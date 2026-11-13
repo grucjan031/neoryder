@@ -8,6 +8,7 @@ import { tuning, createTuningGui } from './core/tuning';
 import type { GameContext } from './core/context';
 import { scenes } from './scenes';
 import { Sandbox } from './scenes/sandbox';
+import { PlayerTest } from './scenes/playerTest';
 import { createCommandExecutor } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
 import './ui/styles.css';
@@ -57,7 +58,14 @@ async function main(): Promise<void> {
       stats?.end();
     },
   });
-  const ctx: GameContext = { bus, rng: new Rng(seed), loop, tuning, debug };
+  const ctx: GameContext = {
+    bus,
+    rng: new Rng(seed),
+    loop,
+    tuning,
+    debug,
+    camera,
+  };
   await scene.init(ctx, three);
   const resize = (): void => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -69,8 +77,8 @@ async function main(): Promise<void> {
   const hint = document.createElement('p');
   hint.className = 'hint';
   hint.textContent = debug
-    ? 'NEORYDER / sandbox · kliknij scenę, aby przechwycić mysz · ` konsola'
-    : 'NEORYDER / sandbox · kliknij scenę, aby przechwycić mysz';
+    ? `NEORYDER / ${scene.id} · kliknij scenę, aby przechwycić mysz · \` konsola`
+    : `NEORYDER / ${scene.id} · kliknij scenę, aby przechwycić mysz`;
   app.append(hint);
   const focusOff = input.onFocusLost(() => {
     loop.paused = true;
@@ -80,8 +88,8 @@ async function main(): Promise<void> {
     loop.paused = false;
     input.requestPointerLock();
     hint.textContent = debug
-      ? 'NEORYDER / sandbox · ` konsola'
-      : 'NEORYDER / sandbox';
+      ? `NEORYDER / ${scene.id} · \` konsola`
+      : `NEORYDER / ${scene.id}`;
   };
   renderer.domElement.addEventListener('click', resume);
   const hitstopOff = bus.on('hitstop', ({ ms }) => loop.hitstop(ms));
@@ -89,7 +97,8 @@ async function main(): Promise<void> {
   if (stats) document.body.append(stats.dom);
   const command = createCommandExecutor({
     reset: () => {
-      if (scene instanceof Sandbox) scene.reset();
+      if (scene instanceof Sandbox || scene instanceof PlayerTest)
+        scene.reset();
     },
     spawnCube: () => scene instanceof Sandbox && scene.spawnCube(),
     seed,
@@ -97,6 +106,12 @@ async function main(): Promise<void> {
       loop.timeScale = value;
     },
     hitstop: (ms) => bus.emit('hitstop', { ms }),
+    ...(scene instanceof PlayerTest
+      ? {
+          teleport: (position: { x: number; y: number; z: number }) =>
+            scene.teleport(position),
+        }
+      : {}),
   });
   const disposeConsole = debug ? createDebugConsole(command) : undefined;
   if (debug) {
@@ -104,7 +119,9 @@ async function main(): Promise<void> {
       tick: () => loop.tick,
       sceneId: () => scene.id,
       query: (name: string) =>
-        scene instanceof Sandbox ? scene.query(name) : undefined,
+        scene instanceof Sandbox || scene instanceof PlayerTest
+          ? scene.query(name)
+          : undefined,
       command,
     });
   }

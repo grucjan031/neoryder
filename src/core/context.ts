@@ -9,4 +9,5 @@ export interface GameContext {
   loop: GameLoop;
   tuning: Tuning;
   debug: boolean;
+  camera?: import('three').PerspectiveCamera;
 }

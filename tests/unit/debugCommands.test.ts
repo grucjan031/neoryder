@@ -13,6 +13,7 @@ describe('komendy debug', () => {
     ['timescale 0.2', { type: 'timescale', value: 0.2 }],
     ['timescale 0', { type: 'timescale', value: 0 }],
     ['hitstop 80', { type: 'hitstop', value: 80 }],
+    ['tp -2 5 0', { type: 'teleport', position: { x: -2, y: 5, z: 0 } }],
   ])('parsuje %s', (line, expected) => {
     expect(parseCommand(line)).toEqual(expected);
   });
@@ -27,8 +28,29 @@ describe('komendy debug', () => {
     'timescale Infinity',
     'hitstop -10',
     'hitstop 3 extra',
+    'tp 0 5',
+    'tp 0 5 0 extra',
+    'tp 0 NaN 0',
+    'tp Infinity 5 0',
   ])('odrzuca %s', (line) => {
     expect(parseCommand(line).type).toBe('error');
+  });
+  it('tp jest opcjonalne dla sandboxa i przekazuje współrzędne tylko obsługującej scenie', () => {
+    const actions = {
+      reset: vi.fn(),
+      spawnCube: vi.fn(() => false),
+      seed: 'tp',
+      timescale: vi.fn(),
+      hitstop: vi.fn(),
+    };
+    expect(createCommandExecutor(actions)('tp 0 5 0')).toContain('niedostępny');
+    const teleport = vi.fn();
+    const command = createCommandExecutor({ ...actions, teleport });
+    expect(command('help')).toContain('tp <x> <y> <z>');
+    expect(command('tp -2 5 0')).toBe('Gracz teleportowany.');
+    expect(teleport).toHaveBeenCalledExactlyOnceWith({ x: -2, y: 5, z: 0 });
+    command('tp 0 NaN 0');
+    expect(teleport).toHaveBeenCalledTimes(1);
   });
   it('ta sama funkcja wykonuje efekty i zwraca wynik do konsoli oraz debug handle', () => {
     const actions = {
