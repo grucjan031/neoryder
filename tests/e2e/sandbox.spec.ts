@@ -88,7 +88,7 @@ test('nieznana scena pokazuje komunikat i listę dostępnych scen', async ({
   await page.goto('/?scene=missing');
   await expect(
     page.getByText(
-      'Nieznana scena: missing. Dostępne sceny: sandbox, player-test.',
+      'Nieznana scena: missing. Dostępne sceny: sandbox, player-test, damage-test.',
     ),
   ).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);

@@ -22,6 +22,7 @@ import type { Scene } from './index';
 
 export class PlayerTest implements Scene {
   readonly id = 'player-test';
+  private commandOff?: () => void;
   private ctx!: GameContext;
   private three!: ThreeScene;
   private world!: World;
@@ -143,6 +144,21 @@ export class PlayerTest implements Scene {
     // Pierwszy krok indeksuje statyczne collidery przed zapytaniami kontrolera.
     this.world.step();
     this.render(1);
+    this.commandOff = ctx.commands?.register('tp', 'tp <x> <y> <z>', (args) => {
+      const [x, y, z] = args.map(Number);
+      if (
+        args.length !== 3 ||
+        x === undefined ||
+        y === undefined ||
+        z === undefined ||
+        !Number.isFinite(x) ||
+        !Number.isFinite(y) ||
+        !Number.isFinite(z)
+      )
+        return 'Podaj trzy skończone współrzędne.';
+      this.teleport({ x, y, z });
+      return 'Gracz teleportowany.';
+    });
   }
 
   private spawnPosition(): Vec3 {
@@ -203,6 +219,7 @@ export class PlayerTest implements Scene {
   }
 
   dispose(): void {
+    this.commandOff?.();
     this.player.dispose();
     this.world.free();
     this.root.traverse((object) => {

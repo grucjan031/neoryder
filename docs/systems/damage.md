@@ -20,14 +20,14 @@ atak (melee / pocisk / moc)
 
 ## Elementy
 
-| Element | Rola |
-|---|---|
-| `EntityRegistry` | id encji, rodzaj (`kind`), drużyna (`Team`), mapa collider → encja. Emituje `entity_spawned/despawned`. `setTeam` przy odbiciu pocisku. |
-| `Health` | `current`, `max` (funkcja — zwykle `stats.get('maxHealth')`, czytana na żywo), `dead`, `apply`, `heal`, `reset`. |
-| `DamageSystem` | `register(id, health, { stats?, invulnMs? })`, `deal`, `canDamage`, `step(dt)` (czas dla nietykalności). |
-| `Hitbox` | aktywny obszar ciosu: właściciel, drużyna, obrażenia, tagi, `lifetimeS`, `hitsPerTarget` (domyślnie 1). Geometrię dostarcza wołający. |
+| Element                        | Rola                                                                                                                                               |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EntityRegistry`               | id encji, rodzaj (`kind`), drużyna (`Team`), mapa collider → encja. Emituje `entity_spawned/despawned`. `setTeam` przy odbiciu pocisku.            |
+| `Health`                       | `current`, `max` (funkcja — zwykle `stats.get('maxHealth')`, czytana na żywo), `dead`, `apply`, `heal`, `reset`.                                   |
+| `DamageSystem`                 | `register(id, health, { stats?, invulnMs? })`, `deal`, `canDamage`, `step(dt)` (czas dla nietykalności).                                           |
+| `Hitbox`                       | aktywny obszar ciosu: właściciel, drużyna, obrażenia, tagi, `lifetimeS`, `hitsPerTarget` (domyślnie 1). Geometrię dostarcza wołający.              |
 | `Hurtboxes` + `queryHurtboxes` | collidery przyjmujące obrażenia z mnożnikiem (np. głowa 1,5). Zapytanie kształtem Rapier zwraca jeden hurtbox na encję — z największym mnożnikiem. |
-| `ResourcePool` | energia (spend + regeneracja po opóźnieniu) i ciepło (`add(n, { resetDelay: true })` + ujemna regeneracja = chłodzenie). |
+| `ResourcePool`                 | energia (spend + regeneracja po opóźnieniu) i ciepło (`add(n, { resetDelay: true })` + ujemna regeneracja = chłodzenie).                           |
 
 ## Reguły
 
@@ -40,12 +40,32 @@ atak (melee / pocisk / moc)
 
 ## Strojenie
 
-Wartości trafień (obrażenia ciosów, odrzut) są w danych broni i w `tuning.ts`. Planowana grupa `tuning.damage` (dodawana razem ze sceną `damage-test`): `playerInvulnMs` (start 250 ms).
+Wartości trafień (obrażenia ciosów, odrzut) są w danych broni i w `tuning.ts`.
+Grupa `tuning.damage` zawiera `playerInvulnMs` (250 ms, okno nietykalności gracza)
+oraz `respawnS` (1,5 s, czas odrodzenia manekina). Manekin nie ma nietykalności.
 
 ## Testy
 
 `tests/unit/damage.test.ts` (rejestr, Health, DamageSystem, Hitbox, zapytanie Rapier), `tests/unit/resource.test.ts` (energia, ciepło).
 
-## Do zrobienia w ramach #01
+## Scena damage-test
 
-- Scena `?scene=damage-test` z manekinem i komendą `hit <dmg>` — po scaleniu kontrolera FPP (#02), bo obie zmiany dotykają rejestru scen i komend.
+`?scene=damage-test&debug=1` pokazuje model `enemy_trooper.glb` na białej podłodze,
+ze statycznej kamery. Przy błędzie ładowania model zastępuje czerwona bryła.
+Manekin ma 100 HP ze `Stats`, kapsułę tułowia (×1) i kulę głowy (×1,5).
+Napis HTML aktualizuje się ze zdarzenia `health_changed`.
+
+- `hit <dmg>` zadaje obrażenia przez `DamageSystem` ze źródłem gracza i tagiem `#debug`.
+- `heal` przywraca pełne zdrowie i emituje `health_changed`.
+- `block on|off` dodaje lub zdejmuje modyfikator `damageTaken` ×0,3, źródło `block`.
+- `slash` tworzy nowy Hitbox (25 obrażeń, 0,1 s). Cuboid na wysokości 1,2 m
+  przecina tułów i głowę. Zapytanie wybiera głowę, więc pojedynczy cios bez bloku
+  zadaje 37,5 obrażeń; kolejne kroki tego samego Hitboxa nie trafiają ponownie.
+
+Po `enemy_killed` model i collidery znikają, a po `tuning.damage.respawnS` czasu
+symulacji manekin wraca z pełnym zdrowiem. Debug query udostępnia `dummyHp`,
+`dummyAlive` i `lastDamage` (ostatni payload `damage_dealt`). Scena odpina komendy,
+subskrypcje i napis oraz zwalnia zasoby przy `dispose`.
+
+`tests/unit/damageTest.test.ts` sprawdza scenę z prawdziwym Rapierem w Node,
+a `tests/e2e/damageTest.spec.ts` weryfikuje ładowanie i trafienie w przeglądarce.

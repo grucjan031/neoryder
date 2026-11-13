@@ -8,6 +8,21 @@ export const tuning = {
     lastKillTimeScale: 0.2,
   },
   camera: { fov: 90, shakeMax: 0.4 },
+  render: {
+    world: '#ffffff',
+    enemy: '#e0262b',
+    enemyGlow: '#ff5050',
+    interactive: '#080808',
+    player: '#00e5ff',
+    power: '#ff2bd6',
+    outline: 1,
+    outlineThickness: 1,
+    outlineDepthThreshold: 0.025,
+    outlineNormalThreshold: 0.2,
+    outlineColor: '#30343b',
+    hemiIntensity: 0.6,
+    keyIntensity: 2.4,
+  },
   /** Kontroler FPP (#02). Prędkości m/s, przyspieszenia m/s², czasy ms. */
   player: {
     walkSpeed: 7,
@@ -32,6 +47,7 @@ export const tuning = {
     groundStickSpeed: 2,
   },
   physics: { gravity: -20, maxDynamicBodies: 300 },
+  damage: { playerInvulnMs: 250, respawnS: 1.5 },
   sandbox: { cubeSpawnHeight: 6 },
 };
 export type Tuning = typeof tuning;
@@ -41,6 +57,8 @@ export function createTuningGui(t: Tuning = tuning): GUI {
   function populate(parent: GUI, group: Record<string, unknown>): void {
     for (const [key, value] of Object.entries(group)) {
       if (typeof value === 'number') parent.add(group, key);
+      else if (typeof value === 'string' && value.startsWith('#'))
+        parent.addColor(group, key);
       else if (typeof value === 'object' && value !== null)
         populate(parent.addFolder(key), value as Record<string, unknown>);
     }

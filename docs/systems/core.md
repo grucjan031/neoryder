@@ -44,13 +44,26 @@ w `step`, interpoluj pozycję i rotację w `render(alpha)`, a w `dispose` zwolni
 WASM, geometrie i materiały. Nowy wspólny kontrakt najpierw uzgodnij w `docs/api.md`.
 Statyczna kamera F0 jest ustawiana w main; kontrakt kamery FPP należy do F1.
 
-Backquote otwiera konsolę. Parser i executor komend są czyste i używane również
-przez `window.__neoryder.command`: `help`, `reset`, `spawn cube`, `seed`,
-`timescale <n>`, `hitstop <ms>`. Wartości muszą być skończone i nieujemne.
-Debug handle jest zamrożony, wystawiany tylko w debug; e2e używają `?debug=1`.
-`cubeY` pochodzi z bieżącego stanu symulacji pierwszej kostki, `bodies` obejmuje
-podłogę i dynamiczne kostki. Sandbox ma lokalne metody do tych operacji;
-nie rozszerzają interfejsu `Scene` ani `GameContext`.
+Backquote otwiera konsolę. `CommandRegistry` z `src/ui/debugCommands.ts` wykonuje
+komendy zarówno konsoli, jak i `window.__neoryder.command`. Rejestr dopasowuje
+najpierw nazwę dwuwyrazową, potem jednowyrazową; ignoruje wielkość liter nazwy,
+zachowuje wielkość liter argumentów. Nieznana komenda zwraca komunikat z sugestią
+`help`, a wyjątek handlera staje się komunikatem błędu. Duplikat nadpisuje komendę
+z ostrzeżeniem `console.warn`. `help()` zbiera opisy bieżących rejestracji.
+
+Scena rejestruje komendy w `init` przez opcjonalne
+`ctx.commands?.register(name, help, run)` i zachowuje zwrócone funkcje unsubscribe,
+które wywołuje w `dispose`. Odpięcie starej rejestracji nie usuwa jej zastępcy.
+Sandbox rejestruje `spawn cube`, player-test — `tp <x> <y> <z>`, damage-test —
+`hit`, `heal`, `block`, `slash`. Eksport `registerCommand` obsługuje domyślną
+instancję używaną w main; testy mogą przekazać własny rejestr przez `GameContext`.
+
+Main rejestruje `help`, `reset`, `seed`, `timescale <n>` i `hitstop <ms>`.
+Wartości czasu muszą być skończone i nieujemne. `reset` deleguje do opcjonalnej
+metody `scene.reset()`, a zapytania do `scene.query(name)`. Main nie rozpoznaje
+konkretnych klas scen. Debug handle jest zamrożony i wystawiany tylko w debug;
+e2e używają `?debug=1`. `cubeY` pochodzi z bieżącego stanu pierwszej kostki,
+a `bodies` obejmuje podłogę i dynamiczne kostki.
 
 ## Weryfikacja
 

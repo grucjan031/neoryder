@@ -7,9 +7,7 @@ import { Input } from './core/input';
 import { tuning, createTuningGui } from './core/tuning';
 import type { GameContext } from './core/context';
 import { scenes } from './scenes';
-import { Sandbox } from './scenes/sandbox';
-import { PlayerTest } from './scenes/playerTest';
-import { createCommandExecutor } from './ui/debugCommands';
+import { defaultCommands as commands } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
 import './ui/styles.css';
 
@@ -65,6 +63,7 @@ async function main(): Promise<void> {
     tuning,
     debug,
     camera,
+    commands,
   };
   await scene.init(ctx, three);
   const resize = (): void => {
@@ -95,33 +94,38 @@ async function main(): Promise<void> {
   const hitstopOff = bus.on('hitstop', ({ ms }) => loop.hitstop(ms));
   const gui = debug ? createTuningGui() : undefined;
   if (stats) document.body.append(stats.dom);
-  const command = createCommandExecutor({
-    reset: () => {
-      if (scene instanceof Sandbox || scene instanceof PlayerTest)
-        scene.reset();
-    },
-    spawnCube: () => scene instanceof Sandbox && scene.spawnCube(),
-    seed,
-    timescale: (value) => {
-      loop.timeScale = value;
-    },
-    hitstop: (ms) => bus.emit('hitstop', { ms }),
-    ...(scene instanceof PlayerTest
-      ? {
-          teleport: (position: { x: number; y: number; z: number }) =>
-            scene.teleport(position),
-        }
-      : {}),
-  });
+  const builtinOff = [
+    commands.register('help', 'help', () => commands.help()),
+    commands.register('seed', 'seed', () => seed),
+    commands.register('reset', 'reset', () => {
+      scene.reset?.();
+      return 'Scena zresetowana.';
+    }),
+    ...(['timescale', 'hitstop'] as const).map((name) =>
+      commands.register(
+        name,
+        name === 'timescale' ? 'timescale <n>' : 'hitstop <ms>',
+        (args) => {
+          const value = Number(args[0]);
+          if (args.length !== 1 || !Number.isFinite(value) || value < 0)
+            return 'Podaj skończoną liczbę nieujemną.';
+          if (name === 'timescale') {
+            loop.timeScale = value;
+            return `Skala czasu: ${value}`;
+          }
+          bus.emit('hitstop', { ms: value });
+          return `Hitstop: ${value} ms`;
+        },
+      ),
+    ),
+  ];
+  const command = (line: string): string => commands.execute(line);
   const disposeConsole = debug ? createDebugConsole(command) : undefined;
   if (debug) {
     window.__neoryder = Object.freeze({
       tick: () => loop.tick,
       sceneId: () => scene.id,
-      query: (name: string) =>
-        scene instanceof Sandbox || scene instanceof PlayerTest
-          ? scene.query(name)
-          : undefined,
+      query: (name: string) => scene.query?.(name),
       command,
     });
   }
@@ -143,6 +147,7 @@ async function main(): Promise<void> {
     window.removeEventListener('resize', resize);
     window.removeEventListener('pagehide', dispose);
     scene.dispose();
+    for (const off of builtinOff) off();
     bus.clear();
     renderer.dispose();
     app.replaceChildren();

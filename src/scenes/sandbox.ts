@@ -32,6 +32,7 @@ const pose = (body: RigidBody): Pose => ({
 
 export class Sandbox implements Scene {
   readonly id = 'sandbox';
+  private commandOff?: () => void;
   private ctx!: GameContext;
   private three!: ThreeScene;
   private world!: World;
@@ -58,6 +59,11 @@ export class Sandbox implements Scene {
     this.floor.position.y = -0.5;
     three.add(this.floor);
     this.reset();
+    this.commandOff = ctx.commands?.register('spawn cube', 'spawn cube', () =>
+      this.spawnCube()
+        ? 'Dodano kostkę.'
+        : 'Osiągnięto limit ciał dynamicznych.',
+    );
   }
 
   reset(): void {
@@ -149,6 +155,7 @@ export class Sandbox implements Scene {
   }
 
   dispose(): void {
+    this.commandOff?.();
     for (const cube of this.cubes) {
       this.three.remove(cube.mesh);
       this.ctx.bus.emit('entity_despawned', { id: cube.id });

@@ -1,81 +1,57 @@
-export type DebugCommand =
-  | { type: 'help' | 'reset' | 'spawnCube' | 'seed' }
-  | { type: 'timescale' | 'hitstop'; value: number }
-  | { type: 'teleport'; position: { x: number; y: number; z: number } }
-  | { type: 'error'; message: string };
-
-export function parseCommand(line: string): DebugCommand {
-  const parts = line.trim().toLowerCase().split(/\s+/);
-  const [name, argument] = parts;
-  if (name === 'tp' && parts.length === 4) {
-    const [x, y, z] = parts.slice(1).map(Number);
-    if (
-      x !== undefined &&
-      y !== undefined &&
-      z !== undefined &&
-      Number.isFinite(x) &&
-      Number.isFinite(y) &&
-      Number.isFinite(z)
-    )
-      return { type: 'teleport', position: { x, y, z } };
-    return { type: 'error', message: 'Podaj trzy skończone współrzędne.' };
-  }
-  if (
-    parts.length === 1 &&
-    (name === 'help' || name === 'reset' || name === 'seed')
-  )
-    return { type: name };
-  if (parts.length === 2 && name === 'spawn' && argument === 'cube')
-    return { type: 'spawnCube' };
-  if (parts.length === 2 && (name === 'timescale' || name === 'hitstop')) {
-    const value = Number(argument);
-    if (Number.isFinite(value) && value >= 0) return { type: name, value };
-    return { type: 'error', message: 'Podaj skończoną liczbę nieujemną.' };
-  }
-  return { type: 'error', message: 'Nieznana komenda. Wpisz help.' };
+interface Command {
+  help: string;
+  run: (args: string[]) => string;
 }
 
-interface CommandActions {
-  reset(): void;
-  spawnCube(): boolean;
-  seed: string;
-  timescale(value: number): void;
-  hitstop(ms: number): void;
-  teleport?(position: { x: number; y: number; z: number }): void;
-}
+export class CommandRegistry {
+  private readonly commands = new Map<string, Command>();
 
-export function createCommandExecutor(
-  actions: CommandActions,
-): (line: string) => string {
-  return (line) => {
-    const command = parseCommand(line);
-    switch (command.type) {
-      case 'help':
-        return (
-          'help · reset · spawn cube · seed · timescale <n> · hitstop <ms>' +
-          (actions.teleport ? ' · tp <x> <y> <z>' : '')
-        );
-      case 'teleport':
-        if (!actions.teleport) return 'Teleport niedostępny w tej scenie.';
-        actions.teleport(command.position);
-        return 'Gracz teleportowany.';
-      case 'reset':
-        actions.reset();
-        return 'Scena zresetowana.';
-      case 'spawnCube':
-        return actions.spawnCube()
-          ? 'Dodano kostkę.'
-          : 'Osiągnięto limit ciał dynamicznych.';
-      case 'seed':
-        return actions.seed;
-      case 'timescale':
-        actions.timescale(command.value);
-        return `Skala czasu: ${command.value}`;
-      case 'hitstop':
-        actions.hitstop(command.value);
-        return `Hitstop: ${command.value} ms`;
-      case 'error':
-        return command.message;
+  register(
+    name: string,
+    help: string,
+    run: (args: string[]) => string,
+  ): () => void {
+    name = name.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!name || name.split(' ').length > 2)
+      throw new Error('Nazwa komendy musi mieć jedno lub dwa słowa.');
+    if (this.commands.has(name)) console.warn(`Nadpisano komendę: ${name}`);
+    const command = { help, run };
+    this.commands.set(name, command);
+    return () => {
+      if (this.commands.get(name) === command) this.commands.delete(name);
+    };
+  }
+
+  execute(line: string): string {
+    const parts = line.trim().split(/\s+/);
+    for (const length of [2, 1]) {
+      if (parts.length < length) continue;
+      const command = this.commands.get(
+        parts.slice(0, length).join(' ').toLowerCase(),
+      );
+      if (!command) continue;
+      try {
+        return command.run(parts.slice(length));
+      } catch (error: unknown) {
+        return `Błąd komendy: ${error instanceof Error ? error.message : String(error)}`;
+      }
     }
-  };
+    return 'Nieznana komenda. Wpisz help.';
+  }
+
+  help(): string {
+    return [...this.commands.values()]
+      .map((command) => command.help)
+      .join(' · ');
+  }
+}
+
+export const defaultCommands = new CommandRegistry();
+
+export function registerCommand(
+  name: string,
+  help: string,
+  run: (args: string[]) => string,
+): () => void {
+  return defaultCommands.register(name, help, run);
 }
