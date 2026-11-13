@@ -1,0 +1,17 @@
+{
+  "keyboard": {
+    "KeyW": "moveForward",
+    "KeyS": "moveBack",
+    "KeyA": "moveLeft",
+    "KeyD": "moveRight",
+    "Space": "jump",
+    "ShiftLeft": "sprint",
+    "ShiftRight": "sprint",
+    "KeyQ": "dash",
+    "ControlLeft": "crouch",
+    "ControlRight": "crouch",
+    "KeyR": "shoot",
+    "KeyF": "power"
+  },
+  "mouse": { "0": "attack", "2": "block" }
+}

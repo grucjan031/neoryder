@@ -1,0 +1,12 @@
+node_modules
+dist
+playwright-report
+test-results
+.npm-cache
+package-lock.json
+AGENTS.md
+docs/api.md
+docs/roadmap.md
+docs/gdd.md
+docs/backlog.md
+docs/issues/
