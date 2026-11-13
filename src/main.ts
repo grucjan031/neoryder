@@ -9,6 +9,7 @@ import type { GameContext } from './core/context';
 import { scenes } from './scenes';
 import { defaultCommands as commands } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
+import { createRenderPipeline } from './render/outline';
 import './ui/styles.css';
 
 async function main(): Promise<void> {
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
   renderer.domElement.tabIndex = 0;
   renderer.domElement.setAttribute('aria-label', 'Scena NEORYDER');
   app.append(renderer.domElement);
+  const pipeline = createRenderPipeline(renderer);
   const three = new ThreeScene();
   const camera = new PerspectiveCamera(tuning.camera.fov, 1, 0.1, 100);
   camera.position.set(8, 6, 10);
@@ -52,7 +54,7 @@ async function main(): Promise<void> {
         camera.updateProjectionMatrix();
       }
       scene.render(alpha);
-      renderer.render(three, camera);
+      pipeline.render(three, camera);
       stats?.end();
     },
   });
@@ -70,6 +72,7 @@ async function main(): Promise<void> {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    pipeline.setSize(window.innerWidth, window.innerHeight);
   };
   resize();
   window.addEventListener('resize', resize);
@@ -149,6 +152,7 @@ async function main(): Promise<void> {
     scene.dispose();
     for (const off of builtinOff) off();
     bus.clear();
+    pipeline.dispose();
     renderer.dispose();
     app.replaceChildren();
     delete window.__neoryder;

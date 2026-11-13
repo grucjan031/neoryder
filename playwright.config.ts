@@ -1,6 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
+  // Jeden wzorzec dla wszystkich systemów: WebGL renderuje programowo SwiftShader.
+  snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
   testDir: './tests/e2e',
   fullyParallel: false,
   workers: 1,
