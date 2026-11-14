@@ -1,5 +1,19 @@
-import { BoxGeometry, CylinderGeometry, Group, Mesh, Vector3 } from 'three';
-import type { Object3D } from 'three';
+import {
+  AnimationMixer,
+  BoxGeometry,
+  CylinderGeometry,
+  Group,
+  LoopOnce,
+  LoopRepeat,
+  Mesh,
+  SkinnedMesh,
+  Sphere,
+  Vector3,
+} from 'three';
+import type { AnimationAction, Object3D } from 'three';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { tuning } from '../core/tuning';
+import { selectEnemyAnimation } from './enemyAnimation';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
@@ -18,7 +32,8 @@ export function loadEnemyModel(name: string): Promise<Object3D | null> {
   if (cached) return cached;
   const template = new GLTFLoader()
     .loadAsync(`/assets/models/${name}.glb`)
-    .then(({ scene }) => {
+    .then(({ scene, animations }) => {
+      scene.animations = animations ?? [];
       const materials = new Set<import('three').Material>();
       scene.traverse((node) => {
         if (node instanceof Mesh)
@@ -41,6 +56,15 @@ export class EnemyView {
   readonly root = new Group();
   private model = new Group();
   private disposed = false;
+  private mixer?: AnimationMixer;
+  private action?: AnimationAction;
+  private readonly actions = new Map<string, AnimationAction>();
+  private readonly skins: SkinnedMesh[] = [];
+  private animationState?: Enemy['current']['state'];
+  private animationTimeS = 0;
+  private shotTimeS?: number;
+  private pendingAnimationS = 0;
+  private animationPending = false;
   private readonly laser?: Mesh;
   private shield?: Object3D;
   private fallbackShield?: Mesh;
@@ -214,7 +238,27 @@ export class EnemyView {
         this.root.remove(this.model);
         this.model = new Group();
         this.model.scale.setScalar(enemy.definition.boss?.modelScale ?? 1);
-        this.model.add(source.clone(true));
+        const instance = clone(source);
+        this.model.add(instance);
+        instance.traverse((node) => {
+          if (node instanceof SkinnedMesh) this.skins.push(node);
+        });
+        if (this.skins.length && source.animations.length) {
+          this.mixer = new AnimationMixer(instance);
+          for (const clip of source.animations)
+            this.actions.set(clip.name, this.mixer.clipAction(clip));
+          // Konserwatywna sfera obejmuje kończyny także po zmianie pozy.
+          for (const skin of this.skins) {
+            skin.boundingSphere = new Sphere(
+              new Vector3(0, body.height / 2, 0),
+              body.height,
+            );
+          }
+          instance.traverse((node) => {
+            if (node instanceof Mesh)
+              node.onBeforeRender = () => this.advanceAnimation();
+          });
+        }
         this.root.add(this.model);
         this.useModelShield();
         this.equipBlade();
@@ -309,15 +353,18 @@ export class EnemyView {
     if (this.shield) this.shield.visible = b.shieldUp === true;
     this.renderLaser();
     const anim = definition.animation;
+    if (this.mixer) this.prepareAnimation(t);
     if (!anim) return;
     for (const [node, rest] of this.rest) {
+      if (this.mixer && (node.type === 'Bone' || node instanceof SkinnedMesh))
+        continue;
       node.rotation.set(rest.x, rest.y, rest.z);
       node.position.copy(rest.position);
       node.scale.copy(rest.scale);
     }
     const rotate = (name: string, axis: 'x' | 'z', angle: number): void => {
       const node = this.model.getObjectByName(name);
-      if (node) node.rotation[axis] += angle;
+      if (node && !this.mixer) node.rotation[axis] += angle;
     };
     const phase =
       ((a.distance + (b.distance - a.distance) * t) / anim.strideM) *
@@ -401,8 +448,75 @@ export class EnemyView {
     }
   }
 
+  /** Zegar snapshotu pochodzi z dt świata, już po Skupieniu i hitstopie. */
+  private prepareAnimation(alpha: number): void {
+    const { previous: a, current: b, definition } = this.enemy;
+    const time =
+      a.state === b.state
+        ? a.stateTimeS + (b.stateTimeS - a.stateTimeS) * alpha
+        : b.stateTimeS;
+    const sameState = this.animationState === b.state;
+    const dt = sameState
+      ? Math.max(0, time - this.animationTimeS)
+      : Math.max(0, time);
+    this.animationState = b.state;
+    this.animationTimeS = time;
+    const selection = selectEnemyAnimation(definition, b);
+    const next = this.actions.get(selection.clip);
+    if (!next) return;
+    const shot =
+      b.state === 'burst' &&
+      b.shotTimeS !== undefined &&
+      (this.shotTimeS === undefined || b.shotTimeS < this.shotTimeS);
+    this.shotTimeS = b.shotTimeS;
+    if (next !== this.action || !sameState || shot) {
+      const old = this.action;
+      next.reset();
+      next.setLoop(selection.once ? LoopOnce : LoopRepeat, Infinity);
+      next.clampWhenFinished = selection.once;
+      next.setEffectiveWeight(1).play();
+      if (old && old !== next)
+        next.crossFadeFrom(
+          old,
+          selection.once
+            ? tuning.enemies.animationActionFadeS
+            : tuning.enemies.animationFadeS,
+          false,
+        );
+      this.action = next;
+    }
+    next.setEffectiveTimeScale(
+      selection.moving
+        ? (next.getClip().duration * b.speed) /
+            (definition.animation?.strideM ?? definition.moveSpeed)
+        : selection.durationS && selection.once
+          ? next.getClip().duration / selection.durationS
+          : 1,
+    );
+    // Nie nadrabiamy czasu poza kadrem. Callback wykonuje się tylko dla widocznej siatki,
+    // raz na render, także gdy outline i bloom rysują tę samą siatkę ponownie.
+    this.pendingAnimationS = dt;
+    this.animationPending = this.root.visible;
+  }
+
+  private advanceAnimation(): void {
+    if (!this.animationPending || !this.mixer) return;
+    this.animationPending = false;
+    this.mixer.update(this.pendingAnimationS);
+    this.model.updateWorldMatrix(true, true);
+    // Renderer zbiera listę obiektów przed onBeforeRender; odśwież też jego macierze skina.
+    for (const skin of this.skins) skin.skeleton.update();
+  }
+
   dispose(): void {
     this.disposed = true;
+    if (this.mixer) {
+      this.mixer.stopAllAction();
+      this.mixer.uncacheRoot(this.mixer.getRoot());
+    }
+    for (const skin of this.skins) skin.skeleton.dispose();
+    this.actions.clear();
+    this.skins.length = 0;
     this.root.removeFromParent();
     this.root.clear();
     for (const geometry of this.fallbackGeometries) geometry.dispose();

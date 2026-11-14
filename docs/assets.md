@@ -11,15 +11,15 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 
 ## Konwencje (obowiązkowe dla nowych modeli)
 
-| Zasada               | Wartość                                                                                        |
-| -------------------- | ---------------------------------------------------------------------------------------------- |
-| Jednostki            | metry, glTF Y-up                                                                               |
-| Postacie i rekwizyty | patrzą w **+Z** (zgodnie z `Object3D.lookAt`), spód / stopy na `y = 0`, środek w `x = z = 0`   |
-| Broń gracza          | celuje w **-Z** (kierunek kamery), początek układu w punkcie chwytu                            |
-| Ręce gracza (FPP)    | początek = nadgarstek, palce w spoczynku w **-Z**, wnętrze dłoni w **+Y**, przedramię w **+Z** |
-| Strona prawa postaci | **-X** (postać patrzy w +Z)                                                                    |
-| Cieniowanie          | płaskie (flat), low-poly, bez tekstur                                                          |
-| Budżet               | wróg ≤ 1500 trójkątów, rekwizyt ≤ 500, broń ≤ 400, ręka FPP ≤ 3000                             |
+| Zasada               | Wartość                                                                                            |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Jednostki            | metry, glTF Y-up                                                                                   |
+| Postacie i rekwizyty | patrzą w **+Z** (zgodnie z `Object3D.lookAt`), spód / stopy na `y = 0`, środek w `x = z = 0`       |
+| Broń gracza          | celuje w **-Z** (kierunek kamery), początek układu w punkcie chwytu                                |
+| Ręce gracza (FPP)    | początek = nadgarstek, palce w spoczynku w **-Z**, wnętrze dłoni w **+Y**, przedramię w **+Z**     |
+| Strona prawa postaci | **-X** (postać patrzy w +Z)                                                                        |
+| Cieniowanie          | płaskie (flat), low-poly, bez tekstur                                                              |
+| Budżet               | humanoid ≤ 6000 trójkątów (ciało ≈ 4000), dron ≤ 1500, rekwizyt ≤ 500, broń ≤ 400, ręka FPP ≤ 3000 |
 
 ### Materiały (rozpoznawane po nazwie — shader stylu może je podmienić)
 
@@ -32,48 +32,74 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 | `mat_player_cyan`   | cyan `#00e5ff`, emisja    | ostrze, otwory chłodzenia blastera, akcenty gracza                |
 | `mat_power_magenta` | magenta `#ff2bd6`, emisja | efekty mocy, emiter Rezonansu na dłoni                            |
 
-## Wrogowie — sztywne części z pivotami w stawach
+## Wrogowie — manekin CC0 ze szkieletem
 
-Wrogowie nie mają skinningu. Każda część to osobny węzeł z pivotem w stawie, więc:
+Pięć humanoidów powstaje przez `build_enemy_cc0(archetype)` z manekina
+**Quaternius Universal Animation Library, Standard**:
+[źródło](https://opengameart.org/content/universal-animation-library),
+[licencja CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
+Oryginał: `tools/blender/sources/ual/AnimationLibrary_Godot_Standard.glb`,
+licencja autora: `tools/blender/sources/ual/License.txt`. Skrypt używa wyłącznie
+importera glTF Blendera. Wyposażenie jest własne, proceduralne.
 
-- animacja = obroty węzłów w kodzie (proceduralnie, z danych), bez klipów;
-- rozpad na odłamki może startować od części (każda część osobno do puli odłamków), kierunek zgodny z ciosem.
+Ciało `armored_body` ma 3999 trójkątów po Decimate (źródło: 13 743),
+z zachowanymi grupami wag i skinem do armatury `Rig` (53 kości). Eksporter
+normalizuje cztery największe wagi każdego wierzchołka. Siatki mają płaskie
+normalne, płyty i broń fazowane krawędzie. Materiały: `mat_enemy` oraz
+`mat_enemy_glow`. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
+ma 2,208 m (1,2×). Dodatkowa skala `boss.modelScale` nadal działa w widoku.
+Stopy w pozycji wiązania leżą na y=0, przód to +Z glTF, prawa strona to -X.
 
-Hierarchia (identyczna dla wszystkich humanoidów):
-
-```
+```text
 enemy_<typ>
-└─ pelvis
-   ├─ torso
-   │  ├─ head ─ helmet, visor
-   │  ├─ arm_upper_L ─ arm_lower_L ─ hand_L
-   │  └─ arm_upper_R ─ arm_lower_R ─ hand_R ─ <broń>
-   ├─ leg_upper_L ─ leg_lower_L ─ foot_L
-   └─ leg_upper_R ─ leg_lower_R ─ foot_R
+└─ Rig
+   ├─ armored_body (skin)
+   └─ root → DEF-hips → kości tułowia i kończyn
+      ├─ DEF-head → helmet / hood, visor
+      ├─ DEF-hand.R → hand_R → baton / rifle / blade_hilt
+      └─ DEF-spine.003 → shield (Tarczownik)
 ```
 
-Wysokość ~1,84 m, staw szyi `head` na 1,52 m. Części dodatkowe są dziećmi części nośnej (np. `shoulder_pad_L` pod `torso`).
+Sztywne wyposażenie jest dzieckiem odpowiedniej kości (bone parent), więc
+podąża za klipami. Tarcza Tarczownika jest przypięta do `DEF-spine.003`,
+pionowa w `Idle_Loop`, obrócona o 12° na zewnątrz i odsunięta przed rękę.
+Jej górna krawędź leży poniżej wizjera, dolna przy kolanach. Panele płaszcza podążają za udami. Chwyt karabinu jest
+kalibrowany w `Pistol_Aim_Neutral`, a chwyt pałki/ostrza w `Sword_Idle`.
+Podglądy pokazują `Idle_Loop` albo `Pistol_Idle_Loop` w klatce 0.
+Każdy GLB zawiera siedem klipów: `Walk_Loop`, `Jog_Fwd_Loop`, `Hit_Chest`,
+`Hit_Head` oraz trzy klipy archetypu:
+
+| Archetyp               | Klipy dodatkowe                                          |
+| ---------------------- | -------------------------------------------------------- |
+| Szturmowiec, Egzekutor | `Idle_Loop`, `Sword_Idle`, `Sword_Attack`                |
+| Strzelec, Snajper      | `Pistol_Idle_Loop`, `Pistol_Aim_Neutral`, `Pistol_Shoot` |
+| Tarczownik             | `Idle_Loop`, `Punch_Enter`, `Punch_Cross`                |
+
+`EnemyView` klonuje szkielet przez `SkeletonUtils.clone`, współdzieli geometrię,
+klipy i materiały, a stan AI mapuje na klipy `AnimationMixer` z przenikaniem.
+Śmierć nadal uruchamia niezależny od części modelu rozpad `enemyShatter`;
+`Death01` nie jest eksportowany. Dron zachowuje dotychczasową budowę i animację.
 
 ## Katalog
 
-| Plik                                   | Co to                                                                                                                                                                               | Węzły dla kodu                                                                                                                                                                    |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enemy_trooper.glb`                    | Szturmowiec (≈1370 tri): masywny, fazowane naramienniki, kamizelka z ładownicami, nakolanniki i nałokietniki, hełm ze świecącym paskiem wizjera, plecak z anteną, pałka elektryczna | `baton` (pivot w dłoni), `baton_tip` (świecąca końcówka), `baton_hit` (punkt trafienia), `visor`                                                                                  |
-| `enemy_gunner.glb`                     | Strzelec (≈1430 tri): smuklejszy, hełm z osłoną karku, kamizelka z magazynkami, plecak z anteną, karabin                                                                            | `rifle` (pivot w dłoni), `muzzle` (wylot pocisku, 0,71 m od chwytu), `visor`                                                                                                      |
-| `enemy_sniper.glb`                     | Snajper (≈1490 tri): wysoki i smukły (~1,9 m), poły płaszcza jako panele na udach, hełm z jedną okrągłą soczewką, długi karabin z lunetą                                            | `rifle`, `muzzle` (0,71 m od chwytu, jak u Strzelca — `muzzle` z danych pasuje), `visor` (soczewka), `scope_lens`                                                                 |
-| `enemy_shielder.glb`                   | Tarczownik (≈1390 tri): krępy, ciężkie pancerze, krótka pałka, duża tarcza 0,8 × 1,2 × 0,12 m przed lewym bokiem (lewa ręka ułożona za nią)                                         | `shield` (pivot w środku tarczy, dziecko `pelvis`; `EnemyView` używa go zamiast bryły zastępczej i przełącza `visible` wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor` |
-| `enemy_executor.glb`                   | Egzekutor (≈1470 tri): największy (~2,1 m), napierśnik z rdzeniem, kolczaste naramienniki, tassety, hełm z grzebieniem i rogami, plecak                                             | `blade_hilt` (rękojeść w prawej dłoni; samo ostrze dodaje kod wg `bladeSizeM` jako `executor_blade` w `hand_R`), `visor`                                                          |
-| `enemy_drone.glb`                      | Dron (≈860 tri): kadłub z kopułą czujnika, cztery ramiona z osłonami, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z)                                           | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                                                                     |
-| `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                                                             | — (do `InstancedMesh`)                                                                                                                                                            |
-| `plasma_blade.glb`                     | ostrze plazmowe                                                                                                                                                                     | `hilt`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`                                                                           |
-| `blaster.glb`                          | blaster z przegrzaniem                                                                                                                                                              | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                                                                      |
-| `player_arm_R.glb`, `player_arm_L.glb` | gładka rękawica taktyczna z rękawem FPP (10 012 tri na rękę)                                                                                                                     | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support`                                                  |
-| `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut)                                                                                                                                   | —                                                                                                                                                                                 |
-| `pillar.glb`                           | filar 4 m                                                                                                                                                                           | —                                                                                                                                                                                 |
-| `wall_segment.glb`                     | ściana 4 × 3 m, grubość 0,4 m                                                                                                                                                       | —                                                                                                                                                                                 |
-| `cover_low.glb`                        | niska osłona 2 × 1 m                                                                                                                                                                | —                                                                                                                                                                                 |
+| Plik                                   | Co to                                                                                                                                     | Węzły dla kodu                                                                                                                   |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `enemy_trooper.glb`                    | Szturmowiec (4651 tri): ludzka sylwetka, hełm z wizjerem, fazowane naramienniki, kamizelka z ładownicami, pałka                           | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
+| `enemy_gunner.glb`                     | Strzelec (4787 tri): hełm z goglami, kamizelka z trzema ładownicami, karabin                                                              | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
+| `enemy_sniper.glb`                     | Snajper (5092 tri): otwarty kaptur, panele płaszcza, długi karabin ze świecącą lunetą                                                     | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
+| `enemy_shielder.glb`                   | Tarczownik (4827 tri): ciężkie płyty, pałka i pionowa tarcza przed lewą połową tułowia                                                    | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
+| `enemy_executor.glb`                   | Egzekutor (4871 tri): manekin 1,2×, egzoszkielet na tułowiu i kończynach, świecący rdzeń                                                  | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
+| `enemy_drone.glb`                      | Dron (≈860 tri): kadłub z kopułą czujnika, cztery ramiona z osłonami, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
+| `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                   | — (do `InstancedMesh`)                                                                                                           |
+| `plasma_blade.glb`                     | ostrze plazmowe                                                                                                                           | `hilt`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`                          |
+| `blaster.glb`                          | blaster z przegrzaniem                                                                                                                    | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |
+| `player_arm_R.glb`, `player_arm_L.glb` | gładka rękawica taktyczna z rękawem FPP (10 012 tri na rękę)                                                                              | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
+| `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut)                                                                                         | —                                                                                                                                |
+| `pillar.glb`                           | filar 4 m                                                                                                                                 | —                                                                                                                                |
+| `wall_segment.glb`                     | ściana 4 × 3 m, grubość 0,4 m                                                                                                             | —                                                                                                                                |
+| `cover_low.glb`                        | niska osłona 2 × 1 m                                                                                                                      | —                                                                                                                                |
 
-Model wroga wybiera pole `model` w `src/data/enemies/<id>.json` (nazwa pliku bez `.glb`). Brak pola: Strzelec i Snajper używają `enemy_gunner`, pozostałe humanoidy `enemy_trooper`; przy błędzie ładowania zostają bryły zastępcze (`EnemyView`, `DroneView`). Test `tests/unit/enemyModels.test.ts` pilnuje, że plik istnieje. Humanoidy mają ręce i nogi z nakładkami (nakolanniki, nałokietniki) jako dzieci stawów, więc animacja kodu je niesie; materiały: pancerz `mat_enemy`, wizjer i końcówki `mat_enemy_glow`.
+Model wroga wybiera pole `model` w `src/data/enemies/<id>.json` (nazwa pliku bez `.glb`). Brak pola: Strzelec i Snajper używają `enemy_gunner`, pozostałe humanoidy `enemy_trooper`; przy błędzie ładowania zostają bryły zastępcze (`EnemyView`, `DroneView`). Test `tests/unit/enemyModels.test.ts` pilnuje, że plik istnieje. Humanoidy używają skinningu i klipów; test `enemySkeleton.test.ts` sprawdza skin, budżet, komplet klipów i węzłów, kierunek lufy oraz niezależność 30 klonów.
 
 Kolizje: wyprowadzaj z prostych brył w kodzie (prostopadłościany, kapsuły), nie z siatek modeli.
 
@@ -192,11 +218,11 @@ Gniazda i `palm_center` są pustymi dziećmi kości `palm`; `resonance_core` jes
 siatką również pod `palm`. Nie mają odbicia ani skali, wyznaczniki wynoszą +1.
 Pozycje poniżej są **względem roota R**, nie lokalnego układu kości:
 
-| Gniazdo | Pozycja [x, y, z], m | Użycie |
-| --- | --- | --- |
-| `socket_blade` | [0, 0.0422, -0.08544] | `gripBlade`; rękojeść poprzecznie, emiter po stronie wskazującego |
-| `socket_gun` | [0.06158, 0.04108, -0.11575] | `gripGun` / `gripGunFire`; pochylenie chwytu o 0,05 rad zostawia miejsce przy kolbie |
-| `socket_support` | [0.00420, 0.03100, -0.10321] | `support`; skręt 55° względem spoczynku dłoni |
+| Gniazdo          | Pozycja [x, y, z], m         | Użycie                                                                               |
+| ---------------- | ---------------------------- | ------------------------------------------------------------------------------------ |
+| `socket_blade`   | [0, 0.0422, -0.08544]        | `gripBlade`; rękojeść poprzecznie, emiter po stronie wskazującego                    |
+| `socket_gun`     | [0.06158, 0.04108, -0.11575] | `gripGun` / `gripGunFire`; pochylenie chwytu o 0,05 rad zostawia miejsce przy kolbie |
+| `socket_support` | [0.00420, 0.03100, -0.10321] | `support`; skręt 55° względem spoczynku dłoni                                        |
 
 Dołącz przedmiot z jednostkową transformacją w gnieździe. Dla podparcia dopasuj
 światową macierz `socket_support` do `support` broni:

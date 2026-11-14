@@ -188,6 +188,8 @@ export const tuning = {
     muzzleFlashSize: 0.14,
   },
   enemies: {
+    animationFadeS: 0.12,
+    animationActionFadeS: 0.04,
     phaseShiftS: 1,
     /** Złamanie tarczy bossa: hitstop (ms) i wstrząs kamery (siła, czas w s). */
     shieldBreakHitstopMs: 80,

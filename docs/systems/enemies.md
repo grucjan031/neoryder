@@ -127,18 +127,53 @@ instancje. Sam nie krokuje świata ani `DamageSystem` — robi to właściciel.
 
 ## Render i animacja
 
-`EnemyView` ładuje `enemy_trooper.glb` raz do cache i tworzy niezależny klon
-hierarchii dla każdego wroga. Geometria oraz materiały stylu pozostają wspólne;
-nie są zwalniane przez pojedynczy widok. Materiały źródłowe GLB są zwalniane po
-`applyStyle`. Cache przechowuje jeden szablon na archetyp na czas życia aplikacji.
-Brak modelu pozostawia czerwone bryły z analogicznymi pivotami.
+`EnemyView` ładuje GLB wskazany przez `definition.model` do cache i klonuje
+szkielet przez `SkeletonUtils.clone`. Każdy humanoid ma własny `AnimationMixer`,
+kości i akcje; geometria, materiały stylu oraz `AnimationClip` są współdzielone.
+`applyStyle` obejmuje `SkinnedMesh`; standardowe materiały stylu i normalne
+obsługują skinning także w przebiegach obrysu i bloom. Materiały źródłowe są
+zwalniane po stylizacji, a zasoby szkieletu pojedynczego klona przy `dispose()`.
+Brak modelu lub `loadModels=false` zachowuje animację proceduralną zastępczych
+brył. Dron nadal korzysta z `DroneView`.
 
 Model patrzy w +Z. Pozycja i yaw interpolują się według `alpha`, z najkrótszą
-drogą obrotu. Chód wynika z przebytej drogi i obraca `leg_upper_*`, `leg_lower_*`
-oraz `arm_upper_*`. Telegraph cofa prawe ramię i zgina łokieć; `baton_tip`
-pulsuje skalą względem skali bazowej. Wymach szybko opuszcza ramię, recovery
-przywraca pozę, a ogłuszenie przechyla `pelvis`. Bazowe obroty GLB są zachowane.
-Animacja pozostaje wyłącznie w renderze i nie steruje trafieniami symulacji.
+drogą obrotu. Czysta funkcja `selectEnemyAnimation` wybiera klip ze snapshotu:
+
+| Stan                        | Klip                                                      |
+| --------------------------- | --------------------------------------------------------- |
+| Bezczynność / recovery      | `Idle_Loop`; strzelcy `Pistol_Idle_Loop`                  |
+| Chase / reposition z ruchem | `Walk_Loop` do połowy `moveSpeed`, powyżej `Jog_Fwd_Loop` |
+| Telegraph                   | `Sword_Idle`; Tarczownik `Punch_Enter`                    |
+| Swing                       | `Sword_Attack`; Tarczownik `Punch_Cross`                  |
+| Aim / cooldown strzelca     | `Pistol_Aim_Neutral`                                      |
+| Burst                       | `Pistol_Shoot`, ponawiany przy resecie `shotTimeS`        |
+| Stunned                     | `Hit_Chest`, jednorazowo                                  |
+| Controlled                  | `Hit_Head`, jednorazowo (ogłuszenie ma pierwszeństwo)     |
+| Dead                        | model niewidoczny, dotychczasowy rozpad na odłamki        |
+
+Tempo ruchu to `clip.duration * speed / animation.strideM`. Klipy jednorazowe
+mają `LoopOnce` i zatrzymują ostatnią pozę; cios dopasowuje czas do
+`swingActiveS`, przygotowanie Tarczownika do `telegraphS`, reakcja na ogłuszenie
+do `stunOnHeavyS`. Pozostałe klipy są zapętlone. Przenikanie ma
+`tuning.enemies.animationFadeS` = 0,12 s oraz
+`animationActionFadeS` = 0,04 s dla akcji jednorazowych; oba pola pojawiają się
+w istniejącym panelu lil-gui.
+
+Mixer dostaje przyrost interpolowanego `stateTimeS` snapshotów symulacji,
+więc Skupienie spowalnia go, a hitstop i pauza zatrzymują. Zmiana stanu resetuje
+bazę zegara. Widok nie używa czasu ściennego ani `frameDt`. Aktualizacja jest
+odroczona do `Mesh.onBeforeRender`: tylko siatka dopuszczona do rysowania
+uruchamia mixer, raz na render mimo wielu przebiegów postprocessu. Pozycje
+kości i macierze skina są odświeżane przed rysowaniem. Konserwatywna sfera
+skina obejmuje ruch kończyn; niewidoczny model nie nadrabia pominiętych klatek.
+
+Recoil `rifle`, pulsowanie `visor` / `baton_tip`, widoczność `shield`, ostrze
+Egzekutora i `boss.modelScale` nadal działają. Żadne klipy nie sterują AI,
+hitboxami, czasem zadawania obrażeń ani rozpadem.
+
+Testy: `enemyAnimation.test.ts` (wybór klipów), `enemySkeleton.test.ts`
+(rzeczywiste GLB, skin, kości, wyposażenie, budżet, celowanie, 30 klonów,
+przenikanie i czas świata), `enemyView.test.ts` (fallback i cache).
 
 ## Scena ai-test i weryfikacja
 
@@ -214,10 +249,11 @@ równego id Strzelca, tag `#gun`, prędkość **11 m/s**, obrażenia **12** i cz
 Wylot symulacji określa lokalny wektor `muzzle` w danych; nie zależy od renderu.
 
 `EnemyView` ładuje i klonuje `enemy_gunner.glb`, stosuje `applyStyle` i zachowuje
-czerwony fallback z karabinem i wizjerem. Chód korzysta z przebytej drogi.
-Celowanie unosi oba ramiona i utrzymuje poziom karabinu; widoczny `visor`
-oraz węzeł `muzzle` pulsują. `shotTimeS` w snapshotach uruchamia odrzut
-`rifle`, także po ostatnim strzale serii. Parametry animacji są w JSON.
+czerwony fallback z karabinem i wizjerem. Model ze skinem używa klipów
+`Pistol_*` i chodu opisanego wyżej; fallback nadal obraca ramiona proceduralnie.
+Widoczny `visor` i `muzzle` pulsują. `shotTimeS` ponawia klip strzału i uruchamia
+odrzut `rifle`, także po ostatnim strzale serii. Parametry recoil i pulsowania
+pozostają w JSON, czasy przenikania w `tuning.enemies`.
 
 `ai-test` ma jedną pulę pocisków i `ProjectileRenderer` z `InstancedMesh`.
 Scena krokuje pociski po `world.step()`, render interpoluje pozycje i ustawia
@@ -376,12 +412,16 @@ blok zwraca 0, nie emituje `damage_dealt`, emituje za to
 Statusy są nakładane tylko przez zwykłą ścieżkę obrażeń; przeciążenie z mocy
 z tagiem `#power` przechodzi przez tarczę.
 
-**Widok:** oba warianty używają `enemy_trooper`. Tarcza jest osobnym meshem
-materiału `enemy` pod `root`, więc pozostaje po wczytaniu GLB; widoczność
-wynika z `shieldUp`. Jej rozmiar to `animation.shieldSizeM`. Egzekutor
-zastępuje pałkę dłuższym ostrzem `enemyGlow`, o rozmiarze
-`animation.bladeSizeM`, także w modelu GLB. Pozostałe archetypy zachowują
-dotychczasowy wygląd. Geometrie obu dodatków są zwalniane z widokiem.
+**Widok:** Tarczownik używa `enemy_shielder`, Egzekutor `enemy_executor`.
+Wbudowany `shield` jest przypięty do najwyższej kości kręgosłupa `DEF-spine.003`
+i jest widoczny wg `shieldUp`. W spoczynku stoi pionowo przed lewą połową
+tułowia, z obrotem 12° na zewnątrz, od kolan do wysokości poniżej wizjera.
+Odsunięcie tarczy pozwala lewej dłoni i przedramieniu poruszać się za nią
+w klipach `Idle_Loop`, `Walk_Loop`, `Jog_Fwd_Loop`, `Punch_Enter`, `Punch_Cross`.
+Gdy model go nie zawiera, pozostaje zastępcza tarcza pod `root`, o wymiarach
+`animation.shieldSizeM`. Egzekutor dostaje ostrze `enemyGlow` w `hand_R`,
+o rozmiarze `animation.bladeSizeM`, także w GLB. Geometrie dodatków tworzonych
+w kodzie są zwalniane z widokiem; geometrie GLB pozostają w cache.
 
 **Kontrola w 30 sekund:** `?scene=ai-test&debug=1`, `god`, `kill all`,
 `spawn shielder 1`: strzel lub tnij z przodu, potem zajdź z boku; ciężki
@@ -455,7 +495,7 @@ zaczynają się, tak jak pozostałe, gdy gracz jest w `attackRange`.
 - `summon` (`enemyId`, `count`, `maxMinions`, `placement`, `radiusM`): telegraf
   `enemy_telegraph.kind: 'summon'`, po nim `EnemyManager.spawn(enemyId, …)` (przez
   `EnemyDependencies.spawnEnemy`). Liczba nowych sług to `min(count, maxMinions −
-  żywi)`; martwi i usunięci nie liczą się do limitu. `placement: 'spawnPoints'` losuje
+żywi)`; martwi i usunięci nie liczą się do limitu. `placement: 'spawnPoints'` losuje
   różne punkty spawnu pokoju (`EnemyManagerOptions.spawnPoints`; bez nich albo przy
   `'around'` — pierścień o promieniu `radiusM` wokół bossa, losowy kąt startowy).
   Bez spawnera (np. testy bez managera) wzorzec jest pomijany. Sługi giną razem z
@@ -490,3 +530,15 @@ losowanie, scena i komendy, reset oraz sprzątanie. Kryteria F3-16 nie wymagają
 Fale areny F2 i raport jej balansu nadal obejmują zwykłych wrogów. Test kompletności
 fal wymaga archetypów z `kind !== 'boss'`; `runBalance` stosuje ten sam filtr.
 Symulacja TTK bossa z fazami jest osobnym punktem w `docs/backlog.md`.
+
+## Kontrola modeli CC0 w 30 sekund
+
+`?scene=ai-test&debug=1`, `god`, `kill all`; następnie
+`spawn assaulter 1`, `spawn gunner 1`, `spawn sniper 1`, `spawn shielder 1`,
+`spawn executor 1`. Obejrzyj sylwetki, płynne przejście chodu w przygotowanie
+ciosu i celowanie, broń niesioną przez dłonie oraz tarczę niesioną przez klatkę
+piersiową. Włącz Skupienie, sprawdź zatrzymanie ciała przy hitstopie,
+po czym `kill all` — ma pozostać rozpad na odłamki. Dla feel zwróć uwagę na
+czytelność zapowiedzi, szybki cios w dotychczasowym oknie obrażeń oraz recoil
+każdego strzału. Do obciążenia użyj `kill all`, `spawn assaulter 30` i obróć
+kamerę od grupy; mixery poza kadrem mają przestać aktualizować kości.
