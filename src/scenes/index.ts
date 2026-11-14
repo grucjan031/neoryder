@@ -5,6 +5,7 @@ import type { GameContext } from '../core/context';
 import type { InputSnapshot } from '../core/input';
 import { Sandbox } from './sandbox';
 import { PlayerTest } from './playerTest';
+import { BlasterTest } from './blasterTest';
 
 export interface Scene {
   readonly id: string;
@@ -22,4 +23,5 @@ export const scenes: Record<string, SceneFactory> = {
   'player-test': () => new PlayerTest(),
   'damage-test': () => new DamageTest(),
   'style-test': () => new StyleTest(),
+  'blaster-test': () => new BlasterTest(),
 };

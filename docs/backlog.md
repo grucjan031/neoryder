@@ -15,6 +15,8 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 ## Moce i bronie
 
+- Aktywne chłodzenie blastera w idealnym oknie podczas przegrzania — F2, po ocenie podstawowego zarządzania ciepłem w F1 #06.
+
 | Pomysł                                                                 | Dlaczego odłożone                 |
 | ---------------------------------------------------------------------- | --------------------------------- |
 | Pozostałe moce Rezonansu (Chwyt, Błyskawica, Fala, Bariera, Skupienie) | F2, po sprawdzeniu pierwszej mocy |
