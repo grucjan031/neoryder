@@ -5,6 +5,8 @@ import type { Enemy, EnemyDependencies } from './types';
 
 export class EnemyManager {
   private enemies: Enemy[] = [];
+  /** Numer spawnu w runie — źródło losowości AI niezależne od rosnących ID encji. */
+  private sequence = 0;
   private readonly deps: EnemyDependencies;
   constructor(
     private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
@@ -13,7 +15,8 @@ export class EnemyManager {
     this.deps = { ...deps, getNeighbors: () => this.enemies };
   }
   spawn(id: string, position: Vec3): Enemy {
-    const enemy = createEnemy(this.ctx, this.deps, id, position);
+    const rng = this.ctx.rng.fork(`spawn:${this.sequence++}`);
+    const enemy = createEnemy({ ...this.ctx, rng }, this.deps, id, position);
     this.enemies.push(enemy);
     return enemy;
   }
@@ -27,6 +30,7 @@ export class EnemyManager {
   despawnAll(): void {
     for (const enemy of this.enemies) enemy.dispose();
     this.enemies = [];
+    this.sequence = 0;
   }
   dispose(): void {
     this.despawnAll();

@@ -1,5 +1,5 @@
 import { Ray } from '@dimforge/rapier3d-compat';
-import type { World } from '@dimforge/rapier3d-compat';
+import type { Collider, World } from '@dimforge/rapier3d-compat';
 import type { EntityRegistry } from '../../core/entities';
 import type { EntityId, EventBus, Team } from '../../core/events';
 import type { Vec3 } from '../../core/math';
@@ -160,8 +160,7 @@ export class ProjectileSystem {
               interactionGroups(member, targets),
               undefined,
               undefined,
-              (collider) =>
-                this.entities.byCollider(collider.handle) !== p.owner,
+              (collider) => this.canHit(collider, p.owner),
             )
           : null;
       if (hit) {
@@ -207,6 +206,18 @@ export class ProjectileSystem {
       p.remainingS -= dt;
       if (p.remainingS <= Number.EPSILON) this.release(p);
     }
+  }
+
+  /**
+   * Pocisk trafia tylko hurtboxy (nie właściciela) i geometrię świata. Collidery ruchu postaci
+   * (kapsuła character controllera wroga) nie są celami — inaczej „połykają” strzały w głowę,
+   * bo obejmują sensor głowy.
+   */
+  private canHit(collider: Collider, owner: EntityId): boolean {
+    if (this.hurtboxes.get(collider.handle))
+      return this.entities.byCollider(collider.handle) !== owner;
+    const membership = collider.collisionGroups() >>> 16;
+    return (membership & CollisionGroup.World) !== 0;
   }
 
   forEachActive(

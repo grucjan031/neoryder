@@ -15,4 +15,6 @@ export interface GameContext {
   camera?: import('three').PerspectiveCamera;
   /** Dźwięki (#14) — jeden system na aplikację. */
   audio?: AudioSystem;
+  /** Wznowienie gry z gestu użytkownika (zdejmuje pauzę, przechwytuje mysz). */
+  resume?: () => void;
 }

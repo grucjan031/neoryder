@@ -190,6 +190,23 @@ export class PlasmaBlade {
       this.stage = 0;
   }
 
+  /** Stan początkowy (nowy run): bez zamachu, bloku, buforów i blokady gardy. */
+  reset(): void {
+    this.exitBlock();
+    this.state = 'idle';
+    this.stage = 0;
+    this.phase = null;
+    this.phaseS = 0;
+    this.sinceSwingS = Number.POSITIVE_INFINITY;
+    this.attackBufferS = 0;
+    this.holding = false;
+    this.holdS = 0;
+    this.blockAgeS = 0;
+    this.guardBrokenS = 0;
+    this.hitbox = null;
+    this.hitstopSent = false;
+  }
+
   dispose(): void {
     this.off();
     this.exitBlock();

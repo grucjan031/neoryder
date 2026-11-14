@@ -180,7 +180,7 @@ export class Arena implements Scene {
     });
 
     if (typeof document !== 'undefined')
-      this.hud = new Hud(ctx.bus, { playerId, onRetry: () => this.reset() });
+      this.hud = new Hud(ctx.bus, { playerId, onRetry: () => this.retry() });
     this.energy = new PlayerEnergy(
       playerId,
       this.playerStats,
@@ -504,10 +504,18 @@ export class Arena implements Scene {
   }
 
   /** Pełny reset areny: wrogowie, pociski, gracz, energia, fale od 1. */
+  /**
+   * Nowy run od zera: wrogowie, pociski, odłamki, stan broni, ostrza i mocy, zdrowie i energia,
+   * pozycja gracza. Fale i AI dostają świeże strumienie Rng — ten sam seed = ten sam przebieg.
+   */
   reset(): void {
     this.manager.despawnAll();
     this.projectiles.dispose();
     this.projectileView.capturePrevious();
+    this.debris.clear();
+    this.blaster.reset();
+    this.blade.reset();
+    this.push.reset();
     this.health.reset();
     this.registerPlayer();
     this.energy.set(this.energy.max);
@@ -515,8 +523,14 @@ export class Arena implements Scene {
     this.previous = this.player.getState();
     this.state = 'playing';
     this.kills = 0;
-    this.director.start();
+    this.director.start(1, this.ctx.rng.fork('waves'));
     this.emitHealth();
+  }
+
+  /** „Jeszcze raz” z HUD (gest użytkownika): reset i wznowienie pętli z przechwyceniem myszy. */
+  private retry(): void {
+    this.reset();
+    this.ctx.resume?.();
   }
 
   private registerCommands(playerId: EntityId): void {
@@ -622,6 +636,10 @@ export class Arena implements Scene {
         return this.state === 'dead';
       case 'kills':
         return this.kills;
+      case 'spawnLog':
+        return this.director.spawnLog.map((e) => ({ ...e }));
+      case 'paused':
+        return this.ctx.loop.paused;
       case 'debris':
         return this.debris.activeCount;
       case 'bodies':

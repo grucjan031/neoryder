@@ -16,7 +16,7 @@ export interface BlasterInput {
 
 export class Blaster {
   readonly heat: ResourcePool;
-  private readonly rng: Rng;
+  private rng: Rng;
   private cooldownS = 0;
   private lockS = 0;
   private coolingEventS = 0;
@@ -45,6 +45,16 @@ export class Blaster {
   }
   get shots(): number {
     return this.shotCount;
+  }
+
+  /** Stan początkowy (nowy run): zimny, bez blokady przegrzania i odnowienia strzału. */
+  reset(): void {
+    this.heat.set(0);
+    this.rng = this.ctx.rng.fork('blaster');
+    this.lockS = 0;
+    this.cooldownS = 0;
+    this.coolingEventS = 0;
+    this.lastHeat = 0;
   }
 
   overheat(): void {

@@ -67,6 +67,8 @@ interface PendingSlam {
  */
 export class ResonancePush {
   private cooldownS = 0;
+  /** Wciśnięcie zapamiętane w hitstopie (dt = 0) — wykonane w pierwszym kroku z dt > 0. */
+  private queued = false;
   private readonly pending: PendingSlam[] = [];
 
   constructor(
@@ -81,11 +83,21 @@ export class ResonancePush {
   }
 
   step(dt: number, input: InputSnapshot): void {
-    if (dt > 0) {
-      this.cooldownS = Math.max(0, this.cooldownS - dt);
-      this.stepSlams(dt);
+    if (input.pressed.has('power')) this.queued = true;
+    if (!(dt > 0)) return; // hitstop: moc nie działa bez upływu czasu symulacji
+    this.cooldownS = Math.max(0, this.cooldownS - dt);
+    this.stepSlams(dt);
+    if (this.queued) {
+      this.queued = false;
+      this.use();
     }
-    if (input.pressed.has('power')) this.use();
+  }
+
+  /** Stan początkowy (nowy run): bez odnowienia, kolejki i oczekujących uderzeń w ścianę. */
+  reset(): void {
+    this.cooldownS = 0;
+    this.queued = false;
+    this.pending.length = 0;
   }
 
   /** Zwraca liczbę trafionych celów albo null przy odmowie. */

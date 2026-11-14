@@ -23,6 +23,7 @@ test('arena: fale startują, zabicie fali przechodzi dalej, śmierć i powtórka
   await expect
     .poll(() => q('phase'), { timeout: SIM_TIMEOUT })
     .toBe('fighting');
+  const firstSpawns = await q('spawnLog');
   await page.evaluate(() => window.__neoryder?.command('kill all'));
   // Zabici wrogowie rozpadają się na odłamki (#12).
   await expect
@@ -40,5 +41,14 @@ test('arena: fale startują, zabicie fali przechodzi dalej, śmierć i powtórka
   await retry.click();
   await expect.poll(() => q('dead')).toBe(false);
   expect(await q('playerHp')).toBe(100);
+  // „Jeszcze raz” wznawia grę (bez dodatkowego kliknięcia canvasu)…
+  await expect.poll(() => q('paused')).toBe(false);
+  // …a ten sam seed daje ten sam przebieg fali 1.
+  await expect
+    .poll(() => q('spawnLog').then((log) => (log as unknown[]).length), {
+      timeout: SIM_TIMEOUT,
+    })
+    .toBeGreaterThanOrEqual(2);
+  expect(await q('spawnLog')).toEqual(firstSpawns);
   expect(errors).toEqual([]);
 });

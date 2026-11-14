@@ -50,7 +50,8 @@ export class Gunner implements Enemy {
       throw new Error('Strzelec wymaga ProjectileSystem sceny.');
     this.projectiles = deps.projectiles;
     this.id = deps.entities.create(definition.kind, 'enemy');
-    this.rng = ctx.rng.fork(`enemy:${this.id}`);
+    // ctx.rng to strumień konkretnego spawnu (EnemyManager) — bez ID encji w etykiecie.
+    this.rng = ctx.rng.fork('ai');
     this.stats = new Stats({
       maxHealth: definition.maxHealth,
       moveSpeed: definition.moveSpeed,

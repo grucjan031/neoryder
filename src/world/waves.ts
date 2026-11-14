@@ -62,13 +62,16 @@ export class WaveDirector {
   private timerS = 0;
   private queue: string[] = [];
   private readonly alive = new Set<EntityId>();
+  /** Spawny bieżącego runu w kolejności (debug, testy powtarzalności). */
+  readonly spawnLog: { wave: number; enemy: string; x: number; z: number }[] =
+    [];
   private readonly off: () => void;
 
   constructor(
     private readonly def: WavesDefinition,
     private readonly deps: WaveDirectorDeps,
     private readonly bus: EventBus,
-    private readonly rng: Rng,
+    private rng: Rng,
   ) {
     this.off = bus.on('enemy_killed', ({ id }) => this.onKilled(id));
   }
@@ -94,8 +97,13 @@ export class WaveDirector {
     return this.def.waves.length;
   }
 
-  /** Start od fali `wave` (1..n) po przerwie firstBreakS. */
-  start(wave = 1): void {
+  /**
+   * Start od fali `wave` (1..n) po przerwie firstBreakS. `rng` — świeży strumień nowego runu
+   * (np. ctx.rng.fork('waves')): ten sam seed daje wtedy ten sam przebieg także po „Jeszcze raz”.
+   */
+  start(wave = 1, rng?: Rng): void {
+    if (rng) this.rng = rng;
+    this.spawnLog.length = 0;
     this.alive.clear();
     this.queue = [];
     this.waveIndex = Math.max(0, Math.min(this.def.waves.length, wave) - 1) - 1;
@@ -131,8 +139,10 @@ export class WaveDirector {
       this.alive.size < this.def.maxAlive
     ) {
       const enemy = this.queue[0] as string;
-      const id = this.deps.spawn(enemy, this.pickSpawnPoint());
+      const point = this.pickSpawnPoint();
+      const id = this.deps.spawn(enemy, point);
       if (id === null) break; // limit świata — spróbuj w następnym kroku
+      this.spawnLog.push({ wave: this.wave, enemy, x: point.x, z: point.z });
       this.queue.shift();
       this.alive.add(id);
       this.timerS += this.currentWave().spawnIntervalS;

@@ -82,6 +82,8 @@ async function main(): Promise<void> {
   });
   audio.attachUnlock(window);
   const ctx: GameContext = {
+    // Wywoływane w geście użytkownika (np. „Jeszcze raz”): zdejmuje pauzę i przechwytuje mysz.
+    resume: () => resume(),
     bus,
     audio,
     rng: new Rng(seed),

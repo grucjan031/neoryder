@@ -51,7 +51,8 @@ export class Assaulter implements Enemy {
     if (!definition.body) throw new Error('Szturmowiec wymaga danych body.');
     this.geometry = definition.body;
     this.id = deps.entities.create(definition.kind, 'enemy');
-    this.rng = ctx.rng.fork(`enemy:${this.id}`);
+    // ctx.rng to strumień konkretnego spawnu (EnemyManager) — bez ID encji w etykiecie.
+    this.rng = ctx.rng.fork('ai');
     this.stats = new Stats({
       maxHealth: definition.maxHealth,
       moveSpeed: definition.moveSpeed,
