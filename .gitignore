@@ -5,3 +5,4 @@ playwright-report/
 .vite/
 .npm-cache/
 graphify-out/
+tools/textures/raw/

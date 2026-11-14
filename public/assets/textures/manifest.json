@@ -1,0 +1,332 @@
+[
+  {
+    "id": "concrete",
+    "category": "surfaces",
+    "path": "surfaces/concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#535c6c",
+    "description": "Betonowe panele z zaciekami",
+    "bytes": 51368
+  },
+  {
+    "id": "asphalt",
+    "category": "surfaces",
+    "path": "surfaces/asphalt.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#2d343b",
+    "description": "Ciemny asfalt z łatami i pęknięciami",
+    "bytes": 153744
+  },
+  {
+    "id": "asphalt_puddles",
+    "category": "surfaces",
+    "path": "surfaces/asphalt_puddles.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#fefefe",
+    "description": "Maska kałuż: biel mokro, czerń sucho",
+    "bytes": 14182
+  },
+  {
+    "id": "metal_panel",
+    "category": "surfaces",
+    "path": "surfaces/metal_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#444d56",
+    "description": "Malowana blacha z nitami i rysami",
+    "bytes": 25908
+  },
+  {
+    "id": "brick",
+    "category": "surfaces",
+    "path": "surfaces/brick.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#2d3b46",
+    "description": "Wilgotna ciemna cegła z zaprawą",
+    "bytes": 44718
+  },
+  {
+    "id": "grime",
+    "category": "surfaces",
+    "path": "surfaces/grime.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3e3e3e",
+    "description": "Szara maska brudu, plam i pionowych zacieków",
+    "bytes": 39972
+  },
+  {
+    "id": "ramen",
+    "category": "signs",
+    "path": "signs/ramen.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fbb905",
+    "description": "Bursztynowy neon ramen z miską",
+    "bytes": 6640
+  },
+  {
+    "id": "hotel",
+    "category": "signs",
+    "path": "signs/hotel.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#140727",
+    "description": "Fioletowy neon HOTEL",
+    "bytes": 5510
+  },
+  {
+    "id": "bar_24h",
+    "category": "signs",
+    "path": "signs/bar_24h.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#371600",
+    "description": "Bursztynowy neon BAR 24H",
+    "bytes": 7240
+  },
+  {
+    "id": "pharmacy",
+    "category": "signs",
+    "path": "signs/pharmacy.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#042701",
+    "description": "Zielony krzyż apteczny",
+    "bytes": 5936
+  },
+  {
+    "id": "noodles",
+    "category": "signs",
+    "path": "signs/noodles.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fffbe9",
+    "description": "Neon miski z pałeczkami",
+    "bytes": 20538
+  },
+  {
+    "id": "karaoke",
+    "category": "signs",
+    "path": "signs/karaoke.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#150827",
+    "description": "Fioletowy neon KARAOKE",
+    "bytes": 7290
+  },
+  {
+    "id": "sake",
+    "category": "signs",
+    "path": "signs/sake.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fba701",
+    "description": "Bursztynowy znak 酒",
+    "bytes": 5246
+  },
+  {
+    "id": "open",
+    "category": "signs",
+    "path": "signs/open.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#022700",
+    "description": "Zielony neon OPEN",
+    "bytes": 6634
+  },
+  {
+    "id": "arrow",
+    "category": "signs",
+    "path": "signs/arrow.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#000b27",
+    "description": "Błękitna strzałka w prawo",
+    "bytes": 3230
+  },
+  {
+    "id": "cat_cafe",
+    "category": "signs",
+    "path": "signs/cat_cafe.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fdebca",
+    "description": "Neon kota i napis CAFE",
+    "bytes": 7052
+  },
+  {
+    "id": "implants",
+    "category": "signs",
+    "path": "signs/implants.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#000b27",
+    "description": "Błękitny neon IMPLANTY",
+    "bytes": 5998
+  },
+  {
+    "id": "bar_mleczny",
+    "category": "signs",
+    "path": "signs/bar_mleczny.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#371900",
+    "description": "Bursztynowy neon BAR MLECZNY",
+    "bytes": 9000
+  },
+  {
+    "id": "holo_android",
+    "category": "holo",
+    "path": "holo/holo_android.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#150437",
+    "description": "Profil fikcyjnego androida",
+    "bytes": 37516
+  },
+  {
+    "id": "holo_drink",
+    "category": "holo",
+    "path": "holo/holo_drink.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#371800",
+    "description": "Reklama puszki VOLTA",
+    "bytes": 30232
+  },
+  {
+    "id": "holo_koi",
+    "category": "holo",
+    "path": "holo/holo_koi.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#000b26",
+    "description": "Świetlisty karp koi w ruchu",
+    "bytes": 35756
+  },
+  {
+    "id": "holo_kurogane",
+    "category": "holo",
+    "path": "holo/holo_kurogane.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#020b26",
+    "description": "Geometryczny znak KUROGANE ARMS",
+    "bytes": 32680
+  },
+  {
+    "id": "holo_noodles",
+    "category": "holo",
+    "path": "holo/holo_noodles.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#002700",
+    "description": "Reklama SYNTH NOODLES",
+    "bytes": 37906
+  },
+  {
+    "id": "holo_implant",
+    "category": "holo",
+    "path": "holo/holo_implant.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#000a28",
+    "description": "Ramię z implantem, IMPLANTY NA RATY",
+    "bytes": 34200
+  },
+  {
+    "id": "graffiti_tag1",
+    "category": "decals",
+    "path": "decals/graffiti_tag1.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fda506",
+    "description": "Fikcyjny bursztynowy tag VEX",
+    "bytes": 35386
+  },
+  {
+    "id": "graffiti_tag2",
+    "category": "decals",
+    "path": "decals/graffiti_tag2.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#9951fb",
+    "description": "Fikcyjny fioletowy tag NURA",
+    "bytes": 32874
+  },
+  {
+    "id": "graffiti_resist",
+    "category": "decals",
+    "path": "decals/graffiti_resist.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#0d1d4d",
+    "description": "Pęknięte ogniwo i napis OPÓR",
+    "bytes": 42950
+  },
+  {
+    "id": "poster_torn1",
+    "category": "decals",
+    "path": "decals/poster_torn1.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#262748",
+    "description": "Podarty plakat NOCNY RYTM",
+    "bytes": 42542
+  },
+  {
+    "id": "poster_torn2",
+    "category": "decals",
+    "path": "decals/poster_torn2.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fee6c5",
+    "description": "Podarty plakat JUTRO",
+    "bytes": 46664
+  },
+  {
+    "id": "floor_arrow",
+    "category": "decals",
+    "path": "decals/floor_arrow.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fdeace",
+    "description": "Starta biała strzałka jezdni",
+    "bytes": 28204
+  },
+  {
+    "id": "floor_hazard",
+    "category": "decals",
+    "path": "decals/floor_hazard.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fcac02",
+    "description": "Startate pasy bursztyn i czerń",
+    "bytes": 52302
+  },
+  {
+    "id": "puddle1",
+    "category": "decals",
+    "path": "decals/puddle1.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#0a1e3e",
+    "description": "Nieregularna ciemna kałuża",
+    "bytes": 17036
+  },
+  {
+    "id": "puddle2",
+    "category": "decals",
+    "path": "decals/puddle2.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#242c53",
+    "description": "Wydłużona ciemna kałuża",
+    "bytes": 14320
+  }
+]
