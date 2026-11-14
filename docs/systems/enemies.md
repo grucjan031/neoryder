@@ -441,7 +441,46 @@ i uruchamia przejście; `hit 9999` / `kill all` przechodzi najwyżej jeden próg
 po czym trzeba odczekać nietykalność. `spawn securityChief` działa także w
 `ai-test`. `query('bosses')` zwraca `{ id, phase, hp }[]` do testów.
 Przy ocenie feel sprawdzić czytelność uniesienia ostrza, czas na dash i gęstość
-wachlarzy. Wezwania, tarcza, docelowy pokój i zakończenie runu należą do F3-17.
+wachlarzy.
+
+## Boss: wezwanie i tarcza łamana — F3-17
+
+Fazy przypisują wzorce w danych: faza 1 `slam` + `fan`, faza 2 dodaje `summon`,
+faza 3 dodaje `summon` i `shield`. Schemat wymaga, żeby każda faza miała co najmniej
+jeden wzorzec zadający obrażenia (`slam` lub `fan`). Losowanie z `Rng` spawnu wybiera
+tylko spośród wzorców dostępnych w danej chwili (`summon` — przy wolnym miejscu i
+dostępnym spawnerze, `shield` — gdy tarczy nie ma i nie trwa okno obrażeń). Wzorce
+zaczynają się, tak jak pozostałe, gdy gracz jest w `attackRange`.
+
+- `summon` (`enemyId`, `count`, `maxMinions`, `placement`, `radiusM`): telegraf
+  `enemy_telegraph.kind: 'summon'`, po nim `EnemyManager.spawn(enemyId, …)` (przez
+  `EnemyDependencies.spawnEnemy`). Liczba nowych sług to `min(count, maxMinions −
+  żywi)`; martwi i usunięci nie liczą się do limitu. `placement: 'spawnPoints'` losuje
+  różne punkty spawnu pokoju (`EnemyManagerOptions.spawnPoints`; bez nich albo przy
+  `'around'` — pierścień o promieniu `radiusM` wokół bossa, losowy kąt startowy).
+  Bez spawnera (np. testy bez managera) wzorzec jest pomijany. Sługi giną razem z
+  bossem: w chwili jego śmierci dostają śmiertelne obrażenia (`source: null`, tag
+  `#boss_death`), więc rozpadają się standardowym efektem śmierci i nie dają zasług graczowi.
+- `shield` (`durability`, `durationS`, `stunS`, `vulnerableS`, `vulnerableMult`):
+  telegraf `kind: 'shield'`, po nim tarcza jest aktywna (`current.shieldUp`, widoczna
+  płyta w `EnemyView` — zastępcza, bez kierunku). Boss nie przerywa wzorców: dalej
+  atakuje (wachlarz można więc odbić). `DamageTargetOptions.guard` zeruje wszystkie
+  obrażenia (nawet z progiem fazy). Wytrzymałość maleje o kwotę obrażeń z tagiem `#power`
+  oraz o kwotę trafienia pocisku bossa odbitego (parowanie ostrzem, Bariera); pocisk
+  gracza z `#gun` jej nie rusza. Obrażenia z tagiem `#debug` (`hit`, `kill all`)
+  przechodzą przez tarczę, żeby dało się przejść progi faz. Niezłamana tarcza opada po
+  `durationS`; zmiana fazy zdejmuje tarczę, ogłuszenie i okno.
+  **Złamanie** przerywa atak, ogłusza bossa na `stunS` (stan `stunned`, zdarzenie
+  `enemy_stunned`) i otwiera okno `vulnerableS` (liczone od złamania), w którym
+  `damageTaken` ma mnożnik `vulnerableMult` (modyfikator o źródle `boss:vulnerable`).
+  Feel: `tuning.enemies.shieldBreakHitstopMs`, `shieldBreakShake`, `shieldBreakShakeS`
+  (zdarzenia `hitstop` i `camera_shake`). Nowych zdarzeń nie dodano.
+
+Debug: `boss pattern summon|shield` (boss-test, ai-test, room-test, `?scene=run`)
+natychmiast zaczyna wzorzec (telegraf, potem skutek); zadziała też na wzorzec z innej
+fazy, jeśli bieżąca go nie ma. `boss phase <n>` jak dotąd. Liczby balansu (tarcza 120,
+2 Tarczowników, limit 3, ogłuszenie 2,5 s, okno 5 s ×1,5) są w `securityChief.json` —
+do strojenia po playteście. Testy: `boss.test.ts` (część F3-17), `bossRoom.test.ts`.
 
 Testy `boss.test.ts` i `bossTest.test.ts`: schemat i rejestr, progi po
 modyfikatorach, nietykalność, kolejność zdarzeń, trafienie w promieniu, przerwanie

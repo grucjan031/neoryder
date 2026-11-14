@@ -55,6 +55,10 @@ export interface EnemyDependencies {
   getNeighbors?(): readonly Enemy[];
   /** F2-12: tokeny ataku i sloty flankowania; bez dyrektora wróg atakuje jak w F1. */
   director?: EnemyDirectorApi;
+  /** F3-17: tworzy wroga (EnemyManager.spawn); dla wezwań bossa. */
+  spawnEnemy?(id: string, position: Vec3): Enemy;
+  /** F3-17: punkty spawnu pokoju (y = 0) dla wezwań bossa. */
+  spawnPoints?: readonly Vec3[];
   /** F2-02: status 'stunned' ogłusza wroga na czas trwania statusu. */
   statuses?: StatusQuery;
 }

@@ -13,9 +13,14 @@ import { Stats } from '../../src/core/stats';
 import { tuning } from '../../src/core/tuning';
 import { Boss } from '../../src/enemies/boss';
 import { enemySchema } from '../../src/enemies/enemySchema';
-import type { BossPattern } from '../../src/enemies/enemySchema';
+import type {
+  BossPattern,
+  ShieldPattern,
+  SummonPattern,
+} from '../../src/enemies/enemySchema';
 import { createEnemy, enemyDefinitions } from '../../src/enemies/registry';
 import { EnemyView } from '../../src/enemies/enemyView';
+import type { Enemy, EnemyDependencies } from '../../src/enemies/types';
 import {
   initPhysics,
   CollisionGroup,
@@ -38,7 +43,14 @@ const slam = definition.boss!.phases[0]!.patterns.find(
 )!;
 const fan = definition.boss!.phases[0]!.patterns.find((p) => p.kind === 'fan')!;
 
-function setup(pattern?: BossPattern, seed = 'boss') {
+interface SetupExtra {
+  spawnEnemy?: EnemyDependencies['spawnEnemy'];
+  spawnPoints?: EnemyDependencies['spawnPoints'];
+  /** Dowolna zmiana kopii danych bossa przed utworzeniem. */
+  data?: (data: typeof definition) => void;
+}
+
+function setup(pattern?: BossPattern, seed = 'boss', extra: SetupExtra = {}) {
   const bus = new EventBus();
   const entities = new EntityRegistry(bus);
   const damage = new DamageSystem(bus, entities);
@@ -74,6 +86,7 @@ function setup(pattern?: BossPattern, seed = 'boss') {
   const data = structuredClone(definition);
   if (pattern)
     for (const phase of data.boss!.phases) phase.patterns = [pattern];
+  extra.data?.(data);
   const spawned = vi.fn();
   bus.on('boss_spawned', spawned);
   const boss = new Boss(
@@ -84,6 +97,8 @@ function setup(pattern?: BossPattern, seed = 'boss') {
       damage,
       hurtboxes,
       projectiles,
+      ...(extra.spawnEnemy ? { spawnEnemy: extra.spawnEnemy } : {}),
+      ...(extra.spawnPoints ? { spawnPoints: extra.spawnPoints } : {}),
       getTarget: () => ({ id: player, position }),
     },
     data,
@@ -365,5 +380,332 @@ describe('F3-16 Boss', () => {
     f.boss.dispose();
     expect(removed).toHaveBeenCalledExactlyOnceWith({ id: f.boss.id });
     expect(f.boss.setPhase(1)).toBe(false);
+  });
+});
+
+const summonSpec = definition.boss!.phases[1]!.patterns.find(
+  (p): p is SummonPattern => p.kind === 'summon',
+)!;
+const shieldSpec = definition.boss!.phases[2]!.patterns.find(
+  (p): p is ShieldPattern => p.kind === 'shield',
+)!;
+const spawnAreas = [
+  { x: -8, y: 0, z: -8 },
+  { x: 8, y: 0, z: -8 },
+  { x: -8, y: 0, z: 8 },
+  { x: 8, y: 0, z: 8 },
+];
+
+/** Sługa-atrapa zarejestrowana w DamageSystem, żeby dało się go zabić jak prawdziwego wroga. */
+function minionFactory() {
+  const made: {
+    enemy: Enemy;
+    position: { x: number; y: number; z: number };
+  }[] = [];
+  const ref: { f?: ReturnType<typeof setup> } = {};
+  const spawnEnemy = vi.fn(
+    (id: string, position: { x: number; y: number; z: number }) => {
+      const f = ref.f!;
+      const entity = f.entities.create(id, 'enemy');
+      f.damage.register(entity, new Health(() => 50));
+      const enemy = {
+        id: entity,
+        removed: false,
+        current: { state: 'idle' },
+      } as unknown as Enemy;
+      f.bus.on('enemy_killed', ({ id: dead }) => {
+        if (dead === entity) enemy.current.state = 'dead';
+      });
+      made.push({ enemy, position });
+      return enemy;
+    },
+  );
+  return {
+    made,
+    spawnEnemy,
+    bind: (f: ReturnType<typeof setup>) => (ref.f = f),
+  };
+}
+
+describe('F3-17 Boss: wezwanie, tarcza łamana', () => {
+  it('waliduje wzorce summon i shield oraz przypisanie do faz w danych', () => {
+    expect(
+      definition.boss!.phases.map((phase) => phase.patterns.map((p) => p.kind)),
+    ).toEqual([
+      ['slam', 'fan'],
+      ['slam', 'fan', 'summon'],
+      ['slam', 'fan', 'summon', 'shield'],
+    ]);
+    const data = definition.boss!;
+    const phase = (patterns: unknown[]) => ({
+      ...data,
+      phases: [{ hpThreshold: 1, patterns }],
+    });
+    expect(
+      enemySchema.safeParse({ ...raw, boss: phase([slam, shieldSpec]) })
+        .success,
+    ).toBe(true);
+    for (const patterns of [
+      [summonSpec],
+      [slam, { ...summonSpec, count: 0 }],
+      [slam, { ...summonSpec, maxMinions: 0 }],
+      [slam, { ...summonSpec, placement: 'nowhere' }],
+      [slam, { ...shieldSpec, durability: 0 }],
+      [slam, { ...shieldSpec, vulnerableMult: 0.5 }],
+      [slam, { ...shieldSpec, stunS: 3, vulnerableS: 2 }],
+    ])
+      expect(
+        enemySchema.safeParse({ ...raw, boss: phase(patterns) }).success,
+      ).toBe(false);
+  });
+
+  it('wzywa sługi po telegrafie w punktach spawnu i nie przekracza maxMinions', () => {
+    const { made, spawnEnemy, bind } = minionFactory();
+    const f = setup(summonSpec, 'summon', {
+      spawnEnemy,
+      spawnPoints: spawnAreas,
+    });
+    bind(f);
+    const telegraphs = vi.fn();
+    f.bus.on('enemy_telegraph', telegraphs);
+    f.step();
+    expect(telegraphs).toHaveBeenCalledExactlyOnceWith({
+      id: f.boss.id,
+      kind: 'summon',
+      durationS: summonSpec.telegraphS,
+    });
+    f.step(Math.round(summonSpec.telegraphS / SIM_DT) - 2);
+    expect(made).toHaveLength(0);
+    f.step(2);
+    expect(made).toHaveLength(summonSpec.count);
+    expect(spawnEnemy.mock.calls.every(([id]) => id === 'shielder')).toBe(true);
+    const points = made.map((m) => m.position);
+    expect(new Set(points).size).toBe(points.length);
+    for (const point of points) expect(spawnAreas).toContainEqual(point);
+    expect(f.boss.minionCount).toBe(2);
+    // Drugie wezwanie dobija do limitu (3), kolejne wzorce nie są losowane.
+    f.step(400);
+    expect(made).toHaveLength(summonSpec.maxMinions);
+    expect(telegraphs).toHaveBeenCalledTimes(2);
+    expect(f.boss.minionCount).toBe(summonSpec.maxMinions);
+    // Zabity sługa zwalnia miejsce.
+    f.damage.deal(made[0]!.enemy.id, {
+      source: f.player,
+      amount: 999,
+      tags: ['#gun'],
+    });
+    expect(f.boss.minionCount).toBe(summonSpec.maxMinions - 1);
+    f.step(400);
+    expect(made).toHaveLength(summonSpec.maxMinions + 1);
+    expect(f.boss.minionCount).toBe(summonSpec.maxMinions);
+  });
+
+  it('bez punktów spawnu ustawia sługi w pierścieniu wokół bossa; bez spawnera pomija wzorzec', () => {
+    const { made, spawnEnemy, bind } = minionFactory();
+    const f = setup(summonSpec, 'ring', { spawnEnemy });
+    bind(f);
+    f.step(1 + Math.round(summonSpec.telegraphS / SIM_DT));
+    expect(made).toHaveLength(summonSpec.count);
+    const center = f.boss.current.position;
+    for (const { position } of made)
+      expect(
+        Math.hypot(position.x - center.x, position.z - center.z),
+      ).toBeCloseTo(summonSpec.radiusM, 5);
+    const lone = setup(summonSpec, 'no-spawner');
+    const telegraphs = vi.fn();
+    lone.bus.on('enemy_telegraph', telegraphs);
+    lone.step(300);
+    expect(telegraphs).not.toHaveBeenCalled();
+  });
+
+  it('po śmierci bossa sługi giną razem z nim (źródło null, bez zasług gracza)', () => {
+    const { made, spawnEnemy, bind } = minionFactory();
+    const f = setup(summonSpec, 'death', {
+      spawnEnemy,
+      spawnPoints: spawnAreas,
+    });
+    bind(f);
+    f.step(1 + Math.round(summonSpec.telegraphS / SIM_DT));
+    expect(made).toHaveLength(2);
+    expect(f.boss.setPhase(3)).toBe(true);
+    f.step(Math.round(f.settings.enemies.phaseShiftS / SIM_DT));
+    const killed = vi.fn();
+    f.bus.on('enemy_killed', killed);
+    expect(f.hit()).toBeGreaterThan(0);
+    expect(killed.mock.calls.map(([e]) => e.id).sort()).toEqual(
+      [f.boss.id, ...made.map((m) => m.enemy.id)].sort(),
+    );
+    for (const [event] of killed.mock.calls)
+      if (event.id !== f.boss.id) expect(event.killer).toBeNull();
+    expect(f.boss.minionCount).toBe(0);
+  });
+
+  describe('tarcza', () => {
+    const withShield = () => {
+      const f = setup(undefined, 'shield', {
+        data: (data) => {
+          for (const phase of data.boss!.phases)
+            phase.patterns = [fan, shieldSpec];
+        },
+      });
+      expect(f.boss.forcePattern('shield')).toBe(true);
+      return f;
+    };
+    const raise = (f: ReturnType<typeof setup>) => {
+      f.step(Math.round(shieldSpec.telegraphS / SIM_DT));
+      expect(f.boss.shield).toBe(shieldSpec.durability);
+      expect(f.boss.current.shieldUp).toBe(true);
+    };
+    const power = (f: ReturnType<typeof setup>, amount: number) =>
+      f.damage.deal(f.boss.id, {
+        source: f.player,
+        amount,
+        tags: ['#power'],
+      });
+
+    it('telegrafuje tarczę, zeruje obrażenia bez #power i zdejmuje wytrzymałość od #power', () => {
+      const f = setup(undefined, 'shield', {
+        data: (data) => {
+          for (const phase of data.boss!.phases)
+            phase.patterns = [fan, shieldSpec];
+        },
+      });
+      const telegraphs = vi.fn();
+      f.bus.on('enemy_telegraph', telegraphs);
+      f.boss.forcePattern('shield');
+      expect(telegraphs).toHaveBeenCalledExactlyOnceWith({
+        id: f.boss.id,
+        kind: 'shield',
+        durationS: shieldSpec.telegraphS,
+      });
+      expect(f.boss.shield).toBe(0);
+      raise(f);
+      expect(f.hit()).toBe(0);
+      expect(
+        f.damage.deal(f.boss.id, {
+          source: f.player,
+          amount: 500,
+          tags: ['#melee', '#heavy'],
+        }),
+      ).toBe(0);
+      expect(f.damage.health(f.boss.id)?.current).toBe(900);
+      expect(f.boss.shield).toBe(shieldSpec.durability);
+      expect(power(f, 50)).toBe(0);
+      expect(f.boss.shield).toBe(shieldSpec.durability - 50);
+      expect(f.damage.health(f.boss.id)?.current).toBe(900);
+      // Cheaty debug przechodzą przez tarczę (kill all / hit).
+      expect(
+        f.damage.deal(f.boss.id, {
+          source: f.player,
+          amount: 10,
+          tags: ['#debug'],
+        }),
+      ).toBe(10);
+      expect(f.boss.shield).toBe(shieldSpec.durability - 50);
+    });
+
+    it('odbity pocisk bossa zdejmuje wytrzymałość, zwykły pocisk gracza nie', () => {
+      const f = withShield();
+      const spawn = vi.spyOn(f.projectiles, 'spawn');
+      raise(f);
+      const full = f.boss.shield;
+      f.projectiles.spawn({
+        owner: f.player,
+        team: 'player',
+        origin: { x: 0, y: 1.5, z: 3 },
+        dir: { x: 0, y: 0, z: -1 },
+        speed: 30,
+        damage: 40,
+        tags: ['#gun'],
+      });
+      for (let i = 0; i < 30; i++) f.projectiles.step(SIM_DT);
+      expect(f.boss.shield).toBe(full);
+      expect(f.damage.health(f.boss.id)?.current).toBe(900);
+      spawn.mockClear();
+      for (let i = 0; i < 600 && spawn.mock.calls.length === 0; i++) f.step();
+      expect(spawn).toHaveBeenCalled();
+      const shots = spawn.mock.results.map((r) => r.value as number);
+      const before = f.boss.shield;
+      f.projectiles.reflect(shots[0]!, f.player, 'player', {
+        x: 0,
+        y: 0,
+        z: -1,
+      });
+      for (let i = 0; i < 30; i++) f.projectiles.step(SIM_DT);
+      expect(f.boss.shield).toBeLessThan(before);
+      expect(f.damage.health(f.boss.id)?.current).toBe(900);
+    });
+
+    it('złamanie: ogłuszenie, zdarzenia feel, okno zwiększonych obrażeń i powrót do normy', () => {
+      const f = withShield();
+      raise(f);
+      const stunned = vi.fn(),
+        hitstop = vi.fn(),
+        shake = vi.fn(),
+        telegraphs = vi.fn(),
+        phases = vi.fn();
+      f.bus.on('enemy_stunned', stunned);
+      f.bus.on('hitstop', hitstop);
+      f.bus.on('camera_shake', shake);
+      f.bus.on('boss_phase', phases);
+      expect(power(f, shieldSpec.durability - 1)).toBe(0);
+      expect(f.boss.shield).toBe(1);
+      expect(stunned).not.toHaveBeenCalled();
+      expect(power(f, 5)).toBe(0);
+      expect(f.boss.shield).toBe(0);
+      expect(f.boss.current.shieldUp).toBe(false);
+      expect(f.boss.current.state).toBe('stunned');
+      expect(stunned).toHaveBeenCalledExactlyOnceWith({
+        id: f.boss.id,
+        durationS: shieldSpec.stunS,
+      });
+      expect(hitstop).toHaveBeenCalledExactlyOnceWith({
+        ms: f.settings.enemies.shieldBreakHitstopMs,
+      });
+      expect(shake).toHaveBeenCalledOnce();
+      f.bus.on('enemy_telegraph', telegraphs);
+      // Ogłuszony boss nie zaczyna ataku; obrażenia są zwiększone w oknie.
+      f.step(Math.round(shieldSpec.stunS / SIM_DT) - 2);
+      expect(f.boss.current.state).toBe('stunned');
+      expect(telegraphs).not.toHaveBeenCalled();
+      expect(f.hit(100)).toBeCloseTo(100 * shieldSpec.vulnerableMult);
+      f.step(5);
+      expect(f.boss.current.state).not.toBe('stunned');
+      f.step(Math.round((shieldSpec.vulnerableS - shieldSpec.stunS) / SIM_DT));
+      expect(f.hit(10)).toBeCloseTo(10);
+      expect(f.boss.stats.modifiers('damageTaken')).toHaveLength(0);
+      expect(phases).not.toHaveBeenCalled();
+    });
+
+    it('niezłamana tarcza opada po durationS, a zmiana fazy zdejmuje ją od razu', () => {
+      const f = withShield();
+      raise(f);
+      f.step(Math.round(shieldSpec.durationS / SIM_DT));
+      expect(f.boss.shield).toBe(0);
+      expect(f.boss.current.shieldUp).toBe(false);
+      expect(f.hit(10)).toBe(10);
+      const g = withShield();
+      raise(g);
+      expect(g.boss.setPhase(2)).toBe(true);
+      expect(g.boss.shield).toBe(0);
+      expect(g.boss.current.shieldUp).toBe(false);
+    });
+  });
+
+  it('kolejność wzorców (z wezwaniem i tarczą) zależy tylko od seeda', () => {
+    const sequence = (seed: string) => {
+      const { spawnEnemy, bind } = minionFactory();
+      const f = setup(undefined, seed, { spawnEnemy, spawnPoints: spawnAreas });
+      bind(f);
+      f.boss.setPhase(3);
+      const kinds: string[] = [];
+      f.bus.on('enemy_telegraph', ({ kind }) => kinds.push(kind));
+      f.step(4000);
+      return kinds;
+    };
+    const a = sequence('same');
+    expect(new Set(a)).toEqual(new Set(['slam', 'aim', 'summon', 'shield']));
+    expect(sequence('same')).toEqual(a);
+    expect(sequence('different')).not.toEqual(a);
   });
 });

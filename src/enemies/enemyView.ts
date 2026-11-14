@@ -177,7 +177,7 @@ export class EnemyView {
     this.captureRest();
     this.root.add(this.model);
     const shieldSize = enemy.definition.animation?.shieldSizeM;
-    if (enemy.definition.shield && shieldSize) {
+    if ((enemy.definition.shield || enemy.definition.boss) && shieldSize) {
       const geometry = new BoxGeometry(
         shieldSize.x,
         shieldSize.y,
