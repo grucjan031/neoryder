@@ -39,6 +39,7 @@ export class EnemyView {
   private model = new Group();
   private disposed = false;
   private readonly laser?: Mesh;
+  private readonly shield?: Mesh;
   private readonly fallbackGeometries: BoxGeometry[] = [];
   private readonly rest = new Map<
     Object3D,
@@ -168,8 +169,27 @@ export class EnemyView {
         -body.centerY / 8,
       );
     }
+    this.equipBlade();
     this.captureRest();
     this.root.add(this.model);
+    const shieldSize = enemy.definition.animation?.shieldSizeM;
+    if (enemy.definition.shield && shieldSize) {
+      const geometry = new BoxGeometry(
+        shieldSize.x,
+        shieldSize.y,
+        shieldSize.z,
+      );
+      this.fallbackGeometries.push(geometry);
+      this.shield = new Mesh(geometry, getMaterial('enemy'));
+      this.shield.name = 'shield';
+      this.shield.position.set(
+        body.radius,
+        body.centerY,
+        body.radius + shieldSize.z / 2,
+      );
+      this.shield.visible = enemy.current.shieldUp === true;
+      this.root.add(this.shield);
+    }
     const laserRadius = enemy.definition.animation?.laserRadiusM;
     if (enemy.definition.laserSight && laserRadius) {
       // Jednostkowy cylinder wzdłuż +Y, skalowany do długości lasera w renderze.
@@ -188,8 +208,23 @@ export class EnemyView {
         this.model = new Group();
         this.model.add(source.clone(true));
         this.root.add(this.model);
+        this.equipBlade();
         this.captureRest();
       });
+  }
+
+  private equipBlade(): void {
+    const size = this.enemy.definition.animation?.bladeSizeM;
+    const hand = this.model.getObjectByName('hand_R');
+    if (!size || !hand) return;
+    const baton = this.model.getObjectByName('baton');
+    if (baton) baton.visible = false;
+    const geometry = new BoxGeometry(size.x, size.y, size.z);
+    this.fallbackGeometries.push(geometry);
+    const blade = new Mesh(geometry, getMaterial('enemyGlow'));
+    blade.name = 'executor_blade';
+    blade.position.z = size.z / 2;
+    hand.add(blade);
   }
 
   private captureRest(): void {
@@ -253,6 +288,7 @@ export class EnemyView {
     const delta = Math.atan2(Math.sin(b.yaw - a.yaw), Math.cos(b.yaw - a.yaw));
     this.root.rotation.y = a.yaw + delta * t;
     this.root.visible = b.state !== 'dead' && !this.enemy.removed;
+    if (this.shield) this.shield.visible = b.shieldUp === true;
     this.renderLaser();
     const anim = definition.animation;
     if (!anim) return;
@@ -325,7 +361,9 @@ export class EnemyView {
     } else if (b.state === 'stunned') rotate('pelvis', 'z', anim.stunAngle);
     for (const name of rifleman(definition.kind)
       ? ['muzzle', 'visor']
-      : ['baton_tip']) {
+      : definition.animation?.bladeSizeM
+        ? ['executor_blade']
+        : ['baton_tip']) {
       const tip = this.model.getObjectByName(name);
       const restScale = tip ? this.rest.get(tip)?.scale : undefined;
       if (tip && restScale) {

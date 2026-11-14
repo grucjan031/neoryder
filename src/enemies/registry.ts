@@ -50,6 +50,12 @@ const factories = new Map<string, EnemyFactory>([
     },
   ],
 ]);
+for (const kind of ['shielder', 'executor'])
+  factories.set(kind, (ctx, deps, id, position) => {
+    const definition = enemyDefinitions.get(id);
+    if (!definition) throw new Error(`Nieznany wróg: ${id}`);
+    return new Assaulter(ctx, deps, definition, position);
+  });
 const files = import.meta.glob<unknown>('../data/enemies/*.json', {
   eager: true,
   import: 'default',

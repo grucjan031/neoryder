@@ -305,3 +305,56 @@ blokada celu (unik po zamrożeniu), ciężki strzał i ucieczka Snajpera; lot
 drona na wysokości i krążenie, brak wejścia w ścianę z odwróceniem kierunku,
 serie, ogłuszenie ciosem i statusem, śmierć i sprzątanie, deterministyczność;
 `DroneView`, laser w `EnemyView`, `createEnemyView`.
+
+## Tarczownik i Egzekutor — F2-14
+
+Oba archetypy używają `Assaulter`, wspólnego ciała, odrzutu, maszyny stanów
+i tokenu `melee` dyrektora. Opcjonalne bloki danych `shield`, `parry` oraz
+`attackTags` rozszerzają zachowanie; bez nich Szturmowiec działa jak dotąd.
+
+**Tarczownik** (`shielder.json`, `kind: 'shielder'`): 90 HP, ruch 3 m/s,
+cios 12 obrażeń. Podniesiona tarcza blokuje tagi `#gun` i `#melee` w łuku
+120° przed wrogiem. Obrona porównuje `-DamageInfo.dir` z kierunkiem patrzenia;
+trafienia z tyłu i z boku poza łukiem oraz bez `dir` przechodzą normalnie.
+`#heavy` z przodu przechodzi, opuszcza tarczę na `shield.downS` = 3 s
+i uruchamia istniejące ogłuszenie ciężkim ciosem. Odliczanie biegnie tylko
+w czasie symulacji. Ogłuszenie (stan lub status) i `StatusQuery.has(id,
+'overload')` wyłączają tarczę; po ich zakończeniu wraca, jeśli minęło `downS`.
+W snapshotach `shieldUp` określa widoczność tarczy.
+
+**Egzekutor** (`executor.json`, `kind: 'executor'`): 220 HP, odporność
+na odrzut 0,6, cios 28 obrażeń z `attackTags: ['#melee', '#heavy']`.
+Zapowiedź trwa 0,7 s i emituje `enemy_telegraph.kind: 'heavy'`. Paruje lekki
+`#melee` raz na `parry.cooldownS` = 2,5 s w stanie `idle` lub `chase`,
+jeśli nie jest ogłuszony. Kolejne cięcia w odnowieniu, ciężkie ciosy
+i strzały trafiają normalnie. Gdy gracz jest w zasięgu 1,8 m, sparowanie
+od razu rozpoczyna zapowiedź kontry skierowanej do gracza. Kontra prosi
+o ten sam token `melee` co zwykły atak; brak tokenu pozwala tylko sparować.
+Podczas zapowiedzi, wymachu, regeneracji i ogłuszenia Egzekutor nie paruje.
+
+Obie obrony korzystają z `DamageTargetOptions.guard` (kontrakt F2-14):
+blok zwraca 0, nie emituje `damage_dealt`, emituje za to
+`melee_blocked { defender, attacker, amount }` z pierwotną kwotą trafienia.
+Statusy są nakładane tylko przez zwykłą ścieżkę obrażeń; przeciążenie z mocy
+z tagiem `#power` przechodzi przez tarczę.
+
+**Widok:** oba warianty używają `enemy_trooper`. Tarcza jest osobnym meshem
+materiału `enemy` pod `root`, więc pozostaje po wczytaniu GLB; widoczność
+wynika z `shieldUp`. Jej rozmiar to `animation.shieldSizeM`. Egzekutor
+zastępuje pałkę dłuższym ostrzem `enemyGlow`, o rozmiarze
+`animation.bladeSizeM`, także w modelu GLB. Pozostałe archetypy zachowują
+dotychczasowy wygląd. Geometrie obu dodatków są zwalniane z widokiem.
+
+**Kontrola w 30 sekund:** `?scene=ai-test&debug=1`, `god`, `kill all`,
+`spawn shielder 1`: strzel lub tnij z przodu, potem zajdź z boku; ciężki
+cios powinien odsłonić wroga na 3 s. Sprawdź przeciążenie mocą z tagiem
+`#power`. Następnie `kill all`, `spawn executor 1`: lekkie cięcie wywołuje
+parowanie i długą zapowiedź ciężkiej kontry; odskocz, potem wykorzystaj
+odnowienie parowania. Ciężki cios przerywa kontrę. Ocena feel: czy tarcza
+czytelnie znika po wytrąceniu i czy 0,7 s wystarcza na rozpoznanie kontry.
+
+Testy: `tests/unit/shielderExecutor.test.ts` — prawdziwy Rapier, walidacja
+i rejestr, przedni łuk i jego granica, flankowanie, ciężki cios, powrót
+tarczy, hitstop, przeciążenie i ogłuszenie, brak kierunku, parowanie,
+ciężka kontra, odnowienie i token dyrektora; widok fallback i GLB, materiały,
+proporcje oraz zwalnianie geometrii. `damage.test.ts` sprawdza kontrakt `guard`.

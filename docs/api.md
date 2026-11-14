@@ -548,7 +548,29 @@ parryArcDeg?: number;                             // F2-11: szerszy kąt odbijan
 // Warianty: src/data/blades/*.json, mapa bladeDefinitions (F2-11).
 ```
 
-### Wrogowie (F2-02, F2-12)
+### Wrogowie (F2-02, F2-12, F2-14)
+
+F2-14: `DamageTargetOptions.guard?: (info: DamageInfo) => number` zwraca
+mnożnik 0–1. `DamageSystem.deal` woła go po filtrze drużyn i nietykalności,
+przed `damageTaken`. Wynik ≤ 0 blokuje trafienie: zwrot 0, bez `damage_dealt`
+i pozostałych zdarzeń obrażeń. Bez `guard` mnożnik wynosi 1.
+
+`kind: 'shielder' | 'executor'` używa klasy `Assaulter`. Opcjonalne dane:
+`shield: { arcDeg, downS, blocksTags }`, `parry: { cooldownS }`,
+`attackTags` (domyślnie `['#melee']`). `EnemySnapshot.shieldUp?: boolean`
+informuje widok o podniesionej tarczy. `#heavy` w `attackTags` wybiera
+`enemy_telegraph.kind: 'heavy'` i przechodzi do tagów ciosu.
+
+Tarcza blokuje wskazane tagi z przedniego łuku (kąt między `-info.dir`
+a kierunkiem patrzenia ≤ `arcDeg/2`); bez `dir` przepuszcza trafienie.
+Ciężki cios z przodu przepuszcza i opuszcza tarczę na `downS`.
+Ogłuszenie i `statuses.has(id, 'overload')` wyłączają tarczę.
+Parowanie blokuje lekki `#melee` tylko w `idle/chase`, bez ogłuszenia,
+raz na `cooldownS`. W zasięgu celu rozpoczyna kontrę, jeśli otrzyma token
+`melee` dyrektora (bez dyrektora zawsze). Obie obrony emitują
+`melee_blocked { defender, attacker: info.source, amount: info.amount }`.
+Proporcje tarczy (`animation.shieldSizeM`) i ostrza
+(`animation.bladeSizeM`) są wektorami `{ x, y, z }` w danych.
 
 ```ts
 // src/enemies/types.ts — rozszerzenie EnemyDependencies

@@ -105,6 +105,56 @@ describe('Health', () => {
 });
 
 describe('DamageSystem', () => {
+  it('guard blocks without damage events or invulnerability and fractions scale before damageTaken', () => {
+    const { damage, events, player, enemy, enemyHealth } = setup();
+    const stats = new Stats({ maxHealth: 50 });
+    stats.add({ stat: 'damageTaken', type: 'flat', value: 1, source: 'test' });
+    let multiplier = 0;
+    const guard = vi.fn(() => multiplier);
+    damage.register(enemy, enemyHealth, { stats, guard, invulnMs: () => 100 });
+    const info = { amount: 20, source: player, tags: ['#melee'] };
+    expect(damage.deal(enemy, info)).toBe(0);
+    expect(guard).toHaveBeenCalledWith(info);
+    expect(enemyHealth.current).toBe(50);
+    expect(events).toEqual([]);
+    multiplier = 0.25;
+    expect(damage.deal(enemy, info)).toBe(10);
+    expect(enemyHealth.current).toBe(40);
+    expect(events.map((event) => event.type)).toEqual([
+      'damage_dealt',
+      'health_changed',
+    ]);
+  });
+
+  it('calls guard only after team and invulnerability filters, and preserves unguarded damage', () => {
+    const { damage, player, enemy, enemy2, enemyHealth } = setup();
+    const guard = vi.fn(() => 1);
+    let invulnerable = true;
+    damage.register(enemy, enemyHealth, {
+      guard,
+      invulnerable: () => invulnerable,
+      invulnMs: () => 100,
+    });
+    expect(damage.deal(enemy, { amount: 10, source: enemy2, tags: [] })).toBe(
+      0,
+    );
+    expect(damage.deal(enemy, { amount: 10, source: player, tags: [] })).toBe(
+      0,
+    );
+    expect(guard).not.toHaveBeenCalled();
+    invulnerable = false;
+    expect(damage.deal(enemy, { amount: 10, source: player, tags: [] })).toBe(
+      10,
+    );
+    expect(damage.deal(enemy, { amount: 10, source: player, tags: [] })).toBe(
+      0,
+    );
+    expect(guard).toHaveBeenCalledOnce();
+    expect(damage.deal(enemy2, { amount: 10, source: player, tags: [] })).toBe(
+      10,
+    );
+  });
+
   it.each([
     {
       statuses: [

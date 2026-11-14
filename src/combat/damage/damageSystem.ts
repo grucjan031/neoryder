@@ -13,6 +13,8 @@ export interface DamageTargetOptions {
   invulnMs?: () => number;
   /** Chwilowa nietykalność niezależna od trafień (np. dash) — sprawdzana przed obrażeniami. */
   invulnerable?: () => boolean;
+  /** Obrona kierunkowa lub parowanie: mnożnik 0–1, po nietykalności, przed damageTaken. */
+  guard?: (info: DamageInfo) => number;
 }
 
 interface Target {
@@ -81,6 +83,8 @@ export class DamageSystem {
     if (!this.canDamage(info.source, target, info.tags)) return 0;
     if (this.timeS < entry.invulnUntilS) return 0;
     if (entry.opts.invulnerable?.()) return 0;
+    const guard = Math.max(0, Math.min(1, entry.opts.guard?.(info) ?? 1));
+    if (guard <= 0) return 0;
 
     // 'damageTaken' ma zawsze bazę 1 — liczą się tylko modyfikatory.
     // Ciężki cios (#heavy) przebija blok: pomija modyfikatory o źródle BLOCK_SOURCE.
@@ -93,7 +97,7 @@ export class DamageSystem {
             .filter((mod) => !pierce || mod.source !== BLOCK_SOURCE),
         )
       : 1;
-    const dealt = entry.health.apply({ amount: info.amount * taken });
+    const dealt = entry.health.apply({ amount: info.amount * guard * taken });
     if (dealt <= 0) return 0;
 
     const invulnMs = entry.opts.invulnMs?.() ?? 0;

@@ -13,6 +13,7 @@ atak (melee / pocisk / moc)
             └─ DamageSystem.deal(target, DamageInfo)
                  ├─ canDamage: drużyny, samotrafienie (#friendly_fire omija)
                  ├─ okno nietykalności (czas symulacji)
+                 ├─ × guard(info) (F2-14, blok lub parowanie celu)
                  ├─ × damageTaken (modyfikatory Stats, baza zawsze 1)
                  ├─ Health.apply → faktyczne obrażenia (≤ pozostałe HP)
                  └─ emit: damage_dealt → health_changed → enemy_killed | player_died
@@ -24,7 +25,7 @@ atak (melee / pocisk / moc)
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EntityRegistry`               | id encji, rodzaj (`kind`), drużyna (`Team`), mapa collider → encja. Emituje `entity_spawned/despawned`. `setTeam` przy odbiciu pocisku.            |
 | `Health`                       | `current`, `max` (funkcja — zwykle `stats.get('maxHealth')`, czytana na żywo), `dead`, `apply`, `heal`, `reset`.                                   |
-| `DamageSystem`                 | `register(id, health, { stats?, invulnMs? })`, `deal`, `canDamage`, `step(dt)` (czas dla nietykalności).                                           |
+| `DamageSystem`                 | `register(id, health, { stats?, invulnMs?, invulnerable?, guard? })`, `deal`, `canDamage`, `step(dt)` (czas dla nietykalności).                    |
 | `Hitbox`                       | aktywny obszar ciosu: właściciel, drużyna, obrażenia, tagi, `lifetimeS`, `hitsPerTarget` (domyślnie 1). Geometrię dostarcza wołający.              |
 | `Hurtboxes` + `queryHurtboxes` | collidery przyjmujące obrażenia z mnożnikiem (np. głowa 1,5). Zapytanie kształtem Rapier zwraca jeden hurtbox na encję — z największym mnożnikiem. |
 | `ResourcePool`                 | energia (spend + regeneracja po opóźnieniu) i ciepło (`add(n, { resetDelay: true })` + ujemna regeneracja = chłodzenie).                           |
@@ -39,6 +40,25 @@ atak (melee / pocisk / moc)
 - **Obrażenia zerowe** (zignorowane, ujemne, cel martwy) nie emitują zdarzeń.
 - **Kolejność zdarzeń:** `damage_dealt` → `health_changed` → `enemy_killed` lub `player_died`. `enemy_killed` emitowane dla każdej drużyny poza `player`.
 - **Kolizje:** hurtboxy to zwykłe collidery Rapier z grupami `CollisionGroup`; filtr zapytania to `interactionGroups(grupaAtakującego, grupyCelów)`. Nie ma osobnej fizyki hitboxów.
+
+## Obrona celu — F2-14
+
+`DamageTargetOptions.guard?: (info: DamageInfo) => number` zwraca mnożnik
+0–1. Wywołanie następuje po sprawdzeniu drużyn i obu rodzajów nietykalności,
+przed modyfikatorami `damageTaken`. Wynik jest ograniczony do 0–1; wynik ≤ 0
+kończy `deal` zwrotem 0, bez utraty HP, nowego okna nietykalności oraz zdarzeń
+`damage_dealt`, `health_changed` i śmierci. Statusy trafienia również wtedy
+nie są nakładane. Ułamek skaluje `info.amount` przed `damageTaken`.
+Bez `guard` dotychczasowa ścieżka obrażeń pozostaje taka sama (mnożnik 1).
+
+Tarczownik używa tej funkcji do obrony przedniego łuku, a Egzekutor do
+parowania lekkich cięć. Ich `guard` emituje `melee_blocked` z oryginalnym
+`info.amount`; `DamageSystem` nie emituje tego zdarzenia samodzielnie.
+Szczegóły oraz kontrola ręczna: `docs/systems/enemies.md`, F2-14.
+
+Testy `damage.test.ts`: pełny blok bez zdarzeń i nietykalności, ułamkowe
+skalowanie przed `damageTaken`, kolejność filtrów i niezmienione trafienia
+bez `guard`.
 
 ## Strojenie
 

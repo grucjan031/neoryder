@@ -5,6 +5,7 @@ import {
   PIERCE_BLOCK_TAG,
   queryHurtboxes,
 } from '../combat/damage';
+import type { DamageInfo } from '../combat/damage';
 import { STUNNED } from '../combat/status/statusSystem';
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
@@ -39,6 +40,8 @@ export class Assaulter implements Enemy {
   private readonly rng;
   private cooldown = 0;
   private stunS = 0;
+  private shieldDownS = 0;
+  private parryCooldownS = 0;
   private probeS = 0;
   private avoid = 0;
   private hitbox?: Hitbox;
@@ -64,7 +67,12 @@ export class Assaulter implements Enemy {
     deps.damage.register(
       this.id,
       new Health(() => this.stats.get('maxHealth')),
-      { stats: this.stats },
+      {
+        stats: this.stats,
+        ...(definition.shield || definition.parry
+          ? { guard: (info: DamageInfo) => this.guard(info) }
+          : {}),
+      },
     );
     this.body = new EnemyBody(deps, this.id, this.geometry, position);
     this.current = {
@@ -75,6 +83,7 @@ export class Assaulter implements Enemy {
       stateTimeS: 0,
       distance: 0,
     };
+    this.updateShield();
     this.previous = copy(this.current);
     this.off.push(
       ctx.bus.on('damage_dealt', (event) => {
@@ -115,16 +124,96 @@ export class Assaulter implements Enemy {
     );
   }
 
+  private isStunned(): boolean {
+    return (
+      this.current.state === 'stunned' ||
+      (this.deps.statuses?.has(this.id, STUNNED) ?? false)
+    );
+  }
+
+  private updateShield(): void {
+    if (this.definition.shield)
+      this.current.shieldUp =
+        this.shieldDownS <= epsilon &&
+        !this.isStunned() &&
+        this.current.state !== 'dead' &&
+        !this.deps.statuses?.has(this.id, 'overload');
+  }
+
+  private guard(info: DamageInfo): number {
+    const { shield, parry } = this.definition;
+    const heavy = info.tags.includes(PIERCE_BLOCK_TAG);
+    this.updateShield();
+    if (shield && this.current.shieldUp && info.dir) {
+      const length = Math.hypot(info.dir.x, info.dir.y, info.dir.z);
+      const dot =
+        -info.dir.x * Math.sin(this.current.yaw) -
+        info.dir.z * Math.cos(this.current.yaw);
+      const front =
+        length > 0 &&
+        dot / length + epsilon >= Math.cos((shield.arcDeg * Math.PI) / 360);
+      if (front && heavy) {
+        this.shieldDownS = shield.downS;
+        this.updateShield();
+      } else if (
+        front &&
+        info.tags.some((tag) => shield.blocksTags.includes(tag))
+      ) {
+        this.blocked(info);
+        return 0;
+      }
+    }
+    if (
+      parry &&
+      !heavy &&
+      info.tags.includes('#melee') &&
+      this.parryCooldownS <= epsilon &&
+      !this.isStunned() &&
+      (this.current.state === 'idle' || this.current.state === 'chase')
+    ) {
+      this.parryCooldownS = parry.cooldownS;
+      const target = this.deps.getTarget();
+      if (target) {
+        const dx = target.position.x - this.current.position.x;
+        const dz = target.position.z - this.current.position.z;
+        if (
+          Math.hypot(dx, dz) <= this.definition.attackRange + epsilon &&
+          this.engage(
+            Math.hypot(dx, dz),
+            this.definition.flankDistanceM ?? this.definition.attackRange,
+          )
+        ) {
+          this.current.yaw = Math.atan2(dx, dz);
+          this.transition('telegraph');
+        }
+      }
+      this.blocked(info);
+      return 0;
+    }
+    return 1;
+  }
+
+  private blocked(info: DamageInfo): void {
+    this.ctx.bus.emit('melee_blocked', {
+      defender: this.id,
+      attacker: info.source,
+      amount: info.amount,
+    });
+  }
+
   private transition(state: EnemyState): void {
     this.current.state = state;
     this.current.stateTimeS = 0;
     this.hitbox = undefined;
+    this.updateShield();
     // Token trzyma tylko zapowiedź i wymach; regeneracja po ciosie oddaje go następnemu.
     if (state !== 'telegraph' && state !== 'swing') this.releaseToken();
     if (state === 'telegraph')
       this.ctx.bus.emit('enemy_telegraph', {
         id: this.id,
-        kind: 'swing',
+        kind: this.definition.attackTags?.includes(PIERCE_BLOCK_TAG)
+          ? 'heavy'
+          : 'swing',
         durationS: this.definition.telegraphS,
       });
     if (state === 'swing')
@@ -132,7 +221,7 @@ export class Assaulter implements Enemy {
         owner: this.id,
         team: 'enemy',
         damage: this.stats.get('damage'),
-        tags: ['#melee'],
+        tags: this.definition.attackTags ?? ['#melee'],
         lifetimeS: this.definition.swingActiveS,
       });
     if (state === 'recovery') this.cooldown = this.definition.cooldownS;
@@ -179,7 +268,10 @@ export class Assaulter implements Enemy {
       return;
     }
     this.cooldown = Math.max(0, this.cooldown - dt);
+    this.shieldDownS = Math.max(0, this.shieldDownS - dt);
+    this.parryCooldownS = Math.max(0, this.parryCooldownS - dt);
     this.holdStun();
+    this.updateShield();
     const target = this.deps.getTarget();
     const dx = target ? target.position.x - s.position.x : 0;
     const dz = target ? target.position.z - s.position.z : 0;

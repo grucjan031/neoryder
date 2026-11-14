@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 04, 05, 12, 13. W toku: 07 (Gemini).
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 04, 05, 06 (rdzeń; moc Skupienia po 07), 12, 13, 14. W toku: 07 (Gemini), 15 (Codex).
 
 ## Decyzje wspólne
 
@@ -25,7 +25,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 04, 05, 12, 13. W
 | 03  | Tryby strzału i dane broni: pistolet, karabin, rozpraszacz, snajperka | Bronie            | 01         | L     | gotowe |
 | 04  | Ciągły laser i granat EMP                                            | Bronie            | 02, 03     | M     | gotowe |
 | 05  | Rejestr mocy, drugi slot, Fala uderzeniowa                           | Moce              | 01         | M     | gotowe |
-| 06  | Skupienie: osobna skala czasu gracza                                 | Architekt + Moce  | 05         | M     | —      |
+| 06  | Skupienie: osobna skala czasu gracza                                 | Architekt + Moce  | 05         | M     | w toku |
 | 07  | Błyskawica (łańcuch, przeciążenie)                                   | Moce              | 02, 05     | S     | w toku |
 | 08  | Bariera                                                              | Moce              | 05         | S     | —      |
 | 09  | Chwyt i rzut                                                         | Moce              | 05         | L     | —      |
@@ -33,8 +33,8 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 04, 05, 12, 13. W
 | 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | —      |
 | 12  | `EnemyDirector`: tokeny ataku, flankowanie, ostrzał zaporowy         | AI wrogów         | 01         | M     | gotowe |
 | 13  | Snajper i Dron                                                       | AI wrogów         | 12         | M     | gotowe |
-| 14  | Tarczownik i Egzekutor                                               | AI wrogów         | 02, 12     | L     | —      |
-| 15  | Ekwipunek, przełączanie broni, HUD mocy i broni                      | UI/UX + Architekt | 03, 05     | M     | —      |
+| 14  | Tarczownik i Egzekutor                                               | AI wrogów         | 02, 12     | L     | gotowe |
+| 15  | Ekwipunek, przełączanie broni, HUD mocy i broni                      | UI/UX + Architekt | 03, 05     | M     | w toku |
 | 16  | Synergie na tagach i 3 hybrydy                                       | Progresja         | 02, 03, 05 | M     | —      |
 | 17  | Ekran wyboru buildu i fale F2 na arenie                              | Architekt + UI/UX | 13, 14, 15 | M     | —      |
 | 18  | Symulator TTK (`npm run balance`) i `docs/balance.md`                | QA                | 04, 09, 14 | M     | —      |

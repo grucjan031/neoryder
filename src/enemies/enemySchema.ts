@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const positive = z.number().finite().positive();
 const nonnegative = z.number().finite().nonnegative();
+const size = z.object({ x: positive, y: positive, z: positive });
 export const gunnerFields = z.object({
   preferredRange: positive,
   rangeTolerance: positive,
@@ -62,6 +63,15 @@ export const enemySchema = z
     repathJitter: nonnegative,
     /** F2-12: promień krążenia Szturmowca bez tokenu ataku (większy niż attackRange). */
     flankDistanceM: positive.optional(),
+    attackTags: z.array(z.string().startsWith('#')).min(1).optional(),
+    shield: z
+      .object({
+        arcDeg: positive.max(360),
+        downS: positive,
+        blocksTags: z.array(z.string().startsWith('#')).min(1),
+      })
+      .optional(),
+    parry: z.object({ cooldownS: positive }).optional(),
     drone: droneFields.optional(),
     body: z
       .object({
@@ -92,6 +102,8 @@ export const enemySchema = z
         stunAngle: nonnegative,
         pulseHz: positive,
         pulseScale: nonnegative,
+        shieldSizeM: size.optional(),
+        bladeSizeM: size.optional(),
         aimAngle: z.number().finite().optional(),
         recoilM: nonnegative.optional(),
         recoilS: positive.optional(),
