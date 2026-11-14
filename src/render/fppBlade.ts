@@ -97,6 +97,7 @@ export class FppBlade {
   }
 
   place(cameraMatrix: Matrix4, view: BladeView): void {
+    this.root.visible = view.flight === null;
     let pose = POSE_IDLE;
     if (view.state === 'blocking') pose = POSE_BLOCK;
     else if (view.state === 'charging') {

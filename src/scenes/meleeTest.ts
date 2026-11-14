@@ -1,3 +1,5 @@
+import { queryBladeSegment } from '../combat/melee/bladeQueries';
+import { FlyingBlade } from '../render/flyingBlade';
 import {
   BoxGeometry,
   Color,
@@ -14,6 +16,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
 import pushTestData from '../data/scenes/pushTest.json';
+import meleeTestData from '../data/scenes/meleeTest.json';
 import type { GameContext } from '../core/context';
 import type { EntityId } from '../core/events';
 import { EntityRegistry } from '../core/entities';
@@ -67,6 +70,21 @@ const DUMMY_POSITIONS: Vec3[] = [
   { x: 2.5, y: 0, z: -4 },
 ];
 
+const meleeTestDefinition = z
+  .object({
+    lanePositions: z
+      .array(
+        z.object({
+          x: z.number().finite(),
+          y: z.number().finite(),
+          z: z.number().finite(),
+        }),
+      )
+      .min(1),
+    controls: z.string().min(1),
+  })
+  .parse(meleeTestData);
+
 const pushTestDefinition = z
   .object({
     slots: z.tuple([z.string().min(1), z.string().min(1)]),
@@ -109,8 +127,10 @@ export class MeleeTest implements Scene {
   private readonly hurtboxes = new Hurtboxes();
   private player!: PlayerController;
   private previous!: PlayerState;
+  private playerSpawn!: Vec3;
   private fpsCamera!: FpsCamera;
   private blade!: PlasmaBlade;
+  private readonly flyingBlade = new FlyingBlade();
   private energy!: PlayerEnergy;
   private push!: ResonancePush;
   private readonly playerStats = new Stats({
@@ -176,7 +196,7 @@ export class MeleeTest implements Scene {
         .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
     );
 
-    if (this.withWall) {
+    if (this.withWall || this.id === 'melee-test') {
       const wall = new Mesh(new BoxGeometry(12, 3, 0.6), getMaterial('world'));
       wall.position.set(0, 1.5, -7.3);
       this.root.add(wall);
@@ -208,6 +228,7 @@ export class MeleeTest implements Scene {
     );
     this.entities.bindCollider(playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
+    this.playerSpawn = { ...this.previous.position };
     this.fpsCamera = new FpsCamera(ctx.tuning, playerId, ctx.bus);
     this.hurtboxes.add(playerId, this.player.colliderHandle);
     this.projectiles = new ProjectileSystem(
@@ -229,6 +250,7 @@ export class MeleeTest implements Scene {
       ctx.bus,
       ctx.tuning,
     );
+    this.root.add(this.flyingBlade.root);
     this.blade = new PlasmaBlade(
       plasmaBladeDefinition,
       {
@@ -238,6 +260,21 @@ export class MeleeTest implements Scene {
         stats: this.playerStats,
         energy: this.energy.pool,
         queryArc: (reach, width) => this.queryArc(reach, width),
+        querySegment: (from, to, radius, dash, dir) =>
+          queryBladeSegment(
+            this.world,
+            this.hurtboxes,
+            from,
+            to,
+            radius,
+            dash,
+            ctx.tuning.melee.dashCutHeightM,
+            dir,
+          ),
+        hurtboxPosition: (box) =>
+          this.world.getCollider(box.colliderHandle)?.translation() ?? null,
+        castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+        dashActive: () => this.player.getState().dashS > 0,
         aim: () => this.aim(),
         projectiles: this.projectiles,
         positionOf: (id) => this.dummies.find((d) => d.id === id)?.pos ?? null,
@@ -300,7 +337,9 @@ export class MeleeTest implements Scene {
   }
 
   protected dummyPositions(): readonly Vec3[] {
-    return DUMMY_POSITIONS;
+    return this.id === 'melee-test'
+      ? meleeTestDefinition.lanePositions
+      : DUMMY_POSITIONS;
   }
 
   protected initPowers(deps: PowerDeps): void {
@@ -538,6 +577,10 @@ export class MeleeTest implements Scene {
       this.moveDummy(d, { ...d.position });
       d.vel = { x: 0, y: 0, z: 0 };
     }
+    this.blade.reset();
+    this.player.teleport(this.playerSpawn);
+    this.previous = this.player.getState();
+    this.world.step();
     this.playerHealth.reset();
     this.energy.set(this.energy.max);
     this.statuses.reset();
@@ -546,14 +589,15 @@ export class MeleeTest implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     this.previous = this.player.getState();
-    this.player.step(dt, input);
-    this.blade.step(dt, input);
-    this.stepPowers(dt, input);
+    const pdt = this.ctx.feel?.playerDt(dt) ?? dt;
+    this.player.step(pdt, input);
+    this.blade.step(pdt, input);
+    this.stepPowers(pdt, input);
     if (dt <= 0) return;
     this.projectileView.capturePrevious();
     this.stepTurret(dt);
     this.projectiles.step(dt);
-    this.energy.step(dt);
+    this.energy.step(pdt);
     this.damage.step(dt);
     this.statuses.step(dt);
     for (const d of this.dummies) {
@@ -582,10 +626,13 @@ export class MeleeTest implements Scene {
         .join(' / ');
       const v = this.blade.view();
       this.label.textContent = `Manekiny: ${hp} · energia ${this.energy.current.toFixed(0)} · HP ${this.playerHealth.current.toFixed(0)} · ${v.state}${v.stage ? ` ${v.stage}` : ''}`;
+      if (this.id === 'melee-test')
+        this.label.textContent += ` · ${meleeTestDefinition.controls}`;
     }
     this.lights?.sync();
     this.arcHideS -= frameDt;
     if (this.arcHideS <= 0) this.arcDebug.visible = false;
+    this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     if (!camera) return;
     const pose = this.fpsCamera.update(
       frameDt,
@@ -618,6 +665,7 @@ export class MeleeTest implements Scene {
     for (const off of this.off.splice(0)) off();
     this.blade.dispose();
     this.bladeModel.dispose();
+    this.flyingBlade.dispose();
     this.statuses.dispose();
     this.lightningView.dispose();
     this.projectiles.dispose();

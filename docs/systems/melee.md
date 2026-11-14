@@ -47,6 +47,74 @@ Energia pochodzi z `PlayerEnergy` (#11, patrz `docs/systems/powers.md`) — jedn
 
 `tests/unit/plasmaBlade.test.ts` (dane, combo i reset, bufor, jedno trafienie na cios, odrzut, ciężki i anulowanie, hitstop 40/80, blok −70% i energia, przebicie, rozbicie gardy), `tests/e2e/meleeTest.spec.ts` (prawdziwy klik LPM rani manekina, PPM blokuje 40 → 12).
 
+## Rzut i dash-cięcie (F2-10)
+
+- Środkowy przycisk myszy (`bladeThrow`) rzuca ostrze w kierunku celowania.
+  Dane `throw` w `src/data/weapons/plasmaBlade.json`: obrażenia 35,
+  prędkość 20 m/s, zasięg 16 m, promień toru 0,35 m, powrót 26 m/s.
+  Kierunek wylotu jest stały. Raycast Rapiera ograniczony do geometrii świata
+  zatrzymuje środek ostrza o `radiusM` przed ścianą i przełącza na powrót;
+  raycast uwzględnia promień także przed końcem bieżącego kroku. Powrót śledzi bieżący
+  punkt oczu gracza i przechodzi przez geometrię. Każdy wróg otrzymuje obrażenia
+  raz na cały lot, również gdy ma wiele hurtboxów. Obrażenia są stałe z danych,
+  bez mnożnika głowy. Zdarzenia: `blade_thrown`, `blade_returned` z `owner`.
+- W stanie `throwing` ostrze znika z dłoni. Cięcia, ładowanie ciężkiego, blok,
+  parowanie i następny rzut są ignorowane. Brak kosztu energii i osobnego cooldownu.
+  Render `FlyingBlade` interpoluje pozycję oraz obrót cyjanowego ostrza wyłącznie
+  ze stanu symulacji; obrót i rozmiary są w `tuning.melee`.
+- Atak podczas dashu lub przez `tuning.melee.dashCutGraceS` (0,1 s) po końcu
+  zastępuje lekki cios dash-cięciem. Start jest zapamiętywany z `dash_used`
+  przed ruchem gracza. Natychmiast sprawdzany jest cały odcinek do aktualnej
+  pozycji, a kolejne kroki obejmują dalszy tor aż do końca dashu. W oknie po
+  dashu używany jest zamrożony koniec toru. Dane `dashCut`: obrażenia 50,
+  pełna szerokość pasa 2 m, odrzut 7 w kierunku toru. Pas jest poziomy,
+  wysokość `dashCutHeightM` (1,2 m), na wysokości oczu. Każdy wróg raz,
+  najwyżej jedno dash-cięcie na dash. Combo po nim zaczyna się od etapu 1.
+- Obie mechaniki korzystają z `DamageSystem.deal`, źródła gracza, tagów ostrza
+  i dotychczasowych zdarzeń obrażeń oraz hitstopu (lekki, ciężki przy zabójstwie).
+  Po lekkim hitstopie zabójstwo w dalszym kroku podbija go raz do ciężkiego.
+  Punkt obrażeń jest środkiem trafionego hurtboxa (fallback: pozycja encji),
+  nie końcem toru. Dodatkowy raycast do celu wyklucza trafienia przez ścianę,
+  również dla zerowego odcinka przy ścianie i pierwszego kroku powrotu.
+  Gracz i ostrze są krokowane przez `ctx.feel?.playerDt(dt) ?? dt`.
+  Nowe zależności `BladeDeps` są opcjonalne: bez nich zachowanie F1 pozostaje.
+  Dźwięki nowych zdarzeń pominięte: obecny moduł audio wymaga zmiany listy
+  obsługiwanych zdarzeń w kodzie, poza zakresem F2-10.
+
+Rzut i atak używają buforów `tuning.melee.attackBufferMs`; czas bufora nie
+upływa w hitstopie. Po wznowieniu sprawdzane są aktualne warunki dash-cięcia,
+również na ostatnim kroku okna łaski. Nowe akcje nie przerywają windup/active
+lekkiego ciosu ani ładowania i żadnej fazy ciężkiego ciosu (w tym recovery).
+Lekki cios można zastąpić w recovery, ciężki dopiero w idle. Przejście po
+zakończeniu ciosu odbywa się w następnym kroku, bez sumowania obrażeń akcji
+w jednym kroku. Bufor może wygasnąć podczas chronionych faz.
+Rzut w dash-cięciu czeka na jego koniec i nie czyści listy trafionych wrogów.
+`guardBrokenS` upływa także w obu nowych akcjach.
+
+Zerowy odcinek zachowuje kierunek dashu/celowania (obrót pasa i kierunek
+obrażeń). W hitstopie poprzednia pozycja i wiek ostrza są zrównywane z
+bieżącymi, więc interpolacja nie cofa lotu ani obrotu. Render lotu działa
+także bez kamery w obu scenach. `melee-test` regeneruje energię w czasie
+gracza; reset teleportuje gracza do punktu startu (kończy dash), odświeża
+stan interpolacji gracza i wykonuje krok świata po przestawieniu manekinów.
+
+`melee-test` zachowuje trzy manekiny; są ustawione w poprzeczny rząd
+(dane sceny walidowane zod w `src/data/scenes/meleeTest.json`) i mają ścianę za
+plecami. Warianty `push-test` i `parry-test` zachowują swoje ustawienie.
+Podpięcie zapytań symulacji i render lotu są też na arenie.
+Testy Rapiera: `tests/unit/bladeSpecials.test.ts` — tor, zasięg, powrót,
+ściana (również cel 0,1 m za cienką ścianą), jednokrotne obrażenia, blokada
+akcji, bufory/hitstop/reset, ochrona ciężkiego ciosu, punkt trafienia, pionowy
+rzut, pas dash-cięcia (obrót i wysokość), zerowy tor i okno po dashu.
+`tests/unit/bladeSpecialScenes.test.ts`: render bez kamery, energia w czasie
+gracza, reset dashu i colliderów.
+
+Ręcznie (około 30 s): podejdź z lewej strony rzędu, wyceluj wzdłuż niego
+i naciśnij ŚPM; w czasie powrotu rusz się i spróbuj PPM/LPM. Rzuć w ścianę.
+Następnie wykonaj Q tuż obok rzędu i kliknij LPM pod koniec dashu, później
+tuż po nim. Oceń czas bez obrony, czytelność powrotu, hitstop przy grupie
+oraz tolerancję późnego kliknięcia.
+
 ## Parowanie pocisków (F1 #10)
 
 - `PlasmaBlade.interceptProjectile` jest rejestrowane w `ProjectileSystem.addInterceptor`. Gdy pocisk wroga trafia właściciela ostrza, przechwytywacz decyduje przed zadaniem obrażeń.

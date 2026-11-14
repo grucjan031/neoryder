@@ -6,6 +6,14 @@
     { "damage": 40, "knockback": 7, "reach": 2.4, "width": 2.6 }
   ],
   "heavy": { "damage": 80, "knockback": 10, "reach": 2.8, "width": 2.0 },
+  "throw": {
+    "damage": 35,
+    "speed": 20,
+    "rangeM": 16,
+    "radiusM": 0.35,
+    "returnSpeed": 26
+  },
+  "dashCut": { "damage": 50, "widthM": 2, "knockback": 7 },
   "blockDamageMult": 0.3,
   "blockEnergyPerHit": 6,
   "blockEnergyPerDamage": 0.4,

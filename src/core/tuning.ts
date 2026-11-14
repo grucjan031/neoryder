@@ -96,6 +96,11 @@ export const tuning = {
     heavyActiveS: 0.12,
     heavyRecoveryS: 0.38,
     guardBreakLockS: 0.8,
+    dashCutGraceS: 0.1,
+    dashCutHeightM: 1.2,
+    throwSpinRadS: 28,
+    throwLengthM: 1.1,
+    throwThicknessM: 0.04,
     /** Parowanie (#10): blok rozpoczęty najwyżej tyle ms przed trafieniem pocisku odbija go. */
     parryWindowMs: 150,
     parryArcDeg: 160,

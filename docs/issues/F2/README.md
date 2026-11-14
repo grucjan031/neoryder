@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–05, 07, 12–16; 06 — rdzeń gotowy, brakuje mocy `kind: 'focus'`. Dalej: moc Skupienia, 08, 09, 10, potem 17.
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–05, 07, 10, 12–16; 06 — rdzeń gotowy, brakuje mocy `kind: 'focus'`. Dalej: moc Skupienia, 08, 09, potem 17.
 
 ## Decyzje wspólne
 
@@ -29,7 +29,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–05, 07, 12–16; 06 — 
 | 07  | Błyskawica (łańcuch, przeciążenie)                                   | Moce              | 02, 05     | S     | gotowe |
 | 08  | Bariera                                                              | Moce              | 05         | S     | —      |
 | 09  | Chwyt i rzut                                                         | Moce              | 05         | L     | —      |
-| 10  | Rzut ostrzem i dash-cięcie                                           | Walka wręcz       | 01         | M     | —      |
+| 10  | Rzut ostrzem i dash-cięcie                                           | Walka wręcz       | 01         | M     | gotowe |
 | 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | —      |
 | 12  | `EnemyDirector`: tokeny ataku, flankowanie, ostrzał zaporowy         | AI wrogów         | 01         | M     | gotowe |
 | 13  | Snajper i Dron                                                       | AI wrogów         | 12         | M     | gotowe |
@@ -90,8 +90,8 @@ Interfejs `Power`, baza kosztu i odnowienia (`power_denied`, kolejkowanie w hits
 
 ### 10 Rzut ostrzem i dash-cięcie
 
-Rzut: ostrze leci prosto `throwRangeM`, przecina wszystkich na drodze (raz każdego), wraca do gracza; w locie brak cięć i bloku. Dash-cięcie: atak w trakcie dashu tnie wszystkich wzdłuż toru dashu (`dashCut` w danych ostrza). Zdarzenia `blade_thrown`, `blade_returned`.
-**Gotowe:** testy toru, jednokrotnego trafienia, powrotu, blokady cięć w locie, dash-cięcia.
+Rzut: ostrze leci prosto do `throw.rangeM`, przecina wszystkich na drodze (raz każdego łącznie z powrotem), zawraca na geometrii świata i wraca do bieżącej pozycji gracza. W locie brak cięć, ciężkiego ataku, bloku, parowania i ponownego rzutu. Dash-cięcie obejmuje cały tor od startu dashu oraz okno `dashCutGraceS` po końcu; każdy wróg raz, combo zaczyna się od nowa. Dane `throw` i `dashCut` w dotychczasowym pliku ostrza. Zdarzenia `blade_thrown`, `blade_returned`. Render lotu oraz zależności fizyki podpięte na arenie i w scenie `melee-test` (rząd trzech manekinów i ściana).
+**Stan: gotowe.** Testy: `tests/unit/bladeSpecials.test.ts`; istniejące asercje combo, bloku i parowania bez zmian. E2E uruchamia koordynator. Audio nowych zdarzeń pominięte zgodnie z zakresem (wymaga zmiany kodu audio).
 
 ### 11 Warianty ostrzy
 

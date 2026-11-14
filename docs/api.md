@@ -541,6 +541,28 @@ class FeelSystem implements FocusControl {
 
 ### Wręcz (F2-10, F2-11)
 
+F2-10: opcjonalne zależności `BladeDeps` (brak = nowe akcje wyłączone):
+`querySegment(from: Vec3, to: Vec3, radius: number, dashCut: boolean, fallbackDir?: Vec3): Hurtbox[]`,
+`castWall(origin: Vec3, dir: Vec3, max: number): number | null`,
+`hurtboxPosition(box: Hurtbox): Vec3 | null` (środek trafionego collidera;
+fallback: istniejące `positionOf(entity)`, bez obu punkt trafienia jest pomijany),
+`dashActive(): boolean`. `querySegment` zwraca hurtboxy wroga przecinające kapsułę
+rzutu albo pas dash-cięcia (szerokość = 2 × radius, wysokość = dashCutHeightM).
+Start dashu ostrze zapisuje z `dash_used` (punkt oczu przed ruchem).
+Aktywność dashu jest czytana po kroku gracza przez `getState().dashS`;
+kontroler nie wymaga zmian. Tor kończy się w ostatnim kroku dashu.
+`BladeView.state` rozszerzone o `throwing` i `dashCut`.
+`BladeView.flight` = null albo `{ previous: Vec3, position: Vec3,
+previousAgeS: number, ageS: number, returning: boolean }` — do interpolacji renderu.
+Jedno dash-cięcie na dash; `dashCutGraceS` odliczane w czasie gracza.
+`fallbackDir` zachowuje kierunek dashu/celowania przy zerowym odcinku.
+Bufory rzutu i ataku używają `tuning.melee.attackBufferMs`, zamrożone w hitstopie.
+Nowe akcje mogą zacząć się w idle, bloku lub recovery lekkiego ciosu;
+nie przerywają ładowania ani całego ciężkiego ciosu (włącznie z recovery).
+Rzut czeka na zakończenie dash-cięcia. Warunki dash-cięcia są ponownie
+sprawdzane przy wykonaniu buforowanego ataku. Cios i nowa akcja nie zadają
+obrażeń w tym samym kroku przejścia między stanami.
+
 ```ts
 // src/combat/melee/bladeSchema.ts — rozszerzenie BladeDefinition (pola opcjonalne, F1 bez zmian)
 throw?: { damage: number; speed: number; rangeM: number; radiusM: number; returnSpeed: number };

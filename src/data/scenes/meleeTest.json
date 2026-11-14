@@ -1,0 +1,8 @@
+{
+  "lanePositions": [
+    { "x": -2.5, "y": 0, "z": -5 },
+    { "x": 0, "y": 0, "z": -5 },
+    { "x": 2.5, "y": 0, "z": -5 }
+  ],
+  "controls": "Podejdź z lewej strony rzędu: ŚPM — rzut, Q + LPM — dash-cięcie tuż obok manekinów. Rzut w ścianę za rzędem od razu zawraca."
+}

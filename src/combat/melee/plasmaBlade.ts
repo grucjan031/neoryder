@@ -9,10 +9,21 @@ import type { DamageSystem, Hurtbox } from '../damage';
 import type { ProjectileHit, ProjectileSystem } from '../weapons/projectiles';
 import type { BladeDefinition, StrikeDefinition } from './bladeSchema';
 
-export type BladeState = 'idle' | 'light' | 'charging' | 'heavy' | 'blocking';
+export type BladeState =
+  'idle' | 'light' | 'charging' | 'heavy' | 'blocking' | 'throwing' | 'dashCut';
 export type SwingPhase = 'windup' | 'active' | 'recovery';
 
 export interface BladeDeps {
+  querySegment?(
+    from: Vec3,
+    to: Vec3,
+    radius: number,
+    dashCut: boolean,
+    fallbackDir?: Vec3,
+  ): Hurtbox[];
+  hurtboxPosition?(box: Hurtbox): Vec3 | null;
+  castWall?(origin: Vec3, dir: Vec3, max: number): number | null;
+  dashActive?(): boolean;
   owner: EntityId;
   team: Team;
   damage: DamageSystem;
@@ -31,6 +42,13 @@ export interface BladeDeps {
 
 /** Stan do animacji ostrza (render) i do testów. */
 export interface BladeView {
+  flight: {
+    previous: Vec3;
+    position: Vec3;
+    previousAgeS: number;
+    ageS: number;
+    returning: boolean;
+  } | null;
   state: BladeState;
   /** Etap combo 1..n (light) albo 0. */
   stage: number;
@@ -52,6 +70,19 @@ export interface BladeView {
  * zadaje ciężki cios przebijający blok.
  */
 export class PlasmaBlade {
+  private flight: NonNullable<BladeView['flight']> | null = null;
+  private flightDir: Vec3 = { x: 0, y: 0, z: -1 };
+  private flightDistance = 0;
+  private throwBufferS = 0;
+  private specialHitstop: 'none' | 'light' | 'heavy' = 'none';
+  private dashDir: Vec3 = { x: 0, y: 0, z: -1 };
+  private readonly specialHits = new Set<EntityId>();
+  private dashStart: Vec3 | null = null;
+  private dashEnd: Vec3 | null = null;
+  private dashGraceS = 0;
+  private dashWasActive = false;
+  private dashUsed = false;
+  private readonly offDash: () => void;
   private state: BladeState = 'idle';
   private stage = 0;
   private phase: SwingPhase | null = null;
@@ -72,11 +103,27 @@ export class PlasmaBlade {
     private readonly bus: EventBus,
     private readonly tuning: Tuning,
   ) {
+    this.offDash = bus.on('dash_used', ({ user, dir }) => {
+      if (user !== deps.owner || !deps.dashActive) return;
+      this.dashDir = normalizeVec(dir);
+      this.dashStart = { ...deps.aim().origin };
+      this.dashEnd = { ...this.dashStart };
+      this.dashWasActive = true;
+      this.dashUsed = false;
+      this.dashGraceS = tuning.melee.dashCutGraceS;
+    });
     this.off = bus.on('damage_dealt', (event) => this.onDamage(event));
   }
 
   view(): BladeView {
     return {
+      flight: this.flight
+        ? {
+            ...this.flight,
+            previous: { ...this.flight.previous },
+            position: { ...this.flight.position },
+          }
+        : null,
       state: this.state,
       stage: this.state === 'light' ? this.stage : 0,
       phase: this.phase,
@@ -136,6 +183,35 @@ export class PlasmaBlade {
 
   step(dt: number, input: InputSnapshot): void {
     const m = this.tuning.melee;
+    const dashReadyAtStepStart = this.canDashCut();
+    if (dt > 0) {
+      this.updateDash(dt);
+      this.guardBrokenS = Math.max(0, this.guardBrokenS - dt);
+    }
+    if (this.flight) {
+      if (dt > 0) this.stepFlight(dt);
+      else {
+        this.flight.previous = { ...this.flight.position };
+        this.flight.previousAgeS = this.flight.ageS;
+      }
+      return;
+    }
+    if (
+      input.pressed.has('bladeThrow') &&
+      this.def.throw &&
+      this.deps.querySegment &&
+      this.deps.castWall
+    )
+      this.throwBufferS = m.attackBufferMs / 1000;
+
+    if (this.state === 'dashCut') {
+      if (dt > 0) {
+        this.throwBufferS = Math.max(0, this.throwBufferS - dt);
+        this.applyDashCut();
+        if (!this.dashWasActive) this.state = 'idle';
+      }
+      return;
+    }
     if (input.pressed.has('attack')) {
       this.attackBufferS = m.attackBufferMs / 1000;
       this.holding = true;
@@ -146,11 +222,32 @@ export class PlasmaBlade {
       this.holding = false;
     }
     if (dt <= 0) return;
+    const dashReady = dashReadyAtStepStart || this.canDashCut();
 
     if (this.holding) this.holdS += dt;
     this.attackBufferS = Math.max(0, this.attackBufferS - dt);
-    this.guardBrokenS = Math.max(0, this.guardBrokenS - dt);
+    this.throwBufferS = Math.max(0, this.throwBufferS - dt);
     this.sinceSwingS += dt;
+
+    if (this.canStartSpecial()) {
+      if (this.throwBufferS > 0) {
+        this.startThrow();
+        this.stepFlight(dt);
+        return;
+      }
+      if (this.attackBufferS > 0 && dashReady) {
+        this.exitBlock();
+        this.endSwing();
+        this.clearAttack();
+        this.specialHits.clear();
+        this.dashUsed = true;
+        this.state = 'dashCut';
+        this.bus.emit('melee_swing', { attacker: this.deps.owner, stage: 1 });
+        this.applyDashCut();
+        if (!this.dashWasActive) this.state = 'idle';
+        return;
+      }
+    }
 
     // Blok: tylko gdy nie trwa faza aktywna ciosu.
     const wantsBlock = input.held.has('block') && this.guardBrokenS <= 0;
@@ -169,7 +266,13 @@ export class PlasmaBlade {
 
     if (this.state === 'light' || this.state === 'heavy') this.stepSwing(dt);
 
-    // Przytrzymanie: ładowanie ciężkiego (po zakończeniu fazy aktywnej bieżącego ciosu).
+    // Nowa akcja dopiero w kolejnym kroku po przejściu ciosu do recovery/idle.
+    if (
+      this.canStartSpecial() &&
+      (this.throwBufferS > 0 || (this.attackBufferS > 0 && dashReady))
+    )
+      return;
+
     if (
       this.holding &&
       this.holdS >= m.heavyHoldS &&
@@ -190,15 +293,61 @@ export class PlasmaBlade {
       this.stage = 0;
   }
 
+  private canStartSpecial(): boolean {
+    return (
+      this.state === 'idle' ||
+      this.state === 'blocking' ||
+      (this.state === 'light' && this.phase === 'recovery')
+    );
+  }
+
+  private canDashCut(): boolean {
+    return !!(
+      this.def.dashCut &&
+      this.deps.querySegment &&
+      this.dashStart &&
+      !this.dashUsed &&
+      (this.dashWasActive || this.dashGraceS > 0)
+    );
+  }
+
+  private startThrow(): void {
+    this.exitBlock();
+    this.endSwing();
+    this.clearAttack();
+    const { origin, dir } = this.deps.aim();
+    this.flightDir = normalizeVec(dir);
+    this.flight = {
+      position: { ...origin },
+      previous: { ...origin },
+      ageS: 0,
+      previousAgeS: 0,
+      returning: false,
+    };
+    this.flightDistance = 0;
+    this.specialHits.clear();
+    this.state = 'throwing';
+    this.bus.emit('blade_thrown', { owner: this.deps.owner });
+  }
+
   /** Stan początkowy (nowy run): bez zamachu, bloku, buforów i blokady gardy. */
   reset(): void {
     this.exitBlock();
+    this.flight = null;
+    this.dashStart = null;
+    this.dashEnd = null;
+    this.dashWasActive = false;
+    this.dashUsed = false;
+    this.dashGraceS = 0;
+    this.specialHits.clear();
     this.state = 'idle';
     this.stage = 0;
     this.phase = null;
     this.phaseS = 0;
     this.sinceSwingS = Number.POSITIVE_INFINITY;
     this.attackBufferS = 0;
+    this.throwBufferS = 0;
+    this.specialHitstop = 'none';
     this.holding = false;
     this.holdS = 0;
     this.blockAgeS = 0;
@@ -209,7 +358,163 @@ export class PlasmaBlade {
 
   dispose(): void {
     this.off();
+    this.offDash();
     this.exitBlock();
+  }
+
+  private clearAttack(): void {
+    this.attackBufferS = 0;
+    this.throwBufferS = 0;
+    this.specialHitstop = 'none';
+    this.holding = false;
+    this.holdS = 0;
+    this.stage = 0;
+    this.sinceSwingS = Number.POSITIVE_INFINITY;
+    this.hitstopSent = false;
+  }
+
+  private updateDash(dt: number): void {
+    const active = this.deps.dashActive?.() ?? false;
+    if (active || this.dashWasActive)
+      this.dashEnd = { ...this.deps.aim().origin };
+    if (active || this.dashWasActive)
+      this.dashGraceS = this.tuning.melee.dashCutGraceS;
+    else this.dashGraceS = Math.max(0, this.dashGraceS - dt);
+    this.dashWasActive = active;
+  }
+
+  private applyDashCut(): void {
+    const def = this.def.dashCut;
+    if (!def || !this.dashStart || !this.dashEnd) return;
+    this.segmentHits(
+      this.dashStart,
+      this.dashEnd,
+      def.widthM / 2,
+      def.damage,
+      def.knockback,
+      true,
+    );
+  }
+
+  private stepFlight(dt: number): void {
+    const flight = this.flight;
+    const def = this.def.throw;
+    if (!flight || !def) return;
+    flight.previous = { ...flight.position };
+    flight.previousAgeS = flight.ageS;
+    flight.ageS += dt;
+    const from = flight.position;
+    const target = this.deps.aim().origin;
+    const distance = flight.returning
+      ? Math.hypot(target.x - from.x, target.y - from.y, target.z - from.z)
+      : Math.max(0, def.rangeM - this.flightDistance);
+    const dir = flight.returning
+      ? normalizeVec({
+          x: target.x - from.x,
+          y: target.y - from.y,
+          z: target.z - from.z,
+        })
+      : this.flightDir;
+    const travel = Math.min(
+      distance,
+      (flight.returning ? def.returnSpeed : def.speed) * dt,
+    );
+    const wall = flight.returning
+      ? null
+      : (this.deps.castWall?.(from, dir, travel + def.radiusM) ?? null);
+    const advance =
+      wall === null
+        ? travel
+        : Math.max(0, Math.min(travel, wall - def.radiusM));
+    const to = {
+      x: from.x + dir.x * advance,
+      y: from.y + dir.y * advance,
+      z: from.z + dir.z * advance,
+    };
+    this.segmentHits(from, to, def.radiusM, def.damage, 0, false);
+    flight.position = to;
+    if (flight.returning) {
+      if (travel >= distance) {
+        this.flight = null;
+        this.state = 'idle';
+        this.clearAttack();
+        this.bus.emit('blade_returned', { owner: this.deps.owner });
+      }
+    } else {
+      this.flightDistance += advance;
+      if (wall !== null || travel >= distance) flight.returning = true;
+    }
+  }
+
+  private segmentHits(
+    from: Vec3,
+    to: Vec3,
+    radius: number,
+    amount: number,
+    knockback: number,
+    dash: boolean,
+  ): void {
+    const dir = normalizeVec(
+      {
+        x: to.x - from.x,
+        y: to.y - from.y,
+        z: to.z - from.z,
+      },
+      dash ? this.dashDir : this.flightDir,
+    );
+    let dealtAny = false;
+    let killed = false;
+    for (const box of this.deps.querySegment?.(from, to, radius, dash, dir) ??
+      []) {
+      if (
+        this.specialHits.has(box.entity) ||
+        !this.deps.damage.canDamage(this.deps.owner, box.entity, this.def.tags)
+      )
+        continue;
+      const point =
+        this.deps.hurtboxPosition?.(box) ??
+        this.deps.positionOf?.(box.entity) ??
+        null;
+      if (!dash && point) {
+        const toward = {
+          x: point.x - from.x,
+          y: point.y - from.y,
+          z: point.z - from.z,
+        };
+        const distance = Math.hypot(toward.x, toward.y, toward.z);
+        if (
+          distance > 0 &&
+          this.deps.castWall?.(from, normalizeVec(toward, dir), distance) !=
+            null
+        )
+          continue;
+      }
+      this.specialHits.add(box.entity);
+      const dealt = this.deps.damage.deal(box.entity, {
+        amount,
+        source: this.deps.owner,
+        tags: this.def.tags,
+        ...(point ? { point: { ...point } } : {}),
+        dir,
+        knockback,
+      });
+      if (dealt > 0) {
+        dealtAny = true;
+        killed ||= this.deps.damage.health(box.entity)?.dead ?? false;
+      }
+    }
+    if (
+      dealtAny &&
+      (this.specialHitstop === 'none' ||
+        (killed && this.specialHitstop !== 'heavy'))
+    ) {
+      this.specialHitstop = killed ? 'heavy' : 'light';
+      this.bus.emit('hitstop', {
+        ms: killed
+          ? this.tuning.time.hitstopHeavyMs
+          : this.tuning.time.hitstopLightMs,
+      });
+    }
   }
 
   // ------------------------------------------------------------------ ciosy
@@ -396,9 +701,9 @@ export class PlasmaBlade {
   }
 }
 
-function normalizeVec(v: Vec3): Vec3 {
+function normalizeVec(v: Vec3, fallback: Vec3 = { x: 0, y: 0, z: -1 }): Vec3 {
   const len = Math.hypot(v.x, v.y, v.z);
   return len > 1e-9
     ? { x: v.x / len, y: v.y / len, z: v.z / len }
-    : { x: 0, y: 0, z: -1 };
+    : { ...fallback };
 }

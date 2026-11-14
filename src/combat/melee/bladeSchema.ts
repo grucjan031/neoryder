@@ -15,6 +15,22 @@ export const bladeSchema = z.object({
   id: z.string().min(1),
   combo: z.array(strikeSchema).min(1).max(5),
   heavy: strikeSchema,
+  throw: z
+    .object({
+      damage: z.number().finite().nonnegative(),
+      speed: z.number().finite().positive(),
+      rangeM: z.number().finite().positive(),
+      radiusM: z.number().finite().positive(),
+      returnSpeed: z.number().finite().positive(),
+    })
+    .optional(),
+  dashCut: z
+    .object({
+      damage: z.number().finite().nonnegative(),
+      widthM: z.number().finite().positive(),
+      knockback: z.number().finite().nonnegative(),
+    })
+    .optional(),
   /** Mnożnik otrzymywanych obrażeń w bloku (0.3 = −70%). */
   blockDamageMult: z.number().finite().min(0).max(1),
   /** Energia zużywana przez każdy zablokowany cios: stała + proporcjonalna do obrażeń. */

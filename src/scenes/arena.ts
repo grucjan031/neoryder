@@ -1,3 +1,5 @@
+import { queryBladeSegment } from '../combat/melee/bladeQueries';
+import { FlyingBlade } from '../render/flyingBlade';
 import {
   BoxGeometry,
   Color,
@@ -115,6 +117,7 @@ export class Arena implements Scene {
   private fpsCamera!: FpsCamera;
   private energy!: PlayerEnergy;
   private blade!: PlasmaBlade;
+  private readonly flyingBlade = new FlyingBlade();
   private powers!: PowerSlots;
   private loadout: Loadout = loadoutDefinitions.get('classic')!;
   private weapons: Weapon[] = [];
@@ -252,6 +255,7 @@ export class Arena implements Scene {
       ctx.bus,
       ctx.tuning,
     );
+    this.root.add(this.flyingBlade.root);
     this.blade = new PlasmaBlade(
       plasmaBladeDefinition,
       {
@@ -261,6 +265,21 @@ export class Arena implements Scene {
         stats: this.playerStats,
         energy: this.energy.pool,
         queryArc: (reach, width) => this.queryArc(reach, width),
+        querySegment: (from, to, radius, dash, dir) =>
+          queryBladeSegment(
+            this.world,
+            this.hurtboxes,
+            from,
+            to,
+            radius,
+            dash,
+            ctx.tuning.melee.dashCutHeightM,
+            dir,
+          ),
+        hurtboxPosition: (box) =>
+          this.world.getCollider(box.colliderHandle)?.translation() ?? null,
+        castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+        dashActive: () => this.player.getState().dashS > 0,
         aim: () => this.aim(),
         projectiles: this.projectiles,
         positionOf: (id) => this.enemy(id)?.current.position ?? null,
@@ -662,6 +681,8 @@ export class Arena implements Scene {
     this.debrisView.render(alpha);
     this.explosionView.render(frameDt);
     this.lights.sync();
+    this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
+    this.flyingBlade.root.visible &&= this.state === 'playing';
     const camera = this.ctx.camera;
     if (!camera) {
       this.beamView.render(this.weapon.beam);
@@ -680,8 +701,8 @@ export class Arena implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    this.bladeView.root.visible = this.state === 'playing';
     this.bladeView.place(camera.matrixWorld, this.blade.view());
+    this.bladeView.root.visible &&= this.state === 'playing';
     this.blasterView.root.visible = this.state === 'playing';
     this.blasterView.place(camera.matrixWorld, frameDt);
     this.blasterView.root.getWorldPosition(this.beamOrigin);
@@ -930,6 +951,7 @@ export class Arena implements Scene {
     this.blade.dispose();
     this.energy.dispose();
     this.bladeView.dispose();
+    this.flyingBlade.dispose();
     this.blasterView.dispose();
     this.projectileView.dispose();
     this.projectiles.dispose();
