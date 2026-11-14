@@ -4,13 +4,15 @@ import {
   Group,
   Matrix4,
   Mesh,
+  MeshToonMaterial,
   Quaternion,
   SphereGeometry,
 } from 'three';
 import type { Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { applyStyle, getMaterial } from './materials';
+import { applyStyle, getMaterial, gradientMap } from './materials';
+import { palette } from './palette';
 import { handNodes, handPoses } from './handPoses';
 import type { HandPose, HandSocket } from './handPoses';
 
@@ -63,6 +65,27 @@ const SOCKETS = {
 const GLOW_RADIUS_M = 0.012;
 const cache = new Map<string, Promise<Object3D | null>>();
 
+let gloveMaterial: MeshToonMaterial | undefined;
+let sleeveMaterial: MeshToonMaterial | undefined;
+
+/** Rękawica i rękaw w grafitach (współdzielone przez dłonie); mat_interactive broni zostaje czarny. */
+function applyHandMaterials(root: Object3D): void {
+  gloveMaterial ??= new MeshToonMaterial({
+    color: palette.handGlove,
+    gradientMap,
+  });
+  sleeveMaterial ??= new MeshToonMaterial({
+    color: palette.handSleeve,
+    gradientMap,
+  });
+  root.traverse((node) => {
+    if (!(node instanceof Mesh) || node.material !== getMaterial('interactive'))
+      return;
+    node.material =
+      node.name === 'tactical_glove' ? gloveMaterial! : sleeveMaterial!;
+  });
+}
+
 function modelFor(side: 'R' | 'L'): Promise<Object3D | null> {
   let pending = cache.get(side);
   if (!pending) {
@@ -70,6 +93,7 @@ function modelFor(side: 'R' | 'L'): Promise<Object3D | null> {
       .loadAsync(`/assets/models/player_arm_${side}.glb`)
       .then(({ scene }) => {
         applyStyle(scene);
+        applyHandMaterials(scene);
         return scene;
       })
       .catch(() => null);

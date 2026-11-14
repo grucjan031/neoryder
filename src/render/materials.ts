@@ -31,7 +31,7 @@ const gridUniforms = {
 };
 const cache = new Map<MaterialKind, StyleMaterial>();
 const warnedNames = new Set<string>();
-const gradientMap = new DataTexture(
+export const gradientMap = new DataTexture(
   new Uint8Array([150, 200, 255]),
   3,
   1,

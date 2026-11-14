@@ -5,4 +5,6 @@ export const palette = {
   enemy: '#e0262b',
   cyan: '#00e5ff',
   magenta: '#ff2bd6',
+  handGlove: '#3a3f47',
+  handSleeve: '#262a30',
 } as const;

@@ -23,16 +23,19 @@ import { HandRig } from './handRig';
 
 /** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
-  pos: new Vector3(0.32, -0.28, -0.42),
-  rot: new Euler(0.04, 0.1, -0.02, 'YXZ'),
+  pos: new Vector3(0.24, -0.15, -0.4),
+  rot: new Euler(0.1, 0.2, -0.02, 'YXZ'),
 };
 /** Broń dwuręczna (węzeł support daleko przed chwytem): bardziej w lewo i wyżej, by obie dłonie były w kadrze. */
 const TWO_HAND_POSE = {
-  pos: new Vector3(0.18, -0.32, -0.5),
+  pos: new Vector3(0.18, -0.34, -0.44),
   rot: new Euler(0.04, 0.1, -0.02, 'YXZ'),
 };
 /** Obrót lewej dłoni wokół osi Y węzła support: przedramię od lewego dołu kadru. */
-const TWO_HAND_SUPPORT_YAW = -1.45;
+const TWO_HAND_SUPPORT_YAW = -1.4;
+/** Przesunięcie lewej dłoni do przodu (pod lufę) i obrót przedramienia w dół, w osiach węzła support. */
+const TWO_HAND_SUPPORT_FORWARD = -0.08;
+const TWO_HAND_SUPPORT_PITCH = 0;
 const TWO_HAND_SUPPORT_Z = -0.15;
 const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;
@@ -258,7 +261,10 @@ export class FppBlaster {
     support.updateWorldMatrix(true, false);
     const matrix = support.matrixWorld.clone();
     if (this.twoHanded)
-      matrix.multiply(this.tmp.m.makeRotationY(TWO_HAND_SUPPORT_YAW));
+      matrix
+        .multiply(this.tmp.m.makeTranslation(0, 0, TWO_HAND_SUPPORT_FORWARD))
+        .multiply(this.tmp.m.makeRotationY(TWO_HAND_SUPPORT_YAW))
+        .multiply(this.tmp.m.makeRotationX(TWO_HAND_SUPPORT_PITCH));
     return matrix;
   }
 
