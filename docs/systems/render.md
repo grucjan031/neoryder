@@ -63,8 +63,10 @@ nie wymagają EffectComposer. Pełny przebieg (każdy pass pomijany, gdy wyłąc
    rozdzielczości, w której kolor mają tylko materiały emisyjne (flaga
    `userData.bloom`, albo nasycony materiał unlit bez flagi; `userData.bloom = false`
    wyłącza), a pozostałe siatki zapisują wyłącznie głębię (zasłaniają neony, same nie
-   świecą). Obiekty bez materiału siatki (linie, punkty, sprite) bez emisji są na
-   czas maski ukryte. Potem 4 przebiegi rozmycia Gaussa w 1/4 rozdzielczości
+   świecą). Siatki przezroczyste lub niezapisujące głębi, bez emisji (deszcz, para,
+   naklejki, plamy świateł), są na czas maski ukryte, a nie podmieniane na zasłaniający
+   materiał (inaczej wycinałyby prostokątne dziury w halo i odbiciach). Obiekty bez
+   materiału siatki (linie, punkty, sprite) bez emisji są na czas maski ukryte. Potem 4 przebiegi rozmycia Gaussa w 1/4 rozdzielczości
    (dwa o promieniu `bloomRadius`, dwa 2,5 raza szersze).
 4. **Kompozycja** (pełny ekran, jeden shader): Sobel 3×3 na normalnych i głębi, niebo,
    mgła, kontur, bloom, winieta, konwersja do przestrzeni wyjściowej.

@@ -28,6 +28,8 @@ export function applyViewmodelLayer(root: Object3D): void {
   });
 }
 
+const savedProjection = [0, 0, 0, 0];
+
 export function hasViewmodel(): boolean {
   return roots.size > 0;
 }
@@ -51,7 +53,10 @@ export function renderWithViewmodel(
   const autoClear = renderer.autoClear;
   const background = scene.background;
   const e = camera.projectionMatrix.elements;
-  const saved = [e[2]!, e[6]!, e[10]!, e[14]!];
+  savedProjection[0] = e[2]!;
+  savedProjection[1] = e[6]!;
+  savedProjection[2] = e[10]!;
+  savedProjection[3] = e[14]!;
   try {
     camera.layers.mask = 1;
     renderer.render(scene, camera);
@@ -71,7 +76,10 @@ export function renderWithViewmodel(
     scene.background = null;
     renderer.render(scene, camera);
   } finally {
-    [e[2], e[6], e[10], e[14]] = saved as [number, number, number, number];
+    e[2] = savedProjection[0]!;
+    e[6] = savedProjection[1]!;
+    e[10] = savedProjection[2]!;
+    e[14] = savedProjection[3]!;
     camera.layers.mask = mask;
     renderer.autoClear = autoClear;
     scene.background = background;

@@ -51,6 +51,13 @@ export class Weather {
   private readonly up = new Vector3(0, 1, 0);
   private readonly splashColor = new Color();
   private readonly splashLimit: number;
+  private readonly rainState = {
+    count: -1,
+    windX: 0,
+    speed: 0,
+    floorY: 0,
+    center: new Vector3(),
+  };
   private initialized = false;
   private disposed = false;
   private splashBudget = 0;
@@ -145,7 +152,20 @@ export class Weather {
       .normalize();
     const length =
       Math.hypot(this.params.windX, this.params.speed) * t.rainExposureS;
-    for (let i = 0; i < this.drops.length; i++) {
+    const unchanged =
+      dt === 0 &&
+      this.initialized &&
+      this.rainState.count === count &&
+      this.rainState.windX === this.params.windX &&
+      this.rainState.speed === this.params.speed &&
+      this.rainState.floorY === this.floorY &&
+      this.rainState.center.equals(center);
+    this.rainState.count = count;
+    this.rainState.windX = this.params.windX;
+    this.rainState.speed = this.params.speed;
+    this.rainState.floorY = this.floorY;
+    this.rainState.center.copy(center);
+    for (let i = 0; i < this.drops.length && !unchanged; i++) {
       const p = this.drops[i]!;
       if (!this.initialized)
         p.set(
@@ -196,7 +216,7 @@ export class Weather {
       this.rain.setMatrixAt(i, this.dummy.matrix);
     }
     this.initialized = true;
-    this.rain.instanceMatrix.needsUpdate = true;
+    if (!unchanged) this.rain.instanceMatrix.needsUpdate = true;
     this.splashes.render(camera, t.splashGrowth);
     this.splashDrops.render(camera);
     this.flash = Math.max(0, this.flash - dt / t.stormFlashS);

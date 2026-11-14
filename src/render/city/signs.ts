@@ -40,6 +40,11 @@ const fragment = /* glsl */ `
     float fade = mix(1.0, smoothstep(0.0, 0.45, uv.y), holo);
     gl_FragColor = vec4(split * tint * brightness * mask * scan, texel.a * fade * opacity);
     #include <colorspace_fragment>
+    // Alfa z luminancji przy niezmienionym rgb * a: czarne tło tekstury nie zasłania bloomu ("over").
+    float coverage = clamp(max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b)), 0.0, 1.0);
+    float shaped = gl_FragColor.a * coverage;
+    gl_FragColor.rgb = shaped > 1e-5 ? gl_FragColor.rgb * (gl_FragColor.a / shaped) : gl_FragColor.rgb;
+    gl_FragColor.a = shaped;
   }
 `;
 

@@ -12,6 +12,8 @@ import { renderWithViewmodel } from './viewmodelLayer';
 /** RGB = normalna, A = podatność materiału na odbicie; ten sam pass geometrii. */
 export class WetNormals {
   private readonly materials = new Map<number, MeshNormalMaterial>();
+  private readonly swappedMeshes: Mesh[] = [];
+  private readonly swappedMaterials: (Material | Material[])[] = [];
   private material(source: Material): MeshNormalMaterial {
     const wetness =
       typeof source.userData.wetness === 'number' ? source.userData.wetness : 0;
@@ -34,20 +36,25 @@ export class WetNormals {
     scene: Scene,
     camera: PerspectiveCamera | OrthographicCamera,
   ): void {
-    const swapped: [Mesh, Material | Material[]][] = [];
+    const swappedMeshes = this.swappedMeshes;
+    const swappedMaterials = this.swappedMaterials;
     const override = scene.overrideMaterial;
     try {
       scene.overrideMaterial = null;
       scene.traverseVisible((object) => {
         if (!(object instanceof Mesh)) return;
-        swapped.push([object, object.material]);
+        swappedMeshes.push(object);
+        swappedMaterials.push(object.material);
         object.material = Array.isArray(object.material)
           ? object.material.map((m) => this.material(m))
           : this.material(object.material);
       });
       renderWithViewmodel(renderer, scene, camera);
     } finally {
-      for (const [mesh, material] of swapped) mesh.material = material;
+      for (let i = 0; i < swappedMeshes.length; i++)
+        swappedMeshes[i]!.material = swappedMaterials[i]!;
+      swappedMeshes.length = 0;
+      swappedMaterials.length = 0;
       scene.overrideMaterial = override;
     }
   }
@@ -60,6 +67,12 @@ export class WetNormals {
 export class ReflectionPass {
   readonly projection = new Matrix4();
   private readonly bloom: BloomPass;
+  private mirror?: PerspectiveCamera;
+  private readonly position = new Vector3();
+  private readonly direction = new Vector3();
+  private readonly up = new Vector3();
+  private readonly target = new Vector3();
+  private readonly clipping: Plane[] = [];
   private readonly plane = new Plane(new Vector3(0, 1, 0));
   constructor(width: number, height: number) {
     this.bloom = new BloomPass(width, height, true);
@@ -77,16 +90,18 @@ export class ReflectionPass {
     floorY: number,
   ): void {
     camera.updateMatrixWorld();
-    const mirror = camera.clone();
-    const position = camera.getWorldPosition(new Vector3());
-    const direction = camera.getWorldDirection(new Vector3());
-    const up = new Vector3(0, 1, 0).transformDirection(camera.matrixWorld);
+    const source = camera as PerspectiveCamera;
+    const mirror = (this.mirror ??= source.clone());
+    mirror.copy(source, false);
+    const position = camera.getWorldPosition(this.position);
+    const direction = camera.getWorldDirection(this.direction);
+    const up = this.up.set(0, 1, 0).transformDirection(camera.matrixWorld);
     position.y = 2 * floorY - position.y;
     direction.y *= -1;
     up.y *= -1;
     mirror.position.copy(position);
     mirror.up.copy(up);
-    mirror.lookAt(position.clone().add(direction));
+    mirror.lookAt(this.target.copy(position).add(direction));
     mirror.layers.set(0);
     mirror.updateMatrixWorld();
     this.projection.multiplyMatrices(
@@ -97,7 +112,10 @@ export class ReflectionPass {
     const target = renderer.getRenderTarget();
     this.plane.constant = -floorY - 0.001;
     try {
-      renderer.clippingPlanes = [...(clipping ?? []), this.plane];
+      this.clipping.length = 0;
+      if (clipping) for (const p of clipping) this.clipping.push(p);
+      this.clipping.push(this.plane);
+      renderer.clippingPlanes = this.clipping;
       this.bloom.render(renderer, scene, mirror);
     } finally {
       renderer.clippingPlanes = clipping;

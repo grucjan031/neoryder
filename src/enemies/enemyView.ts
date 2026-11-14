@@ -18,6 +18,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
 
+const laserLocal = new Vector3();
+const laserFrom = new Vector3();
+
 /** Humanoid z karabinem: Strzelec i Snajper (F2-13) dzielą model i animację. */
 const rifleman = (kind: string): boolean =>
   kind === 'gunner' || kind === 'sniper';
@@ -317,12 +320,12 @@ export class EnemyView {
     const yaw = this.root.rotation.y;
     const wx = b.aim.x - this.root.position.x,
       wz = b.aim.z - this.root.position.z;
-    const local = new Vector3(
+    const local = laserLocal.set(
       Math.cos(yaw) * wx - Math.sin(yaw) * wz,
       b.aim.y - this.root.position.y,
       Math.sin(yaw) * wx + Math.cos(yaw) * wz,
     );
-    const from = new Vector3(m.x, m.y, m.z);
+    const from = laserFrom.set(m.x, m.y, m.z);
     const dir = local.sub(from);
     const length = dir.length();
     if (length <= 1e-6) {

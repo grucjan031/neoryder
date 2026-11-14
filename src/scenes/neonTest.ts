@@ -218,12 +218,13 @@ export class NeonTest implements Scene {
     syncMaterials();
     this.lights.sync();
     this.atmosphere?.sync(dt);
-    this.dressing?.render(dt, this.ctx?.camera);
     const camera = this.ctx?.camera;
     if (camera) {
       camera.position.set(0.7, 1.75, 12.8);
       camera.lookAt(-0.2, 3, -14);
+      camera.updateMatrixWorld();
     }
+    this.dressing?.render(dt, camera);
   }
   dispose(): void {
     this.dressing?.dispose();

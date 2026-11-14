@@ -118,14 +118,17 @@ const fragmentShader = /* glsl */ `
     vec3 rgb = color.rgb;
     vec3 line = outlineColor;
     float rawDepth = texture2D(depthMap, vUv).x;
-    vec4 viewPoint = inverseProjection * vec4(vUv*2.0-1.0, rawDepth*2.0-1.0, 1.0);
-    vec3 worldPoint = (cameraWorld * vec4(viewPoint.xyz / viewPoint.w,1.0)).xyz;
+    vec3 worldPoint = vec3(0.0);
+    if (rawDepth < 1.0) {
+      vec4 viewPoint = inverseProjection * vec4(vUv*2.0-1.0, rawDepth*2.0-1.0, 1.0);
+      worldPoint = (cameraWorld * vec4(viewPoint.xyz / viewPoint.w,1.0)).xyz;
+    }
     if (reflectionStrength > 0.0 && rawDepth > viewmodelDepth && rawDepth < 1.0) {
       float wet = texture2D(normalMap,vUv).a;
       vec3 worldNormal = cameraRotation * normalAt(vUv);
       float floorMask = step(0.9,worldNormal.y) * (1.0-smoothstep(floorTolerance*0.5,floorTolerance,abs(worldPoint.y-floorY)));
       vec4 projected = reflectionProjection * vec4(worldPoint,1.0);
-      vec2 reflectionUv = projected.xy/projected.w*0.5+0.5;
+      vec2 reflectionUv = (projected.w > 1e-4 ? projected.xy/projected.w : vec2(-1.0))*0.5+0.5;
       vec2 wave = vec2(sin(worldPoint.z*19.0+renderTime*2.3),sin(worldPoint.x*23.0-renderTime*1.7));
       reflectionUv += wave * reflectionDistortion * 0.35;
       float inside = step(0.0,reflectionUv.x)*step(reflectionUv.x,1.0)*step(0.0,reflectionUv.y)*step(reflectionUv.y,1.0)*step(0.0,projected.w);
@@ -369,6 +372,7 @@ export class StylePipeline {
     const autoClear = renderer.autoClear;
     renderer.getClearColor(this.clearColor);
     const clearAlpha = renderer.getClearAlpha();
+    let restoreHidden: (() => void) | null = null;
     try {
       renderer.autoClear = true;
       renderer.setRenderTarget(this.colorTarget);
@@ -377,11 +381,12 @@ export class StylePipeline {
       scene.background = null;
       renderer.setClearColor(0x000000, 0);
       renderer.setRenderTarget(this.normalTarget);
-      const restoreHidden = hideNoOutline(scene);
+      restoreHidden = hideNoOutline(scene);
       if (t.reflectionStrength > 0) {
         this.wetNormals ??= new WetNormals();
         this.wetNormals.render(renderer, scene, camera);
         restoreHidden();
+        restoreHidden = null;
         this.reflections ??= new ReflectionPass(
           this.colorTarget.width,
           this.colorTarget.height,
@@ -395,6 +400,7 @@ export class StylePipeline {
       } else {
         renderWithViewmodel(renderer, scene, camera);
         restoreHidden();
+        restoreHidden = null;
       }
       if (bloomOn) {
         this.bloom ??= new BloomPass(
@@ -421,6 +427,7 @@ export class StylePipeline {
         this.composite.render(renderer, target);
       }
     } finally {
+      restoreHidden?.();
       scene.overrideMaterial = override;
       scene.background = background;
       renderer.setClearColor(this.clearColor, clearAlpha);

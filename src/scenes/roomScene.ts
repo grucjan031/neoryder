@@ -135,6 +135,8 @@ export class RoomScene implements Scene {
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
   private fppView!: FppViewModel;
   private readonly views = new Map<EntityId, EnemyViewLike>();
+  private readonly seenEnemyIds = new Set<EntityId>();
+  private readonly powerPair: ReturnType<PowerSlots['get']>[] = [];
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private atmosphere?: SceneAtmosphere;
@@ -147,6 +149,7 @@ export class RoomScene implements Scene {
   private elapsedS = 0;
   private cleared = false;
   private disposed = false;
+  private initDone = false;
   private readonly node: MapNode;
   private readonly implantDefs: ReadonlyMap<string, ImplantDefinition>;
   private readonly initialImplantIds: string[];
@@ -195,6 +198,7 @@ export class RoomScene implements Scene {
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
     this.rapier = await initPhysics();
+    if (this.disposed) return;
     this.world = new this.rapier.World({
       x: 0,
       y: ctx.tuning.physics.gravity,
@@ -215,7 +219,9 @@ export class RoomScene implements Scene {
     three.add(this.root);
     this.root.add(this.lights);
     await this.buildLayout();
+    if (this.disposed) return;
     await loadDecor(this.root, this.layout.decor, this.loadModels);
+    if (this.disposed) return;
     this.dressing = new CityDressing(
       this.root,
       this.layout,
@@ -383,6 +389,10 @@ export class RoomScene implements Scene {
       tuning: ctx.tuning,
     });
     await this.fppView.load(this.loadModels);
+    if (this.disposed) {
+      this.fppView.dispose();
+      return;
+    }
     this.root.add(this.fppView.root);
 
     // F2-17: hybrydy z tagów ekwipunku. Statystyki dashu i ruchu żyją w PlayerController.stats.
@@ -438,6 +448,7 @@ export class RoomScene implements Scene {
     else this.director.start();
     if (this.health.dead) this.onPlayerDied();
     this.render(1);
+    this.initDone = true;
   }
 
   // ----------------------------------------------------------------- budowa
@@ -471,7 +482,7 @@ export class RoomScene implements Scene {
             const scene = file.startsWith('city_')
               ? await cloneCityModel(file)
               : await cloneRoomModel(file);
-            if (!scene) return;
+            if (!scene || this.disposed) return;
             if (blockMaterial)
               scene.traverse((node) => {
                 if (node instanceof Mesh)
@@ -818,7 +829,8 @@ export class RoomScene implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
-    const ids = new Set<EntityId>();
+    const ids = this.seenEnemyIds;
+    ids.clear();
     this.manager.forEach((enemy) => {
       ids.add(enemy.id);
       let view = this.views.get(enemy.id);
@@ -841,12 +853,14 @@ export class RoomScene implements Scene {
     this.hitSparksView.render(frameDt);
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
-    this.dressing?.render(frameDt, this.ctx.camera);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
     const camera = this.ctx.camera;
-    const powers = [this.powers.get(0), this.powers.get(1)];
+    const powers = this.powerPair;
+    powers[0] = this.powers.get(0);
+    powers[1] = this.powers.get(1);
     if (!camera) {
+      this.dressing?.render(frameDt, undefined);
       this.beamView.render(this.weapon.beam);
       this.lightningView.render(powers);
       return;
@@ -858,10 +872,15 @@ export class RoomScene implements Scene {
       alpha,
     );
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
-    const barriers = powers.filter(
-      (power): power is BarrierPower => power instanceof BarrierPower,
-    );
-    const barrier = barriers.find((power) => power.active) ?? barriers[0];
+    let barrier: BarrierPower | undefined;
+    for (const power of powers) {
+      if (!(power instanceof BarrierPower)) continue;
+      if (power.active) {
+        barrier = power;
+        break;
+      }
+      barrier ??= power;
+    }
     if (barrier && this.state === 'playing')
       this.barrierView.render(barrier, pose);
     else this.barrierView.root.visible = false;
@@ -872,6 +891,7 @@ export class RoomScene implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
+    this.dressing?.render(frameDt, camera);
     const velocity = this.player.getState().velocity;
     this.fppView.place(camera.matrixWorld, frameDt, {
       blade: this.blade.view(),
@@ -1162,6 +1182,20 @@ export class RoomScene implements Scene {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    try {
+      this.disposeParts();
+    } catch (error) {
+      if (this.initDone) throw error;
+    } finally {
+      this.dressing?.dispose();
+      this.root.removeFromParent();
+      this.root.clear();
+      this.atmosphere?.dispose();
+    }
+  }
+
+  /** Może rzucić przy niedokończonym `init()`; dispose() i tak sprząta motyw i korzeń sceny. */
+  private disposeParts(): void {
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
     this.synergies.dispose();
@@ -1194,9 +1228,5 @@ export class RoomScene implements Scene {
     this.doors.clear();
     for (const g of this.geometries) g.dispose();
     this.geometries.clear();
-    this.dressing?.dispose();
-    this.root.removeFromParent();
-    this.root.clear();
-    this.atmosphere?.dispose();
   }
 }

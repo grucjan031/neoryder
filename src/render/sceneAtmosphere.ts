@@ -26,6 +26,7 @@ export class SceneAtmosphere {
     this.sync(0);
   }
   sync(dt: number): void {
+    if (this.disposed) return;
     if (!this.panorama && tuning.render.panoramaEnabled > 0) {
       this.panorama = new Panorama(this.seed, this.floorY);
       this.scene.add(this.panorama);

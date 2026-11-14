@@ -19,7 +19,7 @@ idempotentne `dispose()`. Pozycje definicji są współrzędnymi świata; dodaj 
 do sceny bez dodatkowej transformacji. Wywołuj `update` raz na klatkę renderu.
 `dtWorldS` to suma kroków symulacji od poprzedniej klatki (z uwzględnieniem
 Skupienia, hitstopu i pauzy), `dtRealS` to czas rzeczywisty klatki. Zaktualizuj
-kamerę przed efektami. Nie przeliczaj czasu świata ponownie przez timeScale.
+kamerę (pozycja, rotacja i `updateMatrixWorld()`) przed `render`/`update` efektów. Nie przeliczaj czasu świata ponownie przez timeScale.
 
 ```ts
 const signs = new SignRenderer(room.signs ?? [], cosmeticSeed);
@@ -46,7 +46,9 @@ stałe; integrator powinien podać osobne seedy kosmetyczne pokoju. Nie używamy
 `SignRenderer(defs, seed?, textureLoad?)` ładuje tekstury z
 `/assets/textures/signs/<texture>.webp` lub `/assets/textures/holo/<texture>.webp`.
 Płaszczyzna patrzy w +Z przy yaw=0. `tint` mnoży kolor tekstury. Czarne tło jest
-niewidoczne przy addytywnym mieszaniu; kanał alfa pozostaje respektowany.
+niewidoczne przy addytywnym mieszaniu; kanał alfa pozostaje respektowany. W shaderze
+alfa jest dodatkowo skalowana luminancją (rgb·a bez zmian), więc czarne tło bez kanału
+alfa nie przyciemnia bloomu.
 Materiały mają `toneMapped=false`, `depthWrite=false`, `userData.bloom=true`.
 
 Kontur: pass normalnych/głębi w `outline.ts` używa globalnego `overrideMaterial`, więc

@@ -57,7 +57,7 @@ async function main(): Promise<void> {
   app.append(renderer.domElement);
   const pipeline = createRenderPipeline(renderer);
   const three = new ThreeScene();
-  const camera = new PerspectiveCamera(tuning.camera.fov, 1, 0.1, 100);
+  const camera = new PerspectiveCamera(tuning.camera.fov, 1, 0.1, 220);
   camera.position.set(8, 6, 10);
   camera.lookAt(0, 2, 0);
   const scene = factory();

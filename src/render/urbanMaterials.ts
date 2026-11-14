@@ -54,7 +54,8 @@ export function worldPositionShader(
 }
 
 const windowCode = /* glsl */ `
-  vec3 cityNormal = abs(normalize(cross(dFdx(vCityWorld), dFdy(vCityWorld))));
+  vec3 cityCross = cross(dFdx(vCityWorld), dFdy(vCityWorld));
+  vec3 cityNormal = abs(dot(cityCross, cityCross) > 1e-12 ? normalize(cityCross) : vec3(0.0, 1.0, 0.0));
   vec2 cityUv = cityNormal.x > cityNormal.z ? vCityWorld.zy : vCityWorld.xy;
   vec2 windowCell = cityUv / vec2(1.7, 3.2);
   vec2 windowLocal = fract(windowCell);
@@ -103,14 +104,19 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
       .replace(
         '#include <color_fragment>',
         `#include <color_fragment>
-        vec3 nCity = abs(normalize(cross(dFdx(vCityWorld), dFdy(vCityWorld))));
-        vec3 weights = pow(nCity,vec3(4.0)); weights /= max(dot(weights,vec3(1.0)),0.001);
-        vec3 tex = texture2D(surfaceMap,vCityWorld.zy*0.25).rgb*weights.x
-          + texture2D(surfaceMap,vCityWorld.xz*0.25).rgb*weights.y
-          + texture2D(surfaceMap,vCityWorld.xy*0.25).rgb*weights.z;
-        float grain = cityNoise(vCityWorld.xz*18.0 + vCityWorld.y*7.0);
-        float dirt = mix(cityNoise(vCityWorld.xy*0.4),texture2D(grimeMap,vCityWorld.xy*0.25).r,grimeReady);
-        diffuseColor.rgb *= mix(vec3(1.0), mix(vec3(0.82+grain*0.18),vec3(0.5)+tex*0.9,surfaceReady)*(0.85+dirt*0.15),cityDetail);
+        if (cityDetail > 0.0) {
+          vec3 nCross = cross(dFdx(vCityWorld), dFdy(vCityWorld));
+          vec3 nCity = abs(dot(nCross, nCross) > 1e-12 ? normalize(nCross) : vec3(0.0, 1.0, 0.0));
+          vec3 weights = pow(nCity,vec3(4.0)); weights /= max(dot(weights,vec3(1.0)),0.001);
+          vec3 tex = vec3(0.0);
+          if (surfaceReady > 0.5) tex = texture2D(surfaceMap,vCityWorld.zy*0.25).rgb*weights.x
+            + texture2D(surfaceMap,vCityWorld.xz*0.25).rgb*weights.y
+            + texture2D(surfaceMap,vCityWorld.xy*0.25).rgb*weights.z;
+          float grain = cityNoise(vCityWorld.xz*18.0 + vCityWorld.y*7.0);
+          float dirt = cityNoise(vCityWorld.xy*0.4);
+          if (grimeReady > 0.5) dirt = texture2D(grimeMap,vCityWorld.xy*0.25).r;
+          diffuseColor.rgb *= mix(vec3(0.82+grain*0.18),vec3(0.5)+tex*0.9,surfaceReady)*(0.85+dirt*0.15);
+        }
         ${kind === 'metal' ? 'diffuseColor.rgb *= 1.0 - cityDetail * 0.3 * step(0.97,fract(vCityWorld.y*1.5));' : ''}
         ${
           kind === 'facade'
@@ -125,7 +131,7 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
         ${kind === 'facade' ? 'totalEmissiveRadiance += windowLight * 0.65;' : ''}
-        ${kind === 'glass' ? 'totalEmissiveRadiance += glassGlow * cityDetail * (0.3 + 0.7*pow(1.0-abs(dot(normal,normalize(vViewPosition))),3.0));' : ''}
+        ${kind === 'glass' ? 'totalEmissiveRadiance += glassGlow * cityDetail * (0.3 + 0.7*pow(max(0.0,1.0-abs(dot(normal,normalize(vViewPosition)))),3.0));' : ''}
       `,
       );
   };

@@ -14,6 +14,7 @@ export class AmbientFx {
   readonly splashes: CityParticleBatch;
   private readonly rng: Rng;
   private readonly emitters: { def: AmbientFxDef; next: number }[];
+  private readonly steamColor = new Color();
   private disposed = false;
 
   constructor(
@@ -115,7 +116,7 @@ export class AmbientFx {
               p.vy = t.steamRiseMS;
               p.vx = this.rng.float(-t.steamDriftMS, t.steamDriftMS);
               p.size = t.steamSizeM;
-              p.color = new Color(t.steamColor).getHex();
+              p.color = this.steamColor.set(t.steamColor).getHex();
             } else if (def.kind === 'sparks') {
               p.vx = this.rng.float(-1, 1) * t.sparkSpeedMS;
               p.vy = this.rng.float(0.2, 1) * t.sparkSpeedMS;

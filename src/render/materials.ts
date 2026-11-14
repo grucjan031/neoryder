@@ -114,7 +114,8 @@ function addFloorGrid(material: MeshToonMaterial): void {
         '#include <color_fragment>',
         `#include <color_fragment>
         {
-          vec3 gridNormal = normalize(cross(dFdx(vGridPos), dFdy(vGridPos)));
+          vec3 gridCross = cross(dFdx(vGridPos), dFdy(vGridPos));
+          vec3 gridNormal = dot(gridCross, gridCross) > 1e-12 ? normalize(gridCross) : vec3(0.0, 1.0, 0.0);
           float horizontal = smoothstep(0.85, 0.95, abs(gridNormal.y));
           vec2 cell = vGridPos.xz / gridSize;
           vec2 width = max(fwidth(cell), vec2(1e-5));
@@ -151,7 +152,7 @@ export function getMaterial(kind: MaterialKind): StyleMaterial {
         )
         .replace(
           '#include <emissivemap_fragment>',
-          '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * enemyRimStrength * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), enemyRimPower);',
+          '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * enemyRimStrength * pow(max(0.0, 1.0 - abs(dot(normal, normalize(vViewPosition)))), max(enemyRimPower, 1e-4));',
         );
     };
     material.customProgramCacheKey = () => 'enemyRim';

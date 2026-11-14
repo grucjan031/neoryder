@@ -20,6 +20,7 @@ const warned = new Set<string>();
 /** Własność tekstur obejmuje również odpowiedzi przychodzące po dispose(). */
 export class CityTextures {
   private readonly textures = new Set<Texture>();
+  private readonly loaded = new Map<string, Texture>();
   private disposed = false;
   constructor(
     private readonly load: TextureLoad = (url, ok, fail) => {
@@ -36,6 +37,12 @@ export class CityTextures {
     id: string,
     accept: (texture: Texture) => void,
   ): void {
+    const key = `${folder}/${id}`;
+    const cached = this.loaded.get(key);
+    if (cached) {
+      accept(cached);
+      return;
+    }
     const fallback = this.own(this.fallback(id));
     accept(fallback);
     this.load(
@@ -46,6 +53,8 @@ export class CityTextures {
           return;
         }
         this.own(texture);
+        this.loaded.set(key, texture);
+        this.release(fallback);
         accept(texture);
       },
       () => {
@@ -56,6 +65,11 @@ export class CityTextures {
         );
       },
     );
+  }
+
+  private release(texture: Texture): void {
+    if (!this.textures.delete(texture)) return;
+    texture.dispose();
   }
 
   private own(texture: Texture): Texture {
@@ -99,6 +113,7 @@ export class CityTextures {
     this.disposed = true;
     for (const texture of this.textures) texture.dispose();
     this.textures.clear();
+    this.loaded.clear();
   }
 }
 

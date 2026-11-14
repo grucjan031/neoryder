@@ -150,6 +150,9 @@ export class Arena implements Scene {
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
   private fppView!: FppViewModel;
   private readonly views = new Map<EntityId, EnemyViewLike>();
+  private readonly seenEnemyIds = new Set<EntityId>();
+  private readonly powerPair: ReturnType<PowerSlots['get']>[] = [];
+  private disposed = false;
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private atmosphere?: SceneAtmosphere;
@@ -199,6 +202,7 @@ export class Arena implements Scene {
         : new URLSearchParams(location.search).get('blade');
     const choosing = this.selectBuild && requested === null;
     this.rapier = await initPhysics();
+    if (this.disposed) return;
     this.world = new this.rapier.World({
       x: 0,
       y: ctx.tuning.physics.gravity,
@@ -219,7 +223,9 @@ export class Arena implements Scene {
     three.add(this.root);
     this.root.add(this.lights);
     await this.buildLayout();
+    if (this.disposed) return;
     await loadDecor(this.root, layout.decor, this.loadModels);
+    if (this.disposed) return;
     this.dressing = new CityDressing(
       this.root,
       layout,
@@ -380,6 +386,10 @@ export class Arena implements Scene {
       tuning: ctx.tuning,
     });
     await this.fppView.load(this.loadModels);
+    if (this.disposed) {
+      this.fppView.dispose();
+      return;
+    }
     this.root.add(this.fppView.root);
 
     // F2-17: hybrydy z tagów ekwipunku. Statystyki dashu i ruchu żyją w PlayerController.stats.
@@ -456,7 +466,7 @@ export class Arena implements Scene {
           try {
             if (file.startsWith('city_')) {
               const scene = await cloneCityModel(file);
-              if (!scene) return;
+              if (!scene || this.disposed) return;
               if (blockMaterial)
                 scene.traverse((node) => {
                   if (node instanceof Mesh)
@@ -474,6 +484,7 @@ export class Arena implements Scene {
             const { scene } = await loader.loadAsync(
               `/assets/models/${file}.glb`,
             );
+            if (this.disposed) return;
             const materials = new Set<Material>();
             scene.traverse((node) => {
               if (!(node instanceof Mesh)) return;
@@ -776,7 +787,8 @@ export class Arena implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
-    const ids = new Set<EntityId>();
+    const ids = this.seenEnemyIds;
+    ids.clear();
     this.manager.forEach((enemy) => {
       ids.add(enemy.id);
       let view = this.views.get(enemy.id);
@@ -799,12 +811,14 @@ export class Arena implements Scene {
     this.hitSparksView.render(frameDt);
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
-    this.dressing?.render(frameDt, this.ctx.camera);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
     const camera = this.ctx.camera;
-    const powers = [this.powers.get(0), this.powers.get(1)];
+    const powers = this.powerPair;
+    powers[0] = this.powers.get(0);
+    powers[1] = this.powers.get(1);
     if (!camera) {
+      this.dressing?.render(frameDt, undefined);
       this.beamView.render(this.weapon.beam);
       this.lightningView.render(powers);
       return;
@@ -816,10 +830,15 @@ export class Arena implements Scene {
       alpha,
     );
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
-    const barriers = powers.filter(
-      (power): power is BarrierPower => power instanceof BarrierPower,
-    );
-    const barrier = barriers.find((power) => power.active) ?? barriers[0];
+    let barrier: BarrierPower | undefined;
+    for (const power of powers) {
+      if (!(power instanceof BarrierPower)) continue;
+      if (power.active) {
+        barrier = power;
+        break;
+      }
+      barrier ??= power;
+    }
     if (barrier && this.state === 'playing')
       this.barrierView.render(barrier, pose);
     else this.barrierView.root.visible = false;
@@ -830,6 +849,7 @@ export class Arena implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
+    this.dressing?.render(frameDt, camera);
     const velocity = this.player.getState().velocity;
     this.fppView.place(camera.matrixWorld, frameDt, {
       blade: this.blade.view(),
@@ -1118,6 +1138,8 @@ export class Arena implements Scene {
   }
 
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
     this.buildSelect?.dispose();

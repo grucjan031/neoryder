@@ -396,14 +396,26 @@ export class RunScene implements Scene {
     this.room = room;
     this.roomId = layout.id;
     this.roomCommands = new CommandRegistry();
-    await room.init(
-      {
-        ...this.ctx,
-        commands: this.roomCommands,
-        rng: rng.fork(`room:${node.id}`),
-      },
-      this.three,
-    );
+    try {
+      await room.init(
+        {
+          ...this.ctx,
+          commands: this.roomCommands,
+          rng: rng.fork(`room:${node.id}`),
+        },
+        this.three,
+      );
+    } catch (error) {
+      try {
+        room.dispose();
+      } catch {
+        // Niedokończony init: sprzątanie motywu robi dispose() w finally.
+      }
+      this.room = null;
+      this.roomId = null;
+      this.roomCommands = null;
+      throw error;
+    }
     if (this.disposed) {
       room.dispose();
       this.room = null;

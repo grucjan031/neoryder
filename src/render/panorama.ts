@@ -32,13 +32,16 @@ export class Panorama extends Group {
     time: { value: 0 },
     amber: { value: new Color('#ffae1a') },
     white: { value: new Color('#fff1d6') },
+    violet: { value: new Color().setRGB(0.22, 0.08, 0.65) },
   };
   private readonly beacons = new ShaderMaterial({
     uniforms: this.uniforms,
     vertexShader: vertex,
     toneMapped: false,
     fragmentShader: `varying vec3 world; uniform float time; uniform vec3 amber; uniform vec3 white;
-      void main() { float pulse=step(0.1,sin(time*2.0+world.x)); gl_FragColor=vec4(mix(amber,white,step(0.5,fract(world.z)))*(0.15+0.85*pulse),1.0); }`,
+      void main() { float pulse=step(0.1,sin(time*2.0+world.x)); gl_FragColor=vec4(mix(amber,white,step(0.5,fract(world.z)))*(0.15+0.85*pulse),1.0);
+        #include <colorspace_fragment>
+      }`,
   });
   private readonly hologram = new ShaderMaterial({
     uniforms: this.uniforms,
@@ -46,12 +49,14 @@ export class Panorama extends Group {
     toneMapped: false,
     transparent: true,
     depthWrite: false,
-    fragmentShader: `varying vec3 world; varying vec2 texUv; uniform float time; uniform vec3 amber;
+    fragmentShader: `varying vec3 world; varying vec2 texUv; uniform float time; uniform vec3 amber; uniform vec3 violet;
       void main() { float noise=fract(sin(dot(floor(texUv*100.0)+floor(time*4.0),vec2(12.9898,78.233)))*43758.5453);
         float bars=0.45+0.55*step(0.3,fract(texUv.y*12.0));
         float edge=smoothstep(0.0,0.08,texUv.x)*smoothstep(0.0,0.08,1.0-texUv.x);
-        vec3 tint=mix(amber,vec3(0.22,0.08,0.65),texUv.y);
-        gl_FragColor=vec4(tint*(0.65+noise*0.35)*bars,edge*0.55); }`,
+        vec3 tint=mix(amber,violet,texUv.y);
+        gl_FragColor=vec4(tint*(0.65+noise*0.35)*bars,edge*0.55);
+        #include <colorspace_fragment>
+      }`,
   });
   constructor(
     private readonly seed: string,
@@ -112,6 +117,7 @@ export class Panorama extends Group {
       const panel = new Mesh(this.panelGeometry, this.hologram);
       panel.position.set((i - 1) * 40, this.floorY + 18 + i * 8, -58 - i * 14);
       panel.scale.set(12 + i * 2, 7 + i * 3, 1);
+      panel.userData.noOutline = true;
       this.add(panel);
     }
   }

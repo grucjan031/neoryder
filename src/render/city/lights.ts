@@ -20,31 +20,62 @@ import {
   radialFragment,
 } from './resources';
 
-/** Kula zasięgu musi przecinać frustum: światło tuż poza kadrem nadal może oświetlać ulicę. */
+interface Candidate {
+  index: number;
+  distance: number;
+}
+
+const scratchMatrix = new Matrix4();
+const scratchFrustum = new Frustum();
+const scratchOrigin = new Vector3();
+const scratchSphere = new Sphere();
+const candidatePool: Candidate[] = [];
+
+/**
+ * Kula zasięgu musi przecinać frustum: światło tuż poza kadrem nadal może oświetlać ulicę.
+ * Obiekty robocze są współdzielone; wynik trafia do `out` (czyszczonej tablicy), gdy ją podano.
+ */
 export function selectCityLights(
   defs: readonly CityLightDef[],
   camera: Camera,
   limit: number,
+  out: number[] = [],
 ): number[] {
   camera.updateMatrixWorld();
-  const frustum = new Frustum().setFromProjectionMatrix(
-    new Matrix4().multiplyMatrices(
+  scratchFrustum.setFromProjectionMatrix(
+    scratchMatrix.multiplyMatrices(
       camera.projectionMatrix,
       camera.matrixWorldInverse,
     ),
   );
-  const origin = new Vector3().setFromMatrixPosition(camera.matrixWorld);
-  const sphere = new Sphere();
-  return defs
-    .map((def, index) => ({
-      index,
-      distance: origin.distanceToSquared(sphere.center.copy(def.position)),
-      visible: frustum.intersectsSphere(sphere.set(sphere.center, def.range)),
-    }))
-    .filter((entry) => entry.visible)
-    .sort((a, b) => a.distance - b.distance || a.index - b.index)
-    .slice(0, Math.max(0, Math.floor(limit)))
-    .map((entry) => entry.index);
+  scratchOrigin.setFromMatrixPosition(camera.matrixWorld);
+  let count = 0;
+  for (let index = 0; index < defs.length; index++) {
+    const def = defs[index]!;
+    scratchSphere.center.copy(def.position);
+    scratchSphere.radius = def.range;
+    if (!scratchFrustum.intersectsSphere(scratchSphere)) continue;
+    const distance = scratchOrigin.distanceToSquared(def.position);
+    let entry = candidatePool[count];
+    if (!entry) {
+      entry = { index, distance };
+      candidatePool[count] = entry;
+    }
+    entry.index = index;
+    entry.distance = distance;
+    // Wstawianie z zachowaniem kolejności (odległość, potem indeks).
+    let at = count++;
+    while (at > 0 && candidatePool[at - 1]!.distance > distance) {
+      const previous = candidatePool[at - 1]!;
+      candidatePool[at - 1] = entry;
+      candidatePool[at] = previous;
+      at--;
+    }
+  }
+  out.length = 0;
+  const take = Math.min(count, Math.max(0, Math.floor(limit)));
+  for (let i = 0; i < take; i++) out.push(candidatePool[i]!.index);
+  return out;
 }
 
 export class CityLights {
@@ -52,6 +83,9 @@ export class CityLights {
   readonly pool: readonly PointLight[];
   private readonly assignments: (number | null)[];
   private disposed = false;
+  private readonly selected: number[] = [];
+  private readonly wanted = new Set<number>();
+  private readonly assigned = new Set<number>();
 
   constructor(
     private readonly defs: readonly CityLightDef[],
@@ -102,11 +136,15 @@ export class CityLights {
       this.defs,
       camera,
       Math.min(this.pool.length, tuning.city.maxLights),
+      this.selected,
     );
-    const wanted = new Set(selected);
-    const assigned = new Set(
-      this.assignments.filter((index) => index !== null),
-    );
+    const wanted = this.wanted;
+    wanted.clear();
+    for (const index of selected) wanted.add(index);
+    const assigned = this.assigned;
+    assigned.clear();
+    for (const index of this.assignments)
+      if (index !== null) assigned.add(index);
     const fade =
       1 - Math.exp(-tuning.city.lightFadeRate * Math.max(0, dtRealS));
     this.pool.forEach((light, slot) => {

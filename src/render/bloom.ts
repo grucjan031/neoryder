@@ -48,6 +48,13 @@ export function isEmissive(material: Material | Material[]): boolean {
     : isEmissiveOne(material);
 }
 
+/** Przezroczysty lub niezapisujący głębi, nieemisyjny: nie może zasłaniać neonów w masce. */
+export function isSeeThrough(material: Material): boolean {
+  if (material.userData.bloomMaterial instanceof Material) return false;
+  if (isEmissiveOne(material)) return false;
+  return material.transparent || !material.depthWrite;
+}
+
 const blurFragment = /* glsl */ `
   uniform sampler2D map;
   uniform vec2 stepSize;
@@ -157,6 +164,12 @@ export class BloomPass {
     }
   }
 
+  private readonly maskMaterial = (source: Material): Material => {
+    const emission: unknown = source.userData.bloomMaterial;
+    if (emission instanceof Material) return emission;
+    return isEmissive(source) ? source : this.occluder;
+  };
+
   private renderMask(
     renderer: WebGLRenderer,
     scene: Scene,
@@ -169,17 +182,18 @@ export class BloomPass {
     scene.traverseVisible((object) => {
       const { material } = object as Renderable;
       if (!material) return;
-      const maskMaterial = (source: Material): Material => {
-        const emission: unknown = source.userData.bloomMaterial;
-        if (emission instanceof Material) return emission;
-        return isEmissive(source) ? source : this.occluder;
-      };
       if ('isMesh' in object) {
+        const sources = Array.isArray(material) ? material : [material];
+        if (sources.every(isSeeThrough)) {
+          this.hidden.push(object);
+          object.visible = false;
+          return;
+        }
         this.swappedMeshes.push(object as Mesh);
         this.swappedMaterials.push(material);
         (object as Mesh).material = Array.isArray(material)
-          ? material.map(maskMaterial)
-          : maskMaterial(material);
+          ? material.map(this.maskMaterial)
+          : this.maskMaterial(material);
       } else if (!isEmissive(material)) {
         this.hidden.push(object);
         object.visible = false;
