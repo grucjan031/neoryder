@@ -1,5 +1,24 @@
 # Synergie buildów (F2-16)
 
+## F3-10: implanty i progi
+
+`setTags` liczy wystąpienia tagów. `requires` nadal wymaga obecności każdego tagu;
+`requiresCount` dodatkowo wymaga podanej liczby wystąpień. RoomScene przekazuje
+`Loadout.tags` i `ImplantSystem.tags()` bez usuwania powtórzeń. Podgląd buildu
+uwzględnia te same progi, więc nie pokazuje synergii wymagających implantów na starcie.
+
+Trzy nowe definicje: Mistrzostwo ostrza (3 × `#melee`), Splot Rezonansu
+(3 × `#power`), Zimny arsenał (3 × `#gun`). Parametry efektów są w JSON.
+
+`setImplantTriggers(implantSystem.triggers())` przekazuje wyzwalacze do wspólnego
+wykonawcy synergii. Każdy wyzwalacz ma osobne odnowienie i identyfikator
+`implant:<id>:<index>`. Zdarzenia obrażeń z `#synergy` są ignorowane, również przez
+implanty. Usunięcie implantu usuwa jego odnowienia i aktywne modyfikatory czasowe.
+Zmiana implantów w pokoju odświeża tagi i wyzwalacze; inicjalizacja pokoju także je odtwarza.
+
+Sprawdzenie ręczne: `?scene=room-test`, `implant servoTendons`, kolejne implanty
+z `#melee`, następnie `query('synergies')`. Listę implantów podaje pomoc komendy.
+
 `SynergySystem` (`src/progression/synergies.ts`) wykonuje hybrydy buildów zapisane jako dane w `src/data/synergies/*.json`. Nowa synergia = nowy plik JSON, bez zmian w kodzie (ADR 0004 pkt 5).
 
 ## Model danych

@@ -80,6 +80,9 @@ describe('SynergySystem — definicje', () => {
   it('loads and validates the three shipped definitions', () => {
     expect(synergyDefinitions.map((d) => d.id).sort()).toEqual([
       'bladeDancer',
+      'bladeMastery',
+      'gunMastery',
+      'resonanceMastery',
       'resonancePistolero',
       'stormGunner',
     ]);
@@ -416,5 +419,64 @@ describe('SynergySystem — dane z GDD', () => {
     damage.deal(a, { amount: 8, source: player, tags: ['#gun'] });
     const chained = dealt.find((e) => e.tags.includes('#synergy'));
     expect(chained).toMatchObject({ target: b, amount: 4 });
+  });
+});
+
+describe('F3 tag counts and implant triggers', () => {
+  it('requires two sources and retains the presence requirements', () => {
+    const def = { ...bladeDancerRaw, requiresCount: { '#melee': 2 } };
+    const { system } = setup([def], [...BUILD, '#melee']);
+    expect(system.active()).toEqual([]);
+    system.setTags([...BUILD, '#melee', '#melee']);
+    expect(system.active()).toEqual(['bladeDancer']);
+    system.setTags(['#melee', '#melee']);
+    expect(system.active()).toEqual([]);
+  });
+  it('implant effects share cooldowns, reject synergy damage and detach timed effects', () => {
+    const { system, bus, player, addEnergy, stats } = setup([]);
+    system.setImplantTriggers([
+      {
+        implantId: 'trigger',
+        trigger: {
+          when: { event: 'damage_dealt' },
+          cooldownS: 2,
+          effects: [
+            { kind: 'add_energy', amount: 4 },
+            {
+              kind: 'stat_modifier_timed',
+              stat: 'damage',
+              type: 'flat',
+              value: 3,
+              durationS: 4,
+            },
+          ],
+        },
+      },
+    ]);
+    const hit = (tags: string[]) =>
+      bus.emit('damage_dealt', {
+        source: player,
+        target: 100,
+        amount: 10,
+        tags,
+        point: null,
+        dir: null,
+        knockback: 0,
+        killed: false,
+      });
+    hit(['#synergy']);
+    expect(addEnergy).not.toHaveBeenCalled();
+    hit(['#melee']);
+    hit(['#melee']);
+    expect(addEnergy).toHaveBeenCalledTimes(1);
+    system.step(2);
+    hit(['#melee']);
+    expect(addEnergy).toHaveBeenCalledTimes(2);
+    expect(stats.get('damage')).toBe(3);
+    system.setImplantTriggers([]);
+    expect(stats.get('damage')).toBe(0);
+    system.step(5);
+    hit(['#melee']);
+    expect(addEnergy).toHaveBeenCalledTimes(2);
   });
 });

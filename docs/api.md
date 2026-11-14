@@ -1213,7 +1213,7 @@ Fabryka dostaje definicję pokoju, kopię RunState i WavesDefinition.
 `dispose()`; view zawiera ekran, kopię stanu, dostępne węzły, podsumowanie i stan ładowania.
 Akcje: `selectNode(id)`, `next()`, `menu()`. `RunSavePort` udostępnia asynchroniczne
 `loadRun(): Promise<RunState | null>`, `saveRun(state): Promise<void>`, `clearRun(): Promise<void>`.
-Domyślny port jest no-op do podpięcia zapisu F3-06. Operacje zapisu są kolejkowane.
+Domyślny port opakowuje IndexedDB SaveStore v2 przez `createRunSavePort(store?)` z `src/ui/runSave.ts`. Operacje zapisu są kolejkowane.
 `RunScene.whenReady()` czeka na ładowanie pokoju i kolejkę zapisu (przydatne w testach).
 Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,
 `loading`, `runError`, `saveError`; pozostałe zapytania są delegowane do pokoju.
@@ -1231,3 +1231,25 @@ jest wywoływane raz na klatkę; `held` przyjmuje `HeldItemView` albo stałe
 `blade`/`gun` dla scen testowych. `blade` to `BladeView` wymagany przy ostrzu.
 Getter `beamOrigin` zwraca pozycję świata root broni, jak dotychczas w Arenie.
 Moduł zachowuje kolejność: ruch, ostrze, widoczność, broń, wolna dłoń.
+
+### Nagrody i ekonomia (F3-10/11)
+
+`SynergySystem.setImplantTriggers(ImplantSystem.triggers())` aktualizuje wyzwalacze
+wykonywane wspólnym mechanizmem efektów i odnowień. `setTags` zachowuje krotność.
+`offerReward(state, type, rng, sector, definitions, bus?)` zwraca id ofert;
+`stockShop` zwraca implanty z cenami. `RunEconomy` łączy te moduły z RunManager:
+`offerReward`, `stockShop`, `chooseReward`, `buy`, `rest`, `upgradeOptions`, `maxHealth`.
+Oferty są przechowywane do opuszczenia węzła; zakup i odpoczynek weryfikują ekran.
+
+### Menu i mapa (F3-13)
+
+`src/ui/mainMenu.ts`: `MainMenu({ root, save?, navigate?, params? })`,
+`ready: Promise<void>` (odczyt dostępności kontynuacji), `dispose()`.
+Menu używa SaveStore; przejścia prowadzą przez URL.
+`src/ui/mapScreen.ts`: `MapScreen(parent)`, `show(state, onSelect)`, `hide()`,
+`dispose()`. Dostępność wynika wyłącznie z `currentNodeId.next` (na starcie
+pierwsza warstwa). UI przekazuje id do istniejącej akcji RunScene; nie zmienia stanu.
+`createRunSavePort(store?: SaveStore): RunSavePort` opakowuje pełny RunState
+w `{ saveVersion: SAVE_VERSION, seed, startedAt: startedAtMs, run }`.
+Po udanym zapisie mapy RunScene zastępuje URL przez `continue=1`, aby
+odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.

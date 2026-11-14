@@ -3,19 +3,53 @@ import yard from '../../src/data/rooms/combatYard.json';
 import pillars from '../../src/data/rooms/combatPillars.json';
 import { loadRoom, roomSchema } from '../../src/world/roomSchema';
 import { loadRoomDefinitions, roomDefinitions } from '../../src/world/rooms';
+import { generateSectorMap } from '../../src/world/sectorMap';
+import { kuroganeSector } from '../../src/world/sectors';
+
+const roomFiles = Object.keys(
+  import.meta.glob('../../src/data/rooms/*.json'),
+).map((path) =>
+  path
+    .split('/')
+    .pop()!
+    .replace(/.json$/, ''),
+);
 
 describe('pokoje F3: format, loader i układ', () => {
-  it('ładuje oba pliki JSON przez glob i zachowuje dane układu', () => {
-    expect([...roomDefinitions.keys()].sort()).toEqual([
-      'combatPillars',
-      'combatYard',
-    ]);
+  it('ładuje wszystkie pliki JSON z katalogu i zachowuje dane układu', () => {
+    expect([...roomDefinitions.keys()].sort()).toEqual([...roomFiles].sort());
+    expect(roomDefinitions.size).toBeGreaterThanOrEqual(2);
     for (const raw of [yard, pillars]) {
+      expect(roomDefinitions.has(raw.id)).toBe(true);
       expect(loadRoom(raw)).toEqual(raw);
       expect(roomDefinitions.get(raw.id)).toEqual(raw);
       expect(raw.spawnPoints.length).toBeGreaterThanOrEqual(4);
       expect(raw.blocks[0]?.size).toEqual({ x: 24, y: 1, z: 24 });
     }
+  });
+
+  it('pule sektora wskazują istniejące pokoje właściwego typu i pokrywają mapę', () => {
+    const pools = kuroganeSector.roomPools!;
+    for (const [type, ids] of Object.entries(pools))
+      for (const id of ids ?? []) {
+        const room = roomDefinitions.get(id);
+        expect(room, id).toBeDefined();
+        expect(room!.type).toBe(type);
+      }
+    const used = new Set<string>();
+    for (const seed of ['a', 'b', 'c', 'd', 'e', 'f'])
+      for (const layer of generateSectorMap(kuroganeSector, seed).layers)
+        for (const node of layer) used.add(node.type);
+    for (const type of used)
+      if (type !== 'puzzle')
+        expect(pools[type as keyof typeof pools]?.length, type).toBeGreaterThan(
+          0,
+        );
+    expect(used.has('boss')).toBe(true);
+    for (const id of pools.boss ?? [])
+      expect(roomDefinitions.get(id)!.doors.map((door) => door.role)).toEqual([
+        'entry',
+      ]);
   });
 
   it('odrzuca punkt w filarze, osłonie i na krawędzi bloku', () => {

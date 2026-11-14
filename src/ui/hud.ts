@@ -2,6 +2,7 @@ import type { EntityId, EventBus } from '../core/events';
 import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
+import { RunHud, type RunHudSeed } from './runHud';
 import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
 
@@ -16,6 +17,8 @@ interface HudOptions {
   loadout?: HudLoadout;
   /** Liczba fal do napisu „FALA 3 / 12”; bez niej pokazywany jest sam numer. */
   totalWaves?: number;
+  /** Stan runu do odtworzenia Kredytów i implantów w nowym pokoju. */
+  run?: RunHudSeed;
 }
 
 /** Liczba segmentów paska zdrowia. */
@@ -228,6 +231,7 @@ export class Hud {
   private viewYaw = 0;
   private shownAngle = 0;
   private previousFocus: HTMLElement | null = null;
+  private readonly runHud: RunHud;
   private disposed = false;
 
   constructor(
@@ -282,7 +286,9 @@ export class Hud {
     actions.append(this.retryButton);
     if (opts.onChangeBuild) actions.append(this.changeBuildButton);
     this.death.append(element('h1', 'hud__death-title', text.died), actions);
+    this.runHud = new RunHud(bus, opts.run);
     this.root.append(
+      this.runHud.node,
       this.lowHealth,
       this.damage.node,
       this.damageDir.node,
@@ -626,6 +632,7 @@ export class Hud {
     this.retryButton.removeEventListener('click', this.retry);
     this.changeBuildButton.removeEventListener('click', this.changeBuild);
     this.crosshairTicks.removeEventListener('animationend', this.endFire);
+    this.runHud.dispose();
     this.denial.dispose();
     this.damage.dispose();
     this.damageDir.dispose();

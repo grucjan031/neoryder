@@ -7,7 +7,10 @@ import type { MapNode, RoomPlanner, RunState } from '../core/runTypes';
 import playerData from '../data/scenes/roomPlayer.json';
 import { enemyDefinitions } from '../enemies/registry';
 import type { ImplantDefinition } from '../progression/implantSchema';
+import { implantDefinitions } from '../progression/implants';
+import { RunEconomy } from '../progression/runEconomy';
 import { loadoutDefinitions } from '../progression/loadout';
+import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
 import type { RunScreens } from '../ui/runScreens';
 import { CommandRegistry } from '../ui/debugCommands';
@@ -50,12 +53,6 @@ export interface RunSceneOptions {
   implantDefinitions?: ReadonlyMap<string, ImplantDefinition>;
 }
 
-const noSave: RunSavePort = {
-  loadRun: async () => null,
-  saveRun: async () => {},
-  clearRun: async () => {},
-};
-
 export type RunLogEntry =
   | { event: 'node_selected'; nodeId: string; type: MapNode['type'] }
   | { event: 'room_cleared'; nodeId: string }
@@ -69,6 +66,7 @@ export class RunScene implements Scene {
   private ctx!: GameContext;
   private three!: ThreeScene;
   private manager!: RunManager;
+  private economy!: RunEconomy;
   private screens!: RunScreens;
   private readonly save: RunSavePort;
   private readonly sector: SectorDefinition;
@@ -89,7 +87,7 @@ export class RunScene implements Scene {
   private readonly log: RunLogEntry[] = [];
 
   constructor(private readonly options: RunSceneOptions = {}) {
-    this.save = options.save ?? noSave;
+    this.save = options.save ?? createRunSavePort();
     this.sector = options.sector ?? kuroganeSector;
     this.rooms = options.rooms ?? roomDefinitions;
   }
@@ -104,6 +102,12 @@ export class RunScene implements Scene {
       initialHp: playerData.maxHealth,
       initialEnergy: playerData.maxEnergy,
     });
+    this.economy = new RunEconomy(
+      this.manager,
+      ctx.bus,
+      this.sector,
+      this.options.implantDefinitions ?? implantDefinitions,
+    );
     this.off.push(
       ctx.bus.on('entity_spawned', ({ id, kind }) => {
         if (kind === 'player') this.playerId = id;
@@ -185,13 +189,62 @@ export class RunScene implements Scene {
         summary: this.manager.summary,
         busy: this.manager.screen === 'room' && !this.roomReady,
         error: this.runError,
+        offers:
+          this.manager.screen === 'reward'
+            ? this.economy
+                .offerReward()
+                .map((id) => ({
+                  id,
+                  label: (
+                    this.options.implantDefinitions ?? implantDefinitions
+                  ).get(id)!.name,
+                }))
+            : this.manager.screen === 'shop'
+              ? this.economy
+                  .stockShop()
+                  .map(({ id, price }) => ({
+                    id,
+                    price,
+                    label: (
+                      this.options.implantDefinitions ?? implantDefinitions
+                    ).get(id)!.name,
+                  }))
+              : this.economy
+                  .upgradeOptions()
+                  .map((id) => ({
+                    id,
+                    label: (
+                      this.options.implantDefinitions ?? implantDefinitions
+                    ).get(id)!.name,
+                  })),
+        healPrice: this.sector.economy?.shopHealPrice,
+        fallbackCredits: this.sector.economy?.puzzleCredits,
       },
       {
         selectNode: (id) => {
           this.selectNode(id);
         },
+        chooseReward: (id) => {
+          if (this.economy.chooseReward(id)) this.showMap();
+        },
+        buy: (id) => {
+          this.economy.buy(id);
+          this.show();
+        },
+        rest: (choice, id) => {
+          if (this.economy.rest(choice, id)) {
+            this.disposeRoom();
+            this.showMap();
+          }
+        },
         next: () => {
-          if (this.manager.returnToMap()) {
+          if (
+            this.manager.screen === 'reward' &&
+            this.economy.offerReward().length
+          )
+            return;
+          if (this.manager.screen === 'reward') this.economy.chooseReward();
+          if (this.manager.screen === 'map' || this.manager.returnToMap()) {
             this.disposeRoom();
             this.showMap();
           }
@@ -205,7 +258,20 @@ export class RunScene implements Scene {
 
   private showMap(): void {
     const state = this.manager.serialize();
-    this.persist(() => this.save.saveRun(state));
+    this.persist(async () => {
+      await this.save.saveRun(state);
+      if (this.disposed || typeof location === 'undefined') return;
+      const params = new URLSearchParams(location.search);
+      if (params.get('scene') !== 'run') return;
+      params.set('continue', '1');
+      params.delete('seed');
+      params.delete('loadout');
+      history.replaceState(
+        null,
+        '',
+        `${location.pathname}?${params}${location.hash}`,
+      );
+    });
     this.show();
   }
 
@@ -241,7 +307,7 @@ export class RunScene implements Scene {
           return room;
         })
       : [...this.rooms.values()].filter((room) => room.type === node.type);
-    // Do F3-12/16 pokoje specjalne korzystają z układu zwykłej walki.
+    // Zapas dla sektorów bez puli danego typu: układ zwykłej walki.
     const available = candidates.length
       ? candidates
       : [...this.rooms.values()].filter((room) => room.type === 'combat');
@@ -257,14 +323,26 @@ export class RunScene implements Scene {
     const layout = this.chooseRoom(node, rng);
     const combat =
       node.type === 'combat' || node.type === 'elite' || node.type === 'boss';
-    const waves = (this.options.planner ?? roomPlanner).planWaves(
-      layout,
-      this.sector,
-      node.type === 'combat' || node.type === 'elite'
-        ? node
-        : { ...node, type: 'combat' },
-      rng,
-    );
+    // Sklep i odpoczynek nie mają fal; nakładka otwiera się od razu po wejściu.
+    const waves: WavesDefinition =
+      node.type === 'shop' || node.type === 'rest'
+        ? {
+            id: `room:${node.id}`,
+            firstBreakS: 0,
+            breakS: 0,
+            maxAlive: 1,
+            minSpawnDistance: 0,
+            spawnPoints: [],
+            waves: [],
+          }
+        : (this.options.planner ?? roomPlanner).planWaves(
+            layout,
+            this.sector,
+            node.type === 'combat' || node.type === 'elite'
+              ? node
+              : { ...node, type: 'combat' },
+            rng,
+          );
     const room =
       this.options.createRoom?.(layout, state, waves) ??
       new RoomScene(layout, state, waves, {
@@ -321,10 +399,7 @@ export class RunScene implements Scene {
     }
     this.disposeRoom();
     if (this.manager.screen === 'reward') {
-      this.ctx.bus.emit('reward_offered', {
-        nodeId: this.manager.state.currentNodeId!,
-        options: [],
-      });
+      this.economy.offerReward();
       this.show();
     } else if (this.manager.screen === 'map') this.showMap();
     // Boss: completeRoom emituje run_ended, którego obsługa pokaże summary.
@@ -449,24 +524,23 @@ export class RunScene implements Scene {
       if (this.manager.screen !== 'room') this.show();
       return `Kredyty: ${this.manager.state.credits}`;
     });
-    if (this.options.implantDefinitions?.size)
-      register('implant', 'implant <id> — dodaj implant na mapie', (args) => {
-        const implant = this.options.implantDefinitions?.get(args[0] ?? '');
-        if (
-          args.length !== 1 ||
-          !implant ||
-          this.manager.screen !== 'map' ||
-          this.manager.state.implants.includes(implant.id)
-        )
-          return 'Podaj nowy implant na ekranie mapy.';
-        this.ctx.bus.emit('implant_acquired', {
-          id: implant.id,
-          rarity: implant.rarity,
-          source: 'reward',
-        });
-        this.show();
-        return `Implant: ${implant.id}`;
-      });
+    register('implant', 'implant <id> — dodaj implant na mapie', (args) => {
+      if (this.manager.screen === 'room' && this.roomReady)
+        return this.roomCommands!.execute(['implant', ...args].join(' '));
+      const implant = (
+        this.options.implantDefinitions ?? implantDefinitions
+      ).get(args[0] ?? '');
+      if (
+        args.length !== 1 ||
+        !implant ||
+        this.manager.screen !== 'map' ||
+        this.manager.state.implants.includes(implant.id)
+      )
+        return 'Podaj nowy implant na ekranie mapy.';
+      this.economy.addDebugImplant(implant.id);
+      this.show();
+      return `Implant: ${implant.id}`;
+    });
   }
 
   dispose(): void {

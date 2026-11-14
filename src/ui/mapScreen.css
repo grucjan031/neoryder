@@ -1,0 +1,88 @@
+.sector-map[hidden] {
+  display: none;
+}
+.run-screen[data-screen='map'] .run-screen__panel {
+  width: min(850px, 100%);
+}
+.sector-map__graph {
+  position: relative;
+  height: max(440px, 58vh);
+  margin: 16px 0;
+}
+.sector-map__graph svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sector-map__graph line {
+  stroke: #111;
+  stroke-width: 1.5px;
+  opacity: 0.16;
+}
+.sector-map__graph line.is-available {
+  stroke: #009eb3;
+  opacity: 1;
+}
+.sector-map__graph line.is-visited {
+  stroke: #009eb3;
+  opacity: 0.55;
+}
+.run-screen .sector-map__node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 76px;
+  padding: 3px;
+  margin: 0;
+  text-align: center;
+  background: #fff;
+  color: #111;
+  border: 1px solid #111;
+  opacity: 0.35;
+  cursor: default;
+}
+.sector-map__node span {
+  display: block;
+  font-size: 22px;
+  line-height: 1.1;
+}
+.sector-map__node small {
+  display: block;
+  font-size: 10px;
+}
+.run-screen .sector-map__node[data-type='elite'],
+.run-screen .sector-map__node[data-type='boss'] {
+  color: #c71930;
+  border-color: #c71930;
+}
+.run-screen .sector-map__node.is-visited {
+  opacity: 0.8;
+  border-style: dashed;
+}
+.run-screen .sector-map__node.is-current {
+  opacity: 1;
+  outline: 3px solid #00bcd4;
+  outline-offset: 3px;
+}
+.run-screen .sector-map__node.is-available {
+  opacity: 1;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px #00cde533;
+  cursor: pointer;
+}
+.run-screen .sector-map__node.is-available:hover,
+.run-screen .sector-map__node.is-available:focus-visible {
+  background: #d5faff;
+  outline: 2px solid #00bcd4;
+}
+.sector-map__legend {
+  font-size: 12px;
+}
+@media (max-width: 480px) {
+  .run-screen .sector-map__node {
+    width: 58px;
+  }
+  .sector-map__node small {
+    font-size: 9px;
+  }
+}

@@ -271,6 +271,7 @@ export class RoomScene implements Scene {
         playerId,
         loadout: this.loadout,
         totalWaves: this.waves.waves.length,
+        run: { credits: this.run.credits, implants: this.run.implants },
       });
     this.energy = new PlayerEnergy(
       playerId,
@@ -381,6 +382,8 @@ export class RoomScene implements Scene {
       ...this.implantSystem.tags(),
     ]);
 
+    this.synergies.setImplantTriggers(this.implantSystem.triggers());
+
     this.director = new WaveDirector(
       this.waves,
       {
@@ -477,6 +480,7 @@ export class RoomScene implements Scene {
             ...this.loadout.tags,
             ...this.implantSystem.tags(),
           ]);
+          this.synergies.setImplantTriggers(this.implantSystem.triggers());
           this.ctx.bus.emit('health_changed', {
             id: this.player.id,
             current: this.health.current,

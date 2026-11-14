@@ -37,15 +37,32 @@ w obszarze osiągalnym od komórki gracza. Drzwi i props nie są przeszkodami
 tego testu: drzwi zmieniają stan, props nie określają rozmiaru kolizji.
 Walidacja nie używa Three.js, DOM ani losowości.
 
+## Pokoje sektora Kurogane Arms (F3-12)
+
+Pule `roomPools` w `src/data/sectors/kurogane.json`:
+
+| Typ | Pokoje |
+|---|---|
+| combat | `combatCorridor`, `combatPillars`, `combatPlatforms`, `combatRing`, `combatWarehouse`, `combatYard` |
+| elite | `eliteCourtyard`, `eliteFoundry`, `eliteHall` |
+| shop | `shopRoom` (bez spawnów, bez fal) |
+| rest | `restRoom` (bez spawnów, bez fal) |
+| boss | `bossRoom` (tylko drzwi entry, 6 spawnów; fale tymczasowo jak combat do F3-17) |
+
+Puzzle nie ma pokoi (`typeWeights.puzzle` = 0). Pokój losowany jest z puli
+osobnym strumieniem `room-layout:<nodeId>`.
+
 ## Dane i sprawdzenie
 
-`combatYard` i `combatPillars` mają podłogi 24 × 24 m, pięć punktów spawnu,
+`combatYard` i `combatPillars` (pierwsze pokoje F3) mają podłogi 24 × 24 m, pięć punktów spawnu,
 wejście od południa i wyjście na północ. Dziedziniec ma asymetryczne osłony
 i dwa filary, hala cztery filary i osłony przy bocznych trasach.
 Liczby limitów i odległości spawnu oraz geometria są w JSON.
 
 `tests/unit/rooms.test.ts` sprawdza dane, glob, granice, kolizje, cienkie ściany,
-narożniki, przesunięte układy, drzwi i duplikaty id. Istniejące testy areny
+narożniki, przesunięte układy, drzwi i duplikaty id oraz że glob ładuje
+wszystkie pliki katalogu, a pule sektora wskazują istniejące pokoje właściwego
+typu i pokrywają typy węzłów mapy (poza puzzle). Istniejące testy areny
 sprawdzają jej niezmieniony stary schemat. Scena `?scene=room-test&room=<id>`
 jest zakresem F3-04; ten moduł dostarcza jej zwalidowane dane.
 Do późniejszego playtestu: wejście i wyjście mają być widoczne, osłony powinny

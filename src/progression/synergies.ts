@@ -136,7 +136,8 @@ interface TimedEntry {
  * Czas (modyfikatory czasowe, odnowienia) liczony w step(dt) — czasie symulacji.
  */
 export class SynergySystem {
-  private tags = new Set<string>();
+  private tags = new Map<string, number>();
+  private implantTriggers: SynergyDefinition[] = [];
   private readonly cooldowns = new Map<string, number>();
   private readonly timed = new Map<string, TimedEntry[]>();
   private readonly off: (() => void)[];
@@ -174,7 +175,39 @@ export class SynergySystem {
   }
 
   setTags(tags: readonly string[]): void {
-    this.tags = new Set(tags);
+    this.tags.clear();
+    for (const tag of tags) this.tags.set(tag, (this.tags.get(tag) ?? 0) + 1);
+  }
+
+  setImplantTriggers(
+    entries: readonly {
+      implantId: string;
+      trigger: {
+        when: SynergyWhen;
+        effects: SynergyEffect[];
+        cooldownS?: number;
+      };
+    }[],
+  ): void {
+    const counts = new Map<string, number>();
+    const next = entries.map(({ implantId, trigger }) => {
+      const index = counts.get(implantId) ?? 0;
+      counts.set(implantId, index + 1);
+      return {
+        ...trigger,
+        id: `implant:${implantId}:${index}`,
+        name: implantId,
+        requires: [],
+      };
+    });
+    const ids = new Set(next.map((def) => def.id));
+    for (const def of this.implantTriggers) {
+      if (ids.has(def.id)) continue;
+      this.cooldowns.delete(def.id);
+      this.timed.delete(def.id);
+      this.rebuildModifiers(def.id);
+    }
+    this.implantTriggers = next;
   }
 
   /** Id synergii, których `requires` zawierają się w tagach ekwipunku. */
@@ -213,12 +246,17 @@ export class SynergySystem {
   }
 
   private isActive(def: SynergyDefinition): boolean {
-    return def.requires.every((t) => this.tags.has(t));
+    return (
+      def.requires.every((t) => this.tags.has(t)) &&
+      Object.entries(def.requiresCount ?? {}).every(
+        ([tag, count]) => (this.tags.get(tag) ?? 0) >= count,
+      )
+    );
   }
 
   private fire(event: SynergyEvent, facts: EventFacts): void {
     if (facts.tags?.includes(SYNERGY_TAG)) return;
-    for (const def of this.defs) {
+    for (const def of [...this.defs, ...this.implantTriggers]) {
       if (def.when.event !== event || !this.isActive(def)) continue;
       if (this.cooldowns.has(def.id)) continue;
       if (!this.matches(def, facts)) continue;

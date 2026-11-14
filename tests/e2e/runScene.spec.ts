@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('run: wybór węzła, wejście do pokoju, run clear, nagroda i powrót na mapę', async ({
+test('run: wybór węzła, wejście do pokoju, run clear, wybór implantu i powrót na mapę', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -21,17 +21,24 @@ test('run: wybór węzła, wejście do pokoju, run clear, nagroda i powrót na m
   expect(await query('doors')).toMatchObject({ exit: { open: false } });
   await page.evaluate(() => window.__neoryder?.command('run clear'));
   await expect.poll(() => query('screen')).toBe('reward');
-  await expect(page.getByText('brak nagród', { exact: true })).toBeVisible();
-  await page.keyboard.press('Enter');
+  // F3-11: ekran nagrody pokazuje 3 prawdziwe implanty; klawisz 1 wybiera pierwszy.
+  await expect(page.locator('.run-screen button')).toHaveCount(3);
+  await page.keyboard.press('Digit1');
   await expect.poll(() => query('screen')).toBe('map');
+  expect(
+    ((await query('runState')) as { implants: string[] }).implants,
+  ).toHaveLength(1);
   expect(await query('room')).toBeNull();
   await page.keyboard.press('Digit1');
   await expect.poll(() => query('loading')).toBe(false);
   await expect.poll(() => query('screen')).toBe('room');
   await page.evaluate(() => window.__neoryder?.command('run clear'));
   await expect.poll(() => query('screen')).toBe('reward');
-  await page.getByRole('button', { name: 'Dalej', exact: true }).click();
+  await page.locator('.run-screen button').first().click();
   await expect.poll(() => query('screen')).toBe('map');
+  expect(
+    ((await query('runState')) as { implants: string[] }).implants,
+  ).toHaveLength(2);
   expect(await query('runError')).toBeNull();
   expect(errors).toEqual([]);
 });

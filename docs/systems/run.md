@@ -45,3 +45,36 @@ Moduł `src/core/save.ts` rozszerza `RunSave` o pełny stan `run: RunState` (wal
 ## Weryfikacja
 
 Testy jednostkowe: `tests/unit/run.test.ts`, `tests/unit/save.test.ts` (`npm test`).
+
+# F3-11: nagrody i ekonomia
+
+Logika bez DOM: `src/progression/rewards.ts`, `shop.ts`, `rest.ts` oraz
+`runEconomy.ts`. `RunEconomy` używa jawnego API `RunManager` i `ImplantSystem`;
+obliczanie maksimum zdrowia i zmiany implantów przechodzą przez `Stats`.
+
+Po combat/elite gracz wybiera jeden z trzech różnych implantów. Posiadane id są
+wykluczone. Najpierw losowana jest rzadkość według `rewardWeights[type]`, następnie
+implant z tej rzadkości. Puste rzadkości są pomijane i wagi pozostałych normalizowane.
+Pula mniejsza niż trzy daje mniej ofert; całkowicie pusta daje Kredyty w wysokości
+`economy.puzzleCredits`. Losowanie używa `Rng.fork('reward:<nodeId>')`, a zdarzenie
+`reward_offered` jest emitowane raz dla danego ekranu nagrody.
+
+Sklep losuje trzy implanty przez `fork('shop:<nodeId>')` i `rewardWeights.shop`.
+Ceny według rzadkości, cena i ułamek leczenia są w `kurogane.json`. Zakup bez
+środków jest odrzucany; kupiony implant znika bez ponownego losowania towaru.
+Leczenie do maksimum nie pobiera opłaty przy pełnym zdrowiu. Zakup emituje
+`shop_purchase`. Zero ceny jest obsługiwane jako darmowy zakup.
+
+Odpoczynek pozwala raz wybrać leczenie `restHealFraction` maksimum albo zastąpienie
+implantu jego `upgradesTo`. Cel musi mieć dokładnie następną rzadkość i nie może
+być już posiadany. `rest_used.implant` wskazuje zastępowany implant. Nie ma leczenia
+pasywnego; zwiększenie maksimum przez implant zachowuje regułę dodania różnicy HP.
+
+RunScene korzysta z istniejącego `creditKill(threatCost)` oraz bonusu za wyczyszczenie
+elity i Kredytów za zagadkę w RunManager. Wszystkie wartości startowe są w sekcji
+`economy` sektora. Tymczasowe ekrany pokazują rzeczywiste oferty i ceny, obsługują
+mysz, 1/2/3, Enter oraz Tab dla dalszych opcji. Docelowy styl pozostaje dla F3-14.
+
+Sprawdzenie ręczne: `?scene=run&debug=1&seed=economy`, `run clear`, wybór nagrody,
+`credits 500`, wejście do sklepu, zakup i leczenie, następnie odpoczynek i ulepszenie.
+`implant <id>` działa na mapie oraz w aktywnym pokoju; `credits <n>` działa w runie.
