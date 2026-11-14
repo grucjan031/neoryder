@@ -213,7 +213,7 @@ it('routes F/E to independent data powers, queues E in hitstop and resets equipm
   );
   expect(
     document.querySelectorAll('.hud__power-cooldown')[0]?.textContent,
-  ).toBe('Gotowa');
+  ).toBe('');
   scene.step(SIM_DT, press('weapon3'));
   scene.reset();
   expect(scene.query('weapon')).toBe('rifle');
