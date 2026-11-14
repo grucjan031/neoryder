@@ -1,0 +1,23 @@
+{
+  "id": "roomTest",
+  "firstBreakS": 1,
+  "breakS": 1,
+  "maxAlive": 4,
+  "minSpawnDistance": 6,
+  "spawnPoints": [
+    { "x": -8, "z": -8 },
+    { "x": 8, "z": -8 },
+    { "x": -8, "z": 8 },
+    { "x": 8, "z": 8 }
+  ],
+  "waves": [
+    { "spawnIntervalS": 0.3, "groups": [{ "enemy": "assaulter", "count": 2 }] },
+    {
+      "spawnIntervalS": 0.3,
+      "groups": [
+        { "enemy": "assaulter", "count": 1 },
+        { "enemy": "gunner", "count": 1 }
+      ]
+    }
+  ]
+}

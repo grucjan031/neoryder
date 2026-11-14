@@ -1040,3 +1040,20 @@ Komendy konsoli debug (`window.__neoryder.command`, zadania F3-07, F3-09, F3-11)
 - `credits <n>` — dodanie Kredytów
 - `implant <id>` — nałożenie implantu
 
+### RoomScene (F3-04)
+
+`src/scenes/roomScene.ts`: `new RoomScene(room: RoomDefinition, run: RunState,
+waves: WavesDefinition, options?: RoomSceneOptions)` implementuje `Scene`.
+Bieżący węzeł pochodzi z `run.currentNodeId` i `run.map`, ekwipunek z `run.loadoutId`.
+`options.loadModels` (domyślnie true) wyłącza modele w testach;
+`options.implantDefinitions?: ReadonlyMap<string, ImplantDefinition>` dostarcza definicje
+implantów z F3-09. Brak definicji posiadanego implantu jest błędem przed inicjalizacją.
+Modyfikatory ze źródłem `implant:<id>` trafiają na statystyki walki i ruchu.
+`exportState(): Pick<RunState, 'hp' | 'energy'>` zwraca zasoby bez modyfikowania wejściowego runu.
+`clear(): void` jest idempotentnym API dla komendy `run clear` hosta F3-07:
+usuwa wrogów i pociski, otwiera exit i emituje `room_cleared`.
+Pokój nie rejestruje komend `run`; scena `room-test` rejestruje własne `run clear`.
+`room_entered` jest emitowane po gotowości świata, przed uruchomieniem fal;
+`room_cleared` po ostatniej fali, najwyżej raz, z czasem symulacji pokoju.
+Kontekst pokoju dostarcza host (`rng.fork('room:<nodeId>')`, wspólny EventBus).
+

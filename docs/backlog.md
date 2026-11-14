@@ -99,3 +99,9 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Ogłuszenie ciężkim ciosem jako status `stunned` (dziś stan wroga z `stunOnHeavyS`)       | F2-02 dodało status, ale migracja zmieniłaby feel F1; decyzja po playteście |
 | Bufor wciśnięcia spustu broni półautomatycznej (klik w trakcie odnowienia przepada)      | Feel pistoletu i snajperki — ocenić w playteście F2                         |
+
+## Wynikłe z zadań F3
+
+| Pomysł | Dlaczego odłożone |
+| --- | --- |
+| Wspólny skład walki `Arena` i `RoomScene` | F3-04 powiela skład, by zachować Arenę i jej asercje bez zmian; wydzielenie rdzenia wymaga pełnej regresji jednostkowej i e2e Areny |
