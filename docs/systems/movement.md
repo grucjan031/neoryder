@@ -103,3 +103,41 @@ Zapytania sceny: `playerPos`, `playerVel`, `grounded` zwracają stan symulacji.
 W 30 sekund: przejdź po schodach, spróbuj obu ramp, skocz dwukrotnie i wykonaj
 `tp 0 5 0`. Oceń czas rozpędzania, hamowanie, sterowanie w locie i brak
 przyklejania do podłogi przy skoku. Kamera nie ma zmian FOV ani wstrząsów.
+
+## Dash (F1 #04)
+
+Wciśnięcie `dash` (Q) uruchamia poziomy doskok w kierunku wejścia WASD, a bez wejścia — w kierunku patrzenia. Dash działa także w powietrzu.
+
+- Przez `dashDurationS` (0,18 s) gracz porusza się ze stałą prędkością `dashDistance / dashDurationS` (6 m), bez grawitacji. Ostatni krok jest skracany tak, żeby dystans był dokładny.
+- Po dashu prędkość pozioma spada do `dashExitSpeed` (9 m/s) w kierunku dashu — płynne wyjście zamiast nagłego zatrzymania.
+- Odnowienie pochodzi ze statu **`dashCooldown`** (baza `dashCooldownS` = 1,2 s). Synergie skracają je modyfikatorem (np. `mult 0.5`) bez zmiany kodu.
+- Ściany zatrzymuje character controller — dash nie przechodzi przez geometrię.
+- `dashInvulnerable` (0/1): `PlayerController.isInvulnerable()` zwraca `true` w trakcie dashu. Podłączenie do `DamageSystem` nastąpi razem z hurtboxem gracza (zadanie #08/#16).
+- Zdarzenie `dash_used { user, dir }`. Dash przerywa slide.
+
+## Slide i przysiad (F1 #04)
+
+- Start: wciśnięcie `crouch` (Ctrl) na ziemi przy prędkości poziomej ≥ `slideMinSpeed` (9 m/s, czyli w praktyce sprint). Prędkość rośnie o `slideBoost` (do `slideMaxSpeed`).
+- W trakcie: tarcie wykładnicze `slideFriction` (niskie), sterowanie `slideSteer` obraca wektor prędkości bez przyspieszania, kapsuła obniżona do `slideCapsuleHeight` (1 m) ze stopami w miejscu.
+- Koniec: prędkość < `slideEndSpeed`, czas ≥ `slideMaxS`, puszczenie `crouch`, zejście z ziemi albo skok. **Slide-jump** zachowuje pęd poziomy.
+- Wstawanie sprawdza miejsce nad głową (zapytanie kształtem pełnej kapsuły). Gdy nad graczem jest przeszkoda, zostaje w **przysiadzie** (`crouched`) i porusza się z `crouchSpeed`, a wstaje automatycznie, gdy jest miejsce i `crouch` nie jest przytrzymany.
+- Zdarzenia `slide_started`, `slide_ended`.
+
+## Kamera FPP (F1 #03)
+
+`src/player/fpsCamera.ts` — czysta logika zwracająca `CameraPose` (pozycja, pitch, yaw, roll, FOV); scena przepisuje ją na kamerę Three.js. Działa na **czasie rzeczywistym klatki** (`Scene.render(alpha, frameDt)`), więc wstrząs trwa też w hitstopie.
+
+| Efekt           | Model                                                                                                                                       | Parametry `tuning.camera`                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Wstrząs         | trauma 0..1 (sumowana, max 1), amplituda = trauma² × `shakeMax`, wygasa liniowo w `durationS`; gładki szum na pitch/yaw/roll i przesunięcie | `shakeMax`, `shakeMaxAngleDeg`, `shakeMaxOffset`, `shakeFrequency` |
+| Źródła wstrząsu | `camera_shake`; `damage_dealt` gdy cel = gracz (trauma = obrażenia / `shakeDamageRef`) lub gdy gracz zadaje cios (× `shakeOnHitScale`)      | `shakeDamageRef`, `shakeOnHitScale`                                |
+| FOV             | baza `fov` czytana na żywo + `sprintFovKick` / `dashFovKick`, wygładzanie wykładnicze                                                       | `fov`, `sprintFovKick`, `dashFovKick`, `fovLerpRate`               |
+| Kołysanie       | faza z przebytej drogi (`bobStride` m na cykl), waga zależna od prędkości, wyłączane `bobEnabled = 0`; nie działa w slide i w powietrzu     | `bobEnabled`, `bobAmount`, `bobStride`                             |
+| Lądowanie       | ugięcie proporcjonalne do prędkości pionowej (od 3 m/s), powrót wykładniczy                                                                 | `landingDipPerSpeed`, `landingDipMax`, `landingRecoverRate`        |
+| Wysokość oczu   | liczona od stóp (`height − (capsuleHeight − eyeHeight)`), wygładzana przy slide i przysiadzie                                               | `eyeLerpRate`                                                      |
+
+Komenda debug w `player-test`: `shake <0..1> [s]`. Query: `trauma`, `fov`, `sliding`, `crouched`, `height`, `dashCooldown`.
+
+Tor w `player-test`: niski tunel (prześwit 1,25 m, x ≈ 16) do przejścia tylko ślizgiem i ściana (x = −14) do testu dashu.
+
+**Uwaga:** `Settings.fov` (preferencja gracza) zostanie podpięty jako baza FOV razem z menu ustawień (F7); do tego czasu bazą jest `tuning.camera.fov`.

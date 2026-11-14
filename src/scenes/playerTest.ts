@@ -17,12 +17,14 @@ import { loadSettings } from '../core/save';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
+import { FpsCamera } from '../player/fpsCamera';
 import { palette } from '../render/palette';
 import type { Scene } from './index';
 
 export class PlayerTest implements Scene {
   readonly id = 'player-test';
-  private commandOff?: () => void;
+  private readonly commandOffs: (() => void)[] = [];
+  private fpsCamera!: FpsCamera;
   private ctx!: GameContext;
   private three!: ThreeScene;
   private world!: World;
@@ -103,6 +105,12 @@ export class PlayerTest implements Scene {
       box({ x: 3, y: 0.5, z: 3 }, { x, y, z });
     }
 
+    // Tor dashu i slide: niski tunel (prześwit 1,25 m — tylko w ślizgu) i ściana do dashu.
+    for (const x of [14.6, 17.4])
+      box({ x: 0.4, y: 1.25, z: 8 }, { x, y: 0.625, z: -6 });
+    box({ x: 3.2, y: 0.4, z: 8 }, { x: 16, y: 1.45, z: -6 });
+    box({ x: 6, y: 3, z: 0.4 }, { x: -14, y: 1.5, z: -8 });
+
     const props = [
       { model: 'crate', size: { x: 1, y: 1, z: 1 }, x: 3, z: 3 },
       { model: 'crate', size: { x: 1, y: 1, z: 1 }, x: 5, z: 4 },
@@ -141,10 +149,11 @@ export class PlayerTest implements Scene {
       loadSettings(),
     );
     this.previous = this.player.getState();
+    this.fpsCamera = new FpsCamera(ctx.tuning, this.player.id, ctx.bus);
     // Pierwszy krok indeksuje statyczne collidery przed zapytaniami kontrolera.
     this.world.step();
     this.render(1);
-    this.commandOff = ctx.commands?.register('tp', 'tp <x> <y> <z>', (args) => {
+    const tpOff = ctx.commands?.register('tp', 'tp <x> <y> <z>', (args) => {
       const [x, y, z] = args.map(Number);
       if (
         args.length !== 3 ||
@@ -159,6 +168,19 @@ export class PlayerTest implements Scene {
       this.teleport({ x, y, z });
       return 'Gracz teleportowany.';
     });
+    const shakeOff = ctx.commands?.register(
+      'shake',
+      'shake <0..1> [s] — wstrząs kamery',
+      (args) => {
+        const intensity = Number(args[0]);
+        const durationS = args[1] === undefined ? 0.5 : Number(args[1]);
+        if (!Number.isFinite(intensity) || !Number.isFinite(durationS))
+          return 'Podaj intensywność 0..1 i opcjonalnie czas w s.';
+        ctx.bus.emit('camera_shake', { intensity, durationS, dir: null });
+        return `Wstrząs ${intensity} przez ${durationS} s.`;
+      },
+    );
+    for (const off of [tpOff, shakeOff]) if (off) this.commandOffs.push(off);
   }
 
   private spawnPosition(): Vec3 {
@@ -189,25 +211,21 @@ export class PlayerTest implements Scene {
     this.world.step();
   }
 
-  render(alpha: number): void {
+  render(alpha: number, frameDt = 1 / 60): void {
     const camera = this.ctx.camera;
     if (!camera) return;
-    const current = this.player.getState();
-    const p = this.previous;
-    camera.position.set(
-      p.position.x + (current.position.x - p.position.x) * alpha,
-      p.position.y +
-        (current.position.y - p.position.y) * alpha -
-        this.ctx.tuning.player.capsuleHeight / 2 +
-        this.ctx.tuning.player.eyeHeight,
-      p.position.z + (current.position.z - p.position.z) * alpha,
+    const pose = this.fpsCamera.update(
+      frameDt,
+      this.previous,
+      this.player.getState(),
+      alpha,
     );
-    camera.rotation.set(
-      p.pitch + (current.pitch - p.pitch) * alpha,
-      p.yaw + (current.yaw - p.yaw) * alpha,
-      0,
-      'YXZ',
-    );
+    camera.position.set(pose.position.x, pose.position.y, pose.position.z);
+    camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    if (Math.abs(camera.fov - pose.fov) > 1e-3) {
+      camera.fov = pose.fov;
+      camera.updateProjectionMatrix();
+    }
   }
 
   query(name: string): unknown {
@@ -215,11 +233,18 @@ export class PlayerTest implements Scene {
     if (name === 'playerPos') return state.position;
     if (name === 'playerVel') return state.velocity;
     if (name === 'grounded') return state.grounded;
+    if (name === 'sliding') return state.sliding;
+    if (name === 'crouched') return state.crouched;
+    if (name === 'height') return state.height;
+    if (name === 'dashCooldown') return state.dashCooldownS;
+    if (name === 'trauma') return this.fpsCamera.currentTrauma;
+    if (name === 'fov') return this.fpsCamera.currentFov;
     return undefined;
   }
 
   dispose(): void {
-    this.commandOff?.();
+    for (const off of this.commandOffs.splice(0)) off();
+    this.fpsCamera.dispose();
     this.player.dispose();
     this.world.free();
     this.root.traverse((object) => {

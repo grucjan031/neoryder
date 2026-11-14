@@ -10,7 +10,8 @@ export interface Scene {
   readonly id: string;
   init(ctx: GameContext, three: ThreeScene): Promise<void> | void;
   step(dt: number, input: InputSnapshot): void;
-  render(alpha: number): void;
+  /** frameDt: czas rzeczywisty klatki w s (efekty kamery działające także w hitstopie). */
+  render(alpha: number, frameDt?: number): void;
   dispose(): void;
   query?(name: string): unknown;
   reset?(): void;

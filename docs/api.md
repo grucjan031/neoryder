@@ -77,6 +77,7 @@ export const STAT_IDS = [
   'maxHealth', 'moveSpeed', 'damage', 'attackSpeed',
   'maxEnergy', 'energyRegen', 'heatCapacity', 'coolingRate',
   'damageTaken', // F1: mnożnik otrzymywanych obrażeń, baza zawsze 1 (blok = mult 0.3)
+  'dashCooldown', // F1: odnowienie dashu (s), baza z tuning.player.dashCooldownS
 ] as const;
 export type StatId = (typeof STAT_IDS)[number];
 
@@ -216,7 +217,10 @@ export interface Scene {
   /** Ładowanie zasobów, budowa świata fizyki i obiektów Three.js. */
   init(ctx: GameContext, three: import('three').Scene): Promise<void> | void;
   step(dt: number, input: InputSnapshot): void;
-  render(alpha: number): void;
+  /** frameDt: czas rzeczywisty klatki w s (efekty kamery działające także w hitstopie). */
+  render(alpha: number, frameDt?: number): void;
+  query?(name: string): unknown;   // dane do testów i window.__neoryder
+  reset?(): void;                  // komenda debug 'reset'
   dispose(): void;
 }
 

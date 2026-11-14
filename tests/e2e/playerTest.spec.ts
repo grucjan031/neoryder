@@ -56,6 +56,13 @@ test('player-test ładuje modele bez błędów i wraca na podłogę po tp', asyn
     )
     .toBeLessThan(-1);
   await page.keyboard.up('KeyW');
+  const shake = await page.evaluate(() =>
+    window.__neoryder?.command('shake 0.8 0.5'),
+  );
+  expect(shake).toContain('Wstrząs');
+  expect(
+    await page.evaluate(() => window.__neoryder?.query('trauma')),
+  ).toBeGreaterThan(0);
   await testInfo.attach('player-test', {
     body: await page.screenshot(),
     contentType: 'image/png',

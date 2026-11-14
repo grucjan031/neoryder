@@ -9,6 +9,8 @@ export const STAT_IDS = [
   'coolingRate',
   /** Mnożnik otrzymywanych obrażeń; baza zawsze 1 (patrz DamageSystem). Blok = mult 0.3. */
   'damageTaken',
+  /** Odnowienie dashu w sekundach; baza z tuning.player.dashCooldownS (synergia „Tancerz ostrzy” = mult < 1). */
+  'dashCooldown',
 ] as const;
 export type StatId = (typeof STAT_IDS)[number];
 export type ModifierType = 'flat' | 'percent' | 'mult';

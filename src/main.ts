@@ -47,13 +47,13 @@ async function main(): Promise<void> {
   const stats = debug ? new StatsPanel() : undefined;
   const loop = new GameLoop({
     step: (dt) => scene.step(dt, input.snapshot()),
-    render: (alpha) => {
+    render: (alpha, frameDt) => {
       stats?.begin();
       if (camera.fov !== tuning.camera.fov) {
         camera.fov = tuning.camera.fov;
         camera.updateProjectionMatrix();
       }
-      scene.render(alpha);
+      scene.render(alpha, frameDt);
       pipeline.render(three, camera);
       stats?.end();
     },
