@@ -889,6 +889,15 @@ Wzorce `slam` i `fan` mają własne czasy zapowiedzi, regeneracji i odnowienia.
 Obrażenia przechodzą przez `DamageSystem`, limit progu działa po modyfikatorach.
 Scena `boss-test` oraz `ai-test` obsługują komendę `boss phase <n>`.
 
+**F3-17.** Wzorce `summon` (`enemyId`, `count`, `maxMinions`, `placement`, `radiusM`) i `shield`
+(`durability`, `durationS`, `stunS`, `vulnerableS`, `vulnerableMult`); telegrafy
+`enemy_telegraph.kind` = `'summon'` / `'shield'`. Nowe opcjonalne pola
+`EnemyDependencies`: `spawnEnemy(id, position): Enemy` i `spawnPoints: Vec3[]` — wypełnia je
+`EnemyManager` (`EnemyManagerOptions.spawnPoints`). `Boss`: `shield` (wytrzymałość),
+`minionCount`, `forcePattern(kind): boolean` (debug). Brak nowych zdarzeń: złamanie tarczy
+emituje `enemy_stunned`, `hitstop` i `camera_shake`. `RoomScene` w trybie bossa (`layout.bossEnemy`)
+emituje `room_cleared` po `enemy_killed` bossa; `query('boss')`. Opis: `docs/systems/enemies.md`.
+
 Architektura i decyzje: `docs/adr/0005-petla-runu-f3.md`. Zadania: `docs/issues/F3/README.md`.
 
 ### Wspólne typy runu — `src/core/runTypes.ts`
@@ -1037,7 +1046,7 @@ export type RoomDefinition = z.infer<typeof roomSchema>;
 export function loadRoom(data: unknown): RoomDefinition;
 // Pola: id, name, type (NodeType), playerSpawn, blocks (jak arena.json), spawnPoints ({ x, z }[]),
 // doors ({ id, role: 'entry' | 'exit', position, size }[]), director?, maxAlive?, minSpawnDistance?,
-// threatMultiplier?, props? ({ kind, position }[]), puzzle? (Record<string, unknown>).
+// threatMultiplier?, bossEnemy? (F3-17, tylko type 'boss'), props? ({ kind, position }[]), puzzle? (Record<string, unknown>).
 // Wymaga drzwi 'entry'; pokoje o type !== 'boss' wymagają też drzwi 'exit'.
 
 // src/progression/implantSchema.ts

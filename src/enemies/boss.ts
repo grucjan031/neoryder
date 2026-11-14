@@ -5,7 +5,12 @@ import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import { Stats } from '../core/stats';
 import { EnemyBody } from './enemyBody';
-import type { BossPattern, EnemyDefinition } from './enemySchema';
+import type {
+  BossPattern,
+  EnemyDefinition,
+  ShieldPattern,
+  SummonPattern,
+} from './enemySchema';
 import type {
   Enemy,
   EnemyDependencies,
@@ -14,6 +19,12 @@ import type {
 } from './types';
 
 const epsilon = 1e-6;
+const POWER_TAG = '#power';
+/** Cheaty debug (kill all, hit) przechodzą przez tarczę, żeby dało się przejść progi faz. */
+const DEBUG_TAG = '#debug';
+/** Obrażenia zadawane sługom w chwili śmierci bossa. */
+const BOSS_DEATH_TAG = '#boss_death';
+const VULNERABLE_SOURCE = 'boss:vulnerable';
 const copy = (s: EnemySnapshot): EnemySnapshot => ({
   ...s,
   position: { ...s.position },
@@ -49,6 +60,15 @@ export class Boss implements Enemy {
   private phaseIndex = 0;
   private shiftS = 0;
   private pattern: BossPattern | null = null;
+  private minions: Enemy[] = [];
+  /** Pociski wystrzelone przez bossa; po odbiciu zdejmują wytrzymałość tarczy. */
+  private readonly ownShots = new Set<number>();
+  private reflectedHit = false;
+  private shieldHp = 0;
+  private shieldTimeS = 0;
+  private shieldPattern: ShieldPattern | null = null;
+  private stunS = 0;
+  private vulnerableS = 0;
 
   constructor(
     private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
@@ -86,6 +106,7 @@ export class Boss implements Enemy {
     deps.damage.register(this.id, this.health, {
       stats: this.stats,
       invulnerable: () => this.shiftS > epsilon,
+      guard: (info) => this.guard(info),
     });
     this.body = new EnemyBody(deps, this.id, definition.body, spawn);
     this.off.push(
@@ -100,8 +121,18 @@ export class Boss implements Enemy {
       ctx.bus.on('enemy_killed', ({ id }) => {
         if (id === this.id) {
           this.pattern = null;
+          this.resetShield();
           this.transition('dead');
+          this.killMinions();
         }
+      }),
+      ctx.bus.on('entity_despawned', ({ id }) => this.ownShots.delete(id)),
+      this.projectiles.addInterceptor((hit) => {
+        this.reflectedHit =
+          hit.target === this.id &&
+          hit.owner !== this.id &&
+          this.ownShots.has(hit.projectile);
+        return false;
       }),
     );
     ctx.bus.emit('boss_spawned', {
@@ -113,6 +144,19 @@ export class Boss implements Enemy {
 
   get phase(): number {
     return this.phaseIndex + 1;
+  }
+
+  /** Pozostała wytrzymałość tarczy (0 = brak tarczy). */
+  get shield(): number {
+    return this.shieldHp;
+  }
+
+  /** Liczba żywych sług wezwanych przez bossa. */
+  get minionCount(): number {
+    this.minions = this.minions.filter(
+      (m) => !m.removed && m.current.state !== 'dead',
+    );
+    return this.minions.length;
   }
 
   private nextThreshold(): number {
@@ -131,6 +175,7 @@ export class Boss implements Enemy {
     const changed = index !== this.phaseIndex;
     this.phaseIndex = index;
     this.pattern = null;
+    this.resetShield();
     this.shiftS = this.ctx.tuning.enemies.phaseShiftS;
     this.transition(this.shiftS > epsilon ? 'recovery' : 'idle');
     if (changed)
@@ -160,21 +205,180 @@ export class Boss implements Enemy {
     return true;
   }
 
+  private eligible(pattern: BossPattern): boolean {
+    if (pattern.kind === 'summon')
+      return !!this.deps.spawnEnemy && this.minionCount < pattern.maxMinions;
+    if (pattern.kind === 'shield')
+      return this.shieldHp <= 0 && this.vulnerableS <= epsilon;
+    return true;
+  }
+
   private begin(): void {
-    this.pattern = this.rng.pick(this.data.phases[this.phaseIndex]!.patterns);
-    this.stats.setBase('damage', this.pattern.damage);
+    const patterns = this.data.phases[this.phaseIndex]!.patterns.filter((p) =>
+      this.eligible(p),
+    );
+    if (patterns.length === 0) return;
+    this.startPattern(this.rng.pick(patterns));
+  }
+
+  private startPattern(pattern: BossPattern): void {
+    this.pattern = pattern;
+    this.stats.setBase('damage', pattern.damage);
     this.transition('telegraph');
     this.ctx.bus.emit('enemy_telegraph', {
       id: this.id,
-      kind: this.pattern.kind === 'slam' ? 'slam' : 'aim',
-      durationS: this.pattern.telegraphS,
+      kind: pattern.kind === 'fan' ? 'aim' : pattern.kind,
+      durationS: pattern.telegraphS,
     });
+  }
+
+  /** Debug: natychmiast zaczyna wzorzec danego rodzaju (z bieżącej fazy, w razie braku z dowolnej). */
+  forcePattern(kind: BossPattern['kind']): boolean {
+    if (
+      this.removed ||
+      this.health.dead ||
+      this.shiftS > epsilon ||
+      this.stunS > epsilon
+    )
+      return false;
+    const pattern =
+      this.data.phases[this.phaseIndex]!.patterns.find(
+        (p) => p.kind === kind,
+      ) ??
+      this.data.phases
+        .flatMap((phase) => phase.patterns)
+        .find((p) => p.kind === kind);
+    if (!pattern || !this.eligible(pattern)) return false;
+    this.startPattern(pattern);
+    return true;
+  }
+
+  private summon(pattern: SummonPattern): void {
+    const spawn = this.deps.spawnEnemy;
+    if (!spawn) return;
+    const count = Math.min(
+      pattern.count,
+      pattern.maxMinions - this.minionCount,
+    );
+    for (const point of this.summonPoints(pattern, count))
+      this.minions.push(spawn(pattern.enemyId, point));
+  }
+
+  private summonPoints(
+    pattern: SummonPattern,
+    count: number,
+  ): { x: number; y: number; z: number }[] {
+    const base = this.deps.spawnPoints;
+    if (pattern.placement === 'spawnPoints' && base && base.length > 0)
+      return this.rng
+        .shuffle([...base])
+        .slice(0, Math.max(0, count))
+        .map((point) => ({ ...point }));
+    const origin = this.current.position;
+    const y = origin.y - this.definition.body!.controllerOffset;
+    const start = this.rng.float(0, Math.PI * 2);
+    return Array.from({ length: Math.max(0, count) }, (_, i) => {
+      const angle = start + (i * Math.PI * 2) / count;
+      return {
+        x: origin.x + Math.sin(angle) * pattern.radiusM,
+        y,
+        z: origin.z + Math.cos(angle) * pattern.radiusM,
+      };
+    });
+  }
+
+  private killMinions(): void {
+    for (const minion of this.minions.splice(0))
+      if (!minion.removed && minion.current.state !== 'dead')
+        this.deps.damage.deal(minion.id, {
+          source: null,
+          amount: Number.MAX_VALUE,
+          tags: [BOSS_DEATH_TAG],
+        });
+  }
+
+  private raiseShield(pattern: ShieldPattern): void {
+    this.shieldPattern = pattern;
+    this.shieldHp = pattern.durability;
+    this.shieldTimeS = pattern.durationS;
+    this.current.shieldUp = true;
+  }
+
+  /** Tarcza zeruje obrażenia; wytrzymałość tracą tylko #power i odbite pociski bossa. */
+  private guard(info: DamageInfo): number {
+    const reflected = this.reflectedHit;
+    this.reflectedHit = false;
+    if (this.shieldHp <= 0 || info.tags.includes(DEBUG_TAG)) return 1;
+    if (info.tags.includes(POWER_TAG) || reflected) {
+      this.shieldHp = Math.max(0, this.shieldHp - info.amount);
+      if (this.shieldHp <= 0) this.breakShield();
+    }
+    return 0;
+  }
+
+  private breakShield(): void {
+    const pattern = this.shieldPattern;
+    this.resetShield();
+    if (!pattern) return;
+    const feel = this.ctx.tuning.enemies;
+    this.stunS = pattern.stunS;
+    this.vulnerableS = pattern.vulnerableS;
+    this.stats.add({
+      stat: 'damageTaken',
+      type: 'mult',
+      value: pattern.vulnerableMult,
+      source: VULNERABLE_SOURCE,
+    });
+    this.pattern = null;
+    this.transition('stunned');
+    this.ctx.bus.emit('enemy_stunned', {
+      id: this.id,
+      durationS: pattern.stunS,
+    });
+    this.ctx.bus.emit('hitstop', { ms: feel.shieldBreakHitstopMs });
+    this.ctx.bus.emit('camera_shake', {
+      intensity: feel.shieldBreakShake,
+      durationS: feel.shieldBreakShakeS,
+      dir: null,
+    });
+  }
+
+  /** Zdejmuje tarczę, ogłuszenie i okno zwiększonych obrażeń. */
+  private resetShield(): void {
+    this.shieldHp = 0;
+    this.shieldTimeS = 0;
+    this.shieldPattern = null;
+    this.stunS = 0;
+    this.vulnerableS = 0;
+    this.stats.removeBySource(VULNERABLE_SOURCE);
+    this.current.shieldUp = false;
+  }
+
+  private tickShield(dt: number): void {
+    if (this.shieldHp > 0) {
+      this.shieldTimeS -= dt;
+      if (this.shieldTimeS <= epsilon) {
+        this.shieldHp = 0;
+        this.shieldPattern = null;
+        this.current.shieldUp = false;
+      }
+    }
+    if (this.vulnerableS > 0) {
+      this.vulnerableS = Math.max(0, this.vulnerableS - dt);
+      if (this.vulnerableS <= epsilon) {
+        this.vulnerableS = 0;
+        this.stats.removeBySource(VULNERABLE_SOURCE);
+      }
+    }
   }
 
   private attack(): void {
     const pattern = this.pattern;
+    if (!pattern) return;
+    if (pattern.kind === 'summon') return this.summon(pattern);
+    if (pattern.kind === 'shield') return this.raiseShield(pattern);
     const target = this.deps.getTarget();
-    if (!pattern || !target) return;
+    if (!target) return;
     const p = this.current.position;
     if (pattern.kind === 'slam') {
       if (
@@ -210,7 +414,7 @@ export class Boss implements Enemy {
           ? 0
           : i / (pattern.projectileCount - 1) - 0.5;
       const angle = center + (offset * pattern.spreadDeg * Math.PI) / 180;
-      this.projectiles.spawn({
+      const shot = this.projectiles.spawn({
         owner: this.id,
         team: 'enemy',
         origin,
@@ -224,6 +428,7 @@ export class Boss implements Enemy {
         lifetimeS: pattern.projectileLifetimeS,
         tags: ['#gun'],
       });
+      this.ownShots.add(shot);
     }
     this.current.shotTimeS = 0;
   }
@@ -241,11 +446,17 @@ export class Boss implements Enemy {
         this.dispose();
       return;
     }
+    this.reflectedHit = false;
+    this.tickShield(dt);
     let vx = 0,
       vz = 0;
     if (this.shiftS > epsilon) {
       this.shiftS = Math.max(0, this.shiftS - dt);
       if (this.shiftS <= epsilon) this.transition('idle');
+    } else if (this.stunS > epsilon) {
+      this.stunS = Math.max(0, this.stunS - dt);
+      this.pattern = null;
+      if (s.state !== 'stunned') this.transition('stunned');
     } else if (this.deps.statuses?.has(this.id, STUNNED)) {
       this.pattern = null;
       if (s.state !== 'stunned') this.transition('stunned');

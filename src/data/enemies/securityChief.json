@@ -41,6 +41,11 @@
       "x": 0.07,
       "y": 0.07,
       "z": 1.2
+    },
+    "shieldSizeM": {
+      "x": 2,
+      "y": 2.4,
+      "z": 0.2
     }
   },
   "attackTags": ["#melee", "#heavy"],
@@ -96,6 +101,18 @@
             "projectileLifetimeS": 4,
             "projectileCount": 7,
             "spreadDeg": 75
+          },
+          {
+            "telegraphS": 1.2,
+            "recoveryS": 0.8,
+            "cooldownS": 1.5,
+            "damage": 0,
+            "kind": "summon",
+            "enemyId": "shielder",
+            "count": 2,
+            "maxMinions": 3,
+            "placement": "spawnPoints",
+            "radiusM": 4
           }
         ],
         "hpThreshold": 0.65
@@ -120,6 +137,30 @@
             "projectileCount": 9,
             "damage": 12,
             "spreadDeg": 90
+          },
+          {
+            "telegraphS": 1.2,
+            "recoveryS": 0.8,
+            "cooldownS": 1.5,
+            "damage": 0,
+            "kind": "summon",
+            "enemyId": "shielder",
+            "count": 2,
+            "maxMinions": 3,
+            "placement": "spawnPoints",
+            "radiusM": 4
+          },
+          {
+            "telegraphS": 1,
+            "recoveryS": 0.6,
+            "cooldownS": 1,
+            "damage": 0,
+            "kind": "shield",
+            "durability": 120,
+            "durationS": 8,
+            "stunS": 2.5,
+            "vulnerableS": 5,
+            "vulnerableMult": 1.5
           }
         ],
         "hpThreshold": 0.3

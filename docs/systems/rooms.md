@@ -12,7 +12,8 @@ Dodanie pokoju wymaga wyłącznie nowego pliku JSON.
 
 Pola układu `playerSpawn`, `blocks`, `director` odpowiadają arenie. Pokój
 dodaje `id`, `name`, `type`, `spawnPoints`, `doors` oraz opcjonalne `maxAlive`,
-`minSpawnDistance`, `threatMultiplier`, `props` i `puzzle`. Zdrowie dostarcza
+`minSpawnDistance`, `threatMultiplier`, `props`, `puzzle` oraz `bossEnemy` (tylko
+typ boss: id wroga-bossa, włącza tryb bossa w `RoomScene`). Zdrowie dostarcza
 stan runu. Dla combat/elite wymagane są co najmniej cztery punkty spawnu.
 Każdy pokój ma dokładnie jedne drzwi entry i exit; boss ma tylko entry.
 Id drzwi muszą być unikalne w pokoju. Drzwi zajmują przerwy w ścianach;
@@ -47,7 +48,7 @@ Pule `roomPools` w `src/data/sectors/kurogane.json`:
 | elite | `eliteCourtyard`, `eliteFoundry`, `eliteHall` |
 | shop | `shopRoom` (bez spawnów, bez fal) |
 | rest | `restRoom` (bez spawnów, bez fal) |
-| boss | `bossRoom` (tylko drzwi entry, 6 spawnów; fale tymczasowo jak combat do F3-17) |
+| boss | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17) |
 
 Puzzle nie ma pokoi (`typeWeights.puzzle` = 0). Pokój losowany jest z puli
 osobnym strumieniem `room-layout:<nodeId>`.

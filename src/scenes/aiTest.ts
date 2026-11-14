@@ -379,6 +379,22 @@ export class AiTest implements Scene {
         : 'Podaj istniejącą fazę żywego bossa.';
     });
     register(
+      'boss pattern',
+      'boss pattern summon|shield — wymuś wzorzec bossa',
+      (args) => {
+        const kind = args[0];
+        let started = false;
+        if (args.length === 1 && (kind === 'summon' || kind === 'shield'))
+          this.manager.forEach((enemy) => {
+            if (enemy instanceof Boss && enemy.forcePattern(kind))
+              started = true;
+          });
+        return started
+          ? `Wzorzec bossa: ${kind}`
+          : 'Podaj summon lub shield i żywego bossa gotowego do wzorca.';
+      },
+    );
+    register(
       'status',
       `status <id> [s] — na wszystkich wrogów: ${[...statusDefinitions.keys()].join(', ')}`,
       (args) => {

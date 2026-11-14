@@ -81,3 +81,36 @@ it('registers boss-test, starts with only the boss, changes phases, resets and c
   expect(three.children).toHaveLength(0);
   expect(commands.help()).toBe('');
 });
+
+it('boss pattern summon|shield wymusza wzorce: wezwanie tworzy Tarczowników wokół bossa', async () => {
+  const scene = new BossTest(false);
+  const commands = new CommandRegistry();
+  await scene.init(
+    {
+      bus: new EventBus(),
+      rng: new Rng('boss-pattern'),
+      loop: new GameLoop({ step() {}, render() {} }),
+      tuning: structuredClone(tuning),
+      debug: false,
+      camera: new PerspectiveCamera(),
+      commands,
+    },
+    new ThreeScene(),
+  );
+  active = scene;
+  for (const bad of [
+    'boss pattern',
+    'boss pattern slam',
+    'boss pattern summon x',
+  ])
+    expect(commands.execute(bad)).toMatch(/Podaj/);
+  commands.execute('god');
+  expect(commands.execute('boss pattern summon')).toBe('Wzorzec bossa: summon');
+  for (let i = 0; i < 80; i++) scene.step(SIM_DT, input);
+  expect(scene.query('enemies')).toBe(3);
+  expect(commands.execute('boss pattern shield')).toBe('Wzorzec bossa: shield');
+  commands.execute('kill all');
+  for (let i = 0; i < 5; i++) scene.step(SIM_DT, input);
+  // kill all zabija sługi; boss ginie dopiero po trzech progach faz.
+  expect(scene.query('enemies')).toBe(1);
+});

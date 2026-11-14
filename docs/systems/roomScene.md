@@ -49,8 +49,14 @@ wrogów, statusy i pociski oraz kończy pokój bez czekania na kolejkę fal.
 Śmierć zatrzymuje fale i moce; `clear()` po śmierci nie otwiera drzwi i nie
 emituje ukończenia. Pokój nie oferuje restartu ani wyboru buildu.
 
-Pokój bossa oraz pokoje z nakładkami sklepu/odpoczynku wymagają integracji
-odpowiednich kolejnych zadań F3; w F3-04 wyczyszczenie obsługuje `WaveDirector`.
+Pokoje z nakładkami sklepu/odpoczynku wymagają integracji odpowiednich zadań F3;
+w F3-04 wyczyszczenie obsługuje `WaveDirector`.
+
+**Tryb bossa (F3-17):** gdy `layout.bossEnemy` jest ustawione, `RoomScene` nie startuje
+`WaveDirector` (fale są ignorowane), tworzy bossa po inicjalizacji i wywołuje
+`completeRoom` na `enemy_killed` bossa. Dodatkowe komendy: `boss phase <n>`,
+`boss pattern summon|shield`; `query('boss')`. Punkty spawnu układu trafiają do
+`EnemyManager` jako punkty wezwań. Szczegóły: `docs/systems/enemies.md`, `runScene.md`.
 
 ## HeldItem i debug
 
