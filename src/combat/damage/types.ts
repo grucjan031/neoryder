@@ -1,6 +1,13 @@
 import type { EntityId } from '../../core/events';
 import type { Vec3 } from '../../core/math';
 
+export interface StatusApplication {
+  id: string;
+  durationS: number;
+  /** Liczba stosów, domyślnie 1. */
+  stacks?: number;
+}
+
 /** Opis pojedynczego trafienia. Liczby (obrażenia, odrzut) pochodzą z danych lub tuning.ts. */
 export interface DamageInfo {
   amount: number;
@@ -13,6 +20,7 @@ export interface DamageInfo {
   dir?: Vec3;
   /** Impuls odrzutu w N·s. */
   knockback?: number;
+  statuses?: readonly StatusApplication[];
 }
 
 export const FRIENDLY_FIRE_TAG = '#friendly_fire';

@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type * as RAPIER from '@dimforge/rapier3d-compat';
 import { EventBus } from '../../src/core/events';
 import type { GameEvents } from '../../src/core/events';
+import type { StatusApplication } from '../../src/combat/damage/types';
 import { EntityRegistry } from '../../src/core/entities';
 import { Stats } from '../../src/core/stats';
 import {
@@ -104,6 +105,47 @@ describe('Health', () => {
 });
 
 describe('DamageSystem', () => {
+  it.each([
+    {
+      statuses: [
+        { id: 'burning', durationS: 3 },
+        { id: 'overload', durationS: 2, stacks: 2 },
+      ],
+    },
+    { statuses: [] },
+  ] satisfies { statuses: StatusApplication[] }[])(
+    'przekazuje podane statuses bez zmian: $statuses',
+    ({ statuses }) => {
+      const { bus, damage, player, enemy } = setup();
+      const dealt = vi.fn();
+      bus.on('damage_dealt', dealt);
+      damage.deal(enemy, { amount: 10, source: player, tags: [], statuses });
+      expect(dealt).toHaveBeenCalledOnce();
+      expect(dealt.mock.calls[0]?.[0].statuses).toBe(statuses);
+    },
+  );
+
+  it('pomija pole statuses, gdy nie podano go w DamageInfo', () => {
+    const { bus, damage, player, enemy } = setup();
+    const dealt = vi.fn();
+    bus.on('damage_dealt', dealt);
+    damage.deal(enemy, { amount: 10, source: player, tags: [] });
+    expect(dealt).toHaveBeenCalledOnce();
+    expect(dealt.mock.calls[0]?.[0]).not.toHaveProperty('statuses');
+  });
+
+  it('udostępnia zarejestrowane Stats i usuwa dostęp po unregister', () => {
+    const { damage, registry, player, enemy, enemyHealth } = setup();
+    const stats = new Stats({ maxHealth: 50 });
+    const ghost = registry.create('ghost', 'enemy');
+    damage.register(enemy, enemyHealth, { stats });
+    expect(damage.stats(enemy)).toBe(stats);
+    expect(damage.stats(player)).toBeUndefined();
+    expect(damage.stats(ghost)).toBeUndefined();
+    damage.unregister(enemy);
+    expect(damage.stats(enemy)).toBeUndefined();
+  });
+
   it('zadaje obrażenia, emituje zdarzenia i enemy_killed dokładnie raz', () => {
     const { damage, events, player, enemy, enemyHealth } = setup();
     expect(

@@ -12,6 +12,12 @@ iteruje po kopii subskrypcji w kolejności rejestracji; odpięty w jej trakcie z
 handler bierze udział jeszcze w tej emisji. Wyjątki trafiają do `console.error`.
 `once` jest zdejmowane przed wywołaniem, również przy zagnieżdżonej emisji.
 
+Kontrakty F2-01 rozszerzają `GameEvents` o `status_applied`, `status_expired`,
+`focus`, `weapon_switched`, `blade_thrown`, `blade_returned` i `synergy_triggered`
+zgodnie z `docs/api.md` → „Kontrakty F2”. `damage_dealt` ma opcjonalne
+`statuses` przekazywane z `DamageInfo`. To deklaracje kontraktów dla kolejnych
+zadań F2; samo dodanie typów nie uruchamia reakcji na te zdarzenia.
+
 `Stats` liczy `(base + suma flat) × (1 + suma percent) × iloczyn mult`, z dolną
 granicą zero. Cache unieważnia zmiana bazy oraz dodanie/usunięcie modyfikatorów.
 Modyfikatory są kopiowane i zamrażane, a lista zwracana jako kopia. `Rng` używa
@@ -35,6 +41,11 @@ Snapshot zwraca kopie zbiorów, po czym zeruje krawędzie i deltę myszy. Wiele
 klawiszy tej samej akcji jest liczone niezależnie. Fokus okna, widoczność dokumentu
 i utrata pointer lock zerują wejście oraz wywołują subskrybentów pauzy. Kliknięcie
 canvasu wznawia pętlę i prosi o pointer lock. Pisanie w polach UI nie uruchamia akcji.
+
+Akcje F2-01: `power2` pod `KeyE`, `weapon1`–`weapon3` pod `Digit1`–`Digit3`
+oraz `bladeThrow` pod środkowym przyciskiem myszy (`"1"`). `Input` blokuje
+domyślne akcje środkowego `mousedown` i `auxclick` na canvasie, w tym autoscroll.
+Mapowania udostępniają wejście dla kolejnych zadań F2, bez obsługi nowych mechanik.
 
 ## Dodanie sceny debug
 

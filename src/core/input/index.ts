@@ -14,6 +14,11 @@ const actionSchema = z.enum([
   'block',
   'shoot',
   'power',
+  'power2',
+  'weapon1',
+  'weapon2',
+  'weapon3',
+  'bladeThrow',
 ]);
 /** Pojedyncze zdarzenie ruchu myszy większe niż to (px) to artefakt przeglądarki, nie gest. */
 const MAX_MOUSE_DELTA = 400;
@@ -70,8 +75,16 @@ export class Input {
     target.addEventListener(
       'mousedown',
       (event) => {
+        if (event.button === 1) event.preventDefault();
         const action = bindings.mouse[String(event.button)];
         if (action) this.press(`mouse:${event.button}`, action);
+      },
+      options,
+    );
+    target.addEventListener(
+      'auxclick',
+      (event) => {
+        if (event.button === 1) event.preventDefault();
       },
       options,
     );

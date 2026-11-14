@@ -11,7 +11,11 @@
     "ControlLeft": "crouch",
     "ControlRight": "crouch",
     "KeyR": "shoot",
-    "KeyF": "power"
+    "KeyF": "power",
+    "KeyE": "power2",
+    "Digit1": "weapon1",
+    "Digit2": "weapon2",
+    "Digit3": "weapon3"
   },
-  "mouse": { "0": "attack", "2": "block" }
+  "mouse": { "0": "attack", "1": "bladeThrow", "2": "block" }
 }

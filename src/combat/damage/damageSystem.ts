@@ -50,6 +50,11 @@ export class DamageSystem {
     return this.targets.get(id)?.health;
   }
 
+  /** Statystyki celu przekazane w register. */
+  stats(id: EntityId): Stats | undefined {
+    return this.targets.get(id)?.opts.stats;
+  }
+
   /** Czas symulacji dla okien nietykalności. Scena woła w każdym kroku. */
   step(dt: number): void {
     if (dt > 0) this.timeS += dt;
@@ -104,6 +109,7 @@ export class DamageSystem {
       dir: info.dir ?? null,
       knockback: info.knockback ?? 0,
       killed,
+      ...(info.statuses !== undefined ? { statuses: info.statuses } : {}),
     });
     this.bus.emit('health_changed', {
       id: target,

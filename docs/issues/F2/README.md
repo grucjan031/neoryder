@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Start F2: zadanie 01.
+Bramka F1 zaliczona (playtest człowieka). 01 gotowe; w toku 12.
 
 ## Decyzje wspólne
 
@@ -20,7 +20,7 @@ Bramka F1 zaliczona (playtest człowieka). Start F2: zadanie 01.
 
 | Nr  | Tytuł                                                                | Agent             | Zależy od  | Szac. | Stan   |
 | --- | -------------------------------------------------------------------- | ----------------- | ---------- | ----- | ------ |
-| 01  | Kontrakty F2: statusy w obrażeniach, akcje wejścia, zdarzenia        | Architekt         | —          | S     | w toku |
+| 01  | Kontrakty F2: statusy w obrażeniach, akcje wejścia, zdarzenia        | Architekt         | —          | S     | gotowe |
 | 02  | `StatusSystem`: podpalenie, przeciążenie, ogłuszenie                 | Architekt         | 01         | M     | —      |
 | 03  | Tryby strzału i dane broni: pistolet, karabin, rozpraszacz, snajperka | Bronie            | 01         | L     | —      |
 | 04  | Ciągły laser i granat EMP                                            | Bronie            | 02, 03     | M     | —      |
@@ -31,7 +31,7 @@ Bramka F1 zaliczona (playtest człowieka). Start F2: zadanie 01.
 | 09  | Chwyt i rzut                                                         | Moce              | 05         | L     | —      |
 | 10  | Rzut ostrzem i dash-cięcie                                           | Walka wręcz       | 01         | M     | —      |
 | 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | —      |
-| 12  | `EnemyDirector`: tokeny ataku, flankowanie, ostrzał zaporowy         | AI wrogów         | 01         | M     | —      |
+| 12  | `EnemyDirector`: tokeny ataku, flankowanie, ostrzał zaporowy         | AI wrogów         | 01         | M     | w toku |
 | 13  | Snajper i Dron                                                       | AI wrogów         | 12         | M     | —      |
 | 14  | Tarczownik i Egzekutor                                               | AI wrogów         | 02, 12     | L     | —      |
 | 15  | Ekwipunek, przełączanie broni, HUD mocy i broni                      | UI/UX + Architekt | 03, 05     | M     | —      |

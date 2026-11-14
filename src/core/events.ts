@@ -1,4 +1,5 @@
 import type { Vec3 } from './math';
+import type { StatusApplication } from '../combat/damage/types';
 
 export type EntityId = number;
 
@@ -21,6 +22,7 @@ export interface GameEvents {
     /** Impuls odrzutu (N·s) z DamageInfo.knockback; 0, gdy brak. */
     knockback: number;
     killed: boolean;
+    statuses?: readonly StatusApplication[];
   };
   enemy_killed: {
     id: EntityId;
@@ -74,6 +76,20 @@ export interface GameEvents {
   wave_started: { wave: number; count: number };
   wave_cleared: { wave: number };
   wave_last_kill: { wave: number; id: EntityId };
+  // F2 — kontrakty (#01)
+  status_applied: {
+    target: EntityId;
+    status: string;
+    stacks: number;
+    durationS: number;
+    source: EntityId | null;
+  };
+  status_expired: { target: EntityId; status: string };
+  focus: { worldScale: number; durationS: number };
+  weapon_switched: { owner: EntityId; weapon: string; slot: number };
+  blade_thrown: { owner: EntityId };
+  blade_returned: { owner: EntityId };
+  synergy_triggered: { synergy: string; user: EntityId };
 }
 
 export type EventType = keyof GameEvents;

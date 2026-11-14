@@ -31,6 +31,8 @@ atak (melee / pocisk / moc)
 
 ## Reguły
 
+- **Statusy (F2-01):** `DamageInfo.statuses?: readonly StatusApplication[]` opisuje statusy trafienia: `id`, `durationS`, opcjonalne `stacks` (domyślnie 1). `damage_dealt.statuses` otrzymuje podaną tablicę bez zmian, także pustą; gdy jej nie podano, pole nie występuje w zdarzeniu. Samo przekazanie nie nakłada statusów i nie zmienia dotychczasowych warunków emisji obrażeń.
+- **Statystyki celu:** `DamageSystem.stats(id): Stats | undefined` zwraca instancję przekazaną przez `register(id, health, { stats })`; bez statystyk, dla niezarejestrowanego celu i po `unregister` zwraca `undefined`.
 - **Drużyny:** `player`, `enemy`, `neutral`. Ta sama drużyna = brak obrażeń. `neutral` jako źródło rani wszystkich (np. wybuchowa beczka). `source = null` (środowisko) rani wszystkich. Tag `#friendly_fire` omija filtr.
 - **Redukcje** wyłącznie przez `StatModifier` na statystyce `damageTaken` celu. Blok ostrzem = `{ stat: 'damageTaken', type: 'mult', value: 0.3, source: 'block' }`, zdejmowany `removeBySource('block')`. `damageTaken` ma zawsze bazę 1 — wartość bazowa w `Stats` jest ignorowana.
 - **Nietykalność** po trafieniu tylko tam, gdzie podano `invulnMs` (gracz). Liczona w czasie symulacji, więc hitstop i spowolnienie ją wydłużają.
