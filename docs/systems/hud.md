@@ -22,14 +22,14 @@ HUD słucha `held_item_changed` dla gracza: `held: 'blade'` dodaje
 `.hud__weapon--inactive` (opacity 0,4), `held: 'gun'` ją usuwa. Ciepło i nazwa
 wybranego slotu pozostają widoczne. Reset areny publikuje początkowy stan ręki.
 
-| Miejsce | Elementy |
-| --- | --- |
-| Lewy dół | zdrowie: 10 skośnych segmentów + liczba (`.hud__segments`), pod nim cienki pasek energii (cyan) |
-| Prawy dół | blok broni: nazwa (`.hud__weapon-name`), wskaźnik slotów 1/2/3 (tylko gdy broni > 1), pasek ciepła cyan → magenta → czerwień, „PRZEGRZANIE” (migający wiersz nad nazwą); obok kwadraty mocy F i E |
-| Góra, środek | „FALA 3 / 12” i „Wrogowie N”; baner „FALA 3” / „FALA CZYSTA” wjeżdżający i znikający; toast synergii (magenta) pod banerem |
-| Środek | celownik (kropka + 4 kreski), znacznik trafienia, łuk kierunku obrażeń, odmowa mocy pod celownikiem |
-| Dół, środek | „Ostrze w locie” |
-| Krawędzie | czerwona winieta pulsująca po obrażeniach; słaba stała poniżej 30% HP |
+| Miejsce      | Elementy                                                                                                                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lewy dół     | zdrowie: 10 skośnych segmentów + liczba (`.hud__segments`), pod nim cienki pasek energii (cyan)                                                                                                   |
+| Prawy dół    | blok broni: nazwa (`.hud__weapon-name`), wskaźnik slotów 1/2/3 (tylko gdy broni > 1), pasek ciepła cyan → magenta → czerwień, „PRZEGRZANIE” (migający wiersz nad nazwą); obok kwadraty mocy F i E |
+| Góra, środek | „FALA 3 / 12” i „Wrogowie N”; baner „FALA 3” / „FALA CZYSTA” wjeżdżający i znikający; toast synergii (magenta) pod banerem                                                                        |
+| Środek       | celownik (kropka + 4 kreski), znacznik trafienia, łuk kierunku obrażeń, odmowa mocy pod celownikiem                                                                                               |
+| Dół, środek  | „Ostrze w locie”                                                                                                                                                                                  |
+| Krawędzie    | czerwona winieta pulsująca po obrażeniach; słaba stała poniżej 30% HP                                                                                                                             |
 
 Zdrowie: segment i ma wypełnienie `clamp(ratio * 10 - i, 0, 1)` (`data-fill`
 na `.hud__seg-fill`). Pod każdym segmentem leży „duch” (`.hud__seg-ghost`) w czerwieni;
@@ -60,22 +60,22 @@ kąta. Gdy `dir` jest `null` (np. obrażenia obszarowe), łuk się nie pokazuje.
 
 ## Zdarzenia
 
-| Element | Zdarzenie | Filtr |
-| --- | --- | --- |
-| Zdrowie, winieta niskiego HP | `health_changed` | `id === playerId` |
-| Energia, przygaszanie mocy | `energy_changed` | `id === playerId` |
-| Ciepło, przegrzanie | `heat_changed` | `id === playerId` |
-| Nazwa broni, aktywny slot | `weapon_switched` | `owner === playerId` |
-| Rozszerzenie celownika | `weapon_fired` | `owner === playerId` |
-| Odnowienie mocy | `power_cooldown`, `power_used` (Chwyt) | `user === playerId` |
-| Odmowa mocy | `power_denied` | `user === playerId` |
-| Winieta, łuk kierunku | `damage_dealt` | `target === playerId`, `amount > 0` |
-| Znacznik trafienia / zabójstwa | `damage_dealt` | `source === playerId`, `amount > 0` |
-| Fala, baner | `wave_started`, `wave_cleared` | globalne |
-| Pozostali wrogowie | `wave_started.count`, `enemy_killed` | globalne (licznik schodzi do 0) |
-| Toast synergii (nazwa z definicji) | `synergy_triggered` | `user === playerId` |
-| Ostrze w locie | `blade_thrown`, `blade_returned` | `owner === playerId` |
-| Dialog śmierci | `player_died` | `id === playerId` |
+| Element                            | Zdarzenie                              | Filtr                               |
+| ---------------------------------- | -------------------------------------- | ----------------------------------- |
+| Zdrowie, winieta niskiego HP       | `health_changed`                       | `id === playerId`                   |
+| Energia, przygaszanie mocy         | `energy_changed`                       | `id === playerId`                   |
+| Ciepło, przegrzanie                | `heat_changed`                         | `id === playerId`                   |
+| Nazwa broni, aktywny slot          | `weapon_switched`                      | `owner === playerId`                |
+| Rozszerzenie celownika             | `weapon_fired`                         | `owner === playerId`                |
+| Odnowienie mocy                    | `power_cooldown`, `power_used` (Chwyt) | `user === playerId`                 |
+| Odmowa mocy                        | `power_denied`                         | `user === playerId`                 |
+| Winieta, łuk kierunku              | `damage_dealt`                         | `target === playerId`, `amount > 0` |
+| Znacznik trafienia / zabójstwa     | `damage_dealt`                         | `source === playerId`, `amount > 0` |
+| Fala, baner                        | `wave_started`, `wave_cleared`         | globalne                            |
+| Pozostali wrogowie                 | `wave_started.count`, `enemy_killed`   | globalne (licznik schodzi do 0)     |
+| Toast synergii (nazwa z definicji) | `synergy_triggered`                    | `user === playerId`                 |
+| Ostrze w locie                     | `blade_thrown`, `blade_returned`       | `owner === playerId`                |
+| Dialog śmierci                     | `player_died`                          | `id === playerId`                   |
 
 Paski startują puste z liczbą „—”, do pierwszego zdarzenia. Scena powinna utworzyć
 HUD przed początkowymi emisjami zdrowia, energii i ciepła albo wyemitować aktualny
@@ -130,3 +130,31 @@ trafienia i licznik wrogów (`hit 5`, `kill all`), baner fali (`wave 3`). Wpisz
 Oceń czytelność na białym tle i czy HUD nie zasłania pola gry.
 
 Testy DOM: `npx vitest run tests/unit/hud.test.ts` (jsdom).
+
+## HUD runu (F3-15)
+
+`src/ui/runHud.ts` (`RunHud`) jest tworzony przez `Hud` i montowany w jego
+warstwie. Wszystkie elementy mają `hidden`, dopóki nie nadejdzie zdarzenie, więc
+Arena wygląda jak dotąd. Teksty: `src/data/ui/hud.pl.json`
+(`credits`, `implants`, `bossHealth`).
+
+- **Kredyty** (prawy górny róg): panel pojawia się po pierwszym
+  `currency_changed`; pokazuje `amount`, a `delta` wyświetla się krótko pod
+  licznikiem (`+N` cyan, `−N` magenta).
+- **Implanty** (pod Kredytami): kafelek z inicjałami nazwy i ramką w kolorze
+  rzadkości (common szary, rare cyan `#00e5ff`, epic magenta `#ff2bd6`,
+  legendary złoty). Podpowiedź (`title`) zawiera nazwę i opis z definicji.
+  `implant_acquired` ze `source: 'upgrade'` zastępuje w rzędzie implant, którego
+  `upgradesTo` wskazuje nowe id (zamiast dodawać drugi kafelek).
+- **Pasek HP bossa** (góra, środek, pod plakietką fali): `boss_spawned` pokazuje
+  nazwę i pełny pasek; `health_changed` dla id bossa ustawia wypełnienie;
+  `boss_phase` rysuje `phases - 1` kresek w równych odstępach (kreski pojawiają
+  się dopiero po pierwszym `boss_phase`, bo `boss_spawned` nie niesie liczby
+  faz) i uruchamia krótki błysk; `enemy_killed` lub `entity_despawned` z id
+  bossa chowa pasek.
+- **Nowy pokój:** `Hud` jest tworzony od nowa w każdym pokoju, więc opcja
+  `run: { credits, implants }` odtwarza licznik i rząd implantów ze stanu runu
+  (przekazuje ją `RoomScene`).
+
+Kontrola: `?scene=room-test`, komendy `credits`, `implant <id>`; test:
+`npx vitest run tests/unit/runHud.test.ts`.
