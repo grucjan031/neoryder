@@ -1,6 +1,10 @@
-﻿# Zadania fazy F1 — Prototyp walki
+# Zadania fazy F1 — Prototyp walki
 
 Zadania w kolejności realizacji (numer = kolejność z uwzględnieniem zależności). Szacunek: S ≈ 0,5–1 dnia sesji, M ≈ 1–2 dni, L ≈ 2–4 dni. Wspólne wymagania i definicja ukończenia: `AGENTS.md`. Nowe zdarzenia opisane w sekcjach „Kontrakt” trzeba zatwierdzić w `docs/api.md` przed kodem.
+
+## Stan (2026-11-14)
+
+Wszystkie 16 zadań F1 zrealizowane i scalone na `main` (testy jednostkowe + e2e, CI zielone). Następny krok: **bramka fazy** — playtest według `docs/playtest-F1.md`, scena `?scene=arena`.
 
 ## Tabela zadań
 
