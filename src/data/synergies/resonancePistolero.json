@@ -1,0 +1,7 @@
+{
+  "id": "resonancePistolero",
+  "name": "Pistolero Rezonansu",
+  "requires": ["#build_resonance", "#build_gunner"],
+  "when": { "event": "enemy_killed", "tagsAny": ["#power"] },
+  "effects": [{ "kind": "cool_weapon", "amount": "full" }]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "bladeDancer",
+  "name": "Tancerz ostrzy",
+  "requires": ["#build_blade", "#build_resonance"],
+  "when": { "event": "parry_success" },
+  "effects": [
+    { "kind": "add_energy", "amount": 10 },
+    {
+      "kind": "stat_modifier_timed",
+      "stat": "dashCooldown",
+      "type": "mult",
+      "value": 0.5,
+      "durationS": 3
+    }
+  ]
+}

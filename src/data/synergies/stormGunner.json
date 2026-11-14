@@ -1,0 +1,18 @@
+{
+  "id": "stormGunner",
+  "name": "Burzowy strzelec",
+  "requires": ["#build_gunner", "#build_resonance"],
+  "when": {
+    "event": "damage_dealt",
+    "tagsAny": ["#gun"],
+    "targetStatus": "overload"
+  },
+  "effects": [
+    {
+      "kind": "chain_on_hit",
+      "jumpRangeM": 6,
+      "damageMult": 0.5,
+      "tags": ["#elektrycznosc"]
+    }
+  ]
+}
