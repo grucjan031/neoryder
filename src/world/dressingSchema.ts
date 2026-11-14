@@ -1,0 +1,97 @@
+import { z } from 'zod';
+
+/**
+ * Kontrakt oprawy wizualnej pokoju i areny (ADR 0006 „Neon Noir”).
+ * Wszystko tutaj jest kosmetyczne: nie tworzy colliderów, nie wpływa na walidację
+ * osiągalności ani na symulację. Przeszkody to nadal bloki układu.
+ */
+
+const finite = z.number().finite();
+const positive = z.number().finite().positive();
+const nonnegative = z.number().finite().nonnegative();
+const unit = z.number().finite().min(0).max(1);
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+/** Id tekstury: nazwa pliku bez rozszerzenia (np. `ramen_bar`). */
+const textureId = z.string().regex(/^[a-z0-9_]+$/);
+
+const vec3 = z.object({ x: finite, y: finite, z: finite });
+const size2 = z.object({ w: positive, h: positive });
+
+/** Materiał bloku układu; `world` = dotychczasowy materiał świata. */
+export const BLOCK_MATERIALS = [
+  'world',
+  'concrete',
+  'asphalt',
+  'metal',
+  'facade',
+  'trim',
+  'glass',
+] as const;
+export const blockMaterialSchema = z.enum(BLOCK_MATERIALS);
+export type BlockMaterial = z.infer<typeof blockMaterialSchema>;
+
+/**
+ * Napis neonowy (`neon`, plik `/assets/textures/signs/<texture>.webp`) albo
+ * hologram reklamowy (`holo`, `/assets/textures/holo/<texture>.webp`).
+ * Tekstury mają czarne tło i są rysowane addytywnie. `yaw` w radianach, płaszczyzna
+ * patrzy w +Z przy yaw = 0. `tint` mnoży kolor tekstury.
+ */
+export const signSchema = z.object({
+  kind: z.enum(['neon', 'holo']),
+  texture: textureId,
+  position: vec3,
+  size: size2,
+  yaw: finite,
+  tint: hexColor.optional(),
+  /** 0 = stałe światło, 1 = mocne migotanie. */
+  flicker: unit.optional(),
+});
+export type SignDef = z.infer<typeof signSchema>;
+
+/** Kolorowe światło punktowe; renderer ogranicza liczbę aktywnych świateł i dorysowuje plamę światła na podłodze. */
+export const cityLightSchema = z.object({
+  position: vec3,
+  color: hexColor,
+  intensity: positive,
+  range: positive,
+});
+export type CityLightDef = z.infer<typeof cityLightSchema>;
+
+/** Naklejka na ścianę (graffiti, plakat) lub podłogę (kałuża, oznakowanie): `/assets/textures/decals/<texture>.webp` z kanałem alfa. */
+export const decalSchema = z.object({
+  texture: textureId,
+  position: vec3,
+  size: size2,
+  yaw: finite,
+  surface: z.enum(['wall', 'floor']),
+  opacity: unit.optional(),
+});
+export type DecalDef = z.infer<typeof decalSchema>;
+
+/** Efekt otoczenia: para z kratki, iskry z przewodu, kapanie z rynny. */
+export const ambientFxSchema = z.object({
+  kind: z.enum(['steam', 'sparks', 'drip']),
+  position: vec3,
+  rate: nonnegative.optional(),
+});
+export type AmbientFxDef = z.infer<typeof ambientFxSchema>;
+
+/** Model dekoracyjny bez kolizji: `/assets/models/city/<model>.glb`. */
+export const decorSchema = z.object({
+  model: textureId,
+  position: vec3,
+  yaw: finite.optional(),
+  scale: positive.optional(),
+});
+export type DecorDef = z.infer<typeof decorSchema>;
+
+/** Pola oprawy dołączane do schematu pokoju i układu areny. */
+export const dressingFields = {
+  /** Id motywu z `src/data/themes/<id>.json`; brak = `white` (dotychczasowy wygląd). */
+  theme: textureId.optional(),
+  signs: z.array(signSchema).optional(),
+  lights: z.array(cityLightSchema).optional(),
+  decals: z.array(decalSchema).optional(),
+  ambientFx: z.array(ambientFxSchema).optional(),
+  decor: z.array(decorSchema).optional(),
+};
