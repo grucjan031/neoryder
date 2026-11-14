@@ -1,4 +1,5 @@
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
 import {
@@ -137,6 +138,7 @@ export class RoomScene implements Scene {
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private atmosphere?: SceneAtmosphere;
+  private dressing?: CityDressing;
   private readonly geometries = new Set<BufferGeometry>();
   private readonly off: (() => void)[] = [];
   private readonly tmpEuler = new Euler(0, 0, 0, 'YXZ');
@@ -214,6 +216,13 @@ export class RoomScene implements Scene {
     this.root.add(this.lights);
     await this.buildLayout();
     await loadDecor(this.root, this.layout.decor, this.loadModels);
+    this.dressing = new CityDressing(
+      this.root,
+      this.layout,
+      this.atmosphere.theme,
+      this.layout.playerSpawn.y,
+      this.layout.id,
+    );
 
     const playerId = this.entities.create('player', 'player');
     this.player = new PlayerController(
@@ -758,6 +767,7 @@ export class RoomScene implements Scene {
   // ----------------------------------------------------------------- pętla
 
   step(dt: number, input: InputSnapshot): void {
+    this.dressing?.step(dt);
     this.previous = this.player.getState();
     if (this.state === 'dead') {
       this.manager.step(dt);
@@ -831,6 +841,7 @@ export class RoomScene implements Scene {
     this.hitSparksView.render(frameDt);
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
+    this.dressing?.render(frameDt, this.ctx.camera);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
     const camera = this.ctx.camera;
@@ -1183,6 +1194,7 @@ export class RoomScene implements Scene {
     this.doors.clear();
     for (const g of this.geometries) g.dispose();
     this.geometries.clear();
+    this.dressing?.dispose();
     this.root.removeFromParent();
     this.root.clear();
     this.atmosphere?.dispose();

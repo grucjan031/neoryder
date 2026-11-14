@@ -36,14 +36,7 @@ const colors = [
 ];
 const signs: SignDef[] = colors.map((tint, i) => ({
   kind: 'neon',
-  texture: [
-    'ramen_bar',
-    'night_market',
-    'hotel',
-    'metro',
-    'open_24',
-    'noodle_lab',
-  ][i]!,
+  texture: ['ramen', 'hotel', 'bar_24h', 'karaoke', 'sake', 'open'][i]!,
   position: {
     x: i === 0 ? -3.8 : i === 1 ? 3.8 : i % 2 ? 5.76 : -5.76,
     y: i < 2 ? 4.5 : 3.2 + (i % 2) * 1.3,
@@ -57,18 +50,18 @@ const signs: SignDef[] = colors.map((tint, i) => ({
 signs.push(
   {
     kind: 'holo',
-    texture: 'transit',
+    texture: 'holo_android',
     position: { x: -3.6, y: 2.8, z: -8 },
-    size: { w: 1.8, h: 2.4 },
+    size: { w: 1.3, h: 2.6 },
     yaw: 0.3,
     tint: '#8a5cff',
     flicker: 0.4,
   },
   {
     kind: 'holo',
-    texture: 'city_net',
+    texture: 'holo_koi',
     position: { x: 3.6, y: 3, z: -15 },
-    size: { w: 1.8, h: 2.6 },
+    size: { w: 3, h: 1.5 },
     yaw: -0.4,
     tint: '#3d7bff',
     flicker: 0.2,
@@ -101,6 +94,7 @@ export class CityFxTest implements Scene {
   private weather!: Weather;
   private ambient!: AmbientFx;
   private off?: () => void;
+  private offStorm?: () => void;
 
   init(ctx: GameContext, three: ThreeScene): void {
     this.ctx = ctx;
@@ -206,7 +200,7 @@ export class CityFxTest implements Scene {
     this.cityLights = new CityLights(lights);
     this.decalRenderer = new DecalRenderer([
       {
-        texture: 'district_mark',
+        texture: 'graffiti_tag1',
         position: { x: -5.78, y: 1.5, z: -4 },
         size: { w: 1.2, h: 1.5 },
         yaw: Math.PI / 2,
@@ -214,7 +208,7 @@ export class CityFxTest implements Scene {
         opacity: 0.65,
       },
       {
-        texture: 'poster',
+        texture: 'poster_torn1',
         position: { x: 5.78, y: 1.5, z: -9 },
         size: { w: 1, h: 1.6 },
         yaw: -Math.PI / 2,
@@ -222,12 +216,12 @@ export class CityFxTest implements Scene {
         opacity: 0.8,
       },
       {
-        texture: 'road_mark',
+        texture: 'floor_arrow',
         position: { x: 0, y: 0, z: -5 },
         size: { w: 2, h: 4 },
         yaw: 0,
         surface: 'floor',
-        opacity: 0.15,
+        opacity: 0.5,
       },
     ]);
     this.weather = new Weather({}, 0, ctx.rng.fork('rain').getState());
@@ -247,6 +241,16 @@ export class CityFxTest implements Scene {
       this.decalRenderer.root,
       this.weather.root,
       this.ambient.root,
+    );
+    this.offStorm = ctx.commands?.register(
+      'storm',
+      'storm <0|1> — błyski burzy',
+      (args) => {
+        if (args.length !== 1 || (args[0] !== '0' && args[0] !== '1'))
+          return 'Użycie: storm <0|1>';
+        this.weather.stormEnabled = args[0] === '1';
+        return `Burza: ${args[0]}`;
+      },
     );
     this.off = ctx.commands?.register(
       'rain',
@@ -320,6 +324,7 @@ export class CityFxTest implements Scene {
     this.cityLights.update(this.worldDt, frameDt, camera);
     this.weather.update(this.worldDt, frameDt, camera);
     this.ambient.update(this.worldDt, frameDt, camera);
+    this.ctx.tuning.render.skyFlash = this.weather.flash * city.stormFlash;
     this.worldDt = 0;
   }
 
@@ -337,6 +342,8 @@ export class CityFxTest implements Scene {
 
   dispose(): void {
     this.off?.();
+    this.offStorm?.();
+    this.ctx.tuning.render.skyFlash = 0;
     this.signRenderer.dispose();
     this.decalRenderer.dispose();
     this.cityLights.dispose();

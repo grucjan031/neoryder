@@ -92,6 +92,7 @@ export class Weather {
     );
     this.rain.instanceMatrix.setUsage(DynamicDrawUsage);
     this.rain.frustumCulled = false;
+    this.rain.userData.noOutline = true;
     this.rain.count = 0;
     this.splashLimit = Math.max(0, Math.floor(t.rainSplashMax));
     // Pierścienie i krople dzielą łączny limit rozbryzgów.
@@ -105,6 +106,8 @@ export class Weather {
       'drop',
       t.rainOpacity,
     );
+    this.splashes.mesh.userData.noOutline = true;
+    this.splashDrops.mesh.userData.noOutline = true;
     this.root.add(this.rain, this.splashes.mesh, this.splashDrops.mesh);
   }
 

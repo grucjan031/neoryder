@@ -2,8 +2,14 @@
 
 Samodzielne moduły renderu korzystające z `SignDef`, `CityLightDef`, `DecalDef`
 i `AmbientFxDef` z `src/world/dressingSchema.ts`. Nie tworzą colliderów, nie
-zmieniają symulacji i nie konsumują RNG runu. Integrację RoomScene i Areny
-wykonuje integrator. Materiały, motywy i pipeline pozostają oddzielnym zadaniem.
+zmieniają symulacji i nie konsumują RNG runu. RoomScene i Arena tworzą je z pól
+układu przez `CityDressing` (`src/render/city/dressing.ts`): napisy, światła
+(`floorY = playerSpawn.y`), naklejki i efekty otoczenia z danych układu oraz deszcz,
+gdy motyw ma `rain.enabled` (parametry z motywu). `step(dt)` zbiera czas świata,
+`render(frameDt, camera)` woła `update(dtWorld, dtReal, camera)`; `dispose()` zwalnia
+wszystko. Błysk burzy `Weather.flash` trafia do `tuning.render.skyFlash`
+(skalowany `tuning.city.stormFlash`); burza jest włączana tylko komendą `storm 1`
+w `city-fx-test`, bo motyw nie ma jeszcze pola burzy.
 
 ## Kontrakt integracji
 
@@ -42,11 +48,12 @@ Płaszczyzna patrzy w +Z przy yaw=0. `tint` mnoży kolor tekstury. Czarne tło j
 niewidoczne przy addytywnym mieszaniu; kanał alfa pozostaje respektowany.
 Materiały mają `toneMapped=false`, `depthWrite=false`, `userData.bloom=true`.
 
-Uwaga dla integratora pipeline: obecny pass normalnych w `outline.ts` stosuje
-globalny `overrideMaterial`. Bez filtrowania przezroczystej oprawy może rysować
-kontur całych quadów pary, plam i deszczu. Warstwa oprawy nie zmienia tego passu;
-pomijanie przezroczystych VFX w buforze normalnych należy sprawdzić przy integracji
-nowego pipeline. `depthWrite=false` dotyczy materiału koloru, nie globalnego override.
+Kontur: pass normalnych/głębi w `outline.ts` używa globalnego `overrideMaterial`, więc
+przezroczyste quady dostałyby obrys. Obiekty z `userData.noOutline = true` są na czas
+tego passu (normalne, wet normals) ukrywane (`src/render/noOutline.ts`); bloom i
+odbicia nadal je widzą. Flagę mają: deszcz, rozbryzgi, para, iskry, kapanie, plamy
+światła, naklejki, płaszczyzny napisów i hologramów oraz stożek projektora. Ramy
+neonów (pełne bryły) są obrysowane.
 
 Neon ma ciemną płytę za tekstem. `flicker=0` daje stałą jasność; wyższe wartości
 włączają krótkie zaniki, buczenie jasności i częściowe wygaszenie komórek UV.
@@ -79,7 +86,8 @@ zachowuje liczbę świateł w shaderach. Wybór: rosnąca odległość od kamery
 Przy zmianie zestawu stare światło wygasa, dopiero przy progu bliskim zeru
 zmienia pozycję/kolor i płynnie narasta. Nie interpolujemy położenia światła
 przez ulicę. Każda definicja ma własną addytywną, radialną plamę na `floorY`,
-także gdy nie ma przypisanego PointLight. Plamy nie uruchamiają bloomu.
+także gdy nie ma przypisanego PointLight. Plamy nie uruchamiają bloomu. Mają być delikatną poświatą: promień plamy to
+`range * 2 * lightSpotScale` (0,6), siła `lightSpotOpacity` (0,08).
 To stylizowana poświata na mokrej nawierzchni, bez odbicia geometrii ani SSR.
 
 ## Deszcz i efekty otoczenia

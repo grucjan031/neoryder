@@ -46,6 +46,7 @@ export class DecalRenderer {
         mesh.position.x += Math.sin(def.yaw) * tuning.city.surfaceOffsetM;
         mesh.position.z += Math.cos(def.yaw) * tuning.city.surfaceOffsetM;
       }
+      mesh.userData.noOutline = true;
       this.root.add(mesh);
     }
   }

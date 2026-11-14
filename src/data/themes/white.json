@@ -49,6 +49,7 @@
     "bloomStrength": 0.6,
     "bloomRadius": 1.2,
     "skyGradient": 1,
+    "skyFlash": 0,
     "skyTop": "#ffffff",
     "skyHorizon": "#e3e7ea",
     "skyGradientHeight": 0.5,

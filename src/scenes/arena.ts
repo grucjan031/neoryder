@@ -1,5 +1,6 @@
 import { blockMaterialSchema, dressingFields } from '../world/dressingSchema';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
 import {
@@ -152,6 +153,7 @@ export class Arena implements Scene {
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private atmosphere?: SceneAtmosphere;
+  private dressing?: CityDressing;
   private readonly geometries = new Set<BufferGeometry>();
   private readonly off: (() => void)[] = [];
   private readonly tmpEuler = new Euler(0, 0, 0, 'YXZ');
@@ -218,6 +220,13 @@ export class Arena implements Scene {
     this.root.add(this.lights);
     await this.buildLayout();
     await loadDecor(this.root, layout.decor, this.loadModels);
+    this.dressing = new CityDressing(
+      this.root,
+      layout,
+      this.atmosphere.theme,
+      layout.playerSpawn.y,
+      'arena',
+    );
 
     const playerId = this.entities.create('player', 'player');
     this.player = new PlayerController(
@@ -715,6 +724,7 @@ export class Arena implements Scene {
   // ----------------------------------------------------------------- pętla
 
   step(dt: number, input: InputSnapshot): void {
+    this.dressing?.step(dt);
     this.previous = this.player.getState();
     if (this.state === 'select') return;
     if (this.state === 'dead') {
@@ -789,6 +799,7 @@ export class Arena implements Scene {
     this.hitSparksView.render(frameDt);
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
+    this.dressing?.render(frameDt, this.ctx.camera);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
     const camera = this.ctx.camera;
@@ -1139,6 +1150,7 @@ export class Arena implements Scene {
     this.world.free();
     for (const g of this.geometries) g.dispose();
     this.geometries.clear();
+    this.dressing?.dispose();
     this.root.removeFromParent();
     this.root.clear();
     this.atmosphere?.dispose();

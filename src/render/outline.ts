@@ -26,6 +26,7 @@ import { ReflectionPass, WetNormals } from './reflections';
 import { surfaceTexture } from './surfaceTextures';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
 import { syncMaterials } from './materials';
+import { hideNoOutline } from './noOutline';
 import { PostFxPass, PostFxState } from './postFx';
 import { renderWithViewmodel } from './viewmodelLayer';
 
@@ -52,6 +53,7 @@ const fragmentShader = /* glsl */ `
   uniform mat4 inverseProjection;
   uniform mat3 cameraRotation;
   uniform float fogStrength;
+  uniform float skyFlash;
   uniform float fogNear;
   uniform float fogFar;
   uniform vec3 fogColor;
@@ -141,6 +143,7 @@ const fragmentShader = /* glsl */ `
         vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, skyHeight, up));
         rgb = mix(rgb, sky, skyGradient);
       }
+      rgb += vec3(0.62, 0.68, 0.95) * skyFlash;
     } else if (fogStrength > 0.0 || heightFogDensity > 0.0) {
       // Mgła ku bieli ściąga też kontury, więc dalekie obiekty odcinają się od bliskich.
       float fog = smoothstep(fogNear, fogFar, centerDepth) * fogStrength;
@@ -154,8 +157,9 @@ const fragmentShader = /* glsl */ `
         float heightFog = 1.0-exp(-heightFogDensity*length(worldPoint-eyePosition)*integratedDensity);
         fog = 1.0-(1.0-fog)*(1.0-heightFog);
       }
-      rgb = mix(rgb, fogColor, fog);
-      line = mix(line, fogColor, fog);
+      vec3 flashedFog = fogColor + vec3(0.62, 0.68, 0.95) * skyFlash;
+      rgb = mix(rgb, flashedFog, fog);
+      line = mix(line, flashedFog, fog);
     }
     rgb = mix(rgb, line, edge);
     if (bloomStrength > 0.0) {
@@ -211,6 +215,7 @@ export class StylePipeline {
     inverseProjection: { value: new Matrix4() },
     cameraRotation: { value: new Matrix3() },
     fogStrength: { value: 0 },
+    skyFlash: { value: 0 },
     fogNear: { value: 0 },
     fogFar: { value: 1 },
     fogColor: { value: new Color() },
@@ -346,6 +351,7 @@ export class StylePipeline {
     uniforms.reflectionPuddles.value = t.reflectionPuddles;
     uniforms.floorTolerance.value = Math.max(t.reflectionFloorTolerance, 0.001);
     uniforms.fogStrength.value = t.fogStrength;
+    uniforms.skyFlash.value = t.skyFlash;
     uniforms.fogNear.value = t.fogNear;
     uniforms.fogFar.value = Math.max(t.fogFar, t.fogNear + 1e-3);
     uniforms.fogColor.value.set(t.fogColor);
@@ -371,9 +377,11 @@ export class StylePipeline {
       scene.background = null;
       renderer.setClearColor(0x000000, 0);
       renderer.setRenderTarget(this.normalTarget);
+      const restoreHidden = hideNoOutline(scene);
       if (t.reflectionStrength > 0) {
         this.wetNormals ??= new WetNormals();
         this.wetNormals.render(renderer, scene, camera);
+        restoreHidden();
         this.reflections ??= new ReflectionPass(
           this.colorTarget.width,
           this.colorTarget.height,
@@ -384,7 +392,10 @@ export class StylePipeline {
         const puddle = surfaceTexture('asphalt_puddles');
         uniforms.puddleMap.value = puddle.map.value;
         uniforms.puddleReady.value = puddle.ready.value;
-      } else renderWithViewmodel(renderer, scene, camera);
+      } else {
+        renderWithViewmodel(renderer, scene, camera);
+        restoreHidden();
+      }
       if (bloomOn) {
         this.bloom ??= new BloomPass(
           this.colorTarget.width,

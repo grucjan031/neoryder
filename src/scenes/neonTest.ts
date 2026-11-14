@@ -3,16 +3,145 @@ import {
   CapsuleGeometry,
   Group,
   Mesh,
-  PointLight,
   SphereGeometry,
 } from 'three';
 import type { BufferGeometry, Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
+import { CityDressing } from '../render/city/dressing';
+import type { DressingLayout } from '../render/city/dressing';
 import { createStyleLights } from '../render/lights';
 import { getMaterial, syncMaterials } from '../render/materials';
 import type { MaterialKind } from '../render/materials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import type { Scene } from './index';
+
+const wall = (x: number, y: number, z: number) => ({
+  position: { x, y, z },
+  yaw: x < 0 ? Math.PI / 2 : -Math.PI / 2,
+});
+const dressing: DressingLayout = {
+  signs: [
+    {
+      kind: 'neon',
+      texture: 'ramen',
+      ...wall(-3.7, 3.2, 6),
+      size: { w: 2.4, h: 1.2 },
+      flicker: 0.3,
+    },
+    {
+      kind: 'neon',
+      texture: 'hotel',
+      ...wall(3.7, 4, 1),
+      size: { w: 2.4, h: 1.2 },
+      flicker: 0.5,
+    },
+    {
+      kind: 'neon',
+      texture: 'open',
+      ...wall(-3.7, 3, -5),
+      size: { w: 2, h: 1 },
+      flicker: 0.8,
+    },
+    {
+      kind: 'neon',
+      texture: 'arrow',
+      ...wall(3.7, 4.5, -10),
+      size: { w: 2.4, h: 1.2 },
+    },
+    {
+      kind: 'neon',
+      texture: 'bar_24h',
+      position: { x: 0, y: 5.2, z: -14 },
+      yaw: 0,
+      size: { w: 3.2, h: 1.6 },
+      flicker: 0.2,
+    },
+    {
+      kind: 'holo',
+      texture: 'holo_android',
+      position: { x: 2.2, y: 2.4, z: -6.5 },
+      yaw: -0.3,
+      size: { w: 1.2, h: 2.4 },
+      tint: '#8a5cff',
+      flicker: 0.3,
+    },
+  ],
+  lights: [
+    {
+      position: { x: -3.2, y: 3.3, z: 6 },
+      color: '#ffae1a',
+      intensity: 22,
+      range: 9,
+    },
+    {
+      position: { x: 3.2, y: 3.8, z: 1 },
+      color: '#8a5cff',
+      intensity: 22,
+      range: 9,
+    },
+    {
+      position: { x: -3.2, y: 3, z: -5 },
+      color: '#6dff4a',
+      intensity: 22,
+      range: 9,
+    },
+    {
+      position: { x: 3.2, y: 4.2, z: -10 },
+      color: '#3d7bff',
+      intensity: 22,
+      range: 9,
+    },
+    {
+      position: { x: 0, y: 4.8, z: -12 },
+      color: '#fff1d6',
+      intensity: 22,
+      range: 9,
+    },
+  ],
+  decals: [
+    {
+      texture: 'graffiti_tag1',
+      ...wall(-3.7, 1.4, -2),
+      size: { w: 1.5, h: 1.5 },
+      surface: 'wall',
+    },
+    {
+      texture: 'poster_torn1',
+      ...wall(3.7, 1.4, -8),
+      size: { w: 1.2, h: 1.2 },
+      surface: 'wall',
+      opacity: 0.85,
+    },
+    {
+      texture: 'floor_arrow',
+      position: { x: 0, y: 0, z: -1 },
+      yaw: 0,
+      size: { w: 2, h: 2 },
+      surface: 'floor',
+      opacity: 0.5,
+    },
+    {
+      texture: 'puddle1',
+      position: { x: -1, y: 0, z: 4 },
+      yaw: 0.4,
+      size: { w: 2.2, h: 2.2 },
+      surface: 'floor',
+    },
+    {
+      texture: 'puddle2',
+      position: { x: 1.2, y: 0, z: -9 },
+      yaw: 1,
+      size: { w: 2.2, h: 2.2 },
+      surface: 'floor',
+    },
+  ],
+  ambientFx: [
+    { kind: 'steam', position: { x: -2.2, y: 0.05, z: 2 } },
+    { kind: 'steam', position: { x: 2.4, y: 0.05, z: -9 } },
+    { kind: 'sparks', position: { x: -3.6, y: 4.3, z: -7 } },
+    { kind: 'drip', position: { x: 3.6, y: 4.5, z: -2 } },
+  ],
+};
 
 /** Statyczna uliczka do oceny oprawy w 30 sekund, bez zależności od modeli. */
 export class NeonTest implements Scene {
@@ -21,6 +150,7 @@ export class NeonTest implements Scene {
   private readonly lights = createStyleLights();
   private readonly geometries = new Set<BufferGeometry>();
   private atmosphere?: SceneAtmosphere;
+  private dressing?: CityDressing;
   private ctx?: GameContext;
 
   init(ctx: GameContext, three: ThreeScene): void {
@@ -44,23 +174,13 @@ export class NeonTest implements Scene {
         this.box([0.18, 1.6, 2], [side * 3.85, 2.1, i * 6 - 10], 'glass');
       }
     }
-    const neons: {
-      kind: MaterialKind;
-      color: string;
-      position: [number, number, number];
-    }[] = [
-      { kind: 'neon_amber', color: '#ffae1a', position: [-3.7, 3.8, 6] },
-      { kind: 'neon_violet', color: '#8a5cff', position: [3.7, 4, 1] },
-      { kind: 'neon_green', color: '#6dff4a', position: [-3.7, 3.6, -5] },
-      { kind: 'neon_blue', color: '#3d7bff', position: [3.7, 4.5, -10] },
-      { kind: 'neon_white', color: '#fff1d6', position: [0, 5.5, -14] },
-    ];
-    for (const { kind, color, position } of neons) {
-      this.box([0.35, 1.4, 2.2], position, kind);
-      const light = new PointLight(color, 22, 9, 2);
-      light.position.set(position[0] * 0.85, position[1] - 0.6, position[2]);
-      this.root.add(light);
-    }
+    this.dressing = new CityDressing(
+      this.root,
+      dressing,
+      this.atmosphere.theme,
+      0,
+      'neon-test',
+    );
     this.box([1, 1, 1], [-1.7, 0.5, 6], 'interactive');
     this.box([1.4, 0.8, 1], [2, 0.4, -4], 'metal');
     for (const [x, z] of [
@@ -91,11 +211,14 @@ export class NeonTest implements Scene {
     mesh.position.set(...position);
     this.root.add(mesh);
   }
-  step(): void {}
+  step(dt = 0): void {
+    this.dressing?.step(dt);
+  }
   render(_alpha: number, dt = 1 / 60): void {
     syncMaterials();
     this.lights.sync();
     this.atmosphere?.sync(dt);
+    this.dressing?.render(dt, this.ctx?.camera);
     const camera = this.ctx?.camera;
     if (camera) {
       camera.position.set(0.7, 1.75, 12.8);
@@ -103,6 +226,7 @@ export class NeonTest implements Scene {
     }
   }
   dispose(): void {
+    this.dressing?.dispose();
     this.atmosphere?.dispose();
     this.root.removeFromParent();
     this.root.clear();

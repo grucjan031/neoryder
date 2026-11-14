@@ -85,7 +85,12 @@ export class CityLights {
         floorY + tuning.city.surfaceOffsetM,
         def.position.z,
       );
-      spot.scale.set(def.range * 2, def.range * 2, 1);
+      spot.userData.noOutline = true;
+      spot.scale.set(
+        def.range * 2 * tuning.city.lightSpotScale,
+        def.range * 2 * tuning.city.lightSpotScale,
+        1,
+      );
       this.root.add(spot);
     }
     if (!defs.length) geometry.dispose();
@@ -126,9 +131,15 @@ export class CityLights {
       }
       light.intensity += (this.defs[index]!.intensity - light.intensity) * fade;
     });
-    for (const object of this.root.children)
-      if (object instanceof Mesh)
-        object.material.uniforms.opacity.value = tuning.city.lightSpotOpacity;
+    this.root.children.forEach((object, i) => {
+      if (!(object instanceof Mesh)) return;
+      object.material.uniforms.opacity.value = tuning.city.lightSpotOpacity;
+      const def = this.defs[i - this.pool.length];
+      if (def) {
+        const size = def.range * 2 * tuning.city.lightSpotScale;
+        object.scale.set(size, size, 1);
+      }
+    });
   }
 
   dispose(): void {

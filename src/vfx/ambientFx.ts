@@ -31,6 +31,8 @@ export class AmbientFx {
       'ring',
       t.rainOpacity,
     );
+    for (const batch of [this.steam, this.sparks, this.drips, this.splashes])
+      batch.mesh.userData.noOutline = true;
     this.root.add(
       this.steam.mesh,
       this.sparks.mesh,

@@ -54,6 +54,7 @@ export const themeSchema = z.object({
       bloomStrength: nonnegative,
       bloomRadius: nonnegative,
       skyGradient: unit,
+      skyFlash: unit,
       skyTop: color,
       skyHorizon: color,
       skyGradientHeight: nonnegative,

@@ -106,6 +106,7 @@ export class SignRenderer {
         new PlaneGeometry(def.size.w, def.size.h),
         material,
       );
+      plane.userData.noOutline = true;
       plane.position.z = tuning.city.surfaceOffsetM;
       group.add(plane);
       const state: SignState = {
@@ -146,6 +147,7 @@ export class SignRenderer {
         beam.position.y = -def.size.h / 2;
         beam.material.userData.bloom = true;
         group.add(beam);
+        beam.userData.noOutline = true;
         state.projector = beam;
       }
       this.signs.push(state);

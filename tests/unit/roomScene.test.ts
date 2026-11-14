@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { Scene as ThreeScene } from 'three';
+import { Mesh, Scene as ThreeScene } from 'three';
 import type { RoomDefinition } from '../../src/world/roomSchema';
 import { RoomScene } from '../../src/scenes/roomScene';
 import type { RoomSceneOptions } from '../../src/scenes/roomScene';
@@ -381,4 +381,70 @@ it('RoomScene z loadModels=false zachowuje oprawę i stosuje materiał bloku bez
     expect(three.children).toHaveLength(0);
     expect(tuning.render).toEqual(previous);
   }
+});
+
+it('rysuje oprawę z układu pokoju i zwalnia jej zasoby bez wycieku', async () => {
+  const base = roomDefinitions.get('combatYard')!;
+  const room: RoomDefinition = {
+    ...base,
+    theme: 'neonStreet',
+    signs: [
+      {
+        kind: 'neon',
+        texture: 'ramen',
+        position: { x: 0, y: 3, z: -5 },
+        size: { w: 2, h: 1 },
+        yaw: 0,
+      },
+      {
+        kind: 'holo',
+        texture: 'holo_koi',
+        position: { x: 2, y: 2, z: -5 },
+        size: { w: 1, h: 2 },
+        yaw: 0,
+      },
+    ],
+    lights: [
+      {
+        position: { x: 0, y: 3, z: -4 },
+        color: '#ffae1a',
+        intensity: 10,
+        range: 6,
+      },
+    ],
+    decals: [
+      {
+        texture: 'puddle1',
+        position: { x: 1, y: 0, z: 1 },
+        size: { w: 1, h: 1 },
+        yaw: 0,
+        surface: 'floor',
+      },
+    ],
+    ambientFx: [{ kind: 'steam', position: { x: 1, y: 0, z: 2 } }],
+  };
+  const withoutRoom = await setup(runState(), new EventBus(), base);
+  const baseline = withoutRoom.three.children[0]!.children.length;
+  dispose(withoutRoom.scene);
+  const { scene, three } = await setup(runState(), new EventBus(), room);
+  const root = three.children.find((c) => c.name === '' && c.children.length)!;
+  expect(root.children.length).toBeGreaterThanOrEqual(baseline + 5);
+  const disposed = new Set<unknown>();
+  const resources: {
+    addEventListener: (type: string, listener: () => void) => void;
+  }[] = [];
+  const meshes: Mesh[] = [];
+  three.traverse((object) => {
+    if (object instanceof Mesh && object.userData.noOutline === true)
+      meshes.push(object);
+  });
+  expect(meshes.length).toBeGreaterThan(4);
+  for (const mesh of meshes) {
+    resources.push(mesh.geometry as never, mesh.material as never);
+  }
+  for (const resource of resources)
+    resource.addEventListener('dispose', () => disposed.add(resource));
+  dispose(scene);
+  expect(disposed.size).toBe(new Set(resources).size);
+  expect(tuning.render.skyFlash).toBe(0);
 });
