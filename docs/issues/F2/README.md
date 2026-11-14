@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–08, 10, 12–17. Skupienie i Bariera mają dane, moce, testy Vitest i scenę `barrier-test`. Dalej: 09, 11, potem 18.
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–10, 12–17; 18 — symulator gotowy, bramka balansu niezaliczona (propozycje w `docs/systems/balance.md` czekają na decyzję). Dalej: decyzja o balansie, 11.
 
 ## Decyzje wspólne
 
@@ -28,7 +28,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–08, 10, 12–17. Skupien
 | 06  | Skupienie: osobna skala czasu gracza                                 | Architekt + Moce  | 05         | M     | gotowe |
 | 07  | Błyskawica (łańcuch, przeciążenie)                                   | Moce              | 02, 05     | S     | gotowe |
 | 08  | Bariera                                                              | Moce              | 05         | S     | gotowe |
-| 09  | Chwyt i rzut                                                         | Moce              | 05         | L     | —      |
+| 09  | Chwyt i rzut                                                         | Moce              | 05         | L     | gotowe |
 | 10  | Rzut ostrzem i dash-cięcie                                           | Walka wręcz       | 01         | M     | gotowe |
 | 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | —      |
 | 12  | `EnemyDirector`: tokeny ataku, flankowanie, ostrzał zaporowy         | AI wrogów         | 01         | M     | gotowe |
@@ -88,6 +88,12 @@ Interfejs `Power`, baza kosztu i odnowienia (`power_denied`, kolejkowanie w hits
 **Gotowe:** testy odbicia z przodu, przepuszczenia z tyłu i końca działania.
 
 ### 09 Chwyt i rzut
+
+**Stan: gotowe.** `grab.json`, `GrabPower`, przejęcie AI i ciał, odmowy HUD,
+cyjanowa wiązka, scena `?scene=grab-test`; testy w `grabPower.test.ts`
+i `grabTest.test.ts`. Kontrakt w `docs/api.md`, szczegóły i playtest w
+`docs/systems/powers.md` oraz `docs/systems/enemies.md`. E2E uruchamia koordynator.
+Przegląd zewnętrzny: poprawki i weryfikacja punktów 1–13 w [grabReview.md](grabReview.md).
 
 `kind: 'grab'`: przytrzymanie `power` łapie obiekt interaktywny (czarny) albo lekkiego wroga (`grabbable` w danych wroga) w zasięgu, trzyma go przed kamerą, puszczenie rzuca — rzucone ciało zadaje obrażenia przy zderzeniu (wróg i cel). Energia drenowana w trakcie trzymania.
 **Gotowe:** testy chwytu, odmowy (za ciężki, za daleko), rzutu i obrażeń przy zderzeniu.

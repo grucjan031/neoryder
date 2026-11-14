@@ -1,0 +1,19 @@
+{
+  "id": "grab",
+  "name": "Chwyt i rzut",
+  "kind": "grab",
+  "cost": 20,
+  "cooldownS": 1.5,
+  "aimConeDeg": 36,
+  "rangeM": 12,
+  "maxMassKg": 100,
+  "drainPerS": 12,
+  "maxHoldS": 5,
+  "holdDistanceM": 3,
+  "throwSpeed": 22,
+  "minImpactSpeed": 5,
+  "impactDamage": 35,
+  "landingNormalY": 0.5,
+  "landingSpeedMps": 1,
+  "tags": ["#power", "#grab"]
+}

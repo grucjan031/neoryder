@@ -25,6 +25,7 @@ export const gunnerFields = z.object({
 });
 /** F2-13: lot drona — kinematyka 3D bez character controllera. */
 export const droneFields = z.object({
+  massKg: positive,
   /** Wysokość środka drona nad punktem spawnu (stopami). */
   hoverHeightM: positive,
   /** Prędkość kątowa krążenia wokół celu. */
@@ -49,6 +50,7 @@ export const enemySchema = z
     ...gunnerFields.partial().shape,
     id: z.string().min(1),
     kind: z.string().min(1),
+    grabbable: z.boolean().optional(),
     maxHealth: positive,
     moveSpeed: positive,
     turnRateDegS: positive,

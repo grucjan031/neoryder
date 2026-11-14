@@ -1,6 +1,7 @@
 {
   "id": "shielder",
   "kind": "shielder",
+  "grabbable": true,
   "maxHealth": 90,
   "moveSpeed": 3,
   "turnRateDegS": 360,

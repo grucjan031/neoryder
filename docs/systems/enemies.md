@@ -1,5 +1,43 @@
 # Wrogowie — F1 #08–09
 
+## Chwyt i przejęcie ciała (F2-09)
+
+`enemySchema.grabbable?: boolean` określa podatność na Chwyt. Brak pola oznacza
+odmowę. Szturmowiec, Strzelec, Snajper, Dron i Tarczownik mają `true`,
+Egzekutor ma `false`. Nie jest to status: system mocy nie nakłada bezpośrednio
+ogłuszenia ani innych statusów.
+
+`Enemy.grabTarget?()` (wszystkie wbudowane archetypy) udostępnia ciało Rapiera,
+masę i `setControlled(boolean)`; `EnemyManager.grabTargets()` filtruje martwych
+i usuniętych. Przejęcie natychmiast przerywa telegraph/swing/aim/burst, usuwa
+aktywny hitbox, punkt celowania i token lub oczekiwanie w kolejce dyrektora.
+Snapshot `controlled` jest `true` podczas chwytu i lotu. Wrogowie odczytują
+wtedy pozycję z fizyki, bez własnego ruchu, ataków i próśb o token. Tarczownik
+opuszcza tarczę, więc rzut i trafienia podczas przejęcia przechodzą normalnie.
+Kapsuły mają zablokowany obrót, aby dynamiczny lot nie przechylał kontrolera.
+Po `world.step()` scena wywołuje `manager.captureControlled()`, aktualizując
+bieżące snapshoty przed interpolacją; model nie zostaje o krok za wiązką.
+
+Dron przy przejęciu czasowo zmienia swój hurtbox z sensora w ciało kolidujące;
+po zwolnieniu przywraca sensor. Trafienie lecącą skrzynią w normalnie latającego
+Drona jest wykrywane przelotem kształtu także wobec sensora. Lądowanie kończy
+przejęcie i przywraca `idle` żywemu wrogowi; od kolejnego kroku działa zwykłe AI
+(Dron wraca na swój pułap). Statusy, jeśli nadal aktywne, ponownie ograniczają
+AI zwykłą ścieżką. Śmierć nie jest nadpisywana przez `idle`.
+
+Podczas `controlled` handlery obrażeń nie uruchamiają odrzutu ani zmiany stanu;
+same obrażenia i statusy nadal działają. Zwolnienie od razu zachowuje aktywne
+ogłuszenie z `StatusQuery`, a parowanie Egzekutora jest wyłączone podczas
+przejęcia. Kolejny Chwyt pomija wroga już przejętego przez dowolną instancję.
+Dron ma jawną `drone.massKg` = 5 kg (limit chwytu i masa fizyczna). Po przejęciu
+jego ciało odzyskuje odstęp `skinM` od świata, dzięki czemu może wznieść się
+z podłogi przy ścianie i wznowić orbitę. Nie zmienia to zwykłej pracy AI.
+
+Reset mocy przywraca typ ciała i CCD przed usunięciem wrogów przez scenę.
+Śmierć lub despawn przejętego celu odłącza go od Chwytu natychmiast.
+Testy: `grabPower.test.ts`, scena: `?scene=grab-test`; dotychczasowe testy AI
+zachowują asercje.
+
 Szturmowiec (`assaulter`) naciera z pałką elektryczną. Ma 60 HP, porusza się
 z prędkością 4,2 m/s, zatrzymuje się 1,8 m od celu i zapowiada cios przez 0,4 s.
 Aktywny wymach trwa 0,12 s i zadaje 15 obrażeń przez `Hitbox` oraz `DamageSystem`.

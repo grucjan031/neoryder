@@ -7,6 +7,7 @@ import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { EnemyDirectorApi } from './director';
 import type { EnemyDefinition } from './enemySchema';
+import type { GrabTarget } from '../combat/powers/grabTypes';
 
 export type EnemyState =
   | 'idle'
@@ -29,6 +30,7 @@ export interface EnemySnapshot {
   distance: number;
   shotTimeS?: number;
   shieldUp?: boolean;
+  controlled?: boolean;
   /** Punkt celowania podczas aim/burst (linia lasera Snajpera). */
   aim?: Vec3;
 }
@@ -38,6 +40,8 @@ export interface Enemy {
   readonly previous: EnemySnapshot;
   readonly current: EnemySnapshot;
   readonly removed: boolean;
+  grabTarget?(): GrabTarget;
+  syncControlled?(): void;
   step(dt: number): void;
   dispose(): void;
 }

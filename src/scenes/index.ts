@@ -12,6 +12,7 @@ import { BlasterTest } from './blasterTest';
 import { WeaponsTest } from './weaponsTest';
 import { AiTest, createStatusTest, createBarrierTest } from './aiTest';
 import { DebrisTest } from './debrisTest';
+import { GrabTest } from './grabTest';
 
 export interface Scene {
   readonly id: string;
@@ -40,4 +41,5 @@ export const scenes: Record<string, SceneFactory> = {
   'status-test': () => createStatusTest(),
   'barrier-test': () => createBarrierTest(),
   'debris-test': () => new DebrisTest(),
+  'grab-test': () => new GrabTest(),
 };

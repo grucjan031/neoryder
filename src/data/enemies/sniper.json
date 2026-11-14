@@ -1,6 +1,7 @@
 {
   "id": "sniper",
   "kind": "sniper",
+  "grabbable": true,
   "maxHealth": 35,
   "moveSpeed": 3.8,
   "turnRateDegS": 240,

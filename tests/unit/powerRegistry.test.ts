@@ -81,6 +81,7 @@ describe('rejestr mocy', () => {
       'barrier',
       'chain',
       'focus',
+      'grab',
       'push',
       'shockwave',
     ]);

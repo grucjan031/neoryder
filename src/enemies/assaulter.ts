@@ -1,3 +1,4 @@
+import type { GrabTarget } from '../combat/powers/grabTypes';
 import { Cuboid } from '@dimforge/rapier3d-compat';
 import {
   Health,
@@ -90,6 +91,7 @@ export class Assaulter implements Enemy {
         if (
           event.target !== this.id ||
           this.current.state === 'dead' ||
+          this.current.controlled ||
           event.killed
         )
           return;
@@ -137,6 +139,7 @@ export class Assaulter implements Enemy {
         this.shieldDownS <= epsilon &&
         !this.isStunned() &&
         this.current.state !== 'dead' &&
+        !this.current.controlled &&
         !this.deps.statuses?.has(this.id, 'overload');
   }
 
@@ -165,6 +168,7 @@ export class Assaulter implements Enemy {
     }
     if (
       parry &&
+      !this.current.controlled &&
       !heavy &&
       info.tags.includes('#melee') &&
       this.parryCooldownS <= epsilon &&
@@ -261,6 +265,39 @@ export class Assaulter implements Enemy {
       this.stunS = Math.max(this.stunS, this.current.stateTimeS + remaining);
   }
 
+  syncControlled(): void {
+    if (!this.removed && this.current.controlled)
+      this.current.position = this.body.position();
+  }
+
+  grabTarget(): GrabTarget {
+    return {
+      id: this.id,
+      body: this.body.body,
+      enemy: true,
+      controlled: this.current.controlled ?? false,
+      grabbable: this.definition.grabbable ?? false,
+      massKg: this.body.body.mass(),
+      setControlled: (controlled) => {
+        if (this.removed) return;
+        this.current.controlled = controlled;
+        this.deps.director?.releaseToken(this.id);
+        this.token = false;
+        this.body.clearMotion();
+        this.current.position = this.body.position();
+        if (this.current.state !== 'dead') {
+          this.transition('idle');
+          const remaining =
+            this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
+          if (!controlled && remaining > 0) {
+            this.stunS = remaining;
+            this.transition('stunned');
+          }
+        }
+      },
+    };
+  }
+
   step(dt: number): void {
     if (this.removed) return;
     this.previous = copy(this.current);
@@ -272,6 +309,10 @@ export class Assaulter implements Enemy {
     if (s.state === 'dead') {
       if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
         this.dispose();
+      return;
+    }
+    if (s.controlled) {
+      s.position = this.body.position();
       return;
     }
     this.cooldown = Math.max(0, this.cooldown - dt);

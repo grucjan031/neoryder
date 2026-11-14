@@ -1,6 +1,7 @@
 {
   "id": "drone",
   "kind": "drone",
+  "grabbable": true,
   "maxHealth": 18,
   "moveSpeed": 5.5,
   "turnRateDegS": 540,
@@ -14,6 +15,7 @@
   "stunOnHeavyS": 0.8,
   "repathJitter": 0,
   "drone": {
+    "massKg": 5,
     "hoverHeightM": 2.6,
     "orbitSpeedDegS": 35,
     "radiusM": 0.35,

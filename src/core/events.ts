@@ -32,6 +32,7 @@ export interface GameEvents {
   parry_success: { projectile: EntityId; attacker: EntityId | null };
   power_used: { power: string; user: EntityId };
   power_cooldown: { power: string; user: EntityId; cooldownS: number };
+  power_released: { power: string; user: EntityId };
   hitstop: { ms: number };
 
   // F1 — zdrowie (#01)
@@ -68,7 +69,7 @@ export interface GameEvents {
   power_denied: {
     power: string;
     user: EntityId;
-    reason: 'no_energy' | 'cooldown';
+    reason: 'no_energy' | 'cooldown' | 'too_heavy' | 'out_of_range';
   };
   // F1 — wrogowie (#08)
   enemy_telegraph: { id: EntityId; kind: string; durationS: number };

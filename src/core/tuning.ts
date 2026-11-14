@@ -111,6 +111,7 @@ export const tuning = {
   },
   /** Rezonans i energia (#11). Dane mocy w src/data/powers/*.json. */
   powers: {
+    grabClearanceM: 0.02,
     energyRegenDelayS: 2,
     meleeKillEnergy: 15,
     parryEnergy: 10,
@@ -139,6 +140,11 @@ export const tuning = {
     barrierSegments: 32,
     barrierOpacity: 0.12,
     barrierFlashOpacity: 0.55,
+    grabBeamColor: '#00e5ff',
+    grabBeamOpacity: 0.85,
+    grabHandSideM: 0.25,
+    grabHandDownM: 0.2,
+    grabHandForwardM: 0.35,
     beamRadiusM: 0.018,
     explosionDurationS: 0.3,
     explosionOpacity: 0.4,

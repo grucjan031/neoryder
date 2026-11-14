@@ -11,7 +11,7 @@ import type { EnemyDefinition } from './enemySchema';
 import type { EnemyDependencies } from './types';
 
 export class EnemyBody {
-  private readonly body;
+  readonly body;
   private readonly collider;
   private readonly controller;
   private readonly groups = interactionGroups(CollisionGroup.Enemy, 0xffff);
@@ -27,11 +27,9 @@ export class EnemyBody {
     const g = geometry;
     const centerY = g.height / 2;
     this.body = deps.world.createRigidBody(
-      RigidBodyDesc.kinematicPositionBased().setTranslation(
-        position.x,
-        position.y + centerY,
-        position.z,
-      ),
+      RigidBodyDesc.kinematicPositionBased()
+        .lockRotations()
+        .setTranslation(position.x, position.y + centerY, position.z),
     );
     this.collider = deps.world.createCollider(
       ColliderDesc.capsule(centerY - g.radius, g.radius).setCollisionGroups(
@@ -69,6 +67,15 @@ export class EnemyBody {
     if (length <= Number.EPSILON) return;
     this.impulse.x += (dir.x / length) * impulse;
     this.impulse.z += (dir.z / length) * impulse;
+  }
+
+  clearMotion(): void {
+    this.impulse.x = this.impulse.z = this.verticalSpeed = 0;
+  }
+
+  position(): Vec3 {
+    const p = this.body.translation();
+    return { x: p.x, y: p.y - this.geometry.height / 2, z: p.z };
   }
 
   wallAhead(yaw: number, distance: number): boolean {

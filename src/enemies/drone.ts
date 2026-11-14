@@ -1,3 +1,4 @@
+import type { GrabTarget } from '../combat/powers/grabTypes';
 import {
   Ball,
   ColliderDesc,
@@ -82,14 +83,13 @@ export class Drone implements Enemy {
     this.altitude = position.y + this.flight.hoverHeightM;
     const center = { x: position.x, y: this.altitude, z: position.z };
     this.body = deps.world.createRigidBody(
-      RigidBodyDesc.kinematicPositionBased().setTranslation(
-        center.x,
-        center.y,
-        center.z,
-      ),
+      RigidBodyDesc.kinematicPositionBased()
+        .lockRotations()
+        .setTranslation(center.x, center.y, center.z),
     );
     this.hurtbox = deps.world.createCollider(
       ColliderDesc.ball(this.flight.radiusM)
+        .setMass(this.flight.massKg)
         .setSensor(true)
         .setCollisionGroups(interactionGroups(CollisionGroup.Enemy, 0xffff)),
       this.body,
@@ -111,6 +111,7 @@ export class Drone implements Enemy {
         if (
           event.target !== this.id ||
           this.current.state === 'dead' ||
+          this.current.controlled ||
           event.killed
         )
           return;
@@ -216,6 +217,41 @@ export class Drone implements Enemy {
     });
   }
 
+  syncControlled(): void {
+    if (!this.removed && this.current.controlled)
+      this.current.position = { ...this.body.translation() };
+  }
+
+  grabTarget(): GrabTarget {
+    return {
+      id: this.id,
+      body: this.body,
+      enemy: true,
+      controlled: this.current.controlled ?? false,
+      grabbable: this.definition.grabbable ?? false,
+      massKg: this.flight.massKg,
+      setControlled: (controlled) => {
+        if (this.removed) return;
+        this.current.controlled = controlled;
+        this.deps.director?.releaseToken(this.id);
+        this.token = false;
+        this.hurtbox.setSensor(!controlled);
+        this.impulse.x = this.impulse.y = this.impulse.z = 0;
+        this.current.position = { ...this.body.translation() };
+        if (!controlled) this.recoverClearance();
+        if (this.current.state !== 'dead') {
+          this.transition('idle');
+          const remaining =
+            this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
+          if (!controlled && remaining > 0) {
+            this.stunS = remaining;
+            this.transition('stunned');
+          }
+        }
+      },
+    };
+  }
+
   step(dt: number): void {
     if (this.removed) return;
     this.previous = copy(this.current);
@@ -229,6 +265,10 @@ export class Drone implements Enemy {
     if (s.state === 'dead') {
       if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
         this.dispose();
+      return;
+    }
+    if (s.controlled) {
+      s.position = { ...this.body.translation() };
       return;
     }
     const stunned = this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
@@ -341,6 +381,31 @@ export class Drone implements Enemy {
     this.impulse.z *= damping;
     s.speed = moved / dt;
     s.distance += moved;
+  }
+
+  private recoverClearance(): void {
+    const point = { ...this.body.translation() };
+    this.deps.world.forEachCollider((collider) => {
+      if (
+        collider.isSensor() ||
+        ((collider.collisionGroups() >>> 16) & CollisionGroup.World) === 0
+      )
+        return;
+      const contact = collider.contactShape(
+        this.shape,
+        point,
+        identity,
+        this.flight.skinM,
+      );
+      if (!contact || contact.distance >= this.flight.skinM) return;
+      const distance = this.flight.skinM - contact.distance + epsilon;
+      point.x += contact.normal1.x * distance;
+      point.y += contact.normal1.y * distance;
+      point.z += contact.normal1.z * distance;
+    });
+    this.body.setTranslation(point, true);
+    this.body.setNextKinematicTranslation(point);
+    this.current.position = point;
   }
 
   /** Rzut kuli z `from` o `delta`; zwraca ułamek ruchu do kolizji (1 = bez przeszkody). */

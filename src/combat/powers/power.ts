@@ -6,6 +6,7 @@ import type { ProjectileSystem } from '../weapons/projectiles';
 import type { PlayerEnergy } from './energy';
 import type { PowerDefinition } from './powerSchema';
 import type { PushTarget } from './push';
+import type { GrabPhysics } from '../../physics/grabPhysics';
 
 export interface PowerInput {
   pressed: boolean;
@@ -17,7 +18,7 @@ export interface Power {
   readonly def: PowerDefinition;
   readonly cooldownRemaining: number;
   readonly active: boolean;
-  step(dt: number, input: PowerInput): void;
+  step(dt: number, input: PowerInput, worldDt?: number): void;
   reset(): void;
 }
 
@@ -31,6 +32,7 @@ export interface PowerDeps {
   targets(): readonly PushTarget[];
   castWall(origin: Vec3, dir: Vec3, maxDistance: number): number | null;
   projectiles?: ProjectileSystem;
+  grab?: GrabPhysics;
 }
 
 export type PowerFactory = (def: PowerDefinition, deps: PowerDeps) => Power;
@@ -103,6 +105,10 @@ export abstract class PowerBase<
 
   protected get cooldownOnActivation(): boolean {
     return true;
+  }
+
+  protected get activationQueued(): boolean {
+    return this.queued;
   }
 
   protected startCooldown(): void {

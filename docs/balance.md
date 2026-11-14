@@ -171,3 +171,5 @@ Historyczna próba pięciu zmian pól, jej dokładne wartości i wyniki są opis
 ### Ograniczenie loadera nieznanych mocy
 
 Symulator ostrzega i pomija nieobsługiwane rodzaje udostępnione przez rejestr. Obecny rejestr gry jednak waliduje wszystkie JSON-y przez powerSchema już podczas importu: rodzaj spoza jego unii przerwie import przed uruchomieniem symulatora. Pełne pomijanie surowego JSON-a z nieznanym kind wymaga zmiany loadera poza dozwolonym zakresem; do decyzji Architekta.
+
+Ostrzeżenie: Pominięto nieobsługiwany rodzaj mocy: grab (grab).

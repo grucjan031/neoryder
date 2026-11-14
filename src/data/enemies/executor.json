@@ -1,6 +1,7 @@
 {
   "id": "executor",
   "kind": "executor",
+  "grabbable": false,
   "maxHealth": 220,
   "moveSpeed": 4.2,
   "turnRateDegS": 360,

@@ -2,6 +2,7 @@ import { Ray } from '@dimforge/rapier3d-compat';
 import type { GameContext } from '../core/context';
 import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
+import type { GrabTarget } from '../combat/powers/grabTypes';
 import { CollisionGroup, interactionGroups } from '../physics';
 import { EnemyDirector } from './director';
 import type { DirectorConfig } from './director';
@@ -74,6 +75,16 @@ export class EnemyManager {
   }
   forEach(cb: (enemy: Enemy) => void): void {
     this.enemies.forEach(cb);
+  }
+  grabTargets(): GrabTarget[] {
+    return this.enemies.flatMap((enemy) => {
+      if (enemy.removed || enemy.current.state === 'dead') return [];
+      const target = enemy.grabTarget?.();
+      return target ? [target] : [];
+    });
+  }
+  captureControlled(): void {
+    for (const enemy of this.enemies) enemy.syncControlled?.();
   }
   despawnAll(): void {
     for (const enemy of this.enemies) enemy.dispose();

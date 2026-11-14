@@ -75,15 +75,39 @@ export const barrierPowerSchema = z.object({
 export type BarrierPowerDefinition = z.infer<typeof barrierPowerSchema> & {
   readonly knockback?: undefined;
 };
+export const grabPowerSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  kind: z.literal('grab'),
+  cost: z.number().finite().nonnegative(),
+  cooldownS: z.number().finite().nonnegative(),
+  aimConeDeg: z.number().finite().positive().max(360),
+  rangeM: z.number().finite().positive(),
+  maxMassKg: z.number().finite().positive(),
+  drainPerS: z.number().finite().nonnegative(),
+  maxHoldS: z.number().finite().positive(),
+  holdDistanceM: z.number().finite().positive(),
+  throwSpeed: z.number().finite().positive(),
+  minImpactSpeed: z.number().finite().nonnegative(),
+  impactDamage: z.number().finite().nonnegative(),
+  landingNormalY: z.number().finite().positive().max(1),
+  landingSpeedMps: z.number().finite().positive(),
+  tags: z.array(z.string().startsWith('#')),
+});
+export type GrabPowerDefinition = z.infer<typeof grabPowerSchema> & {
+  readonly knockback?: undefined;
+};
 
 export const powerSchema = z.discriminatedUnion('kind', [
   conePowerSchema,
   chainPowerSchema,
   focusPowerSchema,
   barrierPowerSchema,
+  grabPowerSchema,
 ]);
 export type PowerDefinition =
   | ConePowerDefinition
   | ChainPowerDefinition
   | FocusPowerDefinition
-  | BarrierPowerDefinition;
+  | BarrierPowerDefinition
+  | GrabPowerDefinition;

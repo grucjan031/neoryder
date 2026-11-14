@@ -12,13 +12,16 @@ export class PowerSlots {
     return this.slots[slot] ?? null;
   }
 
-  step(dt: number, input: InputSnapshot): void {
+  step(dt: number, input: InputSnapshot, worldDt?: number): void {
     for (const [slot, action] of (['power', 'power2'] as const).entries()) {
-      this.get(slot)?.step(dt, {
+      const powerInput = {
         pressed: input.pressed.has(action),
         held: input.held.has(action),
         released: input.released.has(action),
-      });
+      };
+      const power = this.get(slot);
+      if (worldDt === undefined) power?.step(dt, powerInput);
+      else power?.step(dt, powerInput, worldDt);
     }
   }
 

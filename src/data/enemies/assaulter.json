@@ -1,6 +1,7 @@
 {
   "id": "assaulter",
   "kind": "assaulter",
+  "grabbable": true,
   "maxHealth": 60,
   "moveSpeed": 4.2,
   "turnRateDegS": 360,

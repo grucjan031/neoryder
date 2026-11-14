@@ -1,5 +1,82 @@
 # API między modułami (kontrakty)
 
+## Chwyt i rzut (F2-09)
+
+Uzupełnienia po przeglądzie F2-09:
+
+- `Power.step(playerDt, input, worldDt = playerDt)` i
+  `PowerSlots.step(playerDt, input, worldDt = playerDt)` są wstecznie zgodne.
+  Chwyt krokuje loty po obsłudze wejścia (także nowy rzut) czasem świata;
+  koszt trzymania, limit i odnowienie nadal używają czasu gracza.
+- `GrabTarget.controlled?: boolean` wyklucza przejętego wroga z kandydatów.
+  `GrabContact.normal: Vec3` jest normalną od przeszkody do lecącego ciała.
+  `GrabPhysics.sweep(target, velocity, worldDt, accept?)` sprawdza także
+  początkowe nakładanie, pomija odrzucone kontakty i przy tym samym czasie
+  trafienia wybiera wroga przed światem. `accept` nie ma skutków ubocznych.
+- `holdPosition(target, origin, desired, { owner, playerRadiusM, clearanceM })`
+  wykonuje przelot od oka; zwraca `Vec3 | null` (brak bezpiecznego miejsca).
+  Sprawdza odstęp od kapsuły właściciela; bez collidera używa kuli przy oku.
+  `placeForRelease(target)` zatwierdza punkt kinematyczny przed rzutem,
+  także dla chwytu i puszczenia zakolejkowanych w jednym hitstopie.
+- Świat zadaje obrażenia przy normalnej prędkości uderzenia ≥ minImpactSpeed;
+  kontakt z podłogą i lądowanie wymagają małej całkowitej prędkości ciała.
+  Puszczenie ma pierwszeństwo przed wyczerpaniem energii i maxHoldS.
+- Dron po przejęciu odzyskuje odstęp `skinM` od świata. `drone.massKg` w danych
+  określa masę dla Chwytu i dynamicznego ciała, niezależnie od sensora.
+  Przejęte AI ignoruje reakcje ruchu/stanu na damage_dealt, ale obrażenia
+  i statusy nadal przechodzą zwykłą drogą. Zwolnienie zachowuje aktywne
+  ogłuszenie ze StatusSystem; parowanie nie działa podczas controlled.
+- `PowerBase.activationQueued` (chroniony getter) pozwala buforować puszczenie
+  tylko dla istniejącego lub zakolejkowanego chwytu. Hitstop wyrównuje snapshoty
+  wiązki, wrogów i skrzyń bez kroku fizyki; HUD zeruje stary licznik przy chwycie.
+
+- `PowerInput` już zawiera `pressed`, `held`, `released`; F/E łapie po wciśnięciu,
+  trzyma do puszczenia i rzuca po puszczeniu (również po hitstopie).
+- `PowerDeps.grab?: GrabPhysics` jest opcjonalne; pozostałe moce go nie używają.
+  `GrabPhysics(world, entities, enemies)` dostaje funkcję zwracającą `GrabTarget[]`.
+  `registerObject(id, body, massKg)` rejestruje dynamiczny obiekt interaktywny
+  i zwraca funkcję wyrejestrowania. `targets()` łączy obiekty i żywych wrogów.
+  `contacts(target)` odczytuje rzeczywiste kontakty, `sweep(target, velocity, dt)`
+  sprawdza przelot kształtu przez świat i hurtboxy wrogów (także sensory Drona).
+  Kontakt ma `enemy: EntityId | null`, `point`, `normalY` (podparcie od dołu)
+  i `impact: boolean` (świat lub wróg). Podparcie na obiekcie też kończy lot,
+  ale samo uderzenie w obiekt nie zadaje obrażeń Chwytu.
+- `GrabTarget`: `{ id, body: RigidBody, enemy: boolean, grabbable: boolean,
+  massKg: number, setControlled?(controlled: boolean): void }`.
+  Obiekty rejestruje scena, bez wyszukiwania po kolorze materiału.
+- Opcjonalne `Enemy.grabTarget?(): GrabTarget` udostępnia ciało i przejęcie ruchu
+  (zaimplementowane przez wszystkie wbudowane archetypy);
+  `EnemyManager.grabTargets()` zwraca żywych wrogów. Brak `grabbable` oznacza
+  `false`; dane pięciu lekkich archetypów mają `true`, Egzekutor ma `false`.
+  Przejęcie natychmiast przerywa atak i oddaje token dyrektora (także kolejkę),
+  ustawia snapshot `controlled?: boolean` i wstrzymuje AI. Snapshoty nadal
+  odczytują ciało fizyczne. Zwolnienie przywraca `idle` lub nadal aktywne
+  ogłuszenie żywemu wrogowi.
+  Przejęcie obejmuje trzymanie i lot do lądowania; nie jest statusem bojowym.
+  Scena po `world.step()` woła `EnemyManager.captureControlled()`, które przez
+  opcjonalne `Enemy.syncControlled()` aktualizuje bieżącą pozycję przejętego
+  wroga z ciała (poprzednia zostaje z początku kroku). Zapobiega to opóźnieniu
+  modelu względem wiązki i zachowuje interpolację podczas dynamicznego lotu.
+- `PowerBase` ma chronione `cooldownOnActivation` (domyślnie `true`) i
+  `startCooldown()`. Chwyt ustawia `false` i zaczyna odnowienie po puszczeniu.
+  `power_used` pozostaje zdarzeniem pobrania kosztu; nowe `power_released:
+  { power: string; user: EntityId }` zaczyna odnowienie Chwytu w HUD.
+- `power_denied.reason` rozszerza się o `'too_heavy' | 'out_of_range'`;
+  odmowy wyboru celu nie pobierają energii ani nie zaczynają odnowienia.
+- `GrabPower.heldTarget` to `EntityId | null`; `beam` to tylko odczytywany przez
+  render stan `{ previous: { from, to }, current: { from, to } } | null`.
+  Reset zwalnia trzymany cel i wszystkie loty oraz subskrypcje. Śmierć właściciela
+  opuszcza cel bez obrażeń, śmierć/despawn celu odłącza jego przejęcie.
+- Scena krokuje trzymanie czasem gracza, loty czasem świata przed fizyką.
+  Rzut włącza dynamiczne ciało i CCD; pierwsze kwalifikujące zderzenie przy
+  prędkości ≥ `minImpactSpeed` zadaje obrażenia raz na cel
+  przez `DamageSystem.deal`, źródło gracza, tagi `#power`, `#grab`.
+  Upuszczenie bez rzutu nie zadaje obrażeń. Przy lądowaniu żywy wróg wraca do AI.
+  `grab.json` zawiera też `landingNormalY` i `landingSpeedMps` (próg podparcia
+  i całkowitej prędkości kończących lot). Obiekt po pierwszym trafieniu wraca
+  do zwykłej fizyki dynamicznej (bez dalszych obrażeń od tego rzutu).
+  Render nie modyfikuje ciał ani mocy.
+
 Zmiany w tym pliku zatwierdza Architekt. Kod w `src/core/` musi być z nim zgodny. Sygnatury podane w TypeScript.
 
 ## Pętla gry — `src/core/loop.ts`
@@ -374,7 +451,8 @@ melee_blocked: { defender: EntityId; attacker: EntityId | null; amount: number }
 // moce (#11)
 power_cooldown: { power: string; user: EntityId; cooldownS: number };
 energy_changed: { id: EntityId; current: number; max: number };
-power_denied: { power: string; user: EntityId; reason: 'no_energy' | 'cooldown' };
+power_denied: { power: string; user: EntityId; reason: 'no_energy' | 'cooldown' | 'too_heavy' | 'out_of_range' };
+power_released: { power: string; user: EntityId }; // F2-09: odnowienie od puszczenia
 
 // wrogowie (#08)
 enemy_telegraph: { id: EntityId; kind: string; durationS: number };
@@ -504,6 +582,7 @@ export interface PowerDeps {
   targets(): readonly PushTarget[];               // { id, position }
   castWall(origin: Vec3, dir: Vec3, maxDistance: number): number | null;
   projectiles?: ProjectileSystem;                 // Bariera
+  grab?: GrabPhysics;                             // Chwyt (F2-09)
   feel?: FocusControl;                            // Skupienie (F2-06)
 }
 export type PowerFactory = (def: PowerDefinition, deps: PowerDeps) => Power;

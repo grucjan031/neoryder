@@ -2,6 +2,7 @@ import { ChainPower } from './chain';
 import { BarrierPower } from './barrier';
 import { FocusPower } from './focus';
 import { ConePower } from './cone';
+import { GrabPower } from './grab';
 import type { Power, PowerDeps, PowerFactory } from './power';
 import { powerSchema } from './powerSchema';
 import type { PowerDefinition } from './powerSchema';
@@ -73,4 +74,10 @@ registerPowerKind('barrier', (def, deps) => {
   if (def.kind !== 'barrier')
     throw new Error(`Nieprawidłowy mechanizm Bariery: ${def.kind}`);
   return new BarrierPower(def, deps);
+});
+
+registerPowerKind('grab', (def, deps) => {
+  if (def.kind !== 'grab')
+    throw new Error(`Nieprawidłowy mechanizm chwytu: ${def.kind}`);
+  return new GrabPower(def, deps);
 });

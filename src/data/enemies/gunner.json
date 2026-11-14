@@ -1,6 +1,7 @@
 {
   "id": "gunner",
   "kind": "gunner",
+  "grabbable": true,
   "maxHealth": 45,
   "moveSpeed": 3.4,
   "turnRateDegS": 360,

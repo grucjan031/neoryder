@@ -1,10 +1,10 @@
-# Rezonans — moce i energia (F1 #11, F2-05–08)
+# Rezonans — moce i energia (F1 #11, F2-05–09)
 
 Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, sceny: `?scene=push-test` (dwa sloty, ściana, `StatusSystem`, łuki błyskawicy) i `?scene=melee-test` (Pchnięcie z F1).
 
 ## Rejestr i wspólna baza
 
-- `powerSchema.ts`: `powerSchema` to unia zod po `kind` (`cone`, `chain`, `focus`, `barrier`). `registry.ts` eksportuje schemat i typ `PowerDefinition`; ładuje wszystkie `src/data/powers/*.json` przez `import.meta.glob` i waliduje je przy starcie. Nieznany `kind`, błędne parametry i powtórzone `id` kończą się błędem.
+- `powerSchema.ts`: `powerSchema` to unia zod po `kind` (`cone`, `chain`, `focus`, `barrier`, `grab`). `registry.ts` eksportuje schemat i typ `PowerDefinition`; ładuje wszystkie `src/data/powers/*.json` przez `import.meta.glob` i waliduje je przy starcie. Nieznany `kind`, błędne parametry i powtórzone `id` kończą się błędem.
 - `registerPowerKind(kind, factory)` rejestruje mechanizm raz; ponowna rejestracja tego samego rodzaju kończy się błędem. `createPower(id, deps)` tworzy osobny stan mocy przez fabrykę, a nieznane `id` zgłasza błędem. Nowy wariant istniejącego rodzaju wymaga wyłącznie nowego JSON-a. Nowy rodzaj wymaga gałęzi unii i jednej fabryki.
 - `Power` udostępnia `def`, `cooldownRemaining`, `active`, `step(dt, input)` i `reset()`. `PowerInput` niesie `pressed`, `held`, `released` konkretnej akcji. `PowerDeps` zawiera wspólną energię, obrażenia, celowanie, cele, promień ściany, bus i tuning; opcjonalne `projectiles` jest wymagane przez Barierę. Skupienie komunikuje skalę czasu zdarzeniem `focus`; scena przekazuje mocą `ctx.feel.playerDt(dt)`.
 - `PowerBase` jako jedyna obsługuje koszt przez `PlayerEnergy.spend`, odnowienie `cooldownS`, odmowę `power_denied` (`cooldown` ma pierwszeństwo przed `no_energy`), hak warunkowy `protected canActivate(): boolean` (domyślnie `true`, sprawdzany przed kosztem) i zdarzenie `power_used` przy udanym użyciu. Nieudana próba nie zużywa energii. Samo trzymanie nie ponawia użycia.
@@ -69,6 +69,102 @@ Krótszy zasięg i słabszy odrzut w zamian za kontrolę otoczenia; wyższy kosz
 - **Łańcuch przeskoków:** z ostatniego trafionego celu łuk skacze do najbliższego jeszcze nietrafionego celu w `jumpRangeM` (maksymalnie `jumps` razy). Każdy cel może zostać trafiony najwyżej raz w jednym użyciu. Ściana między punktami (`deps.castWall(from, dir, dystans)` przed celem) blokuje trafienie i przeskok.
 - **Obrażenia i statusy:** każde trafienie idzie przez `DamageSystem.deal` ze źródłem `owner`, tagami `#power`, `#elektrycznosc` i `statuses` (`overload`), dzięki czemu `StatusSystem` nakłada przeciążenie (przy 3 stosach cel zostaje ogłuszony i wyzwala wyładowanie obszarowe).
 - **Wizualizacja (`LightningRenderer`):** `ChainPower` przechowuje aktywne łuki w `arcs` (`{ points, ageS }`), postarzane w `step(dt)` i usuwane po `vfx.arcLifeS` (oraz przy `reset()`). `src/render/lightningRenderer.ts` rysuje zygzak z `segments` odcinków na ogniwo z odchyleniem `±jitterM`, używając materiału `power` z zanikaniem przezroczystości i ponownym użyciem geometrii.
+
+## Chwyt i rzut (`grab.json`, `kind: 'grab'`, F2-09)
+
+| Parametr | Wartość startowa |
+| --- | --- |
+| `cost`, `cooldownS` | 20 energii, 1,5 s od puszczenia |
+| `rangeM`, `aimConeDeg` | 12 m, pełny stożek 36° |
+| `maxMassKg` | 100 kg |
+| `drainPerS`, `maxHoldS` | 12 energii/s czasu gracza, 5 s |
+| `holdDistanceM`, `throwSpeed` | 3 m, 22 m/s |
+| `minImpactSpeed`, `impactDamage` | co najmniej 5 m/s, 35 obrażeń |
+| `landingNormalY`, `landingSpeedMps` | normalna podparcia ≥ 0,5; całkowita prędkość ≤ 1 m/s |
+
+Wciśnięcie F/E wybiera najbliższy środek ciała w stożku celowania z linią
+widzenia do `rangeM`. Wrogowie pochodzą z `EnemyManager.grabTargets()`,
+a dynamiczne czarne obiekty scena rejestruje przez `GrabPhysics.registerObject`
+z masą. Bliższy ciężki cel nie jest pomijany na rzecz dalszego lekkiego.
+`grabbable !== true` albo masa ponad limit emituje `too_heavy` („Za ciężki”);
+brak widocznego kandydata emituje `out_of_range` („Za daleko”). Te odmowy
+nie pobierają energii ani nie zaczynają odnowienia. Koszt i odmowa braku
+energii nadal korzystają ze wspólnej bazy `PowerBase`.
+
+Po koszcie początkowym ciało staje się kinematyczne; punkt przed kamerą
+podąża za symulowanym celowaniem. Przelot kształtu od oka blokuje przenikanie
+ścian, a odstęp od kapsuły gracza wynosi co najmniej `tuning.powers.grabClearanceM`
+(0,02 m). Brak miejsca bezpiecznie zwalnia chwyt. Wróg jest przejęty,
+nie porusza się przez AI, nie atakuje i natychmiast
+oddaje token oraz miejsce w kolejce dyrektora. Tarcza Tarczownika jest
+opuszczona. Odpływ energii, limit czasu i odnowienie używają czasu gracza
+(`ctx.feel?.playerDt(dt) ?? dt`); hitstop je zatrzymuje. Wciśnięcie i puszczenie
+z hitstopu są buforowane tylko dla aktywnego lub zakolejkowanego chwytu.
+Sam hitstop wyrównuje snapshoty wrogów, skrzyń i wiązki, więc render nie
+interpoluje ich ruchu. Samo przytrzymanie nie ponawia nieudanego chwytu.
+
+Puszczenie klawisza nadaje dynamicznemu ciału prędkość `throwSpeed` zgodną
+z aktualnym celowaniem i włącza CCD. Brak energii lub limit trzymania upuszcza
+je z zerową prędkością bez obrażeń. W obu przypadkach zaczyna się odnowienie.
+`power_used` pozostaje zdarzeniem kosztu aktywacji; HUD pokazuje „Trzymanie”,
+a odliczanie uruchamia dopiero `power_released`. Nowy chwyt zeruje stary licznik
+HUD. Puszczenie ma pierwszeństwo przed końcem energii/czasu w tej samej klatce.
+Szybki chwyt i puszczenie po hitstopie zatwierdzają punkt trzymania przed rzutem.
+
+Odczyt kontaktów Rapiera i przelot kształtu wykrywają świat oraz wrogów,
+w tym sensor Drona i początkowe nakładanie. Lot jest sprawdzany już w klatce
+puszczenia, w czasie świata (`worldDt`), niezależnie od Skupienia. Pierwsze
+kwalifikujące uderzenie przy prędkości co najmniej równej progowi
+zadaje po `impactDamage` rzucanemu wrogowi i trafionemu wrogowi, każdemu raz;
+skrzynia nie wymaga własnego `Health`. Oba trafienia wykonują
+`DamageSystem.deal` ze źródłem gracza i tagami `#power`, `#grab`; śmierć
+rzucanego w pierwszym trafieniu nie przerywa drugiego. Kolejne odbicia
+i lądowanie nie powtarzają obrażeń. Upuszczenie bez rzutu nigdy nie rani.
+Przy kontakcie ze światem próg dotyczy prędkości w kierunku normalnej
+uderzenia; tarcie po podłodze lub styczny kontakt ze ścianą nie wystarczają.
+Podłoga i lądowanie wymagają małej całkowitej prędkości po kroku solvera.
+Jednoczesny kontakt z wrogiem ma pierwszeństwo przed światem.
+Podparcie (także na skrzyni), po wyhamowaniu, kończy przejęcie i przywraca
+żywemu wrogowi AI. Skrzynia po pierwszym trafieniu wraca do zwykłej fizyki
+dynamicznej, zachowując ruch i tracąc możliwość kolejnych obrażeń tego rzutu.
+Kontakt z czarnym obiektem sam w sobie nie zadaje obrażeń Chwytu.
+
+Śmierć/despawn trzymanego celu natychmiast odłącza chwyt. Śmierć gracza
+upuszcza cel i wyłącza obrażenia pozostałych lotów. `reset()` przywraca typy
+ciał i CCD, zwalnia przejęcia, kolejkę wejścia, wiązkę oraz subskrypcje.
+Subskrypcje trwają tylko podczas chwytu/lotu. Nie ma interceptorów pocisków
+ani bezpośredniego nakładania statusów.
+
+`GrabRenderer` odczytuje interpolowane `previous/current` wiązki z
+`GrabPower.beam`, rysując cyjanową linię od dłoni do celu wyłącznie podczas
+trzymania. Geometria jest wielokrotnie używana, a zwalniana przy dispose.
+Kolor, przezroczystość i położenie dłoni są w `tuning.vfx.grab*` i lil-gui.
+
+### Scena `grab-test` — kontrola w 30 sekund
+
+1. Otwórz `?scene=grab-test&debug=1`, kliknij canvas, przytrzymaj F na przednim
+   Szturmowcu: podąża przed kamerą, nie atakuje, widać wiązkę i odpływ energii.
+   Puść w kierunku wroga lub białej ściany; sprawdź pojedyncze obrażenia.
+2. Wyceluj w Drona i Tarczownika po bokach, następnie w Egzekutora za plecami
+   i dużą skrzynię po prawej: dwa ostatnie cele odmawiają „Za ciężki”.
+   Celowanie w pustą przestrzeń daje „Za daleko”, bez kosztu.
+3. Chwyć małą czarną skrzynię i rzuć we wroga. Podczas kolejnego chwytu wpisz
+   `energy 0` lub trzymaj 5 s: cel opada bez rzutu. `energy 100` uzupełnia energię,
+   `kill held` sprawdza śmierć trzymanego wroga, `reset` odtwarza scenę,
+   `god` pozwala spokojnie ocenić zachowanie wrogów.
+
+Feel do oceny: czy wybór najbliższego celu i skok do punktu 3 m są czytelne,
+czy prędkość 22 m/s i obrażenia 35 dają satysfakcjonujący rzut, czy koszt
+20 + 12/s pozwala szybko zdecydować o celu rzutu, i czy puszczenie przy
+braku energii wyraźnie różni się od rzutu.
+
+Testy: `grabPower.test.ts` (prawdziwy Rapier: wybór, odmowy, energia, kinematyka,
+pięć archetypów, tokeny i kolejka, hitstop, upuszczenie, kolizje, sensory,
+jednokrotność obrażeń, śmierć, reset), `grabTest.test.ts` (scena, czas gracza,
+komendy, reset bez narastania ciał, HUD, interpolacja i sprzątanie renderera).
+E2E i ręczny playtest wykonuje koordynator.
+
+Wyniki przeglądu i testy regresji: `docs/issues/F2/grabReview.md`.
 
 ## Scena `push-test`
 

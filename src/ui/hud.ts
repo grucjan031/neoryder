@@ -184,11 +184,26 @@ export class Hud {
           this.showCooldown(slot);
         }
       }),
+      // F2-09: Chwyt nie ma odnowienia w trakcie trzymania; odnowienie pokaże power_cooldown po puszczeniu.
+      bus.on('power_used', ({ user, power }) => {
+        if (user !== opts.playerId) return;
+        if (powerDefinitions.get(power)?.kind !== 'grab') return;
+        for (const slot of this.powerSlots) {
+          if (slot.id !== power) continue;
+          slot.remaining = 0;
+          setText(slot.value, text.holding);
+        }
+      }),
       bus.on('power_denied', ({ user, power, reason }) => {
         if (user !== opts.playerId) return;
         setText(
           this.denial.node,
-          reason === 'no_energy' ? text.noEnergy : text.cooldown,
+          {
+            no_energy: text.noEnergy,
+            cooldown: text.cooldown,
+            too_heavy: text.tooHeavy,
+            out_of_range: text.outOfRange,
+          }[reason],
         );
         this.denial.show();
         for (const slot of this.powerSlots) {

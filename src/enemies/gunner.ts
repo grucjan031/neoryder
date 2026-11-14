@@ -1,3 +1,4 @@
+import type { GrabTarget } from '../combat/powers/grabTypes';
 import { Ray } from '@dimforge/rapier3d-compat';
 import { Health, PIERCE_BLOCK_TAG } from '../combat/damage';
 import { STUNNED } from '../combat/status/statusSystem';
@@ -82,6 +83,7 @@ export class Gunner implements Enemy {
         if (
           event.target !== this.id ||
           this.current.state === 'dead' ||
+          this.current.controlled ||
           event.killed
         )
           return;
@@ -246,6 +248,39 @@ export class Gunner implements Enemy {
       this.stunS = Math.max(this.stunS, this.current.stateTimeS + remaining);
   }
 
+  syncControlled(): void {
+    if (!this.removed && this.current.controlled)
+      this.current.position = this.body.position();
+  }
+
+  grabTarget(): GrabTarget {
+    return {
+      id: this.id,
+      body: this.body.body,
+      enemy: true,
+      controlled: this.current.controlled ?? false,
+      grabbable: this.definition.grabbable ?? false,
+      massKg: this.body.body.mass(),
+      setControlled: (controlled) => {
+        if (this.removed) return;
+        this.current.controlled = controlled;
+        this.deps.director?.releaseToken(this.id);
+        this.token = false;
+        this.body.clearMotion();
+        this.current.position = this.body.position();
+        if (this.current.state !== 'dead') {
+          this.transition('idle');
+          const remaining =
+            this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
+          if (!controlled && remaining > 0) {
+            this.stunS = remaining;
+            this.transition('stunned');
+          }
+        }
+      },
+    };
+  }
+
   step(dt: number): void {
     if (this.removed) return;
     this.previous = copy(this.current);
@@ -259,6 +294,10 @@ export class Gunner implements Enemy {
     if (s.state === 'dead') {
       if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
         this.dispose();
+      return;
+    }
+    if (s.controlled) {
+      s.position = this.body.position();
       return;
     }
     this.holdStun();
