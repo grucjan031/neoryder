@@ -2,6 +2,7 @@
   "id": "restRoom",
   "name": "Stacja diagnostyczna",
   "type": "rest",
+  "theme": "neonStreet",
   "playerSpawn": {
     "x": 0,
     "y": 0,
@@ -18,7 +19,8 @@
         "x": 0,
         "y": -0.5,
         "z": 0
-      }
+      },
+      "material": "asphalt"
     },
     {
       "size": {
@@ -31,7 +33,8 @@
         "y": 2,
         "z": 0
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "facade"
     },
     {
       "size": {
@@ -44,7 +47,8 @@
         "y": 2,
         "z": 0
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "facade"
     },
     {
       "size": {
@@ -57,7 +61,8 @@
         "y": 2,
         "z": -5.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "facade"
     },
     {
       "size": {
@@ -70,7 +75,8 @@
         "y": 2,
         "z": -5.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "facade"
     },
     {
       "size": {
@@ -83,7 +89,8 @@
         "y": 2,
         "z": 5.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "facade"
     },
     {
       "size": {
@@ -96,7 +103,8 @@
         "y": 2,
         "z": 5.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "facade"
     },
     {
       "size": {
@@ -109,7 +117,8 @@
         "y": 2,
         "z": -2.5
       },
-      "model": "pillar"
+      "model": "pillar",
+      "material": "concrete"
     },
     {
       "size": {
@@ -122,7 +131,8 @@
         "y": 2,
         "z": -2.5
       },
-      "model": "pillar"
+      "model": "pillar",
+      "material": "concrete"
     },
     {
       "size": {
@@ -135,7 +145,472 @@
         "y": 0.5,
         "z": 0.5
       },
-      "model": "cover_low"
+      "model": "cover_low",
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 14,
+        "z": 12
+      },
+      "position": {
+        "x": -9.8,
+        "y": 7,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 12
+      },
+      "position": {
+        "x": 9.8,
+        "y": 8,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 8,
+        "y": 18,
+        "z": 6
+      },
+      "position": {
+        "x": -6.5,
+        "y": 9,
+        "z": -9.8
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 8,
+        "y": 13,
+        "z": 6
+      },
+      "position": {
+        "x": 6.5,
+        "y": 6.5,
+        "z": -9.8
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 20,
+        "z": 6
+      },
+      "position": {
+        "x": 0,
+        "y": 10,
+        "z": -14.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 8,
+        "y": 15,
+        "z": 6
+      },
+      "position": {
+        "x": -6.5,
+        "y": 7.5,
+        "z": 9.8
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 8,
+        "y": 12,
+        "z": 6
+      },
+      "position": {
+        "x": 6.5,
+        "y": 6,
+        "z": 9.8
+      },
+      "material": "facade"
+    }
+  ],
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "cat_cafe",
+      "position": {
+        "x": -4.9,
+        "y": 3.1,
+        "z": 0
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": 1.5708,
+      "tint": "#fff1d6",
+      "flicker": 0.05
+    },
+    {
+      "kind": "neon",
+      "texture": "ramen",
+      "position": {
+        "x": 4.9,
+        "y": 3.1,
+        "z": -1.5
+      },
+      "size": {
+        "w": 2,
+        "h": 1
+      },
+      "yaw": -1.5708,
+      "tint": "#ffae1a",
+      "flicker": 0.1
+    },
+    {
+      "kind": "neon",
+      "texture": "open",
+      "position": {
+        "x": -3.2,
+        "y": 3,
+        "z": -4.9
+      },
+      "size": {
+        "w": 1.8,
+        "h": 0.9
+      },
+      "yaw": 0,
+      "tint": "#6dff4a",
+      "flicker": 0.15
+    },
+    {
+      "kind": "neon",
+      "texture": "sake",
+      "position": {
+        "x": -6.7,
+        "y": 6,
+        "z": -2
+      },
+      "size": {
+        "w": 2.2,
+        "h": 1.1
+      },
+      "yaw": 1.5708,
+      "tint": "#ffae1a",
+      "flicker": 0.1
+    },
+    {
+      "kind": "neon",
+      "texture": "hotel",
+      "position": {
+        "x": 6.7,
+        "y": 6.5,
+        "z": 2
+      },
+      "size": {
+        "w": 2.8,
+        "h": 1.4
+      },
+      "yaw": -1.5708,
+      "tint": "#8a5cff",
+      "flicker": 0.15
+    },
+    {
+      "kind": "holo",
+      "texture": "holo_koi",
+      "position": {
+        "x": 0,
+        "y": 7,
+        "z": -11.3
+      },
+      "size": {
+        "w": 3.6,
+        "h": 1.8
+      },
+      "yaw": 0,
+      "tint": "#3d7bff",
+      "flicker": 0.1
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": -3.5,
+        "y": 3.2,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 4,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 3.5,
+        "y": 3.2,
+        "z": -1.5
+      },
+      "color": "#ffae1a",
+      "intensity": 3.8,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": -3,
+        "y": 3.2,
+        "z": -3.8
+      },
+      "color": "#6dff4a",
+      "intensity": 3,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": -4,
+        "y": 5,
+        "z": -2
+      },
+      "color": "#ffae1a",
+      "intensity": 3.5,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 5.2,
+        "z": 2
+      },
+      "color": "#8a5cff",
+      "intensity": 3.5,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 5,
+        "z": -4
+      },
+      "color": "#3d7bff",
+      "intensity": 3,
+      "range": 10
+    }
+  ],
+  "decals": [
+    {
+      "texture": "poster_torn2",
+      "position": {
+        "x": -5,
+        "y": 1.5,
+        "z": -3
+      },
+      "size": {
+        "w": 1.1,
+        "h": 1.1
+      },
+      "yaw": 1.5708,
+      "surface": "wall",
+      "opacity": 0.85
+    },
+    {
+      "texture": "graffiti_tag1",
+      "position": {
+        "x": 5,
+        "y": 1.5,
+        "z": 3
+      },
+      "size": {
+        "w": 1.3,
+        "h": 1.3
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.7
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": -1.5,
+        "y": 0.01,
+        "z": -1
+      },
+      "size": {
+        "w": 2.4,
+        "h": 2.4
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.75
+    },
+    {
+      "texture": "puddle2",
+      "position": {
+        "x": 1,
+        "y": 0.01,
+        "z": 2.5
+      },
+      "size": {
+        "w": 2.2,
+        "h": 1.8
+      },
+      "yaw": 1.1,
+      "surface": "floor",
+      "opacity": 0.7
+    }
+  ],
+  "ambientFx": [
+    {
+      "kind": "steam",
+      "position": {
+        "x": -3.8,
+        "y": 0.05,
+        "z": 2.5
+      },
+      "rate": 3
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -4.6,
+        "y": 3.6,
+        "z": -2.5
+      },
+      "rate": 1.5
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": 4.6,
+        "y": 3.6,
+        "z": 3
+      },
+      "rate": 1.5
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 0,
+        "y": 4.2,
+        "z": -1.5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 0,
+        "y": 4.4,
+        "z": 2
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": -5,
+        "y": 2.3,
+        "z": 0
+      },
+      "yaw": 1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_door",
+      "position": {
+        "x": -5,
+        "y": 0,
+        "z": 2.5
+      },
+      "yaw": 1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": -6.8,
+        "y": 5,
+        "z": 3
+      },
+      "yaw": 1.5708,
+      "scale": 1.1
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 6.8,
+        "y": 5.2,
+        "z": -3
+      },
+      "yaw": -1.5708,
+      "scale": 1.1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -6.8,
+        "y": 3.5,
+        "z": -4
+      },
+      "yaw": 1.5708,
+      "scale": 1.1
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 6.8,
+        "y": 4.8,
+        "z": -2
+      },
+      "yaw": -1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -3.8,
+        "y": 0,
+        "z": 2.5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_trash_bags",
+      "position": {
+        "x": -4.3,
+        "y": 0,
+        "z": -4.3
+      },
+      "yaw": 0.4,
+      "scale": 1
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 9.8,
+        "y": 16,
+        "z": 0
+      },
+      "yaw": -0.3,
+      "scale": 1.2
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": -14.5
+      },
+      "yaw": 0,
+      "scale": 1.4
     }
   ],
   "spawnPoints": [],

@@ -2,6 +2,7 @@
   "id": "eliteHall",
   "name": "Wielka hala montażowa",
   "type": "elite",
+  "theme": "neonStreet",
   "playerSpawn": {
     "x": 0,
     "y": 0,
@@ -18,7 +19,8 @@
         "x": 0,
         "y": -0.5,
         "z": 0
-      }
+      },
+      "material": "concrete"
     },
     {
       "size": {
@@ -31,7 +33,8 @@
         "y": 2,
         "z": 0
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -44,7 +47,8 @@
         "y": 2,
         "z": 0
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -57,7 +61,8 @@
         "y": 2,
         "z": -15.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -70,7 +75,8 @@
         "y": 2,
         "z": -15.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -83,7 +89,8 @@
         "y": 2,
         "z": 15.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -96,7 +103,8 @@
         "y": 2,
         "z": 15.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -109,7 +117,8 @@
         "y": 2.25,
         "z": -7
       },
-      "model": "pillar"
+      "model": "pillar",
+      "material": "trim"
     },
     {
       "size": {
@@ -122,7 +131,8 @@
         "y": 2.25,
         "z": -7
       },
-      "model": "pillar"
+      "model": "pillar",
+      "material": "trim"
     },
     {
       "size": {
@@ -135,7 +145,8 @@
         "y": 2.25,
         "z": 7
       },
-      "model": "pillar"
+      "model": "pillar",
+      "material": "trim"
     },
     {
       "size": {
@@ -148,7 +159,8 @@
         "y": 2.25,
         "z": 7
       },
-      "model": "pillar"
+      "model": "pillar",
+      "material": "trim"
     },
     {
       "size": {
@@ -161,7 +173,8 @@
         "y": 1.5,
         "z": 0.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -174,7 +187,8 @@
         "y": 1.5,
         "z": -0.5
       },
-      "model": "wall"
+      "model": "wall",
+      "material": "concrete"
     },
     {
       "size": {
@@ -187,7 +201,8 @@
         "y": 0.65,
         "z": -9.5
       },
-      "model": "cover_low"
+      "model": "cover_low",
+      "material": "metal"
     },
     {
       "size": {
@@ -200,7 +215,8 @@
         "y": 0.65,
         "z": 8.5
       },
-      "model": "cover_low"
+      "model": "cover_low",
+      "material": "metal"
     },
     {
       "size": {
@@ -213,7 +229,8 @@
         "y": 0.6,
         "z": -3
       },
-      "model": "cover_low"
+      "model": "cover_low",
+      "material": "metal"
     },
     {
       "size": {
@@ -226,7 +243,8 @@
         "y": 0.6,
         "z": -3
       },
-      "model": "cover_low"
+      "model": "cover_low",
+      "material": "metal"
     },
     {
       "size": {
@@ -239,7 +257,8 @@
         "y": 0.6,
         "z": 4
       },
-      "model": "cover_low"
+      "model": "cover_low",
+      "material": "metal"
     },
     {
       "size": {
@@ -252,7 +271,8 @@
         "y": 0.6,
         "z": 4
       },
-      "model": "cover_low"
+      "model": "cover_low",
+      "material": "metal"
     },
     {
       "size": {
@@ -279,6 +299,766 @@
         "z": 4.5
       },
       "model": "crate"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 10
+      },
+      "position": {
+        "x": -20,
+        "y": 8,
+        "z": -10.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 22,
+        "z": 10
+      },
+      "position": {
+        "x": -20,
+        "y": 11,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 18,
+        "z": 10
+      },
+      "position": {
+        "x": -20,
+        "y": 9,
+        "z": 10.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 20,
+        "z": 10
+      },
+      "position": {
+        "x": 20,
+        "y": 10,
+        "z": -10.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 15,
+        "z": 10
+      },
+      "position": {
+        "x": 20,
+        "y": 7.5,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 24,
+        "z": 10
+      },
+      "position": {
+        "x": 20,
+        "y": 12,
+        "z": 10.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 19,
+        "z": 6
+      },
+      "position": {
+        "x": -9.5,
+        "y": 9.5,
+        "z": -20
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 16,
+        "z": 6
+      },
+      "position": {
+        "x": 9.5,
+        "y": 8,
+        "z": -20
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 24,
+        "z": 6
+      },
+      "position": {
+        "x": 0,
+        "y": 12,
+        "z": -25
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 17,
+        "z": 6
+      },
+      "position": {
+        "x": -9.5,
+        "y": 8.5,
+        "z": 20
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 14,
+        "z": 6
+      },
+      "position": {
+        "x": 9.5,
+        "y": 7,
+        "z": 20
+      },
+      "material": "facade"
+    }
+  ],
+  "signs": [
+    {
+      "kind": "holo",
+      "texture": "holo_kurogane",
+      "position": {
+        "x": 0,
+        "y": 8,
+        "z": -21.8
+      },
+      "size": {
+        "w": 5,
+        "h": 2.5
+      },
+      "yaw": 0,
+      "tint": "#3d7bff",
+      "flicker": 0.15
+    },
+    {
+      "kind": "neon",
+      "texture": "implants",
+      "position": {
+        "x": -8,
+        "y": 3.1,
+        "z": -14.9
+      },
+      "size": {
+        "w": 3.2,
+        "h": 1.6
+      },
+      "yaw": 0,
+      "tint": "#3d7bff",
+      "flicker": 0.2
+    },
+    {
+      "kind": "neon",
+      "texture": "open",
+      "position": {
+        "x": 14.9,
+        "y": 3.1,
+        "z": 6
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": -1.5708,
+      "tint": "#6dff4a",
+      "flicker": 0.35
+    },
+    {
+      "kind": "neon",
+      "texture": "bar_24h",
+      "position": {
+        "x": -14.9,
+        "y": 3.1,
+        "z": -6
+      },
+      "size": {
+        "w": 3.2,
+        "h": 1.6
+      },
+      "yaw": 1.5708,
+      "tint": "#ffae1a",
+      "flicker": 0.15
+    },
+    {
+      "kind": "neon",
+      "texture": "karaoke",
+      "position": {
+        "x": -16.9,
+        "y": 7,
+        "z": 7
+      },
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "yaw": 1.5708,
+      "tint": "#8a5cff",
+      "flicker": 0.3
+    },
+    {
+      "kind": "holo",
+      "texture": "holo_android",
+      "position": {
+        "x": 16.8,
+        "y": 7.5,
+        "z": -6
+      },
+      "size": {
+        "w": 2.2,
+        "h": 4.4
+      },
+      "yaw": -1.5708,
+      "tint": "#8a5cff",
+      "flicker": 0.25
+    },
+    {
+      "kind": "neon",
+      "texture": "ramen",
+      "position": {
+        "x": 16.9,
+        "y": 6.5,
+        "z": 8
+      },
+      "size": {
+        "w": 3.6,
+        "h": 1.8
+      },
+      "yaw": -1.5708,
+      "tint": "#ffae1a",
+      "flicker": 0.2
+    },
+    {
+      "kind": "neon",
+      "texture": "hotel",
+      "position": {
+        "x": 9.5,
+        "y": 6.2,
+        "z": 16.9
+      },
+      "size": {
+        "w": 3.6,
+        "h": 1.8
+      },
+      "yaw": 3.1416,
+      "tint": "#8a5cff",
+      "flicker": 0.25
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": 0,
+        "y": 6,
+        "z": -13
+      },
+      "color": "#3d7bff",
+      "intensity": 5,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": -8,
+        "y": 3.5,
+        "z": -13.5
+      },
+      "color": "#3d7bff",
+      "intensity": 4.5,
+      "range": 11
+    },
+    {
+      "position": {
+        "x": 13.5,
+        "y": 3.5,
+        "z": 6
+      },
+      "color": "#6dff4a",
+      "intensity": 4,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": -13.5,
+        "y": 3.5,
+        "z": -6
+      },
+      "color": "#ffae1a",
+      "intensity": 4.5,
+      "range": 11
+    },
+    {
+      "position": {
+        "x": -13.5,
+        "y": 5.8,
+        "z": 7
+      },
+      "color": "#8a5cff",
+      "intensity": 5,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": 13.5,
+        "y": 5.8,
+        "z": -6
+      },
+      "color": "#8a5cff",
+      "intensity": 5,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": 13.5,
+        "y": 5.5,
+        "z": 8
+      },
+      "color": "#ffae1a",
+      "intensity": 4.5,
+      "range": 11
+    },
+    {
+      "position": {
+        "x": 9.5,
+        "y": 5,
+        "z": 13.5
+      },
+      "color": "#8a5cff",
+      "intensity": 4,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 4.5,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 3.5,
+      "range": 12
+    }
+  ],
+  "decals": [
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": -7,
+        "y": 0.01,
+        "z": 0
+      },
+      "size": {
+        "w": 2.6,
+        "h": 2.6
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "floor_hazard",
+      "position": {
+        "x": 7,
+        "y": 0.01,
+        "z": 0
+      },
+      "size": {
+        "w": 2.6,
+        "h": 2.6
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "floor_arrow",
+      "position": {
+        "x": 0,
+        "y": 0.01,
+        "z": 10.5
+      },
+      "size": {
+        "w": 2.4,
+        "h": 2.8
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.5
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": -3.5,
+        "y": 0.01,
+        "z": 6.5
+      },
+      "size": {
+        "w": 3.4,
+        "h": 3.4
+      },
+      "yaw": 0.5,
+      "surface": "floor",
+      "opacity": 0.75
+    },
+    {
+      "texture": "puddle2",
+      "position": {
+        "x": 4,
+        "y": 0.01,
+        "z": -7
+      },
+      "size": {
+        "w": 3.6,
+        "h": 2.6
+      },
+      "yaw": 1.4,
+      "surface": "floor",
+      "opacity": 0.75
+    },
+    {
+      "texture": "graffiti_tag1",
+      "position": {
+        "x": -15,
+        "y": 1.6,
+        "z": 5
+      },
+      "size": {
+        "w": 1.8,
+        "h": 1.8
+      },
+      "yaw": 1.5708,
+      "surface": "wall",
+      "opacity": 0.75
+    },
+    {
+      "texture": "graffiti_tag2",
+      "position": {
+        "x": 15,
+        "y": 1.6,
+        "z": -5
+      },
+      "size": {
+        "w": 1.8,
+        "h": 1.8
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.75
+    },
+    {
+      "texture": "poster_torn1",
+      "position": {
+        "x": 6,
+        "y": 1.5,
+        "z": -15
+      },
+      "size": {
+        "w": 1.4,
+        "h": 1.4
+      },
+      "yaw": 0,
+      "surface": "wall",
+      "opacity": 0.85
+    },
+    {
+      "texture": "poster_torn2",
+      "position": {
+        "x": -6,
+        "y": 1.5,
+        "z": 15
+      },
+      "size": {
+        "w": 1.4,
+        "h": 1.4
+      },
+      "yaw": 3.1416,
+      "surface": "wall",
+      "opacity": 0.8
+    }
+  ],
+  "ambientFx": [
+    {
+      "kind": "steam",
+      "position": {
+        "x": -12,
+        "y": 0.05,
+        "z": 9
+      },
+      "rate": 4.5
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 12,
+        "y": 0.05,
+        "z": -9
+      },
+      "rate": 4.5
+    },
+    {
+      "kind": "sparks",
+      "position": {
+        "x": -14.8,
+        "y": 3.8,
+        "z": 0
+      },
+      "rate": 0.5
+    },
+    {
+      "kind": "sparks",
+      "position": {
+        "x": 14.8,
+        "y": 3.8,
+        "z": 0
+      },
+      "rate": 0.45
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -14,
+        "y": 4.5,
+        "z": -10
+      },
+      "rate": 2
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": 14,
+        "y": 4.5,
+        "z": 10
+      },
+      "rate": 1.8
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 0,
+        "y": 8.5,
+        "z": -7
+      },
+      "yaw": 0,
+      "scale": 3.1
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 0,
+        "y": 8.8,
+        "z": 0
+      },
+      "yaw": 0,
+      "scale": 3.1
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 0,
+        "y": 8.2,
+        "z": 7
+      },
+      "yaw": 0,
+      "scale": 3.1
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": -17,
+        "y": 5.5,
+        "z": -5
+      },
+      "yaw": 1.5708,
+      "scale": 1.3
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 17,
+        "y": 5.5,
+        "z": 4
+      },
+      "yaw": -1.5708,
+      "scale": 1.3
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -17,
+        "y": 4,
+        "z": 0
+      },
+      "yaw": 1.5708,
+      "scale": 1.4
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 17,
+        "y": 4,
+        "z": 0
+      },
+      "yaw": -1.5708,
+      "scale": 1.4
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": -17,
+        "y": 5.2,
+        "z": -11
+      },
+      "yaw": 1.5708,
+      "scale": 1.15
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 17,
+        "y": 5.2,
+        "z": 11
+      },
+      "yaw": -1.5708,
+      "scale": 1.15
+    },
+    {
+      "model": "city_shutter",
+      "position": {
+        "x": -15,
+        "y": 0,
+        "z": -11
+      },
+      "yaw": 1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_shutter",
+      "position": {
+        "x": 15,
+        "y": 0,
+        "z": 11
+      },
+      "yaw": -1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": -14.5,
+        "y": 0,
+        "z": 9
+      },
+      "yaw": 1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 14.5,
+        "y": 0,
+        "z": -9
+      },
+      "yaw": -1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -12,
+        "y": 0,
+        "z": 9
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 12,
+        "y": 0,
+        "z": -9
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_trash_bags",
+      "position": {
+        "x": -14.3,
+        "y": 0,
+        "z": 14.3
+      },
+      "yaw": 0.4,
+      "scale": 1
+    },
+    {
+      "model": "city_traffic_cone",
+      "position": {
+        "x": 14.3,
+        "y": 0,
+        "z": -14.3
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": -20,
+        "y": 22,
+        "z": 0
+      },
+      "yaw": 0.2,
+      "scale": 1.5
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 20,
+        "y": 24,
+        "z": 10.5
+      },
+      "yaw": -0.3,
+      "scale": 1.5
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 0,
+        "y": 24,
+        "z": -25
+      },
+      "yaw": 0,
+      "scale": 1.6
     }
   ],
   "spawnPoints": [
