@@ -28,6 +28,8 @@ import {
 import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
 import { PlayerEnergy } from '../combat/powers/energy';
 import { pushDefinition, ResonancePush } from '../combat/powers/push';
+import { ProjectileSystem } from '../combat/weapons/projectiles';
+import { ProjectileRenderer } from '../render/projectileRenderer';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
@@ -103,11 +105,21 @@ function lerpPose(a: BladePose, b: BladePose, t: number): BladePose {
 
 const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
 
+/** Parametry wieżyczki sceny testowej (nie rozgrywki — tylko do ćwiczenia parowania). */
+const TURRET_INTERVAL_S = 1.6;
+const TURRET_SPEED = 9;
+const TURRET_DAMAGE = 12;
+
 /** Scena ostrza plazmowego (#07): combo, ciężki atak, blok, manekiny z odradzaniem. */
 export class MeleeTest implements Scene {
   readonly id: string = 'melee-test';
   /** Ściana za manekinami (wariant push-test). */
   protected withWall = false;
+  /** Środkowy manekin strzela do gracza wolnymi pociskami (wariant parry-test). */
+  protected withTurret = false;
+  private projectiles!: ProjectileSystem;
+  private projectileView!: ProjectileRenderer;
+  private turretS = 1;
   private ctx!: GameContext;
   private three!: ThreeScene;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
@@ -207,6 +219,20 @@ export class MeleeTest implements Scene {
     this.entities.bindCollider(playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.fpsCamera = new FpsCamera(ctx.tuning, playerId, ctx.bus);
+    this.hurtboxes.add(playerId, this.player.colliderHandle);
+    this.projectiles = new ProjectileSystem(
+      this.world,
+      this.entities,
+      this.hurtboxes,
+      this.damage,
+      ctx.bus,
+      ctx.tuning,
+    );
+    this.projectileView = new ProjectileRenderer(
+      this.projectiles,
+      ctx.tuning.weapons.maxProjectiles,
+    );
+    this.root.add(this.projectileView.root);
     this.energy = new PlayerEnergy(
       playerId,
       this.playerStats,
@@ -223,9 +249,14 @@ export class MeleeTest implements Scene {
         energy: this.energy.pool,
         queryArc: (reach, width) => this.queryArc(reach, width),
         aim: () => this.aim(),
+        projectiles: this.projectiles,
+        positionOf: (id) => this.dummies.find((d) => d.id === id)?.pos ?? null,
       },
       ctx.bus,
       ctx.tuning,
+    );
+    this.off.push(
+      this.projectiles.addInterceptor(this.blade.interceptProjectile),
     );
     this.push = new ResonancePush(
       pushDefinition,
@@ -407,6 +438,33 @@ export class MeleeTest implements Scene {
 
   private arcHideS = 0;
 
+  /** Wieżyczka w środkowym manekinie: wolny pocisk w oczy gracza co TURRET_INTERVAL_S. */
+  private stepTurret(dt: number): void {
+    const shooter = this.dummies[1];
+    if (!this.withTurret || !shooter || shooter.respawnS !== null) return;
+    this.turretS -= dt;
+    if (this.turretS > 0) return;
+    this.turretS = TURRET_INTERVAL_S;
+    const origin = { x: shooter.pos.x, y: 1.45, z: shooter.pos.z + 0.45 };
+    const eye = this.aim().origin;
+    const d = {
+      x: eye.x - origin.x,
+      y: eye.y - 0.3 - origin.y,
+      z: eye.z - origin.z,
+    };
+    const len = Math.hypot(d.x, d.y, d.z) || 1;
+    this.projectiles.spawn({
+      owner: shooter.id,
+      team: 'enemy',
+      origin,
+      dir: { x: d.x / len, y: d.y / len, z: d.z / len },
+      speed: TURRET_SPEED,
+      damage: TURRET_DAMAGE,
+      tags: ['#gun'],
+      lifetimeS: 4,
+    });
+  }
+
   /** Odległość do geometrii świata wzdłuż promienia (ściany), albo null. */
   private castWall(origin: Vec3, dir: Vec3, max: number): number | null {
     const hit = this.world.castRay(
@@ -501,6 +559,9 @@ export class MeleeTest implements Scene {
     this.blade.step(dt, input);
     this.push.step(dt, input);
     if (dt <= 0) return;
+    this.projectileView.capturePrevious();
+    this.stepTurret(dt);
+    this.projectiles.step(dt);
     this.energy.step(dt);
     this.damage.step(dt);
     for (const d of this.dummies) {
@@ -522,6 +583,7 @@ export class MeleeTest implements Scene {
 
   render(alpha: number, frameDt = 1 / 60): void {
     const camera = this.ctx.camera;
+    this.projectileView.render(alpha);
     if (this.label) {
       const hp = this.dummies
         .map((d) => d.health.current.toFixed(0))
@@ -580,6 +642,7 @@ export class MeleeTest implements Scene {
     if (name === 'bladeState') return this.blade.view().state;
     if (name === 'blocking') return this.blade.blocking;
     if (name === 'energy') return this.energy.current;
+    if (name === 'projectiles') return this.projectiles.activeCount;
     if (name === 'dummyPos') return this.dummies.map((d) => ({ ...d.pos }));
     if (name === 'playerHp') return this.playerHealth.current;
     return undefined;
@@ -588,6 +651,8 @@ export class MeleeTest implements Scene {
   dispose(): void {
     for (const off of this.off.splice(0)) off();
     this.blade.dispose();
+    this.projectiles.dispose();
+    this.projectileView.dispose();
     this.energy.dispose();
     this.fpsCamera.dispose();
     this.player.dispose();
@@ -605,4 +670,10 @@ export class MeleeTest implements Scene {
 export class PushTest extends MeleeTest {
   override readonly id = 'push-test';
   protected override withWall = true;
+}
+
+/** Wariant z wieżyczką do ćwiczenia parowania pocisków (#10). */
+export class ParryTest extends MeleeTest {
+  override readonly id = 'parry-test';
+  protected override withTurret = true;
 }

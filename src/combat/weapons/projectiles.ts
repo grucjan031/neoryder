@@ -20,6 +20,20 @@ export interface ProjectileSpec {
   lifetimeS?: number;
 }
 
+/** Trafienie pocisku w hurtbox, zanim zada obrażenia (np. parowanie ostrzem). */
+export interface ProjectileHit {
+  projectile: EntityId;
+  owner: EntityId;
+  team: Team;
+  target: EntityId;
+  point: Vec3;
+  dir: Vec3;
+  speed: number;
+}
+
+/** Zwraca true, gdy przejął trafienie (np. odbił pocisk przez reflect) — obrażeń nie ma. */
+export type ProjectileInterceptor = (hit: ProjectileHit) => boolean;
+
 interface Projectile {
   id: EntityId | null;
   owner: EntityId;
@@ -35,6 +49,7 @@ interface Projectile {
 
 export class ProjectileSystem {
   private readonly pool: Projectile[];
+  private readonly interceptors: ProjectileInterceptor[] = [];
   private sequence = 0;
 
   constructor(
@@ -89,10 +104,27 @@ export class ProjectileSystem {
     return id;
   }
 
-  reflect(id: EntityId, newOwner: EntityId, newTeam: Team, dir: Vec3): void {
+  /** Rejestruje przechwytywanie trafień; zwraca funkcję wyrejestrowania. */
+  addInterceptor(interceptor: ProjectileInterceptor): () => void {
+    this.interceptors.push(interceptor);
+    return () => {
+      const i = this.interceptors.indexOf(interceptor);
+      if (i >= 0) this.interceptors.splice(i, 1);
+    };
+  }
+
+  reflect(
+    id: EntityId,
+    newOwner: EntityId,
+    newTeam: Team,
+    dir: Vec3,
+    opts: { speedMult?: number; damageMult?: number } = {},
+  ): void {
     const p = this.pool.find((p) => p.id === id);
     if (!p) return;
     Object.assign(p.dir, normalized(dir));
+    p.speed *= opts.speedMult ?? 1;
+    p.damage *= opts.damageMult ?? 1;
     p.owner = newOwner;
     p.team = newTeam;
     this.entities.setTeam(id, newTeam);
@@ -147,6 +179,24 @@ export class ProjectileSystem {
           point,
           dir: { ...p.dir },
         };
+        if (box && p.id !== null) {
+          const hitInfo: ProjectileHit = {
+            projectile: p.id,
+            owner: p.owner,
+            team: p.team,
+            target: box.entity,
+            point,
+            dir: { ...p.dir },
+            speed: p.speed,
+          };
+          if (this.interceptors.some((intercept) => intercept(hitInfo))) {
+            // Przejęty (np. odbity): pocisk zostaje tuż przed punktem trafienia i leci dalej.
+            p.pos.x = point.x - hitInfo.dir.x * 0.05;
+            p.pos.y = point.y - hitInfo.dir.y * 0.05;
+            p.pos.z = point.z - hitInfo.dir.z * 0.05;
+            continue;
+          }
+        }
         this.release(p);
         if (box) this.damage.deal(box.entity, info);
         continue;

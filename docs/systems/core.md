@@ -72,3 +72,11 @@ a `bodies` obejmuje podłogę i dynamiczne kostki.
 grę i uruchamia `npm run preview` na stałym porcie 4173; testy używają SwiftShader.
 Ręcznie: sprawdź spadek kostki, reset/spawn, zmianę grawitacji, fov i wysokości,
 hitstop, historię komend oraz pauzę po Escape/utracie fokusu i wznowienie kliknięciem.
+
+## FeelSystem — czas gry (F1 #13)
+
+`src/core/feel.ts` jest jedynym właścicielem czasu (ADR 0003 pkt 5). Systemy walki tylko emitują zdarzenia:
+
+- `hitstop { ms }` → `loop.hitstop(ms)` (kumulacja jako max w pętli; ignorowane w pauzie).
+- `slowmo { timeScale, durationS }` i `wave_last_kill` (→ `tuning.time.lastKillTimeScale` 0,2 przez `lastKillSlowmoS` 0,3 s) → spowolnienie liczone w **czasie rzeczywistym** (`update(frameDt)` z `main.ts`), potem płynny powrót w `slowmoRecoverS` (0,15 s). Kumulacja: mocniejsze spowolnienie wygrywa, czas jako max.
+- `baseTimeScale` — cel powrotu; komenda debug `timescale <n>` zmienia bazę, nie nadpisuje efektów. `reset()` przy zmianie sceny.

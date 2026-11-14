@@ -319,7 +319,9 @@ export class DamageSystem {
 export interface ProjectileSpec { owner: EntityId; team: Team; origin: Vec3; dir: Vec3; speed: number; damage: number; tags: readonly string[] }
 export interface ProjectileSystem {
   spawn(spec: ProjectileSpec): EntityId;               // z puli; emituje projectile_spawned
-  reflect(id: EntityId, newOwner: EntityId, newTeam: Team, dir: Vec3): void; // emituje projectile_reflected
+  reflect(id: EntityId, newOwner: EntityId, newTeam: Team, dir: Vec3, opts?: { speedMult?: number; damageMult?: number }): void; // emituje projectile_reflected
+  /** Przechwytywanie trafień przed obrażeniami (parowanie #10). true = przejęte. */
+  addInterceptor(fn: (hit: ProjectileHit) => boolean): () => void;
   step(dt: number): void;                              // sweep, trafienia przez DamageSystem.deal
   forEachActive(cb: (id: EntityId, pos: Vec3, dir: Vec3, team: Team) => void): void; // dla renderu (InstancedMesh)
 }

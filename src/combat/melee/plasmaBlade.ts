@@ -6,6 +6,7 @@ import type { Stats } from '../../core/stats';
 import type { Tuning } from '../../core/tuning';
 import { BLOCK_SOURCE, Hitbox, PIERCE_BLOCK_TAG } from '../damage';
 import type { DamageSystem, Hurtbox } from '../damage';
+import type { ProjectileHit, ProjectileSystem } from '../weapons/projectiles';
 import type { BladeDefinition, StrikeDefinition } from './bladeSchema';
 
 export type BladeState = 'idle' | 'light' | 'charging' | 'heavy' | 'blocking';
@@ -23,6 +24,9 @@ export interface BladeDeps {
   queryArc(reach: number, width: number): Hurtbox[];
   /** Punkt oczu i kierunek patrzenia (do punktu trafienia i kierunku odrzutu). */
   aim(): { origin: Vec3; dir: Vec3 };
+  /** Parowanie (#10): system pocisków do odbicia i pozycje strzelców (cel odbicia). */
+  projectiles?: Pick<ProjectileSystem, 'reflect'>;
+  positionOf?(id: EntityId): Vec3 | null;
 }
 
 /** Stan do animacji ostrza (render) i do testów. */
@@ -85,6 +89,46 @@ export class PlasmaBlade {
       guardBrokenS: this.guardBrokenS,
     };
   }
+
+  /**
+   * Przechwytywanie trafień pocisków (ProjectileSystem.addInterceptor). Pocisk wroga, który
+   * trafia właściciela w oknie parowania (blok rozpoczęty ≤ parryWindowMs temu) i nadlatuje
+   * z przodu, zostaje odbity w strzelca — szybszy i silniejszy. Poza oknem działa zwykły blok.
+   */
+  readonly interceptProjectile = (hit: ProjectileHit): boolean => {
+    const m = this.tuning.melee;
+    const projectiles = this.deps.projectiles;
+    if (!projectiles || hit.target !== this.deps.owner) return false;
+    if (this.state !== 'blocking' || hit.team === this.deps.team) return false;
+    if (this.blockAgeS * 1000 > m.parryWindowMs) return false;
+    const { dir } = this.deps.aim();
+    // Pocisk musi nadlatywać z przodu: kąt między -kierunkiem lotu a patrzeniem ≤ parryArcDeg/2.
+    const facing = -(hit.dir.x * dir.x + hit.dir.y * dir.y + hit.dir.z * dir.z);
+    if (facing < Math.cos(((m.parryArcDeg / 2) * Math.PI) / 180)) return false;
+    const shooter = this.deps.positionOf?.(hit.owner) ?? null;
+    const back = shooter
+      ? normalizeVec({
+          x: shooter.x - hit.point.x,
+          y: shooter.y + 1.2 - hit.point.y,
+          z: shooter.z - hit.point.z,
+        })
+      : { x: -hit.dir.x, y: -hit.dir.y, z: -hit.dir.z };
+    projectiles.reflect(hit.projectile, this.deps.owner, this.deps.team, back, {
+      speedMult: m.parrySpeedMult,
+      damageMult: m.parryDamageMult,
+    });
+    this.bus.emit('parry_success', {
+      projectile: hit.projectile,
+      attacker: hit.owner,
+    });
+    this.bus.emit('hitstop', { ms: m.parryHitstopMs });
+    this.bus.emit('camera_shake', {
+      intensity: m.parryShake,
+      durationS: 0.2,
+      dir: null,
+    });
+    return true;
+  };
 
   get blocking(): boolean {
     return this.state === 'blocking';
@@ -333,4 +377,11 @@ export class PlasmaBlade {
       });
     }
   }
+}
+
+function normalizeVec(v: Vec3): Vec3 {
+  const len = Math.hypot(v.x, v.y, v.z);
+  return len > 1e-9
+    ? { x: v.x / len, y: v.y / len, z: v.z / len }
+    : { x: 0, y: 0, z: -1 };
 }

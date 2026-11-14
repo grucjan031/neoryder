@@ -6,6 +6,8 @@ export const tuning = {
     hitstopHeavyMs: 80,
     lastKillSlowmoS: 0.3,
     lastKillTimeScale: 0.2,
+    /** Płynny powrót do normalnej prędkości po spowolnieniu (s, czas rzeczywisty). */
+    slowmoRecoverS: 0.15,
   },
   /** Kamera FPP (#03). Wstrząs: trauma 0..1, amplituda = trauma² × shakeMax. Czasy w s. */
   camera: {
@@ -94,6 +96,13 @@ export const tuning = {
     heavyActiveS: 0.12,
     heavyRecoveryS: 0.38,
     guardBreakLockS: 0.8,
+    /** Parowanie (#10): blok rozpoczęty najwyżej tyle ms przed trafieniem pocisku odbija go. */
+    parryWindowMs: 150,
+    parryArcDeg: 160,
+    parryHitstopMs: 60,
+    parryShake: 0.3,
+    parrySpeedMult: 1.8,
+    parryDamageMult: 2,
   },
   /** Rezonans i energia (#11). Dane mocy w src/data/powers/*.json. */
   powers: {

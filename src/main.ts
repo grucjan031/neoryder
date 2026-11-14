@@ -3,6 +3,7 @@ import StatsPanel from 'stats.js';
 import { EventBus } from './core/events';
 import { Rng } from './core/rng';
 import { GameLoop } from './core/loop';
+import { FeelSystem } from './core/feel';
 import { Input } from './core/input';
 import { tuning, createTuningGui } from './core/tuning';
 import type { GameContext } from './core/context';
@@ -53,6 +54,7 @@ async function main(): Promise<void> {
         camera.fov = tuning.camera.fov;
         camera.updateProjectionMatrix();
       }
+      feel.update(frameDt);
       scene.render(alpha, frameDt);
       pipeline.render(three, camera);
       stats?.end();
@@ -94,7 +96,7 @@ async function main(): Promise<void> {
       : `NEORYDER / ${scene.id}`;
   };
   renderer.domElement.addEventListener('click', resume);
-  const hitstopOff = bus.on('hitstop', ({ ms }) => loop.hitstop(ms));
+  const feel = new FeelSystem(bus, loop, tuning);
   const gui = debug ? createTuningGui() : undefined;
   if (stats) document.body.append(stats.dom);
   const builtinOff = [
@@ -113,7 +115,7 @@ async function main(): Promise<void> {
           if (args.length !== 1 || !Number.isFinite(value) || value < 0)
             return 'Podaj skończoną liczbę nieujemną.';
           if (name === 'timescale') {
-            loop.timeScale = value;
+            feel.baseTimeScale = value;
             return `Skala czasu: ${value}`;
           }
           bus.emit('hitstop', { ms: value });
@@ -141,7 +143,7 @@ async function main(): Promise<void> {
     disposed = true;
     loop.stop();
     focusOff();
-    hitstopOff();
+    feel.dispose();
     input.dispose();
     disposeConsole?.();
     gui?.destroy();
