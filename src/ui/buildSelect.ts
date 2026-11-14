@@ -82,7 +82,14 @@ export function buildOptions(
       ),
       powers: loadout.powers.map((id) => powerDefinitions.get(id)?.name ?? id),
       synergies: synergies
-        .filter((s) => s.requires.every((tag) => tags.has(tag)))
+        .filter(
+          (s) =>
+            s.requires.every((tag) => tags.has(tag)) &&
+            Object.entries(s.requiresCount ?? {}).every(
+              ([tag, count]) =>
+                loadout.tags.filter((value) => value === tag).length >= count,
+            ),
+        )
         .map((s) => s.name),
     };
   });

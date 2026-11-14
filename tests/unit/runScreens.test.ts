@@ -88,3 +88,67 @@ it('placeholder nagrody ma Dalej; pisanie w konsoli nie uruchamia ekranu', () =>
   expect(next).toHaveBeenCalledOnce();
   expect(document.querySelector('.run-screen')).toBeNull();
 });
+
+it('renders real rewards and keyboard selection forwards their ids', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const chooseReward = vi.fn();
+  screens.show(
+    {
+      ...view,
+      screen: 'reward',
+      offers: [
+        { id: 'one', label: 'One' },
+        { id: 'two', label: 'Two' },
+        { id: 'three', label: 'Three' },
+      ],
+    },
+    { selectNode() {}, next() {}, menu() {}, chooseReward },
+  );
+  const buttons = [
+    ...document.querySelectorAll<HTMLButtonElement>('.run-screen button'),
+  ];
+  expect(buttons.map((button) => button.textContent)).toEqual([
+    'One',
+    'Two',
+    'Three',
+  ]);
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit2' }));
+  expect(chooseReward).toHaveBeenCalledExactlyOnceWith('two');
+});
+
+it('shop disables unaffordable items and rest forwards the upgrade id', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const buy = vi.fn();
+  const rest = vi.fn();
+  const actions = { selectNode() {}, next() {}, menu() {}, buy, rest };
+  screens.show(
+    {
+      ...view,
+      screen: 'shop',
+      state: { ...view.state, credits: 40 },
+      offers: [
+        { id: 'cheap', label: 'Cheap', price: 30 },
+        { id: 'costly', label: 'Costly', price: 75 },
+      ],
+      healPrice: 35,
+    },
+    actions,
+  );
+  const buttons = [
+    ...document.querySelectorAll<HTMLButtonElement>('.run-screen button'),
+  ];
+  expect(buttons[0]!.textContent).toContain('30');
+  expect(buttons[1]!.disabled).toBe(true);
+  buttons[1]!.click();
+  expect(buy).not.toHaveBeenCalled();
+  buttons[0]!.click();
+  expect(buy).toHaveBeenCalledExactlyOnceWith('cheap');
+  screens.show(
+    { ...view, screen: 'rest', offers: [{ id: 'old', label: 'Old' }] },
+    actions,
+  );
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit2' }));
+  expect(rest).toHaveBeenCalledExactlyOnceWith('upgrade', 'old');
+});

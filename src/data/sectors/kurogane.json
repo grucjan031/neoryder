@@ -2,22 +2,50 @@
   "id": "kurogane",
   "name": "Kurogane Arms",
   "layers": 8,
-  "nodesPerLayer": { "min": 2, "max": 4 },
+  "nodesPerLayer": {
+    "min": 2,
+    "max": 4
+  },
   "extraEdgeChance": 0.3,
   "typeWeights": [
-    { "fromLayer": 1, "toLayer": 2, "weights": { "combat": 1 } },
+    {
+      "fromLayer": 1,
+      "toLayer": 2,
+      "weights": {
+        "combat": 1
+      }
+    },
     {
       "fromLayer": 3,
       "toLayer": 6,
-      "weights": { "combat": 7, "elite": 3, "shop": 1, "rest": 0, "puzzle": 0 }
+      "weights": {
+        "combat": 7,
+        "elite": 3,
+        "shop": 1,
+        "rest": 0,
+        "puzzle": 0
+      }
     }
   ],
   "guarantees": [
-    { "type": "shop", "min": 1, "fromLayer": 3, "toLayer": 6 },
-    { "type": "elite", "min": 2, "fromLayer": 3, "toLayer": 6 }
+    {
+      "type": "shop",
+      "min": 1,
+      "fromLayer": 3,
+      "toLayer": 6
+    },
+    {
+      "type": "elite",
+      "min": 2,
+      "fromLayer": 3,
+      "toLayer": 6
+    }
   ],
   "limits": {
-    "maxPerLayer": { "elite": 1, "puzzle": 1 },
+    "maxPerLayer": {
+      "elite": 1,
+      "puzzle": 1
+    },
     "maxElitesPerPath": 2
   },
   "expectedDurationS": {
@@ -81,5 +109,39 @@
         "spawnIntervalS": 0.8
       }
     }
+  },
+  "rewardWeights": {
+    "combat": {
+      "common": 70,
+      "rare": 25,
+      "epic": 5,
+      "legendary": 0
+    },
+    "elite": {
+      "common": 20,
+      "rare": 50,
+      "epic": 25,
+      "legendary": 5
+    },
+    "shop": {
+      "common": 45,
+      "rare": 35,
+      "epic": 15,
+      "legendary": 5
+    }
+  },
+  "economy": {
+    "creditsPerThreat": 5,
+    "eliteBonusCredits": 30,
+    "shopPrices": {
+      "common": 40,
+      "rare": 75,
+      "epic": 120,
+      "legendary": 180
+    },
+    "shopHealPrice": 35,
+    "shopHealFraction": 0.3,
+    "puzzleCredits": 60,
+    "restHealFraction": 0.4
   }
 }

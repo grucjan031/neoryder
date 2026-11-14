@@ -1219,3 +1219,12 @@ Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,
 `loading`, `runError`, `saveError`; pozostałe zapytania są delegowane do pokoju.
 Przejścia po `room_cleared` / `run_ended` następują po zakończeniu stosu zdarzenia,
 bez zwalniania świata podczas kroku symulacji.
+
+### Nagrody i ekonomia (F3-10/11)
+
+`SynergySystem.setImplantTriggers(ImplantSystem.triggers())` aktualizuje wyzwalacze
+wykonywane wspólnym mechanizmem efektów i odnowień. `setTags` zachowuje krotność.
+`offerReward(state, type, rng, sector, definitions, bus?)` zwraca id ofert;
+`stockShop` zwraca implanty z cenami. `RunEconomy` łączy te moduły z RunManager:
+`offerReward`, `stockShop`, `chooseReward`, `buy`, `rest`, `upgradeOptions`, `maxHealth`.
+Oferty są przechowywane do opuszczenia węzła; zakup i odpoczynek weryfikują ekran.

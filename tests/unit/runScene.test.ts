@@ -8,6 +8,7 @@ import type { RunState } from '../../src/core/runTypes';
 import { tuning } from '../../src/core/tuning';
 import { initPhysics } from '../../src/physics';
 import { loadImplant } from '../../src/progression/implantSchema';
+import { implantDefinitions } from '../../src/progression/implants';
 import { RunScene } from '../../src/scenes/run';
 import type {
   RunRoom,
@@ -148,6 +149,7 @@ async function setup(options: RunSceneOptions = {}, bus = new EventBus()) {
     params: new URLSearchParams('seed=test1&loadout=classic'),
     screens,
     save,
+    implantDefinitions: new Map(),
     createRoom: (_layout, run) => {
       const room = new FakeRoom(run);
       rooms.push(room);
@@ -437,4 +439,36 @@ it('clearRun czeka na zaległy saveRun, więc zapis nie odżywa po końcu runu',
   await scene.whenReady();
   expect(save.state).toBeNull();
   expect(save.clears).toBe(1);
+});
+
+it('real offers reach the run screen, selection persists and a second selection is rejected', async () => {
+  const { scene, screens, commands, save } = await setup({
+    implantDefinitions,
+  });
+  screens.actions.selectNode(screens.view.nodes[0]!.id);
+  await scene.whenReady();
+  commands.execute('run clear');
+  await scene.whenReady();
+  const offers = screens.view.offers!;
+  expect(offers).toHaveLength(3);
+  expect(
+    offers.every(
+      (offer) => offer.label === implantDefinitions.get(offer.id)!.name,
+    ),
+  ).toBe(true);
+  expect(scene.query('runLog')).toContainEqual({
+    event: 'reward_offered',
+    nodeId: screens.view.state.currentNodeId,
+    options: offers.map((offer) => offer.id),
+  });
+  screens.actions.next();
+  expect(scene.query('screen')).toBe('reward');
+  screens.actions.chooseReward!(offers[0]!.id);
+  await scene.whenReady();
+  expect(scene.query('screen')).toBe('map');
+  expect(save.state!.implants).toEqual([offers[0]!.id]);
+  screens.actions.chooseReward!(offers[1]!.id);
+  expect((scene.query('runState') as RunState).implants).toEqual([
+    offers[0]!.id,
+  ]);
 });

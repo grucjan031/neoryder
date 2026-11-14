@@ -35,6 +35,8 @@ const text = z
     layer: z.string(),
     kills: z.string(),
     time: z.string(),
+    heal: z.string(),
+    upgrade: z.string(),
   })
   .parse(textData);
 
@@ -45,11 +47,17 @@ export interface RunScreenView {
   summary: RunSummary | null;
   busy: boolean;
   error: string | null;
+  offers?: readonly { id: string; label: string; price?: number }[];
+  healPrice?: number;
+  fallbackCredits?: number;
 }
 
 export interface RunScreenActions {
   selectNode(id: string): void;
   next(): void;
+  chooseReward?(id?: string): void;
+  buy?(id: string): void;
+  rest?(choice: 'heal' | 'upgrade', id?: string): void;
   menu(): void;
 }
 
@@ -138,8 +146,39 @@ export class HtmlRunScreens implements RunScreens {
         );
       }
       this.button(text.menu, actions.menu);
+    } else if (view.screen === 'reward') {
+      for (const offer of view.offers ?? [])
+        this.button(offer.label, () => actions.chooseReward?.(offer.id));
+      if (!view.offers?.length) {
+        this.line(text.noRewards);
+        this.button(
+          `${text.next} · ${text.credits}: +${view.fallbackCredits ?? 0}`,
+          () =>
+            actions.chooseReward ? actions.chooseReward() : actions.next(),
+        );
+      }
+    } else if (view.screen === 'shop') {
+      for (const offer of view.offers ?? []) {
+        const button = this.button(
+          `${offer.label} — ${offer.price} ${text.credits}`,
+          () => actions.buy?.(offer.id),
+        );
+        button.disabled = view.state.credits < (offer.price ?? 0);
+      }
+      const heal = this.button(
+        `${text.heal} — ${view.healPrice ?? 0} ${text.credits}`,
+        () => actions.buy?.('heal'),
+      );
+      heal.disabled = view.state.credits < (view.healPrice ?? 0);
+      this.button(text.next, actions.next);
+    } else if (view.screen === 'rest') {
+      this.button(text.heal, () => actions.rest?.('heal'));
+      for (const offer of view.offers ?? [])
+        this.button(`${text.upgrade}: ${offer.label}`, () =>
+          actions.rest?.('upgrade', offer.id),
+        );
     } else {
-      this.line(view.screen === 'reward' ? text.noRewards : text.placeholder);
+      this.line(text.placeholder);
       this.button(text.next, actions.next);
     }
   }

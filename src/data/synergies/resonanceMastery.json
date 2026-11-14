@@ -1,0 +1,21 @@
+{
+  "id": "resonanceMastery",
+  "name": "Splot Rezonansu",
+  "requires": [],
+  "requiresCount": {
+    "#power": 3
+  },
+  "when": {
+    "event": "power_used"
+  },
+  "effects": [
+    {
+      "kind": "stat_modifier_timed",
+      "stat": "damage",
+      "type": "percent",
+      "value": 0.15,
+      "durationS": 3
+    }
+  ],
+  "cooldownS": 2
+}

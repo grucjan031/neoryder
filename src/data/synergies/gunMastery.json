@@ -1,0 +1,18 @@
+{
+  "id": "gunMastery",
+  "name": "Zimny arsenał",
+  "requires": [],
+  "requiresCount": {
+    "#gun": 3
+  },
+  "when": {
+    "event": "enemy_killed"
+  },
+  "effects": [
+    {
+      "kind": "cool_weapon",
+      "amount": 15
+    }
+  ],
+  "cooldownS": 2
+}
