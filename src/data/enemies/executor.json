@@ -1,5 +1,6 @@
 {
   "id": "executor",
+  "threatCost": 6,
   "kind": "executor",
   "model": "enemy_executor",
   "grabbable": false,

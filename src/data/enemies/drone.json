@@ -1,5 +1,6 @@
 {
   "id": "drone",
+  "threatCost": 1,
   "kind": "drone",
   "model": "enemy_drone",
   "grabbable": true,

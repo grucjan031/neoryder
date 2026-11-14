@@ -868,6 +868,13 @@ wyłącznie stygną. HUD słucha held_item_changed i przygasza blok broni przy o
 
 ## Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005)
 
+F3-08: `src/world/threat.ts` eksportuje `planWaves: RoomPlanner['planWaves']`
+oraz `roomPlanner: RoomPlanner`. Planer przyjmuje główny RNG runu i sam tworzy
+`fork('room:<nodeId>')`. Obsługuje combat/elite; błędna konfiguracja powoduje błąd.
+Sekcja threat dodaje opcjonalne `waveWeights` (domyślnie [1, 1.3, 1.6]) oraz
+`pacing[type]` (domyślnie firstBreakS=2, breakS=4, spawnIntervalS=0.8).
+Szczegóły: `docs/systems/threat.md`.
+
 Architektura i decyzje: `docs/adr/0005-petla-runu-f3.md`. Zadania: `docs/issues/F3/README.md`.
 
 ### Wspólne typy runu — `src/core/runTypes.ts`

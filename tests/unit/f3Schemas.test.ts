@@ -240,7 +240,9 @@ describe('ImplantDefinition (implantSchema)', () => {
 
 describe('enemySchema.threatCost i synergySchema.requiresCount', () => {
   it('enemySchema przyjmuje dodatnie threatCost i odrzuca <= 0', () => {
-    expect(enemySchema.parse(assaulterRaw).threatCost).toBeUndefined();
+    expect(
+      enemySchema.parse({ ...assaulterRaw, threatCost: undefined }).threatCost,
+    ).toBeUndefined();
     expect(
       enemySchema.parse({ ...assaulterRaw, threatCost: 1.5 }).threatCost,
     ).toBe(1.5);

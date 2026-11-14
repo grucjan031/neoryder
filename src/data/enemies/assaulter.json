@@ -1,5 +1,6 @@
 {
   "id": "assaulter",
+  "threatCost": 1,
   "kind": "assaulter",
   "model": "enemy_trooper",
   "grabbable": true,

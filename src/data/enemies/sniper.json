@@ -1,5 +1,6 @@
 {
   "id": "sniper",
+  "threatCost": 2.5,
   "kind": "sniper",
   "model": "enemy_sniper",
   "grabbable": true,

@@ -27,5 +27,59 @@
     "rest": 45,
     "puzzle": 90,
     "boss": 300
+  },
+  "threat": {
+    "base": {
+      "combat": 4,
+      "elite": 8
+    },
+    "perLayer": {
+      "combat": 1.5,
+      "elite": 2
+    },
+    "waveCount": {
+      "combat": {
+        "min": 2,
+        "max": 3
+      },
+      "elite": {
+        "min": 2,
+        "max": 3
+      }
+    },
+    "pools": {
+      "combat": {
+        "assaulter": 4,
+        "gunner": 3,
+        "drone": 2,
+        "shielder": 1,
+        "sniper": 1
+      },
+      "elite": {
+        "assaulter": 3,
+        "gunner": 2,
+        "drone": 1,
+        "shielder": 3,
+        "sniper": 2,
+        "executor": 1
+      }
+    },
+    "unlockLayer": {
+      "sniper": 3,
+      "executor": 4
+    },
+    "waveWeights": [1, 1.3, 1.6],
+    "pacing": {
+      "combat": {
+        "firstBreakS": 2,
+        "breakS": 4,
+        "spawnIntervalS": 0.8
+      },
+      "elite": {
+        "firstBreakS": 2,
+        "breakS": 4,
+        "spawnIntervalS": 0.8
+      }
+    }
   }
 }
