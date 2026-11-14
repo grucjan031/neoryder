@@ -210,6 +210,9 @@ export interface GameContext {
   loop: GameLoop;
   tuning: Tuning;
   debug: boolean;
+  commands?: CommandRegistry;                  // rejestr komend debug
+  camera?: import('three').PerspectiveCamera;   // kamera główna (sceny FPP)
+  audio?: AudioSystem;                          // dźwięki (#14), jeden na aplikację
 }
 
 export interface Scene {

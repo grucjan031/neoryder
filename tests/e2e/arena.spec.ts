@@ -28,6 +28,8 @@ test('arena: fale startują, zabicie fali przechodzi dalej, śmierć i powtórka
   await expect
     .poll(() => q('debris'), { timeout: SIM_TIMEOUT })
     .toBeGreaterThan(0);
+  // …i grają dźwięk rozbicia (#14).
+  expect(await q('recentSounds')).toContain('kill');
   await expect.poll(() => q('phase'), { timeout: SIM_TIMEOUT }).toBe('break');
   await expect.poll(() => q('wave'), { timeout: SIM_TIMEOUT }).toBe(2);
   // Śmierć gracza: skok do najtrudniejszej fali, gracz stoi bez obrony.

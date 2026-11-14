@@ -115,6 +115,8 @@ export const tuning = {
   },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
   arena: { maxEnemies: 30 },
+  /** Dźwięki (#14). Przepisy i reguły w src/data/audio/sfx.json. */
+  audio: { maxVoices: 24, masterGain: 0.7, refDistance: 4, maxPan: 0.8 },
   physics: { gravity: -20, maxDynamicBodies: 300 },
   damage: { playerInvulnMs: 250, respawnS: 1.5 },
   weapons: { overheatLockS: 1.5, coolDelayS: 0.25, maxProjectiles: 256 },

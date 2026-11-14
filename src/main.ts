@@ -11,6 +11,10 @@ import { scenes } from './scenes';
 import { defaultCommands as commands } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
 import { createSceneMenu } from './ui/sceneMenu';
+import { AudioSystem } from './audio/audioSystem';
+import { loadSfx } from './audio/sfxSchema';
+import sfxData from './data/audio/sfx.json';
+import { loadSettings } from './core/save';
 import { createRenderPipeline } from './render/outline';
 import './ui/styles.css';
 
@@ -67,8 +71,19 @@ async function main(): Promise<void> {
       stats?.end();
     },
   });
+  const settings = loadSettings();
+  // Dźwięk przed sceną: musi usłyszeć entity_spawned gracza z init() sceny.
+  const audio = new AudioSystem(bus, loadSfx(sfxData), {
+    createContext: () =>
+      typeof AudioContext === 'undefined' ? null : new AudioContext(),
+    tuning,
+    masterVolume: () => settings.masterVolume,
+    listener: () => ({ position: camera.position, yaw: camera.rotation.y }),
+  });
+  audio.attachUnlock(window);
   const ctx: GameContext = {
     bus,
+    audio,
     rng: new Rng(seed),
     loop,
     tuning,
@@ -137,7 +152,14 @@ async function main(): Promise<void> {
     window.__neoryder = Object.freeze({
       tick: () => loop.tick,
       sceneId: () => scene.id,
-      query: (name: string) => scene.query?.(name),
+      query: (name: string) =>
+        name === 'audioState'
+          ? audio.state
+          : name === 'lastSound'
+            ? audio.lastSound
+            : name === 'recentSounds'
+              ? [...audio.recentSounds]
+              : scene.query?.(name),
       command,
     });
   }
@@ -151,6 +173,7 @@ async function main(): Promise<void> {
     loop.stop();
     focusOff();
     feel.dispose();
+    audio.dispose();
     input.dispose();
     disposeConsole?.();
     gui?.destroy();

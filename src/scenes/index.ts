@@ -2,6 +2,7 @@ import { DamageTest } from './damageTest';
 import { StyleTest } from './styleTest';
 import { MeleeTest, ParryTest, PushTest } from './meleeTest';
 import { Arena } from './arena';
+import { SfxTest } from './sfxTest';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import type { InputSnapshot } from '../core/input';
@@ -28,6 +29,7 @@ export const scenes: Record<string, SceneFactory> = {
   'damage-test': () => new DamageTest(),
   'style-test': () => new StyleTest(),
   arena: () => new Arena(),
+  'sfx-test': () => new SfxTest(),
   'melee-test': () => new MeleeTest(),
   'push-test': () => new PushTest(),
   'parry-test': () => new ParryTest(),

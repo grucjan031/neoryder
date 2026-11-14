@@ -48,6 +48,11 @@ const DESCRIPTIONS: Record<
     text: 'Paleta, obrys krawędzi i modele z Blendera.',
     order: 8,
   },
+  'sfx-test': {
+    title: 'Dźwięki',
+    text: 'Odsłuch syntezowanych efektów (kliknij przycisk w panelu).',
+    order: 8.5,
+  },
   sandbox: {
     title: 'Sandbox fizyki',
     text: 'Spadające kostki Rapier (scena techniczna F0).',
