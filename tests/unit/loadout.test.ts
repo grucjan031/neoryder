@@ -35,7 +35,7 @@ describe('Loadout', () => {
     expect(loadoutDefinitions.get('resonance')).toMatchObject({
       name: 'Moc',
       weapons: ['blaster'],
-      powers: ['push', 'shockwave'],
+      powers: ['chain', 'push'],
       tags: ['#build_resonance'],
     });
     expect(loadoutDefinitions.get('gunner')).toMatchObject({

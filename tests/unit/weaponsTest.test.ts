@@ -207,9 +207,9 @@ it('beam range and the first wall collider protect the dummy behind the wall', a
   // Remove the three foreground hurtboxes until their normal respawn.
   commands.execute('weapon sniper');
   scene.step(SIM_DT, firing);
-  for (let i = 0; i < 61; i++) scene.step(SIM_DT, input);
+  for (let i = 0; i < 76; i++) scene.step(SIM_DT, input);
   scene.step(SIM_DT, firing);
-  for (let i = 0; i < 61; i++) scene.step(SIM_DT, input);
+  for (let i = 0; i < 76; i++) scene.step(SIM_DT, input);
   scene.step(SIM_DT, firing);
   for (let i = 0; i < 10; i++) scene.step(SIM_DT, input);
   commands.execute('weapon beam');

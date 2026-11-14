@@ -22,7 +22,7 @@ try {
   ]))
     console.warn(warning);
   console.log(
-    `Zapisano docs/balance.md. Bramka (otwarta przestrzeń / ściana): ${results.open.passed} / ${results.wall.passed}.`,
+    `Zapisano docs/balance.md. Bramka (paczka, otwarta przestrzeń): ${results.open.passed}; przy ścianie (informacyjnie): ${results.wall.passed}.`,
   );
   console.table(
     results.open.paths.map(({ enemy, ttkS, medianS, passed }) => ({

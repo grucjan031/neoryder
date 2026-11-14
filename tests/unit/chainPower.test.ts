@@ -51,7 +51,7 @@ function setup(
   );
   const targets: PushTarget[] = positions.map((position) => {
     const id = entities.create('dummy', 'enemy');
-    const stats = new Stats({ maxHealth: 200 });
+    const stats = new Stats({ maxHealth: 1000 });
     damage.register(id, new Health(() => stats.get('maxHealth')), { stats });
     return { id, position: { ...position } };
   });

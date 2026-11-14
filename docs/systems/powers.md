@@ -26,10 +26,10 @@ Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, s
 
 | Parametr (dane)                   | Start        | Znaczenie                                                       |
 | --------------------------------- | ------------ | --------------------------------------------------------------- |
-| `cost`                            | 25           | energia za użycie                                               |
+| `cost`                            | 10           | energia za użycie                                               |
 | `cooldownS`                       | 0,6          | odnowienie                                                      |
 | `coneAngleDeg`, `range`           | 70°, 7 m     | stożek przed oczami (kąt pełny)                                 |
-| `damage`, `knockback`             | 10, 14       | obrażenia i impuls w `damage_dealt`                             |
+| `damage`, `knockback`             | 35, 14       | obrażenia i impuls w `damage_dealt`                             |
 | `wallSlamDamage`, `wallSlamRange` | 30, 3,5 m    | uderzenie w ścianę                                              |
 | `knockbackLift`, `shakeDurationS` | 0,15; 0,25 s | minimalna składowa Y kierunku przed normalizacją; czas wstrząsu |
 
@@ -37,6 +37,8 @@ Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, s
 - Cele w stożku dostają obrażenia z tagiem `#power` i odrzut (`damage_dealt.knockback`, kierunek od gracza z lekkim uniesieniem). Ruch po odrzucie realizuje odbiorca (wróg, manekin) — ten sam kanał co ostatni cios combo.
 - **Uderzenie w ścianę** jest przewidywane promieniem w chwili pchnięcia: jeśli geometria świata jest bliżej niż `wallSlamRange` w kierunku odrzutu, po czasie lotu (`dystans / knockback`) cel dostaje `wallSlamDamage` z tagami `#power`, `#wall`. Deterministyczne i niezależne od fizyki konkretnego wroga. Ograniczenie: przeszkoda, która pojawi się po pchnięciu, nie liczy się (do oceny w playteście).
 - Drużyny filtruje `DamageSystem` (pchnięcie nie rani sojuszników).
+
+Wartości po F2-18 (opcja B): `damage` 35, `cost` 10; `cooldownS` bez zmian (0,6 s). Ograniczenia: `cost` ≥ 10, `cooldownS` ≥ 0,35, żeby Pchnięcie pozostało kontrolą, a nie karabinem.
 
 ## Fala uderzeniowa (`shockwave.json`, klawisz E w push-test)
 
@@ -56,10 +58,10 @@ Krótszy zasięg i słabszy odrzut w zamian za kontrolę otoczenia; wyższy kosz
 
 | Parametr (dane)                        | Wartość startowa           | Znaczenie                                                         |
 | -------------------------------------- | -------------------------- | ----------------------------------------------------------------- |
-| `cost`, `cooldownS`                    | 30 energii, 1,2 s          | koszt użycia i odnowienie                                         |
+| `cost`, `cooldownS`                    | 10 energii, 0,4 s          | koszt użycia i odnowienie                                         |
 | `rangeM`, `coneDeg`                    | 14 m, 20°                  | zasięg i pełny kąt stożka wyboru pierwszego celu                  |
 | `jumps`, `jumpRangeM`                  | 3, 5 m                     | maksymalna liczba przeskoków i zasięg pojedynczego przeskoku      |
-| `damage`, `falloff`                    | 18, 0,25                   | obrażenia bazowe i spadek: n-ty cel dostaje `damage × 0,75^(n−1)` |
+| `damage`, `falloff`                    | 60, 0,25                   | obrażenia bazowe i spadek: n-ty cel dostaje `damage × 0,75^(n−1)` |
 | `statuses`                             | `overload` (4 s, 1 stos)   | nakładane przez `DamageSystem.deal` → `StatusSystem`              |
 | `tags`                                 | `#power`, `#elektrycznosc` | tagi obrażeń każdego ogniwa                                       |
 | `vfx: { arcLifeS, jitterM, segments }` | 0,2 s, 0,12 m, 6           | czas życia łuku, amplituda zygzaka i liczba odcinków na ogniwo    |
@@ -70,16 +72,18 @@ Krótszy zasięg i słabszy odrzut w zamian za kontrolę otoczenia; wyższy kosz
 - **Obrażenia i statusy:** każde trafienie idzie przez `DamageSystem.deal` ze źródłem `owner`, tagami `#power`, `#elektrycznosc` i `statuses` (`overload`), dzięki czemu `StatusSystem` nakłada przeciążenie (przy 3 stosach cel zostaje ogłuszony i wyzwala wyładowanie obszarowe).
 - **Wizualizacja (`LightningRenderer`):** `ChainPower` przechowuje aktywne łuki w `arcs` (`{ points, ageS }`), postarzane w `step(dt)` i usuwane po `vfx.arcLifeS` (oraz przy `reset()`). `src/render/lightningRenderer.ts` rysuje zygzak z `segments` odcinków na ogniwo z odchyleniem `±jitterM`, używając materiału `power` z zanikaniem przezroczystości i ponownym użyciem geometrii.
 
+Wartości po F2-18 (opcja B, `docs/systems/balance.md`): `damage` 60, `cost` 10, `cooldownS` 0,4 s (`chain.cooldownS` ≥ 0,4). Błyskawica jest głównym źródłem obrażeń ścieżki Moc, a energia (pula 100, regeneracja po 2 s bez wydatku) nadal ją ogranicza: 10 użyć z pełnej puli.
+
 ## Chwyt i rzut (`grab.json`, `kind: 'grab'`, F2-09)
 
-| Parametr | Wartość startowa |
-| --- | --- |
-| `cost`, `cooldownS` | 20 energii, 1,5 s od puszczenia |
-| `rangeM`, `aimConeDeg` | 12 m, pełny stożek 36° |
-| `maxMassKg` | 100 kg |
-| `drainPerS`, `maxHoldS` | 12 energii/s czasu gracza, 5 s |
-| `holdDistanceM`, `throwSpeed` | 3 m, 22 m/s |
-| `minImpactSpeed`, `impactDamage` | co najmniej 5 m/s, 35 obrażeń |
+| Parametr                            | Wartość startowa                                     |
+| ----------------------------------- | ---------------------------------------------------- |
+| `cost`, `cooldownS`                 | 20 energii, 1,5 s od puszczenia                      |
+| `rangeM`, `aimConeDeg`              | 12 m, pełny stożek 36°                               |
+| `maxMassKg`                         | 100 kg                                               |
+| `drainPerS`, `maxHoldS`             | 12 energii/s czasu gracza, 5 s                       |
+| `holdDistanceM`, `throwSpeed`       | 3 m, 22 m/s                                          |
+| `minImpactSpeed`, `impactDamage`    | co najmniej 5 m/s, 35 obrażeń                        |
 | `landingNormalY`, `landingSpeedMps` | normalna podparcia ≥ 0,5; całkowita prędkość ≤ 1 m/s |
 
 Wciśnięcie F/E wybiera najbliższy środek ciała w stożku celowania z linią
@@ -174,7 +178,7 @@ Komenda debug `power <slot 1|2> <id>` wstawia dowolną moc z rejestru do wskazan
 
 ### Kontrola w 30 sekund
 
-1. Otwórz `?scene=push-test&debug=1`, kliknij canvas i naciśnij F: środkowy manekin leci do ściany, traci łącznie 40 HP; tylne manekiny pozostają nietknięte.
+1. Otwórz `?scene=push-test&debug=1`, kliknij canvas i naciśnij F: środkowy manekin leci do ściany, traci łącznie 65 HP (35 + 30 za ścianę); tylne manekiny pozostają nietknięte.
 2. Użyj debug `reset`, naciśnij E i obróć się: wszystkie pobliskie manekiny, także dwa z tyłu, dostają obrażenia i odrzut. Energia spada o 40; natychmiastowe ponowne E jest odrzucone z powodu odnowienia.
 3. Wpisz `power 1 chain`, `reset` i naciśnij F patrząc w środkowego manekina: łuk Błyskawicy trafia środkowego manekina i przeskakuje po sąsiednich (łącznie 4 cele ze spadkiem obrażeń i nałożeniem `overload`), a magenta zygzak zanika po 0,2 s. Odwróć wzrok w bok (poza stożek) i naciśnij F — brak strzału i brak kosztu energii. Trzykrotne trafienie grupy (`energy 100` między strzałami) dobija do 3 stosów `overload` i wyzwala wyładowanie.
 

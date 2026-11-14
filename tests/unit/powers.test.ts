@@ -154,7 +154,7 @@ describe('energia', () => {
     const last = c.log
       .filter((e) => e.type === 'energy_changed')
       .at(-1)?.payload;
-    expect(last).toEqual({ id: c.player, current: 75, max: 100 });
+    expect(last).toEqual({ id: c.player, current: 90, max: 100 });
   });
 });
 
