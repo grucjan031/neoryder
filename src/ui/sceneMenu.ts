@@ -3,6 +3,11 @@ const DESCRIPTIONS: Record<
   string,
   { title: string; text: string; order: number }
 > = {
+  arena: {
+    title: 'Arena — fale wrogów',
+    text: '12 fal Szturmowców i Strzelców: ostrze, blok, parowanie, Pchnięcie, blaster.',
+    order: 0,
+  },
   'ai-test': {
     title: 'Walka z wrogami',
     text: 'Arena z Szturmowcami i Strzelcem — najbliżej docelowej gry.',

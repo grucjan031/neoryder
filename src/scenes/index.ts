@@ -1,6 +1,7 @@
 import { DamageTest } from './damageTest';
 import { StyleTest } from './styleTest';
 import { MeleeTest, ParryTest, PushTest } from './meleeTest';
+import { Arena } from './arena';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import type { InputSnapshot } from '../core/input';
@@ -8,6 +9,7 @@ import { Sandbox } from './sandbox';
 import { PlayerTest } from './playerTest';
 import { BlasterTest } from './blasterTest';
 import { AiTest } from './aiTest';
+import { DebrisTest } from './debrisTest';
 
 export interface Scene {
   readonly id: string;
@@ -25,9 +27,11 @@ export const scenes: Record<string, SceneFactory> = {
   'player-test': () => new PlayerTest(),
   'damage-test': () => new DamageTest(),
   'style-test': () => new StyleTest(),
+  arena: () => new Arena(),
   'melee-test': () => new MeleeTest(),
   'push-test': () => new PushTest(),
   'parry-test': () => new ParryTest(),
   'blaster-test': () => new BlasterTest(),
   'ai-test': () => new AiTest(),
+  'debris-test': () => new DebrisTest(),
 };

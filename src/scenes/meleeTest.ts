@@ -31,11 +31,11 @@ import { pushDefinition, ResonancePush } from '../combat/powers/push';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
-import type { BladeView } from '../combat/melee/plasmaBlade';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
+import { FppBlade } from '../render/fppBlade';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
 import { palette } from '../render/palette';
@@ -59,51 +59,6 @@ const DUMMY_POSITIONS: Vec3[] = [
   { x: 0, y: 0, z: -5 },
   { x: 2.5, y: 0, z: -4 },
 ];
-
-/** Poza ostrza w układzie kamery (pozycja, kąty Euler 'YXZ' w radianach). */
-interface BladePose {
-  pos: [number, number, number];
-  rot: [number, number, number];
-}
-
-const POSE_IDLE: BladePose = {
-  pos: [0.3, -0.3, -0.55],
-  rot: [0.9, 0.15, -0.25],
-};
-const POSE_BLOCK: BladePose = {
-  pos: [0.05, -0.12, -0.5],
-  rot: [0.15, 0, -1.45],
-};
-
-/** Początek i koniec zamachu dla etapów combo i ciężkiego ciosu. */
-const SWINGS: Record<string, [BladePose, BladePose]> = {
-  1: [
-    { pos: [0.45, -0.1, -0.5], rot: [0.5, 0.9, -1.2] },
-    { pos: [-0.35, -0.3, -0.55], rot: [0.5, -0.9, -1.4] },
-  ],
-  2: [
-    { pos: [-0.4, -0.1, -0.5], rot: [0.5, -0.9, 1.2] },
-    { pos: [0.4, -0.3, -0.55], rot: [0.5, 0.9, 1.4] },
-  ],
-  3: [
-    { pos: [0.15, 0.15, -0.45], rot: [1.9, 0.1, -0.1] },
-    { pos: [0.05, -0.45, -0.6], rot: [-0.4, 0, -0.1] },
-  ],
-  heavy: [
-    { pos: [0.35, 0.2, -0.35], rot: [2.2, 0.3, -0.4] },
-    { pos: [0, -0.5, -0.65], rot: [-0.6, 0, 0] },
-  ],
-};
-
-function lerpPose(a: BladePose, b: BladePose, t: number): BladePose {
-  const l = (x: number, y: number) => x + (y - x) * t;
-  return {
-    pos: [l(a.pos[0], b.pos[0]), l(a.pos[1], b.pos[1]), l(a.pos[2], b.pos[2])],
-    rot: [l(a.rot[0], b.rot[0]), l(a.rot[1], b.rot[1]), l(a.rot[2], b.rot[2])],
-  };
-}
-
-const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
 
 /** Parametry wieżyczki sceny testowej (nie rozgrywki — tylko do ćwiczenia parowania). */
 const TURRET_INTERVAL_S = 1.6;
@@ -143,7 +98,7 @@ export class MeleeTest implements Scene {
   );
   private readonly dummies: Dummy[] = [];
   private readonly root = new Group();
-  private readonly bladeModel = new Group();
+  private readonly bladeModel = new FppBlade();
   private readonly arcDebug = new Mesh(
     new BoxGeometry(1, 1, 1),
     new MeshBasicMaterial({ color: palette.cyan, wireframe: true }),
@@ -279,7 +234,7 @@ export class MeleeTest implements Scene {
     );
 
     this.arcDebug.visible = false;
-    this.root.add(this.bladeModel, this.arcDebug);
+    this.root.add(this.bladeModel.root, this.arcDebug);
     this.world.step();
     this.registerCommands();
     this.off.push(
@@ -313,24 +268,13 @@ export class MeleeTest implements Scene {
   }
 
   private async loadAssets(): Promise<void> {
-    const fallbackBlade = new Mesh(
-      new BoxGeometry(0.03, 0.03, 1.1),
-      getMaterial('player'),
-    );
-    fallbackBlade.position.z = -0.55;
-    this.bladeModel.add(fallbackBlade);
+    await this.bladeModel.load(this.loadModels);
     if (!this.loadModels) return;
-    const loader = new GLTFLoader();
     try {
-      const [blade, trooper] = await Promise.all([
-        loader.loadAsync('/assets/models/plasma_blade.glb'),
-        loader.loadAsync('/assets/models/enemy_trooper.glb'),
-      ]);
-      applyStyle(blade.scene);
+      const trooper = await new GLTFLoader().loadAsync(
+        '/assets/models/enemy_trooper.glb',
+      );
       applyStyle(trooper.scene);
-      this.bladeModel.remove(fallbackBlade);
-      fallbackBlade.geometry.dispose();
-      this.bladeModel.add(blade.scene);
       this.dummyTemplate = trooper.scene;
     } catch {
       // Bryły zastępcze zostają — scena jest grywalna bez modeli.
@@ -608,33 +552,7 @@ export class MeleeTest implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    this.placeBlade(camera.matrixWorld, this.blade.view());
-  }
-
-  /** Ostrze w widoku FPP: poza z maszyny stanów, przeliczona do układu kamery. */
-  private placeBlade(cameraMatrix: Matrix4, view: BladeView): void {
-    let pose = POSE_IDLE;
-    if (view.state === 'blocking') pose = POSE_BLOCK;
-    else if (view.state === 'charging') {
-      const [start] = SWINGS.heavy as [BladePose, BladePose];
-      pose = lerpPose(POSE_IDLE, start, easeOut(view.charge));
-    } else if (view.state === 'light' || view.state === 'heavy') {
-      const key = view.state === 'heavy' ? 'heavy' : String(view.stage);
-      const [start, end] = (SWINGS[key] ?? SWINGS[1]) as [BladePose, BladePose];
-      if (view.phase === 'windup')
-        pose = lerpPose(POSE_IDLE, start, easeOut(view.phaseT));
-      else if (view.phase === 'active')
-        pose = lerpPose(start, end, easeOut(view.phaseT));
-      else pose = lerpPose(end, POSE_IDLE, view.phaseT * view.phaseT);
-    }
-    const { m, q, e, v, s } = this.tmp;
-    e.set(pose.rot[0], pose.rot[1], pose.rot[2], 'YXZ');
-    q.setFromEuler(e);
-    v.set(pose.pos[0], pose.pos[1], pose.pos[2]);
-    m.compose(v, q, s);
-    this.bladeModel.matrixAutoUpdate = false;
-    this.bladeModel.matrix.multiplyMatrices(cameraMatrix, m);
-    this.bladeModel.matrixWorldNeedsUpdate = true;
+    this.bladeModel.place(camera.matrixWorld, this.blade.view());
   }
 
   query(name: string): unknown {
@@ -651,6 +569,7 @@ export class MeleeTest implements Scene {
   dispose(): void {
     for (const off of this.off.splice(0)) off();
     this.blade.dispose();
+    this.bladeModel.dispose();
     this.projectiles.dispose();
     this.projectileView.dispose();
     this.energy.dispose();

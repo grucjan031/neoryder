@@ -113,6 +113,8 @@ export const tuning = {
     pushHitstopMs: 40,
     pushShake: 0.35,
   },
+  /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
+  arena: { maxEnemies: 30 },
   physics: { gravity: -20, maxDynamicBodies: 300 },
   damage: { playerInvulnMs: 250, respawnS: 1.5 },
   weapons: { overheatLockS: 1.5, coolDelayS: 0.25, maxProjectiles: 256 },
@@ -121,6 +123,16 @@ export const tuning = {
     corpseS: 0.5,
     separationRadius: 1,
     wallProbe: 1.5,
+  },
+  vfx: {
+    maxDebris: 600,
+    debrisMin: 12,
+    debrisMax: 30,
+    debrisPerDamage: 0.25,
+    debrisStrength: 6,
+    debrisLifetimeS: 2.2,
+    debrisGravity: -18,
+    debrisSize: 0.18,
   },
   sandbox: { cubeSpawnHeight: 6 },
 };

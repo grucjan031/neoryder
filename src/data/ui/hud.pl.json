@@ -1,0 +1,12 @@
+{
+  "health": "Zdrowie",
+  "energy": "Energia",
+  "heat": "Ciepło",
+  "overheated": "Przegrzanie",
+  "noEnergy": "Brak energii",
+  "cooldown": "Odnowienie",
+  "died": "Zginąłeś",
+  "retry": "Jeszcze raz",
+  "wave": "Fala",
+  "waveCleared": "Fala wyczyszczona"
+}

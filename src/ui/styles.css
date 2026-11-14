@@ -115,3 +115,220 @@ body:has(.scene-menu) {
   font-size: 12px;
   line-height: 1.6;
 }
+
+/* Minimalny HUD — HTML nad canvasem. */
+.hud {
+  --hud-health: #fff;
+  --hud-danger: #e0262b;
+  --hud-energy: #00e5ff;
+  --hud-heat: #ff2bd6;
+  --hud-background: #111d;
+  --hud-text: #fff;
+  --hud-gap: 12px;
+  --hud-inset: 24px;
+  --hud-meter-width: min(280px, calc(100vw - 48px));
+  --hud-denial-duration: 0.6s;
+  --hud-damage-duration: 0.3s;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  color: var(--hud-text);
+  font-size: 14px;
+}
+.hud [hidden] {
+  display: none;
+}
+.hud__meters {
+  position: absolute;
+  left: var(--hud-inset);
+  bottom: var(--hud-inset);
+  display: grid;
+  gap: var(--hud-gap);
+  width: var(--hud-meter-width);
+}
+.hud__meter {
+  --hud-fill: var(--hud-health);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  padding: 10px;
+  background: var(--hud-background);
+  border-left: 3px solid var(--hud-fill);
+}
+.hud__meter--health {
+  border-color: var(--hud-danger);
+}
+.hud__meter--energy {
+  --hud-fill: var(--hud-energy);
+}
+.hud__meter--heat {
+  --hud-fill: var(--hud-heat);
+}
+.hud__track {
+  grid-column: 1 / -1;
+  height: 6px;
+  background: #ffffff26;
+  overflow: hidden;
+}
+.hud__fill {
+  height: 100%;
+  background: var(--hud-fill);
+}
+.hud__meter--overheated .hud__fill,
+.hud__meter--overheated .hud__label {
+  animation: hud-overheated 0.4s ease-in-out infinite alternate;
+}
+@keyframes hud-overheated {
+  to {
+    opacity: 0.3;
+  }
+}
+.hud__crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+}
+.hud__crosshair::before,
+.hud__crosshair::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+}
+.hud__crosshair::before {
+  top: 5px;
+  width: 12px;
+  height: 2px;
+}
+.hud__crosshair::after {
+  left: 5px;
+  width: 2px;
+  height: 12px;
+}
+.hud__denial {
+  position: absolute;
+  top: calc(50% + 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  white-space: nowrap;
+  background: var(--hud-background);
+  color: var(--hud-energy);
+  animation: hud-flash var(--hud-denial-duration) ease-out forwards;
+}
+.hud__damage {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 12vmin 2vmin var(--hud-danger);
+  animation: hud-flash var(--hud-damage-duration) ease-out forwards;
+}
+.hud__flash--alternate {
+  animation-name: hud-flash-alternate;
+}
+@keyframes hud-flash {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes hud-flash-alternate {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.hud__wave {
+  position: absolute;
+  top: var(--hud-inset);
+  right: var(--hud-inset);
+  padding: 10px;
+  background: var(--hud-background);
+}
+.hud__wave:empty {
+  display: none;
+}
+.hud__death {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hud-gap);
+  background: #111b;
+}
+.hud__death-title {
+  margin: 0;
+}
+.hud__retry {
+  pointer-events: auto;
+  border: 2px solid var(--hud-energy);
+  padding: 12px 24px;
+  background: var(--hud-background);
+  color: var(--hud-text);
+  font: inherit;
+  cursor: pointer;
+}
+.hud__retry:focus-visible {
+  outline: 2px solid var(--hud-text);
+  outline-offset: 4px;
+}
+.arena-status {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 6px 12px;
+  background: #050505cc;
+  color: #f2f2f2;
+  font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.arena-dead {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #050505d9;
+  color: #f2f2f2;
+  z-index: 900;
+}
+.arena-dead[hidden] {
+  display: none;
+}
+.arena-dead h2 {
+  margin: 0;
+  color: #ff3b40;
+  letter-spacing: 0.2em;
+  font-size: 32px;
+}
+.arena-dead button {
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: #e0262b;
+  color: #fff;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.arena-dead button:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: 2px;
+}
+body:has(.hud) .hint {
+  left: auto;
+  right: 20px;
+}

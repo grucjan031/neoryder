@@ -1,0 +1,91 @@
+{
+  "id": "arena",
+  "firstBreakS": 2,
+  "breakS": 4,
+  "maxAlive": 10,
+  "minSpawnDistance": 9,
+  "spawnPoints": [
+    { "x": -15, "z": -15 },
+    { "x": 0, "z": -16 },
+    { "x": 15, "z": -15 },
+    { "x": -16, "z": 0 },
+    { "x": 16, "z": 0 },
+    { "x": -15, "z": 15 },
+    { "x": 0, "z": 16 },
+    { "x": 15, "z": 15 }
+  ],
+  "waves": [
+    { "spawnIntervalS": 0.9, "groups": [{ "enemy": "assaulter", "count": 2 }] },
+    { "spawnIntervalS": 0.8, "groups": [{ "enemy": "assaulter", "count": 3 }] },
+    {
+      "spawnIntervalS": 0.8,
+      "groups": [
+        { "enemy": "assaulter", "count": 2 },
+        { "enemy": "gunner", "count": 1 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.7,
+      "groups": [
+        { "enemy": "assaulter", "count": 4 },
+        { "enemy": "gunner", "count": 1 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.7,
+      "groups": [
+        { "enemy": "assaulter", "count": 3 },
+        { "enemy": "gunner", "count": 2 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.6,
+      "groups": [
+        { "enemy": "assaulter", "count": 5 },
+        { "enemy": "gunner", "count": 2 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.6,
+      "groups": [
+        { "enemy": "assaulter", "count": 4 },
+        { "enemy": "gunner", "count": 3 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        { "enemy": "assaulter", "count": 6 },
+        { "enemy": "gunner", "count": 3 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        { "enemy": "assaulter", "count": 6 },
+        { "enemy": "gunner", "count": 4 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.45,
+      "groups": [
+        { "enemy": "assaulter", "count": 8 },
+        { "enemy": "gunner", "count": 4 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.4,
+      "groups": [
+        { "enemy": "assaulter", "count": 8 },
+        { "enemy": "gunner", "count": 5 }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.35,
+      "groups": [
+        { "enemy": "assaulter", "count": 10 },
+        { "enemy": "gunner", "count": 6 }
+      ]
+    }
+  ]
+}
