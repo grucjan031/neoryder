@@ -28,14 +28,14 @@ const POSE = {
 };
 /** Broń dwuręczna (węzeł support daleko przed chwytem): bardziej w lewo i wyżej, by obie dłonie były w kadrze. */
 const TWO_HAND_POSE = {
-  pos: new Vector3(0.18, -0.34, -0.44),
-  rot: new Euler(0.04, 0.1, -0.02, 'YXZ'),
+  pos: new Vector3(0.14, -0.27, -0.44),
+  rot: new Euler(0.1, 0.12, -0.15, 'YXZ'),
 };
 /** Obrót lewej dłoni wokół osi Y węzła support: przedramię od lewego dołu kadru. */
 const TWO_HAND_SUPPORT_YAW = -1.4;
 /** Przesunięcie lewej dłoni do przodu (pod lufę) i obrót przedramienia w dół, w osiach węzła support. */
 const TWO_HAND_SUPPORT_FORWARD = -0.08;
-const TWO_HAND_SUPPORT_PITCH = 0;
+const TWO_HAND_SUPPORT_PITCH = 0.8;
 const TWO_HAND_SUPPORT_Z = -0.15;
 const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;

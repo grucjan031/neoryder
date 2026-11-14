@@ -81,7 +81,7 @@ przełącza ją w `gripGunFire`, z powrotem razem z zanikiem odrzutu. Węzeł
 
 Cały viewmodel jest na osobnej warstwie i rysowany drugim przebiegiem z ściśniętą głębią, więc przedmiot i ręce nie wchodzą w ściany ani wrogów (szczegóły: `docs/systems/render.md`, „Viewmodel zawsze na wierzchu”).
 
-Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle, beam, emp_launcher) mają osobną pozę `TWO_HAND_POSE` (niżej i bliżej środka) i lewą dłoń obróconą o `TWO_HAND_SUPPORT_YAW`, tak by przedramię wchodziło od lewego dołu kadru (stałe w `src/render/fppBlaster.ts`).
+Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle, beam, emp_launcher) mają osobną pozę `TWO_HAND_POSE` (pos 0.14, -0.27, -0.44; rot X 0.1, Y 0.12, Z -0.15: wyżej niż pierwotnie, lufa wzdłuż kierunku patrzenia, lekki przechył) i lewą dłoń obróconą o `TWO_HAND_SUPPORT_YAW` oraz pochyloną o `TWO_HAND_SUPPORT_PITCH` (0.8), tak by przedramię wchodziło od lewego dołu kadru i wychodziło poza dolną krawędź (stałe w `src/render/fppBlaster.ts`). Prawa dłoń na chwycie jest w większości zasłonięta przez model broni (widać palce).
 
 ### Gest mocy i wolna lewa dłoń
 
