@@ -402,7 +402,10 @@ export function evaluateGate(ttkS: [number, number, number]) {
 }
 
 export function runBalance(options: SimulationOptions = {}): BalanceResult {
-  const enemies = [...enemyDefinitions.values()];
+  // Raport F2 mierzy zwykłych wrogów; TTK bossa wymaga symulacji jego faz.
+  const enemies = [...enemyDefinitions.values()].filter(
+    (definition) => definition.kind !== 'boss',
+  );
   const warnings: string[] = [];
   const candidates: { id: string; name: string; attack: Attack }[] = [
     ...[...weaponDefinitions.values()].map((definition) => ({

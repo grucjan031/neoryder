@@ -396,3 +396,58 @@ i rejestr, przedni łuk i jego granica, flankowanie, ciężki cios, powrót
 tarczy, hitstop, przeciążenie i ogłuszenie, brak kierunku, parowanie,
 ciężka kontra, odnowienie i token dyrektora; widok fallback i GLB, materiały,
 proporcje oraz zwalnianie geometrii. `damage.test.ts` sprawdza kontrakt `guard`.
+
+# Boss — F3-16
+
+`Boss` (`src/enemies/boss.ts`, `kind: 'boss'`) korzysta z `EnemyBody`, `Stats`,
+`DamageSystem` oraz wspólnego `ProjectileSystem`. Nie wymaga dyrektora ani budżetu
+zagrożenia. Dane `securityChief.json` waliduje blok `enemySchema.boss`:
+`name`, `modelScale`, `muzzle`, `phases: [{ hpThreshold, patterns }]`.
+Progi oznaczają początek fazy jako ułamek maksymalnego HP; zaczynają się od 1,
+muszą ściśle maleć i być dodatnie. Każda faza wymaga co najmniej jednego wzorca.
+
+Dyrektor Ochrony Kurogane Arms ma 900 HP i fazy przy 100%, 65%, 30%.
+Obrażenia po modyfikatorach są ucinane na kolejnym progu przez lokalną odmianę
+`Health.apply`; niewykorzystana część ciosu przepada. Przejście przerywa zapowiedź
+i daje `tuning.enemies.phaseShiftS` nietykalności (domyślnie 1 s, panel debug).
+Czas stoi przy `dt = 0`. `boss_spawned` niesie id, polską nazwę i maksimum HP;
+`boss_phase` ma fazy numerowane od 1 i pojawia się tylko przy zmianie (dwa razy
+w zwykłej walce). `health_changed` i śmierć korzystają ze standardowego systemu.
+
+Maszyna: `idle/chase → telegraph → swing → recovery → cooldown → idle`.
+Boss podchodzi do `attackRange`, losuje jeden wzorzec równomiernie przez
+`ctx.rng.fork('ai')` (manager dostarcza strumień konkretnego spawnu).
+W czasie zapowiedzi stoi, a trafienie następuje dopiero po `telegraphS` wzorca.
+Status ogłuszenia przerywa zapowiedź; po zakończeniu boss rozpoczyna nowy atak.
+
+- `slam`: `enemy_telegraph.kind: 'slam'`, po zapowiedzi pojedyncze obrażenia
+  `#melee`, `#heavy`, jeżeli aktualny środek gracza leży w sferze `radiusM`
+  wokół stóp bossa. Dash korzysta z nietykalności celu w `DamageSystem`;
+  wyjście z promienia w czasie zapowiedzi unika ciosu.
+- `fan`: `enemy_telegraph.kind: 'aim'`, po zapowiedzi symetryczny wachlarz
+  `projectileCount` pocisków w `spreadDeg` stopniach, z wylotu `muzzle`
+  w kierunku aktualnej pozycji gracza. Prędkość, obrażenia, czas życia i czasy
+  wzorca są w JSON. Pociski mają `#gun`, przechodzą przez standardowy interceptor
+  ostrza i dają się parować oraz odbijać w bossa. Kolejne fazy zwiększają wachlarz
+  z 5 do 7 i 9 pocisków; ostatnia przyspiesza i wzmacnia uderzenie obszarowe.
+
+Widok: istniejący `EnemyView` i `enemy_executor.glb` w skali 1,5; geometria
+hurtboxów jest odpowiednio powiększona w danych. Fallback powstaje z tej geometrii.
+Zapowiedź pokazuje istniejące uniesienie ramienia i puls ostrza.
+
+Ręczny podgląd: `?scene=boss-test&seed=f3-16` — pusta arena, gracz i jeden boss.
+`god` pozwala obserwować wzorce; `boss phase 2` / `boss phase 3` ustawia HP na próg
+i uruchamia przejście; `hit 9999` / `kill all` przechodzi najwyżej jeden próg,
+po czym trzeba odczekać nietykalność. `spawn securityChief` działa także w
+`ai-test`. `query('bosses')` zwraca `{ id, phase, hp }[]` do testów.
+Przy ocenie feel sprawdzić czytelność uniesienia ostrza, czas na dash i gęstość
+wachlarzy. Wezwania, tarcza, docelowy pokój i zakończenie runu należą do F3-17.
+
+Testy `boss.test.ts` i `bossTest.test.ts`: schemat i rejestr, progi po
+modyfikatorach, nietykalność, kolejność zdarzeń, trafienie w promieniu, przerwanie
+ataku, rzeczywiste parowanie i odbicie pocisku przez `PlasmaBlade`, deterministyczne
+losowanie, scena i komendy, reset oraz sprzątanie. Kryteria F3-16 nie wymagają e2e.
+
+Fale areny F2 i raport jej balansu nadal obejmują zwykłych wrogów. Test kompletności
+fal wymaga archetypów z `kind !== 'boss'`; `runBalance` stosuje ten sam filtr.
+Symulacja TTK bossa z fazami jest osobnym punktem w `docs/backlog.md`.

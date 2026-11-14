@@ -14,6 +14,7 @@ import { AiTest, createStatusTest, createBarrierTest } from './aiTest';
 import { DebrisTest } from './debrisTest';
 import { GrabTest } from './grabTest';
 import { MapTest } from './mapTest';
+import { BossTest } from './bossTest';
 
 export interface Scene {
   readonly id: string;
@@ -27,6 +28,7 @@ export interface Scene {
 }
 export type SceneFactory = () => Scene;
 export const scenes: Record<string, SceneFactory> = {
+  'boss-test': () => new BossTest(),
   'map-test': () => new MapTest(),
   sandbox: () => new Sandbox(),
   'player-test': () => new PlayerTest(),

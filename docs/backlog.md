@@ -27,6 +27,10 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 ## Wrogowie i bossowie
 
+- Symulacja TTK bossa z progami HP, nietykalnością przejść i wzorcami faz:
+  osobne zadanie po F3-16. Raport balansu F2 pomija `kind: 'boss'`, ponieważ
+  model paczek zwykłych wrogów nie odtwarza tych mechanik.
+
 | Pomysł                                            | Dlaczego odłożone                |
 | ------------------------------------------------- | -------------------------------- |
 | Snajper, Dron, Tarczownik, Egzekutor              | F2                               |
