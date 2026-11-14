@@ -3,6 +3,8 @@ import type { Material, Scene as ThreeScene } from 'three';
 import type { World } from '@dimforge/rapier3d-compat';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { z } from 'zod';
+import { ProjectileSystem } from '../combat/weapons/projectiles';
+import { ProjectileRenderer } from '../render/projectileRenderer';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import type { GameContext } from '../core/context';
 import { EntityRegistry } from '../core/entities';
@@ -32,7 +34,7 @@ const data = z
     respawnS: z.number().positive(),
     spawnDistance: z.number().positive(),
     spawnSpacing: z.number().positive(),
-    initialEnemies: z.array(vec3),
+    initialEnemies: z.array(z.object({ id: z.string(), position: vec3 })),
     arena: z.array(
       z.object({ size: vec3, position: vec3, model: z.string().optional() }),
     ),
@@ -47,6 +49,8 @@ export class AiTest implements Scene {
   private entities!: EntityRegistry;
   private damage!: DamageSystem;
   private manager!: EnemyManager;
+  private projectiles!: ProjectileSystem;
+  private projectileRenderer!: ProjectileRenderer;
   private player!: PlayerController;
   private previous!: PlayerState;
   private camera!: FpsCamera;
@@ -89,7 +93,22 @@ export class AiTest implements Scene {
     this.entities.bindCollider(id, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.camera = new FpsCamera(ctx.tuning, id, ctx.bus);
+    this.projectiles = new ProjectileSystem(
+      this.world,
+      this.entities,
+      this.hurtboxes,
+      this.damage,
+      ctx.bus,
+      ctx.tuning,
+    );
+    this.projectileRenderer = new ProjectileRenderer(
+      this.projectiles,
+      ctx.tuning.weapons.maxProjectiles,
+      this.loadModels,
+    );
+    this.root.add(this.projectileRenderer.root);
     this.manager = new EnemyManager(ctx, {
+      projectiles: this.projectiles,
       world: this.world,
       entities: this.entities,
       damage: this.damage,
@@ -242,8 +261,8 @@ export class AiTest implements Scene {
     });
   }
   private spawnInitial(): void {
-    for (const position of data.initialEnemies)
-      this.manager.spawn('assaulter', position);
+    for (const { id, position } of data.initialEnemies)
+      this.manager.spawn(id, position);
   }
   private updateLabel(): void {
     if (this.label)
@@ -252,6 +271,8 @@ export class AiTest implements Scene {
 
   reset(): void {
     this.manager.despawnAll();
+    this.projectiles.dispose();
+    this.projectileRenderer.capturePrevious();
     this.health.reset();
     this.registerPlayer();
     this.player.teleport(this.spawnPosition());
@@ -273,10 +294,12 @@ export class AiTest implements Scene {
       this.respawnS -= dt;
       if (this.respawnS <= 1e-9) this.reset();
     }
+    this.projectileRenderer.capturePrevious();
     this.manager.step(dt);
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
+    this.projectiles.step(dt);
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
@@ -296,6 +319,7 @@ export class AiTest implements Scene {
         view.dispose();
         this.views.delete(id);
       }
+    this.projectileRenderer.render(alpha);
     this.lights.sync();
     const camera = this.ctx.camera;
     if (!camera) return;
@@ -328,6 +352,8 @@ export class AiTest implements Scene {
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
     this.manager.dispose();
+    this.projectileRenderer.dispose();
+    this.projectiles.dispose();
     this.camera.dispose();
     this.damage.unregister(this.player.id);
     this.entities.destroy(this.player.id);

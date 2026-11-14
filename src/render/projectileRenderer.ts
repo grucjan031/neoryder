@@ -2,10 +2,13 @@ import {
   BoxGeometry,
   DynamicDrawUsage,
   Group,
+  Mesh,
   InstancedMesh,
   Object3D,
   Vector3,
 } from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { BufferGeometry, Material } from 'three';
 import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { ProjectileSystem } from '../combat/weapons/projectiles';
@@ -14,6 +17,8 @@ import { getMaterial } from './materials';
 export class ProjectileRenderer {
   readonly root = new Group();
   private readonly geometry = new BoxGeometry(0.08, 0.08, 0.45);
+  private enemyGeometry: BufferGeometry = this.geometry.clone();
+  private disposed = false;
   private readonly player: InstancedMesh;
   private readonly enemy: InstancedMesh;
   private readonly transform = new Object3D();
@@ -24,6 +29,7 @@ export class ProjectileRenderer {
   constructor(
     private readonly system: ProjectileSystem,
     capacity: number,
+    loadModels = true,
   ) {
     this.player = new InstancedMesh(
       this.geometry,
@@ -31,15 +37,49 @@ export class ProjectileRenderer {
       capacity,
     );
     this.enemy = new InstancedMesh(
-      this.geometry,
+      this.enemyGeometry,
       getMaterial('enemyGlow'),
       capacity,
     );
+    if (loadModels && typeof window !== 'undefined') void this.loadEnemyModel();
     for (const mesh of [this.player, this.enemy]) {
       mesh.count = 0;
       mesh.frustumCulled = false;
       mesh.instanceMatrix.setUsage(DynamicDrawUsage);
       this.root.add(mesh);
+    }
+  }
+
+  private async loadEnemyModel(): Promise<void> {
+    try {
+      const { scene } = await new GLTFLoader().loadAsync(
+        '/assets/models/enemy_projectile.glb',
+      );
+      scene.updateMatrixWorld(true);
+      let geometry: BufferGeometry | undefined;
+      const geometries = new Set<BufferGeometry>();
+      const materials = new Set<Material>();
+      scene.traverse((node) => {
+        if (!(node instanceof Mesh)) return;
+        geometry ??= node.geometry.clone().applyMatrix4(node.matrixWorld);
+        geometries.add(node.geometry);
+        for (const m of Array.isArray(node.material)
+          ? node.material
+          : [node.material])
+          materials.add(m);
+      });
+      for (const g of geometries) g.dispose();
+      for (const m of materials) m.dispose();
+      if (!geometry) return;
+      if (this.disposed) {
+        geometry.dispose();
+        return;
+      }
+      this.enemyGeometry.dispose();
+      this.enemyGeometry = geometry;
+      this.enemy.geometry = geometry;
+    } catch {
+      // Bryła zastępcza zachowuje czytelność bez assetu.
     }
   }
 
@@ -61,6 +101,7 @@ export class ProjectileRenderer {
       );
       this.direction.set(dir.x, dir.y, dir.z);
       this.transform.quaternion.setFromUnitVectors(this.axis, this.direction);
+      this.transform.scale.setScalar(team === 'enemy' ? 1.6 : 1);
       this.transform.updateMatrix();
       mesh.setMatrixAt(mesh.count++, this.transform.matrix);
     });
@@ -69,10 +110,12 @@ export class ProjectileRenderer {
   }
 
   dispose(): void {
+    this.disposed = true;
     this.root.removeFromParent();
     this.player.dispose();
     this.enemy.dispose();
     this.geometry.dispose();
+    this.enemyGeometry.dispose();
     this.previous.clear();
   }
 }

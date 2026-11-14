@@ -1,3 +1,4 @@
+import type { ProjectileSystem } from '../combat/weapons/projectiles';
 import type { World } from '@dimforge/rapier3d-compat';
 import type { DamageSystem, Hurtboxes } from '../combat/damage';
 import type { EntityRegistry } from '../core/entities';
@@ -6,7 +7,17 @@ import type { Vec3 } from '../core/math';
 import type { EnemyDefinition } from './enemySchema';
 
 export type EnemyState =
-  'idle' | 'chase' | 'telegraph' | 'swing' | 'recovery' | 'stunned' | 'dead';
+  | 'idle'
+  | 'chase'
+  | 'telegraph'
+  | 'swing'
+  | 'recovery'
+  | 'reposition'
+  | 'aim'
+  | 'burst'
+  | 'cooldown'
+  | 'stunned'
+  | 'dead';
 export interface EnemySnapshot {
   position: Vec3;
   yaw: number;
@@ -14,6 +25,7 @@ export interface EnemySnapshot {
   state: EnemyState;
   stateTimeS: number;
   distance: number;
+  shotTimeS?: number;
 }
 export interface Enemy {
   readonly id: EntityId;
@@ -25,6 +37,7 @@ export interface Enemy {
   dispose(): void;
 }
 export interface EnemyDependencies {
+  projectiles?: ProjectileSystem;
   world: World;
   entities: EntityRegistry;
   damage: DamageSystem;

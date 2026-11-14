@@ -1,5 +1,6 @@
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
+import { Gunner } from './gunner';
 import { Assaulter } from './assaulter';
 import { enemySchema } from './enemySchema';
 import type { EnemyDefinition } from './enemySchema';
@@ -14,6 +15,14 @@ export type EnemyFactory = (
 export const enemyDefinitions = new Map<string, EnemyDefinition>();
 export const enemyRegistry = new Map<string, EnemyFactory>();
 const factories = new Map<string, EnemyFactory>([
+  [
+    'gunner',
+    (ctx, deps, id, position) => {
+      const definition = enemyDefinitions.get(id);
+      if (!definition) throw new Error(`Nieznany wróg: ${id}`);
+      return new Gunner(ctx, deps, definition, position);
+    },
+  ],
   [
     'assaulter',
     (ctx, deps, id, position) => {

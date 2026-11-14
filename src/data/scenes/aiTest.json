@@ -4,8 +4,9 @@
   "spawnDistance": 8,
   "spawnSpacing": 1.5,
   "initialEnemies": [
-    { "x": -2, "y": 0, "z": -8 },
-    { "x": 2, "y": 0, "z": -8 }
+    { "id": "assaulter", "position": { "x": -2, "y": 0, "z": -8 } },
+    { "id": "assaulter", "position": { "x": 2, "y": 0, "z": -8 } },
+    { "id": "gunner", "position": { "x": 5, "y": 0, "z": -8 } }
   ],
   "arena": [
     {

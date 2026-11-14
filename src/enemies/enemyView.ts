@@ -4,10 +4,13 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
 
-let template: Promise<Object3D | null> | undefined;
-function loadTemplate(): Promise<Object3D | null> {
-  template ??= new GLTFLoader()
-    .loadAsync('/assets/models/enemy_trooper.glb')
+const templates = new Map<string, Promise<Object3D | null>>();
+function loadTemplate(kind: string): Promise<Object3D | null> {
+  const name = kind === 'gunner' ? 'enemy_gunner' : 'enemy_trooper';
+  const cached = templates.get(name);
+  if (cached) return cached;
+  const template = new GLTFLoader()
+    .loadAsync(`/assets/models/${name}.glb`)
     .then(({ scene }) => {
       const materials = new Set<import('three').Material>();
       scene.traverse((node) => {
@@ -22,6 +25,7 @@ function loadTemplate(): Promise<Object3D | null> {
       return scene;
     })
     .catch(() => null);
+  templates.set(name, template);
   return template;
 }
 
@@ -37,6 +41,7 @@ export class EnemyView {
       x: number;
       y: number;
       z: number;
+      position: { x: number; y: number; z: number };
       scale: { x: number; y: number; z: number };
     }
   >();
@@ -61,7 +66,11 @@ export class EnemyView {
       this.fallbackGeometries.push(geometry);
       const mesh = new Mesh(
         geometry,
-        getMaterial(name === 'baton_tip' ? 'enemyGlow' : 'enemy'),
+        getMaterial(
+          name === 'baton_tip' || name === 'muzzle' || name === 'visor'
+            ? 'enemyGlow'
+            : 'enemy',
+        ),
       );
       mesh.position.y = offsetY;
       pivot.add(mesh);
@@ -80,7 +89,7 @@ export class EnemyView {
       { x: 0, y: body.centerY / 2, z: 0 },
       { x: body.radius * 2, y: body.halfHeight * 2, z: body.radius * 2 },
     );
-    part(
+    const head = part(
       torso,
       'head',
       { x: 0, y: body.headY - body.centerY, z: 0 },
@@ -90,6 +99,17 @@ export class EnemyView {
         z: body.headRadius * 2,
       },
     );
+    if (enemy.definition.kind === 'gunner')
+      part(
+        head,
+        'visor',
+        { x: 0, y: 0, z: body.headRadius },
+        {
+          x: body.headRadius * 2,
+          y: body.headRadius / 2,
+          z: body.headRadius / 2,
+        },
+      );
     for (const [side, sign] of [
       ['L', 1],
       ['R', -1],
@@ -117,13 +137,13 @@ export class EnemyView {
       if (side === 'R') {
         const baton = part(
           hand,
-          'baton',
+          this.enemy.definition.kind === 'gunner' ? 'rifle' : 'baton',
           { x: 0, y: 0, z: body.halfHeight },
           { x: body.radius / 2, y: body.radius / 2, z: body.halfHeight * 2 },
         );
         part(
           baton,
-          'baton_tip',
+          this.enemy.definition.kind === 'gunner' ? 'muzzle' : 'baton_tip',
           { x: 0, y: 0, z: body.halfHeight },
           { x: body.radius / 2, y: body.radius / 2, z: body.radius / 2 },
         );
@@ -146,7 +166,7 @@ export class EnemyView {
     this.captureRest();
     this.root.add(this.model);
     if (loadModels)
-      void loadTemplate().then((source) => {
+      void loadTemplate(enemy.definition.kind).then((source) => {
         if (!source || this.disposed) return;
         this.root.remove(this.model);
         this.model = new Group();
@@ -163,6 +183,11 @@ export class EnemyView {
         x: node.rotation.x,
         y: node.rotation.y,
         z: node.rotation.z,
+        position: {
+          x: node.position.x,
+          y: node.position.y,
+          z: node.position.z,
+        },
         scale: { x: node.scale.x, y: node.scale.y, z: node.scale.z },
       }),
     );
@@ -181,8 +206,11 @@ export class EnemyView {
     this.root.visible = b.state !== 'dead' && !this.enemy.removed;
     const anim = definition.animation;
     if (!anim) return;
-    for (const [node, rest] of this.rest)
+    for (const [node, rest] of this.rest) {
       node.rotation.set(rest.x, rest.y, rest.z);
+      node.position.copy(rest.position);
+      node.scale.copy(rest.scale);
+    }
     const rotate = (name: string, axis: 'x' | 'z', angle: number): void => {
       const node = this.model.getObjectByName(name);
       if (node) node.rotation[axis] += angle;
@@ -207,6 +235,22 @@ export class EnemyView {
       a.state === b.state
         ? a.stateTimeS + (b.stateTimeS - a.stateTimeS) * t
         : b.stateTimeS;
+    if (
+      definition.kind === 'gunner' &&
+      ['aim', 'burst', 'cooldown'].includes(b.state)
+    ) {
+      const angle = anim.aimAngle ?? 0;
+      for (const side of ['L', 'R']) rotate(`arm_upper_${side}`, 'x', angle);
+      rotate('rifle', 'x', -angle);
+    }
+    const rifle = this.model.getObjectByName('rifle');
+    if (rifle && anim.recoilS && b.shotTimeS !== undefined) {
+      const recoil =
+        (anim.recoilM ?? 0) * Math.max(0, 1 - b.shotTimeS / anim.recoilS);
+      // Kierunek lokalny kompensuje uniesienie ramion: odrzut wzdłuż osi karabinu.
+      rifle.position.y += recoil * Math.sin(rifle.rotation.x);
+      rifle.position.z -= recoil * Math.cos(rifle.rotation.x);
+    }
     if (b.state === 'telegraph') {
       rotate(
         'arm_upper_R',
@@ -229,19 +273,24 @@ export class EnemyView {
         anim.swingAngle * Math.max(0, 1 - time / definition.recoveryS),
       );
     } else if (b.state === 'stunned') rotate('pelvis', 'z', anim.stunAngle);
-    const tip = this.model.getObjectByName('baton_tip');
-    const restScale = tip ? this.rest.get(tip)?.scale : undefined;
-    if (tip && restScale) {
-      const pulse =
-        b.state === 'telegraph'
-          ? 1 +
-            anim.pulseScale * (1 + Math.sin(time * anim.pulseHz * Math.PI * 2))
-          : 1;
-      tip.scale.set(
-        restScale.x * pulse,
-        restScale.y * pulse,
-        restScale.z * pulse,
-      );
+    for (const name of definition.kind === 'gunner'
+      ? ['muzzle', 'visor']
+      : ['baton_tip']) {
+      const tip = this.model.getObjectByName(name);
+      const restScale = tip ? this.rest.get(tip)?.scale : undefined;
+      if (tip && restScale) {
+        const pulse =
+          b.state === 'telegraph' || b.state === 'aim'
+            ? 1 +
+              anim.pulseScale *
+                (1 + Math.sin(time * anim.pulseHz * Math.PI * 2))
+            : 1;
+        tip.scale.set(
+          restScale.x * pulse,
+          restScale.y * pulse,
+          restScale.z * pulse,
+        );
+      }
     }
   }
 

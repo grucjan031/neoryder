@@ -6,6 +6,7 @@ import { EnemyView } from '../../src/enemies/enemyView';
 import { enemySchema } from '../../src/enemies/enemySchema';
 import type { Enemy, EnemySnapshot } from '../../src/enemies/types';
 import raw from '../../src/data/enemies/assaulter.json';
+import gunnerRaw from '../../src/data/enemies/gunner.json';
 import { getMaterial } from '../../src/render/materials';
 
 const views: EnemyView[] = [];
@@ -141,4 +142,59 @@ it('loads GLB once, clones joints independently, preserves tip scale and keeps s
   vb.dispose();
   expect(disposeGeometry).not.toHaveBeenCalled();
   expect(disposeStyle).not.toHaveBeenCalled();
+});
+
+it('raises gunner arms, pulses the visible visor during aim and recoils on every shot', () => {
+  const e = { ...enemy(), definition: enemySchema.parse(gunnerRaw) };
+  const v = view(e);
+  e.current.state = 'aim';
+  e.current.stateTimeS = 0.2;
+  v.render(1);
+  expect(v.root.getObjectByName('arm_upper_R')?.rotation.x).toBeCloseTo(
+    -Math.PI / 2,
+  );
+  expect(v.root.getObjectByName('arm_upper_L')?.rotation.x).toBeCloseTo(
+    -Math.PI / 2,
+  );
+  expect(v.root.getObjectByName('visor')?.scale.x).toBeGreaterThan(1);
+  const rifle = v.root.getObjectByName('rifle')!;
+  const restY = rifle.position.y;
+  e.current.state = 'burst';
+  e.current.shotTimeS = 0;
+  v.render(1);
+  expect(rifle.position.y).toBeGreaterThan(restY);
+  e.current.shotTimeS = gunnerRaw.animation.recoilS;
+  v.render(1);
+  expect(rifle.position.y).toBeCloseTo(restY);
+  expect(v.root.getObjectByName('visor')?.scale.x).toBe(1);
+});
+
+it('caches gunner GLB separately and clones its weapon nodes per enemy', async () => {
+  const source = new Group();
+  source.name = 'gunner-rig';
+  for (const name of ['rifle', 'muzzle', 'visor']) {
+    const node = new Group();
+    node.name = name;
+    source.add(node);
+  }
+  const load = vi
+    .spyOn(GLTFLoader.prototype, 'loadAsync')
+    .mockResolvedValue({ scene: source } as GLTF);
+  const a = view(
+    { ...enemy(), definition: enemySchema.parse(gunnerRaw) },
+    true,
+  );
+  const b = view(
+    { ...enemy(), definition: enemySchema.parse(gunnerRaw) },
+    true,
+  );
+  await vi.waitFor(() =>
+    expect(a.root.getObjectByName('gunner-rig')).toBeDefined(),
+  );
+  expect(load).toHaveBeenCalledExactlyOnceWith(
+    '/assets/models/enemy_gunner.glb',
+  );
+  expect(a.root.getObjectByName('rifle')).not.toBe(
+    b.root.getObjectByName('rifle'),
+  );
 });

@@ -43,11 +43,11 @@ async function setup() {
 it('registers ai-test, handles commands/queries and disposes all owned resources', async () => {
   expect(scenes['ai-test']?.().id).toBe('ai-test');
   const { scene, commands, three } = await setup();
-  expect(scene.query('enemies')).toBe(2);
+  expect(scene.query('enemies')).toBe(3);
   expect(scene.query('playerHp')).toBe(100);
-  expect(scene.query('enemyStates')).toHaveLength(2);
+  expect(scene.query('enemyStates')).toHaveLength(3);
   commands.execute('spawn assaulter 2');
-  expect(scene.query('enemies')).toBe(4);
+  expect(scene.query('enemies')).toBe(5);
   for (const command of [
     'spawn missing',
     'spawn assaulter -1',
@@ -59,13 +59,13 @@ it('registers ai-test, handles commands/queries and disposes all owned resources
     'hit 3 extra',
   ])
     commands.execute(command);
-  expect(scene.query('enemies')).toBe(4);
+  expect(scene.query('enemies')).toBe(5);
   commands.execute('hit 1000');
   for (let i = 0; i < 35; i++) scene.step(SIM_DT, input);
   scene.render(0.5);
   expect(scene.query('enemies')).toBe(0);
   scene.reset();
-  expect(scene.query('enemies')).toBe(2);
+  expect(scene.query('enemies')).toBe(3);
   commands.execute('kill all');
   expect(scene.query('enemies')).toBe(0);
   expect(scene.query('missing')).toBeUndefined();
@@ -95,5 +95,26 @@ it('god prevents damage immediately and player death resets the arena after one 
   expect(scene.query('playerHp')).toBe(0);
   scene.step(SIM_DT, input);
   expect(scene.query('playerHp')).toBe(100);
-  expect(scene.query('enemies')).toBe(2);
+  expect(scene.query('enemies')).toBe(3);
+});
+
+it('shares projectiles with spawned gunners, applies ranged damage and clears shots on reset', async () => {
+  const { scene, commands, bus } = await setup();
+  commands.execute('kill all');
+  commands.execute('spawn gunner 1');
+  expect(scene.query('enemies')).toBe(1);
+  const shots = new Set<number>();
+  bus.on('projectile_spawned', ({ id, team }) => {
+    expect(team).toBe('enemy');
+    shots.add(id);
+  });
+  bus.on('entity_despawned', ({ id }) => shots.delete(id));
+  for (let i = 0; i < 300 && scene.query('playerHp') === 100; i++)
+    scene.step(SIM_DT, input);
+  expect(scene.query('playerHp')).toBe(88);
+  expect(shots.size).toBeGreaterThan(0);
+  scene.reset();
+  expect(shots.size).toBe(0);
+  expect(scene.query('enemies')).toBe(3);
+  expect(scene.query('playerHp')).toBe(100);
 });

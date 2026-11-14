@@ -1,4 +1,4 @@
-# Wrogowie — F1 #08
+# Wrogowie — F1 #08–09
 
 Szturmowiec (`assaulter`) naciera z pałką elektryczną. Ma 60 HP, porusza się
 z prędkością 4,2 m/s, zatrzymuje się 1,8 m od celu i zapowiada cios przez 0,4 s.
@@ -92,7 +92,7 @@ instancje. Sam nie krokuje świata ani `DamageSystem` — robi to właściciel.
 `EnemyView` ładuje `enemy_trooper.glb` raz do cache i tworzy niezależny klon
 hierarchii dla każdego wroga. Geometria oraz materiały stylu pozostają wspólne;
 nie są zwalniane przez pojedynczy widok. Materiały źródłowe GLB są zwalniane po
-`applyStyle`. Cache jest ograniczony do jednego modelu na czas życia aplikacji.
+`applyStyle`. Cache przechowuje jeden szablon na archetyp na czas życia aplikacji.
 Brak modelu pozostawia czerwone bryły z analogicznymi pivotami.
 
 Model patrzy w +Z. Pozycja i yaw interpolują się według `alpha`, z najkrótszą
@@ -105,7 +105,7 @@ Animacja pozostaje wyłącznie w renderze i nie steruje trafieniami symulacji.
 ## Scena ai-test i weryfikacja
 
 `?scene=ai-test&debug=1` zawiera arenę z osłonami `cover_low`, filarem `pillar`
-i dwoma Szturmowcami. Konfiguracja sceny jest w `src/data/scenes/aiTest.json`,
+i dwoma Szturmowcami oraz jednym Strzelcem. Konfiguracja sceny jest w `src/data/scenes/aiTest.json`,
 walidowana zod. Gracz korzysta z `PlayerController` i `FpsCamera`, ma 100 HP,
 hurtbox kapsuły oraz nietykalność po trafieniu z `tuning.damage.playerInvulnMs`.
 Napis HTML pokazuje HP. Śmierć resetuje gracza i wrogów po 1 s symulacji;
@@ -136,8 +136,67 @@ Wariant istniejącego Szturmowca: dodaj JSON w `src/data/enemies/` z nowym `id`
 i `kind: 'assaulter'`, pozostałymi polami, `body` i `animation`. Rejestr wykryje
 plik automatycznie; `spawn <nowe-id>` działa bez zmiany kodu zachowania.
 
-Nowy archetyp (#09): rozszerz schemat o potrzebne pola opcjonalne, dodaj
+Nowy archetyp: rozszerz schemat o potrzebne pola opcjonalne, dodaj
 implementację interfejsu `Enemy` i fabrykę dla nowego `kind` w `registry.ts`.
 Może korzystać z `EnemyBody`, istniejącego managera i własnego widoku.
 Dodaj dane, testy i scenę w zakresie zatwierdzonego zadania. Kontrakty nowych
 zdarzeń zatwierdza Architekt w `docs/api.md` przed implementacją.
+
+## Strzelec — F1 #09
+
+`gunner` jest drugim archetypem w rejestrze. `src/data/enemies/gunner.json`
+ustala 45 HP, prędkość ruchu 3,4 m/s i preferowany dystans 9 m z tolerancją
+2 m (pasmo 7–11 m). Pola dystansowe są opcjonalne dla innych archetypów;
+walidator wymaga ich i `body` dla `kind: 'gunner'`. Dane Szturmowca pozostają poprawne.
+`maxHealth`, `moveSpeed` i obrażenia pocisku przechodzą przez `Stats`.
+
+Cykl: `idle → reposition → aim → burst → cooldown → reposition`.
+Z bliska Strzelec odchodzi, z daleka podchodzi, dodając lekki ruch boczny
+(`strafeScale`). Stronę i rozrzut wybiera wyłącznie własny strumień
+`Rng.fork('enemy:<id>')`. Korzysta z `EnemyBody`, separacji sąsiadów oraz
+istniejącej próby ściany `tuning.enemies.wallProbe`.
+
+W paśmie z widocznym celem zatrzymuje się i emituje
+`enemy_telegraph { id, kind: 'aim', durationS: 0.5 }`. Przez całe 0,5 s
+celuje i obraca się do gracza, dopiero potem oddaje trzy strzały co 0,22 s
+(z dokładnością do stałego kroku). Każdy strzał mierzy w aktualną pozycję celu
+z rozrzutem ±2° na osiach yaw i pitch. Po serii odpoczywa 1,6 s.
+Ogłuszenie przerywa zapowiedź lub serię; obsługa odrzutu, śmierci i usuwania
+ciała jest taka jak u Szturmowca.
+
+Przy `losRequired: true` raycast Rapiera sprawdza `CollisionGroup.World`
+od ciała do wylotu i od wylotu do celu. Brak widoczności przerywa celowanie
+lub serię i kieruje Strzelca do celu w stanie `reposition`. Odcinek do wylotu
+zapobiega strzelaniu przez osłonę, w którą wszedł model karabinu.
+
+Scena przekazuje wspólny `ProjectileSystem` w `EnemyDependencies.projectiles`
+(wymagany przy tworzeniu Strzelca). Pocisk ma `team: 'enemy'`, właściciela
+równego id Strzelca, tag `#gun`, prędkość **11 m/s**, obrażenia **12** i czas
+życia 4 s. Po `reflect(id, playerId, 'player', dir)` może zranić Strzelca.
+Wylot symulacji określa lokalny wektor `muzzle` w danych; nie zależy od renderu.
+
+`EnemyView` ładuje i klonuje `enemy_gunner.glb`, stosuje `applyStyle` i zachowuje
+czerwony fallback z karabinem i wizjerem. Chód korzysta z przebytej drogi.
+Celowanie unosi oba ramiona i utrzymuje poziom karabinu; widoczny `visor`
+oraz węzeł `muzzle` pulsują. `shotTimeS` w snapshotach uruchamia odrzut
+`rifle`, także po ostatnim strzale serii. Parametry animacji są w JSON.
+
+`ai-test` ma jedną pulę pocisków i `ProjectileRenderer` z `InstancedMesh`.
+Scena krokuje pociski po `world.step()`, render interpoluje pozycje i ustawia
+orientację wzdłuż lotu. Pociski wrogów używają `enemy_projectile.glb`,
+`enemyGlow` i skali 1,6; przy braku modelu pozostaje większa bryła zastępcza.
+Reset czyści aktywne pociski, a dispose usuwa pulę i zasoby renderu.
+
+Kontrola w 30 sekund: `?scene=ai-test&debug=1&seed=gunner`, `kill all`,
+`spawn gunner 1`. Sprawdź pulsowanie wizjera przed serią, widoczność wolnych
+pocisków i możliwość zejścia z toru lotu. Podejdź bliżej niż 7 m, potem odejdź
+ponad 11 m; wróg powinien odzyskać dystans. Osłoń się filarem — nie powinien
+strzelać przez ścianę. `god` pozwala obserwować kolejne serie bez śmierci.
+
+Testy Rapiera w `enemies.test.ts` obejmują dane obu archetypów, dystans,
+zapowiedź, serię, LOS, prędkość i obrażenia pocisku, odbicie, deterministyczność
+oraz przerwanie serii przez ogłuszenie. `aiTest.test.ts` sprawdza pociski sceny
+i ich czyszczenie przy resecie, a `enemyView.test.ts` — osobny cache Strzelca,
+celowanie, pulsowanie i odrzut. Playwright `aiTest.spec.ts` sprawdza
+`spawn gunner 1` oraz utratę HP od pocisków z wyłączonym `god`, czekając
+na kroki symulacji przez `waitSimSteps` i `SIM_TIMEOUT`.
