@@ -12,6 +12,8 @@ test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
   await expect.poll(() => query('screen')).toBe('reward');
   await page.keyboard.press('Digit1');
   await expect.poll(() => query('screen')).toBe('map');
+  // Zapis do IndexedDB jest asynchroniczny — przeładowanie dopiero po jego końcu.
+  await expect.poll(() => query('savePending')).toBe(false);
   const saved = await query('runState');
   await page.goto('/?scene=run&continue=1&debug=1');
   await expect.poll(() => query('screen')).toBe('map');

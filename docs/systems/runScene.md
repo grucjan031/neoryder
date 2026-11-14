@@ -73,7 +73,7 @@ pozostają dostępne i nie występuje nadpisywanie `hurt`.
   rejestru definicji; dodaje implant na mapie, a następny pokój nakłada go
   przez istniejące API RoomScene. Zmiana implantów podczas walki wymaga F3-09.
 - `query`: `screen`, `runState`, `map`, `room` (id układu), `runLog`,
-  `loading`, `runError`, `saveError`. Pozostałe nazwy trafiają do pokoju.
+  `loading`, `runError`, `saveError`, `savePending` (zapis w toku). Pozostałe nazwy trafiają do pokoju.
 
 Weryfikacja w 30 sekund: otwórz powyższy URL, wybierz pierwszy węzeł,
 wykonaj `run clear`, obejrzyj „brak nagród”, naciśnij Enter. Sprawdź dostępne

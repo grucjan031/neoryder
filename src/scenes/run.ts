@@ -80,6 +80,7 @@ export class RunScene implements Scene {
   private readonly enemyKinds = new Map<EntityId, string>();
   private loading: Promise<void> | null = null;
   private saving: Promise<void> = Promise.resolve();
+  private pendingSaves = 0;
   private pending: 'clear' | 'end' | null = null;
   private disposed = false;
   private runError: string | null = null;
@@ -312,10 +313,16 @@ export class RunScene implements Scene {
   }
 
   private persist(operation: () => Promise<void>): void {
-    this.saving = this.saving.then(operation).catch((error: unknown) => {
-      this.saveError = error instanceof Error ? error.message : String(error);
-      console.warn('Nie można zapisać runu.', error);
-    });
+    this.pendingSaves++;
+    this.saving = this.saving
+      .then(operation)
+      .catch((error: unknown) => {
+        this.saveError = error instanceof Error ? error.message : String(error);
+        console.warn('Nie można zapisać runu.', error);
+      })
+      .finally(() => {
+        this.pendingSaves--;
+      });
   }
 
   private selectNode(id: string): boolean {
@@ -490,6 +497,8 @@ export class RunScene implements Scene {
         return this.loading !== null;
       case 'runError':
         return this.runError;
+      case 'savePending':
+        return this.pendingSaves > 0;
       case 'saveError':
         return this.saveError;
       default:

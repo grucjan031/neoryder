@@ -1227,7 +1227,7 @@ Akcje: `selectNode(id)`, `next()`, `menu()`. `RunSavePort` udostępnia asynchron
 Domyślny port opakowuje IndexedDB SaveStore v2 przez `createRunSavePort(store?)` z `src/ui/runSave.ts`. Operacje zapisu są kolejkowane.
 `RunScene.whenReady()` czeka na ładowanie pokoju i kolejkę zapisu (przydatne w testach).
 Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,
-`loading`, `runError`, `saveError`; pozostałe zapytania są delegowane do pokoju.
+`loading`, `runError`, `saveError`, `savePending`; pozostałe zapytania są delegowane do pokoju.
 Przejścia po `room_cleared` / `run_ended` następują po zakończeniu stosu zdarzenia,
 bez zwalniania świata podczas kroku symulacji.
 
