@@ -7,6 +7,7 @@ import type { InputSnapshot } from '../core/input';
 import { Sandbox } from './sandbox';
 import { PlayerTest } from './playerTest';
 import { BlasterTest } from './blasterTest';
+import { AiTest } from './aiTest';
 
 export interface Scene {
   readonly id: string;
@@ -27,4 +28,5 @@ export const scenes: Record<string, SceneFactory> = {
   'melee-test': () => new MeleeTest(),
   'push-test': () => new PushTest(),
   'blaster-test': () => new BlasterTest(),
+  'ai-test': () => new AiTest(),
 };

@@ -1,0 +1,278 @@
+import { Cuboid } from '@dimforge/rapier3d-compat';
+import {
+  Health,
+  Hitbox,
+  PIERCE_BLOCK_TAG,
+  queryHurtboxes,
+} from '../combat/damage';
+import type { GameContext } from '../core/context';
+import type { Vec3 } from '../core/math';
+import { Stats } from '../core/stats';
+import { CollisionGroup, interactionGroups } from '../physics';
+import type { EnemyDefinition } from './enemySchema';
+import { EnemyBody } from './enemyBody';
+import type {
+  Enemy,
+  EnemyDependencies,
+  EnemySnapshot,
+  EnemyState,
+} from './types';
+
+const copy = (s: EnemySnapshot): EnemySnapshot => ({
+  ...s,
+  position: { ...s.position },
+});
+// Rapier przechowuje pozycje w float32.
+const epsilon = 1e-6;
+
+/** Pozycja spawnu i snapshotów oznacza stopy; świat krokuje właściciel managera. */
+export class Assaulter implements Enemy {
+  readonly id: number;
+  readonly stats: Stats;
+  previous: EnemySnapshot;
+  current: EnemySnapshot;
+  removed = false;
+  private readonly body: EnemyBody;
+  private readonly off: (() => void)[] = [];
+  private readonly geometry;
+  private readonly rng;
+  private cooldown = 0;
+  private stunS = 0;
+  private probeS = 0;
+  private avoid = 0;
+  private hitbox?: Hitbox;
+
+  constructor(
+    private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
+    private readonly deps: EnemyDependencies,
+    readonly definition: EnemyDefinition,
+    position: Vec3,
+  ) {
+    if (!definition.body) throw new Error('Szturmowiec wymaga danych body.');
+    this.geometry = definition.body;
+    this.id = deps.entities.create(definition.kind, 'enemy');
+    this.rng = ctx.rng.fork(`enemy:${this.id}`);
+    this.stats = new Stats({
+      maxHealth: definition.maxHealth,
+      moveSpeed: definition.moveSpeed,
+      damage: definition.damage,
+    });
+    deps.damage.register(
+      this.id,
+      new Health(() => this.stats.get('maxHealth')),
+      { stats: this.stats },
+    );
+    this.body = new EnemyBody(deps, this.id, this.geometry, position);
+    this.current = {
+      position: { ...position },
+      yaw: 0,
+      speed: 0,
+      state: 'idle',
+      stateTimeS: 0,
+      distance: 0,
+    };
+    this.previous = copy(this.current);
+    this.off.push(
+      ctx.bus.on('damage_dealt', (event) => {
+        if (
+          event.target !== this.id ||
+          this.current.state === 'dead' ||
+          event.killed
+        )
+          return;
+        const target = deps.getTarget();
+        const dir =
+          event.dir ??
+          (target?.id === event.source
+            ? {
+                x: this.current.position.x - target.position.x,
+                y: 0,
+                z: this.current.position.z - target.position.z,
+              }
+            : null);
+        if (dir)
+          this.body.knockback(
+            dir,
+            event.knockback * (1 - definition.knockbackResist),
+          );
+        if (
+          event.tags.includes(PIERCE_BLOCK_TAG) ||
+          event.knockback >= ctx.tuning.enemies.stunKnockback
+        ) {
+          this.stunS = definition.stunOnHeavyS;
+          this.transition('stunned');
+          ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
+        }
+      }),
+      ctx.bus.on('enemy_killed', ({ id }) => {
+        if (id === this.id && this.current.state !== 'dead')
+          this.transition('dead');
+      }),
+    );
+  }
+
+  private transition(state: EnemyState): void {
+    this.current.state = state;
+    this.current.stateTimeS = 0;
+    this.hitbox = undefined;
+    if (state === 'telegraph')
+      this.ctx.bus.emit('enemy_telegraph', {
+        id: this.id,
+        kind: 'swing',
+        durationS: this.definition.telegraphS,
+      });
+    if (state === 'swing')
+      this.hitbox = new Hitbox({
+        owner: this.id,
+        team: 'enemy',
+        damage: this.stats.get('damage'),
+        tags: ['#melee'],
+        lifetimeS: this.definition.swingActiveS,
+      });
+    if (state === 'recovery') this.cooldown = this.definition.cooldownS;
+  }
+
+  step(dt: number): void {
+    if (this.removed) return;
+    this.previous = copy(this.current);
+    if (!(dt > 0)) return;
+    const s = this.current;
+    const d = this.definition;
+    s.stateTimeS += dt;
+    s.speed = 0;
+    if (s.state === 'dead') {
+      if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
+        this.dispose();
+      return;
+    }
+    this.cooldown = Math.max(0, this.cooldown - dt);
+    const target = this.deps.getTarget();
+    const dx = target ? target.position.x - s.position.x : 0;
+    const dz = target ? target.position.z - s.position.z : 0;
+    const distance = Math.hypot(dx, dz);
+    if (s.state === 'stunned') {
+      if (s.stateTimeS + epsilon >= this.stunS)
+        this.transition(target ? 'chase' : 'idle');
+    } else if (s.state === 'telegraph') {
+      if (s.stateTimeS + epsilon >= d.telegraphS) this.transition('swing');
+    } else if (s.state === 'swing') {
+      if (s.stateTimeS + epsilon >= d.swingActiveS) this.transition('recovery');
+    } else if (s.state === 'recovery') {
+      if (s.stateTimeS + epsilon >= d.recoveryS)
+        this.transition(target ? 'chase' : 'idle');
+    } else if (!target) this.transition('idle');
+    else {
+      if (s.state === 'idle') this.transition('chase');
+      const yaw = Math.atan2(dx, dz);
+      const delta = Math.atan2(Math.sin(yaw - s.yaw), Math.cos(yaw - s.yaw));
+      const turn = ((d.turnRateDegS * Math.PI) / 180) * dt;
+      s.yaw += Math.max(-turn, Math.min(turn, delta));
+      if (
+        distance <= d.attackRange + epsilon &&
+        this.cooldown <= epsilon &&
+        Math.abs(delta) <= turn + epsilon
+      )
+        this.transition('telegraph');
+    }
+    let vx = 0;
+    let vz = 0;
+    if (s.state === 'chase' && target && distance > d.attackRange) {
+      this.probeS -= dt;
+      if (this.probeS <= 0) {
+        const hit = this.body.wallAhead(
+          s.yaw,
+          this.ctx.tuning.enemies.wallProbe,
+        );
+        this.avoid = hit ? (this.rng.chance(0.5) ? 1 : -1) : 0;
+        this.probeS =
+          this.ctx.tuning.enemies.wallProbe / this.stats.get('moveSpeed') +
+          this.rng.float(0, d.repathJitter);
+      }
+      const yaw = s.yaw + (this.avoid * Math.PI) / 2;
+      const speed = Math.min(
+        this.stats.get('moveSpeed'),
+        (distance - d.attackRange) / dt,
+      );
+      vx = Math.sin(yaw) * speed;
+      vz = Math.cos(yaw) * speed;
+    }
+    for (const neighbor of this.deps.getNeighbors?.() ?? []) {
+      if (neighbor.id === this.id || neighbor.current.state === 'dead')
+        continue;
+      let x = s.position.x - neighbor.current.position.x;
+      let z = s.position.z - neighbor.current.position.z;
+      const length = Math.hypot(x, z);
+      const radius = this.ctx.tuning.enemies.separationRadius;
+      if (length >= radius) continue;
+      if (length <= epsilon) {
+        x = this.id < neighbor.id ? -1 : 1;
+        z = 0;
+      } else {
+        x /= length;
+        z /= length;
+      }
+      const strength =
+        ((radius - length) / radius) * this.stats.get('moveSpeed');
+      vx += x * strength;
+      vz += z * strength;
+    }
+    const movement = this.body.move(dt, vx, vz, this.ctx.tuning);
+    s.position = movement.position;
+    s.speed = movement.distance / dt;
+    s.distance += movement.distance;
+    if (this.hitbox) {
+      this.strike();
+      this.hitbox.step(dt);
+    }
+  }
+
+  private strike(): void {
+    const d = this.definition;
+    const s = this.current;
+    const target = this.deps.getTarget();
+    if (
+      !target ||
+      Math.hypot(
+        target.position.x - s.position.x,
+        target.position.z - s.position.z,
+      ) >
+        d.attackRange + epsilon
+    )
+      return;
+    const forward = { x: Math.sin(s.yaw), y: 0, z: Math.cos(s.yaw) };
+    const position = {
+      x: s.position.x + (forward.x * d.attackRange) / 2,
+      y: s.position.y + this.geometry.centerY,
+      z: s.position.z + (forward.z * d.attackRange) / 2,
+    };
+    for (const box of queryHurtboxes(
+      this.deps.world,
+      this.deps.hurtboxes,
+      new Cuboid(
+        this.geometry.attackHalfWidth,
+        this.geometry.attackHalfHeight,
+        d.attackRange / 2,
+      ),
+      position,
+      { x: 0, y: Math.sin(s.yaw / 2), z: 0, w: Math.cos(s.yaw / 2) },
+      interactionGroups(CollisionGroup.Enemy, CollisionGroup.Player),
+    )) {
+      if (box.entity !== target.id) continue;
+      this.hitbox?.strike(box.entity, this.deps.damage, {
+        multiplier: box.multiplier,
+        dir: forward,
+        point: position,
+      });
+    }
+  }
+
+  dispose(): void {
+    if (this.removed) return;
+    this.removed = true;
+    for (const off of this.off.splice(0)) off();
+    this.deps.hurtboxes.removeEntity(this.id);
+    this.deps.damage.unregister(this.id);
+    this.deps.entities.destroy(this.id);
+    this.body.dispose();
+  }
+}

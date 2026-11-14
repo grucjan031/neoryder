@@ -15,6 +15,9 @@ const actionSchema = z.enum([
   'shoot',
   'power',
 ]);
+/** Pojedyncze zdarzenie ruchu myszy większe niż to (px) to artefakt przeglądarki, nie gest. */
+const MAX_MOUSE_DELTA = 400;
+
 export type Action = z.infer<typeof actionSchema>;
 const bindings = z
   .object({
@@ -36,6 +39,7 @@ export class Input {
   private readonly released = new Set<Action>();
   private readonly down = new Map<string, Action>();
   private lookDelta = { x: 0, y: 0 };
+  private skipNextMove = false;
   private readonly focusListeners = new Set<() => void>();
   private readonly listeners = new AbortController();
   private wasLocked = false;
@@ -85,6 +89,17 @@ export class Input {
       'mousemove',
       (event) => {
         if (!this.pointerLocked) return;
+        // Chromium (zwłaszcza Linux) po przechwyceniu kursora przenosi go na środek i wysyła
+        // zdarzenie z ogromnym przesunięciem — kamera „skakałaby” przy każdym wejściu w grę.
+        if (this.skipNextMove) {
+          this.skipNextMove = false;
+          return;
+        }
+        if (
+          Math.abs(event.movementX) > MAX_MOUSE_DELTA ||
+          Math.abs(event.movementY) > MAX_MOUSE_DELTA
+        )
+          return;
         this.lookDelta.x += event.movementX;
         this.lookDelta.y += event.movementY;
       },
@@ -102,6 +117,7 @@ export class Input {
       'pointerlockchange',
       () => {
         if (this.wasLocked && !this.pointerLocked) this.loseFocus();
+        if (!this.wasLocked && this.pointerLocked) this.skipNextMove = true;
         this.wasLocked = this.pointerLocked;
       },
       options,
