@@ -11,6 +11,8 @@ export interface DamageTargetOptions {
   stats?: Stats;
   /** Okno nietykalności po trafieniu w ms (np. () => tuning.damage.playerInvulnMs). */
   invulnMs?: () => number;
+  /** Chwilowa nietykalność niezależna od trafień (np. dash) — sprawdzana przed obrażeniami. */
+  invulnerable?: () => boolean;
 }
 
 interface Target {
@@ -73,6 +75,7 @@ export class DamageSystem {
     if (!entry || entry.health.dead) return 0;
     if (!this.canDamage(info.source, target, info.tags)) return 0;
     if (this.timeS < entry.invulnUntilS) return 0;
+    if (entry.opts.invulnerable?.()) return 0;
 
     // 'damageTaken' ma zawsze bazę 1 — liczą się tylko modyfikatory.
     // Ciężki cios (#heavy) przebija blok: pomija modyfikatory o źródle BLOCK_SOURCE.

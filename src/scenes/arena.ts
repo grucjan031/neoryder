@@ -338,10 +338,8 @@ export class Arena implements Scene {
   private registerPlayer(): void {
     this.damage.register(this.player.id, this.health, {
       stats: this.playerStats,
-      invulnMs: () =>
-        this.player.isInvulnerable()
-          ? 1e9
-          : this.ctx.tuning.damage.playerInvulnMs,
+      invulnMs: () => this.ctx.tuning.damage.playerInvulnMs,
+      invulnerable: () => this.player.isInvulnerable(),
     });
   }
 

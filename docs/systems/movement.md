@@ -112,7 +112,7 @@ Wciśnięcie `dash` (Q) uruchamia poziomy doskok w kierunku wejścia WASD, a bez
 - Po dashu prędkość pozioma spada do `dashExitSpeed` (9 m/s) w kierunku dashu — płynne wyjście zamiast nagłego zatrzymania.
 - Odnowienie pochodzi ze statu **`dashCooldown`** (baza `dashCooldownS` = 1,2 s). Synergie skracają je modyfikatorem (np. `mult 0.5`) bez zmiany kodu.
 - Ściany zatrzymuje character controller — dash nie przechodzi przez geometrię.
-- `dashInvulnerable` (0/1): `PlayerController.isInvulnerable()` zwraca `true` w trakcie dashu. Podłączenie do `DamageSystem` nastąpi razem z hurtboxem gracza (zadanie #08/#16).
+- `dashInvulnerable` (0/1): `PlayerController.isInvulnerable()` zwraca `true` w trakcie dashu; arena podpina to jako `DamageTargetOptions.invulnerable` (sprawdzane **przed** zadaniem obrażeń).
 - Zdarzenie `dash_used { user, dir }`. Dash przerywa slide.
 
 ## Slide i przysiad (F1 #04)

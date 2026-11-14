@@ -221,6 +221,19 @@ describe('DamageSystem', () => {
     expect(damage.deal(p, { amount: 10, source: enemy, tags: [] })).toBe(10);
   });
 
+  it('invulnerable() blokuje obrażenia przed trafieniem i nie przedłuża okna', () => {
+    const { damage, registry, enemy } = setup();
+    const p = registry.create('player', 'player');
+    let dashing = true;
+    damage.register(p, new Health(() => 100), {
+      invulnMs: () => 250,
+      invulnerable: () => dashing,
+    });
+    expect(damage.deal(p, { amount: 10, source: enemy, tags: [] })).toBe(0);
+    dashing = false;
+    expect(damage.deal(p, { amount: 10, source: enemy, tags: [] })).toBe(10);
+  });
+
   it('nie zadaje obrażeń niezarejestrowanym ani ujemnych', () => {
     const { damage, registry, player, enemy } = setup();
     const ghost = registry.create('ghost', 'enemy');
