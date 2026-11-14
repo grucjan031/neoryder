@@ -1,0 +1,35 @@
+.run-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #f1f3f4ed;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.run-screen[hidden] {
+  display: none;
+}
+.run-screen__panel {
+  width: min(620px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.run-screen button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 14px;
+  text-align: left;
+  font: inherit;
+  background: #111;
+  border: 2px solid #111;
+  color: white;
+  cursor: pointer;
+}
+.run-screen button:hover,
+.run-screen button:focus-visible {
+  outline: 2px solid #00a9c4;
+  outline-offset: 2px;
+}

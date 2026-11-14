@@ -1129,4 +1129,22 @@ export class RunManager {
 }
 ```
 
+### Host runu (F3-07)
 
+`src/scenes/run.ts`: `RunScene` implementuje `Scene`, rejestr `?scene=run`.
+Opcje konstruktora: `params?: URLSearchParams`, `screens?: RunScreens`,
+`save?: RunSavePort`, `planner?: RoomPlanner`, `sector?: SectorDefinition`,
+`rooms?: ReadonlyMap<string, RoomDefinition>`, `createRoom?: RunRoomFactory`,
+`implantDefinitions?: ReadonlyMap<string, ImplantDefinition>`.
+`RunRoom` to `Scene` z `clear()` i `exportState(): Pick<RunState, 'hp' | 'energy'>`.
+Fabryka dostaje definicję pokoju, kopię RunState i WavesDefinition.
+`RunScreens` (`src/ui/runScreens.ts`) udostępnia `show(view, actions)`, `hide()`,
+`dispose()`; view zawiera ekran, kopię stanu, dostępne węzły, podsumowanie i stan ładowania.
+Akcje: `selectNode(id)`, `next()`, `menu()`. `RunSavePort` udostępnia asynchroniczne
+`loadRun(): Promise<RunState | null>`, `saveRun(state): Promise<void>`, `clearRun(): Promise<void>`.
+Domyślny port jest no-op do podpięcia zapisu F3-06. Operacje zapisu są kolejkowane.
+`RunScene.whenReady()` czeka na ładowanie pokoju i kolejkę zapisu (przydatne w testach).
+Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,
+`loading`, `runError`, `saveError`; pozostałe zapytania są delegowane do pokoju.
+Przejścia po `room_cleared` / `run_ended` następują po zakończeniu stosu zdarzenia,
+bez zwalniania świata podczas kroku symulacji.
