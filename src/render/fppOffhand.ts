@@ -11,8 +11,8 @@ const REST = {
   rot: new Euler(0.15, -0.18, -0.2, 'YXZ'),
 };
 const CAST = {
-  pos: new Vector3(-0.2, -0.14, -0.57),
-  rot: new Euler(-Math.PI / 2, 0, -0.12, 'YXZ'),
+  pos: new Vector3(-0.2, -0.2, -0.5),
+  rot: new Euler(1.25, 0.1, -0.12, 'YXZ'),
 };
 
 export class FppOffhand {

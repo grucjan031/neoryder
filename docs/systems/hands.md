@@ -73,7 +73,7 @@ z modelu L i jego gniazda; ujemna skala dotyczy wyłącznie modelu lewego ostrza
 W locie ostrza prawa dłoń zostaje w spoczynkowym położeniu ostrza z pozą `open`.
 Podczas całej aktywnej fazy obrotu dwustronnego ostrza dłoń jest ukryta.
 
-Broń palna jest po prawej, przy pozycji `[0.2, -0.24, -0.45]` w układzie
+Broń palna jest po prawej, przy pozycji `[0.32, -0.28, -0.42]` w układzie
 kamery. Prawa dłoń używa `socket_gun` i `gripGun`; `weapon_fired` właściciela
 przełącza ją w `gripGunFire`, z powrotem razem z zanikiem odrzutu. Węzeł
 `support` aktualnego modelu broni wyznacza położenie lewej dłoni (`support`,

@@ -25,17 +25,17 @@ interface BladePose {
 type Hand = 'main' | 'off';
 
 const POSE_IDLE: BladePose = {
-  pos: [0.3, -0.3, -0.55],
-  rot: [0.9, 0.15, -0.25],
+  pos: [0.24, -0.26, -0.4],
+  rot: [0.9, -0.7, 0.8],
 };
 const POSE_BLOCK: BladePose = {
   pos: [0.05, -0.12, -0.5],
-  rot: [0.15, 0, -1.45],
+  rot: [0.2, -0.5, 1.0],
 };
 /** Lewa dłoń bliźniaczych ostrzy: niżej, między bronią palną a środkiem ekranu. */
 const OFF_IDLE: BladePose = {
-  pos: [-0.14, -0.38, -0.55],
-  rot: [0.9, -0.15, 0.25],
+  pos: [-0.24, -0.28, -0.4],
+  rot: [0.9, 0.7, -0.8],
 };
 const OFF_BLOCK_DROP_M = 0.08;
 /** Ostrze dwustronne trzymane w środku: model przesunięty do przodu. */
