@@ -16,6 +16,12 @@ i `opacity` (ciepło używa `clip-path`); czasy animacji HUD są w CSS, nie w
 
 ## Układ
 
+W arenie LPM — atak/strzał, R — zamiana ostrze/broń, PPM — natychmiast ostrze
+i blok, środkowy przycisk — ostrze i rzut, 1/2/3 — slot broni i jej dobycie.
+HUD słucha `held_item_changed` dla gracza: `held: 'blade'` dodaje
+`.hud__weapon--inactive` (opacity 0,4), `held: 'gun'` ją usuwa. Ciepło i nazwa
+wybranego slotu pozostają widoczne. Reset areny publikuje początkowy stan ręki.
+
 | Miejsce | Elementy |
 | --- | --- |
 | Lewy dół | zdrowie: 10 skośnych segmentów + liczba (`.hud__segments`), pod nim cienki pasek energii (cyan) |

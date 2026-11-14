@@ -1,6 +1,7 @@
 {
   "id": "gunner",
   "name": "Strzelec",
+  "startHeld": "gun",
   "blade": "plasmaBlade",
   "weapons": ["rifle", "scatter", "sniper"],
   "powers": ["push"],

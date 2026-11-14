@@ -61,7 +61,7 @@ const DESCRIPTIONS: Record<
 };
 
 const CONTROLS =
-  'Kliknij scenę, by przechwycić mysz · WASD ruch · Shift sprint · Spacja skok (×2) · Q dash · Ctrl ślizg · LPM cios (przytrzymaj = ciężki) · PPM blok · F Pchnięcie · R strzał · ` konsola';
+  'Kliknij scenę, by przechwycić mysz · WASD ruch · Shift sprint · Spacja skok (×2) · Q dash · Ctrl ślizg · LPM — atak/strzał (ostrze: przytrzymaj = ciężki) · PPM blok · F Pchnięcie · R — zamiana ostrze/broń · ` konsola';
 
 /** Menu startowe: lista scen jako linki (zachowuje parametry debug i seed). */
 export function createSceneMenu(

@@ -1,6 +1,7 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  hands: { swapS: 0.24, swapBufferS: 0.4 },
   time: {
     hitstopLightMs: 40,
     hitstopHeavyMs: 80,

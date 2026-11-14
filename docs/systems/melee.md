@@ -4,6 +4,14 @@ Właściciel: Walka wręcz. Kod: `src/combat/melee/` (`plasmaBlade.ts`, `bladeSc
 
 ## Sterowanie
 
+W arenie wejście rozdziela [HeldItem](hands.md): LPM tnie tylko z ostrzem w ręku,
+R zamienia ostrze/broń, a PPM i środkowy przycisk przy broni przywracają ostrze
+natychmiast i przekazują blok/rzut w tym samym kroku. Okno parowania pozostaje
+liczone od kroku rozpoczęcia bloku. Podczas zamiany ostrze nie dostaje akcji
+ataku; żądanie dobycia broni podczas ciosu czeka maksymalnie `hands.swapBufferS`.
+Lot ostrza nie blokuje zamiany i trwa również przy broni w ręku. Sceny testowe
+ostrza zachowują dotychczasowe sterowanie.
+
 | Wejście           | Działanie                                                                                                               |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | LPM klik          | lekki cios; kolejne kliknięcia w oknie = combo 1 → 2 → 3                                                                |

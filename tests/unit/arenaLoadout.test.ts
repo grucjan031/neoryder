@@ -13,6 +13,9 @@ import { BeamRenderer } from '../../src/render/beamRenderer';
 import { ExplosionRenderer } from '../../src/render/explosionRenderer';
 import { weaponDefinitions } from '../../src/combat/weapons/weaponSchema';
 import type { Weapon } from '../../src/combat/weapons/weapon';
+import type { Action } from '../../src/core/input';
+import { FppBlade } from '../../src/render/fppBlade';
+import { FppBlaster } from '../../src/render/fppBlaster';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -20,14 +23,107 @@ const idle: InputSnapshot = {
   released: new Set(),
   lookDelta: { x: 0, y: 0 },
 };
-const firing: InputSnapshot = { ...idle, held: new Set(['shoot']) };
-const press = (
-  action: 'power' | 'power2' | 'weapon1' | 'weapon2' | 'weapon3',
-): InputSnapshot => ({
+const firing: InputSnapshot = { ...idle, held: new Set(['attack']) };
+const press = (action: Action): InputSnapshot => ({
   ...idle,
   pressed: new Set([action]),
 });
 const active: Arena[] = [];
+
+it('gunner starts with a gun: LPM shoots, R swaps to blade and LPM cuts without firing', async () => {
+  const { scene, bus } = await setup('gunner');
+  const fired = vi.fn();
+  const swing = vi.fn();
+  bus.on('weapon_fired', fired);
+  bus.on('melee_swing', swing);
+  expect(scene.heldView().held).toBe('gun');
+  expect(document.querySelector('.hud__weapon--inactive')).toBeNull();
+  scene.step(SIM_DT, { ...firing, pressed: new Set(['attack']) });
+  expect(fired).toHaveBeenCalledOnce();
+  expect(swing).not.toHaveBeenCalled();
+  scene.step(SIM_DT, press('swap'));
+  for (let i = 0; i < Math.ceil(tuning.hands.swapS / SIM_DT); i++)
+    scene.step(SIM_DT, idle);
+  expect(scene.heldView()).toEqual({
+    held: 'blade',
+    target: 'blade',
+    swapping: false,
+    swapT: 1,
+  });
+  expect(document.querySelector('.hud__weapon--inactive')).not.toBeNull();
+  scene.step(SIM_DT, { ...firing, pressed: new Set(['attack']) });
+  expect(swing).toHaveBeenCalledExactlyOnceWith({ attacker: 1, stage: 1 });
+  expect(fired).toHaveBeenCalledOnce();
+  scene.reset();
+  expect(scene.heldView().held).toBe('gun');
+  expect(document.querySelector('.hud__weapon--inactive')).toBeNull();
+});
+
+it.each(['weapon1', 'weapon2', 'weapon3'] as const)(
+  '%s requests a gun from the blade, including the current slot',
+  async (action) => {
+    const { scene, commands } = await setup('gunner');
+    commands.execute('hold blade');
+    scene.step(SIM_DT, press(action));
+    expect(scene.heldView()).toMatchObject({
+      held: 'blade',
+      target: 'gun',
+      swapping: true,
+    });
+    for (let i = 0; i < Math.ceil(tuning.hands.swapS / SIM_DT); i++)
+      scene.step(SIM_DT, idle);
+    expect(scene.heldView().held).toBe('gun');
+    expect(scene.query('weapon')).toBe(
+      { weapon1: 'rifle', weapon2: 'scatter', weapon3: 'sniper' }[action],
+    );
+  },
+);
+
+it('throwing the blade from a gun happens immediately and its flight allows swapping to a gun', async () => {
+  const { scene, bus } = await setup('gunner');
+  const thrown = vi.fn();
+  bus.on('blade_thrown', thrown);
+  scene.step(SIM_DT, { ...press('bladeThrow'), held: new Set(['bladeThrow']) });
+  expect(scene.heldView().held).toBe('blade');
+  expect(thrown).toHaveBeenCalledExactlyOnceWith({ owner: 1 });
+  scene.step(SIM_DT, press('swap'));
+  expect(scene.heldView()).toMatchObject({
+    held: 'blade',
+    target: 'gun',
+    swapping: true,
+  });
+});
+
+it('renders only the held model and switches visibility halfway through a swap', async () => {
+  const { scene } = await setup('gunner');
+  let bladeRoot: FppBlade['root'] | undefined;
+  let gunRoot: FppBlaster['root'] | undefined;
+  const placeBlade = FppBlade.prototype.place;
+  const placeGun = FppBlaster.prototype.place;
+  vi.spyOn(FppBlade.prototype, 'place').mockImplementation(function (
+    this: FppBlade,
+    ...args
+  ) {
+    bladeRoot = this.root;
+    placeBlade.apply(this, args);
+  });
+  vi.spyOn(FppBlaster.prototype, 'place').mockImplementation(function (
+    this: FppBlaster,
+    ...args
+  ) {
+    gunRoot = this.root;
+    placeGun.apply(this, args);
+  });
+  scene.render(1);
+  expect([bladeRoot?.visible, gunRoot?.visible]).toEqual([false, true]);
+  scene.step(SIM_DT, press('swap'));
+  scene.render(1);
+  expect([bladeRoot?.visible, gunRoot?.visible]).toEqual([false, true]);
+  for (let i = 0; i < Math.ceil(tuning.hands.swapS / 2 / SIM_DT); i++)
+    scene.step(SIM_DT, idle);
+  scene.render(1);
+  expect([bladeRoot?.visible, gunRoot?.visible]).toEqual([true, false]);
+});
 
 afterEach(() => {
   for (const scene of active.splice(0)) scene.dispose();
@@ -65,7 +161,7 @@ async function setup(loadout?: string, debug = false) {
 }
 
 it('keeps the F1 loadout without a parameter and ignores empty weapon and power slots', async () => {
-  const { scene, bus, switched } = await setup();
+  const { scene, commands, bus, switched } = await setup();
   expect(scene.query('loadout')).toBe('classic');
   expect(scene.query('weapon')).toBe('blaster');
   expect(scene.query('powerSlots')).toEqual(['push']);
@@ -86,6 +182,7 @@ it('keeps the F1 loadout without a parameter and ignores empty weapon and power 
   expect(switched).toHaveBeenCalledOnce();
   expect(used).not.toHaveBeenCalled();
   expect(scene.query('energy')).toBe(100);
+  commands.execute('hold gun');
   scene.step(0, firing);
   expect(scene.query('heat')).toBe(0);
   scene.step(SIM_DT, firing);
@@ -222,7 +319,11 @@ it('routes F/E to independent data powers, queues E in hitstop and resets equipm
 
 it('supports a data loadout with beam and EMP, renders effects and stops the beam on switching', async () => {
   const get = loadoutDefinitions.get.bind(loadoutDefinitions);
-  const loadout = loadLoadout({ ...get('classic')!, weapons: ['beam', 'emp'] });
+  const loadout = loadLoadout({
+    ...get('classic')!,
+    startHeld: 'gun',
+    weapons: ['beam', 'emp'],
+  });
   vi.spyOn(loadoutDefinitions, 'get').mockImplementation((id) =>
     id === 'classic' ? loadout : get(id),
   );
@@ -251,7 +352,11 @@ it('supports a data loadout with beam and EMP, renders effects and stops the bea
 
 it('casts arena beams against the first world collider or enemy hurtbox, excluding the player', async () => {
   const getLoadout = loadoutDefinitions.get.bind(loadoutDefinitions);
-  const loadout = loadLoadout({ ...getLoadout('classic')!, weapons: ['beam'] });
+  const loadout = loadLoadout({
+    ...getLoadout('classic')!,
+    startHeld: 'gun',
+    weapons: ['beam'],
+  });
   vi.spyOn(loadoutDefinitions, 'get').mockImplementation((id) =>
     id === 'classic' ? loadout : getLoadout(id),
   );

@@ -56,13 +56,13 @@ Mapowanie w danych, zgodne z typem `Action` z `docs/api.md`. Ustawienia (czuło�
 | `sprint` | Shift (trzymanie) | |
 | `dash` | Q | krótki doskok, odnowienie |
 | `crouch` | Ctrl | w biegu = slide |
-| `attack` | LPM | combo 3 ciosów; przytrzymanie = ciężki atak |
+| `attack` | LPM | atak/strzał; ostrze: combo 3 ciosów, przytrzymanie = ciężki atak |
 | `block` | PPM | wciśnięcie w oknie 150 ms = parowanie |
-| `shoot` | R (trzymanie) | blaster; alternatywa do rozważenia w playteście: Tab = przełączanie broni |
+| `swap` | R | zamiana ostrze/broń w bieżącym slocie |
 | `power` | F | Pchnięcie Rezonansu |
 | pauza | Esc | pointer lock i fokus obsługuje `src/core/input/` |
 
-Otwarte pytanie do playtestu F1: czy strzał pod LPM z przełączaniem broni jest wygodniejszy niż osobny klawisz.
+Gracz trzyma jeden przedmiot: ostrze albo broń. PPM natychmiast przywraca ostrze i blok, środkowy przycisk przywraca ostrze i rzuca. 1/2/3 wybierają slot broni i żądają jej dobycia. F/E działają niezależnie od ręki.
 
 ## 5. Trzy ścieżki buildów i hybrydy
 

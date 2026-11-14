@@ -9,6 +9,7 @@ export const loadoutSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   blade: z.string().refine((id) => bladeDefinitions.has(id), 'Nieznane ostrze'),
+  startHeld: z.enum(['blade', 'gun']).default('blade'),
   weapons: z
     .array(
       z.string().refine((id) => weaponDefinitions.has(id), 'Nieznana broń'),

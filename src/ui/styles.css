@@ -149,6 +149,10 @@ body:has(.scene-menu) {
   white-space: nowrap;
 }
 
+.hud__weapon--inactive {
+  opacity: 0.4;
+}
+
 /* Lewy dół: zdrowie i energia. */
 .hud__vitals,
 .hud__weapon {

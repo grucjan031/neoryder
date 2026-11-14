@@ -6,6 +6,14 @@ ani DOM, używa stałego kroku i przekazanego `EventBus` oraz `Rng`.
 
 ## Dane blastera
 
+W arenie [HeldItem](hands.md) wybiera przedmiot w ręku: LPM — atak/strzał,
+R — zamiana ostrze/broń. 1/2/3 wybierają slot i żądają dobycia broni;
+zmiana między broniami jest natychmiastowa. Ostrze → broń trwa `hands.swapS`,
+czeka na koniec ciosu do `hands.swapBufferS`, a w trakcie zamiany strzał jest
+zablokowany. Nietrzymane bronie wyłącznie stygną (`Weapon.cool`). PPM i środkowy
+przycisk natychmiast przywracają ostrze. Gunner oraz oba buildy strzeleckich
+hybryd zaczynają z bronią (`startHeld`); reset przywraca wybór z loadoutu.
+
 `src/data/weapons/*.json` są ładowane przez `import.meta.glob` i walidowane przy
 ładowaniu przez `weaponSchema.ts`. `weaponDefinitions: ReadonlyMap<string,
 WeaponDefinition>` pomija `plasmaBlade.json`. `loadWeapon(unknown)` rzuca czytelny
@@ -155,8 +163,8 @@ zwalniane przez scenę.
 `blaster-test` używa wyłącznie publicznego API `PlayerController`; kamera FPP
 interpoluje stan gracza. Strzały wychodzą z pozycji oka i bieżącego kierunku
 symulacji (nie z interpolowanego kadru). **LPM to akcja `attack`**, zgodnie
-z `src/data/inputBindings.json`; scena używa jej jako spustu blastera. Globalne
-mapowanie pozostaje bez zmian (`shoot` jest przypisane do R).
+z `src/data/inputBindings.json`; scena używa jej jako spustu blastera. W arenie
+LPM (`attack`) jest spustem, gdy w ręku jest broń; R (`swap`) zamienia ostrze i broń.
 
 Model `blaster.glb` jest dzieckiem kamery w prawym dolnym rogu. `applyStyle`
 nadaje styl, a osobne lokalne materiały neonowe węzłów `heat_vents` i `heat_cell`
@@ -305,7 +313,7 @@ wyłącznie ciepło aktywnej broni. Arena ma zależność `castBeam` i renderery
 `BeamRenderer`/`ExplosionRenderer` jak poligon; wszystkie bronie mają obecnie
 model `FppBlaster`. Reset wraca do pierwszej, zimnej broni zestawu.
 
-Kontrola w 30 sekund: `?scene=arena&loadout=gunner&debug=1`, strzel R z karabinu,
+Kontrola w 30 sekund: `?scene=arena&loadout=gunner&debug=1`, strzel LPM z karabinu,
 wybierz 2 i strzel z rozpraszacza, wróć do 1. Oceń zmianę rytmu i nazwę w HUD;
 ciepło schowanej broni powinno spadać po opóźnieniu bez nadpisywania paska.
 Testy `weaponCooling.test.ts` i `arenaLoadout.test.ts` sprawdzają ciszę zdarzeń,

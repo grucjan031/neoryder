@@ -12,7 +12,7 @@ const actionSchema = z.enum([
   'crouch',
   'attack',
   'block',
-  'shoot',
+  'swap',
   'power',
   'power2',
   'weapon1',

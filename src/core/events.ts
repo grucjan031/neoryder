@@ -1,4 +1,5 @@
 import type { Vec3 } from './math';
+import type { HeldKind } from '../combat/heldItem';
 import type { StatusApplication } from '../combat/damage/types';
 
 export type EntityId = number;
@@ -89,6 +90,7 @@ export interface GameEvents {
   status_expired: { target: EntityId; status: string };
   focus: { worldScale: number; durationS: number };
   weapon_switched: { owner: EntityId; weapon: string; slot: number };
+  held_item_changed: { owner: EntityId; held: HeldKind; weapon: string | null };
   blade_thrown: { owner: EntityId };
   blade_returned: { owner: EntityId };
   explosion: {

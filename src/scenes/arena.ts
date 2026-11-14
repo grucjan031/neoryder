@@ -28,6 +28,8 @@ import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { resolveBlade } from '../combat/melee/bladeSchema';
 import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
+import { HeldItem } from '../combat/heldItem';
+import type { HeldItemView } from '../combat/heldItem';
 import { PlayerEnergy } from '../combat/powers/energy';
 import { createPower } from '../combat/powers/registry';
 import { PowerSlots } from '../combat/powers/slots';
@@ -127,6 +129,7 @@ export class Arena implements Scene {
   private fpsCamera!: FpsCamera;
   private energy!: PlayerEnergy;
   private blade!: PlasmaBlade;
+  private heldItem!: HeldItem;
   private readonly flyingBlade = new FlyingBlade();
   private powers!: PowerSlots;
   private loadout: Loadout = loadoutDefinitions.get('classic')!;
@@ -317,6 +320,12 @@ export class Arena implements Scene {
     this.off.push(
       this.projectiles.addInterceptor(this.blade.interceptProjectile),
     );
+    this.heldItem = new HeldItem(
+      ctx.bus,
+      playerId,
+      ctx.tuning,
+      this.loadout.startHeld,
+    );
     this.createEquipment();
     this.debris = new DebrisSystem({
       maxDebris: ctx.tuning.vfx.maxDebris,
@@ -399,6 +408,7 @@ export class Arena implements Scene {
     );
     this.registerCommands(playerId);
     this.emitHealth();
+    this.heldItem.reset(this.loadout.startHeld);
     this.world.step();
     if (choosing) this.enterBuildSelect();
     else this.director.start();
@@ -687,9 +697,16 @@ export class Arena implements Scene {
     for (const [slot, action] of (
       ['weapon1', 'weapon2', 'weapon3'] as const
     ).entries())
-      if (input.pressed.has(action)) this.selectWeapon(slot);
+      if (input.pressed.has(action) && this.weapons[slot]) {
+        this.selectWeapon(slot);
+        this.heldItem.requestGun();
+      }
     this.player.step(pdt, input);
-    this.blade.step(pdt, input);
+    const bladeState = this.blade.view().state;
+    const { bladeInput, triggerHeld } = this.heldItem.step(pdt, input, {
+      bladeBusy: bladeState !== 'idle' && bladeState !== 'throwing',
+    });
+    this.blade.step(pdt, bladeInput);
     this.powers.step(pdt, input);
     if (!(dt > 0)) {
       this.manager.step(dt);
@@ -702,10 +719,10 @@ export class Arena implements Scene {
     this.projectileView.capturePrevious();
     this.debris.step(dt);
     for (const weapon of this.weapons) {
-      if (weapon === this.weapon)
+      if (weapon === this.weapon && this.heldItem.held === 'gun')
         weapon.step(pdt, {
           ...this.aim(),
-          triggerHeld: input.held.has('shoot'),
+          triggerHeld,
         });
       else weapon.cool(pdt);
     }
@@ -771,8 +788,12 @@ export class Arena implements Scene {
     }
     camera.updateMatrixWorld();
     this.bladeView.place(camera.matrixWorld, this.blade.view());
-    this.bladeView.root.visible &&= this.state === 'playing';
-    this.blasterView.root.visible = this.state === 'playing';
+    const hands = this.heldView();
+    const shown =
+      hands.swapping && hands.swapT >= 0.5 ? hands.target : hands.held;
+    this.bladeView.root.visible &&=
+      this.state === 'playing' && shown === 'blade';
+    this.blasterView.root.visible = this.state === 'playing' && shown === 'gun';
     this.blasterView.place(camera.matrixWorld, frameDt);
     this.blasterView.root.getWorldPosition(this.beamOrigin);
     this.beamView.render(this.weapon.beam, this.beamOrigin);
@@ -820,6 +841,7 @@ export class Arena implements Scene {
     this.kills = 0;
     this.director.start(1, this.ctx.rng.fork('waves'));
     this.emitHealth();
+    this.heldItem.reset(this.loadout.startHeld);
   }
 
   /** „Jeszcze raz” z HUD (gest użytkownika): reset i wznowienie pętli z przechwyceniem myszy. */
@@ -873,6 +895,17 @@ export class Arena implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register(
+      'hold',
+      'hold blade|gun — przedmiot w ręku natychmiast',
+      (args) => {
+        const kind = args[0];
+        if (args.length !== 1 || (kind !== 'blade' && kind !== 'gun'))
+          return 'Użycie: hold blade|gun';
+        this.heldItem.reset(kind);
+        return `W ręku: ${kind}`;
+      },
+    );
     register('loadout', 'loadout <id> — reset areny z ekwipunkiem', (args) => {
       const selected = loadoutDefinitions.get(args[0] ?? '');
       if (args.length !== 1 || !selected)
@@ -975,6 +1008,10 @@ export class Arena implements Scene {
     this.emitWeapon();
   }
 
+  heldView(): HeldItemView {
+    return this.heldItem.view();
+  }
+
   query(name: string): unknown {
     switch (name) {
       case 'wave':
@@ -997,6 +1034,8 @@ export class Arena implements Scene {
         return this.loadout.id;
       case 'blade':
         return this.blade.definition.id;
+      case 'heldItem':
+        return this.heldView();
       case 'weapon':
         return this.weapon.definition.id;
       case 'weaponHeat':
@@ -1058,6 +1097,7 @@ export class Arena implements Scene {
     this.manager.dispose();
     this.statuses.dispose();
     this.blade.dispose();
+    this.heldItem.dispose();
     this.energy.dispose();
     this.bladeView.dispose();
     this.flyingBlade.dispose();

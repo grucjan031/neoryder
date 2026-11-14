@@ -1,6 +1,7 @@
 {
   "id": "stormGunner",
   "name": "Burzowy strzelec",
+  "startHeld": "gun",
   "blade": "plasmaBlade",
   "weapons": ["rifle", "emp"],
   "powers": ["chain", "push"],

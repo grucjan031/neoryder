@@ -16,7 +16,7 @@ const idle: InputSnapshot = {
   released: new Set(),
   lookDelta: { x: 0, y: 0 },
 };
-const firing: InputSnapshot = { ...idle, held: new Set(['shoot']) };
+const firing: InputSnapshot = { ...idle, held: new Set(['attack']) };
 const active: Arena[] = [];
 
 afterEach(() => {

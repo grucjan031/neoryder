@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { SIM_TIMEOUT } from './helpers';
 
-test('arena: gunner switches the active weapon and HUD with Digit2', async ({
+test('arena: gunner switches weapon slots and swaps blade/gun with R', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -28,5 +28,24 @@ test('arena: gunner switches the active weapon and HUD with Digit2', async ({
     .toBe('scatter');
   await page.keyboard.press('Digit1');
   await expect(weapon).toHaveText('Karabin', { timeout: SIM_TIMEOUT });
+  const weaponBlock = page.locator('.hud__weapon');
+  await expect(weaponBlock).not.toHaveClass(/hud__weapon--inactive/);
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.query('heldItem')))
+    .toMatchObject({ held: 'gun', swapping: false });
+  await page.keyboard.press('KeyR');
+  await expect(weaponBlock).toHaveClass(/hud__weapon--inactive/, {
+    timeout: SIM_TIMEOUT,
+  });
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.query('heldItem')))
+    .toMatchObject({ held: 'blade', swapping: false });
+  await page.keyboard.press('KeyR');
+  await expect(weaponBlock).not.toHaveClass(/hud__weapon--inactive/, {
+    timeout: SIM_TIMEOUT,
+  });
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.query('heldItem')))
+    .toMatchObject({ held: 'gun', swapping: false });
   expect(errors).toEqual([]);
 });

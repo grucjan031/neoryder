@@ -202,6 +202,7 @@ export class Hud {
   private readonly crosshairTicks = element('div', 'hud__crosshair-ticks');
   private readonly overheat = element('div', 'hud__overheat', text.overheated);
   private readonly weaponName = element('span', 'hud__weapon-name');
+  private readonly weapon = element('div', 'hud__weapon');
   private readonly slots = element('div', 'hud__slots');
   private readonly powers = element('div', 'hud__power-list');
   private readonly waveLabel = element('span', 'hud__wave-label');
@@ -238,7 +239,7 @@ export class Hud {
     const vitals = element('div', 'hud__vitals');
     vitals.append(health.node, energy.node);
 
-    const weapon = element('div', 'hud__weapon');
+    const weapon = this.weapon;
     const weaponHead = element('div', 'hud__weapon-head');
     weaponHead.append(this.weaponName, this.slots);
     this.heat.node.dataset.level = 'cool';
@@ -332,6 +333,10 @@ export class Hud {
           this.heat.node.classList.toggle('hud__meter--overheated', next);
           this.overheat.hidden = !next;
         }
+      }),
+      bus.on('held_item_changed', ({ owner, held }) => {
+        if (owner !== opts.playerId) return;
+        this.weapon.classList.toggle('hud__weapon--inactive', held === 'blade');
       }),
       bus.on('weapon_switched', ({ owner, weapon, slot }) => {
         if (owner !== opts.playerId) return;

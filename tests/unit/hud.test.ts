@@ -23,6 +23,16 @@ describe('Hud', () => {
   let root: HTMLElement;
   let onRetry: ReturnType<typeof vi.fn<() => void>>;
 
+  it('dims the weapon for the player blade, restores it for the gun and ignores other owners', () => {
+    const weapon = query('.hud__weapon');
+    bus.emit('held_item_changed', { owner: 1, held: 'blade', weapon: null });
+    expect(weapon.classList.contains('hud__weapon--inactive')).toBe(true);
+    bus.emit('held_item_changed', { owner: 2, held: 'gun', weapon: 'rifle' });
+    expect(weapon.classList.contains('hud__weapon--inactive')).toBe(true);
+    bus.emit('held_item_changed', { owner: 1, held: 'gun', weapon: 'rifle' });
+    expect(weapon.classList.contains('hud__weapon--inactive')).toBe(false);
+  });
+
   function query<T extends HTMLElement = HTMLElement>(selector: string): T {
     const node = root.querySelector<T>(selector);
     if (!node) throw new Error(`Brak elementu ${selector}`);

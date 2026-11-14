@@ -256,7 +256,7 @@ Wczytany zapis z `saveVersion < SAVE_VERSION` jest migrowany; z `saveVersion > S
 
 ```ts
 export type Action = 'moveForward' | 'moveBack' | 'moveLeft' | 'moveRight'
-  | 'jump' | 'sprint' | 'dash' | 'crouch' | 'attack' | 'block' | 'shoot' | 'power';
+  | 'jump' | 'sprint' | 'dash' | 'crouch' | 'attack' | 'block' | 'swap' | 'power';
 
 export interface InputSnapshot {
   held: ReadonlySet<Action>;
@@ -276,7 +276,7 @@ export class Input {
 }
 ```
 
-Mapowanie klawiszy w danych (domyślnie WASD, Space, Shift, Q = dash, Ctrl = crouch, LPM = attack, PPM = block, R/F = shoot/power — do ustalenia w F1).
+Mapowanie klawiszy w danych (domyślnie WASD, Space, Shift, Q = dash, Ctrl = crouch, LPM = attack, PPM = block, R/F = swap/power).
 
 ## Kontekst gry i sceny — `src/core/context.ts`, `src/scenes/`
 
@@ -762,7 +762,7 @@ export function createEnemyView(enemy: Enemy, loadModels?: boolean): EnemyViewLi
 
 ```ts
 // src/progression/loadout.ts — src/data/loadouts/*.json
-export interface Loadout { id: string; name: string; blade: string; weapons: string[]; powers: string[]; tags: string[] }
+export interface Loadout { id: string; name: string; blade: string; weapons: string[]; powers: string[]; tags: string[]; startHeld: HeldKind }
 // weapons: 1–3 id broni; powers: 1–2 id mocy; tags: np. '#build_blade' (wymagania synergii)
 // Walidacja znanych id (ostrze: dowolne id z bladeDefinitions), bez powtórzeń broni, mocy i id ekwipunków.
 export const loadoutSchema: z.ZodType<Loadout>;
@@ -827,3 +827,41 @@ blade_thrown: { owner: EntityId };
 blade_returned: { owner: EntityId };
 synergy_triggered: { synergy: string; user: EntityId };
 ```
+
+### Przedmiot w ręku (arena)
+
+```ts
+// src/combat/heldItem.ts — symulacja bez Three.js i DOM
+export type HeldKind = 'blade' | 'gun';
+export interface HeldItemView { held: HeldKind; target: HeldKind; swapping: boolean; swapT: number }
+export class HeldItem {
+  constructor(bus: EventBus, owner: EntityId, tuning: Tuning, start: HeldKind);
+  get held(): HeldKind;
+  view(): HeldItemView; // swapT 0..1, 1 = bez zamiany
+  requestGun(): void;
+  requestToggle(): void;
+  forceBlade(): void; // natychmiast, kasuje zamianę i bufor
+  reset(start: HeldKind): void; // natychmiast, publikuje stan, kasuje zamianę i bufor
+  step(dt: number, input: InputSnapshot, ctx: { bladeBusy: boolean }): {
+    bladeInput: InputSnapshot; triggerHeld: boolean;
+  };
+  dispose(): void; // odpina nasłuch weapon_switched
+}
+// GameEvents:
+held_item_changed: { owner: EntityId; held: HeldKind; weapon: string | null };
+// Id broni HeldItem zapamiętuje z weapon_switched dla owner; arena publikuje je przed reset().
+// Przy ostrzu weapon = null; przy broni = id wybranego slotu.
+// Nowa akcja Action: swap (KeyR), usuwa shoot. attack (LPM) = atak/spust.
+// Loadout: startHeld opcjonalne w JSON, domyślnie 'blade' po walidacji.
+// tuning.hands: { swapS: 0.24, swapBufferS: 0.4 } — czas gracza, lil-gui.
+// Arena.heldView(): HeldItemView; query('heldItem') zwraca ten sam stan.
+// Komenda areny: hold blade|gun — natychmiastowy reset samego stanu ręki.
+```
+
+Arena rozdziela wejście przed PlasmaBlade.step i Weapon.step. W zamianie blokuje
+atak, blok i rzut ostrzem oraz spust; PPM i środkowy przycisk przerywają zamianę,
+przywracają ostrze i przekazują wejście w tym samym kroku. `bladeBusy` oznacza stan
+inny niż idle, z wyjątkiem throwing (lot nie blokuje zamiany). Bufor żądania
+ostrze → broń trwa najwyżej swapBufferS. Klawisze 1/2/3 wybierają istniejący slot
+przed żądaniem broni; zmiana broń → broń nie uruchamia zamiany. Nietrzymane bronie
+wyłącznie stygną. HUD słucha held_item_changed i przygasza blok broni przy ostrzu.

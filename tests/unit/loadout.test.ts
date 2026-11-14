@@ -9,6 +9,7 @@ const classic = {
   id: 'classic',
   name: 'Klasyczny',
   blade: 'plasmaBlade',
+  startHeld: 'blade',
   weapons: ['blaster'],
   powers: ['push'],
   tags: [],

@@ -10,7 +10,7 @@
     "KeyQ": "dash",
     "ControlLeft": "crouch",
     "ControlRight": "crouch",
-    "KeyR": "shoot",
+    "KeyR": "swap",
     "KeyF": "power",
     "KeyE": "power2",
     "Digit1": "weapon1",
