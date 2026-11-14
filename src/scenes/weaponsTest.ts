@@ -1,4 +1,8 @@
-import { BoxGeometry, Color, Group, Mesh } from 'three';
+import { Ray } from '@dimforge/rapier3d-compat';
+import { StatusSystem } from '../combat/status/statusSystem';
+import { BeamRenderer } from '../render/beamRenderer';
+import { ExplosionRenderer } from '../render/explosionRenderer';
+import { BoxGeometry, Color, Group, Mesh, Vector3 } from 'three';
 import type { Object3D, Scene as ThreeScene } from 'three';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
@@ -62,6 +66,9 @@ export class WeaponsTest implements Scene {
   private world!: World;
   private entities!: EntityRegistry;
   private damage!: DamageSystem;
+  private statuses!: StatusSystem;
+  private beamRenderer!: BeamRenderer;
+  private explosionRenderer!: ExplosionRenderer;
   private player!: PlayerController;
   private previous!: PlayerState;
   private projectiles!: ProjectileSystem;
@@ -69,6 +76,7 @@ export class WeaponsTest implements Scene {
   private readonly hurtboxes = new Hurtboxes();
   private readonly root = new Group();
   private readonly weaponModel = new Group();
+  private readonly beamOrigin = new Vector3();
   private readonly weapons = new Map<string, Weapon>();
   private readonly slots = [...data.slots];
   private slot = 0;
@@ -94,6 +102,12 @@ export class WeaponsTest implements Scene {
     });
     this.entities = new EntityRegistry(ctx.bus);
     this.damage = new DamageSystem(ctx.bus, this.entities);
+    this.statuses = new StatusSystem(ctx.bus, this.damage, {
+      position: (id) =>
+        this.dummies.find((d) => d.id === id)?.model.position ?? null,
+      targets: () =>
+        this.dummies.filter((d) => !d.health.dead).map((d) => d.id),
+    });
     const playerId = this.entities.create('player', 'player');
     this.projectiles = new ProjectileSystem(
       this.world,
@@ -114,7 +128,44 @@ export class WeaponsTest implements Scene {
           playerId,
           ctx,
           stats,
-          { projectiles: this.projectiles },
+          {
+            projectiles: this.projectiles,
+            damage: this.damage,
+            castBeam: (origin, dir, rangeM) => {
+              const hit = this.world.castRayAndGetNormal(
+                new Ray(origin, dir),
+                rangeM,
+                true,
+                undefined,
+                interactionGroups(
+                  CollisionGroup.PlayerProjectile,
+                  CollisionGroup.Enemy | CollisionGroup.World,
+                ),
+                undefined,
+                undefined,
+                (collider) => {
+                  const box = this.hurtboxes.get(collider.handle);
+                  return box
+                    ? box.entity !== playerId
+                    : ((collider.collisionGroups() >>> 16) &
+                        CollisionGroup.World) !==
+                        0;
+                },
+              );
+              const distance = hit?.timeOfImpact ?? rangeM;
+              return {
+                target: hit
+                  ? (this.hurtboxes.get(hit.collider.handle)?.entity ?? null)
+                  : null,
+                distance,
+                point: {
+                  x: origin.x + dir.x * distance,
+                  y: origin.y + dir.y * distance,
+                  z: origin.z + dir.z * distance,
+                },
+              };
+            },
+          },
           definition,
         ),
       );
@@ -128,6 +179,9 @@ export class WeaponsTest implements Scene {
       ctx.tuning.weapons.maxProjectiles,
       false,
     );
+    this.beamRenderer = new BeamRenderer();
+    this.explosionRenderer = new ExplosionRenderer(ctx.bus);
+    this.root.add(this.beamRenderer.root, this.explosionRenderer.root);
     three.background = new Color(ctx.tuning.render.world);
     three.add(this.root);
     this.lights = createStyleLights();
@@ -288,6 +342,7 @@ export class WeaponsTest implements Scene {
       if (input.pressed.has(action)) this.slot = index;
     }
     this.damage.step(dt);
+    this.statuses.step(dt);
     for (const dummy of this.dummies) {
       if (dummy.respawnS === undefined) continue;
       dummy.respawnS -= dt;
@@ -316,7 +371,7 @@ export class WeaponsTest implements Scene {
     this.projectiles.step(dt);
   }
 
-  render(alpha: number): void {
+  render(alpha: number, frameDt = 0): void {
     const current = this.player.getState();
     const p = this.previous;
     const camera = this.ctx.camera;
@@ -338,13 +393,25 @@ export class WeaponsTest implements Scene {
     }
     this.lights.sync();
     this.projectileRenderer.render(alpha);
+    this.beamOrigin.set(0, 0, -data.weaponModel.size[2] / 2);
+    this.weaponModel.localToWorld(this.beamOrigin);
+    this.beamRenderer.render(this.weapon.beam, this.beamOrigin);
+    this.explosionRenderer.render(frameDt);
     if (this.bar) {
       this.bar.style.width = `${this.weapon.heat.fraction * 100}%`;
       this.bar.style.background = `#${new Color(this.ctx.tuning.render.player).lerp(new Color(this.ctx.tuning.render.enemy), this.weapon.heat.fraction).getHexString()}`;
     }
     const label = this.hud?.firstElementChild;
     if (label)
-      label.textContent = `${this.slot + 1}: ${this.weapon.definition.name} | Ciepło: ${Math.round(this.weapon.heat.current)} / ${this.weapon.heat.max}${this.weapon.overheated ? ' — PRZEGRZANIE' : ''} | HP: ${this.dummies.map((d) => d.health.current).join(' / ')}`;
+      label.textContent = `${this.slot + 1}: ${this.weapon.definition.name} | Ciepło: ${Math.round(this.weapon.heat.current)} / ${this.weapon.heat.max}${this.weapon.overheated ? ' — PRZEGRZANIE' : ''} | HP: ${this.dummies.map((d) => d.health.current).join(' / ')} | ${this.dummies
+        .map((d) =>
+          this.statuses
+            .list(d.id)
+            .map((s) => `${s.id} ×${s.stacks}`)
+            .join(', '),
+        )
+        .filter(Boolean)
+        .join(' / ')}`;
   }
 
   query(name: string): unknown {
@@ -360,6 +427,9 @@ export class WeaponsTest implements Scene {
     if (name === 'activeProjectiles') return this.projectiles.activeCount;
     if (name === 'dummyHp')
       return this.dummies.map((dummy) => dummy.health.current);
+    if (name === 'dummyStatuses')
+      return this.dummies.map((d) => this.statuses.list(d.id));
+    if (name === 'beam') return this.weapon.beam;
     if (name === 'shots') return this.weapon.shots;
     return undefined;
   }
@@ -367,6 +437,9 @@ export class WeaponsTest implements Scene {
   dispose(): void {
     for (const off of this.off.splice(0)) off();
     this.hud?.remove();
+    this.beamRenderer.dispose();
+    this.explosionRenderer.dispose();
+    this.statuses.dispose();
     this.projectileRenderer.dispose();
     this.projectiles.dispose();
     this.player.dispose();

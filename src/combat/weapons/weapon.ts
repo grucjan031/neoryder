@@ -34,6 +34,8 @@ export class Weapon {
   private lastHeat = 0;
   private shotCount = 0;
   private triggerHeld = false;
+  private beamTickS = 0;
+  readonly beam: { active: boolean; from: Vec3; to: Vec3 } | null;
 
   constructor(
     readonly owner: EntityId,
@@ -43,6 +45,16 @@ export class Weapon {
     readonly definition: WeaponDefinition,
     private readonly team: Team = 'player',
   ) {
+    if (definition.fireMode === 'beam' && (!deps.castBeam || !deps.damage))
+      throw new Error('Laser wymaga castBeam i damage');
+    this.beam =
+      definition.fireMode === 'beam'
+        ? {
+            active: false,
+            from: { x: 0, y: 0, z: 0 },
+            to: { x: 0, y: 0, z: 0 },
+          }
+        : null;
     this.rng = ctx.rng.fork(this.definition.id);
     this.heat = new ResourcePool({
       start: 0,
@@ -68,9 +80,12 @@ export class Weapon {
     this.coolingEventS = 0;
     this.lastHeat = 0;
     this.triggerHeld = false;
+    this.beamTickS = 0;
+    if (this.beam) this.beam.active = false;
   }
 
   overheat(): void {
+    if (this.beam) this.beam.active = false;
     this.heat.set(this.heat.max);
     this.lockS = this.ctx.tuning.weapons.overheatLockS;
     this.emitHeat();
@@ -97,6 +112,10 @@ export class Weapon {
       (this.coolingEventS >= 0.1 && this.lastHeat !== this.heat.current)
     )
       this.emitHeat();
+    if (this.definition.fireMode === 'beam') {
+      this.stepBeam(dt, input, this.definition);
+      return;
+    }
     const pressed = input.triggerHeld && !this.triggerHeld;
     this.triggerHeld = input.triggerHeld;
     if (
@@ -121,6 +140,44 @@ export class Weapon {
       weapon: this.definition.id,
       owner: this.owner,
     });
+    this.emitHeat();
+  }
+
+  private stepBeam(
+    dt: number,
+    input: WeaponInput,
+    def: Extract<WeaponDefinition, { fireMode: 'beam' }>,
+  ): void {
+    const beam = this.beam!;
+    const wasActive = beam.active;
+    beam.active = input.triggerHeld && !this.overheated;
+    if (!beam.active) {
+      this.beamTickS = 0;
+      return;
+    }
+    if (!wasActive) {
+      this.shotCount++;
+      this.ctx.bus.emit('weapon_fired', { weapon: def.id, owner: this.owner });
+    }
+    const hit = this.deps.castBeam!(input.origin, input.dir, def.rangeM);
+    Object.assign(beam.from, input.origin);
+    Object.assign(beam.to, hit.point);
+    this.beamTickS += dt;
+    while (this.beamTickS + Number.EPSILON * 16 >= 1 / def.tickHz) {
+      this.beamTickS -= 1 / def.tickHz;
+      if (hit.target !== null && hit.distance <= def.rangeM)
+        this.deps.damage!.deal(hit.target, {
+          source: this.owner,
+          amount: def.dps / def.tickHz,
+          tags: def.tags,
+          point: hit.point,
+          dir: input.dir,
+          ...(def.statuses ? { statuses: def.statuses } : {}),
+        });
+    }
+    this.heat.add(def.heatPerS * dt, { resetDelay: true });
+    if (this.heat.current >= this.heat.max)
+      this.lockS = this.ctx.tuning.weapons.overheatLockS;
     this.emitHeat();
   }
 

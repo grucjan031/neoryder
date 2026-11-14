@@ -1,0 +1,11 @@
+{
+  "id": "beam",
+  "name": "Laser ciągły",
+  "fireMode": "beam",
+  "automatic": true,
+  "dps": 40,
+  "heatPerS": 65,
+  "rangeM": 12,
+  "tickHz": 10,
+  "tags": ["#gun", "#laser"]
+}

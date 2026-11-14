@@ -4,7 +4,7 @@ import type { WeaponDefinition } from '../weaponSchema';
 import { spreadDirection } from './spread';
 
 export function fireProjectile(
-  definition: WeaponDefinition,
+  definition: Exclude<WeaponDefinition, { fireMode: 'beam' }>,
   projectiles: Pick<ProjectileSystem, 'spawn'>,
   rng: Rng,
   aim: Pick<ProjectileSpec, 'owner' | 'team' | 'origin' | 'dir'>,
@@ -18,7 +18,20 @@ export function fireProjectile(
       damage: definition.damage,
       tags: definition.tags,
       lifetimeS: definition.projectileLifetimeS,
-      ...(definition.statuses ? { statuses: definition.statuses } : {}),
+      ...(definition.fireMode === 'lob'
+        ? {
+            gravity: definition.gravity,
+            explode: {
+              radiusM: definition.radiusM,
+              damage: definition.explosionDamage,
+              tags: definition.tags,
+              ...(definition.statuses ? { statuses: definition.statuses } : {}),
+            },
+          }
+        : {}),
+      ...(definition.fireMode !== 'lob' && definition.statuses
+        ? { statuses: definition.statuses }
+        : {}),
       ...(definition.fireMode === 'pierce'
         ? {
             pierce: {

@@ -204,6 +204,69 @@ W konsoli wpisz `weapon sniper`, wyceluj w rząd i kliknij: HP powinno wynosić
 pocisku; `overheat` sprawdza blokadę. Oceń czytelność rozrzutu, rytm półautomatu,
 tempo karabinu oraz koszt cieplny snajperki i rozpraszacza.
 
+## F2-04: laser ciągły i granat EMP
+
+`beam` jest osobnym wariantem schematu: `dps`, `heatPerS`, `rangeM`, `tickHz`,
+`automatic: true`, tagi i opcjonalne statusy. Nie zawiera `damage`, `fireRateHz`,
+`heatPerShot` ani pól pocisku. W każdym dodatnim kroku przy wciśniętym spuście
+wywołuje `WeaponDeps.castBeam`; pierwszy hurtbox lub collider świata kończy promień.
+W chwili tiku aktualny cel otrzymuje `dps / tickHz` przez `DamageSystem.deal`
+z tagami i statusami. Pierwszy tik następuje po `1 / tickHz` s; puszczenie spustu
+lub blokada zeruje zegar tików. Hitstop nie wykonuje zapytań, tików ani ogrzewania.
+Ciepło rośnie o `heatPerS × dt`, opóźnia chłodzenie i uruchamia zwykłą blokadę.
+`weapon_fired` i licznik `shots` oznaczają początek ciągłego strzału (także po
+zakończeniu blokady przy trzymanym spuście). Stan `weapon.beam` udostępnia
+`active`, `from`, `to`; pozostałe tryby zwracają `null`. Laser wymaga zależności
+`castBeam` i `damage`; brak zależności zgłasza błąd przy tworzeniu broni.
+
+`lob` używa istniejącej puli. `gravity` oznacza dodatnie przyspieszenie w dół;
+pozycja wynika z prędkości początkowej oraz `−gravity × t² / 2`.
+Każdy krok omiata odcinek do nowej pozycji, ograniczony czasem życia.
+Trafienie świata, podłogi lub wroga oraz wygaśnięcie czasu wywołują wybuch.
+`damage` to obrażenia bezpośrednie, `explosionDamage` to osobne obrażenia obszarowe.
+Statusy definicji granatu są przekazywane do wybuchu, dzięki czemu bezpośredni
+cel otrzymuje przeciążenie raz. `ProjectileSpec.explode` zawiera `radiusM`,
+`damage`, `tags` i opcjonalne `statuses`. Zapytanie kuli obejmuje przecinające ją
+hurtboxy, po jednym trafieniu obszarowym na encję, bez mnożnika hurtboxa.
+Właściciel jest pomijany; filtr drużyn pozostaje w `DamageSystem`.
+Wybuch obejmuje również hurtboxy za przeszkodą w promieniu (bez testu widoczności).
+Zwolnienie slotu poprzedza emisję obrażeń i zdarzeń, więc handler może bezpiecznie
+utworzyć nowy pocisk. Przepełnienie puli i `dispose` usuwają pociski bez wybuchu.
+Pociski bez `gravity` i `explode` zachowują dotychczasowy ruch i trafienia.
+
+Wartości startowe (docelowy balans: F2-18):
+
+| Dane                  | Parametry                                                                                                                                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `beam` / Laser ciągły | 40 DPS, 10 tików/s po 4 obrażenia, zasięg 12 m, 65 ciepła/s; `#gun`, `#laser`.                                                                                                                                  |
+| `emp` / Granat EMP    | Półautomat 0,8 Hz, 60 ciepła/strzał, prędkość 12 m/s, czas 2 s, grawitacja 12 m/s², bez rozrzutu; 2 obrażenia bezpośrednie, 8 obszarowych, promień 3,5 m; `#gun`, `#elektrycznosc`; `overload` na 4 s, 2 stosy. |
+
+`BeamRenderer` korzysta z jednego cylindra cyan ze współdzielonym materiałem
+gracza, od lufy interpolowanej broni do punktu symulacji. `ExplosionRenderer`
+reaguje na `explosion { point, radiusM, owner, tags }`; pula kul magenta rośnie
+do promienia zdarzenia i zanika w czasie rzeczywistym. Parametry w `tuning.vfx`
+(widoczne w lil-gui): `beamRadiusM = 0.018`, `explosionDurationS = 0.3`,
+`explosionOpacity = 0.4`, `maxExplosions = 16`. Pojemność ustalana jest przy
+tworzeniu renderera; pełna pula zastępuje najstarszy rozbłysk. `dispose` odpina
+zdarzenie, usuwa obiekty i zwalnia własne geometrie i materiały, zachowując
+współdzielone materiały palety.
+
+W `weapons-test` komendy `weapon beam` i `weapon emp` wybierają nowe bronie;
+dotychczasowe sloty pozostają dostępne. `StatusSystem` krokowany po `DamageSystem`
+nakłada przeciążenie z obrażeń EMP. HUD pokazuje identyfikatory statusów i stosy;
+query `dummyStatuses` zwraca statusy manekinów, `beam` — stan aktywnej broni.
+
+Kontrola w 30 sekund: otwórz `?scene=weapons-test&debug=1`, wpisz `weapon beam`
+i przytrzymaj LPM na pierwszym manekinie: cyan kończy się na celu, HP spada
+w tikach, ciepło szybko rośnie do blokady. Puść spust, wpisz `weapon emp`,
+kliknij w kierunku manekina: pocisk opada, pojawia się rosnąca kula magenta,
+a HUD pokazuje `overload ×2`. Oceń czytelność końca lasera, rytm tików,
+szybkość przegrzania i czas rozbłysku.
+
+Testy F2-04: `beamLob.test.ts` (tiki, ciepło, hitstop, aktualny cel, balistyka,
+wybuchy od kolizji i czasu, promień, deduplikacja, właściciel, statusy i render),
+`weaponsTest.test.ts` (nowe bronie, HUD, zasięg lasera i rzeczywista ściana Rapier).
+
 ## Weryfikacja
 
 `tests/unit/weapons.test.ts`: walidacja danych, ciepło i opóźnienie, blokada,

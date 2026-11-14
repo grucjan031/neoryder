@@ -36,12 +36,13 @@ async function setup() {
   camera.add(cameraChild);
   const commands = new CommandRegistry();
   const bus = new EventBus();
+  const settings = structuredClone(tuning);
   await scene.init(
     {
       bus,
       rng: new Rng('weapons-scene'),
       loop: new GameLoop({ step: () => {}, render: () => {} }),
-      tuning: structuredClone(tuning),
+      tuning: settings,
       debug: false,
       camera,
       commands,
@@ -49,7 +50,16 @@ async function setup() {
     three,
   );
   active.push(scene);
-  return { scene, three, camera, cameraParent, cameraChild, commands, bus };
+  return {
+    scene,
+    three,
+    camera,
+    cameraParent,
+    cameraChild,
+    commands,
+    bus,
+    settings,
+  };
 }
 
 it('registers, loads scene data, switches on weapon1..3 pressed and retains heat per weapon', async () => {
@@ -80,7 +90,9 @@ it('registers, loads scene data, switches on weapon1..3 pressed and retains heat
   scene.step(SIM_DT, { ...input, pressed: new Set(['weapon1']) });
   expect(scene.query('heat')).toBe(9);
   expect(scene.query('weaponHeat')).toEqual({
+    beam: 0,
     blaster: 0,
+    emp: 0,
     pistol: 9,
     rifle: 10,
     scatter: 28,
@@ -160,4 +172,66 @@ it('fires a piercing round through the row, leaves the dummy behind the wall unh
   expect(commands.help()).toBe('');
   expect(document.querySelector('[aria-label="Broń i ciepło"]')).toBeNull();
   expect(despawn).toHaveBeenCalledTimes(6);
+});
+
+it('exposes beam and EMP through commands, ticks laser damage and shows overload from the grenade', async () => {
+  const { scene, commands, bus } = await setup();
+  expect(commands.execute('weapon beam')).toContain('Laser ciągły');
+  for (let i = 0; i < 60; i++) scene.step(SIM_DT, firing);
+  expect(scene.query('dummyHp')).toEqual([60, 100, 100, 100]);
+  expect(scene.query('beam')).toMatchObject({ active: true });
+  scene.step(0, firing);
+  expect(scene.query('dummyHp')).toEqual([60, 100, 100, 100]);
+  commands.execute('weapon emp');
+  const explosion = vi.fn();
+  bus.on('explosion', explosion);
+  scene.step(SIM_DT, firing);
+  for (let i = 0; i < 120; i++) scene.step(SIM_DT, input);
+  expect(explosion).toHaveBeenCalledTimes(1);
+  const statuses = scene.query('dummyStatuses') as {
+    id: string;
+    stacks: number;
+  }[][];
+  expect(statuses.flat()).toContainEqual(
+    expect.objectContaining({ id: 'overload', stacks: 2 }),
+  );
+  scene.render(1, 0.15);
+  expect(
+    document.querySelector('[aria-label="Broń i ciepło"]')?.textContent,
+  ).toContain('overload');
+});
+
+it('beam range and the first wall collider protect the dummy behind the wall', async () => {
+  const { scene, commands, bus, settings } = await setup();
+  settings.damage.respawnS = 100;
+  // Remove the three foreground hurtboxes until their normal respawn.
+  commands.execute('weapon sniper');
+  scene.step(SIM_DT, firing);
+  for (let i = 0; i < 61; i++) scene.step(SIM_DT, input);
+  scene.step(SIM_DT, firing);
+  for (let i = 0; i < 61; i++) scene.step(SIM_DT, input);
+  scene.step(SIM_DT, firing);
+  for (let i = 0; i < 10; i++) scene.step(SIM_DT, input);
+  commands.execute('weapon beam');
+  scene.step(SIM_DT, firing);
+  const beam = scene.query('beam') as {
+    from: { z: number };
+    to: { z: number };
+  };
+  expect(beam.from.z - beam.to.z).toBeCloseTo(12);
+  const dealt = vi.fn();
+  bus.on('damage_dealt', dealt);
+  const moving: InputSnapshot = {
+    ...input,
+    held: new Set(['moveForward', 'attack']),
+  };
+  for (let i = 0; i < 30; i++) scene.step(SIM_DT, moving);
+  const closeBeam = scene.query('beam') as {
+    from: { z: number };
+    to: { z: number };
+  };
+  expect(closeBeam.to.z).toBeCloseTo(-10.75);
+  expect(closeBeam.from.z - closeBeam.to.z).toBeLessThan(12);
+  expect(scene.query('dummyHp')).toEqual([0, 0, 0, 100]);
+  expect(dealt).not.toHaveBeenCalled();
 });

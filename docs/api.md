@@ -434,16 +434,24 @@ export const STATUS_TAG = '#status'; export const STUNNED = 'stunned';
 // src/combat/weapons/weaponSchema.ts — unia po fireMode (zod discriminatedUnion)
 interface WeaponBase {
   id: string; name: string;                       // name: tekst UI (pl)
-  fireMode: 'projectile' | 'spread' | 'pierce' | 'beam' | 'lob';
+  tags: string[]; statuses?: StatusApplication[];
+}
+interface ShotWeaponBase extends WeaponBase {
+  fireMode: 'projectile' | 'spread' | 'pierce' | 'lob';
   damage: number; fireRateHz: number;
   automatic: boolean;                             // false = jeden strzał na wciśnięcie
-  heatPerShot: number; tags: string[]; statuses?: StatusApplication[];
+  heatPerShot: number;
+}
+interface BeamWeaponDefinition extends WeaponBase {
+  fireMode: 'beam'; automatic: true;
+  dps: number; heatPerS: number; rangeM: number; tickHz: number;
 }
 // projectile: projectileSpeed, projectileLifetimeS, spreadDeg
 // spread:     + pellets (≥ 2)
 // pierce:     + pierceCount (≥ 1), pierceFalloff (0..1)
-// beam:       dps, heatPerS, rangeM, tickHz (damage/fireRateHz/heatPerShot nieużywane — 0)
-// lob:        projectileSpeed, projectileLifetimeS, gravity, radiusM
+// beam:       osobny wariant BeamWeaponDefinition; bez damage/fireRateHz/heatPerShot i pól pocisku
+// lob:        projectileSpeed, projectileLifetimeS, spreadDeg, gravity, radiusM, explosionDamage
+// damage = obrażenia bezpośrednie; explosionDamage = obrażenia obszarowe; statuses przekazywane do wybuchu
 
 // src/combat/weapons/weapon.ts
 export interface WeaponInput { triggerHeld: boolean; origin: Vec3; dir: Vec3 } // zbocze wciśnięcia liczy Weapon
@@ -458,6 +466,7 @@ export class Weapon {
               deps: WeaponDeps, definition: WeaponDefinition, team?: Team);
   readonly definition: WeaponDefinition;
   readonly heat: ResourcePool; readonly overheated: boolean; readonly shots: number;
+  readonly beam: { active: boolean; from: Vec3; to: Vec3 } | null;
   step(dt: number, input: WeaponInput): void;
   reset(): void;
 }
@@ -597,6 +606,7 @@ Nowe akcje: `power2` (`KeyE`), `weapon1`, `weapon2`, `weapon3` (`Digit1`–`Digi
 ```ts
 damage_dealt: { /* …F1… */ statuses?: readonly StatusApplication[] };  // tylko gdy DamageInfo.statuses
 status_applied: { target: EntityId; status: string; stacks: number; durationS: number; source: EntityId | null };
+explosion: { point: Vec3; radiusM: number; owner: EntityId; tags: readonly string[] }; // F2-04
 status_expired: { target: EntityId; status: string };
 focus: { worldScale: number; durationS: number };
 weapon_switched: { owner: EntityId; weapon: string; slot: number };

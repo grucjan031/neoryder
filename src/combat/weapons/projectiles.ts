@@ -1,4 +1,4 @@
-import { Ray } from '@dimforge/rapier3d-compat';
+import { Ball, Ray } from '@dimforge/rapier3d-compat';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import type { EntityRegistry } from '../../core/entities';
 import type { EntityId, EventBus, Team } from '../../core/events';
@@ -7,6 +7,7 @@ import type { Tuning } from '../../core/tuning';
 import type { DamageSystem, Hurtboxes } from '../damage';
 import type { StatusApplication } from '../damage/types';
 import { CollisionGroup, interactionGroups } from '../../physics';
+import { queryHurtboxes } from '../damage/hurtbox';
 import { blasterDefinition } from './weaponSchema';
 
 export interface ProjectileSpec {
@@ -21,6 +22,13 @@ export interface ProjectileSpec {
   lifetimeS?: number;
   statuses?: readonly StatusApplication[];
   pierce?: { count: number; falloff: number };
+  gravity?: number;
+  explode?: {
+    radiusM: number;
+    damage: number;
+    tags: readonly string[];
+    statuses?: readonly StatusApplication[];
+  };
 }
 
 /** Trafienie pocisku w hurtbox, zanim zada obrażenia (np. parowanie ostrzem). */
@@ -52,6 +60,11 @@ interface Projectile {
   hitsRemaining: number;
   falloff: number;
   hitTargets: EntityId[];
+  gravity: number;
+  velocityY: number;
+  velocityX: number;
+  velocityZ: number;
+  explode: ProjectileSpec['explode'];
 }
 
 export class ProjectileSystem {
@@ -84,6 +97,11 @@ export class ProjectileSystem {
         hitsRemaining: 1,
         falloff: 0,
         hitTargets: [],
+        gravity: 0,
+        velocityY: 0,
+        velocityX: 0,
+        velocityZ: 0,
+        explode: undefined,
       }),
     );
   }
@@ -108,6 +126,17 @@ export class ProjectileSystem {
       statuses: spec.statuses?.map((status) => ({ ...status })),
       hitsRemaining: spec.pierce?.count ?? 1,
       falloff: spec.pierce?.falloff ?? 0,
+      gravity: spec.gravity ?? 0,
+      velocityY: dir.y * spec.speed,
+      velocityX: dir.x * spec.speed,
+      velocityZ: dir.z * spec.speed,
+      explode: spec.explode
+        ? {
+            ...spec.explode,
+            tags: [...spec.explode.tags],
+            statuses: spec.explode.statuses?.map((status) => ({ ...status })),
+          }
+        : undefined,
     });
     Object.assign(slot.pos, spec.origin);
     Object.assign(slot.dir, dir);
@@ -139,6 +168,9 @@ export class ProjectileSystem {
     if (!p) return;
     Object.assign(p.dir, normalized(dir));
     p.speed *= opts.speedMult ?? 1;
+    p.velocityY = p.dir.y * p.speed;
+    p.velocityX = p.dir.x * p.speed;
+    p.velocityZ = p.dir.z * p.speed;
     p.damage *= opts.damageMult ?? 1;
     p.owner = newOwner;
     p.team = newTeam;
@@ -153,6 +185,19 @@ export class ProjectileSystem {
       const id = p.id;
       const travelS = Math.min(dt, Math.max(0, p.remainingS));
       let distance = p.speed * travelS;
+      if (p.gravity !== 0) {
+        const dx = p.velocityX * travelS;
+        const dy = p.velocityY * travelS - (p.gravity * travelS * travelS) / 2;
+        const dz = p.velocityZ * travelS;
+        p.velocityY -= p.gravity * travelS;
+        distance = Math.hypot(dx, dy, dz);
+        if (distance > 0)
+          Object.assign(p.dir, {
+            x: dx / distance,
+            y: dy / distance,
+            z: dz / distance,
+          });
+      }
       let intercepted = false;
       while (distance > 0 && p.id === id) {
         const member =
@@ -215,6 +260,17 @@ export class ProjectileSystem {
             }
           }
           if (p.id !== id) break;
+          if (p.explode) {
+            Object.assign(p.pos, point);
+            const directTarget = box?.entity;
+            this.detonate(
+              p,
+              directTarget === undefined
+                ? undefined
+                : () => this.damage.deal(directTarget, info),
+            );
+            break;
+          }
           // Zapisujemy trafienie lub zwalniamy slot przed synchroniczną emisją obrażeń.
           if (box) {
             p.hitTargets.push(box.entity);
@@ -234,7 +290,10 @@ export class ProjectileSystem {
       }
       if (p.id !== id || intercepted) continue;
       p.remainingS -= dt;
-      if (p.remainingS <= Number.EPSILON) this.release(p);
+      if (p.remainingS <= Number.EPSILON) {
+        if (p.explode) this.detonate(p);
+        else this.release(p);
+      }
     }
   }
 
@@ -264,6 +323,37 @@ export class ProjectileSystem {
 
   dispose(): void {
     for (const p of this.pool) this.release(p);
+  }
+
+  private detonate(p: Projectile, directHit?: () => void): void {
+    const explosion = p.explode!;
+    const point = { ...p.pos };
+    const owner = p.owner;
+    const targets = queryHurtboxes(
+      this.world,
+      this.hurtboxes,
+      new Ball(explosion.radiusM),
+      point,
+      { x: 0, y: 0, z: 0, w: 1 },
+    );
+    this.release(p);
+    directHit?.();
+    for (const box of targets) {
+      if (box.entity === owner) continue;
+      this.damage.deal(box.entity, {
+        source: owner,
+        amount: explosion.damage,
+        tags: explosion.tags,
+        point,
+        ...(explosion.statuses ? { statuses: explosion.statuses } : {}),
+      });
+    }
+    this.bus.emit('explosion', {
+      point,
+      radiusM: explosion.radiusM,
+      owner,
+      tags: explosion.tags,
+    });
   }
 
   private release(p: Projectile): void {

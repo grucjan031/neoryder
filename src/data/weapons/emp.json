@@ -1,0 +1,23 @@
+{
+  "id": "emp",
+  "name": "Granat EMP",
+  "fireMode": "lob",
+  "automatic": false,
+  "damage": 2,
+  "fireRateHz": 0.8,
+  "heatPerShot": 60,
+  "projectileSpeed": 12,
+  "projectileLifetimeS": 2,
+  "spreadDeg": 0,
+  "gravity": 12,
+  "radiusM": 3.5,
+  "explosionDamage": 8,
+  "tags": ["#gun", "#elektrycznosc"],
+  "statuses": [
+    {
+      "id": "overload",
+      "durationS": 4,
+      "stacks": 2
+    }
+  ]
+}

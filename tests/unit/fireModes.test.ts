@@ -48,13 +48,23 @@ function setupWeapon(
     { projectiles: { spawn } },
     loadWeapon({ ...definition(id), ...overrides }),
   );
-  return { weapon, bus, rng, spawn, stats };
+  return {
+    weapon: weapon as Weapon & {
+      readonly definition: Exclude<WeaponDefinition, { fireMode: 'beam' }>;
+    },
+    bus,
+    rng,
+    spawn,
+    stats,
+  };
 }
 
 describe('fire mode data', () => {
   it('loads all firearm JSON definitions and excludes the blade', () => {
     expect([...weaponDefinitions.keys()].sort()).toEqual([
+      'beam',
       'blaster',
+      'emp',
       'pistol',
       'rifle',
       'scatter',

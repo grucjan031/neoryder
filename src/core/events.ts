@@ -89,6 +89,12 @@ export interface GameEvents {
   weapon_switched: { owner: EntityId; weapon: string; slot: number };
   blade_thrown: { owner: EntityId };
   blade_returned: { owner: EntityId };
+  explosion: {
+    point: Vec3;
+    radiusM: number;
+    owner: EntityId;
+    tags: readonly string[];
+  };
   synergy_triggered: { synergy: string; user: EntityId };
 }
 

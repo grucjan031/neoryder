@@ -127,6 +127,10 @@ export const tuning = {
     wallProbe: 1.5,
   },
   vfx: {
+    beamRadiusM: 0.018,
+    explosionDurationS: 0.3,
+    explosionOpacity: 0.4,
+    maxExplosions: 16,
     maxDebris: 600,
     debrisMin: 12,
     debrisMax: 30,

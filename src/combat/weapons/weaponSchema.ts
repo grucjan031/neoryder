@@ -3,10 +3,6 @@ import { z } from 'zod';
 const weaponFields = {
   id: z.string().min(1),
   name: z.string().min(1),
-  damage: z.number().finite().nonnegative(),
-  fireRateHz: z.number().finite().positive(),
-  automatic: z.boolean(),
-  heatPerShot: z.number().finite().positive(),
   tags: z.array(z.string().startsWith('#')),
   statuses: z
     .array(
@@ -21,6 +17,10 @@ const weaponFields = {
 
 const projectileFields = {
   ...weaponFields,
+  damage: z.number().finite().nonnegative(),
+  fireRateHz: z.number().finite().positive(),
+  automatic: z.boolean(),
+  heatPerShot: z.number().finite().positive(),
   projectileSpeed: z.number().finite().positive(),
   projectileLifetimeS: z.number().finite().positive(),
   spreadDeg: z.number().finite().min(0).max(180),
@@ -28,6 +28,24 @@ const projectileFields = {
 
 export const weaponSchema = z.discriminatedUnion('fireMode', [
   z.object({ ...projectileFields, fireMode: z.literal('projectile') }),
+  z
+    .object({
+      ...weaponFields,
+      fireMode: z.literal('beam'),
+      automatic: z.literal(true),
+      dps: z.number().finite().positive(),
+      heatPerS: z.number().finite().positive(),
+      rangeM: z.number().finite().positive(),
+      tickHz: z.number().finite().positive(),
+    })
+    .strict(),
+  z.object({
+    ...projectileFields,
+    fireMode: z.literal('lob'),
+    gravity: z.number().finite().positive(),
+    radiusM: z.number().finite().positive(),
+    explosionDamage: z.number().finite().positive(),
+  }),
   z.object({
     ...projectileFields,
     fireMode: z.literal('spread'),
@@ -71,4 +89,7 @@ export const weaponDefinitions = loadWeaponDefinitions(
     .filter(([path]) => !path.endsWith('/plasmaBlade.json'))
     .map(([, data]) => data),
 );
-export const blasterDefinition = weaponDefinitions.get('blaster')!;
+const loadedBlaster = weaponDefinitions.get('blaster')!;
+if (loadedBlaster.fireMode !== 'projectile')
+  throw new Error('Nieprawidłowy tryb blastera');
+export const blasterDefinition = loadedBlaster;
