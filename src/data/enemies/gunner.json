@@ -1,5 +1,6 @@
 {
   "id": "gunner",
+  "threatCost": 1.5,
   "kind": "gunner",
   "model": "enemy_gunner",
   "grabbable": true,

@@ -186,6 +186,7 @@ export const tuning = {
     muzzleFlashSize: 0.14,
   },
   enemies: {
+    phaseShiftS: 1,
     stunKnockback: 6,
     corpseS: 0.5,
     separationRadius: 1,

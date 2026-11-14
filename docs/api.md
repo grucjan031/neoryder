@@ -226,10 +226,10 @@ Obiekt jest mutowalny: kod czyta wartość przy użyciu (`tuning.time.hitstopLig
 ## Zapis — `src/core/save.ts`
 
 ```ts
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface MetaSave { saveVersion: number; createdAt: number; updatedAt: number; /* rozwijane w F4 */ }
-export interface RunSave  { saveVersion: number; seed: string; startedAt: number; /* rozwijane w F3 */ }
+export interface RunSave  { saveVersion: number; seed: string; startedAt: number; run: RunState }
 
 export type Migration = (data: Record<string, unknown>) => Record<string, unknown>;
 /** migrations[n] migruje z wersji n do n+1. */
@@ -868,6 +868,27 @@ wyłącznie stygną. HUD słucha held_item_changed i przygasza blok broni przy o
 
 ## Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005)
 
+F3-08: `src/world/threat.ts` eksportuje `planWaves: RoomPlanner['planWaves']`
+oraz `roomPlanner: RoomPlanner`. Planer przyjmuje główny RNG runu i sam tworzy
+`fork('room:<nodeId>')`. Obsługuje combat/elite; błędna konfiguracja powoduje błąd.
+Sekcja threat dodaje opcjonalne `waveWeights` (domyślnie [1, 1.3, 1.6]) oraz
+`pacing[type]` (domyślnie firstBreakS=2, breakS=4, spawnIntervalS=0.8).
+Szczegóły: `docs/systems/threat.md`.
+
+### Boss (F3-16) — `src/enemies/boss.ts`
+
+`Boss` implementuje `Enemy`; `EnemyManager.spawn('securityChief', position)` korzysta
+z istniejących `EnemyDependencies` (wymagane `projectiles`). `boss_spawned` emituje
+po rejestracji zdrowia; `boss_phase` tylko przy zmianie fazy, numerowanej od 1.
+`phase` zwraca numer fazy; `setPhase(n): boolean` to debug: ustawia fazę i jej HP,
+przerywa atak, uruchamia `tuning.enemies.phaseShiftS` i emituje `health_changed`.
+`enemySchema.boss` zawiera nazwę, skalę modelu, wylot pocisków i fazy
+`{ hpThreshold, patterns }`; progi to malejące ułamki maksymalnego HP, pierwszy 1.
+Wzorce `slam` i `fan` mają własne czasy zapowiedzi, regeneracji i odnowienia.
+`slam` emituje `enemy_telegraph.kind: 'slam'`, `fan` — `'aim'`; faza przerywa zapowiedź.
+Obrażenia przechodzą przez `DamageSystem`, limit progu działa po modyfikatorach.
+Scena `boss-test` oraz `ai-test` obsługują komendę `boss phase <n>`.
+
 Architektura i decyzje: `docs/adr/0005-petla-runu-f3.md`. Zadania: `docs/issues/F3/README.md`.
 
 ### Wspólne typy runu — `src/core/runTypes.ts`
@@ -1049,6 +1070,119 @@ Komendy konsoli debug (`window.__neoryder.command`, zadania F3-07, F3-09, F3-11)
 - `credits <n>` — dodanie Kredytów
 - `implant <id>` — nałożenie implantu
 
+### RoomScene (F3-04)
+
+`src/scenes/roomScene.ts`: `new RoomScene(room: RoomDefinition, run: RunState,
+waves: WavesDefinition, options?: RoomSceneOptions)` implementuje `Scene`.
+Bieżący węzeł pochodzi z `run.currentNodeId` i `run.map`, ekwipunek z `run.loadoutId`.
+`options.loadModels` (domyślnie true) wyłącza modele w testach;
+`options.implantDefinitions?: ReadonlyMap<string, ImplantDefinition>` dostarcza definicje
+implantów z F3-09. Brak definicji posiadanego implantu jest błędem przed inicjalizacją.
+Modyfikatory ze źródłem `implant:<id>` trafiają na statystyki walki i ruchu.
+`exportState(): Pick<RunState, 'hp' | 'energy'>` zwraca zasoby bez modyfikowania wejściowego runu.
+`clear(): void` jest idempotentnym API dla komendy `run clear` hosta F3-07:
+usuwa wrogów i pociski, otwiera exit i emituje `room_cleared`.
+Pokój nie rejestruje komend `run`; scena `room-test` rejestruje własne `run clear`.
+`room_entered` jest emitowane po gotowości świata, przed uruchomieniem fal;
+`room_cleared` po ostatniej fali, najwyżej raz, z czasem symulacji pokoju.
+Kontekst pokoju dostarcza host (`rng.fork('room:<nodeId>')`, wspólny EventBus).
+
+### Zarządca stanu runu (F3-05) — `src/world/run.ts`
+
+```ts
+export const RUN_SCREENS = ['map', 'room', 'reward', 'shop', 'rest', 'summary'] as const;
+export type RunScreen = (typeof RUN_SCREENS)[number];
+export type MapGenerator = (seed: string) => SectorMap;
+
+export interface RunManagerOptions {
+  generateMap?: MapGenerator;
+  sector?: Pick<SectorDefinition, 'id' | 'economy'>;
+  creditsPerThreat?: number;
+  eliteBonusCredits?: number;
+  puzzleCredits?: number;
+  initialHp?: number;
+  initialEnergy?: number;
+  now?: () => number;
+}
+
+export const runStateSchema: z.ZodType<RunState>;
+
+export class RunManager {
+  constructor(
+    bus: EventBus,
+    optionsOrGenerateMap?: MapGenerator | RunManagerOptions,
+    extraOptions?: RunManagerOptions,
+  );
+  readonly screen: RunScreen;
+  readonly active: boolean;
+  readonly state: Readonly<RunState>;
+  readonly summary: RunSummary | null;
+  readonly currentNode: MapNode | null;
+  newRun(seed: string, loadoutId?: string): RunState;
+  availableNodes(): readonly MapNode[];
+  canSelectNode(id: string): boolean;
+  selectNode(id: string): boolean;
+  completeRoom(roomState?: { hp?: number; energy?: number }): boolean;
+  returnToMap(): boolean;
+  completeReward(): boolean;
+  leaveShop(): boolean;
+  leaveRest(): boolean;
+  creditKill(threatCost: number): number;
+  addCredits(amount: number): boolean;
+  spendCredits(amount: number): boolean;
+  setHp(hp: number, maxHp?: number): boolean;
+  heal(amount: number, maxHp?: number): number;
+  setEnergy(energy: number, maxEnergy?: number): boolean;
+  addImplant(id: string): boolean;
+  upgradeImplant(fromId: string, toId: string): boolean;
+  step(dt: number): void;
+  finish(outcome: RunOutcome): RunSummary;
+  serialize(): RunState;
+  restore(state: RunState): RunState;
+  dispose(): void;
+}
+```
+
+### Zapis runu (F3-06) — `src/core/save.ts`
+
+### Implanty (F3-09) — `src/progression/implants.ts`
+
+```ts
+export const IMPLANT_SOURCE_PREFIX = 'implant:';
+export function implantSource(id: string): string;
+export function nextRarity(rarity: Rarity): Rarity | null;
+export function loadImplantDefinitions(data: readonly unknown[]): ReadonlyMap<string, ImplantDefinition>;
+export const implantDefinitions: ReadonlyMap<string, ImplantDefinition>;
+
+export class ImplantSystem {
+  constructor(
+    statsOrOptions: Stats | readonly Stats[] | ImplantSystemOptions,
+    optionsOrHealth?: Omit<ImplantSystemOptions, 'stats'> | ImplantHealthTarget,
+    bus?: EventBus,
+    definitions?: ReadonlyMap<string, ImplantDefinition> | readonly ImplantDefinition[],
+  );
+  has(id: string): boolean;
+  get(id: string): ImplantDefinition | undefined;
+  ids(): string[];
+  list(): ImplantDefinition[];
+  tags(): string[];
+  triggers(): { implantId: string; trigger: ImplantTrigger }[];
+  add(id: string, source?: 'reward' | 'shop' | 'upgrade'): boolean;
+  remove(id: string): boolean;
+  set(ids: readonly string[], options?: ImplantSetOptions): string[];
+  canUpgrade(id: string): boolean;
+  upgradeTarget(id: string): ImplantDefinition | null;
+  upgrade(id: string): boolean;
+  clear(): void;
+  reset(): void;
+}
+```
+
+
+
+`SAVE_VERSION = 2`. `RunSave` rozszerzone o `run: RunState` (walidowane przez `runStateSchema` z `src/world/run.ts`).
+Migracja 1→2 jest neutralna dla `MetaSave`, natomiast szkielet `RunSave` v1 (bez pola `run`) traktuje jako brak aktywnego runu (`loadRun()` zwraca `null`). Zapisy z `saveVersion > SAVE_VERSION` pozostają nietknięte (`isFuture`), a uszkodzone zapisy zwracają `null` z ostrzeżeniem.
+
 ### Render dłoni FPP
 
 `HandRig(side: 'R' | 'L')` (`src/render/handRig.ts`) udostępnia `root: Group`,
@@ -1065,3 +1199,35 @@ stan renderu i zdarzenie `power_used` właściciela. Bliźniacze blokują gest m
 `FppMotion.place(cameraMatrix, frameDt, horizontalSpeed, heldView?)` zwraca
 macierz kamery z opadem zamiany i kołysaniem; nie zmienia kamery ani symulacji.
 Sceny wywołują go raz na render, przekazując tę samą macierz przedmiotom i dłoniom.
+
+### Host runu (F3-07)
+
+`src/scenes/run.ts`: `RunScene` implementuje `Scene`, rejestr `?scene=run`.
+Opcje konstruktora: `params?: URLSearchParams`, `screens?: RunScreens`,
+`save?: RunSavePort`, `planner?: RoomPlanner`, `sector?: SectorDefinition`,
+`rooms?: ReadonlyMap<string, RoomDefinition>`, `createRoom?: RunRoomFactory`,
+`implantDefinitions?: ReadonlyMap<string, ImplantDefinition>`.
+`RunRoom` to `Scene` z `clear()` i `exportState(): Pick<RunState, 'hp' | 'energy'>`.
+Fabryka dostaje definicję pokoju, kopię RunState i WavesDefinition.
+`RunScreens` (`src/ui/runScreens.ts`) udostępnia `show(view, actions)`, `hide()`,
+`dispose()`; view zawiera ekran, kopię stanu, dostępne węzły, podsumowanie i stan ładowania.
+Akcje: `selectNode(id)`, `next()`, `menu()`. `RunSavePort` udostępnia asynchroniczne
+`loadRun(): Promise<RunState | null>`, `saveRun(state): Promise<void>`, `clearRun(): Promise<void>`.
+Domyślny port jest no-op do podpięcia zapisu F3-06. Operacje zapisu są kolejkowane.
+`RunScene.whenReady()` czeka na ładowanie pokoju i kolejkę zapisu (przydatne w testach).
+Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,
+`loading`, `runError`, `saveError`; pozostałe zapytania są delegowane do pokoju.
+Przejścia po `room_cleared` / `run_ended` następują po zakończeniu stosu zdarzenia,
+bez zwalniania świata podczas kroku symulacji.
+
+## Wspólny widok FPP
+
+`FppViewModel` (`src/render/fppViewModel.ts`) posiada ostrze, broń, wolną dłoń
+i ruch rąk. Konstruktor przyjmuje bus, właściciela i opcje definicji ostrza,
+modeli broni oraz tuningu. `load(loadModels)`, `root`,
+`setBladeDefinition(def)` i `dispose()` obsługują cykl życia.
+`place(cameraMatrix, frameDt, { blade?, held, horizontalSpeed, visible? })`
+jest wywoływane raz na klatkę; `held` przyjmuje `HeldItemView` albo stałe
+`blade`/`gun` dla scen testowych. `blade` to `BladeView` wymagany przy ostrzu.
+Getter `beamOrigin` zwraca pozycję świata root broni, jak dotychczas w Arenie.
+Moduł zachowuje kolejność: ruch, ostrze, widoczność, broń, wolna dłoń.

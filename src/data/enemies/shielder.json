@@ -1,5 +1,6 @@
 {
   "id": "shielder",
+  "threatCost": 2.5,
   "kind": "shielder",
   "model": "enemy_shielder",
   "grabbable": true,

@@ -3,6 +3,51 @@ import { z } from 'zod';
 const positive = z.number().finite().positive();
 const nonnegative = z.number().finite().nonnegative();
 const size = z.object({ x: positive, y: positive, z: positive });
+const patternFields = {
+  telegraphS: positive,
+  recoveryS: nonnegative,
+  cooldownS: nonnegative,
+  damage: nonnegative,
+};
+export const bossPatternSchema = z.discriminatedUnion('kind', [
+  z.object({ ...patternFields, kind: z.literal('slam'), radiusM: positive }),
+  z.object({
+    ...patternFields,
+    kind: z.literal('fan'),
+    projectileCount: z.number().int().positive(),
+    spreadDeg: nonnegative.max(180),
+    projectileSpeed: positive,
+    projectileLifetimeS: positive,
+  }),
+]);
+export type BossPattern = z.infer<typeof bossPatternSchema>;
+export const bossSchema = z
+  .object({
+    name: z.string().min(1),
+    modelScale: positive,
+    muzzle: z.object({ x: z.number().finite(), y: positive, z: positive }),
+    phases: z
+      .array(
+        z.object({
+          hpThreshold: positive.max(1),
+          patterns: z.array(bossPatternSchema).min(1),
+        }),
+      )
+      .min(1),
+  })
+  .superRefine((boss, ctx) => {
+    boss.phases.forEach((phase, index) => {
+      if (
+        (index === 0 && phase.hpThreshold !== 1) ||
+        (index > 0 && phase.hpThreshold >= boss.phases[index - 1]!.hpThreshold)
+      )
+        ctx.addIssue({
+          code: 'custom',
+          path: ['phases', index, 'hpThreshold'],
+          message: 'Progi HP muszą maleć, zaczynając od 1.',
+        });
+    });
+  });
 export const gunnerFields = z.object({
   preferredRange: positive,
   rangeTolerance: positive,
@@ -79,6 +124,7 @@ export const enemySchema = z
       .optional(),
     parry: z.object({ cooldownS: positive }).optional(),
     drone: droneFields.optional(),
+    boss: bossSchema.optional(),
     body: z
       .object({
         height: positive,
@@ -120,6 +166,12 @@ export const enemySchema = z
       .optional(),
   })
   .superRefine((definition, ctx) => {
+    if (definition.kind === 'boss' && (!definition.boss || !definition.body))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['boss'],
+        message: 'Boss wymaga danych boss i body.',
+      });
     if (
       definition.flankDistanceM !== undefined &&
       definition.flankDistanceM <= definition.attackRange

@@ -1,3 +1,4 @@
+import { FppViewModel } from '../render/fppViewModel';
 import {
   queryBladeArc,
   queryBladeSegment,
@@ -49,9 +50,6 @@ import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
-import { FppBlade } from '../render/fppBlade';
-import { FppMotion } from '../render/fppMotion';
-import { FppOffhand } from '../render/fppOffhand';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
 import { palette } from '../render/palette';
@@ -149,9 +147,7 @@ export class MeleeTest implements Scene {
   );
   private readonly dummies: Dummy[] = [];
   private readonly root = new Group();
-  private readonly bladeModel = new FppBlade();
-  private handMotion!: FppMotion;
-  private offhandView!: FppOffhand;
+  private fppView!: FppViewModel;
   private readonly arcDebug = new Mesh(
     new BoxGeometry(1, 1, 1),
     new MeshBasicMaterial({ color: palette.cyan, wireframe: true }),
@@ -314,15 +310,12 @@ export class MeleeTest implements Scene {
     });
 
     this.arcDebug.visible = false;
-    this.handMotion = new FppMotion(ctx.tuning);
-    this.offhandView = new FppOffhand(ctx.bus, playerId, ctx.tuning);
-    await this.offhandView.load(this.loadModels);
-    this.root.add(
-      this.bladeModel.root,
-      this.arcDebug,
-      this.lightningView.root,
-      this.offhandView.root,
-    );
+    this.fppView = new FppViewModel(ctx.bus, playerId, {
+      bladeDefinition: this.initialBlade(),
+      tuning: ctx.tuning,
+    });
+    await this.fppView.load(this.loadModels);
+    this.root.add(this.fppView.root, this.arcDebug, this.lightningView.root);
     this.world.step();
     this.registerCommands();
     this.off.push(
@@ -379,7 +372,6 @@ export class MeleeTest implements Scene {
   }
 
   private async loadAssets(): Promise<void> {
-    await this.bladeModel.load(this.loadModels, this.initialBlade());
     if (!this.loadModels) return;
     try {
       const trooper = await new GLTFLoader().loadAsync(
@@ -587,7 +579,7 @@ export class MeleeTest implements Scene {
           if (args.length !== 1 || !next)
             return `Dostępne ostrza: ${[...bladeDefinitions.keys()].join(', ')}`;
           this.blade.setDefinition(next);
-          void this.bladeModel.setDefinition(next, this.loadModels);
+          void this.fppView.setBladeDefinition(next);
           return `Ostrze: ${next.id}`;
         },
       ),
@@ -697,18 +689,11 @@ export class MeleeTest implements Scene {
     }
     camera.updateMatrixWorld();
     const velocity = this.player.getState().velocity;
-    const handMatrix = this.handMotion.place(
-      camera.matrixWorld,
-      frameDt,
-      Math.hypot(velocity.x, velocity.z),
-    );
-    this.bladeModel.place(handMatrix, this.blade.view());
-    this.offhandView.place(
-      handMatrix,
-      frameDt,
-      'blade',
-      this.blade.definition.offhand,
-    );
+    this.fppView.place(camera.matrixWorld, frameDt, {
+      blade: this.blade.view(),
+      held: 'blade',
+      horizontalSpeed: Math.hypot(velocity.x, velocity.z),
+    });
   }
 
   query(name: string): unknown {
@@ -726,8 +711,7 @@ export class MeleeTest implements Scene {
   dispose(): void {
     for (const off of this.off.splice(0)) off();
     this.blade.dispose();
-    this.bladeModel.dispose();
-    this.offhandView.dispose();
+    this.fppView.dispose();
     this.flyingBlade.dispose();
     this.statuses.dispose();
     this.lightningView.dispose();

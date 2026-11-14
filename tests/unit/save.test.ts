@@ -1,5 +1,7 @@
 import 'fake-indexeddb/auto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { EventBus } from '../../src/core/events';
+import type { RunState } from '../../src/core/runTypes';
 import {
   createIndexedDbSaveStore,
   createMemorySaveStore,
@@ -8,10 +10,56 @@ import {
   SAVE_VERSION,
   saveSettings,
 } from '../../src/core/save';
-import type { SaveStore } from '../../src/core/save';
+import type { MetaSave, RunSave, SaveStore } from '../../src/core/save';
+import { RunManager } from '../../src/world/run';
+import { generateSectorMap } from '../../src/world/sectorMap';
+import { kuroganeSector } from '../../src/world/sectors';
 
-const meta = { saveVersion: SAVE_VERSION, createdAt: 100, updatedAt: 200 };
-const run = { saveVersion: SAVE_VERSION, seed: 'test', startedAt: 300 };
+function createSampleRunState(seed = 'test-seed'): RunState {
+  const bus = new EventBus();
+  const manager = new RunManager(
+    bus,
+    (s) => generateSectorMap(kuroganeSector, s),
+    {
+      sector: kuroganeSector,
+      now: () => 300,
+    },
+  );
+  manager.newRun(seed, 'classic');
+  const firstNode = manager.availableNodes()[0]!;
+  manager.selectNode(firstNode.id);
+  manager.step(18.5);
+  manager.creditKill(2);
+  manager.addImplant('overclock');
+  bus.emit('damage_dealt', {
+    source: 1,
+    target: 2,
+    amount: 75,
+    tags: ['#melee'],
+    point: null,
+    dir: null,
+    knockback: 0,
+    killed: true,
+  });
+  bus.emit('enemy_killed', { id: 2, killer: 1, tags: ['#melee'] });
+  manager.completeRoom({ hp: 82, energy: 65 });
+  manager.returnToMap();
+  const snapshot = manager.serialize();
+  manager.dispose();
+  return snapshot;
+}
+
+const meta: MetaSave = {
+  saveVersion: SAVE_VERSION,
+  createdAt: 100,
+  updatedAt: 200,
+};
+const run: RunSave = {
+  saveVersion: SAVE_VERSION,
+  seed: 'test-seed',
+  startedAt: 300,
+  run: createSampleRunState('test-seed'),
+};
 let databaseId = 0;
 const databaseName = () => `neoryder-test-${++databaseId}`;
 
@@ -33,6 +81,29 @@ async function rawSave(
       tx.oncomplete = () => {
         db.close();
         resolve();
+      };
+      tx.onabort = () => {
+        db.close();
+        reject(tx.error);
+      };
+    };
+  });
+}
+
+async function rawRead(name: string, key: string): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, 1);
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore('saves');
+    };
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction('saves', 'readonly');
+      const getReq = tx.objectStore('saves').get(key);
+      tx.oncomplete = () => {
+        db.close();
+        resolve(getReq.result as unknown);
       };
       tx.onabort = () => {
         db.close();
@@ -83,38 +154,139 @@ describe.each([
     const input = { ...meta };
     await store.saveMeta(input);
     input.updatedAt = 999;
-    await store.saveRun(run);
+    const runInput = structuredClone(run);
+    await store.saveRun(runInput);
+    runInput.run.hp = 1;
+    runInput.run.visited.push('mutated');
     expect(await store.loadMeta()).toEqual(meta);
     expect(await store.loadRun()).toEqual(run);
     const loaded = await store.loadMeta();
     if (loaded) loaded.updatedAt = 888;
+    const loadedRun = await store.loadRun();
+    if (loadedRun) {
+      loadedRun.run.credits = 9999;
+      loadedRun.run.implants.push('mutated');
+    }
     expect(await store.loadMeta()).toEqual(meta);
+    expect(await store.loadRun()).toEqual(run);
     await store.clearRun();
     expect(await store.loadRun()).toBeNull();
     expect(await store.loadMeta()).toEqual(meta);
   });
+
+  it('wykonuje pełny round-trip RunState przez RunManager.serialize i restore', async () => {
+    const store = create();
+    const state = createSampleRunState('roundtrip-seed');
+    const savePayload: RunSave = {
+      saveVersion: SAVE_VERSION,
+      seed: state.seed,
+      startedAt: state.startedAtMs,
+      run: state,
+    };
+
+    await store.saveRun(savePayload);
+    const loaded = await store.loadRun();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.saveVersion).toBe(2);
+    expect(loaded?.run).toEqual(state);
+
+    const bus = new EventBus();
+    const restoredManager = new RunManager(bus, (s) =>
+      generateSectorMap(kuroganeSector, s),
+    );
+    const restoredState = restoredManager.restore(loaded!.run);
+    expect(restoredState).toEqual(state);
+    expect(restoredManager.serialize()).toEqual(state);
+    expect(restoredManager.screen).toBe('map');
+    restoredManager.dispose();
+  });
+
   it('odrzuca zapis niezgodny z bieżącym schematem', async () => {
     const store = create();
     // Funkcje fabryki zwracają Promise, walidacja może odrzucić także synchronicznie.
     await expect(async () =>
       store.saveMeta({ ...meta, saveVersion: SAVE_VERSION + 1 }),
     ).rejects.toThrow();
+    await expect(async () =>
+      store.saveRun({
+        ...run,
+        run: { ...run.run, implants: ['dup', 'dup'] },
+      }),
+    ).rejects.toThrow();
+    await expect(async () =>
+      store.saveRun({
+        ...run,
+        run: { ...run.run, currentNodeId: 'L99N99' },
+      }),
+    ).rejects.toThrow();
   });
 });
 
-describe('IndexedDB', () => {
-  it('odczytuje dane przez inną instancję i migruje wersję 0', async () => {
-    const name = databaseName();
-    await rawSave(name, 'meta', { ...meta, saveVersion: 0 });
-    expect(await createIndexedDbSaveStore(name).loadMeta()).toEqual(meta);
-    await createIndexedDbSaveStore(name).saveRun(run);
-    expect(await createIndexedDbSaveStore(name).loadRun()).toEqual(run);
+describe('IndexedDB i migracje v1 -> v2', () => {
+  it('odczytuje dane przez inną instancję i migruje meta z wersji 0 oraz 1 bez zmian', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name0 = databaseName();
+    await rawSave(name0, 'meta', {
+      saveVersion: 0,
+      createdAt: 100,
+      updatedAt: 200,
+    });
+    expect(await createIndexedDbSaveStore(name0).loadMeta()).toEqual(meta);
+
+    const name1 = databaseName();
+    await rawSave(name1, 'meta', {
+      saveVersion: 1,
+      createdAt: 100,
+      updatedAt: 200,
+    });
+    expect(await createIndexedDbSaveStore(name1).loadMeta()).toEqual(meta);
+
+    await createIndexedDbSaveStore(name1).saveRun(run);
+    expect(await createIndexedDbSaveStore(name1).loadRun()).toEqual(run);
+    expect(warning).not.toHaveBeenCalled();
   });
-  it('odrzuca nowszy zapis z ostrzeżeniem, bez nadpisania i kasowania', async () => {
+
+  it('traktuje zapis runu v1 (oraz v0) bez stanu RunState jako brak runu (null) i pozwala zapisać nowy run v2', async () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const name = databaseName();
-    await rawSave(name, 'run', { ...run, saveVersion: 99 });
-    await rawSave(name, 'meta', { ...meta, saveVersion: 99 });
+    await rawSave(name, 'meta', {
+      saveVersion: 1,
+      createdAt: 100,
+      updatedAt: 200,
+    });
+    await rawSave(name, 'run', {
+      saveVersion: 1,
+      seed: 'legacy-seed',
+      startedAt: 300,
+    });
+
+    const store = createIndexedDbSaveStore(name);
+    expect(await store.loadRun()).toBeNull();
+    expect(await store.loadMeta()).toEqual(meta);
+    expect(warning).not.toHaveBeenCalled();
+
+    // Po migracji v1 -> null można normalnie zapisać lub wyczyścić run v2
+    await store.saveRun(run);
+    expect(await store.loadRun()).toEqual(run);
+
+    // Szkielet v0 runu również migruje do braku runu
+    const name0 = databaseName();
+    await rawSave(name0, 'run', {
+      saveVersion: 0,
+      seed: 'v0-seed',
+      startedAt: 150,
+    });
+    expect(await createIndexedDbSaveStore(name0).loadRun()).toBeNull();
+    expect(warning).not.toHaveBeenCalled();
+  });
+
+  it('odrzuca nowszy zapis z ostrzeżeniem, pozostawiając dane nietknięte bez nadpisania i kasowania', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = databaseName();
+    const futureRun = { ...run, saveVersion: 99 };
+    const futureMeta = { ...meta, saveVersion: 99 };
+    await rawSave(name, 'run', futureRun);
+    await rawSave(name, 'meta', futureMeta);
     const store = createIndexedDbSaveStore(name);
     expect(await store.loadRun()).toBeNull();
     expect(await store.loadMeta()).toBeNull();
@@ -122,15 +294,55 @@ describe('IndexedDB', () => {
     await expect(store.saveMeta(meta)).rejects.toThrow('nowszej');
     await expect(store.clearRun()).rejects.toThrow('nowszej');
     expect(warning).toHaveBeenCalled();
-    // Brak zmiany danych pozwala ponownie stwierdzić konflikt wersji.
+    // Brak zmiany danych pozwala ponownie stwierdzić konflikt wersji; surowy zapis w bazie jest nietknięty.
     expect(await store.loadRun()).toBeNull();
     await expect(store.saveRun(run)).rejects.toThrow('nowszej');
+    expect(await rawRead(name, 'run')).toEqual(futureRun);
+    expect(await rawRead(name, 'meta')).toEqual(futureMeta);
   });
-  it('niepoprawny zapis zwraca null i ostrzeżenie', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+  it('uszkodzony zapis meta lub run zwraca null i ostrzeżenie', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const name = databaseName();
+
+    // Uszkodzony meta v1
     await rawSave(name, 'meta', { saveVersion: 1, createdAt: 'invalid' });
     expect(await createIndexedDbSaveStore(name).loadMeta()).toBeNull();
+    expect(warning).toHaveBeenCalledTimes(1);
+
+    // Uszkodzony run v2 bez pola run
+    await rawSave(name, 'run', {
+      saveVersion: 2,
+      seed: 'test',
+      startedAt: 300,
+    });
+    expect(await createIndexedDbSaveStore(name).loadRun()).toBeNull();
+    expect(warning).toHaveBeenCalledTimes(2);
+
+    // Uszkodzony run v2 z niepoprawnym RunState (nieznany węzeł currentNodeId)
+    await rawSave(name, 'run', {
+      ...run,
+      run: { ...run.run, currentNodeId: 'INVALID_NODE' },
+    });
+    expect(await createIndexedDbSaveStore(name).loadRun()).toBeNull();
+    expect(warning).toHaveBeenCalledTimes(3);
+
+    // Uszkodzony run v2 z powtórzonym implantem
+    await rawSave(name, 'run', {
+      ...run,
+      run: { ...run.run, implants: ['impA', 'impA'] },
+    });
+    expect(await createIndexedDbSaveStore(name).loadRun()).toBeNull();
+    expect(warning).toHaveBeenCalledTimes(4);
+
+    // Uszkodzony run v1 (błędne typy pól szkieletu)
+    await rawSave(name, 'run', {
+      saveVersion: 1,
+      seed: 12345,
+      startedAt: 'invalid',
+    });
+    expect(await createIndexedDbSaveStore(name).loadRun()).toBeNull();
+    expect(warning).toHaveBeenCalledTimes(5);
   });
 });
 

@@ -1,0 +1,31 @@
+{
+  "titles": {
+    "map": "Mapa sektora",
+    "room": "Pokój",
+    "reward": "Nagroda",
+    "shop": "Sklep",
+    "rest": "Odpoczynek",
+    "summary": "Podsumowanie runu"
+  },
+  "types": {
+    "combat": "Walka",
+    "elite": "Elita",
+    "shop": "Sklep",
+    "rest": "Odpoczynek",
+    "puzzle": "Zagadka",
+    "boss": "Boss"
+  },
+  "noRewards": "brak nagród",
+  "placeholder": "Ekran tymczasowy — przejdź dalej.",
+  "next": "Dalej",
+  "menu": "Menu",
+  "loading": "Ładowanie pokoju…",
+  "victory": "Zwycięstwo",
+  "death": "Porażka",
+  "keys": "Wybór: mysz, 1 / 2 / 3, Enter. Tab wybiera także czwarty węzeł.",
+  "hp": "Zdrowie",
+  "credits": "Kredyty",
+  "layer": "Warstwa",
+  "kills": "Zabójstwa",
+  "time": "Czas"
+}

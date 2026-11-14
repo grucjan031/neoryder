@@ -1,0 +1,13 @@
+{
+  "id": "subdermalWeaveRare",
+  "name": "Splot podskórny Mk II",
+  "description": "Gęsty splot balistyczny podnosi wytrzymałość organizmu i tłumi część obrażeń.",
+  "rarity": "rare",
+  "tags": ["#melee"],
+  "modifiers": [
+    { "stat": "maxHealth", "type": "flat", "value": 35 },
+    { "stat": "damage", "type": "percent", "value": 0.1 },
+    { "stat": "damageTaken", "type": "mult", "value": 0.92 }
+  ],
+  "upgradesTo": "subdermalWeaveEpic"
+}

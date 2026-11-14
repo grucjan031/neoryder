@@ -1,0 +1,26 @@
+{
+  "id": "stormSynapseApex",
+  "name": "Rdzeń burzy plazmowej",
+  "description": "Eksperymentalny generator wyładowań wyzwala silne łuki elektryczne przy trafieniach mocą lub ostrzem.",
+  "rarity": "legendary",
+  "tags": ["#power", "#elektrycznosc"],
+  "modifiers": [
+    { "stat": "energyRegen", "type": "flat", "value": 12 },
+    { "stat": "maxEnergy", "type": "flat", "value": 40 },
+    { "stat": "moveSpeed", "type": "percent", "value": 0.18 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "damage_dealt", "tagsAny": ["#power", "#melee"] },
+      "effects": [
+        {
+          "kind": "chain_on_hit",
+          "jumpRangeM": 6.5,
+          "damageMult": 0.5,
+          "tags": ["#elektrycznosc"]
+        }
+      ],
+      "cooldownS": 1
+    }
+  ]
+}

@@ -27,6 +27,10 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 ## Wrogowie i bossowie
 
+- Symulacja TTK bossa z progami HP, nietykalnością przejść i wzorcami faz:
+  osobne zadanie po F3-16. Raport balansu F2 pomija `kind: 'boss'`, ponieważ
+  model paczek zwykłych wrogów nie odtwarza tych mechanik.
+
 | Pomysł                                            | Dlaczego odłożone                |
 | ------------------------------------------------- | -------------------------------- |
 | Snajper, Dron, Tarczownik, Egzekutor              | F2                               |
@@ -99,3 +103,9 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Ogłuszenie ciężkim ciosem jako status `stunned` (dziś stan wroga z `stunOnHeavyS`)       | F2-02 dodało status, ale migracja zmieniłaby feel F1; decyzja po playteście |
 | Bufor wciśnięcia spustu broni półautomatycznej (klik w trakcie odnowienia przepada)      | Feel pistoletu i snajperki — ocenić w playteście F2                         |
+
+## Wynikłe z zadań F3
+
+| Pomysł | Dlaczego odłożone |
+| --- | --- |
+| Wspólny skład walki `Arena` i `RoomScene` | F3-04 powiela skład, by zachować Arenę i jej asercje bez zmian; wydzielenie rdzenia wymaga pełnej regresji jednostkowej i e2e Areny |

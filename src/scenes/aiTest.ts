@@ -24,6 +24,7 @@ import { PowerSlots } from '../combat/powers/slots';
 import { BarrierRenderer } from '../render/barrierRenderer';
 import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
+import { Boss } from '../enemies/boss';
 import { createEnemyView } from '../enemies/views';
 import type { EnemyViewLike } from '../enemies/views';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
@@ -366,6 +367,17 @@ export class AiTest implements Scene {
         : 'Podaj skończone, nieujemne obrażenia.';
     });
     register('kill all', 'kill all', () => hit(Number.MAX_VALUE));
+    register('boss phase', 'boss phase <n> — faza bossa od 1', (args) => {
+      const phase = Number(args[0]);
+      let changed = false;
+      if (args.length === 1)
+        this.manager.forEach((enemy) => {
+          if (enemy instanceof Boss && enemy.setPhase(phase)) changed = true;
+        });
+      return changed
+        ? `Faza bossa: ${phase}`
+        : 'Podaj istniejącą fazę żywego bossa.';
+    });
     register(
       'status',
       `status <id> [s] — na wszystkich wrogów: ${[...statusDefinitions.keys()].join(', ')}`,
@@ -570,6 +582,18 @@ export class AiTest implements Scene {
         enemies.push({ id: enemy.id, state: enemy.current.state });
     });
     if (name === 'enemies') return enemies.length;
+    if (name === 'bosses') {
+      const bosses: { id: number; phase: number; hp: number }[] = [];
+      this.manager.forEach((enemy) => {
+        if (enemy instanceof Boss && !enemy.removed)
+          bosses.push({
+            id: enemy.id,
+            phase: enemy.phase,
+            hp: this.damage.health(enemy.id)?.current ?? 0,
+          });
+      });
+      return bosses;
+    }
     if (name === 'enemyStates') return enemies;
     if (name === 'playerHp') return this.health.current;
     if (name === 'director') return this.manager.director?.snapshot() ?? null;

@@ -1,8 +1,9 @@
+import { FppViewModel } from '../render/fppViewModel';
 import { Ray } from '@dimforge/rapier3d-compat';
 import { StatusSystem } from '../combat/status/statusSystem';
 import { BeamRenderer } from '../render/beamRenderer';
 import { ExplosionRenderer } from '../render/explosionRenderer';
-import { BoxGeometry, Color, Group, Mesh, Vector3 } from 'three';
+import { BoxGeometry, Color, Group, Mesh } from 'three';
 import type { Object3D, Scene as ThreeScene } from 'three';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
@@ -26,9 +27,6 @@ import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { getMaterial } from '../render/materials';
 import { createStyleLights } from '../render/lights';
-import { FppBlaster } from '../render/fppBlaster';
-import { FppMotion } from '../render/fppMotion';
-import { FppOffhand } from '../render/fppOffhand';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import type { Scene } from './index';
 
@@ -80,12 +78,9 @@ export class WeaponsTest implements Scene {
   private projectileRenderer!: ProjectileRenderer;
   private readonly hurtboxes = new Hurtboxes();
   private readonly root = new Group();
-  private weaponView!: FppBlaster;
-  private handMotion!: FppMotion;
-  private offhandView!: FppOffhand;
+  private fppView!: FppViewModel;
   private playerId!: EntityId;
   private shownWeapon = '';
-  private readonly beamOrigin = new Vector3();
   private readonly weapons = new Map<string, Weapon>();
   private readonly slots = [...data.slots];
   private slot = 0;
@@ -255,16 +250,12 @@ export class WeaponsTest implements Scene {
       this.hurtboxes.add(id, collider);
       this.dummies.push({ id, health, model, collider });
     }
-    this.weaponView = new FppBlaster(ctx.bus, playerId, {
+    this.fppView = new FppViewModel(ctx.bus, playerId, {
       modelOf: weaponModelOf,
       tuning: ctx.tuning,
     });
-    void this.weaponView.load(typeof document !== 'undefined');
-    this.root.add(this.weaponView.root);
-    this.handMotion = new FppMotion(ctx.tuning);
-    this.offhandView = new FppOffhand(ctx.bus, playerId, ctx.tuning);
-    void this.offhandView.load(typeof document !== 'undefined');
-    this.root.add(this.offhandView.root);
+    void this.fppView.load(typeof document !== 'undefined');
+    this.root.add(this.fppView.root);
     if (ctx.camera) {
       this.cameraParent = ctx.camera.parent;
       this.root.add(ctx.camera);
@@ -427,22 +418,12 @@ export class WeaponsTest implements Scene {
     this.projectileRenderer.render(alpha);
     if (camera) {
       camera.updateMatrixWorld();
-      const handMatrix = this.handMotion.place(
-        camera.matrixWorld,
-        frameDt,
-        Math.hypot(current.velocity.x, current.velocity.z),
-      );
-      this.weaponView.place(handMatrix, frameDt);
-      this.offhandView.place(
-        handMatrix,
-        frameDt,
-        'gun',
-        false,
-        this.weaponView.supportMatrix(),
-      );
+      this.fppView.place(camera.matrixWorld, frameDt, {
+        held: 'gun',
+        horizontalSpeed: Math.hypot(current.velocity.x, current.velocity.z),
+      });
     }
-    this.weaponView.root.getWorldPosition(this.beamOrigin);
-    this.beamRenderer.render(this.weapon.beam, this.beamOrigin);
+    this.beamRenderer.render(this.weapon.beam, this.fppView.beamOrigin);
     this.explosionRenderer.render(frameDt);
     if (this.bar) {
       this.bar.style.width = `${this.weapon.heat.fraction * 100}%`;
@@ -496,8 +477,7 @@ export class WeaponsTest implements Scene {
       this.entities.destroy(id);
     }
     this.world.free();
-    this.weaponView.dispose();
-    this.offhandView.dispose();
+    this.fppView.dispose();
     if (this.ctx.camera) {
       this.ctx.camera.removeFromParent();
       this.cameraParent?.add(this.ctx.camera);
