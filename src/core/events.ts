@@ -1,5 +1,6 @@
 import type { Vec3 } from './math';
 import type { HeldKind } from '../combat/heldItem';
+import type { NodeType, Rarity, RunSummary } from './runTypes';
 import type { StatusApplication } from '../combat/damage/types';
 
 export type EntityId = number;
@@ -100,6 +101,27 @@ export interface GameEvents {
     tags: readonly string[];
   };
   synergy_triggered: { synergy: string; user: EntityId };
+  // F3 — pętla runu (#01)
+  node_selected: { nodeId: string; type: NodeType };
+  room_entered: {
+    nodeId: string;
+    roomId: string;
+    type: NodeType;
+    layer: number;
+  };
+  room_cleared: { nodeId: string; type: NodeType; timeS: number };
+  reward_offered: { nodeId: string; options: readonly string[] };
+  implant_acquired: {
+    id: string;
+    rarity: Rarity;
+    source: 'reward' | 'shop' | 'upgrade';
+  };
+  currency_changed: { currency: 'credits'; amount: number; delta: number };
+  shop_purchase: { item: string; kind: 'implant' | 'heal'; price: number };
+  rest_used: { choice: 'heal' | 'upgrade'; implant: string | null };
+  boss_spawned: { id: EntityId; name: string; maxHealth: number };
+  boss_phase: { id: EntityId; phase: number; phases: number };
+  run_ended: { outcome: 'victory' | 'death'; summary: RunSummary };
 }
 
 export type EventType = keyof GameEvents;

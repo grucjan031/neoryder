@@ -102,6 +102,23 @@ describe('Health', () => {
     max = 60;
     expect(h.current).toBe(60);
   });
+
+  it('set obcina wartość do [0, max] i działa również po śmierci', () => {
+    const h = new Health(() => 80);
+    h.set(37);
+    expect(h.current).toBe(37);
+    expect(h.dead).toBe(false);
+    h.set(-10);
+    expect(h.current).toBe(0);
+    expect(h.dead).toBe(true);
+    h.set(55);
+    expect(h.current).toBe(55);
+    expect(h.dead).toBe(false);
+    h.set(200);
+    expect(h.current).toBe(80);
+    h.set(Number.NaN);
+    expect(h.current).toBe(80);
+  });
 });
 
 describe('DamageSystem', () => {

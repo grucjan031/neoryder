@@ -50,6 +50,8 @@ export const enemySchema = z
     ...gunnerFields.partial().shape,
     id: z.string().min(1),
     kind: z.string().min(1),
+    /** F3: koszt wroga w budżecie zagrożenia pokoju (dodatni). */
+    threatCost: positive.optional(),
     grabbable: z.boolean().optional(),
     /** Nazwa modelu GLB w public/assets/models (bez rozszerzenia); brak = domyślny dla archetypu. */
     model: z.string().min(1).optional(),

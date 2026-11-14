@@ -253,6 +253,8 @@ export const tuning = {
     /** Iskry trafienia gracza bliżej kamery niż tyle metrów nie są rysowane. */
     hitSparkCameraMinM: 0.6,
   },
+  /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
+  run: { transitionS: 0.6, fadeS: 0.35 },
   sandbox: { cubeSpawnHeight: 6 },
 };
 export type Tuning = typeof tuning;

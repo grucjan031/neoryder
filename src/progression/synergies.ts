@@ -22,7 +22,7 @@ export const SYNERGY_EVENTS = [
 ] as const;
 export type SynergyEvent = (typeof SYNERGY_EVENTS)[number];
 
-const effectSchema = z.discriminatedUnion('kind', [
+export const effectSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('add_energy'), amount: z.number().finite() }),
   z.object({
     kind: z.literal('cool_weapon'),
@@ -44,13 +44,14 @@ const effectSchema = z.discriminatedUnion('kind', [
 ]);
 export type SynergyEffect = z.infer<typeof effectSchema>;
 
-const whenSchema = z.object({
+export const whenSchema = z.object({
   event: z.enum(SYNERGY_EVENTS),
   /** Tagi zdarzenia (enemy_killed, damage_dealt): wystarczy jeden. */
   tagsAny: z.array(tag).min(1).optional(),
   /** Status celu zdarzenia (enemy_killed, damage_dealt). */
   targetStatus: tag.optional(),
 });
+export type SynergyWhen = z.infer<typeof whenSchema>;
 
 /** Definicja synergii z src/data/synergies/*.json. Liczby balansu tylko tutaj. */
 export const synergySchema = z
@@ -60,6 +61,8 @@ export const synergySchema = z
     name: tag,
     /** Wszystkie tagi muszą być w tagach ekwipunku. */
     requires: z.array(tag),
+    /** F3: opcjonalny próg liczby wystąpień tagów (np. { "#melee": 2 }). */
+    requiresCount: z.record(tag, z.number().int().min(1)).optional(),
     when: whenSchema,
     effects: z.array(effectSchema).min(1),
     cooldownS: positive.optional(),

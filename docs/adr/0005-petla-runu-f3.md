@@ -1,6 +1,6 @@
 # ADR 0005 — Pętla runu (F3)
 
-Status: **Propozycja (do akceptacji po bramce F2)**. Po akceptacji przez człowieka Architekt dopisuje kontrakty do `docs/api.md` („Kontrakty F3”) w zadaniu F3-01 (`docs/issues/F3/README.md`); do tego czasu `docs/api.md` i kod pozostają bez zmian.
+Status: **Przyjęta do realizacji (2026-11-14)** — człowiek polecił kontynuować rozwój gry po zamknięciu zadań F2; playtest bramki F2 pozostaje otwarty i może jeszcze zmienić balans. Kontrakty są w `docs/api.md` („Kontrakty F3”, zadanie F3-01 w `docs/issues/F3/README.md`).
 Data: 2026-11-14
 
 F3 zamienia arenę F1/F2 w pętlę roguelite: **jeden run = jeden sektor Kurogane Arms** (zgodnie z GDD: 15–25 min, jeden boss). Gracz wybiera ścieżkę po mapie, przechodzi pokoje, zbiera implanty, wydaje Kredyty i kończy na bossie albo ginie. Zasady nadrzędne z `AGENTS.md` bez zmian: symulacja oddzielona od renderu, dane zamiast kodu, `Stats` + `StatModifier`, `EventBus`, `Rng` z seeda, `SaveStore`. Poniższe decyzje ustalają, gdzie przebiega granica między danymi a kodem w pętli runu.
