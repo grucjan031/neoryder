@@ -50,6 +50,8 @@ import type { PlayerState } from '../player/playerController';
 import { FppBlade } from '../render/fppBlade';
 import { FppBlaster } from '../render/fppBlaster';
 import { BeamRenderer } from '../render/beamRenderer';
+import { BarrierRenderer } from '../render/barrierRenderer';
+import { BarrierPower } from '../combat/powers/barrier';
 import { ExplosionRenderer } from '../render/explosionRenderer';
 import { loadoutDefinitions } from '../progression/loadout';
 import type { Loadout } from '../progression/loadout';
@@ -123,6 +125,7 @@ export class Arena implements Scene {
   private weapons: Weapon[] = [];
   private weaponSlot = 0;
   private beamView!: BeamRenderer;
+  private barrierView!: BarrierRenderer;
   private explosionView!: ExplosionRenderer;
   private readonly beamOrigin = new Vector3();
   private readonly playerStats = new Stats({
@@ -222,6 +225,8 @@ export class Arena implements Scene {
     this.beamView = new BeamRenderer();
     this.explosionView = new ExplosionRenderer(ctx.bus);
     this.root.add(this.beamView.root, this.explosionView.root);
+    this.barrierView = new BarrierRenderer(ctx.tuning);
+    this.root.add(this.barrierView.root);
 
     this.manager = new EnemyManager(
       ctx,
@@ -479,7 +484,8 @@ export class Arena implements Scene {
                   id: e.id,
                   position: {
                     ...e.current.position,
-                    y: e.current.position.y + 1.1,
+                    // Środek ciała z danych wroga (Dron bez `body` to już środek kuli).
+                    y: e.current.position.y + (e.definition.body?.centerY ?? 0),
                   },
                 });
             });
@@ -695,6 +701,13 @@ export class Arena implements Scene {
       alpha,
     );
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
+    const barriers = [this.powers.get(0), this.powers.get(1)].filter(
+      (power): power is BarrierPower => power instanceof BarrierPower,
+    );
+    const barrier = barriers.find((power) => power.active) ?? barriers[0];
+    if (barrier && this.state === 'playing')
+      this.barrierView.render(barrier, pose);
+    else this.barrierView.root.visible = false;
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
       camera.fov = pose.fov;
@@ -713,6 +726,8 @@ export class Arena implements Scene {
 
   private onPlayerDied(): void {
     this.state = 'dead';
+    // Aktywne moce (Skupienie, Bariera) kończą się ze śmiercią, nie dopiero przy „Jeszcze raz”.
+    this.powers.reset();
     this.weapon.cool(0);
     this.deadS = 0;
     this.director.stop();
@@ -953,6 +968,7 @@ export class Arena implements Scene {
     this.bladeView.dispose();
     this.flyingBlade.dispose();
     this.blasterView.dispose();
+    this.barrierView.dispose();
     this.projectileView.dispose();
     this.projectiles.dispose();
     this.fpsCamera.dispose();

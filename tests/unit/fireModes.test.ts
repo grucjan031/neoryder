@@ -369,7 +369,7 @@ describe('piercing sweeps with real Rapier', () => {
     expect(deal.mock.calls[1]?.[1]).not.toHaveProperty('statuses');
   });
 
-  it('interception preserves the piercing budget and reflected shots keep their hit history and damage falloff', () => {
+  it('interception preserves the piercing budget and reflection clears hit history while keeping damage falloff', () => {
     const { target, projectiles, spec, owner } = setupProjectiles();
     const a = target(-2);
     const b = target(-4);
@@ -394,8 +394,8 @@ describe('piercing sweeps with real Rapier', () => {
     projectiles.reflect(id, owner, 'player', { x: 0, y: 0, z: -1 });
     off();
     projectiles.step(0.4);
-    expect(a.health.current).toBe(920);
-    expect(b.health.current).toBe(955);
+    expect(a.health.current).toBe(875);
+    expect(b.health.current).toBe(1000);
     expect(projectiles.activeCount).toBe(0);
   });
 

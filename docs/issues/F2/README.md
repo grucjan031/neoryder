@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–05, 07, 10, 12–16; 06 — rdzeń gotowy, brakuje mocy `kind: 'focus'`. Dalej: moc Skupienia, 08, 09, potem 17.
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–08, 10, 12–17. Skupienie i Bariera mają dane, moce, testy Vitest i scenę `barrier-test`. Dalej: 09, 11, potem 18.
 
 ## Decyzje wspólne
 
@@ -25,9 +25,9 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–05, 07, 10, 12–16; 06 
 | 03  | Tryby strzału i dane broni: pistolet, karabin, rozpraszacz, snajperka | Bronie            | 01         | L     | gotowe |
 | 04  | Ciągły laser i granat EMP                                            | Bronie            | 02, 03     | M     | gotowe |
 | 05  | Rejestr mocy, drugi slot, Fala uderzeniowa                           | Moce              | 01         | M     | gotowe |
-| 06  | Skupienie: osobna skala czasu gracza                                 | Architekt + Moce  | 05         | M     | w toku |
+| 06  | Skupienie: osobna skala czasu gracza                                 | Architekt + Moce  | 05         | M     | gotowe |
 | 07  | Błyskawica (łańcuch, przeciążenie)                                   | Moce              | 02, 05     | S     | gotowe |
-| 08  | Bariera                                                              | Moce              | 05         | S     | —      |
+| 08  | Bariera                                                              | Moce              | 05         | S     | gotowe |
 | 09  | Chwyt i rzut                                                         | Moce              | 05         | L     | —      |
 | 10  | Rzut ostrzem i dash-cięcie                                           | Walka wręcz       | 01         | M     | gotowe |
 | 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | —      |
@@ -70,6 +70,8 @@ Interfejs `Power`, baza kosztu i odnowienia (`power_denied`, kolejkowanie w hits
 
 ### 06 Skupienie
 
+**Stan:** gotowe — `FocusPower`, `focus.json`, testy cyklu życia oraz skali czasu; scena `?scene=barrier-test`, klawisz F. E2E wykonuje koordynator.
+
 `FeelSystem.playerTimeScale`, `GameContext.feel.playerDt(dt)` (ADR 0004 pkt 4), zdarzenie `focus`. Moc `kind: 'focus'`: świat zwalnia (np. 0,3), gracz porusza się normalnie przez `durationS`, energia drenowana na sekundę. Sceny krokują gracza, ostrze, broń i moce z `playerDt`.
 **Gotowe:** testy: gracz w Skupieniu przebywa w 1 s czasu rzeczywistego ten sam dystans co bez niego, wrogowie i pociski — 0,3 tego; hitstop zatrzymuje oba; `playerDt` ograniczone do `SIM_DT × 2`.
 
@@ -79,6 +81,8 @@ Interfejs `Power`, baza kosztu i odnowienia (`power_denied`, kolejkowanie w hits
 **Gotowe:** testy kolejności przeskoków, braku powtórzeń celu, zasięgu i spadku obrażeń.
 
 ### 08 Bariera
+
+**Stan:** gotowe — `BarrierPower`, `barrier.json`, cyjanowa osłona z błyskiem odbicia; scena `?scene=barrier-test`, klawisz E. Testy rzeczywistych pocisków obejmują powrót do strzelca, tył, koszt, wyczerpanie energii i odpinanie interceptora. E2E wykonuje koordynator.
 
 `kind: 'barrier'`: przez `durationS` `ProjectileSystem.addInterceptor` odbija pociski wrogów trafiające z przodu (kąt `arcDeg`) z powrotem do strzelca; koszt energii na odbity pocisk. Wizualizacja tarczy.
 **Gotowe:** testy odbicia z przodu, przepuszczenia z tyłu i końca działania.

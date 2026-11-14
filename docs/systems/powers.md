@@ -1,12 +1,12 @@
-# Rezonans — moce i energia (F1 #11, F2-05, F2-07)
+# Rezonans — moce i energia (F1 #11, F2-05–08)
 
 Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, sceny: `?scene=push-test` (dwa sloty, ściana, `StatusSystem`, łuki błyskawicy) i `?scene=melee-test` (Pchnięcie z F1).
 
 ## Rejestr i wspólna baza
 
-- `powerSchema.ts`: `powerSchema` to unia zod po `kind` (`cone`, `chain`). `registry.ts` eksportuje schemat i typ `PowerDefinition`; ładuje wszystkie `src/data/powers/*.json` przez `import.meta.glob` i waliduje je przy starcie. Nieznany `kind`, błędne parametry i powtórzone `id` kończą się błędem.
+- `powerSchema.ts`: `powerSchema` to unia zod po `kind` (`cone`, `chain`, `focus`, `barrier`). `registry.ts` eksportuje schemat i typ `PowerDefinition`; ładuje wszystkie `src/data/powers/*.json` przez `import.meta.glob` i waliduje je przy starcie. Nieznany `kind`, błędne parametry i powtórzone `id` kończą się błędem.
 - `registerPowerKind(kind, factory)` rejestruje mechanizm raz; ponowna rejestracja tego samego rodzaju kończy się błędem. `createPower(id, deps)` tworzy osobny stan mocy przez fabrykę, a nieznane `id` zgłasza błędem. Nowy wariant istniejącego rodzaju wymaga wyłącznie nowego JSON-a. Nowy rodzaj wymaga gałęzi unii i jednej fabryki.
-- `Power` udostępnia `def`, `cooldownRemaining`, `active`, `step(dt, input)` i `reset()`. `PowerInput` niesie `pressed`, `held`, `released` konkretnej akcji. `PowerDeps` zawiera wspólną energię, obrażenia, celowanie, cele, promień ściany, bus i tuning; opcjonalne `projectiles` czeka na Barierę. `FocusControl` i pole `feel` doda F2-06.
+- `Power` udostępnia `def`, `cooldownRemaining`, `active`, `step(dt, input)` i `reset()`. `PowerInput` niesie `pressed`, `held`, `released` konkretnej akcji. `PowerDeps` zawiera wspólną energię, obrażenia, celowanie, cele, promień ściany, bus i tuning; opcjonalne `projectiles` jest wymagane przez Barierę. Skupienie komunikuje skalę czasu zdarzeniem `focus`; scena przekazuje mocą `ctx.feel.playerDt(dt)`.
 - `PowerBase` jako jedyna obsługuje koszt przez `PlayerEnergy.spend`, odnowienie `cooldownS`, odmowę `power_denied` (`cooldown` ma pierwszeństwo przed `no_energy`), hak warunkowy `protected canActivate(): boolean` (domyślnie `true`, sprawdzany przed kosztem) i zdarzenie `power_used` przy udanym użyciu. Nieudana próba nie zużywa energii. Samo trzymanie nie ponawia użycia.
 - Wciśnięcie przy `dt = 0` trafia do kolejki, wykonywanej raz w pierwszym kroku z `dt > 0`. Hitstop zatrzymuje odnowienie i efekt (także lot do ściany). `reset()` usuwa kolejkę, odnowienie i stan efektu; nie uzupełnia energii.
 - `ConePower` zawiera wyłącznie efekt stożka i uderzeń w ścianę. Pchnięcie i Fala korzystają z tej samej klasy, `active = false` (efekt natychmiastowy). `ResonancePush` zachowuje konstruktor, `step(dt, InputSnapshot)`, `use(): number | null` i `reset()` z F1. Jego `loadPush` nadal ogranicza kąt do 180° dla zgodności; ogólny rejestr przyjmuje do 360°.
@@ -84,4 +84,100 @@ Komenda debug `power <slot 1|2> <id>` wstawia dowolną moc z rejestru do wskazan
 
 ## Testy
 
+F2-06 i F2-08: `focusPower.test.ts` sprawdza start, koszt, odpływ według
+`playerDt`, wygaśnięcie, wcześniejsze wyłączenie, brak energii, odnowienie od
+końca, reset i bufor hitstopu. Istniejące `feel.test.ts` oraz `arenaFocus.test.ts`
+pokrywają dystans gracza, powrót czasu i limit `SIM_DT × 2` bez powielania ich
+asercji. `focusWorld.test.ts` uzupełnia je o rzeczywisty ruch wroga i pocisku
+Rapier (0,3 dystansu w sekundę) oraz hitstop w `GameLoop`; pomiar poziomego
+ruchu izoluje skalę czasu przez wyłączenie docisku kapsuły do podłoża.
+`barrierPower.test.ts` obejmuje rzeczywiste odbicie do strzelca, właściciela
+i drużynę gracza, tył, energię, odpinanie interceptora, ignorowanie kolejnego
+wciśnięcia, wybuch obszarowy i odczyt stanu przez renderer.
+`barrierTest.test.ts` sprawdza scenę, klawisze F/E, reset i sprzątanie.
+
 `tests/unit/powers.test.ts` i `reviewFixes.test.ts` zachowują asercje F1 (energia, odmowy, stożek, ściana, hitstop i reset). `powerRegistry.test.ts` sprawdza ładowanie i błędy rejestru, wspólną bazę na osobnej mocy testowej, sloty i ich wspólną energię, Falę 360° oraz usuwanie oczekujących uderzeń. `chainPower.test.ts` sprawdza wybór pierwszego celu w stożku, kolejność przeskoków bez powtórzeń, przerwanie powyżej `jumpRangeM`, spadek obrażeń, nakładanie `overload` przez `StatusSystem`, blokadę przez ścianę, brak kosztu przy braku celu, wygasanie `arcs` oraz `LightningRenderer`. `pushTest.test.ts` sprawdza dane sceny, F ze ścianą, E w hitstopie i za plecami, reset, komendę `power`, sprzątanie i zgodność scen F1. `tests/e2e/pushTest.spec.ts` pozostaje bez zmian (prawdziwe F: odrzut ponad 1 m, −40 HP, zużycie energii); uruchamia go menedżer.
+
+## Skupienie (`focus.json`, `kind: 'focus'`, F2-06)
+
+Parametry startowe: `cost = 20`, `durationS = 3`, `drainPerS = 15`,
+`worldScale = 0.3`, `cooldownS = 4`. Wszystkie są danymi walidowanymi zod.
+Wciśnięcie emituje `focus { worldScale, durationS }` i pobiera koszt startowy.
+Kolejne kroki pobierają `drainPerS × dtPlayer`, najwyżej za pozostały czas
+działania. Gdy energii nie wystarcza na krok, zużywana jest reszta puli i moc
+gaśnie. Opłacony krok pozostawia moc aktywną nawet przy dokładnie zerowej
+energii; koniec następuje, gdy następnego kroku nie da się opłacić. Naturalny
+koniec, ponowne wciśnięcie, brak energii i reset aktywnej mocy wysyłają
+`focus { worldScale, durationS: 0 }`. Samo trzymanie F nie kończy mocy.
+Odnowienie zaczyna się dopiero po zakończeniu, niezależnie od jego przyczyny;
+reset zeruje je. `startCooldown()` emituje `power_cooldown { power, user,
+cooldownS }`, od którego HUD zaczyna odnowienie. Hitstop wstrzymuje odpływ,
+zegar mocy oraz odliczanie aktywnego Skupienia i spowolnienia w `FeelSystem`.
+Ponieważ pętla nie udostępnia stanu hitstopu, `FeelSystem` śledzi maksymalny
+pozostały czas z tych samych zdarzeń `hitstop`. Slowmo F1 bez aktywnego
+Skupienia nadal odlicza czas rzeczywisty. Test z sekundą hitstopu wywołuje
+`feel.update` przez cały cykl i potwierdza pełne `durationS` czasu gracza oraz
+powrót świata do 1 po `slowmoRecoverS`.
+
+Obie moce interpretują wciśnięcie według stanu w chwili jego odebrania, również
+w hitstopie. Wciśnięcie podczas Skupienia wyłącza je, a podczas Bariery jest
+ignorowane, także jeśli moc naturalnie wygasa w tym samym kroku; bez nowej
+aktywacji lub fałszywego `power_denied`. Kolejność `PowerBase.step` pozostałych
+mocy pozostaje bez zmian.
+
+`FeelSystem` pozostaje właścicielem skali czasu i płynnego powrotu świata;
+sceny przekazują graczowi i mocom `playerDt`, a wrogom i pociskom czas świata.
+
+## Bariera (`barrier.json`, `kind: 'barrier'`, F2-08)
+
+Parametry startowe: `cost = 20`, `durationS = 2`, `arcDeg = 160`,
+`costPerReflect = 5`, `cooldownS = 4` (od aktywacji). Ponowne wciśnięcie
+aktywnej Bariery nic nie robi i nie pobiera kosztu.
+
+Aktywacja dołącza interceptor. Trafienie musi pochodzić od drużyny `enemy`,
+mieć cel równy graczowi oraz mieścić się w przednim łuku 3D: kąt między
+kierunkiem patrzenia i `-hit.dir` ≤ `arcDeg / 2`. Po pobraniu kosztu odbicia
+`reflect` kieruje pocisk do bieżącej pozycji strzelca z `targets()`; scena
+podaje środek tułowia z danych modelu. Jeśli strzelca już nie ma, pocisk wraca
+przeciwnie do kierunku lotu. Nowy właściciel to gracz, drużyna `player`,
+prędkość i obrażenia bez mnożników. Odbicie emituje `projectile_reflected`.
+Pocisk z tyłu trafia normalnie. Brak energii na odbicie wyłącza Barierę,
+odpina interceptor i przepuszcza to samo trafienie. Koniec czasu i reset też
+odpinają interceptor. Promienie ciągłe i wybuchy obszarowe omijają ten kanał.
+
+`BarrierRenderer` w `src/render/` czyta wyłącznie `active` i
+`reflectionFlashS`, pokazując cyjanowy płat przed kamerą. Geometria i
+przezroczystość są strojone przez `tuning.vfx.barrier*`, czas błysku przez
+`tuning.powers.barrierFlashS`; wszystkie wartości są w lil-gui. Render nie
+odlicza czasu ani nie zmienia mocy.
+
+`AiTest.render` wybiera aktywną Barierę z dowolnego slotu (F lub E).
+`push-test` przekazuje `projectiles` do fabryk; komenda `power <1|2> barrier`
+działa, a błąd tworzenia nieobsługiwanej mocy zwraca komunikat i zachowuje slot.
+Testy Bariery obejmują również kąt boczny 90°, dokładną granicę `arcDeg/2`,
+wektor odbicia bez strzelca oraz odnowienie czasu życia i historii trafień
+przez `ProjectileSystem.reflect`. Reset `barrier-test` kończy Skupienie,
+a kolejne `feel.update` przywracają skalę świata do 1.
+
+## Scena `barrier-test` — kontrola obu mocy w 30 sekund
+
+`src/data/scenes/barrierTest.json` ustawia trzy Strzelce przed graczem,
+sloty `["focus", "barrier"]`, energię 100 i regenerację 20/s. Scena bazuje na
+`AiTest`, pokazuje energię, aktywność i odnowienie F/E. Komenda `energy [n]`
+uzupełnia energię; dostępne są również `god` i `spawn` sceny AI. Query:
+`energy`, `powerSlots`, `powerActive`, `playerPos`.
+
+1. Otwórz `?scene=barrier-test&debug=1`, kliknij canvas i naciśnij F. Idź w bok:
+   gracz reaguje normalnie, przeciwnicy i ich pociski zwalniają. Ponowne F
+   kończy efekt; zwróć uwagę na płynny powrót świata i odpływ energii.
+2. Ustaw `energy 100`, patrz na Strzelców i naciśnij E tuż przed dolotem salwy.
+   Cyjanowy płat błyska przy odbiciu, pociski wracają do strzelców i mogą ich
+   zranić. Kolejne E nie odnawia czasu osłony. Po dwóch sekundach osłona znika.
+3. Odwróć się plecami podczas działania: pociski trafiają normalnie. Ustaw
+   `energy 0` podczas aktywnej osłony: następny przedni pocisk ją wyłącza i
+   trafia gracza. W razie potrzeby użyj `god` do obserwacji i resetu sceny.
+
+Do oceny przez człowieka: czytelność przedniego łuku, widoczność błysku bez
+zasłaniania celów, możliwość uników podczas Skupienia i tempo wydawania
+wspólnej energii przy obu mocach. E2E uruchamia koordynator (ograniczenie
+Playwright EPERM w sandboxie workera).

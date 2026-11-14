@@ -55,6 +55,7 @@ interface Projectile {
   damage: number;
   tags: readonly string[];
   remainingS: number;
+  lifetimeS: number;
   order: number;
   statuses: readonly StatusApplication[] | undefined;
   hitsRemaining: number;
@@ -92,6 +93,7 @@ export class ProjectileSystem {
         damage: 0,
         tags: [],
         remainingS: 0,
+        lifetimeS: 0,
         order: 0,
         statuses: undefined,
         hitsRemaining: 1,
@@ -122,6 +124,7 @@ export class ProjectileSystem {
       damage: spec.damage,
       tags: [...spec.tags],
       remainingS: spec.lifetimeS ?? blasterDefinition.projectileLifetimeS,
+      lifetimeS: spec.lifetimeS ?? blasterDefinition.projectileLifetimeS,
       order: this.sequence++,
       statuses: spec.statuses?.map((status) => ({ ...status })),
       hitsRemaining: spec.pierce?.count ?? 1,
@@ -174,6 +177,8 @@ export class ProjectileSystem {
     p.damage *= opts.damageMult ?? 1;
     p.owner = newOwner;
     p.team = newTeam;
+    p.hitTargets.length = 0;
+    p.remainingS = p.lifetimeS;
     this.entities.setTeam(id, newTeam);
     this.bus.emit('projectile_reflected', { id, newOwner });
   }

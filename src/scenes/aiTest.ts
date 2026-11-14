@@ -16,6 +16,12 @@ import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
 import sceneData from '../data/scenes/aiTest.json';
 import statusSceneData from '../data/scenes/statusTest.json';
+import barrierSceneData from '../data/scenes/barrierTest.json';
+import { BarrierPower } from '../combat/powers/barrier';
+import { PlayerEnergy } from '../combat/powers/energy';
+import { createPower } from '../combat/powers/registry';
+import { PowerSlots } from '../combat/powers/slots';
+import { BarrierRenderer } from '../render/barrierRenderer';
 import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
 import { createEnemyView } from '../enemies/views';
@@ -41,6 +47,13 @@ export const aiTestSchema = z.object({
   spawnSpacing: z.number().positive(),
   initialEnemies: z.array(z.object({ id: z.string(), position: vec3 })),
   director: directorConfigSchema.optional(),
+  powers: z
+    .object({
+      slots: z.tuple([z.string(), z.string()]),
+      maxEnergy: z.number().positive(),
+      energyRegen: z.number().nonnegative(),
+    })
+    .optional(),
   arena: z.array(
     z.object({ size: vec3, position: vec3, model: z.string().optional() }),
   ),
@@ -78,6 +91,9 @@ export class AiTest implements Scene {
   private respawnS: number | null = null;
   private god = false;
   private readonly stats: Stats;
+  private energy?: PlayerEnergy;
+  private powers?: PowerSlots;
+  private barrierRenderer?: BarrierRenderer;
 
   constructor(
     private readonly loadModels = true,
@@ -128,6 +144,61 @@ export class AiTest implements Scene {
       ctx.bus,
       ctx.tuning,
     );
+    if (this.data.powers) {
+      this.stats.setBase('maxEnergy', this.data.powers.maxEnergy);
+      this.stats.setBase('energyRegen', this.data.powers.energyRegen);
+      const energy = new PlayerEnergy(id, this.stats, ctx.bus, ctx.tuning);
+      this.energy = energy;
+      this.powers = new PowerSlots(
+        this.data.powers.slots.map((power) =>
+          createPower(power, {
+            owner: id,
+            bus: ctx.bus,
+            tuning: ctx.tuning,
+            damage: this.damage,
+            energy,
+            projectiles: this.projectiles,
+            aim: () => {
+              const state = this.player.getState();
+              return {
+                origin: {
+                  x: state.position.x,
+                  y:
+                    state.position.y -
+                    ctx.tuning.player.capsuleHeight / 2 +
+                    ctx.tuning.player.eyeHeight,
+                  z: state.position.z,
+                },
+                dir: {
+                  x: -Math.sin(state.yaw) * Math.cos(state.pitch),
+                  y: Math.sin(state.pitch),
+                  z: -Math.cos(state.yaw) * Math.cos(state.pitch),
+                },
+              };
+            },
+            targets: () => {
+              const targets: { id: EntityId; position: Vec3 }[] = [];
+              this.manager.forEach((enemy) => {
+                if (enemy.removed || enemy.current.state === 'dead') return;
+                targets.push({
+                  id: enemy.id,
+                  position: {
+                    ...enemy.current.position,
+                    y:
+                      enemy.current.position.y +
+                      (enemy.definition.body?.centerY ?? 0),
+                  },
+                });
+              });
+              return targets;
+            },
+            castWall: () => null,
+          }),
+        ),
+      );
+      this.barrierRenderer = new BarrierRenderer(ctx.tuning);
+      this.root.add(this.barrierRenderer.root);
+    }
     this.projectileRenderer = new ProjectileRenderer(
       this.projectiles,
       ctx.tuning.weapons.maxProjectiles,
@@ -304,6 +375,12 @@ export class AiTest implements Scene {
         });
       return `Nieśmiertelność: ${this.god ? 'włączona' : 'wyłączona'}`;
     });
+    if (this.energy)
+      register('energy', 'energy [n] — energia Rezonansu', (args) => {
+        if (args.length === 1 && Number.isFinite(Number(args[0])))
+          this.energy!.set(Number(args[0]));
+        return `Energia: ${this.energy!.current}`;
+      });
     this.spawnInitial();
     this.world.step();
     this.updateLabel();
@@ -347,6 +424,18 @@ export class AiTest implements Scene {
   private updateLabel(): void {
     if (!this.label) return;
     const lines = [`Gracz: ${this.health.current} / ${this.health.max} HP`];
+    if (this.energy && this.powers) {
+      lines.push(
+        `Energia: ${this.energy.current.toFixed(0)} / ${this.energy.max}`,
+      );
+      for (const [slot, key] of ['F', 'E'].entries()) {
+        const power = this.powers.get(slot);
+        if (power)
+          lines.push(
+            `${key} — ${power.def.name}: ${power.active ? 'aktywna' : `${power.cooldownRemaining.toFixed(1)} s`}`,
+          );
+      }
+    }
     for (const target of this.enemyIds()) {
       const active = this.statuses.list(target);
       if (active.length)
@@ -358,6 +447,8 @@ export class AiTest implements Scene {
   }
 
   reset(): void {
+    this.powers?.reset();
+    this.energy?.set(this.energy.max);
     this.manager.despawnAll();
     this.statuses.reset();
     this.projectiles.dispose();
@@ -373,7 +464,11 @@ export class AiTest implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     this.previous = this.player.getState();
-    this.player.step(this.ctx.feel?.playerDt(dt) ?? dt, input);
+    const playerDt = this.ctx.feel?.playerDt(dt) ?? dt;
+    this.player.step(playerDt, input);
+    this.energy?.step(playerDt);
+    this.powers?.step(playerDt, input);
+    if (this.powers) this.updateLabel();
     if (!(dt > 0)) {
       this.manager.step(dt);
       return;
@@ -423,6 +518,11 @@ export class AiTest implements Scene {
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
     camera.fov = pose.fov;
     camera.updateProjectionMatrix();
+    const barriers = [this.powers?.get(0), this.powers?.get(1)].filter(
+      (power): power is BarrierPower => power instanceof BarrierPower,
+    );
+    const barrier = barriers.find((power) => power.active) ?? barriers[0];
+    if (barrier) this.barrierRenderer?.render(barrier, pose);
   }
 
   query(name: string): unknown {
@@ -435,10 +535,19 @@ export class AiTest implements Scene {
     if (name === 'enemyStates') return enemies;
     if (name === 'playerHp') return this.health.current;
     if (name === 'director') return this.manager.director?.snapshot() ?? null;
+    if (name === 'playerPos') return this.player.getState().position;
+    if (name === 'energy') return this.energy?.current;
+    if (name === 'powerSlots')
+      return [this.powers?.get(0)?.def.id, this.powers?.get(1)?.def.id];
+    if (name === 'powerActive')
+      return [this.powers?.get(0)?.active, this.powers?.get(1)?.active];
     return undefined;
   }
 
   dispose(): void {
+    this.powers?.reset();
+    this.energy?.dispose();
+    this.barrierRenderer?.dispose();
     for (const off of this.off.splice(0)) off();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
@@ -464,4 +573,11 @@ export class AiTest implements Scene {
 /** `?scene=status-test` (F2-02): ai-test z danymi statusTest.json i komendą `status`. */
 export function createStatusTest(loadModels = true): AiTest {
   return new AiTest(loadModels, { id: 'status-test', data: statusData });
+}
+
+export function createBarrierTest(loadModels = true): AiTest {
+  return new AiTest(loadModels, {
+    id: 'barrier-test',
+    data: aiTestSchema.parse(barrierSceneData),
+  });
 }

@@ -49,8 +49,41 @@ export type ChainPowerDefinition = z.infer<typeof chainPowerSchema> & {
   readonly knockback?: undefined;
 };
 
+const timedPowerFields = {
+  id: z.string().min(1),
+  name: z.string().min(1),
+  cost: z.number().finite().nonnegative(),
+  cooldownS: z.number().finite().nonnegative(),
+  durationS: z.number().finite().positive(),
+  tags: z.array(z.string().startsWith('#')),
+};
+export const focusPowerSchema = z.object({
+  ...timedPowerFields,
+  kind: z.literal('focus'),
+  worldScale: z.number().finite().positive().max(1),
+  drainPerS: z.number().finite().nonnegative(),
+});
+export type FocusPowerDefinition = z.infer<typeof focusPowerSchema> & {
+  readonly knockback?: undefined;
+};
+export const barrierPowerSchema = z.object({
+  ...timedPowerFields,
+  kind: z.literal('barrier'),
+  arcDeg: z.number().finite().positive().max(360),
+  costPerReflect: z.number().finite().nonnegative(),
+});
+export type BarrierPowerDefinition = z.infer<typeof barrierPowerSchema> & {
+  readonly knockback?: undefined;
+};
+
 export const powerSchema = z.discriminatedUnion('kind', [
   conePowerSchema,
   chainPowerSchema,
+  focusPowerSchema,
+  barrierPowerSchema,
 ]);
-export type PowerDefinition = ConePowerDefinition | ChainPowerDefinition;
+export type PowerDefinition =
+  | ConePowerDefinition
+  | ChainPowerDefinition
+  | FocusPowerDefinition
+  | BarrierPowerDefinition;

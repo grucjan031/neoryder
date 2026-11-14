@@ -34,6 +34,14 @@ describe('FeelSystem', () => {
     expect(c.hitstops).toEqual([]);
   });
 
+  it('hitstop nie zmienia odliczania slowmo F1 bez Skupienia', () => {
+    const c = setup();
+    c.bus.emit('wave_last_kill', { wave: 1, id: 5 });
+    c.bus.emit('hitstop', { ms: 1000 });
+    c.run(c.t.time.lastKillSlowmoS + c.t.time.slowmoRecoverS + 0.1);
+    expect(c.loop.timeScale).toBe(1);
+  });
+
   it('wave_last_kill: timeScale 0,2 przez 0,3 s czasu rzeczywistego, potem płynny powrót do 1', () => {
     const c = setup();
     c.bus.emit('wave_last_kill', { wave: 1, id: 5 });

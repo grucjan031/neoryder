@@ -31,6 +31,7 @@ export interface GameEvents {
   };
   parry_success: { projectile: EntityId; attacker: EntityId | null };
   power_used: { power: string; user: EntityId };
+  power_cooldown: { power: string; user: EntityId; cooldownS: number };
   hitstop: { ms: number };
 
   // F1 — zdrowie (#01)

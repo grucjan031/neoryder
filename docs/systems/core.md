@@ -99,7 +99,7 @@ hitstop, historię komend oraz pauzę po Escape/utracie fokusu i wznowienie klik
 wyjmuje gracza spod spowolnienia: `playerDt(dtSim)` zwraca w Skupieniu
 `dtSim / loop.timeScale × playerTimeScale` (najwyżej `SIM_DT × 2`), poza nim
 `dtSim`; hitstop (0) zostaje 0. `focusActive` trwa przez `durationS` czasu
-rzeczywistego i przez płynny powrót świata (`time.slowmoRecoverS`), żeby gracz
+rzeczywistego z wyłączeniem hitstopu i przez płynny powrót świata (`time.slowmoRecoverS`), żeby gracz
 nie zwalniał przy wychodzeniu ze Skupienia. `durationS: 0` kończy je przed
 czasem (np. brak energii). `main.ts` ustawia `ctx.feel`; sceny krokują gracza,
 ostrze, moce, broń i energię z `ctx.feel?.playerDt(dt) ?? dt`, a wrogów,
@@ -109,4 +109,7 @@ zabójstwo fali i inne `slowmo` nadal spowalniają także gracza.
 Testy: `feel.test.ts` (dystans gracza w 1 s czasu rzeczywistego jak bez
 Skupienia, świat 0,3; hitstop, limit, powrót, wcześniejsze zakończenie,
 kumulacja) i `arenaFocus.test.ts` (prawdziwa arena). Moc `kind: 'focus'`
-dochodzi w osobnym kroku (rejestr mocy).
+jest w rejestrze mocy; `focusPower.test.ts` sprawdza synchronizację mocy i świata
+z sekundą hitstopu oraz naturalne zakończenie przez `focus { durationS: 0 }`.
+`FeelSystem` śledzi hitstop z tych samych zdarzeń co `GameLoop` (pętla nie
+udostępnia pozostałego czasu); samodzielne slowmo F1 odlicza czas jak dotąd.

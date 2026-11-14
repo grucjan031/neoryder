@@ -1,4 +1,6 @@
 import { ChainPower } from './chain';
+import { BarrierPower } from './barrier';
+import { FocusPower } from './focus';
 import { ConePower } from './cone';
 import type { Power, PowerDeps, PowerFactory } from './power';
 import { powerSchema } from './powerSchema';
@@ -60,3 +62,15 @@ export function createPower(id: string, deps: PowerDeps): Power {
   if (!factory) throw new Error(`Nieznany mechanizm mocy: ${def.kind}`);
   return factory(def, deps);
 }
+
+registerPowerKind('focus', (def, deps) => {
+  if (def.kind !== 'focus')
+    throw new Error(`Nieprawidłowy mechanizm Skupienia: ${def.kind}`);
+  return new FocusPower(def, deps);
+});
+
+registerPowerKind('barrier', (def, deps) => {
+  if (def.kind !== 'barrier')
+    throw new Error(`Nieprawidłowy mechanizm Bariery: ${def.kind}`);
+  return new BarrierPower(def, deps);
+});

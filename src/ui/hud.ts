@@ -176,11 +176,11 @@ export class Hud {
             weaponDefinitions.get(weapon)?.name ?? text.empty,
           );
       }),
-      bus.on('power_used', ({ user, power }) => {
+      bus.on('power_cooldown', ({ user, power, cooldownS }) => {
         if (user !== opts.playerId) return;
         for (const slot of this.powerSlots) {
           if (slot.id !== power) continue;
-          slot.remaining = slot.cooldownS;
+          slot.remaining = cooldownS;
           this.showCooldown(slot);
         }
       }),

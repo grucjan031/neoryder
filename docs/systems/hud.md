@@ -15,7 +15,7 @@ modułów symulacji. Style są w sekcji `.hud` pliku `src/ui/styles.css`.
 | Dialog śmierci                                         | `player_died`                  | `id === playerId`                   |
 | Licznik fali / komunikat wyczyszczenia                 | `wave_started`, `wave_cleared` | globalne                            |
 | Nazwa bieżącej broni                                   | `weapon_switched`              | `owner === playerId`                |
-| Dwa sloty mocy (F/E), nazwy i odnowienie               | `power_used`, `power_denied`   | `user === playerId`                 |
+| Dwa sloty mocy (F/E), nazwy i odnowienie               | `power_cooldown`, `power_denied` | `user === playerId`                 |
 
 Paski startują jako puste z liczbą „—”, do pierwszego zdarzenia. Scena powinna
 utworzyć HUD przed początkowymi emisjami zdrowia, energii i ciepła albo wyemitować
@@ -81,7 +81,10 @@ Pusty slot pokazuje „—”. Pierwsza broń ma nazwę od początku; dalsze zmi
 pochodzą z `weapon_switched`. Scena natychmiast emituje po nim `heat_changed`
 wybranej broni. Nieaktywne bronie chłodzą się bez emisji, więc nie nadpisują paska.
 
-`power_used` rozpoczyna odliczanie `cooldownS` tylko dla odpowiadającego mu slotu.
+`power_cooldown { power, user, cooldownS }` rozpoczyna odliczanie przekazanego
+`cooldownS` tylko dla odpowiadającego mu slotu. Zdarzenie pochodzi ze wspólnego
+`PowerBase.startCooldown()`: dla Skupienia po końcu działania, dla pozostałych
+mocy przy aktywacji. Samo `power_used` nie rozpoczyna odnowienia.
 Arena przekazuje do `Hud.step(dt)` czas gracza przed krokiem mocy: odnowienie
 zatrzymuje się w hitstopie i pauzie oraz zgadza się z czasem mocy w Skupieniu.
 HUD nie odpytuje symulacji. Wyświetla dziesiąte części sekundy, po końcu „Gotowa”.

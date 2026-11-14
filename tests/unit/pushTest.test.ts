@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
+import * as powers from '../../src/combat/powers/registry';
 import { Scene as ThreeScene } from 'three';
 import { EventBus } from '../../src/core/events';
 import type { InputSnapshot } from '../../src/core/input';
@@ -119,3 +120,22 @@ it.each([MeleeTest, ParryTest])(
     expect(scene.query('energy')).toBe(75);
   },
 );
+
+it('komenda power obsługuje Barierę i zwraca komunikat po błędzie fabryki bez wymiany slotu', async () => {
+  const { scene, commands } = await setup();
+  expect(commands.execute('power 1 barrier')).toContain('Bariera');
+  expect(scene.query('powerSlots')).toEqual(['barrier', 'shockwave']);
+  scene.step(SIM_DT, first);
+  expect(scene.query('energy')).toBe(80);
+  const factory = vi.spyOn(powers, 'createPower').mockImplementationOnce(() => {
+    throw new Error('Brak zależności sceny.');
+  });
+  try {
+    expect(commands.execute('power 1 focus')).toContain(
+      'Scena nie obsługuje mocy focus: Brak zależności sceny.',
+    );
+    expect(scene.query('powerSlots')).toEqual(['barrier', 'shockwave']);
+  } finally {
+    factory.mockRestore();
+  }
+});

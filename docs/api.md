@@ -372,6 +372,7 @@ melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 'heavy' };
 melee_blocked: { defender: EntityId; attacker: EntityId | null; amount: number };
 
 // moce (#11)
+power_cooldown: { power: string; user: EntityId; cooldownS: number };
 energy_changed: { id: EntityId; current: number; max: number };
 power_denied: { power: string; user: EntityId; reason: 'no_energy' | 'cooldown' };
 
@@ -524,6 +525,44 @@ export class PowerSlots {
 // Wspólna baza: koszt (PlayerEnergy.spend), odnowienie, power_denied, power_used, kolejka wciśnięcia w hitstopie.
 ```
 
+Definicje `kind: 'focus'` i `kind: 'barrier'` mają wspólne pola
+`id`, `name`, `cost`, `cooldownS`, `tags` oraz dodatnie `durationS`.
+Skupienie dodaje `worldScale` (0 < wartość ≤ 1) i `drainPerS` (≥ 0).
+Bariera dodaje `arcDeg` (0 < wartość ≤ 360, pełny kąt) i `costPerReflect` (≥ 0).
+`step(dt, input)` obu mocy dostaje czas gracza (`ctx.feel.playerDt(dtSim)`).
+Skupienie pobiera koszt startowy, potem `drainPerS × dt`, a odnowienie zaczyna
+przy zakończeniu. Ponowne wciśnięcie lub brak energii kończy je zdarzeniem
+`focus { worldScale, durationS: 0 }`. Reset także kończy aktywne Skupienie.
+Bariera ignoruje ponowne wciśnięcie, a odnowienie zaczyna przy aktywacji.
+Interceptor przyjmuje tylko trafienia w `owner` od drużyny `enemy`; kierunek
+do pocisku to `-hit.dir`, porównywany z kierunkiem patrzenia w pełnym 3D.
+Odbija przez `reflect` do pozycji strzelca z `targets()` (gdy strzelca już
+nie ma, w kierunku przeciwnym do lotu), z właścicielem `owner` i drużyną
+`player`. Brak energii odczepia interceptor i przepuszcza bieżące trafienie.
+Promienie i obrażenia obszarowe omijają interceptor pocisków.
+`BarrierPower.reflectionFlashS` to pozostały czas błysku (tylko odczyt dla
+renderu, odliczany w symulacji); `BarrierRenderer.render(power, pose)` czyta
+`active` i ten czas. Reset i koniec działania usuwają interceptor.
+`PowerBase` udostępnia podklasom `cooldownOnActivation` oraz `startCooldown()`
+do wspólnego naliczania odnowienia od końca mocy podtrzymywanej.
+
+`startCooldown()` emituje `power_cooldown: { power: string; user: EntityId;
+cooldownS: number }`. HUD zaczyna odliczanie wyłącznie od tego zdarzenia;
+`power_used` nadal oznacza udaną aktywację, bez rozpoczęcia odnowienia Skupienia.
+Naturalny koniec Skupienia również emituje `focus { worldScale, durationS: 0 }`.
+Wciśnięcie odebrane podczas działania zachowuje swoje znaczenie po hitstopie
+i na granicy wygaśnięcia: Skupienie wyłącza, Bariera ignoruje (bez odmowy i kosztu).
+Opłacenie kroku do dokładnie zerowej energii nie kończy Skupienia przed czasem;
+kończy je dopiero brak środków na kolejny krok lub upływ czasu.
+
+`GameLoop` nie udostępnia stanu hitstopu. `FeelSystem` śledzi maksymalny
+pozostały czas z tych samych zdarzeń `hitstop`, aby odliczanie aktywnego
+Skupienia i jego spowolnienia nie zużywało czasu hitstopu. Slowmo bez
+Skupienia nadal odlicza czas rzeczywisty jak w F1.
+
+`ProjectileSystem.reflect` czyści historię trafionych celów i odnawia czas
+życia do `lifetimeS` zapisanej przy spawnie (także dla wartości domyślnej).
+
 ### Skupienie — skala czasu gracza (F2-06)
 
 ```ts
@@ -648,7 +687,7 @@ export const loadoutDefinitions: ReadonlyMap<string, Loadout>;
 // Arena: ?loadout=<id>, domyślnie classic; nieznane id → classic i console.warn w debug.
 // weapon_switched.slot: indeks 0–2; po zdarzeniu scena emituje heat_changed wybranej broni.
 // Hud: opcja loadout (weapons, powers), setLoadout(loadout) przy resecie;
-// step(dt) odlicza odnowienia wyłącznie ze zdarzeń power_used i cooldownS danych, w czasie gracza.
+// step(dt) odlicza odnowienia wyłącznie ze zdarzeń power_cooldown { power, user, cooldownS }, w czasie gracza.
 
 // src/progression/synergies.ts — src/data/synergies/*.json
 export class SynergySystem {

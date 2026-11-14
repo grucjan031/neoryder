@@ -1,0 +1,11 @@
+{
+  "id": "focus",
+  "name": "Skupienie",
+  "kind": "focus",
+  "cost": 20,
+  "cooldownS": 4,
+  "durationS": 3,
+  "worldScale": 0.3,
+  "drainPerS": 15,
+  "tags": ["#power"]
+}

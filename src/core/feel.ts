@@ -32,6 +32,7 @@ export class FeelSystem implements FocusControl {
   /** Pozostały czas Skupienia (s, czas rzeczywisty); po nim powrót świata też nie spowalnia gracza. */
   private focusHoldS = 0;
   private focusRecover = false;
+  private focusHitstopS = 0;
   private readonly off: (() => void)[] = [];
 
   constructor(
@@ -42,7 +43,10 @@ export class FeelSystem implements FocusControl {
     this.off.push(
       bus.on('hitstop', ({ ms }) => {
         // Pauza ma pierwszeństwo — hitstop nałożony w pauzie "zjadłby" pierwsze klatki po wznowieniu.
-        if (!this.loop.paused && ms > 0) this.loop.hitstop(ms);
+        if (!this.loop.paused && Number.isFinite(ms) && ms > 0) {
+          this.loop.hitstop(ms);
+          this.focusHitstopS = Math.max(this.focusHitstopS, ms / 1000);
+        }
       }),
       bus.on('slowmo', ({ timeScale, durationS }) =>
         this.startSlowmo(timeScale, durationS),
@@ -112,12 +116,16 @@ export class FeelSystem implements FocusControl {
   update(frameDt: number): void {
     const dt = Math.max(0, Math.min(frameDt, 0.25));
     if (this.loop.paused || dt === 0) return;
+    // GameLoop nie udostępnia zegara hitstopu; śledzimy te same zdarzenia.
+    const focusDt = Math.max(0, Math.min(frameDt - this.focusHitstopS, dt));
+    this.focusHitstopS = Math.max(0, this.focusHitstopS - frameDt);
+    const holdDt = this.focusHoldS > 0 ? focusDt : dt;
     if (this.focusHoldS > 0) {
-      this.focusHoldS = Math.max(0, this.focusHoldS - dt);
+      this.focusHoldS = Math.max(0, this.focusHoldS - holdDt);
       if (this.focusHoldS === 0) this.focusRecover = true;
     }
     if (this.slowmo) {
-      this.slowmo.holdS -= dt;
+      this.slowmo.holdS -= holdDt;
       if (this.slowmo.holdS <= 0) {
         this.recover = { from: this.slowmo.scale, t: 0 };
         this.slowmo = null;
@@ -150,6 +158,7 @@ export class FeelSystem implements FocusControl {
     this.recover = null;
     this.focusHoldS = 0;
     this.focusRecover = false;
+    this.focusHitstopS = 0;
     this.apply(this.baseTimeScale);
   }
 

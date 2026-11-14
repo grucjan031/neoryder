@@ -286,6 +286,7 @@ export class MeleeTest implements Scene {
       this.projectiles.addInterceptor(this.blade.interceptProjectile),
     );
     this.initPowers({
+      projectiles: this.projectiles,
       bus: ctx.bus,
       tuning: ctx.tuning,
       owner: playerId,
@@ -718,7 +719,12 @@ export class PushTest extends MeleeTest {
             !powerDefinitions.has(id)
           )
             return `Użycie: power <1|2> <id>. Dostępne moce: ${[...powerDefinitions.keys()].join(', ')}`;
-          const power = createPower(id, this.powerDeps);
+          let power;
+          try {
+            power = createPower(id, this.powerDeps);
+          } catch (error) {
+            return `Scena nie obsługuje mocy ${id}: ${error instanceof Error ? error.message : String(error)}`;
+          }
           this.slots.get(slot)?.reset();
           this.slots = new PowerSlots(
             [0, 1].map((i) => (i === slot ? power : this.slots.get(i))),

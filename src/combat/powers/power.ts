@@ -92,13 +92,26 @@ export abstract class PowerBase<
       });
       return null;
     }
-    this.cooldownS = this.def.cooldownS;
+    if (this.cooldownOnActivation) this.startCooldown();
     bus.emit('power_used', { power: this.def.id, user: owner });
     return this.activate();
   }
 
   protected canActivate(): boolean {
     return true;
+  }
+
+  protected get cooldownOnActivation(): boolean {
+    return true;
+  }
+
+  protected startCooldown(): void {
+    this.cooldownS = this.def.cooldownS;
+    this.deps.bus.emit('power_cooldown', {
+      power: this.def.id,
+      user: this.deps.owner,
+      cooldownS: this.def.cooldownS,
+    });
   }
 
   protected abstract activate(): number;

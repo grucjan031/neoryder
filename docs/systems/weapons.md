@@ -130,16 +130,18 @@ Dodatkowe reguły drużyn i nietykalności nadal należą do `DamageSystem`.
 różnych encji. Po trafieniu system omiata pozostały odcinek tego samego kroku,
 pomijając wszystkie hurtboxy wcześniej trafionych encji, także w kolejnych
 krokach. N-ty cel dostaje `damage × (1 − falloff)^(n−1)` przed mnożnikiem hurtboxa.
-Ściana zatrzymuje także pocisk przebijający. Historia trafień, pozostały limit
-i spadek obrażeń są zachowane po odbiciu; przechwycone trafienie nie zużywa limitu.
+Ściana zatrzymuje także pocisk przebijający. Odbicie czyści historię trafień,
+zachowując pozostały limit i spadek obrażeń; przechwycone trafienie nie zużywa limitu.
 Nowy pocisk w slocie zeruje historię i nadpisuje statusy oraz parametry przebicia.
 ID slotu jest sprawdzane po synchronicznych zdarzeniach, aby stary sweep nie
 przesuwał nowego pocisku utworzonego przez handler obrażeń.
 
 `reflect(id, newOwner, newTeam, dir)` zmienia właściciela, kierunek oraz drużynę
 w slocie i `EntityRegistry.setTeam`, emitując `projectile_reflected`.
-Następny sweep używa nowego filtra; prędkość, obrażenia i pozostały czas życia
-są zachowane. Nieaktywny ID jest ignorowany. `forEachActive(cb)` udostępnia
+Następny sweep używa nowego filtra; prędkość i obrażenia są zachowane (poza
+jawnymi mnożnikami w opcjach). Czas życia odnawia się do pierwotnego `lifetimeS`
+ze spawnu, a historia trafionych celów jest czyszczona, więc powracający pocisk
+może ponownie trafić wcześniejszy cel. Nieaktywny ID jest ignorowany. `forEachActive(cb)` udostępnia
 `(id, pos, dir, team)` rendererowi; przekazanych wektorów nie należy modyfikować.
 
 ## Render i scena testowa

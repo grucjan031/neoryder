@@ -10,7 +10,7 @@ import { Sandbox } from './sandbox';
 import { PlayerTest } from './playerTest';
 import { BlasterTest } from './blasterTest';
 import { WeaponsTest } from './weaponsTest';
-import { AiTest, createStatusTest } from './aiTest';
+import { AiTest, createStatusTest, createBarrierTest } from './aiTest';
 import { DebrisTest } from './debrisTest';
 
 export interface Scene {
@@ -38,5 +38,6 @@ export const scenes: Record<string, SceneFactory> = {
   'weapons-test': () => new WeaponsTest(),
   'ai-test': () => new AiTest(),
   'status-test': () => createStatusTest(),
+  'barrier-test': () => createBarrierTest(),
   'debris-test': () => new DebrisTest(),
 };

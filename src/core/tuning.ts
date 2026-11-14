@@ -117,6 +117,7 @@ export const tuning = {
     energyEventIntervalS: 0.1,
     pushHitstopMs: 40,
     pushShake: 0.35,
+    barrierFlashS: 0.12,
   },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
   arena: { maxEnemies: 30 },
@@ -132,6 +133,12 @@ export const tuning = {
     wallProbe: 1.5,
   },
   vfx: {
+    barrierRadiusM: 1.25,
+    barrierHeightM: 1.1,
+    barrierDistanceM: 0.9,
+    barrierSegments: 32,
+    barrierOpacity: 0.12,
+    barrierFlashOpacity: 0.55,
     beamRadiusM: 0.018,
     explosionDurationS: 0.3,
     explosionOpacity: 0.4,

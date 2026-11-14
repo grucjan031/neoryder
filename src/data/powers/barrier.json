@@ -1,0 +1,11 @@
+{
+  "id": "barrier",
+  "name": "Bariera",
+  "kind": "barrier",
+  "cost": 20,
+  "cooldownS": 4,
+  "durationS": 2,
+  "arcDeg": 160,
+  "costPerReflect": 5,
+  "tags": ["#power"]
+}
