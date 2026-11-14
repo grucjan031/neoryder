@@ -36,7 +36,7 @@ import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import sceneData from '../data/scenes/arena.json';
 import wavesData from '../data/waves/arena.json';
-import { StatusSystem } from '../combat/status';
+import { statusDefinitions, StatusSystem } from '../combat/status';
 import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
 import { createEnemyView } from '../enemies/views';
@@ -64,6 +64,10 @@ import { Hud } from '../ui/hud';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
 import { EnemyShatter } from '../vfx/enemyShatter';
+import { enemyBody } from '../vfx/enemyBody';
+import { HitSparks } from '../vfx/hitSparks';
+import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
+import { StatusVfx } from '../vfx/statusVfx';
 import { loadWaves, WaveDirector } from '../world/waves';
 import type { Scene } from './index';
 
@@ -153,6 +157,10 @@ export class Arena implements Scene {
   private debris!: DebrisSystem;
   private debrisView!: DebrisRenderer;
   private shatter!: EnemyShatter;
+  private statusVfx!: StatusVfx;
+  private statusView!: StatusVfxRenderer;
+  private hitSparks!: HitSparks;
+  private hitSparksView!: HitSparksRenderer;
   private synergies!: SynergySystem;
   private buildSelect?: BuildSelect;
 
@@ -307,6 +315,30 @@ export class Arena implements Scene {
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
       tuning: ctx.tuning,
     });
+
+    this.statusVfx = new StatusVfx(ctx.bus, {
+      bodyOf: (id, a) => {
+        const e = this.enemy(id);
+        return e ? enemyBody(e, a) : null;
+      },
+      tuning: ctx.tuning,
+    });
+    this.statusView = new StatusVfxRenderer(this.statusVfx, {
+      flames: ctx.tuning.vfx.maxStatusFlames,
+      sparks: ctx.tuning.vfx.maxStatusSparks,
+      stars: ctx.tuning.vfx.maxStatusStars,
+    });
+    this.root.add(this.statusView.root);
+    this.hitSparks = new HitSparks(ctx.bus, {
+      playerId,
+      cameraPosition: () => ctx.camera?.position ?? null,
+      tuning: ctx.tuning,
+    });
+    this.hitSparksView = new HitSparksRenderer(
+      this.hitSparks,
+      ctx.tuning.vfx.maxHitSparks,
+    );
+    this.root.add(this.hitSparksView.root);
 
     await this.bladeView.load(this.loadModels);
     this.root.add(this.bladeView.root);
@@ -686,6 +718,8 @@ export class Arena implements Scene {
     this.projectileView.render(alpha);
     this.debrisView.render(alpha);
     this.explosionView.render(frameDt);
+    this.statusView.render(alpha, frameDt);
+    this.hitSparksView.render(frameDt);
     this.lights.sync();
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
@@ -745,6 +779,8 @@ export class Arena implements Scene {
     this.projectiles.dispose();
     this.projectileView.capturePrevious();
     this.debris.clear();
+    this.statusVfx.clear();
+    this.hitSparks.clear();
     this.blade.reset();
     this.createEquipment();
     this.synergies.reset();
@@ -812,6 +848,24 @@ export class Arena implements Scene {
       this.reset();
       return `Ekwipunek: ${selected.name}`;
     });
+    register(
+      'status',
+      `status <id> [s] — na wszystkich wrogów: ${[...statusDefinitions.keys()].join(', ')}`,
+      (args) => {
+        const status = args[0] ?? '';
+        const seconds = args[1] === undefined ? 3 : Number(args[1]);
+        if (!statusDefinitions.has(status) || !(seconds > 0))
+          return 'Podaj znany status i dodatni czas w sekundach.';
+        const ids = this.enemyIds();
+        for (const target of ids)
+          this.statuses.apply(
+            target,
+            { id: status, durationS: seconds },
+            playerId,
+          );
+        return `Nałożono ${status} (${seconds} s) na wrogów: ${ids.length}`;
+      },
+    );
     if (this.selectBuild)
       register('build', 'build — ekran wyboru buildu (reset areny)', () => {
         this.openBuildSelect();
@@ -958,6 +1012,10 @@ export class Arena implements Scene {
     this.explosionView.dispose();
     this.shatter.dispose();
     this.debrisView.dispose();
+    this.statusVfx.dispose();
+    this.statusView.dispose();
+    this.hitSparks.dispose();
+    this.hitSparksView.dispose();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
     this.director.dispose();

@@ -34,6 +34,10 @@ import type { PlayerState } from '../player/playerController';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Scene } from './index';
+import { enemyBody } from '../vfx/enemyBody';
+import { HitSparks } from '../vfx/hitSparks';
+import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
+import { StatusVfx } from '../vfx/statusVfx';
 
 const vec3 = z.object({
   x: z.number().finite(),
@@ -94,6 +98,10 @@ export class AiTest implements Scene {
   private energy?: PlayerEnergy;
   private powers?: PowerSlots;
   private barrierRenderer?: BarrierRenderer;
+  private statusVfx!: StatusVfx;
+  private statusView!: StatusVfxRenderer;
+  private hitSparks!: HitSparks;
+  private hitSparksView!: HitSparksRenderer;
 
   constructor(
     private readonly loadModels = true,
@@ -205,6 +213,32 @@ export class AiTest implements Scene {
       this.loadModels,
     );
     this.root.add(this.projectileRenderer.root);
+    this.statusVfx = new StatusVfx(ctx.bus, {
+      bodyOf: (target, a) => {
+        let body = null;
+        this.manager.forEach((e) => {
+          if (e.id === target && !e.removed) body = enemyBody(e, a);
+        });
+        return body;
+      },
+      tuning: ctx.tuning,
+    });
+    this.statusView = new StatusVfxRenderer(this.statusVfx, {
+      flames: ctx.tuning.vfx.maxStatusFlames,
+      sparks: ctx.tuning.vfx.maxStatusSparks,
+      stars: ctx.tuning.vfx.maxStatusStars,
+    });
+    this.root.add(this.statusView.root);
+    this.hitSparks = new HitSparks(ctx.bus, {
+      playerId: id,
+      cameraPosition: () => ctx.camera?.position ?? null,
+      tuning: ctx.tuning,
+    });
+    this.hitSparksView = new HitSparksRenderer(
+      this.hitSparks,
+      ctx.tuning.vfx.maxHitSparks,
+    );
+    this.root.add(this.hitSparksView.root);
     this.manager = new EnemyManager(
       ctx,
       {
@@ -451,6 +485,8 @@ export class AiTest implements Scene {
     this.energy?.set(this.energy.max);
     this.manager.despawnAll();
     this.statuses.reset();
+    this.statusVfx.clear();
+    this.hitSparks.clear();
     this.projectiles.dispose();
     this.projectileRenderer.capturePrevious();
     this.health.reset();
@@ -505,6 +541,8 @@ export class AiTest implements Scene {
         this.views.delete(id);
       }
     this.projectileRenderer.render(alpha);
+    this.statusView.render(alpha, frameDt);
+    this.hitSparksView.render(frameDt);
     this.lights.sync();
     const camera = this.ctx.camera;
     if (!camera) return;
@@ -553,6 +591,10 @@ export class AiTest implements Scene {
     this.views.clear();
     this.manager.dispose();
     this.statuses.dispose();
+    this.statusVfx.dispose();
+    this.statusView.dispose();
+    this.hitSparks.dispose();
+    this.hitSparksView.dispose();
     this.projectileRenderer.dispose();
     this.projectiles.dispose();
     this.camera.dispose();

@@ -4,13 +4,14 @@ import type { Tuning } from '../core/tuning';
 import type { DebrisSystem } from './debris';
 
 export interface EnemyShatterOptions {
-  /** Pozycja stóp wroga; null dla gracza i nieznanych encji. */
+  /** Pozycja stóp wroga (dla drona: środek bryły); null dla gracza i nieznanych encji. */
   positionOf(id: EntityId): Vec3 | null;
   tuning: Pick<Tuning, 'vfx'>;
 }
 
 export class EnemyShatter {
   private readonly shattered = new Set<EntityId>();
+  private readonly kinds = new Map<EntityId, string>();
   private readonly off: (() => void)[];
 
   constructor(bus: EventBus, debris: DebrisSystem, opts: EnemyShatterOptions) {
@@ -25,6 +26,28 @@ export class EnemyShatter {
       if (!pos) return;
       this.shattered.add(id);
       const t = opts.tuning.vfx;
+      if (this.kinds.get(id) === 'drone') {
+        const n = Math.max(
+          1,
+          Math.round(
+            Math.min(
+              t.debrisMax,
+              t.debrisMin + Math.max(0, amount) * t.debrisPerDamage,
+            ) * t.droneDebrisCountMult,
+          ),
+        );
+        const strength = t.debrisStrength + Math.max(0, knockback);
+        debris.burst({
+          origin: { x: pos.x, y: pos.y, z: pos.z },
+          dir,
+          strength,
+          spread: strength * 0.65 * t.droneDebrisSpreadMult,
+          count: n,
+          size: t.debrisSize * t.droneDebrisSizeMult,
+          bounds: { halfX: 0.3, halfY: 0.3, halfZ: 0.3 },
+        });
+        return;
+      }
       const count = Math.round(
         Math.max(
           t.debrisMin,
@@ -62,13 +85,20 @@ export class EnemyShatter {
           burst(event.target, event.amount, event.knockback, event.dir);
       }),
       bus.on('enemy_killed', ({ id }) => burst(id, 0, 0, null)),
-      bus.on('entity_spawned', ({ id }) => this.shattered.delete(id)),
-      bus.on('entity_despawned', ({ id }) => this.shattered.delete(id)),
+      bus.on('entity_spawned', ({ id, kind }) => {
+        this.shattered.delete(id);
+        this.kinds.set(id, kind);
+      }),
+      bus.on('entity_despawned', ({ id }) => {
+        this.shattered.delete(id);
+        this.kinds.delete(id);
+      }),
     ];
   }
 
   dispose(): void {
     for (const off of this.off) off();
     this.shattered.clear();
+    this.kinds.clear();
   }
 }

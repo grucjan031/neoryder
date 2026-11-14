@@ -121,3 +121,51 @@ Testy `tests/unit/debris.test.ts` obejmują pulę, kierunek, grawitację, odbici
 `tests/e2e/debrisTest.spec.ts` sprawdza błędy konsoli, `shatter 3`, `perf` oraz
 wygaśnięcie, czekając na kroki symulacji przez `waitSimSteps` / `SIM_TIMEOUT`.
 Ocena czytelności i odczucia ciosu pozostaje częścią review Architekta.
+
+## Odłamki drona
+
+`EnemyShatter` zapamiętuje rodzaj encji z `entity_spawned.kind`. Dla `drone`
+pojedynczy wybuch startuje ze środka bryły (pozycja drona to jego środek, bez
+przesunięcia o metr jak u humanoida), w sześcianie o półboku 0.3 m. Liczba
+odłamków to `droneDebrisCountMult` (0.5) razy liczba humanoida, rozmiar
+`droneDebrisSizeMult` (0.55), rozrzut `droneDebrisSpreadMult` (1.4) razy
+domyślny. Odłamki lecą w powietrzu i opadają grawitacją jak pozostałe.
+
+## Efekty statusów na wrogach
+
+`StatusVfx` (`statusVfx.ts`, bez Three.js) słucha `status_applied`,
+`status_expired`, `enemy_killed` i `entity_despawned`. Pozycje bierze z
+`bodyOf(id, alpha)` (`enemyBody.ts`: interpolowana bryła z publicznego stanu
+wroga, dron liczony od środka). Cząsteczki kosmetyczne używają `Math.random()` i
+zegara klatki; nie wpływają na symulację.
+
+| Status     | Efekt                                                                                              |
+| ---------- | -------------------------------------------------------------------------------------------------- |
+| `burning`  | unoszące się płomyki: czerwona podstawa, pomarańczowy pas, biały czubek (kolory wierzchołków)      |
+| `overload` | magentowe cienkie łuki wokół korpusu; częstość rośnie liniowo z liczbą stosów                      |
+| `stunned`  | pierścień `statusStarCount` białych trójkątów nad głową; kontur z postprocessu czyni je widocznymi |
+
+`StatusVfxRenderer` rysuje trzy `InstancedMesh` (po jednej na typ) z
+`MeshBasicMaterial`. Pojemności ustala `tuning.vfx.maxStatusFlames/Sparks/Stars`;
+po wyczerpaniu pula zastępuje najstarszą cząsteczkę, a gwiazdki ponad limit
+są pomijane. Pozostałe pola `statusFlame*`, `statusSpark*`, `statusStar*`
+są w panelu lil-gui.
+
+## Iskry trafień
+
+`HitSparks` + `HitSparksRenderer` (jedna `InstancedMesh`, kolor na instancję):
+przy `damage_dealt` z niepustym `point` rozprysk `hitSparkCount` iskier w
+kierunku `dir`. Cyan (`#00e5ff`), gdy źródłem jest gracz; czerwone, gdy celem
+jest gracz, a źródłem ktoś inny. Trafienia w gracza bliżej kamery niż
+`hitSparkCameraMinM` są pomijane. Pula: `maxHitSparks`. Błysk wylotu broni to
+osobne zadanie.
+
+## Podłączenie i weryfikacja
+
+Arena i sceny `ai-test`/`status-test` tworzą `StatusVfx`, `HitSparks` i ich
+renderery, wołają `render(alpha, frameDt)` (statusy) i `render(frameDt)`
+(iskry), czyszczą je w `reset()` i zwalniają w `dispose()`. Komenda `status <id>
+[s]` (arena i status-test) nakłada status na wszystkich wrogów. Kontrola w 30 s:
+`?scene=status-test&debug=1`, poczekaj aż wrogowie podejdą, `status burning`,
+`status overload`, `status stunned`; w arenie `spawn drone 3`, `kill all`.
+Testy: `tests/unit/vfxEffects.test.ts`.
