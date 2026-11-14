@@ -26,6 +26,14 @@ const POSE = {
   pos: new Vector3(0.32, -0.28, -0.42),
   rot: new Euler(0.04, 0.1, -0.02, 'YXZ'),
 };
+/** Broń dwuręczna (węzeł support daleko przed chwytem): bardziej w lewo i wyżej, by obie dłonie były w kadrze. */
+const TWO_HAND_POSE = {
+  pos: new Vector3(0.18, -0.32, -0.5),
+  rot: new Euler(0.04, 0.1, -0.02, 'YXZ'),
+};
+/** Obrót lewej dłoni wokół osi Y węzła support: przedramię od lewego dołu kadru. */
+const TWO_HAND_SUPPORT_YAW = -1.45;
+const TWO_HAND_SUPPORT_Z = -0.15;
 const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;
 const RECOIL_RECOVER = 14;
@@ -211,14 +219,15 @@ export class FppBlaster {
       .lerp(HOT, Math.min(1, this.heat + pulse * 0.4));
 
     const { m, q, e, v, s } = this.tmp;
+    const pose = this.twoHanded ? TWO_HAND_POSE : POSE;
     e.set(
-      POSE.rot.x + this.recoil * RECOIL_PITCH,
-      POSE.rot.y,
-      POSE.rot.z,
+      pose.rot.x + this.recoil * RECOIL_PITCH,
+      pose.rot.y,
+      pose.rot.z,
       'YXZ',
     );
     q.setFromEuler(e);
-    v.copy(POSE.pos);
+    v.copy(pose.pos);
     v.z += this.recoil * RECOIL_BACK;
     m.compose(v, q, s);
     this.root.matrix.multiplyMatrices(cameraMatrix, m);
@@ -238,11 +247,19 @@ export class FppBlaster {
     this.flashLeft = Math.max(0, this.flashLeft - dt);
   }
 
+  private get twoHanded(): boolean {
+    const support = this.current?.getObjectByName('support');
+    return !!support && support.position.z < TWO_HAND_SUPPORT_Z;
+  }
+
   supportMatrix(): Matrix4 | null {
     const support = this.current?.getObjectByName('support');
     if (!support) return null;
     support.updateWorldMatrix(true, false);
-    return support.matrixWorld.clone();
+    const matrix = support.matrixWorld.clone();
+    if (this.twoHanded)
+      matrix.multiply(this.tmp.m.makeRotationY(TWO_HAND_SUPPORT_YAW));
+    return matrix;
   }
 
   dispose(): void {
