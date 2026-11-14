@@ -1,0 +1,27 @@
+{
+  "id": "stormSynapseEpic",
+  "name": "Łuk synaptyczny Orbis",
+  "description": "Sieć wyładowań w układzie nerwowym przesyła łuk elektryczny do pobliskiego celu przy trafieniu mocą.",
+  "rarity": "epic",
+  "tags": ["#power", "#elektrycznosc"],
+  "modifiers": [
+    { "stat": "energyRegen", "type": "flat", "value": 8 },
+    { "stat": "maxEnergy", "type": "flat", "value": 25 },
+    { "stat": "moveSpeed", "type": "percent", "value": 0.14 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "damage_dealt", "tagsAny": ["#power"] },
+      "effects": [
+        {
+          "kind": "chain_on_hit",
+          "jumpRangeM": 5,
+          "damageMult": 0.35,
+          "tags": ["#elektrycznosc"]
+        }
+      ],
+      "cooldownS": 1.5
+    }
+  ],
+  "upgradesTo": "stormSynapseApex"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "cortexCapacitorEpic",
+  "name": "Rezonator głębokiej kory",
+  "description": "Zaawansowany implant Rezonansu zwiększa pojemność energetyczną i chłodzi broń przy użyciu mocy.",
+  "rarity": "epic",
+  "tags": ["#power"],
+  "modifiers": [
+    { "stat": "maxEnergy", "type": "flat", "value": 50 },
+    { "stat": "energyRegen", "type": "percent", "value": 0.35 },
+    { "stat": "damage", "type": "percent", "value": 0.14 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "power_used" },
+      "effects": [{ "kind": "cool_weapon", "amount": 20 }],
+      "cooldownS": 2
+    }
+  ],
+  "upgradesTo": "cortexCapacitorApex"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "stormSynapseRare",
+  "name": "Synapsa burzowa Mk II",
+  "description": "Wysokonapięciowe złącze nerwowe zwiększa regenerację energii i zwraca ładunek po odbiciu pocisku.",
+  "rarity": "rare",
+  "tags": ["#power", "#elektrycznosc"],
+  "modifiers": [
+    { "stat": "energyRegen", "type": "flat", "value": 5 },
+    { "stat": "maxEnergy", "type": "flat", "value": 15 },
+    { "stat": "moveSpeed", "type": "percent", "value": 0.1 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "projectile_reflected" },
+      "effects": [{ "kind": "add_energy", "amount": 8 }],
+      "cooldownS": 1
+    }
+  ],
+  "upgradesTo": "stormSynapseEpic"
+}

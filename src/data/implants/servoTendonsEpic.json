@@ -1,0 +1,28 @@
+{
+  "id": "servoTendonsEpic",
+  "name": "Serwo-ścięgna Kalibru Kurogane",
+  "description": "Wojskowe napędy ścięgnowe przyspieszają ataki i dają krótkie przyspieszenie po każdym zrywie.",
+  "rarity": "epic",
+  "tags": ["#melee"],
+  "modifiers": [
+    { "stat": "attackSpeed", "type": "percent", "value": 0.26 },
+    { "stat": "moveSpeed", "type": "percent", "value": 0.12 },
+    { "stat": "dashCooldown", "type": "mult", "value": 0.82 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "dash_used" },
+      "effects": [
+        {
+          "kind": "stat_modifier_timed",
+          "stat": "attackSpeed",
+          "type": "percent",
+          "value": 0.15,
+          "durationS": 2
+        }
+      ],
+      "cooldownS": 2.5
+    }
+  ],
+  "upgradesTo": "servoTendonsApex"
+}

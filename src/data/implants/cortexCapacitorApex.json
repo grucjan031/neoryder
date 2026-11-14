@@ -1,0 +1,28 @@
+{
+  "id": "cortexCapacitorApex",
+  "name": "Korona Rezonansu",
+  "description": "Szczytowy układ neuro-energetyczny radykalnie zwiększa zasoby energii i wzmacnia obrażenia po wyzwoleniu mocy.",
+  "rarity": "legendary",
+  "tags": ["#power"],
+  "modifiers": [
+    { "stat": "maxEnergy", "type": "flat", "value": 75 },
+    { "stat": "energyRegen", "type": "percent", "value": 0.5 },
+    { "stat": "damage", "type": "percent", "value": 0.22 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "power_used" },
+      "effects": [
+        { "kind": "cool_weapon", "amount": 35 },
+        {
+          "kind": "stat_modifier_timed",
+          "stat": "damage",
+          "type": "percent",
+          "value": 0.2,
+          "durationS": 3
+        }
+      ],
+      "cooldownS": 2
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "servoTendonsRare",
+  "name": "Serwo-ścięgna Mk II",
+  "description": "Wzmocnione siłowniki ścięgien zwiększają tempo combo i skracają odnowienie zrywu.",
+  "rarity": "rare",
+  "tags": ["#melee"],
+  "modifiers": [
+    { "stat": "attackSpeed", "type": "percent", "value": 0.18 },
+    { "stat": "moveSpeed", "type": "percent", "value": 0.08 },
+    { "stat": "dashCooldown", "type": "mult", "value": 0.9 }
+  ],
+  "upgradesTo": "servoTendonsEpic"
+}

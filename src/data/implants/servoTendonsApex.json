@@ -1,0 +1,28 @@
+{
+  "id": "servoTendonsApex",
+  "name": "Nadprzewodzące Serwo-ścięgna",
+  "description": "Prototypowe włókna o zerowym oporze maksymalizują szybkość cięć i napędzają ruch po każdym zrywie.",
+  "rarity": "legendary",
+  "tags": ["#melee"],
+  "modifiers": [
+    { "stat": "attackSpeed", "type": "percent", "value": 0.35 },
+    { "stat": "moveSpeed", "type": "percent", "value": 0.16 },
+    { "stat": "dashCooldown", "type": "mult", "value": 0.72 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "dash_used" },
+      "effects": [
+        {
+          "kind": "stat_modifier_timed",
+          "stat": "attackSpeed",
+          "type": "percent",
+          "value": 0.25,
+          "durationS": 2.5
+        },
+        { "kind": "add_energy", "amount": 6 }
+      ],
+      "cooldownS": 2
+    }
+  ]
+}

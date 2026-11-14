@@ -1145,6 +1145,41 @@ export class RunManager {
 
 ### Zapis runu (F3-06) — `src/core/save.ts`
 
+### Implanty (F3-09) — `src/progression/implants.ts`
+
+```ts
+export const IMPLANT_SOURCE_PREFIX = 'implant:';
+export function implantSource(id: string): string;
+export function nextRarity(rarity: Rarity): Rarity | null;
+export function loadImplantDefinitions(data: readonly unknown[]): ReadonlyMap<string, ImplantDefinition>;
+export const implantDefinitions: ReadonlyMap<string, ImplantDefinition>;
+
+export class ImplantSystem {
+  constructor(
+    statsOrOptions: Stats | readonly Stats[] | ImplantSystemOptions,
+    optionsOrHealth?: Omit<ImplantSystemOptions, 'stats'> | ImplantHealthTarget,
+    bus?: EventBus,
+    definitions?: ReadonlyMap<string, ImplantDefinition> | readonly ImplantDefinition[],
+  );
+  has(id: string): boolean;
+  get(id: string): ImplantDefinition | undefined;
+  ids(): string[];
+  list(): ImplantDefinition[];
+  tags(): string[];
+  triggers(): { implantId: string; trigger: ImplantTrigger }[];
+  add(id: string, source?: 'reward' | 'shop' | 'upgrade'): boolean;
+  remove(id: string): boolean;
+  set(ids: readonly string[], options?: ImplantSetOptions): string[];
+  canUpgrade(id: string): boolean;
+  upgradeTarget(id: string): ImplantDefinition | null;
+  upgrade(id: string): boolean;
+  clear(): void;
+  reset(): void;
+}
+```
+
+
+
 `SAVE_VERSION = 2`. `RunSave` rozszerzone o `run: RunState` (walidowane przez `runStateSchema` z `src/world/run.ts`).
 Migracja 1→2 jest neutralna dla `MetaSave`, natomiast szkielet `RunSave` v1 (bez pola `run`) traktuje jako brak aktywnego runu (`loadRun()` zwraca `null`). Zapisy z `saveVersion > SAVE_VERSION` pozostają nietknięte (`isFuture`), a uszkodzone zapisy zwracają `null` z ostrzeżeniem.
 

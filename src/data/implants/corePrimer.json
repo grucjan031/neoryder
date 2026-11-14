@@ -1,0 +1,12 @@
+{
+  "id": "corePrimer",
+  "name": "Starter rdzenia",
+  "description": "Podstawowy stabilizator bojowy podnosi obrażenia, zdrowie i tempo chłodzenia broni.",
+  "rarity": "common",
+  "tags": ["#melee", "#power", "#gun"],
+  "modifiers": [
+    { "stat": "damage", "type": "percent", "value": 0.08 },
+    { "stat": "maxHealth", "type": "flat", "value": 10 }
+  ],
+  "upgradesTo": "overclock"
+}
