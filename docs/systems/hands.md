@@ -74,11 +74,12 @@ W locie ostrza prawa dłoń zostaje w spoczynkowym położeniu ostrza z pozą `o
 Podczas całej aktywnej fazy obrotu dwustronnego ostrza dłoń jest ukryta.
 
 Broń palna jest po prawej, przy pozycji `[0.32, -0.28, -0.42]` w układzie
-Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle, beam, emp_launcher) mają osobną pozę `TWO_HAND_POSE` (niżej i bliżej środka) i lewą dłoń obróconą o `TWO_HAND_SUPPORT_YAW`, tak by przedramię wchodziło od lewego dołu kadru (stałe w `src/render/fppBlaster.ts`).
 kamery. Prawa dłoń używa `socket_gun` i `gripGun`; `weapon_fired` właściciela
 przełącza ją w `gripGunFire`, z powrotem razem z zanikiem odrzutu. Węzeł
 `support` aktualnego modelu broni wyznacza położenie lewej dłoni (`support`,
 `socket_support`). Gdy węzła nie ma, lewa dłoń nie podpiera broni.
+
+Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle, beam, emp_launcher) mają osobną pozę `TWO_HAND_POSE` (niżej i bliżej środka) i lewą dłoń obróconą o `TWO_HAND_SUPPORT_YAW`, tak by przedramię wchodziło od lewego dołu kadru (stałe w `src/render/fppBlaster.ts`).
 
 ### Gest mocy i wolna lewa dłoń
 
