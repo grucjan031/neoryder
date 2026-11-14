@@ -1,6 +1,7 @@
 {
   "id": "assaulter",
   "kind": "assaulter",
+  "model": "enemy_trooper",
   "grabbable": true,
   "maxHealth": 60,
   "moveSpeed": 4.2,

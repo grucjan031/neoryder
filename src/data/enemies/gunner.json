@@ -1,6 +1,7 @@
 {
   "id": "gunner",
   "kind": "gunner",
+  "model": "enemy_gunner",
   "grabbable": true,
   "maxHealth": 45,
   "moveSpeed": 3.4,

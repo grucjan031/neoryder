@@ -158,6 +158,8 @@ def bm_merge(*parts: bmesh.types.BMesh) -> bmesh.types.BMesh:
 
 # --------------------------------------------------------------------------- humanoid
 
+LAST_BUILD: dict = {}  # parametry ostatniego humanoid() — dla dekoracji w builderach wrogów
+
 def humanoid(name: str, build: dict):
     """Manekin ze sztywnych części. Pivoty w stawach, hierarchia jak szkielet.
 
@@ -171,9 +173,11 @@ def humanoid(name: str, build: dict):
         "waist_z": 1.03, "torso_h": 0.45, "waist_w": 0.30, "chest_w": 0.46, "torso_d": 0.24,
         "shoulder_x": 0.25, "shoulder_z": 1.44, "arm_upper": 0.29, "arm_lower": 0.27,
         "arm_r": 0.064, "wrist_r": 0.045, "neck_z": 1.52, "head_r": 0.12,
-        "arm_spread_deg": 8.0, "mat": "mat_enemy",
+        "arm_spread_deg": 8.0, "mat": "mat_enemy", "arm_pose": {},
     }
     b.update(build)
+    LAST_BUILD.clear()
+    LAST_BUILD.update(b)
     m = b["mat"]
 
     root = empty(name, size=0.3)
@@ -196,11 +200,14 @@ def humanoid(name: str, build: dict):
         spread = math.radians(b["arm_spread_deg"]) * sx
         au = mesh_object(f"arm_upper_{side}", bm_prism(b["arm_upper"], b["arm_r"], b["arm_r"] * 0.85), m,
                          parent=torso, location=(sx * b["shoulder_x"], 0, b["shoulder_z"]))
-        au.rotation_euler = (0, spread, 0)
+        pose = b["arm_pose"].get(side)  # (pochylenie ramienia, pochylenie przedramienia) w stopniach, - = do przodu
+        au.rotation_euler = (math.radians(pose[0]) if pose else 0, spread, 0)
         bpy.context.view_layer.update()
         elbow = au.matrix_world @ Vector((0, 0, -b["arm_upper"]))
         al = mesh_object(f"arm_lower_{side}", bm_prism(b["arm_lower"], b["arm_r"] * 0.85, b["wrist_r"]), m,
                          parent=au, location=elbow)
+        if pose:
+            al.matrix_world = Matrix.Translation(elbow) @ Matrix.Rotation(math.radians(pose[1]), 4, "X")
         bpy.context.view_layer.update()
         wrist = al.matrix_world @ Vector((0, 0, -b["arm_lower"]))
         hand_bm = bm_box(0.07, 0.09, 0.1, center=(0, 0, -0.05), bevel=0.012)
@@ -219,64 +226,423 @@ def humanoid(name: str, build: dict):
     return root
 
 
+# --------------------------------------------------------------------------- wrogowie: wspólne elementy
+
+RED, GLOW = "mat_enemy", "mat_enemy_glow"
+
+
+def part(name, bm, mat, parent, loc=(0, 0, 0), rot=(0, 0, 0)):
+    """Część-dziecko z lokalnym transformem (bm w układzie rodzica, bez kompensacji świata)."""
+    obj = mesh_object(name, bm, mat)
+    obj.parent = parent
+    obj.matrix_parent_inverse = Matrix.Identity(4)
+    obj.location = loc
+    obj.rotation_euler = tuple(math.radians(a) for a in rot)
+    return obj
+
+
+def node(name, parent, loc=(0, 0, 0), size=0.05):
+    obj = empty(name, size=size)
+    obj.parent = parent
+    obj.matrix_parent_inverse = Matrix.Identity(4)
+    obj.location = loc
+    return obj
+
+
+def objs_by_name() -> dict:
+    return {o.name: o for o in bpy.data.objects}
+
+
+def dress_limbs(o: dict, b: dict, knee=0.11, elbow=0.09, bracer=True, thigh=True, shin=True) -> None:
+    """Nakolanniki, nałokietniki, nagolenniki, płyty na udach, opaski przedramion i nakładki na buty."""
+    for side in ("L", "R"):
+        ll, lu, al, foot = (o[f"leg_lower_{side}"], o[f"leg_upper_{side}"], o[f"arm_lower_{side}"], o[f"foot_{side}"])
+        kr = b["knee_r"]
+        part(f"knee_pad_{side}", bm_box(knee, 0.07, knee * 0.9, center=(0, FWD * (kr + 0.025), 0.0),
+                                        taper_top=(0.8, 0.8), bevel=0.012), RED, ll)
+        if shin:
+            part(f"shin_guard_{side}", bm_box(knee * 0.85, 0.035, 0.28, center=(0, FWD * (kr * 0.85 + 0.012), -0.2),
+                                              taper_top=(1.15, 1.0)), RED, ll)
+        if thigh:
+            part(f"thigh_plate_{side}", bm_box(0.15, 0.04, 0.24, center=(0, FWD * (b["thigh_r"] + 0.012), -0.2),
+                                               taper_top=(1.1, 1.0)), RED, lu)
+        ar = b["arm_r"] * 0.85
+        part(f"elbow_pad_{side}", bm_box(elbow, 0.07, elbow, center=(0, -FWD * (ar + 0.02), 0.0),
+                                         taper_top=(0.8, 0.7), bevel=0.01), RED, al)
+        if bracer:
+            part(f"bracer_{side}", bm_prism(0.13, ar * 1.12, ar * 1.0, sides=6, offset=(0, 0, -0.08)), RED, al)
+        az = b["hip_z"] - b["leg_upper"] - b["leg_lower"]
+        part(f"toe_cap_{side}", bm_box(0.125, 0.09, 0.06, center=(0, FWD * 0.2, -az + 0.032), taper_top=(0.9, 0.7)),
+             RED, foot)
+        part(f"heel_{side}", bm_box(0.1, 0.07, 0.05, center=(0, -FWD * 0.04, -az + 0.025)), RED, foot)
+        part(f"ankle_cuff_{side}", bm_prism(0.06, 0.068, 0.07, sides=6), RED, foot)
+
+
+def dress_torso(o: dict, b: dict, pouches=3, collar=True, back_plate=True, chest_plate=True) -> None:
+    torso, pelvis = o["torso"], o["pelvis"]
+    d, h, w = b["torso_d"], b["torso_h"], b["chest_w"]
+    if chest_plate:
+        part("chest_plate", bm_box(w * 0.74, 0.05, h * 0.52, center=(0, FWD * (d * 0.54 + 0.018), h * 0.66),
+                                   taper_top=(1.12, 1.0), bevel=0.012), RED, torso)
+        part("abdomen_plate", bm_box(w * 0.5, 0.04, h * 0.22, center=(0, FWD * (d * 0.5 + 0.01), h * 0.25),
+                                     taper_top=(1.1, 1.0)), RED, torso)
+    if back_plate:
+        part("back_plate", bm_box(w * 0.78, 0.045, h * 0.7, center=(0, -FWD * (d * 0.54 + 0.015), h * 0.55),
+                                  taper_top=(1.1, 1.0)), RED, torso)
+    xs = {0: [], 2: [-0.1, 0.1], 3: [-0.13, 0.0, 0.13]}[pouches]
+    for i, x in enumerate(xs):
+        part(f"pouch_{i}", bm_box(0.075, 0.05, 0.09, center=(x, FWD * (d * 0.5 + 0.022), 0.06)), RED, torso)
+    if collar:
+        part("collar", bm_prism(0.07, w * 0.2, w * 0.24, sides=6, offset=(0, 0, h + 0.02)), RED, torso)
+    part("belt", bm_box(b["waist_w"] + 0.07, 0.26, 0.05, center=(0, 0, 0.075)), RED, pelvis)
+    part("belt_buckle", bm_box(0.06, 0.03, 0.05, center=(0, FWD * 0.13, 0.075)), GLOW, pelvis)
+
+
+def torso_local_z(b: dict, world_z: float) -> float:
+    return world_z - b["waist_z"]
+
+
+# --------------------------------------------------------------------------- wrogowie: Szturmowiec
+
 def build_enemy_trooper():
-    """Szturmowiec: masywny, naramienniki, pałka elektryczna w prawej ręce."""
+    """Szturmowiec: masywny, fazowane naramienniki, kamizelka, pałka elektryczna w prawej ręce."""
     root = humanoid("enemy_trooper", {
         "chest_w": 0.54, "waist_w": 0.34, "torso_d": 0.28, "shoulder_x": 0.29,
         "arm_r": 0.065, "wrist_r": 0.045, "thigh_r": 0.095, "head_r": 0.115, "arm_spread_deg": 12,
     })
-    objs = {o.name: o for o in bpy.data.objects}
-    torso, head = objs["torso"], objs["head"]
+    b = dict(LAST_BUILD)
+    o = objs_by_name()
+    torso, head = o["torso"], o["head"]
+    dress_torso(o, b, pouches=3)
+    dress_limbs(o, b)
+    sz = torso_local_z(b, b["shoulder_z"]) + 0.03
     for side, sx in (("L", 1), ("R", -1)):
-        pad = bm_box(0.18, 0.24, 0.1, center=(0, 0, 0), taper_top=(0.75, 0.8), bevel=0.02)
-        p = mesh_object(f"shoulder_pad_{side}", pad, "mat_enemy", parent=torso,
-                        location=(sx * 0.31, 0, 1.47))
-        p.rotation_euler = (0, math.radians(-18 * sx), 0)
-    # hełm z wizjerem
-    helmet = bm_box(0.27, 0.29, 0.27, center=(0, 0, 0.185), taper_top=(0.82, 0.85), bevel=0.025)
-    mesh_object("helmet", helmet, "mat_enemy", parent=head, location=wpos(head))
-    visor = bm_box(0.2, 0.02, 0.04, center=(0, FWD * 0.148, 0.2))
-    mesh_object("visor", visor, "mat_enemy_glow", parent=head, location=wpos(head))
+        pad = bm_merge(
+            bm_box(0.2, 0.26, 0.09, taper_top=(0.7, 0.8), bevel=0.02),
+            bm_box(0.17, 0.22, 0.04, center=(0, 0, 0.065), taper_top=(0.7, 0.75)),
+            bm_box(0.2, 0.05, 0.06, center=(0, FWD * 0.14, -0.02)),
+        )
+        part(f"shoulder_pad_{side}", pad, RED, torso, loc=(sx * 0.31, 0, sz), rot=(0, -18 * sx, 0))
+    # hełm: kopuła, daszek, policzki, grzbiet, szczęka i szeroki świecący pasek wizjera
+    helmet = bm_merge(
+        bm_box(0.27, 0.29, 0.27, center=(0, 0, 0.185), taper_top=(0.82, 0.85), bevel=0.025),
+        bm_box(0.29, 0.05, 0.05, center=(0, FWD * 0.15, 0.265)),
+        bm_box(0.045, 0.12, 0.1, center=(0.14, 0, 0.12)),
+        bm_box(0.045, 0.12, 0.1, center=(-0.14, 0, 0.12)),
+        bm_box(0.04, 0.22, 0.04, center=(0, 0, 0.33)),
+        bm_box(0.17, 0.06, 0.06, center=(0, FWD * 0.12, 0.05), taper_top=(0.8, 1.0)),
+    )
+    part("helmet", helmet, RED, head)
+    part("visor", bm_box(0.21, 0.025, 0.045), GLOW, head, loc=(0, FWD * 0.153, 0.195))
+    # plecak z anteną
+    part("backpack", bm_merge(
+        bm_box(0.26, 0.1, 0.22, center=(0, 0, 0.0), bevel=0.012),
+        bm_box(0.06, 0.06, 0.06, center=(0.07, -FWD * 0.06, 0.14)),
+        bm_prism(0.46, 0.008, 0.012, sides=4, offset=(0.1, 0, 0.27)),
+    ), RED, torso, loc=(0, -FWD * (b["torso_d"] / 2 + 0.05), 0.28))
+    part("antenna_tip", bm_box(0.025, 0.025, 0.025), GLOW, torso,
+         loc=(0.1, -FWD * (b["torso_d"] / 2 + 0.05), 0.55))
     # pałka elektryczna
-    hand = objs["hand_R"]
-    bpy.context.view_layer.update()
-    grip = hand.matrix_world @ Vector((0, 0, -0.05))
-    baton = empty("baton", parent=hand, location=grip, size=0.05)
-    shaft = bm_prism(0.62, 0.022, 0.026, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.22, 0))
-    mesh_object("baton_shaft", shaft, "mat_enemy", parent=baton, location=grip)
-    tip = bm_prism(0.16, 0.034, 0.034, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.58, 0))
-    mesh_object("baton_tip", tip, "mat_enemy_glow", parent=baton, location=grip)
-    empty("baton_hit", parent=baton, location=grip + Vector((0, FWD * 0.6, 0)), size=0.05)
+    baton = node("baton", o["hand_R"], (0, 0, -0.05))
+    part("baton_shaft", bm_merge(
+        bm_prism(0.62, 0.022, 0.026, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.22, 0)),
+        bm_prism(0.12, 0.03, 0.03, sides=6, axis="Y", top_at_origin=False, offset=(0, -FWD * 0.07, 0)),  # chwyt
+        bm_box(0.09, 0.03, 0.05, center=(0, 0, 0.0)),  # jelec
+    ), RED, baton)
+    part("baton_tip", bm_prism(0.16, 0.034, 0.034, sides=6, axis="Y", top_at_origin=False),
+         GLOW, baton, loc=(0, FWD * 0.58, 0))
+    node("baton_hit", baton, (0, FWD * 0.6, 0))
     return root
 
 
+# --------------------------------------------------------------------------- wrogowie: Strzelec
+
+def _rifle_parts(long: bool):
+    """Bryła karabinu w układzie węzła rifle (początek w chwycie, lufa do przodu = FWD)."""
+    if not long:
+        return bm_merge(
+            bm_box(0.06, 0.5, 0.1, center=(0, FWD * 0.12, 0.03), bevel=0.01),
+            bm_box(0.05, 0.22, 0.08, center=(0, -FWD * 0.22, 0.0), taper_top=(1.0, 0.8)),
+            bm_box(0.04, 0.05, 0.12, center=(0, FWD * 0.02, -0.06)),
+            bm_prism(0.34, 0.018, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.53, 0.05)),
+            bm_box(0.045, 0.07, 0.15, center=(0, FWD * 0.16, -0.08), taper_top=(1.0, 0.8)),  # magazynek
+            bm_box(0.04, 0.2, 0.03, center=(0, FWD * 0.32, 0.075)),  # szyna
+            bm_box(0.03, 0.03, 0.05, center=(0, FWD * 0.38, 0.1)),  # muszka
+            bm_box(0.04, 0.04, 0.04, center=(0, FWD * 0.69, 0.05)),  # kompensator
+        )
+    return bm_merge(
+        bm_box(0.06, 0.46, 0.1, center=(0, 0, 0.03), bevel=0.01),
+        bm_box(0.055, 0.3, 0.09, center=(0, -FWD * 0.3, 0.0), taper_top=(1.0, 0.7)),  # kolba
+        bm_box(0.04, 0.07, 0.07, center=(0, -FWD * 0.35, 0.07)),  # policzek
+        bm_box(0.04, 0.05, 0.12, center=(0, 0, -0.06)),
+        bm_prism(0.5, 0.017, 0.017, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.45, 0.05)),
+        bm_box(0.045, 0.08, 0.045, center=(0, FWD * 0.67, 0.05)),  # hamulec wylotowy
+        bm_box(0.045, 0.07, 0.13, center=(0, FWD * 0.08, -0.07), taper_top=(1.0, 0.8)),  # magazynek
+        bm_prism(0.3, 0.028, 0.028, sides=8, axis="Y", top_at_origin=False, offset=(0, FWD * 0.04, 0.11)),  # luneta
+        bm_prism(0.07, 0.037, 0.034, sides=8, axis="Y", top_at_origin=False, offset=(0, FWD * 0.2, 0.11)),
+        bm_prism(0.05, 0.03, 0.036, sides=8, axis="Y", top_at_origin=False, offset=(0, -FWD * 0.2, 0.11)),
+        bm_box(0.03, 0.03, 0.04, center=(0, FWD * 0.1, 0.07)),
+        bm_box(0.03, 0.03, 0.04, center=(0, -FWD * 0.04, 0.07)),
+    )
+
+
 def build_enemy_gunner():
-    """Strzelec: smuklejszy, długi hełm z wizjerem, karabin trzymany oburącz."""
+    """Strzelec: smuklejszy, hełm z osłoną karku, kamizelka z magazynkami, plecak z anteną, karabin."""
     root = humanoid("enemy_gunner", {"chest_w": 0.44, "head_r": 0.118, "arm_spread_deg": 6})
-    objs = {o.name: o for o in bpy.data.objects}
-    head, torso = objs["head"], objs["torso"]
+    b = dict(LAST_BUILD)
+    o = objs_by_name()
+    head, torso = o["head"], o["torso"]
+    dress_torso(o, b, pouches=3)
+    dress_limbs(o, b, knee=0.1, elbow=0.08, thigh=False)
+    sz = torso_local_z(b, b["shoulder_z"]) + 0.03
+    for side, sx in (("L", 1), ("R", -1)):
+        part(f"shoulder_pad_{side}", bm_merge(
+            bm_box(0.13, 0.17, 0.06, taper_top=(0.75, 0.8), bevel=0.015),
+            bm_box(0.12, 0.03, 0.05, center=(0, FWD * 0.09, -0.01)),
+        ), RED, torso, loc=(sx * 0.255, 0, sz), rot=(0, -14 * sx, 0))
     helmet = bm_merge(
         bm_box(0.24, 0.28, 0.26, center=(0, 0, 0.18), taper_top=(0.8, 0.9), bevel=0.025),
         bm_box(0.2, 0.12, 0.06, center=(0, -FWD * 0.15, 0.1), bevel=0.01),  # osłona karku
+        bm_box(0.26, 0.04, 0.04, center=(0, FWD * 0.14, 0.27)),  # daszek
+        bm_box(0.04, 0.1, 0.09, center=(0.125, 0, 0.12)),
+        bm_box(0.04, 0.1, 0.09, center=(-0.125, 0, 0.12)),
+        bm_box(0.035, 0.2, 0.035, center=(0, -FWD * 0.02, 0.315)),
     )
-    mesh_object("helmet", helmet, "mat_enemy", parent=head, location=wpos(head))
-    visor = bm_box(0.06, 0.02, 0.06, center=(0, FWD * 0.142, 0.19))
-    mesh_object("visor", visor, "mat_enemy_glow", parent=head, location=wpos(head))
-    pack = bm_box(0.3, 0.12, 0.3, center=(0, -FWD * 0.17, 0.27), bevel=0.02)
-    mesh_object("backpack", pack, "mat_enemy", parent=torso, location=wpos(torso))
-    # karabin: uchwyt w prawej dłoni, lufa do przodu
-    hand = objs["hand_R"]
-    bpy.context.view_layer.update()
-    grip = hand.matrix_world @ Vector((0, 0, -0.05))
-    rifle = empty("rifle", parent=hand, location=grip, size=0.05)
-    body = bm_merge(
-        bm_box(0.06, 0.5, 0.1, center=(0, FWD * 0.12, 0.03), bevel=0.01),
-        bm_box(0.05, 0.22, 0.08, center=(0, -FWD * 0.22, 0.0), taper_top=(1.0, 0.8)),  # kolba
-        bm_box(0.04, 0.05, 0.12, center=(0, FWD * 0.02, -0.06)),  # chwyt
-        bm_prism(0.34, 0.018, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.53, 0.05)),
+    part("helmet", helmet, RED, head)
+    part("visor", bm_box(0.19, 0.025, 0.04), GLOW, head, loc=(0, FWD * 0.143, 0.19))
+    part("backpack", bm_merge(
+        bm_box(0.3, 0.12, 0.3, center=(0, 0, 0.0), bevel=0.02),
+        bm_box(0.1, 0.05, 0.12, center=(0, -FWD * 0.08, -0.03)),
+        bm_box(0.04, 0.05, 0.05, center=(-0.11, -FWD * 0.03, 0.17)),
+        bm_prism(0.5, 0.008, 0.012, sides=4, offset=(-0.11, 0, 0.35)),
+    ), RED, torso, loc=(0, -FWD * (b["torso_d"] / 2 + 0.06), 0.27))
+    part("antenna_tip", bm_box(0.025, 0.025, 0.025), GLOW, torso,
+         loc=(-0.11, -FWD * (b["torso_d"] / 2 + 0.06), 0.6))
+    rifle = node("rifle", o["hand_R"], (0, 0, -0.05))
+    part("rifle_body", _rifle_parts(False), RED, rifle)
+    node("muzzle", rifle, (0, FWD * 0.71, 0.05))
+    return root
+
+
+# --------------------------------------------------------------------------- wrogowie: Snajper
+
+def build_enemy_sniper():
+    """Snajper: wysoki i smukły, płaszcz z paneli, kaptur z jedną soczewką, długi karabin z lunetą."""
+    root = humanoid("enemy_sniper", {
+        "hip_z": 1.0, "leg_upper": 0.47, "leg_lower": 0.47, "waist_z": 1.08, "torso_h": 0.45,
+        "waist_w": 0.26, "chest_w": 0.36, "torso_d": 0.2, "shoulder_x": 0.22, "shoulder_z": 1.5,
+        "arm_upper": 0.3, "arm_lower": 0.29, "arm_r": 0.052, "wrist_r": 0.038, "neck_z": 1.56,
+        "head_r": 0.105, "thigh_r": 0.085, "knee_r": 0.065, "ankle_r": 0.048, "hip_x": 0.085,
+        "arm_spread_deg": 4,
+    })
+    b = dict(LAST_BUILD)
+    o = objs_by_name()
+    head, torso = o["head"], o["torso"]
+    dress_torso(o, b, pouches=2, back_plate=False)
+    dress_limbs(o, b, knee=0.09, elbow=0.075, thigh=False, shin=True)
+    sz = torso_local_z(b, b["shoulder_z"]) + 0.02
+    for side, sx in (("L", 1), ("R", -1)):
+        part(f"shoulder_pad_{side}", bm_box(0.12, 0.16, 0.05, taper_top=(0.7, 0.8), bevel=0.012), RED, torso,
+             loc=(sx * 0.225, 0, sz), rot=(0, -12 * sx, 0))
+        lu = o[f"leg_upper_{side}"]
+        # poły płaszcza: panele zwisające z talii, wachlarzem na boki, podążają za nogami
+        part(f"coat_front_{side}", bm_box(0.15, 0.018, 0.6, center=(0, FWD * 0.115, -0.3), taper_top=(0.8, 1.0)),
+             RED, lu, rot=(0, 5 * sx, 0))
+        part(f"coat_side_{side}", bm_box(0.018, 0.22, 0.66, center=(sx * 0.07, 0, -0.33), taper_top=(1.0, 0.75)),
+             RED, lu, rot=(0, 7 * sx, 0))
+        part(f"coat_back_{side}", bm_box(0.15, 0.018, 0.78, center=(0, -FWD * 0.115, -0.39), taper_top=(0.85, 1.0)),
+             RED, lu, rot=(0, 4 * sx, 0))
+    part("cape", bm_box(0.4, 0.26, 0.05, taper_top=(0.7, 0.8)), RED, torso,
+         loc=(0, 0, torso_local_z(b, b["shoulder_z"]) + 0.01))
+    helmet = bm_merge(
+        bm_box(0.23, 0.27, 0.25, center=(0, 0, 0.17), taper_top=(0.85, 0.9), bevel=0.02),
+        bm_box(0.25, 0.04, 0.05, center=(0, FWD * 0.14, 0.255)),
+        bm_box(0.16, 0.1, 0.12, center=(0, -FWD * 0.12, 0.08), taper_top=(0.9, 1.0)),  # osłona karku
+        bm_prism(0.05, 0.062, 0.062, sides=8, axis="Y", top_at_origin=False, offset=(0, FWD * 0.135, 0.19)),  # obejma
+        bm_prism(0.3, 0.007, 0.01, sides=4, offset=(0.1, 0, 0.45)),  # antena
     )
-    mesh_object("rifle_body", body, "mat_enemy", parent=rifle, location=grip)
-    empty("muzzle", parent=rifle, location=grip + Vector((0, FWD * 0.71, 0.05)), size=0.05)
+    part("helmet", helmet, RED, head)
+    part("visor", bm_prism(0.03, 0.043, 0.043, sides=10, axis="Y", top_at_origin=False), GLOW, head,
+         loc=(0, FWD * 0.165, 0.19))
+    rifle = node("rifle", o["hand_R"], (0, 0, -0.05))
+    part("rifle_body", _rifle_parts(True), RED, rifle)
+    part("scope_lens", bm_prism(0.012, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False), GLOW, rifle,
+         loc=(0, FWD * 0.24, 0.11))
+    node("muzzle", rifle, (0, FWD * 0.71, 0.05))
+    return root
+
+
+# --------------------------------------------------------------------------- wrogowie: Tarczownik
+
+def build_enemy_shielder():
+    """Tarczownik: krępy, ciężkie pancerze, duża tarcza (węzeł shield) przed lewym bokiem, krótka pałka."""
+    root = humanoid("enemy_shielder", {
+        "hip_z": 0.9, "leg_upper": 0.43, "leg_lower": 0.42, "waist_z": 0.97, "torso_h": 0.46,
+        "waist_w": 0.42, "chest_w": 0.58, "torso_d": 0.3, "shoulder_x": 0.33, "shoulder_z": 1.4,
+        "arm_upper": 0.28, "arm_lower": 0.26, "arm_r": 0.078, "wrist_r": 0.055, "neck_z": 1.45,
+        "head_r": 0.125, "thigh_r": 0.115, "knee_r": 0.09, "ankle_r": 0.066, "hip_x": 0.12,
+        "arm_spread_deg": 6, "arm_pose": {"L": (-45, -75)},
+    })
+    b = dict(LAST_BUILD)
+    o = objs_by_name()
+    head, torso, pelvis = o["head"], o["torso"], o["pelvis"]
+    dress_torso(o, b, pouches=2)
+    dress_limbs(o, b, knee=0.13, elbow=0.1)
+    sz = torso_local_z(b, b["shoulder_z"]) + 0.03
+    for side, sx in (("L", 1), ("R", -1)):
+        big = side == "R"
+        part(f"shoulder_pad_{side}", bm_merge(
+            bm_box(0.22 if big else 0.18, 0.28, 0.1, taper_top=(0.7, 0.8), bevel=0.02),
+            bm_box(0.2 if big else 0.16, 0.24, 0.05, center=(0, 0, 0.075), taper_top=(0.7, 0.75)),
+        ), RED, torso, loc=(sx * 0.35, 0, sz), rot=(0, -18 * sx, 0))
+    helmet = bm_merge(
+        bm_box(0.3, 0.31, 0.27, center=(0, 0, 0.19), taper_top=(0.85, 0.88), bevel=0.025),
+        bm_box(0.32, 0.05, 0.06, center=(0, FWD * 0.16, 0.27)),
+        bm_box(0.05, 0.14, 0.11, center=(0.16, 0, 0.12)),
+        bm_box(0.05, 0.14, 0.11, center=(-0.16, 0, 0.12)),
+        bm_box(0.18, 0.07, 0.07, center=(0, FWD * 0.13, 0.05), taper_top=(0.85, 1.0)),
+        bm_box(0.05, 0.2, 0.04, center=(0, 0, 0.34)),
+    )
+    part("helmet", helmet, RED, head)
+    part("visor", bm_box(0.24, 0.025, 0.04), GLOW, head, loc=(0, FWD * 0.164, 0.2))
+    part("backpack", bm_box(0.3, 0.1, 0.24, bevel=0.015), RED, torso,
+         loc=(0, -FWD * (b["torso_d"] / 2 + 0.05), 0.25))
+    # krótka pałka do uderzenia tarczą
+    baton = node("baton", o["hand_R"], (0, 0, -0.05))
+    part("baton_shaft", bm_merge(
+        bm_prism(0.36, 0.028, 0.034, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.12, 0)),
+        bm_prism(0.12, 0.034, 0.034, sides=6, axis="Y", top_at_origin=False, offset=(0, -FWD * 0.06, 0)),
+    ), RED, baton)
+    part("baton_tip", bm_prism(0.12, 0.042, 0.042, sides=6, axis="Y", top_at_origin=False), GLOW, baton,
+         loc=(0, FWD * 0.36, 0))
+    node("baton_hit", baton, (0, FWD * 0.42, 0))
+    # tarcza 0,8 x 1,2 x 0,12 m (shieldSizeM), przed lewym bokiem; dziecko pelvis, żeby podążała za przechyłem
+    sy = FWD * 0.52
+    pw = wpos(pelvis)
+    shield = node("shield", pelvis, (0.3 - pw.x, sy - pw.y, 1.05 - pw.z), size=0.2)
+    part("shield_plate", bm_merge(
+        bm_box(0.8, 0.07, 1.2, taper_top=(0.9, 1.0)),
+        bm_box(0.84, 0.12, 0.07, center=(0, 0, 0.6), taper_top=(0.92, 1.0)),
+        bm_box(0.7, 0.12, 0.07, center=(0, 0, -0.6)),
+        bm_box(0.07, 0.12, 1.1, center=(0.375, 0, 0.0)),
+        bm_box(0.07, 0.12, 1.1, center=(-0.375, 0, 0.0)),
+        bm_box(0.12, 0.12, 0.9),  # żebro środkowe
+        bm_box(0.05, 0.06, 0.3, center=(0.0, -FWD * 0.08, 0.0)),  # uchwyt od strony ręki
+    ), RED, shield)
+    part("shield_slit", bm_box(0.52, 0.03, 0.07), GLOW, shield, loc=(0, FWD * 0.065, 0.36))
+    part("shield_trim", bm_box(0.5, 0.025, 0.035), GLOW, shield, loc=(0, FWD * 0.065, -0.45))
+    return root
+
+
+# --------------------------------------------------------------------------- wrogowie: Egzekutor
+
+def build_enemy_executor():
+    """Egzekutor: największy, ciężki pancerz, rogi na hełmie, kolczaste naramienniki, rękojeść ostrza w prawej dłoni."""
+    root = humanoid("enemy_executor", {
+        "hip_z": 1.02, "leg_upper": 0.49, "leg_lower": 0.47, "waist_z": 1.1, "torso_h": 0.5,
+        "waist_w": 0.4, "chest_w": 0.66, "torso_d": 0.32, "shoulder_x": 0.37, "shoulder_z": 1.55,
+        "arm_upper": 0.31, "arm_lower": 0.29, "arm_r": 0.08, "wrist_r": 0.055, "neck_z": 1.64,
+        "head_r": 0.13, "thigh_r": 0.12, "knee_r": 0.09, "ankle_r": 0.066, "hip_x": 0.13,
+        "arm_spread_deg": 10,
+    })
+    b = dict(LAST_BUILD)
+    o = objs_by_name()
+    head, torso = o["head"], o["torso"]
+    dress_torso(o, b, pouches=0)
+    dress_limbs(o, b, knee=0.14, elbow=0.11)
+    d = b["torso_d"]
+    part("chest_ridge", bm_box(0.06, 0.06, 0.4, center=(0, FWD * (d * 0.5 + 0.06), 0.32)), RED, torso)
+    part("chest_core", bm_box(0.09, 0.03, 0.09), GLOW, torso, loc=(0, FWD * (d * 0.5 + 0.1), 0.34))
+    part("chest_flanks", bm_merge(
+        bm_box(0.18, 0.06, 0.3, center=(0.19, FWD * (d * 0.5 + 0.03), 0.3)),
+        bm_box(0.18, 0.06, 0.3, center=(-0.19, FWD * (d * 0.5 + 0.03), 0.3)),
+    ), RED, torso)
+    sz = torso_local_z(b, b["shoulder_z"]) + 0.03
+    for side, sx in (("L", 1), ("R", -1)):
+        lu = o[f"leg_upper_{side}"]
+        part(f"tasset_{side}", bm_box(0.2, 0.05, 0.3, center=(0, FWD * 0.13, -0.18), taper_top=(1.15, 1.0)), RED, lu)
+        pad = bm_merge(
+            bm_box(0.26, 0.32, 0.11, taper_top=(0.7, 0.8), bevel=0.02),
+            bm_box(0.22, 0.28, 0.06, center=(0, 0, 0.085), taper_top=(0.7, 0.75)),
+            bm_prism(0.2, 0.0, 0.05, sides=4, top_at_origin=False, offset=(sx * 0.07, 0, 0.19)),
+            bm_prism(0.14, 0.0, 0.04, sides=4, top_at_origin=False, offset=(sx * 0.07, FWD * 0.09, 0.15)),
+            bm_prism(0.14, 0.0, 0.04, sides=4, top_at_origin=False, offset=(sx * 0.07, -FWD * 0.09, 0.15)),
+        )
+        part(f"shoulder_pad_{side}", pad, RED, torso, loc=(sx * 0.4, 0, sz), rot=(0, -20 * sx, 0))
+    helmet = bm_merge(
+        bm_box(0.3, 0.32, 0.29, center=(0, 0, 0.2), taper_top=(0.82, 0.85), bevel=0.025),
+        bm_box(0.32, 0.06, 0.06, center=(0, FWD * 0.165, 0.29)),
+        bm_box(0.05, 0.15, 0.12, center=(0.16, 0, 0.12)),
+        bm_box(0.05, 0.15, 0.12, center=(-0.16, 0, 0.12)),
+        bm_box(0.2, 0.08, 0.08, center=(0, FWD * 0.14, 0.05), taper_top=(0.8, 1.0)),
+        bm_box(0.06, 0.34, 0.07, center=(0, -FWD * 0.02, 0.36)),  # grzebień
+        bm_box(0.2, 0.08, 0.06, center=(0, -FWD * 0.17, 0.08)),
+        bm_prism(0.3, 0.0, 0.05, sides=4, top_at_origin=False, offset=(0.15, -FWD * 0.03, 0.42)),  # rogi
+        bm_prism(0.3, 0.0, 0.05, sides=4, top_at_origin=False, offset=(-0.15, -FWD * 0.03, 0.42)),
+    )
+    part("helmet", helmet, RED, head)
+    part("visor", bm_merge(bm_box(0.24, 0.025, 0.04), bm_box(0.04, 0.025, 0.1, center=(0, 0, -0.02))), GLOW, head,
+         loc=(0, FWD * 0.172, 0.215))
+    part("backpack", bm_merge(
+        bm_box(0.4, 0.14, 0.34, bevel=0.02),
+        bm_box(0.08, 0.1, 0.16, center=(0.13, -FWD * 0.09, 0.05)),
+        bm_box(0.08, 0.1, 0.16, center=(-0.13, -FWD * 0.09, 0.05)),
+    ), RED, torso, loc=(0, -FWD * (d / 2 + 0.08), 0.3))
+    part("backpack_glow", bm_box(0.2, 0.02, 0.05), GLOW, torso, loc=(0, -FWD * (d / 2 + 0.16), 0.4))
+    # rękojeść ostrza plazmowego: samo ostrze dodaje kod (bladeSizeM) w węźle hand_R
+    hilt = node("blade_hilt", o["hand_R"], (0, 0, -0.05))
+    part("hilt_body", bm_merge(
+        bm_prism(0.26, 0.032, 0.032, sides=6, axis="Y", top_at_origin=False, offset=(0, -FWD * 0.06, 0.0)),
+        bm_box(0.2, 0.035, 0.07, center=(0, FWD * 0.065, 0.0)),  # jelec
+        bm_box(0.04, 0.05, 0.04, center=(0.09, FWD * 0.08, 0.0)),
+        bm_box(0.04, 0.05, 0.04, center=(-0.09, FWD * 0.08, 0.0)),
+        bm_prism(0.1, 0.055, 0.05, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.12, 0.0)),  # emiter
+        bm_box(0.06, 0.05, 0.06, center=(0, -FWD * 0.2, 0.0)),  # głowica
+    ), RED, hilt)
+    return root
+
+
+# --------------------------------------------------------------------------- wrogowie: Dron
+
+def build_enemy_drone():
+    """Dron: początek w środku kadłuba, oko z przodu (+Z glTF), cztery wirniki (węzły rotor_*) obracane w kodzie."""
+    root = empty("enemy_drone", size=0.3)
+    hull = mesh_object("hull", bm_merge(
+        bm_ico(0.2, subdiv=1, scale=(1.0, 1.15, 0.62)),
+        bm_box(0.2, 0.26, 0.05, center=(0, 0, 0.13), taper_top=(0.7, 0.8)),  # kopuła czujnika
+        bm_box(0.06, 0.16, 0.05, center=(0, -FWD * 0.2, 0.0)),  # tylny statecznik
+        bm_box(0.012, 0.012, 0.18, center=(0, -FWD * 0.24, 0.1)),  # antena
+        bm_box(0.14, 0.12, 0.05, center=(0, FWD * 0.02, -0.14), taper_top=(0.7, 0.7)),  # brzuch
+        bm_prism(0.2, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.24, -0.11)),  # lufa
+    ), RED, parent=root)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            tag = f"{'L' if sx > 0 else 'R'}{'F' if sy < 0 else 'B'}"
+            cx, cy, cz = sx * 0.28, sy * 0.28, 0.06
+            ang = math.degrees(math.atan2(cy, cx))
+            part(f"arm_{tag}", bm_box(0.4, 0.04, 0.035), RED, hull, loc=(cx / 2, cy / 2, cz - 0.01), rot=(0, 0, ang))
+            part(f"motor_{tag}", bm_prism(0.07, 0.05, 0.055, sides=8, top_at_origin=False), RED, hull,
+                 loc=(cx, cy, cz))
+            ring = None  # osłona wirnika: pierścień z 8 odcinków
+            segs = 8
+            for i in range(segs):
+                a = 2 * math.pi * i / segs
+                seg = bm_box(0.125, 0.024, 0.03)
+                bmesh.ops.rotate(seg, verts=seg.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(a + math.pi / 2, 3, "Z"))
+                for v in seg.verts:
+                    v.co += Vector((math.cos(a) * 0.165, math.sin(a) * 0.165, 0))
+                ring = seg if ring is None else bm_merge(ring, seg)
+            part(f"guard_{tag}", ring, RED, hull, loc=(cx, cy, cz + 0.02))
+            rotor = bm_merge(
+                bm_box(0.3, 0.035, 0.008),
+                bm_box(0.035, 0.3, 0.008),
+                bm_prism(0.025, 0.03, 0.03, sides=6, top_at_origin=False, offset=(0, 0, 0.012)),
+            )
+            part(f"rotor_{tag}", rotor, RED, root, loc=(cx, cy, cz + 0.07))
+    part("eye_ring", bm_prism(0.04, 0.095, 0.1, sides=10, axis="Y", top_at_origin=False), RED, root,
+         loc=(0, FWD * 0.2, 0.01))
+    part("eye", bm_ico(0.075, subdiv=1), GLOW, root, loc=(0, FWD * 0.235, 0.01))
+    node("muzzle", root, (0, FWD * 0.34, -0.11))
     return root
 
 
@@ -619,6 +985,10 @@ def main() -> None:
     builders = {
         "enemy_trooper": build_enemy_trooper,
         "enemy_gunner": build_enemy_gunner,
+        "enemy_sniper": build_enemy_sniper,
+        "enemy_shielder": build_enemy_shielder,
+        "enemy_executor": build_enemy_executor,
+        "enemy_drone": build_enemy_drone,
         "plasma_blade": build_plasma_blade,
         "blaster": build_blaster,
         "pistol": build_pistol,

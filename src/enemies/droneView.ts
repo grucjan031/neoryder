@@ -5,22 +5,30 @@ import {
   OctahedronGeometry,
   SphereGeometry,
 } from 'three';
-import type { BufferGeometry } from 'three';
+import type { BufferGeometry, Object3D } from 'three';
 import { getMaterial } from '../render/materials';
 import { droneFields } from './enemySchema';
+import { loadEnemyModel } from './enemyView';
 import type { Enemy } from './types';
 
-/** Widok drona z prymitywów (F2-13): korpus, świecące oko z przodu (+Z), cztery wirniki. */
+/**
+ * Widok drona (F2-13): model GLB z `definition.model` (węzły `eye` i `rotor*`) albo,
+ * przy braku modelu lub błędzie ładowania, bryła z prymitywów: korpus, oko z przodu (+Z), cztery wirniki.
+ */
 export class DroneView {
   readonly root = new Group();
   private readonly tilt = new Group();
-  private readonly eye: Mesh;
-  private readonly rotors: Mesh[] = [];
+  private eye: Object3D;
+  private rotors: Object3D[] = [];
+  private disposed = false;
   private readonly geometries: BufferGeometry[] = [];
   private readonly flight;
   private spin = 0;
 
-  constructor(readonly enemy: Enemy) {
+  constructor(
+    readonly enemy: Enemy,
+    loadModels = true,
+  ) {
     this.flight = droneFields.parse(enemy.definition.drone);
     const r = this.flight.radiusM;
     const hull = new OctahedronGeometry(r);
@@ -47,6 +55,20 @@ export class DroneView {
       this.tilt.add(mesh);
     }
     this.root.add(this.tilt);
+    if (loadModels && enemy.definition.model)
+      void loadEnemyModel(enemy.definition.model).then((source) => {
+        const eye = source?.getObjectByName('eye');
+        if (!source || !eye || this.disposed) return;
+        const model = source.clone(true);
+        const rotors: Object3D[] = [];
+        model.traverse((node) => {
+          if (node.name.startsWith('rotor')) rotors.push(node);
+        });
+        this.tilt.clear();
+        this.tilt.add(model);
+        this.eye = model.getObjectByName('eye') ?? eye;
+        this.rotors = rotors;
+      });
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
@@ -75,6 +97,7 @@ export class DroneView {
   }
 
   dispose(): void {
+    this.disposed = true;
     this.root.removeFromParent();
     this.root.clear();
     for (const geometry of this.geometries) geometry.dispose();

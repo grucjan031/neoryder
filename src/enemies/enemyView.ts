@@ -9,8 +9,11 @@ const rifleman = (kind: string): boolean =>
   kind === 'gunner' || kind === 'sniper';
 const up = new Vector3(0, 1, 0);
 const templates = new Map<string, Promise<Object3D | null>>();
-function loadTemplate(kind: string): Promise<Object3D | null> {
-  const name = rifleman(kind) ? 'enemy_gunner' : 'enemy_trooper';
+/** Domyślny model archetypu, gdy dane nie podają pola model. */
+const defaultModel = (kind: string): string =>
+  rifleman(kind) ? 'enemy_gunner' : 'enemy_trooper';
+/** Wczytuje i stylizuje model GLB wroga (cache po nazwie); null przy błędzie. */
+export function loadEnemyModel(name: string): Promise<Object3D | null> {
   const cached = templates.get(name);
   if (cached) return cached;
   const template = new GLTFLoader()
@@ -39,7 +42,8 @@ export class EnemyView {
   private model = new Group();
   private disposed = false;
   private readonly laser?: Mesh;
-  private readonly shield?: Mesh;
+  private shield?: Object3D;
+  private fallbackShield?: Mesh;
   private readonly fallbackGeometries: BoxGeometry[] = [];
   private readonly rest = new Map<
     Object3D,
@@ -180,7 +184,8 @@ export class EnemyView {
         shieldSize.z,
       );
       this.fallbackGeometries.push(geometry);
-      this.shield = new Mesh(geometry, getMaterial('enemy'));
+      this.fallbackShield = new Mesh(geometry, getMaterial('enemy'));
+      this.shield = this.fallbackShield;
       this.shield.name = 'shield';
       this.shield.position.set(
         body.radius,
@@ -202,15 +207,27 @@ export class EnemyView {
       this.root.add(this.laser);
     }
     if (loadModels)
-      void loadTemplate(enemy.definition.kind).then((source) => {
+      void loadEnemyModel(
+        enemy.definition.model ?? defaultModel(enemy.definition.kind),
+      ).then((source) => {
         if (!source || this.disposed) return;
         this.root.remove(this.model);
         this.model = new Group();
         this.model.add(source.clone(true));
         this.root.add(this.model);
+        this.useModelShield();
         this.equipBlade();
         this.captureRest();
       });
+  }
+
+  /** Model z własnym węzłem shield zastępuje bryłę zastępczą (bez wpływu na dane tarczy). */
+  private useModelShield(): void {
+    const node = this.model.getObjectByName('shield');
+    if (!node || !this.fallbackShield) return;
+    this.fallbackShield.removeFromParent();
+    this.shield = node;
+    node.visible = this.enemy.current.shieldUp === true;
   }
 
   private equipBlade(): void {

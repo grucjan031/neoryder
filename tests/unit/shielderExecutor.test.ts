@@ -400,9 +400,10 @@ describe('F2-14 — widoki', () => {
         await vi.waitFor(() =>
           expect(a.root.getObjectByName('trooper-rig')).toBeDefined(),
         );
-        expect(load).toHaveBeenCalledExactlyOnceWith(
-          '/assets/models/enemy_trooper.glb',
-        );
+        expect(load.mock.calls.map(([url]) => url).sort()).toEqual([
+          '/assets/models/enemy_executor.glb',
+          '/assets/models/enemy_shielder.glb',
+        ]);
       }
       a.render(1);
       const mesh = a.root.getObjectByName('shield') as Mesh<BoxGeometry>;
