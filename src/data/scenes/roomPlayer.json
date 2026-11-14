@@ -1,0 +1,7 @@
+{
+  "maxHealth": 100,
+  "maxEnergy": 100,
+  "energyRegen": 25,
+  "heatCapacity": 100,
+  "coolingRate": 45
+}

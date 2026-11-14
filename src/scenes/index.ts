@@ -14,6 +14,7 @@ import { AiTest, createStatusTest, createBarrierTest } from './aiTest';
 import { DebrisTest } from './debrisTest';
 import { GrabTest } from './grabTest';
 import { MapTest } from './mapTest';
+import { createRoomTest } from './roomTest';
 
 export interface Scene {
   readonly id: string;
@@ -44,4 +45,5 @@ export const scenes: Record<string, SceneFactory> = {
   'barrier-test': () => createBarrierTest(),
   'debris-test': () => new DebrisTest(),
   'grab-test': () => new GrabTest(),
+  'room-test': () => createRoomTest(),
 };
