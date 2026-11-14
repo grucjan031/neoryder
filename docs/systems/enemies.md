@@ -262,3 +262,46 @@ i śmierci, walidacja danych) i `aiTest.test.ts` (dyrektor z danych sceny).
 **Statusy (F2-02).** `EnemyDependencies.statuses` (z `StatusSystem` sceny):
 status `stunned` przełącza wroga w stan `stunned` na czas trwania statusu
 (emisja `enemy_stunned`, zwolnienie tokenu dyrektora). Szczegóły: `docs/systems/status.md`.
+
+## Snajper i Dron — F2-13
+
+**Snajper** (`sniper.json`, `kind: 'sniper'`) to archetyp Strzelca z innymi
+danymi — ta sama klasa `Gunner`, model i animacja. Trzyma dystans 16 m ± 3,5
+(z bliska odchodzi), celuje 1,6 s z widoczną linią lasera, przez ostatnie
+`aimLockS` = 0,35 s cel jest zamrożony (laser grubieje ×`laserLockScale`), potem
+oddaje jeden strzał 30 obrażeń z tagami `projectileTags: ['#gun', '#heavy']`:
+blok ostrzem go nie osłabia, trzeba zejść z linii po zamrożeniu albo sparować.
+Nowe opcjonalne pola Strzelca: `aimLockS` (krótszy niż `aimTelegraphS`),
+`laserSight`, `projectileTags` (domyślnie `['#gun']`), w `animation`:
+`laserRadiusM`, `laserLockScale`. Snapshot ma `aim` (punkt celowania)
+w stanach `aim` i `burst`; bez `aimLockS` cel jest śledzony do końca serii
+jak w F1. Laser rysuje `EnemyView` w przestrzeni lokalnej widoku: od `muzzle`
+z danych do `aim`, tylko w stanie `aim`.
+
+**Dron** (`drone.json`, `kind: 'drone'`, klasa `Drone`) lata bez character
+controllera: kinematyczne ciało z sensorem-kulą (hurtbox `radiusM`,
+`hurtboxMultiplier`) na stałej wysokości `hoverHeightM` nad punktem spawnu.
+W `reposition` i `cooldown` krąży wokół celu w odległości `preferredRange`
+z prędkością kątową `orbitSpeedDegS` (kierunek z `Rng`), w `aim`/`burst` wisi
+w miejscu. Strzela seriami jak Strzelec (pola `gunnerFields`, token `shot`
+dyrektora, widoczność promieniem do celu). Każdy ruch to `world.castShape`
+kuli po grupie `World` z odstępem `skinM`: dron zatrzymuje się przed ścianą
+i odwraca kierunek krążenia, odrzut jest wtedy wygaszany. Odrzut działa w 3D
+z tłumieniem `knockbackDamping`; po nim dron wraca na wysokość lotu. Ciężki
+cios, duży odrzut i status `stunned` ogłuszają go (przechył, wolne wirniki,
+brak strzałów). Pozycja snapshotów to środek drona. Widok `DroneView`
+(prymitywy: korpus, oko `enemyGlow`, cztery wirniki; liczby w `drone`
+w danych). Sceny tworzą widoki przez `createEnemyView` (`src/enemies/views.ts`).
+
+Kontrola w 30 sekund: `?scene=ai-test&debug=1`, `god`, `kill all`,
+`spawn sniper 1` — laser przez 1,6 s, na końcu grubieje; odskocz po
+zgrubieniu: strzał chybia. `spawn drone 3` — drony krążą nad graczem,
+omijają filar i ściany, strzelają seriami na zmianę. Ocena feel: czy zgrubienie
+lasera wystarcza jako sygnał uniku i czy drony nie są za trudne do trafienia
+ostrzem (wiszą na 2,6 m).
+
+Testy: `tests/unit/sniperDrone.test.ts` — dane, telegraf i śledzenie lasera,
+blokada celu (unik po zamrożeniu), ciężki strzał i ucieczka Snajpera; lot
+drona na wysokości i krążenie, brak wejścia w ścianę z odwróceniem kierunku,
+serie, ogłuszenie ciosem i statusem, śmierć i sprzątanie, deterministyczność;
+`DroneView`, laser w `EnemyView`, `createEnemyView`.

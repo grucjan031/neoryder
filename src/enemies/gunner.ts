@@ -40,6 +40,8 @@ export class Gunner implements Enemy {
   private avoid = 0;
   /** Token strzału od dyrektora (F2-12). */
   private token = false;
+  /** Punkt, w który pójdzie strzał; zamrożony na `aimLockS` przed końcem telegrafu. */
+  private aimPoint: Vec3 | null = null;
 
   constructor(
     private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
@@ -118,7 +120,11 @@ export class Gunner implements Enemy {
     this.current.state = state;
     this.current.stateTimeS = 0;
     // Token trzyma tylko celowanie i seria; po niej strzela następny (ostrzał zaporowy).
-    if (state !== 'aim' && state !== 'burst') this.releaseToken();
+    if (state !== 'aim' && state !== 'burst') {
+      this.releaseToken();
+      this.aimPoint = null;
+      this.current.aim = undefined;
+    }
     if (state === 'reposition') {
       this.strafe = this.rng.chance(0.5) ? 1 : -1;
       this.probeS = 0;
@@ -134,6 +140,19 @@ export class Gunner implements Enemy {
       this.shots = 0;
       this.nextShotS = 0;
     }
+  }
+
+  /** Bez `aimLockS` cel śledzony do końca serii; z nim — zamrożony na końcu telegrafu. */
+  private track(target: Vec3): void {
+    const s = this.current;
+    const lock = this.ranged.aimLockS;
+    const locked =
+      lock !== undefined &&
+      this.aimPoint !== null &&
+      (s.state === 'burst' ||
+        s.stateTimeS + epsilon >= this.ranged.aimTelegraphS - lock);
+    if (!locked) this.aimPoint = { ...target };
+    s.aim = this.aimPoint ? { ...this.aimPoint } : undefined;
   }
 
   private releaseToken(): void {
@@ -206,7 +225,7 @@ export class Gunner implements Enemy {
       speed: this.ranged.projectileSpeed,
       damage: this.stats.get('damage'),
       lifetimeS: this.ranged.projectileLifetimeS,
-      tags: ['#gun'],
+      tags: this.ranged.projectileTags ?? ['#gun'],
     });
   }
 
@@ -268,8 +287,9 @@ export class Gunner implements Enemy {
         this.transition('burst');
       else if (s.state === 'cooldown' && s.stateTimeS + epsilon >= d.cooldownS)
         this.transition('reposition');
+      if (s.state === 'aim' || s.state === 'burst') this.track(target.position);
       if (s.state === 'burst' && s.stateTimeS + epsilon >= this.nextShotS) {
-        this.fire(target.position);
+        this.fire(this.aimPoint ?? target.position);
         this.shots++;
         this.nextShotS += r.burstIntervalS;
         if (this.shots >= r.burstCount) this.transition('cooldown');

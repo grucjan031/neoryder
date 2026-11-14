@@ -28,6 +28,8 @@ export interface EnemySnapshot {
   stateTimeS: number;
   distance: number;
   shotTimeS?: number;
+  /** Punkt celowania podczas aim/burst (linia lasera Snajpera). */
+  aim?: Vec3;
 }
 export interface Enemy {
   readonly id: EntityId;

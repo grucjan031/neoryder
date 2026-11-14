@@ -579,6 +579,12 @@ new EnemyManager(ctx, deps, { director?: DirectorConfig }); // manager tworzy dy
                                                             // deps.director i krokuje go po wrogach
 readonly director: EnemyDirector | null;
 // Dane: `director` w src/data/scenes/*.json; `flankDistanceM` w danych Szturmowca.
+
+// F2-13: archetypy 'sniper' (klasa Gunner z danymi: aimLockS, laserSight, projectileTags)
+// i 'drone' (klasa Drone, blok `drone` w danych). EnemySnapshot.aim?: Vec3 — punkt celowania.
+// src/enemies/views.ts
+export interface EnemyViewLike { readonly root: Object3D; render(alpha: number, frameDt?: number): void; dispose(): void }
+export function createEnemyView(enemy: Enemy, loadModels?: boolean): EnemyViewLike; // DroneView albo EnemyView
 ```
 
 ### Ekwipunek i synergie (F2-15, F2-16)

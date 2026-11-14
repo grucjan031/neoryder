@@ -18,7 +18,8 @@ import sceneData from '../data/scenes/aiTest.json';
 import statusSceneData from '../data/scenes/statusTest.json';
 import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
-import { EnemyView } from '../enemies/enemyView';
+import { createEnemyView } from '../enemies/views';
+import type { EnemyViewLike } from '../enemies/views';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
@@ -70,7 +71,7 @@ export class AiTest implements Scene {
   private readonly hurtboxes = new Hurtboxes();
   private readonly root = new Group();
   private readonly lights = createStyleLights();
-  private readonly views = new Map<number, EnemyView>();
+  private readonly views = new Map<number, EnemyViewLike>();
   private readonly geometries = new Set<import('three').BufferGeometry>();
   private readonly off: (() => void)[] = [];
   private label?: HTMLParagraphElement;
@@ -397,7 +398,7 @@ export class AiTest implements Scene {
       ids.add(enemy.id);
       let view = this.views.get(enemy.id);
       if (!view) {
-        view = new EnemyView(enemy, this.loadModels);
+        view = createEnemyView(enemy, this.loadModels);
         this.views.set(enemy.id, view);
         this.root.add(view.root);
       }

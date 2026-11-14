@@ -1,5 +1,6 @@
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
+import { Drone } from './drone';
 import { Gunner } from './gunner';
 import { Assaulter } from './assaulter';
 import { enemySchema } from './enemySchema';
@@ -21,6 +22,23 @@ const factories = new Map<string, EnemyFactory>([
       const definition = enemyDefinitions.get(id);
       if (!definition) throw new Error(`Nieznany wróg: ${id}`);
       return new Gunner(ctx, deps, definition, position);
+    },
+  ],
+  [
+    // F2-13: Snajper to Strzelec z innymi danymi (długi telegraf, blokada celu, laser).
+    'sniper',
+    (ctx, deps, id, position) => {
+      const definition = enemyDefinitions.get(id);
+      if (!definition) throw new Error(`Nieznany wróg: ${id}`);
+      return new Gunner(ctx, deps, definition, position);
+    },
+  ],
+  [
+    'drone',
+    (ctx, deps, id, position) => {
+      const definition = enemyDefinitions.get(id);
+      if (!definition) throw new Error(`Nieznany wróg: ${id}`);
+      return new Drone(ctx, deps, definition, position);
     },
   ],
   [

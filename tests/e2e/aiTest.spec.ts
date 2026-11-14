@@ -67,3 +67,33 @@ test('spawn gunner adds a ranged enemy whose projectiles damage the player with 
     1,
   );
 });
+
+test('spawn sniper and drone (F2-13) renders both new archetypes without console errors', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.goto('/?scene=ai-test&debug=1&seed=f2-13-e2e');
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: SIM_TIMEOUT,
+    })
+    .toBe('ai-test');
+  const after = await page.evaluate(() => {
+    window.__neoryder?.command('god');
+    window.__neoryder?.command('kill all');
+    window.__neoryder?.command('spawn sniper 1');
+    window.__neoryder?.command('spawn drone 2');
+    return window.__neoryder?.query('enemies');
+  });
+  expect(after).toBe(3);
+  await waitSimSteps(page, 180);
+  const states = (await page.evaluate(() =>
+    window.__neoryder?.query('enemyStates'),
+  )) as { state: string }[];
+  expect(states).toHaveLength(3);
+  expect(errors).toEqual([]);
+});

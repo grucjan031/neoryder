@@ -1,12 +1,16 @@
-import { BoxGeometry, Group, Mesh } from 'three';
+import { BoxGeometry, CylinderGeometry, Group, Mesh, Vector3 } from 'three';
 import type { Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
 
+/** Humanoid z karabinem: Strzelec i Snajper (F2-13) dzielą model i animację. */
+const rifleman = (kind: string): boolean =>
+  kind === 'gunner' || kind === 'sniper';
+const up = new Vector3(0, 1, 0);
 const templates = new Map<string, Promise<Object3D | null>>();
 function loadTemplate(kind: string): Promise<Object3D | null> {
-  const name = kind === 'gunner' ? 'enemy_gunner' : 'enemy_trooper';
+  const name = rifleman(kind) ? 'enemy_gunner' : 'enemy_trooper';
   const cached = templates.get(name);
   if (cached) return cached;
   const template = new GLTFLoader()
@@ -34,6 +38,7 @@ export class EnemyView {
   readonly root = new Group();
   private model = new Group();
   private disposed = false;
+  private readonly laser?: Mesh;
   private readonly fallbackGeometries: BoxGeometry[] = [];
   private readonly rest = new Map<
     Object3D,
@@ -99,7 +104,7 @@ export class EnemyView {
         z: body.headRadius * 2,
       },
     );
-    if (enemy.definition.kind === 'gunner')
+    if (rifleman(enemy.definition.kind))
       part(
         head,
         'visor',
@@ -137,13 +142,13 @@ export class EnemyView {
       if (side === 'R') {
         const baton = part(
           hand,
-          this.enemy.definition.kind === 'gunner' ? 'rifle' : 'baton',
+          rifleman(this.enemy.definition.kind) ? 'rifle' : 'baton',
           { x: 0, y: 0, z: body.halfHeight },
           { x: body.radius / 2, y: body.radius / 2, z: body.halfHeight * 2 },
         );
         part(
           baton,
-          this.enemy.definition.kind === 'gunner' ? 'muzzle' : 'baton_tip',
+          rifleman(this.enemy.definition.kind) ? 'muzzle' : 'baton_tip',
           { x: 0, y: 0, z: body.halfHeight },
           { x: body.radius / 2, y: body.radius / 2, z: body.radius / 2 },
         );
@@ -165,6 +170,17 @@ export class EnemyView {
     }
     this.captureRest();
     this.root.add(this.model);
+    const laserRadius = enemy.definition.animation?.laserRadiusM;
+    if (enemy.definition.laserSight && laserRadius) {
+      // Jednostkowy cylinder wzdłuż +Y, skalowany do długości lasera w renderze.
+      this.laser = new Mesh(
+        new CylinderGeometry(laserRadius, laserRadius, 1, 6, 1, true),
+        getMaterial('enemyGlow'),
+      );
+      this.laser.name = 'laser';
+      this.laser.visible = false;
+      this.root.add(this.laser);
+    }
     if (loadModels)
       void loadTemplate(enemy.definition.kind).then((source) => {
         if (!source || this.disposed) return;
@@ -193,6 +209,39 @@ export class EnemyView {
     );
   }
 
+  /** Linia lasera Snajpera w przestrzeni widoku: od lufy z danych do punktu celowania. */
+  private renderLaser(): void {
+    const laser = this.laser;
+    if (!laser) return;
+    const { current: b, definition } = this.enemy;
+    const m = definition.muzzle;
+    laser.visible = b.state === 'aim' && b.aim !== undefined && m !== undefined;
+    if (!laser.visible || !b.aim || !m) return;
+    const yaw = this.root.rotation.y;
+    const wx = b.aim.x - this.root.position.x,
+      wz = b.aim.z - this.root.position.z;
+    const local = new Vector3(
+      Math.cos(yaw) * wx - Math.sin(yaw) * wz,
+      b.aim.y - this.root.position.y,
+      Math.sin(yaw) * wx + Math.cos(yaw) * wz,
+    );
+    const from = new Vector3(m.x, m.y, m.z);
+    const dir = local.sub(from);
+    const length = dir.length();
+    if (length <= 1e-6) {
+      laser.visible = false;
+      return;
+    }
+    const lock = definition.aimLockS ?? 0;
+    const locked =
+      definition.aimTelegraphS !== undefined &&
+      b.stateTimeS >= definition.aimTelegraphS - lock;
+    const width = locked ? (definition.animation?.laserLockScale ?? 1) : 1;
+    laser.position.copy(from).addScaledVector(dir, 0.5);
+    laser.quaternion.setFromUnitVectors(up, dir.normalize());
+    laser.scale.set(width, length, width);
+  }
+
   render(alpha: number): void {
     const { previous: a, current: b, definition } = this.enemy;
     const t = Math.max(0, Math.min(1, alpha));
@@ -204,6 +253,7 @@ export class EnemyView {
     const delta = Math.atan2(Math.sin(b.yaw - a.yaw), Math.cos(b.yaw - a.yaw));
     this.root.rotation.y = a.yaw + delta * t;
     this.root.visible = b.state !== 'dead' && !this.enemy.removed;
+    this.renderLaser();
     const anim = definition.animation;
     if (!anim) return;
     for (const [node, rest] of this.rest) {
@@ -236,7 +286,7 @@ export class EnemyView {
         ? a.stateTimeS + (b.stateTimeS - a.stateTimeS) * t
         : b.stateTimeS;
     if (
-      definition.kind === 'gunner' &&
+      rifleman(definition.kind) &&
       ['aim', 'burst', 'cooldown'].includes(b.state)
     ) {
       const angle = anim.aimAngle ?? 0;
@@ -273,7 +323,7 @@ export class EnemyView {
         anim.swingAngle * Math.max(0, 1 - time / definition.recoveryS),
       );
     } else if (b.state === 'stunned') rotate('pelvis', 'z', anim.stunAngle);
-    for (const name of definition.kind === 'gunner'
+    for (const name of rifleman(definition.kind)
       ? ['muzzle', 'visor']
       : ['baton_tip']) {
       const tip = this.model.getObjectByName(name);
@@ -299,6 +349,7 @@ export class EnemyView {
     this.root.removeFromParent();
     this.root.clear();
     for (const geometry of this.fallbackGeometries) geometry.dispose();
+    this.laser?.geometry.dispose();
     this.rest.clear();
   }
 }

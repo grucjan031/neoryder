@@ -27,7 +27,8 @@ import wavesData from '../data/waves/arena.json';
 import { StatusSystem } from '../combat/status';
 import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
-import { EnemyView } from '../enemies/enemyView';
+import { createEnemyView } from '../enemies/views';
+import type { EnemyViewLike } from '../enemies/views';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
 import type { Enemy } from '../enemies/types';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
@@ -109,7 +110,7 @@ export class Arena implements Scene {
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
   private readonly bladeView = new FppBlade();
   private blasterView!: FppBlaster;
-  private readonly views = new Map<EntityId, EnemyView>();
+  private readonly views = new Map<EntityId, EnemyViewLike>();
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private readonly geometries = new Set<BufferGeometry>();
@@ -489,7 +490,7 @@ export class Arena implements Scene {
       ids.add(enemy.id);
       let view = this.views.get(enemy.id);
       if (!view) {
-        view = new EnemyView(enemy, this.loadModels);
+        view = createEnemyView(enemy, this.loadModels);
         this.views.set(enemy.id, view);
         this.root.add(view.root);
       }
