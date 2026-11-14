@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitSimSteps } from './helpers';
 import { tuning } from '../../src/core/tuning';
 
 test('sandbox ładuje canvas bez błędów i wykonuje kroki', async ({
@@ -40,14 +41,14 @@ test('kostka spada i stabilizuje się nad podłogą', async ({ page }) => {
       page.evaluate(() => window.__neoryder?.query('cubeY') as number),
     )
     .toBeLessThan(initial);
-  await page.waitForTimeout(3000);
+  await waitSimSteps(page, 180); // 3 s czasu symulacji
   const settled = await page.evaluate(
     () => window.__neoryder?.query('cubeY') as number,
   );
   expect(settled).toBeGreaterThan(0);
   expect(settled).toBeLessThan(initial);
   expect(settled).toBeCloseTo(0.5, 1);
-  await page.waitForTimeout(300);
+  await waitSimSteps(page, 18);
   const later = await page.evaluate(
     () => window.__neoryder?.query('cubeY') as number,
   );

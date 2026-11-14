@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { SIM_TIMEOUT } from './helpers';
 
 test('player-test ładuje modele bez błędów i wraca na podłogę po tp', async ({
   page,
@@ -14,7 +15,9 @@ test('player-test ładuje modele bez błędów i wraca na podłogę po tp', asyn
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
     .toBe('player-test');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.query('grounded')))
+    .poll(() => page.evaluate(() => window.__neoryder?.query('grounded')), {
+      timeout: SIM_TIMEOUT,
+    })
     .toBe(true);
   const result = await page.evaluate(() => {
     const message = window.__neoryder?.command('tp 0 5 0');
@@ -28,7 +31,9 @@ test('player-test ładuje modele bez błędów i wraca na podłogę po tp', asyn
   expect(result.position).toEqual({ x: 0, y: 5, z: 0 });
   expect(result.grounded).toBe(false);
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.query('grounded')))
+    .poll(() => page.evaluate(() => window.__neoryder?.query('grounded')), {
+      timeout: SIM_TIMEOUT,
+    })
     .toBe(true);
   const settled = await page.evaluate(
     () => window.__neoryder?.query('playerPos') as { y: number },
@@ -42,10 +47,12 @@ test('player-test ładuje modele bez błędów i wraca na podłogę po tp', asyn
     .toBe('CANVAS');
   await page.keyboard.down('KeyW');
   await expect
-    .poll(() =>
-      page.evaluate(
-        () => (window.__neoryder?.query('playerPos') as { z: number }).z,
-      ),
+    .poll(
+      () =>
+        page.evaluate(
+          () => (window.__neoryder?.query('playerPos') as { z: number }).z,
+        ),
+      { timeout: SIM_TIMEOUT },
     )
     .toBeLessThan(-1);
   await page.keyboard.up('KeyW');
