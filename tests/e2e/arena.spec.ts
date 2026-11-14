@@ -48,7 +48,7 @@ test('arena: fale startują, zabicie fali przechodzi dalej, śmierć i powtórka
     .poll(() => q('spawnLog').then((log) => (log as unknown[]).length), {
       timeout: SIM_TIMEOUT,
     })
-    .toBeGreaterThanOrEqual(2);
+    .toBeGreaterThanOrEqual((firstSpawns as unknown[]).length);
   expect(await q('spawnLog')).toEqual(firstSpawns);
   expect(errors).toEqual([]);
 });
