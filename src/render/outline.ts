@@ -24,6 +24,7 @@ import { BloomPass } from './bloom';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
 import { syncMaterials } from './materials';
 import { PostFxPass, PostFxState } from './postFx';
+import { renderWithViewmodel } from './viewmodelLayer';
 
 const fragmentShader = /* glsl */ `
   #include <packing>
@@ -37,6 +38,7 @@ const fragmentShader = /* glsl */ `
   uniform vec3 outlineColor;
   uniform float cameraNear;
   uniform float cameraFar;
+  uniform float viewmodelDepth;
   uniform bool perspective;
   uniform sampler2D bloomMap;
   uniform float bloomStrength;
@@ -58,6 +60,8 @@ const fragmentShader = /* glsl */ `
 
   float viewDepth(vec2 uv) {
     float depth = texture2D(depthMap, uv).x;
+    // Głębia viewmodelu jest ściśnięta do [0, viewmodelDepth]: przywracamy pełny zakres.
+    if (depth < viewmodelDepth) depth /= viewmodelDepth;
     return -(perspective
       ? perspectiveDepthToViewZ(depth, cameraNear, cameraFar)
       : orthographicDepthToViewZ(depth, cameraNear, cameraFar));
@@ -151,6 +155,7 @@ export class StylePipeline {
     outlineColor: { value: new Color() },
     cameraNear: { value: 0.1 },
     cameraFar: { value: 100 },
+    viewmodelDepth: { value: 0.01 },
     perspective: { value: true },
     bloomMap: { value: this.colorTarget.texture as Texture },
     bloomStrength: { value: 0 },
@@ -233,7 +238,7 @@ export class StylePipeline {
     this.lastRenderMs = now;
     this.postFxState.update(Math.min(frameDt, 0.25));
     if (tuning.render.outline === 0) {
-      this.renderer.render(scene, camera);
+      renderWithViewmodel(this.renderer, scene, camera);
       return;
     }
     // Zmiana DPR nie musi wywołać zdarzenia resize.
@@ -253,6 +258,10 @@ export class StylePipeline {
     uniforms.outlineColor.value.set(t.outlineColor);
     uniforms.cameraNear.value = camera.near;
     uniforms.cameraFar.value = camera.far;
+    uniforms.viewmodelDepth.value = Math.min(
+      Math.max(t.viewmodelDepth, 1e-5),
+      1,
+    );
     uniforms.perspective.value = 'isPerspectiveCamera' in camera;
     uniforms.skyGradient.value = t.skyGradient;
     uniforms.skyHeight.value = Math.max(t.skyGradientHeight, 1e-3);
@@ -281,12 +290,12 @@ export class StylePipeline {
     try {
       renderer.autoClear = true;
       renderer.setRenderTarget(this.colorTarget);
-      renderer.render(scene, camera);
+      renderWithViewmodel(renderer, scene, camera);
       scene.overrideMaterial = this.normalMaterial;
       scene.background = null;
       renderer.setClearColor(0x000000, 0);
       renderer.setRenderTarget(this.normalTarget);
-      renderer.render(scene, camera);
+      renderWithViewmodel(renderer, scene, camera);
       if (bloomOn) {
         this.bloom ??= new BloomPass(
           this.colorTarget.width,

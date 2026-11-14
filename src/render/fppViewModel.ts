@@ -11,6 +11,7 @@ import { FppBlaster } from './fppBlaster';
 import type { FppBlasterOptions } from './fppBlaster';
 import { FppMotion, shownHeld } from './fppMotion';
 import { FppOffhand } from './fppOffhand';
+import { applyViewmodelLayer, registerViewmodel } from './viewmodelLayer';
 
 export interface FppViewModelOptions {
   bladeDefinition?: BladeDefinition;
@@ -36,6 +37,7 @@ export class FppViewModel {
   private readonly origin = new Vector3();
   private definition: BladeDefinition;
   private loadModels = true;
+  private readonly unregister: () => void;
 
   constructor(
     bus: EventBus,
@@ -52,6 +54,7 @@ export class FppViewModel {
     this.motion = new FppMotion(t);
     this.offhand = new FppOffhand(bus, owner, t);
     this.root.add(this.blade.root, this.blaster.root, this.offhand.root);
+    this.unregister = registerViewmodel(this.root);
   }
 
   async load(loadModels = true): Promise<void> {
@@ -93,6 +96,7 @@ export class FppViewModel {
       this.blaster.supportMatrix(),
     );
     this.offhand.root.visible &&= visible;
+    applyViewmodelLayer(this.root);
   }
 
   get beamOrigin(): Vector3 {
@@ -103,6 +107,7 @@ export class FppViewModel {
     this.blade.dispose();
     this.blaster.dispose();
     this.offhand.dispose();
+    this.unregister();
     this.root.removeFromParent();
   }
 }

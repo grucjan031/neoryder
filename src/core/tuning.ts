@@ -75,6 +75,8 @@ export const tuning = {
     fogColor: '#eef1f3',
     fogNear: 14,
     fogFar: 80,
+    /** Ułamek zakresu głębi zarezerwowany dla rąk i przedmiotu (zawsze przed światem). */
+    viewmodelDepth: 0.01,
     /** Siatka płytek podłogi w shaderze materiału świata (m, kontrast 0..1, grubość w px). */
     gridSize: 2,
     gridContrast: 0.1,

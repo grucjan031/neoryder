@@ -79,6 +79,8 @@ przełącza ją w `gripGunFire`, z powrotem razem z zanikiem odrzutu. Węzeł
 `support` aktualnego modelu broni wyznacza położenie lewej dłoni (`support`,
 `socket_support`). Gdy węzła nie ma, lewa dłoń nie podpiera broni.
 
+Cały viewmodel jest na osobnej warstwie i rysowany drugim przebiegiem z ściśniętą głębią, więc przedmiot i ręce nie wchodzą w ściany ani wrogów (szczegóły: `docs/systems/render.md`, „Viewmodel zawsze na wierzchu”).
+
 Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle, beam, emp_launcher) mają osobną pozę `TWO_HAND_POSE` (niżej i bliżej środka) i lewą dłoń obróconą o `TWO_HAND_SUPPORT_YAW`, tak by przedramię wchodziło od lewego dołu kadru (stałe w `src/render/fppBlaster.ts`).
 
 ### Gest mocy i wolna lewa dłoń
