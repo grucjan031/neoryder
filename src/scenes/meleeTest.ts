@@ -27,6 +27,7 @@ import {
   Hurtboxes,
   queryHurtboxes,
 } from '../combat/damage';
+import { StatusSystem } from '../combat/status';
 import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
 import { PlayerEnergy } from '../combat/powers/energy';
 import { pushDefinition, ResonancePush } from '../combat/powers/push';
@@ -34,6 +35,7 @@ import type { PowerDeps } from '../combat/powers/power';
 import { createPower, powerDefinitions } from '../combat/powers/registry';
 import { PowerSlots } from '../combat/powers/slots';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
+import { LightningRenderer } from '../render/lightningRenderer';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
@@ -102,6 +104,8 @@ export class MeleeTest implements Scene {
   private world!: World;
   private entities!: EntityRegistry;
   private damage!: DamageSystem;
+  protected statuses!: StatusSystem;
+  protected readonly lightningView = new LightningRenderer();
   private readonly hurtboxes = new Hurtboxes();
   private player!: PlayerController;
   private previous!: PlayerState;
@@ -148,6 +152,16 @@ export class MeleeTest implements Scene {
     });
     this.entities = new EntityRegistry(ctx.bus);
     this.damage = new DamageSystem(ctx.bus, this.entities);
+    this.statuses = new StatusSystem(ctx.bus, this.damage, {
+      position: (id) => {
+        const d = this.dummies.find(
+          (dummy) => dummy.id === id && dummy.respawnS === null,
+        );
+        return d ? { x: d.pos.x, y: 1.4, z: d.pos.z } : null;
+      },
+      targets: () =>
+        this.dummies.filter((d) => d.respawnS === null).map((d) => d.id),
+    });
 
     three.background = new Color(palette.background);
     three.add(this.root);
@@ -246,13 +260,13 @@ export class MeleeTest implements Scene {
           .filter((d) => d.respawnS === null)
           .map((d) => ({
             id: d.id,
-            position: { x: d.pos.x, y: 1.1, z: d.pos.z },
+            position: { x: d.pos.x, y: 1.4, z: d.pos.z },
           })),
       castWall: (origin, dir, max) => this.castWall(origin, dir, max),
     });
 
     this.arcDebug.visible = false;
-    this.root.add(this.bladeModel.root, this.arcDebug);
+    this.root.add(this.bladeModel.root, this.arcDebug, this.lightningView.root);
     this.world.step();
     this.registerCommands();
     this.off.push(
@@ -313,8 +327,9 @@ export class MeleeTest implements Scene {
 
   private spawnDummy(position: Vec3): void {
     const id = this.entities.create('dummy', 'enemy');
-    const health = new Health(() => 100);
-    this.damage.register(id, health);
+    const stats = new Stats({ maxHealth: 100 });
+    const health = new Health(() => stats.get('maxHealth'));
+    this.damage.register(id, health, { stats });
     const colliders: Collider[] = [];
     for (const [desc, multiplier] of [
       [
@@ -525,6 +540,8 @@ export class MeleeTest implements Scene {
     }
     this.playerHealth.reset();
     this.energy.set(this.energy.max);
+    this.statuses.reset();
+    this.lightningView.render(null);
   }
 
   step(dt: number, input: InputSnapshot): void {
@@ -538,6 +555,7 @@ export class MeleeTest implements Scene {
     this.projectiles.step(dt);
     this.energy.step(dt);
     this.damage.step(dt);
+    this.statuses.step(dt);
     for (const d of this.dummies) {
       this.stepKnockback(d, dt);
       if (d.respawnS === null) continue;
@@ -600,6 +618,8 @@ export class MeleeTest implements Scene {
     for (const off of this.off.splice(0)) off();
     this.blade.dispose();
     this.bladeModel.dispose();
+    this.statuses.dispose();
+    this.lightningView.dispose();
     this.projectiles.dispose();
     this.projectileView.dispose();
     this.energy.dispose();
@@ -672,6 +692,7 @@ export class PushTest extends MeleeTest {
 
   override render(alpha: number, frameDt = 1 / 60): void {
     super.render(alpha, frameDt);
+    this.lightningView.render([this.slots.get(0), this.slots.get(1)]);
     if (this.label)
       this.label.textContent += ` · ${pushTestDefinition.controls}`;
   }

@@ -1,3 +1,4 @@
+import { ChainPower } from './chain';
 import { ConePower } from './cone';
 import type { Power, PowerDeps, PowerFactory } from './power';
 import { powerSchema } from './powerSchema';
@@ -44,6 +45,12 @@ registerPowerKind('cone', (def, deps) => {
   if (def.kind !== 'cone')
     throw new Error(`Nieprawidłowy mechanizm stożka: ${def.kind}`);
   return new ConePower(def, deps);
+});
+
+registerPowerKind('chain', (def, deps) => {
+  if (def.kind !== 'chain')
+    throw new Error(`Nieprawidłowy mechanizm łańcucha: ${def.kind}`);
+  return new ChainPower(def, deps);
 });
 
 export function createPower(id: string, deps: PowerDeps): Power {

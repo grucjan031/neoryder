@@ -83,6 +83,7 @@ export abstract class PowerBase<
       });
       return null;
     }
+    if (!this.canActivate()) return null;
     if (!energy.spend(this.def.cost)) {
       bus.emit('power_denied', {
         power: this.def.id,
@@ -94,6 +95,10 @@ export abstract class PowerBase<
     this.cooldownS = this.def.cooldownS;
     bus.emit('power_used', { power: this.def.id, user: owner });
     return this.activate();
+  }
+
+  protected canActivate(): boolean {
+    return true;
   }
 
   protected abstract activate(): number;

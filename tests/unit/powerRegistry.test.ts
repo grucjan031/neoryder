@@ -77,7 +77,11 @@ class ProbePower extends PowerBase {
 
 describe('rejestr mocy', () => {
   it('ładuje i waliduje wszystkie JSON-y, oba warianty mają ten sam mechanizm', () => {
-    expect([...powerDefinitions.keys()].sort()).toEqual(['push', 'shockwave']);
+    expect([...powerDefinitions.keys()].sort()).toEqual([
+      'chain',
+      'push',
+      'shockwave',
+    ]);
     expect(powerDefinitions.get('push')).toEqual(pushData);
     expect(powerDefinitions.get('shockwave')).toEqual(shockwaveData);
     const { deps } = setup();
