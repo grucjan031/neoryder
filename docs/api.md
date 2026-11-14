@@ -1073,3 +1073,60 @@ Pokój nie rejestruje komend `run`; scena `room-test` rejestruje własne `run cl
 `room_cleared` po ostatniej fali, najwyżej raz, z czasem symulacji pokoju.
 Kontekst pokoju dostarcza host (`rng.fork('room:<nodeId>')`, wspólny EventBus).
 
+### Zarządca stanu runu (F3-05) — `src/world/run.ts`
+
+```ts
+export const RUN_SCREENS = ['map', 'room', 'reward', 'shop', 'rest', 'summary'] as const;
+export type RunScreen = (typeof RUN_SCREENS)[number];
+export type MapGenerator = (seed: string) => SectorMap;
+
+export interface RunManagerOptions {
+  generateMap?: MapGenerator;
+  sector?: Pick<SectorDefinition, 'id' | 'economy'>;
+  creditsPerThreat?: number;
+  eliteBonusCredits?: number;
+  puzzleCredits?: number;
+  initialHp?: number;
+  initialEnergy?: number;
+  now?: () => number;
+}
+
+export const runStateSchema: z.ZodType<RunState>;
+
+export class RunManager {
+  constructor(
+    bus: EventBus,
+    optionsOrGenerateMap?: MapGenerator | RunManagerOptions,
+    extraOptions?: RunManagerOptions,
+  );
+  readonly screen: RunScreen;
+  readonly active: boolean;
+  readonly state: Readonly<RunState>;
+  readonly summary: RunSummary | null;
+  readonly currentNode: MapNode | null;
+  newRun(seed: string, loadoutId?: string): RunState;
+  availableNodes(): readonly MapNode[];
+  canSelectNode(id: string): boolean;
+  selectNode(id: string): boolean;
+  completeRoom(roomState?: { hp?: number; energy?: number }): boolean;
+  returnToMap(): boolean;
+  completeReward(): boolean;
+  leaveShop(): boolean;
+  leaveRest(): boolean;
+  creditKill(threatCost: number): number;
+  addCredits(amount: number): boolean;
+  spendCredits(amount: number): boolean;
+  setHp(hp: number, maxHp?: number): boolean;
+  heal(amount: number, maxHp?: number): number;
+  setEnergy(energy: number, maxEnergy?: number): boolean;
+  addImplant(id: string): boolean;
+  upgradeImplant(fromId: string, toId: string): boolean;
+  step(dt: number): void;
+  finish(outcome: RunOutcome): RunSummary;
+  serialize(): RunState;
+  restore(state: RunState): RunState;
+  dispose(): void;
+}
+```
+
+
