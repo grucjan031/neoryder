@@ -16,13 +16,17 @@ import { Stats } from '../core/stats';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { Weapon } from '../combat/weapons/weapon';
 import type { WeaponInput } from '../combat/weapons/weapon';
-import { weaponDefinitions } from '../combat/weapons/weaponSchema';
+import {
+  weaponDefinitions,
+  weaponModelOf,
+} from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { getMaterial } from '../render/materials';
 import { createStyleLights } from '../render/lights';
+import { FppBlaster } from '../render/fppBlaster';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import type { Scene } from './index';
 
@@ -45,7 +49,6 @@ const data = z
     wall: box,
     dummy: z.object({ size: vector, maxHealth: z.number().positive() }),
     dummyPositions: z.array(vector).min(3),
-    weaponModel: box,
     hudLabel: z.string(),
     controls: z.string(),
   })
@@ -75,7 +78,9 @@ export class WeaponsTest implements Scene {
   private projectileRenderer!: ProjectileRenderer;
   private readonly hurtboxes = new Hurtboxes();
   private readonly root = new Group();
-  private readonly weaponModel = new Group();
+  private weaponView!: FppBlaster;
+  private playerId!: EntityId;
+  private shownWeapon = '';
   private readonly beamOrigin = new Vector3();
   private readonly weapons = new Map<string, Weapon>();
   private readonly slots = [...data.slots];
@@ -109,6 +114,7 @@ export class WeaponsTest implements Scene {
         this.dummies.filter((d) => !d.health.dead).map((d) => d.id),
     });
     const playerId = this.entities.create('player', 'player');
+    this.playerId = playerId;
     this.projectiles = new ProjectileSystem(
       this.world,
       this.entities,
@@ -245,17 +251,15 @@ export class WeaponsTest implements Scene {
       this.hurtboxes.add(id, collider);
       this.dummies.push({ id, health, model, collider });
     }
-    this.weaponModel.position.set(...data.weaponModel.position);
-    this.weaponModel.add(
-      new Mesh(
-        new BoxGeometry(...data.weaponModel.size),
-        getMaterial('interactive'),
-      ),
-    );
+    this.weaponView = new FppBlaster(ctx.bus, playerId, {
+      modelOf: weaponModelOf,
+      tuning: ctx.tuning,
+    });
+    void this.weaponView.load(typeof document !== 'undefined');
+    this.root.add(this.weaponView.root);
     if (ctx.camera) {
       this.cameraParent = ctx.camera.parent;
       this.root.add(ctx.camera);
-      ctx.camera.add(this.weaponModel);
     }
     this.off.push(
       ctx.bus.on('enemy_killed', ({ id }) => {
@@ -309,6 +313,7 @@ export class WeaponsTest implements Scene {
       document.body.append(this.hud);
     }
     this.world.step();
+    this.syncWeaponView();
     this.render(1);
   }
 
@@ -369,6 +374,25 @@ export class WeaponsTest implements Scene {
       });
     }
     this.projectiles.step(dt);
+    this.syncWeaponView();
+  }
+
+  /** Widok FPP dostaje bieżącą broń i jej ciepło przez zdarzenia (jak w arenie). */
+  private syncWeaponView(): void {
+    const id = this.weapon.definition.id;
+    if (id === this.shownWeapon) return;
+    this.shownWeapon = id;
+    this.ctx.bus.emit('weapon_switched', {
+      owner: this.playerId,
+      weapon: id,
+      slot: this.slot,
+    });
+    this.ctx.bus.emit('heat_changed', {
+      id: this.playerId,
+      current: this.weapon.heat.current,
+      max: this.weapon.heat.max,
+      overheated: this.weapon.overheated,
+    });
   }
 
   render(alpha: number, frameDt = 0): void {
@@ -393,8 +417,11 @@ export class WeaponsTest implements Scene {
     }
     this.lights.sync();
     this.projectileRenderer.render(alpha);
-    this.beamOrigin.set(0, 0, -data.weaponModel.size[2] / 2);
-    this.weaponModel.localToWorld(this.beamOrigin);
+    if (camera) {
+      camera.updateMatrixWorld();
+      this.weaponView.place(camera.matrixWorld, frameDt);
+    }
+    this.weaponView.root.getWorldPosition(this.beamOrigin);
     this.beamRenderer.render(this.weapon.beam, this.beamOrigin);
     this.explosionRenderer.render(frameDt);
     if (this.bar) {
@@ -449,10 +476,7 @@ export class WeaponsTest implements Scene {
       this.entities.destroy(id);
     }
     this.world.free();
-    this.weaponModel.removeFromParent();
-    this.weaponModel.traverse((object) => {
-      if (object instanceof Mesh) object.geometry.dispose();
-    });
+    this.weaponView.dispose();
     if (this.ctx.camera) {
       this.ctx.camera.removeFromParent();
       this.cameraParent?.add(this.ctx.camera);
@@ -462,7 +486,6 @@ export class WeaponsTest implements Scene {
     });
     this.three.remove(this.root);
     this.root.clear();
-    this.weaponModel.clear();
     this.weapons.clear();
     this.three.background = null;
   }

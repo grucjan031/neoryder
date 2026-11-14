@@ -302,24 +302,192 @@ def build_plasma_blade():
     return root
 
 
+# --------------------------------------------------------------------------- bronie F2 (modele FPP)
+# Układ: lufa = +Y Blendera (-Z glTF), początek w punkcie chwytu, góra = +Z. Bryła mat_interactive
+# (węzeł `frame`), cyjanowe węzły `heat_vents` / `heat_cell` kolorowane ciepłem przez kod, `muzzle` = wylot.
+
+def tube(y0, y1, r0, r1, sides=8, x=0.0, z=0.0):
+    """Walec/stożek ścięty wzdłuż Y od y0 (promień r0) do y1 (promień r1)."""
+    return bm_prism(y1 - y0, r1, r0, sides=sides, axis="Y", top_at_origin=False,
+                    offset=(x, (y0 + y1) / 2, z))
+
+
+def block(x0, x1, y0, y1, z0, z1, taper_top=(1.0, 1.0), bevel=0.0):
+    return bm_box(x1 - x0, y1 - y0, z1 - z0, center=((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2),
+                  taper_top=taper_top, bevel=bevel)
+
+
+def weapon_root(name, frame, vents, cell, muzzle_pos, extra=()):
+    root = empty(name, size=0.1)
+    mesh_object("frame", frame, "mat_interactive", parent=root)
+    if vents is not None:
+        mesh_object("heat_vents", vents, "mat_player_cyan", parent=root)
+    if cell is not None:
+        mesh_object("heat_cell", cell, "mat_player_cyan", parent=root)
+    for ename, bm in extra:
+        mesh_object(ename, bm, "mat_player_cyan", parent=root)
+    empty("muzzle", parent=root, location=muzzle_pos, size=0.03)
+    return root
+
+
 def build_blaster():
-    """Blaster gracza z przegrzaniem. Początek w chwycie, lufa wzdłuż +Y (-Z glTF)."""
-    root = empty("blaster", size=0.1)
-    body = bm_merge(
-        bm_box(0.05, 0.26, 0.075, center=(0, 0.06, 0.06), taper_top=(0.9, 0.95), bevel=0.008),  # zamek
-        bm_box(0.042, 0.06, 0.14, center=(0, -0.02, -0.03), taper_top=(1.0, 1.15), bevel=0.006),  # chwyt
-        bm_box(0.03, 0.05, 0.012, center=(0, 0.035, -0.005)),  # kabłąk
-        bm_prism(0.12, 0.016, 0.02, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.25, 0.07)),  # lufa
-        bm_box(0.012, 0.03, 0.02, center=(0, -0.05, 0.105)),  # szczerbinka
+    """Blaster gracza z przegrzaniem: średni pistolet energetyczny z kołpakiem lufy."""
+    frame = bm_merge(
+        block(-0.025, 0.025, -0.07, 0.19, 0.03, 0.1, taper_top=(0.9, 0.95), bevel=0.008),  # zamek
+        block(-0.021, 0.021, -0.05, 0.01, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.006),  # chwyt
+        block(-0.015, 0.015, 0.01, 0.06, 0.0, 0.012),  # kabłąk
+        block(-0.012, 0.012, 0.06, 0.07, -0.03, 0.012),
+        tube(0.19, 0.31, 0.02, 0.016, sides=8, z=0.07),  # lufa
+        tube(0.285, 0.325, 0.026, 0.026, sides=8, z=0.07),  # kołpak lufy
+        block(-0.006, 0.006, -0.06, -0.03, 0.1, 0.12),  # szczerbinka
+        block(-0.004, 0.004, 0.16, 0.18, 0.1, 0.118),  # muszka
     )
-    mesh_object("frame", body, "mat_interactive", parent=root)
-    vents = bm_merge(*[
-        bm_box(0.054, 0.018, 0.04, center=(0, 0.02 + i * 0.035, 0.065)) for i in range(4)
-    ])
-    mesh_object("heat_vents", vents, "mat_player_cyan", parent=root)
-    cell = bm_box(0.046, 0.05, 0.03, center=(0, -0.02, -0.105))
-    mesh_object("heat_cell", cell, "mat_player_cyan", parent=root)
-    empty("muzzle", parent=root, location=(0, 0.315, 0.07), size=0.03)
+    vents = bm_merge(*[block(-0.027, 0.027, 0.0 + i * 0.035, 0.018 + i * 0.035, 0.045, 0.085) for i in range(4)])
+    cell = block(-0.023, 0.023, -0.045, 0.005, -0.12, -0.092)
+    return weapon_root("blaster", frame, vents, cell, (0, 0.33, 0.07))
+
+
+def build_pistol():
+    """Pistolet: zwarty, krótki zamek, pochylony chwyt, trzy cyjanowe nacięcia."""
+    frame = bm_merge(
+        block(-0.02, 0.02, -0.04, 0.12, 0.02, 0.075, taper_top=(0.85, 1.0), bevel=0.005),  # zamek
+        block(-0.018, 0.018, -0.04, 0.0, -0.09, 0.02, taper_top=(1.0, 1.2), bevel=0.005),  # chwyt
+        tube(0.12, 0.15, 0.012, 0.012, sides=6, z=0.052),  # wylot
+        block(-0.012, 0.012, 0.0, 0.05, 0.0, 0.012),  # kabłąk
+        block(-0.005, 0.005, -0.035, -0.015, 0.075, 0.09),  # szczerbinka
+    )
+    vents = bm_merge(*[block(-0.0215, 0.0215, 0.02 + i * 0.03, 0.036 + i * 0.03, 0.035, 0.065) for i in range(3)])
+    cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09)
+    return weapon_root("pistol", frame, vents, cell, (0, 0.155, 0.052))
+
+
+def build_rifle():
+    """Karabin: długi, kolba, rączka, ogniwo ciepła jak magazynek pod komorą."""
+    frame = bm_merge(
+        block(-0.025, 0.025, -0.08, 0.2, 0.0, 0.1, taper_top=(0.9, 1.0), bevel=0.006),  # komora
+        block(-0.022, 0.022, 0.2, 0.42, 0.015, 0.085, bevel=0.005),  # łoże
+        tube(0.42, 0.6, 0.014, 0.012, sides=8, z=0.05),  # lufa
+        tube(0.57, 0.62, 0.02, 0.02, sides=6, z=0.05),  # tłumik
+        block(-0.02, 0.02, -0.22, -0.08, -0.035, 0.085, taper_top=(0.9, 0.7)),  # kolba
+        block(-0.018, 0.018, -0.07, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.008, 0.008, 0.0, 0.24, 0.1, 0.118),  # szyna z celownikiem
+    )
+    vents = bm_merge(*[block(-0.0235, 0.0235, 0.24 + i * 0.045, 0.262 + i * 0.045, 0.03, 0.07) for i in range(4)])
+    cell = block(-0.02, 0.02, 0.07, 0.14, -0.1, 0.0)
+    return weapon_root("rifle", frame, vents, cell, (0, 0.625, 0.05))
+
+
+def build_scatter():
+    """Rozpraszacz: szeroki, dwie grube lufy w jednej osłonie, pompa, krótka kolba."""
+    frame = bm_merge(
+        block(-0.05, 0.05, 0.0, 0.2, 0.0, 0.1, taper_top=(0.9, 1.0), bevel=0.008),  # szeroka komora
+        tube(0.2, 0.42, 0.028, 0.028, sides=6, x=-0.03, z=0.07),
+        tube(0.2, 0.42, 0.028, 0.028, sides=6, x=0.03, z=0.07),
+        block(-0.06, 0.06, 0.2, 0.3, 0.035, 0.105, bevel=0.006),  # osłona
+        block(-0.034, 0.034, 0.22, 0.34, -0.005, 0.03, bevel=0.005),  # pompa
+        block(-0.026, 0.026, -0.14, 0.0, -0.03, 0.09, taper_top=(0.9, 0.8)),  # kolba
+        block(-0.02, 0.02, -0.06, 0.02, -0.13, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+    )
+    vents = bm_merge(*[block(-0.052, 0.052, 0.02 + i * 0.045, 0.038 + i * 0.045, 0.045, 0.095) for i in range(4)])
+    cell = block(-0.025, 0.025, -0.01, 0.06, -0.15, -0.115)
+    return weapon_root("scatter", frame, vents, cell, (0, 0.43, 0.07))
+
+
+def build_sniper_rifle():
+    """Snajperka: bardzo długa, smukła lufa, duża luneta z cyjanową soczewką."""
+    frame = bm_merge(
+        block(-0.02, 0.02, -0.08, 0.2, 0.0, 0.085, bevel=0.005),  # komora
+        block(-0.017, 0.017, 0.2, 0.55, 0.02, 0.07),  # łoże
+        tube(0.55, 0.86, 0.011, 0.01, sides=8, z=0.045),  # lufa
+        block(-0.02, 0.02, 0.86, 0.92, 0.025, 0.068),  # hamulec wylotowy
+        block(-0.022, 0.022, -0.24, -0.08, -0.04, 0.085, taper_top=(0.9, 0.6)),  # kolba
+        block(-0.016, 0.016, -0.065, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        tube(0.0, 0.34, 0.03, 0.03, sides=8, z=0.145),  # luneta
+        tube(0.34, 0.4, 0.036, 0.036, sides=8, z=0.145),  # osłona obiektywu
+        tube(-0.06, 0.0, 0.026, 0.03, sides=8, z=0.145),
+        block(-0.006, 0.006, 0.05, 0.08, 0.085, 0.12),  # mocowania lunety
+        block(-0.006, 0.006, 0.24, 0.27, 0.085, 0.12),
+    )
+    vents = bm_merge(*[block(-0.0195, 0.0195, 0.3 + i * 0.055, 0.32 + i * 0.055, 0.03, 0.062) for i in range(4)])
+    cell = block(-0.017, 0.017, -0.16, -0.1, 0.09, 0.115)
+    lens = tube(0.395, 0.405, 0.03, 0.03, sides=8, z=0.145)
+    return weapon_root("sniper_rifle", frame, vents, cell, (0, 0.93, 0.045), extra=[("scope_lens", lens)])
+
+
+def build_beam():
+    """Laser: gruby emiter z soczewką na froncie, cewki dookoła rury, chwyt pistoletowy."""
+    frame = bm_merge(
+        tube(0.0, 0.3, 0.036, 0.042, sides=8, z=0.07),  # rura emitera
+        block(-0.03, 0.03, -0.1, 0.02, 0.03, 0.09, bevel=0.006),  # moduł zasilania z tyłu
+        block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15)),  # chwyt
+        block(-0.014, 0.014, 0.03, 0.09, 0.0, 0.012),  # kabłąk
+        tube(0.3, 0.34, 0.052, 0.058, sides=8, z=0.07),  # kołnierz lufy
+        block(-0.006, 0.006, 0.05, 0.16, 0.108, 0.128),  # grzebień
+    )
+    coils = bm_merge(*[tube(0.04 + i * 0.065, 0.062 + i * 0.065, 0.052, 0.052, sides=8, z=0.07) for i in range(4)])
+    lens = tube(0.34, 0.352, 0.044, 0.01, sides=8, z=0.07)
+    cell = block(-0.026, 0.026, -0.095, -0.03, 0.04, 0.08)
+    return weapon_root("beam", frame, coils, cell, (0, 0.36, 0.07), extra=[("lens", lens)])
+
+
+def build_emp_launcher():
+    """Granatnik EMP: gruba tuba, bęben, rozszerzony wylot i kondensator."""
+    frame = bm_merge(
+        tube(0.04, 0.38, 0.05, 0.05, sides=8, z=0.07),  # tuba
+        tube(0.38, 0.45, 0.05, 0.07, sides=8, z=0.07),  # rozszerzony wylot
+        tube(-0.02, 0.1, 0.074, 0.074, sides=8, z=0.07),  # bęben
+        block(-0.026, 0.026, -0.14, -0.02, -0.01, 0.09, taper_top=(0.9, 0.8)),  # kolba
+        block(-0.02, 0.02, 0.0, 0.07, -0.12, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.014, 0.014, 0.1, 0.16, -0.02, 0.01),  # chwyt przedni
+        block(-0.007, 0.007, 0.2, 0.3, 0.125, 0.145),  # szyna
+    )
+    rings = bm_merge(*[tube(0.14 + i * 0.07, 0.16 + i * 0.07, 0.054, 0.054, sides=8, z=0.07) for i in range(3)])
+    cell = block(-0.018, 0.018, 0.0, 0.08, 0.142, 0.162)
+    return weapon_root("emp_launcher", frame, rings, cell, (0, 0.46, 0.07))
+
+
+def build_blade_twin():
+    """Rękojeść wariantu bliźniaczego: krótsza, z poprzeczną osłoną. Węzły jak plasma_blade."""
+    root = empty("blade_twin", size=0.1)
+    hilt = bm_merge(
+        bm_prism(0.17, 0.024, 0.024, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.0, 0)),
+        bm_prism(0.03, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.075, 0)),  # gardło
+        bm_prism(0.025, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.09, 0)),  # głowica
+        bm_box(0.1, 0.012, 0.016, center=(0, 0.056, 0)),  # poprzeczna osłona
+        bm_box(0.012, 0.05, 0.02, center=(0.026, 0.02, 0)),
+    )
+    mesh_object("hilt", hilt, "mat_interactive", parent=root)
+    ring = bm_prism(0.012, 0.034, 0.034, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.1, 0))
+    mesh_object("emitter_ring", ring, "mat_player_cyan", parent=root)
+    pivot = empty("blade", parent=root, location=(0, 0.106, 0), size=0.05)
+    core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
+    mesh_object("blade_core", core, "mat_player_cyan", parent=pivot, location=(0, 0.106, 0))
+    empty("blade_tip", parent=pivot, location=(0, 1.106, 0), size=0.05)
+    return root
+
+
+def build_blade_staff():
+    """Kij: długa rękojeść (0,8 m) z emiterami na obu końcach; chwyt w środku."""
+    root = empty("blade_staff", size=0.1)
+    hilt = bm_merge(
+        bm_prism(0.8, 0.02, 0.02, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.0, 0)),
+        bm_prism(0.1, 0.027, 0.027, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.0, 0)),  # uchwyt
+        bm_prism(0.03, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.385, 0)),
+        bm_prism(0.03, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.385, 0)),
+        bm_box(0.012, 0.08, 0.02, center=(0.024, 0.0, 0)),
+    )
+    mesh_object("hilt", hilt, "mat_interactive", parent=root)
+    ring_f = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.406, 0))
+    ring_b = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.406, 0))
+    mesh_object("emitter_ring", bm_merge(ring_f, ring_b), "mat_player_cyan", parent=root)
+    front = empty("blade", parent=root, location=(0, 0.412, 0), size=0.05)
+    core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
+    mesh_object("blade_core", core, "mat_player_cyan", parent=front, location=(0, 0.412, 0))
+    empty("blade_tip", parent=front, location=(0, 1.412, 0), size=0.05)
+    back = empty("blade_back", parent=root, location=(0, -0.412, 0), size=0.05)
+    core_b = bm_prism(1.0, 0.018, 0.012, sides=6, axis="Y", top_at_origin=False, offset=(0, -0.5, 0))
+    mesh_object("blade_back_core", core_b, "mat_player_cyan", parent=back, location=(0, -0.412, 0))
+    empty("blade_back_tip", parent=back, location=(0, -1.412, 0), size=0.05)
     return root
 
 
@@ -453,6 +621,14 @@ def main() -> None:
         "enemy_gunner": build_enemy_gunner,
         "plasma_blade": build_plasma_blade,
         "blaster": build_blaster,
+        "pistol": build_pistol,
+        "rifle": build_rifle,
+        "scatter": build_scatter,
+        "sniper_rifle": build_sniper_rifle,
+        "beam": build_beam,
+        "emp_launcher": build_emp_launcher,
+        "blade_twin": build_blade_twin,
+        "blade_staff": build_blade_staff,
         "player_arm_R": lambda: build_player_arm("R"),
         "player_arm_L": lambda: build_player_arm("L"),
         **build_props(),
@@ -467,7 +643,9 @@ def main() -> None:
         export_glb(root, os.path.join(OUT_DIR, f"{name}.glb"))
         if preview:
             render_preview(root, os.path.join(PREVIEW_DIR, f"{name}.png"))
-        print(f"[neoryder] built {name}")
+        tris = sum(len(p.vertices) - 2 for o in [root, *root.children_recursive] if o.type == "MESH"
+                   for p in o.data.polygons)
+        print(f"[neoryder] built {name} tris={tris}")
 
 
 if __name__ == "__main__":

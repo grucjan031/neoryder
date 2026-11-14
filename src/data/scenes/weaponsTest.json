@@ -12,7 +12,6 @@
     [0, 1, -9],
     [0, 1, -14]
   ],
-  "weaponModel": { "size": [0.16, 0.18, 0.5], "position": [0.3, -0.28, -0.55] },
   "hudLabel": "Broń i ciepło",
   "controls": "1/2/3 — wybór broni | LPM — strzał | weapon <id> — zmiana broni"
 }

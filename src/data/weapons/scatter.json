@@ -10,5 +10,6 @@
   "projectileLifetimeS": 0.3,
   "spreadDeg": 6,
   "tags": ["#gun"],
-  "pellets": 8
+  "pellets": 8,
+  "model": "scatter"
 }

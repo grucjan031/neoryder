@@ -269,6 +269,22 @@ Testy F2-04: `beamLob.test.ts` (tiki, ciepło, hitstop, aktualny cel, balistyka,
 wybuchy od kolizji i czasu, promień, deduplikacja, właściciel, statusy i render),
 `weaponsTest.test.ts` (nowe bronie, HUD, zasięg lasera i rzeczywista ściana Rapier).
 
+## Modele broni i błysk wylotu
+
+Opcjonalne pole `model` w danych broni (`weaponSchema.ts`) wskazuje plik
+`public/assets/models/<model>.glb` (blaster, pistol, rifle, scatter, sniper_rifle, beam,
+emp_launcher). `FppBlaster` (`src/render/fppBlaster.ts`) ładuje model bieżącej broni przy
+`weapon_switched` (cache per model); fallback to `blaster.glb`, potem bryła zastępcza.
+Kolor ciepła (`heat_vents`, `heat_cell`) i odrzut działają dla każdego modelu. Arena i
+`weapons-test` podają rozwiązywanie modelu (`weaponModelOf`); `weapons-test` emituje
+`weapon_switched` i `heat_changed` przy zmianie broni.
+
+Przy `weapon_fired` gracza w węźle `muzzle` modelu na krótko pojawia się cyjanowa gwiazda
+(czysto renderowy błysk, bez wpływu na symulację). Czas trwania i rozmiar:
+`tuning.weapons.muzzleFlashS` (0,06 s, czas rzeczywisty klatki; widoczny co najmniej
+jedną klatkę) i `tuning.weapons.muzzleFlashSize` (m), oba w lil-gui. Test
+`tests/unit/weaponModels.test.ts` pilnuje, by każdy plik modelu z danych istniał.
+
 ## Weryfikacja
 
 ### Ekwipunek areny (F2-15)

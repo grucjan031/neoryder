@@ -126,7 +126,14 @@ export const tuning = {
   audio: { maxVoices: 24, masterGain: 0.7, refDistance: 4, maxPan: 0.8 },
   physics: { gravity: -20, maxDynamicBodies: 300 },
   damage: { playerInvulnMs: 250, respawnS: 1.5 },
-  weapons: { overheatLockS: 1.5, coolDelayS: 0.25, maxProjectiles: 256 },
+  weapons: {
+    overheatLockS: 1.5,
+    coolDelayS: 0.25,
+    maxProjectiles: 256,
+    /** Błysk wylotu w widoku FPP (render, czas rzeczywisty): czas trwania w s i promień w m. */
+    muzzleFlashS: 0.06,
+    muzzleFlashSize: 0.14,
+  },
   enemies: {
     stunKnockback: 6,
     corpseS: 0.5,
