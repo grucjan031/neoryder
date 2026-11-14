@@ -7,5 +7,6 @@
   "heatPerS": 65,
   "rangeM": 12,
   "tickHz": 10,
-  "tags": ["#gun", "#laser"]
+  "tags": ["#gun", "#laser"],
+  "model": "beam"
 }

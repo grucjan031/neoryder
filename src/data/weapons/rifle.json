@@ -9,5 +9,6 @@
   "projectileSpeed": 75,
   "projectileLifetimeS": 2,
   "spreadDeg": 1.1,
-  "tags": ["#gun"]
+  "tags": ["#gun"],
+  "model": "rifle"
 }

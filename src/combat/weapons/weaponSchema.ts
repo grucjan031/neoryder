@@ -4,6 +4,8 @@ const weaponFields = {
   id: z.string().min(1),
   name: z.string().min(1),
   tags: z.array(z.string().startsWith('#')),
+  /** Nazwa modelu FPP: `public/assets/models/<model>.glb`. */
+  model: z.string().min(1).optional(),
   statuses: z
     .array(
       z.object({
@@ -93,3 +95,7 @@ const loadedBlaster = weaponDefinitions.get('blaster')!;
 if (loadedBlaster.fireMode !== 'projectile')
   throw new Error('Nieprawidłowy tryb blastera');
 export const blasterDefinition = loadedBlaster;
+
+export function weaponModelOf(id: string): string | undefined {
+  return weaponDefinitions.get(id)?.model;
+}

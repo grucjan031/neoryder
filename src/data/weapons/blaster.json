@@ -9,5 +9,6 @@
   "tags": ["#gun"],
   "name": "Blaster",
   "fireMode": "projectile",
-  "automatic": true
+  "automatic": true,
+  "model": "blaster"
 }

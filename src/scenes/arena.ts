@@ -32,7 +32,10 @@ import { PlayerEnergy } from '../combat/powers/energy';
 import { createPower } from '../combat/powers/registry';
 import { PowerSlots } from '../combat/powers/slots';
 import { Weapon } from '../combat/weapons/weapon';
-import { weaponDefinitions } from '../combat/weapons/weaponSchema';
+import {
+  weaponDefinitions,
+  weaponModelOf,
+} from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import sceneData from '../data/scenes/arena.json';
 import wavesData from '../data/waves/arena.json';
@@ -310,7 +313,10 @@ export class Arena implements Scene {
 
     await this.bladeView.load(this.loadModels);
     this.root.add(this.bladeView.root);
-    this.blasterView = new FppBlaster(ctx.bus, playerId);
+    this.blasterView = new FppBlaster(ctx.bus, playerId, {
+      modelOf: weaponModelOf,
+      tuning: ctx.tuning,
+    });
     await this.blasterView.load(this.loadModels);
     this.root.add(this.blasterView.root);
 
