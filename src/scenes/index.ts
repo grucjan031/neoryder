@@ -1,5 +1,6 @@
 import { NeonTest } from './neonTest';
 import { DamageTest } from './damageTest';
+import { CityFxTest } from './cityFxTest';
 import { StyleTest } from './styleTest';
 import { MeleeTest, ParryTest, PushTest } from './meleeTest';
 import { Arena } from './arena';
@@ -31,6 +32,7 @@ export interface Scene {
 }
 export type SceneFactory = () => Scene;
 export const scenes: Record<string, SceneFactory> = {
+  'city-fx-test': () => new CityFxTest(),
   'boss-test': () => new BossTest(),
   run: () => new RunScene(),
   'map-test': () => new MapTest(),
