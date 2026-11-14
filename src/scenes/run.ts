@@ -241,7 +241,7 @@ export class RunScene implements Scene {
           return room;
         })
       : [...this.rooms.values()].filter((room) => room.type === node.type);
-    // Do F3-12/16 pokoje specjalne korzystają z układu zwykłej walki.
+    // Zapas dla sektorów bez puli danego typu: układ zwykłej walki.
     const available = candidates.length
       ? candidates
       : [...this.rooms.values()].filter((room) => room.type === 'combat');
@@ -257,14 +257,26 @@ export class RunScene implements Scene {
     const layout = this.chooseRoom(node, rng);
     const combat =
       node.type === 'combat' || node.type === 'elite' || node.type === 'boss';
-    const waves = (this.options.planner ?? roomPlanner).planWaves(
-      layout,
-      this.sector,
-      node.type === 'combat' || node.type === 'elite'
-        ? node
-        : { ...node, type: 'combat' },
-      rng,
-    );
+    // Sklep i odpoczynek nie mają fal; nakładka otwiera się od razu po wejściu.
+    const waves: WavesDefinition =
+      node.type === 'shop' || node.type === 'rest'
+        ? {
+            id: `room:${node.id}`,
+            firstBreakS: 0,
+            breakS: 0,
+            maxAlive: 1,
+            minSpawnDistance: 0,
+            spawnPoints: [],
+            waves: [],
+          }
+        : (this.options.planner ?? roomPlanner).planWaves(
+            layout,
+            this.sector,
+            node.type === 'combat' || node.type === 'elite'
+              ? node
+              : { ...node, type: 'combat' },
+            rng,
+          );
     const room =
       this.options.createRoom?.(layout, state, waves) ??
       new RoomScene(layout, state, waves, {
