@@ -25,8 +25,11 @@ mulberry32 i xmur3; szczegóły i odtwarzanie strumieni opisuje ADR 0002.
 
 `SaveStore` rozdziela klucze `meta` i `run` w IndexedDB `neoryder`, magazyn `saves`.
 Implementacja pamięciowa zachowuje te same zasady kopiowania. Schematy zod
-walidują dane. Migracja 0→1 zachowuje pola istniejącego szkieletu i podnosi wersję;
-brakujące wymagane pola są odrzucane. Nowszy zapis zwraca null z ostrzeżeniem;
+walidują dane (`SAVE_VERSION = 2`, w `RunSave` pole `run: RunState` walidowane przez `runStateSchema`).
+Migracja 0→1 zachowuje pola istniejącego szkieletu i podnosi wersję; migracja 1→2 jest
+neutralna dla `meta`, natomiast szkielet `run` v1 (bez pola `run`) traktuje jako brak
+aktywnego runu (`loadRun()` zwraca `null` bez ostrzeżenia). Brakujące lub uszkodzone pola
+są odrzucane z ostrzeżeniem (`null`). Nowszy zapis zwraca `null` z ostrzeżeniem;
 nie można go nadpisać ani skasować przez `clearRun`. Odczyt migruje w pamięci,
 bez automatycznego zapisu. Ustawienia w `neoryder.settings` w localStorage mają
 domyślne wartości przy niedostępnej pamięci, błędnym JSON lub błędnych danych.
