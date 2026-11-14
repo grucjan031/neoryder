@@ -187,6 +187,10 @@ export const tuning = {
   },
   enemies: {
     phaseShiftS: 1,
+    /** Złamanie tarczy bossa: hitstop (ms) i wstrząs kamery (siła, czas w s). */
+    shieldBreakHitstopMs: 80,
+    shieldBreakShake: 0.5,
+    shieldBreakShakeS: 0.3,
     stunKnockback: 6,
     corpseS: 0.5,
     separationRadius: 1,

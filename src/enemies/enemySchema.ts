@@ -19,8 +19,33 @@ export const bossPatternSchema = z.discriminatedUnion('kind', [
     projectileSpeed: positive,
     projectileLifetimeS: positive,
   }),
+  /** F3-17: wezwanie sług; `maxMinions` to limit żywych sług bossa naraz. */
+  z.object({
+    ...patternFields,
+    kind: z.literal('summon'),
+    enemyId: z.string().min(1),
+    count: z.number().int().positive(),
+    maxMinions: z.number().int().positive(),
+    /** `spawnPoints` — punkty spawnu pokoju (bez nich: pierścień); `around` — pierścień wokół bossa. */
+    placement: z.enum(['spawnPoints', 'around']),
+    radiusM: positive,
+  }),
+  /** F3-17: tarcza łamana; obrażenia bez #power i odbitych pocisków są zerowane. */
+  z.object({
+    ...patternFields,
+    kind: z.literal('shield'),
+    durability: positive,
+    /** Po tym czasie niezłamana tarcza opada. */
+    durationS: positive,
+    stunS: positive,
+    /** Okno zwiększonych obrażeń liczone od złamania tarczy. */
+    vulnerableS: positive,
+    vulnerableMult: z.number().finite().min(1),
+  }),
 ]);
 export type BossPattern = z.infer<typeof bossPatternSchema>;
+export type SummonPattern = Extract<BossPattern, { kind: 'summon' }>;
+export type ShieldPattern = Extract<BossPattern, { kind: 'shield' }>;
 export const bossSchema = z
   .object({
     name: z.string().min(1),
@@ -37,6 +62,21 @@ export const bossSchema = z
   })
   .superRefine((boss, ctx) => {
     boss.phases.forEach((phase, index) => {
+      if (!phase.patterns.some((p) => p.kind === 'slam' || p.kind === 'fan'))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['phases', index, 'patterns'],
+          message:
+            'Faza wymaga co najmniej jednego wzorca zadającego obrażenia.',
+        });
+      phase.patterns.forEach((pattern, p) => {
+        if (pattern.kind === 'shield' && pattern.vulnerableS < pattern.stunS)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['phases', index, 'patterns', p, 'vulnerableS'],
+            message: 'Okno obrażeń nie może być krótsze niż ogłuszenie.',
+          });
+      });
       if (
         (index === 0 && phase.hpThreshold !== 1) ||
         (index > 0 && phase.hpThreshold >= boss.phases[index - 1]!.hpThreshold)

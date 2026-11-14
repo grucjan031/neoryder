@@ -5,14 +5,7 @@ import {
   queryBladeSpin,
 } from '../combat/melee/bladeQueries';
 import { FlyingBlade } from '../render/flyingBlade';
-import {
-  BoxGeometry,
-  Color,
-  Euler,
-  Group,
-  Mesh,
-  Quaternion,
-} from 'three';
+import { BoxGeometry, Color, Euler, Group, Mesh, Quaternion } from 'three';
 import type { BufferGeometry, Scene as ThreeScene } from 'three';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
@@ -49,6 +42,7 @@ import {
 } from '../progression/implants';
 import { cloneRoomModel } from './roomModels';
 import { statusDefinitions, StatusSystem } from '../combat/status';
+import { Boss } from '../enemies/boss';
 import { EnemyManager } from '../enemies/manager';
 import { createEnemyView } from '../enemies/views';
 import type { EnemyViewLike } from '../enemies/views';
@@ -118,6 +112,8 @@ export class RoomScene implements Scene {
   private projectileView!: ProjectileRenderer;
   private manager!: EnemyManager;
   private director!: WaveDirector;
+  /** Tryb bossa (layout.bossEnemy): bez fal, pokój kończy śmierć bossa. */
+  private boss: Boss | null = null;
   private player!: PlayerController;
   private previous!: PlayerState;
   private fpsCamera!: FpsCamera;
@@ -263,7 +259,14 @@ export class RoomScene implements Scene {
             ? null
             : { id: playerId, position: this.player.getState().position },
       },
-      this.layout.director ? { director: this.layout.director } : {},
+      {
+        ...(this.layout.director ? { director: this.layout.director } : {}),
+        spawnPoints: this.layout.spawnPoints.map((p) => ({
+          x: p.x,
+          y: 0,
+          z: p.z,
+        })),
+      },
     );
 
     if (typeof document !== 'undefined')
@@ -397,8 +400,9 @@ export class RoomScene implements Scene {
       ctx.bus.on('player_died', ({ id }) => {
         if (id === playerId) this.onPlayerDied();
       }),
-      ctx.bus.on('enemy_killed', ({ killer }) => {
+      ctx.bus.on('enemy_killed', ({ id, killer }) => {
         if (killer === playerId) this.kills++;
+        if (this.boss && id === this.boss.id) this.completeRoom();
       }),
     );
     this.registerCommands(playerId);
@@ -411,7 +415,8 @@ export class RoomScene implements Scene {
       type: this.node.type,
       layer: this.node.layer,
     });
-    this.director.start();
+    if (this.layout.bossEnemy) this.spawnBoss(this.layout.bossEnemy);
+    else this.director.start();
     if (this.health.dead) this.onPlayerDied();
     this.render(1);
   }
@@ -514,6 +519,18 @@ export class RoomScene implements Scene {
     if (this.world.bodies.len() >= this.ctx.tuning.physics.maxDynamicBodies)
       return null;
     return this.manager.spawn(kind, position).id;
+  }
+
+  private spawnBoss(enemyId: string): void {
+    const marker = this.layout.props?.find((p) => p.kind === 'bossSpawn');
+    const enemy = this.manager.spawn(enemyId, {
+      x: marker?.position.x ?? 0,
+      y: marker?.position.y ?? 0,
+      z: marker?.position.z ?? 0,
+    });
+    if (!(enemy instanceof Boss))
+      throw new Error(`Wróg ${enemyId} nie jest bossem.`);
+    this.boss = enemy;
   }
 
   private enemy(id: EntityId): Enemy | undefined {
@@ -953,6 +970,24 @@ export class RoomScene implements Scene {
         : 'Podaj obrażenia.';
     });
     register('kill all', 'kill all', () => hitAll(Number.MAX_VALUE));
+    register('boss phase', 'boss phase <n> — faza bossa od 1', (args) => {
+      const phase = Number(args[0]);
+      return args.length === 1 && this.boss?.setPhase(phase)
+        ? `Faza bossa: ${phase}`
+        : 'Podaj istniejącą fazę żywego bossa.';
+    });
+    register(
+      'boss pattern',
+      'boss pattern summon|shield — wymuś wzorzec bossa',
+      (args) => {
+        const kind = args[0];
+        return args.length === 1 &&
+          (kind === 'summon' || kind === 'shield') &&
+          this.boss?.forcePattern(kind)
+          ? `Wzorzec bossa: ${kind}`
+          : 'Podaj summon lub shield i żywego bossa gotowego do wzorca.';
+      },
+    );
     register('wave', 'wave <n> — skok do fali', (args) => {
       const n = Number(args[0]);
       if (!Number.isSafeInteger(n) || n < 1 || n > this.director.totalWaves)
@@ -1009,6 +1044,16 @@ export class RoomScene implements Scene {
         return this.director.currentPhase;
       case 'enemies':
         return this.aliveEnemies();
+      case 'boss':
+        return this.boss && !this.boss.removed
+          ? {
+              id: this.boss.id,
+              phase: this.boss.phase,
+              hp: this.damage.health(this.boss.id)?.current ?? 0,
+              shield: this.boss.shield,
+              minions: this.boss.minionCount,
+            }
+          : null;
       case 'enemyDirector':
         return this.manager.director?.snapshot() ?? null;
       case 'playerPos':

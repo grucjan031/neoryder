@@ -12,6 +12,8 @@ import type { Enemy, EnemyDependencies } from './types';
 export interface EnemyManagerOptions {
   /** Dane `director` sceny; bez nich wrogowie atakują bez koordynacji (F1). */
   director?: DirectorConfig;
+  /** F3-17: punkty spawnu pokoju dla wezwań bossa (opcjonalne). */
+  spawnPoints?: readonly Vec3[];
 }
 
 export class EnemyManager {
@@ -54,6 +56,8 @@ export class EnemyManager {
     this.deps = {
       ...deps,
       getNeighbors: () => this.enemies,
+      spawnEnemy: (id: string, position: Vec3) => this.spawn(id, position),
+      ...(options.spawnPoints ? { spawnPoints: options.spawnPoints } : {}),
       ...(this.director ? { director: this.director } : {}),
     };
   }

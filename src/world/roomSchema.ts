@@ -55,6 +55,8 @@ export const roomSchema = z
     maxAlive: z.number().int().positive().optional(),
     minSpawnDistance: nonnegative.optional(),
     threatMultiplier: positive.optional(),
+    /** Boss pokoju: id wroga z `kind: 'boss'`; włącza tryb bossa w RoomScene (bez fal). */
+    bossEnemy: z.string().min(1).optional(),
     props: z.array(roomPropSchema).optional(),
     puzzle: z.record(z.string(), z.unknown()).optional(),
   })
@@ -91,6 +93,12 @@ export const roomSchema = z
         code: 'custom',
         path: ['spawnPoints'],
         message: 'Pokój combat/elite wymaga co najmniej 4 punktów spawnu.',
+      });
+    if (room.bossEnemy !== undefined && room.type !== 'boss')
+      ctx.addIssue({
+        code: 'custom',
+        path: ['bossEnemy'],
+        message: 'bossEnemy jest dozwolone tylko w pokoju typu boss.',
       });
     validateLayout(room, ctx);
   });

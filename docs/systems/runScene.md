@@ -23,8 +23,16 @@ Host składa `RunManager`, pokoje i ekrany; logika stanu pozostaje w
   otwiera exit i od razu otwiera nakładkę sklepu/odpoczynku. Wyjdź zamyka
   nakładkę, niszczy pokój i wraca na mapę.
 - `puzzle`: tymczasowo czyszczenie i powrót na mapę; generator ma wagę 0.
-- `boss`: tymczasowo fale zwykłego `combat`, z zachowaniem typu boss w
-  zdarzeniach. `room_cleared` kończy run zwycięstwem, bez nagrody.
+- `boss`: układ z `bossEnemy` (`bossRoom`) dostaje puste `WavesDefinition` jak sklep
+  (host nie woła `planWaves`), `RoomScene` w trybie bossa pomija `WaveDirector` i
+  tuż po wejściu tworzy bossa w punkcie `props[kind=bossSpawn]` (domyślnie środek).
+  `room_cleared` pada wyłącznie po śmierci bossa (sługi giną razem z nim i nie
+  liczą się), potem `RunManager.completeRoom` kończy run zwycięstwem, bez nagrody.
+  Układ boss bez `bossEnemy` zachowuje dawne zachowanie (fale combat).
+  Śmierć gracza działa jak w innych pokojach. Komendy `boss phase` i
+  `boss pattern` są przekazywane do pokoju; `query('boss')` zwraca
+  `{ id, phase, hp, shield, minions }` lub `null`. Podgląd bez przechodzenia mapy:
+  `?scene=room-test&room=bossRoom`, `kill all` powtarzany co ok. 1,1 s.
 - `player_died` kończy run przez `RunManager`; host usuwa zapis, niszczy pokój
   i pokazuje proste podsumowanie z przyciskiem Menu (`/`).
 

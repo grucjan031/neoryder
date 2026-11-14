@@ -257,14 +257,16 @@ export class RunScene implements Scene {
     const layout = this.chooseRoom(node, rng);
     const combat =
       node.type === 'combat' || node.type === 'elite' || node.type === 'boss';
-    // Sklep i odpoczynek nie mają fal; nakładka otwiera się od razu po wejściu.
+    // Sklep i odpoczynek nie mają fal (nakładka otwiera się od razu po wejściu);
+    // pokój bossa (layout.bossEnemy) też nie: walkę prowadzi boss, nie WaveDirector.
+    const bossRoom = node.type === 'boss' && layout.bossEnemy !== undefined;
     const waves: WavesDefinition =
-      node.type === 'shop' || node.type === 'rest'
+      node.type === 'shop' || node.type === 'rest' || bossRoom
         ? {
             id: `room:${node.id}`,
             firstBreakS: 0,
             breakS: 0,
-            maxAlive: 1,
+            maxAlive: bossRoom ? (layout.maxAlive ?? 1) : 1,
             minSpawnDistance: 0,
             spawnPoints: [],
             waves: [],
@@ -446,6 +448,8 @@ export class RunScene implements Scene {
       'spawn',
       'hit',
       'kill all',
+      'boss phase',
+      'boss pattern',
       'wave',
       'god',
     ]) {

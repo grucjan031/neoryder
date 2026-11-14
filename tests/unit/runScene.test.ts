@@ -438,3 +438,81 @@ it('clearRun czeka na zaległy saveRun, więc zapis nie odżywa po końcu runu',
   expect(save.state).toBeNull();
   expect(save.clears).toBe(1);
 });
+
+function bossRunState(): RunState {
+  return {
+    seed: 'boss-run',
+    sectorId: 'kurogane',
+    loadoutId: 'classic',
+    startedAtMs: 0,
+    elapsedS: 0,
+    map: {
+      sectorId: 'kurogane',
+      layers: [[{ id: 'B', layer: 8, index: 0, type: 'boss', next: [] }]],
+    },
+    currentNodeId: null,
+    visited: [],
+    hp: 100,
+    energy: 50,
+    credits: 0,
+    implants: [],
+    stats: { kills: 0, damage: { melee: 0, power: 0, gun: 0, other: 0 } },
+  };
+}
+
+async function bossRun() {
+  const save = new MemorySave();
+  save.state = bossRunState();
+  const made = setup({
+    save,
+    params: new URLSearchParams('continue=1'),
+    createRoom: (layout, run, waves) => {
+      expect(waves.waves).toHaveLength(0);
+      return new RoomScene(layout, run, waves, { loadModels: false });
+    },
+  });
+  return { ...(await made), save };
+}
+
+it('węzeł boss: pokój bossa bez fal, boss pojawia się po wejściu, śmierć bossa kończy run zwycięstwem bez nagrody', async () => {
+  const { scene, screens, commands, save } = await bossRun();
+  screens.actions.selectNode('B');
+  await scene.whenReady();
+  expect(scene.query('runError')).toBeNull();
+  expect(scene.query('room')).toBe('bossRoom');
+  expect(scene.query('screen')).toBe('room');
+  expect(scene.query('phase')).toBe('stopped');
+  expect(scene.query('boss')).toMatchObject({ phase: 1, hp: 900 });
+  commands.execute('god');
+  for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+  expect(scene.query('screen')).toBe('room');
+  for (let n = 0; n < 3; n++) {
+    commands.execute('kill all');
+    for (let i = 0; i < 70; i++) scene.step(SIM_DT, idle);
+  }
+  await scene.whenReady();
+  expect(scene.query('screen')).toBe('summary');
+  expect(screens.view.summary?.outcome).toBe('victory');
+  expect(scene.query('room')).toBeNull();
+  expect(scene.query('runLog')).toEqual([
+    { event: 'node_selected', nodeId: 'B', type: 'boss' },
+    { event: 'room_cleared', nodeId: 'B' },
+    { event: 'run_ended', outcome: 'victory' },
+  ]);
+  expect(save.clears).toBe(1);
+  expect(save.state).toBeNull();
+});
+
+it('węzeł boss: śmierć gracza kończy run porażką jak w innych pokojach', async () => {
+  const { scene, screens, commands } = await bossRun();
+  screens.actions.selectNode('B');
+  await scene.whenReady();
+  commands.execute('hurt 1000');
+  await scene.whenReady();
+  expect(scene.query('screen')).toBe('summary');
+  expect(screens.view.summary?.outcome).toBe('death');
+  expect(scene.query('runLog')).toEqual([
+    { event: 'node_selected', nodeId: 'B', type: 'boss' },
+    { event: 'run_ended', outcome: 'death' },
+  ]);
+});
