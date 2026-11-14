@@ -59,6 +59,8 @@ it('wyłączenie obrysu pomija cele pośrednie i nadal synchronizuje paletę', (
 
 it('rysuje kolor, normalne z głębią i kompozycję; przywraca stan i skaluje cele przez DPR', () => {
   const { renderer, pipeline, clearColor } = fixture();
+  tuning.render.bloom = 0;
+  tuning.render.postFx = 0;
   const scene = new Scene();
   const background = new Color('#ffffff');
   scene.background = background;

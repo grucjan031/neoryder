@@ -56,6 +56,7 @@ async function main(): Promise<void> {
   const scene = factory();
   const input = new Input(renderer.domElement);
   const bus = new EventBus();
+  pipeline.bindEvents(bus);
   const stats = debug ? new StatsPanel() : undefined;
   const loop = new GameLoop({
     step: (dt) => scene.step(dt, input.snapshot()),
@@ -67,7 +68,7 @@ async function main(): Promise<void> {
       }
       feel.update(frameDt);
       scene.render(alpha, frameDt);
-      pipeline.render(three, camera);
+      pipeline.render(three, camera, frameDt);
       stats?.end();
     },
   });
@@ -131,6 +132,18 @@ async function main(): Promise<void> {
       scene.reset?.();
       return 'Scena zresetowana.';
     }),
+    commands.register(
+      'fx',
+      'fx <damage|focus|off> — impuls kompozycji',
+      (args) => {
+        const mode = args[0];
+        if (mode === 'damage') pipeline.fxState.hit(1);
+        else if (mode === 'focus') pipeline.fxState.focusActive = true;
+        else if (mode === 'off') pipeline.fxState.reset();
+        else return 'Użycie: fx <damage|focus|off>';
+        return `fx: ${mode}`;
+      },
+    ),
     ...(['timescale', 'hitstop'] as const).map((name) =>
       commands.register(
         name,

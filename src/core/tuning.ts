@@ -43,6 +43,40 @@ export const tuning = {
     outlineColor: '#30343b',
     hemiIntensity: 0.6,
     keyIntensity: 2.4,
+    /** Przełączniki jakości: 0 pomija pass (słaby sprzęt). */
+    bloom: 1,
+    postFx: 1,
+    /** Bloom selektywny: tylko materiały emisyjne (neony). Promień mnoży odstęp próbek rozmycia. */
+    bloomStrength: 0.6,
+    bloomRadius: 1.2,
+    /** Tło i mgła (liczone w kompozycji). skyGradient/fogStrength = 0 wyłączają efekt. */
+    skyGradient: 1,
+    skyTop: '#ffffff',
+    skyHorizon: '#e3e7ea',
+    skyGradientHeight: 0.5,
+    fogStrength: 0.85,
+    fogColor: '#eef1f3',
+    fogNear: 14,
+    fogFar: 80,
+    /** Siatka płytek podłogi w shaderze materiału świata (m, kontrast 0..1, grubość w px). */
+    gridSize: 2,
+    gridContrast: 0.1,
+    gridLineWidth: 1,
+    /** Kompozycja końcowa (postFx). Czasy w s czasu rzeczywistego. */
+    vignetteStrength: 0.2,
+    vignetteRadius: 0.55,
+    vignetteSoftness: 0.6,
+    damagePulseS: 0.4,
+    damagePulseMin: 0.35,
+    damagePulseHpGain: 2,
+    damageAberration: 0.018,
+    damageTint: 0.5,
+    damageTintColor: '#ff1a2a',
+    focusTint: 0.14,
+    focusTintColor: '#ff2bd6',
+    focusDesaturate: 0.3,
+    focusFadeInS: 0.15,
+    focusFadeOutS: 0.35,
   },
   /** Kontroler FPP (#02). Prędkości m/s, przyspieszenia m/s², czasy ms. */
   player: {
