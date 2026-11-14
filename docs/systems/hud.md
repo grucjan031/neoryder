@@ -1,4 +1,4 @@
-# Minimalny HUD — F1 #15
+# HUD — F1 #15, F2-15
 
 `src/ui/hud.ts` tworzy warstwę HTML nad canvasem, bez Three.js i bez odczytu
 modułów symulacji. Style są w sekcji `.hud` pliku `src/ui/styles.css`.
@@ -14,6 +14,8 @@ modułów symulacji. Style są w sekcji `.hud` pliku `src/ui/styles.css`.
 | Czerwona winieta trafienia                             | `damage_dealt`                 | `target === playerId`, `amount > 0` |
 | Dialog śmierci                                         | `player_died`                  | `id === playerId`                   |
 | Licznik fali / komunikat wyczyszczenia                 | `wave_started`, `wave_cleared` | globalne                            |
+| Nazwa bieżącej broni                                   | `weapon_switched`              | `owner === playerId`                |
+| Dwa sloty mocy (F/E), nazwy i odnowienie               | `power_used`, `power_denied`   | `user === playerId`                 |
 
 Paski startują jako puste z liczbą „—”, do pierwszego zdarzenia. Scena powinna
 utworzyć HUD przed początkowymi emisjami zdrowia, energii i ciepła albo wyemitować
@@ -65,3 +67,27 @@ celownika na bieli i czerwieni oraz ponowienie po śmierci myszą i klawiaturą.
 Scena demonstracyjna nie jest częścią #15.
 
 Testy DOM: `npx vitest run tests/unit/hud.test.ts` (jsdom).
+
+## Ekwipunek i odnowienia (F2-15)
+
+Opcja `loadout` konstruktora przyjmuje początkowe `weapons` i `powers` z danych
+ekwipunku. HUD rozwiązuje polskie nazwy i `cooldownS` w rejestrach definicji,
+bez odczytu instancji broni lub mocy. `setLoadout(loadout)` przy resecie odtwarza
+dwa sloty, zeruje odnowienia i sygnały odmowy oraz zamyka dialog śmierci.
+Pusty slot pokazuje „—”. Pierwsza broń ma nazwę od początku; dalsze zmiany
+pochodzą z `weapon_switched`. Scena natychmiast emituje po nim `heat_changed`
+wybranej broni. Nieaktywne bronie chłodzą się bez emisji, więc nie nadpisują paska.
+
+`power_used` rozpoczyna odliczanie `cooldownS` tylko dla odpowiadającego mu slotu.
+Arena przekazuje do `Hud.step(dt)` czas gracza przed krokiem mocy: odnowienie
+zatrzymuje się w hitstopie i pauzie oraz zgadza się z czasem mocy w Skupieniu.
+HUD nie odpytuje symulacji. Wyświetla dziesiąte części sekundy, po końcu „Gotowa”.
+`power_denied` zachowuje sygnał pod celownikiem i dodatkowo miga przy właściwym
+slocie; nie rozpoczyna ani nie przedłuża odnowienia. `dispose()` usuwa również
+listenery animacji obu slotów. Teksty, etykiety F/E i jednostka czasu są w
+`src/data/ui/hud.pl.json`; nazwy broni i mocy pozostają w ich definicjach JSON.
+
+Kontrola w 30 sekund: otwórz `?scene=arena&loadout=resonance&debug=1`, użyj F i E.
+Sprawdź osobne odliczania oraz sygnał ponownego E. Wpisz `loadout gunner`,
+przytrzymaj R i wybierz 2, potem 1: nazwa i ciepło muszą zmieniać się razem.
+Oceń czytelność nazw, pozostałego czasu i paska podczas walki.

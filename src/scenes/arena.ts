@@ -1,4 +1,12 @@
-import { BoxGeometry, Color, Euler, Group, Mesh, Quaternion } from 'three';
+import {
+  BoxGeometry,
+  Color,
+  Euler,
+  Group,
+  Mesh,
+  Quaternion,
+  Vector3,
+} from 'three';
 import type { BufferGeometry, Material, Scene as ThreeScene } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { World } from '@dimforge/rapier3d-compat';
@@ -19,8 +27,10 @@ import {
 import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import { PlayerEnergy } from '../combat/powers/energy';
-import { pushDefinition, ResonancePush } from '../combat/powers/push';
-import { Blaster } from '../combat/weapons/blaster';
+import { createPower } from '../combat/powers/registry';
+import { PowerSlots } from '../combat/powers/slots';
+import { Weapon } from '../combat/weapons/weapon';
+import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import sceneData from '../data/scenes/arena.json';
 import wavesData from '../data/waves/arena.json';
@@ -37,6 +47,10 @@ import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { FppBlade } from '../render/fppBlade';
 import { FppBlaster } from '../render/fppBlaster';
+import { BeamRenderer } from '../render/beamRenderer';
+import { ExplosionRenderer } from '../render/explosionRenderer';
+import { loadoutDefinitions } from '../progression/loadout';
+import type { Loadout } from '../progression/loadout';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
@@ -98,8 +112,13 @@ export class Arena implements Scene {
   private fpsCamera!: FpsCamera;
   private energy!: PlayerEnergy;
   private blade!: PlasmaBlade;
-  private push!: ResonancePush;
-  private blaster!: Blaster;
+  private powers!: PowerSlots;
+  private loadout: Loadout = loadoutDefinitions.get('classic')!;
+  private weapons: Weapon[] = [];
+  private weaponSlot = 0;
+  private beamView!: BeamRenderer;
+  private explosionView!: ExplosionRenderer;
+  private readonly beamOrigin = new Vector3();
   private readonly playerStats = new Stats({
     maxHealth: layout.playerHealth,
     maxEnergy: 100,
@@ -130,6 +149,15 @@ export class Arena implements Scene {
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
+    const requested =
+      typeof location === 'undefined'
+        ? null
+        : new URLSearchParams(location.search).get('loadout');
+    this.loadout =
+      loadoutDefinitions.get(requested ?? 'classic') ??
+      loadoutDefinitions.get('classic')!;
+    if (requested !== null && !loadoutDefinitions.has(requested) && ctx.debug)
+      console.warn(`Nieznany ekwipunek: ${requested}. Wybrano classic.`);
     this.three = three;
     this.rapier = await initPhysics();
     this.world = new this.rapier.World({
@@ -175,6 +203,9 @@ export class Arena implements Scene {
       ctx.tuning.weapons.maxProjectiles,
     );
     this.root.add(this.projectileView.root);
+    this.beamView = new BeamRenderer();
+    this.explosionView = new ExplosionRenderer(ctx.bus);
+    this.root.add(this.beamView.root, this.explosionView.root);
 
     this.manager = new EnemyManager(
       ctx,
@@ -194,7 +225,11 @@ export class Arena implements Scene {
     );
 
     if (typeof document !== 'undefined')
-      this.hud = new Hud(ctx.bus, { playerId, onRetry: () => this.retry() });
+      this.hud = new Hud(ctx.bus, {
+        playerId,
+        loadout: this.loadout,
+        onRetry: () => this.retry(),
+      });
     this.energy = new PlayerEnergy(
       playerId,
       this.playerStats,
@@ -220,32 +255,7 @@ export class Arena implements Scene {
     this.off.push(
       this.projectiles.addInterceptor(this.blade.interceptProjectile),
     );
-    this.push = new ResonancePush(
-      pushDefinition,
-      {
-        owner: playerId,
-        damage: this.damage,
-        energy: this.energy,
-        aim: () => this.aim(),
-        targets: () => {
-          const list: { id: EntityId; position: Vec3 }[] = [];
-          this.manager.forEach((e) => {
-            if (e.current.state !== 'dead')
-              list.push({
-                id: e.id,
-                position: {
-                  ...e.current.position,
-                  y: e.current.position.y + 1.1,
-                },
-              });
-          });
-          return list;
-        },
-        castWall: (origin, dir, max) => this.castWall(origin, dir, max),
-      },
-      ctx.bus,
-      ctx.tuning,
-    );
+    this.createEquipment();
     this.debris = new DebrisSystem({
       maxDebris: ctx.tuning.vfx.maxDebris,
       walls: (pos, dir, dist) => this.castWall(pos, dir, dist),
@@ -257,12 +267,6 @@ export class Arena implements Scene {
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
       tuning: ctx.tuning,
     });
-    this.blaster = new Blaster(
-      playerId,
-      ctx,
-      this.playerStats,
-      this.projectiles,
-    );
 
     await this.bladeView.load(this.loadModels);
     this.root.add(this.bladeView.root);
@@ -398,6 +402,112 @@ export class Arena implements Scene {
 
   // ----------------------------------------------------------------- walka
 
+  private get weapon(): Weapon {
+    return this.weapons[this.weaponSlot]!;
+  }
+
+  private createEquipment(): void {
+    this.powers?.reset();
+    this.powers = new PowerSlots(
+      this.loadout.powers.map((id) =>
+        createPower(id, {
+          owner: this.player.id,
+          bus: this.ctx.bus,
+          tuning: this.ctx.tuning,
+          damage: this.damage,
+          energy: this.energy,
+          projectiles: this.projectiles,
+          aim: () => this.aim(),
+          targets: () => {
+            const list: { id: EntityId; position: Vec3 }[] = [];
+            this.manager.forEach((e) => {
+              if (e.current.state !== 'dead')
+                list.push({
+                  id: e.id,
+                  position: {
+                    ...e.current.position,
+                    y: e.current.position.y + 1.1,
+                  },
+                });
+            });
+            return list;
+          },
+          castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+        }),
+      ),
+    );
+    this.weaponSlot = 0;
+    this.weapons = this.loadout.weapons.map(
+      (id) =>
+        new Weapon(
+          this.player.id,
+          this.ctx,
+          this.playerStats,
+          {
+            projectiles: this.projectiles,
+            damage: this.damage,
+            castBeam: (origin, dir, rangeM) =>
+              this.castBeam(origin, dir, rangeM),
+          },
+          weaponDefinitions.get(id)!,
+        ),
+    );
+  }
+
+  private selectWeapon(slot: number): void {
+    if (!this.weapons[slot] || slot === this.weaponSlot) return;
+    this.weapon.cool(0);
+    this.weaponSlot = slot;
+    this.emitWeapon();
+  }
+
+  private emitWeapon(): void {
+    this.ctx.bus.emit('weapon_switched', {
+      owner: this.player.id,
+      weapon: this.weapon.definition.id,
+      slot: this.weaponSlot,
+    });
+    this.ctx.bus.emit('heat_changed', {
+      id: this.player.id,
+      current: this.weapon.heat.current,
+      max: this.weapon.heat.max,
+      overheated: this.weapon.overheated,
+    });
+  }
+
+  private castBeam(origin: Vec3, dir: Vec3, rangeM: number) {
+    const hit = this.world.castRayAndGetNormal(
+      new this.rapier.Ray(origin, dir),
+      rangeM,
+      true,
+      undefined,
+      interactionGroups(
+        CollisionGroup.PlayerProjectile,
+        CollisionGroup.Enemy | CollisionGroup.World,
+      ),
+      undefined,
+      undefined,
+      (collider) => {
+        const box = this.hurtboxes.get(collider.handle);
+        return box
+          ? box.entity !== this.player.id
+          : ((collider.collisionGroups() >>> 16) & CollisionGroup.World) !== 0;
+      },
+    );
+    const distance = hit?.timeOfImpact ?? rangeM;
+    return {
+      target: hit
+        ? (this.hurtboxes.get(hit.collider.handle)?.entity ?? null)
+        : null,
+      distance,
+      point: {
+        x: origin.x + dir.x * distance,
+        y: origin.y + dir.y * distance,
+        z: origin.z + dir.z * distance,
+      },
+    };
+  }
+
   private aim(): { origin: Vec3; dir: Vec3 } {
     const s = this.player.getState();
     const t = this.ctx.tuning.player;
@@ -462,9 +572,14 @@ export class Arena implements Scene {
     }
     // F2-06: gracz, ostrze, moce, broń i energia w czasie gracza (Skupienie), reszta w czasie świata.
     const pdt = this.ctx.feel?.playerDt(dt) ?? dt;
+    this.hud?.step(pdt);
+    for (const [slot, action] of (
+      ['weapon1', 'weapon2', 'weapon3'] as const
+    ).entries())
+      if (input.pressed.has(action)) this.selectWeapon(slot);
     this.player.step(pdt, input);
     this.blade.step(pdt, input);
-    this.push.step(pdt, input);
+    this.powers.step(pdt, input);
     if (!(dt > 0)) {
       this.manager.step(dt);
       return;
@@ -474,10 +589,14 @@ export class Arena implements Scene {
     this.statuses.step(dt);
     this.projectileView.capturePrevious();
     this.debris.step(dt);
-    this.blaster.step(pdt, {
-      ...this.aim(),
-      triggerHeld: input.held.has('shoot'),
-    });
+    for (const weapon of this.weapons) {
+      if (weapon === this.weapon)
+        weapon.step(pdt, {
+          ...this.aim(),
+          triggerHeld: input.held.has('shoot'),
+        });
+      else weapon.cool(pdt);
+    }
     this.director.step(dt);
     this.manager.step(dt);
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
@@ -505,9 +624,13 @@ export class Arena implements Scene {
       }
     this.projectileView.render(alpha);
     this.debrisView.render(alpha);
+    this.explosionView.render(frameDt);
     this.lights.sync();
     const camera = this.ctx.camera;
-    if (!camera) return;
+    if (!camera) {
+      this.beamView.render(this.weapon.beam);
+      return;
+    }
     const pose = this.fpsCamera.update(
       frameDt,
       this.previous,
@@ -525,12 +648,15 @@ export class Arena implements Scene {
     this.bladeView.place(camera.matrixWorld, this.blade.view());
     this.blasterView.root.visible = this.state === 'playing';
     this.blasterView.place(camera.matrixWorld, frameDt);
+    this.blasterView.root.getWorldPosition(this.beamOrigin);
+    this.beamView.render(this.weapon.beam, this.beamOrigin);
   }
 
   // ----------------------------------------------------------------- śmierć i reset
 
   private onPlayerDied(): void {
     this.state = 'dead';
+    this.weapon.cool(0);
     this.deadS = 0;
     this.director.stop();
     if (typeof document !== 'undefined') document.exitPointerLock?.();
@@ -547,9 +673,10 @@ export class Arena implements Scene {
     this.projectiles.dispose();
     this.projectileView.capturePrevious();
     this.debris.clear();
-    this.blaster.reset();
     this.blade.reset();
-    this.push.reset();
+    this.createEquipment();
+    this.hud?.setLoadout(this.loadout);
+    this.explosionView.render(this.ctx.tuning.vfx.explosionDurationS);
     this.health.reset();
     this.registerPlayer();
     this.energy.set(this.energy.max);
@@ -576,6 +703,14 @@ export class Arena implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('loadout', 'loadout <id> — reset areny z ekwipunkiem', (args) => {
+      const selected = loadoutDefinitions.get(args[0] ?? '');
+      if (args.length !== 1 || !selected)
+        return `Dostępne ekwipunki: ${[...loadoutDefinitions.keys()].join(', ')}`;
+      this.loadout = selected;
+      this.reset();
+      return `Ekwipunek: ${selected.name}`;
+    });
     register(
       'spawn',
       `spawn <id> [n] — ${availableEnemyIds().join(', ')}`,
@@ -644,12 +779,7 @@ export class Arena implements Scene {
       current: this.health.current,
       max: this.health.max,
     });
-    this.ctx.bus.emit('heat_changed', {
-      id: this.player.id,
-      current: this.blaster.heat.current,
-      max: this.blaster.heat.max,
-      overheated: this.blaster.overheated,
-    });
+    this.emitWeapon();
   }
 
   query(name: string): unknown {
@@ -669,7 +799,26 @@ export class Arena implements Scene {
       case 'energy':
         return this.energy.current;
       case 'heat':
-        return this.blaster.heat.current;
+        return this.weapon.heat.current;
+      case 'loadout':
+        return this.loadout.id;
+      case 'weapon':
+        return this.weapon.definition.id;
+      case 'weaponHeat':
+        return Object.fromEntries(
+          this.weapons.map((weapon) => [
+            weapon.definition.id,
+            weapon.heat.current,
+          ]),
+        );
+      case 'powerSlots':
+        return this.loadout.powers.slice();
+      case 'powerCooldowns':
+        return this.loadout.powers.map(
+          (_, slot) => this.powers.get(slot)!.cooldownRemaining,
+        );
+      case 'beam':
+        return this.weapon.beam;
       case 'dead':
         return this.state === 'dead';
       case 'kills':
@@ -690,6 +839,9 @@ export class Arena implements Scene {
   dispose(): void {
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
+    this.powers.reset();
+    this.beamView.dispose();
+    this.explosionView.dispose();
     this.shatter.dispose();
     this.debrisView.dispose();
     for (const view of this.views.values()) view.dispose();

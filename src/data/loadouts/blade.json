@@ -1,0 +1,8 @@
+{
+  "id": "blade",
+  "name": "Ostrze",
+  "blade": "plasmaBlade",
+  "weapons": ["pistol"],
+  "powers": ["push"],
+  "tags": ["#build_blade"]
+}

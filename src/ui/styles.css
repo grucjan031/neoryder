@@ -159,6 +159,39 @@ body:has(.scene-menu) {
 .hud__meter--health {
   border-color: var(--hud-danger);
 }
+.hud__weapon {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--hud-gap);
+  padding: 10px;
+  background: var(--hud-background);
+  border-left: 3px solid var(--hud-heat);
+}
+.hud__powers {
+  position: absolute;
+  right: var(--hud-inset);
+  bottom: var(--hud-inset);
+  display: grid;
+  gap: var(--hud-gap);
+  width: var(--hud-meter-width);
+}
+.hud__power {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 6px 12px;
+  padding: 10px;
+  background: var(--hud-background);
+  border-right: 3px solid var(--hud-energy);
+}
+.hud__power-key,
+.hud__power-cooldown {
+  color: var(--hud-energy);
+}
+.hud__power-denial {
+  grid-column: 2 / -1;
+  color: var(--hud-danger);
+  animation: hud-flash var(--hud-denial-duration) ease-out forwards;
+}
 .hud__meter--energy {
   --hud-fill: var(--hud-energy);
 }
@@ -254,6 +287,16 @@ body:has(.scene-menu) {
 }
 .hud__wave:empty {
   display: none;
+}
+@media (max-width: 640px) {
+  .hud__powers {
+    top: var(--hud-inset);
+    bottom: auto;
+  }
+  .hud__wave {
+    right: auto;
+    left: var(--hud-inset);
+  }
 }
 .hud__death {
   position: absolute;

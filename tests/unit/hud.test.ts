@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventBus } from '../../src/core/events';
 import { Hud } from '../../src/ui/hud';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 
 describe('Hud', () => {
   let bus: EventBus;
@@ -131,6 +132,100 @@ describe('Hud', () => {
     });
     expect(meter.classList.contains('hud__meter--overheated')).toBe(false);
     expect(query('.hud__meter--heat .hud__label').textContent).toBe('Ciepło');
+  });
+
+  it('shows initial data names, event-driven weapon changes and current weapon heat', () => {
+    hud.dispose();
+    hud = new Hud(bus, {
+      playerId: 1,
+      root,
+      loadout: loadoutDefinitions.get('gunner')!,
+    });
+    expect(query('.hud__weapon-name').textContent).toBe('Karabin');
+    expect(root.querySelectorAll('.hud__power-name')[0]?.textContent).toBe(
+      'Pchnięcie Rezonansu',
+    );
+    expect(root.querySelectorAll('.hud__power-name')[1]?.textContent).toBe('—');
+    bus.emit('weapon_switched', { owner: 2, weapon: 'sniper', slot: 2 });
+    expect(query('.hud__weapon-name').textContent).toBe('Karabin');
+    bus.emit('weapon_switched', { owner: 1, weapon: 'scatter', slot: 1 });
+    bus.emit('heat_changed', {
+      id: 1,
+      current: 28,
+      max: 100,
+      overheated: false,
+    });
+    expect(query('.hud__weapon-name').textContent).toBe('Rozpraszacz');
+    expect(query('.hud__meter--heat .hud__value').textContent).toBe('28 / 100');
+  });
+
+  it('counts down both data cooldowns from power_used, freezes in hitstop and flashes the denied slot', () => {
+    hud.setLoadout(loadoutDefinitions.get('resonance')!);
+    const slots = root.querySelectorAll<HTMLElement>('.hud__power');
+    expect(slots[0]?.querySelector('kbd')?.textContent).toBe('F');
+    expect(slots[1]?.querySelector('kbd')?.textContent).toBe('E');
+    expect(slots[1]?.querySelector('.hud__power-name')?.textContent).toBe(
+      'Fala uderzeniowa',
+    );
+    const cooldown = (slot: number) =>
+      slots[slot]?.querySelector('.hud__power-cooldown')?.textContent;
+    bus.emit('power_used', { user: 2, power: 'push' });
+    bus.emit('power_used', { user: 1, power: 'missing' });
+    expect(cooldown(0)).toBe('Gotowa');
+    bus.emit('power_used', { user: 1, power: 'push' });
+    bus.emit('power_used', { user: 1, power: 'shockwave' });
+    expect(cooldown(0)).toBe('0.6 s');
+    expect(cooldown(1)).toBe('1.5 s');
+    hud.step(0);
+    expect(cooldown(0)).toBe('0.6 s');
+    hud.step(0.2);
+    expect(cooldown(0)).toBe('0.4 s');
+    expect(cooldown(1)).toBe('1.3 s');
+    bus.emit('power_denied', {
+      user: 1,
+      power: 'shockwave',
+      reason: 'cooldown',
+    });
+    const denied = slots[1]?.querySelector<HTMLElement>('.hud__power-denial');
+    expect(denied?.hidden).toBe(false);
+    expect(denied?.textContent).toBe('Odnowienie');
+    expect(
+      slots[0]?.querySelector<HTMLElement>('.hud__power-denial')?.hidden,
+    ).toBe(true);
+    denied?.dispatchEvent(new Event('animationend'));
+    expect(denied?.hidden).toBe(true);
+    hud.step(0.4);
+    expect(cooldown(0)).toBe('Gotowa');
+    expect(cooldown(1)).toBe('0.9 s');
+    hud.step(1);
+    expect(cooldown(1)).toBe('Gotowa');
+    bus.emit('power_used', { user: 1, power: 'push' });
+    expect(cooldown(0)).toBe('0.6 s');
+  });
+
+  it('resets cooldowns and the death dialog with new loadout data and disposes countdown events', () => {
+    hud.setLoadout(loadoutDefinitions.get('resonance')!);
+    bus.emit('power_used', { user: 1, power: 'shockwave' });
+    bus.emit('player_died', { id: 1 });
+    hud.setLoadout(loadoutDefinitions.get('blade')!);
+    expect(query('[role="dialog"]').hidden).toBe(true);
+    expect(query('.hud__weapon-name').textContent).toBe('Pistolet');
+    expect(query('.hud__power-cooldown').textContent).toBe('Gotowa');
+    bus.emit('power_used', { user: 1, power: 'push' });
+    const node = query('.hud');
+    hud.dispose();
+    const observer = new MutationObserver(() => {});
+    observer.observe(node, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      characterData: true,
+    });
+    hud.step(1);
+    bus.emit('power_used', { user: 1, power: 'push' });
+    bus.emit('weapon_switched', { owner: 1, weapon: 'sniper', slot: 2 });
+    expect(observer.takeRecords()).toHaveLength(0);
+    observer.disconnect();
   });
 
   it('pokazuje właściwy powód odmowy i restartuje animację', () => {

@@ -1,0 +1,8 @@
+{
+  "id": "gunner",
+  "name": "Strzelec",
+  "blade": "plasmaBlade",
+  "weapons": ["rifle", "scatter", "sniper"],
+  "powers": ["push"],
+  "tags": ["#build_gunner"]
+}

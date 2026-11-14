@@ -269,6 +269,28 @@ wybuchy od kolizji i czasu, promień, deduplikacja, właściciel, statusy i rend
 
 ## Weryfikacja
 
+### Ekwipunek areny (F2-15)
+
+Arena tworzy osobną instancję `Weapon` dla każdej pozycji `Loadout.weapons`.
+Aktywna dostaje `step(dt, input)` ze spustem R. Pozostałe dostają `cool(dt)`:
+chłodzenie z tym samym opóźnieniem, odliczanie blokady przegrzania i czasu
+do kolejnego strzału, bez `heat_changed` ani strzałów. Metoda zwalnia też spust,
+zeruje zegar tików i wyłącza promień; `cool(0)` robi tylko tę dezaktywację.
+Dotychczasowe zachowanie aktywnej broni pozostaje bez zmian.
+
+Wybór 1–3 zachowuje ciepło per broń i publikuje kolejno `weapon_switched`
+(`owner`, id broni, indeks `slot` od 0) oraz `heat_changed` wybranej instancji.
+Pusty lub już aktywny slot jest ignorowany. HUD i kolor modelu FPP dostają
+wyłącznie ciepło aktywnej broni. Arena ma zależność `castBeam` i renderery
+`BeamRenderer`/`ExplosionRenderer` jak poligon; wszystkie bronie mają obecnie
+model `FppBlaster`. Reset wraca do pierwszej, zimnej broni zestawu.
+
+Kontrola w 30 sekund: `?scene=arena&loadout=gunner&debug=1`, strzel R z karabinu,
+wybierz 2 i strzel z rozpraszacza, wróć do 1. Oceń zmianę rytmu i nazwę w HUD;
+ciepło schowanej broni powinno spadać po opóźnieniu bez nadpisywania paska.
+Testy `weaponCooling.test.ts` i `arenaLoadout.test.ts` sprawdzają ciszę zdarzeń,
+blokadę, ponowne wybranie półautomatu, przełączanie, promień i EMP na arenie.
+
 `tests/unit/weapons.test.ts`: walidacja danych, ciepło i opóźnienie, blokada,
 tempo ognia, żywe statystyki, deterministyczny rozrzut, prawdziwe sweeps Rapier,
 pojedyncze obrażenia i zdarzenia, świat, czas życia, odbicie i pełna pula.

@@ -1,0 +1,8 @@
+{
+  "id": "resonance",
+  "name": "Moc",
+  "blade": "plasmaBlade",
+  "weapons": ["blaster"],
+  "powers": ["push", "shockwave"],
+  "tags": ["#build_resonance"]
+}

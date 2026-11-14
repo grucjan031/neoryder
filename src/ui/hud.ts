@@ -1,10 +1,16 @@
 import type { EntityId, EventBus } from '../core/events';
 import text from '../data/ui/hud.pl.json';
+import { powerDefinitions } from '../combat/powers/registry';
+import { weaponDefinitions } from '../combat/weapons/weaponSchema';
+import type { Loadout } from '../progression/loadout';
+
+type HudLoadout = Pick<Loadout, 'weapons' | 'powers'>;
 
 interface HudOptions {
   playerId: EntityId;
   root?: HTMLElement;
   onRetry?: () => void;
+  loadout?: HudLoadout;
 }
 
 function element<K extends keyof HTMLElementTagNameMap>(
@@ -25,13 +31,13 @@ function setText(node: HTMLElement, content: string): void {
 function createMeter(kind: 'health' | 'energy' | 'heat') {
   const node = element('div', `hud__meter hud__meter--${kind}`);
   const label = element('span', 'hud__label', text[kind]);
-  const value = element('span', 'hud__value', '—');
+  const value = element('span', 'hud__value', text.empty);
   const track = element('div', 'hud__track');
   const fill = element('div', 'hud__fill');
   fill.style.width = '0%';
   track.setAttribute('role', 'progressbar');
   track.setAttribute('aria-label', text[kind]);
-  track.setAttribute('aria-valuetext', '—');
+  track.setAttribute('aria-valuetext', text.empty);
   track.append(fill);
   node.append(label, value, track);
   let lastCurrent: number | undefined;
@@ -86,6 +92,15 @@ export class Hud {
   private readonly death = element('section', 'hud__death');
   private readonly denial = createFlash('hud__denial');
   private readonly damage = createFlash('hud__damage');
+  private readonly weaponName = element('span', 'hud__weapon-name');
+  private readonly powers = element('div', 'hud__powers');
+  private powerSlots: {
+    id: string;
+    cooldownS: number;
+    remaining: number;
+    value: HTMLElement;
+    denial: ReturnType<typeof createFlash>;
+  }[] = [];
   private previousFocus: HTMLElement | null = null;
   private disposed = false;
 
@@ -97,7 +112,10 @@ export class Hud {
     const energy = createMeter('energy');
     const heat = createMeter('heat');
     const meters = element('div', 'hud__meters');
-    meters.append(health.node, energy.node, heat.node);
+    const weapon = element('div', 'hud__weapon');
+    weapon.append(element('span', 'hud__label', text.weapon), this.weaponName);
+    meters.append(health.node, energy.node, weapon, heat.node);
+    this.powers.setAttribute('aria-label', text.powers);
     const crosshair = element('div', 'hud__crosshair');
     crosshair.setAttribute('aria-hidden', 'true');
     this.damage.node.setAttribute('aria-hidden', 'true');
@@ -115,12 +133,14 @@ export class Hud {
     this.root.append(
       this.damage.node,
       meters,
+      this.powers,
       crosshair,
       this.denial.node,
       wave,
       this.death,
     );
     (opts.root ?? document.body).append(this.root);
+    this.setLoadout(opts.loadout ?? { weapons: [], powers: [] });
     this.retryButton.addEventListener('click', this.retry);
     window.addEventListener('keydown', this.onKeyDown, true);
     let overheated = false;
@@ -140,13 +160,33 @@ export class Hud {
           setText(heat.label, next ? text.overheated : text.heat);
         }
       }),
-      bus.on('power_denied', ({ user, reason }) => {
+      bus.on('weapon_switched', ({ owner, weapon }) => {
+        if (owner === opts.playerId)
+          setText(
+            this.weaponName,
+            weaponDefinitions.get(weapon)?.name ?? text.empty,
+          );
+      }),
+      bus.on('power_used', ({ user, power }) => {
+        if (user !== opts.playerId) return;
+        for (const slot of this.powerSlots) {
+          if (slot.id !== power) continue;
+          slot.remaining = slot.cooldownS;
+          this.showCooldown(slot);
+        }
+      }),
+      bus.on('power_denied', ({ user, power, reason }) => {
         if (user !== opts.playerId) return;
         setText(
           this.denial.node,
           reason === 'no_energy' ? text.noEnergy : text.cooldown,
         );
         this.denial.show();
+        for (const slot of this.powerSlots) {
+          if (slot.id !== power) continue;
+          setText(slot.denial.node, this.denial.node.textContent ?? '');
+          slot.denial.show();
+        }
       }),
       bus.on('damage_dealt', ({ target, amount }) => {
         if (target === opts.playerId && amount > 0) this.damage.show();
@@ -165,6 +205,65 @@ export class Hud {
         this.retryButton.focus();
       }),
     ];
+  }
+
+  /** Dane startowe ekwipunku; dalsze zmiany zasobów pochodzą wyłącznie ze zdarzeń. */
+  setLoadout(loadout: HudLoadout): void {
+    for (const slot of this.powerSlots) slot.denial.dispose();
+    this.powerSlots = [];
+    this.powers.replaceChildren();
+    setText(
+      this.weaponName,
+      weaponDefinitions.get(loadout.weapons[0] ?? '')?.name ?? text.empty,
+    );
+    for (const [index, key] of text.powerKeys.entries()) {
+      const def = powerDefinitions.get(loadout.powers[index] ?? '');
+      const node = element('div', 'hud__power');
+      const value = element(
+        'span',
+        'hud__power-cooldown',
+        def ? text.ready : text.empty,
+      );
+      const denial = createFlash('hud__power-denial');
+      node.append(
+        element('kbd', 'hud__power-key', key),
+        element('span', 'hud__power-name', def?.name ?? text.empty),
+        value,
+        denial.node,
+      );
+      this.powers.append(node);
+      this.powerSlots.push({
+        id: def?.id ?? '',
+        cooldownS: def?.cooldownS ?? 0,
+        remaining: 0,
+        value,
+        denial,
+      });
+    }
+    this.death.hidden = true;
+    this.denial.node.hidden = true;
+    this.damage.node.hidden = true;
+    this.restoreFocus();
+  }
+
+  /** Czas gracza, także 0 podczas hitstopu; bez odpytywania obiektów symulacji. */
+  step(dt: number): void {
+    if (this.disposed || !(dt > 0)) return;
+    for (const slot of this.powerSlots) {
+      if (!(slot.remaining > 0)) continue;
+      slot.remaining = Math.max(0, slot.remaining - dt);
+      if (slot.remaining < Number.EPSILON * 16) slot.remaining = 0;
+      this.showCooldown(slot);
+    }
+  }
+
+  private showCooldown(slot: (typeof this.powerSlots)[number]): void {
+    setText(
+      slot.value,
+      slot.remaining > 0
+        ? `${slot.remaining.toFixed(1)} ${text.seconds}`
+        : text.ready,
+    );
   }
 
   private readonly retry = (): void => {
@@ -201,6 +300,7 @@ export class Hud {
     this.retryButton.removeEventListener('click', this.retry);
     this.denial.dispose();
     this.damage.dispose();
+    for (const slot of this.powerSlots) slot.denial.dispose();
     this.restoreFocus();
     this.root.remove();
   }

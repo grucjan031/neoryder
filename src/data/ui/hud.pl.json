@@ -8,5 +8,11 @@
   "died": "Zginąłeś",
   "retry": "Jeszcze raz",
   "wave": "Fala",
-  "waveCleared": "Fala wyczyszczona"
+  "waveCleared": "Fala wyczyszczona",
+  "weapon": "Broń",
+  "powers": "Moce Rezonansu",
+  "powerKeys": ["F", "E"],
+  "ready": "Gotowa",
+  "empty": "—",
+  "seconds": "s"
 }

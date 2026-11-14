@@ -468,6 +468,7 @@ export class Weapon {
   readonly heat: ResourcePool; readonly overheated: boolean; readonly shots: number;
   readonly beam: { active: boolean; from: Vec3; to: Vec3 } | null;
   step(dt: number, input: WeaponInput): void;
+  cool(dt: number): void;                       // nieaktywna broń: chłodzenie i zegary bez zdarzeń; zwalnia spust/promień
   reset(): void;
 }
 export class Blaster extends Weapon {} // zgodność z F1: dane blastera, to samo zachowanie
@@ -616,6 +617,15 @@ export function createEnemyView(enemy: Enemy, loadModels?: boolean): EnemyViewLi
 // src/progression/loadout.ts — src/data/loadouts/*.json
 export interface Loadout { id: string; name: string; blade: string; weapons: string[]; powers: string[]; tags: string[] }
 // weapons: 1–3 id broni; powers: 1–2 id mocy; tags: np. '#build_blade' (wymagania synergii)
+// Walidacja znanych id (ostrze: plasmaBlade), bez powtórzeń broni, mocy i id ekwipunków.
+export const loadoutSchema: z.ZodType<Loadout>;
+export function loadLoadout(data: unknown): Loadout;
+export function loadLoadoutDefinitions(data: readonly unknown[]): ReadonlyMap<string, Loadout>;
+export const loadoutDefinitions: ReadonlyMap<string, Loadout>;
+// Arena: ?loadout=<id>, domyślnie classic; nieznane id → classic i console.warn w debug.
+// weapon_switched.slot: indeks 0–2; po zdarzeniu scena emituje heat_changed wybranej broni.
+// Hud: opcja loadout (weapons, powers), setLoadout(loadout) przy resecie;
+// step(dt) odlicza odnowienia wyłącznie ze zdarzeń power_used i cooldownS danych, w czasie gracza.
 
 // src/progression/synergies.ts — src/data/synergies/*.json
 export class SynergySystem {

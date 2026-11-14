@@ -91,15 +91,25 @@ export class Weapon {
     this.emitHeat();
   }
 
-  step(dt: number, input: WeaponInput): void {
-    if (!(dt > 0)) return;
+  /** Nieaktywna broń zachowuje ciepło i blokadę, bez emisji do HUD. */
+  cool(dt: number): void {
+    this.triggerHeld = false;
+    this.beamTickS = 0;
+    if (this.beam) this.beam.active = false;
+    if (dt > 0) this.advanceCooling(dt, false);
+  }
+
+  private advanceCooling(dt: number, publish: boolean): void {
     // Zewnętrzne podgrzanie zasobu również uruchamia blokadę.
     if (
       !this.overheated &&
       this.heat.max > 0 &&
       this.heat.current >= this.heat.max
-    )
-      this.overheat();
+    ) {
+      this.lockS = this.ctx.tuning.weapons.overheatLockS;
+      if (this.beam) this.beam.active = false;
+      if (publish) this.emitHeat();
+    }
     const wasOverheated = this.overheated;
     this.heat.step(dt);
     this.lockS = Math.max(0, this.lockS - dt);
@@ -108,10 +118,16 @@ export class Weapon {
     if (this.cooldownS < Number.EPSILON * 16) this.cooldownS = 0;
     this.coolingEventS += dt;
     if (
-      wasOverheated !== this.overheated ||
-      (this.coolingEventS >= 0.1 && this.lastHeat !== this.heat.current)
+      publish &&
+      (wasOverheated !== this.overheated ||
+        (this.coolingEventS >= 0.1 && this.lastHeat !== this.heat.current))
     )
       this.emitHeat();
+  }
+
+  step(dt: number, input: WeaponInput): void {
+    if (!(dt > 0)) return;
+    this.advanceCooling(dt, true);
     if (this.definition.fireMode === 'beam') {
       this.stepBeam(dt, input, this.definition);
       return;
