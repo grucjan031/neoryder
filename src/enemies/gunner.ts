@@ -142,17 +142,22 @@ export class Gunner implements Enemy {
     }
   }
 
+  /** Zamrożony punkt strzału: ostatnie `aimLockS` telegrafu i seria; null bez blokady. */
+  private lockedPoint(): Vec3 | null {
+    const lock = this.ranged.aimLockS;
+    const s = this.current;
+    if (lock === undefined || !this.aimPoint) return null;
+    if (s.state === 'burst') return this.aimPoint;
+    return s.state === 'aim' &&
+      s.stateTimeS + epsilon >= this.ranged.aimTelegraphS - lock
+      ? this.aimPoint
+      : null;
+  }
+
   /** Bez `aimLockS` cel śledzony do końca serii; z nim — zamrożony na końcu telegrafu. */
   private track(target: Vec3): void {
-    const s = this.current;
-    const lock = this.ranged.aimLockS;
-    const locked =
-      lock !== undefined &&
-      this.aimPoint !== null &&
-      (s.state === 'burst' ||
-        s.stateTimeS + epsilon >= this.ranged.aimTelegraphS - lock);
-    if (!locked) this.aimPoint = { ...target };
-    s.aim = this.aimPoint ? { ...this.aimPoint } : undefined;
+    if (!this.lockedPoint()) this.aimPoint = { ...target };
+    this.current.aim = this.aimPoint ? { ...this.aimPoint } : undefined;
   }
 
   private releaseToken(): void {
@@ -268,12 +273,17 @@ export class Gunner implements Enemy {
     } else if (!target) {
       if (s.state !== 'idle') this.transition('idle');
     } else {
-      const yaw = Math.atan2(dx, dz);
+      // Po zamrożeniu celu Snajper patrzy w zamrożony punkt i nie przerywa strzału,
+      // gdy gracz zejdzie z linii albo schowa się — strzał leci w zapowiedziane miejsce.
+      const locked = this.lockedPoint();
+      const yaw = locked
+        ? Math.atan2(locked.x - s.position.x, locked.z - s.position.z)
+        : Math.atan2(dx, dz);
       const delta = Math.atan2(Math.sin(yaw - s.yaw), Math.cos(yaw - s.yaw));
       const turn = ((d.turnRateDegS * Math.PI) / 180) * dt;
       s.yaw += Math.max(-turn, Math.min(turn, delta));
       if (s.state === 'idle') this.transition('reposition');
-      if ((s.state === 'aim' || s.state === 'burst') && !los)
+      if ((s.state === 'aim' || s.state === 'burst') && !los && !locked)
         this.transition('reposition');
       if (
         s.state === 'reposition' &&
@@ -313,13 +323,20 @@ export class Gunner implements Enemy {
         vz = Math.cos(heading) * speed;
       }
     } else if (s.state === 'reposition' && target && distance > epsilon) {
-      this.steer(dt, Math.atan2(dx, dz), 0);
       const radial =
         !los || distance > r.preferredRange + r.rangeTolerance
           ? 1
           : distance < r.preferredRange - r.rangeTolerance
             ? -1
             : 0;
+      // Próba ściany w kierunku faktycznego ruchu (cofanie się sprawdza ścianę za plecami).
+      this.steer(
+        dt,
+        radial !== 0
+          ? Math.atan2(dx * radial, dz * radial)
+          : Math.atan2(dz * this.strafe, -dx * this.strafe),
+        0,
+      );
       const lateral = this.avoid ? this.strafe : this.strafe * r.strafeScale;
       const norm = Math.hypot(radial, lateral) || 1;
       const speed = this.stats.get('moveSpeed');

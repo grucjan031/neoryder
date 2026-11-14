@@ -413,3 +413,49 @@ describe('Widoki F2-13', () => {
     expect(laser.visible).toBe(false);
   });
 });
+
+describe('F2-13 — poprawki po przeglądzie', () => {
+  it('drone slides along a wall that is closer than its orbit instead of freezing', () => {
+    const { manager, step, wall } = world('slide');
+    // Ściana między graczem a okręgiem orbity (z = -5 < preferredRange 7).
+    wall({ x: 0, y: 3, z: -5.25 }, { x: 20, y: 3, z: 0.25 });
+    const drone = manager.spawn('drone', { x: 0, y: 0, z: -4 });
+    const start = { ...drone.current.position };
+    let minZ = Infinity;
+    step(Math.round(0.2 / SIM_DT));
+    for (let i = 0; i < 2 / SIM_DT; i++) {
+      step();
+      minZ = Math.min(minZ, drone.current.position.z);
+    }
+    expect(
+      Math.hypot(
+        drone.current.position.x - start.x,
+        drone.current.position.z - start.z,
+      ),
+    ).toBeGreaterThan(1);
+    expect(minZ).toBeGreaterThanOrEqual(-5 - 1e-3 + droneRaw.drone.radiusM);
+  });
+
+  it('sniper keeps the locked point: faces it, and fires even when the player hides after the lock', () => {
+    const { bus, manager, step, moveTarget, wall } = world('lock');
+    const sniper = manager.spawn('sniper', {
+      x: 0,
+      y: 0,
+      z: -sniperRaw.preferredRange,
+    });
+    while (sniper.current.state !== 'aim') step();
+    const lockAt = sniperRaw.aimTelegraphS - sniperRaw.aimLockS;
+    while (sniper.current.stateTimeS < lockAt + SIM_DT) step();
+    // Unik w bok i osłona między snajperem a graczem.
+    moveTarget({ x: 4, y: 0.9, z: 0 });
+    wall({ x: 4, y: 1.5, z: -3 }, { x: 1.5, y: 1.5, z: 0.3 });
+    let shots = 0;
+    bus.on('projectile_spawned', () => shots++);
+    while (sniper.current.state === 'aim') {
+      step();
+      expect(Math.abs(sniper.current.yaw)).toBeLessThan(0.05);
+    }
+    expect(sniper.current.state).not.toBe('reposition');
+    expect(shots).toBe(1);
+  });
+});

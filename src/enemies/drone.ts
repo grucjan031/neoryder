@@ -169,25 +169,25 @@ export class Drone implements Enemy {
 
   private hasLos(target: Vec3): boolean {
     if (!this.ranged.losRequired) return true;
+    const blocked = (a: Vec3, b: Vec3): boolean => {
+      const dx = b.x - a.x,
+        dy = b.y - a.y,
+        dz = b.z - a.z;
+      const distance = Math.hypot(dx, dy, dz);
+      if (distance <= epsilon) return false;
+      return (
+        this.deps.world.castRay(
+          new Ray(a, { x: dx / distance, y: dy / distance, z: dz / distance }),
+          distance,
+          true,
+          undefined,
+          interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
+        ) !== null
+      );
+    };
+    // Odcinek środek → lufa też: przy narożniku lufa może wystawać za przeszkodę.
     const origin = this.muzzle();
-    const dx = target.x - origin.x,
-      dy = target.y - origin.y,
-      dz = target.z - origin.z;
-    const distance = Math.hypot(dx, dy, dz);
-    if (distance <= epsilon) return true;
-    return (
-      this.deps.world.castRay(
-        new Ray(origin, {
-          x: dx / distance,
-          y: dy / distance,
-          z: dz / distance,
-        }),
-        distance,
-        true,
-        undefined,
-        interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
-      ) === null
-    );
+    return !blocked(this.current.position, origin) && !blocked(origin, target);
   }
 
   private fire(target: Vec3): void {
@@ -281,28 +281,33 @@ export class Drone implements Enemy {
       vy = 0,
       vz = 0;
     if (target && (s.state === 'reposition' || s.state === 'cooldown')) {
-      const bearing = Math.atan2(
-        s.position.x - target.position.x,
-        s.position.z - target.position.z,
+      // Krążenie = składowa styczna (prędkość kątowa na bieżącym promieniu) + korekta promienia
+      // do preferredRange. Gdy ściana blokuje korektę, ślizg zachowuje pełne krążenie.
+      const speed = this.stats.get('moveSpeed');
+      const rx = s.position.x - target.position.x,
+        rz = s.position.z - target.position.z;
+      const radius = Math.hypot(rx, rz);
+      const ux = radius > epsilon ? rx / radius : 0,
+        uz = radius > epsilon ? rz / radius : 1;
+      const tangential = Math.min(
+        speed,
+        ((this.flight.orbitSpeedDegS * Math.PI) / 180) * radius,
       );
-      const next =
-        bearing +
-        this.orbit * ((this.flight.orbitSpeedDegS * Math.PI) / 180) * dt;
-      const goal = {
-        x: target.position.x + Math.sin(next) * r.preferredRange,
-        y: this.altitude,
-        z: target.position.z + Math.cos(next) * r.preferredRange,
-      };
-      const gx = goal.x - s.position.x,
-        gy = goal.y - s.position.y,
-        gz = goal.z - s.position.z;
-      const gap = Math.hypot(gx, gy, gz);
-      if (gap > epsilon) {
-        const speed = Math.min(this.stats.get('moveSpeed'), gap / dt);
-        vx = (gx / gap) * speed;
-        vy = (gy / gap) * speed;
-        vz = (gz / gap) * speed;
+      const radial = Math.max(
+        -speed,
+        Math.min(speed, (r.preferredRange - radius) / dt),
+      );
+      vx = uz * this.orbit * tangential + ux * radial;
+      vz = -ux * this.orbit * tangential + uz * radial;
+      const horizontal = Math.hypot(vx, vz);
+      if (horizontal > speed) {
+        vx *= speed / horizontal;
+        vz *= speed / horizontal;
       }
+      vy = Math.max(
+        -speed,
+        Math.min(speed, (this.altitude - s.position.y) / dt),
+      );
     } else if (s.state !== 'stunned') {
       // Powrót na wysokość lotu po odrzucie.
       vy = (this.altitude - s.position.y) / Math.max(dt, epsilon);
@@ -338,11 +343,9 @@ export class Drone implements Enemy {
     s.distance += moved;
   }
 
-  /** Przesuwa kulę o `delta`, zatrzymując się `skinM` przed światem. Zwraca przebytą drogę. */
-  private move(delta: Vec3): number {
-    const length = Math.hypot(delta.x, delta.y, delta.z);
-    if (length <= epsilon) return 0;
-    const from = this.current.position;
+  /** Rzut kuli z `from` o `delta`; zwraca ułamek ruchu do kolizji (1 = bez przeszkody). */
+  private sweep(from: Vec3, delta: Vec3): number {
+    if (Math.hypot(delta.x, delta.y, delta.z) <= epsilon) return 1;
     const hit = this.deps.world.castShape(
       from,
       identity,
@@ -356,20 +359,38 @@ export class Drone implements Enemy {
       undefined,
       this.body,
     );
-    const t = hit ? Math.max(0, hit.time_of_impact) : 1;
-    if (hit) {
-      // Ściana na drodze: odwróć krążenie i wygaś odrzut, żeby nie wciskać się w nią dalej.
-      this.orbit = this.orbit === 1 ? -1 : 1;
+    return hit ? Math.max(0, Math.min(1, hit.time_of_impact)) : 1;
+  }
+
+  /**
+   * Przesuwa kulę o `delta`, zatrzymując się `skinM` przed światem. Przy kolizji resztę ruchu
+   * próbuje osobno w osiach x, z, y (ślizg wzdłuż ściany), więc dron nie zamarza, gdy cel orbity
+   * leży za ścianą. Gdy nie przesunie się wcale, odwraca kierunek krążenia. Zwraca przebytą drogę.
+   */
+  private move(delta: Vec3): number {
+    const length = Math.hypot(delta.x, delta.y, delta.z);
+    if (length <= epsilon) return 0;
+    const pos = { ...this.current.position };
+    const t = this.sweep(pos, delta);
+    pos.x += delta.x * t;
+    pos.y += delta.y * t;
+    pos.z += delta.z * t;
+    let moved = length * t;
+    if (t < 1) {
       this.impulse.x = this.impulse.y = this.impulse.z = 0;
+      for (const axis of ['x', 'z', 'y'] as const) {
+        const rest = delta[axis] * (1 - t);
+        if (Math.abs(rest) <= epsilon) continue;
+        const step = { x: 0, y: 0, z: 0, [axis]: rest };
+        const k = this.sweep(pos, step);
+        pos[axis] += rest * k;
+        moved += Math.abs(rest) * k;
+      }
+      if (moved <= epsilon) this.orbit = this.orbit === 1 ? -1 : 1;
     }
-    const next = {
-      x: from.x + delta.x * t,
-      y: from.y + delta.y * t,
-      z: from.z + delta.z * t,
-    };
-    this.body.setNextKinematicTranslation(next);
-    this.current.position = next;
-    return length * t;
+    this.body.setNextKinematicTranslation(pos);
+    this.current.position = pos;
+    return moved;
   }
 
   private engage(): boolean {
