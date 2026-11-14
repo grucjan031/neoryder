@@ -179,7 +179,7 @@ async function main(): Promise<void> {
       command,
     });
   }
-  bus.emit('run_started', { seed });
+  if (scene.id !== 'run') bus.emit('run_started', { seed });
   bus.emit('scene_loaded', { sceneId: scene.id });
   loop.start();
   let disposed = false;
