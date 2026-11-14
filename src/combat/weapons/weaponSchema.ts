@@ -85,9 +85,7 @@ const modules = import.meta.glob('../../data/weapons/*.json', {
   import: 'default',
 });
 export const weaponDefinitions = loadWeaponDefinitions(
-  Object.entries(modules)
-    .filter(([path]) => !path.endsWith('/plasmaBlade.json'))
-    .map(([, data]) => data),
+  Object.entries(modules).map(([, data]) => data),
 );
 const loadedBlaster = weaponDefinitions.get('blaster')!;
 if (loadedBlaster.fireMode !== 'projectile')

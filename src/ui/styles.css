@@ -477,3 +477,50 @@ body:has(.hud) .hint {
 .hud__change-build {
   border-color: var(--hud-heat);
 }
+
+/* Wybór wariantu ostrza na ekranie buildu (F2-11). */
+.build-select__blades {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px 12px;
+  margin: 0 0 4px;
+}
+.build-select__blades-label {
+  align-self: center;
+  color: #ccc;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.build-select__blade {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: #050505e6;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.build-select__blade[aria-pressed='true'] {
+  border-bottom-color: var(--build-accent);
+  background: #1c1c1c;
+}
+.build-select__blade:hover,
+.build-select__blade:focus-visible {
+  background: #1c1c1c;
+  outline: 2px solid var(--build-accent);
+  outline-offset: 2px;
+}
+.build-select__blade-name {
+  font-weight: 700;
+}
+.build-select__blade-desc {
+  color: #aaa;
+  font-size: 12px;
+}

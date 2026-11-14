@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import text from '../data/ui/buildSelect.pl.json';
+import {
+  bladeDefinitions,
+  DEFAULT_BLADE_ID,
+} from '../combat/melee/bladeSchema';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { loadoutDefinitions } from '../progression/loadout';
@@ -14,6 +18,20 @@ const buildSelectSchema = z.object({
   weapons: z.string().min(1),
   powers: z.string().min(1),
   synergies: z.string().min(1),
+  blade: z.object({
+    title: z.string().min(1),
+    options: z
+      .array(
+        z.object({
+          id: z
+            .string()
+            .refine((id) => bladeDefinitions.has(id), 'Nieznane ostrze'),
+          name: z.string().min(1),
+          description: z.string().min(1),
+        }),
+      )
+      .min(1),
+  }),
   builds: z
     .array(
       z.object({
@@ -83,7 +101,8 @@ function element<K extends keyof HTMLElementTagNameMap>(
 }
 
 interface BuildSelectOptions {
-  onSelect: (loadoutId: string) => void;
+  /** `bladeId` tylko gdy gracz wybrał wariant ostrza (nadpisanie ostrza ekwipunku). */
+  onSelect: (loadoutId: string, bladeId?: string) => void;
   root?: HTMLElement;
   /** Teksty i lista buildów; domyślnie src/data/ui/buildSelect.pl.json. */
   data?: unknown;
@@ -93,6 +112,9 @@ interface BuildSelectOptions {
 export class BuildSelect {
   private readonly root = element('section', 'build-select');
   private readonly buttons: HTMLButtonElement[] = [];
+  private readonly bladeButtons = new Map<string, HTMLButtonElement>();
+  /** Wybrany wariant ostrza; null = ostrze ekwipunku (domyślnie plazmowe). */
+  private bladeId: string | null = null;
   private readonly listeners: (() => void)[] = [];
   private disposed = false;
 
@@ -110,7 +132,7 @@ export class BuildSelect {
       const button = this.card(option, t);
       (option.hybrid ? hybrids : builds).append(button);
     }
-    panel.append(builds);
+    panel.append(this.bladeRow(t), builds);
     if (hybrids.childElementCount > 0)
       panel.append(
         element('h3', 'build-select__section', t.hybridsTitle),
@@ -139,6 +161,43 @@ export class BuildSelect {
     this.disposed = true;
     for (const off of this.listeners.splice(0)) off();
     this.root.remove();
+  }
+
+  private bladeRow(t: BuildSelectText): HTMLElement {
+    const row = element('div', 'build-select__blades');
+    row.setAttribute('role', 'group');
+    const label = element('span', 'build-select__blades-label', t.blade.title);
+    label.id = 'build-select-blade-title';
+    row.setAttribute('aria-labelledby', label.id);
+    row.append(label);
+    for (const option of t.blade.options) {
+      const button = element('button', 'build-select__blade');
+      button.type = 'button';
+      button.dataset.blade = option.id;
+      button.title = option.description;
+      button.append(
+        element('span', 'build-select__blade-name', option.name),
+        element('span', 'build-select__blade-desc', option.description),
+      );
+      const onClick = (): void => this.chooseBlade(option.id);
+      button.addEventListener('click', onClick);
+      this.listeners.push(() => button.removeEventListener('click', onClick));
+      this.bladeButtons.set(option.id, button);
+      row.append(button);
+    }
+    this.markBlade();
+    return row;
+  }
+
+  private chooseBlade(id: string): void {
+    this.bladeId = id;
+    this.markBlade();
+  }
+
+  private markBlade(): void {
+    const current = this.bladeId ?? DEFAULT_BLADE_ID;
+    for (const [id, button] of this.bladeButtons)
+      button.setAttribute('aria-pressed', String(id === current));
   }
 
   private card(option: BuildOption, t: BuildSelectText): HTMLButtonElement {
@@ -192,6 +251,7 @@ export class BuildSelect {
   private select(id: string): void {
     if (!this.visible) return;
     this.hide();
-    this.opts.onSelect(id);
+    if (this.bladeId === null) this.opts.onSelect(id);
+    else this.opts.onSelect(id, this.bladeId);
   }
 }

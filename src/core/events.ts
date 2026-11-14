@@ -58,7 +58,7 @@ export interface GameEvents {
   projectile_spawned: { id: EntityId; owner: EntityId; team: Team };
   projectile_reflected: { id: EntityId; newOwner: EntityId };
   // F1 — wręcz (#07)
-  melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 'heavy' };
+  melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };
   melee_blocked: {
     defender: EntityId;
     attacker: EntityId | null;

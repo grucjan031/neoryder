@@ -445,7 +445,7 @@ projectile_spawned: { id: EntityId; owner: EntityId; team: Team };
 projectile_reflected: { id: EntityId; newOwner: EntityId };
 
 // wręcz (#07)
-melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 'heavy' };
+melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };  // F2-11: etap 4 = bliźniacze ostrza
 melee_blocked: { defender: EntityId; attacker: EntityId | null; amount: number };
 
 // moce (#11)
@@ -685,9 +685,15 @@ obrażeń w tym samym kroku przejścia między stanami.
 // src/combat/melee/bladeSchema.ts — rozszerzenie BladeDefinition (pola opcjonalne, F1 bez zmian)
 throw?: { damage: number; speed: number; rangeM: number; radiusM: number; returnSpeed: number };
 dashCut?: { damage: number; widthM: number; knockback: number };
-heavyShape?: 'arc' | 'spin';                      // F2-11: dwustronne = 'spin'
-parryArcDeg?: number;                             // F2-11: szerszy kąt odbijania
-// Warianty: src/data/blades/*.json, mapa bladeDefinitions (F2-11).
+heavyShape: 'arc' | 'spin';                       // F2-11: domyślnie 'arc'; dwustronne = 'spin' (kula o promieniu heavy.reach wokół oczu)
+timeScale: number;                                // F2-11: mnożnik czasu faz ciosu (domyślnie 1; bliźniacze 0.7, dwustronne 1.2)
+parryArcDeg?: number;                             // F2-11: kąt odbijania pocisków (brak = tuning.melee.parryArcDeg)
+model?: string;                                   // F2-11: /assets/models/<model>.glb (fallback plasma_blade.glb, potem bryła)
+offhand: boolean; doubleEnded: boolean; lengthScale: number;  // F2-11: wskazówki widoku FPP (druga dłoń, ostrze z obu stron, długość)
+// Warianty: src/data/blades/*.json (plasmaBlade, twinBlades, staffBlade), `bladeDefinitions: ReadonlyMap<string, BladeDefinition>`,
+// `resolveBlade(loadoutBlade, override?)` — nadpisanie (?blade= / ekran buildu) wygrywa z Loadout.blade; nieznane id nadpisania ignorowane.
+// BladeDeps.queryArc(reach, width, shape?: 'arc' | 'spin') — spin = obrót 360° (odrzut od gracza, nie w kierunku patrzenia).
+// PlasmaBlade.definition (odczyt) i setDefinition(def) (zmiana wariantu: reset stanu).
 ```
 
 ### Wrogowie (F2-02, F2-12, F2-14)
@@ -758,12 +764,13 @@ export function createEnemyView(enemy: Enemy, loadModels?: boolean): EnemyViewLi
 // src/progression/loadout.ts — src/data/loadouts/*.json
 export interface Loadout { id: string; name: string; blade: string; weapons: string[]; powers: string[]; tags: string[] }
 // weapons: 1–3 id broni; powers: 1–2 id mocy; tags: np. '#build_blade' (wymagania synergii)
-// Walidacja znanych id (ostrze: plasmaBlade), bez powtórzeń broni, mocy i id ekwipunków.
+// Walidacja znanych id (ostrze: dowolne id z bladeDefinitions), bez powtórzeń broni, mocy i id ekwipunków.
 export const loadoutSchema: z.ZodType<Loadout>;
 export function loadLoadout(data: unknown): Loadout;
 export function loadLoadoutDefinitions(data: readonly unknown[]): ReadonlyMap<string, Loadout>;
 export const loadoutDefinitions: ReadonlyMap<string, Loadout>;
 // Arena: ?loadout=<id>, domyślnie classic; nieznane id → classic i console.warn w debug.
+// ?blade=<id> (arena, melee-test i jego warianty) nadpisuje ostrze ekwipunku (F2-11).
 // weapon_switched.slot: indeks 0–2; po zdarzeniu scena emituje heat_changed wybranej broni.
 // Hud: opcja loadout (weapons, powers), setLoadout(loadout) przy resecie;
 // step(dt) odlicza odnowienia wyłącznie ze zdarzeń power_cooldown { power, user, cooldownS }, w czasie gracza.
@@ -783,16 +790,17 @@ export class SynergySystem {
 // src/scenes/arena.ts
 class Arena {
   constructor(loadModels?: boolean, selectBuild?: boolean);  // rejestr scen: new Arena(true, true); testy: domyślnie bez ekranu
-  chooseLoadout(id: string): boolean;             // nowy run od fali 1 z ekwipunkiem + ctx.resume(); false dla nieznanego id
+  chooseLoadout(id: string, bladeId?: string): boolean;  // nowy run od fali 1 z ekwipunkiem + ctx.resume(); bladeId (F2-11) nadpisuje ostrze na cały run; false dla nieznanego id
 }
 // Stany: 'select' (ekran wyboru, fale stoją, gracz nie krokuje) | 'playing' | 'dead'.
 // selectBuild i brak ?loadout= → start w 'select'; ?loadout=<id> pomija ekran.
 // Komenda debug `build` (tylko z selectBuild): reset i powrót do ekranu.
-// query: 'state', 'synergies' (SynergySystem.active()), 'buildSelect' (czy ekran widoczny).
+// query: 'state', 'synergies' (SynergySystem.active()), 'buildSelect' (czy ekran widoczny), 'blade' (id ostrza runu).
 // SynergySystem w arenie: tagi z Loadout.tags przy każdym resecie; stats = PlayerController.stats
 // (tam żyją dashCooldown i moveSpeed), addEnergy → PlayerEnergy.add, coolWeapon → aktywna broń vent().
 
 // src/ui/buildSelect.ts — teksty i lista kart w src/data/ui/buildSelect.pl.json
+// F2-11: rząd „Ostrze:” (blade.options w JSON); onSelect(loadoutId, bladeId?) — bladeId tylko, gdy gracz wybrał wariant.
 export function buildOptions(data: unknown, loadouts?, synergies?): { text: BuildSelectText; options: BuildOption[] };
 // BuildOption: id, name, description, hybrid, weapons/powers (nazwy), synergies (nazwy aktywnych synergii)
 export class BuildSelect {

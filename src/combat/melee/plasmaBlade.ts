@@ -7,7 +7,11 @@ import type { Tuning } from '../../core/tuning';
 import { BLOCK_SOURCE, Hitbox, PIERCE_BLOCK_TAG } from '../damage';
 import type { DamageSystem, Hurtbox } from '../damage';
 import type { ProjectileHit, ProjectileSystem } from '../weapons/projectiles';
-import type { BladeDefinition, StrikeDefinition } from './bladeSchema';
+import type {
+  BladeDefinition,
+  HitShape,
+  StrikeDefinition,
+} from './bladeSchema';
 
 export type BladeState =
   'idle' | 'light' | 'charging' | 'heavy' | 'blocking' | 'throwing' | 'dashCut';
@@ -31,8 +35,11 @@ export interface BladeDeps {
   stats: Stats;
   /** Energia Rezonansu (blok ją zużywa). */
   energy: ResourcePool;
-  /** Hurtboxy w łuku cięcia przed atakującym (zasięg i szerokość w m). */
-  queryArc(reach: number, width: number): Hurtbox[];
+  /**
+   * Hurtboxy w obszarze cięcia: `arc` — łuk przed atakującym (zasięg i szerokość w m),
+   * `spin` — obrót 360° (kula o promieniu `reach` wokół oczu).
+   */
+  queryArc(reach: number, width: number, shape?: HitShape): Hurtbox[];
   /** Punkt oczu i kierunek patrzenia (do punktu trafienia i kierunku odrzutu). */
   aim(): { origin: Vec3; dir: Vec3 };
   /** Parowanie (#10): system pocisków do odbicia i pozycje strzelców (cel odbicia). */
@@ -98,7 +105,7 @@ export class PlasmaBlade {
   private readonly off: () => void;
 
   constructor(
-    private readonly def: BladeDefinition,
+    private def: BladeDefinition,
     private readonly deps: BladeDeps,
     private readonly bus: EventBus,
     private readonly tuning: Tuning,
@@ -113,6 +120,16 @@ export class PlasmaBlade {
       this.dashGraceS = tuning.melee.dashCutGraceS;
     });
     this.off = bus.on('damage_dealt', (event) => this.onDamage(event));
+  }
+
+  get definition(): BladeDefinition {
+    return this.def;
+  }
+
+  /** Zmiana wariantu ostrza (nowy run): czyści stan zamachu, bloku i rzutu. */
+  setDefinition(def: BladeDefinition): void {
+    this.reset();
+    this.def = def;
   }
 
   view(): BladeView {
@@ -151,7 +168,8 @@ export class PlasmaBlade {
     const { dir } = this.deps.aim();
     // Pocisk musi nadlatywać z przodu: kąt między -kierunkiem lotu a patrzeniem ≤ parryArcDeg/2.
     const facing = -(hit.dir.x * dir.x + hit.dir.y * dir.y + hit.dir.z * dir.z);
-    if (facing < Math.cos(((m.parryArcDeg / 2) * Math.PI) / 180)) return false;
+    const arcDeg = this.def.parryArcDeg ?? m.parryArcDeg;
+    if (facing < Math.cos(((arcDeg / 2) * Math.PI) / 180)) return false;
     const shooter = this.deps.positionOf?.(hit.owner) ?? null;
     const back = shooter
       ? normalizeVec({
@@ -539,7 +557,7 @@ export class PlasmaBlade {
     this.beginPhase('windup');
     this.bus.emit('melee_swing', {
       attacker: this.deps.owner,
-      stage: this.stage as 1 | 2 | 3,
+      stage: this.stage as 1 | 2 | 3 | 4,
     });
   }
 
@@ -608,11 +626,17 @@ export class PlasmaBlade {
     };
     let dealtAny = false;
     let killed = false;
-    for (const box of this.deps.queryArc(strike.reach, strike.width)) {
+    const spin = this.state === 'heavy' && this.def.heavyShape === 'spin';
+    for (const box of this.deps.queryArc(
+      strike.reach,
+      strike.width,
+      spin ? 'spin' : 'arc',
+    )) {
+      const hitDir = spin ? this.radialDir(box, origin, dir) : dir;
       const dealt = hitbox.strike(box.entity, this.deps.damage, {
         multiplier: box.multiplier,
-        point,
-        dir,
+        point: spin ? (this.deps.hurtboxPosition?.(box) ?? point) : point,
+        dir: hitDir,
         knockback: strike.knockback,
       });
       if (dealt > 0) {
@@ -631,6 +655,19 @@ export class PlasmaBlade {
     }
   }
 
+  /** Obrót: odrzut od gracza na zewnątrz (poziomo), gdy znana pozycja trafionego. */
+  private radialDir(box: Hurtbox, origin: Vec3, fallback: Vec3): Vec3 {
+    const at =
+      this.deps.hurtboxPosition?.(box) ??
+      this.deps.positionOf?.(box.entity) ??
+      null;
+    if (!at) return fallback;
+    return normalizeVec(
+      { x: at.x - origin.x, y: 0, z: at.z - origin.z },
+      fallback,
+    );
+  }
+
   private strike(): StrikeDefinition {
     if (this.state === 'heavy') return this.def.heavy;
     const index = Math.min(this.def.combo.length, Math.max(1, this.stage)) - 1;
@@ -640,13 +677,14 @@ export class PlasmaBlade {
   private phaseDuration(): number {
     const m = this.tuning.melee;
     const heavy = this.state === 'heavy';
+    const scale = this.def.timeScale;
     switch (this.phase) {
       case 'windup':
-        return heavy ? m.heavyWindupS : m.lightWindupS;
+        return (heavy ? m.heavyWindupS : m.lightWindupS) * scale;
       case 'active':
-        return heavy ? m.heavyActiveS : m.lightActiveS;
+        return (heavy ? m.heavyActiveS : m.lightActiveS) * scale;
       case 'recovery':
-        return heavy ? m.heavyRecoveryS : m.lightRecoveryS;
+        return (heavy ? m.heavyRecoveryS : m.lightRecoveryS) * scale;
       default:
         return 1;
     }

@@ -1,4 +1,8 @@
-import { queryBladeSegment } from '../combat/melee/bladeQueries';
+import {
+  queryBladeArc,
+  queryBladeSegment,
+  queryBladeSpin,
+} from '../combat/melee/bladeQueries';
 import { FlyingBlade } from '../render/flyingBlade';
 import {
   BoxGeometry,
@@ -24,14 +28,14 @@ import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
-import {
-  DamageSystem,
-  Health,
-  Hurtboxes,
-  queryHurtboxes,
-} from '../combat/damage';
+import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { StatusSystem } from '../combat/status';
-import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
+import {
+  bladeDefinitions,
+  DEFAULT_BLADE_ID,
+  resolveBlade,
+} from '../combat/melee/bladeSchema';
+import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlayerEnergy } from '../combat/powers/energy';
 import { pushDefinition, ResonancePush } from '../combat/powers/push';
 import type { PowerDeps } from '../combat/powers/power';
@@ -251,15 +255,16 @@ export class MeleeTest implements Scene {
       ctx.tuning,
     );
     this.root.add(this.flyingBlade.root);
+    const bladeDefinition = this.initialBlade();
     this.blade = new PlasmaBlade(
-      plasmaBladeDefinition,
+      bladeDefinition,
       {
         owner: playerId,
         team: 'player',
         damage: this.damage,
         stats: this.playerStats,
         energy: this.energy.pool,
-        queryArc: (reach, width) => this.queryArc(reach, width),
+        queryArc: (reach, width, shape) => this.queryArc(reach, width, shape),
         querySegment: (from, to, radius, dash, dir) =>
           queryBladeSegment(
             this.world,
@@ -351,8 +356,17 @@ export class MeleeTest implements Scene {
     this.push.step(dt, input);
   }
 
+  /** Wariant ostrza sceny: `?blade=<id>` albo ostrze plazmowe. */
+  private initialBlade() {
+    const requested =
+      typeof location === 'undefined'
+        ? null
+        : new URLSearchParams(location.search).get('blade');
+    return resolveBlade(DEFAULT_BLADE_ID, requested);
+  }
+
   private async loadAssets(): Promise<void> {
-    await this.bladeModel.load(this.loadModels);
+    await this.bladeModel.load(this.loadModels, this.initialBlade());
     if (!this.loadModels) return;
     try {
       const trooper = await new GLTFLoader().loadAsync(
@@ -431,8 +445,18 @@ export class MeleeTest implements Scene {
   }
 
   /** Łuk cięcia jako prostopadłościan przed oczami, obrócony zgodnie z patrzeniem. */
-  private queryArc(reach: number, width: number) {
+  private queryArc(reach: number, width: number, shape: HitShape = 'arc') {
     const { origin, dir } = this.aim();
+    if (shape === 'spin') {
+      if (this.ctx.debug) {
+        this.arcDebug.position.set(origin.x, origin.y, origin.z);
+        this.arcDebug.quaternion.identity();
+        this.arcDebug.scale.set(reach * 2, 1.2, reach * 2);
+        this.arcDebug.visible = true;
+        this.arcHideS = 0.12;
+      }
+      return queryBladeSpin(this.world, this.hurtboxes, origin, reach);
+    }
     const s = this.player.getState();
     const center = {
       x: origin.x + dir.x * reach * 0.5,
@@ -447,7 +471,6 @@ export class MeleeTest implements Scene {
       z: this.tmp.q.z,
       w: this.tmp.q.w,
     };
-    const shape = new this.rapier.Cuboid(width / 2, 0.6, reach / 2);
     if (this.ctx.debug) {
       this.arcDebug.position.set(center.x, center.y, center.z);
       this.arcDebug.quaternion.copy(this.tmp.q);
@@ -455,13 +478,13 @@ export class MeleeTest implements Scene {
       this.arcDebug.visible = true;
       this.arcHideS = 0.12;
     }
-    return queryHurtboxes(
+    return queryBladeArc(
       this.world,
       this.hurtboxes,
-      shape,
       center,
       rotation,
-      interactionGroups(CollisionGroup.Player, CollisionGroup.Enemy),
+      reach,
+      width,
     );
   }
 
@@ -543,6 +566,18 @@ export class MeleeTest implements Scene {
     const commands = this.ctx.commands;
     if (!commands) return;
     this.off.push(
+      commands.register(
+        'blade',
+        `blade <id> — wariant ostrza (${[...bladeDefinitions.keys()].join(', ')})`,
+        (args) => {
+          const next = bladeDefinitions.get(args[0] ?? '');
+          if (args.length !== 1 || !next)
+            return `Dostępne ostrza: ${[...bladeDefinitions.keys()].join(', ')}`;
+          this.blade.setDefinition(next);
+          void this.bladeModel.setDefinition(next, this.loadModels);
+          return `Ostrze: ${next.id}`;
+        },
+      ),
       commands.register(
         'enemyhit',
         'enemyhit <dmg> — manekin uderza gracza',
@@ -654,6 +689,7 @@ export class MeleeTest implements Scene {
   query(name: string): unknown {
     if (name === 'dummyHp') return this.dummies.map((d) => d.health.current);
     if (name === 'bladeState') return this.blade.view().state;
+    if (name === 'bladeId') return this.blade.definition.id;
     if (name === 'blocking') return this.blade.blocking;
     if (name === 'energy') return this.energy.current;
     if (name === 'projectiles') return this.projectiles.activeCount;

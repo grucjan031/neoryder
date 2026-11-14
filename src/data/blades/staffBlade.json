@@ -1,0 +1,26 @@
+{
+  "id": "staffBlade",
+  "model": "blade_staff",
+  "timeScale": 1.2,
+  "doubleEnded": true,
+  "heavyShape": "spin",
+  "parryArcDeg": 240,
+  "combo": [
+    { "damage": 28, "knockback": 0, "reach": 2.2, "width": 3.5 },
+    { "damage": 28, "knockback": 0, "reach": 2.2, "width": 3.5 },
+    { "damage": 44, "knockback": 7, "reach": 2.4, "width": 4.2 }
+  ],
+  "heavy": { "damage": 88, "knockback": 10, "reach": 2.8, "width": 5.6 },
+  "throw": {
+    "damage": 38,
+    "speed": 20,
+    "rangeM": 16,
+    "radiusM": 0.35,
+    "returnSpeed": 26
+  },
+  "dashCut": { "damage": 55, "widthM": 2, "knockback": 7 },
+  "blockDamageMult": 0.3,
+  "blockEnergyPerHit": 6,
+  "blockEnergyPerDamage": 0.4,
+  "tags": ["#melee"]
+}

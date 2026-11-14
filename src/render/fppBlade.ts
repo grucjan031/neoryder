@@ -1,4 +1,5 @@
 import {
+  Box3,
   BoxGeometry,
   Euler,
   Group,
@@ -7,7 +8,10 @@ import {
   Quaternion,
   Vector3,
 } from 'three';
+import type { Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
+import type { BladeDefinition } from '../combat/melee/bladeSchema';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import { applyStyle, getMaterial } from './materials';
 
@@ -17,6 +21,8 @@ interface BladePose {
   rot: [number, number, number];
 }
 
+type Hand = 'main' | 'off';
+
 const POSE_IDLE: BladePose = {
   pos: [0.3, -0.3, -0.55],
   rot: [0.9, 0.15, -0.25],
@@ -25,6 +31,20 @@ const POSE_BLOCK: BladePose = {
   pos: [0.05, -0.12, -0.5],
   rot: [0.15, 0, -1.45],
 };
+/** Lewa dłoń bliźniaczych ostrzy: niżej, między bronią palną a środkiem ekranu. */
+const OFF_IDLE: BladePose = {
+  pos: [-0.14, -0.38, -0.55],
+  rot: [0.9, -0.15, 0.25],
+};
+const OFF_BLOCK_DROP_M = 0.08;
+/** Ostrze dwustronne trzymane w środku: model przesunięty do przodu. */
+const DOUBLE_ENDED_FORWARD_M = -0.2;
+/** Poza obrotu 360° (ostrze poziomo); sam obrót to kąt wokół pionowej osi kamery. */
+const SPIN_POSE: BladePose = {
+  pos: [0.3, -0.18, -0.62],
+  rot: [0.05, 0, -1.5],
+};
+const FULL_TURN = Math.PI * 2;
 
 /** Początek i koniec zamachu dla etapów combo i ciężkiego ciosu. */
 const SWINGS: Record<string, [BladePose, BladePose]> = {
@@ -45,6 +65,15 @@ const SWINGS: Record<string, [BladePose, BladePose]> = {
     { pos: [0, -0.5, -0.65], rot: [-0.6, 0, 0] },
   ],
 };
+const HEAVY_SWING = SWINGS.heavy as [BladePose, BladePose];
+
+/** Bliźniacze: etapy combo prowadzą naprzemiennie prawym i lewym ostrzem. */
+const TWIN_STAGES: Record<number, { hand: Hand; swing: string }> = {
+  1: { hand: 'main', swing: '1' },
+  2: { hand: 'off', swing: '1' },
+  3: { hand: 'main', swing: '2' },
+  4: { hand: 'off', swing: '3' },
+};
 
 function lerpPose(a: BladePose, b: BladePose, t: number): BladePose {
   const l = (x: number, y: number) => x + (y - x) * t;
@@ -54,75 +83,246 @@ function lerpPose(a: BladePose, b: BladePose, t: number): BladePose {
   };
 }
 
+function mirrorPose(p: BladePose): BladePose {
+  return {
+    pos: [-p.pos[0], p.pos[1], p.pos[2]],
+    rot: [p.rot[0], -p.rot[1], -p.rot[2]],
+  };
+}
+
 const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
+const easeInOut = (t: number) => t * t * (3 - 2 * t);
+
+const MODEL_DIR = '/assets/models/';
+const FALLBACK_MODEL = 'plasma_blade';
+
+/** Wczytane i ostylowane sceny modeli (jedno wczytanie na plik; null = brak pliku). */
+const modelCache = new Map<string, Promise<Object3D | null>>();
+
+function loadModel(name: string): Promise<Object3D | null> {
+  let cached = modelCache.get(name);
+  if (!cached) {
+    cached = new GLTFLoader()
+      .loadAsync(`${MODEL_DIR}${name}.glb`)
+      .then((gltf) => {
+        applyStyle(gltf.scene);
+        return gltf.scene;
+      })
+      .catch(() => null);
+    modelCache.set(name, cached);
+  }
+  return cached;
+}
 
 /**
- * Ostrze plazmowe w widoku FPP: model plasma_blade.glb (albo bryła zastępcza) ustawiany
- * co klatkę w układzie kamery według stanu ostrza (poza spoczynku, zamachy etapów combo,
- * ładowanie ciężkiego, blok). Kod renderu — logika ostrza jest w src/combat/melee.
+ * Ostrze w widoku FPP: model z `def.model` (albo `plasma_blade.glb`, albo bryła zastępcza)
+ * ustawiany co klatkę w układzie kamery według stanu ostrza. Bliźniacze rysują drugą,
+ * lustrzaną instancję po lewej; dwustronne mają ostrze z obu stron rękojeści i obrót 360°
+ * w ciężkim ataku. Kod renderu — logika ostrza jest w src/combat/melee.
  */
 export class FppBlade {
   readonly root = new Group();
-  private readonly fallback = new Mesh(
-    new BoxGeometry(0.03, 0.03, 1.1),
-    getMaterial('player'),
-  );
+  private readonly hands: Record<Hand, Group> = {
+    main: new Group(),
+    off: new Group(),
+  };
+  private def: BladeDefinition;
+  private generation = 0;
   private readonly tmp = {
     m: new Matrix4(),
+    spin: new Matrix4(),
     q: new Quaternion(),
     e: new Euler(0, 0, 0, 'YXZ'),
     v: new Vector3(),
     s: new Vector3(1, 1, 1),
+    mirror: new Vector3(-1, 1, 1),
+    up: new Vector3(0, 1, 0),
+    box: new Box3(),
   };
 
-  constructor() {
-    this.fallback.position.z = -0.55;
-    this.root.add(this.fallback);
+  constructor(def: BladeDefinition = plasmaBladeDefinition) {
+    this.def = def;
     this.root.matrixAutoUpdate = false;
+    for (const hand of [this.hands.main, this.hands.off]) {
+      hand.matrixAutoUpdate = false;
+      this.root.add(hand);
+    }
+    this.setModel(def, null, false);
   }
 
-  /** Ładuje model; przy błędzie zostaje bryła zastępcza. */
-  async load(loadModels = true): Promise<void> {
+  /** Ładuje model wariantu; przy braku pliku `plasma_blade.glb`, a potem bryła zastępcza. */
+  async load(
+    loadModels = true,
+    def: BladeDefinition = this.def,
+  ): Promise<void> {
+    const generation = ++this.generation;
+    this.setModel(def, null, false);
     if (!loadModels) return;
-    try {
-      const blade = await new GLTFLoader().loadAsync(
-        '/assets/models/plasma_blade.glb',
-      );
-      applyStyle(blade.scene);
-      this.root.remove(this.fallback);
-      this.root.add(blade.scene);
-    } catch {
-      // Bryła zastępcza wystarcza do gry.
+    const wanted = def.model ?? FALLBACK_MODEL;
+    let scene = await loadModel(wanted);
+    let fallback = false;
+    if (!scene && wanted !== FALLBACK_MODEL) {
+      scene = await loadModel(FALLBACK_MODEL);
+      fallback = true;
     }
+    if (scene && generation === this.generation)
+      this.setModel(def, scene, fallback);
+  }
+
+  /** Zmiana wariantu w trakcie sceny (nowy run, komenda debug). */
+  setDefinition(def: BladeDefinition, loadModels = true): Promise<void> {
+    return this.load(loadModels, def);
+  }
+
+  private setModel(
+    def: BladeDefinition,
+    scene: Object3D | null,
+    fallback: boolean,
+  ): void {
+    this.def = def;
+    for (const hand of Object.values(this.hands)) {
+      for (const child of hand.children.slice()) {
+        this.disposeBuilt(child);
+        hand.remove(child);
+      }
+    }
+    this.hands.main.add(this.build(scene, fallback));
+    if (def.offhand) this.hands.off.add(this.build(scene, fallback));
+    this.hands.off.visible = def.offhand;
+  }
+
+  /** Zwalnia tylko geometrię brył zastępczych (modele z cache są współdzielone). */
+  private disposeBuilt(node: Object3D): void {
+    if (node.userData.fallbackShape === true)
+      node.traverse((child) => {
+        if (child instanceof Mesh) child.geometry.dispose();
+      });
+  }
+
+  private build(scene: Object3D | null, fallback: boolean): Object3D {
+    const def = this.def;
+    const length = def.lengthScale;
+    if (!scene) {
+      const group = new Group();
+      group.userData.fallbackShape = true;
+      const bar = (z: number) => {
+        const blade = new Mesh(
+          new BoxGeometry(0.03, 0.03, 1.1 * length),
+          getMaterial('player'),
+        );
+        blade.position.z = z;
+        return blade;
+      };
+      group.add(bar(-0.55 * length));
+      if (def.doubleEnded) group.add(bar(0.55 * length));
+      return group;
+    }
+    const model = scene.clone(true);
+    const front = model.getObjectByName('blade');
+    if (fallback && front) front.scale.z = length;
+    if (def.doubleEnded && front && !model.getObjectByName('blade_back')) {
+      // Brak tylnego ostrza w modelu: kopia przedniego, obrócona o 180°, od tyłu rękojeści.
+      const back = front.clone(true);
+      back.name = 'blade_back';
+      const renames = [
+        ['blade_core', 'blade_back_core'],
+        ['blade_tip', 'blade_back_tip'],
+      ] as const;
+      for (const [from, to] of renames) {
+        const node = back.getObjectByName(from);
+        if (node) node.name = to;
+      }
+      this.tmp.box.setFromObject(model);
+      back.position.z = this.tmp.box.max.z;
+      back.rotation.y = Math.PI;
+      front.parent?.add(back);
+    }
+    return model;
+  }
+
+  private poseFor(view: BladeView, hand: Hand): BladePose {
+    const main = hand === 'main';
+    const idle = main ? POSE_IDLE : OFF_IDLE;
+    const adapt = (p: BladePose): BladePose => (main ? p : mirrorPose(p));
+    const spin = this.def.heavyShape === 'spin';
+    const heavyStart = spin ? SPIN_POSE : HEAVY_SWING[0];
+    const heavyEnd = spin ? SPIN_POSE : HEAVY_SWING[1];
+    if (view.state === 'blocking') {
+      const block = adapt(POSE_BLOCK);
+      return main
+        ? block
+        : {
+            pos: [block.pos[0], block.pos[1] - OFF_BLOCK_DROP_M, block.pos[2]],
+            rot: block.rot,
+          };
+    }
+    if (view.state === 'charging')
+      return lerpPose(idle, adapt(heavyStart), easeOut(view.charge));
+    if (view.state === 'heavy')
+      return this.swingPose(view, idle, adapt(heavyStart), adapt(heavyEnd));
+    if (view.state === 'light') {
+      let key = String(view.stage);
+      if (this.def.offhand) {
+        const step = TWIN_STAGES[view.stage] ?? TWIN_STAGES[1];
+        if (step && step.hand !== hand) return idle;
+        key = step?.swing ?? '1';
+      } else if (!main) return idle;
+      const [start, end] = (SWINGS[key] ?? SWINGS[1]) as [BladePose, BladePose];
+      // Lewe ostrze w bliźniaczych tnie lustrzanie do prawego.
+      return this.swingPose(view, idle, adapt(start), adapt(end));
+    }
+    return idle;
+  }
+
+  private swingPose(
+    view: BladeView,
+    idle: BladePose,
+    start: BladePose,
+    end: BladePose,
+  ): BladePose {
+    if (view.phase === 'windup')
+      return lerpPose(idle, start, easeOut(view.phaseT));
+    if (view.phase === 'active')
+      return lerpPose(start, end, easeOut(view.phaseT));
+    return lerpPose(end, idle, view.phaseT * view.phaseT);
   }
 
   place(cameraMatrix: Matrix4, view: BladeView): void {
     this.root.visible = view.flight === null;
-    let pose = POSE_IDLE;
-    if (view.state === 'blocking') pose = POSE_BLOCK;
-    else if (view.state === 'charging') {
-      const [start] = SWINGS.heavy as [BladePose, BladePose];
-      pose = lerpPose(POSE_IDLE, start, easeOut(view.charge));
-    } else if (view.state === 'light' || view.state === 'heavy') {
-      const key = view.state === 'heavy' ? 'heavy' : String(view.stage);
-      const [start, end] = (SWINGS[key] ?? SWINGS[1]) as [BladePose, BladePose];
-      if (view.phase === 'windup')
-        pose = lerpPose(POSE_IDLE, start, easeOut(view.phaseT));
-      else if (view.phase === 'active')
-        pose = lerpPose(start, end, easeOut(view.phaseT));
-      else pose = lerpPose(end, POSE_IDLE, view.phaseT * view.phaseT);
+    const turn =
+      view.state === 'heavy' &&
+      this.def.heavyShape === 'spin' &&
+      view.phase === 'active'
+        ? easeInOut(view.phaseT) * FULL_TURN
+        : 0;
+    for (const name of ['main', 'off'] as const) {
+      const hand = this.hands[name];
+      if (!hand.visible) continue;
+      const pose = this.poseFor(view, name);
+      const { m, spin, q, e, v, s, mirror, up } = this.tmp;
+      e.set(pose.rot[0], pose.rot[1], pose.rot[2], 'YXZ');
+      q.setFromEuler(e);
+      v.set(
+        pose.pos[0],
+        pose.pos[1],
+        pose.pos[2] + (this.def.doubleEnded ? DOUBLE_ENDED_FORWARD_M : 0),
+      );
+      // Lewa dłoń: model odbity lustrzanie (skala X = -1).
+      m.compose(v, q, name === 'off' ? mirror : s);
+      if (turn !== 0) {
+        // Obrót 360° wokół pionowej osi kamery: ostrze zatacza koło dookoła gracza.
+        spin.makeRotationAxis(up, turn);
+        m.premultiply(spin);
+      }
+      hand.matrix.multiplyMatrices(cameraMatrix, m);
+      hand.matrixWorldNeedsUpdate = true;
     }
-    const { m, q, e, v, s } = this.tmp;
-    e.set(pose.rot[0], pose.rot[1], pose.rot[2], 'YXZ');
-    q.setFromEuler(e);
-    v.set(pose.pos[0], pose.pos[1], pose.pos[2]);
-    m.compose(v, q, s);
-    this.root.matrix.multiplyMatrices(cameraMatrix, m);
     this.root.matrixWorldNeedsUpdate = true;
   }
 
   dispose(): void {
-    this.fallback.geometry.dispose();
+    for (const hand of Object.values(this.hands))
+      for (const child of hand.children) this.disposeBuilt(child);
     this.root.removeFromParent();
   }
 }

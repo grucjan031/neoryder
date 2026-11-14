@@ -51,6 +51,8 @@ moce, tagi z `#` i brak powtórzonych broni, mocy oraz id ekwipunków.
 nieznane id wybiera `classic`, a w debug pojawia się `console.warn`. Bez parametru
 arena z rejestru scen zaczyna od ekranu wyboru buildu (F2-17). `classic` (konfiguracja
 F1) nie ma karty na ekranie; zostaje dla testów i `?loadout=classic`.
+`?blade=<id>` nadpisuje ostrze ekwipunku (F2-11, patrz `docs/systems/melee.md`); ekran
+wyboru ma rząd „Ostrze:” (Plazmowe / Bliźniacze / Dwustronne), a wybór obowiązuje na cały run.
 
 Każda broń ma osobną instancję, zasób ciepła i blokadę. Naciśnięcie 1–3 wybiera
 istniejący slot (indeks 0–2 w zdarzeniu), emituje `weapon_switched`, a zaraz po

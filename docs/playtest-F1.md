@@ -43,7 +43,7 @@ Przydatne komendy: `god` (nieśmiertelność), `wave 6` (skok do fali), `spawn g
 | Ostrze za wolne / za szybkie  | `melee.lightWindupS`, `lightActiveS`, `lightRecoveryS`, `comboWindowS`                                              |
 | Ciężki atak                   | `melee.heavyHoldS`, `heavyChargeS`                                                                                  |
 | Parowanie za trudne           | `melee.parryWindowMs`, `parryArcDeg`                                                                                |
-| Blok drenuje energię          | dane `src/data/weapons/plasmaBlade.json` (`blockEnergyPerHit`, `blockEnergyPerDamage`)                              |
+| Blok drenuje energię          | dane `src/data/blades/plasmaBlade.json` (`blockEnergyPerHit`, `blockEnergyPerDamage`)                              |
 | Ruch                          | `player.walkSpeed`, `sprintSpeed`, `groundAccel`, `jumpVelocity`, `coyoteTimeMs`                                    |
 | Dash / ślizg                  | `player.dashDistance`, `dashDurationS`, `dashCooldownS`; `slideBoost`, `slideFriction`, `slideMaxS`                 |
 | Kamera                        | `camera.fov`, `sprintFovKick`, `bobEnabled`, `bobAmount`                                                            |

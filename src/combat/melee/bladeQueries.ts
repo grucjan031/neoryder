@@ -62,3 +62,46 @@ export function queryBladeSegment(
     interactionGroups(CollisionGroup.Player, CollisionGroup.Enemy),
   );
 }
+
+const BLADE_GROUPS = interactionGroups(
+  CollisionGroup.Player,
+  CollisionGroup.Enemy,
+);
+/** Połowa wysokości łuku cięcia (m), wspólna dla wszystkich wariantów. */
+const ARC_HALF_HEIGHT_M = 0.6;
+
+/** Łuk cięcia: prostopadłościan o środku `center`, obrócony kwaternionem patrzenia. */
+export function queryBladeArc(
+  world: World,
+  hurtboxes: Hurtboxes,
+  center: Vec3,
+  rotation: { x: number; y: number; z: number; w: number },
+  reach: number,
+  width: number,
+) {
+  return queryHurtboxes(
+    world,
+    hurtboxes,
+    new Cuboid(width / 2, ARC_HALF_HEIGHT_M, reach / 2),
+    center,
+    rotation,
+    BLADE_GROUPS,
+  );
+}
+
+/** Obrót 360°: kula o promieniu `reach` wokół oczu — trafia też cele za plecami. */
+export function queryBladeSpin(
+  world: World,
+  hurtboxes: Hurtboxes,
+  origin: Vec3,
+  reach: number,
+) {
+  return queryHurtboxes(
+    world,
+    hurtboxes,
+    new Ball(reach),
+    origin,
+    { x: 0, y: 0, z: 0, w: 1 },
+    BLADE_GROUPS,
+  );
+}
