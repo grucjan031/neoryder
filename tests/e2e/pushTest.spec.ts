@@ -28,7 +28,7 @@ test('push-test: F odrzuca manekina na ścianę i zużywa energię', async ({
     () => (window.__neoryder?.query('dummyPos') as { z: number }[])[1]?.z,
   );
   await page.keyboard.press('KeyF');
-  // Pchnięcie (10) + uderzenie w ścianę (30).
+  // Pchnięcie (35) + uderzenie w ścianę (30).
   await expect
     .poll(
       () =>
@@ -37,7 +37,7 @@ test('push-test: F odrzuca manekina na ścianę i zużywa energię', async ({
         ),
       { timeout: SIM_TIMEOUT },
     )
-    .toBe(hpBefore - 40);
+    .toBe(hpBefore - 65);
   const endZ = await page.evaluate(
     () => (window.__neoryder?.query('dummyPos') as { z: number }[])[1]?.z,
   );

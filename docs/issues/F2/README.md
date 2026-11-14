@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–10, 12–17; 18 — symulator (miara: TTK paczki 5 wrogów) i ekwipunek Mocy `chain` + `push` gotowe, bramka balansu niezaliczona (opcje strojenia A–C w `docs/systems/balance.md` czekają na wybór liczb). Dalej: wybór opcji balansu, 11.
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–10, 12–18; 18 — gotowe (bramka TTK paczki zaliczona, opcja B). Dalej: 11 i playtest człowieka bramki fazy.
 
 ## Decyzje wspólne
 
@@ -37,7 +37,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–10, 12–17; 18 — symu
 | 15  | Ekwipunek, przełączanie broni, HUD mocy i broni                      | UI/UX + Architekt | 03, 05     | M     | gotowe |
 | 16  | Synergie na tagach i 3 hybrydy                                       | Progresja         | 02, 03, 05 | M     | gotowe |
 | 17  | Ekran wyboru buildu i fale F2 na arenie                              | Architekt + UI/UX | 13, 14, 15 | M     | gotowe |
-| 18  | Symulator TTK (`npm run balance`) i `docs/balance.md`                | QA                | 04, 09, 14 | M     | symulator i miara paczki gotowe; bramka niezaliczona, czeka na wybór opcji |
+| 18  | Symulator TTK (`npm run balance`) i `docs/balance.md`                | QA                | 04, 09, 14 | M     | gotowe |
 
 Graf jest acykliczny (zależności tylko od niższych numerów). Ścieżka krytyczna: 01 → 05 → 15 → 17 oraz 01 → 12 → 14 → 17. Po 01 równolegle mogą ruszyć 02, 03, 05, 10 i 12 (rozłączne foldery).
 
@@ -143,17 +143,11 @@ Ekran przed falą 1: trzy gotowe buildy (Ostrze, Moc, Strzelec) i hybrydy, `?loa
 `npm run balance` (node, bez renderu): TTK każdej broni i mocy wobec każdego wroga z danych, z uwzględnieniem ciepła, odnowień, mnożników i statusów. Zapis `docs/balance.md`. Test: żadna ścieżka buildu nie odstaje o więcej niż 2× od mediany.
 **Gotowe:** raport wygenerowany, test balansu w Vitest.
 
-**Stan F2-18 (2026-11-14):** symulator i generowany raport gotowe. Rzeczywiste
-klasy walki krokowane w Node przez istniejący Vite, bez nowych zależności.
-Zastosowane decyzje koordynatora: bramka liczona na otwartej przestrzeni,
-miara to TTK paczki 5 wrogów po kolei (ciepło, odnowienia i energia przechodzą
-między celami), ścieżka Mocy używa `chain` + `push` (opis buildu zaktualizowany).
-Test bramki jest jawnie `todo`: w dozwolonych granicach strojenia (brief)
-zaliczenie wymaga trzykrotnego lub większego wzrostu obrażeń Błyskawicy albo
-jej kosztu ≤ 5, czego brief nie rozstrzyga. Dane mocy i broni nie zostały
-zmienione; `docs/systems/balance.md` zawiera opcje A–C z liczbami i wynikami
-(najgorszy iloraz 1,44–1,94). Do decyzji koordynatora: wybór opcji (lub zmiana
-HP Egzekutora / reguł energii poza dozwolonymi polami) oraz kontrakt pomijania
-surowych mocy nieznanego rodzaju (obecny loader odrzuca je przed startem
-symulatora). Bramka fazy pozostaje otwarta; wymagane review Architekta i ocena
-człowieka.
+**Stan F2-18 (2026-11-14):** gotowe. Symulator (rzeczywiste klasy walki w Node przez
+istniejący Vite) mierzy TTK paczki 5 wrogów po kolei; bramka liczona na otwartej
+przestrzeni, wariant przy ścianie i pojedyncze TTK informacyjnie. Ścieżka Mocy używa
+`chain` + `push`. Zastosowana opcja B (chain 60 / 10 energii / 0,4 s, push 35 / 10,
+snajperka 0,8 Hz): bramka TTK zaliczona, najgorszy iloraz 1,935 (executor). Zostaje
+playtest człowieka (feel Mocy), review Architekta i kontrakt pomijania surowych mocy
+nieznanego rodzaju (obecny loader odrzuca je przed startem symulatora). Szczegóły:
+`docs/balance.md`, `docs/systems/balance.md`.

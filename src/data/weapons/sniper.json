@@ -4,7 +4,7 @@
   "fireMode": "pierce",
   "automatic": false,
   "damage": 80,
-  "fireRateHz": 1,
+  "fireRateHz": 0.8,
   "heatPerShot": 45,
   "projectileSpeed": 180,
   "projectileLifetimeS": 2,

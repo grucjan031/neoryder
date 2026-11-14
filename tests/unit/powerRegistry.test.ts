@@ -282,7 +282,7 @@ describe('warianty cone', () => {
       const hits: GameEvents['damage_dealt'][] = [];
       c.deps.bus.on('damage_dealt', (hit) => hits.push(hit));
       power.step(SIM_DT, press);
-      expect(c.hp()).toEqual(id === 'push' ? [90, 100, 100] : [90, 90, 100]);
+      expect(c.hp()).toEqual(id === 'push' ? [65, 100, 100] : [90, 90, 100]);
       expect(hits).toHaveLength(id === 'push' ? 1 : 2);
       expect(hits[0]?.dir?.z).toBeLessThan(0);
       if (id === 'shockwave') expect(hits[1]?.dir?.z).toBeGreaterThan(0);
@@ -301,6 +301,6 @@ describe('warianty cone', () => {
     power.step(SIM_DT, press);
     power.reset();
     power.step(1, idle);
-    expect(c.hp()).toEqual([90, 100, 100]);
+    expect(c.hp()).toEqual([65, 100, 100]);
   });
 });

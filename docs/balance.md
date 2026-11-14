@@ -2,7 +2,7 @@
 
 Data wygenerowania (UTC): 2026-11-14. Generator: `npm run balance`.
 
-**Bramka: NIEZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: assaulter, drone, executor, gunner, shielder, sniper. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
+**Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
 
 ## Założenia
@@ -23,18 +23,18 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 
 | Wróg | Ostrze paczki (s) | Moc paczki (s) | Strzelec paczki (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| assaulter | 3.083 | 77.833 | 2.683 | 3.083 | 1.000 | 25.243 | 0.870 | NIE |
-| drone | 0.917 | 17.850 | 0.917 | 0.917 | 1.000 | 19.473 | 1.000 | NIE |
-| executor | 8.250 | ∞ | 10.017 | 10.017 | 0.824 | ∞ | 1.000 | NIE |
-| gunner | 2.083 | 62.833 | 2.683 | 2.683 | 0.776 | 23.416 | 1.000 | NIE |
-| shielder | 3.083 | ∞ | 4.017 | 4.017 | 0.768 | ∞ | 1.000 | NIE |
-| sniper | 1.583 | 47.833 | 2.683 | 2.683 | 0.590 | 17.826 | 1.000 | NIE |
+| assaulter | 3.083 | 1.683 | 2.683 | 2.683 | 1.149 | 0.627 | 1.000 | TAK |
+| drone | 0.917 | 0.850 | 0.917 | 0.917 | 1.000 | 0.927 | 1.000 | TAK |
+| executor | 8.250 | 21.317 | 11.017 | 11.017 | 0.749 | 1.935 | 1.000 | TAK |
+| gunner | 2.083 | 1.683 | 2.683 | 2.083 | 1.000 | 0.808 | 1.288 | TAK |
+| shielder | 3.083 | 2.100 | 5.017 | 3.083 | 1.000 | 0.681 | 1.627 | TAK |
+| sniper | 1.583 | 0.850 | 2.683 | 1.583 | 1.000 | 0.537 | 1.695 | TAK |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
 | assaulter | plasmaBlade:combo | chain → push | scatter |
 | drone | plasmaBlade:combo | chain → push | rifle |
-| executor | plasmaBlade:combo | chain → push | sniper |
+| executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
@@ -43,12 +43,12 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 
 | Wróg | Ostrze TTK (s) | Moc TTK (s) | Strzelec TTK (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| assaulter | 0.417 | 5.833 | 0.017 | 0.417 | 1.000 | 14.000 | 0.040 | NIE |
+| assaulter | 0.417 | 0.017 | 0.017 | 0.017 | 25.000 | 1.000 | 1.000 | NIE |
 | drone | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
-| executor | 1.583 | 53.833 | 1.017 | 1.583 | 1.000 | 34.000 | 0.642 | NIE |
-| gunner | 0.250 | 2.833 | 0.017 | 0.250 | 1.000 | 11.333 | 0.067 | NIE |
-| shielder | 0.417 | 14.833 | 0.017 | 0.417 | 1.000 | 35.600 | 0.040 | NIE |
-| sniper | 0.250 | 0.617 | 0.017 | 0.250 | 1.000 | 2.467 | 0.067 | NIE |
+| executor | 1.583 | 0.617 | 1.267 | 1.267 | 1.250 | 0.487 | 1.000 | NIE |
+| gunner | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
+| shielder | 0.417 | 0.017 | 0.017 | 0.017 | 25.000 | 1.000 | 1.000 | NIE |
+| sniper | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
@@ -99,24 +99,24 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Rozpraszacz (scatter) | gunner | 0.017 | 2700.000 | 2.683 | 83.851 |
 | Rozpraszacz (scatter) | shielder | 0.683 | 131.707 | 6.850 | 65.693 |
 | Rozpraszacz (scatter) | sniper | 0.017 | 2100.000 | 2.683 | 65.217 |
-| Snajperka (sniper) | assaulter | 0.017 | 3600.000 | 4.017 | 74.689 |
-| Snajperka (sniper) | drone | 0.017 | 1080.000 | 4.017 | 22.407 |
-| Snajperka (sniper) | executor | 1.017 | 216.393 | 10.017 | 109.817 |
-| Snajperka (sniper) | gunner | 0.017 | 2700.000 | 4.017 | 56.017 |
-| Snajperka (sniper) | shielder | 0.017 | 5400.000 | 4.017 | 112.033 |
-| Snajperka (sniper) | sniper | 0.017 | 2100.000 | 4.017 | 43.568 |
-| Błyskawica (chain) | assaulter | 2.417 | 24.828 | 40.433 | 7.420 |
-| Błyskawica (chain) | drone | 0.017 | 1080.000 | 8.433 | 10.672 |
-| Błyskawica (chain) | executor | 24.433 | 9.004 | ∞ | 7.188 |
-| Błyskawica (chain) | gunner | 2.417 | 18.621 | 40.433 | 5.565 |
-| Błyskawica (chain) | shielder | 8.433 | 10.672 | 72.433 | 6.213 |
-| Błyskawica (chain) | sniper | 1.217 | 28.767 | 24.433 | 7.162 |
-| Pchnięcie Rezonansu (push) | assaulter | 7.833 | 7.660 | 79.833 | 3.758 |
-| Pchnięcie Rezonansu (push) | drone | 0.617 | 29.189 | 19.833 | 4.538 |
-| Pchnięcie Rezonansu (push) | executor | 55.833 | 3.940 | ∞ | 3.583 |
-| Pchnięcie Rezonansu (push) | gunner | 4.833 | 9.310 | 64.833 | 3.470 |
-| Pchnięcie Rezonansu (push) | shielder | 16.833 | 5.347 | ∞ | 3.583 |
-| Pchnięcie Rezonansu (push) | sniper | 1.817 | 19.266 | 49.833 | 3.512 |
+| Snajperka (sniper) | assaulter | 0.017 | 3600.000 | 5.017 | 59.801 |
+| Snajperka (sniper) | drone | 0.017 | 1080.000 | 5.017 | 17.940 |
+| Snajperka (sniper) | executor | 1.267 | 173.684 | 11.267 | 97.633 |
+| Snajperka (sniper) | gunner | 0.017 | 2700.000 | 5.017 | 44.850 |
+| Snajperka (sniper) | shielder | 0.017 | 5400.000 | 5.017 | 89.701 |
+| Snajperka (sniper) | sniper | 0.017 | 2100.000 | 5.017 | 34.884 |
+| Błyskawica (chain) | assaulter | 0.017 | 3600.000 | 1.683 | 178.218 |
+| Błyskawica (chain) | drone | 0.017 | 1080.000 | 1.683 | 53.465 |
+| Błyskawica (chain) | executor | 0.850 | 258.824 | 15.783 | 69.694 |
+| Błyskawica (chain) | gunner | 0.017 | 2700.000 | 1.683 | 133.663 |
+| Błyskawica (chain) | shielder | 0.433 | 207.692 | 3.767 | 119.469 |
+| Błyskawica (chain) | sniper | 0.017 | 2100.000 | 1.683 | 103.960 |
+| Pchnięcie Rezonansu (push) | assaulter | 0.617 | 97.297 | 5.417 | 55.385 |
+| Pchnięcie Rezonansu (push) | drone | 0.017 | 1080.000 | 2.417 | 37.241 |
+| Pchnięcie Rezonansu (push) | executor | 3.617 | 60.829 | 65.433 | 16.811 |
+| Pchnięcie Rezonansu (push) | gunner | 0.617 | 72.973 | 5.417 | 41.538 |
+| Pchnięcie Rezonansu (push) | shielder | 1.217 | 73.973 | 17.433 | 25.813 |
+| Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
 | Fala uderzeniowa (shockwave) | assaulter | 15.150 | 3.960 | 101.550 | 2.954 |
 | Fala uderzeniowa (shockwave) | drone | 1.533 | 11.739 | 29.550 | 3.046 |
 | Fala uderzeniowa (shockwave) | executor | 72.750 | 3.024 | ∞ | 2.917 |
@@ -140,18 +140,18 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 
 | Wróg | Ostrze paczki (s) | Moc paczki (s) | Strzelec paczki (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| assaulter | 3.083 | 19.850 | 2.683 | 3.083 | 1.000 | 6.438 | 0.870 | NIE |
-| drone | 0.917 | 4.850 | 0.917 | 0.917 | 1.000 | 5.291 | 1.000 | NIE |
-| executor | 8.250 | 79.850 | 10.017 | 10.017 | 0.824 | 7.972 | 1.000 | NIE |
-| gunner | 2.083 | 19.833 | 2.683 | 2.683 | 0.776 | 7.391 | 1.000 | NIE |
-| shielder | 3.083 | 34.833 | 4.017 | 4.017 | 0.768 | 8.672 | 1.000 | NIE |
-| sniper | 1.583 | 4.850 | 2.683 | 2.683 | 0.590 | 1.807 | 1.000 | TAK |
+| assaulter | 3.083 | 2.433 | 2.683 | 2.683 | 1.149 | 0.907 | 1.000 | TAK |
+| drone | 0.917 | 2.417 | 0.917 | 0.917 | 1.000 | 2.636 | 1.000 | NIE |
+| executor | 8.250 | 29.433 | 11.017 | 11.017 | 0.749 | 2.672 | 1.000 | NIE |
+| gunner | 2.083 | 2.433 | 2.683 | 2.433 | 0.856 | 1.000 | 1.103 | TAK |
+| shielder | 3.083 | 5.417 | 5.017 | 5.017 | 0.615 | 1.080 | 1.000 | TAK |
+| sniper | 1.583 | 2.417 | 2.683 | 2.417 | 0.655 | 1.000 | 1.110 | TAK |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
 | assaulter | plasmaBlade:combo | chain → push | scatter |
 | drone | plasmaBlade:combo | chain → push | rifle |
-| executor | plasmaBlade:combo | chain → push | sniper |
+| executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
@@ -160,12 +160,12 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 
 | Wróg | Ostrze TTK (s) | Moc TTK (s) | Strzelec TTK (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| assaulter | 0.417 | 0.633 | 0.017 | 0.417 | 1.000 | 1.520 | 0.040 | NIE |
-| drone | 0.083 | 0.033 | 0.017 | 0.033 | 2.500 | 1.000 | 0.500 | NIE |
-| executor | 1.583 | 7.850 | 1.017 | 1.583 | 1.000 | 4.958 | 0.642 | NIE |
-| gunner | 0.250 | 0.617 | 0.017 | 0.250 | 1.000 | 2.467 | 0.067 | NIE |
-| shielder | 0.417 | 1.217 | 0.017 | 0.417 | 1.000 | 2.920 | 0.040 | NIE |
-| sniper | 0.250 | 0.033 | 0.017 | 0.033 | 7.500 | 1.000 | 0.500 | NIE |
+| assaulter | 0.417 | 0.033 | 0.017 | 0.033 | 12.500 | 1.000 | 0.500 | NIE |
+| drone | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
+| executor | 1.583 | 1.817 | 1.267 | 1.583 | 1.000 | 1.147 | 0.800 | TAK |
+| gunner | 0.250 | 0.033 | 0.017 | 0.033 | 7.500 | 1.000 | 0.500 | NIE |
+| shielder | 0.417 | 0.617 | 0.017 | 0.417 | 1.000 | 1.480 | 0.040 | NIE |
+| sniper | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
@@ -186,12 +186,12 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Błyskawica (chain) | gunner | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | shielder | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | sniper | ∞ | 0.000 | ∞ | 0.000 |
-| Pchnięcie Rezonansu (push) | assaulter | 0.633 | 94.737 | 19.850 | 15.113 |
-| Pchnięcie Rezonansu (push) | drone | 0.033 | 540.000 | 4.850 | 18.557 |
-| Pchnięcie Rezonansu (push) | executor | 7.850 | 28.025 | 79.850 | 13.776 |
-| Pchnięcie Rezonansu (push) | gunner | 0.617 | 72.973 | 19.833 | 11.345 |
-| Pchnięcie Rezonansu (push) | shielder | 1.217 | 73.973 | 34.833 | 12.919 |
-| Pchnięcie Rezonansu (push) | sniper | 0.033 | 1050.000 | 4.850 | 36.082 |
+| Pchnięcie Rezonansu (push) | assaulter | 0.033 | 1800.000 | 2.433 | 123.288 |
+| Pchnięcie Rezonansu (push) | drone | 0.017 | 1080.000 | 2.417 | 37.241 |
+| Pchnięcie Rezonansu (push) | executor | 1.817 | 121.101 | 29.433 | 37.373 |
+| Pchnięcie Rezonansu (push) | gunner | 0.033 | 1350.000 | 2.433 | 92.466 |
+| Pchnięcie Rezonansu (push) | shielder | 0.617 | 145.946 | 5.417 | 83.077 |
+| Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
 | Fala uderzeniowa (shockwave) | assaulter | 1.550 | 38.710 | 29.567 | 10.147 |
 | Fala uderzeniowa (shockwave) | drone | 0.033 | 540.000 | 11.567 | 7.781 |
 | Fala uderzeniowa (shockwave) | executor | 22.350 | 9.843 | ∞ | 8.083 |
@@ -201,7 +201,7 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 
 ## Wnioski
 
-- Bramka (paczka ×5, otwarta przestrzeń): 6/6 wrogów poza przedziałem (assaulter, drone, executor, gunner, shielder, sniper). Pojedyncze TTK (informacyjnie): 6/6. Przy ścianie (informacyjnie, paczka): 5/6.
+- Bramka (paczka ×5, otwarta przestrzeń): 0/6 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 6/6. Przy ścianie (informacyjnie, paczka): 2/6.
 - Pojedyncze TTK jest bardzo wrażliwe na obrażenia jednego trafienia (zabójstwo w 1/60 s wobec 0,4 s ostrza); dlatego bramkę liczy paczka.
 - Wynik jest liczbową podstawą decyzji o danych. Nie zastępuje playtestu 12 fal ani oceny feel.
 

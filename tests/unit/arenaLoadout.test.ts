@@ -92,7 +92,7 @@ it('keeps the F1 loadout without a parameter and ignores empty weapon and power 
   expect(scene.query('heat')).toBe(14);
   scene.step(SIM_DT, press('power'));
   expect(used).toHaveBeenCalledExactlyOnceWith({ user: 1, power: 'push' });
-  expect(scene.query('energy')).toBe(75);
+  expect(scene.query('energy')).toBe(90);
 });
 
 it('falls back from unknown URL ids to classic and warns only in debug', async () => {
@@ -178,7 +178,7 @@ it('routes F/E to independent data powers, queues E in hitstop and resets equipm
     'push',
     'shockwave',
   ]);
-  expect(scene.query('energy')).toBe(35);
+  expect(scene.query('energy')).toBe(50);
   expect(scene.query('powerCooldowns')).toEqual([0.6 - SIM_DT, 1.5]);
   expect(
     document.querySelectorAll('.hud__power-cooldown')[1]?.textContent,

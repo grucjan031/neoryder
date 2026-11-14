@@ -126,40 +126,55 @@ Rozstrzygnięte (stare propozycje z pierwszej wersji symulatora — usunięcie
 ### Wynik po zmianie ekwipunku (dane mocy bez zmian)
 
 Bramka NIEZALICZONA, 6/6 wrogów poza przedziałem. Ścieżka Mocy (chain 18 / 30 energii /
-1,2 s, Pchnięcie 10 / 25 / 0,6 s) potrzebuje na paczkę 5 wrogów: assaulter 77,8 s,
+1,2 s, Pchnięcie 10 / 25 / 0,6 s) potrzebowała na paczkę 5 wrogów: assaulter 77,8 s,
 drone 17,9 s, executor ∞, gunner 62,8 s, shielder ∞, sniper 47,8 s przy medianach
-0,9–10 s. Ostrze i Strzelec mieszczą się w swoich przedziałach (np. assaulter 3,08 s
-i 2,68 s). Dane mocy, broni i ostrza nie zostały zmienione, bo bramka wymaga zmian
-o skali, której nie rozstrzyga brief (poniżej).
+0,9–10 s. Przyczyna: Błyskawica to 15 DPS na pojedynczym celu, ostrze ok. 100 DPS, a pula
+energii to 100 z regeneracją 25/s dopiero po 2 s bez wydatku
+(`tuning.powers.energyRegenDelayS`); po opróżnieniu puli każde użycie kosztuje ~2 s
+opóźnienia. Paczka 5 Egzekutorów to 1100 HP. Samo skrócenie opóźnienia regeneracji
+(poza dozwolonymi polami) nie wystarcza: Egzekutor 102 s przy 0 s.
 
-**Dlaczego tak daleko.** Chain zadaje 15 DPS na pojedynczym celu, ostrze ok. 100 DPS,
-a pula energii to 100 z regeneracją 25/s dopiero po 2 s bez wydatku
-(`tuning.powers.energyRegenDelayS`); po opróżnieniu puli każde użycie kosztuje
-~2 s opóźnienia. Paczka 5 Egzekutorów to 1100 HP. Samo skrócenie opóźnienia regeneracji
-(0,5 s lub 0 s, poza dozwolonymi polami) nie wystarcza: Egzekutor 102 s przy 0 s.
-
-**Co odstaje w granicach strojenia.** Przy `chain.cost` ≥ 10 i `chain.damage` ≤ 45
-(np. chain 45 / 10 / 0,4 s, Pchnięcie 25 / 10 / 0,6 s, snajperka 0,66 Hz, rozpraszacz
-6 obrażeń na śrut, 1 Hz) poza przedziałem zostaje tylko Egzekutor: ścieżka Mocy 38,1 s
-przy medianie 13,7 s (2,79×). Bez spowolnienia Strzelca odstaje też Tarczownik.
-Zaliczenie wymaga `chain.damage` ≥ 60 przy koszcie ≥ 10 (z wolniejszą snajperką),
+Przy `chain.cost` ≥ 10 i `chain.damage` ≤ 45 poza przedziałem zostaje tylko Egzekutor
+(38,1 s przy medianie 13,7 s, 2,79×, w najlepszej próbie z wolniejszym Strzelcem).
+Zaliczenie wymagało `chain.damage` ≥ 60 przy koszcie ≥ 10 (z wolniejszą snajperką),
 `chain.damage` ≥ 100 przy koszcie 10 (bez zmian Strzelca) albo kosztu `chain` ≤ 5.
 
-### Opcje (każda sprawdzona pełnym `npm run balance`-owym przebiegiem, otwarta przestrzeń, paczka ×5)
+### Opcje rozważone
 
-Wszystkie spełniają ograniczenia z punktu 4. Żadna nie jest zastosowana — wybór
-liczb to decyzja projektowa (feel Mocy), nie symulatora.
+| Opcja           | Zmiany pól                                                                                       | Najgorszy iloraz do mediany |
+| --------------- | ------------------------------------------------------------------------------------------------ | --------------------------- |
+| A               | `chain`: damage 100, cost 10, cooldownS 0,6; `push`: damage 18                                   | 1,44                        |
+| **B (wybrana)** | `chain`: damage 60, cost 10, cooldownS 0,4; `push`: damage 35, cost 10; `sniper`: fireRateHz 0,8 | 1,94                        |
+| C               | `chain`: damage 36, cost 2, cooldownS 0,4; `push`: damage 35, cost 10                            | 1,70                        |
 
-| Opcja | Zmiany pól                                                                                                           | Najgorszy iloraz do mediany                 | Uwagi                                                                                                                 |
-| ----- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| A     | `chain`: damage 100, cost 10, cooldownS 0,6; `push`: damage 18                                                       | 1,44 (executor: Moc 14,4 s, mediana 10,0 s) | Strzelec bez zmian; Błyskawica zabija jednym użyciem wszystko poza Egzekutorem — duży skok obrażeń.                   |
-| B     | `chain`: damage 60, cost 10, cooldownS 0,4; `push`: damage 35, cost 10; `sniper`: fireRateHz 0,8 (odnowienie 1,25 s) | 1,94 (executor: Moc 21,3 s, mediana 11,0 s) | Najmniejsze skoki obrażeń; margines przy Egzekutorze mały; osłabia snajperkę (nadal zabija Strzelca jednym strzałem). |
-| C     | `chain`: damage 36, cost 2, cooldownS 0,4; `push`: damage 35, cost 10                                                | 1,70 (Strzelec vs mediana snajpera)         | Dane tylko `chain`/`push`, ale energia przestaje ograniczać Błyskawicę.                                               |
+### Wybrana opcja B (decyzja koordynatora)
 
-Poza dozwolonymi polami (do decyzji koordynatora, jeśli żadna opcja nie jest
-akceptowalna): zmiana HP Egzekutora lub reguły energii (pula, opóźnienie regeneracji).
-Same zmiany `tuning.ts` bez wzrostu obrażeń Mocy nie wystarczają (patrz wyżej).
-Po wyborze opcji wystarczy zmienić wskazane pola, uruchomić `npm run balance` i
-zatwierdzić `docs/balance.md`; asercja bramki w `tests/unit/balance.test.ts` staje
-się wtedy aktywna automatycznie. Opisy w `docs/systems/powers.md` i
-`docs/systems/weapons.md` należy zaktualizować razem ze zmianą liczb.
+Zastosowane wartości (pozostałe pola bez zmian; `shockwave` i `scatter` nietknięte):
+
+| Plik w src/data     | Pole       | Było | Jest                    |
+| ------------------- | ---------- | ---- | ----------------------- |
+| powers/chain.json   | damage     | 18   | 60                      |
+| powers/chain.json   | cost       | 30   | 10                      |
+| powers/chain.json   | cooldownS  | 1,2  | 0,4                     |
+| powers/push.json    | damage     | 10   | 35                      |
+| powers/push.json    | cost       | 25   | 10                      |
+| weapons/sniper.json | fireRateHz | 1    | 0,8 (odnowienie 1,25 s) |
+
+Uzasadnienie: B daje najmniejsze skoki obrażeń spośród opcji zaliczających bramkę
+(A podnosi Błyskawicę ponad 5×, tak że zabijałaby grupy jednym użyciem) i zachowuje
+rolę energii: Błyskawica kosztuje 10 z puli 100, więc po 10 użyciach trzeba czekać na
+regenerację (C z kosztem 2 znosi tę rolę). Wolniejsza snajperka (1,25 s) podnosi
+medianę Egzekutora do 11,0 s, co mieści Moc (21,3 s); snajperka nadal zabija Strzelca
+jednym strzałem (obrażenia 80 ≥ 45). Ograniczenia z punktu 4 spełnione:
+`push.cost` 10, `push.cooldownS` 0,6, `chain.cooldownS` 0,4; rozpraszacz bez zmian
+(8 × 10 obrażeń, zabija Szturmowca w jednym strzale).
+
+Wynik (otwarta przestrzeń, paczka ×5): bramka ZALICZONA, najgorszy iloraz do mediany
+1,935 (executor: Moc 21,3 s, mediana 11,0 s); pozostałe ilorazy Mocy 0,54–0,93,
+Strzelca do 1,70 (sniper). Margines przy Egzekutorze jest mały (1,935 wobec limitu 2);
+dalsze strojenie Mocy lub snajperki wymaga ponownego `npm run balance`. Symulacja nie
+zastępuje playtestu: do oceny feel zostaje playtest człowieka (Błyskawica 60 obrażeń
+co 0,4 s, Pchnięcie 35 obrażeń przy koszcie 10, wolniejsza snajperka).
+
+Symulator nie modeluje Chwytu (`grab`), dlatego `npm run balance` zostawia
+ostrzeżenie „Pominięto nieobsługiwany rodzaj mocy: grab”.

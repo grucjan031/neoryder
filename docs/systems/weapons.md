@@ -64,13 +64,13 @@ Tryby `beam` i `lob` nie są jeszcze obsługiwane (F2-04).
 
 Wszystkie dane mają tag `#gun`. Wstępny balans względem blastera (F2-18 dopracuje TTK):
 
-| ID / nazwa              | Tryb / spust      | Obrażenia  | Strzały/s | Ciepło | Prędkość m/s | Życie s | Półkąt ° | Parametry                                      |
-| ----------------------- | ----------------- | ---------- | --------- | ------ | ------------ | ------- | -------- | ---------------------------------------------- |
-| `blaster` / Blaster     | projectile / auto | 20         | 6         | 14     | 60           | 2       | 0,6      | Bez zmiany zachowania F1.                      |
-| `pistol` / Pistolet     | projectile / semi | 32         | 4         | 9      | 70           | 2       | 0,35     | Mocniejszy i oszczędniejszy pojedynczy strzał. |
-| `rifle` / Karabin       | projectile / auto | 12         | 10        | 10     | 75           | 2       | 1,1      | Szybka seria, mniejsze obrażenia pocisku.      |
-| `scatter` / Rozpraszacz | spread / semi     | 10 na śrut | 1,5       | 28     | 45           | 0,3     | 6        | 8 śrutów, maksymalny zasięg 13,5 m.            |
-| `sniper` / Snajperka    | pierce / semi     | 80         | 1         | 45     | 180          | 2       | 0        | 3 cele; spadek 0,25: obrażenia 80 → 60 → 45.   |
+| ID / nazwa              | Tryb / spust      | Obrażenia  | Strzały/s | Ciepło | Prędkość m/s | Życie s | Półkąt ° | Parametry                                                               |
+| ----------------------- | ----------------- | ---------- | --------- | ------ | ------------ | ------- | -------- | ----------------------------------------------------------------------- |
+| `blaster` / Blaster     | projectile / auto | 20         | 6         | 14     | 60           | 2       | 0,6      | Bez zmiany zachowania F1.                                               |
+| `pistol` / Pistolet     | projectile / semi | 32         | 4         | 9      | 70           | 2       | 0,35     | Mocniejszy i oszczędniejszy pojedynczy strzał.                          |
+| `rifle` / Karabin       | projectile / auto | 12         | 10        | 10     | 75           | 2       | 1,1      | Szybka seria, mniejsze obrażenia pocisku.                               |
+| `scatter` / Rozpraszacz | spread / semi     | 10 na śrut | 1,5       | 28     | 45           | 0,3     | 6        | 8 śrutów, maksymalny zasięg 13,5 m.                                     |
+| `sniper` / Snajperka    | pierce / semi     | 80         | 0,8       | 45     | 180          | 2       | 0        | 3 cele; spadek 0,25: obrażenia 80 → 60 → 45; odnowienie 1,25 s (F2-18). |
 
 ## Ciepło
 

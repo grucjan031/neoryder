@@ -44,15 +44,15 @@ async function setup(scene: MeleeTest = new PushTest(false)) {
   return { scene, commands, bus, three };
 }
 
-it('wczytuje sloty i manekiny z danych, F zachowuje odrzut i 40 obrażeń na ścianie', async () => {
+it('wczytuje sloty i manekiny z danych, F zachowuje odrzut i 65 obrażeń na ścianie', async () => {
   const { scene } = await setup();
   expect(scene.query('powerSlots')).toEqual(data.slots);
   expect(scene.query('dummyPos')).toEqual(data.dummyPositions);
   scene.step(SIM_DT, first);
-  expect(scene.query('energy')).toBe(75);
-  expect(scene.query('dummyHp')).toEqual([100, 90, 100, 100, 100]);
+  expect(scene.query('energy')).toBe(90);
+  expect(scene.query('dummyHp')).toEqual([100, 65, 100, 100, 100]);
   for (let i = 0; i < 15; i++) scene.step(SIM_DT, idle);
-  expect(scene.query('dummyHp')).toEqual([100, 60, 100, 100, 100]);
+  expect(scene.query('dummyHp')).toEqual([100, 35, 100, 100, 100]);
   const positions = scene.query('dummyPos') as { z: number }[];
   expect(positions[1]?.z).toBeLessThan(data.dummyPositions[1]!.z - 1);
   expect(document.querySelector('.hint')?.textContent).toContain(data.controls);
@@ -116,8 +116,8 @@ it.each([MeleeTest, ParryTest])(
     scene.step(SIM_DT, second);
     expect(scene.query('energy')).toBe(100);
     scene.step(SIM_DT, first);
-    expect(scene.query('dummyHp')).toEqual([100, 90, 100]);
-    expect(scene.query('energy')).toBe(75);
+    expect(scene.query('dummyHp')).toEqual([100, 65, 100]);
+    expect(scene.query('energy')).toBe(90);
   },
 );
 
