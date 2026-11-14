@@ -33,6 +33,6 @@ Scena `?scene=arena` (pierwsza pozycja w menu) — pierwsza pełna pętla walki 
 
 ## Otwarte (do playtestu / kolejnych zadań)
 
-- Wydajność **symulacji** zmierzona testem `tests/unit/arenaPerf.test.ts`: 30 wrogów (20 Szturmowców + 10 Strzelców) ≈ 1 ms na krok, rozpad 30 wrogów naraz (440 odłamków) ≈ 1 ms na krok (lokalnie; budżet testu 6 ms przy 16,7 ms klatki). **Render** (GPU, obrys = 3 przebiegi) do sprawdzenia ręcznie na `wave 12` + `spawn assaulter 20`.
+- Wydajność **symulacji** zmierzona testem `tests/unit/arenaPerf.test.ts`: 30 wrogów (20 Szturmowców + 10 Strzelców) ≈ 1 ms na krok, rozpad 30 wrogów naraz (440 odłamków) ≈ 1 ms na krok (lokalnie; budżet testu 6 ms przy 16,7 ms klatki). **Render** zmierzony 2026-11-14 (Chromium, ANGLE/D3D11, RTX 4070, 1920×1080, obrys włączony): fala 1 / 30 wrogów / rozpad 30 wrogów = 60 / 60 / 60 FPS (limit odświeżania); z CPU spowolnionym 4× (przybliżenie słabszego laptopa) = 60 / 55 / 60 FPS. Na słabszych GPU pierwszym kandydatem do optymalizacji jest obrys (3 przebiegi; `render.outline = 0` wyłącza).
 - Blaster nie ma jeszcze modelu w widoku FPP (strzela z oczu, ciepło widać w HUD).
 - Dźwięki (#14) — brak.
