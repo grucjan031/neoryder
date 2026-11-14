@@ -33,6 +33,8 @@ export const enemySchema = z
     knockbackResist: z.number().min(0).max(1),
     stunOnHeavyS: positive,
     repathJitter: nonnegative,
+    /** F2-12: promień krążenia Szturmowca bez tokenu ataku (większy niż attackRange). */
+    flankDistanceM: positive.optional(),
     body: z
       .object({
         height: positive,
@@ -69,6 +71,15 @@ export const enemySchema = z
       .optional(),
   })
   .superRefine((definition, ctx) => {
+    if (
+      definition.flankDistanceM !== undefined &&
+      definition.flankDistanceM <= definition.attackRange
+    )
+      ctx.addIssue({
+        code: 'custom',
+        path: ['flankDistanceM'],
+        message: 'Promień krążenia musi być większy niż zasięg ataku.',
+      });
     if (definition.kind !== 'gunner') return;
     const result = gunnerFields.safeParse(definition);
     if (!result.success)

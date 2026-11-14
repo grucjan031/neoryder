@@ -4,6 +4,7 @@ import type { DamageSystem, Hurtboxes } from '../combat/damage';
 import type { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
+import type { EnemyDirectorApi } from './director';
 import type { EnemyDefinition } from './enemySchema';
 
 export type EnemyState =
@@ -44,4 +45,6 @@ export interface EnemyDependencies {
   hurtboxes: Hurtboxes;
   getTarget(): { id: EntityId; position: Vec3 } | null;
   getNeighbors?(): readonly Enemy[];
+  /** F2-12: tokeny ataku i sloty flankowania; bez dyrektora wróg atakuje jak w F1. */
+  director?: EnemyDirectorApi;
 }

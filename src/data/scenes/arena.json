@@ -81,5 +81,16 @@
       "position": { "x": 12.8, "y": 0.25, "z": 12.2 },
       "model": "crate_small"
     }
-  ]
+  ],
+  "director": {
+    "attackTokens": 3,
+    "shotTokens": 2,
+    "maxHoldS": 4,
+    "reassignS": 1,
+    "probeHeightM": 0.5,
+    "slots": {
+      "melee": { "count": 8, "offsetDeg": 0 },
+      "shot": { "count": 6, "offsetDeg": 30 }
+    }
+  }
 }

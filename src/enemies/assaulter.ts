@@ -41,6 +41,8 @@ export class Assaulter implements Enemy {
   private probeS = 0;
   private avoid = 0;
   private hitbox?: Hitbox;
+  /** Token ataku wręcz od dyrektora (F2-12). */
+  private token = false;
 
   constructor(
     private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
@@ -116,6 +118,8 @@ export class Assaulter implements Enemy {
     this.current.state = state;
     this.current.stateTimeS = 0;
     this.hitbox = undefined;
+    // Token trzyma tylko zapowiedź i wymach; regeneracja po ciosie oddaje go następnemu.
+    if (state !== 'telegraph' && state !== 'swing') this.releaseToken();
     if (state === 'telegraph')
       this.ctx.bus.emit('enemy_telegraph', {
         id: this.id,
@@ -131,6 +135,21 @@ export class Assaulter implements Enemy {
         lifetimeS: this.definition.swingActiveS,
       });
     if (state === 'recovery') this.cooldown = this.definition.cooldownS;
+  }
+
+  private releaseToken(): void {
+    if (this.token) this.deps.director?.releaseToken(this.id);
+    this.token = false;
+  }
+
+  /** Bez dyrektora zawsze true. Z dyrektorem: token prosi wróg w zasięgu krążenia + ciosu. */
+  private engage(distance: number, flank: number): boolean {
+    const director = this.deps.director;
+    if (!director) return true;
+    if (!this.token && distance > flank + this.definition.attackRange + epsilon)
+      return false;
+    this.token = director.requestToken(this.id, 'melee');
+    return this.token;
   }
 
   step(dt: number): void {
@@ -151,6 +170,8 @@ export class Assaulter implements Enemy {
     const dx = target ? target.position.x - s.position.x : 0;
     const dz = target ? target.position.z - s.position.z : 0;
     const distance = Math.hypot(dx, dz);
+    const flank = d.flankDistanceM ?? d.attackRange;
+    let engaged = true;
     if (s.state === 'stunned') {
       if (s.stateTimeS + epsilon >= this.stunS)
         this.transition(target ? 'chase' : 'idle');
@@ -164,11 +185,13 @@ export class Assaulter implements Enemy {
     } else if (!target) this.transition('idle');
     else {
       if (s.state === 'idle') this.transition('chase');
+      engaged = this.engage(distance, flank);
       const yaw = Math.atan2(dx, dz);
       const delta = Math.atan2(Math.sin(yaw - s.yaw), Math.cos(yaw - s.yaw));
       const turn = ((d.turnRateDegS * Math.PI) / 180) * dt;
       s.yaw += Math.max(-turn, Math.min(turn, delta));
       if (
+        engaged &&
         distance <= d.attackRange + epsilon &&
         this.cooldown <= epsilon &&
         Math.abs(delta) <= turn + epsilon
@@ -177,11 +200,34 @@ export class Assaulter implements Enemy {
     }
     let vx = 0;
     let vz = 0;
-    if (s.state === 'chase' && target && distance > d.attackRange) {
+    let heading: number | null = null;
+    let speed = 0;
+    if (s.state === 'chase' && target) {
+      if (engaged) {
+        if (distance > d.attackRange) {
+          heading = s.yaw;
+          speed = (distance - d.attackRange) / dt;
+        }
+      } else {
+        // Bez tokenu: krążenie w slocie dyrektora, twarzą do celu.
+        const goal = this.deps.director?.slot(this.id, 'melee', flank) ?? {
+          x: target.position.x - (dx / Math.max(distance, epsilon)) * flank,
+          z: target.position.z - (dz / Math.max(distance, epsilon)) * flank,
+        };
+        const gx = goal.x - s.position.x;
+        const gz = goal.z - s.position.z;
+        const gap = Math.hypot(gx, gz);
+        if (gap > epsilon) {
+          heading = Math.atan2(gx, gz);
+          speed = gap / dt;
+        }
+      }
+    }
+    if (heading !== null) {
       this.probeS -= dt;
       if (this.probeS <= 0) {
         const hit = this.body.wallAhead(
-          s.yaw,
+          heading,
           this.ctx.tuning.enemies.wallProbe,
         );
         this.avoid = hit ? (this.rng.chance(0.5) ? 1 : -1) : 0;
@@ -189,13 +235,10 @@ export class Assaulter implements Enemy {
           this.ctx.tuning.enemies.wallProbe / this.stats.get('moveSpeed') +
           this.rng.float(0, d.repathJitter);
       }
-      const yaw = s.yaw + (this.avoid * Math.PI) / 2;
-      const speed = Math.min(
-        this.stats.get('moveSpeed'),
-        (distance - d.attackRange) / dt,
-      );
-      vx = Math.sin(yaw) * speed;
-      vz = Math.cos(yaw) * speed;
+      const yaw = heading + (this.avoid * Math.PI) / 2;
+      const v = Math.min(this.stats.get('moveSpeed'), speed);
+      vx = Math.sin(yaw) * v;
+      vz = Math.cos(yaw) * v;
     }
     for (const neighbor of this.deps.getNeighbors?.() ?? []) {
       if (neighbor.id === this.id || neighbor.current.state === 'dead')
@@ -270,6 +313,7 @@ export class Assaulter implements Enemy {
   dispose(): void {
     if (this.removed) return;
     this.removed = true;
+    this.releaseToken();
     for (const off of this.off.splice(0)) off();
     this.deps.hurtboxes.removeEntity(this.id);
     this.deps.damage.unregister(this.id);

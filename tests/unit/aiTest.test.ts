@@ -118,3 +118,22 @@ it('shares projectiles with spawned gunners, applies ranged damage and clears sh
   expect(scene.query('enemies')).toBe(3);
   expect(scene.query('playerHp')).toBe(100);
 });
+
+it('coordinates enemies through the EnemyDirector from scene data (F2-12)', async () => {
+  const { scene, commands } = await setup();
+  commands.execute('god');
+  commands.execute('spawn assaulter 4');
+  for (let i = 0; i < 3 / SIM_DT; i++) scene.step(SIM_DT, input);
+  const snapshot = scene.query('director') as {
+    tokens: { melee: number[]; shot: number[] };
+    slots: { melee: (number | null)[] };
+  };
+  expect(snapshot.tokens.melee.length).toBeLessThanOrEqual(2);
+  expect(snapshot.tokens.shot.length).toBeLessThanOrEqual(1);
+  expect(snapshot.slots.melee.some((id) => id !== null)).toBe(true);
+  expect(commands.execute('director')).toMatch(/^Tokeny wręcz: /);
+  const states = scene.query('enemyStates') as { state: string }[];
+  expect(
+    states.filter((e) => e.state === 'telegraph' || e.state === 'swing').length,
+  ).toBeLessThanOrEqual(2);
+});

@@ -12,6 +12,7 @@ import type { InputSnapshot } from '../core/input';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
 import sceneData from '../data/scenes/aiTest.json';
+import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
 import { EnemyView } from '../enemies/enemyView';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
@@ -35,6 +36,7 @@ const data = z
     spawnDistance: z.number().positive(),
     spawnSpacing: z.number().positive(),
     initialEnemies: z.array(z.object({ id: z.string(), position: vec3 })),
+    director: directorConfigSchema.optional(),
     arena: z.array(
       z.object({ size: vec3, position: vec3, model: z.string().optional() }),
     ),
@@ -107,17 +109,21 @@ export class AiTest implements Scene {
       this.loadModels,
     );
     this.root.add(this.projectileRenderer.root);
-    this.manager = new EnemyManager(ctx, {
-      projectiles: this.projectiles,
-      world: this.world,
-      entities: this.entities,
-      damage: this.damage,
-      hurtboxes: this.hurtboxes,
-      getTarget: () =>
-        this.health.dead
-          ? null
-          : { id, position: this.player.getState().position },
-    });
+    this.manager = new EnemyManager(
+      ctx,
+      {
+        projectiles: this.projectiles,
+        world: this.world,
+        entities: this.entities,
+        damage: this.damage,
+        hurtboxes: this.hurtboxes,
+        getTarget: () =>
+          this.health.dead
+            ? null
+            : { id, position: this.player.getState().position },
+      },
+      data.director ? { director: data.director } : {},
+    );
     three.background = new Color(ctx.tuning.render.world);
     three.add(this.root);
     this.root.add(this.lights);
@@ -227,6 +233,17 @@ export class AiTest implements Scene {
         : 'Podaj skończone, nieujemne obrażenia.';
     });
     register('kill all', 'kill all', () => hit(Number.MAX_VALUE));
+    register('director', 'director — tokeny, kolejki i sloty dyrektora', () => {
+      const d = this.manager.director?.snapshot();
+      if (!d) return 'Scena bez dyrektora.';
+      const list = (ids: readonly (number | null)[]) =>
+        ids.map((id) => id ?? '·').join(' ') || '—';
+      return [
+        `Tokeny wręcz: ${list(d.tokens.melee)} | strzał: ${list(d.tokens.shot)}`,
+        `Czekają wręcz: ${list(d.waiting.melee)} | strzał: ${list(d.waiting.shot)}`,
+        `Sloty wręcz: ${list(d.slots.melee)} | strzał: ${list(d.slots.shot)}`,
+      ].join('\n');
+    });
     register('god', 'god — nieśmiertelność gracza', () => {
       this.god = !this.god;
       this.stats.removeBySource('debug:god');
@@ -344,6 +361,7 @@ export class AiTest implements Scene {
     if (name === 'enemies') return enemies.length;
     if (name === 'enemyStates') return enemies;
     if (name === 'playerHp') return this.health.current;
+    if (name === 'director') return this.manager.director?.snapshot() ?? null;
     return undefined;
   }
 

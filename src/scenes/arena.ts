@@ -24,6 +24,7 @@ import { Blaster } from '../combat/weapons/blaster';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import sceneData from '../data/scenes/arena.json';
 import wavesData from '../data/waves/arena.json';
+import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
 import { EnemyView } from '../enemies/enemyView';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
@@ -56,6 +57,7 @@ const layout = z
     blocks: z.array(
       z.object({ size: vec3, position: vec3, model: z.string().optional() }),
     ),
+    director: directorConfigSchema.optional(),
   })
   .parse(sceneData);
 const waves = loadWaves(wavesData);
@@ -167,17 +169,21 @@ export class Arena implements Scene {
     );
     this.root.add(this.projectileView.root);
 
-    this.manager = new EnemyManager(ctx, {
-      projectiles: this.projectiles,
-      world: this.world,
-      entities: this.entities,
-      damage: this.damage,
-      hurtboxes: this.hurtboxes,
-      getTarget: () =>
-        this.health.dead
-          ? null
-          : { id: playerId, position: this.player.getState().position },
-    });
+    this.manager = new EnemyManager(
+      ctx,
+      {
+        projectiles: this.projectiles,
+        world: this.world,
+        entities: this.entities,
+        damage: this.damage,
+        hurtboxes: this.hurtboxes,
+        getTarget: () =>
+          this.health.dead
+            ? null
+            : { id: playerId, position: this.player.getState().position },
+      },
+      layout.director ? { director: layout.director } : {},
+    );
 
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, { playerId, onRetry: () => this.retry() });
@@ -626,6 +632,8 @@ export class Arena implements Scene {
         return this.director.currentPhase;
       case 'enemies':
         return this.aliveEnemies();
+      case 'enemyDirector':
+        return this.manager.director?.snapshot() ?? null;
       case 'playerHp':
         return this.health.current;
       case 'energy':

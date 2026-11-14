@@ -13,6 +13,7 @@
   "knockbackResist": 0,
   "stunOnHeavyS": 0.6,
   "repathJitter": 0.15,
+  "flankDistanceM": 4,
   "body": {
     "height": 1.8,
     "halfHeight": 0.35,

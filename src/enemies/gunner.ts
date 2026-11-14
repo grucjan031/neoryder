@@ -37,6 +37,8 @@ export class Gunner implements Enemy {
   private nextShotS = 0;
   private probeS = 0;
   private avoid = 0;
+  /** Token strzału od dyrektora (F2-12). */
+  private token = false;
 
   constructor(
     private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
@@ -114,6 +116,8 @@ export class Gunner implements Enemy {
   private transition(state: EnemyState): void {
     this.current.state = state;
     this.current.stateTimeS = 0;
+    // Token trzyma tylko celowanie i seria; po niej strzela następny (ostrzał zaporowy).
+    if (state !== 'aim' && state !== 'burst') this.releaseToken();
     if (state === 'reposition') {
       this.strafe = this.rng.chance(0.5) ? 1 : -1;
       this.probeS = 0;
@@ -129,6 +133,19 @@ export class Gunner implements Enemy {
       this.shots = 0;
       this.nextShotS = 0;
     }
+  }
+
+  private releaseToken(): void {
+    if (this.token) this.deps.director?.releaseToken(this.id);
+    this.token = false;
+  }
+
+  /** Bez dyrektora zawsze true; z dyrektorem prosi o token strzału. */
+  private engage(): boolean {
+    const director = this.deps.director;
+    if (!director) return true;
+    this.token = director.requestToken(this.id, 'shot');
+    return this.token;
   }
 
   private muzzle(): Vec3 {
@@ -229,7 +246,8 @@ export class Gunner implements Enemy {
         s.state === 'reposition' &&
         los &&
         Math.abs(distance - r.preferredRange) <= r.rangeTolerance + epsilon &&
-        Math.abs(delta) <= turn + epsilon
+        Math.abs(delta) <= turn + epsilon &&
+        this.engage()
       )
         this.transition('aim');
       else if (s.state === 'aim' && s.stateTimeS + epsilon >= r.aimTelegraphS)
@@ -245,26 +263,30 @@ export class Gunner implements Enemy {
     }
     let vx = 0,
       vz = 0;
-    if (s.state === 'reposition' && target && distance > epsilon) {
-      this.probeS -= dt;
-      if (this.probeS <= 0) {
-        this.avoid = this.body.wallAhead(
-          Math.atan2(dx, dz),
-          this.ctx.tuning.enemies.wallProbe,
-        )
-          ? this.strafe
-          : 0;
-        this.probeS =
-          this.ctx.tuning.enemies.wallProbe / this.stats.get('moveSpeed') +
-          this.rng.float(0, d.repathJitter);
+    // Z dyrektorem i widocznym celem: czekanie na token w slocie na preferowanym dystansie.
+    const goal =
+      s.state === 'reposition' && target && los
+        ? (this.deps.director?.slot(this.id, 'shot', r.preferredRange) ?? null)
+        : null;
+    if (goal) {
+      const gx = goal.x - s.position.x,
+        gz = goal.z - s.position.z;
+      const gap = Math.hypot(gx, gz);
+      if (gap > epsilon) {
+        const heading = this.steer(dt, Math.atan2(gx, gz), this.strafe);
+        const speed = Math.min(this.stats.get('moveSpeed'), gap / dt);
+        vx = Math.sin(heading) * speed;
+        vz = Math.cos(heading) * speed;
       }
+    } else if (s.state === 'reposition' && target && distance > epsilon) {
+      this.steer(dt, Math.atan2(dx, dz), 0);
       const radial =
         !los || distance > r.preferredRange + r.rangeTolerance
           ? 1
           : distance < r.preferredRange - r.rangeTolerance
             ? -1
             : 0;
-      const lateral = this.avoid || this.strafe * r.strafeScale;
+      const lateral = this.avoid ? this.strafe : this.strafe * r.strafeScale;
       const norm = Math.hypot(radial, lateral) || 1;
       const speed = this.stats.get('moveSpeed');
       vx = ((dx * radial + dz * lateral) / distance / norm) * speed;
@@ -296,9 +318,30 @@ export class Gunner implements Enemy {
     s.distance += movement.distance;
   }
 
+  /**
+   * Próba ściany co `wallProbe / moveSpeed` (+ rozrzut z Rng). Zapisuje `avoid` (1 = omijanie)
+   * i zwraca kierunek ruchu: przy ścianie odchylony o 90° w stronę `side`.
+   */
+  private steer(dt: number, heading: number, side: number): number {
+    this.probeS -= dt;
+    if (this.probeS <= 0) {
+      this.avoid = this.body.wallAhead(
+        heading,
+        this.ctx.tuning.enemies.wallProbe,
+      )
+        ? 1
+        : 0;
+      this.probeS =
+        this.ctx.tuning.enemies.wallProbe / this.stats.get('moveSpeed') +
+        this.rng.float(0, this.definition.repathJitter);
+    }
+    return heading + (this.avoid * side * Math.PI) / 2;
+  }
+
   dispose(): void {
     if (this.removed) return;
     this.removed = true;
+    this.releaseToken();
     for (const off of this.off.splice(0)) off();
     this.deps.hurtboxes.removeEntity(this.id);
     this.deps.damage.unregister(this.id);

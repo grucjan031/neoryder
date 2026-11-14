@@ -200,3 +200,61 @@ i ich czyszczenie przy resecie, a `enemyView.test.ts` — osobny cache Strzelca,
 celowanie, pulsowanie i odrzut. Playwright `aiTest.spec.ts` sprawdza
 `spawn gunner 1` oraz utratę HP od pocisków z wyłączonym `god`, czekając
 na kroki symulacji przez `waitSimSteps` i `SIM_TIMEOUT`.
+
+## Dyrektor wrogów — F2-12
+
+`EnemyDirector` (`src/enemies/director.ts`) koordynuje grupę, żeby walka z wieloma
+wrogami była czytelna: naraz atakuje tylko kilku, reszta otacza gracza i czeka.
+Tworzy go `EnemyManager`, gdy scena poda dane `director`
+(`new EnemyManager(ctx, deps, { director })`). Manager wstrzykuje go wrogom
+w `EnemyDependencies.director` i woła `director.step(dt)` po krokach wszystkich
+wrogów. Bez danych `director` wrogowie zachowują się dokładnie jak w F1.
+
+**Tokeny.** `attackTokens` ogranicza jednoczesne ataki wręcz, `shotTokens` —
+jednoczesne celowanie i serie. Wróg, który chce zacząć atak, woła
+`requestToken(id, kind)` w każdym kroku. Czekający stoją w kolejce FIFO:
+zwolniony token dostaje najdłużej czekający, więc przy `shotTokens: 1` Strzelcy
+strzelają na zmianę (ostrzał zaporowy). Zgłoszenie, którego wróg nie ponowił
+w kroku, wypada z kolejki. `dt = 0` (hitstop) niczego nie przedawnia. Token
+wraca do puli przy `releaseToken`, a sam dyrektor zwalnia go przy `enemy_killed`,
+`entity_despawned`, `enemy_stunned` i `status_applied` ze statusem `stunned`.
+Bezpiecznik `maxHoldS` odbiera token trzymany zbyt długo.
+
+**Sloty flankowania.** Dwie pule kątów wokół gracza (`slots.melee`, `slots.shot`:
+`count`, `offsetDeg` od osi +Z). Kąt przydziela dyrektor, promień podaje wróg:
+`slot(id, kind, radiusM)` zwraca punkt na okręgu wokół aktualnej pozycji celu.
+Pierwszy przydział to najbliższy wolny slot; remis rozstrzyga niższy indeks.
+Co `reassignS` przydział liczony jest od nowa zachłannie (pary wróg–slot od
+najbliższej), żeby wrogowie nie przebiegali przez gracza, gdy ten zmieni stronę.
+Slot zasłonięty przez świat (promień od gracza na wysokości `probeHeightM` nad
+jego pozycją, grupa `World`) jest pomijany. Przy braku wolnego slotu `slot`
+zwraca `null`. Slot, o który wróg nie zapytał w kroku, zostaje zwolniony.
+
+**Szturmowiec.** W pościgu prosi o token, gdy jest bliżej niż
+`flankDistanceM + attackRange` (lub już go ma). Z tokenem naciera i atakuje jak
+w F1. Bez tokenu idzie do slotu na promieniu `flankDistanceM` (dane, 4 m), twarzą
+do gracza; bez slotu zatrzymuje się na tym promieniu na linii do gracza. Token
+trzymają tylko zapowiedź i wymach. Wejście w regenerację, ogłuszenie, śmierć
+albo utrata celu go oddaje. `flankDistanceM` musi być większy niż `attackRange`.
+
+**Strzelec.** Prosi o token strzału dopiero, gdy jest w paśmie dystansu, widzi
+cel i jest do niego obrócony. Bez tokenu, przy widocznym celu, czeka w slocie
+na promieniu `preferredRange`. Bez widoczności działa jak w F1 (podchodzi).
+Token trzymają celowanie i seria. Przejście w `cooldown`, utrata widoczności,
+ogłuszenie albo śmierć go oddaje.
+
+Dane: blok `director` w `src/data/scenes/aiTest.json` (2 tokeny wręcz, 1 strzału)
+i `arena.json` (3 i 2 — arena zostaje wymagająca; fale F2 dostroi zadanie 17).
+Zapytania debug: `director` w ai-test i `enemyDirector` w arenie zwracają
+`snapshot()` (tokeny, kolejki, sloty).
+
+Kontrola w 30 sekund: `?scene=ai-test&debug=1`, `god`, `spawn assaulter 6`, komenda `director` (kto ma tokeny, kto czeka, sloty).
+Naraz zapowiada cios najwyżej dwóch Szturmowców, reszta stoi w kręgu ok. 4 m
+i przesuwa się za graczem. `kill all`, `spawn gunner 3`: Strzelcy rozstawiają
+się wokół i strzelają seriami po kolei, nie razem. Ocena feel: czy krąg nie
+wygląda sztywno i czy przerwy między atakami nie są za długie.
+
+Testy: `tests/unit/director.test.ts` (logika tokenów i slotów bez fizyki oraz
+Szturmowcy i Strzelcy w prawdziwym Rapierze: limit ataków, rotacja tokenów,
+krążenie na `flankDistanceM`, naprzemienne serie, zwolnienie przy ogłuszeniu
+i śmierci, walidacja danych) i `aiTest.test.ts` (dyrektor z danych sceny).

@@ -541,12 +541,31 @@ parryArcDeg?: number;                             // F2-11: szerszy kąt odbijan
 statuses?: StatusQuery;                           // ogłuszony (status 'stunned') nie atakuje
 director?: EnemyDirectorApi;
 
-// src/enemies/director.ts
+// src/enemies/director.ts (zaimplementowane w F2-12)
+export type TokenKind = 'melee' | 'shot';
 export interface EnemyDirectorApi {
-  requestToken(id: EntityId, kind: 'melee' | 'shot'): boolean; // true = może atakować teraz
+  requestToken(id: EntityId, kind: TokenKind): boolean; // true = może atakować teraz; kolejka FIFO, wołać co krok
   releaseToken(id: EntityId): void;               // koniec ataku, śmierć, ogłuszenie
-  slot(id: EntityId): Vec3 | null;                // punkt flankowania wokół gracza
+  slot(id: EntityId, kind: TokenKind, radiusM: number): Vec3 | null; // kąt od dyrektora, promień wroga; wołać co krok
 }
+export const directorConfigSchema; // zod: attackTokens, shotTokens, maxHoldS, reassignS, probeHeightM,
+                                   // slots: { melee: { count, offsetDeg }, shot: { count, offsetDeg } }
+export class EnemyDirector implements EnemyDirectorApi {
+  constructor(bus: EventBus, config: DirectorConfig, deps: {
+    target(): { id: EntityId; position: Vec3 } | null;
+    position(id: EntityId): Vec3 | null;
+    clear?(from: Vec3, to: Vec3): boolean;        // false = świat zasłania slot
+  });
+  step(dt: number): void;                         // po krokach wrogów; dt = 0 nic nie zmienia
+  forget(id: EntityId): void; snapshot(): DirectorSnapshot; reset(): void; dispose(): void;
+}
+// Zwalnia sam przy enemy_killed, entity_despawned, enemy_stunned i status_applied 'stunned'.
+
+// src/enemies/manager.ts
+new EnemyManager(ctx, deps, { director?: DirectorConfig }); // manager tworzy dyrektora, wstrzykuje
+                                                            // deps.director i krokuje go po wrogach
+readonly director: EnemyDirector | null;
+// Dane: `director` w src/data/scenes/*.json; `flankDistanceM` w danych Szturmowca.
 ```
 
 ### Ekwipunek i synergie (F2-15, F2-16)
