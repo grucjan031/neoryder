@@ -6,7 +6,7 @@ Architektura: `docs/adr/0005-petla-runu-f3.md` (**przyjęta do realizacji 2026-1
 
 ## Stan (2026-11-14)
 
-W toku. Człowiek polecił kontynuować prace po zamknięciu zadań F2 (playtest bramki F2 nadal otwarty — `docs/issues/F2/README.md`). Zadania spoza tej listy trafiają do `docs/backlog.md`.
+Zadania 01–18 i 20 gotowe; zadanie 19 (zagadka z Chwytem) przeniesione do `docs/backlog.md` (`typeWeights.puzzle` = 0). Bramka F3 czeka na playtest człowieka (`docs/playtest-F3.md`); bot e2e (`tests/e2e/runBot.spec.ts`) i test deterministyczności (`tests/unit/runDeterminism.test.ts`) przechodzą. Playtest bramki F2 nadal otwarty — `docs/issues/F2/README.md`. Zadania spoza tej listy trafiają do `docs/backlog.md`.
 
 ## Decyzje wspólne
 
@@ -26,26 +26,26 @@ W toku. Człowiek polecił kontynuować prace po zamknięciu zadań F2 (playtest
 
 | Nr  | Tytuł                                                                  | Agent                | Zależy od  | Szac. | Stan |
 | --- | ---------------------------------------------------------------------- | -------------------- | ---------- | ----- | ---- |
-| 01  | Kontrakty F3: typy, zdarzenia, schematy                                | Architekt            | —          | M     | —    |
-| 02  | Generator mapy sektora i dane `kurogane.json`                          | Świat                | 01         | M     | —    |
-| 03  | Format pokoi, loader i walidacja układów                               | Świat                | 01         | M     | —    |
-| 04  | `RoomScene`: pokój jako nowy świat ze stanem z `RunState`              | Architekt            | 01, 03     | L     | —    |
-| 05  | `RunState` i `RunManager`                                              | Świat                | 01         | M     | —    |
-| 06  | Zapis runu: `RunSave` v2 i migracja                                    | Architekt            | 01, 05     | S     | —    |
-| 07  | `RunScene`: przepływ mapa → pokój → nagroda, cheaty `run`              | Architekt            | 04, 05     | L     | —    |
-| 08  | Budżet zagrożenia: `threatCost` i planowanie fal pokoju                | Świat + AI wrogów    | 01, 03     | M     | —    |
-| 09  | Implanty: dane, schemat, nakładanie przez `Stats`                      | Progresja            | 01, 05     | M     | —    |
-| 10  | Tagi implantów w `SynergySystem`: progi i wyzwalacze                   | Progresja            | 09         | M     | —    |
-| 11  | Nagrody, Kredyty, sklep i odpoczynek (logika)                          | Progresja            | 05, 09, 10 | L     | —    |
-| 12  | Zawartość pokoi sektora Kurogane Arms                                  | Świat                | 04, 08     | L     | —    |
-| 13  | Menu główne i ekran mapy                                               | UI/UX + Architekt    | 02, 06, 07 | M     | —    |
-| 14  | Ekrany nagrody, sklepu i odpoczynku                                    | UI/UX                | 11, 13     | M     | —    |
-| 15  | HUD runu: Kredyty, implanty, pasek HP bossa                            | UI/UX                | 01, 09     | S     | —    |
-| 16  | Boss: rdzeń, fazy z danych, uderzenie obszarowe i wachlarz             | AI wrogów            | 01         | L     | —    |
-| 17  | Boss: wezwanie Tarczowników, faza tarczy, pokój bossa                  | AI wrogów + Świat    | 12, 15, 16 | L     | —    |
-| 18  | Podsumowanie runu i śmierć                                             | UI/UX + Świat        | 05, 07, 13 | M     | —    |
-| 19  | Zagadka z Chwytem (niski priorytet, może do backlogu)                  | Świat                | 07, 11, 12 | M     | —    |
-| 20  | Bot e2e, test deterministyczności, dokumentacja i szablon playtestu    | QA                   | 14, 17, 18 | L     | —    |
+| 01  | Kontrakty F3: typy, zdarzenia, schematy                                | Architekt            | —          | M     | gotowe |
+| 02  | Generator mapy sektora i dane `kurogane.json`                          | Świat                | 01         | M     | gotowe |
+| 03  | Format pokoi, loader i walidacja układów                               | Świat                | 01         | M     | gotowe |
+| 04  | `RoomScene`: pokój jako nowy świat ze stanem z `RunState`              | Architekt            | 01, 03     | L     | gotowe |
+| 05  | `RunState` i `RunManager`                                              | Świat                | 01         | M     | gotowe |
+| 06  | Zapis runu: `RunSave` v2 i migracja                                    | Architekt            | 01, 05     | S     | gotowe |
+| 07  | `RunScene`: przepływ mapa → pokój → nagroda, cheaty `run`              | Architekt            | 04, 05     | L     | gotowe |
+| 08  | Budżet zagrożenia: `threatCost` i planowanie fal pokoju                | Świat + AI wrogów    | 01, 03     | M     | gotowe |
+| 09  | Implanty: dane, schemat, nakładanie przez `Stats`                      | Progresja            | 01, 05     | M     | gotowe |
+| 10  | Tagi implantów w `SynergySystem`: progi i wyzwalacze                   | Progresja            | 09         | M     | gotowe |
+| 11  | Nagrody, Kredyty, sklep i odpoczynek (logika)                          | Progresja            | 05, 09, 10 | L     | gotowe |
+| 12  | Zawartość pokoi sektora Kurogane Arms                                  | Świat                | 04, 08     | L     | gotowe |
+| 13  | Menu główne i ekran mapy                                               | UI/UX + Architekt    | 02, 06, 07 | M     | gotowe |
+| 14  | Ekrany nagrody, sklepu i odpoczynku                                    | UI/UX                | 11, 13     | M     | gotowe |
+| 15  | HUD runu: Kredyty, implanty, pasek HP bossa                            | UI/UX                | 01, 09     | S     | gotowe |
+| 16  | Boss: rdzeń, fazy z danych, uderzenie obszarowe i wachlarz             | AI wrogów            | 01         | L     | gotowe |
+| 17  | Boss: wezwanie Tarczowników, faza tarczy, pokój bossa                  | AI wrogów + Świat    | 12, 15, 16 | L     | gotowe |
+| 18  | Podsumowanie runu i śmierć                                             | UI/UX + Świat        | 05, 07, 13 | M     | gotowe |
+| 19  | Zagadka z Chwytem (niski priorytet, może do backlogu)                  | Świat                | 07, 11, 12 | M     | backlog |
+| 20  | Bot e2e, test deterministyczności, dokumentacja i szablon playtestu    | QA                   | 14, 17, 18 | L     | gotowe |
 
 Graf jest acykliczny (zależności tylko od niższych numerów). Ścieżki krytyczne: 01 → 03 → 04 → 07 → 13 → 14 → 20 oraz 01 → 03 → 08 → 12 → 17 → 20. Po 01 równolegle mogą ruszyć 02, 03, 05 i 16 (rozłączne foldery); 09 po 05, 15 po 09. Zadanie 19 nie blokuje bramki: może przejść do `docs/backlog.md`, wtedy `typeWeights.puzzle` w danych sektora zostaje 0.
 
