@@ -14,6 +14,7 @@ Konwencje (opisane w docs/assets.md):
 
 from __future__ import annotations
 
+import json
 import math
 import os
 import sys
@@ -25,6 +26,9 @@ from mathutils import Matrix, Vector
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT_DIR = os.path.join(ROOT, "public", "assets", "models")
 PREVIEW_DIR = os.path.join(ROOT, "tools", "blender", "previews")
+HAND_POSES = os.path.join(ROOT, "src", "data", "hands", "handPoses.json")
+# Zmiana bazy glTF -> Blender; także dla lokalnych układów przegubów.
+HAND_BASIS = Matrix.Rotation(math.pi / 2, 4, "X")
 
 # Blender: przód postaci = -Y (po eksporcie +Z glTF). Bronie: lufa = +Y (po eksporcie -Z glTF).
 FWD = -1.0  # znak osi Y "do przodu" dla postaci
@@ -693,6 +697,13 @@ def weapon_root(name, frame, vents, cell, muzzle_pos, extra=()):
     for ename, bm in extra:
         mesh_object(ename, bm, "mat_player_cyan", parent=root)
     empty("muzzle", parent=root, location=muzzle_pos, size=0.03)
+    support_positions = {
+        "pistol": (0, -0.02, -0.105), "blaster": (0, -0.02, -0.125),
+        "rifle": (0, 0.28, 0.012), "scatter": (0, 0.28, -0.008),
+        "sniper_rifle": (0, 0.30, 0.017), "beam": (0, 0.22, 0.018),
+        "emp_launcher": (0, 0.20, 0.014),
+    }
+    empty("support", parent=root, location=support_positions[name], size=0.025)
     return root
 
 
@@ -896,24 +907,124 @@ def _crate(size: float):
 
 
 def build_player_arm(side: str):
-    """Przedramię i dłoń gracza do widoku FPP. Początek = punkt chwytu broni (węzeł grip),
-    przedramię biegnie do kamery (+Z glTF). Lewa ręka to lustro prawej."""
-    sx = 1 if side == "R" else -1
+    """Sztywne paliczki: modelowanie w glTF, na końcu zmiana bazy do Blendera.
+
+    Spoczynek: nadgarstek w początku, palce -Z, wnętrze +Y, prawy kciuk po +X.
+    Odbicie S*M*S zachowuje prawoskrętność; S*Rx*S = Rx dla obu dłoni.
+    """
     root = empty(f"player_arm_{side}", size=0.05)
-    fist = bm_merge(
-        bm_box(0.075, 0.09, 0.085, center=(sx * 0.005, -0.005, 0.0), bevel=0.012),
-        bm_box(0.03, 0.05, 0.03, center=(sx * -0.035, 0.015, 0.03), bevel=0.006),  # kciuk
+    forearm = node("forearm", root)
+    part("undersleeve", bm_prism(0.315, 0.049, 0.030, sides=8,
+         top_at_origin=False, offset=(0.012, 0.002, 0.163)), "mat_interactive", forearm)
+    for i, (z, width) in enumerate(((0.063, 0.068), (0.151, 0.080), (0.244, 0.092))):
+        part(f"armor_{i + 1}", bm_box(width, 0.053, 0.112, center=(0.009, -0.009, z),
+             taper_top=(1.06, 1.03), bevel=0.009), "mat_interactive", forearm)
+    for x in (-0.019, 0.033):
+        part("light_rail", bm_box(0.004, 0.003, 0.235, center=(x, -0.037, 0.164),
+             bevel=0.0009), "mat_player_cyan", forearm)
+    part("cuff", bm_prism(0.055, 0.056, 0.051, sides=8, top_at_origin=False,
+         offset=(0.013, 0.002, 0.322)), "mat_world", forearm)
+    part("cuff_seam", bm_prism(0.009, 0.053, 0.052, sides=8, top_at_origin=False,
+         offset=(0.013, 0.002, 0.296)), "mat_interactive", forearm)
+    part("wrist_ring", bm_prism(0.022, 0.034, 0.034, sides=10, top_at_origin=False,
+         offset=(0, 0, 0.012)), "mat_interactive", forearm)
+    part("wrist_light", bm_prism(0.004, 0.0345, 0.0345, sides=10, top_at_origin=False,
+         offset=(0, 0, 0.012)), "mat_player_cyan", forearm)
+    wrist = node("wrist", forearm)
+    palm = part("palm", bm_box(0.078, 0.028, 0.094, center=(0, 0, -0.047),
+                taper_top=(0.92, 0.94), bevel=0.009), "mat_interactive", wrist)
+    part("dorsal_plate", bm_box(0.060, 0.010, 0.063, center=(0, -0.018, -0.049),
+         taper_top=(0.90, 0.85), bevel=0.005), "mat_interactive", palm)
+    part("resonance_mount", bm_prism(0.007, 0.016, 0.019, sides=6, axis="Y",
+         top_at_origin=False, offset=(0, -0.027, -0.050)), "mat_interactive", palm)
+    part("resonance_core", bm_prism(0.003, 0.012, 0.013, sides=6, axis="Y",
+         top_at_origin=False, offset=(0, -0.032, -0.050)), "mat_power_magenta", palm)
+    for x in (-0.022, 0.022):
+        part("dorsal_trace", bm_box(0.002, 0.002, 0.038, center=(x, -0.024, -0.049)),
+             "mat_player_cyan", palm)
+    part("thumb_web", bm_ico(0.023, center=(0.030, 0, -0.038), subdiv=1,
+         scale=(0.8, 0.67, 1.18)), "mat_interactive", palm)
+    for x in (-0.024, 0.022):
+        part("palm_pad", bm_box(0.023, 0.004, 0.048, center=(x, 0.014, -0.045),
+             bevel=0.002), "mat_interactive", palm)
+    center = node("palm_center", palm, (0, 0.016, -0.051))
+    center.rotation_euler.x = math.pi / 2  # -Z węzła = +Y dłoni (normalna wnętrza).
+
+    fingers = (
+        ("index", 0.029, -0.100, (0.041, 0.025, 0.021), 0.0175, -0.045),
+        ("middle", 0.009, -0.098, (0.043, 0.027, 0.022), 0.0185, -0.010),
+        ("ring", -0.012, -0.100, (0.040, 0.025, 0.021), 0.0175, 0.025),
+        ("pinky", -0.031, -0.101, (0.036, 0.021, 0.018), 0.0150, 0.090),
+        ("thumb", 0.042, -0.032, (0.032, 0.026, 0.022), 0.0220, 0),
     )
-    mesh_object("hand", fist, "mat_interactive", parent=root)
-    fore = bm_prism(0.36, 0.034, 0.045, sides=6, axis="Y", top_at_origin=False, offset=(0, 0, 0))
-    bmesh.ops.rotate(fore, verts=fore.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(-12), 3, "X"))
-    for v in fore.verts:
-        v.co += Vector((sx * 0.005, -0.205, -0.01))
-    mesh_object("forearm", fore, "mat_interactive", parent=root)
-    cuff = bm_prism(0.03, 0.039, 0.039, sides=6, axis="Y", top_at_origin=False, offset=(sx * 0.005, -0.07, -0.005))
-    mesh_object("cuff", cuff, "mat_player_cyan", parent=root)
-    empty("grip", parent=root, location=(0, 0, 0), size=0.03)
+    for name, x, z, lengths, width, spread in fingers:
+        parent = palm
+        for j, length in enumerate(lengths):
+            joint = node(f"{name}_{j + 1}", parent,
+                         (x, 0, z) if j == 0 else (0, 0, -lengths[j - 1]))
+            if j == 0:
+                if name == "thumb":
+                    joint.location.y = -0.004
+                    joint.rotation_euler = (-0.42285393, -0.50065471, 0.75315128)
+                else:
+                    joint.rotation_euler.y = spread
+            part(f"{name}_phalanx_{j + 1}", bm_box(width * (1 - j * 0.09), 0.017 - j * 0.001,
+                 length - 0.002, center=(0, 0, -length / 2), bevel=0.003), "mat_interactive", joint)
+            part(f"{name}_bearing_{j + 1}", bm_prism(width * 0.90, 0.007, 0.007,
+                 sides=8, axis="X", top_at_origin=False), "mat_interactive", joint)
+            guard_length, guard_center = (0.36, 0.22) if name == "thumb" and j == 2 else (0.56, 0.36)
+            part(f"{name}_guard_{j + 1}", bm_box(width * 0.88, 0.005, length * guard_length,
+                 center=(0, -0.009, -length * guard_center), bevel=0.0018), "mat_interactive", joint)
+            if j == 0:
+                part(f"{name}_joint_light", bm_box(width * 0.52, 0.0018, 0.002,
+                     center=(0, -0.012, -0.006)), "mat_player_cyan", joint)
+            if j == 2:
+                part(f"{name}_pad", bm_box(width * 0.69, 0.0015, length * 0.52,
+                     center=(0, 0.007, -length * 0.61), bevel=0.0006), "mat_interactive", joint)
+            parent = joint
+
+    # Kolumny macierzy: osie broni w układzie spoczynkowym dłoni.
+    gun_rotation = Matrix(((0, 1, 0), (-1, 0, 0), (0, 0, 1))).to_4x4()
+    blade_rotation = Matrix(((0, 0, -1), (0, 1, 0), (1, 0, 0))).to_4x4()
+    blade_rotation = blade_rotation @ Matrix.Rotation(math.pi / 2, 4, "Z")
+    for name, loc, rotation in (
+        ("socket_gun", (0.049, 0.038, -0.120), gun_rotation),
+        ("socket_blade", (0, 0.033, -0.110), blade_rotation),
+        ("socket_support", (0, 0.024, -0.108), Matrix.Rotation(math.radians(55), 4, "Y")),
+    ):
+        socket = node(name, palm)
+        socket.matrix_basis = Matrix.Translation(loc) @ rotation
+
+    bpy.context.view_layer.update()
+    reflection = Matrix.Diagonal((-1, 1, 1, 1)) if side == "L" else Matrix.Identity(4)
+    basis = HAND_BASIS @ reflection
+    for obj in [root, *root.children_recursive]:
+        local = obj.matrix_basis.copy()
+        obj.matrix_basis = basis @ local @ basis.inverted()
+        if obj.type == "MESH":
+            obj.data.transform(basis)
+            if side == "L":
+                bm = bmesh.new()
+                bm.from_mesh(obj.data)
+                bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
+                bm.to_mesh(obj.data)
+                bm.free()
+    bpy.context.view_layer.update()
     return root
+
+
+def hand_pose(root, name):
+    with open(HAND_POSES, encoding="utf-8") as source:
+        angles = json.load(source)["poses"][name]
+    objects = {o.name.split(".")[0]: o for o in root.children_recursive}
+    for joint_name, xyz in angles.items():
+        obj = objects[joint_name]
+        rotation = Matrix.Identity(4)
+        # Three.js Euler XYZ = Rx * Ry * Rz (Blender Euler XYZ używa innej kolejności).
+        for axis, angle in zip("XYZ", xyz):
+            rotation = rotation @ Matrix.Rotation(angle, 4, axis)
+        obj.matrix_basis = obj.matrix_basis @ HAND_BASIS @ rotation @ HAND_BASIS.inverted()
+    bpy.context.view_layer.update()
 
 
 def _projectile():
@@ -975,6 +1086,109 @@ def render_preview(root, path: str) -> None:
     bpy.ops.render.render(write_still=True)
 
 
+def hand_preview(path, target=(0, 0, 0), direction=(0.9, -0.85, -0.6), span=0.55, fpp=False):
+    """Kamera opisana w glTF; Workbench zachowuje materiały docelowej palety."""
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_WORKBENCH"
+    shading = scene.display.shading
+    shading.light = "STUDIO"
+    shading.studiolight_rotate_z = 0.35
+    shading.color_type = "MATERIAL"
+    shading.show_shadows = True
+    shading.show_cavity = True
+    shading.cavity_type = "BOTH"
+    shading.curvature_ridge_factor = 1.6
+    shading.curvature_valley_factor = 1.2
+    shading.show_object_outline = True
+    shading.background_type = "WORLD"
+    scene.world = bpy.data.worlds.new("hand_preview_world")
+    scene.world.color = (0.15, 0.18, 0.21)
+    scene.render.resolution_x = 1440 if fpp else 1200
+    scene.render.resolution_y = 810 if fpp else 1000
+    scene.render.resolution_percentage = 100
+    scene.display.render_aa = "32"
+    camera_data = bpy.data.cameras.new("hand_camera")
+    camera = bpy.data.objects.new("hand_camera", camera_data)
+    scene.collection.objects.link(camera)
+    camera_data.clip_start = 0.005
+    if fpp:
+        camera_data.type = "PERSP"
+        camera_data.sensor_fit = "VERTICAL"
+        camera_data.sensor_height = 24
+        camera_data.lens = 12 / math.tan(math.radians(70) / 2)
+        camera.matrix_world = HAND_BASIS.copy()
+    else:
+        camera_data.type = "ORTHO"
+        camera_data.ortho_scale = span
+        aim = HAND_BASIS @ Vector(target)
+        camera.location = aim + HAND_BASIS.to_3x3() @ Vector(direction).normalized() * 2
+        camera.rotation_euler = (aim - camera.location).to_track_quat("-Z", "Y").to_euler()
+    scene.camera = camera
+    scene.render.filepath = os.path.join(PREVIEW_DIR, path)
+    bpy.ops.render.render(write_still=True)
+
+
+def hand_object(root, name):
+    return next(o for o in root.children_recursive if o.name.split(".")[0] == name)
+
+
+def attach_hand_item(hand, item, socket_name):
+    socket = hand_object(hand, socket_name)
+    item.parent = socket
+    item.matrix_parent_inverse = Matrix.Identity(4)
+    item.matrix_basis = Matrix.Identity(4)
+    bpy.context.view_layer.update()
+
+
+def render_hand_previews():
+    for pose in ("open", "fist"):
+        reset_scene()
+        right = build_player_arm("R")
+        left = build_player_arm("L")
+        hand_pose(right, pose)
+        hand_pose(left, pose)
+        right.location.x = -0.105
+        left.location.x = 0.105
+        hand_preview(f"hand_pose_{pose}.png", target=(0, 0, 0.04),
+                     direction=(0.05, -1, -0.55), span=0.75)
+    for name, builder, pose, socket in (
+        ("blade", build_plasma_blade, "gripBlade", "socket_blade"),
+        ("pistol", build_pistol, "gripGun", "socket_gun"),
+        ("pistol_fire", build_pistol, "gripGunFire", "socket_gun"),
+        ("blaster", build_blaster, "gripGun", "socket_gun"),
+        ("rifle", build_rifle, "gripGun", "socket_gun"),
+    ):
+        reset_scene()
+        right = build_player_arm("R")
+        hand_pose(right, pose)
+        item = builder()
+        attach_hand_item(right, item, socket)
+        if name == "rifle":
+            left = build_player_arm("L")
+            hand_pose(left, "support")
+            support = hand_object(item, "support")
+            socket_left = hand_object(left, "socket_support")
+            left.matrix_world = support.matrix_world @ socket_left.matrix_world.inverted()
+            bpy.context.view_layer.update()
+        hand_preview(f"hand_grip_{name}.png", target=(0.01, 0.01, -0.18 if name == "rifle" else 0.035),
+                     direction=(0.9, -0.75, -0.5), span=0.65 if name != "rifle" else 1.22)
+        if name == "blade":
+            hand_preview("hand_grip_blade_inner.png", target=(0, 0.03, -0.1),
+                         direction=(-0.4, 1, -0.35), span=0.32)
+        if name == "rifle":
+            target = HAND_BASIS.inverted() @ support.matrix_world.translation
+            hand_preview("hand_support_rifle.png", target=target,
+                         direction=(-0.6, 0.9, -0.3), span=0.34)
+        if name == "pistol":
+            hand_preview("hand_grip_pistol_inner.png", target=(0.01, 0.025, -0.08),
+                         direction=(-0.6, 1, -0.5), span=0.30)
+            socket = hand_object(right, "socket_gun")
+            right.matrix_world = (Matrix.Translation(HAND_BASIS @ Vector((0.22, -0.24, -0.45)))
+                                  @ socket.matrix_world.to_quaternion().inverted().to_matrix().to_4x4())
+            bpy.context.view_layer.update()
+            hand_preview("hand_fpp_view.png", fpp=True)
+
+
 def main() -> None:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     only = None
@@ -1012,10 +1226,16 @@ def main() -> None:
         root = fn()
         export_glb(root, os.path.join(OUT_DIR, f"{name}.glb"))
         if preview:
-            render_preview(root, os.path.join(PREVIEW_DIR, f"{name}.png"))
+            if name.startswith("player_arm_"):
+                hand_pose(root, "relaxed")
+                hand_preview(f"{name}.png", target=(0, 0, 0.065), span=0.61)
+            else:
+                render_preview(root, os.path.join(PREVIEW_DIR, f"{name}.png"))
         tris = sum(len(p.vertices) - 2 for o in [root, *root.children_recursive] if o.type == "MESH"
                    for p in o.data.polygons)
         print(f"[neoryder] built {name} tris={tris}")
+    if preview and (only is None or "hand_previews" in only):
+        render_hand_previews()
 
 
 if __name__ == "__main__":
