@@ -42,12 +42,28 @@ export const sectorLimitsSchema = z.object({
   maxElitesPerPath: positiveInt,
 });
 
+export const threatPacingSchema = z.object({
+  firstBreakS: nonnegative.default(2),
+  breakS: nonnegative.default(4),
+  spawnIntervalS: positive.default(0.8),
+});
+
 export const sectorThreatSchema = z.object({
   base: z.partialRecord(nodeTypeSchema, nonnegative),
   perLayer: z.partialRecord(nodeTypeSchema, nonnegative),
   waveCount: z.partialRecord(nodeTypeSchema, intRangeSchema),
   pools: z.partialRecord(nodeTypeSchema, z.record(z.string().min(1), positive)),
   unlockLayer: z.record(z.string().min(1), positiveInt).optional(),
+  waveWeights: z
+    .array(positive)
+    .min(1)
+    .refine(
+      (weights) =>
+        weights.every((weight, i) => i === 0 || weight >= weights[i - 1]!),
+      'Wagi fal muszą być niemalejące.',
+    )
+    .default([1, 1.3, 1.6]),
+  pacing: z.partialRecord(nodeTypeSchema, threatPacingSchema).default({}),
 });
 
 export const sectorRewardWeightsSchema = z.partialRecord(
