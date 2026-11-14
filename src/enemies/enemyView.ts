@@ -213,6 +213,7 @@ export class EnemyView {
         if (!source || this.disposed) return;
         this.root.remove(this.model);
         this.model = new Group();
+        this.model.scale.setScalar(enemy.definition.boss?.modelScale ?? 1);
         this.model.add(source.clone(true));
         this.root.add(this.model);
         this.useModelShield();

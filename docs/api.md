@@ -875,6 +875,20 @@ Sekcja threat dodaje opcjonalne `waveWeights` (domyślnie [1, 1.3, 1.6]) oraz
 `pacing[type]` (domyślnie firstBreakS=2, breakS=4, spawnIntervalS=0.8).
 Szczegóły: `docs/systems/threat.md`.
 
+### Boss (F3-16) — `src/enemies/boss.ts`
+
+`Boss` implementuje `Enemy`; `EnemyManager.spawn('securityChief', position)` korzysta
+z istniejących `EnemyDependencies` (wymagane `projectiles`). `boss_spawned` emituje
+po rejestracji zdrowia; `boss_phase` tylko przy zmianie fazy, numerowanej od 1.
+`phase` zwraca numer fazy; `setPhase(n): boolean` to debug: ustawia fazę i jej HP,
+przerywa atak, uruchamia `tuning.enemies.phaseShiftS` i emituje `health_changed`.
+`enemySchema.boss` zawiera nazwę, skalę modelu, wylot pocisków i fazy
+`{ hpThreshold, patterns }`; progi to malejące ułamki maksymalnego HP, pierwszy 1.
+Wzorce `slam` i `fan` mają własne czasy zapowiedzi, regeneracji i odnowienia.
+`slam` emituje `enemy_telegraph.kind: 'slam'`, `fan` — `'aim'`; faza przerywa zapowiedź.
+Obrażenia przechodzą przez `DamageSystem`, limit progu działa po modyfikatorach.
+Scena `boss-test` oraz `ai-test` obsługują komendę `boss phase <n>`.
+
 Architektura i decyzje: `docs/adr/0005-petla-runu-f3.md`. Zadania: `docs/issues/F3/README.md`.
 
 ### Wspólne typy runu — `src/core/runTypes.ts`

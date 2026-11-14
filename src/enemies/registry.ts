@@ -3,6 +3,7 @@ import type { Vec3 } from '../core/math';
 import { Drone } from './drone';
 import { Gunner } from './gunner';
 import { Assaulter } from './assaulter';
+import { Boss } from './boss';
 import { enemySchema } from './enemySchema';
 import type { EnemyDefinition } from './enemySchema';
 import type { Enemy, EnemyDependencies } from './types';
@@ -16,6 +17,14 @@ export type EnemyFactory = (
 export const enemyDefinitions = new Map<string, EnemyDefinition>();
 export const enemyRegistry = new Map<string, EnemyFactory>();
 const factories = new Map<string, EnemyFactory>([
+  [
+    'boss',
+    (ctx, deps, id, position) => {
+      const definition = enemyDefinitions.get(id);
+      if (!definition) throw new Error(`Nieznany wróg: ${id}`);
+      return new Boss(ctx, deps, definition, position);
+    },
+  ],
   [
     'gunner',
     (ctx, deps, id, position) => {

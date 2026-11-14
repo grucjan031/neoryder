@@ -1,0 +1,130 @@
+{
+  "id": "securityChief",
+  "kind": "boss",
+  "model": "enemy_executor",
+  "grabbable": false,
+  "maxHealth": 900,
+  "moveSpeed": 3.8,
+  "turnRateDegS": 360,
+  "attackRange": 5,
+  "telegraphS": 0.7,
+  "swingActiveS": 0.12,
+  "recoveryS": 0.6,
+  "cooldownS": 0.9,
+  "damage": 28,
+  "knockbackResist": 0.6,
+  "stunOnHeavyS": 0.6,
+  "repathJitter": 0.15,
+  "body": {
+    "height": 2.7,
+    "halfHeight": 0.525,
+    "radius": 0.45,
+    "centerY": 1.575,
+    "headY": 2.475,
+    "headRadius": 0.33,
+    "headMultiplier": 1.5,
+    "controllerOffset": 0.02,
+    "knockbackDamping": 8,
+    "attackHalfWidth": 0.825,
+    "attackHalfHeight": 0.975
+  },
+  "animation": {
+    "strideM": 1.8,
+    "walkAngle": 0.5,
+    "telegraphAngle": -2.4,
+    "swingAngle": 1.2,
+    "elbowAngle": -1,
+    "stunAngle": 0.3,
+    "pulseHz": 6,
+    "pulseScale": 0.4,
+    "bladeSizeM": {
+      "x": 0.07,
+      "y": 0.07,
+      "z": 1.2
+    }
+  },
+  "attackTags": ["#melee", "#heavy"],
+  "boss": {
+    "muzzle": {
+      "y": 1.5,
+      "z": 0.8,
+      "x": 0
+    },
+    "name": "Dyrektor Ochrony Kurogane Arms",
+    "phases": [
+      {
+        "patterns": [
+          {
+            "telegraphS": 0.9,
+            "cooldownS": 0.8,
+            "recoveryS": 0.7,
+            "damage": 30,
+            "kind": "slam",
+            "radiusM": 5.5
+          },
+          {
+            "cooldownS": 0.9,
+            "telegraphS": 0.8,
+            "kind": "fan",
+            "projectileSpeed": 16,
+            "recoveryS": 0.5,
+            "projectileLifetimeS": 4,
+            "projectileCount": 5,
+            "damage": 12,
+            "spreadDeg": 60
+          }
+        ],
+        "hpThreshold": 1
+      },
+      {
+        "patterns": [
+          {
+            "telegraphS": 0.9,
+            "cooldownS": 0.8,
+            "recoveryS": 0.7,
+            "damage": 30,
+            "kind": "slam",
+            "radiusM": 5.5
+          },
+          {
+            "cooldownS": 0.9,
+            "telegraphS": 0.8,
+            "kind": "fan",
+            "projectileSpeed": 16,
+            "recoveryS": 0.5,
+            "damage": 12,
+            "projectileLifetimeS": 4,
+            "projectileCount": 7,
+            "spreadDeg": 75
+          }
+        ],
+        "hpThreshold": 0.65
+      },
+      {
+        "patterns": [
+          {
+            "telegraphS": 0.75,
+            "cooldownS": 0.8,
+            "recoveryS": 0.7,
+            "damage": 36,
+            "kind": "slam",
+            "radiusM": 5.5
+          },
+          {
+            "cooldownS": 0.9,
+            "telegraphS": 0.8,
+            "kind": "fan",
+            "projectileSpeed": 16,
+            "recoveryS": 0.5,
+            "projectileLifetimeS": 4,
+            "projectileCount": 9,
+            "damage": 12,
+            "spreadDeg": 90
+          }
+        ],
+        "hpThreshold": 0.3
+      }
+    ],
+    "modelScale": 1.5
+  }
+}
