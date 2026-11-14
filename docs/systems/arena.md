@@ -33,6 +33,6 @@ Scena `?scene=arena` (pierwsza pozycja w menu) — pierwsza pełna pętla walki 
 
 ## Otwarte (do playtestu / kolejnych zadań)
 
-- Test wydajności „30 wrogów bez spadku FPS” — nie zmierzony automatycznie (CI renderuje programowo); do sprawdzenia ręcznie na `wave 12` + `spawn assaulter 20`.
+- Wydajność **symulacji** zmierzona testem `tests/unit/arenaPerf.test.ts`: 30 wrogów (20 Szturmowców + 10 Strzelców) ≈ 1 ms na krok, rozpad 30 wrogów naraz (440 odłamków) ≈ 1 ms na krok (lokalnie; budżet testu 6 ms przy 16,7 ms klatki). **Render** (GPU, obrys = 3 przebiegi) do sprawdzenia ręcznie na `wave 12` + `spawn assaulter 20`.
 - Blaster nie ma jeszcze modelu w widoku FPP (strzela z oczu, ciepło widać w HUD).
 - Dźwięki (#14) — brak.
