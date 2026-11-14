@@ -9,6 +9,7 @@ import {
 } from 'three';
 import type { Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { applyStyle, getMaterial } from './materials';
 import { handNodes, handPoses } from './handPoses';
 import type { HandPose, HandSocket } from './handPoses';
@@ -190,7 +191,7 @@ export class HandRig {
     if (!this.fallback) return;
     const model = await modelFor(this.side);
     if (model && !this.disposed && generation === this.generation)
-      this.install(model.clone(true), false);
+      this.install(cloneSkinned(model), false);
   }
 
   private releaseModel(): void {
@@ -212,6 +213,10 @@ export class HandRig {
     this.fallback = fallback;
     this.joints.clear();
     this.root.add(model);
+    model.traverse((node) => {
+      // Granice skinu liczone z pozy spoczynkowej; po zgięciu palców bywają zbyt małe.
+      if (node instanceof Mesh) node.frustumCulled = false;
+    });
     for (const name of handNodes) {
       const node = model.getObjectByName(name)!;
       this.joints.set(name, { node, rest: node.quaternion.clone() });

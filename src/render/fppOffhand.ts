@@ -5,9 +5,9 @@ import { tuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { HandRig } from './handRig';
 
-// Układ kamery, metry i radiany YXZ: spoczynek nisko z lewej; gest wnętrzem dłoni do przodu.
+// Układ kamery, metry i radiany YXZ: spoczynek poza dolną krawędzią kadru; gest wnętrzem dłoni do przodu.
 const REST = {
-  pos: new Vector3(-0.31, -0.42, -0.38),
+  pos: new Vector3(-0.31, -0.8, -0.38),
   rot: new Euler(0.15, -0.18, -0.2, 'YXZ'),
 };
 const CAST = {
@@ -57,7 +57,7 @@ export class FppOffhand {
     const h = this.t.hands;
     const active = this.elapsed < h.castS;
     this.root.visible =
-      this.enabled && (shown === 'blade' || support !== null || active);
+      this.enabled && ((shown === 'gun' && support !== null) || active);
     const t = active ? this.elapsed / Math.max(h.castS, Number.EPSILON) : 1;
     const peak = Math.max(
       Number.EPSILON,

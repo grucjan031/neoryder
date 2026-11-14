@@ -51,7 +51,7 @@ describe('FppViewModel', () => {
       const [blade, gun, offhand] = view.root.children;
       expect(blade?.visible).toBe(shown === 'blade');
       expect(gun?.visible).toBe(shown === 'gun');
-      expect(offhand?.visible).toBe(shown === 'blade');
+      expect(offhand?.visible).toBe(false);
     },
   );
 
@@ -75,6 +75,13 @@ describe('FppViewModel', () => {
     const bus = new EventBus();
     const view = keep(new FppViewModel(bus, 1));
     await view.load(false);
+    view.place(new Matrix4(), 0, {
+      blade: idle,
+      held: 'blade',
+      horizontalSpeed: 0,
+    });
+    expect(view.root.children[2]?.visible).toBe(false);
+    bus.emit('power_used', { user: 1, power: 'push' });
     view.place(new Matrix4(), 0, {
       blade: idle,
       held: 'blade',

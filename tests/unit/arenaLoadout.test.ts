@@ -149,7 +149,7 @@ it('renders only the held model and switches visibility halfway through a swap',
     visible(bladeRoot?.getObjectByName('hand_R')),
     visible(gunRoot?.getObjectByName('hand_R')),
   ]).toEqual([true, false]);
-  expect(visible(leftRoot)).toBe(true);
+  expect(visible(leftRoot)).toBe(false); // Wolna lewa ręka chowa się poza kadr.
 });
 
 afterEach(() => {

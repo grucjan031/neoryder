@@ -246,7 +246,7 @@ describe('FPP items and offhand', () => {
     const bus = new EventBus();
     const left = keep(new FppOffhand(bus, 1));
     left.place(identity, 0, 'blade', false);
-    expect(left.root.visible).toBe(true);
+    expect(left.root.visible).toBe(false);
     const rest = left.root.matrix.clone();
     bus.emit('power_used', { user: 2, power: 'push' });
     left.place(

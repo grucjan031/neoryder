@@ -85,7 +85,7 @@ Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle
 
 ### Gest mocy i wolna lewa dłoń
 
-`FppOffhand` pokazuje `relaxed` nisko z lewej przy pojedynczym ostrzu.
+`FppOffhand` przy pojedynczym ostrzu trzyma lewą dłoń schowaną poniżej dolnej krawędzi kadru (niewidoczną); wjeżdża tylko na czas gestu mocy.
 `power_used` właściciela wyzwala gest `open`: szybkie wysunięcie dłoni,
 następnie wolniejszy powrót w czasie `castS` czasu klatki. Przy broni lewa
 dłoń płynnie opuszcza `support` i wraca do jego aktualnej transformacji.
