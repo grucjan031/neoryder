@@ -1,0 +1,12 @@
+{
+  "id": "push",
+  "cost": 25,
+  "cooldownS": 0.6,
+  "coneAngleDeg": 70,
+  "range": 7,
+  "knockback": 14,
+  "damage": 10,
+  "wallSlamDamage": 30,
+  "wallSlamRange": 3.5,
+  "tags": ["#power"]
+}

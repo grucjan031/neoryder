@@ -95,10 +95,24 @@ export const tuning = {
     heavyRecoveryS: 0.38,
     guardBreakLockS: 0.8,
   },
+  /** Rezonans i energia (#11). Dane mocy w src/data/powers/*.json. */
+  powers: {
+    energyRegenDelayS: 2,
+    meleeKillEnergy: 15,
+    parryEnergy: 10,
+    energyEventIntervalS: 0.1,
+    pushHitstopMs: 40,
+    pushShake: 0.35,
+  },
   physics: { gravity: -20, maxDynamicBodies: 300 },
   damage: { playerInvulnMs: 250, respawnS: 1.5 },
   weapons: { overheatLockS: 1.5, coolDelayS: 0.25, maxProjectiles: 256 },
-  enemies: { stunKnockback: 6, corpseS: 0.5, separationRadius: 1, wallProbe: 1.5 },
+  enemies: {
+    stunKnockback: 6,
+    corpseS: 0.5,
+    separationRadius: 1,
+    wallProbe: 1.5,
+  },
   sandbox: { cubeSpawnHeight: 6 },
 };
 export type Tuning = typeof tuning;

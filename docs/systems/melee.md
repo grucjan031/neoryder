@@ -41,7 +41,7 @@ Właściciel: Walka wręcz. Kod: `src/combat/melee/` (`plasmaBlade.ts`, `bladeSc
 
 Gracz z kamerą FPP, trzy manekiny (100 HP, odradzanie po `tuning.damage.respawnS`), ostrze w widoku FPP z proceduralną animacją (różne kierunki cięć dla etapów combo, odchylenie przy ładowaniu, poza bloku). W trybie debug łuk cięcia rysowany jest jako siatka cyan. Komendy: `enemyhit <dmg> [heavy]` (manekin uderza gracza — test bloku), `energy [n]`. Query: `dummyHp`, `bladeState`, `blocking`, `energy`, `playerHp`.
 
-Energia jest tymczasowo tworzona w scenie (regeneracja 20/s po 2 s); docelowo pasek energii należy do zadania #11.
+Energia pochodzi z `PlayerEnergy` (#11, patrz `docs/systems/powers.md`) — jedna pula dla bloku i mocy. W scenie działa też Pchnięcie (F), a manekiny ślizgają się po odrzucie.
 
 ## Testy
 

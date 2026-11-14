@@ -17,7 +17,6 @@ import type { EntityId } from '../core/events';
 import { EntityRegistry } from '../core/entities';
 import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
-import { ResourcePool } from '../core/resource';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
 import {
@@ -27,6 +26,8 @@ import {
   queryHurtboxes,
 } from '../combat/damage';
 import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
+import { PlayerEnergy } from '../combat/powers/energy';
+import { pushDefinition, ResonancePush } from '../combat/powers/push';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
@@ -43,7 +44,11 @@ interface Dummy {
   health: Health;
   colliders: Collider[];
   model: Object3D;
+  /** Pozycja startowa (respawn). */
   position: Vec3;
+  /** Bieżąca pozycja stóp i prędkość odrzutu (m/s). */
+  pos: Vec3;
+  vel: Vec3;
   respawnS: number | null;
 }
 
@@ -100,7 +105,9 @@ const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
 
 /** Scena ostrza plazmowego (#07): combo, ciężki atak, blok, manekiny z odradzaniem. */
 export class MeleeTest implements Scene {
-  readonly id = 'melee-test';
+  readonly id: string = 'melee-test';
+  /** Ściana za manekinami (wariant push-test). */
+  protected withWall = false;
   private ctx!: GameContext;
   private three!: ThreeScene;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
@@ -112,8 +119,13 @@ export class MeleeTest implements Scene {
   private previous!: PlayerState;
   private fpsCamera!: FpsCamera;
   private blade!: PlasmaBlade;
-  private energy!: ResourcePool;
-  private readonly playerStats = new Stats({ maxHealth: 100, maxEnergy: 100 });
+  private energy!: PlayerEnergy;
+  private push!: ResonancePush;
+  private readonly playerStats = new Stats({
+    maxHealth: 100,
+    maxEnergy: 100,
+    energyRegen: 25,
+  });
   private readonly playerHealth = new Health(() =>
     this.playerStats.get('maxHealth'),
   );
@@ -162,6 +174,16 @@ export class MeleeTest implements Scene {
         .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
     );
 
+    if (this.withWall) {
+      const wall = new Mesh(new BoxGeometry(12, 3, 0.6), getMaterial('world'));
+      wall.position.set(0, 1.5, -7.3);
+      this.root.add(wall);
+      this.world.createCollider(
+        this.rapier.ColliderDesc.cuboid(6, 1.5, 0.3)
+          .setTranslation(0, 1.5, -7.3)
+          .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
+      );
+    }
     await this.loadAssets();
     for (const position of DUMMY_POSITIONS) this.spawnDummy(position);
 
@@ -185,12 +207,12 @@ export class MeleeTest implements Scene {
     this.entities.bindCollider(playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.fpsCamera = new FpsCamera(ctx.tuning, playerId, ctx.bus);
-    // Energia tymczasowo w scenie — właścicielem paska energii jest zadanie #11 (Moce).
-    this.energy = new ResourcePool({
-      max: () => this.playerStats.get('maxEnergy'),
-      regenPerS: () => 20,
-      regenDelayS: () => 2,
-    });
+    this.energy = new PlayerEnergy(
+      playerId,
+      this.playerStats,
+      ctx.bus,
+      ctx.tuning,
+    );
     this.blade = new PlasmaBlade(
       plasmaBladeDefinition,
       {
@@ -198,9 +220,28 @@ export class MeleeTest implements Scene {
         team: 'player',
         damage: this.damage,
         stats: this.playerStats,
-        energy: this.energy,
+        energy: this.energy.pool,
         queryArc: (reach, width) => this.queryArc(reach, width),
         aim: () => this.aim(),
+      },
+      ctx.bus,
+      ctx.tuning,
+    );
+    this.push = new ResonancePush(
+      pushDefinition,
+      {
+        owner: playerId,
+        damage: this.damage,
+        energy: this.energy,
+        aim: () => this.aim(),
+        targets: () =>
+          this.dummies
+            .filter((d) => d.respawnS === null)
+            .map((d) => ({
+              id: d.id,
+              position: { x: d.pos.x, y: 1.1, z: d.pos.z },
+            })),
+        castWall: (origin, dir, max) => this.castWall(origin, dir, max),
       },
       ctx.bus,
       ctx.tuning,
@@ -211,6 +252,17 @@ export class MeleeTest implements Scene {
     this.world.step();
     this.registerCommands();
     this.off.push(
+      // Odrzut manekinów: impuls z damage_dealt.knockback (masa 1) w kierunku ciosu.
+      ctx.bus.on('damage_dealt', ({ target, dir, knockback }) => {
+        const dummy = this.dummies.find((d) => d.id === target);
+        if (!dummy || !dir || knockback <= 0) return;
+        const flat = Math.hypot(dir.x, dir.z) || 1;
+        dummy.vel = {
+          x: (dir.x / flat) * knockback,
+          y: 0,
+          z: (dir.z / flat) * knockback,
+        };
+      }),
       ctx.bus.on('enemy_killed', ({ id }) => {
         const dummy = this.dummies.find((d) => d.id === id);
         if (dummy) {
@@ -290,6 +342,8 @@ export class MeleeTest implements Scene {
       colliders,
       model: holder,
       position,
+      pos: { ...position },
+      vel: { x: 0, y: 0, z: 0 },
       respawnS: null,
     });
   }
@@ -352,6 +406,50 @@ export class MeleeTest implements Scene {
   }
 
   private arcHideS = 0;
+
+  /** Odległość do geometrii świata wzdłuż promienia (ściany), albo null. */
+  private castWall(origin: Vec3, dir: Vec3, max: number): number | null {
+    const hit = this.world.castRay(
+      new this.rapier.Ray(origin, dir),
+      max,
+      true,
+      undefined,
+      interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
+    );
+    return hit ? hit.timeOfImpact : null;
+  }
+
+  /** Ślizg po odrzucie z tarciem; ściana zatrzymuje manekina. */
+  private stepKnockback(d: Dummy, dt: number): void {
+    const speed = Math.hypot(d.vel.x, d.vel.z);
+    if (speed < 0.05) return;
+    const dir = { x: d.vel.x / speed, y: 0, z: d.vel.z / speed };
+    const travel = speed * dt;
+    const wall = this.castWall(
+      { x: d.pos.x, y: 1.1, z: d.pos.z },
+      dir,
+      travel + 0.35,
+    );
+    const step = wall === null ? travel : Math.max(0, wall - 0.35);
+    this.moveDummy(d, {
+      x: d.pos.x + dir.x * step,
+      y: 0,
+      z: d.pos.z + dir.z * step,
+    });
+    if (wall !== null) d.vel = { x: 0, y: 0, z: 0 };
+    else {
+      const damping = Math.exp(-6 * dt);
+      d.vel = { x: d.vel.x * damping, y: 0, z: d.vel.z * damping };
+    }
+  }
+
+  private moveDummy(d: Dummy, pos: Vec3): void {
+    d.pos = pos;
+    const [torso, head] = d.colliders;
+    torso?.setTranslation({ x: pos.x, y: 1.05, z: pos.z });
+    head?.setTranslation({ x: pos.x, y: 1.65, z: pos.z });
+    d.model.position.set(pos.x, 0, pos.z);
+  }
   private lights?: ReturnType<typeof createStyleLights>;
 
   private registerCommands(): void {
@@ -390,6 +488,8 @@ export class MeleeTest implements Scene {
       d.health.reset();
       d.model.visible = true;
       d.respawnS = null;
+      this.moveDummy(d, { ...d.position });
+      d.vel = { x: 0, y: 0, z: 0 };
     }
     this.playerHealth.reset();
     this.energy.set(this.energy.max);
@@ -399,16 +499,20 @@ export class MeleeTest implements Scene {
     this.previous = this.player.getState();
     this.player.step(dt, input);
     this.blade.step(dt, input);
+    this.push.step(dt, input);
     if (dt <= 0) return;
     this.energy.step(dt);
     this.damage.step(dt);
     for (const d of this.dummies) {
+      this.stepKnockback(d, dt);
       if (d.respawnS === null) continue;
       d.respawnS -= dt;
       if (d.respawnS <= 0) {
         d.health.reset();
         d.model.visible = true;
         d.respawnS = null;
+        this.moveDummy(d, { ...d.position });
+        d.vel = { x: 0, y: 0, z: 0 };
       }
     }
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
@@ -476,6 +580,7 @@ export class MeleeTest implements Scene {
     if (name === 'bladeState') return this.blade.view().state;
     if (name === 'blocking') return this.blade.blocking;
     if (name === 'energy') return this.energy.current;
+    if (name === 'dummyPos') return this.dummies.map((d) => ({ ...d.pos }));
     if (name === 'playerHp') return this.playerHealth.current;
     return undefined;
   }
@@ -483,6 +588,7 @@ export class MeleeTest implements Scene {
   dispose(): void {
     for (const off of this.off.splice(0)) off();
     this.blade.dispose();
+    this.energy.dispose();
     this.fpsCamera.dispose();
     this.player.dispose();
     this.world.free();
@@ -493,4 +599,10 @@ export class MeleeTest implements Scene {
     this.root.clear();
     this.three.background = null;
   }
+}
+
+/** Wariant ze ścianą za manekinami do testu Pchnięcia i uderzeń w ścianę (#11). */
+export class PushTest extends MeleeTest {
+  override readonly id = 'push-test';
+  protected override withWall = true;
 }
