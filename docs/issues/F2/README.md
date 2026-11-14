@@ -37,7 +37,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–08, 10, 12–17. Skupien
 | 15  | Ekwipunek, przełączanie broni, HUD mocy i broni                      | UI/UX + Architekt | 03, 05     | M     | gotowe |
 | 16  | Synergie na tagach i 3 hybrydy                                       | Progresja         | 02, 03, 05 | M     | gotowe |
 | 17  | Ekran wyboru buildu i fale F2 na arenie                              | Architekt + UI/UX | 13, 14, 15 | M     | gotowe |
-| 18  | Symulator TTK (`npm run balance`) i `docs/balance.md`                | QA                | 04, 09, 14 | M     | —      |
+| 18  | Symulator TTK (`npm run balance`) i `docs/balance.md`                | QA                | 04, 09, 14 | M     | symulator gotowy; bramka niezaliczona |
 
 Graf jest acykliczny (zależności tylko od niższych numerów). Ścieżka krytyczna: 01 → 05 → 15 → 17 oraz 01 → 12 → 14 → 17. Po 01 równolegle mogą ruszyć 02, 03, 05, 10 i 12 (rozłączne foldery).
 
@@ -136,3 +136,13 @@ Ekran przed falą 1: trzy gotowe buildy (Ostrze, Moc, Strzelec) i hybrydy, `?loa
 
 `npm run balance` (node, bez renderu): TTK każdej broni i mocy wobec każdego wroga z danych, z uwzględnieniem ciepła, odnowień, mnożników i statusów. Zapis `docs/balance.md`. Test: żadna ścieżka buildu nie odstaje o więcej niż 2× od mediany.
 **Gotowe:** raport wygenerowany, test balansu w Vitest.
+
+**Stan F2-18 (2026-11-14):** symulator i generowany raport gotowe. Rzeczywiste
+klasy walki krokowane w Node przez istniejący Vite, bez nowych zależności.
+Testy regresji symulatora, deterministyczności i aktualności raportu dodane.
+Bramka nie przechodzi dla 6/6 wrogów zarówno w otwartej przestrzeni, jak przy
+ścianie; test bramki jawnie `todo`. Danych balansu nie zmieniono. Do decyzji
+koordynatora: korekty danych, wariant otoczenia oraz kontrakt pomijania surowych
+mocy nieznanego rodzaju (obecny loader odrzuca je przed startem symulatora).
+Szczegóły: `docs/balance.md`, `docs/systems/balance.md`. Bramka fazy pozostaje
+otwarta; wymagane review Architekta i ocena człowieka.

@@ -15,7 +15,8 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "build": "vite build",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test",
+    "balance": "node src/balance/run.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.21.0",
