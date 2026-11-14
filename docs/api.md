@@ -1231,3 +1231,12 @@ jest wywoływane raz na klatkę; `held` przyjmuje `HeldItemView` albo stałe
 `blade`/`gun` dla scen testowych. `blade` to `BladeView` wymagany przy ostrzu.
 Getter `beamOrigin` zwraca pozycję świata root broni, jak dotychczas w Arenie.
 Moduł zachowuje kolejność: ruch, ostrze, widoczność, broń, wolna dłoń.
+
+### Nagrody i ekonomia (F3-10/11)
+
+`SynergySystem.setImplantTriggers(ImplantSystem.triggers())` aktualizuje wyzwalacze
+wykonywane wspólnym mechanizmem efektów i odnowień. `setTags` zachowuje krotność.
+`offerReward(state, type, rng, sector, definitions, bus?)` zwraca id ofert;
+`stockShop` zwraca implanty z cenami. `RunEconomy` łączy te moduły z RunManager:
+`offerReward`, `stockShop`, `chooseReward`, `buy`, `rest`, `upgradeOptions`, `maxHealth`.
+Oferty są przechowywane do opuszczenia węzła; zakup i odpoczynek weryfikują ekran.

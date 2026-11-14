@@ -382,6 +382,8 @@ export class RoomScene implements Scene {
       ...this.implantSystem.tags(),
     ]);
 
+    this.synergies.setImplantTriggers(this.implantSystem.triggers());
+
     this.director = new WaveDirector(
       this.waves,
       {
@@ -478,6 +480,7 @@ export class RoomScene implements Scene {
             ...this.loadout.tags,
             ...this.implantSystem.tags(),
           ]);
+          this.synergies.setImplantTriggers(this.implantSystem.triggers());
           this.ctx.bus.emit('health_changed', {
             id: this.player.id,
             current: this.health.current,

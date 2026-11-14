@@ -123,5 +123,39 @@
     "shop": ["shopRoom"],
     "rest": ["restRoom"],
     "boss": ["bossRoom"]
+  },
+  "rewardWeights": {
+    "combat": {
+      "common": 70,
+      "rare": 25,
+      "epic": 5,
+      "legendary": 0
+    },
+    "elite": {
+      "common": 20,
+      "rare": 50,
+      "epic": 25,
+      "legendary": 5
+    },
+    "shop": {
+      "common": 45,
+      "rare": 35,
+      "epic": 15,
+      "legendary": 5
+    }
+  },
+  "economy": {
+    "creditsPerThreat": 5,
+    "eliteBonusCredits": 30,
+    "shopPrices": {
+      "common": 40,
+      "rare": 75,
+      "epic": 120,
+      "legendary": 180
+    },
+    "shopHealPrice": 35,
+    "shopHealFraction": 0.3,
+    "puzzleCredits": 60,
+    "restHealFraction": 0.4
   }
 }

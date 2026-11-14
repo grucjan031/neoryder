@@ -27,5 +27,7 @@
   "credits": "Kredyty",
   "layer": "Warstwa",
   "kills": "Zabójstwa",
-  "time": "Czas"
+  "time": "Czas",
+  "heal": "Leczenie",
+  "upgrade": "Ulepszenie"
 }

@@ -1,0 +1,18 @@
+{
+  "id": "bladeMastery",
+  "name": "Mistrzostwo ostrza",
+  "requires": [],
+  "requiresCount": {
+    "#melee": 3
+  },
+  "when": {
+    "event": "enemy_killed"
+  },
+  "effects": [
+    {
+      "kind": "add_energy",
+      "amount": 8
+    }
+  ],
+  "cooldownS": 2
+}
