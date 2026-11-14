@@ -1,3 +1,4 @@
+import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import type { EntityId } from '../core/events';
@@ -189,34 +190,57 @@ export class RunScene implements Scene {
         summary: this.manager.summary,
         busy: this.manager.screen === 'room' && !this.roomReady,
         error: this.runError,
-        offers:
-          this.manager.screen === 'reward'
-            ? this.economy
-                .offerReward()
-                .map((id) => ({
-                  id,
-                  label: (
-                    this.options.implantDefinitions ?? implantDefinitions
-                  ).get(id)!.name,
-                }))
-            : this.manager.screen === 'shop'
-              ? this.economy
-                  .stockShop()
-                  .map(({ id, price }) => ({
-                    id,
-                    price,
-                    label: (
-                      this.options.implantDefinitions ?? implantDefinitions
-                    ).get(id)!.name,
-                  }))
-              : this.economy
-                  .upgradeOptions()
-                  .map((id) => ({
-                    id,
-                    label: (
-                      this.options.implantDefinitions ?? implantDefinitions
-                    ).get(id)!.name,
-                  })),
+        offers: (() => {
+          const definitions =
+            this.options.implantDefinitions ?? implantDefinitions;
+          const tags = [
+            ...(loadoutDefinitions.get(this.manager.state.loadoutId)?.tags ??
+              []),
+            ...this.manager.state.implants.flatMap(
+              (id) => definitions.get(id)?.tags ?? [],
+            ),
+          ];
+          const active = (
+            all: string[],
+            def: (typeof synergyDefinitions)[number],
+          ) =>
+            def.requires.every((tag) => all.includes(tag)) &&
+            Object.entries(def.requiresCount ?? {}).every(
+              ([tag, count]) =>
+                all.filter((entry) => entry === tag).length >= count,
+            );
+          const describe = (id: string, price?: number) => {
+            const implant = definitions.get(id)!;
+            const target = implant.upgradesTo
+              ? definitions.get(implant.upgradesTo)
+              : undefined;
+            return {
+              id,
+              label: implant.name,
+              price,
+              description: implant.description,
+              rarity: implant.rarity,
+              tags: implant.tags,
+              nextRarity: target?.rarity,
+              synergies: synergyDefinitions
+                .filter(
+                  (def) =>
+                    !active(tags, def) &&
+                    active([...tags, ...implant.tags], def),
+                )
+                .map((def) => def.name),
+            };
+          };
+          if (this.manager.screen === 'reward')
+            return this.economy.offerReward().map((id) => describe(id));
+          if (this.manager.screen === 'shop')
+            return this.economy
+              .stockShop()
+              .map(({ id, price }) => describe(id, price));
+          if (this.manager.screen === 'rest')
+            return this.economy.upgradeOptions().map((id) => describe(id));
+          return [];
+        })(),
         healPrice: this.sector.economy?.shopHealPrice,
         fallbackCredits: this.sector.economy?.puzzleCredits,
       },
@@ -248,6 +272,18 @@ export class RunScene implements Scene {
             this.disposeRoom();
             this.showMap();
           }
+        },
+        newRun: () => {
+          const seed = Array.from(
+            crypto.getRandomValues(new Uint32Array(4)),
+            (value) => value.toString(16),
+          ).join('-');
+          const params = new URLSearchParams({
+            scene: 'run',
+            seed,
+            loadout: this.manager.state.loadoutId,
+          });
+          location.assign(`/?${params}`);
         },
         menu: () => {
           if (typeof location !== 'undefined') location.assign('/');

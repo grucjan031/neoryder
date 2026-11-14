@@ -59,5 +59,26 @@
     "saveError": "Nie można odczytać zapisu.",
     "back": "Wróć",
     "debug": "Sceny debug"
+  },
+  "rooms": "Pokoje",
+  "implants": "Implanty",
+  "damage": "Obra?enia",
+  "seed": "Seed",
+  "newRun": "Nowy run",
+  "noImplants": "Brak implant?w",
+  "synergies": "Nowe synergie",
+  "nextRarity": "Nast?pna rzadko??",
+  "leave": "Wyjd?",
+  "rarities": {
+    "common": "Pospolity",
+    "rare": "Rzadki",
+    "epic": "Epicki",
+    "legendary": "Legendarny"
+  },
+  "paths": {
+    "melee": "Ostrze",
+    "power": "Moc",
+    "gun": "Strzelec",
+    "other": "Inne"
   }
 }

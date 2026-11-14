@@ -152,3 +152,102 @@ it('shop disables unaffordable items and rest forwards the upgrade id', () => {
   window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit2' }));
   expect(rest).toHaveBeenCalledExactlyOnceWith('upgrade', 'old');
 });
+
+it('shows implant details, rarity and new synergies on reward cards', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  screens.show(
+    {
+      ...view,
+      screen: 'reward',
+      offers: [
+        {
+          id: 'x',
+          label: 'Implant',
+          description: 'Opis',
+          rarity: 'rare',
+          tags: ['#power'],
+          synergies: ['Reakcja'],
+        },
+      ],
+    },
+    { selectNode() {}, next() {}, menu() {} },
+  );
+  const button =
+    document.querySelector<HTMLButtonElement>('.run-screen button')!;
+  expect(button.dataset.rarity).toBe('rare');
+  expect(button.textContent).toContain('Opis');
+  expect(button.textContent).toContain('#power');
+  expect(button.textContent).toContain('Reakcja');
+});
+
+it('shows rest upgrade preview and omits upgrades when none are available', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const rest = vi.fn();
+  const actions = { selectNode() {}, next() {}, menu() {}, rest };
+  screens.show({ ...view, screen: 'rest', offers: [] }, actions);
+  expect(document.querySelectorAll('.run-screen button')).toHaveLength(1);
+  screens.show(
+    {
+      ...view,
+      screen: 'rest',
+      offers: [
+        { id: 'old', label: 'Old', rarity: 'common', nextRarity: 'rare' },
+      ],
+    },
+    actions,
+  );
+  expect(
+    document.querySelectorAll('.run-screen button')[1]!.textContent,
+  ).toContain('Rzadki');
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit2' }));
+  expect(rest).toHaveBeenCalledWith('upgrade', 'old');
+});
+
+it('shows all summary data and dispatches navigation actions', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const newRun = vi.fn();
+  const menu = vi.fn();
+  screens.show(
+    {
+      ...view,
+      screen: 'summary',
+      summary: {
+        outcome: 'death',
+        seed: 'abc',
+        loadoutId: 'classic',
+        elapsedS: 125,
+        kills: 7,
+        roomsCleared: 3,
+        layerReached: 4,
+        implants: ['unknown'],
+        damage: { melee: 10, power: 20, gun: 30, other: 5 },
+      },
+    },
+    { selectNode() {}, next() {}, menu, newRun },
+  );
+  const content = document.querySelector('.run-screen')!.textContent!;
+  for (const value of [
+    'Porażka',
+    '02:05',
+    '7',
+    '3',
+    '4',
+    'abc',
+    'unknown',
+    '10',
+    '20',
+    '30',
+    '5',
+  ])
+    expect(content).toContain(value);
+  expect(document.querySelectorAll('.run-screen__bar')).toHaveLength(4);
+  const buttons =
+    document.querySelectorAll<HTMLButtonElement>('.run-screen button');
+  buttons[0]!.click();
+  buttons[1]!.click();
+  expect(newRun).toHaveBeenCalledOnce();
+  expect(menu).toHaveBeenCalledOnce();
+});

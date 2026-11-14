@@ -82,3 +82,70 @@ test('run: dojście do bossa, kill all po progach faz i ekran zwycięstwa', asyn
   expect(await query('runError')).toBeNull();
   expect(errors).toEqual([]);
 });
+
+test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
+  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1');
+  const query = (name: string) =>
+    page.evaluate((key) => window.__neoryder?.query(key), name);
+  const command = (value: string) =>
+    page.evaluate((cmd) => window.__neoryder?.command(cmd), value);
+  await expect.poll(() => query('screen')).toBe('map');
+  const map = (await query('map')) as {
+    layers: { id: string; type: string; next: string[] }[][];
+  };
+  const byId = new Map(map.layers.flat().map((node) => [node.id, node]));
+  const route = (id: string): string[] | null => {
+    const node = byId.get(id)!;
+    if (node.type === 'shop') return [id];
+    for (const next of node.next) {
+      const path = route(next);
+      if (path) return [id, ...path];
+    }
+    return null;
+  };
+  const path = map.layers[0]!.map((node) => route(node.id)).find(
+    (candidate) => candidate !== null,
+  );
+  expect(path).toBeTruthy();
+  for (const id of path!) {
+    await page.locator(`[data-node-id="${id}"]`).click();
+    await expect.poll(() => query('loading')).toBe(false);
+    if ((await query('screen')) === 'shop') break;
+    if ((await query('screen')) === 'room') {
+      await command('run clear');
+      await expect.poll(() => query('screen')).toBe('reward');
+    }
+    await page.keyboard.press('Enter');
+    await expect.poll(() => query('screen')).toBe('map');
+  }
+  await expect.poll(() => query('screen')).toBe('shop');
+  await command('credits 500');
+  const before = (await query('runState')) as {
+    credits: number;
+    implants: string[];
+  };
+  await page.locator('.run-screen button[data-rarity]').first().click();
+  const after = (await query('runState')) as {
+    credits: number;
+    implants: string[];
+  };
+  expect(after.credits).toBeLessThan(before.credits);
+  expect(after.implants).toHaveLength(before.implants.length + 1);
+});
+
+test('run: śmierć w pokoju prowadzi do podsumowania i menu', async ({
+  page,
+}) => {
+  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1');
+  const query = (name: string) =>
+    page.evaluate((key) => window.__neoryder?.query(key), name);
+  await expect.poll(() => query('screen')).toBe('map');
+  await page.locator('.run-screen [data-node-id]').first().click();
+  await expect.poll(() => query('loading')).toBe(false);
+  await page.evaluate(() => window.__neoryder?.command('hurt 9999'));
+  await expect.poll(() => query('screen')).toBe('summary');
+  await expect(page.getByText('Porażka', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Menu', exact: true }).click();
+  await expect(page).toHaveURL('/');
+  await expect(page.getByRole('button', { name: 'Kontynuuj' })).toBeDisabled();
+});

@@ -204,3 +204,5 @@ odtworzenie pełnego stanu i usunięcie zapisu. Playwright `mainMenu.spec.ts`
 obejmuje nowy run oraz fixture mapy z Kredytami i implantem dla kontynuacji
 oraz odświeżenia. Test listy scen w sandbox.spec.ts używa teraz `/?debug=1`;
 asercje listy i istniejące sceny z `?scene=` pozostają bez zmian.
+
+Ekrany runu pokazują karty implantów z rzadkością, opisem, tagami i nowo aktywowanymi synergiami. Sklep blokuje nieopłacalne zakupy, a odpoczynek pokazuje dostępną następną rzadkość. Obsługa: mysz, 1/2/3 i Enter; sceną kontrolną jest `?scene=run`.

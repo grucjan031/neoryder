@@ -1,4 +1,4 @@
-.run-screen {
+﻿.run-screen {
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -33,3 +33,67 @@
   outline: 2px solid #00a9c4;
   outline-offset: 2px;
 }
+.run-screen:not([data-screen='map']) {
+  background: #090b11f5;
+  color: #f4f7fa;
+  font-family: system-ui, sans-serif;
+}
+.run-screen:not([data-screen='map']) .run-screen__panel {
+  width: min(880px, 100%);
+  padding: 28px;
+  box-sizing: border-box;
+  background: #11151e;
+  border: 1px solid #34414c;
+}
+.run-screen:not([data-screen='map']) h1 {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #00e5ff;
+}
+.run-screen:not([data-screen='map']) button {
+  background: #171d28;
+  border: 1px solid #596573;
+  border-left: 4px solid #828b94;
+  padding: 16px;
+}
+.run-screen:not([data-screen='map']) button[data-rarity='rare'] {
+  border-color: #00e5ff;
+}
+.run-screen:not([data-screen='map']) button[data-rarity='epic'] {
+  border-color: #ff2bd6;
+}
+.run-screen:not([data-screen='map']) button[data-rarity='legendary'] {
+  border-color: #ffd166;
+}
+.run-screen:not([data-screen='map']) button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.run-screen__rarity {
+  float: right;
+  color: #aeb8c1;
+}
+[data-rarity='rare'] .run-screen__rarity {
+  color: #00e5ff;
+}
+[data-rarity='epic'] .run-screen__rarity {
+  color: #ff2bd6;
+}
+[data-rarity='legendary'] .run-screen__rarity {
+  color: #ffd166;
+}
+.run-screen__detail {
+  display: block;
+  margin-top: 6px;
+  color: #b9c6d1;
+  font-size: 0.9em;
+}
+.run-screen__damage {
+  margin: 10px 0;
+}
+.run-screen__bar {
+  height: 7px;
+  margin-top: 4px;
+  background: #00e5ff;
+}
+

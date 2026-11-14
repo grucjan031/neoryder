@@ -1,4 +1,5 @@
-import type { MapNode, RunState, RunSummary } from '../core/runTypes';
+import { implantDefinitions } from '../progression/implants';
+import type { MapNode, Rarity, RunState, RunSummary } from '../core/runTypes';
 import type { RunScreen } from '../world/run';
 import { z } from 'zod';
 import textData from '../data/ui/run.pl.json';
@@ -38,6 +39,27 @@ const text = z
     time: z.string(),
     heal: z.string(),
     upgrade: z.string(),
+    rooms: z.string(),
+    implants: z.string(),
+    damage: z.string(),
+    seed: z.string(),
+    newRun: z.string(),
+    noImplants: z.string(),
+    synergies: z.string(),
+    nextRarity: z.string(),
+    leave: z.string(),
+    rarities: z.object({
+      common: z.string(),
+      rare: z.string(),
+      epic: z.string(),
+      legendary: z.string(),
+    }),
+    paths: z.object({
+      melee: z.string(),
+      power: z.string(),
+      gun: z.string(),
+      other: z.string(),
+    }),
   })
   .parse(textData);
 
@@ -48,7 +70,16 @@ export interface RunScreenView {
   summary: RunSummary | null;
   busy: boolean;
   error: string | null;
-  offers?: readonly { id: string; label: string; price?: number }[];
+  offers?: readonly {
+    id: string;
+    label: string;
+    price?: number;
+    description?: string;
+    rarity?: Rarity;
+    tags?: string[];
+    nextRarity?: Rarity;
+    synergies?: string[];
+  }[];
   healPrice?: number;
   fallbackCredits?: number;
 }
@@ -60,6 +91,7 @@ export interface RunScreenActions {
   buy?(id: string): void;
   rest?(choice: 'heal' | 'upgrade', id?: string): void;
   menu(): void;
+  newRun?(): void;
 }
 
 export interface RunScreens {
@@ -138,47 +170,98 @@ export class HtmlRunScreens implements RunScreens {
     } else if (view.screen === 'summary') {
       const summary = view.summary;
       if (summary) {
+        const seconds = Math.floor(summary.elapsedS);
         this.line(text[summary.outcome]);
         this.line(
-          `${text.layer}: ${summary.layerReached} · ${text.kills}: ${summary.kills} · ${text.time}: ${Math.floor(summary.elapsedS)} s`,
+          `${text.time}: ${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')} ? ${text.kills}: ${summary.kills} ? ${text.rooms}: ${summary.roomsCleared} ? ${text.layer}: ${summary.layerReached}`,
         );
+        this.line(`${text.seed}: ${summary.seed}`);
+        this.line(
+          `${text.implants}: ${summary.implants.map((id) => implantDefinitions.get(id)?.name ?? id).join(', ') || text.noImplants}`,
+        );
+        this.line(text.damage);
+        const max = Math.max(0, ...Object.values(summary.damage));
+        for (const path of ['melee', 'power', 'gun', 'other'] as const) {
+          const row = document.createElement('div');
+          row.className = 'run-screen__damage';
+          const label = document.createElement('span');
+          label.textContent = `${text.paths[path]}: ${summary.damage[path]}`;
+          const bar = document.createElement('div');
+          bar.className = 'run-screen__bar';
+          bar.style.width = `${max > 0 ? (summary.damage[path] / max) * 100 : 0}%`;
+          row.append(label, bar);
+          this.panel.append(row);
+        }
       }
+      this.button(text.newRun, () => actions.newRun?.());
       this.button(text.menu, actions.menu);
     } else if (view.screen === 'reward') {
       for (const offer of view.offers ?? [])
-        this.button(offer.label, () => actions.chooseReward?.(offer.id));
+        this.offer(offer, () => actions.chooseReward?.(offer.id));
       if (!view.offers?.length) {
         this.line(text.noRewards);
         this.button(
-          `${text.next} · ${text.credits}: +${view.fallbackCredits ?? 0}`,
+          `${text.next} ? ${text.credits}: +${view.fallbackCredits ?? 0}`,
           () =>
             actions.chooseReward ? actions.chooseReward() : actions.next(),
         );
       }
     } else if (view.screen === 'shop') {
       for (const offer of view.offers ?? []) {
-        const button = this.button(
-          `${offer.label} — ${offer.price} ${text.credits}`,
-          () => actions.buy?.(offer.id),
-        );
+        const button = this.offer(offer, () => actions.buy?.(offer.id));
         button.disabled = view.state.credits < (offer.price ?? 0);
       }
       const heal = this.button(
-        `${text.heal} — ${view.healPrice ?? 0} ${text.credits}`,
+        `${text.heal} ? ${view.healPrice ?? 0} ${text.credits}`,
         () => actions.buy?.('heal'),
       );
       heal.disabled = view.state.credits < (view.healPrice ?? 0);
-      this.button(text.next, actions.next);
+      this.button(text.leave, actions.next);
     } else if (view.screen === 'rest') {
       this.button(text.heal, () => actions.rest?.('heal'));
       for (const offer of view.offers ?? [])
-        this.button(`${text.upgrade}: ${offer.label}`, () =>
-          actions.rest?.('upgrade', offer.id),
-        );
+        this.offer(offer, () => actions.rest?.('upgrade', offer.id), true);
     } else {
       this.line(text.placeholder);
       this.button(text.next, actions.next);
     }
+  }
+
+  private offer(
+    offer: NonNullable<RunScreenView['offers']>[number],
+    action: () => void,
+    upgrade = false,
+  ): HTMLButtonElement {
+    const button = this.button(
+      `${upgrade ? `${text.upgrade}: ` : ''}${offer.label}`,
+      action,
+    );
+    if (offer.rarity) {
+      button.dataset.rarity = offer.rarity;
+      const rarity = document.createElement('span');
+      rarity.className = 'run-screen__rarity';
+      rarity.textContent = text.rarities[offer.rarity];
+      button.append(rarity);
+    }
+    const details = [
+      offer.description,
+      offer.tags?.join(' '),
+      offer.synergies?.length
+        ? `${text.synergies}: ${offer.synergies.join(', ')}`
+        : '',
+      offer.nextRarity && upgrade
+        ? `${text.nextRarity}: ${text.rarities[offer.nextRarity]}`
+        : '',
+      offer.price !== undefined ? `${offer.price} ${text.credits}` : '',
+    ];
+    for (const detail of details)
+      if (detail) {
+        const line = document.createElement('span');
+        line.className = 'run-screen__detail';
+        line.textContent = detail;
+        button.append(line);
+      }
+    return button;
   }
 
   private line(value: string): void {
