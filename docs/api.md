@@ -1184,3 +1184,15 @@ Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,
 `loading`, `runError`, `saveError`; pozostałe zapytania są delegowane do pokoju.
 Przejścia po `room_cleared` / `run_ended` następują po zakończeniu stosu zdarzenia,
 bez zwalniania świata podczas kroku symulacji.
+
+## Wspólny widok FPP
+
+`FppViewModel` (`src/render/fppViewModel.ts`) posiada ostrze, broń, wolną dłoń
+i ruch rąk. Konstruktor przyjmuje bus, właściciela i opcje definicji ostrza,
+modeli broni oraz tuningu. `load(loadModels)`, `root`,
+`setBladeDefinition(def)` i `dispose()` obsługują cykl życia.
+`place(cameraMatrix, frameDt, { blade?, held, horizontalSpeed, visible? })`
+jest wywoływane raz na klatkę; `held` przyjmuje `HeldItemView` albo stałe
+`blade`/`gun` dla scen testowych. `blade` to `BladeView` wymagany przy ostrzu.
+Getter `beamOrigin` zwraca pozycję świata root broni, jak dotychczas w Arenie.
+Moduł zachowuje kolejność: ruch, ostrze, widoczność, broń, wolna dłoń.

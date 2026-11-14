@@ -1,3 +1,4 @@
+import { FppViewModel } from '../render/fppViewModel';
 import {
   queryBladeArc,
   queryBladeSegment,
@@ -11,7 +12,6 @@ import {
   Group,
   Mesh,
   Quaternion,
-  Vector3,
 } from 'three';
 import type { BufferGeometry, Material, Scene as ThreeScene } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -52,10 +52,6 @@ import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
-import { FppBlade } from '../render/fppBlade';
-import { FppBlaster } from '../render/fppBlaster';
-import { FppMotion, shownHeld } from '../render/fppMotion';
-import { FppOffhand } from '../render/fppOffhand';
 import { BeamRenderer } from '../render/beamRenderer';
 import { BarrierRenderer } from '../render/barrierRenderer';
 import { LightningRenderer } from '../render/lightningRenderer';
@@ -143,7 +139,6 @@ export class Arena implements Scene {
   private barrierView!: BarrierRenderer;
   private lightningView!: LightningRenderer;
   private explosionView!: ExplosionRenderer;
-  private readonly beamOrigin = new Vector3();
   private readonly playerStats = new Stats({
     maxHealth: layout.playerHealth,
     maxEnergy: 100,
@@ -152,10 +147,7 @@ export class Arena implements Scene {
     coolingRate: 45,
   });
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
-  private readonly bladeView = new FppBlade();
-  private blasterView!: FppBlaster;
-  private handMotion!: FppMotion;
-  private offhandView!: FppOffhand;
+  private fppView!: FppViewModel;
   private readonly views = new Map<EntityId, EnemyViewLike>();
   private readonly root = new Group();
   private readonly lights = createStyleLights();
@@ -367,18 +359,13 @@ export class Arena implements Scene {
     );
     this.root.add(this.hitSparksView.root);
 
-    await this.bladeView.load(this.loadModels, this.blade.definition);
-    this.root.add(this.bladeView.root);
-    this.blasterView = new FppBlaster(ctx.bus, playerId, {
+    this.fppView = new FppViewModel(ctx.bus, playerId, {
+      bladeDefinition: this.blade.definition,
       modelOf: weaponModelOf,
       tuning: ctx.tuning,
     });
-    await this.blasterView.load(this.loadModels);
-    this.root.add(this.blasterView.root);
-    this.handMotion = new FppMotion(ctx.tuning);
-    this.offhandView = new FppOffhand(ctx.bus, playerId, ctx.tuning);
-    await this.offhandView.load(this.loadModels);
-    this.root.add(this.offhandView.root);
+    await this.fppView.load(this.loadModels);
+    this.root.add(this.fppView.root);
 
     // F2-17: hybrydy z tagów ekwipunku. Statystyki dashu i ruchu żyją w PlayerController.stats.
     this.synergies = new SynergySystem(ctx.bus, {
@@ -795,30 +782,14 @@ export class Arena implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    const hands = this.heldView();
     const velocity = this.player.getState().velocity;
-    const handMatrix = this.handMotion.place(
-      camera.matrixWorld,
-      frameDt,
-      Math.hypot(velocity.x, velocity.z),
-      hands,
-    );
-    this.bladeView.place(handMatrix, this.blade.view());
-    const shown = shownHeld(hands);
-    this.bladeView.root.visible &&=
-      this.state === 'playing' && shown === 'blade';
-    this.blasterView.root.visible = this.state === 'playing' && shown === 'gun';
-    this.blasterView.place(handMatrix, frameDt);
-    this.offhandView.place(
-      handMatrix,
-      frameDt,
-      shown,
-      this.blade.definition.offhand,
-      this.blasterView.supportMatrix(),
-    );
-    this.offhandView.root.visible &&= this.state === 'playing';
-    this.blasterView.root.getWorldPosition(this.beamOrigin);
-    this.beamView.render(this.weapon.beam, this.beamOrigin);
+    this.fppView.place(camera.matrixWorld, frameDt, {
+      blade: this.blade.view(),
+      held: this.heldView(),
+      horizontalSpeed: Math.hypot(velocity.x, velocity.z),
+      visible: this.state === 'playing',
+    });
+    this.beamView.render(this.weapon.beam, this.fppView.beamOrigin);
     this.lightningView.render(powers, camera);
   }
 
@@ -891,7 +862,7 @@ export class Arena implements Scene {
     const next = resolveBlade(this.loadout.blade, this.bladeOverride);
     if (next !== this.blade.definition) {
       this.blade.setDefinition(next);
-      void this.bladeView.setDefinition(next, this.loadModels);
+      void this.fppView.setBladeDefinition(next);
     } else this.blade.reset();
   }
 
@@ -1121,10 +1092,8 @@ export class Arena implements Scene {
     this.blade.dispose();
     this.heldItem.dispose();
     this.energy.dispose();
-    this.bladeView.dispose();
+    this.fppView.dispose();
     this.flyingBlade.dispose();
-    this.blasterView.dispose();
-    this.offhandView.dispose();
     this.barrierView.dispose();
     this.projectileView.dispose();
     this.projectiles.dispose();

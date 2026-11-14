@@ -102,8 +102,11 @@ Ta sama dodatkowa macierz kamery trafia do ostrza, broni i lewej dłoni.
 Sway reaguje na różnicę yaw/pitch kamery między klatkami, ze sprężynowym
 powrotem i ograniczeniem kąta. Bob ma amplitudę zależną od prędkości poziomej
 gracza, wygładzoną także po zatrzymaniu. Kod nie zmienia kamery ani symulacji;
-odrzut i gest mogą działać w hitstopie. `arena`, `melee-test` i `weapons-test`
-używają tych samych klas renderu.
+odrzut i gest mogą działać w hitstopie. `arena`, `RoomScene` (pokoje runu),
+`melee-test` i `weapons-test` używają wspólnego `FppViewModel`, który posiada
+`FppBlade`, `FppBlaster`, `FppOffhand` i `FppMotion`. Scena wywołuje jego
+`place()` raz na klatkę; sceny testowe przekazują stały rodzaj przedmiotu.
+RoomScene korzysta z tego samego gestu mocy, zamiany i kołysania co Arena.
 
 | Parametry `tuning.hands`                             | Znaczenie                                                                 |
 | ---------------------------------------------------- | ------------------------------------------------------------------------- |

@@ -1,3 +1,4 @@
+import { FppViewModel } from '../render/fppViewModel';
 import {
   queryBladeArc,
   queryBladeSegment,
@@ -11,7 +12,6 @@ import {
   Group,
   Mesh,
   Quaternion,
-  Vector3,
 } from 'three';
 import type { BufferGeometry, Scene as ThreeScene } from 'three';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
@@ -54,8 +54,6 @@ import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
-import { FppBlade } from '../render/fppBlade';
-import { FppBlaster } from '../render/fppBlaster';
 import { BeamRenderer } from '../render/beamRenderer';
 import { BarrierRenderer } from '../render/barrierRenderer';
 import { LightningRenderer } from '../render/lightningRenderer';
@@ -131,11 +129,9 @@ export class RoomScene implements Scene {
   private barrierView!: BarrierRenderer;
   private lightningView!: LightningRenderer;
   private explosionView!: ExplosionRenderer;
-  private readonly beamOrigin = new Vector3();
   private readonly playerStats = new Stats(playerDefaults);
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
-  private readonly bladeView = new FppBlade();
-  private blasterView!: FppBlaster;
+  private fppView!: FppViewModel;
   private readonly views = new Map<EntityId, EnemyViewLike>();
   private readonly root = new Group();
   private readonly lights = createStyleLights();
@@ -354,14 +350,13 @@ export class RoomScene implements Scene {
     );
     this.root.add(this.hitSparksView.root);
 
-    await this.bladeView.load(this.loadModels, this.blade.definition);
-    this.root.add(this.bladeView.root);
-    this.blasterView = new FppBlaster(ctx.bus, playerId, {
+    this.fppView = new FppViewModel(ctx.bus, playerId, {
+      bladeDefinition: this.blade.definition,
       modelOf: weaponModelOf,
       tuning: ctx.tuning,
     });
-    await this.blasterView.load(this.loadModels);
-    this.root.add(this.blasterView.root);
+    await this.fppView.load(this.loadModels);
+    this.root.add(this.fppView.root);
 
     // F2-17: hybrydy z tagów ekwipunku. Statystyki dashu i ruchu żyją w PlayerController.stats.
     this.synergies = new SynergySystem(ctx.bus, {
@@ -798,16 +793,14 @@ export class RoomScene implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    this.bladeView.place(camera.matrixWorld, this.blade.view());
-    const hands = this.heldView();
-    const shown =
-      hands.swapping && hands.swapT >= 0.5 ? hands.target : hands.held;
-    this.bladeView.root.visible &&=
-      this.state === 'playing' && shown === 'blade';
-    this.blasterView.root.visible = this.state === 'playing' && shown === 'gun';
-    this.blasterView.place(camera.matrixWorld, frameDt);
-    this.blasterView.root.getWorldPosition(this.beamOrigin);
-    this.beamView.render(this.weapon.beam, this.beamOrigin);
+    const velocity = this.player.getState().velocity;
+    this.fppView.place(camera.matrixWorld, frameDt, {
+      blade: this.blade.view(),
+      held: this.heldView(),
+      horizontalSpeed: Math.hypot(velocity.x, velocity.z),
+      visible: this.state === 'playing',
+    });
+    this.beamView.render(this.weapon.beam, this.fppView.beamOrigin);
     this.lightningView.render(powers, camera);
   }
 
@@ -1066,9 +1059,8 @@ export class RoomScene implements Scene {
     this.blade.dispose();
     this.heldItem.dispose();
     this.energy.dispose();
-    this.bladeView.dispose();
+    this.fppView.dispose();
     this.flyingBlade.dispose();
-    this.blasterView.dispose();
     this.barrierView.dispose();
     this.projectileView.dispose();
     this.projectiles.dispose();
