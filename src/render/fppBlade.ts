@@ -14,6 +14,7 @@ import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
 import type { BladeDefinition } from '../combat/melee/bladeSchema';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import { applyStyle, getMaterial } from './materials';
+import { HandRig } from './handRig';
 
 /** Poza ostrza w układzie kamery (pozycja, kąty Euler 'YXZ' w radianach). */
 interface BladePose {
@@ -122,6 +123,8 @@ function loadModel(name: string): Promise<Object3D | null> {
  */
 export class FppBlade {
   readonly root = new Group();
+  readonly mainHand = new HandRig('R');
+  readonly offHand = new HandRig('L');
   private readonly hands: Record<Hand, Group> = {
     main: new Group(),
     off: new Group(),
@@ -147,6 +150,7 @@ export class FppBlade {
       hand.matrixAutoUpdate = false;
       this.root.add(hand);
     }
+    this.root.add(this.mainHand.root, this.offHand.root);
     this.setModel(def, null, false);
   }
 
@@ -157,6 +161,10 @@ export class FppBlade {
   ): Promise<void> {
     const generation = ++this.generation;
     this.setModel(def, null, false);
+    await Promise.all([
+      this.mainHand.load(loadModels),
+      this.offHand.load(loadModels),
+    ]);
     if (!loadModels) return;
     const wanted = def.model ?? FALLBACK_MODEL;
     let scene = await loadModel(wanted);
@@ -288,17 +296,24 @@ export class FppBlade {
   }
 
   place(cameraMatrix: Matrix4, view: BladeView): void {
-    this.root.visible = view.flight === null;
-    const turn =
+    this.root.visible = true;
+    const spinning =
       view.state === 'heavy' &&
       this.def.heavyShape === 'spin' &&
-      view.phase === 'active'
-        ? easeInOut(view.phaseT) * FULL_TURN
-        : 0;
+      view.phase === 'active';
+    const turn = spinning ? easeInOut(view.phaseT) * FULL_TURN : 0;
     for (const name of ['main', 'off'] as const) {
       const hand = this.hands[name];
-      if (!hand.visible) continue;
-      const pose = this.poseFor(view, name);
+      hand.visible =
+        view.flight === null && (name === 'main' || this.def.offhand);
+      const rig = name === 'main' ? this.mainHand : this.offHand;
+      rig.root.visible = !spinning && (name === 'main' || this.def.offhand);
+      const pose =
+        view.flight !== null
+          ? name === 'main'
+            ? POSE_IDLE
+            : OFF_IDLE
+          : this.poseFor(view, name);
       const { m, spin, q, e, v, s, mirror, up } = this.tmp;
       e.set(pose.rot[0], pose.rot[1], pose.rot[2], 'YXZ');
       q.setFromEuler(e);
@@ -307,7 +322,14 @@ export class FppBlade {
         pose.pos[1],
         pose.pos[2] + (this.def.doubleEnded ? DOUBLE_ENDED_FORWARD_M : 0),
       );
-      // Lewa dłoń: model odbity lustrzanie (skala X = -1).
+      // Dłoń L ma własną geometrię i gniazdo; lustro dotyczy wyłącznie ostrza.
+      m.compose(v, q, s).premultiply(cameraMatrix);
+      rig.setPose(
+        view.flight !== null ? 'open' : 'gripBlade',
+        view.flight !== null ? 'open' : 'gripBlade',
+        0,
+      );
+      rig.placeAt(m, 'socket_blade');
       m.compose(v, q, name === 'off' ? mirror : s);
       if (turn !== 0) {
         // Obrót 360° wokół pionowej osi kamery: ostrze zatacza koło dookoła gracza.
@@ -321,6 +343,9 @@ export class FppBlade {
   }
 
   dispose(): void {
+    this.generation++;
+    this.mainHand.dispose();
+    this.offHand.dispose();
     for (const hand of Object.values(this.hands))
       for (const child of hand.children) this.disposeBuilt(child);
     this.root.removeFromParent();

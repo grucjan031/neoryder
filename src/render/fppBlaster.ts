@@ -19,11 +19,12 @@ import { tuning as defaultTuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { applyStyle, getMaterial } from './materials';
 import { palette } from './palette';
+import { HandRig } from './handRig';
 
-/** Położenie blastera w lewej dłoni (układ kamery) i odrzut po strzale. */
+/** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
-  pos: new Vector3(-0.3, -0.27, -0.5),
-  rot: new Euler(0.04, 0.06, 0.02, 'YXZ'),
+  pos: new Vector3(0.2, -0.24, -0.45),
+  rot: new Euler(0.04, -0.06, -0.02, 'YXZ'),
 };
 const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;
@@ -54,7 +55,7 @@ function starGeometry(): ShapeGeometry {
 }
 
 /**
- * Broń gracza w widoku FPP (lewa ręka). Model bieżącej broni (pole `model` danych, cache per model,
+ * Broń gracza w widoku FPP (prawa ręka). Model bieżącej broni (pole `model` danych, cache per model,
  * podmiana przy weapon_switched; fallback blaster.glb, potem bryła zastępcza). Otwory chłodzenia
  * (heat_vents, heat_cell) zmieniają kolor z cyan na czerwień wraz z ciepłem, przegrzanie pulsuje;
  * strzał gracza daje krótki odrzut i cyjanowy błysk wylotu w węźle muzzle. Dane wyłącznie ze
@@ -62,6 +63,7 @@ function starGeometry(): ShapeGeometry {
  */
 export class FppBlaster {
   readonly root = new Group();
+  readonly hand = new HandRig('R');
   private readonly heatMaterial = new MeshBasicMaterial({
     color: COLD.clone(),
     toneMapped: false,
@@ -88,6 +90,7 @@ export class FppBlaster {
   private recoil = 0;
   private flashLeft = 0;
   private time = 0;
+  private disposed = false;
   private readonly off: (() => void)[] = [];
   private readonly tmp = {
     m: new Matrix4(),
@@ -102,6 +105,7 @@ export class FppBlaster {
     this.modelOf = options.modelOf ?? (() => undefined);
     this.root.matrixAutoUpdate = false;
     this.root.add(this.fallback);
+    this.root.add(this.hand.root);
     this.off.push(
       bus.on('heat_changed', ({ id, current, max, overheated }) => {
         if (id !== owner) return;
@@ -123,6 +127,7 @@ export class FppBlaster {
 
   async load(loadModels = true): Promise<void> {
     this.loadModels = loadModels;
+    await this.hand.load(loadModels);
     if (!loadModels) return;
     await this.show(this.wanted);
   }
@@ -132,7 +137,13 @@ export class FppBlaster {
     let model = await this.fetchModel(name);
     if (!model && name !== FALLBACK_MODEL)
       model = await this.fetchModel(FALLBACK_MODEL);
-    if (name !== this.wanted || !model || model === this.current) return;
+    if (
+      this.disposed ||
+      name !== this.wanted ||
+      !model ||
+      model === this.current
+    )
+      return;
     this.setCurrent(model);
   }
 
@@ -212,6 +223,8 @@ export class FppBlaster {
     m.compose(v, q, s);
     this.root.matrix.multiplyMatrices(cameraMatrix, m);
     this.root.matrixWorldNeedsUpdate = true;
+    this.hand.setPose('gripGun', 'gripGunFire', this.recoil);
+    this.hand.placeAt(m.identity(), 'socket_gun');
 
     const flash = this.current ? this.flashes.get(this.current) : undefined;
     if (flash) {
@@ -225,7 +238,16 @@ export class FppBlaster {
     this.flashLeft = Math.max(0, this.flashLeft - dt);
   }
 
+  supportMatrix(): Matrix4 | null {
+    const support = this.current?.getObjectByName('support');
+    if (!support) return null;
+    support.updateWorldMatrix(true, false);
+    return support.matrixWorld.clone();
+  }
+
   dispose(): void {
+    this.disposed = true;
+    this.hand.dispose();
     for (const off of this.off.splice(0)) off();
     this.heatMaterial.dispose();
     this.flashMaterial.dispose();

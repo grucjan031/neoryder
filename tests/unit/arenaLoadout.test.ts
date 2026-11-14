@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
 import { PerspectiveCamera, Scene as ThreeScene } from 'three';
+import type { Object3D } from 'three';
 import { Arena } from '../../src/scenes/arena';
 import { EventBus } from '../../src/core/events';
 import { Rng } from '../../src/core/rng';
@@ -16,6 +17,7 @@ import type { Weapon } from '../../src/combat/weapons/weapon';
 import type { Action } from '../../src/core/input';
 import { FppBlade } from '../../src/render/fppBlade';
 import { FppBlaster } from '../../src/render/fppBlaster';
+import { FppOffhand } from '../../src/render/fppOffhand';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -98,8 +100,23 @@ it('renders only the held model and switches visibility halfway through a swap',
   const { scene } = await setup('gunner');
   let bladeRoot: FppBlade['root'] | undefined;
   let gunRoot: FppBlaster['root'] | undefined;
+  let leftRoot: FppOffhand['root'] | undefined;
   const placeBlade = FppBlade.prototype.place;
   const placeGun = FppBlaster.prototype.place;
+  const placeLeft = FppOffhand.prototype.place;
+  vi.spyOn(FppOffhand.prototype, 'place').mockImplementation(function (
+    this: FppOffhand,
+    ...args
+  ) {
+    leftRoot = this.root;
+    placeLeft.apply(this, args);
+  });
+  const visible = (node: Object3D | undefined): boolean => {
+    if (!node) return false;
+    for (let current: Object3D | null = node; current; current = current.parent)
+      if (!current.visible) return false;
+    return true;
+  };
   vi.spyOn(FppBlade.prototype, 'place').mockImplementation(function (
     this: FppBlade,
     ...args
@@ -116,6 +133,11 @@ it('renders only the held model and switches visibility halfway through a swap',
   });
   scene.render(1);
   expect([bladeRoot?.visible, gunRoot?.visible]).toEqual([false, true]);
+  expect([
+    visible(bladeRoot?.getObjectByName('hand_R')),
+    visible(gunRoot?.getObjectByName('hand_R')),
+  ]).toEqual([false, true]);
+  expect(visible(leftRoot)).toBe(false); // Bryła broni zastępczej nie ma support.
   scene.step(SIM_DT, press('swap'));
   scene.render(1);
   expect([bladeRoot?.visible, gunRoot?.visible]).toEqual([false, true]);
@@ -123,6 +145,11 @@ it('renders only the held model and switches visibility halfway through a swap',
     scene.step(SIM_DT, idle);
   scene.render(1);
   expect([bladeRoot?.visible, gunRoot?.visible]).toEqual([true, false]);
+  expect([
+    visible(bladeRoot?.getObjectByName('hand_R')),
+    visible(gunRoot?.getObjectByName('hand_R')),
+  ]).toEqual([true, false]);
+  expect(visible(leftRoot)).toBe(true);
 });
 
 afterEach(() => {

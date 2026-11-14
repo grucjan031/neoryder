@@ -54,6 +54,8 @@ import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { FppBlade } from '../render/fppBlade';
 import { FppBlaster } from '../render/fppBlaster';
+import { FppMotion, shownHeld } from '../render/fppMotion';
+import { FppOffhand } from '../render/fppOffhand';
 import { BeamRenderer } from '../render/beamRenderer';
 import { BarrierRenderer } from '../render/barrierRenderer';
 import { LightningRenderer } from '../render/lightningRenderer';
@@ -152,6 +154,8 @@ export class Arena implements Scene {
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
   private readonly bladeView = new FppBlade();
   private blasterView!: FppBlaster;
+  private handMotion!: FppMotion;
+  private offhandView!: FppOffhand;
   private readonly views = new Map<EntityId, EnemyViewLike>();
   private readonly root = new Group();
   private readonly lights = createStyleLights();
@@ -371,6 +375,10 @@ export class Arena implements Scene {
     });
     await this.blasterView.load(this.loadModels);
     this.root.add(this.blasterView.root);
+    this.handMotion = new FppMotion(ctx.tuning);
+    this.offhandView = new FppOffhand(ctx.bus, playerId, ctx.tuning);
+    await this.offhandView.load(this.loadModels);
+    this.root.add(this.offhandView.root);
 
     // F2-17: hybrydy z tagów ekwipunku. Statystyki dashu i ruchu żyją w PlayerController.stats.
     this.synergies = new SynergySystem(ctx.bus, {
@@ -787,14 +795,28 @@ export class Arena implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    this.bladeView.place(camera.matrixWorld, this.blade.view());
     const hands = this.heldView();
-    const shown =
-      hands.swapping && hands.swapT >= 0.5 ? hands.target : hands.held;
+    const velocity = this.player.getState().velocity;
+    const handMatrix = this.handMotion.place(
+      camera.matrixWorld,
+      frameDt,
+      Math.hypot(velocity.x, velocity.z),
+      hands,
+    );
+    this.bladeView.place(handMatrix, this.blade.view());
+    const shown = shownHeld(hands);
     this.bladeView.root.visible &&=
       this.state === 'playing' && shown === 'blade';
     this.blasterView.root.visible = this.state === 'playing' && shown === 'gun';
-    this.blasterView.place(camera.matrixWorld, frameDt);
+    this.blasterView.place(handMatrix, frameDt);
+    this.offhandView.place(
+      handMatrix,
+      frameDt,
+      shown,
+      this.blade.definition.offhand,
+      this.blasterView.supportMatrix(),
+    );
+    this.offhandView.root.visible &&= this.state === 'playing';
     this.blasterView.root.getWorldPosition(this.beamOrigin);
     this.beamView.render(this.weapon.beam, this.beamOrigin);
     this.lightningView.render(powers, camera);
@@ -1102,6 +1124,7 @@ export class Arena implements Scene {
     this.bladeView.dispose();
     this.flyingBlade.dispose();
     this.blasterView.dispose();
+    this.offhandView.dispose();
     this.barrierView.dispose();
     this.projectileView.dispose();
     this.projectiles.dispose();

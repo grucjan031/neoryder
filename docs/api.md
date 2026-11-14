@@ -853,7 +853,7 @@ held_item_changed: { owner: EntityId; held: HeldKind; weapon: string | null };
 // Przy ostrzu weapon = null; przy broni = id wybranego slotu.
 // Nowa akcja Action: swap (KeyR), usuwa shoot. attack (LPM) = atak/spust.
 // Loadout: startHeld opcjonalne w JSON, domyślnie 'blade' po walidacji.
-// tuning.hands: { swapS: 0.24, swapBufferS: 0.4 } — czas gracza, lil-gui.
+// tuning.hands: swapS / swapBufferS — czas gracza; parametry renderu opisane w systems/hands.md.
 // Arena.heldView(): HeldItemView; query('heldItem') zwraca ten sam stan.
 // Komenda areny: hold blade|gun — natychmiastowy reset samego stanu ręki.
 ```
@@ -1049,3 +1049,19 @@ Komendy konsoli debug (`window.__neoryder.command`, zadania F3-07, F3-09, F3-11)
 - `credits <n>` — dodanie Kredytów
 - `implant <id>` — nałożenie implantu
 
+### Render dłoni FPP
+
+`HandRig(side: 'R' | 'L')` (`src/render/handRig.ts`) udostępnia `root: Group`,
+`load(loadModels?: boolean): Promise<void>`, `setPose(from, to, t)` (nazwy póz
+z walidowanych danych), `socketMatrix(name): Matrix4` względem root oraz `dispose()`.
+`placeAt(itemMatrix, socket)` ustawia root jako itemMatrix × inverse(socketMatrix).
+Modele i ich geometrie należą do cache; rig zwalnia tylko własne materiały i bryłę zastępczą.
+`FppBlade` zawiera rig prawej dłoni i rig lewego ostrza bliźniaczego;
+`FppBlaster` zawiera prawą dłoń i udostępnia `supportMatrix(): Matrix4 | null`
+w przestrzeni świata dla lewej dłoni (null przy braku węzła support).
+`FppOffhand(bus, owner, tuning)` obsługuje lewą dłoń wolną/podpierającą,
+`place(cameraMatrix, frameDt, shown, twin, supportMatrix)` odczytuje wyłącznie
+stan renderu i zdarzenie `power_used` właściciela. Bliźniacze blokują gest mocy.
+`FppMotion.place(cameraMatrix, frameDt, horizontalSpeed, heldView?)` zwraca
+macierz kamery z opadem zamiany i kołysaniem; nie zmienia kamery ani symulacji.
+Sceny wywołują go raz na render, przekazując tę samą macierz przedmiotom i dłoniom.
