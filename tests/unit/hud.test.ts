@@ -467,7 +467,7 @@ describe('Hud', () => {
     expect(slots[0]?.classList.contains('hud__power--dim')).toBe(false);
     bus.emit('energy_changed', { id: 1, current: 5, max: 100 });
     expect(slots[0]?.classList.contains('hud__power--dim')).toBe(true);
-    bus.emit('power_cooldown', { user: 1, power: 'push', cooldownS: 2 });
+    bus.emit('power_cooldown', { user: 1, power: 'chain', cooldownS: 2 });
     expect(slots[0]?.style.getPropertyValue('--cd')).toBe('1.00');
     hud.step(1);
     expect(slots[0]?.style.getPropertyValue('--cd')).toBe('0.50');
