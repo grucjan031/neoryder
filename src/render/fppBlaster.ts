@@ -23,8 +23,8 @@ import { HandRig } from './handRig';
 
 /** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
-  pos: new Vector3(0.2, -0.24, -0.45),
-  rot: new Euler(0.04, -0.06, -0.02, 'YXZ'),
+  pos: new Vector3(0.32, -0.28, -0.42),
+  rot: new Euler(0.04, 0.1, -0.02, 'YXZ'),
 };
 const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;
