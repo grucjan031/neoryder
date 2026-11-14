@@ -158,3 +158,49 @@ Arena wygląda jak dotąd. Teksty: `src/data/ui/hud.pl.json`
 
 Kontrola: `?scene=room-test`, komendy `credits`, `implant <id>`; test:
 `npx vitest run tests/unit/runHud.test.ts`.
+
+## Menu i mapa sektora — F3-13
+
+Bez `?scene=` produkcja pokazuje `MainMenu` (`src/ui/mainMenu.ts`). W trybie
+debug (`?debug=1` lub serwer dev) pozostaje dotychczasowa lista scen.
+Nowy run otwiera istniejący BuildSelect i przechodzi do
+`?scene=run&seed=…&loadout=…`; puste pole generuje seed przez Web Crypto.
+Wybór dotyczy buildu z przypisanym ostrzem: dodatkowy wybór wariantu ostrza
+jest ukryty, ponieważ RunState przechowuje loadoutId, a nie nadpisanie ostrza.
+Arena / poligon prowadzi do `?scene=arena`. Kontynuuj jest nieaktywne podczas
+odczytu, bez zapisu i przy błędzie IndexedDB; zapis udostępnia warstwę oraz HP.
+Kontynuacja przechodzi do `?scene=run&continue=1`.
+
+`MapScreen` (`src/ui/mapScreen.ts`, style `mapScreen.css`) rysuje pełną mapę:
+warstwa 1 na dole, boss u góry, połączenia SVG za przyciskami. Symbole i legenda
+odróżniają typy; elita i boss są czerwone, bieżący węzeł ma cyanową ramkę,
+odwiedzone mają przerywaną krawędź, dostępne są podświetlone.
+Dostępność pochodzi z next bieżącego węzła, na początku z pierwszej warstwy.
+Pozostałe przyciski są disabled. Kliknięcie i 1/2/3 wybierają dostępny węzeł;
+Enter wybiera przycisk z fokusem lub pierwszy dostępny. Tab + Enter pozwala
+wybrać także czwarty węzeł. Pola tekstowe, modyfikatory i powtórzenia klawiszy
+nie uruchamiają akcji. Ukrycie i dispose odłączają obsługę mapy.
+Teksty menu, mapy, symbole i nazwy statusów są w `src/data/ui/run.pl.json`,
+walidowane zod przy imporcie. Wymiary grafu są prezentacją CSS, bez liczb symulacji.
+
+Domyślny `RunSavePort` (`src/ui/runSave.ts`) opakowuje IndexedDB SaveStore v2.
+RunScene zapisuje pełen RunState przy wejściu na mapę, czyści przy run_ended;
+kolejka gwarantuje, że zaległy zapis nie odtworzy zakończonego runu.
+`continue=1` ładuje zapis i wywołuje restore, odtwarzając mapę, węzeł i zasoby.
+Błędy zapisu są dostępne jako query('saveError'), zgodnie z istniejącym RunScene.
+Po udanym zapisie na mapie RunScene zamienia URL przez history.replaceState
+na continue=1 (usuwa seed/loadout, zachowuje debug). Dzięki temu odświeżenie
+mapy oraz odświeżenie podczas walki wznawia ostatni zapis mapy.
+
+Kontrola w 30 sekund: produkcyjne `/` → wpisz seed → Nowy run → build → mapa.
+Sprawdź układ i podświetlenie, wybierz węzeł przez mysz lub 1/2/3 / Enter.
+`?scene=run&seed=menu-test&debug=1`: `run clear` po wejściu do walki,
+Dalej po nagrodzie → mapa; `/` → Kontynuuj ma zachować bieżący węzeł i zasoby.
+Sprawdź czytelność grafu przy czterech węzłach i wąskim oknie.
+
+Testy: jsdom `mainMenu.test.ts`, `mapScreen.test.ts`, `runScreens.test.ts`;
+`runScene.test.ts` testuje domyślny adapter z fake-indexeddb, zapis po pokoju,
+odtworzenie pełnego stanu i usunięcie zapisu. Playwright `mainMenu.spec.ts`
+obejmuje nowy run oraz fixture mapy z Kredytami i implantem dla kontynuacji
+oraz odświeżenia. Test listy scen w sandbox.spec.ts używa teraz `/?debug=1`;
+asercje listy i istniejące sceny z `?scene=` pozostają bez zmian.

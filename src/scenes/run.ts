@@ -10,6 +10,7 @@ import type { ImplantDefinition } from '../progression/implantSchema';
 import { implantDefinitions } from '../progression/implants';
 import { RunEconomy } from '../progression/runEconomy';
 import { loadoutDefinitions } from '../progression/loadout';
+import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
 import type { RunScreens } from '../ui/runScreens';
 import { CommandRegistry } from '../ui/debugCommands';
@@ -52,12 +53,6 @@ export interface RunSceneOptions {
   implantDefinitions?: ReadonlyMap<string, ImplantDefinition>;
 }
 
-const noSave: RunSavePort = {
-  loadRun: async () => null,
-  saveRun: async () => {},
-  clearRun: async () => {},
-};
-
 export type RunLogEntry =
   | { event: 'node_selected'; nodeId: string; type: MapNode['type'] }
   | { event: 'room_cleared'; nodeId: string }
@@ -92,7 +87,7 @@ export class RunScene implements Scene {
   private readonly log: RunLogEntry[] = [];
 
   constructor(private readonly options: RunSceneOptions = {}) {
-    this.save = options.save ?? noSave;
+    this.save = options.save ?? createRunSavePort();
     this.sector = options.sector ?? kuroganeSector;
     this.rooms = options.rooms ?? roomDefinitions;
   }
@@ -263,7 +258,20 @@ export class RunScene implements Scene {
 
   private showMap(): void {
     const state = this.manager.serialize();
-    this.persist(() => this.save.saveRun(state));
+    this.persist(async () => {
+      await this.save.saveRun(state);
+      if (this.disposed || typeof location === 'undefined') return;
+      const params = new URLSearchParams(location.search);
+      if (params.get('scene') !== 'run') return;
+      params.set('continue', '1');
+      params.delete('seed');
+      params.delete('loadout');
+      history.replaceState(
+        null,
+        '',
+        `${location.pathname}?${params}${location.hash}`,
+      );
+    });
     this.show();
   }
 

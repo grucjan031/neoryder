@@ -144,8 +144,8 @@ test('tryb produkcyjny bez debug nie wystawia uchwytu ani konsoli', async ({
   ).toHaveCount(0);
 });
 
-test('bez ?scene= pokazuje menu scen z linkami', async ({ page }) => {
-  await page.goto('/');
+test('bez ?scene= w debug pokazuje menu scen z linkami', async ({ page }) => {
+  await page.goto('/?debug=1');
   await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);
   const link = page.getByRole('link', { name: /Walka z wrogami/ });
