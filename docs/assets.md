@@ -67,7 +67,7 @@ Wysokość ~1,84 m, staw szyi `head` na 1,52 m. Części dodatkowe są dziećmi 
 | `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                                                             | — (do `InstancedMesh`)                                                                                                                                                            |
 | `plasma_blade.glb`                     | ostrze plazmowe                                                                                                                                                                     | `hilt`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`                                                                           |
 | `blaster.glb`                          | blaster z przegrzaniem                                                                                                                                                              | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                                                                      |
-| `player_arm_R.glb`, `player_arm_L.glb` | opancerzone przedramię i przegubowa dłoń FPP (2656 tri na rękę)                                                                                                                     | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support`                                                  |
+| `player_arm_R.glb`, `player_arm_L.glb` | gładka rękawica taktyczna z rękawem FPP (10 012 tri na rękę)                                                                                                                     | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support`                                                  |
 | `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut)                                                                                                                                   | —                                                                                                                                                                                 |
 | `pillar.glb`                           | filar 4 m                                                                                                                                                                           | —                                                                                                                                                                                 |
 | `wall_segment.glb`                     | ściana 4 × 3 m, grubość 0,4 m                                                                                                                                                       | —                                                                                                                                                                                 |
@@ -123,110 +123,146 @@ Położenia w metrach, w osiach glTF:
 
 ## Przegubowe ręce FPP
 
-Każda ręka ma 2656 trójkątów, przedramię z mankietem ok. 0,35 m i dłoń ok. 0,19 m od
-nadgarstka do czubka środkowego palca. Trzy fazowane, nachodzące płyty przedramienia są czarne,
-dwie podłużne listwy i pasek nadgarstka cyjanowe, mankiet biały. Grzbiet dłoni ma płytkę
-z magentowym emiterem `resonance_core`. Paliczki mają osłony kostek, ośmioboczne osłony
-przegubów i opuszki. Wszystkie materiały należą do `PALETTE`, bez tekstur i skinningu.
+Ręce FPP są wyjątkiem od ogólnego budżetu i płaskiego cieniowania: każda ma
+**10 012 trójkątów** (budżet 6–12 tys.), smooth shading i skin glTF. `tactical_glove`
+to jedna zamknięta, połączona siatka rękawicy, przedramienia i rękawa kurtki.
+Subdivision Surface (Catmull–Clark, jeden poziom) jest zastosowany przed eksportem.
+Przedramię z rękawem ma ok. 0,34 m, dłoń od nadgarstka do środkowego palca ok. 0,19 m.
 
-Hierarchia obu modeli (nazwy przegubów są identyczne wewnątrz R i L):
+Owalne palce mają proporcjonalne paliczki, zaokrąglone opuszki i wspólne błony
+międzypalcowe. Poduszki dłoni, łagodna nasada kciuka, kostki i delikatne ścięgna
+są częścią powierzchni rękawicy. Nie ma osobnych klocków paliczków ani przegubów.
+Rękaw kurtki ma subtelne nierówności materiału i czarny mankiet, bez bieli.
+
+Rękawica i rękaw używają matowego `mat_interactive` (roughness 0,85).
+Cienka linia `dorsal_trace` i lamówka `wrist_light` mają `mat_player_cyan`.
+Owalny, gładki `resonance_core` z `mat_power_magenta` jest osadzony w niskim
+czarnym `resonance_mount`. Dekoracje są małymi osobnymi siatkami, cała rękawica
+pozostaje jednym skinowanym obiektem. Materiały należą do `PALETTE`, bez tekstur.
+
+### Szkielet i skinning
 
 ```text
 player_arm_R / player_arm_L
-└─ forearm
-   ├─ armor_1/2/3, undersleeve, light_rail*, cuff, cuff_seam, wrist_ring, wrist_light
-   └─ wrist                         (pusty przegub)
-      └─ palm                       (siatka, pivot w nadgarstku)
-         ├─ dorsal_plate, dorsal_trace*, resonance_mount, resonance_core
-         ├─ thumb_web, palm_pad*
-         ├─ index_1  → index_2  → index_3
-         ├─ middle_1 → middle_2 → middle_3
-         ├─ ring_1   → ring_2   → ring_3
-         ├─ pinky_1  → pinky_2  → pinky_3
-         ├─ thumb_1  → thumb_2  → thumb_3
-         ├─ palm_center
-         ├─ socket_blade
-         ├─ socket_gun
-         └─ socket_support
+└─ hand_skeleton_R / hand_skeleton_L (armatura)
+   ├─ tactical_glove               (skin → 18 kości)
+   └─ forearm                     (kość)
+      ├─ wrist_light
+      └─ wrist                    (kość, pivot w nadgarstku)
+         └─ palm                  (kość, pivot w nadgarstku)
+            ├─ index_1  → index_2  → index_3
+            ├─ middle_1 → middle_2 → middle_3
+            ├─ ring_1   → ring_2   → ring_3
+            ├─ pinky_1  → pinky_2  → pinky_3
+            ├─ thumb_1  → thumb_2  → thumb_3
+            ├─ dorsal_trace, resonance_mount, resonance_core
+            ├─ palm_center
+            ├─ socket_blade
+            ├─ socket_gun
+            └─ socket_support
 ```
 
-Każdy `<palec>_<n>` jest pustym węzłem umieszczonym w stawie. Ma siatki
-`<palec>_phalanx_<n>`, `<palec>_guard_<n>` i `<palec>_bearing_<n>` jako dzieci;
-ostatni człon ma także `<palec>_pad`. Obrót przegubu niesie dalsze człony.
-Gwiazdka w schemacie oznacza kilka siatek dekoracyjnych, nie dosłowną nazwę węzła.
+Nazwy kości są dokładnie dawnymi nazwami przegubów. Automatic weights inicjuje
+grupy kości, następnie generator przypisuje poprawione wagi na pętlach: izoluje
+sąsiednie palce, miesza po dwie kości wokół stawów i stabilizuje rękaw.
+Subdivision interpoluje wagi i jest stosowany przed modyfikatorem armatury.
+Deformacja jest liniowa, bez zależności od blenderowego Preserve Volume,
+bez klipów animacji i bez niezastosowanego Subdivision w GLB.
+
+**Wymaganie integracyjne skina:** Three.js odczytuje `tactical_glove` jako
+`SkinnedMesh`. Instancję trzeba klonować z przepisaniem referencji kości
+(np. `SkeletonUtils.clone`). Obecne `model.clone(true)` w `src/render/handRig.ts`
+klonuje węzły, ale zachowuje oryginalny `Skeleton` i jego kości: obroty sklonowanych
+przegubów nie deformują siatki instancji. To odrębna konieczna poprawka renderera.
+Test `handRig.test.ts` sprawdza hierarchię i gniazda, lecz nie powiązanie kości skina.
+Kontrakt nazw, póz i macierzy gniazd pozostaje zgodny.
 
 ### Osie i gniazda
 
-GLB eksportuje **spoczynek**, z prostymi, lekko rozstawionymi palcami. `relaxed` jest pozą
-z danych stosowaną tylko do podglądu modelu. Root i nadgarstek są w początku układu.
-Przedramię biegnie w +Z, palce w -Z, wnętrze dłoni jest po +Y. Kciuk prawej dłoni jest po +X,
-lewej po -X. Lokalna oś X każdego przegubu palców to zawias: **dodatni kąt zgina do wnętrza**.
-Kciuk ma ukośny układ opozycji; `thumb_1` może obracać się we wszystkich osiach,
-`thumb_2/3` zginają się po lokalnym X. Oś -Z węzła `palm_center` wskazuje na zewnątrz
-wnętrza dłoni (w spoczynku +Y roota), do zaczepiania efektów mocy.
+GLB eksportuje **spoczynek**; `relaxed` jest stosowany do podglądu z danych.
+Root i nadgarstek są w początku, przedramię biegnie w +Z, palce w -Z,
+wnętrze dłoni jest po +Y. Kciuk R wyrasta po +X, kciuk L po -X.
+Lokalna oś **X kości palców jest zawiasem**, dodatni kąt zgina do wnętrza dłoni.
+Kości mają lokalną oś Y wzdłuż paliczka, Z ku wnętrzu dłoni. Ich spoczynkowe
+macierze obejmują tę orientację; lokalne osie kości nie są osiami roota.
+`thumb_1` obejmuje nasadę śródręcza w ukośnym układzie opozycji, `thumb_2/3`
+dalsze człony. Oś -Z `palm_center` wskazuje +Y roota w spoczynku.
 
-Gniazda są pustymi dziećmi `palm`, mają skalę [1, 1, 1] i obroty o wyznaczniku +1:
+Gniazda i `palm_center` są pustymi dziećmi kości `palm`; `resonance_core` jest
+siatką również pod `palm`. Nie mają odbicia ani skali, wyznaczniki wynoszą +1.
+Pozycje poniżej są **względem roota R**, nie lokalnego układu kości:
 
-- `socket_blade`: dołącz `plasma_blade.glb` z jednostkową transformacją i zastosuj `gripBlade`.
-  Rękojeść leży poprzecznie w tunelu palców; emiter i ostrze wychodzą po stronie wskazującego
-  i kciuka, głowica po stronie małego palca. Lokalna -Z broni wskazuje stronę emitera.
-- `socket_gun`: dołącz `pistol.glb` lub `blaster.glb` z jednostkową transformacją i zastosuj
-  `gripGun`. Wskazujący biegnie przy kabłąku; `gripGunFire` dociska jego dalsze człony.
-  Kciuk leży obok zamka. Przedmioty są wymienne — ręka trzyma jedną rzecz naraz.
-- `socket_support`: zastosuj `support` i dopasuj światową macierz tego gniazda do
-  światowej macierzy `support` broni. Dłoń podpiera łoże od spodu; gniazdo ma skręt o 55°
-  względem spoczynku dłoni, żeby przedramię dochodziło ukośnie z boku.
-  Dla sceny podglądu: `M_hand = M_weapon_support * inverse(M_hand_socket_relative)`.
+| Gniazdo | Pozycja [x, y, z], m | Użycie |
+| --- | --- | --- |
+| `socket_blade` | [0, 0.0422, -0.08544] | `gripBlade`; rękojeść poprzecznie, emiter po stronie wskazującego |
+| `socket_gun` | [0.06158, 0.04108, -0.11575] | `gripGun` / `gripGunFire`; pochylenie chwytu o 0,05 rad zostawia miejsce przy kolbie |
+| `socket_support` | [0.00420, 0.03100, -0.10321] | `support`; skręt 55° względem spoczynku dłoni |
 
-Lewa geometria jest odbiciem względem YZ z odwróconą kolejnością wierzchołków ścian
-i poprawnymi normalnymi. Dla lokalnych macierzy stosowane jest `M_L = S * M_R * S`,
-gdzie `S = diag(-1, 1, 1, 1)`. Nie ma ujemnej skali, także na gniazdach.
-`S * Rx(a) * S = Rx(a)`, więc te same dodatnie kąty z danych zginają obie dłonie
-w tę samą stronę. Wszystkie dostarczone pozy używają X; przy przyszłych obrotach Y/Z
-trzeba uwzględnić lustrzany układ (identyczne kąty Y/Z nie tworzą lustrzanych ruchów).
+Dołącz przedmiot z jednostkową transformacją w gnieździe. Dla podparcia dopasuj
+światową macierz `socket_support` do `support` broni:
+`M_hand = M_weapon_support * inverse(M_hand_socket_relative)`.
+`socket_gun` ma obrót `Rz(-π/2) * Rx(-0.05)` w układzie roota R.
+`socket_blade` zachowuje poprzednią orientację osi przedmiotu.
+
+Geometria L jest odbiciem względem YZ, z poprawnymi normalnymi. Spoczynkowe
+układy kości i gniazd: `M_L = S * M_R * S`, `S = diag(-1, 1, 1, 1)`.
+W eksporcie wszystkie skale są dodatnie i jednostkowe, także na kościach i gniazdach.
+`S * Rx(a) * S = Rx(a)`: identyczne dodatnie kąty X dają lustrzane zgięcie.
+Pozy używają tylko X; przyszłe kąty Y/Z wymagają uwzględnienia odbicia.
 
 ### Pozy — jedno źródło danych
 
-`src/data/hands/handPoses.json` jest czytany przez generator podglądów i przeznaczony do
-odczytu przez grę. Format:
+`src/data/hands/handPoses.json` jest wspólnym źródłem gry i podglądów.
+Format nie zmienia się:
 
 ```json
 {
   "poses": {
     "relaxed": {
-      "index_1": [0.17, 0, 0]
+      "index_1": [0.18, 0, 0]
     }
   }
 }
 ```
 
-To przykład formatu, plik zawiera siedem pełnych póz: `relaxed`, `open`, `fist`,
-`gripBlade`, `gripGun`, `gripGunFire`, `support`. Wartości to **radiany Euler XYZ
-w lokalnych osiach glTF**, tak jak w Three.js (`Rx * Ry * Rz`). Węzły pominięte wracają
-do spoczynku. Obrót należy liczyć od zapamiętanej orientacji spoczynkowej, bez kumulowania:
-`q_pose = q_rest * q_EulerXYZ`. Nie dodawać kątów do Eulera spoczynkowego.
-Skrypt jawnie przelicza lokalne geometrie i macierze glTF do Blendera przed eksportem,
-a przy podglądzie sprzęga obrót pozy z tą samą zmianą bazy.
+Plik zawiera siedem pełnych póz po 15 przegubów palców: `relaxed`, `open`, `fist`,
+`gripBlade`, `gripGun`, `gripGunFire`, `support`. `relaxed` ma stopniowo mocniej
+ugięte dalsze palce i kciuk przy wskazującym. `open` otwiera dłoń do mocy bez
+przeprostów, `fist` zawija opuszki ku dłoni, chwyty dopasowano do przedmiotów.
+`gripGunFire` zmienia wskazujący, pozostałe palce zachowują stabilny chwyt.
+
+Wartości to **radiany Euler XYZ w lokalnych osiach kości glTF**, jak w Three.js
+(`Rx * Ry * Rz`). Pominięte węzły wracają do spoczynku. Należy liczyć od
+zapamiętanej orientacji, bez kumulowania: `q_pose = q_rest * q_EulerXYZ`.
+Generator podglądów ustawia tę samą rotację w lokalnym układzie kości armatury.
+Macierze gniazd należy składać względem roota, również przez kości szkieletu.
 
 ### Budowanie i kontrola wizualna
 
 ```bash
 "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only player_arm_R,player_arm_L
-"D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only blaster,pistol,rifle,scatter,sniper_rifle,beam,emp_launcher
 "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only hand_previews
+npx vitest run tests/unit/handRig.test.ts
 ```
 
-`hand_previews` tworzy wyłącznie PNG, **nie eksportuje dodatkowych GLB**. Podglądy Workbench:
+`hand_previews` odtwarza wszystkie PNG `hand_*` i `player_arm_*`, bez eksportowania
+GLB i bez przebudowy plików modeli broni. Workbench używa gładkich normalnych,
+oświetlenia studyjnego i cavity, aby pokazać przekroje i zgięcia:
 
-- `player_arm_R.png`, `player_arm_L.png`: `relaxed`, pełne przedramię i mankiet;
-- `hand_pose_open.png`, `hand_pose_fist.png`: obie dłonie obok siebie, wspólne kąty;
-- `hand_grip_blade.png`, `hand_grip_pistol.png`, `hand_grip_rifle.png`: przedmioty w gniazdach,
-  karabin dodatkowo z lewą ręką na swoim `support`;
-- `hand_fpp_view.png`: kamera w początku, patrzy w -Z, pionowe FOV 70°, 16:9;
-  prawy nadgarstek przy [0.22, -0.24, -0.45] m, pistolet skierowany w -Z;
-- dodatkowe zbliżenia: `hand_grip_blade_inner.png`, `hand_grip_pistol_inner.png`,
-  `hand_support_rifle.png`; warianty `hand_grip_pistol_fire.png` i `hand_grip_blaster.png`.
+- `player_arm_R.png`, `player_arm_L.png`: `relaxed`, całe przedramię i czarny mankiet;
+- `hand_relaxed_detail.png`: grzbiet, nasada kciuka i naturalny łuk palców;
+- `hand_pose_open.png`, `hand_pose_fist.png`: obie dłonie, wspólne kąty;
+- `hand_fist_inner.png`: zbliżenie obu pięści od strony opuszek;
+- `hand_grip_blade.png`, `hand_grip_pistol.png`, `hand_grip_blaster.png`,
+  `hand_grip_pistol_fire.png`, `hand_grip_rifle.png`: chwyty przedmiotów;
+- `hand_grip_blade_inner.png`, `hand_grip_pistol_inner.png`, `hand_support_rifle.png`:
+  styki z rękojeścią, chwytem i łożem;
+- `hand_fpp_view.png`: kamera gracza w początku, -Z, pionowe FOV 70°, 16:9;
+  prawy nadgarstek przy [0.22, -0.24, -0.45] m, ręka w prawym dolnym rogu.
 
-Sprawdź szczególnie styki opuszek z chwytem i kciuk przy zamku, czytelność segmentów
-przy zgięciu, lustrzane zgięcie palców oraz proporcje ręki w dolnym prawym rogu widoku FPP.
-Podgląd ostrza celowo kadruje rękojeść i dłoń; koniec pełnowymiarowego ostrza wypada poza kadrem.
+Kontrola ręczna: opuszki obejmują chwyt, kciuk przeciwstawia się palcom, zgięcia
+są gładkie i nie zapadają się, obie dłonie zginają się lustrzanie. Sprawdź nasadę
+kciuka, lamówkę i proporcje FPP. Podgląd ostrza kadruje rękojeść i dłoń,
+koniec pełnego ostrza jest poza kadrem. Sprawdzono też przecięcia powierzchni
+rękawicy z ostrzem, pistoletem, blasterem i karabinem (`gripGun`, `gripGunFire`)
+oraz z karabinem dla lewej ręki `support`: brak przecięć.

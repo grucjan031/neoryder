@@ -906,109 +906,352 @@ def _crate(size: float):
     return bm_merge(*parts)
 
 
-def build_player_arm(side: str):
-    """Sztywne paliczki: modelowanie w glTF, na końcu zmiana bazy do Blendera.
+def _hand_surface(name, vertices, faces, mat, parent):
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(vertices, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    obj.parent = parent
+    mesh.materials.append(material(mat))
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    bm.to_mesh(mesh)
+    bm.free()
+    for polygon in mesh.polygons:
+        polygon.use_smooth = True
+    return obj
 
-    Spoczynek: nadgarstek w początku, palce -Z, wnętrze +Y, prawy kciuk po +X.
-    Odbicie S*M*S zachowuje prawoskrętność; S*Rx*S = Rx dla obu dłoni.
+
+def _hand_subdivide(obj, levels=1):
+    bpy.context.view_layer.objects.active = obj
+    modifier = obj.modifiers.new("Tailored quad surface", "SUBSURF")
+    modifier.levels = levels
+    bpy.ops.object.modifier_move_up(modifier=modifier.name)
+    bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+
+def _hand_bone_child(obj, rig, bone, world):
+    obj.parent = rig
+    obj.parent_type = "BONE"
+    obj.parent_bone = bone
+    obj.matrix_parent_inverse = Matrix.Identity(4)
+    bpy.context.view_layer.update()
+    obj.matrix_world = world
+    obj.scale = (1, 1, 1)
+    bpy.context.view_layer.update()
+
+
+def _hand_tube(name, centers, radii, mat, root, closed=False, sides=8):
+    vertices, faces = [], []
+    for i, center in enumerate(centers):
+        before = (i - 1) % len(centers) if closed else max(0, i - 1)
+        after = (i + 1) % len(centers) if closed else min(len(centers) - 1, i + 1)
+        tangent = Vector(centers[after]) - Vector(centers[before])
+        if tangent.length < 1e-6:
+            tangent = Vector((0, 0, 1))
+        tangent.normalize()
+        cross = tangent.cross(Vector((0, 1, 0)))
+        if cross.length < 0.1:
+            cross = tangent.cross(Vector((1, 0, 0)))
+        cross.normalize()
+        other = tangent.cross(cross).normalized()
+        for j in range(sides):
+            angle = 2 * math.pi * j / sides
+            vertices.append(Vector(center) + radii[i] * (cross * math.cos(angle) + other * math.sin(angle)))
+    for i in range(len(centers) if closed else len(centers) - 1):
+        for j in range(sides):
+            faces.append((i * sides + j, i * sides + (j + 1) % sides,
+                          ((i + 1) % len(centers)) * sides + (j + 1) % sides,
+                          ((i + 1) % len(centers)) * sides + j))
+    if not closed:
+        faces.extend((tuple(reversed(range(sides))), tuple((len(centers) - 1) * sides + j for j in range(sides))))
+    return _hand_surface(name, vertices, faces, mat, root)
+
+
+def _hand_dorsal_points(glove, basis):
+    from mathutils.bvhtree import BVHTree
+
+    surface = BVHTree.FromPolygons([v.co for v in glove.data.vertices],
+                                   [p.vertices for p in glove.data.polygons])
+    inverse = basis.inverted()
+    points = []
+    for z in (-.020, -.029, -.044, -.060, -.071):
+        origin = basis @ Vector((.020, -.080, z))
+        direction = basis.to_3x3() @ Vector((0, 1, 0))
+        position, normal, _, _ = surface.ray_cast(origin, direction)
+        if position is None:
+            raise RuntimeError("Dorsal piping must stay on the glove surface")
+        points.append(inverse @ (position + normal * .0003))
+    return points
+
+
+def build_player_arm(side: str):
+    """Continuous tailored glove: quad palm/webs, joint loops and baked subdivision.
+
+    Construction coordinates are glTF metres. Bone Y follows each finger; bone X
+    is the flexion hinge and bone Z faces the palm. Positive X curls both hands.
+    Reflection is baked into vertices and proper rest frames, never object scale.
     """
     root = empty(f"player_arm_{side}", size=0.05)
-    forearm = node("forearm", root)
-    part("undersleeve", bm_prism(0.315, 0.049, 0.030, sides=8,
-         top_at_origin=False, offset=(0.012, 0.002, 0.163)), "mat_interactive", forearm)
-    for i, (z, width) in enumerate(((0.063, 0.068), (0.151, 0.080), (0.244, 0.092))):
-        part(f"armor_{i + 1}", bm_box(width, 0.053, 0.112, center=(0.009, -0.009, z),
-             taper_top=(1.06, 1.03), bevel=0.009), "mat_interactive", forearm)
-    for x in (-0.019, 0.033):
-        part("light_rail", bm_box(0.004, 0.003, 0.235, center=(x, -0.037, 0.164),
-             bevel=0.0009), "mat_player_cyan", forearm)
-    part("cuff", bm_prism(0.055, 0.056, 0.051, sides=8, top_at_origin=False,
-         offset=(0.013, 0.002, 0.322)), "mat_world", forearm)
-    part("cuff_seam", bm_prism(0.009, 0.053, 0.052, sides=8, top_at_origin=False,
-         offset=(0.013, 0.002, 0.296)), "mat_interactive", forearm)
-    part("wrist_ring", bm_prism(0.022, 0.034, 0.034, sides=10, top_at_origin=False,
-         offset=(0, 0, 0.012)), "mat_interactive", forearm)
-    part("wrist_light", bm_prism(0.004, 0.0345, 0.0345, sides=10, top_at_origin=False,
-         offset=(0, 0, 0.012)), "mat_player_cyan", forearm)
-    wrist = node("wrist", forearm)
-    palm = part("palm", bm_box(0.078, 0.028, 0.094, center=(0, 0, -0.047),
-                taper_top=(0.92, 0.94), bevel=0.009), "mat_interactive", wrist)
-    part("dorsal_plate", bm_box(0.060, 0.010, 0.063, center=(0, -0.018, -0.049),
-         taper_top=(0.90, 0.85), bevel=0.005), "mat_interactive", palm)
-    part("resonance_mount", bm_prism(0.007, 0.016, 0.019, sides=6, axis="Y",
-         top_at_origin=False, offset=(0, -0.027, -0.050)), "mat_interactive", palm)
-    part("resonance_core", bm_prism(0.003, 0.012, 0.013, sides=6, axis="Y",
-         top_at_origin=False, offset=(0, -0.032, -0.050)), "mat_power_magenta", palm)
-    for x in (-0.022, 0.022):
-        part("dorsal_trace", bm_box(0.002, 0.002, 0.038, center=(x, -0.024, -0.049)),
-             "mat_player_cyan", palm)
-    part("thumb_web", bm_ico(0.023, center=(0.030, 0, -0.038), subdiv=1,
-         scale=(0.8, 0.67, 1.18)), "mat_interactive", palm)
-    for x in (-0.024, 0.022):
-        part("palm_pad", bm_box(0.023, 0.004, 0.048, center=(x, 0.014, -0.045),
-             bevel=0.002), "mat_interactive", palm)
-    center = node("palm_center", palm, (0, 0.016, -0.051))
-    center.rotation_euler.x = math.pi / 2  # -Z węzła = +Y dłoni (normalna wnętrza).
-
-    fingers = (
-        ("index", 0.029, -0.100, (0.041, 0.025, 0.021), 0.0175, -0.045),
-        ("middle", 0.009, -0.098, (0.043, 0.027, 0.022), 0.0185, -0.010),
-        ("ring", -0.012, -0.100, (0.040, 0.025, 0.021), 0.0175, 0.025),
-        ("pinky", -0.031, -0.101, (0.036, 0.021, 0.018), 0.0150, 0.090),
-        ("thumb", 0.042, -0.032, (0.032, 0.026, 0.022), 0.0220, 0),
-    )
-    for name, x, z, lengths, width, spread in fingers:
-        parent = palm
-        for j, length in enumerate(lengths):
-            joint = node(f"{name}_{j + 1}", parent,
-                         (x, 0, z) if j == 0 else (0, 0, -lengths[j - 1]))
-            if j == 0:
-                if name == "thumb":
-                    joint.location.y = -0.004
-                    joint.rotation_euler = (-0.42285393, -0.50065471, 0.75315128)
-                else:
-                    joint.rotation_euler.y = spread
-            part(f"{name}_phalanx_{j + 1}", bm_box(width * (1 - j * 0.09), 0.017 - j * 0.001,
-                 length - 0.002, center=(0, 0, -length / 2), bevel=0.003), "mat_interactive", joint)
-            part(f"{name}_bearing_{j + 1}", bm_prism(width * 0.90, 0.007, 0.007,
-                 sides=8, axis="X", top_at_origin=False), "mat_interactive", joint)
-            guard_length, guard_center = (0.36, 0.22) if name == "thumb" and j == 2 else (0.56, 0.36)
-            part(f"{name}_guard_{j + 1}", bm_box(width * 0.88, 0.005, length * guard_length,
-                 center=(0, -0.009, -length * guard_center), bevel=0.0018), "mat_interactive", joint)
-            if j == 0:
-                part(f"{name}_joint_light", bm_box(width * 0.52, 0.0018, 0.002,
-                     center=(0, -0.012, -0.006)), "mat_player_cyan", joint)
-            if j == 2:
-                part(f"{name}_pad", bm_box(width * 0.69, 0.0015, length * 0.52,
-                     center=(0, 0.007, -length * 0.61), bevel=0.0006), "mat_interactive", joint)
-            parent = joint
-
-    # Kolumny macierzy: osie broni w układzie spoczynkowym dłoni.
-    gun_rotation = Matrix(((0, 1, 0), (-1, 0, 0), (0, 0, 1))).to_4x4()
-    blade_rotation = Matrix(((0, 0, -1), (0, 1, 0), (1, 0, 0))).to_4x4()
-    blade_rotation = blade_rotation @ Matrix.Rotation(math.pi / 2, 4, "Z")
-    for name, loc, rotation in (
-        ("socket_gun", (0.049, 0.038, -0.120), gun_rotation),
-        ("socket_blade", (0, 0.033, -0.110), blade_rotation),
-        ("socket_support", (0, 0.024, -0.108), Matrix.Rotation(math.radians(55), 4, "Y")),
-    ):
-        socket = node(name, palm)
-        socket.matrix_basis = Matrix.Translation(loc) @ rotation
-
-    bpy.context.view_layer.update()
     reflection = Matrix.Diagonal((-1, 1, 1, 1)) if side == "L" else Matrix.Identity(4)
     basis = HAND_BASIS @ reflection
-    for obj in [root, *root.children_recursive]:
-        local = obj.matrix_basis.copy()
-        obj.matrix_basis = basis @ local @ basis.inverted()
-        if obj.type == "MESH":
-            obj.data.transform(basis)
-            if side == "L":
-                bm = bmesh.new()
-                bm.from_mesh(obj.data)
-                bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
-                bm.to_mesh(obj.data)
-                bm.free()
+    forward_frame = Matrix.Rotation(-math.pi / 2, 4, "X")
+    fingers = (
+        ("pinky", -0.032, -0.083, (0.032, 0.020, 0.018), 0.0087, 0.105),
+        ("ring", -0.013, -0.093, (0.040, 0.025, 0.020), 0.0103, 0.035),
+        ("middle", 0.009, -0.096, (0.043, 0.027, 0.021), 0.0110, -0.012),
+        ("index", 0.031, -0.090, (0.039, 0.024, 0.020), 0.0105, -0.065),
+    )
+    # Distal edge: four dorsal vertices and four palmar vertices per finger.
+    angles = [math.pi + (j + 0.5) * math.pi / 4 for j in range(8)]
+    frames, lengths_by_name = {}, {}
+    for name, x, z, lengths, radius, spread in fingers:
+        frames[name] = Matrix.Translation((x, 0, z)) @ Matrix.Rotation(spread, 4, "Y")
+        lengths_by_name[name] = lengths
+    # The metacarpal emerges from the thenar mound, diagonally forward, not sideways.
+    frames["thumb"] = (Matrix.Translation((0.034, 0.006, -0.034))
+                       @ Matrix.Rotation(-0.10, 4, "X")
+                       @ Matrix.Rotation(-0.60, 4, "Y")
+                       @ Matrix.Rotation(0.62, 4, "Z"))
+    lengths_by_name["thumb"] = (0.028, 0.025, 0.021)
+    vertices, faces, weights = [], [], []
+
+    def vertex(point, influence):
+        vertices.append(basis @ Vector(point))
+        weights.append(influence)
+        return len(vertices) - 1
+
+    def bridge(a, b):
+        for j in range(len(a)):
+            faces.append((a[j], a[(j + 1) % len(a)], b[(j + 1) % len(b)], b[j]))
+
+    distal = []
+    for name, x, z, lengths, radius, spread in fingers:
+        distal.append([frames[name] @ Vector((radius * math.cos(a), radius * 0.89 * math.sin(a), 0)) for a in angles])
+    # Cross sections run from jacket opening to knuckle line. A distal scallop
+    # blends the four knuckle cushions into the back instead of adding armour boxes.
+    sections = (
+        (0.340, .048, .036), (.335, .049, .037), (.310, .048, .036),
+        (.275, .046, .034), (.235, .043, .032), (.190, .041, .030),
+        (.145, .037, .027), (.100, .033, .025), (.066, .031, .024),
+        (.047, .031, .024), (.043, .029, .023), (.038, .029, .023),
+        (.033, .027, .021), (.018, .025, .019), (.002, .025, .017),
+        (-.017, .029, .017), (-.036, .036, .020), (-.055, .040, .020),
+        (-.072, .041, .018), (-.083, .041, .016), (None, None, None),
+    )
+    rings = []
+    for row, (z, width, depth) in enumerate(sections):
+        dorsal, palmar = [], []
+        for f, (name, *_) in enumerate(fingers):
+            for j in range(8):
+                endpoint = distal[f][j]
+                if z is None:
+                    point = endpoint
+                    influence = {"palm": .55, f"{name}_1": .45}
+                else:
+                    u = endpoint.x / .041
+                    y = (-1 if j < 4 else 1) * depth * math.sqrt(max(.10, 1 - .82 * u * u))
+                    # Palm pads and restrained dorsal tendon ridges.
+                    if z < -.015:
+                        if j >= 4:
+                            y += .0025 * math.exp(-((endpoint.x - .023) / .018) ** 2)
+                        else:
+                            y -= .0014 * math.exp(-((j - 1.5) / .9) ** 2)
+                    if z > .047:
+                        y += .0013 * math.cos(u * 4.5 + row * 1.7) * math.exp(-((z - .105) / .095) ** 2)
+                    center_x = .006 * max(0, z) / .34
+                    point = Vector((u * width + center_x, y, z))
+                    blend = max(0, min(1, (-z - .058) / .032))
+                    point = point.lerp(endpoint, blend * .65)
+                    if z > .040:
+                        influence = {"forearm": 1}
+                    elif z > .005:
+                        t = (z - .005) / .035
+                        influence = {"forearm": t, "wrist": 1 - t}
+                    else:
+                        t = max(0, min(1, (-z + .002) / .025))
+                        influence = {"wrist": 1 - t, "palm": t}
+                index = vertex(point, influence)
+                (dorsal if j < 4 else palmar).append(index)
+        # Around the perimeter: dorsal left->right, palmar right->left.
+        ring = dorsal + [v for f in reversed(range(4)) for v in palmar[f * 4:f * 4 + 4]]
+        rings.append(ring)
+        if row:
+            # Thumb opening on the radial side over three palm rows (8-edge boundary).
+            previous = rings[row - 1]
+            for j in range(32):
+                if j == 15 and row in (16, 17, 18):
+                    continue
+                faces.append((previous[j], previous[(j + 1) % 32], ring[(j + 1) % 32], ring[j]))
+    faces.append(tuple(reversed(rings[0])))
+    last = rings[-1]
+    for f in range(3):
+        # Real webbing between adjoining fingers, continuous with both palm surfaces.
+        faces.append((last[f * 4 + 3], last[(f + 1) * 4], last[31 - (f + 1) * 4], last[28 - f * 4]))
+
+    finger_specs = list(fingers) + [("thumb", 0, 0, lengths_by_name["thumb"], .0113, 0)]
+    for f, (name, x, z, lengths, radius, spread) in enumerate(finger_specs):
+        frame = frames[name]
+        if name == "thumb":
+            previous = [rings[r][15] for r in (15, 16, 17, 18)] + [rings[r][16] for r in (18, 17, 16, 15)]
+            base_points = [frame @ Vector((radius * 1.25 * math.cos(a), radius * math.sin(a), -.016)) for a in angles]
+            # Match perimeter order geometrically: no crossed quads in the thumb web.
+            candidates = []
+            for order in (previous, list(reversed(previous))):
+                for shift in range(8):
+                    candidate = order[shift:] + order[:shift]
+                    cost = sum((basis.inverted() @ vertices[v] - point).length_squared
+                               for v, point in zip(candidate, base_points))
+                    candidates.append((cost, candidate))
+            previous = min(candidates, key=lambda entry: entry[0])[1]
+            transition, base = [], []
+            for index, point in zip(previous, base_points):
+                boundary = basis.inverted() @ vertices[index]
+                weights[index] = {"palm": .88, "thumb_1": .12}
+                transition.append(vertex(boundary.lerp(point, .48), {"palm": .78, "thumb_1": .22}))
+                base.append(vertex(point, {"palm": .25, "thumb_1": .75}))
+            bridge(previous, transition)
+            bridge(transition, base)
+            previous = base
+        else:
+            previous = [last[f * 4 + j] for j in range(4)] + [last[28 - f * 4 + j] for j in range(4)]
+        total = sum(lengths)
+        joints = (0, lengths[0], lengths[0] + lengths[1])
+        distances = sorted(set((.004, lengths[0] * .52, lengths[0] - .004, lengths[0],
+                                lengths[0] + .004, joints[2] - .004, joints[2], joints[2] + .004,
+                                total - .009, total - .004, total - .001)))
+        for distance in distances:
+            if name == "thumb" and distance <= .016:
+                continue
+            t = distance / total
+            taper = 1 - .26 * t
+            tip = min(1, max(.22, (total - distance) / .007)) ** .5
+            bulge = 1 + .10 * sum(math.exp(-((distance - joint) / .004) ** 2) for joint in joints[1:])
+            influence = {f"{name}_{min(3, 1 + sum(distance > joint for joint in joints[1:]))}": 1}
+            for joint_index, joint in enumerate(joints[1:], 1):
+                if abs(distance - joint) <= .006:
+                    t_joint = max(0, min(1, .5 + (distance - joint) / .012))
+                    influence = {f"{name}_{joint_index}": 1 - t_joint, f"{name}_{joint_index + 1}": t_joint}
+            root_blend = .016 if name == "thumb" else .009
+            if distance < root_blend:
+                t_root = distance / root_blend
+                influence = {"palm": .45 * (1 - t_root), f"{name}_1": .55 + .45 * t_root}
+            ring = []
+            for a in angles:
+                # Oval pad, slightly full on the palm side; integrated knuckle cushion.
+                xx = radius * taper * tip * math.cos(a)
+                yy = radius * .88 * taper * tip * math.sin(a) * bulge
+                if math.sin(a) > 0:
+                    yy *= 1.06
+                ring.append(vertex(frame @ Vector((xx, yy, -distance)), influence))
+            bridge(previous, ring)
+            previous = ring
+        faces.append(tuple(previous))
+
+    glove = _hand_surface("tactical_glove", vertices, faces, "mat_interactive", root)
+    # All vertices above are already in Blender world coordinates, with identity transforms.
+    armature = bpy.data.armatures.new(f"hand_skeleton_{side}")
+    rig = bpy.data.objects.new(f"hand_skeleton_{side}", armature)
+    bpy.context.scene.collection.objects.link(rig)
+    rig.parent = root
+    bpy.ops.object.select_all(action="DESELECT")
+    rig.select_set(True)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode="EDIT")
+
+    def bone(name, joint_frame, length, parent=None):
+        edit = armature.edit_bones.new(name)
+        rotation = reflection @ joint_frame @ reflection
+        rotation.translation = reflection @ joint_frame.translation
+        edit.length = length
+        edit.matrix = HAND_BASIS @ rotation @ forward_frame
+        if parent:
+            edit.parent = armature.edit_bones[parent]
+        return edit
+
+    bone("forearm", Matrix.Translation((0, 0, .30)), .28)
+    bone("wrist", Matrix.Identity(4), .009, "forearm")
+    bone("palm", Matrix.Identity(4), .075, "wrist")
+    for name, _, _, lengths, _, _ in finger_specs:
+        distance, parent = 0, "palm"
+        for j, length in enumerate(lengths):
+            joint_name = f"{name}_{j + 1}"
+            bone(joint_name, frames[name] @ Matrix.Translation((0, 0, -distance)), length, parent)
+            distance += length
+            parent = joint_name
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.ops.object.select_all(action="DESELECT")
+    glove.select_set(True)
+    rig.select_set(True)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.parent_set(type="ARMATURE_AUTO")
+    # Heat weights seed the skin; topology-specific corrections isolate adjacent digits,
+    # keep the jacket stable, and spread each joint over three supporting loops.
+    for group in glove.vertex_groups:
+        group.remove(range(len(vertices)))
+    for name in (b.name for b in armature.bones):
+        if not glove.vertex_groups.get(name):
+            glove.vertex_groups.new(name=name)
+    for index, influence in enumerate(weights):
+        for name, weight in influence.items():
+            if weight > 0:
+                glove.vertex_groups[name].add([index], weight, "REPLACE")
+    _hand_subdivide(glove)
+    arm_modifier = next(m for m in glove.modifiers if m.type == "ARMATURE")
+    # Subdivision is baked before linear skinning, including interpolated vertex weights.
+    arm_modifier.use_deform_preserve_volume = False
+
+    def palm_detail(obj, position=(0, 0, 0)):
+        obj.data.transform(basis)
+        if side == "L":
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
+            bm.to_mesh(obj.data)
+            bm.free()
+        _hand_bone_child(obj, rig, "palm", Matrix.Translation(basis @ Vector(position)))
+        return obj
+
+    # Thin light piping, seated in the glove surface rather than raised armour.
+    trace = _hand_tube("dorsal_trace", _hand_dorsal_points(glove, basis),
+                       [.0009] * 5, "mat_player_cyan", root)
+    palm_detail(trace)
+    cuff_centers = []
+    for index in rings[11]:
+        point = basis.inverted() @ vertices[index]
+        outward = Vector((point.x, point.y, 0)).normalized()
+        cuff_centers.append(point + outward * .0008)
+    cuff = _hand_tube("wrist_light", cuff_centers, [.0011] * 32, "mat_player_cyan", root, closed=True)
+    cuff.data.transform(basis)
+    if side == "L":
+        bm = bmesh.new()
+        bm.from_mesh(cuff.data)
+        bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
+        bm.to_mesh(cuff.data)
+        bm.free()
+    _hand_bone_child(cuff, rig, "forearm", Matrix.Identity(4))
+    for name, size, position, mat in (
+        ("resonance_mount", (.014, .004, .019), (0, -.020, -.047), "mat_interactive"),
+        ("resonance_core", (.0105, .0032, .0145), (0, -.023, -.047), "mat_power_magenta"),
+    ):
+        obj = mesh_object(name, bm_ico(1, subdiv=3, scale=size), mat)
+        for polygon in obj.data.polygons:
+            polygon.use_smooth = True
+        palm_detail(obj, position)
+    gun_rotation = (Matrix(((0, 1, 0), (-1, 0, 0), (0, 0, 1))).to_4x4()
+                    @ Matrix.Rotation(-.05, 4, "X"))
+    blade_rotation = Matrix(((0, 0, -1), (0, 1, 0), (1, 0, 0))).to_4x4() @ Matrix.Rotation(math.pi / 2, 4, "Z")
+    for name, loc, rotation in (
+        ("palm_center", (0, .018, -.049), Matrix.Rotation(math.pi / 2, 4, "X")),
+        ("socket_gun", (.06158, .04108, -.11575), gun_rotation),
+        ("socket_blade", (0, .0422, -.08544), blade_rotation),
+        ("socket_support", (.00420, .03100, -.10321), Matrix.Rotation(math.radians(55), 4, "Y")),
+    ):
+        obj = empty(name, size=.012)
+        world = HAND_BASIS @ reflection @ Matrix.Translation(loc) @ rotation @ reflection @ HAND_BASIS.inverted()
+        _hand_bone_child(obj, rig, "palm", world)
     bpy.context.view_layer.update()
     return root
 
@@ -1016,14 +1259,14 @@ def build_player_arm(side: str):
 def hand_pose(root, name):
     with open(HAND_POSES, encoding="utf-8") as source:
         angles = json.load(source)["poses"][name]
-    objects = {o.name.split(".")[0]: o for o in root.children_recursive}
-    for joint_name, xyz in angles.items():
-        obj = objects[joint_name]
+    rig = next(o for o in root.children_recursive if o.type == "ARMATURE")
+    for joint in rig.pose.bones:
         rotation = Matrix.Identity(4)
-        # Three.js Euler XYZ = Rx * Ry * Rz (Blender Euler XYZ używa innej kolejności).
-        for axis, angle in zip("XYZ", xyz):
+        # Bone X is the same hinge in Blender and glTF; XYZ order matches Three.js.
+        for axis, angle in zip("XYZ", angles.get(joint.name, (0, 0, 0))):
             rotation = rotation @ Matrix.Rotation(angle, 4, axis)
-        obj.matrix_basis = obj.matrix_basis @ HAND_BASIS @ rotation @ HAND_BASIS.inverted()
+        joint.rotation_mode = "QUATERNION"
+        joint.rotation_quaternion = rotation.to_quaternion()
     bpy.context.view_layer.update()
 
 
@@ -1141,6 +1384,14 @@ def attach_hand_item(hand, item, socket_name):
 
 
 def render_hand_previews():
+    for side in ("R", "L"):
+        reset_scene()
+        hand = build_player_arm(side)
+        hand_pose(hand, "relaxed")
+        hand_preview(f"player_arm_{side}.png", target=(0, 0, .065), span=.61)
+        if side == "R":
+            hand_preview("hand_relaxed_detail.png", target=(.008, 0, -.060),
+                         direction=(.25, -1, -.4), span=.29)
     for pose in ("open", "fist"):
         reset_scene()
         right = build_player_arm("R")
@@ -1151,6 +1402,9 @@ def render_hand_previews():
         left.location.x = 0.105
         hand_preview(f"hand_pose_{pose}.png", target=(0, 0, 0.04),
                      direction=(0.05, -1, -0.55), span=0.75)
+        if pose == "fist":
+            hand_preview("hand_fist_inner.png", target=(0, .02, -.06),
+                         direction=(.10, 1, -.4), span=.42)
     for name, builder, pose, socket in (
         ("blade", build_plasma_blade, "gripBlade", "socket_blade"),
         ("pistol", build_pistol, "gripGun", "socket_gun"),
