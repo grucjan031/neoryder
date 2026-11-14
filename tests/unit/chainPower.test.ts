@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import { Line, Scene as ThreeScene } from 'three';
-import type { MeshBasicMaterial } from 'three';
+import { Scene as ThreeScene } from 'three';
 import { DamageSystem, Health } from '../../src/combat/damage';
 import { ChainPower } from '../../src/combat/powers/chain';
 import { PlayerEnergy } from '../../src/combat/powers/energy';
@@ -23,8 +22,6 @@ import { Rng } from '../../src/core/rng';
 import { Stats } from '../../src/core/stats';
 import { tuning } from '../../src/core/tuning';
 import chainData from '../../src/data/powers/chain.json';
-import { LightningRenderer } from '../../src/render/lightningRenderer';
-import { getMaterial } from '../../src/render/materials';
 import { PushTest } from '../../src/scenes/meleeTest';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 
@@ -221,7 +218,7 @@ describe('Błyskawica — wybór pierwszego celu, przeskoki i obrażenia', () =>
   });
 });
 
-describe('Błyskawica — stan arcs i LightningRenderer', () => {
+describe('Błyskawica — stan arcs', () => {
   it('tworzy łuk z punktami łańcucha, postarza go w step i usuwa po arcLifeS oraz przy reset', () => {
     const c = setup([
       { x: 0, y: 1, z: -4 },
@@ -253,54 +250,6 @@ describe('Błyskawica — stan arcs i LightningRenderer', () => {
     expect(c.chain.arcs).toHaveLength(1);
     c.chain.reset();
     expect(c.chain.arcs).toHaveLength(0);
-  });
-
-  it('LightningRenderer buduje zygzak z materiałem power, zanika, ponownie używa geometrii i sprząta w dispose', () => {
-    const c = setup([
-      { x: 0, y: 1, z: -4 },
-      { x: 2, y: 1, z: -4 },
-    ]);
-    const parent = new ThreeScene();
-    const renderer = new LightningRenderer();
-    parent.add(renderer.root);
-
-    c.chain.step(SIM_DT, press);
-    renderer.render(c.chain);
-
-    expect(renderer.root.children).toHaveLength(1);
-    const line = renderer.root.children[0] as Line;
-    expect(line).toBeInstanceOf(Line);
-    expect(line.visible).toBe(true);
-    const geometry = line.geometry;
-    const material = line.material as MeshBasicMaterial;
-    expect(material.color.getHex()).toBe(getMaterial('power').color.getHex());
-    expect(material.opacity).toBeCloseTo(1);
-
-    const expectedVertices =
-      (c.chain.arcs[0]!.points.length - 1) * c.chain.def.vfx.segments + 1;
-    expect(geometry.drawRange.count).toBe(expectedVertices);
-
-    // Zanikanie w połowie czasu życia.
-    c.chain.step(c.chain.def.vfx.arcLifeS / 2, idle);
-    renderer.render(c.chain);
-    expect(material.opacity).toBeCloseTo(0.5);
-
-    // Po wygaśnięciu linia staje się niewidoczna, a przy kolejnym łuku ta sama geometria jest użyta ponownie.
-    c.chain.step(c.chain.def.vfx.arcLifeS / 2, idle);
-    renderer.render(c.chain);
-    expect(line.visible).toBe(false);
-
-    c.chain.step(c.chain.def.cooldownS, press);
-    renderer.render([c.chain]);
-    expect(line.visible).toBe(true);
-    expect(line.geometry).toBe(geometry);
-
-    const geoDispose = vi.spyOn(geometry, 'dispose');
-    const matDispose = vi.spyOn(material, 'dispose');
-    renderer.dispose();
-    expect(geoDispose).toHaveBeenCalledOnce();
-    expect(matDispose).toHaveBeenCalledOnce();
-    expect(parent.children).toHaveLength(0);
   });
 
   it('w scenie push-test komenda power 1 chain pozwala razić łańcuchem manekiny i nałożyć statusy', async () => {

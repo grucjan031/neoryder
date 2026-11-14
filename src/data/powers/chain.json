@@ -13,7 +13,7 @@
   "tags": ["#power", "#elektrycznosc"],
   "statuses": [{ "id": "overload", "durationS": 4, "stacks": 1 }],
   "vfx": {
-    "arcLifeS": 0.2,
+    "arcLifeS": 0.32,
     "jitterM": 0.12,
     "segments": 6
   }

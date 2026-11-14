@@ -187,6 +187,28 @@ export const tuning = {
     grabHandDownM: 0.2,
     grabHandForwardM: 0.35,
     beamRadiusM: 0.018,
+    /**
+     * Błyskawica (render): szerokość wstęgi rdzenia i poświaty (m), krycie poświaty, kolor rdzenia,
+     * ułamek życia łuku na uderzenie, migotanie (Hz, głębokość 0..1), odnogi (szansa na wierzchołek,
+     * długość w m), rozmiar błysku trafienia (m), limit łuków, punkt dłoni względem kamery (m)
+     * oraz zwężanie bliżej niż lightningNearTaperM od kamery (do ułamka lightningNearMinScale).
+     */
+    lightningCoreWidthM: 0.035,
+    lightningGlowWidthM: 0.16,
+    lightningGlowOpacity: 0.55,
+    lightningCoreColor: '#ffe3ff',
+    lightningStrikeFrac: 0.3,
+    lightningFlickerHz: 30,
+    lightningFlickerAmount: 0.35,
+    lightningBranchChance: 0.3,
+    lightningBranchLengthM: 0.6,
+    lightningImpactSizeM: 0.35,
+    lightningMaxArcs: 8,
+    lightningHandSideM: -0.22,
+    lightningHandDownM: 0.2,
+    lightningHandForwardM: 0.4,
+    lightningNearTaperM: 2,
+    lightningNearMinScale: 0.2,
     explosionDurationS: 0.3,
     explosionOpacity: 0.4,
     maxExplosions: 16,

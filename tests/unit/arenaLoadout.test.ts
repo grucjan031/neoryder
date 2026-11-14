@@ -291,3 +291,17 @@ it('removes HUD, effect listeners and loadout command on dispose', async () => {
     }),
   ).not.toThrow();
 });
+
+it('arena dodaje root Błyskawicy, rysuje łuk po użyciu mocy i odpina root w dispose', async () => {
+  const { scene, commands, three } = await setup('resonance');
+  expect(scene.query('powerSlots')).toEqual(['chain', 'push']);
+  expect(three.getObjectByName('lightning')).toBeDefined();
+  commands.execute('spawn assaulter 1');
+  scene.step(SIM_DT, press('power'));
+  scene.render(1, SIM_DT);
+  const glow = three.getObjectByName('lightning-glow');
+  expect(glow?.visible).toBe(true);
+  active.splice(active.indexOf(scene), 1);
+  scene.dispose();
+  expect(three.getObjectByName('lightning')).toBeUndefined();
+});

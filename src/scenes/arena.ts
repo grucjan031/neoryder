@@ -54,6 +54,7 @@ import { FppBlade } from '../render/fppBlade';
 import { FppBlaster } from '../render/fppBlaster';
 import { BeamRenderer } from '../render/beamRenderer';
 import { BarrierRenderer } from '../render/barrierRenderer';
+import { LightningRenderer } from '../render/lightningRenderer';
 import { BarrierPower } from '../combat/powers/barrier';
 import { ExplosionRenderer } from '../render/explosionRenderer';
 import { loadoutDefinitions } from '../progression/loadout';
@@ -135,6 +136,7 @@ export class Arena implements Scene {
   private weaponSlot = 0;
   private beamView!: BeamRenderer;
   private barrierView!: BarrierRenderer;
+  private lightningView!: LightningRenderer;
   private explosionView!: ExplosionRenderer;
   private readonly beamOrigin = new Vector3();
   private readonly playerStats = new Stats({
@@ -244,6 +246,8 @@ export class Arena implements Scene {
     this.root.add(this.beamView.root, this.explosionView.root);
     this.barrierView = new BarrierRenderer(ctx.tuning);
     this.root.add(this.barrierView.root);
+    this.lightningView = new LightningRenderer(ctx.tuning);
+    this.root.add(this.lightningView.root);
 
     this.manager = new EnemyManager(
       ctx,
@@ -739,8 +743,10 @@ export class Arena implements Scene {
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
     const camera = this.ctx.camera;
+    const powers = [this.powers.get(0), this.powers.get(1)];
     if (!camera) {
       this.beamView.render(this.weapon.beam);
+      this.lightningView.render(powers);
       return;
     }
     const pose = this.fpsCamera.update(
@@ -750,7 +756,7 @@ export class Arena implements Scene {
       alpha,
     );
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
-    const barriers = [this.powers.get(0), this.powers.get(1)].filter(
+    const barriers = powers.filter(
       (power): power is BarrierPower => power instanceof BarrierPower,
     );
     const barrier = barriers.find((power) => power.active) ?? barriers[0];
@@ -770,6 +776,7 @@ export class Arena implements Scene {
     this.blasterView.place(camera.matrixWorld, frameDt);
     this.blasterView.root.getWorldPosition(this.beamOrigin);
     this.beamView.render(this.weapon.beam, this.beamOrigin);
+    this.lightningView.render(powers, camera);
   }
 
   // ----------------------------------------------------------------- śmierć i reset
@@ -1037,6 +1044,7 @@ export class Arena implements Scene {
     this.synergies.dispose();
     this.powers.reset();
     this.beamView.dispose();
+    this.lightningView.dispose();
     this.explosionView.dispose();
     this.shatter.dispose();
     this.debrisView.dispose();
