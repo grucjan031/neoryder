@@ -19,8 +19,11 @@ test('push-test: F odrzuca manekina na ścianę i zużywa energię', async ({
   await expect
     .poll(() => page.evaluate(() => document.pointerLockElement?.tagName))
     .toBe('CANVAS');
-  // Kliknięcie przechwytujące mysz to też LPM (cios ostrzem) — mierzymy od stanu po nim.
+  // Kliknięcie przechwytujące mysz to też LPM (cios ostrzem) — reset przywraca pełne HP,
+  // żeby Pchnięcie z uderzeniem w ścianę (65) nie zabiło manekina.
   await waitSimSteps(page, 40);
+  await page.evaluate(() => window.__neoryder?.command('reset'));
+  await waitSimSteps(page, 5);
   const hpBefore = await page.evaluate(
     () => (window.__neoryder?.query('dummyHp') as number[])[1] ?? 0,
   );
