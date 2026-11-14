@@ -1,0 +1,636 @@
+{
+  "id": "noodleShop",
+  "name": "Budka z makaronem",
+  "type": "shop",
+  "theme": "neonStreet",
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 5.5
+  },
+  "blocks": [
+    {
+      "size": {
+        "x": 10,
+        "y": 1,
+        "z": 16
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "material": "asphalt"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 12,
+        "z": 7
+      },
+      "position": {
+        "x": -8.0,
+        "y": 6.0,
+        "z": -4.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 18,
+        "z": 9
+      },
+      "position": {
+        "x": -8.0,
+        "y": 9.0,
+        "z": 3.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 8
+      },
+      "position": {
+        "x": 8.0,
+        "y": 8.0,
+        "z": -4.0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 13,
+        "z": 8
+      },
+      "position": {
+        "x": 8.0,
+        "y": 6.5,
+        "z": 4.0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 10,
+        "z": 1
+      },
+      "position": {
+        "x": -3,
+        "y": 5.0,
+        "z": 7.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 10,
+        "z": 1
+      },
+      "position": {
+        "x": 3,
+        "y": 5.0,
+        "z": 7.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 10,
+        "z": 1
+      },
+      "position": {
+        "x": -3,
+        "y": 5.0,
+        "z": -7.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 10,
+        "z": 1
+      },
+      "position": {
+        "x": 3,
+        "y": 5.0,
+        "z": -7.5
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 2.6,
+        "z": 2.025
+      },
+      "position": {
+        "x": -3.3,
+        "y": 1.3,
+        "z": -3
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.592,
+        "z": 1.215
+      },
+      "position": {
+        "x": 4,
+        "y": 0.796,
+        "z": -5.5
+      },
+      "material": "metal",
+      "model": "city_crates"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 2,
+        "z": 0.811
+      },
+      "position": {
+        "x": 4.4,
+        "y": 1.0,
+        "z": -2.2
+      },
+      "material": "metal",
+      "model": "city_vending"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 1.3,
+        "z": 1.108
+      },
+      "position": {
+        "x": 3.9,
+        "y": 0.65,
+        "z": 2.5
+      },
+      "material": "metal",
+      "model": "city_dumpster"
+    }
+  ],
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "ramen",
+      "position": {
+        "x": -4.9,
+        "y": 5,
+        "z": -3
+      },
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "kind": "neon",
+      "texture": "noodles",
+      "position": {
+        "x": -4.9,
+        "y": 3.6,
+        "z": -6.2
+      },
+      "size": {
+        "w": 1.8,
+        "h": 1.8
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "kind": "neon",
+      "texture": "bar_mleczny",
+      "position": {
+        "x": 4.9,
+        "y": 5,
+        "z": 0
+      },
+      "size": {
+        "w": 4,
+        "h": 2
+      },
+      "yaw": -1.5707963267948966,
+      "flicker": 0.15
+    },
+    {
+      "kind": "neon",
+      "texture": "sake",
+      "position": {
+        "x": 4.9,
+        "y": 4.2,
+        "z": 5
+      },
+      "size": {
+        "w": 2.6,
+        "h": 1.3
+      },
+      "yaw": -1.5707963267948966,
+      "flicker": 0.3
+    },
+    {
+      "kind": "holo",
+      "texture": "holo_noodles",
+      "position": {
+        "x": 0,
+        "y": 5.5,
+        "z": -6.9
+      },
+      "size": {
+        "w": 5,
+        "h": 2.5
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "neon",
+      "texture": "cat_cafe",
+      "position": {
+        "x": 0,
+        "y": 5.2,
+        "z": 6.9
+      },
+      "size": {
+        "w": 3.2,
+        "h": 1.6
+      },
+      "yaw": 3.141592653589793,
+      "flicker": 0.1
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": -3.3,
+        "y": 2.9,
+        "z": -2.5
+      },
+      "color": "#ffae1a",
+      "intensity": 4,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": -3.3,
+        "y": 4.5,
+        "z": -3
+      },
+      "color": "#fff1d6",
+      "intensity": 3,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 4.5,
+        "z": -5.5
+      },
+      "color": "#ffae1a",
+      "intensity": 3.5,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 4.5,
+        "z": 0
+      },
+      "color": "#ffae1a",
+      "intensity": 3,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 3.8,
+        "z": 4
+      },
+      "color": "#fff1d6",
+      "intensity": 3,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 4.4,
+        "y": 3,
+        "z": -2.2
+      },
+      "color": "#3d7bff",
+      "intensity": 2.5,
+      "range": 7
+    }
+  ],
+  "decals": [
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": 1.5,
+        "y": 0.01,
+        "z": 2
+      },
+      "size": {
+        "w": 2.8,
+        "h": 2.8
+      },
+      "yaw": 0.5,
+      "surface": "floor"
+    },
+    {
+      "texture": "puddle2",
+      "position": {
+        "x": -1,
+        "y": 0.01,
+        "z": -5.5
+      },
+      "size": {
+        "w": 2.4,
+        "h": 2.4
+      },
+      "yaw": 0.2,
+      "surface": "floor"
+    },
+    {
+      "texture": "floor_arrow",
+      "position": {
+        "x": 0,
+        "y": 0.01,
+        "z": -1
+      },
+      "size": {
+        "w": 2,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "surface": "floor",
+      "opacity": 0.5
+    },
+    {
+      "texture": "poster_torn1",
+      "position": {
+        "x": 4.95,
+        "y": 1.8,
+        "z": 3.8
+      },
+      "size": {
+        "w": 1.5,
+        "h": 1.5
+      },
+      "yaw": -1.5707963267948966,
+      "surface": "wall"
+    },
+    {
+      "texture": "graffiti_tag2",
+      "position": {
+        "x": -4.95,
+        "y": 1.6,
+        "z": 1.5
+      },
+      "size": {
+        "w": 2,
+        "h": 2
+      },
+      "yaw": 1.5707963267948966,
+      "surface": "wall"
+    },
+    {
+      "texture": "graffiti_tag1",
+      "position": {
+        "x": 4.95,
+        "y": 1.8,
+        "z": -6
+      },
+      "size": {
+        "w": 1.8,
+        "h": 1.8
+      },
+      "yaw": -1.5707963267948966,
+      "surface": "wall"
+    }
+  ],
+  "ambientFx": [
+    {
+      "kind": "steam",
+      "position": {
+        "x": -3.3,
+        "y": 2.5,
+        "z": -1.6
+      },
+      "rate": 1.6
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 1.5,
+        "y": 0.1,
+        "z": -3
+      },
+      "rate": 1.0
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -4.7,
+        "y": 4,
+        "z": 3.5
+      }
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_holo_projector",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -6.4
+      }
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 1.5,
+        "y": 0,
+        "z": -3
+      }
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 0,
+        "y": 3.8,
+        "z": -3.5
+      },
+      "yaw": 1.5707963267948966,
+      "scale": 0.9
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 0,
+        "y": 3.9,
+        "z": 2
+      },
+      "scale": 1.0
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 0,
+        "y": 4.6,
+        "z": 5
+      },
+      "scale": 1.0
+    },
+    {
+      "model": "city_door",
+      "position": {
+        "x": -5,
+        "y": 0,
+        "z": 2
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": -5,
+        "y": 3.3,
+        "z": 2
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_shutter",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": -5.5
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 5,
+        "y": 4,
+        "z": -4
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": -5,
+        "y": 6.5,
+        "z": -2
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -5,
+        "y": 0,
+        "z": -7
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 7
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": -4.4,
+        "y": 0,
+        "z": 5
+      },
+      "yaw": 1.5707963267948966
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 4.4,
+        "y": 0,
+        "z": -0.5
+      },
+      "yaw": -1.5707963267948966
+    },
+    {
+      "model": "city_trash_bags",
+      "position": {
+        "x": 4.2,
+        "y": 0,
+        "z": 6.2
+      }
+    },
+    {
+      "model": "city_traffic_cone",
+      "position": {
+        "x": -4,
+        "y": 0,
+        "z": 0
+      }
+    }
+  ],
+  "spawnPoints": [],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": 7.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 1
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": -7.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 1
+      }
+    }
+  ],
+  "props": [
+    {
+      "kind": "shopTerminal",
+      "position": {
+        "x": -3.3,
+        "y": 1.2,
+        "z": -1.5
+      }
+    }
+  ]
+}

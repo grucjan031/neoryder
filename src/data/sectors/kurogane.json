@@ -122,9 +122,15 @@
       "alleyBackstreet",
       "alleyCrossing"
     ],
-    "elite": ["eliteCourtyard", "eliteFoundry", "eliteHall"],
-    "shop": ["shopRoom"],
-    "rest": ["restRoom"],
+    "elite": [
+      "alleyUnderpass",
+      "eliteCourtyard",
+      "eliteFoundry",
+      "eliteHall",
+      "plazaHolo"
+    ],
+    "shop": ["noodleShop", "shopRoom"],
+    "rest": ["restRoom", "rooftopRest"],
     "boss": ["bossRoom"]
   },
   "rewardWeights": {

@@ -68,13 +68,29 @@ Pule `roomPools` w `src/data/sectors/kurogane.json`:
 | Typ    | Pokoje                                                                                                                                                 |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | combat | `combatCorridor`, `combatPillars`, `combatPlatforms`, `combatRing`, `combatWarehouse`, `combatYard`, `alleyMarket`, `alleyBackstreet`, `alleyCrossing` |
-| elite  | `eliteCourtyard`, `eliteFoundry`, `eliteHall`                                                                                                          |
-| shop   | `shopRoom` (bez spawnów, bez fal)                                                                                                                      |
-| rest   | `restRoom` (bez spawnów, bez fal)                                                                                                                      |
+| elite  | `alleyUnderpass`, `eliteCourtyard`, `eliteFoundry`, `eliteHall`, `plazaHolo`                                                                           |
+| shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                                                                                        |
+| rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                                                                                       |
 | boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)                                                                 |
 
 Puzzle nie ma pokoi (`typeWeights.puzzle` = 0). Pokój losowany jest z puli
 osobnym strumieniem `room-layout:<nodeId>`.
+
+## Mapy Neon Noir
+
+Pokoje w motywie `neonStreet` (uliczki miasta nocą) dopisane do pul sektora Kurogane Arms.
+Podłoga to bloki z górą na y = 0, budynki to wysokie bloki `facade` za krawędzią podłogi,
+oprawa (napisy, hologramy, światła, naklejki, efekty, dekoracje) w polach z `dressingSchema.ts`.
+
+| id               | Typ   | Wymiary (użyteczne) | Idea                                                                                                                                                                                          |
+| ---------------- | ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `alleyUnderpass` | elite | 16 × 34 m           | przejście pod estakadą: 8 filarów betonowych 1,5 × 1,5 m jako osłony, estakada ~7 m nad środkiem, neony na filarach, kapanie z estakady, automaty, barierki i samochód jako osłony            |
+| `plazaHolo`      | elite | 26 × 26 m           | plac z centralnym hologramem koi nad cokołem z projektorem; barierki, automaty, samochody i skrzynie wokół, hologramy android/drink na fasadach, wejście i wyjście po przeciwległych stronach |
+| `noodleShop`     | shop  | 10 × 14 m           | spokojna uliczka z budką `city_stall` (terminal sklepu), ciepłe światła i lampiony, napisy ramen/noodles/bar_mleczny, hologram makaronu; bez spawnów i fal                                    |
+| `rooftopRest`    | rest  | 14 × 14 m           | dach z murkami 0,8 m i szklanymi osłonami, antena, generator, widok na panoramę miasta i hologramy na sąsiednich budynkach; bez spawnów i fal                                                 |
+
+Scena kontroli: `?scene=room-test&room=<id>` (pokoje shop/rest nie mają spawnów, więc
+`room-test` wymaga do nich tymczasowej kopii z jednym spawnem).
 
 ## Dane i sprawdzenie
 
