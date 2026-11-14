@@ -271,6 +271,7 @@ export class RoomScene implements Scene {
         playerId,
         loadout: this.loadout,
         totalWaves: this.waves.waves.length,
+        run: { credits: this.run.credits, implants: this.run.implants },
       });
     this.energy = new PlayerEnergy(
       playerId,

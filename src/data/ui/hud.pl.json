@@ -20,5 +20,8 @@
   "powerKeys": ["F", "E"],
   "ready": "Gotowa",
   "empty": "—",
-  "seconds": "s"
+  "seconds": "s",
+  "credits": "Kredyty",
+  "implants": "Implanty",
+  "bossHealth": "Zdrowie bossa"
 }
