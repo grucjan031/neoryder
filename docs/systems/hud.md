@@ -1,99 +1,126 @@
-# HUD — F1 #15, F2-15
+# HUD — F1 #15, F2-15, nowy HUD
 
 `src/ui/hud.ts` tworzy warstwę HTML nad canvasem, bez Three.js i bez odczytu
 modułów symulacji. Style są w sekcji `.hud` pliku `src/ui/styles.css`.
 
-## Elementy i zdarzenia
+## Styl
 
-| Element                                                | Zdarzenie                      | Filtr                               |
-| ------------------------------------------------------ | ------------------------------ | ----------------------------------- |
-| Zdrowie: biały pasek, czerwony akcent, liczba          | `health_changed`               | `id === playerId`                   |
-| Energia: cyan, liczba                                  | `energy_changed`               | `id === playerId`                   |
-| Ciepło: magenta, liczba, migotanie i tekst przegrzania | `heat_changed`                 | `id === playerId`                   |
-| Odmowa mocy pod celownikiem                            | `power_denied`                 | `user === playerId`                 |
-| Czerwona winieta trafienia                             | `damage_dealt`                 | `target === playerId`, `amount > 0` |
-| Dialog śmierci                                         | `player_died`                  | `id === playerId`                   |
-| Licznik fali / komunikat wyczyszczenia                 | `wave_started`, `wave_cleared` | globalne                            |
-| Nazwa bieżącej broni                                   | `weapon_switched`              | `owner === playerId`                |
-| Dwa sloty mocy (F/E), nazwy i odnowienie               | `power_cooldown`, `power_denied` | `user === playerId`                 |
+Cienkie linie 1–2 px, ścięte narożniki (`clip-path`), monospace. Ciemne
+półprzezroczyste tło (`--hud-plate`) jest tylko małą tabliczką pod tekstem i
+paskami, by były czytelne na białym świecie; reszta to linie i tekst z
+lekkim cieniem. Kolory: biały tekst, cyan = zasoby gracza (energia, aktywny slot),
+magenta = moce i ciepło, czerwień = zagrożenie i wrogowie. Kolory, odstępy i czasy
+efektów ustawia się przez zmienne CSS `--hud-*`. Animacje używają `transform`
+i `opacity` (ciepło używa `clip-path`); czasy animacji HUD są w CSS, nie w
+`tuning.ts` (to nie liczby rozgrywki).
 
-Paski startują jako puste z liczbą „—”, do pierwszego zdarzenia. Scena powinna
-utworzyć HUD przed początkowymi emisjami zdrowia, energii i ciepła albo wyemitować
-aktualny stan po jego utworzeniu. `PlayerEnergy` emituje energię, a `Blaster`
-ciepło; HUD nie odpytuje tych obiektów. Szerokości są ograniczone do 0–100%;
-maksimum równe zero daje pusty pasek. Liczby są zaokrąglane do całości.
-Niezmienione szerokości, teksty i stan przegrzania nie zapisują ponownie DOM.
+## Układ
 
-Celownik jest centralnym krzyżykiem z `mix-blend-mode: difference`. Paski mają
-ciemne półprzezroczyste tło. Kolory, odstępy i czasy efektów ustawia się przez
-zmienne CSS `--hud-*`. Odmowa trwa domyślnie 0,6 s, winieta 0,3 s; kolejne
-trafienie lub odmowa restartuje animację, a jej koniec ukrywa element.
+| Miejsce | Elementy |
+| --- | --- |
+| Lewy dół | zdrowie: 10 skośnych segmentów + liczba (`.hud__segments`), pod nim cienki pasek energii (cyan) |
+| Prawy dół | blok broni: nazwa (`.hud__weapon-name`), wskaźnik slotów 1/2/3 (tylko gdy broni > 1), pasek ciepła cyan → magenta → czerwień, „PRZEGRZANIE” (migający wiersz nad nazwą); obok kwadraty mocy F i E |
+| Góra, środek | „FALA 3 / 12” i „Wrogowie N”; baner „FALA 3” / „FALA CZYSTA” wjeżdżający i znikający; toast synergii (magenta) pod banerem |
+| Środek | celownik (kropka + 4 kreski), znacznik trafienia, łuk kierunku obrażeń, odmowa mocy pod celownikiem |
+| Dół, środek | „Ostrze w locie” |
+| Krawędzie | czerwona winieta pulsująca po obrażeniach; słaba stała poniżej 30% HP |
 
-Teksty pochodzą z `src/data/ui/hud.pl.json`: `health`, `energy`, `heat`,
-`overheated`, `noEnergy`, `cooldown`, `died`, `retry`, `wave`, `waveCleared`.
-Powody `no_energy` i `cooldown` mapują się na „Brak energii” i „Odnowienie”.
+Zdrowie: segment i ma wypełnienie `clamp(ratio * 10 - i, 0, 1)` (`data-fill`
+na `.hud__seg-fill`). Pod każdym segmentem leży „duch” (`.hud__seg-ghost`) w czerwieni;
+przy utracie HP wypełnienie spada od razu, a duch dochodzi do tej wartości z
+opóźnieniem 0,4 s (CSS `transition`). Poniżej 30% HP (i powyżej 0) wypełnienie
+robi się czerwone, a winieta `.hud__lowhp` pulsuje.
+
+Ciepło: `data-level` na `.hud__meter--heat` to `cool` (< 50%), `warm` (< 80%), `hot`.
+Przy `overheated` pojawia się `.hud__overheat` i klasa `hud__meter--overheated`.
+
+Moce: kwadrat z literą klawisza, nazwą, sekundami odnowienia i radialnym odliczaniem
+(`conic-gradient`, zmienna `--cd` = pozostała część odnowienia 0–1, aktualizowana
+tylko przy zmianie o 0,01). Brak energii na koszt mocy (`def.cost`) przygasza
+kwadrat (`hud__power--dim`). `power_denied` daje czerwony błysk właściwego kwadratu
+i tekst pod celownikiem. Po końcu odnowienia kwadrat nie pokazuje tekstu.
+
+Znacznik trafienia: biały X przy `damage_dealt` z `source === playerId` i `amount > 0`;
+większy czerwony przy `killed`. Celownik rozszerza się na 0,16 s przy `weapon_fired`
+gracza.
+
+Kierunek obrażeń: `damage_dealt` z `target === playerId`, `amount > 0`, niepustym
+`dir` i `source !== playerId` pokazuje czerwony łuk wokół środka, obrócony w stronę
+źródła. Kąt liczy czysta funkcja `damageIndicatorAngle(dir, yaw)` (stopnie
+zgodnie z ruchem wskazówek od góry ekranu, `dir` = kierunek lotu ataku). HUD nie zna
+kamery, więc scena wywołuje `hud.setViewYaw(yaw)` co klatkę w `render()`; łuk
+obraca się razem z widokiem, DOM jest zapisywany tylko przy zmianie zaokrąglonego
+kąta. Gdy `dir` jest `null` (np. obrażenia obszarowe), łuk się nie pokazuje.
+
+## Zdarzenia
+
+| Element | Zdarzenie | Filtr |
+| --- | --- | --- |
+| Zdrowie, winieta niskiego HP | `health_changed` | `id === playerId` |
+| Energia, przygaszanie mocy | `energy_changed` | `id === playerId` |
+| Ciepło, przegrzanie | `heat_changed` | `id === playerId` |
+| Nazwa broni, aktywny slot | `weapon_switched` | `owner === playerId` |
+| Rozszerzenie celownika | `weapon_fired` | `owner === playerId` |
+| Odnowienie mocy | `power_cooldown`, `power_used` (Chwyt) | `user === playerId` |
+| Odmowa mocy | `power_denied` | `user === playerId` |
+| Winieta, łuk kierunku | `damage_dealt` | `target === playerId`, `amount > 0` |
+| Znacznik trafienia / zabójstwa | `damage_dealt` | `source === playerId`, `amount > 0` |
+| Fala, baner | `wave_started`, `wave_cleared` | globalne |
+| Pozostali wrogowie | `wave_started.count`, `enemy_killed` | globalne (licznik schodzi do 0) |
+| Toast synergii (nazwa z definicji) | `synergy_triggered` | `user === playerId` |
+| Ostrze w locie | `blade_thrown`, `blade_returned` | `owner === playerId` |
+| Dialog śmierci | `player_died` | `id === playerId` |
+
+Paski startują puste z liczbą „—”, do pierwszego zdarzenia. Scena powinna utworzyć
+HUD przed początkowymi emisjami zdrowia, energii i ciepła albo wyemitować aktualny
+stan po jego utworzeniu. HUD nie odpytuje symulacji. Niezmienione wartości,
+teksty i stany nie zapisują ponownie DOM. Liczby są zaokrąglane do całości,
+szerokości ograniczone do 0–100%.
+
+Teksty pochodzą z `src/data/ui/hud.pl.json`. Łącznej liczby fal nie ma w
+zdarzeniach, więc scena podaje opcję `totalWaves`; bez niej napis to „FALA 3”.
+
+## Ekran śmierci i wybór buildu
 
 Dialog ma `role="dialog"` i etykietę „Zginąłeś”. Pokazanie przenosi fokus na
 „Jeszcze raz”. Kliknięcie, Enter lub R ukrywa dialog, przywraca poprzedni fokus
-i wywołuje opcjonalne `onRetry`. Przytrzymanie klawisza nie ponawia akcji.
-Gdy scena poda `onChangeBuild` (arena z ekranem wyboru, F2-17), obok jest drugi
-przycisk „Zmień build” (`changeBuild`): ukrywa dialog i oddaje scenie powrót do
-ekranu wyboru buildu; Enter i R nadal oznaczają „Jeszcze raz”.
-Restart stanu gry i obsługę pointer lock zapewnia scena przez istniejący moduł
-wejścia; HUD nie przechwytuje myszy. Jedynym elementem przechwytującym klik jest
-przycisk ponowienia.
+i wywołuje opcjonalne `onRetry`. Przytrzymanie klawisza nie ponawia akcji. Gdy
+scena poda `onChangeBuild`, obok jest „Zmień build” (magenta); Enter i R nadal
+oznaczają „Jeszcze raz”. Przyciski i karty ekranu wyboru buildu
+(`.build-select*`) używają tego samego języka: ciemne tło, cienkie linie, ścięte
+narożniki, cyan i magenta. Struktura DOM ekranu buildu jest w `src/ui/buildSelect.ts`.
 
 ## Integracja w scenie areny
 
 ```ts
-import { Hud } from '../ui/hud';
-
-// W init, po ustaleniu playerId, przed początkowymi emisjami zasobów:
 this.hud = new Hud(ctx.bus, {
   playerId,
+  loadout: this.loadout,
+  totalWaves: waves.waves.length,
   onRetry: () => this.reset(),
 });
 
-// W dispose:
-this.hud?.dispose();
+// W render(), po ustawieniu kamery:
+this.hud?.setViewYaw(pose.yaw);
+
+// W step(): this.hud?.step(playerDt) — odliczanie odnowień; w dispose(): this.hud?.dispose();
 ```
 
-Pole sceny: `private hud?: Hud`. Opcja `root` pozwala zamontować warstwę we
-wskazanym elemencie; domyślnie jest to `document.body`. Główny arkusz stylów
-musi być załadowany przez aplikację. `dispose()` jest idempotentne: odpina
-subskrypcje, zdarzenia klawiatury/przycisku/animacji i usuwa własny DOM.
+Opcja `root` pozwala zamontować warstwę we wskazanym elemencie; domyślnie jest to
+`document.body`. `setLoadout(loadout)` odtwarza kwadraty mocy i wskaźnik slotów,
+zeruje odnowienia i chowa chwilowe elementy (baner, toast, znaczniki, dialog).
+`dispose()` jest idempotentne.
 
-Komenda weryfikacji integracji: `npm run dev`, następnie `?scene=arena&debug=1`
-po zarejestrowaniu areny przez #16. Ręcznie: sprawdź liczby po obrażeniach,
-zużycie energii, migotanie przegrzania, komunikaty odmowy i fal, czytelność
-celownika na bieli i czerwieni oraz ponowienie po śmierci myszą i klawiaturą.
-Scena demonstracyjna nie jest częścią #15.
-
-Testy DOM: `npx vitest run tests/unit/hud.test.ts` (jsdom).
-
-## Ekwipunek i odnowienia (F2-15)
-
-Opcja `loadout` konstruktora przyjmuje początkowe `weapons` i `powers` z danych
-ekwipunku. HUD rozwiązuje polskie nazwy i `cooldownS` w rejestrach definicji,
-bez odczytu instancji broni lub mocy. `setLoadout(loadout)` przy resecie odtwarza
-dwa sloty, zeruje odnowienia i sygnały odmowy oraz zamyka dialog śmierci.
-Pusty slot pokazuje „—”. Pierwsza broń ma nazwę od początku; dalsze zmiany
-pochodzą z `weapon_switched`. Scena natychmiast emituje po nim `heat_changed`
-wybranej broni. Nieaktywne bronie chłodzą się bez emisji, więc nie nadpisują paska.
-
-`power_cooldown { power, user, cooldownS }` rozpoczyna odliczanie przekazanego
-`cooldownS` tylko dla odpowiadającego mu slotu. Zdarzenie pochodzi ze wspólnego
-`PowerBase.startCooldown()`: dla Skupienia po końcu działania, dla pozostałych
-mocy przy aktywacji. Samo `power_used` nie rozpoczyna odnowienia.
 Arena przekazuje do `Hud.step(dt)` czas gracza przed krokiem mocy: odnowienie
 zatrzymuje się w hitstopie i pauzie oraz zgadza się z czasem mocy w Skupieniu.
-HUD nie odpytuje symulacji. Wyświetla dziesiąte części sekundy, po końcu „Gotowa”.
-`power_denied` zachowuje sygnał pod celownikiem i dodatkowo miga przy właściwym
-slocie; nie rozpoczyna ani nie przedłuża odnowienia. `dispose()` usuwa również
-listenery animacji obu slotów. Teksty, etykiety F/E i jednostka czasu są w
-`src/data/ui/hud.pl.json`; nazwy broni i mocy pozostają w ich definicjach JSON.
+Wyświetla dziesiąte części sekundy.
 
-Kontrola w 30 sekund: otwórz `?scene=arena&loadout=resonance&debug=1`, użyj F i E.
-Sprawdź osobne odliczania oraz sygnał ponownego E. Wpisz `loadout gunner`,
-przytrzymaj R i wybierz 2, potem 1: nazwa i ciepło muszą zmieniać się razem.
-Oceń czytelność nazw, pozostałego czasu i paska podczas walki.
+## Kontrola w 30 sekund
+
+`?scene=arena&loadout=gunner&debug=1`: sprawdź segmenty zdrowia po obrażeniach,
+ciepło i „PRZEGRZANIE” przy długim ogniu, sloty 1/2/3 (klawisze 1–3), znacznik
+trafienia i licznik wrogów (`hit 5`, `kill all`), baner fali (`wave 3`). Wpisz
+`loadout resonance`: kwadraty F/E z odliczaniem, przygaszenie przy braku energii.
+Oceń czytelność na białym tle i czy HUD nie zasłania pola gry.
+
+Testy DOM: `npx vitest run tests/unit/hud.test.ts` (jsdom).

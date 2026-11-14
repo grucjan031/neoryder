@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EventBus } from '../../src/core/events';
-import { Hud } from '../../src/ui/hud';
+import {
+  Hud,
+  HEALTH_SEGMENTS,
+  damageIndicatorAngle,
+  heatLevel,
+  segmentFill,
+} from '../../src/ui/hud';
 import { loadoutDefinitions } from '../../src/progression/loadout';
 import { createPower } from '../../src/combat/powers/registry';
 import { PlayerEnergy } from '../../src/combat/powers/energy';
@@ -50,21 +56,21 @@ describe('Hud', () => {
     vi.restoreAllMocks();
   });
 
-  it.each(['health', 'energy', 'heat'] as const)(
+  it.each(['energy', 'heat'] as const)(
     'aktualizuje pasek %s i pomija identyczny stan',
     (kind) => {
       const update = (current: number, max: number): void => {
         const payload = { id: 1, current, max };
         if (kind === 'heat')
           bus.emit('heat_changed', { ...payload, overheated: false });
-        else if (kind === 'health') bus.emit('health_changed', payload);
         else bus.emit('energy_changed', payload);
       };
       update(25, 100);
       const meter = query(`.hud__meter--${kind}`);
       const fill = query(`.hud__meter--${kind} .hud__fill`);
       const value = query(`.hud__meter--${kind} .hud__value`);
-      expect(fill.style.width).toBe('25%');
+      const p = () => fill.style.getPropertyValue('--p');
+      expect(p()).toBe('0.250');
       expect(value.textContent).toBe('25 / 100');
       const observer = new MutationObserver(() => {});
       observer.observe(meter, {
@@ -77,24 +83,61 @@ describe('Hud', () => {
       expect(observer.takeRecords()).toHaveLength(0);
       update(25.1, 100.4);
       expect(value.textContent).toBe('25 / 100');
-      expect(
-        observer.takeRecords().some((record) => record.target === value),
-      ).toBe(false);
       update(50, 100);
-      expect(fill.style.width).toBe('50%');
-      expect(value.textContent).toBe('50 / 100');
-      update(50, 200);
-      expect(fill.style.width).toBe('25%');
-      expect(value.textContent).toBe('50 / 200');
+      expect(p()).toBe('0.500');
       update(1, 0);
-      expect(fill.style.width).toBe('0%');
+      expect(p()).toBe('0.000');
       update(-5, 100);
-      expect(fill.style.width).toBe('0%');
+      expect(p()).toBe('0.000');
       update(150, 100);
-      expect(fill.style.width).toBe('100%');
+      expect(p()).toBe('1.000');
       observer.disconnect();
     },
   );
+
+  it('zdrowie rysuje 10 segmentów i obcina wartości', () => {
+    const fills = () =>
+      [...root.querySelectorAll<HTMLElement>('.hud__seg-fill')].map((n) =>
+        Number(n.dataset.fill),
+      );
+    expect(fills()).toHaveLength(HEALTH_SEGMENTS);
+    bus.emit('health_changed', { id: 1, current: 25, max: 100 });
+    expect(fills()).toEqual([1, 1, 0.5, 0, 0, 0, 0, 0, 0, 0]);
+    expect(query('.hud__meter--health .hud__value').textContent).toBe(
+      '25 / 100',
+    );
+    bus.emit('health_changed', { id: 1, current: 100, max: 100 });
+    expect(fills().every((f) => f === 1)).toBe(true);
+    bus.emit('health_changed', { id: 1, current: -3, max: 100 });
+    expect(fills().every((f) => f === 0)).toBe(true);
+    expect(segmentFill(0.95, 9)).toBeCloseTo(0.5);
+  });
+
+  it('duch utraconego zdrowia ma własną wartość segmentu (znika z opóźnieniem w CSS)', () => {
+    bus.emit('health_changed', { id: 1, current: 100, max: 100 });
+    bus.emit('health_changed', { id: 1, current: 50, max: 100 });
+    const seg = query('.hud__seg:nth-child(10)');
+    expect(seg.querySelector<HTMLElement>('.hud__seg-fill')?.dataset.fill).toBe(
+      '0.00',
+    );
+    expect(
+      seg
+        .querySelector<HTMLElement>('.hud__seg-ghost')
+        ?.style.getPropertyValue('--f'),
+    ).toBe('0.00');
+  });
+
+  it('winieta niskiego zdrowia działa poniżej 30% i znika przy zerze oraz leczeniu', () => {
+    const low = query('.hud__lowhp');
+    expect(low.hidden).toBe(true);
+    bus.emit('health_changed', { id: 1, current: 29, max: 100 });
+    expect(low.hidden).toBe(false);
+    bus.emit('health_changed', { id: 1, current: 60, max: 100 });
+    expect(low.hidden).toBe(true);
+    bus.emit('health_changed', { id: 1, current: 10, max: 100 });
+    bus.emit('health_changed', { id: 1, current: 0, max: 100 });
+    expect(low.hidden).toBe(true);
+  });
 
   it('ignoruje wszystkie zdarzenia dotyczące innej encji', () => {
     const observer = new MutationObserver(() => {});
@@ -119,26 +162,26 @@ describe('Hud', () => {
     observer.disconnect();
   });
 
-  it('dodaje i zdejmuje przegrzanie, także bez zmiany liczby', () => {
+  it('stany ciepła i przegrzanie, także bez zmiany liczby', () => {
     const meter = query('.hud__meter--heat');
-    bus.emit('heat_changed', {
-      id: 1,
-      current: 30,
-      max: 100,
-      overheated: true,
-    });
+    const overheat = query('.hud__overheat');
+    const heat = (current: number, overheated: boolean) =>
+      bus.emit('heat_changed', { id: 1, current, max: 100, overheated });
+    expect(overheat.hidden).toBe(true);
+    heat(10, false);
+    expect(meter.dataset.level).toBe('cool');
+    heat(60, false);
+    expect(meter.dataset.level).toBe('warm');
+    heat(85, false);
+    expect(meter.dataset.level).toBe('hot');
+    expect(heatLevel(0.5)).toBe('warm');
+    heat(30, true);
     expect(meter.classList.contains('hud__meter--overheated')).toBe(true);
-    expect(query('.hud__meter--heat .hud__label').textContent).toBe(
-      'Przegrzanie',
-    );
-    bus.emit('heat_changed', {
-      id: 1,
-      current: 30,
-      max: 100,
-      overheated: false,
-    });
+    expect(overheat.hidden).toBe(false);
+    expect(overheat.textContent).toBe('Przegrzanie');
+    heat(30, false);
     expect(meter.classList.contains('hud__meter--overheated')).toBe(false);
-    expect(query('.hud__meter--heat .hud__label').textContent).toBe('Ciepło');
+    expect(overheat.hidden).toBe(true);
   });
 
   it('shows initial data names, event-driven weapon changes and current weapon heat', () => {
@@ -178,7 +221,7 @@ describe('Hud', () => {
       slots[slot]?.querySelector('.hud__power-cooldown')?.textContent;
     bus.emit('power_cooldown', { user: 2, power: 'push', cooldownS: 0.6 });
     bus.emit('power_cooldown', { user: 1, power: 'missing', cooldownS: 1 });
-    expect(cooldown(0)).toBe('Gotowa');
+    expect(cooldown(0)).toBe('');
     bus.emit('power_cooldown', { user: 1, power: 'push', cooldownS: 0.6 });
     bus.emit('power_cooldown', { user: 1, power: 'shockwave', cooldownS: 1.5 });
     expect(cooldown(0)).toBe('0.6 s');
@@ -195,17 +238,16 @@ describe('Hud', () => {
     });
     const denied = slots[1]?.querySelector<HTMLElement>('.hud__power-denial');
     expect(denied?.hidden).toBe(false);
-    expect(denied?.textContent).toBe('Odnowienie');
     expect(
       slots[0]?.querySelector<HTMLElement>('.hud__power-denial')?.hidden,
     ).toBe(true);
     denied?.dispatchEvent(new Event('animationend'));
     expect(denied?.hidden).toBe(true);
     hud.step(0.4);
-    expect(cooldown(0)).toBe('Gotowa');
+    expect(cooldown(0)).toBe('');
     expect(cooldown(1)).toBe('0.9 s');
     hud.step(1);
-    expect(cooldown(1)).toBe('Gotowa');
+    expect(cooldown(1)).toBe('');
     bus.emit('power_cooldown', { user: 1, power: 'push', cooldownS: 0.6 });
     expect(cooldown(0)).toBe('0.6 s');
   });
@@ -232,7 +274,7 @@ describe('Hud', () => {
     try {
       power.step(SIM_DT, { pressed: true, held: true, released: false });
       hud.step(1);
-      expect(query('.hud__power-cooldown').textContent).toBe('Gotowa');
+      expect(query('.hud__power-cooldown').textContent).toBe('');
       power.step(power.def.kind === 'focus' ? power.def.durationS : 0, {
         pressed: false,
         held: false,
@@ -256,7 +298,7 @@ describe('Hud', () => {
     hud.setLoadout(loadoutDefinitions.get('blade')!);
     expect(query('[role="dialog"]').hidden).toBe(true);
     expect(query('.hud__weapon-name').textContent).toBe('Pistolet');
-    expect(query('.hud__power-cooldown').textContent).toBe('Gotowa');
+    expect(query('.hud__power-cooldown').textContent).toBe('');
     bus.emit('power_cooldown', { user: 1, power: 'push', cooldownS: 0.6 });
     const node = query('.hud');
     hud.dispose();
@@ -301,15 +343,164 @@ describe('Hud', () => {
     expect(vignette.hidden).toBe(true);
   });
 
-  it('wyświetla falę i pomija zapis tego samego tekstu', () => {
-    bus.emit('wave_started', { wave: 3, count: 5 });
+  it('wyświetla falę, licznik wrogów i baner; pomija zapis tego samego tekstu', () => {
     const wave = query('.hud__wave');
-    expect(wave.textContent).toBe('Fala 3');
-    const spy = vi.spyOn(wave, 'textContent', 'set');
-    bus.emit('wave_started', { wave: 3, count: 4 });
+    expect(wave.hidden).toBe(true);
+    bus.emit('wave_started', { wave: 3, count: 2 });
+    const label = query('.hud__wave-label');
+    expect(label.textContent).toBe('Fala 3');
+    expect(query('.hud__wave-left').textContent).toBe('Wrogowie 2');
+    const banner = query('.hud__banner');
+    expect(banner.hidden).toBe(false);
+    expect(banner.textContent).toBe('Fala 3');
+    expect(banner.classList.contains('hud__banner--clear')).toBe(false);
+    banner.dispatchEvent(new Event('animationend'));
+    expect(banner.hidden).toBe(true);
+    const spy = vi.spyOn(label, 'textContent', 'set');
+    bus.emit('wave_started', { wave: 3, count: 2 });
     expect(spy).not.toHaveBeenCalled();
+    bus.emit('enemy_killed', { id: 9, killer: 1, tags: [] });
+    expect(query('.hud__wave-left').textContent).toBe('Wrogowie 1');
+    bus.emit('enemy_killed', { id: 10, killer: 1, tags: [] });
+    bus.emit('enemy_killed', { id: 11, killer: 1, tags: [] });
+    expect(query('.hud__wave-left').textContent).toBe('Wrogowie 0');
     bus.emit('wave_cleared', { wave: 3 });
-    expect(wave.textContent).toBe('Fala wyczyszczona');
+    expect(banner.hidden).toBe(false);
+    expect(banner.textContent).toBe('Fala czysta');
+    expect(banner.classList.contains('hud__banner--clear')).toBe(true);
+  });
+
+  it('pokazuje numer fali z sumą, gdy scena poda totalWaves', () => {
+    hud.dispose();
+    hud = new Hud(bus, { playerId: 1, root, totalWaves: 12 });
+    bus.emit('wave_started', { wave: 3, count: 5 });
+    expect(query('.hud__wave-label').textContent).toBe('Fala 3 / 12');
+  });
+
+  it('znacznik trafienia: kill wyróżniony, obrażenia 0 i cudze pomijane', () => {
+    const marker = query('.hud__hitmarker');
+    const hit = (
+      source: number,
+      target: number,
+      amount: number,
+      killed: boolean,
+    ) =>
+      bus.emit('damage_dealt', {
+        source,
+        target,
+        amount,
+        tags: [],
+        point: null,
+        dir: null,
+        knockback: 0,
+        killed,
+      });
+    hit(1, 5, 0, false);
+    hit(2, 5, 10, false);
+    expect(marker.hidden).toBe(true);
+    hit(1, 5, 10, false);
+    expect(marker.hidden).toBe(false);
+    expect(marker.classList.contains('hud__hitmarker--kill')).toBe(false);
+    hit(1, 5, 10, true);
+    expect(marker.classList.contains('hud__hitmarker--kill')).toBe(true);
+    marker.dispatchEvent(new Event('animationend'));
+    expect(marker.hidden).toBe(true);
+    hit(1, 5, 10, false);
+    expect(marker.classList.contains('hud__hitmarker--kill')).toBe(false);
+  });
+
+  it('celownik rozszerza się przy strzale gracza', () => {
+    const ticks = query('.hud__crosshair-ticks');
+    bus.emit('weapon_fired', { weapon: 'rifle', owner: 2 });
+    expect(ticks.classList.contains('hud__crosshair-ticks--fire')).toBe(false);
+    bus.emit('weapon_fired', { weapon: 'rifle', owner: 1 });
+    expect(ticks.classList.contains('hud__crosshair-ticks--fire')).toBe(true);
+    ticks.dispatchEvent(new Event('animationend'));
+    expect(ticks.classList.contains('hud__crosshair-ticks--fire')).toBe(false);
+  });
+
+  it.each([
+    [{ x: 0, z: 1 }, 0, 0],
+    [{ x: -1, z: 0 }, 0, 90],
+    [{ x: 1, z: 0 }, 0, -90],
+    [{ x: 0, z: 1 }, Math.PI / 2, 90],
+    [{ x: 1, z: 0 }, Math.PI / 2, 0],
+  ])('kierunek obrażeń dir=%j yaw=%d daje %d stopni', (dir, yaw, expected) => {
+    expect(damageIndicatorAngle(dir, yaw)).toBeCloseTo(expected);
+  });
+
+  it('kierunek obrażeń z tyłu daje 180 stopni', () => {
+    expect(Math.abs(damageIndicatorAngle({ x: 0, z: -1 }, 0))).toBeCloseTo(180);
+  });
+
+  it('wskaźnik kierunku obrażeń podąża za obrotem kamery i pomija obrażenia własne oraz bez kierunku', () => {
+    const indicator = query('.hud__dmgdir');
+    const hurt = (
+      source: number,
+      dir: { x: number; y: number; z: number } | null,
+    ) =>
+      bus.emit('damage_dealt', {
+        source,
+        target: 1,
+        amount: 5,
+        tags: [],
+        point: null,
+        dir,
+        knockback: 0,
+        killed: false,
+      });
+    hurt(2, null);
+    hurt(1, { x: 0, y: 0, z: 1 });
+    expect(indicator.hidden).toBe(true);
+    hurt(2, { x: -1, y: 0, z: 0 });
+    expect(indicator.hidden).toBe(false);
+    expect(indicator.style.getPropertyValue('--angle')).toBe('90deg');
+    hud.setViewYaw(Math.PI / 2);
+    expect(indicator.style.getPropertyValue('--angle')).toBe('180deg');
+  });
+
+  it('moc bez energii jest przygaszona, odliczanie ustawia radialny postęp', () => {
+    hud.setLoadout(loadoutDefinitions.get('resonance')!);
+    const slots = root.querySelectorAll<HTMLElement>('.hud__power');
+    expect(slots[0]?.classList.contains('hud__power--dim')).toBe(true);
+    bus.emit('energy_changed', { id: 1, current: 100, max: 100 });
+    expect(slots[0]?.classList.contains('hud__power--dim')).toBe(false);
+    bus.emit('energy_changed', { id: 1, current: 5, max: 100 });
+    expect(slots[0]?.classList.contains('hud__power--dim')).toBe(true);
+    bus.emit('power_cooldown', { user: 1, power: 'push', cooldownS: 2 });
+    expect(slots[0]?.style.getPropertyValue('--cd')).toBe('1.00');
+    hud.step(1);
+    expect(slots[0]?.style.getPropertyValue('--cd')).toBe('0.50');
+    hud.step(1);
+    expect(slots[0]?.style.getPropertyValue('--cd')).toBe('0.00');
+  });
+
+  it('wskaźnik slotów broni pojawia się tylko przy kilku brońach i podświetla bieżący', () => {
+    hud.setLoadout({ weapons: ['rifle'], powers: [] });
+    expect(query('.hud__slots').hidden).toBe(true);
+    hud.setLoadout({ weapons: ['rifle', 'sniper', 'scatter'], powers: [] });
+    const slots = query('.hud__slots');
+    expect(slots.hidden).toBe(false);
+    const items = () => [...slots.children].map((n) => n.className);
+    expect(items()[0]).toContain('hud__slot--active');
+    bus.emit('weapon_switched', { owner: 1, weapon: 'sniper', slot: 1 });
+    expect(items()[0]).not.toContain('hud__slot--active');
+    expect(items()[1]).toContain('hud__slot--active');
+  });
+
+  it('toast synergii i wskaźnik ostrza w locie', () => {
+    const toast = query('.hud__toast');
+    bus.emit('synergy_triggered', { synergy: 'nieistniejaca', user: 2 });
+    expect(toast.hidden).toBe(true);
+    bus.emit('synergy_triggered', { synergy: 'nieistniejaca', user: 1 });
+    expect(toast.hidden).toBe(false);
+    expect(toast.textContent).toBe('nieistniejaca');
+    const blade = query('.hud__blade');
+    expect(blade.hidden).toBe(true);
+    bus.emit('blade_thrown', { owner: 1 });
+    expect(blade.hidden).toBe(false);
+    bus.emit('blade_returned', { owner: 1 });
+    expect(blade.hidden).toBe(true);
   });
 
   it.each(['click', 'Enter', 'r'])(

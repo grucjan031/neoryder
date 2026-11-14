@@ -3,6 +3,7 @@ import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import type { Loadout } from '../progression/loadout';
+import { synergyDefinitions } from '../progression/synergies';
 
 type HudLoadout = Pick<Loadout, 'weapons' | 'powers'>;
 
@@ -13,6 +14,41 @@ interface HudOptions {
   /** F2-17: drugi przycisk na ekranie śmierci — powrót do wyboru buildu. */
   onChangeBuild?: () => void;
   loadout?: HudLoadout;
+  /** Liczba fal do napisu „FALA 3 / 12”; bez niej pokazywany jest sam numer. */
+  totalWaves?: number;
+}
+
+/** Liczba segmentów paska zdrowia. */
+export const HEALTH_SEGMENTS = 10;
+/** Maksymalna liczba slotów broni pokazywanych we wskaźniku. */
+const MAX_WEAPON_SLOTS = 3;
+const HEAT_WARM = 0.5;
+const HEAT_HOT = 0.8;
+const LOW_HEALTH = 0.3;
+const RAD_TO_DEG = 180 / Math.PI;
+
+/**
+ * Kąt źródła obrażeń w stopniach, zgodnie z ruchem wskazówek od góry ekranu
+ * (−180..180]. `dir` to kierunek lotu ataku (źródło → gracz), `yaw` to obrót kamery.
+ */
+export function damageIndicatorAngle(
+  dir: { x: number; z: number },
+  yaw: number,
+): number {
+  const sx = -dir.x;
+  const sz = -dir.z;
+  const forward = sx * -Math.sin(yaw) + sz * -Math.cos(yaw);
+  const right = sx * Math.cos(yaw) + sz * -Math.sin(yaw);
+  return Math.atan2(right, forward) * RAD_TO_DEG;
+}
+
+export function heatLevel(ratio: number): 'cool' | 'warm' | 'hot' {
+  return ratio >= HEAT_HOT ? 'hot' : ratio >= HEAT_WARM ? 'warm' : 'cool';
+}
+
+/** Wypełnienie i-tego segmentu (0–1) dla stosunku zdrowia 0–1. */
+export function segmentFill(ratio: number, index: number): number {
+  return Math.min(1, Math.max(0, ratio * HEALTH_SEGMENTS - index));
 }
 
 function element<K extends keyof HTMLElementTagNameMap>(
@@ -30,41 +66,99 @@ function setText(node: HTMLElement, content: string): void {
   if (node.textContent !== content) node.textContent = content;
 }
 
-function createMeter(kind: 'health' | 'energy' | 'heat') {
+const ratioOf = (current: number, max: number): number =>
+  max > 0 ? Math.min(1, Math.max(0, current / max)) : 0;
+
+function createBar(kind: 'energy' | 'heat') {
   const node = element('div', `hud__meter hud__meter--${kind}`);
-  const label = element('span', 'hud__label', text[kind]);
   const value = element('span', 'hud__value', text.empty);
   const track = element('div', 'hud__track');
   const fill = element('div', 'hud__fill');
-  fill.style.width = '0%';
+  fill.style.setProperty('--p', '0');
   track.setAttribute('role', 'progressbar');
   track.setAttribute('aria-label', text[kind]);
   track.setAttribute('aria-valuetext', text.empty);
   track.append(fill);
-  node.append(label, value, track);
+  node.append(track, value);
   let lastCurrent: number | undefined;
   let lastMax: number | undefined;
-  let lastWidth = '0%';
+  let lastP = '0';
   return {
     node,
-    label,
-    update(current: number, max: number): void {
-      if (current === lastCurrent && max === lastMax) return;
+    value,
+    fill,
+    /** Zwraca stosunek 0–1 przy zmianie, inaczej undefined. */
+    update(current: number, max: number): number | undefined {
+      if (current === lastCurrent && max === lastMax) return undefined;
       lastCurrent = current;
       lastMax = max;
-      const width = `${max > 0 ? Math.min(1, Math.max(0, current / max)) * 100 : 0}%`;
-      if (width !== lastWidth) {
-        fill.style.width = width;
-        lastWidth = width;
+      const ratio = ratioOf(current, max);
+      const p = ratio.toFixed(3);
+      if (p !== lastP) {
+        fill.style.setProperty('--p', p);
+        lastP = p;
       }
       const content = `${Math.round(current)} / ${Math.round(max)}`;
       setText(value, content);
       if (track.getAttribute('aria-valuetext') !== content)
         track.setAttribute('aria-valuetext', content);
+      return ratio;
     },
   };
 }
 
+function createHealth() {
+  const node = element('div', 'hud__meter hud__meter--health');
+  const track = element('div', 'hud__segments');
+  track.setAttribute('role', 'progressbar');
+  track.setAttribute('aria-label', text.health);
+  track.setAttribute('aria-valuetext', text.empty);
+  const fills: HTMLElement[] = [];
+  const ghosts: HTMLElement[] = [];
+  const shown: string[] = [];
+  for (let i = 0; i < HEALTH_SEGMENTS; i++) {
+    const seg = element('span', 'hud__seg');
+    const ghost = element('span', 'hud__seg-ghost');
+    const fill = element('span', 'hud__seg-fill');
+    fill.dataset.fill = '0';
+    seg.append(ghost, fill);
+    track.append(seg);
+    fills.push(fill);
+    ghosts.push(ghost);
+    shown.push('0');
+  }
+  const value = element('span', 'hud__value', text.empty);
+  node.append(track, value);
+  let lastCurrent: number | undefined;
+  let lastMax: number | undefined;
+  return {
+    node,
+    value,
+    update(current: number, max: number): number | undefined {
+      if (current === lastCurrent && max === lastMax) return undefined;
+      lastCurrent = current;
+      lastMax = max;
+      const ratio = ratioOf(current, max);
+      for (let i = 0; i < HEALTH_SEGMENTS; i++) {
+        const f = segmentFill(ratio, i).toFixed(2);
+        if (f === shown[i]) continue;
+        shown[i] = f;
+        const fill = fills[i];
+        const ghost = ghosts[i];
+        if (!fill || !ghost) continue;
+        fill.dataset.fill = f;
+        fill.style.setProperty('--f', f);
+        ghost.style.setProperty('--f', f);
+      }
+      const content = `${Math.round(current)} / ${Math.round(max)}`;
+      setText(value, content);
+      track.setAttribute('aria-valuetext', content);
+      return ratio;
+    },
+  };
+}
+
+/** Element pokazywany animacją jednorazową; koniec animacji ukrywa go, kolejne show() restartuje. */
 function createFlash(className: string) {
   const node = element('div', className);
   node.hidden = true;
@@ -99,15 +193,39 @@ export class Hud {
   private readonly death = element('section', 'hud__death');
   private readonly denial = createFlash('hud__denial');
   private readonly damage = createFlash('hud__damage');
+  private readonly lowHealth = element('div', 'hud__lowhp');
+  private readonly damageDir = createFlash('hud__dmgdir');
+  private readonly hitMarker = createFlash('hud__hitmarker');
+  private readonly banner = createFlash('hud__banner');
+  private readonly toast = createFlash('hud__toast');
+  private readonly blade = element('div', 'hud__blade', text.bladeInFlight);
+  private readonly crosshairTicks = element('div', 'hud__crosshair-ticks');
+  private readonly overheat = element('div', 'hud__overheat', text.overheated);
   private readonly weaponName = element('span', 'hud__weapon-name');
-  private readonly powers = element('div', 'hud__powers');
+  private readonly slots = element('div', 'hud__slots');
+  private readonly powers = element('div', 'hud__power-list');
+  private readonly waveLabel = element('span', 'hud__wave-label');
+  private readonly waveLeft = element('span', 'hud__wave-left');
+  private readonly wave = element('div', 'hud__wave');
+  private readonly heat = createBar('heat');
   private powerSlots: {
     id: string;
-    cooldownS: number;
+    cost: number;
+    total: number;
     remaining: number;
+    cd: string;
+    node: HTMLElement;
     value: HTMLElement;
     denial: ReturnType<typeof createFlash>;
   }[] = [];
+  private fireAlternate = false;
+  private energy = 0;
+  private remaining = 0;
+  private slotCount = 0;
+  private activeSlot = -1;
+  private damageDirection: { x: number; z: number } | null = null;
+  private viewYaw = 0;
+  private shownAngle = 0;
   private previousFocus: HTMLElement | null = null;
   private disposed = false;
 
@@ -115,20 +233,45 @@ export class Hud {
     bus: EventBus,
     private readonly opts: HudOptions,
   ) {
-    const health = createMeter('health');
-    const energy = createMeter('energy');
-    const heat = createMeter('heat');
-    const meters = element('div', 'hud__meters');
+    const health = createHealth();
+    const energy = createBar('energy');
+    const vitals = element('div', 'hud__vitals');
+    vitals.append(health.node, energy.node);
+
     const weapon = element('div', 'hud__weapon');
-    weapon.append(element('span', 'hud__label', text.weapon), this.weaponName);
-    meters.append(health.node, energy.node, weapon, heat.node);
+    const weaponHead = element('div', 'hud__weapon-head');
+    weaponHead.append(this.weaponName, this.slots);
+    this.heat.node.dataset.level = 'cool';
+    this.overheat.hidden = true;
+    weapon.append(this.overheat, weaponHead, this.heat.node);
+    const arsenal = element('div', 'hud__arsenal');
     this.powers.setAttribute('aria-label', text.powers);
+    arsenal.append(weapon, this.powers);
+
     const crosshair = element('div', 'hud__crosshair');
     crosshair.setAttribute('aria-hidden', 'true');
+    for (const side of ['up', 'right', 'down', 'left'])
+      this.crosshairTicks.append(
+        element('span', `hud__tick hud__tick--${side}`),
+      );
+    crosshair.append(element('span', 'hud__dot'), this.crosshairTicks);
     this.damage.node.setAttribute('aria-hidden', 'true');
+    this.damageDir.node.setAttribute('aria-hidden', 'true');
+    this.damageDir.node.append(element('span', 'hud__dmgdir-arc'));
+    this.hitMarker.node.setAttribute('aria-hidden', 'true');
+    this.hitMarker.node.append(
+      element('span', 'hud__hit-bar'),
+      element('span', 'hud__hit-bar'),
+    );
+    this.lowHealth.hidden = true;
+    this.lowHealth.setAttribute('aria-hidden', 'true');
+    this.blade.hidden = true;
     this.denial.node.setAttribute('role', 'status');
-    const wave = element('div', 'hud__wave');
-    wave.setAttribute('role', 'status');
+    this.banner.node.setAttribute('role', 'status');
+    this.toast.node.setAttribute('role', 'status');
+    this.wave.setAttribute('role', 'status');
+    this.wave.hidden = true;
+    this.wave.append(this.waveLabel, this.waveLeft);
     this.death.hidden = true;
     this.death.setAttribute('role', 'dialog');
     this.death.setAttribute('aria-label', text.died);
@@ -139,12 +282,18 @@ export class Hud {
     if (opts.onChangeBuild) actions.append(this.changeBuildButton);
     this.death.append(element('h1', 'hud__death-title', text.died), actions);
     this.root.append(
+      this.lowHealth,
       this.damage.node,
-      meters,
-      this.powers,
+      this.damageDir.node,
+      vitals,
+      arsenal,
       crosshair,
+      this.hitMarker.node,
       this.denial.node,
-      wave,
+      this.blade,
+      this.wave,
+      this.banner.node,
+      this.toast.node,
       this.death,
     );
     (opts.root ?? document.body).append(this.root);
@@ -152,35 +301,61 @@ export class Hud {
     this.retryButton.addEventListener('click', this.retry);
     this.changeBuildButton.addEventListener('click', this.changeBuild);
     window.addEventListener('keydown', this.onKeyDown, true);
+    this.crosshairTicks.addEventListener('animationend', this.endFire);
     let overheated = false;
     this.unsubscribe = [
       bus.on('health_changed', ({ id, current, max }) => {
-        if (id === opts.playerId) health.update(current, max);
+        if (id !== opts.playerId) return;
+        const ratio = health.update(current, max);
+        if (ratio === undefined) return;
+        const low = current > 0 && ratio < LOW_HEALTH;
+        if (this.lowHealth.hidden === low) this.lowHealth.hidden = !low;
       }),
       bus.on('energy_changed', ({ id, current, max }) => {
-        if (id === opts.playerId) energy.update(current, max);
+        if (id !== opts.playerId) return;
+        energy.update(current, max);
+        if (current !== this.energy) {
+          this.energy = current;
+          this.refreshDim();
+        }
       }),
       bus.on('heat_changed', ({ id, current, max, overheated: next }) => {
         if (id !== opts.playerId) return;
-        heat.update(current, max);
+        const ratio = this.heat.update(current, max);
+        if (ratio !== undefined) {
+          const level = heatLevel(ratio);
+          if (this.heat.node.dataset.level !== level)
+            this.heat.node.dataset.level = level;
+        }
         if (overheated !== next) {
           overheated = next;
-          heat.node.classList.toggle('hud__meter--overheated', next);
-          setText(heat.label, next ? text.overheated : text.heat);
+          this.heat.node.classList.toggle('hud__meter--overheated', next);
+          this.overheat.hidden = !next;
         }
       }),
-      bus.on('weapon_switched', ({ owner, weapon }) => {
-        if (owner === opts.playerId)
-          setText(
-            this.weaponName,
-            weaponDefinitions.get(weapon)?.name ?? text.empty,
-          );
+      bus.on('weapon_switched', ({ owner, weapon, slot }) => {
+        if (owner !== opts.playerId) return;
+        setText(
+          this.weaponName,
+          weaponDefinitions.get(weapon)?.name ?? text.empty,
+        );
+        this.setActiveSlot(slot);
+      }),
+      bus.on('weapon_fired', ({ owner }) => {
+        if (owner !== opts.playerId) return;
+        this.fireAlternate = !this.fireAlternate;
+        this.crosshairTicks.classList.toggle(
+          'hud__flash--alternate',
+          this.fireAlternate,
+        );
+        this.crosshairTicks.classList.add('hud__crosshair-ticks--fire');
       }),
       bus.on('power_cooldown', ({ user, power, cooldownS }) => {
         if (user !== opts.playerId) return;
         for (const slot of this.powerSlots) {
           if (slot.id !== power) continue;
           slot.remaining = cooldownS;
+          slot.total = cooldownS;
           this.showCooldown(slot);
         }
       }),
@@ -191,6 +366,7 @@ export class Hud {
         for (const slot of this.powerSlots) {
           if (slot.id !== power) continue;
           slot.remaining = 0;
+          this.setCooldownFill(slot, 0);
           setText(slot.value, text.holding);
         }
       }),
@@ -206,19 +382,54 @@ export class Hud {
           }[reason],
         );
         this.denial.show();
-        for (const slot of this.powerSlots) {
-          if (slot.id !== power) continue;
-          setText(slot.denial.node, this.denial.node.textContent ?? '');
-          slot.denial.show();
+        for (const slot of this.powerSlots)
+          if (slot.id === power) slot.denial.show();
+      }),
+      bus.on('damage_dealt', ({ source, target, amount, dir, killed }) => {
+        if (!(amount > 0)) return;
+        if (target === opts.playerId) {
+          this.damage.show();
+          if (dir && source !== opts.playerId) {
+            this.damageDirection = { x: dir.x, z: dir.z };
+            this.placeDamageDir(true);
+            this.damageDir.show();
+          }
+        } else if (source === opts.playerId) {
+          this.hitMarker.node.classList.toggle('hud__hitmarker--kill', killed);
+          this.hitMarker.show();
         }
       }),
-      bus.on('damage_dealt', ({ target, amount }) => {
-        if (target === opts.playerId && amount > 0) this.damage.show();
+      bus.on('enemy_killed', () => {
+        if (this.remaining > 0) this.setRemaining(this.remaining - 1);
       }),
-      bus.on('wave_started', ({ wave: number }) =>
-        setText(wave, `${text.wave} ${number}`),
-      ),
-      bus.on('wave_cleared', () => setText(wave, text.waveCleared)),
+      bus.on('wave_started', ({ wave: number, count }) => {
+        this.wave.hidden = false;
+        const total = opts.totalWaves;
+        setText(
+          this.waveLabel,
+          `${text.wave} ${number}${total ? ` / ${total}` : ''}`,
+        );
+        this.setRemaining(count);
+        this.showBanner(`${text.wave} ${number}`, false);
+      }),
+      bus.on('wave_cleared', () => {
+        this.setRemaining(0);
+        this.showBanner(text.waveCleared, true);
+      }),
+      bus.on('synergy_triggered', ({ synergy, user }) => {
+        if (user !== opts.playerId) return;
+        setText(
+          this.toast.node,
+          synergyDefinitions.find((def) => def.id === synergy)?.name ?? synergy,
+        );
+        this.toast.show();
+      }),
+      bus.on('blade_thrown', ({ owner }) => {
+        if (owner === opts.playerId) this.blade.hidden = false;
+      }),
+      bus.on('blade_returned', ({ owner }) => {
+        if (owner === opts.playerId) this.blade.hidden = true;
+      }),
       bus.on('player_died', ({ id }) => {
         if (id !== opts.playerId || !this.death.hidden) return;
         this.previousFocus =
@@ -240,14 +451,18 @@ export class Hud {
       this.weaponName,
       weaponDefinitions.get(loadout.weapons[0] ?? '')?.name ?? text.empty,
     );
+    this.slotCount = Math.min(loadout.weapons.length, MAX_WEAPON_SLOTS);
+    this.slots.replaceChildren();
+    for (let i = 0; i < this.slotCount; i++)
+      this.slots.append(element('span', 'hud__slot', String(i + 1)));
+    this.slots.hidden = this.slotCount <= 1;
+    this.activeSlot = -1;
+    this.setActiveSlot(0);
     for (const [index, key] of text.powerKeys.entries()) {
       const def = powerDefinitions.get(loadout.powers[index] ?? '');
       const node = element('div', 'hud__power');
-      const value = element(
-        'span',
-        'hud__power-cooldown',
-        def ? text.ready : text.empty,
-      );
+      if (!def) node.classList.add('hud__power--empty');
+      const value = element('span', 'hud__power-cooldown', '');
       const denial = createFlash('hud__power-denial');
       node.append(
         element('kbd', 'hud__power-key', key),
@@ -255,19 +470,37 @@ export class Hud {
         value,
         denial.node,
       );
+      node.style.setProperty('--cd', '0');
       this.powers.append(node);
       this.powerSlots.push({
         id: def?.id ?? '',
-        cooldownS: def?.cooldownS ?? 0,
+        cost: def?.cost ?? 0,
+        total: 0,
         remaining: 0,
+        cd: '0',
+        node,
         value,
         denial,
       });
     }
+    this.refreshDim();
     this.death.hidden = true;
     this.denial.node.hidden = true;
     this.damage.node.hidden = true;
+    this.damageDir.node.hidden = true;
+    this.hitMarker.node.hidden = true;
+    this.banner.node.hidden = true;
+    this.toast.node.hidden = true;
+    this.blade.hidden = true;
+    this.lowHealth.hidden = true;
     this.restoreFocus();
+  }
+
+  /** Obrót kamery (rad), by znacznik kierunku obrażeń podążał za widokiem. */
+  setViewYaw(yaw: number): void {
+    if (this.disposed || yaw === this.viewYaw) return;
+    this.viewYaw = yaw;
+    if (!this.damageDir.node.hidden) this.placeDamageDir(false);
   }
 
   /** Czas gracza, także 0 podczas hitstopu; bez odpytywania obiektów symulacji. */
@@ -281,14 +514,70 @@ export class Hud {
     }
   }
 
+  private placeDamageDir(force: boolean): void {
+    if (!this.damageDirection) return;
+    const angle = Math.round(
+      damageIndicatorAngle(this.damageDirection, this.viewYaw),
+    );
+    if (!force && angle === this.shownAngle) return;
+    this.shownAngle = angle;
+    this.damageDir.node.style.setProperty('--angle', `${angle}deg`);
+  }
+
+  private setActiveSlot(slot: number): void {
+    if (slot === this.activeSlot) return;
+    this.activeSlot = slot;
+    [...this.slots.children].forEach((child, index) =>
+      child.classList.toggle('hud__slot--active', index === slot),
+    );
+  }
+
+  private setRemaining(count: number): void {
+    this.remaining = count;
+    setText(this.waveLeft, `${text.enemiesLeft} ${count}`);
+  }
+
+  private showBanner(content: string, clear: boolean): void {
+    setText(this.banner.node, content);
+    this.banner.node.classList.toggle('hud__banner--clear', clear);
+    this.banner.show();
+  }
+
+  private refreshDim(): void {
+    for (const slot of this.powerSlots) {
+      const dim = slot.id !== '' && this.energy < slot.cost;
+      if (slot.node.classList.contains('hud__power--dim') !== dim)
+        slot.node.classList.toggle('hud__power--dim', dim);
+    }
+  }
+
+  private setCooldownFill(
+    slot: (typeof this.powerSlots)[number],
+    fraction: number,
+  ): void {
+    const cd = fraction.toFixed(2);
+    if (cd === slot.cd) return;
+    slot.cd = cd;
+    slot.node.style.setProperty('--cd', cd);
+  }
+
   private showCooldown(slot: (typeof this.powerSlots)[number]): void {
     setText(
       slot.value,
-      slot.remaining > 0
-        ? `${slot.remaining.toFixed(1)} ${text.seconds}`
-        : text.ready,
+      slot.remaining > 0 ? `${slot.remaining.toFixed(1)} ${text.seconds}` : '',
+    );
+    this.setCooldownFill(
+      slot,
+      slot.remaining > 0 && slot.total > 0
+        ? Math.min(1, slot.remaining / slot.total)
+        : 0,
     );
   }
+
+  private readonly endFire = (event: AnimationEvent): void => {
+    if (event.target === this.crosshairTicks)
+      this.crosshairTicks.classList.remove('hud__crosshair-ticks--fire');
+  };
 
   private readonly retry = (): void => {
     if (this.disposed || this.death.hidden) return;
@@ -331,8 +620,13 @@ export class Hud {
     window.removeEventListener('keydown', this.onKeyDown, true);
     this.retryButton.removeEventListener('click', this.retry);
     this.changeBuildButton.removeEventListener('click', this.changeBuild);
+    this.crosshairTicks.removeEventListener('animationend', this.endFire);
     this.denial.dispose();
     this.damage.dispose();
+    this.damageDir.dispose();
+    this.hitMarker.dispose();
+    this.banner.dispose();
+    this.toast.dispose();
     for (const slot of this.powerSlots) slot.denial.dispose();
     this.restoreFocus();
     this.root.remove();

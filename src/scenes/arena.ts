@@ -249,6 +249,7 @@ export class Arena implements Scene {
       this.hud = new Hud(ctx.bus, {
         playerId,
         loadout: this.loadout,
+        totalWaves: waves.waves.length,
         onRetry: () => this.retry(),
         ...(this.selectBuild
           ? { onChangeBuild: () => this.openBuildSelect() }
@@ -709,6 +710,7 @@ export class Arena implements Scene {
       this.barrierView.render(barrier, pose);
     else this.barrierView.root.visible = false;
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    this.hud?.setViewYaw(pose.yaw);
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
       camera.fov = pose.fov;
       camera.updateProjectionMatrix();
