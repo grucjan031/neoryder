@@ -1,5 +1,6 @@
 import { Ray } from '@dimforge/rapier3d-compat';
 import { Health, PIERCE_BLOCK_TAG } from '../combat/damage';
+import { STUNNED } from '../combat/status/statusSystem';
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import { Stats } from '../core/stats';
@@ -209,6 +210,18 @@ export class Gunner implements Enemy {
     });
   }
 
+  /** Status 'stunned' (F2-02) działa jak ogłuszenie ciosem i trwa, dopóki trwa status. */
+  private holdStun(): void {
+    const remaining = this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
+    if (!(remaining > 0)) return;
+    if (this.current.state !== 'stunned') {
+      this.transition('stunned');
+      this.stunS = remaining;
+      this.ctx.bus.emit('enemy_stunned', { id: this.id, durationS: remaining });
+    } else
+      this.stunS = Math.max(this.stunS, this.current.stateTimeS + remaining);
+  }
+
   step(dt: number): void {
     if (this.removed) return;
     this.previous = copy(this.current);
@@ -224,6 +237,7 @@ export class Gunner implements Enemy {
         this.dispose();
       return;
     }
+    this.holdStun();
     const target = this.deps.getTarget();
     const dx = target ? target.position.x - s.position.x : 0;
     const dz = target ? target.position.z - s.position.z : 0;

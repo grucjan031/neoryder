@@ -24,6 +24,7 @@ import { Blaster } from '../combat/weapons/blaster';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import sceneData from '../data/scenes/arena.json';
 import wavesData from '../data/waves/arena.json';
+import { StatusSystem } from '../combat/status';
 import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
 import { EnemyView } from '../enemies/enemyView';
@@ -85,6 +86,7 @@ export class Arena implements Scene {
   private world!: World;
   private entities!: EntityRegistry;
   private damage!: DamageSystem;
+  private statuses!: StatusSystem;
   private readonly hurtboxes = new Hurtboxes();
   private projectiles!: ProjectileSystem;
   private projectileView!: ProjectileRenderer;
@@ -136,6 +138,10 @@ export class Arena implements Scene {
     });
     this.entities = new EntityRegistry(ctx.bus);
     this.damage = new DamageSystem(ctx.bus, this.entities);
+    this.statuses = new StatusSystem(ctx.bus, this.damage, {
+      position: (id) => this.enemyPosition(id),
+      targets: () => this.enemyIds(),
+    });
     three.background = new Color(ctx.tuning.render.world);
     three.add(this.root);
     this.root.add(this.lights);
@@ -177,6 +183,7 @@ export class Arena implements Scene {
         entities: this.entities,
         damage: this.damage,
         hurtboxes: this.hurtboxes,
+        statuses: this.statuses,
         getTarget: () =>
           this.health.dead
             ? null
@@ -364,6 +371,22 @@ export class Arena implements Scene {
     return found;
   }
 
+  private enemyIds(): EntityId[] {
+    const ids: EntityId[] = [];
+    this.manager.forEach((e) => {
+      if (!e.removed && e.current.state !== 'dead') ids.push(e.id);
+    });
+    return ids;
+  }
+
+  private enemyPosition(id: EntityId): Vec3 | null {
+    let position: Vec3 | null = null;
+    this.manager.forEach((e) => {
+      if (e.id === id && !e.removed) position = e.current.position;
+    });
+    return position;
+  }
+
   private aliveEnemies(): number {
     let n = 0;
     this.manager.forEach((e) => {
@@ -445,6 +468,7 @@ export class Arena implements Scene {
     }
     this.energy.step(dt);
     this.damage.step(dt);
+    this.statuses.step(dt);
     this.projectileView.capturePrevious();
     this.debris.step(dt);
     this.blaster.step(dt, {
@@ -516,6 +540,7 @@ export class Arena implements Scene {
    */
   reset(): void {
     this.manager.despawnAll();
+    this.statuses.reset();
     this.projectiles.dispose();
     this.projectileView.capturePrevious();
     this.debris.clear();
@@ -666,6 +691,7 @@ export class Arena implements Scene {
     this.views.clear();
     this.director.dispose();
     this.manager.dispose();
+    this.statuses.dispose();
     this.blade.dispose();
     this.energy.dispose();
     this.bladeView.dispose();

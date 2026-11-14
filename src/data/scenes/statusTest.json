@@ -1,0 +1,158 @@
+{
+  "playerHealth": 100,
+  "respawnS": 1,
+  "spawnDistance": 8,
+  "spawnSpacing": 1.5,
+  "initialEnemies": [
+    {
+      "id": "assaulter",
+      "position": {
+        "x": -1.6,
+        "y": 0,
+        "z": -8
+      }
+    },
+    {
+      "id": "assaulter",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -9
+      }
+    },
+    {
+      "id": "assaulter",
+      "position": {
+        "x": 1.6,
+        "y": 0,
+        "z": -8
+      }
+    },
+    {
+      "id": "gunner",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "z": -9
+      }
+    }
+  ],
+  "arena": [
+    {
+      "size": {
+        "x": 40,
+        "y": 1,
+        "z": 40
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      }
+    },
+    {
+      "model": "cover_low",
+      "size": {
+        "x": 2,
+        "y": 1,
+        "z": 0.6
+      },
+      "position": {
+        "x": -4,
+        "y": 0.5,
+        "z": -4
+      }
+    },
+    {
+      "model": "cover_low",
+      "size": {
+        "x": 2,
+        "y": 1,
+        "z": 0.6
+      },
+      "position": {
+        "x": 4,
+        "y": 0.5,
+        "z": -4
+      }
+    },
+    {
+      "model": "pillar",
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": -6
+      }
+    },
+    {
+      "size": {
+        "x": 40,
+        "y": 4,
+        "z": 0.5
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": -20
+      }
+    },
+    {
+      "size": {
+        "x": 40,
+        "y": 4,
+        "z": 0.5
+      },
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": 20
+      }
+    },
+    {
+      "size": {
+        "x": 0.5,
+        "y": 4,
+        "z": 40
+      },
+      "position": {
+        "x": -20,
+        "y": 2,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 0.5,
+        "y": 4,
+        "z": 40
+      },
+      "position": {
+        "x": 20,
+        "y": 2,
+        "z": 0
+      }
+    }
+  ],
+  "director": {
+    "attackTokens": 2,
+    "shotTokens": 1,
+    "maxHoldS": 4,
+    "reassignS": 1,
+    "probeHeightM": 0.5,
+    "slots": {
+      "melee": {
+        "count": 8,
+        "offsetDeg": 0
+      },
+      "shot": {
+        "count": 6,
+        "offsetDeg": 30
+      }
+    }
+  }
+}

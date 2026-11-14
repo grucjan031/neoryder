@@ -1,0 +1,11 @@
+{
+  "id": "overload",
+  "name": "Przeciążenie",
+  "tags": ["#elektrycznosc"],
+  "maxStacks": 3,
+  "damageTakenPerStack": 0.25,
+  "onMaxStacks": {
+    "apply": [{ "id": "stunned", "durationS": 1.5 }],
+    "discharge": { "radiusM": 4, "damage": 12, "tags": ["#elektrycznosc"] }
+  }
+}

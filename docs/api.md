@@ -416,11 +416,15 @@ export class StatusSystem implements StatusQuery {
     targets(): readonly EntityId[];               // potencjalne cele wyładowań
   }, defs?: ReadonlyMap<string, StatusDefinition>);
   step(dt: number): void;                         // czas symulacji (dt = 0 w hitstopie)
+  /** Tylko StatusSystem (z damage_dealt), testy i komendy debug. Zaimplementowane w F2-02. */
+  apply(target: EntityId, app: StatusApplication, source: EntityId | null): void;
+  list(target: EntityId): ActiveStatus[];         // { id, stacks, remainingS, source } — HUD, debug
   clear(target: EntityId): void;                  // śmierć, despawn
   reset(): void;                                  // nowy run
   dispose(): void;
 }
-// Nakładanie wyłącznie z damage_dealt.statuses (tylko gdy amount > 0).
+export const STATUS_TAG = '#status'; export const STUNNED = 'stunned';
+// Nakładanie wyłącznie z damage_dealt.statuses (tylko gdy amount > 0 i killed = false).
 // Obrażenia statusów: DamageSystem.deal, source = nakładający, tagi statusu + '#status', bez statuses.
 ```
 

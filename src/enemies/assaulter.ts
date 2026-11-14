@@ -5,6 +5,7 @@ import {
   PIERCE_BLOCK_TAG,
   queryHurtboxes,
 } from '../combat/damage';
+import { STUNNED } from '../combat/status/statusSystem';
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import { Stats } from '../core/stats';
@@ -152,6 +153,18 @@ export class Assaulter implements Enemy {
     return this.token;
   }
 
+  /** Status 'stunned' (F2-02) działa jak ogłuszenie ciosem i trwa, dopóki trwa status. */
+  private holdStun(): void {
+    const remaining = this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
+    if (!(remaining > 0)) return;
+    if (this.current.state !== 'stunned') {
+      this.transition('stunned');
+      this.stunS = remaining;
+      this.ctx.bus.emit('enemy_stunned', { id: this.id, durationS: remaining });
+    } else
+      this.stunS = Math.max(this.stunS, this.current.stateTimeS + remaining);
+  }
+
   step(dt: number): void {
     if (this.removed) return;
     this.previous = copy(this.current);
@@ -166,6 +179,7 @@ export class Assaulter implements Enemy {
       return;
     }
     this.cooldown = Math.max(0, this.cooldown - dt);
+    this.holdStun();
     const target = this.deps.getTarget();
     const dx = target ? target.position.x - s.position.x : 0;
     const dz = target ? target.position.z - s.position.z : 0;

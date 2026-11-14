@@ -92,3 +92,11 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | Boty grające w Playwright z raportem DPS | F2 (QA i balans)                                     |
 | Test FPS w CI                            | Po pierwszych falach z odłamkami, F1 końcówka lub F2 |
 | Edytor poziomów w grze, mody             | Poza zakresem                                        |
+
+## Wynikłe z zadań F2
+
+| Pomysł                                                                                   | Dlaczego odłożone                                                           |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Ogłuszenie ciężkim ciosem jako status `stunned` (dziś stan wroga z `stunOnHeavyS`)       | F2-02 dodało status, ale migracja zmieniłaby feel F1; decyzja po playteście |
+| Bufor wciśnięcia spustu broni półautomatycznej (klik w trakcie odnowienia przepada)      | Feel pistoletu i snajperki — ocenić w playteście F2                         |
+| VFX statusów na wrogach (płomień, iskry przeciążenia, gwiazdki ogłuszenia)               | Grafika/VFX, poza ścieżką krytyczną F2                                      |

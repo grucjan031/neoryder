@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 03, 12. W toku: 02.
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 12. W toku: 05 (Codex).
 
 ## Decyzje wspólne
 
@@ -21,10 +21,10 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 03, 12. W toku: 02.
 | Nr  | Tytuł                                                                | Agent             | Zależy od  | Szac. | Stan   |
 | --- | -------------------------------------------------------------------- | ----------------- | ---------- | ----- | ------ |
 | 01  | Kontrakty F2: statusy w obrażeniach, akcje wejścia, zdarzenia        | Architekt         | —          | S     | gotowe |
-| 02  | `StatusSystem`: podpalenie, przeciążenie, ogłuszenie                 | Architekt         | 01         | M     | w toku |
+| 02  | `StatusSystem`: podpalenie, przeciążenie, ogłuszenie                 | Architekt         | 01         | M     | gotowe |
 | 03  | Tryby strzału i dane broni: pistolet, karabin, rozpraszacz, snajperka | Bronie            | 01         | L     | gotowe |
 | 04  | Ciągły laser i granat EMP                                            | Bronie            | 02, 03     | M     | —      |
-| 05  | Rejestr mocy, drugi slot, Fala uderzeniowa                           | Moce              | 01         | M     | —      |
+| 05  | Rejestr mocy, drugi slot, Fala uderzeniowa                           | Moce              | 01         | M     | w toku |
 | 06  | Skupienie: osobna skala czasu gracza                                 | Architekt + Moce  | 05         | M     | —      |
 | 07  | Błyskawica (łańcuch, przeciążenie)                                   | Moce              | 02, 05     | S     | —      |
 | 08  | Bariera                                                              | Moce              | 05         | S     | —      |

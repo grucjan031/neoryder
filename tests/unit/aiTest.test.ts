@@ -1,6 +1,6 @@
 import { afterEach, expect, it } from 'vitest';
 import { PerspectiveCamera, Scene as ThreeScene } from 'three';
-import { AiTest } from '../../src/scenes/aiTest';
+import { AiTest, createStatusTest } from '../../src/scenes/aiTest';
 import { scenes } from '../../src/scenes';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 import { EventBus } from '../../src/core/events';
@@ -19,8 +19,7 @@ const active: AiTest[] = [];
 afterEach(() => {
   for (const scene of active.splice(0)) scene.dispose();
 });
-async function setup() {
-  const scene = new AiTest(false);
+async function setup(scene: AiTest = new AiTest(false)) {
   const commands = new CommandRegistry();
   const bus = new EventBus();
   const three = new ThreeScene();
@@ -136,4 +135,47 @@ it('coordinates enemies through the EnemyDirector from scene data (F2-12)', asyn
   expect(
     states.filter((e) => e.state === 'telegraph' || e.state === 'swing').length,
   ).toBeLessThanOrEqual(2);
+});
+
+it('status-test applies statuses with the debug command; stunned enemies stop attacking (F2-02)', async () => {
+  expect(scenes['status-test']?.().id).toBe('status-test');
+  const { scene, commands, bus } = await setup(createStatusTest(false));
+  expect(scene.id).toBe('status-test');
+  for (const bad of [
+    'status',
+    'status missing',
+    'status burning 0',
+    'status burning x',
+    'status burning 1 2',
+  ])
+    expect(commands.execute(bad)).toMatch(/Podaj/);
+  commands.execute('god');
+  // Wrogowie podchodzą i zaczynają atakować.
+  for (let i = 0; i < 2 / SIM_DT; i++) scene.step(SIM_DT, input);
+  const telegraphs: number[] = [];
+  bus.on('enemy_telegraph', ({ id }) => telegraphs.push(id));
+  expect(commands.execute('status stunned 2')).toMatch(/wrogów: 4/);
+  scene.step(SIM_DT, input);
+  const states = () => scene.query('enemyStates') as { state: string }[];
+  expect(states().every((e) => e.state === 'stunned')).toBe(true);
+  for (let i = 0; i < 1.5 / SIM_DT; i++) scene.step(SIM_DT, input);
+  expect(states().every((e) => e.state === 'stunned')).toBe(true);
+  expect(telegraphs).toEqual([]);
+  for (let i = 0; i < 1 / SIM_DT; i++) scene.step(SIM_DT, input);
+  expect(states().some((e) => e.state !== 'stunned')).toBe(true);
+
+  const discharged: number[] = [];
+  bus.on('damage_dealt', ({ target, tags }) => {
+    if (tags.includes('#status')) discharged.push(target);
+  });
+  for (let i = 0; i < 3; i++) commands.execute('status overload 5');
+  expect(discharged.length).toBeGreaterThan(0);
+  scene.reset();
+  expect(scene.query('enemies')).toBe(4);
+  commands.execute('status burning 1');
+  const before = discharged.length;
+  scene.reset();
+  for (let i = 0; i < 1 / SIM_DT; i++) scene.step(SIM_DT, input);
+  // Reset zdejmuje podpalenie — żadnych tików po nowym starcie.
+  expect(discharged.length).toBe(before);
 });

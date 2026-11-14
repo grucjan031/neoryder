@@ -258,3 +258,7 @@ Testy: `tests/unit/director.test.ts` (logika tokenów i slotów bez fizyki oraz
 Szturmowcy i Strzelcy w prawdziwym Rapierze: limit ataków, rotacja tokenów,
 krążenie na `flankDistanceM`, naprzemienne serie, zwolnienie przy ogłuszeniu
 i śmierci, walidacja danych) i `aiTest.test.ts` (dyrektor z danych sceny).
+
+**Statusy (F2-02).** `EnemyDependencies.statuses` (z `StatusSystem` sceny):
+status `stunned` przełącza wroga w stan `stunned` na czas trwania statusu
+(emisja `enemy_stunned`, zwolnienie tokenu dyrektora). Szczegóły: `docs/systems/status.md`.

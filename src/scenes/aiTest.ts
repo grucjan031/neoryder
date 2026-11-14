@@ -6,12 +6,16 @@ import { z } from 'zod';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
+import { statusDefinitions, StatusSystem } from '../combat/status';
 import type { GameContext } from '../core/context';
+import type { EntityId } from '../core/events';
+import type { Vec3 } from '../core/math';
 import { EntityRegistry } from '../core/entities';
 import type { InputSnapshot } from '../core/input';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
 import sceneData from '../data/scenes/aiTest.json';
+import statusSceneData from '../data/scenes/statusTest.json';
 import { directorConfigSchema } from '../enemies/director';
 import { EnemyManager } from '../enemies/manager';
 import { EnemyView } from '../enemies/enemyView';
@@ -29,22 +33,28 @@ const vec3 = z.object({
   y: z.number().finite(),
   z: z.number().finite(),
 });
-const data = z
-  .object({
-    playerHealth: z.number().positive(),
-    respawnS: z.number().positive(),
-    spawnDistance: z.number().positive(),
-    spawnSpacing: z.number().positive(),
-    initialEnemies: z.array(z.object({ id: z.string(), position: vec3 })),
-    director: directorConfigSchema.optional(),
-    arena: z.array(
-      z.object({ size: vec3, position: vec3, model: z.string().optional() }),
-    ),
-  })
-  .parse(sceneData);
+export const aiTestSchema = z.object({
+  playerHealth: z.number().positive(),
+  respawnS: z.number().positive(),
+  spawnDistance: z.number().positive(),
+  spawnSpacing: z.number().positive(),
+  initialEnemies: z.array(z.object({ id: z.string(), position: vec3 })),
+  director: directorConfigSchema.optional(),
+  arena: z.array(
+    z.object({ size: vec3, position: vec3, model: z.string().optional() }),
+  ),
+});
+export type AiTestData = z.infer<typeof aiTestSchema>;
+const defaultData = aiTestSchema.parse(sceneData);
+const statusData = aiTestSchema.parse(statusSceneData);
+
+/** Domyślny czas statusu z komendy `status <id>` (debug). */
+const STATUS_COMMAND_S = 3;
 
 export class AiTest implements Scene {
-  readonly id = 'ai-test';
+  readonly id: string;
+  private readonly data: AiTestData;
+  private statuses!: StatusSystem;
   private ctx!: GameContext;
   private three!: ThreeScene;
   private world!: World;
@@ -66,9 +76,19 @@ export class AiTest implements Scene {
   private label?: HTMLParagraphElement;
   private respawnS: number | null = null;
   private god = false;
-  private readonly stats = new Stats({ maxHealth: data.playerHealth });
+  private readonly stats: Stats;
 
-  constructor(private readonly loadModels = true) {}
+  constructor(
+    private readonly loadModels = true,
+    variant: { id: string; data: AiTestData } = {
+      id: 'ai-test',
+      data: defaultData,
+    },
+  ) {
+    this.id = variant.id;
+    this.data = variant.data;
+    this.stats = new Stats({ maxHealth: this.data.playerHealth });
+  }
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
@@ -81,6 +101,10 @@ export class AiTest implements Scene {
     });
     this.entities = new EntityRegistry(ctx.bus);
     this.damage = new DamageSystem(ctx.bus, this.entities);
+    this.statuses = new StatusSystem(ctx.bus, this.damage, {
+      position: (target) => this.enemyPosition(target),
+      targets: () => this.enemyIds(),
+    });
     const id = this.entities.create('player', 'player');
     this.player = new PlayerController(
       id,
@@ -117,18 +141,19 @@ export class AiTest implements Scene {
         entities: this.entities,
         damage: this.damage,
         hurtboxes: this.hurtboxes,
+        statuses: this.statuses,
         getTarget: () =>
           this.health.dead
             ? null
             : { id, position: this.player.getState().position },
       },
-      data.director ? { director: data.director } : {},
+      this.data.director ? { director: this.data.director } : {},
     );
     three.background = new Color(ctx.tuning.render.world);
     three.add(this.root);
     this.root.add(this.lights);
     await Promise.all(
-      data.arena.map(async ({ size, position, model }) => {
+      this.data.arena.map(async ({ size, position, model }) => {
         this.world.createCollider(
           rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
             .setTranslation(position.x, position.y, position.z)
@@ -169,15 +194,17 @@ export class AiTest implements Scene {
       this.label = document.createElement('p');
       this.label.setAttribute('aria-label', 'Zdrowie gracza');
       this.label.style.cssText =
-        'position:absolute;top:48px;left:20px;color:#00e5ff;pointer-events:none';
+        'position:absolute;top:48px;left:20px;color:#00e5ff;pointer-events:none;white-space:pre';
       document.body.append(this.label);
     }
     this.off.push(
       ctx.bus.on('health_changed', ({ id: target }) => {
         if (target === id) this.updateLabel();
       }),
+      ctx.bus.on('status_applied', () => this.updateLabel()),
+      ctx.bus.on('status_expired', () => this.updateLabel()),
       ctx.bus.on('player_died', ({ id: target }) => {
-        if (target === id) this.respawnS = data.respawnS;
+        if (target === id) this.respawnS = this.data.respawnS;
       }),
     );
     const register = (
@@ -204,16 +231,16 @@ export class AiTest implements Scene {
           return 'Podaj znany archetyp i poprawną liczbę wrogów.';
         const { position, yaw } = this.player.getState();
         for (let i = 0; i < n; i++) {
-          const offset = (i - (n - 1) / 2) * data.spawnSpacing;
+          const offset = (i - (n - 1) / 2) * this.data.spawnSpacing;
           this.manager.spawn(kind, {
             x:
               position.x -
-              Math.sin(yaw) * data.spawnDistance +
+              Math.sin(yaw) * this.data.spawnDistance +
               Math.cos(yaw) * offset,
             y: position.y - ctx.tuning.player.capsuleHeight / 2,
             z:
               position.z -
-              Math.cos(yaw) * data.spawnDistance -
+              Math.cos(yaw) * this.data.spawnDistance -
               Math.sin(yaw) * offset,
           });
         }
@@ -233,6 +260,26 @@ export class AiTest implements Scene {
         : 'Podaj skończone, nieujemne obrażenia.';
     });
     register('kill all', 'kill all', () => hit(Number.MAX_VALUE));
+    register(
+      'status',
+      `status <id> [s] — na wszystkich wrogów: ${[...statusDefinitions.keys()].join(', ')}`,
+      (args) => {
+        const status = args[0] ?? '';
+        const seconds =
+          args[1] === undefined ? STATUS_COMMAND_S : Number(args[1]);
+        if (
+          !statusDefinitions.has(status) ||
+          args.length > 2 ||
+          !Number.isFinite(seconds) ||
+          seconds <= 0
+        )
+          return 'Podaj znany status i dodatni czas w sekundach.';
+        const targets = this.enemyIds();
+        for (const target of targets)
+          this.statuses.apply(target, { id: status, durationS: seconds }, id);
+        return `Nałożono ${status} (${seconds} s) na wrogów: ${targets.length}`;
+      },
+    );
     register('director', 'director — tokeny, kolejki i sloty dyrektora', () => {
       const d = this.manager.director?.snapshot();
       if (!d) return 'Scena bez dyrektora.';
@@ -278,16 +325,40 @@ export class AiTest implements Scene {
     });
   }
   private spawnInitial(): void {
-    for (const { id, position } of data.initialEnemies)
+    for (const { id, position } of this.data.initialEnemies)
       this.manager.spawn(id, position);
   }
+  private enemyIds(): EntityId[] {
+    const ids: EntityId[] = [];
+    this.manager.forEach((enemy) => {
+      if (!enemy.removed && enemy.current.state !== 'dead') ids.push(enemy.id);
+    });
+    return ids;
+  }
+  private enemyPosition(target: EntityId): Vec3 | null {
+    let position: Vec3 | null = null;
+    this.manager.forEach((enemy) => {
+      if (enemy.id === target && !enemy.removed)
+        position = enemy.current.position;
+    });
+    return position;
+  }
   private updateLabel(): void {
-    if (this.label)
-      this.label.textContent = `Gracz: ${this.health.current} / ${this.health.max} HP`;
+    if (!this.label) return;
+    const lines = [`Gracz: ${this.health.current} / ${this.health.max} HP`];
+    for (const target of this.enemyIds()) {
+      const active = this.statuses.list(target);
+      if (active.length)
+        lines.push(
+          `#${target}: ${active.map((a) => `${a.id}×${a.stacks}`).join(', ')}`,
+        );
+    }
+    this.label.textContent = lines.join('\n');
   }
 
   reset(): void {
     this.manager.despawnAll();
+    this.statuses.reset();
     this.projectiles.dispose();
     this.projectileRenderer.capturePrevious();
     this.health.reset();
@@ -307,6 +378,7 @@ export class AiTest implements Scene {
       return;
     }
     this.damage.step(dt);
+    this.statuses.step(dt);
     if (this.respawnS !== null) {
       this.respawnS -= dt;
       if (this.respawnS <= 1e-9) this.reset();
@@ -370,6 +442,7 @@ export class AiTest implements Scene {
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
     this.manager.dispose();
+    this.statuses.dispose();
     this.projectileRenderer.dispose();
     this.projectiles.dispose();
     this.camera.dispose();
@@ -385,4 +458,9 @@ export class AiTest implements Scene {
     this.root.clear();
     this.three.background = null;
   }
+}
+
+/** `?scene=status-test` (F2-02): ai-test z danymi statusTest.json i komendą `status`. */
+export function createStatusTest(loadModels = true): AiTest {
+  return new AiTest(loadModels, { id: 'status-test', data: statusData });
 }

@@ -1,6 +1,7 @@
 import type { ProjectileSystem } from '../combat/weapons/projectiles';
 import type { World } from '@dimforge/rapier3d-compat';
 import type { DamageSystem, Hurtboxes } from '../combat/damage';
+import type { StatusQuery } from '../combat/status/statusSystem';
 import type { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
@@ -47,4 +48,6 @@ export interface EnemyDependencies {
   getNeighbors?(): readonly Enemy[];
   /** F2-12: tokeny ataku i sloty flankowania; bez dyrektora wróg atakuje jak w F1. */
   director?: EnemyDirectorApi;
+  /** F2-02: status 'stunned' ogłusza wroga na czas trwania statusu. */
+  statuses?: StatusQuery;
 }

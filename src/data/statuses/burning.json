@@ -1,0 +1,7 @@
+{
+  "id": "burning",
+  "name": "Podpalenie",
+  "tags": ["#fire"],
+  "maxStacks": 1,
+  "tick": { "intervalS": 0.5, "damage": 4 }
+}
