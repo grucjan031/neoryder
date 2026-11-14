@@ -3,7 +3,7 @@
 Czytaj ten plik przed każdym zadaniem. Źródła prawdy: `docs/roadmap.md` (wizja, fazy), `docs/gdd.md` (projekt gry), `docs/api.md` (kontrakty między modułami), `docs/systems/*.md` (specyfikacje systemów).
 
 ## Gra w skrócie
-FPP roguelite, cyberpunk, styl Superhot (biały płaski świat, czerwoni wrogowie, czarne obiekty interaktywne, cyan/magenta dla gracza i mocy). Trzy ścieżki: Ostrze, Moc (Rezonans), Strzelec. Każda decyzja wspiera co najmniej jeden filar: feel walki, build-crafting, trwała progresja, czytelny styl.
+FPP roguelite, cyberpunk, styl Neon Noir (nocne, deszczowe uliczki bliskiej przyszłości, ciemne chłodne otoczenie z neonami bursztyn/zieleń/fiolet/błękit/ciepła biel, obiekty interaktywne jasne). Kolory zarezerwowane, zakazane w otoczeniu: czerwień dla wrogów, cyan dla gracza, magenta dla Rezonansu. Szczegóły: `docs/adr/0006-neon-noir.md`. Trzy ścieżki: Ostrze, Moc (Rezonans), Strzelec. Każda decyzja wspiera co najmniej jeden filar: feel walki, build-crafting, trwała progresja, czytelny styl.
 
 **Zakaz nazw chronionych:** nie używaj „Jedi”, „Sith”, „lightsaber”, „the Force” ani nazw z Superhot w kodzie, danych, tekstach i commitach. Używaj: *ostrze plazmowe* (`plasmaBlade`), *Rezonans* (`resonance`), *Rezonanci*.
 

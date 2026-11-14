@@ -6,14 +6,14 @@ Nov 13, 2026 · @Gracjan
 
 NEORYDER to FPP roguelite w świecie cyberpunk, w którym każdy run kończy się trwałym postępem postaci, a sercem gry jest bardzo satysfakcjonująca walka. Gracz jest agentem komórki ruchu oporu walczącej z Koalicją wielkich korporacji.
 
-**Pitch w jednym zdaniu:** ostrze plazmowe, blaster i moce w ręku, biało-czerwony świat w stylu Superhot, a każda śmierć czyni cię silniejszym.
+**Pitch w jednym zdaniu:** ostrze plazmowe, blaster i moce w ręku, nocne neonowe miasto z czytelnymi czerwonymi wrogami, a każda śmierć czyni cię silniejszym.
 
 **Cztery filary (każda decyzja agenta musi wspierać przynajmniej jeden):**
 
 1. **Walka, która „czuje się” świetnie** — hitstop, rozpad wrogów na odłamki, parowanie strzałów ostrzem, czytelny feedback dźwiękowy i kamerowy.
 2. **Build-crafting** — trzy główne ścieżki (Ostrze, Moc, Strzelec) i hybrydy z synergiami między nimi.
 3. **Trwała progresja** — poziom, drzewka i odblokowania zostają po śmierci; run daje dodatkowo tymczasowe implanty, które budują napięcie.
-4. **Czytelny styl wizualny** — białe, płaskie otoczenie, czerwoni wrogowie, czarne obiekty interaktywne, neon cyan/magenta dla gracza i mocy.
+4. **Czytelny styl wizualny** — Neon Noir (ADR 0006): nocne, deszczowe cyberpunkowe uliczki w stylizowanych, czytelnych bryłach z konturem; otoczenie ciemne i chłodne z neonami w kolorach bursztynu, zieleni, fioletu, błękitu i ciepłej bieli. Czerwień (wrogowie), cyan (gracz) i magenta (Rezonans) są zarezerwowane i nie występują w otoczeniu; obiekty interaktywne są jasne. Czytelność walki ponad efekty; Superhot zostaje inspiracją w czytelności ról obiektów, nie w kolorze świata.
 
 **Tryby gry:**
 

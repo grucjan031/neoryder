@@ -6,7 +6,7 @@ Wersja robocza 0.1 · Producent · źródła: `docs/roadmap.md`, `AGENTS.md`, `d
 
 NEORYDER to FPP roguelite w świecie cyberpunk. Gracz jest agentem komórki ruchu oporu walczącej z Koalicją wielkich korporacji. Każdy run kończy się trwałym postępem, a sercem gry jest bardzo satysfakcjonująca walka.
 
-**Pitch w jednym zdaniu:** ostrze plazmowe, blaster i moce w ręku, biało-czerwony świat, a każda śmierć czyni cię silniejszym.
+**Pitch w jednym zdaniu:** ostrze plazmowe, blaster i moce w ręku, nocne neonowe miasto z czytelnymi czerwonymi wrogami, a każda śmierć czyni cię silniejszym.
 
 **Dla kogo:** gracze lubiący krótkie, intensywne sesje (run 15–25 min), szybkie FPS-y i roguelite z buildami (Hades, Ultrakill, Risk of Rain w roli odniesienia dla pętli, nie kopiowania).
 
@@ -21,7 +21,7 @@ Każda decyzja musi wspierać co najmniej jeden filar.
 | 1 | Walka, która „czuje się” świetnie | Hitstop, rozpad wrogów na odłamki, parowanie ostrzem, 3 warstwy feedbacku (obraz, dźwięk, kamera) | Czy trafienie da się „poczuć” z zamkniętymi oczami? |
 | 2 | Build-crafting | 3 ścieżki (Ostrze, Moc, Strzelec) i hybrydy z synergiami na tagach | Czy zmienia to sposób gry, a nie tylko liczby? |
 | 3 | Trwała progresja | Poziom, drzewka i odblokowania zostają; implanty są tymczasowe | Czy po śmierci gracz ma powód do „jeszcze jednego runu”? |
-| 4 | Czytelny styl wizualny | Biały płaski świat, czerwoni wrogowie, czarne obiekty interaktywne, cyan/magenta dla gracza i mocy | Czy w 0,2 s widać, kto jest kim i co jest groźne? |
+| 4 | Czytelny styl wizualny | Neon Noir: ciemny, chłodny świat z neonami; czerwień, cyan i magenta zarezerwowane dla wrogów, gracza i Rezonansu; obiekty interaktywne jasne | Czy w 0,2 s widać, kto jest kim i co jest groźne? |
 
 ## 3. Pętla rozgrywki
 
@@ -154,14 +154,40 @@ Zapis: IndexedDB, `saveVersion`, migracje; meta-progres i stan runu osobno.
 ### Wizualia
 | Element | Styl |
 | --- | --- |
-| Świat | Biały, płaski, low-poly, minimalne tekstury, wyraźne cienie lub ich brak |
-| Wrogowie | Czerwoni, jednolity kolor, rozpad na czerwone odłamki |
-| Obiekty interaktywne | Czarne (rekwizyty do rzucania, terminale, drzwi) |
-| Gracz i moce | Neon cyan (ostrze, Rezonans) i magenta (energia, akcenty) |
+| Świat | Neon Noir: nocne, deszczowe uliczki bliskiej przyszłości (beton, blacha, rolety, kable, klimatyzatory, schody przeciwpożarowe), stylizowane czytelne bryły z konturem, bez fotorealizmu |
+| Wrogowie | Czerwoni (#e0262b i pokrewne), jednolity kolor z czerwoną poświatą krawędzi na ciemnym tle, rozpad na czerwone odłamki |
+| Obiekty interaktywne | Jasne (#d9dde3 w motywie neon): rekwizyty do rzucania, terminale, drzwi; odcinają się od ciemnego świata |
+| Gracz i moce | Neon cyan #00e5ff (ostrze, gracz) i magenta #ff2bd6 (Rezonans, akcenty mocy) |
 | Pociski wrogów | Wolne, duże, widoczne; pociski gracza cyan |
 | HUD | Minimalny: zdrowie, energia, ciepło; HTML/CSS nad canvasem |
 
-Assety: CC0 (Kenney, Quaternius) lub własne; modele z Blendera do glTF.
+Assety: CC0 (Kenney, Quaternius) lub własne; modele z Blendera do glTF (`tools/blender/build_assets.py`, `public/assets/models/city/`); tekstury własne (Codex lub ComfyUI).
+
+### Styl Neon Noir (ADR 0006)
+
+Decyzja właściciela gry: świat nie jest biało-szary, lecz nocny i neonowy; mapy to cyberpunkowe uliczki lekko futurystycznego miasta. Efekty mają robić wrażenie, ale walka zostaje czytelna.
+
+**Paleta**
+- Otoczenie ciemne i chłodne: granat, grafit, stalowy błękit; powierzchnie oświetlone ok. #2a3344–#56627a.
+- Niebo: granat #070b16, przy horyzoncie przechodzi w fioletowo-bursztynową łunę (#2b1f3d / #3a2a2a).
+- Neony otoczenia wyłącznie: bursztyn #ffae1a, zieleń #6dff4a, fiolet #8a5cff, błękit królewski #3d7bff, ciepła biel #fff1d6.
+- Zarezerwowane, zakazane w otoczeniu: czerwień (wrogowie), cyan #00e5ff (gracz), magenta #ff2bd6 (Rezonans).
+
+**Zasady czytelności**
+- Czytelność walki ponad efekty; kontur zostaje.
+- Wrogowie mają czerwoną poświatę krawędzi, dzięki której odcinają się od ciemnego tła.
+- Obiekty interaktywne (skrzynie do Chwytu) są jasne, żeby wyróżniały się w ciemnym świecie.
+- Superhot pozostaje inspiracją w czytelności ról obiektów, nie w kolorze świata.
+
+**Motywy i oprawa pokoju**
+- Motyw wizualny to dane (`src/data/themes/<id>.json`); pokój wybiera go polem `theme`. `white` to dotychczasowy wygląd (sceny testowe, klasyczna arena), `neonStreet` to nocna ulica.
+- Oprawa pokoju (napisy neonowe, hologramy, kolorowe światła punktowe, naklejki, para, iskry, kapanie, dekoracje bez kolizji) wg `src/world/dressingSchema.ts` jest czysto kosmetyczna: nie wpływa na symulację, kolizje ani walidację osiągalności. Przeszkody to nadal bloki układu (z polem `material`).
+
+**Efekty**
+- Deszcz (smugi, `InstancedMesh` do ok. 4000), mokry asfalt z odbiciami neonów, para z kratek, mgła z poświatą miasta.
+- Panorama: w tle sylwetki wieżowców z oświetlonymi oknami.
+- Neony i hologramy reklam jako źródła światła i emisji.
+- Budżet: do 8 aktywnych świateł punktowych; odbicia jako render samych obiektów emisyjnych z odbitej kamery w 1/2 rozdzielczości; cel 60 FPS na średnim laptopie (F7).
 
 ### Audio
 - Web Audio API, SFX z wariacjami (pitch, wybór próbki z `Rng` kosmetycznego), odblokowanie po pierwszym kliknięciu.
