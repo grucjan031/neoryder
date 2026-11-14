@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { blockMaterialSchema, dressingFields } from './dressingSchema';
 import { NODE_TYPES } from '../core/runTypes';
 import { directorConfigSchema } from '../enemies/director';
 
@@ -21,6 +22,7 @@ export const positiveVec3Schema = z.object({
 export const roomBlockSchema = z.object({
   size: positiveVec3Schema,
   position: vec3Schema,
+  material: blockMaterialSchema.optional(),
   model: z.string().min(1).optional(),
 });
 
@@ -44,6 +46,7 @@ export const roomPropSchema = z.object({
 /** Definicja pokoju z src/data/rooms/*.json (ADR 0005 pkt 2). */
 export const roomSchema = z
   .object({
+    ...dressingFields,
     id: z.string().min(1),
     name: z.string().min(1),
     type: z.enum(NODE_TYPES),

@@ -1,3 +1,6 @@
+import { blockMaterialSchema, dressingFields } from '../world/dressingSchema';
+import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
 import {
   queryBladeArc,
@@ -5,14 +8,7 @@ import {
   queryBladeSpin,
 } from '../combat/melee/bladeQueries';
 import { FlyingBlade } from '../render/flyingBlade';
-import {
-  BoxGeometry,
-  Color,
-  Euler,
-  Group,
-  Mesh,
-  Quaternion,
-} from 'three';
+import { BoxGeometry, Euler, Group, Mesh, Quaternion } from 'three';
 import type { BufferGeometry, Material, Scene as ThreeScene } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { World } from '@dimforge/rapier3d-compat';
@@ -80,16 +76,21 @@ const vec3 = z.object({
   y: z.number().finite(),
   z: z.number().finite(),
 });
-const layout = z
-  .object({
-    playerHealth: z.number().positive(),
-    playerSpawn: vec3,
-    blocks: z.array(
-      z.object({ size: vec3, position: vec3, model: z.string().optional() }),
-    ),
-    director: directorConfigSchema.optional(),
-  })
-  .parse(sceneData);
+export const arenaLayoutSchema = z.object({
+  ...dressingFields,
+  playerHealth: z.number().positive(),
+  playerSpawn: vec3,
+  blocks: z.array(
+    z.object({
+      size: vec3,
+      position: vec3,
+      model: z.string().optional(),
+      material: blockMaterialSchema.optional(),
+    }),
+  ),
+  director: directorConfigSchema.optional(),
+});
+const layout = arenaLayoutSchema.parse(sceneData);
 const waves = loadWaves(wavesData);
 
 /** Modele dla bloków układu; 'wall' to rozciągnięta bryła świata (bez modelu). */
@@ -111,7 +112,6 @@ type ArenaState = 'select' | 'playing' | 'dead';
 export class Arena implements Scene {
   readonly id = 'arena';
   private ctx!: GameContext;
-  private three!: ThreeScene;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
   private world!: World;
   private entities!: EntityRegistry;
@@ -151,6 +151,7 @@ export class Arena implements Scene {
   private readonly views = new Map<EntityId, EnemyViewLike>();
   private readonly root = new Group();
   private readonly lights = createStyleLights();
+  private atmosphere?: SceneAtmosphere;
   private readonly geometries = new Set<BufferGeometry>();
   private readonly off: (() => void)[] = [];
   private readonly tmpEuler = new Euler(0, 0, 0, 'YXZ');
@@ -195,7 +196,6 @@ export class Arena implements Scene {
         ? null
         : new URLSearchParams(location.search).get('blade');
     const choosing = this.selectBuild && requested === null;
-    this.three = three;
     this.rapier = await initPhysics();
     this.world = new this.rapier.World({
       x: 0,
@@ -208,10 +208,16 @@ export class Arena implements Scene {
       position: (id) => this.enemyPosition(id),
       targets: () => this.enemyIds(),
     });
-    three.background = new Color(ctx.tuning.render.world);
+    this.atmosphere = new SceneAtmosphere(
+      three,
+      layout.theme,
+      'arena',
+      layout.playerSpawn.y,
+    );
     three.add(this.root);
     this.root.add(this.lights);
     await this.buildLayout();
+    await loadDecor(this.root, layout.decor, this.loadModels);
 
     const playerId = this.entities.create('player', 'player');
     this.player = new PlayerController(
@@ -415,44 +421,74 @@ export class Arena implements Scene {
   private async buildLayout(): Promise<void> {
     const loader = new GLTFLoader();
     await Promise.all(
-      layout.blocks.map(async ({ size, position, model }) => {
-        this.world.createCollider(
-          this.rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
-            .setTranslation(position.x, position.y, position.z)
-            .setCollisionGroups(
-              interactionGroups(CollisionGroup.World, 0xffff),
-            ),
-        );
-        const geometry = new BoxGeometry(size.x, size.y, size.z);
-        this.geometries.add(geometry);
-        const material = model?.startsWith('crate') ? 'interactive' : 'world';
-        const fallback = new Mesh(geometry, getMaterial(material));
-        fallback.position.set(position.x, position.y, position.z);
-        this.root.add(fallback);
-        const file = model ? MODEL_FILES[model] : undefined;
-        if (!file || !this.loadModels) return;
-        try {
-          const { scene } = await loader.loadAsync(
-            `/assets/models/${file}.glb`,
+      layout.blocks.map(
+        async ({ size, position, model, material: blockMaterial }) => {
+          this.world.createCollider(
+            this.rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
+              .setTranslation(position.x, position.y, position.z)
+              .setCollisionGroups(
+                interactionGroups(CollisionGroup.World, 0xffff),
+              ),
           );
-          const materials = new Set<Material>();
-          scene.traverse((node) => {
-            if (!(node instanceof Mesh)) return;
-            this.geometries.add(node.geometry);
-            for (const m of Array.isArray(node.material)
-              ? node.material
-              : [node.material])
-              materials.add(m);
-          });
-          applyStyle(scene);
-          for (const m of materials) m.dispose();
-          scene.position.set(position.x, position.y - size.y / 2, position.z);
-          this.root.remove(fallback);
-          this.root.add(scene);
-        } catch {
-          // Bryła zastępcza zostaje (ten sam collider).
-        }
-      }),
+          const geometry = new BoxGeometry(size.x, size.y, size.z);
+          this.geometries.add(geometry);
+          const material =
+            blockMaterial ??
+            (model?.startsWith('crate') ? 'interactive' : 'world');
+          const fallback = new Mesh(geometry, getMaterial(material));
+          fallback.position.set(position.x, position.y, position.z);
+          this.root.add(fallback);
+          const file = model?.startsWith('city_')
+            ? model
+            : model
+              ? MODEL_FILES[model]
+              : undefined;
+          if (!file || !this.loadModels) return;
+          try {
+            if (file.startsWith('city_')) {
+              const scene = await cloneCityModel(file);
+              if (!scene) return;
+              if (blockMaterial)
+                scene.traverse((node) => {
+                  if (node instanceof Mesh)
+                    node.material = getMaterial(blockMaterial);
+                });
+              scene.position.set(
+                position.x,
+                position.y - size.y / 2,
+                position.z,
+              );
+              this.root.remove(fallback);
+              this.root.add(scene);
+              return;
+            }
+            const { scene } = await loader.loadAsync(
+              `/assets/models/${file}.glb`,
+            );
+            const materials = new Set<Material>();
+            scene.traverse((node) => {
+              if (!(node instanceof Mesh)) return;
+              this.geometries.add(node.geometry);
+              for (const m of Array.isArray(node.material)
+                ? node.material
+                : [node.material])
+                materials.add(m);
+            });
+            applyStyle(scene);
+            for (const m of materials) m.dispose();
+            if (blockMaterial)
+              scene.traverse((node) => {
+                if (node instanceof Mesh)
+                  node.material = getMaterial(blockMaterial);
+              });
+            scene.position.set(position.x, position.y - size.y / 2, position.z);
+            this.root.remove(fallback);
+            this.root.add(scene);
+          } catch {
+            // Bryła zastępcza zostaje (ten sam collider).
+          }
+        },
+      ),
     );
   }
 
@@ -752,6 +788,7 @@ export class Arena implements Scene {
     this.statusView.render(alpha, frameDt);
     this.hitSparksView.render(frameDt);
     this.lights.sync();
+    this.atmosphere?.sync(frameDt);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
     const camera = this.ctx.camera;
@@ -1104,6 +1141,6 @@ export class Arena implements Scene {
     this.geometries.clear();
     this.root.removeFromParent();
     this.root.clear();
-    this.three.background = null;
+    this.atmosphere?.dispose();
   }
 }

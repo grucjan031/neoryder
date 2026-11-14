@@ -3,16 +3,36 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshToonMaterial,
+  MeshStandardMaterial,
   NearestFilter,
   RedFormat,
 } from 'three';
 import type { Object3D, WebGLProgramParametersWithUniforms } from 'three';
 import { tuning } from '../core/tuning';
+import {
+  createUrbanMaterial,
+  urbanKinds,
+  syncUrbanMaterials,
+} from './urbanMaterials';
+import type { UrbanKind } from './urbanMaterials';
 
 export type MaterialKind =
-  'world' | 'enemy' | 'enemyGlow' | 'interactive' | 'player' | 'power';
+  | 'world'
+  | 'enemy'
+  | 'enemyGlow'
+  | 'interactive'
+  | 'player'
+  | 'power'
+  | UrbanKind
+  | 'neon_amber'
+  | 'neon_green'
+  | 'neon_violet'
+  | 'neon_blue'
+  | 'neon_white'
+  | 'light_white';
 
-type StyleMaterial = MeshToonMaterial | MeshBasicMaterial;
+type StyleMaterial =
+  MeshToonMaterial | MeshBasicMaterial | MeshStandardMaterial;
 
 const names = new Map<string, MaterialKind>([
   ['mat_world', 'world'],
@@ -22,8 +42,29 @@ const names = new Map<string, MaterialKind>([
   ['mat_player_cyan', 'player'],
   ['mat_power_magenta', 'power'],
 ]);
+for (const kind of [
+  ...urbanKinds,
+  'neon_amber',
+  'neon_green',
+  'neon_violet',
+  'neon_blue',
+  'neon_white',
+  'light_white',
+] as const) {
+  names.set(`mat_${kind}`, kind);
+}
 /** Materiały neonów: bloom selektywny świeci tylko z nich (patrz bloom.ts). */
-const emissiveKinds = new Set<MaterialKind>(['enemyGlow', 'player', 'power']);
+const emissiveKinds = new Set<MaterialKind>([
+  'enemyGlow',
+  'player',
+  'power',
+  'neon_amber',
+  'neon_green',
+  'neon_violet',
+  'neon_blue',
+  'neon_white',
+  'light_white',
+]);
 const gridUniforms = {
   gridSize: { value: 2 },
   gridContrast: { value: 0.1 },
@@ -94,11 +135,27 @@ export function getMaterial(kind: MaterialKind): StyleMaterial {
   const existing = cache.get(kind);
   if (existing) return existing;
   const color = tuning.render[kind];
-  const material =
-    kind === 'world' || kind === 'enemy' || kind === 'interactive'
+  const material = urbanKinds.includes(kind as UrbanKind)
+    ? createUrbanMaterial(kind as UrbanKind)
+    : kind === 'world' || kind === 'enemy' || kind === 'interactive'
       ? new MeshToonMaterial({ color, gradientMap })
       : new MeshBasicMaterial({ color, toneMapped: false });
   if (emissiveKinds.has(kind)) material.userData.bloom = true;
+  if (kind === 'enemy') {
+    material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, rimUniforms);
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          '#include <common>',
+          '#include <common>\nuniform float enemyRimStrength; uniform float enemyRimPower;',
+        )
+        .replace(
+          '#include <emissivemap_fragment>',
+          '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * enemyRimStrength * pow(1.0 - abs(dot(normal, normalize(vViewPosition))), enemyRimPower);',
+        );
+    };
+    material.customProgramCacheKey = () => 'enemyRim';
+  }
   if (kind === 'world') addFloorGrid(material as MeshToonMaterial);
   material.name = [...names].find(([, value]) => value === kind)![0];
   cache.set(kind, material);
@@ -106,7 +163,14 @@ export function getMaterial(kind: MaterialKind): StyleMaterial {
 }
 
 /** Współdzielone materiały należą do rejestru, nie do pojedynczej sceny. */
+const rimUniforms = {
+  enemyRimStrength: { value: 0 },
+  enemyRimPower: { value: 2.5 },
+};
 export function syncMaterials(): void {
+  syncUrbanMaterials();
+  rimUniforms.enemyRimStrength.value = tuning.render.enemyRimStrength;
+  rimUniforms.enemyRimPower.value = tuning.render.enemyRimPower;
   gridUniforms.gridSize.value = Math.max(tuning.render.gridSize, 0.01);
   gridUniforms.gridContrast.value = tuning.render.gridContrast;
   gridUniforms.gridLineWidth.value = Math.max(

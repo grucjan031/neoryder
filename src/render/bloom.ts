@@ -1,5 +1,6 @@
 import {
   Color,
+  Material,
   HalfFloatType,
   MeshBasicMaterial,
   ShaderMaterial,
@@ -7,7 +8,6 @@ import {
   WebGLRenderTarget,
 } from 'three';
 import type {
-  Material,
   Mesh,
   Object3D,
   PerspectiveCamera,
@@ -98,7 +98,11 @@ export class BloomPass {
   private readonly hidden: Object3D[] = [];
   private readonly clearColor = new Color();
 
-  constructor(width: number, height: number) {
+  constructor(
+    width: number,
+    height: number,
+    private readonly reflection = false,
+  ) {
     this.setSize(width, height);
   }
 
@@ -108,7 +112,10 @@ export class BloomPass {
       Math.max(1, Math.floor(value * scale));
     this.mask.setSize(scaled(MASK_SCALE, width), scaled(MASK_SCALE, height));
     for (const target of [this.blurA, this.blurB])
-      target.setSize(scaled(BLUR_SCALE, width), scaled(BLUR_SCALE, height));
+      target.setSize(
+        scaled(this.reflection ? MASK_SCALE : BLUR_SCALE, width),
+        scaled(this.reflection ? MASK_SCALE : BLUR_SCALE, height),
+      );
   }
 
   /** Wynik: rgb premultiplikowane, alfa = pokrycie. */
@@ -144,8 +151,10 @@ export class BloomPass {
     };
     run(this.mask.texture, this.blurA, 1, true);
     run(this.blurA.texture, this.blurB, 1, false);
-    run(this.blurB.texture, this.blurA, 2.5, true);
-    run(this.blurA.texture, this.blurB, 2.5, false);
+    if (!this.reflection) {
+      run(this.blurB.texture, this.blurA, 2.5, true);
+      run(this.blurA.texture, this.blurB, 2.5, false);
+    }
   }
 
   private renderMask(
@@ -159,12 +168,19 @@ export class BloomPass {
     const clearAlpha = renderer.getClearAlpha();
     scene.traverseVisible((object) => {
       const { material } = object as Renderable;
-      if (!material || isEmissive(material)) return;
+      if (!material) return;
+      const maskMaterial = (source: Material): Material => {
+        const emission: unknown = source.userData.bloomMaterial;
+        if (emission instanceof Material) return emission;
+        return isEmissive(source) ? source : this.occluder;
+      };
       if ('isMesh' in object) {
         this.swappedMeshes.push(object as Mesh);
         this.swappedMaterials.push(material);
-        (object as Mesh).material = this.occluder;
-      } else {
+        (object as Mesh).material = Array.isArray(material)
+          ? material.map(maskMaterial)
+          : maskMaterial(material);
+      } else if (!isEmissive(material)) {
         this.hidden.push(object);
         object.visible = false;
       }
@@ -174,7 +190,8 @@ export class BloomPass {
       scene.background = null;
       renderer.setClearColor(0x000000, 0);
       renderer.setRenderTarget(this.mask);
-      renderWithViewmodel(renderer, scene, camera);
+      if (this.reflection) renderer.render(scene, camera);
+      else renderWithViewmodel(renderer, scene, camera);
     } finally {
       for (let i = 0; i < this.swappedMeshes.length; i++)
         this.swappedMeshes[i]!.material = this.swappedMaterials[i]!;

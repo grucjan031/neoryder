@@ -9,6 +9,7 @@ import {
   ShaderMaterial,
   UnsignedIntType,
   Vector2,
+  Vector3,
   WebGLRenderTarget,
 } from 'three';
 import type {
@@ -21,6 +22,8 @@ import type {
 import type { EventBus } from '../core/events';
 import { tuning } from '../core/tuning';
 import { BloomPass } from './bloom';
+import { ReflectionPass, WetNormals } from './reflections';
+import { surfaceTexture } from './surfaceTextures';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
 import { syncMaterials } from './materials';
 import { PostFxPass, PostFxState } from './postFx';
@@ -52,6 +55,20 @@ const fragmentShader = /* glsl */ `
   uniform float fogNear;
   uniform float fogFar;
   uniform vec3 fogColor;
+  uniform mat4 cameraWorld;
+  uniform vec3 eyePosition;
+  uniform float floorY;
+  uniform float heightFogDensity;
+  uniform float heightFogFalloff;
+  uniform sampler2D reflectionMap;
+  uniform mat4 reflectionProjection;
+  uniform float reflectionStrength;
+  uniform float reflectionDistortion;
+  uniform float reflectionPuddles;
+  uniform float floorTolerance;
+  uniform sampler2D puddleMap;
+  uniform float puddleReady;
+  uniform float renderTime;
   uniform float aspect;
   uniform float vignetteStrength;
   uniform float vignetteRadius;
@@ -98,6 +115,24 @@ const fragmentShader = /* glsl */ `
     vec4 color = texture2D(colorMap, vUv);
     vec3 rgb = color.rgb;
     vec3 line = outlineColor;
+    float rawDepth = texture2D(depthMap, vUv).x;
+    vec4 viewPoint = inverseProjection * vec4(vUv*2.0-1.0, rawDepth*2.0-1.0, 1.0);
+    vec3 worldPoint = (cameraWorld * vec4(viewPoint.xyz / viewPoint.w,1.0)).xyz;
+    if (reflectionStrength > 0.0 && rawDepth > viewmodelDepth && rawDepth < 1.0) {
+      float wet = texture2D(normalMap,vUv).a;
+      vec3 worldNormal = cameraRotation * normalAt(vUv);
+      float floorMask = step(0.9,worldNormal.y) * (1.0-smoothstep(floorTolerance*0.5,floorTolerance,abs(worldPoint.y-floorY)));
+      vec4 projected = reflectionProjection * vec4(worldPoint,1.0);
+      vec2 reflectionUv = projected.xy/projected.w*0.5+0.5;
+      vec2 wave = vec2(sin(worldPoint.z*19.0+renderTime*2.3),sin(worldPoint.x*23.0-renderTime*1.7));
+      reflectionUv += wave * reflectionDistortion * 0.35;
+      float inside = step(0.0,reflectionUv.x)*step(reflectionUv.x,1.0)*step(0.0,reflectionUv.y)*step(reflectionUv.y,1.0)*step(0.0,projected.w);
+      float puddle = smoothstep(-0.5,0.6,sin(worldPoint.x*1.8+sin(worldPoint.z*0.9))*cos(worldPoint.z*1.1));
+      if (puddleReady > 0.5) puddle = texture2D(puddleMap,worldPoint.xz*0.25).r;
+      puddle = mix(1.0,0.18+0.82*puddle,reflectionPuddles);
+      float fresnel = 0.25+0.75*pow(1.0-abs(normalize(eyePosition-worldPoint).y),3.0);
+      rgb += texture2D(reflectionMap,reflectionUv).rgb * reflectionStrength * wet * floorMask * puddle * fresnel * inside;
+    }
     // Brak geometrii w buforze głębi = niebo: gradient pionowy zamiast płaskiego tła.
     if (texture2D(depthMap, vUv).x >= 1.0) {
       if (skyGradient > 0.0) {
@@ -106,9 +141,19 @@ const fragmentShader = /* glsl */ `
         vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, skyHeight, up));
         rgb = mix(rgb, sky, skyGradient);
       }
-    } else if (fogStrength > 0.0) {
+    } else if (fogStrength > 0.0 || heightFogDensity > 0.0) {
       // Mgła ku bieli ściąga też kontury, więc dalekie obiekty odcinają się od bliskich.
       float fog = smoothstep(fogNear, fogFar, centerDepth) * fogStrength;
+      // Ca?ka g?sto?ci wzd?u? promienia: stabilna tak?e dla poziomego spojrzenia.
+      if (heightFogDensity > 0.0 && rawDepth > viewmodelDepth) {
+        float eyeHeight = max(eyePosition.y-floorY,0.0);
+        float pointHeight = max(worldPoint.y-floorY,0.0);
+        float heightDelta = (pointHeight-eyeHeight)*heightFogFalloff;
+        float integratedDensity = abs(heightDelta)<0.001 ? exp(-eyeHeight*heightFogFalloff)
+          : (exp(-eyeHeight*heightFogFalloff)-exp(-pointHeight*heightFogFalloff))/heightDelta;
+        float heightFog = 1.0-exp(-heightFogDensity*length(worldPoint-eyePosition)*integratedDensity);
+        fog = 1.0-(1.0-fog)*(1.0-heightFog);
+      }
       rgb = mix(rgb, fogColor, fog);
       line = mix(line, fogColor, fog);
     }
@@ -169,6 +214,20 @@ export class StylePipeline {
     fogNear: { value: 0 },
     fogFar: { value: 1 },
     fogColor: { value: new Color() },
+    cameraWorld: { value: new Matrix4() },
+    eyePosition: { value: new Vector3() },
+    floorY: { value: 0 },
+    heightFogDensity: { value: 0 },
+    heightFogFalloff: { value: 0 },
+    reflectionMap: { value: this.colorTarget.texture as Texture },
+    reflectionProjection: { value: new Matrix4() },
+    reflectionStrength: { value: 0 },
+    reflectionDistortion: { value: 0 },
+    reflectionPuddles: { value: 0 },
+    floorTolerance: { value: 0.08 },
+    puddleMap: { value: null as Texture | null },
+    puddleReady: { value: 0 },
+    renderTime: { value: 0 },
     aspect: { value: 1 },
     vignetteStrength: { value: 0 },
     vignetteRadius: { value: 0.55 },
@@ -188,6 +247,8 @@ export class StylePipeline {
   private readonly clearColor = new Color();
   /** Tworzone przy pierwszym użyciu: wyłączone przełączniki nie kosztują pamięci. */
   private bloom: BloomPass | undefined;
+  private reflections: ReflectionPass | undefined;
+  private wetNormals: WetNormals | undefined;
   private postFx: PostFxPass | undefined;
   private readonly postFxState = new PostFxState();
   private lastRenderMs = 0;
@@ -219,6 +280,7 @@ export class StylePipeline {
     this.uniforms.texelSize.value.set(1 / w, 1 / h);
     this.uniforms.aspect.value = w / h;
     this.bloom?.setSize(w, h);
+    this.reflections?.setSize(w, h);
     this.postFx?.setSize(w, h);
   }
 
@@ -251,6 +313,7 @@ export class StylePipeline {
       this.setSize(size.x, size.y);
     }
     const t = tuning.render;
+    camera.updateMatrixWorld();
     const uniforms = this.uniforms;
     uniforms.thickness.value = t.outlineThickness;
     uniforms.depthThreshold.value = t.outlineDepthThreshold;
@@ -269,6 +332,19 @@ export class StylePipeline {
     uniforms.skyHorizon.value.set(t.skyHorizon);
     uniforms.inverseProjection.value.copy(camera.projectionMatrixInverse);
     uniforms.cameraRotation.value.setFromMatrix4(camera.matrixWorld);
+    uniforms.cameraWorld.value.copy(camera.matrixWorld);
+    uniforms.eyePosition.value.setFromMatrixPosition(camera.matrixWorld);
+    uniforms.heightFogDensity.value = t.heightFogDensity;
+    uniforms.heightFogFalloff.value = t.heightFogFalloff;
+    uniforms.floorY.value =
+      typeof scene.userData.reflectionFloorY === 'number'
+        ? scene.userData.reflectionFloorY
+        : 0;
+    uniforms.renderTime.value += Math.min(frameDt, 0.25);
+    uniforms.reflectionStrength.value = t.reflectionStrength;
+    uniforms.reflectionDistortion.value = t.reflectionDistortion;
+    uniforms.reflectionPuddles.value = t.reflectionPuddles;
+    uniforms.floorTolerance.value = Math.max(t.reflectionFloorTolerance, 0.001);
     uniforms.fogStrength.value = t.fogStrength;
     uniforms.fogNear.value = t.fogNear;
     uniforms.fogFar.value = Math.max(t.fogFar, t.fogNear + 1e-3);
@@ -295,7 +371,20 @@ export class StylePipeline {
       scene.background = null;
       renderer.setClearColor(0x000000, 0);
       renderer.setRenderTarget(this.normalTarget);
-      renderWithViewmodel(renderer, scene, camera);
+      if (t.reflectionStrength > 0) {
+        this.wetNormals ??= new WetNormals();
+        this.wetNormals.render(renderer, scene, camera);
+        this.reflections ??= new ReflectionPass(
+          this.colorTarget.width,
+          this.colorTarget.height,
+        );
+        this.reflections.render(renderer, scene, camera, uniforms.floorY.value);
+        uniforms.reflectionMap.value = this.reflections.texture;
+        uniforms.reflectionProjection.value.copy(this.reflections.projection);
+        const puddle = surfaceTexture('asphalt_puddles');
+        uniforms.puddleMap.value = puddle.map.value;
+        uniforms.puddleReady.value = puddle.ready.value;
+      } else renderWithViewmodel(renderer, scene, camera);
       if (bloomOn) {
         this.bloom ??= new BloomPass(
           this.colorTarget.width,
@@ -339,6 +428,8 @@ export class StylePipeline {
     this.composite.dispose();
     this.postFx?.dispose();
     this.bloom?.dispose();
+    this.reflections?.dispose();
+    this.wetNormals?.dispose();
   }
 }
 

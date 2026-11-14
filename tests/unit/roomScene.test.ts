@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { Scene as ThreeScene } from 'three';
+import type { RoomDefinition } from '../../src/world/roomSchema';
 import { RoomScene } from '../../src/scenes/roomScene';
 import type { RoomSceneOptions } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
@@ -54,10 +55,11 @@ function runState(overrides: Partial<RunState> = {}): RunState {
 async function setup(
   run = runState(),
   bus = new EventBus(),
-  roomId = 'combatYard',
+  roomId: string | RoomDefinition = 'combatYard',
   options: RoomSceneOptions = {},
 ) {
-  const room = roomDefinitions.get(roomId)!;
+  const room =
+    typeof roomId === 'string' ? roomDefinitions.get(roomId)! : roomId;
   const waves = loadWaves({ ...wavesData, spawnPoints: room.spawnPoints });
   const scene = new RoomScene(room, run, waves, {
     loadModels: false,
@@ -328,4 +330,55 @@ it('odrzuca brak węzła, nieznany loadout i brak definicji implantu przed utwor
   expect(
     () => new RoomScene(room, runState({ implants: ['missing'] }), waves),
   ).toThrow('Nieznany implant');
+});
+
+it('RoomScene z loadModels=false zachowuje oprawę i stosuje materiał bloku bez ładowania dekoracji', async () => {
+  const base = roomDefinitions.get('combatYard')!;
+  const room = {
+    ...base,
+    id: 'neonUnitRoom',
+    theme: 'neonStreet',
+    blocks: base.blocks.map((block) => ({
+      ...block,
+      material: 'concrete' as const,
+    })),
+    decor: [{ model: 'city_missing', position: { x: 0, y: 0, z: 0 } }],
+    signs: [
+      {
+        kind: 'neon' as const,
+        texture: 'test',
+        position: { x: 0, y: 2, z: 0 },
+        size: { w: 1, h: 1 },
+        yaw: 0,
+      },
+    ],
+    lights: [
+      {
+        position: { x: 0, y: 3, z: 0 },
+        color: '#ffae1a',
+        intensity: 10,
+        range: 8,
+      },
+    ],
+  };
+  const previous = { ...tuning.render };
+  {
+    const { scene, three } = await setup(runState(), new EventBus(), room);
+    expect(tuning.render.interactive).toBe('#d9dde3');
+    expect(three.getObjectByName('city-panorama')).toBeDefined();
+    const materialNames: string[] = [];
+    three.traverse((object) => {
+      if ('material' in object) {
+        const material = (object as import('three').Mesh).material;
+        for (const m of Array.isArray(material) ? material : [material])
+          materialNames.push(m.name);
+      }
+    });
+    expect(materialNames).toContain('mat_concrete');
+    scene.step(SIM_DT, idle);
+    scene.render(0.5);
+    dispose(scene);
+    expect(three.children).toHaveLength(0);
+    expect(tuning.render).toEqual(previous);
+  }
 });

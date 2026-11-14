@@ -10,6 +10,29 @@ Dodanie pokoju wymaga wyłącznie nowego pliku JSON.
 
 ## Format i granice
 
+Pokoje i arena przyjmują pola oprawy z `dressingSchema.ts`: `theme`, `signs`,
+`lights`, `decals`, `ambientFx`, `decor`. Brak `theme` oznacza `white`, a URL
+`?theme=neonStreet` nadpisuje wybór. Wyłącznie identyfikator motywu dopuszcza
+camelCase (konieczne dla `neonStreet`); identyfikatory tekstur i modeli nadal
+używają małych liter, cyfr i podkreślenia. Błędne kolory i nieznane materiały
+są odrzucane. Pozostałe reguły walidacji przestrzennej nie zmieniły się.
+
+Blok może podać `material`: world/concrete/asphalt/metal/facade/trim/glass.
+Jawny materiał obowiązuje bryłę zastępczą oraz siatki modelu; bez niego nazwy
+materiałów glTF pozostają źródłem stylu. Model `city_*` jest ładowany z
+`/assets/models/city/<model>.glb` ze stopami na spodzie bloku. Brak pliku
+zostawia bryłę i istniejący collider. `decor` ładuje modele z tej samej bazy,
+stosuje `position`, `yaw` w radianach i jednolity `scale`, bez colliderów;
+brak pliku pomija dekorację. Ostrzeżenie i nieudany request występują raz na plik.
+Szablony GLB i ich geometrie są własnością cache renderu, nie sceny.
+`loadModels=false` pomija również dekoracje i modele miejskie, więc RoomScene
+działa nadal bez DOM i sieci. `signs/lights/decals/ambientFx` są zachowywane
+w danych dla integratora; RoomScene i Arena jeszcze ich nie renderują.
+
+`SceneAtmosphere` przywraca poprzedni motyw i tło przy dispose; parametry deszczu
+są dostępne przez `theme.rain` dla modułu VFX. Oprawa nie zmienia symulacji,
+osiągalności, spawnu ani przebiegu fal. Scena kontroli: `?scene=neon-test`.
+
 Pola układu `playerSpawn`, `blocks`, `director` odpowiadają arenie. Pokój
 dodaje `id`, `name`, `type`, `spawnPoints`, `doors` oraz opcjonalne `maxAlive`,
 `minSpawnDistance`, `threatMultiplier`, `props`, `puzzle` oraz `bossEnemy` (tylko

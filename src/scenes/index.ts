@@ -1,3 +1,4 @@
+import { NeonTest } from './neonTest';
 import { DamageTest } from './damageTest';
 import { StyleTest } from './styleTest';
 import { MeleeTest, ParryTest, PushTest } from './meleeTest';
@@ -37,6 +38,7 @@ export const scenes: Record<string, SceneFactory> = {
   'player-test': () => new PlayerTest(),
   'damage-test': () => new DamageTest(),
   'style-test': () => new StyleTest(),
+  'neon-test': () => new NeonTest(),
   arena: () => new Arena(true, true),
   'sfx-test': () => new SfxTest(),
   'melee-test': () => new MeleeTest(),

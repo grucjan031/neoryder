@@ -1264,3 +1264,28 @@ pierwsza warstwa). UI przekazuje id do istniejącej akcji RunScene; nie zmienia 
 w `{ saveVersion: SAVE_VERSION, seed, startedAt: startedAtMs, run }`.
 Po udanym zapisie mapy RunScene zastępuje URL przez `continue=1`, aby
 odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
+
+
+## Motywy i miejska oprawa renderu (Neon Noir)
+
+- `Theme` / `themeSchema` (`src/render/themeSchema.ts`): `{ id, render, rain }`.
+  `render` zawiera walidowany komplet parametrów oprawy `tuning.render`;
+  `rain: { enabled, density, speed, windX, color, opacity }` jest wyłącznie danymi.
+- `themeDefinitions`, `loadThemeDefinitions(data)`, `resolveTheme(id?, search?)`
+  (`src/render/themes.ts`): eager JSON, domyślnie `white`, URL `theme` ma pierwszeństwo.
+  Nieznany id zgłasza ostrzeżenie i wybiera `white`.
+- `applyTheme(theme): () => void` ustawia `tuning.render`; zwrócone idempotentne
+  zamknięcie przywraca poprzednie wartości. Scena posiada to zamknięcie do dispose.
+- Pokoje i arena przepuszczają `dressingFields`; `block.material` jest opcjonalnym
+  `blockMaterialSchema`. `theme` dopuszcza camelCase, wymagany przez `neonStreet`.
+  `city_*` wskazuje `/assets/models/city/<model>.glb`; `decor` używa tej samej bazy,
+  bez kolizji. Brak modelu zostawia blok lub pomija dekorację z ostrzeżeniem raz na plik.
+- Rejestr materiałów obsługuje `concrete`, `asphalt`, `metal`, `facade`, `trim`,
+  `glass`, `cable`, `neon_amber|green|violet|blue|white`, `light_white`.
+  Nazwa glTF to `mat_<kind>`. `userData.wetness` materiału oznacza odbicia
+  (asphalt 1, concrete 0.22), `userData.bloomMaterial` opcjonalnie dostarcza
+  materiał samej emisji dla maski bloomu i odbić (okna fasad).
+- `SceneAtmosphere(three, themeId, seed, floorY)` nakłada motyw, ustawia
+  `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.
+  `sync(dt)` odświeża oprawę; wyłącznie render, bez zmian symulacji.
+- Pola `signs/lights/decals/ambientFx` pozostają danymi dla integratora.

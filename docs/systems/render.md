@@ -220,7 +220,73 @@ przełączniki bloom/postFx, maskę emisyjną, impulsy obrażeń i Skupienia, si
 podłogi i zwalnianie zasobów (`renderPostFx.test.ts`);
 test sceny obejmuje fallback, GLB, instancje i zwalnianie zasobów.
 
-## Dłonie FPP
+## Motywy Neon Noir
+
+`src/data/themes/{white,neonStreet}.json` zawierają pełne zestawy parametrów
+`render` oraz dane `rain` dla modułu deszczu. Schemat zod znajduje się w
+`themeSchema.ts`, eager loader i wybór URL w `themes.ts`. Motyw `white` zachowuje
+wszystkie wcześniejsze wartości `tuning.render`; nowe efekty są wyłączone.
+`applyTheme()` zapisuje poprzedni stan i zwraca idempotentne przywrócenie.
+Pokoje i arena posiadają `SceneAtmosphere`, która stosuje motyw i sprząta go
+przy opuszczaniu sceny. `?theme=<id>` nadpisuje dane układu. Nieznany identyfikator
+ostrzega raz i wybiera white. Deszcz nie jest tu renderowany.
+
+Materiały `mat_concrete`, `mat_asphalt`, `mat_metal`, `mat_facade`, `mat_trim`,
+`mat_glass`, `mat_cable` są materiałami Standard i przyjmują kolorowe PointLight
+(limit 8 obsługuje integrator świateł). Tekstury concrete/asphalt/metal_panel/brick/grime
+są próbkowane triplanarnie z pozycji świata; maska asphalt_puddles w XZ.
+Pliki `/assets/textures/surfaces/*.webp` są ładowane leniwie i współdzielone.
+Manifest glob pozwala pominąć żądanie brakującego pliku. Brak lub niepoprawny plik
+daje jeden warning i proceduralny szum, bez przerwania renderu.
+Po dodaniu nowych plików w trakcie sesji należy odświeżyć stronę.
+Fasady mają siatkę okien, ramy, rolety, gzymsy oraz ciepłą/zimną emisję z hasha
+komórki. Ich `userData.bloomMaterial` rysuje tylko słabą emisję okien w maskach.
+Szkło odbija kolor łuny proceduralnie. `mat_neon_amber|green|violet|blue|white`
+i `mat_light_white` są unlit z jawnym bloomem. Czerwień, cyan i magenta pozostają
+rolami walki. W neonStreet skrzynie są jasne, a wróg ma czerwony rim Fresnela.
+
+Odbicia (`reflections.ts`) używają odbitej względem `playerSpawn.y` kamery,
+globalnej płaszczyzny odcinającej geometrię poniżej podłogi i selekcji emisji
+z bloomu. Kamera odbić pomija viewmodel. Maska i dwa rozmycia Gaussa mają 1/2
+szerokości i wysokości bufora. Kanał A istniejącego przebiegu normalnych koduje
+`userData.wetness`: asphalt 1, concrete 0.22, pozostałe 0. Kompozycja rekonstruuje
+pozycję świata, sprawdza normalną w górę i tolerancję wysokości podłogi,
+projektuje odbicie, dodaje Fresnel, maskę kałuż i animowane zniekształcenie.
+W white nie powstają cele odbić i nie ma dodatkowych przebiegów.
+
+Mgła wysokościowa w kompozycji używa całki gęstości wzdłuż promienia widzenia,
+ze spadkiem wykładniczym względem wysokości nad podłogą. Nie obejmuje viewmodelu.
+Panorama to trzy warstwy InstancedMesh, proceduralne okna, bursztynowo-białe
+światła dachowe oraz trzy odległe panele z gradientem i szumem. Osobny `Rng`
+z identyfikatora pokoju zapewnia powtarzalność, bez dotykania RNG symulacji.
+Nie ma colliderów. `panoramaDensity` i `panoramaHeight` przebudowują instancje
+tylko po zmianie wartości; reszta aktualizuje uniformy.
+
+Wszystkie nowe pola `tuning.render` widoczne są automatycznie w lil-gui:
+`reflectionStrength/Distortion/Puddles/FloorTolerance`,
+`heightFogDensity/Falloff`, `panoramaEnabled/Density/Height/WindowWarm/WindowCool`,
+`enemyRimStrength/Power`, kolory świateł i materiałów, `citySurfaceDetail`.
+
+### Koszt i kontrola
+
+Przy włączonym bloomie, bez impulsu i viewmodelu: white = **8 przebiegów**,
+neonStreet = **11 przebiegów**. W obu: kolor i normalne/głębia w pełnej
+rozdzielczości, maska bloomu w 1/2, cztery rozmycia w 1/4, kompozycja w pełnej.
+Neon dodaje maskę odbicia i dwa rozmycia w 1/2. Panorama uczestniczy w istniejących
+przebiegach geometrii. Viewmodel dodaje po jednym wywołaniu renderu w kolorze,
+normalnych i bloomie: odpowiednio 11/14; aktywny impuls dodaje jeden pełny pass.
+Przy `outline=0` nadal omijany jest cały pipeline stylu.
+
+`?scene=neon-test`: uliczka 8 × 30 m, fasady, asfalt, beton, metal, szkło,
+jasna skrzynia i trzy czerwone manekiny, pięć neonów z kolorowymi światłami.
+Porównaj z `?scene=neon-test&theme=white`. Sprawdź odbicia poniżej neonów,
+brak odbić na ścianach i skrzyni, daleką panoramę i czytelność wroga.
+Jednostkowo sprawdzane są dane, przywracanie motywu, deterministyczność panoramy,
+liczba i rozdzielczość passów, mokra maska oraz przywracanie stanu po błędzie.
+W sandboxie wykonawcy Chromium/SwiftShader zwrócił `spawn EPERM`; zrzuty i
+kompilacja shaderów na GPU wymagają weryfikacji przez integratora.
+
+## Dłonie FPP — animacja
 
 `HandRig` animuje przegubowe modele R/L pozami Euler XYZ z walidowanych danych
 `src/data/hands/handPoses.json`, względem orientacji spoczynkowych. Przypięcie
