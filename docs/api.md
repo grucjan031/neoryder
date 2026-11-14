@@ -532,7 +532,8 @@ class FeelSystem implements FocusControl {
   /** dt dla gracza (ruch, ostrze, broń, moce): dtSim / worldScale × playerTimeScale, max SIM_DT × 2; 0 w hitstopie. */
   playerDt(dtSim: number): number;
 }
-// GameContext.feel?: Pick<FeelSystem, 'playerDt' | 'focusActive'>
+// GameContext.feel?: Pick<FeelSystem, 'playerDt' | 'focusActive'>   (zaimplementowane w F2-06; main.ts ustawia ctx.feel)
+// focus { durationS: 0 } kończy Skupienie przed czasem; po Skupieniu powrót świata też nie spowalnia gracza.
 // Zdarzenie focus { worldScale, durationS } — kumulacja ze slowmo jak w F1 (mocniejsze wygrywa).
 ```
 

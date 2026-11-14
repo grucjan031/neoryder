@@ -91,3 +91,22 @@ hitstop, historię komend oraz pauzę po Escape/utracie fokusu i wznowienie klik
 - `hitstop { ms }` → `loop.hitstop(ms)` (kumulacja jako max w pętli; ignorowane w pauzie).
 - `slowmo { timeScale, durationS }` i `wave_last_kill` (→ `tuning.time.lastKillTimeScale` 0,2 przez `lastKillSlowmoS` 0,3 s) → spowolnienie liczone w **czasie rzeczywistym** (`update(frameDt)` z `main.ts`), potem płynny powrót w `slowmoRecoverS` (0,15 s). Kumulacja: mocniejsze spowolnienie wygrywa, czas jako max.
 - `baseTimeScale` — cel powrotu; komenda debug `timescale <n>` zmienia bazę, nie nadpisuje efektów. `reset()` przy zmianie sceny.
+
+## Skupienie: czas gracza — F2-06
+
+`FeelSystem` obsługuje zdarzenie `focus { worldScale, durationS }` jak `slowmo`
+(kumulacja: mocniejsze spowolnienie wygrywa, czas jako max), ale dodatkowo
+wyjmuje gracza spod spowolnienia: `playerDt(dtSim)` zwraca w Skupieniu
+`dtSim / loop.timeScale × playerTimeScale` (najwyżej `SIM_DT × 2`), poza nim
+`dtSim`; hitstop (0) zostaje 0. `focusActive` trwa przez `durationS` czasu
+rzeczywistego i przez płynny powrót świata (`time.slowmoRecoverS`), żeby gracz
+nie zwalniał przy wychodzeniu ze Skupienia. `durationS: 0` kończy je przed
+czasem (np. brak energii). `main.ts` ustawia `ctx.feel`; sceny krokują gracza,
+ostrze, moce, broń i energię z `ctx.feel?.playerDt(dt) ?? dt`, a wrogów,
+pociski, statusy, obrażenia i fizykę zwykłym `dt` (arena, ai-test). Ostatnie
+zabójstwo fali i inne `slowmo` nadal spowalniają także gracza.
+
+Testy: `feel.test.ts` (dystans gracza w 1 s czasu rzeczywistego jak bez
+Skupienia, świat 0,3; hitstop, limit, powrót, wcześniejsze zakończenie,
+kumulacja) i `arenaFocus.test.ts` (prawdziwa arena). Moc `kind: 'focus'`
+dochodzi w osobnym kroku (rejestr mocy).

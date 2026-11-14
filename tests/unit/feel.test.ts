@@ -76,3 +76,70 @@ describe('FeelSystem', () => {
     expect(c.loop.timeScale).toBe(0.5);
   });
 });
+
+describe('FeelSystem — Skupienie (F2-06)', () => {
+  const SIM = 1 / 60;
+  /** Model pętli: co klatkę jeden krok świata SIM_DT × timeScale; gracz bierze playerDt. */
+  function travel(c: ReturnType<typeof setup>, seconds: number) {
+    let player = 0;
+    let world = 0;
+    for (let s = 0; s < seconds - 1e-9; s += SIM) {
+      const dt = SIM * c.loop.timeScale;
+      player += c.feel.playerDt(dt);
+      world += dt;
+      c.feel.update(SIM);
+    }
+    return { player, world };
+  }
+
+  it('player covers the same distance in 1 s of real time with focus; the world only worldScale of it', () => {
+    const plain = travel(setup(), 1);
+    const c = setup();
+    c.bus.emit('focus', { worldScale: 0.3, durationS: 1 });
+    expect(c.feel.focusActive).toBe(true);
+    const focus = travel(c, 1);
+    expect(focus.player).toBeCloseTo(plain.player, 6);
+    expect(focus.world).toBeCloseTo(plain.world * 0.3, 2);
+  });
+
+  it('hitstop freezes both, playerDt is capped at SIM_DT × 2 and equals dtSim without focus', () => {
+    const c = setup();
+    expect(c.feel.playerDt(SIM * 0.5)).toBe(SIM * 0.5);
+    c.bus.emit('focus', { worldScale: 0.3, durationS: 1 });
+    expect(c.feel.playerDt(0)).toBe(0);
+    c.feel.playerTimeScale = 10;
+    expect(c.feel.playerDt(SIM * 0.3)).toBe(SIM * 2);
+  });
+
+  it('keeps the player at real time while the world recovers, then ends; durationS 0 ends early', () => {
+    const c = setup();
+    c.bus.emit('focus', { worldScale: 0.3, durationS: 0.5 });
+    c.run(0.52);
+    expect(c.loop.timeScale).toBeLessThan(1);
+    expect(c.feel.focusActive).toBe(true);
+    expect(c.feel.playerDt(SIM * c.loop.timeScale)).toBeCloseTo(SIM, 9);
+    c.run(c.t.time.slowmoRecoverS + 0.05);
+    expect(c.loop.timeScale).toBe(1);
+    expect(c.feel.focusActive).toBe(false);
+
+    c.bus.emit('focus', { worldScale: 0.3, durationS: 5 });
+    c.run(0.2);
+    c.bus.emit('focus', { worldScale: 0.3, durationS: 0 });
+    c.run(1 / 60);
+    expect(c.loop.timeScale).toBeGreaterThan(0.3);
+    c.run(c.t.time.slowmoRecoverS + 0.05);
+    expect(c.feel.focusActive).toBe(false);
+    expect(c.loop.timeScale).toBe(1);
+  });
+
+  it('stacks with slowmo (stronger wins) and reset clears focus', () => {
+    const c = setup();
+    c.bus.emit('focus', { worldScale: 0.3, durationS: 1 });
+    c.bus.emit('slowmo', { timeScale: 0.1, durationS: 0.2 });
+    expect(c.loop.timeScale).toBe(0.1);
+    expect(c.feel.playerDt(SIM * 0.1)).toBeCloseTo(SIM, 9);
+    c.feel.reset();
+    expect(c.feel.focusActive).toBe(false);
+    expect(c.loop.timeScale).toBe(1);
+  });
+});

@@ -121,6 +121,7 @@ async function main(): Promise<void> {
   };
   renderer.domElement.addEventListener('click', resume);
   const feel = new FeelSystem(bus, loop, tuning);
+  ctx.feel = feel;
   const gui = debug ? createTuningGui() : undefined;
   if (stats) document.body.append(stats.dom);
   const builtinOff = [

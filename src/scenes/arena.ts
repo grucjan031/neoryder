@@ -460,19 +460,21 @@ export class Arena implements Scene {
       this.manager.step(dt);
       return;
     }
-    this.player.step(dt, input);
-    this.blade.step(dt, input);
-    this.push.step(dt, input);
+    // F2-06: gracz, ostrze, moce, broń i energia w czasie gracza (Skupienie), reszta w czasie świata.
+    const pdt = this.ctx.feel?.playerDt(dt) ?? dt;
+    this.player.step(pdt, input);
+    this.blade.step(pdt, input);
+    this.push.step(pdt, input);
     if (!(dt > 0)) {
       this.manager.step(dt);
       return;
     }
-    this.energy.step(dt);
+    this.energy.step(pdt);
     this.damage.step(dt);
     this.statuses.step(dt);
     this.projectileView.capturePrevious();
     this.debris.step(dt);
-    this.blaster.step(dt, {
+    this.blaster.step(pdt, {
       ...this.aim(),
       triggerHeld: input.held.has('shoot'),
     });
@@ -660,6 +662,8 @@ export class Arena implements Scene {
         return this.aliveEnemies();
       case 'enemyDirector':
         return this.manager.director?.snapshot() ?? null;
+      case 'playerPos':
+        return { ...this.player.getState().position };
       case 'playerHp':
         return this.health.current;
       case 'energy':

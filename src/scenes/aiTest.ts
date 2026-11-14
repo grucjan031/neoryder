@@ -373,7 +373,7 @@ export class AiTest implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     this.previous = this.player.getState();
-    this.player.step(dt, input);
+    this.player.step(this.ctx.feel?.playerDt(dt) ?? dt, input);
     if (!(dt > 0)) {
       this.manager.step(dt);
       return;

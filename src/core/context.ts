@@ -1,6 +1,7 @@
 import type { AudioSystem } from '../audio/audioSystem';
 import type { CommandRegistry } from '../ui/debugCommands';
 import type { EventBus } from './events';
+import type { FeelSystem } from './feel';
 import type { Rng } from './rng';
 import type { GameLoop } from './loop';
 import type { Tuning } from './tuning';
@@ -17,4 +18,6 @@ export interface GameContext {
   audio?: AudioSystem;
   /** Wznowienie gry z gestu użytkownika (zdejmuje pauzę, przechwytuje mysz). */
   resume?: () => void;
+  /** F2-06: czas gracza w Skupieniu. Sceny krokują gracza z `feel?.playerDt(dt) ?? dt`. */
+  feel?: Pick<FeelSystem, 'playerDt' | 'focusActive'>;
 }
