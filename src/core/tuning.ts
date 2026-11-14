@@ -83,7 +83,7 @@ export const tuning = {
     slideCapsuleHeight: 1.0,
     crouchSpeed: 3.5,
   },
-  /** Ostrze plazmowe (#07). Fazy ciosu w s; obrażenia i zasięg w src/data/weapons/plasmaBlade.json. */
+  /** Ostrze plazmowe (#07). Fazy ciosu w s; obrażenia i zasięg w src/data/blades/plasmaBlade.json. */
   melee: {
     lightWindupS: 0.05,
     lightActiveS: 0.1,

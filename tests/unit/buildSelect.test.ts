@@ -59,3 +59,52 @@ it('ekran: pokazanie ustawia fokus na pierwszej karcie, wybór chowa ekran raz',
   screen.dispose();
   expect(document.querySelector('.build-select')).toBeNull();
 });
+
+it('rząd „Ostrze:” z trzema wariantami; wybór wariantu trafia do onSelect', () => {
+  const onSelect = vi.fn();
+  const screen = new BuildSelect({ onSelect });
+  const buttons = [
+    ...document.querySelectorAll<HTMLButtonElement>('[data-blade]'),
+  ];
+  expect(buttons.map((b) => b.dataset.blade)).toEqual([
+    'plasmaBlade',
+    'twinBlades',
+    'staffBlade',
+  ]);
+  expect(buttons.map((b) => b.querySelector('span')?.textContent)).toEqual([
+    'Plazmowe',
+    'Bliźniacze',
+    'Dwustronne',
+  ]);
+  expect(
+    document.querySelector('.build-select__blades-label')?.textContent,
+  ).toBe('Ostrze:');
+  // Domyślnie zaznaczone plazmowe, a wybór karty nie nadpisuje ostrza ekwipunku.
+  expect(buttons.map((b) => b.getAttribute('aria-pressed'))).toEqual([
+    'true',
+    'false',
+    'false',
+  ]);
+  screen.show();
+  buttons[2]!.click();
+  expect(buttons.map((b) => b.getAttribute('aria-pressed'))).toEqual([
+    'false',
+    'false',
+    'true',
+  ]);
+  document.querySelector<HTMLButtonElement>('[data-loadout="blade"]')!.click();
+  expect(onSelect).toHaveBeenCalledExactlyOnceWith('blade', 'staffBlade');
+  screen.dispose();
+});
+
+it('odrzuca nieznane ostrze w danych ekranu', () => {
+  expect(() =>
+    buildOptions({
+      ...data,
+      blade: {
+        title: 'Ostrze:',
+        options: [{ id: 'nieMa', name: 'X', description: 'x' }],
+      },
+    }),
+  ).toThrow();
+});

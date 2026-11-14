@@ -1,0 +1,26 @@
+{
+  "id": "twinBlades",
+  "model": "blade_twin",
+  "timeScale": 0.7,
+  "offhand": true,
+  "lengthScale": 0.7,
+  "combo": [
+    { "damage": 16, "knockback": 0, "reach": 1.8, "width": 2.0 },
+    { "damage": 16, "knockback": 0, "reach": 1.8, "width": 2.0 },
+    { "damage": 16, "knockback": 0, "reach": 1.8, "width": 2.2 },
+    { "damage": 26, "knockback": 5, "reach": 2.0, "width": 2.4 }
+  ],
+  "heavy": { "damage": 52, "knockback": 8, "reach": 2.4, "width": 1.8 },
+  "throw": {
+    "damage": 23,
+    "speed": 20,
+    "rangeM": 16,
+    "radiusM": 0.35,
+    "returnSpeed": 26
+  },
+  "dashCut": { "damage": 33, "widthM": 2, "knockback": 5 },
+  "blockDamageMult": 0.55,
+  "blockEnergyPerHit": 6,
+  "blockEnergyPerDamage": 0.4,
+  "tags": ["#melee"]
+}

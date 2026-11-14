@@ -1,4 +1,8 @@
-import { queryBladeSegment } from '../combat/melee/bladeQueries';
+import {
+  queryBladeArc,
+  queryBladeSegment,
+  queryBladeSpin,
+} from '../combat/melee/bladeQueries';
 import { FlyingBlade } from '../render/flyingBlade';
 import {
   BoxGeometry,
@@ -20,13 +24,9 @@ import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
-import {
-  DamageSystem,
-  Health,
-  Hurtboxes,
-  queryHurtboxes,
-} from '../combat/damage';
-import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
+import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
+import { resolveBlade } from '../combat/melee/bladeSchema';
+import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import { PlayerEnergy } from '../combat/powers/energy';
 import { createPower } from '../combat/powers/registry';
@@ -129,6 +129,8 @@ export class Arena implements Scene {
   private readonly flyingBlade = new FlyingBlade();
   private powers!: PowerSlots;
   private loadout: Loadout = loadoutDefinitions.get('classic')!;
+  /** Wariant ostrza wybrany na ekranie buildu albo z `?blade=`; nadpisuje ostrze ekwipunku. */
+  private bladeOverride: string | null = null;
   private weapons: Weapon[] = [];
   private weaponSlot = 0;
   private beamView!: BeamRenderer;
@@ -187,6 +189,10 @@ export class Arena implements Scene {
       loadoutDefinitions.get('classic')!;
     if (requested !== null && !loadoutDefinitions.has(requested) && ctx.debug)
       console.warn(`Nieznany ekwipunek: ${requested}. Wybrano classic.`);
+    this.bladeOverride =
+      typeof location === 'undefined'
+        ? null
+        : new URLSearchParams(location.search).get('blade');
     const choosing = this.selectBuild && requested === null;
     this.three = three;
     this.rapier = await initPhysics();
@@ -274,14 +280,14 @@ export class Arena implements Scene {
     );
     this.root.add(this.flyingBlade.root);
     this.blade = new PlasmaBlade(
-      plasmaBladeDefinition,
+      resolveBlade(this.loadout.blade, this.bladeOverride),
       {
         owner: playerId,
         team: 'player',
         damage: this.damage,
         stats: this.playerStats,
         energy: this.energy.pool,
-        queryArc: (reach, width) => this.queryArc(reach, width),
+        queryArc: (reach, width, shape) => this.queryArc(reach, width, shape),
         querySegment: (from, to, radius, dash, dir) =>
           queryBladeSegment(
             this.world,
@@ -344,7 +350,7 @@ export class Arena implements Scene {
     );
     this.root.add(this.hitSparksView.root);
 
-    await this.bladeView.load(this.loadModels);
+    await this.bladeView.load(this.loadModels, this.blade.definition);
     this.root.add(this.bladeView.root);
     this.blasterView = new FppBlaster(ctx.bus, playerId, {
       modelOf: weaponModelOf,
@@ -367,7 +373,7 @@ export class Arena implements Scene {
     this.synergies.setTags(this.loadout.tags);
     if (this.selectBuild && typeof document !== 'undefined')
       this.buildSelect = new BuildSelect({
-        onSelect: (id) => this.chooseLoadout(id),
+        onSelect: (id, bladeId) => this.chooseLoadout(id, bladeId),
       });
 
     this.director = new WaveDirector(
@@ -624,15 +630,16 @@ export class Arena implements Scene {
     };
   }
 
-  private queryArc(reach: number, width: number) {
+  private queryArc(reach: number, width: number, shape: HitShape = 'arc') {
     const { origin, dir } = this.aim();
+    if (shape === 'spin')
+      return queryBladeSpin(this.world, this.hurtboxes, origin, reach);
     const s = this.player.getState();
     this.tmpEuler.set(s.pitch, s.yaw, 0, 'YXZ');
     this.tmpQuat.setFromEuler(this.tmpEuler);
-    return queryHurtboxes(
+    return queryBladeArc(
       this.world,
       this.hurtboxes,
-      new this.rapier.Cuboid(width / 2, 0.6, reach / 2),
       {
         x: origin.x + dir.x * reach * 0.5,
         y: origin.y + dir.y * reach * 0.5,
@@ -644,7 +651,8 @@ export class Arena implements Scene {
         z: this.tmpQuat.z,
         w: this.tmpQuat.w,
       },
-      interactionGroups(CollisionGroup.Player, CollisionGroup.Enemy),
+      reach,
+      width,
     );
   }
 
@@ -789,7 +797,7 @@ export class Arena implements Scene {
     this.debris.clear();
     this.statusVfx.clear();
     this.hitSparks.clear();
-    this.blade.reset();
+    this.applyBlade();
     this.createEquipment();
     this.synergies.reset();
     this.synergies.setTags(this.loadout.tags);
@@ -817,13 +825,23 @@ export class Arena implements Scene {
    * Wybór z ekranu buildu (gest użytkownika, F2-17): nowy run od fali 1 z tym ekwipunkiem
    * i przechwycenie myszy. Zwraca false dla nieznanego id (stan bez zmian).
    */
-  chooseLoadout(id: string): boolean {
+  chooseLoadout(id: string, bladeId?: string): boolean {
     const selected = loadoutDefinitions.get(id);
     if (!selected) return false;
+    if (bladeId !== undefined) this.bladeOverride = bladeId;
     this.loadout = selected;
     this.reset();
     this.ctx.resume?.();
     return true;
+  }
+
+  /** Ostrze runu: nadpisanie (ekran buildu, `?blade=`) albo ostrze ekwipunku; reset stanu ostrza. */
+  private applyBlade(): void {
+    const next = resolveBlade(this.loadout.blade, this.bladeOverride);
+    if (next !== this.blade.definition) {
+      this.blade.setDefinition(next);
+      void this.bladeView.setDefinition(next, this.loadModels);
+    } else this.blade.reset();
   }
 
   /** Powrót do ekranu wyboru (HUD po śmierci, komenda `build`): czysta arena, fale stoją. */
@@ -970,6 +988,8 @@ export class Arena implements Scene {
         return this.weapon.heat.current;
       case 'loadout':
         return this.loadout.id;
+      case 'blade':
+        return this.blade.definition.id;
       case 'weapon':
         return this.weapon.definition.id;
       case 'weaponHeat':

@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–10, 12–17; 18 — symulator gotowy, bramka balansu niezaliczona (propozycje w `docs/systems/balance.md` czekają na decyzję). Dalej: decyzja o balansie, 11.
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–17; 18 — symulator gotowy, bramka balansu niezaliczona (propozycje w `docs/systems/balance.md` czekają na decyzję). Dalej: decyzja o balansie.
 
 ## Decyzje wspólne
 
@@ -30,7 +30,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–10, 12–17; 18 — symu
 | 08  | Bariera                                                              | Moce              | 05         | S     | gotowe |
 | 09  | Chwyt i rzut                                                         | Moce              | 05         | L     | gotowe |
 | 10  | Rzut ostrzem i dash-cięcie                                           | Walka wręcz       | 01         | M     | gotowe |
-| 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | —      |
+| 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | gotowe |
 | 12  | `EnemyDirector`: tokeny ataku, flankowanie, ostrzał zaporowy         | AI wrogów         | 01         | M     | gotowe |
 | 13  | Snajper i Dron                                                       | AI wrogów         | 12         | M     | gotowe |
 | 14  | Tarczownik i Egzekutor                                               | AI wrogów         | 02, 12     | L     | gotowe |
@@ -107,6 +107,7 @@ Rzut: ostrze leci prosto do `throw.rangeM`, przecina wszystkich na drodze (raz k
 
 Dane `src/data/blades/` (przeniesienie `plasmaBlade.json`): `twinBlades` (podwójne: szybsze, 4-etapowe combo, słabszy blok), `staffBlade` (dwustronne: szerokie łuki, ciężki atak to obrót 360°, odbijanie pocisków w szerszym kącie). Różnice tylko w danych i w kształcie trafienia (`arc` vs `spin`).
 **Gotowe:** testy każdego wariantu, wybór wariantu z `Loadout`.
+**Stan: gotowe.** Dane w `src/data/blades/` (`plasmaBlade`, `twinBlades`, `staffBlade`), `resolveBlade`, kształt trafienia `spin`, `melee_swing.stage` do 4, rząd „Ostrze:” na ekranie buildu, `?blade=`, komenda debug `blade <id>`, widok FPP z fallbackiem modelu. Testy: `tests/unit/bladeVariants.test.ts`, `buildSelect.test.ts`, `arenaBlade.test.ts`. Modele `blade_twin.glb` i `blade_staff.glb` powstają osobno; do tego czasu widok używa `plasma_blade.glb`. Wartości startowe do strojenia w playteście (tabela w `docs/systems/melee.md`). E2E uruchamia koordynator.
 
 ### 12 EnemyDirector
 

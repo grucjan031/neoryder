@@ -5,6 +5,26 @@
   "weapons": "Bronie",
   "powers": "Moce",
   "synergies": "Synergie",
+  "blade": {
+    "title": "Ostrze:",
+    "options": [
+      {
+        "id": "plasmaBlade",
+        "name": "Plazmowe",
+        "description": "Zrównoważone: trzy cięcia combo, mocny blok."
+      },
+      {
+        "id": "twinBlades",
+        "name": "Bliźniacze",
+        "description": "Szybkie czteroetapowe combo, słabszy blok."
+      },
+      {
+        "id": "staffBlade",
+        "name": "Dwustronne",
+        "description": "Szerokie cięcia, obrót 360° i szerokie odbijanie pocisków."
+      }
+    ]
+  },
   "builds": [
     {
       "id": "blade",

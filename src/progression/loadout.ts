@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { bladeDefinitions } from '../combat/melee/bladeSchema';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { powerDefinitions } from '../combat/powers/registry';
 
@@ -7,7 +8,7 @@ const uniqueIds = (ids: string[]): boolean => new Set(ids).size === ids.length;
 export const loadoutSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  blade: z.literal('plasmaBlade'),
+  blade: z.string().refine((id) => bladeDefinitions.has(id), 'Nieznane ostrze'),
   weapons: z
     .array(
       z.string().refine((id) => weaponDefinitions.has(id), 'Nieznana broń'),

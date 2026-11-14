@@ -1,6 +1,6 @@
 # Ostrze plazmowe (F1 #07)
 
-Właściciel: Walka wręcz. Kod: `src/combat/melee/` (`plasmaBlade.ts`, `bladeSchema.ts`), dane: `src/data/weapons/plasmaBlade.json`, scena: `?scene=melee-test`.
+Właściciel: Walka wręcz. Kod: `src/combat/melee/` (`plasmaBlade.ts`, `bladeSchema.ts`), dane: `src/data/blades/*.json` (`plasmaBlade`, `twinBlades`, `staffBlade`), scena: `?scene=melee-test`.
 
 ## Sterowanie
 
@@ -50,7 +50,7 @@ Energia pochodzi z `PlayerEnergy` (#11, patrz `docs/systems/powers.md`) — jedn
 ## Rzut i dash-cięcie (F2-10)
 
 - Środkowy przycisk myszy (`bladeThrow`) rzuca ostrze w kierunku celowania.
-  Dane `throw` w `src/data/weapons/plasmaBlade.json`: obrażenia 35,
+  Dane `throw` w `src/data/blades/plasmaBlade.json`: obrażenia 35,
   prędkość 20 m/s, zasięg 16 m, promień toru 0,35 m, powrót 26 m/s.
   Kierunek wylotu jest stały. Raycast Rapiera ograniczony do geometrii świata
   zatrzymuje środek ostrza o `radiusM` przed ścianą i przełącza na powrót;
@@ -122,3 +122,35 @@ oraz tolerancję późnego kliknięcia.
 - **Efekt:** `ProjectileSystem.reflect` — pocisk zmienia właściciela i drużynę na gracza, leci w strzelca (`positionOf`, w razie braku — z powrotem po torze), szybciej ×`parrySpeedMult` (1,8) i mocniej ×`parryDamageMult` (2). Emisja `parry_success { projectile, attacker }` (energia +10 przez `PlayerEnergy`), hitstop `parryHitstopMs` (60 ms), wstrząs `parryShake`.
 - Scena `?scene=parry-test`: wariant piaskownicy, w którym środkowy manekin co 1,6 s strzela wolnym pociskiem (9 m/s, 12 obrażeń) w gracza. Ćwiczenie: wciśnij PPM w ostatniej chwili.
 - Testy: `tests/unit/parry.test.ts` (prawdziwy Rapier: odbicie w oknie trafia strzelca ×2, blok poza oknem −70% bez odbicia, brak bloku = obrażenia, pocisk z tyłu nieparowany), `tests/e2e/parryTest.spec.ts`.
+
+## Warianty ostrzy (F2-11)
+
+Jedna klasa `PlasmaBlade`, różnice w danych `src/data/blades/<id>.json` (zod, `bladeDefinitions`) i w kształcie trafienia ciężkiego ataku (`heavyShape`: `arc` | `spin`). Wariant wybiera `resolveBlade(loadout.blade, nadpisanie)`: ekran buildu (rząd „Ostrze:”) i `?blade=<id>` nadpisują ostrze ekwipunku na cały run. Zmiana wariantu w trakcie sceny: `PlasmaBlade.setDefinition` (reset stanu ostrza).
+
+| Pole danych                                      | Znaczenie                                                                                                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `timeScale`                                      | mnożnik czasu faz lekkiego i ciężkiego ciosu (czas ładowania i okno combo bez zmian)                                                         |
+| `heavyShape`                                     | `arc` (prostopadłościan przed oczami) albo `spin` (kula o promieniu `heavy.reach` wokół oczu — trafia też cele za plecami, odrzut od gracza) |
+| `parryArcDeg`                                    | kąt odbijania pocisków; brak = `tuning.melee.parryArcDeg` (160°). Okno parowania `parryWindowMs` wspólne                                     |
+| `model`, `offhand`, `doubleEnded`, `lengthScale` | widok FPP (patrz niżej)                                                                                                                      |
+
+Wartości startowe (do strojenia w playteście):
+
+|                            | Plazmowe          | Bliźniacze (`twinBlades`)          | Dwustronne (`staffBlade`)      |
+| -------------------------- | ----------------- | ---------------------------------- | ------------------------------ |
+| Combo (obrażenia)          | 25 / 25 / 40      | 16 / 16 / 16 / 26 (4 etapy)        | 28 / 28 / 44                   |
+| Zasięg × szerokość lekkich | 2,2–2,4 × 2,2–2,6 | 1,8–2,0 × 2,0–2,4 (krótsze ostrze) | 2,2–2,4 × 3,5–4,2 (+60%)       |
+| Ciężki                     | 80, łuk           | 52, łuk                            | 88, obrót 360° (promień 2,8 m) |
+| Czas faz                   | ×1                | ×0,7                               | ×1,2                           |
+| Blok (`blockDamageMult`)   | 0,3               | 0,55                               | 0,3                            |
+| Kąt odbijania              | 160°              | 160°                               | 240°                           |
+
+Rzut i dash-cięcie zachowują wszystkie warianty (obrażenia skalowane jak lekkie ciosy). Zdarzenie `melee_swing.stage` ma wartości `1 | 2 | 3 | 4 | 'heavy'`; audio (reguła `melee_swing`) i HUD nie zależą od etapu. Obrót `spin` nie sprawdza zasłonięcia ścianą (jak łuk).
+
+**Widok FPP** (`src/render/fppBlade.ts`): model `/assets/models/<model>.glb`, a gdy pliku nie ma — `plasma_blade.glb` (z `lengthScale` na węźle `blade`), a potem bryła zastępcza. Bliźniacze: druga instancja ostrza, lustrzana, po lewej i niżej (między bronią palną a środkiem ekranu); etapy combo prowadzą naprzemiennie prawym (1, 3) i lewym (2, 4), ciężki i blok używają obu. Dwustronne: węzły `blade_back*` z modelu, a gdy ich brak — kopia przedniego ostrza obrócona o 180° od tyłu rękojeści; obrót 360° w ciężkim ataku to obrót modelu wokół pionowej osi kamery.
+
+Scena `melee-test`: `?blade=<id>` i komenda debug `blade <id>` (przełączenie wariantu w locie), query `bladeId`. Arena: `?blade=<id>`, query `blade`.
+
+Testy: `tests/unit/bladeVariants.test.ts` (dane i walidacja, wybór wariantu, kolejność i czasy combo 1→4, obrót 360° na prawdziwym Rapierze, szerszy łuk, kąt odbijania, słabszy blok), `tests/unit/buildSelect.test.ts` (rząd „Ostrze:”), `tests/unit/arenaBlade.test.ts` (ekran buildu i `?blade=` w arenie).
+
+Ręcznie (ok. 30 s): `?scene=melee-test&blade=twinBlades&debug=1` — cztery szybkie cięcia kolejno prawym i lewym ostrzem, krótszy zasięg; `&blade=staffBlade` — przytrzymaj LPM i puść: obrót 360° rani wszystkie manekiny w zasięgu (komenda `blade <id>` zmienia wariant bez przeładowania).

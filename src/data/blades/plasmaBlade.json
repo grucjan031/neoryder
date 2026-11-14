@@ -1,5 +1,6 @@
 {
   "id": "plasmaBlade",
+  "model": "plasma_blade",
   "combo": [
     { "damage": 25, "knockback": 0, "reach": 2.2, "width": 2.2 },
     { "damage": 25, "knockback": 0, "reach": 2.2, "width": 2.2 },
