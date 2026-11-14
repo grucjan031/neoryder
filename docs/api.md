@@ -386,3 +386,198 @@ wave_last_kill: { wave: number; id: EntityId };
 ```
 
 Konwencja: czasy w zdarzeniach w sekundach z sufiksem `S` (`durationS`), wyjątek `hitstop.ms` (milisekundy, bo tak się je stroi).
+
+## Kontrakty F2 (zatwierdzone 2026-11-14, ADR 0004)
+
+Zadania: `docs/issues/F2/README.md`. Zdarzenia i akcje wejścia dopisuje do kodu zadanie F2-01 (Architekt) z góry, żeby zadania równoległe nie zmieniały `src/core/`.
+
+### Statusy (F2-01, F2-02)
+
+```ts
+// src/combat/damage/types.ts
+export interface StatusApplication { id: string; durationS: number; stacks?: number } // stacks domyślnie 1
+export interface DamageInfo { /* …jak w F1… */ statuses?: readonly StatusApplication[] }
+
+// src/combat/damage/damageSystem.ts
+class DamageSystem {
+  /** Statystyki celu przekazane w register (StatusSystem nakłada na nie modyfikatory). */
+  stats(id: EntityId): Stats | undefined;
+}
+
+// src/combat/status/statusSystem.ts (definicje: src/data/statuses/*.json, zod)
+export interface StatusQuery {
+  has(target: EntityId, status: string): boolean;
+  stacks(target: EntityId, status: string): number;
+  remaining(target: EntityId, status: string): number; // s, 0 gdy brak
+}
+export class StatusSystem implements StatusQuery {
+  constructor(bus: EventBus, damage: DamageSystem, deps: {
+    position(id: EntityId): Vec3 | null;          // dla wyładowań w promieniu
+    targets(): readonly EntityId[];               // potencjalne cele wyładowań
+  }, defs?: ReadonlyMap<string, StatusDefinition>);
+  step(dt: number): void;                         // czas symulacji (dt = 0 w hitstopie)
+  clear(target: EntityId): void;                  // śmierć, despawn
+  reset(): void;                                  // nowy run
+  dispose(): void;
+}
+// Nakładanie wyłącznie z damage_dealt.statuses (tylko gdy amount > 0).
+// Obrażenia statusów: DamageSystem.deal, source = nakładający, tagi statusu + '#status', bez statuses.
+```
+
+### Bronie (F2-03, F2-04)
+
+```ts
+// src/combat/weapons/weaponSchema.ts — unia po fireMode (zod discriminatedUnion)
+interface WeaponBase {
+  id: string; name: string;                       // name: tekst UI (pl)
+  fireMode: 'projectile' | 'spread' | 'pierce' | 'beam' | 'lob';
+  damage: number; fireRateHz: number;
+  automatic: boolean;                             // false = jeden strzał na wciśnięcie
+  heatPerShot: number; tags: string[]; statuses?: StatusApplication[];
+}
+// projectile: projectileSpeed, projectileLifetimeS, spreadDeg
+// spread:     + pellets (≥ 2)
+// pierce:     + pierceCount (≥ 1), pierceFalloff (0..1)
+// beam:       dps, heatPerS, rangeM, tickHz (damage/fireRateHz/heatPerShot nieużywane — 0)
+// lob:        projectileSpeed, projectileLifetimeS, gravity, radiusM
+
+// src/combat/weapons/weapon.ts
+export interface WeaponInput { triggerHeld: boolean; origin: Vec3; dir: Vec3 } // zbocze wciśnięcia liczy Weapon
+export interface WeaponDeps {
+  projectiles: Pick<ProjectileSystem, 'spawn'>;
+  /** F2-04: promień lasera — pierwszy trafiony collider (wróg albo ściana). */
+  castBeam?(origin: Vec3, dir: Vec3, rangeM: number): { target: EntityId | null; distance: number; point: Vec3 };
+  damage?: DamageSystem;
+}
+export class Weapon {
+  constructor(owner: EntityId, ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>, stats: Stats,
+              deps: WeaponDeps, definition: WeaponDefinition, team?: Team);
+  readonly definition: WeaponDefinition;
+  readonly heat: ResourcePool; readonly overheated: boolean; readonly shots: number;
+  step(dt: number, input: WeaponInput): void;
+  reset(): void;
+}
+export class Blaster extends Weapon {} // zgodność z F1: dane blastera, to samo zachowanie
+export const weaponDefinitions: ReadonlyMap<string, WeaponDefinition>; // src/data/weapons/*.json (bez plasmaBlade)
+
+// src/combat/weapons/projectiles.ts — rozszerzenie ProjectileSpec
+interface ProjectileSpec { /* …F1… */
+  statuses?: readonly StatusApplication[];
+  pierce?: { count: number; falloff: number };    // F2-03
+  gravity?: number;                               // F2-04, m/s² w dół
+  explode?: { radiusM: number; damage: number; tags: readonly string[]; statuses?: readonly StatusApplication[] }; // F2-04
+}
+```
+
+### Moce (F2-05 … F2-09)
+
+```ts
+// src/combat/powers/power.ts
+export interface PowerInput { pressed: boolean; held: boolean; released: boolean }
+export interface Power {
+  readonly def: PowerDefinition;
+  readonly cooldownRemaining: number;
+  readonly active: boolean;                       // trwa działanie (Bariera, Skupienie, trzymanie Chwytu)
+  step(dt: number, input: PowerInput): void;
+  reset(): void;
+}
+export interface PowerDeps {
+  owner: EntityId; bus: EventBus; tuning: Tuning;
+  damage: DamageSystem; energy: PlayerEnergy;
+  aim(): { origin: Vec3; dir: Vec3 };
+  targets(): readonly PushTarget[];               // { id, position }
+  castWall(origin: Vec3, dir: Vec3, maxDistance: number): number | null;
+  projectiles?: ProjectileSystem;                 // Bariera
+  feel?: FocusControl;                            // Skupienie (F2-06)
+}
+export type PowerFactory = (def: PowerDefinition, deps: PowerDeps) => Power;
+
+// src/combat/powers/registry.ts — definicje z src/data/powers/*.json, unia po `kind`
+// kind: 'cone' (Pchnięcie, Fala uderzeniowa) | 'chain' | 'barrier' | 'grab' | 'focus'
+export const powerDefinitions: ReadonlyMap<string, PowerDefinition>;
+export function registerPowerKind(kind: string, factory: PowerFactory): void;
+export function createPower(id: string, deps: PowerDeps): Power;
+
+// src/combat/powers/slots.ts
+export class PowerSlots {
+  constructor(slots: readonly (Power | null)[]);  // [0] = akcja 'power' (F), [1] = 'power2' (E)
+  get(slot: number): Power | null;
+  step(dt: number, input: InputSnapshot): void;
+  reset(): void;
+}
+// ResonancePush zostaje jako eksport (kind 'cone' z danymi push.json) — sceny F1 bez zmian.
+// Wspólna baza: koszt (PlayerEnergy.spend), odnowienie, power_denied, power_used, kolejka wciśnięcia w hitstopie.
+```
+
+### Skupienie — skala czasu gracza (F2-06)
+
+```ts
+// src/core/feel.ts
+export interface FocusControl { readonly focusActive: boolean }
+class FeelSystem implements FocusControl {
+  playerTimeScale: number;                        // domyślnie 1
+  /** dt dla gracza (ruch, ostrze, broń, moce): dtSim / worldScale × playerTimeScale, max SIM_DT × 2; 0 w hitstopie. */
+  playerDt(dtSim: number): number;
+}
+// GameContext.feel?: Pick<FeelSystem, 'playerDt' | 'focusActive'>
+// Zdarzenie focus { worldScale, durationS } — kumulacja ze slowmo jak w F1 (mocniejsze wygrywa).
+```
+
+### Wręcz (F2-10, F2-11)
+
+```ts
+// src/combat/melee/bladeSchema.ts — rozszerzenie BladeDefinition (pola opcjonalne, F1 bez zmian)
+throw?: { damage: number; speed: number; rangeM: number; radiusM: number; returnSpeed: number };
+dashCut?: { damage: number; widthM: number; knockback: number };
+heavyShape?: 'arc' | 'spin';                      // F2-11: dwustronne = 'spin'
+parryArcDeg?: number;                             // F2-11: szerszy kąt odbijania
+// Warianty: src/data/blades/*.json, mapa bladeDefinitions (F2-11).
+```
+
+### Wrogowie (F2-02, F2-12)
+
+```ts
+// src/enemies/types.ts — rozszerzenie EnemyDependencies
+statuses?: StatusQuery;                           // ogłuszony (status 'stunned') nie atakuje
+director?: EnemyDirectorApi;
+
+// src/enemies/director.ts
+export interface EnemyDirectorApi {
+  requestToken(id: EntityId, kind: 'melee' | 'shot'): boolean; // true = może atakować teraz
+  releaseToken(id: EntityId): void;               // koniec ataku, śmierć, ogłuszenie
+  slot(id: EntityId): Vec3 | null;                // punkt flankowania wokół gracza
+}
+```
+
+### Ekwipunek i synergie (F2-15, F2-16)
+
+```ts
+// src/progression/loadout.ts — src/data/loadouts/*.json
+export interface Loadout { id: string; name: string; blade: string; weapons: string[]; powers: string[]; tags: string[] }
+// weapons: 1–3 id broni; powers: 1–2 id mocy; tags: np. '#build_blade' (wymagania synergii)
+
+// src/progression/synergies.ts — src/data/synergies/*.json
+export class SynergySystem {
+  constructor(bus: EventBus, ctx: SynergyContext, defs?: readonly SynergyDefinition[]);
+  setTags(tags: readonly string[]): void;         // tagi ekwipunku (później implantów F3)
+  reset(): void; dispose(): void;
+}
+// efekty: add_energy | cool_weapon | stat_modifier_timed | chain_on_hit (ADR 0004 pkt 5)
+```
+
+### Wejście (F2-01)
+
+Nowe akcje: `power2` (`KeyE`), `weapon1`, `weapon2`, `weapon3` (`Digit1`–`Digit3`), `bladeThrow` (środkowy przycisk myszy, `mouse: "1"`).
+
+### Zdarzenia dopisywane do `GameEvents` (F2-01)
+
+```ts
+damage_dealt: { /* …F1… */ statuses?: readonly StatusApplication[] };  // tylko gdy DamageInfo.statuses
+status_applied: { target: EntityId; status: string; stacks: number; durationS: number; source: EntityId | null };
+status_expired: { target: EntityId; status: string };
+focus: { worldScale: number; durationS: number };
+weapon_switched: { owner: EntityId; weapon: string; slot: number };
+blade_thrown: { owner: EntityId };
+blade_returned: { owner: EntityId };
+synergy_triggered: { synergy: string; user: EntityId };
+```

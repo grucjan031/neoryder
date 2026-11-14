@@ -4,7 +4,7 @@ Zadania w kolejności realizacji (numer = kolejność z uwzględnieniem zależno
 
 ## Stan (2026-11-14)
 
-Wszystkie 16 zadań F1 zrealizowane i scalone na `main` (testy jednostkowe + e2e, CI zielone). Następny krok: **bramka fazy** — playtest według `docs/playtest-F1.md`, scena `?scene=arena`.
+Wszystkie 16 zadań F1 zrealizowane i scalone na `main` (testy jednostkowe + e2e, CI zielone). **Bramka fazy zaliczona 2026-11-14** (playtest według `docs/playtest-F1.md`). Dalej: `docs/issues/F2/README.md`.
 
 ## Tabela zadań
 

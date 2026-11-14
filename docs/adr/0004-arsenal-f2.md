@@ -1,6 +1,6 @@
 # ADR 0004 — Architektura arsenału (F2)
 
-Status: **propozycja Architekta — do akceptacji razem z bramką F1** (F2 startuje dopiero po playteście F1)
+Status: **zaakceptowana 2026-11-14** (bramka F1 zaliczona w playteście człowieka). Kontrakty: `docs/api.md`, sekcja „Kontrakty F2”.
 Data: 2026-11-14
 
 F2 mnoży zawartość: 6 broni, 6–8 mocy, warianty ostrza, 5–6 archetypów wrogów, statusy, synergie. Zasada nadrzędna z `AGENTS.md`: **nowy wariant = nowy plik danych, nowe zachowanie = nowy kod tylko raz**. Poniższe decyzje ustalają, gdzie przebiega ta granica.
@@ -17,7 +17,7 @@ F2 mnoży zawartość: 6 broni, 6–8 mocy, warianty ostrza, 5–6 archetypów w
 | `beam`       | ciągły promień (raycast co krok), ciepło na sekundę | ciągły laser (`dps`, `heatPerS`, `rangeM`)    |
 | `lob`        | pocisk balistyczny + wybuch w promieniu             | granat EMP (`gravity`, `radiusM`, `statuses`) |
 
-Wspólne: przegrzanie (`ResourcePool`, jak blaster), moduły broni (F3/F4) jako `StatModifier` + tagi. **Ekwipunek:** `Loadout { blade, weapon, powers[2] }`; przełączanie broni klawiszami 1–3 tylko w poligonie/arenie wyboru, w runie — znalezione bronie (F3).
+Wspólne: przegrzanie (`ResourcePool`, jak blaster), moduły broni (F3/F4) jako `StatModifier` + tagi. **Ekwipunek:** `Loadout { blade, weapons[1..3], powers[1..2] }`; przełączanie broni klawiszami 1–3 tylko w poligonie/arenie wyboru, w runie — znalezione bronie (F3).
 
 ## 2. Moce: jeden interfejs i rejestr
 
