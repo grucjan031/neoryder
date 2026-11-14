@@ -206,3 +206,14 @@ mapowanie, cache, gradient, synchronizację, przebiegi i przywracanie stanu,
 przełączniki bloom/postFx, maskę emisyjną, impulsy obrażeń i Skupienia, siatkę
 podłogi i zwalnianie zasobów (`renderPostFx.test.ts`);
 test sceny obejmuje fallback, GLB, instancje i zwalnianie zasobów.
+
+## Dłonie FPP
+
+`HandRig` animuje przegubowe modele R/L pozami Euler XYZ z walidowanych danych
+`src/data/hands/handPoses.json`, względem orientacji spoczynkowych. Przypięcie
+jest oparte na odwrotności macierzy gniazda dłoni. `FppBlade` / `FppBlaster`
+rysują prawy chwyt oraz drugi chwyt bliźniaczych; `FppOffhand` obsługuje wolną
+lewą dłoń, podparcie na `support` broni i gest mocy z własnym magentowym materiałem.
+`FppMotion` dodaje opad zamiany, sway i bob wyłącznie w renderze. Strojenie:
+`tuning.hands` w lil-gui oraz stałe pozycji/kątów na górze plików FPP.
+Szczegóły i kontrola ręczna: [hands.md](hands.md#render-przegubowych-dłoni).

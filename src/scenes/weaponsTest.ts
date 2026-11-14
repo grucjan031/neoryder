@@ -27,6 +27,8 @@ import type { PlayerState } from '../player/playerController';
 import { getMaterial } from '../render/materials';
 import { createStyleLights } from '../render/lights';
 import { FppBlaster } from '../render/fppBlaster';
+import { FppMotion } from '../render/fppMotion';
+import { FppOffhand } from '../render/fppOffhand';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import type { Scene } from './index';
 
@@ -79,6 +81,8 @@ export class WeaponsTest implements Scene {
   private readonly hurtboxes = new Hurtboxes();
   private readonly root = new Group();
   private weaponView!: FppBlaster;
+  private handMotion!: FppMotion;
+  private offhandView!: FppOffhand;
   private playerId!: EntityId;
   private shownWeapon = '';
   private readonly beamOrigin = new Vector3();
@@ -257,6 +261,10 @@ export class WeaponsTest implements Scene {
     });
     void this.weaponView.load(typeof document !== 'undefined');
     this.root.add(this.weaponView.root);
+    this.handMotion = new FppMotion(ctx.tuning);
+    this.offhandView = new FppOffhand(ctx.bus, playerId, ctx.tuning);
+    void this.offhandView.load(typeof document !== 'undefined');
+    this.root.add(this.offhandView.root);
     if (ctx.camera) {
       this.cameraParent = ctx.camera.parent;
       this.root.add(ctx.camera);
@@ -419,7 +427,19 @@ export class WeaponsTest implements Scene {
     this.projectileRenderer.render(alpha);
     if (camera) {
       camera.updateMatrixWorld();
-      this.weaponView.place(camera.matrixWorld, frameDt);
+      const handMatrix = this.handMotion.place(
+        camera.matrixWorld,
+        frameDt,
+        Math.hypot(current.velocity.x, current.velocity.z),
+      );
+      this.weaponView.place(handMatrix, frameDt);
+      this.offhandView.place(
+        handMatrix,
+        frameDt,
+        'gun',
+        false,
+        this.weaponView.supportMatrix(),
+      );
     }
     this.weaponView.root.getWorldPosition(this.beamOrigin);
     this.beamRenderer.render(this.weapon.beam, this.beamOrigin);
@@ -477,6 +497,7 @@ export class WeaponsTest implements Scene {
     }
     this.world.free();
     this.weaponView.dispose();
+    this.offhandView.dispose();
     if (this.ctx.camera) {
       this.ctx.camera.removeFromParent();
       this.cameraParent?.add(this.ctx.camera);

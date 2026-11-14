@@ -1,7 +1,23 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
-  hands: { swapS: 0.24, swapBufferS: 0.4 },
+  hands: {
+    swapS: 0.24,
+    swapBufferS: 0.4,
+    /** Render dłoni: metry, radiany i sekundy czasu klatki; bez wpływu na symulację. */
+    swapDropM: 0.8,
+    swapAngle: -0.8,
+    castS: 0.35,
+    castOutFraction: 0.22,
+    castGlow: 3,
+    swayAmount: 0.35,
+    swayMax: 0.055,
+    swayReturn: 90,
+    bobAmount: 0.008,
+    bobFrequency: 1.8,
+    bobSpeed: 7,
+    bobReturn: 10,
+  },
   time: {
     hitstopLightMs: 40,
     hitstopHeavyMs: 80,

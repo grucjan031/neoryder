@@ -50,6 +50,8 @@ import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { FppBlade } from '../render/fppBlade';
+import { FppMotion } from '../render/fppMotion';
+import { FppOffhand } from '../render/fppOffhand';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
 import { palette } from '../render/palette';
@@ -148,6 +150,8 @@ export class MeleeTest implements Scene {
   private readonly dummies: Dummy[] = [];
   private readonly root = new Group();
   private readonly bladeModel = new FppBlade();
+  private handMotion!: FppMotion;
+  private offhandView!: FppOffhand;
   private readonly arcDebug = new Mesh(
     new BoxGeometry(1, 1, 1),
     new MeshBasicMaterial({ color: palette.cyan, wireframe: true }),
@@ -310,7 +314,15 @@ export class MeleeTest implements Scene {
     });
 
     this.arcDebug.visible = false;
-    this.root.add(this.bladeModel.root, this.arcDebug, this.lightningView.root);
+    this.handMotion = new FppMotion(ctx.tuning);
+    this.offhandView = new FppOffhand(ctx.bus, playerId, ctx.tuning);
+    await this.offhandView.load(this.loadModels);
+    this.root.add(
+      this.bladeModel.root,
+      this.arcDebug,
+      this.lightningView.root,
+      this.offhandView.root,
+    );
     this.world.step();
     this.registerCommands();
     this.off.push(
@@ -684,7 +696,19 @@ export class MeleeTest implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    this.bladeModel.place(camera.matrixWorld, this.blade.view());
+    const velocity = this.player.getState().velocity;
+    const handMatrix = this.handMotion.place(
+      camera.matrixWorld,
+      frameDt,
+      Math.hypot(velocity.x, velocity.z),
+    );
+    this.bladeModel.place(handMatrix, this.blade.view());
+    this.offhandView.place(
+      handMatrix,
+      frameDt,
+      'blade',
+      this.blade.definition.offhand,
+    );
   }
 
   query(name: string): unknown {
@@ -703,6 +727,7 @@ export class MeleeTest implements Scene {
     for (const off of this.off.splice(0)) off();
     this.blade.dispose();
     this.bladeModel.dispose();
+    this.offhandView.dispose();
     this.flyingBlade.dispose();
     this.statuses.dispose();
     this.lightningView.dispose();
