@@ -270,7 +270,7 @@ export class EnemyView {
     const lock = definition.aimLockS ?? 0;
     const locked =
       definition.aimTelegraphS !== undefined &&
-      b.stateTimeS >= definition.aimTelegraphS - lock;
+      b.stateTimeS + 1e-6 >= definition.aimTelegraphS - lock;
     const width = locked ? (definition.animation?.laserLockScale ?? 1) : 1;
     laser.position.copy(from).addScaledVector(dir, 0.5);
     laser.quaternion.setFromUnitVectors(up, dir.normalize());
@@ -356,7 +356,8 @@ export class EnemyView {
       rotate(
         'arm_upper_R',
         'x',
-        anim.swingAngle * Math.max(0, 1 - time / definition.recoveryS),
+        anim.swingAngle *
+          Math.max(0, 1 - time / Math.max(definition.recoveryS, 1e-6)),
       );
     } else if (b.state === 'stunned') rotate('pelvis', 'z', anim.stunAngle);
     for (const name of rifleman(definition.kind)

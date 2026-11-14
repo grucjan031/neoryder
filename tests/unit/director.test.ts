@@ -303,6 +303,7 @@ function arena(patch: Partial<DirectorConfig>) {
     bus,
     settings,
   );
+  let target = { id: player, position: { x: 0, y: 0.9, z: 0 } };
   const manager = new EnemyManager(
     { bus, rng: new Rng('director'), tuning: settings },
     {
@@ -311,7 +312,7 @@ function arena(patch: Partial<DirectorConfig>) {
       damage,
       hurtboxes,
       projectiles,
-      getTarget: () => ({ id: player, position: { x: 0, y: 0.9, z: 0 } }),
+      getTarget: () => target,
     },
     { director: config(patch) },
   );
@@ -328,7 +329,10 @@ function arena(patch: Partial<DirectorConfig>) {
     world.step();
     projectiles.step(SIM_DT);
   };
-  return { bus, damage, manager, step };
+  const moveTarget = (x: number, z: number) => {
+    target = { id: player, position: { x, y: 0.9, z } };
+  };
+  return { bus, damage, manager, step, moveTarget };
 }
 
 describe('EnemyDirector — wrogowie w Rapierze', () => {
@@ -417,6 +421,28 @@ describe('EnemyDirector — wrogowie w Rapierze', () => {
     for (let i = 0; i < 2; i++) step();
     expect(director?.snapshot().tokens.melee).toEqual([b.id]);
     damage.deal(b.id, { amount: 1e9, source: null, tags: [] });
+    expect(director?.snapshot().tokens.melee).toEqual([]);
+  });
+
+  it('gives the token back when the player runs out of reach and does not hold it during cooldown', () => {
+    const { manager, step, moveTarget } = arena({ attackTokens: 1 });
+    const a = manager.spawn('assaulter', { x: 0, y: 0, z: 3 });
+    for (let i = 0; i < 3; i++) step();
+    const director = manager.director;
+    expect(director?.snapshot().tokens.melee).toEqual([a.id]);
+    moveTarget(0, -25);
+    step();
+    expect(director?.snapshot().tokens.melee).toEqual([]);
+    // Wraca w zasięg: atak, po regeneracji (odnowienie > 0) bez tokenu.
+    moveTarget(0, 0);
+    let recovered = false;
+    for (let i = 0; i < 4 / SIM_DT; i++) {
+      step();
+      if (a.current.state === 'recovery') recovered = true;
+      if (recovered && a.current.state === 'chase') break;
+    }
+    expect(recovered).toBe(true);
+    expect(a.current.state).toBe('chase');
     expect(director?.snapshot().tokens.melee).toEqual([]);
   });
 });

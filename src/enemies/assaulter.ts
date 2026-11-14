@@ -236,8 +236,15 @@ export class Assaulter implements Enemy {
   private engage(distance: number, flank: number): boolean {
     const director = this.deps.director;
     if (!director) return true;
-    if (!this.token && distance > flank + this.definition.attackRange + epsilon)
+    // Gracz poza zasięgiem krążenia + ciosu albo cios się odnawia: token wraca do kolejki,
+    // wróg wraca do slotu (po ataku odstępuje, zamiast blokować token na odnowieniu).
+    if (
+      distance > flank + this.definition.attackRange + epsilon ||
+      this.cooldown > epsilon
+    ) {
+      this.releaseToken();
       return false;
+    }
     this.token = director.requestToken(this.id, 'melee');
     return this.token;
   }
