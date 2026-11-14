@@ -1,0 +1,23 @@
+{
+  "id": "overclockApex",
+  "name": "Nadbiegunowe Przetaktowanie",
+  "description": "Pełne odblokowanie limitów rdzenia bojowego potęguje wszystkie ścieżki walki i nagradza każde parowanie.",
+  "rarity": "legendary",
+  "tags": ["#melee", "#power", "#gun"],
+  "modifiers": [
+    { "stat": "damage", "type": "percent", "value": 0.32 },
+    { "stat": "maxHealth", "type": "flat", "value": 55 },
+    { "stat": "coolingRate", "type": "percent", "value": 0.25 },
+    { "stat": "energyRegen", "type": "percent", "value": 0.25 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "parry_success" },
+      "effects": [
+        { "kind": "add_energy", "amount": 18 },
+        { "kind": "cool_weapon", "amount": "full" }
+      ],
+      "cooldownS": 1
+    }
+  ]
+}

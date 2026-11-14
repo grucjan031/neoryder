@@ -1,0 +1,13 @@
+{
+  "id": "cryoVentsRare",
+  "name": "Radiator kriogeniczny Mk II",
+  "description": "Rozbudowany wymiennik ciepła powiększa pojemność cieplną i wzmacnia siłę ognia.",
+  "rarity": "rare",
+  "tags": ["#gun"],
+  "modifiers": [
+    { "stat": "heatCapacity", "type": "flat", "value": 30 },
+    { "stat": "coolingRate", "type": "percent", "value": 0.22 },
+    { "stat": "damage", "type": "percent", "value": 0.08 }
+  ],
+  "upgradesTo": "cryoVentsEpic"
+}

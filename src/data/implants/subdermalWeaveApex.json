@@ -1,0 +1,28 @@
+{
+  "id": "subdermalWeaveApex",
+  "name": "Pancerz reaktywny Aegis",
+  "description": "Ciężki egzosplot bojowy daje ogromny zapas zdrowia, redukuje obrażenia i zasila ciało przy zabójstwach wręcz.",
+  "rarity": "legendary",
+  "tags": ["#melee"],
+  "modifiers": [
+    { "stat": "maxHealth", "type": "flat", "value": 75 },
+    { "stat": "damage", "type": "percent", "value": 0.24 },
+    { "stat": "damageTaken", "type": "mult", "value": 0.78 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "enemy_killed", "tagsAny": ["#melee"] },
+      "effects": [
+        { "kind": "add_energy", "amount": 15 },
+        {
+          "kind": "stat_modifier_timed",
+          "stat": "moveSpeed",
+          "type": "percent",
+          "value": 0.2,
+          "durationS": 3
+        }
+      ],
+      "cooldownS": 1.5
+    }
+  ]
+}

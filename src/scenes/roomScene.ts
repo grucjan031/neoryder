@@ -42,7 +42,11 @@ import playerData from '../data/scenes/roomPlayer.json';
 import type { RunState, MapNode } from '../core/runTypes';
 import type { RoomDefinition } from '../world/roomSchema';
 import type { WavesDefinition } from '../world/waves';
-import type { ImplantDefinition } from '../progression/implantSchema';
+import {
+  implantDefinitions,
+  ImplantSystem,
+  type ImplantDefinition,
+} from '../progression/implants';
 import { cloneRoomModel } from './roomModels';
 import { statusDefinitions, StatusSystem } from '../combat/status';
 import { EnemyManager } from '../enemies/manager';
@@ -148,7 +152,9 @@ export class RoomScene implements Scene {
   private cleared = false;
   private disposed = false;
   private readonly node: MapNode;
-  private readonly implants: ImplantDefinition[];
+  private readonly implantDefs: ReadonlyMap<string, ImplantDefinition>;
+  private readonly initialImplantIds: string[];
+  private implantSystem!: ImplantSystem;
   private readonly loadModels: boolean;
   private readonly doors = new Map<
     string,
@@ -182,11 +188,12 @@ export class RoomScene implements Scene {
     if (!loadout) throw new Error(`Nieznany ekwipunek: ${run.loadoutId}`);
     this.loadout = loadout;
     this.loadModels = options.loadModels ?? true;
-    this.implants = [...new Set(run.implants)].map((id) => {
-      const definition = options.implantDefinitions?.get(id);
-      if (!definition) throw new Error(`Nieznany implant pokoju: ${id}`);
-      return definition;
-    });
+    this.implantDefs = options.implantDefinitions ?? implantDefinitions;
+    this.initialImplantIds = [...new Set(run.implants)];
+    for (const id of this.initialImplantIds) {
+      if (!this.implantDefs.has(id))
+        throw new Error(`Nieznany implant pokoju: ${id}`);
+    }
   }
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
@@ -376,7 +383,7 @@ export class RoomScene implements Scene {
     });
     this.synergies.setTags([
       ...this.loadout.tags,
-      ...this.implants.flatMap((implant) => implant.tags),
+      ...this.implantSystem.tags(),
     ]);
 
     this.director = new WaveDirector(
@@ -463,10 +470,27 @@ export class RoomScene implements Scene {
   }
 
   private applyImplants(): void {
-    for (const implant of this.implants)
-      for (const stats of [this.playerStats, this.player.stats])
-        for (const modifier of implant.modifiers)
-          stats.add({ ...modifier, source: `implant:${implant.id}` });
+    this.implantSystem = new ImplantSystem(
+      [this.playerStats, this.player.stats],
+      {
+        health: this.health,
+        bus: this.ctx.bus,
+        definitions: this.implantDefs,
+        onChange: () => {
+          if (!this.synergies) return;
+          this.synergies.setTags([
+            ...this.loadout.tags,
+            ...this.implantSystem.tags(),
+          ]);
+          this.ctx.bus.emit('health_changed', {
+            id: this.player.id,
+            current: this.health.current,
+            max: this.health.max,
+          });
+        },
+      },
+    );
+    this.implantSystem.set(this.initialImplantIds, { adjustHealth: false });
   }
 
   private spawnPosition(): Vec3 {
@@ -955,6 +979,19 @@ export class RoomScene implements Scene {
         });
       return `Nieśmiertelność: ${this.god ? 'włączona' : 'wyłączona'}`;
     });
+    register(
+      'implant',
+      `implant <id> — nałóż implant: ${[...this.implantDefs.keys()].join(', ')}`,
+      (args) => {
+        const id = args[0] ?? '';
+        const definition = this.implantDefs.get(id);
+        if (args.length !== 1 || !definition)
+          return `Podaj znany implant: ${[...this.implantDefs.keys()].join(', ')}`;
+        if (!this.implantSystem.add(id, 'reward'))
+          return `Implant już posiadany: ${id}`;
+        return `Dodano implant: ${definition.name} (${definition.id})`;
+      },
+    );
   }
 
   /** Stan początkowy dla HUD (zdrowie i ciepło emitują zdarzenia dopiero przy zmianie). */
@@ -985,6 +1022,10 @@ export class RoomScene implements Scene {
         return { ...this.player.getState().position };
       case 'playerHp':
         return this.health.current;
+      case 'playerMaxHp':
+        return this.health.max;
+      case 'implants':
+        return this.implantSystem.ids();
       case 'energy':
         return this.energy.current;
       case 'heat':

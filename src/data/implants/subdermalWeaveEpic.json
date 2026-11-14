@@ -1,0 +1,20 @@
+{
+  "id": "subdermalWeaveEpic",
+  "name": "Tytanowy splot podskórny",
+  "description": "Warstwowy pancerz podskórny wzmacnia ciosy wręcz i odzyskuje energię po obaleniu wroga ostrzem.",
+  "rarity": "epic",
+  "tags": ["#melee"],
+  "modifiers": [
+    { "stat": "maxHealth", "type": "flat", "value": 50 },
+    { "stat": "damage", "type": "percent", "value": 0.16 },
+    { "stat": "damageTaken", "type": "mult", "value": 0.85 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "enemy_killed", "tagsAny": ["#melee"] },
+      "effects": [{ "kind": "add_energy", "amount": 10 }],
+      "cooldownS": 1.5
+    }
+  ],
+  "upgradesTo": "subdermalWeaveApex"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "cryoVentsEpic",
+  "name": "Kriokomora zamkowa",
+  "description": "Układ ciekłego azotu błyskawicznie chłodzi komorę broni po każdym zabójstwie strzałem.",
+  "rarity": "epic",
+  "tags": ["#gun"],
+  "modifiers": [
+    { "stat": "heatCapacity", "type": "flat", "value": 45 },
+    { "stat": "coolingRate", "type": "percent", "value": 0.35 },
+    { "stat": "damage", "type": "percent", "value": 0.15 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "enemy_killed", "tagsAny": ["#gun"] },
+      "effects": [{ "kind": "cool_weapon", "amount": 25 }],
+      "cooldownS": 1.2
+    }
+  ],
+  "upgradesTo": "cryoVentsApex"
+}

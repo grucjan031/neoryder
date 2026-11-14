@@ -1,0 +1,23 @@
+{
+  "id": "overclockPlus",
+  "name": "Przetaktowanie rdzenia+",
+  "description": "Wysokowydajny rdzeń bojowy podnosi obrażenia i przeżywalność oraz chłodzi broń przy każdym parowaniu.",
+  "rarity": "epic",
+  "tags": ["#melee", "#power", "#gun"],
+  "modifiers": [
+    { "stat": "damage", "type": "percent", "value": 0.22 },
+    { "stat": "maxHealth", "type": "flat", "value": 35 },
+    { "stat": "coolingRate", "type": "percent", "value": 0.15 }
+  ],
+  "triggers": [
+    {
+      "when": { "event": "parry_success" },
+      "effects": [
+        { "kind": "add_energy", "amount": 12 },
+        { "kind": "cool_weapon", "amount": 20 }
+      ],
+      "cooldownS": 1.2
+    }
+  ],
+  "upgradesTo": "overclockApex"
+}

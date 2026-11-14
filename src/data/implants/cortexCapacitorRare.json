@@ -1,0 +1,13 @@
+{
+  "id": "cortexCapacitorRare",
+  "name": "Kondensator kory Mk II",
+  "description": "Podwójna matryca synaptyczna przyspiesza regenerację energii i wzmacnia siłę mocy.",
+  "rarity": "rare",
+  "tags": ["#power"],
+  "modifiers": [
+    { "stat": "maxEnergy", "type": "flat", "value": 35 },
+    { "stat": "energyRegen", "type": "percent", "value": 0.22 },
+    { "stat": "damage", "type": "percent", "value": 0.08 }
+  ],
+  "upgradesTo": "cortexCapacitorEpic"
+}
