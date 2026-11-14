@@ -41,7 +41,7 @@ moce, tagi z `#` i brak powtórzonych broni, mocy oraz id ekwipunków.
 | -------------------- | ------------------- | ---------------------------- | ------------------- | ----------------------------------- |
 | `classic`            | Klasyczny           | `blaster`                    | `push`              | —                                   |
 | `blade`              | Ostrze              | `pistol`                     | `push`              | `#build_blade`                      |
-| `resonance`          | Moc                 | `blaster`                    | `push`, `shockwave` | `#build_resonance`                  |
+| `resonance`          | Moc                 | `blaster`                    | `chain`, `push`     | `#build_resonance`                  |
 | `gunner`             | Strzelec            | `rifle`, `scatter`, `sniper` | `push`              | `#build_gunner`                     |
 | `bladeDancer`        | Tancerz ostrzy      | `pistol`                     | `push`, `shockwave` | `#build_blade`, `#build_resonance`  |
 | `resonancePistolero` | Pistolero Rezonansu | `pistol`, `scatter`          | `shockwave`, `push` | `#build_resonance`, `#build_gunner` |

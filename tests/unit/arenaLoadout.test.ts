@@ -164,7 +164,7 @@ it('switches only on presses, emits the new heat immediately and keeps heat per 
 });
 
 it('routes F/E to independent data powers, queues E in hitstop and resets equipment through debug', async () => {
-  const { scene, commands, bus } = await setup('resonance');
+  const { scene, commands, bus } = await setup('bladeDancer');
   const used = vi.fn();
   const denied = vi.fn();
   bus.on('power_used', used);
@@ -190,7 +190,7 @@ it('routes F/E to independent data powers, queues E in hitstop and resets equipm
     reason: 'cooldown',
   });
   expect(commands.execute('loadout missing')).toContain('Dostępne ekwipunki:');
-  expect(scene.query('loadout')).toBe('resonance');
+  expect(scene.query('loadout')).toBe('bladeDancer');
   scene.step(SIM_DT, firing);
   commands.execute('spawn assaulter 2');
   expect(commands.execute('loadout gunner')).toBe('Ekwipunek: Strzelec');

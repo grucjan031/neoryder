@@ -3,6 +3,6 @@
   "name": "Moc",
   "blade": "plasmaBlade",
   "weapons": ["blaster"],
-  "powers": ["push", "shockwave"],
+  "powers": ["chain", "push"],
   "tags": ["#build_resonance"]
 }

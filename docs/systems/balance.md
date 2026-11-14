@@ -28,19 +28,37 @@ naładowania, następnie puszcza; zawiera lekki cios rozpoczynający przytrzyman
 w obecnym `PlasmaBlade`. Półautomat zwalnia spust przez publiczne `cool(0)` podczas
 oczekiwania, dzięki czemu trafia w pierwszy krok dopuszczony przez cooldown.
 
-Ścieżki biorą wyposażenie z `blade`, `resonance`, `gunner`. Ostrze wybiera lepszy
-tryb, Strzelec najlepszą pojedynczą broń. Moc używa obu ofensywnych slotów,
-gdy są gotowe i starcza wspólnej energii. Runner sprawdza wszystkie stałe
-priorytety slotów i wybiera najniższy TTK osobno dla każdego wroga. Nie modeluje
-rotacji z celowym opóźnianiem gotowych mocy. Przeciążenie zwiększa otrzymywane
-obrażenia przez `Stats`; przy maksimum nakłada ogłuszenie. Wyładowanie omija
-nosiciela, więc w starciu z jednym celem nie dodaje obrażeń.
+## TTK paczki (miara bramki)
 
-Raport pokazuje oddzielnie otwartą przestrzeń i cel tuż przed ścianą (0 m,
-wall-slam rozliczany w następnym kroku). Brief nie rozstrzyga wariantu otoczenia;
-wybór wariantu bramki wymaga decyzji koordynatora. Każdy wariant ma własną medianę.
-Bramka sprawdza oba końce przedziału `[mediana / 2, mediana × 2]` bez zaokrąglania;
-każde ∞ oznacza niezaliczenie.
+`SimulationOptions.count` (domyślnie 1) każe zabić `count` wrogów po kolei;
+`PACK_SIZE = 5` to paczka bramki. Po śmierci celu natychmiast pojawia się
+następny, świeży, w tym samym miejscu (nowa encja, pełne HP, bez statusów i
+oczekujących wall-slamów poprzednika). Przechodzą dalej: ciepło i cooldown broni,
+odnowienia mocy, energia gracza z opóźnieniem regeneracji, energia za zabójstwo
+w zwarciu oraz stan ostrza. Statusy znikają z martwym celem (`StatusSystem`
+czyści je przy `enemy_killed`). Następca nie dostaje cięcia ostrza, które zabiło
+poprzednika (jedno cięcie = jeden cel), bo inaczej jedno cięcie czyściłoby paczkę.
+`SimulationResult.ttkS` to czas ostatniego zabójstwa (∞, gdy nie wszystkie
+padły), `killTimesS` to czasy kolejnych zabójstw.
+
+Uzasadnienie (decyzja koordynatora): pojedyncze TTK karze bronie zabijające jednym
+strzałem (1/60 s wobec 0,4 s ostrza), a na arenie liczy się tempo czyszczenia
+fali. Tabele pojedynczego TTK zostają w raporcie informacyjnie.
+
+Ścieżki biorą wyposażenie z `blade`, `resonance`, `gunner`. Ostrze wybiera lepszy
+tryb, Strzelec najlepszą pojedynczą broń. Moc używa ofensywnych slotów, gdy są
+gotowe i starcza wspólnej energii. Runner sprawdza wszystkie stałe priorytety
+slotów i wybiera najniższy czas osobno dla każdego wroga (osobno dla paczki i dla
+pojedynczego celu). Nie modeluje rotacji z celowym opóźnianiem gotowych mocy.
+Przeciążenie zwiększa otrzymywane obrażenia przez `Stats`; przy maksimum nakłada
+ogłuszenie. Wyładowanie omija nosiciela, więc w starciu z jednym celem nie dodaje
+obrażeń.
+
+Bramka: tylko wariant „otwarta przestrzeń”. Dla każdego wroga każda ścieżka ma
+mieć TTK paczki w `[mediana / 2, mediana × 2]` (oba końce bez zaokrąglania; ∞ to
+niezaliczenie). Wariant „cel przy ścianie” (0 m, wall-slam rozliczany w następnym
+kroku) zostaje w raporcie jako informacyjny: wall-slam to nagroda za grę
+pozycyjną, nie część bramki.
 
 ## Dane i rozszerzanie
 
@@ -54,11 +72,12 @@ każde ∞ oznacza niezaliczenie.
 - Nowa moc istniejącego rodzaju `cone` lub `chain`: rejestr gry dostarcza
   fabrykę i definicję, symulator automatycznie uwzględnia ofensywne dane.
   Moce bez obrażeń i rodzaje `focus`/`barrier` są pomijane. Inny rodzaj
-  dostępny w rejestrze daje ostrzeżenie; po implementacji jego mechaniki trzeba
-  dodać obsługę idealnego wejścia i zależności w `damagingPowerIds`/`simulate`.
-  Uwaga: obecny loader rejestru waliduje wszystkie pliki przed uruchomieniem
-  symulatora. Rodzaj spoza unii `powerSchema` przerwie import; pełne pomijanie
-  takich surowych plików wymaga zmiany kontraktu loadera poza zakresem F2-18.
+  dostępny w rejestrze (np. `grab`) daje ostrzeżenie; po implementacji jego
+  mechaniki trzeba dodać obsługę idealnego wejścia i zależności w
+  `damagingPowerIds`/`simulate`. Uwaga: obecny loader rejestru waliduje wszystkie
+  pliki przed uruchomieniem symulatora. Rodzaj spoza unii `powerSchema` przerwie
+  import; pełne pomijanie takich surowych plików wymaga zmiany kontraktu loadera
+  poza zakresem F2-18.
 - Statusy obsługuje rzeczywisty `StatusSystem` i jego loader; nowy status
   istniejącego mechanizmu nie wymaga osobnego wzoru DPS.
 
@@ -66,11 +85,15 @@ każde ∞ oznacza niezaliczenie.
 
 `tests/unit/balance.test.ts` używa tej samej funkcji co CLI. Sprawdza ręcznie
 wyliczony przypadek, przegrzanie, półautomat, cooldown, wspólną energię,
-regenerację, podpalenie, przeciążenie, mnożnik celu, limit, oba progi bramki,
-deterministyczność oraz aktualność raportu (z pominięciem różnicy daty).
-Przy obecnych danych test bramki ma status `todo` z jawną przyczyną; po
-zaliczeniu obu wariantów automatycznie staje się aktywną asercją. Po wyborze
-jednego wariantu przez koordynatora należy dopasować tę politykę.
+regenerację, podpalenie, przeciążenie, mnożnik celu, limit i oba progi bramki,
+deterministyczność oraz aktualność raportu (z pominięciem różnicy daty). Testy
+paczki: ręcznie wyliczone zabójstwa w krokach 1/31/61, przenoszenie ciepła
+(paczka 2×20 HP = jeden cel 40 HP), przenoszenie energii i odnowień mocy,
+znikanie statusów z martwym celem, osobne cięcie ostrza dla następcy oraz
+spójność ścieżek z wynikami paczki. Testy mocy pinują wartości przez
+`withPowers`, więc strojenie danych nie łamie ręcznych wyliczeń. Asercja bramki
+(otwarta przestrzeń, paczka) jest aktywna, gdy bramka przechodzi; w przeciwnym razie
+jest `todo` z listą wrogów poza przedziałem.
 
 Nie dodano nowej mechaniki gry ani sceny. Przegląd w 30 sekund: `npm run balance`,
 tabela ścieżek w `docs/balance.md`; do ręcznego porównania feel istnieją
@@ -79,33 +102,64 @@ Zwrócić uwagę na jednorazowy burst Strzelca, koszt kolejnych użyć Mocy i r�
 walki przy ścianie. Akceptacja bramki fazy i review Architekta pozostają osobnymi
 decyzjami człowieka.
 
-## Propozycja danych do decyzji koordynatora (2026-11-14)
+## Decyzje koordynatora (2026-11-14)
 
-Próba wyłącznie w pamięci procesu, dla otwartej przestrzeni: pięć zmian pól
-wystarcza do zaliczenia bramki. Nie zastosowano ich do danych gry. Nie jest to
-dowód globalnie minimalnej liczby zmian ani ocena feel.
+Rozstrzygnięte (stare propozycje z pierwszej wersji symulatora — usunięcie
+`rifle`-only ze Strzelca oraz `push.cost = 1` — nie są stosowane):
 
-| Plik w src/data       | Pole      | Obecnie                | Propozycja | Powód                                                                        |
-| --------------------- | --------- | ---------------------- | ---------- | ---------------------------------------------------------------------------- |
-| loadouts/gunner.json  | weapons   | rifle, scatter, sniper | rifle      | Usunięcie jednorazowych zabójstw z pomiaru ścieżki, bez zmiany danych broni. |
-| powers/push.json      | cost      | 25                     | 1          | Ograniczenie wielosekundowych przerw po wyczerpaniu energii.                 |
-| powers/push.json      | cooldownS | 0.6                    | 0.1        | Tempo obrażeń bliższe combo ostrza.                                          |
-| powers/shockwave.json | cost      | 40                     | 25         | Oba sloty dostępne w dłuższym starciu.                                       |
-| powers/shockwave.json | damage    | 10                     | 7          | Pierwsze aktywacje dają razem 17, poniżej 18 HP drona.                       |
+1. Bramka liczona tylko dla „otwartej przestrzeni”; ściana informacyjnie.
+2. Miara bramki to TTK paczki 5 wrogów (sekcja wyżej); reguła `[mediana / 2, mediana × 2]` bez zmian.
+3. Ekwipunek ścieżki Moc (`src/data/loadouts/resonance.json`): moce `["chain", "push"]`
+   (było `["push", "shockwave"]`) — Błyskawica jako główne obrażenia, Pchnięcie jako
+   kontrola. Opis na ekranie buildu (`src/data/ui/buildSelect.pl.json`): „Rezonans zamiast
+   lufy: Błyskawica przeskakuje między wrogami, Pchnięcie rozbija grupy i miażdży o
+   ściany.” Hybrydy `bladeDancer` i `resonancePistolero` nadal używają Pchnięcia i Fali
+   uderzeniowej (bez zmian). Ekwipunek Strzelca bez zmian.
+4. Dozwolone strojenie (tylko te pola): `chain` (`damage`, `cost`, `cooldownS`), `push`
+   (`damage`, `cost`, `cooldownS`), `shockwave` (`damage`, `cost`), `scatter` (obrażenia,
+   śruty, tempo), `sniper` (obrażenia, tempo). Ograniczenia feel: `push.cost` ≥ 10,
+   `push.cooldownS` ≥ 0,35, `chain.cooldownS` ≥ 0,4, rozpraszacz zabija Szturmowca z
+   bliska w ≤ 2 strzałach (śruty × obrażenia ≥ 30), snajperka zabija Strzelca jednym
+   strzałem (obrażenia ≥ 45). Bez zmian: dane ostrza, HP wrogów, `tuning.ts`.
+5. Jeśli w tych granicach bramka nie przechodzi — nie łamać ograniczeń, opisać opcje.
 
-| Wróg      | Ostrze (s) | Moc (s) | Strzelec (s) |
-| --------- | ---------: | ------: | -----------: |
-| assaulter |      0.417 |   0.600 |        0.417 |
-| drone     |      0.083 |   0.133 |        0.117 |
-| executor  |      1.583 |   2.350 |        4.617 |
-| gunner    |      0.250 |   0.367 |        0.317 |
-| shielder  |      0.417 |   0.950 |        0.717 |
-| sniper    |      0.250 |   0.250 |        0.217 |
+### Wynik po zmianie ekwipunku (dane mocy bez zmian)
 
-W tej próbie wszystkie sześć bramek przechodzi, stosunki do mediany mieszczą się
-w 0.581–1.965. Alternatywa zachowująca trzy bronie w ekwipunku: zamiast zmiany
-`loadouts/gunner.json` zmniejszyć `scatter.damage` z 10 do 2 i `sniper.damage`
-z 80 do 7 (łącznie sześć pól z korektami mocy powyżej). Próba daje te same TTK,
-bo wygrywa karabin; oznacza duże osłabienie pozostałych broni. Obie propozycje
-silnie zmieniają feel i nie zaliczają wariantu przy ścianie. Koordynator powinien
-wybrać otoczenie pomiaru i kierunek strojenia przed zastosowaniem zmian.
+Bramka NIEZALICZONA, 6/6 wrogów poza przedziałem. Ścieżka Mocy (chain 18 / 30 energii /
+1,2 s, Pchnięcie 10 / 25 / 0,6 s) potrzebuje na paczkę 5 wrogów: assaulter 77,8 s,
+drone 17,9 s, executor ∞, gunner 62,8 s, shielder ∞, sniper 47,8 s przy medianach
+0,9–10 s. Ostrze i Strzelec mieszczą się w swoich przedziałach (np. assaulter 3,08 s
+i 2,68 s). Dane mocy, broni i ostrza nie zostały zmienione, bo bramka wymaga zmian
+o skali, której nie rozstrzyga brief (poniżej).
+
+**Dlaczego tak daleko.** Chain zadaje 15 DPS na pojedynczym celu, ostrze ok. 100 DPS,
+a pula energii to 100 z regeneracją 25/s dopiero po 2 s bez wydatku
+(`tuning.powers.energyRegenDelayS`); po opróżnieniu puli każde użycie kosztuje
+~2 s opóźnienia. Paczka 5 Egzekutorów to 1100 HP. Samo skrócenie opóźnienia regeneracji
+(0,5 s lub 0 s, poza dozwolonymi polami) nie wystarcza: Egzekutor 102 s przy 0 s.
+
+**Co odstaje w granicach strojenia.** Przy `chain.cost` ≥ 10 i `chain.damage` ≤ 45
+(np. chain 45 / 10 / 0,4 s, Pchnięcie 25 / 10 / 0,6 s, snajperka 0,66 Hz, rozpraszacz
+6 obrażeń na śrut, 1 Hz) poza przedziałem zostaje tylko Egzekutor: ścieżka Mocy 38,1 s
+przy medianie 13,7 s (2,79×). Bez spowolnienia Strzelca odstaje też Tarczownik.
+Zaliczenie wymaga `chain.damage` ≥ 60 przy koszcie ≥ 10 (z wolniejszą snajperką),
+`chain.damage` ≥ 100 przy koszcie 10 (bez zmian Strzelca) albo kosztu `chain` ≤ 5.
+
+### Opcje (każda sprawdzona pełnym `npm run balance`-owym przebiegiem, otwarta przestrzeń, paczka ×5)
+
+Wszystkie spełniają ograniczenia z punktu 4. Żadna nie jest zastosowana — wybór
+liczb to decyzja projektowa (feel Mocy), nie symulatora.
+
+| Opcja | Zmiany pól                                                                                                           | Najgorszy iloraz do mediany                 | Uwagi                                                                                                                 |
+| ----- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| A     | `chain`: damage 100, cost 10, cooldownS 0,6; `push`: damage 18                                                       | 1,44 (executor: Moc 14,4 s, mediana 10,0 s) | Strzelec bez zmian; Błyskawica zabija jednym użyciem wszystko poza Egzekutorem — duży skok obrażeń.                   |
+| B     | `chain`: damage 60, cost 10, cooldownS 0,4; `push`: damage 35, cost 10; `sniper`: fireRateHz 0,8 (odnowienie 1,25 s) | 1,94 (executor: Moc 21,3 s, mediana 11,0 s) | Najmniejsze skoki obrażeń; margines przy Egzekutorze mały; osłabia snajperkę (nadal zabija Strzelca jednym strzałem). |
+| C     | `chain`: damage 36, cost 2, cooldownS 0,4; `push`: damage 35, cost 10                                                | 1,70 (Strzelec vs mediana snajpera)         | Dane tylko `chain`/`push`, ale energia przestaje ograniczać Błyskawicę.                                               |
+
+Poza dozwolonymi polami (do decyzji koordynatora, jeśli żadna opcja nie jest
+akceptowalna): zmiana HP Egzekutora lub reguły energii (pula, opóźnienie regeneracji).
+Same zmiany `tuning.ts` bez wzrostu obrażeń Mocy nie wystarczają (patrz wyżej).
+Po wyborze opcji wystarczy zmienić wskazane pola, uruchomić `npm run balance` i
+zatwierdzić `docs/balance.md`; asercja bramki w `tests/unit/balance.test.ts` staje
+się wtedy aktywna automatycznie. Opisy w `docs/systems/powers.md` i
+`docs/systems/weapons.md` należy zaktualizować razem ze zmianą liczb.

@@ -167,7 +167,7 @@ describe('Hud', () => {
   });
 
   it('counts down both data cooldowns from power_cooldown, freezes in hitstop and flashes the denied slot', () => {
-    hud.setLoadout(loadoutDefinitions.get('resonance')!);
+    hud.setLoadout({ weapons: [], powers: ['push', 'shockwave'] });
     const slots = root.querySelectorAll<HTMLElement>('.hud__power');
     expect(slots[0]?.querySelector('kbd')?.textContent).toBe('F');
     expect(slots[1]?.querySelector('kbd')?.textContent).toBe('E');
@@ -250,7 +250,7 @@ describe('Hud', () => {
   });
 
   it('resets cooldowns and the death dialog with new loadout data and disposes countdown events', () => {
-    hud.setLoadout(loadoutDefinitions.get('resonance')!);
+    hud.setLoadout({ weapons: [], powers: ['push', 'shockwave'] });
     bus.emit('power_cooldown', { user: 1, power: 'shockwave', cooldownS: 1.5 });
     bus.emit('player_died', { id: 1 });
     hud.setLoadout(loadoutDefinitions.get('blade')!);
