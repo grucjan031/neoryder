@@ -27,5 +27,35 @@
   "credits": "Kredyty",
   "layer": "Warstwa",
   "kills": "Zabójstwa",
-  "time": "Czas"
+  "time": "Czas",
+  "map": {
+    "legend": "Typy pokoi",
+    "current": "Bieżący",
+    "visited": "Odwiedzony",
+    "available": "Dostępny",
+    "locked": "Niedostępny",
+    "seed": "Seed",
+    "symbols": {
+      "combat": "⚔",
+      "elite": "◆",
+      "shop": "¤",
+      "rest": "+",
+      "puzzle": "?",
+      "boss": "⬟"
+    }
+  },
+  "mainMenu": {
+    "title": "NEORYDER",
+    "subtitle": "Wybierz swoją ścieżkę przez sektor.",
+    "newRun": "Nowy run",
+    "continue": "Kontynuuj",
+    "arena": "Arena / poligon",
+    "seed": "Seed (opcjonalny)",
+    "seedPlaceholder": "Puste pole — nowy seed",
+    "loading": "Odczytywanie zapisu…",
+    "noSave": "Brak zapisanego runu",
+    "saveError": "Nie można odczytać zapisu.",
+    "back": "Wróć",
+    "debug": "Sceny debug"
+  }
 }

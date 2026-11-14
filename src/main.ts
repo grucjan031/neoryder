@@ -11,6 +11,7 @@ import { scenes } from './scenes';
 import { defaultCommands as commands } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
 import { createSceneMenu } from './ui/sceneMenu';
+import { MainMenu } from './ui/mainMenu';
 import { AudioSystem } from './audio/audioSystem';
 import { loadSfx } from './audio/sfxSchema';
 import sfxData from './data/audio/sfx.json';
@@ -23,9 +24,16 @@ async function main(): Promise<void> {
   if (!app) throw new Error('Brak elementu aplikacji.');
   const params = new URLSearchParams(location.search);
   const requested = params.get('scene');
+  const debug = import.meta.env.DEV || params.get('debug') === '1';
   if (requested === null) {
-    // Bez ?scene= — menu startowe zamiast sceny technicznej.
-    createSceneMenu(app, Object.keys(scenes), params);
+    if (debug) createSceneMenu(app, Object.keys(scenes), params);
+    else {
+      const menu = new MainMenu({ root: app, params });
+      const dispose = (): void => menu.dispose();
+      window.addEventListener('pagehide', dispose, { once: true });
+      import.meta.hot?.dispose(dispose);
+      await menu.ready;
+    }
     return;
   }
   const sceneId = requested;
@@ -37,7 +45,6 @@ async function main(): Promise<void> {
     app.append(message);
     return;
   }
-  const debug = import.meta.env.DEV || params.get('debug') === '1';
   const seed =
     params.get('seed') ??
     Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>

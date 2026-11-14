@@ -1,3 +1,5 @@
+import 'fake-indexeddb/auto';
+import { createIndexedDbSaveStore } from '../../src/core/save';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../../src/core/context';
@@ -437,4 +439,38 @@ it('clearRun czeka na zaległy saveRun, więc zapis nie odżywa po końcu runu',
   await scene.whenReady();
   expect(save.state).toBeNull();
   expect(save.clears).toBe(1);
+});
+
+it('domyślny SaveStore v2 zapisuje mapę, wznawia pełen stan i czyści po run_ended', async () => {
+  const store = createIndexedDbSaveStore();
+  await store.clearRun();
+  const first = await setup({ save: undefined });
+  first.screens.actions.selectNode(first.screens.view.nodes[0]!.id);
+  await first.scene.whenReady();
+  first.commands.execute('run clear');
+  await first.scene.whenReady();
+  first.commands.execute('credits 23');
+  first.bus.emit('implant_acquired', {
+    id: 'test-save',
+    rarity: 'common',
+    source: 'reward',
+  });
+  first.screens.actions.next();
+  await first.scene.whenReady();
+  const saved = await store.loadRun();
+  expect(saved).toMatchObject({
+    saveVersion: 2,
+    run: { credits: 23, implants: ['test-save'] },
+  });
+  expect(saved!.run.currentNodeId).not.toBeNull();
+  first.scene.dispose();
+  const second = await setup({
+    save: undefined,
+    params: new URLSearchParams('continue=1'),
+  });
+  expect(second.scene.query('runState')).toEqual(saved!.run);
+  expect(second.scene.query('screen')).toBe('map');
+  second.commands.execute('run end lose');
+  await second.scene.whenReady();
+  expect(await store.loadRun()).toBeNull();
 });

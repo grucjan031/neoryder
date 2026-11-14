@@ -1178,9 +1178,22 @@ Fabryka dostaje definicję pokoju, kopię RunState i WavesDefinition.
 `dispose()`; view zawiera ekran, kopię stanu, dostępne węzły, podsumowanie i stan ładowania.
 Akcje: `selectNode(id)`, `next()`, `menu()`. `RunSavePort` udostępnia asynchroniczne
 `loadRun(): Promise<RunState | null>`, `saveRun(state): Promise<void>`, `clearRun(): Promise<void>`.
-Domyślny port jest no-op do podpięcia zapisu F3-06. Operacje zapisu są kolejkowane.
+Domyślny port opakowuje IndexedDB SaveStore v2 przez `createRunSavePort(store?)` z `src/ui/runSave.ts`. Operacje zapisu są kolejkowane.
 `RunScene.whenReady()` czeka na ładowanie pokoju i kolejkę zapisu (przydatne w testach).
 Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,
 `loading`, `runError`, `saveError`; pozostałe zapytania są delegowane do pokoju.
 Przejścia po `room_cleared` / `run_ended` następują po zakończeniu stosu zdarzenia,
 bez zwalniania świata podczas kroku symulacji.
+
+### Menu i mapa (F3-13)
+
+`src/ui/mainMenu.ts`: `MainMenu({ root, save?, navigate?, params? })`,
+`ready: Promise<void>` (odczyt dostępności kontynuacji), `dispose()`.
+Menu używa SaveStore; przejścia prowadzą przez URL.
+`src/ui/mapScreen.ts`: `MapScreen(parent)`, `show(state, onSelect)`, `hide()`,
+`dispose()`. Dostępność wynika wyłącznie z `currentNodeId.next` (na starcie
+pierwsza warstwa). UI przekazuje id do istniejącej akcji RunScene; nie zmienia stanu.
+`createRunSavePort(store?: SaveStore): RunSavePort` opakowuje pełny RunState
+w `{ saveVersion: SAVE_VERSION, seed, startedAt: startedAtMs, run }`.
+Po udanym zapisie mapy RunScene zastępuje URL przez `continue=1`, aby
+odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.

@@ -1,0 +1,43 @@
+.main-menu {
+  box-sizing: border-box;
+  width: min(540px, 100%);
+  margin: 8vh auto;
+  padding: 32px;
+  color: #111;
+  background: #fff;
+  border-top: 4px solid #00bcd4;
+}
+.main-menu h1 {
+  letter-spacing: 0.18em;
+}
+body:has(.main-menu) {
+  overflow: auto;
+}
+.main-menu > button,
+.main-menu input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin: 12px 0;
+  font: inherit;
+  border: 2px solid #111;
+}
+.main-menu > button {
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+.main-menu > button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.main-menu button:focus-visible,
+.main-menu input:focus-visible {
+  outline: 3px solid #00bcd4;
+  outline-offset: 3px;
+}
+/* RunState przechowuje ekwipunek; warianty ostrza pozostają wyborem poligonu. */
+.main-menu .build-select__blades {
+  display: none;
+}

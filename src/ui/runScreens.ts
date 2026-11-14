@@ -3,6 +3,7 @@ import type { RunScreen } from '../world/run';
 import { z } from 'zod';
 import textData from '../data/ui/run.pl.json';
 import './runScreens.css';
+import { MapScreen } from './mapScreen';
 
 const text = z
   .object({
@@ -59,14 +60,16 @@ export interface RunScreens {
   dispose(): void;
 }
 
-/** Tymczasowe ekrany do zastąpienia przez UI F3-13/14. */
+/** Mapa sektora i ekrany przejść runu (pozostałe nakładki: F3-14). */
 export class HtmlRunScreens implements RunScreens {
   private readonly root = document.createElement('section');
   private readonly panel = document.createElement('div');
   private buttons: HTMLButtonElement[] = [];
+  private readonly map: MapScreen;
   private readonly onKey = (event: KeyboardEvent): void => {
     if (
       this.root.hidden ||
+      this.root.dataset.screen === 'map' ||
       event.repeat ||
       event.ctrlKey ||
       event.altKey ||
@@ -98,6 +101,7 @@ export class HtmlRunScreens implements RunScreens {
     this.root.setAttribute('aria-label', 'Run');
     this.panel.className = 'run-screen__panel';
     this.root.append(this.panel);
+    this.map = new MapScreen(this.panel);
     parent.append(this.root);
     window.addEventListener('keydown', this.onKey);
   }
@@ -106,6 +110,7 @@ export class HtmlRunScreens implements RunScreens {
     this.root.hidden = false;
     this.root.dataset.screen = view.screen;
     this.buttons = [];
+    this.map.hide();
     this.panel.replaceChildren();
     const heading = document.createElement('h1');
     heading.textContent = text.titles[view.screen];
@@ -120,15 +125,8 @@ export class HtmlRunScreens implements RunScreens {
     } else if (view.busy) {
       this.line(text.loading);
     } else if (view.screen === 'map') {
-      this.line(`${view.state.sectorId} · seed: ${view.state.seed}`);
-      view.nodes.forEach((node, index) => {
-        const button = this.button(
-          `${index + 1}. ${node.id} — ${text.types[node.type]}`,
-          () => actions.selectNode(node.id),
-        );
-        button.dataset.nodeId = node.id;
-      });
-      this.line(text.keys);
+      this.panel.append(this.map.root);
+      this.map.show(view.state, actions.selectNode);
     } else if (view.screen === 'summary') {
       const summary = view.summary;
       if (summary) {
@@ -161,12 +159,14 @@ export class HtmlRunScreens implements RunScreens {
   }
 
   hide(): void {
+    this.map.hide();
     this.root.hidden = true;
     this.buttons = [];
   }
 
   dispose(): void {
     window.removeEventListener('keydown', this.onKey);
+    this.map.dispose();
     this.root.remove();
     this.buttons = [];
   }
