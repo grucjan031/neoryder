@@ -1192,6 +1192,17 @@ body:has(.hud) .hint {
   background: var(--hud-danger);
   transition: width 0.15s linear;
 }
+.run-hud__boss-shield {
+  width: 100%;
+  height: 4px;
+  background: var(--hud-plate);
+}
+.run-hud__boss-shield-fill {
+  height: 100%;
+  width: calc(var(--p, 0) * 100%);
+  background: var(--hud-energy);
+  transition: width 0.15s linear;
+}
 .run-hud__boss-ticks {
   position: absolute;
   inset: 0;

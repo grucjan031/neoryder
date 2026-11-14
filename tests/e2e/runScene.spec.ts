@@ -1,6 +1,29 @@
 import { expect, test } from '@playwright/test';
 import { waitSimSteps } from './helpers';
 
+test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
+  await page.goto('/?scene=run&seed=resume-check&debug=1');
+  const query = (name: string) =>
+    page.evaluate((key) => window.__neoryder?.query(key), name);
+  await expect.poll(() => query('screen')).toBe('map');
+  await page.locator('.run-screen [data-node-id]').first().click();
+  await expect.poll(() => query('loading')).toBe(false);
+  await page.evaluate(() => window.__neoryder?.command('run clear'));
+  await expect.poll(() => query('screen')).toBe('reward');
+  await page.keyboard.press('Digit1');
+  await expect.poll(() => query('screen')).toBe('map');
+  const saved = await query('runState');
+  await page.goto('/?scene=run&continue=1&debug=1');
+  await expect.poll(() => query('screen')).toBe('map');
+  // Czas runu płynie dalej na mapie po wczytaniu — porównujemy resztę stanu.
+  const { elapsedS: savedS, ...savedRest } = saved as { elapsedS: number };
+  const { elapsedS, ...rest } = (await query('runState')) as {
+    elapsedS: number;
+  };
+  expect(rest).toEqual(savedRest);
+  expect(elapsedS).toBeGreaterThanOrEqual(savedS);
+});
+
 test('run: wybór węzła, wejście do pokoju, run clear, wybór implantu i powrót na mapę', async ({
   page,
 }) => {

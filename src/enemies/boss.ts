@@ -139,6 +139,7 @@ export class Boss implements Enemy {
       id: this.id,
       name: this.data.name,
       maxHealth: this.health.max,
+      phaseThresholds: this.data.phases.slice(1).map((phase) => phase.hpThreshold),
     });
   }
 
@@ -302,6 +303,7 @@ export class Boss implements Enemy {
     this.shieldHp = pattern.durability;
     this.shieldTimeS = pattern.durationS;
     this.current.shieldUp = true;
+    this.emitShield();
   }
 
   /** Tarcza zeruje obrażenia; wytrzymałość tracą tylko #power i odbite pociski bossa. */
@@ -311,6 +313,7 @@ export class Boss implements Enemy {
     if (this.shieldHp <= 0 || info.tags.includes(DEBUG_TAG)) return 1;
     if (info.tags.includes(POWER_TAG) || reflected) {
       this.shieldHp = Math.max(0, this.shieldHp - info.amount);
+      this.emitShield();
       if (this.shieldHp <= 0) this.breakShield();
     }
     return 0;
@@ -345,6 +348,7 @@ export class Boss implements Enemy {
 
   /** Zdejmuje tarczę, ogłuszenie i okno zwiększonych obrażeń. */
   private resetShield(): void {
+    const wasActive = this.shieldHp > 0;
     this.shieldHp = 0;
     this.shieldTimeS = 0;
     this.shieldPattern = null;
@@ -352,6 +356,15 @@ export class Boss implements Enemy {
     this.vulnerableS = 0;
     this.stats.removeBySource(VULNERABLE_SOURCE);
     this.current.shieldUp = false;
+    if (wasActive) this.emitShield();
+  }
+
+  private emitShield(): void {
+    this.ctx.bus.emit('boss_shield', {
+      id: this.id,
+      current: this.shieldHp,
+      max: this.shieldPattern?.durability ?? 0,
+    });
   }
 
   private tickShield(dt: number): void {
@@ -361,6 +374,7 @@ export class Boss implements Enemy {
         this.shieldHp = 0;
         this.shieldPattern = null;
         this.current.shieldUp = false;
+        this.emitShield();
       }
     }
     if (this.vulnerableS > 0) {

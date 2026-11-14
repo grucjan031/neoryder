@@ -988,8 +988,9 @@ Scena `map-test` udostępnia tekst mapy przez komendę `map` i graf przez `query
 | `currency_changed` | `{ currency: 'credits'; amount: number; delta: number }`                  | `RunManager`    |
 | `shop_purchase`    | `{ item: string; kind: 'implant' \| 'heal'; price: number }`              | shop            |
 | `rest_used`        | `{ choice: 'heal' \| 'upgrade'; implant: string \| null }`                | rest            |
-| `boss_spawned`     | `{ id: EntityId; name: string; maxHealth: number }`                       | `Boss`          |
+| `boss_spawned`     | `{ id: EntityId; name: string; maxHealth: number; phaseThresholds: number[] }`                       | `Boss`          |
 | `boss_phase`       | `{ id: EntityId; phase: number; phases: number }`                         | `Boss`          |
+| `boss_shield`      | `{ id: EntityId; current: number; max: number }` (0 = brak tarczy)        | `Boss`          |
 | `run_ended`        | `{ outcome: 'victory' \| 'death'; summary: RunSummary }`                  | `RunManager`    |
 
 ```ts
@@ -1002,8 +1003,9 @@ implant_acquired: { id: string; rarity: Rarity; source: 'reward' | 'shop' | 'upg
 currency_changed: { currency: 'credits'; amount: number; delta: number };
 shop_purchase: { item: string; kind: 'implant' | 'heal'; price: number };
 rest_used: { choice: 'heal' | 'upgrade'; implant: string | null };
-boss_spawned: { id: EntityId; name: string; maxHealth: number };
+boss_spawned: { id: EntityId; name: string; maxHealth: number; phaseThresholds: number[] };
 boss_phase: { id: EntityId; phase: number; phases: number };
+boss_shield: { id: EntityId; current: number; max: number };
 run_ended: { outcome: 'victory' | 'death'; summary: RunSummary };
 ```
 

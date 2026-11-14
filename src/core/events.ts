@@ -119,8 +119,9 @@ export interface GameEvents {
   currency_changed: { currency: 'credits'; amount: number; delta: number };
   shop_purchase: { item: string; kind: 'implant' | 'heal'; price: number };
   rest_used: { choice: 'heal' | 'upgrade'; implant: string | null };
-  boss_spawned: { id: EntityId; name: string; maxHealth: number };
+  boss_spawned: { id: EntityId; name: string; maxHealth: number; phaseThresholds: number[] };
   boss_phase: { id: EntityId; phase: number; phases: number };
+  boss_shield: { id: EntityId; current: number; max: number };
   run_ended: { outcome: 'victory' | 'death'; summary: RunSummary };
 }
 

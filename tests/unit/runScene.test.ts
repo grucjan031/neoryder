@@ -182,6 +182,21 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+it('dwa przebiegi z tym samym seedem dają identyczny runLog', async () => {
+  const play = async () => {
+    const { scene, screens, rooms } = await setup({
+      params: new URLSearchParams('seed=stable-run-log&loadout=classic'),
+    });
+    const node = screens.view.nodes[0]!;
+    screens.actions.selectNode(node.id);
+    await scene.whenReady();
+    rooms[0]!.clear();
+    await scene.whenReady();
+    return scene.query('runLog');
+  };
+  expect(await play()).toEqual(await play());
+});
+
 it('prowadzi mapa → pokój → nagroda → mapa, zapisuje tylko mapę i przenosi zasoby', async () => {
   const bus = new EventBus();
   const started = vi.fn();
