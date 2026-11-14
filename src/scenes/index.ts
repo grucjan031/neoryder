@@ -13,6 +13,7 @@ import { WeaponsTest } from './weaponsTest';
 import { AiTest, createStatusTest, createBarrierTest } from './aiTest';
 import { DebrisTest } from './debrisTest';
 import { GrabTest } from './grabTest';
+import { MapTest } from './mapTest';
 
 export interface Scene {
   readonly id: string;
@@ -26,6 +27,7 @@ export interface Scene {
 }
 export type SceneFactory = () => Scene;
 export const scenes: Record<string, SceneFactory> = {
+  'map-test': () => new MapTest(),
   sandbox: () => new Sandbox(),
   'player-test': () => new PlayerTest(),
   'damage-test': () => new DamageTest(),

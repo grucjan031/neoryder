@@ -937,6 +937,15 @@ export interface RoomPlanner {
 }
 ```
 
+### Generator mapy (F3-02) — `src/world/sectorMap.ts`
+
+`generateSectorMap(def: SectorDefinition, seed: string): SectorMap` waliduje dane przez zod,
+używa wyłącznie `new Rng(seed).fork('map')` i zwraca serializowalny graf z id `L1N1` itd.
+Nie zmienia definicji wejściowej. Gwarancje liczą węzły w domkniętym przedziale warstw;
+limit elit dotyczy każdej ścieżki. Sprzeczne reguły zgłaszają błąd zamiast zwracać niepoprawną mapę.
+`kuroganeSector` z `src/world/sectors.ts` to zwalidowana definicja sektora Kurogane Arms.
+Scena `map-test` udostępnia tekst mapy przez komendę `map` i graf przez `query('map')`.
+
 ### Zdarzenia dopisywane do `GameEvents` (F3-01) — `src/core/events.ts`
 
 | Zdarzenie          | Payload                                                                   | Emituje         |
