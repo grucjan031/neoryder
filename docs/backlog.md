@@ -110,7 +110,5 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | --- | --- |
 | Wspólny skład walki `Arena` i `RoomScene` | F3-04 powiela skład, by zachować Arenę i jej asercje bez zmian; wydzielenie rdzenia wymaga pełnej regresji jednostkowej i e2e Areny |
 | Zagadka z Chwytem (F3-19, typ węzła `puzzle`) | Niski priorytet; `typeWeights.puzzle` = 0 w danych sektora |
-| Progi faz bossa w zdarzeniu `boss_spawned` (pasek HP rozkłada dziś kreski faz równo) | Wymaga rozszerzenia kontraktu zdarzenia |
-| Wskaźnik wytrzymałości tarczy bossa w HUD | Poza zakresem F3-15; ocenić czytelność na playteście F3 |
 | TTK bossa w symulatorze balansu (`docs/balance.md`), jeśli jeszcze go nie ma | Strojenie po playteście F3 |
 | Oddzielenie viewmodelu od głębi świata (ręce mogą wchodzić w ściany) | Osobne zadanie grafiki/renderu |

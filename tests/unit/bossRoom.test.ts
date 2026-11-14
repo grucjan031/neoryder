@@ -111,6 +111,7 @@ it('boss pojawia się po wejściu, bez WaveDirector; room_cleared dopiero po śm
     id: expect.any(Number),
     name: 'Dyrektor Ochrony Kurogane Arms',
     maxHealth: 900,
+    phaseThresholds: [0.65, 0.3],
   });
   expect(scene.query('boss')).toMatchObject({
     phase: 1,

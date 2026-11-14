@@ -199,6 +199,7 @@ describe('F3-16 Boss', () => {
       id: f.boss.id,
       name: definition.boss!.name,
       maxHealth: 900,
+      phaseThresholds: [0.65, 0.3],
     });
     f.boss.stats.add({
       stat: 'damageTaken',
@@ -571,7 +572,9 @@ describe('F3-17 Boss: wezwanie, tarcza łamana', () => {
         },
       });
       const telegraphs = vi.fn();
+      const shields = vi.fn();
       f.bus.on('enemy_telegraph', telegraphs);
+      f.bus.on('boss_shield', shields);
       f.boss.forcePattern('shield');
       expect(telegraphs).toHaveBeenCalledExactlyOnceWith({
         id: f.boss.id,
@@ -580,6 +583,11 @@ describe('F3-17 Boss: wezwanie, tarcza łamana', () => {
       });
       expect(f.boss.shield).toBe(0);
       raise(f);
+      expect(shields).toHaveBeenLastCalledWith({
+        id: f.boss.id,
+        current: shieldSpec.durability,
+        max: shieldSpec.durability,
+      });
       expect(f.hit()).toBe(0);
       expect(
         f.damage.deal(f.boss.id, {
@@ -592,6 +600,11 @@ describe('F3-17 Boss: wezwanie, tarcza łamana', () => {
       expect(f.boss.shield).toBe(shieldSpec.durability);
       expect(power(f, 50)).toBe(0);
       expect(f.boss.shield).toBe(shieldSpec.durability - 50);
+      expect(shields).toHaveBeenLastCalledWith({
+        id: f.boss.id,
+        current: shieldSpec.durability - 50,
+        max: shieldSpec.durability,
+      });
       expect(f.damage.health(f.boss.id)?.current).toBe(900);
       // Cheaty debug przechodzą przez tarczę (kill all / hit).
       expect(

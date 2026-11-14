@@ -151,6 +151,7 @@ describe('EventBus', () => {
       id: 99,
       name: 'Dyrektor Ochrony',
       maxHealth: 800,
+      phaseThresholds: [0.65, 0.3],
     });
     bus.emit('boss_phase', { id: 99, phase: 2, phases: 3 });
     bus.emit('run_ended', { outcome: 'victory', summary });
@@ -198,7 +199,7 @@ describe('EventBus', () => {
       },
       {
         type: 'boss_spawned',
-        payload: { id: 99, name: 'Dyrektor Ochrony', maxHealth: 800 },
+        payload: { id: 99, name: 'Dyrektor Ochrony', maxHealth: 800, phaseThresholds: [0.65, 0.3] },
       },
       {
         type: 'boss_phase',

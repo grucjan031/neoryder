@@ -206,3 +206,5 @@ oraz odświeżenia. Test listy scen w sandbox.spec.ts używa teraz `/?debug=1`;
 asercje listy i istniejące sceny z `?scene=` pozostają bez zmian.
 
 Ekrany runu pokazują karty implantów z rzadkością, opisem, tagami i nowo aktywowanymi synergiami. Sklep blokuje nieopłacalne zakupy, a odpoczynek pokazuje dostępną następną rzadkość. Obsługa: mysz, 1/2/3 i Enter; sceną kontrolną jest `?scene=run`.
+
+HUD bossa rysuje kreski faz z boss_spawned.phaseThresholds (ułamki HP paska), widoczne od pojawienia się bossa. boss_shield aktualizuje pasek wytrzymałości, widoczny tylko przy aktywnej tarczy.
