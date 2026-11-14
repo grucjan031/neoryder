@@ -18,6 +18,7 @@ import type {
 } from 'three';
 import { tuning } from '../core/tuning';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
+import { renderWithViewmodel } from './viewmodelLayer';
 
 /** Maska w 1/2 rozdzielczości bufora, rozmycie w 1/4. */
 const MASK_SCALE = 0.5;
@@ -173,7 +174,7 @@ export class BloomPass {
       scene.background = null;
       renderer.setClearColor(0x000000, 0);
       renderer.setRenderTarget(this.mask);
-      renderer.render(scene, camera);
+      renderWithViewmodel(renderer, scene, camera);
     } finally {
       for (let i = 0; i < this.swappedMeshes.length; i++)
         this.swappedMeshes[i]!.material = this.swappedMaterials[i]!;
