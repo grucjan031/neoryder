@@ -33,6 +33,7 @@ import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { FppBlade } from '../render/fppBlade';
+import { FppBlaster } from '../render/fppBlaster';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
@@ -103,6 +104,7 @@ export class Arena implements Scene {
   });
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
   private readonly bladeView = new FppBlade();
+  private blasterView!: FppBlaster;
   private readonly views = new Map<EntityId, EnemyView>();
   private readonly root = new Group();
   private readonly lights = createStyleLights();
@@ -250,6 +252,9 @@ export class Arena implements Scene {
 
     await this.bladeView.load(this.loadModels);
     this.root.add(this.bladeView.root);
+    this.blasterView = new FppBlaster(ctx.bus, playerId);
+    await this.blasterView.load(this.loadModels);
+    this.root.add(this.blasterView.root);
 
     this.director = new WaveDirector(
       waves,
@@ -487,6 +492,8 @@ export class Arena implements Scene {
     camera.updateMatrixWorld();
     this.bladeView.root.visible = this.state === 'playing';
     this.bladeView.place(camera.matrixWorld, this.blade.view());
+    this.blasterView.root.visible = this.state === 'playing';
+    this.blasterView.place(camera.matrixWorld, frameDt);
   }
 
   // ----------------------------------------------------------------- śmierć i reset
@@ -638,6 +645,7 @@ export class Arena implements Scene {
     this.blade.dispose();
     this.energy.dispose();
     this.bladeView.dispose();
+    this.blasterView.dispose();
     this.projectileView.dispose();
     this.projectiles.dispose();
     this.fpsCamera.dispose();
