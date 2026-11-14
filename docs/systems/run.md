@@ -78,3 +78,5 @@ mysz, 1/2/3, Enter oraz Tab dla dalszych opcji. Docelowy styl pozostaje dla F3-1
 Sprawdzenie ręczne: `?scene=run&debug=1&seed=economy`, `run clear`, wybór nagrody,
 `credits 500`, wejście do sklepu, zakup i leczenie, następnie odpoczynek i ulepszenie.
 `implant <id>` działa na mapie oraz w aktywnym pokoju; `credits <n>` działa w runie.
+
+Podsumowanie runu pokazuje wynik, czas symulacji, zabójstwa, pokoje, warstwę, implanty, seed i obrażenia według czterech ścieżek. Nowy run zachowuje build i losuje nowy seed; menu prowadzi pod `/`. Do kontroli służą `?scene=run` i komendy `run end win|lose`.
