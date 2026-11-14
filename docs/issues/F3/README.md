@@ -1,12 +1,12 @@
 # Zadania fazy F3 — Pętla runu
 
-Architektura: `docs/adr/0005-petla-runu-f3.md` (**propozycja, do akceptacji po bramce F2**). Kontrakty trafią do `docs/api.md`, sekcja „Kontrakty F3”, w zadaniu 01 — dopiero po akceptacji ADR. Wspólne wymagania i definicja ukończenia: `AGENTS.md`. Szacunek: S ≈ 0,5–1 dnia sesji, M ≈ 1–2 dni, L ≈ 2–4 dni.
+Architektura: `docs/adr/0005-petla-runu-f3.md` (**przyjęta do realizacji 2026-11-14**). Kontrakty: `docs/api.md`, sekcja „Kontrakty F3” (zadanie 01). Wspólne wymagania i definicja ukończenia: `AGENTS.md`. Szacunek: S ≈ 0,5–1 dnia sesji, M ≈ 1–2 dni, L ≈ 2–4 dni.
 
 **Bramka fazy:** pełny run 15–25 min z bossem (jeden sektor Kurogane Arms); śmierć wraca do menu z podsumowaniem. Kryteria testowalne: (1) bot e2e na stałym seedzie przechodzi całą mapę z cheatami w < 2 min i kończy podsumowaniem zwycięstwa; (2) test deterministyczności: ten sam seed daje identyczną mapę, te same oferty nagród i te same fale. Długość 15–25 min ocenia człowiek w playteście (czas w podsumowaniu runu).
 
 ## Stan (2026-11-14)
 
-Nie rozpoczęte, czeka na bramkę F2 (bramka F2 otwarta — patrz `docs/issues/F2/README.md`) i akceptację ADR 0005 przez człowieka. Zadania spoza tej listy trafiają do `docs/backlog.md`.
+W toku. Człowiek polecił kontynuować prace po zamknięciu zadań F2 (playtest bramki F2 nadal otwarty — `docs/issues/F2/README.md`). Zadania spoza tej listy trafiają do `docs/backlog.md`.
 
 ## Decyzje wspólne
 

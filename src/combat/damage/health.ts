@@ -33,6 +33,12 @@ export class Health {
     this.value = Math.min(this.max, this.current + n);
   }
 
+  /** Ustawia bieżące zdrowie obcięte do [0, max] (np. stan przeniesiony z RunState). */
+  set(n: number): void {
+    if (!Number.isFinite(n)) return;
+    this.value = Math.min(this.max, Math.max(0, n));
+  }
+
   /** Przywraca pełne zdrowie (respawn, reset sceny). */
   reset(): void {
     this.value = this.max;

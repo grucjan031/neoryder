@@ -827,3 +827,173 @@ blade_thrown: { owner: EntityId };
 blade_returned: { owner: EntityId };
 synergy_triggered: { synergy: string; user: EntityId };
 ```
+
+## Kontrakty F3 (zatwierdzone 2026-11-14, ADR 0005)
+
+Architektura i decyzje: `docs/adr/0005-petla-runu-f3.md`. Zadania: `docs/issues/F3/README.md`.
+
+### Wspólne typy runu — `src/core/runTypes.ts`
+
+```ts
+export const NODE_TYPES = ['combat', 'elite', 'shop', 'rest', 'puzzle', 'boss'] as const;
+export type NodeType = (typeof NODE_TYPES)[number];
+
+export interface MapNode {
+  id: string;
+  layer: number;
+  index: number;
+  type: NodeType;
+  next: string[];
+}
+
+export interface SectorMap {
+  sectorId: string;
+  layers: MapNode[][];
+}
+
+export const RARITIES = ['common', 'rare', 'epic', 'legendary'] as const;
+export type Rarity = (typeof RARITIES)[number];
+
+export type RunOutcome = 'victory' | 'death';
+
+export interface RunDamageStats {
+  melee: number;
+  power: number;
+  gun: number;
+  other: number;
+}
+
+export interface RunState {
+  seed: string;
+  sectorId: string;
+  loadoutId: string;
+  startedAtMs: number;
+  elapsedS: number;                // czas symulacji w s (nie zegar ściany)
+  map: SectorMap;
+  currentNodeId: string | null;
+  visited: string[];
+  hp: number;
+  energy: number;                  // ciepło broni nie jest przenoszone (broń startuje zimna)
+  credits: number;
+  implants: string[];              // id posiadanych implantów, bez duplikatów
+  stats: {
+    kills: number;
+    damage: RunDamageStats;
+  };
+}
+
+export interface RunSummary {
+  outcome: RunOutcome;
+  seed: string;
+  loadoutId: string;
+  elapsedS: number;
+  kills: number;
+  roomsCleared: number;
+  layerReached: number;
+  implants: string[];
+  damage: RunDamageStats;
+}
+
+export interface RoomPlanner {
+  planWaves(room: RoomDefinition, sector: SectorDefinition, node: MapNode, rng: Rng): WavesDefinition;
+}
+```
+
+### Zdarzenia dopisywane do `GameEvents` (F3-01) — `src/core/events.ts`
+
+| Zdarzenie          | Payload                                                                   | Emituje         |
+| ------------------ | ------------------------------------------------------------------------- | --------------- |
+| `node_selected`    | `{ nodeId: string; type: NodeType }`                                      | `RunManager`    |
+| `room_entered`     | `{ nodeId: string; roomId: string; type: NodeType; layer: number }`       | `RoomScene`     |
+| `room_cleared`     | `{ nodeId: string; type: NodeType; timeS: number }`                       | `RoomScene`     |
+| `reward_offered`   | `{ nodeId: string; options: readonly string[] }`                          | rewards         |
+| `implant_acquired` | `{ id: string; rarity: Rarity; source: 'reward' \| 'shop' \| 'upgrade' }` | `ImplantSystem` |
+| `currency_changed` | `{ currency: 'credits'; amount: number; delta: number }`                  | `RunManager`    |
+| `shop_purchase`    | `{ item: string; kind: 'implant' \| 'heal'; price: number }`              | shop            |
+| `rest_used`        | `{ choice: 'heal' \| 'upgrade'; implant: string \| null }`                | rest            |
+| `boss_spawned`     | `{ id: EntityId; name: string; maxHealth: number }`                       | `Boss`          |
+| `boss_phase`       | `{ id: EntityId; phase: number; phases: number }`                         | `Boss`          |
+| `run_ended`        | `{ outcome: 'victory' \| 'death'; summary: RunSummary }`                  | `RunManager`    |
+
+```ts
+// src/core/events.ts
+node_selected: { nodeId: string; type: NodeType };
+room_entered: { nodeId: string; roomId: string; type: NodeType; layer: number };
+room_cleared: { nodeId: string; type: NodeType; timeS: number };
+reward_offered: { nodeId: string; options: readonly string[] };
+implant_acquired: { id: string; rarity: Rarity; source: 'reward' | 'shop' | 'upgrade' };
+currency_changed: { currency: 'credits'; amount: number; delta: number };
+shop_purchase: { item: string; kind: 'implant' | 'heal'; price: number };
+rest_used: { choice: 'heal' | 'upgrade'; implant: string | null };
+boss_spawned: { id: EntityId; name: string; maxHealth: number };
+boss_phase: { id: EntityId; phase: number; phases: number };
+run_ended: { outcome: 'victory' | 'death'; summary: RunSummary };
+```
+
+### Zdrowie, wrogowie i synergie (rozszerzenia F3-01)
+
+```ts
+// src/combat/damage/health.ts
+class Health {
+  /** Ustawia bieżące zdrowie obcięte do [0, max] (jak heal/reset nie emituje zdarzeń; sceny emitują health_changed). */
+  set(n: number): void;
+}
+
+// src/enemies/enemySchema.ts
+// Opcjonalny koszt wroga w budżecie zagrożenia pokoju (liczba skończona > 0):
+threatCost?: number;
+
+// src/progression/synergies.ts
+export const effectSchema: z.ZodType<SynergyEffect>;
+export const whenSchema: z.ZodType<SynergyWhen>;
+export type SynergyWhen = z.infer<typeof whenSchema>;
+// W synergySchema opcjonalny próg liczby wystąpień tagów (liczba całkowita ≥ 1):
+requiresCount?: Record<string, number>;
+```
+
+### Schematy zod danych F3 (F3-01)
+
+```ts
+// src/world/sectorSchema.ts
+export const sectorSchema: z.ZodType<SectorDefinition>;
+export type SectorDefinition = z.infer<typeof sectorSchema>;
+export function loadSector(data: unknown): SectorDefinition;
+// Pola wymagane: id, layers (≥ 2), nodesPerLayer { min ≥ 1, max ≥ min }, extraEdgeChance (0..1),
+// typeWeights (przedziały warstw { fromLayer, toLayer, weights }), guarantees ({ type, min, fromLayer, toLayer }[]),
+// limits ({ maxPerLayer, maxElitesPerPath }), expectedDurationS (Record<NodeType, number>).
+// Opcjonalne sekcje: threat, rewardWeights, economy, roomPools.
+
+// src/world/roomSchema.ts
+export const roomSchema: z.ZodType<RoomDefinition>;
+export type RoomDefinition = z.infer<typeof roomSchema>;
+export function loadRoom(data: unknown): RoomDefinition;
+// Pola: id, name, type (NodeType), playerSpawn, blocks (jak arena.json), spawnPoints ({ x, z }[]),
+// doors ({ id, role: 'entry' | 'exit', position, size }[]), director?, maxAlive?, minSpawnDistance?,
+// threatMultiplier?, props? ({ kind, position }[]), puzzle? (Record<string, unknown>).
+// Wymaga drzwi 'entry'; pokoje o type !== 'boss' wymagają też drzwi 'exit'.
+
+// src/progression/implantSchema.ts
+export const implantSchema: z.ZodType<ImplantDefinition>;
+export type ImplantDefinition = z.infer<typeof implantSchema>;
+export function loadImplant(data: unknown): ImplantDefinition;
+// Pola: id, name, rarity (Rarity), tags ('#...'), modifiers (stat z STAT_IDS, type, value — bez source),
+// triggers? ({ when: SynergyWhen, effects: SynergyEffect[], cooldownS? }[] — reużywa whenSchema/effectSchema),
+// upgradesTo?.
+```
+
+### Strojenie i komendy debug runu (F3-01, zapowiedź F3-07/09/11)
+
+```ts
+// src/core/tuning.ts
+tuning.run = { transitionS: 0.6, fadeS: 0.35 };
+```
+
+Komendy konsoli debug (`window.__neoryder.command`, zadania F3-07, F3-09, F3-11):
+- `run node <id>` — wybór węzła mapy
+- `run clear` — natychmiastowe wyczyszczenie bieżącego pokoju
+- `run state` — zrzut stanu `RunState`
+- `run end win|lose` — zakończenie runu zwycięstwem lub porażką
+- `hurt <n>` — zadanie obrażeń graczowi
+- `credits <n>` — dodanie Kredytów
+- `implant <id>` — nałożenie implantu
+
