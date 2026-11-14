@@ -10,6 +10,7 @@ import type { GameContext } from './core/context';
 import { scenes } from './scenes';
 import { defaultCommands as commands } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
+import { createSceneMenu } from './ui/sceneMenu';
 import { createRenderPipeline } from './render/outline';
 import './ui/styles.css';
 
@@ -17,7 +18,13 @@ async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) throw new Error('Brak elementu aplikacji.');
   const params = new URLSearchParams(location.search);
-  const sceneId = params.get('scene') ?? 'sandbox';
+  const requested = params.get('scene');
+  if (requested === null) {
+    // Bez ?scene= — menu startowe zamiast sceny technicznej.
+    createSceneMenu(app, Object.keys(scenes), params);
+    return;
+  }
+  const sceneId = requested;
   const factory = Object.hasOwn(scenes, sceneId) ? scenes[sceneId] : undefined;
   if (!factory) {
     const message = document.createElement('p');

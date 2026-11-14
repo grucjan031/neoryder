@@ -129,11 +129,21 @@ test('utrata fokusu zatrzymuje tick, kliknięcie wznawia i prosi o pointer lock'
 test('tryb produkcyjny bez debug nie wystawia uchwytu ani konsoli', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/?scene=sandbox');
   await expect(page.getByLabel('Scena NEORYDER')).toBeVisible();
   expect(await page.evaluate(() => window.__neoryder)).toBeUndefined();
   await page.keyboard.press('Backquote');
   await expect(
     page.getByRole('textbox', { name: 'Komenda debug' }),
   ).toHaveCount(0);
+});
+
+test('bez ?scene= pokazuje menu scen z linkami', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
+  await expect(page.locator('canvas')).toHaveCount(0);
+  const link = page.getByRole('link', { name: /Walka z wrogami/ });
+  await expect(link).toHaveAttribute('href', /scene=ai-test/);
+  await page.getByRole('link', { name: /Sandbox fizyki/ }).click();
+  await expect(page.getByLabel('Scena NEORYDER')).toBeVisible();
 });
