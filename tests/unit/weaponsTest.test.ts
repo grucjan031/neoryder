@@ -1,0 +1,163 @@
+// @vitest-environment jsdom
+import { afterEach, expect, it, vi } from 'vitest';
+import { Group, Mesh, PerspectiveCamera, Scene as ThreeScene } from 'three';
+import { WeaponsTest } from '../../src/scenes/weaponsTest';
+import { scenes } from '../../src/scenes';
+import { CommandRegistry } from '../../src/ui/debugCommands';
+import { EventBus } from '../../src/core/events';
+import { Rng } from '../../src/core/rng';
+import { GameLoop, SIM_DT } from '../../src/core/loop';
+import { tuning } from '../../src/core/tuning';
+import type { InputSnapshot } from '../../src/core/input';
+import { getMaterial } from '../../src/render/materials';
+import data from '../../src/data/scenes/weaponsTest.json';
+
+const input: InputSnapshot = {
+  held: new Set(),
+  pressed: new Set(),
+  released: new Set(),
+  lookDelta: { x: 0, y: 0 },
+};
+const firing: InputSnapshot = { ...input, held: new Set(['attack']) };
+const active: WeaponsTest[] = [];
+
+afterEach(() => {
+  for (const scene of active.splice(0)) scene.dispose();
+  vi.restoreAllMocks();
+});
+
+async function setup() {
+  const scene = new WeaponsTest();
+  const three = new ThreeScene();
+  const camera = new PerspectiveCamera();
+  const cameraParent = new Group();
+  cameraParent.add(camera);
+  const cameraChild = new Group();
+  camera.add(cameraChild);
+  const commands = new CommandRegistry();
+  const bus = new EventBus();
+  await scene.init(
+    {
+      bus,
+      rng: new Rng('weapons-scene'),
+      loop: new GameLoop({ step: () => {}, render: () => {} }),
+      tuning: structuredClone(tuning),
+      debug: false,
+      camera,
+      commands,
+    },
+    three,
+  );
+  active.push(scene);
+  return { scene, three, camera, cameraParent, cameraChild, commands, bus };
+}
+
+it('registers, loads scene data, switches on weapon1..3 pressed and retains heat per weapon', async () => {
+  expect(scenes['weapons-test']?.().id).toBe('weapons-test');
+  const { scene, commands } = await setup();
+  expect(scene.query('slots')).toEqual(data.slots);
+  expect(scene.query('weapon')).toBe('pistol');
+  expect(scene.query('dummyHp')).toEqual(
+    data.dummyPositions.map(() => data.dummy.maxHealth),
+  );
+  scene.step(0, firing);
+  expect(scene.query('shots')).toBe(0);
+  scene.step(SIM_DT, firing);
+  expect(scene.query('heat')).toBe(9);
+  scene.step(SIM_DT, { ...input, held: new Set(['weapon2']) });
+  expect(scene.query('weapon')).toBe('pistol');
+  scene.step(SIM_DT, { ...input, pressed: new Set(['weapon2']) });
+  expect(scene.query('slot')).toBe(1);
+  expect(scene.query('weapon')).toBe('rifle');
+  expect(scene.query('heat')).toBe(0);
+  scene.step(SIM_DT, firing);
+  expect(scene.query('heat')).toBe(10);
+  scene.step(SIM_DT, { ...input, pressed: new Set(['weapon3']) });
+  expect(scene.query('weapon')).toBe('scatter');
+  scene.step(SIM_DT, firing);
+  expect(scene.query('heat')).toBe(28);
+  expect(scene.query('activeProjectiles')).toBeGreaterThanOrEqual(8);
+  scene.step(SIM_DT, { ...input, pressed: new Set(['weapon1']) });
+  expect(scene.query('heat')).toBe(9);
+  expect(scene.query('weaponHeat')).toEqual({
+    blaster: 0,
+    pistol: 9,
+    rifle: 10,
+    scatter: 28,
+    sniper: 0,
+  });
+  expect(commands.execute('heat')).toContain('9');
+  commands.execute('overheat');
+  expect(scene.query('overheated')).toBe(true);
+  scene.step(SIM_DT, { ...input, pressed: new Set(['weapon2']) });
+  expect(scene.query('overheated')).toBe(false);
+  for (let i = 0; i < 120; i++) scene.step(SIM_DT, input);
+  scene.step(SIM_DT, { ...input, pressed: new Set(['weapon1']) });
+  expect(scene.query('overheated')).toBe(false);
+  expect(scene.query('heat')).toBeLessThan(100);
+});
+
+it('weapon command replaces only the active slot, validates ids and reuses weapon heat', async () => {
+  const { scene, commands } = await setup();
+  for (const invalid of ['weapon', 'weapon missing', 'weapon sniper extra']) {
+    expect(commands.execute(invalid)).toContain('Dostępne bronie:');
+    expect(scene.query('slots')).toEqual(data.slots);
+  }
+  expect(commands.execute('weapon sniper')).toContain('Snajperka');
+  expect(scene.query('slots')).toEqual(['sniper', 'rifle', 'scatter']);
+  scene.step(SIM_DT, firing);
+  expect(scene.query('heat')).toBe(45);
+  commands.execute('weapon pistol');
+  scene.step(SIM_DT, input);
+  scene.step(SIM_DT, firing);
+  expect(scene.query('heat')).toBe(9);
+  commands.execute('weapon sniper');
+  expect(scene.query('heat')).toBe(45);
+  scene.render(0.5);
+  const hud = document.querySelector('[aria-label="Broń i ciepło"]');
+  expect(hud?.textContent).toContain('Snajperka');
+  expect(hud?.textContent).toContain('45 / 100');
+  expect(hud?.textContent).toContain(data.controls);
+});
+
+it('fires a piercing round through the row, leaves the dummy behind the wall unharmed, respawns and cleans up', async () => {
+  const { scene, three, camera, cameraParent, cameraChild, commands, bus } =
+    await setup();
+  commands.execute('weapon sniper');
+  scene.step(SIM_DT, firing);
+  for (let i = 0; i < 15; i++) scene.step(SIM_DT, firing);
+  expect(scene.query('shots')).toBe(1);
+  expect(scene.query('dummyHp')).toEqual([20, 40, 55, 100]);
+  expect(scene.query('activeProjectiles')).toBe(0);
+  for (let i = 0; i < 60; i++) scene.step(SIM_DT, input);
+  scene.step(SIM_DT, firing);
+  for (let i = 0; i < 15; i++) scene.step(SIM_DT, input);
+  expect(scene.query('dummyHp')).toEqual([0, 0, 10, 100]);
+  for (let i = 0; i < 120; i++) scene.step(SIM_DT, input);
+  expect(scene.query('dummyHp')).toEqual([100, 100, 10, 100]);
+  expect(scene.query('missing')).toBeUndefined();
+  scene.render(0.5);
+  const sharedDispose = vi.spyOn(getMaterial('interactive'), 'dispose');
+  const geometries = new Set<Mesh['geometry']>();
+  three.traverse((object) => {
+    if (object instanceof Mesh) geometries.add(object.geometry);
+  });
+  const disposedGeometry = [...geometries].map((geometry) =>
+    vi.spyOn(geometry, 'dispose'),
+  );
+  const despawn = vi.fn();
+  bus.on('entity_despawned', despawn);
+  commands.execute('weapon rifle');
+  scene.step(SIM_DT, firing);
+  expect(scene.query('activeProjectiles')).toBeGreaterThan(0);
+  scene.dispose();
+  active.splice(active.indexOf(scene), 1);
+  expect(sharedDispose).not.toHaveBeenCalled();
+  for (const spy of disposedGeometry) expect(spy).toHaveBeenCalledOnce();
+  expect(three.children).toHaveLength(0);
+  expect(camera.parent).toBe(cameraParent);
+  expect(camera.children).toEqual([cameraChild]);
+  expect(commands.help()).toBe('');
+  expect(document.querySelector('[aria-label="Broń i ciepło"]')).toBeNull();
+  expect(despawn).toHaveBeenCalledTimes(6);
+});

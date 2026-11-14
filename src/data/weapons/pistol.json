@@ -1,0 +1,13 @@
+{
+  "id": "pistol",
+  "name": "Pistolet",
+  "fireMode": "projectile",
+  "automatic": false,
+  "damage": 32,
+  "fireRateHz": 4,
+  "heatPerShot": 9,
+  "projectileSpeed": 70,
+  "projectileLifetimeS": 2,
+  "spreadDeg": 0.35,
+  "tags": ["#gun"]
+}

@@ -6,5 +6,8 @@
   "projectileSpeed": 60,
   "projectileLifetimeS": 2,
   "spreadDeg": 0.6,
-  "tags": ["#gun"]
+  "tags": ["#gun"],
+  "name": "Blaster",
+  "fireMode": "projectile",
+  "automatic": true
 }

@@ -9,6 +9,7 @@ import type { InputSnapshot } from '../core/input';
 import { Sandbox } from './sandbox';
 import { PlayerTest } from './playerTest';
 import { BlasterTest } from './blasterTest';
+import { WeaponsTest } from './weaponsTest';
 import { AiTest } from './aiTest';
 import { DebrisTest } from './debrisTest';
 
@@ -34,6 +35,7 @@ export const scenes: Record<string, SceneFactory> = {
   'push-test': () => new PushTest(),
   'parry-test': () => new ParryTest(),
   'blaster-test': () => new BlasterTest(),
+  'weapons-test': () => new WeaponsTest(),
   'ai-test': () => new AiTest(),
   'debris-test': () => new DebrisTest(),
 };

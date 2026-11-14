@@ -1,0 +1,13 @@
+{
+  "id": "rifle",
+  "name": "Karabin",
+  "fireMode": "projectile",
+  "automatic": true,
+  "damage": 12,
+  "fireRateHz": 10,
+  "heatPerShot": 10,
+  "projectileSpeed": 75,
+  "projectileLifetimeS": 2,
+  "spreadDeg": 1.1,
+  "tags": ["#gun"]
+}

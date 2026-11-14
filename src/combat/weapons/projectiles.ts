@@ -5,6 +5,7 @@ import type { EntityId, EventBus, Team } from '../../core/events';
 import type { Vec3 } from '../../core/math';
 import type { Tuning } from '../../core/tuning';
 import type { DamageSystem, Hurtboxes } from '../damage';
+import type { StatusApplication } from '../damage/types';
 import { CollisionGroup, interactionGroups } from '../../physics';
 import { blasterDefinition } from './weaponSchema';
 
@@ -18,6 +19,8 @@ export interface ProjectileSpec {
   tags: readonly string[];
   /** Domyślnie czas życia z danych blastera. */
   lifetimeS?: number;
+  statuses?: readonly StatusApplication[];
+  pierce?: { count: number; falloff: number };
 }
 
 /** Trafienie pocisku w hurtbox, zanim zada obrażenia (np. parowanie ostrzem). */
@@ -45,6 +48,10 @@ interface Projectile {
   tags: readonly string[];
   remainingS: number;
   order: number;
+  statuses: readonly StatusApplication[] | undefined;
+  hitsRemaining: number;
+  falloff: number;
+  hitTargets: EntityId[];
 }
 
 export class ProjectileSystem {
@@ -73,6 +80,10 @@ export class ProjectileSystem {
         tags: [],
         remainingS: 0,
         order: 0,
+        statuses: undefined,
+        hitsRemaining: 1,
+        falloff: 0,
+        hitTargets: [],
       }),
     );
   }
@@ -83,6 +94,7 @@ export class ProjectileSystem {
       this.pool.find((p) => p.id === null) ??
       this.pool.reduce((oldest, p) => (p.order < oldest.order ? p : oldest));
     this.release(slot);
+    slot.hitTargets.length = 0;
     const id = this.entities.create('projectile', spec.team);
     Object.assign(slot, {
       id,
@@ -93,6 +105,9 @@ export class ProjectileSystem {
       tags: [...spec.tags],
       remainingS: spec.lifetimeS ?? blasterDefinition.projectileLifetimeS,
       order: this.sequence++,
+      statuses: spec.statuses?.map((status) => ({ ...status })),
+      hitsRemaining: spec.pierce?.count ?? 1,
+      falloff: spec.pierce?.falloff ?? 0,
     });
     Object.assign(slot.pos, spec.origin);
     Object.assign(slot.dir, dir);
@@ -135,74 +150,89 @@ export class ProjectileSystem {
     if (!(dt > 0)) return;
     for (const p of this.pool) {
       if (p.id === null) continue;
+      const id = p.id;
       const travelS = Math.min(dt, Math.max(0, p.remainingS));
-      const distance = p.speed * travelS;
-      const member =
-        p.team === 'player'
-          ? CollisionGroup.PlayerProjectile
-          : p.team === 'enemy'
-            ? CollisionGroup.EnemyProjectile
-            : CollisionGroup.PlayerProjectile | CollisionGroup.EnemyProjectile;
-      const targets =
-        CollisionGroup.World |
-        (p.team === 'player'
-          ? CollisionGroup.Enemy
-          : p.team === 'enemy'
-            ? CollisionGroup.Player
-            : CollisionGroup.Player | CollisionGroup.Enemy);
-      const hit =
-        distance > 0
-          ? this.world.castRayAndGetNormal(
-              new Ray(p.pos, p.dir),
-              distance,
-              true,
-              undefined,
-              interactionGroups(member, targets),
-              undefined,
-              undefined,
-              (collider) => this.canHit(collider, p.owner),
-            )
-          : null;
-      if (hit) {
-        const box = this.hurtboxes.get(hit.collider.handle);
-        const point = {
-          x: p.pos.x + p.dir.x * hit.timeOfImpact,
-          y: p.pos.y + p.dir.y * hit.timeOfImpact,
-          z: p.pos.z + p.dir.z * hit.timeOfImpact,
-        };
-        // Zwalniamy przed emisją obrażeń, aby synchroniczne handlery nie trafiły ponownie.
-        const info = {
-          amount: p.damage * (box?.multiplier ?? 1),
-          source: p.owner,
-          tags: p.tags,
-          point,
-          dir: { ...p.dir },
-        };
-        if (box && p.id !== null) {
-          const hitInfo: ProjectileHit = {
-            projectile: p.id,
-            owner: p.owner,
-            team: p.team,
-            target: box.entity,
+      let distance = p.speed * travelS;
+      let intercepted = false;
+      while (distance > 0 && p.id === id) {
+        const member =
+          p.team === 'player'
+            ? CollisionGroup.PlayerProjectile
+            : p.team === 'enemy'
+              ? CollisionGroup.EnemyProjectile
+              : CollisionGroup.PlayerProjectile |
+                CollisionGroup.EnemyProjectile;
+        const targets =
+          CollisionGroup.World |
+          (p.team === 'player'
+            ? CollisionGroup.Enemy
+            : p.team === 'enemy'
+              ? CollisionGroup.Player
+              : CollisionGroup.Player | CollisionGroup.Enemy);
+        const hit = this.world.castRayAndGetNormal(
+          new Ray(p.pos, p.dir),
+          distance,
+          true,
+          undefined,
+          interactionGroups(member, targets),
+          undefined,
+          undefined,
+          (collider) => this.canHit(collider, p),
+        );
+        if (hit) {
+          const box = this.hurtboxes.get(hit.collider.handle);
+          const point = {
+            x: p.pos.x + p.dir.x * hit.timeOfImpact,
+            y: p.pos.y + p.dir.y * hit.timeOfImpact,
+            z: p.pos.z + p.dir.z * hit.timeOfImpact,
+          };
+          const info = {
+            amount: p.damage * (box?.multiplier ?? 1),
+            source: p.owner,
+            tags: p.tags,
             point,
             dir: { ...p.dir },
-            speed: p.speed,
+            ...(p.statuses ? { statuses: p.statuses } : {}),
           };
-          if (this.interceptors.some((intercept) => intercept(hitInfo))) {
-            // Przejęty (np. odbity): pocisk zostaje tuż przed punktem trafienia i leci dalej.
-            p.pos.x = point.x - hitInfo.dir.x * 0.05;
-            p.pos.y = point.y - hitInfo.dir.y * 0.05;
-            p.pos.z = point.z - hitInfo.dir.z * 0.05;
-            continue;
+          if (box && p.id !== null) {
+            const hitInfo: ProjectileHit = {
+              projectile: p.id,
+              owner: p.owner,
+              team: p.team,
+              target: box.entity,
+              point,
+              dir: { ...p.dir },
+              speed: p.speed,
+            };
+            if (this.interceptors.some((intercept) => intercept(hitInfo))) {
+              if (p.id !== id) break;
+              // Przejęty (np. odbity): pocisk zostaje tuż przed punktem trafienia i leci dalej.
+              p.pos.x = point.x - hitInfo.dir.x * 0.05;
+              p.pos.y = point.y - hitInfo.dir.y * 0.05;
+              p.pos.z = point.z - hitInfo.dir.z * 0.05;
+              intercepted = true;
+              break;
+            }
           }
+          if (p.id !== id) break;
+          // Zapisujemy trafienie lub zwalniamy slot przed synchroniczną emisją obrażeń.
+          if (box) {
+            p.hitTargets.push(box.entity);
+            p.hitsRemaining--;
+            p.damage *= 1 - p.falloff;
+          }
+          Object.assign(p.pos, point);
+          distance = Math.max(0, distance - hit.timeOfImpact);
+          if (!box || p.hitsRemaining <= 0) this.release(p);
+          if (box) this.damage.deal(box.entity, info);
+          continue;
         }
-        this.release(p);
-        if (box) this.damage.deal(box.entity, info);
-        continue;
+        p.pos.x += p.dir.x * distance;
+        p.pos.y += p.dir.y * distance;
+        p.pos.z += p.dir.z * distance;
+        break;
       }
-      p.pos.x += p.dir.x * distance;
-      p.pos.y += p.dir.y * distance;
-      p.pos.z += p.dir.z * distance;
+      if (p.id !== id || intercepted) continue;
       p.remainingS -= dt;
       if (p.remainingS <= Number.EPSILON) this.release(p);
     }
@@ -213,9 +243,10 @@ export class ProjectileSystem {
    * (kapsuła character controllera wroga) nie są celami — inaczej „połykają” strzały w głowę,
    * bo obejmują sensor głowy.
    */
-  private canHit(collider: Collider, owner: EntityId): boolean {
-    if (this.hurtboxes.get(collider.handle))
-      return this.entities.byCollider(collider.handle) !== owner;
+  private canHit(collider: Collider, p: Projectile): boolean {
+    const box = this.hurtboxes.get(collider.handle);
+    if (box)
+      return box.entity !== p.owner && !p.hitTargets.includes(box.entity);
     const membership = collider.collisionGroups() >>> 16;
     return (membership & CollisionGroup.World) !== 0;
   }

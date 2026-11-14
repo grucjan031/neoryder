@@ -1,0 +1,14 @@
+{
+  "id": "scatter",
+  "name": "Rozpraszacz",
+  "fireMode": "spread",
+  "automatic": false,
+  "damage": 10,
+  "fireRateHz": 1.5,
+  "heatPerShot": 28,
+  "projectileSpeed": 45,
+  "projectileLifetimeS": 0.3,
+  "spreadDeg": 6,
+  "tags": ["#gun"],
+  "pellets": 8
+}
