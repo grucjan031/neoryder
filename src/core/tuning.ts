@@ -9,7 +9,7 @@ export const tuning = {
     lightSpotOpacity: 0.08,
     lightSpotScale: 0.6,
     surfaceOffsetM: 0.012,
-    signBrightness: 1.7,
+    signBrightness: 3.2,
     signFrameM: 0.09,
     signBuzzHz: 37,
     signBuzzAmount: 0.08,
@@ -43,7 +43,8 @@ export const tuning = {
     rainSplashRiseMS: 1.5,
     rainSplashDriftMS: 1,
     splashGrowth: 2,
-    stormRate: 0.018,
+    /** Średnio jeden błysk na ok. 40 s (1/0.025). */
+    stormRate: 0.025,
     stormFlashS: 0.35,
     /** Siła rozbłysku nieba i mgły przy błysku burzy (0..1). */
     stormFlash: 0.35,

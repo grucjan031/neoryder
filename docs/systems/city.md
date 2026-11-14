@@ -8,8 +8,9 @@ układu przez `CityDressing` (`src/render/city/dressing.ts`): napisy, światła
 gdy motyw ma `rain.enabled` (parametry z motywu). `step(dt)` zbiera czas świata,
 `render(frameDt, camera)` woła `update(dtWorld, dtReal, camera)`; `dispose()` zwalnia
 wszystko. Błysk burzy `Weather.flash` trafia do `tuning.render.skyFlash`
-(skalowany `tuning.city.stormFlash`); burza jest włączana tylko komendą `storm 1`
-w `city-fx-test`, bo motyw nie ma jeszcze pola burzy.
+(skalowany `tuning.city.stormFlash`); burza włącza się polem `rain.storm`
+motywu (`neonStreet`: tak, średnio jeden błysk na ok. 40 s, `tuning.city.stormRate`);
+w `city-fx-test` przełącza ją komenda `storm <0|1>`. Jasność neonów: `tuning.city.signBrightness` (3,2).
 
 ## Kontrakt integracji
 

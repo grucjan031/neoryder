@@ -91,6 +91,8 @@ export const themeSchema = z.object({
     windX: z.number().finite(),
     color,
     opacity: unit,
+    /** Rzadkie błyski burzy (częstość: tuning.city.stormRate). */
+    storm: z.boolean().optional(),
   }),
 });
 export type Theme = z.infer<typeof themeSchema>;

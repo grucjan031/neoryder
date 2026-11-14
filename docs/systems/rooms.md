@@ -65,13 +65,13 @@ Walidacja nie używa Three.js, DOM ani losowości.
 
 Pule `roomPools` w `src/data/sectors/kurogane.json`:
 
-| Typ | Pokoje |
-|---|---|
-| combat | `combatCorridor`, `combatPillars`, `combatPlatforms`, `combatRing`, `combatWarehouse`, `combatYard` |
-| elite | `eliteCourtyard`, `eliteFoundry`, `eliteHall` |
-| shop | `shopRoom` (bez spawnów, bez fal) |
-| rest | `restRoom` (bez spawnów, bez fal) |
-| boss | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17) |
+| Typ    | Pokoje                                                                                                                                                 |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| combat | `combatCorridor`, `combatPillars`, `combatPlatforms`, `combatRing`, `combatWarehouse`, `combatYard`, `alleyMarket`, `alleyBackstreet`, `alleyCrossing` |
+| elite  | `eliteCourtyard`, `eliteFoundry`, `eliteHall`                                                                                                          |
+| shop   | `shopRoom` (bez spawnów, bez fal)                                                                                                                      |
+| rest   | `restRoom` (bez spawnów, bez fal)                                                                                                                      |
+| boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)                                                                 |
 
 Puzzle nie ma pokoi (`typeWeights.puzzle` = 0). Pokój losowany jest z puli
 osobnym strumieniem `room-layout:<nodeId>`.
@@ -91,3 +91,11 @@ sprawdzają jej niezmieniony stary schemat. Scena `?scene=room-test&room=<id>`
 jest zakresem F3-04; ten moduł dostarcza jej zwalidowane dane.
 Do późniejszego playtestu: wejście i wyjście mają być widoczne, osłony powinny
 zostawiać czytelne trasy boczne, a wszystkie spawny znajdować się poza geometrią.
+
+## Mapy w motywie neonStreet
+
+| id                | typ    | wymiary                       | idea                                                                                                  |
+| ----------------- | ------ | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `alleyMarket`     | combat | 14 × 40 m                     | nocny targ: stragany po obu stronach jako osłony, lampiony nad głową, neony ramen/sake, para z kratek |
+| `alleyBackstreet` | combat | wąski zaułek 6–9 m, kształt Z | zaplecza: kontenery, generator, skrzynie, schody ppoż., iskry i kapanie, migające neony               |
+| `alleyCrossing`   | combat | ok. 36 × 36 m, plus           | skrzyżowanie: zaparkowane auta i barierki, latarnie, hologram Kurogane na narożniku                   |

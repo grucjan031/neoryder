@@ -47,6 +47,12 @@ it('waliduje oba motywy, zachowuje white i odrzuca niepoprawne parametry', () =>
     themeSchema.safeParse({ ...white, rain: { ...white.rain, density: 2 } })
       .success,
   ).toBe(false);
+  expect(themeDefinitions.get('neonStreet')!.rain.storm).toBe(true);
+  expect(white.rain.storm).toBeUndefined();
+  expect(
+    themeSchema.safeParse({ ...white, rain: { ...white.rain, storm: 1 } })
+      .success,
+  ).toBe(false);
   expect(
     themeSchema.safeParse({
       ...white,

@@ -59,6 +59,7 @@ export class CityDressing {
     }
     if (theme.rain.enabled) {
       this.weather = new Weather(theme.rain, floorY, `${seed}:rain`);
+      this.weather.stormEnabled = theme.rain.storm === true;
       roots.push(this.weather.root);
     }
     for (const root of roots) parent.add(root);

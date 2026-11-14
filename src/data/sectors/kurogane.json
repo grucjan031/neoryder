@@ -117,7 +117,10 @@
       "combatPlatforms",
       "combatRing",
       "combatWarehouse",
-      "combatYard"
+      "combatYard",
+      "alleyMarket",
+      "alleyBackstreet",
+      "alleyCrossing"
     ],
     "elite": ["eliteCourtyard", "eliteFoundry", "eliteHall"],
     "shop": ["shopRoom"],
