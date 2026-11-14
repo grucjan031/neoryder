@@ -30,6 +30,18 @@ Moduł `src/world/run.ts` odpowiada za czystą logikę stanu pętli runu (ADR 00
   - `finish('victory' | 'death')` buduje `RunSummary` (`outcome`, `seed`, `loadoutId`, `elapsedS`, `kills`, `roomsCleared`, `layerReached`, `implants`, `damage`), przechodzi do `summary` i emituje `run_ended` (idempotentnie — kolejne wywołania nie duplikują zdarzenia).
   - `serialize()` zwraca głęboką kopię `RunState`, a `restore(state)` waliduje ją schematem zod `runStateSchema` (sprawdza m.in. unikalność implantów i obecność `currentNodeId` oraz `visited` w mapie).
 
+## Zapis runu (`RunSave` v2 i migracja 1→2) — F3-06
+
+Moduł `src/core/save.ts` rozszerza `RunSave` o pełny stan `run: RunState` (walidowany schematem `runStateSchema` z `src/world/run.ts`) i podnosi `SAVE_VERSION` do `2` (ADR 0005 pkt 5):
+
+- **Struktura `RunSave` v2:** `{ saveVersion: 2, seed: string, startedAt: number, run: RunState }`. Sygnatury `saveRun`, `loadRun` i `clearRun` w `SaveStore` (zarówno `createMemorySaveStore`, jak i `createIndexedDbSaveStore`) pozostają bez zmian.
+- **Migracja 1→2:**
+  - `MetaSave` (v0 i v1) migruje do wersji `2` neutralnie (pola `createdAt` i `updatedAt` pozostają nietknięte).
+  - Szkielet `RunSave` z wersji v1/v0 (posiadający jedynie `seed` i `startedAt`, bez stanu `run`) jest podczas migracji 1→2 traktowany jako brak aktywnego runu (`loadRun()` zwraca `null` bez ostrzeżenia), a miejsce w magazynie można nadpisać nowym zapisem v2.
+- **Ochrona danych gracza:**
+  - Zapis z przyszłej wersji (`saveVersion > SAVE_VERSION`) zwraca `null` z ostrzeżeniem przy odczycie oraz blokuje nadpisanie (`saveRun`, `saveMeta`) i skasowanie (`clearRun`), pozostawiając dane w magazynie nietknięte.
+  - Uszkodzony zapis (np. v2 bez pola `run`, nieznany `currentNodeId`, zduplikowane implanty, błędne typy pól w v1 lub v2) jest odrzucany przez walidację zod, loguje ostrzeżenie `console.warn` i zwraca `null`.
+
 ## Weryfikacja
 
-Testy jednostkowe: `tests/unit/run.test.ts` (`npm test`).
+Testy jednostkowe: `tests/unit/run.test.ts`, `tests/unit/save.test.ts` (`npm test`).

@@ -1,7 +1,9 @@
 import { z } from 'zod';
+import { runStateSchema } from '../world/run';
+import type { RunState } from './runTypes';
 import { tuning } from './tuning';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export interface MetaSave {
   saveVersion: number;
   createdAt: number;
@@ -11,6 +13,7 @@ export interface RunSave {
   saveVersion: number;
   seed: string;
   startedAt: number;
+  run: RunState;
 }
 export type Migration = (
   data: Record<string, unknown>,
@@ -42,18 +45,30 @@ export interface SaveStore {
   clearRun(): Promise<void>;
 }
 
-const metaSchema = z.object({
+const metaSchema: z.ZodType<MetaSave> = z.object({
   saveVersion: z.literal(SAVE_VERSION),
   createdAt: z.number().finite(),
   updatedAt: z.number().finite(),
 });
-const runSchema = z.object({
+const runSchema: z.ZodType<RunSave> = z.object({
   saveVersion: z.literal(SAVE_VERSION),
+  seed: z.string(),
+  startedAt: z.number().finite(),
+  run: runStateSchema,
+});
+const legacyRunV1Schema = z.object({
+  saveVersion: z.literal(1),
   seed: z.string(),
   startedAt: z.number().finite(),
 });
 const recordSchema = z.record(z.string(), z.unknown());
-const migrations: readonly Migration[] = [(data) => ({ ...data })];
+const migrations: readonly Migration[] = [
+  (data) => ({ ...data }),
+  (data) =>
+    data.run === undefined && legacyRunV1Schema.safeParse(data).success
+      ? { ...data, run: null }
+      : { ...data },
+];
 
 function isFuture(data: unknown): boolean {
   const record = recordSchema.safeParse(data);
@@ -73,9 +88,15 @@ function decode<T>(raw: unknown, schema: z.ZodType<T>): T | null {
     return null;
   }
   try {
-    return schema.parse(
-      migrate(recordSchema.parse(raw), migrations, SAVE_VERSION),
-    );
+    const record = recordSchema.parse(raw);
+    const migrated = migrate(record, migrations, SAVE_VERSION);
+    if (
+      schema === runSchema &&
+      record.run === undefined &&
+      migrated.run === null
+    )
+      return null;
+    return schema.parse(migrated);
   } catch (error) {
     console.warn('Nie można odczytać zapisu.', error);
     return null;

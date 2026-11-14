@@ -226,10 +226,10 @@ Obiekt jest mutowalny: kod czyta wartość przy użyciu (`tuning.time.hitstopLig
 ## Zapis — `src/core/save.ts`
 
 ```ts
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface MetaSave { saveVersion: number; createdAt: number; updatedAt: number; /* rozwijane w F4 */ }
-export interface RunSave  { saveVersion: number; seed: string; startedAt: number; /* rozwijane w F3 */ }
+export interface RunSave  { saveVersion: number; seed: string; startedAt: number; run: RunState }
 
 export type Migration = (data: Record<string, unknown>) => Record<string, unknown>;
 /** migrations[n] migruje z wersji n do n+1. */
@@ -1128,5 +1128,11 @@ export class RunManager {
   dispose(): void;
 }
 ```
+
+### Zapis runu (F3-06) — `src/core/save.ts`
+
+`SAVE_VERSION = 2`. `RunSave` rozszerzone o `run: RunState` (walidowane przez `runStateSchema` z `src/world/run.ts`).
+Migracja 1→2 jest neutralna dla `MetaSave`, natomiast szkielet `RunSave` v1 (bez pola `run`) traktuje jako brak aktywnego runu (`loadRun()` zwraca `null`). Zapisy z `saveVersion > SAVE_VERSION` pozostają nietknięte (`isFuture`), a uszkodzone zapisy zwracają `null` z ostrzeżeniem.
+
 
 
