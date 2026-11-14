@@ -1021,6 +1021,11 @@ export function loadImplant(data: unknown): ImplantDefinition;
 
 ### Strojenie i komendy debug runu (F3-01, zapowiedź F3-07/09/11)
 
+F3-03: `src/world/rooms.ts` eksportuje `loadRoomDefinitions(data: readonly unknown[]): ReadonlyMap<string, RoomDefinition>`
+oraz `roomDefinitions` (eager `import.meta.glob` z `src/data/rooms/*.json`). Loader odrzuca powtórzone id pokoi.
+`loadRoom` / `roomSchema` sprawdzają także układ: podłogę na wysokości `playerSpawn.y`, granice,
+kolizje punktów i osiągalność na siatce 1 m. Szczegóły: `docs/systems/rooms.md`.
+
 ```ts
 // src/core/tuning.ts
 tuning.run = { transitionS: 0.6, fadeS: 0.35 };
