@@ -81,9 +81,24 @@ export const tuning = {
     slideCapsuleHeight: 1.0,
     crouchSpeed: 3.5,
   },
+  /** Ostrze plazmowe (#07). Fazy ciosu w s; obrażenia i zasięg w src/data/weapons/plasmaBlade.json. */
+  melee: {
+    lightWindupS: 0.05,
+    lightActiveS: 0.1,
+    lightRecoveryS: 0.16,
+    comboWindowS: 0.3,
+    attackBufferMs: 120,
+    heavyHoldS: 0.22,
+    heavyChargeS: 0.6,
+    heavyWindupS: 0.04,
+    heavyActiveS: 0.12,
+    heavyRecoveryS: 0.38,
+    guardBreakLockS: 0.8,
+  },
   physics: { gravity: -20, maxDynamicBodies: 300 },
   damage: { playerInvulnMs: 250, respawnS: 1.5 },
   weapons: { overheatLockS: 1.5, coolDelayS: 0.25, maxProjectiles: 256 },
+  enemies: { stunKnockback: 6, corpseS: 0.5, separationRadius: 1, wallProbe: 1.5 },
   sandbox: { cubeSpawnHeight: 6 },
 };
 export type Tuning = typeof tuning;

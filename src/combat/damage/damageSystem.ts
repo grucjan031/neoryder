@@ -3,7 +3,7 @@ import type { EntityRegistry } from '../../core/entities';
 import { computeStat } from '../../core/stats';
 import type { Stats } from '../../core/stats';
 import type { Health } from './health';
-import { FRIENDLY_FIRE_TAG } from './types';
+import { BLOCK_SOURCE, FRIENDLY_FIRE_TAG, PIERCE_BLOCK_TAG } from './types';
 import type { DamageInfo } from './types';
 
 export interface DamageTargetOptions {
@@ -75,8 +75,15 @@ export class DamageSystem {
     if (this.timeS < entry.invulnUntilS) return 0;
 
     // 'damageTaken' ma zawsze bazę 1 — liczą się tylko modyfikatory.
+    // Ciężki cios (#heavy) przebija blok: pomija modyfikatory o źródle BLOCK_SOURCE.
+    const pierce = info.tags.includes(PIERCE_BLOCK_TAG);
     const taken = entry.opts.stats
-      ? computeStat(1, entry.opts.stats.modifiers('damageTaken'))
+      ? computeStat(
+          1,
+          entry.opts.stats
+            .modifiers('damageTaken')
+            .filter((mod) => !pierce || mod.source !== BLOCK_SOURCE),
+        )
       : 1;
     const dealt = entry.health.apply({ amount: info.amount * taken });
     if (dealt <= 0) return 0;
@@ -92,6 +99,7 @@ export class DamageSystem {
       tags: info.tags,
       point: info.point ?? null,
       dir: info.dir ?? null,
+      knockback: info.knockback ?? 0,
       killed,
     });
     this.bus.emit('health_changed', {

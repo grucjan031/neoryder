@@ -16,3 +16,9 @@ export interface DamageInfo {
 }
 
 export const FRIENDLY_FIRE_TAG = '#friendly_fire';
+
+/** Tag ciosu przebijającego blok (ciężki atak ostrzem, ciężkie ataki wrogów). */
+export const PIERCE_BLOCK_TAG = '#heavy';
+
+/** Źródło modyfikatora damageTaken nakładanego przez blok (ignorowane przy PIERCE_BLOCK_TAG). */
+export const BLOCK_SOURCE = 'block';

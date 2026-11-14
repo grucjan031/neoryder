@@ -339,7 +339,7 @@ export function registerCommand(name: string, help: string, run: (args: string[]
 ```ts
 // zmienione
 damage_dealt: { source: EntityId | null; target: EntityId; amount: number; tags: readonly string[];
-                point: Vec3 | null; dir: Vec3 | null; killed: boolean };
+                point: Vec3 | null; dir: Vec3 | null; knockback: number; killed: boolean };
 
 // walka i zdrowie (#01)
 health_changed: { id: EntityId; current: number; max: number };

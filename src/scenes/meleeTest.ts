@@ -1,0 +1,496 @@
+import {
+  BoxGeometry,
+  Color,
+  Euler,
+  Group,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  Quaternion,
+  Vector3,
+} from 'three';
+import type { Object3D, Scene as ThreeScene } from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { Collider, World } from '@dimforge/rapier3d-compat';
+import type { GameContext } from '../core/context';
+import type { EntityId } from '../core/events';
+import { EntityRegistry } from '../core/entities';
+import type { InputSnapshot } from '../core/input';
+import type { Vec3 } from '../core/math';
+import { ResourcePool } from '../core/resource';
+import { loadSettings } from '../core/save';
+import { Stats } from '../core/stats';
+import {
+  DamageSystem,
+  Health,
+  Hurtboxes,
+  queryHurtboxes,
+} from '../combat/damage';
+import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
+import { PlasmaBlade } from '../combat/melee/plasmaBlade';
+import type { BladeView } from '../combat/melee/plasmaBlade';
+import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
+import { FpsCamera } from '../player/fpsCamera';
+import { PlayerController } from '../player/playerController';
+import type { PlayerState } from '../player/playerController';
+import { createStyleLights } from '../render/lights';
+import { applyStyle, getMaterial } from '../render/materials';
+import { palette } from '../render/palette';
+import type { Scene } from './index';
+
+interface Dummy {
+  id: EntityId;
+  health: Health;
+  colliders: Collider[];
+  model: Object3D;
+  position: Vec3;
+  respawnS: number | null;
+}
+
+const DUMMY_POSITIONS: Vec3[] = [
+  { x: -2.5, y: 0, z: -4 },
+  { x: 0, y: 0, z: -5 },
+  { x: 2.5, y: 0, z: -4 },
+];
+
+/** Poza ostrza w układzie kamery (pozycja, kąty Euler 'YXZ' w radianach). */
+interface BladePose {
+  pos: [number, number, number];
+  rot: [number, number, number];
+}
+
+const POSE_IDLE: BladePose = {
+  pos: [0.3, -0.3, -0.55],
+  rot: [0.9, 0.15, -0.25],
+};
+const POSE_BLOCK: BladePose = {
+  pos: [0.05, -0.12, -0.5],
+  rot: [0.15, 0, -1.45],
+};
+
+/** Początek i koniec zamachu dla etapów combo i ciężkiego ciosu. */
+const SWINGS: Record<string, [BladePose, BladePose]> = {
+  1: [
+    { pos: [0.45, -0.1, -0.5], rot: [0.5, 0.9, -1.2] },
+    { pos: [-0.35, -0.3, -0.55], rot: [0.5, -0.9, -1.4] },
+  ],
+  2: [
+    { pos: [-0.4, -0.1, -0.5], rot: [0.5, -0.9, 1.2] },
+    { pos: [0.4, -0.3, -0.55], rot: [0.5, 0.9, 1.4] },
+  ],
+  3: [
+    { pos: [0.15, 0.15, -0.45], rot: [1.9, 0.1, -0.1] },
+    { pos: [0.05, -0.45, -0.6], rot: [-0.4, 0, -0.1] },
+  ],
+  heavy: [
+    { pos: [0.35, 0.2, -0.35], rot: [2.2, 0.3, -0.4] },
+    { pos: [0, -0.5, -0.65], rot: [-0.6, 0, 0] },
+  ],
+};
+
+function lerpPose(a: BladePose, b: BladePose, t: number): BladePose {
+  const l = (x: number, y: number) => x + (y - x) * t;
+  return {
+    pos: [l(a.pos[0], b.pos[0]), l(a.pos[1], b.pos[1]), l(a.pos[2], b.pos[2])],
+    rot: [l(a.rot[0], b.rot[0]), l(a.rot[1], b.rot[1]), l(a.rot[2], b.rot[2])],
+  };
+}
+
+const easeOut = (t: number) => 1 - (1 - t) * (1 - t);
+
+/** Scena ostrza plazmowego (#07): combo, ciężki atak, blok, manekiny z odradzaniem. */
+export class MeleeTest implements Scene {
+  readonly id = 'melee-test';
+  private ctx!: GameContext;
+  private three!: ThreeScene;
+  private rapier!: Awaited<ReturnType<typeof initPhysics>>;
+  private world!: World;
+  private entities!: EntityRegistry;
+  private damage!: DamageSystem;
+  private readonly hurtboxes = new Hurtboxes();
+  private player!: PlayerController;
+  private previous!: PlayerState;
+  private fpsCamera!: FpsCamera;
+  private blade!: PlasmaBlade;
+  private energy!: ResourcePool;
+  private readonly playerStats = new Stats({ maxHealth: 100, maxEnergy: 100 });
+  private readonly playerHealth = new Health(() =>
+    this.playerStats.get('maxHealth'),
+  );
+  private readonly dummies: Dummy[] = [];
+  private readonly root = new Group();
+  private readonly bladeModel = new Group();
+  private readonly arcDebug = new Mesh(
+    new BoxGeometry(1, 1, 1),
+    new MeshBasicMaterial({ color: palette.cyan, wireframe: true }),
+  );
+  private readonly off: (() => void)[] = [];
+  private label?: HTMLParagraphElement;
+  private dummyTemplate: Object3D | null = null;
+  private readonly tmp = {
+    m: new Matrix4(),
+    q: new Quaternion(),
+    e: new Euler(0, 0, 0, 'YXZ'),
+    v: new Vector3(),
+    s: new Vector3(1, 1, 1),
+  };
+
+  constructor(private readonly loadModels = true) {}
+
+  async init(ctx: GameContext, three: ThreeScene): Promise<void> {
+    this.ctx = ctx;
+    this.three = three;
+    this.rapier = await initPhysics();
+    this.world = new this.rapier.World({
+      x: 0,
+      y: ctx.tuning.physics.gravity,
+      z: 0,
+    });
+    this.entities = new EntityRegistry(ctx.bus);
+    this.damage = new DamageSystem(ctx.bus, this.entities);
+
+    three.background = new Color(palette.background);
+    three.add(this.root);
+    this.lights = createStyleLights();
+    this.root.add(this.lights);
+    const floor = new Mesh(new BoxGeometry(30, 1, 30), getMaterial('world'));
+    floor.position.y = -0.5;
+    this.root.add(floor);
+    this.world.createCollider(
+      this.rapier.ColliderDesc.cuboid(15, 0.5, 15)
+        .setTranslation(0, -0.5, 0)
+        .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
+    );
+
+    await this.loadAssets();
+    for (const position of DUMMY_POSITIONS) this.spawnDummy(position);
+
+    const playerId = this.entities.create('player', 'player');
+    this.damage.register(playerId, this.playerHealth, {
+      stats: this.playerStats,
+    });
+    this.player = new PlayerController(
+      playerId,
+      this.world,
+      ctx,
+      {
+        x: 0,
+        y:
+          ctx.tuning.player.capsuleHeight / 2 +
+          ctx.tuning.player.controllerOffset,
+        z: -3,
+      },
+      loadSettings(),
+    );
+    this.entities.bindCollider(playerId, this.player.colliderHandle);
+    this.previous = this.player.getState();
+    this.fpsCamera = new FpsCamera(ctx.tuning, playerId, ctx.bus);
+    // Energia tymczasowo w scenie — właścicielem paska energii jest zadanie #11 (Moce).
+    this.energy = new ResourcePool({
+      max: () => this.playerStats.get('maxEnergy'),
+      regenPerS: () => 20,
+      regenDelayS: () => 2,
+    });
+    this.blade = new PlasmaBlade(
+      plasmaBladeDefinition,
+      {
+        owner: playerId,
+        team: 'player',
+        damage: this.damage,
+        stats: this.playerStats,
+        energy: this.energy,
+        queryArc: (reach, width) => this.queryArc(reach, width),
+        aim: () => this.aim(),
+      },
+      ctx.bus,
+      ctx.tuning,
+    );
+
+    this.arcDebug.visible = false;
+    this.root.add(this.bladeModel, this.arcDebug);
+    this.world.step();
+    this.registerCommands();
+    this.off.push(
+      ctx.bus.on('enemy_killed', ({ id }) => {
+        const dummy = this.dummies.find((d) => d.id === id);
+        if (dummy) {
+          dummy.model.visible = false;
+          dummy.respawnS = ctx.tuning.damage.respawnS;
+        }
+      }),
+    );
+    if (typeof document !== 'undefined') {
+      this.label = document.createElement('p');
+      this.label.className = 'hint';
+      this.label.style.top = '12px';
+      this.label.style.bottom = 'auto';
+      document.body.append(this.label);
+    }
+    this.render(1);
+  }
+
+  private async loadAssets(): Promise<void> {
+    const fallbackBlade = new Mesh(
+      new BoxGeometry(0.03, 0.03, 1.1),
+      getMaterial('player'),
+    );
+    fallbackBlade.position.z = -0.55;
+    this.bladeModel.add(fallbackBlade);
+    if (!this.loadModels) return;
+    const loader = new GLTFLoader();
+    try {
+      const [blade, trooper] = await Promise.all([
+        loader.loadAsync('/assets/models/plasma_blade.glb'),
+        loader.loadAsync('/assets/models/enemy_trooper.glb'),
+      ]);
+      applyStyle(blade.scene);
+      applyStyle(trooper.scene);
+      this.bladeModel.remove(fallbackBlade);
+      fallbackBlade.geometry.dispose();
+      this.bladeModel.add(blade.scene);
+      this.dummyTemplate = trooper.scene;
+    } catch {
+      // Bryły zastępcze zostają — scena jest grywalna bez modeli.
+    }
+  }
+
+  private spawnDummy(position: Vec3): void {
+    const id = this.entities.create('dummy', 'enemy');
+    const health = new Health(() => 100);
+    this.damage.register(id, health);
+    const colliders: Collider[] = [];
+    for (const [desc, multiplier] of [
+      [
+        this.rapier.ColliderDesc.capsule(0.35, 0.3).setTranslation(0, 1.05, 0),
+        1,
+      ],
+      [this.rapier.ColliderDesc.ball(0.22).setTranslation(0, 1.65, 0), 1.5],
+    ] as const) {
+      const collider = this.world.createCollider(
+        desc
+          .setTranslation(position.x, desc.translation.y, position.z)
+          .setCollisionGroups(interactionGroups(CollisionGroup.Enemy, 0xffff)),
+      );
+      colliders.push(collider);
+      this.entities.bindCollider(id, collider.handle);
+      this.hurtboxes.add(id, collider, multiplier);
+    }
+    const model = this.dummyTemplate
+      ? this.dummyTemplate.clone(true)
+      : new Mesh(new BoxGeometry(0.6, 1.8, 0.4), getMaterial('enemy'));
+    if (!this.dummyTemplate) model.position.y = 0.9;
+    const holder = new Group();
+    holder.position.set(position.x, 0, position.z);
+    holder.add(model);
+    // Manekin patrzy na gracza (+Z).
+    this.root.add(holder);
+    this.dummies.push({
+      id,
+      health,
+      colliders,
+      model: holder,
+      position,
+      respawnS: null,
+    });
+  }
+
+  private aim(): { origin: Vec3; dir: Vec3 } {
+    const s = this.player.getState();
+    const t = this.ctx.tuning.player;
+    const cosP = Math.cos(s.pitch);
+    return {
+      origin: {
+        x: s.position.x,
+        y:
+          s.position.y -
+          s.height / 2 +
+          s.height -
+          (t.capsuleHeight - t.eyeHeight),
+        z: s.position.z,
+      },
+      dir: {
+        x: -Math.sin(s.yaw) * cosP,
+        y: Math.sin(s.pitch),
+        z: -Math.cos(s.yaw) * cosP,
+      },
+    };
+  }
+
+  /** Łuk cięcia jako prostopadłościan przed oczami, obrócony zgodnie z patrzeniem. */
+  private queryArc(reach: number, width: number) {
+    const { origin, dir } = this.aim();
+    const s = this.player.getState();
+    const center = {
+      x: origin.x + dir.x * reach * 0.5,
+      y: origin.y + dir.y * reach * 0.5,
+      z: origin.z + dir.z * reach * 0.5,
+    };
+    this.tmp.e.set(s.pitch, s.yaw, 0, 'YXZ');
+    this.tmp.q.setFromEuler(this.tmp.e);
+    const rotation = {
+      x: this.tmp.q.x,
+      y: this.tmp.q.y,
+      z: this.tmp.q.z,
+      w: this.tmp.q.w,
+    };
+    const shape = new this.rapier.Cuboid(width / 2, 0.6, reach / 2);
+    if (this.ctx.debug) {
+      this.arcDebug.position.set(center.x, center.y, center.z);
+      this.arcDebug.quaternion.copy(this.tmp.q);
+      this.arcDebug.scale.set(width, 1.2, reach);
+      this.arcDebug.visible = true;
+      this.arcHideS = 0.12;
+    }
+    return queryHurtboxes(
+      this.world,
+      this.hurtboxes,
+      shape,
+      center,
+      rotation,
+      interactionGroups(CollisionGroup.Player, CollisionGroup.Enemy),
+    );
+  }
+
+  private arcHideS = 0;
+  private lights?: ReturnType<typeof createStyleLights>;
+
+  private registerCommands(): void {
+    const commands = this.ctx.commands;
+    if (!commands) return;
+    this.off.push(
+      commands.register(
+        'enemyhit',
+        'enemyhit <dmg> — manekin uderza gracza',
+        (args) => {
+          const amount = Number(args[0]);
+          if (!Number.isFinite(amount) || amount <= 0)
+            return 'Podaj obrażenia > 0.';
+          const source = this.dummies[0]?.id ?? null;
+          const dealt = this.damage.deal(this.player.id, {
+            amount,
+            source,
+            tags: args[1] === 'heavy' ? ['#heavy'] : [],
+          });
+          return `Gracz otrzymał ${dealt.toFixed(1)} (HP ${this.playerHealth.current.toFixed(0)}).`;
+        },
+      ),
+      commands.register(
+        'energy',
+        'energy [n] — pokaż / ustaw energię',
+        (args) => {
+          if (args[0] !== undefined) this.energy.set(Number(args[0]));
+          return `Energia: ${this.energy.current.toFixed(0)}`;
+        },
+      ),
+    );
+  }
+
+  reset(): void {
+    for (const d of this.dummies) {
+      d.health.reset();
+      d.model.visible = true;
+      d.respawnS = null;
+    }
+    this.playerHealth.reset();
+    this.energy.set(this.energy.max);
+  }
+
+  step(dt: number, input: InputSnapshot): void {
+    this.previous = this.player.getState();
+    this.player.step(dt, input);
+    this.blade.step(dt, input);
+    if (dt <= 0) return;
+    this.energy.step(dt);
+    this.damage.step(dt);
+    for (const d of this.dummies) {
+      if (d.respawnS === null) continue;
+      d.respawnS -= dt;
+      if (d.respawnS <= 0) {
+        d.health.reset();
+        d.model.visible = true;
+        d.respawnS = null;
+      }
+    }
+    this.world.gravity.y = this.ctx.tuning.physics.gravity;
+    this.world.timestep = dt;
+    this.world.step();
+  }
+
+  render(alpha: number, frameDt = 1 / 60): void {
+    const camera = this.ctx.camera;
+    if (this.label) {
+      const hp = this.dummies
+        .map((d) => d.health.current.toFixed(0))
+        .join(' / ');
+      const v = this.blade.view();
+      this.label.textContent = `Manekiny: ${hp} · energia ${this.energy.current.toFixed(0)} · HP ${this.playerHealth.current.toFixed(0)} · ${v.state}${v.stage ? ` ${v.stage}` : ''}`;
+    }
+    this.lights?.sync();
+    this.arcHideS -= frameDt;
+    if (this.arcHideS <= 0) this.arcDebug.visible = false;
+    if (!camera) return;
+    const pose = this.fpsCamera.update(
+      frameDt,
+      this.previous,
+      this.player.getState(),
+      alpha,
+    );
+    camera.position.set(pose.position.x, pose.position.y, pose.position.z);
+    camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    if (Math.abs(camera.fov - pose.fov) > 1e-3) {
+      camera.fov = pose.fov;
+      camera.updateProjectionMatrix();
+    }
+    camera.updateMatrixWorld();
+    this.placeBlade(camera.matrixWorld, this.blade.view());
+  }
+
+  /** Ostrze w widoku FPP: poza z maszyny stanów, przeliczona do układu kamery. */
+  private placeBlade(cameraMatrix: Matrix4, view: BladeView): void {
+    let pose = POSE_IDLE;
+    if (view.state === 'blocking') pose = POSE_BLOCK;
+    else if (view.state === 'charging') {
+      const [start] = SWINGS.heavy as [BladePose, BladePose];
+      pose = lerpPose(POSE_IDLE, start, easeOut(view.charge));
+    } else if (view.state === 'light' || view.state === 'heavy') {
+      const key = view.state === 'heavy' ? 'heavy' : String(view.stage);
+      const [start, end] = (SWINGS[key] ?? SWINGS[1]) as [BladePose, BladePose];
+      if (view.phase === 'windup')
+        pose = lerpPose(POSE_IDLE, start, easeOut(view.phaseT));
+      else if (view.phase === 'active')
+        pose = lerpPose(start, end, easeOut(view.phaseT));
+      else pose = lerpPose(end, POSE_IDLE, view.phaseT * view.phaseT);
+    }
+    const { m, q, e, v, s } = this.tmp;
+    e.set(pose.rot[0], pose.rot[1], pose.rot[2], 'YXZ');
+    q.setFromEuler(e);
+    v.set(pose.pos[0], pose.pos[1], pose.pos[2]);
+    m.compose(v, q, s);
+    this.bladeModel.matrixAutoUpdate = false;
+    this.bladeModel.matrix.multiplyMatrices(cameraMatrix, m);
+    this.bladeModel.matrixWorldNeedsUpdate = true;
+  }
+
+  query(name: string): unknown {
+    if (name === 'dummyHp') return this.dummies.map((d) => d.health.current);
+    if (name === 'bladeState') return this.blade.view().state;
+    if (name === 'blocking') return this.blade.blocking;
+    if (name === 'energy') return this.energy.current;
+    if (name === 'playerHp') return this.playerHealth.current;
+    return undefined;
+  }
+
+  dispose(): void {
+    for (const off of this.off.splice(0)) off();
+    this.blade.dispose();
+    this.fpsCamera.dispose();
+    this.player.dispose();
+    this.world.free();
+    this.label?.remove();
+    this.arcDebug.geometry.dispose();
+    this.arcDebug.material.dispose();
+    this.three.remove(this.root);
+    this.root.clear();
+    this.three.background = null;
+  }
+}

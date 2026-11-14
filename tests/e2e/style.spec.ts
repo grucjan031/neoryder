@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { SIM_TIMEOUT } from './helpers';
 
 test('style-test zachowuje paletę i obrys bez błędów konsoli', async ({
   page,
@@ -22,6 +23,8 @@ test('style-test zachowuje paletę i obrys bez błędów konsoli', async ({
     'style-test.png',
     {
       maxDiffPixelRatio: 0.02,
+      // Na CI (SwiftShader + obrys) pojedynczy zrzut trwa długo; stabilizacja wymaga 2 zgodnych.
+      timeout: SIM_TIMEOUT,
     },
   );
   expect(errors).toEqual([]);

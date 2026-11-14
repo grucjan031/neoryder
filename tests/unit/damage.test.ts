@@ -153,6 +153,7 @@ describe('DamageSystem', () => {
       tags: ['#gun'],
       point,
       dir,
+      knockback: 0,
       killed: false,
     });
     expect(dealt[1]).toMatchObject({

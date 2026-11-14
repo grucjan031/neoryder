@@ -18,6 +18,8 @@ export interface GameEvents {
     tags: readonly string[];
     point: Vec3 | null;
     dir: Vec3 | null;
+    /** Impuls odrzutu (N·s) z DamageInfo.knockback; 0, gdy brak. */
+    knockback: number;
     killed: boolean;
   };
   enemy_killed: {

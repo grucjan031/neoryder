@@ -63,7 +63,7 @@ describe('FpsCamera', () => {
   it('trafienie gracza trzęsie mocniej niż cios zadany przez gracza', () => {
     const bus = new EventBus();
     const cam = new FpsCamera(tuning, 1, bus);
-    const hit = { amount: 20, tags: [], point: null, dir: null, killed: false };
+    const hit = { amount: 20, tags: [], point: null, dir: null, knockback: 0, killed: false };
     bus.emit('damage_dealt', { ...hit, source: 2, target: 1 });
     const taken = cam.currentTrauma;
     cam.dispose();

@@ -5,5 +5,5 @@ export { Hitbox } from './hitbox';
 export type { HitboxSpec, StrikeExtra } from './hitbox';
 export { Hurtboxes, queryHurtboxes } from './hurtbox';
 export type { Hurtbox } from './hurtbox';
-export { FRIENDLY_FIRE_TAG } from './types';
+export { BLOCK_SOURCE, FRIENDLY_FIRE_TAG, PIERCE_BLOCK_TAG } from './types';
 export type { DamageInfo } from './types';
