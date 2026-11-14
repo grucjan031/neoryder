@@ -6,7 +6,7 @@ Architektura: `docs/adr/0004-arsenal-f2.md` (zaakceptowana 2026-11-14 razem z br
 
 ## Stan (2026-11-14)
 
-Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 12. W toku: 05 (Codex).
+Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 05, 12. W toku: 04 (Codex), 13.
 
 ## Decyzje wspólne
 
@@ -23,8 +23,8 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 12. W toku: 05 (C
 | 01  | Kontrakty F2: statusy w obrażeniach, akcje wejścia, zdarzenia        | Architekt         | —          | S     | gotowe |
 | 02  | `StatusSystem`: podpalenie, przeciążenie, ogłuszenie                 | Architekt         | 01         | M     | gotowe |
 | 03  | Tryby strzału i dane broni: pistolet, karabin, rozpraszacz, snajperka | Bronie            | 01         | L     | gotowe |
-| 04  | Ciągły laser i granat EMP                                            | Bronie            | 02, 03     | M     | —      |
-| 05  | Rejestr mocy, drugi slot, Fala uderzeniowa                           | Moce              | 01         | M     | w toku |
+| 04  | Ciągły laser i granat EMP                                            | Bronie            | 02, 03     | M     | w toku |
+| 05  | Rejestr mocy, drugi slot, Fala uderzeniowa                           | Moce              | 01         | M     | gotowe |
 | 06  | Skupienie: osobna skala czasu gracza                                 | Architekt + Moce  | 05         | M     | —      |
 | 07  | Błyskawica (łańcuch, przeciążenie)                                   | Moce              | 02, 05     | S     | —      |
 | 08  | Bariera                                                              | Moce              | 05         | S     | —      |
@@ -32,7 +32,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01, 02, 03, 12. W toku: 05 (C
 | 10  | Rzut ostrzem i dash-cięcie                                           | Walka wręcz       | 01         | M     | —      |
 | 11  | Warianty ostrzy: podwójne i dwustronne                               | Walka wręcz       | 10         | M     | —      |
 | 12  | `EnemyDirector`: tokeny ataku, flankowanie, ostrzał zaporowy         | AI wrogów         | 01         | M     | gotowe |
-| 13  | Snajper i Dron                                                       | AI wrogów         | 12         | M     | —      |
+| 13  | Snajper i Dron                                                       | AI wrogów         | 12         | M     | w toku |
 | 14  | Tarczownik i Egzekutor                                               | AI wrogów         | 02, 12     | L     | —      |
 | 15  | Ekwipunek, przełączanie broni, HUD mocy i broni                      | UI/UX + Architekt | 03, 05     | M     | —      |
 | 16  | Synergie na tagach i 3 hybrydy                                       | Progresja         | 02, 03, 05 | M     | —      |

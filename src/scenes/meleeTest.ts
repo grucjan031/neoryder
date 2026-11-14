@@ -12,6 +12,8 @@ import {
 import type { Object3D, Scene as ThreeScene } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
+import { z } from 'zod';
+import pushTestData from '../data/scenes/pushTest.json';
 import type { GameContext } from '../core/context';
 import type { EntityId } from '../core/events';
 import { EntityRegistry } from '../core/entities';
@@ -28,6 +30,9 @@ import {
 import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
 import { PlayerEnergy } from '../combat/powers/energy';
 import { pushDefinition, ResonancePush } from '../combat/powers/push';
+import type { PowerDeps } from '../combat/powers/power';
+import { createPower, powerDefinitions } from '../combat/powers/registry';
+import { PowerSlots } from '../combat/powers/slots';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
@@ -59,6 +64,22 @@ const DUMMY_POSITIONS: Vec3[] = [
   { x: 0, y: 0, z: -5 },
   { x: 2.5, y: 0, z: -4 },
 ];
+
+const pushTestDefinition = z
+  .object({
+    slots: z.tuple([z.string().min(1), z.string().min(1)]),
+    dummyPositions: z
+      .array(
+        z.object({
+          x: z.number().finite(),
+          y: z.number().finite(),
+          z: z.number().finite(),
+        }),
+      )
+      .min(1),
+    controls: z.string().min(1),
+  })
+  .parse(pushTestData);
 
 /** Parametry wieżyczki sceny testowej (nie rozgrywki — tylko do ćwiczenia parowania). */
 const TURRET_INTERVAL_S = 1.6;
@@ -103,8 +124,8 @@ export class MeleeTest implements Scene {
     new BoxGeometry(1, 1, 1),
     new MeshBasicMaterial({ color: palette.cyan, wireframe: true }),
   );
-  private readonly off: (() => void)[] = [];
-  private label?: HTMLParagraphElement;
+  protected readonly off: (() => void)[] = [];
+  protected label?: HTMLParagraphElement;
   private dummyTemplate: Object3D | null = null;
   private readonly tmp = {
     m: new Matrix4(),
@@ -152,7 +173,7 @@ export class MeleeTest implements Scene {
       );
     }
     await this.loadAssets();
-    for (const position of DUMMY_POSITIONS) this.spawnDummy(position);
+    for (const position of this.dummyPositions()) this.spawnDummy(position);
 
     const playerId = this.entities.create('player', 'player');
     this.damage.register(playerId, this.playerHealth, {
@@ -213,25 +234,22 @@ export class MeleeTest implements Scene {
     this.off.push(
       this.projectiles.addInterceptor(this.blade.interceptProjectile),
     );
-    this.push = new ResonancePush(
-      pushDefinition,
-      {
-        owner: playerId,
-        damage: this.damage,
-        energy: this.energy,
-        aim: () => this.aim(),
-        targets: () =>
-          this.dummies
-            .filter((d) => d.respawnS === null)
-            .map((d) => ({
-              id: d.id,
-              position: { x: d.pos.x, y: 1.1, z: d.pos.z },
-            })),
-        castWall: (origin, dir, max) => this.castWall(origin, dir, max),
-      },
-      ctx.bus,
-      ctx.tuning,
-    );
+    this.initPowers({
+      bus: ctx.bus,
+      tuning: ctx.tuning,
+      owner: playerId,
+      damage: this.damage,
+      energy: this.energy,
+      aim: () => this.aim(),
+      targets: () =>
+        this.dummies
+          .filter((d) => d.respawnS === null)
+          .map((d) => ({
+            id: d.id,
+            position: { x: d.pos.x, y: 1.1, z: d.pos.z },
+          })),
+      castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+    });
 
     this.arcDebug.visible = false;
     this.root.add(this.bladeModel.root, this.arcDebug);
@@ -265,6 +283,18 @@ export class MeleeTest implements Scene {
       document.body.append(this.label);
     }
     this.render(1);
+  }
+
+  protected dummyPositions(): readonly Vec3[] {
+    return DUMMY_POSITIONS;
+  }
+
+  protected initPowers(deps: PowerDeps): void {
+    this.push = new ResonancePush(pushDefinition, deps, deps.bus, deps.tuning);
+  }
+
+  protected stepPowers(dt: number, input: InputSnapshot): void {
+    this.push.step(dt, input);
   }
 
   private async loadAssets(): Promise<void> {
@@ -501,7 +531,7 @@ export class MeleeTest implements Scene {
     this.previous = this.player.getState();
     this.player.step(dt, input);
     this.blade.step(dt, input);
-    this.push.step(dt, input);
+    this.stepPowers(dt, input);
     if (dt <= 0) return;
     this.projectileView.capturePrevious();
     this.stepTurret(dt);
@@ -589,6 +619,70 @@ export class MeleeTest implements Scene {
 export class PushTest extends MeleeTest {
   override readonly id = 'push-test';
   protected override withWall = true;
+  private slots!: PowerSlots;
+  private powerDeps!: PowerDeps;
+
+  protected override dummyPositions(): readonly Vec3[] {
+    return pushTestDefinition.dummyPositions;
+  }
+
+  protected override initPowers(deps: PowerDeps): void {
+    this.powerDeps = deps;
+    this.slots = new PowerSlots(
+      pushTestDefinition.slots.map((id) => createPower(id, deps)),
+    );
+  }
+
+  override async init(ctx: GameContext, three: ThreeScene): Promise<void> {
+    await super.init(ctx, three);
+    if (!ctx.commands) return;
+    this.off.push(
+      ctx.commands.register(
+        'power',
+        'power <slot 1|2> <id> — wstaw moc do slotu',
+        (args) => {
+          const slot = args[0] === '1' ? 0 : args[0] === '2' ? 1 : null;
+          const id = args[1];
+          if (
+            slot === null ||
+            !id ||
+            args.length !== 2 ||
+            !powerDefinitions.has(id)
+          )
+            return `Użycie: power <1|2> <id>. Dostępne moce: ${[...powerDefinitions.keys()].join(', ')}`;
+          const power = createPower(id, this.powerDeps);
+          this.slots.get(slot)?.reset();
+          this.slots = new PowerSlots(
+            [0, 1].map((i) => (i === slot ? power : this.slots.get(i))),
+          );
+          return `Slot ${slot + 1}: ${power.def.name}`;
+        },
+      ),
+    );
+  }
+
+  protected override stepPowers(dt: number, input: InputSnapshot): void {
+    this.slots.step(dt, input);
+  }
+
+  override reset(): void {
+    super.reset();
+    this.slots.reset();
+  }
+
+  override render(alpha: number, frameDt = 1 / 60): void {
+    super.render(alpha, frameDt);
+    if (this.label)
+      this.label.textContent += ` · ${pushTestDefinition.controls}`;
+  }
+
+  override query(name: string): unknown {
+    if (name === 'powerSlots')
+      return [0, 1].map((i) => this.slots.get(i)?.def.id ?? null);
+    if (name === 'powerCooldowns')
+      return [0, 1].map((i) => this.slots.get(i)?.cooldownRemaining ?? 0);
+    return super.query(name);
+  }
 }
 
 /** Wariant z wieżyczką do ćwiczenia parowania pocisków (#10). */
