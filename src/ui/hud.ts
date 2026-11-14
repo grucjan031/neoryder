@@ -10,6 +10,8 @@ interface HudOptions {
   playerId: EntityId;
   root?: HTMLElement;
   onRetry?: () => void;
+  /** F2-17: drugi przycisk na ekranie śmierci — powrót do wyboru buildu. */
+  onChangeBuild?: () => void;
   loadout?: HudLoadout;
 }
 
@@ -89,6 +91,11 @@ export class Hud {
   private readonly unsubscribe: (() => void)[];
   private readonly root = element('div', 'hud');
   private readonly retryButton = element('button', 'hud__retry', text.retry);
+  private readonly changeBuildButton = element(
+    'button',
+    'hud__retry hud__change-build',
+    text.changeBuild,
+  );
   private readonly death = element('section', 'hud__death');
   private readonly denial = createFlash('hud__denial');
   private readonly damage = createFlash('hud__damage');
@@ -126,10 +133,11 @@ export class Hud {
     this.death.setAttribute('role', 'dialog');
     this.death.setAttribute('aria-label', text.died);
     this.retryButton.type = 'button';
-    this.death.append(
-      element('h1', 'hud__death-title', text.died),
-      this.retryButton,
-    );
+    this.changeBuildButton.type = 'button';
+    const actions = element('div', 'hud__actions');
+    actions.append(this.retryButton);
+    if (opts.onChangeBuild) actions.append(this.changeBuildButton);
+    this.death.append(element('h1', 'hud__death-title', text.died), actions);
     this.root.append(
       this.damage.node,
       meters,
@@ -142,6 +150,7 @@ export class Hud {
     (opts.root ?? document.body).append(this.root);
     this.setLoadout(opts.loadout ?? { weapons: [], powers: [] });
     this.retryButton.addEventListener('click', this.retry);
+    this.changeBuildButton.addEventListener('click', this.changeBuild);
     window.addEventListener('keydown', this.onKeyDown, true);
     let overheated = false;
     this.unsubscribe = [
@@ -273,6 +282,14 @@ export class Hud {
     this.opts.onRetry?.();
   };
 
+  private readonly changeBuild = (): void => {
+    if (this.disposed || this.death.hidden) return;
+    this.death.hidden = true;
+    this.previousFocus = null;
+    this.changeBuildButton.blur();
+    this.opts.onChangeBuild?.();
+  };
+
   private readonly onKeyDown = (event: KeyboardEvent): void => {
     if (this.death.hidden || event.repeat) return;
     if (
@@ -298,6 +315,7 @@ export class Hud {
     for (const unsubscribe of this.unsubscribe) unsubscribe();
     window.removeEventListener('keydown', this.onKeyDown, true);
     this.retryButton.removeEventListener('click', this.retry);
+    this.changeBuildButton.removeEventListener('click', this.changeBuild);
     this.denial.dispose();
     this.damage.dispose();
     for (const slot of this.powerSlots) slot.denial.dispose();

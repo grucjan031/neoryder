@@ -1,0 +1,8 @@
+{
+  "id": "bladeDancer",
+  "name": "Tancerz ostrzy",
+  "blade": "plasmaBlade",
+  "weapons": ["pistol"],
+  "powers": ["push", "shockwave"],
+  "tags": ["#build_blade", "#build_resonance"]
+}

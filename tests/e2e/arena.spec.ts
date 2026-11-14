@@ -9,7 +9,7 @@ test('arena: fale startują, zabicie fali przechodzi dalej, śmierć i powtórka
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=arena&debug=1&seed=arena-e2e');
+  await page.goto('/?scene=arena&debug=1&seed=arena-e2e&loadout=classic');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
     .toBe('arena');
@@ -19,7 +19,7 @@ test('arena: fale startują, zabicie fali przechodzi dalej, śmierć i powtórka
   await expect
     .poll(() => q('enemies'), { timeout: SIM_TIMEOUT })
     .toBeGreaterThan(0);
-  // Fala 1 ma 2 wrogów — czekamy, aż obaj się pojawią, i zabijamy ich.
+  // Czekamy, aż cała fala 1 się pojawi, i zabijamy ją.
   await expect
     .poll(() => q('phase'), { timeout: SIM_TIMEOUT })
     .toBe('fighting');

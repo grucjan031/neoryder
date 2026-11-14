@@ -99,6 +99,20 @@ export class Weapon {
     if (dt > 0) this.advanceCooling(dt, false);
   }
 
+  /**
+   * Natychmiastowe schłodzenie z zewnątrz (synergia `cool_weapon`, F2-17). Zdejmuje `amount`
+   * ciepła; gdy ciepło spada do zera („full”), zdejmuje też blokadę przegrzania.
+   */
+  vent(amount: number | 'full'): void {
+    const left =
+      amount === 'full'
+        ? 0
+        : Math.max(0, this.heat.current - Math.max(0, amount));
+    this.heat.set(left);
+    if (left === 0) this.lockS = 0;
+    this.emitHeat();
+  }
+
   private advanceCooling(dt: number, publish: boolean): void {
     // Zewnętrzne podgrzanie zasobu również uruchamia blokadę.
     if (

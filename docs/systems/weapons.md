@@ -276,6 +276,8 @@ Aktywna dostaje `step(dt, input)` ze spustem R. Pozostałe dostają `cool(dt)`:
 chłodzenie z tym samym opóźnieniem, odliczanie blokady przegrzania i czasu
 do kolejnego strzału, bez `heat_changed` ani strzałów. Metoda zwalnia też spust,
 zeruje zegar tików i wyłącza promień; `cool(0)` robi tylko tę dezaktywację.
+`vent(amount | 'full')` (F2-17, efekt synergii `cool_weapon`) zdejmuje ciepło od razu;
+gdy spadnie do zera, zdejmuje też blokadę przegrzania, i emituje `heat_changed`.
 Dotychczasowe zachowanie aktywnej broni pozostaje bez zmian.
 
 Wybór 1–3 zachowuje ciepło per broń i publikuje kolejno `weapon_switched`

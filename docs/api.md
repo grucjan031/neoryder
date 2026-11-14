@@ -469,6 +469,7 @@ export class Weapon {
   readonly beam: { active: boolean; from: Vec3; to: Vec3 } | null;
   step(dt: number, input: WeaponInput): void;
   cool(dt: number): void;                       // nieaktywna broń: chłodzenie i zegary bez zdarzeń; zwalnia spust/promień
+  vent(amount: number | 'full'): void;          // F2-17: natychmiastowe schłodzenie (synergia cool_weapon); przy zerze zdejmuje blokadę, emituje heat_changed
   reset(): void;
 }
 export class Blaster extends Weapon {} // zgodność z F1: dane blastera, to samo zachowanie
@@ -634,6 +635,31 @@ export class SynergySystem {
   reset(): void; dispose(): void;
 }
 // efekty: add_energy | cool_weapon | stat_modifier_timed | chain_on_hit (ADR 0004 pkt 5)
+```
+
+### Ekran wyboru buildu i fale F2 (F2-17)
+
+```ts
+// src/scenes/arena.ts
+class Arena {
+  constructor(loadModels?: boolean, selectBuild?: boolean);  // rejestr scen: new Arena(true, true); testy: domyślnie bez ekranu
+  chooseLoadout(id: string): boolean;             // nowy run od fali 1 z ekwipunkiem + ctx.resume(); false dla nieznanego id
+}
+// Stany: 'select' (ekran wyboru, fale stoją, gracz nie krokuje) | 'playing' | 'dead'.
+// selectBuild i brak ?loadout= → start w 'select'; ?loadout=<id> pomija ekran.
+// Komenda debug `build` (tylko z selectBuild): reset i powrót do ekranu.
+// query: 'state', 'synergies' (SynergySystem.active()), 'buildSelect' (czy ekran widoczny).
+// SynergySystem w arenie: tagi z Loadout.tags przy każdym resecie; stats = PlayerController.stats
+// (tam żyją dashCooldown i moveSpeed), addEnergy → PlayerEnergy.add, coolWeapon → aktywna broń vent().
+
+// src/ui/buildSelect.ts — teksty i lista kart w src/data/ui/buildSelect.pl.json
+export function buildOptions(data: unknown, loadouts?, synergies?): { text: BuildSelectText; options: BuildOption[] };
+// BuildOption: id, name, description, hybrid, weapons/powers (nazwy), synergies (nazwy aktywnych synergii)
+export class BuildSelect {
+  constructor(opts: { onSelect(loadoutId: string): void; root?: HTMLElement; data?: unknown });
+  readonly visible: boolean; show(): void; hide(): void; dispose(): void;
+}
+// HudOptions.onChangeBuild?: () => void — przycisk „Zmień build” na ekranie śmierci.
 ```
 
 ### Wejście (F2-01)

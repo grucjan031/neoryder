@@ -51,9 +51,11 @@ import { BeamRenderer } from '../render/beamRenderer';
 import { ExplosionRenderer } from '../render/explosionRenderer';
 import { loadoutDefinitions } from '../progression/loadout';
 import type { Loadout } from '../progression/loadout';
+import { SynergySystem } from '../progression/synergies';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
+import { BuildSelect } from '../ui/buildSelect';
 import { Hud } from '../ui/hud';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
@@ -86,7 +88,8 @@ const MODEL_FILES: Record<string, string> = {
   crate_small: 'crate_small',
 };
 
-type ArenaState = 'playing' | 'dead';
+/** 'select' — ekran wyboru buildu przed falą 1 (F2-17): fale stoją, gracz czeka. */
+type ArenaState = 'select' | 'playing' | 'dead';
 
 /**
  * Arena z falami (F1 #16) — pierwsza pełna pętla walki: gracz z ostrzem (combo, ciężki, blok,
@@ -144,8 +147,17 @@ export class Arena implements Scene {
   private debris!: DebrisSystem;
   private debrisView!: DebrisRenderer;
   private shatter!: EnemyShatter;
+  private synergies!: SynergySystem;
+  private buildSelect?: BuildSelect;
 
-  constructor(private readonly loadModels = true) {}
+  /**
+   * @param selectBuild F2-17: bez `?loadout=` arena zaczyna od ekranu wyboru buildu
+   *   (rejestr scen). Domyślnie wyłączone, żeby testy i sceny F1 startowały od razu z `classic`.
+   */
+  constructor(
+    private readonly loadModels = true,
+    private readonly selectBuild = false,
+  ) {}
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
@@ -158,6 +170,7 @@ export class Arena implements Scene {
       loadoutDefinitions.get('classic')!;
     if (requested !== null && !loadoutDefinitions.has(requested) && ctx.debug)
       console.warn(`Nieznany ekwipunek: ${requested}. Wybrano classic.`);
+    const choosing = this.selectBuild && requested === null;
     this.three = three;
     this.rapier = await initPhysics();
     this.world = new this.rapier.World({
@@ -229,6 +242,9 @@ export class Arena implements Scene {
         playerId,
         loadout: this.loadout,
         onRetry: () => this.retry(),
+        ...(this.selectBuild
+          ? { onChangeBuild: () => this.openBuildSelect() }
+          : {}),
       });
     this.energy = new PlayerEnergy(
       playerId,
@@ -274,6 +290,23 @@ export class Arena implements Scene {
     await this.blasterView.load(this.loadModels);
     this.root.add(this.blasterView.root);
 
+    // F2-17: hybrydy z tagów ekwipunku. Statystyki dashu i ruchu żyją w PlayerController.stats.
+    this.synergies = new SynergySystem(ctx.bus, {
+      user: playerId,
+      addEnergy: (n) => this.energy.add(n),
+      coolWeapon: (amount) => this.weapon.vent(amount),
+      stats: this.player.stats,
+      damage: this.damage,
+      statuses: this.statuses,
+      targets: () => this.enemyIds(),
+      position: (id) => this.enemyPosition(id),
+    });
+    this.synergies.setTags(this.loadout.tags);
+    if (this.selectBuild && typeof document !== 'undefined')
+      this.buildSelect = new BuildSelect({
+        onSelect: (id) => this.chooseLoadout(id),
+      });
+
     this.director = new WaveDirector(
       waves,
       {
@@ -294,7 +327,8 @@ export class Arena implements Scene {
     this.registerCommands(playerId);
     this.emitHealth();
     this.world.step();
-    this.director.start();
+    if (choosing) this.enterBuildSelect();
+    else this.director.start();
     this.render(1);
   }
 
@@ -565,6 +599,7 @@ export class Arena implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     this.previous = this.player.getState();
+    if (this.state === 'select') return;
     if (this.state === 'dead') {
       if (dt > 0) this.deadS += dt;
       this.manager.step(dt);
@@ -585,6 +620,7 @@ export class Arena implements Scene {
       return;
     }
     this.energy.step(pdt);
+    this.synergies.step(pdt);
     this.damage.step(dt);
     this.statuses.step(dt);
     this.projectileView.capturePrevious();
@@ -675,6 +711,9 @@ export class Arena implements Scene {
     this.debris.clear();
     this.blade.reset();
     this.createEquipment();
+    this.synergies.reset();
+    this.synergies.setTags(this.loadout.tags);
+    this.buildSelect?.hide();
     this.hud?.setLoadout(this.loadout);
     this.explosionView.render(this.ctx.tuning.vfx.explosionDurationS);
     this.health.reset();
@@ -694,6 +733,32 @@ export class Arena implements Scene {
     this.ctx.resume?.();
   }
 
+  /**
+   * Wybór z ekranu buildu (gest użytkownika, F2-17): nowy run od fali 1 z tym ekwipunkiem
+   * i przechwycenie myszy. Zwraca false dla nieznanego id (stan bez zmian).
+   */
+  chooseLoadout(id: string): boolean {
+    const selected = loadoutDefinitions.get(id);
+    if (!selected) return false;
+    this.loadout = selected;
+    this.reset();
+    this.ctx.resume?.();
+    return true;
+  }
+
+  /** Powrót do ekranu wyboru (HUD po śmierci, komenda `build`): czysta arena, fale stoją. */
+  private openBuildSelect(): void {
+    this.reset();
+    this.enterBuildSelect();
+  }
+
+  private enterBuildSelect(): void {
+    this.director.stop();
+    this.state = 'select';
+    if (typeof document !== 'undefined') document.exitPointerLock?.();
+    this.buildSelect?.show();
+  }
+
   private registerCommands(playerId: EntityId): void {
     const register = (
       name: string,
@@ -711,6 +776,11 @@ export class Arena implements Scene {
       this.reset();
       return `Ekwipunek: ${selected.name}`;
     });
+    if (this.selectBuild)
+      register('build', 'build — ekran wyboru buildu (reset areny)', () => {
+        this.openBuildSelect();
+        return 'Wybierz build.';
+      });
     register(
       'spawn',
       `spawn <id> [n] — ${availableEnemyIds().join(', ')}`,
@@ -821,6 +891,12 @@ export class Arena implements Scene {
         return this.weapon.beam;
       case 'dead':
         return this.state === 'dead';
+      case 'state':
+        return this.state;
+      case 'synergies':
+        return this.synergies.active();
+      case 'buildSelect':
+        return this.buildSelect?.visible ?? false;
       case 'kills':
         return this.kills;
       case 'spawnLog':
@@ -839,6 +915,8 @@ export class Arena implements Scene {
   dispose(): void {
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
+    this.buildSelect?.dispose();
+    this.synergies.dispose();
     this.powers.reset();
     this.beamView.dispose();
     this.explosionView.dispose();

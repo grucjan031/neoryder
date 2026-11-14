@@ -1,0 +1,8 @@
+{
+  "id": "resonancePistolero",
+  "name": "Pistolero Rezonansu",
+  "blade": "plasmaBlade",
+  "weapons": ["pistol", "scatter"],
+  "powers": ["shockwave", "push"],
+  "tags": ["#build_resonance", "#build_gunner"]
+}

@@ -36,7 +36,7 @@ Bramka F1 zaliczona (playtest człowieka). Gotowe: 01–05, 07, 12–16; 06 — 
 | 14  | Tarczownik i Egzekutor                                               | AI wrogów         | 02, 12     | L     | gotowe |
 | 15  | Ekwipunek, przełączanie broni, HUD mocy i broni                      | UI/UX + Architekt | 03, 05     | M     | gotowe |
 | 16  | Synergie na tagach i 3 hybrydy                                       | Progresja         | 02, 03, 05 | M     | gotowe |
-| 17  | Ekran wyboru buildu i fale F2 na arenie                              | Architekt + UI/UX | 13, 14, 15 | M     | —      |
+| 17  | Ekran wyboru buildu i fale F2 na arenie                              | Architekt + UI/UX | 13, 14, 15 | M     | gotowe |
 | 18  | Symulator TTK (`npm run balance`) i `docs/balance.md`                | QA                | 04, 09, 14 | M     | —      |
 
 Graf jest acykliczny (zależności tylko od niższych numerów). Ścieżka krytyczna: 01 → 05 → 15 → 17 oraz 01 → 12 → 14 → 17. Po 01 równolegle mogą ruszyć 02, 03, 05, 10 i 12 (rozłączne foldery).

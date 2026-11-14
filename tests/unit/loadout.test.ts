@@ -15,12 +15,15 @@ const classic = {
 };
 
 describe('Loadout', () => {
-  it('loads the four presets and preserves the F1 default', () => {
+  it('loads the seven presets (F2-17 hybrids) and preserves the F1 default', () => {
     expect([...loadoutDefinitions.keys()].sort()).toEqual([
       'blade',
+      'bladeDancer',
       'classic',
       'gunner',
       'resonance',
+      'resonancePistolero',
+      'stormGunner',
     ]);
     expect(loadoutDefinitions.get('classic')).toEqual(classic);
     expect(loadoutDefinitions.get('blade')).toMatchObject({

@@ -6,6 +6,7 @@ import { Rng } from '../../src/core/rng';
 import { SIM_DT } from '../../src/core/loop';
 import arenaData from '../../src/data/waves/arena.json';
 import { loadWaves, WaveDirector } from '../../src/world/waves';
+import { availableEnemyIds, enemyRegistry } from '../../src/enemies/registry';
 import type { WavesDefinition } from '../../src/world/waves';
 
 const small: WavesDefinition = {
@@ -75,6 +76,16 @@ describe('dane fal areny', () => {
     for (let i = 1; i < sizes.length; i++)
       expect(sizes[i]).toBeGreaterThanOrEqual(sizes[i - 1] ?? 0);
     expect(() => loadWaves({ ...def, waves: [] })).toThrow(/fal/);
+  });
+
+  it('fale F2 (F2-17): 12 fal, tylko znane archetypy, każdy archetyp z rejestru występuje', () => {
+    const def = loadWaves(arenaData);
+    expect(def.waves).toHaveLength(12);
+    const used = new Set(
+      def.waves.flatMap((w) => w.groups.map((g) => g.enemy)),
+    );
+    for (const id of used) expect(enemyRegistry.has(id)).toBe(true);
+    expect([...used].sort()).toEqual(availableEnemyIds().slice().sort());
   });
 });
 

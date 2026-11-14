@@ -66,6 +66,31 @@ describe('wydajność symulacji areny', () => {
     expect(perStepMs).toBeLessThan(6);
   }, 60_000);
 
+  it('30 wrogów z mieszanki fal F2 (wszystkie archetypy) mieści się w budżecie', async () => {
+    const { scene, commands } = await setup();
+    commands.execute('god');
+    for (const [kind, n] of [
+      ['assaulter', 8],
+      ['gunner', 6],
+      ['drone', 6],
+      ['sniper', 4],
+      ['shielder', 4],
+      ['executor', 2],
+    ] as const)
+      commands.execute(`spawn ${kind} ${n}`);
+    expect(scene.query('enemies')).toBe(30);
+    for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+    const steps = 600;
+    const t0 = performance.now();
+    for (let i = 0; i < steps; i++) scene.step(SIM_DT, idle);
+    const perStepMs = (performance.now() - t0) / steps;
+    console.info(
+      `[perf] arena 30 wrogów F2: ${perStepMs.toFixed(3)} ms / krok symulacji`,
+    );
+    expect(scene.query('enemies')).toBeGreaterThanOrEqual(30);
+    expect(perStepMs).toBeLessThan(6);
+  }, 60_000);
+
   it('masowe zabójstwo 30 wrogów naraz (odłamki) nie przekracza budżetu', async () => {
     const { scene, commands } = await setup();
     commands.execute('spawn assaulter 30');

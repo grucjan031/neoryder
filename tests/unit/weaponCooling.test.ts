@@ -71,3 +71,31 @@ it('starts an externally heated inactive lock silently and advances the shot coo
   weapon.step(SIM_DT, firing);
   expect(spawn).toHaveBeenCalledTimes(2);
 });
+
+it('vent (cool_weapon): częściowe schłodzenie zostawia blokadę, pełne zdejmuje ciepło i blokadę', () => {
+  const bus = new EventBus();
+  const weapon = new Weapon(
+    1,
+    { bus, rng: new Rng('vent'), tuning },
+    new Stats({ heatCapacity: 100, coolingRate: 45 }),
+    { projectiles: { spawn: vi.fn(() => 1) } },
+    weaponDefinitions.get('pistol')!,
+  );
+  const heat = vi.fn();
+  bus.on('heat_changed', heat);
+  weapon.overheat();
+  weapon.vent(30);
+  expect(weapon.heat.current).toBe(70);
+  expect(weapon.overheated).toBe(true);
+  weapon.vent(-5);
+  expect(weapon.heat.current).toBe(70);
+  weapon.vent('full');
+  expect(weapon.heat.current).toBe(0);
+  expect(weapon.overheated).toBe(false);
+  expect(heat).toHaveBeenLastCalledWith({
+    id: 1,
+    current: 0,
+    max: 100,
+    overheated: false,
+  });
+});

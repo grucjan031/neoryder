@@ -60,7 +60,7 @@ Zdarzenia z tagiem `#synergy` nigdy nie wyzwalają synergii. Obrażenia z `chain
 
 `new SynergySystem(bus, ctx, defs?)`, `setTags`, `active()` (id aktywnych — debug/HUD), `step(dt)` (dt ≤ 0 nic nie zmienia), `reset()` (zdejmuje modyfikatory, zeruje odnowienia), `dispose()` (odpina słuchaczy + reset).
 
-`SynergyContext`: `user`, `addEnergy`, `coolWeapon`, `stats`, `damage` (`deal`), `statuses?`, `targets()`, `position(id)`. **Kontekst — w szczególności `addEnergy` i `coolWeapon` — dostarcza scena**; integracja z areną i ekwipunkiem (`Loadout.tags`) to osobne zadanie.
+`SynergyContext`: `user`, `addEnergy`, `coolWeapon`, `stats`, `damage` (`deal`), `statuses?`, `targets()`, `position(id)`. **Kontekst — w szczególności `addEnergy` i `coolWeapon` — dostarcza scena.** Arena (F2-17) ustawia tagi z `Loadout.tags` przy każdym resecie, krokuje synergie w czasie gracza i podaje `PlayerController.stats` (dash, ruch), `PlayerEnergy.add` oraz `Weapon.vent` aktywnej broni; hybrydy wybiera się na ekranie wyboru buildu (`docs/systems/arena.md`).
 
 ## Jak dodać synergię
 
@@ -70,4 +70,4 @@ Zdarzenia z tagiem `#synergy` nigdy nie wyzwalają synergii. Obrażenia z `chain
 
 ## Jak sprawdzić
 
-`npx vitest run tests/unit/synergies.test.ts` — walidacja definicji, `requires`, warunki, efekty, brak pętli, odnowienie, trzy hybrydy z GDD. W grze (po integracji ze sceną): `active()` w konsoli debug i zdarzenie `synergy_triggered`.
+`npx vitest run tests/unit/synergies.test.ts` — walidacja definicji, `requires`, warunki, efekty, brak pętli, odnowienie, trzy hybrydy z GDD. W grze: `?scene=arena&debug=1`, wybierz hybrydę, `__neoryder.query('synergies')` pokazuje aktywne synergie, a zdarzenie `synergy_triggered` — odpalenia; test integracji: `arenaBuild.test.ts`.

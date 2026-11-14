@@ -36,6 +36,9 @@ Powody `no_energy` i `cooldown` mapują się na „Brak energii” i „Odnowien
 Dialog ma `role="dialog"` i etykietę „Zginąłeś”. Pokazanie przenosi fokus na
 „Jeszcze raz”. Kliknięcie, Enter lub R ukrywa dialog, przywraca poprzedni fokus
 i wywołuje opcjonalne `onRetry`. Przytrzymanie klawisza nie ponawia akcji.
+Gdy scena poda `onChangeBuild` (arena z ekranem wyboru, F2-17), obok jest drugi
+przycisk „Zmień build” (`changeBuild`): ukrywa dialog i oddaje scenie powrót do
+ekranu wyboru buildu; Enter i R nadal oznaczają „Jeszcze raz”.
 Restart stanu gry i obsługę pointer lock zapewnia scena przez istniejący moduł
 wejścia; HUD nie przechwytuje myszy. Jedynym elementem przechwytującym klik jest
 przycisk ponowienia.

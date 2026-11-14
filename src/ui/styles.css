@@ -375,3 +375,105 @@ body:has(.hud) .hint {
   left: auto;
   right: 20px;
 }
+/* Ekran wyboru buildu (F2-17) — nad HUD, przed falą 1. */
+.build-select {
+  --build-accent: #00e5ff;
+  --build-hybrid: #ff2bd6;
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: flex;
+  padding: 24px 16px;
+  overflow-y: auto;
+  background: #111c;
+  color: #fff;
+  font-size: 14px;
+}
+.build-select[hidden] {
+  display: none;
+}
+.build-select__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(960px, 100%);
+  margin: auto;
+}
+.build-select__title {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.build-select__subtitle {
+  margin: 0 0 8px;
+  color: #ccc;
+}
+.build-select__section {
+  margin: 12px 0 0;
+  color: var(--build-hybrid);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.build-select__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.build-select__card {
+  --card-accent: var(--build-accent);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 0;
+  border-left: 4px solid var(--card-accent);
+  background: #050505e6;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.build-select__card--hybrid {
+  --card-accent: var(--build-hybrid);
+}
+.build-select__card:hover,
+.build-select__card:focus-visible {
+  background: #1c1c1c;
+  outline: 2px solid var(--card-accent);
+  outline-offset: 2px;
+}
+.build-select__name {
+  font-size: 20px;
+  font-weight: 700;
+}
+.build-select__details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.build-select__description {
+  color: #ddd;
+}
+.build-select__line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.build-select__label {
+  min-width: 64px;
+  color: #999;
+}
+.build-select__line--synergy .build-select__items {
+  color: var(--card-accent);
+}
+.hud__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--hud-gap);
+}
+.hud__change-build {
+  border-color: var(--hud-heat);
+}

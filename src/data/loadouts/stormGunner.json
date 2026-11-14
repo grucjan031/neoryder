@@ -1,0 +1,8 @@
+{
+  "id": "stormGunner",
+  "name": "Burzowy strzelec",
+  "blade": "plasmaBlade",
+  "weapons": ["rifle", "emp"],
+  "powers": ["chain", "push"],
+  "tags": ["#build_gunner", "#build_resonance"]
+}

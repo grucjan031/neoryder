@@ -5,86 +5,262 @@
   "maxAlive": 10,
   "minSpawnDistance": 9,
   "spawnPoints": [
-    { "x": -15, "z": -15 },
-    { "x": 0, "z": -16 },
-    { "x": 15, "z": -15 },
-    { "x": -16, "z": 0 },
-    { "x": 16, "z": 0 },
-    { "x": -15, "z": 15 },
-    { "x": 0, "z": 16 },
-    { "x": 15, "z": 15 }
+    {
+      "x": -15,
+      "z": -15
+    },
+    {
+      "x": 0,
+      "z": -16
+    },
+    {
+      "x": 15,
+      "z": -15
+    },
+    {
+      "x": -16,
+      "z": 0
+    },
+    {
+      "x": 16,
+      "z": 0
+    },
+    {
+      "x": -15,
+      "z": 15
+    },
+    {
+      "x": 0,
+      "z": 16
+    },
+    {
+      "x": 15,
+      "z": 15
+    }
   ],
   "waves": [
-    { "spawnIntervalS": 0.9, "groups": [{ "enemy": "assaulter", "count": 2 }] },
-    { "spawnIntervalS": 0.8, "groups": [{ "enemy": "assaulter", "count": 3 }] },
+    {
+      "spawnIntervalS": 0.9,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 3
+        }
+      ]
+    },
     {
       "spawnIntervalS": 0.8,
       "groups": [
-        { "enemy": "assaulter", "count": 2 },
-        { "enemy": "gunner", "count": 1 }
+        {
+          "enemy": "assaulter",
+          "count": 3
+        },
+        {
+          "enemy": "gunner",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.8,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 2
+        },
+        {
+          "enemy": "gunner",
+          "count": 1
+        },
+        {
+          "enemy": "drone",
+          "count": 3
+        }
       ]
     },
     {
       "spawnIntervalS": 0.7,
       "groups": [
-        { "enemy": "assaulter", "count": 4 },
-        { "enemy": "gunner", "count": 1 }
+        {
+          "enemy": "assaulter",
+          "count": 4
+        },
+        {
+          "enemy": "gunner",
+          "count": 1
+        },
+        {
+          "enemy": "sniper",
+          "count": 1
+        }
       ]
     },
     {
       "spawnIntervalS": 0.7,
       "groups": [
-        { "enemy": "assaulter", "count": 3 },
-        { "enemy": "gunner", "count": 2 }
+        {
+          "enemy": "assaulter",
+          "count": 3
+        },
+        {
+          "enemy": "drone",
+          "count": 3
+        },
+        {
+          "enemy": "sniper",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "spawnIntervalS": 0.65,
+      "groups": [
+        {
+          "enemy": "shielder",
+          "count": 2
+        },
+        {
+          "enemy": "assaulter",
+          "count": 3
+        },
+        {
+          "enemy": "gunner",
+          "count": 2
+        }
       ]
     },
     {
       "spawnIntervalS": 0.6,
       "groups": [
-        { "enemy": "assaulter", "count": 5 },
-        { "enemy": "gunner", "count": 2 }
+        {
+          "enemy": "shielder",
+          "count": 2
+        },
+        {
+          "enemy": "assaulter",
+          "count": 4
+        },
+        {
+          "enemy": "drone",
+          "count": 2
+        },
+        {
+          "enemy": "sniper",
+          "count": 1
+        }
       ]
     },
     {
       "spawnIntervalS": 0.6,
       "groups": [
-        { "enemy": "assaulter", "count": 4 },
-        { "enemy": "gunner", "count": 3 }
+        {
+          "enemy": "executor",
+          "count": 1
+        },
+        {
+          "enemy": "assaulter",
+          "count": 5
+        },
+        {
+          "enemy": "gunner",
+          "count": 3
+        }
       ]
     },
     {
       "spawnIntervalS": 0.5,
       "groups": [
-        { "enemy": "assaulter", "count": 6 },
-        { "enemy": "gunner", "count": 3 }
-      ]
-    },
-    {
-      "spawnIntervalS": 0.5,
-      "groups": [
-        { "enemy": "assaulter", "count": 6 },
-        { "enemy": "gunner", "count": 4 }
+        {
+          "enemy": "assaulter",
+          "count": 5
+        },
+        {
+          "enemy": "gunner",
+          "count": 3
+        },
+        {
+          "enemy": "drone",
+          "count": 3
+        },
+        {
+          "enemy": "sniper",
+          "count": 2
+        }
       ]
     },
     {
       "spawnIntervalS": 0.45,
       "groups": [
-        { "enemy": "assaulter", "count": 8 },
-        { "enemy": "gunner", "count": 4 }
+        {
+          "enemy": "shielder",
+          "count": 3
+        },
+        {
+          "enemy": "assaulter",
+          "count": 4
+        },
+        {
+          "enemy": "gunner",
+          "count": 3
+        },
+        {
+          "enemy": "drone",
+          "count": 3
+        },
+        {
+          "enemy": "sniper",
+          "count": 2
+        }
       ]
     },
     {
       "spawnIntervalS": 0.4,
       "groups": [
-        { "enemy": "assaulter", "count": 8 },
-        { "enemy": "gunner", "count": 5 }
+        {
+          "enemy": "executor",
+          "count": 1
+        },
+        {
+          "enemy": "shielder",
+          "count": 2
+        },
+        {
+          "enemy": "assaulter",
+          "count": 6
+        },
+        {
+          "enemy": "gunner",
+          "count": 3
+        },
+        {
+          "enemy": "drone",
+          "count": 3
+        }
       ]
     },
     {
       "spawnIntervalS": 0.35,
       "groups": [
-        { "enemy": "assaulter", "count": 10 },
-        { "enemy": "gunner", "count": 6 }
+        {
+          "enemy": "executor",
+          "count": 2
+        },
+        {
+          "enemy": "shielder",
+          "count": 3
+        },
+        {
+          "enemy": "assaulter",
+          "count": 6
+        },
+        {
+          "enemy": "sniper",
+          "count": 2
+        },
+        {
+          "enemy": "drone",
+          "count": 4
+        }
       ]
     }
   ]

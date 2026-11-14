@@ -1,0 +1,37 @@
+{
+  "title": "Wybierz build",
+  "subtitle": "Ekwipunek na cały run: 12 fal Koalicji.",
+  "hybridsTitle": "Hybrydy",
+  "weapons": "Bronie",
+  "powers": "Moce",
+  "synergies": "Synergie",
+  "builds": [
+    {
+      "id": "blade",
+      "description": "Ostrze w centrum walki: combo, parowanie i dash. Pistolet tylko na dystans."
+    },
+    {
+      "id": "resonance",
+      "description": "Rezonans zamiast lufy: Pchnięcie i Fala uderzeniowa rozbijają grupy."
+    },
+    {
+      "id": "gunner",
+      "description": "Trzy lufy na każdą odległość: karabin, rozpraszacz i snajperka."
+    },
+    {
+      "id": "bladeDancer",
+      "hybrid": true,
+      "description": "Udane parowanie oddaje energię i skraca odnowienie dashu."
+    },
+    {
+      "id": "resonancePistolero",
+      "hybrid": true,
+      "description": "Zabójstwo mocą w pełni chłodzi broń: strzelaj bez przerwy."
+    },
+    {
+      "id": "stormGunner",
+      "hybrid": true,
+      "description": "Błyskawica przeciąża wrogów, a strzał w przeciążonego przeskakuje dalej."
+    }
+  ]
+}
