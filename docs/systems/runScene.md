@@ -12,13 +12,16 @@ Host składa `RunManager`, pokoje i ekrany; logika stanu pozostaje w
   tworzy nowy `RoomScene` i świat Rapier. Host przekazuje kopię `RunState`,
   ten sam EventBus i `new Rng(seed).fork('room:<nodeId>')`.
 - Układ jest losowany z `sector.roomPools[type]`, a przy braku puli z pokojów
-  tego typu. Do czasu dostarczenia pokojów specjalnych używany jest układ
-  `combat`. Wybór ma osobny strumień `room-layout:<nodeId>`; `planWaves`
-  otrzymuje główny RNG runu i sam wykonuje wymagany fork pokoju.
+  tego typu (ostatecznie układ `combat`). Wybór ma osobny strumień
+  `room-layout:<nodeId>`; `planWaves` otrzymuje główny RNG runu i sam
+  wykonuje wymagany fork pokoju.
 - `combat` i `elite`: `room_cleared` → eksport HP/energii → zniszczenie pokoju
   → nagroda → Dalej → mapa. Brak pasywnego leczenia.
-- `shop` i `rest`: po inicjalizacji pokój jest czyszczony bez kroku walki,
-  co otwiera exit i nakładkę. Dalej niszczy pokój i wraca na mapę.
+- `shop` i `rest`: gracz wchodzi do małego pokoju fizycznego (`shopRoom`,
+  `restRoom`, bez punktów spawnu). Pokój nie ma fal (host przekazuje puste
+  `WavesDefinition`), po inicjalizacji jest czyszczony bez kroku walki, co
+  otwiera exit i od razu otwiera nakładkę sklepu/odpoczynku. Wyjdź zamyka
+  nakładkę, niszczy pokój i wraca na mapę.
 - `puzzle`: tymczasowo czyszczenie i powrót na mapę; generator ma wagę 0.
 - `boss`: tymczasowo fale zwykłego `combat`, z zachowaniem typu boss w
   zdarzeniach. `room_cleared` kończy run zwycięstwem, bez nagrody.

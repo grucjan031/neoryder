@@ -1,0 +1,354 @@
+{
+  "id": "combatWarehouse",
+  "name": "Magazyn kontenerowy",
+  "type": "combat",
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 9
+  },
+  "blocks": [
+    {
+      "size": {
+        "x": 26,
+        "y": 1,
+        "z": 24
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 24
+      },
+      "position": {
+        "x": -12.5,
+        "y": 2,
+        "z": 0
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 24
+      },
+      "position": {
+        "x": 12.5,
+        "y": 2,
+        "z": 0
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -7,
+        "y": 2,
+        "z": -11.5
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 7,
+        "y": 2,
+        "z": -11.5
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -7,
+        "y": 2,
+        "z": 11.5
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 7,
+        "y": 2,
+        "z": 11.5
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 2.5,
+        "z": 2
+      },
+      "position": {
+        "x": -5.5,
+        "y": 1.25,
+        "z": -4
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 2.5,
+        "z": 2
+      },
+      "position": {
+        "x": 5.5,
+        "y": 1.25,
+        "z": -4
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 2.5,
+        "z": 2
+      },
+      "position": {
+        "x": -5.5,
+        "y": 1.25,
+        "z": 4
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 2.5,
+        "z": 2
+      },
+      "position": {
+        "x": 5.5,
+        "y": 1.25,
+        "z": 4
+      },
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.2,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 0.6,
+        "z": 0.5
+      },
+      "model": "cover_low"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "position": {
+        "x": -2.5,
+        "y": 0.5,
+        "z": -2.5
+      },
+      "model": "crate"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "position": {
+        "x": 2.5,
+        "y": 0.5,
+        "z": -2.5
+      },
+      "model": "crate"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "position": {
+        "x": -2.5,
+        "y": 0.5,
+        "z": 2.5
+      },
+      "model": "crate"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "position": {
+        "x": 2.5,
+        "y": 0.5,
+        "z": 2.5
+      },
+      "model": "crate"
+    },
+    {
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      },
+      "position": {
+        "x": -8.5,
+        "y": 0.25,
+        "z": 0.5
+      },
+      "model": "crate_small"
+    },
+    {
+      "size": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      },
+      "position": {
+        "x": 8.5,
+        "y": 0.25,
+        "z": 0.5
+      },
+      "model": "crate_small"
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -9,
+      "z": -8
+    },
+    {
+      "x": 9,
+      "z": -8
+    },
+    {
+      "x": -9,
+      "z": 8
+    },
+    {
+      "x": 9,
+      "z": 8
+    },
+    {
+      "x": 0,
+      "z": -9
+    },
+    {
+      "x": 0,
+      "z": -4
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": 11.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 1
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": -11.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 1
+      }
+    }
+  ],
+  "director": {
+    "attackTokens": 3,
+    "shotTokens": 2,
+    "maxHoldS": 4,
+    "reassignS": 1,
+    "probeHeightM": 0.5,
+    "slots": {
+      "melee": {
+        "count": 8,
+        "offsetDeg": 0
+      },
+      "shot": {
+        "count": 6,
+        "offsetDeg": 30
+      }
+    }
+  },
+  "maxAlive": 8,
+  "minSpawnDistance": 6,
+  "props": [
+    {
+      "kind": "crate",
+      "position": {
+        "x": -2.5,
+        "y": 0.5,
+        "z": -2.5
+      }
+    },
+    {
+      "kind": "crate",
+      "position": {
+        "x": 2.5,
+        "y": 0.5,
+        "z": -2.5
+      }
+    },
+    {
+      "kind": "crate",
+      "position": {
+        "x": -2.5,
+        "y": 0.5,
+        "z": 2.5
+      }
+    },
+    {
+      "kind": "crate",
+      "position": {
+        "x": 2.5,
+        "y": 0.5,
+        "z": 2.5
+      }
+    }
+  ]
+}
