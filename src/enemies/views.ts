@@ -15,6 +15,6 @@ export function createEnemyView(
   loadModels = true,
 ): EnemyViewLike {
   return enemy.definition.kind === 'drone'
-    ? new DroneView(enemy)
+    ? new DroneView(enemy, loadModels)
     : new EnemyView(enemy, loadModels);
 }

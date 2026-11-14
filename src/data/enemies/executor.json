@@ -1,6 +1,7 @@
 {
   "id": "executor",
   "kind": "executor",
+  "model": "enemy_executor",
   "grabbable": false,
   "maxHealth": 220,
   "moveSpeed": 4.2,

@@ -1,6 +1,7 @@
 {
   "id": "drone",
   "kind": "drone",
+  "model": "enemy_drone",
   "grabbable": true,
   "maxHealth": 18,
   "moveSpeed": 5.5,
