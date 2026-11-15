@@ -120,14 +120,18 @@
       "combatYard",
       "alleyMarket",
       "alleyBackstreet",
-      "alleyCrossing"
+      "alleyCrossing",
+      "combatSubstation",
+      "combatLaserYard",
+      "combatFloodedTunnel"
     ],
     "elite": [
       "alleyUnderpass",
       "eliteCourtyard",
       "eliteFoundry",
       "eliteHall",
-      "plazaHolo"
+      "plazaHolo",
+      "eliteChemPlant"
     ],
     "shop": ["noodleShop", "shopRoom"],
     "rest": ["restRoom", "rooftopRest"],

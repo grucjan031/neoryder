@@ -1,0 +1,183 @@
+{
+  "id": "eliteChemPlant",
+  "name": "Destylarnia chromu",
+  "type": "elite",
+  "theme": "neonStreet",
+  "playerSpawn": { "x": 0, "y": 0, "z": 12 },
+  "blocks": [
+    {
+      "size": { "x": 28, "y": 1, "z": 30 },
+      "position": { "x": 0, "y": -0.5, "z": 0 },
+      "material": "concrete"
+    },
+    {
+      "size": { "x": 1, "y": 5, "z": 30 },
+      "position": { "x": -13.5, "y": 2.5, "z": 0 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 1, "y": 5, "z": 30 },
+      "position": { "x": 13.5, "y": 2.5, "z": 0 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 13, "y": 5, "z": 1 },
+      "position": { "x": -7.5, "y": 2.5, "z": -14.5 },
+      "material": "metal"
+    },
+    {
+      "size": { "x": 13, "y": 5, "z": 1 },
+      "position": { "x": 7.5, "y": 2.5, "z": -14.5 },
+      "material": "metal"
+    },
+    {
+      "size": { "x": 13, "y": 5, "z": 1 },
+      "position": { "x": -7.5, "y": 2.5, "z": 14.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 13, "y": 5, "z": 1 },
+      "position": { "x": 7.5, "y": 2.5, "z": 14.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 2, "y": 4, "z": 2 },
+      "position": { "x": 0, "y": 2, "z": 0 },
+      "material": "metal"
+    },
+    {
+      "size": { "x": 4, "y": 1.2, "z": 1 },
+      "position": { "x": 5, "y": 0.6, "z": 0 },
+      "material": "concrete"
+    },
+    {
+      "size": { "x": 3, "y": 1.2, "z": 1 },
+      "position": { "x": -5, "y": 0.6, "z": 6 },
+      "material": "concrete"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "chem-west-a",
+      "kind": "explosive_barrel",
+      "position": { "x": -5, "y": 0, "z": -5 }
+    },
+    {
+      "id": "chem-west-b",
+      "kind": "explosive_barrel",
+      "position": { "x": -3, "y": 0, "z": -5 }
+    },
+    {
+      "id": "chem-west-c",
+      "kind": "explosive_barrel",
+      "position": { "x": -4, "y": 0, "z": -3 }
+    },
+    {
+      "id": "chem-east-a",
+      "kind": "explosive_barrel",
+      "position": { "x": 5, "y": 0, "z": 4 }
+    },
+    {
+      "id": "chem-east-b",
+      "kind": "explosive_barrel",
+      "position": { "x": 3, "y": 0, "z": 4 }
+    },
+    {
+      "id": "chem-east-c",
+      "kind": "explosive_barrel",
+      "position": { "x": 4, "y": 0, "z": 6 }
+    },
+    {
+      "id": "chem-wall-field",
+      "kind": "electric_field",
+      "position": { "x": -11.5, "y": 0.7, "z": 0 },
+      "size": { "x": 2, "y": 1.4, "z": 6 }
+    }
+  ],
+  "spawnPoints": [
+    { "x": -8, "z": -11 },
+    { "x": 8, "z": -11 },
+    { "x": -8, "z": 11 },
+    { "x": 8, "z": 11 },
+    { "x": -8, "z": 0 },
+    { "x": 8, "z": 0 },
+    { "x": 0, "z": -12 }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": { "x": 0, "y": 1.5, "z": 14.5 },
+      "size": { "x": 2, "y": 3, "z": 1 }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": { "x": 0, "y": 1.5, "z": -14.5 },
+      "size": { "x": 2, "y": 3, "z": 1 }
+    }
+  ],
+  "director": {
+    "attackTokens": 4,
+    "shotTokens": 3,
+    "maxHoldS": 4,
+    "reassignS": 1,
+    "probeHeightM": 0.5,
+    "slots": {
+      "melee": { "count": 8, "offsetDeg": 0 },
+      "shot": { "count": 6, "offsetDeg": 30 }
+    }
+  },
+  "maxAlive": 10,
+  "minSpawnDistance": 7,
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "warsztat",
+      "position": { "x": 12.95, "y": 3, "z": -5 },
+      "size": { "w": 2.4, "h": 1.2 },
+      "yaw": -1.5708,
+      "tint": "#6dff4a"
+    }
+  ],
+  "lights": [
+    {
+      "position": { "x": -10, "y": 4, "z": -5 },
+      "color": "#ffae1a",
+      "intensity": 3.5,
+      "range": 10
+    },
+    {
+      "position": { "x": 10, "y": 4, "z": 5 },
+      "color": "#6dff4a",
+      "intensity": 3,
+      "range": 10
+    }
+  ],
+  "decals": [
+    {
+      "texture": "floor_hazard",
+      "position": { "x": -11.5, "y": 0.01, "z": 0 },
+      "size": { "w": 2, "h": 6 },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.75
+    },
+    {
+      "texture": "oil_stain",
+      "position": { "x": -4, "y": 0.01, "z": -4 },
+      "size": { "w": 4, "h": 4 },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.6
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_pipe_run",
+      "position": { "x": -12.95, "y": 2.5, "z": 0 },
+      "yaw": 1.5708
+    },
+    { "model": "city_vent_grate", "position": { "x": 10, "y": 0, "z": -5 } }
+  ]
+}

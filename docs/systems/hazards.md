@@ -112,6 +112,31 @@ wymaga rozszerzenia unii zod, kontraktu API, symulacji, widoku i testów.
 Obecne pokoje: `combatWarehouse` — 4 beczki; `alleyUnderpass` — pole cykliczne;
 `eliteFoundry` — 2 przesunięte bramki i 2 beczki; `combatYard` — stałe pole i beczka.
 
+### Z11: nowe pokoje z zagrożeniami
+
+Wszystkie cztery pokoje mają motyw `neonStreet`, wejście od południa, wyjście
+na północ i trafiają do jawnych pul `roomPools` sektora Kurogane. Podane wymiary
+obejmują podłogę wraz ze ścianami obwodowymi grubości 1 m.
+
+| id                    | Typ i podłoga     | Zagrożenia                                                                                         | Wybór taktyczny                                                                                                                                  |
+| --------------------- | ----------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `combatSubstation`    | combat, 24 × 24 m | 2 pola 6 × 3 m, `onS: 2.5`, `offS: 3.5`, offsety 0 i 3 s; 2 beczki przy północnych spawnach        | środkowa bryła rozdziela przejścia; wybierz cykl po lewej lub prawej albo suche obejście 2 m przy ścianie; beczki zatrzymują grupę od północy    |
+| `combatLaserYard`     | combat, 24 × 28 m | 3 lasery na wysokości 0,7 m, długości 21,6 m; cykle on/off/offset: 1,5/2,5/0 s, 2/3/1 s, 1/2/0,5 s | cztery strefy rozdzielone bramkami; czekaj za niską osłoną na przerwę albo przeskocz laser                                                       |
+| `eliteChemPlant`      | elite, 28 × 30 m  | 6 beczek w dwóch trójkach; stałe pole 2 × 6 m przy zachodniej ścianie                              | detonuj wybraną grupę z dystansu albo zepchnij wroga Pchnięciem w stałe pole; wewnątrz grup beczki dzieli 2–2,24 m, poniżej `barrelRadiusM: 4.5` |
+| `combatFloodedTunnel` | combat, 12 × 32 m | centralne pole-kałuża 6 × 20 m, `onS: 2`, `offS: 5`                                                | szybka szeroka trasa przez wyłączoną kałużę albo dwa stale suche obejścia po 2 m; pod dachem tunelu spawny pozostają na suchych końcach          |
+
+Wysokość wszystkich pól: 1,4 m, środek y = 0,7 m. Spawny gracza i wrogów
+przechodzą `validateLayout`, w tym margines 1 m od pola i lasera oraz
+osiągalność. Beczki są poza spawnami i blokami, co dodatkowo kontroluje
+`contentZ11.test.ts`. Combat ma po 5 spawnów, elite ma 7.
+Oprawa jest skromna: po jednym istniejącym napisie, dwa światła, naklejki
+podłogowe i dwie dekoracje; kolory wyłącznie z palety ADR 0006.
+
+Kontrola ręczna dla architekta: `?scene=room-test&room=<id>&debug=1`, następnie
+`hazard list`. W podstacji porównaj oba cykle, na placu przejdź trzy bramki,
+w zakładzie detonuj `chem-west-a`, a w tunelu porównaj środek i suche obejścia.
+Ocena wyglądu, czytelności i „feel” należy do architekta.
+
 ## Ograniczenia
 
 Pchnięcie i Błyskawica nie trafiają beczek; beczkę odpalają ciosy ostrza,

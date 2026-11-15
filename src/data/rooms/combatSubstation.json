@@ -1,0 +1,159 @@
+{
+  "id": "combatSubstation",
+  "name": "Podstacja Iskra",
+  "type": "combat",
+  "theme": "neonStreet",
+  "playerSpawn": { "x": 0, "y": 0, "z": 9 },
+  "blocks": [
+    {
+      "size": { "x": 24, "y": 1, "z": 24 },
+      "position": { "x": 0, "y": -0.5, "z": 0 },
+      "material": "asphalt"
+    },
+    {
+      "size": { "x": 1, "y": 4, "z": 24 },
+      "position": { "x": -11.5, "y": 2, "z": 0 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 1, "y": 4, "z": 24 },
+      "position": { "x": 11.5, "y": 2, "z": 0 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 11, "y": 4, "z": 1 },
+      "position": { "x": -6.5, "y": 2, "z": -11.5 },
+      "material": "metal"
+    },
+    {
+      "size": { "x": 11, "y": 4, "z": 1 },
+      "position": { "x": 6.5, "y": 2, "z": -11.5 },
+      "material": "metal"
+    },
+    {
+      "size": { "x": 11, "y": 4, "z": 1 },
+      "position": { "x": -6.5, "y": 2, "z": 11.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 11, "y": 4, "z": 1 },
+      "position": { "x": 6.5, "y": 2, "z": 11.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 6, "y": 3, "z": 4 },
+      "position": { "x": 0, "y": 1.5, "z": 0 },
+      "material": "metal"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "substation-west",
+      "kind": "electric_field",
+      "position": { "x": -6, "y": 0.7, "z": 0 },
+      "size": { "x": 6, "y": 1.4, "z": 3 },
+      "cycle": { "onS": 2.5, "offS": 3.5 }
+    },
+    {
+      "id": "substation-east",
+      "kind": "electric_field",
+      "position": { "x": 6, "y": 0.7, "z": 0 },
+      "size": { "x": 6, "y": 1.4, "z": 3 },
+      "cycle": { "onS": 2.5, "offS": 3.5, "offsetS": 3 }
+    },
+    {
+      "id": "substation-west-barrel",
+      "kind": "explosive_barrel",
+      "position": { "x": -5, "y": 0, "z": -6 }
+    },
+    {
+      "id": "substation-east-barrel",
+      "kind": "explosive_barrel",
+      "position": { "x": 5, "y": 0, "z": -6 }
+    }
+  ],
+  "spawnPoints": [
+    { "x": -8, "z": -8 },
+    { "x": 8, "z": -8 },
+    { "x": -8, "z": 8 },
+    { "x": 8, "z": 8 },
+    { "x": 0, "z": -9 }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": { "x": 0, "y": 1.5, "z": 11.5 },
+      "size": { "x": 2, "y": 3, "z": 1 }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": { "x": 0, "y": 1.5, "z": -11.5 },
+      "size": { "x": 2, "y": 3, "z": 1 }
+    }
+  ],
+  "director": {
+    "attackTokens": 3,
+    "shotTokens": 2,
+    "maxHoldS": 4,
+    "reassignS": 1,
+    "probeHeightM": 0.5,
+    "slots": {
+      "melee": { "count": 8, "offsetDeg": 0 },
+      "shot": { "count": 6, "offsetDeg": 30 }
+    }
+  },
+  "maxAlive": 8,
+  "minSpawnDistance": 6,
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "iskra",
+      "position": { "x": -10.95, "y": 2.7, "z": -5 },
+      "size": { "w": 2.4, "h": 1.2 },
+      "yaw": 1.5708,
+      "tint": "#ffae1a"
+    }
+  ],
+  "lights": [
+    {
+      "position": { "x": -8, "y": 3, "z": 0 },
+      "color": "#ffae1a",
+      "intensity": 3,
+      "range": 9
+    },
+    {
+      "position": { "x": 8, "y": 3, "z": 0 },
+      "color": "#3d7bff",
+      "intensity": 3,
+      "range": 9
+    }
+  ],
+  "decals": [
+    {
+      "texture": "floor_hazard",
+      "position": { "x": -6, "y": 0.01, "z": 0 },
+      "size": { "w": 6, "h": 3 },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.7
+    },
+    {
+      "texture": "floor_hazard",
+      "position": { "x": 6, "y": 0.01, "z": 0 },
+      "size": { "w": 6, "h": 3 },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.7
+    }
+  ],
+  "decor": [
+    { "model": "city_generator", "position": { "x": 0, "y": 3, "z": 0 } },
+    {
+      "model": "city_cable_span",
+      "position": { "x": 0, "y": 5, "z": -3 },
+      "scale": 2
+    }
+  ]
+}

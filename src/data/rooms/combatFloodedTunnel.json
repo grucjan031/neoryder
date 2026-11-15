@@ -1,0 +1,153 @@
+{
+  "id": "combatFloodedTunnel",
+  "name": "Zalany tranzyt",
+  "type": "combat",
+  "theme": "neonStreet",
+  "playerSpawn": { "x": 0, "y": 0, "z": 13 },
+  "blocks": [
+    {
+      "size": { "x": 12, "y": 1, "z": 32 },
+      "position": { "x": 0, "y": -0.5, "z": 0 },
+      "material": "asphalt"
+    },
+    {
+      "size": { "x": 1, "y": 4, "z": 32 },
+      "position": { "x": -5.5, "y": 2, "z": 0 },
+      "material": "concrete"
+    },
+    {
+      "size": { "x": 1, "y": 4, "z": 32 },
+      "position": { "x": 5.5, "y": 2, "z": 0 },
+      "material": "concrete"
+    },
+    {
+      "size": { "x": 5, "y": 4, "z": 1 },
+      "position": { "x": -3.5, "y": 2, "z": -15.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 5, "y": 4, "z": 1 },
+      "position": { "x": 3.5, "y": 2, "z": -15.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 5, "y": 4, "z": 1 },
+      "position": { "x": -3.5, "y": 2, "z": 15.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 5, "y": 4, "z": 1 },
+      "position": { "x": 3.5, "y": 2, "z": 15.5 },
+      "material": "facade"
+    },
+    {
+      "size": { "x": 12, "y": 1, "z": 24 },
+      "position": { "x": 0, "y": 4.5, "z": 0 },
+      "material": "concrete"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "tunnel-puddle",
+      "kind": "electric_field",
+      "position": { "x": 0, "y": 0.7, "z": 0 },
+      "size": { "x": 6, "y": 1.4, "z": 20 },
+      "cycle": { "onS": 2, "offS": 5 }
+    }
+  ],
+  "spawnPoints": [
+    { "x": -4, "z": -13 },
+    { "x": 4, "z": -13 },
+    { "x": -4, "z": 13 },
+    { "x": 4, "z": 13 },
+    { "x": 0, "z": -13 }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": { "x": 0, "y": 1.5, "z": 15.5 },
+      "size": { "x": 2, "y": 3, "z": 1 }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": { "x": 0, "y": 1.5, "z": -15.5 },
+      "size": { "x": 2, "y": 3, "z": 1 }
+    }
+  ],
+  "director": {
+    "attackTokens": 3,
+    "shotTokens": 2,
+    "maxHoldS": 4,
+    "reassignS": 1,
+    "probeHeightM": 0.5,
+    "slots": {
+      "melee": { "count": 8, "offsetDeg": 0 },
+      "shot": { "count": 6, "offsetDeg": 30 }
+    }
+  },
+  "maxAlive": 8,
+  "minSpawnDistance": 6,
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "metro",
+      "position": { "x": -4.95, "y": 2.6, "z": 11 },
+      "size": { "w": 2, "h": 1 },
+      "yaw": 1.5708,
+      "tint": "#3d7bff"
+    }
+  ],
+  "lights": [
+    {
+      "position": { "x": -4, "y": 3, "z": 6 },
+      "color": "#fff1d6",
+      "intensity": 3,
+      "range": 9
+    },
+    {
+      "position": { "x": 4, "y": 3, "z": -6 },
+      "color": "#ffae1a",
+      "intensity": 3,
+      "range": 9
+    }
+  ],
+  "decals": [
+    {
+      "texture": "puddle1",
+      "position": { "x": 0, "y": 0.01, "z": 0 },
+      "size": { "w": 6, "h": 20 },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.8
+    },
+    {
+      "texture": "floor_arrow",
+      "position": { "x": -4, "y": 0.01, "z": 6 },
+      "size": { "w": 1, "h": 2 },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.6
+    },
+    {
+      "texture": "floor_arrow",
+      "position": { "x": 4, "y": 0.01, "z": 6 },
+      "size": { "w": 1, "h": 2 },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.6
+    }
+  ],
+  "ambientFx": [
+    { "kind": "drip", "position": { "x": 0, "y": 3.9, "z": 3 }, "rate": 2 }
+  ],
+  "decor": [
+    {
+      "model": "city_pipe_run",
+      "position": { "x": -4.95, "y": 2.5, "z": 0 },
+      "yaw": 1.5708
+    },
+    { "model": "city_vent_grate", "position": { "x": 4, "y": 0, "z": -11 } }
+  ]
+}
