@@ -96,6 +96,50 @@ function setup(opts: { inRange?: boolean; enemyHp?: number } = {}) {
   };
 }
 
+it('hak wykończenia konsumuje lekki atak i resetuje combo', () => {
+  const f = setup();
+  let execute = false;
+  let calls = 0;
+  const blade = new PlasmaBlade(
+    plasmaBladeDefinition,
+    {
+      owner: f.player,
+      team: 'player',
+      damage: f.damage,
+      stats: f.playerStats,
+      energy: f.energy,
+      queryArc: () => [{ entity: f.enemy, colliderHandle: 1, multiplier: 1 }],
+      aim: () => ({ origin: { x: 0, y: 1, z: 0 }, dir: { x: 0, y: 0, z: -1 } }),
+      tryExecute: () => {
+        calls++;
+        return execute;
+      },
+    },
+    f.bus,
+    f.t,
+  );
+  blade.step(SIM_DT, input(['attack'], ['attack']));
+  expect(blade.view().stage).toBe(1);
+  for (let i = 0; i < 10; i++) blade.step(SIM_DT, input());
+  expect(blade.view().phase).toBe('recovery');
+  const damageBefore = f.enemyHealth.current;
+  const swingsBefore = f.log.filter((e) => e.type === 'melee_swing').length;
+  execute = true;
+  blade.step(SIM_DT, input(['attack'], ['attack']));
+  expect(calls).toBe(2);
+  expect(blade.view()).toMatchObject({ state: 'idle', stage: 0 });
+  for (let i = 0; i < 40; i++) blade.step(SIM_DT, input(['attack']));
+  expect(f.enemyHealth.current).toBe(damageBefore);
+  expect(f.log.filter((e) => e.type === 'melee_swing')).toHaveLength(
+    swingsBefore,
+  );
+  execute = false;
+  blade.step(SIM_DT, input(['attack'], ['attack']));
+  expect(blade.view().stage).toBe(1);
+  blade.dispose();
+  f.blade.dispose();
+});
+
 /** Jeden lekki cios: klik i puszczenie, potem czekanie do fazy odnowienia. */
 function tap(ctx: ReturnType<typeof setup>) {
   ctx.step(input(['attack'], ['attack']));

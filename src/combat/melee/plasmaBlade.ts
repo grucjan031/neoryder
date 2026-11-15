@@ -18,6 +18,7 @@ export type BladeState =
 export type SwingPhase = 'windup' | 'active' | 'recovery';
 
 export interface BladeDeps {
+  tryExecute?(): boolean;
   attackSpeed?(): number;
   querySegment?(
     from: Vec3,
@@ -549,6 +550,11 @@ export class PlasmaBlade {
   }
 
   private startLight(): void {
+    if (this.deps.tryExecute?.()) {
+      this.endSwing();
+      this.clearAttack();
+      return;
+    }
     const withinCombo =
       (this.state === 'light' && this.phase === 'recovery') ||
       this.sinceSwingS <= this.tuning.melee.comboWindowS;
