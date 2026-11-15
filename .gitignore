@@ -2,7 +2,9 @@ node_modules/
 dist/
 test-results/
 playwright-report/
+perf-report/
 .vite/
 .npm-cache/
 graphify-out/
 tools/textures/raw/
+debug.log
