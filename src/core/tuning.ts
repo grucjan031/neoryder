@@ -305,6 +305,8 @@ export const tuning = {
   },
   /** Ostrze plazmowe (#07). Fazy ciosu w s; obrażenia i zasięg w src/data/blades/plasmaBlade.json. */
   melee: {
+    attackSpeedMin: 0.5,
+    attackSpeedMax: 2,
     lightWindupS: 0.05,
     lightActiveS: 0.1,
     lightRecoveryS: 0.16,

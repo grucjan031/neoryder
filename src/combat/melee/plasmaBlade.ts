@@ -18,6 +18,7 @@ export type BladeState =
 export type SwingPhase = 'windup' | 'active' | 'recovery';
 
 export interface BladeDeps {
+  attackSpeed?(): number;
   querySegment?(
     from: Vec3,
     to: Vec3,
@@ -677,7 +678,11 @@ export class PlasmaBlade {
   private phaseDuration(): number {
     const m = this.tuning.melee;
     const heavy = this.state === 'heavy';
-    const scale = this.def.timeScale;
+    const speed = Math.max(
+      m.attackSpeedMin,
+      Math.min(m.attackSpeedMax, this.deps.attackSpeed?.() ?? 1),
+    );
+    const scale = this.def.timeScale / speed;
     switch (this.phase) {
       case 'windup':
         return (heavy ? m.heavyWindupS : m.lightWindupS) * scale;

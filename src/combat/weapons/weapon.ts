@@ -16,6 +16,7 @@ export interface WeaponInput {
 }
 
 export interface WeaponDeps {
+  attackSpeed?(): number;
   projectiles: Pick<ProjectileSystem, 'spawn'>;
   castBeam?(
     origin: Vec3,
@@ -161,7 +162,12 @@ export class Weapon {
       origin: input.origin,
       dir: input.dir,
     });
-    this.cooldownS = 1 / this.definition.fireRateHz;
+    const m = this.ctx.tuning.melee;
+    const speed = Math.max(
+      m.attackSpeedMin,
+      Math.min(m.attackSpeedMax, this.deps.attackSpeed?.() ?? 1),
+    );
+    this.cooldownS = 1 / this.definition.fireRateHz / speed;
     this.shotCount++;
     this.heat.add(this.definition.heatPerShot, { resetDelay: true });
     if (this.heat.current >= this.heat.max)

@@ -1,5 +1,14 @@
 # Ostrze plazmowe (F1 #07)
 
+Z5: `BladeDeps.attackSpeed()` (opcjonalne, domyślnie 1) dzieli czasy zamachu,
+fazy aktywnej i odnowienia lekkiego oraz ciężkiego ciosu. Odczyt pochodzi z
+`playerStats` pokoju/areny, baza wynosi 1. Mnożnik jest ograniczony przez
+`tuning.melee.attackSpeedMin = 0.5` i `attackSpeedMax = 2` (wspólne z bronią,
+widoczne w panelu strojenia). Przy 1,25 czasy wynoszą 80% pierwotnych;
+krok symulacji może zaokrąglić przejście fazy. Okna parowania i combo,
+ładowanie ciężkiego ciosu oraz rzut i cięcie z dashem pozostają bez zmian.
+Testy kontraktu: `tests/unit/playerDamageStats.test.ts`.
+
 Właściciel: Walka wręcz. Kod: `src/combat/melee/` (`plasmaBlade.ts`, `bladeSchema.ts`), dane: `src/data/blades/*.json` (`plasmaBlade`, `twinBlades`, `staffBlade`), scena: `?scene=melee-test`.
 
 ## Sterowanie

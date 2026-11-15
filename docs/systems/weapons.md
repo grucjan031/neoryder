@@ -1,5 +1,13 @@
 # Bronie i pociski — F1 #06, F2-03
 
+Z5: `WeaponDeps.attackSpeed()` (opcjonalne, domyślnie 1) skraca odstęp pomiędzy
+strzałami do `1 / fireRateHz / attackSpeed`. Pokój i arena przekazują żywy odczyt
+`playerStats.attackSpeed` z bazą 1. Ograniczenie korzysta ze wspólnej pary
+`tuning.melee.attackSpeedMin/Max` (0,5–2). Ciepło pojedynczego strzału pozostaje
+bez zmian. Laser ciągły nie ma odstępu `fireRateHz`: jego `tickHz`, DPS i ciepło
+na sekundę pozostają bez zmian. Obrażenia wszystkich trybów skaluje `DamageSystem`
+przez `outgoing` gracza. Testy kontraktu: `tests/unit/playerDamageStats.test.ts`.
+
 Kod symulacji: `src/combat/weapons/`. Render: `src/render/projectileRenderer.ts`.
 Scena: `?scene=blaster-test&debug=1&seed=test`. Symulacja nie importuje Three.js
 ani DOM, używa stałego kroku i przekazanego `EventBus` oraz `Rng`.
