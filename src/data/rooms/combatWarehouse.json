@@ -941,6 +941,28 @@
       "scale": 1.5
     }
   ],
+  "hazards": [
+    {
+      "kind": "explosive_barrel",
+      "id": "warehouse-west",
+      "position": { "x": -5.5, "y": 0, "z": 0 }
+    },
+    {
+      "kind": "explosive_barrel",
+      "id": "warehouse-east",
+      "position": { "x": 5.5, "y": 0, "z": 0 }
+    },
+    {
+      "kind": "explosive_barrel",
+      "id": "warehouse-north",
+      "position": { "x": 1.5, "y": 0, "z": -6 }
+    },
+    {
+      "kind": "explosive_barrel",
+      "id": "warehouse-south",
+      "position": { "x": -3.5, "y": 0, "z": 6 }
+    }
+  ],
   "spawnPoints": [
     {
       "x": -9,

@@ -1498,6 +1498,15 @@
       }
     }
   ],
+  "hazards": [
+    {
+      "kind": "electric_field",
+      "id": "underpass-puddle",
+      "position": { "x": -6.5, "y": 0.7, "z": 6 },
+      "size": { "x": 2, "y": 1.4, "z": 2 },
+      "cycle": { "onS": 2, "offS": 3 }
+    }
+  ],
   "spawnPoints": [
     {
       "x": -6.5,

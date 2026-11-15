@@ -866,6 +866,19 @@
       "scale": 1.5
     }
   ],
+  "hazards": [
+    {
+      "kind": "electric_field",
+      "id": "yard-wall",
+      "position": { "x": -10, "y": 0.7, "z": -1 },
+      "size": { "x": 1.5, "y": 1.4, "z": 3 }
+    },
+    {
+      "kind": "explosive_barrel",
+      "id": "yard-barrel",
+      "position": { "x": 5, "y": 0, "z": -6 }
+    }
+  ],
   "spawnPoints": [
     {
       "x": -8,

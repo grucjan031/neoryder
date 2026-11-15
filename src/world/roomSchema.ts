@@ -19,6 +19,35 @@ export const positiveVec3Schema = z.object({
   z: positive,
 });
 
+const hazardCycleSchema = z.object({
+  onS: positive,
+  offS: positive,
+  offsetS: nonnegative.optional(),
+});
+export type HazardCycle = z.infer<typeof hazardCycleSchema>;
+export const hazardSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('electric_field'),
+    id: z.string().min(1),
+    position: vec3Schema,
+    size: positiveVec3Schema,
+    cycle: hazardCycleSchema.optional(),
+  }),
+  z.object({
+    kind: z.literal('explosive_barrel'),
+    id: z.string().min(1),
+    position: vec3Schema,
+  }),
+  z.object({
+    kind: z.literal('laser_gate'),
+    id: z.string().min(1),
+    from: vec3Schema,
+    to: vec3Schema,
+    cycle: hazardCycleSchema,
+  }),
+]);
+export type Hazard = z.infer<typeof hazardSchema>;
+
 export const roomBlockSchema = z.object({
   size: positiveVec3Schema,
   position: vec3Schema,
@@ -61,6 +90,7 @@ export const roomSchema = z
     /** Boss pokoju: id wroga z `kind: 'boss'`; włącza tryb bossa w RoomScene (bez fal). */
     bossEnemy: z.string().min(1).optional(),
     props: z.array(roomPropSchema).optional(),
+    hazards: z.array(hazardSchema).optional(),
     puzzle: z.record(z.string(), z.unknown()).optional(),
   })
   .superRefine((room, ctx) => {
@@ -128,6 +158,7 @@ export function validateLayout(
     playerSpawn: z.infer<typeof vec3Schema>;
     blocks: z.infer<typeof roomBlockSchema>[];
     spawnPoints: z.infer<typeof roomSpawnPointSchema>[];
+    hazards?: Hazard[];
   },
   ctx: z.RefinementCtx,
 ): void {
@@ -152,6 +183,64 @@ export function validateLayout(
   }
 
   const points = [room.playerSpawn, ...room.spawnPoints];
+  const hazardIds = new Set<string>();
+  for (const [index, hazard] of (room.hazards ?? []).entries()) {
+    const issue = (message: string) =>
+      ctx.addIssue({ code: 'custom', path: ['hazards', index], message });
+    if (hazardIds.has(hazard.id))
+      issue(`Powtórzone id zagrożenia: ${hazard.id}.`);
+    hazardIds.add(hazard.id);
+    const bounds =
+      hazard.kind === 'laser_gate'
+        ? [hazard.from, hazard.to]
+        : hazard.kind === 'electric_field'
+          ? [-1, 1].flatMap((x) =>
+              [-1, 1].map((z) => ({
+                x: hazard.position.x + (x * hazard.size.x) / 2,
+                z: hazard.position.z + (z * hazard.size.z) / 2,
+              })),
+            )
+          : [
+              { x: hazard.position.x - 0.4, z: hazard.position.z - 0.4 },
+              { x: hazard.position.x + 0.4, z: hazard.position.z + 0.4 },
+            ];
+    if (bounds.some((p) => !floors.some((floor) => contains(floor, p.x, p.z))))
+      issue('Zagrożenie poza granicami podłogi pokoju.');
+    for (const point of points) {
+      if (hazard.kind === 'explosive_barrel') continue;
+      let unsafe: boolean;
+      if (hazard.kind === 'electric_field') {
+        unsafe =
+          Math.abs(point.x - hazard.position.x) <= hazard.size.x / 2 + 1 &&
+          Math.abs(point.z - hazard.position.z) <= hazard.size.z / 2 + 1;
+      } else {
+        const dx = hazard.to.x - hazard.from.x;
+        const dz = hazard.to.z - hazard.from.z;
+        const lengthSq = dx * dx + dz * dz;
+        const t =
+          lengthSq === 0
+            ? 0
+            : Math.max(
+                0,
+                Math.min(
+                  1,
+                  ((point.x - hazard.from.x) * dx +
+                    (point.z - hazard.from.z) * dz) /
+                    lengthSq,
+                ),
+              );
+        unsafe =
+          Math.hypot(
+            point.x - hazard.from.x - dx * t,
+            point.z - hazard.from.z - dz * t,
+          ) <= 1;
+      }
+      if (unsafe)
+        issue(
+          'Punkt spawnu znajduje się w zagrożeniu lub jego marginesie 1 m.',
+        );
+    }
+  }
   const valid = points.map((point, index) => {
     const path = index === 0 ? ['playerSpawn'] : ['spawnPoints', index - 1];
     if (!floors.some((floor) => contains(floor, point.x, point.z))) {

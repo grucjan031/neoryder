@@ -1106,6 +1106,32 @@
       "scale": 1.6
     }
   ],
+  "hazards": [
+    {
+      "kind": "laser_gate",
+      "id": "foundry-front",
+      "from": { "x": -3.5, "y": 0.7, "z": 7 },
+      "to": { "x": 3.5, "y": 0.7, "z": 7 },
+      "cycle": { "onS": 2, "offS": 3 }
+    },
+    {
+      "kind": "laser_gate",
+      "id": "foundry-back",
+      "from": { "x": -3.5, "y": 0.7, "z": -10 },
+      "to": { "x": 3.5, "y": 0.7, "z": -10 },
+      "cycle": { "onS": 2, "offS": 3, "offsetS": 2.5 }
+    },
+    {
+      "kind": "explosive_barrel",
+      "id": "foundry-west",
+      "position": { "x": -7, "y": 0, "z": 4 }
+    },
+    {
+      "kind": "explosive_barrel",
+      "id": "foundry-east",
+      "position": { "x": 7, "y": 0, "z": 4 }
+    }
+  ],
   "spawnPoints": [
     {
       "x": -11,

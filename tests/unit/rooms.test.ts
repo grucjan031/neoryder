@@ -186,6 +186,11 @@ describe('pokoje F3: format, loader i układ', () => {
         ...door,
         position: { ...door.position, ...shift(door.position) },
       })),
+      // combatYard ma tylko zagrożenia z `position` (pole, beczka).
+      hazards: yard.hazards.map((hazard) => ({
+        ...hazard,
+        position: { ...hazard.position, ...shift(hazard.position) },
+      })),
     };
     expect(loadRoom(shifted)).toEqual(shifted);
   });
