@@ -1,0 +1,20 @@
+[
+  {"id":"frame_vitals","width":1024,"height":256,"purpose":"Ramka panelu zdrowia i energii, lewy dół; dwa paski.","borderImageSlice":48,"prompt":"Cyan sci-fi health and energy panel frame with magenta accents, two horizontal empty bar wells, 4:1."},
+  {"id":"frame_weapon","width":1024,"height":256,"purpose":"Ramka panelu broni, prawy dół; nazwa i pasek ciepła.","borderImageSlice":48,"prompt":"Cyan and amber sci-fi weapon panel frame with empty name area and long heat bar well, 4:1."},
+  {"id":"frame_power_slot","width":256,"height":256,"purpose":"Kwadratowy slot mocy z magentowym obrysem.","borderImageSlice":40,"prompt":"Square magenta sci-fi power slot frame with a clipped corner and empty dark center."},
+  {"id":"frame_banner","width":1024,"height":256,"purpose":"Symetryczny górny baner licznika fali i komunikatów.","borderImageSlice":48,"prompt":"Wide symmetric cyan sci-fi top HUD banner frame, broad empty interior, 4:1."},
+  {"id":"frame_chip","width":512,"height":128,"purpose":"Bursztynowy chip walut i statystyk.","borderImageSlice":24,"prompt":"Compact amber sci-fi HUD chip frame with empty interior, 4:1."},
+  {"id":"frame_boss","width":1024,"height":128,"purpose":"Groźna ramka paska zdrowia bossa.","borderImageSlice":24,"prompt":"Very wide red and graphite threatening boss health bar frame, 8:1."},
+  {"id":"frame_prompt","width":512,"height":128,"purpose":"Ramka podpowiedzi interakcji z kwadratem klawisza po lewej.","borderImageSlice":24,"prompt":"Wide cyan interaction prompt frame with empty square key well left and text space right, 4:1."},
+  {"id":"frame_panel","width":1024,"height":1024,"purpose":"Duża ramka okna terminala lub warsztatu; 9-slice.","borderImageSlice":96,"prompt":"Square large cyan graphite overlay frame with clipped corners, corner braces, clean straight middle edges for 9-slice."},
+  {"id":"bar_segments","width":1024,"height":64,"purpose":"Jasne segmentowane wypełnienie paska, do tintowania CSS.","borderImageSlice":0,"prompt":"Wide white light gray luminous segmented horizontal fill bar texture, 16:1."},
+  {"id":"crosshair","width":256,"height":256,"purpose":"Cienki celownik cyan z przerwą i kropką.","borderImageSlice":0,"prompt":"Minimal thin cyan crosshair with four separated arms and center dot."},
+  {"id":"crosshair_hit","width":256,"height":256,"purpose":"Cztery ukośne białe kreski znacznika trafienia.","borderImageSlice":0,"prompt":"Four short crisp white diagonal hit marker strokes, centered."},
+  {"id":"icon_blade","width":256,"height":256,"purpose":"Biała ikona ostrza plazmowego.","borderImageSlice":0,"prompt":"Simple clean white line icon of a plasma blade."},
+  {"id":"icon_gun","width":256,"height":256,"purpose":"Biała ikona blastera.","borderImageSlice":0,"prompt":"Simple clean white line icon of a futuristic compact blaster."},
+  {"id":"icon_power","width":256,"height":256,"purpose":"Biała ikona fali Rezonansu.","borderImageSlice":0,"prompt":"Simple clean white line icon of an abstract resonance wave."},
+  {"id":"icon_credits","width":256,"height":256,"purpose":"Biała ikona monety-chip Kredytów.","borderImageSlice":0,"prompt":"Simple clean white line icon of a coin chip."},
+  {"id":"icon_data","width":256,"height":256,"purpose":"Biała ikona kostki danych.","borderImageSlice":0,"prompt":"Simple clean white line icon of a data cube."},
+  {"id":"icon_cores","width":256,"height":256,"purpose":"Biała ikona rdzenia energii.","borderImageSlice":0,"prompt":"Simple clean white line icon of an energy core."},
+  {"id":"scanlines","width":512,"height":512,"purpose":"Kafelkowalna subtelna tekstura skanowania.","borderImageSlice":0,"prompt":"Seamless subtle transparent horizontal white scanlines, very low opacity."}
+]
