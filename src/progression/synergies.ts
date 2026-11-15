@@ -15,6 +15,7 @@ const tag = z.string().min(1);
 const positive = z.number().finite().positive();
 
 export const SYNERGY_EVENTS = [
+  'execute_performed',
   'enemy_killed',
   'damage_dealt',
   'parry_success',
@@ -200,6 +201,9 @@ export class SynergySystem {
           });
       }),
       bus.on('parry_success', () => this.fire('parry_success', {})),
+      bus.on('execute_performed', (e) => {
+        if (e.attacker === user) this.fire('execute_performed', {});
+      }),
       bus.on('power_used', (e) => {
         if (e.user === user) this.fire('power_used', {});
       }),

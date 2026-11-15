@@ -205,6 +205,7 @@
     }
   },
   "rules": [
+    { "event": "execute_performed", "sound": "hitHeavy" },
     { "event": "damage_dealt", "when": { "targetIsPlayer": true }, "sound": "playerHurt" },
     { "event": "damage_dealt", "when": { "killed": true }, "sound": "kill" },
     { "event": "damage_dealt", "when": { "tagsAny": ["#wall"] }, "sound": "wallSlam" },

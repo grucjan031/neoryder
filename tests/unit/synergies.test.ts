@@ -20,6 +20,66 @@ import type {
 
 const BUILD = ['#build_blade', '#build_gunner', '#build_resonance'];
 
+it('execute_performed wyzwala synergię gracza bez celu i używa tablicy Stats', () => {
+  const bus = new EventBus();
+  const addEnergy = vi.fn();
+  const def = {
+    id: 'executionReward',
+    name: 'Wykończenie',
+    requires: [],
+    when: { event: 'execute_performed' },
+    effects: [{ kind: 'add_energy', amount: 7 }],
+  };
+  const system = new SynergySystem(
+    bus,
+    {
+      user: 1,
+      stats: [new Stats({ damage: 1 }), new Stats({ damage: 1 })],
+      addEnergy,
+      coolWeapon() {},
+      damage: { deal: () => 0 },
+      targets: () => [],
+      position: () => null,
+    },
+    loadSynergyDefinitions([def]),
+  );
+  bus.emit('execute_performed', {
+    attacker: 2,
+    target: 3,
+    point: { x: 0, y: 0, z: 0 },
+  });
+  expect(addEnergy).not.toHaveBeenCalled();
+  bus.emit('execute_performed', {
+    attacker: 1,
+    target: 3,
+    point: { x: 0, y: 0, z: 0 },
+  });
+  expect(addEnergy).toHaveBeenCalledExactlyOnceWith(7);
+  expect(() =>
+    loadSynergyDefinitions([
+      {
+        ...def,
+        effects: [
+          {
+            kind: 'explode',
+            at: 'target',
+            radiusM: 1,
+            damage: 1,
+            tags: ['#melee'],
+          },
+        ],
+      },
+    ]),
+  ).toThrow();
+  system.dispose();
+  bus.emit('execute_performed', {
+    attacker: 1,
+    target: 3,
+    point: { x: 0, y: 0, z: 0 },
+  });
+  expect(addEnergy).toHaveBeenCalledTimes(1);
+});
+
 it('czasowy damage trafia do obu Stats, odświeża się i znika po czasie oraz resecie', () => {
   const bus = new EventBus();
   const stats = [new Stats({ damage: 1 }), new Stats({ damage: 1 })] as const;
