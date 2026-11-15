@@ -65,7 +65,7 @@
   {
     "id": "power:focus",
     "cost": {
-      "cores": 3
+      "cores": 12
     },
     "minLevel": 5
   },
@@ -79,7 +79,7 @@
   {
     "id": "blade:staffBlade",
     "cost": {
-      "cores": 3
+      "cores": 14
     },
     "minLevel": 6
   },
@@ -93,14 +93,14 @@
   {
     "id": "slot:power2",
     "cost": {
-      "cores": 2
+      "cores": 8
     },
     "minLevel": 3
   },
   {
     "id": "slot:weapon3",
     "cost": {
-      "cores": 2
+      "cores": 10
     },
     "minLevel": 4
   }

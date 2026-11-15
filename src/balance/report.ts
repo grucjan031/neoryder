@@ -1,6 +1,7 @@
 import { MAX_TIME_S, PACK_SIZE, PLAYER_STATS, runBalance } from './simulator';
 import type { BalanceResult, PathRow } from './simulator';
 import { SIM_DT } from '../core/loop';
+import { renderMetaSection } from './metaSim';
 
 // Brief sumuje wszystkie przebicia na jednym celu. Bramkę rozstrzyga tylko
 // otwarta przestrzeń; wariant przy ścianie jest informacyjny (wall-slam to
@@ -119,6 +120,7 @@ export function renderReport(results: BalanceReport, date: string): string {
       '- Pojedyncze TTK jest bardzo wrażliwe na obrażenia jednego trafienia (zabójstwo w 1/60 s wobec 0,4 s ostrza); dlatego bramkę liczy paczka.',
       '- Wynik jest liczbową podstawą decyzji o danych. Nie zastępuje playtestu 12 fal ani oceny feel.',
       '',
+      ...renderMetaSection(),
       '## Decyzje i strojenie',
       '',
       'Decyzje koordynatora, zastosowane zmiany i opcje strojenia opisuje [specyfikacja symulatora](systems/balance.md#decyzje-koordynatora-2026-11-14).',

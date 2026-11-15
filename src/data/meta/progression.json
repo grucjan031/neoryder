@@ -22,17 +22,17 @@
   },
   "levels": {
     "xpToNext": [
-      100, 115, 130, 150, 175, 200, 230, 265, 305, 350, 405, 465, 535, 615, 710,
+      50, 115, 130, 150, 175, 200, 230, 265, 305, 350, 405, 465, 535, 615, 710,
       815, 935, 1075, 1240
     ]
   },
   "rewards": {
-    "xpPerRoom": 15,
+    "xpPerRoom": 25,
     "xpPerElite": 40,
-    "xpVictory": 100,
-    "dataPerRoom": 10,
-    "dataPerKill": 2,
-    "dataVictory": 150,
+    "xpVictory": 50,
+    "dataPerRoom": 5,
+    "dataPerKill": 1,
+    "dataVictory": 30,
     "coresPerElite": 1,
     "coresVictory": 3
   }

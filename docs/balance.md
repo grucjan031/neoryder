@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-14. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-15. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -204,6 +204,29 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 - Bramka (paczka ×5, otwarta przestrzeń): 0/6 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 6/6. Przy ścianie (informacyjnie, paczka): 2/6.
 - Pojedyncze TTK jest bardzo wrażliwe na obrażenia jednego trafienia (zabójstwo w 1/60 s wobec 0,4 s ostrza); dlatego bramkę liczy paczka.
 - Wynik jest liczbową podstawą decyzji o danych. Nie zastępuje playtestu 12 fal ani oceny feel.
+
+## Meta-progres (F4)
+
+Symulacja 5 typowych runów nowego gracza na Poziomie zagrożenia 0 (`src/balance/metaSim.ts`, `tests/unit/metaBalance.test.ts`). **Wynik: poziom 7, 4 zakupów w warsztacie** (cel bramki F4: poziom 5–8, 2–4 zakupy, pierwszy run co najmniej 1 poziom, żaden run więcej niż 3 poziomy).
+
+Model runu: stała ścieżka przez sektor Kurogane Arms (warstwy: walka, walka, walka, elita, sklep, elita, odpoczynek, boss). `roomsCleared` to wszystkie ukończone węzły (tak liczy `RunManager`: także sklep i odpoczynek, a przy zwycięstwie boss), więc śmierć w warstwie L daje L − 1 pokoi, a zwycięstwo 8. `elitesCleared`: 0, 1, 1, 2. Zabójstwa: 6 na pokój walki, 10 na elitę, boss 1 + 4 pomocników. `elapsedS`: suma `expectedDurationS` ukończonych pokoi. Po każdym runie gracz kupuje zachłannie talenty (najtańszy dostępny węzeł, remis: id) za wszystkie wolne punkty oraz odblokowania (najtańsze dostępne, Dane i Rdzenie), dopóki go stać.
+
+| Run | Pokoje | Elity | Zabójstwa | Czas (s) | XP | Dane | Rdzenie | Poziom po runie | Talenty kupione | Zakupy w warsztacie | Dane po zakupach | Rdzenie po zakupach |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| 1. Śmierć w warstwie 3 | 2 | 0 | 12 | 300 | 50 | 22 | 0 | 2 | 1 | — | 22 | 0 |
+| 2. Śmierć w warstwie 5 | 4 | 1 | 28 | 660 | 140 | 48 | 1 | 3 | 1 | — | 70 | 1 |
+| 3. Zwycięstwo | 8 | 2 | 43 | 1275 | 330 | 113 | 5 | 5 | 2 | power:grab, weapon:rifle | 23 | 6 |
+| 4. Śmierć w warstwie 6 | 5 | 1 | 28 | 720 | 165 | 53 | 1 | 6 | 1 | — | 76 | 7 |
+| 5. Zwycięstwo | 8 | 2 | 43 | 1275 | 330 | 113 | 5 | 7 | 1 | slot:power2, power:shockwave | 89 | 4 |
+
+Nagrody za typowe zwycięstwo i śmierć w warstwie 5 na Poziomach zagrożenia 0–3 (Rdzenie nie mnożą się przez `rewardMult`, zwycięstwo dolicza `victoryCores`):
+
+| Poziom zagrożenia | `rewardMult` | Zwycięstwo: XP | Dane | Rdzenie | Śmierć w warstwie 5: XP | Dane | Rdzenie |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 1 | 330 | 113 | 5 | 140 | 48 | 1 |
+| 1 | 1.15 | 379 | 130 | 6 | 161 | 55 | 1 |
+| 2 | 1.3 | 429 | 147 | 6 | 182 | 62 | 1 |
+| 3 | 1.45 | 479 | 164 | 6 | 203 | 70 | 1 |
 
 ## Decyzje i strojenie
 

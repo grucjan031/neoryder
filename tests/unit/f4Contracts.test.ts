@@ -65,7 +65,7 @@ describe('dane meta F4 przechodzą schematy', () => {
     const data = loadProgression(progressionRaw);
     expect(data).toEqual(progression);
     expect(data.levels.xpToNext).toHaveLength(19);
-    expect(data.levels.xpToNext[0]).toBeGreaterThanOrEqual(100);
+    expect(data.levels.xpToNext[0]).toBeGreaterThanOrEqual(50);
     expect(data.levels.xpToNext[0]).toBeLessThanOrEqual(150);
     expect(data.starter).toMatchObject({
       xp: 0,

@@ -140,7 +140,9 @@ export class Boss implements Enemy {
       id: this.id,
       name: this.data.name,
       maxHealth: this.health.max,
-      phaseThresholds: this.data.phases.slice(1).map((phase) => phase.hpThreshold),
+      phaseThresholds: this.data.phases
+        .slice(1)
+        .map((phase) => phase.hpThreshold),
     });
   }
 
