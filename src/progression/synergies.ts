@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { DamageSystem } from '../combat/damage';
+import type { StatusApplication } from '../combat/damage/types';
 import type { StatusQuery } from '../combat/status';
+import { statusDefinitions } from '../combat/status/statusSchema';
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import { STAT_IDS } from '../core/stats';
@@ -23,6 +25,23 @@ export const SYNERGY_EVENTS = [
 export type SynergyEvent = (typeof SYNERGY_EVENTS)[number];
 
 export const effectSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('heal'), amount: positive }),
+  z.object({
+    kind: z.literal('explode'),
+    at: z.enum(['target', 'user']),
+    radiusM: positive,
+    damage: z.number().finite().nonnegative(),
+    knockback: z.number().finite().nonnegative().optional(),
+    tags: z.array(tag),
+  }),
+  z.object({
+    kind: z.literal('apply_status_area'),
+    at: z.enum(['target', 'user']),
+    radiusM: z.number().finite().nonnegative(),
+    status: tag.refine((id) => statusDefinitions.has(id), 'Nieznany status'),
+    durationS: positive,
+    stacks: z.number().int().min(1).optional(),
+  }),
   z.object({ kind: z.literal('add_energy'), amount: z.number().finite() }),
   z.object({
     kind: z.literal('cool_weapon'),
@@ -44,13 +63,22 @@ export const effectSchema = z.discriminatedUnion('kind', [
 ]);
 export type SynergyEffect = z.infer<typeof effectSchema>;
 
-export const whenSchema = z.object({
-  event: z.enum(SYNERGY_EVENTS),
-  /** Tagi zdarzenia (enemy_killed, damage_dealt): wystarczy jeden. */
-  tagsAny: z.array(tag).min(1).optional(),
-  /** Status celu zdarzenia (enemy_killed, damage_dealt). */
-  targetStatus: tag.optional(),
-});
+export const whenSchema = z
+  .object({
+    event: z.enum(SYNERGY_EVENTS),
+    /** Tagi zdarzenia (enemy_killed, damage_dealt): wystarczy jeden. */
+    tagsAny: z.array(tag).min(1).optional(),
+    /** Status celu zdarzenia (enemy_killed, damage_dealt). */
+    targetStatus: tag.optional(),
+    targetIsUser: z.boolean().optional(),
+  })
+  .superRefine((when, ctx) => {
+    if (when.targetIsUser !== undefined && when.event !== 'damage_dealt')
+      ctx.addIssue({
+        code: 'custom',
+        message: 'targetIsUser tylko przy damage_dealt',
+      });
+  });
 export type SynergyWhen = z.infer<typeof whenSchema>;
 
 /** Definicja synergii z src/data/synergies/*.json. Liczby balansu tylko tutaj. */
@@ -70,6 +98,11 @@ export const synergySchema = z
   .superRefine((def, ctx) => {
     const { event, tagsAny, targetStatus } = def.when;
     const hasTarget = event === 'enemy_killed' || event === 'damage_dealt';
+    if (!hasTarget && def.effects.some((e) => 'at' in e && e.at === 'target'))
+      ctx.addIssue({
+        code: 'custom',
+        message: "at: 'target' wymaga zdarzenia z celem",
+      });
     if (!hasTarget && (tagsAny || targetStatus))
       ctx.addIssue({
         code: 'custom',
@@ -117,9 +150,13 @@ export interface SynergyContext {
   statuses?: StatusQuery;
   targets(): readonly EntityId[];
   position(id: EntityId): Vec3 | null;
+  heal?(amount: number): void;
+  userPosition?(): Vec3 | null;
+  applyStatus?(target: EntityId, app: StatusApplication): void;
 }
 
 interface EventFacts {
+  source?: EntityId | null;
   tags?: readonly string[];
   target?: EntityId;
   damage?: number;
@@ -154,8 +191,9 @@ export class SynergySystem {
           this.fire('enemy_killed', { tags: e.tags, target: e.id });
       }),
       bus.on('damage_dealt', (e) => {
-        if (e.source === user)
+        if (e.source === user || e.target === user)
           this.fire('damage_dealt', {
+            source: e.source,
             tags: e.tags,
             target: e.target,
             damage: e.amount,
@@ -275,6 +313,11 @@ export class SynergySystem {
   }
 
   private matches(def: SynergyDefinition, facts: EventFacts): boolean {
+    if (def.when.event === 'damage_dealt') {
+      if (def.when.targetIsUser === true) {
+        if (facts.target !== this.ctx.user) return false;
+      } else if (facts.source !== this.ctx.user) return false;
+    }
     const { tagsAny, targetStatus } = def.when;
     if (tagsAny && !tagsAny.some((t) => facts.tags?.includes(t))) return false;
     if (targetStatus) {
@@ -290,6 +333,13 @@ export class SynergySystem {
     facts: EventFacts,
   ): boolean {
     switch (effect.kind) {
+      case 'heal':
+        if (!this.ctx.heal) return false;
+        this.ctx.heal(effect.amount);
+        return true;
+      case 'explode':
+      case 'apply_status_area':
+        return this.area(effect, facts);
       case 'add_energy':
         this.ctx.addEnergy(effect.amount);
         return true;
@@ -308,6 +358,73 @@ export class SynergySystem {
       case 'chain_on_hit':
         return this.chain(effect, facts);
     }
+  }
+
+  private area(
+    effect: Extract<SynergyEffect, { kind: 'explode' | 'apply_status_area' }>,
+    facts: EventFacts,
+  ): boolean {
+    if (effect.kind === 'apply_status_area' && !this.ctx.applyStatus)
+      return false;
+    const application =
+      effect.kind === 'apply_status_area'
+        ? {
+            id: effect.status,
+            durationS: effect.durationS,
+            stacks: effect.stacks,
+          }
+        : null;
+    if (effect.kind === 'apply_status_area' && effect.radiusM === 0) {
+      if (facts.target === undefined || !application) return false;
+      this.ctx.applyStatus?.(facts.target, application);
+      return true;
+    }
+    const origin =
+      effect.at === 'user'
+        ? this.ctx.userPosition?.()
+        : facts.target === undefined
+          ? null
+          : this.ctx.position(facts.target);
+    if (!origin) return false;
+    // Kopia pozycji i listy: obrażenia mogą synchronicznie usunąć wroga.
+    const point = { ...origin };
+    const targets = [...this.ctx.targets()];
+    let applied = false;
+    for (const target of targets) {
+      const position = this.ctx.position(target);
+      if (!position) continue;
+      const x = position.x - point.x;
+      const y = position.y - point.y;
+      const z = position.z - point.z;
+      const distance = Math.hypot(x, y, z);
+      if (distance > effect.radiusM) continue;
+      if (effect.kind === 'explode') {
+        this.ctx.damage.deal(target, {
+          amount: effect.damage,
+          source: this.ctx.user,
+          tags: [...effect.tags, SYNERGY_TAG],
+          point,
+          dir:
+            distance > 0
+              ? { x: x / distance, y: y / distance, z: z / distance }
+              : { x: 0, y: 0, z: 0 },
+          knockback: effect.knockback,
+        });
+      } else if (application) {
+        this.ctx.applyStatus?.(target, application);
+        applied = true;
+      }
+    }
+    if (effect.kind === 'explode') {
+      this.bus.emit('explosion', {
+        point,
+        radiusM: effect.radiusM,
+        owner: this.ctx.user,
+        tags: [...effect.tags, SYNERGY_TAG],
+      });
+      return true;
+    }
+    return applied;
   }
 
   private chain(

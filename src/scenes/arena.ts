@@ -404,6 +404,12 @@ export class Arena implements Scene {
     // F2-17: hybrydy z tagów ekwipunku. Statystyki dashu i ruchu żyją w PlayerController.stats.
     this.synergies = new SynergySystem(ctx.bus, {
       user: playerId,
+      heal: (amount) => {
+        this.health.heal(amount);
+        this.emitHealth();
+      },
+      userPosition: () => this.player.getState().position,
+      applyStatus: (target, app) => this.statuses.apply(target, app, playerId),
       addEnergy: (n) => this.energy.add(n),
       coolWeapon: (amount) => this.weapon.vent(amount),
       stats: this.player.stats,

@@ -29,6 +29,28 @@ export const implantTriggerSchema = z
   .superRefine((trigger, ctx) => {
     const { event, tagsAny, targetStatus } = trigger.when;
     const hasTarget = event === 'enemy_killed' || event === 'damage_dealt';
+    if (
+      !hasTarget &&
+      trigger.effects.some((e) => 'at' in e && e.at === 'target')
+    )
+      ctx.addIssue({
+        code: 'custom',
+        message: "at: 'target' wymaga zdarzenia z celem",
+      });
+    if (
+      trigger.cooldownS === undefined &&
+      trigger.effects.some(
+        (e) =>
+          e.kind === 'heal' ||
+          e.kind === 'explode' ||
+          e.kind === 'apply_status_area',
+      )
+    )
+      ctx.addIssue({
+        code: 'custom',
+        message:
+          'heal, explode i apply_status_area wymagają cooldownS implantu',
+      });
     if (!hasTarget && (tagsAny || targetStatus))
       ctx.addIssue({
         code: 'custom',

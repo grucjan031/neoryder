@@ -835,8 +835,10 @@ export class SynergySystem {
   setTags(tags: readonly string[]): void;         // tagi ekwipunku (później implantów F3)
   reset(): void; dispose(): void;
 }
-// efekty: add_energy | cool_weapon | stat_modifier_timed | chain_on_hit (ADR 0004 pkt 5)
+// efekty: add_energy | cool_weapon | stat_modifier_timed | chain_on_hit | heal | explode | apply_status_area (ADR 0004 pkt 5)
 ```
+
+Z4: `SynergyContext` dodaje opcjonalne `heal(amount: number): void`, `userPosition(): Vec3 | null` i `applyStatus(target: EntityId, app: StatusApplication): void`; brak wymaganej funkcji pomija efekt bez wyzwolenia i odnowienia. `heal` wymaga dodatniego `amount`; `explode` przyjmuje `at: 'target' | 'user'`, dodatni `radiusM`, nieujemne `damage`, opcjonalny nieujemny `knockback` i `tags`, zadaje obrażenia w promieniu ze źródłem użytkownika i tagiem `#synergy`, emituje `explosion`. `apply_status_area` przyjmuje takie samo `at`, nieujemny `radiusM` (0 = wyłącznie cel zdarzenia), istniejący `status`, dodatni `durationS` i opcjonalne całkowite `stacks >= 1`. `at: 'target'` jest dozwolone tylko przy `enemy_killed` i `damage_dealt`. `when.targetIsUser?: boolean` jest dozwolone tylko przy `damage_dealt`: `true` wybiera obrażenia otrzymane przez użytkownika, `false` lub brak zachowuje filtr `source === user`. Wyzwalacze implantów z nowymi efektami wymagają `cooldownS`. Scena przekazuje źródło użytkownika do `StatusSystem.apply` i emituje `health_changed` po leczeniu.
 
 ### Ekran wyboru buildu i fale F2 (F2-17)
 

@@ -56,6 +56,40 @@ z `#melee`, następnie `query('synergies')`. Listę implantów podaje pomoc kome
 
 ## Efekty (`effects`, co najmniej jeden)
 
+Z4 dodaje `when.targetIsUser?: boolean`, wyłącznie dla `damage_dealt`. `true`
+wybiera obrażenia otrzymane przez użytkownika (`target === user`, również bez źródła).
+`false` i brak pola zachowują dotychczasowe `source === user`. Filtry tagów,
+statusu i zakaz wyzwalania przez `#synergy` obowiązują w obu wariantach.
+
+- `heal { amount > 0 }` — leczy przez opcjonalne `ctx.heal(amount)`.
+- `explode { at, radiusM > 0, damage >= 0, knockback? >= 0, tags }` — środek
+  to `ctx.position(target)` lub opcjonalne `ctx.userPosition()`. Każdy cel z
+  `ctx.targets()` w sferze (łącznie z granicą i celem zdarzenia) otrzymuje
+  `damage` przez `ctx.damage.deal`, ze źródłem `ctx.user`, tagami efektu oraz
+  `#synergy` i znormalizowanym kierunkiem od środka (wektor zerowy w środku).
+  Emituje `explosion { point, radiusM, owner: user, tags }` z tymi samymi tagami;
+  sama emisja wybuchu liczy się jako efekt, także bez trafionych celów.
+- `apply_status_area { at, radiusM >= 0, status, durationS > 0, stacks? >= 1 }`
+  — przez opcjonalne `ctx.applyStatus(target, { id: status, durationS, stacks })`.
+  Stosy muszą być całkowite. Promień 0 oznacza wyłącznie cel zdarzenia, bez
+  odczytu pozycji; przy braku celu nic się nie dzieje. Dodatni promień wybiera
+  cele tak jak wybuch. Status musi istnieć w rejestrze `src/data/statuses/`;
+  walidacja w `effectSchema` importuje sam schemat statusów bez cyklu zależności.
+
+W obu efektach obszarowych `at` to `target` lub `user`. `at: 'target'` jest
+dozwolone wyłącznie przy `enemy_killed` i `damage_dealt` (walidacja synergii
+i wyzwalaczy implantów, także używanych przez talenty). Brak wymaganej funkcji
+kontekstu albo pozycji pomija efekt. Brak celów statusu również nie jest
+wyzwoleniem. Pominięte efekty nie emitują `synergy_triggered` ani nie uruchamiają
+odnowienia, chyba że inny efekt tego samego wyzwalacza zadziałał.
+
+Nowe opcjonalne pola `SynergyContext`: `heal(amount: number): void`,
+`userPosition(): Vec3 | null`, `applyStatus(target: EntityId, app: StatusApplication): void`.
+Arena przekazuje `Health.heal` wraz z emisją `health_changed`, pozycję kontrolera
+i `StatusSystem.apply(target, app, playerId)`. Integracja tych pól w `RoomScene`
+wymaga osobnego wklejenia przez architekta. Wyzwalacze implantów z `heal`,
+`explode` lub `apply_status_area` muszą podawać dodatni `cooldownS`.
+
 - `add_energy { amount }` — `ctx.addEnergy(amount)`.
 - `cool_weapon { amount: number | "full" }` — `ctx.coolWeapon(amount)`.
 - `stat_modifier_timed { stat, type, value, durationS }` — `StatModifier` ze źródłem `synergy:<id>`, zdejmowany po `durationS` czasu symulacji. Ponowne wyzwolenie odświeża czas, modyfikatory się nie kumulują.
