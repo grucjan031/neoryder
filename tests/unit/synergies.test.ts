@@ -278,9 +278,17 @@ describe('SynergySystem — definicje', () => {
     expect(synergyDefinitions.map((d) => d.id).sort()).toEqual([
       'bladeDancer',
       'bladeMastery',
+      'closeCircuit',
+      'emberRelay',
+      'executionVent',
       'gunMastery',
+      'killSwitch',
+      'mirrorBurst',
+      'parryLock',
       'resonanceMastery',
       'resonancePistolero',
+      'resonanceSiphon',
+      'shockFracture',
       'stormGunner',
     ]);
   });

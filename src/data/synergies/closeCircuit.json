@@ -1,0 +1,16 @@
+{
+  "id": "closeCircuit",
+  "name": "Domknięcie obwodu",
+  "requires": [],
+  "requiresCount": { "#melee": 2, "#power": 1 },
+  "when": {
+    "event": "damage_dealt",
+    "tagsAny": ["#melee"],
+    "targetStatus": "overload"
+  },
+  "effects": [
+    { "kind": "add_energy", "amount": 8 },
+    { "kind": "heal", "amount": 3 }
+  ],
+  "cooldownS": 4
+}

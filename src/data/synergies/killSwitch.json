@@ -1,0 +1,17 @@
+{
+  "id": "killSwitch",
+  "name": "Przełącznik",
+  "requires": ["#build_blade", "#build_gunner"],
+  "when": { "event": "enemy_killed", "tagsAny": ["#gun"] },
+  "effects": [
+    { "kind": "add_energy", "amount": 6 },
+    {
+      "kind": "stat_modifier_timed",
+      "stat": "dashCooldown",
+      "type": "mult",
+      "value": 0.6,
+      "durationS": 2
+    }
+  ],
+  "cooldownS": 3
+}

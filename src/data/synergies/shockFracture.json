@@ -1,0 +1,20 @@
+{
+  "id": "shockFracture",
+  "name": "Iskrowy rozłam",
+  "requires": ["#build_blade", "#build_resonance"],
+  "when": {
+    "event": "damage_dealt",
+    "tagsAny": ["#melee"],
+    "targetStatus": "stunned"
+  },
+  "effects": [
+    {
+      "kind": "explode",
+      "at": "target",
+      "radiusM": 2,
+      "damage": 8,
+      "tags": ["#elektrycznosc"]
+    }
+  ],
+  "cooldownS": 3
+}

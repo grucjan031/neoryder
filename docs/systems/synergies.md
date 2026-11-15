@@ -121,6 +121,39 @@ Zdarzenia z tagiem `#synergy` nigdy nie wyzwalają synergii. Obrażenia z `chain
 | `bladeDancer.json`        | Tancerz ostrzy      | `#build_blade`, `#build_resonance`  | udane parowanie                     | +10 energii, `dashCooldown` ×0,5 przez 3 s          |
 | `stormGunner.json`        | Burzowy strzelec    | `#build_gunner`, `#build_resonance` | trafienie `#gun` w cel z `overload` | skok na cel w 6 m za 50% obrażeń (`#elektrycznosc`) |
 
+## Z11: osiem nowych synergii zawartości
+
+Wszystkie poniższe definicje korzystają z istniejącego schematu i wykonawcy.
+Schemat nie ma pola opisu; dokładne działanie opisuje ta tabela. Wymagania
+par ścieżek to tagi `#build_blade`, `#build_resonance`, `#build_gunner`.
+
+| id                | Nazwa             | Wymagania                  | Wyzwalacz                                | Efekty                                                                                                        | Odnowienie |
+| ----------------- | ----------------- | -------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------- |
+| `parryLock`       | Rygiel            | Ostrze + Rezonans          | `parry_success`                          | ogłuszenie wrogów w 2,5 m od gracza na 0,6 s; parowanie otwiera okno podejścia                                | 4 s        |
+| `shockFracture`   | Iskrowy rozłam    | Ostrze + Rezonans          | `damage_dealt`, `#melee`, cel `stunned`  | wybuch przy celu: 8 obrażeń, promień 2 m, `#elektrycznosc`; wykorzystuje okno ogłuszenia                      | 3 s        |
+| `executionVent`   | Zimny finisz      | Ostrze + Strzelec          | `execute_performed`                      | schłodzenie aktywnej broni o 30, `moveSpeed` ×1,12 przez 2 s; egzekucja przygotowuje powrót do strzelania     | 3 s        |
+| `killSwitch`      | Przełącznik       | Ostrze + Strzelec          | `enemy_killed`, `#gun`                   | +6 energii, `dashCooldown` ×0,6 przez 2 s; zabójstwo strzałem przygotowuje doskok z ostrzem                   | 3 s        |
+| `emberRelay`      | Żarowy przekaźnik | Rezonans + Strzelec        | `damage_dealt`, `#power`, cel `burning`  | wybuch przy celu: 8 obrażeń, promień 2 m, `#fire`; podpal pociskiem z modułem incendiary, następnie traf mocą | 3 s        |
+| `resonanceSiphon` | Żywy obwód        | Rezonans + Strzelec        | `enemy_killed`, `#power`                 | +4 HP; osłab strzałami, dobij mocą                                                                            | 4 s        |
+| `mirrorBurst`     | Lustrzany impuls  | 3 × `#elektrycznosc`       | `projectile_reflected`                   | wybuch przy graczu: 8 obrażeń, promień 2,5 m, `#elektrycznosc`; odbijanie pocisków razi także pobliską grupę  | 4 s        |
+| `closeCircuit`    | Domknięcie obwodu | 2 × `#melee`, 1 × `#power` | `damage_dealt`, `#melee`, cel `overload` | +8 energii i +3 HP; po nałożeniu przeciążenia mocą podejdź z ostrzem                                          | 4 s        |
+
+Bazowy pierwszy cios `plasmaBlade.combo[0].damage` = 25; budżet dodatkowych
+bazowych obrażeń to 10 na cel i wyzwolenie. Nowe wybuchy zadają 8 (32% ciosu),
+leczenie wynosi najwyżej 4 HP. Wybuchy mogą objąć wiele celów i nadal podlegają
+istniejącym modyfikatorom obrażeń. Nowe dane nie używają zależnego od obrażeń
+trafienia `chain_on_hit` ani bonusu `damage`, więc nie obchodzą tego budżetu.
+`stunned` nie zadaje obrażeń; tag `#elektrycznosc` wybuchu sam nie nakłada
+`overload`. Każda nowa definicja ma dodatnie `cooldownS`.
+
+`execute_performed` dotyczy `attacker === user`; nie udostępnia filtrów
+`tagsAny` ani `targetStatus`. Rygiel działa wokół gracza, ponieważ
+`parry_success` nie udostępnia celu efektom obszarowym. Modyfikatory czasowe
+nie kumulują się, a odnowienie nie skraca już trwającego dashu.
+
+Testy zawartości: `tests/unit/contentZ11.test.ts` — loader, rozkład wymagań,
+budżet dodatkowych obrażeń (w tym statusów) i leczenia, dodatnie odnowienia.
+
 ## API
 
 `new SynergySystem(bus, ctx, defs?)`, `setTags`, `active()` (id aktywnych — debug/HUD), `step(dt)` (dt ≤ 0 nic nie zmienia), `reset()` (zdejmuje modyfikatory, zeruje odnowienia), `dispose()` (odpina słuchaczy + reset).

@@ -1,0 +1,20 @@
+{
+  "id": "emberRelay",
+  "name": "Żarowy przekaźnik",
+  "requires": ["#build_resonance", "#build_gunner"],
+  "when": {
+    "event": "damage_dealt",
+    "tagsAny": ["#power"],
+    "targetStatus": "burning"
+  },
+  "effects": [
+    {
+      "kind": "explode",
+      "at": "target",
+      "radiusM": 2,
+      "damage": 8,
+      "tags": ["#fire"]
+    }
+  ],
+  "cooldownS": 3
+}

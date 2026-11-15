@@ -1,0 +1,8 @@
+{
+  "id": "resonanceSiphon",
+  "name": "Żywy obwód",
+  "requires": ["#build_resonance", "#build_gunner"],
+  "when": { "event": "enemy_killed", "tagsAny": ["#power"] },
+  "effects": [{ "kind": "heal", "amount": 4 }],
+  "cooldownS": 4
+}

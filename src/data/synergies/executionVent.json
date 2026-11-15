@@ -1,0 +1,17 @@
+{
+  "id": "executionVent",
+  "name": "Zimny finisz",
+  "requires": ["#build_blade", "#build_gunner"],
+  "when": { "event": "execute_performed" },
+  "effects": [
+    { "kind": "cool_weapon", "amount": 30 },
+    {
+      "kind": "stat_modifier_timed",
+      "stat": "moveSpeed",
+      "type": "mult",
+      "value": 1.12,
+      "durationS": 2
+    }
+  ],
+  "cooldownS": 3
+}

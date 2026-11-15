@@ -1,0 +1,17 @@
+{
+  "id": "mirrorBurst",
+  "name": "Lustrzany impuls",
+  "requires": [],
+  "requiresCount": { "#elektrycznosc": 3 },
+  "when": { "event": "projectile_reflected" },
+  "effects": [
+    {
+      "kind": "explode",
+      "at": "user",
+      "radiusM": 2.5,
+      "damage": 8,
+      "tags": ["#elektrycznosc"]
+    }
+  ],
+  "cooldownS": 4
+}

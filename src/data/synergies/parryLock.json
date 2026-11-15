@@ -1,0 +1,16 @@
+{
+  "id": "parryLock",
+  "name": "Rygiel",
+  "requires": ["#build_blade", "#build_resonance"],
+  "when": { "event": "parry_success" },
+  "effects": [
+    {
+      "kind": "apply_status_area",
+      "at": "user",
+      "radiusM": 2.5,
+      "status": "stunned",
+      "durationS": 0.6
+    }
+  ],
+  "cooldownS": 4
+}
