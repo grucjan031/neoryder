@@ -13,9 +13,93 @@ import {
   SynergySystem,
   synergyDefinitions,
 } from '../../src/progression/synergies';
-import type { SynergyDefinition } from '../../src/progression/synergies';
+import type {
+  SynergyContext,
+  SynergyDefinition,
+} from '../../src/progression/synergies';
 
 const BUILD = ['#build_blade', '#build_gunner', '#build_resonance'];
+
+function setupArea(
+  effects: unknown[],
+  when: unknown = { event: 'damage_dealt' },
+) {
+  const bus = new EventBus();
+  const registry = new EntityRegistry(bus);
+  const damage = new DamageSystem(bus, registry);
+  const user = registry.create('player', 'player');
+  const target = registry.create('dummy', 'enemy');
+  const edge = registry.create('dummy', 'enemy');
+  const far = registry.create('dummy', 'enemy');
+  const missing = registry.create('dummy', 'enemy');
+  const health = new Health(() => 100);
+  health.set(50);
+  damage.register(user, health);
+  for (const id of [target, edge, far, missing])
+    damage.register(id, new Health(() => 100));
+  const positions = new Map<EntityId, Vec3>([
+    [target, { x: 10, y: 0, z: 0 }],
+    [edge, { x: 10, y: 3, z: 4 }],
+    [far, { x: 10, y: 0, z: 5.01 }],
+  ]);
+  const applyStatus = vi.fn();
+  const ctx: SynergyContext = {
+    user,
+    damage,
+    stats: new Stats({ damage: 1 }),
+    addEnergy: vi.fn(),
+    coolWeapon: vi.fn(),
+    heal: (amount) => health.heal(amount),
+    userPosition: () => ({ x: 10, y: 0, z: 0 }),
+    applyStatus,
+    targets: () => [target, edge, far, missing],
+    position: (id) => positions.get(id) ?? null,
+  };
+  const system = new SynergySystem(
+    bus,
+    ctx,
+    loadSynergyDefinitions([
+      { id: 'area', name: 'Obszar', requires: [], when, effects, cooldownS: 2 },
+    ]),
+  );
+  const triggered = vi.fn();
+  const explosion = vi.fn();
+  bus.on('synergy_triggered', triggered);
+  bus.on('explosion', explosion);
+  const deal = vi.spyOn(damage, 'deal');
+  const hit = (
+    source: EntityId | null = user,
+    recipient = target,
+    tags = ['#melee'],
+  ) =>
+    bus.emit('damage_dealt', {
+      source,
+      target: recipient,
+      amount: 1,
+      tags,
+      point: null,
+      dir: null,
+      knockback: 0,
+      killed: false,
+    });
+  return {
+    bus,
+    ctx,
+    system,
+    health,
+    damage,
+    deal,
+    user,
+    target,
+    edge,
+    far,
+    positions,
+    applyStatus,
+    triggered,
+    explosion,
+    hit,
+  };
+}
 
 function setup(raws: readonly unknown[], tags: readonly string[] = BUILD) {
   const bus = new EventBus();
@@ -419,6 +503,196 @@ describe('SynergySystem — dane z GDD', () => {
     damage.deal(a, { amount: 8, source: player, tags: ['#gun'] });
     const chained = dealt.find((e) => e.tags.includes('#synergy'));
     expect(chained).toMatchObject({ target: b, amount: 4 });
+  });
+});
+
+describe('Z4 — nowe efekty wyzwalaczy', () => {
+  const blast = {
+    kind: 'explode',
+    at: 'target',
+    radiusM: 5,
+    damage: 12,
+    knockback: 8,
+    tags: ['#fire'],
+  };
+  const burn = {
+    kind: 'apply_status_area',
+    at: 'target',
+    radiusM: 0,
+    status: 'burning',
+    durationS: 2,
+    stacks: 1,
+  };
+
+  it('leczy; brak funkcji nie emituje wyzwolenia ani nie zużywa odnowienia', () => {
+    const h = setupArea([{ kind: 'heal', amount: 8 }]);
+    const heal = h.ctx.heal;
+    delete h.ctx.heal;
+    h.hit();
+    expect(h.health.current).toBe(50);
+    expect(h.triggered).not.toHaveBeenCalled();
+    h.ctx.heal = heal;
+    h.hit();
+    h.hit();
+    expect(h.health.current).toBe(58);
+    expect(h.triggered).toHaveBeenCalledTimes(1);
+    h.system.step(2);
+    h.hit();
+    expect(h.health.current).toBe(66);
+  });
+
+  it('wybuch trafia cel i granicę sfery, zachowuje kredyt, odrzut i nie tworzy pętli', () => {
+    const h = setupArea([blast]);
+    h.hit();
+    expect(h.damage.health(h.target)?.current).toBe(88);
+    expect(h.damage.health(h.edge)?.current).toBe(88);
+    expect(h.damage.health(h.far)?.current).toBe(100);
+    expect(h.deal).toHaveBeenCalledTimes(2);
+    expect(h.deal).toHaveBeenCalledWith(h.edge, {
+      amount: 12,
+      source: h.user,
+      tags: ['#fire', '#synergy'],
+      point: { x: 10, y: 0, z: 0 },
+      dir: { x: 0, y: 0.6, z: 0.8 },
+      knockback: 8,
+    });
+    expect(h.deal).toHaveBeenCalledWith(
+      h.target,
+      expect.objectContaining({ dir: { x: 0, y: 0, z: 0 } }),
+    );
+    expect(h.explosion).toHaveBeenCalledExactlyOnceWith({
+      point: { x: 10, y: 0, z: 0 },
+      radiusM: 5,
+      owner: h.user,
+      tags: ['#fire', '#synergy'],
+    });
+    expect(h.triggered).toHaveBeenCalledTimes(1);
+  });
+
+  it('wybuch po zabójstwie ignoruje martwy cel, ale rani sąsiada bez kolejnej eksplozji', () => {
+    const h = setupArea([{ ...blast, damage: 200 }], { event: 'enemy_killed' });
+    h.damage.deal(h.target, { source: h.user, amount: 100, tags: ['#gun'] });
+    expect(h.damage.health(h.target)?.dead).toBe(true);
+    expect(h.damage.health(h.edge)?.dead).toBe(true);
+    expect(h.damage.health(h.far)?.current).toBe(100);
+    expect(h.explosion).toHaveBeenCalledTimes(1);
+    expect(h.triggered).toHaveBeenCalledTimes(1);
+  });
+
+  it('radiusM = 0 nakłada status tylko na cel nawet bez jego pozycji', () => {
+    const h = setupArea([burn]);
+    h.positions.clear();
+    h.hit();
+    expect(h.applyStatus).toHaveBeenCalledExactlyOnceWith(h.target, {
+      id: 'burning',
+      durationS: 2,
+      stacks: 1,
+    });
+    expect(h.triggered).toHaveBeenCalledTimes(1);
+  });
+
+  it('obszar statusu uwzględnia promień, stosy i pozycję użytkownika', () => {
+    const h = setupArea(
+      [{ ...burn, at: 'user', radiusM: 5, status: 'overload', stacks: 2 }],
+      { event: 'dash_used' },
+    );
+    h.bus.emit('dash_used', { user: h.user, dir: { x: 1, y: 0, z: 0 } });
+    expect(h.applyStatus.mock.calls).toEqual([
+      [h.target, { id: 'overload', durationS: 2, stacks: 2 }],
+      [h.edge, { id: 'overload', durationS: 2, stacks: 2 }],
+    ]);
+  });
+
+  it('brak applyStatus i pusty obszar nie zużywają odnowienia', () => {
+    const h = setupArea([{ ...burn, radiusM: 5 }]);
+    delete h.ctx.applyStatus;
+    h.hit();
+    expect(h.triggered).not.toHaveBeenCalled();
+    h.ctx.applyStatus = h.applyStatus;
+    const targets = h.ctx.targets;
+    h.ctx.targets = () => [];
+    h.hit();
+    expect(h.triggered).not.toHaveBeenCalled();
+    h.ctx.targets = targets;
+    h.hit();
+    expect(h.applyStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['explode', 'apply_status_area'])(
+    '%s pomija brak pozycji bez odnowienia',
+    (kind) => {
+      const effect = kind === 'explode' ? blast : { ...burn, radiusM: 5 };
+      const h = setupArea([{ ...effect, at: 'user' }], { event: 'dash_used' });
+      const fire = () =>
+        h.bus.emit('dash_used', { user: h.user, dir: { x: 1, y: 0, z: 0 } });
+      delete h.ctx.userPosition;
+      fire();
+      h.ctx.userPosition = () => null;
+      fire();
+      expect(h.triggered).not.toHaveBeenCalled();
+      h.ctx.userPosition = () => ({ x: 10, y: 0, z: 0 });
+      fire();
+      expect(h.triggered).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('targetIsUser wybiera otrzymane obrażenia, także bez źródła, i ignoruje #synergy', () => {
+    const h = setupArea([{ kind: 'heal', amount: 4 }], {
+      event: 'damage_dealt',
+      targetIsUser: true,
+    });
+    h.hit();
+    h.hit(h.edge, h.target);
+    h.hit(h.target, h.user, ['#synergy']);
+    expect(h.triggered).not.toHaveBeenCalled();
+    h.hit(h.target, h.user);
+    expect(h.health.current).toBe(54);
+    h.system.step(2);
+    h.hit(null, h.user);
+    expect(h.health.current).toBe(58);
+  });
+
+  it.each([undefined, false])(
+    'targetIsUser=%s zachowuje filtr źródła gracza',
+    (targetIsUser) => {
+      const h = setupArea([{ kind: 'heal', amount: 4 }], {
+        event: 'damage_dealt',
+        targetIsUser,
+      });
+      h.hit(h.target, h.user);
+      expect(h.triggered).not.toHaveBeenCalled();
+      h.hit();
+      expect(h.health.current).toBe(54);
+    },
+  );
+
+  it('walidacja odrzuca cel przy zdarzeniu bez celu i błędne parametry efektów', () => {
+    for (const event of [
+      'dash_used',
+      'power_used',
+      'parry_success',
+      'projectile_reflected',
+    ]) {
+      expect(() => setupArea([blast], { event })).toThrow(/target/);
+      expect(() => setupArea([burn], { event })).toThrow(/target/);
+    }
+    for (const effect of [
+      { ...blast, radiusM: -1 },
+      { ...blast, radiusM: 0 },
+      { ...blast, damage: -1 },
+      { ...blast, knockback: -1 },
+      { ...burn, radiusM: -1 },
+      { ...burn, status: 'unknown' },
+      { ...burn, durationS: 0 },
+      { ...burn, stacks: 0 },
+      { ...burn, stacks: 1.5 },
+      { kind: 'heal', amount: 0 },
+      { kind: 'heal', amount: -1 },
+    ])
+      expect(() => setupArea([effect])).toThrow();
+    expect(() =>
+      setupArea([burn], { event: 'enemy_killed', targetIsUser: false }),
+    ).toThrow(/targetIsUser/);
   });
 });
 
