@@ -21,6 +21,7 @@ export interface LoadoutChoice {
   blade: string;
   weapons: string[];
   powers: string[];
+  modules: Record<string, string[]>;
 }
 
 export interface RunRewards {
@@ -48,7 +49,7 @@ export interface MetaState {
   cores: number;
   /** Kupione węzły drzewek. */
   talents: string[];
-  /** `weapon:<id>` | `power:<id>` | `blade:<id>` | `slot:<id>`. */
+  /** `weapon:<id>` | `power:<id>` | `blade:<id>` | `slot:<id>` | `module:<id>`. */
   unlocks: string[];
   /** Ekwipunek wybrany w warsztacie. */
   loadout: LoadoutChoice;
@@ -72,7 +73,7 @@ export const MAX_APPLIED_RUN_IDS = 20;
 /** Łatka definicji broni, mocy lub ostrza (ADR 0007 pkt 5). */
 export interface DefinitionPatch {
   target: `weapon:${string}` | `power:${string}` | `blade:${string}`;
-  op: 'set' | 'add' | 'mul';
+  op: 'set' | 'add' | 'mul' | 'append';
   /** Ścieżka w definicji, np. 'jumps', 'combo.2.knockback', 'statuses'. */
   path: string;
   /** Liczba dla add/mul; dowolna wartość JSON dla set. */

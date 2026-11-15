@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { DefinitionPatch } from '../core/metaTypes';
 
-export const PATCH_OPS = ['set', 'add', 'mul'] as const;
+export const PATCH_OPS = ['set', 'add', 'mul', 'append'] as const;
 
 /** Łatka definicji (ADR 0007 pkt 5); `add` i `mul` wymagają liczby skończonej. */
 export const definitionPatchSchema: z.ZodType<DefinitionPatch> = z
@@ -17,13 +17,19 @@ export const definitionPatchSchema: z.ZodType<DefinitionPatch> = z
   })
   .superRefine((patch, ctx) => {
     if (
-      patch.op !== 'set' &&
+      (patch.op === 'add' || patch.op === 'mul') &&
       !(typeof patch.value === 'number' && Number.isFinite(patch.value))
     )
       ctx.addIssue({
         code: 'custom',
         path: ['value'],
         message: `Operacja ${patch.op} wymaga liczby skończonej.`,
+      });
+    if (patch.op === 'append' && !Array.isArray(patch.value))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['value'],
+        message: 'Operacja append wymaga tablicy.',
       });
   });
 

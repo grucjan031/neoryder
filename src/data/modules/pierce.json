@@ -1,0 +1,8 @@
+{
+  "id": "pierce",
+  "name": "Przebicie",
+  "description": "Pocisk przechodzi przez jednego dodatkowego wroga.",
+  "tags": ["#pierce"],
+  "weaponKinds": ["projectile", "spread", "pierce"],
+  "patches": [{ "op": "add", "path": "pierceCount", "value": 1 }]
+}

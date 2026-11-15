@@ -1,4 +1,5 @@
 {
+  "moduleSlotsPerWeapon": 2,
   "starter": {
     "xp": 0,
     "data": 0,

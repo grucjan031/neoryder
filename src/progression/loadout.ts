@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { bladeDefinitions } from '../combat/melee/bladeSchema';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { powerDefinitions } from '../combat/powers/registry';
+import { moduleDefinitions } from './moduleSchema';
 
 const uniqueIds = (ids: string[]): boolean => new Set(ids).size === ids.length;
 
@@ -23,6 +24,14 @@ export const loadoutSchema = z.object({
     .max(2)
     .refine(uniqueIds, 'Powtórzone id mocy'),
   tags: z.array(z.string().startsWith('#')),
+  modules: z
+    .record(
+      z.string().min(1),
+      z.array(
+        z.string().refine((id) => moduleDefinitions.has(id), 'Nieznany moduł'),
+      ),
+    )
+    .optional(),
 });
 
 export type Loadout = z.infer<typeof loadoutSchema>;

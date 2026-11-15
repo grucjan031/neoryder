@@ -248,6 +248,7 @@ describe('EventBus', () => {
       blade: 'plasmaBlade',
       weapons: ['blaster'],
       powers: ['push'],
+      modules: {},
     };
     bus.emit('meta_rewards', {
       runId: 'seed:1',

@@ -1,0 +1,8 @@
+{
+  "id": "ricochet",
+  "name": "Rykoszet",
+  "description": "Pocisk odbija się raz od ściany.",
+  "tags": ["#ricochet"],
+  "weaponKinds": ["projectile", "spread", "pierce", "lob"],
+  "patches": [{ "op": "set", "path": "ricochets", "value": 1 }]
+}

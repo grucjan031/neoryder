@@ -9,7 +9,8 @@
       "weapon": "Bronie",
       "power": "Moce",
       "blade": "Ostrza",
-      "slot": "Sloty"
+      "slot": "Sloty",
+      "module": "Moduły"
     }
   },
   "header": {
@@ -26,7 +27,9 @@
     "counter": "{label}: {used}/{slots}",
     "slotOrder": "Slot {n}",
     "fullHint": "Limit slotów wyczerpany",
-    "lastHint": "Wymagana co najmniej jedna pozycja"
+    "lastHint": "Wymagana co najmniej jedna pozycja",
+    "moduleSlot": "Moduł {n}",
+    "emptyModule": "Pusty"
   },
   "bladeNames": {
     "plasmaBlade": "Ostrze plazmowe",

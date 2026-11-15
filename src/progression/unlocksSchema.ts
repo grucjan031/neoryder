@@ -3,6 +3,7 @@ import { bladeDefinitions } from '../combat/melee/bladeSchema';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import unlocksData from '../data/meta/unlocks.json';
+import { moduleDefinitions } from './moduleSchema';
 
 export const SLOT_IDS = ['weapon2', 'weapon3', 'power2'] as const;
 
@@ -16,6 +17,7 @@ export const unlockIdSchema = z.string().superRefine((id, ctx) => {
     ((kind === 'weapon' && weaponDefinitions.has(name)) ||
       (kind === 'power' && powerDefinitions.has(name)) ||
       (kind === 'blade' && bladeDefinitions.has(name)) ||
+      (kind === 'module' && moduleDefinitions.has(name)) ||
       (kind === 'slot' && (SLOT_IDS as readonly string[]).includes(name)));
   if (!known)
     ctx.addIssue({ code: 'custom', message: `Nieznane odblokowanie: ${id}` });

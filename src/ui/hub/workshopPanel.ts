@@ -4,6 +4,7 @@ import {
   equipmentState,
   groupRows,
   nextLoadout,
+  nextModuleLoadout,
   unlockRows,
   workshopText as text,
 } from './workshopState';
@@ -236,6 +237,51 @@ export const createWorkshopPanel: HubPanelFactory = (
         equipment.powers.slots,
       ),
     );
+    for (const weapon of equipment.modules) {
+      const group = el('div', 'workshop__modules');
+      group.dataset.moduleWeapon = weapon.weaponId;
+      group.append(el('h3', undefined, weapon.weaponName));
+      weapon.slots.forEach((slot, index) => {
+        const label = el('label', 'workshop__module-slot');
+        label.append(
+          el(
+            'span',
+            undefined,
+            fill(text.equipment.moduleSlot, { n: index + 1 }),
+          ),
+        );
+        const select = el('select', 'workshop__module-select');
+        select.dataset.weapon = weapon.weaponId;
+        select.dataset.slot = String(index);
+        select.dataset.key = `module:${weapon.weaponId}:${index}`;
+        const empty = el('option', undefined, text.equipment.emptyModule);
+        empty.value = '';
+        select.append(empty);
+        for (const option of slot.options) {
+          const node = el('option', undefined, option.name);
+          node.value = option.id;
+          node.title = option.description;
+          select.append(node);
+        }
+        select.value = slot.selected;
+        select.title =
+          slot.options.find((option) => option.id === slot.selected)
+            ?.description ?? '';
+        select.addEventListener('change', () => {
+          void setChoice(
+            nextModuleLoadout(
+              ctx.manager,
+              weapon.weaponId,
+              index,
+              select.value,
+            ),
+          );
+        });
+        label.append(select);
+        group.append(label);
+      });
+      section.querySelector('[data-group="weapons"]')!.append(group);
+    }
     return section;
   };
 

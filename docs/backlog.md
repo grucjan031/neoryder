@@ -117,6 +117,5 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 | Pomysł | Dlaczego odłożone |
 | --- | --- |
-| Warsztat modułów broni (rykoszet, przebicie, podpalenie, pociski nadprzewodzące; 2 sloty na broń) | Moduły broni nie istnieją w kodzie walki; F4 robi warsztat odblokowań i ekwipunku (ADR 0007). Kandydat na zadanie po bramce F4 |
 | NPC ruchu oporu w kryjówce, dialogi | F5 |
 | Automatyczny wzrost Poziomu zagrożenia z poziomem postaci | Odrzucone w ADR 0007; wrócić, jeśli playtest F4 pokaże, że gra robi się za łatwa |

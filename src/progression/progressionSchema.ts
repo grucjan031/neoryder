@@ -85,6 +85,7 @@ export const progressionSchema = z
       })
       .strict(),
     rewards: rewardRulesSchema,
+    moduleSlotsPerWeapon: positiveInt,
   })
   .strict();
 export type ProgressionData = z.infer<typeof progressionSchema>;
@@ -110,6 +111,7 @@ export function createStarterMetaState(
       blade: starter.loadout.blade,
       weapons: [...starter.loadout.weapons],
       powers: [...starter.loadout.powers],
+      modules: structuredClone(starter.loadout.modules),
     },
     threat: { ...starter.threat },
     stats: { runs: 0, victories: 0, deaths: 0, kills: 0, bestVictoryS: null },

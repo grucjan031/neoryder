@@ -6,6 +6,10 @@ import type { LoadoutChoice } from '../../core/metaTypes';
 import type { MetaManager } from '../../progression/meta';
 import { unlockDefinitions } from '../../progression/unlocksSchema';
 import type { UnlockDefinition } from '../../progression/unlocksSchema';
+import {
+  moduleDefinitions,
+  moduleFitsWeapon,
+} from '../../progression/moduleSchema';
 import textData from '../../data/ui/workshop.pl.json';
 
 export const workshopText = z
@@ -21,6 +25,7 @@ export const workshopText = z
         power: z.string(),
         blade: z.string(),
         slot: z.string(),
+        module: z.string(),
       }),
     }),
     header: z.object({
@@ -38,6 +43,8 @@ export const workshopText = z
       slotOrder: z.string(),
       fullHint: z.string(),
       lastHint: z.string(),
+      moduleSlot: z.string(),
+      emptyModule: z.string(),
     }),
     bladeNames: z.record(z.string(), z.string()),
     slotNames: z.record(z.string(), z.string()),
@@ -45,18 +52,24 @@ export const workshopText = z
   })
   .parse(textData);
 
-export type ItemKind = 'weapon' | 'power' | 'blade' | 'slot';
+export type ItemKind = 'weapon' | 'power' | 'blade' | 'slot' | 'module';
 export const ITEM_KINDS: readonly ItemKind[] = [
   'weapon',
   'power',
   'blade',
   'slot',
+  'module',
 ];
 
 /** Podzbiór `MetaManager` potrzebny do stanu warsztatu (tylko publiczne gettery). */
 export type MetaView = Pick<
   MetaManager,
-  'level' | 'weaponSlots' | 'powerSlots' | 'isUnlocked' | 'state'
+  | 'level'
+  | 'weaponSlots'
+  | 'powerSlots'
+  | 'moduleSlotsPerWeapon'
+  | 'isUnlocked'
+  | 'state'
 >;
 
 export type RowStatus = 'owned' | 'buyable' | 'level' | 'data' | 'cores';
@@ -90,6 +103,8 @@ export function itemName(kind: ItemKind, key: string): string {
       );
     case 'slot':
       return workshopText.slotNames[key] ?? key;
+    case 'module':
+      return moduleDefinitions.get(key)?.name ?? key;
   }
 }
 
@@ -177,6 +192,14 @@ export interface EquipmentState {
   blades: { key: string; name: string; selected: boolean }[];
   weapons: { options: ChoiceOption[]; used: number; slots: number };
   powers: { options: ChoiceOption[]; used: number; slots: number };
+  modules: {
+    weaponId: string;
+    weaponName: string;
+    slots: {
+      selected: string;
+      options: { id: string; name: string; description: string }[];
+    }[];
+  }[];
 }
 
 function choiceOptions(
@@ -227,6 +250,25 @@ export function equipmentState(view: MetaView): EquipmentState {
       used: loadout.powers.length,
       slots: powerSlots,
     },
+    modules: loadout.weapons.map((weaponId) => {
+      const installed = loadout.modules[weaponId] ?? [];
+      return {
+        weaponId,
+        weaponName: itemName('weapon', weaponId),
+        slots: Array.from({ length: view.moduleSlotsPerWeapon }, (_, slot) => ({
+          selected: installed[slot] ?? '',
+          options: [...moduleDefinitions.values()]
+            .filter(
+              (module) =>
+                view.isUnlocked(`module:${module.id}`) &&
+                moduleFitsWeapon(module, weaponId) &&
+                (!installed.includes(module.id) ||
+                  installed[slot] === module.id),
+            )
+            .map(({ id, name, description }) => ({ id, name, description })),
+        })),
+      };
+    }),
   };
 }
 
@@ -241,5 +283,29 @@ export function nextLoadout(
   const current = view.state.loadout;
   const slots = part === 'weapons' ? view.weaponSlots : view.powerSlots;
   const list = toggleSelection(current[part], key, slots);
-  return list ? { ...current, [part]: list } : null;
+  if (!list) return null;
+  const modules =
+    part === 'weapons'
+      ? Object.fromEntries(
+          Object.entries(current.modules).filter(([id]) => list.includes(id)),
+        )
+      : current.modules;
+  return { ...current, [part]: list, modules };
+}
+
+/** Puste sloty są usuwane; kolejność pozostałych modułów zostaje zachowana. */
+export function nextModuleLoadout(
+  view: MetaView,
+  weaponId: string,
+  slot: number,
+  moduleId: string,
+): LoadoutChoice {
+  const current = view.state.loadout;
+  const ids = [...(current.modules[weaponId] ?? [])];
+  ids[slot] = moduleId;
+  const modules = { ...current.modules };
+  const selected = ids.filter(Boolean);
+  if (selected.length) modules[weaponId] = selected;
+  else delete modules[weaponId];
+  return { ...current, modules };
 }

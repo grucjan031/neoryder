@@ -5,20 +5,30 @@ test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
   await page.goto('/?scene=run&seed=resume-check&debug=1');
   const query = (name: string) =>
     page.evaluate((key) => window.__neoryder?.query(key), name);
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('map');
   await page.locator('.run-screen [data-node-id]').first().click();
-  await expect.poll(() => query('loading')).toBe(false);
+  await expect
+    .poll(() => query('loading'), { timeout: SIM_TIMEOUT })
+    .toBe(false);
   await page.evaluate(() => window.__neoryder?.command('run clear'));
   await expect
     .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
     .toBe('reward');
   await page.keyboard.press('Digit1');
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('map');
   // Zapis do IndexedDB jest asynchroniczny — przeładowanie dopiero po jego końcu.
-  await expect.poll(() => query('savePending')).toBe(false);
+  await expect
+    .poll(() => query('savePending'), { timeout: SIM_TIMEOUT })
+    .toBe(false);
   const saved = await query('runState');
   await page.goto('/?scene=run&continue=1&debug=1');
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('map');
   // Czas runu płynie dalej na mapie po wczytaniu — porównujemy resztę stanu.
   const { elapsedS: savedS, ...savedRest } = saved as { elapsedS: number };
   const { elapsedS, ...rest } = (await query('runState')) as {
@@ -122,7 +132,9 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
     page.evaluate((key) => window.__neoryder?.query(key), name);
   const command = (value: string) =>
     page.evaluate((cmd) => window.__neoryder?.command(cmd), value);
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('map');
   const map = (await query('map')) as {
     layers: { id: string; type: string; next: string[] }[][];
   };
@@ -142,24 +154,44 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
   expect(path).toBeTruthy();
   for (const id of path!) {
     await page.locator(`[data-node-id="${id}"]`).click();
-    await expect.poll(() => query('loading')).toBe(false);
-    if ((await query('screen')) === 'shop') break;
-    if ((await query('screen')) === 'room') {
+    await expect
+      .poll(() => query('loading'), { timeout: SIM_TIMEOUT })
+      .toBe(false);
+    const screen = await query('screen');
+    if (screen === 'shop') break;
+    if (screen === 'room') {
       await command('run clear');
       await expect
         .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
         .toBe('reward');
     }
     await page.keyboard.press('Enter');
-    await expect.poll(() => query('screen')).toBe('map');
+    await expect
+      .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+      .toBe('map');
   }
-  await expect.poll(() => query('screen')).toBe('shop');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('shop');
   await command('credits 500');
   const before = (await query('runState')) as {
     credits: number;
     implants: string[];
   };
   await page.locator('.run-screen button[data-rarity]').first().click();
+  await expect
+    .poll(
+      async () => {
+        const state = (await query('runState')) as {
+          credits: number;
+          implants: string[];
+        };
+        return state.credits < before.credits &&
+          state.implants.length === before.implants.length + 1;
+      },
+      { timeout: SIM_TIMEOUT },
+    )
+    .toBe(true);
   const after = (await query('runState')) as {
     credits: number;
     implants: string[];

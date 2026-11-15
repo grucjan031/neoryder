@@ -1,0 +1,11 @@
+{
+  "id": "superconductor",
+  "name": "Nadprzewodnik",
+  "description": "Prędkość pocisku +20%, ciepło na strzał −15%.",
+  "tags": ["#superconductor"],
+  "weaponKinds": ["projectile", "spread", "pierce", "lob"],
+  "patches": [
+    { "op": "mul", "path": "projectileSpeed", "value": 1.2 },
+    { "op": "mul", "path": "heatPerShot", "value": 0.85 }
+  ]
+}

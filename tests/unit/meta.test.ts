@@ -162,6 +162,72 @@ describe('MetaManager.applyRun', () => {
 });
 
 describe('MetaManager zakupy i ekwipunek', () => {
+  it('moduły wymagają odblokowania, właściwej broni i wolnych slotów; walidacja jest atomowa', () => {
+    const meta = make();
+    const base = meta.state.loadout;
+    expect(() =>
+      meta.setLoadout({ ...base, modules: { blaster: ['ricochet'] } }),
+    ).toThrow('nieodblokowany');
+    meta.debugUnlockAll();
+    const before = meta.serialize();
+    const invalidModules: Record<string, string[]>[] = [
+      { blaster: ['ricochet', 'pierce', 'incendiary'] },
+      { blaster: ['ricochet', 'ricochet'] },
+      { pistol: ['ricochet'] },
+      { blaster: ['unknown'] },
+    ];
+    for (const modules of invalidModules) {
+      expect(() => meta.setLoadout({ ...base, modules })).toThrow();
+      expect(meta.serialize()).toEqual(before);
+    }
+    expect(() =>
+      meta.setLoadout({
+        ...base,
+        weapons: ['beam'],
+        modules: { beam: ['ricochet'] },
+      }),
+    ).toThrow('nie pasuje');
+    meta.setLoadout({
+      ...base,
+      weapons: ['blaster', 'pistol'],
+      modules: { blaster: ['ricochet', 'pierce'], pistol: ['ricochet'] },
+    });
+    const resolved = meta.loadout();
+    expect(resolved.modules).toEqual(meta.state.loadout.modules);
+    resolved.modules!.blaster!.pop();
+    expect(meta.state.loadout.modules.blaster).toEqual(['ricochet', 'pierce']);
+  });
+
+  it('ceny i progi modułów są egzekwowane przy zakupie', () => {
+    const cases = [
+      { id: 'ricochet', currency: 'data', cost: 160, minLevel: 3 },
+      { id: 'pierce', currency: 'data', cost: 180, minLevel: 4 },
+      { id: 'incendiary', currency: 'data', cost: 200, minLevel: 4 },
+      { id: 'superconductor', currency: 'cores', cost: 6, minLevel: 5 },
+    ] as const;
+    for (const { id, currency, cost, minLevel } of cases) {
+      const meta = make();
+      const unlockId = `module:${id}`;
+      expect(defaultMetaRules.unlocks.get(unlockId)).toMatchObject({
+        cost: { [currency]: cost },
+        minLevel,
+      });
+      const requiredXp = xpToNext
+        .slice(0, minLevel - 1)
+        .reduce((sum, xp) => sum + xp, 0);
+      meta.debugAddXp(requiredXp - 1);
+      expect(() => meta.buyUnlock(unlockId)).toThrow(`poziom ${minLevel}`);
+      meta.debugAddXp(1);
+      expect(() => meta.buyUnlock(unlockId)).toThrow(
+        currency === 'data' ? 'Danych' : 'Rdzeni',
+      );
+      if (currency === 'data') meta.debugAddData(cost);
+      else meta.debugAddCores(cost);
+      meta.buyUnlock(unlockId);
+      expect(meta.state[currency]).toBe(0);
+      expect(meta.isUnlocked(unlockId)).toBe(true);
+    }
+  });
   it('odrzuca zakup bez waluty i poniżej minLevel', () => {
     const meta = make();
     const def = [...defaultMetaRules.unlocks.values()].find(
@@ -236,6 +302,17 @@ describe('MetaManager zakupy i ekwipunek', () => {
 });
 
 describe('MetaManager zapis', () => {
+  it('wczytuje stan meta v3 bez modules bez migracji i zachowuje postęp', () => {
+    const meta = make();
+    meta.debugAddData(217);
+    meta.debugGrantTalent('bladeRoot');
+    const old = meta.serialize();
+    const { modules: omitted, ...loadout } = old.loadout;
+    expect(omitted).toEqual({});
+    const restored = MetaManager.restore({ ...old, loadout });
+    expect(restored.serialize()).toEqual(old);
+    expect(restored.loadout().modules).toEqual({});
+  });
   it('restore(serialize()) jest identyczny', () => {
     const meta = make();
     meta.applyRun(summary({ outcome: 'victory' }), 'a');

@@ -22,6 +22,7 @@ export interface ProjectileSpec {
   lifetimeS?: number;
   statuses?: readonly StatusApplication[];
   pierce?: { count: number; falloff: number };
+  ricochets?: number;
   gravity?: number;
   explode?: {
     radiusM: number;
@@ -59,6 +60,7 @@ interface Projectile {
   order: number;
   statuses: readonly StatusApplication[] | undefined;
   hitsRemaining: number;
+  ricochetsRemaining: number;
   falloff: number;
   hitTargets: EntityId[];
   gravity: number;
@@ -97,6 +99,7 @@ export class ProjectileSystem {
         order: 0,
         statuses: undefined,
         hitsRemaining: 1,
+        ricochetsRemaining: 0,
         falloff: 0,
         hitTargets: [],
         gravity: 0,
@@ -128,6 +131,7 @@ export class ProjectileSystem {
       order: this.sequence++,
       statuses: spec.statuses?.map((status) => ({ ...status })),
       hitsRemaining: spec.pierce?.count ?? 1,
+      ricochetsRemaining: spec.ricochets ?? 0,
       falloff: spec.pierce?.falloff ?? 0,
       gravity: spec.gravity ?? 0,
       velocityY: dir.y * spec.speed,
@@ -265,6 +269,29 @@ export class ProjectileSystem {
             }
           }
           if (p.id !== id) break;
+          if (!box && p.ricochetsRemaining > 0) {
+            const normal = hit.normal;
+            const dot =
+              p.dir.x * normal.x + p.dir.y * normal.y + p.dir.z * normal.z;
+            p.dir.x -= 2 * dot * normal.x;
+            p.dir.y -= 2 * dot * normal.y;
+            p.dir.z -= 2 * dot * normal.z;
+            const velocityDot =
+              p.velocityX * normal.x +
+              p.velocityY * normal.y +
+              p.velocityZ * normal.z;
+            p.velocityX -= 2 * velocityDot * normal.x;
+            p.velocityY -= 2 * velocityDot * normal.y;
+            p.velocityZ -= 2 * velocityDot * normal.z;
+            p.ricochetsRemaining--;
+            // Tolerancja numeryczna Rapier: kolejny ray zaczyna się poza powierzchnią.
+            const separation = 1e-4;
+            p.pos.x = point.x + p.dir.x * separation;
+            p.pos.y = point.y + p.dir.y * separation;
+            p.pos.z = point.z + p.dir.z * separation;
+            distance = Math.max(0, distance - hit.timeOfImpact - separation);
+            continue;
+          }
           if (p.explode) {
             Object.assign(p.pos, point);
             const directTarget = box?.entity;

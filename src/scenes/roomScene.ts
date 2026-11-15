@@ -59,6 +59,7 @@ import { BarrierPower } from '../combat/powers/barrier';
 import { ExplosionRenderer } from '../render/explosionRenderer';
 import type { Loadout } from '../progression/loadout';
 import { resolveLoadout } from '../progression/patches';
+import { modulePatches } from '../progression/moduleSchema';
 import type { ResolvedLoadout } from '../progression/patches';
 import type { DefinitionPatch } from '../core/metaTypes';
 import { SynergySystem } from '../progression/synergies';
@@ -191,10 +192,11 @@ export class RoomScene implements Scene {
     if (!node)
       throw new Error('RoomScene wymaga bieżącego węzła w mapie runu.');
     this.node = { ...node, next: [...node.next] };
-    // Łatki: najpierw talenty (po id węzła), potem opcje sceny.
+    // Łatki: talenty (po id węzła), moduły (po slotach), opcje sceny.
     this.initialTalentIds = [...new Set(run.talents)];
     this.resolved = resolveLoadout(run.loadout, [
       ...resolveTalents(this.initialTalentIds).patches,
+      ...modulePatches(run.loadout),
       ...(options.patches ?? []),
     ]);
     this.loadout = run.loadout;

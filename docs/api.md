@@ -1,5 +1,41 @@
 # API między modułami (kontrakty)
 
+## Warsztat modułów broni
+
+`moduleSchema` / `loadModuleDefinitions(data[])` / `moduleDefinitions` w
+`src/progression/moduleSchema.ts` walidują `src/data/modules/*.json`:
+`{ id, name, description, tags: string[], weaponKinds?: string[], patches }`.
+`weaponKinds` ogranicza `WeaponDefinition.fireMode`; brak ograniczenia dopuszcza każdy tryb.
+Łatki modułu mają `{ op, path, value }` bez `target`. `modulePatches(loadout)`
+nadaje im `target: weapon:<id>` w kolejności broni i slotów, bez mutacji danych.
+`RoomScene` przekazuje do `resolveLoadout` kolejno talenty, moduły i `options.patches`.
+
+`append` wymaga tablicy `value` i dopisuje jej elementy do tablicy pod `path`;
+nieobecne pole opcjonalne zaczyna od `[]`. Wynik musi przejść schemat i zachować
+całą zapisaną tablicę (nieznane pola i ścieżki są błędem).
+
+`LoadoutChoice.modules: Record<string, string[]>` mapuje id broni na uporządkowane id
+modułów. `loadoutChoiceSchema` uzupełnia brakujące pole przez `{}` w zapisach v3,
+bez zmiany wersji. Pełny `Loadout` ma opcjonalne `modules`; `MetaManager.loadout()`
+zwraca ich głęboką kopię, a `RunManager.newRun` zamraża ją razem z ekwipunkiem.
+`MetaManager.setLoadout` wymaga odblokowanych `module:<id>`, broni obecnej w zestawie,
+zgodnego `weaponKinds`, braku duplikatów i limitu `progression.moduleSlotsPerWeapon`
+(startowo 2). Ten sam moduł może być zamontowany w kilku broniach.
+`unlockIdSchema` weryfikuje prefiks `module:` przeciw `moduleDefinitions`.
+
+Bronie pociskowe mają opcjonalne `ricochets` (licznik odbić od świata).
+`pierceCount` (liczba trafionych celów, domyślnie 1) i `pierceFalloff` (domyślnie 0)
+są dostępne także poza trybem `pierce`. `fireProjectile` przenosi je do
+`ProjectileSpec.pierce`, a `ricochets` do `ProjectileSpec.ricochets`.
+Pocisk odbija kierunek i prędkość zgodnie z normalną ściany, zużywa jedno odbicie
+i kontynuuje pozostały dystans kroku. Bez odbić kolizja świata kończy lot jak dotąd.
+Odbicie nie zmienia właściciela, obrażeń ani pozostałego czasu życia.
+
+Nadprzewodnik używa wariantu +20% `projectileSpeed`, −15% `heatPerShot`:
+istniejące efekty synergii nie dają bonusu do obrażeń tego samego celu z `overload`.
+Warsztat pokazuje grupę Moduły i selektory slotów przy wybranych broniach;
+zmiana wywołuje `setLoadout` i zapis meta. Usunięcie broni usuwa jej przypisania.
+
 ## Chwyt i rzut (F2-09)
 
 Uzupełnienia po przeglądzie F2-09:
@@ -1331,7 +1367,7 @@ export type TreeId = (typeof TREE_IDS)[number];
 export const HUB_STATION_IDS = ['talents', 'workshop', 'missions', 'arena'] as const;
 export type HubStationId = (typeof HUB_STATION_IDS)[number];
 
-interface LoadoutChoice { blade: string; weapons: string[]; powers: string[] }
+interface LoadoutChoice { blade: string; weapons: string[]; powers: string[]; modules: Record<string, string[]> }
 interface RunRewards { xp: number; data: number; cores: number }
 interface MetaRunRecord {
   runId: string;          // `${seed}:${startedAtMs}`
@@ -1353,7 +1389,7 @@ interface MetaState {
 }
 interface DefinitionPatch {
   target: `weapon:${string}` | `power:${string}` | `blade:${string}`;
-  op: 'set' | 'add' | 'mul';
+  op: 'set' | 'add' | 'mul' | 'append';
   path: string;          // np. 'jumps', 'combo.2.knockback', 'statuses'
   value: unknown;        // liczba skończona dla add/mul; dowolny JSON dla set
 }

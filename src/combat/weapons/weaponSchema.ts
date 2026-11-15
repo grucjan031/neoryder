@@ -26,6 +26,9 @@ const projectileFields = {
   projectileSpeed: z.number().finite().positive(),
   projectileLifetimeS: z.number().finite().positive(),
   spreadDeg: z.number().finite().min(0).max(180),
+  ricochets: z.number().int().nonnegative().optional(),
+  pierceCount: z.number().int().min(1).default(1),
+  pierceFalloff: z.number().finite().min(0).max(1).default(0),
 };
 
 export const weaponSchema = z.discriminatedUnion('fireMode', [

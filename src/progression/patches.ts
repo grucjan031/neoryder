@@ -92,6 +92,15 @@ function applyOne(
     container[key] = structuredClone(patch.value);
     return segments;
   }
+  if (patch.op === 'append') {
+    if (!Array.isArray(patch.value))
+      throw new Error(`${prefix}: wartość musi być tablicą.`);
+    const current = exists ? container[key] : [];
+    if (!Array.isArray(current))
+      throw new Error(`${prefix}: pole nie jest tablicą.`);
+    container[key] = [...current, ...structuredClone(patch.value)];
+    return segments;
+  }
   if (!(typeof patch.value === 'number' && Number.isFinite(patch.value)))
     throw new Error(`${prefix}: wartość musi być liczbą skończoną.`);
   const current = exists ? container[key] : undefined;
@@ -122,15 +131,16 @@ export function applyPatches<T extends object>(
   for (const patch of patches) {
     const prefix = describe(label, patch);
     const segments = applyOne(current, patch, prefix);
+    const expected = readPath(current, segments).value;
     const result = schema.safeParse(current);
     if (!result.success)
       throw new Error(
         `${prefix}: wynik nie przechodzi schematu (${formatIssues(result.error)}).`,
       );
-    if (patch.op === 'set') {
+    if (patch.op === 'set' || patch.op === 'append') {
       const written = readPath(result.data, segments);
       if (!written.found) throw new Error(`${prefix}: nieznana ścieżka.`);
-      if (!jsonEqual(written.value, patch.value))
+      if (!jsonEqual(written.value, expected))
         throw new Error(
           `${prefix}: schemat zmienił ustawioną wartość (nieznana ścieżka lub wartość spoza schematu).`,
         );

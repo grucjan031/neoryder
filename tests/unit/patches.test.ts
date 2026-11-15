@@ -14,6 +14,7 @@ import {
   weaponSchema,
 } from '../../src/combat/weapons/weaponSchema';
 import type { DefinitionPatch } from '../../src/core/metaTypes';
+import type { WeaponDefinition } from '../../src/combat/weapons/weaponSchema';
 import { loadLoadout } from '../../src/progression/loadout';
 import { applyPatches, resolveLoadout } from '../../src/progression/patches';
 
@@ -42,6 +43,47 @@ function chainOf(resolved: ReturnType<typeof resolveLoadout>): PowerDefinition {
 }
 
 describe('applyPatches', () => {
+  it('append zachowuje istniejące statusy, tworzy opcjonalną tablicę i nie mutuje danych', () => {
+    const burning = [{ id: 'burning', durationS: 3 }];
+    const source = { ...blaster, statuses: [{ id: 'overload', durationS: 2 }] };
+    const result = applyPatches<WeaponDefinition>(
+      source,
+      weaponSchema,
+      [patch('weapon:blaster', 'append', 'statuses', burning)],
+      'test',
+    );
+    expect(result.statuses).toEqual([...source.statuses, ...burning]);
+    result.statuses![1]!.durationS = 9;
+    expect(burning[0]!.durationS).toBe(3);
+    expect(source.statuses).toEqual([{ id: 'overload', durationS: 2 }]);
+    expect(
+      applyPatches(
+        blaster,
+        weaponSchema,
+        [patch('weapon:blaster', 'append', 'statuses', burning)],
+        'test',
+      ).statuses,
+    ).toEqual(burning);
+  });
+
+  it('append odrzuca nieliczbowe pola nietablicowe, złe elementy i nieznane ścieżki', () => {
+    for (const [path, value] of [
+      ['damage', [1]],
+      ['statuses', 1],
+      ['statuses', [{ id: 'burning' }]],
+      ['unknown', []],
+      ['statuses', [{ id: 'burning', durationS: 1, unknown: true }]],
+    ] as const) {
+      expect(() =>
+        applyPatches(
+          blaster,
+          weaponSchema,
+          [patch('weapon:blaster', 'append', path, value)],
+          'test',
+        ),
+      ).toThrow();
+    }
+  });
   it('add, mul i set zmieniają kopię i nie ruszają definicji globalnej', () => {
     const snapshot = structuredClone(chain);
     const result = applyPatches(

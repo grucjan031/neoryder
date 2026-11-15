@@ -10,6 +10,7 @@ import type { RunState } from '../../src/core/runTypes';
 import { tuning } from '../../src/core/tuning';
 import { powerDefinitions } from '../../src/combat/powers/registry';
 import { loadoutDefinitions } from '../../src/progression/loadout';
+import type { Loadout } from '../../src/progression/loadout';
 import { RoomScene } from '../../src/scenes/roomScene';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 import { roomDefinitions } from '../../src/world/rooms';
@@ -53,8 +54,9 @@ function runState(): RunState {
   };
 }
 
-async function setup(patches: readonly DefinitionPatch[]) {
+async function setup(patches: readonly DefinitionPatch[], loadout?: Loadout) {
   const run = runState();
+  if (loadout) run.loadout = loadout;
   const room = roomDefinitions.get('combatYard')!;
   const waves = loadWaves({
     ...wavesData,
@@ -96,6 +98,28 @@ async function chainTargets(
 afterEach(() => {
   for (const scene of active) scene.dispose();
   active.clear();
+});
+
+it('pistolet z modułem incendiary nakłada burning w pokoju przez rzeczywiste trafienie pocisku', async () => {
+  const { scene, bus, commands } = await setup([], {
+    ...loadoutDefinitions.get('classic')!,
+    weapons: ['pistol'],
+    startHeld: 'gun',
+    modules: { pistol: ['incendiary'] },
+  });
+  const applied: { status: string; target: number }[] = [];
+  bus.on('status_applied', (event) => applied.push(event));
+  commands.execute('spawn assaulter 1');
+  scene.step(SIM_DT, {
+    ...idle,
+    held: new Set(['attack']),
+    pressed: new Set(['attack']),
+  });
+  for (let i = 0; i < 30 && applied.length === 0; i++) scene.step(SIM_DT, idle);
+  expect(applied).toEqual([expect.objectContaining({ status: 'burning' })]);
+  expect(scene.query('resolvedLoadout')).toMatchObject({
+    weapons: [{ id: 'pistol', statuses: [{ id: 'burning', durationS: 3 }] }],
+  });
 });
 
 it('łatka power:chain add jumps 1 trafia o jeden cel więcej', async () => {

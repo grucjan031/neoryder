@@ -274,6 +274,59 @@ function setupProjectiles(capacity = 16) {
 }
 
 describe('piercing sweeps with real Rapier', () => {
+  it('rykoszet odbija lustrzanie od ściany raz, zużywa resztę kroku i ginie na następnej ścianie', () => {
+    const { world, projectiles, spec, entities } = setupProjectiles();
+    for (const z of [-4, 4])
+      world.createCollider(
+        rapier.ColliderDesc.cuboid(100, 2, 0.05)
+          .setTranslation(0, 0, z)
+          .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
+      );
+    world.step();
+    const id = projectiles.spawn({
+      ...spec,
+      dir: { x: 1, y: 0, z: -1 },
+      ricochets: 1,
+    });
+    projectiles.step(0.1);
+    const inspect = vi.fn();
+    projectiles.forEachActive(inspect);
+    const [, pos, dir] = inspect.mock.calls[0]!;
+    expect(dir.x).toBeCloseTo(Math.SQRT1_2);
+    expect(dir.z).toBeCloseTo(Math.SQRT1_2);
+    expect(dir.y).toBe(0);
+    expect(pos.x).toBeCloseTo(6 * Math.SQRT1_2, 3);
+    expect(pos.z).toBeCloseTo(6 * Math.SQRT1_2 - 7.9, 3);
+    expect(entities.alive(id)).toBe(true);
+    projectiles.step(0.3);
+    expect(projectiles.activeCount).toBe(0);
+    expect(entities.alive(id)).toBe(false);
+  });
+
+  it('rykoszet nie odbija się od wroga i nie odnawia czasu życia ani licznika po użyciu puli', () => {
+    const { world, projectiles, spec, target } = setupProjectiles(1);
+    const enemy = target(-2);
+    projectiles.spawn({ ...spec, pierce: undefined, ricochets: 1 });
+    projectiles.step(0.1);
+    expect(enemy.health.current).toBe(920);
+    expect(projectiles.activeCount).toBe(0);
+    world.removeCollider(enemy.collider, true);
+    world.createCollider(
+      rapier.ColliderDesc.cuboid(10, 2, 0.05)
+        .setTranslation(0, 0, -1)
+        .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
+    );
+    world.step();
+    projectiles.spawn({ ...spec, ricochets: 1, lifetimeS: 0.05 });
+    projectiles.step(0.05);
+    expect(projectiles.activeCount).toBe(0);
+    projectiles.spawn({ ...spec, ricochets: 1 });
+    projectiles.step(0.05);
+    expect(projectiles.activeCount).toBe(1);
+    projectiles.spawn(spec);
+    projectiles.step(0.05);
+    expect(projectiles.activeCount).toBe(0);
+  });
   it('hits count distinct entities in one sweep, skips all hurtboxes of a hit entity and applies multiplicative falloff', () => {
     const { target, projectiles, spec, bus, entities } = setupProjectiles();
     const targets = [-2, -4, -6, -8].map((z) => target(z));

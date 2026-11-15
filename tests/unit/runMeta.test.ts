@@ -88,6 +88,7 @@ function configuredMeta(): MetaManager {
     blade: 'plasmaBlade',
     weapons: ['blaster', 'pistol'],
     powers: ['push'],
+    modules: { pistol: ['incendiary'] },
   });
   meta.debugGrantTalent('bladeRoot');
   meta.debugGrantTalent('bladeServoFrame');
@@ -148,6 +149,12 @@ it('loadout=meta startuje run z ekwipunkiem, talentami, zdrowiem i poziomem zagr
   expect(state.loadoutId).toBe('custom');
   expect(state.loadout).toEqual(meta.loadout());
   expect(state.loadout.weapons).toEqual(['blaster', 'pistol']);
+  expect(state.loadout.modules).toEqual({ pistol: ['incendiary'] });
+  meta.setLoadout({ ...meta.state.loadout, modules: {} });
+  await saveMetaManager(store, meta);
+  expect((scene.query('runState') as RunState).loadout.modules).toEqual({
+    pistol: ['incendiary'],
+  });
   expect(state.talents).toEqual(['bladeRoot', 'bladeServoFrame']);
   expect(state.threatLevel).toBe(2);
   expect(state.hp).toBe(playerData.maxHealth + 15);

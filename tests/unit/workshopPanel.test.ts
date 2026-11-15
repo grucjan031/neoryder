@@ -75,6 +75,7 @@ describe('workshopState', () => {
       'power',
       'blade',
       'slot',
+      'module',
     ]);
     expect(groups[0]!.rows[0]!.status).toBe('owned');
     expect(groups[3]!.rows.map((r) => r.name)).toContain('Drugi slot broni');
@@ -105,6 +106,63 @@ describe('workshopState', () => {
 });
 
 describe('createWorkshopPanel', () => {
+  it('montuje i usuwa moduły przez setLoadout i save, filtruje duplikaty oraz typ broni', async () => {
+    const { manager, save, panel } = setup((m) => m.debugUnlockAll());
+    const spy = vi.spyOn(manager, 'setLoadout');
+    const select = (weapon: string, slot: number) =>
+      panel.root.querySelector<HTMLSelectElement>(
+        `select[data-weapon="${weapon}"][data-slot="${slot}"]`,
+      )!;
+    expect(row(panel.root, 'module:ricochet').textContent).toContain(
+      'Rykoszet',
+    );
+    expect(
+      panel.root.querySelectorAll('select[data-weapon="blaster"]'),
+    ).toHaveLength(2);
+    select('blaster', 0).value = 'ricochet';
+    select('blaster', 0).dispatchEvent(new Event('change'));
+    await flush();
+    expect(spy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        modules: { blaster: ['ricochet'] },
+      }),
+    );
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(select('blaster', 0).value).toBe('ricochet');
+    expect([...select('blaster', 1).options].map((o) => o.value)).not.toContain(
+      'ricochet',
+    );
+    select('blaster', 1).value = 'incendiary';
+    select('blaster', 1).dispatchEvent(new Event('change'));
+    await flush();
+    expect(manager.state.loadout.modules.blaster).toEqual([
+      'ricochet',
+      'incendiary',
+    ]);
+    select('blaster', 0).value = '';
+    select('blaster', 0).dispatchEvent(new Event('change'));
+    await flush();
+    expect(manager.state.loadout.modules.blaster).toEqual(['incendiary']);
+    choice(panel.root, 'weapons', 'beam')!.click();
+    await flush();
+    expect([...select('beam', 0).options].map((o) => o.value)).toEqual([
+      '',
+      'incendiary',
+    ]);
+    choice(panel.root, 'weapons', 'blaster')!.click();
+    await flush();
+    expect(manager.state.loadout.modules).toEqual({});
+    expect(
+      panel.root.querySelector('select[data-weapon="blaster"]'),
+    ).toBeNull();
+    expect(save).toHaveBeenCalledTimes(5);
+  });
+
+  it('sloty nie oferują nieodblokowanych modułów', () => {
+    const { panel } = setup();
+    const select = panel.root.querySelector<HTMLSelectElement>('select')!;
+    expect([...select.options].map((o) => o.value)).toEqual(['']);
+  });
   it('pokazuje Dane, Rdzenie i poziom w nagłówku', () => {
     const { root } = setup((m) => {
       m.debugAddData(42);

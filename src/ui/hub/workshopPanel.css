@@ -109,3 +109,30 @@
   color: #ffae1a;
   font-size: 0.9em;
 }
+.workshop__modules {
+  padding: 8px 12px;
+  margin: 8px 0;
+  background: #0c1017;
+  border: 1px solid #34414c;
+}
+.workshop__module-slot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0;
+  color: #b9c6d1;
+  font-size: 0.9em;
+}
+.workshop__module-select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  color: #f4f7fa;
+  background: #171d28;
+  border: 1px solid #596573;
+  font: inherit;
+}
+.workshop__module-select:focus-visible {
+  outline: 2px solid #00a9c4;
+  outline-offset: 2px;
+}

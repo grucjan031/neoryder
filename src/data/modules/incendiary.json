@@ -1,0 +1,13 @@
+{
+  "id": "incendiary",
+  "name": "Podpalenie",
+  "description": "Trafienie podpala cel na 3 sekundy.",
+  "tags": ["#burning"],
+  "patches": [
+    {
+      "op": "append",
+      "path": "statuses",
+      "value": [{ "id": "burning", "durationS": 3 }]
+    }
+  ]
+}

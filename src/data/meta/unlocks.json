@@ -1,4 +1,8 @@
 [
+  { "id": "module:ricochet", "cost": { "data": 160 }, "minLevel": 3 },
+  { "id": "module:pierce", "cost": { "data": 180 }, "minLevel": 4 },
+  { "id": "module:incendiary", "cost": { "data": 200 }, "minLevel": 4 },
+  { "id": "module:superconductor", "cost": { "cores": 6 }, "minLevel": 5 },
   {
     "id": "weapon:rifle",
     "cost": {

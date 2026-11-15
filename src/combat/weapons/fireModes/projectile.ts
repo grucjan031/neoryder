@@ -18,6 +18,9 @@ export function fireProjectile(
       damage: definition.damage,
       tags: definition.tags,
       lifetimeS: definition.projectileLifetimeS,
+      ...(definition.ricochets !== undefined
+        ? { ricochets: definition.ricochets }
+        : {}),
       ...(definition.fireMode === 'lob'
         ? {
             gravity: definition.gravity,
@@ -32,7 +35,7 @@ export function fireProjectile(
       ...(definition.fireMode !== 'lob' && definition.statuses
         ? { statuses: definition.statuses }
         : {}),
-      ...(definition.fireMode === 'pierce'
+      ...(definition.fireMode === 'pierce' || definition.pierceCount > 1
         ? {
             pierce: {
               count: definition.pierceCount,

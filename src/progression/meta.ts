@@ -19,6 +19,7 @@ import { threatLevels } from './threatSchema';
 import type { ThreatLevel } from './threatSchema';
 import { unlockDefinitions } from './unlocksSchema';
 import type { UnlockDefinition } from './unlocksSchema';
+import { moduleDefinitions, moduleFitsWeapon } from './moduleSchema';
 
 export const CUSTOM_LOADOUT_NAME = 'Własny';
 
@@ -187,12 +188,16 @@ export class MetaManager {
     return 1 + (this.isUnlocked('slot:power2') ? 1 : 0);
   }
 
+  get moduleSlotsPerWeapon(): number {
+    return this.rules.progression.moduleSlotsPerWeapon;
+  }
+
   isUnlocked(id: string): boolean {
     return this.current.unlocks.includes(id);
   }
 
   loadout(): Loadout {
-    const { blade, weapons, powers } = this.current.loadout;
+    const { blade, weapons, powers, modules } = this.current.loadout;
     return {
       id: 'custom',
       name: CUSTOM_LOADOUT_NAME,
@@ -201,6 +206,7 @@ export class MetaManager {
       weapons: [...weapons],
       powers: [...powers],
       tags: [],
+      modules: structuredClone(modules),
     };
   }
 
@@ -288,10 +294,28 @@ export class MetaManager {
       throw new Error(`Ostrze nieodblokowane: ${choice.blade}.`);
     this.checkList(choice.weapons, 'weapon', 'broń', this.weaponSlots);
     this.checkList(choice.powers, 'power', 'moc', this.powerSlots);
+    for (const [weaponId, ids] of Object.entries(choice.modules)) {
+      if (!choice.weapons.includes(weaponId))
+        throw new Error(
+          `Moduły przypisane do broni spoza ekwipunku: ${weaponId}.`,
+        );
+      if (ids.length > this.moduleSlotsPerWeapon)
+        throw new Error(`Limit modułów na broń: ${this.moduleSlotsPerWeapon}.`);
+      if (new Set(ids).size !== ids.length)
+        throw new Error(`Powtórzone moduły broni: ${weaponId}.`);
+      for (const id of ids) {
+        const module = moduleDefinitions.get(id);
+        if (!module || !this.isUnlocked(`module:${id}`))
+          throw new Error(`Moduł nieodblokowany lub nieznany: ${id}.`);
+        if (!moduleFitsWeapon(module, weaponId))
+          throw new Error(`Moduł ${id} nie pasuje do broni ${weaponId}.`);
+      }
+    }
     this.current.loadout = {
       blade: choice.blade,
       weapons: [...choice.weapons],
       powers: [...choice.powers],
+      modules: structuredClone(choice.modules),
     };
     this.events?.emit('loadout_changed', {
       loadout: structuredClone(this.current.loadout),

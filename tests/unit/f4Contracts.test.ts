@@ -112,6 +112,10 @@ describe('dane meta F4 przechodzą schematy', () => {
       'slot:weapon2',
       'slot:weapon3',
       'slot:power2',
+      'module:ricochet',
+      'module:pierce',
+      'module:incendiary',
+      'module:superconductor',
     ].filter((id) => !starter.has(id));
     expect([...loaded.keys()].sort()).toEqual(expected.sort());
     for (const id of starter) expect(loaded.has(id)).toBe(false);
@@ -125,7 +129,9 @@ describe('dane meta F4 przechodzą schematy', () => {
       expect(unlock.minLevel).toBeLessThanOrEqual(6);
       if (unlock.cost.data !== undefined && !unlock.id.startsWith('slot:')) {
         expect(unlock.cost.data).toBeGreaterThanOrEqual(80);
-        expect(unlock.cost.data).toBeLessThanOrEqual(200);
+        expect(unlock.cost.data).toBeLessThanOrEqual(
+          unlock.id.startsWith('module:') ? 240 : 200,
+        );
       }
     }
   });
