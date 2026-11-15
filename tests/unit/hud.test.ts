@@ -163,16 +163,25 @@ describe('Hud', () => {
     ).toBe('0.00');
   });
 
-  it('winieta niskiego zdrowia działa poniżej 30% i znika przy zerze oraz leczeniu', () => {
+  it('stan krytyczny obejmuje 30% HP, zmienia mikrotekst i znika po leczeniu lub śmierci', () => {
     const low = query('.hud__lowhp');
+    const micro = query('.hud__vital-micro');
     expect(low.hidden).toBe(true);
+    expect(micro.textContent).toBe('VIT // SYNC 100%');
+    bus.emit('health_changed', { id: 1, current: 31, max: 100 });
+    expect(low.hidden).toBe(true);
+    bus.emit('health_changed', { id: 1, current: 30, max: 100 });
+    expect(low.hidden).toBe(false);
+    expect(micro.textContent).toBe('VIT // KRYTYCZNE');
     bus.emit('health_changed', { id: 1, current: 29, max: 100 });
     expect(low.hidden).toBe(false);
     bus.emit('health_changed', { id: 1, current: 60, max: 100 });
     expect(low.hidden).toBe(true);
+    expect(micro.textContent).toBe('VIT // SYNC 100%');
     bus.emit('health_changed', { id: 1, current: 10, max: 100 });
     bus.emit('health_changed', { id: 1, current: 0, max: 100 });
     expect(low.hidden).toBe(true);
+    expect(micro.textContent).toBe('VIT // SYNC 100%');
   });
 
   it('ignoruje wszystkie zdarzenia dotyczące innej encji', () => {

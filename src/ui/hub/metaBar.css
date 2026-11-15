@@ -1,56 +1,59 @@
 ﻿.meta-bar {
   position: fixed;
-  top: 14px;
-  left: 20px;
-  right: 20px;
+  top: 26px;
+  left: 32px;
   z-index: 90;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px 24px;
-  padding: 4px 16px;
-  border: 12px solid transparent;
-  border-image: url('/assets/ui/hud/frame_banner.webp') 48 fill / 12px;
-  box-sizing: border-box;
+  flex-wrap: wrap;
+  gap: 22px 32px;
+  max-width: calc(100vw - 100px);
+  perspective: 1100px;
   color: #edf7ff;
   font:
-    500 17px/1.25 Rajdhani,
+    500 16px/1.2 Rajdhani,
     'Segoe UI',
     sans-serif;
   font-variant-numeric: tabular-nums;
-  background: #080f1ded;
-  background-clip: padding-box;
-  text-shadow: 0 1px 3px #000;
-  filter: drop-shadow(0 2px 5px #0009);
   pointer-events: none;
-  isolation: isolate;
+  text-shadow:
+    0 1px 3px #000,
+    0 0 8px #00e5ff35;
 }
-.meta-bar::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: url('/assets/ui/hud/scanlines.webp') repeat;
-  background-size: 256px;
-  opacity: 0.045;
+.meta-bar[data-debug='true'] {
+  left: 108px;
+}
+.meta-bar__identity {
+  display: grid;
+  gap: 5px;
+  width: 210px;
+  transform: rotateY(10deg);
+  transform-origin: left center;
+}
+.meta-bar__operator {
+  color: #8faebc;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 .meta-bar__level {
+  font-size: 32px;
   font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
   color: #00e5ff;
 }
 .meta-bar__xp {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 .meta-bar__xp-track {
-  display: inline-block;
-  width: clamp(100px, 13vw, 200px);
-  height: 10px;
+  display: block;
+  width: 100%;
+  height: 4px;
   background: #00e5ff20;
-  mask: url('/assets/ui/hud/bar_segments.webp') center / 100% 100%;
+  mask-image: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 4px);
 }
 .meta-bar__xp-fill {
   display: block;
@@ -58,53 +61,109 @@
   background: #00e5ff;
 }
 .meta-bar__xp-text {
-  min-width: 5.5em;
-  color: #bed0e2;
-  font-size: 15px;
+  color: #a0b8c6;
+  font-size: 11px;
+  letter-spacing: 0.12em;
 }
 .meta-bar__stat {
-  display: inline-flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: 27px auto;
+  gap: 2px 10px;
   align-items: center;
-  gap: 10px;
-  padding: 0 8px;
-  border: 7px solid transparent;
-  border-image: url('/assets/ui/hud/frame_chip.webp') 24 fill / 7px;
-  color: #ffe1a3;
+  min-width: 100px;
+  padding-bottom: 9px;
+  transform: rotateY(10deg);
+  transform-origin: left center;
 }
 .meta-bar__stat::before {
   content: '';
-  display: block;
-  width: 24px;
-  height: 24px;
+  grid-column: 1;
+  grid-row: 1 / 3;
+  width: 27px;
+  height: 27px;
   background: #ffae1a;
   mask: url('/assets/ui/hud/icon_data.webp') center / contain no-repeat;
+}
+.meta-bar__stat::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #ffae1a90, transparent);
 }
 .meta-bar__stat[data-stat='cores']::before {
   background: #ff2bd6;
   mask-image: url('/assets/ui/hud/icon_cores.webp');
 }
+.meta-bar__stat[data-stat='cores']::after {
+  background: linear-gradient(90deg, #ff2bd690, transparent);
+}
+.meta-bar__stat-label {
+  grid-column: 2;
+  font-size: 9px;
+  color: #8faebc;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.meta-bar__stat-value {
+  grid-column: 2;
+  font-size: 28px;
+  font-weight: 600;
+  color: #ffe1a3;
+}
+.meta-bar__stat[data-stat='cores'] .meta-bar__stat-value {
+  color: #ffb6f3;
+}
 .meta-bar__free {
-  margin-left: auto;
-  color: #a7b8ca;
-  font:
-    12px 'Segoe UI',
-    sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #92a8b8;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.meta-bar__free::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border: 1px solid currentColor;
+  transform: rotate(45deg);
 }
 .meta-bar__free[data-active='true'] {
-  font-weight: 700;
   color: #ffcf77;
-  text-shadow: 0 0 8px #ffae1a40;
+  animation: meta-free-pulse 1.6s ease-in-out infinite alternate;
 }
-@media (max-width: 1000px) {
+.meta-bar__free[data-active='true']::before {
+  background: currentColor;
+  box-shadow: 0 0 7px #ffae1a60;
+}
+@keyframes meta-free-pulse {
+  to {
+    opacity: 0.55;
+  }
+}
+@media (max-width: 900px) {
   .meta-bar {
-    gap: 8px 12px;
-    padding-inline: 8px;
-    font-size: 15px;
+    gap: 18px;
   }
-  .meta-bar__xp-track {
-    width: 90px;
+  .meta-bar__identity {
+    width: 170px;
   }
-  .meta-bar__stat {
-    gap: 6px;
+  .meta-bar__free {
+    flex-basis: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meta-bar {
+    text-shadow: 0 1px 3px #000;
+  }
+  .meta-bar__free[data-active='true'] {
+    animation: none;
+  }
+  .meta-bar__free::before {
+    box-shadow: none;
   }
 }

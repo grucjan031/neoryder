@@ -72,13 +72,17 @@ export class RunHud {
   constructor(bus: EventBus, seed?: RunHudSeed) {
     this.credits.hidden = true;
     this.credits.setAttribute('role', 'status');
+    const creditsIcon = element('span', 'run-hud__credits-icon');
+    creditsIcon.setAttribute('aria-hidden', 'true');
     this.credits.append(
       this.creditsLabel,
+      creditsIcon,
       this.creditsValue,
       this.creditsDelta,
     );
     this.implants.hidden = true;
     this.implants.setAttribute('aria-label', text.implants);
+    this.implants.dataset.micro = text.microImplants;
     this.boss.hidden = true;
     this.bossTrack.setAttribute('role', 'progressbar');
     this.bossTrack.setAttribute('aria-label', text.bossHealth);
@@ -86,7 +90,12 @@ export class RunHud {
     this.bossTrack.append(this.bossFill, this.bossTicks);
     this.bossShield.hidden = true;
     this.bossShield.append(this.bossShieldFill);
-    this.boss.append(this.bossName, this.bossTrack, this.bossShield);
+    this.boss.append(
+      element('span', 'hud__micro', text.microBoss),
+      this.bossName,
+      this.bossShield,
+      this.bossTrack,
+    );
     this.node.append(this.credits, this.implants, this.boss);
 
     if (seed) {
@@ -170,6 +179,12 @@ export class RunHud {
     const definition = implantDefinitions.get(id);
     const name = definition?.name ?? id;
     const node = element('li', 'run-hud__implant', implantBadge(name));
+    const badge = element(
+      'span',
+      'run-hud__implant-label',
+      node.textContent ?? '',
+    );
+    node.replaceChildren(badge);
     node.dataset.rarity = rarity;
     node.dataset.implant = id;
     node.title = definition ? `${name}\n${definition.description}` : name;

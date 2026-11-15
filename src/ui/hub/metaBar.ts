@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { EventBus } from '../../core/events';
 import type { MetaManager } from '../../progression/meta';
 import textData from '../../data/ui/missions.pl.json';
+import hudText from '../../data/ui/hud.pl.json';
 import './metaBar.css';
 
 const text = z
@@ -51,6 +52,10 @@ export function createMetaBar(
 ): MetaBar {
   const root = document.createElement('div');
   root.className = 'meta-bar';
+  root.dataset.debug = String(
+    import.meta.env.DEV ||
+      new URLSearchParams(location.search).get('debug') === '1',
+  );
   root.setAttribute('role', 'status');
   root.setAttribute('aria-label', text.label);
   const level = span('meta-bar__level');
@@ -67,8 +72,17 @@ export function createMetaBar(
   data.dataset.stat = 'data';
   const cores = span('meta-bar__stat');
   cores.dataset.stat = 'cores';
+  const dataLabel = span('meta-bar__stat-label', `${text.data}: `);
+  const dataValue = span('meta-bar__stat-value');
+  data.append(dataLabel, dataValue);
+  const coresLabel = span('meta-bar__stat-label', `${text.cores}: `);
+  const coresValue = span('meta-bar__stat-value');
+  cores.append(coresLabel, coresValue);
   const free = span('meta-bar__free');
-  root.append(level, xp, data, cores, free);
+  const operator = span('meta-bar__operator', hudText.microOperator);
+  const identity = span('meta-bar__identity');
+  identity.append(operator, level, xp);
+  root.append(identity, data, cores, free);
   parent.append(root);
 
   const refresh = (): void => {
@@ -82,8 +96,8 @@ export function createMetaBar(
       next === null
         ? text.xpMax
         : fill(text.xp, { current: progress.xpIntoLevel, next });
-    data.textContent = `${text.data}: ${state.data}`;
-    cores.textContent = `${text.cores}: ${state.cores}`;
+    dataValue.textContent = String(state.data);
+    coresValue.textContent = String(state.cores);
     const points = manager.freePoints;
     free.textContent = fill(text.freePoints, { count: points });
     free.dataset.active = String(points > 0);

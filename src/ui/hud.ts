@@ -249,16 +249,33 @@ export class Hud {
     const health = createHealth();
     const energy = createBar('energy');
     const vitals = element('div', 'hud__vitals');
-    vitals.append(health.node, energy.node);
+    const vitalMicro = element(
+      'span',
+      'hud__micro hud__vital-micro',
+      text.microHealth,
+    );
+    vitals.append(
+      vitalMicro,
+      health.node,
+      element('span', 'hud__micro', text.microEnergy),
+      energy.node,
+    );
 
     const weapon = this.weapon;
     const weaponHead = element('div', 'hud__weapon-head');
     weaponHead.append(this.weaponName, this.slots);
     this.heat.node.dataset.level = 'cool';
     this.overheat.hidden = true;
-    weapon.append(this.overheat, weaponHead, this.heat.node);
+    this.overheat.dataset.text = text.overheated;
+    weapon.append(
+      element('span', 'hud__micro', text.microWeapon),
+      this.overheat,
+      weaponHead,
+      this.heat.node,
+    );
     const arsenal = element('div', 'hud__arsenal');
     this.powers.setAttribute('aria-label', text.powers);
+    this.powers.dataset.micro = text.microPowers;
     arsenal.append(weapon, this.powers);
 
     const crosshair = element('div', 'hud__crosshair');
@@ -286,7 +303,11 @@ export class Hud {
     this.toast.node.setAttribute('role', 'status');
     this.wave.setAttribute('role', 'status');
     this.wave.hidden = true;
-    this.wave.append(this.waveLabel, this.waveLeft);
+    this.wave.append(
+      element('span', 'hud__micro', text.microWave),
+      this.waveLabel,
+      this.waveLeft,
+    );
     this.death.hidden = true;
     this.death.setAttribute('role', 'dialog');
     this.death.setAttribute('aria-label', text.died);
@@ -325,7 +346,8 @@ export class Hud {
         if (id !== opts.playerId) return;
         const ratio = health.update(current, max);
         if (ratio === undefined) return;
-        const low = current > 0 && ratio < LOW_HEALTH;
+        const low = current > 0 && ratio <= LOW_HEALTH;
+        setText(vitalMicro, low ? text.microCritical : text.microHealth);
         if (this.lowHealth.hidden === low) this.lowHealth.hidden = !low;
       }),
       bus.on('energy_changed', ({ id, current, max }) => {
@@ -486,6 +508,7 @@ export class Hud {
       const value = element('span', 'hud__power-cooldown', '');
       const denial = createFlash('hud__power-denial');
       node.append(
+        element('span', 'hud__power-face'),
         element('kbd', 'hud__power-key', key),
         element('span', 'hud__power-name', def?.name ?? text.empty),
         value,

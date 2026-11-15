@@ -1,4 +1,4 @@
-@font-face {
+﻿@font-face {
   font-family: Rajdhani;
   src: url('/assets/fonts/Rajdhani-Medium.ttf') format('truetype');
   font-style: normal;
@@ -12,23 +12,27 @@
   font-weight: 600 800;
   font-display: swap;
 }
-
 .hud {
   --hud-health: #00e5ff;
   --hud-energy: #ff2bd6;
   --hud-heat: #ff2bd6;
   --hud-warm: #ffae1a;
   --hud-danger: #e0262b;
-  --hud-plate: #080f1ded;
   --hud-text: #edf7ff;
   --hud-gap: 10px;
-  --hud-inset: clamp(20px, 2.2vw, 42px);
+  --hud-inset: clamp(26px, 3vw, 58px);
   --hud-denial-duration: 0.6s;
   --hud-damage-duration: 0.35s;
+  --hud-ticks: repeating-linear-gradient(
+    90deg,
+    #000 0 2px,
+    transparent 2px 4px
+  );
   position: fixed;
   inset: 0;
   z-index: 100;
   pointer-events: none;
+  perspective: 1100px;
   color: var(--hud-text);
   font:
     500 14px/1.15 Rajdhani,
@@ -38,96 +42,95 @@
   letter-spacing: 0.06em;
   text-shadow:
     0 1px 3px #000,
-    0 0 12px #00e5ff20;
+    0 0 9px #00e5ff45;
 }
 .hud [hidden] {
   display: none;
 }
-
-/* 9-slice keeps corners sharp; panel-local scanlines never cover the view. */
+.hud__micro,
+.hud__meter-label,
+.run-hud__credits-label,
+.hud__power-list::before,
+.run-hud__implants::before {
+  font:
+    500 9px/1.3 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8faebc;
+}
 .hud__vitals,
-.hud__weapon,
-.hud__wave,
-.hud__banner,
-.hud__toast,
+.hud__arsenal,
 .run-hud__credits,
-.run-hud__boss {
-  box-sizing: border-box;
-  border: 12px solid transparent;
-  background: var(--hud-plate);
-  background-clip: padding-box;
-  isolation: isolate;
-  filter: drop-shadow(0 2px 5px #0009);
+.run-hud__implants {
+  position: absolute;
+}
+.hud__vitals {
+  left: var(--hud-inset);
+  bottom: var(--hud-inset);
+  width: 340px;
+  display: grid;
+  gap: 7px;
+  transform: rotateY(10deg);
+  transform-origin: left center;
 }
 .hud__vitals::after,
 .hud__weapon::after,
-.hud__wave::after,
-.hud__banner::after,
-.hud__toast::after,
-.run-hud__credits::after,
-.run-hud__boss::after {
+.run-hud__credits::after {
+  content: '';
+  height: 1px;
+  background: linear-gradient(90deg, #00e5ff90, #00e5ff20);
+  margin-top: 6px;
+  box-shadow: 0 0 5px #00e5ff40;
+}
+.hud__vitals::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: url('/assets/ui/hud/scanlines.webp') repeat;
-  background-size: 256px;
-  opacity: 0.045;
-  pointer-events: none;
-  z-index: -1;
-}
-.hud__vitals {
-  position: absolute;
-  left: var(--hud-inset);
-  bottom: var(--hud-inset);
-  width: 350px;
-  display: grid;
-  gap: 12px;
-  padding: 6px 10px;
-  border-image: url('/assets/ui/hud/frame_vitals.webp') 48 fill / 12px;
+  width: 5px;
+  height: 5px;
+  bottom: -2px;
+  right: 0;
+  background: #00e5ff;
+  transform: rotate(45deg);
 }
 .hud__meter {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr 110px;
   align-items: center;
-  gap: 4px 14px;
+  gap: 3px 15px;
 }
 .hud__meter-label {
   grid-column: 1;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 9px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #c0d3e3;
 }
 .hud__value {
   grid-column: 2;
   grid-row: 1 / 3;
-  min-width: 70px;
   text-align: right;
   white-space: nowrap;
-  font-size: 23px;
+  font-size: 32px;
   font-weight: 600;
-  letter-spacing: 0;
+  letter-spacing: -0.03em;
 }
 .hud__meter--health .hud__value {
   color: var(--hud-health);
 }
 .hud__meter--energy .hud__value {
   color: var(--hud-energy);
-  font-size: 19px;
+  font-size: 18px;
 }
 .hud__segments {
   display: flex;
-  gap: 2px;
-  height: 13px;
-  mask: url('/assets/ui/hud/bar_segments.webp') center / 100% 100%;
+  height: 7px;
+  mask-image: var(--hud-ticks);
+  filter: drop-shadow(0 0 4px #00e5ff70);
 }
 .hud__seg {
   position: relative;
   flex: 1;
   overflow: hidden;
-  background: #00e5ff22;
+  background: #00e5ff20;
 }
 .hud__seg-fill,
 .hud__seg-ghost {
@@ -140,15 +143,15 @@
   background: var(--hud-health);
 }
 .hud__seg-ghost {
-  background: var(--hud-danger);
-  transition: transform 0.45s ease-out 0.4s;
+  background: #fff;
+  transition: transform 0.4s ease-out 0.4s;
 }
 .hud__track {
   position: relative;
-  height: 9px;
+  height: 4px;
   overflow: hidden;
-  background: #ffffff15;
-  mask: url('/assets/ui/hud/bar_segments.webp') center / 100% 100%;
+  background: #ffffff16;
+  mask-image: var(--hud-ticks);
 }
 .hud__fill {
   position: absolute;
@@ -162,10 +165,13 @@
 .hud__meter::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: #ffffff38;
+  left: 0;
+  right: 125px;
+  bottom: 0;
+  height: 4px;
+  background: #fff;
   opacity: 0;
-  pointer-events: none;
+  mask-image: var(--hud-ticks);
 }
 .hud__meter[data-change='a']::after {
   animation: hud-bar-a 0.24s ease-out;
@@ -175,7 +181,7 @@
 }
 @keyframes hud-bar-a {
   from {
-    opacity: 0.65;
+    opacity: 0.7;
   }
   to {
     opacity: 0;
@@ -183,90 +189,95 @@
 }
 @keyframes hud-bar-b {
   from {
-    opacity: 0.65;
+    opacity: 0.7;
   }
   to {
     opacity: 0;
   }
 }
 .hud:has(.hud__lowhp:not([hidden])) .hud__meter--health {
-  animation: hud-resource-pulse 1.2s ease-in-out infinite alternate;
+  animation: hud-pulse 1.2s ease-in-out infinite alternate;
 }
-
+.hud:has(.hud__lowhp:not([hidden])) .hud__vital-micro {
+  color: var(--hud-warm);
+}
 .hud__arsenal {
-  position: absolute;
   right: var(--hud-inset);
   bottom: var(--hud-inset);
   display: flex;
+  flex-direction: column;
   align-items: flex-end;
-  gap: 16px;
+  gap: 28px;
+  transform: rotateY(-10deg);
+  transform-origin: right center;
 }
 .hud__weapon {
   position: relative;
-  width: 310px;
-  min-height: 108px;
-  padding: 8px 12px;
+  width: min(285px, calc(18vw - var(--hud-inset)));
+  text-align: right;
   display: grid;
-  align-content: center;
-  gap: 12px;
-  border-image: url('/assets/ui/hud/frame_weapon.webp') 48 fill / 12px;
+  gap: 9px;
   transition: opacity 0.18s;
 }
 .hud__weapon--inactive {
   opacity: 0.6;
 }
 .hud__weapon-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .hud__weapon-head::before,
 .hud__blade::before,
-.hud__power::before,
-.run-hud__credits-label::before {
+.run-hud__credits-icon {
   content: '';
   display: block;
   flex: none;
-  width: 30px;
-  height: 24px;
+  width: 34px;
+  height: 28px;
   background-color: var(--hud-health);
   mask: url('/assets/ui/hud/icon_gun.webp') center / contain no-repeat;
-  filter: drop-shadow(0 0 3px #00e5ff40);
 }
 .hud__weapon-name {
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 600;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  transform: skewX(-8deg);
 }
 .hud__slots {
+  grid-column: 2;
+  justify-self: end;
   display: flex;
-  gap: 4px;
+  gap: 9px;
+  padding-inline: 3px;
 }
 .hud__slot {
-  display: grid;
-  place-items: center;
-  width: 19px;
-  height: 21px;
-  color: #c0d3e3;
-  border: 1px solid #536a80;
-  font-size: 13px;
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #00e5ff85;
+  transform: rotate(45deg);
+  font-size: 0;
 }
 .hud__slot--active {
-  border-color: var(--hud-health);
-  background: #00e5ff20;
-  color: var(--hud-health);
+  background: var(--hud-health);
+  box-shadow: 0 0 7px #00e5ff65;
 }
-.hud__meter--heat .hud__fill {
-  background: linear-gradient(90deg, var(--hud-warm) 35%, var(--hud-danger));
-  clip-path: inset(0 calc((1 - var(--p, 0)) * 100%) 0 0);
+.hud__meter--heat {
+  grid-template-columns: 1fr 70px;
 }
 .hud__meter--heat .hud__value {
   color: var(--hud-warm);
-  font-size: 18px;
+  font-size: 15px;
+}
+.hud__meter--heat .hud__fill {
+  background: linear-gradient(90deg, var(--hud-warm) 30%, var(--hud-danger));
+  clip-path: inset(0 calc((1 - var(--p, 0)) * 100%) 0 0);
 }
 .hud__meter--heat[data-level='hot'] .hud__value {
   color: #ff6266;
@@ -274,107 +285,164 @@
 .hud__meter--overheated .hud__fill {
   background: var(--hud-danger);
 }
-.hud__meter--overheated {
-  animation: hud-resource-pulse 0.65s ease-in-out infinite alternate;
-}
 .hud__overheat {
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 0;
+  bottom: calc(100% + 10px);
   right: 0;
-  padding: 5px 8px;
-  text-align: center;
-  background: var(--hud-plate);
   color: #ff6266;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
-  animation: hud-resource-pulse 0.65s ease-in-out infinite alternate;
 }
-@keyframes hud-resource-pulse {
-  to {
-    opacity: 0.55;
+.hud__overheat::before,
+.hud__overheat::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.hud__overheat::before {
+  color: var(--hud-health);
+  animation: hud-glitch-a 0.18s steps(3, end);
+}
+.hud__overheat::after {
+  color: var(--hud-energy);
+  animation: hud-glitch-b 0.18s steps(3, end);
+}
+@keyframes hud-glitch-a {
+  0%,
+  66% {
+    opacity: 0.7;
+    transform: translate(2px, -1px);
+  }
+  33% {
+    transform: translate(-1px, 1px);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hud-glitch-b {
+  0%,
+  66% {
+    opacity: 0.6;
+    transform: translate(-2px, 1px);
+  }
+  33% {
+    transform: translate(1px, -1px);
+  }
+  100% {
+    opacity: 0;
   }
 }
 .hud__power-list {
+  position: relative;
   display: flex;
-  gap: 8px;
+  gap: 16px;
+  padding-top: 23px;
+}
+.hud__power-list::before {
+  content: attr(data-micro);
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
 }
 .hud__power {
   position: relative;
-  box-sizing: border-box;
+  width: 68px;
+  min-height: 86px;
   display: grid;
-  grid-template: 'key icon' 23px 'name name' 26px 'cool cool' 18px / 20px 1fr;
+  grid-template-rows: 58px auto;
+  justify-items: center;
   align-items: center;
-  width: 92px;
-  min-height: 108px;
-  padding: 4px;
-  border: 9px solid transparent;
-  border-image: url('/assets/ui/hud/frame_power_slot.webp') 40 fill / 9px;
-  background: var(--hud-plate);
-  background-clip: padding-box;
-  transition: opacity 0.15s;
 }
-.hud__power::before {
-  grid-area: icon;
-  justify-self: end;
-  width: 28px;
-  height: 22px;
-  background-color: var(--hud-energy);
-  mask-image: url('/assets/ui/hud/icon_power.webp');
+.hud__power-face {
+  position: absolute;
+  top: 0;
+  left: 6px;
+  width: 56px;
+  height: 58px;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  background: #ff2bd61c;
 }
-.hud__power::after {
+.hud__power-face::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  clip-path: inherit;
+  background: #07152280;
+}
+.hud__power-face::after {
   content: '';
   position: absolute;
   inset: 0;
   background: conic-gradient(
-    #030711c0 calc(var(--cd, 0) * 360deg),
+    #020914db calc(var(--cd, 0) * 360deg),
     transparent 0
   );
-  pointer-events: none;
 }
-.hud__power-key {
-  grid-area: key;
-  font:
-    600 20px Rajdhani,
-    'Segoe UI',
-    sans-serif;
-  color: var(--hud-energy);
-}
-.hud__power-name {
-  grid-area: name;
+.hud__power::before {
+  content: '';
   position: relative;
   z-index: 1;
+  width: 30px;
+  height: 30px;
+  background: var(--hud-energy);
+  mask: url('/assets/ui/hud/icon_power.webp') center / contain no-repeat;
+  opacity: calc(1 - var(--cd, 0) * 0.8);
+}
+.hud__power-key {
+  position: absolute;
+  top: -4px;
+  right: -1px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 1px solid #ff2bd6a0;
+  background: #08131b;
+  color: #ffb6f3;
   font:
-    10px/1.25 'Segoe UI',
+    600 13px Rajdhani,
     sans-serif;
+}
+.hud__power-name {
+  grid-row: 2;
+  z-index: 1;
+  font-size: 10px;
   text-align: center;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
   overflow-wrap: anywhere;
 }
 .hud__power-cooldown {
-  grid-area: cool;
-  position: relative;
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
   z-index: 1;
   text-align: center;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
 }
-.hud__power--dim > *,
-.hud__power--empty > * {
+.hud__power--dim,
+.hud__power--empty {
   opacity: 0.4;
-}
-.hud__power--empty::before {
-  opacity: 0.25;
 }
 .hud__power-denial {
   position: absolute;
-  inset: 0;
+  inset: 0 6px auto;
+  height: 58px;
   z-index: 2;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
   background: #e0262b90;
   animation: hud-flash 0.4s ease-out forwards;
 }
-
 .hud__crosshair,
 .hud__hitmarker {
   position: absolute;
@@ -386,22 +454,45 @@
 .hud__crosshair {
   filter: drop-shadow(0 1px 2px #000);
 }
-.hud__dot,
-.hud__tick {
-  display: none;
+.hud__dot {
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: 2px;
+  height: 2px;
+  background: var(--hud-health);
 }
 .hud__crosshair-ticks {
   position: absolute;
   inset: 0;
 }
-.hud__crosshair-ticks::before {
-  content: '';
+.hud__tick {
   position: absolute;
-  width: 42px;
-  height: 42px;
-  left: -21px;
-  top: -21px;
-  background: url('/assets/ui/hud/crosshair.webp') center / contain no-repeat;
+  background: var(--hud-health);
+}
+.hud__tick--up,
+.hud__tick--down {
+  width: 1px;
+  height: 5px;
+  left: -0.5px;
+}
+.hud__tick--left,
+.hud__tick--right {
+  height: 1px;
+  width: 5px;
+  top: -0.5px;
+}
+.hud__tick--up {
+  top: -12px;
+}
+.hud__tick--down {
+  top: 7px;
+}
+.hud__tick--left {
+  left: -12px;
+}
+.hud__tick--right {
+  left: 7px;
 }
 .hud__crosshair-ticks--fire {
   animation: hud-spread-a 0.16s ease-out;
@@ -436,7 +527,7 @@
   left: -1px;
   top: -17px;
   width: 2px;
-  height: 8px;
+  height: 7px;
   background: #fff;
   box-shadow: 0 0 3px #000;
   transform-origin: 1px 17px;
@@ -457,6 +548,7 @@
 }
 .hud__hitmarker--kill .hud__hit-bar {
   background: var(--hud-danger);
+  box-shadow: 0 0 8px #e0262b;
 }
 @keyframes hud-hit-a {
   from {
@@ -491,7 +583,7 @@
 .hud__dmgdir-arc {
   position: absolute;
   inset: 0;
-  border: 4px solid var(--hud-danger);
+  border: 3px solid var(--hud-danger);
   border-radius: 50%;
   clip-path: polygon(50% 50%, 30% 0, 70% 0);
   filter: drop-shadow(0 0 3px #000a);
@@ -501,10 +593,8 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  padding: 6px 12px;
-  background: var(--hud-plate);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
 }
 .hud__denial {
   top: calc(50% + 40px);
@@ -512,12 +602,12 @@
   animation: hud-flash var(--hud-denial-duration) ease-out forwards;
 }
 .hud__blade {
-  bottom: calc(var(--hud-inset) + 124px);
+  bottom: calc(var(--hud-inset) + 140px);
   display: flex;
   align-items: center;
   gap: 10px;
   color: var(--hud-health);
-  font-size: 13px;
+  font-size: 12px;
 }
 .hud__blade::before {
   width: 30px;
@@ -533,11 +623,16 @@
 .hud__lowhp {
   position: absolute;
   inset: 0;
-  box-shadow: inset 0 0 8vmin #e0262b38;
-  animation: hud-resource-pulse 1.4s ease-in-out infinite alternate;
+  box-shadow: inset 0 0 8vmin #e0262b28;
+  animation: hud-pulse 1.4s ease-in-out infinite alternate;
 }
 .hud__flash--alternate {
   animation-name: hud-flash-alternate;
+}
+@keyframes hud-pulse {
+  to {
+    opacity: 0.55;
+  }
 }
 @keyframes hud-flash {
   from {
@@ -555,49 +650,62 @@
     opacity: 0;
   }
 }
-
 .hud__wave {
   position: absolute;
-  top: 18px;
+  top: 25px;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
   justify-items: center;
-  min-width: 240px;
-  padding: 0 26px;
-  gap: 2px;
-  border-image: url('/assets/ui/hud/frame_banner.webp') 48 fill / 12px;
+  gap: 4px;
+  min-width: 220px;
 }
-.hud__wave-label {
-  font-size: 20px;
+.hud__wave-label,
+.hud__banner {
+  position: relative;
+  font-size: 25px;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
+.hud__wave-label::before,
+.hud__wave-label::after,
+.hud__banner::before,
+.hud__banner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 65px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00e5ff80);
+}
+.hud__wave-label::before,
+.hud__banner::before {
+  right: calc(100% + 18px);
+}
+.hud__wave-label::after,
+.hud__banner::after {
+  left: calc(100% + 18px);
+  transform: scaleX(-1);
+}
 .hud__wave-left {
-  color: #f5b9bc;
-  font:
-    10px 'Segoe UI',
-    sans-serif;
-  letter-spacing: 0.12em;
+  color: #b2c7d2;
+  font-size: 10px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 .hud__banner,
 .hud__toast {
   position: absolute;
   left: 50%;
-  max-width: calc(100vw - 2 * var(--hud-inset));
+  max-width: min(520px, 65vw);
   text-align: center;
   text-transform: uppercase;
   overflow-wrap: anywhere;
 }
 .hud__banner {
-  top: 165px;
-  padding: 4px 40px;
+  top: 180px;
   font-size: 28px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  border-image: url('/assets/ui/hud/frame_banner.webp') 48 fill / 12px;
   animation: hud-banner-a 1.9s ease-out forwards;
 }
 .hud__banner.hud__flash--alternate {
@@ -607,36 +715,41 @@
   color: var(--hud-health);
 }
 @keyframes hud-banner-a {
-  0%,
-  100% {
+  0% {
     opacity: 0;
-    transform: translateX(-50%);
+    transform: translate(-50%, -8px);
   }
   14%,
   70% {
     opacity: 1;
-    transform: translateX(-50%);
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 4px);
   }
 }
 @keyframes hud-banner-b {
-  0%,
-  100% {
+  0% {
     opacity: 0;
-    transform: translateX(-50%);
+    transform: translate(-50%, -8px);
   }
   14%,
   70% {
     opacity: 1;
-    transform: translateX(-50%);
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 4px);
   }
 }
 .hud__toast {
-  top: 238px;
-  padding: 2px 18px;
-  border-image: url('/assets/ui/hud/frame_chip.webp') 24 fill / 12px;
+  top: 240px;
   color: var(--hud-energy);
   font-size: 16px;
   font-weight: 600;
+  letter-spacing: 0.18em;
   transform: translateX(-50%);
   animation: hud-toast-a 1.8s ease-out forwards;
 }
@@ -661,46 +774,47 @@
     opacity: 0;
   }
 }
-
-.run-hud__credits {
+.run-hud {
   position: absolute;
+  inset: 0;
+  perspective: 1100px;
+}
+.run-hud__credits {
   top: var(--hud-inset);
   right: var(--hud-inset);
-  display: flex;
+  min-width: 145px;
+  display: grid;
+  grid-template-columns: 25px 1fr;
   align-items: center;
-  gap: 16px;
-  min-width: 190px;
-  padding: 0 8px;
-  border-image: url('/assets/ui/hud/frame_chip.webp') 24 fill / 10px;
+  gap: 4px 12px;
+  transform: rotateY(-10deg);
+  transform-origin: right center;
 }
 .run-hud__credits-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--hud-warm);
-  font:
-    10px 'Segoe UI',
-    sans-serif;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  grid-column: 1 / -1;
+  text-align: right;
 }
-.run-hud__credits-label::before {
-  width: 24px;
-  height: 24px;
+.run-hud__credits-value {
+  text-align: right;
+  font-size: 32px;
+  font-weight: 600;
+  color: #ffe2a9;
+}
+.run-hud__credits-icon {
+  width: 25px;
+  height: 25px;
   background-color: var(--hud-warm);
   mask-image: url('/assets/ui/hud/icon_credits.webp');
 }
-.run-hud__credits-value {
-  margin-left: auto;
-  font-size: 25px;
-  font-weight: 600;
+.run-hud__credits::after {
+  grid-column: 1 / -1;
+  background: linear-gradient(90deg, #ffae1a10, #ffae1aaa);
 }
 .run-hud__credits-delta {
   position: absolute;
-  right: 8px;
-  top: calc(100% + 12px);
-  font-size: 16px;
-  font-weight: 600;
+  right: 0;
+  top: calc(100% + 5px);
+  font-size: 15px;
   opacity: 0;
 }
 .run-hud__credits-delta[data-sign='gain'] {
@@ -723,32 +837,42 @@
   }
 }
 .run-hud__implants {
-  position: absolute;
-  top: calc(var(--hud-inset) + 88px);
+  top: calc(var(--hud-inset) + 112px);
   right: var(--hud-inset);
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px;
-  max-width: 240px;
+  gap: 13px;
+  max-width: 220px;
   margin: 0;
-  padding: 0;
+  padding: 5px;
   list-style: none;
+  transform: rotateY(-10deg);
+  transform-origin: right center;
+}
+.run-hud__implants::before {
+  content: attr(data-micro);
+  position: absolute;
+  top: -17px;
+  right: 0;
+  white-space: nowrap;
 }
 .run-hud__implant {
   --rarity: #9aa0a6;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 32px;
-  background: var(--hud-plate);
+  width: 20px;
+  height: 20px;
   border: 1px solid var(--rarity);
-  box-shadow: inset 0 -3px var(--rarity);
+  background: color-mix(in srgb, var(--rarity) 12%, transparent);
   color: var(--rarity);
-  font-size: 14px;
-  font-weight: 600;
+  transform: rotate(45deg);
   pointer-events: auto;
   cursor: help;
+}
+.run-hud__implant-label {
+  transform: rotate(-45deg);
+  font-size: 9px;
 }
 .run-hud__implant[data-rarity='rare'] {
   --rarity: #00e5ff;
@@ -767,23 +891,24 @@
     box-shadow: 0 0 10px var(--rarity);
   }
   to {
-    box-shadow: inset 0 -3px var(--rarity);
+    box-shadow: 0 0 0 transparent;
   }
 }
 .run-hud__boss {
   position: absolute;
-  top: 86px;
+  top: 102px;
   left: 50%;
-  width: min(560px, 46vw);
+  width: min(520px, 44vw);
   transform: translateX(-50%);
   display: grid;
-  gap: 6px;
-  padding: 1px 16px 4px;
-  border-image: url('/assets/ui/hud/frame_boss.webp') 24 / 12px;
+  gap: 5px;
+}
+.run-hud__boss > .hud__micro {
+  text-align: center;
 }
 .run-hud__boss-name {
   text-align: center;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -791,25 +916,32 @@
 .run-hud__boss-track {
   position: relative;
   width: 100%;
-  height: 12px;
-  background: #e0262b20;
+  height: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    #e0262b20 0 2px,
+    transparent 2px 4px
+  );
 }
 .run-hud__boss-fill {
   height: 100%;
   width: calc(var(--p, 1) * 100%);
   background: var(--hud-danger);
-  mask: url('/assets/ui/hud/bar_segments.webp') left / 100% 100%;
   transition: width 0.15s linear;
+}
+.run-hud__boss-fill,
+.run-hud__boss-shield {
+  mask-image: var(--hud-ticks);
 }
 .run-hud__boss-shield {
   width: 100%;
-  height: 4px;
-  background: #ffffff15;
+  height: 2px;
+  background: #ffffff10;
 }
 .run-hud__boss-shield-fill {
   height: 100%;
   width: calc(var(--p, 0) * 100%);
-  background: var(--hud-health);
+  background: #fff;
   transition: width 0.15s linear;
 }
 .run-hud__boss-ticks {
@@ -821,96 +953,162 @@
   top: -2px;
   bottom: -2px;
   left: calc(var(--at) * 100%);
-  width: 2px;
+  width: 1px;
   background: #fff;
-  box-shadow: 0 0 3px #000;
 }
-.run-hud__boss--phase .run-hud__boss-track {
+.run-hud__boss--phase .run-hud__boss-name {
   animation: run-hud-phase 0.8s ease-out;
 }
 @keyframes run-hud-phase {
   from {
-    box-shadow: 0 0 14px var(--hud-danger);
+    color: #ff7478;
   }
   to {
-    box-shadow: 0 0 0 transparent;
+    color: var(--hud-text);
   }
 }
-
+/* One local brightness interruption per cycle; no timers or simulation randomness. */
+.hud__weapon-head {
+  animation: hud-holo 8.6s linear infinite;
+}
+@keyframes hud-holo {
+  0%,
+  94%,
+  96%,
+  100% {
+    filter: brightness(1);
+  }
+  95% {
+    filter: brightness(0.86);
+  }
+}
+.hud__meter--health .hud__value,
+.run-hud__credits-value {
+  mask-image: repeating-linear-gradient(0deg, #000 0 3px, #000c 3px 4px);
+}
 @media (max-width: 1000px) {
   .hud__vitals {
-    width: 300px;
-  }
-  .hud__arsenal {
-    gap: 8px;
+    width: 290px;
   }
   .hud__weapon {
-    width: 270px;
+    width: 245px;
   }
-  .hud__power {
-    width: 78px;
+  .hud__arsenal {
+    gap: 20px;
+  }
+  .hud__power-list {
+    gap: 10px;
   }
 }
 @media (max-width: 760px) {
   .hud {
-    --hud-inset: 12px;
+    --hud-inset: 16px;
+    perspective: none;
   }
   .hud__vitals {
-    width: min(300px, calc(100vw - 24px));
+    width: min(300px, calc(100vw - 32px));
+    transform: none;
   }
   .hud__arsenal {
-    bottom: 140px;
+    bottom: 155px;
     flex-direction: column-reverse;
     align-items: flex-end;
-  }
-  .hud__weapon {
-    width: 250px;
+    transform: none;
   }
   .hud__wave {
-    left: 12px;
+    left: 16px;
     transform: none;
-    min-width: 160px;
-    padding-inline: 8px;
+    min-width: 150px;
+  }
+  .hud__wave-label::before,
+  .hud__wave-label::after {
+    width: 18px;
+  }
+  .run-hud__credits,
+  .run-hud__implants {
+    transform: none;
   }
   .run-hud__boss {
-    width: calc(100vw - 24px);
-    top: 112px;
+    top: 120px;
+    width: 65vw;
   }
   .hud__banner {
-    top: 202px;
+    top: 195px;
     font-size: 22px;
   }
   .hud__toast {
-    top: 270px;
+    top: 250px;
   }
   .hud__blade {
-    bottom: 112px;
+    bottom: 130px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .hud {
+    text-shadow: 0 1px 3px #000;
+  }
   .hud *,
   .hud *::before,
   .hud *::after {
     transition: none !important;
   }
-  .hud__lowhp,
-  .hud__overheat,
-  .hud__meter--overheated,
-  .hud:has(.hud__lowhp:not([hidden])) .hud__meter--health {
-    animation: none;
+  .hud__meter--health .hud__value,
+  .run-hud__credits-value {
+    mask-image: none;
   }
-  .hud__meter::after {
+  .hud__weapon-head,
+  .hud__lowhp,
+  .hud:has(.hud__lowhp:not([hidden])) .hud__meter--health,
+  .hud__overheat::before,
+  .hud__overheat::after,
+  .hud__meter::after,
+  .run-hud__implant--new,
+  .run-hud__boss--phase .run-hud__boss-name {
     animation: none !important;
   }
-  /* Finite animations still finish: animationend cleans up temporary messages. */
+  .hud__vitals::after,
+  .hud__weapon::after,
+  .run-hud__credits::after,
+  .hud__hit-bar {
+    box-shadow: none;
+  }
+  .hud__crosshair,
+  .hud__dmgdir-arc,
+  .hud__segments {
+    filter: none;
+  }
+  /* Keep finite lifetimes and animationend cleanup without positional motion. */
+  .hud__banner {
+    animation-name: hud-banner-still-a;
+  }
+  .hud__banner.hud__flash--alternate {
+    animation-name: hud-banner-still-b;
+  }
   .hud__crosshair-ticks--fire {
     animation-duration: 0.001s;
   }
-  .hud__hitmarker {
-    animation-duration: 0.15s;
+}
+@keyframes hud-banner-still-a {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(-50%);
   }
-  .run-hud__implant--new,
-  .run-hud__boss--phase .run-hud__boss-track {
-    animation: none;
+  14%,
+  70% {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+@keyframes hud-banner-still-b {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(-50%);
+  }
+  14%,
+  70% {
+    opacity: 1;
+    transform: translateX(-50%);
   }
 }

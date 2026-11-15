@@ -23,5 +23,14 @@
   "seconds": "s",
   "credits": "Kredyty",
   "implants": "Implanty",
-  "bossHealth": "Zdrowie bossa"
+  "bossHealth": "Zdrowie bossa",
+  "microHealth": "VIT // SYNC 100%",
+  "microCritical": "VIT // KRYTYCZNE",
+  "microEnergy": "REZ // ŁADUNEK",
+  "microWeapon": "ARM // UZBROJENIE",
+  "microPowers": "REZ // MODUŁY",
+  "microWave": "SEKTOR KUROGANE // FALA",
+  "microBoss": "ZAGROŻENIE // SYGNAŁ",
+  "microImplants": "IMPLANTY // AKTYWNE",
+  "microOperator": "ISKRA // OPERATOR"
 }

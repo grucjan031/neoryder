@@ -3,54 +3,63 @@
 `src/ui/hud.ts` tworzy warstwę HTML nad canvasem, bez Three.js i bez odczytu
 modułów symulacji. Style są w `src/ui/hud.css`, importowanym przez `src/ui/styles.css`.
 
-## Styl
+## Styl — wizjer hełmu
 
-Cybernetyczne panele korzystają z lokalnego pakietu `public/assets/ui/hud/`.
-Manifest (`manifest.json`) i `docs/hud-assets.md` opisują przeznaczenie grafik.
-Ramki są skalowane przez `border-image`: vitals/weapon/banner mają slice 48,
-slot mocy 40, chip i boss 24. Ramka bossa nie używa `fill`, bo grafika zawiera
-pełny czerwony pasek — widoczne HP pochodzi wyłącznie z aktualnego stanu.
+HUD to unoszące się holograficzne grupy bez paneli, pełnych teł i ramek.
+`frame_*.webp` nie są używane w HUD walki, meta ani podpowiedzi interakcji.
+Lokalny Rajdhani (OFL w `public/assets/fonts/Rajdhani-OFL.txt`) daje duże,
+wąskie liczby z `tabular-nums`; mikroteksty mają 9 px, wielkie litery
+oraz odstęp 0,18 em. Teksty techniczne są w `src/data/ui/hud.pl.json`.
 
-- **Zdrowie i energia:** panel `frame_vitals` na lewym dole, podpisane paski
-  i duże liczby. Zdrowie cyan `#00e5ff`, energia magenta `#ff2bd6`. Wypełnienia
-  używają `bar_segments.webp` jako maski; zdrowie zachowuje 10 segmentów i ducha
-  utraconego HP. Krótki błysk po utracie HP albo odzyskaniu energii, delikatny
-  puls poniżej 30% HP. Kolor zdrowia pozostaje cyan również przy niskim HP.
-- **Broń:** `frame_weapon`, maskowana ikona broni, nazwa i sloty 1/2/3.
-  Segmentowane ciepło przechodzi od bursztynu `#ffae1a` do czerwieni `#e0262b`;
-  przegrzanie daje czerwony pasek i pulsującą etykietę nad panelem.
-- **Moce:** `frame_power_slot`, magentowa maskowana ikona Rezonansu, klawisz,
-  nazwa i czas odnowienia. Pozostaje radialne zaciemnienie i przygaszenie przy
-  braku energii. Sloty F/E są obok panelu broni.
-- **Celownik:** `crosshair.webp`, 42 px, mała poświata i krótkie rozszerzenie
-  przy strzale. Znacznik trafienia ma cztery oddzielne ukośne kreski CSS;
-  zabójstwo powiększa je i barwi na czerwono. `crosshair_hit.webp` nie jest używany.
-- **Fale i komunikaty:** `frame_banner` na górze, osobny krótkotrwały baner
-  poniżej paska bossa, toast synergii w `frame_chip`. Odmowa mocy i kierunek
-  obrażeń pozostają przy celowniku; ostrze w locie ma ikonę `icon_blade` i napis
-  nad dolnymi panelami, aby nie kolidować z bronią.
-- **Run:** Kredyty w bursztynowym `frame_chip` z maskowaną ikoną monety;
-  delta ma własny wiersz nad implantami. Implanty zachowują inicjały, opis
-  i kolor rzadkości. Boss w `frame_boss`: nazwa, czerwony segmentowany pasek,
-  białe znaczniki faz i cienka cyanowa tarcza.
-- **Meta kryjówki:** `src/ui/hub/metaBar.css` używa `frame_banner`, chipów walut,
-  maskowanych ikon `icon_data`/`icon_cores` i segmentowanego paska XP. Wolne
-  punkty mają bursztynowe wyróżnienie. Role, etykiety i teksty pozostają bez zmian.
+- **Lewy dół:** grupa zdrowia/energii ma `rotateY(10deg)` względem zewnętrznej
+  krawędzi i perspektywę 1100 px. Cyanowe HP: liczba 32 px, pasek 7 px
+  z pionowych kresek (maska `repeating-linear-gradient`). Energia: magenta,
+  pasek 4 px i mniejsza liczba. Podkreślenie kończy się rombem. Biały ślad
+  obrażeń zostaje na 0,4 s, a potem kurczy się przez 0,4 s. Przy HP ≤ 30%
+  (i powyżej zera) pulsuje liczba i pasek, a mikrotekst zmienia się na
+  bursztynowe „VIT // KRYTYCZNE”.
+- **Prawy dół:** broń jest nad mocami w kolumnie wyrównanej do prawej krawędzi;
+  arsenał zachowuje `rotateY(-10deg)`. Szerokość broni to maksymalnie 285 px,
+  ograniczona do prawego pasa 18% ekranu z uwzględnieniem marginesu.
+  W 1280×720 i 1920×1080 pozostawia to dolny pas 45–80% szerokości wolny
+  od grupy broni, poza blaskiem ostrza viewmodelu. Duża nazwa broni jest pochylona
+  `skewX(-8deg)`; obok maskowana ikona. Sloty są rombami, aktywny jest pełny.
+  Ciepło ma cienkie kreski bursztyn → czerwień. „PRZEGRZANIE” ma jednorazowy
+  glitch cyan/magenta o przesunięciu 1–2 px, trwający 0,18 s.
+- **Moce:** małe sześciokąty CSS z ikoną Rezonansu, okrągłym znacznikiem F/E
+  (19 px), radialnym zaciemnieniem i sekundami odnowienia. Nazwy pozostają
+  pod ikonami, brak energii przygasza grupę.
+- **Fale i komunikaty:** tekst otoczony poziomymi liniami z gradientem,
+  nad nim mikrotekst sektora, pod nim licznik wrogów. Krótkotrwały komunikat
+  fali pojawia się pod bossem; toast synergii niżej. Środek walki jest wolny.
+- **Prawa góra:** Kredyty jako mikrotekst, ikona, duża liczba i podkreślenie;
+  delta ma osobny wiersz. Implanty są małymi rombami z inicjałami i kolorem
+  rzadkości; zachowują podpowiedzi z nazwą/opisem.
+- **Boss:** nazwa wielkimi literami, czerwony kreskowy pasek 5 px,
+  pionowe znaczniki faz oraz biała tarcza 2 px nad paskiem, bez ramki.
+- **Celownik:** cyanowa kropka i cztery krótkie kreski CSS z przerwą.
+  Trafienie daje cztery ukośne kreski; zabójstwo czerwony błysk.
+  Kierunek obrażeń i winiety zachowują dotychczasową funkcję.
+- **Meta kryjówki:** oddzielne grupy w lewej górze, bez pełnej belki.
+  „ISKRA // OPERATOR”, duży poziom, kreskowy XP; obok Dane i Rdzenie
+  z ikonami, liczbami i podkreśleniami. Wolne punkty pulsują, gdy > 0.
+  W debug (`import.meta.env.DEV` lub `?debug=1`) lewy margines 108 px
+  pozostawia wolne 80×48 px panelu FPS. Selektory i pełne teksty walut
+  pozostają dostępne również po rozdzieleniu etykiet i liczb.
+- **Podpowiedź kryjówki:** `.hub-prompt` ma okrągły znaczek `kbd` z „E”,
+  mikrotekst „INTERAKCJA” z istniejącej etykiety i nazwę stacji z podkreśleniem.
 
-Lokalne Rajdhani Medium/SemiBold (`public/assets/fonts/`) jest na licencji OFL
-(`Rajdhani-OFL.txt`, źródło: katalog `ofl/rajdhani` repozytorium google/fonts).
-Nagłówki i liczby używają Rajdhani z fallbackiem Segoe UI/sans-serif; małe
-podpisy używają czytelnego Segoe UI. Liczby mają `tabular-nums`. Teksty nadal
-pochodzą z danych UI, a dekoracyjne ikony są pseudoelementami CSS.
+Poświata jest lokalna. Skanowanie jest delikatną maską dużych liczb, a nie
+nakładką na ekran. Jedna grupa (nagłówek broni) ma krótkie, subtelne osłabienie
+jasności co 8,6 s; nie używa losowości ani czasu symulacji. `prefers-reduced-motion`
+wyłącza glitch, pulsowanie, migotanie, skanowanie, poświatę i przesuwanie komunikatów.
+Skończone animacje zachowują `animationend`, by usuwać komunikaty po ich czasie.
+Czasy efektów są w CSS; nie zmieniają liczb rozgrywki w `tuning.ts`.
 
-Poświata jest ograniczona do małych cieni. `scanlines.webp` z opacity 0,045
-pokrywa tylko panele, nigdy cały ekran. Dolne panele mają stałe maksymalne
-szerokości, odstęp od krawędzi rośnie do 42 px; przy szerokości poniżej 1000 px
-panele się zwężają, poniżej 760 px arsenał układa się pionowo. Docelowe widoki
-1280×720 i 1920×1080 zachowują wolny środek ekranu. `prefers-reduced-motion`
-wyłącza pulsowanie, błyski i przejścia; jednorazowe komunikaty nadal kończą
-animacje, ponieważ `animationend` usuwa je z ekranu. Czasy efektów są w CSS,
-bez nowych liczb symulacji w `tuning.ts`.
+Układ jest ograniczony szerokościami grup i przeznaczony dla 1280×720 oraz
+1920×1080. Poniżej 1000 px grupy się zwężają, poniżej 760 px zmienia się kolejność
+w kolumnie arsenału i znika pochylenie. Kontrola ręczna: `?scene=room-test&room=combatYard&loadout=classic&debug=1`,
+`?scene=boss-test&debug=1`, `?scene=hub&debug=1`; zrzuty ocenia manager.
 
 ## Układ
 
@@ -60,28 +69,28 @@ HUD słucha `held_item_changed` dla gracza: `held: 'blade'` dodaje
 `.hud__weapon--inactive` (opacity 0,6), `held: 'gun'` ją usuwa. Ciepło i nazwa
 wybranego slotu pozostają widoczne. Reset areny publikuje początkowy stan ręki.
 
-| Miejsce              | Elementy                                                                                                                                                                                    |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lewy dół             | zdrowie: 10 segmentów cyan + liczba (`.hud__segments`), pod nim pasek energii (magenta)                                                                                                     |
-| Prawy dół            | blok broni: nazwa (`.hud__weapon-name`), wskaźnik slotów 1/2/3 (tylko gdy broni > 1), pasek ciepła bursztyn → czerwień, „PRZEGRZANIE” (migający wiersz nad nazwą); obok kwadraty mocy F i E |
-| Góra, środek         | „FALA 3 / 12” i „Wrogowie N”; baner „FALA 3” / „FALA CZYSTA” pojawiający się i znikający; toast synergii (magenta) pod banerem                                                              |
-| Środek               | celownik z grafiki pakietu, znacznik trafienia, łuk kierunku obrażeń, odmowa mocy pod celownikiem                                                                                           |
-| Nad dolnymi panelami | „Ostrze w locie”                                                                                                                                                                            |
-| Krawędzie            | czerwona winieta pulsująca po obrażeniach; słaba stała poniżej 30% HP                                                                                                                       |
+| Miejsce              | Elementy                                                                                                                                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lewy dół             | zdrowie: 10 segmentów cyan + liczba (`.hud__segments`), pod nim pasek energii (magenta)                                                                                                      |
+| Prawy dół            | blok broni: nazwa (`.hud__weapon-name`), wskaźnik slotów 1/2/3 (tylko gdy broni > 1), pasek ciepła bursztyn → czerwień, „PRZEGRZANIE” (krótki glitch nad nazwą); obok sześciokąty mocy F i E |
+| Góra, środek         | „FALA 3 / 12” i „Wrogowie N”; baner „FALA 3” / „FALA CZYSTA” pojawiający się i znikający; toast synergii (magenta) pod banerem                                                               |
+| Środek               | celownik CSS: kropka i cztery kreski, znacznik trafienia, łuk kierunku obrażeń, odmowa mocy pod celownikiem                                                                                  |
+| Nad dolnymi panelami | „Ostrze w locie”                                                                                                                                                                             |
+| Krawędzie            | czerwona winieta pulsująca po obrażeniach; delikatna przy HP ≤ 30%                                                                                                                           |
 
 Zdrowie: segment i ma wypełnienie `clamp(ratio * 10 - i, 0, 1)` (`data-fill`
-na `.hud__seg-fill`). Pod każdym segmentem leży „duch” (`.hud__seg-ghost`) w czerwieni;
+na `.hud__seg-fill`). Pod każdym segmentem leży biały „duch” (`.hud__seg-ghost`);
 przy utracie HP wypełnienie spada od razu, a duch dochodzi do tej wartości z
-opóźnieniem 0,4 s (CSS `transition`). Poniżej 30% HP (i powyżej 0) panel zdrowia i winieta `.hud__lowhp` pulsują.
+opóźnieniem 0,4 s (CSS `transition`). Przy HP ≤ 30% (i powyżej 0) panel zdrowia i winieta `.hud__lowhp` pulsują.
 
 Ciepło: `data-level` na `.hud__meter--heat` to `cool` (< 50%), `warm` (< 80%), `hot`.
 Przy `overheated` pojawia się `.hud__overheat` i klasa `hud__meter--overheated`.
 
-Moce: kwadrat z literą klawisza, nazwą, sekundami odnowienia i radialnym odliczaniem
+Moce: sześciokąt z okrągłym znaczkiem klawisza, nazwą, sekundami odnowienia i radialnym odliczaniem
 (`conic-gradient`, zmienna `--cd` = pozostała część odnowienia 0–1, aktualizowana
 tylko przy zmianie o 0,01). Brak energii na koszt mocy (`def.cost`) przygasza
-kwadrat (`hud__power--dim`). `power_denied` daje czerwony błysk właściwego kwadratu
-i tekst pod celownikiem. Po końcu odnowienia kwadrat nie pokazuje tekstu.
+sześciokąt (`hud__power--dim`). `power_denied` daje czerwony błysk właściwego sześciokąta
+i tekst pod celownikiem. Po końcu odnowienia sześciokąt nie pokazuje tekstu.
 
 Znacznik trafienia: biały X przy `damage_dealt` z `source === playerId` i `amount > 0`;
 większy czerwony przy `killed`. Celownik rozszerza się na 0,16 s przy `weapon_fired`
@@ -150,7 +159,7 @@ this.hud?.setViewYaw(pose.yaw);
 ```
 
 Opcja `root` pozwala zamontować warstwę we wskazanym elemencie; domyślnie jest to
-`document.body`. `setLoadout(loadout)` odtwarza kwadraty mocy i wskaźnik slotów,
+`document.body`. `setLoadout(loadout)` odtwarza sześciokąty mocy i wskaźnik slotów,
 zeruje odnowienia i chowa chwilowe elementy (baner, toast, znaczniki, dialog).
 `dispose()` jest idempotentne.
 
@@ -163,7 +172,7 @@ Wyświetla dziesiąte części sekundy.
 `?scene=arena&loadout=gunner&debug=1`: sprawdź segmenty zdrowia po obrażeniach,
 ciepło i „PRZEGRZANIE” przy długim ogniu, sloty 1/2/3 (klawisze 1–3), znacznik
 trafienia i licznik wrogów (`hit 5`, `kill all`), baner fali (`wave 3`). Wpisz
-`loadout resonance`: kwadraty F/E z odliczaniem, przygaszenie przy braku energii.
+`loadout resonance`: sześciokąty F/E z odliczaniem, przygaszenie przy braku energii.
 Oceń czytelność na białym tle i czy HUD nie zasłania pola gry.
 
 Testy DOM: `npx vitest run tests/unit/hud.test.ts` (jsdom).

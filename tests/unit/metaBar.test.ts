@@ -26,7 +26,9 @@ function setup() {
 }
 
 it('pokazuje poziom, doświadczenie, Dane, Rdzenie i wolne punkty ze stanu meta', () => {
-  const { manager, text } = setup();
+  const { manager, bar, text } = setup();
+  expect(text('.meta-bar__operator')).toBe('ISKRA // OPERATOR');
+  expect(bar.root.dataset.debug).toBe('true');
   expect(text('.meta-bar__level')).toBe('Poziom 1');
   expect(text('.meta-bar__xp-text')).toBe(
     `0 / ${manager.xpProgress.xpForNext} XP`,
