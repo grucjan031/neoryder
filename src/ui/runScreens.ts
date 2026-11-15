@@ -1,8 +1,10 @@
 import { implantDefinitions } from '../progression/implants';
+import type { ApplyRunResult } from '../progression/meta';
 import type { MapNode, Rarity, RunState, RunSummary } from '../core/runTypes';
 import type { RunScreen } from '../world/run';
 import { z } from 'zod';
 import textData from '../data/ui/run.pl.json';
+import metaTextData from '../data/ui/meta.pl.json';
 import './runScreens.css';
 import { MapScreen } from './mapScreen';
 
@@ -63,11 +65,33 @@ const text = z
   })
   .parse(textData);
 
+const metaText = z
+  .object({
+    summary: z.object({
+      rewards: z.string(),
+      xp: z.string(),
+      data: z.string(),
+      cores: z.string(),
+      levelUp: z.string(),
+      threatUnlocked: z.string(),
+      backToHub: z.string(),
+    }),
+  })
+  .parse(metaTextData).summary;
+
+/** Wynik `MetaManager.applyRun` pokazywany w podsumowaniu (ADR 0007 pkt 2). */
+export type RunMetaView = Pick<
+  ApplyRunResult,
+  'rewards' | 'levelBefore' | 'levelAfter' | 'threatUnlocked'
+>;
+
 export interface RunScreenView {
   screen: RunScreen;
   state: RunState;
   nodes: readonly MapNode[];
   summary: RunSummary | null;
+  /** Nagrody meta za zakończony run (brak = sekcja nie jest pokazywana). */
+  meta?: RunMetaView;
   busy: boolean;
   error: string | null;
   offers?: readonly {
@@ -92,6 +116,8 @@ export interface RunScreenActions {
   rest?(choice: 'heal' | 'upgrade', id?: string): void;
   menu(): void;
   newRun?(): void;
+  /** Powrót do kryjówki (`?scene=hub`); przycisk pokazywany tylko, gdy akcja jest podana. */
+  hub?(): void;
 }
 
 export interface RunScreens {
@@ -193,6 +219,12 @@ export class HtmlRunScreens implements RunScreens {
           this.panel.append(row);
         }
       }
+      if (view.meta) this.metaRewards(view.meta, summary?.threatLevel ?? 0);
+      const hub = actions.hub;
+      if (hub) {
+        const back = this.button(metaText.backToHub, hub);
+        back.classList.add('run-screen__primary');
+      }
       this.button(text.newRun, () => actions.newRun?.());
       this.button(text.menu, actions.menu);
     } else if (view.screen === 'reward') {
@@ -225,6 +257,44 @@ export class HtmlRunScreens implements RunScreens {
       this.line(text.placeholder);
       this.button(text.next, actions.next);
     }
+  }
+
+  private metaRewards(meta: RunMetaView, runThreat: number): void {
+    const box = document.createElement('div');
+    box.className = 'run-screen__rewards';
+    box.dataset.testid = 'run-meta-rewards';
+    const title = document.createElement('h2');
+    title.textContent = metaText.rewards;
+    box.append(title);
+    const rows: [string, string, number][] = [
+      ['xp', metaText.xp, meta.rewards.xp],
+      ['data', metaText.data, meta.rewards.data],
+      ['cores', metaText.cores, meta.rewards.cores],
+    ];
+    for (const [key, label, value] of rows) {
+      const row = document.createElement('p');
+      row.dataset.reward = key;
+      row.textContent = `${label}: +${value}`;
+      box.append(row);
+    }
+    if (meta.levelAfter > meta.levelBefore) {
+      const row = document.createElement('p');
+      row.className = 'run-screen__levelup';
+      row.textContent = metaText.levelUp
+        .replace('{from}', String(meta.levelBefore))
+        .replace('{to}', String(meta.levelAfter));
+      box.append(row);
+    }
+    if (meta.threatUnlocked) {
+      const row = document.createElement('p');
+      row.className = 'run-screen__levelup';
+      row.textContent = metaText.threatUnlocked.replace(
+        '{level}',
+        String(runThreat + 1),
+      );
+      box.append(row);
+    }
+    this.panel.append(box);
   }
 
   private offer(

@@ -4,17 +4,29 @@ import type { GameContext } from '../core/context';
 import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
 import { Rng } from '../core/rng';
-import type { MapNode, RoomPlanner, RunState } from '../core/runTypes';
+import type {
+  MapNode,
+  RoomPlanner,
+  RunState,
+  RunSummary,
+} from '../core/runTypes';
 import playerData from '../data/scenes/roomPlayer.json';
 import { enemyDefinitions } from '../enemies/registry';
 import type { ImplantDefinition } from '../progression/implantSchema';
 import { implantDefinitions } from '../progression/implants';
 import { RunEconomy } from '../progression/runEconomy';
+import { runIdOf } from '../progression/meta';
+import type { ApplyRunResult, MetaManager } from '../progression/meta';
+import { loadMetaManager, saveMetaManager } from '../progression/metaSave';
+import { createIndexedDbSaveStore } from '../core/save';
+import type { SaveStore } from '../core/save';
 import { loadoutDefinitions } from '../progression/loadout';
 import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
 import type { RunScreens } from '../ui/runScreens';
 import { CommandRegistry } from '../ui/debugCommands';
+import { registerMetaCommands } from '../ui/metaCommands';
+import type { MetaCommandsHandle } from '../ui/metaCommands';
 import { roomDefinitions } from '../world/rooms';
 import type { RoomDefinition } from '../world/roomSchema';
 import { RunManager } from '../world/run';
@@ -25,6 +37,8 @@ import { roomPlanner } from '../world/threat';
 import type { WavesDefinition } from '../world/waves';
 import type { Scene } from './index';
 import { RoomScene } from './roomScene';
+
+const CUSTOM_LOADOUT_ID = 'custom';
 
 export interface RunSavePort {
   loadRun(): Promise<RunState | null>;
@@ -47,6 +61,8 @@ export interface RunSceneOptions {
   params?: URLSearchParams;
   screens?: RunScreens;
   save?: RunSavePort;
+  /** Zapis meta-progresu (domyślnie IndexedDB); `RunScene` czyta z niego nagrody i ekwipunek. */
+  metaStore?: SaveStore;
   planner?: RoomPlanner;
   sector?: SectorDefinition;
   rooms?: ReadonlyMap<string, RoomDefinition>;
@@ -69,6 +85,10 @@ export class RunScene implements Scene {
   private manager!: RunManager;
   private economy!: RunEconomy;
   private screens!: RunScreens;
+  private meta!: MetaManager;
+  private metaCommands: MetaCommandsHandle | null = null;
+  private metaResult: ApplyRunResult | null = null;
+  private metaStore: SaveStore | null = null;
   private readonly save: RunSavePort;
   private readonly sector: SectorDefinition;
   private readonly rooms: ReadonlyMap<string, RoomDefinition>;
@@ -146,9 +166,9 @@ export class RunScene implements Scene {
       ctx.bus.on('implant_acquired', ({ id }) =>
         this.log.push({ event: 'implant_acquired', id }),
       ),
-      ctx.bus.on('run_ended', ({ outcome }) => {
+      ctx.bus.on('run_ended', ({ outcome, summary }) => {
         this.log.push({ event: 'run_ended', outcome });
-        this.persist(() => this.save.clearRun());
+        this.finishMeta(summary);
         this.schedule('end');
       }),
     );
@@ -157,23 +177,61 @@ export class RunScene implements Scene {
       new URLSearchParams(
         typeof location === 'undefined' ? '' : location.search,
       );
+    this.meta = await loadMetaManager(this.getMetaStore(), ctx.bus);
+    if (this.disposed) return;
     if (params.get('continue') === '1') {
       const state = await this.save.loadRun();
       if (this.disposed) return;
       if (!state) throw new Error('Brak zapisu runu do wznowienia.');
-      this.validateLoadout(state.loadoutId);
+      if (state.loadoutId !== CUSTOM_LOADOUT_ID)
+        this.validateLoadout(state.loadoutId);
       this.manager.restore(state);
     } else {
       const loadout = params.get('loadout') ?? 'classic';
-      this.validateLoadout(loadout);
-      this.manager.newRun(
-        params.get('seed') ?? String(ctx.rng.getState()),
-        loadout,
-      );
+      const seed = params.get('seed') ?? String(ctx.rng.getState());
+      if (loadout === 'meta') {
+        const meta = this.meta.state;
+        this.manager.newRun(seed, CUSTOM_LOADOUT_ID, {
+          loadout: this.meta.loadout(),
+          talents: meta.talents,
+          threatLevel: meta.threat.selected,
+          baseMaxHealth: playerData.maxHealth,
+        });
+      } else {
+        this.validateLoadout(loadout);
+        this.manager.newRun(seed, loadout);
+      }
     }
     this.registerCommands();
     this.showMap();
     await this.saving;
+  }
+
+  private getMetaStore(): SaveStore {
+    this.metaStore ??= this.options.metaStore ?? createIndexedDbSaveStore();
+    return this.metaStore;
+  }
+
+  /** Kolejność (ADR 0007 pkt 2): applyRun, zapis meta, clearRun; błąd zapisu meta nie blokuje reszty. */
+  private finishMeta(summary: RunSummary): void {
+    try {
+      this.metaResult = this.meta.applyRun(
+        summary,
+        runIdOf(this.manager.state),
+      );
+    } catch (error) {
+      this.metaResult = null;
+      console.warn('Nie można naliczyć nagród meta.', error);
+    }
+    const store = this.getMetaStore();
+    this.persist(async () => {
+      try {
+        await saveMetaManager(store, this.meta);
+      } catch (error) {
+        console.warn('Nie można zapisać meta-progresu.', error);
+      }
+      await this.save.clearRun();
+    });
   }
 
   private validateLoadout(id: string): void {
@@ -189,14 +247,14 @@ export class RunScene implements Scene {
         state: this.manager.serialize(),
         nodes: structuredClone(this.manager.availableNodes()),
         summary: this.manager.summary,
+        meta: this.metaResult?.applied ? this.metaResult : undefined,
         busy: this.manager.screen === 'room' && !this.roomReady,
         error: this.runError,
         offers: (() => {
           const definitions =
             this.options.implantDefinitions ?? implantDefinitions;
           const tags = [
-            ...(loadoutDefinitions.get(this.manager.state.loadoutId)?.tags ??
-              []),
+            ...this.manager.state.loadout.tags,
             ...this.manager.state.implants.flatMap(
               (id) => definitions.get(id)?.tags ?? [],
             ),
@@ -282,8 +340,18 @@ export class RunScene implements Scene {
           const params = new URLSearchParams({
             scene: 'run',
             seed,
-            loadout: this.manager.state.loadoutId,
+            loadout:
+              this.manager.state.loadoutId === CUSTOM_LOADOUT_ID
+                ? 'meta'
+                : this.manager.state.loadoutId,
           });
+          location.assign(`/?${params}`);
+        },
+        hub: () => {
+          if (typeof location === 'undefined') return;
+          const params = new URLSearchParams({ scene: 'hub' });
+          if (new URLSearchParams(location.search).get('debug') === '1')
+            params.set('debug', '1');
           location.assign(`/?${params}`);
         },
         menu: () => {
@@ -492,6 +560,7 @@ export class RunScene implements Scene {
     await this.loading;
     this.flushTransitions();
     await this.saving;
+    await this.metaCommands?.settled();
   }
 
   query(name: string): unknown {
@@ -504,6 +573,14 @@ export class RunScene implements Scene {
         return this.manager.serialize().map;
       case 'room':
         return this.roomId;
+      case 'meta':
+        return this.meta.state;
+      case 'level':
+        return {
+          ...this.meta.xpProgress,
+          talentPoints: this.meta.talentPoints,
+          freePoints: this.meta.freePoints,
+        };
       case 'runLog':
         return structuredClone(this.log);
       case 'loading':
@@ -528,6 +605,12 @@ export class RunScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    this.metaCommands = registerMetaCommands(
+      this.ctx.commands,
+      this.meta,
+      this.getMetaStore(),
+    );
+    this.off.push(() => this.metaCommands?.dispose());
     register('run node', 'run node <id> — wybierz dostępny węzeł', (args) =>
       args.length === 1 && this.selectNode(args[0]!)
         ? 'Wczytywanie pokoju.'

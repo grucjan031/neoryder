@@ -71,6 +71,6 @@ test('bot: śmierć -> podsumowanie porażki -> Menu', async ({ page }) => {
   await expect(page.getByText('Porażka', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Menu', exact: true }).click();
   await expect(page).toHaveURL('/');
-  await expect(page.getByRole('button', { name: 'Nowy run' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Kryjówka' })).toBeVisible();
   expect(errors).toEqual([]);
 });

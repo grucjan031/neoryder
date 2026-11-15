@@ -42,7 +42,7 @@
 
 ## Komendy debug (metody)
 
-`debugAddXp`, `debugAddData`, `debugAddCores`, `debugUnlockAll`, `debugReset`. Podpięcie do konsoli: zadanie F4-06.
+`debugAddXp`, `debugAddData`, `debugAddCores`, `debugUnlockAll`, `debugReset`. Podpięcie do konsoli: `registerMetaCommands` (sekcja „Zapis i integracja z runem”).
 
 ## Łatki definicji
 
@@ -57,3 +57,15 @@ Pełny opis (drzewka, progi, lista węzłów, działanie w pokoju): `docs/system
 - `spentInTree(drzewko)`: suma `cost` kupionych węzłów drzewka. `spentPoints` to suma po wszystkich drzewkach (łącznie z hybrydami).
 - `debugGrantTalent(id)`: bez kosztu i bez progów (konsola debug).
 - Talenty zamraża `RunManager.newRun` w `RunState.talents`; w pokoju działają przez `TalentSystem` (`src/progression/talents.ts`).
+
+## Zapis i integracja z runem (F4-06)
+
+Kod: `src/progression/metaSave.ts`, `src/ui/metaCommands.ts`, `src/scenes/run.ts`, `src/ui/runScreens.ts`. Kontrakt: `docs/api.md` („Integracja runu z meta”).
+
+- `loadMetaManager(store, bus?)`: brak zapisu daje stan startowy z danych; zapis nieczytelny (też nowszej wersji albo błąd bazy) daje stan startowy z ostrzeżeniem w konsoli i **nie nadpisuje** zapisu. Dopiero pierwszy `saveMetaManager` go zastępuje (poza zapisem z nowszej wersji, który `SaveStore` odrzuca).
+- `saveMetaManager(store, manager)`: `MetaSave` v3, `createdAt` zachowany, `updatedAt` ustawiony. Zapisy do jednego `SaveStore` są kolejkowane, a migawka stanu powstaje przy wywołaniu. Z tej pary korzystają `RunScene`, komendy debug i kryjówka (zadania 08–10).
+- `RunScene` wczytuje meta przy starcie (każdy run). `?loadout=meta` zamraża w `RunState` ekwipunek (`loadout()`, `loadoutId: 'custom'`), talenty, `threat.selected` i bazowe `maxHealth` gracza (`roomPlayer.json`). Presety nie czytają talentów ani poziomu zagrożenia.
+- Przy `run_ended` (śmierć i zwycięstwo, także presety): `applyRun(summary, runIdOf(state))` → `saveMetaManager` → `clearRun`. Błąd zapisu meta jest logowany i nie blokuje `clearRun` ani podsumowania. Powtórne zakończenie tego samego runu (`runId` w `appliedRunIds`) nie zmienia meta i nie pokazuje nagród.
+- Podsumowanie runu pokazuje Doświadczenie, Dane, Rdzenie, awans („Awans: Poziom 3 → 4”, tylko gdy nastąpił) i „Odblokowano Poziom zagrożenia N”; przycisk „Wróć do kryjówki” (`?scene=hub`, zachowuje `debug=1`) jest pierwszy.
+- Komendy debug (`registerMetaCommands`, w scenie `run`): `meta state`, `meta xp <n>`, `meta data <n>`, `meta cores <n>`, `meta unlock all`, `meta reset`; każda zmiana zapisuje meta. `query('meta')` i `query('level')` w `RunScene`.
+- Ręcznie: `?scene=run&loadout=meta&seed=x&debug=1`, `meta xp 40`, `run end win` → podsumowanie z nagrodami; po ponownym wejściu `query('meta')` pokazuje zapisany stan.

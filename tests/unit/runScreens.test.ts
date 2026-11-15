@@ -257,3 +257,79 @@ it('shows all summary data and dispatches navigation actions', () => {
   expect(newRun).toHaveBeenCalledOnce();
   expect(menu).toHaveBeenCalledOnce();
 });
+
+const summaryView: RunScreenView = {
+  ...view,
+  screen: 'summary',
+  summary: {
+    outcome: 'victory',
+    seed: 'abc',
+    loadoutId: 'custom',
+    elapsedS: 60,
+    kills: 7,
+    elitesCleared: 1,
+    threatLevel: 2,
+    roomsCleared: 3,
+    layerReached: 4,
+    implants: [],
+    damage: { melee: 10, power: 20, gun: 30, other: 5 },
+  },
+};
+
+it('podsumowanie pokazuje nagrody meta, awans poziomu i odblokowany Poziom zagrożenia', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const hub = vi.fn();
+  const newRun = vi.fn();
+  const menu = vi.fn();
+  screens.show(
+    {
+      ...summaryView,
+      meta: {
+        rewards: { xp: 120, data: 45, cores: 4 },
+        levelBefore: 3,
+        levelAfter: 4,
+        threatUnlocked: true,
+      },
+    },
+    { selectNode() {}, next() {}, menu, newRun, hub },
+  );
+  const rewards = document.querySelector('[data-testid="run-meta-rewards"]')!;
+  expect(rewards.textContent).toContain('Doświadczenie: +120');
+  expect(rewards.textContent).toContain('Dane: +45');
+  expect(rewards.textContent).toContain('Rdzenie: +4');
+  expect(rewards.textContent).toContain('Poziom 3 → 4');
+  expect(rewards.textContent).toContain('Odblokowano Poziom zagrożenia 3');
+  const buttons =
+    document.querySelectorAll<HTMLButtonElement>('.run-screen button');
+  expect(buttons[0]!.textContent).toBe('Wróć do kryjówki');
+  buttons[0]!.click();
+  buttons[1]!.click();
+  buttons[2]!.click();
+  expect(hub).toHaveBeenCalledOnce();
+  expect(newRun).toHaveBeenCalledOnce();
+  expect(menu).toHaveBeenCalledOnce();
+});
+
+it('podsumowanie bez awansu i odblokowania nie pokazuje tych wierszy, a bez meta - sekcji nagród', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  screens.show(
+    {
+      ...summaryView,
+      meta: {
+        rewards: { xp: 10, data: 5, cores: 0 },
+        levelBefore: 2,
+        levelAfter: 2,
+        threatUnlocked: false,
+      },
+    },
+    { selectNode() {}, next() {}, menu() {} },
+  );
+  const text = document.querySelector('.run-screen')!.textContent!;
+  expect(text).not.toContain('Awans');
+  expect(text).not.toContain('Odblokowano Poziom zagrożenia');
+  expect(text).not.toContain('Wróć do kryjówki');
+  screens.show(summaryView, { selectNode() {}, next() {}, menu() {} });
+  expect(document.querySelector('[data-testid="run-meta-rewards"]')).toBeNull();
+});

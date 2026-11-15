@@ -133,7 +133,10 @@ export class RunHud {
       bus.on('boss_shield', ({ id, current, max }) => {
         if (id !== this.bossId) return;
         this.bossShield.hidden = max <= 0 || current <= 0;
-        this.bossShieldFill.style.setProperty('--p', max > 0 ? (current / max).toFixed(3) : '0');
+        this.bossShieldFill.style.setProperty(
+          '--p',
+          max > 0 ? (current / max).toFixed(3) : '0',
+        );
       }),
       bus.on('enemy_killed', ({ id }) => this.hideBoss(id)),
       bus.on('entity_despawned', ({ id }) => this.hideBoss(id)),

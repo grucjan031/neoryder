@@ -97,3 +97,23 @@
   background: #00e5ff;
 }
 
+.run-screen__rewards {
+  margin: 14px 0;
+  padding: 10px 14px;
+  border: 1px solid #ffb347;
+}
+.run-screen__rewards h2 {
+  margin: 0 0 6px;
+  font-size: 1em;
+  color: #ffb347;
+}
+.run-screen__rewards p {
+  margin: 4px 0;
+}
+.run-screen__levelup {
+  color: #ffb347;
+  font-weight: 600;
+}
+.run-screen button.run-screen__primary {
+  border-color: #ffb347;
+}

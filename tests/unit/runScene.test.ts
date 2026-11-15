@@ -1,6 +1,9 @@
 import 'fake-indexeddb/auto';
 import { loadoutDefinitions } from '../../src/progression/loadout';
-import { createIndexedDbSaveStore } from '../../src/core/save';
+import {
+  createIndexedDbSaveStore,
+  createMemorySaveStore,
+} from '../../src/core/save';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../../src/core/context';
@@ -152,6 +155,7 @@ async function setup(options: RunSceneOptions = {}, bus = new EventBus()) {
     params: new URLSearchParams('seed=test1&loadout=classic'),
     screens,
     save,
+    metaStore: createMemorySaveStore(),
     implantDefinitions: new Map(),
     createRoom: (_layout, run) => {
       const room = new FakeRoom(run);

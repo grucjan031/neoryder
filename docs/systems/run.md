@@ -80,3 +80,7 @@ Sprawdzenie ręczne: `?scene=run&debug=1&seed=economy`, `run clear`, wybór nagr
 `implant <id>` działa na mapie oraz w aktywnym pokoju; `credits <n>` działa w runie.
 
 Podsumowanie runu pokazuje wynik, czas symulacji, zabójstwa, pokoje, warstwę, implanty, seed i obrażenia według czterech ścieżek. Nowy run zachowuje build i losuje nowy seed; menu prowadzi pod `/`. Do kontroli służą `?scene=run` i komendy `run end win|lose`.
+
+## F4-06: start z kryjówki i nagrody meta
+
+`?scene=run&loadout=meta` startuje run z `MetaState` (ekwipunek, talenty, Poziom zagrożenia, `loadoutId: 'custom'`); presety `?loadout=<id>` działają jak w F3. Przy `run_ended` `RunScene` robi `applyRun` → zapis meta → `clearRun` (każdy run), a podsumowanie pokazuje nagrody i przycisk „Wróć do kryjówki”. Tagi i nazwę ekwipunku w ekranach bierze z `RunState.loadout`, nie z presetu. Szczegóły: `docs/systems/meta.md` („Zapis i integracja z runem”).

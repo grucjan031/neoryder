@@ -1507,3 +1507,39 @@ baseMaxHealth?: number; // bazowe maxHealth gracza (domyślnie initialHp); hp st
 ```
 
 `RunManager.newRun` dolicza `runStartCredits` do Kredytów startowych. `RoomScene` czyta `run.talents`: modyfikatory na obu instancjach `Stats`, tagi w `SynergySystem.setTags`, wyzwalacze (jako `implant:talent:<id>:<n>`) razem z wyzwalaczami implantów w `setImplantTriggers`, łatki (najpierw talenty, potem `options.patches`) do `resolveLoadout`. Komendy pokoju: `talent <id>`, `talent reset`; `query('talents')`.
+
+### Integracja runu z meta (F4-06) — `src/progression/metaSave.ts`, `src/ui/metaCommands.ts`, `src/scenes/run.ts`
+
+Opis: `docs/systems/meta.md` (zapis i integracja), `docs/systems/run.md`.
+
+```ts
+// src/progression/metaSave.ts — jedyna droga odczytu i zapisu meta (RunScene, kryjówka, komendy debug)
+loadMetaManager(store: SaveStore, bus?: EventBus, rules?: MetaRules): Promise<MetaManager>;
+// Brak zapisu → stan startowy z danych. Zapis nieczytelny (uszkodzony, nowszej wersji, błąd bazy)
+// → stan startowy + console.warn, bez nadpisywania zapisu do pierwszego saveMetaManager.
+saveMetaManager(store: SaveStore, manager: MetaManager, now?: () => number): Promise<void>;
+// MetaSave v3: zachowuje createdAt istniejącego zapisu, ustawia updatedAt. Migawka stanu powstaje w chwili
+// wywołania, a zapisy do jednego SaveStore idą kolejno (starszy stan nie nadpisze nowszego). Błąd odrzuca obietnicę.
+
+// src/ui/metaCommands.ts — komendy debug meta dla dowolnej sceny
+registerMetaCommands(host: { register(name, help, run): () => void } | undefined, manager: MetaManager, store: SaveStore):
+  { dispose(): void; settled(): Promise<void> };
+// host = ctx.commands. Komendy: `meta state`, `meta xp <n>`, `meta data <n>`, `meta cores <n>`, `meta unlock all`,
+// `meta reset`; każda zmiana zapisuje meta (settled() czeka na zapisy).
+
+// RunScene (src/scenes/run.ts)
+RunSceneOptions.metaStore?: SaveStore;   // domyślnie IndexedDB
+// ?loadout=meta → newRun(seed, 'custom', { loadout: meta.loadout(), talents: state.talents,
+//                 threatLevel: state.threat.selected, baseMaxHealth: roomPlayer.maxHealth })
+// presety (?loadout=<id>): talenty [], Poziom zagrożenia 0. `continue=1` przyjmuje loadoutId 'custom'.
+// run_ended (każdy run): MetaManager.applyRun(summary, runIdOf(state)) → saveMetaManager → clearRun;
+// błąd zapisu meta = console.warn, nie blokuje clearRun ani podsumowania.
+query('meta'): MetaState;                 // kopia
+query('level'): LevelInfo & { talentPoints: number; freePoints: number };
+
+// src/ui/runScreens.ts
+RunScreenView.meta?: Pick<ApplyRunResult, 'rewards' | 'levelBefore' | 'levelAfter' | 'threatUnlocked'>;
+RunScreenActions.hub?(): void;            // przycisk „Wróć do kryjówki” (pierwszy na podsumowaniu), ?scene=hub (+debug=1)
+```
+
+`RunScreenView.meta` jest ustawiane tylko, gdy `applyRun` naliczył nagrody (`applied: true`). Teksty: `src/data/ui/meta.pl.json`, sekcja `summary`. Nowy run z podsumowania runu z ekwipunkiem własnym wraca pod `?loadout=meta`.
