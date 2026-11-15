@@ -93,7 +93,12 @@ it('hybrydy aktywują synergie z tagów ekwipunku, czyste buildy żadnej', async
   expect(blade.scene.query('synergies')).toEqual([]);
   blade.commands.execute('build');
   blade.card('bladeDancer').click();
-  expect(blade.scene.query('synergies')).toEqual(['bladeDancer']);
+  // Z11: para Ostrze+Rezonans ma też Rygiel i Iskrowy rozłam.
+  expect(blade.scene.query('synergies')).toEqual([
+    'bladeDancer',
+    'parryLock',
+    'shockFracture',
+  ]);
   blade.commands.execute('build');
   blade.card('stormGunner').click();
   expect(blade.scene.query('synergies')).toEqual(

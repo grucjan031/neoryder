@@ -134,6 +134,7 @@ export class RoomScene implements Scene {
   private energy!: PlayerEnergy;
   private blade!: PlasmaBlade;
   private execute!: ExecuteSystem;
+  private executeTarget: EntityId | null = null;
   private heldItem!: HeldItem;
   private readonly flyingBlade = new FlyingBlade();
   private powers!: PowerSlots;
@@ -687,6 +688,25 @@ export class RoomScene implements Scene {
 
   private createExecute(): void {
     this.execute?.dispose();
+    this.executeTarget = null;
+    const pool: ExecuteEnemy[] = [];
+    const enemies: ExecuteEnemy[] = [];
+    const collectEnemy = (enemy: Enemy): void => {
+      if (enemy.removed) return;
+      const index = enemies.length;
+      const entry = (pool[index] ??= {
+        id: enemy.id,
+        kind: enemy.definition.kind,
+        position: { x: 0, y: 0, z: 0 },
+      });
+      entry.id = enemy.id;
+      entry.kind = enemy.definition.kind;
+      const position = enemy.current.position;
+      entry.position.x = position.x;
+      entry.position.y = position.y + (enemy.definition.body?.centerY ?? 0);
+      entry.position.z = position.z;
+      enemies.push(entry);
+    };
     this.execute = new ExecuteSystem({
       bus: this.ctx.bus,
       damage: this.damage,
@@ -694,19 +714,8 @@ export class RoomScene implements Scene {
       owner: this.player.id,
       statuses: this.statuses,
       enemies: () => {
-        const enemies: ExecuteEnemy[] = [];
-        this.manager.forEach((enemy) => {
-          if (enemy.removed) return;
-          const position = enemy.current.position;
-          enemies.push({
-            id: enemy.id,
-            kind: enemy.definition.kind,
-            position: {
-              ...position,
-              y: position.y + (enemy.definition.body?.centerY ?? 0),
-            },
-          });
-        });
+        enemies.length = 0;
+        this.manager.forEach(collectEnemy);
         return enemies;
       },
       aim: () => this.aim(),
@@ -992,15 +1001,16 @@ export class RoomScene implements Scene {
     this.world.timestep = dt;
     this.world.step();
     this.projectiles.step(dt);
+    this.executeTarget = this.execute.targetId();
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
-    const executable = new Set(this.execute.readyIds());
+    const executable = this.execute.readyIds();
     this.hud?.setExecuteHint(
       this.state === 'playing' &&
         this.heldItem.held === 'blade' &&
         this.blade.view().state !== 'throwing' &&
-        this.execute.targetId() !== null,
+        this.executeTarget !== null,
     );
     this.hazardView.update(this.hazards.state(), alpha);
     const ids = this.seenEnemyIds;
@@ -1015,7 +1025,7 @@ export class RoomScene implements Scene {
       }
       view.render(alpha);
       view.setExecutable?.(
-        executable.has(enemy.id),
+        executable.includes(enemy.id),
         frameDt,
         this.ctx.tuning.melee.executeMarkerPulseHz,
       );
@@ -1122,6 +1132,36 @@ export class RoomScene implements Scene {
     });
   }
 
+  private lookAtDegrees(yaw: number, pitch: number): boolean {
+    const state = this.player.getState();
+    const settings = loadSettings();
+    const scale =
+      this.ctx.tuning.player.lookSensitivity * settings.mouseSensitivity;
+    const yawRad =
+      (((((yaw + 180) % 360) + 360) % 360) - 180) * (Math.PI / 180);
+    const pitchLimit = this.ctx.tuning.player.maxPitchDeg;
+    const pitchRad =
+      (Math.max(-pitchLimit, Math.min(pitchLimit, pitch)) * Math.PI) / 180;
+    const lookDelta = {
+      x: (state.yaw - yawRad) / scale,
+      y: (state.pitch - pitchRad) / (scale * (settings.invertY ? -1 : 1)),
+    };
+    if (
+      ![yawRad, pitchRad, scale, lookDelta.x, lookDelta.y].every(
+        Number.isFinite,
+      )
+    )
+      return false;
+    this.player.step(0, {
+      held: new Set(),
+      pressed: new Set(),
+      released: new Set(),
+      lookDelta,
+    });
+    this.previous = this.player.getState();
+    return true;
+  }
+
   private registerCommands(playerId: EntityId): void {
     const register = (
       name: string,
@@ -1131,6 +1171,40 @@ export class RoomScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('tp', 'tp <x> <z> [yawDeg] [pitchDeg]', (args) => {
+      const [x, z, yaw = 0, pitch = 0] = args.map(Number);
+      if (
+        args.length < 2 ||
+        args.length > 4 ||
+        ![x, z, yaw, pitch].every(Number.isFinite) ||
+        Math.abs(x!) > 1e4 ||
+        Math.abs(z!) > 1e4 ||
+        Math.abs(yaw) > 1e6 ||
+        Math.abs(pitch) > 1e6 ||
+        !this.lookAtDegrees(yaw, pitch)
+      )
+        return 'Uzycie: tp <x> <z> [yawDeg] [pitchDeg]';
+      this.player.teleport({
+        ...this.player.getState().position,
+        x: x!,
+        z: z!,
+      });
+      this.previous = this.player.getState();
+      return `Gracz: ${x}, ${z}`;
+    });
+    register('look', 'look <yawDeg> [pitchDeg]', (args) => {
+      const [yaw, pitch = 0] = args.map(Number);
+      if (
+        args.length < 1 ||
+        args.length > 2 ||
+        ![yaw, pitch].every(Number.isFinite) ||
+        Math.abs(yaw!) > 1e6 ||
+        Math.abs(pitch) > 1e6 ||
+        !this.lookAtDegrees(yaw!, pitch)
+      )
+        return 'Uzycie: look <yawDeg> [pitchDeg]';
+      return `Kamera: ${yaw}, ${pitch}`;
+    });
     register('execute', 'execute ready — gotowi do wykończenia', (args) =>
       args.length === 1 && args[0] === 'ready'
         ? JSON.stringify(this.execute.readyIds())
@@ -1350,6 +1424,13 @@ export class RoomScene implements Scene {
           : null;
       case 'enemyDirector':
         return this.manager.director?.snapshot() ?? null;
+      case 'playerLook': {
+        const { yaw, pitch } = this.player.getState();
+        return {
+          yawDeg: (yaw * 180) / Math.PI,
+          pitchDeg: (pitch * 180) / Math.PI,
+        };
+      }
       case 'playerPos':
         return { ...this.player.getState().position };
       case 'playerHp':

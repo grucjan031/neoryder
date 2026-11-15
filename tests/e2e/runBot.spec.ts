@@ -4,7 +4,8 @@ import { SIM_TIMEOUT, waitSimSteps } from './helpers';
 const URL = '/?scene=run&seed=bot-1&loadout=classic&debug=1';
 
 test('bot: cała mapa z cheatami do zwycięstwa nad bossem', async ({ page }) => {
-  test.setTimeout(120_000);
+  // Osiem warstw przy renderowaniu programowym przekracza 120 s.
+  test.setTimeout(300_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {

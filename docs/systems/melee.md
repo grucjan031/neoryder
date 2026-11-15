@@ -72,6 +72,12 @@ z dostępnym celem w zasięgu/stożku, poza lotem ostrza.
 W pokoju i arenie: ostrze rozstrzyga akcję, następnie w bloku `dt > 0`
 po `statuses.step(dt)` następuje `execute.step(dt)` (czas świata).
 Render odczytuje gotowość bez referencji do Three.js w symulacji.
+`readyIds()` udostępnia stałą tablicę tylko do odczytu, aktualizowaną w miejscu;
+nie należy traktować jej jako snapshotu. System ponownie wykorzystuje zbiór
+roboczy zamiast `filter/map` i nowego `Set` w każdym kroku. Arena i pokój
+przechowują pulę obiektów `ExecuteEnemy` z mutowanymi pozycjami oraz jedną
+tablicę wejścia czyszczoną przez `length = 0`. Podpowiedź HUD korzysta z celu
+zapisanego na końcu ostatniego kroku; render nie odbudowuje listy wrogów.
 Reset areny odtwarza system i usuwa stare okno nietykalności.
 
 Zdarzenia:

@@ -22,6 +22,8 @@ it('dane ekranu: trzy czyste buildy i trzy hybrydy, każda z aktywną synergią'
     expect(option.synergies.length).toBeGreaterThan(0);
   expect(options.find((o) => o.id === 'bladeDancer')!.synergies).toEqual([
     'Tancerz ostrzy',
+    'Rygiel',
+    'Iskrowy rozłam',
   ]);
   for (const option of options) {
     expect(option.weapons.length).toBeGreaterThan(0);

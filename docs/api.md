@@ -295,10 +295,29 @@ export interface SaveStore {
 export function createIndexedDbSaveStore(dbName?: string): SaveStore;   // domyślnie 'neoryder'
 export function createMemorySaveStore(): SaveStore;                     // testy
 
-export interface Settings { mouseSensitivity: number; fov: number; masterVolume: number }
+export interface Settings {
+  mouseSensitivity: number; fov: number; masterVolume: number;
+  sfxVolume: number; musicVolume: number; invertY: boolean;
+  screenShake: number; flashes: boolean; quality: 'low' | 'medium' | 'high';
+  bindings: Partial<Record<Action, string>>;
+}
 export function loadSettings(storage?: Storage): Settings;              // localStorage, wartości domyślne przy braku/błędzie
 export function saveSettings(s: Settings, storage?: Storage): void;
 ```
+
+Ustawienia Z6: czułość 0,1–5 (domyślnie 1), FOV 60–110 (90), głośności
+0–1 (master 1, SFX 1, muzyka 0,7), `invertY=false`, `screenShake=1` (0–1),
+`flashes=true`, `quality='high'`, `bindings={}`. Każde błędne lub brakujące pole
+otrzymuje własną wartość domyślną. Nieznane akcje i zarezerwowane kody są pomijane.
+Bez argumentu `Storage` w przeglądarce `loadSettings()` zwraca wspólny, mutowalny
+obiekt sesji. Ekrany zapisują go przy każdej zmianie; istniejące kontrolery
+odczytują zmiany bez przeładowania. Wywołanie z `Storage` zawsze dekoduje osobny obiekt.
+Nie dodano zdarzenia do `GameEvents`. `main.ts` ustawia bazowy FOV w `tuning.camera.fov`
+przy starcie i po zmianie ustawień. `FpsCamera` mnoży amplitudę traumy przez
+`screenShake`, a `PlayerController` odwraca znak pionowego ruchu dla `invertY`.
+`AudioSystemOptions.sfxVolume?: () => number` (domyślnie 1) mnoży głośność główną;
+`AudioSystem.updateVolume()` aktualizuje gain także dla trwających dźwięków.
+`quality` i `musicVolume` są obecnie wyłącznie zapisywane.
 
 Meta i run mają osobne tablice migracji (`metaMigrations`, `runMigrations`); szczegóły v3 w sekcji „Kontrakty F4”.
 
@@ -308,7 +327,12 @@ Wczytany zapis z `saveVersion < SAVE_VERSION` jest migrowany; z `saveVersion > S
 
 ```ts
 export type Action = 'moveForward' | 'moveBack' | 'moveLeft' | 'moveRight'
-  | 'jump' | 'sprint' | 'dash' | 'crouch' | 'attack' | 'block' | 'swap' | 'power';
+  | 'jump' | 'sprint' | 'dash' | 'crouch' | 'attack' | 'block' | 'swap' | 'power'
+  | 'power2' | 'weapon1' | 'weapon2' | 'weapon3' | 'bladeThrow';
+export type BindingOverrides = Partial<Record<Action, string>>;
+export function resolveBindings(overrides?: BindingOverrides): Record<string, Action>;
+export function assignBinding(overrides: BindingOverrides, action: Action, code: string): BindingOverrides;
+export function isBindingCode(code: string): boolean;
 
 export interface InputSnapshot {
   held: ReadonlySet<Action>;
@@ -318,7 +342,8 @@ export interface InputSnapshot {
 }
 
 export class Input {
-  constructor(target: HTMLElement);
+  constructor(target: HTMLElement, getBindings?: () => BindingOverrides);
+  clear(): void; // zeruje przytrzymane akcje i ruch myszy przy pauzie/rebindzie
   /** Wołane raz na krok symulacji; zwraca stan i zeruje pressed/released/lookDelta. */
   snapshot(): InputSnapshot;
   requestPointerLock(): void;
@@ -550,7 +575,7 @@ export class StatusSystem implements StatusQuery {
   }, defs?: ReadonlyMap<string, StatusDefinition>);
   step(dt: number): void;                         // czas symulacji (dt = 0 w hitstopie)
   /** Tylko StatusSystem (z damage_dealt), testy i komendy debug. Zaimplementowane w F2-02. */
-  apply(target: EntityId, app: StatusApplication, source: EntityId | null): void;
+  apply(target: EntityId, app: StatusApplication, source: EntityId | null): boolean; // czy nałożono status
   list(target: EntityId): ActiveStatus[];         // { id, stacks, remainingS, source } — HUD, debug
   clear(target: EntityId): void;                  // śmierć, despawn
   reset(): void;                                  // nowy run
@@ -842,7 +867,7 @@ export class SynergySystem {
 // efekty: add_energy | cool_weapon | stat_modifier_timed | chain_on_hit | heal | explode | apply_status_area (ADR 0004 pkt 5)
 ```
 
-Z4: `SynergyContext` dodaje opcjonalne `heal(amount: number): void`, `userPosition(): Vec3 | null` i `applyStatus(target: EntityId, app: StatusApplication): void`; brak wymaganej funkcji pomija efekt bez wyzwolenia i odnowienia. `heal` wymaga dodatniego `amount`; `explode` przyjmuje `at: 'target' | 'user'`, dodatni `radiusM`, nieujemne `damage`, opcjonalny nieujemny `knockback` i `tags`, zadaje obrażenia w promieniu ze źródłem użytkownika i tagiem `#synergy`, emituje `explosion`. `apply_status_area` przyjmuje takie samo `at`, nieujemny `radiusM` (0 = wyłącznie cel zdarzenia), istniejący `status`, dodatni `durationS` i opcjonalne całkowite `stacks >= 1`. `at: 'target'` jest dozwolone tylko przy `enemy_killed` i `damage_dealt`. `when.targetIsUser?: boolean` jest dozwolone tylko przy `damage_dealt`: `true` wybiera obrażenia otrzymane przez użytkownika, `false` lub brak zachowuje filtr `source === user`. Wyzwalacze implantów z nowymi efektami wymagają `cooldownS`. Scena przekazuje źródło użytkownika do `StatusSystem.apply` i emituje `health_changed` po leczeniu.
+Z4: `SynergyContext` dodaje opcjonalne `heal(amount: number): void`, `userPosition(): Vec3 | null` i `applyStatus(target: EntityId, app: StatusApplication): boolean` (czy nałożono status); brak wymaganej funkcji pomija efekt bez wyzwolenia i odnowienia. `heal` wymaga dodatniego `amount`; `explode` przyjmuje `at: 'target' | 'user'`, dodatni `radiusM`, nieujemne `damage`, opcjonalny nieujemny `knockback` i `tags`, zadaje obrażenia w promieniu ze źródłem użytkownika i tagiem `#synergy`, emituje `explosion`. `apply_status_area` przyjmuje takie samo `at`, nieujemny `radiusM` (0 = wyłącznie cel zdarzenia), istniejący `status`, dodatni `durationS` i opcjonalne całkowite `stacks >= 1`. `at: 'target'` jest dozwolone tylko przy `enemy_killed` i `damage_dealt`. `when.targetIsUser?: boolean` jest dozwolone tylko przy `damage_dealt`: `true` wybiera obrażenia otrzymane przez użytkownika, `false` lub brak zachowuje filtr `source === user`. Wyzwalacze implantów z nowymi efektami wymagają `cooldownS`. Scena przekazuje źródło użytkownika do `StatusSystem.apply` i emituje `health_changed` po leczeniu.
 
 ### Ekran wyboru buildu i fale F2 (F2-17)
 
@@ -1631,5 +1656,18 @@ Szczegóły: `docs/systems/hazards.md`.
 - `ExecuteSystem` (`combat/melee/execute.ts`): konstruktor przyjmuje bus, damage, tuning, owner, statuses (`StatusQuery`), `enemies()` (id, kind, position), `aim()` (origin, dir), `addEnergy`, `heal`; opcjonalny `castWall` odrzuca zasłonięte cele.
 - `step(dt)`, `tryExecute(): boolean`, `readyIds(): readonly EntityId[]`, `targetId(): EntityId | null` (odczyt celu dla HUD), `invulnerable(): boolean` (odczyt dla rejestracji gracza), `dispose()`.
 - HP/maxHP pochodzą z DamageSystem. `kind === 'boss'` wyklucza cel, `kind === 'executor'` wybiera próg elity. Pozycja celu to środek korpusu, nie stopy.
-- Sceny krokują system zaraz po statusach w czasie świata; callback nietykalności gracza łączy dash i wykończenie. Render przekazuje gotowość do widoku i odczytuje `targetId()` dla HUD.
+- Sceny krokują system zaraz po statusach w czasie świata; callback nietykalności gracza łączy dash i wykończenie. Render przekazuje gotowość do widoku i korzysta z celu HUD zapisanego na końcu kroku.
 
+
+### Z8: widoki i kamera debug
+
+`readyIds()` zwraca stały widok `readonly EntityId[]`, aktualizowany w miejscu,
+nie snapshot. Sceny wykorzystują pulę `ExecuteEnemy` i jedną tablicę.
+Render czyta gotowość i cel zapisany po ostatnim kroku symulacji.
+
+Komendy `RoomScene` i `Arena`: `tp <x> <z> [yawDeg] [pitchDeg]` teleportuje
+na aktualnej wysokości i ustawia obrót (domyślnie 0, 0);
+`look <yawDeg> [pitchDeg]` ustawia sam obrót (pitch domyślnie 0).
+Yaw 0 = -Z; pitch ograniczony przez `tuning.player.maxPitchDeg`.
+Zmiana stanu i interpolacji jest natychmiastowa, także w pauzie.
+Query `playerPos` zwraca pozycję, `playerLook` → `{ yawDeg, pitchDeg }`.

@@ -75,6 +75,23 @@ function setup() {
 }
 
 describe('wykończenia', () => {
+  it('100 kroków dla 10 wrogów zachowuje widok gotowości i bufor wejścia', () => {
+    const f = setup();
+    for (let i = 0; i < 10; i++) f.spawn();
+    const view = f.system.readyIds();
+    const enemies = f.enemies;
+    const entries = [...enemies];
+    for (let i = 0; i < 100; i++) {
+      f.system.step(1 / 60);
+      expect(f.system.readyIds()).toBe(view);
+      expect(view).toHaveLength(10);
+      expect(f.enemies).toBe(enemies);
+      for (let j = 0; j < 10; j++) expect(enemies[j]).toBe(entries[j]);
+    }
+    f.enemies.length = 0;
+    f.system.step(1 / 60);
+    expect(view).toEqual([]);
+  });
   it('próg HP, niższy próg elity, status stunned; boss i martwy nigdy', () => {
     const f = setup();
     const edge = f.spawn();

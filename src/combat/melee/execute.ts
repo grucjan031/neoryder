@@ -25,6 +25,8 @@ export interface ExecuteDeps {
 
 export class ExecuteSystem {
   private readonly ready = new Set<EntityId>();
+  private readonly nextReady = new Set<EntityId>();
+  private readonly readyView: EntityId[] = [];
   private invulnS = 0;
   private disposed = false;
 
@@ -33,18 +35,17 @@ export class ExecuteSystem {
   step(dt: number): void {
     if (this.disposed || !(dt > 0)) return;
     this.invulnS = Math.max(0, this.invulnS - dt);
-    const next = new Set(
-      this.deps
-        .enemies()
-        .filter((enemy) => this.isReady(enemy))
-        .map((e) => e.id),
-    );
+    const next = this.nextReady;
+    next.clear();
+    for (const enemy of this.deps.enemies()) {
+      if (this.isReady(enemy)) next.add(enemy.id);
+    }
     for (const id of this.ready) if (!next.has(id)) this.setReady(id, false);
     for (const id of next) if (!this.ready.has(id)) this.setReady(id, true);
   }
 
   readyIds(): readonly EntityId[] {
-    return [...this.ready];
+    return this.readyView;
   }
 
   invulnerable(): boolean {
@@ -117,8 +118,16 @@ export class ExecuteSystem {
 
   private setReady(id: EntityId, ready: boolean): void {
     if (this.ready.has(id) === ready) return;
-    if (ready) this.ready.add(id);
-    else this.ready.delete(id);
+    if (ready) {
+      this.ready.add(id);
+      this.readyView.push(id);
+    } else {
+      this.ready.delete(id);
+      const index = this.readyView.indexOf(id);
+      for (let i = index; i < this.readyView.length - 1; i++)
+        this.readyView[i] = this.readyView[i + 1]!;
+      this.readyView.length--;
+    }
     this.deps.bus.emit('enemy_executable', { id, ready });
   }
 
