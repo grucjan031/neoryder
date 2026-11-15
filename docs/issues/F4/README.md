@@ -6,7 +6,7 @@ Architektura: `docs/adr/0007-meta-progres-f4.md` (**przyjęta do realizacji 2026
 
 ## Stan (2026-11-15)
 
-Bramka F3 zaakceptowana przez człowieka 2026-11-15. Gotowe: 01–05, 07, 11 (progi drzewek `[0, 1, 4, 7]`, krzywa i nagrody nastrojone symulacją: po 5 runach poziom 7 i 4 zakupy). W toku: 06. Dalej: 08–10 (UI kryjówki), 12 (bot e2e).
+Bramka F3 zaakceptowana przez człowieka 2026-11-15. Wszystkie zadania F4 (01–12) gotowe: progi drzewek `[0, 1, 4, 7]`, krzywa i nagrody nastrojone symulacją (po 5 runach poziom 7 i 4 zakupy), UI kryjówki (terminal drzewek, warsztat, tablica misji, pasek meta), integracja runu z meta oraz bot e2e `tests/e2e/metaBot.spec.ts`. Bramka czeka na playtest człowieka wg `docs/playtest-F4.md` (5 runów od zera, ocena progresu i oporu).
 
 ## Decyzje wspólne
 
@@ -29,13 +29,13 @@ Bramka F3 zaakceptowana przez człowieka 2026-11-15. Gotowe: 01–05, 07, 11 (pr
 | 03  | Łatki definicji i `ResolvedLoadout` w pokoju i arenie         | Architekt           | 01         | L     | gotowe |
 | 04  | Drzewka talentów: dane, zakup, `TalentSystem` w pokoju        | Progresja           | 02, 03     | L     | gotowe |
 | 05  | Poziom zagrożenia: dane, budżet fal, modyfikatory wrogów      | Świat + AI wrogów   | 01, 03     | M     | gotowe |
-| 06  | Integracja runu z meta: start z kryjówki, nagrody, podsumowanie | Architekt + UI/UX | 02, 05     | M     | do zrobienia |
+| 06  | Integracja runu z meta: start z kryjówki, nagrody, podsumowanie | Architekt + UI/UX | 02, 05     | M     | gotowe |
 | 07  | Scena kryjówki: układ, stacje, nakładki, menu główne          | Świat + Grafika     | 01         | L     | gotowe |
-| 08  | Terminal drzewek (UI)                                         | UI/UX               | 04, 07     | M     | do zrobienia |
-| 09  | Warsztat: odblokowania i ekwipunek (UI)                       | UI/UX               | 02, 07     | M     | do zrobienia |
-| 10  | Tablica misji i pasek meta (UI)                               | UI/UX               | 05, 06, 07 | S     | do zrobienia |
+| 08  | Terminal drzewek (UI)                                         | UI/UX               | 04, 07     | M     | gotowe |
+| 09  | Warsztat: odblokowania i ekwipunek (UI)                       | UI/UX               | 02, 07     | M     | gotowe |
+| 10  | Tablica misji i pasek meta (UI)                               | UI/UX               | 05, 06, 07 | S     | gotowe |
 | 11  | Symulacja balansu meta i strojenie danych                     | QA i balans         | 02, 04, 05 | M     | gotowe |
-| 12  | Bot e2e F4, dokumentacja, szablon playtestu                   | QA                  | 08–11      | M     | do zrobienia |
+| 12  | Bot e2e F4, dokumentacja, szablon playtestu                   | QA                  | 08–11      | M     | gotowe |
 
 Graf jest acykliczny. Po 01 równolegle: 02, 03, 07 (rozłączne pliki). Po 03: 05; po 02 i 03: 04; po 02 i 05: 06. UI (08–10) po kryjówce i logice.
 

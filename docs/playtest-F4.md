@@ -5,12 +5,12 @@ Cel bramki (`docs/issues/F4/README.md`): po 5 runach czuć progres, ale gra nada
 ## Start
 
 ```bash
-npm run dev        # http://localhost:5173 → menu główne → „Kryjówka”
+npm run dev        # http://localhost:5173 → menu gry → „Kryjówka” → tablica misji → „Rozpocznij run”
 ```
 
 Do oceny bramki graj **bez cheatów meta**, zaczynając od czystego stanu (`meta reset` w konsoli debug `` ` ``). W kryjówce (`?scene=hub`) poruszasz się kontrolerem FPP; stacje — **terminal drzewek**, **warsztat**, **tablica misji** i **przejście na poligon** — otwierają się automatycznie po wejściu w strefę (ponowne otwarcie wymaga wyjścia ze strefy).
 
-Komendy debug do ewentualnych testów pobocznych (poza właściwą oceną 5 runów): `meta state`, `meta xp <n>`, `meta data <n>`, `meta cores <n>`, `meta reset`, `talent <id>`, `talent reset`, `threat <n>`, `hub open <stacja>`.
+Komendy debug do ewentualnych testów pobocznych (poza właściwą oceną 5 runów; w kryjówce: `meta state`, `meta xp <n>`, `meta data <n>`, `meta cores <n>`, `meta unlock all`, `meta threat <n>` (najwyższy dostępny Poziom zagrożenia), `meta reset`, `hub open <stacja>` (`missions`, `talents`, `workshop`, `arena`), `hub close`, `hub tp <x> <z>`; w trakcie runu z kryjówki dodatkowo `talent <id>|reset`). Menu gry pokazuje „Sceny debug” i „Nowy run (presety)” tylko w trybie dev — nie służą do oceny bramki.
 
 ## Co mierzyć (wpisz do tabeli)
 

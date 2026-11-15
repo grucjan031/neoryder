@@ -60,10 +60,16 @@ test('hub: hub open missions pokazuje nakładkę, Zamknij ją chowa, a Rozpoczni
   await expect(page.locator('.hub-screen')).toBeHidden();
   expect(await query(page, 'hubStation')).toBeNull();
   await command(page, 'hub open missions');
+  // RunScene po zapisie na mapie podmienia URL na `continue=1`, więc adres startu sprawdzamy w chwili nawigacji.
+  const started = page.waitForURL(
+    (url) =>
+      url.searchParams.get('scene') === 'run' &&
+      url.searchParams.get('loadout') === 'meta' &&
+      url.searchParams.get('debug') === '1',
+    { waitUntil: 'commit' },
+  );
   await page.getByRole('button', { name: 'Rozpocznij run' }).click();
-  await expect(page).toHaveURL(/scene=run/);
-  await expect(page).toHaveURL(/loadout=meta/);
-  await expect(page).toHaveURL(/debug=1/);
+  await started;
   await expect(page.getByRole('heading', { name: 'Mapa sektora' })).toBeVisible(
     { timeout: SIM_TIMEOUT },
   );
@@ -105,10 +111,15 @@ test('hub: tablica misji → wybór Poziomu zagrożenia → Rozpocznij run start
     'true',
   );
   await page.getByLabel('Seed (opcjonalnie)').fill('missions-e2e');
+  const started = page.waitForURL(
+    (url) =>
+      url.searchParams.get('loadout') === 'meta' &&
+      url.searchParams.get('seed') === 'missions-e2e' &&
+      url.searchParams.get('debug') === '1',
+    { waitUntil: 'commit' },
+  );
   await page.getByRole('button', { name: 'Rozpocznij run' }).click();
-  await expect(page).toHaveURL(/loadout=meta/);
-  await expect(page).toHaveURL(/seed=missions-e2e/);
-  await expect(page).toHaveURL(/debug=1/);
+  await started;
   await expect(page.getByRole('heading', { name: 'Mapa sektora' })).toBeVisible(
     { timeout: SIM_TIMEOUT },
   );

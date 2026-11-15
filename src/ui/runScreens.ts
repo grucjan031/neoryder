@@ -199,7 +199,7 @@ export class HtmlRunScreens implements RunScreens {
         const seconds = Math.floor(summary.elapsedS);
         this.line(text[summary.outcome]);
         this.line(
-          `${text.time}: ${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')} ? ${text.kills}: ${summary.kills} ? ${text.rooms}: ${summary.roomsCleared} ? ${text.layer}: ${summary.layerReached}`,
+          `${text.time}: ${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')} · ${text.kills}: ${summary.kills} · ${text.rooms}: ${summary.roomsCleared} · ${text.layer}: ${summary.layerReached}`,
         );
         this.line(`${text.seed}: ${summary.seed}`);
         this.line(
