@@ -1,0 +1,119 @@
+.missions-panel {
+  display: grid;
+  gap: 14px;
+  color: #f4f7fa;
+  font-family: system-ui, sans-serif;
+}
+.missions-panel__sector {
+  padding: 12px 14px;
+  background: #0d1119;
+  border: 1px solid #34414c;
+  border-left: 4px solid #ffae1a;
+}
+.missions-panel__sector-name {
+  margin: 0 0 6px;
+  font-size: 1.1em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ffae1a;
+}
+.missions-panel__sector-text {
+  margin: 0;
+  color: #b9c6d1;
+  font-size: 0.92em;
+}
+.missions-panel__heading {
+  margin: 4px 0 0;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8894a8;
+}
+.missions-panel__levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+}
+.missions-panel__level {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  font-size: 0.9em;
+  color: #f4f7fa;
+  background: #171d28;
+  border: 1px solid #596573;
+  border-left: 4px solid #828b94;
+  cursor: pointer;
+}
+.missions-panel__level[data-state='selected'] {
+  border-left-color: #ffae1a;
+  background: #221d12;
+  box-shadow: inset 0 0 0 1px #ffae1a;
+}
+.missions-panel__level[aria-disabled='true'] {
+  color: #6b7686;
+  background: #0f131b;
+  border-color: #2a323d;
+  cursor: not-allowed;
+}
+.missions-panel__level:hover:not([aria-disabled='true']),
+.missions-panel__level:focus-visible {
+  outline: 2px solid #00a9c4;
+  outline-offset: 2px;
+}
+.missions-panel__note {
+  min-height: 1.1em;
+  font-size: 0.8em;
+  color: #8894a8;
+}
+.missions-panel__details {
+  margin: 0;
+  padding: 10px 14px 10px 28px;
+  background: #0c1017;
+  border: 1px solid #34414c;
+  color: #d9dde3;
+  font-size: 0.92em;
+}
+.missions-panel__status {
+  min-height: 1.2em;
+  margin: 0;
+  color: #ffae1a;
+  font-size: 0.85em;
+}
+.missions-panel__seed {
+  display: grid;
+  gap: 4px;
+  font-size: 0.85em;
+  color: #8894a8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.missions-panel__seed input {
+  padding: 10px;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #f4f7fa;
+  background: #0c1017;
+  border: 1px solid #596573;
+}
+.missions-panel__start {
+  padding: 16px;
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f4f7fa;
+  background: #171d28;
+  border: 1px solid #596573;
+  border-left: 4px solid #ffae1a;
+  cursor: pointer;
+}
+.missions-panel__start:hover,
+.missions-panel__start:focus-visible {
+  outline: 2px solid #00a9c4;
+  outline-offset: 2px;
+}

@@ -64,6 +64,48 @@ it('w debug Kryjówka i Poligon zachowują debug w URL', async () => {
   expect(navigate).toHaveBeenLastCalledWith('?scene=arena&debug=1');
 });
 
+it('w debug pojawia się przycisk Sceny debug prowadzący do ?scenes=1 (z debug=1 z URL)', async () => {
+  const navigate = vi.fn();
+  const menu = new MainMenu({
+    root: document.body,
+    save: createMemorySaveStore(),
+    navigate,
+    params: new URLSearchParams('debug=1'),
+  });
+  active.push(menu);
+  await menu.ready;
+  button('Sceny debug').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scenes=1&debug=1');
+});
+
+it('bez debug nie ma przycisku Sceny debug, a opcja debug (tryb dev) go włącza bez debug w URL', async () => {
+  const plain = new MainMenu({
+    root: document.body,
+    save: createMemorySaveStore(),
+  });
+  active.push(plain);
+  await plain.ready;
+  expect(
+    [...document.querySelectorAll('button')].some(
+      (b) => b.textContent === 'Sceny debug',
+    ),
+  ).toBe(false);
+  plain.dispose();
+  const navigate = vi.fn();
+  const dev = new MainMenu({
+    root: document.body,
+    save: createMemorySaveStore(),
+    navigate,
+    debug: true,
+  });
+  active.push(dev);
+  await dev.ready;
+  button('Sceny debug').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scenes=1');
+  button('Kryjówka').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=hub');
+});
+
 it('Kontynuuj pokazuje warstwę i HP i wznawia zapis bez seeda z menu', async () => {
   const save = createMemorySaveStore();
   const manager = new RunManager(new EventBus(), {

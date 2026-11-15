@@ -1,0 +1,38 @@
+{
+  "missions": {
+    "sector": {
+      "name": "Kurogane Arms",
+      "description": "Dzielnica fabryk broni korporacji Kurogane: nocne uliczki, zakłady i strzeżone magazyny. Przebij się przez kolejne warstwy sektora aż do szefa."
+    },
+    "threat": {
+      "heading": "Poziom zagrożenia",
+      "level": "Poziom {level}",
+      "recommended": "zalecany",
+      "locked": "Wygraj na poziomie {level}, aby odblokować",
+      "modifiers": "Wrogowie +{health}% zdrowia, +{damage}% obrażeń, +{budget}% liczebności",
+      "baseline": "Bez modyfikatorów wrogów",
+      "reward": "Nagrody +{percent}%",
+      "baseReward": "Nagrody bez premii",
+      "victoryCores": {
+        "one": "+{count} Rdzeń za zwycięstwo",
+        "few": "+{count} Rdzenie za zwycięstwo",
+        "many": "+{count} Rdzeni za zwycięstwo"
+      },
+      "saveError": "Nie można zapisać wyboru."
+    },
+    "seed": {
+      "label": "Seed (opcjonalnie)",
+      "placeholder": "losowy"
+    },
+    "start": "Rozpocznij run"
+  },
+  "bar": {
+    "label": "Postęp meta",
+    "level": "Poziom {level}",
+    "xp": "{current} / {next} XP",
+    "xpMax": "MAX",
+    "data": "Dane",
+    "cores": "Rdzenie",
+    "freePoints": "Wolne punkty: {count}"
+  }
+}

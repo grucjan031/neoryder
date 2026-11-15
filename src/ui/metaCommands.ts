@@ -26,7 +26,7 @@ const amount = (args: readonly string[]): number | null => {
 
 /**
  * Komendy debug meta-progresu (ADR 0007 pkt 11): `meta state`, `meta xp <n>`, `meta data <n>`,
- * `meta cores <n>`, `meta unlock all`, `meta reset`. Każda zmiana zapisuje meta przez `SaveStore`.
+ * `meta cores <n>`, `meta threat <n>`, `meta unlock all`, `meta reset`. Każda zmiana zapisuje meta przez `SaveStore`.
  * `host` to `ctx.commands` sceny (może być `undefined` poza trybem debug).
  */
 export function registerMetaCommands(
@@ -74,6 +74,18 @@ export function registerMetaCommands(
     persist();
     return `Odblokowania: ${manager.state.unlocks.length}`;
   });
+  register(
+    'meta threat',
+    'meta threat <n> — ustaw najwyższy dostępny Poziom zagrożenia',
+    (args) => {
+      const n = amount(args);
+      if (n === null) return 'Użycie: meta threat <liczba całkowita ≥ 0>';
+      manager.debugSetThreatMax(n);
+      persist();
+      const { max, selected } = manager.state.threat;
+      return `Poziom zagrożenia: max ${max}, wybrany ${selected}`;
+    },
+  );
   register('meta reset', 'meta reset — stan startowy meta', () => {
     manager.debugReset();
     persist();

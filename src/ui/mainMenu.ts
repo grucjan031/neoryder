@@ -32,6 +32,8 @@ interface MainMenuOptions {
   save?: SaveStore;
   navigate?: (url: string) => void;
   params?: URLSearchParams;
+  /** Tryb debug (presety, seed, lista scen); domyślnie `?debug=1` w parametrach. */
+  debug?: boolean;
 }
 
 export class MainMenu {
@@ -53,7 +55,7 @@ export class MainMenu {
     heading.textContent = t.title;
     const subtitle = document.createElement('p');
     subtitle.textContent = t.subtitle;
-    const debug = options.params?.get('debug') === '1';
+    const debug = options.debug ?? options.params?.get('debug') === '1';
     const button = (label: string, action: () => void): HTMLButtonElement => {
       const node = document.createElement('button');
       node.type = 'button';
@@ -105,6 +107,9 @@ export class MainMenu {
         newRun.focus();
       });
       this.root.querySelector('.build-select__panel')?.prepend(back);
+      const scenes = new URLSearchParams({ scenes: '1' });
+      if (options.params?.get('debug') === '1') scenes.set('debug', '1');
+      this.root.append(button(t.debug, () => navigate(`?${scenes}`)));
     }
     this.ready = (options.save ?? createIndexedDbSaveStore())
       .loadRun()

@@ -390,6 +390,16 @@ export class MetaManager {
     this.current.cores += Math.max(0, Math.floor(amount));
   }
 
+  /** Ustawia najwyższy dostępny Poziom zagrożenia (konsola debug); wybrany poziom nie przekracza nowego limitu. */
+  debugSetThreatMax(level: number): void {
+    const max = Math.max(
+      0,
+      Math.min(Math.floor(level), this.rules.threat.length - 1),
+    );
+    this.current.threat.max = max;
+    this.current.threat.selected = Math.min(this.current.threat.selected, max);
+  }
+
   debugUnlockAll(): void {
     for (const id of this.rules.unlocks.keys())
       if (!this.isUnlocked(id)) this.current.unlocks.push(id);

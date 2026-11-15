@@ -144,8 +144,25 @@ test('tryb produkcyjny bez debug nie wystawia uchwytu ani konsoli', async ({
   ).toHaveCount(0);
 });
 
-test('bez ?scene= w debug pokazuje menu scen z linkami', async ({ page }) => {
+test('bez ?scene= w debug pokazuje menu gry z Kryjówką i przyciskiem Sceny debug', async ({
+  page,
+}) => {
   await page.goto('/?debug=1');
+  await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Kryjówka' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Walka z wrogami/ })).toHaveCount(
+    0,
+  );
+  await page.getByRole('button', { name: 'Sceny debug' }).click();
+  await expect(page).toHaveURL(/scenes=1/);
+  await expect(page).toHaveURL(/debug=1/);
+  await expect(
+    page.getByRole('link', { name: /Walka z wrogami/ }),
+  ).toBeVisible();
+});
+
+test('?scenes=1&debug=1 pokazuje menu scen z linkami', async ({ page }) => {
+  await page.goto('/?scenes=1&debug=1');
   await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);
   const link = page.getByRole('link', { name: /Walka z wrogami/ });

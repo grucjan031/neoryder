@@ -1401,14 +1401,17 @@ Szczegóły: `docs/systems/hub.md`.
 ```ts
 interface HubScreenActions {
   close(): void;
-  startRun?(): void;   // tylko 'missions'
   openArena?(): void;  // tylko 'arena'
 }
 interface HubScreens {  // wstrzykiwane do HubScene (opcja `screens`)
   show(station: HubStationId, actions: HubScreenActions): void;
   hide(): void;
+  refresh?(): void;  // odświeża otwarty panel po zdarzeniu meta
   dispose(): void;
 }
+// HtmlHubScreens(parent, { panels?: Partial<Record<HubStationId, HubPanelFactory>>, host?: { manager, save, navigate } })
+// montuje panel (src/ui/hub/hubPanel.ts) stacji z rejestru; HubScene opcje: metaStore?, panels?, metaBar?.
+// Pasek meta: createMetaBar(manager, bus) w src/ui/hub/metaBar.ts. Tablica misji: createMissionsPanel w src/ui/hub/missionsPanel.ts.
 class HubStations {  // czysta logika stref, bez DOM
   constructor(zones: readonly HubZone[], bus: EventBus, exitMarginM: number);
   readonly opened: HubStationId | null;
@@ -1524,7 +1527,7 @@ saveMetaManager(store: SaveStore, manager: MetaManager, now?: () => number): Pro
 // src/ui/metaCommands.ts — komendy debug meta dla dowolnej sceny
 registerMetaCommands(host: { register(name, help, run): () => void } | undefined, manager: MetaManager, store: SaveStore):
   { dispose(): void; settled(): Promise<void> };
-// host = ctx.commands. Komendy: `meta state`, `meta xp <n>`, `meta data <n>`, `meta cores <n>`, `meta unlock all`,
+// host = ctx.commands. Komendy: `meta state`, `meta xp <n>`, `meta data <n>`, `meta cores <n>`, `meta threat <n>`, `meta unlock all`,
 // `meta reset`; każda zmiana zapisuje meta (settled() czeka na zapisy).
 
 // RunScene (src/scenes/run.ts)

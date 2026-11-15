@@ -62,11 +62,76 @@ test('hub: hub open missions pokazuje nakładkę, Zamknij ją chowa, a Rozpoczni
   await command(page, 'hub open missions');
   await page.getByRole('button', { name: 'Rozpocznij run' }).click();
   await expect(page).toHaveURL(/scene=run/);
-  await expect(page).toHaveURL(/loadout=classic/);
+  await expect(page).toHaveURL(/loadout=meta/);
   await expect(page).toHaveURL(/debug=1/);
   await expect(page.getByRole('heading', { name: 'Mapa sektora' })).toBeVisible(
     { timeout: SIM_TIMEOUT },
   );
+  expect(errors).toEqual([]);
+});
+
+test('hub: pasek meta pokazuje poziom i odświeża się po komendzie meta', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  const bar = page.locator('.meta-bar');
+  await expect(bar).toBeVisible();
+  await expect(bar).toContainText('Poziom 1');
+  await expect(bar).toContainText('Wolne punkty: 0');
+  await command(page, 'meta xp 500');
+  await expect(bar).not.toContainText('Wolne punkty: 0');
+  const level = (await query(page, 'level')) as { level: number };
+  expect(level.level).toBeGreaterThan(1);
+  await expect(bar).toContainText(`Poziom ${level.level}`);
+  expect(errors).toEqual([]);
+});
+
+test('hub: tablica misji → wybór Poziomu zagrożenia → Rozpocznij run startuje run z tym poziomem i ekwipunkiem meta', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  await command(page, 'meta threat 2');
+  await command(page, 'hub open missions');
+  await expect(page.getByText('Kurogane Arms')).toBeVisible();
+  await expect(page.locator('[data-level="3"]')).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
+  await page.locator('[data-level="2"]').click();
+  await expect(page.locator('[data-level="2"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByLabel('Seed (opcjonalnie)').fill('missions-e2e');
+  await page.getByRole('button', { name: 'Rozpocznij run' }).click();
+  await expect(page).toHaveURL(/loadout=meta/);
+  await expect(page).toHaveURL(/seed=missions-e2e/);
+  await expect(page).toHaveURL(/debug=1/);
+  await expect(page.getByRole('heading', { name: 'Mapa sektora' })).toBeVisible(
+    { timeout: SIM_TIMEOUT },
+  );
+  const run = (await query(page, 'runState')) as {
+    threatLevel: number;
+    loadout: { id: string };
+  };
+  expect(run.threatLevel).toBe(2);
+  expect(run.loadout.id).toBe('custom');
+  expect(errors).toEqual([]);
+});
+
+test('hub: stacje talents i workshop montują panele w nakładce', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  await command(page, 'hub open workshop');
+  await expect(page.locator('.hub-screen [data-panel=workshop]')).toBeVisible();
+  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await expect(page.locator('.hub-screen')).toBeHidden();
+  await command(page, 'hub open talents');
+  await expect(page.locator('.hub-screen .talents-panel')).toBeVisible();
   expect(errors).toEqual([]);
 });
 

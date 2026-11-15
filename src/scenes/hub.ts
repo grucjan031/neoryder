@@ -8,21 +8,31 @@ import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
 import { HUB_STATION_IDS } from '../core/metaTypes';
 import type { HubStationId } from '../core/metaTypes';
-import { loadSettings } from '../core/save';
+import { createIndexedDbSaveStore, loadSettings } from '../core/save';
+import type { SaveStore } from '../core/save';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import hideoutData from '../data/hub/hideout.json';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
+import type { MetaManager } from '../progression/meta';
+import { loadMetaManager, saveMetaManager } from '../progression/metaSave';
 import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
 import { createStyleLights } from '../render/lights';
 import { getMaterial } from '../render/materials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { createMetaBar } from '../ui/hub/metaBar';
+import type { MetaBar } from '../ui/hub/metaBar';
+import { createMissionsPanel } from '../ui/hub/missionsPanel';
+import { createTalentsPanel } from '../ui/hub/talentsPanel';
+import { createWorkshopPanel } from '../ui/hub/workshopPanel';
 import { HtmlHubScreens } from '../ui/hubScreens';
-import type { HubScreens } from '../ui/hubScreens';
+import type { HubPanelRegistry, HubScreens } from '../ui/hubScreens';
+import { registerMetaCommands } from '../ui/metaCommands';
+import type { CommandHost } from '../ui/metaCommands';
 import { loadHubLayout } from '../world/hubSchema';
 import type { HubLayout } from '../world/hubSchema';
 import { HubStations } from '../world/hubStations';
@@ -35,7 +45,28 @@ export interface HubSceneOptions {
   params?: URLSearchParams;
   navigate?: (url: string) => void;
   loadModels?: boolean;
+  /** Zapis meta (domyślnie IndexedDB); w testach pamięć. */
+  metaStore?: SaveStore;
+  /** Fabryki paneli stacji (domyślnie tablica misji, talenty i warsztat). */
+  panels?: HubPanelRegistry;
+  /** Pasek meta u góry ekranu; domyślnie włączony, gdy scena sama tworzy nakładki (DOM). */
+  metaBar?: boolean;
 }
+
+const DEFAULT_PANELS: HubPanelRegistry = {
+  missions: createMissionsPanel,
+  talents: createTalentsPanel,
+  workshop: createWorkshopPanel,
+};
+
+const META_EVENTS = [
+  'meta_rewards',
+  'level_up',
+  'talents_changed',
+  'unlock_purchased',
+  'loadout_changed',
+  'threat_selected',
+] as const;
 
 /** Ręce pokazują ostrze w spoczynku: widok bez walki (brak ciosów, bloku i rzutu). */
 const IDLE_BLADE: BladeView = {
@@ -51,12 +82,6 @@ const IDLE_BLADE: BladeView = {
 
 const stationList = HUB_STATION_IDS.join('|');
 
-function randomSeed(): string {
-  return Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
-    value.toString(16),
-  ).join('-');
-}
-
 /** Kryjówka ruchu oporu (F4-07): peron nieczynnej stacji metra, FPP bez wrogów, stacje jako strefy z nakładkami UI. */
 export class HubScene implements Scene {
   readonly id = 'hub';
@@ -65,6 +90,10 @@ export class HubScene implements Scene {
   private readonly navigate: (url: string) => void;
   private readonly loadModels: boolean;
   private readonly screensOption: HubScreens | undefined;
+  private readonly options: HubSceneOptions;
+  private metaStore: SaveStore | null = null;
+  private meta!: MetaManager;
+  private metaBar: MetaBar | null = null;
   private screens!: HubScreens;
   private ctx!: GameContext;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
@@ -97,11 +126,28 @@ export class HubScene implements Scene {
     this.navigate = options.navigate ?? ((url) => location.assign(url));
     this.loadModels = options.loadModels ?? true;
     this.screensOption = options.screens;
+    this.options = options;
   }
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
-    this.screens = this.screensOption ?? new HtmlHubScreens();
+    this.metaStore = this.options.metaStore ?? createIndexedDbSaveStore();
+    const store = this.metaStore;
+    this.meta = await loadMetaManager(store, ctx.bus);
+    if (this.disposed) return;
+    this.screens =
+      this.screensOption ??
+      new HtmlHubScreens(undefined, {
+        panels: this.options.panels ?? DEFAULT_PANELS,
+        host: {
+          manager: this.meta,
+          save: () => saveMetaManager(store, this.meta),
+          navigate: (url) =>
+            this.go(new URLSearchParams(url.replace(/^\?/, ''))),
+        },
+      });
+    if (this.options.metaBar ?? this.screensOption === undefined)
+      this.metaBar = createMetaBar(this.meta, ctx.bus);
     this.rapier = await initPhysics();
     if (this.disposed) return;
     this.world = new this.rapier.World({
@@ -170,6 +216,9 @@ export class HubScene implements Scene {
       ctx.bus.on('hub_station_opened', ({ station }) =>
         this.showStation(station),
       ),
+      ...META_EVENTS.map((name) =>
+        ctx.bus.on(name, () => this.screens.refresh?.()),
+      ),
     );
     this.registerCommands();
     this.world.step();
@@ -228,13 +277,6 @@ export class HubScene implements Scene {
     if (this.disposed) return;
     this.screens.show(station, {
       close: () => this.closeStation(),
-      ...(station === 'missions'
-        ? {
-            // Tymczasowo preset `classic`; zadanie 10 podmieni to na ekwipunek z meta.
-            startRun: () =>
-              this.go({ scene: 'run', loadout: 'classic', seed: randomSeed() }),
-          }
-        : {}),
       ...(station === 'arena'
         ? { openArena: () => this.go({ scene: 'arena' }) }
         : {}),
@@ -247,7 +289,7 @@ export class HubScene implements Scene {
     this.ctx.resume?.();
   }
 
-  private go(params: Record<string, string>): void {
+  private go(params: URLSearchParams | Record<string, string>): void {
     const query = new URLSearchParams(params);
     if (this.params.get('debug') === '1') query.set('debug', '1');
     this.navigate(`?${query}`);
@@ -321,6 +363,14 @@ export class HubScene implements Scene {
 
   query(name: string): unknown {
     switch (name) {
+      case 'meta':
+        return this.meta.state;
+      case 'level':
+        return {
+          ...this.meta.xpProgress,
+          talentPoints: this.meta.talentPoints,
+          freePoints: this.meta.freePoints,
+        };
       case 'hubStation':
         return this.stations.opened;
       case 'playerPos':
@@ -346,6 +396,17 @@ export class HubScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    const host: CommandHost | undefined = this.ctx.commands && {
+      register: (name, help, run) =>
+        this.ctx.commands!.register(name, help, (args) => {
+          const result = run(args);
+          this.metaBar?.refresh();
+          this.screens.refresh?.();
+          return result;
+        }),
+    };
+    const metaCommands = registerMetaCommands(host, this.meta, this.metaStore!);
+    this.off.push(() => metaCommands.dispose());
     register(
       'hub open',
       `hub open <${stationList}> — otwórz nakładkę stacji`,
@@ -394,6 +455,7 @@ export class HubScene implements Scene {
       for (const off of this.off.splice(0)) off();
       this.stations?.dispose();
       this.screens?.dispose();
+      this.metaBar?.dispose();
       this.fppView?.dispose();
       this.fpsCamera?.dispose();
       this.player?.dispose();

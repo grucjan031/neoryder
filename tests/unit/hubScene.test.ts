@@ -5,6 +5,8 @@ import type { InputSnapshot } from '../../src/core/input';
 import { GameLoop, SIM_DT } from '../../src/core/loop';
 import type { HubStationId } from '../../src/core/metaTypes';
 import { Rng } from '../../src/core/rng';
+import { createMemorySaveStore } from '../../src/core/save';
+import { loadMetaManager } from '../../src/progression/metaSave';
 import { tuning } from '../../src/core/tuning';
 import { HubScene } from '../../src/scenes/hub';
 import type { HubScreenActions, HubScreens } from '../../src/ui/hubScreens';
@@ -25,11 +27,15 @@ class FakeScreens implements HubScreens {
   shown: { station: HubStationId; actions: HubScreenActions }[] = [];
   hidden = 0;
   disposed = 0;
+  refreshed = 0;
   show(station: HubStationId, actions: HubScreenActions): void {
     this.shown.push({ station, actions });
   }
   hide(): void {
     this.hidden++;
+  }
+  refresh(): void {
+    this.refreshed++;
   }
   dispose(): void {
     this.disposed++;
@@ -56,8 +62,10 @@ async function setup(params = '') {
   const screens = new FakeScreens();
   const navigate = vi.fn();
   const resume = vi.fn();
+  const metaStore = createMemorySaveStore();
   const scene = new HubScene({
     screens,
+    metaStore,
     navigate,
     params: new URLSearchParams(params),
     loadModels: false,
@@ -77,7 +85,17 @@ async function setup(params = '') {
     new ThreeScene(),
   );
   active.add(scene);
-  return { scene, bus, commands, screens, navigate, resume, opened, baseline };
+  return {
+    scene,
+    bus,
+    commands,
+    screens,
+    navigate,
+    resume,
+    opened,
+    baseline,
+    metaStore,
+  };
 }
 
 const position = (scene: HubScene) =>
@@ -161,24 +179,44 @@ it('niecka torów nie jest pułapką: gracz staje na dnie i wychodzi skokiem na 
   expect(position(scene).y).toBeGreaterThan(0.5);
 });
 
-it('przyciski misji i poligonu nawigują, zachowując debug', async () => {
-  const { scene, commands, screens, navigate } = await setup('debug=1');
-  expect(scene).toBeDefined();
+it('przycisk poligonu nawiguje, zachowując debug; tablica misji nie dostaje już akcji startRun', async () => {
+  const { commands, screens, navigate } = await setup('debug=1');
   commands.execute('hub open missions');
-  screens.shown[0]!.actions.startRun?.();
-  const run = new URLSearchParams(
-    (navigate.mock.calls[0]![0] as string).slice(1),
-  );
-  expect(run.get('scene')).toBe('run');
-  expect(run.get('loadout')).toBe('classic');
-  expect(run.get('seed')).toBeTruthy();
-  expect(run.get('debug')).toBe('1');
+  expect(screens.shown[0]!.actions.openArena).toBeUndefined();
+  expect(Object.keys(screens.shown[0]!.actions)).toEqual(['close']);
   commands.execute('hub close');
   commands.execute('hub open arena');
   screens.shown[1]!.actions.openArena?.();
-  expect(navigate.mock.calls[1]![0]).toBe('?scene=arena&debug=1');
-  expect(screens.shown[0]!.actions.openArena).toBeUndefined();
-  expect(screens.shown[1]!.actions.startRun).toBeUndefined();
+  expect(navigate.mock.calls[0]![0]).toBe('?scene=arena&debug=1');
+});
+
+it('wczytuje meta z zapisu, wystawia query meta i level oraz komendy meta zapisujące stan', async () => {
+  const { scene, commands, metaStore } = await setup();
+  expect((scene.query('meta') as { xp: number }).xp).toBe(0);
+  expect(scene.query('level')).toMatchObject({ level: 1, freePoints: 0 });
+  expect(commands.execute('meta xp 500')).toContain('Poziom');
+  expect((scene.query('level') as { level: number }).level).toBeGreaterThan(1);
+  expect(commands.execute('meta threat 3')).toContain('max 3');
+  expect((scene.query('meta') as { threat: { max: number } }).threat.max).toBe(
+    3,
+  );
+  await vi.waitFor(async () => {
+    const saved = await loadMetaManager(metaStore);
+    expect(saved.state.threat.max).toBe(3);
+    expect(saved.state.xp).toBe(500);
+  });
+});
+
+it('zdarzenia meta odświeżają nakładkę, a dispose wyrejestrowuje komendy meta', async () => {
+  const { scene, bus, commands, screens } = await setup();
+  bus.emit('threat_selected', { level: 0 });
+  bus.emit('level_up', { level: 2 });
+  expect(screens.refreshed).toBe(2);
+  commands.execute('hub open talents');
+  expect(commands.execute('meta state')).toContain('"xp"');
+  scene.dispose();
+  active.delete(scene);
+  expect(commands.execute('meta state')).toContain('Nieznana komenda');
 });
 
 it('bez debug w URL nawigacja go nie dodaje', async () => {

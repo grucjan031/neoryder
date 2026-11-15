@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { HUB_STATION_IDS } from '../core/metaTypes';
 import type { HubStationId } from '../core/metaTypes';
+import type { MetaManager } from '../progression/meta';
 import textData from '../data/ui/meta.pl.json';
+import type { HubPanel, HubPanelFactory } from './hub/hubPanel';
 import './hubScreens.css';
 
 const stationText = z.object({ title: z.string(), description: z.string() });
@@ -12,7 +14,6 @@ const text = z
       placeholder: z.string(),
       close: z.string(),
       closeHint: z.string(),
-      startRun: z.string(),
       toArena: z.string(),
     }),
   })
@@ -21,8 +22,6 @@ const text = z
 export interface HubScreenActions {
   /** Zamyka nakładkę; scena wznawia ruch gracza. */
   close(): void;
-  /** Tylko `missions`: start runu (tymczasowo preset `classic`, zadanie 10 to zmieni). */
-  startRun?(): void;
   /** Tylko `arena`: przejście na poligon. */
   openArena?(): void;
 }
@@ -31,21 +30,46 @@ export interface HubScreenActions {
 export interface HubScreens {
   show(station: HubStationId, actions: HubScreenActions): void;
   hide(): void;
+  /** Odświeża widok otwartej stacji po zmianie stanu meta (opcjonalne). */
+  refresh?(): void;
   dispose(): void;
 }
 
-/** Zaślepki nakładek stacji (zadania 08–10 zastąpią je pełnymi ekranami). */
+/** Rejestr paneli stacji: stacja z fabryką dostaje panel w treści nakładki, pozostałe zaślepkę. */
+export type HubPanelRegistry = Partial<Record<HubStationId, HubPanelFactory>>;
+
+/** Zależności paneli (kontekst `HubPanelContext` bez `close`, który zapewnia nakładka). */
+export interface HubPanelHost {
+  readonly manager: MetaManager;
+  save(): Promise<void>;
+  navigate(url: string): void;
+}
+
+export interface HtmlHubScreensOptions {
+  panels?: HubPanelRegistry;
+  host?: HubPanelHost;
+}
+
+/** Nakładki stacji: panele z rejestru (talenty, warsztat, tablica misji) i zaślepki dla pozostałych (poligon). */
 export class HtmlHubScreens implements HubScreens {
   private readonly root = document.createElement('section');
   private readonly panel = document.createElement('div');
   private actions: HubScreenActions | null = null;
+  private hosted: HubPanel | null = null;
+  private readonly panels: HubPanelRegistry;
+  private readonly host: HubPanelHost | undefined;
   private readonly onKey = (event: KeyboardEvent): void => {
     if (this.root.hidden || event.code !== 'Escape' || event.repeat) return;
     event.preventDefault();
     this.actions?.close();
   };
 
-  constructor(parent = document.querySelector('#app') ?? document.body) {
+  constructor(
+    parent: Element = document.querySelector('#app') ?? document.body,
+    options: HtmlHubScreensOptions = {},
+  ) {
+    this.panels = options.panels ?? {};
+    this.host = options.host;
     this.root.className = 'hub-screen';
     this.root.setAttribute('aria-label', 'Kryjówka');
     this.root.hidden = true;
@@ -56,6 +80,7 @@ export class HtmlHubScreens implements HubScreens {
   }
 
   show(station: HubStationId, actions: HubScreenActions): void {
+    this.disposePanel();
     this.actions = actions;
     this.root.hidden = false;
     this.root.dataset.station = station;
@@ -64,31 +89,56 @@ export class HtmlHubScreens implements HubScreens {
     const info = text.stations[station];
     const heading = document.createElement('h1');
     heading.textContent = info.title;
-    this.panel.append(heading, this.line(info.description));
-    this.panel.append(this.line(text.placeholder, 'hub-screen__note'));
+    const host = this.host;
+    const factory = host ? this.panels[station] : undefined;
     const buttons: HTMLButtonElement[] = [];
-    if (station === 'missions' && actions.startRun)
-      buttons.push(this.button(text.startRun, actions.startRun, 'start'));
-    if (station === 'arena' && actions.openArena)
-      buttons.push(this.button(text.toArena, actions.openArena, 'arena'));
+    if (factory && host) {
+      this.hosted = factory({
+        manager: host.manager,
+        save: () => host.save(),
+        navigate: (url) => host.navigate(url),
+        close: actions.close,
+      });
+      this.panel.append(heading, this.hosted.root);
+    } else {
+      this.panel.append(heading, this.line(info.description));
+      this.panel.append(this.line(text.placeholder, 'hub-screen__note'));
+      if (station === 'arena' && actions.openArena)
+        buttons.push(this.button(text.toArena, actions.openArena, 'arena'));
+    }
+    this.root.classList.toggle('hub-screen--panel', this.hosted !== null);
     buttons.push(this.button(text.close, actions.close, 'close'));
     this.panel.append(
       ...buttons,
       this.line(text.closeHint, 'hub-screen__hint'),
     );
-    buttons[0]?.focus();
+    (
+      this.hosted?.root.querySelector<HTMLElement>('button') ?? buttons[0]
+    )?.focus();
+  }
+
+  /** Odświeża panel stacji ze stanu meta (np. po zdarzeniu meta). */
+  refresh(): void {
+    this.hosted?.refresh();
   }
 
   hide(): void {
+    this.disposePanel();
     this.root.hidden = true;
     this.actions = null;
     this.panel.replaceChildren();
   }
 
   dispose(): void {
+    this.disposePanel();
     window.removeEventListener('keydown', this.onKey);
     this.root.remove();
     this.actions = null;
+  }
+
+  private disposePanel(): void {
+    this.hosted?.dispose();
+    this.hosted = null;
   }
 
   private line(value: string, className?: string): HTMLParagraphElement {

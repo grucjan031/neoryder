@@ -26,9 +26,12 @@ async function main(): Promise<void> {
   const requested = params.get('scene');
   const debug = import.meta.env.DEV || params.get('debug') === '1';
   if (requested === null) {
-    if (debug) createSceneMenu(app, Object.keys(scenes), params);
-    else {
-      const menu = new MainMenu({ root: app, params });
+    if (debug && params.get('scenes') === '1') {
+      const sceneParams = new URLSearchParams(params);
+      sceneParams.delete('scenes');
+      createSceneMenu(app, Object.keys(scenes), sceneParams);
+    } else {
+      const menu = new MainMenu({ root: app, params, debug });
       const dispose = (): void => menu.dispose();
       window.addEventListener('pagehide', dispose, { once: true });
       import.meta.hot?.dispose(dispose);

@@ -1,0 +1,126 @@
+// @vitest-environment jsdom
+import { afterEach, expect, it, vi } from 'vitest';
+import { EventBus } from '../../src/core/events';
+import { MetaManager } from '../../src/progression/meta';
+import { createStarterMetaState } from '../../src/progression/progressionSchema';
+import { threatLevels } from '../../src/progression/threatSchema';
+import { createMissionsPanel } from '../../src/ui/hub/missionsPanel';
+import type { HubPanel } from '../../src/ui/hub/hubPanel';
+
+const active: HubPanel[] = [];
+afterEach(() => {
+  active.splice(0).forEach((panel) => panel.dispose());
+  document.body.replaceChildren();
+});
+
+function setup(max = 0, selected = 0) {
+  const manager = new MetaManager(createStarterMetaState(), new EventBus());
+  manager.debugSetThreatMax(max);
+  if (selected > 0) manager.selectThreat(selected);
+  const save = vi.fn(async () => {});
+  const navigate = vi.fn();
+  const close = vi.fn();
+  const panel = createMissionsPanel({ manager, save, navigate, close });
+  document.body.append(panel.root);
+  active.push(panel);
+  const level = (n: number) =>
+    panel.root.querySelector<HTMLButtonElement>(`[data-level="${n}"]`)!;
+  return { manager, save, navigate, panel, level };
+}
+
+it('pokazuje kartę sektora Kurogane Arms i poziomy 0..ostatni z nazwami', () => {
+  const { panel, level } = setup();
+  expect(panel.root.textContent).toContain('Kurogane Arms');
+  expect(panel.root.querySelectorAll('[data-level]')).toHaveLength(
+    threatLevels.length,
+  );
+  expect(level(0).textContent).toContain('Poziom 0');
+  expect(level(0).textContent).toContain(threatLevels[0]!.name);
+});
+
+it('poziomy powyżej max są nieaktywne z podpowiedzią, a kliknięcie nic nie zmienia ani nie zapisuje', async () => {
+  const { manager, save, level } = setup(2);
+  expect(level(2).getAttribute('aria-disabled')).toBe('false');
+  expect(level(3).getAttribute('aria-disabled')).toBe('true');
+  expect(level(3).textContent).toContain(
+    'Wygraj na poziomie 2, aby odblokować',
+  );
+  expect(level(5).textContent).toContain(
+    'Wygraj na poziomie 4, aby odblokować',
+  );
+  level(3).click();
+  await Promise.resolve();
+  expect(manager.state.threat.selected).toBe(0);
+  expect(save).not.toHaveBeenCalled();
+});
+
+it('wybór dostępnego poziomu zapisuje threat.selected, zapisuje meta i odświeża opis', async () => {
+  const { manager, save, panel, level } = setup(2);
+  level(2).click();
+  await vi.waitFor(() => expect(save).toHaveBeenCalledOnce());
+  expect(manager.state.threat.selected).toBe(2);
+  const details = panel.root.querySelector('.missions-panel__details')!;
+  const threat = threatLevels[2]!;
+  expect(details.textContent).toContain(
+    `Wrogowie +${Math.round(threat.enemyHealth * 100)}% zdrowia, +${Math.round(threat.enemyDamage * 100)}% obrażeń, +${Math.round((threat.budgetMult - 1) * 100)}% liczebności`,
+  );
+  expect(details.textContent).toContain(
+    `Nagrody +${Math.round((threat.rewardMult - 1) * 100)}%`,
+  );
+  expect(details.textContent).toContain('1 Rdzeń za zwycięstwo');
+  await vi.waitFor(() =>
+    expect(level(2).getAttribute('aria-pressed')).toBe('true'),
+  );
+  expect(level(0).getAttribute('aria-pressed')).toBe('false');
+});
+
+it('poziom 0 nie ma modyfikatorów, poziom zalecany (max) jest oznaczony', () => {
+  const { panel, level } = setup(3);
+  expect(
+    panel.root.querySelector('.missions-panel__details')!.textContent,
+  ).toContain('Bez modyfikatorów wrogów');
+  expect(level(3).textContent).toContain('zalecany');
+  expect(level(2).textContent).not.toContain('zalecany');
+});
+
+it('Rozpocznij run nawiguje na run z ekwipunkiem meta i seedem z pola lub losowym', () => {
+  const { panel, navigate } = setup();
+  const start = panel.root.querySelector<HTMLButtonElement>(
+    '[data-action=start-run]',
+  )!;
+  const input = panel.root.querySelector<HTMLInputElement>('input')!;
+  input.value = '  mój seed ';
+  start.click();
+  const first = new URLSearchParams(
+    (navigate.mock.calls[0]![0] as string).slice(1),
+  );
+  expect(first.get('scene')).toBe('run');
+  expect(first.get('loadout')).toBe('meta');
+  expect(first.get('seed')).toBe('mój seed');
+  input.value = '';
+  start.click();
+  const second = new URLSearchParams(
+    (navigate.mock.calls[1]![0] as string).slice(1),
+  );
+  expect(second.get('seed')).toMatch(/^[0-9a-f]+(-[0-9a-f]+){3}$/);
+});
+
+it('refresh czyta stan meta, a błąd zapisu trafia do statusu', async () => {
+  const { manager, panel, level, save } = setup(3);
+  manager.selectThreat(1);
+  panel.refresh();
+  expect(level(1).getAttribute('aria-pressed')).toBe('true');
+  save.mockRejectedValueOnce(new Error('dysk pełny'));
+  level(2).click();
+  await vi.waitFor(() =>
+    expect(panel.root.querySelector('[role=status]')!.textContent).toBe(
+      'dysk pełny',
+    ),
+  );
+});
+
+it('dispose usuwa panel z DOM', () => {
+  const { panel } = setup();
+  panel.dispose();
+  expect(document.querySelector('.missions-panel')).toBeNull();
+});

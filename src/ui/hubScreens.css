@@ -23,6 +23,9 @@
   border: 1px solid #34414c;
   border-top: 4px solid #ffae1a;
 }
+.hub-screen--panel .hub-screen__panel {
+  width: min(1040px, 100%);
+}
 .hub-screen h1 {
   margin-top: 0;
   text-transform: uppercase;
@@ -38,7 +41,7 @@
   color: #8894a8;
   font-size: 0.85em;
 }
-.hub-screen button {
+.hub-screen__panel > button {
   display: block;
   width: 100%;
   margin: 10px 0;
@@ -51,12 +54,11 @@
   border-left: 4px solid #828b94;
   cursor: pointer;
 }
-.hub-screen button[data-action='start'],
-.hub-screen button[data-action='arena'] {
+.hub-screen__panel > button[data-action='arena'] {
   border-left-color: #ffae1a;
 }
-.hub-screen button:hover,
-.hub-screen button:focus-visible {
+.hub-screen__panel > button:hover,
+.hub-screen__panel > button:focus-visible {
   outline: 2px solid #00a9c4;
   outline-offset: 2px;
 }

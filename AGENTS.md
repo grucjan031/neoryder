@@ -21,7 +21,7 @@ TypeScript strict, Vite, Three.js, Rapier (`@dimforge/rapier3d-compat`), zod, li
 | `npm run build` | build produkcyjny do `dist/` |
 | `npm run check` | typecheck + lint + test (to samo co CI bez e2e) |
 
-Parametry URL: `?scene=<id>` wybiera scenę (domyślnie `sandbox`), `?debug=1` włącza panel lil-gui, stats.js i konsolę debug (w `npm run dev` debug jest włączony zawsze), `?seed=<tekst>` ustawia seed runu.
+Parametry URL: `?scene=<id>` wybiera scenę (domyślnie `sandbox`), `?debug=1` włącza panel lil-gui, stats.js i konsolę debug (w `npm run dev` debug jest włączony zawsze), `?seed=<tekst>` ustawia seed runu, `?scenes=1` (tylko w trybie debug) pokazuje listę scen debug zamiast menu gry.
 
 ## Architektura (obowiązuje każdego agenta)
 1. **Symulacja oddzielona od renderu.** Logika gry i Rapier działają w stałym kroku `SIM_DT = 1/60` s w `step()`. Three.js tylko rysuje stan w `render(alpha)` z interpolacją między poprzednim i bieżącym stanem. Kod symulacji nie importuje `three` poza typami matematycznymi i nie dotyka DOM — dzięki temu działa w Vitest.

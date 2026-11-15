@@ -48,37 +48,43 @@ Stacje: `talents` (terminal drzewek), `workshop` (warsztat), `missions` (tablica
 ## Nakładki (`HubScreens`)
 
 Interfejs `show(station, actions) / hide() / dispose()` wstrzykiwany przez opcję `screens` (w testach atrapa).
-`HtmlHubScreens` (`src/ui/hubScreens.ts` + `hubScreens.css`) to na razie zaślepki: tytuł i opis stacji, przycisk
-„Zamknij” (Esc też zamyka). `missions` dodaje „Rozpocznij run” → `?scene=run&loadout=classic&seed=<losowy>`
-(tymczasowo; zadanie 10 poda ekwipunek z meta), `arena` dodaje „Przejdź na poligon” → `?scene=arena`. Nawigacja
-zachowuje `?debug=1`. Teksty: `src/data/ui/meta.pl.json`, sekcja `hub`. Zadania 08–10 podmieniają zaślepki na
-pełne ekrany talentów, warsztatu i tablicy misji.
+`HtmlHubScreens` (`src/ui/hubScreens.ts` + `hubScreens.css`) hostuje panele stacji (sekcja „Panele stacji”);
+stacja bez fabryki w rejestrze (`arena`) zostaje zaślepką: tytuł i opis, „Przejdź na poligon” → `?scene=arena`
+oraz „Zamknij” (Esc też zamyka). Nawigacja zachowuje `?debug=1`. Teksty zaślepek: `src/data/ui/meta.pl.json`,
+sekcja `hub`. `HubScreens` ma opcjonalne `refresh()`: scena woła je po zdarzeniach meta, a nakładka przekazuje je
+do otwartego panelu.
 
 ## Menu główne
 
 `src/ui/mainMenu.ts`: „Kryjówka” (główny przycisk → `?scene=hub`), „Kontynuuj run”, „Poligon”. „Nowy run (presety)”
-z polem seeda i `BuildSelect` pojawia się tylko, gdy menu dostanie `?debug=1` w parametrach.
+z polem seeda, `BuildSelect` i przycisk „Sceny debug” (→ `?scenes=1`, z `debug=1`, jeśli był) pojawiają się tylko w
+trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje menu gry; lista scen debug jest pod
+`?scenes=1` (tylko w trybie debug, `src/ui/sceneMenu.ts`).
 
 ## Debug
 
 - `hub open <talents|workshop|missions|arena>`, `hub close`;
 - `hub tp <x> <z> [yawDeg] [pitchDeg]` — teleport gracza (yaw 0 patrzy w −Z; ruch myszy symulowany w następnym
   kroku); teleport w strefę stacji ją otwiera;
-- `query('hubStation')` (otwarta stacja albo `null`), `query('playerPos')`, `query('stations')`;
+- `query('hubStation')` (otwarta stacja albo `null`), `query('playerPos')`, `query('stations')`, `query('meta')`
+  (stan meta), `query('level')` (poziom, XP, punkty);
+- komendy meta (`registerMetaCommands`): `meta state|xp|data|cores|threat|unlock all|reset`; `meta threat <n>` ustawia
+  `threat.max` (odblokowanie kolejnych Poziomów zagrożenia bez grania); po każdej komendzie pasek i panel się odświeżają;
 - `reset` wraca na `playerSpawn`.
 
 ## Testy
 
 `tests/unit/hubLayout.test.ts` (walidacja układu: stacje w granicach i osiągalne, strefy rozłączne, paleta, zasoby),
 `hubStations.test.ts` (histereza), `hubScene.test.ts` (scena bez DOM: komendy, zatrzymanie ruchu, niecka torów,
-nawigacja, `dispose` bez subskrypcji), `hubScreens.test.ts` (jsdom), `mainMenu.test.ts`; e2e: `tests/e2e/hub.spec.ts`.
+nawigacja, `dispose` bez subskrypcji, meta), `hubScreens.test.ts` (jsdom, hostowanie paneli),
+`missionsPanel.test.ts`, `metaBar.test.ts`, `mainMenu.test.ts`; e2e: `tests/e2e/hub.spec.ts`.
 Ręcznie: `?scene=hub&debug=1`, przejść do tablicy misji i terminalu, sprawdzić napisy, ekrany i światła; `hub tp`
 ułatwia ustawienie kamery.
 
 ### Terminal drzewek
 
 `src/ui/hub/talentsPanel.ts` (+ `talentsPanel.css`) eksportuje `createTalentsPanel: HubPanelFactory` (kontrakt:
-`src/ui/hub/hubPanel.ts`). Panel czyta i zmienia wyłącznie `MetaManager`; podpięcie do nakładki robi zadanie 10.
+`src/ui/hub/hubPanel.ts`). Panel czyta i zmienia wyłącznie `MetaManager`; montuje go nakładka stacji `talents`.
 
 - Nagłówek: „Wolne punkty: N”, „Poziom L”. Trzy kolumny (Ostrze, Rezonans, Strzelec) z węzłami pogrupowanymi wg
   progu 1–4 (podpis: wymagane punkty w drzewku i bieżąco wydane), pod nimi „Hybrydy”.
@@ -97,7 +103,7 @@ ułatwia ustawienie kamery.
 ### Warsztat
 
 `createWorkshopPanel` (`src/ui/hub/workshopPanel.ts`, kontrakt `HubPanel`) to samodzielny panel stacji `workshop`;
-podpięcie do sceny kryjówki należy do zadania 10. Nagłówek pokazuje Dane, Rdzenie i poziom gracza.
+podpięty w rejestrze paneli sceny kryjówki. Nagłówek pokazuje Dane, Rdzenie i poziom gracza.
 
 - **Odblokowania:** lista pogrupowana (Bronie, Moce, Ostrza, Sloty) wg `unlocks.json`; startowe pozycje są pokazane
   jako „Posiadane”. Wiersz: nazwa, cena (Dane i/lub Rdzenie) i stan: „Posiadane”, „Wymagany poziom N”, „Za mało
@@ -112,3 +118,43 @@ podpięcie do sceny kryjówki należy do zadania 10. Nagłówek pokazuje Dane, R
   `toggleSelection`, `nextLoadout`); nazwy broni i mocy z definicji (`name`), nazwy ostrzy i slotów z
   `src/data/ui/workshop.pl.json` (ostrza nie mają pola `name`). Styl: `workshopPanel.css`.
 - Testy: `tests/unit/workshopPanel.test.ts` (jsdom + czyste funkcje).
+
+### Panele stacji
+
+Kontrakt: `src/ui/hub/hubPanel.ts` (`HubPanelContext { manager, save, navigate, close }`, `HubPanel { root, refresh,
+dispose }`, `HubPanelFactory`). `HubScene` (`src/scenes/hub.ts`) przy `init` wczytuje meta (`loadMetaManager(store,
+bus)`; `store` z opcji `metaStore`, domyślnie IndexedDB), rejestruje komendy meta (`registerMetaCommands`, sprzątane w
+`dispose`) i buduje `HtmlHubScreens` z rejestrem `Partial<Record<HubStationId, HubPanelFactory>>`:
+`missions: createMissionsPanel`, `talents: createTalentsPanel`, `workshop: createWorkshopPanel` (opcja `panels`
+podmienia rejestr). `show(station)` montuje panel w treści nakładki (pod tytułem, nad „Zamknij”; nakładka jest wtedy
+szersza, klasa `hub-screen--panel`), a `hide()`, kolejne `show()` i `dispose()` wołają `panel.dispose()`. Kontekst:
+`save` = `saveMetaManager(store, manager)`, `navigate` doklejający `debug=1` z URL sceny, `close` zamyka nakładkę
+(wznawia ruch). Po zdarzeniach meta scena woła `screens.refresh()` → `panel.refresh()`.
+
+### Tablica misji
+
+`src/ui/hub/missionsPanel.ts` (+ `missionsPanel.css`), `createMissionsPanel`; teksty `src/data/ui/missions.pl.json`
+(sekcja `missions`).
+
+- Karta sektora „Kurogane Arms” (nazwa i krótki opis).
+- Poziomy zagrożenia 0..ostatni z `threat.json` jako przyciski z nazwą. Poziomy `<= threat.max` są aktywne, wyższe
+  mają `aria-disabled="true"` i podpowiedź „Wygraj na poziomie N, aby odblokować” (N = poprzedni poziom); kliknięcie
+  nic nie zmienia ani nie zapisuje. Poziom `max` (gdy `> 0`) ma znacznik „zalecany”. Wybór → `selectThreat` →
+  `ctx.save()` → odświeżenie; błąd trafia do linii `role="status"`.
+- Opis wybranego poziomu: „Wrogowie +X% zdrowia, +Y% obrażeń, +Z% liczebności” (z `enemyHealth`, `enemyDamage`,
+  `budgetMult`; poziom 0: „Bez modyfikatorów wrogów”), „Nagrody +N%” (`rewardMult`) i „+K Rdzeń/Rdzenie/Rdzeni za
+  zwycięstwo” (`victoryCores`, tylko gdy `> 0`).
+- Pole opcjonalnego seeda i „Rozpocznij run” → `navigate('?scene=run&loadout=meta&seed=<seed lub losowy>')`; host
+  dokleja `debug=1`. Losowy seed z `crypto.getRandomValues` (to UI, nie symulacja). Run czyta wybrany poziom z meta
+  (`RunScene`, `loadout=meta`).
+- Testy: `tests/unit/missionsPanel.test.ts`; e2e: `hub.spec.ts` (`meta threat 2` → wybór → run z `threatLevel` 2).
+
+### Pasek meta
+
+`src/ui/hub/metaBar.ts` (+ `metaBar.css`), `createMetaBar(manager, bus)`: stała belka u góry ekranu kryjówki
+(`.meta-bar`, `pointer-events: none`, pod nakładkami): „Poziom L”, pasek doświadczenia z podpisem „xp / następny XP”
+(na limicie poziomu „MAX” i pełny pasek), „Dane”, „Rdzenie”, „Wolne punkty: N” (wyróżnione bursztynem, gdy `> 0`).
+Odświeża się po zdarzeniach `meta_rewards`, `level_up`, `talents_changed`, `unlock_purchased`, `loadout_changed`,
+`threat_selected` oraz po każdej komendzie meta (te nie zawsze emitują zdarzenia). Scena tworzy pasek, gdy sama
+tworzy nakładki (opcja `metaBar` pozwala to zmienić). Teksty: `missions.pl.json`, sekcja `bar`.
+Testy: `tests/unit/metaBar.test.ts`.
