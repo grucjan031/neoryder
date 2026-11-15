@@ -3,6 +3,8 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   // Testy czekają na czas symulacji (helpers.ts), który na wolnym GPU płynie wolniej.
   timeout: 120_000,
+  // Ładowanie sceny z modelami .glb na SwiftShader potrafi przekroczyć domyślne 5 s.
+  expect: { timeout: 30_000 },
   // Jeden wzorzec dla wszystkich systemów: WebGL renderuje programowo SwiftShader.
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}{ext}',
   testDir: './tests/e2e',
