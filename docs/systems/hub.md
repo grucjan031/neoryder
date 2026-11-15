@@ -93,3 +93,22 @@ ułatwia ustawienie kamery.
   (wymagane węzły, próg drzewka, punkty w drzewkach, wolne punkty); testy: `tests/unit/talentsPanel.test.ts`.
 - Akcenty drzewek: Ostrze cyan, Rezonans magenta, Strzelec bursztyn, Hybrydy fiolet. Teksty:
   `src/data/ui/talents.pl.json`.
+
+### Warsztat
+
+`createWorkshopPanel` (`src/ui/hub/workshopPanel.ts`, kontrakt `HubPanel`) to samodzielny panel stacji `workshop`;
+podpięcie do sceny kryjówki należy do zadania 10. Nagłówek pokazuje Dane, Rdzenie i poziom gracza.
+
+- **Odblokowania:** lista pogrupowana (Bronie, Moce, Ostrza, Sloty) wg `unlocks.json`; startowe pozycje są pokazane
+  jako „Posiadane”. Wiersz: nazwa, cena (Dane i/lub Rdzenie) i stan: „Posiadane”, „Wymagany poziom N”, „Za mało
+  Danych” / „Za mało Rdzeni” (kolejność sprawdzeń jak w `buyUnlock`) albo aktywny przycisk „Kup”. Niedostępny
+  przycisk ma `disabled`. Kup → `buyUnlock` → `ctx.save()` → odświeżenie.
+- **Ekwipunek:** ostrze (jedno z odblokowanych), bronie i moce jako przełączniki z limitem `weaponSlots` /
+  `powerSlots` (licznik „Bronie: 1/2”; kolejność wyboru = kolejność slotów, pierwsza broń to slot 1). UI blokuje
+  ponad limit i odznaczenie ostatniej pozycji, zanim zmiana trafi do `setLoadout`. Każda zmiana → `setLoadout` →
+  `save` → odświeżenie.
+- **Błędy:** `Error` z `MetaManager` (lub z zapisu) trafia do linii `role="status"`; stan zostaje bez zmian.
+- **Logika bez DOM:** `src/ui/hub/workshopState.ts` (`unlockRows`, `groupRows`, `equipmentState`,
+  `toggleSelection`, `nextLoadout`); nazwy broni i mocy z definicji (`name`), nazwy ostrzy i slotów z
+  `src/data/ui/workshop.pl.json` (ostrza nie mają pola `name`). Styl: `workshopPanel.css`.
+- Testy: `tests/unit/workshopPanel.test.ts` (jsdom + czyste funkcje).

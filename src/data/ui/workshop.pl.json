@@ -1,0 +1,42 @@
+{
+  "unlocks": {
+    "title": "Odblokowania",
+    "owned": "Posiadane",
+    "buy": "Kup",
+    "requiredLevel": "Wymagany poziom {level}",
+    "notEnough": { "data": "Za mało Danych", "cores": "Za mało Rdzeni" },
+    "groups": {
+      "weapon": "Bronie",
+      "power": "Moce",
+      "blade": "Ostrza",
+      "slot": "Sloty"
+    }
+  },
+  "header": {
+    "data": "Dane",
+    "cores": "Rdzenie",
+    "level": "Poziom"
+  },
+  "currency": { "data": "Dane", "cores": "Rdzenie" },
+  "equipment": {
+    "title": "Ekwipunek",
+    "blade": "Ostrze",
+    "weapons": "Bronie",
+    "powers": "Moce",
+    "counter": "{label}: {used}/{slots}",
+    "slotOrder": "Slot {n}",
+    "fullHint": "Limit slotów wyczerpany",
+    "lastHint": "Wymagana co najmniej jedna pozycja"
+  },
+  "bladeNames": {
+    "plasmaBlade": "Ostrze plazmowe",
+    "twinBlades": "Ostrza bliźniacze",
+    "staffBlade": "Ostrze dwustronne"
+  },
+  "slotNames": {
+    "weapon2": "Drugi slot broni",
+    "weapon3": "Trzeci slot broni",
+    "power2": "Drugi slot mocy"
+  },
+  "errors": { "generic": "Operacja nie powiodła się." }
+}

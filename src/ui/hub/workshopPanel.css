@@ -1,0 +1,111 @@
+.workshop {
+  color: #f4f7fa;
+  font-family: system-ui, sans-serif;
+}
+.workshop__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  background: #0c1017;
+  border: 1px solid #34414c;
+  border-left: 4px solid #ffae1a;
+}
+.workshop__stat {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.workshop__stat-label {
+  color: #8894a8;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.workshop__stat strong {
+  color: #00e5ff;
+  font-variant-numeric: tabular-nums;
+}
+.workshop h2 {
+  margin: 20px 0 8px;
+  font-size: 1.05em;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #ffae1a;
+}
+.workshop h3 {
+  margin: 14px 0 6px;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #b9c6d1;
+}
+.workshop__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.workshop__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #1f2733;
+}
+.workshop__name {
+  flex: 1 1 auto;
+}
+.workshop__cost {
+  color: #b9c6d1;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+}
+.workshop__state {
+  color: #8cd17d;
+  font-size: 0.85em;
+}
+.workshop__state.is-blocked {
+  color: #8894a8;
+}
+.hub-screen .workshop button {
+  display: inline-block;
+  width: auto;
+  margin: 0;
+  padding: 6px 14px;
+  font: inherit;
+  text-align: left;
+  color: #f4f7fa;
+  background: #171d28;
+  border: 1px solid #596573;
+  border-left: 4px solid #828b94;
+  cursor: pointer;
+}
+.hub-screen .workshop .workshop__choice {
+  flex: 1 1 auto;
+  width: 100%;
+}
+.hub-screen .workshop button[aria-pressed='true'] {
+  border-left-color: #ffae1a;
+  background: #232b3a;
+}
+.hub-screen .workshop button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.hub-screen .workshop button:not(:disabled):hover,
+.hub-screen .workshop button:focus-visible {
+  outline: 2px solid #00a9c4;
+  outline-offset: 2px;
+}
+.workshop__order {
+  color: #ffae1a;
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+.workshop__status {
+  min-height: 1.4em;
+  margin: 16px 0 0;
+  color: #ffae1a;
+  font-size: 0.9em;
+}
