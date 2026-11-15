@@ -74,3 +74,22 @@ z polem seeda i `BuildSelect` pojawia się tylko, gdy menu dostanie `?debug=1` w
 nawigacja, `dispose` bez subskrypcji), `hubScreens.test.ts` (jsdom), `mainMenu.test.ts`; e2e: `tests/e2e/hub.spec.ts`.
 Ręcznie: `?scene=hub&debug=1`, przejść do tablicy misji i terminalu, sprawdzić napisy, ekrany i światła; `hub tp`
 ułatwia ustawienie kamery.
+
+### Terminal drzewek
+
+`src/ui/hub/talentsPanel.ts` (+ `talentsPanel.css`) eksportuje `createTalentsPanel: HubPanelFactory` (kontrakt:
+`src/ui/hub/hubPanel.ts`). Panel czyta i zmienia wyłącznie `MetaManager`; podpięcie do nakładki robi zadanie 10.
+
+- Nagłówek: „Wolne punkty: N”, „Poziom L”. Trzy kolumny (Ostrze, Rezonans, Strzelec) z węzłami pogrupowanymi wg
+  progu 1–4 (podpis: wymagane punkty w drzewku i bieżąco wydane), pod nimi „Hybrydy”.
+- Karta węzła to `<button>`: nazwa, koszt, stan kupiony / dostępny / zablokowany z krótkim powodem
+  („wymaga: <nazwa>”, „próg: N pkt w drzewku”, „wymaga 3 pkt w Ostrze i 3 pkt w Rezonans”, „za mało punktów”).
+  Niedostępne karty mają `aria-disabled="true"` i nie wołają `buyTalent`. Opis węzła w panelu szczegółów po
+  najechaniu lub fokusie.
+- Kupno: klik/Enter/Spacja → `buyTalent` → `await ctx.save()` → odświeżenie kart (bez przebudowy DOM, fokus
+  zostaje). Błąd `buyTalent` trafia do linii statusu (`role="status"`).
+- Reset: „Resetuj talenty” → „Potwierdź reset” (wygasa po `RESET_CONFIRM_MS` = 4 s) → `resetTalents` → zapis.
+- Reguły stanu węzła: czysta funkcja `talentNodeState` (`src/ui/hub/talentState.ts`) odwzorowuje `buyTalent`
+  (wymagane węzły, próg drzewka, punkty w drzewkach, wolne punkty); testy: `tests/unit/talentsPanel.test.ts`.
+- Akcenty drzewek: Ostrze cyan, Rezonans magenta, Strzelec bursztyn, Hybrydy fiolet. Teksty:
+  `src/data/ui/talents.pl.json`.

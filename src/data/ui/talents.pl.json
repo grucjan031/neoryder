@@ -1,0 +1,34 @@
+{
+  "freePoints": "Wolne punkty: {n}",
+  "level": "Poziom {n}",
+  "trees": {
+    "blade": "Ostrze",
+    "resonance": "Rezonans",
+    "gunner": "Strzelec",
+    "hybrid": "Hybrydy"
+  },
+  "tier": "Próg {tier}",
+  "tierRequirement": "{need} pkt w drzewku (wydane: {spent})",
+  "tierOpen": "bez wymagań (wydane: {spent})",
+  "cost": "Koszt: {n}",
+  "states": {
+    "bought": "kupiony",
+    "available": "dostępny",
+    "locked": "zablokowany"
+  },
+  "reasons": {
+    "requires": "wymaga: {name}",
+    "tier": "próg: {n} pkt w drzewku",
+    "points": "za mało punktów",
+    "treePoints": "wymaga {parts}",
+    "treePart": "{n} pkt w {tree}",
+    "treeJoin": " i "
+  },
+  "detailsHint": "Najedź na węzeł lub wybierz go klawiaturą, by zobaczyć opis.",
+  "detailsCost": "Koszt: {n}",
+  "reset": "Resetuj talenty",
+  "resetConfirm": "Potwierdź reset",
+  "resetDone": "Talenty zresetowane.",
+  "bought": "Kupiono: {name}.",
+  "saveFailed": "Nie udało się zapisać postępu."
+}

@@ -1,0 +1,26 @@
+import type { MetaManager } from '../../progression/meta';
+
+/**
+ * Kontrakt paneli stacji kryjówki (F4-08/09/10). Panel to komponent HTML bez
+ * własnego stanu gry: czyta i zmienia wyłącznie `MetaManager`, a po każdej
+ * udanej zmianie woła `save()`. Nakładkę, tytuł i przycisk „Zamknij” zapewnia
+ * `HtmlHubScreens`; panel wypełnia tylko swój `root`.
+ */
+export interface HubPanelContext {
+  readonly manager: MetaManager;
+  /** Zapisuje meta (`saveMetaManager`); rozwiązuje się po zapisie. */
+  save(): Promise<void>;
+  /** Przejście przez URL (zachowuje `debug=1` po stronie hosta). */
+  navigate(url: string): void;
+  /** Zamyka nakładkę stacji. */
+  close(): void;
+}
+
+export interface HubPanel {
+  readonly root: HTMLElement;
+  /** Odświeża widok ze stanu `MetaManager` (np. po zdarzeniu meta). */
+  refresh(): void;
+  dispose(): void;
+}
+
+export type HubPanelFactory = (ctx: HubPanelContext) => HubPanel;
