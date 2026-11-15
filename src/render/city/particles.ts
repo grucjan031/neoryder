@@ -1,7 +1,6 @@
 import {
   AdditiveBlending,
   Color,
-  DoubleSide,
   DynamicDrawUsage,
   InstancedMesh,
   MeshBasicMaterial,
@@ -12,6 +11,7 @@ import {
 } from 'three';
 import type { Camera } from 'three';
 import { ParticlePool } from '../../vfx/fxPool';
+import { tuning } from '../../core/tuning';
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -55,16 +55,16 @@ export class CityParticleBatch {
             uniforms: { opacity: { value: opacity } },
             transparent: true,
             blending: AdditiveBlending,
+            depthTest: true,
             depthWrite: false,
-            side: DoubleSide,
             toneMapped: false,
           })
         : new MeshBasicMaterial({
             transparent: true,
             opacity,
             blending: AdditiveBlending,
+            depthTest: true,
             depthWrite: false,
-            side: DoubleSide,
             toneMapped: false,
           });
     material.userData.bloom = kind === 'spark';
@@ -74,6 +74,7 @@ export class CityParticleBatch {
       this.pool.capacity,
     );
     this.mesh.instanceMatrix.setUsage(DynamicDrawUsage);
+    this.mesh.renderOrder = tuning.city.glowRenderOrder;
     this.mesh.frustumCulled = false;
     this.mesh.count = 0;
     // Bufor koloru musi istnieć przed pierwszą kompilacją shadera.

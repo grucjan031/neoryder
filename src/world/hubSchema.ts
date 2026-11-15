@@ -39,6 +39,7 @@ export const hubBlockSchema = roomBlockSchema.extend({
   material: z.enum(HUB_BLOCK_MATERIALS).optional(),
   interactive: z.boolean().optional(),
   yaw: finite.optional(),
+  shape: z.literal('barrel').optional(),
 });
 
 /** Neonowy napis stacji (tekst z `label`), rysowany jako płaszczyzna `yaw` patrząca w +Z przy yaw = 0. */
@@ -106,13 +107,24 @@ export type NpcAnimation = (typeof NPC_ANIMATIONS)[number];
  * Postać niezależna kryjówki. `rotationDeg` to kierunek patrzenia na płaszczyźnie podłogi:
  * 0 = +Z (w stronę torów), 90 = +X, 180 = −Z. Teksty rozmów: `src/data/hub/npcs.pl.json` (to samo `id`).
  */
-export const hubNpcSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  position: z.object({ x: finite, y: finite.optional(), z: finite }),
-  rotationDeg: finite,
-  animation: z.enum(NPC_ANIMATIONS).optional(),
-  accent: z.enum(NPC_ACCENTS),
-});
+export const hubNpcSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    position: z.object({ x: finite, y: finite.optional(), z: finite }),
+    rotationDeg: finite,
+    animation: z.enum(NPC_ANIMATIONS).optional(),
+    accent: z.enum(NPC_ACCENTS),
+    /** Wysokość blatu siedziska nad position.y i lokalny offset korzenia od jego środka (metry). */
+    seat: z.object({ heightM: positive, offset: vec3Schema }).optional(),
+  })
+  .superRefine((npc, ctx) => {
+    if (npc.animation?.startsWith('Sitting') && !npc.seat)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['seat'],
+        message: 'Siedzący NPC wymaga wysokości siedziska i offsetu korzenia.',
+      });
+  });
 export type HubNpcDef = z.infer<typeof hubNpcSchema>;
 
 /** Płomień w beczce: skrzyżowane płaszczyzny z poświatą (czysto kosmetyczne). */

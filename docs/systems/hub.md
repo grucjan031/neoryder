@@ -22,14 +22,15 @@ styl: `docs/adr/0006-neon-noir.md`.
     `tiles` to kafle ściany (dowolna tekstura z `surfaces/`, powtarzana co `tileM` m, domyślnie 3), `screen` to świecący ekran
     (`screens/screen_*` jako nadruk `mat_screen_*`, bloom), `poster` to nieprzezroczysty plakat, baner albo mural
     (`posters/<texture>.webp`, ładowany przez `HubDecor`, bo `dressingSchema` nie ma tej kategorii);
-  - `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent }[]` — postacie (sekcja „NPC”);
+  - `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, seat?: { heightM, offset {x,y,z} } }[]` — postacie (sekcja „NPC”);
+  - `blocks[].shape: 'barrel'` — otwarta beczka z blachy (walec z obręczami i ciemnym wnętrzem), z koliderem walca;
   - `fires: { position, size? }[]` — płomień w beczce (skrzyżowane płaszczyzny z gradientem, addytywnie, bloom, migotanie w `HubDecor.update`).
 - Walidacja układu używa `validateLayout` z `roomSchema.ts` (ta sama co spawny pokoi): środki stref i stojących NPC muszą
   leżeć na podłodze na poziomie `playerSpawn.y`, poza blokami i być osiągalne od `playerSpawn` na siatce 1 m (komórka
   1 × 1 m musi mieścić się w jednym bloku podłogi, więc krawędzie podłóg i przejść leżą na całkowitych współrzędnych;
   cienkie nakładki, np. pasy ostrzegawcze, mają dolną krawędź ponad podłogą i nie są przeszkodą). Dodatkowo: jedna
   stacja każdego `id`, jeden NPC każdego `id`, strefy nie nachodzą na siebie (odległość środków ≥ suma promieni).
-  Siedzący NPC (`animation` zaczyna się od `Sitting`) stoi na bloku (stołek/krzesło), więc nie podlega walidacji bloków.
+  Siedzący NPC (`animation` zaczyna się od `Sitting`) wymaga `seat` i siedziska pod miednicą, więc nie podlega walidacji bloków dla stojących postaci.
 - Motyw `hideout` (`src/data/themes/hideout.json`, na bazie `neonStreet`): bez deszczu i burzy, bez panoramy
   miasta, ciemniejsza ciepła mgła, słabsze światło kluczowe. Układ definiuje 14 świateł (limit testu: 16), a
   `CityLights` włącza naraz 8 najbliższych kamery (`tuning.city.maxLights`); reszta to emisja i poświata (neony,
@@ -87,11 +88,21 @@ Pięć postaci (nie wrogowie): Mira (mechaniczka, wagon-warsztat), Doktor Wolan 
 Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekranach w kąciku łączności), Stary Tomasz
 (weteran, siedzi przy beczce z ogniem).
 
-- **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent }[]`
+- **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, seat? }[]`
   (`hubNpcSchema`, `src/world/hubSchema.ts`). `rotationDeg` to kierunek patrzenia na podłodze: 0 = +Z (w stronę
   torów), 90 = +X, 180 = −Z. `animation` to klip z `public/assets/models/npc_anims.glb` (`Idle_Loop`, `Idle_Talking_Loop`,
   `Idle_Torch_Loop`, `Sitting_Idle_Loop`, `Sitting_Talking_Loop`, `Fixing_Kneeling`, `Crouch_Idle_Loop`, `Interact`;
   domyślnie `Idle_Loop`), `accent` ∈ `amber|green|violet|blue|white` (paleta ADR 0006; każdy NPC inny).
+- **Siedziska:** dla siedzących `position` oznacza punkt na podłodze pod miednicą i środkiem siedziska.
+  `seat.heightM` to wysokość jego górnej powierzchni nad tym punktem, a `seat.offset` to wektor od środka tej
+  powierzchni do korzenia modelu, w lokalnych osiach NPC. `npcRootPosition` obraca offset wraz z tułowiem,
+  zachowując miednicę nad nieruchomym stołkiem. Focus i kolider pozostają przy `position`.
+  Pomiar `node tools/hub/measureSeatedPose.mjs` odtwarza klipy `npc_anims.glb` na `enemy_trooper.glb`:
+  miednica `DEF-hips` ma lokalne położenie `(0,002812; 0,543908; −0,333626) m`, podeszwa `−0,000613 m`.
+  Dla obu pętli siedzenia stołek ma wysokość `0,48 m`, offset korzenia `(−0,002812; −0,48; 0,333626) m`;
+  miednica leży `0,063908 m` nad siedziskiem, stopy na podłodze. Biurko Bajta ma otwartą przestrzeń na nogi.
+  `hubSeating.test.ts` sprawdza prawdziwy klip w 121 próbkach i trzech kątach tułowia: ±0,08 m nad siedziskiem,
+  podparcie w X/Z oraz obie stopy i skórkowaną podeszwę przy podłodze.
 - **Wygląd (`src/scenes/hubNpcs.ts`, `HubNpcs`):** ten sam manekin UAL co wrogowie (`enemy_trooper.glb`, tylko ciało
   `armored_body`, bez płyt, broni i wizjera) w materiale toon grafit/granat (każdy NPC inny odcień) ze słabą poświatą
   krawędzi w kolorze akcentu (bez czerwieni wrogów). Niebojowe akcesoria na głowie (czapka, gogle, okulary,
@@ -157,6 +168,49 @@ Ręcznie: `?scene=hub&debug=1`, `hub tp 14.05 13.6 0` — brak podpowiedzi mimo 
 podpowiedź „E TALENTY”; E otwiera, Esc zamyka, kolejne E ponownie otwiera. Sprawdzić też tablicę misji,
 warsztat i poligon oraz zasięg i margines brył interakcji (parametry `hub` w lil-gui).
 Ze strefy stacji: `hub tp <x> <z>` z `query('stations')` i `hub look <stacja>` — podpowiedź widoczna, E otwiera.
+
+### Kontrola poprawek oprawy kryjówki (bug1–bug6)
+
+W `tools/hub/` nie ma generatora układu; `hideout.json` jest edytowany bezpośrednio. Jasność obiektów interaktywnych
+pozostaje `#d9dde3`, ale dotyczy teraz cienkich blatów i listew: warsztat ma metalowe szafki, tablica misji ciemne
+plecy i ramę, terminal talentów ciemny korpus i cokół, a portal ciemne słupki z jasnymi paskami. `focus` stacji
+zachowuje poprzednie położenie i rozmiar; sprawdzić podpowiedź oraz E po `hub look <stacja>`.
+
+Blada ściana widoczna z boku terminalu w `bug3` odpowiadała jednolicie jasnemu bokowi bryły `talents`.
+Dodatkowo dwie okładziny ścianki łączności rozciągały się przez drzwi: są teraz podzielone na pełne odcinki
+`z 8…10`, `13…16` i nadproże `y 2,8…5`. Płaszczyzny pozostają jednostronne, zwrócone do właściwego wnętrza;
+test sprawdza ich orientację oraz pełne podparcie na blokach.
+
+Ogień miał trzy nakładające się addytywne płaszczyzny o szerokości 0,95 m. Teraz ma dwie, szerokość 0,4275 m,
+wysokość bazową 0,5985 m, jasność 0,38 i krycie 0,55. Parametry rozmiaru, jasności i migotania są w `tuning.hub.fire*`
+(lil-gui); materiał ma jawne `depthTest: true`, `depthWrite: false`. Beczki mają otwarte metalowe walce,
+obręcze i ciemne wnętrze zamiast sześcianów. Nie ma pasującego modelu beczki w `models/city/`.
+
+`graffiti_resist` (OPÓR) odsunięto od narożnika do `z −4,5` i zmniejszono do 1,6 × 1,6 m (zakres `z −5,3…−3,7`).
+`sticker_cluster` przeniesiono z wnętrza ścianki (`x 8,3`) na jej zachodnie lico (`x 7,98`).
+`hubLayout.test.ts` używa `wallDecalFitsBlock` z `dressingSchema` dla wszystkich naklejek ściennych i okładzin.
+
+Bursztynowe lampiony ze zrzutów to `city_lantern_string` pod sufitem (`y 4,7`), a pionowe paski filarów to bloki
+`neon_*`. `HubDecor` nie tworzy odrębnych bursztynowych prostokątów w hali. Ich halo/rozmyte kopie powstają we
+wspólnej ścieżce renderowania (`materials`, `bloom`, `reflections`), obsługiwanej przez równoległe zadanie.
+Ta poprawka kryjówki nie zmienia plików `src/render/**` ani globalnych parametrów oprawy miasta.
+
+Kamery kontrolne w `?scene=hub&debug=1` (yaw 0 = −Z, pitch ujemny = w dół):
+
+| Punkt / zrzut         | Komendy konsoli                                                                                                                              | Co sprawdzić                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1, Tomasz / bug2      | `hub tp -10.2 10.2 129 -22`, potem opcjonalnie `hub look tomasz`                                                                             | Miednica nad stołkiem, obie stopy na podłodze; po podejściu obrót nie przesuwa miednicy.                  |
+| 1, Bajt / bug3        | `hub tp 17 13.8 -38 -20`, potem `hub look bajt`                                                                                              | Stołek pod miednicą, nogi mieszczą się pod biurkiem.                                                      |
+| 2, blada bryła / bug3 | `hub tp 18 14.3 105 -8`                                                                                                                      | Ciemny bok terminalu po lewej; brak płaszczyzny w otworze drzwi łączności.                                |
+| 3, warsztat / bug1    | `hub tp -9.5 4.4 180 -18`, potem `hub look workshop`                                                                                         | Ciemne szafki, cienki jasny blat, E otwiera warsztat.                                                     |
+| 3, pozostałe stacje   | `hub tp -6 -4.4 0`, potem `hub look missions`; `hub tp 14.05 13.6 180`, potem `hub look talents`; `hub tp 14 -4.8 0`, potem `hub look arena` | Ramy i korpusy, jasne akcenty, niezmienione działanie E.                                                  |
+| 4, ogień / bug2       | `hub tp -11.2 10 123 -12`                                                                                                                    | Płomień mieści się nad otworem beczki, obręcze pozostają czytelne; beczka zasłania dolną część płomienia. |
+| 5, OPÓR / bug4        | `hub tp -17.5 -3 59 5`                                                                                                                       | Cały prostokąt graffiti na zachodniej ścianie; brzegi nie wystają za narożnik.                            |
+| 6, lampy / bug1       | `hub tp -8 10.6 90 5`                                                                                                                        | Hala w stronę Tomasza, wagon po prawej; kontrola wspólnego halo na filarach.                              |
+| 6, lampy / bug6       | `hub tp -12 10.6 -90 5`                                                                                                                      | Wagon po lewej, bar po prawej; kontrola rozmytych kopii lampionów.                                        |
+
+Testy regresji: `hubSeating.test.ts`, `hubDecor.test.ts`, rozszerzone `hubLayout.test.ts` oraz dotychczasowe
+testy sceny i interakcji. E2E i zrzuty kontrolne wykonuje manager.
 NPC: `hub tp -8.2 3.9 255`, `hub look mira` — „MIRA / POROZMAWIAJ”, E pokazuje dymek, kolejne E następną kwestię.
 Antresola: `hub tp -12 1.4 0` i trzymać W (schody). Kładka: `hub tp 5.5 3.6 180`; łączność: `hub tp 9.2 10.6 262`.
 

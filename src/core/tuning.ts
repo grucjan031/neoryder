@@ -18,7 +18,12 @@ export const tuning = {
     lightSpotPower: 2,
     /** Poświata neonów i hologramów na ścianie: siła, rozmiar względem napisu, mnożnik dla hologramów, profil. */
     signGlowOpacity: 0.45,
-    signGlowScale: 2.3,
+    signGlowScale: 1.6,
+    signGlowMaxScale: 1.6,
+    /** Pas UV, w którym poświata wygasa do zera przy każdej krawędzi quada. */
+    signGlowEdgeFade: 0.2,
+    /** Kolejność przezroczystych efektów po geometrii nieprzezroczystej. */
+    glowRenderOrder: 1,
     signGlowHoloFactor: 0.5,
     signGlowPower: 2.2,
     /** Odległość (m) do światła, którego kolor przejmuje poświata napisu bez własnego tintu. */
@@ -455,6 +460,19 @@ export const tuning = {
     npcHeadMaxRad: 1,
     npcStandBodyMaxRad: 1.9,
     npcSeatedBodyMaxRad: 0.5,
+    fireDefaultSizeM: 0.6,
+    fireSizeScale: 0.45,
+    fireBrightness: 0.38,
+    fireOpacity: 0.55,
+    fireHeightRatio: 1.4,
+    firePlanes: 2,
+    fireFlickerHz: 7,
+    fireFlickerAmplitude: 0.1,
+    fireFlickerSecondaryAmplitude: 0.06,
+    fireFlickerSecondaryRate: 2.7,
+    fireFlickerSecondaryPhase: 1.3,
+    fireSeedPhase: 2.1,
+    firePlanePhase: 1.7,
   },
   sandbox: { cubeSpawnHeight: 6 },
 };

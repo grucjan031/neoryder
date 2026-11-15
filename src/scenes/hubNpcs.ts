@@ -27,7 +27,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { gradientMap } from '../render/materials';
-import { isSeated, updateNpcLook } from '../world/hubNpcs';
+import { isSeated, npcRootPosition, updateNpcLook } from '../world/hubNpcs';
 import type { NpcLookState } from '../world/hubNpcs';
 import type { HubNpcDef, NpcAccent } from '../world/hubSchema';
 
@@ -120,7 +120,7 @@ export class HubNpcs {
       const root = new Group();
       root.name = `npc:${def.id}`;
       const baseYaw = (def.rotationDeg * Math.PI) / 180;
-      root.position.set(def.position.x, def.position.y ?? 0, def.position.z);
+      root.position.copy(npcRootPosition(def));
       root.rotation.y = baseYaw;
       this.root.add(root);
       this.views.push({
@@ -306,6 +306,7 @@ export class HubNpcs {
         },
       );
       view.root.rotation.y = view.look.bodyYaw;
+      view.root.position.copy(npcRootPosition(view.def, view.look.bodyYaw));
       if (!view.mixer) continue;
       view.mixer.update(dt);
       view.root.updateMatrixWorld(true);

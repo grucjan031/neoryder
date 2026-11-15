@@ -30,6 +30,21 @@ export const NPC_SEATED_HEIGHT_M = 1.35;
 export const isSeated = (npc: Pick<HubNpcDef, 'animation'>): boolean =>
   npc.animation?.startsWith('Sitting') ?? false;
 
+/** Kotwiczy miednicę nad siedziskiem również podczas obrotu tułowia. Offset w osiach modelu. */
+export function npcRootPosition(
+  npc: HubNpcDef,
+  yaw = (npc.rotationDeg * Math.PI) / 180,
+): Vec3 {
+  const base = { ...npc.position, y: npc.position.y ?? 0 };
+  if (!isSeated(npc) || !npc.seat) return base;
+  const { heightM, offset } = npc.seat;
+  return {
+    x: base.x + Math.cos(yaw) * offset.x + Math.sin(yaw) * offset.z,
+    y: base.y + heightM + offset.y,
+    z: base.z - Math.sin(yaw) * offset.x + Math.cos(yaw) * offset.z,
+  };
+}
+
 export function npcHeight(npc: Pick<HubNpcDef, 'animation'>): number {
   return isSeated(npc) ? NPC_SEATED_HEIGHT_M : NPC_STANDING_HEIGHT_M;
 }

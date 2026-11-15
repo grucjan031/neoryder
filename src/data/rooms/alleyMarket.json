@@ -96,9 +96,9 @@
   "decals": [
     { "texture": "graffiti_tag1", "position": { "x": -5.95, "y": 1.8, "z": -13.5 }, "size": { "w": 2.2, "h": 2.2 }, "yaw": 1.5708, "surface": "wall", "opacity": 0.9 },
     { "texture": "graffiti_tag2", "position": { "x": 5.95, "y": 1.8, "z": -15 }, "size": { "w": 2.2, "h": 2.2 }, "yaw": -1.5708, "surface": "wall", "opacity": 0.9 },
-    { "texture": "poster_torn1", "position": { "x": -5.95, "y": 2, "z": 6.5 }, "size": { "w": 1.6, "h": 1.6 }, "yaw": 1.5708, "surface": "wall" },
+    { "texture": "poster_torn1", "position": { "x": -5.95, "y": 2, "z": 6.85 }, "size": { "w": 1.6, "h": 1.6 }, "yaw": 1.5708, "surface": "wall" },
     { "texture": "poster_torn2", "position": { "x": 5.95, "y": 2, "z": 5.5 }, "size": { "w": 1.6, "h": 1.6 }, "yaw": -1.5708, "surface": "wall" },
-    { "texture": "graffiti_resist", "position": { "x": -5.95, "y": 2, "z": 12.3 }, "size": { "w": 2, "h": 2 }, "yaw": 1.5708, "surface": "wall", "opacity": 0.85 },
+    { "texture": "graffiti_resist", "position": { "x": -5.95, "y": 2, "z": 11.95 }, "size": { "w": 2, "h": 2 }, "yaw": 1.5708, "surface": "wall", "opacity": 0.85 },
     { "texture": "poster_torn1", "position": { "x": 5.95, "y": 2, "z": -1 }, "size": { "w": 1.6, "h": 1.6 }, "yaw": -1.5708, "surface": "wall" },
     { "texture": "puddle1", "position": { "x": -1, "y": 0.01, "z": -2 }, "size": { "w": 4, "h": 4 }, "yaw": 0, "surface": "floor", "opacity": 0.85 },
     { "texture": "puddle2", "position": { "x": -0.5, "y": 0.01, "z": 12.5 }, "size": { "w": 2.5, "h": 5 }, "yaw": 0.3, "surface": "floor", "opacity": 0.85 },

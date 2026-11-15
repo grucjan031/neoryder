@@ -110,7 +110,9 @@ export class LampCones {
       },
       transparent: true,
       blending: AdditiveBlending,
+      depthTest: true,
       depthWrite: false,
+      // Kamera może wejść do otwartego stożka światła.
       side: DoubleSide,
       toneMapped: false,
     });
@@ -118,6 +120,7 @@ export class LampCones {
     this.mesh = new InstancedMesh(geometry, material, fixtures.length);
     this.mesh.frustumCulled = false;
     this.mesh.userData.noOutline = true;
+    this.mesh.renderOrder = tuning.city.glowRenderOrder;
     this.root.add(this.mesh);
   }
 

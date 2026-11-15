@@ -18,7 +18,7 @@ import {
   cityColor,
   cityVertex,
   disposeCityGroup,
-  radialFragment,
+  signGlowFragment,
 } from './resources';
 import type { TextureLoad } from './resources';
 
@@ -128,8 +128,8 @@ export class SignRenderer {
         },
         transparent: true,
         blending: AdditiveBlending,
+        depthTest: true,
         depthWrite: false,
-        side: DoubleSide,
         toneMapped: false,
       });
       material.userData.bloom = true;
@@ -145,11 +145,12 @@ export class SignRenderer {
         material,
       );
       plane.userData.noOutline = true;
+      plane.renderOrder = tuning.city.glowRenderOrder;
       plane.position.z = tuning.city.surfaceOffsetM;
       group.add(plane);
       const glow = new ShaderMaterial({
         vertexShader: cityVertex,
-        fragmentShader: radialFragment,
+        fragmentShader: signGlowFragment,
         uniforms: {
           tint: {
             value: cityColor(
@@ -158,20 +159,24 @@ export class SignRenderer {
           },
           opacity: { value: 0 },
           power: { value: tuning.city.signGlowPower },
+          edgeFade: { value: tuning.city.signGlowEdgeFade },
         },
         transparent: true,
         blending: AdditiveBlending,
+        depthTest: true,
         depthWrite: false,
-        side: DoubleSide,
         toneMapped: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -2,
       });
       glow.userData.bloom = false;
       const halo = new Mesh(new PlaneGeometry(1, 1), glow);
       halo.userData.noOutline = true;
-      halo.position.z = tuning.city.surfaceOffsetM * 0.4;
+      halo.renderOrder = tuning.city.glowRenderOrder;
+      halo.position.z = tuning.city.surfaceOffsetM;
+      const glowScale = Math.min(
+        tuning.city.signGlowScale,
+        tuning.city.signGlowMaxScale,
+      );
+      halo.scale.set(def.size.w * glowScale, def.size.h * glowScale, 1);
       group.add(halo);
       const state: SignState = {
         glow,
@@ -207,7 +212,9 @@ export class SignRenderer {
             transparent: true,
             opacity: tuning.city.holoProjectorOpacity,
             blending: AdditiveBlending,
+            depthTest: true,
             depthWrite: false,
+            // Otwarty stożek projektora jest widoczny również od środka.
             side: DoubleSide,
             toneMapped: false,
           }),
@@ -217,6 +224,7 @@ export class SignRenderer {
         beam.material.userData.bloom = true;
         group.add(beam);
         beam.userData.noOutline = true;
+        beam.renderOrder = tuning.city.glowRenderOrder;
         state.projector = beam;
       }
       this.signs.push(state);
@@ -274,11 +282,9 @@ export class SignRenderer {
       glow.opacity!.value =
         t.signGlowOpacity * sign.glowBase * Math.min(1.25, brightness);
       glow.power!.value = t.signGlowPower;
-      sign.halo.scale.set(
-        sign.width * t.signGlowScale,
-        sign.height * t.signGlowScale,
-        1,
-      );
+      glow.edgeFade!.value = t.signGlowEdgeFade;
+      const glowScale = Math.min(t.signGlowScale, t.signGlowMaxScale);
+      sign.halo.scale.set(sign.width * glowScale, sign.height * glowScale, 1);
       if (sign.projector)
         sign.projector.material.opacity = t.holoProjectorOpacity * brightness;
     }

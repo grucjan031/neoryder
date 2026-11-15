@@ -49,7 +49,8 @@ Płaszczyzna patrzy w +Z przy yaw=0. `tint` mnoży kolor tekstury. Czarne tło j
 niewidoczne przy addytywnym mieszaniu; kanał alfa pozostaje respektowany. W shaderze
 alfa jest dodatkowo skalowana luminancją (rgb·a bez zmian), więc czarne tło bez kanału
 alfa nie przyciemnia bloomu.
-Materiały mają `toneMapped=false`, `depthWrite=false`, `userData.bloom=true`.
+Materiały mają `toneMapped=false`, `depthTest=true`, `depthWrite=false`, `userData.bloom=true`.
+Płaszczyzny napisów i halo są jednostronne, odsunięte o `surfaceOffsetM` (0,012 m).
 
 Kontur: pass normalnych/głębi w `outline.ts` używa globalnego `overrideMaterial`, więc
 przezroczyste quady dostałyby obrys. Obiekty z `userData.noOutline = true` są na czas
@@ -79,6 +80,17 @@ po `dispose()`; nie należy ich współdzielić z innymi właścicielami.
 Naklejki nie zapisują głębi i mają jawne `userData.bloom=false`. Dla podłogi
 normalna wskazuje +Y; yaw obraca obraz w jej płaszczyźnie. Naklejki są statyczne.
 
+`wallDecalFitsBlock(decal, block, surfaceToleranceM=0.1)` z
+`src/world/dressingSchema.ts` jest czystym, eksportowanym sprawdzeniem nośnika.
+Przyjmuje blok AABB `{ position: {x,y,z}, size: {x,y,z} }`, rozpoznaje jego pionową
+ścianę po pozycji i normalnej naklejki (`yaw`) i sprawdza szerokość oraz wysokość
+całego prostokąta względem jednej ściany. Tolerancja 0,1 m uwzględnia istniejące
+odsunięcia danych od płaszczyzny; nie rozszerza granic ściany. Zaokrąglone kąty
+np. 1,5708 są obsługiwane, naklejki podłogowe zwracają `false`.
+Bez dodawania pól lub ograniczeń do schematu; można użyć tej samej funkcji dla
+bloków kryjówki. `tests/unit/cityDecalBounds.test.ts` sprawdza wszystkie JSON-y
+pokoi i wymaga, by każda naklejka ścienna mieściła się na co najmniej jednym bloku.
+
 `CityLights(defs, floorY=0)` tworzy dokładnie `tuning.city.maxLights` obiektów
 PointLight (domyślnie 8), również gdy definicji jest mniej. Nie usuwa świateł
 ani nie przełącza ich widoczności w trakcie aktualizacji. Intensywność 0
@@ -98,8 +110,10 @@ To stylizowana poświata na mokrej nawierzchni, bez odbicia geometrii ani SSR.
 - **Wybór do puli 8 świateł:** nadal frustum + odległość od kamery, ale odległość² jest dzielona przez `(intensity*range/40)^lightImportance` (jasne, dalekie źródła wygrywają z bliskimi słabymi), a światła już przydzielone dostają premię `lightKeepBonus` (histereza: bez przełączania przy remisie). `lightImportance=0` przywraca czystą odległość (`lightScore`, `selectCityLights(..., priority)`). Wygaszanie przed przestawieniem bez zmian.
 - **Siła i spadek:** intensywność każdego światła mnożona przez `lightIntensityScale`, wykładnik spadku `lightDecay` (mniejszy = łagodniej). Neony i hologramy oświetlają więc kolorem ściany i mokrą nawierzchnię bez twardej granicy.
 - **Plamy pod światłem:** profil `(1 - smoothstep(0,1,r))^lightSpotPower` (miękki środek i brzeg), siła `lightSpotOpacity`.
-- **Poświata napisów:** każdy neon i hologram ma addytywny, miękki halo-quad tuż za płaszczyzną napisu (rozmiar `signGlowScale` × rozmiar napisu, siła `signGlowOpacity`, hologramy × `signGlowHoloFactor`). Kolor: `tint` napisu, w razie braku kolor najbliższego światła w `signGlowLightRangeM` (`signGlowColor`), w ostateczności ciepła biel. Jasność podąża za migotaniem napisu (zaniki i buczenie zostają). Bez bloomu, bez konturu.
+- **Poświata napisów:** każdy neon i hologram ma addytywny, miękki halo-quad w płaszczyźnie napisu (rozmiar `min(signGlowScale, signGlowMaxScale)` × rozmiar napisu, domyślnie maks. 1,6× zamiast 2,3×; siła `signGlowOpacity`, hologramy × `signGlowHoloFactor`). Definicja napisu nie zawiera wymiarów nośnika, dlatego stosowany jest ten limit oraz dodatkowe wygaszenie do zera na całym obwodzie (`signGlowEdgeFade`, pas UV 0,2). Kolor: `tint` napisu, w razie braku kolor najbliższego światła w `signGlowLightRangeM` (`signGlowColor`), w ostateczności ciepła biel. Jasność podąża za migotaniem napisu (zaniki i buczenie zostają). Bez bloomu, bez konturu.
 - **Latarnie** (`src/render/city/lamps.ts`): dla dekoracji `city_street_lamp` (z `layout.decor`, przekazywanych przez `CityDressing`) powstaje światło punktowe (`lampLight*`, `lampColor`) dołączone do puli i plama pod lampą oraz subtelny stożek: jeden `InstancedMesh`, addytywny, bez cieni, gaśnie ku ziemi i na brzegach sylwetki (`lampCone*`). Położenie głowicy: `lampHeadHeightM`, `lampHeadForwardM`.
+- **Zasłanianie poświat:** napisy, halo, plamy, stożki i addytywne cząsteczki mają jawne `depthTest=true`, `depthWrite=false` i `renderOrder=glowRenderOrder` (1), po geometrii nieprzezroczystej. Halo nie używa polygonOffset; odsunięcie nie przekracza `surfaceOffsetM`. Jednostronne są quady oraz billboardy cząsteczek; otwarte stożki pozostają dwustronne, bo kamera może wejść do środka.
+- **Maska bloomu i odbić:** `BloomPass` renderuje geometrię z własnym buforem głębi i zachowuje test głębi materiałów emisyjnych. Nieemisyjne halo/plamy/stożki lamp są ukrywane w obu maskach. Zasłony zapisują teraz także zerowe RGBA (`NoBlending`, opacity 0, bez mgły), usuwając kolor źródła narysowanego wcześniej; samo `colorWrite=false` zostawiało daleką emisję pod bliższą ścianą/filarem. `NoBlending` zapobiega wymuszeniu alfy 1 przez wariant `OPAQUE` Three.js. Wyłączony test głębi w pełnoekranowych przebiegach rozmycia dotyczy wyłącznie gotowej tekstury, nie geometrii sceny. Testy: `tests/unit/cityGlowOcclusion.test.ts`; wizualną ocenę rozmycia i GLSL wykonuje się w przeglądarce.
 
 ### Okna budynków (atlasy)
 
@@ -166,6 +180,7 @@ tło, mgłę i rejestrację komendy.
 - Odwróć kamerę i wróć: światła powinny płynnie zmienić zestaw bez skoków koloru.
 - Podejdź do napisów: oceń skanowanie, częściowe zaniki i czytelność znaków.
 - Oceń, czy efekty nie zasłaniają centralnej osi walki i jasnej skrzyni.
+- Sprawdź napisy i lampy zza filara oraz z obu stron ściany: źródło zasłonięte bryłą nie może zostawiać prostokąta w masce bloom ani odbić. Przy krawędzi wąskiego napisu halo powinno miękko zanikać w granicach 1,6×; porównaj też z wyłączonym bloomem i odbiciami.
 
 Testy `tests/unit/cityFx.test.ts`: najbliższe światła/frustum/stała pula,
 zawijanie deszczu, gęstość i pauza, deterministyczny seed, limity i kapanie,

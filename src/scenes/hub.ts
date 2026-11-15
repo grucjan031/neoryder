@@ -1,4 +1,4 @@
-import { BoxGeometry, Group, Mesh } from 'three';
+import { BoxGeometry, CylinderGeometry, Group, Mesh } from 'three';
 import type { BufferGeometry, Scene as ThreeScene } from 'three';
 import type { World } from '@dimforge/rapier3d-compat';
 import type { GameContext } from '../core/context';
@@ -215,6 +215,7 @@ export class HubScene implements Scene {
       this.layout.panels ?? [],
       this.layout.stations,
       this.layout.fires ?? [],
+      ctx.tuning.hub,
     );
     this.root.add(this.decor.root);
 
@@ -272,14 +273,74 @@ export class HubScene implements Scene {
   private async buildBlocks(): Promise<void> {
     await Promise.all(
       this.layout.blocks.map(
-        async ({ size, position, model, material, interactive, yaw }) => {
+        async ({
+          size,
+          position,
+          model,
+          material,
+          interactive,
+          yaw,
+          shape,
+        }) => {
           this.world.createCollider(
-            this.rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
+            (shape === 'barrel'
+              ? this.rapier.ColliderDesc.cylinder(size.y / 2, size.x / 2)
+              : this.rapier.ColliderDesc.cuboid(
+                  size.x / 2,
+                  size.y / 2,
+                  size.z / 2,
+                )
+            )
               .setTranslation(position.x, position.y, position.z)
               .setCollisionGroups(
                 interactionGroups(CollisionGroup.World, 0xffff),
               ),
           );
+          if (shape === 'barrel') {
+            const barrel = new Group();
+            barrel.name = 'hub:barrel';
+            barrel.position.copy(position);
+            const add = (
+              geometry: CylinderGeometry,
+              surface: 'rust' | 'metal' | 'rubber',
+              y = 0,
+            ): void => {
+              this.geometries.add(geometry);
+              const mesh = new Mesh(geometry, getMaterial(surface));
+              mesh.position.y = y;
+              barrel.add(mesh);
+            };
+            const radius = size.x / 2;
+            add(
+              new CylinderGeometry(radius, radius, size.y, 20, 1, true),
+              'rust',
+            );
+            for (const y of [-0.44, -0.22, 0.22, 0.48])
+              add(
+                new CylinderGeometry(
+                  radius * 1.03,
+                  radius * 1.03,
+                  size.y * 0.04,
+                  20,
+                  1,
+                  true,
+                ),
+                'metal',
+                size.y * y,
+              );
+            add(
+              new CylinderGeometry(
+                radius * 0.98,
+                radius * 0.98,
+                size.y * 0.02,
+                20,
+              ),
+              'rubber',
+              size.y * 0.36,
+            );
+            this.root.add(barrel);
+            return;
+          }
           const geometry = new BoxGeometry(size.x, size.y, size.z);
           this.geometries.add(geometry);
           const fallback = new Mesh(

@@ -12,6 +12,8 @@ import {
   TextureLoader,
 } from 'three';
 import type { Texture } from 'three';
+import { tuning } from '../core/tuning';
+import type { Tuning } from '../core/tuning';
 import { printMaterial } from '../render/propPrints';
 import { assetTexture } from '../render/surfaceTextures';
 import type {
@@ -25,9 +27,6 @@ const DEFAULT_LABEL_COLOR = '#ffae1a';
 /** Rozmiar tekstury napisu w px na metr szerokości. */
 const LABEL_PX_PER_M = 256;
 const FLAME_COLOR = '#ffae1a';
-/** Płomień: liczba skrzyżowanych płaszczyzn i wysokość względem `size`. */
-const FLAME_PLANES = 3;
-const FLAME_HEIGHT = 1.4;
 // Lista z Vite pozwala pominąć żądanie brakującego pliku (bez błędów HTTP w konsoli).
 const availablePosters = new Set(
   Object.keys(import.meta.glob('/public/assets/textures/posters/*.webp')).map(
@@ -46,8 +45,7 @@ export class HubDecor {
   private readonly geometries: PlaneGeometry[] = [];
   private readonly materials: (MeshStandardMaterial | MeshBasicMaterial)[] = [];
   private readonly textures: Texture[] = [];
-  private readonly flames: { mesh: Mesh; baseScale: number; phase: number }[] =
-    [];
+  private readonly flames: { mesh: Mesh; phase: number }[] = [];
   private flameTexture: CanvasTexture | null = null;
   private timeS = 0;
   private disposed = false;
@@ -56,6 +54,7 @@ export class HubDecor {
     panels: readonly HubPanelDef[],
     stations: readonly HubStationDef[],
     fires: readonly HubFireDef[] = [],
+    private readonly hubTuning: Tuning['hub'] = tuning.hub,
   ) {
     for (const panel of panels)
       this.root.add(
@@ -73,10 +72,20 @@ export class HubDecor {
   /** Migotanie płomieni (czas kosmetyczny, bez RNG). */
   update(dt: number): void {
     this.timeS += dt;
+    const t = this.hubTuning;
     for (const flame of this.flames) {
-      const t = this.timeS * 7 + flame.phase;
-      const flicker = 1 + 0.16 * Math.sin(t) + 0.1 * Math.sin(t * 2.7 + 1.3);
-      flame.mesh.scale.set(flame.baseScale, flame.baseScale * flicker, 1);
+      const phase = this.timeS * t.fireFlickerHz + flame.phase;
+      const flicker =
+        1 +
+        t.fireFlickerAmplitude * Math.sin(phase) +
+        t.fireFlickerSecondaryAmplitude *
+          Math.sin(
+            phase * t.fireFlickerSecondaryRate + t.fireFlickerSecondaryPhase,
+          );
+      flame.mesh.scale.set(t.fireSizeScale, t.fireSizeScale * flicker, 1);
+      const material = flame.mesh.material as MeshBasicMaterial;
+      material.color.setScalar(t.fireBrightness);
+      material.opacity = t.fireOpacity;
     }
   }
 
@@ -178,28 +187,36 @@ export class HubDecor {
   private fire(def: HubFireDef, seed: number): void {
     if (typeof document === 'undefined') return;
     this.flameTexture ??= this.makeFlameTexture();
-    const size = def.size ?? 0.6;
-    const geometry = new PlaneGeometry(size, size * FLAME_HEIGHT);
-    geometry.translate(0, (size * FLAME_HEIGHT) / 2, 0);
+    const t = this.hubTuning;
+    const size = def.size ?? t.fireDefaultSizeM;
+    const geometry = new PlaneGeometry(size, size * t.fireHeightRatio);
+    geometry.translate(0, (size * t.fireHeightRatio) / 2, 0);
     this.geometries.push(geometry);
     const material = new MeshBasicMaterial({
       map: this.flameTexture,
-      color: 0xffffff,
+      color: new Color().setScalar(t.fireBrightness),
+      opacity: t.fireOpacity,
       blending: AdditiveBlending,
       transparent: true,
       depthWrite: false,
+      depthTest: true,
       toneMapped: false,
       side: DoubleSide,
     });
     material.userData.bloom = true;
     this.materials.push(material);
-    for (let i = 0; i < FLAME_PLANES; i++) {
+    for (let i = 0; i < t.firePlanes; i++) {
       const mesh = new Mesh(geometry, material);
       mesh.position.set(def.position.x, def.position.y, def.position.z);
-      mesh.rotation.y = (i * Math.PI) / FLAME_PLANES;
+      mesh.rotation.y = (i * Math.PI) / t.firePlanes;
+      mesh.scale.set(t.fireSizeScale, t.fireSizeScale, 1);
+      mesh.name = `fire:${seed}:${i}`;
       mesh.userData.noOutline = true;
       this.root.add(mesh);
-      this.flames.push({ mesh, baseScale: 1, phase: seed * 2.1 + i * 1.7 });
+      this.flames.push({
+        mesh,
+        phase: seed * t.fireSeedPhase + i * t.firePlanePhase,
+      });
     }
   }
 

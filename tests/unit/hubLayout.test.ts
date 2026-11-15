@@ -5,6 +5,7 @@ import hideoutData from '../../src/data/hub/hideout.json';
 import { HUB_STATION_IDS } from '../../src/core/metaTypes';
 import { themeDefinitions } from '../../src/render/themes';
 import { loadHubLayout } from '../../src/world/hubSchema';
+import { wallDecalFitsBlock } from '../../src/world/dressingSchema';
 
 const layout = loadHubLayout(hideoutData);
 const publicFile = (path: string): string =>
@@ -287,4 +288,58 @@ it('animacje NPC istnieją w npc_anims.glb, a kolidery NPC nie blokują wejść 
       expect(
         Math.hypot(npc.position.x - door.x, npc.position.z - door.z),
       ).toBeGreaterThan(1.2);
+});
+
+it('naklejki ścienne i okładziny w całości mieszczą się na licu ściany, bez zasłaniania drzwi', () => {
+  const planes = [
+    ...(layout.decals ?? []).filter((decal) => decal.surface === 'wall'),
+    ...(layout.panels ?? [])
+      .filter((panel) => panel.kind === 'tiles')
+      .map((panel) => ({ ...panel, surface: 'wall' as const })),
+  ];
+  for (const plane of planes)
+    expect(
+      layout.blocks.some((block) => wallDecalFitsBlock(plane, block, 0.04)),
+      `${plane.texture} ${JSON.stringify(plane.position)}`,
+    ).toBe(true);
+});
+
+it('stacje mają ciemne korpusy z jasnym akcentem wewnątrz zachowanego focusu', () => {
+  for (const station of layout.stations) {
+    const { position, size } = station.focus;
+    const overlaps = layout.blocks.filter((block) =>
+      (['x', 'y', 'z'] as const).every(
+        (axis) =>
+          Math.abs(block.position[axis] - position[axis]) <=
+          (block.size[axis] + size[axis]) / 2,
+      ),
+    );
+    expect(
+      overlaps.some(
+        (block) =>
+          !block.interactive &&
+          ['metal', 'plastic'].includes(block.material ?? ''),
+      ),
+      station.id,
+    ).toBe(true);
+    const accents = overlaps.filter((block) => block.interactive);
+    expect(accents.length, station.id).toBeGreaterThan(0);
+    const volume = (s: { x: number; y: number; z: number }): number =>
+      s.x * s.y * s.z;
+    expect(
+      accents.reduce((sum, block) => sum + volume(block.size), 0),
+      station.id,
+    ).toBeLessThan(volume(size) / 4);
+  }
+  for (const fire of layout.fires ?? [])
+    expect(
+      layout.blocks.some(
+        (block) =>
+          block.shape === 'barrel' &&
+          block.position.x === fire.position.x &&
+          block.position.z === fire.position.z &&
+          Math.abs(block.position.y + block.size.y / 2 - fire.position.y) <
+            0.001,
+      ),
+    ).toBe(true);
 });

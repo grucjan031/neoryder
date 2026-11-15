@@ -145,6 +145,7 @@ export class CityLights {
         },
         transparent: true,
         blending: AdditiveBlending,
+        depthTest: true,
         depthWrite: false,
         toneMapped: false,
       });
@@ -157,6 +158,7 @@ export class CityLights {
         def.position.z,
       );
       spot.userData.noOutline = true;
+      spot.renderOrder = tuning.city.glowRenderOrder;
       spot.scale.set(
         def.range * 2 * tuning.city.lightSpotScale,
         def.range * 2 * tuning.city.lightSpotScale,

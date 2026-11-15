@@ -73,6 +73,40 @@ export const decalSchema = z.object({
 });
 export type DecalDef = z.infer<typeof decalSchema>;
 
+/**
+ * Czy cały prostokąt naklejki leży na jednej pionowej ścianie bloku AABB?
+ * Nośnik jest rozpoznawany po pozycji i normalnej (yaw), bez zmiany schematu danych.
+ * Tolerancja dotyczy wyłącznie odsunięcia od płaszczyzny; nie pozwala wyjść poza jej brzeg.
+ * Funkcja nie mutuje danych i może sprawdzać również bloki kryjówki.
+ */
+export function wallDecalFitsBlock(
+  decal: DecalDef,
+  block: {
+    position: { x: number; y: number; z: number };
+    size: { x: number; y: number; z: number };
+  },
+  surfaceToleranceM = 0.1,
+): boolean {
+  if (decal.surface !== 'wall') return false;
+  const epsilon = 1e-6;
+  const normal = { x: Math.sin(decal.yaw), z: Math.cos(decal.yaw) };
+  const axis = Math.abs(normal.x) > Math.abs(normal.z) ? 'x' : 'z';
+  const along = axis === 'x' ? 'z' : 'x';
+  // Dane używają też zaokrąglonych kątów (np. 1.5708).
+  if (Math.abs(normal[along]) > 1e-4) return false;
+  const face =
+    block.position[axis] + (Math.sign(normal[axis]) * block.size[axis]) / 2;
+  const gap = Math.abs(decal.position[axis] - face);
+  return (
+    gap <= surfaceToleranceM + epsilon &&
+    Math.abs(decal.position[along] - block.position[along]) +
+      decal.size.w / 2 <=
+      block.size[along] / 2 + epsilon &&
+    Math.abs(decal.position.y - block.position.y) + decal.size.h / 2 <=
+      block.size.y / 2 + epsilon
+  );
+}
+
 /** Efekt otoczenia: para z kratki, iskry z przewodu, kapanie z rynny. */
 export const ambientFxSchema = z.object({
   kind: z.enum(['steam', 'sparks', 'drip']),

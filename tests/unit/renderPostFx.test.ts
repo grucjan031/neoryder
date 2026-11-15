@@ -117,7 +117,14 @@ it('maska bloomu zasłania bryły nieświecące i przywraca materiały', () => {
   pipeline.render(scene, new PerspectiveCamera(), 0.016);
   expect(maskNeon).toBe(getMaterial('player'));
   expect(maskWall).not.toBe(getMaterial('world'));
-  expect((maskWall as MeshBasicMaterial).colorWrite).toBe(false);
+  expect(maskWall).toMatchObject({
+    colorWrite: true,
+    opacity: 0,
+    transparent: false,
+    depthTest: true,
+    depthWrite: true,
+  });
+  expect((maskWall as MeshBasicMaterial).color.getHex()).toBe(0);
   expect(wall.material).toBe(getMaterial('world'));
   expect(neon.material).toBe(getMaterial('player'));
   pipeline.dispose();

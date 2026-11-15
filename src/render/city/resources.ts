@@ -158,3 +158,16 @@ export const radialFragment = /* glsl */ `
 `;
 
 export const cityColor = (color: string): Color => new Color(color);
+
+/** Halo napisu znika na całym obwodzie, także przy bardzo niskim wykładniku profilu. */
+export const signGlowFragment = radialFragment
+  .replace(
+    'uniform float power;',
+    'uniform float power; uniform float edgeFade;',
+  )
+  .replace(
+    'gl_FragColor = vec4(tint, a);',
+    `vec2 edge = min(vUv, 1.0 - vUv);
+    a *= smoothstep(0.0, max(edgeFade, 1e-5), min(edge.x, edge.y));
+    gl_FragColor = vec4(tint, a);`,
+  );

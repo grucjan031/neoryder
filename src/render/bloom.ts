@@ -3,6 +3,7 @@ import {
   Material,
   HalfFloatType,
   MeshBasicMaterial,
+  NoBlending,
   ShaderMaterial,
   Vector2,
   WebGLRenderTarget,
@@ -71,7 +72,7 @@ type Renderable = Object3D & { material?: Material | Material[] };
 
 /**
  * Bloom selektywny: maska to scena, w której tylko materiały emisyjne mają kolor,
- * a reszta zapisuje wyłącznie głębię (zasłania neony, sama nie świeci). Maska jest
+ * a reszta zapisuje głębię i zerową emisję (zasłania neony, sama nie świeci). Maska jest
  * rozmywana w niskiej rozdzielczości; kompozycja nakłada ją "over", więc halo jest
  * widoczne także na białym świecie, który nigdy się nie rozmywa.
  */
@@ -85,7 +86,19 @@ export class BloomPass {
     type: HalfFloatType,
     depthBuffer: false,
   });
-  private readonly occluder = new MeshBasicMaterial({ colorWrite: false });
+  // Zerowa alfa i kolor usuwają także emisję narysowaną przed bliższą zasłoną.
+  // Sam colorWrite=false pozostawiał kolor dalekiego neonu w masce.
+  private readonly occluder = new MeshBasicMaterial({
+    color: 0x000000,
+    opacity: 0,
+    // NormalBlending przy transparent=false wymusza w Three.js alfę 1 (OPAQUE).
+    blending: NoBlending,
+    transparent: false,
+    fog: false,
+    toneMapped: false,
+    depthTest: true,
+    depthWrite: true,
+  });
   private readonly blurUniforms = {
     map: { value: this.mask.texture as Texture },
     stepSize: { value: new Vector2() },
