@@ -21,6 +21,12 @@ export interface EnemyAnimation {
   /** Długość stanu dla klipów jednorazowych; nie zmienia okna obrażeń. */
   durationS?: number;
   moving: boolean;
+  /**
+   * Odcinek klipu (ułamki 0..1) rozciągnięty na `spanS` sekund; wymach i regeneracja
+   * kontynuują akcję zapowiedzi (`continues`) bez resetu.
+   */
+  segment?: { from: number; to: number; spanS: number };
+  continues?: boolean;
 }
 
 /** Wybór pozy jest wyłącznie prezentacją istniejącego snapshotu AI. */
@@ -43,6 +49,8 @@ export function selectEnemyAnimation(
   if (snapshot.state === 'stunned')
     return result('Hit_Chest', true, definition.stunOnHeavyS);
   if (snapshot.controlled) return result('Hit_Head', true);
+  const attack = bossAttack(definition, snapshot);
+  if (attack) return attack;
   switch (snapshot.state) {
     case 'telegraph':
       if (ranged) return result('Pistol_Aim_Neutral');
@@ -76,7 +84,8 @@ export function selectEnemyAnimation(
   ) {
     return {
       clip:
-        snapshot.speed <= definition.moveSpeed / 2
+        snapshot.speed <=
+        definition.moveSpeed * (definition.animation?.jogFromSpeedFrac ?? 0.5)
           ? 'Walk_Loop'
           : 'Jog_Fwd_Loop',
       once: false,
@@ -84,4 +93,37 @@ export function selectEnemyAnimation(
     };
   }
   return result(ranged ? 'Pistol_Idle_Loop' : 'Idle_Loop');
+}
+
+/** Boss: zapowiedź do chwili skutku, potem wymach i regeneracja tą samą akcją (bez resetu). */
+function bossAttack(
+  definition: EnemyDefinition,
+  snapshot: EnemySnapshot,
+): EnemyAnimation | null {
+  const attack = snapshot.attack;
+  const spec = attack
+    ? definition.boss?.attackAnimations?.[
+        attack.kind as keyof NonNullable<
+          NonNullable<EnemyDefinition['boss']>['attackAnimations']
+        >
+      ]
+    : undefined;
+  if (!attack || !spec) return null;
+  const common = { clip: spec.clip, once: true, moving: false };
+  if (snapshot.state === 'telegraph')
+    return {
+      ...common,
+      segment: { from: 0, to: spec.impact, spanS: attack.telegraphS },
+    };
+  if (snapshot.state === 'swing' || snapshot.state === 'recovery')
+    return {
+      ...common,
+      continues: true,
+      segment: {
+        from: spec.impact,
+        to: spec.end,
+        spanS: definition.swingActiveS + attack.recoveryS,
+      },
+    };
+  return null;
 }

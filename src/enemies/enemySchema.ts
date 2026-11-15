@@ -46,10 +46,41 @@ export const bossPatternSchema = z.discriminatedUnion('kind', [
 export type BossPattern = z.infer<typeof bossPatternSchema>;
 export type SummonPattern = Extract<BossPattern, { kind: 'summon' }>;
 export type ShieldPattern = Extract<BossPattern, { kind: 'shield' }>;
+const clipNames = [
+  'Idle_Loop',
+  'Walk_Loop',
+  'Jog_Fwd_Loop',
+  'Sword_Idle',
+  'Sword_Attack',
+  'Hit_Chest',
+  'Hit_Head',
+] as const;
+/**
+ * Animacja wzorca ataku bossa w klipie jednorazowym: zapowiedź odtwarza ułamki [0, impact]
+ * klipu, dokładnie do chwili skutku (efekt i obrażenia w symulacji), a wymach i regeneracja
+ * [impact, end]. `end` = `impact` zatrzymuje pozę (np. wezwanie, tarcza).
+ */
+export const bossAttackAnimationSchema = z
+  .object({
+    clip: z.enum(clipNames),
+    impact: z.number().finite().min(0).max(1),
+    end: z.number().finite().min(0).max(1),
+  })
+  .refine((a) => a.end >= a.impact, 'Koniec klipu przed chwilą skutku.');
+export type BossAttackAnimation = z.infer<typeof bossAttackAnimationSchema>;
 export const bossSchema = z
   .object({
     name: z.string().min(1),
     modelScale: positive,
+    /** Animacja ataku wg rodzaju wzorca; bez wpisu obowiązuje klip domyślny. */
+    attackAnimations: z
+      .object({
+        slam: bossAttackAnimationSchema.optional(),
+        fan: bossAttackAnimationSchema.optional(),
+        summon: bossAttackAnimationSchema.optional(),
+        shield: bossAttackAnimationSchema.optional(),
+      })
+      .optional(),
     muzzle: z.object({ x: z.number().finite(), y: positive, z: positive }),
     phases: z
       .array(
@@ -195,6 +226,33 @@ export const enemySchema = z
         pulseHz: positive,
         pulseScale: nonnegative,
         shieldSizeM: size.optional(),
+        /** Tarcza trzymana w ręce: kość oraz pozycja i obrót (m, stopnie) w układzie wroga w pozie Idle_Loop. */
+        shieldHold: z
+          .object({
+            bone: z.string().min(1),
+            position: z.object({
+              x: z.number().finite(),
+              y: z.number().finite(),
+              z: z.number().finite(),
+            }),
+            rotationDeg: z.object({
+              x: z.number().finite(),
+              y: z.number().finite(),
+              z: z.number().finite(),
+            }),
+            /** Jaka część obrotu kości przenosi się na tarczę (1 = sztywne przypięcie). */
+            rotationFollow: z.number().finite().min(0).max(1),
+          })
+          .optional(),
+        /** Droga stóp (m świata) na cykl klipu chodu i biegu; bez wpisu ruch używa `strideM`. */
+        clipStrideM: z
+          .object({
+            Walk_Loop: positive.optional(),
+            Jog_Fwd_Loop: positive.optional(),
+          })
+          .optional(),
+        /** Ułamek moveSpeed, powyżej którego ruch używa biegu zamiast chodu (domyślnie 0,5). */
+        jogFromSpeedFrac: positive.optional(),
         bladeSizeM: size.optional(),
         aimAngle: z.number().finite().optional(),
         recoilM: nonnegative.optional(),

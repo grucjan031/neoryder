@@ -25,6 +25,31 @@ interface Candidate {
   distance: number;
 }
 
+/** Ważność źródeł: jasne światła o dużym zasięgu wygrywają z bliższymi, słabymi. */
+export interface LightPriority {
+  /** 0 = tylko odległość od kamery; 1 = odległość² dzielona przez intensity*range. */
+  importance: number;
+  /** Premia ważności dla świateł już przydzielonych (histereza, mniej przełączeń). */
+  keepBonus: number;
+  /** Indeksy aktualnie przydzielone do puli. */
+  keep?: ReadonlySet<number>;
+}
+
+const REFERENCE_POWER = 40;
+
+/** Wynik do porównań (odległość² skorygowana o ważność): mniejszy = ważniejsze. */
+export function lightScore(
+  distanceSq: number,
+  def: Pick<CityLightDef, 'intensity' | 'range'>,
+  priority: LightPriority | undefined,
+  kept: boolean,
+): number {
+  if (!priority || priority.importance <= 0) return distanceSq;
+  const power = Math.max(1e-3, (def.intensity * def.range) / REFERENCE_POWER);
+  const keep = kept ? 1 + Math.max(0, priority.keepBonus) : 1;
+  return distanceSq / (Math.pow(power, priority.importance) * keep);
+}
+
 const scratchMatrix = new Matrix4();
 const scratchFrustum = new Frustum();
 const scratchOrigin = new Vector3();
@@ -40,6 +65,7 @@ export function selectCityLights(
   camera: Camera,
   limit: number,
   out: number[] = [],
+  priority?: LightPriority,
 ): number[] {
   camera.updateMatrixWorld();
   scratchFrustum.setFromProjectionMatrix(
@@ -55,7 +81,12 @@ export function selectCityLights(
     scratchSphere.center.copy(def.position);
     scratchSphere.radius = def.range;
     if (!scratchFrustum.intersectsSphere(scratchSphere)) continue;
-    const distance = scratchOrigin.distanceToSquared(def.position);
+    const distance = lightScore(
+      scratchOrigin.distanceToSquared(def.position),
+      def,
+      priority,
+      priority?.keep?.has(index) ?? false,
+    );
     let entry = candidatePool[count];
     if (!entry) {
       entry = { index, distance };
@@ -86,6 +117,11 @@ export class CityLights {
   private readonly selected: number[] = [];
   private readonly wanted = new Set<number>();
   private readonly assigned = new Set<number>();
+  private readonly priority: LightPriority = {
+    importance: 0,
+    keepBonus: 0,
+    keep: this.assigned,
+  };
 
   constructor(
     private readonly defs: readonly CityLightDef[],
@@ -93,7 +129,7 @@ export class CityLights {
   ) {
     this.pool = Array.from(
       { length: Math.max(0, Math.floor(tuning.city.maxLights)) },
-      () => new PointLight('#fff1d6', 0),
+      () => new PointLight('#fff1d6', 0, 0, tuning.city.lightDecay),
     );
     this.assignments = this.pool.map(() => null);
     this.root.add(...this.pool);
@@ -105,6 +141,7 @@ export class CityLights {
         uniforms: {
           tint: { value: cityColor(def.color) },
           opacity: { value: tuning.city.lightSpotOpacity },
+          power: { value: tuning.city.lightSpotPower },
         },
         transparent: true,
         blending: AdditiveBlending,
@@ -132,19 +169,22 @@ export class CityLights {
 
   update(_dtWorldS: number, dtRealS: number, camera: Camera): void {
     if (this.disposed) return;
+    const assigned = this.assigned;
+    assigned.clear();
+    for (const index of this.assignments)
+      if (index !== null) assigned.add(index);
+    this.priority.importance = tuning.city.lightImportance;
+    this.priority.keepBonus = tuning.city.lightKeepBonus;
     const selected = selectCityLights(
       this.defs,
       camera,
       Math.min(this.pool.length, tuning.city.maxLights),
       this.selected,
+      this.priority,
     );
     const wanted = this.wanted;
     wanted.clear();
     for (const index of selected) wanted.add(index);
-    const assigned = this.assigned;
-    assigned.clear();
-    for (const index of this.assignments)
-      if (index !== null) assigned.add(index);
     const fade =
       1 - Math.exp(-tuning.city.lightFadeRate * Math.max(0, dtRealS));
     this.pool.forEach((light, slot) => {
@@ -167,11 +207,16 @@ export class CityLights {
         light.color.set(def.color);
         light.distance = def.range;
       }
-      light.intensity += (this.defs[index]!.intensity - light.intensity) * fade;
+      light.decay = tuning.city.lightDecay;
+      light.intensity +=
+        (this.defs[index]!.intensity * tuning.city.lightIntensityScale -
+          light.intensity) *
+        fade;
     });
     this.root.children.forEach((object, i) => {
       if (!(object instanceof Mesh)) return;
       object.material.uniforms.opacity.value = tuning.city.lightSpotOpacity;
+      object.material.uniforms.power.value = tuning.city.lightSpotPower;
       const def = this.defs[i - this.pool.length];
       if (def) {
         const size = def.range * 2 * tuning.city.lightSpotScale;

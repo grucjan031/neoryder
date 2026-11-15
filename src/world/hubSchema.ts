@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { HUB_STATION_IDS } from '../core/metaTypes';
-import { dressingFields } from './dressingSchema';
+import { BLOCK_MATERIALS, dressingFields } from './dressingSchema';
 import {
   roomBlockSchema,
   roomSpawnPointSchema,
@@ -14,9 +14,31 @@ const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const textureId = z.string().regex(/^[a-z0-9_]+$/);
 const size2 = z.object({ w: positive, h: positive });
 
-/** Blok kryjówki: blok pokoju, opcjonalnie jasny obiekt interaktywny (materiał `interactive`, ADR 0006 pkt 2). */
+/** Materiały bloków kryjówki: materiały pokoju plus dodatkowe powierzchnie miejskie i świecące paski neonowe. */
+export const HUB_BLOCK_MATERIALS = [
+  ...BLOCK_MATERIALS,
+  'wood',
+  'fabric',
+  'machine',
+  'paint',
+  'lacquer',
+  'plastic',
+  'rubber',
+  'neon_amber',
+  'neon_green',
+  'neon_violet',
+  'neon_blue',
+  'neon_white',
+] as const;
+
+/**
+ * Blok kryjówki: blok pokoju, opcjonalnie jasny obiekt interaktywny (materiał `interactive`, ADR 0006 pkt 2).
+ * `yaw` (radiany, wielokrotność 90°) obraca model `city_*` wokół środka; `size` jest już w osiach świata.
+ */
 export const hubBlockSchema = roomBlockSchema.extend({
+  material: z.enum(HUB_BLOCK_MATERIALS).optional(),
   interactive: z.boolean().optional(),
+  yaw: finite.optional(),
 });
 
 /** Neonowy napis stacji (tekst z `label`), rysowany jako płaszczyzna `yaw` patrząca w +Z przy yaw = 0. */
@@ -43,11 +65,12 @@ export type HubStationDef = z.infer<typeof hubStationSchema>;
 
 /**
  * Płaszczyzna okładziny: `tiles` — kafle ściany (`/assets/textures/surfaces/<texture>.webp`,
- * powtarzane co `tileM` metrów), `screen` — świecący ekran (`/assets/textures/screens/<texture>.webp`).
+ * powtarzane co `tileM` metrów), `screen` — świecący ekran (`/assets/textures/screens/<texture>.webp`),
+ * `poster` — nieprzezroczysty plakat, baner albo mural (`/assets/textures/posters/<texture>.webp`).
  * Płaszczyzna patrzy w +Z przy yaw = 0. Kosmetyka bez collidera.
  */
 export const hubPanelSchema = z.object({
-  kind: z.enum(['tiles', 'screen']),
+  kind: z.enum(['tiles', 'screen', 'poster']),
   texture: textureId,
   position: vec3Schema,
   size: size2,
@@ -56,6 +79,48 @@ export const hubPanelSchema = z.object({
   tint: hexColor.optional(),
 });
 export type HubPanelDef = z.infer<typeof hubPanelSchema>;
+
+/** Akcent NPC (paleta neonów z ADR 0006): słaba poświata krawędzi sylwetki. */
+export const NPC_ACCENTS = [
+  'amber',
+  'green',
+  'violet',
+  'blue',
+  'white',
+] as const;
+export type NpcAccent = (typeof NPC_ACCENTS)[number];
+/** Klipy animacji NPC z `public/assets/models/npc_anims.glb` (Quaternius UAL, CC0). */
+export const NPC_ANIMATIONS = [
+  'Idle_Loop',
+  'Idle_Talking_Loop',
+  'Idle_Torch_Loop',
+  'Sitting_Idle_Loop',
+  'Sitting_Talking_Loop',
+  'Fixing_Kneeling',
+  'Crouch_Idle_Loop',
+  'Interact',
+] as const;
+export type NpcAnimation = (typeof NPC_ANIMATIONS)[number];
+
+/**
+ * Postać niezależna kryjówki. `rotationDeg` to kierunek patrzenia na płaszczyźnie podłogi:
+ * 0 = +Z (w stronę torów), 90 = +X, 180 = −Z. Teksty rozmów: `src/data/hub/npcs.pl.json` (to samo `id`).
+ */
+export const hubNpcSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  position: z.object({ x: finite, y: finite.optional(), z: finite }),
+  rotationDeg: finite,
+  animation: z.enum(NPC_ANIMATIONS).optional(),
+  accent: z.enum(NPC_ACCENTS),
+});
+export type HubNpcDef = z.infer<typeof hubNpcSchema>;
+
+/** Płomień w beczce: skrzyżowane płaszczyzny z poświatą (czysto kosmetyczne). */
+export const hubFireSchema = z.object({
+  position: vec3Schema,
+  size: positive.optional(),
+});
+export type HubFireDef = z.infer<typeof hubFireSchema>;
 
 /** Układ kryjówki: format pokoju (bez drzwi, spawnów wrogów i walki) plus stacje. */
 export const hubLayoutSchema = z
@@ -67,6 +132,8 @@ export const hubLayoutSchema = z
     blocks: z.array(hubBlockSchema),
     stations: z.array(hubStationSchema).min(1),
     panels: z.array(hubPanelSchema).optional(),
+    npcs: z.array(hubNpcSchema).optional(),
+    fires: z.array(hubFireSchema).optional(),
   })
   .superRefine((layout, ctx) => {
     const ids = new Set<string>();
@@ -94,12 +161,25 @@ export const hubLayoutSchema = z
             message: `Strefy ${first.id} i ${second.id} nachodzą na siebie.`,
           });
       }
-    // Środki stref przechodzą tę samą walidację co punkty spawnu pokoju: w podłodze, poza blokami, osiągalne od playerSpawn.
+    const npcIds = new Set<string>();
+    (layout.npcs ?? []).forEach((npc, index) => {
+      if (npcIds.has(npc.id))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['npcs', index, 'id'],
+          message: `Powtórzony NPC: ${npc.id}.`,
+        });
+      npcIds.add(npc.id);
+    });
+    // Środki stref (i NPC stojących) przechodzą tę samą walidację co punkty spawnu pokoju: w podłodze, poza blokami, osiągalne od playerSpawn.
     validateLayout(
       {
         playerSpawn: layout.playerSpawn,
-        blocks: layout.blocks,
-        spawnPoints: layout.stations.map((station) => station.position),
+        blocks: layout.blocks.map(({ size, position }) => ({ size, position })),
+        spawnPoints: [
+          ...layout.stations.map((station) => station.position),
+          ...standingNpcs(layout).map(({ npc }) => npc.position),
+        ],
       },
       {
         addIssue: (issue: { path?: PropertyKey[]; message?: string }) => {
@@ -109,13 +189,30 @@ export const hubLayoutSchema = z
             message: issue.message ?? 'Nieprawidłowy układ.',
             path:
               head === 'spawnPoints' && typeof index === 'number'
-                ? ['stations', index, 'position', ...rest]
+                ? index < layout.stations.length
+                  ? ['stations', index, 'position', ...rest]
+                  : [
+                      'npcs',
+                      standingNpcs(layout)[index - layout.stations.length]!
+                        .index,
+                      'position',
+                      ...rest,
+                    ]
                 : (issue.path ?? []),
           });
         },
       } as unknown as z.RefinementCtx,
     );
   });
+
+/** NPC stojące podlegają walidacji podłogi i osiągalności; siedzący stoją na bloku (stołek). */
+function standingNpcs(layout: {
+  npcs?: HubNpcDef[] | undefined;
+}): { npc: HubNpcDef; index: number }[] {
+  return (layout.npcs ?? [])
+    .map((npc, index) => ({ npc, index }))
+    .filter(({ npc }) => !npc.animation?.startsWith('Sitting'));
+}
 
 export type HubLayout = z.infer<typeof hubLayoutSchema>;
 

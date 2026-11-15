@@ -34,6 +34,8 @@ export interface EnemySnapshot {
   controlled?: boolean;
   /** Punkt celowania podczas aim/burst (linia lasera Snajpera). */
   aim?: Vec3;
+  /** Boss: bieżący wzorzec ataku (czasy dla animacji); brak poza atakiem. */
+  attack?: { kind: string; telegraphS: number; recoveryS: number };
 }
 export interface Enemy {
   readonly id: EntityId;

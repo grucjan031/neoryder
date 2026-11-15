@@ -1,0 +1,65 @@
+{
+  "talkPrompt": "Porozmawiaj",
+  "npcs": [
+    {
+      "id": "mira",
+      "name": "Mira",
+      "role": "Mechaniczka",
+      "lines": [
+        "Nie dotykaj spawarki, chyba że chcesz zostać bez brwi. Masz Dane? W warsztacie odblokujesz nowe zabawki i moce.",
+        "Twoje sloty ekwipunku to nie worek bez dna. Wybierz przed wyjściem to, co faktycznie ocali ci skórę w sektorze Kurogane.",
+        "Pancerze Kurogane Arms są grube, ale ich chłodzenie broni to żart. Pilnuj własnego przegrzania, bo zostaniesz z gorącym złomem.",
+        "Ostrze plazmowe trzyma kalibrację idealnie, sam je stroiłam. Jak je zarysujesz na tarczy, to sam będziesz je polerował.",
+        "Ta stara stacja metra sypie się szybciej niż tanie implanty Helixy, ale mój warsztat przeżyje nas wszystkich."
+      ]
+    },
+    {
+      "id": "wolan",
+      "name": "Doktor Wolan",
+      "role": "Badaczka Rezonansu",
+      "lines": [
+        "Kora ruchowa dobrze znosi obciążenie, ale nie forsuj się ponad miarę. W terminalu rozwiniesz nowe ścieżki talentów.",
+        "Jeśli obecna konfiguracja węzłów ci nie służy, zrób darmowy reset w terminalu. Neuroplastyczność pozwala szukać lepszej drogi.",
+        "Przekierowanie Rezonansu do kończyn odblokuje podwójny skok i zwiększy wytrzymałość. Na górze bardzo się to przyda.",
+        "Koalicja poluje na Rezonantów, bo nie potrafi nas w pełni kontrolować. Tutaj, w Iskrze, jesteś wśród swoich.",
+        "Pamiętaj o ukryciu sygnatury implantu przed skanerami. Nawet najlepsi agenci potrzebują chwili na regenerację."
+      ]
+    },
+    {
+      "id": "szron",
+      "name": "Kapitan Szron",
+      "role": "Koordynator operacji",
+      "lines": [
+        "Tablica jest aktualna. Wyższy Poziom zagrożenia oznacza ostrzejszy ogień, ale i znacznie lepsze nagrody.",
+        "Cel na dziś: sektor Kurogane Arms. Ich Dyrektor Ochrony trzyma tam twardy garnizon, więc nie lekceważ zwiadu.",
+        "Elitarne jednostki niosą Rdzenie. Jeśli masz czysty strzał i zapas energii, zdejmuj je w pierwszej kolejności.",
+        "Przed wejściem na arenę bossa weź oddech i uzupełnij zasoby. Martwy agent nie przyniesie nam żadnych Danych.",
+        "Góra ma kredyty i pancerze, my mamy determinację i przejście na poligon. Rozgrzej się, zanim wyjdziesz w tunel."
+      ]
+    },
+    {
+      "id": "bajt",
+      "name": "Bajt",
+      "role": "Haker",
+      "lines": [
+        "Siedzę na nasłuchu szyfrów Koalicji. Orbis Grid znowu łata swoje firewalle taśmą klejącą, żenada na łączach.",
+        "Uwaga na feedzie: w sektorze latają drony zwiadowcze i siedzą snajperzy. Nie stój w miejscu, bo cię namierzą w sekundę.",
+        "Zgarniasz Kredyty podczas akcji? Wydawaj je w sklepie po drodze, w sieci po śmierci i tak przepadną.",
+        "Przechwyciłem pingi od Helixy Dynamics — znowu testują jakieś stymulanty na ochronie Kurogane. Dobrze wiedzieć, nie?",
+        "Mam czysty kanał na twój komunikator, zero szumów. Jak tylko złamię kolejny węzeł Orbisu, zrzucę ci dane na HUD."
+      ]
+    },
+    {
+      "id": "tomasz",
+      "name": "Stary Tomasz",
+      "role": "Weteran",
+      "lines": [
+        "Pamiętam Neo-Ryd, zanim korporacje odcięły nam niebo. Dziś na dole grzeje tylko ta beczka i wspomnienia.",
+        "Ostrze plazmowe to nie tylko broń do ataku, młody. Dobrze wyczute parowanie odbije nawet salwę prosto w strzelca.",
+        "Nigdy nie walcz w otwartym polu, kiedy mają przewagę ognia. Szukaj osłon, bo nawet najlepszy pancerz ma swoje granice.",
+        "Widziałem, jak powstawała Iskra z garstki uciekinierów z górnych poziomów. Nie zmarnuj tego, co tu zbudowaliśmy.",
+        "Usiądź na chwilę przy ogniu, jeśli ręce ci drżą. W tym mieście nawet weterani muszą czasem odłożyć ostrze."
+      ]
+    }
+  ]
+}

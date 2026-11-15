@@ -93,6 +93,21 @@ także gdy nie ma przypisanego PointLight. Plamy nie uruchamiają bloomu. Mają 
 `range * 2 * lightSpotScale` (0,6), siła `lightSpotOpacity` (0,08).
 To stylizowana poświata na mokrej nawierzchni, bez odbicia geometrii ani SSR.
 
+### Ocena świateł (poprawka oświetlenia)
+
+- **Wybór do puli 8 świateł:** nadal frustum + odległość od kamery, ale odległość² jest dzielona przez `(intensity*range/40)^lightImportance` (jasne, dalekie źródła wygrywają z bliskimi słabymi), a światła już przydzielone dostają premię `lightKeepBonus` (histereza: bez przełączania przy remisie). `lightImportance=0` przywraca czystą odległość (`lightScore`, `selectCityLights(..., priority)`). Wygaszanie przed przestawieniem bez zmian.
+- **Siła i spadek:** intensywność każdego światła mnożona przez `lightIntensityScale`, wykładnik spadku `lightDecay` (mniejszy = łagodniej). Neony i hologramy oświetlają więc kolorem ściany i mokrą nawierzchnię bez twardej granicy.
+- **Plamy pod światłem:** profil `(1 - smoothstep(0,1,r))^lightSpotPower` (miękki środek i brzeg), siła `lightSpotOpacity`.
+- **Poświata napisów:** każdy neon i hologram ma addytywny, miękki halo-quad tuż za płaszczyzną napisu (rozmiar `signGlowScale` × rozmiar napisu, siła `signGlowOpacity`, hologramy × `signGlowHoloFactor`). Kolor: `tint` napisu, w razie braku kolor najbliższego światła w `signGlowLightRangeM` (`signGlowColor`), w ostateczności ciepła biel. Jasność podąża za migotaniem napisu (zaniki i buczenie zostają). Bez bloomu, bez konturu.
+- **Latarnie** (`src/render/city/lamps.ts`): dla dekoracji `city_street_lamp` (z `layout.decor`, przekazywanych przez `CityDressing`) powstaje światło punktowe (`lampLight*`, `lampColor`) dołączone do puli i plama pod lampą oraz subtelny stożek: jeden `InstancedMesh`, addytywny, bez cieni, gaśnie ku ziemi i na brzegach sylwetki (`lampCone*`). Położenie głowicy: `lampHeadHeightM`, `lampHeadForwardM`.
+
+### Okna budynków (atlasy)
+
+- Okna fasad (materiał `facade`: budynki wokół pokoi i panorama w tle) pochodzą z atlasów `atlas/windows_lit.webp` i `atlas/windows_dark.webp` (siatka 4×4, komórki 256 px). Shader (`src/render/urbanMaterials.ts`, `windowCode`) wybiera okno deterministycznie z indeksu okna na ścianie (rzut świata, bez migotania między wczytaniami); wersja referencyjna w TS: `src/render/city/windowAtlas.ts` (`windowChoice`, `windowCellUv`, testy `tests/unit/windowAtlas.test.ts`).
+- Siatka okien: rozstaw `windowPitchXM × windowPitchYM` (2,4 × 3,2 m), wymiary okna losowane z `windowMin/MaxWidthM` (1,2–1,6 m) i `windowMin/MaxHeightM` (1,6–2,2 m) — okna pionowe, mniejsze niż dawne płachty.
+- `windowLitFraction` (0,4) = udział okien z atlasu oświetlonego, reszta z ciemnego. Emisja: `windowLitEmission` (0,5) i `windowDarkEmission` (0,02); siła w bloomie `windowBloom` (0,35). Mipmapy próbkowane `textureGrad` po ciągłych UV okna (bez szwów na krawędziach komórek). Do załadowania atlasu okna są wyłączone.
+- Bez nowych świateł; ten sam materiał i atlas w panoramie (dalekie okna uśredniają się mipmapami). Wolne gaśnięcie/zapalanie okien nie zostało wdrożone.
+
 ## Deszcz i efekty otoczenia
 
 `Weather(params?, floorY=0, seed?)` ma publiczne, mutowalne `params: RainParams`:

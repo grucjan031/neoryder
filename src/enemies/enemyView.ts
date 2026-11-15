@@ -14,6 +14,7 @@ import type { AnimationAction, Object3D } from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { tuning } from '../core/tuning';
 import { selectEnemyAnimation } from './enemyAnimation';
+import { HeldShield } from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
@@ -71,6 +72,7 @@ export class EnemyView {
   private readonly laser?: Mesh;
   private shield?: Object3D;
   private fallbackShield?: Mesh;
+  private heldShield?: HeldShield;
   private readonly fallbackGeometries: BoxGeometry[] = [];
   private readonly rest = new Map<
     Object3D,
@@ -276,6 +278,14 @@ export class EnemyView {
     this.fallbackShield.removeFromParent();
     this.shield = node;
     node.visible = this.enemy.current.shieldUp === true;
+    const hold = this.enemy.definition.animation?.shieldHold;
+    const idle = this.actions.get('Idle_Loop');
+    if (!hold || !idle || !this.mixer) return;
+    // Poza odniesienia: tarcza ma stać w ręce w Idle_Loop i dalej podążać za kością.
+    idle.reset().play();
+    this.mixer.setTime(0);
+    this.heldShield = HeldShield.mount(node, this.root, hold) ?? undefined;
+    idle.stop();
   }
 
   private equipBlade(): void {
@@ -451,6 +461,12 @@ export class EnemyView {
     }
   }
 
+  private strideFor(name: string): number {
+    const anim = this.enemy.definition.animation;
+    const perClip = anim?.clipStrideM?.[name as 'Walk_Loop' | 'Jog_Fwd_Loop'];
+    return perClip ?? anim?.strideM ?? this.enemy.definition.moveSpeed;
+  }
+
   /** Zegar snapshotu pochodzi z dt świata, już po Skupieniu i hitstopie. */
   private prepareAnimation(alpha: number): void {
     const { previous: a, current: b, definition } = this.enemy;
@@ -467,14 +483,17 @@ export class EnemyView {
     const selection = selectEnemyAnimation(definition, b);
     const next = this.actions.get(selection.clip);
     if (!next) return;
+    const clip = next.getClip();
     const shot =
       b.state === 'burst' &&
       b.shotTimeS !== undefined &&
       (this.shotTimeS === undefined || b.shotTimeS < this.shotTimeS);
     this.shotTimeS = b.shotTimeS;
-    if (next !== this.action || !sameState || shot) {
+    const continued = selection.continues === true && next === this.action;
+    if (!continued && (next !== this.action || !sameState || shot)) {
       const old = this.action;
       next.reset();
+      if (selection.segment) next.time = selection.segment.from * clip.duration;
       next.setLoop(selection.once ? LoopOnce : LoopRepeat, Infinity);
       next.clampWhenFinished = selection.once;
       next.setEffectiveWeight(1).play();
@@ -488,13 +507,16 @@ export class EnemyView {
         );
       this.action = next;
     }
+    const segment = selection.segment;
     next.setEffectiveTimeScale(
-      selection.moving
-        ? (next.getClip().duration * b.speed) /
-            (definition.animation?.strideM ?? definition.moveSpeed)
-        : selection.durationS && selection.once
-          ? next.getClip().duration / selection.durationS
-          : 1,
+      segment
+        ? ((segment.to - segment.from) * clip.duration) /
+            Math.max(segment.spanS, 1e-6)
+        : selection.moving
+          ? (clip.duration * b.speed) / this.strideFor(selection.clip)
+          : selection.durationS && selection.once
+            ? clip.duration / selection.durationS
+            : 1,
     );
     // Nie nadrabiamy czasu poza kadrem. Callback wykonuje się tylko dla widocznej siatki,
     // raz na render, także gdy outline i bloom rysują tę samą siatkę ponownie.
@@ -507,6 +529,7 @@ export class EnemyView {
     this.animationPending = false;
     this.mixer.update(this.pendingAnimationS);
     this.model.updateWorldMatrix(true, true);
+    this.heldShield?.update();
     // Renderer zbiera listę obiektów przed onBeforeRender; odśwież też jego macierze skina.
     for (const skin of this.skins) skin.skeleton.update();
   }

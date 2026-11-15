@@ -722,3 +722,41 @@ describe('F3-17 Boss: wezwanie, tarcza łamana', () => {
     expect(sequence('different')).not.toEqual(a);
   });
 });
+
+describe('Boss: chód i czytelne ataki (animacja)', () => {
+  it('w pościgu czas stanu płynie (animacja chodu nie stoi) i boss się przemieszcza', () => {
+    const f = setup(slam, 'boss', {
+      data: (d) => {
+        d.attackRange = 0.5;
+      },
+    });
+    f.step(30);
+    const s = f.boss.current;
+    expect(s.state).toBe('chase');
+    expect(s.stateTimeS).toBeGreaterThan(25 * SIM_DT);
+    expect(s.speed).toBeGreaterThan(0);
+    expect(s.distance).toBeGreaterThan(0);
+    expect(s.position.z).toBeGreaterThan(0);
+  });
+
+  it('wzorzec trafia do snapshotu na czas ataku, a pociski wachlarza wylatują z punktu broni', () => {
+    const f = setup(fan);
+    const spawn = vi.spyOn(f.projectiles, 'spawn');
+    f.step();
+    expect(f.boss.current.state).toBe('telegraph');
+    expect(f.boss.current.attack).toEqual({
+      kind: 'fan',
+      telegraphS: fan.telegraphS,
+      recoveryS: fan.recoveryS,
+    });
+    f.step(Math.round(fan.telegraphS / SIM_DT));
+    expect(spawn).toHaveBeenCalled();
+    const muzzle = definition.boss!.muzzle;
+    const p = f.boss.current.position;
+    for (const [spec] of spawn.mock.calls) {
+      expect(spec.origin.x).toBeCloseTo(p.x + muzzle.x, 1);
+      expect(spec.origin.y).toBeCloseTo(p.y + muzzle.y, 1);
+      expect(spec.origin.z).toBeCloseTo(p.z + muzzle.z, 1);
+    }
+  });
+});

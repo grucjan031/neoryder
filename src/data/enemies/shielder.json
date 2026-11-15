@@ -32,6 +32,7 @@
   },
   "animation": {
     "strideM": 1.8,
+    "clipStrideM": { "Walk_Loop": 1.41, "Jog_Fwd_Loop": 4.61 },
     "walkAngle": 0.5,
     "telegraphAngle": -2.4,
     "swingAngle": 1.2,
@@ -43,6 +44,12 @@
       "x": 0.8,
       "y": 1.2,
       "z": 0.12
+    },
+    "shieldHold": {
+      "bone": "DEF-forearmL",
+      "position": { "x": 0.2, "y": 1, "z": 0.12 },
+      "rotationDeg": { "x": 0, "y": 0, "z": 0 },
+      "rotationFollow": 0.15
     }
   },
   "shield": {

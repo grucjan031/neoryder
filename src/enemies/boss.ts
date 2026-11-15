@@ -121,7 +121,7 @@ export class Boss implements Enemy {
       }),
       ctx.bus.on('enemy_killed', ({ id }) => {
         if (id === this.id) {
-          this.pattern = null;
+          this.setPattern(null);
           this.resetShield();
           this.transition('dead');
           this.killMinions();
@@ -170,6 +170,18 @@ export class Boss implements Enemy {
     );
   }
 
+  /** Wzorzec trafia też do snapshotu, żeby widok dopasował animację do czasów ataku. */
+  private setPattern(pattern: BossPattern | null): void {
+    this.pattern = pattern;
+    this.current.attack = pattern
+      ? {
+          kind: pattern.kind,
+          telegraphS: pattern.telegraphS,
+          recoveryS: pattern.recoveryS,
+        }
+      : undefined;
+  }
+
   private transition(state: EnemyState): void {
     this.current.state = state;
     this.current.stateTimeS = 0;
@@ -178,7 +190,7 @@ export class Boss implements Enemy {
   private enterPhase(index: number): void {
     const changed = index !== this.phaseIndex;
     this.phaseIndex = index;
-    this.pattern = null;
+    this.setPattern(null);
     this.resetShield();
     this.shiftS = this.ctx.tuning.enemies.phaseShiftS;
     this.transition(this.shiftS > epsilon ? 'recovery' : 'idle');
@@ -226,7 +238,7 @@ export class Boss implements Enemy {
   }
 
   private startPattern(pattern: BossPattern): void {
-    this.pattern = pattern;
+    this.setPattern(pattern);
     this.stats.setBase('damage', pattern.damage);
     this.transition('telegraph');
     this.ctx.bus.emit('enemy_telegraph', {
@@ -335,7 +347,7 @@ export class Boss implements Enemy {
       value: pattern.vulnerableMult,
       source: VULNERABLE_SOURCE,
     });
-    this.pattern = null;
+    this.setPattern(null);
     this.transition('stunned');
     this.ctx.bus.emit('enemy_stunned', {
       id: this.id,
@@ -472,15 +484,15 @@ export class Boss implements Enemy {
       if (this.shiftS <= epsilon) this.transition('idle');
     } else if (this.stunS > epsilon) {
       this.stunS = Math.max(0, this.stunS - dt);
-      this.pattern = null;
+      this.setPattern(null);
       if (s.state !== 'stunned') this.transition('stunned');
     } else if (this.deps.statuses?.has(this.id, STUNNED)) {
-      this.pattern = null;
+      this.setPattern(null);
       if (s.state !== 'stunned') this.transition('stunned');
     } else {
       const target = this.deps.getTarget();
       if (!target) {
-        this.pattern = null;
+        this.setPattern(null);
         this.transition('idle');
       } else {
         const dx = target.position.x - s.position.x,
@@ -494,7 +506,7 @@ export class Boss implements Enemy {
         if (s.state === 'idle' || s.state === 'chase') {
           if (distance <= this.definition.attackRange) this.begin();
           else {
-            this.transition('chase');
+            if (s.state !== 'chase') this.transition('chase');
             const speed = Math.min(this.stats.get('moveSpeed'), distance / dt);
             vx = (dx / distance) * speed;
             vz = (dz / distance) * speed;
@@ -522,7 +534,7 @@ export class Boss implements Enemy {
           this.pattern &&
           s.stateTimeS + epsilon >= this.pattern.cooldownS
         ) {
-          this.pattern = null;
+          this.setPattern(null);
           this.transition('idle');
         }
       }

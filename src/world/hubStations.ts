@@ -39,6 +39,45 @@ export function rayAabbDistance(
   return near;
 }
 
+function lookDirection(yaw: number, pitch: number): Vec3 {
+  return {
+    x: -Math.sin(yaw) * Math.cos(pitch),
+    y: Math.sin(pitch),
+    z: -Math.cos(yaw) * Math.cos(pitch),
+  };
+}
+
+/** Cel interakcji w kryjówce: stacja albo NPC. */
+export type HubTarget =
+  { kind: 'station'; id: HubStationId } | { kind: 'npc'; id: string };
+
+/** Wybiera najbliższy cel (stację lub NPC) trafiony promieniem z oka w zasięgu (yaw/pitch w radianach). */
+export function selectHubTarget(
+  stations: readonly (HubZone & { focus: HubFocusBox })[],
+  npcs: readonly { id: string; focus: HubFocusBox }[],
+  eye: Vec3,
+  yaw: number,
+  pitch: number,
+  interactRangeM: number,
+  focusPaddingM: number,
+): HubTarget | null {
+  const forward = lookDirection(yaw, pitch);
+  let nearest = Infinity;
+  let target: HubTarget | null = null;
+  const consider = (focus: HubFocusBox, hit: () => HubTarget): void => {
+    const distance = rayAabbDistance(eye, forward, focus, focusPaddingM);
+    if (distance !== null && distance <= interactRangeM && distance < nearest) {
+      nearest = distance;
+      target = hit();
+    }
+  };
+  for (const zone of stations)
+    consider(zone.focus, () => ({ kind: 'station', id: zone.id }));
+  for (const npc of npcs)
+    consider(npc.focus, () => ({ kind: 'npc', id: npc.id }));
+  return target;
+}
+
 /** Wybiera najbliższe trafienie bryły stacji w zasięgu oka (yaw/pitch w radianach). */
 export function selectHubFocus(
   zones: readonly (HubZone & { focus: HubFocusBox })[],
@@ -48,21 +87,16 @@ export function selectHubFocus(
   interactRangeM: number,
   focusPaddingM: number,
 ): HubStationId | null {
-  const forward = {
-    x: -Math.sin(yaw) * Math.cos(pitch),
-    y: Math.sin(pitch),
-    z: -Math.cos(yaw) * Math.cos(pitch),
-  };
-  let nearest = Infinity;
-  let focused: HubStationId | null = null;
-  for (const zone of zones) {
-    const distance = rayAabbDistance(eye, forward, zone.focus, focusPaddingM);
-    if (distance !== null && distance <= interactRangeM && distance < nearest) {
-      nearest = distance;
-      focused = zone.id;
-    }
-  }
-  return focused;
+  const target = selectHubTarget(
+    zones,
+    [],
+    eye,
+    yaw,
+    pitch,
+    interactRangeM,
+    focusPaddingM,
+  );
+  return target?.kind === 'station' ? target.id : null;
 }
 
 /** Stan nakładki stacji bez DOM i renderu; otwarcie wyłącznie na żądanie. */

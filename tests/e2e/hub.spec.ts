@@ -152,7 +152,7 @@ test('hub: spojrzenie w zasięgu pokazuje podpowiedź, E otwiera, Esc zamyka bez
 }) => {
   const errors = collectErrors(page);
   await openHub(page);
-  await command(page, 'hub tp 6 -3.2 180');
+  await command(page, 'hub tp 14.05 13.6 0');
   await waitSimSteps(page, 5);
   expect(await query(page, 'hubFocus')).toBeNull();
   expect(await query(page, 'hubStation')).toBeNull();
@@ -204,16 +204,12 @@ test('hub: stacja arena przechodzi na poligon', async ({ page }) => {
 });
 
 for (const station of hideout.stations) {
-  test(`hub: blisko obiektu ${station.id} podpowiedź i E działają`, async ({
+  test(`hub: ze strefy stacji ${station.id} podpowiedź i E działają`, async ({
     page,
   }) => {
     const errors = collectErrors(page);
     await openHub(page);
-    const { position, size } = station.focus;
-    await command(
-      page,
-      `hub tp ${position.x} ${position.z + size.z / 2 + 0.8}`,
-    );
+    await command(page, `hub tp ${station.position.x} ${station.position.z}`);
     await command(page, `hub look ${station.id}`);
     await expect
       .poll(() => query(page, 'hubFocus'), { timeout: SIM_TIMEOUT })
@@ -228,3 +224,49 @@ for (const station of hideout.stations) {
     expect(errors).toEqual([]);
   });
 }
+
+test('hub: pięciu NPC, spojrzenie pokazuje „Porozmawiaj” z imieniem, E daje kolejne kwestie i dymek znika po odejściu', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  const npcs = (await query(page, 'npcs')) as {
+    id: string;
+    x: number;
+    z: number;
+  }[];
+  expect(npcs.map((npc) => npc.id).sort()).toEqual([
+    'bajt',
+    'mira',
+    'szron',
+    'tomasz',
+    'wolan',
+  ]);
+  const mira = npcs.find((npc) => npc.id === 'mira')!;
+  await command(page, `hub tp ${mira.x - 1.6} ${mira.z - 0.4}`);
+  await command(page, 'hub look mira');
+  await expect
+    .poll(() => query(page, 'hubNpc'), { timeout: SIM_TIMEOUT })
+    .toBe('mira');
+  const prompt = page.locator('.hub-prompt');
+  await expect(prompt).toBeVisible();
+  await expect(prompt).toContainText('Porozmawiaj');
+  await expect(prompt).toHaveAttribute('aria-label', 'Mira');
+  const dialog = page.locator('.hub-dialog');
+  await expect(dialog).toBeHidden();
+  await page.keyboard.press('KeyE');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.hub-dialog__name')).toHaveText('Mira');
+  const first = await dialog.locator('.hub-dialog__line').textContent();
+  await waitSimSteps(page, 5);
+  await page.keyboard.press('KeyE');
+  await expect
+    .poll(() => dialog.locator('.hub-dialog__line').textContent())
+    .not.toBe(first);
+  expect(await query(page, 'hubStation')).toBeNull();
+  await command(page, 'hub tp 0 0.8');
+  await expect(dialog).toBeHidden({ timeout: SIM_TIMEOUT });
+  expect(await command(page, 'hub talk szron')).toContain('Kapitan Szron');
+  await expect(dialog).toBeVisible();
+  expect(errors).toEqual([]);
+});

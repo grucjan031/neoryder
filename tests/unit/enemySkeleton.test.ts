@@ -257,7 +257,8 @@ it('ponawia klip każdego strzału i skaluje tempo biegu prędkością ze snapsh
     .map((r) => r.value as AnimationAction)
     .find((a) => a.getClip().name === 'Jog_Fwd_Loop')!;
   expect(jog.getEffectiveTimeScale()).toBeCloseTo(
-    (jog.getClip().duration * gunner.moveSpeed) / gunner.animation.strideM,
+    (jog.getClip().duration * gunner.moveSpeed) /
+      gunner.animation.clipStrideM.Jog_Fwd_Loop,
   );
 });
 

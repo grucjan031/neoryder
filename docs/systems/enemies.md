@@ -151,7 +151,10 @@ drogą obrotu. Czysta funkcja `selectEnemyAnimation` wybiera klip ze snapshotu:
 | Controlled                  | `Hit_Head`, jednorazowo (ogłuszenie ma pierwszeństwo)     |
 | Dead                        | model niewidoczny, dotychczasowy rozpad na odłamki        |
 
-Tempo ruchu to `clip.duration * speed / animation.strideM`. Klipy jednorazowe
+Tempo ruchu to `clip.duration * speed / stride`, gdzie `stride` to `animation.clipStrideM[klip]` (droga stóp na cykl w metrach świata: Walk 1,41 / Jog 4,61 dla modelu Szturmowca, Strzelca, Snajpera i Tarczownika, 1,69 / 5,54 dla modelu Egzekutora, razy `modelScale`; test `enemyStride.test.ts` mierzy je w GLB), a bez wpisu `animation.strideM` (też faza chodu brył zastępczych)
+(`strideM` = droga na cykl klipu chodu w metrach świata, u bossa 1,69 m × `modelScale`
+1,5; `animation.jogFromSpeedFrac` zmienia próg chodu i biegu, boss ma 2 = zawsze chód,
+bo `Jog_Fwd_Loop` ma ok. 5,5 m na cykl i przy tym tempie ślizgałby stopy). Klipy jednorazowe
 mają `LoopOnce` i zatrzymują ostatnią pozę; cios dopasowuje czas do
 `swingActiveS`, przygotowanie Tarczownika do `telegraphS`, reakcja na ogłuszenie
 do `stunOnHeavyS`. Pozostałe klipy są zapętlone. Przenikanie ma
@@ -166,6 +169,20 @@ odroczona do `Mesh.onBeforeRender`: tylko siatka dopuszczona do rysowania
 uruchamia mixer, raz na render mimo wielu przebiegów postprocessu. Pozycje
 kości i macierze skina są odświeżane przed rysowaniem. Konserwatywna sfera
 skina obejmuje ruch kończyn; niewidoczny model nie nadrabia pominiętych klatek.
+
+**Boss** (`kind: 'boss'`): w pościgu zegar stanu płynie (wcześniej `transition('chase')`
+w każdym kroku zerował `stateTimeS`, więc mixer dostawał dt = 0 i boss „pływał”
+w zastygłej pozie). Snapshot niesie `attack { kind, telegraphS, recoveryS }` bieżącego
+wzorca; `boss.attackAnimations[kind]` (`clip`, `impact`, `end`, ułamki klipu) mapuje
+go na animację: zapowiedź rozciąga odcinek [0, `impact`] na `telegraphS`, tak że poza
+uderzenia przypada na chwilę skutku w symulacji (efekt i obrażenia), a wymach z regeneracją
+([`impact`, `end`], `swingActiveS + recoveryS`) kontynuują tę samą akcję bez resetu.
+`end = impact` zatrzymuje pozę (wezwanie i tarcza: miecz wzniesiony). Model `enemy_executor`
+ma tylko klipy mieczowe, więc `slam` i `fan` używają `Sword_Attack` (uderzenie w
+podłogę przy 0,36 i zamach poziomy przy 0,30), a `summon`/`shield` jego fazy wzniesienia
+miecza (0,15). Pociski wachlarza wylatują z `boss.muzzle` (przed bossem, na wysokości
+ostrza w zamachu), nie z klatki piersiowej. Do zmiany po dodaniu dedykowanych klipów
+(strzał, wezwanie, tarcza) wystarczy edycja danych.
 
 Recoil `rifle`, pulsowanie `visor` / `baton_tip`, widoczność `shield`, ostrze
 Egzekutora i `boss.modelScale` nadal działają. Żadne klipy nie sterują AI,
@@ -413,12 +430,16 @@ Statusy są nakładane tylko przez zwykłą ścieżkę obrażeń; przeciążenie
 z tagiem `#power` przechodzi przez tarczę.
 
 **Widok:** Tarczownik używa `enemy_shielder`, Egzekutor `enemy_executor`.
-Wbudowany `shield` jest przypięty do najwyższej kości kręgosłupa `DEF-spine.003`
-i jest widoczny wg `shieldUp`. W spoczynku stoi pionowo przed lewą połową
-tułowia, z obrotem 12° na zewnątrz, od kolan do wysokości poniżej wizjera.
-Odsunięcie tarczy pozwala lewej dłoni i przedramieniu poruszać się za nią
-w klipach `Idle_Loop`, `Walk_Loop`, `Jog_Fwd_Loop`, `Punch_Enter`, `Punch_Cross`.
-Gdy model go nie zawiera, pozostaje zastępcza tarcza pod `root`, o wymiarach
+Wbudowany węzeł `shield` jest widoczny wg `shieldUp` i **trzymany w lewej ręce**:
+`HeldShield` (`src/enemies/heldShield.ts`) wg `animation.shieldHold`
+(`bone`, `position` i `rotationDeg` w układzie wroga w pozie `Idle_Loop`,
+`rotationFollow`) ustawia go przed lewą połową tułowia (przy przedramieniu
+`DEF-forearmL`) i co klatkę, po aktualizacji szkieletu, przenosi środek tarczy
+za kością. Ułamek `rotationFollow` obrotu kości przenosi się na tarczę
+(1 = sztywne przypięcie; 0,15 — tarcza nie koziołkuje, gdy klipy `Punch_*`
+unoszą przedramię). Wcześniejsze przypięcie do kręgosłupa trzymało tarczę 0,6 m
+przed postacią, w powietrzu. Pozycja tarczy to wyłącznie prezentacja:
+blok z przodu (łuk 120°) liczy `Assaulter`. Gdy model go nie zawiera, pozostaje zastępcza tarcza pod `root`, o wymiarach
 `animation.shieldSizeM`. Egzekutor dostaje ostrze `enemyGlow` w `hand_R`,
 o rozmiarze `animation.bladeSizeM`, także w GLB. Geometrie dodatków tworzonych
 w kodzie są zwalniane z widokiem; geometrie GLB pozostają w cache.

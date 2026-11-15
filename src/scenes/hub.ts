@@ -12,6 +12,7 @@ import { createIndexedDbSaveStore, loadSettings } from '../core/save';
 import type { SaveStore } from '../core/save';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import hideoutData from '../data/hub/hideout.json';
+import npcTextData from '../data/hub/npcs.pl.json';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
@@ -30,14 +31,25 @@ import { createMissionsPanel } from '../ui/hub/missionsPanel';
 import { createTalentsPanel } from '../ui/hub/talentsPanel';
 import { createWorkshopPanel } from '../ui/hub/workshopPanel';
 import { HtmlHubScreens } from '../ui/hubScreens';
+import { HubDialog } from '../ui/hubDialog';
 import { HubPrompt } from '../ui/hubPrompt';
 import type { HubPanelRegistry, HubScreens } from '../ui/hubScreens';
 import { registerMetaCommands } from '../ui/metaCommands';
 import type { CommandHost } from '../ui/metaCommands';
 import { loadHubLayout } from '../world/hubSchema';
 import type { HubLayout } from '../world/hubSchema';
-import { HubStations, selectHubFocus } from '../world/hubStations';
+import {
+  NPC_RADIUS_M,
+  NpcDialogue,
+  loadNpcTexts,
+  npcFocusBox,
+  npcHeight,
+} from '../world/hubNpcs';
+import type { NpcLine, NpcTexts } from '../world/hubNpcs';
+import { HubStations, selectHubTarget } from '../world/hubStations';
+import type { HubTarget } from '../world/hubStations';
 import { HubDecor } from './hubDecor';
+import { HubNpcs } from './hubNpcs';
 import type { Scene } from './index';
 
 export interface HubSceneOptions {
@@ -46,6 +58,8 @@ export interface HubSceneOptions {
   params?: URLSearchParams;
   navigate?: (url: string) => void;
   loadModels?: boolean;
+  /** Teksty rozmów NPC (domyślnie `src/data/hub/npcs.pl.json`). */
+  npcTexts?: NpcTexts;
   /** Zapis meta (domyślnie IndexedDB); w testach pamięć. */
   metaStore?: SaveStore;
   /** Fabryki paneli stacji (domyślnie tablica misji, talenty i warsztat). */
@@ -82,6 +96,7 @@ const IDLE_BLADE: BladeView = {
 };
 
 const stationList = HUB_STATION_IDS.join('|');
+const lookList = `${stationList}|<npc>`;
 // E jest przypisane do power2; w kryjówce nie ma walki ani mocy.
 const HUB_INTERACT_ACTION = 'power2';
 
@@ -99,6 +114,15 @@ export class HubScene implements Scene {
   private metaBar: MetaBar | null = null;
   private screens!: HubScreens;
   private prompt: HubPrompt | null = null;
+  private dialogUi: HubDialog | null = null;
+  private npcTexts!: NpcTexts;
+  private dialogue!: NpcDialogue;
+  private npcs?: HubNpcs;
+  private talk: {
+    line: NpcLine;
+    remainingS: number;
+    anywhere: boolean;
+  } | null = null;
   private ctx!: GameContext;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
   private world!: World;
@@ -153,7 +177,12 @@ export class HubScene implements Scene {
       });
     if (this.options.metaBar ?? this.screensOption === undefined)
       this.metaBar = createMetaBar(this.meta, ctx.bus);
-    if (this.screensOption === undefined) this.prompt = new HubPrompt();
+    if (this.screensOption === undefined) {
+      this.prompt = new HubPrompt();
+      this.dialogUi = new HubDialog();
+    }
+    this.npcTexts = this.options.npcTexts ?? loadNpcTexts(npcTextData);
+    this.dialogue = new NpcDialogue(this.npcTexts.npcs);
     this.rapier = await initPhysics();
     if (this.disposed) return;
     this.world = new this.rapier.World({
@@ -182,8 +211,16 @@ export class HubScene implements Scene {
       floorY,
       this.layout.id,
     );
-    this.decor = new HubDecor(this.layout.panels ?? [], this.layout.stations);
+    this.decor = new HubDecor(
+      this.layout.panels ?? [],
+      this.layout.stations,
+      this.layout.fires ?? [],
+    );
     this.root.add(this.decor.root);
+
+    this.buildNpcs();
+    if (this.loadModels) await this.npcs?.load();
+    if (this.disposed) return;
 
     this.playerId = this.entities.create('player', 'player');
     const settings = loadSettings();
@@ -235,7 +272,7 @@ export class HubScene implements Scene {
   private async buildBlocks(): Promise<void> {
     await Promise.all(
       this.layout.blocks.map(
-        async ({ size, position, model, material, interactive }) => {
+        async ({ size, position, model, material, interactive, yaw }) => {
           this.world.createCollider(
             this.rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
               .setTranslation(position.x, position.y, position.z)
@@ -256,6 +293,7 @@ export class HubScene implements Scene {
             const scene = await cloneCityModel(model);
             if (!scene || this.disposed) return;
             scene.position.set(position.x, position.y - size.y / 2, position.z);
+            scene.rotation.y = yaw ?? 0;
             this.root.remove(fallback);
             this.root.add(scene);
           } catch {
@@ -264,6 +302,25 @@ export class HubScene implements Scene {
         },
       ),
     );
+  }
+
+  /** NPC: widok (`HubNpcs`) i collider walca, przez który gracz nie przechodzi. */
+  private buildNpcs(): void {
+    const defs = this.layout.npcs ?? [];
+    this.npcs = new HubNpcs(defs, this.ctx.tuning);
+    this.root.add(this.npcs.root);
+    for (const npc of defs) {
+      const height = npcHeight(npc);
+      this.world.createCollider(
+        this.rapier.ColliderDesc.cylinder(height / 2, NPC_RADIUS_M)
+          .setTranslation(
+            npc.position.x,
+            (npc.position.y ?? 0) + height / 2,
+            npc.position.z,
+          )
+          .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
+      );
+    }
   }
 
   private spawnPosition(): Vec3 {
@@ -281,6 +338,7 @@ export class HubScene implements Scene {
   private showStation(station: HubStationId): void {
     if (this.disposed) return;
     this.prompt?.update(null);
+    this.endTalk();
     this.screens.show(station, {
       close: () => this.closeStation(),
       ...(station === 'arena'
@@ -306,17 +364,60 @@ export class HubScene implements Scene {
     };
   }
 
-  private focusedStation(): HubStationId | null {
+  private focusedTarget(): HubTarget | null {
     const state = this.player.getState();
     const t = this.ctx.tuning.hub;
-    return selectHubFocus(
+    return selectHubTarget(
       this.layout.stations,
+      (this.layout.npcs ?? []).map((npc) => ({
+        id: npc.id,
+        focus: npcFocusBox(npc),
+      })),
       this.eyePosition(),
       state.yaw,
       state.pitch,
       t.interactRangeM,
       t.focusPaddingM,
     );
+  }
+
+  private focusedStation(): HubStationId | null {
+    const target = this.focusedTarget();
+    return target?.kind === 'station' ? target.id : null;
+  }
+
+  private focusedNpc(): string | null {
+    const target = this.focusedTarget();
+    return target?.kind === 'npc' ? target.id : null;
+  }
+
+  /** Pokazuje kolejną kwestię NPC (E przy spojrzeniu albo `hub talk`, które nie wymaga bliskości); `null`, gdy brak tekstów NPC. */
+  private talkTo(id: string, anywhere = false): NpcLine | null {
+    const line = this.dialogue.talk(id);
+    if (!line) return null;
+    this.talk = { line, remainingS: this.ctx.tuning.hub.npcLineS, anywhere };
+    this.dialogUi?.show(line);
+    return line;
+  }
+
+  private endTalk(): void {
+    this.talk = null;
+    this.dialogUi?.hide();
+  }
+
+  /** Dymek znika po `npcLineS` s albo gdy gracz odejdzie od NPC. */
+  private tickTalk(dt: number): void {
+    const talk = this.talk;
+    if (!talk) return;
+    talk.remainingS -= dt;
+    const npc = this.layout.npcs?.find(({ id }) => id === talk.line.id);
+    const player = this.player.getState().position;
+    const away =
+      !talk.anywhere &&
+      npc !== undefined &&
+      Math.hypot(player.x - npc.position.x, player.z - npc.position.z) >
+        this.ctx.tuning.hub.interactRangeM + 1;
+    if (talk.remainingS <= 0 || away) this.endTalk();
   }
 
   private go(params: URLSearchParams | Record<string, string>): void {
@@ -338,9 +439,12 @@ export class HubScene implements Scene {
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
-    const focused = this.focusedStation();
-    if (!discardInteract && focused && input.pressed.has(HUB_INTERACT_ACTION))
-      this.stations.open(focused);
+    const target = this.focusedTarget();
+    if (!discardInteract && target && input.pressed.has(HUB_INTERACT_ACTION)) {
+      if (target.kind === 'station') this.stations.open(target.id);
+      else this.talkTo(target.id);
+    }
+    this.tickTalk(dt);
   }
 
   /** Komenda debug `hub tp`: ustawia kierunek patrzenia jako jednorazowy ruch myszy w następnym kroku. */
@@ -359,11 +463,26 @@ export class HubScene implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
-    const focused = this.focusedStation();
-    this.prompt?.update(
-      this.layout.stations.find(({ id }) => id === focused)?.label ?? null,
-      this.stations.opened !== null,
-    );
+    const target = this.focusedTarget();
+    if (target?.kind === 'npc') {
+      const name =
+        this.npcTexts.npcs.find(({ id }) => id === target.id)?.name ??
+        target.id;
+      // Podczas rozmowy dymek zajmuje miejsce podpowiedzi (E dalej daje następną kwestię).
+      this.prompt?.update(
+        this.npcTexts.talkPrompt,
+        this.stations.opened !== null || this.talk !== null,
+        name,
+      );
+    } else
+      this.prompt?.update(
+        this.layout.stations.find(
+          ({ id }) => target?.kind === 'station' && id === target.id,
+        )?.label ?? null,
+        this.stations.opened !== null,
+      );
+    this.decor?.update(frameDt);
+    this.npcs?.update(frameDt, this.player.getState().position);
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
     const camera = this.ctx.camera;
@@ -413,6 +532,17 @@ export class HubScene implements Scene {
         return this.stations.opened;
       case 'hubFocus':
         return this.focusedStation();
+      case 'hubNpc':
+        return this.focusedNpc();
+      case 'hubTalk':
+        return this.talk ? { ...this.talk.line } : null;
+      case 'npcs':
+        return (this.layout.npcs ?? []).map(({ id, position }) => ({
+          id,
+          x: position.x,
+          z: position.z,
+          bodyYaw: this.npcs?.bodyYaw(id) ?? null,
+        }));
       case 'playerPos':
         return { ...this.player.getState().position };
       case 'stations':
@@ -463,20 +593,22 @@ export class HubScene implements Scene {
     );
     register(
       'hub look',
-      `hub look <${stationList}> — spójrz na stację`,
+      `hub look <${lookList}> — spójrz na stację albo NPC`,
       (args) => {
         const station = this.layout.stations.find(({ id }) => id === args[0]);
-        if (args.length !== 1 || !station)
-          return `Użycie: hub look <${stationList}>`;
+        const npc = this.layout.npcs?.find(({ id }) => id === args[0]);
+        const focus = station?.focus ?? (npc ? npcFocusBox(npc) : undefined);
+        if (args.length !== 1 || !focus)
+          return `Użycie: hub look <${lookList}>`;
         const eye = this.eyePosition();
-        const dx = station.focus.position.x - eye.x;
-        const dz = station.focus.position.z - eye.z;
-        const dy = station.focus.position.y - eye.y;
+        const dx = focus.position.x - eye.x;
+        const dz = focus.position.z - eye.z;
+        const dy = focus.position.y + (npc ? 0.35 : 0) - eye.y;
         this.pendingLook = {
           yaw: Math.atan2(-dx, -dz),
           pitch: Math.atan2(dy, Math.hypot(dx, dz)),
         };
-        return `Patrzysz na: ${station.id}`;
+        return `Patrzysz na: ${args[0]}`;
       },
     );
     register(
@@ -499,6 +631,19 @@ export class HubScene implements Scene {
         return `Gracz: ${x}, ${z}`;
       },
     );
+    register(
+      'hub talk',
+      'hub talk <npc> — pokaż kolejną kwestię NPC (bez patrzenia na niego)',
+      (args) => {
+        const id = args[0];
+        if (args.length !== 1 || !id || !this.dialogue.has(id))
+          return `Użycie: hub talk <${this.npcTexts.npcs.map((npc) => npc.id).join('|')}>`;
+        if (this.stations.opened)
+          return `Stacja otwarta: ${this.stations.opened}`;
+        const line = this.talkTo(id, true);
+        return line ? `${line.name}: ${line.line}` : `Brak NPC: ${id}`;
+      },
+    );
     register('hub close', 'hub close — zamknij nakładkę stacji', () => {
       const closed = this.stations.opened;
       this.closeStation();
@@ -514,6 +659,8 @@ export class HubScene implements Scene {
       this.stations?.dispose();
       this.screens?.dispose();
       this.prompt?.dispose();
+      this.dialogUi?.dispose();
+      this.npcs?.dispose();
       this.metaBar?.dispose();
       this.fppView?.dispose();
       this.fpsCamera?.dispose();

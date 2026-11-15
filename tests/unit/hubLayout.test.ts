@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
 import hideoutData from '../../src/data/hub/hideout.json';
@@ -39,7 +39,7 @@ it('kryjówka ma po jednej stacji każdego rodzaju, a spawn leży na poziomie 0'
   expect(layout.playerSpawn.y).toBe(0);
 });
 
-it('układ to peron 36–44 m × 12–16 m z sufitem i niecką torów', () => {
+it('układ to dwa perony 36–44 m po obu stronach niecki torów, z sufitem', () => {
   const floors = layout.blocks.filter(
     (block) => block.position.y + block.size.y / 2 === 0,
   );
@@ -51,18 +51,29 @@ it('układ to peron 36–44 m × 12–16 m z sufitem i niecką torów', () => {
     (block) => block.position.y - block.size.y / 2 >= 5,
   );
   expect(ceiling).toBeDefined();
-  // Wnętrze: od tylnej ściany (z = −7) do ściany za torami (z = 8).
-  const trough = layout.blocks.filter((block) => block.position.y < 0);
+  // Wnętrze: od tylnej ściany hali (z = −7) do tylnej ściany peronu B (z = 16).
+  const long = floors.filter((b) => b.size.x >= 30);
+  expect(long.length).toBeGreaterThanOrEqual(2);
+  const front = Math.min(...long.map((b) => b.position.z - b.size.z / 2));
+  const back = Math.max(...long.map((b) => b.position.z + b.size.z / 2));
+  expect(back - front).toBeGreaterThanOrEqual(20);
+  expect(back - front).toBeLessThanOrEqual(26);
+  // Niecka torów leży między peronami.
+  const trough = layout.blocks.filter(
+    (block) => block.position.y + block.size.y / 2 < 0 && block.size.x >= 30,
+  );
   expect(trough.length).toBeGreaterThan(0);
-  const depth =
-    Math.max(...trough.map((b) => b.position.z + b.size.z / 2)) -
-    Math.min(
-      ...floors
-        .filter((b) => b.size.x >= 30)
-        .map((b) => b.position.z - b.size.z / 2),
+  const [hall, platformB] = [...long].sort(
+    (a, b) => a.position.z - b.position.z,
+  );
+  for (const bed of trough) {
+    expect(bed.position.z - bed.size.z / 2).toBeGreaterThanOrEqual(
+      hall!.position.z + hall!.size.z / 2,
     );
-  expect(depth).toBeGreaterThanOrEqual(12);
-  expect(depth).toBeLessThanOrEqual(16);
+    expect(bed.position.z + bed.size.z / 2).toBeLessThanOrEqual(
+      platformB!.position.z - platformB!.size.z / 2,
+    );
+  }
 });
 
 it('dno niecki torów leży najwyżej 1 m pod peronem (wyjście skokiem, bez pułapek)', () => {
@@ -84,13 +95,17 @@ it('motyw hideout istnieje i nie ma deszczu ani burzy', () => {
 it('tekstury i modele z danych istnieją w public/assets', () => {
   const exists = (path: string): boolean => existsSync(publicFile(path));
   for (const sign of layout.signs ?? [])
-    expect(exists(`textures/signs/${sign.texture}.webp`)).toBe(true);
+    expect(
+      exists(
+        `textures/${sign.kind === 'holo' ? 'holo' : 'signs'}/${sign.texture}.webp`,
+      ),
+    ).toBe(true);
   for (const decal of layout.decals ?? [])
     expect(exists(`textures/decals/${decal.texture}.webp`)).toBe(true);
   for (const panel of layout.panels ?? [])
     expect(
       exists(
-        `textures/${panel.kind === 'tiles' ? 'surfaces' : 'screens'}/${panel.texture}.webp`,
+        `textures/${{ tiles: 'surfaces', screen: 'screens', poster: 'posters' }[panel.kind]}/${panel.texture}.webp`,
       ),
     ).toBe(true);
   for (const decor of layout.decor ?? [])
@@ -103,8 +118,8 @@ it('tekstury i modele z danych istnieją w public/assets', () => {
   );
 });
 
-it('oprawa: najwyżej 8 świateł i paleta Neon Noir bez czerwieni, cyanu i magenty', () => {
-  expect((layout.lights ?? []).length).toBeLessThanOrEqual(8);
+it('oprawa: definicje świateł (renderer włącza 8 najbliższych) i paleta Neon Noir bez czerwieni, cyanu i magenty', () => {
+  expect((layout.lights ?? []).length).toBeLessThanOrEqual(16);
   const allowed = new Set([
     '#ffae1a',
     '#6dff4a',
@@ -191,4 +206,85 @@ it('stacja odgrodzona od playerSpawn jest odrzucona jako nieosiągalna', () => {
   expect(
     issues(walled).some((issue) => issue.message.includes('nieosiągalny')),
   ).toBe(true);
+});
+
+it('układ ma pięciu NPC z akcentami z palety, każdy z innym akcentem, na podłodze i poza blokami', () => {
+  const npcs = layout.npcs ?? [];
+  expect(npcs.map((npc) => npc.id).sort()).toEqual(
+    ['bajt', 'mira', 'szron', 'tomasz', 'wolan'].sort(),
+  );
+  expect(new Set(npcs.map((npc) => npc.accent)).size).toBe(npcs.length);
+  for (const npc of npcs) expect(npc.position.y ?? 0).toBe(0);
+});
+
+it('schemat odrzuca NPC w bloku, poza podłogą i z powtórzonym id; siedzący stoi na bloku', () => {
+  const standing = (copy: Data): void => {
+    copy.npcs[0]!.animation = 'Idle_Loop';
+  };
+  expect(
+    paths(
+      mutate((copy) => {
+        standing(copy);
+        // Środek tablicy misji: wewnątrz bloku.
+        copy.npcs[0]!.position = { x: -6, z: -6.85 };
+      }),
+    ),
+  ).toContain('npcs.0.position');
+  expect(
+    paths(
+      mutate((copy) => {
+        standing(copy);
+        copy.npcs[0]!.position = { x: 0, z: 6 };
+      }),
+    ),
+  ).toContain('npcs.0.position');
+  expect(
+    issues(
+      mutate((copy) => {
+        copy.npcs[1]!.id = copy.npcs[0]!.id;
+      }),
+    ).some((issue) => issue.message.includes('Powtórzony NPC')),
+  ).toBe(true);
+  // Siedzący (stołek to blok) nie podlega walidacji bloków.
+  expect(layout.npcs?.some((npc) => npc.animation?.startsWith('Sitting'))).toBe(
+    true,
+  );
+});
+
+it('schemat odrzuca nieznany akcent i klip animacji NPC', () => {
+  expect(
+    issues(
+      mutate((copy) => {
+        (copy.npcs[0] as { accent: string }).accent = 'red';
+      }),
+    ).length,
+  ).toBeGreaterThan(0);
+  expect(
+    issues(
+      mutate((copy) => {
+        (copy.npcs[0] as { animation: string }).animation = 'Idle_Gun';
+      }),
+    ).length,
+  ).toBeGreaterThan(0);
+});
+
+it('animacje NPC istnieją w npc_anims.glb, a kolidery NPC nie blokują wejść do wagonu i pokoju łączności', () => {
+  const glb = readFileSync(publicFile('models/npc_anims.glb'));
+  const json = JSON.parse(
+    glb.subarray(20, 20 + glb.readUInt32LE(12)).toString(),
+  ) as { animations: { name: string }[] };
+  const clips = new Set(json.animations.map((clip) => clip.name));
+  for (const npc of layout.npcs ?? [])
+    expect(clips.has(npc.animation ?? 'Idle_Loop')).toBe(true);
+  // Wejścia: drzwi wagonu (x −13…−11, −8…−6 przy z = 3) i pokoju łączności (x = 8, z 10…13).
+  const doors = [
+    { x: -12, z: 3.5 },
+    { x: -7, z: 3.5 },
+    { x: 8.25, z: 11.5 },
+  ];
+  for (const door of doors)
+    for (const npc of layout.npcs ?? [])
+      expect(
+        Math.hypot(npc.position.x - door.x, npc.position.z - door.z),
+      ).toBeGreaterThan(1.2);
 });

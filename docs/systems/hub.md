@@ -15,37 +15,60 @@ styl: `docs/adr/0006-neon-noir.md`.
   - `stations: { id, position {x,z}, radius, focus {position {x,y,z}, size {x,y,z}}, label, sign? }[]` — `id` z `HUB_STATION_IDS`, środek strefy na podłodze;
     `focus` określa środek i dodatnie wymiary bryły obiektu (dla poligonu: wejścia tunelu);
     `sign` (pozycja, rozmiar, `yaw`, `color`) to neonowy napis z tekstu `label` (płótno, mieszanie addytywne);
-  - `panels: { kind: 'tiles' | 'screen', texture, position, size, yaw, tileM?, tint? }[]` — okładziny bez collidera:
-    `tiles` to kafle ściany (`surfaces/tiles_wall`, powtarzane co `tileM` m, domyślnie 3), `screen` to świecący ekran
-    (`screens/screen_*` jako nadruk `mat_screen_*`, bloom).
-- Walidacja układu używa `validateLayout` z `roomSchema.ts` (ta sama co spawny pokoi): środki stref muszą leżeć na
-  podłodze na poziomie `playerSpawn.y`, poza blokami i być osiągalne od `playerSpawn` na siatce 1 m. Dodatkowo: jedna
-  stacja każdego `id`, strefy nie nachodzą na siebie (odległość środków ≥ suma promieni).
+  - `blocks[].yaw` — obrót modelu `city_*` wokół środka (wielokrotność 90°; `size` jest już w osiach świata);
+    `blocks[].material` ma poza materiałami pokoju także `wood`, `fabric`, `machine`, `paint`, `lacquer`, `plastic`,
+    `rubber` i świecące paski `neon_amber|green|violet|blue|white` (bloom);
+  - `panels: { kind: 'tiles' | 'screen' | 'poster', texture, position, size, yaw, tileM?, tint? }[]` — okładziny bez collidera:
+    `tiles` to kafle ściany (dowolna tekstura z `surfaces/`, powtarzana co `tileM` m, domyślnie 3), `screen` to świecący ekran
+    (`screens/screen_*` jako nadruk `mat_screen_*`, bloom), `poster` to nieprzezroczysty plakat, baner albo mural
+    (`posters/<texture>.webp`, ładowany przez `HubDecor`, bo `dressingSchema` nie ma tej kategorii);
+  - `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent }[]` — postacie (sekcja „NPC”);
+  - `fires: { position, size? }[]` — płomień w beczce (skrzyżowane płaszczyzny z gradientem, addytywnie, bloom, migotanie w `HubDecor.update`).
+- Walidacja układu używa `validateLayout` z `roomSchema.ts` (ta sama co spawny pokoi): środki stref i stojących NPC muszą
+  leżeć na podłodze na poziomie `playerSpawn.y`, poza blokami i być osiągalne od `playerSpawn` na siatce 1 m (komórka
+  1 × 1 m musi mieścić się w jednym bloku podłogi, więc krawędzie podłóg i przejść leżą na całkowitych współrzędnych;
+  cienkie nakładki, np. pasy ostrzegawcze, mają dolną krawędź ponad podłogą i nie są przeszkodą). Dodatkowo: jedna
+  stacja każdego `id`, jeden NPC każdego `id`, strefy nie nachodzą na siebie (odległość środków ≥ suma promieni).
+  Siedzący NPC (`animation` zaczyna się od `Sitting`) stoi na bloku (stołek/krzesło), więc nie podlega walidacji bloków.
 - Motyw `hideout` (`src/data/themes/hideout.json`, na bazie `neonStreet`): bez deszczu i burzy, bez panoramy
-  miasta, ciemniejsza ciepła mgła, słabsze światło kluczowe. Do 8 świateł punktowych (`CityLights`).
+  miasta, ciemniejsza ciepła mgła, słabsze światło kluczowe. Układ definiuje 14 świateł (limit testu: 16), a
+  `CityLights` włącza naraz 8 najbliższych kamery (`tuning.city.maxLights`); reszta to emisja i poświata (neony,
+  paski `neon_*`, płomień, lampy w wagonie).
 
-## Peron
+## Układ (≈ 2× powierzchni)
 
-Peron 40 × 10,5 m ze ścianą tylną i sufitem na 5 m (wnętrze 15 m od tylnej ściany do ściany za torami), filary,
-pas ostrzegawczy (`hazard`) przy krawędzi, kafle na dolnej części ścian. Tory leżą w niecce 0,8 m poniżej peronu:
-dno ma collider, a skok (`jumpVelocity` 8 m/s ≈ 1,6 m) wyprowadza z niej z powrotem na peron, więc nie ma
-pułapek. Na tylnej ścianie od lewej: warsztat, tablica misji, neon ISKRA, terminal drzewek, generator, wejście do
-tunelu „POLIGON” (korytarz-ślepy zaułek z bursztynowym światłem). Neony `iskra`, `warsztat` i `metro`, ekrany
-`screen_talents` i `screen_missions`, graffiti `graffiti_iskra`; para z kratki, kapanie, iskry; lampiony i kable.
+Współrzędne: +Z w stronę torów i peronu B, +X na wschód; sufit na 5 m, granice jak w podziemiu (ściany boczne ±20 m).
+
+| Strefa          | Zakres                       | Zawartość                                                                                                                                                                                                                 |
+| --------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hala (peron A)  | x −20…20, z −7…3             | główna hala ze spawnem (0; 0,8); tylna ściana: antresola, tablica misji (stacja `missions`, Kapitan Szron), neon ISKRA, automat, kiosk, generator, wejście na poligon w tunelu (x 12,5…15,5; stacja `arena`)              |
+| Antresola       | x −20…−11, z −7…−3, y 2,4    | podest z barierką i kolizyjnymi stopniami (12 × 0,2 m, bieg 0,3 m; autostep gracza 0,35 m), skrzynie, pod spodem magazyn z zielonym światłem                                                                              |
+| Tory            | z 3…8, dno y −0,8            | niecka z szynami i podkładami; skok (`jumpVelocity` 8 m/s ≈ 1,6 m) wyprowadza z niej na peron, więc nie ma pułapek                                                                                                        |
+| Wagon-warsztat  | x −16…−3, z 3…7, podłoga y 0 | wrak wagonu metra na torach: dwoje drzwi od strony hali (x −13…−11 i −8…−6), okna od strony peronu B, stół warsztatowy (stacja `workshop`), ławki, generator, Mira                                                        |
+| Kładka          | x 4…7, z 3…8, poziom peronu  | metalowy pomost z barierkami nad torami, łączy halę z peronem B                                                                                                                                                           |
+| Peron B         | x −20…20, z 8…16             | zachód: strefa wypoczynku (bar z modelu `city_stall` i neon `sign_bar`, beczka z ogniem i Stary Tomasz, dwie kanapy, stolik, skrzynie, mural `mural_spark`, baner `banner_iskra`, sznury lampek); środek: automat i kiosk |
+| Kącik łączności | x 8…20, z 8…16               | pomieszczenie z wejściem 3 m (z 10…13): szafy serwerowe z ekranami, terminal drzew (stacja `talents`, Doktor Wolan), biurko Bajta z ekranem `screen_comms`, hologram Kurogane, projektor, antena, kable                   |
+
+Wszystkie perony i przejścia są na poziomie 0, więc strefy są osiągalne bez skoków (podwójny skok jest talentem);
+antresola jest opcjonalna. Neony `iskra`, `warsztat`, `sign_bar` i `metro`, ekrany `screen_talents`, `screen_missions`,
+`screen_comms`, `screen_status`, `screen_menu`, `screen_map`, `screen_news`, plakaty `poster_iskra_recruit` i
+`poster_koalicja_defaced` na hali, graffiti; para z kratki, kapanie, iskry (także z beczki), lampiony, kable i paski
+neonowe na filarach.
 
 ## Stacje i strefy
 
 `selectHubFocus` i `HubStations` (`src/world/hubStations.ts`, bez DOM i Three.js, testowalne w Vitest):
 
-- wybór wymaga przecięcia promienia z oka gracza w kierunku kamery (yaw + pitch) z AABB `focus`
-  stacji, powiększonym z każdej strony o `tuning.hub.focusPaddingM` (0,2 m). Odległość od oka
+- wybór (`selectHubTarget`: stacje i NPC razem, `selectHubFocus` zwraca tylko stację) wymaga przecięcia promienia z oka
+  gracza w kierunku kamery (yaw + pitch) z AABB `focus` stacji lub NPC, powiększonym z każdej strony o `tuning.hub.focusPaddingM` (0,2 m). Odległość od oka
   do trafienia musi być ≤ `tuning.hub.interactRangeM` (3,5 m). Wygrywa najbliższe trafienie,
   także z bliska i przy spojrzeniu w dół. Wysokość oka uwzględnia przysiad;
   `radius` nie ogranicza interakcji;
 - samo wejście w promień niczego nie otwiera. Dopiero zbocze naciśnięcia E (istniejąca akcja `power2`,
   nazwana w scenie `HUB_INTERACT_ACTION`) otwiera wybraną stację i emituje `hub_station_opened { station }`;
   `HubScene` nasłuchuje tego zdarzenia i pokazuje nakładkę przez `HubScreens.show`;
-- `HubPrompt` (`src/ui/hubPrompt.ts`) pokazuje klawisz E w ramce i `label` stacji na środku dolnej części ekranu.
+- `HubPrompt` (`src/ui/hubPrompt.ts`) pokazuje klawisz E w ramce i `label` stacji na środku dolnej części ekranu
+  (dla NPC: „Porozmawiaj” z imieniem nad etykietą, trzeci argument `update`).
   Podpowiedź znika przy braku stacji w celowniku lub otwartej nakładce. Teksty: sekcja `hub` w
   `src/data/ui/meta.pl.json`; aktualizacja DOM podpowiedzi odbywa się podczas renderowania;
 - przy otwartej stacji gracz stoi w miejscu (scena nie krokuje kontrolera ani fizyki), a kursor jest zwolniony
@@ -55,7 +78,38 @@ tunelu „POLIGON” (korytarz-ślepy zaułek z bursztynowym światłem). Neony 
   po zamknięciu ignoruje interakcję, aby odrzucić zaległe E z czasu pauzy, gdy pętla nie wykonywała kroków;
 - zamknięcie (`Zamknij`, Esc, `hub close`) wywołuje `ctx.resume`, więc gra wraca do przechwyconej myszy.
 
-Stacje: `talents` (terminal drzewek), `workshop` (warsztat), `missions` (tablica misji), `arena` (tunel na poligon).
+Stacje: `talents` (terminal drzewek, kącik łączności), `workshop` (stół w wagonie), `missions` (tablica misji w hali),
+`arena` (tunel na poligon).
+
+## NPC
+
+Pięć postaci (nie wrogowie): Mira (mechaniczka, wagon-warsztat), Doktor Wolan (badaczka Rezonansu, przy terminalu),
+Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekranach w kąciku łączności), Stary Tomasz
+(weteran, siedzi przy beczce z ogniem).
+
+- **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent }[]`
+  (`hubNpcSchema`, `src/world/hubSchema.ts`). `rotationDeg` to kierunek patrzenia na podłodze: 0 = +Z (w stronę
+  torów), 90 = +X, 180 = −Z. `animation` to klip z `public/assets/models/npc_anims.glb` (`Idle_Loop`, `Idle_Talking_Loop`,
+  `Idle_Torch_Loop`, `Sitting_Idle_Loop`, `Sitting_Talking_Loop`, `Fixing_Kneeling`, `Crouch_Idle_Loop`, `Interact`;
+  domyślnie `Idle_Loop`), `accent` ∈ `amber|green|violet|blue|white` (paleta ADR 0006; każdy NPC inny).
+- **Wygląd (`src/scenes/hubNpcs.ts`, `HubNpcs`):** ten sam manekin UAL co wrogowie (`enemy_trooper.glb`, tylko ciało
+  `armored_body`, bez płyt, broni i wizjera) w materiale toon grafit/granat (każdy NPC inny odcień) ze słabą poświatą
+  krawędzi w kolorze akcentu (bez czerwieni wrogów). Niebojowe akcesoria na głowie (czapka, gogle, okulary,
+  słuchawki). Klipy bezczynne z `npc_anims.glb` (wycięte z Quaternius UAL CC0 skryptem
+  `tools/hub/extractNpcAnimations.mjs`, ~1,6 MB; źródło `tools/blender/sources/ual/`), przesunięte w czasie i lekko
+  różne tempem, żeby NPC nie byli zsynchronizowani. Bez modelu (testy, `loadModels: false`) zostają collider i dialog.
+- **Obrót do gracza:** w zasięgu `tuning.hub.npcTurnRangeM` NPC obraca głowę i szyję (kości `DEF-head`, `DEF-neck`;
+  obrót wokół osi Y świata, `npcHeadMaxRad`) i powoli tułów (`npcTurnSpeedRadS`, do `npcStandBodyMaxRad` /
+  `npcSeatedBodyMaxRad` od kierunku bazowego); po odejściu gracza wraca do pozy bazowej. Czysta logika:
+  `updateNpcLook` (`src/world/hubNpcs.ts`).
+- **Kolizja:** każdy NPC ma nieruchomy collider walca (promień 0,4 m; 1,8 m wysokości, siedzący 1,35 m), grupa świata.
+  `focus` NPC wylicza `npcFocusBox` z tego kolidera.
+- **Rozmowa:** spojrzenie na NPC w zasięgu pokazuje „[E] Porozmawiaj” z imieniem; E pokazuje u dołu ekranu dymek
+  (`HubDialog`, `src/ui/hubDialog.ts`, styl „wizjer”): imię, rola i jedna kwestia. Kolejne E (na tego samego NPC)
+  daje następną kwestię w pętli (`NpcDialogue`, osobny licznik na NPC), dymek znika po `tuning.hub.npcLineS` (5 s) albo
+  po odejściu gracza dalej niż zasięg interakcji + 1 m; otwarcie stacji też go zamyka. Podczas rozmowy podpowiedź
+  jest ukryta. Teksty: `src/data/hub/npcs.pl.json` (`{ talkPrompt, npcs: [{ id, name, role, lines[] }] }`, schemat
+  `npcTextsSchema`; id muszą pasować do `hideout.json`).
 
 ## Nakładki (`HubScreens`)
 
@@ -76,10 +130,14 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 ## Debug
 
 - `hub open <talents|workshop|missions|arena>`, `hub close`;
-- `hub look <talents|workshop|missions|arena>` — obraca kamerę na środek bryły `focus` stacji w następnym kroku;
+- `hub look <talents|workshop|missions|arena|npc>` — obraca kamerę na środek bryły `focus` stacji albo NPC (id z
+  `hideout.json`) w następnym kroku;
+- `hub talk <npc>` — pokazuje kolejną kwestię NPC bez patrzenia na niego (nie wymaga bliskości; znika po 5 s);
 - `hub tp <x> <z> [yawDeg] [pitchDeg]` — teleport gracza (yaw 0 patrzy w −Z; ruch myszy symulowany w następnym
   kroku); teleport nie otwiera nakładki;
 - `query('hubStation')` (otwarta stacja albo `null`), `query('hubFocus')` (stacja w celowniku albo `null`),
+  `query('hubNpc')` (id NPC w celowniku albo `null`), `query('hubTalk')` (bieżąca kwestia `{ id, name, role, line }`
+  albo `null`), `query('npcs')` (id, pozycja i `bodyYaw` NPC),
   `query('playerPos')`, `query('stations')`, `query('meta')`
   (stan meta), `query('level')` (poziom, XP, punkty);
 - komendy meta (`registerMetaCommands`): `meta state|xp|data|cores|threat|unlock all|reset`; `meta threat <n>` ustawia
@@ -91,12 +149,16 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 `tests/unit/hubLayout.test.ts` (walidacja układu: stacje w granicach i osiągalne, strefy rozłączne, paleta, zasoby),
 `hubStations.test.ts` (ray–AABB, zasięg, najbliższe trafienie, otwieranie na żądanie), `hubPrompt.test.ts` (jsdom, podpowiedź),
 `hubScene.test.ts` (scena bez DOM: spojrzenie i zbocze E, komendy, zatrzymanie ruchu, niecka torów,
-nawigacja, `dispose` bez subskrypcji, meta), `hubScreens.test.ts` (jsdom, hostowanie paneli),
+nawigacja, `dispose` bez subskrypcji, meta, NPC: cel `hubNpc`, kwestie w pętli, wygasanie dymka, kolidery, obrót),
+`hubNpcs.test.ts` (teksty NPC, kolejność kwestii, `focus` z kolidera, `selectHubTarget`, `updateNpcLook`),
+`hubDialog.test.ts` (jsdom, dymek), `hubScreens.test.ts` (jsdom, hostowanie paneli),
 `missionsPanel.test.ts`, `metaBar.test.ts`, `mainMenu.test.ts`; e2e: `tests/e2e/hub.spec.ts`.
-Ręcznie: `?scene=hub&debug=1`, `hub tp 6 -3.2 180` — brak podpowiedzi mimo zasięgu; `hub look talents` —
+Ręcznie: `?scene=hub&debug=1`, `hub tp 14.05 13.6 0` — brak podpowiedzi mimo zasięgu; `hub look talents` —
 podpowiedź „E TALENTY”; E otwiera, Esc zamyka, kolejne E ponownie otwiera. Sprawdzić też tablicę misji,
 warsztat i poligon oraz zasięg i margines brył interakcji (parametry `hub` w lil-gui).
-Z bliska: `hub tp 6 -5.45`, `hub look talents` — podpowiedź widoczna, E otwiera terminal.
+Ze strefy stacji: `hub tp <x> <z>` z `query('stations')` i `hub look <stacja>` — podpowiedź widoczna, E otwiera.
+NPC: `hub tp -8.2 3.9 255`, `hub look mira` — „MIRA / POROZMAWIAJ”, E pokazuje dymek, kolejne E następną kwestię.
+Antresola: `hub tp -12 1.4 0` i trzymać W (schody). Kładka: `hub tp 5.5 3.6 180`; łączność: `hub tp 9.2 10.6 262`.
 
 ### Terminal drzewek
 

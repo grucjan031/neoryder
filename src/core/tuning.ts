@@ -6,8 +6,44 @@ export const tuning = {
     maxLights: 8,
     lightFadeRate: 6,
     lightSwitchThreshold: 0.01,
-    lightSpotOpacity: 0.08,
+    lightSpotOpacity: 0.12,
     lightSpotScale: 0.6,
+    /** Mnożnik intensywności świateł punktowych i wykładnik ich spadku (mniejszy = łagodniejszy). */
+    lightIntensityScale: 2.5,
+    lightDecay: 1.8,
+    /** Wybór świateł do puli: ważność jasnych źródeł (0..1) i premia histerezy dla przydzielonych. */
+    lightImportance: 0.6,
+    lightKeepBonus: 0.5,
+    /** Profil plamy pod światłem: wyższy wykładnik = węższa, miększa poświata. */
+    lightSpotPower: 2,
+    /** Poświata neonów i hologramów na ścianie: siła, rozmiar względem napisu, mnożnik dla hologramów, profil. */
+    signGlowOpacity: 0.45,
+    signGlowScale: 2.3,
+    signGlowHoloFactor: 0.5,
+    signGlowPower: 2.2,
+    /** Odległość (m) do światła, którego kolor przejmuje poświata napisu bez własnego tintu. */
+    signGlowLightRangeM: 3,
+    /** Latarnie (model city_street_lamp): punkt lampy w układzie modelu [m], stożek (kąt połowy, siła, profil), światło dynamiczne i plama. */
+    lampHeadHeightM: 4.31,
+    lampHeadForwardM: 0.34,
+    lampConeAngleDeg: 32,
+    lampConeOpacity: 0.2,
+    lampConePower: 1.6,
+    lampConeEdgePower: 1.4,
+    lampLightIntensity: 4,
+    lampLightRange: 7,
+    lampColor: '#fff1d6',
+    /** Okna fasad (atlasy windows_lit/dark): udział oświetlonych, rozstaw (m), zakres wymiarów okna (m), emisja oświetlonych i ciemnych, siła w bloomie. */
+    windowLitFraction: 0.4,
+    windowPitchXM: 2.4,
+    windowPitchYM: 3.2,
+    windowMinWidthM: 1.2,
+    windowMaxWidthM: 1.6,
+    windowMinHeightM: 1.6,
+    windowMaxHeightM: 2.2,
+    windowLitEmission: 0.5,
+    windowDarkEmission: 0.02,
+    windowBloom: 0.35,
     surfaceOffsetM: 0.012,
     signBrightness: 3.2,
     signFrameM: 0.09,
@@ -407,7 +443,19 @@ export const tuning = {
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
   run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },
   /** Kryjówka: zasięg od oka i margines bryły interakcji (m). */
-  hub: { interactRangeM: 3.5, focusPaddingM: 0.2 },
+  hub: {
+    interactRangeM: 3.5,
+    focusPaddingM: 0.2,
+    /** Dymek rozmowy z NPC znika po tylu sekundach (albo po odejściu gracza). */
+    npcLineS: 5,
+    /** NPC zwraca się do gracza w tym zasięgu (m); tułów obraca się z tą prędkością (rad/s). */
+    npcTurnRangeM: 4.5,
+    npcTurnSpeedRadS: 2,
+    /** Maks. odchylenie głowy od tułowia oraz tułowia od pozy bazowej (stojący / siedzący), rad. */
+    npcHeadMaxRad: 1,
+    npcStandBodyMaxRad: 1.9,
+    npcSeatedBodyMaxRad: 0.5,
+  },
   sandbox: { cubeSpawnHeight: 6 },
 };
 export type Tuning = typeof tuning;

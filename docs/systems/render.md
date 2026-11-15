@@ -46,6 +46,8 @@ od panelu debug.
 i ukośnym `DirectionalLight` z góry. Dodaj ją do sceny i wywołuj `lights.sync()`
 w jej `render()`. Intensywności czytane są z `hemiIntensity` i `keyIntensity`.
 Górne powierzchnie są prawie białe, boczne jaśniejszym odcieniem szarości.
+
+Motyw `neonStreet` (poprawka oświetlenia): `hemiIntensity` 1,35 (ciemne partie czytelne, bryły i przejścia widoczne), `bloomStrength` 0,65 i `bloomRadius` 1,2 (neony świecą bez mlecznej mgiełki na całym kadrze). Światło dynamiczne i poświata neonów, hologramów i latarni: `docs/systems/city.md`, sekcja „Ocena świateł”; parametry w `tuning.city` (widoczne w lil-gui).
 Domyślny renderer używa `NoToneMapping`; zachowaj to ustawienie, aby oba tryby
 obrysu dawały tę samą paletę. Dynamiczne cienie pozostają wyłączone.
 

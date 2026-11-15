@@ -1,7 +1,13 @@
-import { Color, MeshBasicMaterial, MeshStandardMaterial } from 'three';
+import {
+  Color,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  Vector2,
+  Vector4,
+} from 'three';
 import type { WebGLProgramParametersWithUniforms } from 'three';
 import { tuning } from '../core/tuning';
-import { surfaceTexture } from './surfaceTextures';
+import { assetTexture, surfaceTexture } from './surfaceTextures';
 import type { SurfaceTexture } from './surfaceTextures';
 
 export const urbanKinds = [
@@ -79,7 +85,24 @@ export const urbanUniforms = {
   windowWarm: { value: new Color() },
   windowCool: { value: new Color() },
   glassGlow: { value: new Color() },
+  windowPitch: { value: new Vector2(2.4, 3.2) },
+  /** Zakres wymiarów okna: (minSzer, maxSzer, minWys, maxWys) w metrach. */
+  windowSize: { value: new Vector4(1.2, 1.6, 1.6, 2.2) },
+  /** Udział oświetlonych okien, emisja oświetlonych, emisja ciemnych, siła w bloomie. */
+  windowParams: { value: new Vector4(0.4, 0.5, 0.02, 0.35) },
 };
+
+/** Atlasy okien (4x4 komórki po 256 px); do czasu załadowania okna są wyłączone. */
+function windowAtlasUniforms() {
+  const lit = assetTexture('atlas', 'windows_lit');
+  const dark = assetTexture('atlas', 'windows_dark');
+  return {
+    windowLitMap: lit.map,
+    windowLitReady: lit.ready,
+    windowDarkMap: dark.map,
+    windowDarkReady: dark.ready,
+  };
+}
 
 export function worldPositionShader(
   shader: WebGLProgramParametersWithUniforms,
@@ -105,6 +128,11 @@ export function worldPositionShader(
     uniform vec3 windowWarm;
     uniform vec3 windowCool;
     uniform vec3 glassGlow;
+    uniform vec2 windowPitch;
+    uniform vec4 windowSize;
+    uniform vec4 windowParams;
+    uniform sampler2D windowLitMap; uniform float windowLitReady;
+    uniform sampler2D windowDarkMap; uniform float windowDarkReady;
     float cityHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float cityNoise(vec2 p) {
       vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
@@ -125,19 +153,34 @@ export function worldPositionShader(
   Object.assign(shader.uniforms, urbanUniforms);
 }
 
+// Okno wybierane z atlasu 4x4 deterministycznie z indeksu okna na ścianie (lustro: city/windowAtlas.ts).
 const windowCode = /* glsl */ `
   vec3 cityCross = cross(dFdx(vCityWorld), dFdy(vCityWorld));
   vec3 cityNormal = abs(dot(cityCross, cityCross) > 1e-12 ? normalize(cityCross) : vec3(0.0, 1.0, 0.0));
   vec2 cityUv = cityNormal.x > cityNormal.z ? vCityWorld.zy : vCityWorld.xy;
-  vec2 windowCell = cityUv / vec2(1.7, 3.2);
-  vec2 windowLocal = fract(windowCell);
-  float windowSeed = cityHash(floor(windowCell));
-  vec2 windowEdge = smoothstep(vec2(0.17,0.22), vec2(0.20,0.25), windowLocal)
-    * (1.0-smoothstep(vec2(0.78,0.76), vec2(0.81,0.79), windowLocal));
-  float windowMask = windowEdge.x * windowEdge.y * (1.0-step(0.5,cityNormal.y));
-  float shutters = mix(1.0, 0.3 + 0.7*step(0.25,fract(cityUv.y*7.0)), step(0.72,windowSeed));
-  vec3 windowLight = mix(windowWarm, windowCool, step(0.65,windowSeed))
-    * windowMask * step(0.48,windowSeed) * shutters * cityDetail;
+  vec2 windowCell = cityUv / windowPitch;
+  vec2 windowId = floor(windowCell);
+  float windowSeed = cityHash(windowId);
+  vec2 windowDim = vec2(
+    mix(windowSize.x, windowSize.y, cityHash(windowId + vec2(17.3, 5.1))),
+    mix(windowSize.z, windowSize.w, cityHash(windowId + vec2(3.7, 41.9))));
+  vec2 windowLocal = (fract(windowCell) - 0.5) * windowPitch / windowDim + 0.5;
+  float windowLit = step(windowSeed, windowParams.x);
+  float windowReady = mix(windowDarkReady, windowLitReady, windowLit);
+  vec2 windowInside = step(vec2(0.0), windowLocal) * step(windowLocal, vec2(1.0));
+  float windowMask = windowInside.x * windowInside.y * (1.0-step(0.5,cityNormal.y)) * windowReady;
+  float windowIndex = min(15.0, floor(cityHash(windowId + vec2(9.1, 23.7)) * 16.0));
+  vec2 windowAtlasCell = vec2(mod(windowIndex, 4.0), floor(windowIndex / 4.0));
+  vec2 windowImage = vec2(windowLocal.x, 1.0 - windowLocal.y);
+  vec2 windowUv = (windowAtlasCell + clamp(windowImage, 0.012, 0.988)) * 0.25;
+  vec2 windowDx = dFdx(windowImage) * 0.25;
+  vec2 windowDy = dFdy(windowImage) * 0.25;
+  vec3 windowTex = vec3(0.0);
+  if (windowMask > 0.0) {
+    windowTex = windowLit > 0.5 ? textureGrad(windowLitMap, windowUv, windowDx, windowDy).rgb
+      : textureGrad(windowDarkMap, windowUv, windowDx, windowDy).rgb;
+  }
+  vec3 windowLight = windowTex * mix(windowParams.z, windowParams.y, windowLit) * windowMask * cityDetail;
 `;
 
 const glsl = (value: number) => value.toFixed(4);
@@ -155,6 +198,8 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
   const texelsPerPixel = glsl(config.scale * 1024);
   material.onBeforeCompile = (shader) => {
     worldPositionShader(shader);
+    if (kind === 'facade')
+      Object.assign(shader.uniforms, windowAtlasUniforms());
     const surface = surfaceTexture(config.texture);
     const grime = surfaceTexture('grime');
     Object.assign(shader.uniforms, {
@@ -200,8 +245,8 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
         ${
           kind === 'facade'
             ? `${windowCode}
-          diffuseColor.rgb *= 1.0 - windowMask * cityDetail * 0.7;
-          diffuseColor.rgb *= 1.0 - cityDetail*0.35*step(0.94,windowLocal.y);`
+          diffuseColor.rgb = mix(diffuseColor.rgb, windowTex * 0.3, windowMask * cityDetail);
+          diffuseColor.rgb *= 1.0 - cityDetail*0.35*step(0.94,fract(windowCell.y));`
             : ''
         }
       `,
@@ -223,7 +268,7 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
       .replace(
         '#include <emissivemap_fragment>',
         `#include <emissivemap_fragment>
-        ${kind === 'facade' ? 'totalEmissiveRadiance += windowLight * 0.65;' : ''}
+        ${kind === 'facade' ? 'totalEmissiveRadiance += windowLight;' : ''}
         ${kind === 'glass' ? 'totalEmissiveRadiance += glassGlow * cityDetail * (0.3 + 0.7*pow(max(0.0,1.0-abs(dot(normal,normalize(vViewPosition)))),3.0));' : ''}
       `,
       );
@@ -233,14 +278,15 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
     const glow = new MeshBasicMaterial({ color: 0xffffff, toneMapped: false });
     glow.onBeforeCompile = (shader) => {
       worldPositionShader(shader);
+      Object.assign(shader.uniforms, windowAtlasUniforms());
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <color_fragment>',
-          `#include <color_fragment>\n${windowCode}\ndiffuseColor.rgb = windowLight * 0.18; diffuseColor.a = windowMask * step(0.48,windowSeed) * cityDetail * 0.18;`,
+          `#include <color_fragment>\n${windowCode}\nfloat windowGlow = windowMask * windowLit * cityDetail; diffuseColor.rgb = windowTex * windowParams.w; diffuseColor.a = windowGlow * 0.18;`,
         )
         .replace(
           '#include <opaque_fragment>',
-          '#include <opaque_fragment>\ngl_FragColor.a = windowMask * step(0.48,windowSeed) * cityDetail * 0.18;',
+          '#include <opaque_fragment>\ngl_FragColor.a = windowGlow * 0.18;',
         );
     };
     glow.customProgramCacheKey = () => 'facadeEmission';
@@ -257,4 +303,18 @@ export function syncUrbanMaterials(): void {
   urbanUniforms.windowWarm.value.set(tuning.render.panoramaWindowWarm);
   urbanUniforms.windowCool.value.set(tuning.render.panoramaWindowCool);
   urbanUniforms.glassGlow.value.set(tuning.render.skyHorizon);
+  const c = tuning.city;
+  urbanUniforms.windowPitch.value.set(c.windowPitchXM, c.windowPitchYM);
+  urbanUniforms.windowSize.value.set(
+    c.windowMinWidthM,
+    c.windowMaxWidthM,
+    c.windowMinHeightM,
+    c.windowMaxHeightM,
+  );
+  urbanUniforms.windowParams.value.set(
+    c.windowLitFraction,
+    c.windowLitEmission,
+    c.windowDarkEmission,
+    c.windowBloom,
+  );
 }

@@ -12,12 +12,13 @@ import {
 import type { Camera } from 'three';
 import { Rng } from '../../core/rng';
 import { tuning } from '../../core/tuning';
-import type { SignDef } from '../../world/dressingSchema';
+import type { CityLightDef, SignDef } from '../../world/dressingSchema';
 import {
   CityTextures,
   cityColor,
   cityVertex,
   disposeCityGroup,
+  radialFragment,
 } from './resources';
 import type { TextureLoad } from './resources';
 
@@ -48,8 +49,39 @@ const fragment = /* glsl */ `
   }
 `;
 
+/**
+ * Kolor poświaty napisu: własny tint, w razie braku kolor najbliższego światła punktowego
+ * w zasięgu `rangeM` (napisy bez tintu dziedziczą barwę z tekstury, której nie znamy przed
+ * załadowaniem), w ostateczności ciepła biel.
+ */
+export function signGlowColor(
+  def: Pick<SignDef, 'tint' | 'position'>,
+  lights: readonly CityLightDef[],
+  rangeM: number,
+): string {
+  if (def.tint) return def.tint;
+  let best = rangeM * rangeM;
+  let color = '#fff1d6';
+  for (const light of lights) {
+    const d =
+      (light.position.x - def.position.x) ** 2 +
+      (light.position.y - def.position.y) ** 2 +
+      (light.position.z - def.position.z) ** 2;
+    if (d <= best) {
+      best = d;
+      color = light.color;
+    }
+  }
+  return color;
+}
+
 interface SignState {
   material: ShaderMaterial;
+  glow: ShaderMaterial;
+  glowBase: number;
+  halo: Mesh;
+  width: number;
+  height: number;
   flicker: number;
   rng: Rng;
   time: number;
@@ -69,6 +101,7 @@ export class SignRenderer {
     defs: readonly SignDef[],
     seed: string | number = 'city-signs',
     load?: TextureLoad,
+    lights: readonly CityLightDef[] = [],
   ) {
     this.textures = new CityTextures(load);
     const rng = new Rng(seed);
@@ -114,7 +147,38 @@ export class SignRenderer {
       plane.userData.noOutline = true;
       plane.position.z = tuning.city.surfaceOffsetM;
       group.add(plane);
+      const glow = new ShaderMaterial({
+        vertexShader: cityVertex,
+        fragmentShader: radialFragment,
+        uniforms: {
+          tint: {
+            value: cityColor(
+              signGlowColor(def, lights, tuning.city.signGlowLightRangeM),
+            ),
+          },
+          opacity: { value: 0 },
+          power: { value: tuning.city.signGlowPower },
+        },
+        transparent: true,
+        blending: AdditiveBlending,
+        depthWrite: false,
+        side: DoubleSide,
+        toneMapped: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -2,
+      });
+      glow.userData.bloom = false;
+      const halo = new Mesh(new PlaneGeometry(1, 1), glow);
+      halo.userData.noOutline = true;
+      halo.position.z = tuning.city.surfaceOffsetM * 0.4;
+      group.add(halo);
       const state: SignState = {
+        glow,
+        halo,
+        width: def.size.w,
+        height: def.size.h,
+        glowBase: def.kind === 'holo' ? tuning.city.signGlowHoloFactor : 1,
         material,
         flicker: def.flicker ?? 0,
         rng: rng.fork(String(i)),
@@ -206,6 +270,15 @@ export class SignRenderer {
       u.scanHz!.value = t.holoScanHz;
       u.glitchUv!.value = t.holoGlitchUv;
       u.opacity!.value = u.holo!.value ? t.holoOpacity : 1;
+      const glow = sign.glow.uniforms;
+      glow.opacity!.value =
+        t.signGlowOpacity * sign.glowBase * Math.min(1.25, brightness);
+      glow.power!.value = t.signGlowPower;
+      sign.halo.scale.set(
+        sign.width * t.signGlowScale,
+        sign.height * t.signGlowScale,
+        1,
+      );
       if (sign.projector)
         sign.projector.material.opacity = t.holoProjectorOpacity * brightness;
     }

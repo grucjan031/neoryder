@@ -146,10 +146,12 @@ export const cityVertex = /* glsl */ `
 export const radialFragment = /* glsl */ `
   uniform vec3 tint;
   uniform float opacity;
+  uniform float power;
   varying vec2 vUv;
   void main() {
+    // Miękki środek i brzeg (smoothstep): bez stożkowego szczytu i bez twardej krawędzi.
     float r = length(vUv * 2.0 - 1.0);
-    float a = pow(max(0.0, 1.0 - r), 2.0) * opacity;
+    float a = pow(1.0 - smoothstep(0.0, 1.0, r), power) * opacity;
     gl_FragColor = vec4(tint, a);
     #include <colorspace_fragment>
   }

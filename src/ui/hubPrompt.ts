@@ -24,9 +24,16 @@ export class HubPrompt {
     parent.append(this.root);
   }
 
-  update(label: string | null, overlayOpen = false): void {
+  /** `caption` zastępuje domyślny podpis nad etykietą (np. imię NPC); bez niego wraca „interakcja”. */
+  update(
+    label: string | null,
+    overlayOpen = false,
+    caption: string = text.interact,
+  ): void {
     this.root.hidden = label === null || overlayOpen;
     this.label.textContent = label ?? '';
+    if (this.root.getAttribute('aria-label') !== caption)
+      this.root.setAttribute('aria-label', caption);
   }
 
   dispose(): void {

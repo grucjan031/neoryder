@@ -6,10 +6,12 @@ import type {
   AmbientFxDef,
   CityLightDef,
   DecalDef,
+  DecorDef,
   SignDef,
 } from '../../world/dressingSchema';
 import type { Theme } from '../themeSchema';
 import { DecalRenderer } from './decals';
+import { LampCones, lampFixtures, lampLightDefs } from './lamps';
 import { CityLights } from './lights';
 import { SignRenderer } from './signs';
 
@@ -18,6 +20,8 @@ export interface DressingLayout {
   lights?: readonly CityLightDef[];
   decals?: readonly DecalDef[];
   ambientFx?: readonly AmbientFxDef[];
+  /** Latarnie z dekoracji dostają stożek światła i światło punktowe. */
+  decor?: readonly DecorDef[];
 }
 
 /**
@@ -27,6 +31,7 @@ export interface DressingLayout {
 export class CityDressing {
   private readonly signs?: SignRenderer;
   private readonly lights?: CityLights;
+  private readonly lamps?: LampCones;
   private readonly decals?: DecalRenderer;
   private readonly ambient?: AmbientFx;
   readonly weather?: Weather;
@@ -42,12 +47,23 @@ export class CityDressing {
   ) {
     const roots: Object3D[] = [];
     if (layout.signs?.length) {
-      this.signs = new SignRenderer(layout.signs, `${seed}:signs`);
+      this.signs = new SignRenderer(
+        layout.signs,
+        `${seed}:signs`,
+        undefined,
+        layout.lights,
+      );
       roots.push(this.signs.root);
     }
-    if (layout.lights?.length) {
-      this.lights = new CityLights(layout.lights, floorY);
+    const fixtures = lampFixtures(layout.decor);
+    const lightDefs = [...(layout.lights ?? []), ...lampLightDefs(fixtures)];
+    if (lightDefs.length) {
+      this.lights = new CityLights(lightDefs, floorY);
       roots.push(this.lights.root);
+    }
+    if (fixtures.length) {
+      this.lamps = new LampCones(fixtures);
+      roots.push(this.lamps.root);
     }
     if (layout.decals?.length) {
       this.decals = new DecalRenderer(layout.decals);
@@ -69,6 +85,7 @@ export class CityDressing {
     return !!(
       this.signs ||
       this.lights ||
+      this.lamps ||
       this.decals ||
       this.ambient ||
       this.weather
@@ -86,6 +103,7 @@ export class CityDressing {
     this.worldDt = 0;
     this.signs?.update(dt, frameDt, camera);
     this.lights?.update(dt, frameDt, camera);
+    this.lamps?.update(dt, frameDt, camera);
     this.decals?.update(dt, frameDt, camera);
     this.ambient?.update(dt, frameDt, camera);
     if (this.weather) {
@@ -99,6 +117,7 @@ export class CityDressing {
     this.disposed = true;
     this.signs?.dispose();
     this.lights?.dispose();
+    this.lamps?.dispose();
     this.decals?.dispose();
     this.ambient?.dispose();
     if (this.weather) {

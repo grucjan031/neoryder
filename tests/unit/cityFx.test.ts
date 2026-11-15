@@ -298,7 +298,11 @@ describe('tekstury i własność zasobów', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     const shaders: ShaderMaterial[] = [];
     renderer.root.traverse((object) => {
-      if (object instanceof Mesh && object.material instanceof ShaderMaterial)
+      if (
+        object instanceof Mesh &&
+        object.material instanceof ShaderMaterial &&
+        object.material.uniforms.map
+      )
         shaders.push(object.material);
     });
     expect(shaders).toHaveLength(2);

@@ -170,3 +170,90 @@
     text-shadow: 0 1px 3px #000;
   }
 }
+
+.hub-dialog {
+  position: fixed;
+  left: 50%;
+  bottom: 9%;
+  transform: translateX(-50%);
+  z-index: 91;
+  width: min(640px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 12px 22px 14px;
+  color: var(--hud-text, #edf7ff);
+  font:
+    500 19px/1.35 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #070b16c8 14%,
+    #070b16c8 86%,
+    transparent
+  );
+  pointer-events: none;
+  animation: hub-dialog-in 0.2s ease-out;
+}
+.hub-dialog::before,
+.hub-dialog::after {
+  content: '';
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  pointer-events: none;
+}
+.hub-dialog::before {
+  top: 0;
+  background: linear-gradient(90deg, transparent, #ffae1a90, transparent);
+}
+.hub-dialog::after {
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, #00e5ffb0, transparent);
+}
+.hub-dialog[hidden] {
+  display: none;
+}
+.hub-dialog__header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+.hub-dialog__name {
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ffae1a;
+  text-shadow:
+    0 1px 3px #000,
+    0 0 12px #ffae1a60;
+}
+.hub-dialog__role {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8faebc;
+}
+.hub-dialog__line {
+  margin: 0;
+  text-shadow: 0 1px 3px #000;
+}
+@keyframes hub-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-dialog {
+    animation: none;
+  }
+}

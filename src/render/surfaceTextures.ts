@@ -18,7 +18,7 @@ export type SurfaceTexture =
   | 'tech_panel'
   | 'plaster';
 /** Foldery tekstur ładowanych przez materiały (powierzchnie i nadruki modeli). */
-export type TextureFolder = 'surfaces' | 'labels' | 'screens';
+export type TextureFolder = 'surfaces' | 'labels' | 'screens' | 'atlas';
 export interface TextureEntry {
   map: { value: Texture | null };
   ready: { value: number };
@@ -29,7 +29,7 @@ const readyListeners = new Map<string, Array<(texture: Texture) => void>>();
 const available = new Set(
   Object.keys(
     import.meta.glob(
-      '/public/assets/textures/{surfaces,labels,screens}/*.webp',
+      '/public/assets/textures/{surfaces,labels,screens,atlas}/*.webp',
     ),
   ).map((path) => path.slice('/public'.length)),
 );

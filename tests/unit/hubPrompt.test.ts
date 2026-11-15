@@ -40,3 +40,13 @@ it('etykieta jest tekstem, a dispose usuwa podpowiedź z DOM', () => {
   prompt.dispose();
   expect(document.querySelector('.hub-prompt')).toBeNull();
 });
+
+it('podpis nad etykietą można zastąpić (imię NPC) i wraca do domyślnego', () => {
+  const prompt = new HubPrompt(document.body);
+  const root = document.querySelector<HTMLElement>('.hub-prompt')!;
+  prompt.update('Porozmawiaj', false, 'Mira');
+  expect(root.getAttribute('aria-label')).toBe('Mira');
+  expect(root.querySelector('span')?.textContent).toBe('Porozmawiaj');
+  prompt.update('WARSZTAT');
+  expect(root.getAttribute('aria-label')).toBe(text.hub.interact);
+});

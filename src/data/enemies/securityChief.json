@@ -29,7 +29,9 @@
     "attackHalfHeight": 0.975
   },
   "animation": {
-    "strideM": 1.8,
+    "strideM": 2.54,
+    "clipStrideM": { "Walk_Loop": 2.54, "Jog_Fwd_Loop": 8.31 },
+    "jogFromSpeedFrac": 2,
     "walkAngle": 0.5,
     "telegraphAngle": -2.4,
     "swingAngle": 1.2,
@@ -51,9 +53,15 @@
   "attackTags": ["#melee", "#heavy"],
   "boss": {
     "muzzle": {
-      "y": 1.5,
-      "z": 0.8,
+      "y": 1.25,
+      "z": 1.5,
       "x": 0
+    },
+    "attackAnimations": {
+      "slam": { "clip": "Sword_Attack", "impact": 0.36, "end": 1 },
+      "fan": { "clip": "Sword_Attack", "impact": 0.3, "end": 1 },
+      "summon": { "clip": "Sword_Attack", "impact": 0.15, "end": 0.15 },
+      "shield": { "clip": "Sword_Attack", "impact": 0.15, "end": 0.15 }
     },
     "name": "Dyrektor Ochrony Kurogane Arms",
     "phases": [

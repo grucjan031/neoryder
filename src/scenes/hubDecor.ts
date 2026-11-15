@@ -2,26 +2,43 @@ import {
   AdditiveBlending,
   CanvasTexture,
   Color,
+  DoubleSide,
   Group,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
   PlaneGeometry,
   SRGBColorSpace,
+  TextureLoader,
 } from 'three';
 import type { Texture } from 'three';
 import { printMaterial } from '../render/propPrints';
 import { assetTexture } from '../render/surfaceTextures';
-import type { HubPanelDef, HubStationDef } from '../world/hubSchema';
+import type {
+  HubFireDef,
+  HubPanelDef,
+  HubStationDef,
+} from '../world/hubSchema';
 
 const DEFAULT_TILE_TINT = '#8e9ab0';
 const DEFAULT_LABEL_COLOR = '#ffae1a';
 /** Rozmiar tekstury napisu w px na metr szerokości. */
 const LABEL_PX_PER_M = 256;
+const FLAME_COLOR = '#ffae1a';
+/** Płomień: liczba skrzyżowanych płaszczyzn i wysokość względem `size`. */
+const FLAME_PLANES = 3;
+const FLAME_HEIGHT = 1.4;
+// Lista z Vite pozwala pominąć żądanie brakującego pliku (bez błędów HTTP w konsoli).
+const availablePosters = new Set(
+  Object.keys(import.meta.glob('/public/assets/textures/posters/*.webp')).map(
+    (path) => path.slice('/public'.length),
+  ),
+);
+const posterTextures = new Map<string, Texture>();
 
 /**
  * Kosmetyczna oprawa kryjówki spoza `dressingSchema`: okładziny ścian z kafli, ekrany
- * (nadruki `mat_screen_*`) i neonowe napisy stacji. Bez colliderów; `dispose` zwalnia
+ * (nadruki `mat_screen_*`), plakaty/banery/murale (`posters/`), neonowe napisy stacji i płomienie beczek. Bez colliderów; `dispose` zwalnia
  * geometrie, materiały i tekstury napisów (współdzielone tekstury zasobów zostają w cache).
  */
 export class HubDecor {
@@ -29,18 +46,38 @@ export class HubDecor {
   private readonly geometries: PlaneGeometry[] = [];
   private readonly materials: (MeshStandardMaterial | MeshBasicMaterial)[] = [];
   private readonly textures: Texture[] = [];
+  private readonly flames: { mesh: Mesh; baseScale: number; phase: number }[] =
+    [];
+  private flameTexture: CanvasTexture | null = null;
+  private timeS = 0;
   private disposed = false;
 
   constructor(
     panels: readonly HubPanelDef[],
     stations: readonly HubStationDef[],
+    fires: readonly HubFireDef[] = [],
   ) {
     for (const panel of panels)
       this.root.add(
-        panel.kind === 'tiles' ? this.tiles(panel) : this.screen(panel),
+        panel.kind === 'tiles'
+          ? this.tiles(panel)
+          : panel.kind === 'poster'
+            ? this.poster(panel)
+            : this.screen(panel),
       );
     for (const station of stations)
       if (station.sign) this.root.add(this.label(station));
+    fires.forEach((fire, index) => this.fire(fire, index));
+  }
+
+  /** Migotanie płomieni (czas kosmetyczny, bez RNG). */
+  update(dt: number): void {
+    this.timeS += dt;
+    for (const flame of this.flames) {
+      const t = this.timeS * 7 + flame.phase;
+      const flicker = 1 + 0.16 * Math.sin(t) + 0.1 * Math.sin(t * 2.7 + 1.3);
+      flame.mesh.scale.set(flame.baseScale, flame.baseScale * flicker, 1);
+    }
   }
 
   private plane(panel: {
@@ -98,6 +135,95 @@ export class HubDecor {
     mesh.userData.noOutline = true;
     place(mesh);
     return mesh;
+  }
+
+  /** Plakat, baner albo mural: nieprzezroczysta płaszczyzna z `posters/<texture>.webp`. */
+  private poster(panel: HubPanelDef): Mesh {
+    const { geometry, place } = this.plane(panel);
+    const material = new MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.85,
+      metalness: 0,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -2,
+    });
+    this.materials.push(material);
+    const path = `/assets/textures/posters/${panel.texture}.webp`;
+    if (typeof window !== 'undefined') {
+      const cached = posterTextures.get(path);
+      if (cached) {
+        material.map = cached;
+      } else if (availablePosters.has(path)) {
+        new TextureLoader().load(path, (texture) => {
+          texture.colorSpace = SRGBColorSpace;
+          texture.anisotropy = 4;
+          posterTextures.set(path, texture);
+          if (this.disposed) return;
+          material.map = texture;
+          material.needsUpdate = true;
+        });
+      } else {
+        console.warn(`Brak tekstury ${path}; użyto wzoru zastępczego.`);
+        material.color.set('#3a4458');
+      }
+    }
+    const mesh = new Mesh(geometry, material);
+    mesh.userData.noOutline = true;
+    place(mesh);
+    return mesh;
+  }
+
+  /** Płomień: kilka skrzyżowanych płaszczyzn z gradientem, mieszanie addytywne i bloom. */
+  private fire(def: HubFireDef, seed: number): void {
+    if (typeof document === 'undefined') return;
+    this.flameTexture ??= this.makeFlameTexture();
+    const size = def.size ?? 0.6;
+    const geometry = new PlaneGeometry(size, size * FLAME_HEIGHT);
+    geometry.translate(0, (size * FLAME_HEIGHT) / 2, 0);
+    this.geometries.push(geometry);
+    const material = new MeshBasicMaterial({
+      map: this.flameTexture,
+      color: 0xffffff,
+      blending: AdditiveBlending,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+      side: DoubleSide,
+    });
+    material.userData.bloom = true;
+    this.materials.push(material);
+    for (let i = 0; i < FLAME_PLANES; i++) {
+      const mesh = new Mesh(geometry, material);
+      mesh.position.set(def.position.x, def.position.y, def.position.z);
+      mesh.rotation.y = (i * Math.PI) / FLAME_PLANES;
+      mesh.userData.noOutline = true;
+      this.root.add(mesh);
+      this.flames.push({ mesh, baseScale: 1, phase: seed * 2.1 + i * 1.7 });
+    }
+  }
+
+  private makeFlameTexture(): CanvasTexture | null {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 96;
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+    const gradient = context.createRadialGradient(32, 70, 2, 32, 62, 34);
+    gradient.addColorStop(0, '#fff1d6');
+    gradient.addColorStop(0.35, FLAME_COLOR);
+    gradient.addColorStop(1, '#00000000');
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.moveTo(32, 2);
+    context.bezierCurveTo(52, 34, 62, 52, 50, 80);
+    context.quadraticCurveTo(32, 98, 14, 80);
+    context.bezierCurveTo(2, 52, 14, 36, 32, 2);
+    context.fill();
+    const texture = new CanvasTexture(canvas);
+    texture.colorSpace = SRGBColorSpace;
+    this.textures.push(texture);
+    return texture;
   }
 
   /** Neonowy napis z `label` stacji (tekst rysowany na płótnie, mieszanie addytywne). */
@@ -185,5 +311,6 @@ export class HubDecor {
     this.geometries.length = 0;
     this.materials.length = 0;
     this.textures.length = 0;
+    this.flames.length = 0;
   }
 }

@@ -135,7 +135,7 @@ it('hub open pokazuje nakładkę i emituje zdarzenie, hub close ją zamyka i wzn
 
 it('stacja wymaga patrzenia i zbocza E; nakładka ignoruje E, po zamknięciu można otworzyć ją ponownie', async () => {
   const { scene, commands, screens, opened } = await setup();
-  commands.execute('hub tp 6 -3.2 180');
+  commands.execute('hub tp 14.05 13.6 0');
   scene.step(SIM_DT, idle);
   expect(scene.query('hubFocus')).toBeNull();
   scene.step(SIM_DT, interact);
@@ -164,7 +164,7 @@ it.each([false, true])(
   'odrzuca zaległe E po zamknięciu nakładki (kroki przy otwartej: %s)',
   async (stepsWhileOpen) => {
     const { scene, commands, screens, opened } = await setup();
-    commands.execute('hub tp 6 -3.2');
+    commands.execute('hub tp 14.05 13.6');
     commands.execute('hub look talents');
     scene.step(SIM_DT, interact);
     expect(scene.query('hubStation')).toBe('talents');
@@ -305,11 +305,10 @@ it('dispose nie zostawia subskrypcji EventBus ani komend i zwalnia nakładki', a
 });
 
 it.each(hideout.stations)(
-  'blisko obiektu $id spojrzenie w środek focus i E działają',
+  'ze strefy stacji $id spojrzenie w środek focus i E działają',
   async (station) => {
     const { scene, commands, opened } = await setup();
-    const { position, size } = station.focus;
-    commands.execute(`hub tp ${position.x} ${position.z + size.z / 2 + 0.8}`);
+    commands.execute(`hub tp ${station.position.x} ${station.position.z}`);
     commands.execute(`hub look ${station.id}`);
     scene.step(SIM_DT, idle);
     expect(scene.query('hubFocus')).toBe(station.id);
@@ -317,3 +316,94 @@ it.each(hideout.stations)(
     expect(opened).toEqual([station.id]);
   },
 );
+
+const npcSpot = (scene: HubScene, id: string) =>
+  (scene.query('npcs') as { id: string; x: number; z: number }[]).find(
+    (npc) => npc.id === id,
+  )!;
+
+it('NPC: spojrzenie pokazuje cel hubNpc, E daje kolejne kwestie w pętli, bez otwierania stacji', async () => {
+  const { scene, commands, opened } = await setup();
+  const mira = npcSpot(scene, 'mira');
+  commands.execute(`hub tp ${mira.x - 1.6} ${mira.z - 0.4}`);
+  expect(commands.execute('hub look mira')).toBe('Patrzysz na: mira');
+  scene.step(SIM_DT, holdInteract);
+  expect(scene.query('hubNpc')).toBe('mira');
+  expect(scene.query('hubFocus')).toBeNull();
+  expect(scene.query('hubTalk')).toBeNull();
+  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, interact);
+  const first = scene.query('hubTalk') as { line: string; name: string };
+  expect(first.name).toBe('Mira');
+  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, interact);
+  const second = scene.query('hubTalk') as { line: string };
+  expect(second.line).not.toBe(first.line);
+  expect(opened).toEqual([]);
+  expect(scene.query('hubStation')).toBeNull();
+});
+
+it('NPC: dymek znika po npcLineS sekundach i po odejściu gracza', async () => {
+  const { scene, commands } = await setup();
+  const wolan = npcSpot(scene, 'wolan');
+  commands.execute(`hub tp ${wolan.x - 1.6} ${wolan.z - 0.4}`);
+  commands.execute('hub look wolan');
+  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubTalk')).not.toBeNull();
+  for (let i = 0; i < (tuning.hub.npcLineS - 0.5) * 60; i++)
+    scene.step(SIM_DT, idle);
+  expect(scene.query('hubTalk')).not.toBeNull();
+  for (let i = 0; i < 60; i++) scene.step(SIM_DT, idle);
+  expect(scene.query('hubTalk')).toBeNull();
+  // Odejście gracza kończy rozmowę; komenda debug nie wymaga bliskości.
+  commands.execute(`hub tp ${wolan.x - 1.6} ${wolan.z - 0.4}`);
+  commands.execute('hub look wolan');
+  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubTalk')).not.toBeNull();
+  commands.execute('hub tp 0 0.8');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubTalk')).toBeNull();
+  commands.execute('hub talk wolan');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubTalk')).not.toBeNull();
+});
+
+it('hub talk <npc> pokazuje kwestię bez patrzenia; nieznany NPC daje użycie', async () => {
+  const { scene, commands } = await setup();
+  expect(commands.execute('hub talk tomasz')).toContain('Stary Tomasz');
+  expect((scene.query('hubTalk') as { id: string }).id).toBe('tomasz');
+  expect(commands.execute('hub talk nikt')).toContain('Użycie');
+  expect(commands.execute('hub talk')).toContain('Użycie');
+});
+
+it('NPC mają kolidery: gracz idący w NPC zatrzymuje się przed nim', async () => {
+  const { scene, commands } = await setup();
+  const szron = npcSpot(scene, 'szron');
+  // Gracz idzie w −Z prosto na Szrona (stoi przy tablicy misji).
+  commands.execute(`hub tp ${szron.x} ${szron.z + 3} 0`);
+  for (let i = 0; i < 20; i++) scene.step(SIM_DT, idle);
+  for (let i = 0; i < 45; i++) scene.step(SIM_DT, walkForward);
+  // Promień NPC 0,4 m + promień gracza 0,35 m.
+  expect(position(scene).z).toBeGreaterThan(szron.z + 0.7);
+});
+
+it('NPC zwraca się do gracza w zasięgu i wraca do pozy bazowej po jego odejściu', async () => {
+  const { scene, commands } = await setup();
+  const yawOf = (id: string): number =>
+    (scene.query('npcs') as { id: string; bodyYaw: number }[]).find(
+      (npc) => npc.id === id,
+    )!.bodyYaw;
+  const base = yawOf('szron');
+  const szron = npcSpot(scene, 'szron');
+  commands.execute(`hub tp ${szron.x + 2} ${szron.z + 2}`);
+  scene.step(SIM_DT, idle);
+  for (let i = 0; i < 90; i++) scene.render(1, 1 / 60);
+  // Gracz stoi za plecami Szrona (+X/+Z): tułów obraca się do granicy zakresu, głowa dokończy obrót.
+  expect(yawOf('szron')).toBeCloseTo(base + tuning.hub.npcStandBodyMaxRad, 1);
+  commands.execute('hub tp 0 0.8');
+  scene.step(SIM_DT, idle);
+  for (let i = 0; i < 180; i++) scene.render(1, 1 / 60);
+  expect(Math.cos(yawOf('szron') - base)).toBeCloseTo(1, 2);
+});
