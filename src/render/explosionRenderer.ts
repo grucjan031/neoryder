@@ -1,7 +1,11 @@
-import { Group, Mesh, SphereGeometry } from 'three';
+import { Color, Group, Mesh, SphereGeometry } from 'three';
 import type { EventBus } from '../core/events';
 import { tuning } from '../core/tuning';
 import { getMaterial } from './materials';
+
+/** Magenta jest zarezerwowana dla Rezonansu (ADR 0006): tylko wybuchy z tagiem #power. */
+const ELECTRIC = new Color('#fff1d6');
+const FIRE = new Color('#ffb84d');
 
 export class ExplosionRenderer {
   readonly root = new Group();
@@ -9,6 +13,7 @@ export class ExplosionRenderer {
   private readonly pool;
   private readonly off: () => void;
   private sequence = 0;
+  private readonly powerColor = getMaterial('power').color.clone();
 
   constructor(bus: EventBus) {
     this.pool = Array.from(
@@ -23,7 +28,7 @@ export class ExplosionRenderer {
         return { mesh, age: 0, radius: 0, order: -1 };
       },
     );
-    this.off = bus.on('explosion', ({ point, radiusM }) => {
+    this.off = bus.on('explosion', ({ point, radiusM, tags }) => {
       const slot =
         this.pool.find((p) => !p.mesh.visible) ??
         this.pool.reduce((a, b) => (a.order < b.order ? a : b));
@@ -33,6 +38,13 @@ export class ExplosionRenderer {
       slot.mesh.position.set(point.x, point.y, point.z);
       slot.mesh.scale.setScalar(0);
       slot.mesh.material.opacity = tuning.vfx.explosionOpacity;
+      slot.mesh.material.color.copy(
+        tags.includes('#power')
+          ? this.powerColor
+          : tags.includes('#elektrycznosc')
+            ? ELECTRIC
+            : FIRE,
+      );
       slot.mesh.visible = true;
     });
   }
