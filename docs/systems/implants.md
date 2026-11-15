@@ -84,13 +84,14 @@ Wszystkie liczby pozostają w JSON; nowe efekty wymagają `cooldownS`.
 | `glassCore` → `glassCorePlus`             | `#melee`, `#gun`, `#power`, `#cursed` | stałe modyfikatory                            | damage +35% → +45%; maxHealth −25% → −20%                                          |
 | `overdriveHeart` → `overdriveHeartPlus`   | `#melee`, `#power`, `#cursed`         | stałe modyfikatory                            | moveSpeed +15% → +20%; energyRegen +25% → +35%; damageTaken +20% → +15%            |
 
-`resonanceLoop` korzysta z istniejącego `stat_modifier_timed`. Obecnie sceny
-przekazują wykonawcy tylko `PlayerController.stats`, a modułom walki osobne
-`playerStats`. Ponadto ataki gracza nie odczytują statystyki `damage` (używają
-obrażeń definicji broni/ostrza). Architekt musi podłączyć mnożnik obrażeń gracza
-oraz przekazywanie czasowych modyfikatorów do statystyk walki; bez tego bonus
-obrażeń `resonanceLoop` i `glassCore` nie wpływa na trafienia. Leczenie wymaga nowych pól
-kontekstu (Arena podłączona, RoomScene do integracji przez architekta).
+`resonanceLoop` korzysta z `stat_modifier_timed`. Pokój i arena przekazują
+`[playerStats, player.stats]`, więc czasowe modyfikatory trafiają do obu obiektów
+`Stats` (walka i ruch). `DamageSystem` odczytuje `playerStats.damage` przez
+mnożnik `outgoing`; wyjątki to `#hazard`, `#status` i `#derived`. Bonusy
+`resonanceLoop` i `glassCore` wpływają na trafienia. Łańcuch używa `#derived`,
+ponieważ bazuje na już zadanych obrażeniach; wybuch z danych nadal się skaluje.
+W pokoju i arenie podpięto `heal` (z emisją `health_changed`), `userPosition`
+i `applyStatus` (zwraca wynik `StatusSystem.apply`).
 
 ## Integracja z `RoomScene` i sprawdzenie w 30 sekund
 

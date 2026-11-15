@@ -96,6 +96,7 @@ export class PlasmaBlade {
   private stage = 0;
   private phase: SwingPhase | null = null;
   private phaseS = 0;
+  private phaseAttackSpeed = 1;
   private sinceSwingS = Number.POSITIVE_INFINITY;
   private attackBufferS = 0;
   private holding = false;
@@ -586,6 +587,13 @@ export class PlasmaBlade {
   private beginPhase(phase: SwingPhase): void {
     this.phase = phase;
     this.phaseS = 0;
+    this.phaseAttackSpeed = Math.max(
+      this.tuning.melee.attackSpeedMin,
+      Math.min(
+        this.tuning.melee.attackSpeedMax,
+        this.deps.attackSpeed?.() ?? 1,
+      ),
+    );
     if (phase === 'active') {
       const strike = this.strike();
       this.hitbox = new Hitbox({
@@ -684,11 +692,7 @@ export class PlasmaBlade {
   private phaseDuration(): number {
     const m = this.tuning.melee;
     const heavy = this.state === 'heavy';
-    const speed = Math.max(
-      m.attackSpeedMin,
-      Math.min(m.attackSpeedMax, this.deps.attackSpeed?.() ?? 1),
-    );
-    const scale = this.def.timeScale / speed;
+    const scale = this.def.timeScale / this.phaseAttackSpeed;
     switch (this.phase) {
       case 'windup':
         return (heavy ? m.heavyWindupS : m.lightWindupS) * scale;

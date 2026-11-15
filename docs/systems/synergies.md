@@ -6,6 +6,9 @@ przekazanych instancjach, również przy wygaśnięciu, usunięciu wyzwalacza,
 `reset` i `dispose`. Pojedynczy `Stats` zachowuje dotychczasową obsługę.
 Pokój i arena przekazują `[playerStats, player.stats]`, dzięki czemu czasowy
 bonus `damage` dociera do statystyk walki, a bonus dashu do kontrolera ruchu.
+`DamageSystem` skaluje trafienia przez `outgoing` odczytujące `playerStats.damage`;
+wyjątki to `#hazard`, `#status` i `#derived`. Wybuch używa bazowej wartości
+z danych i podlega skalowaniu, a łańcuch już zadanych obrażeń nie skaluje ponownie.
 
 ## F3-10: implanty i progi
 
@@ -91,16 +94,18 @@ wyzwoleniem. Pominięte efekty nie emitują `synergy_triggered` ani nie uruchami
 odnowienia, chyba że inny efekt tego samego wyzwalacza zadziałał.
 
 Nowe opcjonalne pola `SynergyContext`: `heal(amount: number): void`,
-`userPosition(): Vec3 | null`, `applyStatus(target: EntityId, app: StatusApplication): void`.
-Arena przekazuje `Health.heal` wraz z emisją `health_changed`, pozycję kontrolera
-i `StatusSystem.apply(target, app, playerId)`. Integracja tych pól w `RoomScene`
-wymaga osobnego wklejenia przez architekta. Wyzwalacze implantów z `heal`,
+`userPosition(): Vec3 | null`, `applyStatus(target: EntityId, app: StatusApplication): boolean`.
+Pokój i arena przekazują `Health.heal` wraz z emisją `health_changed`, pozycję kontrolera
+i wynik `StatusSystem.apply(target, app, playerId)`. Efekt statusu liczy się jako
+wykonany tylko po nałożeniu na co najmniej jeden cel, także przy promieniu 0.
+Martwy cel nie zużywa odnowienia i nie emituje `synergy_triggered`.
+Wyzwalacze implantów z `heal`,
 `explode` lub `apply_status_area` muszą podawać dodatni `cooldownS`.
 
 - `add_energy { amount }` — `ctx.addEnergy(amount)`.
 - `cool_weapon { amount: number | "full" }` — `ctx.coolWeapon(amount)`.
 - `stat_modifier_timed { stat, type, value, durationS }` — `StatModifier` ze źródłem `synergy:<id>`, zdejmowany po `durationS` czasu symulacji. Ponowne wyzwolenie odświeża czas, modyfikatory się nie kumulują.
-- `chain_on_hit { jumpRangeM, damageMult, tags }` — najbliższy inny cel z `ctx.targets()` w `jumpRangeM` od trafionego zadaje `damage × damageMult` (`ctx.damage.deal`, źródło = gracz, tagi + `#synergy`). Brak celu w zasięgu = efekt nie zadziałał. Synergia liczy się jako wyzwolona (`synergy_triggered`, start `cooldownS`) tylko wtedy, gdy zadziałał choć jeden jej efekt.
+- `chain_on_hit { jumpRangeM, damageMult, tags }` — najbliższy inny cel z `ctx.targets()` w `jumpRangeM` od trafionego zadaje `damage × damageMult` (`ctx.damage.deal`, źródło = gracz, tagi + `#synergy` i `#derived`). Brak celu w zasięgu = efekt nie zadziałał. Synergia liczy się jako wyzwolona (`synergy_triggered`, start `cooldownS`) tylko wtedy, gdy zadziałał choć jeden jej efekt.
 
 Każde wyzwolenie emituje `synergy_triggered { synergy, user }`.
 
