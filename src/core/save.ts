@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { actionSchema, isBindingCode } from './input';
 import { loadoutDefinitions } from '../progression/loadout';
 import { metaStateSchema } from '../progression/metaStateSchema';
 import { createStarterMetaState } from '../progression/progressionSchema';
@@ -250,31 +251,84 @@ export interface Settings {
   mouseSensitivity: number;
   fov: number;
   masterVolume: number;
+  sfxVolume: number;
+  musicVolume: number;
+  invertY: boolean;
+  screenShake: number;
+  flashes: boolean;
+  quality: 'low' | 'medium' | 'high';
+  bindings: import('./input').BindingOverrides;
 }
+export const SETTINGS_RANGES = {
+  mouseSensitivity: { min: 0.1, max: 5 },
+  fov: { min: 60, max: 110 },
+} as const;
+
+function clampedSetting(range: { min: number; max: number }, fallback: number) {
+  return z
+    .number()
+    .finite()
+    .transform((value) => Math.min(range.max, Math.max(range.min, value)))
+    .catch(fallback);
+}
+
 const settingsSchema = z.object({
-  mouseSensitivity: z.number().positive().finite(),
-  fov: z.number().positive().max(179),
-  masterVolume: z.number().min(0).max(1),
+  mouseSensitivity: clampedSetting(SETTINGS_RANGES.mouseSensitivity, 1),
+  fov: clampedSetting(SETTINGS_RANGES.fov, 90),
+  masterVolume: z.number().min(0).max(1).catch(1),
+  sfxVolume: z.number().min(0).max(1).catch(1),
+  musicVolume: z.number().min(0).max(1).catch(0.7),
+  invertY: z.boolean().catch(false),
+  screenShake: z.number().min(0).max(1).catch(1),
+  flashes: z.boolean().catch(true),
+  quality: z.enum(['low', 'medium', 'high']).catch('high'),
+  bindings: z
+    .record(z.string(), z.unknown())
+    .catch({})
+    .transform((value) => {
+      const result: import('./input').BindingOverrides = {};
+      for (const [name, code] of Object.entries(value)) {
+        const action = actionSchema.safeParse(name);
+        if (action.success && typeof code === 'string' && isBindingCode(code))
+          result[action.data] = code;
+      }
+      return result;
+    }),
 });
 const settingsKey = 'neoryder.settings';
 const defaults = (): Settings => ({
   mouseSensitivity: 1,
   fov: tuning.camera.fov,
   masterVolume: 1,
+  sfxVolume: 1,
+  musicVolume: 0.7,
+  invertY: false,
+  screenShake: 1,
+  flashes: true,
+  quality: 'medium',
+  bindings: {},
 });
 
+let sharedSettings: Settings | undefined;
+
 export function loadSettings(storage?: Storage): Settings {
+  if (!storage && typeof window !== 'undefined' && sharedSettings)
+    return sharedSettings;
+  let result = defaults();
   try {
     const raw = (storage ?? localStorage).getItem(settingsKey);
-    return raw
+    result = raw
       ? settingsSchema.parse({
           ...defaults(),
+          quality: 'high',
           ...recordSchema.parse(JSON.parse(raw)),
         })
       : defaults();
   } catch {
-    return defaults();
+    // Brak dostępu do localStorage nie blokuje zmiany ustawień w bieżącej sesji.
   }
+  if (!storage && typeof window !== 'undefined') sharedSettings = result;
+  return result;
 }
 
 export function saveSettings(s: Settings, storage?: Storage): void {

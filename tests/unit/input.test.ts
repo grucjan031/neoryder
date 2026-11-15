@@ -10,9 +10,14 @@ describe('Input — kontrakty F2', () => {
     canvas = document.createElement('canvas');
     document.body.append(canvas);
     input = new Input(canvas);
+    Object.defineProperty(document, 'pointerLockElement', {
+      configurable: true,
+      value: canvas,
+    });
   });
 
   afterEach(() => {
+    Reflect.deleteProperty(document, 'pointerLockElement');
     input.dispose();
     canvas.remove();
   });

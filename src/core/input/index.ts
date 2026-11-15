@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import bindingsData from '../../data/inputBindings.json';
 
-const actionSchema = z.enum([
+export const actionSchema = z.enum([
   'moveForward',
   'moveBack',
   'moveLeft',
@@ -24,12 +24,60 @@ const actionSchema = z.enum([
 const MAX_MOUSE_DELTA = 400;
 
 export type Action = z.infer<typeof actionSchema>;
+export type BindingOverrides = Partial<Record<Action, string>>;
+export const isBindingCode = (code: string): boolean =>
+  code === '' ||
+  /^(Key[A-Z]|Digit[0-9]|Numpad\w+|F([1-9]|1[0-9]|2[0-4])|Arrow(Up|Down|Left|Right)|Space|Tab|Enter|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Shift(Left|Right)|Control(Left|Right)|Alt(Left|Right)|CapsLock|Minus|Equal|BracketLeft|BracketRight|Backslash|Semicolon|Quote|Comma|Period|Slash|IntlBackslash)$/.test(
+    code,
+  );
 const bindings = z
   .object({
     keyboard: z.record(z.string(), actionSchema),
     mouse: z.record(z.string(), actionSchema),
   })
   .parse(bindingsData);
+
+/** Puste nadpisanie oznacza akcję bez klawisza; przyciski myszy pozostają niezależne. */
+export function resolveBindings(
+  overrides: BindingOverrides = {},
+): Record<string, Action> {
+  const keyboard = { ...bindings.keyboard };
+  const displaced = new Set<Action>();
+  for (const [name, code] of Object.entries(overrides)) {
+    const parsed = actionSchema.safeParse(name);
+    if (!parsed.success || !isBindingCode(code)) continue;
+    const action = parsed.data;
+    for (const [key, owner] of Object.entries(keyboard))
+      if (owner === action) delete keyboard[key];
+    if (!code) continue;
+    const previous = keyboard[code];
+    if (previous && previous !== action) displaced.add(previous);
+    keyboard[code] = action;
+  }
+  for (const action of displaced) {
+    if (Object.values(keyboard).includes(action)) continue;
+    for (const [code, owner] of Object.entries(bindings.keyboard))
+      if (owner === action && !keyboard[code]) keyboard[code] = action;
+  }
+  return keyboard;
+}
+
+export function assignBinding(
+  overrides: BindingOverrides,
+  action: Action,
+  code: string,
+): BindingOverrides {
+  if (!isBindingCode(code) || !code) return { ...overrides };
+  const next = { ...overrides };
+  delete next[action];
+  next[action] = code;
+  const resolved = resolveBindings(next);
+  // Utrwalenie rozstrzygnięcia zapobiega powrotowi wypartego nadpisania po kolejnej zmianie.
+  for (const name of Object.keys(next) as Action[])
+    next[name] =
+      Object.keys(resolved).find((key) => resolved[key] === name) ?? '';
+  return next;
+}
 
 export interface InputSnapshot {
   held: ReadonlySet<Action>;
@@ -50,20 +98,30 @@ export class Input {
   private wasLocked = false;
   private readonly document: Document;
 
-  constructor(private readonly target: HTMLElement) {
+  constructor(
+    private readonly target: HTMLElement,
+    private readonly getBindings: () => BindingOverrides = () => ({}),
+  ) {
     this.document = target.ownerDocument;
     const win = this.document.defaultView;
     if (!win) throw new Error('Brak okna dla wejścia.');
     const options = { signal: this.listeners.signal };
     const isEditing = (element: EventTarget | null): boolean =>
-      element instanceof HTMLElement &&
-      (element.isContentEditable ||
-        ['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName));
+      !this.pointerLocked ||
+      [element, this.document.activeElement].some(
+        (node) =>
+          node instanceof HTMLElement &&
+          (node.isContentEditable ||
+            node.closest(
+              'input, textarea, select, button, [role="button"], a[href]',
+            ) !== null),
+      );
     win.addEventListener(
       'keydown',
       (event) => {
         if (isEditing(event.target)) return;
-        const action = bindings.keyboard[event.code];
+        if (event.defaultPrevented) return;
+        const action = resolveBindings(this.getBindings())[event.code];
         if (action) {
           event.preventDefault();
           this.press(event.code, action);
@@ -153,12 +211,15 @@ export class Input {
     }
   }
   private loseFocus(): void {
+    this.clear();
+    for (const cb of [...this.focusListeners]) cb();
+  }
+  clear(): void {
     for (const action of this.held) this.released.add(action);
     this.held.clear();
     this.pressed.clear();
     this.down.clear();
     this.lookDelta = { x: 0, y: 0 };
-    for (const cb of [...this.focusListeners]) cb();
   }
   snapshot(): InputSnapshot {
     const result = {

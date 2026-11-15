@@ -494,16 +494,40 @@ describe('settings', () => {
   it('zapisuje ustawienia i wraca do domyślnych przy błędnym JSON, brakujących lub błędnych danych', () => {
     const storage = memoryStorage();
     const defaults = loadSettings(storage);
-    expect(defaults).toEqual({ mouseSensitivity: 1, fov: 90, masterVolume: 1 });
-    const settings = { mouseSensitivity: 2, fov: 80, masterVolume: 0.5 };
+    expect(defaults).toEqual({
+      mouseSensitivity: 1,
+      fov: 90,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 0.7,
+      invertY: false,
+      screenShake: 1,
+      flashes: true,
+      quality: 'medium',
+      bindings: {},
+    });
+    const settings = {
+      ...defaults,
+      mouseSensitivity: 2,
+      fov: 80,
+      masterVolume: 0.5,
+    };
     saveSettings(settings, storage);
     expect(loadSettings(storage)).toEqual(settings);
     storage.setItem('neoryder.settings', '{broken');
     expect(loadSettings(storage)).toEqual(defaults);
     storage.setItem('neoryder.settings', '{"masterVolume":0.3}');
-    expect(loadSettings(storage)).toEqual({ ...defaults, masterVolume: 0.3 });
+    expect(loadSettings(storage)).toEqual({
+      ...defaults,
+      masterVolume: 0.3,
+      quality: 'high',
+    });
     storage.setItem('neoryder.settings', '{"fov":-1}');
-    expect(loadSettings(storage)).toEqual(defaults);
+    expect(loadSettings(storage)).toEqual({
+      ...defaults,
+      fov: 60,
+      quality: 'high',
+    });
   });
   it('działa przy braku/dostępie odmówionym do localStorage', () => {
     expect(loadSettings().fov).toBe(90);
