@@ -12,6 +12,7 @@ import { Stats } from '../../src/core/stats';
 import { tuning } from '../../src/core/tuning';
 import { initPhysics } from '../../src/physics';
 import { loadImplant } from '../../src/progression/implantSchema';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { roomDefinitions } from '../../src/world/rooms';
 import { loadWaves } from '../../src/world/waves';
 import { CommandRegistry } from '../../src/ui/debugCommands';
@@ -31,10 +32,14 @@ const press = (action: Action): InputSnapshot => ({
 const active = new Set<RoomScene>();
 
 function runState(overrides: Partial<RunState> = {}): RunState {
+  const loadoutId = overrides.loadoutId ?? 'classic';
   return {
     seed: 'room-unit',
     sectorId: 'test',
-    loadoutId: 'classic',
+    loadoutId,
+    loadout: loadoutDefinitions.get(loadoutId)!,
+    talents: [],
+    threatLevel: 0,
     startedAtMs: 0,
     elapsedS: 0,
     map: {
@@ -325,7 +330,14 @@ it('odrzuca brak węzła, nieznany loadout i brak definicji implantu przed utwor
     () => new RoomScene(room, runState({ currentNodeId: null }), waves),
   ).toThrow('bieżącego węzła');
   expect(
-    () => new RoomScene(room, runState({ loadoutId: 'missing' }), waves),
+    () =>
+      new RoomScene(
+        room,
+        runState({
+          loadout: { ...loadoutDefinitions.get('classic')!, blade: 'missing' },
+        }),
+        waves,
+      ),
   ).toThrow('Nieznany ekwipunek');
   expect(
     () => new RoomScene(room, runState({ implants: ['missing'] }), waves),

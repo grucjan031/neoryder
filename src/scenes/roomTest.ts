@@ -16,12 +16,15 @@ export function createRoomTest(loadModels = true): RoomScene {
   const room = roomDefinitions.get(roomId);
   if (!room) throw new Error(`Nieznany pokój: ${roomId}`);
   const loadoutId = params.get('loadout') ?? 'classic';
-  if (!loadoutDefinitions.has(loadoutId))
-    throw new Error(`Nieznany ekwipunek: ${loadoutId}`);
+  const loadout = loadoutDefinitions.get(loadoutId);
+  if (!loadout) throw new Error(`Nieznany ekwipunek: ${loadoutId}`);
   const run: RunState = {
     seed: params.get('seed') ?? 'room-test',
     sectorId: 'room-test',
     loadoutId,
+    loadout,
+    talents: [],
+    threatLevel: 0,
     startedAtMs: 0,
     elapsedS: 0,
     map: {

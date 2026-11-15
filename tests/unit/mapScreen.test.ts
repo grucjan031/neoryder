@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { MapScreen } from '../../src/ui/mapScreen';
 import type { MapNode, RunState } from '../../src/core/runTypes';
 
@@ -18,6 +19,9 @@ const state: RunState = {
   seed: 'map',
   sectorId: 'test',
   loadoutId: 'blade',
+  loadout: loadoutDefinitions.get('blade')!,
+  talents: [],
+  threatLevel: 0,
   startedAtMs: 0,
   elapsedS: 0,
   map: { sectorId: 'test', layers },

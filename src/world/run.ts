@@ -9,6 +9,8 @@ import {
   type RunSummary,
   type SectorMap,
 } from '../core/runTypes';
+import { loadoutDefinitions, loadoutSchema } from '../progression/loadout';
+import type { Loadout } from '../progression/loadout';
 import type { SectorDefinition } from './sectorSchema';
 
 export const RUN_SCREENS = [
@@ -42,6 +44,16 @@ export interface RunManagerOptions {
   now?: () => number;
 }
 
+/** Opcje startu runu zamrożone w `RunState` (ADR 0007): ekwipunek z kryjówki, talenty, Poziom zagrożenia. */
+export interface NewRunOptions {
+  /** Pełny ekwipunek; domyślnie preset `loadoutId`. */
+  loadout?: Loadout;
+  /** Id kupionych talentów; domyślnie brak. */
+  talents?: readonly string[];
+  /** Poziom zagrożenia; domyślnie 0. */
+  threatLevel?: number;
+}
+
 export interface RoomExportState {
   hp?: number;
   energy?: number;
@@ -72,6 +84,14 @@ export const runStateSchema: z.ZodType<RunState> = z
     seed: z.string(),
     sectorId: z.string().min(1),
     loadoutId: z.string().min(1),
+    loadout: loadoutSchema,
+    talents: z
+      .array(z.string().min(1))
+      .refine(
+        (ids) => new Set(ids).size === ids.length,
+        'Powtórzone id talentu w stanie runu.',
+      ),
+    threatLevel: z.number().int().nonnegative(),
     startedAtMs: z.number().finite().nonnegative(),
     elapsedS: z.number().finite().nonnegative(),
     map: sectorMapSchema,
@@ -256,17 +276,29 @@ export class RunManager {
    * Rozpoczyna nowy run z podanym seedem i ekwipunkiem: generuje mapę sektora,
    * ustawia ekran `map` i emituje `run_started`.
    */
-  newRun(seed: string, loadoutId = 'classic'): RunState {
+  newRun(
+    seed: string,
+    loadoutId = 'classic',
+    options: NewRunOptions = {},
+  ): RunState {
     if (!this.generateMap)
       throw new Error('Brak funkcji generującej mapę sektora (generateMap).');
     const rawMap = this.generateMap(seed);
     const map = sectorMapSchema.parse(structuredClone(rawMap));
     this.rebuildNodeIndex(map);
+    const loadout = options.loadout ?? loadoutDefinitions.get(loadoutId);
+    if (!loadout) throw new Error(`Nieznany ekwipunek: ${loadoutId}`);
+    const threatLevel = options.threatLevel ?? 0;
+    if (!Number.isInteger(threatLevel) || threatLevel < 0)
+      throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
 
     this.currentState = {
       seed,
       sectorId: this.sectorIdOverride ?? map.sectorId,
       loadoutId,
+      loadout: structuredClone(loadout),
+      talents: [...(options.talents ?? [])],
+      threatLevel,
       startedAtMs: this.now(),
       elapsedS: 0,
       map,
@@ -580,6 +612,8 @@ export class RunManager {
       elapsedS: this.currentState.elapsedS,
       kills: this.currentState.stats.kills,
       roomsCleared: this.clearedNodes.size,
+      elitesCleared: this.countClearedElites(),
+      threatLevel: this.currentState.threatLevel,
       layerReached: this.computeLayerReached(),
       implants: [...this.currentState.implants],
       damage: { ...this.currentState.stats.damage },
@@ -635,6 +669,13 @@ export class RunManager {
     this.nodeIndex = new Map<string, MapNode>();
     for (const layer of map.layers)
       for (const node of layer) this.nodeIndex.set(node.id, node);
+  }
+
+  private countClearedElites(): number {
+    let count = 0;
+    for (const id of this.clearedNodes)
+      if (this.nodeIndex.get(id)?.type === 'elite') count++;
+    return count;
   }
 
   private computeLayerReached(): number {

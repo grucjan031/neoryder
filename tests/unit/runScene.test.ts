@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { createIndexedDbSaveStore } from '../../src/core/save';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Scene as ThreeScene } from 'three';
@@ -511,7 +512,7 @@ it('domyślny SaveStore v2 zapisuje mapę, wznawia pełen stan i czyści po run_
   expect(credits).toBeGreaterThanOrEqual(23);
   const saved = await store.loadRun();
   expect(saved).toMatchObject({
-    saveVersion: 2,
+    saveVersion: 3,
     run: { credits, implants: ['test-save'] },
   });
   expect(saved!.run.currentNodeId).not.toBeNull();
@@ -531,6 +532,9 @@ function bossRunState(): RunState {
     seed: 'boss-run',
     sectorId: 'kurogane',
     loadoutId: 'classic',
+    loadout: loadoutDefinitions.get('classic')!,
+    talents: [],
+    threatLevel: 0,
     startedAtMs: 0,
     elapsedS: 0,
     map: {

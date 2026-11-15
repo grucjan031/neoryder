@@ -20,13 +20,13 @@ import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
-import { resolveBlade } from '../combat/melee/bladeSchema';
+import { bladeDefinitions, resolveBlade } from '../combat/melee/bladeSchema';
 import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import { HeldItem } from '../combat/heldItem';
 import type { HeldItemView } from '../combat/heldItem';
 import { PlayerEnergy } from '../combat/powers/energy';
-import { createPower } from '../combat/powers/registry';
+import { createPower, powerDefinitions } from '../combat/powers/registry';
 import { PowerSlots } from '../combat/powers/slots';
 import { Weapon } from '../combat/weapons/weapon';
 import {
@@ -60,7 +60,6 @@ import { BarrierRenderer } from '../render/barrierRenderer';
 import { LightningRenderer } from '../render/lightningRenderer';
 import { BarrierPower } from '../combat/powers/barrier';
 import { ExplosionRenderer } from '../render/explosionRenderer';
-import { loadoutDefinitions } from '../progression/loadout';
 import type { Loadout } from '../progression/loadout';
 import { SynergySystem } from '../progression/synergies';
 import { createStyleLights } from '../render/lights';
@@ -183,8 +182,14 @@ export class RoomScene implements Scene {
     if (!node)
       throw new Error('RoomScene wymaga bieżącego węzła w mapie runu.');
     this.node = { ...node, next: [...node.next] };
-    const loadout = loadoutDefinitions.get(run.loadoutId);
-    if (!loadout) throw new Error(`Nieznany ekwipunek: ${run.loadoutId}`);
+    const loadout = run.loadout;
+    for (const [defs, ids] of [
+      [bladeDefinitions, [loadout.blade]],
+      [weaponDefinitions, loadout.weapons],
+      [powerDefinitions, loadout.powers],
+    ] as const)
+      for (const id of ids)
+        if (!defs.has(id)) throw new Error(`Nieznany ekwipunek: ${id}`);
     this.loadout = loadout;
     this.loadModels = options.loadModels ?? true;
     this.implantDefs = options.implantDefinitions ?? implantDefinitions;

@@ -1,4 +1,5 @@
 import { basename } from 'node:path';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { describe, expect, it } from 'vitest';
 import { Scene as ThreeScene } from 'three';
 import { Health } from '../../src/combat/damage';
@@ -475,6 +476,9 @@ describe('RoomScene — integracja ImplantSystem i komendy implant <id>', () => 
       seed: 'implant-room-test',
       sectorId: 'test',
       loadoutId: 'classic',
+      loadout: loadoutDefinitions.get('classic')!,
+      talents: [],
+      threatLevel: 0,
       startedAtMs: 0,
       elapsedS: 0,
       map: {

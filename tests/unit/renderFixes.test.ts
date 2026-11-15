@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import {
   AdditiveBlending,
   Color,
@@ -185,6 +186,9 @@ it('RoomScene woła CityDressing.render po ustawieniu kamery i ma strażnik disp
     seed: 's',
     sectorId: 'test',
     loadoutId: 'classic',
+    loadout: loadoutDefinitions.get('classic')!,
+    talents: [],
+    threatLevel: 0,
     startedAtMs: 0,
     elapsedS: 0,
     map: {

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { HtmlRunScreens } from '../../src/ui/runScreens';
 import type { RunScreenView } from '../../src/ui/runScreens';
 
@@ -21,6 +22,9 @@ const view: RunScreenView = {
     seed: 'test',
     sectorId: 'test',
     loadoutId: 'classic',
+    loadout: loadoutDefinitions.get('classic')!,
+    talents: [],
+    threatLevel: 0,
     startedAtMs: 0,
     elapsedS: 0,
     map: { sectorId: 'test', layers: [nodes] },
@@ -220,6 +224,8 @@ it('shows all summary data and dispatches navigation actions', () => {
         loadoutId: 'classic',
         elapsedS: 125,
         kills: 7,
+        elitesCleared: 0,
+        threatLevel: 0,
         roomsCleared: 3,
         layerReached: 4,
         implants: ['unknown'],

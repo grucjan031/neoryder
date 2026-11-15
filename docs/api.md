@@ -226,9 +226,9 @@ Obiekt jest mutowalny: kod czyta wartość przy użyciu (`tuning.time.hitstopLig
 ## Zapis — `src/core/save.ts`
 
 ```ts
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
-export interface MetaSave { saveVersion: number; createdAt: number; updatedAt: number; /* rozwijane w F4 */ }
+export interface MetaSave { saveVersion: number; createdAt: number; updatedAt: number; meta: MetaState }
 export interface RunSave  { saveVersion: number; seed: string; startedAt: number; run: RunState }
 
 export type Migration = (data: Record<string, unknown>) => Record<string, unknown>;
@@ -249,6 +249,8 @@ export interface Settings { mouseSensitivity: number; fov: number; masterVolume:
 export function loadSettings(storage?: Storage): Settings;              // localStorage, wartości domyślne przy braku/błędzie
 export function saveSettings(s: Settings, storage?: Storage): void;
 ```
+
+Meta i run mają osobne tablice migracji (`metaMigrations`, `runMigrations`); szczegóły v3 w sekcji „Kontrakty F4”.
 
 Wczytany zapis z `saveVersion < SAVE_VERSION` jest migrowany; z `saveVersion > SAVE_VERSION` — odrzucany z ostrzeżeniem (nie nadpisujemy zapisu z nowszej wersji gry).
 
@@ -1300,3 +1302,102 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.
   `sync(dt)` odświeża oprawę; wyłącznie render, bez zmian symulacji.
 - Pola `signs/lights/decals/ambientFx` pozostają danymi dla integratora.
+
+## Kontrakty F4 (zatwierdzone 2026-11-15, ADR 0007)
+
+Architektura i decyzje: `docs/adr/0007-meta-progres-f4.md`. Zadania: `docs/issues/F4/README.md`. Zadanie 01 dostarcza wyłącznie typy, zdarzenia, schematy, dane startowe i zapis v3; logikę zakupów, nagród i talentów dopisują zadania 02–05.
+
+### Typy meta — `src/core/metaTypes.ts`
+
+```ts
+export const TREE_IDS = ['blade', 'resonance', 'gunner', 'hybrid'] as const;
+export type TreeId = (typeof TREE_IDS)[number];
+export const HUB_STATION_IDS = ['talents', 'workshop', 'missions', 'arena'] as const;
+export type HubStationId = (typeof HUB_STATION_IDS)[number];
+
+interface LoadoutChoice { blade: string; weapons: string[]; powers: string[] }
+interface RunRewards { xp: number; data: number; cores: number }
+interface MetaRunRecord {
+  runId: string;          // `${seed}:${startedAtMs}`
+  outcome: RunOutcome;
+  elapsedS: number;
+  layerReached: number;
+  threatLevel: number;
+  rewards: RunRewards;
+}
+interface MetaState {
+  xp: number; data: number; cores: number;
+  talents: string[];      // kupione węzły drzewek
+  unlocks: string[];      // 'weapon:<id>' | 'power:<id>' | 'blade:<id>' | 'slot:<weapon2|weapon3|power2>'
+  loadout: LoadoutChoice;
+  threat: { max: number; selected: number };
+  stats: { runs: number; victories: number; deaths: number; kills: number; bestVictoryS: number | null };
+  lastRuns: MetaRunRecord[];   // najnowsze pierwsze, najwyżej MAX_LAST_RUNS = 10
+  appliedRunIds: string[];     // idempotencja nagród, najwyżej MAX_APPLIED_RUN_IDS = 20
+}
+interface DefinitionPatch {
+  target: `weapon:${string}` | `power:${string}` | `blade:${string}`;
+  op: 'set' | 'add' | 'mul';
+  path: string;          // np. 'jumps', 'combo.2.knockback', 'statuses'
+  value: unknown;        // liczba skończona dla add/mul; dowolny JSON dla set
+}
+// TalentTree, TalentNode, TalentEffects: typy inferowane ze schematu zod (src/progression/talentSchema.ts),
+// re-eksportowane z metaTypes.ts.
+```
+
+### Schematy zod i dane — `src/progression/`, `src/data/meta/`
+
+| Plik | Eksport | Dane |
+| --- | --- | --- |
+| `progressionSchema.ts` | `progressionSchema`, `loadProgression(data)`, `progression`, `createStarterMetaState(starter?)`, `rewardRulesSchema`, `RewardRules` | `src/data/meta/progression.json`: `starter` (bez historii: xp 0, data, cores, talents, unlocks, loadout, threat), `levels.xpToNext` (długość = limit poziomu − 1; start: 19 progów dla limitu 20), `rewards` (`xpPerRoom`, `xpPerElite`, `xpVictory`, `dataPerRoom`, `dataPerKill`, `dataVictory`, `coresPerElite`, `coresVictory`) |
+| `unlocksSchema.ts` | `unlocksSchema`, `unlockIdSchema`, `loadUnlockDefinitions(data)`, `unlockDefinitions` (`Map` po id) | `src/data/meta/unlocks.json`: tablica `{ id, cost: { data?, cores? }, minLevel? }` |
+| `threatSchema.ts` | `threatSchema`, `loadThreatLevels(data)`, `threatLevels` | `src/data/meta/threat.json`: tablica poziomów 0–10 `{ level, name, enemyHealth, enemyDamage, budgetMult, rewardMult, victoryCores }` |
+| `talentSchema.ts` | `talentTreeSchema`, `talentNodeSchema`, `loadTalentTrees(data[])`, `talentTrees` (z `src/data/talents/*.json`, na razie puste) | `src/data/talents/*.json` (zadanie 04) |
+| `patchSchema.ts` | `definitionPatchSchema`, `loadDefinitionPatch` | — |
+| `metaStateSchema.ts` | `metaStateSchema` (strukturalna walidacja zapisu) | — |
+
+- `unlockIdSchema` wymaga formatu `weapon:<id>`, `power:<id>`, `blade:<id>` (id istnieje w `weaponDefinitions` / `powerDefinitions` / `bladeDefinitions`) albo `slot:weapon2|weapon3|power2`; `unlocksSchema` odrzuca duplikaty, koszt bez Danych i Rdzeni oraz wartości ujemne.
+- `threatSchema`: poziomy kolejne od 0 bez luk; poziom 0 jest neutralny (`enemyHealth` 0, `enemyDamage` 0, `budgetMult` 1, `rewardMult` 1). `enemyHealth` i `enemyDamage` to ułamki (0.1 = +10%).
+- `talentTreeSchema`: `tier` 1–4, `cost` 1–3, `tierThresholds` długości 4 i niemalejące, id węzłów unikalne; `effects.modifiers` i `effects.triggers` reużywają `implantModifierSchema` i `implantTriggerSchema`, `effects.patches` to `definitionPatchSchema`. `loadTalentTrees` sprawdza unikalność id w całym komplecie i istnienie węzłów z `requires`; działa na pustym zbiorze.
+- `definitionPatchSchema`: `op` ∈ `set | add | mul`, `target` z prefiksem `weapon:` / `power:` / `blade:`, `add` i `mul` tylko z liczbą skończoną.
+- `starter` w `progression.json` zawiera wyłącznie istniejące odblokowania, a ekwipunek startowy tylko z nich. `createStarterMetaState()` składa pełny `MetaState` (zerowe `stats`, puste `lastRuns` i `appliedRunIds`).
+
+### `RunState` i `RunSummary` (rozszerzenie `src/core/runTypes.ts`)
+
+```ts
+interface RunState {
+  // ...pola F3...
+  loadout: Loadout;      // pełna kopia ekwipunku z chwili startu runu (typ z src/progression/loadout.ts)
+  talents: string[];     // id talentów zamrożone na start, bez duplikatów
+  threatLevel: number;   // zamrożony na start; 0 = F3
+}
+interface RunSummary {
+  // ...pola F3...
+  elitesCleared: number; // ukończone węzły typu elite
+  threatLevel: number;
+}
+```
+
+`RunManager.newRun(seed, loadoutId = 'classic', options?: NewRunOptions)` (`NewRunOptions`: `loadout?`, `talents?`, `threatLevel?`) bez opcji wypełnia `loadout` kopią presetu `loadoutDefinitions.get(loadoutId)` (nieznany preset = błąd), `talents: []`, `threatLevel: 0`. `RoomScene` czyta ekwipunek z `run.loadout` (i sprawdza istnienie ostrza, broni i mocy); `loadoutId` zostaje etykietą do podsumowania. `elitesCleared` liczy ukończone węzły `elite` ze zbioru węzłów ukończonych (spójnie z `roomsCleared`).
+
+### Zdarzenia dopisywane do `GameEvents` (F4-01) — `src/core/events.ts`
+
+```ts
+meta_rewards: { runId: string; rewards: RunRewards; levelBefore: number; levelAfter: number };
+level_up: { level: number };
+talents_changed: { talents: readonly string[] };
+unlock_purchased: { id: string };
+loadout_changed: { loadout: LoadoutChoice };
+threat_selected: { level: number };
+hub_station_opened: { station: HubStationId };
+```
+
+Emitują: `MetaManager` (wszystkie poza ostatnim) i scena kryjówki (`hub_station_opened`).
+
+### Zapis v3 — `src/core/save.ts`
+
+`SAVE_VERSION = 3`. `MetaSave` dostaje pole `meta: MetaState` (walidowane `metaStateSchema`). Meta i run mają osobne tablice migracji:
+
+- **Meta 2→3:** brak `meta` → `createStarterMetaState()` (gracz z F3 zaczyna od stanu startowego z danych).
+- **Run 2→3:** `run.loadout` = kopia presetu `loadoutDefinitions.get(run.loadoutId)`, `talents: []`, `threatLevel: 0`. Nieznany preset = zapis runu nieczytelny (`loadRun()` zwraca `null` z ostrzeżeniem). `run: null` z migracji 1→2 nadal oznacza brak runu (bez ostrzeżenia).
+- Zapis z nowszej wersji pozostaje nietknięty, uszkodzony daje `null` z ostrzeżeniem (jak dotąd, obie implementacje: pamięć i IndexedDB).

@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { Scene as ThreeScene } from 'three';
 import { RoomScene } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
@@ -35,6 +36,9 @@ function runState(): RunState {
     seed: 'boss-room',
     sectorId: 'test',
     loadoutId: 'classic',
+    loadout: loadoutDefinitions.get('classic')!,
+    talents: [],
+    threatLevel: 0,
     startedAtMs: 0,
     elapsedS: 0,
     map: {

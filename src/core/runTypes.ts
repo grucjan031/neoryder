@@ -1,4 +1,5 @@
 import type { Rng } from './rng';
+import type { Loadout } from '../progression/loadout';
 import type { RoomDefinition } from '../world/roomSchema';
 import type { SectorDefinition } from '../world/sectorSchema';
 import type { WavesDefinition } from '../world/waves';
@@ -42,6 +43,12 @@ export interface RunState {
   seed: string;
   sectorId: string;
   loadoutId: string;
+  /** Pełna kopia ekwipunku z chwili startu runu (ADR 0007 pkt 6). */
+  loadout: Loadout;
+  /** Id talentów zamrożone na start runu. */
+  talents: string[];
+  /** Poziom zagrożenia zamrożony na start runu (0 = F3). */
+  threatLevel: number;
   startedAtMs: number;
   /** Czas symulacji w sekundach (nie zegar ściany). */
   elapsedS: number;
@@ -67,6 +74,9 @@ export interface RunSummary {
   elapsedS: number;
   kills: number;
   roomsCleared: number;
+  /** Ukończone pokoje typu elite. */
+  elitesCleared: number;
+  threatLevel: number;
   layerReached: number;
   implants: string[];
   damage: RunDamageStats;

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { EventBus, type GameEvents } from '../../src/core/events';
 import type { SectorMap } from '../../src/core/runTypes';
 import { RunManager, runStateSchema } from '../../src/world/run';
@@ -57,6 +58,9 @@ describe('RunManager (F3-05)', () => {
       seed: 'alpha',
       sectorId: 'kurogane-alpha',
       loadoutId: 'blade',
+      loadout: loadoutDefinitions.get('blade'),
+      talents: [],
+      threatLevel: 0,
       startedAtMs: 1700000000000,
       elapsedS: 0,
       map: createTestMap('alpha'),
@@ -402,6 +406,8 @@ describe('RunManager (F3-05)', () => {
         elapsedS: 23.5,
         kills: 2,
         roomsCleared: 1,
+        elitesCleared: 0,
+        threatLevel: 0,
         layerReached: 2,
         implants: ['overclock'],
         damage: {

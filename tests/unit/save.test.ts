@@ -2,6 +2,8 @@ import 'fake-indexeddb/auto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EventBus } from '../../src/core/events';
 import type { RunState } from '../../src/core/runTypes';
+import { loadoutDefinitions } from '../../src/progression/loadout';
+import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import {
   createIndexedDbSaveStore,
   createMemorySaveStore,
@@ -53,6 +55,7 @@ const meta: MetaSave = {
   saveVersion: SAVE_VERSION,
   createdAt: 100,
   updatedAt: 200,
+  meta: createStarterMetaState(),
 };
 const run: RunSave = {
   saveVersion: SAVE_VERSION,
@@ -187,7 +190,7 @@ describe.each([
     await store.saveRun(savePayload);
     const loaded = await store.loadRun();
     expect(loaded).not.toBeNull();
-    expect(loaded?.saveVersion).toBe(2);
+    expect(loaded?.saveVersion).toBe(3);
     expect(loaded?.run).toEqual(state);
 
     const bus = new EventBus();
@@ -222,7 +225,7 @@ describe.each([
   });
 });
 
-describe('IndexedDB i migracje v1 -> v2', () => {
+describe('IndexedDB i migracje v1 -> v2 -> v3', () => {
   it('odczytuje dane przez inną instancję i migruje meta z wersji 0 oraz 1 bez zmian', async () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const name0 = databaseName();
@@ -343,6 +346,129 @@ describe('IndexedDB i migracje v1 -> v2', () => {
     });
     expect(await createIndexedDbSaveStore(name).loadRun()).toBeNull();
     expect(warning).toHaveBeenCalledTimes(5);
+  });
+});
+
+describe('zapis v3: meta-progres F4', () => {
+  const progressed = (): MetaSave => {
+    const state = createStarterMetaState();
+    state.xp = 340;
+    state.data = 120;
+    state.cores = 2;
+    state.talents = ['bladeRoot'];
+    state.unlocks.push('weapon:rifle');
+    state.threat = { max: 2, selected: 1 };
+    state.stats = {
+      runs: 1,
+      victories: 1,
+      deaths: 0,
+      kills: 25,
+      bestVictoryS: 812.5,
+    };
+    state.lastRuns = [
+      {
+        runId: 'seed:300',
+        outcome: 'victory',
+        elapsedS: 812.5,
+        layerReached: 8,
+        threatLevel: 1,
+        rewards: { xp: 340, data: 120, cores: 2 },
+      },
+    ];
+    state.appliedRunIds = ['seed:300'];
+    return { ...meta, meta: state };
+  };
+
+  it('round-trip MetaSave v3 w magazynie pamięciowym i IndexedDB zachowuje cały stan meta', async () => {
+    for (const store of [
+      createMemorySaveStore(),
+      createIndexedDbSaveStore(databaseName()),
+    ]) {
+      expect(await store.loadMeta()).toBeNull();
+      await store.saveMeta(progressed());
+      expect(await store.loadMeta()).toEqual(progressed());
+    }
+  });
+
+  it('odrzuca MetaSave bez pola meta albo z niespójnym stanem', async () => {
+    const store = createMemorySaveStore();
+    const withoutMeta: Record<string, unknown> = { ...progressed() };
+    delete withoutMeta.meta;
+    await expect(async () =>
+      store.saveMeta(withoutMeta as unknown as MetaSave),
+    ).rejects.toThrow();
+    const broken = progressed();
+    broken.meta.threat = { max: 1, selected: 2 };
+    await expect(async () => store.saveMeta(broken)).rejects.toThrow();
+  });
+
+  it('migruje meta v2 -> v3 do stanu startowego z danych', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = databaseName();
+    await rawSave(name, 'meta', {
+      saveVersion: 2,
+      createdAt: 100,
+      updatedAt: 200,
+    });
+    const loaded = await createIndexedDbSaveStore(name).loadMeta();
+    expect(loaded).toEqual({
+      saveVersion: 3,
+      createdAt: 100,
+      updatedAt: 200,
+      meta: createStarterMetaState(),
+    });
+    expect(loaded?.meta.unlocks).toEqual([
+      'blade:plasmaBlade',
+      'weapon:blaster',
+      'weapon:pistol',
+      'power:push',
+    ]);
+    expect(warning).not.toHaveBeenCalled();
+  });
+
+  it('migruje run v2 -> v3: ekwipunek z presetu, talents [] i threatLevel 0', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = databaseName();
+    const legacyState: Record<string, unknown> = {
+      ...createSampleRunState('legacy-v2'),
+    };
+    for (const key of ['loadout', 'talents', 'threatLevel'])
+      delete legacyState[key];
+    await rawSave(name, 'run', {
+      saveVersion: 2,
+      seed: 'legacy-v2',
+      startedAt: 300,
+      run: { ...legacyState, loadoutId: 'bladeDancer' },
+    });
+    const loaded = await createIndexedDbSaveStore(name).loadRun();
+    expect(loaded?.saveVersion).toBe(3);
+    expect(loaded?.run.loadout).toEqual(loadoutDefinitions.get('bladeDancer'));
+    expect(loaded?.run.talents).toEqual([]);
+    expect(loaded?.run.threatLevel).toBe(0);
+    expect(loaded?.run.loadoutId).toBe('bladeDancer');
+    expect(warning).not.toHaveBeenCalled();
+  });
+
+  it('run v2 z nieznanym presetem jest nieczytelny (null z ostrzeżeniem), a szkielet v1 nadal daje null bez ostrzeżenia', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const name = databaseName();
+    const legacyState: Record<string, unknown> = {
+      ...createSampleRunState('x'),
+    };
+    delete legacyState.loadout;
+    await rawSave(name, 'run', {
+      saveVersion: 2,
+      seed: 'x',
+      startedAt: 1,
+      run: { ...legacyState, loadoutId: 'missing' },
+    });
+    expect(await createIndexedDbSaveStore(name).loadRun()).toBeNull();
+    expect(warning).toHaveBeenCalledTimes(1);
+
+    const v1 = databaseName();
+    await rawSave(v1, 'run', { saveVersion: 1, seed: 's', startedAt: 1 });
+    expect(await createIndexedDbSaveStore(v1).loadRun()).toBeNull();
+    expect(warning).toHaveBeenCalledTimes(1);
   });
 });
 

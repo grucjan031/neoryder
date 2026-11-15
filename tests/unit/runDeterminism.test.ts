@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { loadoutDefinitions } from '../../src/progression/loadout';
 import { Rng } from '../../src/core/rng';
 import type { MapNode, RunState } from '../../src/core/runTypes';
 import { implantDefinitions } from '../../src/progression/implants';
@@ -16,6 +17,9 @@ function stateFor(seed: string, node: MapNode): RunState {
     seed,
     sectorId: kuroganeSector.id,
     loadoutId: 'classic',
+    loadout: loadoutDefinitions.get('classic')!,
+    talents: [],
+    threatLevel: 0,
     startedAtMs: 0,
     elapsedS: 0,
     map: generateSectorMap(kuroganeSector, seed),

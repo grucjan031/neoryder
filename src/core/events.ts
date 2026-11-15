@@ -1,5 +1,6 @@
 import type { Vec3 } from './math';
 import type { HeldKind } from '../combat/heldItem';
+import type { HubStationId, LoadoutChoice, RunRewards } from './metaTypes';
 import type { NodeType, Rarity, RunSummary } from './runTypes';
 import type { StatusApplication } from '../combat/damage/types';
 
@@ -119,10 +120,28 @@ export interface GameEvents {
   currency_changed: { currency: 'credits'; amount: number; delta: number };
   shop_purchase: { item: string; kind: 'implant' | 'heal'; price: number };
   rest_used: { choice: 'heal' | 'upgrade'; implant: string | null };
-  boss_spawned: { id: EntityId; name: string; maxHealth: number; phaseThresholds: number[] };
+  boss_spawned: {
+    id: EntityId;
+    name: string;
+    maxHealth: number;
+    phaseThresholds: number[];
+  };
   boss_phase: { id: EntityId; phase: number; phases: number };
   boss_shield: { id: EntityId; current: number; max: number };
   run_ended: { outcome: 'victory' | 'death'; summary: RunSummary };
+  // F4 — meta-progres (#01)
+  meta_rewards: {
+    runId: string;
+    rewards: RunRewards;
+    levelBefore: number;
+    levelAfter: number;
+  };
+  level_up: { level: number };
+  talents_changed: { talents: readonly string[] };
+  unlock_purchased: { id: string };
+  loadout_changed: { loadout: LoadoutChoice };
+  threat_selected: { level: number };
+  hub_station_opened: { station: HubStationId };
 }
 
 export type EventType = keyof GameEvents;

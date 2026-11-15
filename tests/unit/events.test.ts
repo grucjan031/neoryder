@@ -80,6 +80,8 @@ describe('EventBus', () => {
       elapsedS: 920,
       kills: 42,
       roomsCleared: 8,
+      elitesCleared: 2,
+      threatLevel: 3,
       layerReached: 8,
       implants: ['overclock'],
       damage: { melee: 500, power: 300, gun: 200, other: 50 },
@@ -199,7 +201,12 @@ describe('EventBus', () => {
       },
       {
         type: 'boss_spawned',
-        payload: { id: 99, name: 'Dyrektor Ochrony', maxHealth: 800, phaseThresholds: [0.65, 0.3] },
+        payload: {
+          id: 99,
+          name: 'Dyrektor Ochrony',
+          maxHealth: 800,
+          phaseThresholds: [0.65, 0.3],
+        },
       },
       {
         type: 'boss_phase',
@@ -209,6 +216,63 @@ describe('EventBus', () => {
         type: 'run_ended',
         payload: { outcome: 'victory', summary },
       },
+    ]);
+  });
+  it('emituje i odbiera wszystkie zdarzenia meta-progresu F4', () => {
+    const bus = new EventBus();
+    const received: { type: string; payload: unknown }[] = [];
+    bus.on('meta_rewards', (payload) =>
+      received.push({ type: 'meta_rewards', payload }),
+    );
+    bus.on('level_up', (payload) =>
+      received.push({ type: 'level_up', payload }),
+    );
+    bus.on('talents_changed', (payload) =>
+      received.push({ type: 'talents_changed', payload }),
+    );
+    bus.on('unlock_purchased', (payload) =>
+      received.push({ type: 'unlock_purchased', payload }),
+    );
+    bus.on('loadout_changed', (payload) =>
+      received.push({ type: 'loadout_changed', payload }),
+    );
+    bus.on('threat_selected', (payload) =>
+      received.push({ type: 'threat_selected', payload }),
+    );
+    bus.on('hub_station_opened', (payload) =>
+      received.push({ type: 'hub_station_opened', payload }),
+    );
+
+    const rewards = { xp: 130, data: 110, cores: 1 };
+    const loadout = {
+      blade: 'plasmaBlade',
+      weapons: ['blaster'],
+      powers: ['push'],
+    };
+    bus.emit('meta_rewards', {
+      runId: 'seed:1',
+      rewards,
+      levelBefore: 1,
+      levelAfter: 2,
+    });
+    bus.emit('level_up', { level: 2 });
+    bus.emit('talents_changed', { talents: ['bladeRoot'] });
+    bus.emit('unlock_purchased', { id: 'weapon:rifle' });
+    bus.emit('loadout_changed', { loadout });
+    bus.emit('threat_selected', { level: 1 });
+    bus.emit('hub_station_opened', { station: 'workshop' });
+
+    expect(received).toEqual([
+      {
+        type: 'meta_rewards',
+        payload: { runId: 'seed:1', rewards, levelBefore: 1, levelAfter: 2 },
+      },
+      { type: 'level_up', payload: { level: 2 } },
+      { type: 'talents_changed', payload: { talents: ['bladeRoot'] } },
+      { type: 'unlock_purchased', payload: { id: 'weapon:rifle' } },
+      { type: 'loadout_changed', payload: { loadout } },
+      { type: 'threat_selected', payload: { level: 1 } },
+      { type: 'hub_station_opened', payload: { station: 'workshop' } },
     ]);
   });
 });

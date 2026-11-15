@@ -25,7 +25,7 @@ mulberry32 i xmur3; szczegóły i odtwarzanie strumieni opisuje ADR 0002.
 
 `SaveStore` rozdziela klucze `meta` i `run` w IndexedDB `neoryder`, magazyn `saves`.
 Implementacja pamięciowa zachowuje te same zasady kopiowania. Schematy zod
-walidują dane (`SAVE_VERSION = 2`, w `RunSave` pole `run: RunState` walidowane przez `runStateSchema`).
+walidują dane (`SAVE_VERSION = 3`, w `RunSave` pole `run: RunState` walidowane przez `runStateSchema`, w `MetaSave` pole `meta: MetaState`).
 Migracja 0→1 zachowuje pola istniejącego szkieletu i podnosi wersję; migracja 1→2 jest
 neutralna dla `meta`, natomiast szkielet `run` v1 (bez pola `run`) traktuje jako brak
 aktywnego runu (`loadRun()` zwraca `null` bez ostrzeżenia). Brakujące lub uszkodzone pola

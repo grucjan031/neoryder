@@ -1,0 +1,107 @@
+[
+  {
+    "id": "weapon:rifle",
+    "cost": {
+      "data": 80
+    },
+    "minLevel": 1
+  },
+  {
+    "id": "weapon:scatter",
+    "cost": {
+      "data": 100
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "weapon:emp",
+    "cost": {
+      "data": 120
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "weapon:sniper",
+    "cost": {
+      "data": 140
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "weapon:beam",
+    "cost": {
+      "data": 180
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "power:grab",
+    "cost": {
+      "data": 80
+    },
+    "minLevel": 1
+  },
+  {
+    "id": "power:shockwave",
+    "cost": {
+      "data": 100
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "power:chain",
+    "cost": {
+      "data": 140
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "power:barrier",
+    "cost": {
+      "data": 160
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "power:focus",
+    "cost": {
+      "cores": 3
+    },
+    "minLevel": 5
+  },
+  {
+    "id": "blade:twinBlades",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "blade:staffBlade",
+    "cost": {
+      "cores": 3
+    },
+    "minLevel": 6
+  },
+  {
+    "id": "slot:weapon2",
+    "cost": {
+      "data": 100
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "slot:power2",
+    "cost": {
+      "cores": 2
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "slot:weapon3",
+    "cost": {
+      "cores": 2
+    },
+    "minLevel": 4
+  }
+]

@@ -1,13 +1,18 @@
 import { z } from 'zod';
+import { loadoutDefinitions } from '../progression/loadout';
+import { metaStateSchema } from '../progression/metaStateSchema';
+import { createStarterMetaState } from '../progression/progressionSchema';
 import { runStateSchema } from '../world/run';
+import type { MetaState } from './metaTypes';
 import type { RunState } from './runTypes';
 import { tuning } from './tuning';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export interface MetaSave {
   saveVersion: number;
   createdAt: number;
   updatedAt: number;
+  meta: MetaState;
 }
 export interface RunSave {
   saveVersion: number;
@@ -49,6 +54,7 @@ const metaSchema: z.ZodType<MetaSave> = z.object({
   saveVersion: z.literal(SAVE_VERSION),
   createdAt: z.number().finite(),
   updatedAt: z.number().finite(),
+  meta: metaStateSchema,
 });
 const runSchema: z.ZodType<RunSave> = z.object({
   saveVersion: z.literal(SAVE_VERSION),
@@ -62,12 +68,43 @@ const legacyRunV1Schema = z.object({
   startedAt: z.number().finite(),
 });
 const recordSchema = z.record(z.string(), z.unknown());
-const migrations: readonly Migration[] = [
-  (data) => ({ ...data }),
+const identity: Migration = (data) => ({ ...data });
+
+/** Meta 2→3: gracz z F3 nie miał meta-progresu, więc zaczyna od stanu startowego z danych. */
+const metaMigrations: readonly Migration[] = [
+  identity,
+  identity,
+  (data) =>
+    data.meta === undefined
+      ? { ...data, meta: createStarterMetaState() }
+      : { ...data },
+];
+
+/** Run 2→3: dopisuje ekwipunek z presetu `loadoutId`, talenty i Poziom zagrożenia; nieznany preset = zapis nieczytelny. */
+const runMigrations: readonly Migration[] = [
+  identity,
   (data) =>
     data.run === undefined && legacyRunV1Schema.safeParse(data).success
       ? { ...data, run: null }
       : { ...data },
+  (data) => {
+    const state = recordSchema.safeParse(data.run);
+    if (!state.success || state.data.loadout !== undefined) return { ...data };
+    const preset = loadoutDefinitions.get(String(state.data.loadoutId));
+    if (!preset)
+      throw new Error(
+        `Nieznany ekwipunek w zapisie runu: ${String(state.data.loadoutId)}`,
+      );
+    return {
+      ...data,
+      run: {
+        ...state.data,
+        loadout: structuredClone(preset),
+        talents: [],
+        threatLevel: 0,
+      },
+    };
+  },
 ];
 
 function isFuture(data: unknown): boolean {
@@ -79,7 +116,11 @@ function isFuture(data: unknown): boolean {
   );
 }
 
-function decode<T>(raw: unknown, schema: z.ZodType<T>): T | null {
+function decode<T>(
+  raw: unknown,
+  schema: z.ZodType<T>,
+  migrations: readonly Migration[],
+): T | null {
   if (raw == null) return null;
   if (isFuture(raw)) {
     console.warn(
@@ -114,12 +155,12 @@ export function createMemorySaveStore(): SaveStore {
   let meta: unknown = null;
   let run: unknown = null;
   return {
-    loadMeta: async () => decode(meta, metaSchema),
+    loadMeta: async () => decode(meta, metaSchema, metaMigrations),
     saveMeta: async (data) => {
       assertWritable(meta);
       meta = structuredClone(metaSchema.parse(data));
     },
-    loadRun: async () => decode(run, runSchema),
+    loadRun: async () => decode(run, runSchema, runMigrations),
     saveRun: async (data) => {
       assertWritable(run);
       run = structuredClone(runSchema.parse(data));
@@ -196,9 +237,10 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   }
 
   return {
-    loadMeta: async () => decode(await read('meta'), metaSchema),
+    loadMeta: async () =>
+      decode(await read('meta'), metaSchema, metaMigrations),
     saveMeta: async (data) => write('meta', metaSchema.parse(data)),
-    loadRun: async () => decode(await read('run'), runSchema),
+    loadRun: async () => decode(await read('run'), runSchema, runMigrations),
     saveRun: async (data) => write('run', runSchema.parse(data)),
     clearRun: () => write('run'),
   };
