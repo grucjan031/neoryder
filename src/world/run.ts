@@ -9,7 +9,9 @@ import {
   type RunSummary,
   type SectorMap,
 } from '../core/runTypes';
+import { Stats } from '../core/stats';
 import { loadoutDefinitions, loadoutSchema } from '../progression/loadout';
+import { resolveTalents } from '../progression/talents';
 import type { Loadout } from '../progression/loadout';
 import type { SectorDefinition } from './sectorSchema';
 
@@ -52,6 +54,11 @@ export interface NewRunOptions {
   talents?: readonly string[];
   /** Poziom zagrożenia; domyślnie 0. */
   threatLevel?: number;
+  /**
+   * Bazowe `maxHealth` gracza bez talentów (domyślnie `initialHp` menedżera). Talenty podnoszące
+   * `maxHealth` zwiększają startowe zdrowie o różnicę względem tej bazy.
+   */
+  baseMaxHealth?: number;
 }
 
 export interface RoomExportState {
@@ -288,6 +295,13 @@ export class RunManager {
     this.rebuildNodeIndex(map);
     const loadout = options.loadout ?? loadoutDefinitions.get(loadoutId);
     if (!loadout) throw new Error(`Nieznany ekwipunek: ${loadoutId}`);
+    const talents = [...new Set(options.talents ?? [])];
+    const resolvedTalents = resolveTalents(talents);
+    const baseMaxHealth = options.baseMaxHealth ?? this.initialHp;
+    const healthStats = new Stats({ maxHealth: baseMaxHealth });
+    for (const modifier of resolvedTalents.modifiers)
+      if (modifier.stat === 'maxHealth') healthStats.add(modifier);
+    const talentHealth = healthStats.get('maxHealth') - baseMaxHealth;
     const threatLevel = options.threatLevel ?? 0;
     if (!Number.isInteger(threatLevel) || threatLevel < 0)
       throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
@@ -297,16 +311,16 @@ export class RunManager {
       sectorId: this.sectorIdOverride ?? map.sectorId,
       loadoutId,
       loadout: structuredClone(loadout),
-      talents: [...(options.talents ?? [])],
+      talents,
       threatLevel,
       startedAtMs: this.now(),
       elapsedS: 0,
       map,
       currentNodeId: null,
       visited: [],
-      hp: this.initialHp,
+      hp: this.initialHp + talentHealth,
       energy: this.initialEnergy,
-      credits: 0,
+      credits: resolvedTalents.runStartCredits,
       implants: [],
       stats: {
         kills: 0,

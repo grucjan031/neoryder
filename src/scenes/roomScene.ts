@@ -61,6 +61,8 @@ import { resolveLoadout } from '../progression/patches';
 import type { ResolvedLoadout } from '../progression/patches';
 import type { DefinitionPatch } from '../core/metaTypes';
 import { SynergySystem } from '../progression/synergies';
+import { talentTrees } from '../progression/talentSchema';
+import { resolveTalents, TalentSystem } from '../progression/talents';
 import { createStyleLights } from '../render/lights';
 import { getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
@@ -73,6 +75,7 @@ import { HitSparks } from '../vfx/hitSparks';
 import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
 import { StatusVfx } from '../vfx/statusVfx';
 import { WaveDirector } from '../world/waves';
+import { threatModifiers } from '../world/threat';
 import type { Scene } from './index';
 
 const playerDefaults = z
@@ -126,6 +129,8 @@ export class RoomScene implements Scene {
   private powers!: PowerSlots;
   private readonly loadout: Loadout;
   private readonly resolved: ResolvedLoadout;
+  private readonly initialTalentIds: string[];
+  private talentSystem!: TalentSystem;
   private weapons: Weapon[] = [];
   private weaponSlot = 0;
   private beamView!: BeamRenderer;
@@ -184,7 +189,12 @@ export class RoomScene implements Scene {
     if (!node)
       throw new Error('RoomScene wymaga bieżącego węzła w mapie runu.');
     this.node = { ...node, next: [...node.next] };
-    this.resolved = resolveLoadout(run.loadout, options.patches ?? []);
+    // Łatki: najpierw talenty (po id węzła), potem opcje sceny.
+    this.initialTalentIds = [...new Set(run.talents)];
+    this.resolved = resolveLoadout(run.loadout, [
+      ...resolveTalents(this.initialTalentIds).patches,
+      ...(options.patches ?? []),
+    ]);
     this.loadout = run.loadout;
     this.loadModels = options.loadModels ?? true;
     this.implantDefs = options.implantDefinitions ?? implantDefinitions;
@@ -239,6 +249,7 @@ export class RoomScene implements Scene {
       loadSettings(),
     );
     this.applyImplants();
+    this.applyTalents();
     this.health.set(this.run.hp);
     this.registerPlayer();
     this.hurtboxes.add(playerId, this.player.colliderHandle);
@@ -290,6 +301,7 @@ export class RoomScene implements Scene {
         })),
       },
     );
+    this.manager.setSpawnModifiers(threatModifiers(this.run.threatLevel));
 
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
@@ -408,12 +420,7 @@ export class RoomScene implements Scene {
       targets: () => this.enemyIds(),
       position: (id) => this.enemyPosition(id),
     });
-    this.synergies.setTags([
-      ...this.loadout.tags,
-      ...this.implantSystem.tags(),
-    ]);
-
-    this.synergies.setImplantTriggers(this.implantSystem.triggers());
+    this.refreshSynergyInputs();
 
     this.director = new WaveDirector(
       this.waves,
@@ -525,11 +532,7 @@ export class RoomScene implements Scene {
         definitions: this.implantDefs,
         onChange: () => {
           if (!this.synergies) return;
-          this.synergies.setTags([
-            ...this.loadout.tags,
-            ...this.implantSystem.tags(),
-          ]);
-          this.synergies.setImplantTriggers(this.implantSystem.triggers());
+          this.refreshSynergyInputs();
           this.ctx.bus.emit('health_changed', {
             id: this.player.id,
             current: this.health.current,
@@ -539,6 +542,40 @@ export class RoomScene implements Scene {
       },
     );
     this.implantSystem.set(this.initialImplantIds, { adjustHealth: false });
+  }
+
+  /** Talenty (ADR 0007 pkt 4): modyfikatory na obu instancjach `Stats`, tagi i wyzwalacze w synergiach. */
+  private applyTalents(): void {
+    this.talentSystem = new TalentSystem({
+      stats: [this.playerStats, this.player.stats],
+      health: this.health,
+      onChange: () => {
+        if (!this.synergies) return;
+        this.refreshSynergyInputs();
+        this.ctx.bus.emit('health_changed', {
+          id: this.player.id,
+          current: this.health.current,
+          max: this.health.max,
+        });
+      },
+    });
+    this.talentSystem.set(this.initialTalentIds, { adjustHealth: false });
+  }
+
+  /** Tagi ekwipunku, implantów i talentów oraz wyzwalacze implantów i talentów do `SynergySystem`. */
+  private refreshSynergyInputs(): void {
+    this.synergies.setTags([
+      ...this.loadout.tags,
+      ...this.implantSystem.tags(),
+      ...this.talentSystem.tags(),
+    ]);
+    this.synergies.setImplantTriggers([
+      ...this.implantSystem.triggers(),
+      ...this.talentSystem.triggers().map(({ talentId, trigger }) => ({
+        implantId: `talent:${talentId}`,
+        trigger,
+      })),
+    ]);
   }
 
   private spawnPosition(): Vec3 {
@@ -1080,6 +1117,23 @@ export class RoomScene implements Scene {
         return `Dodano implant: ${definition.name} (${definition.id})`;
       },
     );
+    const talentNodes = [...talentTrees.values()].flatMap((tree) => tree.nodes);
+    register(
+      'talent',
+      `talent <id>|reset — talent na żywo (modyfikatory, tagi, wyzwalacze; łatki ekwipunku od następnego pokoju): ${talentNodes.map((node) => node.id).join(', ')}`,
+      (args) => {
+        if (args.length === 1 && args[0] === 'reset') {
+          this.talentSystem.clear();
+          return 'Talenty pokoju wyczyszczone.';
+        }
+        const id = args[0] ?? '';
+        const node = talentNodes.find((candidate) => candidate.id === id);
+        if (args.length !== 1 || !node)
+          return 'Podaj znany talent: talent <id> | talent reset.';
+        if (!this.talentSystem.add(id)) return `Talent już aktywny: ${id}`;
+        return `Dodano talent: ${node.name} (${node.id})`;
+      },
+    );
   }
 
   /** Stan początkowy dla HUD (zdrowie i ciepło emitują zdarzenia dopiero przy zmianie). */
@@ -1124,6 +1178,8 @@ export class RoomScene implements Scene {
         return this.health.max;
       case 'implants':
         return this.implantSystem.ids();
+      case 'talents':
+        return this.talentSystem.ids();
       case 'energy':
         return this.energy.current;
       case 'heat':

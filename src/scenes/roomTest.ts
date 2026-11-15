@@ -3,6 +3,7 @@ import type { GameContext } from '../core/context';
 import type { RunState } from '../core/runTypes';
 import { loadWaves } from '../world/waves';
 import { roomDefinitions } from '../world/rooms';
+import { threatLevelDef } from '../world/threat';
 import { loadoutDefinitions } from '../progression/loadout';
 import playerData from '../data/scenes/roomPlayer.json';
 import wavesData from '../data/waves/roomTest.json';
@@ -18,13 +19,15 @@ export function createRoomTest(loadModels = true): RoomScene {
   const loadoutId = params.get('loadout') ?? 'classic';
   const loadout = loadoutDefinitions.get(loadoutId);
   if (!loadout) throw new Error(`Nieznany ekwipunek: ${loadoutId}`);
+  const threatLevel = Number(params.get('threat') ?? 0);
+  threatLevelDef(threatLevel);
   const run: RunState = {
     seed: params.get('seed') ?? 'room-test',
     sectorId: 'room-test',
     loadoutId,
     loadout,
     talents: [],
-    threatLevel: 0,
+    threatLevel,
     startedAtMs: 0,
     elapsedS: 0,
     map: {

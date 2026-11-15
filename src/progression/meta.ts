@@ -6,6 +6,7 @@ import {
   type MetaRunRecord,
   type MetaState,
   type RunRewards,
+  type TreeId,
 } from '../core/metaTypes';
 import type { RunSummary } from '../core/runTypes';
 import type { Loadout } from './loadout';
@@ -13,6 +14,7 @@ import { createStarterMetaState, progression } from './progressionSchema';
 import type { ProgressionData, RewardRules } from './progressionSchema';
 import { metaStateSchema } from './metaStateSchema';
 import { talentTrees } from './talentSchema';
+import type { TalentNode, TalentTree } from './talentSchema';
 import { threatLevels } from './threatSchema';
 import type { ThreatLevel } from './threatSchema';
 import { unlockDefinitions } from './unlocksSchema';
@@ -77,6 +79,14 @@ export function computeRunRewards(
       summary.elitesCleared * rules.coresPerElite +
       (victory ? rules.coresVictory + threatLevel.victoryCores : 0),
   };
+}
+
+function findTalentNode(id: string): { tree: TalentTree; node: TalentNode } {
+  for (const tree of talentTrees.values()) {
+    const node = tree.nodes.find((candidate) => candidate.id === id);
+    if (node) return { tree, node };
+  }
+  throw new Error(`Nieznany talent: ${id}.`);
 }
 
 export interface MetaRules {
@@ -155,6 +165,14 @@ export class MetaManager {
 
   get freePoints(): number {
     return this.talentPoints - this.spentPoints;
+  }
+
+  /** Punkty wydane w drzewku (suma `cost` kupionych węzłów tego drzewka). */
+  spentInTree(tree: TreeId): number {
+    const nodes = talentTrees.get(tree)?.nodes ?? [];
+    return nodes
+      .filter((node) => this.current.talents.includes(node.id))
+      .reduce((sum, node) => sum + node.cost, 0);
   }
 
   get weaponSlots(): number {
@@ -310,11 +328,58 @@ export class MetaManager {
     this.events?.emit('threat_selected', { level });
   }
 
+  /**
+   * Kupuje węzeł talentu: wolne punkty, wszystkie `requires`, próg drzewka
+   * (`tierThresholds[tier - 1]`) i `requiresTreePoints` (punkty wydane w danym drzewku).
+   */
+  buyTalent(id: string): void {
+    const { tree, node } = findTalentNode(id);
+    if (this.current.talents.includes(id)) throw new Error('Już kupione.');
+    if (this.freePoints < node.cost)
+      throw new Error(`Za mało punktów talentów (koszt ${node.cost}).`);
+    for (const required of node.requires)
+      if (!this.current.talents.includes(required))
+        throw new Error(`Wymagany talent: ${required}.`);
+    const threshold = tree.tierThresholds[node.tier - 1] ?? 0;
+    if (this.spentInTree(tree.tree) < threshold)
+      throw new Error(
+        `Wymagane ${threshold} pkt w drzewku ${tree.name} (próg ${node.tier}).`,
+      );
+    for (const [requiredTree, points] of Object.entries(
+      node.requiresTreePoints ?? {},
+    )) {
+      if (this.spentInTree(requiredTree as TreeId) < points)
+        throw new Error(
+          `Wymagane ${points} pkt w drzewku ${talentTrees.get(requiredTree as TreeId)?.name ?? requiredTree}.`,
+        );
+    }
+    this.current.talents.push(id);
+    this.events?.emit('talents_changed', {
+      talents: [...this.current.talents],
+    });
+  }
+
+  /** Darmowy reset: czyści wszystkie talenty, punkty wracają do puli. */
+  resetTalents(): void {
+    this.current.talents = [];
+    this.events?.emit('talents_changed', { talents: [] });
+  }
+
   debugAddXp(amount: number): void {
     const before = this.level;
     this.current.xp += Math.max(0, Math.floor(amount));
     for (let level = before + 1; level <= this.level; level += 1)
       this.events?.emit('level_up', { level });
+  }
+
+  /** Dodaje talent bez kosztu i bez sprawdzania progów (konsola debug). */
+  debugGrantTalent(id: string): void {
+    findTalentNode(id);
+    if (this.current.talents.includes(id)) return;
+    this.current.talents.push(id);
+    this.events?.emit('talents_changed', {
+      talents: [...this.current.talents],
+    });
   }
 
   debugAddData(amount: number): void {

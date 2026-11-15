@@ -64,7 +64,7 @@ Dane: `src/data/talents/blade.json`, `resonance.json`, `gunner.json`, `hybrid.js
 interface TalentTree {
   tree: TreeId;
   name: string;
-  tierThresholds: number[]; // punkty wydane w tym drzewku wymagane dla progu 1..4, np. [0, 2, 5, 8]
+  tierThresholds: number[]; // punkty wydane w tym drzewku wymagane dla progu 1..4, np. [0, 1, 4, 7]
   nodes: TalentNode[];
 }
 interface TalentNode {

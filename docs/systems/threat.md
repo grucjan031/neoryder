@@ -97,3 +97,34 @@ Integracja RunScene, room-test i podgląd planu pozostają w F3-07 zgodnie
 z decyzją zlecającego. Moduł nie dodaje sceny ani testu e2e. Po integracji
 playtest powinien sprawdzić tempo narastania presji i czytelność wejścia
 Egzekutora w ostatniej fali elity; obecne koszty wymagają oceny człowieka.
+
+## Poziom zagrożenia (F4-05)
+
+Poziom zagrożenia (0–10, `RunState.threatLevel`, dane `src/data/meta/threat.json`, tabela w [balance.md](../balance.md)) działa na dwa sposoby, oba przez dane:
+
+1. **Budżet fal.** `planWaves(room, sector, node, rng, threatLevel = 0)` mnoży budżet przez `budgetMult` poziomu: `(base + perLayer * (layer - 1)) * (room.threatMultiplier ?? 1) * budgetMult`. Zaokrąglanie bez zmian względem F3; poziom 0 (mnożnik 1) daje plan identyczny jak dotąd. `RoomPlanner.planWaves` ma opcjonalny 5. parametr; `RunScene` przekazuje `state.threatLevel`.
+2. **Statystyki wrogów.** `threatModifiers(level)` zwraca `StatModifier[]` ze źródłem `threat:<poziom>`: `maxHealth` (`percent` = `enemyHealth`) i `damage` (`percent` = `enemyDamage`); dla poziomu 0 pustą tablicę. `EnemyManager.setSpawnModifiers(mods)` ustawia je dla każdego nowo spawnowanego wroga (także pomocników i bossa); trafiają do `EnemyDependencies.spawnModifiers` i są dodawane do `Stats` w konstruktorze wroga, przed utworzeniem `Health`, więc wróg startuje z pełnym, powiększonym HP, a `boss_spawned.maxHealth` jest poprawne.
+
+`threatLevelDef(level)` zwraca definicję z danych i rzuca błąd dla nieznanego poziomu.
+
+Scena: `?scene=room-test&threat=<n>` (syntetyczny `RunState.threatLevel`). `RoomScene` wywołuje `setSpawnModifiers(threatModifiers(run.threatLevel))` zaraz po utworzeniu `EnemyManager`.
+
+### Tabela poziomów 0–10
+
+Wartości pochodzą z `src/data/meta/threat.json` (źródło prawdy; strojenie wyłącznie w danych). Poziom 0 jest neutralny. Wzrosty zdrowia i obrażeń to modyfikatory `percent` źródła `threat:<poziom>`; budżet fal mnoży budżet z `planWaves`.
+
+| Poziom | Nazwa | Zdrowie wrogów | Obrażenia wrogów | Budżet fal | Nagrody | Rdzenie za zwycięstwo |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | Rutyna | — | — | ×1 | ×1 | 0 |
+| 1 | Podwyższona czujność | +10% | +5% | ×1.1 | ×1.15 | 1 |
+| 2 | Alarm | +20% | +10% | ×1.2 | ×1.3 | 1 |
+| 3 | Wzmocniony patrol | +30% | +15% | ×1.3 | ×1.45 | 1 |
+| 4 | Obława | +40% | +20% | ×1.4 | ×1.6 | 2 |
+| 5 | Stan wyjątkowy | +50% | +25% | ×1.5 | ×1.75 | 2 |
+| 6 | Blokada dzielnicy | +60% | +30% | ×1.6 | ×1.9 | 2 |
+| 7 | Pełna mobilizacja | +70% | +35% | ×1.7 | ×2.05 | 3 |
+| 8 | Nocna czystka | +80% | +40% | ×1.8 | ×2.2 | 3 |
+| 9 | Zero tolerancji | +90% | +45% | ×1.9 | ×2.35 | 3 |
+| 10 | Totalna blokada | +100% | +50% | ×2 | ×2.5 | 4 |
+
+Strojenie tabeli to zadanie 11 (symulacja balansu meta). Uwaga: `docs/balance.md` jest generowany przez `npm run balance` i sprawdzany testem, dlatego tabela leży tutaj.

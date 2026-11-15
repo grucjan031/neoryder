@@ -89,5 +89,7 @@ export interface RoomPlanner {
     sector: SectorDefinition,
     node: MapNode,
     rng: Rng,
+    /** F4-05: Poziom zagrożenia z RunState (mnożnik budżetu); domyślnie 0 = F3. */
+    threatLevel?: number,
   ): WavesDefinition;
 }

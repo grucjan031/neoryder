@@ -65,6 +65,7 @@ export class Assaulter implements Enemy {
       moveSpeed: definition.moveSpeed,
       damage: definition.damage,
     });
+    for (const mod of deps.spawnModifiers ?? []) this.stats.add(mod);
     deps.damage.register(
       this.id,
       new Health(() => this.stats.get('maxHealth')),

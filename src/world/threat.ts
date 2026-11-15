@@ -1,4 +1,7 @@
 import type { RoomPlanner } from '../core/runTypes';
+import type { StatModifier } from '../core/stats';
+import { threatLevels } from '../progression/threatSchema';
+import type { ThreatLevel } from '../progression/threatSchema';
 import { tuning } from '../core/tuning';
 import { enemySchema } from '../enemies/enemySchema';
 import { sectorThreatSchema, threatPacingSchema } from './sectorSchema';
@@ -19,11 +22,41 @@ function costOf(id: string): number {
   return cost;
 }
 
+/** Definicja Poziomu zagrożenia z danych (`threat.json`); nieznany poziom to błąd. */
+export function threatLevelDef(level: number): ThreatLevel {
+  const def = Number.isInteger(level) ? threatLevels[level] : undefined;
+  if (!def) throw new Error(`Nieznany Poziom zagrożenia: ${level}.`);
+  return def;
+}
+
+/** Modyfikatory wrogów dla poziomu (źródło `threat:<poziom>`); poziom 0 nic nie zmienia. */
+export function threatModifiers(level: number): StatModifier[] {
+  const def = threatLevelDef(level);
+  const source = `threat:${level}`;
+  const mods: StatModifier[] = [];
+  if (def.enemyHealth !== 0)
+    mods.push({
+      stat: 'maxHealth',
+      type: 'percent',
+      value: def.enemyHealth,
+      source,
+    });
+  if (def.enemyDamage !== 0)
+    mods.push({
+      stat: 'damage',
+      type: 'percent',
+      value: def.enemyDamage,
+      source,
+    });
+  return mods;
+}
+
 export const planWaves: RoomPlanner['planWaves'] = (
   room,
   sector,
   node,
   rng,
+  threatLevel = 0,
 ) => {
   if (node.type !== 'combat' && node.type !== 'elite')
     throw new Error('Budżet zagrożenia obsługuje tylko combat i elite.');
@@ -38,7 +71,9 @@ export const planWaves: RoomPlanner['planWaves'] = (
   if (!Number.isInteger(node.layer) || node.layer < 1)
     throw new Error('Warstwa pokoju musi być dodatnią liczbą całkowitą.');
   const budget =
-    (base + perLayer * (node.layer - 1)) * (room.threatMultiplier ?? 1);
+    (base + perLayer * (node.layer - 1)) *
+    (room.threatMultiplier ?? 1) *
+    threatLevelDef(threatLevel).budgetMult;
   if (!Number.isFinite(budget) || budget < 0)
     throw new Error('Nieprawidłowy budżet zagrożenia.');
   const random = rng.fork(`room:${node.id}`);

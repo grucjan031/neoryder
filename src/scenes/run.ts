@@ -387,6 +387,7 @@ export class RunScene implements Scene {
               ? node
               : { ...node, type: 'combat' },
             rng,
+            state.threatLevel,
           );
     const room =
       this.options.createRoom?.(layout, state, waves) ??

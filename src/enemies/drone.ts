@@ -75,6 +75,7 @@ export class Drone implements Enemy {
       moveSpeed: definition.moveSpeed,
       damage: this.ranged.projectileDamage,
     });
+    for (const mod of deps.spawnModifiers ?? []) this.stats.add(mod);
     deps.damage.register(
       this.id,
       new Health(() => this.stats.get('maxHealth')),

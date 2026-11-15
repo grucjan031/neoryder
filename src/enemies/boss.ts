@@ -86,6 +86,7 @@ export class Boss implements Enemy {
       maxHealth: definition.maxHealth,
       moveSpeed: definition.moveSpeed,
     });
+    for (const mod of deps.spawnModifiers ?? []) this.stats.add(mod);
     this.health = new BossHealth(
       () => this.stats.get('maxHealth'),
       () => this.nextThreshold(),

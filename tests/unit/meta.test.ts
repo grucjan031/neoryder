@@ -255,3 +255,90 @@ describe('MetaManager zapis', () => {
     expect(meta.freePoints).toBe(0);
   });
 });
+
+describe('MetaManager talenty', () => {
+  /** Poziom 20 daje 19 punktów talentów. */
+  function rich(bus?: EventBus): MetaManager {
+    const meta = make(bus);
+    meta.debugAddXp(xpToNext.reduce((a, b) => a + b, 0));
+    return meta;
+  }
+
+  it('odrzuca zakup bez punktów, nieznany i powtórzony węzeł', () => {
+    expect(() => make().buyTalent('bladeRoot')).toThrow('Za mało punktów');
+    const meta = rich();
+    expect(() => meta.buyTalent('nope')).toThrow('Nieznany talent');
+    meta.buyTalent('bladeRoot');
+    expect(() => meta.buyTalent('bladeRoot')).toThrow('Już kupione');
+  });
+
+  it('odrzuca zakup bez wymaganego węzła', () => {
+    const meta = rich();
+    expect(() => meta.buyTalent('bladeRiposte')).toThrow('Wymagany talent');
+    expect(meta.state.talents).toEqual([]);
+  });
+
+  it('odrzuca zakup poniżej progu drzewka i przyjmuje po jego spełnieniu', () => {
+    const meta = rich();
+    meta.buyTalent('bladeRoot');
+    meta.buyTalent('bladeDashCut'); // 3 pkt w drzewku
+    expect(meta.spentInTree('blade')).toBe(3);
+    // bladeThrowEdge: tier 3, wymaga bladeDashCut (jest) i 4 pkt w drzewku (są 3).
+    expect(() => meta.buyTalent('bladeThrowEdge')).toThrow('Wymagane 4 pkt');
+    meta.buyTalent('bladeRiposte');
+    meta.buyTalent('bladeThrowEdge');
+    expect(meta.state.talents).toContain('bladeThrowEdge');
+  });
+
+  it('hybryda bez wymaganych punktów w drzewkach jest odrzucona', () => {
+    const meta = rich();
+    expect(() => meta.buyTalent('hybridStormDancer')).toThrow('Wymagane 3 pkt');
+    meta.buyTalent('bladeRoot');
+    meta.buyTalent('bladeDashCut');
+    expect(() => meta.buyTalent('hybridStormDancer')).toThrow('Wymagane 3 pkt');
+  });
+
+  it('hybryda po zainwestowaniu w oba drzewka odejmuje punkty i nie liczy się do drzewek', () => {
+    const meta = rich();
+    for (const id of [
+      'bladeRoot',
+      'bladeDashCut',
+      'resonanceRoot',
+      'resonanceCapacitor',
+    ])
+      meta.buyTalent(id);
+    const before = meta.freePoints;
+    meta.buyTalent('hybridStormDancer');
+    expect(meta.freePoints).toBe(before - 2);
+    expect(meta.spentInTree('blade')).toBe(3);
+    expect(meta.spentInTree('hybrid')).toBe(2);
+  });
+
+  it('zakup emituje talents_changed, a reset zwraca wszystkie punkty', () => {
+    const bus = new EventBus();
+    const events: GameEvents['talents_changed'][] = [];
+    bus.on('talents_changed', (e) => events.push(e));
+    const meta = rich(bus);
+    const total = meta.freePoints;
+    for (const id of ['bladeRoot', 'resonanceRoot', 'gunnerRoot'])
+      meta.buyTalent(id);
+    expect(events.at(-1)?.talents).toEqual([
+      'bladeRoot',
+      'resonanceRoot',
+      'gunnerRoot',
+    ]);
+    expect(meta.spentPoints).toBe(3);
+    meta.resetTalents();
+    expect(meta.state.talents).toEqual([]);
+    expect(meta.freePoints).toBe(total);
+    expect(events.at(-1)?.talents).toEqual([]);
+  });
+
+  it('debugGrantTalent dodaje bez kosztu i odrzuca nieznany id', () => {
+    const meta = make();
+    meta.debugGrantTalent('bladeRoot');
+    meta.debugGrantTalent('bladeRoot');
+    expect(meta.state.talents).toEqual(['bladeRoot']);
+    expect(() => meta.debugGrantTalent('nope')).toThrow('Nieznany talent');
+  });
+});

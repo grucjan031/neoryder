@@ -1434,3 +1434,50 @@ Powiązane zmiany:
 - `src/combat/melee/bladeSchema.ts`: `withBladeOverride(base: BladeDefinition, override?: string | null): BladeDefinition` (nadpisanie `?blade=` wygrywa z ostrzem już rozwiązanym); `resolveBlade` bez zmian.
 - `RoomSceneOptions.patches?: readonly DefinitionPatch[]` (domyślnie `[]`); `RoomScene.query('resolvedLoadout')` zwraca kopię `ResolvedLoadout`. `Arena` używa `resolveLoadout(preset, [])`.
 - Wartości z `tuning.ts` nie są łatkowane. `Hud` i `FppViewModel` nadal czytają nazwy i modele z globalnych map (łatki ich nie zmieniają); model broni z `ResolvedLoadout` ma pierwszeństwo w `RoomScene`.
+
+### Poziom zagrożenia (F4-05) — `src/world/threat.ts`, `src/enemies/manager.ts`
+
+```ts
+threatLevelDef(level: number): ThreatLevel;            // z threat.json; nieznany poziom = błąd
+threatModifiers(level: number): StatModifier[];        // źródło `threat:<poziom>`; poziom 0 = []
+// RoomPlanner (kompatybilnie, opcjonalny parametr):
+planWaves(room, sector, node, rng, threatLevel?: number): WavesDefinition; // domyślnie 0
+// EnemyManager:
+setSpawnModifiers(mods: readonly StatModifier[]): void; // dla każdego NOWO spawnowanego wroga i bossa
+// EnemyDependencies:
+spawnModifiers?: readonly StatModifier[];               // dodawane do Stats w konstruktorze wroga, przed Health
+```
+
+`maxHealth` (`percent` = `enemyHealth`) i `damage` (`percent` = `enemyDamage`). Wróg startuje z pełnym, powiększonym HP. `RunScene` przekazuje `RunState.threatLevel` do planera; `RoomScene` wywołuje `manager.setSpawnModifiers(threatModifiers(run.threatLevel))` po utworzeniu `EnemyManager`. Opis: `docs/systems/threat.md`.
+
+### Talenty (F4-04) — `src/progression/talents.ts`, `src/progression/meta.ts`
+
+Opis: `docs/systems/talents.md`.
+
+```ts
+// MetaManager (meta.ts)
+buyTalent(id: string): void;        // wolne punkty, requires, próg drzewka, requiresTreePoints; błąd = Error (pl); emituje talents_changed
+resetTalents(): void;               // darmowy, pełny; emituje talents_changed
+spentInTree(tree: TreeId): number;  // suma cost kupionych węzłów drzewka
+debugGrantTalent(id: string): void; // bez kosztu i progów
+
+// talents.ts
+interface ResolvedTalents {
+  modifiers: StatModifier[];                              // źródło `talent:<id>`
+  triggers: { talentId: string; trigger: ImplantTrigger }[];
+  tags: string[];
+  patches: DefinitionPatch[];                             // posortowane po id węzła, w węźle wg tablicy
+  runStartCredits: number;
+}
+resolveTalents(ids: readonly string[], trees = talentTrees): ResolvedTalents; // posortowane id, duplikaty raz, nieznany id = błąd
+class TalentSystem {                                      // jak ImplantSystem: nakłada/zdejmuje po źródle na podanych Stats
+  constructor(options: { stats?: Stats | Stats[]; health?: ImplantHealthTarget; trees?; onChange?: () => void });
+  add(id, { adjustHealth? }): boolean; set(ids, { adjustHealth? }): void; clear(): void;
+  has(id): boolean; ids(): string[]; tags(): string[]; triggers(): TalentTrigger[]; patches(): DefinitionPatch[];
+}
+
+// NewRunOptions (world/run.ts)
+baseMaxHealth?: number; // bazowe maxHealth gracza (domyślnie initialHp); hp startowe += przyrost maxHealth z talentów
+```
+
+`RunManager.newRun` dolicza `runStartCredits` do Kredytów startowych. `RoomScene` czyta `run.talents`: modyfikatory na obu instancjach `Stats`, tagi w `SynergySystem.setTags`, wyzwalacze (jako `implant:talent:<id>:<n>`) razem z wyzwalaczami implantów w `setImplantTriggers`, łatki (najpierw talenty, potem `options.patches`) do `resolveLoadout`. Komendy pokoju: `talent <id>`, `talent reset`; `query('talents')`.

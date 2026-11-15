@@ -50,4 +50,10 @@
 
 ## Talenty
 
-(zadanie F4-04)
+Pełny opis (drzewka, progi, lista węzłów, działanie w pokoju): `docs/systems/talents.md`.
+
+- `buyTalent(id)`: węzeł istnieje i nie jest kupiony, `freePoints >= cost`, wszystkie `requires` kupione, punkty wydane w drzewku węzła (`spentInTree`) ≥ `tierThresholds[tier - 1]`, każde `requiresTreePoints[drzewko]` spełnione. Błąd to `Error` z polskim komunikatem; sukces emituje `talents_changed`.
+- `resetTalents()`: darmowy, pełny; czyści listę (punkty wracają do puli) i emituje `talents_changed`.
+- `spentInTree(drzewko)`: suma `cost` kupionych węzłów drzewka. `spentPoints` to suma po wszystkich drzewkach (łącznie z hybrydami).
+- `debugGrantTalent(id)`: bez kosztu i bez progów (konsola debug).
+- Talenty zamraża `RunManager.newRun` w `RunState.talents`; w pokoju działają przez `TalentSystem` (`src/progression/talents.ts`).

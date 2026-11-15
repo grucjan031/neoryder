@@ -6,6 +6,7 @@ import type { GrabTarget } from '../combat/powers/grabTypes';
 import { CollisionGroup, interactionGroups } from '../physics';
 import { EnemyDirector } from './director';
 import type { DirectorConfig } from './director';
+import type { StatModifier } from '../core/stats';
 import { createEnemy } from './registry';
 import type { Enemy, EnemyDependencies } from './types';
 
@@ -20,6 +21,7 @@ export class EnemyManager {
   private enemies: Enemy[] = [];
   /** Numer spawnu w runie — źródło losowości AI niezależne od rosnących ID encji. */
   private sequence = 0;
+  private spawnModifiers: readonly StatModifier[] = [];
   private readonly deps: EnemyDependencies;
   readonly director: EnemyDirector | null;
   constructor(
@@ -53,9 +55,13 @@ export class EnemyManager {
           },
         })
       : null;
+    const readModifiers = () => this.spawnModifiers;
     this.deps = {
       ...deps,
       getNeighbors: () => this.enemies,
+      get spawnModifiers() {
+        return readModifiers();
+      },
       spawnEnemy: (id: string, position: Vec3) => this.spawn(id, position),
       ...(options.spawnPoints ? { spawnPoints: options.spawnPoints } : {}),
       ...(this.director ? { director: this.director } : {}),
@@ -65,6 +71,10 @@ export class EnemyManager {
     for (const enemy of this.enemies)
       if (enemy.id === id && !enemy.removed) return enemy.current.position;
     return null;
+  }
+  /** Modyfikatory nakładane na Stats każdego nowo spawnowanego wroga (także pomocnicy i boss). */
+  setSpawnModifiers(mods: readonly StatModifier[]): void {
+    this.spawnModifiers = [...mods];
   }
   spawn(id: string, position: Vec3): Enemy {
     const rng = this.ctx.rng.fork(`spawn:${this.sequence++}`);

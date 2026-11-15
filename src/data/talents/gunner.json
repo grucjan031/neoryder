@@ -1,7 +1,7 @@
 {
   "tree": "gunner",
   "name": "Strzelec",
-  "tierThresholds": [0, 2, 5, 8],
+  "tierThresholds": [0, 1, 4, 7],
   "nodes": [
     {
       "id": "gunnerRoot",

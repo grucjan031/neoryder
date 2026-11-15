@@ -5,6 +5,7 @@ import type { StatusQuery } from '../combat/status/statusSystem';
 import type { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
+import type { StatModifier } from '../core/stats';
 import type { EnemyDirectorApi } from './director';
 import type { EnemyDefinition } from './enemySchema';
 import type { GrabTarget } from '../combat/powers/grabTypes';
@@ -61,4 +62,6 @@ export interface EnemyDependencies {
   spawnPoints?: readonly Vec3[];
   /** F2-02: status 'stunned' ogłusza wroga na czas trwania statusu. */
   statuses?: StatusQuery;
+  /** F4-05: modyfikatory Poziomu zagrożenia nakładane na Stats przy konstrukcji wroga (przed utworzeniem Health). */
+  spawnModifiers?: readonly StatModifier[];
 }
