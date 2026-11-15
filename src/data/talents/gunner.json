@@ -1,0 +1,161 @@
+{
+  "tree": "gunner",
+  "name": "Strzelec",
+  "tierThresholds": [0, 2, 5, 8],
+  "nodes": [
+    {
+      "id": "gunnerRoot",
+      "name": "Rdzeń Strzelca",
+      "description": "Odblokowuje styl Strzelca (#build_gunner) i zmniejsza nagrzewanie wszystkich broni palnych o 15%.",
+      "tier": 1,
+      "cost": 1,
+      "requires": [],
+      "effects": {
+        "tags": ["#build_gunner"],
+        "patches": [
+          { "target": "weapon:blaster", "op": "mul", "path": "heatPerShot", "value": 0.85 },
+          { "target": "weapon:pistol", "op": "mul", "path": "heatPerShot", "value": 0.85 },
+          { "target": "weapon:rifle", "op": "mul", "path": "heatPerShot", "value": 0.85 },
+          { "target": "weapon:scatter", "op": "mul", "path": "heatPerShot", "value": 0.85 },
+          { "target": "weapon:sniper", "op": "mul", "path": "heatPerShot", "value": 0.85 },
+          { "target": "weapon:emp", "op": "mul", "path": "heatPerShot", "value": 0.85 },
+          { "target": "weapon:beam", "op": "mul", "path": "heatPerS", "value": 0.85 }
+        ]
+      }
+    },
+    {
+      "id": "gunnerScatterChoke",
+      "name": "Rozpraszacz: ciasny czok",
+      "description": "Rozpraszacz wystrzeliwuje o 2 śruciny więcej i zawęża rozrzut o 2°.",
+      "tier": 2,
+      "cost": 2,
+      "requires": ["gunnerRoot"],
+      "effects": {
+        "patches": [
+          { "target": "weapon:scatter", "op": "add", "path": "pellets", "value": 2 },
+          { "target": "weapon:scatter", "op": "add", "path": "spreadDeg", "value": -2 }
+        ]
+      }
+    },
+    {
+      "id": "gunnerRapidCaliber",
+      "name": "Blaster, Pistolet i Karabin: szybki zamek",
+      "description": "Zwiększa szybkostrzelność Blastera, Pistoletu i Karabinu o 20% oraz obrażenia Blastera o 15%.",
+      "tier": 2,
+      "cost": 2,
+      "requires": ["gunnerRoot"],
+      "effects": {
+        "patches": [
+          { "target": "weapon:blaster", "op": "mul", "path": "fireRateHz", "value": 1.2 },
+          { "target": "weapon:pistol", "op": "mul", "path": "fireRateHz", "value": 1.2 },
+          { "target": "weapon:rifle", "op": "mul", "path": "fireRateHz", "value": 1.2 },
+          { "target": "weapon:blaster", "op": "mul", "path": "damage", "value": 1.15 }
+        ]
+      }
+    },
+    {
+      "id": "gunnerCryoChamber",
+      "name": "Komora kriogeniczna",
+      "description": "Zwiększa pojemność cieplną broni o 25 pkt oraz tempo chłodzenia o 20%.",
+      "tier": 2,
+      "cost": 1,
+      "requires": ["gunnerRoot"],
+      "effects": {
+        "modifiers": [
+          { "stat": "heatCapacity", "type": "flat", "value": 25 },
+          { "stat": "coolingRate", "type": "percent", "value": 0.2 }
+        ]
+      }
+    },
+    {
+      "id": "gunnerSniperBeam",
+      "name": "Snajperka i Laser ciągły: przebicie",
+      "description": "Snajperka przebija o 1 cel więcej przy mniejszym spadku obrażeń (−0.1), a Laser ciągły zyskuje +4 m zasięgu.",
+      "tier": 3,
+      "cost": 2,
+      "requires": ["gunnerRapidCaliber"],
+      "effects": {
+        "patches": [
+          { "target": "weapon:sniper", "op": "add", "path": "pierceCount", "value": 1 },
+          { "target": "weapon:sniper", "op": "add", "path": "pierceFalloff", "value": -0.1 },
+          { "target": "weapon:beam", "op": "add", "path": "rangeM", "value": 4 }
+        ]
+      }
+    },
+    {
+      "id": "gunnerEmpIncendiary",
+      "name": "Granat EMP: wyładowanie wtórne",
+      "description": "Granat EMP zwiększa promień wybuchu o 1.5 m, nakłada o 1 stos przeciążenia więcej i daje 35 kredytów na start runu.",
+      "tier": 3,
+      "cost": 2,
+      "requires": ["gunnerScatterChoke"],
+      "effects": {
+        "patches": [
+          { "target": "weapon:emp", "op": "add", "path": "radiusM", "value": 1.5 },
+          { "target": "weapon:emp", "op": "add", "path": "statuses.0.stacks", "value": 1 }
+        ],
+        "runStart": { "credits": 35 }
+      }
+    },
+    {
+      "id": "gunnerIncendiaryRounds",
+      "name": "Pistolet i Karabin: amunicja termiczna",
+      "description": "Strzały Pistoletu i Karabinu podpalają cel na 3 s, a zabójstwo bronią palną schładza broń o 25 pkt.",
+      "tier": 4,
+      "cost": 3,
+      "requires": ["gunnerSniperBeam"],
+      "effects": {
+        "patches": [
+          {
+            "target": "weapon:pistol",
+            "op": "set",
+            "path": "statuses",
+            "value": [{ "id": "burning", "durationS": 3, "stacks": 1 }]
+          },
+          {
+            "target": "weapon:rifle",
+            "op": "set",
+            "path": "statuses",
+            "value": [{ "id": "burning", "durationS": 3, "stacks": 1 }]
+          }
+        ],
+        "triggers": [
+          {
+            "when": { "event": "enemy_killed", "tagsAny": ["#gun"] },
+            "effects": [{ "kind": "cool_weapon", "amount": 25 }],
+            "cooldownS": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "gunnerHeadhunter",
+      "name": "Zimna precyzja",
+      "description": "Trafienia bronią palną przyspieszają chłodzenie o 25% na 3 s, a bazowe obrażenia i zdrowie rosną o 12% i 15 pkt.",
+      "tier": 4,
+      "cost": 3,
+      "requires": ["gunnerCryoChamber"],
+      "effects": {
+        "modifiers": [
+          { "stat": "damage", "type": "percent", "value": 0.12 },
+          { "stat": "maxHealth", "type": "flat", "value": 15 }
+        ],
+        "triggers": [
+          {
+            "when": { "event": "damage_dealt", "tagsAny": ["#gun"] },
+            "effects": [
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "coolingRate",
+                "type": "percent",
+                "value": 0.25,
+                "durationS": 3
+              }
+            ],
+            "cooldownS": 2
+          }
+        ]
+      }
+    }
+  ]
+}

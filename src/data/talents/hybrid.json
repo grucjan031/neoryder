@@ -1,0 +1,146 @@
+{
+  "tree": "hybrid",
+  "name": "Hybrydy",
+  "tierThresholds": [0, 0, 0, 0],
+  "nodes": [
+    {
+      "id": "hybridStormDancer",
+      "name": "Tancerz burzy",
+      "description": "Użycie zdolności Rezonansu zwiększa szybkość ataku o 20% i skraca odnowienie dashu o 30% na 3 s.",
+      "tier": 1,
+      "cost": 2,
+      "requires": [],
+      "requiresTreePoints": { "blade": 3, "resonance": 3 },
+      "effects": {
+        "triggers": [
+          {
+            "when": { "event": "power_used" },
+            "effects": [
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "attackSpeed",
+                "type": "percent",
+                "value": 0.2,
+                "durationS": 3
+              },
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "dashCooldown",
+                "type": "mult",
+                "value": 0.7,
+                "durationS": 3
+              }
+            ],
+            "cooldownS": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "hybridResonanceGunner",
+      "name": "Spust Rezonansu",
+      "description": "Zabójstwo zdolnością Rezonansu schładza broń o 40 pkt, a Błyskawica zadaje o 20% wyższe obrażenia.",
+      "tier": 1,
+      "cost": 2,
+      "requires": [],
+      "requiresTreePoints": { "resonance": 3, "gunner": 3 },
+      "effects": {
+        "patches": [
+          { "target": "power:chain", "op": "mul", "path": "damage", "value": 1.2 }
+        ],
+        "triggers": [
+          {
+            "when": { "event": "enemy_killed", "tagsAny": ["#power"] },
+            "effects": [{ "kind": "cool_weapon", "amount": 40 }],
+            "cooldownS": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "hybridBladeGunner",
+      "name": "Ostrze i lufa",
+      "description": "Dash zwiększa obrażenia o 18% na 2.5 s, a zabójstwo w zwarciu schładza broń palną o 35 pkt.",
+      "tier": 1,
+      "cost": 2,
+      "requires": [],
+      "requiresTreePoints": { "blade": 3, "gunner": 3 },
+      "effects": {
+        "triggers": [
+          {
+            "when": { "event": "dash_used" },
+            "effects": [
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "damage",
+                "type": "percent",
+                "value": 0.18,
+                "durationS": 2.5
+              }
+            ],
+            "cooldownS": 2
+          },
+          {
+            "when": { "event": "enemy_killed", "tagsAny": ["#melee"] },
+            "effects": [{ "kind": "cool_weapon", "amount": 35 }],
+            "cooldownS": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "hybridArcBlade",
+      "name": "Iskrząca klinga",
+      "description": "Trafienie ostrzem plazmowym wyzwala łuk elektryczny w promieniu 5 m za 35% obrażeń i przyspiesza ruch o 10%.",
+      "tier": 1,
+      "cost": 3,
+      "requires": [],
+      "requiresTreePoints": { "blade": 4, "resonance": 4 },
+      "effects": {
+        "modifiers": [
+          { "stat": "moveSpeed", "type": "percent", "value": 0.1 }
+        ],
+        "triggers": [
+          {
+            "when": { "event": "damage_dealt", "tagsAny": ["#melee"] },
+            "effects": [
+              {
+                "kind": "chain_on_hit",
+                "jumpRangeM": 5,
+                "damageMult": 0.35,
+                "tags": ["#elektrycznosc"]
+              }
+            ],
+            "cooldownS": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "hybridApexProtocol",
+      "name": "Protokół Apex",
+      "description": "Zabójstwo daje +10 energii i −20 ciepła, a bazowe obrażenia, zdrowie i startowe kredyty rosną o 12%, 20 pkt i 40 kredytów.",
+      "tier": 1,
+      "cost": 3,
+      "requires": [],
+      "requiresTreePoints": { "blade": 3, "resonance": 3, "gunner": 3 },
+      "effects": {
+        "modifiers": [
+          { "stat": "damage", "type": "percent", "value": 0.12 },
+          { "stat": "maxHealth", "type": "flat", "value": 20 }
+        ],
+        "triggers": [
+          {
+            "when": { "event": "enemy_killed" },
+            "effects": [
+              { "kind": "add_energy", "amount": 10 },
+              { "kind": "cool_weapon", "amount": 20 }
+            ],
+            "cooldownS": 2
+          }
+        ],
+        "runStart": { "credits": 40 }
+      }
+    }
+  ]
+}

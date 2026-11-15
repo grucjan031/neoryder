@@ -1,0 +1,193 @@
+{
+  "tree": "blade",
+  "name": "Ostrze",
+  "tierThresholds": [0, 2, 5, 8],
+  "nodes": [
+    {
+      "id": "bladeRoot",
+      "name": "Rdzeń Ostrza",
+      "description": "Odblokowuje styl Ostrza (#build_blade) i zwiększa zasięg cięć w combo o 10%.",
+      "tier": 1,
+      "cost": 1,
+      "requires": [],
+      "effects": {
+        "tags": ["#build_blade"],
+        "patches": [
+          { "target": "blade:plasmaBlade", "op": "mul", "path": "combo.0.reach", "value": 1.1 },
+          { "target": "blade:plasmaBlade", "op": "mul", "path": "combo.1.reach", "value": 1.1 },
+          { "target": "blade:plasmaBlade", "op": "mul", "path": "combo.2.reach", "value": 1.1 },
+          { "target": "blade:twinBlades", "op": "mul", "path": "combo.0.reach", "value": 1.1 },
+          { "target": "blade:twinBlades", "op": "mul", "path": "combo.1.reach", "value": 1.1 },
+          { "target": "blade:twinBlades", "op": "mul", "path": "combo.2.reach", "value": 1.1 },
+          { "target": "blade:twinBlades", "op": "mul", "path": "combo.3.reach", "value": 1.1 },
+          { "target": "blade:staffBlade", "op": "mul", "path": "combo.0.reach", "value": 1.1 },
+          { "target": "blade:staffBlade", "op": "mul", "path": "combo.1.reach", "value": 1.1 },
+          { "target": "blade:staffBlade", "op": "mul", "path": "combo.2.reach", "value": 1.1 }
+        ]
+      }
+    },
+    {
+      "id": "bladeRiposte",
+      "name": "Kontra parowania",
+      "description": "Udane parowanie regeneruje 10 energii i skraca czas odnowienia dashu o 30% na 3 s.",
+      "tier": 2,
+      "cost": 1,
+      "requires": ["bladeRoot"],
+      "effects": {
+        "triggers": [
+          {
+            "when": { "event": "parry_success" },
+            "effects": [
+              { "kind": "add_energy", "amount": 10 },
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "dashCooldown",
+                "type": "mult",
+                "value": 0.7,
+                "durationS": 3
+              }
+            ],
+            "cooldownS": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "bladeDashCut",
+      "name": "Cięcie w ślizgu",
+      "description": "Zwiększa obrażenia cięcia z dashu o 25% oraz jego szerokość o 0.5 m dla wszystkich ostrzy.",
+      "tier": 2,
+      "cost": 2,
+      "requires": ["bladeRoot"],
+      "effects": {
+        "patches": [
+          { "target": "blade:plasmaBlade", "op": "mul", "path": "dashCut.damage", "value": 1.25 },
+          { "target": "blade:plasmaBlade", "op": "add", "path": "dashCut.widthM", "value": 0.5 },
+          { "target": "blade:twinBlades", "op": "mul", "path": "dashCut.damage", "value": 1.25 },
+          { "target": "blade:twinBlades", "op": "add", "path": "dashCut.widthM", "value": 0.5 },
+          { "target": "blade:staffBlade", "op": "mul", "path": "dashCut.damage", "value": 1.25 },
+          { "target": "blade:staffBlade", "op": "add", "path": "dashCut.widthM", "value": 0.5 }
+        ]
+      }
+    },
+    {
+      "id": "bladeServoFrame",
+      "name": "Serwomotory klingi",
+      "description": "Zwiększa szybkość ataku o 12% i wytrzymałość o 15 pkt zdrowia.",
+      "tier": 2,
+      "cost": 2,
+      "requires": ["bladeRoot"],
+      "effects": {
+        "modifiers": [
+          { "stat": "attackSpeed", "type": "percent", "value": 0.12 },
+          { "stat": "maxHealth", "type": "flat", "value": 15 }
+        ]
+      }
+    },
+    {
+      "id": "bladeThrowEdge",
+      "name": "Bumerang plazmowy",
+      "description": "Rzut ostrzem plazmowym zadaje o 25% więcej obrażeń, leci o 4 m dalej i zapewnia 30 kredytów na start runu.",
+      "tier": 3,
+      "cost": 2,
+      "requires": ["bladeDashCut"],
+      "effects": {
+        "patches": [
+          { "target": "blade:plasmaBlade", "op": "mul", "path": "throw.damage", "value": 1.25 },
+          { "target": "blade:plasmaBlade", "op": "add", "path": "throw.rangeM", "value": 4 },
+          { "target": "blade:twinBlades", "op": "mul", "path": "throw.damage", "value": 1.25 },
+          { "target": "blade:twinBlades", "op": "add", "path": "throw.rangeM", "value": 4 },
+          { "target": "blade:staffBlade", "op": "mul", "path": "throw.damage", "value": 1.25 },
+          { "target": "blade:staffBlade", "op": "add", "path": "throw.rangeM", "value": 4 }
+        ],
+        "runStart": { "credits": 30 }
+      }
+    },
+    {
+      "id": "bladeAegisBlock",
+      "name": "Defleksyjna garda",
+      "description": "Zmniejsza obrażenia przyjmowane w bloku o 0.1 oraz koszt energii za trafienie o 2 pkt.",
+      "tier": 3,
+      "cost": 2,
+      "requires": ["bladeRiposte"],
+      "effects": {
+        "patches": [
+          { "target": "blade:plasmaBlade", "op": "add", "path": "blockDamageMult", "value": -0.1 },
+          { "target": "blade:plasmaBlade", "op": "add", "path": "blockEnergyPerHit", "value": -2 },
+          { "target": "blade:twinBlades", "op": "add", "path": "blockDamageMult", "value": -0.1 },
+          { "target": "blade:twinBlades", "op": "add", "path": "blockEnergyPerHit", "value": -2 },
+          { "target": "blade:staffBlade", "op": "add", "path": "blockDamageMult", "value": -0.1 },
+          { "target": "blade:staffBlade", "op": "add", "path": "blockEnergyPerHit", "value": -2 }
+        ]
+      }
+    },
+    {
+      "id": "bladeHeavyBreaker",
+      "name": "Rozbijacz pancerza",
+      "description": "Ciężki atak ostrzem zyskuje +25% obrażeń i +3 odrzutu, a każde ciężkie trafienie zwiększa obrażenia o 10% na 4 s.",
+      "tier": 4,
+      "cost": 3,
+      "requires": ["bladeThrowEdge"],
+      "effects": {
+        "patches": [
+          { "target": "blade:plasmaBlade", "op": "mul", "path": "heavy.damage", "value": 1.25 },
+          { "target": "blade:plasmaBlade", "op": "add", "path": "heavy.knockback", "value": 3 },
+          { "target": "blade:twinBlades", "op": "mul", "path": "heavy.damage", "value": 1.25 },
+          { "target": "blade:twinBlades", "op": "add", "path": "heavy.knockback", "value": 3 },
+          { "target": "blade:staffBlade", "op": "mul", "path": "heavy.damage", "value": 1.25 },
+          { "target": "blade:staffBlade", "op": "add", "path": "heavy.knockback", "value": 3 }
+        ],
+        "triggers": [
+          {
+            "when": { "event": "damage_dealt", "tagsAny": ["#heavy"] },
+            "effects": [
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "damage",
+                "type": "percent",
+                "value": 0.1,
+                "durationS": 4
+              }
+            ],
+            "cooldownS": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "bladePhantomStep",
+      "name": "Widmowy krok",
+      "description": "Zabójstwo w zwarciu przyspiesza ruch o 20% na 3 s i skraca odnowienie dashu o 25% na 3 s, a obrażenia rosną o 10%.",
+      "tier": 4,
+      "cost": 3,
+      "requires": ["bladeAegisBlock"],
+      "effects": {
+        "modifiers": [
+          { "stat": "damage", "type": "percent", "value": 0.1 }
+        ],
+        "triggers": [
+          {
+            "when": { "event": "enemy_killed", "tagsAny": ["#melee"] },
+            "effects": [
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "moveSpeed",
+                "type": "percent",
+                "value": 0.2,
+                "durationS": 3
+              },
+              {
+                "kind": "stat_modifier_timed",
+                "stat": "dashCooldown",
+                "type": "mult",
+                "value": 0.75,
+                "durationS": 3
+              }
+            ],
+            "cooldownS": 1.5
+          }
+        ]
+      }
+    }
+  ]
+}
