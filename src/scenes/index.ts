@@ -20,6 +20,7 @@ import { MapTest } from './mapTest';
 import { createRoomTest } from './roomTest';
 import { BossTest } from './bossTest';
 import { RunScene } from './run';
+import { HubScene } from './hub';
 
 export interface Scene {
   readonly id: string;
@@ -36,6 +37,7 @@ export const scenes: Record<string, SceneFactory> = {
   'city-fx-test': () => new CityFxTest(),
   'city-props-test': () => new CityPropsTest(),
   'boss-test': () => new BossTest(),
+  hub: () => new HubScene(),
   run: () => new RunScene(),
   'map-test': () => new MapTest(),
   sandbox: () => new Sandbox(),

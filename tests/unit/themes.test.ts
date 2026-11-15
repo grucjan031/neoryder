@@ -37,7 +37,11 @@ afterEach(() => {
 });
 
 it('waliduje oba motywy, zachowuje white i odrzuca niepoprawne parametry', () => {
-  expect([...themeDefinitions.keys()].sort()).toEqual(['neonStreet', 'white']);
+  expect([...themeDefinitions.keys()].sort()).toEqual([
+    'hideout',
+    'neonStreet',
+    'white',
+  ]);
   for (const theme of themeDefinitions.values())
     expect(themeSchema.safeParse(theme).success).toBe(true);
   const white = themeDefinitions.get('white')!;

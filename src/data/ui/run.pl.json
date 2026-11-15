@@ -49,9 +49,10 @@
   "mainMenu": {
     "title": "NEORYDER",
     "subtitle": "Wybierz swoją ścieżkę przez sektor.",
-    "newRun": "Nowy run",
-    "continue": "Kontynuuj",
-    "arena": "Arena / poligon",
+    "hub": "Kryjówka",
+    "newRun": "Nowy run (presety)",
+    "continue": "Kontynuuj run",
+    "arena": "Poligon",
     "seed": "Seed (opcjonalny)",
     "seedPlaceholder": "Puste pole — nowy seed",
     "loading": "Odczytywanie zapisu…",

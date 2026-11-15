@@ -1,0 +1,108 @@
+import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+
+function collectErrors(page: Page): string[] {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  return errors;
+}
+const query = (page: Page, name: string) =>
+  page.evaluate((n) => window.__neoryder?.query(n), name);
+const command = (page: Page, line: string) =>
+  page.evaluate((l) => window.__neoryder?.command(l), line);
+const openHub = async (page: Page, extra = '') => {
+  await page.goto(`/?scene=hub&debug=1&seed=hub-e2e${extra}`);
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: SIM_TIMEOUT,
+    })
+    .toBe('hub');
+  await waitSimSteps(page, 5);
+};
+
+test('menu → Kryjówka → scena hub startuje bez błędów konsoli', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Kryjówka' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Nowy run (presety)' }),
+  ).toHaveCount(0);
+  await page.getByRole('button', { name: 'Kryjówka' }).click();
+  await expect(page).toHaveURL(/scene=hub/);
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('.hint')).toContainText('hub', {
+    timeout: SIM_TIMEOUT,
+  });
+  await expect(page.locator('.hub-screen')).toBeHidden();
+  await page.waitForTimeout(1500);
+  expect(errors).toEqual([]);
+});
+
+test('hub: hub open missions pokazuje nakładkę, Zamknij ją chowa, a Rozpocznij run startuje run', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  expect(await query(page, 'hubStation')).toBeNull();
+  await command(page, 'hub open missions');
+  expect(await query(page, 'hubStation')).toBe('missions');
+  await expect(page.locator('.hub-screen')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Tablica misji' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await expect(page.locator('.hub-screen')).toBeHidden();
+  expect(await query(page, 'hubStation')).toBeNull();
+  await command(page, 'hub open missions');
+  await page.getByRole('button', { name: 'Rozpocznij run' }).click();
+  await expect(page).toHaveURL(/scene=run/);
+  await expect(page).toHaveURL(/loadout=classic/);
+  await expect(page).toHaveURL(/debug=1/);
+  await expect(page.getByRole('heading', { name: 'Mapa sektora' })).toBeVisible(
+    { timeout: SIM_TIMEOUT },
+  );
+  expect(errors).toEqual([]);
+});
+
+test('hub: wejście w strefę otwiera stację, Esc zamyka, ponowne otwarcie dopiero po wyjściu', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  await command(page, 'hub tp 6 -4.4');
+  await expect
+    .poll(() => query(page, 'hubStation'), { timeout: SIM_TIMEOUT })
+    .toBe('talents');
+  await expect(
+    page.getByRole('heading', { name: 'Terminal drzewek' }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.hub-screen')).toBeHidden();
+  expect(await query(page, 'hubStation')).toBeNull();
+  await waitSimSteps(page, 30);
+  expect(await query(page, 'hubStation')).toBeNull();
+  await command(page, 'hub tp 0 0.8');
+  await waitSimSteps(page, 5);
+  await command(page, 'hub tp 6 -4.4');
+  await expect
+    .poll(() => query(page, 'hubStation'), { timeout: SIM_TIMEOUT })
+    .toBe('talents');
+  expect(errors).toEqual([]);
+});
+
+test('hub: stacja arena przechodzi na poligon', async ({ page }) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  await command(page, 'hub open arena');
+  await expect(page.getByRole('heading', { name: 'Poligon' })).toBeVisible();
+  await page.getByRole('button', { name: 'Przejdź na poligon' }).click();
+  await expect(page).toHaveURL(/scene=arena/);
+  await expect(page).toHaveURL(/debug=1/);
+  expect(errors).toEqual([]);
+});

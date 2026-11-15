@@ -1394,6 +1394,32 @@ hub_station_opened: { station: HubStationId };
 
 Emitują: `MetaManager` (wszystkie poza ostatnim) i scena kryjówki (`hub_station_opened`).
 
+### Kryjówka — `src/ui/hubScreens.ts`, `src/world/hubSchema.ts`, `src/world/hubStations.ts` (F4-07)
+
+Szczegóły: `docs/systems/hub.md`.
+
+```ts
+interface HubScreenActions {
+  close(): void;
+  startRun?(): void;   // tylko 'missions'
+  openArena?(): void;  // tylko 'arena'
+}
+interface HubScreens {  // wstrzykiwane do HubScene (opcja `screens`)
+  show(station: HubStationId, actions: HubScreenActions): void;
+  hide(): void;
+  dispose(): void;
+}
+class HubStations {  // czysta logika stref, bez DOM
+  constructor(zones: readonly HubZone[], bus: EventBus, exitMarginM: number);
+  readonly opened: HubStationId | null;
+  update(x: number, z: number): HubStationId | null;  // wejście w promień otwiera (hub_station_opened)
+  open(id: HubStationId): boolean;
+  close(): HubStationId | null;  // blokuje ponowne otwarcie do wyjścia poza promień + margines
+}
+```
+
+`loadHubLayout(data): HubLayout` — układ w formacie pokoju (`playerSpawn`, `blocks` z polem `interactive`, pola oprawy z `dressingSchema`) plus `stations` i `panels`. `HubScene` rejestruje komendy debug `hub open <stacja>`, `hub close`, `hub tp <x> <z> [yawDeg] [pitchDeg]` i zapytania `query('hubStation' | 'playerPos' | 'stations')`.
+
 ### Zapis v3 — `src/core/save.ts`
 
 `SAVE_VERSION = 3`. `MetaSave` dostaje pole `meta: MetaState` (walidowane `metaStateSchema`). Meta i run mają osobne tablice migracji:

@@ -10,6 +10,7 @@ const text = z
     mainMenu: z.object({
       title: z.string(),
       subtitle: z.string(),
+      hub: z.string(),
       newRun: z.string(),
       continue: z.string(),
       arena: z.string(),
@@ -36,7 +37,7 @@ interface MainMenuOptions {
 export class MainMenu {
   readonly ready: Promise<void>;
   private readonly root = document.createElement('main');
-  private readonly builds: BuildSelect;
+  private builds: BuildSelect | null = null;
   private disposed = false;
 
   constructor(options: MainMenuOptions) {
@@ -52,13 +53,7 @@ export class MainMenu {
     heading.textContent = t.title;
     const subtitle = document.createElement('p');
     subtitle.textContent = t.subtitle;
-    const seedLabel = document.createElement('label');
-    seedLabel.textContent = t.seed;
-    const seed = document.createElement('input');
-    seed.type = 'text';
-    seed.placeholder = t.seedPlaceholder;
-    seed.value = options.params?.get('seed') ?? '';
-    seedLabel.append(seed);
+    const debug = options.params?.get('debug') === '1';
     const button = (label: string, action: () => void): HTMLButtonElement => {
       const node = document.createElement('button');
       node.type = 'button';
@@ -66,7 +61,7 @@ export class MainMenu {
       node.addEventListener('click', action);
       return node;
     };
-    const newRun = button(t.newRun, () => this.builds.show());
+    const hub = button(t.hub, () => navigate(`?${query('hub')}`));
     const resume = button(t.continue, () => {
       const params = query('run');
       params.set('continue', '1');
@@ -77,36 +72,40 @@ export class MainMenu {
     status.setAttribute('role', 'status');
     status.textContent = t.loading;
     const arena = button(t.arena, () => navigate(`?${query('arena')}`));
-    this.root.append(
-      heading,
-      subtitle,
-      seedLabel,
-      newRun,
-      resume,
-      status,
-      arena,
-    );
+    this.root.append(heading, subtitle, hub, resume, status, arena);
     options.root.append(this.root);
-    this.builds = new BuildSelect({
-      root: this.root,
-      onSelect: (loadoutId) => {
-        const params = query('run');
-        params.set(
-          'seed',
-          seed.value.trim() ||
-            Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
-              value.toString(16),
-            ).join('-'),
-        );
-        params.set('loadout', loadoutId);
-        navigate(`?${params}`);
-      },
-    });
-    const back = button(t.back, () => {
-      this.builds.hide();
-      newRun.focus();
-    });
-    this.root.querySelector('.build-select__panel')?.prepend(back);
+    // Wybór presetów (BuildSelect) z własnym seedem zostaje tylko w trybie debug.
+    if (debug) {
+      const seedLabel = document.createElement('label');
+      seedLabel.textContent = t.seed;
+      const seed = document.createElement('input');
+      seed.type = 'text';
+      seed.placeholder = t.seedPlaceholder;
+      seed.value = options.params?.get('seed') ?? '';
+      seedLabel.append(seed);
+      const newRun = button(t.newRun, () => this.builds?.show());
+      this.root.append(seedLabel, newRun);
+      this.builds = new BuildSelect({
+        root: this.root,
+        onSelect: (loadoutId) => {
+          const params = query('run');
+          params.set(
+            'seed',
+            seed.value.trim() ||
+              Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
+                value.toString(16),
+              ).join('-'),
+          );
+          params.set('loadout', loadoutId);
+          navigate(`?${params}`);
+        },
+      });
+      const back = button(t.back, () => {
+        this.builds?.hide();
+        newRun.focus();
+      });
+      this.root.querySelector('.build-select__panel')?.prepend(back);
+    }
     this.ready = (options.save ?? createIndexedDbSaveStore())
       .loadRun()
       .then((save) => {
@@ -126,7 +125,7 @@ export class MainMenu {
 
   dispose(): void {
     this.disposed = true;
-    this.builds.dispose();
+    this.builds?.dispose();
     this.root.remove();
   }
 }

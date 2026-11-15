@@ -399,6 +399,8 @@ export const tuning = {
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
   run: { transitionS: 0.6, fadeS: 0.35 },
+  /** Kryjówka (F4-07): margines w m, o który gracz musi wyjść poza promień stacji, by otworzyła się ponownie po zamknięciu nakładki. */
+  hub: { exitMarginM: 0.75 },
   sandbox: { cubeSpawnHeight: 6 },
 };
 export type Tuning = typeof tuning;

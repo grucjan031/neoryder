@@ -8,6 +8,11 @@ const DESCRIPTIONS: Record<
     text: '12 fal Szturmowców i Strzelców: ostrze, blok, parowanie, Pchnięcie, blaster.',
     order: 0,
   },
+  hub: {
+    title: 'Kryjówka Iskry',
+    text: 'Peron nieczynnej stacji metra: spacer bez wrogów, wejście w strefę stacji otwiera nakładkę (hub open <stacja>).',
+    order: 0.5,
+  },
   'ai-test': {
     title: 'Walka z wrogami',
     text: 'Arena z Szturmowcami i Strzelcem — najbliżej docelowej gry.',

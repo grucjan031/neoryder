@@ -15,7 +15,7 @@ afterEach(() => {
 const button = (text: string) =>
   [...document.querySelectorAll('button')].find((b) => b.textContent === text)!;
 
-it('Kontynuuj jest nieaktywne podczas odczytu i bez zapisu; arena prowadzi do poligonu', async () => {
+it('Kryjówka prowadzi do sceny hub, Kontynuuj run jest nieaktywne podczas odczytu i bez zapisu, Poligon do areny', async () => {
   const navigate = vi.fn();
   const menu = new MainMenu({
     root: document.body,
@@ -23,12 +23,45 @@ it('Kontynuuj jest nieaktywne podczas odczytu i bez zapisu; arena prowadzi do po
     navigate,
   });
   active.push(menu);
-  expect(button('Kontynuuj').disabled).toBe(true);
+  expect(button('Kontynuuj run').disabled).toBe(true);
   await menu.ready;
-  button('Kontynuuj').click();
+  button('Kontynuuj run').click();
   expect(navigate).not.toHaveBeenCalled();
-  button('Arena / poligon').click();
-  expect(navigate).toHaveBeenCalledExactlyOnceWith('?scene=arena');
+  button('Kryjówka').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=hub');
+  button('Poligon').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=arena');
+  expect(navigate).toHaveBeenCalledTimes(2);
+});
+
+it('bez debug menu nie pokazuje Nowy run (presety), seeda ani wyboru buildu', async () => {
+  const menu = new MainMenu({
+    root: document.body,
+    save: createMemorySaveStore(),
+  });
+  active.push(menu);
+  await menu.ready;
+  expect(
+    [...document.querySelectorAll('button')].map((b) => b.textContent),
+  ).toEqual(['Kryjówka', 'Kontynuuj run', 'Poligon']);
+  expect(document.querySelector('input')).toBeNull();
+  expect(document.querySelector('.build-select')).toBeNull();
+});
+
+it('w debug Kryjówka i Poligon zachowują debug w URL', async () => {
+  const navigate = vi.fn();
+  const menu = new MainMenu({
+    root: document.body,
+    save: createMemorySaveStore(),
+    navigate,
+    params: new URLSearchParams('debug=1'),
+  });
+  active.push(menu);
+  await menu.ready;
+  button('Kryjówka').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=hub&debug=1');
+  button('Poligon').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=arena&debug=1');
 });
 
 it('Kontynuuj pokazuje warstwę i HP i wznawia zapis bez seeda z menu', async () => {
@@ -56,25 +89,26 @@ it('Kontynuuj pokazuje warstwę i HP i wznawia zapis bez seeda z menu', async ()
   });
   active.push(menu);
   await menu.ready;
-  expect(button('Kontynuuj').disabled).toBe(false);
+  expect(button('Kontynuuj run').disabled).toBe(false);
   expect(document.querySelector('[role=status]')?.textContent).toBe(
     'Warstwa: 1 · Zdrowie: 37',
   );
-  button('Kontynuuj').click();
+  button('Kontynuuj run').click();
   expect(navigate).toHaveBeenCalledExactlyOnceWith('?scene=run&continue=1');
 });
 
-it('Nowy run używa BuildSelect, zachowuje seed i koduje URL; Wróć przywraca menu', async () => {
+it('w debug Nowy run (presety) używa BuildSelect, zachowuje seed i koduje URL; Wróć przywraca menu', async () => {
   const navigate = vi.fn();
   const menu = new MainMenu({
     root: document.body,
     save: createMemorySaveStore(),
     navigate,
+    params: new URLSearchParams('debug=1'),
   });
   active.push(menu);
   await menu.ready;
   document.querySelector('input')!.value = 'm?j seed&test';
-  button('Nowy run').click();
+  button('Nowy run (presety)').click();
   expect(document.querySelector<HTMLElement>('.build-select')!.hidden).toBe(
     false,
   );
@@ -82,7 +116,7 @@ it('Nowy run używa BuildSelect, zachowuje seed i koduje URL; Wróć przywraca m
   expect(document.querySelector<HTMLElement>('.build-select')!.hidden).toBe(
     true,
   );
-  button('Nowy run').click();
+  button('Nowy run (presety)').click();
   document.querySelector<HTMLButtonElement>('[data-loadout=gunner]')!.click();
   const url = new URL(navigate.mock.calls[0]![0] as string, 'http://localhost');
   expect(url.searchParams.get('scene')).toBe('run');
@@ -96,14 +130,19 @@ it('pusty seed generuje seed w URL, a błąd odczytu pozostawia Kontynuuj wyłą
   save.loadRun = async () => {
     throw new Error('offline');
   };
-  const menu = new MainMenu({ root: document.body, save, navigate });
+  const menu = new MainMenu({
+    root: document.body,
+    save,
+    navigate,
+    params: new URLSearchParams('debug=1'),
+  });
   active.push(menu);
   await menu.ready;
-  expect(button('Kontynuuj').disabled).toBe(true);
+  expect(button('Kontynuuj run').disabled).toBe(true);
   expect(document.querySelector('[role=status]')?.textContent).toBe(
     'Nie można odczytać zapisu.',
   );
-  button('Nowy run').click();
+  button('Nowy run (presety)').click();
   document.querySelector<HTMLButtonElement>('[data-loadout=blade]')!.click();
   expect(
     new URL(

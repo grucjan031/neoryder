@@ -2,24 +2,22 @@ import { expect, test } from '@playwright/test';
 import type { RunSave } from '../../src/core/save';
 import type { RunState } from '../../src/core/runTypes';
 
-test('menu → Nowy run → wybór buildu → mapa sektora', async ({ page }) => {
+test('menu pokazuje Kryjówkę, Kontynuuj run i Poligon; Poligon otwiera arenę', async ({
+  page,
+}) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Kontynuuj' })).toBeDisabled();
-  await page.getByLabel('Seed (opcjonalny)').fill('menu-e2e');
-  await page.getByRole('button', { name: 'Nowy run', exact: true }).click();
-  await page.locator('[data-loadout="blade"]').click();
-  await expect(page).toHaveURL(/scene=run&continue=1/);
+  await expect(page.getByRole('button', { name: 'Kryjówka' })).toBeEnabled();
   await expect(
-    page.getByRole('heading', { name: 'Mapa sektora' }),
-  ).toBeVisible();
-  await expect(page.locator('.sector-map')).toContainText('menu-e2e');
-  await expect(page.locator('.sector-map svg line').first()).toBeAttached();
+    page.getByRole('button', { name: 'Kontynuuj run' }),
+  ).toBeDisabled();
   await expect(
-    page.locator('.sector-map__node.is-available').first(),
-  ).toBeEnabled();
+    page.getByRole('button', { name: 'Nowy run (presety)' }),
+  ).toHaveCount(0);
+  await page.getByRole('button', { name: 'Poligon' }).click();
+  await expect(page).toHaveURL(/scene=arena/);
   expect(errors).toEqual([]);
 });
 
@@ -63,9 +61,11 @@ test('odświeżenie i Kontynuuj zachowują zapisany węzeł, Kredyty i implanty'
     });
   });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Kontynuuj' })).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'Kontynuuj run' }),
+  ).toBeEnabled();
   await expect(page.getByRole('status')).toContainText('Zdrowie: 37');
-  await page.getByRole('button', { name: 'Kontynuuj' }).click();
+  await page.getByRole('button', { name: 'Kontynuuj run' }).click();
   await expect(page).toHaveURL(/scene=run&continue=1/);
   await expect(page.locator('[aria-current="step"]')).toHaveAttribute(
     'data-node-id',

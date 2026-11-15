@@ -123,7 +123,7 @@ function contains(rect: Rect, x: number, z: number): boolean {
   return x >= rect.minX && x <= rect.maxX && z >= rect.minZ && z <= rect.maxZ;
 }
 
-function validateLayout(
+export function validateLayout(
   room: {
     playerSpawn: z.infer<typeof vec3Schema>;
     blocks: z.infer<typeof roomBlockSchema>[];
