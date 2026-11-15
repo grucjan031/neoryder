@@ -95,11 +95,11 @@ export class StatusSystem implements StatusQuery {
     target: EntityId,
     app: StatusApplication,
     source: EntityId | null,
-  ): void {
+  ): boolean {
     const def = this.defs.get(app.id);
     if (!def) throw new Error(`Nieznany status: ${app.id}`);
     const health = this.damage.health(target);
-    if (!health || health.dead || !(app.durationS > 0)) return;
+    if (!health || health.dead || !(app.durationS > 0)) return false;
     let statuses = this.active.get(target);
     if (!statuses) {
       statuses = new Map();
@@ -129,6 +129,7 @@ export class StatusSystem implements StatusQuery {
     });
     if (instance.stacks >= def.maxStacks && def.onMaxStacks)
       this.trigger(target, def, source);
+    return true;
   }
 
   /** Czas symulacji: tiki obrażeń, potem wygaśnięcie. dt = 0 (hitstop) nic nie zmienia. */

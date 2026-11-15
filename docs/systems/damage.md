@@ -2,10 +2,15 @@
 
 Z5: opcjonalne `DamageTargetOptions.outgoing()` określa mnożnik obrażeń zadawanych
 przez zarejestrowane źródło. `deal` odczytuje go na żywo przed `guard` i `damageTaken`
-celu; brak źródła, rejestracji lub callbacka oznacza 1. Tagi `#hazard` i `#status`
+celu; brak źródła, rejestracji lub callbacka oznacza 1. Tagi `#hazard`, `#status` i `#derived`
 pomijają mnożnik. Pokój i arena rejestrują gracza z odczytem `playerStats.damage`
 o bazie 1: `percent 0.15` daje ×1,15 dla ostrza, broni i mocy. Wrogowie zachowują
 dotychczasowe obrażenia, ponieważ nie dostają `outgoing`.
+
+`DERIVED_DAMAGE_TAG` (`#derived`) oznacza obrażenia wyliczone z już zadanych,
+np. przeskok `chain_on_hit`: baza 100 × outgoing 1,35 × 0,5 = 67,5.
+Pomija wyłącznie ponowne `outgoing`; obrona i `damageTaken` nowego celu nadal działają.
+Wybuchy z bazową wartością z danych nie dostają tego tagu.
 
 Właściciel: Architekt. Kod: `src/combat/damage/`, `src/core/entities.ts`, `src/core/resource.ts`, `src/core/math.ts`. Kontrakty: `docs/api.md` → „Kontrakty F1”, decyzje: `docs/adr/0003-kontrakty-f1.md`.
 

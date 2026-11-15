@@ -3,11 +3,16 @@ import type { EntityRegistry } from '../../core/entities';
 import { computeStat } from '../../core/stats';
 import type { Stats } from '../../core/stats';
 import type { Health } from './health';
-import { BLOCK_SOURCE, FRIENDLY_FIRE_TAG, PIERCE_BLOCK_TAG } from './types';
+import {
+  BLOCK_SOURCE,
+  DERIVED_DAMAGE_TAG,
+  FRIENDLY_FIRE_TAG,
+  PIERCE_BLOCK_TAG,
+} from './types';
 import type { DamageInfo } from './types';
 
 export interface DamageTargetOptions {
-  /** Mnożnik obrażeń zadawanych; pomijany dla #hazard i #status. */
+  /** Mnożnik obrażeń zadawanych; pomijany dla #hazard, #status i #derived. */
   outgoing?: () => number;
   /** Statystyki celu: modyfikatory 'damageTaken' (np. blok −70% = mult 0.3) zmieniają obrażenia. */
   stats?: Stats;
@@ -96,7 +101,8 @@ export class DamageSystem {
     const outgoing =
       info.source !== null &&
       !info.tags.includes('#hazard') &&
-      !info.tags.includes('#status')
+      !info.tags.includes('#status') &&
+      !info.tags.includes(DERIVED_DAMAGE_TAG)
         ? (this.targets.get(info.source)?.opts.outgoing?.() ?? 1)
         : 1;
     const guard = Math.max(0, Math.min(1, entry.opts.guard?.(info) ?? 1));

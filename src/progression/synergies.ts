@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { DamageSystem } from '../combat/damage';
 import type { StatusApplication } from '../combat/damage/types';
+import { DERIVED_DAMAGE_TAG } from '../combat/damage/types';
 import type { StatusQuery } from '../combat/status';
 import { statusDefinitions } from '../combat/status/statusSchema';
 import type { EntityId, EventBus } from '../core/events';
@@ -153,7 +154,7 @@ export interface SynergyContext {
   position(id: EntityId): Vec3 | null;
   heal?(amount: number): void;
   userPosition?(): Vec3 | null;
-  applyStatus?(target: EntityId, app: StatusApplication): void;
+  applyStatus?(target: EntityId, app: StatusApplication): boolean;
 }
 
 interface EventFacts {
@@ -380,8 +381,7 @@ export class SynergySystem {
         : null;
     if (effect.kind === 'apply_status_area' && effect.radiusM === 0) {
       if (facts.target === undefined || !application) return false;
-      this.ctx.applyStatus?.(facts.target, application);
-      return true;
+      return this.ctx.applyStatus?.(facts.target, application) ?? false;
     }
     const origin =
       effect.at === 'user'
@@ -415,8 +415,8 @@ export class SynergySystem {
           knockback: effect.knockback,
         });
       } else if (application) {
-        this.ctx.applyStatus?.(target, application);
-        applied = true;
+        applied =
+          (this.ctx.applyStatus?.(target, application) ?? false) || applied;
       }
     }
     if (effect.kind === 'explode') {
@@ -454,7 +454,7 @@ export class SynergySystem {
     this.ctx.damage.deal(best, {
       amount: (facts.damage ?? 0) * effect.damageMult,
       source: this.ctx.user,
-      tags: [...effect.tags, SYNERGY_TAG],
+      tags: [...effect.tags, SYNERGY_TAG, DERIVED_DAMAGE_TAG],
     });
     return true;
   }

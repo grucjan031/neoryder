@@ -155,6 +155,7 @@ function setupArea(
     [far, { x: 10, y: 0, z: 5.01 }],
   ]);
   const applyStatus = vi.fn();
+  applyStatus.mockReturnValue(true);
   const ctx: SynergyContext = {
     user,
     damage,
@@ -491,7 +492,8 @@ describe('SynergySystem — efekty', () => {
       target: near,
       amount: 10,
       source: player,
-      tags: ['#elektrycznosc', '#synergy'],
+      // #derived: obrażenia liczone z już zadanych nie dostają drugi raz mnożnika źródła (R1).
+      tags: ['#elektrycznosc', '#synergy', '#derived'],
     });
     expect(far).not.toBe(near);
   });

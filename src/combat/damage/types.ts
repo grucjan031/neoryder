@@ -25,6 +25,9 @@ export interface DamageInfo {
 
 export const FRIENDLY_FIRE_TAG = '#friendly_fire';
 
+/** Obrażenia wyliczone z już zadanych — bez ponownego mnożnika outgoing. */
+export const DERIVED_DAMAGE_TAG = '#derived';
+
 /** Tag ciosu przebijającego blok (ciężki atak ostrzem, ciężkie ataki wrogów). */
 export const PIERCE_BLOCK_TAG = '#heavy';
 
