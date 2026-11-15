@@ -1281,9 +1281,20 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `city_*` wskazuje `/assets/models/city/<model>.glb`; `decor` używa tej samej bazy,
   bez kolizji. Brak modelu zostawia blok lub pomija dekorację z ostrzeżeniem raz na plik.
 - Rejestr materiałów obsługuje `concrete`, `asphalt`, `metal`, `facade`, `trim`,
-  `glass`, `cable`, `neon_amber|green|violet|blue|white`, `light_white`.
-  Nazwa glTF to `mat_<kind>`. `userData.wetness` materiału oznacza odbicia
-  (asphalt 1, concrete 0.22), `userData.bloomMaterial` opcjonalnie dostarcza
+  `glass`, `cable`, `paint`, `lacquer`, `rust`, `corrugated`, `plastic`, `hivis`,
+  `rubber`, `wood`, `fabric`, `machine`, `paving`, `plaster`, `hazard`
+  (`urbanKinds` w `src/render/urbanMaterials.ts`, wygląd w `urbanLooks`),
+  `neon_amber|green|violet|blue|white`, `light_white`.
+  Nazwa glTF to `mat_<kind>`. Nadruki UV `mat_label_<x>` / `mat_screen_<x>`
+  zwraca `printMaterial(name)` (`src/render/propPrints.ts`; `isPrintMaterialName`
+  sprawdza nazwę), tekstury ładuje `assetTexture(folder, id)`
+  (`src/render/surfaceTextures.ts`; foldery `surfaces`, `labels`, `screens`).
+  `BLOCK_MATERIALS` (`src/world/dressingSchema.ts`, pole `block.material`)
+  dopuszcza: `world`, `concrete`, `asphalt`, `metal`, `facade`, `trim`, `glass`,
+  `paving`, `plaster`, `corrugated`, `rust`, `hazard`. Parametry motywu:
+  `cityBumpStrength`, `cityHazardPeriod` (patrz `docs/systems/render.md`).
+  `userData.wetness` materiału oznacza odbicia
+  (asphalt 1, paving 0.45, concrete 0.22, plaster 0.1), `userData.bloomMaterial` opcjonalnie dostarcza
   materiał samej emisji dla maski bloomu i odbić (okna fasad).
 - `SceneAtmosphere(three, themeId, seed, floorY)` nakłada motyw, ustawia
   `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.

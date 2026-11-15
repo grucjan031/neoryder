@@ -35,7 +35,11 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 ## Miasto
 
 Zestaw „Neon Noir”: własne proceduralne bryły low-poly, płaskie normalne,
-fazowane krawędzie głównych obudów, detale geometryczne, bez tekstur.
+fazowane krawędzie głównych obudów, bogate detale geometryczne (śruby, szwy,
+uchwyty, kratki, obejmy) i zróżnicowane materiały. GLB nie zawierają obrazów
+(`material.map` jest puste); nadruki mają jednak siatkę UV, a gra nakłada
+tekstury powierzchni i nadruków wyłącznie po nazwie materiału (patrz niżej
+i `docs/systems/render.md`).
 Pliki poniżej znajdują się w `public/assets/models/city/`, a podglądy Workbench
 w `tools/blender/previews/city/`. Budżet **1500 trójkątów** dla rekwizytu
 z kolizją i **800 trójkątów** dla dekoracji dotyczy całego modelu.
@@ -43,83 +47,125 @@ z kolizją i **800 trójkątów** dla dekoracji dotyczy całego modelu.
 Wymiary w tabeli to rzeczywisty bounding box GLB, **X × Y × Z w metrach**,
 zaokrąglony do 0,001 m. Docelowe bloki kolizji: dumpster 2 × 1,3 × 1,1;
 vending 1 × 2 × 0,8; barrier 2 × 0,9 × 0,5; car 4,4 × 1,4 × 2;
-stall 3 × 2,6 × 2; crates 1,2 × 1,6 × 1,2; generator 1,6 × 1,4 × 1.
+stall 3 × 2,6 × 2; crates 1,2 × 1,6 × 1,2; generator 1,6 × 1,4 × 1;
+kiosk 0,8 × 2,2 × 0,6.
 Drobne uchwyty, fazy i listwy mieszczą się w tolerancji 5% tych wymiarów.
-Pojazd ma szerokość X = 4,4 m zgodnie z blokiem; światła przednie patrzą w +Z.
+Samochód stoi wzdłuż osi X (długość 4,4 m bloku), przód w +X (światła
+`headlight`, belka `light_bar`, tablica `front_plate`), tył w −X
+(`tail_light`, `rear_plate`), bok do gracza w +Z.
 
 Montaż: **blok** = pole `model` bloku układu, collider tworzy gra z wymiarów
 bloku; **ściana** = `decor`, tył z = 0, bryła wystaje w +Z, spód y = 0;
 **podłoże** = `decor`, spód y = 0, środek bounding boxu w x = z = 0;
 **rozpięcie** = `decor`, początek na górze, najwyższy punkt y = 0,
 końce x = ±5 m, zwis w -Y (około 1 m). Bloki również mają spód y = 0
-i środek x = z = 0, przód +Z. Modele nie zawierają siatek colliderów.
+i środek x = z = 0, przód +Z (wyjątek: samochód, przód +X). Modele nie zawierają siatek colliderów.
 Gra nadaje dekoracjom wysokość i obrót; skala X rozpięcia = długość / 10.
 Obecny kontrakt `decor.scale` jest skalarem — nie opisuje osobnej skali X;
 obsługa rozpiętości po stronie renderu pozostaje zadaniem integracji.
 
-| Plik | Wymiary X × Y × Z [m] | Kolizja | Montaż | Węzły | Trójkąty |
-| --- | --- | --- | --- | --- | ---: |
-| `city_dumpster.glb` | 2,000 × 1,300 × 1,108 | tak | blok | `bin`, `lid`, `wheel`, `handle`, `hinge` | 600 |
-| `city_vending.glb` | 1,000 × 2,000 × 0,811 | tak | blok | `cabinet`, `header`, `display`, `product`, `pickup`, `keypad` | 964 |
-| `city_barrier.glb` | 2,000 × 0,907 × 0,504 | tak | blok | `concrete_body`, `stripe`, `lifting_socket` | 124 |
-| `city_car.glb` | 4,400 × 1,400 × 2,008 | tak | blok | `body`, `canopy`, `wheel`, `headlight`, `tail_light` | 700 |
-| `city_stall.glb` | 3,000 × 2,600 × 2,025 | tak | blok | `counter`, `canopy`, `bulb_string`, `bulb`, `menu` | 744 |
-| `city_crates.glb` | 1,212 × 1,592 × 1,215 | tak | blok | `crate_shell`, `rim`, `front_rib`, `handle_recess` | 864 |
-| `city_generator.glb` | 1,600 × 1,400 × 1,015 | tak | blok | `housing`, `louvre`, `status`, `socket`, `power_cable` | 476 |
-| `city_ac_unit.glb` | 0,900 × 0,604 × 0,500 | nie | ściana | `housing`, `fan_hub`, `fan_guard`, `wall_bracket` | 316 |
-| `city_pipe_run.glb` | 0,780 × 6,042 × 0,310 | nie | ściana | `pipe`, `pipe_clamp`, `wall_plate` | 404 |
-| `city_fire_escape.glb` | 3,000 × 3,527 × 1,167 | nie | ściana | `balcony`, `top_rail`, `ladder_rail`, `rung` | 440 |
-| `city_shutter.glb` | 3,000 × 3,000 × 0,250 | nie | ściana | `slat`, `guide`, `roller_box`, `pull_handle` | 432 |
-| `city_awning.glb` | 2,500 × 0,557 × 1,160 | nie | ściana | `canopy`, `valance`, `brace`, `roof_seam` | 100 |
-| `city_door.glb` | 1,505 × 2,360 × 0,238 | nie | ściana | `frame`, `door_leaf`, `handle`, `keypad`, `status_dot` | 416 |
-| `city_sign_box.glb` | 2,000 × 1,000 × 0,250 | nie | ściana | `housing`, `sign_face` | 136 |
-| `city_street_lamp.glb` | 0,440 × 4,500 × 1,280 | nie | podłoże | `base`, `pole`, `arm`, `head`, `lamp` | 244 |
-| `city_vent_grate.glb` | 1,000 × 0,050 × 1,000 | nie | podłoże | `recess`, `frame`, `grate_bar`, `crossbar` | 168 |
-| `city_trash_bags.glb` | 1,076 × 0,640 × 0,867 | nie | podłoże | `bag_0`, `bag_1`, `bag_2`, `tie` | 108 |
-| `city_traffic_cone.glb` | 0,460 × 0,700 × 0,460 | nie | podłoże | `base`, `cone`, `reflector_band` | 128 |
-| `city_holo_projector.glb` | 0,600 × 0,200 × 0,600 | nie | podłoże | `disc_base`, `emitter_ring`, `emitter` | 204 |
-| `city_antenna.glb` | 1,560 × 2,250 × 1,270 | nie | podłoże | `mast`, `aerial`, `dish`, `receiver`, `coax` | 288 |
-| `city_cable_span.glb` | 10,000 × 1,023 × 0,418 | nie | rozpięcie | `cable_0`, `cable_1`, `cable_2` | 348 |
-| `city_lantern_string.glb` | 10,000 × 1,189 × 0,300 | nie | rozpięcie | `wire`, `hanger`, `lantern`, `lantern_cap` | 724 |
+| Plik                      | Wymiary X × Y × Z [m]  | Kolizja | Montaż    | Węzły                                                                                                                                                                                                               | Trójkąty |
+| ------------------------- | ---------------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------: |
+| `city_dumpster.glb`       | 1,970 × 1,330 × 1,080  | tak     | blok      | `bin`, `rust_skirt`, `top_rim`, `lid`, `lid_open`, `wheel`, `caster_fork`, `fork_pocket`, `handle`, `hinge`, `bag_peek`, `stencil`, `sticker`                                                                       |      684 |
+| `city_vending.glb`        | 1,005 × 2,000 × 0,802  | tak     | blok      | `cabinet`, `header`, `display`, `status_screen`, `screen_frame`, `pickup`, `pickup_flap`, `selection`, `control_panel`, `key`, `coin_slot`, `card_reader`, `sticker`, `warning`                                     |      484 |
+| `city_barrier.glb`        | 2,000 × 0,929 × 0,510  | tak     | blok      | `concrete_body`, `stripe`, `reflector`, `lifting_loop`, `foot_recess`                                                                                                                                               |      172 |
+| `city_car.glb`            | 4,420 × 1,401 × 1,940  | tak     | blok      | `body`, `body_crease`, `canopy`, `roof`, `spoiler`, `wheel`, `rim`, `hub`, `headlight`, `light_bar`, `front_plate`, `front_intake`, `tail_light`, `rear_plate`, `underglow`, `mirror`, `door_handle`, `charge_port` |     1212 |
+| `city_stall.glb`          | 3,000 × 2,600 × 2,025  | tak     | blok      | `counter`, `counter_base`, `canopy`, `valance`, `noren`, `bulb_string`, `bulb`, `menu`, `menu_frame`, `cooking_pot`, `bowl_stack`, `sticker`                                                                        |      908 |
+| `city_crates.glb`         | 1,212 × 1,590 × 1,212  | tak     | blok      | `crate_shell`, `rim`, `front_rib`, `side_rib`, `handle_recess`, `pallet_board`, `pallet_block`, `stencil`, `sticker`, `warning`                                                                                     |      690 |
+| `city_generator.glb`      | 1,600 × 1,406 × 1,005  | tak     | blok      | `housing`, `top_cover`, `louvre`, `control_panel`, `status`, `socket`, `power_cable`, `exhaust`, `skid`, `lifting_eye`, `stencil`, `warning`                                                                        |      582 |
+| `city_kiosk.glb`          | 0,800 × 2,200 × 0,620  | tak     | blok      | `plinth`, `body`, `header`, `header_glow`, `news`, `map`, `map_frame`, `shelf`, `key`, `card_reader`, `ad`, `ad_frame`, `sticker`, `warning`                                                                        |      386 |
+| `city_ac_unit.glb`        | 0,902 × 0,604 × 0,518  | nie     | ściana    | `housing`, `fan_hub`, `fan_blade`, `fan_guard`, `side_louvre`, `wall_bracket`, `support`, `drain_hose`, `sticker`                                                                                                   |      514 |
+| `city_pipe_run.glb`       | 0,780 × 6,060 × 0,374  | nie     | ściana    | `pipe`, `pipe_clamp`, `wall_plate`, `flange`, `valve_wheel`, `gauge`, `bottom_mount`                                                                                                                                |      728 |
+| `city_fire_escape.glb`    | 3,000 × 3,527 × 1,167  | nie     | ściana    | `balcony`, `deck_slot`, `top_rail`, `middle_rail`, `front_baluster`, `ladder_rail`, `rung`, `ladder_hook`, `bracket`, `kick_plate`                                                                                  |      624 |
+| `city_shutter.glb`        | 3,000 × 3,000 × 0,250  | nie     | ściana    | `slat`, `guide`, `roller_box`, `bottom_rail`, `pull_handle`, `padlock`, `backing`, `stencil`, `warning`                                                                                                             |      476 |
+| `city_awning.glb`         | 2,500 × 0,570 × 1,160  | nie     | ściana    | `canopy`, `valance`, `brace`, `roof_seam`, `led_strip`, `wall_flashing`                                                                                                                                             |      124 |
+| `city_door.glb`           | 1,505 × 2,465 × 0,238  | nie     | ściana    | `frame`, `door_leaf`, `inset_panel`, `window`, `wire_mesh`, `handle`, `keypad`, `key`, `status_dot`, `door_number`, `lamp`, `lintel`, `kick_plate`, `door_closer`                                                   |      602 |
+| `city_sign_box.glb`       | 2,000 × 1,000 × 0,250  | nie     | ściana    | `housing`, `sign_face`, `bolt`                                                                                                                                                                                      |      136 |
+| `city_ad_screen.glb`      | 1,100 × 2,294 × 0,181  | nie     | ściana    | `housing`, `bezel`, `screen`, `wall_arm`, `led_edge`, `conduit`, `sticker`                                                                                                                                          |      140 |
+| `city_street_lamp.glb`    | 0,440 × 4,500 × 1,280  | nie     | podłoże   | `base`, `pole`, `band`, `arm`, `head`, `lamp`, `service_box`, `warning`                                                                                                                                             |      290 |
+| `city_vent_grate.glb`     | 1,000 × 0,050 × 1,000  | nie     | podłoże   | `recess`, `frame`, `grate_bar`, `crossbar`                                                                                                                                                                          |      168 |
+| `city_trash_bags.glb`     | 1,076 × 0,640 × 0,867  | nie     | podłoże   | `bag`, `tie`                                                                                                                                                                                                        |      108 |
+| `city_traffic_cone.glb`   | 0,460 × 0,700 × 0,460  | nie     | podłoże   | `base`, `cone`, `reflector_band`                                                                                                                                                                                    |      152 |
+| `city_holo_projector.glb` | 0,600 × 0,200 × 0,600  | nie     | podłoże   | `disc_base`, `clamp`, `emitter_ring`, `emitter`                                                                                                                                                                     |      204 |
+| `city_antenna.glb`        | 1,560 × 2,250 × 1,270  | nie     | podłoże   | `mast`, `frame`, `foot`, `aerial`, `dish`, `dish_mount`, `receiver`, `coax`, `beacon`                                                                                                                               |      460 |
+| `city_cable_span.glb`     | 10,000 × 1,104 × 0,429 | nie     | rozpięcie | `cable`, `insulator`, `junction_box`, `junction_hanger`                                                                                                                                                             |      444 |
+| `city_lantern_string.glb` | 10,000 × 1,189 × 0,300 | nie     | rozpięcie | `wire`, `hanger`, `lantern`, `lantern_cap`                                                                                                                                                                          |      724 |
 
 Każdy model ma pusty korzeń o nazwie modelu. Powtarzane części mają nazwy
-Blendera z sufiksem `.001`, `.002` itd.; loader może usuwać kropkę.
-Balkon jest na wysokości 2,5 m nad końcem drabiny. `sign_face` jest ciemną,
-płaską powierzchnią przednią na z = 0,25 m; napis nakłada gra.
+Blendera z sufiksem `.001`, `.002` itd. (w tabeli podano nazwy bazowe);
+loader może usuwać kropkę. Balkon jest na wysokości 2,5 m nad końcem drabiny.
+`sign_face` jest ciemną, płaską powierzchnią przednią na z = 0,25 m; napis
+nakłada gra. Pomocnicze generatory w `build_assets.py`: `_city_box(taper=, spin=)`,
+`_city_rod`, `_city_tube(closed=)`, `_city_ring` (zamknięty pierścień wokół osi),
+`_city_print` (czworokąt z UV pod nadruk).
 
-Materiały rozpoznawane wyłącznie po nazwie:
+Materiały rozpoznawane wyłącznie po nazwie (kolor to tylko podgląd Workbench,
+sRGB z `_city_root` w `tools/blender/build_assets.py`; wygląd w grze wynika
+z `urbanLooks`, patrz `docs/systems/render.md`):
 
-| Nazwa | Podgląd sRGB | Emisja |
-| --- | --- | --- |
-| `mat_concrete` | `#424d61` | nie |
-| `mat_asphalt` | `#2a3344` | nie |
-| `mat_metal` | `#56627a` | nie |
-| `mat_trim` | `#313b50` | nie |
-| `mat_glass` | `#202c44` | nie |
-| `mat_cable` | `#181f30` | nie |
-| `mat_neon_amber` | `#ffae1a` | tak |
-| `mat_neon_green` | `#6dff4a` | tak |
-| `mat_neon_violet` | `#8a5cff` | tak |
-| `mat_neon_blue` | `#3d7bff` | tak |
-| `mat_neon_white` | `#fff1d6` | tak |
-| `mat_light_white` | `#fff1d6` | tak |
+| Nazwa             | Podgląd sRGB | Emisja                                          |
+| ----------------- | ------------ | ----------------------------------------------- |
+| `mat_concrete`    | `#424d61`    | nie                                             |
+| `mat_asphalt`     | `#2a3344`    | nie                                             |
+| `mat_metal`       | `#56627a`    | nie                                             |
+| `mat_trim`        | `#313b50`    | nie                                             |
+| `mat_glass`       | `#202c44`    | nie                                             |
+| `mat_cable`       | `#181f30`    | nie                                             |
+| `mat_paint`       | `#3e5a48`    | nie                                             |
+| `mat_lacquer`     | `#2c3766`    | nie                                             |
+| `mat_rust`        | `#5a4a3e`    | nie                                             |
+| `mat_corrugated`  | `#5d6879`    | nie                                             |
+| `mat_plastic`     | `#4a5d7a`    | nie                                             |
+| `mat_hivis`       | `#d08a1c`    | nie                                             |
+| `mat_rubber`      | `#1d2027`    | nie                                             |
+| `mat_wood`        | `#5a5047`    | nie                                             |
+| `mat_fabric`      | `#5a4c86`    | nie                                             |
+| `mat_machine`     | `#5f6a80`    | nie                                             |
+| `mat_paving`      | `#59637a`    | nie                                             |
+| `mat_plaster`     | `#56606e`    | nie                                             |
+| `mat_hazard`      | `#e09a1a`    | nie (pasy bursztynowo-czarne rysuje shader gry) |
+| `mat_neon_amber`  | `#ffae1a`    | tak                                             |
+| `mat_neon_green`  | `#6dff4a`    | tak                                             |
+| `mat_neon_violet` | `#8a5cff`    | tak                                             |
+| `mat_neon_blue`   | `#3d7bff`    | tak                                             |
+| `mat_neon_white`  | `#fff1d6`    | tak                                             |
+| `mat_light_white` | `#fff1d6`    | tak                                             |
+
+Nadruki mapowane UV (poza tabelą, bo nazwa niesie identyfikator obrazu):
+`mat_label_<x>` to naklejka z `public/assets/textures/labels/label_<x>.webp`
+(RGBA, odcięcie alfy 0,5, oświetlana), `mat_screen_<x>` to ekran z
+`public/assets/textures/screens/screen_<x>.webp` (świeci, bloom). Nazwa pliku to
+nazwa materiału bez `mat_`. Używane: `label_warning`, `label_stencil` („07”),
+`label_barcode`, `label_plate` („NR 0471”), `screen_vending`, `screen_menu`,
+`screen_status`, `screen_ad`, `screen_news`, `screen_map`. Nadruk to czworokąt z jedną siatką UV (`_city_print`): obraz
+leży prosto, gdy lewy dolny róg czworokąta ma UV (0, 0) w Blenderze, a prawy
+górny (1, 1); eksporter glTF odwraca V do konwencji obrazu. Do załadowania
+tekstury nadruk jest niewidoczny; w motywie `white` (`citySurfaceDetail` 0)
+naklejka jest biała, a ekran ciemny.
 
 Szare skrzynki `city_crates` są dekoracyjną przeszkodą, nie obiektami Chwytu.
 Tylne lampy samochodu i lampiony są bursztynowe. Kolory zarezerwowane dla
 wrogów, gracza i Rezonansu nie występują w materiałach miasta. Workbench
 pokazuje barwę materiału, nie poświatę emisji; poświatę zapewnia renderer gry.
 
+````bash
 ```bash
-"D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only city_dumpster,city_vending,city_barrier,city_car,city_stall,city_crates,city_generator,city_ac_unit,city_pipe_run,city_fire_escape,city_shutter,city_awning,city_door,city_sign_box,city_street_lamp,city_vent_grate,city_trash_bags,city_traffic_cone,city_holo_projector,city_antenna,city_cable_span,city_lantern_string
+"D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only city_dumpster,city_vending,city_barrier,city_car,city_stall,city_crates,city_generator,city_ac_unit,city_pipe_run,city_fire_escape,city_shutter,city_awning,city_door,city_sign_box,city_street_lamp,city_vent_grate,city_trash_bags,city_traffic_cone,city_holo_projector,city_antenna,city_cable_span,city_lantern_string,city_ad_screen,city_kiosk
 node node_modules/vitest/vitest.mjs run tests/unit/cityModels.test.ts --configLoader runner
-```
+````
 
-Test parsuje komplet GLB, sprawdza dozwolone materiały i kolory emisji,
-brak tekstur, budżet, węzły, wymiary kolizji ±5%, poziom podstawy, tył
-dekoracji ściennych, centrowanie rekwizytów, końce rozpięć i osiem lampionów.
-Kontrola podglądów: sylwetka, fazy, uchwyty, kratki, otwory automatu, drabina,
-zwis kabli; front automatu i menu budki od +Z. Zbiorczy podgląd roboczy:
-`%TEMP%/neoryder-city-contact-sheet.png` (nie jest częścią zasobów gry).
+Test parsuje komplet GLB i sprawdza: obecność 24 plików, dozwolone materiały
+(lista `mat_*` powyżej) i kolory emisji, dla nadruków `mat_label_*` /
+`mat_screen_*` istnienie pliku tekstury w `public/assets/textures/` oraz atrybut
+UV siatki, brak map (`material.map`), budżet trójkątów, obecność węzłów
+charakterystycznych (automat: `header`, `display`, `pickup`), wymiary kolizji ±5%,
+poziom podstawy, tył dekoracji ściennych, centrowanie rekwizytów, końce rozpięć
+i osiem lampionów. Samochód: `headlight` ma x > 2, `tail_light` ma x < −2.
+Kontrola podglądów: sylwetka, fazy, uchwyty, kratki, ekran i otwory automatu,
+drabina, zwis kabli; front automatu i menu budki od +Z, bok samochodu od +Z.
+Zbiorczy podgląd roboczy: `%TEMP%/neoryder-city-contact-sheet.png` (nie jest
+częścią zasobów gry). Galeria w grze: `?scene=city-props-test` (opis w
+`docs/systems/city.md`).
 
 ## Wrogowie — manekin CC0 ze szkieletem
 

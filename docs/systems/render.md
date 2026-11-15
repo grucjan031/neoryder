@@ -236,9 +236,69 @@ Pokoje i arena posiadają `SceneAtmosphere`, która stosuje motyw i sprząta go
 przy opuszczaniu sceny. `?theme=<id>` nadpisuje dane układu. Nieznany identyfikator
 ostrzega raz i wybiera white. Deszcz nie jest tu renderowany.
 
-Materiały `mat_concrete`, `mat_asphalt`, `mat_metal`, `mat_facade`, `mat_trim`,
-`mat_glass`, `mat_cable` są materiałami Standard i przyjmują kolorowe PointLight
-(limit 8 obsługuje integrator świateł). Tekstury concrete/asphalt/metal_panel/brick/grime
+Materiały miejskie (`src/render/urbanMaterials.ts`, lista `urbanKinds`) są
+materiałami Standard i przyjmują kolorowe PointLight (limit 8 obsługuje integrator
+świateł). Rozpoznawane po nazwie glTF `mat_<rodzaj>`; kolor bazowy to
+`tuning.render[rodzaj]` (nadpisywany przez motyw), a wygląd definiuje tabela
+`urbanLooks`: tekstura, `scale` (powtórzenia na metr), roughness, metalness,
+`bump` (mnożnik reliefu) i `wetness`. Rzut tekstur jest trójplanarny w przestrzeni
+świata.
+
+| Rodzaj       | Tekstura (`surfaces/`) | Skala | Rough. | Metal. | Bump | Przeznaczenie                           |
+| ------------ | ---------------------- | ----: | -----: | -----: | ---: | --------------------------------------- |
+| `concrete`   | `concrete`             |  0,25 |    0,8 |      0 |  0,5 | beton, bariery, chodniki (wetness 0,22) |
+| `asphalt`    | `asphalt`              |  0,25 |    0,3 |      0 | 0,25 | jezdnia, mokra (wetness 1)              |
+| `metal`      | `metal_panel`          |  0,25 |    0,8 |   0,35 |  0,5 | blacha, konstrukcje                     |
+| `facade`     | `brick`                |  0,25 |    0,8 |      0 |  0,9 | ściany budynków, okna, rolety           |
+| `trim`       | `metal_panel`          |  0,25 |    0,8 |   0,35 |  0,3 | listwy, obramowania                     |
+| `glass`      | `grime`                |  0,25 |    0,8 |      0 |    0 | szkło (proceduralna łuna)               |
+| `cable`      | `grime`                |  0,25 |    0,8 |      0 |    0 | kable, czarne detale                    |
+| `paint`      | `painted_metal`        |   0,7 |   0,55 |   0,25 |  0,7 | malowana blacha: kontenery, drzwi       |
+| `lacquer`    | `painted_metal`        |   0,5 |    0,3 |    0,3 | 0,25 | lakier: karoseria, automaty             |
+| `rust`       | `rust_metal`           |   0,8 |   0,85 |    0,3 |    1 | skorodowany metal: schody, rury         |
+| `corrugated` | `corrugated`           |   0,5 |   0,55 |   0,35 |  1,4 | blacha falista: daszki, rolety          |
+| `plastic`    | `plastic`              |     1 |    0,6 |      0 |  0,5 | plastik: skrzynki, pokrywy              |
+| `hivis`      | `plastic`              |     1 |    0,5 |      0 |  0,5 | odzież ostrzegawcza, pachołki           |
+| `rubber`     | `rubber`               |   1,2 |    0,9 |      0 |  0,7 | guma: koła, worki, uszczelki            |
+| `wood`       | `wood_planks`          |   0,8 |   0,85 |      0 |  1,1 | drewno: palety, lady                    |
+| `fabric`     | `tarp`                 |   0,9 |   0,95 |      0 |  0,8 | tkanina: markizy, noren, lampiony       |
+| `machine`    | `tech_panel`           |   0,6 |    0,5 |   0,35 |    1 | urządzenia: panele, klawiatury          |
+| `paving`     | `paving`               |   0,5 |   0,55 |      0 |    1 | kostka brukowa, chodnik (wetness 0,45)  |
+| `plaster`    | `plaster`              |   0,3 |    0,9 |      0 |  0,8 | tynk (wetness 0,1)                      |
+| `hazard`     | `plastic`              |     1 |   0,55 |      0 |  0,4 | pasy ostrzegawcze (patrz niżej)         |
+
+Relief: z jasności tekstury powierzchni (`cityHeight`) różniczkowanej w przestrzeni
+ekranu liczone jest zaburzenie normalnej (bez UV), skalowane przez
+`tuning.render.cityBumpStrength` × `bump` rodzaju. Gaśnie z odległością, gdy piksel
+obejmuje kilka tekseli (`smoothstep(1, 4, texeli na piksel)`), co ogranicza
+migotanie. Wartość 0 daje powierzchnie płaskie (motyw `white`); neonStreet używa 1.
+Roughness jest dodatkowo modulowany jasnością tekstury. Całość wyłącza
+`citySurfaceDetail` = 0.
+
+Materiał `hazard` rysuje w shaderze bursztynowo-czarne ukośne pasy w przestrzeni
+świata; okres pasów w metrach to `tuning.render.cityHazardPeriod` (domyślnie 0,3).
+
+Nadruki UV (`src/render/propPrints.ts`): `mat_label_<x>` i `mat_screen_<x>`
+(rozpoznawane przez `isPrintMaterialName`, tworzone przez `printMaterial(name)`
+i podpinane w `applyStyle`) mapują teksturę po UV modelu zamiast rzutu świata.
+Naklejka (`/assets/textures/labels/label_<x>.webp`) to oświetlany
+`MeshStandardMaterial` z odcięciem alfy 0,5; ekran
+(`/assets/textures/screens/screen_<x>.webp`) to `MeshBasicMaterial` bez tone
+mappingu z `userData.bloom = true` (świeci w bloomie). Oba mają polygon offset,
+żeby nie walczyć z podłożem. Do załadowania tekstury materiał jest niewidoczny.
+Bez detalu miasta (`citySurfaceDetail` 0, motyw `white`) naklejka jest biała, a
+ekran ciemny. Tekstury ładuje wspólny `assetTexture(folder, id)` z
+`src/render/surfaceTextures.ts` (foldery `surfaces`, `labels`, `screens`);
+`surfaceTexture(name)` to jego skrót dla `surfaces`. Konwencja UV i lista nadruków:
+`docs/assets.md`.
+
+Nowe pola motywu `render`: `cityBumpStrength` (≥ 0, siła reliefu) i
+`cityHazardPeriod` (> 0, okres pasów w m) obok `citySurfaceDetail`; kolory
+nowych rodzajów (`paint`, `lacquer`, `rust`, `corrugated`, `plastic`, `hivis`,
+`rubber`, `wood`, `fabric`, `machine`, `paving`, `plaster`, `hazard`) są polami
+`render` w motywach i domyślnie w `tuning.ts`.
+
+Tekstury concrete/asphalt/metal_panel/brick/grime (oraz nowe z tabeli)
 są próbkowane triplanarnie z pozycji świata; maska asphalt_puddles w XZ.
 Pliki `/assets/textures/surfaces/*.webp` są ładowane leniwie i współdzielone.
 Manifest glob pozwala pominąć żądanie brakującego pliku. Brak lub niepoprawny plik
@@ -254,7 +314,7 @@ Odbicia (`reflections.ts`) używają odbitej względem `playerSpawn.y` kamery,
 globalnej płaszczyzny odcinającej geometrię poniżej podłogi i selekcji emisji
 z bloomu. Kamera odbić pomija viewmodel. Maska i dwa rozmycia Gaussa mają 1/2
 szerokości i wysokości bufora. Kanał A istniejącego przebiegu normalnych koduje
-`userData.wetness`: asphalt 1, concrete 0.22, pozostałe 0. Kompozycja rekonstruuje
+`userData.wetness`: asphalt 1, paving 0.45, concrete 0.22, plaster 0.1, pozostałe 0. Kompozycja rekonstruuje
 pozycję świata, sprawdza normalną w górę i tolerancję wysokości podłogi,
 projektuje odbicie, dodaje Fresnel, maskę kałuż i animowane zniekształcenie.
 W white nie powstają cele odbić i nie ma dodatkowych przebiegów.
@@ -270,7 +330,8 @@ tylko po zmianie wartości; reszta aktualizuje uniformy.
 Wszystkie nowe pola `tuning.render` widoczne są automatycznie w lil-gui:
 `reflectionStrength/Distortion/Puddles/FloorTolerance`,
 `heightFogDensity/Falloff`, `panoramaEnabled/Density/Height/WindowWarm/WindowCool`,
-`enemyRimStrength/Power`, kolory świateł i materiałów, `citySurfaceDetail`.
+`enemyRimStrength/Power`, kolory świateł i materiałów, `citySurfaceDetail`,
+`cityBumpStrength`, `cityHazardPeriod`.
 
 ### Koszt i kontrola
 

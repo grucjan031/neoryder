@@ -15,6 +15,7 @@ import {
   syncUrbanMaterials,
 } from './urbanMaterials';
 import type { UrbanKind } from './urbanMaterials';
+import { printMaterial } from './propPrints';
 
 export type MaterialKind =
   | 'world'
@@ -186,6 +187,8 @@ export function syncMaterials(): void {
 function materialForName(name: string): StyleMaterial {
   const kind = names.get(name);
   if (kind) return getMaterial(kind);
+  const print = printMaterial(name);
+  if (print) return print;
   if (!warnedNames.has(name)) {
     warnedNames.add(name);
     console.warn(`Nieznany materiał glTF "${name}"; użyto mat_world.`);

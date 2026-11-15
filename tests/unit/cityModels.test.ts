@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { Box3, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -13,6 +13,7 @@ const colliders = {
   city_stall: [3, 2.6, 2],
   city_crates: [1.2, 1.6, 1.2],
   city_generator: [1.6, 1.4, 1],
+  city_kiosk: [0.8, 2.2, 0.6],
 } as const;
 const wallModels = [
   'city_ac_unit',
@@ -22,6 +23,7 @@ const wallModels = [
   'city_awning',
   'city_door',
   'city_sign_box',
+  'city_ad_screen',
 ];
 const spans = ['city_cable_span', 'city_lantern_string'];
 const floorModels = [
@@ -45,6 +47,19 @@ const materials = [
   'mat_trim',
   'mat_glass',
   'mat_cable',
+  'mat_paint',
+  'mat_lacquer',
+  'mat_rust',
+  'mat_corrugated',
+  'mat_plastic',
+  'mat_hivis',
+  'mat_rubber',
+  'mat_wood',
+  'mat_fabric',
+  'mat_machine',
+  'mat_paving',
+  'mat_plaster',
+  'mat_hazard',
   'mat_neon_amber',
   'mat_neon_green',
   'mat_neon_violet',
@@ -52,6 +67,9 @@ const materials = [
   'mat_neon_white',
   'mat_light_white',
 ];
+/** Nadruki mapowane UV: tekstura musi istnieć w public/assets/textures. */
+const printName = /^mat_((label|screen)_[a-z0-9_]+)$/;
+const textures = join(__dirname, '../../public/assets/textures');
 const glowColors: Record<string, number> = {
   mat_neon_amber: 0xffae1a,
   mat_neon_green: 0x6dff4a,
@@ -62,7 +80,7 @@ const glowColors: Record<string, number> = {
 };
 const landmarks: Record<string, string[]> = {
   city_dumpster: ['lid', 'wheel', 'handle'],
-  city_vending: ['header', 'product', 'pickup'],
+  city_vending: ['header', 'display', 'pickup'],
   city_barrier: ['concrete_body', 'stripe'],
   city_car: ['body', 'canopy', 'headlight', 'tail_light'],
   city_stall: ['counter', 'canopy', 'bulb', 'menu'],
@@ -83,9 +101,11 @@ const landmarks: Record<string, string[]> = {
   city_antenna: ['mast', 'dish', 'receiver'],
   city_cable_span: ['cable_0', 'cable_1', 'cable_2'],
   city_lantern_string: ['wire', 'lantern', 'hanger'],
+  city_ad_screen: ['housing', 'screen'],
+  city_kiosk: ['body', 'map', 'news', 'ad'],
 };
 
-it('zawiera cały zestaw 22 modeli miasta', () => {
+it('zawiera cały zestaw 24 modeli miasta', () => {
   expect(readdirSync(folder).sort()).toEqual(
     names.map((n) => `${n}.glb`).sort(),
   );
@@ -113,7 +133,15 @@ it.each(names)('%s: geometria, paleta, budżet i montaż GLB', async (name) => {
     triangles += (node.geometry.index?.count ?? position.count) / 3;
     const used = Array.isArray(node.material) ? node.material : [node.material];
     for (const mat of used) {
-      expect(materials).toContain(mat.name);
+      const print = printName.exec(mat.name);
+      if (print) {
+        const folder = print[2] === 'label' ? 'labels' : 'screens';
+        expect(
+          existsSync(join(textures, folder, `${print[1]}.webp`)),
+          mat.name,
+        ).toBe(true);
+        expect(node.geometry.getAttribute('uv'), mat.name).toBeDefined();
+      } else expect(materials).toContain(mat.name);
       expect(mat).toBeInstanceOf(MeshStandardMaterial);
       if (!(mat instanceof MeshStandardMaterial)) continue;
       expect(mat.map).toBeNull();
@@ -171,7 +199,8 @@ it.each(names)('%s: geometria, paleta, budżet i montaż GLB', async (name) => {
   if (name === 'city_car') {
     const headlight = gltf.scene.getObjectByName('headlight')!;
     const tail = gltf.scene.getObjectByName('tail_light')!;
-    expect(headlight.getWorldPosition(new Vector3()).z).toBeGreaterThan(0);
-    expect(tail.getWorldPosition(new Vector3()).z).toBeLessThan(0);
+    // Auto stoi wzdłuż X (długość bloku 4,4 m), przód w +X, bok do gracza w +Z.
+    expect(headlight.getWorldPosition(new Vector3()).x).toBeGreaterThan(2);
+    expect(tail.getWorldPosition(new Vector3()).x).toBeLessThan(-2);
   }
 });

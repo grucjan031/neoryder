@@ -26,6 +26,11 @@ export const BLOCK_MATERIALS = [
   'facade',
   'trim',
   'glass',
+  'paving',
+  'plaster',
+  'corrugated',
+  'rust',
+  'hazard',
 ] as const;
 export const blockMaterialSchema = z.enum(BLOCK_MATERIALS);
 export type BlockMaterial = z.infer<typeof blockMaterialSchema>;

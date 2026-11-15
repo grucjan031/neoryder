@@ -328,5 +328,415 @@
     "dominantColor": "#242c53",
     "description": "Wydłużona ciemna kałuża",
     "bytes": 14320
+  },
+  {
+    "id": "painted_metal",
+    "category": "surfaces",
+    "path": "surfaces/painted_metal.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#7b7b7d",
+    "description": "Malowana blacha z odpryskami i zaciekami",
+    "bytes": 34120
+  },
+  {
+    "id": "rust_metal",
+    "category": "surfaces",
+    "path": "surfaces/rust_metal.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#313538",
+    "description": "Ciemna stal z brązowoszarą korozją",
+    "bytes": 49288
+  },
+  {
+    "id": "corrugated",
+    "category": "surfaces",
+    "path": "surfaces/corrugated.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#626c77",
+    "description": "Blacha falista z szesnastoma przetłoczeniami",
+    "bytes": 31418
+  },
+  {
+    "id": "plastic",
+    "category": "surfaces",
+    "path": "surfaces/plastic.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#767674",
+    "description": "Matowy plastik z ziarnem i przetarciami",
+    "bytes": 115346
+  },
+  {
+    "id": "rubber",
+    "category": "surfaces",
+    "path": "surfaces/rubber.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#23272a",
+    "description": "Czarna guma z kurzem i wytartymi miejscami",
+    "bytes": 138880
+  },
+  {
+    "id": "wood_planks",
+    "category": "surfaces",
+    "path": "surfaces/wood_planks.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#685c52",
+    "description": "Cztery poziome zwietrzałe deski",
+    "bytes": 78746
+  },
+  {
+    "id": "tarp",
+    "category": "surfaces",
+    "path": "surfaces/tarp.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#67686a",
+    "description": "Tkana plandeka z fałdami i zaciekami",
+    "bytes": 87344
+  },
+  {
+    "id": "paving",
+    "category": "surfaces",
+    "path": "surfaces/paving.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#414c5d",
+    "description": "Chodnik z szesnastu płyt i ciemnymi fugami",
+    "bytes": 31764
+  },
+  {
+    "id": "tech_panel",
+    "category": "surfaces",
+    "path": "surfaces/tech_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#596175",
+    "description": "Panel obudowy maszyny ze śrubami i szczelinami",
+    "bytes": 37638
+  },
+  {
+    "id": "plaster",
+    "category": "surfaces",
+    "path": "surfaces/plaster.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#939393",
+    "description": "Stary tynk z łuszczącą farbą i pęknięciami",
+    "bytes": 50884
+  },
+  {
+    "id": "label_warning",
+    "category": "labels",
+    "path": "labels/label_warning.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fda504",
+    "description": "Wytarta bursztynowa naklejka ostrzegawcza",
+    "bytes": 41516
+  },
+  {
+    "id": "label_stencil",
+    "category": "labels",
+    "path": "labels/label_stencil.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fdf3d2",
+    "description": "Biały napis szablonowy 07",
+    "bytes": 42730
+  },
+  {
+    "id": "label_barcode",
+    "category": "labels",
+    "path": "labels/label_barcode.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#f7e5c8",
+    "description": "Naklejka inspekcyjna z kodem kreskowym",
+    "bytes": 8516
+  },
+  {
+    "id": "label_plate",
+    "category": "labels",
+    "path": "labels/label_plate.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#333b45",
+    "description": "Tablica rejestracyjna NR 0471",
+    "bytes": 21062
+  },
+  {
+    "id": "screen_vending",
+    "category": "screens",
+    "path": "screens/screen_vending.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#fdf2d8",
+    "description": "Pionowy ekran automatu z napojami",
+    "bytes": 26626
+  },
+  {
+    "id": "screen_menu",
+    "category": "screens",
+    "path": "screens/screen_menu.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#fdf2d8",
+    "description": "Pozioma tablica menu z trzema miskami",
+    "bytes": 34346
+  },
+  {
+    "id": "screen_status",
+    "category": "screens",
+    "path": "screens/screen_status.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#69fa45",
+    "description": "Zielony ekran stanu maszyny",
+    "bytes": 13714
+  },
+  {
+    "id": "oil_stain",
+    "category": "decals",
+    "path": "decals/oil_stain.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#19151c",
+    "description": "Opalizująca plama oleju na asfalcie",
+    "bytes": 33644
+  },
+  {
+    "id": "crack_floor",
+    "category": "decals",
+    "path": "decals/crack_floor.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#6a6668",
+    "description": "Rozgałęzione pęknięcie betonu z okruchami",
+    "bytes": 55216
+  },
+  {
+    "id": "manhole",
+    "category": "decals",
+    "path": "decals/manhole.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#4a4744",
+    "description": "Wytarta żeliwna pokrywa włazu z kratką",
+    "bytes": 64026
+  },
+  {
+    "id": "tire_marks",
+    "category": "decals",
+    "path": "decals/tire_marks.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#2a2426",
+    "description": "Dwa wyblakłe ślady hamowania opon",
+    "bytes": 44964
+  },
+  {
+    "id": "graffiti_tag3",
+    "category": "decals",
+    "path": "decals/graffiti_tag3.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fcbb06",
+    "description": "Bursztynowo-biały tag KOT",
+    "bytes": 73634
+  },
+  {
+    "id": "graffiti_piece",
+    "category": "decals",
+    "path": "decals/graffiti_piece.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#9c51fb",
+    "description": "Fioletowo-błękitny wildstyle NEO",
+    "bytes": 36704
+  },
+  {
+    "id": "sticker_cluster",
+    "category": "decals",
+    "path": "decals/sticker_cluster.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#683886",
+    "description": "Skupisko podartych naklejek bez napisów",
+    "bytes": 42832
+  },
+  {
+    "id": "poster_torn3",
+    "category": "decals",
+    "path": "decals/poster_torn3.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#471458",
+    "description": "Podarty plakat NEON FEST",
+    "bytes": 82416
+  },
+  {
+    "id": "leak_streak",
+    "category": "decals",
+    "path": "decals/leak_streak.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#564839",
+    "description": "Pionowy ciemny zaciek deszczu i rdzy",
+    "bytes": 46160
+  },
+  {
+    "id": "floor_stop",
+    "category": "decals",
+    "path": "decals/floor_stop.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#feebd3",
+    "description": "Starty napis STOP na jezdni",
+    "bytes": 56306
+  },
+  {
+    "id": "kebab",
+    "category": "signs",
+    "path": "signs/kebab.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#260c00",
+    "description": "Bursztynowy neon KEBAB 24H",
+    "bytes": 9474
+  },
+  {
+    "id": "tattoo",
+    "category": "signs",
+    "path": "signs/tattoo.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#0a0127",
+    "description": "Fioletowy neon TATTOO z gwiazdką",
+    "bytes": 8278
+  },
+  {
+    "id": "arcade",
+    "category": "signs",
+    "path": "signs/arcade.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#000038",
+    "description": "Błękitny neon ARCADE z joystickiem",
+    "bytes": 11730
+  },
+  {
+    "id": "beer",
+    "category": "signs",
+    "path": "signs/beer.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#002700",
+    "description": "Zielony neon PIWO z kuflem",
+    "bytes": 8880
+  },
+  {
+    "id": "repair",
+    "category": "signs",
+    "path": "signs/repair.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffdec",
+    "description": "Ciepłobiały neon SERWIS z kluczem",
+    "bytes": 9086
+  },
+  {
+    "id": "cocktail",
+    "category": "signs",
+    "path": "signs/cocktail.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#0a0127",
+    "description": "Fioletowy neon kieliszka z bursztynową oliwką",
+    "bytes": 8450
+  },
+  {
+    "id": "holo_cat",
+    "category": "holo",
+    "path": "holo/holo_cat.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#000827",
+    "description": "Błękitny hologram machającego kota maneki-neko",
+    "bytes": 46610
+  },
+  {
+    "id": "holo_jellyfish",
+    "category": "holo",
+    "path": "holo/holo_jellyfish.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#160037",
+    "description": "Fioletowy hologram meduzy z długimi czułkami",
+    "bytes": 62438
+  },
+  {
+    "id": "screen_ad",
+    "category": "screens",
+    "path": "screens/screen_ad.webp",
+    "width": 512,
+    "height": 1024,
+    "dominantColor": "#a559fc",
+    "description": "Fioletowa reklama implantu na ekranie",
+    "bytes": 31968
+  },
+  {
+    "id": "screen_news",
+    "category": "screens",
+    "path": "screens/screen_news.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#0846ea",
+    "description": "Błękitny abstrakcyjny ekran wiadomości",
+    "bytes": 39646
+  },
+  {
+    "id": "screen_map",
+    "category": "screens",
+    "path": "screens/screen_map.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#014e02",
+    "description": "Zielona siatkowa mapa kwartału z trasą",
+    "bytes": 38788
+  },
+  {
+    "id": "tiles_wall",
+    "category": "surfaces",
+    "path": "surfaces/tiles_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#6c6964",
+    "description": "Drobne zabrudzone płytki ceramiczne 12 na 12",
+    "bytes": 155680
+  },
+  {
+    "id": "tread_plate",
+    "category": "surfaces",
+    "path": "surfaces/tread_plate.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#535c67",
+    "description": "Stalowa blacha ryflowana w romby",
+    "bytes": 248022
+  },
+  {
+    "id": "roof_tar",
+    "category": "surfaces",
+    "path": "surfaces/roof_tar.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#34373c",
+    "description": "Grafitowa papa dachowa z zakładkami i łatami",
+    "bytes": 188602
   }
 ]

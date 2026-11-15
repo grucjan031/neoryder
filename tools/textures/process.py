@@ -108,15 +108,21 @@ def build(ids):
             raise FileNotFoundError(raw)
         with Image.open(raw) as source:
             image = source.convert("RGB")
-        if item["category"] == "decals":
+        if item["category"] in ("decals", "labels"):
             image = green_key(image)
         image = ImageOps.fit(image, (item["width"], item["height"]), Image.Resampling.LANCZOS)
         if item["category"] == "surfaces":
             if item["id"] in ("asphalt_puddles", "grime"):
                 image = image.convert("L").convert("RGB")
             image = seamless(image)
-        elif item["category"] in ("signs", "holo"):
+        elif item["category"] in ("signs", "holo", "screens"):
             image = black_key(image)
+            if item.get("hueShift"):
+                # Korekta barwy po kontroli palety (np. fiolet dryfujący ku zarezerwowanej magencie).
+                h, sat, val = image.convert("HSV").split()
+                shift = round(item["hueShift"] / 360 * 256)
+                h = h.point(lambda x: (x + shift) % 256)
+                image = Image.merge("HSV", (h, sat, val)).convert("RGB")
         path = destination(item)
         path.parent.mkdir(parents=True, exist_ok=True)
         image.save(path, "WEBP", quality=QUALITY, method=6, exact=True)
@@ -150,17 +156,17 @@ def validate():
         with Image.open(path) as image:
             result = {"id": item["id"], "size": list(image.size), "mode": image.mode,
                       "bytes": path.stat().st_size}
-            required_mode = "RGBA" if item["category"] == "decals" else "RGB"
+            required_mode = "RGBA" if item["category"] in ("decals", "labels") else "RGB"
             if image.format != "WEBP" or image.size != (item["width"], item["height"]) or image.mode != required_mode:
                 errors.append(f"{item['id']}: wrong format, size or mode")
             a = np.asarray(image).astype(np.float32)
-            if item["category"] in ("signs", "holo"):
+            if item["category"] in ("signs", "holo", "screens"):
                 values = corners(a)
                 mean = float(values.mean())
                 result["cornerBrightness255"] = round(mean, 4)
                 if mean >= 3:
                     errors.append(f"{item['id']}: corners not black: {mean}")
-            elif item["category"] == "decals":
+            elif item["category"] in ("decals", "labels"):
                 maximum = float(corners(a)[:, 3].max())
                 result["cornerAlphaMax255"] = maximum
                 if maximum != 0 or a[:, :, 3].max() < 200:
@@ -203,7 +209,8 @@ def validate():
 def previews():
     PREVIEWS.mkdir(parents=True, exist_ok=True)
     font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 16)
-    sheet = Image.new("RGB", (6 * 256, 6 * 300), "#151b29")
+    rows = (len(CATALOG) + 5) // 6
+    sheet = Image.new("RGB", (6 * 256, rows * 300), "#151b29")
     draw = ImageDraw.Draw(sheet)
     for i, item in enumerate(CATALOG):
         if not destination(item).exists():
@@ -213,7 +220,7 @@ def previews():
         image.thumbnail((240, 260), Image.Resampling.LANCZOS)
         x, y = (i % 6) * 256, (i // 6) * 300
         # Szachownica tylko w podglądzie, nigdy w teksturze.
-        if item["category"] == "decals":
+        if item["category"] in ("decals", "labels"):
             for cy in range(y, y + 260, 16):
                 for cx in range(x, x + 256, 16):
                     color = "#4c5260" if ((cx - x) // 16 + (cy - y) // 16) % 2 else "#303642"

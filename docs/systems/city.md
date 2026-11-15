@@ -156,3 +156,7 @@ Testy `tests/unit/cityFx.test.ts`: najbliższe światła/frustum/stała pula,
 zawijanie deszczu, gęstość i pauza, deterministyczny seed, limity i kapanie,
 fallback canvas, późne ładowanie, naklejki i jednokrotne zwalnianie zasobów.
 Ocena wizualna wymaga Chromium/WebGL; testy jednostkowe nie kompilują GLSL.
+
+## Galeria modeli: `?scene=city-props-test`
+
+Uliczka ok. 10 × 44 m z wszystkimi 24 modelami `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy); lista modeli w `src/scenes/cityPropsTest.ts`. Parametry: `prop=<nazwa>` (np. `city_car`, kamera 3/4 z bliska), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2` (przegląd: wzdłuż ulicy, odwrotnie, z góry). Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.

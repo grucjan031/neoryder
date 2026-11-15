@@ -1,6 +1,6 @@
 # Narzędzia i prompty tekstur NEORYDER
 
-Wszystkie 33 obrazy utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Data: 2026-11-14. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
+Wszystkie 74 obrazy (33 z pierwszego pakietu, 17 z drugiego i 24 z trzeciego) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
 
 ## Odtworzenie
 
@@ -16,13 +16,13 @@ python tools/textures/process.py validate
 python tools/textures/process.py previews
 ```
 
-Dla pojedynczych źródeł: `python tools/textures/process.py build --ids concrete hotel`. Manifest odbudowuje się ze wszystkich istniejących wyników; pełna walidacja zawsze wymaga wszystkich 33 plików.
+Dla pojedynczych źródeł: `python tools/textures/process.py build --ids concrete hotel`. Manifest odbudowuje się ze wszystkich istniejących wyników; pełna walidacja zawsze wymaga wszystkich 74 plików.
 
 Algorytmy i zasady użycia opisuje [docs/textures.md](../../docs/textures.md). Wyniki trafiają do `public/assets/textures/<category>/<id>.webp`. Podglądy i raport trafiają do `%TEMP%/neoryder-textures/`: `contact-sheet.png`, `<id>-2x2.png`, `validation.json`. Font podpisów podglądu: systemowy Arial z `C:/Windows/Fonts/arial.ttf`.
 
 ## Kontrola i ponowne generowanie
 
-Obejrzano źródła i przetworzone wyniki, sprawdzono napisy, marki i paletę, powierzchnie także w układzie 2×2. Raz ponowiono: `cat_cafe`, `holo_android`, `holo_drink`, `holo_koi`, `holo_implant`, `holo_noodles`, `floor_hazard`. Przyczyna: mieszanie kolorowych poświat tworzyło różowe/czerwonawe obwódki. Wersje końcowe hologramów i CAFE mają jedną dominującą barwę światła; pasy ostrzegawcze ograniczono do bursztynu i czerni. Pozostałe 26 obrazów zaakceptowano po pierwszym generowaniu. Nie przekroczono dwóch ponowień na obraz. Odrzucone wersje nie są eksportowane.
+Kontrola pierwszego pakietu: obejrzano źródła i przetworzone wyniki, sprawdzono napisy, marki i paletę, powierzchnie także w układzie 2×2. Raz ponowiono: `cat_cafe`, `holo_android`, `holo_drink`, `holo_koi`, `holo_implant`, `holo_noodles`, `floor_hazard`. Przyczyna: mieszanie kolorowych poświat tworzyło różowe/czerwonawe obwódki. Wersje końcowe hologramów i CAFE mają jedną dominującą barwę światła; pasy ostrzegawcze ograniczono do bursztynu i czerni. Pozostałe 26 obrazów zaakceptowano po pierwszym generowaniu. Nie przekroczono dwóch ponowień na obraz. Odrzucone wersje nie są eksportowane.
 
 ## Pełne prompty wysłane do generatora
 
@@ -396,5 +396,273 @@ Prompt wersji końcowej:
 
 ```text
 Use case: stylized-concept. ONE square game decal bitmap. One elongated asymmetric puddle shape with small lobes, dark glossy charcoal blue water with subtle violet reflected highlights, top down flat isolated silhouette, no ground, no shadow, no reflection of green. Stylized painted near future noir art, flat orthographic view. Isolated object entirely inside canvas, generous 15% empty margin on all four sides. Background must be UNIFORM PURE CHROMA GREEN #00ff00, completely flat, no texture, no gradient, no lighting or shadow on background. Green is only the removable background, never in the object itself. Object colors allowed: amber #ffae1a, violet #8a5cff, royal blue #3d7bff, warm white #fff1d6, navy and charcoal. NO red, cyan, turquoise, magenta, pink, real brands, watermark, extra text, perspective or environment. Exact spelling critical.
+```
+
+## Drugi pakiet — 17 tekstur (2026-11-15)
+
+Każdy obraz poniżej wygenerowano osobnym wywołaniem imagegen. Źródła znajdują się lokalnie w `tools/textures/raw/`; build uruchomiono wyłącznie z `--ids` nowych tekstur. W razie odrzucenia jakości wizualnej wolno ponowić generowanie maksymalnie dwa razy na obraz; powód i finalny prompt należy zapisać tutaj.
+
+### surfaces — 1024×1024
+
+```text
+### painted_metal - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game albedo texture: painted metal wall, neutral low-saturation medium gray tintable surface, dark steel showing through chipped paint, scratches, small dents, subtle vertical rain streaks. Flat orthographic head-on, even lighting, stylized readable painted shapes, not photorealistic, no perspective, no text, no objects, no borders. Fill entire square. Opposite edges must tile seamlessly. No red, cyan, magenta, rust orange, or colored lights.
+```
+```text
+### rust_metal - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture: dark steel with subdued brown-gray corrosion #4a3a2c on dark steel #2b3038, pits and downward drips. Flat orthographic head-on, even lighting, stylized readable painted shapes, not photorealistic, no perspective, no text, no objects. Fill square; edges tile seamlessly. Corrosion is brown-gray, never red or orange. No cyan or magenta.
+```
+```text
+### corrugated - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture: corrugated steel sheet with exactly 16 evenly spaced vertical ribs across the tile, dark dirt in grooves, tiny dents, cool steel gray #3b4454 to #5d6879. Ribs must continue seamlessly at left and right edges. Flat orthographic head-on, even lighting, stylized readable shapes, not photorealistic, no perspective, text, objects. No red, cyan, magenta.
+```
+```text
+### plastic - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game albedo texture: matte injection-molded plastic, neutral low-saturation medium gray tintable surface, fine grain, scuffs, scratches and slight grime. Flat orthographic head-on, even lighting, stylized readable shapes, not photorealistic, no perspective, no text, objects, borders. Opposite edges tile seamlessly. No red, cyan, magenta.
+```
+```text
+### rubber - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture: black rubber #1d2027 to #34383f, fine grain, worn smooth patches and dust. Flat orthographic head-on, even lighting, stylized readable shapes, not photorealistic, no perspective, no text, objects. Opposite edges tile seamlessly. No red, cyan, magenta.
+```
+```text
+### wood_planks - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game albedo texture: exactly 4 horizontal weathered wood planks across tile height, muted gray-brown low saturation neutral medium gray tintable appearance, visible grain, nail holes, dark gaps. Plank pattern must tile seamlessly on all edges. Flat orthographic head-on, even lighting, stylized readable shapes, not photorealistic, no perspective, no text, objects. No orange/rust, red, cyan, magenta.
+```
+```text
+### tarp - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game albedo texture: thick woven tarp, neutral low-saturation medium gray tintable surface, visible weave, soft folds and water streaks. Flat orthographic head-on, even lighting, stylized readable shapes, not photorealistic, no perspective, no text, objects. Opposite edges tile seamlessly. No red, cyan, magenta.
+```
+```text
+### paving - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture: 4 by 4 square sidewalk paving slabs, dark grout, small chips and cracks, darker wet edges, cool dark blue-gray #3a4252 to #59637a. Grid aligns seamlessly at all tile edges. Flat orthographic head-on, even lighting, stylized painted shapes, not photorealistic, no perspective, no text, objects. No red, cyan, magenta.
+```
+```text
+### tech_panel - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture: machine casing, grid of rectangular panels in varied sizes, screws at corners, a few small ventilation slits, scratches, cool gray #3f4859 to #66718a. Flat orthographic head-on, even lighting, stylized readable shapes, not photorealistic, no perspective, no text, objects. Opposite edges tile seamlessly. No red, cyan, magenta.
+```
+```text
+### plaster - surfaces, 1024x1024
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game albedo texture: old plaster, peeling paint, hairline cracks, water streaks, neutral low-saturation medium gray tintable surface. Flat orthographic head-on, even lighting, stylized readable shapes, not photorealistic, no perspective, no text, objects. Opposite edges tile seamlessly. No red, cyan, magenta.
+```
+
+### labels — chroma green background #00ff00
+
+```text
+### label_warning - labels, 512x512
+
+```text
+Use case: stylized-concept. ONE isolated worn amber #ffae1a warning sticker: rounded triangle with black lightning bolt, scratched edges, no text. Center on a uniform pure green #00ff00 background for later chroma keying; green must not appear on sticker. Flat orthographic, even light, stylized readable shapes, no perspective, no shadow, no watermark. Square composition.
+```
+```text
+### label_stencil - labels, 512x512
+
+```text
+Use case: stylized-concept. ONE isolated spray-painted stencil marking, exact characters “07” in warm white #fff1d6, stencil typeface with bridges, slight overspray. Center on a uniform pure green #00ff00 background for later chroma keying; green must not appear on the marking. Flat orthographic, even light, no other text, no perspective, no shadow, no watermark. Square composition.
+```
+```text
+### label_barcode - labels, 512x256
+
+```text
+Use case: stylized-concept. ONE isolated small rectangular inspection sticker, warm off-white, barcode and empty check boxes, no readable words, one peeling corner. Center on uniform pure green #00ff00 background for later chroma keying; green must not appear on sticker. Flat orthographic, even light, no perspective, no shadow, no watermark. Wide 2:1 composition.
+```
+```text
+### label_plate - labels, 512x256
+
+```text
+Use case: stylized-concept. ONE isolated futuristic license plate, dark blue-gray plate #2a3344, raised warm white characters exactly “NR 0471”, thin border, screw holes, grime. Center on uniform pure green #00ff00 background for later chroma keying; green must not appear on plate. Flat orthographic, even light, no other text, no perspective, no shadow, no watermark. Wide 2:1 composition.
+```
+
+### screens — black background
+
+```text
+### screen_vending - screens, 512x1024
+
+```text
+Use case: stylized-concept. ONE flat UV texture for a vertical vending machine SCREEN ONLY, not a physical machine. Entire canvas background must be perfectly uniform pure black #000000 in every pixel outside the luminous graphics; NO blue rectangle, NO panel, NO frame, NO machine body. Black background is no emission. On black, draw a tidy 3 column by 4 row grid of small stylized cans and bottles using only royal blue #3d7bff and warm white #fff1d6; thin royal blue grid lines; tiny price dots only. Nothing else. Flat orthographic head-on, even lighting, stylized readable graphic, no perspective, no text or words. No red, cyan, magenta, additional colors, environment or watermark.
+```
+```text
+### screen_menu - screens, 1024x512
+
+```text
+Use case: stylized-concept. ONE isolated horizontal noodle stall menu display graphic on pure black #000000 background, black means no emission. Three bowl pictograms with numbers exactly “12”, “15”, “18”, amber #ffae1a and warm white #fff1d6, no other words or numbers. Flat orthographic, even illumination, crisp readable shapes, no perspective, no frame, no other colors, no red/cyan/magenta.
+```
+
+Ponowiono `screen_vending` raz: pierwsza wersja zawierała nieczarny nieemisyjny panel tła. Wersję końcową wygenerowano z wymaganiem jednolitej czerni poza świecącą grafiką; kolejne obrazy zaakceptowano po pierwszym generowaniu. Łącznie nie przekroczono limitu dwóch ponowień na obraz.
+```text
+### screen_status - screens, 512x256
+
+```text
+Use case: stylized-concept. ONE isolated machine status display graphic on pure black #000000 background, black means no emission. Green #6dff4a bars, a sine-wave line and fine grid, no text. Flat orthographic, even illumination, crisp readable shapes, no perspective, no frame, no other colors, no red/cyan/magenta.
+```
+
+Ponowiono screen_vending raz: pierwsza wersja zawierała nieczarny nieemisyjny panel tła. Wersję końcową wygenerowano z wymaganiem jednolitej czerni poza świecącą grafiką; kolejne obrazy zaakceptowano po pierwszym generowaniu. Łącznie nie przekroczono limitu dwóch ponowień na obraz.
+
+
+## Trzeci pakiet (2026-11-15) — prompty końcowe
+
+Każdy obraz powstał w osobnym wywołaniu imagegen. Dla decals użyto zielonego tła #00ff00; dla znaków, holo i ekranów czarnego tła. Ponowienia: sticker_cluster (pierwsza wersja zawierała czerwonobrązowe papierki); graffiti_piece (pierwsza wersja miała różowo-magenta odcień zamiast czystego fioletu). Każdy obraz ponowiono raz; końcowe wersje wykorzystują wyłącznie chłodne dozwolone barwy.
+
+### oil_stain — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Dark irregular asphalt oil stain, subtle violet and royal blue iridescent highlights, top-down. Isolated on pure green #00ff00 chroma key; no green in the motif. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### crack_floor — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Branching dark concrete crack with crumbs, isolated on pure green #00ff00. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### manhole — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Top-down worn circular cast iron manhole cover with grid, no text, isolated on pure green #00ff00. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### tire_marks — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Two parallel faded braking tire marks, isolated on pure green #00ff00. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### graffiti_tag3 — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Amber and warm white spray tag spelling exactly KOT, paint drips, pure green #00ff00 background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### graffiti_piece — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Wildstyle exactly NEO in violet, royal blue and amber only, pure green #00ff00 background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### sticker_cluster — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Small torn blank sticker cluster, no readable words or brands, pure green #00ff00 background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### poster_torn3 — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Torn concert poster spelling exactly NEON FEST in violet and amber, pure green #00ff00 background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### leak_streak — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Isolated vertical charcoal and muted brown-gray rain/rust streak, pure green #00ff00 background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### floor_stop — decal, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Worn top-down warm-white road marking spelling exactly STOP, pure green #00ff00 background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### kebab — sign, 512×256
+
+```text
+Use case: stylized-concept. ONE game texture. Amber neon exact text KEBAB 24H, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### tattoo — sign, 512×256
+
+```text
+Use case: stylized-concept. ONE game texture. Violet neon exact text TATTOO and small star, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### arcade — sign, 512×256
+
+```text
+Use case: stylized-concept. ONE game texture. Royal blue neon exact text ARCADE and joystick icon, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### beer — sign, 512×256
+
+```text
+Use case: stylized-concept. ONE game texture. Green neon exact text PIWO and beer mug icon, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### repair — sign, 512×256
+
+```text
+Use case: stylized-concept. ONE game texture. Warm white neon exact text SERWIS and wrench icon, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### cocktail — sign, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Violet cocktail glass neon with amber olive, no text, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### holo_cat — holo, 512×1024
+
+```text
+Use case: stylized-concept. ONE game texture. Large royal-blue sci-fi maneki-neko waving, scanlines, no text, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### holo_jellyfish — holo, 512×1024
+
+```text
+Use case: stylized-concept. ONE game texture. Violet holographic jellyfish with long tentacles, scanlines, no text, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### screen_ad — screen, 512×1024
+
+```text
+Use case: stylized-concept. ONE game texture. Violet implant chip inside rotating rings with abstract interface lines, no words, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### screen_news — screen, 1024×512
+
+```text
+Use case: stylized-concept. ONE game texture. Royal-blue abstract news charts and map outline; ticker dashes only, no words, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### screen_map — screen, 512×512
+
+```text
+Use case: stylized-concept. ONE game texture. Green grid map of city blocks with route and location dot, no words, black background. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### tiles_wall — surface, 1024×1024
+
+```text
+Use case: stylized-concept. ONE game texture. Seamless flat orthographic 12×12 ceramic wall tiles, grout, cracked and missing tiles, grime, neutral gray tint 35–45%. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### tread_plate — surface, 1024×1024
+
+```text
+Use case: stylized-concept. ONE game texture. Seamless flat orthographic steel diamond tread plate, scratches, grime in grooves, #3f4859–#66718a. No perspective, no watermark, no red/cyan/magenta.
+```
+
+### roof_tar — surface, 1024×1024
+
+```text
+Use case: stylized-concept. ONE game texture. Seamless flat orthographic graphite roofing membrane with overlaps, patches, pebbles, puddle stains without reflections, #22262e–#3a404c. No perspective, no watermark, no red/cyan/magenta.
 ```
 
