@@ -1,4 +1,5 @@
 import type { EntityId, EventBus } from '../core/events';
+import { loadSettings } from '../core/save';
 import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
@@ -354,6 +355,7 @@ export class Hud {
       this.death,
     );
     (opts.root ?? document.body).append(this.root);
+    this.refreshFlashes();
     this.setLoadout(opts.loadout ?? { weapons: [], powers: [] });
     this.retryButton.addEventListener('click', this.retry);
     this.changeBuildButton.addEventListener('click', this.changeBuild);
@@ -459,7 +461,7 @@ export class Hud {
       bus.on('damage_dealt', ({ source, target, amount, dir, killed }) => {
         if (!(amount > 0)) return;
         if (target === opts.playerId) {
-          this.damage.show();
+          if (loadSettings().flashes) this.damage.show();
           if (dir && source !== opts.playerId) {
             this.damageDirection = { x: dir.x, z: dir.z };
             this.placeDamageDir(true);
@@ -570,20 +572,30 @@ export class Hud {
 
   /** Obrót kamery (rad), by znacznik kierunku obrażeń podążał za widokiem. */
   setViewYaw(yaw: number): void {
-    if (this.disposed || yaw === this.viewYaw) return;
+    if (this.disposed) return;
+    this.refreshFlashes();
+    if (yaw === this.viewYaw) return;
     this.viewYaw = yaw;
     if (!this.damageDir.node.hidden) this.placeDamageDir(false);
   }
 
   /** Czas gracza, także 0 podczas hitstopu; bez odpytywania obiektów symulacji. */
   step(dt: number): void {
-    if (this.disposed || !(dt > 0)) return;
+    if (this.disposed) return;
+    this.refreshFlashes();
+    if (!(dt > 0)) return;
     for (const slot of this.powerSlots) {
       if (!(slot.remaining > 0)) continue;
       slot.remaining = Math.max(0, slot.remaining - dt);
       if (slot.remaining < Number.EPSILON * 16) slot.remaining = 0;
       this.showCooldown(slot);
     }
+  }
+
+  private refreshFlashes(): void {
+    const disabled = !loadSettings().flashes;
+    if (this.root.classList.contains('hud--no-flashes') !== disabled)
+      this.root.classList.toggle('hud--no-flashes', disabled);
   }
 
   private placeDamageDir(force: boolean): void {

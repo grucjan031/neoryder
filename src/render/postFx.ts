@@ -2,6 +2,7 @@ import { Color, HalfFloatType, ShaderMaterial, WebGLRenderTarget } from 'three';
 import type { Texture, WebGLRenderer } from 'three';
 import type { EventBus } from '../core/events';
 import { tuning } from '../core/tuning';
+import { loadSettings } from '../core/save';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
 
 const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
@@ -20,10 +21,12 @@ export class PostFxState {
   private lastHealth: number | null = null;
 
   hit(amount: number): void {
+    if (!loadSettings().flashes) return;
     this.damage = Math.max(this.damage, clamp01(amount));
   }
 
   update(dt: number): void {
+    if (!loadSettings().flashes) this.damage = 0;
     const t = tuning.render;
     if (dt <= 0) return;
     this.damage = Math.max(

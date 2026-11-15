@@ -62,7 +62,8 @@ export class PlayerController {
     private readonly world: World,
     private readonly ctx: Pick<GameContext, 'bus' | 'tuning'>,
     position: Vec3,
-    private readonly settings: Pick<Settings, 'mouseSensitivity'> = {
+    private readonly settings: Pick<Settings, 'mouseSensitivity'> &
+      Partial<Pick<Settings, 'invertY'>> = {
       mouseSensitivity: 1,
     },
     statBases: Partial<Record<StatId, number>> = {},
@@ -288,7 +289,11 @@ export class PlayerController {
     const pitchLimit = (t.maxPitchDeg * Math.PI) / 180;
     s.pitch = Math.max(
       -pitchLimit,
-      Math.min(pitchLimit, s.pitch - input.lookDelta.y * sensitivity),
+      Math.min(
+        pitchLimit,
+        s.pitch -
+          input.lookDelta.y * sensitivity * (this.settings.invertY ? -1 : 1),
+      ),
     );
   }
 

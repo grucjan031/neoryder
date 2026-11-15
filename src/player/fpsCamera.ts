@@ -1,6 +1,7 @@
 import type { EntityId, EventBus } from '../core/events';
 import type { Tuning } from '../core/tuning';
 import type { PlayerState } from './playerController';
+import { loadSettings } from '../core/save';
 
 /** Wynik kamery na klatkę. Scena przepisuje go na PerspectiveCamera (rotacja 'YXZ'). */
 export interface CameraPose {
@@ -49,6 +50,10 @@ export class FpsCamera {
     private readonly tuning: Tuning,
     private readonly playerId: EntityId,
     bus?: EventBus,
+    private readonly settings: Pick<
+      import('../core/save').Settings,
+      'screenShake'
+    > = loadSettings(),
   ) {
     this.fov = tuning.camera.fov;
     this.eye = tuning.player.eyeHeight;
@@ -132,7 +137,8 @@ export class FpsCamera {
     const yaw = lerp(prev.yaw, cur.yaw);
     const pitch = lerp(prev.pitch, cur.pitch);
 
-    const amp = shakeAmplitude(this.trauma, c.shakeMax);
+    const amp =
+      shakeAmplitude(this.trauma, c.shakeMax) * this.settings.screenShake;
     const t = this.time * c.shakeFrequency;
     const shakePitch = amp * c.shakeMaxAngleDeg * DEG * smoothNoise(t, 1.3);
     const shakeYaw = amp * c.shakeMaxAngleDeg * DEG * smoothNoise(t, 7.1);

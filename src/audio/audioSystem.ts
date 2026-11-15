@@ -19,6 +19,7 @@ export interface AudioSystemOptions {
   tuning: Pick<Tuning, 'audio'>;
   /** Głośność główna z ustawień gracza (Settings.masterVolume, 0..1). */
   masterVolume: () => number;
+  sfxVolume?: () => number;
   listener?: () => Listener | null;
   /** Kosmetyczny generator (warianty, pitch, szum) — nie wpływa na symulację. */
   seed?: string;
@@ -119,6 +120,19 @@ export class AudioSystem {
   }
 
   /** Odtwarza dźwięk po nazwie; point = źródło w świecie (panorama, odległość). */
+  updateVolume(): void {
+    if (!this.master || !this.ctx) return;
+    this.master.gain.setValueAtTime(
+      Math.max(
+        0,
+        this.opts.tuning.audio.masterGain *
+          this.opts.masterVolume() *
+          (this.opts.sfxVolume?.() ?? 1),
+      ),
+      this.ctx.currentTime,
+    );
+  }
+
   play(name: string, opts: { point?: Vec3 | null } = {}): boolean {
     const sound = this.def.sounds[name];
     const ctx = this.ensureContext();
@@ -133,10 +147,7 @@ export class AudioSystem {
       return false;
 
     const a = this.opts.tuning.audio;
-    this.master.gain.setValueAtTime(
-      Math.max(0, a.masterGain * this.opts.masterVolume()),
-      now,
-    );
+    this.updateVolume();
     this.prune();
     while (this.voices.length >= Math.max(1, Math.floor(a.maxVoices)))
       this.steal();
