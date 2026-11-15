@@ -122,6 +122,68 @@ describe('Health', () => {
 });
 
 describe('DamageSystem', () => {
+  it.each([
+    ['#melee', 23],
+    ['#hazard', 20],
+    ['#status', 20],
+  ])('outgoing 1,15: %s daje %s', (tag, expected) => {
+    const { damage, player, playerHealth, enemy } = setup();
+    const outgoing = vi.fn(() => 1.15);
+    damage.register(player, playerHealth, { outgoing });
+    expect(
+      damage.deal(enemy, { amount: 20, source: player, tags: [String(tag)] }),
+    ).toBeCloseTo(Number(expected));
+    expect(outgoing).toHaveBeenCalledTimes(tag === '#melee' ? 1 : 0);
+  });
+
+  it('czyta outgoing na żywo przed guard i damageTaken; brak źródła lub callbacka daje 1', () => {
+    const { damage, player, playerHealth, enemy, enemyHealth } = setup();
+    const stats = new Stats({ damage: 1 });
+    const targetStats = new Stats({});
+    targetStats.add({
+      stat: 'damageTaken',
+      type: 'mult',
+      value: 0.5,
+      source: 'armor',
+    });
+    const calls: string[] = [];
+    damage.register(player, playerHealth, {
+      outgoing: () => {
+        calls.push('outgoing');
+        return stats.get('damage');
+      },
+    });
+    damage.register(enemy, enemyHealth, {
+      stats: targetStats,
+      guard: () => {
+        calls.push('guard');
+        return 0.5;
+      },
+    });
+    stats.add({
+      stat: 'damage',
+      type: 'percent',
+      value: 0.15,
+      source: 'implant',
+    });
+    expect(
+      damage.deal(enemy, { amount: 20, source: player, tags: [] }),
+    ).toBeCloseTo(5.75);
+    expect(calls).toEqual(['outgoing', 'guard']);
+    stats.removeBySource('implant');
+    expect(damage.deal(enemy, { amount: 20, source: player, tags: [] })).toBe(
+      5,
+    );
+    damage.register(player, playerHealth);
+    expect(damage.deal(enemy, { amount: 20, source: player, tags: [] })).toBe(
+      5,
+    );
+    damage.unregister(player);
+    expect(damage.deal(enemy, { amount: 20, source: player, tags: [] })).toBe(
+      5,
+    );
+    expect(damage.deal(enemy, { amount: 20, source: null, tags: [] })).toBe(5);
+  });
   it('guard blocks without damage events or invulnerability and fractions scale before damageTaken', () => {
     const { damage, events, player, enemy, enemyHealth } = setup();
     const stats = new Stats({ maxHealth: 50 });

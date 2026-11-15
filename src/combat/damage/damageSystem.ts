@@ -7,6 +7,8 @@ import { BLOCK_SOURCE, FRIENDLY_FIRE_TAG, PIERCE_BLOCK_TAG } from './types';
 import type { DamageInfo } from './types';
 
 export interface DamageTargetOptions {
+  /** Mnożnik obrażeń zadawanych; pomijany dla #hazard i #status. */
+  outgoing?: () => number;
   /** Statystyki celu: modyfikatory 'damageTaken' (np. blok −70% = mult 0.3) zmieniają obrażenia. */
   stats?: Stats;
   /** Okno nietykalności po trafieniu w ms (np. () => tuning.damage.playerInvulnMs). */
@@ -83,6 +85,12 @@ export class DamageSystem {
     if (!this.canDamage(info.source, target, info.tags)) return 0;
     if (this.timeS < entry.invulnUntilS) return 0;
     if (entry.opts.invulnerable?.()) return 0;
+    const outgoing =
+      info.source !== null &&
+      !info.tags.includes('#hazard') &&
+      !info.tags.includes('#status')
+        ? (this.targets.get(info.source)?.opts.outgoing?.() ?? 1)
+        : 1;
     const guard = Math.max(0, Math.min(1, entry.opts.guard?.(info) ?? 1));
     if (guard <= 0) return 0;
 
@@ -97,7 +105,9 @@ export class DamageSystem {
             .filter((mod) => !pierce || mod.source !== BLOCK_SOURCE),
         )
       : 1;
-    const dealt = entry.health.apply({ amount: info.amount * guard * taken });
+    const dealt = entry.health.apply({
+      amount: info.amount * outgoing * guard * taken,
+    });
     if (dealt <= 0) return 0;
 
     const invulnMs = entry.opts.invulnMs?.() ?? 0;

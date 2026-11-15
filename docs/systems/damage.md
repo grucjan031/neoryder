@@ -1,5 +1,12 @@
 # System obrażeń (F1 #01)
 
+Z5: opcjonalne `DamageTargetOptions.outgoing()` określa mnożnik obrażeń zadawanych
+przez zarejestrowane źródło. `deal` odczytuje go na żywo przed `guard` i `damageTaken`
+celu; brak źródła, rejestracji lub callbacka oznacza 1. Tagi `#hazard` i `#status`
+pomijają mnożnik. Pokój i arena rejestrują gracza z odczytem `playerStats.damage`
+o bazie 1: `percent 0.15` daje ×1,15 dla ostrza, broni i mocy. Wrogowie zachowują
+dotychczasowe obrażenia, ponieważ nie dostają `outgoing`.
+
 Właściciel: Architekt. Kod: `src/combat/damage/`, `src/core/entities.ts`, `src/core/resource.ts`, `src/core/math.ts`. Kontrakty: `docs/api.md` → „Kontrakty F1”, decyzje: `docs/adr/0003-kontrakty-f1.md`.
 
 ## Zasada
