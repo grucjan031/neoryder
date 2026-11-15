@@ -86,6 +86,8 @@ import type { Scene } from './index';
 const playerDefaults = z
   .object({
     ...staminaStatsSchema.shape,
+    damage: z.number().default(1),
+    attackSpeed: z.number().default(1),
     maxHealth: z.number().positive(),
     maxEnergy: z.number().positive(),
     energyRegen: z.number().nonnegative(),
@@ -400,6 +402,7 @@ export class RoomScene implements Scene {
         team: 'player',
         damage: this.damage,
         stats: this.playerStats,
+        attackSpeed: () => this.playerStats.get('attackSpeed'),
         energy: this.energy.pool,
         queryArc: (reach, width, shape) => this.queryArc(reach, width, shape),
         querySegment: (from, to, radius, dash, dir) =>
@@ -495,7 +498,7 @@ export class RoomScene implements Scene {
       applyStatus: (target, app) => this.statuses.apply(target, app, playerId),
       addEnergy: (n) => this.energy.add(n),
       coolWeapon: (amount) => this.weapon.vent(amount),
-      stats: this.player.stats,
+      stats: [this.playerStats, this.player.stats],
       damage: this.damage,
       statuses: this.statuses,
       targets: () => this.enemyIds(),
@@ -670,6 +673,7 @@ export class RoomScene implements Scene {
 
   private registerPlayer(): void {
     this.damage.register(this.player.id, this.health, {
+      outgoing: () => this.playerStats.get('damage'),
       stats: this.playerStats,
       invulnMs: () => this.ctx.tuning.damage.playerInvulnMs,
       invulnerable: () => this.player.isInvulnerable(),
@@ -777,6 +781,7 @@ export class RoomScene implements Scene {
           this.playerStats,
           {
             projectiles: this.projectiles,
+            attackSpeed: () => this.playerStats.get('attackSpeed'),
             damage: this.damage,
             castBeam: (origin, dir, rangeM) =>
               this.castBeam(origin, dir, rangeM),

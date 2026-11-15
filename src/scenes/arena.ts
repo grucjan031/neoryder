@@ -144,6 +144,8 @@ export class Arena implements Scene {
   private lightningView!: LightningRenderer;
   private explosionView!: ExplosionRenderer;
   private readonly playerStats = new Stats({
+    damage: 1,
+    attackSpeed: 1,
     maxStamina: layout.maxStamina,
     staminaRegen: layout.staminaRegen,
     extraJumps: layout.extraJumps,
@@ -248,7 +250,7 @@ export class Arena implements Scene {
       ctx,
       this.spawnPosition(),
       loadSettings(),
-      staminaStatsSchema.parse(layout),
+      { ...staminaStatsSchema.parse(layout), damage: 1, attackSpeed: 1 },
     );
     this.registerPlayer();
     this.hurtboxes.add(playerId, this.player.colliderHandle);
@@ -319,6 +321,7 @@ export class Arena implements Scene {
         team: 'player',
         damage: this.damage,
         stats: this.playerStats,
+        attackSpeed: () => this.playerStats.get('attackSpeed'),
         energy: this.energy.pool,
         queryArc: (reach, width, shape) => this.queryArc(reach, width, shape),
         querySegment: (from, to, radius, dash, dir) =>
@@ -412,7 +415,7 @@ export class Arena implements Scene {
       applyStatus: (target, app) => this.statuses.apply(target, app, playerId),
       addEnergy: (n) => this.energy.add(n),
       coolWeapon: (amount) => this.weapon.vent(amount),
-      stats: this.player.stats,
+      stats: [this.playerStats, this.player.stats],
       damage: this.damage,
       statuses: this.statuses,
       targets: () => this.enemyIds(),
@@ -538,6 +541,7 @@ export class Arena implements Scene {
 
   private registerPlayer(): void {
     this.damage.register(this.player.id, this.health, {
+      outgoing: () => this.playerStats.get('damage'),
       stats: this.playerStats,
       invulnMs: () => this.ctx.tuning.damage.playerInvulnMs,
       invulnerable: () => this.player.isInvulnerable(),
@@ -629,6 +633,7 @@ export class Arena implements Scene {
           this.playerStats,
           {
             projectiles: this.projectiles,
+            attackSpeed: () => this.playerStats.get('attackSpeed'),
             damage: this.damage,
             castBeam: (origin, dir, rangeM) =>
               this.castBeam(origin, dir, rangeM),

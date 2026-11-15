@@ -443,7 +443,7 @@ export class DamageSystem {
   health(id: EntityId): Health | undefined;
   /** Jedyna droga zadawania obrażeń. Sprawdza drużyny, emituje damage_dealt / health_changed / enemy_killed / player_died. */
   deal(target: EntityId, info: DamageInfo): number;
-  register(id: EntityId, health: Health, opts?: { stats?: Stats; invulnMs?: () => number }): void; // stats: modyfikatory 'damageTaken' (baza zawsze 1)
+  register(id: EntityId, health: Health, opts?: { stats?: Stats; invulnMs?: () => number; outgoing?: () => number }): void; // outgoing źródła przed guard/damageTaken celu, poza #hazard i #status; domyślnie 1
   unregister(id: EntityId): void;
 }
 
@@ -712,6 +712,10 @@ class FeelSystem implements FocusControl {
 ```
 
 ### Wręcz (F2-10, F2-11)
+
+Z5: `BladeDeps.attackSpeed?: () => number` i `WeaponDeps.attackSpeed?: () => number`
+odczytują mnożnik szybkości (brak = 1), ograniczony przez `tuning.melee.attackSpeedMin/Max`.
+`SynergyContext.stats: Stats | readonly Stats[]` — czasowe modyfikatory trafiają do wszystkich instancji.
 
 F2-10: opcjonalne zależności `BladeDeps` (brak = nowe akcje wyłączone):
 `querySegment(from: Vec3, to: Vec3, radius: number, dashCut: boolean, fallbackDir?: Vec3): Hurtbox[]`,
