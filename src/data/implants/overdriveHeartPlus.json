@@ -1,0 +1,24 @@
+{
+  "id": "overdriveHeartPlus",
+  "name": "Serce nadbiegu II",
+  "description": "Przeklęty: zwiększa szybkość ruchu o 20% i regenerację energii o 35%, ale otrzymujesz o 15% więcej obrażeń.",
+  "rarity": "epic",
+  "tags": ["#melee", "#power", "#cursed"],
+  "modifiers": [
+    {
+      "stat": "moveSpeed",
+      "type": "percent",
+      "value": 0.2
+    },
+    {
+      "stat": "energyRegen",
+      "type": "percent",
+      "value": 0.35
+    },
+    {
+      "stat": "damageTaken",
+      "type": "percent",
+      "value": 0.15
+    }
+  ]
+}

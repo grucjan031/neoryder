@@ -1,0 +1,30 @@
+{
+  "id": "parrySpark",
+  "name": "Iskra parowania",
+  "description": "Parowanie przeciąża wrogów w promieniu 3 m na 3 s i przywraca 6 energii, co 3 s.",
+  "rarity": "rare",
+  "tags": ["#melee", "#power", "#elektrycznosc"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "parry_success"
+      },
+      "effects": [
+        {
+          "kind": "apply_status_area",
+          "at": "user",
+          "radiusM": 3,
+          "status": "overload",
+          "durationS": 3
+        },
+        {
+          "kind": "add_energy",
+          "amount": 6
+        }
+      ],
+      "cooldownS": 3
+    }
+  ],
+  "upgradesTo": "parrySparkPlus"
+}

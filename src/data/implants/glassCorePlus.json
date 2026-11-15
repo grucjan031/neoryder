@@ -1,0 +1,19 @@
+{
+  "id": "glassCorePlus",
+  "name": "Szklany rdzeń II",
+  "description": "Przeklęty: zwiększa obrażenia o 45%, ale zmniejsza maksymalne zdrowie o 20%.",
+  "rarity": "epic",
+  "tags": ["#melee", "#gun", "#power", "#cursed"],
+  "modifiers": [
+    {
+      "stat": "damage",
+      "type": "percent",
+      "value": 0.45
+    },
+    {
+      "stat": "maxHealth",
+      "type": "percent",
+      "value": -0.2
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "emberEdgePlus",
+  "name": "Żarowa krawędź II",
+  "description": "Trafienie ostrzem podpala trafionego wroga na 3 s, co 1,2 s.",
+  "rarity": "epic",
+  "tags": ["#melee"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "damage_dealt",
+        "tagsAny": ["#melee"]
+      },
+      "effects": [
+        {
+          "kind": "apply_status_area",
+          "at": "target",
+          "radiusM": 0,
+          "status": "burning",
+          "durationS": 3
+        }
+      ],
+      "cooldownS": 1.2
+    }
+  ]
+}

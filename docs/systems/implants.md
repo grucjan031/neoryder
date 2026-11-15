@@ -63,6 +63,35 @@ const system = new ImplantSystem([playerStats, controllerStats], {
 | `cryoVents` → `cryoVentsRare` → `cryoVentsEpic` → `cryoVentsApex`                         | `#gun`                     | `heatCapacity`, `coolingRate`, `damage`             | `enemy_killed` (`#gun`) → `cool_weapon` (+ `add_energy` na `legendary`)                              |
 | `corePrimer` → `overclock` → `overclockPlus` → `overclockApex`                            | `#melee`, `#power`, `#gun` | `damage`, `maxHealth`, `coolingRate`, `energyRegen` | `parry_success` → `add_energy` (+ `cool_weapon` na `epic`/`legendary`)                               |
 
+## Z4 — 10 nowych rodzin (20 definicji)
+
+Każda nowa rodzina ma wariant `rare` i ulepszenie `epic` (`Plus`). Implanty
+przeklęte mają tag `#cursed`, dodatni bonus oraz stałą wadę: obniżone zdrowie
+lub zwiększone `damageTaken`. Opis zaczyna się od „Przeklęty:” i ujawnia wadę.
+Ulepszenie wzmacnia bonus i może łagodzić wadę, ale nigdy jej nie usuwa.
+Wszystkie liczby pozostają w JSON; nowe efekty wymagają `cooldownS`.
+
+| Rodzina (rare → epic)                     | Tagi                                  | Wyzwalacz                                     | Efekty: rare → epic                                                                |
+| ----------------------------------------- | ------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `nanoBloodstream` → `nanoBloodstreamPlus` | `#melee`                              | {"event":"enemy_killed","tagsAny":["#melee"]} | leczenie 6 → 8; CD 1 → 0,8 s                                                       |
+| `thermalFuse` → `thermalFusePlus`         | `#gun`                                | {"event":"enemy_killed","tagsAny":["#gun"]}   | wybuch 16 → 21, promień 2,5 → 3 m, odrzut 2 → 2,5; burning 2 → 2,5 s; CD 3 → 2,5 s |
+| `recoilCapacitor` → `recoilCapacitorPlus` | `#melee`, `#elektrycznosc`            | {"event":"dash_used"}                         | wybuch 6 → 8, promień 2,5 → 3 m, odrzut 8 → 10; CD 2 → 1,6 s                       |
+| `reactiveArmor` → `reactiveArmorPlus`     | `#melee`, `#elektrycznosc`            | {"event":"damage_dealt","targetIsUser":true}  | wybuch 10 → 13, promień 3 → 3,5 m, odrzut 14 → 18; CD 8 → 6,5 s                    |
+| `parrySpark` → `parrySparkPlus`           | `#melee`, `#power`, `#elektrycznosc`  | {"event":"parry_success"}                     | overload 3 → 4 s, promień 3 → 3,5 m; energia 6 → 8; CD 3 → 2,5 s                   |
+| `emberEdge` → `emberEdgePlus`             | `#melee`                              | {"event":"damage_dealt","tagsAny":["#melee"]} | burning 2 → 3 s tylko na celu; CD 1,5 → 1,2 s                                      |
+| `resonanceLoop` → `resonanceLoopPlus`     | `#power`                              | {"event":"power_used"}                        | leczenie 4 → 6; damage +12% przez 3 s → +16% przez 4 s; CD 4 → 3,5 s               |
+| `mirrorCoil` → `mirrorCoilPlus`           | `#gun`, `#power`, `#elektrycznosc`    | {"event":"projectile_reflected"}              | chłodzenie 12 → 16; energia 5 → 7; CD 1 → 0,8 s                                    |
+| `glassCore` → `glassCorePlus`             | `#melee`, `#gun`, `#power`, `#cursed` | stałe modyfikatory                            | damage +35% → +45%; maxHealth −25% → −20%                                          |
+| `overdriveHeart` → `overdriveHeartPlus`   | `#melee`, `#power`, `#cursed`         | stałe modyfikatory                            | moveSpeed +15% → +20%; energyRegen +25% → +35%; damageTaken +20% → +15%            |
+
+`resonanceLoop` korzysta z istniejącego `stat_modifier_timed`. Obecnie sceny
+przekazują wykonawcy tylko `PlayerController.stats`, a modułom walki osobne
+`playerStats`. Ponadto ataki gracza nie odczytują statystyki `damage` (używają
+obrażeń definicji broni/ostrza). Architekt musi podłączyć mnożnik obrażeń gracza
+oraz przekazywanie czasowych modyfikatorów do statystyk walki; bez tego bonus
+obrażeń `resonanceLoop` i `glassCore` nie wpływa na trafienia. Leczenie wymaga nowych pól
+kontekstu (Arena podłączona, RoomScene do integracji przez architekta).
+
 ## Integracja z `RoomScene` i sprawdzenie w 30 sekund
 
 `RoomScene` domyślnie korzysta z `implantDefinitions` (z możliwością nadpisania przez `options.implantDefinitions` w testach) i przekazuje tagi z `ImplantSystem.tags()` do `SynergySystem`.

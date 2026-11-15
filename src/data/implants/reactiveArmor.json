@@ -1,0 +1,28 @@
+{
+  "id": "reactiveArmor",
+  "name": "Pancerz reaktywny",
+  "description": "Otrzymanie obrażeń wyzwala falę za 10 obrażeń z silnym odrzutem w promieniu 3 m, co 8 s.",
+  "rarity": "rare",
+  "tags": ["#melee", "#elektrycznosc"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "damage_dealt",
+        "targetIsUser": true
+      },
+      "effects": [
+        {
+          "kind": "explode",
+          "at": "user",
+          "radiusM": 3,
+          "damage": 10,
+          "knockback": 14,
+          "tags": ["#elektrycznosc"]
+        }
+      ],
+      "cooldownS": 8
+    }
+  ],
+  "upgradesTo": "reactiveArmorPlus"
+}

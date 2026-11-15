@@ -1,0 +1,23 @@
+{
+  "id": "nanoBloodstreamPlus",
+  "name": "Nanokrwiobieg II",
+  "description": "Zabójstwo ostrzem przywraca 8 zdrowia, co najwyżej raz na 0,8 s.",
+  "rarity": "epic",
+  "tags": ["#melee"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "enemy_killed",
+        "tagsAny": ["#melee"]
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "amount": 8
+        }
+      ],
+      "cooldownS": 0.8
+    }
+  ]
+}

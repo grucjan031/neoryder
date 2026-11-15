@@ -1,0 +1,26 @@
+{
+  "id": "recoilCapacitorPlus",
+  "name": "Kondensator odrzutu II",
+  "description": "Doskok zadaje pobliskim wrogom 8 obrażeń i mocniej odrzuca ich w promieniu 3 m, co 1,6 s.",
+  "rarity": "epic",
+  "tags": ["#melee", "#elektrycznosc"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "dash_used"
+      },
+      "effects": [
+        {
+          "kind": "explode",
+          "at": "user",
+          "radiusM": 3,
+          "damage": 8,
+          "knockback": 10,
+          "tags": ["#elektrycznosc"]
+        }
+      ],
+      "cooldownS": 1.6
+    }
+  ]
+}

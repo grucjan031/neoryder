@@ -1,0 +1,27 @@
+{
+  "id": "reactiveArmorPlus",
+  "name": "Pancerz reaktywny II",
+  "description": "Otrzymanie obrażeń wyzwala falę za 13 obrażeń z silniejszym odrzutem w promieniu 3,5 m, co 6,5 s.",
+  "rarity": "epic",
+  "tags": ["#melee", "#elektrycznosc"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "damage_dealt",
+        "targetIsUser": true
+      },
+      "effects": [
+        {
+          "kind": "explode",
+          "at": "user",
+          "radiusM": 3.5,
+          "damage": 13,
+          "knockback": 18,
+          "tags": ["#elektrycznosc"]
+        }
+      ],
+      "cooldownS": 6.5
+    }
+  ]
+}

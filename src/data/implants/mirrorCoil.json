@@ -1,0 +1,27 @@
+{
+  "id": "mirrorCoil",
+  "name": "Cewka zwierciadlana",
+  "description": "Odbicie pocisku usuwa 12 ciepła broni i przywraca 5 energii, co sekundę.",
+  "rarity": "rare",
+  "tags": ["#gun", "#power", "#elektrycznosc"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "projectile_reflected"
+      },
+      "effects": [
+        {
+          "kind": "cool_weapon",
+          "amount": 12
+        },
+        {
+          "kind": "add_energy",
+          "amount": 5
+        }
+      ],
+      "cooldownS": 1
+    }
+  ],
+  "upgradesTo": "mirrorCoilPlus"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "resonanceLoop",
+  "name": "Pętla Rezonansu",
+  "description": "Użycie mocy przywraca 4 zdrowia i zwiększa obrażenia o 12% na 3 s, co 4 s.",
+  "rarity": "rare",
+  "tags": ["#power"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "when": {
+        "event": "power_used"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "amount": 4
+        },
+        {
+          "kind": "stat_modifier_timed",
+          "stat": "damage",
+          "type": "percent",
+          "value": 0.12,
+          "durationS": 3
+        }
+      ],
+      "cooldownS": 4
+    }
+  ],
+  "upgradesTo": "resonanceLoopPlus"
+}
