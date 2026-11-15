@@ -1,4 +1,7 @@
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { HazardSystem } from '../world/hazards';
+import type { HazardTarget } from '../world/hazards';
+import { HazardView } from '../render/hazardView';
 import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
@@ -179,6 +182,8 @@ export class RoomScene implements Scene {
   private hitSparks!: HitSparks;
   private hitSparksView!: HitSparksRenderer;
   private synergies!: SynergySystem;
+  private hazards!: HazardSystem;
+  private hazardView!: HazardView;
 
   constructor(
     private readonly layout: RoomDefinition,
@@ -307,6 +312,70 @@ export class RoomScene implements Scene {
       },
     );
     this.manager.setSpawnModifiers(threatModifiers(this.run.threatLevel));
+
+    const hazardTargets: HazardTarget[] = [];
+    const hazardTargetPool: HazardTarget[] = [];
+    const addHazardTarget = (
+      id: EntityId,
+      position: Vec3,
+      radius: number,
+      halfHeight: number,
+      centerY = 0,
+    ): void => {
+      const index = hazardTargets.length;
+      const target = (hazardTargetPool[index] ??= {
+        id,
+        position: { x: 0, y: 0, z: 0 },
+        radius,
+        halfHeight,
+      });
+      target.id = id;
+      target.position.x = position.x;
+      target.position.y = position.y + centerY;
+      target.position.z = position.z;
+      target.radius = radius;
+      target.halfHeight = halfHeight;
+      hazardTargets.push(target);
+    };
+    const collectHazardEnemy = (enemy: Enemy): void => {
+      if (enemy.removed || enemy.current.state === 'dead') return;
+      const body = enemy.definition.body;
+      addHazardTarget(
+        enemy.id,
+        enemy.current.position,
+        body?.radius ??
+          enemy.definition.drone?.radiusM ??
+          ctx.tuning.player.capsuleRadius,
+        body ? Math.max(0, body.height / 2 - body.radius) : 0,
+        body?.centerY ?? 0,
+      );
+    };
+    this.hazards = new HazardSystem({
+      bus: ctx.bus,
+      damage: this.damage,
+      entities: this.entities,
+      hurtboxes: this.hurtboxes,
+      world: this.world,
+      playerId,
+      hazards: this.layout.hazards ?? [],
+      tuning: ctx.tuning.hazards,
+      targets: () => {
+        const state = this.player.getState();
+        const radius = ctx.tuning.player.capsuleRadius;
+        hazardTargets.length = 0;
+        if (!this.health.dead)
+          addHazardTarget(
+            playerId,
+            state.position,
+            radius,
+            Math.max(0, state.height / 2 - radius),
+          );
+        this.manager.forEach(collectHazardEnemy);
+        return hazardTargets;
+      },
+    });
+    this.hazardView = new HazardView(this.layout.hazards ?? []);
+    this.root.add(this.hazardView.root);
 
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
@@ -854,6 +923,7 @@ export class RoomScene implements Scene {
     this.energy.step(pdt);
     this.synergies.step(pdt);
     this.damage.step(dt);
+    this.hazards.step(dt);
     this.statuses.step(dt);
     this.projectileView.capturePrevious();
     this.debris.step(dt);
@@ -874,6 +944,7 @@ export class RoomScene implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
+    this.hazardView.update(this.hazards.state(), alpha);
     const ids = this.seenEnemyIds;
     ids.clear();
     this.manager.forEach((enemy) => {
@@ -1007,6 +1078,17 @@ export class RoomScene implements Scene {
         this.heldItem.reset(kind);
         return `W ręku: ${kind}`;
       },
+    );
+    register('hazard list', 'hazard list — stan zagrożeń pokoju', () =>
+      JSON.stringify(this.hazards.state()),
+    );
+    register(
+      'hazard detonate',
+      'hazard detonate <id> — wysadź beczkę',
+      (args) =>
+        args.length === 1 && this.hazards.detonate(args[0]!)
+          ? 'Beczka zdetonowana.'
+          : 'Podaj id żywej beczki: hazard list.',
     );
     register(
       'status',
@@ -1158,6 +1240,8 @@ export class RoomScene implements Scene {
 
   query(name: string): unknown {
     switch (name) {
+      case 'hazards':
+        return this.hazards.state();
       case 'wave':
         return this.director.wave;
       case 'phase':
@@ -1266,6 +1350,8 @@ export class RoomScene implements Scene {
 
   /** Może rzucić przy niedokończonym `init()`; dispose() i tak sprząta motyw i korzeń sceny. */
   private disposeParts(): void {
+    this.hazardView?.dispose();
+    this.hazards?.dispose();
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
     this.synergies.dispose();

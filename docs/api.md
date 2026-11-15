@@ -1598,3 +1598,21 @@ RunScreenActions.hub?(): void;            // przycisk „Wróć do kryjówki” 
 ```
 
 `RunScreenView.meta` jest ustawiane tylko, gdy `applyRun` naliczył nagrody (`applied: true`). Teksty: `src/data/ui/meta.pl.json`, sekcja `summary`. Nowy run z podsumowania runu z ekwipunkiem własnym wraca pod `?loadout=meta`.
+
+## Zagrożenia w pokojach
+
+`src/world/roomSchema.ts`: `Hazard` to unia `electric_field` (id, position, size,
+opcjonalny cycle), `explosive_barrel` (id, position), `laser_gate` (id, from, to,
+cycle). `HazardCycle = { onS: number; offS: number; offsetS?: number }`.
+`RoomDefinition.hazards?: Hazard[]`; identyfikatory są unikalne w pokoju.
+
+`src/world/hazards.ts`: `HazardState = { id: string; kind: Hazard['kind'];
+phase: 'off' | 'warn' | 'on'; alive: boolean; phaseT: number }`.
+`HazardSystem` przyjmuje bus, damage, entities, hurtboxes, world, playerId,
+hazards, tuning oraz `targets(): HazardTarget[]` (id, środek position, radius,
+halfHeight osi pionowej kapsuły). Metody: `step(dt)`, `state(): HazardState[]`,
+`targetIds(): EntityId[]`, `detonate(id: string): boolean`, `dispose()`.
+Zdarzenia pozostają bez zmian; śmierć beczki wykrywa `damage_dealt.killed`.
+Render `HazardView(hazards)` udostępnia `root`, `update(states, alpha)`, `dispose()`.
+Pokój: `query('hazards')`, komendy `hazard list`, `hazard detonate <id>`.
+Szczegóły: `docs/systems/hazards.md`.
