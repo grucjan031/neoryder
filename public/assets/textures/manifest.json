@@ -738,5 +738,65 @@
     "dominantColor": "#34373c",
     "description": "Grafitowa papa dachowa z zakładkami i łatami",
     "bytes": 188602
+  },
+  {
+    "id": "iskra",
+    "category": "signs",
+    "path": "signs/iskra.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#281605",
+    "description": "Bursztynowo-bia?y neon ISKRA z symbolem iskry",
+    "bytes": 6108
+  },
+  {
+    "id": "metro",
+    "category": "signs",
+    "path": "signs/metro.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#fffce7",
+    "description": "Pod?wietlany szyld METRO z du?? liter? M",
+    "bytes": 11966
+  },
+  {
+    "id": "warsztat",
+    "category": "signs",
+    "path": "signs/warsztat.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#002800",
+    "description": "Zielony neon WARSZTAT z kluczem i z?batk?",
+    "bytes": 8028
+  },
+  {
+    "id": "screen_talents",
+    "category": "screens",
+    "path": "screens/screen_talents.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fbf5e7",
+    "description": "Ekran TALENTY z rozga??zionym drzewem w?z??w",
+    "bytes": 12304
+  },
+  {
+    "id": "screen_missions",
+    "category": "screens",
+    "path": "screens/screen_missions.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#fefef7",
+    "description": "Tablica misji z map? dzielnicy, pinezkami i trasami",
+    "bytes": 42802
+  },
+  {
+    "id": "graffiti_iskra",
+    "category": "decals",
+    "path": "decals/graffiti_iskra.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fdf6d8",
+    "description": "Szablonowe graffiti ISKRA z symbolem iskry w okr?gu",
+    "bytes": 54174
   }
 ]

@@ -105,6 +105,8 @@ def build(ids):
             continue
         raw = HERE / "raw" / (item["id"] + ".png")
         if not raw.exists():
+            if destination(item).exists():
+                continue
             raise FileNotFoundError(raw)
         with Image.open(raw) as source:
             image = source.convert("RGB")

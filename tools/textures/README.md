@@ -1,6 +1,6 @@
 # Narzędzia i prompty tekstur NEORYDER
 
-Wszystkie 74 obrazy (33 z pierwszego pakietu, 17 z drugiego i 24 z trzeciego) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
+Wszystkie 80 obraz?w (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego i 6 dla kryj?wki Iskra) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
 
 ## Odtworzenie
 
@@ -666,3 +666,44 @@ Use case: stylized-concept. ONE game texture. Seamless flat orthographic steel d
 Use case: stylized-concept. ONE game texture. Seamless flat orthographic graphite roofing membrane with overlaps, patches, pebbles, puddle stains without reflections, #22262e–#3a404c. No perspective, no watermark, no red/cyan/magenta.
 ```
 
+
+
+## Pakiet kryj?wki Iskra ? 2026-11-15
+
+Ka?dy obraz wygenerowano osobnym wywo?aniem imagegen. Pisownia napis?w sprawdzona na wynikach: ISKRA, METRO, WARSZTAT, TALENTY, TABLICA MISJI, ISKRA. Pierwszy wynik `iskra` ponowiono z powodu niedozwolonych barw. Prompt odrzuconej wersji: `Use case: stylized-concept. ONE isolated game neon sign texture. Amber #ffae1a and warm white #fff1d6 neon tubes spelling exactly ISKRA, with a simple spark/lightning bolt emblem. No other text. Restrained soft halo. Wide 2:1 composition, centered with generous pure black margin. Background pure black. Palette only amber, warm white, green #6dff4a, violet #8a5cff, royal blue #3d7bff. No red, cyan, turquoise, magenta, pink, brands, watermark, scene, wall, perspective, frame. Exact spelling ISKRA.` Wynik zawiera? barwy poza zaakceptowanym zestawem dla znaku.
+
+### iskra ? signs, 512?256
+
+```text
+ONE isolated game neon sign texture, 2:1 wide. Exact word ISKRA in uppercase neon tubes, with one simple lightning spark symbol above. Use ONLY amber #ffae1a and warm white #fff1d6 for every illuminated pixel. Pure black background. Absolutely no other hues, no multicolor, no border, no frame, no green, violet, blue, red, cyan, magenta, pink. Clean centered readable lettering, restrained glow, generous black margin. No other text, brands, watermark, scene or wall. Spelling exactly ISKRA.
+```
+
+### metro ? signs, 512?256
+
+```text
+ONE isolated vintage illuminated metro station sign texture, 2:1 wide. Large stylized letter M and exact word METRO, readable uppercase. Neon lines only royal blue #3d7bff and warm white #fff1d6, pure black background, restrained glow, centered, generous black margin. No other hues or colors, no red cyan magenta pink, no brand, watermark, scene, wall, perspective. Exact spelling METRO.
+```
+
+### warsztat ? signs, 512?256
+
+```text
+ONE isolated game neon sign texture, 2:1 wide. Exact Polish word WARSZTAT in uppercase, with simple wrench and gear pictograms. Neon tubes ONLY green #6dff4a, pure black background, restrained glow, centered and readable, generous black margin. No other colors/hues, no red cyan magenta pink, no brands, watermark, wall, scene, perspective. Exact spelling WARSZTAT.
+```
+
+### screen_talents ? screens, 512?512
+
+```text
+ONE square game terminal screen texture, pure black background. Sparse clean abstract branching talent tree diagram: one root node branching into exactly three branches, circular nodes connected by thin lines. Violet #8a5cff and warm white #fff1d6 only for all illuminated elements. Header exact Polish word TALENTY at top, small subtle horizontal scan lines. No other text, no other hues, no red cyan magenta green blue, no brand, watermark, frame or scene. Flat frontal graphic, legible diagram, exact spelling TALENTY.
+```
+
+### screen_missions ? screens, 1024?512
+
+```text
+ONE wide 2:1 game mission board screen texture, pure black background. Minimal schematic district map made of thin block outlines and streets, several clear location pins and route lines connecting them. Amber #ffae1a and warm white #fff1d6 only for all luminous details. Exact Polish header TABLICA MISJI across top. High contrast readable, flat frontal interface graphic. No other text, no other hues, no red cyan magenta violet green blue, no brands, watermark, frame, perspective or scene. Exact spelling TABLICA MISJI.
+```
+
+### graffiti_iskra ? decals, 512?512
+
+```text
+ONE square stencil resistance graffiti decal artwork on a perfectly flat uniform chroma green #00ff00 background for later keying. Centered amber #ffae1a and warm white #fff1d6 stencil graphic: a spark/lightning symbol enclosed in a simple circle, with exact word ISKRA beneath in bold uppercase stencil lettering. Slightly weathered paint edges, high contrast. Keep every mark inside central 75%, green background completely even, no green paint in artwork. No other hues, no red cyan magenta violet blue, no extra text, logos, watermark, wall, scene or shadows. Exact spelling ISKRA.
+```

@@ -1,76 +1,644 @@
 [
-  {"id":"concrete","category":"surfaces","width":1024,"height":1024,"description":"Betonowe panele z zaciekami","subject":"Concrete wall panels, fine pores, subtle vertical rain stains, neutral cool blue gray #2a3344 to #56627a."},
-  {"id":"asphalt","category":"surfaces","width":1024,"height":1024,"description":"Ciemny asfalt z łatami i pęknięciami","subject":"Dark asphalt, fine aggregate, small cracks and repaired patches. Cool charcoal blue gray, no reflections, no markings."},
-  {"id":"asphalt_puddles","category":"surfaces","width":1024,"height":1024,"description":"Maska kałuż: biel mokro, czerń sucho","subject":"Grayscale puddle mask: pure black dry ground, irregular organic WHITE puddle shapes cover approximately 25 percent, softly feathered boundaries. Top down flat mask only, NO reflection, NO shading or objects."},
-  {"id":"metal_panel","category":"surfaces","width":1024,"height":1024,"description":"Malowana blacha z nitami i rysami","subject":"Dark cool gray painted sheet metal panels, small rivets, scratches and subtle weathering. Readable stylized forms."},
-  {"id":"brick","category":"surfaces","width":1024,"height":1024,"description":"Wilgotna ciemna cegła z zaprawą","subject":"Old dark cool blue gray bricks with mortar, slightly damp. Staggered running bond, restrained texture."},
-  {"id":"grime","category":"surfaces","width":1024,"height":1024,"description":"Szara maska brudu, plam i pionowych zacieków","subject":"Grayscale dirt overlay texture, vertical dripping rain streaks, stains and dirt patches. Light gray dirt on dark gray ground. No wall structure."},
-  {"id":"ramen","category":"signs","width":512,"height":256,"description":"Bursztynowy neon ramen z miską","subject":"Amber #ffae1a neon tubes, exact text ラーメン and a simple bowl icon. No other text."},
-  {"id":"hotel","category":"signs","width":512,"height":256,"description":"Fioletowy neon HOTEL","subject":"Violet #8a5cff neon tubes spelling exactly HOTEL. No other text."},
-  {"id":"bar_24h","category":"signs","width":512,"height":256,"description":"Bursztynowy neon BAR 24H","subject":"Amber #ffae1a neon tubes spelling exactly BAR 24H. No other text."},
-  {"id":"pharmacy","category":"signs","width":512,"height":512,"description":"Zielony krzyż apteczny","subject":"Green #6dff4a neon tubes forming a simple equal arm pharmacy cross icon. No text."},
-  {"id":"noodles","category":"signs","width":512,"height":512,"description":"Neon miski z pałeczkami","subject":"Warm white #fff1d6 and amber #ffae1a neon tubes forming a noodle bowl and chopsticks icon. No text."},
-  {"id":"karaoke","category":"signs","width":512,"height":256,"description":"Fioletowy neon KARAOKE","subject":"Violet #8a5cff neon tubes spelling exactly KARAOKE. No other text."},
-  {"id":"sake","category":"signs","width":512,"height":256,"description":"Bursztynowy znak 酒","subject":"Amber #ffae1a neon tubes forming exactly one Japanese character 酒. No other text."},
-  {"id":"open","category":"signs","width":512,"height":256,"description":"Zielony neon OPEN","subject":"Green #6dff4a neon tubes spelling exactly OPEN. No other text."},
-  {"id":"arrow","category":"signs","width":512,"height":256,"description":"Błękitna strzałka w prawo","subject":"Royal blue #3d7bff neon tubes forming one arrow pointing RIGHT. No text."},
-  {"id":"cat_cafe","category":"signs","width":512,"height":256,"description":"Neon kota i napis CAFE","subject":"Warm white #fff1d6 neon tubes forming a cat face icon beside exact text CAFE. No other text."},
-  {"id":"implants","category":"signs","width":512,"height":256,"description":"Błękitny neon IMPLANTY","subject":"Royal blue #3d7bff neon tubes spelling exactly IMPLANTY. No other text."},
-  {"id":"bar_mleczny","category":"signs","width":512,"height":256,"description":"Bursztynowy neon BAR MLECZNY","subject":"Amber #ffae1a neon tubes spelling exactly BAR MLECZNY, one or two lines. No other text."},
-  {"id":"holo_android","category":"holo","width":512,"height":1024,"description":"Profil fikcyjnego androida","subject":"A luminous fictional android face in profile made of violet #8a5cff light wire contours. No text."},
-  {"id":"holo_drink","category":"holo","width":512,"height":1024,"description":"Reklama puszki VOLTA","subject":"A floating luminous beverage can made of amber #ffae1a light contours, exact text VOLTA. No other text."},
-  {"id":"holo_koi","category":"holo","width":1024,"height":512,"description":"Świetlisty karp koi w ruchu","subject":"One graceful koi swimming in motion made of royal blue #3d7bff luminous scales, flowing fins and light trails. No text."},
-  {"id":"holo_kurogane","category":"holo","width":1024,"height":512,"description":"Geometryczny znak KUROGANE ARMS","subject":"Fictional corporation logo: geometric angular emblem beside exact text KUROGANE ARMS. Royal blue and warm white luminous lines. No other text."},
-  {"id":"holo_noodles","category":"holo","width":1024,"height":512,"description":"Reklama SYNTH NOODLES","subject":"Luminous noodle bowl and chopsticks advertisement, exact text SYNTH NOODLES, exclusively green #6dff4a light with neutral white cores. No other text."},
-  {"id":"holo_implant","category":"holo","width":512,"height":1024,"description":"Ramię z implantem, IMPLANTY NA RATY","subject":"One cybernetic arm with implant, royal blue #3d7bff technical glowing contours, exact text IMPLANTY NA RATY on three readable lines. No other text."},
-  {"id":"graffiti_tag1","category":"decals","width":512,"height":512,"description":"Fikcyjny bursztynowy tag VEX","subject":"Fictional graffiti tag spelling VEX, amber spray paint with dark charcoal outline, expressive angular strokes and a few drips."},
-  {"id":"graffiti_tag2","category":"decals","width":512,"height":512,"description":"Fikcyjny fioletowy tag NURA","subject":"Fictional graffiti tag spelling NURA, violet spray paint with warm white highlights, rounded energetic letters and a few drips."},
-  {"id":"graffiti_resist","category":"decals","width":512,"height":512,"description":"Pęknięte ogniwo i napis OPÓR","subject":"Resistance stencil graffiti: a stylized BROKEN CHAIN LINK above exact Polish text OPÓR (accent on first O), warm white paint, worn edges. No other text."},
-  {"id":"poster_torn1","category":"decals","width":512,"height":512,"description":"Podarty plakat NOCNY RYTM","subject":"Single torn fictional music poster with jagged paper edges, violet and warm white ink, exact text NOCNY RYTM, abstract geometric waveform, worn paper. No other text or real brands."},
-  {"id":"poster_torn2","category":"decals","width":512,"height":512,"description":"Podarty plakat JUTRO","subject":"Single torn fictional city poster with irregular paper edges, amber and charcoal ink, exact text JUTRO, geometric city skyline, weathered warm white paper. No other text or real brands."},
-  {"id":"floor_arrow","category":"decals","width":512,"height":512,"description":"Starta biała strzałka jezdni","subject":"One heavily worn warm white road marking arrow pointing UP, flat top down, chipped paint with missing flecks exposing the green background, no ground, no shadow."},
-  {"id":"floor_hazard","category":"decals","width":512,"height":512,"description":"Startate pasy bursztyn i czerń","subject":"A rectangular patch of worn diagonal hazard road stripes, amber #ffae1a and black alternating bands, chipped paint exposing green background, top down, no ground, no shadow."},
-  {"id":"puddle1","category":"decals","width":512,"height":512,"description":"Nieregularna ciemna kałuża","subject":"One irregular organic wide puddle shape, dark glossy navy blue water with subtle steel blue highlights and ripples, top down flat isolated silhouette, no ground, no shadow, no reflection of green."},
-  {"id":"puddle2","category":"decals","width":512,"height":512,"description":"Wydłużona ciemna kałuża","subject":"One elongated asymmetric puddle shape with small lobes, dark glossy charcoal blue water with subtle violet reflected highlights, top down flat isolated silhouette, no ground, no shadow, no reflection of green."},
-  {"id":"painted_metal","category":"surfaces","width":1024,"height":1024,"description":"Malowana blacha z odpryskami i zaciekami","subject":"Painted metal wall, neutral low-saturation medium gray tintable surface, dark steel showing through chipped paint, scratches, small dents, subtle vertical rain streaks."},
-  {"id":"rust_metal","category":"surfaces","width":1024,"height":1024,"description":"Ciemna stal z brązowoszarą korozją","subject":"Dark steel #2b3038 with subdued brown-gray corrosion #4a3a2c, pits and downward drips. Rust is brown-gray, never red or orange."},
-  {"id":"corrugated","category":"surfaces","width":1024,"height":1024,"description":"Blacha falista z szesnastoma przetłoczeniami","subject":"Corrugated steel sheet with exactly 16 evenly spaced vertical ribs, dirt in grooves, tiny dents, cool steel gray #3b4454 to #5d6879. Ribs continue seamlessly at tile edges."},
-  {"id":"plastic","category":"surfaces","width":1024,"height":1024,"description":"Matowy plastik z ziarnem i przetarciami","subject":"Matte injection-molded plastic, neutral low-saturation medium gray tintable surface, fine grain, scuffs, scratches and slight grime."},
-  {"id":"rubber","category":"surfaces","width":1024,"height":1024,"description":"Czarna guma z kurzem i wytartymi miejscami","subject":"Black rubber #1d2027 to #34383f, fine grain, worn smooth patches and dust."},
-  {"id":"wood_planks","category":"surfaces","width":1024,"height":1024,"description":"Cztery poziome zwietrzałe deski","subject":"Exactly 4 horizontal weathered wood planks, muted gray-brown low saturation neutral medium gray tintable appearance, visible grain, nail holes, dark gaps."},
-  {"id":"tarp","category":"surfaces","width":1024,"height":1024,"description":"Tkana plandeka z fałdami i zaciekami","subject":"Thick woven tarp, neutral low-saturation medium gray tintable surface, visible weave, soft folds and water streaks."},
-  {"id":"paving","category":"surfaces","width":1024,"height":1024,"description":"Chodnik z szesnastu płyt i ciemnymi fugami","subject":"4 by 4 square sidewalk paving slabs, dark grout, small chips and cracks, darker wet edges, cool dark blue-gray #3a4252 to #59637a."},
-  {"id":"tech_panel","category":"surfaces","width":1024,"height":1024,"description":"Panel obudowy maszyny ze śrubami i szczelinami","subject":"Machine casing, grid of rectangular panels in varied sizes, screws at corners, a few small ventilation slits, scratches, cool gray #3f4859 to #66718a."},
-  {"id":"plaster","category":"surfaces","width":1024,"height":1024,"description":"Stary tynk z łuszczącą farbą i pęknięciami","subject":"Old plaster, peeling paint, hairline cracks, water streaks, neutral low-saturation medium gray tintable surface."},
-  {"id":"label_warning","category":"labels","width":512,"height":512,"description":"Wytarta bursztynowa naklejka ostrzegawcza","subject":"Worn amber #ffae1a warning sticker: rounded triangle with black lightning bolt, scratched edges, no text."},
-  {"id":"label_stencil","category":"labels","width":512,"height":512,"description":"Biały napis szablonowy 07","subject":"Spray-painted stencil marking, exact characters 07 in warm white #fff1d6, stencil typeface with bridges, slight overspray."},
-  {"id":"label_barcode","category":"labels","width":512,"height":256,"description":"Naklejka inspekcyjna z kodem kreskowym","subject":"Small rectangular inspection sticker, warm off-white, barcode and empty check boxes, no readable words, one peeling corner."},
-  {"id":"label_plate","category":"labels","width":512,"height":256,"description":"Tablica rejestracyjna NR 0471","subject":"Futuristic license plate, dark blue-gray plate #2a3344, raised warm white characters exactly NR 0471, thin border, screw holes, grime."},
-  {"id":"screen_vending","category":"screens","width":512,"height":1024,"description":"Pionowy ekran automatu z napojami","subject":"Vertical vending display, grid of 3 columns by 4 rows of stylized cans and bottles in royal blue #3d7bff and warm white #fff1d6, thin grid lines, prices as dots only, no words."},
-  {"id":"screen_menu","category":"screens","width":1024,"height":512,"description":"Pozioma tablica menu z trzema miskami","subject":"Horizontal noodle stall display, three bowl pictograms with numbers exactly 12, 15, 18 in amber #ffae1a and warm white #fff1d6, no other words or numbers."},
-  {"id":"screen_status","category":"screens","width":512,"height":256,"description":"Zielony ekran stanu maszyny","subject":"Machine status display, green #6dff4a bars, a sine-wave line and fine grid, no text."},
-  {"id":"oil_stain","category":"decals","width":512,"height":512,"description":"Opalizująca plama oleju na asfalcie","subject":"Irregular dark oil stain on asphalt, glossy subtle iridescent violet and royal blue highlights, top-down isolated silhouette."},
-  {"id":"crack_floor","category":"decals","width":512,"height":512,"description":"Rozgałęzione pęknięcie betonu z okruchami","subject":"Branching dark concrete floor crack with broken fissures and small loose crumbs, isolated."},
-  {"id":"manhole","category":"decals","width":512,"height":512,"description":"Wytarta żeliwna pokrywa włazu z kratką","subject":"Top-down circular worn cast iron manhole cover with subtle grid pattern, no letters."},
-  {"id":"tire_marks","category":"decals","width":512,"height":512,"description":"Dwa wyblakłe ślady hamowania opon","subject":"Two parallel faded dark tire braking marks, top-down, worn streaks and broken edges."},
-  {"id":"graffiti_tag3","category":"decals","width":512,"height":512,"description":"Bursztynowo-biały tag KOT","subject":"Amber and warm white spray paint tag spelling exactly KOT, dripping paint."},
-  {"id":"graffiti_piece","category":"decals","width":512,"height":512,"description":"Fioletowo-błękitny wildstyle NEO","subject":"Expressive wildstyle graffiti lettering spelling exactly NEO, violet, royal blue and amber only."},
-  {"id":"sticker_cluster","category":"decals","width":512,"height":512,"description":"Skupisko podartych naklejek bez napisów","subject":"Cluster of small torn layered blank stickers, no readable words, logos or brands."},
-  {"id":"poster_torn3","category":"decals","width":512,"height":512,"description":"Podarty plakat NEON FEST","subject":"Single ragged torn fictional concert poster spelling exactly NEON FEST, violet and amber, no other text."},
-  {"id":"leak_streak","category":"decals","width":512,"height":512,"description":"Pionowy ciemny zaciek deszczu i rdzy","subject":"Isolated vertical dark rain and rust grime streak running downward on wall, charcoal and muted brown-gray only."},
-  {"id":"floor_stop","category":"decals","width":512,"height":512,"description":"Starty napis STOP na jezdni","subject":"Worn top-down road marking spelling exactly STOP in warm white, chipped paint."},
-  {"id":"kebab","category":"signs","width":512,"height":256,"description":"Bursztynowy neon KEBAB 24H","subject":"Amber neon exact text KEBAB 24H, no other text."},
-  {"id":"tattoo","category":"signs","width":512,"height":256,"description":"Fioletowy neon TATTOO z gwiazdką","subject":"Violet neon exact text TATTOO with one small star icon.","hueShift":-18},
-  {"id":"arcade","category":"signs","width":512,"height":256,"description":"Błękitny neon ARCADE z joystickiem","subject":"Royal blue neon exact text ARCADE with simple joystick icon."},
-  {"id":"beer","category":"signs","width":512,"height":256,"description":"Zielony neon PIWO z kuflem","subject":"Green neon exact text PIWO with simple beer mug icon."},
-  {"id":"repair","category":"signs","width":512,"height":256,"description":"Ciepłobiały neon SERWIS z kluczem","subject":"Warm white neon exact text SERWIS with simple wrench icon."},
-  {"id":"cocktail","category":"signs","width":512,"height":512,"description":"Fioletowy neon kieliszka z bursztynową oliwką","subject":"Cocktail glass outline in violet neon with amber olive, no text.","hueShift":-18},
-  {"id":"holo_cat","category":"holo","width":512,"height":1024,"description":"Błękitny hologram machającego kota maneki-neko","subject":"Huge friendly sci-fi maneki-neko cat waving one paw, royal blue luminous contours, scanlines, no text."},
-  {"id":"holo_jellyfish","category":"holo","width":512,"height":1024,"description":"Fioletowy hologram meduzy z długimi czułkami","subject":"Elegant violet luminous jellyfish with long trailing tentacles, scanlines, no text."},
-  {"id":"screen_ad","category":"screens","width":512,"height":1024,"description":"Fioletowa reklama implantu na ekranie","subject":"Violet glowing implant chip inside rotating rings, abstract interface lines, no words."},
-  {"id":"screen_news","category":"screens","width":1024,"height":512,"description":"Błękitny abstrakcyjny ekran wiadomości","subject":"Royal blue abstract charts, map outline, ticker bar made only of dashes not letters, no words."},
-  {"id":"screen_map","category":"screens","width":512,"height":512,"description":"Zielona siatkowa mapa kwartału z trasą","subject":"Green glowing grid map of city blocks with highlighted route and location dot, no text."},
-  {"id":"tiles_wall","category":"surfaces","width":1024,"height":1024,"description":"Drobne zabrudzone płytki ceramiczne 12 na 12","subject":"Small ceramic wall tiles arranged 12 by 12, grout, cracked and missing tiles, grime, neutral gray tint 35-45% brightness."},
-  {"id":"tread_plate","category":"surfaces","width":1024,"height":1024,"description":"Stalowa blacha ryflowana w romby","subject":"Steel diamond tread plate, scratches, grime in recessed grooves, cool steel colors #3f4859 to #66718a."},
-  {"id":"roof_tar","category":"surfaces","width":1024,"height":1024,"description":"Grafitowa papa dachowa z zakładkami i łatami","subject":"Dark graphite roofing membrane strips with overlaps and patches, pebbles and puddle stains without reflections, #22262e to #3a404c."}
+  {
+    "id": "concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Betonowe panele z zaciekami",
+    "subject": "Concrete wall panels, fine pores, subtle vertical rain stains, neutral cool blue gray #2a3344 to #56627a."
+  },
+  {
+    "id": "asphalt",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ciemny asfalt z łatami i pęknięciami",
+    "subject": "Dark asphalt, fine aggregate, small cracks and repaired patches. Cool charcoal blue gray, no reflections, no markings."
+  },
+  {
+    "id": "asphalt_puddles",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Maska kałuż: biel mokro, czerń sucho",
+    "subject": "Grayscale puddle mask: pure black dry ground, irregular organic WHITE puddle shapes cover approximately 25 percent, softly feathered boundaries. Top down flat mask only, NO reflection, NO shading or objects."
+  },
+  {
+    "id": "metal_panel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Malowana blacha z nitami i rysami",
+    "subject": "Dark cool gray painted sheet metal panels, small rivets, scratches and subtle weathering. Readable stylized forms."
+  },
+  {
+    "id": "brick",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Wilgotna ciemna cegła z zaprawą",
+    "subject": "Old dark cool blue gray bricks with mortar, slightly damp. Staggered running bond, restrained texture."
+  },
+  {
+    "id": "grime",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Szara maska brudu, plam i pionowych zacieków",
+    "subject": "Grayscale dirt overlay texture, vertical dripping rain streaks, stains and dirt patches. Light gray dirt on dark gray ground. No wall structure."
+  },
+  {
+    "id": "ramen",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Bursztynowy neon ramen z miską",
+    "subject": "Amber #ffae1a neon tubes, exact text ラーメン and a simple bowl icon. No other text."
+  },
+  {
+    "id": "hotel",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Fioletowy neon HOTEL",
+    "subject": "Violet #8a5cff neon tubes spelling exactly HOTEL. No other text."
+  },
+  {
+    "id": "bar_24h",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Bursztynowy neon BAR 24H",
+    "subject": "Amber #ffae1a neon tubes spelling exactly BAR 24H. No other text."
+  },
+  {
+    "id": "pharmacy",
+    "category": "signs",
+    "width": 512,
+    "height": 512,
+    "description": "Zielony krzyż apteczny",
+    "subject": "Green #6dff4a neon tubes forming a simple equal arm pharmacy cross icon. No text."
+  },
+  {
+    "id": "noodles",
+    "category": "signs",
+    "width": 512,
+    "height": 512,
+    "description": "Neon miski z pałeczkami",
+    "subject": "Warm white #fff1d6 and amber #ffae1a neon tubes forming a noodle bowl and chopsticks icon. No text."
+  },
+  {
+    "id": "karaoke",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Fioletowy neon KARAOKE",
+    "subject": "Violet #8a5cff neon tubes spelling exactly KARAOKE. No other text."
+  },
+  {
+    "id": "sake",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Bursztynowy znak 酒",
+    "subject": "Amber #ffae1a neon tubes forming exactly one Japanese character 酒. No other text."
+  },
+  {
+    "id": "open",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Zielony neon OPEN",
+    "subject": "Green #6dff4a neon tubes spelling exactly OPEN. No other text."
+  },
+  {
+    "id": "arrow",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Błękitna strzałka w prawo",
+    "subject": "Royal blue #3d7bff neon tubes forming one arrow pointing RIGHT. No text."
+  },
+  {
+    "id": "cat_cafe",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Neon kota i napis CAFE",
+    "subject": "Warm white #fff1d6 neon tubes forming a cat face icon beside exact text CAFE. No other text."
+  },
+  {
+    "id": "implants",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Błękitny neon IMPLANTY",
+    "subject": "Royal blue #3d7bff neon tubes spelling exactly IMPLANTY. No other text."
+  },
+  {
+    "id": "bar_mleczny",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Bursztynowy neon BAR MLECZNY",
+    "subject": "Amber #ffae1a neon tubes spelling exactly BAR MLECZNY, one or two lines. No other text."
+  },
+  {
+    "id": "holo_android",
+    "category": "holo",
+    "width": 512,
+    "height": 1024,
+    "description": "Profil fikcyjnego androida",
+    "subject": "A luminous fictional android face in profile made of violet #8a5cff light wire contours. No text."
+  },
+  {
+    "id": "holo_drink",
+    "category": "holo",
+    "width": 512,
+    "height": 1024,
+    "description": "Reklama puszki VOLTA",
+    "subject": "A floating luminous beverage can made of amber #ffae1a light contours, exact text VOLTA. No other text."
+  },
+  {
+    "id": "holo_koi",
+    "category": "holo",
+    "width": 1024,
+    "height": 512,
+    "description": "Świetlisty karp koi w ruchu",
+    "subject": "One graceful koi swimming in motion made of royal blue #3d7bff luminous scales, flowing fins and light trails. No text."
+  },
+  {
+    "id": "holo_kurogane",
+    "category": "holo",
+    "width": 1024,
+    "height": 512,
+    "description": "Geometryczny znak KUROGANE ARMS",
+    "subject": "Fictional corporation logo: geometric angular emblem beside exact text KUROGANE ARMS. Royal blue and warm white luminous lines. No other text."
+  },
+  {
+    "id": "holo_noodles",
+    "category": "holo",
+    "width": 1024,
+    "height": 512,
+    "description": "Reklama SYNTH NOODLES",
+    "subject": "Luminous noodle bowl and chopsticks advertisement, exact text SYNTH NOODLES, exclusively green #6dff4a light with neutral white cores. No other text."
+  },
+  {
+    "id": "holo_implant",
+    "category": "holo",
+    "width": 512,
+    "height": 1024,
+    "description": "Ramię z implantem, IMPLANTY NA RATY",
+    "subject": "One cybernetic arm with implant, royal blue #3d7bff technical glowing contours, exact text IMPLANTY NA RATY on three readable lines. No other text."
+  },
+  {
+    "id": "graffiti_tag1",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Fikcyjny bursztynowy tag VEX",
+    "subject": "Fictional graffiti tag spelling VEX, amber spray paint with dark charcoal outline, expressive angular strokes and a few drips."
+  },
+  {
+    "id": "graffiti_tag2",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Fikcyjny fioletowy tag NURA",
+    "subject": "Fictional graffiti tag spelling NURA, violet spray paint with warm white highlights, rounded energetic letters and a few drips."
+  },
+  {
+    "id": "graffiti_resist",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Pęknięte ogniwo i napis OPÓR",
+    "subject": "Resistance stencil graffiti: a stylized BROKEN CHAIN LINK above exact Polish text OPÓR (accent on first O), warm white paint, worn edges. No other text."
+  },
+  {
+    "id": "poster_torn1",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Podarty plakat NOCNY RYTM",
+    "subject": "Single torn fictional music poster with jagged paper edges, violet and warm white ink, exact text NOCNY RYTM, abstract geometric waveform, worn paper. No other text or real brands."
+  },
+  {
+    "id": "poster_torn2",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Podarty plakat JUTRO",
+    "subject": "Single torn fictional city poster with irregular paper edges, amber and charcoal ink, exact text JUTRO, geometric city skyline, weathered warm white paper. No other text or real brands."
+  },
+  {
+    "id": "floor_arrow",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Starta biała strzałka jezdni",
+    "subject": "One heavily worn warm white road marking arrow pointing UP, flat top down, chipped paint with missing flecks exposing the green background, no ground, no shadow."
+  },
+  {
+    "id": "floor_hazard",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Startate pasy bursztyn i czerń",
+    "subject": "A rectangular patch of worn diagonal hazard road stripes, amber #ffae1a and black alternating bands, chipped paint exposing green background, top down, no ground, no shadow."
+  },
+  {
+    "id": "puddle1",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Nieregularna ciemna kałuża",
+    "subject": "One irregular organic wide puddle shape, dark glossy navy blue water with subtle steel blue highlights and ripples, top down flat isolated silhouette, no ground, no shadow, no reflection of green."
+  },
+  {
+    "id": "puddle2",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Wydłużona ciemna kałuża",
+    "subject": "One elongated asymmetric puddle shape with small lobes, dark glossy charcoal blue water with subtle violet reflected highlights, top down flat isolated silhouette, no ground, no shadow, no reflection of green."
+  },
+  {
+    "id": "painted_metal",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Malowana blacha z odpryskami i zaciekami",
+    "subject": "Painted metal wall, neutral low-saturation medium gray tintable surface, dark steel showing through chipped paint, scratches, small dents, subtle vertical rain streaks."
+  },
+  {
+    "id": "rust_metal",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ciemna stal z brązowoszarą korozją",
+    "subject": "Dark steel #2b3038 with subdued brown-gray corrosion #4a3a2c, pits and downward drips. Rust is brown-gray, never red or orange."
+  },
+  {
+    "id": "corrugated",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Blacha falista z szesnastoma przetłoczeniami",
+    "subject": "Corrugated steel sheet with exactly 16 evenly spaced vertical ribs, dirt in grooves, tiny dents, cool steel gray #3b4454 to #5d6879. Ribs continue seamlessly at tile edges."
+  },
+  {
+    "id": "plastic",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Matowy plastik z ziarnem i przetarciami",
+    "subject": "Matte injection-molded plastic, neutral low-saturation medium gray tintable surface, fine grain, scuffs, scratches and slight grime."
+  },
+  {
+    "id": "rubber",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Czarna guma z kurzem i wytartymi miejscami",
+    "subject": "Black rubber #1d2027 to #34383f, fine grain, worn smooth patches and dust."
+  },
+  {
+    "id": "wood_planks",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Cztery poziome zwietrzałe deski",
+    "subject": "Exactly 4 horizontal weathered wood planks, muted gray-brown low saturation neutral medium gray tintable appearance, visible grain, nail holes, dark gaps."
+  },
+  {
+    "id": "tarp",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Tkana plandeka z fałdami i zaciekami",
+    "subject": "Thick woven tarp, neutral low-saturation medium gray tintable surface, visible weave, soft folds and water streaks."
+  },
+  {
+    "id": "paving",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Chodnik z szesnastu płyt i ciemnymi fugami",
+    "subject": "4 by 4 square sidewalk paving slabs, dark grout, small chips and cracks, darker wet edges, cool dark blue-gray #3a4252 to #59637a."
+  },
+  {
+    "id": "tech_panel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Panel obudowy maszyny ze śrubami i szczelinami",
+    "subject": "Machine casing, grid of rectangular panels in varied sizes, screws at corners, a few small ventilation slits, scratches, cool gray #3f4859 to #66718a."
+  },
+  {
+    "id": "plaster",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Stary tynk z łuszczącą farbą i pęknięciami",
+    "subject": "Old plaster, peeling paint, hairline cracks, water streaks, neutral low-saturation medium gray tintable surface."
+  },
+  {
+    "id": "label_warning",
+    "category": "labels",
+    "width": 512,
+    "height": 512,
+    "description": "Wytarta bursztynowa naklejka ostrzegawcza",
+    "subject": "Worn amber #ffae1a warning sticker: rounded triangle with black lightning bolt, scratched edges, no text."
+  },
+  {
+    "id": "label_stencil",
+    "category": "labels",
+    "width": 512,
+    "height": 512,
+    "description": "Biały napis szablonowy 07",
+    "subject": "Spray-painted stencil marking, exact characters 07 in warm white #fff1d6, stencil typeface with bridges, slight overspray."
+  },
+  {
+    "id": "label_barcode",
+    "category": "labels",
+    "width": 512,
+    "height": 256,
+    "description": "Naklejka inspekcyjna z kodem kreskowym",
+    "subject": "Small rectangular inspection sticker, warm off-white, barcode and empty check boxes, no readable words, one peeling corner."
+  },
+  {
+    "id": "label_plate",
+    "category": "labels",
+    "width": 512,
+    "height": 256,
+    "description": "Tablica rejestracyjna NR 0471",
+    "subject": "Futuristic license plate, dark blue-gray plate #2a3344, raised warm white characters exactly NR 0471, thin border, screw holes, grime."
+  },
+  {
+    "id": "screen_vending",
+    "category": "screens",
+    "width": 512,
+    "height": 1024,
+    "description": "Pionowy ekran automatu z napojami",
+    "subject": "Vertical vending display, grid of 3 columns by 4 rows of stylized cans and bottles in royal blue #3d7bff and warm white #fff1d6, thin grid lines, prices as dots only, no words."
+  },
+  {
+    "id": "screen_menu",
+    "category": "screens",
+    "width": 1024,
+    "height": 512,
+    "description": "Pozioma tablica menu z trzema miskami",
+    "subject": "Horizontal noodle stall display, three bowl pictograms with numbers exactly 12, 15, 18 in amber #ffae1a and warm white #fff1d6, no other words or numbers."
+  },
+  {
+    "id": "screen_status",
+    "category": "screens",
+    "width": 512,
+    "height": 256,
+    "description": "Zielony ekran stanu maszyny",
+    "subject": "Machine status display, green #6dff4a bars, a sine-wave line and fine grid, no text."
+  },
+  {
+    "id": "oil_stain",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Opalizująca plama oleju na asfalcie",
+    "subject": "Irregular dark oil stain on asphalt, glossy subtle iridescent violet and royal blue highlights, top-down isolated silhouette."
+  },
+  {
+    "id": "crack_floor",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Rozgałęzione pęknięcie betonu z okruchami",
+    "subject": "Branching dark concrete floor crack with broken fissures and small loose crumbs, isolated."
+  },
+  {
+    "id": "manhole",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Wytarta żeliwna pokrywa włazu z kratką",
+    "subject": "Top-down circular worn cast iron manhole cover with subtle grid pattern, no letters."
+  },
+  {
+    "id": "tire_marks",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Dwa wyblakłe ślady hamowania opon",
+    "subject": "Two parallel faded dark tire braking marks, top-down, worn streaks and broken edges."
+  },
+  {
+    "id": "graffiti_tag3",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Bursztynowo-biały tag KOT",
+    "subject": "Amber and warm white spray paint tag spelling exactly KOT, dripping paint."
+  },
+  {
+    "id": "graffiti_piece",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Fioletowo-błękitny wildstyle NEO",
+    "subject": "Expressive wildstyle graffiti lettering spelling exactly NEO, violet, royal blue and amber only."
+  },
+  {
+    "id": "sticker_cluster",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Skupisko podartych naklejek bez napisów",
+    "subject": "Cluster of small torn layered blank stickers, no readable words, logos or brands."
+  },
+  {
+    "id": "poster_torn3",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Podarty plakat NEON FEST",
+    "subject": "Single ragged torn fictional concert poster spelling exactly NEON FEST, violet and amber, no other text."
+  },
+  {
+    "id": "leak_streak",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Pionowy ciemny zaciek deszczu i rdzy",
+    "subject": "Isolated vertical dark rain and rust grime streak running downward on wall, charcoal and muted brown-gray only."
+  },
+  {
+    "id": "floor_stop",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Starty napis STOP na jezdni",
+    "subject": "Worn top-down road marking spelling exactly STOP in warm white, chipped paint."
+  },
+  {
+    "id": "kebab",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Bursztynowy neon KEBAB 24H",
+    "subject": "Amber neon exact text KEBAB 24H, no other text."
+  },
+  {
+    "id": "tattoo",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Fioletowy neon TATTOO z gwiazdką",
+    "subject": "Violet neon exact text TATTOO with one small star icon.",
+    "hueShift": -18
+  },
+  {
+    "id": "arcade",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Błękitny neon ARCADE z joystickiem",
+    "subject": "Royal blue neon exact text ARCADE with simple joystick icon."
+  },
+  {
+    "id": "beer",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Zielony neon PIWO z kuflem",
+    "subject": "Green neon exact text PIWO with simple beer mug icon."
+  },
+  {
+    "id": "repair",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Ciepłobiały neon SERWIS z kluczem",
+    "subject": "Warm white neon exact text SERWIS with simple wrench icon."
+  },
+  {
+    "id": "cocktail",
+    "category": "signs",
+    "width": 512,
+    "height": 512,
+    "description": "Fioletowy neon kieliszka z bursztynową oliwką",
+    "subject": "Cocktail glass outline in violet neon with amber olive, no text.",
+    "hueShift": -18
+  },
+  {
+    "id": "holo_cat",
+    "category": "holo",
+    "width": 512,
+    "height": 1024,
+    "description": "Błękitny hologram machającego kota maneki-neko",
+    "subject": "Huge friendly sci-fi maneki-neko cat waving one paw, royal blue luminous contours, scanlines, no text."
+  },
+  {
+    "id": "holo_jellyfish",
+    "category": "holo",
+    "width": 512,
+    "height": 1024,
+    "description": "Fioletowy hologram meduzy z długimi czułkami",
+    "subject": "Elegant violet luminous jellyfish with long trailing tentacles, scanlines, no text."
+  },
+  {
+    "id": "screen_ad",
+    "category": "screens",
+    "width": 512,
+    "height": 1024,
+    "description": "Fioletowa reklama implantu na ekranie",
+    "subject": "Violet glowing implant chip inside rotating rings, abstract interface lines, no words."
+  },
+  {
+    "id": "screen_news",
+    "category": "screens",
+    "width": 1024,
+    "height": 512,
+    "description": "Błękitny abstrakcyjny ekran wiadomości",
+    "subject": "Royal blue abstract charts, map outline, ticker bar made only of dashes not letters, no words."
+  },
+  {
+    "id": "screen_map",
+    "category": "screens",
+    "width": 512,
+    "height": 512,
+    "description": "Zielona siatkowa mapa kwartału z trasą",
+    "subject": "Green glowing grid map of city blocks with highlighted route and location dot, no text."
+  },
+  {
+    "id": "tiles_wall",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Drobne zabrudzone płytki ceramiczne 12 na 12",
+    "subject": "Small ceramic wall tiles arranged 12 by 12, grout, cracked and missing tiles, grime, neutral gray tint 35-45% brightness."
+  },
+  {
+    "id": "tread_plate",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Stalowa blacha ryflowana w romby",
+    "subject": "Steel diamond tread plate, scratches, grime in recessed grooves, cool steel colors #3f4859 to #66718a."
+  },
+  {
+    "id": "roof_tar",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Grafitowa papa dachowa z zakładkami i łatami",
+    "subject": "Dark graphite roofing membrane strips with overlaps and patches, pebbles and puddle stains without reflections, #22262e to #3a404c."
+  },
+  {
+    "id": "iskra",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Bursztynowo-bia?y neon ISKRA z symbolem iskry",
+    "subject": "Exact uppercase ISKRA with a simple spark/lightning emblem, amber #ffae1a and warm white #fff1d6 neon only."
+  },
+  {
+    "id": "metro",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Pod?wietlany szyld METRO z du?? liter? M",
+    "subject": "Vintage illuminated station sign with large stylized M and exact word METRO, royal blue #3d7bff and warm white #fff1d6."
+  },
+  {
+    "id": "warsztat",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Zielony neon WARSZTAT z kluczem i z?batk?",
+    "subject": "Green #6dff4a neon exact WARSZTAT with wrench and gear pictograms."
+  },
+  {
+    "id": "screen_talents",
+    "category": "screens",
+    "width": 512,
+    "height": 512,
+    "description": "Ekran TALENTY z rozga??zionym drzewem w?z??w",
+    "subject": "Black terminal screen, exact header TALENTY, abstract talent tree with one root and exactly three branches of connected circular nodes, violet #8a5cff and warm white #fff1d6, scanlines."
+  },
+  {
+    "id": "screen_missions",
+    "category": "screens",
+    "width": 1024,
+    "height": 512,
+    "description": "Tablica misji z map? dzielnicy, pinezkami i trasami",
+    "subject": "Black mission board, exact header TABLICA MISJI, schematic city district map with location pins and connecting routes, amber #ffae1a and warm white #fff1d6."
+  },
+  {
+    "id": "graffiti_iskra",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Szablonowe graffiti ISKRA z symbolem iskry w okr?gu",
+    "subject": "Resistance stencil graffiti: spark symbol inside circle and exact word ISKRA, amber #ffae1a and warm white #fff1d6 paint on uniform chroma green #00ff00 keying background."
+  }
 ]

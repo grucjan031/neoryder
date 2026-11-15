@@ -1,6 +1,6 @@
 # Tekstury uliczek NEORYDER — Neon Noir
 
-Pakiet 74 bitmap (33 z pierwszego pakietu, 17 z drugiego i 24 z trzeciego) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
+Pakiet 80 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego i 6 dla kryj?wki Iskra) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
 
 Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. W chwili wykonania tego zadania plik ADR 0006 nie był obecny w tym worktree. Istniejący kontrakt `src/world/dressingSchema.ts` określa ścieżki oraz sposób użycia signs, holo i decals. Pakiet nie zmienia kodu gry ani tego kontraktu.
 
