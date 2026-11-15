@@ -145,7 +145,7 @@ export interface SynergyContext {
   user: EntityId;
   addEnergy(n: number): void;
   coolWeapon(amount: number | 'full'): void;
-  stats: Stats;
+  stats: Stats | readonly Stats[];
   damage: Pick<DamageSystem, 'deal'>;
   statuses?: StatusQuery;
   targets(): readonly EntityId[];
@@ -458,13 +458,18 @@ export class SynergySystem {
   /** Zdejmuje i zakłada od nowa modyfikatory synergii wg aktywnych wpisów (odświeżenie bez kumulacji). */
   private rebuildModifiers(id: string): void {
     const source = `synergy:${id}`;
-    this.ctx.stats.removeBySource(source);
-    for (const { effect } of this.timed.get(id) ?? [])
-      this.ctx.stats.add({
-        stat: effect.stat,
-        type: effect.type,
-        value: effect.value,
-        source,
-      });
+    const targets: readonly Stats[] = Array.isArray(this.ctx.stats)
+      ? this.ctx.stats
+      : [this.ctx.stats as Stats];
+    for (const stats of targets) {
+      stats.removeBySource(source);
+      for (const { effect } of this.timed.get(id) ?? [])
+        stats.add({
+          stat: effect.stat,
+          type: effect.type,
+          value: effect.value,
+          source,
+        });
+    }
   }
 }

@@ -20,6 +20,58 @@ import type {
 
 const BUILD = ['#build_blade', '#build_gunner', '#build_resonance'];
 
+it('czasowy damage trafia do obu Stats, odświeża się i znika po czasie oraz resecie', () => {
+  const bus = new EventBus();
+  const stats = [new Stats({ damage: 1 }), new Stats({ damage: 1 })] as const;
+  const system = new SynergySystem(
+    bus,
+    {
+      user: 1,
+      stats,
+      addEnergy() {},
+      coolWeapon() {},
+      damage: { deal: () => 0 },
+      targets: () => [],
+      position: () => null,
+    },
+    loadSynergyDefinitions([
+      {
+        id: 'timedDamage',
+        name: 'Test',
+        requires: [],
+        when: { event: 'power_used' },
+        effects: [
+          {
+            kind: 'stat_modifier_timed',
+            stat: 'damage',
+            type: 'percent',
+            value: 0.15,
+            durationS: 2,
+          },
+        ],
+      },
+    ]),
+  );
+  const trigger = () => bus.emit('power_used', { user: 1, power: 'push' });
+  trigger();
+  for (const s of stats) expect(s.get('damage')).toBeCloseTo(1.15);
+  system.step(1);
+  trigger();
+  system.step(1.5);
+  for (const s of stats) expect(s.get('damage')).toBeCloseTo(1.15);
+  system.step(0.5);
+  for (const s of stats) {
+    expect(s.get('damage')).toBe(1);
+    expect(s.modifiers()).toEqual([]);
+  }
+  trigger();
+  system.reset();
+  for (const s of stats) expect(s.get('damage')).toBe(1);
+  trigger();
+  system.dispose();
+  for (const s of stats) expect(s.get('damage')).toBe(1);
+});
+
 function setupArea(
   effects: unknown[],
   when: unknown = { event: 'damage_dealt' },

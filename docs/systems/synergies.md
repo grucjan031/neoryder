@@ -1,5 +1,12 @@
 # Synergie buildów (F2-16)
 
+Z5: `SynergyContext.stats` przyjmuje `Stats | readonly Stats[]`. Efekt
+`stat_modifier_timed` dodaje, odświeża i usuwa modyfikatory we wszystkich
+przekazanych instancjach, również przy wygaśnięciu, usunięciu wyzwalacza,
+`reset` i `dispose`. Pojedynczy `Stats` zachowuje dotychczasową obsługę.
+Pokój i arena przekazują `[playerStats, player.stats]`, dzięki czemu czasowy
+bonus `damage` dociera do statystyk walki, a bonus dashu do kontrolera ruchu.
+
 ## F3-10: implanty i progi
 
 `setTags` liczy wystąpienia tagów. `requires` nadal wymaga obecności każdego tagu;
@@ -113,7 +120,7 @@ Zdarzenia z tagiem `#synergy` nigdy nie wyzwalają synergii. Obrażenia z `chain
 
 `new SynergySystem(bus, ctx, defs?)`, `setTags`, `active()` (id aktywnych — debug/HUD), `step(dt)` (dt ≤ 0 nic nie zmienia), `reset()` (zdejmuje modyfikatory, zeruje odnowienia), `dispose()` (odpina słuchaczy + reset).
 
-`SynergyContext`: `user`, `addEnergy`, `coolWeapon`, `stats`, `damage` (`deal`), `statuses?`, `targets()`, `position(id)`. **Kontekst — w szczególności `addEnergy` i `coolWeapon` — dostarcza scena.** Arena (F2-17) ustawia tagi z `Loadout.tags` przy każdym resecie, krokuje synergie w czasie gracza i podaje `PlayerController.stats` (dash, ruch), `PlayerEnergy.add` oraz `Weapon.vent` aktywnej broni; hybrydy wybiera się na ekranie wyboru buildu (`docs/systems/arena.md`).
+`SynergyContext`: `user`, `addEnergy`, `coolWeapon`, `stats`, `damage` (`deal`), `statuses?`, `targets()`, `position(id)`. **Kontekst — w szczególności `addEnergy` i `coolWeapon` — dostarcza scena.** Arena (F2-17) ustawia tagi z `Loadout.tags` przy każdym resecie, krokuje synergie w czasie gracza i podaje `[playerStats, player.stats]` (walka, dash, ruch), `PlayerEnergy.add` oraz `Weapon.vent` aktywnej broni; hybrydy wybiera się na ekranie wyboru buildu (`docs/systems/arena.md`).
 
 ## Jak dodać synergię
 
