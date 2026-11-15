@@ -6,7 +6,7 @@ Architektura: `docs/adr/0005-petla-runu-f3.md` (**przyjęta do realizacji 2026-1
 
 ## Stan (2026-11-14)
 
-Zadania 01–18 i 20 gotowe; zadanie 19 (zagadka z Chwytem) przeniesione do `docs/backlog.md` (`typeWeights.puzzle` = 0). Bramka F3 czeka na playtest człowieka (`docs/playtest-F3.md`); bot e2e (`tests/e2e/runBot.spec.ts`) i test deterministyczności (`tests/unit/runDeterminism.test.ts`) przechodzą. Playtest bramki F2 nadal otwarty — `docs/issues/F2/README.md`. Zadania spoza tej listy trafiają do `docs/backlog.md`.
+Zadania 01–18 i 20 gotowe; zadanie 19 (zagadka z Chwytem) przeniesione do `docs/backlog.md` (`typeWeights.puzzle` = 0). **Bramka F3 zaakceptowana przez człowieka 2026-11-15** (start F4: `docs/issues/F4/README.md`); bot e2e (`tests/e2e/runBot.spec.ts`) i test deterministyczności (`tests/unit/runDeterminism.test.ts`) przechodzą. Playtest bramki F2 nadal otwarty — `docs/issues/F2/README.md`. Zadania spoza tej listy trafiają do `docs/backlog.md`.
 
 ## Decyzje wspólne
 
