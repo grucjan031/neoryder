@@ -1,6 +1,6 @@
 # Tekstury uliczek NEORYDER — Neon Noir
 
-Pakiet 86 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego i 12 dla kryjówki Iskra) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
+Pakiet 88 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra i 2 atlasy okien) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
 
 Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. W chwili wykonania tego zadania plik ADR 0006 nie był obecny w tym worktree. Istniejący kontrakt `src/world/dressingSchema.ts` określa ścieżki oraz sposób użycia signs, holo i decals. Pakiet nie zmienia kodu gry ani tego kontraktu.
 
@@ -35,6 +35,7 @@ Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. 
 | screens | 512×512 | screen_map |
 | posters | 512×512 | poster_iskra_recruit, poster_koalicja_defaced, banner_iskra |
 | posters | 1024×512 | mural_spark |
+| atlas | 1024×1024 | windows_lit, windows_dark (siatka 4×4) |
 | signs | 512×256 | iskra, metro, warsztat, sign_bar |
 | screens | 512×512 | screen_talents |
 | screens | 1024×512 | screen_missions, screen_comms |
@@ -54,8 +55,13 @@ python tools/textures/process.py validate
 python tools/textures/process.py previews
 ```
 
-Walidator sprawdza dokładny zestaw 86 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Posters wymagają pełnej nieprzezroczystości oraz zera pikseli z G > 120 i G − max(R, B) > 85 w skali 0–255; nie wymagają kafelkowania ani przezroczystych rogów. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
+Walidator sprawdza dokładny zestaw 88 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Posters wymagają pełnej nieprzezroczystości oraz zera pikseli z G > 120 i G − max(R, B) > 85 w skali 0–255; nie wymagają kafelkowania ani przezroczystych rogów. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
 
 Podgląd zbiorczy: `%TEMP%/neoryder-textures/contact-sheet.png`. Podglądy kafelkowania: `%TEMP%/neoryder-textures/<id>-2x2.png`. Raport wymiarów, bajtów, rogów i krawędzi: `%TEMP%/neoryder-textures/validation.json`.
 
 Do ręcznego review: obejrzeć podglądy 2×2 pod kątem łączeń i widocznego rytmu powtórzeń, sprawdzić pisownię neonów i reklam, obejrzeć brzegi naklejek na ciemnym podłożu. Ocenę czytelności podczas walki należy wykonać po podłączeniu pakietu przez wykonawcę renderera.
+
+
+## Atlasy (`atlas/`)
+
+`atlas/` zawiera nieprzezroczyste tekstury RGB 1024?1024 bez kafelkowania. `windows_lit` i `windows_dark` s? siatkami 4?4, ka?da z 16 oknami; pojedyncza kom?rka ma 256?256 px. UV kom?rki w uk?adzie tekstury od lewego g?rnego rogu: kolumna `c` i wiersz `r` (0?3) zajmuje `u=[c/4,(c+1)/4]`, `v=[r/4,(r+1)/4]`. Przy UV z pocz?tkiem na dole obrazu nale?y odwr?ci? wiersz: `v=[1-(r+1)/4,1-r/4]`. Zostaw margines filtracji przy granicach kom?rki; ka?da kom?rka ma w?asn? cienk? ciemn? ram?, by ogranicza? zlewanie s?siad?w.

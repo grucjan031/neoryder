@@ -198,6 +198,8 @@ def validate():
                 result["keyGreenPixels"] = int(key_pixels.sum())
                 if key_pixels.any():
                     errors.append(f"{item['id']}: green key residue")
+            elif item["category"] == "atlas":
+                result["grid"] = [4, 4]
             else:
                 dx = float(np.abs(a[:, 0] - a[:, -1]).mean())
                 dy = float(np.abs(a[0] - a[-1]).mean())

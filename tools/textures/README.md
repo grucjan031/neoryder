@@ -764,3 +764,22 @@ Plik: `public/assets/textures/signs/sign_bar.webp`.
 ```text
 Use case: stylized-concept. Asset: wide 512x256 isolated neon sign texture on pure black. Violet #8a5cff and warm white #fff1d6 glass neon tubes spell exactly “BAR POD PERONEM”, Polish spelling, with small simple cup icon. Centered with black margins, gentle restrained glow, no board, no wires. No other colors, strictly no red/cyan/magenta, no additional text, brands or watermark.
 ```
+
+
+## Window atlases (`atlas`)
+
+Each atlas was generated in a separate imagegen call; source files are `tools/textures/raw/windows_lit.png` and `windows_dark.png`. Processing uses centered cropping without stretching to 1024?1024, then writes opaque RGB WebP without keying or tiling. The contact sheet includes both atlases.
+
+### windows_lit ? atlas, 1024?1024
+
+Final prompt sent to imagegen:
+
+```text
+Use case: stylized-concept. Asset type: game texture atlas, exterior building windows at night. Generate a square 1024x1024 image, perfectly aligned 4 by 4 grid, exactly sixteen distinct separate square windows, each cell filled edge-to-edge with one complete window seen straight-on from outside; thin dark frame at each cell edge clearly separates cells. Neon Noir rainy near-future city, dark cool facade around window frames, subtle delicate rain droplets on glass. Interiors vary across all sixteen cells: warm white #fff1d6 and amber #ffae1a rooms with varied shades and brightness; closed blinds with stripes of light, drawn translucent curtains, a human silhouette by a window, plant on sill, royal-blue #3d7bff TV glow, desk lamp, kitchen, empty fluorescent office, window reflecting a violet #8a5cff neon advertisement, green #6dff4a monitor glow, plus other varied plausible lit interiors. Each cell has a distinct window composition but occupies its exact 256x256 square with no gutters or grid overlay. Flat orthographic facade, stylized painterly game texture, readable at game distance. RGB opaque. Absolutely no text, letters, logos, brands, watermark. No red, cyan, magenta, pink. No perspective.
+```
+
+### windows_dark ? atlas, 1024?1024
+
+```text
+Use case: stylized-concept. Asset type: game texture atlas, exterior building windows at night. Generate a square 1024x1024 image, perfectly aligned 4 by 4 grid, exactly sixteen distinct separate square dark or dim windows, each cell filled edge-to-edge with one complete window seen straight-on from outside; thin dark frame at each cell edge clearly separates cells. Neon Noir rainy near-future city, cool navy and violet city glow reflected on dark glass, subtle delicate rain droplets, varied subdued dark rooms; include some barely visible light through slightly open blinds, other empty unlit rooms, and varied reflections so all sixteen cells feel distinct but low-light. Each cell has its own complete window composition occupying its exact 256x256 square, no gutters, no visible grid overlay. Flat orthographic facade, stylized painterly game texture, readable at game distance. RGB opaque. Absolutely no text, letters, logos, brands, watermark. No red, cyan, magenta, pink. No perspective.
+```

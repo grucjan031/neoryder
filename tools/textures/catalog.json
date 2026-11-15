@@ -692,5 +692,21 @@
     "height": 256,
     "description": "Fioletowo-biały neon BAR POD PERONEM z kubkiem",
     "subject": "Use case: stylized-concept. Asset: wide 512x256 isolated neon sign texture on pure black. Violet #8a5cff and warm white #fff1d6 glass neon tubes spell exactly “BAR POD PERONEM”, Polish spelling, with small simple cup icon. Centered with black margins, gentle restrained glow, no board, no wires. No other colors, strictly no red/cyan/magenta, no additional text, brands or watermark."
+  },
+  {
+    "id": "windows_lit",
+    "category": "atlas",
+    "width": 1024,
+    "height": 1024,
+    "description": "Atlas 16 lit windows, 4x4 grid",
+    "subject": "Square opaque 4 by 4 atlas of sixteen distinct complete exterior building windows at night, each exact 256x256 cell filled with a window and thin dark edge frame. Varied warm white #fff1d6 and amber #ffae1a interiors: closed blinds with light stripes, translucent curtains, person silhouette, plant on sill, royal blue #3d7bff TV glow, desk lamp, kitchen, empty fluorescent office, reflected violet #8a5cff neon advertisement, green #6dff4a monitor glow, plus varied plausible rooms. Subtle rain droplets on glass. Orthographic Neon Noir facade. No text, brands, red, cyan, or magenta."
+  },
+  {
+    "id": "windows_dark",
+    "category": "atlas",
+    "width": 1024,
+    "height": 1024,
+    "description": "Atlas 16 dark or dim windows, 4x4 grid",
+    "subject": "Square opaque 4 by 4 atlas of sixteen distinct complete dark or dim exterior building windows at night, each exact 256x256 cell with thin dark edge frame. Dark glass with navy and violet city glow reflections, slightly open blinds with barely visible light, empty unlit rooms, subtle rain droplets, varied subdued interiors. Orthographic Neon Noir facade. No text, brands, red, cyan, or magenta."
   }
 ]

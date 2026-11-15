@@ -858,5 +858,25 @@
     "dominantColor": "#190438",
     "description": "Fioletowo-biały neon BAR POD PERONEM z kubkiem",
     "bytes": 6470
+  },
+  {
+    "id": "windows_lit",
+    "category": "atlas",
+    "path": "atlas/windows_lit.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#161a27",
+    "description": "Atlas 16 lit windows, 4x4 grid",
+    "bytes": 236982
+  },
+  {
+    "id": "windows_dark",
+    "category": "atlas",
+    "path": "atlas/windows_dark.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#141729",
+    "description": "Atlas 16 dark or dim windows, 4x4 grid",
+    "bytes": 100926
   }
 ]
