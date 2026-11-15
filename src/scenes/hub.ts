@@ -314,8 +314,8 @@ export class HubScene implements Scene {
       this.eyePosition(),
       state.yaw,
       state.pitch,
-      this.layout.playerSpawn.y + t.focusHeightM,
-      t.interactAngleDeg,
+      t.interactRangeM,
+      t.focusPaddingM,
     );
   }
 
@@ -469,10 +469,9 @@ export class HubScene implements Scene {
         if (args.length !== 1 || !station)
           return `Użycie: hub look <${stationList}>`;
         const eye = this.eyePosition();
-        const dx = station.position.x - eye.x;
-        const dz = station.position.z - eye.z;
-        const dy =
-          this.layout.playerSpawn.y + this.ctx.tuning.hub.focusHeightM - eye.y;
+        const dx = station.focus.position.x - eye.x;
+        const dz = station.focus.position.z - eye.z;
+        const dy = station.focus.position.y - eye.y;
         this.pendingLook = {
           yaw: Math.atan2(-dx, -dz),
           pitch: Math.atan2(dy, Math.hypot(dx, dz)),

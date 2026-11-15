@@ -45,6 +45,7 @@ import type { Enemy } from '../enemies/types';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
+import { staminaStatsSchema } from '../player/stamina';
 import type { PlayerState } from '../player/playerController';
 import { BeamRenderer } from '../render/beamRenderer';
 import { BarrierRenderer } from '../render/barrierRenderer';
@@ -77,6 +78,7 @@ const vec3 = z.object({
   z: z.number().finite(),
 });
 export const arenaLayoutSchema = z.object({
+  ...staminaStatsSchema.shape,
   ...dressingFields,
   playerHealth: z.number().positive(),
   playerSpawn: vec3,
@@ -142,6 +144,9 @@ export class Arena implements Scene {
   private lightningView!: LightningRenderer;
   private explosionView!: ExplosionRenderer;
   private readonly playerStats = new Stats({
+    maxStamina: layout.maxStamina,
+    staminaRegen: layout.staminaRegen,
+    extraJumps: layout.extraJumps,
     maxHealth: layout.playerHealth,
     maxEnergy: 100,
     energyRegen: 25,
@@ -243,6 +248,7 @@ export class Arena implements Scene {
       ctx,
       this.spawnPosition(),
       loadSettings(),
+      staminaStatsSchema.parse(layout),
     );
     this.registerPlayer();
     this.hurtboxes.add(playerId, this.player.colliderHandle);
@@ -298,6 +304,7 @@ export class Arena implements Scene {
           ? { onChangeBuild: () => this.openBuildSelect() }
           : {}),
       });
+    this.player.stamina.set(this.player.stamina.max);
     this.energy = new PlayerEnergy(
       playerId,
       this.playerStats,
@@ -898,6 +905,7 @@ export class Arena implements Scene {
     this.health.reset();
     this.registerPlayer();
     this.energy.set(this.energy.max);
+    this.player.stamina.set(this.player.stamina.max);
     this.player.teleport(this.spawnPosition());
     this.previous = this.player.getState();
     this.state = 'playing';
@@ -1096,6 +1104,10 @@ export class Arena implements Scene {
         return this.health.current;
       case 'energy':
         return this.energy.current;
+      case 'stamina':
+        return this.player.stamina.current;
+      case 'extraJumps':
+        return this.player.stats.get('extraJumps');
       case 'heat':
         return this.weapon.heat.current;
       case 'loadout':

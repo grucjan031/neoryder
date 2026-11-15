@@ -1,4 +1,7 @@
 {
+  "maxStamina": 100,
+  "staminaRegen": 30,
+  "extraJumps": 0,
   "maxHealth": 100,
   "maxEnergy": 100,
   "energyRegen": 25,

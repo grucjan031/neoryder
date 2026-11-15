@@ -12,7 +12,8 @@ styl: `docs/adr/0006-neon-noir.md`.
   `playerSpawn`, `blocks` (`material`, `model` `city_*`), pola oprawy z `dressingSchema` (`theme`, `signs`, `lights`,
   `decals`, `ambientFx`, `decor`) plus pola kryjówki:
   - `blocks[].interactive: true` — jasny obiekt interaktywny (materiał `interactive`, #d9dde3);
-  - `stations: { id, position {x,z}, radius, label, sign? }[]` — `id` z `HUB_STATION_IDS`, środek strefy na podłodze;
+  - `stations: { id, position {x,z}, radius, focus {position {x,y,z}, size {x,y,z}}, label, sign? }[]` — `id` z `HUB_STATION_IDS`, środek strefy na podłodze;
+    `focus` określa środek i dodatnie wymiary bryły obiektu (dla poligonu: wejścia tunelu);
     `sign` (pozycja, rozmiar, `yaw`, `color`) to neonowy napis z tekstu `label` (płótno, mieszanie addytywne);
   - `panels: { kind: 'tiles' | 'screen', texture, position, size, yaw, tileM?, tint? }[]` — okładziny bez collidera:
     `tiles` to kafle ściany (`surfaces/tiles_wall`, powtarzane co `tileM` m, domyślnie 3), `screen` to świecący ekran
@@ -36,10 +37,11 @@ tunelu „POLIGON” (korytarz-ślepy zaułek z bursztynowym światłem). Neony 
 
 `selectHubFocus` i `HubStations` (`src/world/hubStations.ts`, bez DOM i Three.js, testowalne w Vitest):
 
-- wybór wymaga odległości poziomej gracz–stacja ≤ `radius` oraz kąta 3D kierunku patrzenia (yaw + pitch)
-  do punktu stacji ≤ `tuning.hub.interactAngleDeg` (30°). Punkt stacji leży na wysokości
-  `playerSpawn.y + tuning.hub.focusHeightM` (1,25 m nad podłogą). Wektor jest liczony od oka gracza,
-  z uwzględnieniem wysokości kapsuły podczas przysiadu; spośród kandydatów wygrywa najmniejszy kąt;
+- wybór wymaga przecięcia promienia z oka gracza w kierunku kamery (yaw + pitch) z AABB `focus`
+  stacji, powiększonym z każdej strony o `tuning.hub.focusPaddingM` (0,2 m). Odległość od oka
+  do trafienia musi być ≤ `tuning.hub.interactRangeM` (3,5 m). Wygrywa najbliższe trafienie,
+  także z bliska i przy spojrzeniu w dół. Wysokość oka uwzględnia przysiad;
+  `radius` nie ogranicza interakcji;
 - samo wejście w promień niczego nie otwiera. Dopiero zbocze naciśnięcia E (istniejąca akcja `power2`,
   nazwana w scenie `HUB_INTERACT_ACTION`) otwiera wybraną stację i emituje `hub_station_opened { station }`;
   `HubScene` nasłuchuje tego zdarzenia i pokazuje nakładkę przez `HubScreens.show`;
@@ -74,7 +76,7 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 ## Debug
 
 - `hub open <talents|workshop|missions|arena>`, `hub close`;
-- `hub look <talents|workshop|missions|arena>` — obraca kamerę na punkt stacji w następnym kroku;
+- `hub look <talents|workshop|missions|arena>` — obraca kamerę na środek bryły `focus` stacji w następnym kroku;
 - `hub tp <x> <z> [yawDeg] [pitchDeg]` — teleport gracza (yaw 0 patrzy w −Z; ruch myszy symulowany w następnym
   kroku); teleport nie otwiera nakładki;
 - `query('hubStation')` (otwarta stacja albo `null`), `query('hubFocus')` (stacja w celowniku albo `null`),
@@ -87,13 +89,14 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 ## Testy
 
 `tests/unit/hubLayout.test.ts` (walidacja układu: stacje w granicach i osiągalne, strefy rozłączne, paleta, zasoby),
-`hubStations.test.ts` (zasięg, kąt 3D, wybór stacji, otwieranie na żądanie), `hubPrompt.test.ts` (jsdom, podpowiedź),
+`hubStations.test.ts` (ray–AABB, zasięg, najbliższe trafienie, otwieranie na żądanie), `hubPrompt.test.ts` (jsdom, podpowiedź),
 `hubScene.test.ts` (scena bez DOM: spojrzenie i zbocze E, komendy, zatrzymanie ruchu, niecka torów,
 nawigacja, `dispose` bez subskrypcji, meta), `hubScreens.test.ts` (jsdom, hostowanie paneli),
 `missionsPanel.test.ts`, `metaBar.test.ts`, `mainMenu.test.ts`; e2e: `tests/e2e/hub.spec.ts`.
-Ręcznie: `?scene=hub&debug=1`, `hub tp 6 -2.6 180` — brak podpowiedzi mimo zasięgu; `hub look talents` —
+Ręcznie: `?scene=hub&debug=1`, `hub tp 6 -3.2 180` — brak podpowiedzi mimo zasięgu; `hub look talents` —
 podpowiedź „E TALENTY”; E otwiera, Esc zamyka, kolejne E ponownie otwiera. Sprawdzić też tablicę misji,
-warsztat i poligon oraz wygodę stożka interakcji (parametry `hub` w lil-gui).
+warsztat i poligon oraz zasięg i margines brył interakcji (parametry `hub` w lil-gui).
+Z bliska: `hub tp 6 -5.45`, `hub look talents` — podpowiedź widoczna, E otwiera terminal.
 
 ### Terminal drzewek
 

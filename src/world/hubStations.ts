@@ -8,33 +8,57 @@ export interface HubZone {
   radius: number;
 }
 
-/** Wybiera stację w zasięgu o najmniejszym kącie od kierunku patrzenia (yaw/pitch w radianach). */
+export interface HubFocusBox {
+  position: Vec3;
+  size: Vec3;
+}
+
+/** Odległość trafienia promieniem o jednostkowym kierunku; null przy braku przecięcia. */
+export function rayAabbDistance(
+  origin: Vec3,
+  direction: Vec3,
+  box: HubFocusBox,
+  padding = 0,
+): number | null {
+  let near = 0;
+  let far = Infinity;
+  for (const axis of ['x', 'y', 'z'] as const) {
+    const half = box.size[axis] / 2 + padding;
+    const min = box.position[axis] - half;
+    const max = box.position[axis] + half;
+    if (direction[axis] === 0) {
+      if (origin[axis] < min || origin[axis] > max) return null;
+      continue;
+    }
+    const first = (min - origin[axis]) / direction[axis];
+    const second = (max - origin[axis]) / direction[axis];
+    near = Math.max(near, Math.min(first, second));
+    far = Math.min(far, Math.max(first, second));
+    if (near > far) return null;
+  }
+  return near;
+}
+
+/** Wybiera najbliższe trafienie bryły stacji w zasięgu oka (yaw/pitch w radianach). */
 export function selectHubFocus(
-  zones: readonly HubZone[],
+  zones: readonly (HubZone & { focus: HubFocusBox })[],
   eye: Vec3,
   yaw: number,
   pitch: number,
-  focusY: number,
-  interactAngleDeg: number,
+  interactRangeM: number,
+  focusPaddingM: number,
 ): HubStationId | null {
   const forward = {
     x: -Math.sin(yaw) * Math.cos(pitch),
     y: Math.sin(pitch),
     z: -Math.cos(yaw) * Math.cos(pitch),
   };
-  const minDot = Math.cos((interactAngleDeg * Math.PI) / 180);
-  let bestDot = -Infinity;
+  let nearest = Infinity;
   let focused: HubStationId | null = null;
   for (const zone of zones) {
-    const dx = zone.position.x - eye.x;
-    const dz = zone.position.z - eye.z;
-    if (Math.hypot(dx, dz) > zone.radius) continue;
-    const dy = focusY - eye.y;
-    const length = Math.hypot(dx, dy, dz);
-    if (length === 0) continue;
-    const dot = (forward.x * dx + forward.y * dy + forward.z * dz) / length;
-    if (dot >= minDot && dot > bestDot) {
-      bestDot = dot;
+    const distance = rayAabbDistance(eye, forward, zone.focus, focusPaddingM);
+    if (distance !== null && distance <= interactRangeM && distance < nearest) {
+      nearest = distance;
       focused = zone.id;
     }
   }

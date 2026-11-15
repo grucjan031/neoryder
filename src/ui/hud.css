@@ -15,6 +15,7 @@
 .hud {
   --hud-health: #00e5ff;
   --hud-energy: #ff2bd6;
+  --hud-stamina: #c8ff5a;
   --hud-heat: #ff2bd6;
   --hud-warm: #ffae1a;
   --hud-danger: #e0262b;
@@ -120,6 +121,10 @@
   color: var(--hud-energy);
   font-size: 18px;
 }
+.hud__meter--stamina .hud__value {
+  color: var(--hud-stamina);
+  font-size: 18px;
+}
 .hud__segments {
   display: flex;
   height: 7px;
@@ -162,6 +167,11 @@
   transform: scaleX(var(--p, 0));
   transform-origin: left;
 }
+.hud__meter--stamina .hud__fill {
+  background: var(--hud-stamina);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+}
 .hud__meter::after {
   content: '';
   position: absolute;
@@ -178,6 +188,10 @@
 }
 .hud__meter[data-change='b']::after {
   animation: hud-bar-b 0.24s ease-out;
+}
+.hud__meter--stamina[data-change]::after {
+  background: var(--hud-stamina);
+  animation-duration: var(--hud-denial-duration);
 }
 @keyframes hud-bar-a {
   from {

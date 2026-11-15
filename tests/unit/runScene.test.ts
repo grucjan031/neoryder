@@ -82,6 +82,7 @@ class FakeRoom implements RunRoom {
   off: (() => void)[] = [];
   insideStep = false;
   clearOnStep = false;
+  steps = 0;
   initGate?: Promise<void>;
   constructor(readonly run: RunState) {
     this.hp = run.hp;
@@ -122,6 +123,7 @@ class FakeRoom implements RunRoom {
     return { hp: this.hp, energy: this.energy };
   }
   step(): void {
+    this.steps++;
     this.insideStep = true;
     if (this.clearOnStep) this.clear();
     this.insideStep = false;
@@ -136,6 +138,11 @@ class FakeRoom implements RunRoom {
     this.disposed = true;
     for (const off of this.off) off();
   }
+}
+
+function advanceRewardDelay(scene: RunScene): void {
+  for (let i = 0; i < Math.ceil(tuning.run.rewardDelayS / SIM_DT); i++)
+    scene.step(SIM_DT, idle);
 }
 
 function handlerCount(bus: EventBus): number {
@@ -196,6 +203,7 @@ it('dwa przebiegi z tym samym seedem dają identyczny runLog', async () => {
     screens.actions.selectNode(node.id);
     await scene.whenReady();
     rooms[0]!.clear();
+    advanceRewardDelay(scene);
     await scene.whenReady();
     return scene.query('runLog');
   };
@@ -231,6 +239,8 @@ it('prowadzi mapa → pokój → nagroda → mapa, zapisuje tylko mapę i przeno
   room.energy = 41;
   room.clearOnStep = true;
   scene.step(SIM_DT, idle);
+  expect(room.disposed).toBe(false);
+  advanceRewardDelay(scene);
   expect(room.disposed).toBe(true);
   expect(scene.query('screen')).toBe('reward');
   expect(screens.view.state).toMatchObject({ hp: 87, energy: 41 });
@@ -265,6 +275,7 @@ it('wznowienie zachowuje węzeł, pełną mapę i stan ostatniego zapisu', async
   first.screens.actions.selectNode(first.screens.view.nodes[0]!.id);
   await first.scene.whenReady();
   first.commands.execute('run clear');
+  advanceRewardDelay(first.scene);
   await first.scene.whenReady();
   first.screens.actions.next();
   await first.scene.whenReady();
@@ -326,6 +337,7 @@ it('trzy prawdziwe pokoje nie zostawiają subskrypcji, zwalniają światy i nali
     expect((scene.query('runState') as RunState).credits).toBeGreaterThan(0);
     commands.execute('hurt 1');
     commands.execute('run clear');
+    advanceRewardDelay(scene);
     await scene.whenReady();
     expect(scene.query('screen')).toBe('reward');
     expect(handlerCount(bus)).toBe(hostHandlers);
@@ -359,6 +371,7 @@ it('sklep i odpoczynek otwierają się automatycznie, boss z falami kończy run 
       screens.actions.next();
     } else {
       commands.execute('run clear');
+      advanceRewardDelay(scene);
       await scene.whenReady();
       if (node.type !== 'boss') screens.actions.next();
     }
@@ -381,6 +394,7 @@ it('sklep na ścieżce otwiera nakładkę przed pierwszym krokiem walki', async 
     await scene.whenReady();
     if (i === 0) {
       commands.execute('run clear');
+      advanceRewardDelay(scene);
       await scene.whenReady();
     } else expect(scene.query('screen')).toBe('shop');
     screens.actions.next();
@@ -449,6 +463,7 @@ it('clearRun czeka na zaległy saveRun, więc zapis nie odżywa po końcu runu',
   screens.actions.selectNode(screens.view.nodes[0]!.id);
   await scene.whenReady();
   commands.execute('run clear');
+  advanceRewardDelay(scene);
   await scene.whenReady();
   save.saveRun = async (state) => {
     await gate;
@@ -470,6 +485,7 @@ it('real offers reach the run screen, selection persists and a second selection 
   screens.actions.selectNode(screens.view.nodes[0]!.id);
   await scene.whenReady();
   commands.execute('run clear');
+  advanceRewardDelay(scene);
   await scene.whenReady();
   const offers = screens.view.offers!;
   expect(offers).toHaveLength(3);
@@ -502,6 +518,7 @@ it('domyślny SaveStore v2 zapisuje mapę, wznawia pełen stan i czyści po run_
   first.screens.actions.selectNode(first.screens.view.nodes[0]!.id);
   await first.scene.whenReady();
   first.commands.execute('run clear');
+  advanceRewardDelay(first.scene);
   await first.scene.whenReady();
   first.commands.execute('credits 23');
   first.bus.emit('implant_acquired', {
@@ -611,3 +628,37 @@ it('węzeł boss: śmierć gracza kończy run porażką jak w innych pokojach', 
     { event: 'run_ended', outcome: 'death' },
   ]);
 });
+
+it.each(['event', 'command'] as const)(
+  'nagroda po %s czeka na czas symulacji, pokój nadal działa',
+  async (trigger) => {
+    const { scene, screens, commands, rooms } = await setup();
+    screens.actions.selectNode(screens.view.nodes[0]!.id);
+    await scene.whenReady();
+    const room = rooms[0]!;
+    if (trigger === 'event') {
+      room.clearOnStep = true;
+      scene.step(SIM_DT, idle);
+    } else commands.execute('run clear');
+    await scene.whenReady();
+    expect(scene.query('screen')).toBe('room');
+    expect(screens.hidden).toBe(true);
+    const steps = room.steps;
+    const before = Math.ceil(tuning.run.rewardDelayS / SIM_DT) - 1;
+    for (let i = 0; i < before; i++) scene.step(SIM_DT, idle);
+    expect(scene.query('screen')).toBe('room');
+    expect(screens.hidden).toBe(true);
+    expect(room.steps).toBe(steps + before);
+    expect(room.disposed).toBe(false);
+    scene.step(SIM_DT, idle);
+    expect(scene.query('screen')).toBe('reward');
+    expect(screens.view.screen).toBe('reward');
+    expect(screens.hidden).toBe(false);
+    expect(room.disposed).toBe(true);
+    expect(
+      (scene.query('runLog') as unknown[]).filter(
+        (entry) => (entry as { event: string }).event === 'room_cleared',
+      ),
+    ).toHaveLength(1);
+  },
+);

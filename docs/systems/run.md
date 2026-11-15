@@ -48,6 +48,16 @@ Testy jednostkowe: `tests/unit/run.test.ts`, `tests/unit/save.test.ts` (`npm tes
 
 # F3-11: nagrody i ekonomia
 
+Po `room_cleared` w pokojach `combat` i `elite` scena `RunScene` czeka
+`tuning.run.rewardDelayS` (domyślnie 1 s, dostępne w lil-gui), zanim kończy
+pokój i pokazuje wybór implantu. Odliczanie korzysta z czasu symulacji w `step`;
+w tym czasie pokój nadal jest krokowany i renderowany, gracz może się poruszać,
+a efekty śmierci wrogów dogrywają się. Ponowne `room_cleared` nie resetuje
+odliczania, a koniec runu je anuluje. Komenda `run clear` korzysta z tego samego
+opóźnienia. Sklep, odpoczynek i podsumowanie zachowują dotychczasowe przejścia.
+`tests/unit/runScene.test.ts` sprawdza zdarzenie i komendę, brak nagrody przed
+upływem sekundy oraz dalsze kroki pokoju.
+
 Logika bez DOM: `src/progression/rewards.ts`, `shop.ts`, `rest.ts` oraz
 `runEconomy.ts`. `RunEconomy` używa jawnego API `RunManager` i `ImplantSystem`;
 obliczanie maksimum zdrowia i zmiany implantów przechodzą przez `Stats`.

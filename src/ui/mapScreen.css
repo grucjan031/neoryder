@@ -1,82 +1,158 @@
+@font-face {
+  font-family: Rajdhani;
+  src: url('/assets/fonts/Rajdhani-Medium.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: Rajdhani;
+  src: url('/assets/fonts/Rajdhani-SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+}
+.sector-map {
+  font-family: Rajdhani, 'Segoe UI', sans-serif;
+  font-variant-numeric: tabular-nums;
+  animation: sector-map-in 180ms ease-out;
+}
 .sector-map[hidden] {
   display: none;
+}
+.sector-map > p {
+  margin: 6px 0;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: rgba(237, 247, 255, 0.62);
 }
 .run-screen[data-screen='map'] .run-screen__panel {
   width: min(850px, 100%);
 }
 .sector-map__graph {
   position: relative;
-  height: max(440px, 58vh);
-  margin: 16px 0;
+  height: clamp(340px, 52vh, 440px);
+  margin: 12px 0;
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  background:
+    linear-gradient(rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 / 40px
+      40px,
+    linear-gradient(90deg, rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 /
+      40px 40px,
+    rgba(4, 9, 18, 0.55);
 }
 .sector-map__graph svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
 .sector-map__graph line {
-  stroke: #111;
-  stroke-width: 1.5px;
-  opacity: 0.16;
-}
-.sector-map__graph line.is-available {
-  stroke: #009eb3;
+  stroke: rgba(0, 229, 255, 0.2);
+  stroke-width: 1px;
   opacity: 1;
 }
+.sector-map__graph line.is-available {
+  stroke: var(--hud-health, #00e5ff);
+  stroke-width: 1.5px;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.65));
+}
 .sector-map__graph line.is-visited {
-  stroke: #009eb3;
-  opacity: 0.55;
+  stroke: rgba(0, 229, 255, 0.42);
+  stroke-width: 1px;
+  stroke-dasharray: 3 3;
+  opacity: 0.8;
 }
 .run-screen .sector-map__node {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 76px;
-  padding: 3px;
+  width: 82px;
+  padding: 6px 4px;
   margin: 0;
   text-align: center;
-  background: #fff;
-  color: #111;
-  border: 1px solid #111;
-  opacity: 0.35;
+  font-family: Rajdhani, 'Segoe UI', sans-serif;
+  font-variant-numeric: tabular-nums;
+  background: rgba(6, 12, 24, 0.9);
+  color: var(--hud-text, #edf7ff);
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  opacity: 0.4;
   cursor: default;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .sector-map__node span {
   display: block;
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1.1;
 }
 .sector-map__node small {
   display: block;
+  margin-top: 2px;
   font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .run-screen .sector-map__node[data-type='elite'],
 .run-screen .sector-map__node[data-type='boss'] {
-  color: #c71930;
-  border-color: #c71930;
+  color: #ff6266;
+  border-color: rgba(224, 38, 43, 0.65);
 }
 .run-screen .sector-map__node.is-visited {
-  opacity: 0.8;
+  opacity: 0.55;
   border-style: dashed;
+  border-color: rgba(0, 229, 255, 0.3);
+  color: rgba(237, 247, 255, 0.6);
 }
 .run-screen .sector-map__node.is-current {
   opacity: 1;
-  outline: 3px solid #00bcd4;
+  border-color: var(--hud-health, #00e5ff);
+  background: rgba(0, 229, 255, 0.14);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+  outline: 1px solid var(--hud-health, #00e5ff);
   outline-offset: 3px;
 }
 .run-screen .sector-map__node.is-available {
   opacity: 1;
-  border-width: 2px;
-  box-shadow: 0 0 0 3px #00cde533;
+  border: 1px solid var(--hud-health, #00e5ff);
+  background: rgba(6, 18, 34, 0.92);
+  box-shadow:
+    0 0 14px rgba(0, 229, 255, 0.32),
+    inset 0 0 8px rgba(0, 229, 255, 0.12);
   cursor: pointer;
+}
+.run-screen .sector-map__node.is-available[data-type='elite'],
+.run-screen .sector-map__node.is-available[data-type='boss'] {
+  border-color: var(--hud-danger, #e0262b);
+  box-shadow:
+    0 0 14px rgba(224, 38, 43, 0.4),
+    inset 0 0 8px rgba(224, 38, 43, 0.14);
 }
 .run-screen .sector-map__node.is-available:hover,
 .run-screen .sector-map__node.is-available:focus-visible {
-  background: #d5faff;
-  outline: 2px solid #00bcd4;
+  background: rgba(0, 229, 255, 0.18);
+  border-color: var(--hud-health, #00e5ff);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+  outline: 1px solid var(--hud-health, #00e5ff);
+  outline-offset: 2px;
+}
+.run-screen .sector-map__node.is-available[data-type='elite']:hover,
+.run-screen .sector-map__node.is-available[data-type='elite']:focus-visible,
+.run-screen .sector-map__node.is-available[data-type='boss']:hover,
+.run-screen .sector-map__node.is-available[data-type='boss']:focus-visible {
+  background: rgba(224, 38, 43, 0.18);
+  border-color: var(--hud-danger, #e0262b);
+  box-shadow: 0 0 20px rgba(224, 38, 43, 0.5);
+  outline-color: var(--hud-danger, #e0262b);
 }
 .sector-map__legend {
   font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(237, 247, 255, 0.62);
 }
 @media (max-width: 480px) {
   .run-screen .sector-map__node {
@@ -84,5 +160,30 @@
   }
   .sector-map__node small {
     font-size: 9px;
+  }
+}
+@keyframes sector-map-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sector-map {
+    animation: none;
+  }
+  .run-screen .sector-map__node {
+    transition: none;
+  }
+  .sector-map__graph line.is-available {
+    filter: none;
+  }
+  .run-screen .sector-map__node.is-current,
+  .run-screen .sector-map__node.is-available {
+    box-shadow: none;
   }
 }

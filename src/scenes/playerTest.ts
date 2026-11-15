@@ -16,6 +16,7 @@ import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
 import { PlayerController } from '../player/playerController';
+import playerData from '../data/scenes/playerTest.json';
 import type { PlayerState } from '../player/playerController';
 import { FpsCamera } from '../player/fpsCamera';
 import { palette } from '../render/palette';
@@ -147,6 +148,7 @@ export class PlayerTest implements Scene {
       ctx,
       this.spawnPosition(),
       loadSettings(),
+      playerData,
     );
     this.previous = this.player.getState();
     this.fpsCamera = new FpsCamera(ctx.tuning, this.player.id, ctx.bus);

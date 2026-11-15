@@ -12,7 +12,7 @@ const state = (over: Partial<PlayerState> = {}): PlayerState => ({
   grounded: true,
   coyoteMs: 0,
   jumpBufferMs: 0,
-  doubleJumpUsed: false,
+  airJumpsUsed: 0,
   height: tuning.player.capsuleHeight,
   dashS: 0,
   dashCooldownS: 0,

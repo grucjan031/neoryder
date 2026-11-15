@@ -102,6 +102,7 @@ export class RunScene implements Scene {
   private saving: Promise<void> = Promise.resolve();
   private pendingSaves = 0;
   private pending: 'clear' | 'end' | null = null;
+  private rewardDelayRemainingS: number | null = null;
   private disposed = false;
   private runError: string | null = null;
   private saveError: string | null = null;
@@ -153,8 +154,12 @@ export class RunScene implements Scene {
           this.manager.screen !== 'room'
         )
           return;
+        if (this.rewardDelayRemainingS !== null || this.pending) return;
         this.log.push({ event: 'room_cleared', nodeId });
-        this.schedule('clear');
+        const type = this.manager.currentNode?.type;
+        if (type === 'combat' || type === 'elite')
+          this.rewardDelayRemainingS = this.ctx.tuning.run.rewardDelayS;
+        else this.schedule('clear');
       }),
       ctx.bus.on('reward_offered', ({ nodeId, options }) =>
         this.log.push({
@@ -503,6 +508,7 @@ export class RunScene implements Scene {
   }
 
   private schedule(transition: 'clear' | 'end'): void {
+    if (transition === 'end') this.rewardDelayRemainingS = null;
     if (this.pending !== 'end') this.pending = transition;
     queueMicrotask(() => this.flushTransitions());
   }
@@ -546,8 +552,20 @@ export class RunScene implements Scene {
   step(dt: number, input: InputSnapshot): void {
     if (this.disposed) return;
     this.manager.step(dt);
+    const waitingForReward = this.rewardDelayRemainingS !== null;
     if (this.roomReady && this.manager.screen === 'room' && !this.pending)
       this.room?.step(dt, input);
+    if (
+      this.roomReady &&
+      waitingForReward &&
+      this.rewardDelayRemainingS !== null
+    ) {
+      this.rewardDelayRemainingS = Math.max(0, this.rewardDelayRemainingS - dt);
+      if (this.rewardDelayRemainingS === 0) {
+        this.rewardDelayRemainingS = null;
+        this.schedule('clear');
+      }
+    }
     this.flushTransitions();
   }
 

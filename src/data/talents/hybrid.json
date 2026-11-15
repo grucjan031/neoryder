@@ -4,6 +4,17 @@
   "tierThresholds": [0, 0, 0, 0],
   "nodes": [
     {
+      "id": "hybridDoubleJump",
+      "name": "Podwójny skok",
+      "description": "Serwa w łydkach pozwalają odbić się raz w powietrzu (koszt: 25 wytrzymałości).",
+      "tier": 1,
+      "cost": 1,
+      "requires": [],
+      "effects": {
+        "modifiers": [{ "stat": "extraJumps", "type": "flat", "value": 1 }]
+      }
+    },
+    {
       "id": "hybridStormDancer",
       "name": "Tancerz burzy",
       "description": "Użycie zdolności Rezonansu zwiększa szybkość ataku o 20% i skraca odnowienie dashu o 30% na 3 s.",

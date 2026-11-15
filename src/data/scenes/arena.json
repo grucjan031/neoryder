@@ -1,4 +1,7 @@
 {
+  "maxStamina": 100,
+  "staminaRegen": 30,
+  "extraJumps": 0,
   "playerHealth": 100,
   "playerSpawn": { "x": 0, "y": 0, "z": 4 },
   "blocks": [

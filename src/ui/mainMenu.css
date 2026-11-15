@@ -1,32 +1,182 @@
-.main-menu {
-  box-sizing: border-box;
-  width: min(540px, 100%);
-  margin: 8vh auto;
-  padding: 32px;
-  color: #111;
-  background: #fff;
-  border-top: 4px solid #00bcd4;
+@font-face {
+  font-family: Rajdhani;
+  src: url('/assets/fonts/Rajdhani-Medium.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
 }
-.main-menu h1 {
-  letter-spacing: 0.18em;
+@font-face {
+  font-family: Rajdhani;
+  src: url('/assets/fonts/Rajdhani-SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+}
+html:has(.main-menu) {
+  background: #02050b;
 }
 body:has(.main-menu) {
+  /* flow-root: margines menu nie przecieka przez body i nie odsłania tła html. */
+  display: flow-root;
   overflow: auto;
+  min-height: 100vh;
+  background: radial-gradient(
+    ellipse at 50% 25%,
+    #0b1628 0%,
+    #050a14 65%,
+    #02050b 100%
+  );
+  color: var(--hud-text, #edf7ff);
+}
+.main-menu {
+  position: relative;
+  box-sizing: border-box;
+  width: min(540px, calc(100% - 32px));
+  margin: 8vh auto;
+  padding: 32px 36px;
+  color: var(--hud-text, #edf7ff);
+  font:
+    500 15px/1.35 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  animation: main-menu-in 180ms ease-out;
+}
+/* Tło z rozmyciem w ::before, aby backdrop-filter nie tworzył bloku dla fixed .build-select w debugu. */
+.main-menu::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
+      0 / 14px 1px no-repeat,
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
+      0 / 1px 14px no-repeat,
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
+      0 / 14px 1px no-repeat,
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
+      0 / 1px 14px no-repeat,
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
+      100% / 14px 1px no-repeat,
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
+      100% / 1px 14px no-repeat,
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
+      100% / 14px 1px no-repeat,
+    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
+      100% / 1px 14px no-repeat,
+    rgba(6, 12, 24, 0.85);
+  backdrop-filter: blur(6px);
+}
+.main-menu h1 {
+  position: relative;
+  margin: 0 0 10px;
+  padding-bottom: 12px;
+  font-family: Rajdhani, 'Segoe UI', sans-serif;
+  font-size: clamp(36px, 5vw, 50px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--hud-health, #00e5ff);
+  text-shadow:
+    0 1px 3px #000,
+    0 0 16px rgba(0, 229, 255, 0.45);
+}
+.main-menu h1::before {
+  content: 'ISKRA // TERMINAL';
+  display: block;
+  margin-bottom: 6px;
+  font-family: Rajdhani, 'Segoe UI', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.18em;
+  color: rgba(237, 247, 255, 0.58);
+  text-shadow: none;
+}
+.main-menu h1::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.7), transparent);
+}
+.main-menu p {
+  margin: 8px 0 14px;
+  color: rgba(237, 247, 255, 0.62);
+}
+.main-menu p[role='status'] {
+  margin: 14px 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(237, 247, 255, 0.68);
+  border-left: 2px solid rgba(0, 229, 255, 0.45);
+  background: rgba(0, 229, 255, 0.04);
+}
+.main-menu label {
+  display: block;
+  margin-top: 16px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(237, 247, 255, 0.6);
 }
 .main-menu > button,
 .main-menu input {
   box-sizing: border-box;
   display: block;
   width: 100%;
-  padding: 14px;
-  margin: 12px 0;
+  padding: 13px 16px;
+  margin: 10px 0;
   font: inherit;
-  border: 2px solid #111;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid rgba(0, 229, 255, 0.28);
+}
+.main-menu input {
+  margin-top: 6px;
+  background: rgba(6, 12, 24, 0.72);
+  color: var(--hud-text, #edf7ff);
+}
+.main-menu input::placeholder {
+  color: rgba(237, 247, 255, 0.4);
 }
 .main-menu > button {
-  background: #111;
-  color: #fff;
+  position: relative;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--hud-text, #edf7ff);
+  border-bottom-color: rgba(0, 229, 255, 0.65);
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.main-menu > button:first-of-type {
+  color: var(--hud-health, #00e5ff);
+  border-color: rgba(0, 229, 255, 0.65);
+  border-bottom-color: var(--hud-health, #00e5ff);
+  background: rgba(0, 229, 255, 0.09);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
+}
+.main-menu > button:hover:not(:disabled),
+.main-menu > button:focus-visible:not(:disabled) {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: var(--hud-health, #00e5ff);
+  box-shadow:
+    0 0 16px rgba(0, 229, 255, 0.26),
+    inset 0 0 12px rgba(0, 229, 255, 0.08);
 }
 .main-menu > button:disabled {
   opacity: 0.35;
@@ -34,10 +184,32 @@ body:has(.main-menu) {
 }
 .main-menu button:focus-visible,
 .main-menu input:focus-visible {
-  outline: 3px solid #00bcd4;
-  outline-offset: 3px;
+  outline: 1px solid var(--hud-health, #00e5ff);
+  outline-offset: 2px;
 }
 /* RunState przechowuje ekwipunek; warianty ostrza pozostają wyborem poligonu. */
 .main-menu .build-select__blades {
   display: none;
+}
+@keyframes main-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main-menu {
+    animation: none;
+  }
+  .main-menu > button {
+    transition: none;
+  }
+  .main-menu h1,
+  .main-menu > button:first-of-type {
+    text-shadow: 0 1px 3px #000;
+  }
 }

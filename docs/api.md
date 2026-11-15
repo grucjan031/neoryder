@@ -153,6 +153,7 @@ Zasady: emisja synchroniczna, handlery w kolejności rejestracji; wyjątek w han
 export const STAT_IDS = [
   'maxHealth', 'moveSpeed', 'damage', 'attackSpeed',
   'maxEnergy', 'energyRegen', 'heatCapacity', 'coolingRate',
+  'maxStamina', 'staminaRegen', 'extraJumps', // bazy sceny: 100, 30/s, 0
   'damageTaken', // F1: mnożnik otrzymywanych obrażeń, baza zawsze 1 (blok = mult 0.3)
   'dashCooldown', // F1: odnowienie dashu (s), baza z tuning.player.dashCooldownS
 ] as const;
@@ -184,6 +185,19 @@ export class Stats {
 ```
 
 Nowe `StatId` dodaje tylko Architekt (lista jest też źródłem dla `z.enum` w schematach danych).
+
+Wytrzymałość: `PlayerController` przyjmuje opcjonalny szósty argument z bazami
+`Stats` (domyślnie `maxStamina: 100`, `staminaRegen: 30`, `extraJumps: 0`).
+`stats` kontrolera zasila `stamina: PlayerStamina` (`current`, `max`, `spend(n)`,
+`set(n)`, `step(dt)`). Kontroler wykonuje krok zasobu w czasie gracza i publikuje
+`stamina_changed` po zmianie wartości lub maksimum oraz na pierwszym dodatnim
+kroku (dla HUD scen debug utworzonego po kontrolerze); `set()` publikuje również
+stan początkowy po utworzeniu HUD. `stamina_denied` sygnalizuje brak pełnego kosztu
+dashu/skoku w powietrzu. `PlayerState.airJumpsUsed` zastępuje `doubleJumpUsed`;
+limit to `floor(stats.get('extraJumps'))`. Zużycie sprintu następuje tylko przy
+faktycznym przesunięciu poziomym poza dashem i slide. Po zejściu do zera sprint
+wraca dopiero powyżej `tuning.player.sprintMinStamina`. Wytrzymałość nie należy
+do `RunState` ani `exportState()` pokoju; każdy pokój zaczyna z pełną pulą.
 
 ## RNG — `src/core/rng.ts`
 
@@ -453,6 +467,8 @@ melee_blocked: { defender: EntityId; attacker: EntityId | null; amount: number }
 // moce (#11)
 power_cooldown: { power: string; user: EntityId; cooldownS: number };
 energy_changed: { id: EntityId; current: number; max: number };
+stamina_changed: { id: EntityId; current: number; max: number };
+stamina_denied: { user: EntityId; action: 'dash' | 'doubleJump' };
 power_denied: { power: string; user: EntityId; reason: 'no_energy' | 'cooldown' | 'too_heavy' | 'out_of_range' };
 power_released: { power: string; user: EntityId }; // F2-09: odnowienie od puszczenia
 

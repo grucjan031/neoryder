@@ -50,6 +50,7 @@ import type { Enemy } from '../enemies/types';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
+import { staminaStatsSchema } from '../player/stamina';
 import type { PlayerState } from '../player/playerController';
 import { BeamRenderer } from '../render/beamRenderer';
 import { BarrierRenderer } from '../render/barrierRenderer';
@@ -80,6 +81,7 @@ import type { Scene } from './index';
 
 const playerDefaults = z
   .object({
+    ...staminaStatsSchema.shape,
     maxHealth: z.number().positive(),
     maxEnergy: z.number().positive(),
     energyRegen: z.number().nonnegative(),
@@ -247,6 +249,7 @@ export class RoomScene implements Scene {
       ctx,
       this.spawnPosition(),
       loadSettings(),
+      playerDefaults,
     );
     this.applyImplants();
     this.applyTalents();
@@ -310,6 +313,7 @@ export class RoomScene implements Scene {
         totalWaves: this.waves.waves.length,
         run: { credits: this.run.credits, implants: this.run.implants },
       });
+    this.player.stamina.set(this.player.stamina.max);
     this.energy = new PlayerEnergy(
       playerId,
       this.playerStats,
@@ -1182,6 +1186,10 @@ export class RoomScene implements Scene {
         return this.talentSystem.ids();
       case 'energy':
         return this.energy.current;
+      case 'stamina':
+        return this.player.stamina.current;
+      case 'extraJumps':
+        return this.player.stats.get('extraJumps');
       case 'heat':
         return this.weapon.heat.current;
       case 'loadout':

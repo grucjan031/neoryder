@@ -11,10 +11,13 @@ Lokalny Rajdhani (OFL w `public/assets/fonts/Rajdhani-OFL.txt`) daje duże,
 wąskie liczby z `tabular-nums`; mikroteksty mają 9 px, wielkie litery
 oraz odstęp 0,18 em. Teksty techniczne są w `src/data/ui/hud.pl.json`.
 
-- **Lewy dół:** grupa zdrowia/energii ma `rotateY(10deg)` względem zewnętrznej
+- **Lewy dół:** grupa zdrowia/energii/wytrzymałości ma `rotateY(10deg)` względem zewnętrznej
   krawędzi i perspektywę 1100 px. Cyanowe HP: liczba 32 px, pasek 7 px
   z pionowych kresek (maska `repeating-linear-gradient`). Energia: magenta,
-  pasek 4 px i mniejsza liczba. Podkreślenie kończy się rombem. Biały ślad
+  pasek 4 px i mniejsza liczba. Pod energią wytrzymałość: limonkowy `#c8ff5a`
+  kreskowy pasek 4 px, liczba i mikrotekst „MOB // WYTRZYMAŁOŚĆ”. Wyczerpanie
+  lub odmowa dashu/skoku daje krótki puls w czasie `--hud-denial-duration`.
+  Podkreślenie kończy się rombem. Biały ślad
   obrażeń zostaje na 0,4 s, a potem kurczy się przez 0,4 s. Przy HP ≤ 30%
   (i powyżej zera) pulsuje liczba i pasek, a mikrotekst zmienia się na
   bursztynowe „VIT // KRYTYCZNE”.
@@ -110,6 +113,8 @@ kąta. Gdy `dir` jest `null` (np. obrażenia obszarowe), łuk się nie pokazuje.
 | ---------------------------------- | -------------------------------------- | ----------------------------------- |
 | Zdrowie, winieta niskiego HP       | `health_changed`                       | `id === playerId`                   |
 | Energia, przygaszanie mocy         | `energy_changed`                       | `id === playerId`                   |
+| Wytrzymałość                       | `stamina_changed`                      | `id === playerId`                   |
+| Odmowa dashu/skoku                 | `stamina_denied`                       | `user === playerId`                 |
 | Ciepło, przegrzanie                | `heat_changed`                         | `id === playerId`                   |
 | Nazwa broni, aktywny slot          | `weapon_switched`                      | `owner === playerId`                |
 | Rozszerzenie celownika             | `weapon_fired`                         | `owner === playerId`                |
@@ -124,7 +129,7 @@ kąta. Gdy `dir` jest `null` (np. obrażenia obszarowe), łuk się nie pokazuje.
 | Dialog śmierci                     | `player_died`                          | `id === playerId`                   |
 
 Paski startują puste z liczbą „—”, do pierwszego zdarzenia. Scena powinna utworzyć
-HUD przed początkowymi emisjami zdrowia, energii i ciepła albo wyemitować aktualny
+HUD przed początkowymi emisjami zdrowia, energii, wytrzymałości i ciepła albo wyemitować aktualny
 stan po jego utworzeniu. HUD nie odpytuje symulacji. Niezmienione wartości,
 teksty i stany nie zapisują ponownie DOM. Liczby są zaokrąglane do całości,
 szerokości ograniczone do 0–100%.

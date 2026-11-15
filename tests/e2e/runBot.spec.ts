@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { waitSimSteps } from './helpers';
+import { SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 const URL = '/?scene=run&seed=bot-1&loadout=classic&debug=1';
 
@@ -28,7 +28,9 @@ test('bot: cała mapa z cheatami do zwycięstwa nad bossem', async ({ page }) =>
     if ((await query('room')) === 'bossRoom') break;
     if ((await query('screen')) === 'room') {
       await command('run clear');
-      await expect.poll(() => query('screen')).toBe('reward');
+      await expect
+        .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+        .toBe('reward');
       await page.keyboard.press('Digit1');
     } else {
       await page.keyboard.press('Enter');

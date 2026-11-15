@@ -3,79 +3,80 @@ import { EventBus } from '../../src/core/events';
 import type { Vec3 } from '../../src/core/math';
 import type { HubStationId } from '../../src/core/metaTypes';
 import { tuning } from '../../src/core/tuning';
-import { HubStations, selectHubFocus } from '../../src/world/hubStations';
+import {
+  HubStations,
+  selectHubFocus,
+  rayAabbDistance,
+} from '../../src/world/hubStations';
 import type { HubZone } from '../../src/world/hubStations';
 
-const zones: HubZone[] = [
-  { id: 'missions', position: { x: -6, z: 0 }, radius: 2 },
-  { id: 'talents', position: { x: 6, z: 0 }, radius: 2 },
-];
-const focusY = tuning.hub.focusHeightM;
-const eye = (x: number, z: number, y = focusY): Vec3 => ({ x, y, z });
-const focus = (
-  position: Vec3,
-  yaw = 0,
-  pitch = 0,
-  stations = zones,
-  targetY = focusY,
-) =>
+const zones = [
+  {
+    id: 'missions',
+    position: { x: -6, z: 0 },
+    radius: 2,
+    focus: { position: { x: -6, y: 1, z: 0 }, size: { x: 1, y: 2, z: 1 } },
+  },
+  {
+    id: 'talents',
+    position: { x: 6, z: 0 },
+    radius: 2,
+    focus: { position: { x: 6, y: 1, z: 0 }, size: { x: 1, y: 2, z: 1 } },
+  },
+] satisfies (HubZone & { focus: { position: Vec3; size: Vec3 } })[];
+const eye = (x: number, z: number, y = 1.6): Vec3 => ({ x, y, z });
+const focus = (position: Vec3, yaw = 0, pitch = 0, stations = zones) =>
   selectHubFocus(
     stations,
     position,
     yaw,
     pitch,
-    targetY,
-    tuning.hub.interactAngleDeg,
+    tuning.hub.interactRangeM,
+    tuning.hub.focusPaddingM,
   );
 
-it('wybór wymaga zasięgu poziomego i patrzenia na stację, uwzględnia granicę promienia', () => {
-  expect(focus(eye(6, 2))).toBe('talents');
-  expect(focus(eye(6, 2.001))).toBeNull();
-  expect(focus(eye(6, 1), Math.PI)).toBeNull();
+it('trafienie z daleka mierzy zasięg do powierzchni bryły, nie środka strefy', () => {
+  expect(focus(eye(6, 4.2))).toBe('talents');
+  expect(focus(eye(6, 4.201))).toBeNull();
+  expect(focus(eye(6, 3))).toBe('talents');
+  expect(focus(eye(6, 1.3))).toBe('talents');
+  expect(focus(eye(6, 1.3), 0, -0.3)).toBe('talents');
+});
+
+it('patrzenie obok lub za siebie nie wybiera stacji', () => {
+  expect(focus(eye(6, 1.3), Math.PI)).toBeNull();
+  expect(focus(eye(6, 1.3), Math.PI / 2)).toBeNull();
+  expect(focus(eye(6, 1.3), 0, Math.PI / 2)).toBeNull();
   expect(focus(eye(0, 0))).toBeNull();
   expect(focus(eye(0, 0), 0, 0, [])).toBeNull();
 });
 
-it('yaw 0 patrzy w −Z; poprawnie wybiera stacje po obu stronach gracza', () => {
+it('yaw 0 patrzy w −Z; wybiera stacje po obu stronach gracza', () => {
   expect(focus(eye(5, 0), -Math.PI / 2)).toBe('talents');
   expect(focus(eye(-5, 0), Math.PI / 2)).toBe('missions');
 });
 
-it('granica kąta jest włączona, a przekroczenie jej odrzuca stację', () => {
-  const angle = (tuning.hub.interactAngleDeg * Math.PI) / 180;
-  expect(focus(eye(6, 1), angle)).toBe('talents');
-  expect(focus(eye(6, 1), angle + 0.001)).toBeNull();
-  expect(focus(eye(6, 1), -angle - 0.001)).toBeNull();
+it('wybiera najbliższe trafienie niezależnie od kolejności danych', () => {
+  const near = {
+    ...zones[0]!,
+    focus: {
+      position: { x: 6, y: 1, z: 2 },
+      size: { x: 1, y: 2, z: 1 },
+    },
+  };
+  expect(focus(eye(6, 4), 0, 0, [zones[1]!, near])).toBe('missions');
+  expect(focus(eye(6, 4), 0, 0, [near, zones[1]!])).toBe('missions');
 });
 
-it('pitch i wysokość oka decydują o kącie do punktu stacji', () => {
-  const above = eye(6, 1, focusY + 1);
-  expect(focus(above)).toBeNull();
-  expect(focus(above, 0, -Math.PI / 4)).toBe('talents');
-  expect(focus(above, 0, Math.PI / 4)).toBeNull();
-  const below = eye(6, 1, focusY - 1);
-  expect(focus(below, 0, Math.PI / 4)).toBe('talents');
-  expect(focus(above, 0, 0, zones, focusY + 1)).toBe('talents');
-});
-
-it('porównuje pełny kąt 3D, a nie osobne limity yaw i pitch', () => {
-  const angle = (25 * Math.PI) / 180;
-  expect(focus(eye(6, 1), angle, angle)).toBeNull();
-});
-
-it('wybiera najmniejszy kąt zamiast najbliższej stacji lub pierwszej z listy', () => {
-  const overlapping: HubZone[] = [
-    { id: 'missions', position: { x: 0.3, z: -1 }, radius: 3 },
-    { id: 'talents', position: { x: 0, z: -2 }, radius: 3 },
-  ];
-  expect(focus(eye(0, 0), 0, 0, overlapping)).toBe('talents');
-  expect(focus(eye(0, 0), -Math.atan2(0.3, 1), 0, overlapping)).toBe(
-    'missions',
+it('ray–AABB obsługuje promienie równoległe, padding, oko wewnątrz i bryłę za okiem', () => {
+  const box = zones[1]!.focus;
+  expect(rayAabbDistance(eye(6, 2), { x: 0, y: 0, z: -1 }, box)).toBe(1.5);
+  expect(rayAabbDistance(eye(6.6, 2), { x: 0, y: 0, z: -1 }, box)).toBeNull();
+  expect(rayAabbDistance(eye(6.6, 2), { x: 0, y: 0, z: -1 }, box, 0.2)).toBe(
+    1.3,
   );
-});
-
-it('pomija punkt pokrywający się z okiem, bez NaN ani otwierania stacji', () => {
-  expect(focus(eye(6, 0))).toBeNull();
+  expect(rayAabbDistance(eye(6, 0), { x: 0, y: 0, z: -1 }, box)).toBe(0);
+  expect(rayAabbDistance(eye(6, 2), { x: 0, y: 0, z: 1 }, box)).toBeNull();
 });
 
 function setup() {

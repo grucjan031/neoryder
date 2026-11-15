@@ -15,6 +15,8 @@ import { resolveLoadout } from '../../src/progression/patches';
 import { talentTrees } from '../../src/progression/talentSchema';
 import type { TalentNode } from '../../src/progression/talentSchema';
 import { resolveTalents, TalentSystem } from '../../src/progression/talents';
+import { MetaManager, defaultMetaRules } from '../../src/progression/meta';
+import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { RoomScene } from '../../src/scenes/roomScene';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 import { RunManager } from '../../src/world/run';
@@ -28,11 +30,11 @@ const allNodes: TalentNode[] = [...talentTrees.values()].flatMap(
 const nodeById = new Map(allNodes.map((node) => [node.id, node]));
 
 describe('dane drzewek talentów', () => {
-  it('ma komplet drzewek: 8 + 8 + 8 + 5 węzłów', () => {
+  it('ma komplet drzewek: 8 + 8 + 8 + 6 węzłów', () => {
     expect([...talentTrees.keys()].sort()).toEqual([...TREE_IDS].sort());
     for (const tree of ['blade', 'resonance', 'gunner'] as const)
       expect(talentTrees.get(tree)?.nodes).toHaveLength(8);
-    expect(talentTrees.get('hybrid')?.nodes).toHaveLength(5);
+    expect(talentTrees.get('hybrid')?.nodes).toHaveLength(6);
   });
 
   it('wszystkie węzły mają polskie nazwy i opisy bez nazw chronionych', () => {
@@ -353,9 +355,10 @@ describe('talenty w pokoju', () => {
     });
     const scene = new RoomScene(room, run, waves, { loadModels: false });
     const commands = new CommandRegistry();
+    const bus = new EventBus();
     await scene.init(
       {
-        bus: new EventBus(),
+        bus,
         commands,
         rng: new Rng(run.seed).fork('room:node'),
         loop: new GameLoop({ step() {}, render() {} }),
@@ -365,12 +368,38 @@ describe('talenty w pokoju', () => {
       new ThreeScene(),
     );
     active.add(scene);
-    return { scene, commands };
+    return { scene, commands, bus };
   }
+
+  it('Podwójny skok można kupić za pierwszy punkt; daje extraJumps w pokoju i kosztuje wytrzymałość', async () => {
+    const meta = new MetaManager(createStarterMetaState());
+    meta.debugAddXp(defaultMetaRules.progression.levels.xpToNext[0]!);
+    expect(meta.freePoints).toBe(1);
+    meta.buyTalent('hybridDoubleJump');
+    expect(meta.freePoints).toBe(0);
+    expect(meta.spentInTree('blade')).toBe(0);
+    expect(meta.spentInTree('resonance')).toBe(0);
+    expect(meta.spentInTree('gunner')).toBe(0);
+    const { scene, bus } = await setup(meta.state.talents);
+    expect(scene.query('extraJumps')).toBe(1);
+    expect(scene.query('stamina')).toBe(100);
+    for (let i = 0; i < 10; i++) scene.step(SIM_DT, idle);
+    const jumps: boolean[] = [];
+    bus.on('player_jumped', ({ double }) => jumps.push(double));
+    const jump = { ...idle, pressed: new Set(['jump'] as const) };
+    scene.step(SIM_DT, jump);
+    scene.step(SIM_DT, jump);
+    expect(jumps).toEqual([false, true]);
+    expect(scene.query('stamina')).toBe(75);
+    expect(scene.exportState()).not.toHaveProperty('stamina');
+    const next = await setup(meta.state.talents);
+    expect(next.scene.query('stamina')).toBe(100);
+  });
 
   it('bez talentów synergia bladeDancer jest nieaktywna', async () => {
     const { scene } = await setup([]);
     expect(scene.query('talents')).toEqual([]);
+    expect(scene.query('extraJumps')).toBe(0);
     expect(scene.query('synergies')).not.toContain('bladeDancer');
   });
 

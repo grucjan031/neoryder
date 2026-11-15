@@ -92,13 +92,14 @@ describe('Hud', () => {
     expect(energy.dataset.change).toBe('b');
   });
 
-  it.each(['energy', 'heat'] as const)(
+  it.each(['energy', 'stamina', 'heat'] as const)(
     'aktualizuje pasek %s i pomija identyczny stan',
     (kind) => {
       const update = (current: number, max: number): void => {
         const payload = { id: 1, current, max };
         if (kind === 'heat')
           bus.emit('heat_changed', { ...payload, overheated: false });
+        else if (kind === 'stamina') bus.emit('stamina_changed', payload);
         else bus.emit('energy_changed', payload);
       };
       update(25, 100);
@@ -130,6 +131,33 @@ describe('Hud', () => {
       observer.disconnect();
     },
   );
+
+  it('pokazuje wytrzymałość pod energią, filtruje gracza i pulsuje przy zerze oraz odmowie', () => {
+    const meter = query('.hud__meter--stamina');
+    const value = query('.hud__meter--stamina .hud__value');
+    const energy = query('.hud__meter--energy');
+    expect(energy.nextElementSibling?.textContent).toBe('MOB // WYTRZYMAŁOŚĆ');
+    expect(energy.nextElementSibling?.nextElementSibling).toBe(meter);
+    bus.emit('stamina_changed', { id: 2, current: 40, max: 100 });
+    expect(value.textContent).toBe('—');
+    bus.emit('stamina_changed', { id: 1, current: 100, max: 100 });
+    bus.emit('stamina_changed', { id: 1, current: 0, max: 100 });
+    expect(value.textContent).toBe('0 / 100');
+    expect(meter.dataset.change).toBe('a');
+    bus.emit('stamina_changed', { id: 1, current: 0, max: 100 });
+    expect(meter.dataset.change).toBe('a');
+    bus.emit('stamina_denied', { user: 2, action: 'dash' });
+    expect(query('.hud__denial').hidden).toBe(true);
+    bus.emit('stamina_denied', { user: 1, action: 'dash' });
+    expect(meter.dataset.change).toBe('b');
+    expect(query('.hud__denial').hidden).toBe(false);
+    expect(query('.hud__denial').textContent).toBe('Brak wytrzymałości');
+    query('.hud__denial').dispatchEvent(new Event('animationend'));
+    expect(query('.hud__denial').hidden).toBe(true);
+    bus.emit('stamina_denied', { user: 1, action: 'doubleJump' });
+    expect(meter.dataset.change).toBe('a');
+    expect(query('.hud__denial').hidden).toBe(false);
+  });
 
   it('zdrowie rysuje 10 segmentów i obcina wartości', () => {
     const fills = () =>

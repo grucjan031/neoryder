@@ -4,11 +4,11 @@
 
 ## Drzewka i progi
 
-Trzy drzewka ścieżek (Ostrze, Rezonans, Strzelec; po 8 węzłów) i drzewko Hybryd (5 węzłów), razem 29. Każdy węzeł ma `tier` 1–4, `cost` 1–3 punkty, `requires` (wszystkie wymagane węzły, dowolne drzewo) i opcjonalnie `requiresTreePoints` (punkty wydane w danym drzewku, tylko hybrydy).
+Trzy drzewka ścieżek (Ostrze, Rezonans, Strzelec; po 8 węzłów) i drzewko Hybryd (6 węzłów), razem 30. Każdy węzeł ma `tier` 1–4, `cost` 1–3 punkty, `requires` (wszystkie wymagane węzły, dowolne drzewo) i opcjonalnie `requiresTreePoints` (punkty wydane w danym drzewku, tylko hybrydy).
 
-`tierThresholds[tier - 1]` to liczba punktów wydanych w **tym samym drzewku** (suma `cost` kupionych węzłów drzewka), jaka jest potrzebna, by kupić węzeł danego progu. Drzewka ścieżek mają progi `[0, 1, 4, 7]`: korzeń (próg 1, koszt 1) otwiera próg 2, a 4 punkty w drzewku próg 3. Hybrydy mają progi `[0, 0, 0, 0]` i bramkują się wyłącznie `requiresTreePoints` (punkty wydane w drzewkach ścieżek; punkty wydane w hybrydach nie liczą się do drzewek źródłowych).
+`tierThresholds[tier - 1]` to liczba punktów wydanych w **tym samym drzewku** (suma `cost` kupionych węzłów drzewka), jaka jest potrzebna, by kupić węzeł danego progu. Drzewka ścieżek mają progi `[0, 1, 4, 7]`: korzeń (próg 1, koszt 1) otwiera próg 2, a 4 punkty w drzewku próg 3. Hybrydy mają progi `[0, 0, 0, 0]` i opcjonalne `requiresTreePoints` (punkty wydane w drzewkach ścieżek; punkty wydane w hybrydach nie liczą się do drzewek źródłowych). `hybridDoubleJump` nie ma tego wymagania i jest dostępny od pierwszego punktu: daje `extraJumps +1`, odblokowując jeden skok w powietrzu za 25 wytrzymałości. Pokoje stosują modyfikator przez istniejący `TalentSystem` na `PlayerController.stats`.
 
-Uwaga o danych: pierwotne progi `[0, 2, 5, 8]` zakleszczały każde drzewko (jedyny węzeł progu 1 to korzeń za 1 punkt, a próg 2 wymagał 2), więc w F4-04 przesunięto je o 1. Test `talents.test.ts` pilnuje, że każdy z 29 węzłów jest osiągalny.
+Uwaga o danych: pierwotne progi `[0, 2, 5, 8]` zakleszczały każde drzewko (jedyny węzeł progu 1 to korzeń za 1 punkt, a próg 2 wymagał 2), więc w F4-04 przesunięto je o 1. Test `talents.test.ts` pilnuje, że każdy z 30 węzłów jest osiągalny.
 
 ## Zakup i reset
 
@@ -88,6 +88,7 @@ W pokoju (`room-test`, `run`): `talent <id>` dodaje talent na żywo (modyfikator
 | id                      | Nazwa           | Próg | Koszt | Wymaga                                        | Efekt                                                                                                                      |
 | ----------------------- | --------------- | ---- | ----- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `hybridStormDancer`     | Tancerz burzy   | 1    | 2     | 3 pkt: blade, 3 pkt: resonance                | Użycie zdolności Rezonansu zwiększa szybkość ataku o 20% i skraca odnowienie dashu o 30% na 3 s.                           |
+| `hybridDoubleJump`      | Podwójny skok   | 1    | 1     | brak                                          | Jeden dodatkowy skok w powietrzu (`extraJumps +1`), koszt: 25 wytrzymałości.                                               |
 | `hybridResonanceGunner` | Spust Rezonansu | 1    | 2     | 3 pkt: resonance, 3 pkt: gunner               | Zabójstwo zdolnością Rezonansu schładza broń o 40 pkt, a Błyskawica zadaje o 20% wyższe obrażenia.                         |
 | `hybridBladeGunner`     | Ostrze i lufa   | 1    | 2     | 3 pkt: blade, 3 pkt: gunner                   | Dash zwiększa obrażenia o 18% na 2.5 s, a zabójstwo w zwarciu schładza broń palną o 35 pkt.                                |
 | `hybridArcBlade`        | Iskrząca klinga | 1    | 3     | 4 pkt: blade, 4 pkt: resonance                | Trafienie ostrzem plazmowym wyzwala łuk elektryczny w promieniu 5 m za 35% obrażeń i przyspiesza ruch o 10%.               |

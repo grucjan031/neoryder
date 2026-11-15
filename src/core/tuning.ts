@@ -218,6 +218,13 @@ export const tuning = {
   },
   /** Kontroler FPP (#02). Prędkości m/s, przyspieszenia m/s², czasy ms. */
   player: {
+    staminaRegenDelayS: 0.8,
+    sprintStaminaPerS: 20,
+    dashStaminaCost: 30,
+    doubleJumpStaminaCost: 25,
+    sprintMinStamina: 15,
+    /** Pomija mikrokorekty kontaktu Rapiera przy rozliczaniu sprintu (metry/krok). */
+    sprintMovementEpsilonM: 0.001,
     walkSpeed: 7,
     sprintSpeed: 11,
     groundAccel: 90,
@@ -398,9 +405,9 @@ export const tuning = {
     hitSparkCameraMinM: 0.6,
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
-  run: { transitionS: 0.6, fadeS: 0.35 },
-  /** Kryjówka: stożek interakcji i wysokość punktu stacji nad podłogą. */
-  hub: { interactAngleDeg: 30, focusHeightM: 1.25 },
+  run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },
+  /** Kryjówka: zasięg od oka i margines bryły interakcji (m). */
+  hub: { interactRangeM: 3.5, focusPaddingM: 0.2 },
   sandbox: { cubeSpawnHeight: 6 },
 };
 export type Tuning = typeof tuning;

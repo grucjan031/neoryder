@@ -1,3 +1,4 @@
+import hideout from '../../src/data/hub/hideout.json' with { type: 'json' };
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { SIM_TIMEOUT, waitSimSteps } from './helpers';
@@ -151,7 +152,7 @@ test('hub: spojrzenie w zasięgu pokazuje podpowiedź, E otwiera, Esc zamyka bez
 }) => {
   const errors = collectErrors(page);
   await openHub(page);
-  await command(page, 'hub tp 6 -2.6 180');
+  await command(page, 'hub tp 6 -3.2 180');
   await waitSimSteps(page, 5);
   expect(await query(page, 'hubFocus')).toBeNull();
   expect(await query(page, 'hubStation')).toBeNull();
@@ -201,3 +202,29 @@ test('hub: stacja arena przechodzi na poligon', async ({ page }) => {
   await expect(page).toHaveURL(/debug=1/);
   expect(errors).toEqual([]);
 });
+
+for (const station of hideout.stations) {
+  test(`hub: blisko obiektu ${station.id} podpowiedź i E działają`, async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+    await openHub(page);
+    const { position, size } = station.focus;
+    await command(
+      page,
+      `hub tp ${position.x} ${position.z + size.z / 2 + 0.8}`,
+    );
+    await command(page, `hub look ${station.id}`);
+    await expect
+      .poll(() => query(page, 'hubFocus'), { timeout: SIM_TIMEOUT })
+      .toBe(station.id);
+    await expect(page.locator('.hub-prompt')).toBeVisible();
+    await expect(page.locator('.hub-prompt')).toContainText(station.label);
+    await page.keyboard.press('KeyE');
+    await expect
+      .poll(() => query(page, 'hubStation'), { timeout: SIM_TIMEOUT })
+      .toBe(station.id);
+    await expect(page.locator('.hub-screen')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+}

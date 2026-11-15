@@ -44,6 +44,8 @@ export interface GameEvents {
   // F1 — ruch (#02, #04)
   player_jumped: { id: EntityId; double: boolean };
   player_landed: { id: EntityId; speed: number };
+  stamina_changed: { id: EntityId; current: number; max: number };
+  stamina_denied: { user: EntityId; action: 'dash' | 'doubleJump' };
   dash_used: { user: EntityId; dir: Vec3 };
   slide_started: { user: EntityId };
   slide_ended: { user: EntityId };

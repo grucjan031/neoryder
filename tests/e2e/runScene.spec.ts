@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { waitSimSteps } from './helpers';
+import { SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
   await page.goto('/?scene=run&seed=resume-check&debug=1');
@@ -9,7 +9,9 @@ test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
   await page.locator('.run-screen [data-node-id]').first().click();
   await expect.poll(() => query('loading')).toBe(false);
   await page.evaluate(() => window.__neoryder?.command('run clear'));
-  await expect.poll(() => query('screen')).toBe('reward');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('reward');
   await page.keyboard.press('Digit1');
   await expect.poll(() => query('screen')).toBe('map');
   // Zapis do IndexedDB jest asynchroniczny — przeładowanie dopiero po jego końcu.
@@ -46,7 +48,9 @@ test('run: wybór węzła, wejście do pokoju, run clear, wybór implantu i powr
   });
   expect(await query('doors')).toMatchObject({ exit: { open: false } });
   await page.evaluate(() => window.__neoryder?.command('run clear'));
-  await expect.poll(() => query('screen')).toBe('reward');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('reward');
   // F3-11: ekran nagrody pokazuje 3 prawdziwe implanty; klawisz 1 wybiera pierwszy.
   await expect(page.locator('.run-screen button')).toHaveCount(3);
   await page.keyboard.press('Digit1');
@@ -59,7 +63,9 @@ test('run: wybór węzła, wejście do pokoju, run clear, wybór implantu i powr
   await expect.poll(() => query('loading')).toBe(false);
   await expect.poll(() => query('screen')).toBe('room');
   await page.evaluate(() => window.__neoryder?.command('run clear'));
-  await expect.poll(() => query('screen')).toBe('reward');
+  await expect
+    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .toBe('reward');
   await page.locator('.run-screen button').first().click();
   await expect.poll(() => query('screen')).toBe('map');
   expect(
@@ -89,7 +95,9 @@ test('run: dojście do bossa, kill all po progach faz i ekran zwycięstwa', asyn
     if ((await query('room')) === 'bossRoom') break;
     if ((await query('screen')) === 'room') {
       await command('run clear');
-      await expect.poll(() => query('screen')).toBe('reward');
+      await expect
+        .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+        .toBe('reward');
     }
     await page.keyboard.press('Enter');
   }
@@ -138,7 +146,9 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
     if ((await query('screen')) === 'shop') break;
     if ((await query('screen')) === 'room') {
       await command('run clear');
-      await expect.poll(() => query('screen')).toBe('reward');
+      await expect
+        .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+        .toBe('reward');
     }
     await page.keyboard.press('Enter');
     await expect.poll(() => query('screen')).toBe('map');

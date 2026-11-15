@@ -91,7 +91,9 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   await expect.poll(() => query('screen')).toMatch(/^(room|shop|rest)$/);
   if ((await query('screen')) === 'room') {
     await command('run clear');
-    await expect.poll(() => query('screen')).toBe('reward');
+    await expect
+      .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+      .toBe('reward');
     await page.keyboard.press('Digit1');
     await expect.poll(() => query('screen')).toBe('map');
   }

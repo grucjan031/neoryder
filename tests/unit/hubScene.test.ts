@@ -1,3 +1,4 @@
+import hideout from '../../src/data/hub/hideout.json';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Scene as ThreeScene } from 'three';
 import { EventBus } from '../../src/core/events';
@@ -134,7 +135,7 @@ it('hub open pokazuje nakładkę i emituje zdarzenie, hub close ją zamyka i wzn
 
 it('stacja wymaga patrzenia i zbocza E; nakładka ignoruje E, po zamknięciu można otworzyć ją ponownie', async () => {
   const { scene, commands, screens, opened } = await setup();
-  commands.execute('hub tp 6 -2.6 180');
+  commands.execute('hub tp 6 -3.2 180');
   scene.step(SIM_DT, idle);
   expect(scene.query('hubFocus')).toBeNull();
   scene.step(SIM_DT, interact);
@@ -163,7 +164,7 @@ it.each([false, true])(
   'odrzuca zaległe E po zamknięciu nakładki (kroki przy otwartej: %s)',
   async (stepsWhileOpen) => {
     const { scene, commands, screens, opened } = await setup();
-    commands.execute('hub tp 6 -2.6');
+    commands.execute('hub tp 6 -3.2');
     commands.execute('hub look talents');
     scene.step(SIM_DT, interact);
     expect(scene.query('hubStation')).toBe('talents');
@@ -191,7 +192,7 @@ it.each(['workshop', 'missions', 'talents', 'arena'] as const)(
       z: number;
     }[];
     const station = stations.find((station) => station.id === id)!;
-    commands.execute(`hub tp ${station.x} ${station.z + 1.5}`);
+    commands.execute(`hub tp ${station.x} ${station.z}`);
     commands.execute(`hub look ${id}`);
     scene.step(SIM_DT, idle);
     expect(scene.query('hubFocus')).toBe(id);
@@ -302,3 +303,17 @@ it('dispose nie zostawia subskrypcji EventBus ani komend i zwalnia nakładki', a
   expect(commands.execute('hub open missions')).toContain('Nieznana komenda');
   expect(() => scene.dispose()).not.toThrow();
 });
+
+it.each(hideout.stations)(
+  'blisko obiektu $id spojrzenie w środek focus i E działają',
+  async (station) => {
+    const { scene, commands, opened } = await setup();
+    const { position, size } = station.focus;
+    commands.execute(`hub tp ${position.x} ${position.z + size.z / 2 + 0.8}`);
+    commands.execute(`hub look ${station.id}`);
+    scene.step(SIM_DT, idle);
+    expect(scene.query('hubFocus')).toBe(station.id);
+    scene.step(SIM_DT, interact);
+    expect(opened).toEqual([station.id]);
+  },
+);

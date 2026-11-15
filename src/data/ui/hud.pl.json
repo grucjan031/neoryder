@@ -1,6 +1,8 @@
 {
   "health": "Zdrowie",
   "energy": "Energia",
+  "stamina": "Wytrzymałość",
+  "noStamina": "Brak wytrzymałości",
   "heat": "Ciepło",
   "overheated": "Przegrzanie",
   "noEnergy": "Brak energii",
@@ -27,6 +29,7 @@
   "microHealth": "VIT // SYNC 100%",
   "microCritical": "VIT // KRYTYCZNE",
   "microEnergy": "REZ // ŁADUNEK",
+  "microStamina": "MOB // WYTRZYMAŁOŚĆ",
   "microWeapon": "ARM // UZBROJENIE",
   "microPowers": "REZ // MODUŁY",
   "microWave": "SEKTOR KUROGANE // FALA",

@@ -32,6 +32,10 @@ export const hubStationSchema = z.object({
   /** Środek strefy na podłodze. */
   position: roomSpawnPointSchema,
   radius: positive,
+  focus: z.object({
+    position: vec3Schema,
+    size: z.object({ x: positive, y: positive, z: positive }),
+  }),
   label: z.string().min(1),
   sign: hubStationSignSchema.optional(),
 });

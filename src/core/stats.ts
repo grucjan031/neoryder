@@ -5,6 +5,9 @@ export const STAT_IDS = [
   'attackSpeed',
   'maxEnergy',
   'energyRegen',
+  'maxStamina',
+  'staminaRegen',
+  'extraJumps',
   'heatCapacity',
   'coolingRate',
   /** Mnożnik otrzymywanych obrażeń; baza zawsze 1 (patrz DamageSystem). Blok = mult 0.3. */

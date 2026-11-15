@@ -72,7 +72,7 @@ function setText(node: HTMLElement, content: string): void {
 const ratioOf = (current: number, max: number): number =>
   max > 0 ? Math.min(1, Math.max(0, current / max)) : 0;
 
-function createBar(kind: 'energy' | 'heat') {
+function createBar(kind: 'energy' | 'stamina' | 'heat') {
   const node = element('div', `hud__meter hud__meter--${kind}`);
   const value = element('span', 'hud__value', text.empty);
   const track = element('div', 'hud__track');
@@ -90,13 +90,16 @@ function createBar(kind: 'energy' | 'heat') {
     node,
     value,
     fill,
+    pulse(): void {
+      node.dataset.change = node.dataset.change === 'a' ? 'b' : 'a';
+    },
     /** Zwraca stosunek 0–1 przy zmianie, inaczej undefined. */
     update(current: number, max: number): number | undefined {
       if (current === lastCurrent && max === lastMax) return undefined;
       if (
-        kind === 'energy' &&
         lastCurrent !== undefined &&
-        current > lastCurrent
+        ((kind === 'energy' && current > lastCurrent) ||
+          (kind === 'stamina' && current <= 0 && lastCurrent > 0))
       )
         node.dataset.change = node.dataset.change === 'a' ? 'b' : 'a';
       lastCurrent = current;
@@ -248,6 +251,7 @@ export class Hud {
   ) {
     const health = createHealth();
     const energy = createBar('energy');
+    const stamina = createBar('stamina');
     const vitals = element('div', 'hud__vitals');
     const vitalMicro = element(
       'span',
@@ -259,6 +263,8 @@ export class Hud {
       health.node,
       element('span', 'hud__micro', text.microEnergy),
       energy.node,
+      element('span', 'hud__micro', text.microStamina),
+      stamina.node,
     );
 
     const weapon = this.weapon;
@@ -357,6 +363,15 @@ export class Hud {
           this.energy = current;
           this.refreshDim();
         }
+      }),
+      bus.on('stamina_changed', ({ id, current, max }) => {
+        if (id === opts.playerId) stamina.update(current, max);
+      }),
+      bus.on('stamina_denied', ({ user }) => {
+        if (user !== opts.playerId) return;
+        stamina.pulse();
+        setText(this.denial.node, text.noStamina);
+        this.denial.show();
       }),
       bus.on('heat_changed', ({ id, current, max, overheated: next }) => {
         if (id !== opts.playerId) return;

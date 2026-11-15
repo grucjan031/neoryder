@@ -15,7 +15,8 @@ import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
 import type { Settings } from '../core/save';
-import { Stats } from '../core/stats';
+import { Stats, type StatId } from '../core/stats';
+import { PlayerStamina, staminaStatsSchema } from './stamina';
 import { CollisionGroup, interactionGroups } from '../physics';
 
 export interface PlayerState {
@@ -27,7 +28,7 @@ export interface PlayerState {
   grounded: boolean;
   coyoteMs: number;
   jumpBufferMs: number;
-  doubleJumpUsed: boolean;
+  airJumpsUsed: number;
   /** Bieżąca wysokość kapsuły (niższa przy slide i w przysiadzie). */
   height: number;
   /** Pozostały czas trwającego dashu (s); > 0 = dash w toku. */
@@ -44,7 +45,10 @@ export interface PlayerState {
 
 /** Pozycja oznacza środek kapsuły. Właściciel świata wykonuje world.step po step. */
 export class PlayerController {
-  readonly stats = new Stats({});
+  readonly stats: Stats;
+  readonly stamina: PlayerStamina;
+  private sprintExhausted = false;
+  private jumpDenialNotified = false;
   private readonly body: RigidBody;
   private readonly collider: Collider;
   private readonly controller: KinematicCharacterController;
@@ -61,8 +65,14 @@ export class PlayerController {
     private readonly settings: Pick<Settings, 'mouseSensitivity'> = {
       mouseSensitivity: 1,
     },
+    statBases: Partial<Record<StatId, number>> = {},
   ) {
     const t = ctx.tuning.player;
+    this.stats = new Stats({
+      ...statBases,
+      ...staminaStatsSchema.parse(statBases),
+    });
+    this.stamina = new PlayerStamina(id, this.stats, ctx.bus, ctx.tuning);
     this.shapeHeight = t.capsuleHeight;
     this.shapeRadius = t.capsuleRadius;
     this.body = world.createRigidBody(
@@ -88,7 +98,7 @@ export class PlayerController {
       grounded: false,
       coyoteMs: 0,
       jumpBufferMs: 0,
-      doubleJumpUsed: false,
+      airJumpsUsed: 0,
       height: t.capsuleHeight,
       dashS: 0,
       dashCooldownS: 0,
@@ -129,12 +139,13 @@ export class PlayerController {
       grounded: false,
       coyoteMs: 0,
       jumpBufferMs: 0,
-      doubleJumpUsed: false,
+      airJumpsUsed: 0,
       dashS: 0,
       dashCooldownS: 0,
       sliding: false,
       slideS: 0,
       crouched: false,
+      sprinting: false,
     });
     this.setHeight(this.ctx.tuning.player.capsuleHeight, false);
   }
@@ -144,11 +155,17 @@ export class PlayerController {
     const t = this.ctx.tuning.player;
     this.look(input);
     // Wciśnięcia zapamiętujemy także podczas hitstopu (dt = 0), żeby nie ginęły.
-    if (input.pressed.has('jump')) s.jumpBufferMs = t.jumpBufferMs;
+    if (input.pressed.has('jump')) {
+      s.jumpBufferMs = t.jumpBufferMs;
+      this.jumpDenialNotified = false;
+    }
     if (input.pressed.has('dash')) this.dashQueued = true;
     if (input.pressed.has('crouch')) this.crouchQueued = true;
     if (dt <= 0) return;
 
+    if (this.stamina.current <= 0) this.sprintExhausted = true;
+    this.stamina.step(dt);
+    if (this.stamina.current > t.sprintMinStamina) this.sprintExhausted = false;
     this.configure();
     const wasGrounded = s.grounded;
     if (!s.grounded) s.coyoteMs = Math.max(0, s.coyoteMs - dt * 1000);
@@ -162,11 +179,10 @@ export class PlayerController {
 
     if (s.jumpBufferMs > 0 && s.dashS <= 0) {
       if (s.grounded || s.coyoteMs > 0) this.jump(false);
-      else if (!s.doubleJumpUsed) this.jump(true);
+      else if (s.airJumpsUsed < Math.floor(this.stats.get('extraJumps')))
+        this.jump(true);
     }
 
-    s.sprinting =
-      input.held.has('sprint') && move.forward > 0 && !s.crouched && !s.sliding;
     if (
       this.crouchQueued &&
       s.grounded &&
@@ -177,6 +193,15 @@ export class PlayerController {
       this.startSlide();
     this.crouchQueued = false;
 
+    s.sprinting =
+      input.held.has('sprint') &&
+      move.forward > 0 &&
+      !s.crouched &&
+      !s.sliding &&
+      s.dashS <= 0 &&
+      !this.sprintExhausted &&
+      this.stamina.current > 0;
+    const sprintStep = s.sprinting;
     if (s.dashS > 0) this.stepDash(dt);
     else if (s.sliding) this.stepSlide(dt, move, input);
     else this.stepRun(dt, move);
@@ -200,6 +225,19 @@ export class PlayerController {
       this.groups,
     );
     const movement = this.controller.computedMovement();
+    // Pomijamy mikrokorekty kontaktów Rapiera (metry), nie rzeczywisty ruch.
+    if (
+      sprintStep &&
+      Math.hypot(movement.x, movement.z) > t.sprintMovementEpsilonM
+    ) {
+      this.stamina.spend(
+        Math.min(this.stamina.current, t.sprintStaminaPerS * dt),
+      );
+      if (this.stamina.current <= 0) {
+        this.sprintExhausted = true;
+        s.sprinting = false;
+      }
+    } else s.sprinting = false;
     const position = this.body.translation();
     s.position = {
       x: position.x + movement.x,
@@ -217,7 +255,7 @@ export class PlayerController {
     if (s.grounded) {
       s.velocity.y = 0;
       s.coyoteMs = t.coyoteTimeMs;
-      s.doubleJumpUsed = false;
+      s.airJumpsUsed = 0;
       if (!wasGrounded) {
         this.ctx.bus.emit('player_landed', { id: this.id, speed: impactSpeed });
         if (s.jumpBufferMs > 0) this.jump(false);
@@ -307,6 +345,10 @@ export class PlayerController {
   private startDash(move: ReturnType<PlayerController['moveInput']>): void {
     const s = this.state;
     const t = this.ctx.tuning.player;
+    if (!this.stamina.spend(t.dashStaminaCost)) {
+      this.ctx.bus.emit('stamina_denied', { user: this.id, action: 'dash' });
+      return;
+    }
     const yaw = s.yaw;
     s.dashDir = move.dir ?? { x: -Math.sin(yaw), y: 0, z: -Math.cos(yaw) };
     s.dashS = t.dashDurationS;
@@ -438,6 +480,18 @@ export class PlayerController {
 
   private jump(double: boolean): void {
     const s = this.state;
+    if (
+      double &&
+      !this.stamina.spend(this.ctx.tuning.player.doubleJumpStaminaCost)
+    ) {
+      if (!this.jumpDenialNotified)
+        this.ctx.bus.emit('stamina_denied', {
+          user: this.id,
+          action: 'doubleJump',
+        });
+      this.jumpDenialNotified = true;
+      return;
+    }
     if (s.sliding) this.endSlide(); // slide-jump: pęd poziomy zostaje
     s.velocity.y = double
       ? this.ctx.tuning.player.doubleJumpVelocity
@@ -445,7 +499,7 @@ export class PlayerController {
     s.grounded = false;
     s.coyoteMs = 0;
     s.jumpBufferMs = 0;
-    if (double) s.doubleJumpUsed = true;
+    if (double) s.airJumpsUsed++;
     this.ctx.bus.emit('player_jumped', { id: this.id, double });
   }
 

@@ -4,7 +4,7 @@
 Rapier, `bus` i `tuning` z kontekstu, pozycję środka kapsuły oraz ustawienia myszy.
 Nie importuje Three.js i nie korzysta z DOM. `getState()` zwraca kopię stanu
 serializowalnego: pozycję, prędkość, yaw/pitch, grounded, pozostałe czasy coyote
-i bufora oraz znacznik wykorzystania podwójnego skoku. Świat należy do sceny:
+i bufora oraz licznik skoków w powietrzu `airJumpsUsed`. Świat należy do sceny:
 po `player.step(dt, snapshot)` scena wykonuje jeden `world.step()`.
 `dispose()` usuwa kontroler i ciało; świat jest zwalniany osobno przez scenę.
 
@@ -30,8 +30,11 @@ przemieszczenie jest ograniczane przez kolizje Rapiera.
 Pionowa prędkość jest całkowana ręcznie: `vy += tuning.physics.gravity * dt`.
 Skok ustawia ją na `jumpVelocity`, podwójny na `doubleJumpVelocity`. Coyote pozwala
 wykonać **zwykły** skok po zejściu z krawędzi, do `coyoteTimeMs`. Skok natychmiast
-kasuje coyote. Po wygaśnięciu okna pozostaje tylko podwójny skok, raz na lot,
-również po zejściu z platformy bez skoku. Lądowanie resetuje jego limit.
+kasuje coyote. Po wygaśnięciu okna pozostają skoki w powietrzu do limitu
+`floor(stats.get('extraJumps'))`, również po zejściu z platformy bez skoku.
+Baza wynosi 0: podwójny skok odblokowuje talent `hybridDoubleJump` za 1 punkt.
+Lądowanie resetuje licznik. `player-test` ma bazę `extraJumps: 1` w danych,
+pokoje runu i arena mają 0.
 Kontakt z sufitem kasuje wznoszenie, bez odświeżania skoków.
 
 `pressed jump` zapisuje żądanie na `jumpBufferMs`. Dostępny skok jest wykonywany
@@ -77,6 +80,11 @@ Wszystkie są dostępne w lil-gui i odczytywane na bieżąco, także geometria k
 | stepMinWidth         | 0.2       | Minimalna szerokość miejsca za stopniem, m            |
 | snapToGroundDistance | 0.3       | Zasięg przyciągania do podłoża, m                     |
 | groundStickSpeed     | 2         | Minimalna prędkość próby kontaktu w dół na ziemi, m/s |
+| staminaRegenDelayS    | 0.8       | Opóźnienie regeneracji od ostatniego zużycia, s        |
+| sprintStaminaPerS     | 20        | Koszt faktycznego sprintu na sekundę                   |
+| dashStaminaCost       | 30        | Pełny koszt dashu                                      |
+| doubleJumpStaminaCost | 25        | Pełny koszt każdego skoku w powietrzu                  |
+| sprintMinStamina      | 15        | Po wyczerpaniu sprint wraca dopiero powyżej tego progu |
 
 Geometria wymaga dodatniego promienia i wysokości co najmniej dwukrotności
 promienia, a offset dodatniej wartości. Zmiana rozmiaru nie usuwa istniejących
@@ -103,6 +111,43 @@ Zapytania sceny: `playerPos`, `playerVel`, `grounded` zwracają stan symulacji.
 W 30 sekund: przejdź po schodach, spróbuj obu ramp, skocz dwukrotnie i wykonaj
 `tp 0 5 0`. Oceń czas rozpędzania, hamowanie, sterowanie w locie i brak
 przyklejania do podłogi przy skoku. Kamera nie ma zmian FOV ani wstrząsów.
+
+Próg `sprintMovementEpsilonM` (0,001 m na krok, dostępny w lil-gui) pomija
+mikrokorekty kontaktu Rapiera przy sprawdzaniu faktycznego ruchu sprintu.
+
+## Wytrzymałość
+
+`PlayerController.stamina` (`PlayerStamina` w `src/player/stamina.ts`) korzysta
+z `ResourcePool` i statystyk kontrolera. Bazy w danych sceny to `maxStamina: 100`,
+`staminaRegen: 30` na sekundę i `extraJumps: 0`; brakujące pola przyjmują te same
+wartości przez zod. Talenty i implanty modyfikują je przez `Stats` + `StatModifier`.
+Sceny przekazują bazy jako szósty argument kontrolera. Pula zaczyna pełna,
+również po przejściu do kolejnego pokoju; nie jest częścią `RunState`.
+
+Sprint pobiera `sprintStaminaPerS * dt` tylko z dodatnim kierunkiem do przodu,
+po faktycznym poziomym przesunięciu kapsuły, poza dashem, slide i przysiadem.
+Ostatnie zużycie obcina pulę do 0. Po wyczerpaniu gracz idzie i regeneruje zasób,
+nawet z trzymanym Shiftem; sprint wraca dopiero przy zapasie **> 15**. Zwykły
+skok z ziemi lub w oknie coyote jest darmowy. Dash wymaga 30, a każdy dodatkowy
+skok w powietrzu 25 wytrzymałości. Odmowa nie pobiera kosztu, nie uruchamia
+dashu ani jego odnowienia; zwykły ruch pozostaje dostępny. Bufor skoku nadal
+może wykonać darmowy skok przy lądowaniu. Odmowa skoku emituje jeden sygnał
+na naciśnięcie (bez powtarzania co krok bufora).
+
+Regeneracja zaczyna się po 0,8 s od ostatniego udanego zużycia i rozlicza tylko
+część kroku po opóźnieniu. `dt=0`, pauza i hitstop nie zmieniają zasobu.
+`stamina_changed { id, current, max }` zasila HUD; sceny emitują stan po jego
+utworzeniu przez `stamina.set(stamina.max)`. `stamina_denied { user, action }`
+(`dash` lub `doubleJump`) daje krótki komunikat i puls paska w HUD.
+Query `stamina` oraz `extraJumps` są dostępne w pokoju i arenie. W pokoju komenda
+`talent hybridDoubleJump` pozwala sprawdzić odblokowanie na żywo.
+
+Kontrola w 30 sekund: `?scene=room-test&debug=1` — podwójny skok początkowo
+nie działa; wpisz `talent hybridDoubleJump`, skocz dwa razy, sprawdź koszt 25.
+Trzymaj Shift+W do wyczerpania, sprawdź chód i powrót sprintu po przekroczeniu
+progu; wykonuj dash, aż pojawi się odmowa. `?scene=player-test` zachowuje skok
+w powietrzu do testowania przeszkód. Testy: `stamina.test.ts`,
+`playerController.test.ts`, `dashSlide.test.ts`, `talents.test.ts`, `hud.test.ts`.
 
 ## Dash (F1 #04)
 

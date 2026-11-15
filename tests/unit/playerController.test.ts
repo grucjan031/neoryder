@@ -62,6 +62,7 @@ async function setup(ledge = false, mouseSensitivity = 1) {
     },
     { mouseSensitivity },
   );
+  player.stats.setBase('extraJumps', 1);
   active.push({ player, world });
   world.step();
   const tick = (snapshot = input(), dt = SIM_DT) => {
@@ -129,7 +130,7 @@ describe('kontroler FPP — prawdziwy Rapier', () => {
     s.tick(input([], ['jump']));
     expect(s.jumped).toEqual([{ id: 42, double: false }]);
     expect(s.player.getState().velocity.y).toBeGreaterThan(0);
-    expect(s.player.getState().doubleJumpUsed).toBe(false);
+    expect(s.player.getState().airJumpsUsed).toBe(0);
   });
 
   it('po oknie coyote nie daje zwykłego skoku; pozostaje tylko podwójny', async () => {
@@ -150,10 +151,10 @@ describe('kontroler FPP — prawdziwy Rapier', () => {
       { id: 42, double: false },
       { id: 42, double: true },
     ]);
-    expect(s.player.getState().doubleJumpUsed).toBe(true);
+    expect(s.player.getState().airJumpsUsed).toBe(1);
     // Bufor trzeciego naciśnięcia wygasa długo przed lądowaniem.
     s.until(() => s.player.getState().grounded);
-    expect(s.player.getState().doubleJumpUsed).toBe(false);
+    expect(s.player.getState().airJumpsUsed).toBe(0);
     s.tick(input([], ['jump']));
     s.tick(input([], ['jump']));
     expect(s.jumped.map((event) => event.double)).toEqual([
