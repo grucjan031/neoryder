@@ -3,6 +3,8 @@ import { createIndexedDbSaveStore } from '../core/save';
 import type { SaveStore } from '../core/save';
 import data from '../data/ui/run.pl.json';
 import { BuildSelect } from './buildSelect';
+import { SettingsScreen } from './settingsScreen';
+import settingsText from '../data/ui/settings.pl.json';
 import './mainMenu.css';
 
 const text = z
@@ -41,6 +43,7 @@ export class MainMenu {
   private readonly root = document.createElement('main');
   private builds: BuildSelect | null = null;
   private disposed = false;
+  private settings: SettingsScreen | null = null;
 
   constructor(options: MainMenuOptions) {
     const t = text.mainMenu;
@@ -75,6 +78,12 @@ export class MainMenu {
     status.textContent = t.loading;
     const arena = button(t.arena, () => navigate(`?${query('arena')}`));
     this.root.append(heading, subtitle, hub, resume, status, arena);
+    this.root.append(
+      button(settingsText.title, () => {
+        this.settings ??= new SettingsScreen();
+        this.settings.show();
+      }),
+    );
     options.root.append(this.root);
     // Wybór presetów (BuildSelect) z własnym seedem zostaje tylko w trybie debug.
     if (debug) {
@@ -131,6 +140,7 @@ export class MainMenu {
   dispose(): void {
     this.disposed = true;
     this.builds?.dispose();
+    this.settings?.dispose();
     this.root.remove();
   }
 }

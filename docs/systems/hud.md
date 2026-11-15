@@ -64,6 +64,62 @@ Układ jest ograniczony szerokościami grup i przeznaczony dla 1280×720 oraz
 w kolumnie arsenału i znika pochylenie. Kontrola ręczna: `?scene=room-test&room=combatYard&loadout=classic&debug=1`,
 `?scene=boss-test&debug=1`, `?scene=hub&debug=1`; zrzuty ocenia manager.
 
+## Pauza i ustawienia
+
+`PauseMenu` (`src/ui/pauseMenu.ts`) otwiera się po Esc i utracie fokusu.
+`loop.paused=true` zatrzymuje tick symulacji; render pozostaje aktywny.
+Wznów (również Esc w menu) zamyka dialog, wznawia pętlę i prosi o pointer lock.
+Przy pauzie i zmianie klawiszy wejście czyści przytrzymane akcje. Menu zawiera
+Wznów, Ustawienia, Menu główne, a w runie z kryjówki (`loadoutId='custom'`,
+także po kontynuacji) również Wróć do kryjówki. Powrót używa tej samej nawigacji
+do `?scene=hub` i zachowania `debug=1` co `RunScreens`; nie tworzy nowego zapisu
+w środku walki. Kontynuacja korzysta z dotychczasowego checkpointu mapy.
+
+Nie nakładamy pauzy na widoczny interfejs runu (mapa, nagrody, podsumowanie,
+sklep, odpoczynek), nakładkę kryjówki, wybór buildu ani ekran śmierci.
+Widoczna konsola debug zachowuje własne sterowanie. Menu pauzy obsługuje
+strzałki góra/dół, Tab i Enter. Natywne dialogi modalne utrzymują fokus w UI.
+Globalny `Input` mapuje klawiaturę na akcje tylko przy pointer locku własnego
+canvasu i poza edycją UI. Rozszerzony warunek `isEditing()` uwzględnia cel
+zdarzenia oraz `document.activeElement` (pola formularzy, przyciski, linki
+i elementy edytowalne). Poza rozgrywką przypisanie np. dash do Tab nie blokuje
+nawigacji: nie zapisuje akcji ani nie wywołuje `preventDefault()`.
+
+`SettingsScreen` jest dostępny z menu głównego i pauzy. Zakładki Sterowanie,
+Obraz i Dźwięk mają nawigację strzałkami lewo/prawo, Home/End oraz Tab.
+Suwaki reagują na klawiaturę; zmiana zapisuje `saveSettings` natychmiast.
+Teksty i nazwy akcji: `src/data/ui/settings.pl.json`. Styl wykorzystuje lokalny
+Rajdhani, ciemne tło, ciepłą biel i bursztynowy fokus. Długa lista sterowania
+przewija się wewnątrz dialogu, zostawiając dostępne zakładki i Wróć.
+
+Klik przypisania przechwytuje następny `KeyboardEvent.code`; Esc anuluje,
+Backquote jest zarezerwowany dla konsoli. Nowe przypisanie wypiera starą akcję:
+wraca ona do wolnego domyślnego klawisza albo pozostaje bez klawisza, co UI
+pokazuje wprost. Pusty string w nadpisaniu utrwala brak klawisza. Mapowanie
+myszy pozostaje niezmienione. Przywróć domyślne resetuje zakładkę Sterowanie
+(czułość, odwrócenie osi Y i przypisania). Ustawienia są wspólnym obiektem sesji,
+więc kontroler, wejście i efekty korzystają z aktualnych wartości; szczegóły w API.
+
+`flashes=false` wyłącza trzy pełnoekranowe efekty: impuls obrażeń `PostFxState`
+(w tym debug `fx damage`), winietę trafienia `.hud__damage` oraz burzę
+(`skyFlash` w końcowej kompozycji `outline.ts`, zarówno oprawa miejska,
+jak i `city-fx-test`). Wskaźnik kierunku obrażeń, celownik i miejscowe efekty
+broni pozostają czytelne. Dodatkowo winieta niskiego HP pozostaje statyczna:
+klasa `.hud--no-flashes` na korzeniu HUD wyłącza jej `hud-pulse` i ustawia
+stałe opacity 0,55. Klasa synchronizuje ustawienie przy utworzeniu HUD,
+w `step()` (także przy dt=0) oraz w `setViewYaw()` wywoływanym przez render,
+również podczas pauzy i bez zmiany kąta kamery. Zmiana nie wymaga kolejnego
+`health_changed`; ponowne włączenie błysków przywraca pulsowanie.
+Testy regresji: `inputZ12.test.ts`, `hudAccessibilityZ12.test.ts`.
+`screenShake=0` zeruje amplitudę wstrząsu, także
+trwającego. Głośność efektów to master × SFX × dotychczasowy gain audio.
+Muzyka i jakość są tylko zapisywane, bez nowych trybów renderowania czy muzyki.
+
+Kontrola w 30 sekund: `/` → Ustawienia → zmień czułość i dash na V → odśwież;
+`?scene=room-test&debug=1` → Esc → Ustawienia → Obraz → wyłącz wstrząsy/błyski
+→ Wróć → Wznów. Testy: `tests/unit/settings.test.ts`, `tests/e2e/settings.spec.ts`.
+Test E2E i ocenę wyglądu na 1280×720 oraz 1920×1080 wykonuje architekt.
+
 ## Układ
 
 W arenie LPM — atak/strzał, R — zamiana ostrze/broń, PPM — natychmiast ostrze

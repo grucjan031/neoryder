@@ -12,11 +12,15 @@ import { defaultCommands as commands } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
 import { createSceneMenu } from './ui/sceneMenu';
 import { MainMenu } from './ui/mainMenu';
+import { PauseMenu } from './ui/pauseMenu';
+import { SettingsScreen } from './ui/settingsScreen';
+import type { RunState } from './core/runTypes';
 import { AudioSystem } from './audio/audioSystem';
 import { loadSfx } from './audio/sfxSchema';
 import sfxData from './data/audio/sfx.json';
 import { loadSettings } from './core/save';
 import { createRenderPipeline } from './render/outline';
+import { applyQuality } from './render/quality';
 import './ui/styles.css';
 
 async function main(): Promise<void> {
@@ -59,12 +63,23 @@ async function main(): Promise<void> {
   renderer.domElement.setAttribute('aria-label', 'Scena NEORYDER');
   app.append(renderer.domElement);
   const pipeline = createRenderPipeline(renderer);
+  const updateQuality = (): void =>
+    applyQuality(loadSettings().quality, {
+      renderer,
+      pipeline,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio,
+    });
+  updateQuality();
   const three = new ThreeScene();
   const camera = new PerspectiveCamera(tuning.camera.fov, 1, 0.1, 220);
   camera.position.set(8, 6, 10);
   camera.lookAt(0, 2, 0);
   const scene = factory();
-  const input = new Input(renderer.domElement);
+  const settings = loadSettings();
+  tuning.camera.fov = settings.fov;
+  const input = new Input(renderer.domElement, () => settings.bindings);
   const bus = new EventBus();
   pipeline.bindEvents(bus);
   const stats = debug ? new StatsPanel() : undefined;
@@ -82,13 +97,13 @@ async function main(): Promise<void> {
       stats?.end();
     },
   });
-  const settings = loadSettings();
   // Dźwięk przed sceną: musi usłyszeć entity_spawned gracza z init() sceny.
   const audio = new AudioSystem(bus, loadSfx(sfxData), {
     createContext: () =>
       typeof AudioContext === 'undefined' ? null : new AudioContext(),
     tuning,
     masterVolume: () => settings.masterVolume,
+    sfxVolume: () => settings.sfxVolume,
     listener: () => ({ position: camera.position, yaw: camera.rotation.y }),
   });
   audio.attachUnlock(window);
@@ -119,11 +134,69 @@ async function main(): Promise<void> {
     ? `NEORYDER / ${scene.id} · kliknij scenę, aby przechwycić mysz · \` konsola`
     : `NEORYDER / ${scene.id} · kliknij scenę, aby przechwycić mysz`;
   app.append(hint);
-  const focusOff = input.onFocusLost(() => {
-    loop.paused = true;
-    hint.textContent = 'Pauza · kliknij scenę, aby wznowić';
+  const ownsInterface = (): boolean =>
+    document.querySelector(
+      '.run-screen:not([hidden]), .hub-screen:not([hidden]), .build-select:not([hidden]), .hud__death:not([hidden])',
+    ) !== null;
+  const canReturnToHub = (): boolean =>
+    scene.id === 'run' &&
+    (scene.query?.('runState') as RunState | undefined)?.loadoutId === 'custom';
+  const settingsScreen = new SettingsScreen(
+    settings,
+    () => {
+      input.clear();
+      updateQuality();
+      tuning.camera.fov = settings.fov;
+      audio.updateVolume();
+      if (!settings.flashes) {
+        pipeline.fxState.damage = 0;
+        document
+          .querySelectorAll<HTMLElement>('.hud__damage')
+          .forEach((node) => {
+            node.hidden = true;
+          });
+      }
+    },
+    () => pauseMenu.show(canReturnToHub()),
+  );
+  const pauseMenu = new PauseMenu({
+    resume: () => resume(),
+    settings: () => {
+      pauseMenu.hide();
+      settingsScreen.show();
+    },
+    hub: () => {
+      const query = new URLSearchParams({ scene: 'hub' });
+      if (params.get('debug') === '1') query.set('debug', '1');
+      location.assign(`/?${query}`);
+    },
+    menu: () => location.assign('/'),
   });
+  const pause = (): void => {
+    loop.paused = true;
+    input.clear();
+    if (ownsInterface() || settingsScreen.visible || pauseMenu.visible) return;
+    pauseMenu.show(canReturnToHub());
+    if (input.pointerLocked) document.exitPointerLock();
+  };
+  const focusOff = input.onFocusLost(pause);
+  const pauseKey = (event: KeyboardEvent): void => {
+    if (
+      event.code !== 'Escape' ||
+      event.repeat ||
+      settingsScreen.visible ||
+      pauseMenu.visible ||
+      ownsInterface()
+    )
+      return;
+    if (document.querySelector('.debug-console:not([hidden])')) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    pause();
+  };
+  window.addEventListener('keydown', pauseKey, true);
   const resume = (): void => {
+    pauseMenu.hide();
     loop.paused = false;
     input.requestPointerLock();
     hint.textContent = debug
@@ -198,6 +271,9 @@ async function main(): Promise<void> {
     disposed = true;
     loop.stop();
     focusOff();
+    window.removeEventListener('keydown', pauseKey, true);
+    settingsScreen.dispose();
+    pauseMenu.dispose();
     feel.dispose();
     audio.dispose();
     input.dispose();

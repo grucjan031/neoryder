@@ -43,7 +43,7 @@ it('bez debug menu nie pokazuje Nowy run (presety), seeda ani wyboru buildu', as
   await menu.ready;
   expect(
     [...document.querySelectorAll('button')].map((b) => b.textContent),
-  ).toEqual(['Kryjówka', 'Kontynuuj run', 'Poligon']);
+  ).toEqual(['Kryjówka', 'Kontynuuj run', 'Poligon', 'Ustawienia']);
   expect(document.querySelector('input')).toBeNull();
   expect(document.querySelector('.build-select')).toBeNull();
 });

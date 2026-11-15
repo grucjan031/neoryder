@@ -1,0 +1,111 @@
+@import './mainMenu.css';
+
+.settings-screen {
+  --settings-accent: #ffae1a;
+  box-sizing: border-box;
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 24px 32px;
+  border: 1px solid var(--settings-accent);
+  background: #0b1220;
+  color: #fff1d6;
+  font:
+    500 18px/1.4 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  color-scheme: dark;
+}
+.settings-screen[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.settings-screen::backdrop {
+  background: rgb(2 5 11 / 88%);
+}
+.settings-screen h1,
+.settings-screen p {
+  margin: 0;
+}
+.settings-screen h1 {
+  font-size: 32px;
+  letter-spacing: 0.1em;
+}
+.settings-screen__tabs {
+  display: flex;
+  gap: 8px;
+}
+.settings-screen__content {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 4px 8px 4px 0;
+}
+.settings-screen__content p {
+  margin: 12px 0;
+  font-size: 16px;
+}
+.settings-screen__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+  padding: 6px 0;
+  border-bottom: 1px solid #303b4e;
+}
+.settings-screen__row > :first-child,
+.settings-screen__row > input:first-of-type,
+.settings-screen__row > select {
+  margin-left: auto;
+}
+.settings-screen__row > span:first-child {
+  margin-left: 0;
+  margin-right: auto;
+}
+.settings-screen input[type='range'] {
+  width: 40%;
+  accent-color: var(--settings-accent);
+}
+.settings-screen input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--settings-accent);
+}
+.settings-screen output {
+  min-width: 48px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.settings-screen button,
+.settings-screen select {
+  min-height: 44px;
+  padding: 8px 16px;
+  color: inherit;
+  background: #131e30;
+  border: 1px solid #657087;
+  font: inherit;
+  cursor: pointer;
+}
+.settings-screen button:hover,
+.settings-screen button[aria-selected='true'] {
+  border-color: var(--settings-accent);
+  background: #302719;
+}
+.settings-screen :focus-visible {
+  outline: 2px solid var(--settings-accent);
+  outline-offset: 3px;
+}
+.settings-screen button:active {
+  background: #4b371a;
+}
+.settings-screen [role='status']:empty {
+  display: none;
+}
+@media (max-width: 600px) {
+  .settings-screen {
+    padding: 16px;
+  }
+  .settings-screen__row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

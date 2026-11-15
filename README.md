@@ -37,7 +37,7 @@ Z menu wybierz „Kryjówka”, podejdź do tablicy misji i rozpocznij run.
 | 1 / 2 / 3                | wybór broni                                                  |
 | F                        | moc Rezonansu                                                |
 | E                        | interakcja w kryjówce                                        |
-| Esc                      | pauza                                                        |
+| Esc                      | pauza i ustawienia                                           |
 
 ## Komendy
 
