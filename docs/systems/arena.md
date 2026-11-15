@@ -36,6 +36,8 @@ Scena `?scene=arena` (pierwsza pozycja w menu) — pierwsza pełna pętla walki 
 `src/progression/loadout.ts` ładuje `src/data/loadouts/*.json` przez zod.
 Schemat sprawdza znane id broni i mocy, ostrze `plasmaBlade`, 1–3 bronie i 1–2
 moce, tagi z `#` i brak powtórzonych broni, mocy oraz id ekwipunków.
+Arena buduje ostrze, bronie i moce z `resolveLoadout(preset, [])` (F4-03, bez łatek,
+zachowanie jak dotąd); nadpisanie ostrza (`?blade=`) nadal wygrywa z ostrzem ekwipunku.
 
 | Id                   | Nazwa               | Bronie                       | Moce                | Tagi                                |
 | -------------------- | ------------------- | ---------------------------- | ------------------- | ----------------------------------- |

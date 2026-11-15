@@ -22,19 +22,16 @@ import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
-import { resolveBlade } from '../combat/melee/bladeSchema';
+import { withBladeOverride } from '../combat/melee/bladeSchema';
 import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import { HeldItem } from '../combat/heldItem';
 import type { HeldItemView } from '../combat/heldItem';
 import { PlayerEnergy } from '../combat/powers/energy';
-import { createPower } from '../combat/powers/registry';
+import { createPowerFromDefinition } from '../combat/powers/registry';
 import { PowerSlots } from '../combat/powers/slots';
 import { Weapon } from '../combat/weapons/weapon';
-import {
-  weaponDefinitions,
-  weaponModelOf,
-} from '../combat/weapons/weaponSchema';
+import { weaponModelOf } from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import sceneData from '../data/scenes/arena.json';
 import wavesData from '../data/waves/arena.json';
@@ -56,6 +53,8 @@ import { BarrierPower } from '../combat/powers/barrier';
 import { ExplosionRenderer } from '../render/explosionRenderer';
 import { loadoutDefinitions } from '../progression/loadout';
 import type { Loadout } from '../progression/loadout';
+import { resolveLoadout } from '../progression/patches';
+import type { ResolvedLoadout } from '../progression/patches';
 import { SynergySystem } from '../progression/synergies';
 import { createStyleLights } from '../render/lights';
 import { applyStyle, getMaterial } from '../render/materials';
@@ -132,6 +131,8 @@ export class Arena implements Scene {
   private readonly flyingBlade = new FlyingBlade();
   private powers!: PowerSlots;
   private loadout: Loadout = loadoutDefinitions.get('classic')!;
+  /** Definicje ekwipunku presetu (arena nie używa łatek talentów). */
+  private resolved: ResolvedLoadout = resolveLoadout(this.loadout, []);
   /** Wariant ostrza wybrany na ekranie buildu albo z `?blade=`; nadpisuje ostrze ekwipunku. */
   private bladeOverride: string | null = null;
   private weapons: Weapon[] = [];
@@ -191,9 +192,10 @@ export class Arena implements Scene {
       typeof location === 'undefined'
         ? null
         : new URLSearchParams(location.search).get('loadout');
-    this.loadout =
+    this.setLoadout(
       loadoutDefinitions.get(requested ?? 'classic') ??
-      loadoutDefinitions.get('classic')!;
+        loadoutDefinitions.get('classic')!,
+    );
     if (requested !== null && !loadoutDefinitions.has(requested) && ctx.debug)
       console.warn(`Nieznany ekwipunek: ${requested}. Wybrano classic.`);
     this.bladeOverride =
@@ -304,7 +306,7 @@ export class Arena implements Scene {
     );
     this.root.add(this.flyingBlade.root);
     this.blade = new PlasmaBlade(
-      resolveBlade(this.loadout.blade, this.bladeOverride),
+      withBladeOverride(this.resolved.blade, this.bladeOverride),
       {
         owner: playerId,
         team: 'player',
@@ -577,8 +579,8 @@ export class Arena implements Scene {
   private createEquipment(): void {
     this.powers?.reset();
     this.powers = new PowerSlots(
-      this.loadout.powers.map((id) =>
-        createPower(id, {
+      this.resolved.powers.map((definition) =>
+        createPowerFromDefinition(definition, {
           owner: this.player.id,
           bus: this.ctx.bus,
           tuning: this.ctx.tuning,
@@ -606,8 +608,8 @@ export class Arena implements Scene {
       ),
     );
     this.weaponSlot = 0;
-    this.weapons = this.loadout.weapons.map(
-      (id) =>
+    this.weapons = this.resolved.weapons.map(
+      (definition) =>
         new Weapon(
           this.player.id,
           this.ctx,
@@ -618,7 +620,7 @@ export class Arena implements Scene {
             castBeam: (origin, dir, rangeM) =>
               this.castBeam(origin, dir, rangeM),
           },
-          weaponDefinitions.get(id)!,
+          definition,
         ),
     );
   }
@@ -919,15 +921,20 @@ export class Arena implements Scene {
     const selected = loadoutDefinitions.get(id);
     if (!selected) return false;
     if (bladeId !== undefined) this.bladeOverride = bladeId;
-    this.loadout = selected;
+    this.setLoadout(selected);
     this.reset();
     this.ctx.resume?.();
     return true;
   }
 
+  private setLoadout(loadout: Loadout): void {
+    this.loadout = loadout;
+    this.resolved = resolveLoadout(loadout, []);
+  }
+
   /** Ostrze runu: nadpisanie (ekran buildu, `?blade=`) albo ostrze ekwipunku; reset stanu ostrza. */
   private applyBlade(): void {
-    const next = resolveBlade(this.loadout.blade, this.bladeOverride);
+    const next = withBladeOverride(this.resolved.blade, this.bladeOverride);
     if (next !== this.blade.definition) {
       this.blade.setDefinition(next);
       void this.fppView.setBladeDefinition(next);
@@ -971,7 +978,7 @@ export class Arena implements Scene {
       const selected = loadoutDefinitions.get(args[0] ?? '');
       if (args.length !== 1 || !selected)
         return `Dostępne ekwipunki: ${[...loadoutDefinitions.keys()].join(', ')}`;
-      this.loadout = selected;
+      this.setLoadout(selected);
       this.reset();
       return `Ekwipunek: ${selected.name}`;
     });

@@ -1401,3 +1401,36 @@ Emitują: `MetaManager` (wszystkie poza ostatnim) i scena kryjówki (`hub_statio
 - **Meta 2→3:** brak `meta` → `createStarterMetaState()` (gracz z F3 zaczyna od stanu startowego z danych).
 - **Run 2→3:** `run.loadout` = kopia presetu `loadoutDefinitions.get(run.loadoutId)`, `talents: []`, `threatLevel: 0`. Nieznany preset = zapis runu nieczytelny (`loadRun()` zwraca `null` z ostrzeżeniem). `run: null` z migracji 1→2 nadal oznacza brak runu (bez ostrzeżenia).
 - Zapis z nowszej wersji pozostaje nietknięty, uszkodzony daje `null` z ostrzeżeniem (jak dotąd, obie implementacje: pamięć i IndexedDB).
+
+### Łatki definicji i ResolvedLoadout (F4-03) — `src/progression/patches.ts`
+
+Format łatki, ścieżki i reguły: `docs/systems/patches.md`. Talenty (zadanie 04) podają łatki posortowane po id węzła.
+
+```ts
+interface ResolvedLoadout {
+  loadout: Loadout;
+  blade: BladeDefinition;
+  weapons: WeaponDefinition[]; // w kolejności loadout.weapons
+  powers: PowerDefinition[];   // w kolejności loadout.powers
+}
+
+// Działa na structuredClone definicji, nigdy nie mutuje wejścia; bez łatek zwraca tę samą definicję.
+// Po każdej łatce wynik przechodzi przez `schema`. Błąd: `${label}: łatka ${target} ${op} ${path}: ...`.
+function applyPatches<T extends object>(
+  definition: T,
+  schema: z.ZodType<T>,
+  patches: readonly DefinitionPatch[],
+  label: string,
+): T;
+
+// Definicje z globalnych map + łatki w kolejności tablicy; łatki na przedmioty spoza
+// ekwipunku są pomijane; nieznany prefiks celu (inny niż weapon:/power:/blade:) = błąd.
+function resolveLoadout(loadout: Loadout, patches: readonly DefinitionPatch[]): ResolvedLoadout;
+```
+
+Powiązane zmiany:
+
+- `src/combat/powers/registry.ts`: `createPowerFromDefinition(def: PowerDefinition, deps: PowerDeps): Power`; `createPower(id, deps)` zostaje i deleguje.
+- `src/combat/melee/bladeSchema.ts`: `withBladeOverride(base: BladeDefinition, override?: string | null): BladeDefinition` (nadpisanie `?blade=` wygrywa z ostrzem już rozwiązanym); `resolveBlade` bez zmian.
+- `RoomSceneOptions.patches?: readonly DefinitionPatch[]` (domyślnie `[]`); `RoomScene.query('resolvedLoadout')` zwraca kopię `ResolvedLoadout`. `Arena` używa `resolveLoadout(preset, [])`.
+- Wartości z `tuning.ts` nie są łatkowane. `Hud` i `FppViewModel` nadal czytają nazwy i modele z globalnych map (łatki ich nie zmieniają); model broni z `ResolvedLoadout` ma pierwszeństwo w `RoomScene`.

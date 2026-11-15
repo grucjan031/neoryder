@@ -106,3 +106,11 @@ export function resolveBlade(
     plasmaBladeDefinition
   );
 }
+
+/** Jak `resolveBlade`, ale dla ostrza ekwipunku już rozwiązanego (np. z łatkami): ważne nadpisanie je zastępuje. */
+export function withBladeOverride(
+  base: BladeDefinition,
+  override?: string | null,
+): BladeDefinition {
+  return (override ? bladeDefinitions.get(override) : undefined) ?? base;
+}

@@ -11,6 +11,7 @@ poligonem; jej skład nie został zmieniony. Deduplikacja jest w backlogu.
 const room = new RoomScene(definition, run, plannedWaves, {
   loadModels: true,
   implantDefinitions,
+  patches: [], // DefinitionPatch[] (F4-03), domyślnie puste
 });
 await room.init(roomContext, three);
 // roomContext.rng = rng runu .fork(`room:${run.currentNodeId}`)
@@ -25,6 +26,12 @@ w `src/data/scenes/roomPlayer.json`, walidowane zod; odpowiadają bazie Areny.
 Implanty otrzymuje jako mapę definicji od hosta (loader F3-09), a fale jako gotowe
 `WavesDefinition` (planer F3-08). Nieznany implant przerywa konstrukcję sceny,
 zamiast po cichu pomijać bonus.
+
+Ekwipunek (`run.loadout`) przechodzi przez `resolveLoadout(run.loadout, patches)`
+(`docs/systems/patches.md`): ostrze, bronie i moce pochodzą z `ResolvedLoadout`, a nie
+z globalnych map; bez łatek definicje są tymi samymi obiektami co w mapach. Błędna łatka
+na przedmiot z ekwipunku przerywa konstrukcję sceny. `query('resolvedLoadout')` zwraca
+kopię użytych definicji.
 
 Każdy modyfikator implantu jest dodawany do obu instancji `Stats` ze źródłem
 `implant:<id>`. Dopiero potem `Health.set(run.hp)` i `PlayerEnergy.set(run.energy)`

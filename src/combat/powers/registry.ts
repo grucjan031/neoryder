@@ -56,12 +56,20 @@ registerPowerKind('chain', (def, deps) => {
   return new ChainPower(def, deps);
 });
 
-export function createPower(id: string, deps: PowerDeps): Power {
-  const def = powerDefinitions.get(id);
-  if (!def) throw new Error(`Nieznane id mocy: ${id}`);
+/** Moc z gotowej definicji (np. po łatkach talentów); `createPower` bierze definicję z globalnej mapy. */
+export function createPowerFromDefinition(
+  def: PowerDefinition,
+  deps: PowerDeps,
+): Power {
   const factory = factories.get(def.kind);
   if (!factory) throw new Error(`Nieznany mechanizm mocy: ${def.kind}`);
   return factory(def, deps);
+}
+
+export function createPower(id: string, deps: PowerDeps): Power {
+  const def = powerDefinitions.get(id);
+  if (!def) throw new Error(`Nieznane id mocy: ${id}`);
+  return createPowerFromDefinition(def, deps);
 }
 
 registerPowerKind('focus', (def, deps) => {

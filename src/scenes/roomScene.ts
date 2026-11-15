@@ -20,19 +20,15 @@ import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
-import { bladeDefinitions, resolveBlade } from '../combat/melee/bladeSchema';
 import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import { HeldItem } from '../combat/heldItem';
 import type { HeldItemView } from '../combat/heldItem';
 import { PlayerEnergy } from '../combat/powers/energy';
-import { createPower, powerDefinitions } from '../combat/powers/registry';
+import { createPowerFromDefinition } from '../combat/powers/registry';
 import { PowerSlots } from '../combat/powers/slots';
 import { Weapon } from '../combat/weapons/weapon';
-import {
-  weaponDefinitions,
-  weaponModelOf,
-} from '../combat/weapons/weaponSchema';
+import { weaponModelOf } from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import playerData from '../data/scenes/roomPlayer.json';
 import type { RunState, MapNode } from '../core/runTypes';
@@ -61,6 +57,9 @@ import { LightningRenderer } from '../render/lightningRenderer';
 import { BarrierPower } from '../combat/powers/barrier';
 import { ExplosionRenderer } from '../render/explosionRenderer';
 import type { Loadout } from '../progression/loadout';
+import { resolveLoadout } from '../progression/patches';
+import type { ResolvedLoadout } from '../progression/patches';
+import type { DefinitionPatch } from '../core/metaTypes';
 import { SynergySystem } from '../progression/synergies';
 import { createStyleLights } from '../render/lights';
 import { getMaterial } from '../render/materials';
@@ -89,6 +88,8 @@ const playerDefaults = z
 export interface RoomSceneOptions {
   loadModels?: boolean;
   implantDefinitions?: ReadonlyMap<string, ImplantDefinition>;
+  /** Łatki definicji ekwipunku (ADR 0007 pkt 5), np. z talentów; domyślnie brak. */
+  patches?: readonly DefinitionPatch[];
 }
 
 /** Modele dla bloków układu; 'wall' to rozciągnięta bryła świata (bez modelu). */
@@ -124,6 +125,7 @@ export class RoomScene implements Scene {
   private readonly flyingBlade = new FlyingBlade();
   private powers!: PowerSlots;
   private readonly loadout: Loadout;
+  private readonly resolved: ResolvedLoadout;
   private weapons: Weapon[] = [];
   private weaponSlot = 0;
   private beamView!: BeamRenderer;
@@ -182,15 +184,8 @@ export class RoomScene implements Scene {
     if (!node)
       throw new Error('RoomScene wymaga bieżącego węzła w mapie runu.');
     this.node = { ...node, next: [...node.next] };
-    const loadout = run.loadout;
-    for (const [defs, ids] of [
-      [bladeDefinitions, [loadout.blade]],
-      [weaponDefinitions, loadout.weapons],
-      [powerDefinitions, loadout.powers],
-    ] as const)
-      for (const id of ids)
-        if (!defs.has(id)) throw new Error(`Nieznany ekwipunek: ${id}`);
-    this.loadout = loadout;
+    this.resolved = resolveLoadout(run.loadout, options.patches ?? []);
+    this.loadout = run.loadout;
     this.loadModels = options.loadModels ?? true;
     this.implantDefs = options.implantDefinitions ?? implantDefinitions;
     this.initialImplantIds = [...new Set(run.implants)];
@@ -312,7 +307,7 @@ export class RoomScene implements Scene {
     this.energy.set(this.run.energy);
     this.root.add(this.flyingBlade.root);
     this.blade = new PlasmaBlade(
-      resolveBlade(this.loadout.blade),
+      this.resolved.blade,
       {
         owner: playerId,
         team: 'player',
@@ -390,7 +385,9 @@ export class RoomScene implements Scene {
 
     this.fppView = new FppViewModel(ctx.bus, playerId, {
       bladeDefinition: this.blade.definition,
-      modelOf: weaponModelOf,
+      modelOf: (id) =>
+        this.resolved.weapons.find((weapon) => weapon.id === id)?.model ??
+        weaponModelOf(id),
       tuning: ctx.tuning,
     });
     await this.fppView.load(this.loadModels);
@@ -625,8 +622,8 @@ export class RoomScene implements Scene {
   private createEquipment(): void {
     this.powers?.reset();
     this.powers = new PowerSlots(
-      this.loadout.powers.map((id) =>
-        createPower(id, {
+      this.resolved.powers.map((definition) =>
+        createPowerFromDefinition(definition, {
           owner: this.player.id,
           bus: this.ctx.bus,
           tuning: this.ctx.tuning,
@@ -654,8 +651,8 @@ export class RoomScene implements Scene {
       ),
     );
     this.weaponSlot = 0;
-    this.weapons = this.loadout.weapons.map(
-      (id) =>
+    this.weapons = this.resolved.weapons.map(
+      (definition) =>
         new Weapon(
           this.player.id,
           this.ctx,
@@ -666,7 +663,7 @@ export class RoomScene implements Scene {
             castBeam: (origin, dir, rangeM) =>
               this.castBeam(origin, dir, rangeM),
           },
-          weaponDefinitions.get(id)!,
+          definition,
         ),
     );
   }
@@ -1133,6 +1130,8 @@ export class RoomScene implements Scene {
         return this.weapon.heat.current;
       case 'loadout':
         return this.loadout.id;
+      case 'resolvedLoadout':
+        return structuredClone(this.resolved);
       case 'blade':
         return this.blade.definition.id;
       case 'heldItem':
