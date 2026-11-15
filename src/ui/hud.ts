@@ -214,6 +214,15 @@ export class Hud {
   private readonly toast = createFlash('hud__toast');
   private readonly blade = element('div', 'hud__blade', text.bladeInFlight);
   private readonly crosshairTicks = element('div', 'hud__crosshair-ticks');
+  private readonly executeHint = element(
+    'div',
+    'hud__execute-hint',
+    text.execute,
+  );
+
+  setExecuteHint(ready: boolean): void {
+    this.executeHint.hidden = !ready;
+  }
   private readonly overheat = element('div', 'hud__overheat', text.overheated);
   private readonly weaponName = element('span', 'hud__weapon-name');
   private readonly weapon = element('div', 'hud__weapon');
@@ -285,6 +294,9 @@ export class Hud {
     arsenal.append(weapon, this.powers);
 
     const crosshair = element('div', 'hud__crosshair');
+    this.executeHint.hidden = true;
+    this.executeHint.style.cssText =
+      'position:absolute;top:calc(50% + 32px);left:50%;transform:translateX(-50%);color:var(--hud-health);font-size:14px;font-weight:600;letter-spacing:0.08em;text-shadow:0 1px 3px #000;white-space:nowrap';
     crosshair.setAttribute('aria-hidden', 'true');
     for (const side of ['up', 'right', 'down', 'left'])
       this.crosshairTicks.append(
@@ -332,6 +344,7 @@ export class Hud {
       vitals,
       arsenal,
       crosshair,
+      this.executeHint,
       this.hitMarker.node,
       this.denial.node,
       this.blade,
@@ -673,6 +686,7 @@ export class Hud {
   }
 
   dispose(): void {
+    this.executeHint.remove();
     if (this.disposed) return;
     this.disposed = true;
     for (const unsubscribe of this.unsubscribe) unsubscribe();

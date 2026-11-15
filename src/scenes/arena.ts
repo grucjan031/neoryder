@@ -25,6 +25,7 @@ import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { withBladeOverride } from '../combat/melee/bladeSchema';
 import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
+import { ExecuteSystem, type ExecuteEnemy } from '../combat/melee/execute';
 import { HeldItem } from '../combat/heldItem';
 import type { HeldItemView } from '../combat/heldItem';
 import { PlayerEnergy } from '../combat/powers/energy';
@@ -129,6 +130,7 @@ export class Arena implements Scene {
   private fpsCamera!: FpsCamera;
   private energy!: PlayerEnergy;
   private blade!: PlasmaBlade;
+  private execute!: ExecuteSystem;
   private heldItem!: HeldItem;
   private readonly flyingBlade = new FlyingBlade();
   private powers!: PowerSlots;
@@ -314,6 +316,7 @@ export class Arena implements Scene {
       ctx.tuning,
     );
     this.root.add(this.flyingBlade.root);
+    this.createExecute();
     this.blade = new PlasmaBlade(
       withBladeOverride(this.resolved.blade, this.bladeOverride),
       {
@@ -322,6 +325,7 @@ export class Arena implements Scene {
         damage: this.damage,
         stats: this.playerStats,
         attackSpeed: () => this.playerStats.get('attackSpeed'),
+        tryExecute: () => this.execute.tryExecute(),
         energy: this.energy.pool,
         queryArc: (reach, width, shape) => this.queryArc(reach, width, shape),
         querySegment: (from, to, radius, dash, dir) =>
@@ -544,7 +548,42 @@ export class Arena implements Scene {
       outgoing: () => this.playerStats.get('damage'),
       stats: this.playerStats,
       invulnMs: () => this.ctx.tuning.damage.playerInvulnMs,
-      invulnerable: () => this.player.isInvulnerable(),
+      invulnerable: () =>
+        this.player.isInvulnerable() || (this.execute?.invulnerable() ?? false),
+    });
+  }
+
+  private createExecute(): void {
+    this.execute?.dispose();
+    this.execute = new ExecuteSystem({
+      bus: this.ctx.bus,
+      damage: this.damage,
+      tuning: this.ctx.tuning,
+      owner: this.player.id,
+      statuses: this.statuses,
+      enemies: () => {
+        const enemies: ExecuteEnemy[] = [];
+        this.manager.forEach((enemy) => {
+          if (enemy.removed) return;
+          const position = enemy.current.position;
+          enemies.push({
+            id: enemy.id,
+            kind: enemy.definition.kind,
+            position: {
+              ...position,
+              y: position.y + (enemy.definition.body?.centerY ?? 0),
+            },
+          });
+        });
+        return enemies;
+      },
+      aim: () => this.aim(),
+      castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+      addEnergy: (amount) => this.energy.add(amount),
+      heal: (amount) => {
+        this.health.heal(amount);
+        this.emitHealth();
+      },
     });
   }
 
@@ -788,6 +827,7 @@ export class Arena implements Scene {
     this.synergies.step(pdt);
     this.damage.step(dt);
     this.statuses.step(dt);
+    this.execute.step(dt);
     this.projectileView.capturePrevious();
     this.debris.step(dt);
     for (const weapon of this.weapons) {
@@ -807,6 +847,13 @@ export class Arena implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
+    const executable = new Set(this.execute.readyIds());
+    this.hud?.setExecuteHint(
+      this.state === 'playing' &&
+        this.heldItem.held === 'blade' &&
+        this.blade.view().state !== 'throwing' &&
+        this.execute.targetId() !== null,
+    );
     const ids = this.seenEnemyIds;
     ids.clear();
     this.manager.forEach((enemy) => {
@@ -818,6 +865,11 @@ export class Arena implements Scene {
         this.root.add(view.root);
       }
       view.render(alpha);
+      view.setExecutable?.(
+        executable.has(enemy.id),
+        frameDt,
+        this.ctx.tuning.melee.executeMarkerPulseHz,
+      );
     });
     for (const [id, view] of this.views)
       if (!ids.has(id)) {
@@ -900,6 +952,7 @@ export class Arena implements Scene {
    */
   reset(): void {
     this.manager.despawnAll();
+    this.createExecute();
     this.statuses.reset();
     this.projectiles.dispose();
     this.projectileView.capturePrevious();
@@ -982,6 +1035,32 @@ export class Arena implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('execute', 'execute ready — gotowi do wykończenia', (args) =>
+      args.length === 1 && args[0] === 'ready'
+        ? JSON.stringify(this.execute.readyIds())
+        : 'Użycie: execute ready',
+    );
+    register('weaken', 'weaken <procent> — HP żywych wrogów', (args) => {
+      const percent = Number(args[0]);
+      if (
+        args.length !== 1 ||
+        !Number.isFinite(percent) ||
+        percent <= 0 ||
+        percent > 100
+      )
+        return 'Użycie: weaken <procent>, 0 < procent <= 100';
+      this.manager.forEach((enemy) => {
+        const health = this.damage.health(enemy.id);
+        if (!health || health.dead) return;
+        health.set((health.max * percent) / 100);
+        this.ctx.bus.emit('health_changed', {
+          id: enemy.id,
+          current: health.current,
+          max: health.max,
+        });
+      });
+      return `HP wrogów: ${percent}%`;
+    });
     register(
       'hold',
       'hold blade|gun — przedmiot w ręku natychmiast',
@@ -1100,6 +1179,7 @@ export class Arena implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'executable') return this.execute.readyIds();
     switch (name) {
       case 'wave':
         return this.director.wave;
@@ -1190,6 +1270,7 @@ export class Arena implements Scene {
     this.manager.dispose();
     this.statuses.dispose();
     this.blade.dispose();
+    this.execute?.dispose();
     this.heldItem.dispose();
     this.energy.dispose();
     this.fppView.dispose();

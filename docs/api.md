@@ -1622,3 +1622,14 @@ Zdarzenia pozostają bez zmian; śmierć beczki wykrywa `damage_dealt.killed`.
 Render `HazardView(hazards)` udostępnia `root`, `update(states, alpha)`, `dispose()`.
 Pokój: `query('hazards')`, komendy `hazard list`, `hazard detonate <id>`.
 Szczegóły: `docs/systems/hazards.md`.
+## Z3: wykończenia ostrzem
+
+- `enemy_executable: { id: EntityId; ready: boolean }` — wyłącznie zmiana gotowości.
+- `execute_performed: { attacker: EntityId; target: EntityId; point: Vec3 }` — udane wykończenie; dla synergii zdarzenie bez celu.
+- `DamageSystem.isInvulnerable(id): boolean` — odczyt okna po trafieniu i callbacku nietykalności, bez zmiany stanu.
+- `BladeDeps.tryExecute?: () => boolean` — przed startem lekkiego combo; true konsumuje atak i resetuje combo. Rzut, ciężki i dash-cięcie nie wołają haka.
+- `ExecuteSystem` (`combat/melee/execute.ts`): konstruktor przyjmuje bus, damage, tuning, owner, statuses (`StatusQuery`), `enemies()` (id, kind, position), `aim()` (origin, dir), `addEnergy`, `heal`; opcjonalny `castWall` odrzuca zasłonięte cele.
+- `step(dt)`, `tryExecute(): boolean`, `readyIds(): readonly EntityId[]`, `targetId(): EntityId | null` (odczyt celu dla HUD), `invulnerable(): boolean` (odczyt dla rejestracji gracza), `dispose()`.
+- HP/maxHP pochodzą z DamageSystem. `kind === 'boss'` wyklucza cel, `kind === 'executor'` wybiera próg elity. Pozycja celu to środek korpusu, nie stopy.
+- Sceny krokują system zaraz po statusach w czasie świata; callback nietykalności gracza łączy dash i wykończenie. Render przekazuje gotowość do widoku i odczytuje `targetId()` dla HUD.
+

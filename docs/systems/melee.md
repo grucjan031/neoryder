@@ -38,6 +38,66 @@ ostrza zachowują dotychczasowe sterowanie.
 - **Hitstop** raz na cios przy pierwszym trafieniu: `tuning.time.hitstopLightMs` (40 ms) dla lekkiego, `hitstopHeavyMs` (80 ms) dla ciężkiego i dla zabójstwa. Wstrząs kamery wynika z `damage_dealt` (FpsCamera).
 - **Ciężki cios** dostaje tag `#heavy` (`PIERCE_BLOCK_TAG`) — przebija blok celu.
 
+## Wykończenia (Z3)
+
+`ExecuteSystem` jest czystą logiką symulacji. Żywy wróg jest gotowy, jeśli
+ma najwyżej 25% HP albo status `stunned`; Egzekutor (`kind: 'executor'`)
+ma próg 15%. Boss (`kind: 'boss'`) i wróg nietykalny nigdy nie są gotowi.
+Nietykalność odczytuje `DamageSystem.isInvulnerable`: zarówno okno po
+trafieniu, jak i callback encji. Gotowość sprawdzana jest ponownie przy ataku.
+
+Lekki atak z ostrzem wybiera cel o najmniejszym kącie względem osi kamery
+w stożku o pełnym kącie 50° i odległości do 2,8 m od oczu do środka korpusu.
+Remis rozstrzyga odległość. Raycast świata wyklucza trafienia przez ściany.
+Rzut i dash-cięcie mają pierwszeństwo i nie używają haka; ciężki cios również
+go nie woła. Jak dotąd przytrzymanie LPM zaczyna się lekkim ciosem, więc
+gotowy cel może zostać wykończony już w chwili wciśnięcia.
+
+Obrażenia przez `DamageSystem.deal`: aktualne HP, źródło gracza,
+`['#melee', '#execute']`, kierunek od gracza i odrzut 10.
+Tarcza Tarczownika i parowanie Egzekutora przepuszczają `#execute`;
+zwykły lekki cios nadal jest blokowany. Po śmierci celu combo resetuje się,
+energia rośnie o 20, zdrowie o 6 (dotychczasowe API i limity zasobów).
+Zwykła nagroda energii za zabójstwo wręcz nadal działa niezależnie.
+Ochrona gracza trwa 0,4 s czasu świata i obejmuje synchroniczne skutki
+zabójstwa. Callback rejestracji gracza łączy ją z nietykalnością dashu.
+
+Feedback: hitstop 110 ms, slowmo 0,35 przez 0,3 s, camera shake 0,6 przez
+0,3 s. `execute_performed` gra istniejący `hitHeavy`, a standardowe
+zabójstwo dodaje dźwięk rozbicia. Czerwony obrys nad głową pulsuje do
+ciepłej bieli z częstotliwością 3 Hz; nie zmienia materiału całego wroga.
+HUD pokazuje `[LPM] Wykończ` pod celownikiem tylko z ostrzem w ręku,
+z dostępnym celem w zasięgu/stożku, poza lotem ostrza.
+
+W pokoju i arenie: ostrze rozstrzyga akcję, następnie w bloku `dt > 0`
+po `statuses.step(dt)` następuje `execute.step(dt)` (czas świata).
+Render odczytuje gotowość bez referencji do Three.js w symulacji.
+Reset areny odtwarza system i usuwa stare okno nietykalności.
+
+Zdarzenia:
+
+- `enemy_executable { id, ready }` tylko przy zmianie stanu (także wyjście
+  ze zbioru po śmierci/usunięciu lub przy dispose).
+- `execute_performed { attacker, target, point }` po udanym wykończeniu;
+  dla synergii zdarzenie bez celu, analogicznie do `parry_success`.
+- `hitstop`, `slowmo`, `camera_shake` przez istniejący EventBus.
+
+Wszystkie liczby w grupie `tuning.melee`, automatycznie widoczne w lil-gui:
+`executeHpFrac 0.25`, `executeHpFracElite 0.15`, `executeRangeM 2.8`,
+`executeArcDeg 50`, `executeKnockback 10`, `executeEnergy 20`,
+`executeHeal 6`, `executeHitstopMs 110`, `executeSlowmoScale 0.35`,
+`executeSlowmoS 0.3`, `executeShake 0.6`, `executeInvulnS 0.4`,
+`executeMarkerPulseHz 3`.
+
+Debug: `weaken <procent>` ustawia HP wszystkich żywych wrogów (0 < procent
+≤ 100); `execute ready` wypisuje gotowe ID; query `executable` zwraca ID.
+Test w 30 sekund: `?scene=room-test&room=combatYard&loadout=blade&seed=exec-e2e&debug=1`,
+poczekaj na falę, `weaken 10`, podejdź do znacznika i kliknij LPM.
+Oceń czytelność obrysu i podpowiedzi oraz siłę zatrzymania/spowolnienia.
+Alternatywnie `status stunned 3` testuje przejście moc → ostrze.
+Testy: `execute.test.ts`, dopisane przypadki w `damage.test.ts`,
+`plasmaBlade.test.ts`, `synergies.test.ts` oraz `execute.spec.ts`.
+
 ## Blok
 
 - Wejście w blok dodaje graczowi `StatModifier { stat: 'damageTaken', type: 'mult', value: blockDamageMult (0,3), source: 'block' }`; wyjście go zdejmuje. Redukcję liczy `DamageSystem` — ostrze nie modyfikuje obrażeń samo.
