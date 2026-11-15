@@ -12,6 +12,7 @@ import {
 import type { Camera } from 'three';
 import { ParticlePool } from '../../vfx/fxPool';
 import { tuning } from '../../core/tuning';
+import { getQuality } from '../quality';
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -83,8 +84,12 @@ export class CityParticleBatch {
 
   render(camera: Camera, growth = 0): void {
     let count = 0;
+    let density = 0;
     for (const p of this.pool.particles) {
       if (p.life === 0) continue;
+      density += getQuality().particleDensity;
+      if (density < 1) continue;
+      density -= 1;
       const age = p.age / p.life;
       const size = p.size * (1 + age * growth);
       this.dummy.position.set(p.x, p.y, p.z);

@@ -1,5 +1,6 @@
 import type { Camera, Object3D } from 'three';
 import { tuning } from '../../core/tuning';
+import { getQuality } from '../quality';
 import { AmbientFx } from '../../vfx/ambientFx';
 import { Weather } from '../../vfx/weather';
 import type {
@@ -107,7 +108,13 @@ export class CityDressing {
     this.decals?.update(dt, frameDt, camera);
     this.ambient?.update(dt, frameDt, camera);
     if (this.weather) {
-      this.weather.update(dt, frameDt, camera);
+      const density = this.weather.params.density;
+      try {
+        this.weather.params.density = density * getQuality().rainDensity;
+        this.weather.update(dt, frameDt, camera);
+      } finally {
+        this.weather.params.density = density;
+      }
       tuning.render.skyFlash = this.weather.flash * tuning.city.stormFlash;
     }
   }

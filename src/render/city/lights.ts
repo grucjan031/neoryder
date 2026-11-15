@@ -12,6 +12,7 @@ import {
 } from 'three';
 import type { Camera } from 'three';
 import { tuning } from '../../core/tuning';
+import { getQuality } from '../quality';
 import type { CityLightDef } from '../../world/dressingSchema';
 import {
   cityColor,
@@ -171,6 +172,23 @@ export class CityLights {
 
   update(_dtWorldS: number, dtRealS: number, camera: Camera): void {
     if (this.disposed) return;
+    const limit = Math.max(
+      0,
+      Math.floor(
+        Math.min(
+          this.pool.length,
+          tuning.city.maxLights,
+          getQuality().maxLights,
+        ),
+      ),
+    );
+    this.pool.forEach((light, slot) => {
+      light.visible = slot < limit;
+      if (slot >= limit) {
+        light.intensity = 0;
+        this.assignments[slot] = null;
+      }
+    });
     const assigned = this.assigned;
     assigned.clear();
     for (const index of this.assignments)
@@ -180,7 +198,7 @@ export class CityLights {
     const selected = selectCityLights(
       this.defs,
       camera,
-      Math.min(this.pool.length, tuning.city.maxLights),
+      limit,
       this.selected,
       this.priority,
     );
@@ -190,6 +208,7 @@ export class CityLights {
     const fade =
       1 - Math.exp(-tuning.city.lightFadeRate * Math.max(0, dtRealS));
     this.pool.forEach((light, slot) => {
+      if (slot >= limit) return;
       let index = this.assignments[slot] ?? null;
       if (index !== null && !wanted.has(index)) {
         light.intensity += (0 - light.intensity) * fade;

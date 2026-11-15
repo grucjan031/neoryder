@@ -21,7 +21,9 @@ import type {
 } from 'three';
 import type { EventBus } from '../core/events';
 import { tuning } from '../core/tuning';
+import { loadSettings } from '../core/save';
 import { BloomPass } from './bloom';
+import { getQuality } from './quality';
 import { ReflectionPass, WetNormals } from './reflections';
 import { surfaceTexture } from './surfaceTextures';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
@@ -307,7 +309,8 @@ export class StylePipeline {
       dt ?? (this.lastRenderMs > 0 ? (now - this.lastRenderMs) / 1000 : 0);
     this.lastRenderMs = now;
     this.postFxState.update(Math.min(frameDt, 0.25));
-    if (tuning.render.outline === 0) {
+    const quality = getQuality();
+    if (tuning.render.outline === 0 || quality.outline === 0) {
       renderWithViewmodel(this.renderer, scene, camera);
       return;
     }
@@ -342,23 +345,24 @@ export class StylePipeline {
     uniforms.cameraRotation.value.setFromMatrix4(camera.matrixWorld);
     uniforms.cameraWorld.value.copy(camera.matrixWorld);
     uniforms.eyePosition.value.setFromMatrixPosition(camera.matrixWorld);
-    uniforms.heightFogDensity.value = t.heightFogDensity;
+    uniforms.heightFogDensity.value = t.heightFogDensity * quality.heightFog;
     uniforms.heightFogFalloff.value = t.heightFogFalloff;
     uniforms.floorY.value =
       typeof scene.userData.reflectionFloorY === 'number'
         ? scene.userData.reflectionFloorY
         : 0;
     uniforms.renderTime.value += Math.min(frameDt, 0.25);
-    uniforms.reflectionStrength.value = t.reflectionStrength;
+    uniforms.reflectionStrength.value =
+      t.reflectionStrength * quality.reflections;
     uniforms.reflectionDistortion.value = t.reflectionDistortion;
     uniforms.reflectionPuddles.value = t.reflectionPuddles;
     uniforms.floorTolerance.value = Math.max(t.reflectionFloorTolerance, 0.001);
     uniforms.fogStrength.value = t.fogStrength;
-    uniforms.skyFlash.value = t.skyFlash;
+    uniforms.skyFlash.value = loadSettings().flashes ? t.skyFlash : 0;
     uniforms.fogNear.value = t.fogNear;
     uniforms.fogFar.value = Math.max(t.fogFar, t.fogNear + 1e-3);
     uniforms.fogColor.value.set(t.fogColor);
-    const bloomOn = t.bloom > 0 && t.bloomStrength > 0;
+    const bloomOn = quality.bloom > 0 && t.bloom > 0 && t.bloomStrength > 0;
     const postFxOn = t.postFx > 0;
     uniforms.vignetteStrength.value = postFxOn ? t.vignetteStrength : 0;
     uniforms.vignetteRadius.value = t.vignetteRadius;
@@ -382,7 +386,7 @@ export class StylePipeline {
       renderer.setClearColor(0x000000, 0);
       renderer.setRenderTarget(this.normalTarget);
       restoreHidden = hideNoOutline(scene);
-      if (t.reflectionStrength > 0) {
+      if (uniforms.reflectionStrength.value > 0) {
         this.wetNormals ??= new WetNormals();
         this.wetNormals.render(renderer, scene, camera);
         restoreHidden();
@@ -407,6 +411,7 @@ export class StylePipeline {
           this.colorTarget.width,
           this.colorTarget.height,
         );
+        this.bloom.setSize(this.colorTarget.width, this.colorTarget.height);
         this.bloom.render(renderer, scene, camera);
       }
       uniforms.bloomMap.value = bloomOn

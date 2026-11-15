@@ -1,6 +1,45 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  /** Ograniczenia oprawy nakładane na motyw; pixelRatio=0 zachowuje DPR urządzenia. */
+  quality: {
+    low: {
+      pixelRatio: 0.75,
+      outline: 0,
+      bloom: 0,
+      bloomResolution: 0.5,
+      reflections: 0,
+      maxLights: 2,
+      rainDensity: 0.25,
+      particleDensity: 0.25,
+      heightFog: 0,
+      shadows: 0,
+    },
+    medium: {
+      pixelRatio: 1,
+      outline: 1,
+      bloom: 1,
+      bloomResolution: 0.5,
+      reflections: 0,
+      maxLights: 4,
+      rainDensity: 0.5,
+      particleDensity: 0.5,
+      heightFog: 1,
+      shadows: 0,
+    },
+    high: {
+      pixelRatio: 0,
+      outline: 1,
+      bloom: 1,
+      bloomResolution: 1,
+      reflections: 1,
+      maxLights: 8,
+      rainDensity: 1,
+      particleDensity: 1,
+      heightFog: 1,
+      shadows: 0,
+    },
+  },
   /** Oprawa miasta: wyłącznie render, metry i sekundy. Limity pul ustalane przy tworzeniu. */
   city: {
     maxLights: 8,

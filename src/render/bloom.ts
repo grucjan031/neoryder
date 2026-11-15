@@ -18,6 +18,7 @@ import type {
   WebGLRenderer,
 } from 'three';
 import { tuning } from '../core/tuning';
+import { getQuality } from './quality';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
 import { renderWithViewmodel } from './viewmodelLayer';
 
@@ -128,8 +129,9 @@ export class BloomPass {
 
   /** Rozmiar w pikselach bufora rysowania. */
   setSize(width: number, height: number): void {
+    const resolution = this.reflection ? 1 : getQuality().bloomResolution;
     const scaled = (scale: number, value: number): number =>
-      Math.max(1, Math.floor(value * scale));
+      Math.max(1, Math.floor(value * scale * resolution));
     this.mask.setSize(scaled(MASK_SCALE, width), scaled(MASK_SCALE, height));
     for (const target of [this.blurA, this.blurB])
       target.setSize(

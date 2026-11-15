@@ -3,6 +3,12 @@ import { test, expect } from '@playwright/test';
 import { SIM_TIMEOUT } from './helpers';
 
 test('perf: arena pod obciążeniem', async ({ page }, testInfo) => {
+  const quality = process.env.PERF_QUALITY ?? 'high';
+  if (!['low', 'medium', 'high'].includes(quality))
+    throw new Error(`Nieprawidłowe PERF_QUALITY: ${quality}`);
+  await page.addInitScript((quality) => {
+    localStorage.setItem('neoryder.settings', JSON.stringify({ quality }));
+  }, quality);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -130,7 +136,7 @@ test('perf: arena pod obciążeniem', async ({ page }, testInfo) => {
     };
   });
 
-  const json = JSON.stringify(report, null, 2) + '\n';
+  const json = JSON.stringify({ ...report, quality }, null, 2) + '\n';
   await mkdir('perf-report', { recursive: true });
   await writeFile('perf-report/arena.json', json, 'utf8');
   await testInfo.attach('arena-perf', {

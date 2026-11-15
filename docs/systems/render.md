@@ -1,5 +1,56 @@
 # Render — styl F1 #05
 
+## Profile jakości (Z9)
+
+`tuning.quality` zawiera komplet identycznych kluczy dla `low`, `medium`, `high`.
+`applyQuality(profile, targets?)` w `src/render/quality.ts` wybiera ograniczenia
+oprawy; z rendererem i pipeline aktualizuje też DPR, cienie i rozmiary celów.
+`main.ts` stosuje zapis przed utworzeniem sceny oraz po zmianie ustawień.
+Ekran ustawień wybiera profil również bez aktywnego renderera (menu główne).
+Motyw i jego przywracanie nie nadpisują jakości: pipeline odczytuje ograniczenia
+oddzielnie, nie zmieniając wartości `tuning.render`.
+
+| Klucz `quality`   | low              | medium | high               | Koszt / decyzja                                                                                                                                                           |
+| ----------------- | ---------------- | ------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pixelRatio`      | 0,75             | 1      | 0 = DPR urządzenia | Koszt pikseli rośnie kwadratowo; high zachowuje wcześniejsze pełne DPR, bez nowego limitu 2                                                                               |
+| `outline`         | 0                | 1      | 1                  | Kolor + normalne/głębia + kompozycja: 3 przebiegi; low korzysta ze zwykłego renderu                                                                                       |
+| `bloom`           | 0                | 1      | 1                  | Maska sceny i 4 rozmycia; low pomija wszystkie                                                                                                                            |
+| `bloomResolution` | 0,5 (nieaktywny) | 0,5    | 1                  | Mnożnik rozdzielczości: medium maska 1/4 bufora, rozmycia 1/8; high jak wcześniej 1/2 i 1/4                                                                               |
+| `reflections`     | 0                | 0      | 1                  | Odbita scena emisyjna + 2 rozmycia w 1/2; medium usuwa 3 przebiegi                                                                                                        |
+| `maxLights`       | 2                | 4      | 8                  | Limit dodatkowy dla `city.maxLights`; nieaktywne światła są niewidoczne, a nie tylko wyzerowane (mniej świateł w shaderach Standard)                                      |
+| `rainDensity`     | 0,25             | 0,5    | 1                  | Mnożnik gęstości motywu w `CityDressing.render`; mniej smug i rozbryzgów, pula deszczu nadal ma do 4000 miejsc                                                            |
+| `particleDensity` | 0,25             | 0,5    | 1                  | Rysowany ułamek aktywnych cząsteczek `CityParticleBatch`: para, iskry, kapanie i rozbryzgi; mniejszy overdraw i mniej aktualizacji macierzy, pule CPU pozostają bez zmian |
+| `heightFog`       | 0                | 1      | 1                  | Mnożnik gęstości mgły wysokościowej; obliczenia wykładnicze w kompozycji, bez dodatkowego przebiegu                                                                       |
+| `shadows`         | 0                | 0      | 0                  | Dynamiczne cienie były i pozostają wyłączone                                                                                                                              |
+
+W `low` wyłączenie `outline` zgodnie z dotychczasową semantyką omija cały
+pipeline stylu, także gradient nieba, mgłę odległości, winietę i impulsy postFx.
+Materiały, oświetlenie, geometria i viewmodel nadal są rysowane. W `medium`
+zostają kontury, atmosfera i impulsy, a koszt maleje dzięki DPR, bloomowi,
+światłom i wyłączeniu odbić. Bez viewmodelu i impulsu neonStreet ma odpowiednio
+1 / 8 / 11 przebiegów. Są to koszty strukturalne, nie wyniki pomiaru FPS.
+
+Wszystkie zmiany działają na żywo, także podczas pauzy; deszcz zachowuje bazową
+gęstość motywu, a ograniczenie stosuje tylko na czas aktualizacji oprawy.
+Notka w ustawieniach pochodzi z `settings.pl.json`:
+„Zmiany jakości są stosowane na bieżąco.” Zmiana rozdzielczości bloomu działa także
+przy niezmienionym DPR. Bufory nieaktywnych efektów pozostają do ponownego użycia
+i są zwalniane w `dispose()` pipeline. Zmiana liczby widocznych świateł może
+spowodować jednorazową kompilację wariantu shadera.
+
+Brak zapisu ustawień oznacza `medium`. Istniejące `high` oraz starszy zapis bez
+pola jakości zachowują `high`. `tests/unit/quality.test.ts` sprawdza profile na
+atrapie WebGLRenderer, przebiegi i rozdzielczości, powrót low → high, motywy,
+oprawę miasta i zachowanie zapisu.
+
+Pomiar architekta: `PERF_QUALITY=low|medium|high` dla `tests/e2e/perf.spec.ts`
+(domyślnie `high`). Test ustawia localStorage przed nawigacją, odrzuca nieznany
+profil i dopisuje `quality` do `perf-report/arena.json` oraz załącznika testu.
+Cel 60 FPS na średnim laptopie dla `medium` wymaga pomiaru na docelowym GPU.
+Kontrola ręczna: w `?scene=neon-test` zmienić jakość w ustawieniach pauzy,
+porównać kontury, bloom, odbicia, światła i gęstość deszczu.
+Powrót do `high` powinien przywrócić wygląd sprzed Z9.
+
 Warstwa `src/render/` nie uczestniczy w symulacji. Materiały i obrys służą szybkiej
 identyfikacji roli obiektu: białe otoczenie, czerwone zagrożenia, czarne rekwizyty,
 cyan dla gracza i magenta dla Rezonansu.
