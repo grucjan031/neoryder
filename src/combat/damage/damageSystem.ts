@@ -123,7 +123,7 @@ export class DamageSystem {
     if (killed) {
       if (this.registry.team(target) === 'player')
         this.bus.emit('player_died', { id: target });
-      else
+      else if (this.registry.team(target) !== 'neutral')
         this.bus.emit('enemy_killed', {
           id: target,
           killer: info.source,

@@ -38,7 +38,7 @@ atak (melee / pocisk / moc)
 - **Redukcje** wyłącznie przez `StatModifier` na statystyce `damageTaken` celu. Blok ostrzem = `{ stat: 'damageTaken', type: 'mult', value: 0.3, source: 'block' }`, zdejmowany `removeBySource('block')`. `damageTaken` ma zawsze bazę 1 — wartość bazowa w `Stats` jest ignorowana.
 - **Nietykalność** po trafieniu tylko tam, gdzie podano `invulnMs` (gracz). Liczona w czasie symulacji, więc hitstop i spowolnienie ją wydłużają.
 - **Obrażenia zerowe** (zignorowane, ujemne, cel martwy) nie emitują zdarzeń.
-- **Kolejność zdarzeń:** `damage_dealt` → `health_changed` → `enemy_killed` lub `player_died`. `enemy_killed` emitowane dla każdej drużyny poza `player`.
+- **Kolejność zdarzeń:** `damage_dealt` → `health_changed` → `enemy_killed` lub `player_died`; cel `neutral` emituje tylko dwa pierwsze zdarzenia (z `damage_dealt.killed: true`), bez `enemy_killed`.
 - **Kolizje:** hurtboxy to zwykłe collidery Rapier z grupami `CollisionGroup`; filtr zapytania to `interactionGroups(grupaAtakującego, grupyCelów)`. Nie ma osobnej fizyki hitboxów.
 
 ## Obrona celu — F2-14
