@@ -1,6 +1,6 @@
 # Tekstury uliczek NEORYDER — Neon Noir
 
-Pakiet 80 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego i 6 dla kryj?wki Iskra) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
+Pakiet 86 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego i 12 dla kryjówki Iskra) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
 
 Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. W chwili wykonania tego zadania plik ADR 0006 nie był obecny w tym worktree. Istniejący kontrakt `src/world/dressingSchema.ts` określa ścieżki oraz sposób użycia signs, holo i decals. Pakiet nie zmienia kodu gry ani tego kontraktu.
 
@@ -12,6 +12,9 @@ Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. 
 - `screens/`: RGB z czarnym tłem, obróbka black_key jak signs; czerń oznacza brak emisji. Dostępne wymiary to 512×1024, 1024×512 i 512×256.
 - Powierzchnie są chłodne: granat, grafit i stalowy błękit. Dozwolone barwy światła: bursztyn #ffae1a, zieleń #6dff4a, fiolet #8a5cff, błękit królewski #3d7bff, ciepła biel #fff1d6. Czerwień, cyan i magenta pozostają zarezerwowane dla elementów rozgrywki.
 - WebP: jakość 85, metoda 6. Manifest podaje `id`, `category`, ścieżkę względem katalogu tekstur, wymiary, `dominantColor`, opis i liczbę bajtów. Kolor dominujący to mediana najczęstszego koszyka RGB po odrzuceniu przezroczystości i ciemnego tła; nie jest tintem wymaganym przez renderer.
+
+- `posters/`: nieprzezroczyste RGB (dopuszczalne RGBA z alfą 255), 512×512 lub 1024×512. Bez kafelkowania i wymogu przezroczystych rogów. Centralne przycięcie i Lanczos. Plakat werbunkowy zachowuje ciemne tło; pozostałe źródła: green_key z czyszczeniem brzegów i spłaszczenie na #12161d (baner: #1a1f28).
+- `screen_comms` zachowuje całą grafikę dzięki proporcjonalnemu zmniejszeniu i wycentrowaniu z czarnym marginesem minimum 32 px przed black_key (pole `blackMargin` w katalogu).
 
 ## Lista tekstur
 
@@ -30,6 +33,12 @@ Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. 
 | screens | 1024×512 | screen_menu, screen_news |
 | screens | 512×256 | screen_status |
 | screens | 512×512 | screen_map |
+| posters | 512×512 | poster_iskra_recruit, poster_koalicja_defaced, banner_iskra |
+| posters | 1024×512 | mural_spark |
+| signs | 512×256 | iskra, metro, warsztat, sign_bar |
+| screens | 512×512 | screen_talents |
+| screens | 1024×512 | screen_missions, screen_comms |
+| decals | 512×512 | graffiti_iskra |
 
 Pełne ścieżki, opisy, kolory i wielkości plików: [manifest](../public/assets/textures/manifest.json).
 
@@ -45,7 +54,7 @@ python tools/textures/process.py validate
 python tools/textures/process.py previews
 ```
 
-Walidator sprawdza dokładny zestaw 74 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
+Walidator sprawdza dokładny zestaw 86 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Posters wymagają pełnej nieprzezroczystości oraz zera pikseli z G > 120 i G − max(R, B) > 85 w skali 0–255; nie wymagają kafelkowania ani przezroczystych rogów. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
 
 Podgląd zbiorczy: `%TEMP%/neoryder-textures/contact-sheet.png`. Podglądy kafelkowania: `%TEMP%/neoryder-textures/<id>-2x2.png`. Raport wymiarów, bajtów, rogów i krawędzi: `%TEMP%/neoryder-textures/validation.json`.
 

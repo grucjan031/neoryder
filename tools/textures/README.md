@@ -1,6 +1,6 @@
 # Narzędzia i prompty tekstur NEORYDER
 
-Wszystkie 80 obraz?w (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego i 6 dla kryj?wki Iskra) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
+Wszystkie 86 obrazów (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego i 12 dla kryjówki Iskra) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
 
 ## Odtworzenie
 
@@ -16,7 +16,7 @@ python tools/textures/process.py validate
 python tools/textures/process.py previews
 ```
 
-Dla pojedynczych źródeł: `python tools/textures/process.py build --ids concrete hotel`. Manifest odbudowuje się ze wszystkich istniejących wyników; pełna walidacja zawsze wymaga wszystkich 74 plików.
+Dla pojedynczych źródeł: `python tools/textures/process.py build --ids concrete hotel`. Manifest odbudowuje się ze wszystkich istniejących wyników; pełna walidacja zawsze wymaga wszystkich 86 plików.
 
 Algorytmy i zasady użycia opisuje [docs/textures.md](../../docs/textures.md). Wyniki trafiają do `public/assets/textures/<category>/<id>.webp`. Podglądy i raport trafiają do `%TEMP%/neoryder-textures/`: `contact-sheet.png`, `<id>-2x2.png`, `validation.json`. Font podpisów podglądu: systemowy Arial z `C:/Windows/Fonts/arial.ttf`.
 
@@ -706,4 +706,61 @@ ONE wide 2:1 game mission board screen texture, pure black background. Minimal s
 
 ```text
 ONE square stencil resistance graffiti decal artwork on a perfectly flat uniform chroma green #00ff00 background for later keying. Centered amber #ffae1a and warm white #fff1d6 stencil graphic: a spark/lightning symbol enclosed in a simple circle, with exact word ISKRA beneath in bold uppercase stencil lettering. Slightly weathered paint edges, high contrast. Keep every mark inside central 75%, green background completely even, no green paint in artwork. No other hues, no red cyan magenta violet blue, no extra text, logos, watermark, wall, scene or shadows. Exact spelling ISKRA.
+```
+
+
+## Rozbudowa kryjówki Iskra — 2026-11-15
+
+`screen_comms` ma `blackMargin: 32`: cała grafika jest proporcjonalnie zmniejszana i centrowana na czarnym prostokącie przed black_key. Zapewnia to czarne rogi bez przycinania interfejsu. To obróbka źródła, bez regeneracji.
+
+Sześć źródeł wygenerowano osobnymi wywołaniami wbudowanego imagegen. Użyto istniejących PNG bez regeneracji. Napisy sprawdzono na obrazach i planszy. Poniżej pełne prompty źródeł, pierwotnie opisanych jako decals; wynikowe płaszczyzny należą do posters.
+
+Posters są nieprzezroczyste i niekafelkowane. Plakat werbunkowy zachowuje ciemne tło. Pozostałe trzy obrazy przechodzą green_key z czyszczeniem przebarwień brzegów i kompozycję na tle z pola keyBackground: #12161d, dla banera #1a1f28. Następnie centralne przycięcie i Lanczos. Screens i signs używają zwykłego black_key. Walidator posters wymaga pełnej nieprzezroczystości i zera pikseli z G > 120 oraz G − max(R, B) > 85 w skali 0–255.
+
+### poster_iskra_recruit — posters, 512×512
+
+Plik: `public/assets/textures/posters/poster_iskra_recruit.webp`.
+
+```text
+Use case: ads-marketing. Asset: square game decal texture, 512x512. Generate a worn underground resistance recruitment poster, stylized raised fist holding a small lightning spark, screen-print ink on dark paper, amber #ffae1a and warm white #fff1d6 only for illuminated/printed elements. Visible folds, tape corners, slight damage. Text verbatim, accurately rendered Polish: “DOŁĄCZ DO ISKRY”. No other words. Palette strictly amber and warm white on near-black paper, no red, cyan, magenta, no logos, no real people, no watermark.
+```
+
+### poster_koalicja_defaced — posters, 512×512
+
+Plik: `public/assets/textures/posters/poster_koalicja_defaced.webp`.
+
+```text
+Use case: ads-marketing. Asset: square 512x512 decal. Official fictional corporate Coalition propaganda poster, cold royal blue #3d7bff and gray on dark paper, abstract faceless geometry, defaced by resistance: large crossed-out marks and amber spray-painted spark inside a circle, handwritten Polish annotation exactly “KŁAMSTWO”. Main printed text exactly “PORZĄDEK · BEZPIECZEŃSTWO · KOALICJA” with correct Polish spelling. Worn paper and spray paint. Use uniform chroma green #00ff00 background outside poster for alpha keying. No other colors of light, strictly no red/cyan/magenta, no real brands/logos/person faces, no watermark.
+```
+
+### banner_iskra — posters, 512×512
+
+Plik: `public/assets/textures/posters/banner_iskra.webp`.
+
+```text
+Use case: stylized-concept. Asset: square 512x512 decal of a vertical handmade resistance flag/banner. Large spark inside circle, warm white #fff1d6 and amber #ffae1a printed on graphite cloth. Visible woven textile, folds, frayed edges. Uniform chroma green #00ff00 background outside cloth for alpha keying. No text, no extra colors, strictly no red/cyan/magenta, no logo, no watermark.
+```
+
+### mural_spark — posters, 1024×512
+
+Plik: `public/assets/textures/posters/mural_spark.webp`.
+
+```text
+Use case: illustration-story. Asset: wide 1024x512 wall decal mural for a disused metro station. Street art mural, silhouettes of several ordinary people with raised hands beneath one enormous spark-shaped lightning bolt; distant city skyline with tall buildings. Bold layered stencil and spray paint, amber #ffae1a, violet #8a5cff, warm white #fff1d6, dark graphite. No text, no faces/details, no red/cyan/magenta, no brands or watermark. Uniform chroma green #00ff00 outside mural shape for alpha keying.
+```
+
+### screen_comms — screens, 1024×512
+
+Plik: `public/assets/textures/screens/screen_comms.webp`.
+
+```text
+Use case: ui-mockup. Asset: wide 1024x512 hacker communications console screen texture, flat front-facing interface on pure black background, luminous frequency grid, signal waveforms, intercepted channel rows, compact readable hierarchy. Green #6dff4a and warm white #fff1d6 only. Exact Polish header: “ŁĄCZNOŚĆ // KANAŁY KOALICJI”. No other legible words, no red/cyan/magenta, no brand, no watermark, no perspective.
+```
+
+### sign_bar — signs, 512×256
+
+Plik: `public/assets/textures/signs/sign_bar.webp`.
+
+```text
+Use case: stylized-concept. Asset: wide 512x256 isolated neon sign texture on pure black. Violet #8a5cff and warm white #fff1d6 glass neon tubes spell exactly “BAR POD PERONEM”, Polish spelling, with small simple cup icon. Centered with black margins, gentle restrained glow, no board, no wires. No other colors, strictly no red/cyan/magenta, no additional text, brands or watermark.
 ```

@@ -798,5 +798,65 @@
     "dominantColor": "#fdf6d8",
     "description": "Szablonowe graffiti ISKRA z symbolem iskry w okr?gu",
     "bytes": 54174
+  },
+  {
+    "id": "poster_iskra_recruit",
+    "category": "posters",
+    "path": "posters/poster_iskra_recruit.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#1c1814",
+    "description": "Plakat werbunkowy DOŁĄCZ DO ISKRY",
+    "bytes": 67086
+  },
+  {
+    "id": "poster_koalicja_defaced",
+    "category": "posters",
+    "path": "posters/poster_koalicja_defaced.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#28272b",
+    "description": "Plakat Koalicji przekreślony napisem KŁAMSTWO",
+    "bytes": 68670
+  },
+  {
+    "id": "banner_iskra",
+    "category": "posters",
+    "path": "posters/banner_iskra.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#191f28",
+    "description": "Materiałowy baner Iskry z symbolem w okręgu",
+    "bytes": 41420
+  },
+  {
+    "id": "mural_spark",
+    "category": "posters",
+    "path": "posters/mural_spark.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#13161e",
+    "description": "Mural z uniesionymi rękami pod iskrą i panoramą miasta",
+    "bytes": 146360
+  },
+  {
+    "id": "screen_comms",
+    "category": "screens",
+    "path": "screens/screen_comms.webp",
+    "width": 1024,
+    "height": 512,
+    "dominantColor": "#032600",
+    "description": "Ekran ŁĄCZNOŚĆ // KANAŁY KOALICJI",
+    "bytes": 69178
+  },
+  {
+    "id": "sign_bar",
+    "category": "signs",
+    "path": "signs/sign_bar.webp",
+    "width": 512,
+    "height": 256,
+    "dominantColor": "#190438",
+    "description": "Fioletowo-biały neon BAR POD PERONEM z kubkiem",
+    "bytes": 6470
   }
 ]

@@ -112,12 +112,25 @@ def build(ids):
             image = source.convert("RGB")
         if item["category"] in ("decals", "labels"):
             image = green_key(image)
+        elif item["category"] == "posters" and item.get("keyBackground"):
+            keyed = green_key(image)
+            background = Image.new("RGBA", keyed.size, item["keyBackground"])
+            image = Image.alpha_composite(background, keyed).convert("RGB")
         image = ImageOps.fit(image, (item["width"], item["height"]), Image.Resampling.LANCZOS)
         if item["category"] == "surfaces":
             if item["id"] in ("asphalt_puddles", "grime"):
                 image = image.convert("L").convert("RGB")
             image = seamless(image)
         elif item["category"] in ("signs", "holo", "screens"):
+            if item.get("blackMargin"):
+                margin = item["blackMargin"]
+                inner = ImageOps.contain(
+                    image, (image.width - 2 * margin, image.height - 2 * margin),
+                    Image.Resampling.LANCZOS,
+                )
+                image = Image.new("RGB", image.size, "#000000")
+                image.paste(inner, ((image.width - inner.width) // 2,
+                                    (image.height - inner.height) // 2))
             image = black_key(image)
             if item.get("hueShift"):
                 # Korekta barwy po kontroli palety (np. fiolet dryfujący ku zarezerwowanej magencie).
@@ -159,7 +172,10 @@ def validate():
             result = {"id": item["id"], "size": list(image.size), "mode": image.mode,
                       "bytes": path.stat().st_size}
             required_mode = "RGBA" if item["category"] in ("decals", "labels") else "RGB"
-            if image.format != "WEBP" or image.size != (item["width"], item["height"]) or image.mode != required_mode:
+            valid_mode = image.mode == required_mode or (
+                item["category"] == "posters" and image.mode == "RGBA"
+            )
+            if image.format != "WEBP" or image.size != (item["width"], item["height"]) or not valid_mode:
                 errors.append(f"{item['id']}: wrong format, size or mode")
             a = np.asarray(image).astype(np.float32)
             if item["category"] in ("signs", "holo", "screens"):
@@ -173,6 +189,15 @@ def validate():
                 result["cornerAlphaMax255"] = maximum
                 if maximum != 0 or a[:, :, 3].max() < 200:
                     errors.append(f"{item['id']}: invalid transparency")
+            elif item["category"] == "posters":
+                if image.mode == "RGBA" and a[:, :, 3].min() != 255:
+                    errors.append(f"{item['id']}: poster not fully opaque")
+                key_pixels = (a[:, :, 1] > 120) & (
+                    a[:, :, 1] - np.maximum(a[:, :, 0], a[:, :, 2]) > 85
+                )
+                result["keyGreenPixels"] = int(key_pixels.sum())
+                if key_pixels.any():
+                    errors.append(f"{item['id']}: green key residue")
             else:
                 dx = float(np.abs(a[:, 0] - a[:, -1]).mean())
                 dy = float(np.abs(a[0] - a[-1]).mean())

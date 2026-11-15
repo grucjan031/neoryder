@@ -640,5 +640,57 @@
     "height": 512,
     "description": "Szablonowe graffiti ISKRA z symbolem iskry w okr?gu",
     "subject": "Resistance stencil graffiti: spark symbol inside circle and exact word ISKRA, amber #ffae1a and warm white #fff1d6 paint on uniform chroma green #00ff00 keying background."
+  },
+  {
+    "id": "poster_iskra_recruit",
+    "category": "posters",
+    "width": 512,
+    "height": 512,
+    "description": "Plakat werbunkowy DOŁĄCZ DO ISKRY",
+    "subject": "Use case: ads-marketing. Asset: square game decal texture, 512x512. Generate a worn underground resistance recruitment poster, stylized raised fist holding a small lightning spark, screen-print ink on dark paper, amber #ffae1a and warm white #fff1d6 only for illuminated/printed elements. Visible folds, tape corners, slight damage. Text verbatim, accurately rendered Polish: “DOŁĄCZ DO ISKRY”. No other words. Palette strictly amber and warm white on near-black paper, no red, cyan, magenta, no logos, no real people, no watermark."
+  },
+  {
+    "id": "poster_koalicja_defaced",
+    "category": "posters",
+    "width": 512,
+    "height": 512,
+    "description": "Plakat Koalicji przekreślony napisem KŁAMSTWO",
+    "subject": "Use case: ads-marketing. Asset: square 512x512 decal. Official fictional corporate Coalition propaganda poster, cold royal blue #3d7bff and gray on dark paper, abstract faceless geometry, defaced by resistance: large crossed-out marks and amber spray-painted spark inside a circle, handwritten Polish annotation exactly “KŁAMSTWO”. Main printed text exactly “PORZĄDEK · BEZPIECZEŃSTWO · KOALICJA” with correct Polish spelling. Worn paper and spray paint. Use uniform chroma green #00ff00 background outside poster for alpha keying. No other colors of light, strictly no red/cyan/magenta, no real brands/logos/person faces, no watermark.",
+    "keyBackground": "#12161d"
+  },
+  {
+    "id": "banner_iskra",
+    "category": "posters",
+    "width": 512,
+    "height": 512,
+    "description": "Materiałowy baner Iskry z symbolem w okręgu",
+    "subject": "Use case: stylized-concept. Asset: square 512x512 decal of a vertical handmade resistance flag/banner. Large spark inside circle, warm white #fff1d6 and amber #ffae1a printed on graphite cloth. Visible woven textile, folds, frayed edges. Uniform chroma green #00ff00 background outside cloth for alpha keying. No text, no extra colors, strictly no red/cyan/magenta, no logo, no watermark.",
+    "keyBackground": "#1a1f28"
+  },
+  {
+    "id": "mural_spark",
+    "category": "posters",
+    "width": 1024,
+    "height": 512,
+    "description": "Mural z uniesionymi rękami pod iskrą i panoramą miasta",
+    "subject": "Use case: illustration-story. Asset: wide 1024x512 wall decal mural for a disused metro station. Street art mural, silhouettes of several ordinary people with raised hands beneath one enormous spark-shaped lightning bolt; distant city skyline with tall buildings. Bold layered stencil and spray paint, amber #ffae1a, violet #8a5cff, warm white #fff1d6, dark graphite. No text, no faces/details, no red/cyan/magenta, no brands or watermark. Uniform chroma green #00ff00 outside mural shape for alpha keying.",
+    "keyBackground": "#12161d"
+  },
+  {
+    "id": "screen_comms",
+    "category": "screens",
+    "width": 1024,
+    "height": 512,
+    "description": "Ekran ŁĄCZNOŚĆ // KANAŁY KOALICJI",
+    "subject": "Use case: ui-mockup. Asset: wide 1024x512 hacker communications console screen texture, flat front-facing interface on pure black background, luminous frequency grid, signal waveforms, intercepted channel rows, compact readable hierarchy. Green #6dff4a and warm white #fff1d6 only. Exact Polish header: “ŁĄCZNOŚĆ // KANAŁY KOALICJI”. No other legible words, no red/cyan/magenta, no brand, no watermark, no perspective.",
+    "blackMargin": 32
+  },
+  {
+    "id": "sign_bar",
+    "category": "signs",
+    "width": 512,
+    "height": 256,
+    "description": "Fioletowo-biały neon BAR POD PERONEM z kubkiem",
+    "subject": "Use case: stylized-concept. Asset: wide 512x256 isolated neon sign texture on pure black. Violet #8a5cff and warm white #fff1d6 glass neon tubes spell exactly “BAR POD PERONEM”, Polish spelling, with small simple cup icon. Centered with black margins, gentle restrained glow, no board, no wires. No other colors, strictly no red/cyan/magenta, no additional text, brands or watermark."
   }
 ]
