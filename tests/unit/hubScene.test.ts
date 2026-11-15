@@ -22,6 +22,12 @@ const walkForward: InputSnapshot = {
   ...idle,
   held: new Set(['moveForward']),
 };
+const interact: InputSnapshot = {
+  ...idle,
+  held: new Set(['power2']),
+  pressed: new Set(['power2']),
+};
+const holdInteract: InputSnapshot = { ...idle, held: new Set(['power2']) };
 
 class FakeScreens implements HubScreens {
   shown: { station: HubStationId; actions: HubScreenActions }[] = [];
@@ -126,24 +132,82 @@ it('hub open pokazuje nakładkę i emituje zdarzenie, hub close ją zamyka i wzn
   expect(commands.execute('hub open nieznana')).toContain('Użycie');
 });
 
-it('wejście w strefę otwiera stację, a Zamknij z akcji nakładki nie otwiera jej ponownie bez wyjścia', async () => {
+it('stacja wymaga patrzenia i zbocza E; nakładka ignoruje E, po zamknięciu można otworzyć ją ponownie', async () => {
   const { scene, commands, screens, opened } = await setup();
-  commands.execute('hub tp 6 -4.4');
+  commands.execute('hub tp 6 -2.6 180');
   scene.step(SIM_DT, idle);
-  scene.step(SIM_DT, idle);
+  expect(scene.query('hubFocus')).toBeNull();
+  scene.step(SIM_DT, interact);
+  expect(opened).toEqual([]);
+  expect(commands.execute('hub look talents')).toBe('Patrzysz na: talents');
+  scene.step(SIM_DT, holdInteract);
+  expect(scene.query('hubFocus')).toBe('talents');
+  expect(scene.query('hubStation')).toBeNull();
+  expect(screens.shown).toEqual([]);
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubStation')).toBe('talents');
+  expect(opened).toEqual(['talents']);
+  scene.step(SIM_DT, interact);
+  expect(screens.shown).toHaveLength(1);
   expect(opened).toEqual(['talents']);
   screens.shown[0]!.actions.close();
   expect(scene.query('hubStation')).toBeNull();
-  for (let i = 0; i < 10; i++) scene.step(SIM_DT, idle);
+  for (let i = 0; i < 10; i++) scene.step(SIM_DT, holdInteract);
   expect(opened).toEqual(['talents']);
-  // Wyjście poza promień z marginesem, potem powrót.
-  commands.execute('hub tp 0 0.8');
   scene.step(SIM_DT, idle);
-  commands.execute('hub tp 6 -4.4');
-  scene.step(SIM_DT, idle);
-  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, interact);
   expect(opened).toEqual(['talents', 'talents']);
 });
+
+it.each([false, true])(
+  'odrzuca zaległe E po zamknięciu nakładki (kroki przy otwartej: %s)',
+  async (stepsWhileOpen) => {
+    const { scene, commands, screens, opened } = await setup();
+    commands.execute('hub tp 6 -2.6');
+    commands.execute('hub look talents');
+    scene.step(SIM_DT, interact);
+    expect(scene.query('hubStation')).toBe('talents');
+    // E przy otwartej nakładce: snapshot może zostać dostarczony dopiero po wznowieniu pętli.
+    if (stepsWhileOpen) scene.step(SIM_DT, interact);
+    screens.shown[0]!.actions.close();
+    scene.step(SIM_DT, interact);
+    expect(scene.query('hubStation')).toBeNull();
+    scene.step(SIM_DT, holdInteract);
+    expect(opened).toEqual(['talents']);
+    scene.step(SIM_DT, idle);
+    scene.step(SIM_DT, interact);
+    expect(scene.query('hubStation')).toBe('talents');
+    expect(opened).toEqual(['talents', 'talents']);
+  },
+);
+
+it.each(['workshop', 'missions', 'talents', 'arena'] as const)(
+  'hub look i E otwierają stację %s tylko w zasięgu',
+  async (id) => {
+    const { scene, commands, opened } = await setup();
+    const stations = scene.query('stations') as {
+      id: HubStationId;
+      x: number;
+      z: number;
+    }[];
+    const station = stations.find((station) => station.id === id)!;
+    commands.execute(`hub tp ${station.x} ${station.z + 1.5}`);
+    commands.execute(`hub look ${id}`);
+    scene.step(SIM_DT, idle);
+    expect(scene.query('hubFocus')).toBe(id);
+    expect(scene.query('hubStation')).toBeNull();
+    scene.step(SIM_DT, interact);
+    expect(opened).toEqual([id]);
+    commands.execute('hub close');
+    commands.execute('hub tp 0 0.8');
+    commands.execute(`hub look ${id}`);
+    scene.step(SIM_DT, interact);
+    expect(scene.query('hubFocus')).toBeNull();
+    expect(scene.query('hubStation')).toBeNull();
+    expect(commands.execute('hub look nieznana')).toContain('Użycie');
+    expect(commands.execute(`hub look ${id} extra`)).toContain('Użycie');
+  },
+);
 
 it('przy otwartej nakładce ruch gracza jest zatrzymany', async () => {
   const { scene, commands } = await setup();

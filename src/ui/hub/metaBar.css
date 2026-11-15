@@ -1,39 +1,56 @@
-.meta-bar {
+﻿.meta-bar {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 14px;
+  left: 20px;
+  right: 20px;
   z-index: 90;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 24px;
-  padding: 8px 20px;
+  padding: 4px 16px;
+  border: 12px solid transparent;
+  border-image: url('/assets/ui/hud/frame_banner.webp') 48 fill / 12px;
   box-sizing: border-box;
-  color: #f4f7fa;
-  font-family: system-ui, sans-serif;
-  font-size: 0.9em;
-  background: #090b11d9;
-  border-bottom: 1px solid #34414c;
+  color: #edf7ff;
+  font:
+    500 17px/1.25 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  background: #080f1ded;
+  background-clip: padding-box;
+  text-shadow: 0 1px 3px #000;
+  filter: drop-shadow(0 2px 5px #0009);
   pointer-events: none;
+  isolation: isolate;
+}
+.meta-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url('/assets/ui/hud/scanlines.webp') repeat;
+  background-size: 256px;
+  opacity: 0.045;
 }
 .meta-bar__level {
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: #00e5ff;
 }
 .meta-bar__xp {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 .meta-bar__xp-track {
   display: inline-block;
-  width: 160px;
-  height: 8px;
-  background: #1c2430;
-  border: 1px solid #34414c;
+  width: clamp(100px, 13vw, 200px);
+  height: 10px;
+  background: #00e5ff20;
+  mask: url('/assets/ui/hud/bar_segments.webp') center / 100% 100%;
 }
 .meta-bar__xp-fill {
   display: block;
@@ -42,21 +59,52 @@
 }
 .meta-bar__xp-text {
   min-width: 5.5em;
-  color: #b9c6d1;
-  font-size: 0.85em;
-  font-variant-numeric: tabular-nums;
+  color: #bed0e2;
+  font-size: 15px;
 }
 .meta-bar__stat {
-  color: #d9dde3;
-  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  border: 7px solid transparent;
+  border-image: url('/assets/ui/hud/frame_chip.webp') 24 fill / 7px;
+  color: #ffe1a3;
+}
+.meta-bar__stat::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 24px;
+  background: #ffae1a;
+  mask: url('/assets/ui/hud/icon_data.webp') center / contain no-repeat;
+}
+.meta-bar__stat[data-stat='cores']::before {
+  background: #ff2bd6;
+  mask-image: url('/assets/ui/hud/icon_cores.webp');
 }
 .meta-bar__free {
   margin-left: auto;
-  color: #8894a8;
+  color: #a7b8ca;
+  font:
+    12px 'Segoe UI',
+    sans-serif;
 }
 .meta-bar__free[data-active='true'] {
-  padding: 2px 10px;
   font-weight: 700;
-  color: #11151e;
-  background: #ffae1a;
+  color: #ffcf77;
+  text-shadow: 0 0 8px #ffae1a40;
+}
+@media (max-width: 1000px) {
+  .meta-bar {
+    gap: 8px 12px;
+    padding-inline: 8px;
+    font-size: 15px;
+  }
+  .meta-bar__xp-track {
+    width: 90px;
+  }
+  .meta-bar__stat {
+    gap: 6px;
+  }
 }

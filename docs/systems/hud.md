@@ -1,41 +1,78 @@
 # HUD — F1 #15, F2-15, nowy HUD
 
 `src/ui/hud.ts` tworzy warstwę HTML nad canvasem, bez Three.js i bez odczytu
-modułów symulacji. Style są w sekcji `.hud` pliku `src/ui/styles.css`.
+modułów symulacji. Style są w `src/ui/hud.css`, importowanym przez `src/ui/styles.css`.
 
 ## Styl
 
-Cienkie linie 1–2 px, ścięte narożniki (`clip-path`), monospace. Ciemne
-półprzezroczyste tło (`--hud-plate`) jest tylko małą tabliczką pod tekstem i
-paskami, by były czytelne na białym świecie; reszta to linie i tekst z
-lekkim cieniem. Kolory: biały tekst, cyan = zasoby gracza (energia, aktywny slot),
-magenta = moce i ciepło, czerwień = zagrożenie i wrogowie. Kolory, odstępy i czasy
-efektów ustawia się przez zmienne CSS `--hud-*`. Animacje używają `transform`
-i `opacity` (ciepło używa `clip-path`); czasy animacji HUD są w CSS, nie w
-`tuning.ts` (to nie liczby rozgrywki).
+Cybernetyczne panele korzystają z lokalnego pakietu `public/assets/ui/hud/`.
+Manifest (`manifest.json`) i `docs/hud-assets.md` opisują przeznaczenie grafik.
+Ramki są skalowane przez `border-image`: vitals/weapon/banner mają slice 48,
+slot mocy 40, chip i boss 24. Ramka bossa nie używa `fill`, bo grafika zawiera
+pełny czerwony pasek — widoczne HP pochodzi wyłącznie z aktualnego stanu.
+
+- **Zdrowie i energia:** panel `frame_vitals` na lewym dole, podpisane paski
+  i duże liczby. Zdrowie cyan `#00e5ff`, energia magenta `#ff2bd6`. Wypełnienia
+  używają `bar_segments.webp` jako maski; zdrowie zachowuje 10 segmentów i ducha
+  utraconego HP. Krótki błysk po utracie HP albo odzyskaniu energii, delikatny
+  puls poniżej 30% HP. Kolor zdrowia pozostaje cyan również przy niskim HP.
+- **Broń:** `frame_weapon`, maskowana ikona broni, nazwa i sloty 1/2/3.
+  Segmentowane ciepło przechodzi od bursztynu `#ffae1a` do czerwieni `#e0262b`;
+  przegrzanie daje czerwony pasek i pulsującą etykietę nad panelem.
+- **Moce:** `frame_power_slot`, magentowa maskowana ikona Rezonansu, klawisz,
+  nazwa i czas odnowienia. Pozostaje radialne zaciemnienie i przygaszenie przy
+  braku energii. Sloty F/E są obok panelu broni.
+- **Celownik:** `crosshair.webp`, 42 px, mała poświata i krótkie rozszerzenie
+  przy strzale. Znacznik trafienia ma cztery oddzielne ukośne kreski CSS;
+  zabójstwo powiększa je i barwi na czerwono. `crosshair_hit.webp` nie jest używany.
+- **Fale i komunikaty:** `frame_banner` na górze, osobny krótkotrwały baner
+  poniżej paska bossa, toast synergii w `frame_chip`. Odmowa mocy i kierunek
+  obrażeń pozostają przy celowniku; ostrze w locie ma ikonę `icon_blade` i napis
+  nad dolnymi panelami, aby nie kolidować z bronią.
+- **Run:** Kredyty w bursztynowym `frame_chip` z maskowaną ikoną monety;
+  delta ma własny wiersz nad implantami. Implanty zachowują inicjały, opis
+  i kolor rzadkości. Boss w `frame_boss`: nazwa, czerwony segmentowany pasek,
+  białe znaczniki faz i cienka cyanowa tarcza.
+- **Meta kryjówki:** `src/ui/hub/metaBar.css` używa `frame_banner`, chipów walut,
+  maskowanych ikon `icon_data`/`icon_cores` i segmentowanego paska XP. Wolne
+  punkty mają bursztynowe wyróżnienie. Role, etykiety i teksty pozostają bez zmian.
+
+Lokalne Rajdhani Medium/SemiBold (`public/assets/fonts/`) jest na licencji OFL
+(`Rajdhani-OFL.txt`, źródło: katalog `ofl/rajdhani` repozytorium google/fonts).
+Nagłówki i liczby używają Rajdhani z fallbackiem Segoe UI/sans-serif; małe
+podpisy używają czytelnego Segoe UI. Liczby mają `tabular-nums`. Teksty nadal
+pochodzą z danych UI, a dekoracyjne ikony są pseudoelementami CSS.
+
+Poświata jest ograniczona do małych cieni. `scanlines.webp` z opacity 0,045
+pokrywa tylko panele, nigdy cały ekran. Dolne panele mają stałe maksymalne
+szerokości, odstęp od krawędzi rośnie do 42 px; przy szerokości poniżej 1000 px
+panele się zwężają, poniżej 760 px arsenał układa się pionowo. Docelowe widoki
+1280×720 i 1920×1080 zachowują wolny środek ekranu. `prefers-reduced-motion`
+wyłącza pulsowanie, błyski i przejścia; jednorazowe komunikaty nadal kończą
+animacje, ponieważ `animationend` usuwa je z ekranu. Czasy efektów są w CSS,
+bez nowych liczb symulacji w `tuning.ts`.
 
 ## Układ
 
 W arenie LPM — atak/strzał, R — zamiana ostrze/broń, PPM — natychmiast ostrze
 i blok, środkowy przycisk — ostrze i rzut, 1/2/3 — slot broni i jej dobycie.
 HUD słucha `held_item_changed` dla gracza: `held: 'blade'` dodaje
-`.hud__weapon--inactive` (opacity 0,4), `held: 'gun'` ją usuwa. Ciepło i nazwa
+`.hud__weapon--inactive` (opacity 0,6), `held: 'gun'` ją usuwa. Ciepło i nazwa
 wybranego slotu pozostają widoczne. Reset areny publikuje początkowy stan ręki.
 
-| Miejsce      | Elementy                                                                                                                                                                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lewy dół     | zdrowie: 10 skośnych segmentów + liczba (`.hud__segments`), pod nim cienki pasek energii (cyan)                                                                                                   |
-| Prawy dół    | blok broni: nazwa (`.hud__weapon-name`), wskaźnik slotów 1/2/3 (tylko gdy broni > 1), pasek ciepła cyan → magenta → czerwień, „PRZEGRZANIE” (migający wiersz nad nazwą); obok kwadraty mocy F i E |
-| Góra, środek | „FALA 3 / 12” i „Wrogowie N”; baner „FALA 3” / „FALA CZYSTA” wjeżdżający i znikający; toast synergii (magenta) pod banerem                                                                        |
-| Środek       | celownik (kropka + 4 kreski), znacznik trafienia, łuk kierunku obrażeń, odmowa mocy pod celownikiem                                                                                               |
-| Dół, środek  | „Ostrze w locie”                                                                                                                                                                                  |
-| Krawędzie    | czerwona winieta pulsująca po obrażeniach; słaba stała poniżej 30% HP                                                                                                                             |
+| Miejsce              | Elementy                                                                                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lewy dół             | zdrowie: 10 segmentów cyan + liczba (`.hud__segments`), pod nim pasek energii (magenta)                                                                                                     |
+| Prawy dół            | blok broni: nazwa (`.hud__weapon-name`), wskaźnik slotów 1/2/3 (tylko gdy broni > 1), pasek ciepła bursztyn → czerwień, „PRZEGRZANIE” (migający wiersz nad nazwą); obok kwadraty mocy F i E |
+| Góra, środek         | „FALA 3 / 12” i „Wrogowie N”; baner „FALA 3” / „FALA CZYSTA” pojawiający się i znikający; toast synergii (magenta) pod banerem                                                              |
+| Środek               | celownik z grafiki pakietu, znacznik trafienia, łuk kierunku obrażeń, odmowa mocy pod celownikiem                                                                                           |
+| Nad dolnymi panelami | „Ostrze w locie”                                                                                                                                                                            |
+| Krawędzie            | czerwona winieta pulsująca po obrażeniach; słaba stała poniżej 30% HP                                                                                                                       |
 
 Zdrowie: segment i ma wypełnienie `clamp(ratio * 10 - i, 0, 1)` (`data-fill`
 na `.hud__seg-fill`). Pod każdym segmentem leży „duch” (`.hud__seg-ghost`) w czerwieni;
 przy utracie HP wypełnienie spada od razu, a duch dochodzi do tej wartości z
-opóźnieniem 0,4 s (CSS `transition`). Poniżej 30% HP (i powyżej 0) wypełnienie
-robi się czerwone, a winieta `.hud__lowhp` pulsuje.
+opóźnieniem 0,4 s (CSS `transition`). Poniżej 30% HP (i powyżej 0) panel zdrowia i winieta `.hud__lowhp` pulsują.
 
 Ciepło: `data-level` na `.hud__meter--heat` to `cool` (< 50%), `warm` (< 80%), `hot`.
 Przy `overheated` pojawia się `.hud__overheat` i klasa `hud__meter--overheated`.

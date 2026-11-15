@@ -146,26 +146,45 @@ test('hub: stacje talents i workshop montują panele w nakładce', async ({
   expect(errors).toEqual([]);
 });
 
-test('hub: wejście w strefę otwiera stację, Esc zamyka, ponowne otwarcie dopiero po wyjściu', async ({
+test('hub: spojrzenie w zasięgu pokazuje podpowiedź, E otwiera, Esc zamyka bez wychodzenia ze strefy', async ({
   page,
 }) => {
   const errors = collectErrors(page);
   await openHub(page);
-  await command(page, 'hub tp 6 -4.4');
+  await command(page, 'hub tp 6 -2.6 180');
+  await waitSimSteps(page, 5);
+  expect(await query(page, 'hubFocus')).toBeNull();
+  expect(await query(page, 'hubStation')).toBeNull();
+  await expect(page.locator('.hub-prompt')).toBeHidden();
+  await page.keyboard.press('KeyE');
+  await waitSimSteps(page, 5);
+  expect(await query(page, 'hubStation')).toBeNull();
+  await command(page, 'hub look talents');
   await expect
-    .poll(() => query(page, 'hubStation'), { timeout: SIM_TIMEOUT })
+    .poll(() => query(page, 'hubFocus'), { timeout: SIM_TIMEOUT })
     .toBe('talents');
+  const prompt = page.locator('.hub-prompt');
+  await expect(prompt).toBeVisible();
+  await expect(prompt.locator('kbd')).toHaveText('E');
+  await expect(prompt).toContainText('TALENTY');
+  expect(await query(page, 'hubStation')).toBeNull();
+  await page.keyboard.press('KeyE');
   await expect(
     page.getByRole('heading', { name: 'Terminal drzewek' }),
   ).toBeVisible();
+  expect(await query(page, 'hubStation')).toBe('talents');
+  await expect(prompt).toBeHidden();
+  await page.keyboard.press('KeyE');
+  expect(await query(page, 'hubStation')).toBe('talents');
   await page.keyboard.press('Escape');
   await expect(page.locator('.hub-screen')).toBeHidden();
   expect(await query(page, 'hubStation')).toBeNull();
+  // Utrata pointer lock po Esc może ponownie włączyć pauzę; gracz wznawia kliknięciem sceny.
+  await page.mouse.click(640, 360);
   await waitSimSteps(page, 30);
   expect(await query(page, 'hubStation')).toBeNull();
-  await command(page, 'hub tp 0 0.8');
-  await waitSimSteps(page, 5);
-  await command(page, 'hub tp 6 -4.4');
+  await expect(prompt).toBeVisible();
+  await page.keyboard.press('KeyE');
   await expect
     .poll(() => query(page, 'hubStation'), { timeout: SIM_TIMEOUT })
     .toBe('talents');

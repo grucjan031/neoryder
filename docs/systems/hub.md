@@ -2,8 +2,9 @@
 
 Grywalna kryjówka komórki ruchu oporu „Iskra” w nieczynnej stacji metra: scena `?scene=hub`
 (`src/scenes/hub.ts`, `HubScene`). Gracz chodzi kontrolerem FPP (ruch, skok, dash, ślizg) bez wrogów, fal i systemów
-walki; ręce pokazują ostrze plazmowe w spoczynku (`FppViewModel` z nieruchomym `BladeView`). Wejście w strefę
-stacji otwiera nakładkę UI. Decyzje: `docs/adr/0007-meta-progres-f4.md` pkt 10, styl: `docs/adr/0006-neon-noir.md`.
+walki; ręce pokazują ostrze plazmowe w spoczynku (`FppViewModel` z nieruchomym `BladeView`). Podejście do stacji,
+spojrzenie na nią i naciśnięcie E otwiera nakładkę UI. Decyzje: `docs/adr/0007-meta-progres-f4.md` pkt 10,
+styl: `docs/adr/0006-neon-noir.md`.
 
 ## Układ i dane
 
@@ -33,14 +34,23 @@ tunelu „POLIGON” (korytarz-ślepy zaułek z bursztynowym światłem). Neony 
 
 ## Stacje i strefy
 
-`HubStations` (`src/world/hubStations.ts`, bez DOM, testowalna w Vitest):
+`selectHubFocus` i `HubStations` (`src/world/hubStations.ts`, bez DOM i Three.js, testowalne w Vitest):
 
-- wejście w promień stacji otwiera ją i emituje `hub_station_opened { station }`; `HubScene` nasłuchuje tego zdarzenia
-  i pokazuje nakładkę przez `HubScreens.show`;
+- wybór wymaga odległości poziomej gracz–stacja ≤ `radius` oraz kąta 3D kierunku patrzenia (yaw + pitch)
+  do punktu stacji ≤ `tuning.hub.interactAngleDeg` (30°). Punkt stacji leży na wysokości
+  `playerSpawn.y + tuning.hub.focusHeightM` (1,25 m nad podłogą). Wektor jest liczony od oka gracza,
+  z uwzględnieniem wysokości kapsuły podczas przysiadu; spośród kandydatów wygrywa najmniejszy kąt;
+- samo wejście w promień niczego nie otwiera. Dopiero zbocze naciśnięcia E (istniejąca akcja `power2`,
+  nazwana w scenie `HUB_INTERACT_ACTION`) otwiera wybraną stację i emituje `hub_station_opened { station }`;
+  `HubScene` nasłuchuje tego zdarzenia i pokazuje nakładkę przez `HubScreens.show`;
+- `HubPrompt` (`src/ui/hubPrompt.ts`) pokazuje klawisz E w ramce i `label` stacji na środku dolnej części ekranu.
+  Podpowiedź znika przy braku stacji w celowniku lub otwartej nakładce. Teksty: sekcja `hub` w
+  `src/data/ui/meta.pl.json`; aktualizacja DOM podpowiedzi odbywa się podczas renderowania;
 - przy otwartej stacji gracz stoi w miejscu (scena nie krokuje kontrolera ani fizyki), a kursor jest zwolniony
   (`HtmlHubScreens.show` robi `exitPointerLock`, jak ekrany runu);
-- po zamknięciu ta sama stacja otwiera się ponownie dopiero po wyjściu poza promień + `tuning.hub.exitMarginM`
-  (0,75 m, histereza); inne stacje nie są blokowane;
+- przy otwartej nakładce E nic nie robi. Po zamknięciu nowe naciśnięcie E może otworzyć tę samą stację
+  bez wychodzenia ze strefy; nie ma histerezy ani automatycznego ponownego otwierania. Pierwszy snapshot wejścia
+  po zamknięciu ignoruje interakcję, aby odrzucić zaległe E z czasu pauzy, gdy pętla nie wykonywała kroków;
 - zamknięcie (`Zamknij`, Esc, `hub close`) wywołuje `ctx.resume`, więc gra wraca do przechwyconej myszy.
 
 Stacje: `talents` (terminal drzewek), `workshop` (warsztat), `missions` (tablica misji), `arena` (tunel na poligon).
@@ -64,9 +74,11 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 ## Debug
 
 - `hub open <talents|workshop|missions|arena>`, `hub close`;
+- `hub look <talents|workshop|missions|arena>` — obraca kamerę na punkt stacji w następnym kroku;
 - `hub tp <x> <z> [yawDeg] [pitchDeg]` — teleport gracza (yaw 0 patrzy w −Z; ruch myszy symulowany w następnym
-  kroku); teleport w strefę stacji ją otwiera;
-- `query('hubStation')` (otwarta stacja albo `null`), `query('playerPos')`, `query('stations')`, `query('meta')`
+  kroku); teleport nie otwiera nakładki;
+- `query('hubStation')` (otwarta stacja albo `null`), `query('hubFocus')` (stacja w celowniku albo `null`),
+  `query('playerPos')`, `query('stations')`, `query('meta')`
   (stan meta), `query('level')` (poziom, XP, punkty);
 - komendy meta (`registerMetaCommands`): `meta state|xp|data|cores|threat|unlock all|reset`; `meta threat <n>` ustawia
   `threat.max` (odblokowanie kolejnych Poziomów zagrożenia bez grania); po każdej komendzie pasek i panel się odświeżają;
@@ -75,11 +87,13 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 ## Testy
 
 `tests/unit/hubLayout.test.ts` (walidacja układu: stacje w granicach i osiągalne, strefy rozłączne, paleta, zasoby),
-`hubStations.test.ts` (histereza), `hubScene.test.ts` (scena bez DOM: komendy, zatrzymanie ruchu, niecka torów,
+`hubStations.test.ts` (zasięg, kąt 3D, wybór stacji, otwieranie na żądanie), `hubPrompt.test.ts` (jsdom, podpowiedź),
+`hubScene.test.ts` (scena bez DOM: spojrzenie i zbocze E, komendy, zatrzymanie ruchu, niecka torów,
 nawigacja, `dispose` bez subskrypcji, meta), `hubScreens.test.ts` (jsdom, hostowanie paneli),
 `missionsPanel.test.ts`, `metaBar.test.ts`, `mainMenu.test.ts`; e2e: `tests/e2e/hub.spec.ts`.
-Ręcznie: `?scene=hub&debug=1`, przejść do tablicy misji i terminalu, sprawdzić napisy, ekrany i światła; `hub tp`
-ułatwia ustawienie kamery.
+Ręcznie: `?scene=hub&debug=1`, `hub tp 6 -2.6 180` — brak podpowiedzi mimo zasięgu; `hub look talents` —
+podpowiedź „E TALENTY”; E otwiera, Esc zamyka, kolejne E ponownie otwiera. Sprawdzić też tablicę misji,
+warsztat i poligon oraz wygodę stożka interakcji (parametry `hub` w lil-gui).
 
 ### Terminal drzewek
 

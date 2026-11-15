@@ -1,4 +1,5 @@
 import type { EventBus } from '../core/events';
+import type { Vec3 } from '../core/math';
 import type { HubStationId } from '../core/metaTypes';
 
 export interface HubZone {
@@ -7,19 +8,46 @@ export interface HubZone {
   radius: number;
 }
 
-/**
- * Strefy stacji kryjówki bez DOM i renderu. Wejście w promień otwiera stację
- * (`hub_station_opened`); po zamknięciu ta sama stacja otwiera się ponownie dopiero
- * po wyjściu poza promień powiększony o `exitMarginM` (histereza).
- */
+/** Wybiera stację w zasięgu o najmniejszym kącie od kierunku patrzenia (yaw/pitch w radianach). */
+export function selectHubFocus(
+  zones: readonly HubZone[],
+  eye: Vec3,
+  yaw: number,
+  pitch: number,
+  focusY: number,
+  interactAngleDeg: number,
+): HubStationId | null {
+  const forward = {
+    x: -Math.sin(yaw) * Math.cos(pitch),
+    y: Math.sin(pitch),
+    z: -Math.cos(yaw) * Math.cos(pitch),
+  };
+  const minDot = Math.cos((interactAngleDeg * Math.PI) / 180);
+  let bestDot = -Infinity;
+  let focused: HubStationId | null = null;
+  for (const zone of zones) {
+    const dx = zone.position.x - eye.x;
+    const dz = zone.position.z - eye.z;
+    if (Math.hypot(dx, dz) > zone.radius) continue;
+    const dy = focusY - eye.y;
+    const length = Math.hypot(dx, dy, dz);
+    if (length === 0) continue;
+    const dot = (forward.x * dx + forward.y * dy + forward.z * dz) / length;
+    if (dot >= minDot && dot > bestDot) {
+      bestDot = dot;
+      focused = zone.id;
+    }
+  }
+  return focused;
+}
+
+/** Stan nakładki stacji bez DOM i renderu; otwarcie wyłącznie na żądanie. */
 export class HubStations {
   private current: HubStationId | null = null;
-  private locked: HubStationId | null = null;
 
   constructor(
     private readonly zones: readonly HubZone[],
     private readonly bus: EventBus,
-    private readonly exitMarginM: number,
   ) {}
 
   get opened(): HubStationId | null {
@@ -30,32 +58,6 @@ export class HubStations {
     return this.zones.some((zone) => zone.id === id);
   }
 
-  /** Stacja, w której promieniu leży punkt (pierwsza z listy), albo `null`. */
-  zoneAt(x: number, z: number): HubStationId | null {
-    return (
-      this.zones.find((zone) => this.distance(zone, x, z) <= zone.radius)?.id ??
-      null
-    );
-  }
-
-  /** Wywołuj co krok symulacji z pozycją gracza; zwraca otwartą stację. */
-  update(x: number, z: number): HubStationId | null {
-    const locked =
-      this.locked && this.zones.find((zone) => zone.id === this.locked);
-    if (
-      locked &&
-      this.distance(locked, x, z) > locked.radius + this.exitMarginM
-    )
-      this.locked = null;
-    if (this.current) return this.current;
-    for (const zone of this.zones)
-      if (zone.id !== this.locked && this.distance(zone, x, z) <= zone.radius) {
-        this.open(zone.id);
-        break;
-      }
-    return this.current;
-  }
-
   /** Otwiera stację niezależnie od położenia gracza (komenda debug); `false`, gdy nieznana albo któraś już otwarta. */
   open(id: HubStationId): boolean {
     if (this.current || !this.has(id)) return false;
@@ -64,20 +66,14 @@ export class HubStations {
     return true;
   }
 
-  /** Zamyka otwartą stację i blokuje jej ponowne otwarcie do wyjścia ze strefy. */
+  /** Zamyka otwartą stację; kolejne naciśnięcie interakcji może otworzyć ją ponownie. */
   close(): HubStationId | null {
     const closed = this.current;
     this.current = null;
-    this.locked = closed;
     return closed;
   }
 
   dispose(): void {
     this.current = null;
-    this.locked = null;
-  }
-
-  private distance(zone: HubZone, x: number, z: number): number {
-    return Math.hypot(x - zone.position.x, z - zone.position.z);
   }
 }

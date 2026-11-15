@@ -62,3 +62,34 @@
   outline: 2px solid #00a9c4;
   outline-offset: 2px;
 }
+
+.hub-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 18%;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  box-sizing: border-box;
+  border: 1px solid #34414c;
+  border-top: 2px solid #ffae1a;
+  background: #11151eeb;
+  color: #f4f7fa;
+  font:
+    600 16px system-ui,
+    sans-serif;
+  pointer-events: none;
+}
+.hub-prompt[hidden] {
+  display: none;
+}
+.hub-prompt kbd {
+  padding: 3px 8px;
+  border: 1px solid #ffae1a;
+  color: #ffae1a;
+  font: inherit;
+}

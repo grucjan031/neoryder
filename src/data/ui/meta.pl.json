@@ -20,7 +20,9 @@
     },
     "placeholder": "Ekran tymczasowy — pełna wersja trafi do kryjówki w kolejnych zadaniach.",
     "close": "Zamknij",
-    "closeHint": "Esc zamyka okno. Wyjdź ze strefy stacji, by otworzyć ją ponownie.",
+    "closeHint": "Esc zamyka okno. Spójrz na stację i naciśnij E, by otworzyć ją ponownie.",
+    "interact": "Interakcja",
+    "interactKey": "E",
     "toArena": "Przejdź na poligon"
   },
   "summary": {

@@ -82,7 +82,7 @@ function createBar(kind: 'energy' | 'heat') {
   track.setAttribute('aria-label', text[kind]);
   track.setAttribute('aria-valuetext', text.empty);
   track.append(fill);
-  node.append(track, value);
+  node.append(element('span', 'hud__meter-label', text[kind]), track, value);
   let lastCurrent: number | undefined;
   let lastMax: number | undefined;
   let lastP = '0';
@@ -93,6 +93,12 @@ function createBar(kind: 'energy' | 'heat') {
     /** Zwraca stosunek 0–1 przy zmianie, inaczej undefined. */
     update(current: number, max: number): number | undefined {
       if (current === lastCurrent && max === lastMax) return undefined;
+      if (
+        kind === 'energy' &&
+        lastCurrent !== undefined &&
+        current > lastCurrent
+      )
+        node.dataset.change = node.dataset.change === 'a' ? 'b' : 'a';
       lastCurrent = current;
       lastMax = max;
       const ratio = ratioOf(current, max);
@@ -131,7 +137,7 @@ function createHealth() {
     shown.push('0');
   }
   const value = element('span', 'hud__value', text.empty);
-  node.append(track, value);
+  node.append(element('span', 'hud__meter-label', text.health), track, value);
   let lastCurrent: number | undefined;
   let lastMax: number | undefined;
   return {
@@ -139,6 +145,8 @@ function createHealth() {
     value,
     update(current: number, max: number): number | undefined {
       if (current === lastCurrent && max === lastMax) return undefined;
+      if (lastCurrent !== undefined && current < lastCurrent)
+        node.dataset.change = node.dataset.change === 'a' ? 'b' : 'a';
       lastCurrent = current;
       lastMax = max;
       const ratio = ratioOf(current, max);
@@ -265,6 +273,8 @@ export class Hud {
     this.damageDir.node.append(element('span', 'hud__dmgdir-arc'));
     this.hitMarker.node.setAttribute('aria-hidden', 'true');
     this.hitMarker.node.append(
+      element('span', 'hud__hit-bar'),
+      element('span', 'hud__hit-bar'),
       element('span', 'hud__hit-bar'),
       element('span', 'hud__hit-bar'),
     );

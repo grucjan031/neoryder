@@ -66,6 +66,32 @@ describe('Hud', () => {
     vi.restoreAllMocks();
   });
 
+  it('błyska przy utracie zdrowia i odzyskaniu energii, bez ponawiania dla tego samego stanu', () => {
+    const health = query('.hud__meter--health');
+    const energy = query('.hud__meter--energy');
+    bus.emit('health_changed', { id: 1, current: 100, max: 100 });
+    bus.emit('energy_changed', { id: 1, current: 50, max: 100 });
+    expect(health.dataset.change).toBeUndefined();
+    expect(energy.dataset.change).toBeUndefined();
+    bus.emit('health_changed', { id: 2, current: 10, max: 100 });
+    expect(health.dataset.change).toBeUndefined();
+    bus.emit('health_changed', { id: 1, current: 80, max: 100 });
+    expect(health.dataset.change).toBe('a');
+    bus.emit('health_changed', { id: 1, current: 80, max: 100 });
+    bus.emit('health_changed', { id: 1, current: 90, max: 100 });
+    expect(health.dataset.change).toBe('a');
+    bus.emit('health_changed', { id: 1, current: 70, max: 100 });
+    expect(health.dataset.change).toBe('b');
+    bus.emit('energy_changed', { id: 1, current: 25, max: 100 });
+    expect(energy.dataset.change).toBeUndefined();
+    bus.emit('energy_changed', { id: 1, current: 75, max: 100 });
+    expect(energy.dataset.change).toBe('a');
+    bus.emit('energy_changed', { id: 1, current: 75, max: 100 });
+    expect(energy.dataset.change).toBe('a');
+    bus.emit('energy_changed', { id: 1, current: 100, max: 100 });
+    expect(energy.dataset.change).toBe('b');
+  });
+
   it.each(['energy', 'heat'] as const)(
     'aktualizuje pasek %s i pomija identyczny stan',
     (kind) => {

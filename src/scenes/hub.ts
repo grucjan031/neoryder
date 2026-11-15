@@ -30,12 +30,13 @@ import { createMissionsPanel } from '../ui/hub/missionsPanel';
 import { createTalentsPanel } from '../ui/hub/talentsPanel';
 import { createWorkshopPanel } from '../ui/hub/workshopPanel';
 import { HtmlHubScreens } from '../ui/hubScreens';
+import { HubPrompt } from '../ui/hubPrompt';
 import type { HubPanelRegistry, HubScreens } from '../ui/hubScreens';
 import { registerMetaCommands } from '../ui/metaCommands';
 import type { CommandHost } from '../ui/metaCommands';
 import { loadHubLayout } from '../world/hubSchema';
 import type { HubLayout } from '../world/hubSchema';
-import { HubStations } from '../world/hubStations';
+import { HubStations, selectHubFocus } from '../world/hubStations';
 import { HubDecor } from './hubDecor';
 import type { Scene } from './index';
 
@@ -81,6 +82,8 @@ const IDLE_BLADE: BladeView = {
 };
 
 const stationList = HUB_STATION_IDS.join('|');
+// E jest przypisane do power2; w kryjówce nie ma walki ani mocy.
+const HUB_INTERACT_ACTION = 'power2';
 
 /** Kryjówka ruchu oporu (F4-07): peron nieczynnej stacji metra, FPP bez wrogów, stacje jako strefy z nakładkami UI. */
 export class HubScene implements Scene {
@@ -95,6 +98,7 @@ export class HubScene implements Scene {
   private meta!: MetaManager;
   private metaBar: MetaBar | null = null;
   private screens!: HubScreens;
+  private prompt: HubPrompt | null = null;
   private ctx!: GameContext;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
   private world!: World;
@@ -113,6 +117,7 @@ export class HubScene implements Scene {
   private readonly geometries = new Set<BufferGeometry>();
   private readonly off: (() => void)[] = [];
   private pendingLook: { yaw: number; pitch: number } | null = null;
+  private discardInteractAfterClose = false;
   private lookScale = 1;
   private disposed = false;
 
@@ -148,6 +153,7 @@ export class HubScene implements Scene {
       });
     if (this.options.metaBar ?? this.screensOption === undefined)
       this.metaBar = createMetaBar(this.meta, ctx.bus);
+    if (this.screensOption === undefined) this.prompt = new HubPrompt();
     this.rapier = await initPhysics();
     if (this.disposed) return;
     this.world = new this.rapier.World({
@@ -210,7 +216,6 @@ export class HubScene implements Scene {
         radius,
       })),
       ctx.bus,
-      ctx.tuning.hub.exitMarginM,
     );
     this.off.push(
       ctx.bus.on('hub_station_opened', ({ station }) =>
@@ -275,6 +280,7 @@ export class HubScene implements Scene {
 
   private showStation(station: HubStationId): void {
     if (this.disposed) return;
+    this.prompt?.update(null);
     this.screens.show(station, {
       close: () => this.closeStation(),
       ...(station === 'arena'
@@ -285,8 +291,32 @@ export class HubScene implements Scene {
 
   private closeStation(): void {
     if (!this.stations.close()) return;
+    // Podczas pauzy Input nie tworzy snapshotów: pierwszy po zamknięciu może zawierać E z nakładki.
+    this.discardInteractAfterClose = true;
     this.screens.hide();
     this.ctx.resume?.();
+  }
+
+  private eyePosition(): Vec3 {
+    const state = this.player.getState();
+    const t = this.ctx.tuning.player;
+    return {
+      ...state.position,
+      y: state.position.y + state.height / 2 - (t.capsuleHeight - t.eyeHeight),
+    };
+  }
+
+  private focusedStation(): HubStationId | null {
+    const state = this.player.getState();
+    const t = this.ctx.tuning.hub;
+    return selectHubFocus(
+      this.layout.stations,
+      this.eyePosition(),
+      state.yaw,
+      state.pitch,
+      this.layout.playerSpawn.y + t.focusHeightM,
+      t.interactAngleDeg,
+    );
   }
 
   private go(params: URLSearchParams | Record<string, string>): void {
@@ -298,6 +328,8 @@ export class HubScene implements Scene {
   // ----------------------------------------------------------------- pętla
 
   step(dt: number, input: InputSnapshot): void {
+    const discardInteract = this.discardInteractAfterClose;
+    this.discardInteractAfterClose = false;
     this.dressing?.step(dt);
     this.previous = this.player.getState();
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
@@ -306,8 +338,9 @@ export class HubScene implements Scene {
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
-    const { position } = this.player.getState();
-    this.stations.update(position.x, position.z);
+    const focused = this.focusedStation();
+    if (!discardInteract && focused && input.pressed.has(HUB_INTERACT_ACTION))
+      this.stations.open(focused);
   }
 
   /** Komenda debug `hub tp`: ustawia kierunek patrzenia jako jednorazowy ruch myszy w następnym kroku. */
@@ -326,6 +359,11 @@ export class HubScene implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
+    const focused = this.focusedStation();
+    this.prompt?.update(
+      this.layout.stations.find(({ id }) => id === focused)?.label ?? null,
+      this.stations.opened !== null,
+    );
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
     const camera = this.ctx.camera;
@@ -373,6 +411,8 @@ export class HubScene implements Scene {
         };
       case 'hubStation':
         return this.stations.opened;
+      case 'hubFocus':
+        return this.focusedStation();
       case 'playerPos':
         return { ...this.player.getState().position };
       case 'stations':
@@ -422,6 +462,25 @@ export class HubScene implements Scene {
       },
     );
     register(
+      'hub look',
+      `hub look <${stationList}> — spójrz na stację`,
+      (args) => {
+        const station = this.layout.stations.find(({ id }) => id === args[0]);
+        if (args.length !== 1 || !station)
+          return `Użycie: hub look <${stationList}>`;
+        const eye = this.eyePosition();
+        const dx = station.position.x - eye.x;
+        const dz = station.position.z - eye.z;
+        const dy =
+          this.layout.playerSpawn.y + this.ctx.tuning.hub.focusHeightM - eye.y;
+        this.pendingLook = {
+          yaw: Math.atan2(-dx, -dz),
+          pitch: Math.atan2(dy, Math.hypot(dx, dz)),
+        };
+        return `Patrzysz na: ${station.id}`;
+      },
+    );
+    register(
       'hub tp',
       'hub tp <x> <z> [yawDeg] [pitchDeg] — teleport gracza (yaw 0 = patrzy w −Z)',
       (args) => {
@@ -455,6 +514,7 @@ export class HubScene implements Scene {
       for (const off of this.off.splice(0)) off();
       this.stations?.dispose();
       this.screens?.dispose();
+      this.prompt?.dispose();
       this.metaBar?.dispose();
       this.fppView?.dispose();
       this.fpsCamera?.dispose();
