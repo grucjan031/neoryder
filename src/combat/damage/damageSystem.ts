@@ -54,6 +54,14 @@ export class DamageSystem {
     return this.targets.get(id)?.health;
   }
 
+  isInvulnerable(id: EntityId): boolean {
+    const entry = this.targets.get(id);
+    return (
+      !!entry &&
+      (this.timeS < entry.invulnUntilS || !!entry.opts.invulnerable?.())
+    );
+  }
+
   /** Statystyki celu przekazane w register. */
   stats(id: EntityId): Stats | undefined {
     return this.targets.get(id)?.opts.stats;

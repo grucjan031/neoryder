@@ -52,6 +52,28 @@ function setup() {
   };
 }
 
+it('isInvulnerable odczytuje callback i okno po trafieniu bez skutków ubocznych', () => {
+  const f = setup();
+  let active = true;
+  f.damage.register(f.enemy, f.enemyHealth, {
+    invulnerable: () => active,
+    invulnMs: () => 200,
+  });
+  expect(f.damage.isInvulnerable(-1)).toBe(false);
+  expect(f.damage.isInvulnerable(f.enemy)).toBe(true);
+  expect(f.damage.isInvulnerable(f.enemy)).toBe(true);
+  expect(f.enemyHealth.current).toBe(50);
+  expect(f.events).toEqual([]);
+  active = false;
+  expect(f.damage.isInvulnerable(f.enemy)).toBe(false);
+  f.damage.deal(f.enemy, { source: f.player, amount: 1, tags: [] });
+  expect(f.damage.isInvulnerable(f.enemy)).toBe(true);
+  f.damage.step(0.199);
+  expect(f.damage.isInvulnerable(f.enemy)).toBe(true);
+  f.damage.step(0.001);
+  expect(f.damage.isInvulnerable(f.enemy)).toBe(false);
+});
+
 describe('EntityRegistry', () => {
   it('przydziela kolejne id, emituje spawn/despawn i mapuje collidery', () => {
     const bus = new EventBus();

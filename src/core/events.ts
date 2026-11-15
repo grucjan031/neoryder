@@ -10,6 +10,8 @@ export type Team = 'player' | 'enemy' | 'neutral';
 
 /** Mapa wszystkich zdarzeń gry. Nowe zdarzenia dopisuje Architekt po zatwierdzeniu w docs/api.md. */
 export interface GameEvents {
+  enemy_executable: { id: EntityId; ready: boolean };
+  execute_performed: { attacker: EntityId; target: EntityId; point: Vec3 };
   // F0
   run_started: { seed: string };
   scene_loaded: { sceneId: string };
