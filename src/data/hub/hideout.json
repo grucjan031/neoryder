@@ -2423,7 +2423,20 @@
         "z": -4.4
       },
       "radius": 2.4,
-      "label": "MISJE"
+      "label": "MISJE",
+      "sign": {
+        "position": {
+          "x": -6,
+          "y": 3.05,
+          "z": -6.94
+        },
+        "size": {
+          "w": 2.4,
+          "h": 0.6
+        },
+        "yaw": 0,
+        "color": "#ffae1a"
+      }
     },
     {
       "id": "talents",
@@ -2444,7 +2457,20 @@
         "z": 13.6
       },
       "radius": 2,
-      "label": "TALENTY"
+      "label": "TALENTY",
+      "sign": {
+        "position": {
+          "x": 7.95,
+          "y": 3.4,
+          "z": 11.5
+        },
+        "size": {
+          "w": 2.6,
+          "h": 0.65
+        },
+        "yaw": -1.5708,
+        "color": "#8a5cff"
+      }
     },
     {
       "id": "arena",
@@ -2477,7 +2503,7 @@
           "h": 0.7
         },
         "yaw": 0,
-        "color": "#ffae1a"
+        "color": "#3d7bff"
       }
     }
   ],
@@ -2902,6 +2928,34 @@
         "h": 1.5
       },
       "yaw": 0
+    },
+    {
+      "kind": "tunnel",
+      "texture": "tunnel_west",
+      "position": {
+        "x": -19.97,
+        "y": 1.85,
+        "z": 5.5
+      },
+      "size": {
+        "w": 5,
+        "h": 5.3
+      },
+      "yaw": 1.5708
+    },
+    {
+      "kind": "tunnel",
+      "texture": "tunnel_east",
+      "position": {
+        "x": 19.97,
+        "y": 1.85,
+        "z": 5.5
+      },
+      "size": {
+        "w": 5,
+        "h": 5.3
+      },
+      "yaw": -1.5708
     }
   ],
   "npcs": [
@@ -3110,11 +3164,11 @@
     {
       "position": {
         "x": 14,
-        "y": 3.2,
-        "z": -9.5
+        "y": 3.6,
+        "z": -6.2
       },
-      "color": "#ffae1a",
-      "intensity": 3.5,
+      "color": "#3d7bff",
+      "intensity": 2.2,
       "range": 7
     },
     {
@@ -3416,7 +3470,7 @@
       "opacity": 0.7
     },
     {
-      "texture": "oil_stain",
+      "texture": "crack_floor",
       "position": {
         "x": -14,
         "y": 0.012,
@@ -3427,7 +3481,8 @@
         "h": 1.8
       },
       "yaw": 0.7,
-      "surface": "floor"
+      "surface": "floor",
+      "opacity": 0.5
     },
     {
       "texture": "oil_stain",
@@ -3441,7 +3496,8 @@
         "h": 1.5
       },
       "yaw": 0.2,
-      "surface": "floor"
+      "surface": "floor",
+      "opacity": 0.45
     },
     {
       "texture": "crack_floor",
@@ -3502,7 +3558,7 @@
       "opacity": 0.55
     },
     {
-      "texture": "oil_stain",
+      "texture": "crack_floor",
       "position": {
         "x": 16.5,
         "y": 0.012,
@@ -3514,7 +3570,7 @@
       },
       "yaw": 0.3,
       "surface": "floor",
-      "opacity": 0.6
+      "opacity": 0.5
     },
     {
       "texture": "crack_floor",
@@ -3543,6 +3599,36 @@
         "h": 2
       },
       "yaw": 2.4,
+      "surface": "floor",
+      "opacity": 0.7
+    },
+    {
+      "texture": "puddle2",
+      "position": {
+        "x": 3,
+        "y": 0.012,
+        "z": -2
+      },
+      "size": {
+        "w": 1.6,
+        "h": 1.6
+      },
+      "yaw": 0.9,
+      "surface": "floor",
+      "opacity": 0.75
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": -3,
+        "y": 0.012,
+        "z": 1.3
+      },
+      "size": {
+        "w": 1.4,
+        "h": 1.4
+      },
+      "yaw": 2.2,
       "surface": "floor",
       "opacity": 0.7
     }
@@ -3601,6 +3687,33 @@
         "z": 15.2
       },
       "rate": 0.12
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -19.3,
+        "y": -0.75,
+        "z": 5.5
+      },
+      "rate": 0.7
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 19.3,
+        "y": -0.75,
+        "z": 5.5
+      },
+      "rate": 0.7
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -18.6,
+        "y": 4.9,
+        "z": 4.2
+      },
+      "rate": 0.45
     }
   ],
   "decor": [
@@ -3847,15 +3960,6 @@
       "yaw": 1.5708
     },
     {
-      "model": "city_fire_escape",
-      "position": {
-        "x": 19.9,
-        "y": 0.5,
-        "z": 5.8
-      },
-      "yaw": -1.5708
-    },
-    {
       "model": "city_awning",
       "position": {
         "x": 14,
@@ -3880,6 +3984,36 @@
         "y": 0,
         "z": 6.1
       }
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": -10.45,
+        "y": 0.95,
+        "z": 6.4
+      },
+      "yaw": 3.1416,
+      "scale": 0.3
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": -8.55,
+        "y": 0.95,
+        "z": 6.45
+      },
+      "yaw": 0.4,
+      "scale": 0.24
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": -8.9,
+        "y": 0.95,
+        "z": 6.35
+      },
+      "yaw": -0.2,
+      "scale": 0.16
     }
   ]
 }
