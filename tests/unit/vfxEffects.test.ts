@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { EventBus } from '../../src/core/events';
 import { tuning } from '../../src/core/tuning';
 import { DebrisSystem } from '../../src/vfx/debris';
@@ -64,6 +64,9 @@ describe('StatusVfx', () => {
   });
 
   it('przeciążenie: więcej stosów daje więcej łuków', () => {
+    // Czas życia łuków jest losowy (kosmetyka), a liczymy łuki żywe w jednej
+    // chwili: ze stałym losowaniem wynik nie zależy od szczęścia.
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const a = setup();
     a.bus.emit('status_applied', applied(5, 'overload', 1));
     run(a.vfx, 1);
@@ -72,6 +75,7 @@ describe('StatusVfx', () => {
     run(b.vfx, 1);
     expect(a.vfx.count('spark')).toBeGreaterThan(0);
     expect(b.vfx.count('spark')).toBeGreaterThan(a.vfx.count('spark'));
+    random.mockRestore();
   });
 
   it('ogłuszenie rysuje pierścień trójkątów nad głową i znika', () => {
