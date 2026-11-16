@@ -81,10 +81,16 @@ export class FppViewModel {
       frame.horizontalSpeed,
       held,
     );
-    if (frame.blade) this.blade.place(handMatrix, frame.blade);
     const shown: HeldKind =
       typeof frame.held === 'string' ? frame.held : shownHeld(frame.held);
     const visible = frame.visible ?? true;
+    if (frame.blade)
+      this.blade.place(
+        handMatrix,
+        frame.blade,
+        frameDt,
+        visible && shown === 'blade',
+      );
     this.blade.root.visible &&= visible && shown === 'blade';
     this.blaster.root.visible = visible && shown === 'gun';
     this.blaster.place(handMatrix, frameDt);

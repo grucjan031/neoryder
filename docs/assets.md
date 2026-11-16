@@ -235,9 +235,9 @@ klipy i materiały, a stan AI mapuje na klipy `AnimationMixer` z przenikaniem.
 | `enemy_executor.glb`                   | Egzekutor (5251 tri): manekin 1,2×, rogi, kolce naramienników, egzoszkielet ze świecącym kręgosłupem, rdzeń w ramie                      | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
 | `enemy_drone.glb`                      | Dron (948 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
 | `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                   | — (do `InstancedMesh`)                                                                                                           |
-| `plasma_blade.glb`                     | ostrze plazmowe                                                                                                                           | `hilt`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`                          |
+| `plasma_blade.glb`                     | ostrze plazmowe (284 tri): rękojeść z gumowym chwytem, pierścieniami i pazurami emitera                                                   | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
 | `blaster.glb`                          | blaster z przegrzaniem                                                                                                                    | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |
-| `player_arm_R.glb`, `player_arm_L.glb` | gładka rękawica taktyczna z rękawem FPP (10 012 tri na rękę)                                                                              | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
+| `player_arm_R.glb`, `player_arm_L.glb` | rękawica taktyczna z rękawem i cybernetycznym karwaszem FPP (10 264 tri na rękę)                                                          | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
 | `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut)                                                                                         | —                                                                                                                                |
 | `pillar.glb`                           | filar 4 m                                                                                                                                 | —                                                                                                                                |
 | `wall_segment.glb`                     | ściana 4 × 3 m, grubość 0,4 m                                                                                                             | —                                                                                                                                |
@@ -257,19 +257,27 @@ Kolizje: wyprowadzaj z prostych brył w kodzie (prostopadłościany, kapsuły), 
 
 Bronie celują w -Z, początek w punkcie chwytu. Bryła `frame` to `mat_interactive`; `heat_vents` i
 `heat_cell` (`mat_player_cyan`) kod koloruje ciepłem; `muzzle` to pusty węzeł wylotu (tu rysowany
-jest błysk). Budowa: `--only blaster,pistol,rifle,scatter,sniper_rifle,beam,emp_launcher,blade_twin,blade_staff`.
+jest błysk). Budowa: `--only plasma_blade,blaster,pistol,rifle,scatter,sniper_rifle,beam,emp_launcher,blade_twin,blade_staff`.
 
-| Plik               | Sylwetka                                                       | Węzły dla kodu                                                                                  | Trójkąty |
-| ------------------ | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
-| `blaster.glb`      | średni pistolet energetyczny, kołpak lufy                      | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 252      |
-| `pistol.glb`       | zwarty, krótki zamek, trzy cyjanowe nacięcia                   | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 180      |
-| `rifle.glb`        | długi, kolba, ogniwo ciepła jak magazynek                      | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 232      |
-| `scatter.glb`      | szeroki, dwie grube lufy, pompa                                | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 256      |
-| `sniper_rifle.glb` | bardzo długi, luneta z cyjanową soczewką (`scope_lens`)        | `frame`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                      | 316      |
-| `beam.glb`         | gruby emiter z cewkami i soczewką (`lens`)                     | `frame`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                    | 288      |
-| `emp_launcher.glb` | gruba tuba z bębnem i rozszerzonym wylotem                     | `frame`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                      | 228      |
-| `blade_twin.glb`   | krótsza rękojeść z poprzeczną osłoną                           | jak `plasma_blade`: `hilt`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                  | 156      |
-| `blade_staff.glb`  | długa rękojeść (0,8 m), emitery na obu końcach, chwyt w środku | przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 220      |
+Szlif FPP: każda broń i rękojeść ma też siatki `trim` (szyny, pierścienie, płytki, spust — jasna
+stal) i `grip` (chwyt, kolba, pompa — guma). W GLB to nadal `mat_interactive`; gra nadaje
+materiały widoku FPP po nazwie węzła (`src/render/fppMaterials.ts`: `frame`/`hilt` grafitowy
+pancerz z chłodną krawędzią, `trim` stal, `grip` guma), niezależnie od motywu — w motywie neon
+`mat_interactive` jest jasny i broń wyglądała jak biała zabawka. `blade_core` dostaje w grze
+jasny cyjanowy rdzeń, poświatę zwróconą do kamery i smugę cięcia (`src/render/fppBladeFx.ts`).
+Ciepło broni przechodzi z cyanu w biel rozgrzanego metalu (nie w czerwień — zarezerwowana dla wrogów).
+
+| Plik               | Sylwetka                                                    | Węzły dla kodu                                                                                                          | Trójkąty |
+| ------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| `blaster.glb`      | średni pistolet energetyczny, kołpak lufy                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 368      |
+| `pistol.glb`       | zwarty, krótki zamek, trzy cyjanowe nacięcia                | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 260      |
+| `rifle.glb`        | długi, kolba, ogniwo ciepła jak magazynek                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 324      |
+| `scatter.glb`      | szeroki, dwie grube lufy, pompa                             | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 352      |
+| `sniper_rifle.glb` | bardzo długi, luneta z cyjanową soczewką, ogniwo pod komorą | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 396      |
+| `beam.glb`         | gruby emiter z cewkami w klatce prętów i soczewką (`lens`)  | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 376      |
+| `emp_launcher.glb` | gruba tuba z bębnem i rozszerzonym wylotem                  | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 324      |
+| `blade_twin.glb`   | krótsza rękojeść z poprzeczną osłoną                        | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 284      |
+| `blade_staff.glb`  | długa rękojeść (0,8 m), emitery z pazurami na obu końcach   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 380      |
 
 Pivoty `blade` i `blade_back` leżą u emiterów, długość ostrza 1 m przy skali 1 (skaluj po Z).
 Model broni wskazuje pole `model` w `src/data/weapons/<id>.json`.
@@ -294,7 +302,7 @@ Położenia w metrach, w osiach glTF:
 ## Przegubowe ręce FPP
 
 Ręce FPP są wyjątkiem od ogólnego budżetu i płaskiego cieniowania: każda ma
-**10 012 trójkątów** (budżet 6–12 tys.), smooth shading i skin glTF. `tactical_glove`
+**10 264 trójkąty** (budżet 6–12 tys.; rękawica 10 012 + karwasz 252), smooth shading i skin glTF. `tactical_glove`
 to jedna zamknięta, połączona siatka rękawicy, przedramienia i rękawa kurtki.
 Subdivision Surface (Catmull–Clark, jeden poziom) jest zastosowany przed eksportem.
 Przedramię z rękawem ma ok. 0,34 m, dłoń od nadgarstka do środkowego palca ok. 0,19 m.
@@ -310,6 +318,12 @@ Owalny, gładki `resonance_core` z `mat_power_magenta` jest osadzony w niskim
 czarnym `resonance_mount`. Dekoracje są małymi osobnymi siatkami, cała rękawica
 pozostaje jednym skinowanym obiektem. Materiały należą do `PALETTE`, bez tekstur.
 
+Cybernetyczny karwasz (sztywne siatki na kości `forearm`, płaskie cieniowanie):
+`plate_bracer` — dwie wygięte, fazowane płyty pancerza na grzbiecie przedramienia;
+`bracer_light` (`mat_player_cyan`) — listwa światła w szczelinie i wzdłuż grzbietu;
+`trim_bracer` — śruby i sześciokątny port złącza nad nadgarstkiem. Gra nadaje
+rękawicy, płytom i wykończeniom materiały widoku FPP po nazwie (`src/render/fppMaterials.ts`).
+
 ### Szkielet i skinning
 
 ```text
@@ -317,7 +331,7 @@ player_arm_R / player_arm_L
 └─ hand_skeleton_R / hand_skeleton_L (armatura)
    ├─ tactical_glove               (skin → 18 kości)
    └─ forearm                     (kość)
-      ├─ wrist_light
+      ├─ wrist_light, plate_bracer, bracer_light, trim_bracer
       └─ wrist                    (kość, pivot w nadgarstku)
          └─ palm                  (kość, pivot w nadgarstku)
             ├─ index_1  → index_2  → index_3

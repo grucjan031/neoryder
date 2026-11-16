@@ -709,16 +709,48 @@ def build_enemy_drone():
 
 # --------------------------------------------------------------------------- player weapons
 
+def _fpp_hilt_parts(length, radius, y_front, grip_len, prongs=True):
+    """Rękojeść ostrza: korpus, gardło emitera, gumowy chwyt, pierścienie i pazury emitera.
+
+    Zwraca listy (korpus, chwyt, wykończenia). Oś rękojeści = +Y Blendera, środek chwytu w 0.
+    """
+    y0 = -length / 2
+    body = [
+        tube(y0 + .025, y_front - .03, radius * .92, radius * .92, sides=8),
+        tube(y_front - .03, y_front, radius * 1.1, radius * 1.38, sides=8),  # gardło
+        tube(y0, y0 + .025, radius * 1.2, radius, sides=8),  # głowica
+    ]
+    grip = [tube(-grip_len / 2, grip_len / 2, radius * 1.07, radius * 1.07, sides=8)]
+    trim = [
+        tube(grip_len / 2, grip_len / 2 + .008, radius * 1.25, radius * 1.25, sides=8),
+        tube(-grip_len / 2 - .008, -grip_len / 2, radius * 1.25, radius * 1.25, sides=8),
+        block(radius * .9, radius * 1.45, .0, .045, -.007, .007, bevel=.002),  # przycisk aktywacji
+    ]
+    if prongs:
+        trim += _fpp_prongs(radius * 1.15, y_front - .02, y_front + .028)
+    return body, grip, trim
+
+
+def _fpp_prongs(x, y0, y1, sign=1):
+    """Dwa pazury osłony emitera po bokach, zwężone ku ostrzu (sign=-1: emiter z tyłu)."""
+    parts = []
+    for side in (-1, 1):
+        part = block(side * x - .005, side * x + .005, y0, y1, -.006, .006)
+        for v in part.verts:
+            if (v.co.y - (y0 + y1) / 2) * sign > 0:
+                v.co.x = side * x + (v.co.x - side * x) * .5
+                v.co.z *= .6
+        parts.append(part)
+    return parts
+
+
 def build_plasma_blade():
     """Ostrze plazmowe. Początek w środku chwytu, ostrze wzdłuż +Y Blendera (-Z glTF)."""
     root = empty("plasma_blade", size=0.1)
-    hilt = bm_merge(
-        bm_prism(0.26, 0.022, 0.022, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.0, 0)),
-        bm_prism(0.03, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.12, 0)),  # gardło
-        bm_prism(0.025, 0.027, 0.027, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.13, 0)),  # głowica
-        bm_box(0.012, 0.06, 0.02, center=(0.024, 0.03, 0)),  # przycisk/listwa
-    )
-    mesh_object("hilt", hilt, "mat_interactive", parent=root)
+    body, grip, trim = _fpp_hilt_parts(.27, .022, .135, .1)
+    mesh_object("hilt", bm_merge(*body), "mat_interactive", parent=root)
+    mesh_object("grip", bm_merge(*grip), "mat_interactive", parent=root)
+    mesh_object("trim", bm_merge(*trim), "mat_interactive", parent=root)
     ring = bm_prism(0.012, 0.031, 0.031, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.105, 0))
     mesh_object("emitter_ring", ring, "mat_player_cyan", parent=root)
     # ostrze jako osobny węzeł: skalowanie po Z lokalnym = wysuwanie (pivot u emitera)
@@ -732,6 +764,8 @@ def build_plasma_blade():
 # --------------------------------------------------------------------------- bronie F2 (modele FPP)
 # Układ: lufa = +Y Blendera (-Z glTF), początek w punkcie chwytu, góra = +Z. Bryła mat_interactive
 # (węzeł `frame`), cyjanowe węzły `heat_vents` / `heat_cell` kolorowane ciepłem przez kod, `muzzle` = wylot.
+# Szlif FPP: `trim` (jasna stal) i `grip` (guma) to też mat_interactive w GLB; gra nadaje im
+# własne materiały widoku FPP po nazwie węzła (src/render/fppMaterials.ts).
 
 def tube(y0, y1, r0, r1, sides=8, x=0.0, z=0.0):
     """Walec/stożek ścięty wzdłuż Y od y0 (promień r0) do y1 (promień r1)."""
@@ -744,9 +778,13 @@ def block(x0, x1, y0, y1, z0, z1, taper_top=(1.0, 1.0), bevel=0.0):
                   taper_top=taper_top, bevel=bevel)
 
 
-def weapon_root(name, frame, vents, cell, muzzle_pos, extra=()):
+def weapon_root(name, frame, vents, cell, muzzle_pos, extra=(), trim=None, grip=None):
     root = empty(name, size=0.1)
     mesh_object("frame", frame, "mat_interactive", parent=root)
+    if trim is not None:
+        mesh_object("trim", trim, "mat_interactive", parent=root)
+    if grip is not None:
+        mesh_object("grip", grip, "mat_interactive", parent=root)
     if vents is not None:
         mesh_object("heat_vents", vents, "mat_player_cyan", parent=root)
     if cell is not None:
@@ -764,11 +802,20 @@ def weapon_root(name, frame, vents, cell, muzzle_pos, extra=()):
     return root
 
 
+def _fpp_plate(x, y0, y1, z0, z1, depth=.003):
+    """Para cienkich płytek na bokach x=±x: szwy paneli widoczne z bliska."""
+    return [block(-x - depth, -x + .0005, y0, y1, z0, z1), block(x - .0005, x + depth, y0, y1, z0, z1)]
+
+
+def _fpp_trigger(y, z_top, depth=.022):
+    """Spust: pochylona listwa pod zamkiem."""
+    return block(-.004, .004, y - .006, y + .004, z_top - depth, z_top, taper_top=(1, 1.6))
+
+
 def build_blaster():
     """Blaster gracza z przegrzaniem: średni pistolet energetyczny z kołpakiem lufy."""
     frame = bm_merge(
         block(-0.025, 0.025, -0.07, 0.19, 0.03, 0.1, taper_top=(0.9, 0.95), bevel=0.008),  # zamek
-        block(-0.021, 0.021, -0.05, 0.01, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.006),  # chwyt
         block(-0.015, 0.015, 0.01, 0.06, 0.0, 0.012),  # kabłąk
         block(-0.012, 0.012, 0.06, 0.07, -0.03, 0.012),
         tube(0.19, 0.31, 0.02, 0.016, sides=8, z=0.07),  # lufa
@@ -776,23 +823,39 @@ def build_blaster():
         block(-0.006, 0.006, -0.06, -0.03, 0.1, 0.12),  # szczerbinka
         block(-0.004, 0.004, 0.16, 0.18, 0.1, 0.118),  # muszka
     )
+    grip = block(-0.021, 0.021, -0.05, 0.01, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.006)
+    trim = bm_merge(
+        block(-0.009, 0.009, -0.025, 0.15, 0.1, 0.108),  # szyna na zamku
+        *_fpp_plate(0.0255, -0.062, -0.012, 0.045, 0.088),  # płytki boczne tyłu zamka
+        tube(0.30, 0.312, 0.029, 0.029, sides=8, z=0.07),  # pierścień kołpaka
+        tube(0.17, 0.19, 0.024, 0.021, sides=8, z=0.07),  # nasada lufy
+        _fpp_trigger(0.035, 0.03),
+        block(-0.023, 0.023, -0.047, 0.007, -0.088, -0.082),  # obejma ogniwa
+    )
     vents = bm_merge(*[block(-0.027, 0.027, 0.0 + i * 0.035, 0.018 + i * 0.035, 0.045, 0.085) for i in range(4)])
     cell = block(-0.023, 0.023, -0.045, 0.005, -0.12, -0.092)
-    return weapon_root("blaster", frame, vents, cell, (0, 0.33, 0.07))
+    return weapon_root("blaster", frame, vents, cell, (0, 0.33, 0.07), trim=trim, grip=grip)
 
 
 def build_pistol():
     """Pistolet: zwarty, krótki zamek, pochylony chwyt, trzy cyjanowe nacięcia."""
     frame = bm_merge(
         block(-0.02, 0.02, -0.04, 0.12, 0.02, 0.075, taper_top=(0.85, 1.0), bevel=0.005),  # zamek
-        block(-0.018, 0.018, -0.04, 0.0, -0.09, 0.02, taper_top=(1.0, 1.2), bevel=0.005),  # chwyt
         tube(0.12, 0.15, 0.012, 0.012, sides=6, z=0.052),  # wylot
         block(-0.012, 0.012, 0.0, 0.05, 0.0, 0.012),  # kabłąk
         block(-0.005, 0.005, -0.035, -0.015, 0.075, 0.09),  # szczerbinka
     )
+    grip = block(-0.018, 0.018, -0.04, 0.0, -0.09, 0.02, taper_top=(1.0, 1.2), bevel=0.005)
+    trim = bm_merge(
+        block(-0.007, 0.007, 0.0, 0.11, 0.075, 0.082),  # szyna
+        block(-0.004, 0.004, 0.1, 0.112, 0.082, 0.092),  # muszka
+        *_fpp_plate(0.0205, -0.036, 0.012, 0.03, 0.068),  # płytki tyłu zamka
+        tube(0.138, 0.146, 0.016, 0.016, sides=6, z=0.052),  # pierścień wylotu
+        _fpp_trigger(0.025, 0.02, depth=0.018),
+    )
     vents = bm_merge(*[block(-0.0215, 0.0215, 0.02 + i * 0.03, 0.036 + i * 0.03, 0.035, 0.065) for i in range(3)])
     cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09)
-    return weapon_root("pistol", frame, vents, cell, (0, 0.155, 0.052))
+    return weapon_root("pistol", frame, vents, cell, (0, 0.155, 0.052), trim=trim, grip=grip)
 
 
 def build_rifle():
@@ -802,13 +865,23 @@ def build_rifle():
         block(-0.022, 0.022, 0.2, 0.42, 0.015, 0.085, bevel=0.005),  # łoże
         tube(0.42, 0.6, 0.014, 0.012, sides=8, z=0.05),  # lufa
         tube(0.57, 0.62, 0.02, 0.02, sides=6, z=0.05),  # tłumik
+    )
+    grip = bm_merge(
         block(-0.02, 0.02, -0.22, -0.08, -0.035, 0.085, taper_top=(0.9, 0.7)),  # kolba
         block(-0.018, 0.018, -0.07, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+    )
+    trim = bm_merge(
         block(-0.008, 0.008, 0.0, 0.24, 0.1, 0.118),  # szyna z celownikiem
+        block(-0.012, 0.012, 0.02, 0.05, 0.118, 0.14, taper_top=(0.7, 0.6)),  # celownik tylny
+        block(-0.006, 0.006, 0.2, 0.22, 0.118, 0.138),  # muszka
+        *_fpp_plate(0.0255, -0.07, 0.06, 0.02, 0.085),  # płyty komory
+        tube(0.6, 0.612, 0.023, 0.023, sides=6, z=0.05),  # czoło tłumika
+        block(-0.021, 0.021, -0.225, -0.21, -0.045, 0.09),  # stopka kolby
+        _fpp_trigger(-0.005, 0.0),
     )
     vents = bm_merge(*[block(-0.0235, 0.0235, 0.24 + i * 0.045, 0.262 + i * 0.045, 0.03, 0.07) for i in range(4)])
     cell = block(-0.02, 0.02, 0.07, 0.14, -0.1, 0.0)
-    return weapon_root("rifle", frame, vents, cell, (0, 0.625, 0.05))
+    return weapon_root("rifle", frame, vents, cell, (0, 0.625, 0.05), trim=trim, grip=grip)
 
 
 def build_scatter():
@@ -818,13 +891,22 @@ def build_scatter():
         tube(0.2, 0.42, 0.028, 0.028, sides=6, x=-0.03, z=0.07),
         tube(0.2, 0.42, 0.028, 0.028, sides=6, x=0.03, z=0.07),
         block(-0.06, 0.06, 0.2, 0.3, 0.035, 0.105, bevel=0.006),  # osłona
+    )
+    grip = bm_merge(
         block(-0.034, 0.034, 0.22, 0.34, -0.005, 0.03, bevel=0.005),  # pompa
         block(-0.026, 0.026, -0.14, 0.0, -0.03, 0.09, taper_top=(0.9, 0.8)),  # kolba
         block(-0.02, 0.02, -0.06, 0.02, -0.13, 0.0, taper_top=(1.0, 1.2)),  # chwyt
     )
+    trim = bm_merge(
+        block(-0.01, 0.01, 0.02, 0.19, 0.1, 0.11),  # szyna
+        block(-0.062, 0.062, 0.385, 0.405, 0.035, 0.105),  # opaska luf
+        *[block(-0.036, 0.036, 0.235 + i * 0.03, 0.245 + i * 0.03, -0.009, 0.0) for i in range(3)],  # żeberka pompy
+        *_fpp_plate(0.0505, 0.0, 0.2, 0.012, 0.04),  # listwy boczne komory
+        _fpp_trigger(0.0, 0.0),
+    )
     vents = bm_merge(*[block(-0.052, 0.052, 0.02 + i * 0.045, 0.038 + i * 0.045, 0.045, 0.095) for i in range(4)])
     cell = block(-0.025, 0.025, -0.01, 0.06, -0.15, -0.115)
-    return weapon_root("scatter", frame, vents, cell, (0, 0.43, 0.07))
+    return weapon_root("scatter", frame, vents, cell, (0, 0.43, 0.07), trim=trim, grip=grip)
 
 
 def build_sniper_rifle():
@@ -834,18 +916,28 @@ def build_sniper_rifle():
         block(-0.017, 0.017, 0.2, 0.55, 0.02, 0.07),  # łoże
         tube(0.55, 0.86, 0.011, 0.01, sides=8, z=0.045),  # lufa
         block(-0.02, 0.02, 0.86, 0.92, 0.025, 0.068),  # hamulec wylotowy
-        block(-0.022, 0.022, -0.24, -0.08, -0.04, 0.085, taper_top=(0.9, 0.6)),  # kolba
-        block(-0.016, 0.016, -0.065, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
         tube(0.0, 0.34, 0.03, 0.03, sides=8, z=0.145),  # luneta
         tube(0.34, 0.4, 0.036, 0.036, sides=8, z=0.145),  # osłona obiektywu
         tube(-0.06, 0.0, 0.026, 0.03, sides=8, z=0.145),
-        block(-0.006, 0.006, 0.05, 0.08, 0.085, 0.12),  # mocowania lunety
-        block(-0.006, 0.006, 0.24, 0.27, 0.085, 0.12),
+    )
+    grip = bm_merge(
+        block(-0.022, 0.022, -0.24, -0.08, -0.04, 0.085, taper_top=(0.9, 0.6)),  # kolba
+        block(-0.016, 0.016, -0.065, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+    )
+    trim = bm_merge(
+        block(-0.008, 0.008, 0.04, 0.09, 0.085, 0.118),  # mocowania lunety
+        block(-0.008, 0.008, 0.23, 0.28, 0.085, 0.118),
+        tube(0.05, 0.075, 0.033, 0.033, sides=8, z=0.145),  # obejmy lunety
+        tube(0.245, 0.27, 0.033, 0.033, sides=8, z=0.145),
+        block(-0.022, 0.022, 0.885, 0.895, 0.02, 0.073),  # szczelina hamulca
+        _fpp_trigger(-0.005, 0.0),
     )
     vents = bm_merge(*[block(-0.0195, 0.0195, 0.3 + i * 0.055, 0.32 + i * 0.055, 0.03, 0.062) for i in range(4)])
-    cell = block(-0.017, 0.017, -0.16, -0.1, 0.09, 0.115)
+    # ogniwo ciepła jako magazynek pod komorą (na kolbie świeciło tuż przy kamerze)
+    cell = block(-0.015, 0.015, 0.05, 0.11, -0.07, 0.0, taper_top=(1.0, 1.0))
     lens = tube(0.395, 0.405, 0.03, 0.03, sides=8, z=0.145)
-    return weapon_root("sniper_rifle", frame, vents, cell, (0, 0.93, 0.045), extra=[("scope_lens", lens)])
+    return weapon_root("sniper_rifle", frame, vents, cell, (0, 0.93, 0.045), extra=[("scope_lens", lens)],
+                       trim=trim, grip=grip)
 
 
 def build_beam():
@@ -853,15 +945,21 @@ def build_beam():
     frame = bm_merge(
         tube(0.0, 0.3, 0.036, 0.042, sides=8, z=0.07),  # rura emitera
         block(-0.03, 0.03, -0.1, 0.02, 0.03, 0.09, bevel=0.006),  # moduł zasilania z tyłu
-        block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15)),  # chwyt
         block(-0.014, 0.014, 0.03, 0.09, 0.0, 0.012),  # kabłąk
         tube(0.3, 0.34, 0.052, 0.058, sides=8, z=0.07),  # kołnierz lufy
+    )
+    grip = block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15))
+    trim = bm_merge(
         block(-0.006, 0.006, 0.05, 0.16, 0.108, 0.128),  # grzebień
+        *[block(s * 0.05 - 0.004, s * 0.05 + 0.004, 0.03, 0.3, 0.064, 0.076) for s in (-1, 1)],  # pręty klatki cewek
+        tube(0.335, 0.345, 0.061, 0.061, sides=8, z=0.07),  # obręcz kołnierza
+        *_fpp_plate(0.0305, -0.09, 0.01, 0.045, 0.08),
+        _fpp_trigger(0.06, 0.0, depth=0.02),
     )
     coils = bm_merge(*[tube(0.04 + i * 0.065, 0.062 + i * 0.065, 0.052, 0.052, sides=8, z=0.07) for i in range(4)])
     lens = tube(0.34, 0.352, 0.044, 0.01, sides=8, z=0.07)
     cell = block(-0.026, 0.026, -0.095, -0.03, 0.04, 0.08)
-    return weapon_root("beam", frame, coils, cell, (0, 0.36, 0.07), extra=[("lens", lens)])
+    return weapon_root("beam", frame, coils, cell, (0, 0.36, 0.07), extra=[("lens", lens)], trim=trim, grip=grip)
 
 
 def build_emp_launcher():
@@ -870,27 +968,33 @@ def build_emp_launcher():
         tube(0.04, 0.38, 0.05, 0.05, sides=8, z=0.07),  # tuba
         tube(0.38, 0.45, 0.05, 0.07, sides=8, z=0.07),  # rozszerzony wylot
         tube(-0.02, 0.1, 0.074, 0.074, sides=8, z=0.07),  # bęben
+    )
+    grip = bm_merge(
         block(-0.026, 0.026, -0.14, -0.02, -0.01, 0.09, taper_top=(0.9, 0.8)),  # kolba
         block(-0.02, 0.02, 0.0, 0.07, -0.12, 0.0, taper_top=(1.0, 1.2)),  # chwyt
         block(-0.014, 0.014, 0.1, 0.16, -0.02, 0.01),  # chwyt przedni
+    )
+    trim = bm_merge(
         block(-0.007, 0.007, 0.2, 0.3, 0.125, 0.145),  # szyna
+        tube(-0.028, -0.018, 0.077, 0.077, sides=8, z=0.07),  # obręcze bębna
+        tube(0.098, 0.108, 0.077, 0.077, sides=8, z=0.07),
+        tube(0.44, 0.455, 0.073, 0.073, sides=8, z=0.07),  # krawędź wylotu
+        _fpp_trigger(0.05, 0.0),
     )
     rings = bm_merge(*[tube(0.14 + i * 0.07, 0.16 + i * 0.07, 0.054, 0.054, sides=8, z=0.07) for i in range(3)])
     cell = block(-0.018, 0.018, 0.0, 0.08, 0.142, 0.162)
-    return weapon_root("emp_launcher", frame, rings, cell, (0, 0.46, 0.07))
+    return weapon_root("emp_launcher", frame, rings, cell, (0, 0.46, 0.07), trim=trim, grip=grip)
 
 
 def build_blade_twin():
     """Rękojeść wariantu bliźniaczego: krótsza, z poprzeczną osłoną. Węzły jak plasma_blade."""
     root = empty("blade_twin", size=0.1)
-    hilt = bm_merge(
-        bm_prism(0.17, 0.024, 0.024, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.0, 0)),
-        bm_prism(0.03, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.075, 0)),  # gardło
-        bm_prism(0.025, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.09, 0)),  # głowica
-        bm_box(0.1, 0.012, 0.016, center=(0, 0.056, 0)),  # poprzeczna osłona
-        bm_box(0.012, 0.05, 0.02, center=(0.026, 0.02, 0)),
-    )
-    mesh_object("hilt", hilt, "mat_interactive", parent=root)
+    body, grip, trim = _fpp_hilt_parts(.19, .024, .09, .07, prongs=False)
+    body.append(bm_box(0.1, 0.012, 0.016, center=(0, 0.056, 0)))  # poprzeczna osłona
+    trim.append(bm_box(0.11, 0.006, 0.02, center=(0, 0.063, 0)))  # krawędź osłony
+    mesh_object("hilt", bm_merge(*body), "mat_interactive", parent=root)
+    mesh_object("grip", bm_merge(*grip), "mat_interactive", parent=root)
+    mesh_object("trim", bm_merge(*trim), "mat_interactive", parent=root)
     ring = bm_prism(0.012, 0.034, 0.034, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.1, 0))
     mesh_object("emitter_ring", ring, "mat_player_cyan", parent=root)
     pivot = empty("blade", parent=root, location=(0, 0.106, 0), size=0.05)
@@ -904,13 +1008,19 @@ def build_blade_staff():
     """Kij: długa rękojeść (0,8 m) z emiterami na obu końcach; chwyt w środku."""
     root = empty("blade_staff", size=0.1)
     hilt = bm_merge(
-        bm_prism(0.8, 0.02, 0.02, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.0, 0)),
-        bm_prism(0.1, 0.027, 0.027, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.0, 0)),  # uchwyt
-        bm_prism(0.03, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.385, 0)),
-        bm_prism(0.03, 0.03, 0.03, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.385, 0)),
-        bm_box(0.012, 0.08, 0.02, center=(0.024, 0.0, 0)),
+        tube(-0.37, 0.37, 0.019, 0.019, sides=8),
+        tube(0.37, 0.4, 0.024, 0.03, sides=8),  # gardła emiterów
+        tube(-0.4, -0.37, 0.03, 0.024, sides=8),
     )
     mesh_object("hilt", hilt, "mat_interactive", parent=root)
+    mesh_object("grip", tube(-0.06, 0.06, 0.024, 0.024, sides=8), "mat_interactive", parent=root)
+    trim = bm_merge(
+        *[tube(y - 0.005, y + 0.005, 0.027, 0.027, sides=8) for y in (-0.065, 0.065, -0.25, 0.25)],
+        block(0.018, 0.03, -0.04, 0.04, -0.01, 0.01),  # przycisk
+        *_fpp_prongs(0.034, 0.38, 0.425),
+        *_fpp_prongs(0.034, -0.425, -0.38, sign=-1),
+    )
+    mesh_object("trim", trim, "mat_interactive", parent=root)
     ring_f = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.406, 0))
     ring_b = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.406, 0))
     mesh_object("emitter_ring", bm_merge(ring_f, ring_b), "mat_player_cyan", parent=root)
@@ -1042,6 +1152,91 @@ def _hand_dorsal_points(glove, basis):
             raise RuntimeError("Dorsal piping must stay on the glove surface")
         points.append(inverse @ (position + normal * .0003))
     return points
+
+
+# Przekrój przedramienia rękawicy (z, półszerokość, półgłębokość) — jak `sections` w build_player_arm.
+_FPP_FOREARM = ((.34, .048, .036), (.31, .048, .036), (.275, .046, .034), (.235, .043, .032),
+                (.19, .041, .030), (.145, .037, .027), (.10, .033, .025), (.066, .031, .024))
+
+
+def _fpp_forearm_size(z):
+    for (z0, w0, d0), (z1, w1, d1) in zip(_FPP_FOREARM, _FPP_FOREARM[1:]):
+        if z1 <= z <= z0:
+            t = (z - z1) / (z0 - z1)
+            return w1 + (w0 - w1) * t, d1 + (d0 - d1) * t
+    return _FPP_FOREARM[-1][1:]
+
+
+def _fpp_shell(z0, z1, u0, u1, gap, thick, segments=5, bevel=.0):
+    """Wygięta płyta pancerza nad grzbietem przedramienia (osie glTF, grzbiet = -Y)."""
+    bm = bmesh.new()
+
+    def ring(z, offset, shrink):
+        w, d = _fpp_forearm_size(z)
+        pts = []
+        for i in range(segments + 1):
+            u = (u0 + (u1 - u0) * i / segments) * shrink
+            y = -(d * math.sqrt(max(.1, 1 - .82 * u * u)) + offset)
+            x = u * (w + offset) + .006 * z / .34
+            pts.append(bm.verts.new((x, y, z)))
+        return pts
+
+    # Fazowane czoła: zewnętrzna powierzchnia krótsza o `bevel` na obu końcach.
+    outer0, outer1 = ring(z0 + bevel, gap + thick, .96), ring(z1 - bevel, gap + thick, .96)
+    inner0, inner1 = ring(z0, gap, 1), ring(z1, gap, 1)
+    for a, b in ((outer0, outer1), (inner1, inner0), (inner0, outer0), (outer1, inner1)):
+        for i in range(segments):
+            bm.faces.new((a[i], a[i + 1], b[i + 1], b[i]))
+    for a, b, c, d in ((inner0[0], outer0[0], outer1[0], inner1[0]),
+                       (inner1[-1], outer1[-1], outer0[-1], inner0[-1])):
+        bm.faces.new((a, b, c, d))
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    return bm
+
+
+def _fpp_hand_part(name, bm, mat, rig, bone, basis, side):
+    """Sztywna część na kości ręki: geometria w osiach glTF, odbicie L z poprawnymi normalnymi."""
+    obj = mesh_object(name, bm, mat)
+    obj.data.transform(basis)
+    if side == "L":
+        mirrored = bmesh.new()
+        mirrored.from_mesh(obj.data)
+        bmesh.ops.reverse_faces(mirrored, faces=list(mirrored.faces))
+        mirrored.to_mesh(obj.data)
+        mirrored.free()
+    _hand_bone_child(obj, rig, bone, Matrix.Identity(4))
+    return obj
+
+
+def _fpp_bracer(rig, basis, side):
+    """Cybernetyczny karwasz: dwie płyty, listwa światła gracza, śruby i port przy nadgarstku.
+
+    Materiały po nazwie węzła w grze: `plate_*` pancerz, `trim_*` jasna stal (fppMaterials.ts).
+    """
+    plates = bm_merge(
+        _fpp_shell(.215, .150, -.85, .85, .003, .005, bevel=.004),
+        _fpp_shell(.142, .078, -.8, .8, .003, .005, bevel=.004),
+    )
+    _fpp_hand_part("plate_bracer", plates, "mat_interactive", rig, "forearm", basis, side)
+    # Listwa światła w rowku między płytami i wzdłuż grzbietu.
+    w, d = _fpp_forearm_size(.146)
+    light = bm_merge(
+        _fpp_shell(.148, .144, -.7, .7, .006, .0025, segments=4),
+        block(-.0035, .0035, -(d + .0105), -(d + .0075), .085, .205),
+    )
+    _fpp_hand_part("bracer_light", light, "mat_player_cyan", rig, "forearm", basis, side)
+    trims = []
+    for z in (.205, .16, .132, .088):
+        w, d = _fpp_forearm_size(z)
+        for u in (-.62, .62):
+            x = u * (w + .008) + .006 * z / .34
+            y = -(d * math.sqrt(max(.1, 1 - .82 * u * u)) + .009)
+            trims.append(bm_box(.006, .006, .006, center=(x, y, z)))
+    # Port złącza nad nadgarstkiem: sześciokątna obejma.
+    w, d = _fpp_forearm_size(.066)
+    trims.append(bm_prism(.006, .009, .011, sides=6, axis="Y", top_at_origin=True,
+                          offset=(.012, -(d + .004), .058)))
+    _fpp_hand_part("trim_bracer", bm_merge(*trims), "mat_interactive", rig, "forearm", basis, side)
 
 
 def build_player_arm(side: str):
@@ -1309,6 +1504,7 @@ def build_player_arm(side: str):
         obj = empty(name, size=.012)
         world = HAND_BASIS @ reflection @ Matrix.Translation(loc) @ rotation @ reflection @ HAND_BASIS.inverted()
         _hand_bone_child(obj, rig, "palm", world)
+    _fpp_bracer(rig, basis, side)
     bpy.context.view_layer.update()
     return root
 

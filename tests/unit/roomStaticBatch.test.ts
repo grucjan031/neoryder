@@ -32,10 +32,11 @@ function counts(roots: readonly Object3D[]) {
 }
 
 // Pomiar przed Z19: cała scena po init, prawdziwe GLB, także niewidoczne pule/VFX.
+// Szlif FPP: +25 siatek viewmodelu (karwasz dłoni, trim/grip broni i rękojeści, warstwy błysku i wiązki).
 const baselines = {
-  alleyMarket: 1683,
-  combatWarehouse: 529,
-  eliteFoundry: 600,
+  alleyMarket: 1708,
+  combatWarehouse: 554,
+  eliteFoundry: 625,
 };
 
 it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
