@@ -37,6 +37,7 @@ import { kuroganeSector } from '../world/sectors';
 import { roomPlanner } from '../world/threat';
 import type { WavesDefinition } from '../world/waves';
 import type { Scene } from './index';
+import { getLiteFx } from '../render/fxMode';
 import { RoomScene } from './roomScene';
 
 const CUSTOM_LOADOUT_ID = 'custom';
@@ -104,6 +105,8 @@ export class RunScene implements Scene {
   private pendingSaves = 0;
   private pending: 'clear' | 'end' | null = null;
   private rewardDelayRemainingS: number | null = null;
+  /** Cisza po zwycięstwie: pokój bossa zostaje na ekranie, zanim pojawi się podsumowanie. */
+  private victoryHoldRemainingS: number | null = null;
   private disposed = false;
   private runError: string | null = null;
   private saveError: string | null = null;
@@ -175,7 +178,13 @@ export class RunScene implements Scene {
       ctx.bus.on('run_ended', ({ outcome, summary }) => {
         this.log.push({ event: 'run_ended', outcome });
         this.finishMeta(summary);
-        this.schedule('end');
+        // Wynik jest już zapisany; opóźniamy tylko pokazanie ekranu (w fx=lite bez opóźnienia).
+        const holdS =
+          outcome === 'victory' && this.roomReady && !getLiteFx()
+            ? this.ctx.tuning.vfx.bossVictoryHoldS
+            : 0;
+        if (holdS > 0) this.victoryHoldRemainingS = holdS;
+        else this.schedule('end');
       }),
     );
     const params =
@@ -531,6 +540,7 @@ export class RunScene implements Scene {
       this.show();
       return;
     }
+    if (this.victoryHoldRemainingS !== null) return;
     this.disposeRoom();
     if (this.manager.screen === 'reward') {
       this.economy.offerReward();
@@ -555,8 +565,20 @@ export class RunScene implements Scene {
     if (this.disposed) return;
     this.manager.step(dt);
     const waitingForReward = this.rewardDelayRemainingS !== null;
-    if (this.roomReady && this.manager.screen === 'room' && !this.pending)
+    const holding = this.victoryHoldRemainingS !== null;
+    if (
+      this.roomReady &&
+      (this.manager.screen === 'room' || holding) &&
+      !this.pending
+    )
       this.room?.step(dt, input);
+    if (this.victoryHoldRemainingS !== null) {
+      this.victoryHoldRemainingS = Math.max(0, this.victoryHoldRemainingS - dt);
+      if (this.victoryHoldRemainingS === 0) {
+        this.victoryHoldRemainingS = null;
+        this.schedule('end');
+      }
+    }
     if (
       this.roomReady &&
       waitingForReward &&
@@ -572,7 +594,10 @@ export class RunScene implements Scene {
   }
 
   render(alpha: number, frameDt?: number): void {
-    if (this.roomReady && this.manager.screen === 'room')
+    if (
+      this.roomReady &&
+      (this.manager.screen === 'room' || this.victoryHoldRemainingS !== null)
+    )
       this.room?.render(alpha, frameDt);
   }
 

@@ -921,70 +921,148 @@
     box-shadow: 0 0 0 transparent;
   }
 }
+/* Pasek bossa (BossBar): u góry, nad polem walki; czerwień = zagrożenie (ADR 0006). */
 .run-hud__boss {
+  --boss-hot: #ffd8bd;
+  --boss-glow: #ff3028;
   position: absolute;
-  top: 102px;
+  top: clamp(18px, 3.2vh, 30px);
   left: 50%;
-  width: min(520px, 44vw);
+  width: min(580px, 46vw);
   transform: translateX(-50%);
+  transform-origin: 50% 0;
   display: grid;
   gap: 5px;
 }
-.run-hud__boss > .hud__micro {
-  text-align: center;
+.run-hud__boss-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.run-hud__boss-phase {
+  font:
+    600 11px/1.3 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ui-danger-text, #ff6b6f);
 }
 .run-hud__boss-name {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 18px;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  line-height: 1.15;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow:
+    0 0 12px #e0262b99,
+    0 1px 3px #000;
+}
+.run-hud__boss-name::before,
+.run-hud__boss-name::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hud-danger));
+}
+.run-hud__boss-name::after {
+  transform: scaleX(-1);
 }
 .run-hud__boss-track {
   position: relative;
   width: 100%;
-  height: 5px;
-  background: repeating-linear-gradient(
-    90deg,
-    #e0262b20 0 2px,
-    transparent 2px 4px
-  );
-}
-.run-hud__boss-fill {
-  height: 100%;
-  width: calc(var(--p, 1) * 100%);
-  background: var(--hud-danger);
-  transition: width 0.15s linear;
+  height: 10px;
+  background:
+    repeating-linear-gradient(90deg, #e0262b24 0 2px, transparent 2px 4px),
+    #0a0408cc;
+  box-shadow:
+    0 0 0 1px #e0262b66,
+    0 0 14px #e0262b40;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
 }
 .run-hud__boss-fill,
-.run-hud__boss-shield {
-  mask-image: var(--hud-ticks);
+.run-hud__boss-ghost {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--p, 1) * 100%);
+}
+.run-hud__boss-fill {
+  background: linear-gradient(180deg, #ff5a52 0 45%, var(--hud-danger) 45%);
+  box-shadow: 0 0 10px var(--boss-glow);
+  transition: width 0.12s linear;
+}
+/* „Duch”: stracone zdrowie schodzi z opóźnieniem, więc siłę trafienia widać na pasku. */
+.run-hud__boss-ghost {
+  background: var(--boss-hot);
+  opacity: 0.75;
+  transition: width 0.55s cubic-bezier(0.3, 0, 0.2, 1) 0.28s;
 }
 .run-hud__boss-shield {
   width: 100%;
-  height: 2px;
-  background: #ffffff10;
+  height: 3px;
+  background: #ffffff14;
+  mask-image: var(--hud-ticks);
 }
 .run-hud__boss-shield-fill {
   height: 100%;
   width: calc(var(--p, 0) * 100%);
   background: #fff;
+  box-shadow: 0 0 8px #fff;
   transition: width 0.15s linear;
 }
 .run-hud__boss-ticks {
   position: absolute;
   inset: 0;
 }
+/* Próg fazy: przerwa w pasku w miejscu progu (pasek ubywa od prawej). */
 .run-hud__boss-tick {
   position: absolute;
-  top: -2px;
-  bottom: -2px;
-  left: calc(var(--at) * 100%);
-  width: 1px;
-  background: #fff;
+  top: 0;
+  bottom: 0;
+  left: calc((1 - var(--at)) * 100%);
+  width: 3px;
+  margin-left: -1px;
+  background: #05070c;
+  box-shadow:
+    -1px 0 0 #fff,
+    1px 0 0 #ffffff66;
+}
+.run-hud__boss-status {
+  justify-self: center;
+  font:
+    600 11px/1.3 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--boss-hot);
+  text-shadow: 0 0 10px var(--boss-glow);
+  opacity: 0;
+}
+.run-hud__boss[data-phase='3'] .run-hud__boss-fill {
+  animation: run-hud-boss-rage 0.9s ease-in-out infinite;
+}
+@keyframes run-hud-boss-rage {
+  50% {
+    filter: brightness(1.45);
+  }
+}
+/* Zmiana fazy: błysk paska, licznik faz i komunikat nietykalności na czas osłony. */
+.run-hud__boss--phase .run-hud__boss-track {
+  animation: run-hud-boss-flash 0.7s ease-out;
+}
+.run-hud__boss--phase .run-hud__boss-phase {
+  animation: run-hud-boss-phase 0.9s ease-out;
 }
 .run-hud__boss--phase .run-hud__boss-name {
   animation: run-hud-phase 0.8s ease-out;
+}
+.run-hud__boss--phase .run-hud__boss-status {
+  animation: run-hud-boss-status var(--shift-s, 1s) steps(1, end) both;
 }
 @keyframes run-hud-phase {
   from {
@@ -992,6 +1070,137 @@
   }
   to {
     color: var(--hud-text);
+  }
+}
+@keyframes run-hud-boss-flash {
+  from {
+    filter: brightness(3.2) saturate(0.4);
+    box-shadow:
+      0 0 0 1px #fff,
+      0 0 34px #ff3028;
+  }
+}
+@keyframes run-hud-boss-phase {
+  from {
+    color: #fff;
+    transform: scale(1.5);
+    transform-origin: 100% 50%;
+  }
+  to {
+    transform: none;
+    transform-origin: 100% 50%;
+  }
+}
+@keyframes run-hud-boss-status {
+  0%,
+  30%,
+  60% {
+    opacity: 1;
+  }
+  22%,
+  52% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* Zapowiedź: duża nazwa w górnej tercji, pasek „ładuje się”, potem całość wraca na miejsce. */
+.run-hud__boss--intro {
+  animation: run-hud-boss-intro var(--intro-s, 1.7s)
+    cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+.run-hud__boss--intro .run-hud__boss-fill,
+.run-hud__boss--intro .run-hud__boss-ghost {
+  transform-origin: 0 50%;
+  animation: run-hud-boss-charge calc(var(--intro-s, 1.7s) * 0.62) ease-out both;
+}
+.run-hud__boss--intro .run-hud__boss-name {
+  animation: run-hud-boss-name calc(var(--intro-s, 1.7s) * 0.5) ease-out both;
+}
+@keyframes run-hud-boss-intro {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 21vh) scale(1.55, 0.2);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, 21vh) scale(1.55);
+  }
+  68% {
+    opacity: 1;
+    transform: translate(-50%, 21vh) scale(1.55);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+@keyframes run-hud-boss-charge {
+  0%,
+  25% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes run-hud-boss-name {
+  from {
+    letter-spacing: 0.5em;
+    color: #ff7478;
+  }
+}
+/* Stempel po zwycięstwie: pasek znika, w jego miejscu krótki komunikat i cisza. */
+.run-hud__boss-verdict {
+  position: absolute;
+  top: clamp(18px, 3.2vh, 30px);
+  left: 50%;
+  width: min(580px, 46vw);
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  opacity: 0;
+}
+.run-hud__boss-verdict-title {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--boss-hot, #ffd8bd);
+  text-shadow:
+    0 0 16px #e0262bcc,
+    0 1px 3px #000;
+}
+.run-hud__boss-verdict-name {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8faebc;
+  text-decoration: line-through;
+  text-decoration-color: var(--hud-danger);
+}
+.run-hud__boss-verdict--show {
+  animation: run-hud-boss-verdict calc(var(--hold-s, 1.7s) + 0.6s) ease-out both;
+}
+@keyframes run-hud-boss-verdict {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.25);
+    filter: brightness(3);
+  }
+  12% {
+    opacity: 1;
+    transform: translateX(-50%);
+    filter: none;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%);
   }
 }
 /* One local brightness interruption per cycle; no timers or simulation randomness. */
@@ -1055,7 +1264,8 @@
   .run-hud__implants {
     transform: none;
   }
-  .run-hud__boss {
+  .run-hud__boss,
+  .run-hud__boss-verdict {
     top: 120px;
     width: 65vw;
   }
@@ -1090,8 +1300,15 @@
   .hud__overheat::after,
   .hud__meter::after,
   .run-hud__implant--new,
-  .run-hud__boss--phase .run-hud__boss-name {
+  .run-hud__boss--intro,
+  .run-hud__boss--intro *,
+  .run-hud__boss--phase *,
+  .run-hud__boss[data-phase='3'] .run-hud__boss-fill {
     animation: none !important;
+  }
+  .run-hud__boss-verdict--show {
+    animation: none !important;
+    opacity: 1;
   }
   .hud__vitals::after,
   .hud__weapon::after,

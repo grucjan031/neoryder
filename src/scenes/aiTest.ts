@@ -79,7 +79,7 @@ export class AiTest implements Scene {
   private world!: World;
   private entities!: EntityRegistry;
   private damage!: DamageSystem;
-  private manager!: EnemyManager;
+  protected manager!: EnemyManager;
   private projectiles!: ProjectileSystem;
   private projectileRenderer!: ProjectileRenderer;
   private player!: PlayerController;
@@ -87,8 +87,8 @@ export class AiTest implements Scene {
   private camera!: FpsCamera;
   private health!: Health;
   private readonly hurtboxes = new Hurtboxes();
-  private readonly root = new Group();
-  private readonly lights = createStyleLights();
+  protected readonly root = new Group();
+  protected readonly lights = createStyleLights();
   private readonly views = new Map<number, EnemyViewLike>();
   private readonly geometries = new Set<import('three').BufferGeometry>();
   private readonly off: (() => void)[] = [];
@@ -101,7 +101,7 @@ export class AiTest implements Scene {
   private barrierRenderer?: BarrierRenderer;
   private statusVfx!: StatusVfx;
   private statusView!: StatusVfxRenderer;
-  private hitSparks!: HitSparks;
+  protected hitSparks!: HitSparks;
   private hitSparksView!: HitSparksRenderer;
 
   constructor(

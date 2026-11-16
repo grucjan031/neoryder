@@ -578,6 +578,33 @@ export const tuning = {
     resonanceWaveS: 0.34,
     resonanceRingS: 0.42,
     resonanceRingDropM: 1.45,
+    /** Prezentacja bossa (kosmetyka). Zapowiedź: czas (s), jasność areny na starcie, chwila „przebudzenia” (s). */
+    bossIntroS: 1.7,
+    bossIntroDim: 0.3,
+    bossWakeAtS: 0.55,
+    /** Fala po podłodze (przebudzenie, zmiana fazy, rozpad): zasięg (m) i czas (s). */
+    bossWaveRadiusM: 16,
+    bossWaveS: 0.9,
+    /** Zabarwienie światła areny czerwienią w ostatniej fazie (0–1) i błysk przy zmianie fazy (mnożnik). */
+    bossPhaseTint: 0.45,
+    bossPhaseFlash: 1.7,
+    bossPhaseShake: 0.35,
+    bossPhaseShakeS: 0.35,
+    /** Poświata pod bossem i powłoka nietykalności (m). */
+    bossGlowRadiusM: 3.4,
+    bossAuraRadiusM: 1.25,
+    /** Telegraf wachlarza: długość promieni na podłodze (m). */
+    bossFanLengthM: 14,
+    /** Rozpad: czas efektu (s), wstrząs, spowolnienie i cisza przed podsumowaniem (s symulacji). */
+    bossDeathFxS: 1.7,
+    bossDeathShake: 0.7,
+    bossDeathShakeS: 0.5,
+    bossDeathSlowmo: 0.3,
+    bossDeathSlowmoS: 0.6,
+    /** 0 = wyłączone (testy runScene oczekują podsumowania od razu); docelowo ok. 1.8. */
+    bossVictoryHoldS: 0,
+    bossColor: '#ff3028',
+    bossHotColor: '#ffd8bd',
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
   run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },
