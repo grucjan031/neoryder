@@ -73,7 +73,7 @@ z modelu L i jego gniazda; ujemna skala dotyczy wyłącznie modelu lewego ostrza
 W locie ostrza prawa dłoń zostaje w spoczynkowym położeniu ostrza z pozą `open`.
 Podczas całej aktywnej fazy obrotu dwustronnego ostrza dłoń jest ukryta.
 
-Broń palna jest po prawej, przy pozycji `[0.32, -0.28, -0.42]` w układzie
+Broń palna jest po prawej, przy pozycji `[0.23, -0.17, -0.41]` (`POSE` w `fppBlaster.ts`) w układzie
 kamery. Prawa dłoń używa `socket_gun` i `gripGun`; `weapon_fired` właściciela
 przełącza ją w `gripGunFire`, z powrotem razem z zanikiem odrzutu. Węzeł
 `support` aktualnego modelu broni wyznacza położenie lewej dłoni (`support`,
@@ -81,7 +81,30 @@ przełącza ją w `gripGunFire`, z powrotem razem z zanikiem odrzutu. Węzeł
 
 Cały viewmodel jest na osobnej warstwie i rysowany drugim przebiegiem z ściśniętą głębią, więc przedmiot i ręce nie wchodzą w ściany ani wrogów (szczegóły: `docs/systems/render.md`, „Viewmodel zawsze na wierzchu”).
 
-Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle, beam, emp_launcher) mają osobną pozę `TWO_HAND_POSE` (pos 0.14, -0.27, -0.44; rot X 0.1, Y 0.12, Z -0.15: wyżej niż pierwotnie, lufa wzdłuż kierunku patrzenia, lekki przechył) i lewą dłoń obróconą o `TWO_HAND_SUPPORT_YAW` oraz pochyloną o `TWO_HAND_SUPPORT_PITCH` (0.8), tak by przedramię wchodziło od lewego dołu kadru i wychodziło poza dolną krawędź (stałe w `src/render/fppBlaster.ts`). Prawa dłoń na chwycie jest w większości zasłonięta przez model broni (widać palce).
+### Wygląd przedmiotów FPP (czysto wizualny)
+
+- **Materiały** (`src/render/fppMaterials.ts`): broń, rękojeści, rękawica i karwasz nie używają
+  współdzielonego `mat_interactive` (w motywie neon jest jasny), tylko własnych materiałów toon
+  po nazwie węzła: `frame`/`hilt`/`plate_*` grafitowy pancerz, `trim*` stal, `grip*` guma,
+  `tactical_glove` rękawica. Każdy ma chłodną krawędź światła (rim) i miękkie kolano jasności
+  (najwyżej ok. 1,8× albedo), żeby lampy miasta tuż przy kamerze nie przepalały broni do bieli.
+- **Ostrze** (`src/render/fppBladeFx.ts`): `blade_core` jest zwężony i jasnocyjanowy, wzdłuż
+  ostrza leży addytywna poświata zwrócona do kamery (pulsuje), u emitera rozbłysk, a w aktywnej
+  fazie cięcia (lekkie, ciężkie, prowadząca dłoń bliźniaczych) smuga w układzie kamery
+  (próbki żyją 0,13 s). Efekty mają `noOutline` i bloom; żadnych dodatkowych świateł punktowych.
+- **Broń palna**: błysk wylotu to addytywna gwiazda, miękki biały rdzeń i dwa skrzyżowane płatki
+  wzdłuż lufy, z losowym obrotem przy każdym strzale. Ciepło przechodzi z cyanu w biel
+  rozgrzanego metalu (nie w czerwień, zarezerwowaną dla wrogów); przegrzanie pulsuje między
+  bielą a przygaszonym cyanem, a wylot świeci poświatą zależną od ciepła.
+- **Pociski i wiązka**: bełt gracza (smukły, z grubszą głowicą) z addytywną otoczką; wiązka
+  `beam` ma biały rdzeń, cyjanową warstwę i dwie drgające poświaty; rzucone ostrze ma biały
+  rdzeń z poświatą. Wszystkie bez konturu (kontur na cienkich bryłach rysował czarne kreski).
+- **Pozy**: blok trzyma ostrze ukośnie przez kadr (rękojeść z prawego dołu, czubek w lewym
+  górnym rogu, środek ekranu wolny). Kij (`staffBlade`) w spoczynku i ładowaniu jest blisko
+  kamery, a wysuwa się o 0,2 m tylko na obrót (dłoń jest wtedy ukryta), więc koniec rękawa
+  nie wchodzi w kadr.
+
+Bronie dwuręczne (węzeł `support` przed chwytem: rifle, scatter, sniper_rifle, beam, emp_launcher) mają osobną pozę `TWO_HAND_POSE` (pos 0.15, -0.27, -0.45; rot X 0.1, Y 0.11, Z -0.15: lufa wzdłuż kierunku patrzenia, lekki przechył; dalej od kamery przedramię lewej dłoni kończyłoby się w kadrze) i lewą dłoń obróconą o `TWO_HAND_SUPPORT_YAW` oraz pochyloną o `TWO_HAND_SUPPORT_PITCH` (0.8), tak by przedramię wchodziło od lewego dołu kadru i wychodziło poza dolną krawędź (stałe w `src/render/fppBlaster.ts`). Prawa dłoń na chwycie jest w większości zasłonięta przez model broni (widać palce).
 
 ### Gest mocy i wolna lewa dłoń
 

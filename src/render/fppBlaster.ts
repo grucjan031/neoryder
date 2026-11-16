@@ -1,12 +1,12 @@
 import {
   BoxGeometry,
   Color,
-  DoubleSide,
   Euler,
   Group,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
+  PlaneGeometry,
   Quaternion,
   ShapeGeometry,
   Shape,
@@ -20,16 +20,22 @@ import type { Tuning } from '../core/tuning';
 import { applyStyle, getMaterial } from './materials';
 import { palette } from './palette';
 import { HandRig } from './handRig';
+import {
+  applyFppSurfaces,
+  fppGlowMaterial,
+  fppGlowTexture,
+  markGlow,
+} from './fppMaterials';
 
 /** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
-  pos: new Vector3(0.24, -0.15, -0.4),
-  rot: new Euler(0.1, 0.2, -0.02, 'YXZ'),
+  pos: new Vector3(0.23, -0.17, -0.41),
+  rot: new Euler(0.08, 0.15, -0.04, 'YXZ'),
 };
 /** Broń dwuręczna (węzeł support daleko przed chwytem): bardziej w lewo i wyżej, by obie dłonie były w kadrze. */
 const TWO_HAND_POSE = {
-  pos: new Vector3(0.14, -0.27, -0.44),
-  rot: new Euler(0.1, 0.12, -0.15, 'YXZ'),
+  pos: new Vector3(0.15, -0.27, -0.45),
+  rot: new Euler(0.1, 0.11, -0.15, 'YXZ'),
 };
 /** Obrót lewej dłoni wokół osi Y węzła support: przedramię od lewego dołu kadru. */
 const TWO_HAND_SUPPORT_YAW = -1.4;
@@ -43,8 +49,12 @@ const RECOIL_RECOVER = 14;
 const FALLBACK_MODEL = 'blaster';
 const FLASH_POINTS = 8;
 const FLASH_INNER = 0.3;
+/** Ciepło: cyan -> biel rozgrzanego metalu (czerwień jest zarezerwowana dla wrogów). */
 const COLD = new Color(palette.cyan);
-const HOT = new Color(palette.enemy);
+const HOT = new Color('#ffffff').multiplyScalar(1.6);
+const OVERHEAT_DIM = new Color(palette.cyan).multiplyScalar(0.6);
+/** Poświata wylotu rośnie z ciepłem (rozmiar względem błysku). */
+const HEAT_GLOW_SIZE = 0.09;
 
 export interface FppBlasterOptions {
   /** Nazwa modelu (`<nazwa>.glb`) dla id broni; brak = model blastera. */
@@ -79,12 +89,25 @@ export class FppBlaster {
     color: COLD.clone(),
     toneMapped: false,
   });
-  private readonly flashMaterial = new MeshBasicMaterial({
-    color: COLD.clone(),
-    toneMapped: false,
-    side: DoubleSide,
-  });
+  private readonly flashMaterial = fppGlowMaterial(palette.cyan, 0.85);
+  private readonly flashCoreMaterial = fppGlowMaterial(
+    '#ffffff',
+    1,
+    fppGlowTexture(),
+  );
+  private readonly flashConeMaterial = fppGlowMaterial(
+    '#8ff6ff',
+    0.9,
+    fppGlowTexture(),
+  );
+  private readonly heatGlowMaterial = fppGlowMaterial(
+    '#ffffff',
+    0,
+    fppGlowTexture(),
+  );
   private readonly flashGeometry = starGeometry();
+  private readonly quadGeometry = new PlaneGeometry(1, 1);
+  private readonly heatGlows = new Map<Object3D, Object3D>();
   private readonly fallback = new Mesh(
     new BoxGeometry(0.06, 0.1, 0.32),
     getMaterial('interactive'),
@@ -181,6 +204,7 @@ export class FppBlaster {
         `/assets/models/${name}.glb`,
       );
       applyStyle(gltf.scene);
+      applyFppSurfaces(gltf.scene);
       // Własny materiał dla elementów ciepła — współdzielony materiał gracza zostaje cyan.
       let muzzle: Object3D | null = null;
       gltf.scene.traverse((node: Object3D) => {
@@ -201,14 +225,37 @@ export class FppBlaster {
   private attachFlash(model: Object3D, muzzle: Object3D): void {
     const flash = new Group();
     flash.visible = false;
-    // Gwiazda w płaszczyźnie XY (do kamery) i druga, obrócona o pół ramienia.
+    // Gwiazda (addytywna, bez konturu) w płaszczyźnie XY, miękki biały rdzeń
+    // i dwa skrzyżowane „płatki” wzdłuż lufy, widoczne z boku broni.
     const front = new Mesh(this.flashGeometry, this.flashMaterial);
+    front.name = 'flash_star';
     const back = new Mesh(this.flashGeometry, this.flashMaterial);
     back.rotation.z = Math.PI / FLASH_POINTS;
     back.scale.setScalar(0.6);
-    flash.add(front, back);
+    const core = new Mesh(this.quadGeometry, this.flashCoreMaterial);
+    core.scale.setScalar(1.3);
+    flash.add(front, back, core);
+    for (const roll of [0, Math.PI / 2]) {
+      const cone = new Mesh(this.quadGeometry, this.flashConeMaterial);
+      cone.rotation.set(Math.PI / 2, 0, 0);
+      cone.rotateY(roll);
+      cone.scale.set(0.9, 2.6, 1);
+      cone.position.z = -0.9;
+      flash.add(cone);
+    }
+    flash.traverse((node) => {
+      if (node instanceof Mesh) node.renderOrder = 3;
+    });
+    markGlow(flash);
     muzzle.add(flash);
     this.flashes.set(model, flash);
+    const heat = new Mesh(this.quadGeometry, this.heatGlowMaterial);
+    heat.name = 'heat_glow';
+    heat.scale.setScalar(HEAT_GLOW_SIZE);
+    heat.renderOrder = 3;
+    markGlow(heat);
+    muzzle.add(heat);
+    this.heatGlows.set(model, heat);
   }
 
   /** frameDt: czas rzeczywisty klatki (odrzut i puls działają też w hitstopie). */
@@ -217,9 +264,15 @@ export class FppBlaster {
     this.time += dt;
     this.recoil *= Math.exp(-RECOIL_RECOVER * dt);
     const pulse = this.overheated ? 0.5 + 0.5 * Math.sin(this.time * 18) : 0;
-    this.heatMaterial.color
-      .copy(COLD)
-      .lerp(HOT, Math.min(1, this.heat + pulse * 0.4));
+    const heat = Math.min(1, this.heat);
+    if (this.overheated)
+      this.heatMaterial.color.copy(OVERHEAT_DIM).lerp(HOT, pulse);
+    else this.heatMaterial.color.copy(COLD).lerp(HOT, heat * heat);
+    // Rozgrzany wylot: biało-cyjanowa poświata, przy przegrzaniu pulsuje.
+    this.heatGlowMaterial.opacity = this.overheated
+      ? 0.35 + 0.45 * pulse
+      : 0.7 * heat * heat;
+    this.heatGlowMaterial.color.copy(COLD).lerp(HOT, 0.4 + 0.6 * heat);
 
     const { m, q, e, v, s } = this.tmp;
     const pose = this.twoHanded ? TWO_HAND_POSE : POSE;
@@ -240,13 +293,18 @@ export class FppBlaster {
 
     const flash = this.current ? this.flashes.get(this.current) : undefined;
     if (flash) {
+      const wasVisible = flash.visible;
       flash.visible = this.flashLeft > 0;
+      // Każdy strzał: losowy obrót gwiazdy (kosmetyka, poza symulacją).
+      if (flash.visible && !wasVisible) flash.rotation.z = Math.random() * 6.28;
       if (flash.visible)
         flash.scale.setScalar(
           this.tuning.weapons.muzzleFlashSize *
             (0.6 + 0.4 * (this.flashLeft / this.tuning.weapons.muzzleFlashS)),
         );
     }
+    const glow = this.current ? this.heatGlows.get(this.current) : undefined;
+    if (glow) glow.visible = this.heatGlowMaterial.opacity > 0.02;
     this.flashLeft = Math.max(0, this.flashLeft - dt);
   }
 
@@ -274,7 +332,11 @@ export class FppBlaster {
     for (const off of this.off.splice(0)) off();
     this.heatMaterial.dispose();
     this.flashMaterial.dispose();
+    this.flashCoreMaterial.dispose();
+    this.flashConeMaterial.dispose();
+    this.heatGlowMaterial.dispose();
     this.flashGeometry.dispose();
+    this.quadGeometry.dispose();
     this.fallback.geometry.dispose();
     // Materiał bryły zastępczej jest współdzielony (getMaterial) — nie zwalniamy go.
     this.root.removeFromParent();

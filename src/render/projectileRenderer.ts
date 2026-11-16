@@ -1,5 +1,6 @@
 import {
   BoxGeometry,
+  CylinderGeometry,
   DynamicDrawUsage,
   Group,
   Mesh,
@@ -14,10 +15,18 @@ import type { Vec3 } from '../core/math';
 import type { ProjectileSystem } from '../combat/weapons/projectiles';
 import { getMaterial } from './materials';
 
+/** Pocisk gracza: smukły sześciokątny bełt z grubszą głowicą z przodu (+Z) zamiast klocka. */
+function boltGeometry(): CylinderGeometry {
+  const geometry = new CylinderGeometry(0.032, 0.008, 0.55, 6);
+  geometry.rotateX(Math.PI / 2);
+  return geometry;
+}
+
 export class ProjectileRenderer {
   readonly root = new Group();
   private readonly geometry = new BoxGeometry(0.08, 0.08, 0.45);
   private enemyGeometry: BufferGeometry = this.geometry.clone();
+  private readonly boltGeometry = boltGeometry();
   private disposed = false;
   private readonly player: InstancedMesh;
   private readonly enemy: InstancedMesh;
@@ -32,7 +41,7 @@ export class ProjectileRenderer {
     loadModels = true,
   ) {
     this.player = new InstancedMesh(
-      this.geometry,
+      this.boltGeometry,
       getMaterial('player'),
       capacity,
     );
@@ -115,6 +124,7 @@ export class ProjectileRenderer {
     this.player.dispose();
     this.enemy.dispose();
     this.geometry.dispose();
+    this.boltGeometry.dispose();
     this.enemyGeometry.dispose();
     this.previous.clear();
   }

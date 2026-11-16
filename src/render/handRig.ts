@@ -4,15 +4,14 @@ import {
   Group,
   Matrix4,
   Mesh,
-  MeshToonMaterial,
   Quaternion,
   SphereGeometry,
 } from 'three';
 import type { Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { applyStyle, getMaterial, gradientMap } from './materials';
-import { palette } from './palette';
+import { applyStyle, getMaterial } from './materials';
+import { fppMaterial, surfaceFor } from './fppMaterials';
 import { handNodes, handPoses } from './handPoses';
 import type { HandPose, HandSocket } from './handPoses';
 
@@ -65,24 +64,18 @@ const SOCKETS = {
 const GLOW_RADIUS_M = 0.012;
 const cache = new Map<string, Promise<Object3D | null>>();
 
-let gloveMaterial: MeshToonMaterial | undefined;
-let sleeveMaterial: MeshToonMaterial | undefined;
-
-/** Rękawica i rękaw w grafitach (współdzielone przez dłonie); mat_interactive broni zostaje czarny. */
+/**
+ * Rękawica, płyty karwasza i reszta czarnych części dłoni dostają materiały widoku FPP
+ * (fppMaterials.ts): grafit z chłodną krawędzią, niezależny od motywu (w neonie
+ * `mat_interactive` jest jasny). `plate_*` to pancerz, `trim_*` jasna stal.
+ */
 function applyHandMaterials(root: Object3D): void {
-  gloveMaterial ??= new MeshToonMaterial({
-    color: palette.handGlove,
-    gradientMap,
-  });
-  sleeveMaterial ??= new MeshToonMaterial({
-    color: palette.handSleeve,
-    gradientMap,
-  });
   root.traverse((node) => {
     if (!(node instanceof Mesh) || node.material !== getMaterial('interactive'))
       return;
-    node.material =
-      node.name === 'tactical_glove' ? gloveMaterial! : sleeveMaterial!;
+    node.material = fppMaterial(
+      node.name === 'resonance_mount' ? 'grip' : surfaceFor(node.name),
+    );
   });
 }
 

@@ -81,7 +81,7 @@ export class FppViewModel {
       frame.horizontalSpeed,
       held,
     );
-    if (frame.blade) this.blade.place(handMatrix, frame.blade);
+    if (frame.blade) this.blade.place(handMatrix, frame.blade, frameDt);
     const shown: HeldKind =
       typeof frame.held === 'string' ? frame.held : shownHeld(frame.held);
     const visible = frame.visible ?? true;
