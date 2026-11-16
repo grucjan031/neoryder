@@ -288,7 +288,8 @@ export class FppBladeFx {
       }
       item.model.updateWorldMatrix(true, true);
       const edges = cachedEdges(item.model);
-      for (const [e, edge] of edges.entries()) {
+      for (let e = 0; e < edges.length; e++) {
+        const edge = edges[e]!;
         t.a.setFromMatrixPosition(edge.base.matrixWorld);
         t.b.setFromMatrixPosition(edge.tip.matrixWorld);
         t.axis.subVectors(t.b, t.a);

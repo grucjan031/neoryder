@@ -95,7 +95,8 @@ export class BeamRenderer {
     this.mesh.scale.set(tuning.vfx.beamRadiusM, length, tuning.vfx.beamRadiusM);
     // Drganie grubości poświaty (kosmetyka, zegar z `advance`).
     const flicker = this.flicker;
-    for (const [i, layer] of this.layers.entries()) {
+    for (let i = 0; i < this.layers.length; i++) {
+      const layer = this.layers[i]!;
       const base = LAYERS[i]!.scale;
       const s = i === 0 ? base : base * flicker;
       layer.scale.set(s, 1.002, s);

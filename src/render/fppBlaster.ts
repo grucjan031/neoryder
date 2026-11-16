@@ -17,6 +17,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { EntityId, EventBus } from '../core/events';
 import { tuning as defaultTuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
+import { loadSettings } from '../core/save';
+import type { Settings } from '../core/save';
 import { applyStyle, getMaterial } from './materials';
 import { palette } from './palette';
 import { HandRig } from './handRig';
@@ -60,7 +62,13 @@ export interface FppBlasterOptions {
   /** Nazwa modelu (`<nazwa>.glb`) dla id broni; brak = model blastera. */
   modelOf?: (weaponId: string) => string | undefined;
   tuning?: Pick<Tuning, 'weapons'>;
+  /** Ustawienia dostępności (domyślnie zapisane ustawienia gracza). */
+  settings?: Pick<Settings, 'flashes'>;
 }
+
+/** Krycie płatków błysku: pełne i przygaszone przy wyłączonych „Błyskach ekranu”. */
+const FLASH_CONE_OPACITY = 0.9;
+const FLASH_CONE_DIM_OPACITY = 0.3;
 
 function starGeometry(): ShapeGeometry {
   const shape = new Shape();
@@ -97,7 +105,7 @@ export class FppBlaster {
   );
   private readonly flashConeMaterial = fppGlowMaterial(
     '#8ff6ff',
-    0.9,
+    FLASH_CONE_OPACITY,
     fppGlowTexture(),
   );
   private readonly heatGlowMaterial = fppGlowMaterial(
@@ -115,6 +123,7 @@ export class FppBlaster {
   private readonly models = new Map<string, Promise<Object3D | null>>();
   private readonly flashes = new Map<Object3D, Object3D>();
   private readonly tuning: Pick<Tuning, 'weapons'>;
+  private readonly settings: Pick<Settings, 'flashes'> | undefined;
   private readonly modelOf: (weaponId: string) => string | undefined;
   private loadModels = false;
   private current: Object3D | null = null;
@@ -137,6 +146,7 @@ export class FppBlaster {
   constructor(bus: EventBus, owner: EntityId, options: FppBlasterOptions = {}) {
     this.tuning = options.tuning ?? defaultTuning;
     this.modelOf = options.modelOf ?? (() => undefined);
+    this.settings = options.settings;
     this.root.matrixAutoUpdate = false;
     this.root.add(this.fallback);
     this.root.add(this.hand.root);
@@ -150,6 +160,7 @@ export class FppBlaster {
         if (who !== owner) return;
         this.recoil = 1;
         this.flashLeft = this.tuning.weapons.muzzleFlashS;
+        this.applyFlashSetting();
       }),
       bus.on('weapon_switched', ({ owner: who, weapon }) => {
         if (who !== owner) return;
@@ -222,6 +233,19 @@ export class FppBlaster {
     }
   }
 
+  /**
+   * „Błyski ekranu” wyłączone: bez białego rdzenia i jasnej gwiazdy, zostaje przygaszony
+   * cyjanowy płatek (strzał nadal czytelny). Sprawdzane przy każdym strzale, jak w wybuchach.
+   */
+  private applyFlashSetting(): void {
+    const bright = (this.settings ?? loadSettings()).flashes;
+    this.flashMaterial.visible = bright;
+    this.flashCoreMaterial.visible = bright;
+    this.flashConeMaterial.opacity = bright
+      ? FLASH_CONE_OPACITY
+      : FLASH_CONE_DIM_OPACITY;
+  }
+
   private attachFlash(model: Object3D, muzzle: Object3D): void {
     const flash = new Group();
     flash.visible = false;
@@ -232,11 +256,14 @@ export class FppBlaster {
     const back = new Mesh(this.flashGeometry, this.flashMaterial);
     back.rotation.z = Math.PI / FLASH_POINTS;
     back.scale.setScalar(0.6);
+    back.name = 'flash_star';
     const core = new Mesh(this.quadGeometry, this.flashCoreMaterial);
+    core.name = 'flash_core';
     core.scale.setScalar(1.3);
     flash.add(front, back, core);
     for (const roll of [0, Math.PI / 2]) {
       const cone = new Mesh(this.quadGeometry, this.flashConeMaterial);
+      cone.name = 'flash_cone';
       cone.rotation.set(Math.PI / 2, 0, 0);
       cone.rotateY(roll);
       cone.scale.set(0.9, 2.6, 1);
