@@ -465,11 +465,20 @@ export const tuning = {
     barrierSegments: 32,
     barrierOpacity: 0.12,
     barrierFlashOpacity: 0.55,
+    /** Siatka heksów Rezonansu na Barierze: kolor, krycie, gęstość (komórki na metr). */
+    barrierLatticeColor: '#ff2bd6',
+    barrierLatticeOpacity: 0.75,
+    barrierLatticeCells: 7,
     grabBeamColor: '#00e5ff',
     grabBeamOpacity: 0.85,
     grabHandSideM: 0.25,
     grabHandDownM: 0.2,
     grabHandForwardM: 0.35,
+    /** Poświata Chwytu (magenta Rezonansu wokół cyan rdzenia): kolor, promień rurki (m), krycie, kula przy celu (m). */
+    grabGlowColor: '#ff2bd6',
+    grabGlowRadiusM: 0.055,
+    grabGlowOpacity: 1.1,
+    grabOrbM: 0.2,
     beamRadiusM: 0.018,
     /**
      * Błyskawica (render): szerokość wstęgi rdzenia i poświaty (m), krycie poświaty, kolor rdzenia,
@@ -550,6 +559,25 @@ export const tuning = {
     hitSparkGravity: -12,
     /** Iskry trafienia gracza bliżej kamery niż tyle metrów nie są rysowane. */
     hitSparkCameraMinM: 0.6,
+    /**
+     * Błyski walki (kosmetyka, DebrisRenderer): błysk sylwetki trafionego wroga i rozbłysk
+     * zabicia (czas w s), czas stygnięcia żaru krawędzi cięcia odłamków (s, stała zaniku),
+     * jasność żaru, rozmiar iskry trafienia (m) i zasięg pierścienia rozpadu (m).
+     */
+    hitFlashS: 0.13,
+    hitFlashBrightness: 1.4,
+    hitFlashStarSizeM: 0.55,
+    /** Gwiazda trafienia bliżej kamery niż tyle metrów nie jest rysowana (zasłaniałaby ekran). */
+    hitFlashCameraMinM: 1,
+    killFlashS: 0.34,
+    killFlashCoreM: 0.55,
+    killFlashRingM: 1.7,
+    debrisEdgeCoolS: 0.35,
+    debrisEdgeBrightness: 1.6,
+    /** Fala Pchnięcia (czasza w kierunku celowania) i Fali uderzeniowej (pierścień przy podłodze), s / m pod okiem. */
+    resonanceWaveS: 0.34,
+    resonanceRingS: 0.42,
+    resonanceRingDropM: 1.45,
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
   run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },

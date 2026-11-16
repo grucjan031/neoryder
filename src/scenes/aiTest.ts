@@ -589,6 +589,7 @@ export class AiTest implements Scene {
       (power): power is BarrierPower => power instanceof BarrierPower,
     );
     const barrier = barriers.find((power) => power.active) ?? barriers[0];
+    this.barrierRenderer?.advance(frameDt);
     if (barrier) this.barrierRenderer?.render(barrier, pose);
   }
 
