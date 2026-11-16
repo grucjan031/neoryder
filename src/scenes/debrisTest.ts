@@ -54,6 +54,7 @@ export class DebrisTest implements Scene {
     this.renderer = new DebrisRenderer(this.debris);
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
       positionOf: (id) => this.positions.get(id) ?? null,
+      cameraPosition: () => ctx.camera?.position ?? null,
       tuning: ctx.tuning,
     });
     const floor = new Mesh(new BoxGeometry(24, 0.2, 20), getMaterial('world'));

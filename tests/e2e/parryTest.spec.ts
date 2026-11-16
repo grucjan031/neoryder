@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 test('parry-test: wieżyczka strzela wolnymi pociskami, trafienie rani gracza', async ({
   page,
@@ -9,9 +9,11 @@ test('parry-test: wieżyczka strzela wolnymi pociskami, trafienie rani gracza', 
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=parry-test&debug=1&seed=parry-e2e');
+  await page.goto('/?scene=parry-test&debug=1&fx=lite&seed=parry-e2e');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('parry-test');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.query('projectiles')), {

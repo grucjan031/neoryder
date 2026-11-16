@@ -149,6 +149,44 @@ To stylizowana poświata na mokrej nawierzchni, bez odbicia geometrii ani SSR.
 - `windowLitFraction` (0,4) = udział okien z atlasu oświetlonego, reszta z ciemnego. Emisja: `windowLitEmission` (0,5) i `windowDarkEmission` (0,02); siła w bloomie `windowBloom` (0,35). Mipmapy próbkowane `textureGrad` po ciągłych UV okna (bez szwów na krawędziach komórek). Do załadowania atlasu okna są wyłączone.
 - Bez nowych świateł; ten sam materiał i atlas w panoramie (dalekie okna uśredniają się mipmapami). Wolne gaśnięcie/zapalanie okien nie zostało wdrożone.
 
+## Panorama miasta i niebo
+
+Motywy z `panoramaEnabled` (`neonStreet`) dostają tło z `src/render/panorama.ts`:
+deterministyczny układ z `src/render/skyline.ts` (osobny strumień RNG, brak ciał i świateł
+punktowych) i nieoświetlone shadery z `src/render/skyMaterials.ts`. Razem 7 meshy:
+
+- **Wieżowce** — jeden `InstancedMesh` (ok. 200 brył): 4 pierścienie (r ≈ 66/92/124/162 m),
+  wyższe z odległością, nieregularne przerwy, uskoki (węższe nadbudowy), podstawy 24 m pod
+  ulicą. Okna w shaderze: rytm pięter i ciągów 2–5 okien (całe piętra zgaszone), daleko
+  uśrednione pokrycie zamiast migotania; ciepła biel / bursztyn, pojedyncze błękitne okna;
+  wybrane wieże z neonowym wieńcem. Głębię daje mgła kompozycji. Do maski bloomu idzie osobny
+  materiał (`userData.bloomMaterial`) z samym światłem okien.
+- **Punkty orientacyjne** — 3 smukłe wieże z uskokami i masztem (główna na −Z, widoczna ze
+  spawnu większości pokojów) i **bursztynowe** światła ostrzegawcze (szczyt i połowa masztu,
+  narożniki uskoków, część dachów): addytywne billboardy z minimalnym rozmiarem kątowym.
+- **Hologramy reklam** — 3 panele w górnej części fasad (pas znaków, baner, znak), kolory tylko
+  z palety otoczenia (fiolet, bursztyn, zieleń).
+- **Pojazdy** — pary świateł (ciepła biel z przodu, bursztyn z tyłu) na łukach między warstwami;
+  ruch liczony w shaderze wierzchołków (zero pracy CPU).
+- **Niebo** — kopuła (podgrupa `city-sky`): łuna miasta tuż nad horyzontem (bursztyn → fiolet,
+  nierówna w azymucie) i pokład chmur/smogu podświetlony od dołu, dryfujący w czasie.
+
+Wszystko, co nie zapisuje głębi, jest addytywne z `premultipliedAlpha` i alfą równą
+luminancji (inaczej poświata bloomu „over” zastępowała ostry punkt rozmytą wersją).
+Strojenie: `tuning.render.panoramaDensity/panoramaHeight` (motyw) oraz `tuning.city.panorama*`
+i `tuning.city.sky*` (ruch, jasność okien i świateł, kolor ścian, łuna, chmury). Testy:
+`tests/unit/skyline.test.ts`.
+
+### Gradient nieba w przebiegu koloru
+
+`StylePipeline` (`outline.ts`) na czas przebiegu koloru dodaje do sceny pełnoekranowy quad
+`sky-background` (głębia NDC 1, bez zapisu głębi, `renderOrder` najniższy, alfa =
+`skyGradient`). Rysuje się tylko tam, gdzie nie ma geometrii nieprzezroczystej, i przed
+wszystkimi obiektami przezroczystymi, więc hologramy, deszcz i viewmodel mieszają się z
+gradientem, a nie z płaskim kolorem tła. Kompozycja na pikselach nieba (głębia koloru = 1) już
+nie podmienia koloru, tylko dodaje błysk burzy; mgła na niebie nadal nie działa. Quad nie
+trafia do przebiegów normalnych, bloomu ani odbić. Test: `tests/unit/renderOutline.test.ts`.
+
 ## Deszcz i efekty otoczenia
 
 `Weather(params?, floorY=0, seed?)` ma publiczne, mutowalne `params: RainParams`:
@@ -247,5 +285,9 @@ fallback canvas, późne ładowanie, naklejki i jednokrotne zwalnianie zasobów.
 Ocena wizualna wymaga Chromium/WebGL; testy jednostkowe nie kompilują GLSL.
 
 ## Galeria modeli: `?scene=city-props-test`
+
+W pokojach modele `city_*` zachowują własne materiały również przy ustawionym `material` bloku; materiał bloku nadal dotyczy bryły zastępczej i modeli spoza `city_*`.
+
+Skala modeli bloków w pokojach (`placeBlockModel` w `src/scenes/roomScene.ts`): proste bryły `pillar`, `cover_low` i `wall_segment` są rozciągane niejednorodnie do `size` bloku (bounding box modelu = kolizja, spód i środek bboxu w spodzie i środku bloku); gdy dłuższy bok podstawy bloku leży w osi Z, osłona obraca się o 90° wokół Y, żeby nie ściskać profilu. Rekwizyty `city_*` i skrzynie zostają w skali 1 — ich wymiary muszą zgadzać się z blokiem w tolerancji 5% (`docs/assets.md`). Pilnuje tego `tests/unit/roomBlockModelFit.test.ts` dla wszystkich pokoi (rozciągliwe: tolerancja 2%).
 
 Uliczka ok. 10 × 44 m z wszystkimi 24 modelami `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy); lista modeli w `src/scenes/cityPropsTest.ts`. Parametry: `prop=<nazwa>` (np. `city_car`, kamera 3/4 z bliska), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2` (przegląd: wzdłuż ulicy, odwrotnie, z góry). Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.

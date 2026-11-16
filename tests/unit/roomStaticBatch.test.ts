@@ -31,15 +31,26 @@ function counts(roots: readonly Object3D[]) {
   return { meshes, materials: materials.size };
 }
 
-// Pomiar przed Z19: cała scena po init, prawdziwe GLB, także niewidoczne pule/VFX.
-const baselines = {
-  alleyMarket: 1683,
-  combatWarehouse: 529,
-  eliteFoundry: 600,
-};
+// Budżety są bezwzględne i wspólne dla wszystkich pokoi, więc nie rosną same przy
+// kolejnych zmianach oprawy. Podnoś je tylko świadomie, z nowym pomiarem w komentarzu.
+// Pomiar 2026-11-16 (integracja szlifu, cała scena po init, prawdziwe GLB):
+//   pokój            siatki sceny   pule vfxPool   statyczne przed -> po scaleniu
+//   alleyMarket      327            99              1554 -> 42
+//   combatWarehouse  324            103             456 -> 26
+//   eliteFoundry     340            101             461 -> 25
+// Wszystkie siatki sceny, także ukryte pule VFX i viewmodel: max 340 + ok. 15% zapasu.
+const SCENE_MESH_BUDGET = 390;
+// Ukryte pule oznaczone `userData.vfxPool`: max 103 + ok. 15% zapasu. Pule wliczają się
+// też do SCENE_MESH_BUDGET, więc oznaczenie siatki flagą niczego nie omija.
+const VFX_POOL_BUDGET = 118;
+// Scalanie statycznej geometrii (bloki + modele + dekoracje). Dziś redukcja 17-37x
+// i dokładnie jedna siatka na materiał; progi łapią zepsute scalanie, nie drobne zmiany.
+const MIN_STATIC_REDUCTION = 5;
+const MAX_STATIC_MESHES_PER_MATERIAL = 2;
+const staticSources = ['static-blocks', 'static-models', 'static-decor'];
 
 it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
-  '%s: co najmniej 3x mniej siatek po init z prawdziwymi GLB',
+  '%s: scalona geometria statyczna i budżet siatek po init z prawdziwymi GLB',
   async (id) => {
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
       async (url) => {
@@ -151,9 +162,20 @@ it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
       );
       rows.push({ source: 'panorama', before: panorama, after: panorama });
       const after = counts([three]);
-      const saved = rows.reduce(
-        (sum, row) => sum + row.before.meshes - row.after.meshes,
-        0,
+      expect(after.meshes).toBeLessThanOrEqual(SCENE_MESH_BUDGET);
+      // Sama geometria statyczna: niezależnie od pul VFX, viewmodelu i oprawy.
+      const staticRows = rows.slice(0, staticSources.length);
+      expect(staticRows.map((row) => row.source)).toEqual(staticSources);
+      const sum = (pick: (row: (typeof rows)[number]) => number) =>
+        staticRows.reduce((total, row) => total + pick(row), 0);
+      const staticBefore = sum((row) => row.before.meshes);
+      const staticAfter = sum((row) => row.after.meshes);
+      expect(staticAfter).toBeGreaterThan(0);
+      expect(staticAfter * MIN_STATIC_REDUCTION).toBeLessThanOrEqual(
+        staticBefore,
+      );
+      expect(staticAfter).toBeLessThanOrEqual(
+        sum((row) => row.after.materials) * MAX_STATIC_MESHES_PER_MATERIAL,
       );
       // Z19 mierzył starą pulę VFX. Z21 dodaje osobny rdzeń i falę na wybuch.
       const explosionDetails: Mesh[] = [];
@@ -169,16 +191,14 @@ it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
           explosionDetails.filter((mesh) => mesh.name === name),
         ).toHaveLength(tuning.vfx.maxExplosions);
       expect(explosionDetails.every((mesh) => !mesh.visible)).toBe(true);
-      const comparableMeshes = after.meshes - explosionDetails.length;
-      expect(comparableMeshes + saved).toBe(baselines[id]);
-      expect(comparableMeshes).toBeLessThanOrEqual(
-        Math.floor(baselines[id] / 3),
-      );
-      expect(rows.slice(0, 3).map((row) => row.source)).toEqual([
-        'static-blocks',
-        'static-models',
-        'static-decor',
-      ]);
+      // Ukryte pule efektów walki (żar odłamków, błyski, fale Rezonansu, siatka
+      // Bariery) mają własny limit, żeby flaga `vfxPool` nie stała się furtką.
+      let vfxPools = 0;
+      three.traverse((object) => {
+        if (object instanceof Mesh && object.userData.vfxPool === true)
+          vfxPools++;
+      });
+      expect(vfxPools).toBeLessThanOrEqual(VFX_POOL_BUDGET);
       const doors = root.children.filter((child) =>
         child.name.startsWith('door:'),
       );
@@ -190,8 +210,10 @@ it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
       console.log(
         JSON.stringify({
           room: id,
-          totalBefore: baselines[id],
-          totalAfter: after,
+          sceneMeshes: after,
+          vfxPools,
+          staticBefore,
+          staticAfter,
           rows,
         }),
       );

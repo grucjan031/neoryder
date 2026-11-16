@@ -13,7 +13,31 @@ export interface DebrisBurst {
   size: number;
   spread?: number;
   bounds?: { halfX: number; halfY: number; halfZ: number };
+  /** Barwa żaru krawędzi: 0 = czerwień wroga, 1 = magenta Rezonansu (zabicie mocą). */
+  tint?: number;
 }
+/** Kosmetyczny błysk walki: trafienie (błysk sylwetki) albo zabicie (rozbłysk rozpadu). */
+export interface CombatFlash {
+  kind: 'hit' | 'kill';
+  /** Środek bryły wroga. */
+  origin: Vec3;
+  /** Punkt trafienia (iskra) albo null. */
+  point: Vec3 | null;
+  dir: Vec3 | null;
+  /** Promień i wysokość bryły (m); dron ma height = 2 * radius. */
+  radius: number;
+  height: number;
+  tint: number;
+  /** Ustawienie „Błyski ekranu” wyłączone: bez rdzenia i gwiazdy, przygaszony obrys. */
+  muted: boolean;
+  age: number;
+  previousAge: number;
+  life: number;
+  /** Bufory slotu (bez alokacji przy każdym trafieniu). */
+  pointBuf: Vec3;
+  dirBuf: Vec3;
+}
+const FLASH_SLOTS = 24;
 export interface DebrisOptions {
   maxDebris: number;
   floorY?: number;
@@ -38,6 +62,7 @@ interface Fragment {
   lifetime: number;
   serial: number;
   sleeping: boolean;
+  tint: number;
 }
 const vector = (): Vec3 => ({ x: 0, y: 0, z: 0 });
 const quaternion = (): DebrisQuaternion => ({ x: 0, y: 0, z: 0, w: 1 });
@@ -76,7 +101,79 @@ export class DebrisSystem {
       lifetime: 0,
       serial: 0,
       sleeping: false,
+      tint: 0,
     }));
+    this.flashes = Array.from({ length: FLASH_SLOTS }, () => ({
+      kind: 'hit' as const,
+      origin: vector(),
+      point: null,
+      dir: null,
+      radius: 0,
+      height: 0,
+      tint: 0,
+      muted: false,
+      age: 0,
+      previousAge: 0,
+      life: 0,
+      pointBuf: vector(),
+      dirBuf: vector(),
+    }));
+  }
+
+  private readonly flashes: CombatFlash[];
+  private flashCursor = 0;
+
+  /** Rejestruje błysk walki (czysto kosmetyczny, nie zużywa puli odłamków). */
+  flash(spec: {
+    kind: 'hit' | 'kill';
+    origin: Vec3;
+    point?: Vec3 | null;
+    dir?: Vec3 | null;
+    radius: number;
+    height: number;
+    tint?: number;
+    muted?: boolean;
+    life: number;
+  }): void {
+    if (!(spec.life > 0)) return;
+    let slot: CombatFlash | undefined;
+    for (const f of this.flashes)
+      if (f.life === 0) {
+        slot = f;
+        break;
+      }
+    if (!slot) {
+      slot = this.flashes[this.flashCursor]!;
+      this.flashCursor = (this.flashCursor + 1) % FLASH_SLOTS;
+    }
+    slot.kind = spec.kind;
+    Object.assign(slot.origin, spec.origin);
+    slot.point = spec.point ? Object.assign(slot.pointBuf, spec.point) : null;
+    slot.dir = spec.dir ? Object.assign(slot.dirBuf, spec.dir) : null;
+    slot.muted = spec.muted ?? false;
+    slot.radius = spec.radius;
+    slot.height = spec.height;
+    slot.tint = spec.tint ?? 0;
+    slot.age = slot.previousAge = 0;
+    slot.life = spec.life;
+  }
+
+  /** Aktywne błyski z interpolowanym wiekiem (s); obiekt pożyczony na czas callbacku. */
+  forEachFlash(
+    cb: (flash: Readonly<CombatFlash>, age: number) => void,
+    interpolation = 1,
+  ): void {
+    const t = Math.max(0, Math.min(1, interpolation));
+    for (const f of this.flashes) {
+      if (f.life === 0) continue;
+      cb(f, f.previousAge + (f.age - f.previousAge) * t);
+    }
+  }
+
+  get activeFlashes(): number {
+    let n = 0;
+    for (const f of this.flashes) if (f.life > 0) n++;
+    return n;
   }
 
   get activeCount(): number {
@@ -112,6 +209,7 @@ export class DebrisSystem {
       fragment.lifetime =
         this.settings.debrisLifetimeS * (0.8 + this.random() * 0.4);
       fragment.sleeping = false;
+      fragment.tint = spec.tint ?? 0;
       fragment.pos.x =
         spec.origin.x + (this.random() * 2 - 1) * (bounds?.halfX ?? 0);
       fragment.pos.y = Math.max(
@@ -144,6 +242,12 @@ export class DebrisSystem {
 
   step(dt: number): void {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
+    for (const f of this.flashes) {
+      if (f.life === 0) continue;
+      f.previousAge = f.age;
+      f.age += dt;
+      if (f.age >= f.life) f.life = 0;
+    }
     for (const f of this.pool) {
       if (f.lifetime === 0) continue;
       Object.assign(f.previous, f.pos);
@@ -213,9 +317,19 @@ export class DebrisSystem {
     }
   }
 
-  /** Referencje tylko do odczytu na czas callbacku. interpolation=1: stan bieżący. */
+  /**
+   * Referencje tylko do odczytu na czas callbacku. interpolation=1: stan bieżący.
+   * `age` to interpolowany wiek fragmentu (s), `tint` barwa żaru krawędzi (0 wróg, 1 Rezonans).
+   */
   forEachActive(
-    cb: (pos: Vec3, quat: DebrisQuaternion, scale: Vec3, alpha: number) => void,
+    cb: (
+      pos: Vec3,
+      quat: DebrisQuaternion,
+      scale: Vec3,
+      alpha: number,
+      age: number,
+      tint: number,
+    ) => void,
     interpolation = 1,
   ): void {
     const t = Math.max(0, Math.min(1, interpolation));
@@ -249,12 +363,13 @@ export class DebrisSystem {
       f.renderQuat.y /= norm;
       f.renderQuat.z /= norm;
       f.renderQuat.w /= norm;
-      cb(f.renderPos, f.renderQuat, f.renderScale, 1);
+      cb(f.renderPos, f.renderQuat, f.renderScale, 1, age, f.tint);
     }
   }
 
   clear(): void {
     for (const f of this.pool) f.lifetime = 0;
+    for (const f of this.flashes) f.life = 0;
     this.count = 0;
   }
 }

@@ -57,7 +57,12 @@
       "requiresTreePoints": { "resonance": 3, "gunner": 3 },
       "effects": {
         "patches": [
-          { "target": "power:chain", "op": "mul", "path": "damage", "value": 1.2 }
+          {
+            "target": "power:chain",
+            "op": "mul",
+            "path": "damage",
+            "value": 1.2
+          }
         ],
         "triggers": [
           {
@@ -108,9 +113,7 @@
       "requires": [],
       "requiresTreePoints": { "blade": 4, "resonance": 4 },
       "effects": {
-        "modifiers": [
-          { "stat": "moveSpeed", "type": "percent", "value": 0.1 }
-        ],
+        "modifiers": [{ "stat": "moveSpeed", "type": "percent", "value": 0.1 }],
         "triggers": [
           {
             "when": { "event": "damage_dealt", "tagsAny": ["#melee"] },

@@ -184,7 +184,7 @@ body:has(.main-menu) {
 }
 .main-menu button:focus-visible,
 .main-menu input:focus-visible {
-  outline: 1px solid var(--hud-health, #00e5ff);
+  outline: 2px solid var(--hud-health, #00e5ff);
   outline-offset: 2px;
 }
 /* RunState przechowuje ekwipunek; warianty ostrza pozostają wyborem poligonu. */

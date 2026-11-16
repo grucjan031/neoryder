@@ -179,13 +179,18 @@ export class HitSparksRenderer {
     private readonly system: HitSparks,
     capacity: number,
   ) {
+    const material = basic();
+    // Iskry świecą (bloom) i nie mają konturu — czarna obwódka gasiła je na ciemnym tle.
+    material.toneMapped = false;
+    material.userData.bloom = true;
     this.fx = new InstancedFx(
       new BoxGeometry(1, 1, 1),
-      basic(),
+      material,
       capacity,
       true,
     );
     this.root = this.fx.mesh;
+    this.root.userData.noOutline = true;
   }
 
   render(frameDt: number): void {

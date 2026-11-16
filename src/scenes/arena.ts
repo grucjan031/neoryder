@@ -284,7 +284,7 @@ export class Arena implements Scene {
     this.root.add(this.beamView.root, this.explosionView.root);
     this.barrierView = new BarrierRenderer(ctx.tuning);
     this.root.add(this.barrierView.root);
-    this.lightningView = new LightningRenderer(ctx.tuning);
+    this.lightningView = new LightningRenderer(ctx.tuning, ctx.bus, playerId);
     this.root.add(this.lightningView.root);
 
     this.manager = new EnemyManager(
@@ -375,6 +375,11 @@ export class Arena implements Scene {
     this.root.add(this.debrisView.root);
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
+      bodyOf: (id) => {
+        const e = this.enemy(id);
+        return e ? enemyBody(e, 1) : null;
+      },
+      cameraPosition: () => ctx.camera?.position ?? null,
       tuning: ctx.tuning,
     });
 
@@ -901,12 +906,15 @@ export class Arena implements Scene {
     this.atmosphere?.sync(frameDt);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
+    this.barrierView.advance(frameDt);
+    this.lightningView.advance(frameDt);
     const camera = this.ctx.camera;
     const powers = this.powerPair;
     powers[0] = this.powers.get(0);
     powers[1] = this.powers.get(1);
     if (!camera) {
       this.dressing?.render(frameDt, undefined);
+      this.beamView.advance(frameDt);
       this.beamView.render(this.weapon.beam);
       this.lightningView.render(powers);
       return;
@@ -945,6 +953,7 @@ export class Arena implements Scene {
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
       visible: this.state === 'playing',
     });
+    this.beamView.advance(frameDt);
     this.beamView.render(this.weapon.beam, this.fppView.beamOrigin);
     this.lightningView.render(powers, camera);
   }

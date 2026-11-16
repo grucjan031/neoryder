@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 test('style-test zachowuje paletę i obrys bez błędów konsoli', async ({
   page,
@@ -11,7 +11,9 @@ test('style-test zachowuje paletę i obrys bez błędów konsoli', async ({
   });
   await page.goto('/?scene=style-test&debug=1&seed=style-regression');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('style-test');
   // Panel debug, licznik FPS i podpowiedź zmieniają się między uruchomieniami
   // i zależą od czcionek systemu — nie należą do regresji stylu.

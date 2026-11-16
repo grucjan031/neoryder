@@ -69,7 +69,7 @@ it.each([
           : [node.material];
         expect(
           materials.every((m) =>
-            ['mat_enemy', 'mat_enemy_glow'].includes(m.name),
+            ['mat_enemy', 'mat_enemy_glow', 'mat_enemy_dark'].includes(m.name),
           ),
         ).toBe(true);
       }
@@ -165,7 +165,7 @@ describe('AnimationMixer bez WebGL', () => {
     expect(new Set(skins.map((s) => s.skeleton))).toHaveProperty('size', 30);
     expect(skins[0]!.skeleton.bones[0]).not.toBe(skins[1]!.skeleton.bones[0]);
     expect(skins[0]!.geometry).toBe(skins[1]!.geometry);
-    expect(skins[0]!.material).toBe(getMaterial('enemy'));
+    expect(skins[0]!.material).toBe(getMaterial('enemyDark'));
     const update = vi.spyOn(AnimationMixer.prototype, 'update');
     expect(action).toHaveBeenCalledTimes(30 * source.animations.length);
     for (const [clip] of action.mock.calls)

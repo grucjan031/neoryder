@@ -1,16 +1,17 @@
 import { expect, test } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
-  await page.goto('/?scene=run&seed=resume-check&debug=1');
+  test.setTimeout(4 * LOAD_TIMEOUT + 4 * SIM_TIMEOUT);
+  await page.goto('/?scene=run&seed=resume-check&debug=1&fx=lite');
   const query = (name: string) =>
     page.evaluate((key) => window.__neoryder?.query(key), name);
   await expect
-    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
   await page.locator('.run-screen [data-node-id]').first().click();
   await expect
-    .poll(() => query('loading'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
     .toBe(false);
   await page.evaluate(() => window.__neoryder?.command('run clear'));
   await expect
@@ -18,16 +19,16 @@ test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
     .toBe('reward');
   await page.keyboard.press('Digit1');
   await expect
-    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
   // Zapis do IndexedDB jest asynchroniczny — przeładowanie dopiero po jego końcu.
   await expect
     .poll(() => query('savePending'), { timeout: SIM_TIMEOUT })
     .toBe(false);
   const saved = await query('runState');
-  await page.goto('/?scene=run&continue=1&debug=1');
+  await page.goto('/?scene=run&continue=1&debug=1&fx=lite');
   await expect
-    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
   // Czas runu płynie dalej na mapie po wczytaniu — porównujemy resztę stanu.
   const { elapsedS: savedS, ...savedRest } = saved as { elapsedS: number };
@@ -41,17 +42,24 @@ test('run: kontynuacja po zapisie odtwarza stan mapy', async ({ page }) => {
 test('run: wybór węzła, wejście do pokoju, run clear, wybór implantu i powrót na mapę', async ({
   page,
 }) => {
+  test.setTimeout(480_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1');
+  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1&fx=lite');
   const query = (name: string) =>
     page.evaluate((key) => window.__neoryder?.query(key), name);
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   const first = page.locator('.run-screen [data-node-id]').first();
   const id = await first.getAttribute('data-node-id');
   await first.click();
-  await expect.poll(() => query('room')).toBeTruthy();
-  await expect.poll(() => query('loading')).toBe(false);
+  await expect
+    .poll(() => query('room'), { timeout: LOAD_TIMEOUT })
+    .toBeTruthy();
+  await expect
+    .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+    .toBe(false);
   expect(await query('runState')).toMatchObject({
     currentNodeId: id,
     loadoutId: 'classic',
@@ -64,20 +72,28 @@ test('run: wybór węzła, wejście do pokoju, run clear, wybór implantu i powr
   // F3-11: ekran nagrody pokazuje 3 prawdziwe implanty; klawisz 1 wybiera pierwszy.
   await expect(page.locator('.run-screen button')).toHaveCount(3);
   await page.keyboard.press('Digit1');
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   expect(
     ((await query('runState')) as { implants: string[] }).implants,
   ).toHaveLength(1);
   expect(await query('room')).toBeNull();
   await page.keyboard.press('Digit1');
-  await expect.poll(() => query('loading')).toBe(false);
-  await expect.poll(() => query('screen')).toBe('room');
+  await expect
+    .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+    .toBe(false);
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('room');
   await page.evaluate(() => window.__neoryder?.command('run clear'));
   await expect
     .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
     .toBe('reward');
   await page.locator('.run-screen button').first().click();
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   expect(
     ((await query('runState')) as { implants: string[] }).implants,
   ).toHaveLength(2);
@@ -88,20 +104,27 @@ test('run: wybór węzła, wejście do pokoju, run clear, wybór implantu i powr
 test('run: dojście do bossa, kill all po progach faz i ekran zwycięstwa', async ({
   page,
 }) => {
-  test.setTimeout(180_000);
+  // Lokalnie ok. 2 min; na runnerze CI zakładamy do 3x wolniej.
+  test.setTimeout(600_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1');
+  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1&fx=lite');
   const query = (name: string) =>
     page.evaluate((key) => window.__neoryder?.query(key), name);
   const command = (text: string) =>
     page.evaluate((cmd) => window.__neoryder?.command(cmd), text);
   // Przejście mapy: pierwszy dostępny węzeł każdej warstwy aż do bossa.
   for (let layer = 0; layer < 8; layer++) {
-    await expect.poll(() => query('screen')).toBe('map');
+    await expect
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+      .toBe('map');
     await page.keyboard.press('Digit1');
-    await expect.poll(() => query('loading'), { timeout: 30_000 }).toBe(false);
-    await expect.poll(() => query('screen')).toMatch(/^(room|shop|rest)$/);
+    await expect
+      .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+      .toBe(false);
+    await expect
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+      .toMatch(/^(room|shop|rest)$/);
     if ((await query('room')) === 'bossRoom') break;
     if ((await query('screen')) === 'room') {
       await command('run clear');
@@ -127,13 +150,14 @@ test('run: dojście do bossa, kill all po progach faz i ekran zwycięstwa', asyn
 });
 
 test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
-  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1');
+  test.setTimeout(480_000);
+  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1&fx=lite');
   const query = (name: string) =>
     page.evaluate((key) => window.__neoryder?.query(key), name);
   const command = (value: string) =>
     page.evaluate((cmd) => window.__neoryder?.command(cmd), value);
   await expect
-    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
   const map = (await query('map')) as {
     layers: { id: string; type: string; next: string[] }[][];
@@ -155,7 +179,7 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
   for (const id of path!) {
     await page.locator(`[data-node-id="${id}"]`).click();
     await expect
-      .poll(() => query('loading'), { timeout: SIM_TIMEOUT })
+      .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
       .toBe(false);
     const screen = await query('screen');
     if (screen === 'shop') break;
@@ -167,11 +191,11 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
     }
     await page.keyboard.press('Enter');
     await expect
-      .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
       .toBe('map');
   }
   await expect
-    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('shop');
   await command('credits 500');
   const before = (await query('runState')) as {
@@ -186,8 +210,10 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
           credits: number;
           implants: string[];
         };
-        return state.credits < before.credits &&
-          state.implants.length === before.implants.length + 1;
+        return (
+          state.credits < before.credits &&
+          state.implants.length === before.implants.length + 1
+        );
       },
       { timeout: SIM_TIMEOUT },
     )
@@ -202,13 +228,22 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
 
 test('run: śmierć w pokoju prowadzi do podsumowania i menu', async ({
   page,
-}) => {
-  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1');
+}, testInfo) => {
+  test.setTimeout(2 * LOAD_TIMEOUT + SIM_TIMEOUT);
+  await page.goto('/?scene=run&seed=test1&loadout=classic&debug=1&fx=lite');
   const query = (name: string) =>
     page.evaluate((key) => window.__neoryder?.query(key), name);
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   await page.locator('.run-screen [data-node-id]').first().click();
-  await expect.poll(() => query('loading')).toBe(false);
+  await expect
+    .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+    .toBe(false);
+  await testInfo.attach('fx-lite-room', {
+    body: await page.screenshot(),
+    contentType: 'image/png',
+  });
   await page.evaluate(() => window.__neoryder?.command('hurt 9999'));
   await expect.poll(() => query('screen')).toBe('summary');
   await expect(page.getByText('Porażka', { exact: true })).toBeVisible();

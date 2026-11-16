@@ -1,3 +1,4 @@
+import { LOAD_TIMEOUT } from './helpers';
 import { expect, test } from '@playwright/test';
 
 test('samouczek: pierwszy krok, ukończenie i przejście do kryjówki', async ({
@@ -8,9 +9,11 @@ test('samouczek: pierwszy krok, ukończenie i przejście do kryjówki', async ({
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=tutorial&debug=1');
+  await page.goto('/?scene=tutorial&debug=1&fx=lite');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('tutorial');
   await expect(page.locator('.tutorial-panel')).toBeVisible();
   await expect(page.locator('.tutorial-panel__number')).toContainText('1 / 11');
@@ -25,7 +28,9 @@ test('samouczek: pierwszy krok, ukończenie i przejście do kryjówki', async ({
   await page.getByRole('button', { name: 'Do kryjówki', exact: true }).click();
   await expect(page).toHaveURL(/scene=hub/);
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('hub');
   expect(errors).toEqual([]);
 });

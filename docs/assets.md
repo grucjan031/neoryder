@@ -23,14 +23,15 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 
 ### Materiały (rozpoznawane po nazwie — shader stylu może je podmienić)
 
-| Materiał            | Kolor                     | Użycie                                                            |
-| ------------------- | ------------------------- | ----------------------------------------------------------------- |
-| `mat_world`         | biel `#ebebeb`            | otoczenie, ściany, osłony                                         |
-| `mat_interactive`   | czerń `#080808`           | obiekty interaktywne (skrzynie do chwytu Rezonansem), broń gracza |
-| `mat_enemy`         | czerwień `#e0262b`        | wrogowie                                                          |
-| `mat_enemy_glow`    | jasna czerwień, emisja    | wizjery, końcówki broni wroga, pociski wroga                      |
-| `mat_player_cyan`   | cyan `#00e5ff`, emisja    | ostrze, otwory chłodzenia blastera, akcenty gracza                |
-| `mat_power_magenta` | magenta `#ff2bd6`, emisja | efekty mocy, emiter Rezonansu na dłoni                            |
+| Materiał            | Kolor                             | Użycie                                                                 |
+| ------------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| `mat_world`         | biel `#ebebeb`                    | otoczenie, ściany, osłony                                              |
+| `mat_interactive`   | czerń `#080808`                   | obiekty interaktywne (skrzynie do chwytu Rezonansem), broń gracza      |
+| `mat_enemy`         | czerwień `#e0262b`                | wrogowie                                                               |
+| `mat_enemy_glow`    | jasna czerwień, emisja            | wizjery, końcówki broni wroga, pociski wroga                           |
+| `mat_enemy_dark`    | ciemna czerwień (16% `mat_enemy`) | kombinezon i ciemne części wrogów; poświata krawędzi w czerwieni wroga |
+| `mat_player_cyan`   | cyan `#00e5ff`, emisja            | ostrze, otwory chłodzenia blastera, akcenty gracza                     |
+| `mat_power_magenta` | magenta `#ff2bd6`, emisja         | efekty mocy, emiter Rezonansu na dłoni                                 |
 
 ## Miasto
 
@@ -66,30 +67,62 @@ obsługa rozpiętości po stronie renderu pozostaje zadaniem integracji.
 
 | Plik                      | Wymiary X × Y × Z [m]  | Kolizja | Montaż    | Węzły                                                                                                                                                                                                               | Trójkąty |
 | ------------------------- | ---------------------- | ------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------: |
-| `city_dumpster.glb`       | 1,970 × 1,330 × 1,080  | tak     | blok      | `bin`, `rust_skirt`, `top_rim`, `lid`, `lid_open`, `wheel`, `caster_fork`, `fork_pocket`, `handle`, `hinge`, `bag_peek`, `stencil`, `sticker`                                                                       |      684 |
-| `city_vending.glb`        | 1,005 × 2,000 × 0,802  | tak     | blok      | `cabinet`, `header`, `display`, `status_screen`, `screen_frame`, `pickup`, `pickup_flap`, `selection`, `control_panel`, `key`, `coin_slot`, `card_reader`, `sticker`, `warning`                                     |      484 |
+| `city_dumpster.glb`       | 1,970 × 1,330 × 1,080  | tak     | blok      | `bin`, `rust_skirt`, `top_rim`, `lid`, `lid_open`, `wheel`, `caster_fork`, `fork_pocket`, `handle`, `hinge`, `bag_peek`, `stencil`, `sticker`                                                                       |      864 |
+| `city_vending.glb`        | 1,014 × 2,000 × 0,816  | tak     | blok      | `cabinet`, `header`, `display`, `status_screen`, `screen_frame`, `pickup`, `pickup_flap`, `selection`, `control_panel`, `key`, `coin_slot`, `card_reader`, `sticker`, `warning`                                     |      640 |
 | `city_barrier.glb`        | 2,000 × 0,929 × 0,510  | tak     | blok      | `concrete_body`, `stripe`, `reflector`, `lifting_loop`, `foot_recess`                                                                                                                                               |      172 |
-| `city_car.glb`            | 4,420 × 1,401 × 1,940  | tak     | blok      | `body`, `body_crease`, `canopy`, `roof`, `spoiler`, `wheel`, `rim`, `hub`, `headlight`, `light_bar`, `front_plate`, `front_intake`, `tail_light`, `rear_plate`, `underglow`, `mirror`, `door_handle`, `charge_port` |     1212 |
-| `city_stall.glb`          | 3,000 × 2,600 × 2,025  | tak     | blok      | `counter`, `counter_base`, `canopy`, `valance`, `noren`, `bulb_string`, `bulb`, `menu`, `menu_frame`, `cooking_pot`, `bowl_stack`, `sticker`                                                                        |      908 |
-| `city_crates.glb`         | 1,212 × 1,590 × 1,212  | tak     | blok      | `crate_shell`, `rim`, `front_rib`, `side_rib`, `handle_recess`, `pallet_board`, `pallet_block`, `stencil`, `sticker`, `warning`                                                                                     |      690 |
-| `city_generator.glb`      | 1,600 × 1,406 × 1,005  | tak     | blok      | `housing`, `top_cover`, `louvre`, `control_panel`, `status`, `socket`, `power_cable`, `exhaust`, `skid`, `lifting_eye`, `stencil`, `warning`                                                                        |      582 |
-| `city_kiosk.glb`          | 0,800 × 2,200 × 0,620  | tak     | blok      | `plinth`, `body`, `header`, `header_glow`, `news`, `map`, `map_frame`, `shelf`, `key`, `card_reader`, `ad`, `ad_frame`, `sticker`, `warning`                                                                        |      386 |
-| `city_ac_unit.glb`        | 0,902 × 0,604 × 0,518  | nie     | ściana    | `housing`, `fan_hub`, `fan_blade`, `fan_guard`, `side_louvre`, `wall_bracket`, `support`, `drain_hose`, `sticker`                                                                                                   |      514 |
-| `city_pipe_run.glb`       | 0,780 × 6,060 × 0,374  | nie     | ściana    | `pipe`, `pipe_clamp`, `wall_plate`, `flange`, `valve_wheel`, `gauge`, `bottom_mount`                                                                                                                                |      728 |
+| `city_car.glb`            | 4,420 × 1,460 × 1,940  | tak     | blok      | `body`, `body_crease`, `canopy`, `roof`, `spoiler`, `wheel`, `rim`, `hub`, `headlight`, `light_bar`, `front_plate`, `front_intake`, `tail_light`, `rear_plate`, `underglow`, `mirror`, `door_handle`, `charge_port` |     1500 |
+| `city_stall.glb`          | 3,000 × 2,622 × 2,043  | tak     | blok      | `counter`, `counter_base`, `canopy`, `valance`, `noren`, `bulb_string`, `bulb`, `menu`, `menu_frame`, `cooking_pot`, `bowl_stack`, `sticker`                                                                        |     1192 |
+| `city_crates.glb`         | 1,212 × 1,590 × 1,256  | tak     | blok      | `crate_shell`, `rim`, `front_rib`, `side_rib`, `handle_recess`, `pallet_board`, `pallet_block`, `stencil`, `sticker`, `warning`                                                                                     |      770 |
+| `city_generator.glb`      | 1,600 × 1,400 × 1,005  | tak     | blok      | `housing`, `top_cover`, `louvre`, `control_panel`, `status`, `socket`, `power_cable`, `exhaust`, `skid`, `lifting_eye`, `stencil`, `warning`                                                                        |      782 |
+| `city_kiosk.glb`          | 0,800 × 2,235 × 0,624  | tak     | blok      | `plinth`, `body`, `header`, `header_glow`, `news`, `map`, `map_frame`, `shelf`, `key`, `card_reader`, `ad`, `ad_frame`, `sticker`, `warning`                                                                        |      502 |
+| `city_ac_unit.glb`        | 0,907 × 0,604 × 0,518  | nie     | ściana    | `housing`, `fan_hub`, `fan_blade`, `fan_guard`, `side_louvre`, `wall_bracket`, `support`, `drain_hose`, `sticker`                                                                                                   |      614 |
+| `city_pipe_run.glb`       | 0,780 × 6,060 × 0,374  | nie     | ściana    | `pipe`, `pipe_clamp`, `wall_plate`, `flange`, `valve_wheel`, `gauge`, `bottom_mount`                                                                                                                                |      780 |
 | `city_fire_escape.glb`    | 3,000 × 3,527 × 1,167  | nie     | ściana    | `balcony`, `deck_slot`, `top_rail`, `middle_rail`, `front_baluster`, `ladder_rail`, `rung`, `ladder_hook`, `bracket`, `kick_plate`                                                                                  |      624 |
-| `city_shutter.glb`        | 3,000 × 3,000 × 0,250  | nie     | ściana    | `slat`, `guide`, `roller_box`, `bottom_rail`, `pull_handle`, `padlock`, `backing`, `stencil`, `warning`                                                                                                             |      476 |
-| `city_awning.glb`         | 2,500 × 0,570 × 1,160  | nie     | ściana    | `canopy`, `valance`, `brace`, `roof_seam`, `led_strip`, `wall_flashing`                                                                                                                                             |      124 |
-| `city_door.glb`           | 1,505 × 2,465 × 0,238  | nie     | ściana    | `frame`, `door_leaf`, `inset_panel`, `window`, `wire_mesh`, `handle`, `keypad`, `key`, `status_dot`, `door_number`, `lamp`, `lintel`, `kick_plate`, `door_closer`                                                   |      602 |
+| `city_shutter.glb`        | 3,000 × 3,000 × 0,251  | nie     | ściana    | `slat`, `guide`, `roller_box`, `bottom_rail`, `pull_handle`, `padlock`, `backing`, `stencil`, `warning`                                                                                                             |      688 |
+| `city_awning.glb`         | 2,500 × 0,570 × 1,172  | nie     | ściana    | `canopy`, `valance`, `brace`, `roof_seam`, `led_strip`, `wall_flashing`                                                                                                                                             |      136 |
+| `city_door.glb`           | 1,505 × 2,465 × 0,238  | nie     | ściana    | `frame`, `door_leaf`, `inset_panel`, `window`, `wire_mesh`, `handle`, `keypad`, `key`, `status_dot`, `door_number`, `lamp`, `lintel`, `kick_plate`, `door_closer`                                                   |      638 |
 | `city_sign_box.glb`       | 2,000 × 1,000 × 0,250  | nie     | ściana    | `housing`, `sign_face`, `bolt`                                                                                                                                                                                      |      136 |
-| `city_ad_screen.glb`      | 1,100 × 2,294 × 0,181  | nie     | ściana    | `housing`, `bezel`, `screen`, `wall_arm`, `led_edge`, `conduit`, `sticker`                                                                                                                                          |      140 |
-| `city_street_lamp.glb`    | 0,440 × 4,500 × 1,280  | nie     | podłoże   | `base`, `pole`, `band`, `arm`, `head`, `lamp`, `service_box`, `warning`                                                                                                                                             |      290 |
+| `city_ad_screen.glb`      | 1,100 × 2,294 × 0,182  | nie     | ściana    | `housing`, `bezel`, `screen`, `wall_arm`, `led_edge`, `conduit`, `sticker`                                                                                                                                          |      176 |
+| `city_street_lamp.glb`    | 0,440 × 4,500 × 1,280  | nie     | podłoże   | `base`, `pole`, `band`, `arm`, `head`, `lamp`, `service_box`, `warning`                                                                                                                                             |      490 |
 | `city_vent_grate.glb`     | 1,000 × 0,050 × 1,000  | nie     | podłoże   | `recess`, `frame`, `grate_bar`, `crossbar`                                                                                                                                                                          |      168 |
-| `city_trash_bags.glb`     | 1,076 × 0,640 × 0,867  | nie     | podłoże   | `bag`, `tie`                                                                                                                                                                                                        |      108 |
+| `city_trash_bags.glb`     | 1,113 × 0,644 × 0,922  | nie     | podłoże   | `bag`, `tie`                                                                                                                                                                                                        |      144 |
 | `city_traffic_cone.glb`   | 0,460 × 0,700 × 0,460  | nie     | podłoże   | `base`, `cone`, `reflector_band`                                                                                                                                                                                    |      152 |
 | `city_holo_projector.glb` | 0,600 × 0,200 × 0,600  | nie     | podłoże   | `disc_base`, `clamp`, `emitter_ring`, `emitter`                                                                                                                                                                     |      204 |
-| `city_antenna.glb`        | 1,560 × 2,250 × 1,270  | nie     | podłoże   | `mast`, `frame`, `foot`, `aerial`, `dish`, `dish_mount`, `receiver`, `coax`, `beacon`                                                                                                                               |      460 |
-| `city_cable_span.glb`     | 10,000 × 1,104 × 0,429 | nie     | rozpięcie | `cable`, `insulator`, `junction_box`, `junction_hanger`                                                                                                                                                             |      444 |
+| `city_antenna.glb`        | 1,560 × 2,250 × 1,270  | nie     | podłoże   | `mast`, `frame`, `foot`, `aerial`, `dish`, `dish_mount`, `receiver`, `coax`, `beacon`                                                                                                                               |      636 |
+| `city_cable_span.glb`     | 10,000 × 1,104 × 0,429 | nie     | rozpięcie | `cable`, `insulator`, `junction_box`, `junction_hanger`                                                                                                                                                             |      612 |
 | `city_lantern_string.glb` | 10,000 × 1,189 × 0,300 | nie     | rozpięcie | `wire`, `hanger`, `lantern`, `lantern_cap`                                                                                                                                                                          |      724 |
+
+Klimatyzator ma rozstawione łopatki, boczny panel z żebrami, okapnik i etykiety
+serwisowe. Rury mają opaski identyfikacyjne i wskazówkę manometru. Antena ma
+zamkniętą, wklęsłą czaszę, tylne wsporniki, obudowę odbiornika i tuleję
+przewodu. Przewieszenie kabli ma przekładki oraz tuleje odciążające, a latarnia
+usztywnienie ramienia, kołnierz podstawy, przewód i podział klosza.
+Nowe statyczne detale są wbudowane w istniejące siatki według materiału
+(`_city_merge_details`); nie dodają węzłów ani obiektów do renderowania.
+Punkty montażu i pozycja klosza latarni pozostają bez zmian.
+
+Szlif dużych brył: roleta ma warstwowe panele i bursztynową ramę, generator
+obniżoną obudowę z osobnym modułem, kominem i osłonami, skrzynie stopniowaną
+sylwetkę, a stragan profilowane metalowe zadaszenie z żebrami i listwami.
+Śmietnik ma niższy korpus, uchyloną klapę, wystające worki i świetlny rant.
+Detale scalono z istniejącymi siatkami; nazwy i liczba węzłów są zachowane.
+Materiały emisyjne korzystają z istniejących `mat_neon_amber` i `mat_neon_green`;
+nie dodano świateł punktowych. Wymiary mieszczą się w tolerancji 5%.
+Szlif 2 (czytelność z 10 m): auto ma fioletową belkę na dachu, listwy krawędzi
+dachu, świecące sześciokątne pierścienie i piasty felg, szerszy biały pas
+przodu i bursztynowe pasy tyłu owinięte na narożniki oraz ciemny próg; automat
+świecące krawędzie frontu i boków, podświetlone okno produktów i oświetloną
+tackę (`pickup_flap` w `mat_neon_white`), tył z panelem, kratką i logo; kiosk
+daszek nad nagłówkiem i świecące krawędzie słupka z czterech stron. Dekoracje:
+listwa pomostu schodów (`kick_plate`) świeci fioletem, markiza ma bursztynową
+krawędź frontu falbany, drzwi świecącą ościeżnicę i nadproże, ekran reklamowy
+pełną ramę LED, pasy pachołka świecą ciepłą bielą, worki mają przewężenie pod
+supłem i czwarty mały worek scalony z `bag_1`. Liczba siatek i nazwy węzłów
+bez zmian; nowe akcenty są scalone z istniejącymi siatkami tego samego materiału
+albo wynikają ze zmiany materiału istniejącej części.
+Uwaga integracyjna: `RoomScene` zastępuje materiały modeli bloków materiałem
+z pola `material` w JSON pokoju. W tych instancjach pozostaje zmiana sylwetki,
+ale emisja i kontrast materiałów są widoczne tylko w galerii i dekoracjach.
 
 Każdy model ma pusty korzeń o nazwie modelu. Powtarzane części mają nazwy
 Blendera z sufiksem `.001`, `.002` itd. (w tabeli podano nazwy bazowe);
@@ -179,9 +212,17 @@ importera glTF Blendera. Wyposażenie jest własne, proceduralne.
 
 Ciało `armored_body` ma 3999 trójkątów po Decimate (źródło: 13 743),
 z zachowanymi grupami wag i skinem do armatury `Rig` (53 kości). Eksporter
-normalizuje cztery największe wagi każdego wierzchołka. Siatki mają płaskie
-normalne, płyty i broń fazowane krawędzie. Materiały: `mat_enemy` oraz
-`mat_enemy_glow`. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
+normalizuje cztery największe wagi każdego wierzchołka. Ciało ma gładkie
+cieniowanie z ostrymi krawędziami powyżej 50° (kontur rysuje sylwetkę i płyty,
+a nie fasetki po decymacji) i ciemny kombinezon `mat_enemy_dark`; płyty pancerza
+(`mat_enemy`) i broń mają płaskie normalne i fazowane krawędzie, akcenty świetlne
+(`mat_enemy_glow`: wizjer, linie na piersi, naramiennikach i kolanach, klamra) nie
+mają konturu w grze. Wspólne: kask z wizjerem i ciemną osłoną szczęki, kołnierz,
+pas z klamrą. Sylwetki ról: Szturmowiec — grzebień na kasku ze światłem i akumulator
+na plecach, Strzelec — daszek, gogle, radio z anteną, Snajper — szpiczasty kaptur,
+monokular, płaszcz na plecach i poły, Tarczownik — osłona twarzy i tarcza z ciemnym
+licem, wizjerem, szewronem i szynami światła, Egzekutor — rogi, kolce naramienników,
+rdzeń w ramie i świecący kręgosłup. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
 ma 2,208 m (1,2×). Dodatkowa skala `boss.modelScale` nadal działa w widoku.
 Stopy w pozycji wiązania leżą na y=0, przód to +Z glTF, prawa strona to -X.
 
@@ -217,26 +258,35 @@ klipy i materiały, a stan AI mapuje na klipy `AnimationMixer` z przenikaniem.
 
 ## Katalog
 
-| Plik                                   | Co to                                                                                                                                     | Węzły dla kodu                                                                                                                   |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `enemy_trooper.glb`                    | Szturmowiec (4651 tri): ludzka sylwetka, hełm z wizjerem, fazowane naramienniki, kamizelka z ładownicami, pałka                           | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
-| `enemy_gunner.glb`                     | Strzelec (4787 tri): hełm z goglami, kamizelka z trzema ładownicami, karabin                                                              | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
-| `enemy_sniper.glb`                     | Snajper (5092 tri): otwarty kaptur, panele płaszcza, długi karabin ze świecącą lunetą                                                     | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
-| `enemy_shielder.glb`                   | Tarczownik (4827 tri): ciężkie płyty, pałka i pionowa tarcza przed lewą połową tułowia                                                    | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
-| `enemy_executor.glb`                   | Egzekutor (4871 tri): manekin 1,2×, egzoszkielet na tułowiu i kończynach, świecący rdzeń                                                  | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
-| `enemy_drone.glb`                      | Dron (≈860 tri): kadłub z kopułą czujnika, cztery ramiona z osłonami, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
-| `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                   | — (do `InstancedMesh`)                                                                                                           |
-| `plasma_blade.glb`                     | ostrze plazmowe                                                                                                                           | `hilt`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`                          |
-| `blaster.glb`                          | blaster z przegrzaniem                                                                                                                    | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |
-| `player_arm_R.glb`, `player_arm_L.glb` | gładka rękawica taktyczna z rękawem FPP (10 012 tri na rękę)                                                                              | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
-| `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut)                                                                                         | —                                                                                                                                |
-| `pillar.glb`                           | filar 4 m                                                                                                                                 | —                                                                                                                                |
-| `wall_segment.glb`                     | ściana 4 × 3 m, grubość 0,4 m                                                                                                             | —                                                                                                                                |
-| `cover_low.glb`                        | niska osłona 2 × 1 m                                                                                                                      | —                                                                                                                                |
+| Plik                                   | Co to                                                                                                                                                                            | Węzły dla kodu                                                                                                                   |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `enemy_trooper.glb`                    | Szturmowiec (5215 tri): hełm z grzebieniem i wizjerem, naramienniki z liniami światła, ładownice, akumulator na plecach, pałka z cewkami                                         | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
+| `enemy_gunner.glb`                     | Strzelec (5315 tri): hełm z daszkiem i goglami, ładownice, radio z anteną, karabin z liniami światła                                                                             | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
+| `enemy_sniper.glb`                     | Snajper (5458 tri): szpiczasty kaptur z monokularem, płaszcz i poły z lamówką, długi karabin ze świecącą lunetą                                                                  | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
+| `enemy_shielder.glb`                   | Tarczownik (5307 tri): ciężkie płyty, osłona twarzy, pałka i tarcza (ciemne lico, wizjer, szewron, szyny światła — dzieci `shield`)                                              | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
+| `enemy_executor.glb`                   | Egzekutor (5251 tri): manekin 1,2×, rogi, kolce naramienników, egzoszkielet ze świecącym kręgosłupem, rdzeń w ramie                                                              | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
+| `enemy_drone.glb`                      | Dron (948 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
+| `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                                                          | — (do `InstancedMesh`)                                                                                                           |
+| `plasma_blade.glb`                     | ostrze plazmowe (284 tri): rękojeść z gumowym chwytem, pierścieniami i pazurami emitera                                                                                          | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
+| `blaster.glb`                          | blaster z przegrzaniem                                                                                                                                                           | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |
+| `player_arm_R.glb`, `player_arm_L.glb` | rękawica taktyczna z rękawem i cybernetycznym karwaszem FPP (10 264 tri na rękę)                                                                                                 | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
+| `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut), obręcze, narożniki i ukośne zastrzały na bokach (356 tri)                                                                     | —                                                                                                                                |
+| `pillar.glb`                           | filar 4 m z pilastrami, opaską w połowie i stopniowanymi głowicami (360 tri)                                                                                                     | —                                                                                                                                |
+| `wall_segment.glb`                     | ściana 4 × 3 m, grubość 0,4 m                                                                                                                                                    | —                                                                                                                                |
+| `cover_low.glb`                        | niska osłona 2 × 1 m z koroną, bocznym pasem i cokołem (176 tri)                                                                                                                 | —                                                                                                                                |
 
 Model wroga wybiera pole `model` w `src/data/enemies/<id>.json` (nazwa pliku bez `.glb`). Brak pola: Strzelec i Snajper używają `enemy_gunner`, pozostałe humanoidy `enemy_trooper`; przy błędzie ładowania zostają bryły zastępcze (`EnemyView`, `DroneView`). Test `tests/unit/enemyModels.test.ts` pilnuje, że plik istnieje. Humanoidy używają skinningu i klipów; test `enemySkeleton.test.ts` sprawdza skin, budżet, komplet klipów i węzłów, kierunek lufy oraz niezależność 30 klonów.
 
 Kolizje: wyprowadzaj z prostych brył w kodzie (prostopadłościany, kapsuły), nie z siatek modeli.
+
+### Montaż bloków pokoju (skala do kolizji)
+
+Collider bloku to zawsze prostopadłościan `size` z JSON pokoju; widoczny model musi go wypełniać.
+
+- **Bryły rozciągliwe** — `pillar`, `cover_low`, `wall_segment`: gra skaluje model niejednorodnie tak, by bounding box był równy `size` bloku (spód na spodzie bloku, środek w środku). Wymiary GLB są tylko proporcją bazową. Gdy dłuższy bok podstawy bloku leży w osi Z, a modelu w X, model obraca się o 90° wokół Y (osłona 1 × 1,2 × 4 m dostaje skalę 2 × 1,2 × 1,67 zamiast 0,5 × 1,2 × 6,67). Detale tych modeli muszą znosić skalę ok. 0,6–2× na osi.
+- **Rekwizyty o stałych proporcjach** — `city_*`, `crate`, `crate_small`: skala 1, bez rozciągania. Blok w danych pokoju ma mieć wymiary modelu w tolerancji 5% (tabela „Miasto”, docelowe bloki kolizji); większy rozjazd to błąd danych pokoju, nie modelu.
+
+Test: `tests/unit/roomBlockModelFit.test.ts` (wszystkie pokoje, prawdziwe GLB).
 
 ## Uwagi do F1
 
@@ -248,19 +298,27 @@ Kolizje: wyprowadzaj z prostych brył w kodzie (prostopadłościany, kapsuły), 
 
 Bronie celują w -Z, początek w punkcie chwytu. Bryła `frame` to `mat_interactive`; `heat_vents` i
 `heat_cell` (`mat_player_cyan`) kod koloruje ciepłem; `muzzle` to pusty węzeł wylotu (tu rysowany
-jest błysk). Budowa: `--only blaster,pistol,rifle,scatter,sniper_rifle,beam,emp_launcher,blade_twin,blade_staff`.
+jest błysk). Budowa: `--only plasma_blade,blaster,pistol,rifle,scatter,sniper_rifle,beam,emp_launcher,blade_twin,blade_staff`.
 
-| Plik               | Sylwetka                                                       | Węzły dla kodu                                                                                  | Trójkąty |
-| ------------------ | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
-| `blaster.glb`      | średni pistolet energetyczny, kołpak lufy                      | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 252      |
-| `pistol.glb`       | zwarty, krótki zamek, trzy cyjanowe nacięcia                   | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 180      |
-| `rifle.glb`        | długi, kolba, ogniwo ciepła jak magazynek                      | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 232      |
-| `scatter.glb`      | szeroki, dwie grube lufy, pompa                                | `frame`, `heat_vents`, `heat_cell`, `muzzle`                                                    | 256      |
-| `sniper_rifle.glb` | bardzo długi, luneta z cyjanową soczewką (`scope_lens`)        | `frame`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                      | 316      |
-| `beam.glb`         | gruby emiter z cewkami i soczewką (`lens`)                     | `frame`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                    | 288      |
-| `emp_launcher.glb` | gruba tuba z bębnem i rozszerzonym wylotem                     | `frame`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                      | 228      |
-| `blade_twin.glb`   | krótsza rękojeść z poprzeczną osłoną                           | jak `plasma_blade`: `hilt`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                  | 156      |
-| `blade_staff.glb`  | długa rękojeść (0,8 m), emitery na obu końcach, chwyt w środku | przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 220      |
+Szlif FPP: każda broń i rękojeść ma też siatki `trim` (szyny, pierścienie, płytki, spust — jasna
+stal) i `grip` (chwyt, kolba, pompa — guma). W GLB to nadal `mat_interactive`; gra nadaje
+materiały widoku FPP po nazwie węzła (`src/render/fppMaterials.ts`: `frame`/`hilt` grafitowy
+pancerz z chłodną krawędzią, `trim` stal, `grip` guma), niezależnie od motywu — w motywie neon
+`mat_interactive` jest jasny i broń wyglądała jak biała zabawka. `blade_core` dostaje w grze
+jasny cyjanowy rdzeń, poświatę zwróconą do kamery i smugę cięcia (`src/render/fppBladeFx.ts`).
+Ciepło broni przechodzi z cyanu w biel rozgrzanego metalu (nie w czerwień — zarezerwowana dla wrogów).
+
+| Plik               | Sylwetka                                                    | Węzły dla kodu                                                                                                          | Trójkąty |
+| ------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| `blaster.glb`      | średni pistolet energetyczny, kołpak lufy                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 368      |
+| `pistol.glb`       | zwarty, krótki zamek, trzy cyjanowe nacięcia                | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 260      |
+| `rifle.glb`        | długi, kolba, ogniwo ciepła jak magazynek                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 324      |
+| `scatter.glb`      | szeroki, dwie grube lufy, pompa                             | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 352      |
+| `sniper_rifle.glb` | bardzo długi, luneta z cyjanową soczewką, ogniwo pod komorą | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 396      |
+| `beam.glb`         | gruby emiter z cewkami w klatce prętów i soczewką (`lens`)  | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 376      |
+| `emp_launcher.glb` | gruba tuba z bębnem i rozszerzonym wylotem                  | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 324      |
+| `blade_twin.glb`   | krótsza rękojeść z poprzeczną osłoną                        | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 284      |
+| `blade_staff.glb`  | długa rękojeść (0,8 m), emitery z pazurami na obu końcach   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 380      |
 
 Pivoty `blade` i `blade_back` leżą u emiterów, długość ostrza 1 m przy skali 1 (skaluj po Z).
 Model broni wskazuje pole `model` w `src/data/weapons/<id>.json`.
@@ -285,7 +343,7 @@ Położenia w metrach, w osiach glTF:
 ## Przegubowe ręce FPP
 
 Ręce FPP są wyjątkiem od ogólnego budżetu i płaskiego cieniowania: każda ma
-**10 012 trójkątów** (budżet 6–12 tys.), smooth shading i skin glTF. `tactical_glove`
+**10 264 trójkąty** (budżet 6–12 tys.; rękawica 10 012 + karwasz 252), smooth shading i skin glTF. `tactical_glove`
 to jedna zamknięta, połączona siatka rękawicy, przedramienia i rękawa kurtki.
 Subdivision Surface (Catmull–Clark, jeden poziom) jest zastosowany przed eksportem.
 Przedramię z rękawem ma ok. 0,34 m, dłoń od nadgarstka do środkowego palca ok. 0,19 m.
@@ -301,6 +359,12 @@ Owalny, gładki `resonance_core` z `mat_power_magenta` jest osadzony w niskim
 czarnym `resonance_mount`. Dekoracje są małymi osobnymi siatkami, cała rękawica
 pozostaje jednym skinowanym obiektem. Materiały należą do `PALETTE`, bez tekstur.
 
+Cybernetyczny karwasz (sztywne siatki na kości `forearm`, płaskie cieniowanie):
+`plate_bracer` — dwie wygięte, fazowane płyty pancerza na grzbiecie przedramienia;
+`bracer_light` (`mat_player_cyan`) — listwa światła w szczelinie i wzdłuż grzbietu;
+`trim_bracer` — śruby i sześciokątny port złącza nad nadgarstkiem. Gra nadaje
+rękawicy, płytom i wykończeniom materiały widoku FPP po nazwie (`src/render/fppMaterials.ts`).
+
 ### Szkielet i skinning
 
 ```text
@@ -308,7 +372,7 @@ player_arm_R / player_arm_L
 └─ hand_skeleton_R / hand_skeleton_L (armatura)
    ├─ tactical_glove               (skin → 18 kości)
    └─ forearm                     (kość)
-      ├─ wrist_light
+      ├─ wrist_light, plate_bracer, bracer_light, trim_bracer
       └─ wrist                    (kość, pivot w nadgarstku)
          └─ palm                  (kość, pivot w nadgarstku)
             ├─ index_1  → index_2  → index_3

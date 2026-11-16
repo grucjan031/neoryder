@@ -15,6 +15,9 @@ import type { BladeDefinition } from '../combat/melee/bladeSchema';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import { applyStyle, getMaterial } from './materials';
 import { HandRig } from './handRig';
+import { FppBladeFx } from './fppBladeFx';
+import type { BladeFxItem } from './fppBladeFx';
+import { applyFppSurfaces } from './fppMaterials';
 
 /** Poza ostrza w układzie kamery (pozycja, kąty Euler 'YXZ' w radianach). */
 interface BladePose {
@@ -28,9 +31,10 @@ const POSE_IDLE: BladePose = {
   pos: [0.24, -0.26, -0.4],
   rot: [0.9, -0.7, 0.8],
 };
+/** Garda: ostrze ukośnie przez kadr (rękojeść z prawego dołu, czubek w lewym górnym), środek wolny. */
 const POSE_BLOCK: BladePose = {
-  pos: [0.05, -0.12, -0.5],
-  rot: [0.2, -0.5, 1.0],
+  pos: [0.17, -0.22, -0.4],
+  rot: [0.5, 0.89, 1.0],
 };
 /** Lewa dłoń bliźniaczych ostrzy: niżej, między bronią palną a środkiem ekranu. */
 const OFF_IDLE: BladePose = {
@@ -38,12 +42,18 @@ const OFF_IDLE: BladePose = {
   rot: [0.9, 0.7, -0.8],
 };
 const OFF_BLOCK_DROP_M = 0.08;
-/** Ostrze dwustronne trzymane w środku: model przesunięty do przodu. */
+/**
+ * Ostrze dwustronne trzymane w środku: model wysuwany do przodu tylko na obrót, gdy dłoń jest
+ * ukryta (w spoczynku i ładowaniu dłoń zostaje blisko, by koniec rękawa nie wchodził w kadr).
+ */
 const DOUBLE_ENDED_FORWARD_M = -0.2;
-/** Poza obrotu 360° (ostrze poziomo); sam obrót to kąt wokół pionowej osi kamery. */
+/**
+ * Poza obrotu 360°; sam obrót to kąt wokół pionowej osi kamery. Przechył w prawo:
+ * przedramię wchodzi z prawej krawędzi, nie przecina środka ekranu.
+ */
 const SPIN_POSE: BladePose = {
-  pos: [0.3, -0.18, -0.62],
-  rot: [0.05, 0, -1.5],
+  pos: [0.3, -0.24, -0.48],
+  rot: [0.05, 0, 1.2],
 };
 const FULL_TURN = Math.PI * 2;
 
@@ -107,6 +117,7 @@ function loadModel(name: string): Promise<Object3D | null> {
       .loadAsync(`${MODEL_DIR}${name}.glb`)
       .then((gltf) => {
         applyStyle(gltf.scene);
+        applyFppSurfaces(gltf.scene);
         return gltf.scene;
       })
       .catch(() => null);
@@ -129,6 +140,11 @@ export class FppBlade {
     main: new Group(),
     off: new Group(),
   };
+  private readonly fx = new FppBladeFx();
+  private readonly fxItems: BladeFxItem[] = [
+    { key: 'main', model: null, visible: false, slashing: false },
+    { key: 'off', model: null, visible: false, slashing: false },
+  ];
   private def: BladeDefinition;
   private generation = 0;
   private readonly tmp = {
@@ -150,7 +166,7 @@ export class FppBlade {
       hand.matrixAutoUpdate = false;
       this.root.add(hand);
     }
-    this.root.add(this.mainHand.root, this.offHand.root);
+    this.root.add(this.mainHand.root, this.offHand.root, this.fx.root);
     this.setModel(def, null, false);
   }
 
@@ -226,6 +242,7 @@ export class FppBlade {
       return group;
     }
     const model = scene.clone(true);
+    this.fx.styleModel(model);
     const front = model.getObjectByName('blade');
     if (fallback && front) front.scale.z = length;
     if (def.doubleEnded && front && !model.getObjectByName('blade_back')) {
@@ -295,7 +312,33 @@ export class FppBlade {
     return lerpPose(end, idle, view.phaseT * view.phaseT);
   }
 
-  place(cameraMatrix: Matrix4, view: BladeView): void {
+  /** Wysunięcie kija do przodu, płynnie wraz z ładowaniem i powrotem po obrocie. */
+  private doubleEndedForward(view: BladeView): number {
+    if (!this.def.doubleEnded || view.flight !== null) return 0;
+    if (view.state !== 'heavy') return 0;
+    if (view.phase === 'windup')
+      return DOUBLE_ENDED_FORWARD_M * easeOut(view.phaseT);
+    if (view.phase === 'recovery')
+      return DOUBLE_ENDED_FORWARD_M * (1 - view.phaseT * view.phaseT);
+    return DOUBLE_ENDED_FORWARD_M;
+  }
+
+  /** Czy dłoń prowadzi teraz cięcie (aktywna faza) — dla smugi. */
+  private slashing(view: BladeView, hand: Hand): boolean {
+    if (view.flight !== null || view.phase !== 'active') return false;
+    if (view.state === 'heavy') return hand === 'main' || this.def.offhand;
+    if (view.state !== 'light') return false;
+    if (!this.def.offhand) return hand === 'main';
+    return (TWIN_STAGES[view.stage] ?? TWIN_STAGES[1])?.hand === hand;
+  }
+
+  /** `fxActive`: false, gdy ostrze nie jest pokazywane — efekty są wtedy tylko chowane. */
+  place(
+    cameraMatrix: Matrix4,
+    view: BladeView,
+    frameDt = 1 / 60,
+    fxActive = true,
+  ): void {
     this.root.visible = true;
     const spinning =
       view.state === 'heavy' &&
@@ -320,7 +363,7 @@ export class FppBlade {
       v.set(
         pose.pos[0],
         pose.pos[1],
-        pose.pos[2] + (this.def.doubleEnded ? DOUBLE_ENDED_FORWARD_M : 0),
+        pose.pos[2] + this.doubleEndedForward(view),
       );
       // Dłoń L ma własną geometrię i gniazdo; lustro dotyczy wyłącznie ostrza.
       m.compose(v, q, s).premultiply(cameraMatrix);
@@ -338,14 +381,26 @@ export class FppBlade {
       }
       hand.matrix.multiplyMatrices(cameraMatrix, m);
       hand.matrixWorldNeedsUpdate = true;
+      const item = this.fxItems[name === 'main' ? 0 : 1]!;
+      item.model = hand.children[0] ?? null;
+      item.visible = hand.visible && this.root.visible;
+      item.slashing = this.slashing(view, name);
     }
     this.root.matrixWorldNeedsUpdate = true;
+    if (!fxActive) this.fx.hide();
+    else
+      this.fx.update(
+        cameraMatrix,
+        Math.max(0, Math.min(frameDt, 0.1)),
+        this.fxItems,
+      );
   }
 
   dispose(): void {
     this.generation++;
     this.mainHand.dispose();
     this.offHand.dispose();
+    this.fx.dispose();
     for (const hand of Object.values(this.hands))
       for (const child of hand.children) this.disposeBuilt(child);
     this.root.removeFromParent();

@@ -12,8 +12,16 @@ import {
   queryBladeSpin,
 } from '../combat/melee/bladeQueries';
 import { FlyingBlade } from '../render/flyingBlade';
-import { BoxGeometry, Euler, Group, Mesh, Quaternion } from 'three';
-import type { BufferGeometry, Scene as ThreeScene } from 'three';
+import {
+  Box3,
+  BoxGeometry,
+  Euler,
+  Group,
+  Mesh,
+  Quaternion,
+  Vector3,
+} from 'three';
+import type { BufferGeometry, Object3D, Scene as ThreeScene } from 'three';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
 import type { GameContext } from '../core/context';
@@ -114,6 +122,57 @@ const MODEL_FILES: Record<string, string> = {
   crate: 'crate',
   crate_small: 'crate_small',
 };
+
+/**
+ * Proste bryły rozciągane do kolizji bloku (docs/assets.md, „Montaż bloków”).
+ * Rekwizyty `city_*` i skrzynie zachowują proporcje i skalę 1.
+ */
+const STRETCH_MODELS = new Set(['pillar', 'cover_low', 'wall_segment']);
+
+/**
+ * Ustawia model bloku: początek układu modelu (spód, środek podstawy) w środku
+ * spodu bloku. Model rozciągliwy dostaje skalę niejednorodną tak, by jego
+ * bounding box był równy `size`, a spód i środek bboxu pokryły się z blokiem.
+ * Gdy dłuższy bok podstawy bloku leży w innej osi niż dłuższy bok modelu,
+ * model obraca się o 90° wokół Y, żeby profil (np. korona osłony) nie był
+ * ściskany wzdłuż długości.
+ */
+export function placeBlockModel(
+  scene: Object3D,
+  model: string,
+  size: Vec3,
+  position: Vec3,
+): void {
+  const base = new Vector3(position.x, position.y - size.y / 2, position.z);
+  scene.position.copy(base);
+  if (!STRETCH_MODELS.has(model)) return;
+  scene.position.set(0, 0, 0);
+  scene.rotation.set(0, 0, 0);
+  scene.scale.set(1, 1, 1);
+  scene.updateMatrixWorld(true);
+  const bounds = new Box3().setFromObject(scene);
+  if (bounds.isEmpty()) {
+    scene.position.copy(base);
+    return;
+  }
+  const extent = bounds.getSize(new Vector3());
+  const turn =
+    extent.x !== extent.z &&
+    size.x !== size.z &&
+    extent.x > extent.z !== size.x > size.z;
+  if (turn) scene.rotation.y = Math.PI / 2;
+  // Skala działa w osiach modelu, przed obrotem.
+  scene.scale.set(
+    (turn ? size.z : size.x) / extent.x,
+    size.y / extent.y,
+    (turn ? size.x : size.z) / extent.z,
+  );
+  const centre = bounds.getCenter(new Vector3());
+  const anchor = new Vector3(centre.x, bounds.min.y, centre.z)
+    .multiply(scene.scale)
+    .applyEuler(scene.rotation);
+  scene.position.copy(base).sub(anchor);
+}
 
 /** Jeden pokój runu: osobny świat i skład walki zgodny z Areną. */
 export class RoomScene implements Scene {
@@ -305,7 +364,7 @@ export class RoomScene implements Scene {
     this.root.add(this.beamView.root, this.explosionView.root);
     this.barrierView = new BarrierRenderer(ctx.tuning);
     this.root.add(this.barrierView.root);
-    this.lightningView = new LightningRenderer(ctx.tuning);
+    this.lightningView = new LightningRenderer(ctx.tuning, ctx.bus, playerId);
     this.root.add(this.lightningView.root);
 
     this.manager = new EnemyManager(
@@ -468,6 +527,11 @@ export class RoomScene implements Scene {
     this.root.add(this.debrisView.root);
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
+      bodyOf: (id) => {
+        const e = this.enemy(id);
+        return e ? enemyBody(e, 1) : null;
+      },
+      cameraPosition: () => ctx.camera?.position ?? null,
       tuning: ctx.tuning,
     });
 
@@ -604,12 +668,12 @@ export class RoomScene implements Scene {
               ? await cloneCityModel(file)
               : await cloneRoomModel(file);
             if (!scene || this.disposed) return;
-            if (blockMaterial)
+            if (blockMaterial && !file.startsWith('city_'))
               scene.traverse((node) => {
                 if (node instanceof Mesh)
                   node.material = getMaterial(blockMaterial);
               });
-            scene.position.set(position.x, position.y - size.y / 2, position.z);
+            placeBlockModel(scene, file, size, position);
             blocks.remove(fallback);
             models.add(scene);
           } catch {
@@ -1038,6 +1102,7 @@ export class RoomScene implements Scene {
         this.blade.view().state !== 'throwing' &&
         this.executeTarget !== null,
     );
+    this.hazardView.advance(frameDt);
     this.hazardView.update(this.hazards.state(), alpha);
     const ids = this.seenEnemyIds;
     ids.clear();
@@ -1070,12 +1135,15 @@ export class RoomScene implements Scene {
     this.atmosphere?.sync(frameDt);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
+    this.barrierView.advance(frameDt);
+    this.lightningView.advance(frameDt);
     const camera = this.ctx.camera;
     const powers = this.powerPair;
     powers[0] = this.powers.get(0);
     powers[1] = this.powers.get(1);
     if (!camera) {
       this.dressing?.render(frameDt, undefined);
+      this.beamView.advance(frameDt);
       this.beamView.render(this.weapon.beam);
       this.lightningView.render(powers);
       return;
@@ -1114,6 +1182,7 @@ export class RoomScene implements Scene {
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
       visible: this.state === 'playing',
     });
+    this.beamView.advance(frameDt);
     this.beamView.render(this.weapon.beam, this.fppView.beamOrigin);
     this.lightningView.render(powers, camera);
   }

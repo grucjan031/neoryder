@@ -4,8 +4,10 @@ import {
   HalfFloatType,
   Matrix3,
   Matrix4,
+  Mesh,
   MeshNormalMaterial,
   NearestFilter,
+  PlaneGeometry,
   ShaderMaterial,
   UnsignedIntType,
   Vector2,
@@ -33,15 +35,54 @@ import { PostFxPass, PostFxState } from './postFx';
 import { renderWithViewmodel } from './viewmodelLayer';
 import { frameProfiler } from './frameProfiler';
 
+/** Ustawienia konturu zależnego od odległości (pola z `tuning.render`). */
+export interface OutlineFade {
+  outlineFadeNear: number;
+  outlineFadeFar: number;
+  outlineFarNormal: number;
+  outlineFarOuter: number;
+}
+
+/**
+ * Odpowiednik shadera kompozycji (TS, do testów i strojenia): mnożniki linii w odległości `depth` m.
+ * `normal` — siła linii wewnątrz bryły; `depthInside` — siła obrysu sylwetki po stronie obiektu
+ * (po stronie tła obrys zostaje zawsze pełny).
+ */
+export function outlineFadeAt(
+  depth: number,
+  fade: OutlineFade,
+): { far: number; normal: number; depthInside: number } {
+  const far = smoothstep(
+    fade.outlineFadeNear,
+    Math.max(fade.outlineFadeFar, fade.outlineFadeNear + 1e-3),
+    depth,
+  );
+  return {
+    far,
+    normal: 1 - far * (1 - fade.outlineFarNormal),
+    depthInside: 1 - far * fade.outlineFarOuter,
+  };
+}
+
+function smoothstep(edge0: number, edge1: number, x: number): number {
+  const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
+  return t * t * (3 - 2 * t);
+}
+
 const fragmentShader = /* glsl */ `
   #include <packing>
   uniform sampler2D colorMap;
+  uniform sampler2D colorDepthMap;
   uniform sampler2D normalMap;
   uniform sampler2D depthMap;
   uniform vec2 texelSize;
   uniform float thickness;
   uniform float depthThreshold;
   uniform float normalThreshold;
+  uniform float outlineFadeNear;
+  uniform float outlineFadeFar;
+  uniform float outlineFarNormal;
+  uniform float outlineFarOuter;
   uniform vec3 outlineColor;
   uniform float cameraNear;
   uniform float cameraFar;
@@ -49,10 +90,6 @@ const fragmentShader = /* glsl */ `
   uniform bool perspective;
   uniform sampler2D bloomMap;
   uniform float bloomStrength;
-  uniform float skyGradient;
-  uniform float skyHeight;
-  uniform vec3 skyTop;
-  uniform vec3 skyHorizon;
   uniform mat4 inverseProjection;
   uniform mat3 cameraRotation;
   uniform float fogStrength;
@@ -100,13 +137,16 @@ const fragmentShader = /* glsl */ `
     float dy = 0.0;
     vec3 nx = vec3(0.0);
     vec3 ny = vec3(0.0);
+    float nearest = centerDepth;
     for (int y = -1; y <= 1; y++) {
       for (int x = -1; x <= 1; x++) {
         vec2 uv = vUv + vec2(float(x), float(y)) * offset;
         float wx = float(x) * (y == 0 ? 2.0 : 1.0);
         float wy = float(y) * (x == 0 ? 2.0 : 1.0);
         // Różnica względem środka ogranicza utratę precyzji daleko od kamery.
-        float depth = (viewDepth(uv) - centerDepth) / centerDepth;
+        float sampleDepth = viewDepth(uv);
+        nearest = min(nearest, sampleDepth);
+        float depth = (sampleDepth - centerDepth) / centerDepth;
         dx += depth * wx;
         dy += depth * wy;
         nx += normalAt(uv) * wx;
@@ -115,7 +155,13 @@ const fragmentShader = /* glsl */ `
     }
     float depthEdge = length(vec2(dx, dy)) / 8.0;
     float normalEdge = sqrt(dot(nx, nx) + dot(ny, ny)) / 8.0;
-    float edge = max(step(depthThreshold, depthEdge), step(normalThreshold, normalEdge));
+    // Z odległością linie wewnątrz bryły (normalne) gasną, a obrys sylwetki (głębia) przechodzi
+    // na stronę tła: cienkie kończyny dalekich wrogów zostają w swoim kolorze zamiast w kolorze linii.
+    float far = smoothstep(outlineFadeNear, max(outlineFadeFar, outlineFadeNear + 1e-3), centerDepth);
+    float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
+    float depthLine = step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
+    float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
+    float edge = max(depthLine, normalLine);
     if (thickness <= 0.0) edge = 0.0;
     vec4 color = texture2D(colorMap, vUv);
     vec3 rgb = color.rgb;
@@ -141,16 +187,14 @@ const fragmentShader = /* glsl */ `
       float fresnel = 0.25+0.75*pow(1.0-abs(normalize(eyePosition-worldPoint).y),3.0);
       rgb += texture2D(reflectionMap,reflectionUv).rgb * reflectionStrength * wet * floorMask * puddle * fresnel * inside;
     }
-    // Brak geometrii w buforze głębi = niebo: gradient pionowy zamiast płaskiego tła.
-    if (texture2D(depthMap, vUv).x >= 1.0) {
-      if (skyGradient > 0.0) {
-        vec4 view = inverseProjection * vec4(vUv * 2.0 - 1.0, 1.0, 1.0);
-        float up = (cameraRotation * normalize(view.xyz / view.w)).y;
-        vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, skyHeight, up));
-        rgb = mix(rgb, sky, skyGradient);
-      }
+    // Brak geometrii w buforze głębi koloru = niebo. Gradient nieba jest już w buforze koloru
+    // (tło rysowane w przebiegu koloru przed obiektami przezroczystymi, skyBackgroundFragment),
+    // więc hologramy, deszcz i viewmodel na niebie mają poprawne krycie; tu tylko błysk burzy
+    // i brak mgły. Głębia koloru, nie normalnych: obiekty bez konturu (rdzeń ostrza, błysk)
+    // nie trafiają do bufora normalnych i bez tego znikały na tle nieba.
+    if (texture2D(colorDepthMap, vUv).x >= 1.0) {
       rgb += vec3(0.62, 0.68, 0.95) * skyFlash;
-    } else if (fogStrength > 0.0 || heightFogDensity > 0.0) {
+    } else if ((fogStrength > 0.0 || heightFogDensity > 0.0) && rawDepth < 1.0) {
       // Mgła ku bieli ściąga też kontury, więc dalekie obiekty odcinają się od bliskich.
       float fog = smoothstep(fogNear, fogFar, centerDepth) * fogStrength;
       // Ca?ka g?sto?ci wzd?u? promienia: stabilna tak?e dla poziomego spojrzenia.
@@ -184,6 +228,38 @@ const fragmentShader = /* glsl */ `
 `;
 
 /**
+ * Tło nieba w przebiegu koloru: pełnoekranowy quad na dalekiej płaszczyźnie (głębia NDC 1),
+ * bez zapisu głębi. Test LEQUAL przepuszcza go tylko tam, gdzie nie ma geometrii
+ * nieprzezroczystej; najniższy `renderOrder` stawia go przed wszystkimi obiektami
+ * przezroczystymi, które mieszają się już z gradientem (nie z płaskim kolorem tła).
+ * Alfa = `skyGradient`: przy 0 zostaje kolor tła sceny, jak wcześniej w kompozycji.
+ */
+export const SKY_BACKGROUND_ORDER = -1e9;
+const skyBackgroundVertex = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = vec4(position.xy, 1.0, 1.0);
+  }
+`;
+export const skyBackgroundFragment = /* glsl */ `
+  uniform float skyGradient;
+  uniform float skyHeight;
+  uniform vec3 skyTop;
+  uniform vec3 skyHorizon;
+  uniform mat4 inverseProjection;
+  uniform mat3 cameraRotation;
+  varying vec2 vUv;
+  void main() {
+    vec4 view = inverseProjection * vec4(vUv * 2.0 - 1.0, 1.0, 1.0);
+    float up = (cameraRotation * normalize(view.xyz / view.w)).y;
+    vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, skyHeight, up));
+    gl_FragColor = vec4(sky, skyGradient);
+    #include <colorspace_fragment>
+  }
+`;
+
+/**
  * Pipeline stylu: kolor + normalne/głębia (obrys Sobela, niebo, mgła), opcjonalnie bloom
  * selektywny, opcjonalnie końcowy pass kompozycji (winieta, impulsy obrażeń i Skupienia).
  */
@@ -202,12 +278,17 @@ export class StylePipeline {
   });
   private readonly uniforms = {
     colorMap: { value: this.colorTarget.texture },
+    colorDepthMap: { value: this.colorTarget.depthTexture as Texture },
     normalMap: { value: this.normalTarget.texture },
     depthMap: { value: this.normalTarget.depthTexture },
     texelSize: { value: new Vector2(1, 1) },
     thickness: { value: 1 },
     depthThreshold: { value: 0 },
     normalThreshold: { value: 0 },
+    outlineFadeNear: { value: 0 },
+    outlineFadeFar: { value: 1 },
+    outlineFarNormal: { value: 1 },
+    outlineFarOuter: { value: 0 },
     outlineColor: { value: new Color() },
     cameraNear: { value: 0.1 },
     cameraFar: { value: 100 },
@@ -255,6 +336,19 @@ export class StylePipeline {
       toneMapped: false,
     }),
   );
+  /** Dodawane do sceny tylko na czas przebiegu koloru (nie trafia do normalnych, bloomu, odbić). */
+  readonly skyBackground = new Mesh(
+    new PlaneGeometry(2, 2),
+    new ShaderMaterial({
+      name: 'sky_background',
+      uniforms: this.uniforms,
+      vertexShader: skyBackgroundVertex,
+      fragmentShader: skyBackgroundFragment,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
   private readonly drawingSize = new Vector2();
   private readonly clearColor = new Color();
   /** Tworzone przy pierwszym użyciu: wyłączone przełączniki nie kosztują pamięci. */
@@ -269,6 +363,11 @@ export class StylePipeline {
   constructor(private readonly renderer: WebGLRenderer) {
     const size = renderer.getSize(new Vector2());
     this.setSize(size.x, size.y);
+    this.skyBackground.name = 'sky-background';
+    this.skyBackground.frustumCulled = false;
+    this.skyBackground.renderOrder = SKY_BACKGROUND_ORDER;
+    this.skyBackground.userData.noOutline = true;
+    this.skyBackground.userData.bloom = false;
   }
 
   /** Stan impulsów kompozycji (obrażenia, Skupienie); testy i debug mogą go ustawiać wprost. */
@@ -336,6 +435,10 @@ export class StylePipeline {
     uniforms.thickness.value = t.outlineThickness;
     uniforms.depthThreshold.value = t.outlineDepthThreshold;
     uniforms.normalThreshold.value = t.outlineNormalThreshold;
+    uniforms.outlineFadeNear.value = t.outlineFadeNear;
+    uniforms.outlineFadeFar.value = t.outlineFadeFar;
+    uniforms.outlineFarNormal.value = t.outlineFarNormal;
+    uniforms.outlineFarOuter.value = t.outlineFarOuter;
     uniforms.outlineColor.value.set(t.outlineColor);
     uniforms.cameraNear.value = camera.near;
     uniforms.cameraFar.value = camera.far;
@@ -389,8 +492,11 @@ export class StylePipeline {
       frameProfiler?.begin('color');
       try {
         renderer.setRenderTarget(this.colorTarget);
+        // Gradient nieba jako tło przebiegu koloru (tylko ten przebieg, tylko warstwa świata).
+        if (t.skyGradient > 0) scene.add(this.skyBackground);
         renderWithViewmodel(renderer, scene, camera);
       } finally {
+        this.skyBackground.removeFromParent();
         frameProfiler?.end();
       }
       frameProfiler?.begin('normals');
@@ -466,6 +572,8 @@ export class StylePipeline {
     this.normalTarget.depthTexture?.dispose();
     this.normalTarget.dispose();
     this.normalMaterial.dispose();
+    this.skyBackground.geometry.dispose();
+    this.skyBackground.material.dispose();
     this.composite.dispose();
     this.postFx?.dispose();
     this.bloom?.dispose();

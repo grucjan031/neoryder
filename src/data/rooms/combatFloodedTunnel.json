@@ -5,50 +5,126 @@
   "theme": "neonStreet",
   "rainShelters": [
     {
-      "position": { "x": 0, "y": 2, "z": 0 },
-      "size": { "x": 12, "y": 4, "z": 24 }
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": 0
+      },
+      "size": {
+        "x": 12,
+        "y": 4,
+        "z": 24
+      }
     }
   ],
-  "playerSpawn": { "x": 0, "y": 0, "z": 13 },
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 13
+  },
   "blocks": [
     {
-      "size": { "x": 12, "y": 1, "z": 32 },
-      "position": { "x": 0, "y": -0.5, "z": 0 },
+      "size": {
+        "x": 12,
+        "y": 1,
+        "z": 32
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
       "material": "asphalt"
     },
     {
-      "size": { "x": 1, "y": 4, "z": 32 },
-      "position": { "x": -5.5, "y": 2, "z": 0 },
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 32
+      },
+      "position": {
+        "x": -5.5,
+        "y": 2,
+        "z": 0
+      },
       "material": "concrete"
     },
     {
-      "size": { "x": 1, "y": 4, "z": 32 },
-      "position": { "x": 5.5, "y": 2, "z": 0 },
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 32
+      },
+      "position": {
+        "x": 5.5,
+        "y": 2,
+        "z": 0
+      },
       "material": "concrete"
     },
     {
-      "size": { "x": 5, "y": 4, "z": 1 },
-      "position": { "x": -3.5, "y": 2, "z": -15.5 },
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -3.5,
+        "y": 2,
+        "z": -15.5
+      },
       "material": "facade"
     },
     {
-      "size": { "x": 5, "y": 4, "z": 1 },
-      "position": { "x": 3.5, "y": 2, "z": -15.5 },
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 3.5,
+        "y": 2,
+        "z": -15.5
+      },
       "material": "facade"
     },
     {
-      "size": { "x": 5, "y": 4, "z": 1 },
-      "position": { "x": -3.5, "y": 2, "z": 15.5 },
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -3.5,
+        "y": 2,
+        "z": 15.5
+      },
       "material": "facade"
     },
     {
-      "size": { "x": 5, "y": 4, "z": 1 },
-      "position": { "x": 3.5, "y": 2, "z": 15.5 },
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 3.5,
+        "y": 2,
+        "z": 15.5
+      },
       "material": "facade"
     },
     {
-      "size": { "x": 12, "y": 1, "z": 24 },
-      "position": { "x": 0, "y": 4.5, "z": 0 },
+      "size": {
+        "x": 12,
+        "y": 1,
+        "z": 24
+      },
+      "position": {
+        "x": 0,
+        "y": 4.5,
+        "z": 0
+      },
       "material": "concrete"
     }
   ],
@@ -56,30 +132,72 @@
     {
       "id": "tunnel-puddle",
       "kind": "electric_field",
-      "position": { "x": 0, "y": 0.7, "z": 0 },
-      "size": { "x": 6, "y": 1.4, "z": 20 },
-      "cycle": { "onS": 2, "offS": 5 }
+      "position": {
+        "x": 0,
+        "y": 0.7,
+        "z": 0
+      },
+      "size": {
+        "x": 6,
+        "y": 1.4,
+        "z": 20
+      },
+      "cycle": {
+        "onS": 2,
+        "offS": 5
+      }
     }
   ],
   "spawnPoints": [
-    { "x": -4, "z": -13 },
-    { "x": 4, "z": -13 },
-    { "x": -4, "z": 13 },
-    { "x": 4, "z": 13 },
-    { "x": 0, "z": -13 }
+    {
+      "x": -4,
+      "z": -13
+    },
+    {
+      "x": 4,
+      "z": -13
+    },
+    {
+      "x": -4,
+      "z": 13
+    },
+    {
+      "x": 4,
+      "z": 13
+    },
+    {
+      "x": 0,
+      "z": -13
+    }
   ],
   "doors": [
     {
       "id": "entry",
       "role": "entry",
-      "position": { "x": 0, "y": 1.5, "z": 15.5 },
-      "size": { "x": 2, "y": 3, "z": 1 }
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 1
+      }
     },
     {
       "id": "exit",
       "role": "exit",
-      "position": { "x": 0, "y": 1.5, "z": -15.5 },
-      "size": { "x": 2, "y": 3, "z": 1 }
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": -15.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 1
+      }
     }
   ],
   "director": {
@@ -89,8 +207,14 @@
     "reassignS": 1,
     "probeHeightM": 0.5,
     "slots": {
-      "melee": { "count": 8, "offsetDeg": 0 },
-      "shot": { "count": 6, "offsetDeg": 30 }
+      "melee": {
+        "count": 8,
+        "offsetDeg": 0
+      },
+      "shot": {
+        "count": 6,
+        "offsetDeg": 30
+      }
     }
   },
   "maxAlive": 8,
@@ -99,61 +223,598 @@
     {
       "kind": "neon",
       "texture": "metro",
-      "position": { "x": -4.95, "y": 2.6, "z": 11 },
-      "size": { "w": 2, "h": 1 },
+      "position": {
+        "x": -4.95,
+        "y": 2.6,
+        "z": 11
+      },
+      "size": {
+        "w": 2,
+        "h": 1
+      },
       "yaw": 1.5708,
       "tint": "#3d7bff"
+    },
+    {
+      "kind": "neon",
+      "texture": "metro",
+      "position": {
+        "x": 4.95,
+        "y": 2.7,
+        "z": -11
+      },
+      "size": {
+        "w": 2,
+        "h": 1
+      },
+      "yaw": -1.5708,
+      "tint": "#3d7bff",
+      "flicker": 0.1
+    },
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": 4.95,
+        "y": 2.9,
+        "z": 8
+      },
+      "size": {
+        "w": 1.6,
+        "h": 0.8
+      },
+      "yaw": -1.5708,
+      "tint": "#ffae1a",
+      "flicker": 0.15
+    },
+    {
+      "kind": "neon",
+      "texture": "pharmacy",
+      "position": {
+        "x": -4.95,
+        "y": 2.6,
+        "z": -9.5
+      },
+      "size": {
+        "w": 1.4,
+        "h": 1.4
+      },
+      "yaw": 1.5708,
+      "tint": "#6dff4a",
+      "flicker": 0.3
+    },
+    {
+      "kind": "neon",
+      "texture": "sake",
+      "position": {
+        "x": 4.95,
+        "y": 3.05,
+        "z": -2.5
+      },
+      "size": {
+        "w": 2.2,
+        "h": 1.1
+      },
+      "yaw": -1.5708,
+      "tint": "#8a5cff",
+      "flicker": 0.35
+    },
+    {
+      "kind": "holo",
+      "texture": "holo_jellyfish",
+      "position": {
+        "x": -4.85,
+        "y": 2,
+        "z": 1.2
+      },
+      "size": {
+        "w": 1.4,
+        "h": 2.8
+      },
+      "yaw": 1.5708,
+      "tint": "#8a5cff",
+      "flicker": 0.2
     }
   ],
   "lights": [
     {
-      "position": { "x": -4, "y": 3, "z": 6 },
+      "position": {
+        "x": -3.8,
+        "y": 3.3,
+        "z": 7.5
+      },
       "color": "#fff1d6",
-      "intensity": 3,
+      "intensity": 2.2,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 3.8,
+        "y": 3.6,
+        "z": 5
+      },
+      "color": "#3d7bff",
+      "intensity": 4,
       "range": 9
     },
     {
-      "position": { "x": 4, "y": 3, "z": -6 },
+      "position": {
+        "x": -3.8,
+        "y": 3.4,
+        "z": 1.2
+      },
+      "color": "#8a5cff",
+      "intensity": 4,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 3.8,
+        "y": 3.6,
+        "z": -4
+      },
+      "color": "#fff1d6",
+      "intensity": 3.5,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": -3.8,
+        "y": 3.4,
+        "z": -9.5
+      },
+      "color": "#6dff4a",
+      "intensity": 3.5,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 3.8,
+        "y": 3.4,
+        "z": -11
+      },
+      "color": "#3d7bff",
+      "intensity": 3.5,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 3.2,
+        "z": 14.2
+      },
       "color": "#ffae1a",
       "intensity": 3,
-      "range": 9
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 3.8,
+        "y": 3.2,
+        "z": 1
+      },
+      "color": "#ffae1a",
+      "intensity": 2.8,
+      "range": 6
     }
   ],
   "decals": [
     {
       "texture": "puddle1",
-      "position": { "x": 0, "y": 0.01, "z": 0 },
-      "size": { "w": 6, "h": 20 },
+      "position": {
+        "x": 0,
+        "y": 0.01,
+        "z": 0
+      },
+      "size": {
+        "w": 6,
+        "h": 20
+      },
       "yaw": 0,
       "surface": "floor",
       "opacity": 0.8
     },
     {
       "texture": "floor_arrow",
-      "position": { "x": -4, "y": 0.01, "z": 6 },
-      "size": { "w": 1, "h": 2 },
+      "position": {
+        "x": -4,
+        "y": 0.01,
+        "z": 6
+      },
+      "size": {
+        "w": 1,
+        "h": 2
+      },
       "yaw": 0,
       "surface": "floor",
       "opacity": 0.6
     },
     {
       "texture": "floor_arrow",
-      "position": { "x": 4, "y": 0.01, "z": 6 },
-      "size": { "w": 1, "h": 2 },
+      "position": {
+        "x": 4,
+        "y": 0.01,
+        "z": 6
+      },
+      "size": {
+        "w": 1,
+        "h": 2
+      },
       "yaw": 0,
       "surface": "floor",
       "opacity": 0.6
+    },
+    {
+      "texture": "oil_stain",
+      "position": {
+        "x": 3.2,
+        "y": 0.01,
+        "z": 3.5
+      },
+      "size": {
+        "w": 1.8,
+        "h": 1.8
+      },
+      "yaw": 0.6,
+      "surface": "floor",
+      "opacity": 0.5
+    },
+    {
+      "texture": "crack_floor",
+      "position": {
+        "x": -3.4,
+        "y": 0.01,
+        "z": -6.5
+      },
+      "size": {
+        "w": 2.4,
+        "h": 2.4
+      },
+      "yaw": 1.1,
+      "surface": "floor",
+      "opacity": 0.6
+    },
+    {
+      "texture": "puddle2",
+      "position": {
+        "x": -2,
+        "y": 0.01,
+        "z": 13.6
+      },
+      "size": {
+        "w": 3,
+        "h": 2.2
+      },
+      "yaw": 0.3,
+      "surface": "floor",
+      "opacity": 0.75
+    },
+    {
+      "texture": "manhole",
+      "position": {
+        "x": 2.6,
+        "y": 0.01,
+        "z": -13.4
+      },
+      "size": {
+        "w": 1.2,
+        "h": 1.2
+      },
+      "yaw": 0,
+      "surface": "floor",
+      "opacity": 0.8
+    },
+    {
+      "texture": "graffiti_piece",
+      "position": {
+        "x": -4.98,
+        "y": 1.3,
+        "z": 4.4
+      },
+      "size": {
+        "w": 2.8,
+        "h": 1.5
+      },
+      "yaw": 1.5708,
+      "surface": "wall",
+      "opacity": 0.8
+    },
+    {
+      "texture": "poster_torn1",
+      "position": {
+        "x": -4.98,
+        "y": 1.6,
+        "z": -11.6
+      },
+      "size": {
+        "w": 1.1,
+        "h": 1.3
+      },
+      "yaw": 1.5708,
+      "surface": "wall",
+      "opacity": 0.85
+    },
+    {
+      "texture": "leak_streak",
+      "position": {
+        "x": -4.98,
+        "y": 2.6,
+        "z": -12.8
+      },
+      "size": {
+        "w": 0.9,
+        "h": 2.4
+      },
+      "yaw": 1.5708,
+      "surface": "wall",
+      "opacity": 0.7
+    },
+    {
+      "texture": "leak_streak",
+      "position": {
+        "x": 4.98,
+        "y": 2.6,
+        "z": 6
+      },
+      "size": {
+        "w": 0.9,
+        "h": 2.4
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.7
+    },
+    {
+      "texture": "poster_torn2",
+      "position": {
+        "x": 4.98,
+        "y": 1.5,
+        "z": -4.6
+      },
+      "size": {
+        "w": 1.2,
+        "h": 1.2
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.85
+    },
+    {
+      "texture": "graffiti_tag3",
+      "position": {
+        "x": 4.98,
+        "y": 1.2,
+        "z": -12.8
+      },
+      "size": {
+        "w": 1.6,
+        "h": 1.4
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.75
+    },
+    {
+      "texture": "poster_torn3",
+      "position": {
+        "x": 4.98,
+        "y": 1.5,
+        "z": 3.4
+      },
+      "size": {
+        "w": 1.1,
+        "h": 1.3
+      },
+      "yaw": -1.5708,
+      "surface": "wall",
+      "opacity": 0.8
     }
   ],
   "ambientFx": [
-    { "kind": "drip", "position": { "x": 0, "y": 3.9, "z": 3 }, "rate": 2 }
+    {
+      "kind": "drip",
+      "position": {
+        "x": 0,
+        "y": 3.9,
+        "z": 3
+      },
+      "rate": 2
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -2,
+        "y": 3.95,
+        "z": 7.5
+      },
+      "rate": 1.5
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": 2.5,
+        "y": 3.95,
+        "z": -2
+      },
+      "rate": 1.8
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -3,
+        "y": 3.95,
+        "z": -9
+      },
+      "rate": 1.4
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 4,
+        "y": 0.05,
+        "z": -11
+      },
+      "rate": 3
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -4,
+        "y": 0.05,
+        "z": 9.5
+      },
+      "rate": 2.5
+    },
+    {
+      "kind": "sparks",
+      "position": {
+        "x": 4.6,
+        "y": 3.5,
+        "z": 4.2
+      },
+      "rate": 0.3
+    }
   ],
   "decor": [
     {
       "model": "city_pipe_run",
-      "position": { "x": -4.95, "y": 2.5, "z": 0 },
-      "yaw": 1.5708
+      "position": {
+        "x": -4.95,
+        "y": -2.1,
+        "z": -0.5
+      },
+      "yaw": 1.5708,
+      "scale": 1
     },
-    { "model": "city_vent_grate", "position": { "x": 4, "y": 0, "z": -11 } }
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 4.95,
+        "y": -2.1,
+        "z": -7
+      },
+      "yaw": -1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 4,
+        "y": 0,
+        "z": -11
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": -4,
+        "y": 0,
+        "z": 9.5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": -4.3,
+        "y": 3.95,
+        "z": 4
+      },
+      "yaw": 1.5707963267948966,
+      "scale": 0.9
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 4.3,
+        "y": 3.95,
+        "z": -5
+      },
+      "yaw": 1.5707963267948966,
+      "scale": 0.9
+    },
+    {
+      "model": "city_shutter",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 1
+      },
+      "yaw": -1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_shutter",
+      "position": {
+        "x": -5,
+        "y": 0,
+        "z": -5.5
+      },
+      "yaw": 1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_door",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 10.5
+      },
+      "yaw": -1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_ad_screen",
+      "position": {
+        "x": -5,
+        "y": 0.9,
+        "z": 7
+      },
+      "yaw": 1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_vending",
+      "position": {
+        "x": -5.27,
+        "y": 0,
+        "z": -2.2
+      },
+      "yaw": 1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_trash_bags",
+      "position": {
+        "x": -4.3,
+        "y": 0,
+        "z": 14
+      },
+      "yaw": 0.4,
+      "scale": 1
+    },
+    {
+      "model": "city_traffic_cone",
+      "position": {
+        "x": 4.2,
+        "y": 0,
+        "z": -13.8
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_traffic_cone",
+      "position": {
+        "x": 3.6,
+        "y": 0,
+        "z": -14.3
+      },
+      "yaw": 0.7,
+      "scale": 1
+    }
   ]
 }

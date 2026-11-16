@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 for (const room of ['combatYard', 'combatPillars'])
   test(`room-test: ${room}, start pierwszej fali i run clear`, async ({
@@ -8,12 +8,14 @@ for (const room of ['combatYard', 'combatPillars'])
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(
-      `/?scene=room-test&room=${room}&loadout=gunner&seed=room-e2e&debug=1`,
+      `/?scene=room-test&room=${room}&loadout=gunner&seed=room-e2e&debug=1&fx=lite`,
     );
     const query = (name: string) =>
       page.evaluate((n) => window.__neoryder?.query(n), name);
     await expect
-      .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+      .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+        timeout: LOAD_TIMEOUT,
+      })
       .toBe('room-test');
     expect(await query('loadout')).toBe('gunner');
     expect(await query('heldItem')).toMatchObject({ held: 'gun' });

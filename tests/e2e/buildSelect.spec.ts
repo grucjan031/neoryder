@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 const builds = [
   { id: 'blade', name: 'Ostrze', synergies: 0 },
@@ -21,10 +21,12 @@ for (const build of builds)
     page.on('console', (message) => {
       if (message.type() === 'error') errors.push(message.text());
     });
-    await page.goto('/?scene=arena&debug=1&seed=build-e2e');
+    await page.goto('/?scene=arena&debug=1&fx=lite&seed=build-e2e');
     const q = (name: string) =>
       page.evaluate((n) => window.__neoryder?.query(n), name);
-    await expect.poll(() => q('state')).toBe('select');
+    await expect
+      .poll(() => q('state'), { timeout: LOAD_TIMEOUT })
+      .toBe('select');
     await expect(
       page.getByRole('heading', { name: 'Wybierz build' }),
     ).toBeVisible();

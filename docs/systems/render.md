@@ -329,6 +329,13 @@ od odległości kamery. Gradienty Sobela są dzielone przez 8. Grubość jest od
 próbek w pikselach bufora GPU (nie CSS), a kolor pochodzi z `outlineColor`.
 `outlineDepthThreshold` i `outlineNormalThreshold` regulują wykrywanie krawędzi;
 wyższy próg usuwa drobniejsze krawędzie. `outlineThickness = 0` ukrywa linię.
+Kontur zależy od odległości piksela od kamery (czytelność dalekich wrogów, ADR 0006 pkt 3):
+między `outlineFadeNear` a `outlineFadeFar` (m) linie wewnątrz bryły (krawędzie normalnych)
+słabną do `outlineFarNormal` (0 = znikają), a obrys sylwetki (krawędź głębi) w ułamku
+`outlineFarOuter` rysuje się tylko na pikselach tła (dalszych od sąsiada o próg głębi).
+Bliżej niż `outlineFadeNear` kontur jest taki jak wcześniej; dalecy wrogowie zostają
+czerwonymi bryłami z cienkim obrysem zamiast ciemnych plam z linii na kończynach.
+`outlineFarNormal = 1` i `outlineFarOuter = 0` przywracają kontur niezależny od odległości.
 **`outline = 0` omija cały pipeline stylu** (zwykły `renderer.render`, bez mgły, gradientu,
 bloomu i postFx; materiały nadal się synchronizują, a siatka podłogi działa).
 

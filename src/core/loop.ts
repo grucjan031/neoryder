@@ -27,11 +27,21 @@ export class GameLoop {
   private lastMs = 0;
   private readonly clock: Clock;
   private readonly scheduler: FrameScheduler;
+  private readonly maxSteps: number;
 
   constructor(
     private readonly cb: LoopCallbacks,
-    opts: { clock?: Clock; scheduler?: FrameScheduler } = {},
+    opts: {
+      clock?: Clock;
+      scheduler?: FrameScheduler;
+      /** Limit kroków na klatkę; większy tylko dla testów na wolnym renderze (`fx=lite`). */
+      maxStepsPerFrame?: number;
+    } = {},
   ) {
+    this.maxSteps = Math.max(
+      1,
+      Math.floor(opts.maxStepsPerFrame ?? MAX_STEPS_PER_FRAME),
+    );
     this.clock = opts.clock ?? { now: () => performance.now() };
     this.scheduler = opts.scheduler ?? {
       request: (callback) => requestAnimationFrame(callback),
@@ -79,7 +89,7 @@ export class GameLoop {
     this.accumulator += frameMs / 1000;
     let steps = 0;
     let consumedMs = 0;
-    while (this.accumulator >= SIM_DT && steps < MAX_STEPS_PER_FRAME) {
+    while (this.accumulator >= SIM_DT && steps < this.maxSteps) {
       const boundaryMs = ((steps + 1) * SIM_DT - previousAccumulator) * 1000;
       const frozen = this.hitstopMs > TIME_EPSILON_MS;
       this.hitstopMs = Math.max(0, this.hitstopMs - (boundaryMs - consumedMs));
@@ -92,7 +102,7 @@ export class GameLoop {
       0,
       this.hitstopMs - Math.max(0, frameMs - consumedMs),
     );
-    if (steps === MAX_STEPS_PER_FRAME) this.accumulator %= SIM_DT;
+    if (steps === this.maxSteps) this.accumulator %= SIM_DT;
     this.cb.render(this.accumulator / SIM_DT, frameMs / 1000);
     return steps;
   }

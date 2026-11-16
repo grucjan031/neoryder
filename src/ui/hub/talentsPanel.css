@@ -1,12 +1,12 @@
 .talents-panel {
   --tp-blade: #00e5ff;
-  --tp-resonance: #e040fb;
+  --tp-resonance: #ff2bd6;
   --tp-gunner: #ffae1a;
-  --tp-hybrid: #9b6bff;
+  --tp-hybrid: #8a5cff;
   display: grid;
   gap: 14px;
   color: #f4f7fa;
-  font-family: system-ui, sans-serif;
+  font-family: var(--ui-font);
 }
 .talents-panel__head {
   display: flex;
@@ -29,10 +29,10 @@
   gap: 12px;
 }
 .talents-tree {
-  --accent: #828b94;
+  --accent: #3a5263;
   padding: 10px;
-  background: #0d1119;
-  border: 1px solid #34414c;
+  background: #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.16);
   border-top: 3px solid var(--accent);
 }
 .talents-tree[data-tree='blade'] {
@@ -76,8 +76,8 @@
   font: inherit;
   font-size: 0.9em;
   color: #f4f7fa;
-  background: #171d28;
-  border: 1px solid #596573;
+  background: #0c1626;
+  border: 1px solid rgba(0, 229, 255, 0.3);
   border-left: 4px solid var(--accent);
   cursor: pointer;
 }
@@ -94,11 +94,11 @@
   color: #b9c6d1;
 }
 .talents-panel button.talents-node[data-state='available'] {
-  background: #1c2533;
+  background: #0e1d2e;
   border-color: var(--accent);
 }
 .talents-panel button.talents-node[data-state='bought'] {
-  background: #0f2a2e;
+  background: #06303a;
   border-color: var(--accent);
 }
 .talents-panel button.talents-node[data-state='bought'] .talents-node__meta {
@@ -111,8 +111,8 @@
 .talents-panel__details {
   min-height: 3.6em;
   padding: 10px 12px;
-  background: #0d1119;
-  border: 1px solid #34414c;
+  background: #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.16);
   color: #b9c6d1;
   font-size: 0.9em;
 }
@@ -131,8 +131,8 @@
   text-align: center;
   font: inherit;
   color: #f4f7fa;
-  background: #171d28;
-  border: 1px solid #596573;
+  background: #0c1626;
+  border: 1px solid rgba(0, 229, 255, 0.3);
   cursor: pointer;
 }
 .talents-panel button.talents-panel__reset[data-confirm='true'] {
@@ -141,7 +141,7 @@
 }
 .talents-panel button.talents-panel__reset:hover,
 .talents-panel button.talents-panel__reset:focus-visible {
-  outline: 2px solid #00a9c4;
+  outline: 2px solid #00e5ff;
   outline-offset: 2px;
 }
 .talents-panel__status {

@@ -62,6 +62,11 @@ export const themeSchema = z.object({
       outlineDepthThreshold: nonnegative,
       outlineNormalThreshold: nonnegative,
       outlineColor: color,
+      /** Opcjonalne: motyw bez nich dziedziczy kontur zależny od odległości z tuning. */
+      outlineFadeNear: nonnegative.optional(),
+      outlineFadeFar: nonnegative.optional(),
+      outlineFarNormal: unit.optional(),
+      outlineFarOuter: unit.optional(),
       hemiIntensity: nonnegative,
       keyIntensity: nonnegative,
       bloom: unit,

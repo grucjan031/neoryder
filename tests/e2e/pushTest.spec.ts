@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 test('push-test: F odrzuca manekina na ścianę i zużywa energię', async ({
   page,
@@ -9,9 +9,11 @@ test('push-test: F odrzuca manekina na ścianę i zużywa energię', async ({
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=push-test&debug=1&seed=push-e2e');
+  await page.goto('/?scene=push-test&debug=1&fx=lite&seed=push-e2e');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('push-test');
   await page
     .getByLabel('Scena NEORYDER')

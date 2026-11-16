@@ -423,6 +423,7 @@ export class WeaponsTest implements Scene {
         horizontalSpeed: Math.hypot(current.velocity.x, current.velocity.z),
       });
     }
+    this.beamRenderer.advance(frameDt);
     this.beamRenderer.render(this.weapon.beam, this.fppView.beamOrigin);
     this.explosionRenderer.render(frameDt);
     if (this.bar) {
