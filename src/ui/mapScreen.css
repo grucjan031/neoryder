@@ -286,6 +286,15 @@
   outline: 2px solid var(--hud-health, #00e5ff);
   outline-offset: 2px;
 }
+/* Tryb wymuszonych kolorów: outline na całym węźle; reguła tutaj, żeby wygrała
+   z outline: none powyżej (ta sama specyficzność, późniejsza w pliku). */
+@media (forced-colors: active) {
+  .run-screen .sector-map__node:focus-visible,
+  .run-screen .sector-map__node.is-available:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
 .sector-map__legend {
   display: flex;
   flex-wrap: wrap;
