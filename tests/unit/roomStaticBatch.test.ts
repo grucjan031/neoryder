@@ -39,6 +39,13 @@ const baselines = {
   eliteFoundry: 625,
 };
 
+// modele city_* zachowują własne materiały; cała scena po scaleniu, także pule VFX.
+const batchedMeshes = {
+  alleyMarket: 202,
+  combatWarehouse: 178,
+  eliteFoundry: 195,
+};
+
 it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
   '%s: co najmniej 3x mniej siatek po init z prawdziwymi GLB',
   async (id) => {
@@ -152,6 +159,7 @@ it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
       );
       rows.push({ source: 'panorama', before: panorama, after: panorama });
       const after = counts([three]);
+      expect(after.meshes).toBe(batchedMeshes[id]);
       const saved = rows.reduce(
         (sum, row) => sum + row.before.meshes - row.after.meshes,
         0,

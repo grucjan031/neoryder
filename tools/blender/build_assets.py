@@ -1665,33 +1665,45 @@ def _city_print(root, name, mat, size, center, facing="+z", spin=0.0):
 def build_city_dumpster():
     root = _city_root("city_dumpster")
     # Painted skip widening towards the rim; the front face stays vertical for prints.
-    _city_box(root, "bin", (1.82, .90, .86), (0, .71, 0), "mat_paint", .045, taper=(1.05, 1.0))
+    _city_box(root, "bin", (1.82, .66, .86), (0, .59, 0), "mat_paint", .045, taper=(1.05, 1.0))
     _city_box(root, "rust_skirt", (1.84, .07, .88), (0, .30, 0), "mat_rust", .015)
-    _city_box(root, "top_rim", (1.96, .07, .94), (0, 1.175, 0), "mat_rust", .02)
-    _city_box(root, "lid", (.95, .065, 1.08), (-.49, 1.24, 0), "mat_plastic", .02)
+    _city_box(root, "top_rim", (1.96, .07, .94), (0, .935, 0), "mat_rust", .02)
+    _city_box(root, "lid", (.95, .065, 1.08), (-.49, .995, 0), "mat_plastic", .02)
     # Second lid propped open a little on its rear hinge.
-    lift = .06
+    lift = .30
     _city_hull(root, "lid_open", [
-        [(x, 1.21, -.54), (x, 1.27, -.54), (x, 1.27 + lift, .54), (x, 1.21 + lift, .54)]
+        [(x, .97, -.54), (x, 1.03, -.54), (x, 1.03 + lift, .54), (x, .97 + lift, .54)]
         for x in (.02, .97)
     ], "mat_plastic")
-    _city_rod(root, "bag_peek", (.55, 1.12, .25), (.55, 1.25, .25), .17, "mat_rubber", 7, .09)
+    mesh_object("bag_peek", bm_ico(1, subdiv=1, scale=(.25, .20, .15)), "mat_rubber",
+                parent=root, location=_city_point((.55, 1.01, .22)))
     for x in (-.49, .49):
-        _city_box(root, "hinge", (.22, .07, .08), (x, 1.2, -.49), "mat_rust")
+        _city_box(root, "hinge", (.22, .07, .08), (x, .96, -.49), "mat_rust")
     for x in (-.78, .78):
         for z in (-.30, .30):
             _city_box(root, "caster_fork", (.08, .15, .13), (x, .2, z), "mat_trim")
             _city_rod(root, "wheel", (x - .045, .12, z), (x + .045, .12, z), .12, "mat_rubber", 10)
     for x in (-.30, .30):
-        _city_box(root, "pressed_rib", (.05, .72, .03), (x, .72, .443), "mat_paint", .01)
+        _city_box(root, "pressed_rib", (.08, .50, .03), (x, .63, .443), "mat_paint", .01)
     for x in (-.955, .955):
         _city_box(root, "fork_pocket", (.06, .16, .72), (x, .55, 0), "mat_trim", .012)
     for x in (-.62, .62):
-        _city_tube(root, "handle", [(x - .15, 1.04, .43), (x - .15, 1.04, .49),
-                                     (x + .15, 1.04, .49), (x + .15, 1.04, .43)], .018, "mat_rust")
+        _city_tube(root, "handle", [(x - .15, .83, .43), (x - .15, .83, .49),
+                                     (x + .15, .83, .49), (x + .15, .83, .43)], .018, "mat_rust")
     _city_print(root, "stencil", "mat_label_stencil", (.34, .34), (-.62, .70, .4335))
     _city_print(root, "sticker", "mat_label_barcode", (.22, .11), (.62, .86, .4335))
-    _city_rod(root, "drain_plug", (0, .40, .43), (0, .40, .46), .035, "mat_rust", 6)
+    _city_rod(root, "drain_plug", (0, .40, .43), (0, .40, .46), .035, "mat_neon_amber", 6)
+    # A lower rim leaves room for an open lid and refuse within the collider height.
+    for x, y, z, radius in ((-.65, 1.13, -.10, .22), (-.20, 1.09, -.20, .17)):
+        mesh_object("bag_load", bm_ico(1, subdiv=1, scale=(radius, radius * .85, .15)),
+                    "mat_rubber", parent=root, location=_city_point((x, y, z)))
+        _city_rod(root, "bag_load", (x, y + .12, z), (x + .035, y + .18, z),
+                  .045, "mat_rubber", 5, .025)
+    for z in (-.482, .482):
+        _city_box(root, "rim_light", (1.75, .06, .025), (0, .92, z), "mat_neon_amber")
+    for x in (-.955, .955):
+        _city_box(root, "side_armour", (.025, .34, .66), (x, .70, 0), "mat_rust", .012)
+    _city_merge_details(root, {"bag_load": "bag_peek", "rim_light": "drain_plug", "side_armour": "rust_skirt"})
     return root
 
 
@@ -1802,10 +1814,13 @@ def build_city_stall():
         for z in (-.92, .92):
             _city_box(root, "post", (.075, 1.47, .075), (x, 1.80, z), "mat_metal")
     _city_box(root, "back_panel", (2.7, 1.30, .05), (0, 1.71, -.83), "mat_wood")
-    _city_box(root, "canopy", (3, .14, 2), (0, 2.53, 0), "mat_fabric", .04)
-    _city_box(root, "valance", (3, .20, .03), (0, 2.37, .985), "mat_fabric")
+    _city_hull(root, "canopy", [
+        [(-1.5, y, z), (1.5, y, z), (1.5, y + .07, z), (-1.5, y + .07, z)]
+        for z, y in ((-1, 2.33), (-.30, 2.53), (.20, 2.53), (1, 2.32))
+    ], "mat_metal")
+    _city_box(root, "valance", (3, .20, .03), (0, 2.25, .985), "mat_fabric")
     for i, x in enumerate((-1.08, -.36, .36, 1.08)):
-        _city_box(root, "noren", (.66, .34, .012), (x, 2.10, .935), "mat_fabric")
+        _city_box(root, "noren", (.58, .46 if i % 2 else .30, .025), (x, 1.99 if i % 2 else 2.07, .935), "mat_fabric")
     _city_tube(root, "bulb_string", [(x, 2.25 - .10 * (1 - (x / 1.3) ** 2), .985)
                                       for x in [-1.3 + i * .325 for i in range(9)]], .008)
     for x in (-1.3 + i * .325 for i in range(9)):
@@ -1821,6 +1836,16 @@ def build_city_stall():
         _city_box(root, "front_panel", (.52, .70, .02), (x, .50, .81), "mat_wood", .01)
     _city_box(root, "kick_strip", (2.8, .08, .02), (0, .05, .815), "mat_rust")
     _city_print(root, "sticker", "mat_label_warning", (.16, .16), (1.15, .80, .8215))
+    for x in (-1.44, -.96, -.48, 0, .48, .96, 1.44):
+        _city_tube(root, "roof_rib", [(x, 2.40, -.99), (x, 2.60, -.30),
+                                     (x, 2.60, .20), (x, 2.39, .99)], .022, "mat_metal")
+    for z in (-1.005, 1.005):
+        _city_box(root, "canopy_light", (2.8, .065, .025), (0, 2.32, z), "mat_neon_amber")
+    for x in (-1.42, 1.42):
+        _city_rod(root, "diagonal", (x, 1.70, -.90), (x, 2.34, -.25), .035, "mat_metal", 4)
+    _city_box(root, "service_panel", (1.72, .57, .025), (-.28, .53, .84), "mat_trim", .02)
+    _city_box(root, "counter_light", (2.70, .055, .025), (0, .92, .84), "mat_neon_amber")
+    _city_merge_details(root, {"roof_rib", "canopy_light", "diagonal", "service_panel", "counter_light"})
     return root
 
 
@@ -1830,7 +1855,8 @@ def build_city_crates():
         _city_box(root, "pallet_block", (.12, .10, 1.2), (x, .05, 0), "mat_wood")
     for z in (-.5, -.25, 0, .25, .5):
         _city_box(root, "pallet_board", (1.2, .025, .18), (0, .1125, z), "mat_wood")
-    for i, mat in enumerate(("mat_plastic", "mat_plastic", "mat_wood")):
+    for i, mat in enumerate(("mat_plastic", "mat_wood", "mat_plastic")):
+        before = set(root.children)
         y = .125 + i * .49
         _city_box(root, "crate_shell", (1.14, .46, 1.14), (0, y + .23, 0), mat, .025)
         _city_box(root, "rim", (1.2, .05, 1.2), (0, y + .46, 0), mat, .015)
@@ -1840,36 +1866,77 @@ def build_city_crates():
         for z in (-.42, .42):
             _city_box(root, "side_rib", (.04, .38, .055), (.586, y + .24, z), mat)
             _city_box(root, "side_rib", (.04, .38, .055), (-.586, y + .24, z), mat)
-        _city_box(root, "handle_recess", (.30, .07, .015), (0, y + .38, .576), "mat_cable")
-    _city_print(root, "stencil", "mat_label_stencil", (.26, .26), (0, .125 + .49 + .19, .5715))
+        _city_box(root, "handle_recess", (.30, .07, .015), (0, y + .38, .576), "mat_neon_amber")
+        # Smaller upper cases form ledges while the pallet retains the footprint.
+        scale = (1.0, .84, .68)[i]
+        offset = (0, -.06, .12)[i]
+        for obj in set(root.children) - before:
+            obj.scale.x *= scale
+            obj.scale.y *= scale
+            obj.location.x = obj.location.x * scale + offset
+            obj.location.y *= scale
+    _city_print(root, "stencil", "mat_label_stencil", (.26, .26), (-.06, .125 + .49 + .19, .4815))
     _city_print(root, "sticker", "mat_label_barcode", (.2, .1), (.2, .125 + .17, .5715))
-    _city_print(root, "warning", "mat_label_warning", (.18, .18), (.5715, .125 + .98 + .2, 0), "+x")
+    _city_print(root, "warning", "mat_label_warning", (.18, .18), (.509, .125 + .98 + .2, 0), "+x")
+    for x in (-.38, .38):
+        _city_tube(root, "strap", [(x, .15, .61), (x, .60, .61),
+                                  (x, .65, .50), (x, 1.08, .50)], .04, "mat_plastic", 4)
+    for z in (-.49, .49):
+        _city_box(root, "locator", (.78, .045, .025), (-.06, 1.02, z), "mat_neon_amber")
+    _city_merge_details(root, {"strap", "locator"})
     return root
 
 
 def build_city_generator():
     root = _city_root("city_generator")
     _city_box(root, "skid", (1.6, .14, 1), (0, .07, 0), "mat_hazard", .02)
-    _city_box(root, "housing", (1.48, 1.11, .86), (0, .695, 0), "mat_machine", .05)
-    _city_box(root, "top_cover", (1.54, .10, .94), (0, 1.30, 0), "mat_paint", .025)
-    _city_rod(root, "exhaust", (-.52, 1.35, -.24), (-.52, 1.40, -.24), .07, "mat_rust", 8)
+    _city_box(root, "housing", (1.48, .83, .86), (0, .555, 0), "mat_machine", .05)
+    _city_box(root, "top_cover", (1.54, .10, .94), (0, 1.02, 0), "mat_paint", .025)
+    _city_rod(root, "exhaust", (-.52, 1.07, -.24), (-.52, 1.40, -.24), .09, "mat_rust", 8)
     _city_box(root, "exhaust_cap", (.18, .015, .18), (-.52, 1.392, -.24), "mat_rust")
     _city_box(root, "grille_recess", (.82, .70, .02), (-.25, .74, .435), "mat_cable")
     for i in range(8):
-        _city_box(root, "louvre", (.76, .035, .04), (-.25, .44 + i * .085, .45), "mat_trim")
+        _city_box(root, "louvre", (.76, .035, .04), (-.25, .44 + i * .085, .45), "mat_neon_green" if i in (1, 5) else "mat_trim")
     _city_box(root, "control_panel", (.34, .48, .03), (.48, .84, .445), "mat_trim", .015)
     _city_print(root, "status", "mat_screen_status", (.26, .13), (.48, .98, .4615))
     _city_rod(root, "socket", (.48, .75, .46), (.48, .75, .48), .06, "mat_rubber", 8)
     _city_tube(root, "power_cable", [(.48, .75, .48), (.68, .63, .48), (.70, .29, .48),
                                        (.43, .20, .48), (.26, .29, .48), (.28, .43, .48)], .025, "mat_rubber")
-    _city_print(root, "warning", "mat_label_warning", (.16, .16), (.25, 1.12, .4315))
+    _city_print(root, "warning", "mat_label_warning", (.16, .16), (.25, .88, .4315))
     _city_print(root, "stencil", "mat_label_stencil", (.34, .34), (.7415, .70, 0), "+x")
-    _city_box(root, "fuel_cap", (.12, .025, .12), (.50, 1.3625, .25), "mat_rubber", .008)
-    for x in (-.55, .55):
-        _city_tube(root, "lifting_eye", [(x - .05, 1.35, 0), (x - .05, 1.395, 0),
-                                          (x + .05, 1.395, 0), (x + .05, 1.35, 0)], .012, "mat_rust")
-    _city_bolts(root, [(-.67, .26, .43), (-.67, 1.16, .43), (.67, .26, .43), (.67, 1.16, .43)], "mat_rust")
+    _city_box(root, "fuel_cap", (.12, .025, .12), (.50, 1.0825, .25), "mat_rubber", .008)
+    for x in (-.68, .68):
+        _city_tube(root, "lifting_eye", [(x - .05, 1.22, 0), (x - .05, 1.30, 0),
+                                          (x + .05, 1.30, 0), (x + .05, 1.22, 0)], .012, "mat_rust")
+    _city_bolts(root, [(-.67, .26, .43), (-.67, .90, .43), (.67, .26, .43), (.67, .90, .43)], "mat_rust")
+    _city_box(root, "power_pack", (.66, .30, .64), (.10, 1.22, -.08), "mat_machine", .04)
+    for x in (-.68, .68):
+        _city_tube(root, "roll_cage", [(x, .18, -.38), (x, 1.22, -.38),
+                                      (x, 1.22, .32), (x, .18, .32)], .045, "mat_rust", 6)
+    for z in (-.411, .251):
+        _city_box(root, "pack_light", (.55, .065, .025), (.10, 1.23, z), "mat_neon_green")
+    _city_box(root, "rear_access", (1.0, .50, .035), (0, .60, -.44), "mat_paint", .02)
+    _city_merge_details(root, {"power_pack", "roll_cage", "pack_light", "rear_access"})
     return root
+
+
+def _city_merge_details(root, names):
+    """Bake static detail into existing material meshes, avoiding extra draw objects."""
+    details = [o for o in root.children if o.type == "MESH" and o.name.split(".")[0] in names]
+    targets = [o for o in root.children if o.type == "MESH" and o not in details]
+    for detail in details:
+        target_name = names.get(detail.name.split(".")[0]) if isinstance(names, dict) else None
+        target = next(o for o in targets if o.data.materials[0] == detail.data.materials[0]
+                      and (target_name is None or o.name == target_name))
+        bpy.ops.object.select_all(action="DESELECT")
+        target.select_set(True)
+        detail.select_set(True)
+        bpy.context.view_layer.objects.active = target
+        bpy.ops.object.join()
+        if root.name == "city_cable_span":
+            # Span endpoint trimming expects vertices in root coordinates.
+            target.data.transform(target.matrix_local)
+            target.matrix_basis = Matrix.Identity(4)
 
 
 def build_city_ac_unit():
@@ -1877,7 +1944,10 @@ def build_city_ac_unit():
     _city_box(root, "housing", (.9, .50, .46), (0, .35, .25), "mat_machine", .025)
     _city_box(root, "fan_recess", (.48, .38, .02), (-.15, .35, .487), "mat_cable")
     for angle in (0, 120, 240):
-        _city_box(root, "fan_blade", (.19, .06, .008), (-.15, .35, .501), "mat_metal", spin=angle + 20)
+        a = math.radians(angle)
+        _city_box(root, "fan_blade", (.16, .065, .008),
+                  (-.15 + .075 * math.cos(a), .35 + .075 * math.sin(a), .501),
+                  "mat_metal", spin=angle + 20)
     _city_rod(root, "fan_hub", (-.15, .35, .497), (-.15, .35, .512), .05, "mat_trim", 8)
     _city_ring(root, "fan_guard", (-.15, .35, .512), .17, "z", .006, "mat_metal", 12)
     _city_ring(root, "fan_guard", (-.15, .35, .512), .10, "z", .006, "mat_metal", 10)
@@ -1891,6 +1961,16 @@ def build_city_ac_unit():
         _city_rod(root, "support", (x, .02, .03), (x, .12, .44), .025, "mat_rust", 4)
     _city_tube(root, "drain_hose", [(.40, .14, .30), (.44, .10, .30), (.44, .0, .30)], .012, "mat_rubber")
     _city_bolts(root, [(-.40, .55, .48), (.40, .55, .48)])
+    _city_box(root, "service_seam", (.018, .43, .008), (.16, .35, .484), "mat_trim")
+    _city_box(root, "side_panel", (.008, .34, .30), (.449, .35, .25), "mat_trim")
+    for y in (.24, .30, .36, .42):
+        _city_box(root, "side_fin", (.009, .018, .25), (.451, y, .25), "mat_metal")
+    _city_box(root, "rain_lip", (.86, .025, .035), (0, .575, .47), "mat_trim")
+    _city_box(root, "lower_seam", (.82, .018, .008), (0, .125, .482), "mat_rust")
+    _city_print(root, "service_warning", "mat_label_barcode", (.10, .08), (.30, .54, .482))
+    _city_print(root, "service_id", "mat_label_barcode", (.20, .13), (.457, .36, .25), "+x")
+    _city_merge_details(root, {"service_seam", "side_panel", "side_fin", "rain_lip",
+                               "lower_seam", "service_warning", "service_id"})
     return root
 
 
@@ -1913,8 +1993,13 @@ def build_city_pipe_run():
         _city_box(root, "valve_spoke", (.2, .012, .012), (-.18, 1.30, .36), "mat_hivis", spin=angle)
     _city_rod(root, "gauge", (.16, 1.9, .265), (.16, 1.9, .32), .05, "mat_trim", 10)
     _city_rod(root, "gauge_face", (.16, 1.9, .32), (.16, 1.9, .323), .042, "mat_neon_white", 10)
+    _city_box(root, "gauge_needle", (.045, .006, .003), (.16, 1.9, .326), "mat_trim", spin=35)
+    for y in (.95, 4.85):
+        x = -.18 + (.20 if y > 2.9 else 0)
+        _city_rod(root, "inspection_band", (x, y, .22), (x, y + .09, .22), .078, "mat_hivis", 6)
     # Small bottom shoe establishes y=0 despite the rounded elbow cross-section.
     _city_box(root, "bottom_mount", (.5, .07, .08), (0, .035, .04), "mat_rust")
+    _city_merge_details(root, {"gauge_needle", "inspection_band"})
     return root
 
 
@@ -1948,15 +2033,24 @@ def build_city_shutter():
     for x in (-1.44, 1.44):
         _city_box(root, "guide", (.12, 2.85, .16), (x, 1.425, .08), "mat_rust", .015)
     for i in range(22):
-        _city_box(root, "slat", (2.76, .112, .065), (0, .07 + i * .125, .075), "mat_metal")
+        _city_box(root, "slat", (2.76, .112, .065), (0, .07 + i * .125, .075),
+                  "mat_paint" if 6 <= i <= 15 else "mat_metal")
     _city_box(root, "roller_box", (3, .20, .25), (0, 2.90, .125), "mat_paint", .025)
     _city_box(root, "bottom_rail", (2.78, .065, .14), (0, .0325, .07), "mat_hazard")
-    _city_box(root, "pull_handle", (.32, .045, .065), (0, .15, .12), "mat_trim")
+    _city_box(root, "pull_handle", (.32, .045, .065), (0, .15, .12), "mat_neon_amber")
     _city_box(root, "padlock", (.07, .08, .03), (.30, .10, .155), "mat_rust")
     _city_tube(root, "padlock_shackle", [(.28, .14, .155), (.28, .17, .155), (.32, .17, .155), (.32, .14, .155)],
                .006, "mat_metal")
     _city_print(root, "stencil", "mat_label_stencil", (.50, .50), (.85, 1.55, .1085))
     _city_print(root, "warning", "mat_label_warning", (.22, .22), (-.95, 1.25, .1085))
+    # Broad stepped armour and inset running lights read across the street.
+    for x in (-1.22, 1.22):
+        _city_box(root, "armour", (.26, 2.55, .09), (x, 1.36, .15), "mat_paint", .025)
+        _city_box(root, "running_light", (.065, 1.90, .025), (x, 1.48, .208), "mat_neon_amber")
+    _city_box(root, "header_lamp", (2.30, .075, .025), (0, 2.90, .238), "mat_neon_amber")
+    for y in (.45, 2.35):
+        _city_box(root, "armour_cross", (2.35, .16, .07), (0, y, .15), "mat_rust", .012)
+    _city_merge_details(root, {"armour", "running_light", "header_lamp", "armour_cross"})
     return root
 
 
@@ -2023,6 +2117,19 @@ def build_city_street_lamp():
     _city_print(root, "warning", "mat_label_warning", (.12, .12), (0, .80, -.2785))
     _city_box(root, "band", (.15, .25, .15), (0, 2.2, -.42), "mat_hazard")
     _city_bolts(root, [(-.15, .12, -.55), (.15, .12, -.55)], "mat_rust")
+    _city_rod(root, "base_collar", (0, .12, -.42), (0, .30, -.42), .105, "mat_trim", 8)
+    for x in (-.11, .11):
+        _city_rod(root, "base_gusset", (x, .13, -.42), (0, .46, -.42), .025, "mat_metal", 4)
+    _city_rod(root, "arm_brace", (0, 3.98, -.42), (0, 4.34, .18), .023, "mat_metal", 6)
+    _city_tube(root, "power_conduit", [(0, .95, -.32), (.075, 1.08, -.42),
+                                      (.075, 3.95, -.42), (0, 4.22, -.32)], .012, "mat_trim")
+    for y in (1.15, 3.85):
+        _city_rod(root, "conduit_clamp", (0, y, -.42), (0, y + .045, -.42), .083, "mat_trim", 6)
+    _city_box(root, "service_latch", (.025, .07, .012), (.065, .69, -.274), "mat_metal")
+    for z in (.12, .25, .38, .51):
+        _city_box(root, "lens_divider", (.27, .018, .018), (0, 4.294, z), "mat_trim")
+    _city_merge_details(root, {"base_collar", "base_gusset", "arm_brace", "power_conduit",
+                               "conduit_clamp", "service_latch", "lens_divider"})
     return root
 
 
@@ -2084,16 +2191,32 @@ def build_city_antenna():
         for y in (.7, 1.05, 1.4):
             _city_rod(root, "aerial", (x - .32, y, -.18), (x + .32, y, -.18), .015, "mat_metal", 4)
     _city_rod(root, "beacon", (-.46, 2.20, -.18), (-.46, 2.25, -.18), .03, "mat_neon_amber", 6)
-    # Shallow concave dish, with a raised outer rim and visible receiver arm.
-    _city_hull(root, "dish", [
-        [(math.cos(i * math.tau / 12) * .14, .80 + math.sin(i * math.tau / 12) * .14, .14) for i in range(12)],
-        [(math.cos(i * math.tau / 12) * .48, .80 + math.sin(i * math.tau / 12) * .48, .32) for i in range(12)],
-    ], "mat_trim")
+    # Closed shell with a recessed centre: no cap across the mouth of the dish.
+    bm = bmesh.new()
+    rings = [[bm.verts.new(_city_point((math.cos(i * math.tau / 12) * r,
+                                       .80 + math.sin(i * math.tau / 12) * r, z)))
+              for i in range(12)] for r, z in ((.14, .14), (.48, .32), (.48, .30), (.14, .12))]
+    bm.faces.new(tuple(reversed(rings[0])))
+    bm.faces.new(tuple(rings[-1]))
+    for a, b in zip(rings, rings[1:]):
+        for i in range(12):
+            j = (i + 1) % 12
+            bm.faces.new((a[i], a[j], b[j], b[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    mesh_object("dish", bm, "mat_metal", parent=root)
+    for x in (-.34, .34):
+        _city_rod(root, "dish_back_brace", (0, .8, .04), (x, 1.10, .25), .018, "mat_metal", 4)
+    _city_box(root, "junction_case", (.10, .22, .10), (0, .59, .66), "mat_machine", .012)
+    _city_rod(root, "coax_sleeve", (-.51, .25, -.18), (-.51, .40, -.18), .018, "mat_cable", 6)
+    for x in (-.46, .46):
+        _city_rod(root, "mast_collar", (x, .15, -.18), (x, .27, -.18), .065, "mat_rust", 6)
     _city_ring(root, "dish_rim", (0, .80, .32), .48, "z", .014, "mat_metal", 12)
-    _city_rod(root, "dish_mount", (0, .12, 0), (0, .8, .12), .045, "mat_rust")
+    _city_rod(root, "dish_mount", (0, .12, 0), (0, .8, .065), .045, "mat_rust")
     _city_rod(root, "receiver_arm", (0, .36, .30), (0, .76, .67), .025, "mat_trim")
     _city_rod(root, "receiver", (0, .76, .60), (0, .76, .72), .06, "mat_machine", 6)
     _city_tube(root, "coax", [(-.46, 1.8, -.18), (-.51, .25, -.18), (0, .20, .12), (0, .8, .12)], .012)
+    _city_merge_details(root, {"dish_back_brace": "dish", "junction_case": "receiver",
+                               "coax_sleeve": "coax", "mast_collar": "mast"})
     return root
 
 
@@ -2113,6 +2236,17 @@ def build_city_cable_span():
     for x in (-3.4, 3.4):
         _city_rod(root, "insulator", (x - .05, -(1 - (x / 5) ** 2) * .8, -.19),
                   (x + .05, -(1 - (x / 5) ** 2) * .8, -.19), .03, "mat_trim", 6)
+    for x in (-2.6, 0, 2.6):
+        sag = 1 - (x / 5) ** 2
+        _city_rod(root, "bundle_spacer", (x, -.8 * sag, -.19),
+                  (x, -sag, .19), .018, "mat_trim", 4)
+    for x in (-4.72, 4.72):
+        for k in range(3):
+            y = -(1 - (x / 5) ** 2) * (.8 + k * .1)
+            _city_rod(root, "strain_sleeve", (x - .09, y, (k - 1) * .19),
+                      (x + .09, y, (k - 1) * .19), .027, "mat_cable", 6)
+    _city_box(root, "junction_latch", (.05, .08, .015), (1.25, -.99, .068), "mat_trim")
+    _city_merge_details(root, {"bundle_spacer", "strain_sleeve", "junction_latch"})
     return root
 
 
