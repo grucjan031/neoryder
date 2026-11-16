@@ -43,6 +43,10 @@ const fragmentShader = /* glsl */ `
   uniform float thickness;
   uniform float depthThreshold;
   uniform float normalThreshold;
+  uniform float outlineFadeNear;
+  uniform float outlineFadeFar;
+  uniform float outlineFarNormal;
+  uniform float outlineFarOuter;
   uniform vec3 outlineColor;
   uniform float cameraNear;
   uniform float cameraFar;
@@ -103,13 +107,16 @@ const fragmentShader = /* glsl */ `
     float dy = 0.0;
     vec3 nx = vec3(0.0);
     vec3 ny = vec3(0.0);
+    float nearest = centerDepth;
     for (int y = -1; y <= 1; y++) {
       for (int x = -1; x <= 1; x++) {
         vec2 uv = vUv + vec2(float(x), float(y)) * offset;
         float wx = float(x) * (y == 0 ? 2.0 : 1.0);
         float wy = float(y) * (x == 0 ? 2.0 : 1.0);
         // Różnica względem środka ogranicza utratę precyzji daleko od kamery.
-        float depth = (viewDepth(uv) - centerDepth) / centerDepth;
+        float sampleDepth = viewDepth(uv);
+        nearest = min(nearest, sampleDepth);
+        float depth = (sampleDepth - centerDepth) / centerDepth;
         dx += depth * wx;
         dy += depth * wy;
         nx += normalAt(uv) * wx;
@@ -118,7 +125,13 @@ const fragmentShader = /* glsl */ `
     }
     float depthEdge = length(vec2(dx, dy)) / 8.0;
     float normalEdge = sqrt(dot(nx, nx) + dot(ny, ny)) / 8.0;
-    float edge = max(step(depthThreshold, depthEdge), step(normalThreshold, normalEdge));
+    // Z odległością linie wewnątrz bryły (normalne) gasną, a obrys sylwetki (głębia) przechodzi
+    // na stronę tła: cienkie kończyny dalekich wrogów zostają w swoim kolorze zamiast w kolorze linii.
+    float far = smoothstep(outlineFadeNear, max(outlineFadeFar, outlineFadeNear + 1e-3), centerDepth);
+    float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
+    float depthLine = step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
+    float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
+    float edge = max(depthLine, normalLine);
     if (thickness <= 0.0) edge = 0.0;
     vec4 color = texture2D(colorMap, vUv);
     vec3 rgb = color.rgb;
@@ -217,6 +230,10 @@ export class StylePipeline {
     thickness: { value: 1 },
     depthThreshold: { value: 0 },
     normalThreshold: { value: 0 },
+    outlineFadeNear: { value: 0 },
+    outlineFadeFar: { value: 1 },
+    outlineFarNormal: { value: 1 },
+    outlineFarOuter: { value: 0 },
     outlineColor: { value: new Color() },
     cameraNear: { value: 0.1 },
     cameraFar: { value: 100 },
@@ -348,6 +365,10 @@ export class StylePipeline {
     uniforms.thickness.value = t.outlineThickness;
     uniforms.depthThreshold.value = t.outlineDepthThreshold;
     uniforms.normalThreshold.value = t.outlineNormalThreshold;
+    uniforms.outlineFadeNear.value = t.outlineFadeNear;
+    uniforms.outlineFadeFar.value = t.outlineFadeFar;
+    uniforms.outlineFarNormal.value = t.outlineFarNormal;
+    uniforms.outlineFarOuter.value = t.outlineFarOuter;
     uniforms.outlineColor.value.set(t.outlineColor);
     uniforms.cameraNear.value = camera.near;
     uniforms.cameraFar.value = camera.far;

@@ -18,6 +18,7 @@ import {
 } from 'three';
 import type { Object3D, Scene as ThreeScene } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
 import pushTestData from '../data/scenes/pushTest.json';
@@ -406,8 +407,9 @@ export class MeleeTest implements Scene {
       this.entities.bindCollider(id, collider.handle);
       this.hurtboxes.add(id, collider, multiplier);
     }
+    // Object3D.clone zostawia SkinnedMesh związany z kośćmi szablonu: ciało się nie rysuje.
     const model = this.dummyTemplate
-      ? this.dummyTemplate.clone(true)
+      ? cloneSkinned(this.dummyTemplate)
       : new Mesh(new BoxGeometry(0.6, 1.8, 0.4), getMaterial('enemy'));
     if (!this.dummyTemplate) model.position.y = 0.9;
     const holder = new Group();

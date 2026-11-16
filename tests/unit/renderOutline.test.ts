@@ -1,9 +1,11 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import {
   Color,
+  Mesh,
   MeshNormalMaterial,
   PerspectiveCamera,
   Scene,
+  ShaderMaterial,
   Vector2,
   WebGLRenderTarget,
 } from 'three';
@@ -119,4 +121,43 @@ it('przywraca stan sceny i renderera także przy błędzie przebiegu normalnych'
   expect(clearColor.getHexString()).toBe('123456');
   pipeline.dispose();
   target.dispose();
+});
+
+it('przekazuje wygaszanie konturu z odległością do kompozycji', () => {
+  const { renderer, pipeline } = fixture();
+  let composite: ShaderMaterial | undefined;
+  renderer.render.mockImplementation((rendered: Scene) => {
+    const quad = rendered.children[0];
+    if (quad instanceof Mesh && quad.material instanceof ShaderMaterial)
+      composite = quad.material;
+  });
+  Object.assign(tuning.render, {
+    outlineFadeNear: 5,
+    outlineFadeFar: 18,
+    outlineFarNormal: 0.25,
+    outlineFarOuter: 0.5,
+  });
+  pipeline.render(new Scene(), new PerspectiveCamera());
+  expect(composite).toBeDefined();
+  const uniforms = composite!.uniforms;
+  expect(uniforms.outlineFadeNear!.value).toBe(5);
+  expect(uniforms.outlineFadeFar!.value).toBe(18);
+  expect(uniforms.outlineFarNormal!.value).toBe(0.25);
+  expect(uniforms.outlineFarOuter!.value).toBe(0.5);
+  // Linie normalnych gasną z odległością, a obrys głębi zostaje po stronie tła.
+  const shader = composite!.fragmentShader;
+  expect(shader).toContain('smoothstep(outlineFadeNear');
+  expect(shader).toContain('1.0 - far * (1.0 - outlineFarNormal)');
+  expect(shader).toContain('mix(1.0, behind, far * outlineFarOuter)');
+  pipeline.dispose();
+});
+
+it('domyślnie zostawia kontur bliskich obiektów bez zmian', () => {
+  const near = tuning.render.outlineFadeNear;
+  expect(near).toBeGreaterThanOrEqual(4);
+  expect(tuning.render.outlineFadeFar).toBeGreaterThan(near);
+  expect(tuning.render.outlineFarNormal).toBeGreaterThanOrEqual(0);
+  expect(tuning.render.outlineFarNormal).toBeLessThanOrEqual(1);
+  expect(tuning.render.outlineFarOuter).toBeGreaterThanOrEqual(0);
+  expect(tuning.render.outlineFarOuter).toBeLessThanOrEqual(1);
 });
