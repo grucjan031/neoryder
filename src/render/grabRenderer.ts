@@ -16,6 +16,7 @@ import {
 import type { Camera } from 'three';
 import type { GrabBeam } from '../combat/powers/grab';
 import type { Tuning } from '../core/tuning';
+import { getLiteFx } from './fxMode';
 
 const UP = new Vector3(0, 1, 0);
 
@@ -155,6 +156,10 @@ export class GrabRenderer {
   }
 
   private renderGlow(t: Tuning['vfx']): void {
+    if (getLiteFx()) {
+      this.tube.visible = this.orb.visible = false;
+      return;
+    }
     const now = performance.now();
     if (this.lastMs >= 0)
       this.time += Math.min(0.1, (now - this.lastMs) / 1000);

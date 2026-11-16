@@ -26,6 +26,7 @@ import type { Camera } from 'three';
 import { tuning as defaultTuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { getMaterial } from '../render/materials';
+import { getLiteFx } from '../render/fxMode';
 import type { CombatFlash, DebrisSystem } from './debris';
 
 const ENEMY_HOT = new Color('#ff3b2f');
@@ -198,6 +199,12 @@ export class DebrisRenderer {
     this.flashRoot.name = 'combat-flashes';
     for (let i = 0; i < FLASH_VIEWS; i++) this.flashViews.push(this.makeView());
     this.root.add(this.flashRoot);
+    // fx=lite: jedno miejsce decyzji — bez żaru, błysków i rozgrzewki shaderów.
+    if (getLiteFx()) {
+      this.warmFrames = 0;
+      this.edges.visible = false;
+      this.flashRoot.visible = false;
+    }
   }
 
   private makeView(): FlashView {
@@ -335,12 +342,15 @@ export class DebrisRenderer {
       .copy(hot)
       .lerp(WHITE_HOT, fade * 0.8);
     rimMaterial.uniforms.uOpacity!.value =
-      (flash.kind === 'kill' ? 1.6 : v.hitFlashBrightness) * fade * fade;
+      (flash.kind === 'kill' ? 1.6 : v.hitFlashBrightness) *
+      fade *
+      fade *
+      (flash.muted ? 0.35 : 1);
 
     if (flash.kind === 'hit') {
       view.core.visible = view.ring.visible = false;
       const point = flash.point;
-      view.star.visible = point !== null;
+      view.star.visible = point !== null && !flash.muted;
       if (point) {
         view.star.position.set(point.x, point.y, point.z);
         const size = v.hitFlashStarSizeM * (0.6 + 0.6 * Math.sqrt(k));
@@ -355,7 +365,7 @@ export class DebrisRenderer {
     // Zabicie: krótki biały rdzeń i pierścień fali w barwie rozpadu.
     view.star.visible = false;
     const coreK = Math.min(1, k * 2.4);
-    view.core.visible = coreK < 1;
+    view.core.visible = coreK < 1 && !flash.muted;
     view.core.position.set(origin.x, origin.y, origin.z);
     view.core.scale.setScalar(
       v.killFlashCoreM * (0.45 + 0.55 * Math.sqrt(coreK)),
@@ -366,7 +376,7 @@ export class DebrisRenderer {
     view.ring.position.set(origin.x, origin.y, origin.z);
     if (this.camera) view.ring.quaternion.copy(this.camera.quaternion);
     view.ring.scale.setScalar(v.killFlashRingM * (0.25 + 0.75 * Math.sqrt(k)));
-    view.ring.material.opacity = fade * fade * 0.9;
+    view.ring.material.opacity = fade * fade * (flash.muted ? 0.3 : 0.9);
     view.ring.material.color.copy(hot);
   }
 

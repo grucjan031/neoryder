@@ -10,6 +10,7 @@ import {
 } from 'three';
 import type { BarrierPower } from '../combat/powers/barrier';
 import type { Tuning } from '../core/tuning';
+import { getLiteFx } from './fxMode';
 import type { CameraPose } from '../player/fpsCamera';
 
 const latticeVertex = /* glsl */ `
@@ -93,6 +94,7 @@ export class BarrierRenderer {
     this.latticeMesh.name = 'barrier-lattice';
     this.latticeMesh.renderOrder = 1;
     this.root.add(this.mesh, this.latticeMesh);
+    this.latticeMesh.visible = !getLiteFx();
     this.root.visible = false;
   }
 

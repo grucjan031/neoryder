@@ -20,6 +20,7 @@ import type { BufferGeometry, Material } from 'three';
 import type { Hazard } from '../world/roomSchema';
 import type { HazardState } from '../world/hazards';
 import { getMaterial } from './materials';
+import { getLiteFx } from './fxMode';
 
 /** Po wybuchu beczki: osmalenie podłogi, żar i dym unoszący się kilka sekund (kosmetyka). */
 interface Wreck {
@@ -151,6 +152,11 @@ export class HazardView {
 
   constructor(hazards: readonly Hazard[]) {
     this.wrecks.name = 'hazard-wrecks';
+    // fx=lite: bez dymu, żaru i rozgrzewki ich shaderów.
+    if (getLiteFx()) {
+      this.warmFrames = 0;
+      this.wrecks.visible = false;
+    }
     this.root.add(this.wrecks);
     for (const hazard of hazards) {
       const root = new Group();

@@ -199,6 +199,10 @@ export class ExplosionRenderer {
       (first.material as MeshBasicMaterial).opacity = this.prewarmOpacity;
     };
     this.root.add(this.prewarm);
+    if (getLiteFx()) {
+      this.prewarm.visible = false;
+      this.prewarmFrames = 0;
+    }
     this.off = bus.on('explosion', ({ point, radiusM, tags }) => {
       const slot =
         this.pool.find(

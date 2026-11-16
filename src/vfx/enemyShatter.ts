@@ -1,12 +1,16 @@
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
+import { loadSettings } from '../core/save';
+import type { Settings } from '../core/save';
 import type { DebrisSystem } from './debris';
 
 export interface EnemyShatterOptions {
   /** Pozycja stóp wroga (dla drona: środek bryły); null dla gracza i nieznanych encji. */
   positionOf(id: EntityId): Vec3 | null;
   tuning: Pick<Tuning, 'vfx'>;
+  /** Ustawienia (domyślnie `loadSettings()` przy zdarzeniu): `flashes` jak dla wybuchu. */
+  settings?: Pick<Settings, 'flashes'>;
 }
 
 export class EnemyShatter {
@@ -36,6 +40,7 @@ export class EnemyShatter {
         radius: drone ? 0.35 : 0.45,
         height: drone ? 0.7 : 1.8,
         tint,
+        muted: !(opts.settings ?? loadSettings()).flashes,
         life: t.killFlashS,
       });
       if (drone) {
@@ -113,6 +118,7 @@ export class EnemyShatter {
         radius: drone ? 0.38 : 0.42,
         height: drone ? 0.76 : 1.85,
         tint: tags.includes('#power') ? 1 : 0,
+        muted: !(opts.settings ?? loadSettings()).flashes,
         life: opts.tuning.vfx.hitFlashS,
       });
     };

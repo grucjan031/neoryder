@@ -25,6 +25,12 @@ import {
 } from '../../src/render/fxMode';
 import { EventBus } from '../../src/core/events';
 import { ExplosionRenderer } from '../../src/render/explosionRenderer';
+import { DebrisSystem } from '../../src/vfx/debris';
+import { DebrisRenderer } from '../../src/vfx/debrisRenderer';
+import { HazardView } from '../../src/render/hazardView';
+import type { Hazard } from '../../src/world/roomSchema';
+import type { HazardState } from '../../src/world/hazards';
+import type { Object3D } from 'three';
 
 const original = { ...tuning.render };
 afterEach(() => {
@@ -295,4 +301,42 @@ it('brak zapisu daje medium; istniejący high i stare ustawienia pozostają high
   expect(loadSettings(storage).quality).toBe('high');
   raw = '{"masterVolume":0.4}';
   expect(loadSettings(storage).quality).toBe('high');
+});
+
+it('lite pomija żar odłamków, błyski walki i wraki beczek', () => {
+  configureFx(new URLSearchParams('debug=1&fx=lite'));
+  const system = new DebrisSystem({ maxDebris: 30 });
+  const debris = new DebrisRenderer(system);
+  const hazards = new HazardView([
+    {
+      kind: 'explosive_barrel',
+      id: 'b',
+      position: { x: 0, y: 0, z: 0 },
+    } as Hazard,
+  ]);
+  try {
+    system.flash({
+      kind: 'kill',
+      origin: { x: 0, y: 1, z: 0 },
+      radius: 0.4,
+      height: 1.8,
+      life: 0.3,
+    });
+    debris.render(1);
+    const hidden = (o: Object3D): boolean => {
+      for (let p: Object3D | null = o; p; p = p.parent)
+        if (!p.visible) return true;
+      return false;
+    };
+    expect(debris.root.children.every((child) => hidden(child))).toBe(true);
+    hazards.update(
+      [{ id: 'b', kind: 'explosive_barrel', alive: false } as HazardState],
+      1,
+    );
+    const wrecks = hazards.root.getObjectByName('hazard-wrecks')!;
+    expect(wrecks.visible).toBe(false);
+  } finally {
+    debris.dispose();
+    hazards.dispose();
+  }
 });

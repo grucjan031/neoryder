@@ -11,6 +11,7 @@ import {
 } from 'three';
 import type { Camera } from 'three';
 import type { Tuning } from '../core/tuning';
+import { getLiteFx } from './fxMode';
 
 /** Moc stożkowa widziana przez render: tylko odczyt definicji i odnowienia. */
 interface ConeLike {
@@ -173,6 +174,10 @@ export class ResonanceWaveFx {
 
   /** Wołane co klatkę z listą mocy i kamerą (bez kamery fale nie startują). */
   update(powers: readonly unknown[], camera: Camera | null): void {
+    if (getLiteFx()) {
+      this.root.visible = false;
+      return;
+    }
     const now = performance.now();
     const dt = this.lastMs < 0 ? 0 : Math.min(0.1, (now - this.lastMs) / 1000);
     this.lastMs = now;

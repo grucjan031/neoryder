@@ -8,6 +8,7 @@ import type { DebrisBurst } from '../../src/vfx/debris';
 import { DebrisRenderer } from '../../src/vfx/debrisRenderer';
 import { EnemyShatter } from '../../src/vfx/enemyShatter';
 import { Matrix4 } from 'three';
+import type { BufferGeometry, Mesh, MeshBasicMaterial } from 'three';
 import { getMaterial } from '../../src/render/materials';
 
 const spec: DebrisBurst = {
@@ -271,5 +272,32 @@ describe('EnemyShatter', () => {
     }
     expect(debris.activeCount).toBe(600);
     shatter.dispose();
+  });
+});
+
+describe('ustawienie Błyski ekranu', () => {
+  it('flashes=false: zabicie bez rdzenia, przygaszony pierścień', () => {
+    const bus = new EventBus();
+    const debris = new DebrisSystem({ maxDebris: 60 });
+    const shatter = new EnemyShatter(bus, debris, {
+      tuning,
+      positionOf: () => ({ x: 0, y: 0, z: 0 }),
+      settings: { flashes: false },
+    });
+    const renderer = new DebrisRenderer(debris);
+    bus.emit('enemy_killed', { id: 5, killer: null, tags: [] });
+    let muted = false;
+    debris.forEachFlash((f) => (muted = f.muted));
+    expect(muted).toBe(true);
+    // Dwie pierwsze klatki to rozgrzewka shaderów (niewidoczne kopie).
+    for (let i = 0; i < 3; i++) renderer.render(1);
+    const meshes = renderer.root.children
+      .flatMap((c) => c.children)
+      .filter((c) => c.visible) as Mesh<BufferGeometry, MeshBasicMaterial>[];
+    expect(meshes.some((m) => m.geometry.type === 'IcosahedronGeometry')).toBe(
+      false,
+    );
+    shatter.dispose();
+    renderer.dispose();
   });
 });

@@ -28,9 +28,14 @@ export interface CombatFlash {
   radius: number;
   height: number;
   tint: number;
+  /** Ustawienie „Błyski ekranu” wyłączone: bez rdzenia i gwiazdy, przygaszony obrys. */
+  muted: boolean;
   age: number;
   previousAge: number;
   life: number;
+  /** Bufory slotu (bez alokacji przy każdym trafieniu). */
+  pointBuf: Vec3;
+  dirBuf: Vec3;
 }
 const FLASH_SLOTS = 24;
 export interface DebrisOptions {
@@ -106,9 +111,12 @@ export class DebrisSystem {
       radius: 0,
       height: 0,
       tint: 0,
+      muted: false,
       age: 0,
       previousAge: 0,
       life: 0,
+      pointBuf: vector(),
+      dirBuf: vector(),
     }));
   }
 
@@ -124,18 +132,25 @@ export class DebrisSystem {
     radius: number;
     height: number;
     tint?: number;
+    muted?: boolean;
     life: number;
   }): void {
     if (!(spec.life > 0)) return;
-    let slot = this.flashes.find((f) => f.life === 0);
+    let slot: CombatFlash | undefined;
+    for (const f of this.flashes)
+      if (f.life === 0) {
+        slot = f;
+        break;
+      }
     if (!slot) {
       slot = this.flashes[this.flashCursor]!;
       this.flashCursor = (this.flashCursor + 1) % FLASH_SLOTS;
     }
     slot.kind = spec.kind;
     Object.assign(slot.origin, spec.origin);
-    slot.point = spec.point ? { ...spec.point } : null;
-    slot.dir = spec.dir ? { ...spec.dir } : null;
+    slot.point = spec.point ? Object.assign(slot.pointBuf, spec.point) : null;
+    slot.dir = spec.dir ? Object.assign(slot.dirBuf, spec.dir) : null;
+    slot.muted = spec.muted ?? false;
     slot.radius = spec.radius;
     slot.height = spec.height;
     slot.tint = spec.tint ?? 0;
