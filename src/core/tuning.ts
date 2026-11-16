@@ -42,6 +42,18 @@ export const tuning = {
   },
   /** Oprawa miasta: wyłącznie render, metry i sekundy. Limity pul ustalane przy tworzeniu. */
   city: {
+    /**
+     * Panorama i niebo motywów z `panoramaEnabled` (tylko tło, bez świateł punktowych).
+     * Ruch pojazdów 0..1, jasność okien wieżowców i świateł ostrzegawczych, kolor ścian.
+     */
+    panoramaTraffic: 0.6,
+    panoramaWindowEmission: 0.5,
+    panoramaBeaconBrightness: 1,
+    panoramaWall: '#1e2638',
+    /** Łuna miasta przy horyzoncie i chmury podświetlone od dołu (addytywnie do gradientu nieba). */
+    skyGlowStrength: 1,
+    skyCloudStrength: 1,
+    skyCloudSpeed: 0.004,
     maxLights: 8,
     lightFadeRate: 6,
     lightSwitchThreshold: 0.01,

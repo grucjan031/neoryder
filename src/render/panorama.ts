@@ -1,134 +1,196 @@
 import {
   BoxGeometry,
-  Color,
   Group,
+  InstancedBufferAttribute,
   InstancedMesh,
   Matrix4,
   Mesh,
   PlaneGeometry,
-  ShaderMaterial,
+  Quaternion,
+  SphereGeometry,
+  Vector3,
 } from 'three';
-import { Rng } from '../core/rng';
+import type { BufferGeometry, Material } from 'three';
 import { tuning } from '../core/tuning';
-import { getMaterial } from './materials';
+import { buildSkyline } from './skyline';
+import {
+  createAdMaterial,
+  createBeaconMaterial,
+  createBuildingMaterial,
+  createSkyMaterial,
+  createSkyUniforms,
+  createTrafficMaterial,
+} from './skyMaterials';
 
-const vertex = /* glsl */ `
-  varying vec3 world; varying vec2 texUv;
-  void main() {
-    texUv=uv; vec4 p=vec4(position,1.0);
-    #ifdef USE_INSTANCING
-      p=instanceMatrix*p;
-    #endif
-    world=(modelMatrix*p).xyz;
-    gl_Position=projectionMatrix*viewMatrix*vec4(world,1.0);
-  }`;
-
-/** Wyłącznie tło: seed osobnego strumienia, brak ciał fizycznych. */
+/**
+ * Wyłącznie tło: seed osobnego strumienia, brak ciał fizycznych, brak świateł.
+ * 7 meshy: wieżowce (1 InstancedMesh), światła ostrzegawcze, pojazdy,
+ * 3 hologramy reklam i kopuła nieba (łuna + chmury) w podgrupie `sky`.
+ */
 export class Panorama extends Group {
   private signature = '';
-  private readonly geometry = new BoxGeometry(1, 1, 1);
-  private readonly panelGeometry = new PlaneGeometry(1, 1);
-  private readonly uniforms = {
-    time: { value: 0 },
-    amber: { value: new Color('#ffae1a') },
-    white: { value: new Color('#fff1d6') },
-    violet: { value: new Color().setRGB(0.22, 0.08, 0.65) },
-  };
-  private readonly beacons = new ShaderMaterial({
-    uniforms: this.uniforms,
-    vertexShader: vertex,
-    toneMapped: false,
-    fragmentShader: `varying vec3 world; uniform float time; uniform vec3 amber; uniform vec3 white;
-      void main() { float pulse=step(0.1,sin(time*2.0+world.x)); gl_FragColor=vec4(mix(amber,white,step(0.5,fract(world.z)))*(0.15+0.85*pulse),1.0);
-        #include <colorspace_fragment>
-      }`,
-  });
-  private readonly hologram = new ShaderMaterial({
-    uniforms: this.uniforms,
-    vertexShader: vertex,
-    toneMapped: false,
-    transparent: true,
-    depthWrite: false,
-    fragmentShader: `varying vec3 world; varying vec2 texUv; uniform float time; uniform vec3 amber; uniform vec3 violet;
-      void main() { float noise=fract(sin(dot(floor(texUv*100.0)+floor(time*4.0),vec2(12.9898,78.233)))*43758.5453);
-        float bars=0.45+0.55*step(0.3,fract(texUv.y*12.0));
-        float edge=smoothstep(0.0,0.08,texUv.x)*smoothstep(0.0,0.08,1.0-texUv.x);
-        vec3 tint=mix(amber,violet,texUv.y);
-        gl_FragColor=vec4(tint*(0.65+noise*0.35)*bars,edge*0.55);
-        #include <colorspace_fragment>
-      }`,
-  });
+  private readonly uniforms = createSkyUniforms();
+  private readonly quad = new PlaneGeometry(1, 1);
+  private readonly sphere = new SphereGeometry(1, 32, 16);
+  private readonly buildingMaterial = createBuildingMaterial(this.uniforms);
+  private readonly beaconMaterial = createBeaconMaterial(this.uniforms);
+  private readonly trafficMaterial = createTrafficMaterial(this.uniforms);
+  private readonly skyMaterial = createSkyMaterial(this.uniforms);
+  private readonly sky = new Group();
+  private readonly owned: (BufferGeometry | Material)[] = [];
   constructor(
     private readonly seed: string,
     private readonly floorY: number,
   ) {
     super();
     this.name = 'city-panorama';
-    this.beacons.userData.bloom = true;
-    this.hologram.userData.bloom = true;
+    this.uniforms.floorY.value = floorY;
+    this.sky.name = 'city-sky';
+    const dome = new Mesh(this.sphere, this.skyMaterial);
+    dome.name = 'sky-dome';
+    dome.frustumCulled = false;
+    dome.renderOrder = -10;
+    dome.userData.noOutline = true;
+    this.sky.add(dome);
   }
   sync(dt: number): void {
     const t = tuning.render;
+    const c = tuning.city;
     this.visible = t.panoramaEnabled > 0;
-    this.uniforms.time.value += dt;
-    const signature = `${t.panoramaDensity}:${t.panoramaHeight}`;
+    const u = this.uniforms;
+    u.time.value += dt;
+    u.wall.value.set(c.panoramaWall);
+    u.windowEmission.value = c.panoramaWindowEmission;
+    u.beaconBrightness.value = c.panoramaBeaconBrightness;
+    u.glowStrength.value = c.skyGlowStrength;
+    u.cloudStrength.value = c.skyCloudStrength;
+    u.cloudSpeed.value = c.skyCloudSpeed;
+    const signature = `${t.panoramaDensity}:${t.panoramaHeight}:${c.panoramaTraffic}`;
     if (!this.visible || signature === this.signature) return;
     this.signature = signature;
+    this.release();
+    this.add(this.sky);
+    const layout = buildSkyline(this.seed, {
+      floorY: this.floorY,
+      density: t.panoramaDensity,
+      height: t.panoramaHeight,
+      traffic: c.panoramaTraffic,
+    });
+    const matrix = new Matrix4();
+    const rotation = new Quaternion();
+    const up = new Vector3(0, 1, 0);
+    const position = new Vector3();
+    const scale = new Vector3();
+
+    // Wieżowce: jedna instancja na bryłę; parametry okien w atrybutach instancji.
+    const box = new BoxGeometry(1, 1, 1);
+    const n = layout.buildings.length;
+    const params = new Float32Array(n * 4);
+    const params2 = new Float32Array(n * 4);
+    box.setAttribute('params', new InstancedBufferAttribute(params, 4));
+    box.setAttribute('params2', new InstancedBufferAttribute(params2, 4));
+    const buildings = new InstancedMesh(box, this.buildingMaterial, n);
+    buildings.name = 'skyline-buildings';
+    layout.buildings.forEach((b, i) => {
+      rotation.setFromAxisAngle(up, b.yaw);
+      position.set(b.x, b.baseY + b.height / 2, b.z);
+      scale.set(b.width, b.height, b.depth);
+      buildings.setMatrixAt(i, matrix.compose(position, rotation, scale));
+      params.set([b.seed, b.kind, b.windowColor, b.lit], i * 4);
+      params2.set([b.accent, b.tone, b.layer, 0], i * 4);
+    });
+    buildings.instanceMatrix.needsUpdate = true;
+    buildings.computeBoundingSphere();
+    this.owned.push(box);
+    this.add(buildings);
+
+    // Światła ostrzegawcze (bursztyn): billboardy addytywne z bloomem.
+    const beaconQuad = this.quad.clone();
+    const beaconData = new Float32Array(layout.beacons.length * 4);
+    beaconQuad.setAttribute(
+      'beacon',
+      new InstancedBufferAttribute(beaconData, 4),
+    );
+    const beacons = new InstancedMesh(
+      beaconQuad,
+      this.beaconMaterial,
+      layout.beacons.length,
+    );
+    beacons.name = 'skyline-beacons';
+    layout.beacons.forEach((b, i) => {
+      beacons.setMatrixAt(i, matrix.makeTranslation(b.x, b.y, b.z));
+      beaconData.set([b.size, b.period, b.phase, b.color], i * 4);
+    });
+    beacons.instanceMatrix.needsUpdate = true;
+    beacons.frustumCulled = false;
+    beacons.userData.noOutline = true;
+    this.owned.push(beaconQuad);
+    this.add(beacons);
+
+    // Pojazdy: para świateł (ciepła biel z przodu, bursztyn z tyłu), ruch w shaderze.
+    const trafficQuad = this.quad.clone();
+    const lanes = new Float32Array(layout.lanes.length * 2 * 4);
+    const lights = new Float32Array(layout.lanes.length * 2 * 2);
+    layout.lanes.forEach((l, i) => {
+      for (let k = 0; k < 2; k++) {
+        lanes.set([l.radius, l.height, l.speed, l.phase], (i * 2 + k) * 4);
+        lights.set(
+          [
+            k === 0 ? 1.4 * Math.sign(l.speed) : -1.4 * Math.sign(l.speed),
+            k === 0 ? 1 : 0,
+          ],
+          (i * 2 + k) * 2,
+        );
+      }
+    });
+    trafficQuad.setAttribute('lane', new InstancedBufferAttribute(lanes, 4));
+    trafficQuad.setAttribute('light', new InstancedBufferAttribute(lights, 2));
+    const traffic = new InstancedMesh(
+      trafficQuad,
+      this.trafficMaterial,
+      layout.lanes.length * 2,
+    );
+    traffic.name = 'skyline-traffic';
+    traffic.frustumCulled = false;
+    traffic.userData.noOutline = true;
+    this.owned.push(trafficQuad);
+    this.add(traffic);
+
+    // Hologramy reklam na fasadach (3 panele, jednostronne logicznie, addytywne).
+    layout.ads.slice(0, 3).forEach((ad, i) => {
+      const material = createAdMaterial(
+        this.uniforms,
+        ad.color,
+        ad.style,
+        i * 3.7 + 1,
+        ad.width,
+        ad.height,
+      );
+      const panel = new Mesh(this.quad, material);
+      panel.name = 'skyline-ad';
+      panel.position.set(ad.x, ad.y, ad.z);
+      panel.rotation.y = ad.yaw;
+      panel.scale.set(ad.width, ad.height, 1);
+      panel.userData.noOutline = true;
+      this.owned.push(material);
+      this.add(panel);
+    });
+  }
+  private release(): void {
     for (const child of this.children)
       if (child instanceof InstancedMesh) child.dispose();
+    for (const item of this.owned) item.dispose();
+    this.owned.length = 0;
     this.clear();
-    const rng = new Rng(this.seed).fork('panorama');
-    const count = Math.max(
-      1,
-      Math.round(Math.min(1, Math.max(0, t.panoramaDensity)) * 40),
-    );
-    const matrix = new Matrix4();
-    const roofs = new InstancedMesh(this.geometry, this.beacons, count * 3);
-    for (let layer = 0; layer < 3; layer++) {
-      const buildings = new InstancedMesh(
-        this.geometry,
-        getMaterial('facade'),
-        count,
-      );
-      for (let i = 0; i < count; i++) {
-        const angle = (i / count) * Math.PI * 2 + rng.float(-0.035, 0.035);
-        const radius = 65 + layer * 32 + rng.float(-6, 6);
-        const height =
-          Math.max(1, t.panoramaHeight) *
-          rng.float(0.45, 1.25) *
-          (1 + layer * 0.25);
-        const x = Math.sin(angle) * radius,
-          z = Math.cos(angle) * radius;
-        matrix.makeScale(rng.float(5, 10), height, rng.float(5, 10));
-        matrix.setPosition(x, this.floorY + height / 2, z);
-        buildings.setMatrixAt(i, matrix);
-        buildings.setColorAt(i, new Color().setScalar(0.45 - layer * 0.08));
-        matrix
-          .makeScale(0.22, 0.22, 0.22)
-          .setPosition(x, this.floorY + height + 0.2, z);
-        roofs.setMatrixAt(layer * count + i, matrix);
-      }
-      buildings.instanceMatrix.needsUpdate = true;
-      this.add(buildings);
-    }
-    roofs.instanceMatrix.needsUpdate = true;
-    this.add(roofs);
-    for (let i = 0; i < 3; i++) {
-      const panel = new Mesh(this.panelGeometry, this.hologram);
-      panel.position.set((i - 1) * 40, this.floorY + 18 + i * 8, -58 - i * 14);
-      panel.scale.set(12 + i * 2, 7 + i * 3, 1);
-      panel.userData.noOutline = true;
-      this.add(panel);
-    }
   }
   dispose(): void {
-    for (const child of this.children)
-      if (child instanceof InstancedMesh) child.dispose();
-    this.clear();
+    this.release();
     this.removeFromParent();
-    this.geometry.dispose();
-    this.panelGeometry.dispose();
-    this.beacons.dispose();
-    this.hologram.dispose();
+    this.quad.dispose();
+    this.sphere.dispose();
+    this.buildingMaterial.dispose();
+    this.beaconMaterial.dispose();
+    this.trafficMaterial.dispose();
+    this.skyMaterial.dispose();
   }
 }

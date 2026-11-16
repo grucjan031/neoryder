@@ -4,8 +4,10 @@ import {
   HalfFloatType,
   Matrix3,
   Matrix4,
+  Mesh,
   MeshNormalMaterial,
   NearestFilter,
+  PlaneGeometry,
   ShaderMaterial,
   UnsignedIntType,
   Vector2,
@@ -50,12 +52,6 @@ const fragmentShader = /* glsl */ `
   uniform bool perspective;
   uniform sampler2D bloomMap;
   uniform float bloomStrength;
-  uniform float skyGradient;
-  uniform float skyHeight;
-  uniform vec3 skyTop;
-  uniform vec3 skyHorizon;
-  uniform vec3 skyBackground;
-  uniform float skyKeepOverlay;
   uniform mat4 inverseProjection;
   uniform mat3 cameraRotation;
   uniform float fogStrength;
@@ -144,19 +140,12 @@ const fragmentShader = /* glsl */ `
       float fresnel = 0.25+0.75*pow(1.0-abs(normalize(eyePosition-worldPoint).y),3.0);
       rgb += texture2D(reflectionMap,reflectionUv).rgb * reflectionStrength * wet * floorMask * puddle * fresnel * inside;
     }
-    // Brak geometrii w buforze głębi koloru = niebo: gradient pionowy zamiast płaskiego tła.
-    // Głębia koloru, nie normalnych: obiekty bez konturu (rdzeń ostrza, błysk) nie trafiają
-    // do bufora normalnych i bez tego znikały na tle nieba.
+    // Brak geometrii w buforze głębi koloru = niebo. Gradient nieba jest już w buforze koloru
+    // (tło rysowane w przebiegu koloru przed obiektami przezroczystymi, skyBackgroundFragment),
+    // więc hologramy, deszcz i viewmodel na niebie mają poprawne krycie; tu tylko błysk burzy
+    // i brak mgły. Głębia koloru, nie normalnych: obiekty bez konturu (rdzeń ostrza, błysk)
+    // nie trafiają do bufora normalnych i bez tego znikały na tle nieba.
     if (texture2D(colorDepthMap, vUv).x >= 1.0) {
-      if (skyGradient > 0.0) {
-        vec4 view = inverseProjection * vec4(vUv * 2.0 - 1.0, 1.0, 1.0);
-        float up = (cameraRotation * normalize(view.xyz / view.w)).y;
-        vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, skyHeight, up));
-        // Hologramy i deszcz nie zapisują głębi, więc trafiają tu jako „niebo”:
-        // zachowujemy ich wkład ponad kolor tła zamiast go nadpisywać.
-        vec3 overlay = max(rgb - skyBackground, 0.0) * skyKeepOverlay;
-        rgb = mix(rgb, sky, skyGradient) + overlay * skyGradient;
-      }
       rgb += vec3(0.62, 0.68, 0.95) * skyFlash;
     } else if ((fogStrength > 0.0 || heightFogDensity > 0.0) && rawDepth < 1.0) {
       // Mgła ku bieli ściąga też kontury, więc dalekie obiekty odcinają się od bliskich.
@@ -187,6 +176,38 @@ const fragmentShader = /* glsl */ `
       rgb *= 1.0 - vignetteStrength * smoothstep(vignetteRadius, vignetteRadius + vignetteSoftness, radius);
     }
     gl_FragColor = vec4(rgb, color.a);
+    #include <colorspace_fragment>
+  }
+`;
+
+/**
+ * Tło nieba w przebiegu koloru: pełnoekranowy quad na dalekiej płaszczyźnie (głębia NDC 1),
+ * bez zapisu głębi. Test LEQUAL przepuszcza go tylko tam, gdzie nie ma geometrii
+ * nieprzezroczystej; najniższy `renderOrder` stawia go przed wszystkimi obiektami
+ * przezroczystymi, które mieszają się już z gradientem (nie z płaskim kolorem tła).
+ * Alfa = `skyGradient`: przy 0 zostaje kolor tła sceny, jak wcześniej w kompozycji.
+ */
+export const SKY_BACKGROUND_ORDER = -1e9;
+const skyBackgroundVertex = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = vec4(position.xy, 1.0, 1.0);
+  }
+`;
+export const skyBackgroundFragment = /* glsl */ `
+  uniform float skyGradient;
+  uniform float skyHeight;
+  uniform vec3 skyTop;
+  uniform vec3 skyHorizon;
+  uniform mat4 inverseProjection;
+  uniform mat3 cameraRotation;
+  varying vec2 vUv;
+  void main() {
+    vec4 view = inverseProjection * vec4(vUv * 2.0 - 1.0, 1.0, 1.0);
+    float up = (cameraRotation * normalize(view.xyz / view.w)).y;
+    vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, skyHeight, up));
+    gl_FragColor = vec4(sky, skyGradient);
     #include <colorspace_fragment>
   }
 `;
@@ -228,8 +249,6 @@ export class StylePipeline {
     skyHeight: { value: 0.5 },
     skyTop: { value: new Color() },
     skyHorizon: { value: new Color() },
-    skyBackground: { value: new Color() },
-    skyKeepOverlay: { value: 0 },
     inverseProjection: { value: new Matrix4() },
     cameraRotation: { value: new Matrix3() },
     fogStrength: { value: 0 },
@@ -266,9 +285,21 @@ export class StylePipeline {
       toneMapped: false,
     }),
   );
+  /** Dodawane do sceny tylko na czas przebiegu koloru (nie trafia do normalnych, bloomu, odbić). */
+  readonly skyBackground = new Mesh(
+    new PlaneGeometry(2, 2),
+    new ShaderMaterial({
+      name: 'sky_background',
+      uniforms: this.uniforms,
+      vertexShader: skyBackgroundVertex,
+      fragmentShader: skyBackgroundFragment,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
   private readonly drawingSize = new Vector2();
   private readonly clearColor = new Color();
-  private readonly skyClear = new Color();
   /** Tworzone przy pierwszym użyciu: wyłączone przełączniki nie kosztują pamięci. */
   private bloom: BloomPass | undefined;
   private reflections: ReflectionPass | undefined;
@@ -281,6 +312,11 @@ export class StylePipeline {
   constructor(private readonly renderer: WebGLRenderer) {
     const size = renderer.getSize(new Vector2());
     this.setSize(size.x, size.y);
+    this.skyBackground.name = 'sky-background';
+    this.skyBackground.frustumCulled = false;
+    this.skyBackground.renderOrder = SKY_BACKGROUND_ORDER;
+    this.skyBackground.userData.noOutline = true;
+    this.skyBackground.userData.bloom = false;
   }
 
   /** Stan impulsów kompozycji (obrażenia, Skupienie); testy i debug mogą go ustawiać wprost. */
@@ -360,16 +396,6 @@ export class StylePipeline {
     uniforms.skyHeight.value = Math.max(t.skyGradientHeight, 1e-3);
     uniforms.skyTop.value.set(t.skyTop);
     uniforms.skyHorizon.value.set(t.skyHorizon);
-    // Nakładki na niebie da się odzyskać tylko przy jednolitym tle (kolor albo kolor czyszczenia).
-    const sky = scene.background;
-    if (sky === null || (sky as Color).isColor) {
-      uniforms.skyBackground.value.copy(
-        sky ? (sky as Color) : this.renderer.getClearColor(this.skyClear),
-      );
-      uniforms.skyKeepOverlay.value = 1;
-    } else {
-      uniforms.skyKeepOverlay.value = 0;
-    }
     uniforms.inverseProjection.value.copy(camera.projectionMatrixInverse);
     uniforms.cameraRotation.value.setFromMatrix4(camera.matrixWorld);
     uniforms.cameraWorld.value.copy(camera.matrixWorld);
@@ -411,8 +437,11 @@ export class StylePipeline {
       frameProfiler?.begin('color');
       try {
         renderer.setRenderTarget(this.colorTarget);
+        // Gradient nieba jako tło przebiegu koloru (tylko ten przebieg, tylko warstwa świata).
+        if (t.skyGradient > 0) scene.add(this.skyBackground);
         renderWithViewmodel(renderer, scene, camera);
       } finally {
+        this.skyBackground.removeFromParent();
         frameProfiler?.end();
       }
       frameProfiler?.begin('normals');
@@ -488,6 +517,8 @@ export class StylePipeline {
     this.normalTarget.depthTexture?.dispose();
     this.normalTarget.dispose();
     this.normalMaterial.dispose();
+    this.skyBackground.geometry.dispose();
+    this.skyBackground.material.dispose();
     this.composite.dispose();
     this.postFx?.dispose();
     this.bloom?.dispose();
