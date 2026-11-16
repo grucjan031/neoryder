@@ -6,6 +6,7 @@ Gra działa w przeglądarce (TypeScript, Three.js, Rapier).
 
 ## Co jest w grze
 
+- **Samouczek** (`?scene=tutorial`): 11 ćwiczeń ruchu i walki, zakończonych przejściem do kryjówki.
 - **Trzy ścieżki buildów:** Ostrze, Rezonans (moce) i Strzelec, plus hybrydy z synergiami.
 - **Run 15–25 minut:** mapa sektora Kurogane Arms z wyborem ścieżki, pokoje walki i elit, sklep, odpoczynek, boss.
 - **Implanty na czas runu** i **trwały postęp:** poziom postaci, drzewka talentów, odblokowania broni, mocy i modułów.

@@ -163,7 +163,7 @@ body:has(.main-menu) {
     border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
-.main-menu > button:first-of-type {
+.main-menu > .main-menu__hub {
   color: var(--hud-health, #00e5ff);
   border-color: rgba(0, 229, 255, 0.65);
   border-bottom-color: var(--hud-health, #00e5ff);
@@ -209,7 +209,30 @@ body:has(.main-menu) {
     transition: none;
   }
   .main-menu h1,
-  .main-menu > button:first-of-type {
+  .main-menu > .main-menu__hub {
     text-shadow: 0 1px 3px #000;
   }
+}
+.main-menu > .main-menu__tutorial--recommended {
+  color: #ffbf50;
+  border-color: #ffbf5080;
+  background: #ffbf5010;
+  box-shadow: 0 0 14px #ffbf501c;
+}
+.main-menu > button.main-menu__tutorial--recommended:hover:not(:disabled),
+.main-menu
+  > button.main-menu__tutorial--recommended:focus-visible:not(:disabled) {
+  border-color: #ffbf50;
+  background: #ffbf5020;
+  box-shadow: 0 0 18px #ffbf5038;
+  outline-color: #ffbf50;
+}
+.main-menu__tutorial-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  text-transform: none;
 }

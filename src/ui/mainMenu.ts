@@ -5,6 +5,8 @@ import data from '../data/ui/run.pl.json';
 import { BuildSelect } from './buildSelect';
 import { SettingsScreen } from './settingsScreen';
 import settingsText from '../data/ui/settings.pl.json';
+import tutorialText from '../data/ui/tutorial.pl.json';
+import { tutorialDone } from '../data/tutorial/schema';
 import './mainMenu.css';
 
 const text = z
@@ -66,7 +68,27 @@ export class MainMenu {
       node.addEventListener('click', action);
       return node;
     };
+    const saveStore = options.save ?? createIndexedDbSaveStore();
+    const tutorial = button(tutorialText.title, () =>
+      navigate(`?${query('tutorial')}`),
+    );
+    tutorial.setAttribute('aria-label', tutorialText.title);
     const hub = button(t.hub, () => navigate(`?${query('hub')}`));
+    hub.className = 'main-menu__hub';
+    const metaReady = saveStore
+      .loadMeta()
+      .then((meta) => {
+        if (this.disposed || meta !== null || tutorialDone()) return;
+        tutorial.classList.add('main-menu__tutorial--recommended');
+        const hint = document.createElement('small');
+        hint.className = 'main-menu__tutorial-hint';
+        hint.textContent = tutorialText.menuHint;
+        tutorial.append(hint);
+        tutorial.setAttribute('aria-description', tutorialText.menuHint);
+      })
+      .catch(() => {
+        // Błąd odczytu nie oznacza braku zapisu; samouczek pozostaje dostępny przyciskiem.
+      });
     const resume = button(t.continue, () => {
       const params = query('run');
       params.set('continue', '1');
@@ -77,7 +99,7 @@ export class MainMenu {
     status.setAttribute('role', 'status');
     status.textContent = t.loading;
     const arena = button(t.arena, () => navigate(`?${query('arena')}`));
-    this.root.append(heading, subtitle, hub, resume, status, arena);
+    this.root.append(heading, subtitle, tutorial, hub, resume, status, arena);
     this.root.append(
       button(settingsText.title, () => {
         this.settings ??= new SettingsScreen();
@@ -120,7 +142,7 @@ export class MainMenu {
       if (options.params?.get('debug') === '1') scenes.set('debug', '1');
       this.root.append(button(t.debug, () => navigate(`?${scenes}`)));
     }
-    this.ready = (options.save ?? createIndexedDbSaveStore())
+    const runReady = saveStore
       .loadRun()
       .then((save) => {
         if (this.disposed) return;
@@ -135,6 +157,7 @@ export class MainMenu {
       .catch(() => {
         if (!this.disposed) status.textContent = t.saveError;
       });
+    this.ready = Promise.all([runReady, metaReady]).then(() => {});
   }
 
   dispose(): void {

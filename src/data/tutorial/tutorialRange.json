@@ -1,0 +1,90 @@
+{
+  "id": "tutorialRange",
+  "name": "Poligon Iskry",
+  "type": "combat",
+  "theme": "neonStreet",
+  "playerSpawn": { "x": 0, "y": 0, "z": 12 },
+  "blocks": [
+    {
+      "position": { "x": 0, "y": -0.5, "z": 0 },
+      "size": { "x": 24, "y": 1, "z": 32 },
+      "material": "asphalt"
+    },
+    {
+      "position": { "x": -12, "y": 2, "z": 0 },
+      "size": { "x": 1, "y": 4, "z": 32 },
+      "material": "concrete"
+    },
+    {
+      "position": { "x": 12, "y": 2, "z": 0 },
+      "size": { "x": 1, "y": 4, "z": 32 },
+      "material": "concrete"
+    },
+    {
+      "position": { "x": 0, "y": 2, "z": -16 },
+      "size": { "x": 24, "y": 4, "z": 1 },
+      "material": "concrete"
+    },
+    {
+      "position": { "x": 0, "y": 2, "z": 16 },
+      "size": { "x": 24, "y": 4, "z": 1 },
+      "material": "concrete"
+    },
+    {
+      "position": { "x": 0, "y": 1.2, "z": 3 },
+      "size": { "x": 3, "y": 2.4, "z": 3 },
+      "material": "metal"
+    },
+    {
+      "position": { "x": 0, "y": 1.8, "z": -2 },
+      "size": { "x": 5, "y": 1, "z": 2 },
+      "material": "metal"
+    },
+    {
+      "position": { "x": 6, "y": 1.5, "z": -13 },
+      "size": { "x": 5, "y": 3, "z": 0.5 },
+      "material": "concrete"
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": { "x": 0, "y": 1.5, "z": 15.4 },
+      "size": { "x": 2, "y": 3, "z": 0.2 }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": { "x": 0, "y": 1.5, "z": -15.4 },
+      "size": { "x": 2, "y": 3, "z": 0.2 }
+    }
+  ],
+  "spawnPoints": [
+    { "x": -8, "z": -12 },
+    { "x": 8, "z": -6 },
+    { "x": -8, "z": -5 },
+    { "x": 2, "z": -11 }
+  ],
+  "maxAlive": 3,
+  "lights": [
+    {
+      "position": { "x": -6, "y": 4, "z": -8 },
+      "color": "#ffae1a",
+      "intensity": 6,
+      "range": 14
+    },
+    {
+      "position": { "x": 6, "y": 4, "z": -8 },
+      "color": "#6dff4a",
+      "intensity": 6,
+      "range": 14
+    },
+    {
+      "position": { "x": 0, "y": 5, "z": 5 },
+      "color": "#8a5cff",
+      "intensity": 6,
+      "range": 16
+    }
+  ]
+}

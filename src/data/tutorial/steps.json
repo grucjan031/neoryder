@@ -1,0 +1,173 @@
+[
+  {
+    "id": "move",
+    "start": { "x": 0, "z": 12, "yawDeg": 0 },
+    "text": "move",
+    "condition": {
+      "kind": "reach_marker",
+      "position": { "x": 0, "y": 0, "z": 8 },
+      "radius": 1
+    },
+    "marker": { "x": 0, "y": 0.03, "z": 8 }
+  },
+  {
+    "id": "jump",
+    "start": { "x": 0, "z": 6, "yawDeg": 0 },
+    "text": "jump",
+    "condition": {
+      "kind": "land_on",
+      "position": { "x": 0, "y": 2.4, "z": 3 },
+      "radius": 1.4
+    },
+    "requires": [
+      { "kind": "event", "event": "player_jumped", "count": 1, "double": true }
+    ],
+    "marker": { "x": 0, "y": 2.43, "z": 3 }
+  },
+  {
+    "id": "mobility",
+    "start": { "x": 0, "z": 0, "yawDeg": 0 },
+    "text": "mobility",
+    "condition": {
+      "kind": "reach_marker",
+      "position": { "x": 0, "y": 0, "z": -5 },
+      "radius": 1.2
+    },
+    "requires": [
+      { "kind": "event", "event": "dash_used", "count": 1 },
+      { "kind": "event", "event": "slide_started", "count": 1 },
+      {
+        "kind": "reach_marker",
+        "position": { "x": 0, "y": 0, "z": -2 },
+        "radius": 1,
+        "sliding": true
+      }
+    ],
+    "marker": { "x": 0, "y": 0.03, "z": -5 }
+  },
+  {
+    "id": "combo",
+    "start": { "x": -5, "z": -6, "yawDeg": 26.565051177 },
+    "text": "combo",
+    "held": "blade",
+    "condition": {
+      "kind": "event",
+      "event": "damage_dealt",
+      "count": 3,
+      "tags": ["#melee"],
+      "combo": true
+    },
+    "spawn": {
+      "enemy": "assaulter",
+      "position": { "x": -6, "y": 0, "z": -8 },
+      "passive": true,
+      "healthMultiplier": 100
+    },
+    "marker": { "x": -6, "y": 0.03, "z": -6 }
+  },
+  {
+    "id": "heavy",
+    "start": { "x": -6, "z": -6, "yawDeg": 0 },
+    "text": "heavy",
+    "held": "blade",
+    "condition": {
+      "kind": "event",
+      "event": "damage_dealt",
+      "count": 1,
+      "tags": ["#melee", "#heavy"]
+    },
+    "spawn": {
+      "enemy": "shielder",
+      "position": { "x": -6, "y": 0, "z": -8 },
+      "passive": true,
+      "healthMultiplier": 100
+    },
+    "marker": { "x": -6, "y": 0.03, "z": -6 }
+  },
+  {
+    "id": "parry",
+    "start": { "x": 0, "z": -7, "yawDeg": 0 },
+    "text": "parry",
+    "held": "blade",
+    "condition": { "kind": "event", "event": "parry_success", "count": 2 },
+    "spawn": {
+      "enemy": "gunner",
+      "position": { "x": 0, "y": 0, "z": -12 },
+      "passive": true,
+      "healthMultiplier": 100,
+      "turret": {
+        "intervalS": 1.6,
+        "speed": 9,
+        "damage": 12,
+        "lifetimeS": 4,
+        "height": 1.45,
+        "offsetZ": 0.45
+      }
+    },
+    "marker": { "x": 0, "y": 0.03, "z": -7 }
+  },
+  {
+    "id": "heat",
+    "start": { "x": 0, "z": -7, "yawDeg": 0 },
+    "text": "heat",
+    "held": "blade",
+    "condition": { "kind": "heat_overheated" },
+    "requires": [
+      {
+        "kind": "event",
+        "event": "held_item_changed",
+        "count": 1,
+        "held": "gun"
+      }
+    ]
+  },
+  {
+    "id": "push",
+    "start": { "x": 6, "z": -8, "yawDeg": 0 },
+    "text": "push",
+    "condition": {
+      "kind": "event",
+      "event": "damage_dealt",
+      "count": 1,
+      "tags": ["#power", "#wall"]
+    },
+    "spawn": {
+      "enemy": "assaulter",
+      "position": { "x": 6, "y": 0, "z": -11 },
+      "passive": true,
+      "healthMultiplier": 100
+    },
+    "marker": { "x": 6, "y": 0.03, "z": -8 }
+  },
+  {
+    "id": "execute",
+    "start": { "x": 6, "z": -8, "yawDeg": 0 },
+    "text": "execute",
+    "held": "blade",
+    "condition": { "kind": "event", "event": "execute_performed", "count": 1 },
+    "spawn": {
+      "enemy": "assaulter",
+      "position": { "x": 6, "y": 0, "z": -10 },
+      "passive": true,
+      "healthFraction": 0.1
+    },
+    "marker": { "x": 6, "y": 0.03, "z": -8 }
+  },
+  {
+    "id": "fight",
+    "start": { "x": 0, "z": -6, "yawDeg": 0 },
+    "text": "fight",
+    "held": "blade",
+    "invulnerable": false,
+    "restartOnDeath": true,
+    "wave": true,
+    "condition": { "kind": "event", "event": "wave_cleared", "count": 1 }
+  },
+  {
+    "id": "complete",
+    "start": { "x": 0, "z": -6, "yawDeg": 0 },
+    "text": "complete",
+    "complete": true,
+    "condition": { "kind": "event", "event": "scene_loaded", "count": 1 }
+  }
+]

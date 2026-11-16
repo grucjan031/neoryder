@@ -21,6 +21,7 @@ import { createRoomTest } from './roomTest';
 import { BossTest } from './bossTest';
 import { RunScene } from './run';
 import { HubScene } from './hub';
+import { Tutorial } from './tutorial';
 
 export interface Scene {
   readonly id: string;
@@ -34,6 +35,7 @@ export interface Scene {
 }
 export type SceneFactory = () => Scene;
 export const scenes: Record<string, SceneFactory> = {
+  tutorial: () => new Tutorial(),
   'city-fx-test': () => new CityFxTest(),
   'city-props-test': () => new CityPropsTest(),
   'boss-test': () => new BossTest(),

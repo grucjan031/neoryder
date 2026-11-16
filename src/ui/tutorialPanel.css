@@ -1,0 +1,120 @@
+.tutorial-panel {
+  position: fixed;
+  z-index: 90;
+  top: max(24px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, calc(100vw - 40px));
+  text-align: center;
+  color: var(--hud-text, #edf7ff);
+  font:
+    600 clamp(17px, 1.6vw, 22px)/1.4 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  text-shadow:
+    0 2px 3px #000,
+    0 0 8px #000;
+  pointer-events: none;
+}
+.tutorial-panel::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00e5ff90, transparent);
+}
+.tutorial-panel__number {
+  color: #9ac1d1;
+  font:
+    600 12px/1.4 'Segoe UI',
+    sans-serif;
+  letter-spacing: 0.18em;
+}
+.tutorial-panel p {
+  margin: 8px 0 12px;
+}
+.tutorial-panel kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid #00e5ff90;
+  border-radius: 4px;
+  color: var(--hud-health, #00e5ff);
+  font: inherit;
+}
+.tutorial-panel__feedback {
+  color: #c8ff5a;
+}
+.tutorial-panel--flash {
+  animation: tutorial-confirm 0.25s ease-out;
+}
+@keyframes tutorial-confirm {
+  from {
+    filter: brightness(1.7);
+  }
+  to {
+    filter: brightness(1);
+  }
+}
+.tutorial-active .hud__wave {
+  top: 180px;
+}
+.tutorial-completion.run-screen {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(560px, calc(100vw - 48px));
+  height: fit-content;
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 32px;
+  border: 1px solid #00e5ff60;
+  background: #0b1421;
+  color: #edf7ff;
+  text-align: center;
+  font:
+    500 20px/1.5 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+}
+.tutorial-completion::backdrop {
+  background: #030712cc;
+}
+.tutorial-completion h1 {
+  font-size: clamp(26px, 4vw, 36px);
+  line-height: 1.2;
+}
+.tutorial-completion button {
+  min-height: 48px;
+  margin: 8px;
+  padding: 8px 20px;
+  border: 1px solid #00e5ff90;
+  background: #132a38;
+  color: #edf7ff;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.18s ease-out;
+}
+.tutorial-completion button:hover {
+  background: #21475b;
+}
+.tutorial-completion button:focus-visible {
+  outline: 2px solid #ffae1a;
+  outline-offset: 4px;
+}
+.tutorial-panel[hidden],
+.tutorial-completion[hidden] {
+  display: none;
+}
+@media (max-width: 600px) {
+  .tutorial-panel {
+    top: max(12px, env(safe-area-inset-top));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-panel--flash {
+    animation: none;
+  }
+  .tutorial-completion button {
+    transition: none;
+  }
+}

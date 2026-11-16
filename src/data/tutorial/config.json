@@ -1,0 +1,30 @@
+{
+  "loadout": "classic",
+  "talents": ["hybridDoubleJump"],
+  "completionSound": "waveCleared",
+  "markerRadius": 0.7,
+  "markerColor": "#fff1d6",
+  "landingTolerance": 0.15,
+  "waves": {
+    "id": "tutorialFinal",
+    "firstBreakS": 1,
+    "breakS": 1,
+    "maxAlive": 3,
+    "minSpawnDistance": 4,
+    "spawnPoints": [
+      { "x": -8, "z": -12 },
+      { "x": 8, "z": -6 },
+      { "x": -8, "z": -5 },
+      { "x": 2, "z": -11 }
+    ],
+    "waves": [
+      {
+        "spawnIntervalS": 0.4,
+        "groups": [
+          { "enemy": "assaulter", "count": 2 },
+          { "enemy": "gunner", "count": 1 }
+        ]
+      }
+    ]
+  }
+}
