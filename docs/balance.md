@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-15. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-16. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -27,8 +27,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | 0.917 | 0.850 | 0.917 | 0.917 | 1.000 | 0.927 | 1.000 | TAK |
 | executor | 8.250 | 21.317 | 11.017 | 11.017 | 0.749 | 1.935 | 1.000 | TAK |
 | gunner | 2.083 | 1.683 | 2.683 | 2.083 | 1.000 | 0.808 | 1.288 | TAK |
+| hacker | 0.917 | 0.850 | 0.917 | 0.917 | 1.000 | 0.927 | 1.000 | TAK |
 | shielder | 3.083 | 2.100 | 5.017 | 3.083 | 1.000 | 0.681 | 1.627 | TAK |
 | sniper | 1.583 | 0.850 | 2.683 | 1.583 | 1.000 | 0.537 | 1.695 | TAK |
+| turret | 3.083 | 2.100 | 2.683 | 2.683 | 1.149 | 0.783 | 1.000 | TAK |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
@@ -36,8 +38,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | plasmaBlade:combo | chain → push | rifle |
 | executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
+| hacker | plasmaBlade:combo | chain → push | rifle |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
+| turret | plasmaBlade:combo | chain → push | scatter |
 
 ## Ścieżki — pojedyncze TTK, otwarta przestrzeń (informacyjnie)
 
@@ -47,8 +51,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
 | executor | 1.583 | 0.617 | 1.267 | 1.267 | 1.250 | 0.487 | 1.000 | NIE |
 | gunner | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
+| hacker | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
 | shielder | 0.417 | 0.017 | 0.017 | 0.017 | 25.000 | 1.000 | 1.000 | NIE |
 | sniper | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
+| turret | 0.417 | 0.017 | 0.017 | 0.017 | 25.000 | 1.000 | 1.000 | NIE |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
@@ -56,8 +62,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | plasmaBlade:combo | chain → push | scatter |
 | executor | plasmaBlade:combo | chain → push | sniper |
 | gunner | plasmaBlade:combo | chain → push | scatter |
+| hacker | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
+| turret | plasmaBlade:combo | chain → push | scatter |
 
 ## Każda broń, moc i ostrze — otwarta przestrzeń
 
@@ -67,74 +75,98 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Laser ciągły (beam) | drone | 0.500 | 36.000 | 5.583 | 16.119 |
 | Laser ciągły (beam) | executor | 13.233 | 16.625 | 78.633 | 13.989 |
 | Laser ciągły (beam) | gunner | 1.200 | 37.500 | 15.283 | 14.722 |
+| Laser ciągły (beam) | hacker | 0.600 | 40.000 | 6.083 | 19.726 |
 | Laser ciągły (beam) | shielder | 3.833 | 23.478 | 31.633 | 14.226 |
 | Laser ciągły (beam) | sniper | 0.900 | 38.889 | 10.683 | 16.381 |
+| Laser ciągły (beam) | turret | 3.333 | 21.000 | 24.483 | 14.295 |
 | Blaster (blaster) | assaulter | 0.350 | 171.429 | 5.017 | 59.801 |
 | Blaster (blaster) | drone | 0.017 | 1080.000 | 0.683 | 131.707 |
 | Blaster (blaster) | executor | 3.017 | 72.928 | 22.350 | 49.217 |
 | Blaster (blaster) | gunner | 0.350 | 128.571 | 5.017 | 44.850 |
+| Blaster (blaster) | hacker | 0.183 | 130.909 | 2.850 | 42.105 |
 | Blaster (blaster) | shielder | 0.683 | 131.707 | 9.350 | 48.128 |
 | Blaster (blaster) | sniper | 0.183 | 190.909 | 2.850 | 61.404 |
+| Blaster (blaster) | turret | 0.517 | 135.484 | 7.183 | 48.724 |
 | Granat EMP (emp) | assaulter | 5.267 | 11.392 | 35.267 | 8.507 |
 | Granat EMP (emp) | drone | 1.267 | 14.211 | 12.767 | 7.050 |
 | Granat EMP (emp) | executor | 24.767 | 8.883 | ∞ | 8.250 |
 | Granat EMP (emp) | gunner | 3.767 | 11.947 | 27.767 | 8.103 |
+| Granat EMP (emp) | hacker | 1.267 | 18.947 | 12.767 | 9.399 |
 | Granat EMP (emp) | shielder | 9.767 | 9.215 | 57.767 | 7.790 |
 | Granat EMP (emp) | sniper | 2.517 | 13.907 | 20.267 | 8.635 |
+| Granat EMP (emp) | turret | 6.767 | 10.345 | 42.767 | 8.184 |
 | Pistolet (pistol) | assaulter | 0.267 | 225.000 | 2.267 | 132.353 |
 | Pistolet (pistol) | drone | 0.017 | 1080.000 | 1.017 | 88.525 |
 | Pistolet (pistol) | executor | 1.517 | 145.055 | 13.517 | 81.381 |
 | Pistolet (pistol) | gunner | 0.267 | 168.750 | 2.267 | 99.265 |
+| Pistolet (pistol) | hacker | 0.017 | 1440.000 | 1.017 | 118.033 |
 | Pistolet (pistol) | shielder | 0.517 | 174.194 | 4.767 | 94.406 |
 | Pistolet (pistol) | sniper | 0.267 | 131.250 | 2.267 | 77.206 |
+| Pistolet (pistol) | turret | 0.517 | 135.484 | 4.767 | 73.427 |
 | Karabin (rifle) | assaulter | 0.417 | 144.000 | 6.617 | 45.340 |
 | Karabin (rifle) | drone | 0.117 | 154.286 | 0.917 | 98.182 |
 | Karabin (rifle) | executor | 4.617 | 47.653 | 30.417 | 36.164 |
 | Karabin (rifle) | gunner | 0.317 | 142.105 | 4.717 | 47.703 |
+| Karabin (rifle) | hacker | 0.117 | 205.714 | 0.917 | 130.909 |
 | Karabin (rifle) | shielder | 0.717 | 125.581 | 10.917 | 41.221 |
 | Karabin (rifle) | sniper | 0.217 | 161.538 | 2.817 | 62.130 |
+| Karabin (rifle) | turret | 0.517 | 135.484 | 8.517 | 41.096 |
 | Rozpraszacz (scatter) | assaulter | 0.017 | 3600.000 | 2.683 | 111.801 |
 | Rozpraszacz (scatter) | drone | 0.017 | 1080.000 | 2.683 | 33.540 |
 | Rozpraszacz (scatter) | executor | 1.350 | 162.963 | 11.017 | 99.849 |
 | Rozpraszacz (scatter) | gunner | 0.017 | 2700.000 | 2.683 | 83.851 |
+| Rozpraszacz (scatter) | hacker | 0.017 | 1440.000 | 2.683 | 44.720 |
 | Rozpraszacz (scatter) | shielder | 0.683 | 131.707 | 6.850 | 65.693 |
 | Rozpraszacz (scatter) | sniper | 0.017 | 2100.000 | 2.683 | 65.217 |
+| Rozpraszacz (scatter) | turret | 0.017 | 4200.000 | 2.683 | 130.435 |
 | Snajperka (sniper) | assaulter | 0.017 | 3600.000 | 5.017 | 59.801 |
 | Snajperka (sniper) | drone | 0.017 | 1080.000 | 5.017 | 17.940 |
 | Snajperka (sniper) | executor | 1.267 | 173.684 | 11.267 | 97.633 |
 | Snajperka (sniper) | gunner | 0.017 | 2700.000 | 5.017 | 44.850 |
+| Snajperka (sniper) | hacker | 0.017 | 1440.000 | 5.017 | 23.920 |
 | Snajperka (sniper) | shielder | 0.017 | 5400.000 | 5.017 | 89.701 |
 | Snajperka (sniper) | sniper | 0.017 | 2100.000 | 5.017 | 34.884 |
+| Snajperka (sniper) | turret | 0.017 | 4200.000 | 5.017 | 69.767 |
 | Błyskawica (chain) | assaulter | 0.017 | 3600.000 | 1.683 | 178.218 |
 | Błyskawica (chain) | drone | 0.017 | 1080.000 | 1.683 | 53.465 |
 | Błyskawica (chain) | executor | 0.850 | 258.824 | 15.783 | 69.694 |
 | Błyskawica (chain) | gunner | 0.017 | 2700.000 | 1.683 | 133.663 |
+| Błyskawica (chain) | hacker | 0.017 | 1440.000 | 1.683 | 71.287 |
 | Błyskawica (chain) | shielder | 0.433 | 207.692 | 3.767 | 119.469 |
 | Błyskawica (chain) | sniper | 0.017 | 2100.000 | 1.683 | 103.960 |
+| Błyskawica (chain) | turret | 0.433 | 161.538 | 3.767 | 92.920 |
 | Pchnięcie Rezonansu (push) | assaulter | 0.617 | 97.297 | 5.417 | 55.385 |
 | Pchnięcie Rezonansu (push) | drone | 0.017 | 1080.000 | 2.417 | 37.241 |
 | Pchnięcie Rezonansu (push) | executor | 3.617 | 60.829 | 65.433 | 16.811 |
 | Pchnięcie Rezonansu (push) | gunner | 0.617 | 72.973 | 5.417 | 41.538 |
+| Pchnięcie Rezonansu (push) | hacker | 0.017 | 1440.000 | 2.417 | 49.655 |
 | Pchnięcie Rezonansu (push) | shielder | 1.217 | 73.973 | 17.433 | 25.813 |
 | Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
+| Pchnięcie Rezonansu (push) | turret | 0.617 | 113.514 | 5.417 | 64.615 |
 | Fala uderzeniowa (shockwave) | assaulter | 15.150 | 3.960 | 101.550 | 2.954 |
 | Fala uderzeniowa (shockwave) | drone | 1.533 | 11.739 | 29.550 | 3.046 |
 | Fala uderzeniowa (shockwave) | executor | 72.750 | 3.024 | ∞ | 2.917 |
 | Fala uderzeniowa (shockwave) | gunner | 11.550 | 3.896 | 83.550 | 2.693 |
+| Fala uderzeniowa (shockwave) | hacker | 4.350 | 5.517 | 47.550 | 2.524 |
 | Fala uderzeniowa (shockwave) | shielder | 25.950 | 3.468 | ∞ | 2.917 |
 | Fala uderzeniowa (shockwave) | sniper | 7.950 | 4.403 | 65.550 | 2.670 |
+| Fala uderzeniowa (shockwave) | turret | 18.750 | 3.733 | 119.550 | 2.928 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | assaulter | 0.417 | 144.000 | 3.083 | 97.297 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | drone | 0.083 | 216.000 | 0.917 | 98.182 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | executor | 1.583 | 138.947 | 8.250 | 133.333 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | gunner | 0.250 | 180.000 | 2.083 | 108.000 |
+| Ostrze: combo lekkie (plasmaBlade:combo) | hacker | 0.083 | 288.000 | 0.917 | 130.909 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | shielder | 0.417 | 216.000 | 3.083 | 145.946 |
 | Ostrze: combo lekkie (plasmaBlade:combo) | sniper | 0.250 | 140.000 | 1.583 | 110.526 |
+| Ostrze: combo lekkie (plasmaBlade:combo) | turret | 0.417 | 168.000 | 3.083 | 113.514 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | assaulter | 0.667 | 90.000 | 5.333 | 56.250 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | drone | 0.083 | 216.000 | 2.417 | 37.241 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | executor | 2.417 | 91.034 | 14.083 | 78.107 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | gunner | 0.667 | 67.500 | 5.333 | 42.188 |
+| Ostrze: ciężki atak (plasmaBlade:heavy) | hacker | 0.083 | 288.000 | 2.417 | 49.655 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | shielder | 0.667 | 135.000 | 5.333 | 84.375 |
 | Ostrze: ciężki atak (plasmaBlade:heavy) | sniper | 0.667 | 52.500 | 5.333 | 32.813 |
+| Ostrze: ciężki atak (plasmaBlade:heavy) | turret | 0.667 | 105.000 | 5.333 | 65.625 |
 
 ## Wariant przy ścianie — TTK paczki ×5 (informacyjnie)
 
@@ -144,8 +176,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | 0.917 | 2.417 | 0.917 | 0.917 | 1.000 | 2.636 | 1.000 | NIE |
 | executor | 8.250 | 29.433 | 11.017 | 11.017 | 0.749 | 2.672 | 1.000 | NIE |
 | gunner | 2.083 | 2.433 | 2.683 | 2.433 | 0.856 | 1.000 | 1.103 | TAK |
+| hacker | 0.917 | 2.417 | 0.917 | 0.917 | 1.000 | 2.636 | 1.000 | NIE |
 | shielder | 3.083 | 5.417 | 5.017 | 5.017 | 0.615 | 1.080 | 1.000 | TAK |
 | sniper | 1.583 | 2.417 | 2.683 | 2.417 | 0.655 | 1.000 | 1.110 | TAK |
+| turret | 3.083 | 5.417 | 2.683 | 3.083 | 1.000 | 1.757 | 0.870 | TAK |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
@@ -153,8 +187,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | plasmaBlade:combo | chain → push | rifle |
 | executor | plasmaBlade:combo | chain → push | scatter |
 | gunner | plasmaBlade:combo | chain → push | scatter |
+| hacker | plasmaBlade:combo | chain → push | rifle |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
+| turret | plasmaBlade:combo | chain → push | scatter |
 
 ### Wariant przy ścianie — pojedyncze TTK
 
@@ -164,8 +200,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
 | executor | 1.583 | 1.817 | 1.267 | 1.583 | 1.000 | 1.147 | 0.800 | TAK |
 | gunner | 0.250 | 0.033 | 0.017 | 0.033 | 7.500 | 1.000 | 0.500 | NIE |
+| hacker | 0.083 | 0.017 | 0.017 | 0.017 | 5.000 | 1.000 | 1.000 | NIE |
 | shielder | 0.417 | 0.617 | 0.017 | 0.417 | 1.000 | 1.480 | 0.040 | NIE |
 | sniper | 0.250 | 0.017 | 0.017 | 0.017 | 15.000 | 1.000 | 1.000 | NIE |
+| turret | 0.417 | 0.617 | 0.017 | 0.417 | 1.000 | 1.480 | 0.040 | NIE |
 
 | Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
 | --- | --- | --- | --- |
@@ -173,8 +211,10 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | drone | plasmaBlade:combo | chain → push | scatter |
 | executor | plasmaBlade:combo | chain → push | sniper |
 | gunner | plasmaBlade:combo | chain → push | scatter |
+| hacker | plasmaBlade:combo | chain → push | scatter |
 | shielder | plasmaBlade:combo | chain → push | sniper |
 | sniper | plasmaBlade:combo | chain → push | scatter |
+| turret | plasmaBlade:combo | chain → push | scatter |
 
 ### Moce przy ścianie (tylko narzędzia, których wynik różni się od otwartej przestrzeni)
 
@@ -184,24 +224,30 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Błyskawica (chain) | drone | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | executor | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | gunner | ∞ | 0.000 | ∞ | 0.000 |
+| Błyskawica (chain) | hacker | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | shielder | ∞ | 0.000 | ∞ | 0.000 |
 | Błyskawica (chain) | sniper | ∞ | 0.000 | ∞ | 0.000 |
+| Błyskawica (chain) | turret | ∞ | 0.000 | ∞ | 0.000 |
 | Pchnięcie Rezonansu (push) | assaulter | 0.033 | 1800.000 | 2.433 | 123.288 |
 | Pchnięcie Rezonansu (push) | drone | 0.017 | 1080.000 | 2.417 | 37.241 |
 | Pchnięcie Rezonansu (push) | executor | 1.817 | 121.101 | 29.433 | 37.373 |
 | Pchnięcie Rezonansu (push) | gunner | 0.033 | 1350.000 | 2.433 | 92.466 |
+| Pchnięcie Rezonansu (push) | hacker | 0.017 | 1440.000 | 2.417 | 49.655 |
 | Pchnięcie Rezonansu (push) | shielder | 0.617 | 145.946 | 5.417 | 83.077 |
 | Pchnięcie Rezonansu (push) | sniper | 0.017 | 2100.000 | 2.417 | 72.414 |
+| Pchnięcie Rezonansu (push) | turret | 0.617 | 113.514 | 5.417 | 64.615 |
 | Fala uderzeniowa (shockwave) | assaulter | 1.550 | 38.710 | 29.567 | 10.147 |
 | Fala uderzeniowa (shockwave) | drone | 0.033 | 540.000 | 11.567 | 7.781 |
 | Fala uderzeniowa (shockwave) | executor | 22.350 | 9.843 | ∞ | 8.083 |
 | Fala uderzeniowa (shockwave) | gunner | 1.550 | 29.032 | 29.567 | 7.610 |
+| Fala uderzeniowa (shockwave) | hacker | 0.033 | 720.000 | 11.567 | 10.375 |
 | Fala uderzeniowa (shockwave) | shielder | 4.367 | 20.611 | 47.567 | 9.460 |
 | Fala uderzeniowa (shockwave) | sniper | 1.533 | 22.826 | 29.550 | 5.922 |
+| Fala uderzeniowa (shockwave) | turret | 4.350 | 16.092 | 47.550 | 7.361 |
 
 ## Wnioski
 
-- Bramka (paczka ×5, otwarta przestrzeń): 0/6 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 6/6. Przy ścianie (informacyjnie, paczka): 2/6.
+- Bramka (paczka ×5, otwarta przestrzeń): 0/8 wrogów poza przedziałem (brak). Pojedyncze TTK (informacyjnie): 8/8. Przy ścianie (informacyjnie, paczka): 3/8.
 - Pojedyncze TTK jest bardzo wrażliwe na obrażenia jednego trafienia (zabójstwo w 1/60 s wobec 0,4 s ostrza); dlatego bramkę liczy paczka.
 - Wynik jest liczbową podstawą decyzji o danych. Nie zastępuje playtestu 12 fal ani oceny feel.
 

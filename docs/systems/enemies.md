@@ -1,5 +1,58 @@
 # Wrogowie — F1 #08–09
 
+## Z16 — Wieżyczka i Dron-haker
+
+| Pole                  | Wieżyczka (`turret`)                               | Dron-haker (`hacker`)               |
+| --------------------- | -------------------------------------------------- | ----------------------------------- |
+| HP / koszt zagrożenia | 70 / 3                                             | 24 / 2,5                            |
+| Ruch / obrót          | stacjonarna / 45°/s                                | 4,5 m/s / 360°/s                    |
+| Zasięg                | 20 m                                               | 15 m, dystans preferowany 9 ± 2,5 m |
+| Telegraf / odnowienie | 0,9 s / 2 s po serii                               | 1,2 s / 5 s                         |
+| Atak                  | 3 pociski po 10 obrażeń co 0,3 s, 9 m/s, życie 4 s | wiązka 2 obrażeń i `jammed` na 3 s  |
+| Chwyt / odrzut        | nie / odporność 1                                  | tak (5 kg) / odporność 0            |
+
+Wieżyczka korzysta z maszyny stanów Strzelca; `stationary` pomija ruch,
+grawitację kontrolera i separację oraz odrzut, zachowując punkt spawnu.
+Pole `moveSpeed: 1` spełnia dotychczasowy dodatni schemat, ale nie powoduje
+ruchu. Pociski lecą zgodnie z yaw głowicy, ograniczonym także podczas serii;
+laser pokazuje ten sam kierunek. Podstawa jest nieruchoma, głowica z lufą
+obraca się. Materiały `enemy`/`enemyGlow` zachowują czerwień i obrys.
+Kontry: flankowanie, parowanie zwykłego pocisku `#gun`, Wykończenie;
+Pchnięcie zadaje obrażenia i może ogłuszyć, ale nie przesuwa.
+
+Haker dziedziczy lot, kolizje i tokeny strzału Drona. Lata na 2,6 m,
+krąży z prędkością 25°/s. W telegrafie zawisa i śledzi gracza czerwoną
+linią. Raycast po telegrafie musi trafić hurtbox gracza; ściana blokuje
+wiązkę. Obrażenia i status idą przez `DamageSystem`, zatem nietykalność,
+śmierć i osłony nie przepuszczają zagłuszenia. Każde otrzymane obrażenie
+przerywa telegraf i rozpoczyna pełne 5 s odnowienia (także przy ogłuszeniu).
+Kontry: strzał przerywający zapowiedź, broń dystansowa, Błyskawica.
+Widok używa istniejącego `enemy_drone` i proceduralnej anteny z dyskiem
+(`drone.antenna`), również w wariancie zastępczym. Wszystko pozostaje czerwone.
+
+Kurogane: haker ma wagę 1 w combat i elite; wieżyczka 1 w combat i 2 w elite.
+Istniejący wspólny `unlockLayer.turret: 4` odblokowuje ją od warstwy 4
+w obu pulach. Zmiana pul zmienia składy dla dawnych seedów; deterministyczność
+dla jednakowych danych i seeda pozostaje. Nie zmieniono asercji zapisanych fal.
+
+Arena (Z18): Dron-haker występuje w falach 5, 8 i 10 po 1 sztuce oraz w fali
+12 w 2 sztukach. Wieżyczka występuje w falach 6, 9 i 11 po 1 sztuce oraz w fali
+12 w 2 sztukach. Pierwsze cztery fale i punkty spawnu pozostają bez zmian.
+Test `arenaTurretSpawns.test.ts` sprawdza na rzeczywistej arenie, że z każdego
+punktu wieżyczka może ostrzelać gracza w dostępnej części areny bez ruchu
+własnego. Widoczność zależy od pozycji gracza: filary i niskie osłony nadal
+blokują linię strzału; nie każdy punkt obejmuje pozycję startową gracza zasięgiem.
+
+Komendy `spawn turret 1` i `spawn hacker 1` używają istniejącego rejestru
+w pokoju, arenie i ai-test. Testy: `enemiesZ16.test.ts`, `threat.test.ts`,
+`hud.test.ts`, `status.test.ts`. Pokój, arena i ai-test przekazują
+`statuses: this.statuses` w zależnościach mocy (patrz `docs/api.md`).
+Test headless w `roomScene.test.ts` sprawdza, że `jammed` gracza odmawia
+Pchnięcia z `power_denied.reason: 'jammed'` bez kosztu energii, a po wygaśnięciu
+pozwala użyć mocy. Raport `docs/balance.md` obejmuje oba nowe archetypy;
+bramka TTK paczki ×5 w otwartej przestrzeni przechodzi bez strojenia ich danych.
+Ocena wyglądu i feel należy do Architekta; nie wykonano Playwrighta ani buildu.
+
 ## Chwyt i przejęcie ciała (F2-09)
 
 `enemySchema.grabbable?: boolean` określa podatność na Chwyt. Brak pola oznacza

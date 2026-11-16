@@ -109,6 +109,10 @@
         {
           "enemy": "sniper",
           "count": 1
+        },
+        {
+          "enemy": "hacker",
+          "count": 1
         }
       ]
     },
@@ -126,6 +130,10 @@
         {
           "enemy": "gunner",
           "count": 2
+        },
+        {
+          "enemy": "turret",
+          "count": 1
         }
       ]
     },
@@ -164,6 +172,10 @@
         {
           "enemy": "gunner",
           "count": 3
+        },
+        {
+          "enemy": "hacker",
+          "count": 1
         }
       ]
     },
@@ -185,6 +197,10 @@
         {
           "enemy": "sniper",
           "count": 2
+        },
+        {
+          "enemy": "turret",
+          "count": 1
         }
       ]
     },
@@ -210,6 +226,10 @@
         {
           "enemy": "sniper",
           "count": 2
+        },
+        {
+          "enemy": "hacker",
+          "count": 1
         }
       ]
     },
@@ -235,6 +255,10 @@
         {
           "enemy": "drone",
           "count": 3
+        },
+        {
+          "enemy": "turret",
+          "count": 1
         }
       ]
     },
@@ -260,6 +284,14 @@
         {
           "enemy": "drone",
           "count": 4
+        },
+        {
+          "enemy": "hacker",
+          "count": 2
+        },
+        {
+          "enemy": "turret",
+          "count": 2
         }
       ]
     }

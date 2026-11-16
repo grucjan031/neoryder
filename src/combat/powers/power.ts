@@ -7,6 +7,7 @@ import type { PlayerEnergy } from './energy';
 import type { PowerDefinition } from './powerSchema';
 import type { PushTarget } from './push';
 import type { GrabPhysics } from '../../physics/grabPhysics';
+import type { StatusQuery } from '../status/statusSystem';
 
 export interface PowerInput {
   pressed: boolean;
@@ -33,6 +34,7 @@ export interface PowerDeps {
   castWall(origin: Vec3, dir: Vec3, maxDistance: number): number | null;
   projectiles?: ProjectileSystem;
   grab?: GrabPhysics;
+  statuses?: StatusQuery;
 }
 
 export type PowerFactory = (def: PowerDefinition, deps: PowerDeps) => Power;
@@ -77,6 +79,14 @@ export abstract class PowerBase<
   /** Liczba trafień lub null przy odmowie; zachowuje API Pchnięcia z F1. */
   use(): number | null {
     const { owner, bus, energy } = this.deps;
+    if (this.deps.statuses?.has(owner, 'jammed')) {
+      bus.emit('power_denied', {
+        power: this.def.id,
+        user: owner,
+        reason: 'jammed',
+      });
+      return null;
+    }
     if (this.cooldownS > 0) {
       bus.emit('power_denied', {
         power: this.def.id,

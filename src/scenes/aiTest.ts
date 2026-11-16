@@ -165,6 +165,7 @@ export class AiTest implements Scene {
             bus: ctx.bus,
             tuning: ctx.tuning,
             damage: this.damage,
+            statuses: this.statuses,
             energy,
             projectiles: this.projectiles,
             aim: () => {

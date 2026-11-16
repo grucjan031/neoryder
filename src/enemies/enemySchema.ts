@@ -141,6 +141,7 @@ export const gunnerFields = z.object({
 });
 /** F2-13: lot drona — kinematyka 3D bez character controllera. */
 export const droneFields = z.object({
+  antenna: z.boolean().optional(),
   massKg: positive,
   /** Wysokość środka drona nad punktem spawnu (stopami). */
   hoverHeightM: positive,
@@ -160,7 +161,13 @@ export const droneFields = z.object({
   pulseScale: z.number().finite().nonnegative(),
 });
 /** Archetypy strzelające jak Strzelec (pola gunnerFields wymagane). */
-export const RANGED_KINDS: readonly string[] = ['gunner', 'sniper', 'drone'];
+export const RANGED_KINDS: readonly string[] = [
+  'gunner',
+  'sniper',
+  'drone',
+  'turret',
+  'hacker',
+];
 export const enemySchema = z
   .object({
     ...gunnerFields.partial().shape,
@@ -169,6 +176,14 @@ export const enemySchema = z
     /** F3: koszt wroga w budżecie zagrożenia pokoju (dodatni). */
     threatCost: positive.optional(),
     grabbable: z.boolean().optional(),
+    stationary: z.boolean().optional(),
+    hack: z
+      .object({
+        hackCooldownS: positive,
+        hackTelegraphS: positive,
+        durationS: positive,
+      })
+      .optional(),
     /** Nazwa modelu GLB w public/assets/models (bez rozszerzenia); brak = domyślny dla archetypu. */
     model: z.string().min(1).optional(),
     maxHealth: positive,
@@ -264,6 +279,24 @@ export const enemySchema = z
       .optional(),
   })
   .superRefine((definition, ctx) => {
+    if (
+      definition.kind === 'turret' &&
+      (!definition.stationary ||
+        definition.grabbable !== false ||
+        definition.knockbackResist !== 1)
+    )
+      ctx.addIssue({
+        code: 'custom',
+        path: ['stationary'],
+        message:
+          'Wieżyczka wymaga stationary, grabbable false i knockbackResist 1.',
+      });
+    if (definition.kind === 'hacker' && !definition.hack)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['hack'],
+        message: 'Haker wymaga danych hack.',
+      });
     if (definition.kind === 'boss' && (!definition.boss || !definition.body))
       ctx.addIssue({
         code: 'custom',
@@ -288,7 +321,7 @@ export const enemySchema = z
           path: issue.path,
           message: issue.message,
         });
-    if (definition.kind === 'drone') {
+    if (definition.kind === 'drone' || definition.kind === 'hacker') {
       if (!definition.drone)
         ctx.addIssue({
           code: 'custom',

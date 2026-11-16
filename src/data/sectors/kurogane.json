@@ -81,7 +81,9 @@
         "gunner": 3,
         "drone": 2,
         "shielder": 1,
-        "sniper": 1
+        "sniper": 1,
+        "turret": 1,
+        "hacker": 1
       },
       "elite": {
         "assaulter": 3,
@@ -89,12 +91,15 @@
         "drone": 1,
         "shielder": 3,
         "sniper": 2,
-        "executor": 1
+        "executor": 1,
+        "turret": 2,
+        "hacker": 1
       }
     },
     "unlockLayer": {
       "sniper": 3,
-      "executor": 4
+      "executor": 4,
+      "turret": 4
     },
     "waveWeights": [1, 1.3, 1.6],
     "pacing": {

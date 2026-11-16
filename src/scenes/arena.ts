@@ -650,6 +650,7 @@ export class Arena implements Scene {
           bus: this.ctx.bus,
           tuning: this.ctx.tuning,
           damage: this.damage,
+          statuses: this.statuses,
           energy: this.energy,
           projectiles: this.projectiles,
           aim: () => this.aim(),

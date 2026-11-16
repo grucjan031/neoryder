@@ -98,6 +98,8 @@ const playerDefaults = z
   .parse(playerData);
 
 export interface RoomSceneOptions {
+  /** Host sam rozpoczyna kolejne ćwiczenia; standardowy pokój nadal startuje fale. */
+  manualEncounter?: boolean;
   loadModels?: boolean;
   implantDefinitions?: ReadonlyMap<string, ImplantDefinition>;
   /** Łatki definicji ekwipunku (ADR 0007 pkt 5), np. z talentów; domyślnie brak. */
@@ -177,6 +179,8 @@ export class RoomScene implements Scene {
     { role: 'entry' | 'exit'; mesh: Mesh; collider: Collider }
   >();
   private god = false;
+  private passiveEncounter = false;
+  private readonly manualEncounter: boolean;
   private kills = 0;
   private hud?: Hud;
   private debris!: DebrisSystem;
@@ -196,6 +200,7 @@ export class RoomScene implements Scene {
     private readonly waves: WavesDefinition,
     options: RoomSceneOptions = {},
   ) {
+    this.manualEncounter = options.manualEncounter ?? false;
     const node = run.map.layers
       .flat()
       .find((node) => node.id === run.currentNodeId);
@@ -303,9 +308,11 @@ export class RoomScene implements Scene {
         hurtboxes: this.hurtboxes,
         statuses: this.statuses,
         getTarget: () =>
-          this.health.dead
+          this.passiveEncounter
             ? null
-            : { id: playerId, position: this.player.getState().position },
+            : this.health.dead
+              ? null
+              : { id: playerId, position: this.player.getState().position },
       },
       {
         ...(this.layout.director ? { director: this.layout.director } : {}),
@@ -544,6 +551,7 @@ export class RoomScene implements Scene {
     });
     if (this.layout.bossEnemy) this.spawnBoss(this.layout.bossEnemy);
     else this.director.start();
+    if (this.manualEncounter) this.director.stop();
     if (this.health.dead) this.onPlayerDied();
     this.render(1);
     this.initDone = true;
@@ -798,6 +806,7 @@ export class RoomScene implements Scene {
           bus: this.ctx.bus,
           tuning: this.ctx.tuning,
           damage: this.damage,
+          statuses: this.statuses,
           energy: this.energy,
           projectiles: this.projectiles,
           aim: () => this.aim(),
@@ -1105,6 +1114,94 @@ export class RoomScene implements Scene {
 
   exportState(): Pick<RunState, 'hp' | 'energy'> {
     return { hp: this.health.current, energy: this.energy.current };
+  }
+
+  get playerId(): EntityId {
+    return this.player.id;
+  }
+
+  playerSnapshot(): PlayerState {
+    return structuredClone(this.player.getState());
+  }
+
+  /** Punkt rozszerzenia hosta ćwiczeń; wywoływać poza obsługą zdarzeń symulacji. */
+  prepareEncounter(options: {
+    invulnerable: boolean;
+    passive: boolean;
+    position?: Vec3;
+    held?: 'blade' | 'gun';
+  }): void {
+    this.director.stop();
+    this.manager.despawnAll();
+    this.statuses.reset();
+    this.projectiles.dispose();
+    this.powers.reset();
+    this.blade.reset();
+    for (const weapon of this.weapons) weapon.reset();
+    this.cleared = false;
+    for (const door of this.doors.values()) {
+      door.collider.setEnabled(true);
+      door.mesh.visible = true;
+    }
+    this.state = 'playing';
+    this.passiveEncounter = options.passive;
+    this.god = options.invulnerable;
+    this.playerStats.removeBySource('debug:god');
+    if (this.god)
+      this.playerStats.add({
+        stat: 'damageTaken',
+        type: 'mult',
+        value: 0,
+        source: 'debug:god',
+      });
+    this.health.reset();
+    this.hud?.setLoadout(this.loadout);
+    this.energy.set(this.energy.max);
+    this.player.stamina.set(this.player.stamina.max);
+    if (options.position) {
+      this.player.teleport(options.position);
+      this.lookAtDegrees(0, 0);
+    }
+    this.previous = this.player.getState();
+    this.heldItem.reset(options.held ?? this.heldItem.held);
+    this.emitHealth();
+  }
+
+  spawnEncounterEnemy(
+    kind: string,
+    position: Vec3,
+    modifiers: readonly import('../core/stats').StatModifier[] = [],
+    healthFraction = 1,
+  ): EntityId | null {
+    this.manager.setSpawnModifiers([
+      ...threatModifiers(this.run.threatLevel),
+      ...modifiers,
+    ]);
+    try {
+      const id = this.spawnEnemy(kind, position);
+      if (id !== null) {
+        const health = this.damage.health(id)!;
+        health.set(health.max * healthFraction);
+        this.ctx.bus.emit('health_changed', {
+          id,
+          current: health.current,
+          max: health.max,
+        });
+      }
+      return id;
+    } finally {
+      this.manager.setSpawnModifiers(threatModifiers(this.run.threatLevel));
+    }
+  }
+
+  fireEncounterProjectile(
+    projectile: Parameters<ProjectileSystem['spawn']>[0],
+  ): void {
+    this.projectiles.spawn(projectile);
+  }
+
+  startEncounterWave(): void {
+    this.director.start();
   }
 
   /** API hosta runu i komendy room-test; bez restartowania ani leczenia gracza. */

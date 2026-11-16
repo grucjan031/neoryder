@@ -36,6 +36,22 @@ i `clear`. Śmierć (`enemy_killed`, `player_died`) i `entity_despawned` czyszcz
 statusy celu. `reset()` (nowy run) usuwa wszystko bez zdarzeń i zdejmuje
 modyfikatory. Zapytania: `has`, `stacks`, `remaining`, `list` (HUD, debug).
 
+## Zagłuszenie — Z16
+
+`jammed` (Zagłuszenie): jeden stos, bez tików i modyfikatorów statystyk.
+Haker nakłada go na 3 s przez `DamageInfo.statuses`; czas określa
+`hacker.json.hack.durationS`, jak dla innych aplikacji statusów. Ponowne
+trafienie odświeża czas, nie sumuje stosów. Wygaśnięcie, śmierć i despawn
+korzystają ze zwykłej ścieżki `StatusSystem`.
+
+`PowerDeps.statuses?: StatusQuery` pozwala `PowerBase.use()` odmówić nowej
+aktywacji przed sprawdzaniem odnowienia i energii: `power_denied` z powodem
+`jammed`, bez kosztu i nowego odnowienia. Już działające moce nie są anulowane.
+Sceny muszą przekazać swój `StatusSystem` do zależności mocy.
+HUD przyciemnia obsadzone sloty i wyświetla „ZAGŁUSZONE” na podstawie
+`status_applied`/`status_expired` gracza. Śmierć i reset ekwipunku czyszczą
+wskaźnik. Istniejąca reguła audio `power_denied` obsługuje nową odmowę.
+
 ## Dane F2
 
 | Status                    | Efekt                                                                                                                    |

@@ -239,6 +239,7 @@ describe('StatusSystem — efekty', () => {
   it('validates definitions: data files, duplicates, unknown and self-applied statuses', () => {
     expect([...statusDefinitions.keys()].sort()).toEqual([
       'burning',
+      'jammed',
       'overload',
       'stunned',
     ]);

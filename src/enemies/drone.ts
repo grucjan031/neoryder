@@ -58,8 +58,8 @@ export class Drone implements Enemy {
   private token = false;
 
   constructor(
-    private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
-    private readonly deps: EnemyDependencies,
+    protected readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
+    protected readonly deps: EnemyDependencies,
     readonly definition: EnemyDefinition,
     position: Vec3,
   ) {
@@ -116,6 +116,7 @@ export class Drone implements Enemy {
           event.killed
         )
           return;
+        this.onDamage();
         const dir = event.dir;
         const push = event.knockback * (1 - definition.knockbackResist);
         if (dir && push > 0) {
@@ -140,10 +141,21 @@ export class Drone implements Enemy {
     );
   }
 
-  private transition(state: EnemyState): void {
+  protected onDamage(): void {}
+
+  protected get aimTelegraphS(): number {
+    return this.ranged.aimTelegraphS;
+  }
+
+  protected get cooldownS(): number {
+    return this.definition.cooldownS;
+  }
+
+  protected transition(state: EnemyState): void {
     this.current.state = state;
     this.current.stateTimeS = 0;
     if (state !== 'aim' && state !== 'burst') {
+      this.current.aim = undefined;
       if (this.token) this.deps.director?.releaseToken(this.id);
       this.token = false;
     }
@@ -151,7 +163,7 @@ export class Drone implements Enemy {
       this.ctx.bus.emit('enemy_telegraph', {
         id: this.id,
         kind: 'aim',
-        durationS: this.ranged.aimTelegraphS,
+        durationS: this.aimTelegraphS,
       });
     if (state === 'burst') {
       this.shots = 0;
@@ -159,7 +171,7 @@ export class Drone implements Enemy {
     }
   }
 
-  private muzzle(): Vec3 {
+  protected muzzle(): Vec3 {
     const { position: p, yaw } = this.current;
     const m = this.ranged.muzzle;
     return {
@@ -192,7 +204,7 @@ export class Drone implements Enemy {
     return !blocked(this.current.position, origin) && !blocked(origin, target);
   }
 
-  private fire(target: Vec3): void {
+  protected fire(target: Vec3): void {
     const origin = this.muzzle();
     const dx = target.x - origin.x,
       dy = target.y - origin.y,
@@ -306,10 +318,18 @@ export class Drone implements Enemy {
         this.engage()
       )
         this.transition('aim');
-      else if (s.state === 'aim' && s.stateTimeS + epsilon >= r.aimTelegraphS)
+      else if (
+        s.state === 'aim' &&
+        s.stateTimeS + epsilon >= this.aimTelegraphS
+      )
         this.transition('burst');
-      else if (s.state === 'cooldown' && s.stateTimeS + epsilon >= d.cooldownS)
+      else if (
+        s.state === 'cooldown' &&
+        s.stateTimeS + epsilon >= this.cooldownS
+      )
         this.transition('reposition');
+      if (s.state === 'aim' || s.state === 'burst')
+        s.aim = { ...target.position };
       if (s.state === 'burst' && s.stateTimeS + epsilon >= this.nextShotS) {
         this.fire(target.position);
         this.shots++;
@@ -459,7 +479,7 @@ export class Drone implements Enemy {
     return moved;
   }
 
-  private engage(): boolean {
+  protected engage(): boolean {
     const director = this.deps.director;
     if (!director) return true;
     this.token = director.requestToken(this.id, 'shot');

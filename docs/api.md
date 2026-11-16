@@ -1,5 +1,22 @@
 # API między modułami (kontrakty)
 
+## Z16 — Wieżyczka, Dron-haker i zagłuszenie
+
+`PowerDeps.statuses?: StatusQuery` udostępnia statusy właściciela mocy.
+`PowerBase.use()` sprawdza `has(owner, 'jammed')` przed kosztem i odnowieniem;
+odmowa emituje `power_denied.reason: 'jammed'`, nie zużywa energii ani odnowienia.
+Sceny przekazują istniejący `StatusSystem` w `createPowerFromDefinition`.
+Blokada dotyczy nowych aktywacji, nie kończy już działających efektów.
+
+Opcjonalne pola wroga: `stationary`, `hack { hackCooldownS, hackTelegraphS,
+durationS }`, `drone.antenna`. `turret` wymaga `stationary: true`,
+`grabbable: false`, `knockbackResist: 1`, danych strzeleckich i `body`;
+`hacker` wymaga `hack`, `drone` i danych strzeleckich.
+Haker nakłada `jammed` przez `DamageInfo.statuses` po trafieniu wiązką
+(raycast do hurtboxa gracza, osłony blokują). Obrażenia przerywają telegraf
+i uruchamiają pełne odnowienie; śmierć i Chwyt również przerywają atak.
+HUD reaguje na `status_applied`/`status_expired` gracza.
+
 ## Warsztat modułów broni
 
 `moduleSchema` / `loadModuleDefinitions(data[])` / `moduleDefinitions` w
@@ -530,7 +547,7 @@ power_cooldown: { power: string; user: EntityId; cooldownS: number };
 energy_changed: { id: EntityId; current: number; max: number };
 stamina_changed: { id: EntityId; current: number; max: number };
 stamina_denied: { user: EntityId; action: 'dash' | 'doubleJump' };
-power_denied: { power: string; user: EntityId; reason: 'no_energy' | 'cooldown' | 'too_heavy' | 'out_of_range' };
+power_denied: { power: string; user: EntityId; reason: 'no_energy' | 'cooldown' | 'too_heavy' | 'out_of_range' | 'jammed' };
 power_released: { power: string; user: EntityId }; // F2-09: odnowienie od puszczenia
 
 // wrogowie (#08)
@@ -662,6 +679,7 @@ export interface PowerDeps {
   castWall(origin: Vec3, dir: Vec3, maxDistance: number): number | null;
   projectiles?: ProjectileSystem;                 // Bariera
   grab?: GrabPhysics;                             // Chwyt (F2-09)
+  statuses?: StatusQuery;                         // blokada aktywacji przez jammed (Z16)
   feel?: FocusControl;                            // Skupienie (F2-06)
 }
 export type PowerFactory = (def: PowerDefinition, deps: PowerDeps) => Power;

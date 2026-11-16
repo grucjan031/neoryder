@@ -76,7 +76,7 @@ export interface GameEvents {
   power_denied: {
     power: string;
     user: EntityId;
-    reason: 'no_energy' | 'cooldown' | 'too_heavy' | 'out_of_range';
+    reason: 'no_energy' | 'cooldown' | 'too_heavy' | 'out_of_range' | 'jammed';
   };
   // F1 — wrogowie (#08)
   enemy_telegraph: { id: EntityId; kind: string; durationS: number };

@@ -92,6 +92,29 @@ describe('dane fal areny', () => {
   });
 });
 
+it('Z18: haker od fali 5 i wieżyczka od 6, najwyżej po dwie sztuki', () => {
+  const def = loadWaves(arenaData);
+  const appearances = (id: string) =>
+    def.waves.flatMap((wave, index) => {
+      const count = wave.groups
+        .filter((group) => group.enemy === id)
+        .reduce((sum, group) => sum + group.count, 0);
+      return count > 0 ? [{ wave: index + 1, count }] : [];
+    });
+  expect(appearances('hacker')).toEqual([
+    { wave: 5, count: 1 },
+    { wave: 8, count: 1 },
+    { wave: 10, count: 1 },
+    { wave: 12, count: 2 },
+  ]);
+  expect(appearances('turret')).toEqual([
+    { wave: 6, count: 1 },
+    { wave: 9, count: 1 },
+    { wave: 11, count: 1 },
+    { wave: 12, count: 2 },
+  ]);
+});
+
 describe('WaveDirector', () => {
   it('przerwa przed pierwszą falą, potem wave_started i spawn co interwał z limitem maxAlive', () => {
     const c = setup();

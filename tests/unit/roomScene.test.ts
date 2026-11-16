@@ -1,5 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { Mesh, Scene as ThreeScene } from 'three';
+import type { DamageSystem } from '../../src/combat/damage';
+import { powerDefinitions } from '../../src/combat/powers/registry';
 import type { RoomDefinition } from '../../src/world/roomSchema';
 import { RoomScene } from '../../src/scenes/roomScene';
 import type { RoomSceneOptions } from '../../src/scenes/roomScene';
@@ -103,6 +105,58 @@ function handlerCount(bus: EventBus): number {
   const handlers = Reflect.get(bus, 'handlers') as Map<unknown, unknown[]>;
   return [...handlers.values()].reduce((total, list) => total + list.length, 0);
 }
+
+it('zagłuszenie gracza blokuje Pchnięcie bez kosztu energii, po wygaśnięciu moc działa', async () => {
+  const { scene, bus } = await setup(runState({ energy: 100 }));
+  const denied = vi.fn();
+  const used = vi.fn();
+  const expired = vi.fn();
+  const applied = vi.fn();
+  bus.on('power_denied', denied);
+  bus.on('power_used', used);
+  bus.on('status_expired', expired);
+  bus.on('status_applied', applied);
+  // Nakładamy status przez rzeczywiste obrażenia, bez rozszerzania API sceny.
+  const damage = Reflect.get(scene, 'damage') as DamageSystem;
+  damage.deal(scene.playerId, {
+    source: null,
+    amount: 2,
+    tags: ['#power'],
+    statuses: [{ id: 'jammed', durationS: 3 }],
+  });
+  expect(applied).toHaveBeenCalledExactlyOnceWith({
+    target: scene.playerId,
+    status: 'jammed',
+    stacks: 1,
+    durationS: 3,
+    source: null,
+  });
+  const energyBefore = scene.exportState().energy;
+  scene.step(SIM_DT, press('power'));
+  expect(denied).toHaveBeenCalledExactlyOnceWith({
+    power: 'push',
+    user: scene.playerId,
+    reason: 'jammed',
+  });
+  expect(used).not.toHaveBeenCalled();
+  expect(scene.exportState().energy).toBe(energyBefore);
+
+  for (let i = 1; i < Math.round(3 / SIM_DT); i++) scene.step(SIM_DT, idle);
+  expect(expired).toHaveBeenCalledExactlyOnceWith({
+    target: scene.playerId,
+    status: 'jammed',
+  });
+  expect(used).not.toHaveBeenCalled();
+  scene.step(SIM_DT, press('power'));
+  expect(used).toHaveBeenCalledExactlyOnceWith({
+    power: 'push',
+    user: scene.playerId,
+  });
+  expect(denied).toHaveBeenCalledTimes(1);
+  expect(scene.exportState().energy).toBe(
+    energyBefore - powerDefinitions.get('push')!.cost,
+  );
+});
 
 afterEach(() => {
   for (const scene of active) scene.dispose();

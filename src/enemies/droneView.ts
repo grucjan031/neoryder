@@ -9,6 +9,7 @@ import type { BufferGeometry, Object3D } from 'three';
 import { getMaterial } from '../render/materials';
 import { droneFields } from './enemySchema';
 import { loadEnemyModel } from './enemyView';
+import { AimLaser } from './aimLaser';
 import type { Enemy } from './types';
 
 /**
@@ -24,6 +25,8 @@ export class DroneView {
   private readonly geometries: BufferGeometry[] = [];
   private readonly flight;
   private spin = 0;
+  private readonly antenna = new Group();
+  private readonly laser?: AimLaser;
 
   constructor(
     readonly enemy: Enemy,
@@ -55,6 +58,22 @@ export class DroneView {
       this.tilt.add(mesh);
     }
     this.root.add(this.tilt);
+    if (this.flight.antenna) {
+      const mast = new CylinderGeometry(r * 0.08, r * 0.08, r * 1.4, 8);
+      const dish = new CylinderGeometry(r * 0.8, r * 0.5, r * 0.2, 12);
+      this.geometries.push(mast, dish);
+      const stem = new Mesh(mast, getMaterial('enemy'));
+      stem.position.y = r;
+      const disk = new Mesh(dish, getMaterial('enemyGlow'));
+      disk.position.y = r * 1.7;
+      this.antenna.name = 'antenna';
+      this.antenna.add(stem, disk);
+      this.tilt.add(this.antenna);
+    }
+    if (enemy.definition.laserSight) {
+      this.laser = new AimLaser(enemy, r * 0.04);
+      this.root.add(this.laser.mesh);
+    }
     if (loadModels && enemy.definition.model)
       void loadEnemyModel(enemy.definition.model).then((source) => {
         const eye = source?.getObjectByName('eye');
@@ -66,6 +85,7 @@ export class DroneView {
         });
         this.tilt.clear();
         this.tilt.add(model);
+        if (this.flight.antenna) this.tilt.add(this.antenna);
         this.eye = model.getObjectByName('eye') ?? eye;
         this.rotors = rotors;
       });
@@ -94,10 +114,12 @@ export class DroneView {
             (1 + Math.sin(b.stateTimeS * this.flight.pulseHz * Math.PI * 2))
         : 1;
     this.eye.scale.setScalar(pulse);
+    this.laser?.render(this.root);
   }
 
   dispose(): void {
     this.disposed = true;
+    this.laser?.dispose();
     this.root.removeFromParent();
     this.root.clear();
     for (const geometry of this.geometries) geometry.dispose();

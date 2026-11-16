@@ -434,6 +434,15 @@
   letter-spacing: 0.04em;
   overflow-wrap: anywhere;
 }
+.hud__power-jammed {
+  display: none;
+  font-size: 0.6rem;
+}
+
+.hud__power--jammed .hud__power-jammed {
+  display: block;
+}
+
 .hud__power-cooldown {
   position: absolute;
   top: 20px;

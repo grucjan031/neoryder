@@ -98,7 +98,7 @@ export class Gunner implements Enemy {
                 z: this.current.position.z - target.position.z,
               }
             : null);
-        if (dir)
+        if (dir && !definition.stationary)
           this.body.knockback(
             dir,
             event.knockback * (1 - definition.knockbackResist),
@@ -217,7 +217,9 @@ export class Gunner implements Enemy {
       dy = target.y - origin.y,
       dz = target.z - origin.z;
     const spread = (this.ranged.spreadDeg * Math.PI) / 180;
-    const yaw = Math.atan2(dx, dz) + this.rng.float(-spread, spread);
+    const yaw =
+      (this.definition.stationary ? this.current.yaw : Math.atan2(dx, dz)) +
+      this.rng.float(-spread, spread);
     const pitch =
       Math.atan2(dy, Math.hypot(dx, dz)) + this.rng.float(-spread, spread);
     this.current.shotTimeS = 0;
@@ -328,7 +330,10 @@ export class Gunner implements Enemy {
       if (
         s.state === 'reposition' &&
         los &&
-        Math.abs(distance - r.preferredRange) <= r.rangeTolerance + epsilon &&
+        (d.stationary
+          ? distance <= d.attackRange
+          : Math.abs(distance - r.preferredRange) <=
+            r.rangeTolerance + epsilon) &&
         Math.abs(delta) <= turn + epsilon &&
         this.engage()
       )
@@ -345,6 +350,7 @@ export class Gunner implements Enemy {
         if (this.shots >= r.burstCount) this.transition('cooldown');
       }
     }
+    if (d.stationary) return;
     let vx = 0,
       vz = 0;
     // Z dyrektorem i widocznym celem: czekanie na token w slocie na preferowanym dystansie.

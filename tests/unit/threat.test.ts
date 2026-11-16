@@ -44,6 +44,31 @@ const budget = (n: MapNode, multiplier = 1) =>
   multiplier;
 
 describe('budżet zagrożenia', () => {
+  it('Z16: pools include new costs and turret unlocks at layer four', () => {
+    expect(costs.get('turret')).toBe(3);
+    expect(costs.get('hacker')).toBe(2.5);
+    expect(sector.threat!.pools.combat).toMatchObject({ turret: 1, hacker: 1 });
+    expect(sector.threat!.pools.elite).toMatchObject({ turret: 2, hacker: 1 });
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 50; seed++) {
+      for (const layer of [3, 4]) {
+        const plan = planWaves(
+          room,
+          sector,
+          node('combat', layer),
+          new Rng(seed),
+        );
+        expect(total(plan)).toBeLessThanOrEqual(budget(node('combat', layer)));
+        for (const wave of plan.waves)
+          for (const group of wave.groups) {
+            if (layer < 4) expect(group.enemy).not.toBe('turret');
+            seen.add(group.enemy);
+          }
+      }
+    }
+    expect(seen.has('turret')).toBe(true);
+    expect(seen.has('hacker')).toBe(true);
+  });
   it('każdy plik wroga poza bossem ma dodatni koszt; koszty startowe zgadzają się z ADR', () => {
     expect(enemies.length).toBeGreaterThanOrEqual(6);
     for (const enemy of enemies.filter((enemy) => enemy.kind !== 'boss'))

@@ -1,6 +1,8 @@
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import { Drone } from './drone';
+import { Turret } from './turret';
+import { Hacker } from './hacker';
 import { Gunner } from './gunner';
 import { Assaulter } from './assaulter';
 import { Boss } from './boss';
@@ -59,6 +61,15 @@ const factories = new Map<string, EnemyFactory>([
     },
   ],
 ]);
+for (const [kind, EnemyClass] of [
+  ['turret', Turret],
+  ['hacker', Hacker],
+] as const)
+  factories.set(kind, (ctx, deps, id, position) => {
+    const definition = enemyDefinitions.get(id);
+    if (!definition) throw new Error(`Nieznany wróg: ${id}`);
+    return new EnemyClass(ctx, deps, definition, position);
+  });
 for (const kind of ['shielder', 'executor'])
   factories.set(kind, (ctx, deps, id, position) => {
     const definition = enemyDefinitions.get(id);

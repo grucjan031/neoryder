@@ -9,6 +9,7 @@ import {
 } from 'three';
 import { DroneView } from './droneView';
 import { EnemyView } from './enemyView';
+import { TurretView } from './turretView';
 import type { Enemy } from './types';
 
 export interface EnemyViewLike {
@@ -24,9 +25,11 @@ export function createEnemyView(
   loadModels = true,
 ): EnemyViewLike {
   const view =
-    enemy.definition.kind === 'drone'
-      ? new DroneView(enemy, loadModels)
-      : new EnemyView(enemy, loadModels);
+    enemy.definition.kind === 'turret'
+      ? new TurretView(enemy)
+      : enemy.definition.kind === 'drone' || enemy.definition.kind === 'hacker'
+        ? new DroneView(enemy, loadModels)
+        : new EnemyView(enemy, loadModels);
   const geometry = new RingGeometry(0.16, 0.21, 4);
   const red = new Color(0xff3028);
   const white = new Color(0xffd8bd);

@@ -245,6 +245,7 @@ export class Hud {
   }[] = [];
   private fireAlternate = false;
   private energy = 0;
+  private jammed = false;
   private remaining = 0;
   private slotCount = 0;
   private activeSlot = -1;
@@ -450,6 +451,7 @@ export class Hud {
           {
             no_energy: text.noEnergy,
             cooldown: text.cooldown,
+            jammed: text.jammed,
             too_heavy: text.tooHeavy,
             out_of_range: text.outOfRange,
           }[reason],
@@ -457,6 +459,14 @@ export class Hud {
         this.denial.show();
         for (const slot of this.powerSlots)
           if (slot.id === power) slot.denial.show();
+      }),
+      bus.on('status_applied', ({ target, status }) => {
+        if (target === opts.playerId && status === 'jammed')
+          this.setJammed(true);
+      }),
+      bus.on('status_expired', ({ target, status }) => {
+        if (target === opts.playerId && status === 'jammed')
+          this.setJammed(false);
       }),
       bus.on('damage_dealt', ({ source, target, amount, dir, killed }) => {
         if (!(amount > 0)) return;
@@ -504,6 +514,7 @@ export class Hud {
         if (owner === opts.playerId) this.blade.hidden = true;
       }),
       bus.on('player_died', ({ id }) => {
+        if (id === opts.playerId) this.setJammed(false);
         if (id !== opts.playerId || !this.death.hidden) return;
         this.previousFocus =
           document.activeElement instanceof HTMLElement
@@ -517,6 +528,7 @@ export class Hud {
 
   /** Dane startowe ekwipunku; dalsze zmiany zasobów pochodzą wyłącznie ze zdarzeń. */
   setLoadout(loadout: HudLoadout): void {
+    this.jammed = false;
     for (const slot of this.powerSlots) slot.denial.dispose();
     this.powerSlots = [];
     this.powers.replaceChildren();
@@ -541,6 +553,7 @@ export class Hud {
         element('span', 'hud__power-face'),
         element('kbd', 'hud__power-key', key),
         element('span', 'hud__power-name', def?.name ?? text.empty),
+        element('span', 'hud__power-jammed', text.jammed),
         value,
         denial.node,
       );
@@ -627,9 +640,18 @@ export class Hud {
     this.banner.show();
   }
 
+  private setJammed(active: boolean): void {
+    this.jammed = active;
+    this.refreshDim();
+  }
+
   private refreshDim(): void {
     for (const slot of this.powerSlots) {
-      const dim = slot.id !== '' && this.energy < slot.cost;
+      const dim = slot.id !== '' && (this.jammed || this.energy < slot.cost);
+      slot.node.classList.toggle(
+        'hud__power--jammed',
+        this.jammed && slot.id !== '',
+      );
       if (slot.node.classList.contains('hud__power--dim') !== dim)
         slot.node.classList.toggle('hud__power--dim', dim);
     }

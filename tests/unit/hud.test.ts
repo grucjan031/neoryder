@@ -18,6 +18,31 @@ import { Stats } from '../../src/core/stats';
 import { tuning } from '../../src/core/tuning';
 
 describe('Hud', () => {
+  it('shows jammed only for player power slots and clears on expiry and reset', () => {
+    const loadout = { weapons: ['rifle'], powers: ['push', 'chain'] };
+    hud.setLoadout(loadout);
+    bus.emit('energy_changed', { id: 1, current: 100, max: 100 });
+    const apply = (target: number) =>
+      bus.emit('status_applied', {
+        target,
+        status: 'jammed',
+        source: 2,
+        stacks: 1,
+        durationS: 3,
+      });
+    apply(2);
+    expect(root.querySelectorAll('.hud__power--jammed')).toHaveLength(0);
+    apply(1);
+    expect(root.querySelectorAll('.hud__power--jammed')).toHaveLength(2);
+    expect(root.querySelectorAll('.hud__power--dim')).toHaveLength(2);
+    expect(query('.hud__power-jammed').textContent).toBe('ZAGŁUSZONE');
+    bus.emit('status_expired', { target: 1, status: 'jammed' });
+    expect(root.querySelectorAll('.hud__power--jammed')).toHaveLength(0);
+    expect(root.querySelectorAll('.hud__power--dim')).toHaveLength(0);
+    apply(1);
+    hud.setLoadout(loadout);
+    expect(root.querySelectorAll('.hud__power--jammed')).toHaveLength(0);
+  });
   let bus: EventBus;
   let hud: Hud;
   let root: HTMLElement;
