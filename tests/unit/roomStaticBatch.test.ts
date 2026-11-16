@@ -155,8 +155,25 @@ it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
         (sum, row) => sum + row.before.meshes - row.after.meshes,
         0,
       );
-      expect(after.meshes + saved).toBe(baselines[id]);
-      expect(after.meshes).toBeLessThanOrEqual(Math.floor(baselines[id] / 3));
+      // Z19 mierzył starą pulę VFX. Z21 dodaje osobny rdzeń i falę na wybuch.
+      const explosionDetails: Mesh[] = [];
+      three.traverse((object) => {
+        if (
+          object instanceof Mesh &&
+          (object.name === 'explosion-core' || object.name === 'explosion-ring')
+        )
+          explosionDetails.push(object);
+      });
+      for (const name of ['explosion-core', 'explosion-ring'])
+        expect(
+          explosionDetails.filter((mesh) => mesh.name === name),
+        ).toHaveLength(tuning.vfx.maxExplosions);
+      expect(explosionDetails.every((mesh) => !mesh.visible)).toBe(true);
+      const comparableMeshes = after.meshes - explosionDetails.length;
+      expect(comparableMeshes + saved).toBe(baselines[id]);
+      expect(comparableMeshes).toBeLessThanOrEqual(
+        Math.floor(baselines[id] / 3),
+      );
       expect(rows.slice(0, 3).map((row) => row.source)).toEqual([
         'static-blocks',
         'static-models',

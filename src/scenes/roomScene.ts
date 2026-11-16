@@ -296,7 +296,12 @@ export class RoomScene implements Scene {
     );
     this.root.add(this.projectileView.root);
     this.beamView = new BeamRenderer();
-    this.explosionView = new ExplosionRenderer(ctx.bus);
+    this.explosionView = new ExplosionRenderer(ctx.bus, {
+      floorY: this.layout.playerSpawn.y,
+      playerPosition: () => this.player.getState().position,
+      burstSparks: (point, count, color) =>
+        this.hitSparks.burst(point, null, color, count),
+    });
     this.root.add(this.beamView.root, this.explosionView.root);
     this.barrierView = new BarrierRenderer(ctx.tuning);
     this.root.add(this.barrierView.root);

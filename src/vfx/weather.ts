@@ -15,6 +15,25 @@ import { Rng } from '../core/rng';
 import { tuning } from '../core/tuning';
 import { CityParticleBatch } from '../render/city/particles';
 import { disposeCityGroup } from '../render/city/resources';
+import type { Vec3 } from '../core/math';
+import type { RainShelterDef } from '../world/dressingSchema';
+
+/** Granice strefy włącznie; odczyt bez alokacji i bez zmiany RNG pogody. */
+export function isRainSheltered(
+  point: Vec3,
+  shelters: readonly RainShelterDef[],
+  halfSize?: Vec3,
+): boolean {
+  for (const { position, size } of shelters) {
+    if (
+      Math.abs(point.x - position.x) <= size.x / 2 + (halfSize?.x ?? 0) &&
+      Math.abs(point.y - position.y) <= size.y / 2 + (halfSize?.y ?? 0) &&
+      Math.abs(point.z - position.z) <= size.z / 2 + (halfSize?.z ?? 0)
+    )
+      return true;
+  }
+  return false;
+}
 
 export interface RainParams {
   enabled: boolean;
@@ -50,6 +69,8 @@ export class Weather {
   private readonly direction = new Vector3();
   private readonly up = new Vector3(0, 1, 0);
   private readonly splashColor = new Color();
+  private readonly floorPoint = new Vector3();
+  private readonly rainHalfSize = new Vector3();
   private readonly splashLimit: number;
   private readonly rainState = {
     count: -1,
@@ -66,6 +87,7 @@ export class Weather {
     params: Partial<RainParams> = {},
     private readonly floorY = 0,
     seed: string | number = 'city-rain',
+    private readonly shelters: readonly RainShelterDef[] = [],
   ) {
     const t = tuning.city;
     this.params = {
@@ -152,6 +174,12 @@ export class Weather {
       .normalize();
     const length =
       Math.hypot(this.params.windX, this.params.speed) * t.rainExposureS;
+    // Konserwatywna obwiednia całej smugi zapobiega wystawaniu końca spod dachu.
+    this.rainHalfSize.set(
+      (Math.abs(this.direction.x) * length + t.rainStreakWidthM) / 2,
+      (Math.abs(this.direction.y) * length + t.rainStreakWidthM) / 2,
+      t.rainStreakWidthM / 2,
+    );
     const unchanged =
       dt === 0 &&
       this.initialized &&
@@ -184,7 +212,11 @@ export class Weather {
         p.y <= this.floorY &&
         this.splashBudget >= 1 &&
         this.splashLimit >= 2 &&
-        dt > 0
+        dt > 0 &&
+        !isRainSheltered(
+          this.floorPoint.set(p.x, this.floorY, p.z),
+          this.shelters,
+        )
       ) {
         this.splashBudget--;
         const ring = this.splashes.pool.spawn(t.rainSplashLifeS);
@@ -211,7 +243,11 @@ export class Weather {
       this.dummy.quaternion.setFromUnitVectors(this.up, this.direction);
       this.dummy.rotateY(Math.atan2(center.x - p.x, center.z - p.z));
       this.dummy.scale.set(t.rainStreakWidthM, length, 1);
-      if (p.y < this.floorY) this.dummy.scale.set(0, 0, 0);
+      if (
+        p.y < this.floorY ||
+        isRainSheltered(p, this.shelters, this.rainHalfSize)
+      )
+        this.dummy.scale.set(0, 0, 0);
       this.dummy.updateMatrix();
       this.rain.setMatrixAt(i, this.dummy.matrix);
     }

@@ -115,6 +115,13 @@ export const ambientFxSchema = z.object({
 });
 export type AmbientFxDef = z.infer<typeof ambientFxSchema>;
 
+/** Kosmetyczna strefa bez deszczu: środek i pełne wymiary AABB w świecie. */
+export const rainShelterSchema = z.object({
+  position: vec3,
+  size: z.object({ x: positive, y: positive, z: positive }),
+});
+export type RainShelterDef = z.infer<typeof rainShelterSchema>;
+
 /** Model dekoracyjny bez kolizji: `/assets/models/city/<model>.glb`. */
 export const decorSchema = z.object({
   model: textureId,
@@ -135,5 +142,6 @@ export const dressingFields = {
   lights: z.array(cityLightSchema).optional(),
   decals: z.array(decalSchema).optional(),
   ambientFx: z.array(ambientFxSchema).optional(),
+  rainShelters: z.array(rainShelterSchema).optional(),
   decor: z.array(decorSchema).optional(),
 };

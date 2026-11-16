@@ -166,6 +166,34 @@ describe('dane dźwięków', () => {
 });
 
 describe('AudioSystem — reguły', () => {
+  it('wybuch gra niski grzmot: szum lowpass w dół i sinus 55–40 Hz przez 0,6 s', () => {
+    const c = setup();
+    c.bus.emit('explosion', {
+      point: { x: 0, y: 0.55, z: -3 },
+      radiusM: 4.5,
+      owner: 1,
+      tags: ['#hazard', '#explosion'],
+    });
+    expect(c.audio.lastSound).toBe('explosion');
+    expect(c.fake.log.started).toBe(2);
+    expect(c.fake.log.oscillators[0]!.freq).toBeGreaterThanOrEqual(40);
+    expect(c.fake.log.oscillators[0]!.freq).toBeLessThanOrEqual(60);
+    expect(def.sounds.explosion!.variants[0]).toEqual([
+      expect.objectContaining({
+        wave: 'noise',
+        durationS: 0.6,
+        filter: { type: 'lowpass', freq: 1400, freqEnd: 90, q: 0.7 },
+      }),
+      expect.objectContaining({
+        wave: 'sine',
+        freq: 55,
+        freqEnd: 40,
+        durationS: 0.6,
+      }),
+    ]);
+    c.audio.dispose();
+  });
+
   it('zdarzenia wybierają właściwy dźwięk z mapy', () => {
     const c = setup();
     const cases: [() => void, string][] = [

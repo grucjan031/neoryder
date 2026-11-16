@@ -3,6 +3,12 @@
   "name": "Pod estakadą",
   "type": "elite",
   "theme": "neonStreet",
+  "rainShelters": [
+    {
+      "position": { "x": 0, "y": 3.25, "z": 0 },
+      "size": { "x": 16, "y": 6.5, "z": 22 }
+    }
+  ],
   "playerSpawn": {
     "x": 0,
     "y": 0,

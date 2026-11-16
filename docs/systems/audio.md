@@ -17,6 +17,7 @@ Właściciel: Grafika, VFX i audio. Kod: `src/audio/` (`audioSystem.ts`, `synth.
 
 | Zdarzenie                             | Warunek             | Dźwięk                                          |
 | ------------------------------------- | ------------------- | ----------------------------------------------- |
+| `explosion`                           | każde zdarzenie     | `explosion` (niski grzmot, Z21)                 |
 | `damage_dealt`                        | cel = gracz         | `playerHurt`                                    |
 |                                       | `killed`            | `kill` (tłuczone szkło + krystaliczne „pingi”)  |
 |                                       | `#wall`             | `wallSlam`                                      |
@@ -36,6 +37,16 @@ Właściciel: Grafika, VFX i audio. Kod: `src/audio/` (`audioSystem.ts`, `synth.
 | `wave_started` / `wave_cleared`       |                     | `waveStart` / `waveCleared`                     |
 
 ## Integracja
+
+Z21: przepis `explosion` ma szum przez lowpass 1400 → 90 Hz (Q 0,7)
+i sinus 55 → 40 Hz, obie warstwy po 0,6 s, attack 5 ms. Głośność przepisu
+0,9, gain warstw 0,9 / 1, pitch 0,96–1,04. Reguła bez warunku gra dla
+każdego zdarzenia `explosion`, niezależnie od wyboru koloru VFX.
+`SFX_EVENTS` obejmuje teraz to zdarzenie. Dźwięk jest nieprzestrzenny:
+obecny adapter faktów audio nie przekazuje punktu `explosion`.
+Dotychczasowy `kill` z `damage_dealt.killed` nadal może towarzyszyć zniszczeniu
+beczki; nie zmieniono rozpoznawania neutralnych celów. Przepis i rzeczywistą
+obsługę zdarzenia na atrapie Web Audio sprawdza `audio.test.ts`.
 
 `main.ts` tworzy jeden `AudioSystem` przed `scene.init` (żeby usłyszał spawn gracza), słuchacz = kamera, `GameContext.audio`. Debug: `window.__neoryder.query('audioState' | 'lastSound')`, w `sfx-test` komenda `sfx <nazwa>` i przyciski lil-gui.
 

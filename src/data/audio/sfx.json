@@ -1,5 +1,15 @@
 {
   "sounds": {
+    "explosion": {
+      "volume": 0.9,
+      "pitch": [0.96, 1.04],
+      "variants": [
+        [
+          { "wave": "noise", "durationS": 0.6, "attackS": 0.005, "gain": 0.9, "filter": { "type": "lowpass", "freq": 1400, "freqEnd": 90, "q": 0.7 } },
+          { "wave": "sine", "freq": 55, "freqEnd": 40, "durationS": 0.6, "attackS": 0.005, "gain": 1 }
+        ]
+      ]
+    },
     "swing": {
       "volume": 0.35,
       "pitch": [0.9, 1.15],
@@ -205,6 +215,7 @@
     }
   },
   "rules": [
+    { "event": "explosion", "sound": "explosion" },
     { "event": "execute_performed", "sound": "hitHeavy" },
     { "event": "damage_dealt", "when": { "targetIsPlayer": true }, "sound": "playerHurt" },
     { "event": "damage_dealt", "when": { "killed": true }, "sound": "kill" },

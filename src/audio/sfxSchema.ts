@@ -3,6 +3,7 @@ import { z } from 'zod';
 /** Zdarzenia, które moduł audio umie obsłużyć (podzbiór GameEvents). */
 export const SFX_EVENTS = [
   'execute_performed',
+  'explosion',
   'damage_dealt',
   'melee_swing',
   'melee_blocked',

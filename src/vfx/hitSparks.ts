@@ -53,10 +53,15 @@ export class HitSparks {
     this.burst(point, dir, HIT_SPARK_RED);
   }
 
-  burst(point: Vec3, dir: Vec3 | null, color: number): void {
+  burst(
+    point: Vec3,
+    dir: Vec3 | null,
+    color: number,
+    count = this.opts.tuning.vfx.hitSparkCount,
+  ): void {
     const t = this.opts.tuning.vfx;
     const length = dir ? Math.hypot(dir.x, dir.y, dir.z) : 0;
-    for (let i = 0; i < t.hitSparkCount; i++) {
+    for (let i = 0; i < count; i++) {
       const p = this.pool.spawn(t.hitSparkLifeS * (0.7 + rand() * 0.6));
       const speed = t.hitSparkSpeedMS * (0.6 + rand() * 0.8);
       p.x = point.x;

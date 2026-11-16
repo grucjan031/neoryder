@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { Scene } from 'three';
 import { RoomScene } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
@@ -13,6 +13,7 @@ import { loadWaves } from '../../src/world/waves';
 import type { HazardState } from '../../src/world/hazards';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 import wavesData from '../../src/data/waves/roomTest.json';
+import { HitSparks } from '../../src/vfx/hitSparks';
 
 it('combatWarehouse: ładuje beczki, detonuje obok wroga, nie liczy beczki jako zabójstwa i sprząta', async () => {
   const room = roomDefinitions.get('combatWarehouse')!;
@@ -51,6 +52,7 @@ it('combatWarehouse: ładuje beczki, detonuje obok wroga, nie liczy beczki jako 
   const commands = new CommandRegistry();
   const three = new Scene();
   const scene = new RoomScene(room, run, waves, { loadModels: false });
+  const sparks = vi.spyOn(HitSparks.prototype, 'burst');
   try {
     await scene.init(
       {
@@ -83,6 +85,14 @@ it('combatWarehouse: ładuje beczki, detonuje obok wroga, nie liczy beczki jako 
     expect(commands.execute('hazard detonate warehouse-north')).toBe(
       'Beczka zdetonowana.',
     );
+    expect(sparks).toHaveBeenCalledWith(
+      expect.any(Object),
+      null,
+      0xffb84d,
+      tuning.vfx.explosionSparkCount,
+    );
+    expect(three.getObjectByName('explosion-core')?.visible).toBe(true);
+    expect(three.getObjectByName('explosion-ring')?.visible).toBe(true);
     expect(
       hits.some(
         (e) =>
@@ -102,6 +112,7 @@ it('combatWarehouse: ładuje beczki, detonuje obok wroga, nie liczy beczki jako 
     expect(three.children).toHaveLength(0);
     expect(commands.execute('hazard list')).toContain('Nieznana komenda');
   } finally {
+    sparks.mockRestore();
     scene.dispose();
     offHit();
     offSpawn();

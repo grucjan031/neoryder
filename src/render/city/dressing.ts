@@ -8,6 +8,7 @@ import type {
   CityLightDef,
   DecalDef,
   DecorDef,
+  RainShelterDef,
   SignDef,
 } from '../../world/dressingSchema';
 import type { Theme } from '../themeSchema';
@@ -22,6 +23,7 @@ export interface DressingLayout {
   lights?: readonly CityLightDef[];
   decals?: readonly DecalDef[];
   ambientFx?: readonly AmbientFxDef[];
+  rainShelters?: readonly RainShelterDef[];
   /** Latarnie z dekoracji dostają stożek światła i światło punktowe. */
   decor?: readonly DecorDef[];
 }
@@ -76,7 +78,12 @@ export class CityDressing {
       roots.push(this.ambient.root);
     }
     if (theme.rain.enabled) {
-      this.weather = new Weather(theme.rain, floorY, `${seed}:rain`);
+      this.weather = new Weather(
+        theme.rain,
+        floorY,
+        `${seed}:rain`,
+        layout.rainShelters,
+      );
       this.weather.stormEnabled = theme.rain.storm === true;
       roots.push(this.weather.root);
     }

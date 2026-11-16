@@ -1,5 +1,56 @@
 # Odłamki wrogów — F1 #12
 
+## Wybuch ognia (Z21)
+
+`ExplosionRenderer(bus, options?)` wzmacnia wybuch z parą `#hazard` +
+`#explosion` oraz z `#fire`. Pierwszeństwo mają `#power` i `#elektrycznosc`:
+zachowują dotychczasową kulę, kolor, czas i opacity, bez nowego feedbacku.
+Ogień ma rdzeń ciepłej bieli z bloomem, kulę od `#ffb84d` do ciemnego
+żółtawego pomarańczu `#a66b08` i addytywny pierścień na podłodze.
+Materiały testują głębię, nie zapisują jej; nowe efekty nie dostają konturu.
+Stała pula 16 wybuchów ma po trzy meshe, współdzieloną sferę i pierścień.
+Po przepełnieniu zastępowany jest najstarszy wybuch; dispose zwalnia własne zasoby.
+
+Parametry `tuning.vfx` (promienie jako mnożniki `explosion.radiusM`):
+
+| Pole                                                                         | Domyślnie                 |
+| ---------------------------------------------------------------------------- | ------------------------- |
+| `explosionDurationS` / `explosionOpacity`                                    | 0,3 s / 0,4 (stary efekt) |
+| `explosionFlashS` / `explosionFlashRadiusScale` / `explosionFlashBrightness` | 0,10 s / 0,22 / 2,5       |
+| `explosionFireOpacity` / `explosionFireStartRadiusScale`                     | 0,8 / 0,15                |
+| `explosionRingS` / `explosionRingRadiusScale` / `explosionRingInnerFrac`     | 0,28 s / 1,2 / 0,9        |
+| `explosionRingOpacity` / `explosionRingFloorOffsetM`                         | 0,65 / 0,025 m            |
+| `explosionSparkCount`                                                        | 32                        |
+| `explosionShakeIntensity` / `explosionShakeS` / `explosionShakeRadiusScale`  | 0,7 / 0,22 s / 2          |
+| `explosionHitstopMs`                                                         | 45 ms                     |
+
+Kula ognia używa czasu 0,3 s, narasta według pierwiastka postępu od 15%
+promienia i zanika liniowo. Pierścień narasta tak samo do 120% promienia.
+`options.floorY` ustawia podłogę (domyślnie 0).
+`options.burstSparks(point, count, color)` podpina istniejący `HitSparks.burst`;
+opcjonalny czwarty argument tej metody zmienia liczbę iskier (domyślnie nadal
+`hitSparkCount`). RoomScene i Arena używają wspólnej puli 128 iskier;
+prędkości, czas życia i grawitacja pozostają z `hitSpark*`. Silny łańcuch
+wybuchów może zastępować wcześniejsze iskry. Losowość jest wyłącznie kosmetyczna.
+
+`options.playerPosition()` daje środek gracza. Dla ognia `camera_shake.intensity`
+maleje liniowo od 0,7 w centrum do 0 w odległości `2 * radiusM`.
+`screenShake=0` blokuje emisję; ułamkowe ustawienie skaluje amplitudę w FpsCamera
+dokładnie raz. Hitstop 45 ms występuje tylko przy odległości ≤ `radiusM`.
+Domyślne ustawienia są czytane przez `loadSettings()`; można wstrzyknąć
+`options.settings`. `flashes=false` ukrywa rdzeń również w trakcie błysku,
+zostawiając kulę, pierścień i iskry. Bez dodatkowego PointLight: CityLights
+rezerwuje pełną pulę `city.maxLights` i nie udostępnia przydziału chwilowego.
+
+Testy: `explosionVfx.test.ts`, rozszerzenia `roomHazards.test.ts` i
+`arenaLoadout.test.ts`. `roomStaticBatch.test.ts` jawnie sprawdza 16 nowych
+rdzeni i 16 pierścieni, po czym odejmuje je od historycznego pomiaru Z19;
+próg redukcji statycznej geometrii pozostaje bez zmian.
+Kontrola dla architekta: pokój `combatWarehouse`,
+`hazard detonate warehouse-north`; porównaj bliski i daleki wybuch oraz
+`flashes=false` i `screenShake=0`. Z21 nie uruchamia przeglądarki ani zrzutów;
+czytelność, bloom i siła odczucia wymagają oceny wizualnej.
+
 `src/vfx/debris.ts` zawiera kosmetyczną kinematykę bez Three.js, DOM i ciał
 Rapier. Efekt nie uczestniczy w obrażeniach ani kolizjach gracza. Każdy fragment
 ma pozycję, prędkość, kwaternion, prędkość kątową i skalę. Pula jest tworzona

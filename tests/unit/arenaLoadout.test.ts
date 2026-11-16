@@ -18,6 +18,7 @@ import type { Action } from '../../src/core/input';
 import { FppBlade } from '../../src/render/fppBlade';
 import { FppBlaster } from '../../src/render/fppBlaster';
 import { FppOffhand } from '../../src/render/fppOffhand';
+import { HitSparks } from '../../src/vfx/hitSparks';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -31,6 +32,28 @@ const press = (action: Action): InputSnapshot => ({
   pressed: new Set([action]),
 });
 const active: Arena[] = [];
+
+it('arena podpina iskry wybuchu ognia i reset czyści rdzeń oraz falę', async () => {
+  const { scene, bus, three } = await setup('gunner');
+  const sparks = vi.spyOn(HitSparks.prototype, 'burst');
+  bus.emit('explosion', {
+    owner: 1,
+    point: { x: 0, y: 0.55, z: 0 },
+    radiusM: 4.5,
+    tags: ['#fire'],
+  });
+  expect(sparks).toHaveBeenCalledExactlyOnceWith(
+    { x: 0, y: 0.55, z: 0 },
+    null,
+    0xffb84d,
+    tuning.vfx.explosionSparkCount,
+  );
+  expect(three.getObjectByName('explosion-core')?.visible).toBe(true);
+  expect(three.getObjectByName('explosion-ring')?.visible).toBe(true);
+  scene.reset();
+  expect(three.getObjectByName('explosion-core')?.visible).toBe(false);
+  expect(three.getObjectByName('explosion-ring')?.visible).toBe(false);
+});
 
 it('gunner starts with a gun: LPM shoots, R swaps to blade and LPM cuts without firing', async () => {
   const { scene, bus } = await setup('gunner');

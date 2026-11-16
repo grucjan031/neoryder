@@ -173,6 +173,38 @@ Efekty używają czasu świata i stałych pul z zastępowaniem starszych cząste
 Nie ma kolizji z dachami i przeszkodami: integrator wybiera miejsca emisji,
 obszar deszczu oraz wysokość płaskiej podłogi.
 
+### Strefy bez deszczu (Z21)
+
+Opcjonalne `rainShelters: [{ position, size }]` w danych oprawy to AABB:
+`position` oznacza środek świata, `size` pełne dodatnie wymiary XYZ.
+Granice należą do strefy. CityDressing przekazuje definicje jako czwarty
+argument `Weather(params, floorY, seed, shelters?)`. Brak pola zachowuje
+dotychczasowy deszcz. Strefy są kosmetyczne i nie tworzą colliderów.
+
+Deszcz już wcześniej przesuwał i zawijał instancje na CPU w Weather.
+W tej samej pętli przecięcie strefy przez obwiednię smugi zeruje skalę instancji;
+pozycja i ruch pozostają zachowane. Nie dodano przebiegu ani shadera.
+`isRainSheltered(point, shelters, halfSize?)` to czyste sprawdzenie bez alokacji:
+opcjonalne półwymiary rozszerzają test o obwiednię całej smugi. Dzięki temu
+koniec smugi nie wystaje pod strop, gdy środek kropli jest jeszcze nad nim.
+Przecięcie podłogi w strefie nie emituje rozbryzgów; jawne emitery kapania
+(`ambientFx: drip`) nadal działają. Deszcz nad stropem i poza obrysem dachu
+pozostaje widoczny. Pauza nadal pomija aktualizacje niezmienionych macierzy.
+
+Strefy od podłogi do spodu stropu:
+
+| Pokój                 | Środek       | Pełne wymiary   |
+| --------------------- | ------------ | --------------- |
+| `combatFloodedTunnel` | (0; 2; 0)    | 12 × 4 × 24 m   |
+| `alleyUnderpass`      | (0; 3,25; 0) | 16 × 6,5 × 22 m |
+
+Testy `rainShelters.test.ts`: schemat, granice, dane stropów, macierze
+rzeczywistych instancji Three.js, rozbryzgi, pauza i przekazanie przez
+CityDressing. Ocena architekta w `?scene=room-test&room=<id>` powinna
+uwzględnić krawędzie stropu przy wietrze: ukrywana jest cała smuga,
+której obwiednia przecina strefę. Może to dawać wąski pas bez smug tuż
+poza dachem; shader nie przycina części smugi na samej granicy.
+
 ## Strojenie i zasoby
 
 Wszystkie parametry animacji oraz limity są w `tuning.city`, automatycznie
