@@ -8,6 +8,7 @@ import {
   RingGeometry,
   SphereGeometry,
 } from 'three';
+import type { Material } from 'three';
 import type { EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
@@ -20,6 +21,83 @@ const ELECTRIC = new Color('#fff1d6');
 const FIRE = new Color('#ffb84d');
 const FIRE_END = new Color('#a66b08');
 
+/**
+ * Kula ognia bez płaskiej „kopuły”: turbulentny szum rozpala brzeg i wypala dziury w miarę
+ * zaniku (dissolve), środek jest jaśniejszy. Wyłączone dla wybuchów mocy i elektrycznych (uFire = 0).
+ */
+function addFireShader(material: Material): {
+  fire: { value: number };
+  burn: { value: number };
+  time: { value: number };
+} {
+  const uniforms = {
+    fire: { value: 0 },
+    burn: { value: 0 },
+    time: { value: 0 },
+  };
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uFire = uniforms.fire;
+    shader.uniforms.uBurn = uniforms.burn;
+    shader.uniforms.uFireTime = uniforms.time;
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+        varying vec3 vFireP;
+        varying vec3 vFireN;
+        varying vec3 vFireV;`,
+      )
+      .replace(
+        '#include <project_vertex>',
+        `#include <project_vertex>
+        vFireP = position;
+        vFireN = normalize(normalMatrix * normal);
+        vFireV = normalize(-mvPosition.xyz);`,
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+        varying vec3 vFireP;
+        varying vec3 vFireN;
+        varying vec3 vFireV;
+        uniform float uFire, uBurn, uFireTime;
+        float fireHash(vec3 p) {
+          p = fract(p * 0.3183099 + 0.1);
+          p *= 17.0;
+          return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+        }
+        float fireNoise(vec3 x) {
+          vec3 i = floor(x);
+          vec3 f = fract(x);
+          f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(mix(fireHash(i), fireHash(i + vec3(1, 0, 0)), f.x),
+                         mix(fireHash(i + vec3(0, 1, 0)), fireHash(i + vec3(1, 1, 0)), f.x), f.y),
+                     mix(mix(fireHash(i + vec3(0, 0, 1)), fireHash(i + vec3(1, 0, 1)), f.x),
+                         mix(fireHash(i + vec3(0, 1, 1)), fireHash(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+        }`,
+      )
+      .replace(
+        '#include <opaque_fragment>',
+        `if (uFire > 0.5) {
+          vec3 q = vFireP * 3.2 + vec3(0.0, -uFireTime * 4.0, 0.0);
+          float n = fireNoise(q) * 0.6 + fireNoise(q * 2.3 + 7.1) * 0.4;
+          float facing = abs(dot(normalize(vFireN), normalize(vFireV)));
+          // Wypalanie: rosnący próg zjada kulę od najsłabszych miejsc szumu.
+          float keep = smoothstep(uBurn - 0.12, uBurn + 0.12, n);
+          float ember = keep * (1.0 - smoothstep(uBurn, uBurn + 0.22, n));
+          // Środek gęstszy i jaśniejszy, brzeg miękki — kula zamiast płaskiej kopuły.
+          float body = mix(0.25, 1.0, pow(facing, 0.8));
+          outgoingLight = mix(outgoingLight * (0.7 + 0.6 * n), vec3(1.0, 0.95, 0.85), ember * 0.8 + pow(facing, 3.0) * 0.35 * (1.0 - uBurn));
+          diffuseColor.a *= keep * body * (0.75 + 0.5 * n);
+        }
+        #include <opaque_fragment>`,
+      );
+  };
+  material.customProgramCacheKey = () => 'explosionFireShell';
+  return uniforms;
+}
+
 interface ExplosionOptions {
   floorY?: number;
   playerPosition?(): Vec3;
@@ -29,7 +107,7 @@ interface ExplosionOptions {
 
 export class ExplosionRenderer {
   readonly root = new Group();
-  private readonly geometry = new SphereGeometry(1, 12, 8);
+  private readonly geometry = new SphereGeometry(1, 24, 16);
   private readonly ringGeometry = new RingGeometry(
     tuning.vfx.explosionRingInnerFrac,
     1,
@@ -38,6 +116,12 @@ export class ExplosionRenderer {
   private readonly pool;
   private readonly off: () => void;
   private sequence = 0;
+  /**
+   * Rozgrzewka programu kuli ognia: niewidoczna (krycie 0) kopia jest rysowana w pierwszych
+   * klatkach sceny, żeby kompilacja shadera nie zjadła pierwszego wybuchu (trwa tylko 0,3 s).
+   */
+  private readonly prewarm: Mesh<SphereGeometry, Material>;
+  private prewarmFrames = 2;
   private readonly powerColor = getMaterial('power').color.clone();
 
   constructor(
@@ -50,6 +134,7 @@ export class ExplosionRenderer {
         const material = getMaterial('power').clone();
         material.transparent = true;
         material.depthWrite = false;
+        const fireShader = addFireShader(material);
         const mesh = new Mesh(this.geometry, material);
         mesh.name = 'explosion-shell';
         const core = new Mesh(
@@ -85,9 +170,34 @@ export class ExplosionRenderer {
           effect.userData.noOutline = effect !== mesh;
         }
         this.root.add(mesh, core, ring);
-        return { mesh, core, ring, fire: false, age: 0, radius: 0, order: -1 };
+        return {
+          mesh,
+          core,
+          ring,
+          fireShader,
+          fire: false,
+          age: 0,
+          radius: 0,
+          order: -1,
+        };
       },
     );
+    const first = this.pool[0]!.mesh;
+    this.prewarm = new Mesh(this.geometry, first.material);
+    this.prewarm.name = 'explosion-prewarm';
+    this.prewarm.scale.setScalar(1e-3);
+    this.prewarm.frustumCulled = false;
+    this.prewarm.userData.noOutline = true;
+    this.prewarm.userData.vfxPool = true;
+    this.prewarm.onBeforeRender = () => {
+      // Krycie 0 tylko na czas tego rysowania; pula korzysta z tego samego materiału.
+      this.prewarmOpacity = (first.material as MeshBasicMaterial).opacity;
+      (first.material as MeshBasicMaterial).opacity = 0;
+    };
+    this.prewarm.onAfterRender = () => {
+      (first.material as MeshBasicMaterial).opacity = this.prewarmOpacity;
+    };
+    this.root.add(this.prewarm);
     this.off = bus.on('explosion', ({ point, radiusM, tags }) => {
       const slot =
         this.pool.find(
@@ -151,7 +261,11 @@ export class ExplosionRenderer {
     });
   }
 
+  private prewarmOpacity = 0;
+
   render(frameDt: number): void {
+    if (this.prewarmFrames > 0 && --this.prewarmFrames === 0)
+      this.prewarm.visible = false;
     for (const slot of this.pool) {
       if (!slot.mesh.visible && !slot.core.visible && !slot.ring.visible)
         continue;
@@ -176,7 +290,10 @@ export class ExplosionRenderer {
       (slot.fire ? t.explosionFireOpacity : t.explosionOpacity) *
       (1 - progress);
     slot.mesh.visible = progress < 1;
+    slot.fireShader.fire.value = slot.fire ? 1 : 0;
     if (!slot.fire) return;
+    slot.fireShader.burn.value = progress * 0.95;
+    slot.fireShader.time.value = slot.age + slot.order * 3.7;
     slot.mesh.material.color.copy(FIRE).lerp(FIRE_END, progress);
     const flash = Math.min(1, slot.age / t.explosionFlashS);
     slot.core.visible = this.settings.flashes && flash < 1;

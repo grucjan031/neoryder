@@ -220,3 +220,45 @@ renderery, wołają `render(alpha, frameDt)` (statusy) i `render(frameDt)`
 `?scene=status-test&debug=1`, poczekaj aż wrogowie podejdą, `status burning`,
 `status overload`, `status stunned`; w arenie `spawn drone 3`, `kill all`.
 Testy: `tests/unit/vfxEffects.test.ts`.
+
+## Szlif efektów walki (Neon Noir)
+
+Wszystkie zmiany są kosmetyczne: nie dotykają symulacji, obrażeń ani zdarzeń.
+Nowe liczby są w `tuning.vfx` (panel lil-gui); istniejące wartości bez zmian.
+
+- **Żar krawędzi cięcia.** `DebrisRenderer` rysuje nad odłamkami drugą
+  `InstancedMesh` (`debris-edges`, wspólna macierz instancji) z krawędziami z
+  barycentrycznych współrzędnych tetraedru. Żar jest biały w chwili rozpadu i
+  stygnie (`debrisEdgeCoolS`, `debrisEdgeBrightness`) do czerwieni wroga; przy
+  zabiciu mocą (`#power`) do magenty Rezonansu. `forEachActive` przekazuje
+  dodatkowo wiek fragmentu i barwę (`tint` z `DebrisBurst`).
+- **Błyski walki.** `DebrisSystem.flash()` przechowuje 24 kosmetyczne błyski
+  (starzeją się w `step()`, nie zużywają puli odłamków, `clear()` je czyści).
+  `EnemyShatter` dodaje: przy zabiciu — rozbłysk rdzenia i pierścień w barwie
+  rozpadu (`killFlashS`, `killFlashCoreM`, `killFlashRingM`); przy trafieniu
+  żywego wroga (bez obrażeń statusów `#status`) — obrys sylwetki (fresnel na
+  kapsule bryły, `hitFlashS`, `hitFlashBrightness`) i gwiazdkę iskry w punkcie
+  trafienia (`hitFlashStarSizeM`).
+- **Fale Rezonansu.** `ResonanceWaveFx` (w `LightningRenderer`, który dostaje
+  listę mocy i kamerę) wykrywa użycie mocy stożkowej po skoku
+  `cooldownRemaining`: Pchnięcie to magentowa czasza z echem w kierunku
+  celowania (`resonanceWaveS`), Fala uderzeniowa — pierścień przy podłodze
+  (`resonanceRingS`, `resonanceRingDropM`).
+- **Chwyt.** Cyan linia (dłoń gracza) zostaje; dookoła magentowa rurka z
+  płynącymi pasami i kula przy celu (`grabGlow*`, `grabOrbM`).
+- **Bariera.** Cyan płat zostaje; nad nim magentowa siatka heksów z ramą,
+  skanem i falą przy odbiciu (`barrierLattice*`).
+- **Statusy.** Podpalenie: wąskie języki ognia przy powierzchni bryły zamiast
+  rombów nad głową. Przeciążenie: łuk to zygzak 3 cienkich odcinków (połowa
+  częstości łuków, ~1,5× dawnej liczby instancji, pula bez zmian).
+- **Wybuch ognia.** Kula ma szum turbulencji i wypalanie (dissolve) zamiast
+  płaskiej kopuły; gęstsza sfera (24×16). Program shadera jest rozgrzewany w
+  pierwszych dwóch klatkach niewidoczną kopią, żeby kompilacja nie zjadła
+  pierwszego wybuchu. Po wybuchu beczki `HazardView` zostawia osmalenie,
+  bursztynowy żar (1,4 s) i 6 kłębów ciemnego dymu (2,6 s, niskie krycie).
+- **Lasery.** Wiązka to miękka rurka z gorącą osią (shader), ostrzeżenie to
+  przerywana, maszerująca bursztynowa smuga — telegraf czytelny z daleka.
+- **Maska bloomu.** Shadery efektów zwracają krycie równe jasności (zwykłe
+  mieszanie), bo kompozycja bloomu przyciemnia obraz alfą maski.
+- Ukryte pule efektów mają `userData.vfxPool = true`; `roomStaticBatch.test.ts`
+  odejmuje je od pomiaru siatek Z19 (jak rdzenie i pierścienie wybuchów).

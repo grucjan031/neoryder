@@ -19,7 +19,11 @@ interface Effect {
 }
 
 const MAGENTA = 0xff2bd6;
+/** Jasny rdzeń łuku przeciążenia (blady róż — nadal czytany jako Rezonans). */
+const MAGENTA_CORE = 0xffb8f2;
 const WHITE = 0xffffff;
+/** Segmenty jednego łuku przeciążenia (zygzak). */
+const ARC_SEGMENTS = 3;
 const rand = (): number => Math.random();
 
 /**
@@ -115,25 +119,30 @@ export class StatusVfx {
       if (p.life === 0) continue;
       const k = p.age / p.life;
       if (kind === 'flame') {
-        const s = t.statusFlameSizeM * p.size * (1 - k);
-        instance.sx = instance.sz = s * 0.7;
-        instance.sy = s * 1.7;
-        instance.dx = p.vx;
-        instance.dy = p.vy;
-        instance.dz = p.vz;
+        // Język ognia: szybko rośnie, potem wydłuża się i zwęża (zamiast równych rombów).
+        const grow = Math.min(1, k * 5);
+        const s = t.statusFlameSizeM * p.size * grow * (1 - k) ** 0.7;
+        instance.sx = instance.sz = s * (0.8 - k * 0.35);
+        instance.sy = s * (1.9 + k * 1.2);
+        // Oś płomienia pionowa z lekkim chybotaniem; dryf poziomy nie przechyla języka.
+        instance.dx = p.vx * 0.35;
+        instance.dy = 1;
+        instance.dz = p.vz * 0.35;
         instance.color = WHITE;
       } else {
-        instance.sx = instance.sz = t.statusSparkWidthM;
-        instance.sy = t.statusSparkLengthM * p.size * (1 - k * 0.5);
+        // Odcinek łuku: cienki, pełna długość do końca krótkiego życia, potem gaśnie skracając się.
+        const fade = k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4;
+        instance.sx = instance.sz = t.statusSparkWidthM * (0.3 + 0.25 * fade);
+        instance.sy = t.statusSparkLengthM * p.size * fade;
         instance.dx = p.vx;
         instance.dy = p.vy;
         instance.dz = p.vz;
-        instance.color = MAGENTA;
+        instance.color = p.color || MAGENTA;
       }
       instance.x = p.x;
       instance.y = p.y;
       instance.z = p.z;
-      instance.roll = p.age * 9;
+      instance.roll = kind === 'flame' ? p.size * 6 + p.age * 4 : p.age * 9;
       cb(instance);
     }
   }
@@ -161,15 +170,19 @@ export class StatusVfx {
     while (effect.carry >= 1) {
       effect.carry -= 1;
       const angle = rand() * Math.PI * 2;
-      const r = body.radius * 0.9 * Math.sqrt(rand());
-      const p = this.flames.spawn(t.statusFlameLifeS * (0.7 + rand() * 0.6));
+      // Płomienie liżą powierzchnię bryły (nie unoszą się metr nad głową): krótsze życie u góry.
+      const r = body.radius * (0.75 + rand() * 0.35);
+      const h = rand() ** 0.8;
+      const p = this.flames.spawn(
+        t.statusFlameLifeS * (0.45 + rand() * 0.45) * (1 - h * 0.45),
+      );
       p.x = body.x + Math.cos(angle) * r;
       p.z = body.z + Math.sin(angle) * r;
-      p.y = body.y + rand() * body.height * 0.9;
-      p.vx = (rand() - 0.5) * 0.5;
-      p.vz = (rand() - 0.5) * 0.5;
-      p.vy = t.statusFlameRiseMS * (0.7 + rand() * 0.6);
-      p.size = 0.7 + rand() * 0.6;
+      p.y = body.y + h * body.height * 0.92;
+      p.vx = Math.cos(angle) * 0.25 + (rand() - 0.5) * 0.35;
+      p.vz = Math.sin(angle) * 0.25 + (rand() - 0.5) * 0.35;
+      p.vy = t.statusFlameRiseMS * (0.45 + rand() * 0.4);
+      p.size = 0.6 + rand() * 0.7;
     }
   }
 
@@ -180,25 +193,44 @@ export class StatusVfx {
     t: Tuning['vfx'],
   ): void {
     if (!(dt > 0)) return;
-    effect.carry += t.statusSparkRate * Math.max(1, effect.stacks) * dt;
+    // Łuk to ARC_SEGMENTS instancji: połowa częstości łuków daje ~1,5x dawnej liczby odcinków.
+    effect.carry += (t.statusSparkRate * Math.max(1, effect.stacks) * dt) / 2;
     while (effect.carry >= 1) {
       effect.carry -= 1;
-      const angle = rand() * Math.PI * 2;
-      const r = body.radius * (0.9 + rand() * 0.5);
-      const p = this.sparks.spawn(t.statusSparkLifeS * (0.6 + rand() * 0.8));
-      p.x = body.x + Math.cos(angle) * r;
-      p.z = body.z + Math.sin(angle) * r;
-      p.y = body.y + rand() * body.height;
-      // Łuk leży stycznie do korpusu z losowym przechyłem.
-      p.vx = -Math.sin(angle) + (rand() - 0.5) * 1.2;
-      p.vz = Math.cos(angle) + (rand() - 0.5) * 1.2;
-      p.vy = (rand() - 0.5) * 1.6;
-      const n = Math.hypot(p.vx, p.vy, p.vz) || 1;
-      p.vx /= n;
-      p.vy /= n;
-      p.vz /= n;
-      p.size = 0.5 + rand() * 0.7;
-      // Jednostkowa prędkość to oś łuku i lekki dryf w ciągu krótkiego życia.
+      // Jeden łuk = zygzak z ARC_SEGMENTS odcinków, przyklejony stycznie do korpusu.
+      let angle = rand() * Math.PI * 2;
+      const r = body.radius * (0.95 + rand() * 0.35);
+      let x = body.x + Math.cos(angle) * r;
+      let z = body.z + Math.sin(angle) * r;
+      let y = body.y + (0.15 + rand() * 0.8) * body.height;
+      const spin = rand() < 0.5 ? -1 : 1;
+      const climb = (rand() - 0.5) * 1.4;
+      const life = t.statusSparkLifeS * (0.6 + rand() * 0.8);
+      const len = t.statusSparkLengthM * (0.35 + rand() * 0.25);
+      for (let i = 0; i < ARC_SEGMENTS; i++) {
+        const kink = i % 2 === 0 ? 0.9 : -0.9;
+        let dx = -Math.sin(angle) * spin + Math.cos(angle) * kink * 0.25;
+        let dz = Math.cos(angle) * spin + Math.sin(angle) * kink * 0.25;
+        let dy = climb + kink * (0.6 + rand() * 0.6);
+        const n = Math.hypot(dx, dy, dz) || 1;
+        dx /= n;
+        dy /= n;
+        dz /= n;
+        const p = this.sparks.spawn(life);
+        p.size = len / Math.max(1e-3, t.statusSparkLengthM);
+        p.x = x + (dx * len) / 2;
+        p.y = y + (dy * len) / 2;
+        p.z = z + (dz * len) / 2;
+        // Mała prędkość: oś odcinka, prawie bez dryfu — zygzak się nie rozrywa.
+        p.vx = dx * 0.12;
+        p.vy = dy * 0.12;
+        p.vz = dz * 0.12;
+        p.color = i === 1 ? MAGENTA_CORE : MAGENTA;
+        x += dx * len;
+        y += dy * len;
+        z += dz * len;
+        angle = Math.atan2(z - body.z, x - body.x);
+      }
     }
   }
 

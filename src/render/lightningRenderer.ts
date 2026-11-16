@@ -13,6 +13,7 @@ import type { Power } from '../combat/powers/power';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { getMaterial } from './materials';
+import { ResonanceWaveFx } from './resonanceWaveFx';
 
 export interface LightningArc {
   readonly points: readonly Vec3[];
@@ -135,8 +136,13 @@ export class LightningRenderer {
   private basis = new Float32Array(0);
   private branch = new Float32Array(0);
 
+  /** Fale Pchnięcia / Fali uderzeniowej: te same sceny przekazują tu listę mocy i kamerę. */
+  private readonly waves: ResonanceWaveFx;
+
   constructor(private readonly tuning: Tuning) {
     this.root.name = 'lightning';
+    this.waves = new ResonanceWaveFx(tuning);
+    this.root.add(this.waves.root);
   }
 
   render(
@@ -164,6 +170,7 @@ export class LightningRenderer {
     }
     this.usedImpacts = 0;
     let used = 0;
+    this.waves.update(Array.isArray(input) ? input : [], camera ?? null);
 
     if (input) {
       if (isSource(input)) {
@@ -803,6 +810,7 @@ export class LightningRenderer {
   }
 
   dispose(): void {
+    this.waves.dispose();
     this.root.removeFromParent();
     this.root.clear();
     for (const slot of this.pool) {

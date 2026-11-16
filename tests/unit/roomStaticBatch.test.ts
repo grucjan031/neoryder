@@ -169,7 +169,15 @@ it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
           explosionDetails.filter((mesh) => mesh.name === name),
         ).toHaveLength(tuning.vfx.maxExplosions);
       expect(explosionDetails.every((mesh) => !mesh.visible)).toBe(true);
-      const comparableMeshes = after.meshes - explosionDetails.length;
+      // Szlif VFX: ukryte pule efektów walki (żar odłamków, błyski, fale Rezonansu,
+      // siatka Bariery) są oznaczone `userData.vfxPool` i nie należą do pomiaru Z19.
+      let vfxPools = 0;
+      three.traverse((object) => {
+        if (object instanceof Mesh && object.userData.vfxPool === true)
+          vfxPools++;
+      });
+      const comparableMeshes =
+        after.meshes - explosionDetails.length - vfxPools;
       expect(comparableMeshes + saved).toBe(baselines[id]);
       expect(comparableMeshes).toBeLessThanOrEqual(
         Math.floor(baselines[id] / 3),

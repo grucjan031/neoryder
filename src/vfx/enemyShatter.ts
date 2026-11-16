@@ -20,13 +20,25 @@ export class EnemyShatter {
       amount: number,
       knockback: number,
       dir: Vec3 | null,
+      tags: readonly string[] = [],
     ): void => {
       if (this.shattered.has(id)) return;
       const pos = opts.positionOf(id);
       if (!pos) return;
       this.shattered.add(id);
       const t = opts.tuning.vfx;
-      if (this.kinds.get(id) === 'drone') {
+      const tint = tags.includes('#power') ? 1 : 0;
+      const drone = this.kinds.get(id) === 'drone';
+      debris.flash({
+        kind: 'kill',
+        origin: { x: pos.x, y: drone ? pos.y : pos.y + 1.1, z: pos.z },
+        dir,
+        radius: drone ? 0.35 : 0.45,
+        height: drone ? 0.7 : 1.8,
+        tint,
+        life: t.killFlashS,
+      });
+      if (drone) {
         const n = Math.max(
           1,
           Math.round(
@@ -45,6 +57,7 @@ export class EnemyShatter {
           count: n,
           size: t.debrisSize * t.droneDebrisSizeMult,
           bounds: { halfX: 0.3, halfY: 0.3, halfZ: 0.3 },
+          tint,
         });
         return;
       }
@@ -69,6 +82,7 @@ export class EnemyShatter {
         count: count - headCount,
         size: t.debrisSize,
         bounds: { halfX: 0.3, halfY: 0.65, halfZ: 0.2 },
+        tint,
       });
       debris.burst({
         origin: { x: pos.x, y: pos.y + 1.65, z: pos.z },
@@ -77,12 +91,43 @@ export class EnemyShatter {
         count: headCount,
         size: t.debrisSize,
         bounds: { halfX: 0.18, halfY: 0.18, halfZ: 0.18 },
+        tint,
+      });
+    };
+    /** Błysk sylwetki trafionego (żywego) wroga i iskra w punkcie trafienia. */
+    const hit = (
+      id: EntityId,
+      point: Vec3 | null,
+      dir: Vec3 | null,
+      tags: readonly string[],
+    ): void => {
+      if (this.shattered.has(id)) return;
+      const pos = opts.positionOf(id);
+      if (!pos) return;
+      const drone = this.kinds.get(id) === 'drone';
+      debris.flash({
+        kind: 'hit',
+        origin: { x: pos.x, y: drone ? pos.y : pos.y + 0.9, z: pos.z },
+        point,
+        dir,
+        radius: drone ? 0.38 : 0.42,
+        height: drone ? 0.76 : 1.85,
+        tint: tags.includes('#power') ? 1 : 0,
+        life: opts.tuning.vfx.hitFlashS,
       });
     };
     this.off = [
       bus.on('damage_dealt', (event) => {
         if (event.killed)
-          burst(event.target, event.amount, event.knockback, event.dir);
+          burst(
+            event.target,
+            event.amount,
+            event.knockback,
+            event.dir,
+            event.tags,
+          );
+        else if (event.amount > 0 && !event.tags.includes('#status'))
+          hit(event.target, event.point, event.dir, event.tags);
       }),
       bus.on('enemy_killed', ({ id }) => burst(id, 0, 0, null)),
       bus.on('entity_spawned', ({ id, kind }) => {
