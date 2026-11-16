@@ -67,11 +67,12 @@ export type HubStationDef = z.infer<typeof hubStationSchema>;
 /**
  * Płaszczyzna okładziny: `tiles` — kafle ściany (`/assets/textures/surfaces/<texture>.webp`,
  * powtarzane co `tileM` metrów), `screen` — świecący ekran (`/assets/textures/screens/<texture>.webp`),
- * `poster` — nieprzezroczysty plakat, baner albo mural (`/assets/textures/posters/<texture>.webp`).
+ * `poster` — nieprzezroczysty plakat, baner albo mural (`/assets/textures/posters/<texture>.webp`),
+ * `tunnel` — malowany proceduralnie wylot tunelu metra (perspektywa w mrok, bez pliku; `texture` to tylko nazwa).
  * Płaszczyzna patrzy w +Z przy yaw = 0. Kosmetyka bez collidera.
  */
 export const hubPanelSchema = z.object({
-  kind: z.enum(['tiles', 'screen', 'poster']),
+  kind: z.enum(['tiles', 'screen', 'poster', 'tunnel']),
   texture: textureId,
   position: vec3Schema,
   size: size2,

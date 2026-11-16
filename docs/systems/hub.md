@@ -21,7 +21,9 @@ styl: `docs/adr/0006-neon-noir.md`.
   - `panels: { kind: 'tiles' | 'screen' | 'poster', texture, position, size, yaw, tileM?, tint? }[]` — okładziny bez collidera:
     `tiles` to kafle ściany (dowolna tekstura z `surfaces/`, powtarzana co `tileM` m, domyślnie 3), `screen` to świecący ekran
     (`screens/screen_*` jako nadruk `mat_screen_*`, bloom), `poster` to nieprzezroczysty plakat, baner albo mural
-    (`posters/<texture>.webp`, ładowany przez `HubDecor`, bo `dressingSchema` nie ma tej kategorii);
+    (`posters/<texture>.webp`, ładowany przez `HubDecor`, bo `dressingSchema` nie ma tej kategorii), a `tunnel` to
+    malowany proceduralnie wylot tunelu (płótno: żebra obudowy, szyny i podkłady zbiegające się w mroku, kable, zielony
+    i bursztynowy sygnał; materiał nieoświetlony z bloomem, bez pliku tekstury — `texture` jest tylko nazwą);
   - `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, seat?: { heightM, offset {x,y,z} } }[]` — postacie (sekcja „NPC”);
   - `blocks[].shape: 'barrel'` — otwarta beczka z blachy (walec z obręczami i ciemnym wnętrzem), z koliderem walca;
   - `fires: { position, size? }[]` — płomień w beczce (skrzyżowane płaszczyzny z gradientem, addytywnie, bloom, migotanie w `HubDecor.update`).
@@ -51,7 +53,10 @@ Współrzędne: +Z w stronę torów i peronu B, +X na wschód; sufit na 5 m, gra
 | Kącik łączności | x 8…20, z 8…16               | pomieszczenie z wejściem 3 m (z 10…13): szafy serwerowe z ekranami, terminal drzew (stacja `talents`, Doktor Wolan), biurko Bajta z ekranem `screen_comms`, hologram Kurogane, projektor, antena, kable                   |
 
 Wszystkie perony i przejścia są na poziomie 0, więc strefy są osiągalne bez skoków (podwójny skok jest talentem);
-antresola jest opcjonalna. Neony `iskra`, `warsztat`, `sign_bar` i `metro`, ekrany `screen_talents`, `screen_missions`,
+antresola jest opcjonalna. Na obu końcach niecki torów (x ±20, z 3…8) są wyloty tunelu (`panels` kind `tunnel`) z parą
+z niecki i kapaniem. Każda stacja ma własny kolor widoczny z daleka: misje bursztyn (napis `MISJE` nad tablicą),
+warsztat zieleń (neon `warsztat`), talenty fiolet (napis `TALENTY` nad wejściem do kącika łączności), poligon błękit
+(napis i światło nad wejściem). Na blacie warsztatu stoją pomniejszone modele (`city_generator`, `city_crates`). Neony `iskra`, `warsztat`, `sign_bar` i `metro`, ekrany `screen_talents`, `screen_missions`,
 `screen_comms`, `screen_status`, `screen_menu`, `screen_map`, `screen_news`, plakaty `poster_iskra_recruit` i
 `poster_koalicja_defaced` na hali, graffiti; para z kratki, kapanie, iskry (także z beczki), lampiony, kable i paski
 neonowe na filarach.

@@ -103,12 +103,15 @@ it('tekstury i modele z danych istnieją w public/assets', () => {
     ).toBe(true);
   for (const decal of layout.decals ?? [])
     expect(exists(`textures/decals/${decal.texture}.webp`)).toBe(true);
-  for (const panel of layout.panels ?? [])
+  for (const panel of layout.panels ?? []) {
+    // Wylot tunelu jest malowany proceduralnie, bez pliku tekstury.
+    if (panel.kind === 'tunnel') continue;
     expect(
       exists(
         `textures/${{ tiles: 'surfaces', screen: 'screens', poster: 'posters' }[panel.kind]}/${panel.texture}.webp`,
       ),
     ).toBe(true);
+  }
   for (const decor of layout.decor ?? [])
     expect(exists(`models/city/${decor.model}.glb`)).toBe(true);
   for (const block of layout.blocks)
