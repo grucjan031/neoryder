@@ -20,7 +20,7 @@ import type {
 import { tuning } from '../core/tuning';
 import { getQuality } from './quality';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
-import { renderWithViewmodel } from './viewmodelLayer';
+import { renderWithViewmodel, VIEWMODEL_LAYER } from './viewmodelLayer';
 import { frameProfiler } from './frameProfiler';
 import type { FrameStage } from './frameProfiler';
 
@@ -73,9 +73,36 @@ const blurFragment = /* glsl */ `
 
 type Renderable = Object3D & { material?: Material | Material[] };
 
+const depthDeclarations = /* glsl */ `
+  uniform sampler2D bloomColorDepth;
+  uniform vec2 bloomColorSize;
+  uniform vec2 bloomMaskSize;
+`;
+const depthComparison = /* glsl */ `
+  vec2 bloomUv = gl_FragCoord.xy / bloomMaskSize;
+  vec2 bloomSampleUv = (floor(bloomUv * bloomColorSize) + 0.5) / bloomColorSize;
+  // Porównujemy tę samą powierzchnię w środku teksela koloru, nie maski.
+  vec2 bloomDelta = (bloomSampleUv - bloomUv) * bloomMaskSize;
+  float bloomDepth = gl_FragCoord.z + dot(
+    vec2(dFdx(gl_FragCoord.z), dFdy(gl_FragCoord.z)), bloomDelta);
+  // Tolerancja kwantyzacji bufora DEPTH_COMPONENT24, nie bias odległości.
+  if (bloomDepth > texture2D(bloomColorDepth, bloomSampleUv).r + 2.0 / 16777215.0) discard;
+`;
+
+// Wariant ma własną tożsamość/program, ale na bieżąco czyta stan źródła.
+const variantOwnProperties = new Set([
+  'id',
+  'uuid',
+  'version',
+  '_listeners',
+  'onBeforeCompile',
+  'customProgramCacheKey',
+]);
+
 /**
- * Bloom selektywny: maska to scena, w której tylko materiały emisyjne mają kolor,
- * a reszta zapisuje głębię i zerową emisję (zasłania neony, sama nie świeci). Maska jest
+ * Bloom świata rysuje tylko emisję, porównując głębię z teksturą koloru.
+ * Odbicia, viewmodel i wywołania bez głębi koloru zachowują własne zasłony.
+ * Maska jest
  * rozmywana w niskiej rozdzielczości; kompozycja nakłada ją "over", więc halo jest
  * widoczne także na białym świecie, który nigdy się nie rozmywa.
  */
@@ -120,6 +147,17 @@ export class BloomPass {
   private readonly swappedMaterials: (Material | Material[])[] = [];
   private readonly hidden: Object3D[] = [];
   private readonly clearColor = new Color();
+  private readonly omitted = new MeshBasicMaterial({ visible: false });
+  private readonly variants = new Map<
+    Material,
+    { material: Material; version: number; release: () => void }
+  >();
+  private readonly materialArrays = new WeakMap<Object3D, Material[]>();
+  private readonly depthUniforms = {
+    bloomColorDepth: { value: null as Texture | null },
+    bloomColorSize: { value: new Vector2() },
+    bloomMaskSize: { value: new Vector2() },
+  };
 
   constructor(
     width: number,
@@ -151,7 +189,19 @@ export class BloomPass {
     renderer: WebGLRenderer,
     scene: Scene,
     camera: PerspectiveCamera | OrthographicCamera,
+    colorTarget?: WebGLRenderTarget,
   ): void {
+    this.depthUniforms.bloomColorDepth.value =
+      !this.reflection && colorTarget ? colorTarget.depthTexture : null;
+    if (colorTarget)
+      this.depthUniforms.bloomColorSize.value.set(
+        colorTarget.width,
+        colorTarget.height,
+      );
+    this.depthUniforms.bloomMaskSize.value.set(
+      this.mask.width,
+      this.mask.height,
+    );
     if (!this.reflection) frameProfiler?.begin('bloom');
     try {
       this.renderPasses(renderer, scene, camera);
@@ -218,6 +268,49 @@ export class BloomPass {
     return isEmissive(source) ? source : this.occluder;
   };
 
+  private selectiveMaterial(source: Material): Material {
+    const emission = this.maskMaterial(source);
+    if (!source.visible || emission === this.occluder) return this.omitted;
+    let cached = this.variants.get(emission);
+    if (!cached) {
+      const variant = emission.clone();
+      variant.onBeforeCompile = (shader, renderer) => {
+        emission.onBeforeCompile.call(variant, shader, renderer);
+        shader.uniforms = { ...shader.uniforms, ...this.depthUniforms };
+        shader.fragmentShader =
+          depthDeclarations +
+          shader.fragmentShader.replace(
+            /void\s+main\s*\(\s*\)\s*\{/,
+            (main) => main + depthComparison,
+          );
+      };
+      variant.customProgramCacheKey = () =>
+        emission.customProgramCacheKey() + ':colorDepthBloom';
+      const release = (): void => {
+        variant.dispose();
+        this.variants.delete(emission);
+        emission.removeEventListener('dispose', release);
+      };
+      emission.addEventListener('dispose', release);
+      cached = { material: variant, version: emission.version, release };
+      this.variants.set(emission, cached);
+    }
+    const variant = cached.material;
+    // Bez Material.copy(): ShaderMaterial.copy klonuje uniformy, a Material.copy
+    // serializuje userData. Referencje zachowują też animowane uniformy i kolory.
+    const from = emission as unknown as Record<string, unknown>;
+    const to = variant as unknown as Record<string, unknown>;
+    for (const key in emission)
+      if (!variantOwnProperties.has(key)) to[key] = from[key];
+    if (cached.version !== emission.version) {
+      variant.needsUpdate = true;
+      cached.version = emission.version;
+    }
+    variant.depthTest = true;
+    variant.depthWrite = false;
+    return variant;
+  }
+
   private renderMask(
     renderer: WebGLRenderer,
     scene: Scene,
@@ -227,27 +320,48 @@ export class BloomPass {
     const background = scene.background;
     renderer.getClearColor(this.clearColor);
     const clearAlpha = renderer.getClearAlpha();
-    scene.traverseVisible((object) => {
-      const { material } = object as Renderable;
-      if (!material) return;
-      if ('isMesh' in object) {
-        const sources = Array.isArray(material) ? material : [material];
-        if (sources.every(isSeeThrough)) {
-          this.hidden.push(object);
-          object.visible = false;
+    try {
+      scene.traverseVisible((object) => {
+        const { material } = object as Renderable;
+        if (!material) return;
+        if (
+          this.depthUniforms.bloomColorDepth.value &&
+          !object.layers.isEnabled(VIEWMODEL_LAYER)
+        ) {
+          this.swappedMeshes.push(object as Mesh);
+          this.swappedMaterials.push(material);
+          if (Array.isArray(material)) {
+            let selected = this.materialArrays.get(object);
+            if (!selected) {
+              selected = [];
+              this.materialArrays.set(object, selected);
+            }
+            selected.length = material.length;
+            for (let i = 0; i < material.length; i++)
+              selected[i] = this.selectiveMaterial(material[i]!);
+            (object as Renderable).material = selected;
+          } else {
+            (object as Renderable).material = this.selectiveMaterial(material);
+          }
           return;
         }
-        this.swappedMeshes.push(object as Mesh);
-        this.swappedMaterials.push(material);
-        (object as Mesh).material = Array.isArray(material)
-          ? material.map(this.maskMaterial)
-          : this.maskMaterial(material);
-      } else if (!isEmissive(material)) {
-        this.hidden.push(object);
-        object.visible = false;
-      }
-    });
-    try {
+        if ('isMesh' in object) {
+          const sources = Array.isArray(material) ? material : [material];
+          if (sources.every(isSeeThrough)) {
+            this.hidden.push(object);
+            object.visible = false;
+            return;
+          }
+          this.swappedMeshes.push(object as Mesh);
+          this.swappedMaterials.push(material);
+          (object as Mesh).material = Array.isArray(material)
+            ? material.map(this.maskMaterial)
+            : this.maskMaterial(material);
+        } else if (!isEmissive(material)) {
+          this.hidden.push(object);
+          object.visible = false;
+        }
+      });
       scene.overrideMaterial = null;
       scene.background = null;
       renderer.setClearColor(0x000000, 0);
@@ -272,6 +386,9 @@ export class BloomPass {
     this.blurA.dispose();
     this.blurB.dispose();
     this.occluder.dispose();
+    this.omitted.dispose();
+    for (const variant of this.variants.values()) variant.release();
+    this.variants.clear();
     this.blur.dispose();
   }
 }

@@ -99,7 +99,7 @@ it('przełączniki bloom i postFx omijają passy', () => {
   pipeline.dispose();
 });
 
-it('maska bloomu zasłania bryły nieświecące i przywraca materiały', () => {
+it('maska bloomu pomija bryły nieświecące i przywraca materiały', () => {
   const { renderer, pipeline } = fixture();
   const scene = new Scene();
   const neon = new Mesh(new BoxGeometry(), getMaterial('player'));
@@ -115,16 +115,12 @@ it('maska bloomu zasłania bryły nieświecące i przywraca materiały', () => {
     maskWall = wall.material;
   });
   pipeline.render(scene, new PerspectiveCamera(), 0.016);
-  expect(maskNeon).toBe(getMaterial('player'));
+  expect(maskNeon).not.toBe(getMaterial('player'));
+  expect(maskNeon).toMatchObject({ depthTest: true, depthWrite: false });
   expect(maskWall).not.toBe(getMaterial('world'));
   expect(maskWall).toMatchObject({
-    colorWrite: true,
-    opacity: 0,
-    transparent: false,
-    depthTest: true,
-    depthWrite: true,
+    visible: false,
   });
-  expect((maskWall as MeshBasicMaterial).color.getHex()).toBe(0);
   expect(wall.material).toBe(getMaterial('world'));
   expect(neon.material).toBe(getMaterial('player'));
   pipeline.dispose();

@@ -1,5 +1,59 @@
 # Render — styl F1 #05
 
+## Statyczna geometria pokoju (Z19)
+
+`RoomScene` grupuje bloki, modele bloków GLB i dekoracje w osobnych korzeniach
+`static-blocks`, `static-models`, `static-decor`. `batchStaticGeometry` scala je
+jednorazowo przez `BufferGeometryUtils.mergeGeometries`, przed dodaniem oprawy
+animowanej, hazardów i widoków walki. Drzwi pozostają poza tymi korzeniami.
+Collidery Rapier nie są zmieniane.
+
+Klucz grupy obejmuje tożsamość materiału, układ atrybutów i indeksowanie,
+warstwę, kolejność renderowania, cienie, frustumCulled oraz metadane (bez nazwy
+węzła GLB). Flagi `noOutline` i `bloom` rodziców są przenoszone na wynik.
+Materiały pozostają tymi samymi obiektami, razem z `bloomMaterial`, wetness,
+uniformami i późno ładowanymi teksturami. Pozycje i normalne są przekształcane
+do przestrzeni korzenia; UV pozostają bez zmian. Rzuty miejskie i okna używają
+pozycji świata, więc nie wymagają zmian shaderów. Różne układy atrybutów zostają
+w osobnych partiach (alleyMarket: dwa zestawy geometrii modeli przy jednym materiale).
+
+Nie są scalane przezroczystości (sortowanie), istniejące instancje, skinned/morph
+meshe, obiekty ukryte, odbite transformacje, niestandardowe callbacki renderu,
+customDepth/DistanceMaterial ani częściowe drawRange. Funkcja przyjmuje wyłącznie
+statyczne poddrzewo; nie wolno jej wywoływać na całej aktywnej scenie.
+Nowe geometrie należą do istniejącego zbioru zasobów pokoju i są zwalniane przy
+dispose; geometrie i materiały szablonów GLB pozostają własnością cache.
+
+Pomiar headless z prawdziwymi plikami GLB po `RoomScene.init()`, bez frustum i
+renderera GPU (wlicza również niewidoczne pule, viewmodel i InstancedMesh jako
+jeden obiekt):
+
+| Pokój           | Mesh przed | Mesh po | Redukcja | Unikalne materiały przed/po |
+| --------------- | ---------: | ------: | -------: | --------------------------: |
+| alleyMarket     |       1683 |     156 |   10,79× |                   120 / 120 |
+| combatWarehouse |        529 |     145 |    3,65× |                   101 / 101 |
+| eliteFoundry    |        600 |     162 |    3,70× |                   109 / 109 |
+
+`tests/unit/roomStaticBatch.test.ts` zawiera zapisane wartości bazowe i próg
+co najmniej 3×, porównuje liczbę trójkątów, AABB i materiały przed/po scaleniu,
+sprawdza też drzwi. `tests/unit/staticBatch.test.ts` sprawdza transformacje,
+UV, flagi konturu/bloomu, warstwy, wykluczenia i własność zasobów.
+Istniejących asercji wyglądu ani liczby meshy nie zmieniono.
+
+Ograniczenia: to redukcja obiektów, nie pomiar GPU ani wszystkich wywołań potoku.
+Scalone geometrie mają większe AABB, więc culling jest mniej dokładny; kopie
+wierzchołków zużywają dodatkową pamięć względem współdzielonych szablonów.
+Scalanie po materiale daje w tych pokojach mniej partii niż instancje według
+każdej odrębnej geometrii GLB. Istniejące instancje panoramy i VFX pozostają.
+Kontrola integratora: `?scene=room-test&room=alleyMarket` oraz dwa pozostałe
+pokoje, jakość high; sprawdzić kontury, UV nadruków, okna, odbicia i zasłanianie
+neonów po obu stronach ścian. W Z19 nie uruchamiano przeglądarki, buildu ani
+profilera; identyczność obrazu i zysk GPU wymagają tej kontroli.
+
+Kryjówka pozostaje bez zmian. Korzysta z tych samych loaderów GLB, więc podobne
+scalanie jej statycznych brył/dekoracji powinno pomóc, po oddzieleniu terminali
+i innych interakcji; nie zmierzono jej w tym zleceniu.
+
 ## Profile jakości (Z9)
 
 `tuning.quality` zawiera komplet identycznych kluczy dla `low`, `medium`, `high`.
@@ -182,7 +236,7 @@ obrysu dawały tę samą paletę. Dynamiczne cienie pozostają wyłączone.
 `StylePipeline` / `createRenderPipeline(renderer)` z `src/render/outline.ts`
 nie wymagają EffectComposer. Pełny przebieg (każdy pass pomijany, gdy wyłączony):
 
-1. Render koloru do celu liniowego HalfFloat (pełna rozdzielczość bufora).
+1. Render koloru do celu liniowego HalfFloat z teksturą głębi (pełna rozdzielczość bufora).
 2. Render geometrii z `scene.overrideMaterial = MeshNormalMaterial` i teksturą
    głębi. Tło jest pomijane w tym przebiegu.
    Obiekty z `userData.noOutline = true` (efekty, przezroczyste quady oprawy) są w tym
@@ -190,11 +244,11 @@ nie wymagają EffectComposer. Pełny przebieg (każdy pass pomijany, gdy wyłąc
 3. **Bloom selektywny** (`bloom = 1` i `bloomStrength > 0`; `bloom.ts`): maska w 1/2
    rozdzielczości, w której kolor mają tylko materiały emisyjne (flaga
    `userData.bloom`, albo nasycony materiał unlit bez flagi; `userData.bloom = false`
-   wyłącza), a pozostałe siatki zapisują wyłącznie głębię (zasłaniają neony, same nie
-   świecą). Siatki przezroczyste lub niezapisujące głębi, bez emisji (deszcz, para,
-   naklejki, plamy świateł), są na czas maski ukryte, a nie podmieniane na zasłaniający
-   materiał (inaczej wycinałyby prostokątne dziury w halo i odbiciach). Obiekty bez
-   materiału siatki (linie, punkty, sprite) bez emisji są na czas maski ukryte. Potem 4 przebiegi rozmycia Gaussa w 1/4 rozdzielczości
+   wyłącza), oraz `userData.bloomMaterial`. Nieemisyjne materiały świata są pomijane
+   bez wywołań rysowania; zasłanianie zapewnia tekstura głębi koloru (Z20 poniżej).
+   Dotyczy to także nieemisyjnego deszczu, pary, poświat, linii, punktów i sprite'ów.
+   Viewmodel oraz odbicia zachowują poprzednią maskę z własnymi zasłonami.
+   Potem 4 przebiegi rozmycia Gaussa w 1/4 rozdzielczości
    (dwa o promieniu `bloomRadius`, dwa 2,5 raza szersze).
 4. **Kompozycja** (pełny ekran, jeden shader): Sobel 3×3 na normalnych i głębi, niebo,
    mgła, kontur, bloom, winieta, konwersja do przestrzeni wyjściowej.
@@ -205,6 +259,56 @@ nie wymagają EffectComposer. Pełny przebieg (każdy pass pomijany, gdy wyłąc
 
 Biały świat się nie rozmywa: bloom nie jest progiem jasności, lecz maską emisyjną
 nakładaną metodą "over" (`kolor * (1 - pokrycie) + halo`), co daje widoczne halo także na bieli.
+
+### Z20 — selektywna maska z głębią koloru
+
+`StylePipeline` przekazuje cel koloru do `BloomPass.render`. Maska świata zachowuje
+swoją rozdzielczość (high: 1/2 bufora, medium: 1/4). Materiały emisyjne mają
+`depthTest=true`, `depthWrite=false`, a ich shader odrzuca fragment za głębią
+koloru. Nie współdzielimy bufora głębi o innym rozmiarze: porównanie korzysta z
+tekstury `DepthTexture` koloru, nie z uproszczonego przebiegu normalnych.
+Współrzędne próbki wskazują środek teksela koloru; pochodne głębi przeliczają
+głębię powierzchni z centrum fragmentu maski do tego punktu. Tolerancja to dwa
+kroki kwantyzacji 24-bitowej głębi, niezależnie od odległości kamery.
+
+Selekcja odczytuje materiały co klatkę na CPU, więc reaguje na przełączanie
+`userData.bloom` (np. zagrożenia), kolory unlit, wymianę materiału i dodawanie lub
+usuwanie obiektów. Używa ponownie tablic roboczych i tablic grup materiałów;
+wariant shadera powstaje przy pierwszym użyciu materiału. Nie trzeba zmieniać
+warstw w oprawie miasta. Niewidoczny materiał zastępczy pomija wywołanie rysowania
+bez ukrywania emisyjnych dzieci nieemisyjnego rodzica. Instancje i grupy materiałów
+zachowują dotychczasową geometrię. Wariant zachowuje mapy, alphaTest, blending,
+uniformy i `onBeforeCompile` emisji (w tym proceduralne okna fasad). Warianty
+zwalnia zarówno `dispose()` źródła, jak i pipeline; teksturę głębi koloru zwalnia
+pipeline. Materiały źródłowe pozostają własnością sceny.
+
+Warstwa viewmodelu nadal używa oryginalnych materiałów emisji, czarnych zasłon,
+własnego zapisu głębi i `renderWithViewmodel` ze ściśniętą projekcją. Odbicia nadal
+rysują emisję i nieprzezroczyste zasłony z odbitej kamery; głębia gracza nie jest
+tam poprawna. Wywołanie `BloomPass` bez celu koloru zachowuje starszy tryb z
+zasłonami. Profile jakości i etapy profilera (`bloomMask`, `reflectionMask`) są
+bez zmian. Nie deklarujemy przyspieszenia odbić w tym zleceniu.
+
+Testy atrap: `bloomDepth.test.ts`, `renderPostFx.test.ts`; regresje dotychczasowych
+masek i jakości: `cityGlowOcclusion.test.ts`, `renderFixes.test.ts`, `quality.test.ts`.
+Nie zastępują kompilacji shaderów ani porównania obrazu na GPU.
+
+Do porównania przez architekta w `room-test` / `alleyMarket` (high i medium):
+
+- neony za ścianą i przy jej krawędzi, cienkie przewody oraz ukośne powierzchnie:
+  rozdzielczość próbkowania głębi jest teraz większa od rozdzielczości maski;
+- napisy i wycięcia alfa, proceduralne okna, powierzchnie z polygon offset:
+  zgodność pokrycia i głębi źródłowego shadera z maską;
+- hologramy, nakładające się neony i przezroczystości: kolor respektuje rzeczywiste
+  `depthWrite` i alphaTest. Dawne czarne zasłony upraszczały te własności. Szczególnie
+  przezroczysty, nieemisyjny materiał z `depthWrite=true` może teraz zasłonić bloom;
+- ręce i broń na tle neonów: kolor zawiera ich ściśniętą głębię, a maska nadal
+  rysuje viewmodel osobno;
+- migające zagrożenia i przełączenia jakości oraz rozmiaru okna.
+
+Pomiar i zrzuty wykonuje architekt. Próg kosztu bloomu: `bloomMask <= 2,35 ms`
+w warunkach pomiaru bazowego 4,7 ms. Odbicia pozostają do pomiaru razem ze zmianą
+scalania geometrii: ta zmiana nie gwarantuje spadku `reflectionMask` o połowę.
 
 Głębia jest linearyzowana według typu kamery (perspektywiczna lub ortograficzna).
 Próg głębi dotyczy różnicy względem odległości środka próbki, co ogranicza zależność

@@ -190,6 +190,7 @@ const fragmentShader = /* glsl */ `
 export class StylePipeline {
   private readonly colorTarget = new WebGLRenderTarget(1, 1, {
     type: HalfFloatType,
+    depthTexture: new DepthTexture(1, 1, UnsignedIntType),
   });
   private readonly normalTarget = new WebGLRenderTarget(1, 1, {
     minFilter: NearestFilter,
@@ -428,7 +429,7 @@ export class StylePipeline {
           this.colorTarget.height,
         );
         this.bloom.setSize(this.colorTarget.width, this.colorTarget.height);
-        this.bloom.render(renderer, scene, camera);
+        this.bloom.render(renderer, scene, camera, this.colorTarget);
       }
       uniforms.bloomMap.value = bloomOn
         ? this.bloom!.texture
@@ -460,6 +461,7 @@ export class StylePipeline {
   dispose(): void {
     this.offEvents?.();
     this.offEvents = undefined;
+    this.colorTarget.depthTexture?.dispose();
     this.colorTarget.dispose();
     this.normalTarget.depthTexture?.dispose();
     this.normalTarget.dispose();
