@@ -335,4 +335,4 @@ Cel: skończyć F0 i mieć pierwszy ruch postaci na szarej arenie.
 - [ ] VFX: pierwsza wersja shadera Superhot (białe otoczenie, czerwone manekiny)
 - [ ] Walka wręcz: placeholder ostrza z jednym ciosem i hitboxem
 - [ ] Konsola debug: spawn manekina, reset areny
-- [ ] Twój playtest 15 min i lista uwag do ruchu
+- [ ] Twój playtest 15 min i lista uwag do poruszania się
