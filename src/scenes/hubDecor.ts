@@ -44,6 +44,13 @@ const availablePosters = new Set(
 const posterTextures = new Map<string, Texture>();
 
 /**
+ * Komórka scalania statycznej geometrii kryjówki (m). Scalanie w jedną siatkę na
+ * materiał wyłączało frustum culling (≈ +70% trójkątów w kadrach z większością
+ * kryjówki poza widokiem); komórki XZ zostawiają odrzucanie przy niewielu draw calls.
+ */
+export const HUB_BATCH_CELL_M = 10;
+
+/**
  * Kosmetyczna oprawa kryjówki spoza `dressingSchema`: okładziny ścian z kafli, ekrany
  * (nadruki `mat_screen_*`), plakaty/banery/murale (`posters/`), neonowe napisy stacji i płomienie beczek. Bez colliderów; `dispose` zwalnia
  * geometrie, materiały i tekstury napisów (współdzielone tekstury zasobów zostają w cache).
@@ -80,7 +87,7 @@ export class HubDecor {
               : this.screen(panel),
         );
     const merged = new Set<BufferGeometry>();
-    batchStaticGeometry(statics, merged);
+    batchStaticGeometry(statics, merged, { cellSize: HUB_BATCH_CELL_M });
     this.geometries.push(...merged);
     this.root.add(...statics.children);
     for (const station of stations)

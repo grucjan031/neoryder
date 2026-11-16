@@ -49,7 +49,7 @@ import {
 import type { NpcLine, NpcTexts } from '../world/hubNpcs';
 import { HubStations, selectHubTarget } from '../world/hubStations';
 import type { HubTarget } from '../world/hubStations';
-import { HubDecor } from './hubDecor';
+import { HUB_BATCH_CELL_M, HubDecor } from './hubDecor';
 import { HubNpcs } from './hubNpcs';
 import type { Scene } from './index';
 import { preserveLiteFx } from '../render/fxMode';
@@ -209,7 +209,9 @@ export class HubScene implements Scene {
     this.root.add(staticDecor);
     await loadDecor(staticDecor, this.layout.decor, this.loadModels);
     if (this.disposed) return;
-    batchStaticGeometry(staticDecor, this.geometries);
+    batchStaticGeometry(staticDecor, this.geometries, {
+      cellSize: HUB_BATCH_CELL_M,
+    });
     this.dressing = new CityDressing(
       this.root,
       this.layout,
@@ -376,8 +378,12 @@ export class HubScene implements Scene {
       ),
     );
     if (this.disposed) return;
-    batchStaticGeometry(blocks, this.geometries);
-    batchStaticGeometry(models, this.geometries);
+    batchStaticGeometry(blocks, this.geometries, {
+      cellSize: HUB_BATCH_CELL_M,
+    });
+    batchStaticGeometry(models, this.geometries, {
+      cellSize: HUB_BATCH_CELL_M,
+    });
   }
 
   /** NPC: widok (`HubNpcs`) i collider walca, przez który gracz nie przechodzi. */

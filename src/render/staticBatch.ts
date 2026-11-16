@@ -1,13 +1,33 @@
-import { Matrix4, Mesh, Object3D, type BufferGeometry } from 'three';
+import {
+  Box3,
+  Matrix4,
+  Mesh,
+  Object3D,
+  Vector3,
+  type BufferGeometry,
+} from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+export interface StaticBatchOptions {
+  /**
+   * Bok komórki siatki XZ (m, w układzie korzenia). Siatki scala się tylko w obrębie
+   * komórki zawierającej środek ich prostopadłościanu, żeby frustum culling dalej
+   * odrzucał to, co poza kadrem. Bez wartości: jedna siatka na materiał.
+   */
+  cellSize?: number;
+}
 
 /** Wyłącznie korzenie statyczne. Oryginały należą do cache/modelu, wynik do sceny. */
 export function batchStaticGeometry(
   root: Object3D,
   ownedGeometries: Set<BufferGeometry>,
+  options: StaticBatchOptions = {},
 ): void {
   root.updateWorldMatrix(true, true);
   const inverse = new Matrix4().copy(root.matrixWorld).invert();
+  const cellSize = options.cellSize;
+  const bounds = new Box3();
+  const center = new Vector3();
   const groups = new Map<
     string,
     { meshes: Mesh[]; noOutline: boolean; bloom: unknown }
@@ -38,6 +58,12 @@ export function batchStaticGeometry(
     const matrix = new Matrix4().multiplyMatrices(inverse, object.matrixWorld);
     // Odbite transformacje wymagają odwrócenia windingu; pozostają osobno.
     if (matrix.determinant() <= 0) return;
+    let cell: [number, number] | null = null;
+    if (cellSize) {
+      if (!geometry.boundingBox) geometry.computeBoundingBox();
+      bounds.copy(geometry.boundingBox!).applyMatrix4(matrix).getCenter(center);
+      cell = [Math.floor(center.x / cellSize), Math.floor(center.z / cellSize)];
+    }
     let noOutline = false;
     let bloom: unknown = object.userData.bloom;
     for (
@@ -68,6 +94,7 @@ export function batchStaticGeometry(
       object.castShadow,
       object.receiveShadow,
       object.frustumCulled,
+      cell,
       noOutline,
       bloom,
       metadata,
