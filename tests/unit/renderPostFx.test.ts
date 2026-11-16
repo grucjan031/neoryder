@@ -200,8 +200,8 @@ it('dispose zwalnia cele i materiały bloomu oraz kompozycji i odpina zdarzenia'
   pipeline.dispose();
   // kolor, normalne, maska, dwa rozmycia, wejście passu impulsów
   expect(targets).toHaveBeenCalledTimes(6);
-  // kompozycja, rozmycie, pass impulsów
-  expect(materials).toHaveBeenCalledTimes(3);
+  // tło nieba, kompozycja, rozmycie, pass impulsów
+  expect(materials).toHaveBeenCalledTimes(4);
   pipeline.fxState.reset();
   bus.emit('entity_spawned', { id: 1, kind: 'player' });
   bus.emit('health_changed', { id: 1, current: 100, max: 100 });
