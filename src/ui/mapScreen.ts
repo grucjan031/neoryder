@@ -72,7 +72,18 @@ export class MapScreen {
         ? (state.map.layers[0] ?? []).map((node) => node.id)
         : []);
     this.buttons = [];
+    // Węzły osiągalne z bieżącej pozycji — wyróżniona droga do bossa.
+    const byId = new Map(nodes.map((node) => [node.id, node]));
+    const reachable = new Set<string>();
+    const queue = [...available];
+    while (queue.length > 0) {
+      const id = queue.pop()!;
+      if (reachable.has(id)) continue;
+      reachable.add(id);
+      queue.push(...(byId.get(id)?.next ?? []));
+    }
     const info = document.createElement('p');
+    info.className = 'sector-map__info';
     info.textContent = `${state.sectorId} · ${text.map.seed}: ${state.seed}`;
     const graph = document.createElement('div');
     graph.className = 'sector-map__graph';
@@ -103,6 +114,8 @@ export class MapScreen {
         edge.setAttribute('y2', String(to.y));
         edge.setAttribute('vector-effect', 'non-scaling-stroke');
         if (node.id === state.currentNodeId) edge.classList.add('is-available');
+        else if (reachable.has(node.id) && reachable.has(id))
+          edge.classList.add('is-reachable');
         if (state.visited.includes(node.id) && state.visited.includes(id))
           edge.classList.add('is-visited');
         svg.append(edge);
@@ -124,6 +137,13 @@ export class MapScreen {
       button.classList.toggle('is-available', index >= 0);
       button.classList.toggle('is-visited', state.visited.includes(node.id));
       button.classList.toggle('is-current', node.id === state.currentNodeId);
+      button.classList.toggle(
+        'is-off-route',
+        index < 0 &&
+          node.id !== state.currentNodeId &&
+          !state.visited.includes(node.id) &&
+          !reachable.has(node.id),
+      );
       if (node.id === state.currentNodeId)
         button.setAttribute('aria-current', 'step');
       const status =
@@ -155,10 +175,20 @@ export class MapScreen {
     const legend = document.createElement('p');
     legend.className = 'sector-map__legend';
     legend.setAttribute('aria-label', text.map.legend);
-    legend.textContent = NODE_TYPES.map(
-      (type) => `${text.map.symbols[type]} ${text.types[type]}`,
-    ).join(' · ');
+    legend.append(
+      ...NODE_TYPES.map((type) => {
+        const item = document.createElement('span');
+        item.className = 'sector-map__legend-item';
+        item.dataset.type = type;
+        const mark = document.createElement('b');
+        mark.setAttribute('aria-hidden', 'true');
+        mark.textContent = text.map.symbols[type];
+        item.append(mark, ` ${text.types[type]} `);
+        return item;
+      }),
+    );
     const keys = document.createElement('p');
+    keys.className = 'sector-map__keys';
     keys.textContent = text.keys;
     this.root.append(info, graph, legend, keys);
   }

@@ -2,12 +2,12 @@
   display: grid;
   gap: 14px;
   color: #f4f7fa;
-  font-family: system-ui, sans-serif;
+  font-family: var(--ui-font);
 }
 .missions-panel__sector {
   padding: 12px 14px;
-  background: #0d1119;
-  border: 1px solid #34414c;
+  background: #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.16);
   border-left: 4px solid #ffae1a;
 }
 .missions-panel__sector-name {
@@ -42,25 +42,34 @@
   font: inherit;
   font-size: 0.9em;
   color: #f4f7fa;
-  background: #171d28;
-  border: 1px solid #596573;
-  border-left: 4px solid #828b94;
+  background: #0c1626;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-left: 4px solid #3a5263;
   cursor: pointer;
 }
 .missions-panel__level[data-state='selected'] {
-  border-left-color: #ffae1a;
-  background: #221d12;
-  box-shadow: inset 0 0 0 1px #ffae1a;
+  border-left-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow:
+    inset 0 0 0 1px #00e5ff,
+    0 0 14px rgba(0, 229, 255, 0.2);
+}
+.missions-panel__level[data-state='selected']::before {
+  content: '◆ WYBRANY' / '';
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #00e5ff;
 }
 .missions-panel__level[aria-disabled='true'] {
   color: #6b7686;
-  background: #0f131b;
-  border-color: #2a323d;
+  background: #060b15;
+  border-color: rgba(0, 229, 255, 0.1);
   cursor: not-allowed;
 }
 .missions-panel__level:hover:not([aria-disabled='true']),
 .missions-panel__level:focus-visible {
-  outline: 2px solid #00a9c4;
+  outline: 2px solid #00e5ff;
   outline-offset: 2px;
 }
 .missions-panel__note {
@@ -71,8 +80,8 @@
 .missions-panel__details {
   margin: 0;
   padding: 10px 14px 10px 28px;
-  background: #0c1017;
-  border: 1px solid #34414c;
+  background: #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.16);
   color: #d9dde3;
   font-size: 0.92em;
 }
@@ -96,24 +105,33 @@
   text-transform: none;
   letter-spacing: normal;
   color: #f4f7fa;
-  background: #0c1017;
-  border: 1px solid #596573;
+  background: #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.3);
 }
 .missions-panel__start {
   padding: 16px;
+  font-size: 1.1em;
   text-align: left;
   font: inherit;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #f4f7fa;
-  background: #171d28;
-  border: 1px solid #596573;
-  border-left: 4px solid #ffae1a;
+  background: #0c1626;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-left: 4px solid #00e5ff;
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .missions-panel__start:hover,
 .missions-panel__start:focus-visible {
-  outline: 2px solid #00a9c4;
+  background: rgba(0, 229, 255, 0.18);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.3);
+  outline: 2px solid #00e5ff;
   outline-offset: 2px;
 }

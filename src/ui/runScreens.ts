@@ -173,6 +173,10 @@ export class HtmlRunScreens implements RunScreens {
   }
 
   show(view: RunScreenView, actions: RunScreenActions): void {
+    // Animacja wejścia tylko przy zmianie ekranu — odświeżenia (np. Kredyty) nie migają.
+    const entering =
+      this.root.hidden !== false || this.root.dataset.screen !== view.screen;
+    this.root.classList.toggle('run-screen--enter', entering);
     this.root.hidden = false;
     this.root.dataset.screen = view.screen;
     this.buttons = [];
@@ -181,15 +185,13 @@ export class HtmlRunScreens implements RunScreens {
     const heading = document.createElement('h1');
     heading.textContent = text.titles[view.screen];
     this.panel.append(heading);
-    this.line(
-      `${text.hp}: ${view.state.hp} · ${text.credits}: ${view.state.credits}`,
-    );
+    this.vitals(view.state.hp, view.state.credits);
     if (document.pointerLockElement) document.exitPointerLock?.();
     if (view.error) {
       this.line(view.error);
       this.button(text.menu, actions.menu);
     } else if (view.busy) {
-      this.line(text.loading);
+      this.line(text.loading).classList.add('run-screen__loading');
     } else if (view.screen === 'map') {
       this.panel.append(this.map.root);
       this.map.show(view.state, actions.selectNode);
@@ -197,66 +199,152 @@ export class HtmlRunScreens implements RunScreens {
       const summary = view.summary;
       if (summary) {
         const seconds = Math.floor(summary.elapsedS);
-        this.line(text[summary.outcome]);
-        this.line(
-          `${text.time}: ${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')} · ${text.kills}: ${summary.kills} · ${text.rooms}: ${summary.roomsCleared} · ${text.layer}: ${summary.layerReached}`,
-        );
-        this.line(`${text.seed}: ${summary.seed}`);
+        const outcome = this.line(text[summary.outcome]);
+        outcome.className = 'run-screen__outcome';
+        outcome.dataset.outcome = summary.outcome;
+        this.panel.dataset.outcome = summary.outcome;
+        const stats = document.createElement('div');
+        stats.className = 'run-screen__stats';
+        const time = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+        for (const [label, value] of [
+          [text.time, time],
+          [text.kills, String(summary.kills)],
+          [text.rooms, String(summary.roomsCleared)],
+          [text.layer, String(summary.layerReached)],
+        ] as const)
+          stats.append(this.stat(label, value));
+        this.panel.append(stats);
+        this.line(`${text.seed}: ${summary.seed}`).className =
+          'run-screen__meta-line';
         this.line(
           `${text.implants}: ${summary.implants.map((id) => implantDefinitions.get(id)?.name ?? id).join(', ') || text.noImplants}`,
-        );
-        this.line(text.damage);
+        ).className = 'run-screen__meta-line';
+        this.line(text.damage).className = 'run-screen__section';
         const max = Math.max(0, ...Object.values(summary.damage));
+        const damage = this.group('run-screen__damage-grid');
         for (const path of ['melee', 'power', 'gun', 'other'] as const) {
           const row = document.createElement('div');
           row.className = 'run-screen__damage';
+          row.dataset.path = path;
           const label = document.createElement('span');
           label.textContent = `${text.paths[path]}: ${summary.damage[path]}`;
+          const track = document.createElement('div');
+          track.className = 'run-screen__track';
           const bar = document.createElement('div');
           bar.className = 'run-screen__bar';
           bar.style.width = `${max > 0 ? (summary.damage[path] / max) * 100 : 0}%`;
-          row.append(label, bar);
-          this.panel.append(row);
+          track.append(bar);
+          row.append(label, track);
+          damage.append(row);
         }
       }
       if (view.meta) this.metaRewards(view.meta, summary?.threatLevel ?? 0);
+      const row = this.group('run-screen__actions');
       const hub = actions.hub;
       if (hub) {
-        const back = this.button(metaText.backToHub, hub);
+        const back = this.button(metaText.backToHub, hub, row);
         back.classList.add('run-screen__primary');
       }
-      this.button(text.newRun, () => actions.newRun?.());
-      this.button(text.menu, actions.menu);
+      const again = this.button(text.newRun, () => actions.newRun?.(), row);
+      if (!hub) again.classList.add('run-screen__primary');
+      this.button(text.menu, actions.menu, row);
     } else if (view.screen === 'reward') {
+      const cards = this.group('run-screen__offers');
       for (const offer of view.offers ?? [])
-        this.offer(offer, () => actions.chooseReward?.(offer.id));
+        this.offer(offer, () => actions.chooseReward?.(offer.id), cards);
       if (!view.offers?.length) {
+        cards.remove();
         this.line(text.noRewards);
         this.button(
-          `${text.next} ? ${text.credits}: +${view.fallbackCredits ?? 0}`,
+          `${text.next} — ${text.credits}: +${view.fallbackCredits ?? 0}`,
           () =>
             actions.chooseReward ? actions.chooseReward() : actions.next(),
         );
       }
     } else if (view.screen === 'shop') {
+      const cards = this.group('run-screen__offers');
       for (const offer of view.offers ?? []) {
-        const button = this.offer(offer, () => actions.buy?.(offer.id));
+        const button = this.offer(offer, () => actions.buy?.(offer.id), cards);
         button.disabled = view.state.credits < (offer.price ?? 0);
       }
+      const row = this.group('run-screen__actions');
       const heal = this.button(
-        `${text.heal} ? ${view.healPrice ?? 0} ${text.credits}`,
+        `${text.heal} — ${view.healPrice ?? 0} ${text.credits}`,
         () => actions.buy?.('heal'),
+        row,
       );
+      heal.classList.add('run-screen__heal');
       heal.disabled = view.state.credits < (view.healPrice ?? 0);
-      this.button(text.leave, actions.next);
+      this.button(text.leave, actions.next, row);
     } else if (view.screen === 'rest') {
-      this.button(text.heal, () => actions.rest?.('heal'));
+      const heal = this.button(text.heal, () => actions.rest?.('heal'));
+      heal.classList.add('run-screen__heal', 'run-screen__primary');
+      const cards = this.group('run-screen__offers');
       for (const offer of view.offers ?? [])
-        this.offer(offer, () => actions.rest?.('upgrade', offer.id), true);
+        this.offer(
+          offer,
+          () => actions.rest?.('upgrade', offer.id),
+          cards,
+          true,
+        );
+      if (!view.offers?.length) cards.remove();
     } else {
       this.line(text.placeholder);
       this.button(text.next, actions.next);
     }
+  }
+
+  /** Zdrowie i Kredyty jako odczyt wizjera; tekst zostaje „Zdrowie: N · Kredyty: N”. */
+  private vitals(hp: number, credits: number): void {
+    const line = document.createElement('p');
+    line.className = 'run-screen__vitals';
+    const part = (kind: string, label: string, value: number): HTMLElement => {
+      const node = document.createElement('span');
+      node.className = 'run-screen__vital';
+      node.dataset.kind = kind;
+      const name = document.createElement('small');
+      name.textContent = label;
+      const colon = document.createElement('span');
+      colon.className = 'run-screen__sr';
+      colon.textContent = ': ';
+      name.append(colon);
+      const strong = document.createElement('b');
+      strong.textContent = String(value);
+      node.append(name, strong);
+      return node;
+    };
+    const separator = document.createElement('span');
+    separator.className = 'run-screen__sep';
+    separator.setAttribute('aria-hidden', 'true');
+    separator.textContent = ' · ';
+    line.append(
+      part('hp', text.hp, hp),
+      separator,
+      part('credits', text.credits, credits),
+    );
+    this.panel.append(line);
+  }
+
+  private stat(label: string, value: string): HTMLElement {
+    const tile = document.createElement('span');
+    tile.className = 'run-screen__stat';
+    const name = document.createElement('small');
+    name.textContent = label;
+    const colon = document.createElement('span');
+    colon.className = 'run-screen__sr';
+    colon.textContent = ': ';
+    name.append(colon);
+    const strong = document.createElement('b');
+    strong.textContent = value;
+    tile.append(name, strong, ' ');
+    return tile;
+  }
+
+  private group(className: string): HTMLElement {
+    const node = document.createElement('div');
+    node.className = className;
+    this.panel.append(node);
+    return node;
   }
 
   private metaRewards(meta: RunMetaView, runThreat: number): void {
@@ -300,12 +388,11 @@ export class HtmlRunScreens implements RunScreens {
   private offer(
     offer: NonNullable<RunScreenView['offers']>[number],
     action: () => void,
+    parent: HTMLElement,
     upgrade = false,
   ): HTMLButtonElement {
-    const button = this.button(
-      `${upgrade ? `${text.upgrade}: ` : ''}${offer.label}`,
-      action,
-    );
+    const button = this.button('', action, parent);
+    button.classList.add('run-screen__card');
     if (offer.rarity) {
       button.dataset.rarity = offer.rarity;
       const rarity = document.createElement('span');
@@ -313,40 +400,90 @@ export class HtmlRunScreens implements RunScreens {
       rarity.textContent = text.rarities[offer.rarity];
       button.append(rarity);
     }
-    const details = [
-      offer.description,
-      offer.tags?.join(' '),
-      offer.synergies?.length
-        ? `${text.synergies}: ${offer.synergies.join(', ')}`
-        : '',
-      offer.nextRarity && upgrade
-        ? `${text.nextRarity}: ${text.rarities[offer.nextRarity]}`
-        : '',
-      offer.price !== undefined ? `${offer.price} ${text.credits}` : '',
-    ];
-    for (const detail of details)
-      if (detail) {
-        const line = document.createElement('span');
-        line.className = 'run-screen__detail';
-        line.textContent = detail;
-        button.append(line);
-      }
+    const name = document.createElement('strong');
+    name.className = 'run-screen__name';
+    if (upgrade) {
+      const prefix = document.createElement('span');
+      prefix.className = 'run-screen__upgrade';
+      prefix.textContent = `${text.upgrade}: `;
+      name.append(prefix);
+    }
+    name.append(offer.label);
+    button.append(name);
+    if (offer.description) this.detail(button, offer.description, 'desc');
+    const tagList = offer.tags ?? [];
+    if (tagList.length > 0) {
+      const tags = document.createElement('span');
+      tags.className = 'run-screen__tags';
+      tagList.forEach((tag, index) => {
+        const chip = document.createElement('span');
+        chip.className = 'run-screen__tag';
+        const path = tag.replace(/^#/, '');
+        if (path === 'melee' || path === 'power' || path === 'gun') {
+          chip.dataset.path = path;
+          const label = document.createElement('b');
+          label.textContent = text.paths[path];
+          chip.append(label, ' ');
+        }
+        chip.append(tag);
+        tags.append(chip);
+        if (index < tagList.length - 1) tags.append(' ');
+      });
+      button.append(tags);
+    }
+    if (offer.synergies?.length)
+      this.detail(
+        button,
+        `${text.synergies}: ${offer.synergies.join(', ')}`,
+        'synergy',
+      );
+    if (offer.nextRarity && upgrade) {
+      const next = this.detail(
+        button,
+        `${text.nextRarity}: ${text.rarities[offer.nextRarity]}`,
+        'next',
+      );
+      next.dataset.rarity = offer.nextRarity;
+    }
+    if (offer.price !== undefined)
+      this.detail(button, `${offer.price} ${text.credits}`, 'price');
     return button;
   }
 
-  private line(value: string): void {
+  private detail(
+    button: HTMLElement,
+    value: string,
+    kind: string,
+  ): HTMLElement {
+    const line = document.createElement('span');
+    line.className = `run-screen__detail run-screen__detail--${kind}`;
+    line.textContent = value;
+    button.append(line);
+    return line;
+  }
+
+  private line(value: string): HTMLParagraphElement {
     const line = document.createElement('p');
     line.textContent = value;
     this.panel.append(line);
+    return line;
   }
 
-  private button(label: string, action: () => void): HTMLButtonElement {
+  private button(
+    label: string,
+    action: () => void,
+    parent: HTMLElement = this.panel,
+  ): HTMLButtonElement {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = label;
     button.addEventListener('click', action);
+    // Podpowiedź klawisza 1/2/3 rysuje CSS (attr bez wpływu na nazwę dostępną).
+    if (this.buttons.length < 3)
+      button.dataset.key = String(this.buttons.length + 1);
+    button.style.setProperty('--i', String(this.buttons.length));
     this.buttons.push(button);
-    this.panel.append(button);
+    parent.append(button);
     return button;
   }
 

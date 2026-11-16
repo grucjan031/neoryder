@@ -25,9 +25,10 @@
 .tutorial-panel__number {
   color: #9ac1d1;
   font:
-    600 12px/1.4 'Segoe UI',
+    600 12px/1.4 Rajdhani,
+    'Segoe UI',
     sans-serif;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
 }
 .tutorial-panel p {
   margin: 8px 0 12px;
@@ -80,8 +81,9 @@
   background: #030712cc;
 }
 .tutorial-completion h1 {
-  font-size: clamp(26px, 4vw, 36px);
+  font-size: clamp(24px, 3.2vw, 32px);
   line-height: 1.2;
+  letter-spacing: 0.12em;
 }
 .tutorial-completion button {
   min-height: 48px;
@@ -98,7 +100,7 @@
   background: #21475b;
 }
 .tutorial-completion button:focus-visible {
-  outline: 2px solid #ffae1a;
+  outline: 2px solid #00e5ff;
   outline-offset: 4px;
 }
 .tutorial-panel[hidden],
