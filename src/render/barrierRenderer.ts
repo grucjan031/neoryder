@@ -10,6 +10,7 @@ import {
 } from 'three';
 import type { BarrierPower } from '../combat/powers/barrier';
 import type { Tuning } from '../core/tuning';
+import { frameStep } from './frameClock';
 import { getLiteFx } from './fxMode';
 import type { CameraPose } from '../player/fpsCamera';
 
@@ -85,7 +86,6 @@ export class BarrierRenderer {
   private readonly latticeMesh = new Mesh(this.mesh.geometry, this.lattice);
   private geometryKey = '';
   private time = 0;
-  private lastMs = -1;
 
   constructor(private readonly tuning: Tuning) {
     this.lattice.userData.bloom = true;
@@ -98,16 +98,14 @@ export class BarrierRenderer {
     this.root.visible = false;
   }
 
+  /** Zegar animacji: czas klatki (s), nie zegar ścienny. */
+  advance(frameDt: number): void {
+    this.time += frameStep(frameDt);
+  }
+
   render(power: BarrierPower, pose: CameraPose): void {
     this.root.visible = power.active;
-    if (!power.active) {
-      this.lastMs = -1;
-      return;
-    }
-    const now = performance.now();
-    if (this.lastMs >= 0)
-      this.time += Math.min(0.1, (now - this.lastMs) / 1000);
-    this.lastMs = now;
+    if (!power.active) return;
     const vfx = this.tuning.vfx;
     const arc = (power.def.arcDeg * Math.PI) / 180;
     const key = [

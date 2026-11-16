@@ -151,6 +151,11 @@ export class LightningRenderer {
     this.root.add(this.waves.root);
   }
 
+  /** Zegar fal Rezonansu: czas klatki (s). */
+  advance(frameDt: number): void {
+    this.waves.advance(frameDt);
+  }
+
   render(
     input:
       | LightningSource

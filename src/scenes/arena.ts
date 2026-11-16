@@ -901,6 +901,8 @@ export class Arena implements Scene {
     this.atmosphere?.sync(frameDt);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
+    this.barrierView.advance(frameDt);
+    this.lightningView.advance(frameDt);
     const camera = this.ctx.camera;
     const powers = this.powerPair;
     powers[0] = this.powers.get(0);

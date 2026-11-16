@@ -414,6 +414,7 @@ export class GrabTest implements Scene {
       camera.fov = pose.fov;
       camera.updateProjectionMatrix();
     }
+    this.grabRenderer.advance(frameDt);
     this.grabRenderer.render(this.grab.beam, alpha, camera);
     this.projectileRenderer.render(alpha);
     this.lights.sync();

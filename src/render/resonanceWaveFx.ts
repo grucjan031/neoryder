@@ -12,6 +12,7 @@ import {
 import type { Camera } from 'three';
 import type { EntityId, EventBus } from '../core/events';
 import type { Tuning } from '../core/tuning';
+import { frameStep } from './frameClock';
 import { getLiteFx } from './fxMode';
 
 /** Moc stożkowa widziana przez render: tylko odczyt definicji. */
@@ -125,7 +126,8 @@ export class ResonanceWaveFx {
   private readonly off: (() => void) | null;
   private readonly ringGeometry = new RingGeometry(0.02, 1, 48, 1);
   private readonly capGeometries = new Map<number, SphereGeometry>();
-  private lastMs = -1;
+  /** Czas klatek zebrany przez `advance` od ostatniego `update` (s). */
+  private stepS = 0;
   private readonly forward = new Vector3();
   private readonly quat = new Quaternion();
 
@@ -183,16 +185,21 @@ export class ResonanceWaveFx {
     return g;
   }
 
+  /** Zegar fal: czas klatki (s), nie zegar ścienny. */
+  advance(frameDt: number): void {
+    this.stepS += frameStep(frameDt);
+  }
+
   /** Wołane co klatkę z listą mocy i kamerą (bez kamery fale nie startują). */
   update(powers: readonly unknown[], camera: Camera | null): void {
     if (getLiteFx()) {
       this.root.visible = false;
       this.pending.clear();
+      this.stepS = 0;
       return;
     }
-    const now = performance.now();
-    const dt = this.lastMs < 0 ? 0 : Math.min(0.1, (now - this.lastMs) / 1000);
-    this.lastMs = now;
+    const dt = this.stepS;
+    this.stepS = 0;
     if (camera && this.pending.size > 0) {
       for (const item of powers) {
         if (isCone(item) && this.pending.has(item.def.id))

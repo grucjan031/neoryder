@@ -20,6 +20,7 @@ import type { BufferGeometry, Material } from 'three';
 import type { Hazard } from '../world/roomSchema';
 import type { HazardState } from '../world/hazards';
 import { getMaterial } from './materials';
+import { frameStep } from './frameClock';
 import { getLiteFx } from './fxMode';
 
 /** Po wybuchu beczki: osmalenie podłogi, żar i dym unoszący się kilka sekund (kosmetyka). */
@@ -29,7 +30,6 @@ interface Wreck {
   smoke: Sprite[];
   /** Czas od zniszczenia (s); < 0 — beczka cała. */
   age: number;
-  lastMs: number;
 }
 
 const SMOKE_PUFFS = 6;
@@ -149,6 +149,9 @@ export class HazardView {
   private readonly wrecks = new Group();
   /** Rozgrzewka programów dymu i żaru (krycie 0) w pierwszych klatkach pokoju. */
   private warmFrames = 2;
+  private time = 0;
+  /** Czas klatek zebrany przez `advance` od ostatniego `update` (s). */
+  private stepS = 0;
 
   constructor(hazards: readonly Hazard[]) {
     this.wrecks.name = 'hazard-wrecks';
@@ -338,14 +341,14 @@ export class HazardView {
       object.userData.noOutline = true;
       this.wrecks.add(object);
     }
-    return { scorch, ember, smoke, age: -1, lastMs: -1 };
+    return { scorch, ember, smoke, age: -1 };
   }
 
   private updateWreck(
     wreck: Wreck,
     alive: boolean,
     origin: Vector3,
-    nowMs: number,
+    stepS: number,
   ): void {
     if (alive) {
       wreck.age = -1;
@@ -358,12 +361,8 @@ export class HazardView {
       }
       return;
     }
-    if (wreck.age < 0) {
-      wreck.age = 0;
-      wreck.lastMs = nowMs;
-    }
-    wreck.age += Math.min(0.1, Math.max(0, nowMs - wreck.lastMs) / 1000);
-    wreck.lastMs = nowMs;
+    if (wreck.age < 0) wreck.age = 0;
+    else wreck.age += stepS;
     const age = wreck.age;
     wreck.scorch.visible = true;
     wreck.scorch.material.opacity = 0.7 * Math.min(1, age / 0.15);
@@ -396,10 +395,18 @@ export class HazardView {
     }
   }
 
+  /** Zegar animacji: czas klatki (s), nie zegar ścienny. */
+  advance(frameDt: number): void {
+    const step = frameStep(frameDt);
+    this.time += step;
+    this.stepS += step;
+  }
+
   update(states: readonly HazardState[], _alpha: number): void {
     void _alpha;
-    const nowMs = performance.now();
-    const time = nowMs / 1000;
+    const time = this.time;
+    const stepS = this.stepS;
+    this.stepS = 0;
     if (this.warmFrames > 0) this.warmFrames--;
     for (let i = 0; i < states.length; i++) {
       const state = states[i]!;
@@ -408,7 +415,7 @@ export class HazardView {
       view.root.visible = state.alive;
       if (state.kind === 'explosive_barrel') {
         if (view.wreck)
-          this.updateWreck(view.wreck, state.alive, view.root.position, nowMs);
+          this.updateWreck(view.wreck, state.alive, view.root.position, stepS);
         continue;
       }
       const wave = 0.5 + 0.5 * Math.sin(state.phaseT * Math.PI * 12);

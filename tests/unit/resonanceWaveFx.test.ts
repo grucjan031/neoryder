@@ -28,6 +28,7 @@ describe('ResonanceWaveFx', () => {
     expect(visible()).toBe(0);
 
     bus.emit('power_used', { power: 'push', user: PLAYER });
+    fx.advance(1 / 60);
     fx.update([push], camera);
     expect(visible()).toBeGreaterThan(0);
   });
@@ -45,6 +46,7 @@ describe('ResonanceWaveFx', () => {
     bus.emit('power_used', { power: 'push', user: PLAYER });
     fx.update([push], null);
     expect(visible()).toBe(0);
+    fx.advance(1 / 60);
     fx.update([push], camera);
     expect(visible()).toBeGreaterThan(0);
   });
@@ -54,6 +56,30 @@ describe('ResonanceWaveFx', () => {
     fx.dispose();
     bus.emit('power_used', { power: 'push', user: PLAYER });
     fx.update([push], camera);
+    expect(visible()).toBe(0);
+  });
+});
+
+describe('ResonanceWaveFx — zegar klatki', () => {
+  it('fala starzeje się o frameDt z advance (krok przycięty do 0,1 s)', () => {
+    const { bus, fx, camera, visible } = setup();
+    const lifeS = tuning.vfx.resonanceWaveS;
+    bus.emit('power_used', { power: 'push', user: PLAYER });
+    fx.advance(1 / 60);
+    fx.update([push], camera);
+    // Bez advance czas stoi, niezależnie od zegara ściennego.
+    for (let i = 0; i < 5; i++) fx.update([push], camera);
+    expect(visible()).toBeGreaterThan(0);
+
+    // Jedna długa klatka liczy się najwyżej jako 0,1 s.
+    fx.advance(1000);
+    fx.update([push], camera);
+    expect(visible() > 0).toBe(lifeS > 0.1 + 1 / 60);
+
+    for (let t = 0; t < lifeS; t += 0.05) {
+      fx.advance(0.05);
+      fx.update([push], camera);
+    }
     expect(visible()).toBe(0);
   });
 });

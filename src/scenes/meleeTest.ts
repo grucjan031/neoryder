@@ -794,6 +794,7 @@ export class PushTest extends MeleeTest {
 
   override render(alpha: number, frameDt = 1 / 60): void {
     super.render(alpha, frameDt);
+    this.lightningView.advance(frameDt);
     this.lightningView.render(
       [this.slots.get(0), this.slots.get(1)],
       this.gameCtx.camera ?? null,

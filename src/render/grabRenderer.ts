@@ -16,6 +16,7 @@ import {
 import type { Camera } from 'three';
 import type { GrabBeam } from '../combat/powers/grab';
 import type { Tuning } from '../core/tuning';
+import { frameStep } from './frameClock';
 import { getLiteFx } from './fxMode';
 
 const UP = new Vector3(0, 1, 0);
@@ -90,7 +91,6 @@ export class GrabRenderer {
   });
   private readonly orb = new Mesh(this.orbGeometry, this.orbMaterial);
   private time = 0;
-  private lastMs = -1;
 
   constructor(private readonly tuning: Tuning) {
     this.geometry.setAttribute(
@@ -113,16 +113,18 @@ export class GrabRenderer {
     }
   }
 
+  /** Zegar animacji: czas klatki (s), nie zegar ścienny. */
+  advance(frameDt: number): void {
+    this.time += frameStep(frameDt);
+  }
+
   render(
     beam: Readonly<GrabBeam> | null,
     alpha: number,
     camera?: Camera,
   ): void {
     this.line.visible = beam !== null;
-    if (!beam) {
-      this.lastMs = -1;
-      return;
-    }
+    if (!beam) return;
     const t = this.tuning.vfx;
     const { previous, current } = beam;
     this.hand.set(
@@ -160,10 +162,6 @@ export class GrabRenderer {
       this.tube.visible = this.orb.visible = false;
       return;
     }
-    const now = performance.now();
-    if (this.lastMs >= 0)
-      this.time += Math.min(0.1, (now - this.lastMs) / 1000);
-    this.lastMs = now;
     this.dir.subVectors(this.target, this.hand);
     const length = this.dir.length();
     this.tube.visible = this.orb.visible = length > 1e-3;
