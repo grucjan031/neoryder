@@ -305,7 +305,7 @@ export class RoomScene implements Scene {
     this.root.add(this.beamView.root, this.explosionView.root);
     this.barrierView = new BarrierRenderer(ctx.tuning);
     this.root.add(this.barrierView.root);
-    this.lightningView = new LightningRenderer(ctx.tuning);
+    this.lightningView = new LightningRenderer(ctx.tuning, ctx.bus, playerId);
     this.root.add(this.lightningView.root);
 
     this.manager = new EnemyManager(

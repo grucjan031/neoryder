@@ -168,7 +168,7 @@ export class MeleeTest implements Scene {
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
     this.three = three;
-    this.lightningView = new LightningRenderer(ctx.tuning);
+    this.lightningView = new LightningRenderer(ctx.tuning, ctx.bus);
     this.rapier = await initPhysics();
     this.world = new this.rapier.World({
       x: 0,

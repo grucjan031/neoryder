@@ -10,6 +10,7 @@ import {
 } from 'three';
 import type { Camera } from 'three';
 import type { Power } from '../combat/powers/power';
+import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { getMaterial } from './materials';
@@ -139,9 +140,14 @@ export class LightningRenderer {
   /** Fale Pchnięcia / Fali uderzeniowej: te same sceny przekazują tu listę mocy i kamerę. */
   private readonly waves: ResonanceWaveFx;
 
-  constructor(private readonly tuning: Tuning) {
+  /** `bus` (i opcjonalnie `owner`) włącza fale Rezonansu po zdarzeniu `power_used`. */
+  constructor(
+    private readonly tuning: Tuning,
+    bus?: EventBus,
+    owner?: EntityId,
+  ) {
     this.root.name = 'lightning';
-    this.waves = new ResonanceWaveFx(tuning);
+    this.waves = new ResonanceWaveFx(tuning, bus, owner);
     this.root.add(this.waves.root);
   }
 

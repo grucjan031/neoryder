@@ -10,17 +10,18 @@ import {
   Vector3,
 } from 'three';
 import type { Camera } from 'three';
+import type { EntityId, EventBus } from '../core/events';
 import type { Tuning } from '../core/tuning';
 import { getLiteFx } from './fxMode';
 
-/** Moc stożkowa widziana przez render: tylko odczyt definicji i odnowienia. */
+/** Moc stożkowa widziana przez render: tylko odczyt definicji. */
 interface ConeLike {
   readonly def: {
+    readonly id: string;
     readonly kind: string;
     readonly coneAngleDeg?: number;
     readonly range?: number;
   };
-  readonly cooldownRemaining: number;
 }
 
 const MAGENTA = new Color('#ff2bd6');
@@ -113,21 +114,31 @@ function material(fragment: string, vertex: string): ShaderMaterial {
 
 /**
  * Fala Pchnięcia i Fali uderzeniowej Rezonansu (kosmetyka): rozszerzająca się magentowa czasza
- * w kierunku celowania (stożek) albo pierścień przy podłodze (360°). Wykrywa użycie mocy po skoku
- * odnowienia — czyta wyłącznie publiczny stan mocy, nie wpływa na symulację.
+ * w kierunku celowania (stożek) albo pierścień przy podłodze (360°). Startuje po zdarzeniu
+ * `power_used` (opcjonalnie tylko danego właściciela); z mocy czyta wyłącznie definicję.
  */
 export class ResonanceWaveFx {
   readonly root = new Group();
   private readonly waves: Wave[] = [];
-  private readonly cooldowns = new WeakMap<object, number>();
+  /** Identyfikatory mocy użytych od ostatniej klatki z kamerą. */
+  private readonly pending = new Set<string>();
+  private readonly off: (() => void) | null;
   private readonly ringGeometry = new RingGeometry(0.02, 1, 48, 1);
   private readonly capGeometries = new Map<number, SphereGeometry>();
   private lastMs = -1;
   private readonly forward = new Vector3();
   private readonly quat = new Quaternion();
 
-  constructor(private readonly tuning: Pick<Tuning, 'vfx'>) {
+  constructor(
+    private readonly tuning: Pick<Tuning, 'vfx'>,
+    bus?: EventBus,
+    owner?: EntityId,
+  ) {
     this.root.name = 'resonance-waves';
+    this.off =
+      bus?.on('power_used', ({ power, user }) => {
+        if (owner === undefined || user === owner) this.pending.add(power);
+      }) ?? null;
     for (let i = 0; i < SLOTS; i++) {
       const caps = Array.from({ length: RIPPLES }, () => {
         const cap = new Mesh(
@@ -176,17 +187,18 @@ export class ResonanceWaveFx {
   update(powers: readonly unknown[], camera: Camera | null): void {
     if (getLiteFx()) {
       this.root.visible = false;
+      this.pending.clear();
       return;
     }
     const now = performance.now();
     const dt = this.lastMs < 0 ? 0 : Math.min(0.1, (now - this.lastMs) / 1000);
     this.lastMs = now;
-    for (const item of powers) {
-      if (!isCone(item)) continue;
-      const before = this.cooldowns.get(item) ?? 0;
-      const after = item.cooldownRemaining;
-      this.cooldowns.set(item, after);
-      if (camera && after > before + 1e-4) this.spawn(item, camera);
+    if (camera && this.pending.size > 0) {
+      for (const item of powers) {
+        if (isCone(item) && this.pending.has(item.def.id))
+          this.spawn(item, camera);
+      }
+      this.pending.clear();
     }
     for (const wave of this.waves) {
       if (wave.life <= 0) continue;
@@ -266,6 +278,8 @@ export class ResonanceWaveFx {
   }
 
   dispose(): void {
+    this.off?.();
+    this.pending.clear();
     for (const wave of this.waves) {
       for (const cap of wave.caps) cap.material.dispose();
       wave.ring.material.dispose();
@@ -285,7 +299,6 @@ function isCone(item: unknown): item is ConeLike {
     typeof def === 'object' &&
     def !== null &&
     (def as { kind?: unknown }).kind === 'cone' &&
-    typeof (item as { cooldownRemaining?: unknown }).cooldownRemaining ===
-      'number'
+    typeof (def as { id?: unknown }).id === 'string'
   );
 }

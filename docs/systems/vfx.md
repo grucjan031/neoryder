@@ -240,8 +240,8 @@ Nowe liczby są w `tuning.vfx` (panel lil-gui); istniejące wartości bez zmian.
   kapsule bryły, `hitFlashS`, `hitFlashBrightness`) i gwiazdkę iskry w punkcie
   trafienia (`hitFlashStarSizeM`).
 - **Fale Rezonansu.** `ResonanceWaveFx` (w `LightningRenderer`, który dostaje
-  listę mocy i kamerę) wykrywa użycie mocy stożkowej po skoku
-  `cooldownRemaining`: Pchnięcie to magentowa czasza z echem w kierunku
+  listę mocy, kamerę oraz `EventBus`) startuje po zdarzeniu `power_used`
+  dla mocy stożkowej z listy (w scenach gry tylko gracza): Pchnięcie to magentowa czasza z echem w kierunku
   celowania (`resonanceWaveS`), Fala uderzeniowa — pierścień przy podłodze
   (`resonanceRingS`, `resonanceRingDropM`).
 - **Chwyt.** Cyan linia (dłoń gracza) zostaje; dookoła magentowa rurka z
