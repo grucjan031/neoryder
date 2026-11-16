@@ -1,6 +1,6 @@
 .workshop {
   color: #f4f7fa;
-  font-family: system-ui, sans-serif;
+  font-family: var(--ui-font);
 }
 .workshop__header {
   display: flex;
@@ -8,8 +8,8 @@
   gap: 8px 24px;
   padding: 10px 12px;
   margin-bottom: 16px;
-  background: #0c1017;
-  border: 1px solid #34414c;
+  background: #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.16);
   border-left: 4px solid #ffae1a;
 }
 .workshop__stat {
@@ -51,7 +51,7 @@
   align-items: center;
   gap: 12px;
   padding: 6px 0;
-  border-bottom: 1px solid #1f2733;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.08);
 }
 .workshop__name {
   flex: 1 1 auto;
@@ -76,9 +76,9 @@
   font: inherit;
   text-align: left;
   color: #f4f7fa;
-  background: #171d28;
-  border: 1px solid #596573;
-  border-left: 4px solid #828b94;
+  background: #0c1626;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-left: 4px solid #3a5263;
   cursor: pointer;
 }
 .hub-screen .workshop .workshop__choice {
@@ -87,7 +87,7 @@
 }
 .hub-screen .workshop button[aria-pressed='true'] {
   border-left-color: #ffae1a;
-  background: #232b3a;
+  background: #102233;
 }
 .hub-screen .workshop button:disabled {
   opacity: 0.45;
@@ -95,7 +95,7 @@
 }
 .hub-screen .workshop button:not(:disabled):hover,
 .hub-screen .workshop button:focus-visible {
-  outline: 2px solid #00a9c4;
+  outline: 2px solid #00e5ff;
   outline-offset: 2px;
 }
 .workshop__order {
@@ -112,8 +112,8 @@
 .workshop__modules {
   padding: 8px 12px;
   margin: 8px 0;
-  background: #0c1017;
-  border: 1px solid #34414c;
+  background: #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.16);
 }
 .workshop__module-slot {
   display: flex;
@@ -128,11 +128,11 @@
   min-width: 0;
   padding: 6px 10px;
   color: #f4f7fa;
-  background: #171d28;
-  border: 1px solid #596573;
+  background: #0c1626;
+  border: 1px solid rgba(0, 229, 255, 0.3);
   font: inherit;
 }
 .workshop__module-select:focus-visible {
-  outline: 2px solid #00a9c4;
+  outline: 2px solid #00e5ff;
   outline-offset: 2px;
 }

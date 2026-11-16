@@ -64,6 +64,17 @@ Układ jest ograniczony szerokościami grup i przeznaczony dla 1280×720 oraz
 w kolumnie arsenału i znika pochylenie. Kontrola ręczna: `?scene=room-test&room=combatYard&loadout=classic&debug=1`,
 `?scene=boss-test&debug=1`, `?scene=hub&debug=1`; zrzuty ocenia manager.
 
+## Wspólny język interfejsu
+
+Tokeny w `src/ui/styles.css` (`:root`, prefiks `--ui-`): font Rajdhani dla
+wszystkich ekranów, cyan tylko dla elementów gracza i fokusu, magenta dla
+Rezonansu, czerwień dla zagrożenia; informacje (Kredyty, podpowiedzi) bursztyn,
+leczenie zieleń, hybrydy i synergie fiolet. Panele (menu, pauza, ustawienia,
+ekrany runu, stacje kryjówki) mają tę samą ramkę z narożnikami (`--ui-frame`),
+małą etykietę nad tytułem (np. `ISKRA // WSTRZYMANO`) i wielkie litery w
+nagłówkach. Mikroanimacje wejścia trwają 160–240 ms i są wyłączane przez
+`prefers-reduced-motion`.
+
 ## Pauza i ustawienia
 
 `PauseMenu` (`src/ui/pauseMenu.ts`) otwiera się po Esc i utracie fokusu.
@@ -292,9 +303,14 @@ odczytu, bez zapisu i przy błędzie IndexedDB; zapis udostępnia warstwę oraz 
 Kontynuacja przechodzi do `?scene=run&continue=1`.
 
 `MapScreen` (`src/ui/mapScreen.ts`, style `mapScreen.css`) rysuje pełną mapę:
-warstwa 1 na dole, boss u góry, połączenia SVG za przyciskami. Symbole i legenda
-odróżniają typy; elita i boss są czerwone, bieżący węzeł ma cyanową ramkę,
-odwiedzone mają przerywaną krawędź, dostępne są podświetlone.
+warstwa 1 na dole, boss u góry, połączenia SVG za przyciskami. Węzły wyglądają
+jak stacje na planie metra: typ rozpoznajesz po kształcie znacznika i kolorze
+(walka — koło, elita — czerwony romb, sklep — bursztynowy kwadrat, odpoczynek —
+zielone koło z plusem, zagadka — fioletowe koło przerywane, boss — czerwony
+sześciokąt) oraz po podpisie, a legenda używa tych samych znaczników. Bieżący
+węzeł ma wypełniony cyanowy znacznik, dostępne pulsują cyanowym pierścieniem
+z płynącą przerywaną krawędzią, droga z bieżącej pozycji do bossa jest
+jaśniejsza (`is-reachable`), a węzły poza nią przygaszone (`is-off-route`).
 Dostępność pochodzi z next bieżącego węzła, na początku z pierwszej warstwy.
 Pozostałe przyciski są disabled. Kliknięcie i 1/2/3 wybierają dostępny węzeł;
 Enter wybiera przycisk z fokusem lub pierwszy dostępny. Tab + Enter pozwala
@@ -325,6 +341,6 @@ obejmuje nowy run oraz fixture mapy z Kredytami i implantem dla kontynuacji
 oraz odświeżenia. Test listy scen w sandbox.spec.ts używa teraz `/?debug=1`;
 asercje listy i istniejące sceny z `?scene=` pozostają bez zmian.
 
-Ekrany runu pokazują karty implantów z rzadkością, opisem, tagami i nowo aktywowanymi synergiami. Sklep blokuje nieopłacalne zakupy, a odpoczynek pokazuje dostępną następną rzadkość. Obsługa: mysz, 1/2/3 i Enter; sceną kontrolną jest `?scene=run`.
+Ekrany runu pokazują karty implantów z rzadkością, opisem, tagami i nowo aktywowanymi synergiami. Rzadkość widać od razu: kolor górnej krawędzi i poświaty karty oraz kształt znacznika przy nazwie rzadkości (pospolity — koło, rzadki — kwadrat, epicki — romb, legendarny — gwiazda). Tagi ścieżek są chipami z nazwą ścieżki (Ostrze cyan, Moc magenta, Strzelec bursztyn), cena w sklepie to bursztynowy chip, który robi się czerwony, gdy brakuje Kredytów. Pierwsze trzy przyciski mają podpowiedź klawisza 1/2/3 rysowaną przez CSS (`content: attr(data-key) / ''`, bez wpływu na nazwę dostępną). Nakładka runu leży nad HUD (`z-index` 120), a animacja wejścia gra tylko przy zmianie ekranu (`run-screen--enter`), żeby odświeżenia (np. Kredyty) nie migały. Sklep blokuje nieopłacalne zakupy, a odpoczynek pokazuje dostępną następną rzadkość. Obsługa: mysz, 1/2/3 i Enter; sceną kontrolną jest `?scene=run`.
 
 HUD bossa rysuje kreski faz z boss_spawned.phaseThresholds (ułamki HP paska), widoczne od pojawienia się bossa. boss_shield aktualizuje pasek wytrzymałości, widoczny tylko przy aktywnej tarczy.

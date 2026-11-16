@@ -12,10 +12,20 @@
   font-weight: 600 800;
   font-display: swap;
 }
+/* Mapa sektora jak plan metra: kształt i kolor znacznika = typ węzła,
+   cyan = droga gracza, czerwień = zagrożenie (elita, boss). */
 .sector-map {
+  --map-combat: #c8d6e2;
+  --map-elite: var(--ui-danger-text, #ff6b6f);
+  --map-boss: var(--ui-danger-text, #ff6b6f);
+  --map-shop: var(--ui-amber, #ffae1a);
+  --map-rest: var(--ui-green, #6dff4a);
+  --map-puzzle: var(--ui-violet-text, #ad92ff);
   font-family: Rajdhani, 'Segoe UI', sans-serif;
   font-variant-numeric: tabular-nums;
-  animation: sector-map-in 180ms ease-out;
+}
+.run-screen--enter .sector-map {
+  animation: sector-map-in 200ms ease-out;
 }
 .sector-map[hidden] {
   display: none;
@@ -24,147 +34,357 @@
   margin: 6px 0;
   font-size: 13px;
   letter-spacing: 0.08em;
-  color: rgba(237, 247, 255, 0.62);
+  color: var(--ui-muted, #a9bccb);
+}
+.sector-map > p.sector-map__info {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ui-faint, #7d93a3);
 }
 .run-screen[data-screen='map'] .run-screen__panel {
-  width: min(850px, 100%);
+  width: min(900px, 100%);
 }
 .sector-map__graph {
   position: relative;
-  height: clamp(340px, 52vh, 440px);
-  margin: 12px 0;
+  height: clamp(320px, calc(92vh - 240px), 520px);
+  margin: 10px 0 12px;
   border: 1px solid rgba(0, 229, 255, 0.16);
   background:
-    linear-gradient(rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 / 40px
-      40px,
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(224, 38, 43, 0.09),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 50% 100%,
+      rgba(0, 229, 255, 0.07),
+      transparent 50%
+    ),
+    linear-gradient(rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 / 32px
+      32px,
     linear-gradient(90deg, rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 /
-      40px 40px,
-    rgba(4, 9, 18, 0.55);
+      32px 32px,
+    rgba(3, 7, 14, 0.7);
 }
 .sector-map__graph svg {
   position: absolute;
+  /* Margines na podpisy węzłów skrajnych warstw. */
   inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
+  overflow: visible;
 }
 .sector-map__graph line {
-  stroke: rgba(0, 229, 255, 0.2);
-  stroke-width: 1px;
-  opacity: 1;
+  stroke: rgba(125, 147, 163, 0.16);
+  stroke-width: 1.5px;
+}
+.sector-map__graph line.is-reachable {
+  stroke: rgba(0, 229, 255, 0.32);
+  stroke-width: 2px;
 }
 .sector-map__graph line.is-available {
   stroke: var(--hud-health, #00e5ff);
-  stroke-width: 1.5px;
-  opacity: 1;
+  stroke-width: 2.5px;
+  stroke-dasharray: 6 4;
   filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.65));
+  animation: sector-map-flow 0.9s linear infinite;
 }
 .sector-map__graph line.is-visited {
-  stroke: rgba(0, 229, 255, 0.42);
-  stroke-width: 1px;
-  stroke-dasharray: 3 3;
-  opacity: 0.8;
+  stroke: rgba(0, 229, 255, 0.75);
+  stroke-width: 3px;
+  stroke-dasharray: none;
+  animation: none;
 }
+/* Węzeł: znacznik w kształcie typu + podpis jak stacja na planie metra. */
 .run-screen .sector-map__node {
+  --node-color: var(--map-combat);
   position: absolute;
-  transform: translate(-50%, -50%);
-  width: 82px;
-  padding: 6px 4px;
+  transform: translate(-50%, -15px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 96px;
+  padding: 0;
   margin: 0;
   text-align: center;
   font-family: Rajdhani, 'Segoe UI', sans-serif;
   font-variant-numeric: tabular-nums;
-  background: rgba(6, 12, 24, 0.9);
-  color: var(--hud-text, #edf7ff);
-  border: 1px solid rgba(0, 229, 255, 0.24);
-  opacity: 0.4;
+  background: none;
+  border: 0;
+  color: var(--node-color);
+  opacity: 0.66;
   cursor: default;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: opacity 0.15s ease;
+}
+.run-screen .sector-map__node[data-type='elite'] {
+  --node-color: var(--map-elite);
+}
+.run-screen .sector-map__node[data-type='boss'] {
+  --node-color: var(--map-boss);
+  transform: translate(-50%, -21px);
+}
+.run-screen .sector-map__node[data-type='shop'] {
+  --node-color: var(--map-shop);
+}
+.run-screen .sector-map__node[data-type='rest'] {
+  --node-color: var(--map-rest);
+}
+.run-screen .sector-map__node[data-type='puzzle'] {
+  --node-color: var(--map-puzzle);
 }
 .sector-map__node span {
-  display: block;
-  font-size: 20px;
-  line-height: 1.1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--node-color);
+  background: #050a14;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+.sector-map__node[data-type='elite'] span {
+  width: 26px;
+  height: 26px;
+  margin: 2px 0;
+  border-radius: 0;
+  font-size: 0;
+  transform: rotate(45deg);
+}
+.sector-map__node[data-type='elite'] span::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+}
+.sector-map__node[data-type='shop'] span {
+  border-radius: 3px;
+}
+.sector-map__node[data-type='puzzle'] span {
+  border-style: dashed;
+}
+.sector-map__node[data-type='boss'] span {
+  isolation: isolate;
+  width: 42px;
+  height: 42px;
+  font-size: 0;
+  border: 0;
+  border-radius: 0;
+  background: currentColor;
+  clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
+}
+.sector-map__node[data-type='boss'] span::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  background: #1a0608;
+  clip-path: inherit;
+}
+.sector-map__node[data-type='boss'] span::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  clip-path: inherit;
 }
 .sector-map__node small {
   display: block;
-  margin-top: 2px;
+  padding: 1px 5px;
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ui-muted, #a9bccb);
+  background: rgba(3, 7, 14, 0.8);
 }
-.run-screen .sector-map__node[data-type='elite'],
-.run-screen .sector-map__node[data-type='boss'] {
-  color: #ff6266;
-  border-color: rgba(224, 38, 43, 0.65);
+.run-screen .sector-map__node[data-type='boss'] small {
+  color: var(--map-boss);
+  letter-spacing: 0.24em;
+}
+.run-screen .sector-map__node.is-off-route {
+  opacity: 0.28;
 }
 .run-screen .sector-map__node.is-visited {
-  opacity: 0.55;
-  border-style: dashed;
-  border-color: rgba(0, 229, 255, 0.3);
-  color: rgba(237, 247, 255, 0.6);
+  opacity: 0.8;
+}
+.run-screen .sector-map__node.is-visited span {
+  color: rgba(0, 229, 255, 0.8);
+  background: #06303a;
 }
 .run-screen .sector-map__node.is-current {
   opacity: 1;
+}
+.run-screen .sector-map__node.is-current span {
+  color: #031018;
+  background: var(--hud-health, #00e5ff);
   border-color: var(--hud-health, #00e5ff);
-  background: rgba(0, 229, 255, 0.14);
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
-  outline: 1px solid var(--hud-health, #00e5ff);
-  outline-offset: 3px;
+  box-shadow:
+    0 0 0 4px rgba(0, 229, 255, 0.22),
+    0 0 16px rgba(0, 229, 255, 0.7);
+}
+.run-screen .sector-map__node.is-current small {
+  color: var(--hud-health, #00e5ff);
 }
 .run-screen .sector-map__node.is-available {
   opacity: 1;
-  border: 1px solid var(--hud-health, #00e5ff);
-  background: rgba(6, 18, 34, 0.92);
-  box-shadow:
-    0 0 14px rgba(0, 229, 255, 0.32),
-    inset 0 0 8px rgba(0, 229, 255, 0.12);
   cursor: pointer;
 }
-.run-screen .sector-map__node.is-available[data-type='elite'],
-.run-screen .sector-map__node.is-available[data-type='boss'] {
-  border-color: var(--hud-danger, #e0262b);
+.run-screen .sector-map__node.is-available span {
   box-shadow:
-    0 0 14px rgba(224, 38, 43, 0.4),
-    inset 0 0 8px rgba(224, 38, 43, 0.14);
+    0 0 0 3px #050a14,
+    0 0 0 4px var(--hud-health, #00e5ff),
+    0 0 18px rgba(0, 229, 255, 0.55);
+  animation: sector-map-ping 1.6s ease-in-out infinite;
+}
+.run-screen .sector-map__node[data-type='boss'].is-available span {
+  box-shadow: none;
+  animation: none;
+  filter: drop-shadow(0 0 8px rgba(224, 38, 43, 0.85));
+}
+.run-screen .sector-map__node.is-available small {
+  color: var(--ui-text, #edf7ff);
+  background: rgba(0, 40, 52, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.55);
 }
 .run-screen .sector-map__node.is-available:hover,
 .run-screen .sector-map__node.is-available:focus-visible {
-  background: rgba(0, 229, 255, 0.18);
-  border-color: var(--hud-health, #00e5ff);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
-  outline: 1px solid var(--hud-health, #00e5ff);
+  background: none;
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+.run-screen .sector-map__node.is-available:hover span,
+.run-screen .sector-map__node.is-available:focus-visible span {
+  transform: scale(1.15);
+  background: #0b3a48;
+}
+.run-screen .sector-map__node[data-type='elite'].is-available:hover span,
+.run-screen
+  .sector-map__node[data-type='elite'].is-available:focus-visible
+  span {
+  transform: rotate(45deg) scale(1.15);
+}
+.run-screen .sector-map__node.is-available:hover small,
+.run-screen .sector-map__node.is-available:focus-visible small {
+  color: #031018;
+  background: var(--hud-health, #00e5ff);
+}
+.run-screen .sector-map__node.is-available:focus-visible small {
+  outline: 2px solid var(--hud-health, #00e5ff);
   outline-offset: 2px;
 }
-.run-screen .sector-map__node.is-available[data-type='elite']:hover,
-.run-screen .sector-map__node.is-available[data-type='elite']:focus-visible,
-.run-screen .sector-map__node.is-available[data-type='boss']:hover,
-.run-screen .sector-map__node.is-available[data-type='boss']:focus-visible {
-  background: rgba(224, 38, 43, 0.18);
-  border-color: var(--hud-danger, #e0262b);
-  box-shadow: 0 0 20px rgba(224, 38, 43, 0.5);
-  outline-color: var(--hud-danger, #e0262b);
+/* Tryb wymuszonych kolorów: outline na całym węźle; reguła tutaj, żeby wygrała
+   z outline: none powyżej (ta sama specyficzność, późniejsza w pliku). */
+@media (forced-colors: active) {
+  .run-screen .sector-map__node:focus-visible,
+  .run-screen .sector-map__node.is-available:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
 }
 .sector-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
   font-size: 12px;
-  letter-spacing: 0.08em;
-  color: rgba(237, 247, 255, 0.62);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ui-muted, #a9bccb);
+}
+.sector-map__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.sector-map__legend-item b {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  font-size: 9px;
+  font-weight: 700;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  color: var(--map-combat);
+}
+.sector-map__legend-item[data-type='elite'] b {
+  width: 12px;
+  height: 12px;
+  margin: 0 2px;
+  border-radius: 0;
+  font-size: 0;
+  color: var(--map-elite);
+  transform: rotate(45deg);
+}
+.sector-map__legend-item[data-type='boss'] b {
+  width: 18px;
+  font-size: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--map-boss);
+  background: currentColor;
+  clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
+}
+.sector-map__legend-item[data-type='shop'] b {
+  border-radius: 2px;
+  color: var(--map-shop);
+}
+.sector-map__legend-item[data-type='rest'] b {
+  color: var(--map-rest);
+}
+.sector-map__legend-item[data-type='puzzle'] b {
+  border-style: dashed;
+  color: var(--map-puzzle);
+}
+.sector-map > p.sector-map__keys {
+  font-size: 12px;
+  color: var(--ui-faint, #7d93a3);
+}
+/* Niskie okna: podpis obok znacznika, żeby warstwy nie nachodziły na siebie. */
+@media (max-height: 820px) {
+  .run-screen .sector-map__node {
+    flex-direction: row;
+    gap: 6px;
+    width: auto;
+    transform: translate(-15px, -50%);
+  }
+  .run-screen .sector-map__node[data-type='boss'] {
+    transform: translate(-21px, -50%);
+  }
+  .sector-map__node[data-type='elite'] span {
+    margin: 0 2px;
+  }
+  .sector-map > p.sector-map__info {
+    display: none;
+  }
 }
 @media (max-width: 480px) {
   .run-screen .sector-map__node {
-    width: 58px;
+    width: 64px;
   }
   .sector-map__node small {
     font-size: 9px;
+    letter-spacing: 0.04em;
   }
 }
 @keyframes sector-map-in {
   from {
-    opacity: 0;
+    opacity: 0.3;
     transform: translateY(8px);
   }
   to {
@@ -172,18 +392,39 @@
     transform: translateY(0);
   }
 }
+@keyframes sector-map-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+@keyframes sector-map-ping {
+  50% {
+    box-shadow:
+      0 0 0 3px #050a14,
+      0 0 0 6px var(--hud-health, #00e5ff),
+      0 0 26px rgba(0, 229, 255, 0.8);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .sector-map {
+  .run-screen--enter .sector-map {
     animation: none;
   }
-  .run-screen .sector-map__node {
+  .run-screen .sector-map__node,
+  .sector-map__node span {
     transition: none;
   }
-  .sector-map__graph line.is-available {
-    filter: none;
+  .sector-map__graph line.is-available,
+  .run-screen .sector-map__node.is-available span {
+    animation: none;
   }
-  .run-screen .sector-map__node.is-current,
-  .run-screen .sector-map__node.is-available {
-    box-shadow: none;
+  .run-screen .sector-map__node.is-available:hover span,
+  .run-screen .sector-map__node.is-available:focus-visible span {
+    transform: none;
+  }
+  .run-screen .sector-map__node[data-type='elite'].is-available:hover span,
+  .run-screen
+    .sector-map__node[data-type='elite'].is-available:focus-visible
+    span {
+    transform: rotate(45deg);
   }
 }
