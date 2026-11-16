@@ -1,0 +1,57 @@
+name: README Toggle
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: readme-toggle-main
+  cancel-in-progress: false
+
+jobs:
+  toggle:
+    if: github.actor == 'Sitkowski01'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.MY_GITHUB_PAT }}
+
+      - name: Toggle test
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("README.md")
+          content = p.read_text(encoding="utf-8")
+
+          lines = content.rstrip("\r\n").splitlines()
+
+          if lines and lines[-1].strip() == "test":
+              lines.pop()
+          else:
+              lines.append("test")
+
+          p.write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8"
+          )
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name "grucjan031"
+          git config user.email "polomski3@wp.pl"
+
+          git add README.md
+          git diff --cached --quiet && exit 0
+
+          git commit -m "chore: update README"
+          git push origin HEAD:main
