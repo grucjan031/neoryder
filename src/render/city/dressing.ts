@@ -15,6 +15,7 @@ import { DecalRenderer } from './decals';
 import { LampCones, lampFixtures, lampLightDefs } from './lamps';
 import { CityLights } from './lights';
 import { SignRenderer } from './signs';
+import { frameProfiler } from '../frameProfiler';
 
 export interface DressingLayout {
   signs?: readonly SignDef[];
@@ -100,6 +101,15 @@ export class CityDressing {
 
   render(frameDt: number, camera: Camera | undefined): void {
     if (this.disposed || !camera) return;
+    frameProfiler?.begin('city');
+    try {
+      this.update(frameDt, camera);
+    } finally {
+      frameProfiler?.end();
+    }
+  }
+
+  private update(frameDt: number, camera: Camera): void {
     const dt = this.worldDt;
     this.worldDt = 0;
     this.signs?.update(dt, frameDt, camera);

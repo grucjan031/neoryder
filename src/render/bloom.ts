@@ -21,6 +21,8 @@ import { tuning } from '../core/tuning';
 import { getQuality } from './quality';
 import { FullscreenPass, fullscreenVertex } from './fullscreen';
 import { renderWithViewmodel } from './viewmodelLayer';
+import { frameProfiler } from './frameProfiler';
+import type { FrameStage } from './frameProfiler';
 
 /** Maska w 1/2 rozdzielczości bufora, rozmycie w 1/4. */
 const MASK_SCALE = 0.5;
@@ -150,7 +152,25 @@ export class BloomPass {
     scene: Scene,
     camera: PerspectiveCamera | OrthographicCamera,
   ): void {
-    this.renderMask(renderer, scene, camera);
+    if (!this.reflection) frameProfiler?.begin('bloom');
+    try {
+      this.renderPasses(renderer, scene, camera);
+    } finally {
+      if (!this.reflection) frameProfiler?.end();
+    }
+  }
+
+  private renderPasses(
+    renderer: WebGLRenderer,
+    scene: Scene,
+    camera: PerspectiveCamera | OrthographicCamera,
+  ): void {
+    frameProfiler?.begin(this.reflection ? 'reflectionMask' : 'bloomMask');
+    try {
+      this.renderMask(renderer, scene, camera);
+    } finally {
+      frameProfiler?.end();
+    }
     const radius = tuning.render.bloomRadius;
     const texel = (
       target: WebGLRenderTarget,
@@ -166,16 +186,29 @@ export class BloomPass {
       target: WebGLRenderTarget,
       scale: number,
       horizontal: boolean,
+      stage: FrameStage,
     ): void => {
       this.blurUniforms.map.value = source;
       texel(target, scale, horizontal);
-      this.blur.render(renderer, target);
+      this.blur.render(renderer, target, stage);
     };
-    run(this.mask.texture, this.blurA, 1, true);
-    run(this.blurA.texture, this.blurB, 1, false);
+    run(
+      this.mask.texture,
+      this.blurA,
+      1,
+      true,
+      this.reflection ? 'reflectionBlurX' : 'bloomBlurX1',
+    );
+    run(
+      this.blurA.texture,
+      this.blurB,
+      1,
+      false,
+      this.reflection ? 'reflectionBlurY' : 'bloomBlurY1',
+    );
     if (!this.reflection) {
-      run(this.blurB.texture, this.blurA, 2.5, true);
-      run(this.blurA.texture, this.blurB, 2.5, false);
+      run(this.blurB.texture, this.blurA, 2.5, true, 'bloomBlurX2');
+      run(this.blurA.texture, this.blurB, 2.5, false, 'bloomBlurY2');
     }
   }
 

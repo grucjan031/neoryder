@@ -21,6 +21,7 @@ import sfxData from './data/audio/sfx.json';
 import { loadSettings } from './core/save';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
+import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
 import './ui/styles.css';
 
 async function main(): Promise<void> {
@@ -63,6 +64,8 @@ async function main(): Promise<void> {
   renderer.domElement.setAttribute('aria-label', 'Scena NEORYDER');
   app.append(renderer.domElement);
   const pipeline = createRenderPipeline(renderer);
+  const profiler = debug ? new FrameProfiler(renderer) : undefined;
+  setFrameProfiler(profiler);
   const updateQuality = (): void =>
     applyQuality(loadSettings().quality, {
       renderer,
@@ -84,7 +87,14 @@ async function main(): Promise<void> {
   pipeline.bindEvents(bus);
   const stats = debug ? new StatsPanel() : undefined;
   const loop = new GameLoop({
-    step: (dt) => scene.step(dt, input.snapshot()),
+    step: (dt) => {
+      profiler?.begin('step');
+      try {
+        scene.step(dt, input.snapshot());
+      } finally {
+        profiler?.end();
+      }
+    },
     render: (alpha, frameDt) => {
       stats?.begin();
       if (camera.fov !== tuning.camera.fov) {
@@ -92,8 +102,19 @@ async function main(): Promise<void> {
         camera.updateProjectionMatrix();
       }
       feel.update(frameDt);
-      scene.render(alpha, frameDt);
-      pipeline.render(three, camera, frameDt);
+      profiler?.begin('sceneRender');
+      try {
+        scene.render(alpha, frameDt);
+      } finally {
+        profiler?.end();
+      }
+      profiler?.begin('pipeline');
+      try {
+        pipeline.render(three, camera, frameDt);
+      } finally {
+        profiler?.end();
+        profiler?.endFrame(three, frameDt);
+      }
       stats?.end();
     },
   });
@@ -246,19 +267,35 @@ async function main(): Promise<void> {
     ),
   ];
   const command = (line: string): string => commands.execute(line);
+  if (profiler) {
+    builtinOff.push(
+      commands.register(
+        'profile',
+        'profile <on|off> — profiler klatki',
+        (args) => {
+          if (args.length !== 1 || (args[0] !== 'on' && args[0] !== 'off'))
+            return 'Użycie: profile <on|off>';
+          profiler.setEnabled(args[0] === 'on');
+          return `Profiler: ${args[0]}`;
+        },
+      ),
+    );
+  }
   const disposeConsole = debug ? createDebugConsole(command) : undefined;
   if (debug) {
     window.__neoryder = Object.freeze({
       tick: () => loop.tick,
       sceneId: () => scene.id,
       query: (name: string) =>
-        name === 'audioState'
-          ? audio.state
-          : name === 'lastSound'
-            ? audio.lastSound
-            : name === 'recentSounds'
-              ? [...audio.recentSounds]
-              : scene.query?.(name),
+        name === 'frameProfile'
+          ? profiler?.averages
+          : name === 'audioState'
+            ? audio.state
+            : name === 'lastSound'
+              ? audio.lastSound
+              : name === 'recentSounds'
+                ? [...audio.recentSounds]
+                : scene.query?.(name),
       command,
     });
   }
@@ -270,6 +307,7 @@ async function main(): Promise<void> {
     if (disposed) return;
     disposed = true;
     loop.stop();
+    profiler?.dispose();
     focusOff();
     window.removeEventListener('keydown', pauseKey, true);
     settingsScreen.dispose();

@@ -8,6 +8,7 @@ import type {
 } from 'three';
 import { BloomPass } from './bloom';
 import { renderWithViewmodel } from './viewmodelLayer';
+import { frameProfiler } from './frameProfiler';
 
 /** RGB = normalna, A = podatność materiału na odbicie; ten sam pass geometrii. */
 export class WetNormals {
@@ -84,6 +85,20 @@ export class ReflectionPass {
     return this.bloom.texture;
   }
   render(
+    renderer: WebGLRenderer,
+    scene: Scene,
+    camera: PerspectiveCamera | OrthographicCamera,
+    floorY: number,
+  ): void {
+    frameProfiler?.begin('reflections');
+    try {
+      this.renderReflection(renderer, scene, camera, floorY);
+    } finally {
+      frameProfiler?.end();
+    }
+  }
+
+  private renderReflection(
     renderer: WebGLRenderer,
     scene: Scene,
     camera: PerspectiveCamera | OrthographicCamera,

@@ -1,5 +1,7 @@
 import { Mesh, OrthographicCamera, PlaneGeometry, Scene } from 'three';
 import type { ShaderMaterial, WebGLRenderTarget, WebGLRenderer } from 'three';
+import { frameProfiler } from './frameProfiler';
+import type { FrameStage } from './frameProfiler';
 
 export const fullscreenVertex = /* glsl */ `
   varying vec2 vUv;
@@ -21,9 +23,18 @@ export class FullscreenPass {
     this.scene.add(this.quad);
   }
 
-  render(renderer: WebGLRenderer, target: WebGLRenderTarget | null): void {
-    renderer.setRenderTarget(target);
-    renderer.render(this.scene, this.camera);
+  render(
+    renderer: WebGLRenderer,
+    target: WebGLRenderTarget | null,
+    stage?: FrameStage,
+  ): void {
+    if (stage) frameProfiler?.begin(stage);
+    try {
+      renderer.setRenderTarget(target);
+      renderer.render(this.scene, this.camera);
+    } finally {
+      if (stage) frameProfiler?.end();
+    }
   }
 
   dispose(): void {

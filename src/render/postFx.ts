@@ -173,7 +173,7 @@ export class PostFxPass {
     u.focusTint.value = t.focusTint;
     u.focusTintColor.value.set(t.focusTintColor);
     u.focusDesaturate.value = t.focusDesaturate;
-    this.pass.render(renderer, target);
+    this.pass.render(renderer, target, 'postFx');
   }
 
   dispose(): void {

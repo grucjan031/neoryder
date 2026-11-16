@@ -31,6 +31,7 @@ import { syncMaterials } from './materials';
 import { hideNoOutline } from './noOutline';
 import { PostFxPass, PostFxState } from './postFx';
 import { renderWithViewmodel } from './viewmodelLayer';
+import { frameProfiler } from './frameProfiler';
 
 const fragmentShader = /* glsl */ `
   #include <packing>
@@ -311,7 +312,12 @@ export class StylePipeline {
     this.postFxState.update(Math.min(frameDt, 0.25));
     const quality = getQuality();
     if (tuning.render.outline === 0 || quality.outline === 0) {
-      renderWithViewmodel(this.renderer, scene, camera);
+      frameProfiler?.begin('color');
+      try {
+        renderWithViewmodel(this.renderer, scene, camera);
+      } finally {
+        frameProfiler?.end();
+      }
       return;
     }
     // Zmiana DPR nie musi wywołać zdarzenia resize.
@@ -379,18 +385,32 @@ export class StylePipeline {
     let restoreHidden: (() => void) | null = null;
     try {
       renderer.autoClear = true;
-      renderer.setRenderTarget(this.colorTarget);
-      renderWithViewmodel(renderer, scene, camera);
-      scene.overrideMaterial = this.normalMaterial;
-      scene.background = null;
-      renderer.setClearColor(0x000000, 0);
-      renderer.setRenderTarget(this.normalTarget);
-      restoreHidden = hideNoOutline(scene);
-      if (uniforms.reflectionStrength.value > 0) {
-        this.wetNormals ??= new WetNormals();
-        this.wetNormals.render(renderer, scene, camera);
+      frameProfiler?.begin('color');
+      try {
+        renderer.setRenderTarget(this.colorTarget);
+        renderWithViewmodel(renderer, scene, camera);
+      } finally {
+        frameProfiler?.end();
+      }
+      frameProfiler?.begin('normals');
+      try {
+        scene.overrideMaterial = this.normalMaterial;
+        scene.background = null;
+        renderer.setClearColor(0x000000, 0);
+        renderer.setRenderTarget(this.normalTarget);
+        restoreHidden = hideNoOutline(scene);
+        if (uniforms.reflectionStrength.value > 0) {
+          this.wetNormals ??= new WetNormals();
+          this.wetNormals.render(renderer, scene, camera);
+        } else {
+          renderWithViewmodel(renderer, scene, camera);
+        }
         restoreHidden();
         restoreHidden = null;
+      } finally {
+        frameProfiler?.end();
+      }
+      if (uniforms.reflectionStrength.value > 0) {
         this.reflections ??= new ReflectionPass(
           this.colorTarget.width,
           this.colorTarget.height,
@@ -401,10 +421,6 @@ export class StylePipeline {
         const puddle = surfaceTexture('asphalt_puddles');
         uniforms.puddleMap.value = puddle.map.value;
         uniforms.puddleReady.value = puddle.ready.value;
-      } else {
-        renderWithViewmodel(renderer, scene, camera);
-        restoreHidden();
-        restoreHidden = null;
       }
       if (bloomOn) {
         this.bloom ??= new BloomPass(
@@ -426,10 +442,10 @@ export class StylePipeline {
           this.postFx = new PostFxPass(this.postFxState);
           this.postFx.setSize(this.colorTarget.width, this.colorTarget.height);
         }
-        this.composite.render(renderer, this.postFx.input);
+        this.composite.render(renderer, this.postFx.input, 'composite');
         this.postFx.render(renderer, target);
       } else {
-        this.composite.render(renderer, target);
+        this.composite.render(renderer, target, 'composite');
       }
     } finally {
       restoreHidden?.();

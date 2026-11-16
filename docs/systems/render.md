@@ -55,6 +55,81 @@ Warstwa `src/render/` nie uczestniczy w symulacji. Materiały i obrys służą s
 identyfikacji roli obiektu: białe otoczenie, czerwone zagrożenia, czarne rekwizyty,
 cyan dla gracza i magenta dla Rezonansu.
 
+## Profilowanie
+
+Profiler Z14 (`src/render/frameProfiler.ts`) istnieje tylko w trybie debug
+(`?debug=1` lub serwer dev) i domyślnie jest wyłączony. W konsoli gry:
+`profile on` / `profile off`. Odczyt w konsoli przeglądarki:
+`window.__neoryder.query('frameProfile')`. Ponowne `on` po `off` zeruje okno;
+`off` zachowuje ostatnie średnie. Odczyt zwraca współdzielony bufor raportu;
+do zachowania stanu użyć `structuredClone(...)`.
+
+Pomiar architekta na działającym serwerze (osobny skrypt Node + Playwright,
+bez uruchamiania testów ani budowania aplikacji):
+
+```powershell
+node tools/perf/profile.mjs --url http://127.0.0.1:5173 --scene room-test --room alleyMarket --quality medium --seconds 10
+```
+
+Wszystkie argumenty są opcjonalne; powyżej pokazano domyślne wartości.
+Chromium używa `--use-angle=d3d11 --enable-gpu --ignore-gpu-blocklist`,
+widoku 1280×720 i DPR 1. Skrypt ustawia `neoryder.settings.quality` przed
+załadowaniem aplikacji, zachowuje pozostałe parametry podanego URL (domyślny
+`loadout=gunner`, `seed=frame-profile`), próbuje włączyć `god`, czeka 3 s na
+rozgrzewkę, a następnie włącza profiler na zadany czas. Zapisuje
+`perf-report/profile-<scena>-<jakosc>.json` i tabelę etap → CPU ms / GPU ms.
+Kolejny pomiar tej samej sceny i jakości nadpisuje plik, także przy innym pokoju.
+JSON zawiera pokój, jakość, URL, GPU/sterownik, FPS z całego okresu, tick przed/po,
+liczbę wrogów, wynik `god`, błędy strony i ostatnie średnie profilera.
+
+| Etap                                                                    | Miejsce pomiaru / zakres                                                                               |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `step`                                                                  | `main.ts`: suma wszystkich `scene.step()` wraz z pobraniem wejścia w jednej klatce; podczas pauzy 0    |
+| `sceneRender`                                                           | `main.ts`: aktualizacja stanu wizualnego `scene.render(alpha, frameDt)`                                |
+| `city`                                                                  | `city/dressing.ts`: napisy, światła, stożki, naklejki, cząsteczki i pogoda/deszcz; część `sceneRender` |
+| `pipeline`                                                              | `main.ts`: całe `pipeline.render()`, łącznie z przygotowaniem i przywróceniem stanu                    |
+| `color`                                                                 | `outline.ts`: kolor świata i viewmodelu; w low zwykły render                                           |
+| `normals`                                                               | `outline.ts`: normalne/głębia (również wariant mokrych materiałów) i viewmodel                         |
+| `reflections`                                                           | `reflections.ts`: przygotowanie odbitej kamery, maska emisji i rozmycia                                |
+| `reflectionMask`, `reflectionBlurX`, `reflectionBlurY`                  | `bloom.ts` / `fullscreen.ts`: maska odbicia i dwa rozmycia                                             |
+| `bloom`                                                                 | `bloom.ts`: cały bloom selektywny                                                                      |
+| `bloomMask`, `bloomBlurX1`, `bloomBlurY1`, `bloomBlurX2`, `bloomBlurY2` | `bloom.ts` / `fullscreen.ts`: maska i cztery osobne rozmycia                                           |
+| `composite`                                                             | `outline.ts` / `fullscreen.ts`: kontur, atmosfera, mgła, odbicia, bloom i winieta w jednym shaderze    |
+| `postFx`                                                                | `postFx.ts` / `fullscreen.ts`: dodatkowy przebieg aktywnego impulsu                                    |
+
+`stages.<etap>.cpuMs` to czas wywołań na CPU (`performance.now()`), a `gpuMs`
+to czas GPU z `EXT_disjoint_timer_query_webgl2`, w ms. GPU nie jest czasem
+obliczeń JS: `step`, `sceneRender` i `city` zwykle nie wysyłają rysowania,
+więc ich GPU będzie bliskie zeru; koszt rysowania deszczu jest w przebiegach
+geometrii. CPU zawiera wysyłanie poleceń do sterownika i może zawierać jego
+oczekiwanie. CPU i GPU działają częściowo równolegle — nie sumować ich do FPS.
+Etapy nadrzędne obejmują dzieci: nie dodawać `pipeline` do przebiegów ani `city`
+do `sceneRender`. Mgła, światła i przezroczystości nie mają osobnych przebiegów;
+ich wpływ porównuje się przez zmianę parametrów i pomiar właściwych etapów.
+
+Raport obejmuje ostatnie maksymalnie **120 klatek**, także zera dla pominiętych
+efektów. `window` = 120, `frames` = bieżąca liczba klatek w oknie, `totalFrames`
+= liczba od włączenia; `frameMs` jest średnią odstępów klatek (obejmuje vsync
+i czas poza mierzonymi zakresami). `gpuAvailable` oznacza dostępność rozszerzenia;
+`gpuFrames` to liczba kompletnych, poprawnych klatek GPU w tym samym oknie.
+GPU odczytywane jest dopiero po `QUERY_RESULT_AVAILABLE`, bez `finish()` i
+blokowania CPU. `null` oznacza brak rozszerzenia albo brak kompletnych, poprawnych
+wyników; nie oznacza zera. `disjoint` lub utrata kontekstu unieważnia wyniki GPU.
+Zagnieżdżone zakresy dzielą zapytania na rozłączne odcinki i przypisują ich sumy
+także rodzicom, bez zagnieżdżania `TIME_ELAPSED_EXT`. Pula ma limit 2048 zapytań;
+jej wyczerpanie pomija GPU danej klatki, a CPU nadal jest raportowane.
+
+`counters` zawiera średnie na klatkę: `calls` i `triangles` z **całego** potoku
+(wliczając przebiegi pomocnicze i fullscreen), `lights` = widoczne światła w drzewie
+sceny, `programs` = liczba programów shaderów w cache renderera, `transparent` =
+widoczne obiekty mające co najmniej jeden widoczny materiał z `transparent=true`
+(tablica materiałów nie mnoży obiektów, `InstancedMesh` liczy się jako jeden).
+Widoczność oznacza `visible` obiektu i rodziców, bez testu frustum czy okluzji.
+Profiler tymczasowo wyłącza `renderer.info.autoReset`, zeruje liczniki po klatce
+i przywraca poprzednią wartość po wyłączeniu. Gdy wyłączony, pomiary kończą się
+na sprawdzeniu flagi: bez odczytów zegara, GL, przechodzenia po scenie i alokacji
+na ścieżce profilera. Włączony profiler ma własny narzut pomiaru i raportowania.
+
 ## Paleta i materiały
 
 Źródłem bieżących kolorów jest `tuning.render`. `palette.ts` pozostaje paletą
