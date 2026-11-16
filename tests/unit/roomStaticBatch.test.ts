@@ -34,8 +34,9 @@ function counts(roots: readonly Object3D[]) {
 // Pomiar przed Z19: cała scena po init, prawdziwe GLB, także niewidoczne pule/VFX.
 const baselines = {
   alleyMarket: 1683,
-  combatWarehouse: 529,
-  eliteFoundry: 600,
+  // Wzrost względem 529/600: naklejki i napisy oprawy (dekoracje, nie bloki) z szlifu map.
+  combatWarehouse: 594,
+  eliteFoundry: 618,
 };
 
 it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
