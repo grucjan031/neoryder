@@ -808,30 +808,64 @@ def build_props():
     return {
         "crate": lambda: build_prop("crate", _crate(1.0), "mat_interactive"),
         "crate_small": lambda: build_prop("crate_small", _crate(0.5), "mat_interactive"),
-        "pillar": lambda: build_prop("pillar", bm_merge(
-            bm_box(0.8, 0.8, 4.0, center=(0, 0, 2.0), bevel=0.03),
-            bm_box(1.0, 1.0, 0.2, center=(0, 0, 0.1), bevel=0.02),
-            bm_box(1.0, 1.0, 0.2, center=(0, 0, 3.9), bevel=0.02),
-        ), "mat_world"),
+        "pillar": lambda: build_prop("pillar", _city2_pillar(), "mat_world"),
         "wall_segment": lambda: build_prop("wall_segment", bm_box(4.0, 0.4, 3.0, center=(0, 0, 1.5), bevel=0.02),
                                            "mat_world"),
-        "cover_low": lambda: build_prop("cover_low", bm_box(2.0, 0.6, 1.0, center=(0, 0, 0.5),
-                                                            taper_top=(0.95, 0.7), bevel=0.03), "mat_world"),
+        "cover_low": lambda: build_prop("cover_low", _city2_cover_low(), "mat_world"),
         "enemy_projectile": lambda: build_prop("enemy_projectile", _projectile(), "mat_enemy_glow"),
     }
 
 
 def _crate(size: float):
-    """Skrzynia: korpus + dwie obręcze i wzmocnione narożniki (czytelna sylwetka przy płaskim cieniowaniu)."""
+    """Skrzynia: korpus, dwie obręcze, wzmocnione narożniki i ukośne zastrzały na bokach.
+
+    Zastrzały (szlif 2) dają kontur czytelny z dystansu także przy jednym jasnym materiale.
+    """
     k = size
-    parts = [bm_box(0.96 * k, 0.96 * k, 0.96 * k, center=(0, 0, 0.5 * k), bevel=0.03 * k)]
+    parts = [bm_box(0.92 * k, 0.92 * k, 0.92 * k, center=(0, 0, 0.5 * k), bevel=0.03 * k)]
     for z in (0.18, 0.82):
         parts.append(bm_box(1.0 * k, 1.0 * k, 0.07 * k, center=(0, 0, z * k), bevel=0.01 * k))
     for x in (-1, 1):
         for y in (-1, 1):
-            parts.append(bm_box(0.09 * k, 0.09 * k, 1.0 * k, center=(x * 0.46 * k, y * 0.46 * k, 0.5 * k),
+            parts.append(bm_box(0.09 * k, 0.09 * k, 1.0 * k, center=(x * 0.455 * k, y * 0.455 * k, 0.5 * k),
                                 bevel=0.01 * k))
+    span, rise = 0.80, 0.57
+    angle = math.atan2(rise, span)
+    for i, (axis, sign) in enumerate((("y", -1), ("y", 1), ("x", -1), ("x", 1))):
+        brace = bm_box(math.hypot(span, rise) * k, 0.05 * k, 0.07 * k)
+        tilt = angle if i % 2 == 0 else -angle
+        bmesh.ops.rotate(brace, verts=brace.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(tilt, 3, "Y"))
+        if axis == "x":
+            bmesh.ops.rotate(brace, verts=brace.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(math.pi / 2, 3, "Z"))
+        offset = Vector((0, sign * 0.475 * k, 0.5 * k)) if axis == "y" else Vector((sign * 0.475 * k, 0, 0.5 * k))
+        bmesh.ops.translate(brace, verts=brace.verts, vec=offset)
+        parts.append(brace)
     return bm_merge(*parts)
+
+
+def _city2_pillar():
+    """Filar 4 m: trzon z pilastrami, opaska w połowie i stopniowane głowice (sylwetka bez nowych siatek)."""
+    parts = [bm_box(0.8, 0.8, 4.0, center=(0, 0, 2.0), bevel=0.03)]
+    for z, h in ((0.1, 0.2), (3.9, 0.2)):
+        parts.append(bm_box(1.0, 1.0, h, center=(0, 0, z), bevel=0.02))
+    for z in (0.28, 3.72):
+        parts.append(bm_box(0.9, 0.9, 0.16, center=(0, 0, z), bevel=0.015))
+    parts.append(bm_box(0.88, 0.88, 0.14, center=(0, 0, 2.0), bevel=0.015))
+    for x, y in ((0.42, 0), (-0.42, 0), (0, 0.42), (0, -0.42)):
+        sx, sy = (0.06, 0.22) if x else (0.22, 0.06)
+        for z0, z1 in ((0.36, 1.93), (2.07, 3.64)):
+            parts.append(bm_box(sx, sy, z1 - z0, center=(x, y, (z0 + z1) / 2)))
+    return bm_merge(*parts)
+
+
+def _city2_cover_low():
+    """Niska osłona 2 × 0,6 × 1 m: profil zapory z koroną i bocznym pasem, zgodny z dawnym obrysem."""
+    return bm_merge(
+        bm_box(2.0, 0.6, 1.0, center=(0, 0, 0.5), taper_top=(0.95, 0.7), bevel=0.03),
+        bm_box(1.86, 0.48, 0.08, center=(0, 0, 0.955), bevel=0.012),
+        bm_box(1.96, 0.56, 0.06, center=(0, 0, 0.38), taper_top=(1.0, 0.97), bevel=0.01),
+        bm_box(1.98, 0.6, 0.1, center=(0, 0, 0.05), bevel=0.012),
+    )
 
 
 def _hand_surface(name, vertices, faces, mat, parent):
@@ -1390,7 +1424,7 @@ def build_city_vending():
     _city_box(root, "front_recess", (.88, 1.76, .03), (0, 1.03, .35), "mat_cable")
     _city_box(root, "screen_frame", (.66, 1.26, .025), (-.10, 1.16, .3725), "mat_trim", .008)
     _city_print(root, "display", "mat_screen_vending", (.58, 1.16), (-.10, 1.16, .386))
-    _city_box(root, "header", (.82, .12, .02), (0, 1.86, .375), "mat_neon_blue")
+    _city_box(root, "header", (.88, .14, .03), (0, 1.86, .38), "mat_neon_blue")
     _city_box(root, "control_panel", (.16, .74, .02), (.33, 1.14, .375), "mat_machine")
     _city_print(root, "status_screen", "mat_screen_status", (.13, .065), (.33, 1.42, .3865))
     for row in range(4):
@@ -1401,13 +1435,25 @@ def build_city_vending():
     _city_box(root, "coin_slot", (.05, .09, .02), (.33, .90, .392), "mat_trim")
     _city_rod(root, "card_reader", (.33, .82, .385), (.33, .82, .398), .018, "mat_neon_green", 8)
     _city_box(root, "pickup", (.64, .22, .02), (-.06, .40, .37), "mat_cable", .02)
-    _city_box(root, "pickup_flap", (.60, .17, .012), (-.06, .41, .386), "mat_plastic", .01)
+    _city_box(root, "pickup_flap", (.60, .17, .012), (-.06, .41, .386), "mat_neon_white", .01)
     _city_box(root, "pickup_lip", (.68, .05, .05), (-.06, .27, .375), "mat_trim")
     _city_print(root, "sticker", "mat_label_barcode", (.16, .08), (.30, .62, .3665))
     _city_print(root, "warning", "mat_label_warning", (.16, .16), (-.5035, 1.55, .05), "-x")
     _city_box(root, "side_vent", (.012, .36, .44), (.496, .45, -.02), "mat_machine")
     for x in (-.40, .40):
         _city_box(root, "base_vent", (.06, .03, .012), (x, .12, .372), "mat_rubber")
+    # Szlif 2: świecący obrys frontu i boków, podświetlone okno produktów i tył z panelem serwisowym.
+    for s in (-1, 1):
+        _city_box(root, "corner_light", (.022, 1.70, .014), (s * .468, 1.0, .372), "mat_neon_blue")
+        _city_box(root, "side_stripe", (.012, 1.40, .05), (s * .501, 1.05, .22), "mat_neon_blue")
+    for y in (.545, 1.775):
+        _city_box(root, "window_light", (.62, .018, .01), (-.10, y, .388), "mat_neon_white")
+    _city_box(root, "back_panel", (.80, 1.50, .016), (0, 1.0, -.398), "mat_trim")
+    _city_box(root, "back_logo", (.62, .05, .012), (0, 1.80, -.404), "mat_neon_blue")
+    for i in range(5):
+        _city_box(root, "back_vent", (.50, .025, .012), (0, .35 + i * .06, -.408), "mat_rubber")
+    _city_merge_details(root, {"corner_light": "header", "side_stripe": "header", "back_logo": "header",
+                               "window_light": "pickup_flap", "back_panel": "top_cap", "back_vent": "plinth"})
     return root
 
 
@@ -1458,7 +1504,7 @@ def build_city_car():
         for x in (-1.42, 1.42):
             _city_rod(root, "wheel", (x, .33, s * .70), (x, .33, s * .94), .33, "mat_rubber", 12)
             _city_rod(root, "rim", (x, .33, s * .935), (x, .33, s * .95), .21, "mat_machine", 10)
-            _city_rod(root, "hub", (x, .33, s * .945), (x, .33, s * .958), .07, "mat_trim", 6)
+            _city_rod(root, "hub", (x, .33, s * .945), (x, .33, s * .958), .07, "mat_neon_violet", 6)
             _city_box(root, "fender_flare", (.98, .05, .09), (x, .67, s * .925), "mat_lacquer", .015)
         _city_box(root, "body_crease", (3.5, .025, .012), (0, .56, s * .955), "mat_trim")
         _city_box(root, "underglow", (2.4, .02, .03), (0, .20, s * .80), "mat_neon_violet")
@@ -1478,6 +1524,27 @@ def build_city_car():
     for z in (-.55, .55):
         _city_box(root, "spoiler_post", (.05, .07, .04), (-2.02, .95, z), "mat_trim")
     _city_rod(root, "charge_port", (-1.62, .62, .93), (-1.62, .62, .945), .03, "mat_neon_green", 8)
+    # Szlif 2: z 10 m czytelne mają być linia dachu, świetlne pasy przód/tył i felgi.
+    # Nowe detale są scalane z istniejącymi siatkami tego samego materiału (bez nowych węzłów).
+    for s in (-1, 1):
+        # Fioletowe listwy wzdłuż krawędzi dachu i progu: obrys auta w ciemnej uliczce.
+        _city_box(root, "roof_edge_light", (1.58, .03, .032), (-.35, 1.38, s * .636), "mat_neon_violet")
+        _city_box(root, "sill_skirt", (2.30, .09, .05), (.0, .27, s * .925), "mat_trim")
+        for x in (-1.42, 1.42):
+            # Felgi: świecący sześciokątny pierścień na obręczy (piasta świeci tym samym fioletem).
+            _city_tube(root, "rim_light", [(x + .19 * math.sin(k * math.tau / 6), .33 + .19 * math.cos(k * math.tau / 6),
+                                            s * .953) for k in range(6)], .012, "mat_neon_violet", 3, closed=True)
+        # Światła owinięte na narożnikach: przód biały, tył bursztynowy.
+        _city_box(root, "head_wrap", (.14, .05, .02), (2.0, .58, s * .862), "mat_light_white")
+        _city_box(root, "tail_wrap", (.14, .05, .02), (-2.02, .74, s * .868), "mat_neon_amber")
+    # Świecąca belka na dachu (jak znak taksówki) łamie linię dachu i jest widoczna z każdej strony.
+    _city_box(root, "roof_sign_base", (.56, .02, .96), (-.35, 1.41, 0), "mat_lacquer")
+    _city_box(root, "roof_sign", (.50, .04, .90), (-.35, 1.44, 0), "mat_neon_violet", taper=(.9, .95))
+    _city_box(root, "tail_lower", (.02, .025, 1.10), (-2.2, .52, 0), "mat_neon_amber")
+    _city_box(root, "nose_light", (.02, .03, 1.36), (2.2, .55, 0), "mat_light_white")
+    _city_merge_details(root, {"roof_edge_light": "underglow", "rim_light": "underglow",
+                               "roof_sign": "underglow", "roof_sign_base": "roof", "sill_skirt": "body_crease", "head_wrap": "light_bar", "nose_light": "light_bar",
+                               "tail_wrap": "tail_light", "tail_lower": "tail_light"})
     return root
 
 
@@ -1688,7 +1755,9 @@ def build_city_fire_escape():
         _city_box(root, "front_baluster", (.035, .88, .035), (x, 3.06, 1.07), "mat_rust")
     _city_box(root, "top_rail", (3, .055, .055), (0, 3.5, 1.07), "mat_rust")
     _city_box(root, "middle_rail", (3, .035, .035), (0, 2.93, 1.07), "mat_rust")
-    _city_box(root, "kick_plate", (3, .10, .012), (0, 2.61, 1.094), "mat_rust")
+    # Szlif 2: listwa krawędzi pomostu świeci fioletem i wyznacza balkon z dystansu
+    # (ta sama siatka `kick_plate`, bez nowego węzła).
+    _city_box(root, "kick_plate", (2.94, .055, .016), (0, 2.53, 1.112), "mat_neon_violet")
     for x in (-1.46, 1.46):
         _city_box(root, "side_rail", (.055, .055, 1.07), (x, 3.5, .535), "mat_rust")
         _city_box(root, "side_baluster", (.035, .88, .035), (x, 3.06, .35), "mat_rust")
@@ -1742,6 +1811,9 @@ def build_city_awning():
     for x in (-.8, 0, .8):
         _city_tube(root, "roof_seam", [(x, .546, .01), (x, .15, 1.13)], .012, "mat_trim")
     _city_box(root, "wall_flashing", (2.5, .06, .03), (0, .54, .015), "mat_rust")
+    # Szlif 2: bursztynowa krawędź frontu falbany (widoczna z ulicy, nie tylko od spodu).
+    _city_box(root, "valance_light", (2.42, .024, .012), (0, .022, 1.166), "mat_neon_amber")
+    _city_merge_details(root, {"valance_light": "led_strip"})
     return root
 
 
@@ -1770,6 +1842,11 @@ def build_city_door():
     _city_box(root, "lamp", (.18, .06, .07), (0, 2.43, .10), "mat_neon_white", .01)
     for x in (-.07, 0, .07):
         _city_box(root, "lamp_cage", (.008, .07, .085), (x, 2.43, .10), "mat_cable")
+    # Szlif 2: ciepła listwa pod nadprożem oświetla wejście z dystansu.
+    _city_box(root, "lintel_light", (1.0, .045, .014), (0, 2.215, .167), "mat_neon_white")
+    for x in (-.535, .535):
+        _city_box(root, "jamb_light", (.03, 2.1, .014), (x, 1.10, .167), "mat_neon_white")
+    _city_merge_details(root, {"lintel_light": "lamp", "jamb_light": "lamp"})
     return root
 
 
@@ -1823,15 +1900,26 @@ def build_city_vent_grate():
 
 def build_city_trash_bags():
     root = _city_root("city_trash_bags")
-    for i, (x, z, w, h, mat) in enumerate(((-.27, -.16, .32, .58, "mat_rubber"), (.26, -.04, .29, .51, "mat_plastic"),
-                                           (-.08, .29, .25, .43, "mat_rubber"))):
+    # Szlif 2: worki z przewężeniem pod supłem, przysiadłe na podłożu i nierówne;
+    # czwarty, mały worek jest scalony z `bag_1` (ten sam materiał, bez nowego węzła).
+    bags = ((-.27, -.16, .32, .58, "mat_rubber", 0), (.26, -.04, .29, .51, "mat_plastic", 1),
+            (-.08, .29, .25, .43, "mat_rubber", 2), (.30, .30, .17, .30, "mat_plastic", 3))
+    for i, (x, z, w, h, mat, seed) in enumerate(bags):
         bm = bm_ico(1, subdiv=1, scale=(w, w * .86, h * .5))
-        # Flatten the base, retain the angular folded silhouette above it.
         bottom = min(v.co.z for v in bm.verts)
         for v in bm.verts:
-            v.co.z = max(v.co.z - bottom, .025)
-        mesh_object(f"bag_{i}", bm, mat, parent=root, location=_city_point((x, -.025, z)))
-        _city_rod(root, "tie", (x, h * .86, z), (x + .04, h + .05, z), .035, "mat_hivis", 5)
+            t = (v.co.z - bottom) / h
+            # Neck: the top fifth gathers towards the knot; the base bulges and sags.
+            squeeze = .5 if t > .88 else (.86 if t > .74 else 1.0 + .12 * math.sin(math.pi * min(t, .6) / .6))
+            wobble = 1.0 + .07 * math.sin(v.co.x * 23 + seed * 1.7) * math.cos(v.co.y * 19 + seed)
+            v.co.x *= squeeze * wobble
+            v.co.y *= squeeze * wobble
+            v.co.z = max(v.co.z - bottom, .025) * (1.0 if t > .3 else .85)
+        name = "bag_extra" if i == 3 else f"bag_{i}"
+        mesh_object(name, bm, mat, parent=root, location=_city_point((x, -.025, z)))
+        _city_rod(root, "tie" if i < 3 else "tie_extra", (x, h * .86, z), (x + .04, h + .05, z),
+                  .035 if i < 3 else .028, "mat_hivis", 5)
+    _city_merge_details(root, {"bag_extra": "bag_1", "tie_extra": "tie.001"})
     return root
 
 
@@ -1842,7 +1930,7 @@ def build_city_traffic_cone():
     for a, b in ((.25, .34), (.47, .56)):
         ra = .19 + (.035 - .19) * (a - .055) / .645 + .003
         rb = .19 + (.035 - .19) * (b - .055) / .645 + .003
-        _city_rod(root, "reflector_band", (0, a, 0), (0, b, 0), ra, "mat_trim", 10, rb)
+        _city_rod(root, "reflector_band", (0, a, 0), (0, b, 0), ra, "mat_neon_white", 10, rb)
     return root
 
 
@@ -1951,6 +2039,11 @@ def build_city_ad_screen():
     _city_box(root, "led_edge", (1.04, .015, .02), (0, .0075, .15), "mat_neon_violet")
     _city_tube(root, "conduit", [(.48, 2.10, .08), (.48, 2.22, .08), (.48, 2.28, .02)], .02, "mat_rubber")
     _city_print(root, "sticker", "mat_label_barcode", (.12, .06), (.40, .07, .1605))
+    # Szlif 2: pełna fioletowa rama LED zamiast samej dolnej krawędzi.
+    for x in (-.52, .52):
+        _city_box(root, "led_side", (.032, 2.06, .02), (x * 1.025, 1.05, .172), "mat_neon_violet")
+    _city_box(root, "led_top", (1.10, .032, .02), (0, 2.074, .172), "mat_neon_violet")
+    _city_merge_details(root, {"led_side": "led_edge", "led_top": "led_edge"})
     return root
 
 
@@ -1972,6 +2065,14 @@ def build_city_kiosk():
     _city_rod(root, "card_reader", (.16, 1.02, .27), (.16, 1.04, .27), .022, "mat_neon_green", 8)
     _city_print(root, "sticker", "mat_label_barcode", (.14, .07), (.18, .40, .2315))
     _city_print(root, "warning", "mat_label_warning", (.12, .12), (.3315, .40, 0), "+x")
+    # Szlif 2: daszek nad nagłówkiem i świetlne krawędzie słupka widoczne z każdej strony.
+    _city_box(root, "roof_cap", (.80, .04, .62), (0, 2.215, 0), "mat_machine", .01, taper=(.92, .9))
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            _city_box(root, "edge_light", (.016, 1.62, .016), (sx * .328, 1.10, sz * .228), "mat_neon_blue")
+    for sz in (-1, 1):
+        _city_box(root, "header_line", (.72, .02, .01), (0, 1.985, sz * .283), "mat_neon_blue")
+    _city_merge_details(root, {"roof_cap": "header", "edge_light": "header_glow", "header_line": "header_glow"})
     return root
 
 
