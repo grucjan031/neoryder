@@ -434,13 +434,13 @@ body:has(.hud) .hint {
     inset 0 0 0 1px var(--card-accent),
     inset 0 0 24px var(--card-glow);
   outline: none;
+  transform: translateY(-2px);
 }
 .build-select__card:focus-visible {
   outline: 2px solid var(--card-accent);
   outline-offset: 3px;
   /* clip-path przycinałby outline. */
   clip-path: none;
-  transform: translateY(-2px);
 }
 .build-select__card:focus-visible .build-select__name::after {
   content: ' ◂';
