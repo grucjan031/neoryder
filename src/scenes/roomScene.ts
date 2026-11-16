@@ -1076,6 +1076,7 @@ export class RoomScene implements Scene {
     powers[1] = this.powers.get(1);
     if (!camera) {
       this.dressing?.render(frameDt, undefined);
+      this.beamView.advance(frameDt);
       this.beamView.render(this.weapon.beam);
       this.lightningView.render(powers);
       return;
@@ -1114,6 +1115,7 @@ export class RoomScene implements Scene {
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
       visible: this.state === 'playing',
     });
+    this.beamView.advance(frameDt);
     this.beamView.render(this.weapon.beam, this.fppView.beamOrigin);
     this.lightningView.render(powers, camera);
   }

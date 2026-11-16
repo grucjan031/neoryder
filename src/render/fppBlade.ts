@@ -332,7 +332,13 @@ export class FppBlade {
     return (TWIN_STAGES[view.stage] ?? TWIN_STAGES[1])?.hand === hand;
   }
 
-  place(cameraMatrix: Matrix4, view: BladeView, frameDt = 1 / 60): void {
+  /** `fxActive`: false, gdy ostrze nie jest pokazywane — efekty są wtedy tylko chowane. */
+  place(
+    cameraMatrix: Matrix4,
+    view: BladeView,
+    frameDt = 1 / 60,
+    fxActive = true,
+  ): void {
     this.root.visible = true;
     const spinning =
       view.state === 'heavy' &&
@@ -381,11 +387,13 @@ export class FppBlade {
       item.slashing = this.slashing(view, name);
     }
     this.root.matrixWorldNeedsUpdate = true;
-    this.fx.update(
-      cameraMatrix,
-      Math.max(0, Math.min(frameDt, 0.1)),
-      this.fxItems,
-    );
+    if (!fxActive) this.fx.hide();
+    else
+      this.fx.update(
+        cameraMatrix,
+        Math.max(0, Math.min(frameDt, 0.1)),
+        this.fxItems,
+      );
   }
 
   dispose(): void {

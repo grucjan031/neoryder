@@ -11,12 +11,20 @@ import { tuning } from '../core/tuning';
 import { getMaterial } from './materials';
 import { fppGlowMaterial, markGlow } from './fppMaterials';
 
-/** Warstwy wiązki względem promienia z tuning: biały rdzeń, cyan, dwie poświaty. */
+/**
+ * Warstwy wiązki względem promienia z tuning. Tylko biały rdzeń jest bryłą z zapisem głębi;
+ * cyan (główny walec) i poświaty są przezroczyste bez zapisu głębi, więc rdzeń widać
+ * przez nie z każdej strony.
+ */
 const LAYERS: readonly { scale: number; color: string; opacity: number }[] = [
   { scale: 0.45, color: '#f2feff', opacity: 1 },
   { scale: 2.6, color: '#00e5ff', opacity: 0.38 },
   { scale: 6, color: '#3fd8ff', opacity: 0.12 },
 ];
+/** Krycie głównego cyjanowego walca (nad rdzeniem daje jasny cyan, na tle pełny kolor). */
+const MAIN_OPACITY = 0.6;
+/** Najdłuższy krok zegara pulsowania (s): po przestoju pulsowanie nie przeskakuje. */
+const MAX_STEP_S = 0.1;
 
 export class BeamRenderer {
   readonly root = new Group();
@@ -25,6 +33,9 @@ export class BeamRenderer {
   private readonly material = new MeshBasicMaterial({
     color: getMaterial('player').color,
     toneMapped: false,
+    transparent: true,
+    opacity: MAIN_OPACITY,
+    depthWrite: false,
   });
   private readonly mesh = new Mesh(this.geometry, this.material);
   private readonly layers: Mesh[] = [];
@@ -36,6 +47,7 @@ export class BeamRenderer {
     this.material.userData.bloom = true;
     this.root.add(this.mesh);
     this.mesh.visible = false;
+    this.mesh.renderOrder = 1;
     for (const layer of LAYERS) {
       const material =
         layer.opacity >= 1
@@ -44,7 +56,8 @@ export class BeamRenderer {
       material.userData.bloom = true;
       const mesh = new Mesh(this.geometry, material);
       mesh.scale.set(layer.scale, 1.002, layer.scale);
-      mesh.renderOrder = 2;
+      // Rdzeń przed cyanem i poświatami (kolejność przezroczystych warstw).
+      mesh.renderOrder = layer.opacity >= 1 ? 0 : 2;
       this.layers.push(mesh);
       this.mesh.add(mesh);
     }
@@ -52,10 +65,22 @@ export class BeamRenderer {
     markGlow(this.mesh);
   }
 
+  /** Zegar pulsowania: czas klatki (s), niezależnie od liczby wywołań `render`. */
+  advance(frameDt: number): void {
+    if (Number.isFinite(frameDt) && frameDt > 0)
+      this.time += Math.min(frameDt, MAX_STEP_S);
+  }
+
+  /** Grubość poświaty względem bazowej (dla testów i kosmetyki). */
+  get flicker(): number {
+    return (
+      1 + 0.12 * Math.sin(this.time * 47) + 0.06 * Math.sin(this.time * 113)
+    );
+  }
+
   render(beam: Weapon['beam'], from: Vec3 | undefined = beam?.from): void {
     this.mesh.visible = beam?.active ?? false;
     if (!beam?.active || !from) return;
-    this.time += 1 / 60;
     this.direction.set(
       beam.to.x - from.x,
       beam.to.y - from.y,
@@ -68,9 +93,8 @@ export class BeamRenderer {
       (from.z + beam.to.z) / 2,
     );
     this.mesh.scale.set(tuning.vfx.beamRadiusM, length, tuning.vfx.beamRadiusM);
-    // Drganie grubości poświaty (kosmetyka, czas renderu).
-    const flicker =
-      1 + 0.12 * Math.sin(this.time * 47) + 0.06 * Math.sin(this.time * 113);
+    // Drganie grubości poświaty (kosmetyka, zegar z `advance`).
+    const flicker = this.flicker;
     for (const [i, layer] of this.layers.entries()) {
       const base = LAYERS[i]!.scale;
       const s = i === 0 ? base : base * flicker;
