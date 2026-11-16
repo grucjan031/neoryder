@@ -15,7 +15,9 @@ export function batchStaticGeometry(
   root.traverseVisible((object) => {
     if (
       !(object instanceof Mesh) ||
-      object.type !== 'Mesh' ||
+      ('isInstancedMesh' in object && object.isInstancedMesh) ||
+      ('isSkinnedMesh' in object && object.isSkinnedMesh) ||
+      ('isBatchedMesh' in object && object.isBatchedMesh) ||
       Array.isArray(object.material) ||
       object.material.transparent ||
       object.morphTargetInfluences ||

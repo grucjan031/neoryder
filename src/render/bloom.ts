@@ -73,6 +73,56 @@ const blurFragment = /* glsl */ `
 
 type Renderable = Object3D & { material?: Material | Material[] };
 
+// Wspólne pozycje próbek dla modelu TS i generowanego GLSL.
+const depthOffsets: readonly (readonly [number, number])[] = [
+  [-0.25, -0.25],
+  [0.25, -0.25],
+  [-0.25, 0.25],
+  [0.25, 0.25],
+];
+const depthTolerance = 2 / 16777215;
+
+/** Model porównania GLSL; sampleDepth to odczyt najbliższego teksela głębi. */
+export function bloomDepthVisible(
+  fragment: readonly [number, number],
+  depth: number,
+  gradient: readonly [number, number],
+  maskSize: readonly [number, number],
+  colorSize: readonly [number, number],
+  sampleDepth: (u: number, v: number) => number,
+): boolean {
+  let visible = false;
+  for (const offset of depthOffsets) {
+    const u =
+      (Math.min(
+        colorSize[0] - 1,
+        Math.max(
+          0,
+          Math.floor(((fragment[0] + offset[0]) / maskSize[0]) * colorSize[0]),
+        ),
+      ) +
+        0.5) /
+      colorSize[0];
+    const v =
+      (Math.min(
+        colorSize[1] - 1,
+        Math.max(
+          0,
+          Math.floor(((fragment[1] + offset[1]) / maskSize[1]) * colorSize[1]),
+        ),
+      ) +
+        0.5) /
+      colorSize[1];
+    const projected =
+      depth +
+      gradient[0] * (u * maskSize[0] - fragment[0]) +
+      gradient[1] * (v * maskSize[1] - fragment[1]);
+    const sceneDepth = sampleDepth(u, v);
+    visible = visible || projected <= sceneDepth + depthTolerance;
+  }
+  return visible;
+}
+
 const depthDeclarations = /* glsl */ `
   uniform sampler2D bloomColorDepth;
   uniform vec2 bloomColorSize;
@@ -80,13 +130,20 @@ const depthDeclarations = /* glsl */ `
 `;
 const depthComparison = /* glsl */ `
   vec2 bloomUv = gl_FragCoord.xy / bloomMaskSize;
-  vec2 bloomSampleUv = (floor(bloomUv * bloomColorSize) + 0.5) / bloomColorSize;
-  // Porównujemy tę samą powierzchnię w środku teksela koloru, nie maski.
-  vec2 bloomDelta = (bloomSampleUv - bloomUv) * bloomMaskSize;
-  float bloomDepth = gl_FragCoord.z + dot(
-    vec2(dFdx(gl_FragCoord.z), dFdy(gl_FragCoord.z)), bloomDelta);
-  // Tolerancja kwantyzacji bufora DEPTH_COMPONENT24, nie bias odległości.
-  if (bloomDepth > texture2D(bloomColorDepth, bloomSampleUv).r + 2.0 / 16777215.0) discard;
+  vec2 bloomGradient = vec2(dFdx(gl_FragCoord.z), dFdy(gl_FragCoord.z));
+  bool bloomVisible = false;
+  ${depthOffsets
+    .map(
+      ([x, y]) => /* glsl */ `{
+    vec2 bloomSampleUv = (clamp(floor((bloomUv + vec2(${x}, ${y}) / bloomMaskSize) * bloomColorSize), vec2(0.0), bloomColorSize - 1.0) + 0.5) / bloomColorSize;
+    vec2 bloomDelta = bloomSampleUv * bloomMaskSize - gl_FragCoord.xy;
+    float bloomDepth = gl_FragCoord.z + dot(bloomGradient, bloomDelta);
+    float bloomSceneDepth = texture2D(bloomColorDepth, bloomSampleUv).r;
+    bloomVisible = bloomVisible || bloomDepth <= bloomSceneDepth + ${depthTolerance};
+  }`,
+    )
+    .join('\n')}
+  if (!bloomVisible) discard;
 `;
 
 // Wariant ma własną tożsamość/program, ale na bieżąco czyta stan źródła.

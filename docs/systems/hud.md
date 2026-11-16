@@ -85,6 +85,15 @@ zdarzenia oraz `document.activeElement` (pola formularzy, przyciski, linki
 i elementy edytowalne). Poza rozgrywką przypisanie np. dash do Tab nie blokuje
 nawigacji: nie zapisuje akcji ani nie wywołuje `preventDefault()`.
 
+Odmowa pointer lock (odrzucona obietnica, wyjątek lub `pointerlockerror`)
+pokazuje na środku ekranu „Kliknij w grę, aby przechwycić mysz”. Tekst pochodzi
+z `src/data/ui/input.pl.json`, styl `pointerLockHint.css` nawiązuje do pauzy.
+Kliknięcie komunikatu ponawia prośbę; kliknięcie canvasu nadal wznawia grę.
+Komunikat znika po `pointerlockchange` z własnym canvasem. `Input.dispose()`
+usuwa go wraz z listenerami; spóźniona odmowa po sukcesie lub dispose nie
+przywraca komunikatu. Klawisze gry nadal wymagają pointer locka.
+Testy jsdom: `tests/unit/pointerLockHint.test.ts`.
+
 `SettingsScreen` jest dostępny z menu głównego i pauzy. Zakładki Sterowanie,
 Obraz i Dźwięk mają nawigację strzałkami lewo/prawo, Home/End oraz Tab.
 Suwaki reagują na klawiaturę; zmiana zapisuje `saveSettings` natychmiast.

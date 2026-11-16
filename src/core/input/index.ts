@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import bindingsData from '../../data/inputBindings.json';
+import inputText from '../../data/ui/input.pl.json';
 
 export const actionSchema = z.enum([
   'moveForward',
@@ -97,6 +98,7 @@ export class Input {
   private readonly listeners = new AbortController();
   private wasLocked = false;
   private readonly document: Document;
+  private lockHint: HTMLButtonElement | undefined;
 
   constructor(
     private readonly target: HTMLElement,
@@ -187,12 +189,38 @@ export class Input {
     this.document.addEventListener(
       'pointerlockchange',
       () => {
+        if (this.pointerLocked && this.lockHint) {
+          this.lockHint.hidden = true;
+          if (this.document.activeElement === this.lockHint)
+            this.target.focus();
+        }
         if (this.wasLocked && !this.pointerLocked) this.loseFocus();
         if (!this.wasLocked && this.pointerLocked) this.skipNextMove = true;
         this.wasLocked = this.pointerLocked;
       },
       options,
     );
+    this.document.addEventListener(
+      'pointerlockerror',
+      () => this.showLockHint(),
+      options,
+    );
+  }
+
+  private showLockHint(): void {
+    if (this.listeners.signal.aborted || this.pointerLocked) return;
+    if (!this.lockHint) {
+      this.lockHint = this.document.createElement('button');
+      this.lockHint.type = 'button';
+      this.lockHint.className = 'pointer-lock-hint';
+      this.lockHint.textContent = inputText.pointerLockRetry;
+      this.lockHint.setAttribute('aria-live', 'polite');
+      this.lockHint.addEventListener('click', () => this.requestPointerLock(), {
+        signal: this.listeners.signal,
+      });
+      this.document.body.append(this.lockHint);
+    }
+    this.lockHint.hidden = false;
   }
 
   private press(code: string, action: Action): void {
@@ -236,12 +264,9 @@ export class Input {
   requestPointerLock(): void {
     try {
       const pending = this.target.requestPointerLock();
-      if (pending)
-        void pending.catch(() => {
-          /* Przeglądarka może odmówić blokady. */
-        });
+      if (pending) void pending.catch(() => this.showLockHint());
     } catch {
-      /* Blokada jest opcjonalna, np. w osadzonym podglądzie. */
+      this.showLockHint();
     }
   }
   get pointerLocked(): boolean {
@@ -255,6 +280,7 @@ export class Input {
   }
   dispose(): void {
     this.listeners.abort();
+    this.lockHint?.remove();
     this.focusListeners.clear();
     this.held.clear();
     this.pressed.clear();

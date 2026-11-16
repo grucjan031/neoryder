@@ -17,10 +17,15 @@ do przestrzeni korzenia; UV pozostają bez zmian. Rzuty miejskie i okna używaj�
 pozycji świata, więc nie wymagają zmian shaderów. Różne układy atrybutów zostają
 w osobnych partiach (alleyMarket: dwa zestawy geometrii modeli przy jednym materiale).
 
-Nie są scalane przezroczystości (sortowanie), istniejące instancje, skinned/morph
+Nie są scalane przezroczystości (sortowanie), istniejące instancje, BatchedMesh, skinned/morph
 meshe, obiekty ukryte, odbite transformacje, niestandardowe callbacki renderu,
 customDepth/DistanceMaterial ani częściowe drawRange. Funkcja przyjmuje wyłącznie
 statyczne poddrzewo; nie wolno jej wywoływać na całej aktywnej scenie.
+InstancedMesh, SkinnedMesh i BatchedMesh są rozpoznawane po flagach `is*`,
+nie po `type` (InstancedMesh w Three 0.187 ma `type === 'Mesh'`). Points i Line
+odpadają przez warunek `instanceof Mesh`. Tablice materiałów pozostają osobno.
+Test każdego wykluczenia używa pary zgodnych obiektów; dla instancji sprawdza
+także światowe AABB, macierze, liczbę instancji i kolory.
 Nowe geometrie należą do istniejącego zbioru zasobów pokoju i są zwalniane przy
 dispose; geometrie i materiały szablonów GLB pozostają własnością cache.
 
@@ -267,9 +272,17 @@ swoją rozdzielczość (high: 1/2 bufora, medium: 1/4). Materiały emisyjne maj�
 `depthTest=true`, `depthWrite=false`, a ich shader odrzuca fragment za głębią
 koloru. Nie współdzielimy bufora głębi o innym rozmiarze: porównanie korzysta z
 tekstury `DepthTexture` koloru, nie z uproszczonego przebiegu normalnych.
-Współrzędne próbki wskazują środek teksela koloru; pochodne głębi przeliczają
-głębię powierzchni z centrum fragmentu maski do tego punktu. Tolerancja to dwa
+Porównanie obejmuje cztery próbki w środkach ćwiartek teksela maski
+(przesunięcia ±0,25 teksela w obu osiach), zaokrąglone do środków tekseli koloru.
+Fragment pozostaje widoczny, jeśli choć jedna próbka przejdzie porównanie.
+Próbki nie wychodzą poza pokrycie teksela maski; nie zwiększamy tolerancji,
+więc pełna zasłona o szerokości co najmniej jednego teksela nadal blokuje emisję.
+Pochodne głębi przeliczają powierzchnię do każdej próbki osobno. Tolerancja to dwa
 kroki kwantyzacji 24-bitowej głębi, niezależnie od odległości kamery.
+`bloomDepthVisible` to czysty model TS z atrapą odczytu głębi. Wspólne pozycje
+próbek i tolerancja generują GLSL; test shadera pilnuje czterech odczytów,
+przeliczenia głębi i alternatywy porównań. Testy obejmują każdą ćwiartkę,
+pełną zasłonę, rozdzielczości 2×/4× i nieparzyste oraz nachylone powierzchnie.
 
 Selekcja odczytuje materiały co klatkę na CPU, więc reaguje na przełączanie
 `userData.bloom` (np. zagrożenia), kolory unlit, wymianę materiału i dodawanie lub

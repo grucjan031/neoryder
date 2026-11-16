@@ -23,6 +23,7 @@ import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
 import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
 import './ui/styles.css';
+import './ui/pointerLockHint.css';
 
 async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');

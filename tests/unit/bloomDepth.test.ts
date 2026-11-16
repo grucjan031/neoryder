@@ -17,7 +17,7 @@ import {
   WebGLRenderTarget,
 } from 'three';
 import type { WebGLRenderer } from 'three';
-import { BloomPass } from '../../src/render/bloom';
+import { BloomPass, bloomDepthVisible } from '../../src/render/bloom';
 import { createRenderPipeline } from '../../src/render/outline';
 import {
   applyViewmodelLayer,
@@ -26,6 +26,67 @@ import {
 import { tuning } from '../../src/core/tuning';
 
 const defaults = { ...tuning.render };
+
+it.each([0, 1, 2, 3])(
+  'zachowuje emisję widoczną tylko w ćwiartce %s teksela maski',
+  (visible) => {
+    const samples: number[][] = [];
+    const result = bloomDepthVisible(
+      [1.5, 1.5],
+      0.6,
+      [0, 0],
+      [4, 4],
+      [8, 8],
+      (u, v) => {
+        samples.push([u, v]);
+        const quadrant = (u > 0.375 ? 1 : 0) + (v > 0.375 ? 2 : 0);
+        return quadrant === visible ? 0.8 : 0.2;
+      },
+    );
+    expect(result).toBe(true);
+    expect(samples).toEqual([
+      [0.3125, 0.3125],
+      [0.4375, 0.3125],
+      [0.3125, 0.4375],
+      [0.4375, 0.4375],
+    ]);
+  },
+);
+
+it.each([
+  [8, 8],
+  [16, 16],
+  [17, 19],
+])(
+  'nie przebija ściany grubości teksela maski przy buforze %s x %s',
+  (width, height) => {
+    expect(
+      bloomDepthVisible(
+        [1.5, 1.5],
+        0.6,
+        [0, 0],
+        [4, 4],
+        [width, height],
+        (u, v) => (u >= 0.25 && u < 0.5 && v >= 0.25 && v < 0.5 ? 0.2 : 1),
+      ),
+    ).toBe(false);
+  },
+);
+
+it('zachowuje tolerancję i przelicza głębię nachylonej powierzchni do środka próbki', () => {
+  const tolerance = 2 / 16777215;
+  const visible = (offset: number) =>
+    bloomDepthVisible(
+      [1.5, 1.5],
+      0.6,
+      [0.1, -0.2],
+      [4, 4],
+      [17, 19],
+      (u, v) => 0.6 + 0.1 * (u * 4 - 1.5) - 0.2 * (v * 4 - 1.5) - offset,
+    );
+  expect(visible(tolerance * 0.9)).toBe(true);
+  expect(visible(tolerance * 1.1)).toBe(false);
+});
 afterEach(() => {
   Object.assign(tuning.render, defaults);
   vi.restoreAllMocks();
@@ -115,6 +176,30 @@ it('rysuje tylko emisję, także w grupach materiałów i pod nieemisyjnym rodzi
     expect(shader.fragmentShader).toContain(
       'texture2D(bloomColorDepth, bloomSampleUv)',
     );
+    expect(
+      shader.fragmentShader.match(
+        /texture2D\(bloomColorDepth, bloomSampleUv\)/g,
+      ),
+    ).toHaveLength(4);
+    for (const offset of [
+      '-0.25, -0.25',
+      '0.25, -0.25',
+      '-0.25, 0.25',
+      '0.25, 0.25',
+    ])
+      expect(shader.fragmentShader).toContain(
+        `vec2(${offset}) / bloomMaskSize`,
+      );
+    expect(shader.fragmentShader).toContain(
+      'bloomSampleUv * bloomMaskSize - gl_FragCoord.xy',
+    );
+    expect(shader.fragmentShader).toContain(
+      'gl_FragCoord.z + dot(bloomGradient, bloomDelta)',
+    );
+    expect(shader.fragmentShader).toContain(
+      `bloomVisible || bloomDepth <= bloomSceneDepth + ${2 / 16777215}`,
+    );
+    expect(shader.fragmentShader).toContain('if (!bloomVisible) discard;');
     expect(shader.fragmentShader).toContain('discard;');
     expect(shader.fragmentShader).toContain('#include <alphatest_fragment>');
     expect(shader.fragmentShader).toContain('#include <alphamap_fragment>');

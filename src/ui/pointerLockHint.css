@@ -1,0 +1,29 @@
+.pointer-lock-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  min-height: 48px;
+  padding: 16px 24px;
+  background: #0b1220;
+  color: #fff1d6;
+  border: 1px solid #ffae1a;
+  font:
+    600 20px/1.4 Rajdhani,
+    'Segoe UI',
+    sans-serif;
+  cursor: pointer;
+}
+.pointer-lock-hint[hidden] {
+  display: none;
+}
+.pointer-lock-hint:hover {
+  background: #302719;
+}
+.pointer-lock-hint:focus-visible {
+  outline: 2px solid #ffae1a;
+  outline-offset: 3px;
+}

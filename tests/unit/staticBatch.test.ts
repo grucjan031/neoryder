@@ -1,12 +1,16 @@
 import { expect, it, vi } from 'vitest';
 import {
   BoxGeometry,
+  Box3,
+  Color,
   BufferGeometry,
   Group,
   InstancedMesh,
   Mesh,
   MeshBasicMaterial,
   Matrix3,
+  Matrix4,
+  SkinnedMesh,
   Vector3,
 } from 'three';
 import { batchStaticGeometry } from '../../src/render/staticBatch';
@@ -109,24 +113,68 @@ it('rozdziela warstwy i flagi, dziedziczy noOutline oraz bloom rodzica', () => {
   expect(meshes.every((mesh) => mesh.visible)).toBe(true);
 });
 
-it('pozostawia przezroczystości, instancje, niewidoczne i odbite obiekty oraz callbacki', () => {
+it.each([
+  'transparent',
+  'instances',
+  'skinned',
+  'callback',
+  'array',
+  'negative',
+  'hidden',
+])('nie scala pary: %s', (kind) => {
   const root = new Group();
   const geometry = new BoxGeometry();
   const material = new MeshBasicMaterial();
-  const transparent = new MeshBasicMaterial({ transparent: true });
-  const objects = [
-    new Mesh(geometry, transparent),
-    new InstancedMesh(geometry, material, 2),
-    new Mesh(geometry, material),
-    new Mesh(geometry, material),
-    new Mesh(geometry, material),
-  ];
-  objects[2]!.visible = false;
-  objects[3]!.scale.x = -1;
-  objects[4]!.onBeforeRender = () => {};
+  material.transparent = kind === 'transparent';
+  const objects = Array.from({ length: 2 }, (_, index) => {
+    const mesh =
+      kind === 'instances'
+        ? new InstancedMesh(geometry, material, 2)
+        : kind === 'skinned'
+          ? new SkinnedMesh(geometry, material)
+          : new Mesh(geometry, kind === 'array' ? [material] : material);
+    mesh.position.x = index * 20;
+    if (kind === 'negative') mesh.scale.x = -1;
+    if (kind === 'callback') mesh.onBeforeRender = () => {};
+    if (kind === 'hidden') mesh.visible = false;
+    if (mesh instanceof InstancedMesh) {
+      mesh.setMatrixAt(0, new Matrix4().makeTranslation(3, 2, 1));
+      mesh.setMatrixAt(1, new Matrix4().makeTranslation(8, 4, 6));
+      mesh.setColorAt(0, new Color(0xffaa00));
+      mesh.setColorAt(1, new Color(0x00aa00));
+    }
+    return mesh;
+  });
   root.add(...objects);
+  const bounds =
+    kind === 'instances' ? new Box3().setFromObject(root).clone() : null;
+  const matrices = objects.map((mesh) =>
+    mesh instanceof InstancedMesh ? mesh.instanceMatrix.array.slice() : null,
+  );
+  const colors = objects.map((mesh) =>
+    mesh instanceof InstancedMesh ? mesh.instanceColor!.array.slice() : null,
+  );
   const owned = new Set<BufferGeometry>();
   batchStaticGeometry(root, owned);
-  expect(root.children).toEqual(objects);
+  expect(root.children).toHaveLength(2);
+  objects.forEach((mesh, index) => expect(root.children[index]).toBe(mesh));
   expect(owned.size).toBe(0);
+  if (bounds) expect(new Box3().setFromObject(root)).toEqual(bounds);
+  objects.forEach((mesh, index) => {
+    if (mesh instanceof InstancedMesh) {
+      expect(mesh.count).toBe(2);
+      expect(mesh.instanceMatrix.array).toEqual(matrices[index]);
+      expect(mesh.instanceColor!.array).toEqual(colors[index]);
+      expect(new Box3().setFromObject(mesh).min.toArray()).toEqual([
+        index * 20 + 2.5,
+        1.5,
+        0.5,
+      ]);
+      expect(new Box3().setFromObject(mesh).max.toArray()).toEqual([
+        index * 20 + 8.5,
+        4.5,
+        6.5,
+      ]);
+    }
+  });
 });
