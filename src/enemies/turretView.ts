@@ -24,7 +24,10 @@ type Kind = 'enemy' | 'enemyDark' | 'enemyGlow';
  */
 export class TurretView {
   readonly root = new Group();
+  /** Obrót głowicy wokół pionu na wysokości podstawy: laser liczy początek z `muzzle` w układzie wroga. */
   private readonly head = new Group();
+  /** Bryła głowicy na wysokości wylotu (`muzzle.y`). */
+  private readonly housing = new Group();
   private readonly barrels = new Group();
   private readonly eye: Mesh;
   private readonly geometries: BufferGeometry[] = [];
@@ -107,11 +110,12 @@ export class TurretView {
     );
     // Głowica obraca się wokół pionu; przód +Z.
     this.head.name = 'turretHead';
-    this.head.position.y = muzzle.y;
+    this.housing.position.y = muzzle.y;
+    this.head.add(this.housing);
     const housing = mesh(
       new BoxGeometry(hr * 1.75, hr * 1.05, hr * 1.85),
       'enemy',
-      this.head,
+      this.housing,
       [0, 0, -hr * 0.1],
       [0, 0, 0],
       'head',
@@ -120,13 +124,13 @@ export class TurretView {
     mesh(
       new BoxGeometry(hr * 1.45, hr * 0.16, hr * 1.5),
       'enemyDark',
-      this.head,
+      this.housing,
       [0, hr * 0.6, -hr * 0.15],
     );
     mesh(
       new BoxGeometry(hr * 1.3, hr * 0.55, hr * 0.22),
       'enemyDark',
-      this.head,
+      this.housing,
       [0, -hr * 0.12, hr * 0.85],
       [-0.25, 0, 0],
     );
@@ -134,24 +138,25 @@ export class TurretView {
       mesh(
         new BoxGeometry(hr * 0.24, hr * 0.85, hr * 1.55),
         'enemyDark',
-        this.head,
+        this.housing,
         [side * hr * 0.98, -hr * 0.05, -hr * 0.12],
       );
       mesh(
         new BoxGeometry(hr * 0.05, hr * 0.08, hr * 1.2),
         'enemyGlow',
-        this.head,
+        this.housing,
         [side * hr * 1.11, hr * 0.12, -hr * 0.12],
       );
-      mesh(new BoxGeometry(hr * 0.32, hr * 0.5, hr * 0.7), 'enemy', this.head, [
-        side * hr * 1.22,
-        -hr * 0.2,
-        -hr * 0.55,
-      ]);
+      mesh(
+        new BoxGeometry(hr * 0.32, hr * 0.5, hr * 0.7),
+        'enemy',
+        this.housing,
+        [side * hr * 1.22, -hr * 0.2, -hr * 0.55],
+      );
     }
     // Lufy od przodu obudowy do wylotu z danych; podwójne, z czerwonymi wylotami.
     this.barrels.name = 'barrels';
-    this.head.add(this.barrels);
+    this.housing.add(this.barrels);
     const front = hr * 0.8;
     const length = Math.max(muzzle.z - front, 0.05);
     for (const side of [-1, 1]) {
@@ -182,7 +187,7 @@ export class TurretView {
     this.eye = mesh(
       new CylinderGeometry(hr * 0.2, hr * 0.24, hr * 0.12, 10),
       'enemyGlow',
-      this.head,
+      this.housing,
       [0, hr * 0.22, hr * 0.88],
       [Math.PI / 2, 0, 0],
       'eye',
