@@ -585,8 +585,12 @@ export const tuning = {
     /** Fala po podłodze (przebudzenie, zmiana fazy, rozpad): zasięg (m) i czas (s). */
     bossWaveRadiusM: 16,
     bossWaveS: 0.9,
-    /** Zabarwienie światła areny czerwienią w ostatniej fazie (0–1) i błysk przy zmianie fazy (mnożnik). */
-    bossPhaseTint: 0.45,
+    /**
+     * Zabarwienie dolnej barwy światła półsferycznego (odbicie od podłogi) w ostatniej fazie (0–1);
+     * niebo i światło kluczowe bez zmian, bo czerwone otoczenie myliłoby się z wrogami (ADR 0006).
+     * Dalej: błysk przy zmianie fazy (mnożnik).
+     */
+    bossPhaseTint: 0.2,
     bossPhaseFlash: 1.7,
     bossPhaseShake: 0.35,
     bossPhaseShakeS: 0.35,
@@ -604,12 +608,13 @@ export const tuning = {
     /** Cisza po zwycięstwie przed podsumowaniem (s symulacji); 0 = od razu. W fx=lite pomijana. */
     bossVictoryHoldS: 1.8,
     /**
-     * Barwy oprawy bossa (ADR 0006: czerwień = wróg). Szkarłat przesunięty ku pomarańczy i bursztyn
-     * gorących krawędzi: daleko od magenty Rezonansu (#ff2bd6) i cyanu gracza. `bossShadeColor`
+     * Barwy oprawy bossa (ADR 0006: czerwień = wróg). Szkarłat przesunięty ku pomarańczy i ciepła
+     * biel gorących krawędzi (nie bursztyn: ten należy do neonów otoczenia); daleko od magenty
+     * Rezonansu (#ff2bd6) i cyanu gracza. `bossShadeColor`
      * mnoży podłogę pod polem rażenia (tłumi fiolet ulicy, żeby czerwień nie różowiała).
      */
     bossColor: '#ff4a1c',
-    bossHotColor: '#ffc061',
+    bossHotColor: '#ffd2c4',
     bossShadeColor: '#ff3a14',
     /**
      * Telegraf z bliska: od `NearM` do `FarM` (m od kamery) wypełnienie gaśnie do `NearFill`,
@@ -621,6 +626,41 @@ export const tuning = {
     bossTelegraphNearEdge: 0.55,
     /** Przy wyłączonych błyskach (ustawienia): rozbłysk wizjera tylko w tej części, bez błysku świateł. */
     bossNoFlashFlare: 0.3,
+    /** Szczegóły oprawy bossa (BossArenaFx): promienie pól, fale, słupy światła, iskry rozpadu. */
+    bossArena: {
+      /** Promień pola telegrafu wezwania i tarczy (m). */
+      summonRadiusM: 3.2,
+      shieldRadiusM: 2.8,
+      /** Druga fala zmiany fazy: ułamek zasięgu, ułamek czasu, opóźnienie (s), siła. */
+      phaseEchoRadius: 0.6,
+      phaseEchoTime: 0.8,
+      phaseEchoDelayS: 0.14,
+      phaseEchoStrength: 0.6,
+      /** Fale rozpadu: ułamek zasięgu bossWaveRadiusM, czas (s rdzenia; dla reszty ułamek bossWaveS), opóźnienie (s), siła. */
+      deathCoreWave: { radius: 0.35, time: 0.3, delayS: 0, strength: 1.2 },
+      deathWave: { radius: 1.15, time: 1.25, delayS: 0.18, strength: 1 },
+      deathEchoWave: { radius: 1.15, time: 1.7, delayS: 0.5, strength: 0.5 },
+      /** Słup światła rozpadu (promień, wysokość w m) i słup przy wezwanym słudze (promień, wysokość, czas). */
+      deathColumnRadiusM: 1.5,
+      deathColumnHeightM: 34,
+      minionColumnRadiusM: 0.9,
+      minionColumnHeightM: 9,
+      minionColumnS: 0.7,
+      /** Rzuty iskier rozpadu (chwila w s, liczba): wybuch w barwie gorącej, żar i dogasanie w czerwieni. */
+      deathSparks: {
+        burstS: 0,
+        burst: 46,
+        emberS: 0.16,
+        ember: 34,
+        fadeS: 0.42,
+        fade: 22,
+      },
+      /** Poświata pod bossem po śmierci: czas wygasania (s). */
+      deathGlowS: 0.9,
+      /** Fala uderzenia w chwili trafienia: czas (s) i siła. */
+      slamWaveS: 0.28,
+      slamWaveStrength: 1.3,
+    },
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
   run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },

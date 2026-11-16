@@ -31,7 +31,7 @@ export class BossTest extends AiTest {
         this.hitSparks.burst(point, null, color, count),
     });
     if (typeof document !== 'undefined')
-      this.unmountBar = mountBossBar(ctx.bus);
+      this.unmountBar = mountBossBar(ctx.bus, document.body, ctx.tuning);
     await super.init(ctx, three);
     this.root.add(this.bossFx.root);
   }
