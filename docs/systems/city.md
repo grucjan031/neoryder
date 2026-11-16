@@ -1,5 +1,32 @@
 # Oprawa miasta — Neon Noir
 
+## Koszt struktury pokoju po scalaniu Z19
+
+Poniżej `meshe przed → po (unikalne materiały przed = po)`, zmierzone na
+prawdziwych GLB przez `tests/unit/roomStaticBatch.test.ts`. Materiały w różnych
+wierszach mogą być współdzielone, więc ich liczby nie są addytywne.
+
+| Źródło                                        |    alleyMarket | combatWarehouse |  eliteFoundry |
+| --------------------------------------------- | -------------: | --------------: | ------------: |
+| Bloki proceduralne, w tym fasady wokół pokoju |     22 → 4 (4) |      20 → 3 (3) |    20 → 3 (3) |
+| Modele GLB bloków                             |    419 → 2 (1) |       7 → 2 (2) |    12 → 3 (3) |
+| Dekoracje GLB, także bryły latarni            | 1113 → 21 (21) |   379 → 17 (17) | 429 → 17 (17) |
+| Napisy i hologramy                            |   27 → 27 (27) |    18 → 18 (18) |  21 → 21 (21) |
+| Plamy świateł                                 |   16 → 16 (16) |    10 → 10 (10) |  11 → 11 (11) |
+| Stożki latarni (InstancedMesh)                |      1 → 1 (1) |       1 → 1 (1) |     1 → 1 (1) |
+| Naklejki                                      |   11 → 11 (11) |       8 → 8 (8) |  10 → 10 (10) |
+| Efekty otoczenia                              |      4 → 4 (4) |       4 → 4 (4) |     4 → 4 (4) |
+| Pogoda                                        |      3 → 3 (3) |       3 → 3 (3) |     3 → 3 (3) |
+| Panorama                                      |      7 → 7 (3) |       7 → 7 (3) |     7 → 7 (3) |
+
+Okna atlasowe nie tworzą osobnych meshy: są częścią shadera fasady. PointLight
+także nie jest meshem; pula świateł pozostaje bez zmian. Statyczne naklejki
+pozostawiono osobno ze względu na przezroczyste materiały i sortowanie.
+Animowane napisy, plamy, stożki, pogoda i efekty zachowują swoich właścicieli
+i dotychczasowe aktualizacje. Nie zmieniono `CityDressing` ani loaderów, więc
+arena, kryjówka i galeria modeli zachowują dotychczasową strukturę.
+Opis własności geometrii, wykluczeń i ograniczeń pomiaru: [render.md](render.md#statyczna-geometria-pokoju-z19).
+
 Samodzielne moduły renderu korzystające z `SignDef`, `CityLightDef`, `DecalDef`
 i `AmbientFxDef` z `src/world/dressingSchema.ts`. Nie tworzą colliderów, nie
 zmieniają symulacji i nie konsumują RNG runu. RoomScene i Arena tworzą je z pól

@@ -4,6 +4,7 @@ import type { HazardTarget } from '../world/hazards';
 import { HazardView } from '../render/hazardView';
 import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
+import { batchStaticGeometry } from '../render/staticBatch';
 import { FppViewModel } from '../render/fppViewModel';
 import {
   queryBladeArc,
@@ -249,8 +250,12 @@ export class RoomScene implements Scene {
     this.root.add(this.lights);
     await this.buildLayout();
     if (this.disposed) return;
-    await loadDecor(this.root, this.layout.decor, this.loadModels);
+    const decor = new Group();
+    decor.name = 'static-decor';
+    this.root.add(decor);
+    await loadDecor(decor, this.layout.decor, this.loadModels);
     if (this.disposed) return;
+    batchStaticGeometry(decor, this.geometries);
     this.dressing = new CityDressing(
       this.root,
       this.layout,
@@ -560,6 +565,11 @@ export class RoomScene implements Scene {
   // ----------------------------------------------------------------- budowa
 
   private async buildLayout(): Promise<void> {
+    const blocks = new Group();
+    blocks.name = 'static-blocks';
+    const models = new Group();
+    models.name = 'static-models';
+    this.root.add(blocks, models);
     await Promise.all(
       this.layout.blocks.map(
         async ({ size, position, model, material: blockMaterial }) => {
@@ -577,7 +587,7 @@ export class RoomScene implements Scene {
             (model?.startsWith('crate') ? 'interactive' : 'world');
           const fallback = new Mesh(geometry, getMaterial(material));
           fallback.position.set(position.x, position.y, position.z);
-          this.root.add(fallback);
+          blocks.add(fallback);
           const file = model?.startsWith('city_')
             ? model
             : model
@@ -595,14 +605,16 @@ export class RoomScene implements Scene {
                   node.material = getMaterial(blockMaterial);
               });
             scene.position.set(position.x, position.y - size.y / 2, position.z);
-            this.root.remove(fallback);
-            this.root.add(scene);
+            blocks.remove(fallback);
+            models.add(scene);
           } catch {
             // Bryła zastępcza zostaje (ten sam collider).
           }
         },
       ),
     );
+    batchStaticGeometry(blocks, this.geometries);
+    batchStaticGeometry(models, this.geometries);
     for (const door of this.layout.doors) {
       const { size, position } = door;
       const geometry = new BoxGeometry(size.x, size.y, size.z);
