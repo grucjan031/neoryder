@@ -436,11 +436,31 @@ body:has(.hud) .hint {
   outline: none;
   transform: translateY(-2px);
 }
-.build-select__card:focus-visible {
-  outline: 2px solid var(--card-accent);
-  outline-offset: 3px;
-  /* clip-path przycinałby outline. */
-  clip-path: none;
+/* Fokus: ramka 3 px rysowana wewnątrz karty (pierścień po obrysie ze ściętymi
+   narożnikami), bo clip-path przycinałby zwykły outline. */
+.build-select__card:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--card-accent);
+  pointer-events: none;
+  clip-path: polygon(
+    evenodd,
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    14px 100%,
+    0 calc(100% - 14px),
+    0 0,
+    3px 3px,
+    3px calc(100% - 15px),
+    15px calc(100% - 3px),
+    calc(100% - 3px) calc(100% - 3px),
+    calc(100% - 3px) 15px,
+    calc(100% - 15px) 3px,
+    3px 3px
+  );
 }
 .build-select__card:focus-visible .build-select__name::after {
   content: ' ◂';
@@ -609,6 +629,13 @@ body:has(.hud) .hint {
 
 /* Tryb wymuszonych kolorów (Windows): cienie znikają, więc fokus zawsze ma outline. */
 @media (forced-colors: active) {
+  /* Tu kształt jest drugorzędny: bez clip-path, żeby outline nie był przycinany. */
+  .build-select__card:focus-visible {
+    clip-path: none;
+  }
+  .build-select__card:focus-visible::after {
+    display: none;
+  }
   .build-select__card:focus-visible,
   .build-select__blade:focus-visible,
   .run-screen button:focus-visible,
