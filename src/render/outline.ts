@@ -33,6 +33,40 @@ import { PostFxPass, PostFxState } from './postFx';
 import { renderWithViewmodel } from './viewmodelLayer';
 import { frameProfiler } from './frameProfiler';
 
+/** Ustawienia konturu zależnego od odległości (pola z `tuning.render`). */
+export interface OutlineFade {
+  outlineFadeNear: number;
+  outlineFadeFar: number;
+  outlineFarNormal: number;
+  outlineFarOuter: number;
+}
+
+/**
+ * Odpowiednik shadera kompozycji (TS, do testów i strojenia): mnożniki linii w odległości `depth` m.
+ * `normal` — siła linii wewnątrz bryły; `depthInside` — siła obrysu sylwetki po stronie obiektu
+ * (po stronie tła obrys zostaje zawsze pełny).
+ */
+export function outlineFadeAt(
+  depth: number,
+  fade: OutlineFade,
+): { far: number; normal: number; depthInside: number } {
+  const far = smoothstep(
+    fade.outlineFadeNear,
+    Math.max(fade.outlineFadeFar, fade.outlineFadeNear + 1e-3),
+    depth,
+  );
+  return {
+    far,
+    normal: 1 - far * (1 - fade.outlineFarNormal),
+    depthInside: 1 - far * fade.outlineFarOuter,
+  };
+}
+
+function smoothstep(edge0: number, edge1: number, x: number): number {
+  const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
+  return t * t * (3 - 2 * t);
+}
+
 const fragmentShader = /* glsl */ `
   #include <packing>
   uniform sampler2D colorMap;

@@ -11,7 +11,7 @@ import {
 } from 'three';
 import type { WebGLRenderer } from 'three';
 import { tuning } from '../../src/core/tuning';
-import { createRenderPipeline } from '../../src/render/outline';
+import { createRenderPipeline, outlineFadeAt } from '../../src/render/outline';
 import { getMaterial, syncMaterials } from '../../src/render/materials';
 
 const defaults = { ...tuning.render };
@@ -152,12 +152,28 @@ it('przekazuje wygaszanie konturu z odległością do kompozycji', () => {
   pipeline.dispose();
 });
 
-it('domyślnie zostawia kontur bliskich obiektów bez zmian', () => {
-  const near = tuning.render.outlineFadeNear;
-  expect(near).toBeGreaterThanOrEqual(4);
-  expect(tuning.render.outlineFadeFar).toBeGreaterThan(near);
-  expect(tuning.render.outlineFarNormal).toBeGreaterThanOrEqual(0);
-  expect(tuning.render.outlineFarNormal).toBeLessThanOrEqual(1);
-  expect(tuning.render.outlineFarOuter).toBeGreaterThanOrEqual(0);
-  expect(tuning.render.outlineFarOuter).toBeLessThanOrEqual(1);
+it('wzór wygaszania: bliskie bez zmian, dalekie bez linii wewnątrz bryły', () => {
+  const fade = {
+    outlineFadeNear: tuning.render.outlineFadeNear,
+    outlineFadeFar: tuning.render.outlineFadeFar,
+    outlineFarNormal: tuning.render.outlineFarNormal,
+    outlineFarOuter: tuning.render.outlineFarOuter,
+  };
+  expect(outlineFadeAt(3, fade)).toEqual({ far: 0, normal: 1, depthInside: 1 });
+  const mid = outlineFadeAt(10, fade);
+  expect(mid.far).toBeCloseTo(0.352, 3);
+  expect(mid.normal).toBeCloseTo(0.648, 3);
+  expect(mid.depthInside).toBeCloseTo(0.648, 3);
+  expect(outlineFadeAt(20, fade)).toEqual({
+    far: 1,
+    normal: 0,
+    depthInside: 0,
+  });
+  // Dolna granica dalekich linii i wyłączenie efektu.
+  expect(
+    outlineFadeAt(20, { ...fade, outlineFarNormal: 0.4 }).normal,
+  ).toBeCloseTo(0.4);
+  expect(
+    outlineFadeAt(20, { ...fade, outlineFarNormal: 1, outlineFarOuter: 0 }),
+  ).toEqual({ far: 1, normal: 1, depthInside: 1 });
 });
