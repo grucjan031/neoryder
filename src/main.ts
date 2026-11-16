@@ -29,8 +29,12 @@ import {
   preserveLiteFx,
 } from './render/fxMode';
 import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
+import { showBootSplash } from './ui/bootSplash';
+import type { BootSplash } from './ui/bootSplash';
 import './ui/styles.css';
 import './ui/pointerLockHint.css';
+
+let bootSplash: BootSplash | undefined;
 
 async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');
@@ -38,18 +42,21 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(location.search);
   configureFx(params);
   const requested = params.get('scene');
+  bootSplash = showBootSplash(params, requested);
   const debug = import.meta.env.DEV || params.get('debug') === '1';
   if (requested === null) {
     if (debug && params.get('scenes') === '1') {
       const sceneParams = new URLSearchParams(params);
       sceneParams.delete('scenes');
       createSceneMenu(app, Object.keys(scenes), sceneParams);
+      bootSplash.dismiss();
     } else {
       const menu = new MainMenu({ root: app, params, debug });
       const dispose = (): void => menu.dispose();
       window.addEventListener('pagehide', dispose, { once: true });
       import.meta.hot?.dispose(dispose);
       await menu.ready;
+      bootSplash.dismiss();
     }
     return;
   }
@@ -60,6 +67,7 @@ async function main(): Promise<void> {
     message.className = 'scene-error';
     message.textContent = `Nieznana scena: ${sceneId}. Dostępne sceny: ${Object.keys(scenes).join(', ')}.`;
     app.append(message);
+    bootSplash.dismiss();
     return;
   }
   const seed =
@@ -315,6 +323,7 @@ async function main(): Promise<void> {
     });
   }
   if (scene.id !== 'run') bus.emit('run_started', { seed });
+  bus.once('scene_loaded', () => bootSplash?.dismiss());
   bus.emit('scene_loaded', { sceneId: scene.id });
   loop.start();
   let disposed = false;
@@ -350,6 +359,7 @@ async function main(): Promise<void> {
 
 void main().catch((error: unknown) => {
   console.error(error);
+  bootSplash?.dismiss();
   const message = document.createElement('p');
   message.className = 'scene-error';
   message.textContent =

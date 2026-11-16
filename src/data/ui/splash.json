@@ -1,0 +1,252 @@
+[
+  {
+    "file": "splash-01-neo-ryd.webp",
+    "title": "Neo-Ryd"
+  },
+  {
+    "file": "splash-02-niecka.webp",
+    "title": "Niecka",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-03-kamienna.webp",
+    "title": "Kamienna",
+    "themes": ["hideout"]
+  },
+  {
+    "file": "splash-04-rampa.webp",
+    "title": "Rampa"
+  },
+  {
+    "file": "splash-05-maszty.webp",
+    "title": "Maszty"
+  },
+  {
+    "file": "splash-06-odlewnia.webp",
+    "title": "Odlewnia",
+    "rooms": ["eliteFoundry"]
+  },
+  {
+    "file": "splash-07-ladunek.webp",
+    "title": "Ładunek"
+  },
+  {
+    "file": "splash-08-bulwar.webp",
+    "title": "Bulwar",
+    "themes": ["neonStreet"],
+    "rooms": ["alleyMarket"]
+  },
+  {
+    "file": "splash-09-kwarantanna.webp",
+    "title": "Kwarantanna"
+  },
+  {
+    "file": "splash-10-zaklad-kalibracji.webp",
+    "title": "Zakład Kalibracji"
+  },
+  {
+    "file": "splash-11-nadajnik.webp",
+    "title": "Nadajnik"
+  },
+  {
+    "file": "splash-12-sala-monitorow.webp",
+    "title": "Sala Monitorów"
+  },
+  {
+    "file": "splash-13-zaciemnienie.webp",
+    "title": "Zaciemnienie",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-14-chor.webp",
+    "title": "Chór"
+  },
+  {
+    "file": "splash-15-pion.webp",
+    "title": "Pion"
+  },
+  {
+    "file": "splash-16-szczyt-masztu.webp",
+    "title": "Szczyt Masztu"
+  },
+  {
+    "file": "splash-17-epilog.webp",
+    "title": "Epilog",
+    "themes": ["hideout"]
+  },
+  {
+    "file": "splash-18-neoryder.webp",
+    "title": "Neoryder"
+  },
+  {
+    "file": "splash-19-winda-towarowa.webp",
+    "title": "Winda towarowa"
+  },
+  {
+    "file": "splash-20-przepompownia.webp",
+    "title": "Przepompownia"
+  },
+  {
+    "file": "splash-21-port-hut.webp",
+    "title": "Port w Hutach"
+  },
+  {
+    "file": "splash-22-ogrody-tarasu.webp",
+    "title": "Ogrody Tarasu"
+  },
+  {
+    "file": "splash-23-ladowiska-korony.webp",
+    "title": "Lądowiska Korony"
+  },
+  {
+    "file": "splash-24-bloki-bulwaru.webp",
+    "title": "Bloki Bulwaru",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-25-budka-z-makaronem.webp",
+    "title": "Budka z makaronem",
+    "themes": ["neonStreet"],
+    "rooms": ["noodleShop"]
+  },
+  {
+    "file": "splash-26-warsztat-miry.webp",
+    "title": "Warsztat Miry",
+    "themes": ["hideout"]
+  },
+  {
+    "file": "splash-27-kacik-bajta.webp",
+    "title": "Kącik Bajta",
+    "themes": ["hideout"]
+  },
+  {
+    "file": "splash-28-poligon.webp",
+    "title": "Poligon",
+    "themes": ["hideout"]
+  },
+  {
+    "file": "splash-29-patrol-dronow.webp",
+    "title": "Patrol dronów",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-30-sciana-tarcz.webp",
+    "title": "Ściana tarcz"
+  },
+  {
+    "file": "splash-31-pojedynek.webp",
+    "title": "Pojedynek"
+  },
+  {
+    "file": "splash-32-rezonans.webp",
+    "title": "Rezonans"
+  },
+  {
+    "file": "splash-33-fabryka-akordu.webp",
+    "title": "Fabryka Akordu"
+  },
+  {
+    "file": "splash-34-zalany-tunel.webp",
+    "title": "Zalany tunel",
+    "rooms": ["combatFloodedTunnel"]
+  },
+  {
+    "file": "splash-35-gabinet-w-koronie.webp",
+    "title": "Gabinet w Koronie"
+  },
+  {
+    "file": "splash-36-zlomowisko.webp",
+    "title": "Złomowisko",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-37-sciana-zaginionych.webp",
+    "title": "Ściana zaginionych",
+    "themes": ["hideout"]
+  },
+  {
+    "file": "splash-38-skok-po-dachach.webp",
+    "title": "Skok po dachach",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-39-pralnia.webp",
+    "title": "Pralnia",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-40-nielegalna-klinika.webp",
+    "title": "Nielegalna klinika"
+  },
+  {
+    "file": "splash-41-kolejka-do-przychodni.webp",
+    "title": "Kolejka do przychodni"
+  },
+  {
+    "file": "splash-42-dzieci-w-zaulku.webp",
+    "title": "Dzieci w zaułku",
+    "themes": ["neonStreet"]
+  },
+  {
+    "file": "splash-43-tama.webp",
+    "title": "Tama"
+  },
+  {
+    "file": "splash-44-podstacja.webp",
+    "title": "Podstacja",
+    "rooms": ["combatSubstation"]
+  },
+  {
+    "file": "splash-45-dworzec.webp",
+    "title": "Dworzec"
+  },
+  {
+    "file": "splash-46-akordowiec.webp",
+    "title": "Akordowiec"
+  },
+  {
+    "file": "splash-47-rozstrojony.webp",
+    "title": "Rozstrojony"
+  },
+  {
+    "file": "splash-48-pokoj-przesluchan.webp",
+    "title": "Pokój przesłuchań"
+  },
+  {
+    "file": "splash-49-magazyn-chlodniczy.webp",
+    "title": "Magazyn chłodniczy"
+  },
+  {
+    "file": "splash-50-radio-iskry.webp",
+    "title": "Radio Iskry",
+    "themes": ["hideout"]
+  },
+  {
+    "file": "splash-51-pionowy-cmentarz.webp",
+    "title": "Pionowy cmentarz"
+  },
+  {
+    "file": "splash-52-burza-nad-masztem.webp",
+    "title": "Burza nad Masztem"
+  },
+  {
+    "file": "splash-53-snajper.webp",
+    "title": "Snajper"
+  },
+  {
+    "file": "splash-54-kolej-nadziemna.webp",
+    "title": "Kolej nadziemna"
+  },
+  {
+    "file": "splash-55-rezonantka.webp",
+    "title": "Rezonantka"
+  },
+  {
+    "file": "splash-56-bar-hutnikow.webp",
+    "title": "Bar Hutników"
+  },
+  {
+    "file": "splash-57-przed-switem.webp",
+    "title": "Przed świtem"
+  }
+]

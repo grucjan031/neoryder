@@ -491,3 +491,7 @@ kciuka, lamówkę i proporcje FPP. Podgląd ostrza kadruje rękojeść i dłoń,
 koniec pełnego ostrza jest poza kadrem. Sprawdzono też przecięcia powierzchni
 rękawicy z ostrzem, pistoletem, blasterem i karabinem (`gripGun`, `gripGunFire`)
 oraz z karabinem dla lewej ręki `support`: brak przecięć.
+
+## Splasharty ekranów ładowania
+
+`public/assets/splash/*.webp` to zoptymalizowane kopie ilustracji Gracjana z `docs/fabula/splash` (oryginały zostają nietknięte; max 1600 px szerokości, WebP jakość ~78, budżet ≤ 180 KB na plik). Wygeneruj je ponownie: `python tools/splash/optimize.py` (wymaga Pillow). Lista tytułów i przypisań do motywów/pokoi: `src/data/ui/splash.json`.
