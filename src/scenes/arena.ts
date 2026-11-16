@@ -1,5 +1,6 @@
 import { blockMaterialSchema, dressingFields } from '../world/dressingSchema';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { batchStaticGeometry } from '../render/staticBatch';
 import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
@@ -472,6 +473,11 @@ export class Arena implements Scene {
 
   private async buildLayout(): Promise<void> {
     const loader = new GLTFLoader();
+    const blocks = new Group();
+    blocks.name = 'static-blocks';
+    const models = new Group();
+    models.name = 'static-models';
+    this.root.add(blocks, models);
     await Promise.all(
       layout.blocks.map(
         async ({ size, position, model, material: blockMaterial }) => {
@@ -489,7 +495,7 @@ export class Arena implements Scene {
             (model?.startsWith('crate') ? 'interactive' : 'world');
           const fallback = new Mesh(geometry, getMaterial(material));
           fallback.position.set(position.x, position.y, position.z);
-          this.root.add(fallback);
+          blocks.add(fallback);
           const file = model?.startsWith('city_')
             ? model
             : model
@@ -510,8 +516,8 @@ export class Arena implements Scene {
                 position.y - size.y / 2,
                 position.z,
               );
-              this.root.remove(fallback);
-              this.root.add(scene);
+              blocks.remove(fallback);
+              models.add(scene);
               return;
             }
             const { scene } = await loader.loadAsync(
@@ -535,14 +541,18 @@ export class Arena implements Scene {
                   node.material = getMaterial(blockMaterial);
               });
             scene.position.set(position.x, position.y - size.y / 2, position.z);
-            this.root.remove(fallback);
-            this.root.add(scene);
+            blocks.remove(fallback);
+            models.add(scene);
           } catch {
             // Bryła zastępcza zostaje (ten sam collider).
           }
         },
       ),
     );
+    if (this.disposed) return;
+    // Statyczne bryły i modele bloków: jedna siatka na materiał (jak w pokojach).
+    batchStaticGeometry(blocks, this.geometries);
+    batchStaticGeometry(models, this.geometries);
   }
 
   private spawnPosition(): Vec3 {
