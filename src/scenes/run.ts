@@ -25,6 +25,7 @@ import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
 import type { RunScreens } from '../ui/runScreens';
 import { CommandRegistry } from '../ui/debugCommands';
+import { preserveLiteFx } from '../render/fxMode';
 import { registerMetaCommands } from '../ui/metaCommands';
 import type { MetaCommandsHandle } from '../ui/metaCommands';
 import { roomDefinitions } from '../world/rooms';
@@ -357,6 +358,7 @@ export class RunScene implements Scene {
           const params = new URLSearchParams({ scene: 'hub' });
           if (new URLSearchParams(location.search).get('debug') === '1')
             params.set('debug', '1');
+          preserveLiteFx(new URLSearchParams(location.search), params);
           location.assign(`/?${params}`);
         },
         menu: () => {

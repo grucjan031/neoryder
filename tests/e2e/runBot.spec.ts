@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
-const URL = '/?scene=run&seed=bot-1&loadout=classic&debug=1';
+const URL = '/?scene=run&seed=bot-1&loadout=classic&debug=1&fx=lite';
 
 test('bot: cała mapa z cheatami do zwycięstwa nad bossem', async ({ page }) => {
   // Osiem warstw przy renderowaniu programowym przekracza 120 s.
-  test.setTimeout(300_000);
+  // Lokalnie ok. 2 min; na runnerze CI zakładamy do 3x wolniej.
+  test.setTimeout(600_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -17,15 +18,23 @@ test('bot: cała mapa z cheatami do zwycięstwa nad bossem', async ({ page }) =>
   const command = (text: string) =>
     page.evaluate((cmd) => window.__neoryder?.command(cmd), text);
 
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   const layers = ((await query('map')) as { layers: unknown[][] }).layers
     .length;
   const started = Date.now();
   for (let layer = 0; layer < layers; layer++) {
-    await expect.poll(() => query('screen')).toBe('map');
+    await expect
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+      .toBe('map');
     await page.keyboard.press('Digit1');
-    await expect.poll(() => query('loading'), { timeout: 30_000 }).toBe(false);
-    await expect.poll(() => query('screen')).toMatch(/^(room|shop|rest)$/);
+    await expect
+      .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+      .toBe(false);
+    await expect
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+      .toMatch(/^(room|shop|rest)$/);
     if ((await query('room')) === 'bossRoom') break;
     if ((await query('screen')) === 'room') {
       await command('run clear');
@@ -58,6 +67,7 @@ test('bot: cała mapa z cheatami do zwycięstwa nad bossem', async ({ page }) =>
 });
 
 test('bot: śmierć -> podsumowanie porażki -> Menu', async ({ page }) => {
+  test.setTimeout(2 * LOAD_TIMEOUT + SIM_TIMEOUT);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -66,9 +76,13 @@ test('bot: śmierć -> podsumowanie porażki -> Menu', async ({ page }) => {
   await page.goto(URL);
   const query = (name: string) =>
     page.evaluate((key) => window.__neoryder?.query(key), name);
-  await expect.poll(() => query('screen')).toBe('map');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   await page.keyboard.press('Digit1');
-  await expect.poll(() => query('loading'), { timeout: 30_000 }).toBe(false);
+  await expect
+    .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+    .toBe(false);
   await page.evaluate(() => window.__neoryder?.command('hurt 9999'));
   await expect.poll(() => query('screen')).toBe('summary');
   await expect(page.getByText('Porażka', { exact: true })).toBeVisible();

@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 test('arena: gunner switches weapon slots and swaps blade/gun with R', async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/?scene=arena&debug=1&seed=loadout-e2e&loadout=gunner');
+  await page.goto(
+    '/?scene=arena&debug=1&fx=lite&seed=loadout-e2e&loadout=gunner',
+  );
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('arena');
   const weapon = page.locator('.hud__weapon-name');
   await expect(weapon).toHaveText('Karabin');

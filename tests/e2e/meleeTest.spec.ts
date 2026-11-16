@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 test('melee-test: cios ostrzem rani manekina, blok redukuje obrażenia', async ({
   page,
@@ -9,9 +9,11 @@ test('melee-test: cios ostrzem rani manekina, blok redukuje obrażenia', async (
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=melee-test&debug=1&seed=melee-e2e');
+  await page.goto('/?scene=melee-test&debug=1&fx=lite&seed=melee-e2e');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('melee-test');
   const canvas = page.getByLabel('Scena NEORYDER');
   await canvas.click({ position: { x: 640, y: 360 } });

@@ -21,6 +21,13 @@ import sfxData from './data/audio/sfx.json';
 import { loadSettings } from './core/save';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
+import {
+  LITE_MAX_STEPS_PER_FRAME,
+  LITE_PIXEL_RATIO,
+  configureFx,
+  getLiteFx,
+  preserveLiteFx,
+} from './render/fxMode';
 import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
 import './ui/styles.css';
 import './ui/pointerLockHint.css';
@@ -29,6 +36,7 @@ async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) throw new Error('Brak elementu aplikacji.');
   const params = new URLSearchParams(location.search);
+  configureFx(params);
   const requested = params.get('scene');
   const debug = import.meta.env.DEV || params.get('debug') === '1';
   if (requested === null) {
@@ -59,8 +67,10 @@ async function main(): Promise<void> {
     Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
       value.toString(16),
     ).join('-');
-  const renderer = new WebGLRenderer({ antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
+  const renderer = new WebGLRenderer({ antialias: !getLiteFx() });
+  renderer.setPixelRatio(
+    getLiteFx() ? LITE_PIXEL_RATIO : window.devicePixelRatio,
+  );
   renderer.domElement.tabIndex = 0;
   renderer.domElement.setAttribute('aria-label', 'Scena NEORYDER');
   app.append(renderer.domElement);
@@ -87,38 +97,41 @@ async function main(): Promise<void> {
   const bus = new EventBus();
   pipeline.bindEvents(bus);
   const stats = debug ? new StatsPanel() : undefined;
-  const loop = new GameLoop({
-    step: (dt) => {
-      profiler?.begin('step');
-      try {
-        scene.step(dt, input.snapshot());
-      } finally {
-        profiler?.end();
-      }
+  const loop = new GameLoop(
+    {
+      step: (dt) => {
+        profiler?.begin('step');
+        try {
+          scene.step(dt, input.snapshot());
+        } finally {
+          profiler?.end();
+        }
+      },
+      render: (alpha, frameDt) => {
+        stats?.begin();
+        if (camera.fov !== tuning.camera.fov) {
+          camera.fov = tuning.camera.fov;
+          camera.updateProjectionMatrix();
+        }
+        feel.update(frameDt);
+        profiler?.begin('sceneRender');
+        try {
+          scene.render(alpha, frameDt);
+        } finally {
+          profiler?.end();
+        }
+        profiler?.begin('pipeline');
+        try {
+          pipeline.render(three, camera, frameDt);
+        } finally {
+          profiler?.end();
+          profiler?.endFrame(three, frameDt);
+        }
+        stats?.end();
+      },
     },
-    render: (alpha, frameDt) => {
-      stats?.begin();
-      if (camera.fov !== tuning.camera.fov) {
-        camera.fov = tuning.camera.fov;
-        camera.updateProjectionMatrix();
-      }
-      feel.update(frameDt);
-      profiler?.begin('sceneRender');
-      try {
-        scene.render(alpha, frameDt);
-      } finally {
-        profiler?.end();
-      }
-      profiler?.begin('pipeline');
-      try {
-        pipeline.render(three, camera, frameDt);
-      } finally {
-        profiler?.end();
-        profiler?.endFrame(three, frameDt);
-      }
-      stats?.end();
-    },
-  });
+    getLiteFx() ? { maxStepsPerFrame: LITE_MAX_STEPS_PER_FRAME } : {},
+  );
   // Dźwięk przed sceną: musi usłyszeć entity_spawned gracza z init() sceny.
   const audio = new AudioSystem(bus, loadSfx(sfxData), {
     createContext: () =>
@@ -190,6 +203,7 @@ async function main(): Promise<void> {
     hub: () => {
       const query = new URLSearchParams({ scene: 'hub' });
       if (params.get('debug') === '1') query.set('debug', '1');
+      preserveLiteFx(params, query);
       location.assign(`/?${query}`);
     },
     menu: () => location.assign('/'),

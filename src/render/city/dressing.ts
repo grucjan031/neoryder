@@ -1,6 +1,7 @@
 import type { Camera, Object3D } from 'three';
 import { tuning } from '../../core/tuning';
 import { getQuality } from '../quality';
+import { getLiteFx } from '../fxMode';
 import { AmbientFx } from '../../vfx/ambientFx';
 import { Weather } from '../../vfx/weather';
 import type {
@@ -73,11 +74,11 @@ export class CityDressing {
       this.decals = new DecalRenderer(layout.decals);
       roots.push(this.decals.root);
     }
-    if (layout.ambientFx?.length) {
+    if (layout.ambientFx?.length && !getLiteFx()) {
       this.ambient = new AmbientFx(layout.ambientFx, floorY, `${seed}:ambient`);
       roots.push(this.ambient.root);
     }
-    if (theme.rain.enabled) {
+    if (theme.rain.enabled && !getLiteFx()) {
       this.weather = new Weather(
         theme.rain,
         floorY,

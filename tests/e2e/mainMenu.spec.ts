@@ -1,3 +1,4 @@
+import { LOAD_TIMEOUT } from './helpers';
 import { expect, test } from '@playwright/test';
 import type { RunSave } from '../../src/core/save';
 import type { RunState } from '../../src/core/runTypes';
@@ -24,9 +25,11 @@ test('menu pokazuje Kryjówkę, Kontynuuj run i Poligon; Poligon otwiera arenę'
 test('odświeżenie i Kontynuuj zachowują zapisany węzeł, Kredyty i implanty', async ({
   page,
 }) => {
-  await page.goto('/?scene=run&seed=resume-e2e&loadout=blade&debug=1');
+  await page.goto('/?scene=run&seed=resume-e2e&loadout=blade&debug=1&fx=lite');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.query('screen')))
+    .poll(() => page.evaluate(() => window.__neoryder?.query('screen')), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('map');
   // Stan mapy po pokoju jako fixture; walka i nagrody mają osobne testy.
   const saved = await page.evaluate(async () => {
@@ -77,7 +80,7 @@ test('odświeżenie i Kontynuuj zachowują zapisany węzeł, Kredyty i implanty'
     'data-node-id',
     saved.currentNodeId!,
   );
-  await page.goto('/?scene=run&continue=1&debug=1');
+  await page.goto('/?scene=run&continue=1&debug=1&fx=lite');
   await expect
     .poll(() =>
       page.evaluate(() => {

@@ -1,3 +1,4 @@
+import { LOAD_TIMEOUT } from './helpers';
 import { test, expect } from '@playwright/test';
 
 test('sfx-test: po kliknięciu kontekst audio działa i dźwięki się odtwarzają', async ({
@@ -8,9 +9,11 @@ test('sfx-test: po kliknięciu kontekst audio działa i dźwięki się odtwarzaj
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=sfx-test&debug=1');
+  await page.goto('/?scene=sfx-test&debug=1&fx=lite');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('sfx-test');
   await page.getByRole('button', { name: 'kill' }).click();
   await expect

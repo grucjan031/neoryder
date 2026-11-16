@@ -51,6 +51,7 @@ import type { HubTarget } from '../world/hubStations';
 import { HubDecor } from './hubDecor';
 import { HubNpcs } from './hubNpcs';
 import type { Scene } from './index';
+import { preserveLiteFx } from '../render/fxMode';
 
 export interface HubSceneOptions {
   layout?: HubLayout;
@@ -484,6 +485,7 @@ export class HubScene implements Scene {
   private go(params: URLSearchParams | Record<string, string>): void {
     const query = new URLSearchParams(params);
     if (this.params.get('debug') === '1') query.set('debug', '1');
+    preserveLiteFx(this.params, query);
     this.navigate(`?${query}`);
   }
 
