@@ -145,6 +145,12 @@ function advanceRewardDelay(scene: RunScene): void {
     scene.step(SIM_DT, idle);
 }
 
+/** Cisza po zwycięstwie nad bossem: pokój zostaje na ekranie, zanim pojawi się podsumowanie. */
+function advanceVictoryHold(scene: RunScene): void {
+  for (let i = 0; i <= Math.ceil(tuning.vfx.bossVictoryHoldS / SIM_DT); i++)
+    scene.step(SIM_DT, idle);
+}
+
 function handlerCount(bus: EventBus): number {
   const handlers = Reflect.get(bus, 'handlers') as Map<unknown, unknown[]>;
   return [...handlers.values()].reduce(
@@ -372,6 +378,7 @@ it('sklep i odpoczynek otwierają się automatycznie, boss z falami kończy run 
     } else {
       commands.execute('run clear');
       advanceRewardDelay(scene);
+      if (node.type === 'boss') advanceVictoryHold(scene);
       await scene.whenReady();
       if (node.type !== 'boss') screens.actions.next();
     }
@@ -602,6 +609,7 @@ it('węzeł boss: pokój bossa bez fal, boss pojawia się po wejściu, śmierć 
     commands.execute('kill all');
     for (let i = 0; i < 70; i++) scene.step(SIM_DT, idle);
   }
+  advanceVictoryHold(scene);
   await scene.whenReady();
   expect(scene.query('screen')).toBe('summary');
   expect(screens.view.summary?.outcome).toBe('victory');

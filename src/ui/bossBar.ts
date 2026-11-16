@@ -1,6 +1,7 @@
 import type { EntityId, EventBus } from '../core/events';
 import { tuning } from '../core/tuning';
 import text from '../data/ui/hud.pl.json';
+import { loadSettings } from '../core/save';
 import { getLiteFx } from '../render/fxMode';
 
 function element<K extends keyof HTMLElementTagNameMap>(
@@ -88,6 +89,7 @@ export class BossBar {
         delete this.node.dataset.phase;
         this.node.classList.remove('run-hud__boss--phase');
         this.verdict.hidden = true;
+        this.syncFlashes();
         this.node.hidden = false;
         // Zapowiedź: tylko animacja (sterowanie zostaje u gracza); w fx=lite pominięta.
         if (!getLiteFx()) restartAnimation(this.node, 'run-hud__boss--intro');
@@ -105,6 +107,7 @@ export class BossBar {
         this.phases = phases;
         this.node.dataset.phase = String(phase);
         this.setPhase(phase);
+        this.syncFlashes();
         this.node.classList.remove('run-hud__boss--intro');
         restartAnimation(this.node, 'run-hud__boss--phase');
       }),
@@ -119,6 +122,13 @@ export class BossBar {
       bus.on('enemy_killed', ({ id }) => this.hide(id, true)),
       bus.on('entity_despawned', ({ id }) => this.hide(id, false)),
     ];
+  }
+
+  /** Ustawienie „błyski” czytane przy każdym zdarzeniu: zmiana w pauzie działa od razu. */
+  private syncFlashes(): void {
+    const off = !loadSettings().flashes;
+    this.node.classList.toggle('run-hud__boss--no-flashes', off);
+    this.verdict.classList.toggle('run-hud__boss-verdict--no-flashes', off);
   }
 
   private setRatio(ratio: number): void {
@@ -147,6 +157,7 @@ export class BossBar {
     this.node.hidden = true;
     this.node.classList.remove('run-hud__boss--intro', 'run-hud__boss--phase');
     if (killed) {
+      this.syncFlashes();
       this.verdict.hidden = false;
       restartAnimation(this.verdict, 'run-hud__boss-verdict--show');
     }

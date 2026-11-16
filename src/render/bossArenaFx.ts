@@ -6,10 +6,12 @@ import {
   Group,
   IcosahedronGeometry,
   Mesh,
+  MultiplyBlending,
   PlaneGeometry,
   ShaderMaterial,
 } from 'three';
-import type { BufferGeometry } from 'three';
+import type { Blending, BufferGeometry } from 'three';
+import { loadSettings } from '../core/save';
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
@@ -29,8 +31,6 @@ export interface BossArenaFxOptions {
 
 const WAVES = 4;
 const COLUMNS = 4;
-const SPARK_RED = 0xff3028;
-const SPARK_HOT = 0xffd8bd;
 /** Wysokość nad podłogą: nad kałużami i kalkomaniami, bez migotania głębi. */
 const FLOOR_LIFT_M = 0.04;
 
@@ -39,9 +39,11 @@ const vertex = /* glsl */ `
   varying vec3 vNormal;
   varying vec3 vView;
   varying vec3 vLocal;
+  varying vec3 vWorld;
   void main() {
     vUv = uv;
     vLocal = position;
+    vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     vNormal = normalize(normalMatrix * normal);
     vView = normalize(-mv.xyz);
@@ -50,13 +52,28 @@ const vertex = /* glsl */ `
 `;
 
 const head = /* glsl */ `
-  uniform vec3 uColor, uHot;
+  uniform vec3 uColor, uHot, uShade;
   uniform float uOpacity, uTime, uProgress, uMode, uSpread, uRays, uSize;
+  uniform float uNearM, uFarM, uNearFill, uNearEdge;
   varying vec2 vUv;
   varying vec3 vNormal;
   varying vec3 vView;
   varying vec3 vLocal;
+  varying vec3 vWorld;
   const float PI = 3.14159265;
+  /** 1 tuż przy kamerze, 0 od uFarM: pole rażenia pod nogami gracza nie zalewa ekranu. */
+  float nearCamera() {
+    return 1.0 - smoothstep(uNearM, uFarM, distance(vWorld, cameraPosition));
+  }
+  /** Promień wachlarza o stałej szerokości w metrach (kąt 0 wzdłuż lokalnego +Z). */
+  float fanRay(float a, float r) {
+    float halfSpread = uSpread * 0.5;
+    float sector = 1.0 - smoothstep(halfSpread, halfSpread + 0.03, abs(a));
+    float t = (a + halfSpread) / max(uSpread, 1e-4) * (uRays - 1.0);
+    float nearest = abs(t - floor(t + 0.5)) * uSpread / max(uRays - 1.0, 1.0);
+    float width = nearest * r * uSize;
+    return (1.0 - smoothstep(0.05, 0.16, width)) * sector;
+  }
 `;
 
 /** Pole rażenia na podłodze. uMode: 0 uderzenie (okrąg), 1 wachlarz, 2 wezwanie, 3 tarcza. */
@@ -70,41 +87,75 @@ const zoneFragment = /* glsl */ `
     float a = atan(p.x, -p.y);
     float alpha = 0.0;
     float hot = 0.0;
+    float near = nearCamera();
+    float edge = mix(1.0, uNearEdge, near);
+    float fill = mix(1.0, uNearFill, near);
     if (uMode < 0.5) {
       float rim = smoothstep(0.93, 0.955, r) * (1.0 - smoothstep(0.985, 1.0, r));
       float inside = 1.0 - step(uProgress, r);
-      float front = smoothstep(uProgress - 0.14, uProgress, r) * inside;
+      // Blisko kamery czoło zwęża się do linii (wypełnienie daje cieniowanie mnożące).
+      float front = smoothstep(uProgress - mix(0.12, 0.02, near), uProgress, r) * inside;
       float ticks = step(0.5, fract(a / PI * 18.0)) * smoothstep(0.86, 0.93, r) * (1.0 - step(0.93, r));
-      alpha = rim + front * 0.75 + inside * (0.1 + 0.12 * uProgress) + ticks * 0.35 + 0.035;
+      alpha = (rim + ticks * 0.4) * edge + front * 0.75 * mix(1.0, 0.6, near) * edge + inside * 0.05 * fill;
       hot = front * 0.7 + rim * smoothstep(0.8, 1.0, uProgress);
     } else if (uMode < 1.5) {
-      float halfSpread = uSpread * 0.5;
-      float sector = 1.0 - smoothstep(halfSpread, halfSpread + 0.03, abs(a));
-      float t = (a + halfSpread) / max(uSpread, 1e-4) * (uRays - 1.0);
-      float nearest = abs(t - floor(t + 0.5)) * uSpread / max(uRays - 1.0, 1.0);
-      // Stała szerokość promienia w metrach niezależnie od odległości od bossa.
-      float width = nearest * r * uSize;
-      float ray = (1.0 - smoothstep(0.05, 0.16, width)) * sector;
+      float sector = 1.0 - smoothstep(uSpread * 0.5, uSpread * 0.5 + 0.03, abs(a));
+      float ray = fanRay(a, r);
       float reach = 1.0 - smoothstep(uProgress - 0.05, uProgress, r);
       float fade = pow(1.0 - r, 0.6) * smoothstep(0.03, 0.09, r);
       float tip = smoothstep(uProgress - 0.1, uProgress, r) * reach;
-      alpha = (ray * (0.75 + tip) + sector * 0.07) * reach * fade;
-      hot = ray * tip;
+      alpha = (ray * (0.75 + tip) * edge + sector * 0.04 * fill) * reach * fade;
+      // Rdzeń promienia ku bursztynowi: na fioletowej ulicy czerwień nie różowieje.
+      hot = ray * max(tip, 0.3);
     } else if (uMode < 2.5) {
       float rings = pow(abs(sin((r * 3.0 - uTime * 1.3) * PI)), 10.0);
       float spokes = pow(abs(sin(a * 3.0 + uTime * 1.6)), 24.0) * smoothstep(0.35, 0.6, r);
       float rim = smoothstep(0.93, 0.96, r) * (1.0 - smoothstep(0.985, 1.0, r));
-      alpha = (rings * 0.55 + spokes * 0.6 + rim) * (0.35 + 0.65 * uProgress) * (1.0 - r * 0.35);
+      alpha = (rings * 0.55 + spokes * 0.6 + rim) * (0.35 + 0.65 * uProgress) * (1.0 - r * 0.35) * edge;
       hot = spokes * uProgress;
     } else {
       float rings = pow(abs(sin((r * 3.0 + uTime * 1.8) * PI)), 10.0);
       float rim = smoothstep(0.93, 0.96, r) * (1.0 - smoothstep(0.985, 1.0, r));
       float core = (1.0 - smoothstep(0.0, 0.5, r)) * uProgress;
-      alpha = (rings * 0.5 + rim * 0.8 + core * 0.5) * (0.35 + 0.65 * uProgress);
+      alpha = (rings * 0.5 + rim * 0.8 + core * 0.5 * fill) * (0.35 + 0.65 * uProgress) * edge;
       hot = core;
     }
     vec3 color = mix(uColor, uHot, clamp(hot, 0.0, 1.0));
     gl_FragColor = vec4(color * 1.25, clamp(alpha * uOpacity, 0.0, 1.0));
+  }
+`;
+
+/**
+ * Cieniowanie mnożące pod polem rażenia i poświatą: tłumi zieleń i błękit podłogi, więc fiolet
+ * neonowej ulicy ciemnieje w szkarłat zamiast różowieć jak przy dodawaniu czerwieni (ADR 0006:
+ * magenta to Rezonans). Nie rozjaśnia, więc z bliska nie zalewa ekranu. uMode 4 = poświata.
+ */
+const shadeFragment = /* glsl */ `
+  ${head}
+  void main() {
+    vec2 p = vUv * 2.0 - 1.0;
+    float r = length(p);
+    if (r > 1.0) discard;
+    float a = atan(p.x, -p.y);
+    float amount = 0.0;
+    float rim = 1.0 - smoothstep(0.96, 1.0, r);
+    if (uMode < 0.5) {
+      float inside = 1.0 - smoothstep(uProgress - 0.03, uProgress, r);
+      amount = (0.3 + 0.4 * inside) * rim;
+    } else if (uMode < 1.5) {
+      float sector = 1.0 - smoothstep(uSpread * 0.5, uSpread * 0.5 + 0.03, abs(a));
+      float reach = 1.0 - smoothstep(uProgress - 0.05, uProgress, r);
+      // Ciemny pas pod każdym promieniem i lekki cień całego wycinka.
+      float lane = fanRay(a, r * 0.6);
+      amount = (sector * 0.35 * (1.0 - r * 0.7) + lane * 0.6) * reach * smoothstep(0.03, 0.09, r);
+    } else if (uMode < 3.5) {
+      amount = 0.4 * (1.0 - r * 0.5) * rim;
+    } else {
+      amount = pow(max(0.0, 1.0 - r), 1.4) * 0.7;
+    }
+    amount = clamp(amount * uOpacity * mix(1.0, uNearFill, nearCamera()), 0.0, 1.0);
+    // Mnożenie z premultiplied alpha: wynik = tło · mix(1, uShade, amount).
+    gl_FragColor = vec4(uShade * amount, amount);
   }
 `;
 
@@ -126,9 +177,10 @@ const glowFragment = /* glsl */ `
   ${head}
   void main() {
     float r = length(vUv * 2.0 - 1.0);
-    float glow = pow(max(0.0, 1.0 - r), 2.0);
+    float glow = pow(max(0.0, 1.0 - r), 3.0) * 0.6;
     float ring = smoothstep(0.52, 0.56, r) * (1.0 - smoothstep(0.58, 0.62, r));
-    gl_FragColor = vec4(mix(uColor, uHot, glow * 0.35), clamp((glow + ring * 0.35 * uProgress) * uOpacity, 0.0, 1.0));
+    float a = (glow * mix(1.0, uNearFill, nearCamera()) + ring * (0.25 + 0.35 * uProgress)) * uOpacity;
+    gl_FragColor = vec4(mix(uColor, uHot, glow * 0.35), clamp(a, 0.0, 1.0));
   }
 `;
 
@@ -187,6 +239,8 @@ interface Column {
   life: number;
   radius: number;
   height: number;
+  /** Wyłączone błyski: łagodne narastanie i niższa jasność słupa. */
+  soft: boolean;
 }
 
 const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
@@ -204,6 +258,9 @@ export class BossArenaFx {
   private readonly lite = getLiteFx();
   private readonly color: Color;
   private readonly hot: Color;
+  private readonly shade: Color;
+  private readonly sparkRed: number;
+  private readonly sparkHot: number;
   private readonly plane = new PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
   private readonly quad = new PlaneGeometry(2, 2);
   private readonly shell = new IcosahedronGeometry(1, 3);
@@ -214,7 +271,9 @@ export class BossArenaFx {
   );
   private readonly materials: ShaderMaterial[] = [];
   private readonly glow: FxMesh;
+  private readonly glowShade: FxMesh;
   private readonly zone: FxMesh;
+  private readonly zoneShade: FxMesh;
   private readonly aura: FxMesh;
   private readonly flare: FxMesh;
   private readonly waves: Wave[] = [];
@@ -242,8 +301,15 @@ export class BossArenaFx {
     private readonly opts: BossArenaFxOptions,
   ) {
     this.root.name = 'boss-arena-fx';
-    this.color = new Color(opts.tuning.vfx.bossColor);
-    this.hot = new Color(opts.tuning.vfx.bossHotColor);
+    const t = opts.tuning.vfx;
+    this.color = new Color(t.bossColor);
+    this.hot = new Color(t.bossHotColor);
+    this.shade = new Color(t.bossShadeColor);
+    this.sparkRed = this.color.getHex();
+    this.sparkHot = this.hot.getHex();
+    this.glowShade = this.mesh(this.plane, shadeFragment, MultiplyBlending);
+    this.glowShade.material.uniforms.uMode!.value = 4;
+    this.zoneShade = this.mesh(this.plane, shadeFragment, MultiplyBlending);
     this.glow = this.mesh(this.plane, glowFragment);
     this.zone = this.mesh(this.plane, zoneFragment);
     this.aura = this.mesh(this.shell, auraFragment);
@@ -268,6 +334,7 @@ export class BossArenaFx {
         life: 0,
         radius: 1,
         height: 1,
+        soft: false,
       });
     if (this.lite) return;
     this.off.push(
@@ -285,12 +352,10 @@ export class BossArenaFx {
         this.phases = phases;
         const boss = this.opts.enemy(id);
         if (!boss) return;
-        const t = this.opts.tuning.vfx;
         const p = boss.current.position;
         this.wave(p, t.bossWaveRadiusM, t.bossWaveS, 0, 1);
         this.wave(p, t.bossWaveRadiusM * 0.6, t.bossWaveS * 0.8, 0.14, 0.6);
-        this.flarePulse = 1;
-        this.lightFlash = 1;
+        this.pulse(1, 1);
         this.bus.emit('camera_shake', {
           intensity: t.bossPhaseShake,
           durationS: t.bossPhaseShakeS,
@@ -309,13 +374,35 @@ export class BossArenaFx {
     );
   }
 
-  private mesh(geometry: BufferGeometry, fragment: string): FxMesh {
+  /** Rozbłysk wizjera i błysk świateł; przy wyłączonych błyskach (ustawienia) mocno przygaszone. */
+  private pulse(flare: number, light: number): void {
+    const bright = loadSettings().flashes;
+    const t = this.opts.tuning.vfx;
+    this.flarePulse = Math.max(
+      this.flarePulse,
+      bright ? flare : flare * t.bossNoFlashFlare,
+    );
+    this.lightFlash = Math.max(this.lightFlash, bright ? light : 0);
+  }
+
+  private mesh(
+    geometry: BufferGeometry,
+    fragment: string,
+    blending: Blending = AdditiveBlending,
+  ): FxMesh {
+    const t = this.opts.tuning.vfx;
+    const multiply = blending === MultiplyBlending;
     const material = new ShaderMaterial({
       vertexShader: vertex,
       fragmentShader: fragment,
       uniforms: {
         uColor: { value: this.color },
         uHot: { value: this.hot },
+        uShade: { value: this.shade },
+        uNearM: { value: t.bossTelegraphNearM },
+        uFarM: { value: t.bossTelegraphFarM },
+        uNearFill: { value: t.bossTelegraphNearFill },
+        uNearEdge: { value: t.bossTelegraphNearEdge },
         uOpacity: { value: 0 },
         uTime: { value: 0 },
         uProgress: { value: 0 },
@@ -327,16 +414,18 @@ export class BossArenaFx {
       transparent: true,
       depthWrite: false,
       side: DoubleSide,
-      blending: AdditiveBlending,
+      blending,
+      premultipliedAlpha: multiply,
       toneMapped: false,
     });
-    material.userData.bloom = true;
+    // Cieniowanie mnożące tylko przyciemnia: bez bloomu, rysowane przed liniami.
+    material.userData.bloom = !multiply;
     this.materials.push(material);
     const mesh = new Mesh(geometry, material);
     mesh.userData.noOutline = true;
     mesh.frustumCulled = false;
     mesh.visible = false;
-    mesh.renderOrder = 6;
+    mesh.renderOrder = multiply ? 5 : 6;
     this.root.add(mesh);
     return mesh;
   }
@@ -367,6 +456,7 @@ export class BossArenaFx {
     slot.life = life;
     slot.radius = radius;
     slot.height = height;
+    slot.soft = !loadSettings().flashes;
     slot.mesh.position.set(at.x, this.opts.floorY, at.z);
   }
 
@@ -383,8 +473,7 @@ export class BossArenaFx {
     this.wave(p, t.bossWaveRadiusM * 1.15, t.bossWaveS * 1.25, 0.18, 1);
     this.wave(p, t.bossWaveRadiusM * 1.15, t.bossWaveS * 1.7, 0.5, 0.5);
     this.column(p, 1.5, 34, t.bossDeathFxS);
-    this.flarePulse = 1;
-    this.lightFlash = 1.4;
+    this.pulse(1, 1.4);
     this.bus.emit('camera_shake', {
       intensity: t.bossDeathShake,
       durationS: t.bossDeathShakeS,
@@ -456,7 +545,8 @@ export class BossArenaFx {
         this.glow.scale.setScalar(t.bossGlowRadiusM * (1.4 + k * 1.6));
         this.glow.material.uniforms.uOpacity!.value = (1 - k) * 0.9;
       }
-      this.zone.visible = this.aura.visible = false;
+      this.zone.visible = this.zoneShade.visible = this.aura.visible = false;
+      this.glowShade.visible = false;
       this.flare.visible = this.deathS >= 0 && this.flarePulse > 0.01;
       if (this.flare.visible) {
         this.flare.position.set(
@@ -490,7 +580,7 @@ export class BossArenaFx {
       this.introS += dt;
       if (!this.woke && this.introS >= t.bossWakeAtS) {
         this.woke = true;
-        this.flarePulse = 1;
+        this.pulse(1, 0);
         this.wave(b.position, t.bossWaveRadiusM, t.bossWaveS * 1.2, 0, 0.9);
       }
       presence = this.woke ? clamp01((this.introS - t.bossWakeAtS) / 0.35) : 0;
@@ -499,7 +589,7 @@ export class BossArenaFx {
 
     const telegraph = b.state === 'telegraph' && !!b.attack;
     const shift = b.state === 'recovery' && !b.attack;
-    if (telegraph && this.lastState !== 'telegraph') this.flarePulse = 0.85;
+    if (telegraph && this.lastState !== 'telegraph') this.pulse(0.85, 0);
     // Trafienie uderzenia: krótki błysk pola i fala o promieniu ataku.
     if (b.state === 'swing' && this.lastState === 'telegraph') {
       const slam =
@@ -521,8 +611,12 @@ export class BossArenaFx {
       presence *
       (0.3 + this.phase * 0.08 + beat * 0.12 + (telegraph ? 0.25 : 0));
     this.glow.material.uniforms.uProgress!.value = this.phase / this.phases;
+    this.glowShade.visible = this.glow.visible;
+    this.glowShade.position.copy(this.glow.position);
+    this.glowShade.scale.copy(this.glow.scale);
+    this.glowShade.material.uniforms.uOpacity!.value = presence;
 
-    this.zone.visible = false;
+    this.zone.visible = this.zoneShade.visible = false;
     if (telegraph && b.attack) {
       const pattern = this.pattern(boss, b.attack.kind);
       const progress = clamp01(time / Math.max(b.attack.telegraphS, 1e-3));
@@ -553,6 +647,22 @@ export class BossArenaFx {
         // Wejście w 80 ms, pulsowanie tuż przed trafieniem.
         const urgency = progress > 0.75 ? 0.75 + 0.25 * Math.sin(time * 40) : 1;
         u.uOpacity!.value = clamp01(time / 0.08) * urgency;
+        const shade = this.zoneShade;
+        shade.visible = true;
+        shade.position.copy(this.zone.position);
+        shade.position.y -= 0.005;
+        shade.rotation.y = yaw;
+        shade.scale.setScalar(radius);
+        const su = shade.material.uniforms;
+        for (const key of [
+          'uMode',
+          'uSpread',
+          'uRays',
+          'uSize',
+          'uProgress',
+        ] as const)
+          su[key]!.value = u[key]!.value;
+        su.uOpacity!.value = clamp01(time / 0.08);
       }
     }
 
@@ -617,8 +727,9 @@ export class BossArenaFx {
       c.mesh.visible = k < 1;
       const r = c.radius * (0.25 + 0.75 * (1 - easeOut(k)));
       c.mesh.scale.set(r, c.height, r);
-      c.mesh.material.uniforms.uOpacity!.value =
-        Math.min(1, k * 14) * (1 - k) ** 1.2;
+      c.mesh.material.uniforms.uOpacity!.value = c.soft
+        ? Math.min(1, k * 3) * (1 - k) ** 1.2 * 0.55
+        : Math.min(1, k * 14) * (1 - k) ** 1.2;
     }
   }
 
@@ -626,9 +737,9 @@ export class BossArenaFx {
     this.deathS += dt;
     // Trzy rzuty iskier: wybuch, żar, dogasanie.
     const bursts: [number, number, number][] = [
-      [0, 46, SPARK_HOT],
-      [0.16, 34, SPARK_RED],
-      [0.42, 22, SPARK_RED],
+      [0, 46, this.sparkHot],
+      [0.16, 34, this.sparkRed],
+      [0.42, 22, this.sparkRed],
     ];
     while (this.deathSparks < bursts.length) {
       const [at, count, color] = bursts[this.deathSparks]!;

@@ -1609,16 +1609,23 @@ export class RoomScene implements Scene {
         return this.director.currentPhase;
       case 'enemies':
         return this.aliveEnemies();
-      case 'boss':
-        return this.boss && !this.boss.removed
-          ? {
-              id: this.boss.id,
-              phase: this.boss.phase,
-              hp: this.damage.health(this.boss.id)?.current ?? 0,
-              shield: this.boss.shield,
-              minions: this.boss.minionCount,
-            }
-          : null;
+      case 'boss': {
+        if (!this.boss || this.boss.removed) return null;
+        const snapshot = this.enemy(this.boss.id)?.current;
+        return {
+          id: this.boss.id,
+          phase: this.boss.phase,
+          hp: this.damage.health(this.boss.id)?.current ?? 0,
+          shield: this.boss.shield,
+          minions: this.boss.minionCount,
+          // Stan i pozycja tylko do podglądu (zrzuty telegrafów); bez wpływu na symulację.
+          state: snapshot?.state,
+          attack: snapshot?.attack?.kind,
+          stateTimeS: snapshot?.stateTimeS,
+          x: snapshot?.position.x,
+          z: snapshot?.position.z,
+        };
+      }
       case 'enemyDirector':
         return this.manager.director?.snapshot() ?? null;
       case 'playerLook': {
