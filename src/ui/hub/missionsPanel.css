@@ -55,6 +55,7 @@
     0 0 14px rgba(0, 229, 255, 0.2);
 }
 .missions-panel__level[data-state='selected']::before {
+  content: '◆ WYBRANY';
   content: '◆ WYBRANY' / '';
   font-size: 0.75em;
   font-weight: 700;

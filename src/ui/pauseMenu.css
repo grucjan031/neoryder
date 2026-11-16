@@ -40,6 +40,7 @@
     0 0 14px rgba(0, 229, 255, 0.4);
 }
 .pause-menu h1::before {
+  content: 'ISKRA // WSTRZYMANO';
   content: 'ISKRA // WSTRZYMANO' / '';
   display: block;
   margin-bottom: 6px;
@@ -115,7 +116,7 @@
   background: rgba(0, 229, 255, 0.24);
 }
 .pause-menu button:focus-visible {
-  outline: 1px solid var(--ui-cyan);
+  outline: 2px solid var(--ui-cyan);
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {

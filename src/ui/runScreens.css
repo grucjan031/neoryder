@@ -88,6 +88,7 @@
     0 0 12px rgba(0, 229, 255, 0.4);
 }
 .run-screen h1::before {
+  content: 'ISKRA // PROTOKÓŁ';
   content: 'ISKRA // PROTOKÓŁ' / '';
   display: block;
   margin-bottom: 5px;
@@ -99,21 +100,27 @@
   text-shadow: none;
 }
 .run-screen[data-screen='map'] h1::before {
+  content: 'SEKTOR KUROGANE // MAPA';
   content: 'SEKTOR KUROGANE // MAPA' / '';
 }
 .run-screen[data-screen='room'] h1::before {
+  content: 'SEKTOR KUROGANE // WĘZEŁ';
   content: 'SEKTOR KUROGANE // WĘZEŁ' / '';
 }
 .run-screen[data-screen='reward'] h1::before {
+  content: 'SYSTEM // MODYFIKACJA';
   content: 'SYSTEM // MODYFIKACJA' / '';
 }
 .run-screen[data-screen='shop'] h1::before {
+  content: 'CZARNY RYNEK // KONTRAKT';
   content: 'CZARNY RYNEK // KONTRAKT' / '';
 }
 .run-screen[data-screen='rest'] h1::before {
+  content: 'STREFA BUFOROWA // KALIBRACJA';
   content: 'STREFA BUFOROWA // KALIBRACJA' / '';
 }
 .run-screen[data-screen='summary'] h1::before {
+  content: 'TELEMETRIA // RAPORT';
   content: 'TELEMETRIA // RAPORT' / '';
 }
 .run-screen h1::after {
@@ -206,7 +213,7 @@
     inset 0 0 10px rgba(0, 229, 255, 0.08);
 }
 .run-screen button:not(.sector-map__node):focus-visible {
-  outline: 1px solid var(--hud-health, #00e5ff);
+  outline: 2px solid var(--hud-health, #00e5ff);
   outline-offset: 3px;
 }
 .run-screen button:active:not(:disabled, .sector-map__node) {
@@ -223,6 +230,7 @@
 }
 /* Podpowiedź klawisza 1 / 2 / 3. */
 .run-screen button[data-key]:not(.sector-map__node)::after {
+  content: attr(data-key);
   content: attr(data-key) / '';
   position: absolute;
   top: 50%;
@@ -489,6 +497,7 @@
   filter: saturate(0.6);
 }
 .run-screen .run-screen__card:disabled .run-screen__detail--price::after {
+  content: ' — za mało';
   content: ' — za mało' / '';
   font-weight: 500;
   letter-spacing: 0.04em;

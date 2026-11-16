@@ -55,6 +55,7 @@
     0 0 12px rgba(0, 229, 255, 0.4);
 }
 .hub-screen h1::before {
+  content: 'KRYJÓWKA ISKRY // STACJA';
   content: 'KRYJÓWKA ISKRY // STACJA' / '';
   display: block;
   margin-bottom: 5px;
@@ -114,7 +115,7 @@
   box-shadow: 0 0 16px rgba(0, 229, 255, 0.25);
 }
 .hub-screen__panel > button:focus-visible {
-  outline: 1px solid var(--ui-cyan, #00e5ff);
+  outline: 2px solid var(--ui-cyan, #00e5ff);
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {

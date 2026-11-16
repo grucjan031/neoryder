@@ -327,6 +327,7 @@ body:has(.hud) .hint {
     0 0 14px rgba(0, 229, 255, 0.4);
 }
 .build-select__title::before {
+  content: 'ISKRA // KONFIGURACJA';
   content: 'ISKRA // KONFIGURACJA' / '';
   display: block;
   margin-bottom: 6px;
@@ -433,9 +434,14 @@ body:has(.hud) .hint {
     inset 0 0 0 1px var(--card-accent),
     inset 0 0 24px var(--card-glow);
   outline: none;
+}
+.build-select__card:focus-visible {
+  outline: 2px solid var(--card-accent);
+  outline-offset: 3px;
   transform: translateY(-2px);
 }
 .build-select__card:focus-visible .build-select__name::after {
+  content: ' ◂';
   content: ' ◂' / '';
   color: var(--card-accent);
 }
@@ -531,6 +537,7 @@ body:has(.hud) .hint {
   background: rgba(0, 229, 255, 0.1);
 }
 .build-select__blade[aria-pressed='true'] .build-select__blade-name::before {
+  content: '◆ ';
   content: '◆ ' / '';
   color: var(--build-accent);
 }
@@ -541,7 +548,8 @@ body:has(.hud) .hint {
   outline: none;
 }
 .build-select__blade:focus-visible {
-  box-shadow: var(--ui-focus);
+  outline: 2px solid var(--build-accent);
+  outline-offset: 2px;
 }
 .build-select__blade-name {
   font-weight: 700;
@@ -594,5 +602,22 @@ body:has(.hud) .hint {
   .pause-menu,
   .settings-screen {
     zoom: 1.2;
+  }
+}
+
+/* Tryb wymuszonych kolorów (Windows): cienie znikają, więc fokus zawsze ma outline. */
+@media (forced-colors: active) {
+  .build-select__card:focus-visible,
+  .build-select__blade:focus-visible,
+  .run-screen button:focus-visible,
+  .run-screen .sector-map__node:focus-visible,
+  .pause-menu button:focus-visible,
+  .settings-screen :focus-visible,
+  .hub-screen button:focus-visible,
+  .hub-screen input:focus-visible,
+  .main-menu button:focus-visible,
+  .main-menu input:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
   }
 }

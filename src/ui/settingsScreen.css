@@ -49,6 +49,7 @@
     0 0 14px rgba(0, 229, 255, 0.4);
 }
 .settings-screen h1::before {
+  content: 'ISKRA // KALIBRACJA IMPLANTU';
   content: 'ISKRA // KALIBRACJA IMPLANTU' / '';
   display: block;
   margin-bottom: 6px;
