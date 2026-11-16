@@ -257,6 +257,16 @@ export const tuning = {
     outlineDepthThreshold: 0.025,
     outlineNormalThreshold: 0.2,
     outlineColor: '#30343b',
+    /**
+     * Kontur z odległością (m od kamery): od outlineFadeNear do outlineFadeFar linie wewnątrz
+     * bryły (krawędzie normalnych) słabną do outlineFarNormal (0 = znikają, 1 = bez zmian),
+     * a obrys sylwetki (krawędź głębi) w ułamku outlineFarOuter rysuje się tylko po stronie tła.
+     * Dzięki temu dalecy wrogowie zostają czerwonymi bryłami z cienkim obrysem.
+     */
+    outlineFadeNear: 6,
+    outlineFadeFar: 16,
+    outlineFarNormal: 0,
+    outlineFarOuter: 1,
     hemiIntensity: 0.6,
     keyIntensity: 2.4,
     /** Przełączniki jakości: 0 pomija pass (słaby sprzęt). */
