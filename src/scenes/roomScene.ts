@@ -66,6 +66,7 @@ import { PlayerController } from '../player/playerController';
 import { staminaStatsSchema } from '../player/stamina';
 import type { PlayerState } from '../player/playerController';
 import { BeamRenderer } from '../render/beamRenderer';
+import { BossArenaFx } from '../render/bossArenaFx';
 import { BarrierRenderer } from '../render/barrierRenderer';
 import { LightningRenderer } from '../render/lightningRenderer';
 import { BarrierPower } from '../combat/powers/barrier';
@@ -190,6 +191,8 @@ export class RoomScene implements Scene {
   private director!: WaveDirector;
   /** Tryb bossa (layout.bossEnemy): bez fal, pokój kończy śmierć bossa. */
   private boss: Boss | null = null;
+  /** Oprawa walki z bossem (kosmetyka); tylko w pokoju bossa. */
+  private bossFx?: BossArenaFx;
   private player!: PlayerController;
   private previous!: PlayerState;
   private fpsCamera!: FpsCamera;
@@ -239,6 +242,8 @@ export class RoomScene implements Scene {
     { role: 'entry' | 'exit'; mesh: Mesh; collider: Collider }
   >();
   private god = false;
+  /** Cisza po zwycięstwie nad bossem (RunScene): gracz nietykalny, bez pocisków i statusów. */
+  private victoryHold = false;
   private passiveEncounter = false;
   private readonly manualEncounter: boolean;
   private kills = 0;
@@ -623,8 +628,17 @@ export class RoomScene implements Scene {
       type: this.node.type,
       layer: this.node.layer,
     });
-    if (this.layout.bossEnemy) this.spawnBoss(this.layout.bossEnemy);
-    else this.director.start();
+    if (this.layout.bossEnemy) {
+      this.bossFx = new BossArenaFx(ctx.bus, {
+        enemy: (id) => this.enemy(id),
+        floorY: this.layout.playerSpawn.y,
+        tuning: ctx.tuning,
+        burstSparks: (point, count, color) =>
+          this.hitSparks.burst(point, null, color, count),
+      });
+      this.root.add(this.bossFx.root);
+      this.spawnBoss(this.layout.bossEnemy);
+    } else this.director.start();
     if (this.manualEncounter) this.director.stop();
     if (this.health.dead) this.onPlayerDied();
     this.render(1);
@@ -1131,7 +1145,9 @@ export class RoomScene implements Scene {
     this.explosionView.render(frameDt);
     this.statusView.render(alpha, frameDt);
     this.hitSparksView.render(frameDt);
+    this.bossFx?.render(alpha, frameDt);
     this.lights.sync();
+    this.bossFx?.applyLights(this.lights);
     this.atmosphere?.sync(frameDt);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
@@ -1188,6 +1204,21 @@ export class RoomScene implements Scene {
   }
 
   // ----------------------------------------------------------------- śmierć i reset
+
+  enterVictoryHold(): void {
+    if (this.victoryHold || this.disposed) return;
+    this.victoryHold = true;
+    this.director.stop();
+    this.projectiles.dispose();
+    this.statuses.reset();
+    // Zagrożenia, beczki i sługi dalej żyją w tle, ale nie zadają już graczowi obrażeń.
+    this.playerStats.add({
+      stat: 'damageTaken',
+      type: 'mult',
+      value: 0,
+      source: 'victory-hold',
+    });
+  }
 
   private onPlayerDied(): void {
     this.state = 'dead';
@@ -1595,16 +1626,23 @@ export class RoomScene implements Scene {
         return this.director.currentPhase;
       case 'enemies':
         return this.aliveEnemies();
-      case 'boss':
-        return this.boss && !this.boss.removed
-          ? {
-              id: this.boss.id,
-              phase: this.boss.phase,
-              hp: this.damage.health(this.boss.id)?.current ?? 0,
-              shield: this.boss.shield,
-              minions: this.boss.minionCount,
-            }
-          : null;
+      case 'boss': {
+        if (!this.boss || this.boss.removed) return null;
+        const snapshot = this.enemy(this.boss.id)?.current;
+        return {
+          id: this.boss.id,
+          phase: this.boss.phase,
+          hp: this.damage.health(this.boss.id)?.current ?? 0,
+          shield: this.boss.shield,
+          minions: this.boss.minionCount,
+          // Stan i pozycja tylko do podglądu (zrzuty telegrafów); bez wpływu na symulację.
+          state: snapshot?.state,
+          attack: snapshot?.attack?.kind,
+          stateTimeS: snapshot?.stateTimeS,
+          x: snapshot?.position.x,
+          z: snapshot?.position.z,
+        };
+      }
       case 'enemyDirector':
         return this.manager.director?.snapshot() ?? null;
       case 'playerLook': {
@@ -1713,6 +1751,7 @@ export class RoomScene implements Scene {
     this.beamView.dispose();
     this.lightningView.dispose();
     this.explosionView.dispose();
+    this.bossFx?.dispose();
     this.shatter.dispose();
     this.debrisView.dispose();
     this.statusVfx.dispose();

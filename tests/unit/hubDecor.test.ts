@@ -12,11 +12,19 @@ it('okładziny kryjówki są jednostronne i zwrócone od ściany do wnętrza', (
     (panel) => panel.kind === 'tiles',
   );
   const decor = new HubDecor(panels, []);
-  for (const [index, object] of decor.root.children.entries()) {
-    const mesh = object as Mesh<Mesh['geometry'], MeshBasicMaterial>;
-    expect(mesh.material.side).toBe(FrontSide);
-    expect(mesh.material.depthTest).toBe(true);
-    const panel = panels[index]!;
+  // Po scalaniu geometrii siatek jest mniej niż paneli: materiały sprawdzamy
+  // na wszystkich siatkach, a orientację na każdym panelu z danych.
+  let meshes = 0;
+  decor.root.traverse((object) => {
+    if (!(object instanceof Mesh)) return;
+    meshes++;
+    const material = (object as Mesh<Mesh['geometry'], MeshBasicMaterial>)
+      .material;
+    expect(material.side).toBe(FrontSide);
+    expect(material.depthTest).toBe(true);
+  });
+  expect(meshes).toBeGreaterThan(0);
+  for (const panel of panels) {
     const nx = Math.sin(panel.yaw);
     const nz = Math.cos(panel.yaw);
     if (Math.abs(panel.position.x) > 19)

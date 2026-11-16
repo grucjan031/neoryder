@@ -29,6 +29,8 @@ import type {
   RunScreenView,
 } from '../../src/ui/runScreens';
 import { kuroganeSector } from '../../src/world/sectors';
+import { configureFx } from '../../src/render/fxMode';
+import type { DamageSystem } from '../../src/combat/damage';
 
 const idle = {
   held: new Set<never>(),
@@ -142,6 +144,12 @@ class FakeRoom implements RunRoom {
 
 function advanceRewardDelay(scene: RunScene): void {
   for (let i = 0; i < Math.ceil(tuning.run.rewardDelayS / SIM_DT); i++)
+    scene.step(SIM_DT, idle);
+}
+
+/** Cisza po zwycięstwie nad bossem: pokój zostaje na ekranie, zanim pojawi się podsumowanie. */
+function advanceVictoryHold(scene: RunScene): void {
+  for (let i = 0; i <= Math.ceil(tuning.vfx.bossVictoryHoldS / SIM_DT); i++)
     scene.step(SIM_DT, idle);
 }
 
@@ -372,6 +380,7 @@ it('sklep i odpoczynek otwierają się automatycznie, boss z falami kończy run 
     } else {
       commands.execute('run clear');
       advanceRewardDelay(scene);
+      if (node.type === 'boss') advanceVictoryHold(scene);
       await scene.whenReady();
       if (node.type !== 'boss') screens.actions.next();
     }
@@ -575,15 +584,31 @@ function bossRunState(): RunState {
 async function bossRun() {
   const save = new MemorySave();
   save.state = bossRunState();
+  const rooms: RoomScene[] = [];
   const made = setup({
     save,
     params: new URLSearchParams('continue=1'),
     createRoom: (layout, run, waves) => {
       expect(waves.waves).toHaveLength(0);
-      return new RoomScene(layout, run, waves, { loadModels: false });
+      const room = new RoomScene(layout, run, waves, { loadModels: false });
+      rooms.push(room);
+      return room;
     },
   });
-  return { ...(await made), save };
+  return { ...(await made), save, rooms };
+}
+
+/** Boss do ostatniej fazy (z `god`), bez ostatniego ciosu. */
+async function bossToLastPhase(): Promise<Awaited<ReturnType<typeof bossRun>>> {
+  const run = await bossRun();
+  run.screens.actions.selectNode('B');
+  await run.scene.whenReady();
+  run.commands.execute('god');
+  for (let n = 0; n < 2; n++) {
+    run.commands.execute('kill all');
+    for (let i = 0; i < 70; i++) run.scene.step(SIM_DT, idle);
+  }
+  return run;
 }
 
 it('węzeł boss: pokój bossa bez fal, boss pojawia się po wejściu, śmierć bossa kończy run zwycięstwem bez nagrody', async () => {
@@ -602,6 +627,7 @@ it('węzeł boss: pokój bossa bez fal, boss pojawia się po wejściu, śmierć 
     commands.execute('kill all');
     for (let i = 0; i < 70; i++) scene.step(SIM_DT, idle);
   }
+  advanceVictoryHold(scene);
   await scene.whenReady();
   expect(scene.query('screen')).toBe('summary');
   expect(screens.view.summary?.outcome).toBe('victory');
@@ -662,3 +688,79 @@ it.each(['event', 'command'] as const)(
     ).toHaveLength(1);
   },
 );
+
+it('cisza po zwycięstwie: pokój zostaje na ekranie, podsumowanie dopiero po ciszy', async () => {
+  const { scene, screens, commands } = await bossToLastPhase();
+  commands.execute('kill all');
+  scene.step(SIM_DT, idle);
+  const half = Math.floor(tuning.vfx.bossVictoryHoldS / SIM_DT / 2);
+  for (let i = 0; i < half; i++) scene.step(SIM_DT, idle);
+  await scene.whenReady();
+  expect(scene.query('victoryHold')).toBeGreaterThan(0);
+  expect(scene.query('screen')).toBe('room');
+  expect(scene.query('room')).toBe('bossRoom');
+  expect(screens.view.summary ?? null).toBeNull();
+  advanceVictoryHold(scene);
+  await scene.whenReady();
+  expect(scene.query('victoryHold')).toBeNull();
+  expect(scene.query('screen')).toBe('summary');
+  expect(screens.view.summary?.outcome).toBe('victory');
+});
+
+it('cisza po zwycięstwie: pocisk w locie i obrażenia nie zabijają gracza (bez god)', async () => {
+  const { scene, screens, commands, rooms } = await bossToLastPhase();
+  const deaths: number[] = [];
+  const ctx = Reflect.get(scene, 'ctx') as GameContext;
+  ctx.bus.on('player_died', ({ id }) => deaths.push(id));
+  commands.execute('god');
+  const boss = scene.query('boss') as { id: number };
+  const player = scene.query('playerPos') as {
+    x: number;
+    y: number;
+    z: number;
+  };
+  rooms.at(-1)!.fireEncounterProjectile({
+    owner: boss.id,
+    team: 'enemy',
+    origin: { x: player.x + 4, y: player.y, z: player.z },
+    dir: { x: -1, y: 0, z: 0 },
+    speed: 4,
+    damage: 9999,
+    tags: ['#test'],
+  });
+  commands.execute('kill all');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('victoryHold')).toBeGreaterThan(0);
+  // Obrażenia zadane wprost w pokoju (komenda hurt runu w ciszy już nie dociera do pokoju).
+  const room = rooms.at(-1)!;
+  (Reflect.get(room, 'damage') as DamageSystem).deal(room.playerId, {
+    source: null,
+    amount: 9999,
+    tags: ['#test'],
+  });
+  for (let i = 0; i < 60; i++) scene.step(SIM_DT, idle);
+  expect(scene.query('playerHp')).toBeGreaterThan(0);
+  expect(deaths).toEqual([]);
+  advanceVictoryHold(scene);
+  await scene.whenReady();
+  expect(screens.view.summary?.outcome).toBe('victory');
+  expect(scene.query('runLog')).not.toContainEqual({
+    event: 'run_ended',
+    outcome: 'death',
+  });
+});
+
+it('fx=lite pomija ciszę po zwycięstwie', async () => {
+  configureFx(new URLSearchParams('debug=1&fx=lite'));
+  try {
+    const { scene, screens, commands } = await bossToLastPhase();
+    commands.execute('kill all');
+    for (let i = 0; i < 3; i++) scene.step(SIM_DT, idle);
+    await scene.whenReady();
+    expect(scene.query('victoryHold')).toBeNull();
+    expect(scene.query('screen')).toBe('summary');
+    expect(screens.view.summary?.outcome).toBe('victory');
+  } finally {
+    configureFx(new URLSearchParams());
+  }
+});

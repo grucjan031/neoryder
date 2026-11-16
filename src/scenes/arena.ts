@@ -1,7 +1,10 @@
 import { blockMaterialSchema, dressingFields } from '../world/dressingSchema';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { batchStaticGeometry } from '../render/staticBatch';
 import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
+import { cloneRoomModel } from './roomModels';
+import { placeBlockModel } from './roomScene';
 import { FppViewModel } from '../render/fppViewModel';
 import {
   queryBladeArc,
@@ -10,8 +13,7 @@ import {
 } from '../combat/melee/bladeQueries';
 import { FlyingBlade } from '../render/flyingBlade';
 import { BoxGeometry, Euler, Group, Mesh, Quaternion } from 'three';
-import type { BufferGeometry, Material, Scene as ThreeScene } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { BufferGeometry, Scene as ThreeScene } from 'three';
 import type { World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
 import type { GameContext } from '../core/context';
@@ -59,7 +61,7 @@ import { resolveLoadout } from '../progression/patches';
 import type { ResolvedLoadout } from '../progression/patches';
 import { SynergySystem } from '../progression/synergies';
 import { createStyleLights } from '../render/lights';
-import { applyStyle, getMaterial } from '../render/materials';
+import { getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { BuildSelect } from '../ui/buildSelect';
 import { Hud } from '../ui/hud';
@@ -471,7 +473,11 @@ export class Arena implements Scene {
   // ----------------------------------------------------------------- budowa
 
   private async buildLayout(): Promise<void> {
-    const loader = new GLTFLoader();
+    const blocks = new Group();
+    blocks.name = 'static-blocks';
+    const models = new Group();
+    models.name = 'static-models';
+    this.root.add(blocks, models);
     await Promise.all(
       layout.blocks.map(
         async ({ size, position, model, material: blockMaterial }) => {
@@ -489,7 +495,7 @@ export class Arena implements Scene {
             (model?.startsWith('crate') ? 'interactive' : 'world');
           const fallback = new Mesh(geometry, getMaterial(material));
           fallback.position.set(position.x, position.y, position.z);
-          this.root.add(fallback);
+          blocks.add(fallback);
           const file = model?.startsWith('city_')
             ? model
             : model
@@ -497,52 +503,29 @@ export class Arena implements Scene {
               : undefined;
           if (!file || !this.loadModels) return;
           try {
-            if (file.startsWith('city_')) {
-              const scene = await cloneCityModel(file);
-              if (!scene || this.disposed) return;
-              if (blockMaterial)
-                scene.traverse((node) => {
-                  if (node instanceof Mesh)
-                    node.material = getMaterial(blockMaterial);
-                });
-              scene.position.set(
-                position.x,
-                position.y - size.y / 2,
-                position.z,
-              );
-              this.root.remove(fallback);
-              this.root.add(scene);
-              return;
-            }
-            const { scene } = await loader.loadAsync(
-              `/assets/models/${file}.glb`,
-            );
-            if (this.disposed) return;
-            const materials = new Set<Material>();
-            scene.traverse((node) => {
-              if (!(node instanceof Mesh)) return;
-              this.geometries.add(node.geometry);
-              for (const m of Array.isArray(node.material)
-                ? node.material
-                : [node.material])
-                materials.add(m);
-            });
-            applyStyle(scene);
-            for (const m of materials) m.dispose();
-            if (blockMaterial)
+            // Ten sam montaż co w pokojach (cache szablonów + placeBlockModel).
+            const scene = file.startsWith('city_')
+              ? await cloneCityModel(file)
+              : await cloneRoomModel(file);
+            if (!scene || this.disposed) return;
+            if (blockMaterial && !file.startsWith('city_'))
               scene.traverse((node) => {
                 if (node instanceof Mesh)
                   node.material = getMaterial(blockMaterial);
               });
-            scene.position.set(position.x, position.y - size.y / 2, position.z);
-            this.root.remove(fallback);
-            this.root.add(scene);
+            placeBlockModel(scene, file, size, position);
+            blocks.remove(fallback);
+            models.add(scene);
           } catch {
             // Bryła zastępcza zostaje (ten sam collider).
           }
         },
       ),
     );
+    if (this.disposed) return;
+    // Statyczne bryły i modele bloków: jedna siatka na materiał (jak w pokojach).
+    batchStaticGeometry(blocks, this.geometries);
+    batchStaticGeometry(models, this.geometries);
   }
 
   private spawnPosition(): Vec3 {

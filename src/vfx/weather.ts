@@ -5,9 +5,10 @@ import {
   DynamicDrawUsage,
   Group,
   InstancedMesh,
+  Matrix4,
   MeshBasicMaterial,
-  Object3D,
   PlaneGeometry,
+  Quaternion,
   Vector3,
 } from 'three';
 import type { Camera } from 'three';
@@ -65,7 +66,8 @@ export class Weather {
   stormEnabled = false;
   private readonly drops: Vector3[];
   private readonly rng: Rng;
-  private readonly dummy = new Object3D();
+  private readonly tilt = new Quaternion();
+  private readonly tiltMatrix = new Matrix4();
   private readonly cameraPosition = new Vector3();
   private readonly direction = new Vector3();
   private readonly up = new Vector3(0, 1, 0);
@@ -198,7 +200,25 @@ export class Weather {
     this.rainState.speed = this.params.speed;
     this.rainState.floorY = this.floorY;
     this.rainState.center.copy(center);
-    for (let i = 0; i < this.drops.length && !unchanged; i++) {
+    // Pochylenie smugi jest wspólne dla klatki; kropla dokłada tylko obrót wokół Y do kamery.
+    const q = this.tiltMatrix.makeRotationFromQuaternion(
+      this.tilt.setFromUnitVectors(this.up, this.direction),
+    ).elements;
+    const q0x = q[0]!,
+      q0y = q[1]!,
+      q0z = q[2]!;
+    const q1x = q[4]! * length,
+      q1y = q[5]! * length,
+      q1z = q[6]! * length;
+    const q2x = q[8]!,
+      q2y = q[9]!,
+      q2z = q[10]!;
+    const width = t.rainStreakWidthM;
+    const out = this.rain.instanceMatrix.array;
+    // Krople poza rysowaną pulą są tylko losowane w pierwszej klatce (stała kolejność RNG);
+    // zawijanie jest okresowe, więc wystarczy je wykonać, gdy kropla wróci do puli.
+    const active = unchanged ? 0 : this.initialized ? count : this.drops.length;
+    for (let i = 0; i < active; i++) {
       const p = this.drops[i]!;
       if (!this.initialized)
         p.set(
@@ -244,20 +264,46 @@ export class Weather {
       p.y = wrapRainAxis(p.y, center.y, t.rainHeightM);
       p.z = wrapRainAxis(p.z, center.z, t.rainDepthM);
       if (i >= count) continue;
-      this.dummy.position.copy(p);
-      this.dummy.quaternion.setFromUnitVectors(this.up, this.direction);
-      this.dummy.rotateY(Math.atan2(center.x - p.x, center.z - p.z));
-      this.dummy.scale.set(t.rainStreakWidthM, length, 1);
+      const o = i * 16;
+      out[o + 3] = 0;
+      out[o + 7] = 0;
+      out[o + 11] = 0;
+      out[o + 12] = p.x;
+      out[o + 13] = p.y;
+      out[o + 14] = p.z;
+      out[o + 15] = 1;
       if (
         p.y < this.floorY ||
         isRainSheltered(p, this.shelters, this.rainHalfSize)
-      )
-        this.dummy.scale.set(0, 0, 0);
-      this.dummy.updateMatrix();
-      this.rain.setMatrixAt(i, this.dummy.matrix);
+      ) {
+        out.fill(0, o, o + 11);
+        continue;
+      }
+      // cos/sin kąta atan2(dx, dz) bez funkcji trygonometrycznych.
+      const dx = center.x - p.x;
+      const dz = center.z - p.z;
+      const h = Math.hypot(dx, dz);
+      const c = h > 0 ? dz / h : 1;
+      const s = h > 0 ? dx / h : 0;
+      out[o] = (c * q0x - s * q2x) * width;
+      out[o + 1] = (c * q0y - s * q2y) * width;
+      out[o + 2] = (c * q0z - s * q2z) * width;
+      out[o + 4] = q1x;
+      out[o + 5] = q1y;
+      out[o + 6] = q1z;
+      out[o + 8] = s * q0x + c * q2x;
+      out[o + 9] = s * q0y + c * q2y;
+      out[o + 10] = s * q0z + c * q2z;
     }
     this.initialized = true;
-    if (!unchanged) this.rain.instanceMatrix.needsUpdate = true;
+    if (!unchanged) {
+      // Do GPU trafia tylko rysowany zakres; zakresy z nierenderowanych klatek nie narastają.
+      this.rain.instanceMatrix.clearUpdateRanges();
+      if (count > 0) {
+        this.rain.instanceMatrix.addUpdateRange(0, count * 16);
+        this.rain.instanceMatrix.needsUpdate = true;
+      }
+    }
     this.splashes.render(camera, t.splashGrowth);
     this.splashDrops.render(camera);
     this.flash = Math.max(0, this.flash - dt / t.stormFlashS);

@@ -1,7 +1,8 @@
-import type { EntityId, EventBus } from '../core/events';
+import type { EventBus } from '../core/events';
 import type { Rarity } from '../core/runTypes';
 import text from '../data/ui/hud.pl.json';
 import { implantDefinitions } from '../progression/implants';
+import { BossBar } from './bossBar';
 
 /** Stan runu potrzebny do odtworzenia HUD po wejściu do nowego pokoju. */
 export interface RunHudSeed {
@@ -43,7 +44,7 @@ function restartAnimation(node: HTMLElement, className: string): void {
 }
 
 /**
- * Warstwa HUD runu: Kredyty, zdobyte implanty i pasek HP bossa. Elementy są
+ * Warstwa HUD runu: Kredyty, zdobyte implanty i pasek bossa (`BossBar`). Elementy są
  * ukryte, dopóki nie nadejdzie odpowiednie zdarzenie, więc poza runem (Arena)
  * HUD wygląda jak dotąd.
  */
@@ -58,16 +59,9 @@ export class RunHud {
   private readonly creditsValue = element('span', 'run-hud__credits-value');
   private readonly creditsDelta = element('span', 'run-hud__credits-delta');
   private readonly implants = element('ul', 'run-hud__implants');
-  private readonly boss = element('div', 'run-hud__boss');
-  private readonly bossName = element('span', 'run-hud__boss-name');
-  private readonly bossTrack = element('div', 'run-hud__boss-track');
-  private readonly bossFill = element('div', 'run-hud__boss-fill');
-  private readonly bossTicks = element('div', 'run-hud__boss-ticks');
-  private readonly bossShield = element('div', 'run-hud__boss-shield');
-  private readonly bossShieldFill = element('div', 'run-hud__boss-shield-fill');
+  private readonly boss: BossBar;
   private readonly entries: ImplantEntry[] = [];
   private readonly unsubscribe: (() => void)[];
-  private bossId: EntityId | null = null;
 
   constructor(bus: EventBus, seed?: RunHudSeed) {
     this.credits.hidden = true;
@@ -83,20 +77,13 @@ export class RunHud {
     this.implants.hidden = true;
     this.implants.setAttribute('aria-label', text.implants);
     this.implants.dataset.micro = text.microImplants;
-    this.boss.hidden = true;
-    this.bossTrack.setAttribute('role', 'progressbar');
-    this.bossTrack.setAttribute('aria-label', text.bossHealth);
-    this.bossFill.style.setProperty('--p', '1');
-    this.bossTrack.append(this.bossFill, this.bossTicks);
-    this.bossShield.hidden = true;
-    this.bossShield.append(this.bossShieldFill);
-    this.boss.append(
-      element('span', 'hud__micro', text.microBoss),
-      this.bossName,
-      this.bossShield,
-      this.bossTrack,
+    this.boss = new BossBar(bus);
+    this.node.append(
+      this.credits,
+      this.implants,
+      this.boss.node,
+      this.boss.verdict,
     );
-    this.node.append(this.credits, this.implants, this.boss);
 
     if (seed) {
       this.setCredits(seed.credits);
@@ -114,41 +101,6 @@ export class RunHud {
       bus.on('implant_acquired', ({ id, rarity, source }) =>
         this.addImplant(id, rarity, source),
       ),
-      bus.on('boss_spawned', ({ id, name, maxHealth, phaseThresholds }) => {
-        this.bossId = id;
-        this.bossName.textContent = name;
-        this.bossTrack.setAttribute('aria-valuetext', `${maxHealth}`);
-        this.bossFill.style.setProperty('--p', '1');
-        this.bossTicks.replaceChildren();
-        this.setPhaseTicks(phaseThresholds);
-        this.bossShield.hidden = true;
-        delete this.boss.dataset.phase;
-        this.boss.hidden = false;
-      }),
-      bus.on('health_changed', ({ id, current, max }) => {
-        if (id !== this.bossId) return;
-        const ratio = max > 0 ? Math.min(1, Math.max(0, current / max)) : 0;
-        this.bossFill.style.setProperty('--p', ratio.toFixed(3));
-        this.bossTrack.setAttribute(
-          'aria-valuetext',
-          `${Math.round(current)} / ${Math.round(max)}`,
-        );
-      }),
-      bus.on('boss_phase', ({ id, phase }) => {
-        if (id !== this.bossId) return;
-        this.boss.dataset.phase = String(phase);
-        restartAnimation(this.boss, 'run-hud__boss--phase');
-      }),
-      bus.on('boss_shield', ({ id, current, max }) => {
-        if (id !== this.bossId) return;
-        this.bossShield.hidden = max <= 0 || current <= 0;
-        this.bossShieldFill.style.setProperty(
-          '--p',
-          max > 0 ? (current / max).toFixed(3) : '0',
-        );
-      }),
-      bus.on('enemy_killed', ({ id }) => this.hideBoss(id)),
-      bus.on('entity_despawned', ({ id }) => this.hideBoss(id)),
     ];
   }
 
@@ -202,23 +154,9 @@ export class RunHud {
     this.implants.hidden = false;
   }
 
-  private setPhaseTicks(thresholds: readonly number[]): void {
-    this.bossTicks.replaceChildren();
-    for (const threshold of thresholds) {
-      const tick = element('span', 'run-hud__boss-tick');
-      tick.style.setProperty('--at', (1 - threshold).toFixed(3));
-      this.bossTicks.append(tick);
-    }
-  }
-
-  private hideBoss(id: EntityId): void {
-    if (id !== this.bossId) return;
-    this.bossId = null;
-    this.boss.hidden = true;
-  }
-
   dispose(): void {
     for (const unsubscribe of this.unsubscribe) unsubscribe();
+    this.boss.dispose();
     this.node.remove();
   }
 }

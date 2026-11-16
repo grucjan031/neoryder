@@ -37,9 +37,16 @@ import { kuroganeSector } from '../world/sectors';
 import { roomPlanner } from '../world/threat';
 import type { WavesDefinition } from '../world/waves';
 import type { Scene } from './index';
+import { getLiteFx } from '../render/fxMode';
 import { RoomScene } from './roomScene';
 
 const CUSTOM_LOADOUT_ID = 'custom';
+const IDLE_INPUT: InputSnapshot = {
+  held: new Set(),
+  pressed: new Set(),
+  released: new Set(),
+  lookDelta: { x: 0, y: 0 },
+};
 
 export interface RunSavePort {
   loadRun(): Promise<RunState | null>;
@@ -49,6 +56,8 @@ export interface RunSavePort {
 
 export interface RunRoom extends Scene {
   clear(): void;
+  /** Cisza po zwycięstwie: pokój tylko „dogrywa” oprawę, gracz nie może już zginąć. */
+  enterVictoryHold?(): void;
   exportState(): Pick<RunState, 'hp' | 'energy'>;
 }
 
@@ -104,6 +113,8 @@ export class RunScene implements Scene {
   private pendingSaves = 0;
   private pending: 'clear' | 'end' | null = null;
   private rewardDelayRemainingS: number | null = null;
+  /** Cisza po zwycięstwie: pokój bossa zostaje na ekranie, zanim pojawi się podsumowanie. */
+  private victoryHoldRemainingS: number | null = null;
   private disposed = false;
   private runError: string | null = null;
   private saveError: string | null = null;
@@ -175,7 +186,15 @@ export class RunScene implements Scene {
       ctx.bus.on('run_ended', ({ outcome, summary }) => {
         this.log.push({ event: 'run_ended', outcome });
         this.finishMeta(summary);
-        this.schedule('end');
+        // Wynik jest już zapisany; opóźniamy tylko pokazanie ekranu (w fx=lite bez opóźnienia).
+        const holdS =
+          outcome === 'victory' && this.roomReady && !getLiteFx()
+            ? this.ctx.tuning.vfx.bossVictoryHoldS
+            : 0;
+        if (holdS > 0) {
+          this.victoryHoldRemainingS = holdS;
+          this.room?.enterVictoryHold?.();
+        } else this.schedule('end');
       }),
     );
     const params =
@@ -531,6 +550,7 @@ export class RunScene implements Scene {
       this.show();
       return;
     }
+    if (this.victoryHoldRemainingS !== null) return;
     this.disposeRoom();
     if (this.manager.screen === 'reward') {
       this.economy.offerReward();
@@ -555,8 +575,21 @@ export class RunScene implements Scene {
     if (this.disposed) return;
     this.manager.step(dt);
     const waitingForReward = this.rewardDelayRemainingS !== null;
-    if (this.roomReady && this.manager.screen === 'room' && !this.pending)
-      this.room?.step(dt, input);
+    const holding = this.victoryHoldRemainingS !== null;
+    // W ciszy pokój krokuje dalej (rozpad, odłamki, spowolnienie), ale bez wejścia gracza.
+    if (
+      this.roomReady &&
+      (this.manager.screen === 'room' || holding) &&
+      !this.pending
+    )
+      this.room?.step(dt, holding ? IDLE_INPUT : input);
+    if (this.victoryHoldRemainingS !== null) {
+      this.victoryHoldRemainingS = Math.max(0, this.victoryHoldRemainingS - dt);
+      if (this.victoryHoldRemainingS === 0) {
+        this.victoryHoldRemainingS = null;
+        this.schedule('end');
+      }
+    }
     if (
       this.roomReady &&
       waitingForReward &&
@@ -572,7 +605,10 @@ export class RunScene implements Scene {
   }
 
   render(alpha: number, frameDt?: number): void {
-    if (this.roomReady && this.manager.screen === 'room')
+    if (
+      this.roomReady &&
+      (this.manager.screen === 'room' || this.victoryHoldRemainingS !== null)
+    )
       this.room?.render(alpha, frameDt);
   }
 
@@ -586,7 +622,12 @@ export class RunScene implements Scene {
   query(name: string): unknown {
     switch (name) {
       case 'screen':
-        return this.manager.screen;
+        // Wynik jest już zapisany, ale podsumowanie pojawi się dopiero po ciszy.
+        return this.victoryHoldRemainingS !== null
+          ? 'room'
+          : this.manager.screen;
+      case 'victoryHold':
+        return this.victoryHoldRemainingS;
       case 'runState':
         return this.manager.serialize();
       case 'map':
