@@ -35,15 +35,16 @@ function counts(roots: readonly Object3D[]) {
 // Szlif FPP: +25 siatek viewmodelu (karwasz dłoni, trim/grip broni i rękojeści, warstwy błysku i wiązki).
 const baselines = {
   alleyMarket: 1708,
-  combatWarehouse: 554,
-  eliteFoundry: 625,
+  // Wzrost względem 529/600: +25 viewmodelu (szlif FPP) i naklejki/napisy oprawy (szlif map).
+  combatWarehouse: 619,
+  eliteFoundry: 643,
 };
 
 // modele city_* zachowują własne materiały; cała scena po scaleniu, także pule VFX.
 const batchedMeshes = {
-  alleyMarket: 202,
-  combatWarehouse: 178,
-  eliteFoundry: 195,
+  alleyMarket: 227,
+  combatWarehouse: 221,
+  eliteFoundry: 239,
 };
 
 it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(

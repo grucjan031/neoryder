@@ -20,7 +20,7 @@
         "y": -0.5,
         "z": 0
       },
-      "material": "concrete"
+      "material": "asphalt"
     },
     {
       "size": {
@@ -468,6 +468,38 @@
       "yaw": 1.5708,
       "tint": "#3d7bff",
       "flicker": 0.25
+    },
+    {
+      "kind": "neon",
+      "texture": "repair",
+      "position": {
+        "x": -7,
+        "y": 3,
+        "z": 10.95
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": 3.1416,
+      "tint": "#3d7bff",
+      "flicker": 0.15
+    },
+    {
+      "kind": "neon",
+      "texture": "tattoo",
+      "position": {
+        "x": 5.5,
+        "y": 2,
+        "z": -5.02
+      },
+      "size": {
+        "w": 1.8,
+        "h": 0.9
+      },
+      "yaw": 3.1416,
+      "tint": "#8a5cff",
+      "flicker": 0.3
     }
   ],
   "lights": [
@@ -616,9 +648,9 @@
     {
       "texture": "puddle1",
       "position": {
-        "x": -9,
+        "x": -8.5,
         "y": 0.01,
-        "z": -5
+        "z": -1
       },
       "size": {
         "w": 2.8,
@@ -672,6 +704,141 @@
       "yaw": -1.5708,
       "surface": "wall",
       "opacity": 0.75
+    },
+    {
+      "texture": "graffiti_tag2",
+      "position": {
+        "x": -5.5,
+        "y": 1.3,
+        "z": 5.02
+      },
+      "size": {
+        "w": 2.2,
+        "h": 1.6
+      },
+      "yaw": 0,
+      "surface": "wall",
+      "opacity": 0.8
+    },
+    {
+      "texture": "poster_torn2",
+      "position": {
+        "x": 4.9,
+        "y": 1.3,
+        "z": 5.02
+      },
+      "size": {
+        "w": 1.1,
+        "h": 1.1
+      },
+      "yaw": 0,
+      "surface": "wall",
+      "opacity": 0.85
+    },
+    {
+      "texture": "graffiti_piece",
+      "position": {
+        "x": -5.5,
+        "y": 1.3,
+        "z": -5.02
+      },
+      "size": {
+        "w": 2.6,
+        "h": 1.4
+      },
+      "yaw": 3.1416,
+      "surface": "wall",
+      "opacity": 0.8
+    },
+    {
+      "texture": "graffiti_tag3",
+      "position": {
+        "x": 5.5,
+        "y": 0.8,
+        "z": -5.02
+      },
+      "size": {
+        "w": 1.2,
+        "h": 1
+      },
+      "yaw": 3.1416,
+      "surface": "wall",
+      "opacity": 0.75
+    },
+    {
+      "texture": "graffiti_iskra",
+      "position": {
+        "x": 7,
+        "y": 1.5,
+        "z": 10.98
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.6
+      },
+      "yaw": 3.1416,
+      "surface": "wall",
+      "opacity": 0.8
+    },
+    {
+      "texture": "leak_streak",
+      "position": {
+        "x": -10.5,
+        "y": 2.7,
+        "z": 10.98
+      },
+      "size": {
+        "w": 0.9,
+        "h": 2.4
+      },
+      "yaw": 3.1416,
+      "surface": "wall",
+      "opacity": 0.7
+    },
+    {
+      "texture": "poster_torn1",
+      "position": {
+        "x": 10.5,
+        "y": 1.6,
+        "z": 10.98
+      },
+      "size": {
+        "w": 1.2,
+        "h": 1.4
+      },
+      "yaw": 3.1416,
+      "surface": "wall",
+      "opacity": 0.85
+    },
+    {
+      "texture": "oil_stain",
+      "position": {
+        "x": -8.5,
+        "y": 0.01,
+        "z": -8.5
+      },
+      "size": {
+        "w": 2.2,
+        "h": 2.2
+      },
+      "yaw": 0.7,
+      "surface": "floor",
+      "opacity": 0.55
+    },
+    {
+      "texture": "crack_floor",
+      "position": {
+        "x": -9,
+        "y": 0.01,
+        "z": 6
+      },
+      "size": {
+        "w": 2.4,
+        "h": 2.4
+      },
+      "yaw": 0.3,
+      "surface": "floor",
+      "opacity": 0.5
     }
   ],
   "ambientFx": [
@@ -939,28 +1106,64 @@
       },
       "yaw": 0,
       "scale": 1.5
+    },
+    {
+      "model": "city_trash_bags",
+      "position": {
+        "x": -11.6,
+        "y": 0,
+        "z": -10.2
+      },
+      "yaw": 0.5,
+      "scale": 1
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": 11.6,
+        "y": 3.98,
+        "z": 10.9
+      },
+      "yaw": 0,
+      "scale": 0.8
     }
   ],
   "hazards": [
     {
       "kind": "explosive_barrel",
       "id": "warehouse-west",
-      "position": { "x": -5.5, "y": 0, "z": 0 }
+      "position": {
+        "x": -5.5,
+        "y": 0,
+        "z": 0
+      }
     },
     {
       "kind": "explosive_barrel",
       "id": "warehouse-east",
-      "position": { "x": 5.5, "y": 0, "z": 0 }
+      "position": {
+        "x": 5.5,
+        "y": 0,
+        "z": 0
+      }
     },
     {
       "kind": "explosive_barrel",
       "id": "warehouse-north",
-      "position": { "x": 1.5, "y": 0, "z": -6 }
+      "position": {
+        "x": 1.5,
+        "y": 0,
+        "z": -6
+      }
     },
     {
       "kind": "explosive_barrel",
       "id": "warehouse-south",
-      "position": { "x": -3.5, "y": 0, "z": 6 }
+      "position": {
+        "x": -3.5,
+        "y": 0,
+        "z": 6
+      }
     }
   ],
   "spawnPoints": [

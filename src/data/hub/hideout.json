@@ -3134,8 +3134,8 @@
         "z": -4.5
       },
       "color": "#6dff4a",
-      "intensity": 2.5,
-      "range": 6
+      "intensity": 1.7,
+      "range": 5
     },
     {
       "position": {
@@ -3470,6 +3470,81 @@
       },
       "yaw": -1.5708,
       "surface": "wall"
+    },
+    {
+      "texture": "puddle2",
+      "position": {
+        "x": -15.5,
+        "y": 0.012,
+        "z": 12.8
+      },
+      "size": {
+        "w": 2.6,
+        "h": 2.2
+      },
+      "yaw": 0.6,
+      "surface": "floor",
+      "opacity": 0.75
+    },
+    {
+      "texture": "crack_floor",
+      "position": {
+        "x": 10.5,
+        "y": 0.012,
+        "z": 10.6
+      },
+      "size": {
+        "w": 2.2,
+        "h": 2.2
+      },
+      "yaw": 1.2,
+      "surface": "floor",
+      "opacity": 0.55
+    },
+    {
+      "texture": "oil_stain",
+      "position": {
+        "x": 16.5,
+        "y": 0.012,
+        "z": -1.2
+      },
+      "size": {
+        "w": 1.8,
+        "h": 1.8
+      },
+      "yaw": 0.3,
+      "surface": "floor",
+      "opacity": 0.6
+    },
+    {
+      "texture": "crack_floor",
+      "position": {
+        "x": -5,
+        "y": 0.012,
+        "z": -5.6
+      },
+      "size": {
+        "w": 2,
+        "h": 2
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.5
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": 9.5,
+        "y": 0.012,
+        "z": 14.2
+      },
+      "size": {
+        "w": 2.2,
+        "h": 2
+      },
+      "yaw": 2.4,
+      "surface": "floor",
+      "opacity": 0.7
     }
   ],
   "ambientFx": [

@@ -36,6 +36,7 @@ import { frameProfiler } from './frameProfiler';
 const fragmentShader = /* glsl */ `
   #include <packing>
   uniform sampler2D colorMap;
+  uniform sampler2D colorDepthMap;
   uniform sampler2D normalMap;
   uniform sampler2D depthMap;
   uniform vec2 texelSize;
@@ -53,6 +54,8 @@ const fragmentShader = /* glsl */ `
   uniform float skyHeight;
   uniform vec3 skyTop;
   uniform vec3 skyHorizon;
+  uniform vec3 skyBackground;
+  uniform float skyKeepOverlay;
   uniform mat4 inverseProjection;
   uniform mat3 cameraRotation;
   uniform float fogStrength;
@@ -141,16 +144,21 @@ const fragmentShader = /* glsl */ `
       float fresnel = 0.25+0.75*pow(1.0-abs(normalize(eyePosition-worldPoint).y),3.0);
       rgb += texture2D(reflectionMap,reflectionUv).rgb * reflectionStrength * wet * floorMask * puddle * fresnel * inside;
     }
-    // Brak geometrii w buforze głębi = niebo: gradient pionowy zamiast płaskiego tła.
-    if (texture2D(depthMap, vUv).x >= 1.0) {
+    // Brak geometrii w buforze głębi koloru = niebo: gradient pionowy zamiast płaskiego tła.
+    // Głębia koloru, nie normalnych: obiekty bez konturu (rdzeń ostrza, błysk) nie trafiają
+    // do bufora normalnych i bez tego znikały na tle nieba.
+    if (texture2D(colorDepthMap, vUv).x >= 1.0) {
       if (skyGradient > 0.0) {
         vec4 view = inverseProjection * vec4(vUv * 2.0 - 1.0, 1.0, 1.0);
         float up = (cameraRotation * normalize(view.xyz / view.w)).y;
         vec3 sky = mix(skyHorizon, skyTop, smoothstep(0.0, skyHeight, up));
-        rgb = mix(rgb, sky, skyGradient);
+        // Hologramy i deszcz nie zapisują głębi, więc trafiają tu jako „niebo”:
+        // zachowujemy ich wkład ponad kolor tła zamiast go nadpisywać.
+        vec3 overlay = max(rgb - skyBackground, 0.0) * skyKeepOverlay;
+        rgb = mix(rgb, sky, skyGradient) + overlay * skyGradient;
       }
       rgb += vec3(0.62, 0.68, 0.95) * skyFlash;
-    } else if (fogStrength > 0.0 || heightFogDensity > 0.0) {
+    } else if ((fogStrength > 0.0 || heightFogDensity > 0.0) && rawDepth < 1.0) {
       // Mgła ku bieli ściąga też kontury, więc dalekie obiekty odcinają się od bliskich.
       float fog = smoothstep(fogNear, fogFar, centerDepth) * fogStrength;
       // Ca?ka g?sto?ci wzd?u? promienia: stabilna tak?e dla poziomego spojrzenia.
@@ -202,6 +210,7 @@ export class StylePipeline {
   });
   private readonly uniforms = {
     colorMap: { value: this.colorTarget.texture },
+    colorDepthMap: { value: this.colorTarget.depthTexture as Texture },
     normalMap: { value: this.normalTarget.texture },
     depthMap: { value: this.normalTarget.depthTexture },
     texelSize: { value: new Vector2(1, 1) },
@@ -219,6 +228,8 @@ export class StylePipeline {
     skyHeight: { value: 0.5 },
     skyTop: { value: new Color() },
     skyHorizon: { value: new Color() },
+    skyBackground: { value: new Color() },
+    skyKeepOverlay: { value: 0 },
     inverseProjection: { value: new Matrix4() },
     cameraRotation: { value: new Matrix3() },
     fogStrength: { value: 0 },
@@ -257,6 +268,7 @@ export class StylePipeline {
   );
   private readonly drawingSize = new Vector2();
   private readonly clearColor = new Color();
+  private readonly skyClear = new Color();
   /** Tworzone przy pierwszym użyciu: wyłączone przełączniki nie kosztują pamięci. */
   private bloom: BloomPass | undefined;
   private reflections: ReflectionPass | undefined;
@@ -348,6 +360,16 @@ export class StylePipeline {
     uniforms.skyHeight.value = Math.max(t.skyGradientHeight, 1e-3);
     uniforms.skyTop.value.set(t.skyTop);
     uniforms.skyHorizon.value.set(t.skyHorizon);
+    // Nakładki na niebie da się odzyskać tylko przy jednolitym tle (kolor albo kolor czyszczenia).
+    const sky = scene.background;
+    if (sky === null || (sky as Color).isColor) {
+      uniforms.skyBackground.value.copy(
+        sky ? (sky as Color) : this.renderer.getClearColor(this.skyClear),
+      );
+      uniforms.skyKeepOverlay.value = 1;
+    } else {
+      uniforms.skyKeepOverlay.value = 0;
+    }
     uniforms.inverseProjection.value.copy(camera.projectionMatrixInverse);
     uniforms.cameraRotation.value.setFromMatrix4(camera.matrixWorld);
     uniforms.cameraWorld.value.copy(camera.matrixWorld);
