@@ -52,7 +52,8 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   const meta = async () => (await query('meta')) as Meta;
 
   // Czysty stan: świeży kontekst Playwrighta ma pustą IndexedDB; menu gry.
-  await page.goto('/?debug=1&fx=lite');
+  // Zrzuty do oceny wizualnej (NEORYDER_SHOTS) robimy w pełnym renderze, bez trybu lite.
+  await page.goto(SHOTS_DIR ? '/?debug=1' : '/?debug=1&fx=lite');
   await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
   await shot('01-menu');
   await page.getByRole('button', { name: 'Kryjówka' }).click();
