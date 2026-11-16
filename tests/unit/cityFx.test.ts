@@ -7,6 +7,7 @@ import {
   InstancedMesh,
   Matrix4,
   Mesh,
+  Object3D,
   PerspectiveCamera,
   Scene as ThreeScene,
   ShaderMaterial,
@@ -182,6 +183,42 @@ describe('deszcz', () => {
     }
     expect(a.rain.instanceMatrix.array).toEqual(b.rain.instanceMatrix.array);
     expect(a.splashes.pool.particles).toEqual(b.splashes.pool.particles);
+  });
+
+  it('przelicza i wysyła tylko rysowane krople, z macierzą jak z Object3D', () => {
+    tuning.city.rainMax = 40;
+    const params = { density: 0.5, speed: 18, windX: 1 };
+    const weather = own(new Weather(params, -100, 'range'));
+    const cam = camera();
+    cam.position.set(3, 2, -4);
+    cam.updateMatrixWorld(true);
+    weather.update(0, 0, cam);
+    const attribute = weather.rain.instanceMatrix;
+    const idle = Array.from(attribute.array.subarray(20 * 16));
+    for (let i = 0; i < 3; i++) weather.update(1 / 60, 1 / 60, cam);
+    expect(weather.rain.count).toBe(20);
+    expect(attribute.updateRanges).toEqual([{ start: 0, count: 20 * 16 }]);
+    expect(Array.from(attribute.array.subarray(20 * 16))).toEqual(idle);
+    const dummy = new Object3D();
+    const direction = new Vector3(-params.windX, params.speed, 0).normalize();
+    const length =
+      Math.hypot(params.windX, params.speed) * tuning.city.rainExposureS;
+    const matrix = new Matrix4();
+    for (let i = 0; i < weather.rain.count; i++) {
+      weather.rain.getMatrixAt(i, matrix);
+      dummy.position.setFromMatrixPosition(matrix);
+      dummy.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), direction);
+      dummy.rotateY(
+        Math.atan2(
+          cam.position.x - dummy.position.x,
+          cam.position.z - dummy.position.z,
+        ),
+      );
+      dummy.scale.set(tuning.city.rainStreakWidthM, length, 1);
+      dummy.updateMatrix();
+      for (let k = 0; k < 16; k++)
+        expect(matrix.elements[k]).toBeCloseTo(dummy.matrix.elements[k]!, 5);
+    }
   });
 });
 
