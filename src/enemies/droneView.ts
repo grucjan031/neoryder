@@ -1,9 +1,11 @@
 import {
+  BoxGeometry,
   CylinderGeometry,
   Group,
   Mesh,
   OctahedronGeometry,
   SphereGeometry,
+  TorusGeometry,
 } from 'three';
 import type { BufferGeometry, Object3D } from 'three';
 import { getMaterial } from '../render/materials';
@@ -59,15 +61,28 @@ export class DroneView {
     }
     this.root.add(this.tilt);
     if (this.flight.antenna) {
-      const mast = new CylinderGeometry(r * 0.08, r * 0.08, r * 1.4, 8);
-      const dish = new CylinderGeometry(r * 0.8, r * 0.5, r * 0.2, 12);
-      this.geometries.push(mast, dish);
-      const stem = new Mesh(mast, getMaterial('enemy'));
+      // Haker: maszt z ciemnym talerzem, pierścieniem nadajnika i świecącym czubkiem (bez konturu).
+      const mast = new CylinderGeometry(r * 0.06, r * 0.1, r * 1.4, 6);
+      const dish = new CylinderGeometry(r * 0.72, r * 0.3, r * 0.16, 12);
+      const ring = new TorusGeometry(r * 0.62, r * 0.05, 4, 20);
+      const tip = new OctahedronGeometry(r * 0.13);
+      const fins = new BoxGeometry(r * 0.9, r * 0.05, r * 0.08);
+      this.geometries.push(mast, dish, ring, tip, fins);
+      const stem = new Mesh(mast, getMaterial('enemyDark'));
       stem.position.y = r;
-      const disk = new Mesh(dish, getMaterial('enemyGlow'));
-      disk.position.y = r * 1.7;
+      const disk = new Mesh(dish, getMaterial('enemy'));
+      disk.position.y = r * 1.6;
+      const halo = new Mesh(ring, getMaterial('enemyGlow'));
+      halo.position.y = r * 1.72;
+      halo.rotation.x = Math.PI / 2;
+      const beacon = new Mesh(tip, getMaterial('enemyGlow'));
+      beacon.position.y = r * 2.05;
+      halo.userData.noOutline = true;
+      beacon.userData.noOutline = true;
+      const crossbar = new Mesh(fins, getMaterial('enemyDark'));
+      crossbar.position.y = r * 1.25;
       this.antenna.name = 'antenna';
-      this.antenna.add(stem, disk);
+      this.antenna.add(stem, disk, halo, beacon, crossbar);
       this.tilt.add(this.antenna);
     }
     if (enemy.definition.laserSight) {

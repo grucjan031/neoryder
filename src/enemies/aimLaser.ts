@@ -19,6 +19,7 @@ export class AimLaser {
       getMaterial('enemyGlow'),
     );
     this.mesh.name = 'laser';
+    this.mesh.userData.noOutline = true;
     this.mesh.visible = false;
   }
 

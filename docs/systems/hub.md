@@ -106,7 +106,9 @@ Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekrana
 - **Wygląd (`src/scenes/hubNpcs.ts`, `HubNpcs`):** ten sam manekin UAL co wrogowie (`enemy_trooper.glb`, tylko ciało
   `armored_body`, bez płyt, broni i wizjera) w materiale toon grafit/granat (każdy NPC inny odcień) ze słabą poświatą
   krawędzi w kolorze akcentu (bez czerwieni wrogów). Niebojowe akcesoria na głowie (czapka, gogle, okulary,
-  słuchawki). Klipy bezczynne z `npc_anims.glb` (wycięte z Quaternius UAL CC0 skryptem
+  słuchawki) i ubiór na kościach `DEF-spine003` / `DEF-hips`: kamizelka w jaśniejszym odcieniu, kołnierz, pas
+  ze świecącą klamrą i pasek akcentu oraz rekwizyt roli (Mira — ładownice i klucz, Wolan — poły płaszcza,
+  Szron — pagony i naszywka, Bajt — plecak z ekranem, Tomasz — ładownice i płyta na plecach). Klipy bezczynne z `npc_anims.glb` (wycięte z Quaternius UAL CC0 skryptem
   `tools/hub/extractNpcAnimations.mjs`, ~1,6 MB; źródło `tools/blender/sources/ual/`), przesunięte w czasie i lekko
   różne tempem, żeby NPC nie byli zsynchronizowani. Bez modelu (testy, `loadModels: false`) zostają collider i dialog.
 - **Obrót do gracza:** w zasięgu `tuning.hub.npcTurnRangeM` NPC obraca głowę i szyję (kości `DEF-head`, `DEF-neck`;

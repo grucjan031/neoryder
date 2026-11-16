@@ -29,6 +29,7 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 | `mat_interactive`   | czerń `#080808`           | obiekty interaktywne (skrzynie do chwytu Rezonansem), broń gracza |
 | `mat_enemy`         | czerwień `#e0262b`        | wrogowie                                                          |
 | `mat_enemy_glow`    | jasna czerwień, emisja    | wizjery, końcówki broni wroga, pociski wroga                      |
+| `mat_enemy_dark`    | ciemna czerwień (16% `mat_enemy`) | kombinezon i ciemne części wrogów; poświata krawędzi w czerwieni wroga |
 | `mat_player_cyan`   | cyan `#00e5ff`, emisja    | ostrze, otwory chłodzenia blastera, akcenty gracza                |
 | `mat_power_magenta` | magenta `#ff2bd6`, emisja | efekty mocy, emiter Rezonansu na dłoni                            |
 
@@ -179,9 +180,17 @@ importera glTF Blendera. Wyposażenie jest własne, proceduralne.
 
 Ciało `armored_body` ma 3999 trójkątów po Decimate (źródło: 13 743),
 z zachowanymi grupami wag i skinem do armatury `Rig` (53 kości). Eksporter
-normalizuje cztery największe wagi każdego wierzchołka. Siatki mają płaskie
-normalne, płyty i broń fazowane krawędzie. Materiały: `mat_enemy` oraz
-`mat_enemy_glow`. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
+normalizuje cztery największe wagi każdego wierzchołka. Ciało ma gładkie
+cieniowanie z ostrymi krawędziami powyżej 50° (kontur rysuje sylwetkę i płyty,
+a nie fasetki po decymacji) i ciemny kombinezon `mat_enemy_dark`; płyty pancerza
+(`mat_enemy`) i broń mają płaskie normalne i fazowane krawędzie, akcenty świetlne
+(`mat_enemy_glow`: wizjer, linie na piersi, naramiennikach i kolanach, klamra) nie
+mają konturu w grze. Wspólne: kask z wizjerem i ciemną osłoną szczęki, kołnierz,
+pas z klamrą. Sylwetki ról: Szturmowiec — grzebień na kasku ze światłem i akumulator
+na plecach, Strzelec — daszek, gogle, radio z anteną, Snajper — szpiczasty kaptur,
+monokular, płaszcz na plecach i poły, Tarczownik — osłona twarzy i tarcza z ciemnym
+licem, wizjerem, szewronem i szynami światła, Egzekutor — rogi, kolce naramienników,
+rdzeń w ramie i świecący kręgosłup. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
 ma 2,208 m (1,2×). Dodatkowa skala `boss.modelScale` nadal działa w widoku.
 Stopy w pozycji wiązania leżą na y=0, przód to +Z glTF, prawa strona to -X.
 
@@ -219,12 +228,12 @@ klipy i materiały, a stan AI mapuje na klipy `AnimationMixer` z przenikaniem.
 
 | Plik                                   | Co to                                                                                                                                     | Węzły dla kodu                                                                                                                   |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `enemy_trooper.glb`                    | Szturmowiec (4651 tri): ludzka sylwetka, hełm z wizjerem, fazowane naramienniki, kamizelka z ładownicami, pałka                           | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
-| `enemy_gunner.glb`                     | Strzelec (4787 tri): hełm z goglami, kamizelka z trzema ładownicami, karabin                                                              | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
-| `enemy_sniper.glb`                     | Snajper (5092 tri): otwarty kaptur, panele płaszcza, długi karabin ze świecącą lunetą                                                     | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
-| `enemy_shielder.glb`                   | Tarczownik (4827 tri): ciężkie płyty, pałka i pionowa tarcza przed lewą połową tułowia                                                    | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
-| `enemy_executor.glb`                   | Egzekutor (4871 tri): manekin 1,2×, egzoszkielet na tułowiu i kończynach, świecący rdzeń                                                  | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
-| `enemy_drone.glb`                      | Dron (≈860 tri): kadłub z kopułą czujnika, cztery ramiona z osłonami, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
+| `enemy_trooper.glb`                    | Szturmowiec (5215 tri): hełm z grzebieniem i wizjerem, naramienniki z liniami światła, ładownice, akumulator na plecach, pałka z cewkami  | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
+| `enemy_gunner.glb`                     | Strzelec (5315 tri): hełm z daszkiem i goglami, ładownice, radio z anteną, karabin z liniami światła                                      | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
+| `enemy_sniper.glb`                     | Snajper (5458 tri): szpiczasty kaptur z monokularem, płaszcz i poły z lamówką, długi karabin ze świecącą lunetą                         | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
+| `enemy_shielder.glb`                   | Tarczownik (5307 tri): ciężkie płyty, osłona twarzy, pałka i tarcza (ciemne lico, wizjer, szewron, szyny światła — dzieci `shield`)    | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
+| `enemy_executor.glb`                   | Egzekutor (5251 tri): manekin 1,2×, rogi, kolce naramienników, egzoszkielet ze świecącym kręgosłupem, rdzeń w ramie                      | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
+| `enemy_drone.glb`                      | Dron (948 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
 | `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                   | — (do `InstancedMesh`)                                                                                                           |
 | `plasma_blade.glb`                     | ostrze plazmowe                                                                                                                           | `hilt`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`                          |
 | `blaster.glb`                          | blaster z przegrzaniem                                                                                                                    | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |

@@ -2,15 +2,19 @@ import {
   AnimationMixer,
   BoxGeometry,
   CylinderGeometry,
+  Euler,
   Group,
   LoopOnce,
   LoopRepeat,
+  Matrix4,
   Mesh,
+  MeshBasicMaterial,
   SkinnedMesh,
   Sphere,
+  TorusGeometry,
   Vector3,
 } from 'three';
-import type { AnimationAction, Object3D } from 'three';
+import type { AnimationAction, BufferGeometry, Object3D } from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { tuning } from '../core/tuning';
 import { selectEnemyAnimation } from './enemyAnimation';
@@ -20,6 +24,11 @@ import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
 
 const laserLocal = new Vector3();
+/** Boss: przezroczystość tarczy energetycznej i grubość jej ramy [m]. */
+const BOSS_SHIELD_OPACITY = 0.18;
+const BOSS_SHIELD_BAR_M = 0.07;
+/** Pierścień korony bossa w metrach modelu Egzekutora: promień, wysokość środka, odsunięcie w tył. */
+const BOSS_HALO: [number, number, number] = [0.36, 2.02, -0.3];
 const laserFrom = new Vector3();
 
 /** Humanoid z karabinem: Strzelec i Snajper (F2-13) dzielą model i animację. */
@@ -47,12 +56,25 @@ export function loadEnemyModel(name: string): Promise<Object3D | null> {
             materials.add(material);
       });
       applyStyle(scene);
+      markGlowNoOutline(scene);
       for (const material of materials) material.dispose();
       return scene;
     })
     .catch(() => null);
   templates.set(name, template);
   return template;
+}
+
+/**
+ * Świecące akcenty (wizjery, linie światła, ostrze, laser) nie dostają konturu: ciemna obwódka
+ * gasiła je z odległości, a bez niej czytają się jak źródło światła z bloomem.
+ */
+export function markGlowNoOutline(root: Object3D): void {
+  const glow = getMaterial('enemyGlow');
+  root.traverse((node) => {
+    if (node instanceof Mesh && node.material === glow)
+      node.userData.noOutline = true;
+  });
 }
 
 /** Geometria GLB i materiały stylu należą do cache, pozy węzłów do pojedynczego widoku. */
@@ -73,7 +95,8 @@ export class EnemyView {
   private shield?: Object3D;
   private fallbackShield?: Mesh;
   private heldShield?: HeldShield;
-  private readonly fallbackGeometries: BoxGeometry[] = [];
+  private readonly fallbackGeometries: BufferGeometry[] = [];
+  private shieldMaterial?: MeshBasicMaterial;
   private readonly rest = new Map<
     Object3D,
     {
@@ -213,9 +236,16 @@ export class EnemyView {
         shieldSize.z,
       );
       this.fallbackGeometries.push(geometry);
-      this.fallbackShield = new Mesh(geometry, getMaterial('enemy'));
+      this.fallbackShield = new Mesh(
+        geometry,
+        enemy.definition.boss
+          ? this.energyShieldMaterial()
+          : getMaterial('enemy'),
+      );
       this.shield = this.fallbackShield;
       this.shield.name = 'shield';
+      if (enemy.definition.boss)
+        this.frameEnergyShield(this.fallbackShield, shieldSize);
       this.shield.position.set(
         body.radius,
         body.centerY,
@@ -232,6 +262,7 @@ export class EnemyView {
         getMaterial('enemyGlow'),
       );
       this.laser.name = 'laser';
+      this.laser.userData.noOutline = true;
       this.laser.visible = false;
       this.root.add(this.laser);
     }
@@ -265,10 +296,126 @@ export class EnemyView {
           });
         }
         this.root.add(this.model);
+        if (enemy.definition.boss) this.decorateBoss(instance);
         this.useModelShield();
         this.equipBlade();
         this.captureRest();
       });
+  }
+
+  /** Tarcza energetyczna bossa: półprzezroczysta czerwień bez zapisu głębi (gracz widzi bossa za nią). */
+  private energyShieldMaterial(): MeshBasicMaterial {
+    this.shieldMaterial = new MeshBasicMaterial({
+      color: getMaterial('enemyGlow').color,
+      transparent: true,
+      opacity: BOSS_SHIELD_OPACITY,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    return this.shieldMaterial;
+  }
+
+  /** Świecąca rama i pasy skanu na krawędziach tarczy (te same wymiary co bryła z danych). */
+  private frameEnergyShield(
+    shield: Mesh,
+    size: { x: number; y: number; z: number },
+  ): void {
+    shield.userData.noOutline = true;
+    const bar = BOSS_SHIELD_BAR_M;
+    const depth = size.z * 1.2;
+    const bars: [number, number, number, number, number][] = [
+      [size.x + bar, bar, 0, size.y / 2, 0],
+      [size.x + bar, bar, 0, -size.y / 2, 0],
+      [bar, size.y, size.x / 2, 0, 0],
+      [bar, size.y, -size.x / 2, 0, 0],
+      [size.x, bar * 0.4, 0, size.y / 6, 0],
+      [size.x, bar * 0.4, 0, -size.y / 6, 0],
+    ];
+    for (const [w, h, x, y, z] of bars) {
+      const geometry = new BoxGeometry(w, h, depth);
+      this.fallbackGeometries.push(geometry);
+      const mesh = new Mesh(geometry, getMaterial('enemyGlow'));
+      mesh.name = 'shield_frame';
+      mesh.userData.noOutline = true;
+      mesh.position.set(x, y, z);
+      shield.add(mesh);
+    }
+  }
+
+  /**
+   * Boss dzieli model z Egzekutorem; wyróżnia go korona ostrzy z czerwonym pierścieniem za głową
+   * i peleryna z płyt. Części siedzą na kości tułowia (ruszają się z klipami), układ w metrach modelu.
+   */
+  private decorateBoss(instance: Object3D): void {
+    instance.updateWorldMatrix(true, true);
+    const spine = instance.getObjectByName('DEF-spine003');
+    if (!spine) return;
+    const toInstance = new Matrix4().copy(instance.matrixWorld).invert();
+    const boneInverse = toInstance.multiply(spine.matrixWorld).invert();
+    const place = (
+      geometry: BufferGeometry,
+      kind: 'enemy' | 'enemyDark' | 'enemyGlow',
+      position: [number, number, number],
+      rotation: [number, number, number] = [0, 0, 0],
+      parent?: Object3D,
+    ): Mesh => {
+      this.fallbackGeometries.push(geometry);
+      const mesh = new Mesh(geometry, getMaterial(kind));
+      mesh.name = 'boss_decor';
+      if (kind === 'enemyGlow') mesh.userData.noOutline = true;
+      if (parent) {
+        mesh.position.set(...position);
+        mesh.rotation.set(...rotation);
+        parent.add(mesh);
+        return mesh;
+      }
+      new Matrix4()
+        .copy(boneInverse)
+        .multiply(
+          new Matrix4()
+            .makeRotationFromEuler(new Euler(...rotation))
+            .setPosition(...position),
+        )
+        .decompose(mesh.position, mesh.quaternion, mesh.scale);
+      spine.add(mesh);
+      return mesh;
+    };
+    const [hx, hy, hz] = BOSS_HALO;
+    place(new TorusGeometry(hx, 0.04, 4, 32), 'enemyGlow', [0, hy, hz]);
+    place(new TorusGeometry(hx * 0.8, 0.028, 4, 24), 'enemyDark', [0, hy, hz]);
+    for (let i = 0; i < 7; i++) {
+      const angle = Math.PI * (0.12 + (0.76 * i) / 6);
+      const length = i === 3 ? 0.3 : 0.2;
+      const r = hx + 0.03 + length / 2;
+      place(
+        new CylinderGeometry(0.006, 0.045, length, 4),
+        'enemy',
+        [Math.cos(angle) * r, hy + Math.sin(angle) * r, hz - 0.01],
+        [0, 0, angle - Math.PI / 2],
+      );
+    }
+    for (const side of [-1, 1]) {
+      const cape = place(
+        new BoxGeometry(0.36, 1.05, 0.04),
+        'enemyDark',
+        [side * 0.19, 1.2, -0.27],
+        [0.16, 0, side * 0.05],
+      );
+      place(
+        new BoxGeometry(0.34, 0.03, 0.05),
+        'enemyGlow',
+        [0, -0.5, 0],
+        [0, 0, 0],
+        cape,
+      );
+      place(
+        new BoxGeometry(0.03, 0.9, 0.05),
+        'enemyGlow',
+        [side * 0.16, 0, 0],
+        [0, 0, 0],
+        cape,
+      );
+    }
   }
 
   /** Model z własnym węzłem shield zastępuje bryłę zastępczą (bez wpływu na dane tarczy). */
@@ -298,6 +445,7 @@ export class EnemyView {
     this.fallbackGeometries.push(geometry);
     const blade = new Mesh(geometry, getMaterial('enemyGlow'));
     blade.name = 'executor_blade';
+    blade.userData.noOutline = true;
     blade.position.z = size.z / 2;
     hand.add(blade);
   }
@@ -438,11 +586,12 @@ export class EnemyView {
           Math.max(0, 1 - time / Math.max(definition.recoveryS, 1e-6)),
       );
     } else if (b.state === 'stunned') rotate('pelvis', 'z', anim.stunAngle);
+    // Zapowiedź: rozbłysk wizjera i broni (skala), widoczny także z daleka.
     for (const name of rifleman(definition.kind)
       ? ['muzzle', 'visor']
       : definition.animation?.bladeSizeM
-        ? ['executor_blade']
-        : ['baton_tip']) {
+        ? ['executor_blade', 'visor', 'chest_core']
+        : ['baton_tip', 'visor']) {
       const tip = this.model.getObjectByName(name);
       const restScale = tip ? this.rest.get(tip)?.scale : undefined;
       if (tip && restScale) {
@@ -546,6 +695,7 @@ export class EnemyView {
     this.root.removeFromParent();
     this.root.clear();
     for (const geometry of this.fallbackGeometries) geometry.dispose();
+    this.shieldMaterial?.dispose();
     this.laser?.geometry.dispose();
     this.rest.clear();
   }

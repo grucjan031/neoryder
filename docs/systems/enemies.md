@@ -27,8 +27,13 @@ wiązkę. Obrażenia i status idą przez `DamageSystem`, zatem nietykalność,
 śmierć i osłony nie przepuszczają zagłuszenia. Każde otrzymane obrażenie
 przerywa telegraf i rozpoczyna pełne 5 s odnowienia (także przy ogłuszeniu).
 Kontry: strzał przerywający zapowiedź, broń dystansowa, Błyskawica.
-Widok używa istniejącego `enemy_drone` i proceduralnej anteny z dyskiem
-(`drone.antenna`), również w wariancie zastępczym. Wszystko pozostaje czerwone.
+Widok używa istniejącego `enemy_drone` i proceduralnej anteny (`drone.antenna`:
+ciemny maszt z poprzeczką, czerwony talerz, świecący pierścień nadajnika i czubek),
+również w wariancie zastępczym. Wieżyczka (`TurretView`) jest proceduralna: ośmiokątny
+cokół na trzech wspornikach, kolumna z pierścieniem światła, obrotowa głowica
+(`turretHead`) z osłonami bocznymi, dwiema lufami (`barrel`) od przodu obudowy do
+`muzzle` z danych i okiem czujnika (`eye`), które pulsuje w stanie `aim`; po strzale
+lufy cofają się o 6 cm (czysto wizualne stałe w widoku). Wszystko pozostaje czerwone.
 
 Kurogane: haker ma wagę 1 w combat i elite; wieżyczka 1 w combat i 2 w elite.
 Istniejący wspólny `unlockLayer.turret: 4` odblokowuje ją od warstwy 4
@@ -238,7 +243,11 @@ ostrza w zamachu), nie z klatki piersiowej. Do zmiany po dodaniu dedykowanych kl
 (strzał, wezwanie, tarcza) wystarczy edycja danych.
 
 Recoil `rifle`, pulsowanie `visor` / `baton_tip`, widoczność `shield`, ostrze
-Egzekutora i `boss.modelScale` nadal działają. Żadne klipy nie sterują AI,
+Egzekutora i `boss.modelScale` nadal działają. W zapowiedzi wręcz pulsuje także
+`visor` (Szturmowiec, Tarczownik) oraz `visor` i `chest_core` (Egzekutor, boss), więc
+rozbłysk widać również wtedy, gdy broń zasłania tułów. Siatki z `mat_enemy_glow`,
+ostrze Egzekutora i lasery celowania mają `userData.noOutline` (bez ciemnego konturu),
+żeby z odległości czytały się jak źródła światła. Żadne klipy nie sterują AI,
 hitboxami, czasem zadawania obrażeń ani rozpadem.
 
 Testy: `enemyAnimation.test.ts` (wybór klipów), `enemySkeleton.test.ts`
@@ -547,6 +556,12 @@ Status ogłuszenia przerywa zapowiedź; po zakończeniu boss rozpoczyna nowy ata
 
 Widok: istniejący `EnemyView` i `enemy_executor.glb` w skali 1,5; geometria
 hurtboxów jest odpowiednio powiększona w danych. Fallback powstaje z tej geometrii.
+Po wczytaniu modelu widok dokłada bossowi (`definition.boss`) koronę: świecący
+pierścień z ciemnym wewnętrznym okręgiem i siedmioma kolcami za głową oraz pelerynę
+z dwóch ciemnych płyt z czerwoną lamówką; części wiszą na kości `DEF-spine003`
+(ruszają się z klipami, bez wpływu na hitboxy). Tarcza bossa (`shield`, wymiary
+`shieldSizeM`) jest energetyczna: półprzezroczysta czerwień bez zapisu głębi
+w świecącej ramie z dwoma pasami skanu.
 Zapowiedź pokazuje istniejące uniesienie ramienia i puls ostrza.
 
 Ręczny podgląd: `?scene=boss-test&seed=f3-16` — pusta arena, gracz i jeden boss.
