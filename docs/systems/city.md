@@ -248,4 +248,6 @@ Ocena wizualna wymaga Chromium/WebGL; testy jednostkowe nie kompilują GLSL.
 
 ## Galeria modeli: `?scene=city-props-test`
 
+W pokojach modele `city_*` zachowują własne materiały również przy ustawionym `material` bloku; materiał bloku nadal dotyczy bryły zastępczej i modeli spoza `city_*`.
+
 Uliczka ok. 10 × 44 m z wszystkimi 24 modelami `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy); lista modeli w `src/scenes/cityPropsTest.ts`. Parametry: `prop=<nazwa>` (np. `city_car`, kamera 3/4 z bliska), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2` (przegląd: wzdłuż ulicy, odwrotnie, z góry). Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.
