@@ -604,7 +604,7 @@ export class RoomScene implements Scene {
               ? await cloneCityModel(file)
               : await cloneRoomModel(file);
             if (!scene || this.disposed) return;
-            if (blockMaterial)
+            if (blockMaterial && !file.startsWith('city_'))
               scene.traverse((node) => {
                 if (node instanceof Mesh)
                   node.material = getMaterial(blockMaterial);
