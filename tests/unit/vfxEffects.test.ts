@@ -238,3 +238,73 @@ describe('odłamki drona', () => {
     expect(mean(human.ys)).toBeGreaterThan(3.5);
   });
 });
+
+describe('błysk trafienia wroga', () => {
+  function hitFlash(opts: {
+    kind: string;
+    bodyOf?: () => typeof body;
+    camera?: { x: number; y: number; z: number };
+  }) {
+    const bus = new EventBus();
+    const debris = new DebrisSystem({ maxDebris: 60, tuning: tuning.vfx });
+    const shatter = new EnemyShatter(bus, debris, {
+      positionOf: () => ({ x: 0, y: 0, z: 0 }),
+      bodyOf: opts.bodyOf,
+      cameraPosition: opts.camera ? () => opts.camera! : undefined,
+      tuning,
+      settings: { flashes: true },
+    });
+    bus.emit('entity_spawned', { id: 9, kind: opts.kind });
+    bus.emit('damage_dealt', {
+      source: 1,
+      target: 9,
+      amount: 10,
+      tags: [],
+      point: { x: 0, y: 1, z: 0.5 },
+      dir: null,
+      knockback: 0,
+      killed: false,
+    });
+    const flashes: {
+      radius: number;
+      height: number;
+      y: number;
+      point: unknown;
+    }[] = [];
+    debris.forEachFlash((f) =>
+      flashes.push({
+        radius: f.radius,
+        height: f.height,
+        y: f.origin.y,
+        point: f.point,
+      }),
+    );
+    shatter.dispose();
+    expect(flashes).toHaveLength(1);
+    return flashes[0]!;
+  }
+
+  it('kapsuła obrysu skaluje się z bryłą wroga', () => {
+    const small = hitFlash({ kind: 'assaulter', bodyOf: () => body });
+    const big = hitFlash({
+      kind: 'brute',
+      bodyOf: () => ({ ...body, height: 2.6, radius: 0.6 }),
+    });
+    expect(small.y).toBeCloseTo(body.height / 2);
+    expect(big.y).toBeCloseTo(1.3);
+    expect(big.height).toBeCloseTo(2.6);
+    expect(big.radius).toBeCloseTo(small.radius * 2);
+    expect(small.radius).toBeGreaterThan(body.radius);
+  });
+
+  it('gwiazda trafienia znika, gdy punkt leży tuż przy kamerze', () => {
+    const near = tuning.vfx.hitFlashCameraMinM * 0.5;
+    const far = tuning.vfx.hitFlashCameraMinM * 2;
+    const at = (d: number) => ({ x: 0, y: 1, z: 0.5 + d });
+    expect(hitFlash({ kind: 'assaulter', camera: at(near) }).point).toBeNull();
+    expect(
+      hitFlash({ kind: 'assaulter', camera: at(far) }).point,
+    ).not.toBeNull();
+    expect(hitFlash({ kind: 'assaulter' }).point).not.toBeNull();
+  });
+});

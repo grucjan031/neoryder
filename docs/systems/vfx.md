@@ -238,7 +238,9 @@ Nowe liczby są w `tuning.vfx` (panel lil-gui); istniejące wartości bez zmian.
   rozpadu (`killFlashS`, `killFlashCoreM`, `killFlashRingM`); przy trafieniu
   żywego wroga (bez obrażeń statusów `#status`) — obrys sylwetki (fresnel na
   kapsule bryły, `hitFlashS`, `hitFlashBrightness`) i gwiazdkę iskry w punkcie
-  trafienia (`hitFlashStarSizeM`).
+  trafienia (`hitFlashStarSizeM`). Kapsuła obrysu bierze wymiary z bryły wroga
+  (`enemyBody()`), a gwiazdka bliżej kamery niż `hitFlashCameraMinM` jest
+  pomijana.
 - **Fale Rezonansu.** `ResonanceWaveFx` (w `LightningRenderer`, który dostaje
   listę mocy, kamerę oraz `EventBus`) startuje po zdarzeniu `power_used`
   dla mocy stożkowej z listy (w scenach gry tylko gracza): Pchnięcie to magentowa czasza z echem w kierunku

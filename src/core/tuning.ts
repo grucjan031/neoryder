@@ -545,6 +545,8 @@ export const tuning = {
     hitFlashS: 0.13,
     hitFlashBrightness: 1.4,
     hitFlashStarSizeM: 0.55,
+    /** Gwiazda trafienia bliżej kamery niż tyle metrów nie jest rysowana (zasłaniałaby ekran). */
+    hitFlashCameraMinM: 1,
     killFlashS: 0.34,
     killFlashCoreM: 0.55,
     killFlashRingM: 1.7,

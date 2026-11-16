@@ -468,6 +468,11 @@ export class RoomScene implements Scene {
     this.root.add(this.debrisView.root);
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
+      bodyOf: (id) => {
+        const e = this.enemy(id);
+        return e ? enemyBody(e, 1) : null;
+      },
+      cameraPosition: () => ctx.camera?.position ?? null,
       tuning: ctx.tuning,
     });
 
