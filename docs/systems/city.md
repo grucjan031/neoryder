@@ -250,4 +250,6 @@ Ocena wizualna wymaga Chromium/WebGL; testy jednostkowe nie kompilują GLSL.
 
 W pokojach modele `city_*` zachowują własne materiały również przy ustawionym `material` bloku; materiał bloku nadal dotyczy bryły zastępczej i modeli spoza `city_*`.
 
+Skala modeli bloków w pokojach (`placeBlockModel` w `src/scenes/roomScene.ts`): proste bryły `pillar`, `cover_low` i `wall_segment` są rozciągane niejednorodnie do `size` bloku (bounding box modelu = kolizja, spód i środek bboxu w spodzie i środku bloku); gdy dłuższy bok podstawy bloku leży w osi Z, osłona obraca się o 90° wokół Y, żeby nie ściskać profilu. Rekwizyty `city_*` i skrzynie zostają w skali 1 — ich wymiary muszą zgadzać się z blokiem w tolerancji 5% (`docs/assets.md`). Pilnuje tego `tests/unit/roomBlockModelFit.test.ts` dla wszystkich pokoi (rozciągliwe: tolerancja 2%).
+
 Uliczka ok. 10 × 44 m z wszystkimi 24 modelami `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy); lista modeli w `src/scenes/cityPropsTest.ts`. Parametry: `prop=<nazwa>` (np. `city_car`, kamera 3/4 z bliska), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2` (przegląd: wzdłuż ulicy, odwrotnie, z góry). Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.

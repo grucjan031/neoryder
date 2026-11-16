@@ -270,6 +270,15 @@ Model wroga wybiera pole `model` w `src/data/enemies/<id>.json` (nazwa pliku bez
 
 Kolizje: wyprowadzaj z prostych brył w kodzie (prostopadłościany, kapsuły), nie z siatek modeli.
 
+### Montaż bloków pokoju (skala do kolizji)
+
+Collider bloku to zawsze prostopadłościan `size` z JSON pokoju; widoczny model musi go wypełniać.
+
+- **Bryły rozciągliwe** — `pillar`, `cover_low`, `wall_segment`: gra skaluje model niejednorodnie tak, by bounding box był równy `size` bloku (spód na spodzie bloku, środek w środku). Wymiary GLB są tylko proporcją bazową. Gdy dłuższy bok podstawy bloku leży w osi Z, a modelu w X, model obraca się o 90° wokół Y (osłona 1 × 1,2 × 4 m dostaje skalę 2 × 1,2 × 1,67 zamiast 0,5 × 1,2 × 6,67). Detale tych modeli muszą znosić skalę ok. 0,6–2× na osi.
+- **Rekwizyty o stałych proporcjach** — `city_*`, `crate`, `crate_small`: skala 1, bez rozciągania. Blok w danych pokoju ma mieć wymiary modelu w tolerancji 5% (tabela „Miasto”, docelowe bloki kolizji); większy rozjazd to błąd danych pokoju, nie modelu.
+
+Test: `tests/unit/roomBlockModelFit.test.ts` (wszystkie pokoje, prawdziwe GLB).
+
 ## Uwagi do F1
 
 - Modele to placeholdery w docelowym stylu. Dopracowanie (więcej archetypów, warianty frakcji) w kolejnych fazach.
