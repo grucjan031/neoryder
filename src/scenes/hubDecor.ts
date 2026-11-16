@@ -205,13 +205,24 @@ export class HubDecor {
       polygonOffsetFactor: -1,
       polygonOffsetUnits: -2,
     });
-    material.userData.bloom = true;
     this.materials.push(material);
     if (typeof document !== 'undefined') {
-      const texture = this.tunnelTexture(panel.size);
-      if (texture) {
-        material.map = texture;
-        this.textures.push(texture);
+      const textures = this.tunnelTextures(panel.size);
+      if (textures) {
+        material.map = textures.map;
+        // Maska bloomu obejmuje tylko sygnały (alfa = ich poświata); ciemne tło tunelu nie trafia do bloomu,
+        // więc rozmycie nie przyciemnia ściany wokół wylotu.
+        const glow = new MeshBasicMaterial({
+          map: textures.glow,
+          color: 0xffffff,
+          transparent: true,
+          depthWrite: false,
+          toneMapped: false,
+        });
+        this.materials.push(glow);
+        material.userData.bloom = true;
+        material.userData.bloomMaterial = glow;
+        this.textures.push(textures.map, textures.glow);
       }
     } else material.color.set(TUNNEL_DARK);
     const mesh = new Mesh(geometry, material);
@@ -221,12 +232,19 @@ export class HubDecor {
     return mesh;
   }
 
-  private tunnelTexture(size: { w: number; h: number }): CanvasTexture | null {
+  private tunnelTextures(size: {
+    w: number;
+    h: number;
+  }): { map: CanvasTexture; glow: CanvasTexture } | null {
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(size.w * TUNNEL_PX_PER_M);
     canvas.height = Math.round(size.h * TUNNEL_PX_PER_M);
+    const glowCanvas = document.createElement('canvas');
+    glowCanvas.width = canvas.width;
+    glowCanvas.height = canvas.height;
     const g = canvas.getContext('2d');
-    if (!g) return null;
+    const glowContext = glowCanvas.getContext('2d');
+    if (!g || !glowContext) return null;
     const { width: w, height: h } = canvas;
     // Punkt zbiegu nieco poniżej środka (oko gracza stoi na peronie, nad dnem niecki).
     const vx = w / 2;
@@ -309,35 +327,49 @@ export class HubDecor {
       { t: 0.45, side: -1, color: TUNNEL_SIGNALS[0], r: 0.022 },
       { t: 0.78, side: 1, color: TUNNEL_SIGNALS[1], r: 0.012 },
     ];
-    for (const signal of signals) {
-      const x =
-        lerp(signal.side < 0 ? 0 : w, vx, signal.t) - signal.side * w * 0.03;
-      const y = lerp(h * 0.42, vy, signal.t);
-      const glow = g.createRadialGradient(x, y, 0, x, y, w * signal.r * 6);
-      glow.addColorStop(0, signal.color);
-      glow.addColorStop(0.18, `${signal.color}88`);
-      glow.addColorStop(1, `${signal.color}00`);
-      g.fillStyle = glow;
-      g.fillRect(
-        x - w * signal.r * 6,
-        y - w * signal.r * 6,
-        w * signal.r * 12,
-        w * signal.r * 12,
-      );
-      g.fillStyle = '#fff1d6';
-      g.beginPath();
-      g.arc(x, y, Math.max(1.5, w * signal.r * 0.45), 0, Math.PI * 2);
-      g.fill();
-    }
+    // Sygnały rysowane na teksturze barwy i na przezroczystej masce bloomu.
+    const drawSignals = (context: CanvasRenderingContext2D): void => {
+      for (const signal of signals) {
+        const x =
+          lerp(signal.side < 0 ? 0 : w, vx, signal.t) - signal.side * w * 0.03;
+        const y = lerp(h * 0.42, vy, signal.t);
+        const glow = context.createRadialGradient(
+          x,
+          y,
+          0,
+          x,
+          y,
+          w * signal.r * 6,
+        );
+        glow.addColorStop(0, signal.color);
+        glow.addColorStop(0.18, `${signal.color}88`);
+        glow.addColorStop(1, `${signal.color}00`);
+        context.fillStyle = glow;
+        context.fillRect(
+          x - w * signal.r * 6,
+          y - w * signal.r * 6,
+          w * signal.r * 12,
+          w * signal.r * 12,
+        );
+        context.fillStyle = '#fff1d6';
+        context.beginPath();
+        context.arc(x, y, Math.max(1.5, w * signal.r * 0.45), 0, Math.PI * 2);
+        context.fill();
+      }
+    };
+    drawSignals(g);
+    drawSignals(glowContext);
     // Brzeg wylotu przyciemniony, żeby płaszczyzna zlała się ze ścianą.
     const edge = g.createLinearGradient(0, 0, 0, h);
     edge.addColorStop(0, '#000000aa');
     edge.addColorStop(0.15, '#00000000');
     g.fillStyle = edge;
     g.fillRect(0, 0, w, h);
-    const texture = new CanvasTexture(canvas);
-    texture.colorSpace = SRGBColorSpace;
-    return texture;
+    const map = new CanvasTexture(canvas);
+    map.colorSpace = SRGBColorSpace;
+    const glow = new CanvasTexture(glowCanvas);
+    glow.colorSpace = SRGBColorSpace;
+    return { map, glow };
   }
 
   /** Płomień: kilka skrzyżowanych płaszczyzn z gradientem, mieszanie addytywne i bloom. */
