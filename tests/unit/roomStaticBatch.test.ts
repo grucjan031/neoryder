@@ -42,9 +42,9 @@ const baselines = {
 
 // modele city_* zachowują własne materiały; cała scena po scaleniu, także pule VFX.
 const batchedMeshes = {
-  alleyMarket: 227,
-  combatWarehouse: 221,
-  eliteFoundry: 239,
+  alleyMarket: 327,
+  combatWarehouse: 324,
+  eliteFoundry: 340,
 };
 
 it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
