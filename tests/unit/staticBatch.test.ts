@@ -178,3 +178,30 @@ it.each([
     }
   });
 });
+
+it('cellSize scala tylko w obrębie komórki XZ, żeby frustum culling dalej działał', () => {
+  const root = new Group();
+  const geometry = new BoxGeometry();
+  const material = new MeshBasicMaterial();
+  const at = (x: number, z: number) => {
+    const mesh = new Mesh(geometry, material);
+    mesh.position.set(x, 0, z);
+    root.add(mesh);
+  };
+  // Komórka (0,0): dwie siatki; komórka (2,0): dwie; komórka (0,-1): jedna (zostaje).
+  at(1, 1);
+  at(3, 2);
+  at(21, 1);
+  at(24, 4);
+  at(2, -3);
+  const owned = new Set<BufferGeometry>();
+  batchStaticGeometry(root, owned, { cellSize: 10 });
+  const meshes = root.children.filter((child) => child instanceof Mesh);
+  expect(owned.size).toBe(2);
+  expect(meshes).toHaveLength(3);
+  for (const geometry of owned) {
+    const box = geometry.boundingBox!;
+    expect(box.max.x - box.min.x).toBeLessThan(10);
+    expect(box.max.z - box.min.z).toBeLessThan(10);
+  }
+});
