@@ -13,11 +13,36 @@
       "effects": {
         "tags": ["#build_resonance"],
         "patches": [
-          { "target": "power:chain", "op": "mul", "path": "cost", "value": 0.85 },
-          { "target": "power:push", "op": "mul", "path": "cost", "value": 0.85 },
-          { "target": "power:shockwave", "op": "mul", "path": "cost", "value": 0.85 },
-          { "target": "power:barrier", "op": "mul", "path": "cost", "value": 0.85 },
-          { "target": "power:focus", "op": "mul", "path": "cost", "value": 0.85 },
+          {
+            "target": "power:chain",
+            "op": "mul",
+            "path": "cost",
+            "value": 0.85
+          },
+          {
+            "target": "power:push",
+            "op": "mul",
+            "path": "cost",
+            "value": 0.85
+          },
+          {
+            "target": "power:shockwave",
+            "op": "mul",
+            "path": "cost",
+            "value": 0.85
+          },
+          {
+            "target": "power:barrier",
+            "op": "mul",
+            "path": "cost",
+            "value": 0.85
+          },
+          {
+            "target": "power:focus",
+            "op": "mul",
+            "path": "cost",
+            "value": 0.85
+          },
           { "target": "power:grab", "op": "mul", "path": "cost", "value": 0.85 }
         ]
       }
@@ -32,8 +57,18 @@
       "effects": {
         "patches": [
           { "target": "power:chain", "op": "add", "path": "jumps", "value": 1 },
-          { "target": "power:chain", "op": "add", "path": "jumpRangeM", "value": 2 },
-          { "target": "power:chain", "op": "mul", "path": "damage", "value": 1.2 }
+          {
+            "target": "power:chain",
+            "op": "add",
+            "path": "jumpRangeM",
+            "value": 2
+          },
+          {
+            "target": "power:chain",
+            "op": "mul",
+            "path": "damage",
+            "value": 1.2
+          }
         ]
       }
     },
@@ -46,10 +81,25 @@
       "requires": ["resonanceRoot"],
       "effects": {
         "patches": [
-          { "target": "power:push", "op": "mul", "path": "wallSlamDamage", "value": 1.25 },
+          {
+            "target": "power:push",
+            "op": "mul",
+            "path": "wallSlamDamage",
+            "value": 1.25
+          },
           { "target": "power:push", "op": "add", "path": "range", "value": 2 },
-          { "target": "power:shockwave", "op": "mul", "path": "wallSlamDamage", "value": 1.25 },
-          { "target": "power:shockwave", "op": "add", "path": "range", "value": 2 }
+          {
+            "target": "power:shockwave",
+            "op": "mul",
+            "path": "wallSlamDamage",
+            "value": 1.25
+          },
+          {
+            "target": "power:shockwave",
+            "op": "add",
+            "path": "range",
+            "value": 2
+          }
         ]
       }
     },
@@ -76,9 +126,24 @@
       "requires": ["resonanceKineticWave"],
       "effects": {
         "patches": [
-          { "target": "power:barrier", "op": "add", "path": "durationS", "value": 1 },
-          { "target": "power:barrier", "op": "set", "path": "arcDeg", "value": 220 },
-          { "target": "power:focus", "op": "add", "path": "durationS", "value": 1 }
+          {
+            "target": "power:barrier",
+            "op": "add",
+            "path": "durationS",
+            "value": 1
+          },
+          {
+            "target": "power:barrier",
+            "op": "set",
+            "path": "arcDeg",
+            "value": 220
+          },
+          {
+            "target": "power:focus",
+            "op": "add",
+            "path": "durationS",
+            "value": 1
+          }
         ]
       }
     },
@@ -91,8 +156,18 @@
       "requires": ["resonanceChainSplit"],
       "effects": {
         "patches": [
-          { "target": "power:grab", "op": "add", "path": "maxMassKg", "value": 50 },
-          { "target": "power:grab", "op": "mul", "path": "impactDamage", "value": 1.3 }
+          {
+            "target": "power:grab",
+            "op": "add",
+            "path": "maxMassKg",
+            "value": 50
+          },
+          {
+            "target": "power:grab",
+            "op": "mul",
+            "path": "impactDamage",
+            "value": 1.3
+          }
         ],
         "runStart": { "credits": 25 }
       }

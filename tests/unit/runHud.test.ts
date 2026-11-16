@@ -124,7 +124,12 @@ describe('RunHud', () => {
 
   describe('boss bar', () => {
     const spawn = (): void =>
-      bus.emit('boss_spawned', { id: 7, name: 'Strażnik', maxHealth: 400, phaseThresholds: [0.65, 0.3] });
+      bus.emit('boss_spawned', {
+        id: 7,
+        name: 'Strażnik',
+        maxHealth: 400,
+        phaseThresholds: [0.65, 0.3],
+      });
     const fill = (): string =>
       q('.run-hud__boss-fill').style.getPropertyValue('--p');
 
@@ -146,7 +151,11 @@ describe('RunHud', () => {
     it('draws phases-1 ticks and animates the phase change', () => {
       spawn();
       expect(all('.run-hud__boss-tick')).toHaveLength(2);
-      expect(all('.run-hud__boss-tick').map((tick) => tick.style.getPropertyValue('--at'))).toEqual(['0.350', '0.700']);
+      expect(
+        all('.run-hud__boss-tick').map((tick) =>
+          tick.style.getPropertyValue('--at'),
+        ),
+      ).toEqual(['0.350', '0.700']);
       bus.emit('boss_phase', { id: 7, phase: 1, phases: 3 });
       expect(all('.run-hud__boss-tick')).toHaveLength(2);
       expect(q('.run-hud__boss').dataset.phase).toBe('1');
@@ -161,7 +170,9 @@ describe('RunHud', () => {
       expect(shield.hidden).toBe(true);
       bus.emit('boss_shield', { id: 7, current: 60, max: 120 });
       expect(shield.hidden).toBe(false);
-      expect(q('.run-hud__boss-shield-fill').style.getPropertyValue('--p')).toBe('0.500');
+      expect(
+        q('.run-hud__boss-shield-fill').style.getPropertyValue('--p'),
+      ).toBe('0.500');
       bus.emit('boss_shield', { id: 7, current: 0, max: 0 });
       expect(shield.hidden).toBe(true);
     });
