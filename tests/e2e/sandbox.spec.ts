@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, waitSimSteps } from './helpers';
 import { tuning } from '../../src/core/tuning';
 
 test('sandbox ładuje canvas bez błędów i wykonuje kroki', async ({
@@ -10,10 +10,12 @@ test('sandbox ładuje canvas bez błędów i wykonuje kroki', async ({
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=sandbox&debug=1&seed=e2e');
+  await page.goto('/?scene=sandbox&debug=1&fx=lite&seed=e2e');
   await expect(page.locator('canvas').first()).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('sandbox');
   const initial = await page.evaluate(() => window.__neoryder?.tick() ?? 0);
   await expect
@@ -27,7 +29,7 @@ test('sandbox ładuje canvas bez błędów i wykonuje kroki', async ({
 });
 
 test('kostka spada i stabilizuje się nad podłogą', async ({ page }) => {
-  await page.goto('/?scene=sandbox&debug=1');
+  await page.goto('/?scene=sandbox&debug=1&fx=lite');
   await expect
     .poll(() => page.evaluate(() => typeof window.__neoryder?.query('cubeY')))
     .toBe('number');
@@ -58,7 +60,7 @@ test('kostka spada i stabilizuje się nad podłogą', async ({ page }) => {
 test('spawn cube zwiększa liczbę ciał, reset ją przywraca i konsola ma historię', async ({
   page,
 }) => {
-  await page.goto('/?scene=sandbox&debug=1&seed=console-test');
+  await page.goto('/?scene=sandbox&debug=1&fx=lite&seed=console-test');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.query('bodies')))
     .toBe(2);
@@ -108,7 +110,7 @@ test('nieznana scena pokazuje komunikat i listę dostępnych scen', async ({
 test('utrata fokusu zatrzymuje tick, menu pauzy wznawia i prosi o pointer lock', async ({
   page,
 }) => {
-  await page.goto('/?scene=sandbox&debug=1');
+  await page.goto('/?scene=sandbox&debug=1&fx=lite');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.tick() ?? 0))
     .toBeGreaterThan(0);
@@ -145,7 +147,7 @@ test('tryb produkcyjny bez debug nie wystawia uchwytu ani konsoli', async ({
 test('bez ?scene= w debug pokazuje menu gry z Kryjówką i przyciskiem Sceny debug', async ({
   page,
 }) => {
-  await page.goto('/?debug=1');
+  await page.goto('/?debug=1&fx=lite');
   await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Kryjówka' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Walka z wrogami/ })).toHaveCount(
@@ -160,7 +162,7 @@ test('bez ?scene= w debug pokazuje menu gry z Kryjówką i przyciskiem Sceny deb
 });
 
 test('?scenes=1&debug=1 pokazuje menu scen z linkami', async ({ page }) => {
-  await page.goto('/?scenes=1&debug=1');
+  await page.goto('/?scenes=1&debug=1&fx=lite');
   await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);
   const link = page.getByRole('link', { name: /Walka z wrogami/ });

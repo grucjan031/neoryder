@@ -1,3 +1,4 @@
+import { LOAD_TIMEOUT } from './helpers';
 import { test, expect } from '@playwright/test';
 
 test('damage-test loads without console errors and applies hit 30', async ({
@@ -8,9 +9,11 @@ test('damage-test loads without console errors and applies hit 30', async ({
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=damage-test&debug=1&seed=damage-e2e');
+  await page.goto('/?scene=damage-test&debug=1&fx=lite&seed=damage-e2e');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('damage-test');
   await expect(page.getByLabel('Scena NEORYDER')).toBeVisible();
   await expect(page.getByLabel('Zdrowie manekina')).toContainText(

@@ -14,6 +14,7 @@ import { loadSettings } from '../core/save';
 import type { Settings } from '../core/save';
 import { tuning } from '../core/tuning';
 import { getMaterial } from './materials';
+import { getLiteFx } from './fxMode';
 
 /** Magenta jest zarezerwowana dla Rezonansu (ADR 0006): tylko wybuchy z tagiem #power. */
 const ELECTRIC = new Color('#fff1d6');
@@ -123,11 +124,12 @@ export class ExplosionRenderer {
       slot.ring.visible = slot.fire;
       this.animate(slot);
       if (!slot.fire) return;
-      options.burstSparks?.(
-        point,
-        tuning.vfx.explosionSparkCount,
-        FIRE.getHex(),
-      );
+      if (!getLiteFx())
+        options.burstSparks?.(
+          point,
+          tuning.vfx.explosionSparkCount,
+          FIRE.getHex(),
+        );
       const player = options.playerPosition?.();
       if (!player || !(radiusM > 0)) return;
       const distance = Math.hypot(
@@ -165,6 +167,12 @@ export class ExplosionRenderer {
   }
 
   private animate(slot: (typeof this.pool)[number]): void {
+    if (getLiteFx()) {
+      slot.mesh.visible = false;
+      slot.core.visible = false;
+      slot.ring.visible = false;
+      return;
+    }
     const t = tuning.vfx;
     const progress = Math.min(1, slot.age / t.explosionDurationS);
     const growth = slot.fire

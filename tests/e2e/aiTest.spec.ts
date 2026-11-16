@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 test('ai-test loads cleanly, spawns assaulters and kills them through DamageSystem', async ({
   page,
@@ -9,10 +9,10 @@ test('ai-test loads cleanly, spawns assaulters and kills them through DamageSyst
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=ai-test&debug=1&seed=ai-e2e');
+  await page.goto('/?scene=ai-test&debug=1&fx=lite&seed=ai-e2e');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-      timeout: SIM_TIMEOUT,
+      timeout: LOAD_TIMEOUT,
     })
     .toBe('ai-test');
   await expect(page.getByLabel('Zdrowie gracza')).toContainText('100 / 100 HP');
@@ -39,10 +39,10 @@ test('ai-test loads cleanly, spawns assaulters and kills them through DamageSyst
 test('spawn gunner adds a ranged enemy whose projectiles damage the player with god disabled', async ({
   page,
 }) => {
-  await page.goto('/?scene=ai-test&debug=1&seed=gunner-e2e');
+  await page.goto('/?scene=ai-test&debug=1&fx=lite&seed=gunner-e2e');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-      timeout: SIM_TIMEOUT,
+      timeout: LOAD_TIMEOUT,
     })
     .toBe('ai-test');
   const result = await page.evaluate(() => {
@@ -76,10 +76,10 @@ test('spawn sniper and drone (F2-13) renders both new archetypes without console
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=ai-test&debug=1&seed=f2-13-e2e');
+  await page.goto('/?scene=ai-test&debug=1&fx=lite&seed=f2-13-e2e');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-      timeout: SIM_TIMEOUT,
+      timeout: LOAD_TIMEOUT,
     })
     .toBe('ai-test');
   const after = await page.evaluate(() => {

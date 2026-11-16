@@ -17,11 +17,107 @@ import { applyTheme, resolveTheme } from '../../src/render/themes';
 import { CityDressing } from '../../src/render/city/dressing';
 import { CityLights } from '../../src/render/city/lights';
 import { CityParticleBatch } from '../../src/render/city/particles';
+import { configureFx, isLiteFx, preserveLiteFx } from '../../src/render/fxMode';
+import { EventBus } from '../../src/core/events';
+import { ExplosionRenderer } from '../../src/render/explosionRenderer';
 
 const original = { ...tuning.render };
 afterEach(() => {
+  configureFx(new URLSearchParams());
   applyQuality('high');
   Object.assign(tuning.render, original);
+});
+
+it.each([
+  ['', false],
+  ['fx=lite', false],
+  ['debug=0&fx=lite', false],
+  ['debug=1', false],
+  ['debug=1&fx=full', false],
+  ['debug=1&fx=lite', true],
+] as const)('flaga renderu %s wymaga jawnego debug=1', (search, enabled) => {
+  const params = new URLSearchParams(search);
+  expect(isLiteFx(params)).toBe(enabled);
+  configureFx(params);
+  const f = fixture();
+  try {
+    applyQuality('high', f.targets);
+    expect(getQuality().outline).toBe(enabled ? 0 : 1);
+    expect(f.renderer.setPixelRatio).toHaveBeenLastCalledWith(enabled ? 1 : 2);
+    const next = new URLSearchParams({ scene: 'hub', debug: '1' });
+    preserveLiteFx(params, next);
+    expect(next.get('fx')).toBe(enabled ? 'lite' : null);
+  } finally {
+    f.pipeline.dispose();
+  }
+});
+
+it('lite omija maski i postprocessing mimo motywu i zmiany jakości', () => {
+  configureFx(new URLSearchParams('debug=1&fx=lite'));
+  const f = fixture();
+  const restore = applyTheme(resolveTheme('neonStreet', ''));
+  const dressing = new CityDressing(
+    new Group(),
+    {},
+    resolveTheme('neonStreet', ''),
+    0,
+    'lite',
+  );
+  try {
+    for (const profile of ['low', 'medium', 'high'] as const) {
+      applyQuality(profile, f.targets);
+      f.renderer.render.mockClear();
+      f.widths.length = 0;
+      f.pipeline.render(new Scene(), new PerspectiveCamera(), 0);
+      expect(f.renderer.render).toHaveBeenCalledOnce();
+      expect(f.widths).toEqual([0]);
+      expect(f.renderer.shadowMap.enabled).toBe(false);
+      expect(f.renderer.setPixelRatio).toHaveBeenLastCalledWith(1);
+      expect(getQuality()).toMatchObject({
+        bloom: 0,
+        reflections: 0,
+        rainDensity: 0,
+        particleDensity: 0,
+      });
+    }
+    expect(dressing.weather).toBeUndefined();
+  } finally {
+    dressing.dispose();
+    restore();
+    f.pipeline.dispose();
+  }
+});
+
+it('lite pomija wizualne warstwy wybuchu, zachowując hitstop i wstrząs', () => {
+  configureFx(new URLSearchParams('debug=1&fx=lite'));
+  const bus = new EventBus();
+  const burstSparks = vi.fn();
+  const hitstop = vi.fn();
+  const shake = vi.fn();
+  bus.on('hitstop', hitstop);
+  bus.on('camera_shake', shake);
+  const view = new ExplosionRenderer(bus, {
+    burstSparks,
+    playerPosition: () => ({ x: 0, y: 0, z: 0 }),
+    settings: { flashes: true, screenShake: 1 },
+  });
+  try {
+    bus.emit('explosion', {
+      point: { x: 0, y: 0, z: 0 },
+      radiusM: 4,
+      owner: 1,
+      tags: ['#fire'],
+    });
+    view.render(0.01);
+    expect(view.root.children.every((mesh) => !mesh.visible)).toBe(true);
+    expect(burstSparks).not.toHaveBeenCalled();
+    expect(hitstop).toHaveBeenCalledExactlyOnceWith({
+      ms: tuning.vfx.explosionHitstopMs,
+    });
+    expect(shake).toHaveBeenCalledOnce();
+  } finally {
+    view.dispose();
+  }
 });
 
 function fixture() {

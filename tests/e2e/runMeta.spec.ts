@@ -1,3 +1,4 @@
+import { LOAD_TIMEOUT } from './helpers';
 import { expect, test } from '@playwright/test';
 
 test('run z kryjówki: ekwipunek z meta, zwycięstwo zapisuje nagrody i pokazuje je w podsumowaniu', async ({
@@ -10,8 +11,10 @@ test('run z kryjówki: ekwipunek z meta, zwycięstwo zapisuje nagrody i pokazuje
   const command = (value: string) =>
     page.evaluate((line) => window.__neoryder?.command(line), value);
 
-  await page.goto('/?scene=run&loadout=meta&seed=meta-e2e&debug=1');
-  await expect.poll(() => query('screen')).toBe('map');
+  await page.goto('/?scene=run&loadout=meta&seed=meta-e2e&debug=1&fx=lite');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   expect(await query('runState')).toMatchObject({
     loadoutId: 'custom',
     talents: [],
@@ -36,8 +39,10 @@ test('run z kryjówki: ekwipunek z meta, zwycięstwo zapisuje nagrody i pokazuje
 
   // Nagrody są zapisane (zapis przed clearRun) i nie wracają po ponownym wejściu.
   await expect.poll(() => query('savePending')).toBe(false);
-  await page.goto('/?scene=run&loadout=meta&seed=meta-e2e-2&debug=1');
-  await expect.poll(() => query('screen')).toBe('map');
+  await page.goto('/?scene=run&loadout=meta&seed=meta-e2e-2&debug=1&fx=lite');
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
   expect(await query('meta')).toMatchObject({
     xp: 90,
     data: 30,

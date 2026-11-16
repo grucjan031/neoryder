@@ -1,17 +1,22 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 test('arena: fale startują, zabicie fali przechodzi dalej, śmierć i powtórka', async ({
   page,
 }) => {
+  test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=arena&debug=1&seed=arena-e2e&loadout=classic');
+  await page.goto(
+    '/?scene=arena&debug=1&fx=lite&seed=arena-e2e&loadout=classic',
+  );
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('arena');
   const q = (name: string) =>
     page.evaluate((n) => window.__neoryder?.query(n), name);

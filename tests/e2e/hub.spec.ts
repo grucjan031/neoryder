@@ -1,7 +1,7 @@
 import hideout from '../../src/data/hub/hideout.json' with { type: 'json' };
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -16,10 +16,10 @@ const query = (page: Page, name: string) =>
 const command = (page: Page, line: string) =>
   page.evaluate((l) => window.__neoryder?.command(l), line);
 const openHub = async (page: Page, extra = '') => {
-  await page.goto(`/?scene=hub&debug=1&seed=hub-e2e${extra}`);
+  await page.goto(`/?scene=hub&debug=1&fx=lite&seed=hub-e2e${extra}`);
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-      timeout: SIM_TIMEOUT,
+      timeout: LOAD_TIMEOUT,
     })
     .toBe('hub');
   await waitSimSteps(page, 5);
@@ -38,7 +38,7 @@ test('menu → Kryjówka → scena hub startuje bez błędów konsoli', async ({
   await expect(page).toHaveURL(/scene=hub/);
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.hint')).toContainText('hub', {
-    timeout: SIM_TIMEOUT,
+    timeout: LOAD_TIMEOUT,
   });
   await expect(page.locator('.hub-screen')).toBeHidden();
   await page.waitForTimeout(1500);
@@ -72,7 +72,7 @@ test('hub: hub open missions pokazuje nakładkę, Zamknij ją chowa, a Rozpoczni
   await page.getByRole('button', { name: 'Rozpocznij run' }).click();
   await started;
   await expect(page.getByRole('heading', { name: 'Mapa sektora' })).toBeVisible(
-    { timeout: SIM_TIMEOUT },
+    { timeout: LOAD_TIMEOUT },
   );
   expect(errors).toEqual([]);
 });
@@ -122,7 +122,7 @@ test('hub: tablica misji → wybór Poziomu zagrożenia → Rozpocznij run start
   await page.getByRole('button', { name: 'Rozpocznij run' }).click();
   await started;
   await expect(page.getByRole('heading', { name: 'Mapa sektora' })).toBeVisible(
-    { timeout: SIM_TIMEOUT },
+    { timeout: LOAD_TIMEOUT },
   );
   const run = (await query(page, 'runState')) as {
     threatLevel: number;

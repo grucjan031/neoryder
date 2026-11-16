@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 test('perf: arena pod obciążeniem', async ({ page }, testInfo) => {
   const quality = process.env.PERF_QUALITY ?? 'high';
@@ -16,7 +16,9 @@ test('perf: arena pod obciążeniem', async ({ page }, testInfo) => {
   });
   await page.goto('/?scene=arena&debug=1&seed=perf-e2e&loadout=classic');
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('arena');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.query('phase')), {

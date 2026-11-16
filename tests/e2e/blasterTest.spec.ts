@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, waitSimSteps } from './helpers';
 
 test('blaster-test fires at dummies and exposes overheat without console errors', async ({
   page,
@@ -9,10 +9,10 @@ test('blaster-test fires at dummies and exposes overheat without console errors'
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=blaster-test&debug=1&seed=blaster-e2e');
+  await page.goto('/?scene=blaster-test&debug=1&fx=lite&seed=blaster-e2e');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-      timeout: SIM_TIMEOUT,
+      timeout: LOAD_TIMEOUT,
     })
     .toBe('blaster-test');
   await expect(page.getByLabel('Scena NEORYDER')).toBeVisible();

@@ -7,6 +7,7 @@ import { SettingsScreen } from './settingsScreen';
 import settingsText from '../data/ui/settings.pl.json';
 import tutorialText from '../data/ui/tutorial.pl.json';
 import { tutorialDone } from '../data/tutorial/schema';
+import { preserveLiteFx } from '../render/fxMode';
 import './mainMenu.css';
 
 const text = z
@@ -53,6 +54,7 @@ export class MainMenu {
     const query = (scene: string): URLSearchParams => {
       const params = new URLSearchParams({ scene });
       if (options.params?.get('debug') === '1') params.set('debug', '1');
+      if (options.params) preserveLiteFx(options.params, params);
       return params;
     };
     this.root.className = 'main-menu';
@@ -140,6 +142,7 @@ export class MainMenu {
       this.root.querySelector('.build-select__panel')?.prepend(back);
       const scenes = new URLSearchParams({ scenes: '1' });
       if (options.params?.get('debug') === '1') scenes.set('debug', '1');
+      if (options.params) preserveLiteFx(options.params, scenes);
       this.root.append(button(t.debug, () => navigate(`?${scenes}`)));
     }
     const runReady = saveStore

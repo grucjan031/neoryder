@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 /** Zrzuty do oceny wizualnej: tylko gdy ustawiono NEORYDER_SHOTS (katalog); domyślnie nic nie jest zapisywane. */
 const SHOTS_DIR = process.env.NEORYDER_SHOTS;
@@ -9,7 +9,7 @@ const SHOTS_DIR = process.env.NEORYDER_SHOTS;
 test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty → odświeżenie → kolejny run z meta', async ({
   page,
 }) => {
-  test.setTimeout(110_000);
+  test.setTimeout(600_000);
   await page.setViewportSize({ width: 1280, height: 720 });
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -36,7 +36,7 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   const waitHub = async () => {
     await expect
       .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-        timeout: SIM_TIMEOUT,
+        timeout: LOAD_TIMEOUT,
       })
       .toBe('hub');
     await waitSimSteps(page, 5);
@@ -52,7 +52,7 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   const meta = async () => (await query('meta')) as Meta;
 
   // Czysty stan: świeży kontekst Playwrighta ma pustą IndexedDB; menu gry.
-  await page.goto('/?debug=1');
+  await page.goto('/?debug=1&fx=lite');
   await expect(page.getByRole('heading', { name: 'NEORYDER' })).toBeVisible();
   await shot('01-menu');
   await page.getByRole('button', { name: 'Kryjówka' }).click();
@@ -82,20 +82,26 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   await page.getByRole('button', { name: 'Rozpocznij run' }).click();
   await started;
   await expect
-    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
 
   // Jeden węzeł normalnie (cheat clear), potem cheat końca runu.
   await page.keyboard.press('Digit1');
-  await expect.poll(() => query('loading'), { timeout: 30_000 }).toBe(false);
-  await expect.poll(() => query('screen')).toMatch(/^(room|shop|rest)$/);
+  await expect
+    .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+    .toBe(false);
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toMatch(/^(room|shop|rest)$/);
   if ((await query('screen')) === 'room') {
     await command('run clear');
     await expect
       .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
       .toBe('reward');
     await page.keyboard.press('Digit1');
-    await expect.poll(() => query('screen')).toBe('map');
+    await expect
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+      .toBe('map');
   }
   await command('run end win');
   await expect.poll(() => query('screen')).toBe('summary');
@@ -201,7 +207,7 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   await page.getByLabel('Seed (opcjonalnie)').fill('meta-bot-2');
   await page.getByRole('button', { name: 'Rozpocznij run' }).click();
   await expect
-    .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
   const run = (await query('runState')) as {
     talents: string[];

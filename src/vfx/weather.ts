@@ -13,6 +13,7 @@ import {
 import type { Camera } from 'three';
 import { Rng } from '../core/rng';
 import { tuning } from '../core/tuning';
+import { getLiteFx } from '../render/fxMode';
 import { CityParticleBatch } from '../render/city/particles';
 import { disposeCityGroup } from '../render/city/resources';
 import type { Vec3 } from '../core/math';
@@ -149,6 +150,10 @@ export class Weather {
 
   update(dtWorldS: number, _dtRealS: number, camera: Camera): void {
     if (this.disposed) return;
+    if (getLiteFx()) {
+      this.root.visible = false;
+      return;
+    }
     const t = tuning.city;
     const dt = Math.max(0, dtWorldS);
     camera.getWorldPosition(this.cameraPosition);
