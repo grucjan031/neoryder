@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Box3, Mesh, Scene, type Object3D, type Material } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { Arena } from '../../src/scenes/arena';
 import { RoomScene } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
 import { GameLoop } from '../../src/core/loop';
@@ -225,3 +226,70 @@ it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
     }
   },
 );
+
+// Arena (po init, prawdziwe GLB). Pomiar 2026-11-16: static-blocks 5 -> 1,
+// static-models 11 -> 2, wszystkie siatki sceny 217. Budżet: 217 + ok. 20% zapasu;
+// podnoś go tylko świadomie, z nowym pomiarem w komentarzu.
+const ARENA_SCENE_MESH_BUDGET = 260;
+it('arena: scalone statyczne bloki i modele bloków, budżet siatek', async () => {
+  vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
+    async (url) => {
+      const data = await readFile(`public${url}`);
+      return new GLTFLoader().parseAsync(
+        data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength),
+        '',
+      );
+    },
+  );
+  const rows: {
+    source: string;
+    before: ReturnType<typeof counts>;
+    after: ReturnType<typeof counts>;
+  }[] = [];
+  const batch = staticBatch.batchStaticGeometry;
+  vi.spyOn(staticBatch, 'batchStaticGeometry').mockImplementation(
+    (root, owned) => {
+      const before = counts([root]);
+      const bounds = new Box3().setFromObject(root);
+      batch(root, owned);
+      const afterBounds = new Box3().setFromObject(root);
+      expect(afterBounds.min.distanceTo(bounds.min)).toBeLessThan(0.0001);
+      expect(afterBounds.max.distanceTo(bounds.max)).toBeLessThan(0.0001);
+      expect(counts([root]).materials).toBe(before.materials);
+      rows.push({ source: root.name, before, after: counts([root]) });
+    },
+  );
+  const scene = new Arena(true);
+  const three = new Scene();
+  try {
+    await scene.init(
+      {
+        bus: new EventBus(),
+        rng: new Rng('static-batch'),
+        loop: new GameLoop({ step() {}, render() {} }),
+        tuning: structuredClone(tuning),
+        debug: false,
+      },
+      three,
+    );
+    const blocks = rows.filter((row) =>
+      ['static-blocks', 'static-models'].includes(row.source),
+    );
+    expect(blocks.map((row) => row.source)).toEqual([
+      'static-blocks',
+      'static-models',
+    ]);
+    for (const row of blocks) {
+      expect(row.after.meshes).toBeGreaterThan(0);
+      expect(row.after.meshes).toBeLessThan(row.before.meshes);
+      expect(row.after.meshes).toBeLessThanOrEqual(
+        row.after.materials * MAX_STATIC_MESHES_PER_MATERIAL,
+      );
+    }
+    const after = counts([three]);
+    expect(after.meshes).toBeLessThanOrEqual(ARENA_SCENE_MESH_BUDGET);
+    console.log(JSON.stringify({ room: 'arena', sceneMeshes: after, rows }));
+  } finally {
+    scene.dispose();
+  }
+});
