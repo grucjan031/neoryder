@@ -31,6 +31,14 @@ export interface BossArenaFxOptions {
 
 const WAVES = 4;
 const COLUMNS = 4;
+/** Uniformy pola rażenia kopiowane do jego cienia mnożącego. */
+const SHADE_SYNC = ['uMode', 'uSpread', 'uRays', 'uSize', 'uProgress'] as const;
+/**
+ * Kolejność rysowania. Cień mnożący zaraz po bryłach nieprzezroczystych (przed wszystkimi
+ * efektami przezroczystymi, w tym barierą, wiązką i ostrzem gracza), linie pól nad resztą.
+ */
+const SHADE_ORDER = -20;
+const LINE_ORDER = 6;
 /** Wysokość nad podłogą: nad kałużami i kalkomaniami, bez migotania głębi. */
 const FLOOR_LIFT_M = 0.04;
 
@@ -105,7 +113,7 @@ const zoneFragment = /* glsl */ `
       float fade = pow(1.0 - r, 0.6) * smoothstep(0.03, 0.09, r);
       float tip = smoothstep(uProgress - 0.1, uProgress, r) * reach;
       alpha = (ray * (0.75 + tip) * edge + sector * 0.04 * fill) * reach * fade;
-      // Rdzeń promienia ku bursztynowi: na fioletowej ulicy czerwień nie różowieje.
+      // Rdzeń promienia ku ciepłej bieli: na fioletowej ulicy czerwień nie różowieje.
       hot = ray * max(tip, 0.3);
     } else if (uMode < 2.5) {
       float rings = pow(abs(sin((r * 3.0 - uTime * 1.3) * PI)), 10.0);
@@ -338,9 +346,11 @@ export class BossArenaFx {
       });
     if (this.lite) return;
     this.off.push(
-      bus.on('boss_spawned', ({ id }) => {
+      bus.on('boss_spawned', ({ id, phaseThresholds }) => {
         this.bossId = id;
         this.phase = 1;
+        this.phases = phaseThresholds.length + 1;
+        this.pendingMinions.length = 0;
         this.introS = 0;
         this.woke = false;
         this.deathS = -1;
@@ -354,7 +364,14 @@ export class BossArenaFx {
         if (!boss) return;
         const p = boss.current.position;
         this.wave(p, t.bossWaveRadiusM, t.bossWaveS, 0, 1);
-        this.wave(p, t.bossWaveRadiusM * 0.6, t.bossWaveS * 0.8, 0.14, 0.6);
+        const a = t.bossArena;
+        this.wave(
+          p,
+          t.bossWaveRadiusM * a.phaseEchoRadius,
+          t.bossWaveS * a.phaseEchoTime,
+          a.phaseEchoDelayS,
+          a.phaseEchoStrength,
+        );
         this.pulse(1, 1);
         this.bus.emit('camera_shake', {
           intensity: t.bossPhaseShake,
@@ -362,8 +379,14 @@ export class BossArenaFx {
           dir: null,
         });
       }),
-      bus.on('entity_spawned', ({ id }) => {
-        if (this.bossId !== null && id !== this.bossId)
+      bus.on('entity_spawned', ({ id, kind }) => {
+        // Kandydaci na sługi; pociski i gracz od razu odpadają, resztę sprawdza resolveMinions.
+        if (
+          this.bossId !== null &&
+          id !== this.bossId &&
+          kind !== 'projectile' &&
+          kind !== 'player'
+        )
           this.pendingMinions.push(id);
       }),
       bus.on('enemy_killed', ({ id }) => {
@@ -425,7 +448,7 @@ export class BossArenaFx {
     mesh.userData.noOutline = true;
     mesh.frustumCulled = false;
     mesh.visible = false;
-    mesh.renderOrder = multiply ? 5 : 6;
+    mesh.renderOrder = multiply ? SHADE_ORDER : LINE_ORDER;
     this.root.add(mesh);
     return mesh;
   }
@@ -469,10 +492,24 @@ export class BossArenaFx {
     this.deathPoint.x = p.x;
     this.deathPoint.y = this.opts.floorY + (boss.definition.body?.centerY ?? 1);
     this.deathPoint.z = p.z;
-    this.wave(p, t.bossWaveRadiusM * 0.35, 0.3, 0, 1.2);
-    this.wave(p, t.bossWaveRadiusM * 1.15, t.bossWaveS * 1.25, 0.18, 1);
-    this.wave(p, t.bossWaveRadiusM * 1.15, t.bossWaveS * 1.7, 0.5, 0.5);
-    this.column(p, 1.5, 34, t.bossDeathFxS);
+    const a = t.bossArena;
+    const core = a.deathCoreWave;
+    this.wave(
+      p,
+      t.bossWaveRadiusM * core.radius,
+      core.time,
+      core.delayS,
+      core.strength,
+    );
+    for (const w of [a.deathWave, a.deathEchoWave])
+      this.wave(
+        p,
+        t.bossWaveRadiusM * w.radius,
+        t.bossWaveS * w.time,
+        w.delayS,
+        w.strength,
+      );
+    this.column(p, a.deathColumnRadiusM, a.deathColumnHeightM, t.bossDeathFxS);
     this.pulse(1, 1.4);
     this.bus.emit('camera_shake', {
       intensity: t.bossDeathShake,
@@ -489,8 +526,18 @@ export class BossArenaFx {
     const phases = boss.definition.boss?.phases ?? [];
     return (
       phases[this.phase - 1]?.patterns.find((p) => p.kind === kind) ??
-      phases.flatMap((p) => p.patterns).find((p) => p.kind === kind)
+      this.anyPattern(phases, kind)
     );
+  }
+
+  private anyPattern(
+    phases: readonly { patterns: readonly BossPattern[] }[],
+    kind: string,
+  ): BossPattern | undefined {
+    for (const phase of phases)
+      for (const pattern of phase.patterns)
+        if (pattern.kind === kind) return pattern;
+    return undefined;
   }
 
   /** Nastrój areny: przyciemnienie na wejściu, błysk i czerwony odcień wg fazy. Wołać po `lights.sync()`. */
@@ -512,11 +559,9 @@ export class BossArenaFx {
     level *= 1 + this.lightFlash * (t.bossPhaseFlash - 1);
     lights.hemisphere.intensity *= level;
     lights.key.intensity *= level;
-    if (this.tint > 1e-3) {
-      lights.hemisphere.color.lerp(this.color, this.tint);
-      lights.hemisphere.groundColor.lerp(this.color, this.tint * 0.5);
-      lights.key.color.lerp(this.color, this.tint * 0.7);
-    }
+    // Tylko odbicie od podłogi: niebo i światło kluczowe zostają, otoczenie nie robi się „wrogie”.
+    if (this.tint > 1e-3)
+      lights.hemisphere.groundColor.lerp(this.color, this.tint);
   }
 
   render(alpha: number, frameDt: number): void {
@@ -539,9 +584,10 @@ export class BossArenaFx {
     this.tint += (tintTarget - this.tint) * (1 - Math.exp(-dt * 3));
     if (this.deathS >= 0) this.stepDeath(dt);
     if (!boss || !alive) {
-      this.glow.visible = this.deathS >= 0 && this.deathS < 0.9;
+      const glowS = t.bossArena.deathGlowS;
+      this.glow.visible = this.deathS >= 0 && this.deathS < glowS;
       if (this.glow.visible) {
-        const k = this.deathS / 0.9;
+        const k = this.deathS / glowS;
         this.glow.scale.setScalar(t.bossGlowRadiusM * (1.4 + k * 1.6));
         this.glow.material.uniforms.uOpacity!.value = (1 - k) * 0.9;
       }
@@ -595,7 +641,13 @@ export class BossArenaFx {
       const slam =
         this.lastKind === 'slam' ? this.pattern(boss, 'slam') : undefined;
       if (slam?.kind === 'slam')
-        this.wave(b.position, slam.radiusM, 0.28, 0, 1.3);
+        this.wave(
+          b.position,
+          slam.radiusM,
+          t.bossArena.slamWaveS,
+          0,
+          t.bossArena.slamWaveStrength,
+        );
     }
     this.lastState = b.state;
     this.lastKind = b.attack?.kind;
@@ -631,10 +683,10 @@ export class BossArenaFx {
         u.uSpread!.value = Math.max((pattern.spreadDeg * Math.PI) / 180, 0.02);
         u.uRays!.value = pattern.projectileCount;
       } else if (pattern?.kind === 'summon') {
-        radius = 3.2;
+        radius = t.bossArena.summonRadiusM;
         u.uMode!.value = 2;
       } else if (pattern?.kind === 'shield') {
-        radius = 2.8;
+        radius = t.bossArena.shieldRadiusM;
         u.uMode!.value = 3;
       }
       if (radius > 0) {
@@ -654,14 +706,7 @@ export class BossArenaFx {
         shade.rotation.y = yaw;
         shade.scale.setScalar(radius);
         const su = shade.material.uniforms;
-        for (const key of [
-          'uMode',
-          'uSpread',
-          'uRays',
-          'uSize',
-          'uProgress',
-        ] as const)
-          su[key]!.value = u[key]!.value;
+        for (const key of SHADE_SYNC) su[key]!.value = u[key]!.value;
         su.uOpacity!.value = clamp01(time / 0.08);
       }
     }
@@ -735,15 +780,14 @@ export class BossArenaFx {
 
   private stepDeath(dt: number): void {
     this.deathS += dt;
-    // Trzy rzuty iskier: wybuch, żar, dogasanie.
-    const bursts: [number, number, number][] = [
-      [0, 46, this.sparkHot],
-      [0.16, 34, this.sparkRed],
-      [0.42, 22, this.sparkRed],
-    ];
-    while (this.deathSparks < bursts.length) {
-      const [at, count, color] = bursts[this.deathSparks]!;
+    // Trzy rzuty iskier: wybuch (barwa gorąca), żar, dogasanie.
+    const s = this.opts.tuning.vfx.bossArena.deathSparks;
+    while (this.deathSparks < 3) {
+      const n = this.deathSparks;
+      const at = n === 0 ? s.burstS : n === 1 ? s.emberS : s.fadeS;
       if (this.deathS < at) break;
+      const count = n === 0 ? s.burst : n === 1 ? s.ember : s.fade;
+      const color = n === 0 ? this.sparkHot : this.sparkRed;
       this.opts.burstSparks?.({ ...this.deathPoint }, count, color);
       this.deathSparks++;
     }
@@ -755,11 +799,19 @@ export class BossArenaFx {
 
   /** Słup światła w miejscu, gdzie boss wezwał sługę (pozycja znana dopiero po spawnie). */
   private resolveMinions(): void {
-    for (const id of this.pendingMinions.splice(0)) {
+    if (this.pendingMinions.length === 0) return;
+    const a = this.opts.tuning.vfx.bossArena;
+    for (const id of this.pendingMinions) {
       const minion = this.opts.enemy(id);
       if (minion && minion.definition.kind !== 'boss')
-        this.column(minion.current.position, 0.9, 9, 0.7);
+        this.column(
+          minion.current.position,
+          a.minionColumnRadiusM,
+          a.minionColumnHeightM,
+          a.minionColumnS,
+        );
     }
+    this.pendingMinions.length = 0;
   }
 
   dispose(): void {

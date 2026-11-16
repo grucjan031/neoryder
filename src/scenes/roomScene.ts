@@ -242,6 +242,8 @@ export class RoomScene implements Scene {
     { role: 'entry' | 'exit'; mesh: Mesh; collider: Collider }
   >();
   private god = false;
+  /** Cisza po zwycięstwie nad bossem (RunScene): gracz nietykalny, bez pocisków i statusów. */
+  private victoryHold = false;
   private passiveEncounter = false;
   private readonly manualEncounter: boolean;
   private kills = 0;
@@ -1202,6 +1204,21 @@ export class RoomScene implements Scene {
   }
 
   // ----------------------------------------------------------------- śmierć i reset
+
+  enterVictoryHold(): void {
+    if (this.victoryHold || this.disposed) return;
+    this.victoryHold = true;
+    this.director.stop();
+    this.projectiles.dispose();
+    this.statuses.reset();
+    // Zagrożenia, beczki i sługi dalej żyją w tle, ale nie zadają już graczowi obrażeń.
+    this.playerStats.add({
+      stat: 'damageTaken',
+      type: 'mult',
+      value: 0,
+      source: 'victory-hold',
+    });
+  }
 
   private onPlayerDied(): void {
     this.state = 'dead';

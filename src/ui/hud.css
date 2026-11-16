@@ -923,7 +923,7 @@
 }
 /* Pasek bossa (BossBar): u góry, nad polem walki; czerwień = zagrożenie (ADR 0006). */
 .run-hud__boss {
-  --boss-hot: #ffc061;
+  --boss-hot: #ffd2c4;
   --boss-glow: #ff4a1c;
   /* Tło paska; etykiety stoją na tej samej płytce, więc kontrast liczy się względem niej. */
   --boss-plate: #0a0408e6;
@@ -941,7 +941,7 @@
   justify-content: space-between;
   align-items: baseline;
 }
-/* Licznik faz: jasny bursztynowo-różany na płytce paska (kontrast ok. 12:1, WCAG ≥ 4.5:1). */
+/* Licznik faz: jasny ciepły róż na płytce paska (kontrast ok. 12:1, WCAG ≥ 4.5:1). */
 .run-hud__boss-phase {
   padding: 1px 7px 0;
   font:
@@ -1338,6 +1338,10 @@
   }
   .run-hud__boss-verdict--show {
     animation: none !important;
+    opacity: 1;
+  }
+  /* Komunikat osłony bez mrugania: widoczny przez czas osłony (data-shift ustawia BossBar). */
+  .run-hud__boss[data-shift] .run-hud__boss-status {
     opacity: 1;
   }
   .hud__vitals::after,

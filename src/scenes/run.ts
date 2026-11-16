@@ -41,6 +41,12 @@ import { getLiteFx } from '../render/fxMode';
 import { RoomScene } from './roomScene';
 
 const CUSTOM_LOADOUT_ID = 'custom';
+const IDLE_INPUT: InputSnapshot = {
+  held: new Set(),
+  pressed: new Set(),
+  released: new Set(),
+  lookDelta: { x: 0, y: 0 },
+};
 
 export interface RunSavePort {
   loadRun(): Promise<RunState | null>;
@@ -50,6 +56,8 @@ export interface RunSavePort {
 
 export interface RunRoom extends Scene {
   clear(): void;
+  /** Cisza po zwycięstwie: pokój tylko „dogrywa” oprawę, gracz nie może już zginąć. */
+  enterVictoryHold?(): void;
   exportState(): Pick<RunState, 'hp' | 'energy'>;
 }
 
@@ -183,8 +191,10 @@ export class RunScene implements Scene {
           outcome === 'victory' && this.roomReady && !getLiteFx()
             ? this.ctx.tuning.vfx.bossVictoryHoldS
             : 0;
-        if (holdS > 0) this.victoryHoldRemainingS = holdS;
-        else this.schedule('end');
+        if (holdS > 0) {
+          this.victoryHoldRemainingS = holdS;
+          this.room?.enterVictoryHold?.();
+        } else this.schedule('end');
       }),
     );
     const params =
@@ -566,12 +576,13 @@ export class RunScene implements Scene {
     this.manager.step(dt);
     const waitingForReward = this.rewardDelayRemainingS !== null;
     const holding = this.victoryHoldRemainingS !== null;
+    // W ciszy pokój krokuje dalej (rozpad, odłamki, spowolnienie), ale bez wejścia gracza.
     if (
       this.roomReady &&
       (this.manager.screen === 'room' || holding) &&
       !this.pending
     )
-      this.room?.step(dt, input);
+      this.room?.step(dt, holding ? IDLE_INPUT : input);
     if (this.victoryHoldRemainingS !== null) {
       this.victoryHoldRemainingS = Math.max(0, this.victoryHoldRemainingS - dt);
       if (this.victoryHoldRemainingS === 0) {
@@ -611,7 +622,12 @@ export class RunScene implements Scene {
   query(name: string): unknown {
     switch (name) {
       case 'screen':
-        return this.manager.screen;
+        // Wynik jest już zapisany, ale podsumowanie pojawi się dopiero po ciszy.
+        return this.victoryHoldRemainingS !== null
+          ? 'room'
+          : this.manager.screen;
+      case 'victoryHold':
+        return this.victoryHoldRemainingS;
       case 'runState':
         return this.manager.serialize();
       case 'map':

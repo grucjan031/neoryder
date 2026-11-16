@@ -1,5 +1,6 @@
 import type { EntityId, EventBus } from '../core/events';
-import { tuning } from '../core/tuning';
+import { tuning as defaultTuning } from '../core/tuning';
+import type { Tuning } from '../core/tuning';
 import text from '../data/ui/hud.pl.json';
 import { loadSettings } from '../core/save';
 import { getLiteFx } from '../render/fxMode';
@@ -51,8 +52,13 @@ export class BossBar {
   private readonly unsubscribe: (() => void)[];
   private bossId: EntityId | null = null;
   private phases = 1;
+  private shiftTimer: ReturnType<typeof setTimeout> | undefined;
+  private verdictTimer: ReturnType<typeof setTimeout> | undefined;
 
-  constructor(bus: EventBus) {
+  constructor(
+    bus: EventBus,
+    private readonly tuning: Pick<Tuning, 'vfx' | 'enemies'> = defaultTuning,
+  ) {
     this.node.hidden = true;
     this.verdict.hidden = true;
     this.verdict.setAttribute('role', 'status');
@@ -71,9 +77,15 @@ export class BossBar {
     const head = element('div', 'run-hud__boss-head');
     head.append(this.micro, this.phase);
     this.node.append(head, this.name, this.shield, this.track, this.status);
-    this.node.style.setProperty('--shift-s', `${tuning.enemies.phaseShiftS}s`);
-    this.node.style.setProperty('--intro-s', `${tuning.vfx.bossIntroS}s`);
-    this.verdict.style.setProperty('--hold-s', `${tuning.vfx.bossDeathFxS}s`);
+    this.node.style.setProperty(
+      '--shift-s',
+      `${this.tuning.enemies.phaseShiftS}s`,
+    );
+    this.node.style.setProperty('--intro-s', `${this.tuning.vfx.bossIntroS}s`);
+    this.verdict.style.setProperty(
+      '--hold-s',
+      `${this.tuning.vfx.bossDeathFxS}s`,
+    );
 
     this.unsubscribe = [
       bus.on('boss_spawned', ({ id, name, maxHealth, phaseThresholds }) => {
@@ -110,6 +122,13 @@ export class BossBar {
         this.syncFlashes();
         this.node.classList.remove('run-hud__boss--intro');
         restartAnimation(this.node, 'run-hud__boss--phase');
+        // Czas osłony jako stan (nie tylko animacja): przy ograniczonym ruchu komunikat i tak widać.
+        this.node.dataset.shift = '';
+        clearTimeout(this.shiftTimer);
+        this.shiftTimer = setTimeout(
+          () => delete this.node.dataset.shift,
+          this.tuning.enemies.phaseShiftS * 1000,
+        );
       }),
       bus.on('boss_shield', ({ id, current, max }) => {
         if (id !== this.bossId) return;
@@ -156,14 +175,24 @@ export class BossBar {
     this.bossId = null;
     this.node.hidden = true;
     this.node.classList.remove('run-hud__boss--intro', 'run-hud__boss--phase');
+    delete this.node.dataset.shift;
+    clearTimeout(this.shiftTimer);
     if (killed) {
       this.syncFlashes();
       this.verdict.hidden = false;
       restartAnimation(this.verdict, 'run-hud__boss-verdict--show');
+      // Stempel znika także bez animacji (prefers-reduced-motion).
+      clearTimeout(this.verdictTimer);
+      this.verdictTimer = setTimeout(
+        () => (this.verdict.hidden = true),
+        (this.tuning.vfx.bossDeathFxS + 0.6) * 1000,
+      );
     }
   }
 
   dispose(): void {
+    clearTimeout(this.shiftTimer);
+    clearTimeout(this.verdictTimer);
     for (const unsubscribe of this.unsubscribe) unsubscribe();
     this.node.remove();
     this.verdict.remove();
@@ -177,10 +206,11 @@ export class BossBar {
 export function mountBossBar(
   bus: EventBus,
   parent: HTMLElement = document.body,
+  tuning: Pick<Tuning, 'vfx' | 'enemies'> = defaultTuning,
 ): () => void {
   const root = element('div', 'hud hud--boss-only');
   const layer = element('div', 'run-hud');
-  const bar = new BossBar(bus);
+  const bar = new BossBar(bus, tuning);
   layer.append(bar.node, bar.verdict);
   root.append(layer);
   parent.append(root);
