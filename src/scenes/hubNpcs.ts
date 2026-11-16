@@ -3,8 +3,10 @@ import {
   BoxGeometry,
   Color,
   CylinderGeometry,
+  Euler,
   Group,
   LoopRepeat,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
   MeshToonMaterial,
@@ -181,6 +183,7 @@ export class HubNpcs {
       view.root.add(instance);
       view.head = instance.getObjectByName('DEF-head');
       if (view.head) this.dress(view, view.head);
+      this.dressBody(view, instance);
       view.neck = instance.getObjectByName('DEF-neck');
       const clip = clips.find(
         ({ name }) => name === (view.def.animation ?? 'Idle_Loop'),
@@ -282,6 +285,129 @@ export class HubNpcs {
       case 'tomasz':
         cap(false);
         add(new BoxGeometry(0.17, 0.03, 0.02), accent, 0, 0.07, 0.108);
+        break;
+    }
+  }
+
+  /**
+   * Ubiór na tułowiu (kamizelka, kołnierz, pas) i rekwizyt roli; części wiszą na kościach
+   * `DEF-spine003` / `DEF-hips`, a pozycje podaje się w metrach modelu w pozie spoczynkowej
+   * (+Y w górę, +Z przód). Akcenty w kolorze NPC, bez czerwieni wrogów.
+   */
+  private dressBody(view: NpcView, instance: Object3D): void {
+    instance.updateWorldMatrix(true, true);
+    const toInstance = new Matrix4().copy(instance.matrixWorld).invert();
+    const accent = view.owned.find(
+      (resource): resource is MeshBasicMaterial =>
+        resource instanceof MeshBasicMaterial,
+    );
+    const shade = new Color(
+      BODY_COLORS[this.views.indexOf(view) % BODY_COLORS.length]!,
+    );
+    const jacket = new MeshToonMaterial({
+      color: shade.multiplyScalar(1.35),
+      gradientMap,
+    });
+    const cloth = new MeshToonMaterial({
+      color: new Color('#262b36'),
+      gradientMap,
+    });
+    view.owned.push(jacket, cloth);
+    const add = (
+      boneName: string,
+      geometry: BufferGeometry,
+      material: Material,
+      position: [number, number, number],
+      rotation: [number, number, number] = [0, 0, 0],
+    ): void => {
+      const bone = instance.getObjectByName(boneName);
+      if (!bone) return;
+      view.owned.push(geometry);
+      const mesh = new Mesh(geometry, material);
+      new Matrix4()
+        .copy(toInstance)
+        .multiply(bone.matrixWorld)
+        .invert()
+        .multiply(
+          new Matrix4()
+            .makeRotationFromEuler(new Euler(...rotation))
+            .setPosition(...position),
+        )
+        .decompose(mesh.position, mesh.quaternion, mesh.scale);
+      if (material === accent) mesh.userData.noOutline = true;
+      bone.add(mesh);
+    };
+    const chest = 'DEF-spine003';
+    const hips = 'DEF-hips';
+    add(chest, new BoxGeometry(0.34, 0.3, 0.25), jacket, [0, 1.3, 0.01]);
+    add(chest, new BoxGeometry(0.26, 0.07, 0.22), cloth, [0, 1.47, -0.005]);
+    add(hips, new BoxGeometry(0.33, 0.055, 0.23), cloth, [0, 0.99, 0.01]);
+    if (accent) {
+      add(hips, new BoxGeometry(0.05, 0.035, 0.01), accent, [0, 0.99, 0.13]);
+      add(chest, new BoxGeometry(0.012, 0.2, 0.01), accent, [0.09, 1.31, 0.14]);
+    }
+    switch (view.def.id) {
+      case 'mira':
+        for (const side of [-1, 1])
+          add(hips, new BoxGeometry(0.07, 0.1, 0.06), cloth, [
+            side * 0.13,
+            0.94,
+            0.08,
+          ]);
+        add(
+          hips,
+          new BoxGeometry(0.03, 0.16, 0.03),
+          jacket,
+          [0.17, 0.9, 0.0],
+          [0, 0, 0.2],
+        );
+        break;
+      case 'wolan':
+        add(
+          hips,
+          new BoxGeometry(0.36, 0.62, 0.03),
+          jacket,
+          [0, 0.66, -0.14],
+          [-0.08, 0, 0],
+        );
+        for (const side of [-1, 1])
+          add(
+            hips,
+            new BoxGeometry(0.13, 0.55, 0.03),
+            jacket,
+            [side * 0.12, 0.7, 0.13],
+            [0.06, 0, 0],
+          );
+        break;
+      case 'szron':
+        for (const side of [-1, 1])
+          add(chest, new BoxGeometry(0.13, 0.04, 0.16), jacket, [
+            side * 0.2,
+            1.47,
+            0,
+          ]);
+        if (accent)
+          add(
+            chest,
+            new BoxGeometry(0.06, 0.012, 0.01),
+            accent,
+            [-0.08, 1.38, 0.14],
+          );
+        break;
+      case 'bajt':
+        add(chest, new BoxGeometry(0.28, 0.32, 0.12), cloth, [0, 1.28, -0.18]);
+        if (accent)
+          add(
+            chest,
+            new BoxGeometry(0.16, 0.08, 0.01),
+            accent,
+            [0, 1.33, -0.245],
+          );
+        break;
+      case 'tomasz':
+        for (const x of [-0.1, 0, 0.1])
+          add(chest, new BoxGeometry(0.07, 0.09, 0.05), cloth, [x, 1.22, 0.15]);
+        add(chest, new BoxGeometry(0.3, 0.3, 0.06), jacket, [0, 1.3, -0.15]);
         break;
     }
   }
