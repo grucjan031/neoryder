@@ -1,6 +1,6 @@
 import type { Settings } from '../core/save';
 import { tuning } from '../core/tuning';
-import { getLiteFx } from './fxMode';
+import { LITE_PIXEL_RATIO, getLiteFx } from './fxMode';
 
 type Quality = Settings['quality'];
 interface QualityTargets {
@@ -25,7 +25,7 @@ export function getQuality(): Readonly<(typeof tuning.quality)[Quality]> {
 // Osobne ograniczenia debug: GUI i zapis jakości nie mogą przywrócić kosztownych efektów.
 const liteQuality = Object.freeze({
   ...tuning.quality.low,
-  pixelRatio: 1,
+  pixelRatio: LITE_PIXEL_RATIO,
   rainDensity: 0,
   particleDensity: 0,
 });

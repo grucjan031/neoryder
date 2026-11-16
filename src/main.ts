@@ -21,7 +21,12 @@ import sfxData from './data/audio/sfx.json';
 import { loadSettings } from './core/save';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
-import { configureFx, getLiteFx, preserveLiteFx } from './render/fxMode';
+import {
+  LITE_PIXEL_RATIO,
+  configureFx,
+  getLiteFx,
+  preserveLiteFx,
+} from './render/fxMode';
 import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
 import './ui/styles.css';
 import './ui/pointerLockHint.css';
@@ -62,7 +67,9 @@ async function main(): Promise<void> {
       value.toString(16),
     ).join('-');
   const renderer = new WebGLRenderer({ antialias: !getLiteFx() });
-  renderer.setPixelRatio(getLiteFx() ? 1 : window.devicePixelRatio);
+  renderer.setPixelRatio(
+    getLiteFx() ? LITE_PIXEL_RATIO : window.devicePixelRatio,
+  );
   renderer.domElement.tabIndex = 0;
   renderer.domElement.setAttribute('aria-label', 'Scena NEORYDER');
   app.append(renderer.domElement);

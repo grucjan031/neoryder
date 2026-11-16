@@ -17,7 +17,12 @@ import { applyTheme, resolveTheme } from '../../src/render/themes';
 import { CityDressing } from '../../src/render/city/dressing';
 import { CityLights } from '../../src/render/city/lights';
 import { CityParticleBatch } from '../../src/render/city/particles';
-import { configureFx, isLiteFx, preserveLiteFx } from '../../src/render/fxMode';
+import {
+  LITE_PIXEL_RATIO,
+  configureFx,
+  isLiteFx,
+  preserveLiteFx,
+} from '../../src/render/fxMode';
 import { EventBus } from '../../src/core/events';
 import { ExplosionRenderer } from '../../src/render/explosionRenderer';
 
@@ -43,7 +48,9 @@ it.each([
   try {
     applyQuality('high', f.targets);
     expect(getQuality().outline).toBe(enabled ? 0 : 1);
-    expect(f.renderer.setPixelRatio).toHaveBeenLastCalledWith(enabled ? 1 : 2);
+    expect(f.renderer.setPixelRatio).toHaveBeenLastCalledWith(
+      enabled ? LITE_PIXEL_RATIO : 2,
+    );
     const next = new URLSearchParams({ scene: 'hub', debug: '1' });
     preserveLiteFx(params, next);
     expect(next.get('fx')).toBe(enabled ? 'lite' : null);
@@ -72,7 +79,9 @@ it('lite omija maski i postprocessing mimo motywu i zmiany jakości', () => {
       expect(f.renderer.render).toHaveBeenCalledOnce();
       expect(f.widths).toEqual([0]);
       expect(f.renderer.shadowMap.enabled).toBe(false);
-      expect(f.renderer.setPixelRatio).toHaveBeenLastCalledWith(1);
+      expect(f.renderer.setPixelRatio).toHaveBeenLastCalledWith(
+        LITE_PIXEL_RATIO,
+      );
       expect(getQuality()).toMatchObject({
         bloom: 0,
         reflections: 0,
