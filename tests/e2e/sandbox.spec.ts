@@ -72,7 +72,7 @@ test('spawn cube zwiększa liczbę ciał, reset ją przywraca i konsola ma histo
   await input.fill('seed');
   await input.press('Enter');
   await expect(
-    page.getByRole('region', { name: 'Konsola debug' }),
+    page.getByRole('dialog', { name: 'Konsola debug' }),
   ).toContainText('console-test');
   await input.press('ArrowUp');
   await expect(input).toHaveValue('seed');
@@ -105,7 +105,7 @@ test('nieznana scena pokazuje komunikat i listę dostępnych scen', async ({
   });
 });
 
-test('utrata fokusu zatrzymuje tick, kliknięcie wznawia i prosi o pointer lock', async ({
+test('utrata fokusu zatrzymuje tick, menu pauzy wznawia i prosi o pointer lock', async ({
   page,
 }) => {
   await page.goto('/?scene=sandbox&debug=1');
@@ -118,12 +118,10 @@ test('utrata fokusu zatrzymuje tick, kliknięcie wznawia i prosi o pointer lock'
   });
   await page.waitForTimeout(150);
   expect(await page.evaluate(() => window.__neoryder?.tick())).toBe(paused);
-  await expect(
-    page.getByText('Pauza · kliknij scenę, aby wznowić'),
-  ).toBeVisible();
-  await page
-    .getByLabel('Scena NEORYDER')
-    .click({ position: { x: 600, y: 400 } });
+  const pauseMenu = page.getByRole('dialog', { name: 'Pauza', exact: true });
+  await expect(pauseMenu).toBeVisible();
+  await pauseMenu.getByRole('button', { name: 'Wznów' }).click();
+  await expect(pauseMenu).toBeHidden();
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.tick() ?? 0))
     .toBeGreaterThan(paused ?? 0);

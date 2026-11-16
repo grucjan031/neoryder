@@ -79,11 +79,15 @@ Nie nakładamy pauzy na widoczny interfejs runu (mapa, nagrody, podsumowanie,
 sklep, odpoczynek), nakładkę kryjówki, wybór buildu ani ekran śmierci.
 Widoczna konsola debug zachowuje własne sterowanie. Menu pauzy obsługuje
 strzałki góra/dół, Tab i Enter. Natywne dialogi modalne utrzymują fokus w UI.
-Globalny `Input` mapuje klawiaturę na akcje tylko przy pointer locku własnego
-canvasu i poza edycją UI. Rozszerzony warunek `isEditing()` uwzględnia cel
-zdarzenia oraz `document.activeElement` (pola formularzy, przyciski, linki
-i elementy edytowalne). Poza rozgrywką przypisanie np. dash do Tab nie blokuje
-nawigacji: nie zapisuje akcji ani nie wywołuje `preventDefault()`.
+Globalny `Input` mapuje klawiaturę na akcje również bez pointer locka.
+Warunek `isEditing()` blokuje akcje przy otwartym dialogu modalnym albo gdy
+cel zdarzenia lub `document.activeElement` jest kontrolką UI (pole formularza,
+przycisk, link, `[contenteditable]`) lub leży wewnątrz otwartego dialogu,
+widocznego `[role="dialog"]`, `.run-screen`, `.hub-screen`, `.sector-map`
+lub `.build-select`. Obejmuje to mapę, nagrody, podsumowanie, nakładki kryjówki,
+pauzę i ustawienia. W UI przypisanie np. dash do Tab nie blokuje nawigacji:
+nie zapisuje akcji ani nie wywołuje `preventDefault()`.
+Ruch myszy obraca kamerę wyłącznie przy pointer locku własnego canvasu.
 
 Odmowa pointer lock (odrzucona obietnica, wyjątek lub `pointerlockerror`)
 pokazuje na środku ekranu „Kliknij w grę, aby przechwycić mysz”. Tekst pochodzi
@@ -91,7 +95,7 @@ z `src/data/ui/input.pl.json`, styl `pointerLockHint.css` nawiązuje do pauzy.
 Kliknięcie komunikatu ponawia prośbę; kliknięcie canvasu nadal wznawia grę.
 Komunikat znika po `pointerlockchange` z własnym canvasem. `Input.dispose()`
 usuwa go wraz z listenerami; spóźniona odmowa po sukcesie lub dispose nie
-przywraca komunikatu. Klawisze gry nadal wymagają pointer locka.
+przywraca komunikatu. Sam brak pointer locka nie blokuje klawiszy gry.
 Testy jsdom: `tests/unit/pointerLockHint.test.ts`.
 
 `SettingsScreen` jest dostępny z menu głównego i pauzy. Zakładki Sterowanie,

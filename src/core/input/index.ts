@@ -109,13 +109,13 @@ export class Input {
     if (!win) throw new Error('Brak okna dla wejścia.');
     const options = { signal: this.listeners.signal };
     const isEditing = (element: EventTarget | null): boolean =>
-      !this.pointerLocked ||
+      this.document.querySelector('dialog:modal') !== null ||
       [element, this.document.activeElement].some(
         (node) =>
           node instanceof HTMLElement &&
           (node.isContentEditable ||
             node.closest(
-              'input, textarea, select, button, [role="button"], a[href]',
+              'input, textarea, select, button, [role="button"], a[href], [contenteditable], dialog[open], [role="dialog"]:not([hidden]), .run-screen:not([hidden]), .hub-screen:not([hidden]), .sector-map:not([hidden]), .build-select:not([hidden])',
             ) !== null),
       );
     win.addEventListener(

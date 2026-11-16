@@ -5,9 +5,11 @@ const builds = [
   { id: 'blade', name: 'Ostrze', synergies: 0 },
   { id: 'resonance', name: 'Moc', synergies: 0 },
   { id: 'gunner', name: 'Strzelec', synergies: 0 },
-  { id: 'bladeDancer', name: 'Tancerz ostrzy', synergies: 1 },
-  { id: 'resonancePistolero', name: 'Pistolero Rezonansu', synergies: 2 },
-  { id: 'stormGunner', name: 'Burzowy strzelec', synergies: 2 },
+  // Tagi presetów: blade + resonance → bladeDancer, parryLock, shockFracture.
+  { id: 'bladeDancer', name: 'Tancerz ostrzy', synergies: 3 },
+  // resonance + gunner → emberRelay, resonancePistolero, resonanceSiphon, stormGunner.
+  { id: 'resonancePistolero', name: 'Pistolero Rezonansu', synergies: 4 },
+  { id: 'stormGunner', name: 'Burzowy strzelec', synergies: 4 },
 ];
 
 for (const build of builds)

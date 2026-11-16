@@ -29,8 +29,10 @@ it.each(['promise', 'event', 'throw'])(
     expect(hint).not.toBeNull();
     expect(hint!.textContent).toBe('Kliknij w grę, aby przechwycić mysz');
     expect(hint!.hidden).toBe(false);
+    // Z23: brak locka sam w sobie nie blokuje klawiszy (blokuje fokus w UI), tylko obrót kamery.
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' }));
-    expect(input.snapshot().held.size).toBe(0);
+    expect(input.snapshot().held.has('moveForward')).toBe(true);
+    window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' }));
     hint!.click();
     expect(request).toHaveBeenCalledTimes(2);
     Object.defineProperty(document, 'pointerLockElement', {
