@@ -1,4 +1,5 @@
 import { loadSettings } from '../core/save';
+import { preserveLiteFx } from '../render/fxMode';
 import { tutorialTextParts } from '../data/tutorial/text';
 import type { TutorialStep } from '../data/tutorial/schema';
 import text from '../data/ui/tutorial.pl.json';
@@ -48,6 +49,7 @@ export class TutorialPanel {
         const params = new URLSearchParams({ scene: scene! });
         if (new URLSearchParams(location.search).get('debug') === '1')
           params.set('debug', '1');
+        preserveLiteFx(new URLSearchParams(location.search), params);
         this.navigate(`?${params}`);
       });
       this.completion.append(button);

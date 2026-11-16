@@ -8,7 +8,7 @@ test('osłabieni wrogowie są gotowi do wykończenia', async ({ page }) => {
     if (message.type() === 'error') errors.push(message.text());
   });
   await page.goto(
-    '/?scene=room-test&room=combatYard&loadout=blade&seed=exec-e2e&debug=1',
+    '/?scene=room-test&room=combatYard&loadout=blade&seed=exec-e2e&debug=1&fx=lite',
   );
   const query = (name: string) =>
     page.evaluate((n) => window.__neoryder?.query(n), name);

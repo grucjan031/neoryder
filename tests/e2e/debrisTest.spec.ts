@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SIM_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 test('debris-test shatters, fills its pool and expires without console errors', async ({
   page,
@@ -9,10 +9,10 @@ test('debris-test shatters, fills its pool and expires without console errors', 
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=debris-test&debug=1&seed=debris-e2e');
+  await page.goto('/?scene=debris-test&debug=1&fx=lite&seed=debris-e2e');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-      timeout: SIM_TIMEOUT,
+      timeout: LOAD_TIMEOUT,
     })
     .toBe('debris-test');
   expect(

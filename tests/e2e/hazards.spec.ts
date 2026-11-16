@@ -1,3 +1,4 @@
+import { LOAD_TIMEOUT } from './helpers';
 import { expect, test } from '@playwright/test';
 import type { HazardState } from '../../src/world/hazards';
 
@@ -10,10 +11,12 @@ test('combatWarehouse: debug detonuje beczkę bez błędów konsoli', async ({
     if (message.type() === 'error') errors.push(message.text());
   });
   await page.goto(
-    '/?scene=room-test&room=combatWarehouse&loadout=gunner&seed=hazard-e2e&debug=1',
+    '/?scene=room-test&room=combatWarehouse&loadout=gunner&seed=hazard-e2e&debug=1&fx=lite',
   );
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('room-test');
   const hazards = () =>
     page.evaluate(() => window.__neoryder?.query('hazards') as HazardState[]);

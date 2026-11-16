@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SIM_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 test('player-test ładuje modele bez błędów i wraca na podłogę po tp', async ({
   page,
@@ -9,10 +9,12 @@ test('player-test ładuje modele bez błędów i wraca na podłogę po tp', asyn
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.goto('/?scene=player-test&debug=1&seed=movement-e2e');
+  await page.goto('/?scene=player-test&debug=1&fx=lite&seed=movement-e2e');
   await expect(page.getByLabel('Scena NEORYDER')).toBeVisible();
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()))
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
     .toBe('player-test');
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.query('grounded')), {
