@@ -10,6 +10,18 @@ function setup() {
 }
 
 describe('GameLoop', () => {
+  it('maxStepsPerFrame podnosi limit kroków nadrabianych w jednej klatce', () => {
+    const step = vi.fn();
+    const loop = new GameLoop(
+      { step, render: () => {} },
+      { maxStepsPerFrame: 60 },
+    );
+    expect(loop.advance(frameMs * 30)).toBe(30);
+    expect(loop.advance(frameMs * 100)).toBe(60);
+    expect(new GameLoop({ step, render: () => {} }).advance(frameMs * 30)).toBe(
+      MAX_STEPS_PER_FRAME,
+    );
+  });
   it('hitstop wywołany w step zamraża kolejne kroki tej samej klatki', () => {
     const values: number[] = [];
     const loop = new GameLoop({

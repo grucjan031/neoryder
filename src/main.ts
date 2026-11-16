@@ -22,6 +22,7 @@ import { loadSettings } from './core/save';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
 import {
+  LITE_MAX_STEPS_PER_FRAME,
   LITE_PIXEL_RATIO,
   configureFx,
   getLiteFx,
@@ -96,38 +97,41 @@ async function main(): Promise<void> {
   const bus = new EventBus();
   pipeline.bindEvents(bus);
   const stats = debug ? new StatsPanel() : undefined;
-  const loop = new GameLoop({
-    step: (dt) => {
-      profiler?.begin('step');
-      try {
-        scene.step(dt, input.snapshot());
-      } finally {
-        profiler?.end();
-      }
+  const loop = new GameLoop(
+    {
+      step: (dt) => {
+        profiler?.begin('step');
+        try {
+          scene.step(dt, input.snapshot());
+        } finally {
+          profiler?.end();
+        }
+      },
+      render: (alpha, frameDt) => {
+        stats?.begin();
+        if (camera.fov !== tuning.camera.fov) {
+          camera.fov = tuning.camera.fov;
+          camera.updateProjectionMatrix();
+        }
+        feel.update(frameDt);
+        profiler?.begin('sceneRender');
+        try {
+          scene.render(alpha, frameDt);
+        } finally {
+          profiler?.end();
+        }
+        profiler?.begin('pipeline');
+        try {
+          pipeline.render(three, camera, frameDt);
+        } finally {
+          profiler?.end();
+          profiler?.endFrame(three, frameDt);
+        }
+        stats?.end();
+      },
     },
-    render: (alpha, frameDt) => {
-      stats?.begin();
-      if (camera.fov !== tuning.camera.fov) {
-        camera.fov = tuning.camera.fov;
-        camera.updateProjectionMatrix();
-      }
-      feel.update(frameDt);
-      profiler?.begin('sceneRender');
-      try {
-        scene.render(alpha, frameDt);
-      } finally {
-        profiler?.end();
-      }
-      profiler?.begin('pipeline');
-      try {
-        pipeline.render(three, camera, frameDt);
-      } finally {
-        profiler?.end();
-        profiler?.endFrame(three, frameDt);
-      }
-      stats?.end();
-    },
-  });
+    getLiteFx() ? { maxStepsPerFrame: LITE_MAX_STEPS_PER_FRAME } : {},
+  );
   // Dźwięk przed sceną: musi usłyszeć entity_spawned gracza z init() sceny.
   const audio = new AudioSystem(bus, loadSfx(sfxData), {
     createContext: () =>
