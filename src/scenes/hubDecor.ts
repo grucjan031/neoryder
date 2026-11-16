@@ -11,10 +11,11 @@ import {
   SRGBColorSpace,
   TextureLoader,
 } from 'three';
-import type { Texture } from 'three';
+import type { BufferGeometry, Texture } from 'three';
 import { tuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { printMaterial } from '../render/propPrints';
+import { batchStaticGeometry } from '../render/staticBatch';
 import { assetTexture } from '../render/surfaceTextures';
 import type {
   HubFireDef,
@@ -49,7 +50,9 @@ const posterTextures = new Map<string, Texture>();
  */
 export class HubDecor {
   readonly root = new Group();
-  private readonly geometries: PlaneGeometry[] = [];
+  private readonly geometries: BufferGeometry[] = [];
+  /** Kafle o tej samej teksturze i barwie dzielą materiał, żeby dało się je scalić. */
+  private readonly tileMaterials = new Map<string, MeshStandardMaterial>();
   private readonly materials: (MeshStandardMaterial | MeshBasicMaterial)[] = [];
   private readonly textures: Texture[] = [];
   private readonly flames: { mesh: Mesh; phase: number }[] = [];
@@ -63,16 +66,23 @@ export class HubDecor {
     fires: readonly HubFireDef[] = [],
     private readonly hubTuning: Tuning['hub'] = tuning.hub,
   ) {
+    // Nieruchome okładziny (kafle, plakaty, ekrany) scalane po materiale; wylot tunelu
+    // (własny `bloomMaterial`), napisy i płomienie zostają osobnymi siatkami.
+    const statics = new Group();
     for (const panel of panels)
-      this.root.add(
-        panel.kind === 'tiles'
-          ? this.tiles(panel)
-          : panel.kind === 'poster'
-            ? this.poster(panel)
-            : panel.kind === 'tunnel'
-              ? this.tunnel(panel)
+      if (panel.kind === 'tunnel') this.root.add(this.tunnel(panel));
+      else
+        statics.add(
+          panel.kind === 'tiles'
+            ? this.tiles(panel)
+            : panel.kind === 'poster'
+              ? this.poster(panel)
               : this.screen(panel),
-      );
+        );
+    const merged = new Set<BufferGeometry>();
+    batchStaticGeometry(statics, merged);
+    this.geometries.push(...merged);
+    this.root.add(...statics.children);
     for (const station of stations)
       if (station.sign) this.root.add(this.label(station));
     fires.forEach((fire, index) => this.fire(fire, index));
@@ -125,17 +135,24 @@ export class HubDecor {
         (uv.getX(i) * panel.size.w) / tileM,
         (uv.getY(i) * panel.size.h) / tileM,
       );
-    const material = new MeshStandardMaterial({
-      color: new Color(panel.tint ?? DEFAULT_TILE_TINT),
-      roughness: 0.55,
-      metalness: 0,
-    });
-    this.materials.push(material);
-    assetTexture('surfaces', panel.texture, (texture) => {
-      if (this.disposed) return;
-      material.map = texture;
-      material.needsUpdate = true;
-    });
+    const tint = panel.tint ?? DEFAULT_TILE_TINT;
+    const key = `${panel.texture}|${tint}`;
+    let material = this.tileMaterials.get(key);
+    if (!material) {
+      const created = new MeshStandardMaterial({
+        color: new Color(tint),
+        roughness: 0.55,
+        metalness: 0,
+      });
+      material = created;
+      this.tileMaterials.set(key, created);
+      this.materials.push(created);
+      assetTexture('surfaces', panel.texture, (texture) => {
+        if (this.disposed) return;
+        created.map = texture;
+        created.needsUpdate = true;
+      });
+    }
     const mesh = new Mesh(geometry, material);
     place(mesh);
     return mesh;
@@ -518,5 +535,6 @@ export class HubDecor {
     this.materials.length = 0;
     this.textures.length = 0;
     this.flames.length = 0;
+    this.tileMaterials.clear();
   }
 }

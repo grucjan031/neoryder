@@ -25,6 +25,7 @@ import { FppViewModel } from '../render/fppViewModel';
 import { createStyleLights } from '../render/lights';
 import { getMaterial } from '../render/materials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
+import { batchStaticGeometry } from '../render/staticBatch';
 import { createMetaBar } from '../ui/hub/metaBar';
 import type { MetaBar } from '../ui/hub/metaBar';
 import { createMissionsPanel } from '../ui/hub/missionsPanel';
@@ -203,8 +204,12 @@ export class HubScene implements Scene {
     this.root.add(this.lights);
     await this.buildBlocks();
     if (this.disposed) return;
-    await loadDecor(this.root, this.layout.decor, this.loadModels);
+    const staticDecor = new Group();
+    staticDecor.name = 'static-decor';
+    this.root.add(staticDecor);
+    await loadDecor(staticDecor, this.layout.decor, this.loadModels);
     if (this.disposed) return;
+    batchStaticGeometry(staticDecor, this.geometries);
     this.dressing = new CityDressing(
       this.root,
       this.layout,
@@ -271,7 +276,13 @@ export class HubScene implements Scene {
 
   // ----------------------------------------------------------------- budowa
 
+  /** Bryły, beczki i modele `city_*` są statyczne: po wczytaniu scalane po materiale (jak w pokojach). */
   private async buildBlocks(): Promise<void> {
+    const blocks = new Group();
+    blocks.name = 'static-blocks';
+    const models = new Group();
+    models.name = 'static-models';
+    this.root.add(blocks, models);
     await Promise.all(
       this.layout.blocks.map(
         async ({
@@ -339,7 +350,7 @@ export class HubScene implements Scene {
               'rubber',
               size.y * 0.36,
             );
-            this.root.add(barrel);
+            blocks.add(barrel);
             return;
           }
           const geometry = new BoxGeometry(size.x, size.y, size.z);
@@ -349,21 +360,24 @@ export class HubScene implements Scene {
             getMaterial(interactive ? 'interactive' : (material ?? 'world')),
           );
           fallback.position.set(position.x, position.y, position.z);
-          this.root.add(fallback);
+          blocks.add(fallback);
           if (!model?.startsWith('city_') || !this.loadModels) return;
           try {
             const scene = await cloneCityModel(model);
             if (!scene || this.disposed) return;
             scene.position.set(position.x, position.y - size.y / 2, position.z);
             scene.rotation.y = yaw ?? 0;
-            this.root.remove(fallback);
-            this.root.add(scene);
+            blocks.remove(fallback);
+            models.add(scene);
           } catch {
             // Bryła zastępcza zostaje (ten sam collider).
           }
         },
       ),
     );
+    if (this.disposed) return;
+    batchStaticGeometry(blocks, this.geometries);
+    batchStaticGeometry(models, this.geometries);
   }
 
   /** NPC: widok (`HubNpcs`) i collider walca, przez który gracz nie przechodzi. */
