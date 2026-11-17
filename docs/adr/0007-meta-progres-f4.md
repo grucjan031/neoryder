@@ -51,7 +51,7 @@ Funkcja czysta `computeRunRewards(summary, threatLevel, rules)`; liczby w `src/d
 - **Idempotencja:** `runId = seed + ':' + startedAtMs`; `applyRun` dla `runId` z `appliedRunIds` nic nie robi. Dzięki temu odświeżenie strony w trakcie zapisu nie podwaja nagród.
 - **Zwycięstwo na `threat.selected == threat.max`** podnosi `threat.max` o 1 (do ostatniego poziomu z danych).
 - Kolejność w `RunScene` przy `run_ended`: `MetaManager.applyRun` → `saveMeta` → `clearRun` → ekran podsumowania z nagrodami.
-- **`clearRun` tylko po udanym `saveMeta`** (zmiana 2026-11-17): przy błędzie zapis runu zostaje z polem `ended` (runId + `RunSummary`), a podsumowanie pokazuje „Ponów zapis”. Ponowienie, odświeżenie i Kontynuuj z menu rozliczają ten run idempotentnie (`appliedRunIds`; meta z pamięci jest zapisywana, nie naliczana drugi raz).
+- **`clearRun` tylko po udanym `saveMeta`** (zmiana 2026-11-17): przy błędzie zapis runu zostaje z polem `ended` (runId + `RunSummary`), a podsumowanie pokazuje „Ponów zapis”. Ponowienie, odświeżenie i Kontynuuj z menu rozliczają ten run idempotentnie (`appliedRunIds`). Każda próba czyta meta z dysku od nowa (błąd odczytu nie nadpisuje meta), a nagrody widać dopiero po potwierdzonym zapisie; nowy run nie nadpisze nierozliczonego runu, chyba że gracz jawnie porzuci nienaliczalną nagrodę.
 
 ## 3. Poziom postaci
 
