@@ -8,12 +8,14 @@ export function fireProjectile(
   projectiles: Pick<ProjectileSystem, 'spawn'>,
   rng: Rng,
   aim: Pick<ProjectileSpec, 'owner' | 'team' | 'origin' | 'dir'>,
+  /** Mnożnik rozrzutu (celowanie zawęża stożek). */
+  spreadScale = 1,
 ): void {
   const count = definition.fireMode === 'spread' ? definition.pellets : 1;
   for (let i = 0; i < count; i++) {
     projectiles.spawn({
       ...aim,
-      dir: spreadDirection(aim.dir, definition.spreadDeg, rng),
+      dir: spreadDirection(aim.dir, definition.spreadDeg * spreadScale, rng),
       speed: definition.projectileSpeed,
       damage: definition.damage,
       tags: definition.tags,

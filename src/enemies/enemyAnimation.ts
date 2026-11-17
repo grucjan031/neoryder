@@ -1,4 +1,6 @@
+import { tuning } from '../core/tuning';
 import type { EnemyDefinition } from './enemySchema';
+import { canKnockDown, knockdownTiming } from './enemyKnockdown';
 import type { EnemySnapshot } from './types';
 
 export type EnemyClip =
@@ -46,8 +48,23 @@ export function selectEnemyAnimation(
     moving: false,
     ...(durationS !== undefined ? { durationS } : {}),
   });
-  if (snapshot.state === 'stunned')
+  if (snapshot.state === 'stunned') {
+    // Kip-up: od początku wyskoku poza bojowa, w której wróg ląduje.
+    if (snapshot.knockdown && canKnockDown(definition)) {
+      const timing = knockdownTiming(
+        definition.stunOnHeavyS,
+        tuning.vfx.enemyKnockdown,
+      );
+      if (
+        snapshot.stateTimeS >=
+        timing.fallS +
+          timing.lieS +
+          timing.kipS * tuning.vfx.enemyKnockdown.tuckAt
+      )
+        return result(ranged ? 'Pistol_Idle_Loop' : 'Sword_Idle');
+    }
     return result('Hit_Chest', true, definition.stunOnHeavyS);
+  }
   if (snapshot.controlled) return result('Hit_Head', true);
   const attack = bossAttack(definition, snapshot);
   if (attack) return attack;

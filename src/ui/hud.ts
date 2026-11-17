@@ -215,6 +215,8 @@ export class Hud {
   private readonly toast = createFlash('hud__toast');
   private readonly blade = element('div', 'hud__blade', text.bladeInFlight);
   private readonly crosshairTicks = element('div', 'hud__crosshair-ticks');
+  private crosshair: HTMLElement | null = null;
+  private aim = 0;
   private readonly executeHint = element(
     'div',
     'hud__execute-hint',
@@ -296,6 +298,7 @@ export class Hud {
     arsenal.append(weapon, this.powers);
 
     const crosshair = element('div', 'hud__crosshair');
+    this.crosshair = crosshair;
     this.executeHint.hidden = true;
     this.executeHint.style.cssText =
       'position:absolute;top:calc(50% + 32px);left:50%;transform:translateX(-50%);color:var(--hud-health);font-size:14px;font-weight:600;letter-spacing:0.08em;text-shadow:0 1px 3px #000;white-space:nowrap';
@@ -584,6 +587,16 @@ export class Hud {
   }
 
   /** Obrót kamery (rad), by znacznik kierunku obrażeń podążał za widokiem. */
+  /** Celowanie 0–1: celownik zwęża się (CSS `--aim`), pełne celowanie dodaje klasę. */
+  setAim(aim: number): void {
+    if (this.disposed || !this.crosshair) return;
+    const k = Math.round(Math.min(1, Math.max(0, aim)) * 100) / 100;
+    if (k === this.aim) return;
+    this.aim = k;
+    this.crosshair.style.setProperty('--aim', String(k));
+    this.crosshair.classList.toggle('hud__crosshair--aim', k >= 0.5);
+  }
+
   setViewYaw(yaw: number): void {
     if (this.disposed) return;
     this.refreshFlashes();

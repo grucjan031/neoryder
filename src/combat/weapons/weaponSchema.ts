@@ -6,6 +6,8 @@ const weaponFields = {
   tags: z.array(z.string().startsWith('#')),
   /** Nazwa modelu FPP: `public/assets/models/<model>.glb`. */
   model: z.string().min(1).optional(),
+  /** FOV w celowaniu jako ułamek bazowego (domyślnie `tuning.player.aim.fovScale`). */
+  aimFovScale: z.number().finite().min(0.2).max(1).optional(),
   statuses: z
     .array(
       z.object({

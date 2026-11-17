@@ -195,6 +195,7 @@ export class PlayerController {
     this.crouchQueued = false;
 
     s.sprinting =
+      this.aim <= 0 &&
       input.held.has('sprint') &&
       move.forward > 0 &&
       !s.crouched &&
@@ -280,11 +281,34 @@ export class PlayerController {
 
   private dashQueued = false;
   private crouchQueued = false;
+  /** Postęp celowania 0–1 (ustawiany przez scenę z `HeldItem.aim`). */
+  private aim = 0;
+
+  /**
+   * Celowanie: czułość myszy i prędkość ruchu skalowane `tuning.player.aim` (prędkość przez
+   * `StatModifier`), sprint niedostępny, dopóki celowanie trwa.
+   */
+  setAim(aim: number): void {
+    const k = Math.min(1, Math.max(0, Number.isFinite(aim) ? aim : 0));
+    if (k === this.aim) return;
+    this.aim = k;
+    this.stats.removeBySource('aim');
+    if (k > 0)
+      this.stats.add({
+        stat: 'moveSpeed',
+        type: 'mult',
+        value: 1 + (this.ctx.tuning.player.aim.moveSpeed - 1) * k,
+        source: 'aim',
+      });
+  }
 
   private look(input: InputSnapshot): void {
     const s = this.state;
     const t = this.ctx.tuning.player;
-    const sensitivity = t.lookSensitivity * this.settings.mouseSensitivity;
+    const sensitivity =
+      t.lookSensitivity *
+      this.settings.mouseSensitivity *
+      (1 + (t.aim.sensitivity - 1) * this.aim);
     s.yaw -= input.lookDelta.x * sensitivity;
     const pitchLimit = (t.maxPitchDeg * Math.PI) / 180;
     s.pitch = Math.max(

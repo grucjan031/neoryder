@@ -16,12 +16,14 @@ import { applyViewmodelLayer, registerViewmodel } from './viewmodelLayer';
 export interface FppViewModelOptions {
   bladeDefinition?: BladeDefinition;
   modelOf?: FppBlasterOptions['modelOf'];
-  tuning?: Pick<Tuning, 'hands' | 'weapons'>;
+  tuning?: Pick<Tuning, 'hands' | 'weapons' | 'player'>;
 }
 
 export type FppViewModelFrame = {
   horizontalSpeed: number;
   visible?: boolean;
+  /** Celowanie 0–1: broń przesuwa się do środka kadru („przy oku”). */
+  aim?: number;
 } & (
   | { held: 'gun'; blade?: BladeView }
   | { held: 'blade' | HeldItemView; blade: BladeView }
@@ -93,7 +95,7 @@ export class FppViewModel {
       );
     this.blade.root.visible &&= visible && shown === 'blade';
     this.blaster.root.visible = visible && shown === 'gun';
-    this.blaster.place(handMatrix, frameDt);
+    this.blaster.place(handMatrix, frameDt, frame.aim ?? 0);
     this.offhand.place(
       handMatrix,
       frameDt,

@@ -111,12 +111,14 @@ export class Assaulter implements Enemy {
             dir,
             event.knockback * (1 - definition.knockbackResist),
           );
-        if (
-          event.tags.includes(PIERCE_BLOCK_TAG) ||
-          event.knockback >= ctx.tuning.enemies.stunKnockback
-        ) {
+        const heavy = event.knockback >= ctx.tuning.enemies.stunKnockback;
+        if (event.tags.includes(PIERCE_BLOCK_TAG) || heavy) {
           this.stunS = definition.stunOnHeavyS;
           this.transition('stunned');
+          // Przewrócenie (tylko widok): kierunek odrzutu, czas i balans ogłuszenia bez zmian.
+          const length = dir ? Math.hypot(dir.x, dir.z) : 0;
+          if (heavy && dir && length > 1e-6)
+            this.current.knockdown = { x: dir.x / length, z: dir.z / length };
           ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
         }
       }),
@@ -210,6 +212,7 @@ export class Assaulter implements Enemy {
   private transition(state: EnemyState): void {
     this.current.state = state;
     this.current.stateTimeS = 0;
+    delete this.current.knockdown;
     this.hitbox = undefined;
     this.updateShield();
     // Token trzyma tylko zapowiedź i wymach; regeneracja po ciosie oddaje go następnemu.

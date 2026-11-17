@@ -1076,11 +1076,17 @@ export class RoomScene implements Scene {
         this.selectWeapon(slot);
         this.heldItem.requestGun();
       }
-    this.player.step(pdt, input);
+    // Przedmiot w ręce przed graczem: PPM z bronią to celowanie, które zmienia ruch i czułość.
     const bladeState = this.blade.view().state;
     const { bladeInput, triggerHeld } = this.heldItem.step(pdt, input, {
       bladeBusy: bladeState !== 'idle' && bladeState !== 'throwing',
+      canAim:
+        this.state === 'playing' &&
+        !this.weapon.overheated &&
+        this.player.getState().dashS <= 0,
     });
+    this.player.setAim(this.heldItem.aim);
+    this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
     this.powers.step(pdt, input);
     if (!(dt > 0)) {
@@ -1100,6 +1106,7 @@ export class RoomScene implements Scene {
         weapon.step(pdt, {
           ...this.aim(),
           triggerHeld,
+          aim: this.heldItem.aim,
         });
       else weapon.cool(pdt);
     }
@@ -1173,7 +1180,10 @@ export class RoomScene implements Scene {
       this.previous,
       this.player.getState(),
       alpha,
+      this.heldItem.aim,
+      this.weapon.definition.aimFovScale,
     );
+    this.hud?.setAim(this.heldItem.aim);
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
     let barrier: BarrierPower | undefined;
     for (const power of powers) {
@@ -1201,6 +1211,7 @@ export class RoomScene implements Scene {
       held: this.heldView(),
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
       visible: this.state === 'playing',
+      aim: this.heldItem.aim,
     });
     this.beamView.advance(frameDt);
     this.beamView.render(this.weapon.beam, this.fppView.beamOrigin);
@@ -1240,6 +1251,8 @@ export class RoomScene implements Scene {
 
   private onPlayerDied(): void {
     this.state = 'dead';
+    this.heldItem.cancelAim();
+    this.player.setAim(0);
     // Aktywne moce (Skupienie, Bariera) kończą się ze śmiercią, nie dopiero przy „Jeszcze raz”.
     this.powers.reset();
     this.weapon.cool(0);

@@ -144,20 +144,15 @@ function setup() {
 }
 
 describe('parowanie pocisków (#10)', () => {
-  it('PPM with a gun starts the parry window in the same step and reflects the incoming projectile', () => {
+  it('PPM z bronią to celowanie: nie wyciąga ostrza i nie otwiera okna parowania', () => {
     const c = setup();
     const hands = new HeldItem(c.bus, c.player.id, c.t, 'gun');
-    c.fire();
-    c.run(c.flightS - 0.08);
     const block = { ...input(['block']), pressed: new Set<Action>(['block']) };
     const routed = hands.step(SIM_DT, block, { bladeBusy: false });
     c.blade.step(SIM_DT, routed.bladeInput);
-    expect(hands.held).toBe('blade');
-    expect(routed.triggerHeld).toBe(false);
-    expect(c.blade.view()).toMatchObject({ state: 'blocking', blockAgeS: 0 });
-    c.run(0.2, ['block']);
-    expect(c.log.some((event) => event.type === 'parry_success')).toBe(true);
-    expect(c.player.health.current).toBe(100);
+    expect(hands.held).toBe('gun');
+    expect(hands.aiming).toBe(true);
+    expect(c.blade.view().state).not.toBe('blocking');
     hands.dispose();
   });
   it('blok wciśnięty w oknie odbija pocisk w strzelca: parry_success, hitstop, obrażenia ×2', () => {
