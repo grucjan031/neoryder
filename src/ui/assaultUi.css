@@ -1,0 +1,69 @@
+.assault-hud {
+  --assault-player: #ffae1a;
+  --assault-enemy: #e0262b;
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  z-index: 12;
+  color: #fff1d6;
+  font: 12px/1.4 monospace;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.assault-hud header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: #101827ed;
+  border-top: 2px solid var(--assault-player);
+}
+.assault-hud header span {
+  color: var(--assault-player);
+}
+.assault-hud [data-station] {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 10px;
+  background: #101827ed;
+  border: 1px solid var(--assault-enemy);
+}
+.assault-hud b {
+  font-size: 20px;
+}
+.assault-hud progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 5px;
+  accent-color: var(--assault-player);
+}
+.assault-hud [data-state='destroyed'] {
+  border-color: var(--assault-player);
+}
+.assault-hud [data-state='fuse'] {
+  border-style: dashed;
+}
+.assault-hud p {
+  grid-column: 1 / -1;
+  margin: 0;
+  text-align: center;
+  background: #101827ed;
+  color: var(--assault-player);
+}
+.assault-hud p:empty {
+  display: none;
+}
+@media (max-width: 600px) {
+  .assault-hud {
+    top: max(88px, calc(env(safe-area-inset-top) + 80px));
+    width: min(300px, calc(100vw - 32px));
+    gap: 4px;
+  }
+}
