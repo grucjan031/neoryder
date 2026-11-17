@@ -70,6 +70,38 @@ stałe; integrator powinien podać osobne seedy kosmetyczne pokoju. Nie używamy
 
 ## Napisy i hologramy
 
+### Wzory migotania
+
+Opcjonalne `flicker` w `lights[]`, `signs[]` oraz `stations[].sign` kryjówki:
+
+```json
+{ "pattern": "fail", "strength": 0.8, "periodS": 8 }
+```
+
+`pattern`: `buzz` (szybkie, drobne drgania), `fail` (długi stabilny odcinek,
+seria 2–5 przygaśnięć, czasem pełne wyłączenie na 0,3 s), `pulse` (sinusoidalne
+oddychanie). `strength` jest opcjonalne, 0..1 (0 = stała jasność), domyślnie
+`tuning.city.flickerStrength` = 0,8. `periodS` musi być dodatnie; domyślnie
+`buzz` = 1/37 s, `fail` = 8 s, `pulse` = 4 s. Dla `fail` okres określa średni
+odstęp serii z rozrzutem; bardzo krótkie okresy skracają całą serię, zachowując
+stabilną część. Dla `buzz` okres określa krok zmian jasności. Parametry wzorów
+są w `tuning.city.flicker*`, także w lil-gui. Starsze liczbowe `signs[].flicker`
+0..1 nadal działa według poprzedniego algorytmu.
+
+Mnożnik 0..1 dotyczy jasności PointLight, plamy na podłodze, emisji napisu,
+halo i projektora. Wybór świateł do ograniczonej puli nadal używa jasności
+bazowej, więc przygasanie nie zmienia priorytetów. Źródło spoza puli nie dostaje
+dodatkowego PointLight; po powrocie używa aktualnego czasu i własnego ziarna.
+Napisy mają niezależne materiały (również napisy stacji).
+Wyłączenie „Błyski ekranu” (`Settings.flashes`) od następnej klatki wyłącza
+`buzz`, `fail` i starsze migotanie; `pulse` pozostaje aktywne.
+
+Podgląd w 30 s: `?scene=city-fx-test&seed=migotanie`. Od wejścia kolory lamp
+i odpowiadających im neonów: bursztyn = `buzz`, zieleń = `fail`, fiolet = `pulse`,
+potem wzory się powtarzają. Poczekaj 10–20 s na serię zielonej lampy; podejdź
+WASD, by sprawdzić zmiany przydziału puli. Porównaj po wyłączeniu błysków
+w ustawieniach. Testy: `tests/unit/flicker.test.ts`.
+
 `SignRenderer(defs, seed?, textureLoad?)` ładuje tekstury z
 `/assets/textures/signs/<texture>.webp` lub `/assets/textures/holo/<texture>.webp`.
 Płaszczyzna patrzy w +Z przy yaw=0. `tint` mnoży kolor tekstury. Czarne tło jest

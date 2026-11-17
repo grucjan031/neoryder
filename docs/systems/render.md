@@ -1,5 +1,32 @@
 # Render — styl F1 #05
 
+## Migotanie świateł i neonów
+
+`src/render/city/flicker.ts`: czysta, bezalokacyjna funkcja
+`flickerIntensity(pattern, t, seed, strength?, periodS?) → 0..1`. Statyczne
+mieszanie bitów daje deterministyczny szum indeksowany czasem; źródła otrzymują
+osobne ziarna przez `Rng.fork` z ziarna oprawy sceny. Czas jest sumą dodatnich
+`dtRealS` z renderu, bez zegara systemowego i bez wpływu na symulację.
+
+Format danych: `flicker: { pattern: 'buzz' | 'fail' | 'pulse', strength?: 0..1,
+periodS?: liczba dodatnia }` w światłach, napisach i znakach stacji kryjówki.
+Domyślne parametry w `tuning.city.flicker*` są dostępne w lil-gui.
+Szczegóły wzorów i zgodność starszego formatu liczbowego: [city.md](city.md#wzory-migotania).
+
+`CityLights` oddziela bazowe wygładzanie puli od mnożnika migotania, dzięki czemu
+krótkie zaniki nie są wygładzane. Selekcja pozostaje oparta na jasności bazowej,
+a czas źródła biegnie również poza pulą. `SignRenderer` mnoży emisję shadera,
+halo i projektor. `HubDecor` mnoży kolor emisyjnego materiału napisu stacji.
+Każdy napis ma własny materiał i zwalnia go ze swoim rendererem; materiały
+współdzielone przez pozostałą oprawę nie są zmieniane.
+
+`loadSettings().flashes` jest sprawdzane przy aktualizacji renderu: wyłącza
+`buzz` i `fail` (stała jasność), pozostawia `pulse`. Debug:
+`?scene=city-fx-test&seed=migotanie`; bursztyn/zieleń/fiolet pokazują kolejno
+buzz/fail/pulse, widoczne w ciągu 30 s. Weryfikacja automatyczna:
+`tests/unit/flicker.test.ts` (wzory, schematy, powrót lampy do puli, niezależne
+materiały, podział czasu na klatki i przełączenie ustawień).
+
 ## Statyczna geometria pokoju (Z19)
 
 `RoomScene` grupuje bloki, modele bloków GLB i dekoracje w osobnych korzeniach

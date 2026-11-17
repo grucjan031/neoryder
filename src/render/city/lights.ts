@@ -12,6 +12,9 @@ import {
 } from 'three';
 import type { Camera } from 'three';
 import { tuning } from '../../core/tuning';
+import { Rng } from '../../core/rng';
+import { loadSettings } from '../../core/save';
+import { sourceFlicker } from './flicker';
 import { getQuality } from '../quality';
 import type { CityLightDef } from '../../world/dressingSchema';
 import {
@@ -114,6 +117,9 @@ export class CityLights {
   readonly root = new Group();
   readonly pool: readonly PointLight[];
   private readonly assignments: (number | null)[];
+  private readonly baseIntensities: number[];
+  private readonly seeds: number[];
+  private timeS = 0;
   private disposed = false;
   private readonly selected: number[] = [];
   private readonly wanted = new Set<number>();
@@ -127,12 +133,16 @@ export class CityLights {
   constructor(
     private readonly defs: readonly CityLightDef[],
     floorY = 0,
+    seed: string | number = 'city-lights',
   ) {
+    const rng = new Rng(seed);
+    this.seeds = defs.map((_, i) => rng.fork(String(i)).getState());
     this.pool = Array.from(
       { length: Math.max(0, Math.floor(tuning.city.maxLights)) },
       () => new PointLight('#fff1d6', 0, 0, tuning.city.lightDecay),
     );
     this.assignments = this.pool.map(() => null);
+    this.baseIntensities = this.pool.map(() => 0);
     this.root.add(...this.pool);
     const geometry = new PlaneGeometry(1, 1);
     for (const def of defs) {
@@ -172,6 +182,8 @@ export class CityLights {
 
   update(_dtWorldS: number, dtRealS: number, camera: Camera): void {
     if (this.disposed) return;
+    this.timeS += Math.max(0, dtRealS);
+    const flashes = loadSettings().flashes;
     const limit = Math.max(
       0,
       Math.floor(
@@ -186,6 +198,7 @@ export class CityLights {
       light.visible = slot < limit;
       if (slot >= limit) {
         light.intensity = 0;
+        this.baseIntensities[slot] = 0;
         this.assignments[slot] = null;
       }
     });
@@ -211,12 +224,22 @@ export class CityLights {
       if (slot >= limit) return;
       let index = this.assignments[slot] ?? null;
       if (index !== null && !wanted.has(index)) {
-        light.intensity += (0 - light.intensity) * fade;
-        if (light.intensity > tuning.city.lightSwitchThreshold) return;
+        this.baseIntensities[slot]! *= 1 - fade;
+        light.intensity =
+          this.baseIntensities[slot]! *
+          sourceFlicker(
+            this.defs[index]!.flicker,
+            this.timeS,
+            this.seeds[index]!,
+            flashes,
+          );
+        if (this.baseIntensities[slot]! > tuning.city.lightSwitchThreshold)
+          return;
         assigned.delete(index);
         index = null;
         this.assignments[slot] = null;
         light.intensity = 0;
+        this.baseIntensities[slot] = 0;
       }
       if (index === null) {
         index = selected.find((candidate) => !assigned.has(candidate)) ?? null;
@@ -229,17 +252,32 @@ export class CityLights {
         light.distance = def.range;
       }
       light.decay = tuning.city.lightDecay;
-      light.intensity +=
+      this.baseIntensities[slot]! +=
         (this.defs[index]!.intensity * tuning.city.lightIntensityScale -
-          light.intensity) *
+          this.baseIntensities[slot]!) *
         fade;
+      light.intensity =
+        this.baseIntensities[slot]! *
+        sourceFlicker(
+          this.defs[index]!.flicker,
+          this.timeS,
+          this.seeds[index]!,
+          flashes,
+        );
     });
     this.root.children.forEach((object, i) => {
       if (!(object instanceof Mesh)) return;
-      object.material.uniforms.opacity.value = tuning.city.lightSpotOpacity;
       object.material.uniforms.power.value = tuning.city.lightSpotPower;
       const def = this.defs[i - this.pool.length];
       if (def) {
+        object.material.uniforms.opacity.value =
+          tuning.city.lightSpotOpacity *
+          sourceFlicker(
+            def.flicker,
+            this.timeS,
+            this.seeds[i - this.pool.length]!,
+            flashes,
+          );
         const size = def.range * 2 * tuning.city.lightSpotScale;
         object.scale.set(size, size, 1);
       }

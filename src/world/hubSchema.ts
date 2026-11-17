@@ -2,7 +2,11 @@ import { z } from 'zod';
 import { tuning } from '../core/tuning';
 import { npcHeight, npcRadius } from './hubNpcs';
 import { HUB_STATION_IDS } from '../core/metaTypes';
-import { BLOCK_MATERIALS, dressingFields } from './dressingSchema';
+import {
+  BLOCK_MATERIALS,
+  dressingFields,
+  flickerSchema,
+} from './dressingSchema';
 import {
   roomBlockSchema,
   roomSpawnPointSchema,
@@ -50,6 +54,7 @@ export const hubStationSignSchema = z.object({
   size: size2,
   yaw: finite,
   color: hexColor.optional(),
+  flicker: flickerSchema.optional(),
 });
 
 export const hubStationSchema = z.object({

@@ -35,6 +35,13 @@ export const BLOCK_MATERIALS = [
 export const blockMaterialSchema = z.enum(BLOCK_MATERIALS);
 export type BlockMaterial = z.infer<typeof blockMaterialSchema>;
 
+export const flickerSchema = z.object({
+  pattern: z.enum(['buzz', 'fail', 'pulse']),
+  strength: unit.optional(),
+  periodS: positive.optional(),
+});
+export type FlickerDef = z.infer<typeof flickerSchema>;
+
 /**
  * Napis neonowy (`neon`, plik `/assets/textures/signs/<texture>.webp`) albo
  * hologram reklamowy (`holo`, `/assets/textures/holo/<texture>.webp`).
@@ -48,8 +55,8 @@ export const signSchema = z.object({
   size: size2,
   yaw: finite,
   tint: hexColor.optional(),
-  /** 0 = stałe światło, 1 = mocne migotanie. */
-  flicker: unit.optional(),
+  /** Liczba 0..1: starszy format migotania napisów. */
+  flicker: z.union([flickerSchema, unit]).optional(),
 });
 export type SignDef = z.infer<typeof signSchema>;
 
@@ -59,6 +66,7 @@ export const cityLightSchema = z.object({
   color: hexColor,
   intensity: positive,
   range: positive,
+  flicker: flickerSchema.optional(),
 });
 export type CityLightDef = z.infer<typeof cityLightSchema>;
 

@@ -1,5 +1,13 @@
 # Kryjówka (hub) — F4-07
 
+Opcjonalne `lights[].flicker`, `signs[].flicker` oraz `stations[].sign.flicker`
+przyjmują `{ pattern: 'buzz' | 'fail' | 'pulse', strength?: 0..1, periodS?: >0 }`.
+`CityDressing` aktualizuje światła i napisy teksturowe, `HubDecor.update(frameDt)`
+aktualizuje niezależne materiały napisów stacji. Wszystko używa czasu renderu
+i osobnych ziaren kosmetycznych. Wyłączenie „Błyski ekranu” zatrzymuje buzz/fail,
+zostawia pulse. Domyślne liczby: `tuning.city.flicker*`.
+Format, wzory i scena podglądu: [city.md](city.md#wzory-migotania).
+
 Grywalna kryjówka komórki ruchu oporu „Iskra” w nieczynnej stacji metra: scena `?scene=hub`
 (`src/scenes/hub.ts`, `HubScene`). Gracz chodzi kontrolerem FPP (ruch, skok, dash, ślizg) bez wrogów, fal i systemów
 walki; ręce pokazują ostrze plazmowe w spoczynku (`FppViewModel` z nieruchomym `BladeView`). Podejście do stacji,
