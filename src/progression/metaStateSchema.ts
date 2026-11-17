@@ -53,6 +53,10 @@ export const metaStateSchema: z.ZodType<MetaState> = z
     }),
     lastRuns: z.array(metaRunRecordSchema).max(MAX_LAST_RUNS),
     appliedRunIds: ids.max(MAX_APPLIED_RUN_IDS),
+    achievements: z.object({
+      unlocked: ids,
+      counters: z.record(z.string().min(1), count),
+    }),
   })
   .refine((state) => state.threat.selected <= state.threat.max, {
     message: 'Wybrany Poziom zagrożenia przekracza maksymalny.',

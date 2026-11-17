@@ -559,7 +559,7 @@ it('domyślny SaveStore v2 zapisuje mapę, wznawia pełen stan i czyści po run_
   expect(credits).toBeGreaterThanOrEqual(23);
   const saved = await store.loadRun();
   expect(saved).toMatchObject({
-    saveVersion: 4,
+    saveVersion: 5,
     run: { credits, implants: ['test-save'] },
   });
   expect(saved!.run.currentNodeId).not.toBeNull();

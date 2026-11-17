@@ -149,6 +149,10 @@ export interface GameEvents {
   unlock_purchased: { id: string };
   loadout_changed: { loadout: LoadoutChoice };
   threat_selected: { level: number };
+  /** Tracker w trakcie runu: próg osiągnięcia przekroczony (nagroda dopiero przy rozliczeniu). */
+  achievement_earned: { id: string };
+  /** `MetaManager`: osiągnięcie zapisane w meta (rozliczenie runu, zakup, debug). */
+  achievement_unlocked: { id: string };
   hub_prop_used: {
     prop: string;
     kind: 'jukebox' | 'noodles' | 'radio' | 'bag';

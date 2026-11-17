@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-16. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-17. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -261,9 +261,9 @@ Model runu: stała ścieżka przez sektor Kurogane Arms (warstwy: walka, walka, 
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | 1. Śmierć w warstwie 3 | 2 | 0 | 12 | 300 | 50 | 22 | 0 | 2 | 1 | — | 22 | 0 |
 | 2. Śmierć w warstwie 5 | 4 | 1 | 28 | 660 | 140 | 48 | 1 | 3 | 1 | — | 70 | 1 |
-| 3. Zwycięstwo | 8 | 2 | 43 | 1275 | 330 | 113 | 5 | 5 | 2 | module:superconductor, power:grab, weapon:rifle | 23 | 0 |
-| 4. Śmierć w warstwie 6 | 5 | 1 | 28 | 720 | 165 | 53 | 1 | 6 | 1 | — | 76 | 1 |
-| 5. Zwycięstwo | 8 | 2 | 43 | 1275 | 330 | 113 | 5 | 7 | 1 | power:shockwave | 89 | 6 |
+| 3. Zwycięstwo | 8 | 2 | 43 | 1275 | 330 | 113 | 5 | 5 | 2 | power:grab, weapon:rifle | 33 | 6 |
+| 4. Śmierć w warstwie 6 | 5 | 1 | 28 | 720 | 165 | 53 | 1 | 6 | 1 | — | 86 | 7 |
+| 5. Zwycięstwo | 8 | 2 | 43 | 1275 | 330 | 113 | 5 | 7 | 1 | slot:power2, power:shockwave | 99 | 4 |
 
 Nagrody za typowe zwycięstwo i śmierć w warstwie 5 na Poziomach zagrożenia 0–3 (Rdzenie nie mnożą się przez `rewardMult`, zwycięstwo dolicza `victoryCores`):
 

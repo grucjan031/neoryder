@@ -73,6 +73,13 @@ export interface RunState {
   };
 }
 
+/** Przyrosty liczników i spełnione flagi osiągnięć z jednego runu (S4b-01). */
+export interface RunAchievementProgress {
+  counters: Record<string, number>;
+  /** Id osiągnięć-flag spełnionych w runie. */
+  flags: string[];
+}
+
 export interface RunSummary {
   modeId?: ModeId;
   missionId?: string;
@@ -89,6 +96,8 @@ export interface RunSummary {
   layerReached: number;
   implants: string[];
   damage: RunDamageStats;
+  /** Dane osiągnięć zebrane w runie; brak pola = nic nie naliczamy (stare zapisy). */
+  achievements?: RunAchievementProgress;
 }
 
 /** Planowanie fal pokoju na podstawie budżetu zagrożenia sektora (ADR 0005 pkt 3). */
