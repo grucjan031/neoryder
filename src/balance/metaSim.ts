@@ -74,6 +74,8 @@ export function typicalSummary(
     layerReached: spec.layer,
     implants: [],
     damage: {} as RunSummary['damage'],
+    // Typowy gracz zabija wrogów, więc dostaje „Pierwszą krew”; reszta naszywek wynika z podsumowania.
+    achievements: { counters: {}, flags: ['pierwsza-krew'] },
   };
 }
 

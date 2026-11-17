@@ -855,3 +855,26 @@
   font-weight: 600;
   animation: none;
 }
+.run-screen__patches {
+  border-color: rgba(255, 174, 26, 0.7);
+  background: rgba(255, 174, 26, 0.1);
+}
+.run-screen .run-screen__patch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff1d6;
+}
+.run-screen__patch-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  color: var(--hud-warm, #ffae1a);
+  border: 1px solid var(--hud-warm, #ffae1a);
+}
+.run-screen__patch-icon .achv-icon {
+  width: 17px;
+  height: 17px;
+}

@@ -9,6 +9,8 @@ import {
   workshopText as text,
 } from './workshopState';
 import type { ChoiceOption, LoadoutPart, UnlockRow } from './workshopState';
+import { achievementText } from '../achievementText';
+import { createLockIcon } from '../achievementIcons';
 import './workshopPanel.css';
 
 const fill = (template: string, values: Record<string, string | number>) =>
@@ -89,6 +91,10 @@ export const createWorkshopPanel: HubPanelFactory = (
     switch (row.status) {
       case 'owned':
         return text.unlocks.owned;
+      case 'achievement':
+        return fill(achievementText.workshop.requires, {
+          title: row.requires?.title ?? '',
+        });
       case 'level':
         return fill(text.unlocks.requiredLevel, { level: row.minLevel ?? 1 });
       case 'data':
@@ -115,16 +121,21 @@ export const createWorkshopPanel: HubPanelFactory = (
         if (row.status !== 'owned')
           item.append(el('span', 'workshop__cost', costLabel(row)));
         const label = statusLabel(row);
-        if (label !== null)
-          item.append(
-            el(
-              'span',
-              row.status === 'owned'
-                ? 'workshop__state'
-                : 'workshop__state is-blocked',
-              label,
-            ),
+        if (label !== null) {
+          const state = el(
+            'span',
+            row.status === 'owned'
+              ? 'workshop__state'
+              : 'workshop__state is-blocked',
+            label,
           );
+          if (row.status === 'achievement') {
+            state.classList.add('is-locked');
+            state.dataset.lock = row.requires?.id ?? '';
+            state.prepend(createLockIcon());
+          }
+          item.append(state);
+        }
         if (row.status !== 'owned') {
           const button = el('button', 'workshop__buy', text.unlocks.buy);
           button.type = 'button';

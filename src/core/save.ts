@@ -2,14 +2,16 @@ import { z } from 'zod';
 import { modeIdSchema } from '../world/modeSchema';
 import { actionSchema, isBindingCode } from './input';
 import { loadoutDefinitions } from '../progression/loadout';
+import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { metaStateSchema } from '../progression/metaStateSchema';
+import { seedAchievementsFromMeta } from '../progression/achievements';
 import { createStarterMetaState } from '../progression/progressionSchema';
 import { runStateSchema } from '../world/run';
 import type { MetaState } from './metaTypes';
 import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 export interface MetaSave {
   saveVersion: number;
   createdAt: number;
@@ -97,6 +99,7 @@ const runEndedSchema: z.ZodType<RunEnded> = z.object({
       gun: z.number().finite(),
       other: z.number().finite(),
     }),
+    achievements: runAchievementProgressSchema.optional(),
   }),
 });
 const runSchema: z.ZodType<RunSave> = z.object({
@@ -114,7 +117,10 @@ const legacyRunV1Schema = z.object({
 const recordSchema = z.record(z.string(), z.unknown());
 const identity: Migration = (data) => ({ ...data });
 
-/** Meta 2→3: gracz z F3 nie miał meta-progresu, więc zaczyna od stanu startowego z danych. */
+/**
+ * Meta 2→3: gracz z F3 nie miał meta-progresu, więc zaczyna od stanu startowego z danych.
+ * Meta 4→5: dodaje puste `achievements` (naszywki Iskry); reszta zapisu nietknięta.
+ */
 const metaMigrations: readonly Migration[] = [
   identity,
   identity,
@@ -129,6 +135,23 @@ const metaMigrations: readonly Migration[] = [
       campaign: { completed: [], pendingDebrief: null },
     },
   }),
+  (data) => {
+    const meta = recordSchema.parse(data.meta);
+    if (meta.achievements !== undefined) return { ...data, meta };
+    const stats = z
+      .object({ runs: count, victories: count })
+      .catch({ runs: 0, victories: 0 })
+      .parse(meta.stats);
+    const unlocks = z.array(z.string()).catch([]).parse(meta.unlocks);
+    const xp = count.catch(0).parse(meta.xp);
+    return {
+      ...data,
+      meta: {
+        ...meta,
+        achievements: seedAchievementsFromMeta({ xp, unlocks, stats }),
+      },
+    };
+  },
 ];
 
 /** Run 2→3: dopisuje ekwipunek z presetu `loadoutId`, talenty i Poziom zagrożenia; nieznany preset = zapis nieczytelny. */
@@ -156,6 +179,7 @@ const runMigrations: readonly Migration[] = [
       },
     };
   },
+  identity,
   identity,
 ];
 

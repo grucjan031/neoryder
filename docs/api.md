@@ -1627,6 +1627,41 @@ hub_chatter_line: { conversation: string; npc: string; text: string };
 
 Emitują: `MetaManager` (zdarzenia meta), scena kryjówki (`hub_station_opened`) i `HubChatter` (`hub_chatter_line`).
 
+### Naszywki Iskry — osiągnięcia (S4b-01)
+
+Opis systemu: `docs/systems/achievements.md`.
+
+```ts
+// src/core/metaTypes.ts
+interface AchievementsState { unlocked: string[]; counters: Record<string, number> }
+interface MetaState { /* ...pola F4... */ achievements: AchievementsState }
+
+// src/core/runTypes.ts
+interface RunAchievementProgress { counters: Record<string, number>; flags: string[] }
+interface RunSummary { /* ... */ achievements?: RunAchievementProgress }
+
+// src/progression/achievementsSchema.ts
+achievementDefinitions: ReadonlyMap<string, AchievementDefinition>;  // z src/data/meta/achievements.json
+loadAchievements(data: unknown): AchievementDefinition[];
+
+// src/progression/achievementTracker.ts
+class AchievementTracker {
+  constructor(bus: EventBus, options: { base: AchievementsState; clock: () => number; active?: () => boolean });
+  get tracked(): RunAchievementProgress;                 // przyrosty ze zdarzeń (do RunSummary.achievements)
+  restore(progress?: RunAchievementProgress): void;      // z RunState.achievementProgress przy continue=1
+  setBase(base: AchievementsState): void;                // po rozliczeniu zostawionego runu
+  dispose(): void;
+}
+
+// src/progression/meta.ts
+interface ApplyRunResult { /* ... */ achievements: { id: string; reward: { data: number; cores: number } }[] }
+MetaManager.hasAchievement(id: string): boolean;
+MetaManager.debugGrantAchievement(id: string): void;     // bez nagrody, konsola debug
+// UnlockDefinition.requiresAchievement?: string — buyUnlock rzuca „Wymagana naszywka: <tytuł>.”
+```
+
+`RunState.achievementProgress?` (opcjonalne) trzyma przyrosty trackera w zapisie runu. `conquest_captured` ma teraz `owner: 'player' | 'enemy' | 'neutral'` i `owners` (migawka A/B/C); `conquestUi` ignoruje `neutral`. Zdarzenia: `achievement_earned: { id: string }` (tracker w trakcie runu, komunikat w HUD) i `achievement_unlocked: { id: string }` (`MetaManager`: rozliczenie runu, zakup, debug). Komenda debug `achievement grant <id>`, zapytania `query('achievements' | 'runAchievements')`. Zapis: `SAVE_VERSION = 5` (migracja meta 4→5: puste osiągnięcia).
+
 ### Kryjówka — `src/ui/hubScreens.ts`, `src/world/hubSchema.ts`, `src/world/hubStations.ts` (F4-07)
 
 Szczegóły: `docs/systems/hub.md`.

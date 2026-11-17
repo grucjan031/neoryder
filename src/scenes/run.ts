@@ -1,3 +1,4 @@
+import { ZodError } from 'zod';
 import { modeIdSchema } from '../world/modeSchema';
 import { modeDefinitions } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
@@ -41,6 +42,9 @@ import { RunManager } from '../world/run';
 import { generateSectorMap, generateMissionMap } from '../world/sectorMap';
 import { missionDefinitions } from '../world/missions';
 import { MissionRadio } from '../ui/missionUi';
+import { achievementDefinitions } from '../progression/achievementsSchema';
+import { AchievementToast } from '../ui/achievementToast';
+import { AchievementTracker } from '../progression/achievementTracker';
 import type { SectorDefinition } from '../world/sectorSchema';
 import { kuroganeSector } from '../world/sectors';
 import { roomPlanner } from '../world/threat';
@@ -112,6 +116,8 @@ export class RunScene implements Scene {
   private screens!: RunScreens;
   private meta!: MetaManager;
   private metaCommands: MetaCommandsHandle | null = null;
+  private tracker: AchievementTracker | null = null;
+  private achievementToast: AchievementToast | null = null;
   private metaResult: ApplyRunResult | null = null;
   /** Zakończony run czekający na trwały zapis nagrody (null = rozliczony albo w toku). */
   private ended: RunEnded | null = null;
@@ -242,7 +248,12 @@ export class RunScene implements Scene {
           this.room?.enterVictoryHold?.();
         } else this.schedule('end');
         // Rozliczenie po ustawieniu ciszy/przejścia: jego odświeżenie nie pokaże podsumowania za wcześnie.
-        this.finishMeta(summary);
+        // Przyrosty osiągnięć dochodzą do podsumowania przed zapisem `ended`, więc przeżywają odświeżenie.
+        this.finishMeta(
+          this.tracker
+            ? { ...summary, achievements: this.tracker.tracked }
+            : summary,
+        );
       }),
     );
     const params =
@@ -252,6 +263,13 @@ export class RunScene implements Scene {
       );
     this.meta = await loadMetaManager(this.getMetaStore(), ctx.bus);
     if (this.disposed) return;
+    this.tracker = new AchievementTracker(ctx.bus, {
+      base: this.meta.state.achievements,
+      clock: () => this.manager.state.elapsedS,
+      active: () => this.manager.active,
+    });
+    if (typeof document !== 'undefined')
+      this.achievementToast = new AchievementToast(ctx.bus);
     if (params.get('continue') === '1') {
       const state = await this.save.loadRun();
       const ended = state ? ((await this.save.loadEnded?.()) ?? null) : null;
@@ -274,6 +292,7 @@ export class RunScene implements Scene {
       if (state.loadoutId !== CUSTOM_LOADOUT_ID)
         this.validateLoadout(state.loadoutId);
       this.manager.restore(state);
+      this.tracker?.restore(state.achievementProgress);
     } else {
       // Nowy run nadpisze zapis runu: zostawiony, nierozliczony run najpierw rozliczamy.
       // Gdy się nie uda, zostajemy na jego podsumowaniu (ponowienie albo porzucenie nagrody).
@@ -406,7 +425,12 @@ export class RunScene implements Scene {
     try {
       await this.save.saveRun(this.manager.serialize(), ended);
     } catch (error) {
-      fail('save', 'Nie można zapisać zakończenia runu.', error);
+      // Dane odrzucone przez walidację nie zmienią się po ponowieniu: zostaje „Porzuć nagrodę”.
+      fail(
+        error instanceof ZodError ? 'apply' : 'save',
+        'Nie można zapisać zakończenia runu.',
+        error,
+      );
       return;
     }
     const store = this.getMetaStore();
@@ -432,7 +456,11 @@ export class RunScene implements Scene {
       try {
         await saveMetaManager(store, meta);
       } catch (error) {
-        fail('save', 'Nie można zapisać meta-progresu.', error);
+        fail(
+          error instanceof ZodError ? 'apply' : 'save',
+          'Nie można zapisać meta-progresu.',
+          error,
+        );
         return;
       }
     }
@@ -460,6 +488,16 @@ export class RunScene implements Scene {
     return {
       applied: false,
       rewards: record.rewards,
+      achievements: (record.achievements ?? []).map((id) => {
+        const def = achievementDefinitions.get(id);
+        return {
+          id,
+          reward: {
+            data: def?.reward.data ?? 0,
+            cores: def?.reward.cores ?? 0,
+          },
+        };
+      }),
       levelBefore: level,
       levelAfter: level,
       threatUnlocked: false,
@@ -469,6 +507,7 @@ export class RunScene implements Scene {
   /** Świeżo wczytany i rozliczony stan meta staje się stanem sceny (także dla komend meta). */
   private adoptMeta(meta: MetaManager): void {
     this.meta = meta;
+    this.tracker?.setBase(meta.state.achievements);
     if (!this.metaCommands) return;
     this.metaCommands.dispose();
     this.metaCommands = registerMetaCommands(
@@ -691,6 +730,7 @@ export class RunScene implements Scene {
   }
 
   private showMap(): void {
+    if (this.tracker) this.manager.setAchievementProgress(this.tracker.tracked);
     const state = this.manager.serialize();
     this.persist(async () => {
       await this.save.saveRun(state);
@@ -1045,6 +1085,10 @@ export class RunScene implements Scene {
         return this.roomId;
       case 'meta':
         return this.meta.state;
+      case 'achievements':
+        return this.meta.state.achievements;
+      case 'runAchievements':
+        return this.tracker?.tracked ?? null;
       case 'level':
         return {
           ...this.meta.xpProgress,
@@ -1237,6 +1281,8 @@ export class RunScene implements Scene {
     for (const off of this.off.splice(0)) off();
     this.disposeRoom();
     this.manager?.dispose();
+    this.tracker?.dispose();
+    this.achievementToast?.dispose();
     this.missionRadio?.dispose();
     this.screens?.dispose();
   }

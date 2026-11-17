@@ -10,6 +10,9 @@ import { MapScreen } from './mapScreen';
 import { splashUrl } from './splash';
 import { getLiteFx } from '../render/fxMode';
 import { createLoadingTip } from './loadingTipView';
+import { createAchievementIcon } from './achievementIcons';
+import { achievementText, fill, rewardLabel } from './achievementText';
+import { achievementDefinitions } from '../progression/achievementsSchema';
 
 const text = z
   .object({
@@ -94,7 +97,10 @@ const metaText = z
 export type RunMetaView = Pick<
   ApplyRunResult,
   'rewards' | 'levelBefore' | 'levelAfter' | 'threatUnlocked'
->;
+> & {
+  /** Nowe naszywki Iskry z tego runu (S4b-01); brak = sekcja nie jest pokazywana. */
+  achievements?: ApplyRunResult['achievements'];
+};
 
 export interface RunScreenView {
   screen: RunScreen;
@@ -506,6 +512,41 @@ export class HtmlRunScreens implements RunScreens {
         '{level}',
         String(runThreat + 1),
       );
+      box.append(row);
+    }
+    this.panel.append(box);
+    if (meta.achievements?.length) this.achievementList(meta.achievements);
+  }
+
+  private achievementList(
+    unlocks: NonNullable<RunMetaView['achievements']>,
+  ): void {
+    const box = document.createElement('div');
+    box.className = 'run-screen__rewards run-screen__patches';
+    box.dataset.testid = 'run-achievements';
+    const title = document.createElement('h2');
+    title.textContent = achievementText.summary.heading;
+    box.append(title);
+    for (const unlock of unlocks) {
+      const def = achievementDefinitions.get(unlock.id);
+      const row = document.createElement('p');
+      row.className = 'run-screen__patch';
+      row.dataset.achievement = unlock.id;
+      const icon = document.createElement('span');
+      icon.className = 'run-screen__patch-icon';
+      icon.append(createAchievementIcon(def?.icon ?? 'spark'));
+      const label = document.createElement('span');
+      const reward = rewardLabel({
+        ...(unlock.reward.data ? { data: unlock.reward.data } : {}),
+        ...(unlock.reward.cores ? { cores: unlock.reward.cores } : {}),
+      });
+      label.textContent = fill(
+        reward
+          ? achievementText.summary.line
+          : achievementText.summary.lineNoReward,
+        { title: def?.title ?? unlock.id, reward },
+      );
+      row.append(icon, label);
       box.append(row);
     }
     this.panel.append(box);

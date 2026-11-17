@@ -9,7 +9,20 @@ import {
   type RunRewards,
   type TreeId,
 } from '../core/metaTypes';
-import type { RunSummary } from '../core/runTypes';
+import type { RunAchievementProgress, RunSummary } from '../core/runTypes';
+import {
+  ACHIEVEMENT_IDS,
+  ACHIEVEMENT_RULES,
+  mergeProgress,
+  summaryProgress,
+} from './achievements';
+import {
+  ACHIEVEMENT_COUNTERS,
+  MAX_RUN_COUNTER,
+  RUN_EVENT_FLAGS,
+  achievementDefinitions,
+} from './achievementsSchema';
+import type { AchievementDefinition } from './achievementsSchema';
 import type { Loadout } from './loadout';
 import { createStarterMetaState, progression } from './progressionSchema';
 import type { ProgressionData, RewardRules } from './progressionSchema';
@@ -95,13 +108,22 @@ export interface MetaRules {
   progression: ProgressionData;
   unlocks: ReadonlyMap<string, UnlockDefinition>;
   threat: readonly ThreatLevel[];
+  /** Definicje osiągnięć; brak = dane gry (`achievements.json`). */
+  achievements?: ReadonlyMap<string, AchievementDefinition>;
 }
 
 export const defaultMetaRules: MetaRules = {
   progression,
   unlocks: unlockDefinitions,
   threat: threatLevels,
+  achievements: achievementDefinitions,
 };
+
+/** Naszywka zdobyta przy rozliczeniu: id i jednorazowa nagroda już doliczona do waluty. */
+export interface AchievementUnlock {
+  id: string;
+  reward: { data: number; cores: number };
+}
 
 export interface ApplyRunResult {
   applied: boolean;
@@ -109,6 +131,8 @@ export interface ApplyRunResult {
   levelBefore: number;
   levelAfter: number;
   threatUnlocked: boolean;
+  /** Nowe naszywki Iskry z tego runu (nagrody osobno od `rewards`). */
+  achievements: AchievementUnlock[];
 }
 
 /** Błędy zakupów i zmian to wyjątki `Error` z polskim komunikatem (jak w `shop.ts`). */
@@ -221,6 +245,7 @@ export class MetaManager {
         levelBefore,
         levelAfter: levelBefore,
         threatUnlocked: false,
+        achievements: [],
       };
     const entry = this.rules.threat[summary.threatLevel];
     if (!entry)
@@ -272,6 +297,22 @@ export class MetaManager {
       s.threat.max += 1;
       threatUnlocked = true;
     }
+    // Postęp z podsumowania liczy tu `MetaManager`; tracker dostarcza tylko przyrosty ze zdarzeń
+    // (tylko znane liczniki i flagi zdarzeniowe, ograniczone wartości).
+    const tracked = summary.achievements;
+    const achievements = this.addAchievementProgress(
+      mergeProgress(summaryProgress(summary), {
+        counters: tracked?.counters ?? {},
+        flags: (tracked?.flags ?? []).filter((flag) =>
+          (RUN_EVENT_FLAGS as readonly string[]).includes(flag),
+        ),
+      }),
+      this.level >= ACHIEVEMENT_RULES.characterLevel
+        ? [ACHIEVEMENT_IDS.level]
+        : [],
+    );
+    if (achievements.length > 0)
+      record.achievements = achievements.map((unlock) => unlock.id);
     const levelAfter = this.level;
     this.events?.emit('meta_rewards', {
       runId,
@@ -281,7 +322,67 @@ export class MetaManager {
     });
     for (let level = levelBefore + 1; level <= levelAfter; level += 1)
       this.events?.emit('level_up', { level });
-    return { applied: true, rewards, levelBefore, levelAfter, threatUnlocked };
+    for (const unlock of achievements)
+      this.events?.emit('achievement_unlocked', { id: unlock.id });
+    return {
+      applied: true,
+      rewards,
+      levelBefore,
+      levelAfter,
+      threatUnlocked,
+      achievements,
+    };
+  }
+
+  hasAchievement(id: string): boolean {
+    return this.current.achievements.unlocked.includes(id);
+  }
+
+  private get achievementRules(): ReadonlyMap<string, AchievementDefinition> {
+    return this.rules.achievements ?? achievementDefinitions;
+  }
+
+  /**
+   * Dolicza przyrosty liczników i spełnione flagi, odblokowuje osiągnięcia i dolicza ich
+   * jednorazowe nagrody. Idempotencję zapewnia wywołujący (`appliedRunIds`).
+   */
+  private addAchievementProgress(
+    progress?: RunAchievementProgress,
+    extraFlags: readonly string[] = [],
+  ): AchievementUnlock[] {
+    const state = this.current.achievements;
+    for (const name of ACHIEVEMENT_COUNTERS) {
+      const delta = progress?.counters[name];
+      if (typeof delta === 'number' && Number.isFinite(delta) && delta > 0)
+        state.counters[name] =
+          (state.counters[name] ?? 0) +
+          Math.min(MAX_RUN_COUNTER, Math.floor(delta));
+    }
+    const flags = new Set([...(progress?.flags ?? []), ...extraFlags]);
+    const unlocks: AchievementUnlock[] = [];
+    for (const def of this.achievementRules.values()) {
+      if (state.unlocked.includes(def.id)) continue;
+      const met =
+        def.kind === 'counter'
+          ? (state.counters[def.counter ?? ''] ?? 0) >= (def.target ?? Infinity)
+          : flags.has(def.id);
+      if (!met) continue;
+      state.unlocked.push(def.id);
+      const reward = {
+        data: def.reward.data ?? 0,
+        cores: def.reward.cores ?? 0,
+      };
+      this.current.data += reward.data;
+      this.current.cores += reward.cores;
+      unlocks.push({ id: def.id, reward });
+    }
+    return unlocks;
+  }
+
+  /** Flaga poza runem (zakup, poziom): odblokowuje i emituje zdarzenie. */
+  private grantFlag(id: string): void {
+    for (const unlock of this.addAchievementProgress(undefined, [id]))
+      this.events?.emit('achievement_unlocked', { id: unlock.id });
   }
 
   clearDebrief(): void {
@@ -292,6 +393,15 @@ export class MetaManager {
     const def = this.rules.unlocks.get(id);
     if (!def) throw new Error(`Nieznane odblokowanie: ${id}.`);
     if (this.isUnlocked(id)) throw new Error('Już odblokowane.');
+    if (
+      def.requiresAchievement &&
+      !this.hasAchievement(def.requiresAchievement)
+    ) {
+      const required = this.achievementRules.get(def.requiresAchievement);
+      throw new Error(
+        `Wymagana naszywka: ${required?.title ?? def.requiresAchievement}.`,
+      );
+    }
     if (def.minLevel !== undefined && this.level < def.minLevel)
       throw new Error(`Wymagany poziom ${def.minLevel}.`);
     const data = def.cost.data ?? 0;
@@ -302,6 +412,7 @@ export class MetaManager {
     this.current.cores -= cores;
     this.current.unlocks.push(id);
     this.events?.emit('unlock_purchased', { id });
+    this.grantFlag(ACHIEVEMENT_IDS.firstPurchase);
   }
 
   setLoadout(choice: LoadoutChoice): void {
@@ -409,6 +520,17 @@ export class MetaManager {
     this.current.xp += Math.max(0, Math.floor(amount));
     for (let level = before + 1; level <= this.level; level += 1)
       this.events?.emit('level_up', { level });
+    if (this.level >= ACHIEVEMENT_RULES.characterLevel)
+      this.grantFlag(ACHIEVEMENT_IDS.level);
+  }
+
+  /** Oznacza osiągnięcie jako zdobyte bez nagrody i bez sprawdzania warunku (konsola debug). */
+  debugGrantAchievement(id: string): void {
+    if (!this.achievementRules.has(id))
+      throw new Error(`Nieznane osiągnięcie: ${id}.`);
+    if (this.hasAchievement(id)) return;
+    this.current.achievements.unlocked.push(id);
+    this.events?.emit('achievement_unlocked', { id });
   }
 
   /** Dodaje talent bez kosztu i bez sprawdzania progów (konsola debug). */

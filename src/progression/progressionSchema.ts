@@ -118,5 +118,6 @@ export function createStarterMetaState(
     lastRuns: [],
     appliedRunIds: [],
     campaign: { completed: [], pendingDebrief: null },
+    achievements: { unlocked: [], counters: {} },
   };
 }

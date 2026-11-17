@@ -55,8 +55,12 @@ export class Conquest {
   private own(point: ConquestPoint, owner: PointOwner): void {
     if (point.owner === owner) return;
     point.owner = owner;
-    if (owner !== 'neutral')
-      this.bus.emit('conquest_captured', { id: point.id, owner });
+    const owners = { A: 'neutral', B: 'neutral', C: 'neutral' } as Record<
+      'A' | 'B' | 'C',
+      PointOwner
+    >;
+    for (const p of this.points) owners[p.id] = p.owner;
+    this.bus.emit('conquest_captured', { id: point.id, owner, owners });
   }
   step(dt: number, player: Vec3, enemies: readonly Vec3[], dead = false): void {
     if (this.outcome) return;
