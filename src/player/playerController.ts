@@ -286,6 +286,7 @@ export class PlayerController {
   private crouchQueued = false;
   /** Postęp celowania 0–1 (ustawiany przez scenę z `HeldItem.aim`). */
   private aim = 0;
+  private aimSensitivityScale = 1;
   private carrySpeed: number | null = null;
 
   setCarry(speed: number | null): void {
@@ -313,7 +314,8 @@ export class PlayerController {
    * Celowanie: czułość myszy i prędkość ruchu skalowane `tuning.player.aim` (prędkość przez
    * `StatModifier`), sprint niedostępny, dopóki celowanie trwa.
    */
-  setAim(aim: number): void {
+  setAim(aim: number, sensitivityScale = 1): void {
+    this.aimSensitivityScale = sensitivityScale;
     const k = Math.min(1, Math.max(0, Number.isFinite(aim) ? aim : 0));
     if (k === this.aim) return;
     this.aim = k;
@@ -333,7 +335,7 @@ export class PlayerController {
     const sensitivity =
       t.lookSensitivity *
       this.settings.mouseSensitivity *
-      (1 + (t.aim.sensitivity - 1) * this.aim);
+      (1 + (t.aim.sensitivity * this.aimSensitivityScale - 1) * this.aim);
     s.yaw -= input.lookDelta.x * sensitivity;
     const pitchLimit = (t.maxPitchDeg * Math.PI) / 180;
     s.pitch = Math.max(

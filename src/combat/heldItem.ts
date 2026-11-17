@@ -124,12 +124,12 @@ export class HeldItem {
     this.aimLatch = false;
   }
 
-  private stepAim(dt: number, wants: boolean): void {
+  private stepAim(dt: number, wants: boolean, inScale = 1): void {
     if (!wants && this.aimingNow) this.aimLatch = true;
     this.aimingNow = wants;
     if (!(dt > 0)) return;
     const a = this.tuning.player.aim;
-    const rate = 1 / Math.max(1e-3, wants ? a.inS : a.outS);
+    const rate = 1 / Math.max(1e-3, wants ? a.inS * inScale : a.outS);
     this.aimT = Math.min(1, Math.max(0, this.aimT + (wants ? dt : -dt) * rate));
   }
 
@@ -149,7 +149,7 @@ export class HeldItem {
   step(
     dt: number,
     input: InputSnapshot,
-    ctx: { bladeBusy: boolean; canAim?: boolean },
+    ctx: { bladeBusy: boolean; canAim?: boolean; aimInScale?: number },
   ): { bladeInput: InputSnapshot; triggerHeld: boolean } {
     const gunReady = this.current === 'gun' && !this.swapping;
     const aimHeld = input.held.has('aim') || input.held.has('block');
@@ -192,6 +192,7 @@ export class HeldItem {
         aimHeld &&
         !this.aimLatch &&
         (ctx.canAim ?? true),
+      ctx.aimInScale,
     );
     return {
       bladeInput:

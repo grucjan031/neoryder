@@ -255,11 +255,7 @@ export const createWorkshopPanel: HubPanelFactory = (
       weapon.slots.forEach((slot, index) => {
         const label = el('label', 'workshop__module-slot');
         label.append(
-          el(
-            'span',
-            undefined,
-            fill(text.equipment.moduleSlot, { n: index + 1 }),
-          ),
+          el('span', undefined, text.equipment.moduleSlots[slot.slot]),
         );
         const select = el('select', 'workshop__module-select');
         select.dataset.weapon = weapon.weaponId;
@@ -289,6 +285,14 @@ export const createWorkshopPanel: HubPanelFactory = (
           );
         });
         label.append(select);
+        const description = el(
+          'span',
+          'workshop__module-description',
+          select.title,
+        );
+        description.id = `module-description-${weapon.weaponId}-${slot.slot}`;
+        select.setAttribute('aria-describedby', description.id);
+        label.append(description);
         group.append(label);
       });
       section.querySelector('[data-group="weapons"]')!.append(group);

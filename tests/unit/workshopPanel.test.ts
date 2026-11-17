@@ -118,7 +118,7 @@ describe('createWorkshopPanel', () => {
     );
     expect(
       panel.root.querySelectorAll('select[data-weapon="blaster"]'),
-    ).toHaveLength(2);
+    ).toHaveLength(3);
     select('blaster', 0).value = 'ricochet';
     select('blaster', 0).dispatchEvent(new Event('change'));
     await flush();
@@ -143,9 +143,27 @@ describe('createWorkshopPanel', () => {
     select('blaster', 0).dispatchEvent(new Event('change'));
     await flush();
     expect(manager.state.loadout.modules.blaster).toEqual(['incendiary']);
+    expect(select('blaster', 1).value).toBe('incendiary');
+    expect(select('blaster', 0).value).toBe('');
+    expect(
+      panel.root.querySelector('[data-module-weapon="blaster"]')?.textContent,
+    ).toContain('Ogniwo');
+    expect(
+      panel.root.querySelector('[data-module-weapon="blaster"]')?.textContent,
+    ).toContain('Optyka');
+    expect(
+      panel.root.querySelector(
+        '[data-module-weapon="blaster"] .workshop__module-description',
+      )?.textContent,
+    ).toBe('');
+    expect(
+      select('blaster', 1).parentElement?.querySelector(
+        '.workshop__module-description',
+      )?.textContent,
+    ).toContain('Trafienie podpala');
     choice(panel.root, 'weapons', 'beam')!.click();
     await flush();
-    expect([...select('beam', 0).options].map((o) => o.value)).toEqual([
+    expect([...select('beam', 1).options].map((o) => o.value)).toEqual([
       '',
       'incendiary',
     ]);

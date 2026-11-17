@@ -34,7 +34,7 @@
 
 ## Ekwipunek
 
-`setLoadout({ blade, weapons, powers, modules })`: ostrze, bronie i moce muszą być odblokowane; 1..`weaponSlots` unikalnych broni i 1..`powerSlots` unikalnych mocy. `modules: Record<string, string[]>` przypisuje moduły wybranym broniom. Wymagane są odblokowania `module:<id>`, zgodny `weaponKinds`, brak duplikatów w broni oraz limit `progression.json.moduleSlotsPerWeapon` (2). Jeden moduł może być użyty w kilku broniach. Walidacja jest atomowa.
+`setLoadout({ blade, weapons, powers, modules })`: ostrze, bronie i moce muszą być odblokowane; 1..`weaponSlots` unikalnych broni i 1..`powerSlots` unikalnych mocy. `modules: Record<string, string[]>` przypisuje moduły wybranym broniom. Wymagane są odblokowania `module:<id>`, zgodny `weaponKinds`, brak duplikatów w broni oraz limit `progression.json.moduleSlotsPerWeapon` (3), po jednym module na Wylot, Ogniwo i Optykę. Wczytywanie meta zachowuje pierwszy moduł każdego slotu przy konflikcie starszego zapisu. Jeden moduł może być użyty w kilku broniach. Walidacja jest atomowa.
 
 `loadout()` zwraca pełny `Loadout` (`id: 'custom'`, `name: 'Własny'`, `startHeld: 'blade'`, `tags: []`) z głęboką kopią modułów. Brak `modules` w starych zapisach meta v3 uzupełnia się przez `{}` bez migracji. Moduły zostają zamrożone na start runu wraz z ekwipunkiem. Dane, ceny, UI i wykonanie łatek opisuje `docs/systems/weaponModules.md`.
 

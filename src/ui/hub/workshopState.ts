@@ -8,6 +8,8 @@ import { achievementDefinitions } from '../../progression/achievementsSchema';
 import { unlockDefinitions } from '../../progression/unlocksSchema';
 import type { UnlockDefinition } from '../../progression/unlocksSchema';
 import {
+  MODULE_SLOTS,
+  type ModuleSlot,
   moduleDefinitions,
   moduleFitsWeapon,
 } from '../../progression/moduleSchema';
@@ -45,6 +47,11 @@ export const workshopText = z
       fullHint: z.string(),
       lastHint: z.string(),
       moduleSlot: z.string(),
+      moduleSlots: z.object({
+        muzzle: z.string(),
+        cell: z.string(),
+        optic: z.string(),
+      }),
       emptyModule: z.string(),
     }),
     bladeNames: z.record(z.string(), z.string()),
@@ -225,6 +232,7 @@ export interface EquipmentState {
     weaponId: string;
     weaponName: string;
     slots: {
+      slot: ModuleSlot;
       selected: string;
       options: { id: string; name: string; description: string }[];
     }[];
@@ -284,15 +292,17 @@ export function equipmentState(view: MetaView): EquipmentState {
       return {
         weaponId,
         weaponName: itemName('weapon', weaponId),
-        slots: Array.from({ length: view.moduleSlotsPerWeapon }, (_, slot) => ({
-          selected: installed[slot] ?? '',
+        slots: MODULE_SLOTS.map((slot) => ({
+          slot,
+          selected:
+            installed.find((id) => moduleDefinitions.get(id)?.slot === slot) ??
+            '',
           options: [...moduleDefinitions.values()]
             .filter(
               (module) =>
                 view.isUnlocked(`module:${module.id}`) &&
                 moduleFitsWeapon(module, weaponId) &&
-                (!installed.includes(module.id) ||
-                  installed[slot] === module.id),
+                module.slot === slot,
             )
             .map(({ id, name, description }) => ({ id, name, description })),
         })),
@@ -322,7 +332,7 @@ export function nextLoadout(
   return { ...current, [part]: list, modules };
 }
 
-/** Puste sloty są usuwane; kolejność pozostałych modułów zostaje zachowana. */
+/** Indeks pola wskazuje stały slot, niezależnie od pustych miejsc w zapisie. */
 export function nextModuleLoadout(
   view: MetaView,
   weaponId: string,
@@ -330,8 +340,19 @@ export function nextModuleLoadout(
   moduleId: string,
 ): LoadoutChoice {
   const current = view.state.loadout;
-  const ids = [...(current.modules[weaponId] ?? [])];
-  ids[slot] = moduleId;
+  const target = MODULE_SLOTS[slot];
+  if (!target) throw new Error('Nieznany slot modułu.');
+  if (moduleId && moduleDefinitions.get(moduleId)?.slot !== target)
+    throw new Error('Moduł nie pasuje do slotu.');
+  const ids = (current.modules[weaponId] ?? []).filter(
+    (id) => moduleDefinitions.get(id)?.slot !== target,
+  );
+  if (moduleId) ids.push(moduleId);
+  ids.sort(
+    (a, b) =>
+      MODULE_SLOTS.indexOf(moduleDefinitions.get(a)!.slot) -
+      MODULE_SLOTS.indexOf(moduleDefinitions.get(b)!.slot),
+  );
   const modules = { ...current.modules };
   const selected = ids.filter(Boolean);
   if (selected.length) modules[weaponId] = selected;

@@ -1,5 +1,7 @@
 {
   "id": "incendiary",
+  "slot": "cell",
+  "visual": { "shape": "canister", "color": "amber" },
   "name": "Podpalenie",
   "description": "Trafienie podpala cel na 3 sekundy.",
   "tags": ["#burning"],

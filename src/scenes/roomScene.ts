@@ -670,6 +670,7 @@ export class RoomScene implements Scene {
     this.root.add(this.hitSparksView.root);
 
     this.fppView = new FppViewModel(ctx.bus, playerId, {
+      modulesOf: (id) => this.run.loadout.modules?.[id] ?? [],
       bladeDefinition: this.blade.definition,
       modelOf: (id) =>
         this.resolved.weapons.find((weapon) => weapon.id === id)?.model ??
@@ -1424,13 +1425,17 @@ export class RoomScene implements Scene {
     // Przedmiot w ręce przed graczem: PPM z bronią to celowanie, które zmienia ruch i czułość.
     const bladeState = this.blade.view().state;
     const { bladeInput, triggerHeld } = this.heldItem.step(pdt, input, {
+      aimInScale: this.weapon.definition.aimInScale,
       bladeBusy: bladeState !== 'idle' && bladeState !== 'throwing',
       canAim:
         this.state === 'playing' &&
         !this.weapon.overheated &&
         this.player.getState().dashS <= 0,
     });
-    this.player.setAim(this.heldItem.aim);
+    this.player.setAim(
+      this.heldItem.aim,
+      this.weapon.definition.aimSensitivityScale,
+    );
     this.syncHeistCarry();
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);

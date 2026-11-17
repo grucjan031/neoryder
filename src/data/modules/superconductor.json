@@ -1,5 +1,7 @@
 {
   "id": "superconductor",
+  "slot": "cell",
+  "visual": { "shape": "coil", "color": "green" },
   "name": "Nadprzewodnik",
   "description": "Prędkość pocisku +20%, ciepło na strzał −15%.",
   "tags": ["#superconductor"],

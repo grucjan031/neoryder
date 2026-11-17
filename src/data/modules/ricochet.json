@@ -1,5 +1,7 @@
 {
   "id": "ricochet",
+  "slot": "muzzle",
+  "visual": { "shape": "brake", "color": "amber" },
   "name": "Rykoszet",
   "description": "Pocisk odbija się raz od ściany.",
   "tags": ["#ricochet"],

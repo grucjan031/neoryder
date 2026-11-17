@@ -431,12 +431,16 @@ export class MetaManager {
         throw new Error(`Limit modułów na broń: ${this.moduleSlotsPerWeapon}.`);
       if (new Set(ids).size !== ids.length)
         throw new Error(`Powtórzone moduły broni: ${weaponId}.`);
+      const slots = new Set<string>();
       for (const id of ids) {
         const module = moduleDefinitions.get(id);
         if (!module || !this.isUnlocked(`module:${id}`))
           throw new Error(`Moduł nieodblokowany lub nieznany: ${id}.`);
         if (!moduleFitsWeapon(module, weaponId))
           throw new Error(`Moduł ${id} nie pasuje do broni ${weaponId}.`);
+        if (slots.has(module.slot))
+          throw new Error(`Slot ${module.slot} jest już zajęty: ${weaponId}.`);
+        slots.add(module.slot);
       }
     }
     this.current.loadout = {

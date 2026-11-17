@@ -190,12 +190,19 @@ describe('MetaManager zakupy i ekwipunek', () => {
     meta.setLoadout({
       ...base,
       weapons: ['blaster', 'pistol'],
-      modules: { blaster: ['ricochet', 'pierce'], pistol: ['ricochet'] },
+      modules: {
+        blaster: ['ricochet', 'incendiary', 'collimator'],
+        pistol: ['ricochet'],
+      },
     });
     const resolved = meta.loadout();
     expect(resolved.modules).toEqual(meta.state.loadout.modules);
     resolved.modules!.blaster!.pop();
-    expect(meta.state.loadout.modules.blaster).toEqual(['ricochet', 'pierce']);
+    expect(meta.state.loadout.modules.blaster).toEqual([
+      'ricochet',
+      'incendiary',
+      'collimator',
+    ]);
   });
 
   it('ceny i progi modułów są egzekwowane przy zakupie', () => {

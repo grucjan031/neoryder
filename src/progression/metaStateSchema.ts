@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { moduleDefinitions } from './moduleSchema';
 import {
   MAX_APPLIED_RUN_IDS,
   MAX_LAST_RUNS,
@@ -12,7 +13,26 @@ export const loadoutChoiceSchema = z.object({
   blade: z.string().min(1),
   weapons: ids.min(1).max(3),
   powers: ids.min(1).max(2),
-  modules: z.record(z.string().min(1), ids).default({}),
+  modules: z
+    .record(z.string().min(1), ids)
+    .default({})
+    .transform((modules) =>
+      Object.fromEntries(
+        Object.entries(modules).map(([weapon, installed]) => {
+          const slots = new Set<string>();
+          return [
+            weapon,
+            installed.filter((id) => {
+              const slot = moduleDefinitions.get(id)?.slot;
+              if (!slot) return true;
+              if (slots.has(slot)) return false;
+              slots.add(slot);
+              return true;
+            }),
+          ];
+        }),
+      ),
+    ),
 });
 
 export const runRewardsSchema = z.object({
