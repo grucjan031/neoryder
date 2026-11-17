@@ -1,0 +1,32 @@
+{
+  "panel": {
+    "tabsLabel": "Terminal drzewek",
+    "tabTalents": "Drzewka talentów",
+    "tabAchievements": "Naszywki Iskry",
+    "heading": "Naszywki Iskry",
+    "count": "Zdobyte: {done} z {total}",
+    "intro": "Naszywki to pamiątki z runów. Każda daje jednorazową nagrodę, a niektóre pozwalają kupić rzadkie odblokowania w warsztacie.",
+    "categories": {
+      "walka": "Walka",
+      "sciezki": "Ścieżki",
+      "misje": "Misje i tryby",
+      "progres": "Progres"
+    },
+    "earned": "Zdobyta",
+    "missing": "Nie zdobyta",
+    "progress": "{current} / {target}",
+    "reward": "Nagroda: {reward}",
+    "unlocksPurchase": "Pozwala kupić: {item}"
+  },
+  "reward": {
+    "data": "{n} Danych",
+    "cores": { "one": "{n} Rdzeń", "few": "{n} Rdzenie", "many": "{n} Rdzeni" },
+    "join": " i "
+  },
+  "toast": { "prefix": "Naszywka" },
+  "summary": {
+    "heading": "Nowe naszywki Iskry",
+    "line": "{title} — {reward}"
+  },
+  "workshop": { "requires": "Wymaga naszywki: {title}" }
+}

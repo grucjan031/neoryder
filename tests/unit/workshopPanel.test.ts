@@ -59,10 +59,10 @@ describe('workshopState', () => {
     expect(find('weapon:scatter').minLevel).toBe(2);
     manager.debugAddXp(1_000_000);
     rows = unlockRows(manager);
-    expect(find('power:focus').status).toBe('cores');
+    expect(find('slot:power2').status).toBe('cores');
     manager.debugAddCores(100);
     expect(
-      unlockRows(manager).find((r) => r.id === 'power:focus')!.status,
+      unlockRows(manager).find((r) => r.id === 'slot:power2')!.status,
     ).toBe('buyable');
   });
 
@@ -201,7 +201,10 @@ describe('createWorkshopPanel', () => {
   });
 
   it('zakup odejmuje walutę, zapisuje i pokazuje pozycję jako posiadaną w edytorze', async () => {
-    const { manager, save, panel } = setup((m) => m.debugAddData(100));
+    const { manager, save, panel } = setup((m) => {
+      m.debugAddData(100);
+      m.debugGrantAchievement('pierwszy-zakup');
+    });
     expect(choice(panel.root, 'weapons', 'rifle')).toBeNull();
     buyButton(panel.root, 'weapon:rifle').click();
     await flush();

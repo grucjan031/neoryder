@@ -136,3 +136,27 @@
   outline: 2px solid #00e5ff;
   outline-offset: 2px;
 }
+.workshop__state.is-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffae1a;
+}
+.workshop__state .achv-lock {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+@media (max-width: 760px) {
+  .workshop__row {
+    flex-wrap: wrap;
+  }
+  .workshop__state.is-locked {
+    order: 5;
+    flex: 1 0 100%;
+  }
+  /* Kłódka z nazwą naszywki zastępuje nieaktywny przycisk. */
+  .workshop__row[data-status='achievement'] .workshop__buy {
+    display: none;
+  }
+}

@@ -3,6 +3,8 @@ import type { TreeId } from '../../core/metaTypes';
 import { talentTrees } from '../../progression/talentSchema';
 import type { TalentNode, TalentTree } from '../../progression/talentSchema';
 import textData from '../../data/ui/talents.pl.json';
+import { achievementText } from '../achievementText';
+import { createAchievementsPanel } from './achievementsPanel';
 import type { HubPanel, HubPanelFactory } from './hubPanel';
 import { talentNodeState } from './talentState';
 import type { TalentNodeState, TalentReason, TalentView } from './talentState';
@@ -123,7 +125,67 @@ export const createTalentsPanel: HubPanelFactory = (ctx) => {
   statusEl.setAttribute('role', 'status');
   foot.append(resetBtn, statusEl);
 
-  root.append(head, treesEl, details, foot);
+  const treesView = document.createElement('section');
+  treesView.className = 'talents-panel__view';
+  treesView.id = 'talents-view-trees';
+  treesView.setAttribute('role', 'tabpanel');
+  treesView.setAttribute('aria-labelledby', 'talents-tab-trees');
+  treesView.append(head, treesEl, details, foot);
+
+  // Zakładka „Naszywki Iskry” (S4b-01): terminal drzewek to miejsce trwałej progresji postaci.
+  const achievements = createAchievementsPanel(manager);
+  const achievementsView = document.createElement('section');
+  achievementsView.className = 'talents-panel__view';
+  achievementsView.id = 'talents-view-achievements';
+  achievementsView.setAttribute('role', 'tabpanel');
+  achievementsView.setAttribute('aria-labelledby', 'talents-tab-achievements');
+  achievementsView.hidden = true;
+  achievementsView.append(achievements.root);
+
+  const tabsEl = document.createElement('div');
+  tabsEl.className = 'talents-tabs';
+  tabsEl.setAttribute('role', 'tablist');
+  tabsEl.setAttribute('aria-label', achievementText.panel.tabsLabel);
+  const tabs = (
+    [
+      ['trees', achievementText.panel.tabTalents, treesView],
+      ['achievements', achievementText.panel.tabAchievements, achievementsView],
+    ] as const
+  ).map(([id, label, view]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.id = `talents-tab-${id}`;
+    button.className = 'talents-tab';
+    button.dataset.tab = id;
+    button.setAttribute('role', 'tab');
+    button.setAttribute('aria-controls', view.id);
+    button.textContent = label;
+    tabsEl.append(button);
+    return { id, button, view };
+  });
+  const selectTab = (id: string, focus = false): void => {
+    for (const tab of tabs) {
+      const active = tab.id === id;
+      tab.button.setAttribute('aria-selected', String(active));
+      tab.button.tabIndex = active ? 0 : -1;
+      tab.view.hidden = !active;
+      if (active && focus) tab.button.focus();
+    }
+    if (id === 'achievements') achievements.refresh();
+  };
+  tabs.forEach(({ id, button }, index) => {
+    button.addEventListener('click', () => selectTab(id));
+    button.addEventListener('keydown', (event) => {
+      const step =
+        event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+      if (step === 0) return;
+      event.preventDefault();
+      selectTab(tabs[(index + step + tabs.length) % tabs.length]!.id, true);
+    });
+  });
+  selectTab('trees');
+
+  root.append(tabsEl, treesView, achievementsView);
 
   const cards: Card[] = [];
   const tierLabels: { tree: TalentTree; tier: number; el: HTMLElement }[] = [];
@@ -176,6 +238,7 @@ export const createTalentsPanel: HubPanelFactory = (ctx) => {
   };
 
   const refresh = (): void => {
+    achievements.refresh();
     const v = view();
     freeEl.textContent = fill(text.freePoints, { n: v.freePoints });
     levelEl.textContent = fill(text.level, { n: manager.level });
@@ -296,6 +359,7 @@ export const createTalentsPanel: HubPanelFactory = (ctx) => {
     dispose(): void {
       disposed = true;
       cancelReset();
+      achievements.dispose();
       root.remove();
     },
   };
