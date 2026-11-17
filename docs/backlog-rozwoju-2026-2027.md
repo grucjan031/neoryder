@@ -1,4 +1,4 @@
-# NEORYDER — backlog rozwoju XI 2026 – V 2027
+# NEORYDER — backlog rozwoju (etapy po kolei)
 
 Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomysły spoza półrocza: [`backlog.md`](backlog.md).
 
@@ -9,7 +9,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ---
 
-## S0 — domknięcie podstaw (17–30 XI 2026)
+## S0 — domknięcie podstaw
 
 ### S0-01 Bezpieczne rozliczenie runu po błędzie zapisu
 
@@ -78,7 +78,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ---
 
-## S1 — kontrakt misji i kampanii (1–14 XII)
+## S1 — kontrakt misji i kampanii
 
 ### S1-01 ADR 0008: misje i kampania
 
@@ -108,7 +108,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 - **Kryteria:** powtarzalny skrypt (build produkcyjny, GPU) mierzy kryjówkę, zwykłą walkę, najcięższy pokój, bossa, rozpad grupy i przejście scen; średnia, 1% low, przycięcia; raport w `docs/systems/render.md`.
 - **Weryfikacja:** dwa przebiegi na sprzęcie referencyjnym różnią się < 5%.
 
-## S2 — „Maszty” (15–31 XII, ½ pojemności)
+## S2 — „Maszty”
 
 ### S2-01 Tablica misji, odprawa, cel w HUD
 
@@ -127,7 +127,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 - **P2** · Wykonawca · Cz 1 · Ag S · zależności: S2-02
 - **Kryteria:** nowe kwestie NPC i zmiana otoczenia wg `zarys-fabuly.md` sekcja 10.
 
-## S3 — „List przewozowy” (4–17 I 2027)
+## S3 — „List przewozowy”
 
 ### S3-01 Cel obrony strefy
 
@@ -140,7 +140,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 - **P1** · Wykonawca · Cz 2 · Ag M · zależności: S3-01
 - **Kryteria:** odprawa, pokoje, rezultat, odblokowanie następnej misji.
 
-## S4 — „Odlewnia” i prototypy (18–31 I)
+## S4 — „Odlewnia” i prototypy
 
 ### S4-01 Zwycięstwo misji poza pokojem bossa
 
@@ -163,7 +163,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 - **P1** · Właściciel + Architekt · Cz 3 · zależności: D2, D3
 
-## S5–S6 — testy nowych graczy (1–28 II)
+## S5–S6 — testy nowych graczy
 
 ### S5-01 Tura testów 1 (4–6 osób)
 
@@ -190,7 +190,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 - **P2** · Wykonawca · Cz 2 · Ag M · zależności: S5-01
 - **Kryteria:** nowa geometria zmienia decyzje (flankowanie, ruch, Rezonans).
 
-## S7–S8 — zawartość i zamknięcie zakresu (1–31 III)
+## S7–S8 — zawartość i zamknięcie zakresu
 
 ### S7-01 Konsekwencje w kryjówce po misjach dema
 
@@ -209,7 +209,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 - **P0** · Właściciel · Cz 1
 
-## S9–S10 — jakość wydania (1–30 IV)
+## S9–S10 — jakość wydania
 
 ### S9-01 Wydajność na sprzęcie referencyjnym
 
@@ -231,7 +231,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 - **P0** · Właściciel · Cz 4
 - **Kryteria:** brak błędów blokujących ukończenie i niszczących postęp; całe demo przeszli nowi gracze.
 
-## S11–S12 — publikacja (1–31 V)
+## S11–S12 — publikacja
 
 ### S11-01 Publikacja dema
 

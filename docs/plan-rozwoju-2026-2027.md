@@ -1,4 +1,4 @@
-# NEORYDER — plan rozwoju XI 2026 – V 2027
+# NEORYDER — plan rozwoju (etapy po kolei, bez dat)
 
 - **Opracowanie:** 17 listopada 2026, na podstawie propozycji `NEORYDER_plan_rozwoju_2026-2027.md` (właściciel) i przeglądu repozytorium.
 - **Stan odniesienia:** `main` = `1999b06` (ten sam commit, na którym oparto propozycję).
@@ -33,27 +33,27 @@ Publiczne demo przeglądarkowe w maju 2027: dopracowana walka, działająca kamp
 - Człowiek: 15–20 h/tydz. → 30–40 h na sprint dwutygodniowy; planujemy **24–28 h** (70–75%), reszta to bufor na integrację, retesty i poprawki.
 - Agenci: implementacja, testy, zrzuty i pomiary wg zleceń (skill `orkiestra`); **domyślnie jeden wykonawca naraz**. Praca agentów nie zastępuje oceny grywalności — każda bramka kończy się graniem człowieka.
 - Estymacje w backlogu: **Cz** = godziny człowieka (projekt, granie, odbiór, decyzje), **Ag** = przybliżony rozmiar pracy agenta (S ≤ 1 zlecenie, M = 2–3 zlecenia, L = 4+).
-- Okres świąteczny (S3) planowany na pół pojemności.
+- **Bez ram czasowych (decyzja właściciela 17 XI 2026):** etapy realizujemy po kolei, następny zaczyna się po bramce poprzedniego. Daty z propozycji nie obowiązują.
 
-## 4. Sprinty
+## 4. Etapy (kolejność)
 
-| Sprint  | Daty          | Cel                                           | Bramka na koniec                                                                         |
-| ------- | ------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **S0**  | 17–30 XI 2026 | Domknięcie podstaw                            | Bezpieczny zapis nagrody; playtesty F2/F4 zapisane; decyzje D1–D4; poprawki z S0 scalone |
-| **S1**  | 1–14 XII      | Kontrakt misji i kampanii                     | ADR 0008 (misje), schemat danych misji, stan kampanii w zapisie z migracją               |
-| **S2**  | 15–31 XII (½) | „Maszty” od odprawy do powrotu                | Maszty do ukończenia bez debug; porażka/ponowienie/wczytanie bez zepsutego stanu         |
-| **S3**  | 4–17 I 2027   | „List przewozowy” (obrona)                    | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem                             |
-| **S4**  | 18–31 I       | „Odlewnia” + prototypy NPC i wagonu           | 3 misje = wewnętrzne demo; raport kosztu prototypów                                      |
-| **S5**  | 1–14 II       | Testy nowych graczy, tura 1                   | 4–6 osób, trzy najważniejsze problemy wybrane                                            |
-| **S6**  | 15–28 II      | Poprawki + tura 2; warunkowo Punkt kontrolny  | Decyzja o „Ładunku klasy K”                                                              |
-| **S7**  | 1–14 III      | Zawartość: narracja, kryjówka, audio          | Konsekwencje w kryjówce po każdej misji dema                                             |
-| **S8**  | 15–31 III     | Zamknięcie zakresu; warunkowo Ładunek klasy K | Decyzja 3 vs 5 misji; od tej chwili nowe pomysły → backlog                               |
-| **S9**  | 1–14 IV       | Wydajność i niezawodność                      | Raport sprzętowy; godzinna sesja bez błędów                                              |
-| **S10** | 15–30 IV      | Czytelność i pierwsze minuty                  | Kandydat do wydania                                                                      |
-| **S11** | 1–15 V        | Ostatnia tura testów, publikacja              | Publiczne demo z numerem wersji                                                          |
-| **S12** | 16–31 V       | Zgłoszenia i pierwsza aktualizacja            | Priorytety zgłoszeń, aktualizacja 1                                                      |
+| Etap    | Kolejność | Cel                                           | Bramka na koniec                                                                         |
+| ------- | --------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **S0**  | 1         | Domknięcie podstaw                            | Bezpieczny zapis nagrody; playtesty F2/F4 zapisane; decyzje D1–D4; poprawki z S0 scalone |
+| **S1**  | 2         | Kontrakt misji i kampanii                     | ADR 0008 (misje), schemat danych misji, stan kampanii w zapisie z migracją               |
+| **S2**  | 3         | „Maszty” od odprawy do powrotu                | Maszty do ukończenia bez debug; porażka/ponowienie/wczytanie bez zepsutego stanu         |
+| **S3**  | 4         | „List przewozowy” (obrona)                    | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem                             |
+| **S4**  | 5         | „Odlewnia” + prototypy NPC i wagonu           | 3 misje = wewnętrzne demo; raport kosztu prototypów                                      |
+| **S5**  | 6         | Testy nowych graczy, tura 1                   | 4–6 osób, trzy najważniejsze problemy wybrane                                            |
+| **S6**  | 7         | Poprawki + tura 2; warunkowo Punkt kontrolny  | Decyzja o „Ładunku klasy K”                                                              |
+| **S7**  | 8         | Zawartość: narracja, kryjówka, audio          | Konsekwencje w kryjówce po każdej misji dema                                             |
+| **S8**  | 9         | Zamknięcie zakresu; warunkowo Ładunek klasy K | Decyzja 3 vs 5 misji; od tej chwili nowe pomysły → backlog                               |
+| **S9**  | 10        | Wydajność i niezawodność                      | Raport sprzętowy; godzinna sesja bez błędów                                              |
+| **S10** | 11        | Czytelność i pierwsze minuty                  | Kandydat do wydania                                                                      |
+| **S11** | 12        | Ostatnia tura testów, publikacja              | Publiczne demo z numerem wersji                                                          |
+| **S12** | 13        | Zgłoszenia i pierwsza aktualizacja            | Priorytety zgłoszeń, aktualizacja 1                                                      |
 
-Daty są celami planistycznymi. Przejście dalej zależy od grywalnego wyniku bramki; gdy bramka nie przechodzi, najpierw poprawki, potem przesunięcie kolejnych sprintów z zachowaniem kolejności zależności.
+Przejście do kolejnego etapu zależy wyłącznie od grywalnego wyniku bramki; gdy bramka nie przechodzi, najpierw poprawki. Kolejność zależności zostaje. Misje (S1–S4) idą od razu po domknięciu S0 (decyzja D1).
 
 ## 5. Zależności (kolejność, której nie zmieniamy)
 
@@ -97,7 +97,7 @@ Poza półroczem: akty II i III, nowe dzielnice i bossowie, nieskończony freepl
 
 Cięcia przy opóźnieniu, w tej kolejności: (1) dekoracje i poboczne interakcje, (2) scenki i warstwy audio, (3) druga misja eskortowa, (4) rozszerzenie 3 → 5 misji, (5) build desktopowy. Zapis, zrozumiałe cele, przyjemność walki i czas na testy graczy zostają zawsze.
 
-## 9. Pierwszy sprint (S0, 17–30 XI 2026)
+## 9. Pierwszy etap (S0)
 
 | Zadanie                                                                 | Kto            | Cz         | Ag  |
 | ----------------------------------------------------------------------- | -------------- | ---------- | --- |
