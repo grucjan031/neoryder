@@ -1,6 +1,7 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  ui: { loadingTipS: 7 },
   /** Ograniczenia oprawy nakładane na motyw; pixelRatio=0 zachowuje DPR urządzenia. */
   quality: {
     low: {

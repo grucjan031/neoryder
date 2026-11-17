@@ -344,3 +344,28 @@ asercje listy i istniejące sceny z `?scene=` pozostają bez zmian.
 Ekrany runu pokazują karty implantów z rzadkością, opisem, tagami i nowo aktywowanymi synergiami. Rzadkość widać od razu: kolor górnej krawędzi i poświaty karty oraz kształt znacznika przy nazwie rzadkości (pospolity — koło, rzadki — kwadrat, epicki — romb, legendarny — gwiazda). Tagi ścieżek są chipami z nazwą ścieżki (Ostrze cyan, Moc magenta, Strzelec bursztyn), cena w sklepie to bursztynowy chip, który robi się czerwony, gdy brakuje Kredytów. Pierwsze trzy przyciski mają podpowiedź klawisza 1/2/3 rysowaną przez CSS (`content: attr(data-key) / ''`, bez wpływu na nazwę dostępną). Nakładka runu leży nad HUD (`z-index` 120), a animacja wejścia gra tylko przy zmianie ekranu (`run-screen--enter`), żeby odświeżenia (np. Kredyty) nie migały. Sklep blokuje nieopłacalne zakupy, a odpoczynek pokazuje dostępną następną rzadkość. Obsługa: mysz, 1/2/3 i Enter; sceną kontrolną jest `?scene=run`.
 
 HUD bossa rysuje kreski faz z boss_spawned.phaseThresholds (ułamki HP paska), widoczne od pojawienia się bossa. boss_shield aktualizuje pasek wytrzymałości, widoczny tylko przy aktywnej tarczy.
+
+## Splasharty i porady ładowania
+
+Nakładka startowa (`#boot-splash`) i ładowanie pokoju w runie pokazują pod
+podpisem obrazu poradę z `src/data/ui/loadingTips.pl.json`. Dane zawierają
+40 wpisów `{ text, kind: 'gameplay' | 'lore' }` oraz `labels` z nagłówkami
+„Porada” i „Neo-Ryd”. Leniwa walidacja zod wyłącza porady przy błędnych danych.
+Wybór przez `hashSeed`: scena + seed, w pokoju run + seed + id węzła.
+Co `tuning.ui.loadingTipS` (domyślnie 7 s, także w lil-gui) pojawia się kolejny
+wpis. Wygaszenie, ukrycie, błąd obrazu i dispose sprzątają timer.
+Tekst dekoracyjny ma `aria-hidden`, ciepłą biel, bursztynowy nagłówek i ciemny
+gradient pod spodem. Pasek przy napisie ładowania sygnalizuje pracę.
+`prefers-reduced-motion` wyłącza animację zmiany i paska; `fx=lite` wyłącza
+obrazy, porady i pasek splashu.
+
+Opcjonalne `scenes: string[]` w `src/data/ui/splash.json` ma priorytet:
+scena → pokój → motyw → pełna lista. `menu` oznacza stronę bez `?scene=`;
+pozostałe identyfikatory pochodzą z `src/scenes/index.ts`. Menu wybiera panoramę
+Neo-Ryd, kuriera lub dachy przed świtem; arena trening i walkę; tutorial rampę
+lub poligon; hub obrazy `hideout`, budkę z makaronem i bar hutników.
+Run zachowuje dobór według pokoju/motywu.
+
+Kontrola: `/`, `?scene=hub`, `?scene=arena`, `?scene=tutorial` i `?scene=run`.
+Przy spowolnionym ładowaniu sprawdź czytelność i zmianę porady po 7 s;
+test jsdom `splash.test.ts` sprawdza rotację zegarem pozorowanym.

@@ -8,6 +8,8 @@ import metaTextData from '../data/ui/meta.pl.json';
 import './runScreens.css';
 import { MapScreen } from './mapScreen';
 import { splashUrl } from './splash';
+import { getLiteFx } from '../render/fxMode';
+import { createLoadingTip } from './loadingTipView';
 
 const text = z
   .object({
@@ -135,6 +137,8 @@ export class HtmlRunScreens implements RunScreens {
   private readonly panel = document.createElement('div');
   private buttons: HTMLButtonElement[] = [];
   private splashFile: string | null = null;
+  private tipKey: string | null = null;
+  private tip: ReturnType<typeof createLoadingTip> | undefined;
   private readonly map: MapScreen;
   private readonly onKey = (event: KeyboardEvent): void => {
     if (
@@ -185,7 +189,12 @@ export class HtmlRunScreens implements RunScreens {
     this.root.dataset.screen = view.screen;
     this.buttons = [];
     this.map.hide();
-    if (!(view.busy && !view.error && view.splash?.file === this.splashFile))
+    if (!(
+      view.busy &&
+      !view.error &&
+      !getLiteFx() &&
+      view.splash?.file === this.splashFile
+    ))
       this.clearSplash();
     this.panel.replaceChildren();
     const heading = document.createElement('h1');
@@ -197,7 +206,11 @@ export class HtmlRunScreens implements RunScreens {
       this.line(view.error);
       this.button(text.menu, actions.menu);
     } else if (view.busy) {
-      if (view.splash) this.showSplash(view.splash);
+      if (view.splash && !getLiteFx())
+        this.showSplash(
+          view.splash,
+          `run:${view.state.seed}:${view.state.currentNodeId ?? ''}`,
+        );
       this.line(text.loading).classList.add('run-screen__loading');
     } else if (view.screen === 'map') {
       this.panel.append(this.map.root);
@@ -302,16 +315,23 @@ export class HtmlRunScreens implements RunScreens {
   }
 
   private clearSplash(): void {
+    this.tip?.dispose();
+    this.tip = undefined;
+    this.tipKey = null;
     this.splashFile = null;
     this.root.classList.remove('run-screen--splash');
     this.root.querySelector('.run-screen__splash')?.remove();
   }
 
   /** Dekoracyjne tło ekranu ładowania; błąd ładowania obrazu przywraca ekran bez tła. */
-  private showSplash(splash: { file: string; title: string }): void {
-    if (this.splashFile === splash.file) return;
+  private showSplash(
+    splash: { file: string; title: string },
+    key: string,
+  ): void {
+    if (this.splashFile === splash.file && this.tipKey === key) return;
     this.clearSplash();
     this.splashFile = splash.file;
+    this.tipKey = key;
     const backdrop = document.createElement('div');
     backdrop.className = 'run-screen__splash';
     backdrop.setAttribute('aria-hidden', 'true');
@@ -329,7 +349,11 @@ export class HtmlRunScreens implements RunScreens {
     const caption = document.createElement('span');
     caption.className = 'run-screen__splash-title';
     caption.textContent = splash.title;
-    backdrop.append(image, caption);
+    const copy = document.createElement('div');
+    copy.className = 'loading-copy';
+    this.tip = createLoadingTip(key);
+    copy.append(caption, this.tip.root);
+    backdrop.append(image, copy);
     this.root.prepend(backdrop);
     this.root.classList.add('run-screen--splash');
   }
@@ -535,6 +559,7 @@ export class HtmlRunScreens implements RunScreens {
   }
 
   dispose(): void {
+    this.clearSplash();
     window.removeEventListener('keydown', this.onKey);
     this.map.dispose();
     this.root.remove();

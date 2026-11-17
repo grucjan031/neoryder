@@ -10,6 +10,7 @@ const splashSchema = z.object({
   themes: z.array(z.string()).optional(),
   /** Id pokoi (`src/data/rooms`), do których obraz oczywiście pasuje. */
   rooms: z.array(z.string()).optional(),
+  scenes: z.array(z.string()).optional(),
 });
 export type SplashEntry = z.infer<typeof splashSchema>;
 
@@ -40,12 +41,13 @@ export function getSplashes(): readonly SplashEntry[] {
 }
 
 export interface SplashHint {
+  scene?: string;
   theme?: string;
   room?: string;
 }
 
 /**
- * Wybór splashartu bez `Math.random`: najpierw obrazy przypisane do pokoju, potem do motywu,
+ * Wybór splashartu bez `Math.random`: najpierw obrazy przypisane do sceny, potem pokoju i motywu,
  * w ostateczności cała lista; w obrębie grupy deterministycznie z klucza (ziarno + węzeł).
  */
 export function pickSplash(
@@ -53,13 +55,22 @@ export function pickSplash(
   hint: SplashHint = {},
   list: readonly SplashEntry[] = getSplashes(),
 ): SplashEntry | null {
+  const byScene = hint.scene
+    ? list.filter((entry) => entry.scenes?.includes(hint.scene!))
+    : [];
   const byRoom = hint.room
     ? list.filter((entry) => entry.rooms?.includes(hint.room!))
     : [];
   const byTheme = hint.theme
     ? list.filter((entry) => entry.themes?.includes(hint.theme!))
     : [];
-  const pool = byRoom.length ? byRoom : byTheme.length ? byTheme : list;
+  const pool = byScene.length
+    ? byScene
+    : byRoom.length
+      ? byRoom
+      : byTheme.length
+        ? byTheme
+        : list;
   const entry = pool[hashSeed(key) % pool.length];
   return entry ?? null;
 }

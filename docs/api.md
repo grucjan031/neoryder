@@ -1689,3 +1689,14 @@ na aktualnej wysokości i ustawia obrót (domyślnie 0, 0);
 Yaw 0 = -Z; pitch ograniczony przez `tuning.player.maxPitchDeg`.
 Zmiana stanu i interpolacji jest natychmiastowa, także w pauzie.
 Query `playerPos` zwraca pozycję, `playerLook` → `{ yawDeg, pitchDeg }`.
+
+
+### Ekrany ładowania: splasharty i porady
+
+`SplashHint.scene?: string` ma priorytet przed `room` i `theme`; `menu` oznacza
+ekran bez parametru sceny (pozostałe wartości z rejestru scen).
+`loadingTips.ts`: `loadTips(unknown)` zwraca walidowane porady z etykietami
+lub pustą listę, `getTips()` waliduje dane leniwie, `pickTip(key)` wybiera
+deterministycznie przez `hashSeed`. Wspólny dekoracyjny widok porad rotuje
+co `tuning.ui.loadingTipS`, a jego `dispose()` usuwa timer. Klucz startowy:
+scena + seed; klucz pokoju: run + seed + currentNodeId.

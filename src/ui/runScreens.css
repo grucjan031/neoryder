@@ -833,7 +833,7 @@
   }
 }
 .run-screen--splash p.run-screen__loading {
-  color: #b8f6ff;
+  color: #fff1d6;
   font-weight: 600;
   animation: none;
 }
