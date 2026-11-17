@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "src/combat/heldItem.ts": {
-    "mtime": 1794952785.8270946,
-    "seen": 1794952817.6212144,
-    "ast_hash": "6196350bdbaf1307968cccd834c367b6",
+    "mtime": 1794958013.050579,
+    "seen": 1794958038.001086,
+    "ast_hash": "e77fee3d4d052531458b684d35d55113",
     "semantic_hash": ""
   },
   "src/combat/melee/bladeQueries.ts": {
@@ -276,15 +276,15 @@
     "semantic_hash": ""
   },
   "src/combat/weapons/weapon.ts": {
-    "mtime": 1794952785.8520603,
-    "seen": 1794952817.6217282,
-    "ast_hash": "ef700f53f6e8efa902d48f4c0ff7bf1b",
+    "mtime": 1794958013.0521092,
+    "seen": 1794958038.001086,
+    "ast_hash": "fa7f6abd0830e932157a98b46ba26e66",
     "semantic_hash": ""
   },
   "src/combat/weapons/weaponSchema.ts": {
-    "mtime": 1794952785.853095,
-    "seen": 1794952817.6217282,
-    "ast_hash": "e614569d64075c18f0ceadd5f016b857",
+    "mtime": 1794958013.0531282,
+    "seen": 1794958038.001086,
+    "ast_hash": "f3a41426cd31ba4f649d3b4a70625445",
     "semantic_hash": ""
   },
   "src/core/context.ts": {
@@ -816,9 +816,9 @@
     "semantic_hash": ""
   },
   "src/data/meta/progression.json": {
-    "mtime": 1794952785.9380732,
-    "seen": 1794952817.6217282,
-    "ast_hash": "d060c255a3f2164d9d7112c81d0b47ce",
+    "mtime": 1794958013.0546603,
+    "seen": 1794958038.0016088,
+    "ast_hash": "fe488b033fbb1510b9692a700525c75b",
     "semantic_hash": ""
   },
   "src/data/meta/threat.json": {
@@ -828,9 +828,9 @@
     "semantic_hash": ""
   },
   "src/data/meta/unlocks.json": {
-    "mtime": 1794952785.9401808,
-    "seen": 1794952817.6217282,
-    "ast_hash": "90653e7cfe4aa0d66bc2d5140a810e68",
+    "mtime": 1794958013.0556796,
+    "seen": 1794958038.0016088,
+    "ast_hash": "1ab3fc4e681426c09501fb3690e72d52",
     "semantic_hash": ""
   },
   "src/data/missions/m01-maszty.json": {
@@ -864,27 +864,27 @@
     "semantic_hash": ""
   },
   "src/data/modules/incendiary.json": {
-    "mtime": 1794952785.949098,
-    "seen": 1794952817.6217282,
-    "ast_hash": "c930252b0237cb4c219d3eed91278e50",
+    "mtime": 1794958013.0572145,
+    "seen": 1794958038.0016088,
+    "ast_hash": "8f381a2d65a4e2aa75d782d5768c7ba3",
     "semantic_hash": ""
   },
   "src/data/modules/pierce.json": {
-    "mtime": 1794952785.949624,
-    "seen": 1794952817.6217282,
-    "ast_hash": "d56d999424e0297c30ec94fa4c1065f4",
+    "mtime": 1794958013.0582454,
+    "seen": 1794958038.0016088,
+    "ast_hash": "f1a8d332b70c790ff41c506cf47514c1",
     "semantic_hash": ""
   },
   "src/data/modules/ricochet.json": {
-    "mtime": 1794952785.9501429,
-    "seen": 1794952817.6217282,
-    "ast_hash": "5cffec3ec7e21241112104543f687d48",
+    "mtime": 1794958013.059266,
+    "seen": 1794958038.0016088,
+    "ast_hash": "e522167fc92886ab12a15fea542326e3",
     "semantic_hash": ""
   },
   "src/data/modules/superconductor.json": {
-    "mtime": 1794952785.9511902,
-    "seen": 1794952817.6217282,
-    "ast_hash": "5c0e0f5c23327ecba00e9f06e50b018e",
+    "mtime": 1794958013.0613067,
+    "seen": 1794958038.0016088,
+    "ast_hash": "b1c30be694a17366400dc4d17fb10d82",
     "semantic_hash": ""
   },
   "src/data/powers/barrier.json": {
@@ -1440,9 +1440,9 @@
     "semantic_hash": ""
   },
   "src/data/ui/workshop.pl.json": {
-    "mtime": 1794952786.0451107,
-    "seen": 1794952817.6217282,
-    "ast_hash": "c775c69a0c84546379f7cf3cd477232e",
+    "mtime": 1794958013.0628653,
+    "seen": 1794958038.0016088,
+    "ast_hash": "4ea5b28687ba83ff952e8a54b0f4010c",
     "semantic_hash": ""
   },
   "src/data/waves/arena.json": {
@@ -1728,9 +1728,9 @@
     "semantic_hash": ""
   },
   "src/player/playerController.ts": {
-    "mtime": 1794952786.0983777,
-    "seen": 1794952817.6217282,
-    "ast_hash": "5d8477301ac54d9838263650ec908fde",
+    "mtime": 1794958013.0644047,
+    "seen": 1794958038.0016088,
+    "ast_hash": "af614646bb58634a86ee9479a29d8ded",
     "semantic_hash": ""
   },
   "src/player/stamina.ts": {
@@ -1770,15 +1770,15 @@
     "semantic_hash": ""
   },
   "src/progression/loadout.ts": {
-    "mtime": 1794952786.105631,
-    "seen": 1794952817.6217282,
-    "ast_hash": "f52a9553e3f389a42f2964a6caa3d6ca",
+    "mtime": 1794958013.0659437,
+    "seen": 1794958038.0016088,
+    "ast_hash": "ed8abe90046667c91377feceec44ec12",
     "semantic_hash": ""
   },
   "src/progression/meta.ts": {
-    "mtime": 1794952786.106148,
-    "seen": 1794952817.6217282,
-    "ast_hash": "b6c079db8d9d439223ddd868da308532",
+    "mtime": 1794958013.0679934,
+    "seen": 1794958038.0016088,
+    "ast_hash": "5a9f5391fcc45039455586cd6967ca20",
     "semantic_hash": ""
   },
   "src/progression/metaSave.ts": {
@@ -1794,9 +1794,9 @@
     "semantic_hash": ""
   },
   "src/progression/moduleSchema.ts": {
-    "mtime": 1794952786.1082196,
-    "seen": 1794952817.6217282,
-    "ast_hash": "a567ef0f38d6014d83f38d3500d1d00b",
+    "mtime": 1794958013.0695536,
+    "seen": 1794958038.0016088,
+    "ast_hash": "8f88589a241fa6196d043134cb07345d",
     "semantic_hash": ""
   },
   "src/progression/patchSchema.ts": {
@@ -1980,9 +1980,9 @@
     "semantic_hash": ""
   },
   "src/render/fppBlaster.ts": {
-    "mtime": 1794952786.1401548,
-    "seen": 1794952817.6217282,
-    "ast_hash": "e3bfb203a06f1ce29cf8734a48267aee",
+    "mtime": 1794958013.0711148,
+    "seen": 1794958038.0021408,
+    "ast_hash": "15f81cdfc8d43a3e7e6dfc0d69383f40",
     "semantic_hash": ""
   },
   "src/render/fppMaterials.ts": {
@@ -2004,9 +2004,9 @@
     "semantic_hash": ""
   },
   "src/render/fppViewModel.ts": {
-    "mtime": 1794952786.1449149,
-    "seen": 1794952817.6217282,
-    "ast_hash": "6964b5d7d42cfca2a61964116c114cd1",
+    "mtime": 1794958013.0726612,
+    "seen": 1794958038.0021408,
+    "ast_hash": "17468122b461d36e898960218623e7c1",
     "semantic_hash": ""
   },
   "src/render/frameClock.ts": {
@@ -2346,9 +2346,9 @@
     "semantic_hash": ""
   },
   "src/scenes/roomScene.ts": {
-    "mtime": 1794952786.2021081,
-    "seen": 1794952817.6222432,
-    "ast_hash": "52a290a395d9823aa45950374261978b",
+    "mtime": 1794958013.0757556,
+    "seen": 1794958038.0021408,
+    "ast_hash": "ced3147963b30f88c4906ad858e6018a",
     "semantic_hash": ""
   },
   "src/scenes/roomTest.ts": {
@@ -2538,15 +2538,15 @@
     "semantic_hash": ""
   },
   "src/ui/hub/workshopPanel.ts": {
-    "mtime": 1794952786.2404249,
-    "seen": 1794952817.6222432,
-    "ast_hash": "299d7e4f093963e910a71db305c5246a",
+    "mtime": 1794958013.0783725,
+    "seen": 1794958038.0021408,
+    "ast_hash": "64b120e0eef95b229793333aca7efd76",
     "semantic_hash": ""
   },
   "src/ui/hub/workshopState.ts": {
-    "mtime": 1794952786.24147,
-    "seen": 1794952817.6222432,
-    "ast_hash": "5adf7d8c75eb5df0b2323c43180c5a09",
+    "mtime": 1794958013.0799074,
+    "seen": 1794958038.0021408,
+    "ast_hash": "f8556e1a3d44f48b02e93b5130625a71",
     "semantic_hash": ""
   },
   "src/ui/hud.ts": {
@@ -3168,9 +3168,9 @@
     "semantic_hash": ""
   },
   "tests/unit/aim.test.ts": {
-    "mtime": 1794952786.3647804,
-    "seen": 1794952817.6222432,
-    "ast_hash": "d5302448f6fb3d2d7163860a1f1fcc76",
+    "mtime": 1794958013.0814486,
+    "seen": 1794958038.0021408,
+    "ast_hash": "b00df2ae7ec95c337d098fc82957bbec",
     "semantic_hash": ""
   },
   "tests/unit/aimLaserOrigin.test.ts": {
@@ -3516,9 +3516,9 @@
     "semantic_hash": ""
   },
   "tests/unit/f4Contracts.test.ts": {
-    "mtime": 1794952786.4168687,
-    "seen": 1794952817.6222432,
-    "ast_hash": "5ab8bbe35c7963e54924db7afd83cda8",
+    "mtime": 1794958013.0824797,
+    "seen": 1794958038.0021408,
+    "ast_hash": "95ac67961df1812acb63d4dff249acb0",
     "semantic_hash": ""
   },
   "tests/unit/feel.test.ts": {
@@ -3846,9 +3846,9 @@
     "semantic_hash": ""
   },
   "tests/unit/meta.test.ts": {
-    "mtime": 1794952786.5140483,
-    "seen": 1794952817.6227567,
-    "ast_hash": "98ec70895a6def42a68cc0a27d58d505",
+    "mtime": 1794958013.0835018,
+    "seen": 1794958038.002656,
+    "ast_hash": "41436076cfd406be5db7b809ef6ba297",
     "semantic_hash": ""
   },
   "tests/unit/metaAchievements.test.ts": {
@@ -3876,9 +3876,9 @@
     "semantic_hash": ""
   },
   "tests/unit/missionCheckpoint.test.ts": {
-    "mtime": 1794952786.517665,
-    "seen": 1794952817.6227567,
-    "ast_hash": "7a7a6daebc64225fc9dc41ca735626b3",
+    "mtime": 1794958013.0850618,
+    "seen": 1794958038.002656,
+    "ast_hash": "2727b607f380001d674b991cc3ce1d1e",
     "semantic_hash": ""
   },
   "tests/unit/missionDefend.test.ts": {
@@ -3942,9 +3942,9 @@
     "semantic_hash": ""
   },
   "tests/unit/modules.test.ts": {
-    "mtime": 1794952786.52815,
-    "seen": 1794952817.6227567,
-    "ast_hash": "769efbacacbea8dc45cdf141f393cab6",
+    "mtime": 1794958013.0861,
+    "seen": 1794958038.002656,
+    "ast_hash": "095a4859075abeae4f0b831fb21ec72d",
     "semantic_hash": ""
   },
   "tests/unit/parry.test.ts": {
@@ -4386,9 +4386,9 @@
     "semantic_hash": ""
   },
   "tests/unit/workshopPanel.test.ts": {
-    "mtime": 1794952786.5958896,
-    "seen": 1794952817.6227567,
-    "ast_hash": "ccf330bbc06327ecfb6e45f22bf25142",
+    "mtime": 1794958013.090258,
+    "seen": 1794958038.002656,
+    "ast_hash": "a2ad1f32840c41ac1c0ce2f4d003f011",
     "semantic_hash": ""
   },
   "tools/blender/build_assets.py": {
@@ -4548,9 +4548,9 @@
     "semantic_hash": ""
   },
   "docs/api.md": {
-    "mtime": 1794952785.020435,
-    "seen": 1794952817.6227567,
-    "ast_hash": "1e9f418a7744cc12721e85cdcd7b5151",
+    "mtime": 1794958013.0470057,
+    "seen": 1794958038.002656,
+    "ast_hash": "5c9ec63aacb3f5f207879d796d4d9de4",
     "semantic_hash": ""
   },
   "docs/assets.md": {
@@ -4986,9 +4986,9 @@
     "semantic_hash": ""
   },
   "docs/systems/meta.md": {
-    "mtime": 1794952785.3145592,
-    "seen": 1794952817.6227567,
-    "ast_hash": "555a38affa7191372182ee4a6178addb",
+    "mtime": 1794958013.0485396,
+    "seen": 1794958038.003179,
+    "ast_hash": "bafcfe586ccf338ccc91a517982e782a",
     "semantic_hash": ""
   },
   "docs/systems/missions.md": {
@@ -5094,9 +5094,9 @@
     "semantic_hash": ""
   },
   "docs/systems/weaponModules.md": {
-    "mtime": 1794952785.3327732,
-    "seen": 1794952817.6227567,
-    "ast_hash": "c7041ee2c90c23c366e2f085462e1e75",
+    "mtime": 1794958013.049562,
+    "seen": 1794958038.003179,
+    "ast_hash": "f01c2915dc63b5a6b413742707966737",
     "semantic_hash": ""
   },
   "docs/systems/weapons.md": {
@@ -7461,6 +7461,48 @@
     "mtime": 1794956622.5765655,
     "seen": 1794956688.6545565,
     "ast_hash": "f902cacafffbf67a619a41ef615786fa",
+    "semantic_hash": ""
+  },
+  "src/data/modules/collimator.json": {
+    "mtime": 1794958013.0561876,
+    "seen": 1794958038.0016088,
+    "ast_hash": "7c06bb3723f954c549acd2ceb899b713",
+    "semantic_hash": ""
+  },
+  "src/data/modules/scope.json": {
+    "mtime": 1794958013.0602896,
+    "seen": 1794958038.0016088,
+    "ast_hash": "06ccb2fef33ca4f24efe53c25ac3467b",
+    "semantic_hash": ""
+  },
+  "src/render/weaponModuleVisuals.ts": {
+    "mtime": 1794958013.0742054,
+    "seen": 1794958038.0021408,
+    "ast_hash": "286019371dda12f14436fe958bb50563",
+    "semantic_hash": ""
+  },
+  "tests/unit/sanitizeModules.test.ts": {
+    "mtime": 1794958013.0866086,
+    "seen": 1794958038.002656,
+    "ast_hash": "ec24dbcd2fcab72e33ec10e2ff869c89",
+    "semantic_hash": ""
+  },
+  "tests/unit/weaponModuleVisuals.test.ts": {
+    "mtime": 1794958013.0876358,
+    "seen": 1794958038.002656,
+    "ast_hash": "ee6d19891c6a2e1cde5edd6bcc339500",
+    "semantic_hash": ""
+  },
+  "tests/unit/weaponModulesSlots.test.ts": {
+    "mtime": 1794958013.0886972,
+    "seen": 1794958038.002656,
+    "ast_hash": "462f06ed677afffed305248593606904",
+    "semantic_hash": ""
+  },
+  "tools/screens/moduleVisuals.mjs": {
+    "mtime": 1794958013.091838,
+    "seen": 1794958038.002656,
+    "ast_hash": "8db874044087b9012194e503306e3cb4",
     "semantic_hash": ""
   },
   "package-lock.json": {
