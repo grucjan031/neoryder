@@ -510,6 +510,46 @@ Odświeża się po zdarzeniach `meta_rewards`, `level_up`, `talents_changed`, `u
 tworzy nakładki (opcja `metaBar` pozwala to zmienić). Teksty: `missions.pl.json`, sekcja `bar`.
 Testy: `tests/unit/metaBar.test.ts`.
 
+## Reakcje na powrót
+
+Mieszkańcy korzystają z istniejących tekstów `reactions.firstVisit`, `victory`
+i `death` w `src/data/hub/npcs.pl.json`. Listy są opcjonalne, ale obecna lista
+musi zawierać co najmniej jedną niepustą kwestię. Zwykłe `lines` nie zmieniają się.
+
+Przy wejściu czysta funkcja `hubArrivalContext(meta, greeted)` ustala kontekst:
+`stats.runs === 0` daje `firstVisit` z kluczem `first-visit`, inaczej
+`lastRuns[0]` daje wynik `victory`/`death` i klucz `runId`. Brak rekordu lub
+już przywitany klucz wyłącza reakcje w tej wizycie. Pamięć jest wstrzykiwana przez
+`HubSceneOptions.greetings` (`last`, `mark`); domyślny adapter UI używa localStorage
+`neoryder.hub.greeted`, z odczytem i zapisem w try/catch. Brak dostępu do pamięci
+nie blokuje sceny: w bieżącej wizycie powitanie występuje najwyżej raz.
+
+Po `hub.arrivalDelayS` (2,5 s, edytowalne w lil-gui) NPC z reakcją najbliższy
+pozycji startowej gracza wypowiada losową kwestię przez istniejące napisy rozmów.
+`HubArrival` wybiera tekst deterministycznie (`Rng`, seed `${key}:${npcId}`),
+a `HubChatter.say` emituje `hub_chatter_line` z `conversation: 'arrival'`,
+pomijając promień rozmów. Po wyświetleniu scena zapisuje klucz powitania.
+Pauza i otwarta stacja zatrzymują odliczanie; aktywna rozmowa E odracza powitanie
+do końca dymka. Powitanie korzysta z istniejącego czasu napisów i może być przerwane
+przez E lub otwarcie stacji.
+
+Pierwsza rozmowa E z każdym NPC posiadającym reakcję dla kontekstu pokazuje tę
+reakcję. U witającego NPC wybór pomija tekst powitania, jeżeli lista zawiera
+więcej niż jedną różną kwestię (także gdy gracz zagada przed powitaniem).
+Następne rozmowy idą przez zwykłe `lines`, od pierwszej kwestii, w dotychczasowej
+pętli. Zapisanie powitania nie usuwa kontekstu trwającej wizyty.
+
+Ręczna próba w 30 s: `?scene=hub&debug=1`, komenda `hub arrive victory`, odczekaj
+około 2,5 s i sprawdź napis. `window.__neoryder.query('hubArrival')` zwraca
+`{ kind, key, greetedNpc, reacted }` albo `null`. Podejdź do witającego NPC
+lub użyj `hub talk <greetedNpc>`: pierwsza kwestia jest inną reakcją, druga zwykłym
+tekstem. Powtórz z `hub arrive death` i `hub arrive firstVisit`; komenda czyści
+stan reakcji i ponownie planuje powitanie (klucz `debug:<kind>`).
+
+Testy: `hubArrival.test.ts`, `hubGreetings.test.ts`, rozszerzone `hubScene.test.ts`,
+`hubNpcs.test.ts` i `hubChatter.test.ts` (kontekst, opóźnienie, odległość, losowanie,
+rozmowy E, pamięć między wizytami i brak localStorage).
+
 ## Dźwięk otoczenia i pociąg
 
 `HubSoundscape` podpina do AudioSystem źródła wyciągane z układu i jawne wpisy

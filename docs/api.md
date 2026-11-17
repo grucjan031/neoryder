@@ -10,8 +10,38 @@ formatu. Napisy zachowują także starszy format liczbowy 0..1.
 `src/render/city/flicker.ts` zwraca mnożnik 0..1 bez Three.js, DOM, stanu i alokacji.
 Czas w sekundach pochodzi z renderu; seed źródła z osobnego `Rng` sceny.
 `CityLights(defs, floorY?, seed?)` przyjmuje kosmetyczne ziarno sceny.
-`HubDecor(panels, stations, fires?, hubTuning?, seed?)` przyjmuje je dla napisów.
+`HubDecor(panels, stations, fires?, hubTuning?, neonTexts?, seed?)` przyjmuje je dla napisów.
 Wyłączenie `Settings.flashes` daje stałą jasność dla buzz/fail; pulse pozostaje.
+
+## Reakcje mieszkańców na przybycie do kryjówki
+
+`HubSceneOptions.greetings?: { last(): string | null; mark(key: string): void }`
+wstrzykuje pamięć ostatniego powitania. Domyślny adapter UI
+`createHubGreetings()` (`src/ui/hub/greetings.ts`) czyta i zapisuje localStorage
+pod kluczem `neoryder.hub.greeted`, przechwytując błędy dostępu. Symulacja nie
+korzysta z localStorage; przy jego braku powitanie nadal występuje raz na wizytę.
+
+`hubArrivalContext(meta, greeted)` (`src/world/hubArrival.ts`) jest czystą funkcją:
+zwraca `{ kind: 'firstVisit' | 'victory' | 'death', key: string }` albo `null`.
+Zero runów oznacza `firstVisit` / `first-visit`; w przeciwnym razie kontekst
+pochodzi z `lastRuns[0].outcome` / `runId`. Brak ostatniego runu lub klucz równy
+`greeted` daje `null`.
+
+`NpcText.reactions?` zawiera opcjonalne listy `firstVisit`, `victory`, `death`
+(każda niepusta, z niepustymi tekstami). `HubArrival` przechowuje kontekst wizyty,
+wybiera NPC z reakcją najbliższego pozycji startowej i losuje jego kwestię przez
+`Rng` z seeda `${key}:${npcId}`. `greet()` zwraca jedną kwestię; `react(id)`
+zwraca reakcję tylko przy pierwszej rozmowie z danym NPC, inną od powitania,
+jeśli lista ma więcej niż jeden tekst. Zwykły licznik `NpcDialogue` pozostaje
+niezależny. `HubChatter.say(line)` pokazuje pojedynczą wymuszoną kwestię bez
+ograniczenia odległości, emituje `hub_chatter_line` i używa istniejących czasów
+napisów; powitanie ma `conversation: 'arrival'`.
+
+Scena po `tuning.hub.arrivalDelayS` (domyślnie 2,5 s) odtwarza powitanie i woła
+`greetings.mark(key)`. Otwarta stacja lub rozmowa E odracza powitanie.
+`hub arrive <firstVisit|victory|death>` resetuje stan reakcji i planuje ponownie
+powitanie (klucz debug `debug:<kind>`). `query('hubArrival')` zwraca
+`{ kind, key, greetedNpc: string | null, reacted: string[] } | null`.
 
 ## Otoczenie kryjówki i przejazd pociągu
 

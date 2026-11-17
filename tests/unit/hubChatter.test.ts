@@ -147,3 +147,21 @@ it('te same kroki i pozycje dają te same zdarzenia', () => {
   expect(a.lines).toEqual(b.lines);
   expect(a.chatter.line).toEqual(b.chatter.line);
 });
+
+it('pojedyncze powitanie pomija promień, emituje zdarzenie, wygasa i podlega blokadzie E', () => {
+  const { chatter, lines, t } = setup();
+  const line = { conversation: 'arrival', npc: 'kid', text: 'Witaj!' };
+  chatter.say(line);
+  expect(lines).toEqual([line]);
+  chatter.step(0.1, far, false);
+  expect(chatter.line).toEqual(line);
+  chatter.step(
+    t.chatterLineBaseS + t.chatterLineCharS * line.text.length,
+    far,
+    false,
+  );
+  expect(chatter.line).toBeNull();
+  chatter.say(line);
+  chatter.step(0.1, far, true);
+  expect(chatter.line).toBeNull();
+});

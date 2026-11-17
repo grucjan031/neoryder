@@ -31,6 +31,15 @@ export const npcConversationSchema = z
   });
 export type NpcConversation = z.infer<typeof npcConversationSchema>;
 
+const reactionLinesSchema = z
+  .array(
+    z
+      .string()
+      .min(1)
+      .refine((text) => text.trim().length > 0),
+  )
+  .min(1);
+
 /** Teksty rozmów (`src/data/hub/npcs.pl.json`). */
 export const npcTextsSchema = z.object({
   talkPrompt: z.string().min(1),
@@ -41,6 +50,13 @@ export const npcTextsSchema = z.object({
       name: z.string().min(1),
       role: z.string().min(1),
       lines: z.array(z.string().min(1)).min(1),
+      reactions: z
+        .object({
+          firstVisit: reactionLinesSchema.optional(),
+          victory: reactionLinesSchema.optional(),
+          death: reactionLinesSchema.optional(),
+        })
+        .optional(),
     }),
   ),
 });

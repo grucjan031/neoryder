@@ -775,6 +775,7 @@ export const tuning = {
     focusPaddingM: 0.2,
     /** Dymek rozmowy z NPC znika po tylu sekundach (albo po odejściu gracza). */
     npcLineS: 5,
+    arrivalDelayS: 2.5,
     npcYieldRadiusM: 1.2,
     npcYieldConeCos: 0.5,
     npcWalkSpeedMS: 1.3,
