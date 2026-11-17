@@ -235,6 +235,37 @@ const PORT_LIGHTS = [
   portLight(19, 6, -8, '#8a5cff', 40, 12),
 ];
 
+const constructionPowerSlots: PortSlot[] = [
+  { model: 'build_tower_crane', x: -90, y: 0, z: -18, yaw: Math.PI / 3 },
+  { model: 'build_scaffold_bay', x: -84, y: 0, z: 21, yaw: 0 },
+  { model: 'build_unfinished_column', x: -76, y: 0, z: 21, yaw: 0 },
+  { model: 'build_rebar_bundle', x: -68, y: 0, z: 21, yaw: 0 },
+  { model: 'build_precast_stack', x: -59, y: 0, z: 21, yaw: 0 },
+  { model: 'build_pipe_stack', x: -50, y: 0, z: 21, yaw: 0 },
+  { model: 'build_mixer_truck', x: -80, y: 0, z: 8, yaw: 0 },
+  { model: 'build_site_office', x: -64, y: 0, z: 8, yaw: 0 },
+  { model: 'build_site_office_stairs', x: -52, y: 0, z: 8, yaw: 0 },
+  { model: 'build_hoarding_fence', x: -43, y: 0, z: 8, yaw: 0 },
+  { model: 'power_cooling_tower', x: -24, y: 0, z: -35, yaw: 0 },
+  { model: 'power_cooling_tower_breach', x: 31, y: 0, z: -35, yaw: 0 },
+  { model: 'power_turbine_housing', x: -23, y: 0, z: 18, yaw: 0 },
+  { model: 'power_transformer', x: -6, y: 0, z: 24, yaw: 0 },
+  { model: 'power_hv_pylon', x: 16, y: 0, z: 8, yaw: 0 },
+  { model: 'power_pipe_rack', x: 9, y: 0, z: 26, yaw: 0 },
+  { model: 'power_chimney', x: 74, y: 0, z: -25, yaw: 0 },
+  { model: 'power_slag_heap', x: 49, y: 0, z: 17, yaw: 0 },
+];
+export const CONSTRUCTION_POWER_PROP_MODELS = constructionPowerSlots.map(
+  ({ model }) => model,
+);
+const CONSTRUCTION_POWER_VIEW = 6;
+const CONSTRUCTION_POWER_LIGHTS = [
+  portLight(-63, 10, 15, '#fff1d6', 155, 38),
+  portLight(-26, 14, 8, '#3d7bff', 220, 60),
+  portLight(32, 12, -2, '#fff1d6', 250, 65),
+  portLight(62, 12, 20, '#ffae1a', 155, 42),
+];
+
 const LIGHT_COLORS = ['#ffae1a', '#8a5cff', '#6dff4a', '#3d7bff', '#fff1d6'];
 type V3 = [number, number, number];
 const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
@@ -244,6 +275,7 @@ const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
   { from: [14, 13, 32], to: [31, 3, -4] },
   { from: [-88, 60, 142], to: [-60, 0, 25] },
   { from: [-63, 60, 150], to: [-35, 0, 35] },
+  { from: [0, 55, 122], to: [-5, 45, -19] },
 ];
 const DEFAULT_YAW_DEG = 35;
 const FILL_RATIO = 0.65;
@@ -270,21 +302,62 @@ export class CityPropsTest implements Scene {
   private focus?: Slot;
   private portFocus?: PortSlot;
   private view = 0;
+  private constructionPower = false;
   private readonly cameraPos = new Vector3();
   private readonly cameraTarget = new Vector3();
   private hasPropCamera = false;
 
   init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
+    const requested = this.params.get('prop');
+    const constructionFocus = constructionPowerSlots.find(
+      ({ model }) => model === requested,
+    );
+    const view = Number(this.params.get('view') ?? 0);
+    this.view =
+      Number.isInteger(view) && view >= 0 && view < REVIEW_VIEWS.length
+        ? view
+        : 0;
+    this.constructionPower =
+      constructionFocus !== undefined ||
+      (!requested && this.view === CONSTRUCTION_POWER_VIEW);
     this.atmosphere = new SceneAtmosphere(
       three,
       'neonStreet',
       'city-props-test',
       0,
+      this.constructionPower
+        ? new Box3(new Vector3(-103, 0, -70), new Vector3(93, 120, 80))
+        : undefined,
     );
     this.root.name = this.id;
     three.add(this.root);
     this.root.add(this.lights);
+    if (this.constructionPower) {
+      this.portFocus = constructionFocus;
+      this.box([196, 0.3, 150], [-5, -0.17, 5], 'asphalt');
+    } else {
+      if (this.view === CONSTRUCTION_POWER_VIEW) this.view = 0;
+      this.buildStreet();
+      if (requested) {
+        this.focus = slots.find((s) => s.model === requested);
+        this.portFocus = portSlots.find((s) => s.model === requested);
+        if (!this.focus && !this.portFocus)
+          console.warn(`city-props-test: nieznany model "${requested}"`);
+      }
+    }
+    this.dressing = new CityDressing(
+      this.root,
+      this.layout(),
+      this.atmosphere.theme,
+      0,
+      'city-props-test',
+    );
+    this.render(0);
+    return this.loadModels();
+  }
+
+  private buildStreet(): void {
     this.box([52, 0.3, 166], [-47.5, -0.15, 36], 'asphalt');
     const length = SPACING * COUNT + 4;
     this.box([6, 0.3, length], [0, -0.15, 0], 'asphalt');
@@ -306,32 +379,13 @@ export class CityPropsTest implements Scene {
         );
       }
     }
-    const requested = this.params.get('prop');
-    if (requested) {
-      this.focus = slots.find((s) => s.model === requested);
-      this.portFocus = portSlots.find((s) => s.model === requested);
-      if (!this.focus && !this.portFocus)
-        console.warn(`city-props-test: nieznany model "${requested}"`);
-    }
-    const view = Number(this.params.get('view') ?? 0);
-    this.view =
-      Number.isInteger(view) && view >= 0 && view < REVIEW_VIEWS.length
-        ? view
-        : 0;
-    this.dressing = new CityDressing(
-      this.root,
-      this.layout(),
-      this.atmosphere.theme,
-      0,
-      'city-props-test',
-    );
-    this.render(0);
-    return this.loadModels();
   }
 
   private layout(): DressingLayout {
-    const lights = [...PORT_LIGHTS];
-    for (let i = 0; i < 8; i++) {
+    const lights = [
+      ...(this.constructionPower ? CONSTRUCTION_POWER_LIGHTS : PORT_LIGHTS),
+    ];
+    for (let i = 0; !this.constructionPower && i < 8; i++) {
       lights.push({
         position: { x: (i % 2 ? 1 : -1) * 3.4, y: 4, z: -19 + i * 5.4 },
         color: LIGHT_COLORS[i % LIGHT_COLORS.length] ?? '#fff1d6',
@@ -379,8 +433,13 @@ export class CityPropsTest implements Scene {
   private async loadModels(): Promise<void> {
     const placed = new Map<Slot, Object3D>();
     const placedPort = new Map<PortSlot, Object3D>();
+    const freestanding = this.constructionPower
+      ? this.portFocus
+        ? [this.portFocus]
+        : constructionPowerSlots
+      : portSlots;
     await Promise.all([
-      ...slots.map(async (s) => {
+      ...(this.constructionPower ? [] : slots).map(async (s) => {
         const model = await cloneCityModel(s.model);
         if (!model || this.disposed) return;
         model.name = s.model;
@@ -389,7 +448,7 @@ export class CityPropsTest implements Scene {
         this.root.add(model);
         placed.set(s, model);
       }),
-      ...portSlots.map(async (s) => {
+      ...freestanding.map(async (s) => {
         const model = await cloneCityModel(s.model);
         if (!model || this.disposed) return;
         model.name = s.model;

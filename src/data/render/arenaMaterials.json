@@ -43,5 +43,55 @@
     "metalness": 0,
     "bump": 0.5,
     "wetness": 0.2
+  },
+  "formwork_plywood": {
+    "texture": "formwork_plywood",
+    "tint": "#625544",
+    "scale": 0.25,
+    "roughness": 0.85,
+    "metalness": 0,
+    "bump": 0,
+    "wetness": 0,
+    "flat": true
+  },
+  "concrete_raw_cast": {
+    "texture": "concrete_raw_cast",
+    "tint": "#566072",
+    "scale": 0.25,
+    "roughness": 0.85,
+    "metalness": 0,
+    "bump": 0,
+    "wetness": 0,
+    "flat": true
+  },
+  "slag_heap": {
+    "texture": "slag_heap",
+    "tint": "#34383f",
+    "scale": 0.25,
+    "roughness": 0.95,
+    "metalness": 0,
+    "bump": 0,
+    "wetness": 0,
+    "flat": true
+  },
+  "cooling_tower_concrete": {
+    "texture": "cooling_tower_concrete",
+    "tint": "#657080",
+    "scale": 0.25,
+    "roughness": 0.9,
+    "metalness": 0,
+    "bump": 0,
+    "wetness": 0,
+    "flat": true
+  },
+  "turbine_hall_floor": {
+    "texture": "turbine_hall_floor",
+    "tint": "#444d5b",
+    "scale": 0.25,
+    "roughness": 0.8,
+    "metalness": 0,
+    "bump": 0,
+    "wetness": 0,
+    "flat": true
   }
 }

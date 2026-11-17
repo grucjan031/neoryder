@@ -358,6 +358,13 @@ statyki; aktualny pomiar 776 → 326 siatek (53 partie instancji) opisuje
 [arenas.md](arenas.md). Test materiałów sprawdza mapowanie nazw GLB, wybór
 tekstury, wspólny uniform pogody i trwałość materiału po synchronizacji.
 
+`?scene=city-props-test&view=6` otwiera osobny plac z 18 modelami budowy
+i elektrowni. `prop=build_<nazwa>` lub `prop=power_<nazwa>` pokazuje wybrany
+model bez sąsiednich eksponatów, a `yaw` obraca kamerę wokół niego.
+Materiały nowych powierzchni mają ciemne kolory zastępcze w
+`src/data/render/arenaMaterials.json`. Wymiary i profile chodzenia
+opisano w [katalogu zasobów](../assets.md#budowa-i-elektrownia).
+
 ## Pogoda pokoju i oprawa portu
 
 Opcjonalne pole `weather` zastępuje parametry deszczu motywu profilem z danych;
