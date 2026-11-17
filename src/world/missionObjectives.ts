@@ -23,6 +23,7 @@ export class MissionObjectives {
     private readonly hooks: ObjectiveHooks,
     private readonly radiusM: number,
     private readonly pickupRadiusM: number,
+    private readonly sequence?: readonly string[],
   ) {
     this.objectives = { ...state.objectives };
     this.progress = { ...state.objectiveProgress };
@@ -51,6 +52,16 @@ export class MissionObjectives {
     };
   }
   unlocked(objective: MissionObjective): boolean {
+    if (this.sequence) {
+      const index = this.sequence.indexOf(objective.id);
+      if (
+        index < 0 ||
+        this.sequence
+          .slice(0, index)
+          .some((id) => this.objectives[id] !== 'done')
+      )
+        return false;
+    }
     return objective.kind === 'pickup'
       ? this.objectives[objective.spawnAfter] === 'done'
       : objective.kind === 'exit' || objective.kind === 'interact'

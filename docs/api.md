@@ -413,7 +413,7 @@ Obiekt jest mutowalny: kod czyta wartość przy użyciu (`tuning.time.hitstopLig
 ## Zapis — `src/core/save.ts`
 
 ```ts
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 5;
 
 export interface MetaSave { saveVersion: number; createdAt: number; updatedAt: number; meta: MetaState }
 export interface RunSave  { saveVersion: number; seed: string; startedAt: number; run: RunState }
@@ -1883,3 +1883,39 @@ jak wznowienie pokoju zwykłego runu; zakończona arena zachowuje podsumowanie.
 `loadMission` waliduje dane i zgodność pokojów. `generateMissionMap(mission, sector, seed)` generuje stałe węzły. `MapNode.fixed` przechowuje pokój, cele i finał. Opcjonalne `RunState.missionId`, `objectives`, `objectiveProgress` zachowują zgodność dawnych runów. `RunManager` blokuje ukończenie pokoju do wykonania jego celów. `RunSummary.missionCompleted` oznacza ukończony finał. Kampania w meta przechowuje ukończone misje i jednorazowy debrief; firstClear jest rozliczany przez applyRun.
 
 `RoomScene.missionState()` eksportuje migawkę celów do hosta; `RunManager.updateObjectives()` aktualizuje ją wyłącznie w aktywnej misji. `RoomSceneOptions.missionSignal(trigger)` przekazuje wyzwalacze radia do kolejki `MissionRadio` hostowanej przez run (kolejka przeżywa zmianę pokoju). Obrażenia i efekty eksplozji korzystają z istniejącego DamageSystem i EventBus.
+# Misja liniowa M01 (kontrakt D1–D8)
+
+`MissionDefinition.level?: string` wybiera scenę `mission`; brak pola zachowuje misję-run.
+`LevelDefinition` (`world/levelSchema.ts`) reużywa pola schematu pokoju i dodaje
+`objectiveOrder`, `objectivePositions`, `encounters`, `checkpoints`, `gates`, `sections`.
+Zależność ma postać `{ kind: 'objective' | 'encounter', id }`; strefa to box (pełne
+`size`) albo sphere (`radiusM`). `loadLevel(data, mission, waves)` waliduje referencje.
+`LevelRuntime` jest czystą symulacją wyzwalaczy i bram; nie zna renderu ani RunState.
+
+`RoomCombatState` to minimalny stan wyposażenia i zasobów bez mapy runu.
+`RoomSceneOptions.linearMission` przekazuje definicję, kolejność i zapisane stany
+celów; `reinforce(wave, key)` deleguje posiłki do hosta. `manualEncounter` wyłącza
+automatyczne kończenie pokoju tylko przy `linearMission`.
+`objectiveModel()`, `setLevelGate(id, block, open)`, `teleportPlayer(position, yawDeg)`,
+`resetLevelCombat(position, yawDeg)` i `removeEncounterEnemies(ids)` są API hosta
+misji; spawn przez istniejące `spawnEncounterEnemy` respektuje wspólny limit.
+`staticCellSize` w opcjach włącza scalanie statyki w komórkach.
+`HudOptions.deathScreen=false` pozwala hostowi misji odradzać bez nakładki śmierci;
+`showWaves=false` ukrywa etykiety i banery fal, gdy HUD pokazuje bieżący cel.
+Scena nie zwalnia pointer lock przy automatycznym odrodzeniu; rzeczywista utrata fokusu nadal pauzuje grę w core/input.
+
+SaveStore v5 dodaje osobny rekord `mission`: `loadMission`, `saveMission`,
+`clearMission` (opcjonalne w portach starszych testów; wymagane przez scenę mission).
+Migracja meta/run 4→5 jest tożsamościowa: nowy rekord nie istniał w v4.
+`MissionSave` zawiera id próby, misji i poziomu, seed, checkpoint, stany celów,
+spotkania zakończone przed checkpointem, czas, zamrożony ekwipunek i flagę ukończenia.
+Zapisy są szeregowane. Cel done jest zapisywany od razu; śmierć zachowuje cele done,
+zeruje częściowe interakcje i spotkania po checkpoincie. Ukończony rekord pozostaje
+do udanego rozliczenia meta, potem jest usuwany. `MetaManager.applyRun` dla misji z
+`level` nalicza wyłącznie firstClear, chroniony przez appliedRunIds i campaign.completed.
+
+Scena: `?scene=mission&mission=m01-maszty[&continue=1]`. Debug: `mission start <id>`,
+`checkpoint <id>`, `objective done <id>`, `encounter clear`; `query('mission')`
+zwraca cele, checkpoint, aktywne/zakończone spotkania, otwarte bramy i stan hosta.
+Tablica udostępnia misje z poziomem; pozostałe pokazuje jako „Wkrótce”. Opcjonalny
+`HubPanelContext.missionSave` udostępnia checkpoint dla przycisku kontynuacji.

@@ -235,6 +235,10 @@ export class HubScene implements Scene {
     this.metaStore = this.options.metaStore ?? createIndexedDbSaveStore();
     const store = this.metaStore;
     this.meta = await loadMetaManager(store, ctx.bus);
+    const missionSave = await store.loadMission?.().catch((error: unknown) => {
+      console.warn('Nie można odczytać misji.', error);
+      return null;
+    });
     if (this.disposed) return;
     this.screens =
       this.screensOption ??
@@ -242,6 +246,7 @@ export class HubScene implements Scene {
         panels: this.options.panels ?? DEFAULT_PANELS,
         host: {
           manager: this.meta,
+          missionSave,
           save: () => saveMetaManager(store, this.meta),
           navigate: (url) =>
             this.go(new URLSearchParams(url.replace(/^\?/, ''))),

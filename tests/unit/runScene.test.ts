@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import { loadoutDefinitions } from '../../src/progression/loadout';
 import {
+  SAVE_VERSION,
   createIndexedDbSaveStore,
   createMemorySaveStore,
 } from '../../src/core/save';
@@ -559,7 +560,7 @@ it('domyślny SaveStore v2 zapisuje mapę, wznawia pełen stan i czyści po run_
   expect(credits).toBeGreaterThanOrEqual(23);
   const saved = await store.loadRun();
   expect(saved).toMatchObject({
-    saveVersion: 4,
+    saveVersion: SAVE_VERSION,
     run: { credits, implants: ['test-save'] },
   });
   expect(saved!.run.currentNodeId).not.toBeNull();

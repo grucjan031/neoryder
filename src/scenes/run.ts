@@ -1082,7 +1082,7 @@ export class RunScene implements Scene {
         )
           return 'Misja niedostępna.';
         const params = new URLSearchParams({
-          scene: 'run',
+          scene: mission.level ? 'mission' : 'run',
           loadout: 'meta',
           mission: mission.id,
           debug: '1',

@@ -86,7 +86,7 @@ it.each([
   ).toBe(false);
 });
 
-it('M03 i M06 pokazują przerywnik przed odprawą, powrót do M01 go usuwa; tablica i summary pozostają osobne', () => {
+it('M03 i M06 pozostają w danych, ale są niedostępne na tablicy; M01 ma odprawę', () => {
   const state = createStarterMetaState();
   state.campaign.completed = ['m01-maszty', 'm03-list-przewozowy'];
   const original = HTMLElement.prototype.scrollIntoView;
@@ -98,47 +98,32 @@ it('M03 i M06 pokazują przerywnik przed odprawą, powrót do M01 go usuwa; tabl
     close() {},
   });
   document.body.append(panel.root);
-  const readLines = (root: Element) =>
-    Array.from(root.querySelectorAll('p'), (p) => ({
-      speaker: p.querySelector<HTMLElement>('[data-speaker]')!.dataset.speaker,
-      text: p.lastChild!.textContent,
-    }));
   try {
-    expect(panel.root.querySelector('[data-mission-interlude]')).toBeNull();
-    for (const id of ['m03-list-przewozowy', 'm06-odlewnia', 'm01-maszty']) {
-      const mission = missionDefinitions.get(id)!;
-      panel.root
-        .querySelector<HTMLButtonElement>(`[data-mission="${id}"]`)!
-        .click();
-      const briefing = panel.root.querySelector<HTMLElement>(
-        '[data-mission-briefing]',
+    for (const id of ['m03-list-przewozowy', 'm06-odlewnia']) {
+      const button = panel.root.querySelector<HTMLButtonElement>(
+        `[data-mission="${id}"]`,
       )!;
-      const interlude = briefing.querySelector('[data-mission-interlude]');
-      if (mission.interlude) {
-        expect(briefing.firstElementChild).toBe(interlude);
-        expect(interlude!.querySelector('h3')!.textContent).toBe(
-          'Tymczasem w Iskrze',
-        );
-        expect(readLines(interlude!)).toEqual(mission.interlude.lines);
-        expect(interlude!.nextElementSibling!.textContent).toBe(
-          `Odprawa · ${mission.title}`,
-        );
-      } else {
-        expect(interlude).toBeNull();
-        expect(briefing.firstElementChild!.textContent).toBe(
-          'Odprawa · Maszty',
-        );
-      }
+      expect(button.disabled).toBe(true);
+      expect(button.textContent).toContain('Wkrótce');
+      button.click();
       expect(
-        readLines(briefing.querySelector(':scope > .mission-dialogue')!),
-      ).toEqual(mission.briefing);
-      expect(
-        panel.root.querySelector('.missions-panel__sector-text')!.textContent,
-      ).toBe(mission.summary);
-      briefing.querySelector<HTMLButtonElement>('button')!.click();
-      expect(briefing.hidden).toBe(true);
+        panel.root.querySelector<HTMLElement>('[data-mission-briefing]')!
+          .hidden,
+      ).toBe(true);
+      expect(missionDefinitions.get(id)!.interlude).toBeDefined();
     }
-    expect(missionDefinitions.get('m01-maszty')!.interlude).toBeUndefined();
+    const m01 = panel.root.querySelector<HTMLButtonElement>(
+      '[data-mission="m01-maszty"]',
+    )!;
+    expect(m01.disabled).toBe(false);
+    m01.click();
+    expect(
+      panel.root.querySelector<HTMLElement>('[data-mission-briefing]')!.hidden,
+    ).toBe(false);
+    expect(
+      panel.root.querySelector('[data-mission-briefing]')!.textContent,
+    ).toContain('Odprawa · Maszty');
+    expect(panel.root.querySelector('[data-mission-interlude]')).toBeNull();
   } finally {
     panel.dispose();
     HTMLElement.prototype.scrollIntoView = original;

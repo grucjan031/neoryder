@@ -556,7 +556,7 @@ it('loadMetaManager: brak zapisu i zapis nieczytelny dają stan startowy bez nad
   expect(warn).toHaveBeenCalled();
 });
 
-it('saveMetaManager: zachowuje createdAt, ustawia updatedAt i wersję 3', async () => {
+it('saveMetaManager: zachowuje createdAt, ustawia updatedAt i bieżącą wersję', async () => {
   const store = createMemorySaveStore();
   const manager = new MetaManager(createStarterMetaState());
   await saveMetaManager(store, manager, () => 100);
@@ -564,7 +564,7 @@ it('saveMetaManager: zachowuje createdAt, ustawia updatedAt i wersję 3', async 
   await saveMetaManager(store, manager, () => 250);
   const saved = (await store.loadMeta())!;
   expect(saved).toMatchObject({
-    saveVersion: 4,
+    saveVersion: SAVE_VERSION,
     createdAt: 100,
     updatedAt: 250,
   });

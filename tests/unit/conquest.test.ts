@@ -141,7 +141,7 @@ describe('Przejęcie', () => {
     expect(model.moveGoal(p, p)).toBeUndefined();
   });
   it.each(['victory', 'death'] as const)(
-    'podsumowanie %s i zapis v4 zachowują tryb',
+    'podsumowanie %s i zapis v5 zachowują tryb',
     async (outcome) => {
       const run = manager();
       run.newRun('arena', 'classic', { modeId: 'conquest' });
@@ -162,7 +162,7 @@ describe('Przejęcie', () => {
       const saved = await store.loadRun();
       expect(saved?.ended?.summary).toEqual(summary);
       expect(saved?.run.modeId).toBe('conquest');
-      expect(SAVE_VERSION).toBe(4);
+      expect(SAVE_VERSION).toBe(5);
     },
   );
   it('stary zapis pozostaje bez modeId, a wznowiona arena ma dostępny pokój', () => {

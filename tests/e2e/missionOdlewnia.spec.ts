@@ -53,21 +53,14 @@ test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i 
       { timeout: LOAD_TIMEOUT },
     )
     .toBe(true);
-  await page.locator('[data-mission="m06-odlewnia"]').click();
-  await expect(
-    page.locator('[data-mission-briefing] .mission-dialogue p').first(),
-  ).toHaveText(
-    'Szron: Dwie noce temu Mira przestawiła zwrotnicę na rozrządni i przejęła wagon z kontenerem klasy K.',
+  await expect(page.locator('[data-mission="m06-odlewnia"]')).toBeDisabled();
+  await expect(page.locator('[data-mission="m06-odlewnia"]')).toContainText(
+    'Wkrótce',
   );
-  await expect(page.locator('[data-mission-interlude] h3')).toHaveText(
-    'Tymczasem w Iskrze',
+  // D6: stary wariant pozostaje do sprawdzenia przez bezpośredni URL.
+  await page.goto(
+    '/?scene=run&mission=m06-odlewnia&loadout=meta&debug=1&fx=lite',
   );
-  await expect(
-    page.locator('[data-mission-briefing] > .mission-dialogue p').first(),
-  ).toContainText('Karta otwiera chłodnicze wejście serwisowe od wschodu.');
-  await page
-    .getByRole('button', { name: 'Rozpocznij misję', exact: true })
-    .click();
   for (let layer = 1; layer <= 7; layer++) {
     await expect
       .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
@@ -137,7 +130,7 @@ test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i 
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
   await page.evaluate(() => window.__neoryder?.command('hub open missions'));
   await expect(page.locator('[data-mission="m06-odlewnia"]')).toContainText(
-    'Ukończona',
+    'Wkrótce',
   );
   await page.reload();
   await expect

@@ -2,9 +2,57 @@
 
 Pole `summary` zawiera krótki opis wyświetlany na tablicy po wyborze misji. Radio mierzy tekst w bieżącej szerokości: cała kwestia pozostaje razem, jeśli mieści się w dwóch liniach, a dłuższe dzieli tylko między zdaniami. Pojedyncze zbyt długie zdanie dopasowuje rozmiarem tekstu, bez urywania treści.
 
-Misja jest runem sektora z mapą i celami opisanymi w `src/data/missions`. Kontrakt: ADR 0008 wraz z uzupełnieniem 2a. Rejestr `missions.ts` waliduje schemat, przypisania celów, zależności oraz typy pokojów. `generateMissionMap` zachowuje jedno przejście przez każdą warstwę stałą; nie dokłada bossa ani gwarancji elit zwykłego sektora.
+Misja bez pola `level` jest runem sektora z mapą i celami opisanymi w `src/data/missions`. M01 ma `level: "m01-maszty"` i używa osobnej sceny liniowej opisanej niżej. Kontrakt: ADR 0008 wraz z uzupełnieniem 2a. Rejestr `missions.ts` waliduje schemat, przypisania celów, zależności oraz typy pokojów. `generateMissionMap` zachowuje jedno przejście przez każdą warstwę stałą; nie dokłada bossa ani gwarancji elit zwykłego sektora.
 
-M01 ma siedem warstw. Wariant `alleyUnderpassMission` zachowuje geometrię oryginału, ale jest walką. Zwykły run wyklucza pokoje z sufiksem `Mission`. Pule misji ograniczają wybór pokojów warstw 2, 4 i 6. Biała lista ogranicza planowanie fal; osłona celów powstaje niezależnie od budżetu.
+## M01 — jedna mapa liniowa
+
+Start: `?scene=mission&mission=m01-maszty`, tablica misji w kryjówce lub komenda
+`mission start m01-maszty`. Scena nie tworzy `RunState` ani mapy sektora, nie ma
+sklepu, odpoczynku, nagród za pokoje i ulepszeń podczas misji. Używa wspólnego
+składu walki `RoomScene` przez `RoomCombatState` i jawne API hosta.
+
+Mapa ma 320 m i siedem odcinków: śluza → targ → zalane przejście → dziedziniec
+→ zaplecze rusztowań → plac → kanał. Siedem spotkań na trasie narasta od dwóch
+szturmowców do grupy z dwiema wieżyczkami. Trzy dodatkowe spotkania to oryginalne
+posiłki `missionPatrol` wyzwalane wybuchami. Każde ma lokalne punkty spawnu.
+Bramy spotkań i celów mają collider oraz widok; oba znikają przy spełnieniu warunku.
+
+Cele: `mast-1` → `mast-2` → `helix` → `mast-3` → `exit`. `MissionObjectives`
+pozostaje wspólną, czystą symulacją; opcjonalna kolejność zamyka przyszłe cele.
+Pozycje pochodzą z poziomu, czasy i skutki z misji: 2,5 s podkładania, 6 s lontu,
+4 m wybuchu i 60 obrażeń ze źródłem null, oryginalna fala posiłków, 2 s włazu.
+HUD pokazuje bieżący cel i obracany względem kamery znacznik kierunku z dystansem.
+Radio, odprawa i debrief pochodzą z istniejących danych i `missionUi.ts`.
+
+Checkpointy: `start`, `po-maszcie-1`, `po-helixie`, `ewakuacja`. Wejście w strefę
+zapisuje osobny rekord `mission` SaveStore v5: id próby, punkt, cele, spotkania
+ukończone przed punktem, czas i wyposażenie. Każdy ukończony cel jest dodatkowo
+zapisywany od razu, więc pozostaje także po śmierci przed następnym punktem.
+Śmierć po 1,2 s odradza w zapisanej pozycji i kierunku, z pełnymi zasobami, zeruje
+częściowe interakcje i odtwarza spotkania za checkpointem. Brak nakładki śmierci
+runu. Rzeczywista utrata fokusu nadal pauzuje symulację. `tuning.level` jest w GUI.
+
+Kryjówka czyta rekord i na tablicy oferuje „Kontynuuj misję”. Start zamraża
+wyposażenie warsztatu i talenty meta; obecny metazapis nie ma slotów implantów,
+więc początkowa lista implantów jest pusta, tak jak na starcie zwykłego runu.
+M03/M06 mają nieaktywne karty „Wkrótce”; ich dane i warianty runowe pozostają,
+dostępne przez bezpośrednie URL debug. Zwykły run i Przejęcie zachowują przepływ.
+
+Zapis v4→v5 zachowuje meta i aktywny run bez zmian; rekord misji jest początkowo
+nieobecny. Zapis ukończenia poprzedza `applyRun`, zapis meta i usunięcie rekordu.
+Nieudane rozliczenie pozostawia ukończoną próbę do ponowienia. `appliedRunIds`
+chroni tę samą próbę, `campaign.completed` chroni firstClear między próbami.
+Misja liniowa daje wyłącznie firstClear (60 Danych dla M01), bez zwykłych nagród
+runu ani odblokowania kolejnego Poziomu zagrożenia. Podsumowanie prowadzi do kryjówki
+z jednorazowym debriefem. Błąd zapisu jest widoczny w HUD; „Ponów zapis” i komenda
+`mission retry` ponawiają zapis lub rozliczenie.
+
+Format mapy i sprawdzenie w 30 sekund: [levels.md](levels.md).
+
+## Warianty misji-runów (zgodność)
+
+Poniższy opis dotyczy misji bez `level`. Zachowane dane warstw M01 nie są używane
+przez scenę `mission`. Zwykły run nadal wyklucza pokoje z sufiksem `Mission`.
 
 `MissionObjectives` jest czystą symulacją. Obecność w strefie zwiększa postęp, wyjście go zatrzymuje. Sabotaż uruchamia lont, następnie obrażenia dla wszystkich ze źródłem `null` i falę wskazaną w danych. Moduł czeka na zniszczenie masztu; właz na spełnienie zależności. Host pokoju kończy węzeł z celami dopiero po ich wykonaniu, niezależnie od żywej osłony. Finał uruchamia zwycięstwo. Nowy run resetuje cele.
 
@@ -12,7 +60,7 @@ Metazapis v4 dodaje kampanię; migracja v3 zachowuje dotychczasowy postęp i dop
 
 Nową misję dodaje się jako JSON: unikalne id, sektor, warstwy, pokoje stałe i dokładnie jeden finał, cele z zależnościami, pule oraz dialogi i nagrody. Fale posiłków są plikami `src/data/waves`, wskazywanymi przez `reinforcements`. Liczby interakcji są w danych misji, wspólne promienie stref i tempo napisów w `tuning.mission` (panel debug).
 
-Sprawdzenie M01: `?scene=run&mission=m01-maszty&debug=1`. Komendy `mission start m01-maszty`, `objective done <id>`, `query('mission')`; cele: `mast-1`, `mast-2`, `helix`, `mast-3`, `exit`. Zwykłe pokoje: `run clear`. Ręcznie sprawdzić zatrzymywanie paska po odejściu, sześć sekund na ucieczkę przed wybuchem, obrażenia i radio, jasny moduł oraz właz przy murze.
+Sprawdzenie M01: `?scene=mission&mission=m01-maszty&debug=1`. Komendy `mission start m01-maszty`, `objective done <id>`, `query('mission')`; cele: `mast-1`, `mast-2`, `helix`, `mast-3`, `exit`. Aktywne spotkania: `encounter clear`. Ręcznie sprawdzić zatrzymywanie paska po odejściu, sześć sekund na ucieczkę przed wybuchem, obrażenia i radio, jasny moduł oraz właz przy murze.
 
 M03 „List przewozowy” odblokowuje ukończenie M01 (M02 poza demem). Warstwy stałe: 3 — plac laserowy, 6 i 7 — magazyn. Osłona bez celu może wskazywać `position` zamiast `nearObjective`; pozycje nie zmieniają warunków ukończenia walki.
 
