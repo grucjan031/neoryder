@@ -45,6 +45,7 @@ Publiczne demo przeglądarkowe w maju 2027: dopracowana walka, działająca kamp
 | **S2b** | 3b        | Tryby areny: Przejęcie (potem Szturm, Kradzież rdzenia) | Przejęcie grywalne z kryjówki, nagrody jak za run; decyzja właściciela 17 XI 2026        |
 | **S3**  | 4         | „List przewozowy” (obrona)                              | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem                             |
 | **S4**  | 5         | „Odlewnia” + prototypy NPC i wagonu                     | 3 misje = wewnętrzne demo; raport kosztu prototypów                                      |
+| **S4b** | 5b        | Osiągnięcia i naszywki Iskry                            | Osiągnięcia liczone, naszywki w kryjówce, bramki tylko na rzadkie odblokowania           |
 | **S5**  | 6         | Testy nowych graczy, tura 1                             | 4–6 osób, trzy najważniejsze problemy wybrane                                            |
 | **S6**  | 7         | Poprawki + tura 2; warunkowo Punkt kontrolny            | Decyzja o „Ładunku klasy K”                                                              |
 | **S7**  | 8         | Zawartość: narracja, kryjówka, audio                    | Konsekwencje w kryjówce po każdej misji dema                                             |
