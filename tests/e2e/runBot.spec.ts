@@ -29,15 +29,29 @@ test('bot: cała mapa z cheatami do zwycięstwa nad bossem', async ({ page }) =>
       .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
       .toBe('map');
     await page.keyboard.press('Digit1');
+    // Gotowość pokoju i `run clear` w jednym evaluate: między osobnymi zapytaniami
+    // pętla w fx=lite liczy do 60 kroków na klatkę, więc na wolnym runnerze wrogowie
+    // zdążali zabić gracza, zanim bot wyczyścił pokój.
+    let entered: { screen: string; room: unknown } | null = null;
     await expect
-      .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
-      .toBe(false);
-    await expect
-      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
-      .toMatch(/^(room|shop|rest)$/);
-    if ((await query('room')) === 'bossRoom') break;
-    if ((await query('screen')) === 'room') {
-      await command('run clear');
+      .poll(
+        async () =>
+          (entered = await page.evaluate(() => {
+            const game = window.__neoryder;
+            if (!game || game.query('loading') !== false) return null;
+            const screen = String(game.query('screen'));
+            if (!/^(room|shop|rest)$/.test(screen)) return null;
+            const room = game.query('room');
+            if (screen === 'room' && room !== 'bossRoom')
+              game.command('run clear');
+            return { screen, room };
+          })),
+        { timeout: LOAD_TIMEOUT },
+      )
+      .not.toBeNull();
+    const { screen, room } = entered!;
+    if (room === 'bossRoom') break;
+    if (screen === 'room') {
       await expect
         .poll(() => query('screen'), { timeout: SIM_TIMEOUT })
         .toBe('reward');
