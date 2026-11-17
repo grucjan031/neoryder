@@ -851,6 +851,9 @@ export const tuning = {
     npcWalkSpeedMS: 1.3,
     npcWalkTurnRadS: 3,
     npcAnimFadeS: 0.25,
+    /** Odstęp [min, max] s między wstawkami animacji statycznych NPC i długość [min, max] s wstawki. */
+    npcIdleVarietyS: [18, 45],
+    npcIdleVarietyLenS: [3, 5],
     npcAnimFarM: 18,
     npcAnimFarFrames: 3,
     npcRouteSampleM: 0.25,

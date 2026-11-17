@@ -462,7 +462,11 @@ export class HubScene implements Scene {
   private buildNpcs(): void {
     const defs = this.layout.npcs ?? [];
     for (const npc of defs) {
-      const state = new NpcRuntime(npc, this.ctx.tuning.hub);
+      const state = new NpcRuntime(
+        npc,
+        this.ctx.tuning.hub,
+        this.ctx.rng.fork(`hub-npc-idle:${npc.id}`),
+      );
       this.npcStates.push(state);
       this.npcById.set(npc.id, state);
       const height = npcHeight(npc);
@@ -695,6 +699,7 @@ export class HubScene implements Scene {
         player,
         this.talk?.line.id === state.def.id,
         this.ctx.tuning.player.capsuleRadius,
+        this.chatter.line?.npc === state.def.id,
       );
     for (const entry of this.npcBodies) {
       entry.translation.x = entry.state.position.x;
@@ -852,6 +857,7 @@ export class HubScene implements Scene {
           y: state.position.y,
           z: state.position.z,
           bodyYaw: state.look.bodyYaw,
+          clip: state.animation(this.chatter.line?.npc === state.def.id),
         }));
       case 'playerPos':
         return { ...this.player.getState().position };

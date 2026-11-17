@@ -333,6 +333,13 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   Render interpoluje poprzednią i bieżącą pozycję oraz yaw (najkrótszy łuk). Zmiana klipu używa
   `npcAnimFadeS`; wszystkie klipy, także `PickUp_Table` i `Punch_*`, są zapętlone. Ekstraktor zeruje
   poziome translacje kości `root` w `Walk_Loop` i `Jog_Fwd_Loop`: przesunięcie pochodzi tylko z trasy.
+- Wstawki animacji (`NPC_IDLE_VARIETY`, `src/world/hubNpcs.ts`): NPC bez trasy, którzy nie mówią (dymek
+  ani podsłuchana rozmowa), co `tuning.hub.npcIdleVarietyS` ([18, 45] s; pierwsza wstawka z losowym
+  przesunięciem) grają przez `npcIdleVarietyLenS` ([3, 5] s) klip z puli bazowej (`Idle_Loop` →
+  `Idle_Talking_Loop`/`Interact`/`PickUp_Table`; `Idle_Talking_Loop` → `Idle_Loop`/`Interact`;
+  `Sitting_Idle_Loop` ↔ `Sitting_Talking_Loop`), potem wracają do bazowej; inne klipy bazowe i chodzący
+  nie mają wstawek. Losowość z `ctx.rng.fork('hub-npc-idle:<id>')`; rozmowa przerywa wstawkę.
+  `query('npcs')` zwraca bieżący `clip`.
 - Walidacja sprawdza punkty i odcinki co `npcRouteSampleM` (0,25 m), w `loop` również ostatni→pierwszy:
   podłoga na `playerSpawn.y`, zapas promienia walca od krawędzi i bloków, co najmniej
   `npcRouteStaticClearanceM` (0,9 m) od statycznych NPC. Istniejąca walidacja osiągalności startu pozostaje.

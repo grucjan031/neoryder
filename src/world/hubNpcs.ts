@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Vec3 } from '../core/math';
+import { Rng } from '../core/rng';
 import type { Tuning } from '../core/tuning';
 import type { HubNpcDef, NpcRoute, NpcAnimation } from './hubSchema';
 import type { HubFocusBox } from './hubStations';
@@ -336,6 +337,16 @@ export function stepNpcRoute(
   }
 }
 
+/** Pule wstawek animacji wg animacji bazowej; bazowe spoza mapy nie mają wstawek. */
+export const NPC_IDLE_VARIETY: Readonly<
+  Partial<Record<NpcAnimation, readonly NpcAnimation[]>>
+> = {
+  Idle_Loop: ['Idle_Talking_Loop', 'Interact', 'PickUp_Table'],
+  Idle_Talking_Loop: ['Idle_Loop', 'Interact'],
+  Sitting_Idle_Loop: ['Sitting_Talking_Loop'],
+  Sitting_Talking_Loop: ['Sitting_Idle_Loop'],
+};
+
 /** Wspólny stan symulacji dla kolidera, fokusowania, rozmów i widoku. */
 export class NpcRuntime {
   readonly route: NpcRouteState;
@@ -346,10 +357,17 @@ export class NpcRuntime {
   previousBodyYaw: number;
   previousHeadYaw = 0;
   readonly baseYaw: number;
+  /** Bieżąca wstawka animacji (null = bazowa) i czas do jej końca lub do następnej. */
+  idleClip: NpcAnimation | null = null;
+  idleLeftS: number;
+  private readonly idleRng: Rng;
   constructor(
     readonly def: HubNpcDef,
     private readonly tuning: Tuning['hub'],
+    rng: Rng = new Rng(def.id),
   ) {
+    this.idleRng = rng;
+    this.idleLeftS = this.idleRng.float(0, this.tuning.npcIdleVarietyS[1] ?? 0);
     this.route = createNpcRouteState(def);
     this.position = this.route.position;
     this.previousPosition = { ...this.position };
@@ -363,7 +381,9 @@ export class NpcRuntime {
     player: Vec3,
     talking: boolean,
     playerRadiusM?: number,
+    speaking = false,
   ): void {
+    this.stepIdleVariety(dt, talking || speaking);
     Object.assign(this.previousPosition, this.position);
     this.previousBodyYaw = this.look.bodyYaw;
     this.previousHeadYaw = this.look.headYaw;
@@ -406,13 +426,39 @@ export class NpcRuntime {
     this.focus.position.x = this.position.x;
     this.focus.position.z = this.position.z;
   }
+  private stepIdleVariety(dt: number, busy: boolean): void {
+    if (this.def.route || !(dt > 0)) return;
+    const pool = NPC_IDLE_VARIETY[this.def.animation ?? 'Idle_Loop'];
+    if (!pool) return;
+    if (busy) {
+      this.idleClip = null;
+      return;
+    }
+    this.idleLeftS -= dt;
+    if (this.idleLeftS > 0) return;
+    const t = this.tuning;
+    if (this.idleClip) {
+      this.idleClip = null;
+      this.idleLeftS = this.idleRng.float(
+        t.npcIdleVarietyS[0] ?? 0,
+        t.npcIdleVarietyS[1] ?? 0,
+      );
+    } else {
+      this.idleClip = this.idleRng.pick(pool);
+      this.idleLeftS = this.idleRng.float(
+        t.npcIdleVarietyLenS[0] ?? 0,
+        t.npcIdleVarietyLenS[1] ?? 0,
+      );
+    }
+  }
+
   animation(speaking: boolean): NpcAnimation {
     const base = this.def.route
       ? this.route.moving
         ? (this.def.route.moveAnimation ?? 'Walk_Loop')
         : (this.def.route.pauseAnimation ?? this.def.animation ?? 'Idle_Loop')
       : (this.def.animation ?? 'Idle_Loop');
-    if (!speaking) return base;
+    if (!speaking) return this.idleClip ?? base;
     return base === 'Idle_Loop'
       ? 'Idle_Talking_Loop'
       : base === 'Sitting_Idle_Loop'
