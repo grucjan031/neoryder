@@ -1,0 +1,144 @@
+.mission-dialogue {
+  color: #fff1d6;
+  line-height: 1.6;
+}
+.mission-dialogue [data-speaker] {
+  color: #ffae1a;
+}
+.mission-dialogue [data-speaker='bajt'] {
+  color: #9bbaff;
+}
+.mission-dialogue [data-speaker='mira'] {
+  color: #c0a4ff;
+}
+.mission-dialogue [data-speaker='tomasz'] {
+  color: #a0e890;
+}
+.mission-hud {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  pointer-events: none;
+  color: #fff1d6;
+  font:
+    15px/1.4 Rajdhani,
+    sans-serif;
+}
+.mission-goals {
+  position: absolute;
+  top: 90px;
+  left: 28px;
+  width: min(300px, 70vw);
+  background: #070b16de;
+  padding: 12px 16px;
+  border-left: 2px solid #ffae1a;
+}
+.mission-goals > div {
+  margin-top: 8px;
+}
+.mission-goals span {
+  display: block;
+}
+.mission-goals progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  accent-color: #ffae1a;
+}
+.mission-radio {
+  position: absolute;
+  bottom: 32%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, 85vw);
+  background: #070b16e8;
+  padding: 8px 16px;
+  text-align: center;
+  border-bottom: 1px solid #ffae1a;
+}
+.mission-radio p {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.mission-debrief {
+  box-sizing: border-box;
+  max-width: min(640px, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  background: #0f172a;
+  color: #fff1d6;
+  border: 1px solid #ffae1a;
+  padding: 24px;
+}
+.mission-debrief::backdrop {
+  background: #030712cc;
+}
+.mission-debrief button,
+.mission-choice {
+  font: inherit;
+  min-height: 44px;
+  padding: 10px 16px;
+  cursor: pointer;
+  background: #0f172a;
+  color: #fff1d6;
+  border: 1px solid #56627a;
+}
+.mission-choice {
+  width: 100%;
+  margin: 4px 0;
+  text-align: left;
+}
+.mission-choice:focus-visible,
+.mission-debrief button:focus-visible {
+  outline: 2px solid #ffae1a;
+  outline-offset: 2px;
+}
+.mission-choice:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+@media (max-width: 600px) {
+  .mission-goals {
+    top: 70px;
+    left: 12px;
+    padding: 8px;
+    font-size: 13px;
+  }
+  .mission-radio {
+    bottom: 30%;
+    font-size: 14px;
+  }
+}
+
+.mission-radio--run {
+  position: fixed;
+  z-index: 102;
+  pointer-events: none;
+  color: #fff1d6;
+  font:
+    16px/1.5 Rajdhani,
+    sans-serif;
+}
+
+.missions-panel [hidden] {
+  display: none;
+}
+.mission-choice {
+  font: inherit;
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+.mission-choice:hover:not(:disabled),
+.mission-choice:active:not(:disabled) {
+  background: #1b2941;
+  border-color: #ffae1a;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mission-choice {
+    transition: none;
+  }
+}

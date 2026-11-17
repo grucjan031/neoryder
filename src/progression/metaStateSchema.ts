@@ -33,6 +33,10 @@ export const metaRunRecordSchema = z.object({
 /** Strukturalna walidacja stanu meta do zapisu; zawartość (id odblokowań) sprawdza MetaManager i dane. */
 export const metaStateSchema: z.ZodType<MetaState> = z
   .object({
+    campaign: z.object({
+      completed: ids,
+      pendingDebrief: z.string().min(1).nullable(),
+    }),
     xp: count,
     data: count,
     cores: count,

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { MissionDefinition } from './missionSchema';
 import type { EntityId, EventBus } from '../core/events';
 import {
   NODE_TYPES,
@@ -48,6 +49,7 @@ export interface RunManagerOptions {
 
 /** Opcje startu runu zamrożone w `RunState` (ADR 0007): ekwipunek z kryjówki, talenty, Poziom zagrożenia. */
 export interface NewRunOptions {
+  mission?: MissionDefinition;
   /** Pełny ekwipunek; domyślnie preset `loadoutId`. */
   loadout?: Loadout;
   /** Id kupionych talentów; domyślnie brak. */
@@ -72,6 +74,13 @@ export const mapNodeSchema: z.ZodType<MapNode> = z.object({
   index: z.number().int().nonnegative(),
   type: z.enum(NODE_TYPES),
   next: z.array(z.string().min(1)),
+  fixed: z
+    .object({
+      roomId: z.string().min(1),
+      objectives: z.array(z.string()),
+      final: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 export const sectorMapSchema: z.ZodType<SectorMap> = z.object({
@@ -88,6 +97,13 @@ export const runDamageStatsSchema: z.ZodType<RunDamageStats> = z.object({
 
 export const runStateSchema: z.ZodType<RunState> = z
   .object({
+    missionId: z.string().min(1).optional(),
+    objectives: z
+      .record(z.string(), z.enum(['pending', 'active', 'done']))
+      .optional(),
+    objectiveProgress: z
+      .record(z.string(), z.number().finite().min(0).max(1))
+      .optional(),
     seed: z.string(),
     sectorId: z.string().min(1),
     loadoutId: z.string().min(1),
@@ -307,6 +323,15 @@ export class RunManager {
       throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
 
     this.currentState = {
+      ...(options.mission
+        ? {
+            missionId: options.mission.id,
+            objectives: Object.fromEntries(
+              options.mission.objectives.map((o) => [o.id, 'pending' as const]),
+            ),
+            objectiveProgress: {},
+          }
+        : {}),
       seed,
       sectorId: this.sectorIdOverride ?? map.sectorId,
       loadoutId,
@@ -375,6 +400,10 @@ export class RunManager {
     this.maxLayerReached = Math.max(this.maxLayerReached, node.layer);
     this.currentScreen = 'room';
 
+    for (const id of node.fixed?.objectives ?? []) {
+      if (this.currentState.objectives?.[id] === 'pending')
+        this.currentState.objectives[id] = 'active';
+    }
     this.bus.emit('node_selected', { nodeId: node.id, type: node.type });
     return true;
   }
@@ -399,6 +428,13 @@ export class RunManager {
 
     const node = this.nodeIndex.get(this.currentState.currentNodeId);
     if (!node) return false;
+    if (
+      this.currentState.missionId &&
+      node.fixed?.objectives.some(
+        (id) => this.currentState!.objectives?.[id] !== 'done',
+      )
+    )
+      return false;
 
     if (roomState?.hp !== undefined && Number.isFinite(roomState.hp))
       this.currentState.hp = Math.max(0, roomState.hp);
@@ -408,6 +444,10 @@ export class RunManager {
     this.clearedNodes.add(node.id);
     this.maxLayerReached = Math.max(this.maxLayerReached, node.layer);
 
+    if (this.currentState.missionId && node.fixed?.final) {
+      this.finish('victory');
+      return true;
+    }
     switch (node.type) {
       case 'combat':
         this.currentScreen = 'reward';
@@ -427,7 +467,8 @@ export class RunManager {
         this.currentScreen = 'map';
         break;
       case 'boss':
-        this.finish('victory');
+        if (this.currentState.missionId) this.currentScreen = 'reward';
+        else this.finish('victory');
         break;
     }
     return true;
@@ -447,6 +488,15 @@ export class RunManager {
       return false;
     this.currentScreen = 'map';
     return true;
+  }
+
+  updateObjectives(
+    objectives: NonNullable<RunState['objectives']>,
+    progress: Record<string, number>,
+  ): void {
+    if (!this.isRunActive() || !this.currentState?.missionId) return;
+    this.currentState.objectives = structuredClone(objectives);
+    this.currentState.objectiveProgress = structuredClone(progress);
   }
 
   /** Alias powrotu na mapę z ekranu nagrody (`reward` → `map`). */
@@ -612,6 +662,15 @@ export class RunManager {
     if (this.currentScreen === 'summary' && this.lastSummary)
       return structuredClone(this.lastSummary);
 
+    if (
+      outcome === 'victory' &&
+      this.currentState.missionId &&
+      (!this.currentNode?.fixed?.final ||
+        this.currentNode.fixed.objectives.some(
+          (id) => this.currentState!.objectives?.[id] !== 'done',
+        ))
+    )
+      throw new Error('Cele finału misji nie są ukończone.');
     if (outcome === 'victory' && this.currentState.currentNodeId !== null) {
       this.clearedNodes.add(this.currentState.currentNodeId);
       const node = this.nodeIndex.get(this.currentState.currentNodeId);
@@ -620,6 +679,12 @@ export class RunManager {
     }
 
     const summary: RunSummary = {
+      ...(this.currentState.missionId
+        ? {
+            missionId: this.currentState.missionId,
+            missionCompleted: outcome === 'victory',
+          }
+        : {}),
       outcome,
       seed: this.currentState.seed,
       loadoutId: this.currentState.loadoutId,

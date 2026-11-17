@@ -1,6 +1,13 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  mission: {
+    zoneRadiusM: 1.6,
+    pickupRadiusM: 1,
+    radioMinS: 3,
+    radioChunkChars: 65,
+    radioCharsPerS: 16,
+  },
   ui: {
     loadingTipS: 7,
     /** Splasharty bez spoilerów: zwycięstwa (meta) potrzebne do aktu 1..4 (`unlockedSplashAct`). */

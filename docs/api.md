@@ -1864,3 +1864,9 @@ a `readSplashAct(store?)` z `bootSplash.ts` czyta go z meta-zapisu (błąd = 1).
 - `hub_fauna_sound: { kind: 'meow' | 'rat'; point: Vec3 }`: kosmetyczne zdarzenie przestrzennego SFX. Mruczenie jest ruchomym źródłem ambience `purr`, aktywnym podczas odpoczynku kota.
 - `AudioSystem.updateAmbienceSource(index, position, gain)`: aktualizuje istniejące źródło skopiowane przez `setAmbience`, bez restartu grafów. `HubSoundscape` przyjmuje opcjonalne dodatkowe źródła na końcu listy.
 - Debug: `hub cat`, `hub rat`; `query('hubFauna')` zwraca `{ cat: {x,z,state} | null, rats: number }`. Teleport kota wymaga bezpiecznej drogi do trasy; przy przeszkodzie komenda zgłasza brak miejsca.
+
+## Misje (ADR 0008)
+
+`loadMission` waliduje dane i zgodność pokojów. `generateMissionMap(mission, sector, seed)` generuje stałe węzły. `MapNode.fixed` przechowuje pokój, cele i finał. Opcjonalne `RunState.missionId`, `objectives`, `objectiveProgress` zachowują zgodność dawnych runów. `RunManager` blokuje ukończenie pokoju do wykonania jego celów. `RunSummary.missionCompleted` oznacza ukończony finał. Kampania w meta przechowuje ukończone misje i jednorazowy debrief; firstClear jest rozliczany przez applyRun.
+
+`RoomScene.missionState()` eksportuje migawkę celów do hosta; `RunManager.updateObjectives()` aktualizuje ją wyłącznie w aktywnej misji. `RoomSceneOptions.missionSignal(trigger)` przekazuje wyzwalacze radia do kolejki `MissionRadio` hostowanej przez run (kolejka przeżywa zmianę pokoju). Obrażenia i efekty eksplozji korzystają z istniejącego DamageSystem i EventBus.

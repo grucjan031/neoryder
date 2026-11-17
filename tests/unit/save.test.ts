@@ -190,7 +190,7 @@ describe.each([
     await store.saveRun(savePayload);
     const loaded = await store.loadRun();
     expect(loaded).not.toBeNull();
-    expect(loaded?.saveVersion).toBe(3);
+    expect(loaded?.saveVersion).toBe(SAVE_VERSION);
     expect(loaded?.run).toEqual(state);
 
     const bus = new EventBus();
@@ -412,7 +412,7 @@ describe('zapis v3: meta-progres F4', () => {
     });
     const loaded = await createIndexedDbSaveStore(name).loadMeta();
     expect(loaded).toEqual({
-      saveVersion: 3,
+      saveVersion: SAVE_VERSION,
       createdAt: 100,
       updatedAt: 200,
       meta: createStarterMetaState(),
@@ -441,7 +441,7 @@ describe('zapis v3: meta-progres F4', () => {
       run: { ...legacyState, loadoutId: 'bladeDancer' },
     });
     const loaded = await createIndexedDbSaveStore(name).loadRun();
-    expect(loaded?.saveVersion).toBe(3);
+    expect(loaded?.saveVersion).toBe(SAVE_VERSION);
     expect(loaded?.run.loadout).toEqual(loadoutDefinitions.get('bladeDancer'));
     expect(loaded?.run.talents).toEqual([]);
     expect(loaded?.run.threatLevel).toBe(0);

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { missionDefinitions } from '../world/missions';
 import { hashSeed } from '../core/rng';
 import { tuning } from '../core/tuning';
 import splashData from '../data/ui/splash.json';
@@ -19,14 +20,21 @@ export type SplashEntry = z.infer<typeof splashSchema>;
 export type SplashAct = SplashEntry['act'];
 
 /**
- * Najwyższy akt splasharów bez spoilerów. Misje nie są podpięte, więc postęp fabuły przybliża
- * liczba zwycięstw z meta-zapisu (`stats.victories`) i progi `tuning.ui.splashActVictories`.
+ * Najwyższy akt z ukończonych misji. Wywołanie z liczbą zachowuje próg zwycięstw
+ * dla pustej kampanii i zgodność dotychczasowego API.
  */
 export function unlockedSplashAct(
-  victories: number,
+  victories: number | readonly string[],
   thresholds: readonly number[] = tuning.ui.splashActVictories,
 ): SplashAct {
   let act: SplashAct = 1;
+  if (typeof victories !== 'number') {
+    for (const id of victories) {
+      const unlocked = missionDefinitions.get(id)?.splashAct ?? 1;
+      if (unlocked > act) act = unlocked;
+    }
+    return act;
+  }
   for (const next of [2, 3, 4] as const) {
     const need = thresholds[next - 1];
     if (need !== undefined && victories >= need) act = next;

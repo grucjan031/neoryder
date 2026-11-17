@@ -1,0 +1,283 @@
+{
+  "id": "m01-maszty",
+  "number": 1,
+  "title": "Maszty",
+  "act": 1,
+  "sectorId": "kurogane",
+  "requires": [],
+  "layers": 7,
+  "enemies": ["assaulter", "gunner", "turret"],
+  "fixedNodes": [
+    {
+      "layer": 1,
+      "type": "combat",
+      "roomId": "alleyUnderpassMission",
+      "objectives": []
+    },
+    {
+      "layer": 3,
+      "type": "combat",
+      "roomId": "alleyCrossing",
+      "objectives": ["mast-1"],
+      "guards": [
+        {
+          "enemy": "turret",
+          "count": 1,
+          "nearObjective": "mast-1",
+          "radiusM": 3
+        }
+      ]
+    },
+    {
+      "layer": 5,
+      "type": "combat",
+      "roomId": "alleyMarket",
+      "objectives": ["mast-2", "helix"],
+      "guards": [
+        {
+          "enemy": "turret",
+          "count": 1,
+          "nearObjective": "mast-2",
+          "radiusM": 3
+        }
+      ]
+    },
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatYard",
+      "objectives": ["mast-3", "exit"],
+      "guards": [
+        {
+          "enemy": "turret",
+          "count": 2,
+          "nearObjective": "mast-3",
+          "radiusM": 3
+        }
+      ],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "mast-1",
+      "kind": "sabotage",
+      "label": "Zniszcz maszt 1",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2.5,
+      "fuseS": 6,
+      "blastRadiusM": 4,
+      "blastDamage": 60,
+      "reinforcements": "missionPatrol"
+    },
+    {
+      "id": "mast-2",
+      "kind": "sabotage",
+      "label": "Zniszcz maszt 2",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2.5,
+      "fuseS": 6,
+      "blastRadiusM": 4,
+      "blastDamage": 60,
+      "reinforcements": "missionPatrol"
+    },
+    {
+      "id": "mast-3",
+      "kind": "sabotage",
+      "label": "Zniszcz maszt 3",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2.5,
+      "fuseS": 6,
+      "blastRadiusM": 4,
+      "blastDamage": 60,
+      "reinforcements": "missionPatrol"
+    },
+    {
+      "id": "helix",
+      "kind": "pickup",
+      "label": "Zabezpiecz moduł Helixa",
+      "spawnAfter": "mast-2",
+      "offset": {
+        "x": 1.5,
+        "y": 0,
+        "z": 0
+      }
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Opuść sektor przez właz",
+      "position": {
+        "x": 10,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": ["mast-3"]
+    }
+  ],
+  "typeWeights": [
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "weights": {
+        "combat": 1,
+        "shop": 1
+      }
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "weights": {
+        "combat": 1,
+        "rest": 1
+      }
+    },
+    {
+      "fromLayer": 6,
+      "toLayer": 6,
+      "weights": {
+        "combat": 2,
+        "rest": 1,
+        "shop": 1
+      }
+    }
+  ],
+  "roomPools": [
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "type": "combat",
+      "rooms": ["alleyBackstreet", "combatCorridor"]
+    },
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "type": "shop",
+      "rooms": ["noodleShop", "shopRoom"]
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "type": "combat",
+      "rooms": ["combatFloodedTunnel", "combatYard"]
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "type": "rest",
+      "rooms": ["restRoom"]
+    },
+    {
+      "fromLayer": 6,
+      "toLayer": 6,
+      "type": "combat",
+      "rooms": ["combatPillars", "combatPlatforms"]
+    },
+    {
+      "fromLayer": 6,
+      "toLayer": 6,
+      "type": "rest",
+      "rooms": ["restRoom"]
+    },
+    {
+      "fromLayer": 6,
+      "toLayer": 6,
+      "type": "shop",
+      "rooms": ["shopRoom"]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "szron",
+      "text": "Trzy maszty w Niecce. Stanęły dziś w nocy, wszystkie na tym samym paśmie, które złapało cię na rampie."
+    },
+    {
+      "speaker": "mira",
+      "text": "Trzy sztuki, z krótkim zapalnikiem. Przykładaj do skrzynki zasilania u podstawy, nie do samej kratownicy."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "bajt",
+      "text": "Dobra, mam to. Zerwałem obudowę Kurogane, a w środku siedzi pełna elektronika Helixa Dynamics."
+    },
+    {
+      "speaker": "szron",
+      "text": "Do łączności?"
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "tomasz",
+          "text": "Słychać mnie dobrze? Jesteś pod trzecią podporą, za plecami masz zejście do kanału."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:mast-1:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Pierwszy ucichł. Reszta sieci podbiła moc o trzydzieści procent — wiedzą już, że to nie awaria bezpieczników."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:mast-2:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Czekaj — coś w tym pieprzonym złomie jeszcze nie zgasło. Pod pokrywą leży nienaruszony moduł. Zgarnij go, przyda się w warsztacie."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:helix:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Chwila... zanim schowasz, wyłapałem jego identyfikator serwisowy. To nie jest blok Kurogane. To ma sygnaturę Helixa Dynamics."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:mast-3:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Trzeci padł, kurwa mać! Pasma w Niecce są puste, przed świtem niczego już nie zestroją."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:exit:started",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Otwieraj i schodź. Jak przekręcisz zawór od środka, nie przejdą bez palników."
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 60
+    }
+  }
+}

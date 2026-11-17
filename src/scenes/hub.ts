@@ -36,6 +36,8 @@ import { createMetaBar } from '../ui/hub/metaBar';
 import { createHubGreetings } from '../ui/hub/greetings';
 import type { MetaBar } from '../ui/hub/metaBar';
 import { createMissionsPanel } from '../ui/hub/missionsPanel';
+import { missionDefinitions } from '../world/missions';
+import { showDebrief } from '../ui/missionUi';
 import { createTalentsPanel } from '../ui/hub/talentsPanel';
 import { createWorkshopPanel } from '../ui/hub/workshopPanel';
 import { HtmlHubScreens } from '../ui/hubScreens';
@@ -404,6 +406,20 @@ export class HubScene implements Scene {
     );
     this.world.step();
     this.render(1);
+    const debriefId = this.meta.state.campaign.pendingDebrief;
+    const mission = debriefId ? missionDefinitions.get(debriefId) : undefined;
+    if (
+      mission &&
+      typeof document !== 'undefined' &&
+      this.screensOption === undefined
+    ) {
+      this.off.push(
+        showDebrief(mission, async () => {
+          this.meta.clearDebrief();
+          await saveMetaManager(store, this.meta);
+        }),
+      );
+    }
   }
 
   // ----------------------------------------------------------------- budowa
