@@ -1902,7 +1902,7 @@ a `readSplashAct(store?)` z `bootSplash.ts` czyta go z meta-zapisu (błąd = 1).
 
 ## Tryby areny S2b-01
 
-`ModeId` pochodzi ze schematu danych trybów (`conquest`). Opcjonalne `RunState.modeId`
+`ModeId` pochodzi ze schematu danych trybów (`conquest` | `assault`). Opcjonalne `RunState.modeId`
 i `RunSummary.modeId` są zachowywane przez zapis v4. Tryb i misja wykluczają się.
 `Conquest` prowadzi punkty, pulę, wybór spawnu i celów ruchu; host pokoju dostarcza
 żywych wrogów i pozycję gracza. `conquest_captured: { id: 'A' | 'B' | 'C';
@@ -1912,6 +1912,24 @@ brak celu zachowuje zwykłą walkę. `RunManager` kończy arenę istniejącym `f
 Przy zwycięstwie `roomsCleared = rewardRooms`, przy porażce 0; bez bonusu kampanii.
 Wznowienie niezakończonej areny rozpoczyna jej pojedynczy pokój od początku,
 jak wznowienie pokoju zwykłego runu; zakończona arena zachowuje podsumowanie.
+
+### Szturm S2b-02
+
+`Assault` zarządza trzema sektorami, parą stacji A/B, pulą żyć i zegarem
+odrodzenia. `stations: MissionObjectives` używa tych samych reguł sabotażu co
+misje; `MissionView` rysuje aktualną parę. Konstruktor celów wymaga jedynie
+`Pick<MissionDefinition, 'objectives'>`. Host przekazuje istniejący hook wybuchu.
+`step(dt, player)` przesuwa front dopiero po obu stacjach; `died()` odejmuje
+życie raz, `stepRespawn(dt)` zgłasza gotowość po czasie z danych. Podczas
+odrodzenia symulacja pokoju czeka. Host resetuje zdrowie, energię, statusy,
+moce, ostrze i broń oraz teleportuje gracza na początek aktywnego sektora.
+`spawnPosition(room, player, enemies, rng)` wybiera bezpieczne miejsce spośród
+punktów posiłków aktywnego sektora; `moveGoal` kieruje obroną stacji.
+`RunManager` pozostawia obsługę śmierci w Szturmie hostowi; host runu wywołuje
+istniejące `finish('death')` wyłącznie dla `query('assault').outcome === 'death'`.
+Zapis pozostaje v4, rozliczenie nagród i pozostałe tryby nie zmieniają reguł.
+Debug: `assault destroy <A|B>`, `assault lives <n>`, `query('assault')` zwraca
+sektor, liczbę sektorów, stacje z postępem i lontem, życia, czas odrodzenia i wynik.
 
 ## Misje (ADR 0008)
 

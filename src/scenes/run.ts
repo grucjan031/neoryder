@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
 import { modeIdSchema } from '../world/modeSchema';
-import { conquestDefinition } from '../world/modes';
+import { modeDefinitions } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -138,6 +138,8 @@ export class RunScene implements Scene {
   private missionRadio?: MissionRadio;
   private room: RunRoom | null = null;
   private roomId: string | null = null;
+  /** Debug: nieśmiertelność nakładana na każdy nowy pokój runu. */
+  private godRun = false;
   private roomReady = false;
   private roomCommands: CommandRegistry | null = null;
   private playerId: EntityId | null = null;
@@ -874,7 +876,7 @@ export class RunScene implements Scene {
             firstBreakS: 0,
             breakS: 0,
             maxAlive: state.modeId
-              ? conquestDefinition.maxAlive
+              ? modeDefinitions[state.modeId].maxAlive
               : bossRoom
                 ? (layout.maxAlive ?? 1)
                 : 1,
@@ -925,6 +927,10 @@ export class RunScene implements Scene {
       this.room = null;
       return;
     }
+    // Debug/testy: `god` wydane poza pokojem włącza nieśmiertelność na cały run — każdy pokój
+    // dostaje ją przed pierwszym krokiem symulacji (fx=lite na wolnym CI liczy wiele kroków na
+    // klatkę, więc strażnicy zdążali zabić gracza, zanim test włączył ją w pokoju).
+    if (this.godRun) this.roomCommands.execute('god');
     this.roomReady = true;
     if (!this.manager.active) {
       this.schedule('end');
@@ -1020,6 +1026,15 @@ export class RunScene implements Scene {
         this.rewardDelayRemainingS = null;
         this.schedule('clear');
       }
+    }
+    if (
+      this.manager.active &&
+      this.manager.state.modeId === 'assault' &&
+      (this.room?.query?.('assault') as { outcome?: string } | null)
+        ?.outcome === 'death'
+    ) {
+      this.manager.setHp(0);
+      this.manager.finish('death');
     }
     this.syncMission();
     this.flushTransitions();
@@ -1203,6 +1218,8 @@ export class RunScene implements Scene {
     for (const name of [
       'conquest capture',
       'conquest tickets',
+      'assault destroy',
+      'assault lives',
       'tp',
       'hold',
       'status',
@@ -1212,7 +1229,6 @@ export class RunScene implements Scene {
       'boss phase',
       'boss pattern',
       'wave',
-      'god',
     ]) {
       register(name, `${name} — komenda aktywnego pokoju`, (args) =>
         this.roomReady && this.manager.screen === 'room'
@@ -1220,6 +1236,12 @@ export class RunScene implements Scene {
           : 'Brak aktywnego pokoju.',
       );
     }
+    register('god', 'god — nieśmiertelność (poza pokojem: na cały run)', () => {
+      if (this.roomReady && this.manager.screen === 'room')
+        return this.roomCommands!.execute('god');
+      this.godRun = !this.godRun;
+      return `Nieśmiertelność w runie: ${this.godRun ? 'włączona' : 'wyłączona'}`;
+    });
     register('credits', 'credits <n> — dodaj Kredyty', (args) => {
       if (args.length !== 1 || !this.manager.addCredits(Number(args[0])))
         return 'Podaj dodatnią liczbę Kredytów.';

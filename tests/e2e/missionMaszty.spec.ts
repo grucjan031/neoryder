@@ -18,6 +18,13 @@ async function start(page: Page): Promise<void> {
   await page
     .getByRole('button', { name: 'Rozpocznij misję', exact: true })
     .click();
+  // Nieśmiertelność na cały run, zanim wejdziemy do pierwszego pokoju (fx=lite na wolnym CI).
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.query('screen')), {
+      timeout: LOAD_TIMEOUT,
+    })
+    .toBe('map');
+  await page.evaluate(() => window.__neoryder?.command('god'));
   await expect
     .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
@@ -44,7 +51,6 @@ test('Maszty: odprawa, siedem warstw, zwycięstwo, debrief i trwała kampania', 
             const screen = game.query('screen');
             if (screen === 'shop' || screen === 'rest') return true;
             if (screen !== 'room') return false;
-            game.command('god');
             const state = game.query('runState') as {
               currentNodeId: string;
               map: {
