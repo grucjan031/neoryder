@@ -64,12 +64,14 @@ it('wybór misji pokazuje odprawę, powrót przywraca listę, start przekazuje i
 it('radio odtwarza długą kwestię w kolejnych fragmentach bez utraty słów', () => {
   const mission = missionDefinitions.get('m01-maszty')!;
   const radio = new MissionRadio(mission);
-  const expected = mission.radio.find((entry) => entry.trigger === 'runStart')!
-    .lines[0]!.text;
+  const expected = mission.radio
+    .find((entry) => entry.trigger === 'runStart')!
+    .lines.map((line) => line.text)
+    .join(' ');
   radio.signal('runStart');
   const chunks: string[] = [];
   try {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 40; i++) {
       radio.step(100);
       const node = document.querySelector<HTMLElement>('.mission-radio--run')!;
       if (node.hidden) break;
