@@ -674,6 +674,12 @@
   color: var(--hud-text, #edf7ff);
   font-weight: 600;
 }
+.run-screen p.run-screen__reward-pending {
+  margin: 14px 0 4px;
+  color: var(--hud-warm, #ffae1a);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
 .run-screen__levelup {
   color: var(--hud-warm, #ffae1a);
   font-weight: 600;

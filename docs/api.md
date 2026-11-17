@@ -1451,7 +1451,13 @@ oraz opcjonalne `loadEnded(): Promise<RunEnded | null>`. `RunSave.ended?: RunEnd
 `src/core/save.ts`) oznacza zakończony, nierozliczony run; pole jest opcjonalne, więc zapisy bez niego
 wczytują się jak dotąd (bez zmiany `SAVE_VERSION`). `continue=1` z `ended` pokazuje podsumowanie i rozlicza
 run zamiast go wznawiać; `RunManager.restoreEnded(state, summary)` odtwarza ekran `summary` bez `run_ended`.
-Podsumowanie: `RunScreenView.rewardError?: 'save' | 'apply' | null`, akcja `retrySave?()`.
+Podsumowanie: `RunScreenView.rewardError?: 'save' | 'apply' | null`, `rewardPending?`, `rewardAlreadySaved?`,
+`leaving?`; akcje `retrySave?()` (błąd zapisu) i `abandonReward?()` (błąd naliczenia, z potwierdzeniem).
+Rozliczenie czyta meta przez `loadMetaManagerStrict(store)` (`src/progression/metaSave.ts`): brak zapisu = stan
+startowy, zapis nieczytelny = wyjątek (opcjonalne `SaveStore.loadMetaStrict()`); `loadMetaManager` bez zmian.
+Nowy run z nierozliczonym runem w zapisie najpierw go rozlicza, a przy błędzie zostaje na jego podsumowaniu.
+`RunSceneOptions.navigate?(url)`: wyjście z podsumowania czeka na kolejkę zapisów; `continue=1` bez zapisu
+wraca do menu. `tuning.run.rewardSaveTimeoutS`: po tym czasie wiszące rozliczenie można ponowić.
 Domyślny port opakowuje IndexedDB SaveStore v2 przez `createRunSavePort(store?)` z `src/ui/runSave.ts`. Operacje zapisu są kolejkowane.
 `RunScene.whenReady()` czeka na ładowanie pokoju i kolejkę zapisu (przydatne w testach).
 Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,

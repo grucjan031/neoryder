@@ -55,6 +55,12 @@ export function migrate(
 
 export interface SaveStore {
   loadMeta(): Promise<MetaSave | null>;
+  /**
+   * Odczyt meta odróżniający brak zapisu (null) od zapisu nieczytelnego (uszkodzony, nowszej
+   * wersji, błąd bazy: wyjątek). Używany przy rozliczaniu nagród, żeby nie nadpisać meta stanem
+   * startowym. Opcjonalny: bez niego `loadMetaManagerStrict` korzysta z `loadMeta`.
+   */
+  loadMetaStrict?(): Promise<MetaSave | null>;
   saveMeta(data: MetaSave): Promise<void>;
   loadRun(): Promise<RunSave | null>;
   saveRun(data: RunSave): Promise<void>;
@@ -178,6 +184,14 @@ function decode<T>(
   }
 }
 
+/** Jak `decode` dla meta, ale nieczytelny zapis rzuca zamiast udawać brak zapisu. */
+function decodeMetaStrict(raw: unknown): MetaSave | null {
+  if (raw == null) return null;
+  if (isFuture(raw)) throw new Error('Zapis pochodzi z nowszej wersji gry.');
+  const record = recordSchema.parse(raw);
+  return metaSchema.parse(migrate(record, metaMigrations, SAVE_VERSION));
+}
+
 function assertWritable(raw: unknown): void {
   if (isFuture(raw)) {
     console.warn('Odmowa nadpisania zapisu z nowszej wersji gry.');
@@ -190,6 +204,7 @@ export function createMemorySaveStore(): SaveStore {
   let run: unknown = null;
   return {
     loadMeta: async () => decode(meta, metaSchema, metaMigrations),
+    loadMetaStrict: async () => decodeMetaStrict(meta),
     saveMeta: async (data) => {
       assertWritable(meta);
       meta = structuredClone(metaSchema.parse(data));
@@ -273,6 +288,7 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   return {
     loadMeta: async () =>
       decode(await read('meta'), metaSchema, metaMigrations),
+    loadMetaStrict: async () => decodeMetaStrict(await read('meta')),
     saveMeta: async (data) => write('meta', metaSchema.parse(data)),
     loadRun: async () => decode(await read('run'), runSchema, runMigrations),
     saveRun: async (data) => write('run', runSchema.parse(data)),

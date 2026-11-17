@@ -17,7 +17,11 @@ import { implantDefinitions } from '../progression/implants';
 import { RunEconomy } from '../progression/runEconomy';
 import { runIdOf } from '../progression/meta';
 import type { ApplyRunResult, MetaManager } from '../progression/meta';
-import { loadMetaManager, saveMetaManager } from '../progression/metaSave';
+import {
+  loadMetaManager,
+  loadMetaManagerStrict,
+  saveMetaManager,
+} from '../progression/metaSave';
 import { createIndexedDbSaveStore } from '../core/save';
 import type { RunEnded, SaveStore } from '../core/save';
 import { loadoutDefinitions } from '../progression/loadout';
@@ -82,6 +86,8 @@ export interface RunSceneOptions {
   rooms?: ReadonlyMap<string, RoomDefinition>;
   createRoom?: RunRoomFactory;
   implantDefinitions?: ReadonlyMap<string, ImplantDefinition>;
+  /** Przejście do innego adresu (domyślnie `location.assign`); w testach atrapa. */
+  navigate?: (url: string) => void;
 }
 
 export type RunLogEntry =
@@ -107,6 +113,13 @@ export class RunScene implements Scene {
   /** Błąd rozliczenia pokazywany w podsumowaniu: zapis meta albo samo naliczenie. */
   private rewardError: 'save' | 'apply' | null = null;
   private settling = false;
+  /** Numer bieżącego rozliczenia: przeterminowana próba nie nadpisuje błędu nowszej. */
+  private settleToken = 0;
+  /** Nagroda tego runu była już na dysku, ale bez rekordu w `lastRuns` (neutralny tekst). */
+  private rewardAlreadySaved = false;
+  /** Gracz wychodzi z podsumowania: nawigacja czeka na kolejkę zapisów. */
+  private leaving = false;
+  private readonly navigate: (url: string) => void;
   private metaStore: SaveStore | null = null;
   private readonly save: RunSavePort;
   private readonly sector: SectorDefinition;
@@ -134,6 +147,11 @@ export class RunScene implements Scene {
     this.save = options.save ?? createRunSavePort();
     this.sector = options.sector ?? kuroganeSector;
     this.rooms = options.rooms ?? roomDefinitions;
+    this.navigate =
+      options.navigate ??
+      ((url) => {
+        if (typeof location !== 'undefined') location.assign(url);
+      });
   }
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
@@ -194,8 +212,7 @@ export class RunScene implements Scene {
       ),
       ctx.bus.on('run_ended', ({ outcome, summary }) => {
         this.log.push({ event: 'run_ended', outcome });
-        this.finishMeta(summary);
-        // Wynik jest już zapisany; opóźniamy tylko pokazanie ekranu (w fx=lite bez opóźnienia).
+        // Opóźniamy tylko pokazanie ekranu (w fx=lite bez opóźnienia).
         const holdS =
           outcome === 'victory' && this.roomReady && !getLiteFx()
             ? this.ctx.tuning.vfx.bossVictoryHoldS
@@ -204,6 +221,8 @@ export class RunScene implements Scene {
           this.victoryHoldRemainingS = holdS;
           this.room?.enterVictoryHold?.();
         } else this.schedule('end');
+        // Rozliczenie po ustawieniu ciszy/przejścia: jego odświeżenie nie pokaże podsumowania za wcześnie.
+        this.finishMeta(summary);
       }),
     );
     const params =
@@ -217,14 +236,18 @@ export class RunScene implements Scene {
       const state = await this.save.loadRun();
       const ended = state ? ((await this.save.loadEnded?.()) ?? null) : null;
       if (this.disposed) return;
-      if (!state) throw new Error('Brak zapisu runu do wznowienia.');
+      if (!state) {
+        // Np. odświeżenie podsumowania po rozliczeniu: nie ma czego wznawiać.
+        console.warn('Brak zapisu runu do wznowienia; powrót do menu.');
+        this.navigate('/');
+        return;
+      }
       if (ended) {
         // Zakończony, nierozliczony run: rozliczenie i podsumowanie zamiast wznowienia gry.
         this.manager.restoreEnded(state, ended.summary);
         this.ended = ended;
         this.registerCommands();
         this.settle();
-        this.show();
         await this.saving;
         return;
       }
@@ -232,8 +255,24 @@ export class RunScene implements Scene {
         this.validateLoadout(state.loadoutId);
       this.manager.restore(state);
     } else {
-      await this.settleLeftover();
+      // Nowy run nadpisze zapis runu: zostawiony, nierozliczony run najpierw rozliczamy.
+      // Gdy się nie uda, zostajemy na jego podsumowaniu (ponowienie albo porzucenie nagrody).
+      const leftover = await this.loadLeftover();
       if (this.disposed) return;
+      if (leftover) {
+        this.manager.restoreEnded(leftover.state, leftover.ended.summary);
+        this.ended = leftover.ended;
+        this.settle();
+        await this.saving;
+        if (this.disposed) return;
+        if (this.ended) {
+          this.registerCommands();
+          this.refresh();
+          return;
+        }
+        this.metaResult = null;
+        this.rewardAlreadySaved = false;
+      }
       const loadout = params.get('loadout') ?? 'classic';
       const seed = params.get('seed') ?? String(ctx.rng.getState());
       if (loadout === 'meta') {
@@ -268,66 +307,194 @@ export class RunScene implements Scene {
       runId: runIdOf(this.manager.state),
       summary: structuredClone(summary),
     };
+    this.metaResult = null;
+    this.rewardAlreadySaved = false;
     this.settle();
   }
 
   /**
-   * Rozlicza `this.ended`. Idempotentne: `applyRun` pomija runId z `appliedRunIds`, więc
-   * ponowienie zapisuje stan z pamięci, a nie nalicza drugi raz. Błąd `applyRun` (uszkodzone
-   * dane) zostawia zapis runu i komunikat bez ponowienia (brak pętli).
+   * Rozlicza `this.ended` w kolejce zapisów. Po `tuning.run.rewardSaveTimeoutS` wisząca próba
+   * pokazuje błąd i pozwala ponowić; ponowienie czeka w kolejce za nią (bez równoległych zapisów).
    */
   private settle(): void {
-    const ended = this.ended;
-    if (!ended || this.settling) return;
+    if (!this.ended || this.settling) return;
+    const token = ++this.settleToken;
     this.settling = true;
     this.rewardError = null;
-    try {
-      const result = this.meta.applyRun(ended.summary, ended.runId);
-      if (result.applied) this.metaResult = result;
-    } catch (error) {
-      console.warn('Nie można naliczyć nagród meta.', error);
-      this.rewardError = 'apply';
-    }
-    const state = this.manager.serialize();
-    const store = this.getMetaStore();
+    const timer = setTimeout(() => {
+      if (token !== this.settleToken || !this.settling) return;
+      console.warn('Rozliczenie nagrody trwa zbyt długo; można ponowić.');
+      this.settling = false;
+      this.rewardError = 'save';
+      this.refresh();
+    }, this.ctx.tuning.run.rewardSaveTimeoutS * 1000);
+    this.refresh();
     this.persist(async () => {
       try {
-        // Najpierw ślad zakończenia: przerwany zapis meta nie gubi nagrody (wznowienie ją rozliczy).
-        await this.save.saveRun(state, ended).catch((error: unknown) => {
-          console.warn('Nie można zapisać zakończenia runu.', error);
-        });
-        if (this.rewardError === 'apply') return;
-        try {
-          await saveMetaManager(store, this.meta);
-        } catch (error) {
-          console.warn('Nie można zapisać meta-progresu.', error);
-          this.rewardError = 'save';
-          return;
-        }
-        await this.save.clearRun();
-        this.ended = null;
+        await this.settleOnce(token);
       } finally {
-        this.settling = false;
-        // Podsumowanie po ciszy zwycięstwa pokaże flushTransitions; tu tylko odświeżenie.
-        if (this.victoryHoldRemainingS === null && this.pending === null)
-          this.show();
+        clearTimeout(timer);
+        if (token === this.settleToken) this.settling = false;
+        this.refresh();
       }
     });
   }
 
   /**
-   * Nowy run nadpisze zapis runu: wcześniej rozliczamy zostawiony tam zakończony run
-   * (np. gracz wyszedł z podsumowania z błędem zapisu). Błąd tylko logujemy.
+   * Jedna próba rozliczenia: ślad `ended` w zapisie runu, świeży odczyt meta z dysku (błąd
+   * odczytu nie nadpisuje meta), `applyRun` (idempotentne po runId), zapis meta, `clearRun`.
+   * Nagroda już obecna na dysku: bez zapisu meta, tylko `clearRun` i podsumowanie.
    */
-  private async settleLeftover(): Promise<void> {
+  private async settleOnce(token: number): Promise<void> {
+    const ended = this.ended;
+    if (!ended) return;
+    const fail = (
+      kind: 'save' | 'apply',
+      message: string,
+      error: unknown,
+    ): void => {
+      console.warn(message, error);
+      if (token === this.settleToken) this.rewardError = kind;
+    };
     try {
-      const ended = await this.save.loadEnded?.();
-      if (!ended || this.disposed) return;
-      this.meta.applyRun(ended.summary, ended.runId);
-      await saveMetaManager(this.getMetaStore(), this.meta);
+      await this.save.saveRun(this.manager.serialize(), ended);
     } catch (error) {
-      console.warn('Nie można rozliczyć poprzedniego runu.', error);
+      fail('save', 'Nie można zapisać zakończenia runu.', error);
+      return;
     }
+    const store = this.getMetaStore();
+    let meta: MetaManager;
+    try {
+      meta = await loadMetaManagerStrict(store, this.ctx.bus);
+    } catch (error) {
+      fail(
+        'save',
+        'Nie można odczytać meta-progresu; zapis nietknięty.',
+        error,
+      );
+      return;
+    }
+    let result: ApplyRunResult;
+    try {
+      result = meta.applyRun(ended.summary, ended.runId);
+    } catch (error) {
+      fail('apply', 'Nie można naliczyć nagród meta.', error);
+      return;
+    }
+    if (result.applied) {
+      try {
+        await saveMetaManager(store, meta);
+      } catch (error) {
+        fail('save', 'Nie można zapisać meta-progresu.', error);
+        return;
+      }
+    }
+    this.adoptMeta(meta);
+    this.metaResult = result.applied ? result : this.recordedResult(ended);
+    this.rewardAlreadySaved = this.metaResult === null;
+    this.ended = null;
+    this.rewardError = null;
+    try {
+      await this.save.clearRun();
+    } catch (error) {
+      // Nagroda jest zapisana; zostawiony ślad `ended` przy Kontynuuj tylko się wyczyści.
+      console.warn('Nie można usunąć zapisu runu.', error);
+    }
+    this.dropContinueParam();
+  }
+
+  /** Nagroda z rekordu `lastRuns`, gdy run był już rozliczony na dysku (bez awansu w widoku). */
+  private recordedResult(ended: RunEnded): ApplyRunResult | null {
+    const record = this.meta.state.lastRuns.find(
+      (run) => run.runId === ended.runId,
+    );
+    if (!record) return null;
+    const level = this.meta.level;
+    return {
+      applied: false,
+      rewards: record.rewards,
+      levelBefore: level,
+      levelAfter: level,
+      threatUnlocked: false,
+    };
+  }
+
+  /** Świeżo wczytany i rozliczony stan meta staje się stanem sceny (także dla komend meta). */
+  private adoptMeta(meta: MetaManager): void {
+    this.meta = meta;
+    if (!this.metaCommands) return;
+    this.metaCommands.dispose();
+    this.metaCommands = registerMetaCommands(
+      this.ctx.commands,
+      this.meta,
+      this.getMetaStore(),
+    );
+  }
+
+  /** Jawna decyzja gracza po błędzie naliczenia: usuwa zapis runu bez nagrody. */
+  private abandonReward(): void {
+    if (!this.ended || this.rewardError !== 'apply') return;
+    this.persist(async () => {
+      try {
+        await this.save.clearRun();
+        this.ended = null;
+        this.rewardError = null;
+        this.dropContinueParam();
+      } catch (error) {
+        console.warn('Nie można usunąć zapisu runu.', error);
+      } finally {
+        this.refresh();
+      }
+    });
+  }
+
+  /** Zostawiony w zapisie zakończony run (błąd odczytu wstrzymuje nowy run). */
+  private async loadLeftover(): Promise<{
+    state: RunState;
+    ended: RunEnded;
+  } | null> {
+    if (!this.save.loadEnded) return null;
+    try {
+      const ended = await this.save.loadEnded();
+      if (!ended) return null;
+      const state = await this.save.loadRun();
+      return state ? { state, ended } : null;
+    } catch (error) {
+      throw new Error(
+        'Nie można odczytać zapisu runu; nowy run wstrzymany, żeby nie nadpisać nierozliczonej nagrody.',
+        { cause: error },
+      );
+    }
+  }
+
+  /** Po rozliczeniu `continue=1` nie ma już czego wznawiać: odświeżenie nie rzuci błędem. */
+  private dropContinueParam(): void {
+    if (typeof location === 'undefined' || typeof history === 'undefined')
+      return;
+    const params = new URLSearchParams(location.search);
+    if (params.get('continue') !== '1') return;
+    params.delete('continue');
+    history.replaceState(
+      null,
+      '',
+      `${location.pathname}?${params}${location.hash}`,
+    );
+  }
+
+  /** Odświeżenie ekranu; podsumowanie po ciszy zwycięstwa pokaże flushTransitions. */
+  private refresh(): void {
+    if (this.victoryHoldRemainingS === null && this.pending === null)
+      this.show();
+  }
+
+  /** Wyjście z podsumowania czeka na kolejkę zapisów (przyciski w stanie zapisywania). */
+  private leave(go: () => void): void {
+    if (this.leaving) return;
+    this.leaving = true;
+    this.refresh();
+    void this.saving.then(() => {
+      if (!this.disposed) go();
+    });
   }
 
   private validateLoadout(id: string): void {
@@ -343,11 +510,15 @@ export class RunScene implements Scene {
         state: this.manager.serialize(),
         nodes: structuredClone(this.manager.availableNodes()),
         summary: this.manager.summary,
+        // Nagrody dopiero po potwierdzonym zapisie meta.
         meta:
-          this.metaResult?.applied && !this.rewardError
+          this.metaResult && !this.rewardError && !this.settling
             ? this.metaResult
             : undefined,
         rewardError: this.rewardError,
+        rewardPending: this.settling,
+        rewardAlreadySaved: this.rewardAlreadySaved,
+        leaving: this.leaving,
         busy: this.manager.screen === 'room' && !this.roomReady,
         splash: this.loadingSplash(),
         error: this.runError,
@@ -446,21 +617,25 @@ export class RunScene implements Scene {
                 ? 'meta'
                 : this.manager.state.loadoutId,
           });
-          location.assign(`/?${params}`);
+          this.leave(() => this.navigate(`/?${params}`));
         },
         hub: () => {
-          if (typeof location === 'undefined') return;
+          const current = new URLSearchParams(
+            typeof location === 'undefined' ? '' : location.search,
+          );
           const params = new URLSearchParams({ scene: 'hub' });
-          if (new URLSearchParams(location.search).get('debug') === '1')
-            params.set('debug', '1');
-          preserveLiteFx(new URLSearchParams(location.search), params);
-          location.assign(`/?${params}`);
+          if (current.get('debug') === '1') params.set('debug', '1');
+          preserveLiteFx(current, params);
+          this.leave(() => this.navigate(`/?${params}`));
         },
         menu: () => {
-          if (typeof location !== 'undefined') location.assign('/');
+          this.leave(() => this.navigate('/'));
         },
-        ...(this.rewardError === 'save'
+        ...(this.rewardError === 'save' && !this.settling
           ? { retrySave: () => this.settle() }
+          : {}),
+        ...(this.rewardError === 'apply' && this.ended
+          ? { abandonReward: () => this.abandonReward() }
           : {}),
       },
     );

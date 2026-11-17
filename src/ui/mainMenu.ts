@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { createIndexedDbSaveStore } from '../core/save';
-import type { SaveStore } from '../core/save';
+import type { RunEnded, SaveStore } from '../core/save';
+import { MetaManager } from '../progression/meta';
+import { createStarterMetaState } from '../progression/progressionSchema';
 import data from '../data/ui/run.pl.json';
 import { BuildSelect } from './buildSelect';
 import { SettingsScreen } from './settingsScreen';
@@ -24,6 +26,8 @@ const text = z
       loading: z.string(),
       noSave: z.string(),
       unsettled: z.string(),
+      settled: z.string(),
+      unsettledBroken: z.string(),
       saveError: z.string(),
       back: z.string(),
       debug: z.string(),
@@ -146,19 +150,40 @@ export class MainMenu {
       if (options.params) preserveLiteFx(options.params, scenes);
       this.root.append(button(t.debug, () => navigate(`?${scenes}`)));
     }
+    /** Status zakończonego runu: już rozliczony, do rozliczenia albo nienaliczalny. */
+    const endedStatus = async (ended: RunEnded): Promise<string> => {
+      let manager: MetaManager;
+      try {
+        const meta = await saveStore.loadMeta();
+        manager = meta
+          ? MetaManager.restore(meta.meta)
+          : new MetaManager(createStarterMetaState());
+      } catch {
+        return t.unsettled;
+      }
+      if (manager.state.appliedRunIds.includes(ended.runId)) return t.settled;
+      try {
+        // Próbne naliczenie na kopii w pamięci (bez zapisu i zdarzeń).
+        manager.applyRun(ended.summary, ended.runId);
+        return t.unsettled;
+      } catch {
+        return t.unsettledBroken;
+      }
+    };
     const runReady = saveStore
       .loadRun()
-      .then((save) => {
+      .then(async (save) => {
+        const ended = save?.ended ? await endedStatus(save.ended) : null;
         if (this.disposed) return;
         resume.disabled = save === null;
         const node = save?.run.map.layers
           .flat()
           .find((node) => node.id === save.run.currentNodeId);
-        status.textContent = save?.ended
-          ? t.unsettled
-          : save
+        status.textContent =
+          ended ??
+          (save
             ? `${text.layer}: ${node?.layer ?? 1} · ${text.hp}: ${save.run.hp}`
-            : t.noSave;
+            : t.noSave);
       })
       .catch(() => {
         if (!this.disposed) status.textContent = t.saveError;

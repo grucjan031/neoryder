@@ -6,6 +6,7 @@ import { EventBus } from '../../src/core/events';
 import { RunManager } from '../../src/world/run';
 import { generateSectorMap } from '../../src/world/sectorMap';
 import { kuroganeSector } from '../../src/world/sectors';
+import { createStarterMetaState } from '../../src/progression/progressionSchema';
 
 const active: MainMenu[] = [];
 afterEach(() => {
@@ -226,4 +227,52 @@ it('zakończony, nierozliczony run: status „Nierozliczony run”, Kontynuuj pr
   );
   button('Kontynuuj run').click();
   expect(navigate).toHaveBeenCalledExactlyOnceWith('?scene=run&continue=1');
+});
+
+async function endedSave(threatLevel: number) {
+  const save = createMemorySaveStore();
+  const manager = new RunManager(new EventBus(), {
+    generateMap: (seed) => generateSectorMap(kuroganeSector, seed),
+  });
+  const run = manager.newRun(`menu-${threatLevel}`, 'blade');
+  const summary = { ...manager.finish('death'), threatLevel };
+  manager.dispose();
+  const runId = `${run.seed}:${run.startedAtMs}`;
+  await save.saveRun({
+    saveVersion: SAVE_VERSION,
+    seed: run.seed,
+    startedAt: run.startedAtMs,
+    run,
+    ended: { runId, summary },
+  });
+  return { save, runId };
+}
+
+it('menu: nienaliczalny run (błąd applyRun) nie obiecuje zapisu nagrody', async () => {
+  const { save } = await endedSave(99);
+  const menu = new MainMenu({ root: document.body, save, navigate: vi.fn() });
+  active.push(menu);
+  await menu.ready;
+  const status = document.querySelector('[role=status]')!.textContent!;
+  expect(status).toContain('nie da się naliczyć');
+  expect(status).not.toContain('zapisze nagrodę');
+  expect(button('Kontynuuj run').disabled).toBe(false);
+});
+
+it('menu: run już rozliczony na dysku (zostawiony ślad) nie mówi „Kontynuuj zapisze nagrodę”', async () => {
+  const { save, runId } = await endedSave(0);
+  const meta = createStarterMetaState();
+  meta.appliedRunIds = [runId];
+  await save.saveMeta({
+    saveVersion: SAVE_VERSION,
+    createdAt: 0,
+    updatedAt: 0,
+    meta,
+  });
+  const menu = new MainMenu({ root: document.body, save, navigate: vi.fn() });
+  active.push(menu);
+  await menu.ready;
+  const status = document.querySelector('[role=status]')!.textContent!;
+  expect(status).toContain('już rozliczony');
+  expect(status).not.toContain('zapisze nagrodę');
 });

@@ -360,3 +360,35 @@ it('podsumowanie z błędem zapisu nagrody pokazuje komunikat i „Ponów zapis�
   screens.show(summaryView, { selectNode() {}, next() {}, menu() {} });
   expect(document.querySelector('.run-screen__reward-error')).toBeNull();
 });
+
+it('podsumowanie: „Zapisywanie nagrody…” zamiast nagród, „Porzuć nagrodę” w dwóch krokach, wyjście w stanie zapisywania', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const actions = { selectNode() {}, next() {}, menu: vi.fn(), hub: vi.fn() };
+  screens.show({ ...summaryView, rewardPending: true }, actions);
+  const root = document.querySelector('.run-screen')!;
+  expect(root.textContent).toContain('Zapisywanie nagrody…');
+  expect(root.querySelector('[data-testid="run-meta-rewards"]')).toBeNull();
+  screens.show({ ...summaryView, rewardAlreadySaved: true }, actions);
+  expect(root.textContent).toContain('Nagroda została już zapisana.');
+  const abandonReward = vi.fn();
+  screens.show(
+    { ...summaryView, rewardError: 'apply' },
+    { ...actions, abandonReward },
+  );
+  const abandon = [...root.querySelectorAll('button')].find(
+    (b) => b.textContent === 'Porzuć nagrodę',
+  )!;
+  abandon.click();
+  expect(abandonReward).not.toHaveBeenCalled();
+  expect(abandon.textContent).toBe('Na pewno? Porzuć nagrodę');
+  abandon.click();
+  expect(abandonReward).toHaveBeenCalledOnce();
+  screens.show({ ...summaryView, leaving: true }, actions);
+  expect(root.textContent).toContain('Zapisywanie…');
+  const nav = [...root.querySelectorAll<HTMLButtonElement>('button')].filter(
+    (b) => ['Wróć do kryjówki', 'Nowy run', 'Menu'].includes(b.textContent!),
+  );
+  expect(nav).toHaveLength(3);
+  for (const button of nav) expect(button.disabled).toBe(true);
+});

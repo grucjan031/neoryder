@@ -52,6 +52,11 @@ const text = z
     rewardSaveError: z.string(),
     rewardApplyError: z.string(),
     retrySave: z.string(),
+    rewardPending: z.string(),
+    rewardAlreadySaved: z.string(),
+    abandonReward: z.string(),
+    abandonConfirm: z.string(),
+    leaving: z.string(),
     noImplants: z.string(),
     synergies: z.string(),
     nextRarity: z.string(),
@@ -100,6 +105,12 @@ export interface RunScreenView {
   meta?: RunMetaView;
   /** Nagroda nie trafiła do zapisu (`save`) albo nie dała się naliczyć (`apply`). */
   rewardError?: 'save' | 'apply' | null;
+  /** Rozliczenie nagrody trwa (nagrody pokazujemy dopiero po potwierdzonym zapisie). */
+  rewardPending?: boolean;
+  /** Nagroda była już zapisana wcześniej, a jej kwot nie da się odtworzyć. */
+  rewardAlreadySaved?: boolean;
+  /** Wyjście z podsumowania czeka na zapis: przyciski nawigacji wyłączone. */
+  leaving?: boolean;
   busy: boolean;
   /** Splashart tła ekranu ładowania pokoju (`busy`); brak = ekran jak dotąd. */
   splash?: { file: string; title: string };
@@ -130,6 +141,8 @@ export interface RunScreenActions {
   hub?(): void;
   /** Ponowienie zapisu nagrody po błędzie; przycisk tylko, gdy akcja jest podana. */
   retrySave?(): void;
+  /** Porzucenie nienaliczalnej nagrody (drugie kliknięcie potwierdza). */
+  abandonReward?(): void;
 }
 
 export interface RunScreens {
@@ -277,16 +290,46 @@ export class HtmlRunScreens implements RunScreens {
         box.append(message);
         const retry = actions.retrySave;
         if (retry) this.button(text.retrySave, retry, box);
+        const abandon = actions.abandonReward;
+        if (abandon) {
+          // Dwa kroki: pierwsze kliknięcie pyta, drugie porzuca nagrodę.
+          const button = this.button(
+            text.abandonReward,
+            () => {
+              if (button.dataset.confirm === '1') abandon();
+              else {
+                button.dataset.confirm = '1';
+                button.textContent = text.abandonConfirm;
+              }
+            },
+            box,
+          );
+        }
+      } else if (view.rewardPending) {
+        const pending = this.line(text.rewardPending);
+        pending.className = 'run-screen__reward-pending';
+        pending.setAttribute('role', 'status');
+      } else if (view.rewardAlreadySaved && !view.meta) {
+        this.line(text.rewardAlreadySaved).className =
+          'run-screen__reward-pending';
       }
       const row = this.group('run-screen__actions');
       const hub = actions.hub;
+      const nav: HTMLButtonElement[] = [];
       if (hub) {
         const back = this.button(metaText.backToHub, hub, row);
         back.classList.add('run-screen__primary');
+        nav.push(back);
       }
       const again = this.button(text.newRun, () => actions.newRun?.(), row);
       if (!hub) again.classList.add('run-screen__primary');
-      this.button(text.menu, actions.menu, row);
+      nav.push(again, this.button(text.menu, actions.menu, row));
+      if (view.leaving) {
+        for (const button of nav) button.disabled = true;
+        const leaving = this.line(text.leaving);
+        leaving.className = 'run-screen__reward-pending';
+        leaving.setAttribute('role', 'status');
+      }
     } else if (view.screen === 'reward') {
       const cards = this.group('run-screen__offers');
       for (const offer of view.offers ?? [])
