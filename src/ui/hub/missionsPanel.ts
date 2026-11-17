@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import modeText from '../../data/ui/modes.pl.json';
 import { missionDefinitions } from '../../world/missions';
 import type { MissionDefinition } from '../../world/missionSchema';
 import { dialogueLines } from '../missionUi';
@@ -118,6 +119,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   status.setAttribute('role', 'status');
 
   let selectedMission: MissionDefinition | undefined;
+  let selectedMode = false;
   const choices = el('section');
   choices.dataset.missionList = '';
   const briefing = el('section');
@@ -131,6 +133,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       button.dataset.mission = mission.id;
       button.addEventListener('click', () => {
         selectedMission = mission;
+        selectedMode = false;
         describe(mission);
         const back = el('button', 'mission-choice', missionText.back);
         back.type = 'button';
@@ -167,6 +170,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   regular.type = 'button';
   regular.dataset.mission = 'regular';
   regular.addEventListener('click', () => {
+    selectedMode = false;
     selectedMission = undefined;
     describe();
     briefing.hidden = true;
@@ -174,6 +178,25 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     start.focus();
   });
   choices.append(regular);
+  choices.append(el('h3', 'missions-panel__heading', modeText.heading));
+  const conquest = el('button', 'mission-choice', modeText.conquest);
+  conquest.type = 'button';
+  conquest.dataset.mode = 'conquest';
+  conquest.addEventListener('click', () => {
+    selectedMode = true;
+    selectedMission = undefined;
+    sectorName.textContent = modeText.conquest;
+    sectorDescription.textContent = modeText.description;
+    start.textContent = modeText.start;
+    start.focus();
+  });
+  choices.append(conquest);
+  for (const title of modeText.soon) {
+    const button = el('button', 'mission-choice', title);
+    button.type = 'button';
+    button.disabled = true;
+    choices.append(button);
+  }
   let disposed = false;
   let busy = false;
 
@@ -229,6 +252,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       seed: seedInput.value.trim() || randomSeed(),
     });
     if (selectedMission) params.set('mission', selectedMission.id);
+    if (selectedMode) params.set('mode', 'conquest');
     ctx.navigate(`?${params}`);
   });
 

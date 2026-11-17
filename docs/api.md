@@ -1865,6 +1865,19 @@ a `readSplashAct(store?)` z `bootSplash.ts` czyta go z meta-zapisu (błąd = 1).
 - `AudioSystem.updateAmbienceSource(index, position, gain)`: aktualizuje istniejące źródło skopiowane przez `setAmbience`, bez restartu grafów. `HubSoundscape` przyjmuje opcjonalne dodatkowe źródła na końcu listy.
 - Debug: `hub cat`, `hub rat`; `query('hubFauna')` zwraca `{ cat: {x,z,state} | null, rats: number }`. Teleport kota wymaga bezpiecznej drogi do trasy; przy przeszkodzie komenda zgłasza brak miejsca.
 
+## Tryby areny S2b-01
+
+`ModeId` pochodzi ze schematu danych trybów (`conquest`). Opcjonalne `RunState.modeId`
+i `RunSummary.modeId` są zachowywane przez zapis v4. Tryb i misja wykluczają się.
+`Conquest` prowadzi punkty, pulę, wybór spawnu i celów ruchu; host pokoju dostarcza
+żywych wrogów i pozycję gracza. `conquest_captured: { id: 'A' | 'B' | 'C';
+owner: 'player' | 'enemy' }` informuje HUD o pełnym przejęciu.
+`Enemy.moveGoal?: Vec3` kieruje marszem poza zasięgiem wykrycia z tuningu trybu;
+brak celu zachowuje zwykłą walkę. `RunManager` kończy arenę istniejącym `finish()`.
+Przy zwycięstwie `roomsCleared = rewardRooms`, przy porażce 0; bez bonusu kampanii.
+Wznowienie niezakończonej areny rozpoczyna jej pojedynczy pokój od początku,
+jak wznowienie pokoju zwykłego runu; zakończona arena zachowuje podsumowanie.
+
 ## Misje (ADR 0008)
 
 `loadMission` waliduje dane i zgodność pokojów. `generateMissionMap(mission, sector, seed)` generuje stałe węzły. `MapNode.fixed` przechowuje pokój, cele i finał. Opcjonalne `RunState.missionId`, `objectives`, `objectiveProgress` zachowują zgodność dawnych runów. `RunManager` blokuje ukończenie pokoju do wykonania jego celów. `RunSummary.missionCompleted` oznacza ukończony finał. Kampania w meta przechowuje ukończone misje i jednorazowy debrief; firstClear jest rozliczany przez applyRun.

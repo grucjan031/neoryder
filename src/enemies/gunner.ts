@@ -28,6 +28,7 @@ export class Gunner implements Enemy {
   previous: EnemySnapshot;
   current: EnemySnapshot;
   removed = false;
+  moveGoal?: Vec3;
   private readonly body: EnemyBody;
   private readonly off: (() => void)[] = [];
   private readonly rng;
@@ -308,6 +309,15 @@ export class Gunner implements Enemy {
     }
     this.holdStun();
     const target = this.deps.getTarget();
+    const march =
+      this.moveGoal &&
+      (!target ||
+        Math.hypot(
+          target.position.x - s.position.x,
+          target.position.z - s.position.z,
+        ) > this.ctx.tuning.modes.conquest.detectRangeM)
+        ? this.moveGoal
+        : undefined;
     const dx = target ? target.position.x - s.position.x : 0;
     const dz = target ? target.position.z - s.position.z : 0;
     const distance = Math.hypot(dx, dz);
@@ -315,6 +325,8 @@ export class Gunner implements Enemy {
     if (s.state === 'stunned') {
       if (s.stateTimeS + epsilon >= this.stunS)
         this.transition(target ? 'reposition' : 'idle');
+    } else if (march) {
+      if (s.state !== 'reposition') this.transition('reposition');
     } else if (!target) {
       if (s.state !== 'idle') this.transition('idle');
     } else {
@@ -358,15 +370,19 @@ export class Gunner implements Enemy {
       vz = 0;
     // Z dyrektorem i widocznym celem: czekanie na token w slocie na preferowanym dystansie.
     const goal =
-      s.state === 'reposition' && target && los
-        ? (this.deps.director?.slot(this.id, 'shot', r.preferredRange) ?? null)
-        : null;
+      march && s.state === 'reposition'
+        ? march
+        : s.state === 'reposition' && target && los
+          ? (this.deps.director?.slot(this.id, 'shot', r.preferredRange) ??
+            null)
+          : null;
     if (goal) {
       const gx = goal.x - s.position.x,
         gz = goal.z - s.position.z;
       const gap = Math.hypot(gx, gz);
-      if (gap > epsilon) {
+      if (gap > (march ? this.ctx.tuning.modes.conquest.goalStopM : epsilon)) {
         const heading = this.steer(dt, Math.atan2(gx, gz), this.strafe);
+        if (march) s.yaw = heading;
         const speed = Math.min(this.stats.get('moveSpeed'), gap / dt);
         vx = Math.sin(heading) * speed;
         vz = Math.cos(heading) * speed;

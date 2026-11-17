@@ -35,6 +35,7 @@ export class Assaulter implements Enemy {
   previous: EnemySnapshot;
   current: EnemySnapshot;
   removed = false;
+  moveGoal?: Vec3;
   private readonly body: EnemyBody;
   private readonly off: (() => void)[] = [];
   private readonly geometry;
@@ -326,6 +327,15 @@ export class Assaulter implements Enemy {
     this.holdStun();
     this.updateShield();
     const target = this.deps.getTarget();
+    const march =
+      this.moveGoal &&
+      (!target ||
+        Math.hypot(
+          target.position.x - s.position.x,
+          target.position.z - s.position.z,
+        ) > this.ctx.tuning.modes.conquest.detectRangeM)
+        ? this.moveGoal
+        : undefined;
     const dx = target ? target.position.x - s.position.x : 0;
     const dz = target ? target.position.z - s.position.z : 0;
     const distance = Math.hypot(dx, dz);
@@ -341,6 +351,9 @@ export class Assaulter implements Enemy {
     } else if (s.state === 'recovery') {
       if (s.stateTimeS + epsilon >= d.recoveryS)
         this.transition(target ? 'chase' : 'idle');
+    } else if (march) {
+      this.releaseToken();
+      if (s.state !== 'chase') this.transition('chase');
     } else if (!target) this.transition('idle');
     else {
       if (s.state === 'idle') this.transition('chase');
@@ -361,7 +374,16 @@ export class Assaulter implements Enemy {
     let vz = 0;
     let heading: number | null = null;
     let speed = 0;
-    if (s.state === 'chase' && target) {
+    if (march && s.state === 'chase') {
+      const gx = march.x - s.position.x,
+        gz = march.z - s.position.z;
+      const gap = Math.hypot(gx, gz);
+      if (gap > this.ctx.tuning.modes.conquest.goalStopM) {
+        heading = Math.atan2(gx, gz);
+        s.yaw = heading;
+        speed = gap / dt;
+      }
+    } else if (s.state === 'chase' && target) {
       if (engaged) {
         if (distance > d.attackRange) {
           heading = s.yaw;

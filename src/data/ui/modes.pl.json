@@ -1,0 +1,13 @@
+{
+  "heading": "Tryby areny",
+  "conquest": "Przejęcie",
+  "description": "Zajmij punkty A, B i C. Utrzymuj co najmniej dwa, aby wyczerpać posiłki Koalicji. Jedno życie — utrzymaj pozycję.",
+  "start": "Rozpocznij Przejęcie",
+  "soon": ["Szturm — Wkrótce", "Kradzież rdzenia — Wkrótce"],
+  "tickets": "Pula Koalicji",
+  "player": "Twoje",
+  "enemy": "Koalicja",
+  "neutral": "Neutralny",
+  "contested": "Sporny",
+  "captured": "Przejęcie punktu"
+}
