@@ -10,7 +10,12 @@ export type Team = 'player' | 'enemy' | 'neutral';
 
 /** Mapa wszystkich zdarzeń gry. Nowe zdarzenia dopisuje Architekt po zatwierdzeniu w docs/api.md. */
 export interface GameEvents {
-  conquest_captured: { id: 'A' | 'B' | 'C'; owner: 'player' | 'enemy' };
+  /** Zmiana właściciela punktu (także na neutralnego); `owners` to migawka wszystkich punktów po zmianie. */
+  conquest_captured: {
+    id: 'A' | 'B' | 'C';
+    owner: 'player' | 'enemy' | 'neutral';
+    owners: Record<'A' | 'B' | 'C', 'player' | 'enemy' | 'neutral'>;
+  };
   hub_fauna_sound: { kind: 'meow' | 'rat'; point: Vec3 };
   hub_train_passed: { durationS: number };
   hub_power_dip: { durationS: number };
@@ -149,6 +154,10 @@ export interface GameEvents {
   unlock_purchased: { id: string };
   loadout_changed: { loadout: LoadoutChoice };
   threat_selected: { level: number };
+  /** Tracker w trakcie runu: próg osiągnięcia przekroczony (nagroda dopiero przy rozliczeniu). */
+  achievement_earned: { id: string };
+  /** `MetaManager`: osiągnięcie zapisane w meta (rozliczenie runu, zakup, debug). */
+  achievement_unlocked: { id: string };
   hub_prop_used: {
     prop: string;
     kind: 'jukebox' | 'noodles' | 'radio' | 'bag';

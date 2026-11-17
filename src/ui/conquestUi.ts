@@ -96,6 +96,7 @@ export class ConquestView {
     this.hud.append(reserve, this.notice);
     document.body.append(this.hud);
     this.off = bus.on('conquest_captured', ({ id, owner }) => {
+      if (owner === 'neutral') return;
       this.notice.textContent = `${text.captured} ${id} · ${text[owner]}`;
     });
     this.update();

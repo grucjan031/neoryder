@@ -207,6 +207,9 @@ describe('MetaManager zakupy i ekwipunek', () => {
     ] as const;
     for (const { id, currency, cost, minLevel } of cases) {
       const meta = make();
+      // Nagroda za pierwszy zakup i bramka Nadprzewodnika to osobne testy naszywek.
+      meta.debugGrantAchievement('pierwszy-zakup');
+      meta.debugGrantAchievement('reka-strzelca');
       const unlockId = `module:${id}`;
       expect(defaultMetaRules.unlocks.get(unlockId)).toMatchObject({
         cost: { [currency]: cost },
@@ -251,6 +254,7 @@ describe('MetaManager zakupy i ekwipunek', () => {
     const bought: string[] = [];
     bus.on('unlock_purchased', (e) => bought.push(e.id));
     const meta = make(bus);
+    meta.debugGrantAchievement('pierwszy-zakup');
     const def = [...defaultMetaRules.unlocks.values()].find(
       (u) => (u.minLevel ?? 1) <= 1 && !meta.isUnlocked(u.id),
     )!;

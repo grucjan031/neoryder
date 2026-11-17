@@ -4,6 +4,7 @@ import { powerDefinitions } from '../../combat/powers/registry';
 import { weaponDefinitions } from '../../combat/weapons/weaponSchema';
 import type { LoadoutChoice } from '../../core/metaTypes';
 import type { MetaManager } from '../../progression/meta';
+import { achievementDefinitions } from '../../progression/achievementsSchema';
 import { unlockDefinitions } from '../../progression/unlocksSchema';
 import type { UnlockDefinition } from '../../progression/unlocksSchema';
 import {
@@ -72,7 +73,8 @@ export type MetaView = Pick<
   | 'state'
 >;
 
-export type RowStatus = 'owned' | 'buyable' | 'level' | 'data' | 'cores';
+export type RowStatus =
+  'owned' | 'buyable' | 'achievement' | 'level' | 'data' | 'cores';
 
 export interface UnlockRow {
   id: string;
@@ -80,6 +82,8 @@ export interface UnlockRow {
   name: string;
   cost: { data: number; cores: number };
   minLevel: number | undefined;
+  /** Id i tytuł naszywki, której brakuje do zakupu (status `achievement`). */
+  requires?: { id: string; title: string };
   status: RowStatus;
 }
 
@@ -108,13 +112,20 @@ export function itemName(kind: ItemKind, key: string): string {
   }
 }
 
-/** Kolejność sprawdzeń jak w `MetaManager.buyUnlock`: poziom, Dane, Rdzenie. */
+/** Kolejność sprawdzeń jak w `MetaManager.buyUnlock`: naszywka, poziom, Dane, Rdzenie. */
 export function rowStatus(
-  state: { level: number; data: number; cores: number; owned: boolean },
+  state: {
+    level: number;
+    data: number;
+    cores: number;
+    owned: boolean;
+    achievementMissing?: boolean;
+  },
   def: UnlockDefinition | undefined,
 ): RowStatus {
   if (state.owned) return 'owned';
   if (!def) return 'level';
+  if (state.achievementMissing) return 'achievement';
   if (def.minLevel !== undefined && state.level < def.minLevel) return 'level';
   if (state.data < (def.cost.data ?? 0)) return 'data';
   if (state.cores < (def.cost.cores ?? 0)) return 'cores';
@@ -132,14 +143,32 @@ export function unlockRows(
   return ids.map((id) => {
     const def = defs.get(id);
     const { kind, key } = splitId(id);
+    const required = def?.requiresAchievement;
+    const missing =
+      required !== undefined &&
+      !view.state.achievements.unlocked.includes(required);
     return {
       id,
       kind,
       name: itemName(kind, key),
       cost: { data: def?.cost.data ?? 0, cores: def?.cost.cores ?? 0 },
       minLevel: def?.minLevel,
+      ...(required !== undefined && missing
+        ? {
+            requires: {
+              id: required,
+              title: achievementDefinitions.get(required)?.title ?? required,
+            },
+          }
+        : {}),
       status: rowStatus(
-        { level: view.level, data, cores, owned: view.isUnlocked(id) },
+        {
+          level: view.level,
+          data,
+          cores,
+          owned: view.isUnlocked(id),
+          achievementMissing: missing,
+        },
         def,
       ),
     };

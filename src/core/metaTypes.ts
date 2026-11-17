@@ -38,6 +38,8 @@ export interface MetaRunRecord {
   layerReached: number;
   threatLevel: number;
   rewards: RunRewards;
+  /** Id naszywek zdobytych w tym runie (podsumowanie po odświeżeniu). */
+  achievements?: string[];
 }
 
 export interface MetaState {
@@ -66,6 +68,13 @@ export interface MetaState {
   lastRuns: MetaRunRecord[];
   /** Idempotencja nagród, najwyżej 20. */
   appliedRunIds: string[];
+  /** Naszywki Iskry: zdobyte id i liczniki łączne (ADR 0007, S4b-01). */
+  achievements: AchievementsState;
+}
+
+export interface AchievementsState {
+  unlocked: string[];
+  counters: Record<string, number>;
 }
 
 export const MAX_LAST_RUNS = 10;

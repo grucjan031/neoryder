@@ -8,11 +8,13 @@ import {
   type MapNode,
   type RunDamageStats,
   type RunOutcome,
+  type RunAchievementProgress,
   type RunState,
   type RunSummary,
   type SectorMap,
 } from '../core/runTypes';
 import { Stats } from '../core/stats';
+import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { loadoutDefinitions, loadoutSchema } from '../progression/loadout';
 import { resolveTalents } from '../progression/talents';
 import type { Loadout } from '../progression/loadout';
@@ -137,6 +139,7 @@ export const runStateSchema: z.ZodType<RunState> = z
       kills: z.number().int().nonnegative(),
       damage: runDamageStatsSchema,
     }),
+    achievementProgress: runAchievementProgressSchema.optional(),
   })
   .superRefine((state, ctx) => {
     const validIds = new Set<string>();
@@ -675,6 +678,12 @@ export class RunManager {
     if (idx < 0 || this.currentState.implants.includes(toId)) return false;
     this.currentState.implants[idx] = toId;
     return true;
+  }
+
+  /** Zapisuje w stanie runu postęp osiągnięć z trackera (trafia do zapisu runu). */
+  setAchievementProgress(progress: RunAchievementProgress): void {
+    if (this.currentState)
+      this.currentState.achievementProgress = structuredClone(progress);
   }
 
   /** Krokuje czas trwania runu w czasie symulacji (bez pasywnej regeneracji zdrowia). */

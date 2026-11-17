@@ -140,6 +140,8 @@ Dane: `src/data/meta/threat.json` — poziomy 0–10, każdy z `name`, `enemyHea
 
 `SAVE_VERSION = 3`. `MetaSave` dostaje pole `meta: MetaState`; migracja 2→3 dla meta: stan startowy z danych (gracz z F3 zaczyna od zera, F3 nie miało meta-progresu). Migracja 2→3 dla runu: `RunState` dostaje `loadout` (z presetu `loadoutId`), `talents: []`, `threatLevel: 0`. Zapis meta po każdym runie (pkt 2) i po każdej zmianie w kryjówce (zakup, reset, ekwipunek, wybór poziomu). Obie implementacje `SaveStore` (pamięć, IndexedDB); zapis z nowszej wersji pozostaje nietknięty jak dotąd.
 
+**Aktualizacja S4b-01 (naszywki Iskry):** `SAVE_VERSION = 5`. `MetaState` dostaje pole `achievements: { unlocked: string[]; counters: Record<string, number> }`, a `RunSummary` opcjonalne `achievements?: { counters; flags }` (także w zapisie zakończonego runu). Migracja meta 4→5 dopisuje puste osiągnięcia, migracja runu 4→5 jest tożsamością. Przyrosty dolicza `applyRun` razem z nagrodami runu (idempotencja przez `appliedRunIds`), a `unlocks.json` może wymagać naszywki do zakupu (`requiresAchievement`). Szczegóły: `docs/systems/achievements.md`.
+
 ## 9. Zdarzenia (do `GameEvents`)
 
 `meta_rewards { runId, rewards, levelBefore, levelAfter }`, `level_up { level }`, `talents_changed { talents }`, `unlock_purchased { id }`, `loadout_changed { loadout }`, `threat_selected { level }`, `hub_station_opened { station }`.
