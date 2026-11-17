@@ -39,6 +39,15 @@ const TWO_HAND_POSE = {
   pos: new Vector3(0.15, -0.27, -0.45),
   rot: new Euler(0.1, 0.11, -0.15, 'YXZ'),
 };
+/** Celowanie: broń na środku kadru, lufa wzdłuż osi widoku („przy oku”). */
+const AIM_POSE = {
+  pos: new Vector3(0.0, -0.145, -0.4),
+  rot: new Euler(0, 0, 0, 'YXZ'),
+};
+const AIM_TWO_HAND_POSE = {
+  pos: new Vector3(0.0, -0.215, -0.44),
+  rot: new Euler(0.02, 0, 0, 'YXZ'),
+};
 /** Obrót lewej dłoni wokół osi Y węzła support: przedramię od lewego dołu kadru. */
 const TWO_HAND_SUPPORT_YAW = -1.4;
 /** Przesunięcie lewej dłoni do przodu (pod lufę) i obrót przedramienia w dół, w osiach węzła support. */
@@ -61,7 +70,7 @@ const HEAT_GLOW_SIZE = 0.09;
 export interface FppBlasterOptions {
   /** Nazwa modelu (`<nazwa>.glb`) dla id broni; brak = model blastera. */
   modelOf?: (weaponId: string) => string | undefined;
-  tuning?: Pick<Tuning, 'weapons'>;
+  tuning?: Pick<Tuning, 'weapons' | 'player'>;
   /** Ustawienia dostępności (domyślnie zapisane ustawienia gracza). */
   settings?: Pick<Settings, 'flashes'>;
 }
@@ -122,7 +131,7 @@ export class FppBlaster {
   );
   private readonly models = new Map<string, Promise<Object3D | null>>();
   private readonly flashes = new Map<Object3D, Object3D>();
-  private readonly tuning: Pick<Tuning, 'weapons'>;
+  private readonly tuning: Pick<Tuning, 'weapons' | 'player'>;
   private readonly settings: Pick<Settings, 'flashes'> | undefined;
   private readonly modelOf: (weaponId: string) => string | undefined;
   private loadModels = false;
@@ -285,8 +294,11 @@ export class FppBlaster {
     this.heatGlows.set(model, heat);
   }
 
-  /** frameDt: czas rzeczywisty klatki (odrzut i puls działają też w hitstopie). */
-  place(cameraMatrix: Matrix4, frameDt: number): void {
+  /**
+   * frameDt: czas rzeczywisty klatki (odrzut i puls działają też w hitstopie); `aim` 0–1
+   * przesuwa broń do pozycji przy oku i zmniejsza odrzut (`tuning.player.aim.recoil`).
+   */
+  place(cameraMatrix: Matrix4, frameDt: number, aim = 0): void {
     const dt = Math.max(0, Math.min(frameDt, 0.1));
     this.time += dt;
     this.recoil *= Math.exp(-RECOIL_RECOVER * dt);
@@ -303,19 +315,23 @@ export class FppBlaster {
 
     const { m, q, e, v, s } = this.tmp;
     const pose = this.twoHanded ? TWO_HAND_POSE : POSE;
+    const sight = this.twoHanded ? AIM_TWO_HAND_POSE : AIM_POSE;
+    const k = Math.min(1, Math.max(0, aim));
+    const recoil = this.recoil * (1 + (this.tuning.player.aim.recoil - 1) * k);
+    const mix = (a: number, b: number): number => a + (b - a) * k;
     e.set(
-      pose.rot.x + this.recoil * RECOIL_PITCH,
-      pose.rot.y,
-      pose.rot.z,
+      mix(pose.rot.x, sight.rot.x) + recoil * RECOIL_PITCH,
+      mix(pose.rot.y, sight.rot.y),
+      mix(pose.rot.z, sight.rot.z),
       'YXZ',
     );
     q.setFromEuler(e);
-    v.copy(pose.pos);
-    v.z += this.recoil * RECOIL_BACK;
+    v.copy(pose.pos).lerp(sight.pos, k);
+    v.z += recoil * RECOIL_BACK;
     m.compose(v, q, s);
     this.root.matrix.multiplyMatrices(cameraMatrix, m);
     this.root.matrixWorldNeedsUpdate = true;
-    this.hand.setPose('gripGun', 'gripGunFire', this.recoil);
+    this.hand.setPose('gripGun', 'gripGunFire', recoil);
     this.hand.placeAt(m.identity(), 'socket_gun');
 
     const flash = this.current ? this.flashes.get(this.current) : undefined;

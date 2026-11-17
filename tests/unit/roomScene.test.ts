@@ -325,7 +325,7 @@ it('nakłada implanty ze źródłem na obie instancje Stats przed przywróceniem
     ).toHaveLength(4);
 });
 
-it('HeldItem bierze startHeld z loadoutu, rozdziela atak i strzał oraz pozwala blokowi przywrócić ostrze', async () => {
+it('HeldItem bierze startHeld z loadoutu, rozdziela atak i strzał; PPM z bronią celuje, ŚPM przywraca ostrze', async () => {
   const { scene, commands, bus } = await setup(
     runState({ loadoutId: 'gunner' }),
   );
@@ -343,6 +343,8 @@ it('HeldItem bierze startHeld z loadoutu, rozdziela atak i strzał oraz pozwala 
   expect(fired).toHaveBeenCalledOnce();
   commands.execute('hold gun');
   scene.step(SIM_DT, press('block'));
+  expect(scene.heldView().held).toBe('gun');
+  scene.step(SIM_DT, press('bladeThrow'));
   expect(scene.heldView().held).toBe('blade');
   expect(commands.execute('hold missing')).toBe('Użycie: hold blade|gun');
 });

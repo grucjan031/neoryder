@@ -33,6 +33,11 @@ export class HeldItem {
   private bufferS = 0;
   private weapon: string | null = null;
   private readonly offWeapon: () => void;
+  /** Postęp celowania 0–1 (liniowy; `aim` zwraca wygładzony). */
+  private aimT = 0;
+  private aimingNow = false;
+  /** Po przełączeniu broni albo przerwaniu celowania PPM trzeba puścić i wcisnąć ponownie. */
+  private aimLatch = false;
 
   constructor(
     private readonly bus: EventBus,
@@ -42,12 +47,34 @@ export class HeldItem {
   ) {
     this.current = this.target = start;
     this.offWeapon = bus.on('weapon_switched', ({ owner, weapon }) => {
-      if (owner === this.owner) this.weapon = weapon;
+      if (owner !== this.owner) return;
+      this.weapon = weapon;
+      // Przełączenie broni kończy celowanie (FOV wraca płynnie).
+      if (this.aimingNow) this.aimLatch = true;
+      this.aimingNow = false;
     });
   }
 
   get held(): HeldKind {
     return this.current;
+  }
+
+  /** Celowanie (ADS) 0–1, wygładzone; 0 bez broni palnej w ręce. */
+  get aim(): number {
+    const t = this.aimT;
+    return t * t * (3 - 2 * t);
+  }
+
+  /** Gracz trzyma celowanie w tym kroku (przyciski, broń w ręce, `canAim`). */
+  get aiming(): boolean {
+    return this.aimingNow;
+  }
+
+  /** Natychmiastowy koniec celowania (śmierć, reset); ponowne wymaga puszczenia PPM. */
+  cancelAim(): void {
+    this.aimT = 0;
+    this.aimLatch = this.aimingNow || this.aimLatch;
+    this.aimingNow = false;
   }
 
   view(): HeldItemView {
@@ -92,6 +119,18 @@ export class HeldItem {
     this.elapsedS = 0;
     this.requested = null;
     this.bufferS = 0;
+    this.aimT = 0;
+    this.aimingNow = false;
+    this.aimLatch = false;
+  }
+
+  private stepAim(dt: number, wants: boolean): void {
+    if (!wants && this.aimingNow) this.aimLatch = true;
+    this.aimingNow = wants;
+    if (!(dt > 0)) return;
+    const a = this.tuning.player.aim;
+    const rate = 1 / Math.max(1e-3, wants ? a.inS : a.outS);
+    this.aimT = Math.min(1, Math.max(0, this.aimT + (wants ? dt : -dt) * rate));
   }
 
   private emit(): void {
@@ -102,18 +141,26 @@ export class HeldItem {
     });
   }
 
+  /**
+   * PPM zależnie od przedmiotu w ręce: z ostrzem `block` (jak dotąd), z bronią palną (bez zmiany
+   * w toku) celowanie — nie wymusza już ostrza. `bladeThrow` nadal wyciąga ostrze. `canAim`
+   * (domyślnie true) wyłącza celowanie np. przy przegrzaniu, dashu albo poza walką.
+   */
   step(
     dt: number,
     input: InputSnapshot,
-    ctx: { bladeBusy: boolean },
+    ctx: { bladeBusy: boolean; canAim?: boolean },
   ): { bladeInput: InputSnapshot; triggerHeld: boolean } {
+    const gunReady = this.current === 'gun' && !this.swapping;
+    const aimHeld = input.held.has('aim') || input.held.has('block');
+    if (!aimHeld) this.aimLatch = false;
     const needsBlade =
-      input.held.has('block') ||
-      input.pressed.has('block') ||
+      (!gunReady && (input.held.has('block') || input.pressed.has('block'))) ||
       input.held.has('bladeThrow') ||
       input.pressed.has('bladeThrow');
     if (needsBlade && (this.current === 'gun' || this.swapping)) {
       this.forceBlade();
+      this.stepAim(dt, false);
       return { bladeInput: input, triggerHeld: false };
     }
     if (input.pressed.has('swap')) this.requestToggle();
@@ -137,6 +184,15 @@ export class HeldItem {
         this.emit();
       }
     }
+    this.stepAim(
+      dt,
+      gunReady &&
+        !swapStep &&
+        this.current === 'gun' &&
+        aimHeld &&
+        !this.aimLatch &&
+        (ctx.canAim ?? true),
+    );
     return {
       bladeInput:
         swapStep || this.current === 'gun' ? withoutBladeActions(input) : input,

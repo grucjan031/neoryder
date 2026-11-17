@@ -383,6 +383,20 @@ export const tuning = {
     slideMaxS: 1.1,
     slideCapsuleHeight: 1.0,
     crouchSpeed: 3.5,
+    /**
+     * Celowanie (ADS, PPM z bronią palną): czas wejścia i wyjścia (s), FOV jako ułamek bazowego
+     * (90° → ~65°; broń może mieć własne `aimFovScale`), mnożniki czułości myszy, prędkości ruchu,
+     * rozrzutu i odrzutu broni w widoku. Sprint w celowaniu niedostępny.
+     */
+    aim: {
+      inS: 0.18,
+      outS: 0.15,
+      fovScale: 0.72,
+      sensitivity: 0.7,
+      moveSpeed: 0.6,
+      spread: 0.4,
+      recoil: 0.7,
+    },
   },
   /** Ostrze plazmowe (#07). Fazy ciosu w s; obrażenia i zasięg w src/data/blades/plasmaBlade.json. */
   melee: {

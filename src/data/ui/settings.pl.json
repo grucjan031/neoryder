@@ -52,6 +52,7 @@
     "crouch": "Przysiad / ślizg",
     "attack": "Atak / strzał",
     "block": "Blok",
+    "aim": "Celowanie (PPM z bronią palną)",
     "swap": "Zmień ostrze / broń",
     "power": "Moc 1",
     "power2": "Moc 2 / interakcja",

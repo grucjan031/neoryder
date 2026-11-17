@@ -13,6 +13,8 @@ export interface WeaponInput {
   triggerHeld: boolean;
   origin: Vec3;
   dir: Vec3;
+  /** Postęp celowania 0–1 (ADS): rozrzut × `tuning.player.aim.spread` przy pełnym celowaniu. */
+  aim?: number;
 }
 
 export interface WeaponDeps {
@@ -156,12 +158,20 @@ export class Weapon {
       this.cooldownS > 0
     )
       return;
-    fireProjectile(this.definition, this.deps.projectiles, this.rng, {
-      owner: this.owner,
-      team: this.team,
-      origin: input.origin,
-      dir: input.dir,
-    });
+    const aim = Math.min(1, Math.max(0, input.aim ?? 0));
+    const spreadScale = 1 + (this.ctx.tuning.player.aim.spread - 1) * aim;
+    fireProjectile(
+      this.definition,
+      this.deps.projectiles,
+      this.rng,
+      {
+        owner: this.owner,
+        team: this.team,
+        origin: input.origin,
+        dir: input.dir,
+      },
+      spreadScale,
+    );
     const m = this.ctx.tuning.melee;
     const speed = Math.max(
       m.attackSpeedMin,
