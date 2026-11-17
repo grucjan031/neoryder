@@ -11,8 +11,14 @@ import {
 } from 'three';
 import type { Camera } from 'three';
 import { Rng } from '../../core/rng';
+import { loadSettings } from '../../core/save';
+import { sourceFlicker } from './flicker';
 import { tuning } from '../../core/tuning';
-import type { CityLightDef, SignDef } from '../../world/dressingSchema';
+import type {
+  CityLightDef,
+  SignDef,
+  FlickerDef,
+} from '../../world/dressingSchema';
 import {
   CityTextures,
   cityColor,
@@ -83,6 +89,8 @@ interface SignState {
   width: number;
   height: number;
   flicker: number;
+  pattern: FlickerDef | undefined;
+  seed: number;
   rng: Rng;
   time: number;
   outage: number;
@@ -185,9 +193,11 @@ export class SignRenderer {
         height: def.size.h,
         glowBase: def.kind === 'holo' ? tuning.city.signGlowHoloFactor : 1,
         material,
-        flicker: def.flicker ?? 0,
+        flicker: typeof def.flicker === 'number' ? def.flicker : 0,
+        pattern: typeof def.flicker === 'object' ? def.flicker : undefined,
+        seed: rng.fork(String(i)).getState(),
         rng: rng.fork(String(i)),
-        time: rng.float(0, 10),
+        time: typeof def.flicker === 'object' ? 0 : rng.float(0, 10),
         outage: 0,
         partial: 0,
         nextEvent: 0,
@@ -237,6 +247,7 @@ export class SignRenderer {
     if (this.disposed) return;
     const dt = Math.max(0, dtRealS);
     const t = tuning.city;
+    const flashes = loadSettings().flashes;
     for (const sign of this.signs) {
       sign.time += dt;
       sign.outage = Math.max(0, sign.outage - dt);
@@ -260,16 +271,21 @@ export class SignRenderer {
         }
       }
       const u = sign.material.uniforms;
-      const brightness =
+      const legacyBrightness =
         sign.outage > 0
           ? t.signOutageBrightness
           : 1 +
             Math.sin(sign.time * t.signBuzzHz * Math.PI * 2) *
               sign.flicker *
               t.signBuzzAmount;
+      const brightness = sign.pattern
+        ? sourceFlicker(sign.pattern, sign.time, sign.seed, flashes)
+        : flashes
+          ? legacyBrightness
+          : 1;
       u.time!.value = sign.time;
       u.brightness!.value = t.signBrightness * brightness;
-      u.partial!.value = sign.partial > 0 ? 1 : 0;
+      u.partial!.value = flashes && sign.partial > 0 ? 1 : 0;
       u.glitch!.value =
         u.holo!.value && sign.time % t.holoGlitchIntervalS < t.holoGlitchS
           ? 1

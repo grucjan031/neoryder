@@ -63,7 +63,7 @@ export class CityDressing {
     const fixtures = lampFixtures(layout.decor);
     const lightDefs = [...(layout.lights ?? []), ...lampLightDefs(fixtures)];
     if (lightDefs.length) {
-      this.lights = new CityLights(lightDefs, floorY);
+      this.lights = new CityLights(lightDefs, floorY, `${seed}:lights`);
       roots.push(this.lights.root);
     }
     if (fixtures.length) {

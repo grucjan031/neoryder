@@ -13,6 +13,10 @@ import {
 } from 'three';
 import type { BufferGeometry, Texture } from 'three';
 import { tuning } from '../core/tuning';
+import { Rng } from '../core/rng';
+import { loadSettings } from '../core/save';
+import { sourceFlicker } from '../render/city/flicker';
+import type { FlickerDef } from '../world/dressingSchema';
 import type { Tuning } from '../core/tuning';
 import { printMaterial } from '../render/propPrints';
 import { batchStaticGeometry } from '../render/staticBatch';
@@ -64,6 +68,12 @@ export class HubDecor {
   private readonly materials: (MeshStandardMaterial | MeshBasicMaterial)[] = [];
   private readonly textures: Texture[] = [];
   private readonly flames: { mesh: Mesh; phase: number }[] = [];
+  private readonly labels: {
+    material: MeshBasicMaterial;
+    flicker: FlickerDef;
+    seed: number;
+  }[] = [];
+  private readonly rng: Rng;
   private flameTexture: CanvasTexture | null = null;
   private timeS = 0;
   private disposed = false;
@@ -74,7 +84,9 @@ export class HubDecor {
     fires: readonly HubFireDef[] = [],
     private readonly hubTuning: Tuning['hub'] = tuning.hub,
     neonTexts: readonly HubNeonTextDef[] = [],
+    seed: string | number = 'hub-labels',
   ) {
+    this.rng = new Rng(seed);
     // Nieruchome okładziny (kafle, plakaty, ekrany) scalane po materiale; wylot tunelu
     // (własny `bloomMaterial`), napisy i płomienie zostają osobnymi siatkami.
     const statics = new Group();
@@ -104,9 +116,14 @@ export class HubDecor {
     fires.forEach((fire, index) => this.fire(fire, index));
   }
 
-  /** Migotanie płomieni (czas kosmetyczny, bez RNG). */
+  /** Migotanie płomieni i neonowych napisów, czas kosmetyczny renderu. */
   update(dt: number): void {
-    this.timeS += dt;
+    this.timeS += Math.max(0, dt);
+    const flashes = loadSettings().flashes;
+    for (const label of this.labels)
+      label.material.color.setScalar(
+        sourceFlicker(label.flicker, this.timeS, label.seed, flashes),
+      );
     const t = this.hubTuning;
     for (const flame of this.flames) {
       const phase = this.timeS * t.fireFlickerHz + flame.phase;
@@ -484,6 +501,12 @@ export class HubDecor {
       toneMapped: false,
     });
     material.userData.bloom = true;
+    if (sign.flicker)
+      this.labels.push({
+        material,
+        flicker: sign.flicker,
+        seed: this.rng.fork(name.replace(/^label:/, '')).getState(),
+      });
     this.materials.push(material);
     if (typeof document !== 'undefined') {
       const texture = this.labelTexture(

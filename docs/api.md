@@ -1,5 +1,18 @@
 # API między modułami (kontrakty)
 
+## Migotanie oprawy
+
+`FlickerDef` (`src/world/dressingSchema.ts`): `{ pattern: 'buzz' | 'fail' |
+'pulse', strength?: number (0..1), periodS?: number (>0) }`. Opcjonalne
+`lights[].flicker`, `signs[].flicker` i `stations[].sign.flicker` korzystają z tego
+formatu. Napisy zachowują także starszy format liczbowy 0..1.
+`flickerIntensity(pattern, t, seed, strength?, periodS?)` w
+`src/render/city/flicker.ts` zwraca mnożnik 0..1 bez Three.js, DOM, stanu i alokacji.
+Czas w sekundach pochodzi z renderu; seed źródła z osobnego `Rng` sceny.
+`CityLights(defs, floorY?, seed?)` przyjmuje kosmetyczne ziarno sceny.
+`HubDecor(panels, stations, fires?, hubTuning?, seed?)` przyjmuje je dla napisów.
+Wyłączenie `Settings.flashes` daje stałą jasność dla buzz/fail; pulse pozostaje.
+
 ## Otoczenie kryjówki i przejazd pociągu
 
 `AudioSystem.setAmbience(sources | null)` przyjmuje źródła `{ kind, position: Vec3,

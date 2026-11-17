@@ -23,7 +23,11 @@ import { DecalRenderer } from '../render/city/decals';
 import { cityVertex, disposeCityGroup } from '../render/city/resources';
 import { Weather } from '../vfx/weather';
 import { AmbientFx } from '../vfx/ambientFx';
-import type { CityLightDef, SignDef } from '../world/dressingSchema';
+import type {
+  CityLightDef,
+  SignDef,
+  FlickerDef,
+} from '../world/dressingSchema';
 import type { Scene } from './index';
 
 const colors = [
@@ -34,6 +38,8 @@ const colors = [
   '#fff1d6',
   '#ffae1a',
 ];
+// Od wejścia: bursztyn = buzz, zieleń = fail, fiolet = pulse (powtórzone dalej).
+const patterns: FlickerDef['pattern'][] = ['buzz', 'fail', 'pulse'];
 const signs: SignDef[] = colors.map((tint, i) => ({
   kind: 'neon',
   texture: ['ramen', 'hotel', 'bar_24h', 'karaoke', 'sake', 'open'][i]!,
@@ -45,7 +51,7 @@ const signs: SignDef[] = colors.map((tint, i) => ({
   size: { w: i < 2 ? 3.4 : 3, h: 1.4 },
   yaw: i < 2 ? 0 : i % 2 ? -Math.PI / 2 : Math.PI / 2,
   tint,
-  flicker: i / 5,
+  flicker: { pattern: patterns[i % patterns.length]! },
 }));
 signs.push(
   {
@@ -72,6 +78,7 @@ const lights: CityLightDef[] = colors.map((color, i) => ({
   color,
   intensity: 24,
   range: 10,
+  flicker: { pattern: patterns[i % patterns.length]! },
 }));
 
 /** Samodzielny pokaz oprawy; WASD, mysz, Spacja/Ctrl pionowo, Shift szybciej. */
@@ -197,7 +204,11 @@ export class CityFxTest implements Scene {
       signs,
       ctx.rng.fork('city-signs').getState(),
     );
-    this.cityLights = new CityLights(lights);
+    this.cityLights = new CityLights(
+      lights,
+      0,
+      ctx.rng.fork('city-lights').getState(),
+    );
     this.decalRenderer = new DecalRenderer([
       {
         texture: 'graffiti_tag1',
