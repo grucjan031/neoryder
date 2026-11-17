@@ -12,7 +12,7 @@ from pathlib import Path
 import tempfile
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageFont, ImageOps
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -120,6 +120,11 @@ def build(ids):
         if item["category"] == "surfaces":
             if item["id"] in ("asphalt_puddles", "grime"):
                 image = image.convert("L").convert("RGB")
+            # Opcjonalna korekta tonów po kontroli palety; domyślnie neutralna.
+            if item.get("saturation") is not None:
+                image = ImageEnhance.Color(image).enhance(item["saturation"])
+            if item.get("brightness") is not None:
+                image = ImageEnhance.Brightness(image).enhance(item["brightness"])
             image = seamless(image)
         elif item["category"] in ("signs", "holo", "screens"):
             if item.get("blackMargin"):

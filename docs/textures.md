@@ -1,6 +1,6 @@
 # Tekstury uliczek NEORYDER — Neon Noir
 
-Pakiet 101 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra 2 atlasy okien i 13 powierzchni dużych aren) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
+Pakiet 121 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra 2 atlasy okien, 13 powierzchni dużych aren i 20 powierzchni drugiego pakietu dużych aren) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
 
 Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. W chwili wykonania tego zadania plik ADR 0006 nie był obecny w tym worktree. Istniejący kontrakt `src/world/dressingSchema.ts` określa ścieżki oraz sposób użycia signs, holo i decals. Pakiet nie zmienia kodu gry ani tego kontraktu.
 
@@ -55,7 +55,7 @@ python tools/textures/process.py validate
 python tools/textures/process.py previews
 ```
 
-Walidator sprawdza dokładny zestaw 101 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Posters wymagają pełnej nieprzezroczystości oraz zera pikseli z G > 120 i G − max(R, B) > 85 w skali 0–255; nie wymagają kafelkowania ani przezroczystych rogów. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
+Walidator sprawdza dokładny zestaw 121 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Posters wymagają pełnej nieprzezroczystości oraz zera pikseli z G > 120 i G − max(R, B) > 85 w skali 0–255; nie wymagają kafelkowania ani przezroczystych rogów. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
 
 Podgląd zbiorczy: `%TEMP%/neoryder-textures/contact-sheet.png`. Podglądy kafelkowania: `%TEMP%/neoryder-textures/<id>-2x2.png`. Raport wymiarów, bajtów, rogów i krawędzi: `%TEMP%/neoryder-textures/validation.json`.
 
@@ -88,3 +88,33 @@ Wszystkie nowe tekstury: surfaces, RGB, 1024×1024, kafelkowanie w obu osiach.
 | roof_hvac_metal | Blacha HVAC z kratkami wentylacyjnymi |
 
 `steel_grating` to nieprzezroczyste albedo: jasny ażur jest kolorem, nie maską alfa. Istniejąca tekstura `roof_tar` pozostaje bez zmian. Pełne prompty i liczba ponowień są w README narzędzi.
+
+
+## Powierzchnie dużych aren, pakiet 2 — 2026-11-18
+
+Wszystkie nowe tekstury: surfaces, RGB, 1024×1024, kafelkowanie w obu osiach. Jeszcze niepodpięte do aren ani materiałów gry; kolumna „Arena” to zamierzone przeznaczenie.
+
+| Id | Arena | Materiał |
+| --- | --- | --- |
+| ship_hull_paint | Port/statek | Granatowa farba poszycia kadłuba ze spawami i zaciekami rdzy |
+| ship_deck_steel | Port/statek | Szara antypoślizgowa stal pokładu, ścieżki użytkowe i spawy |
+| rail_ballast | Zajezdnia | Podsypka kolejowa z betonowymi podkładami |
+| rail_sleeper_concrete | Zajezdnia | Zużyty beton peronu z plamami oleju i pęknięciami |
+| maglev_body_panel | Zajezdnia | Grafitowe panele nadwozia pociągu maglev |
+| snow_asphalt | Zajezdnia | Ciemny asfalt z cienką warstwą ubitego śniegu |
+| snow_concrete | Zajezdnia | Chłodny beton z zamarzniętym śniegiem w pęknięciach |
+| formwork_plywood | Budowa | Mokra sklejka szalunkowa z zaciekami betonu |
+| concrete_raw_cast | Budowa | Surowy beton lany z odciskiem szalunku i otworami |
+| excavation_dirt | Budowa | Błotnista glina wykopu z śladami opon (korekta saturation 0.45) |
+| slag_heap | Elektrownia | Żużel i popiół, ciemnoszare ziarniste grudki |
+| cooling_tower_concrete | Elektrownia | Beton chłodni kominowej z pionowymi zaciekami |
+| turbine_hall_floor | Elektrownia | Szaro-zielona posadzka epoksydowa z bursztynowymi pasami |
+| flood_brick_algae | Doki | Ceglany mur z linią powodzi, glonami i mułem |
+| boardwalk_planks | Doki | Mokre deski pomostu z metalowymi wspornikami |
+| canal_stone_wall | Doki | Mokre kamienne bloki ściany kanału z mchem |
+| gas_station_tiles | Estakada | Szare płytki placu stacji paliw z plamami oleju |
+| highway_asphalt_worn | Estakada | Zużyty asfalt z siecią pęknięć i łatami, bez oznakowania |
+| scaffold_planks | Estakada/budowa | Deski rusztowania ze stalowymi okuciami końców |
+| hazard_stripes_worn | Estakada/uniwersalne | Wytarte ukośne pasy ostrzegawcze bursztyn i grafit |
+
+`excavation_dirt` przeszła korektę nasycenia (opcjonalne pole katalogu `saturation`), aby zmieścić się w ciemnym brązie bez pomarańczy; `hazard_stripes_worn` zawiera bursztyn (dozwolony), nie czerwień. Pełne prompty: README narzędzi.

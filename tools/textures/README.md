@@ -1,6 +1,6 @@
 # Narzędzia i prompty tekstur NEORYDER
 
-Wszystkie 101 obrazów (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra, 2 atlasy okien i 13 powierzchni dużych aren) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
+Wszystkie 121 obrazów (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra, 2 atlasy okien, 13 powierzchni dużych aren i 20 powierzchni drugiego pakietu dużych aren) utworzono osobnymi wywołaniami wbudowanego narzędzia imagegen. Pierwszy pakiet: 2026-11-14; drugi i trzeci pakiet: 2026-11-15. Licencja: wygenerowane na potrzeby projektu — własne. Bez zewnętrznych obrazów i prawdziwych marek. Skrypt obrabia bitmapy, nie rysuje ich treści.
 
 ## Odtworzenie
 
@@ -16,7 +16,7 @@ python tools/textures/process.py validate
 python tools/textures/process.py previews
 ```
 
-Dla pojedynczych źródeł: `python tools/textures/process.py build --ids concrete hotel`. Manifest odbudowuje się ze wszystkich istniejących wyników; pełna walidacja zawsze wymaga wszystkich 101 plików WebP, bez źródeł raw.
+Dla pojedynczych źródeł: `python tools/textures/process.py build --ids concrete hotel`. Manifest odbudowuje się ze wszystkich istniejących wyników; pełna walidacja zawsze wymaga wszystkich 121 plików WebP, bez źródeł raw.
 
 Algorytmy i zasady użycia opisuje [docs/textures.md](../../docs/textures.md). Wyniki trafiają do `public/assets/textures/<category>/<id>.webp`. Podglądy i raport trafiają do `%TEMP%/neoryder-textures/`: `contact-sheet.png`, `<id>-2x2.png`, `validation.json`. Font podpisów podglądu: systemowy Arial z `C:/Windows/Fonts/arial.ttf`.
 
@@ -959,4 +959,178 @@ Poprzedni prompt korekty został odrzucony z powodu smug przy krawędziach.
 
 ```text
 Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture 1024x1024: dark steel industrial walkway grating with light cool gray openings represented as opaque color, no alpha. Flat graphic 8 by 8 perfectly regular grid of identical square openings. The dark steel bars have a uniform flat graphite color, with NO bevel shading, NO shadows, NO highlights, NO edge wear anywhere in the outer 80 pixels of the image. Image boundaries run through uniform dark steel bars. The entire outer 16 pixels on all four sides must be exactly the same flat graphite #343a44, allowing smooth repeat; openings never reach the boundary. Subtle small scratches only in the central area. Stylized painted game material, absolutely flat orthographic, uniform illumination, no perspective, no text, brands, glow, red, cyan, magenta or pink. Opposite edges match seamlessly. Fill entire square.
+```
+
+## Pakiet dużych aren — 2026-11-18
+
+20 nowych powierzchni (surfaces, RGB, 1024×1024) dla aren: port/statek, zajezdnia, budowa, elektrownia, doki, estakada. Obrazy wygenerował Codex imagegen 2026-11-18; licencja: własne. Źródła w `tools/textures/raw/<id>.png`. Każdy obraz powstał jednym wywołaniem; bez ponowień.
+
+```powershell
+python tools/textures/process.py build --ids ship_hull_paint ship_deck_steel rail_ballast rail_sleeper_concrete maglev_body_panel snow_asphalt snow_concrete formwork_plywood concrete_raw_cast excavation_dirt slag_heap cooling_tower_concrete turbine_hall_floor flood_brick_algae boardwalk_planks canal_stone_wall gas_station_tiles highway_asphalt_worn scaffold_planks hazard_stripes_worn
+python tools/textures/process.py validate
+python tools/textures/process.py previews
+```
+
+Korekta tonów: `excavation_dirt` wyszła zbyt nasyconą pomarańczową gliną (gra zakazuje czerwieni w otoczeniu; brief: ciemny brąz #3a2f28–#5e4c3e). Potok dostał opcjonalne pola katalogu `saturation` i `brightness` (mnożniki PIL ImageEnhance, tylko surfaces, przed mieszaniem łączeń; brak pola = bez zmian, więc istniejące tekstury są nietknięte). Dla `excavation_dirt` ustawiono `saturation: 0.45`.
+
+Prompt każdego obrazu miał postać: „Use case: stylized-concept. Generate ONE square seamless tileable game texture, <id>. <subject> Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.” Pełne prompty:
+
+### ship_hull_paint — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/ship_hull_paint.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, ship_hull_paint. Steel ship hull plates, dark navy paint #1d2a40 to #34466a, horizontal welded plate seams, rust streaks running down in muted brown #5a4636, small chips, slight grime. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### ship_deck_steel — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/ship_deck_steel.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, ship_deck_steel. Steel ship deck, gray anti-slip paint #3a4250 to #5b6575, worn walking paths showing darker steel, weld lines in a grid, small scuffs. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### rail_ballast — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/rail_ballast.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, rail_ballast. Railway ballast of crushed dark gray stone #2b2f36 to #565c66 with concrete sleepers crossing horizontally at regular spacing (sleepers pale gray #6b707a), top-down, tiles seamlessly along both axes. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### rail_sleeper_concrete — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/rail_sleeper_concrete.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, rail_sleeper_concrete. Worn concrete slab of a railway platform, cool gray #3a414c to #66707e, oil stains, hairline cracks, small chips. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### maglev_body_panel — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/maglev_body_panel.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, maglev_body_panel. Train body panels, dark graphite #22262e to #3e4450, thin panel seams in a rectangular grid, flush rivets, fine scratches, subtle satin sheen painted flat. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### snow_asphalt — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/snow_asphalt.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, snow_asphalt. Dark asphalt #23262d partially covered by thin compacted snow #b9c4d4 to #dfe6ef, tire ruts exposing dark asphalt strips, slushy edges. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### snow_concrete — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/snow_concrete.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, snow_concrete. Cool concrete #3b424d with frozen snow #c3cdda filling cracks and low hollows, frost speckles, patchy coverage about 40 percent. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### formwork_plywood — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/formwork_plywood.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, formwork_plywood. Wet formwork plywood sheets, muted ochre-brown #6b5a43 to #8a7556, rectangular sheet joints, gray concrete splashes and stains, nail holes. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### concrete_raw_cast — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/concrete_raw_cast.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, concrete_raw_cast. Freshly cast raw concrete wall, gray #4a505a to #747b86, imprint of formwork board lines, regular round tie holes in a grid, small air pores. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### excavation_dirt — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/excavation_dirt.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, excavation_dirt. Muddy clay earth of a construction pit, dark brown #3a2f28 to #5e4c3e, tire tracks, scattered small stones, wet patches darker. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### slag_heap — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/slag_heap.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, slag_heap. Industrial slag and ash, dark gray #24262b to #4a4c52 granular clumps, occasional warm amber-gray glints #7a6a55, rough texture. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### cooling_tower_concrete — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/cooling_tower_concrete.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, cooling_tower_concrete. Cooling tower concrete, light cool gray #5a616c to #7d8592, vertical water stains and dark streaks, faint horizontal formwork bands. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### turbine_hall_floor — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/turbine_hall_floor.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, turbine_hall_floor. Industrial epoxy floor, muted gray-green #3a453f to #56625a, worn amber safety lane lines #b88a2e, scuffs and oil stains. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### flood_brick_algae — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/flood_brick_algae.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, flood_brick_algae. Old brick wall, dark brown-gray bricks #3d3330 to #5a4a42, a horizontal flood line across the middle, below it dark green algae #2f3f2c and silt deposits. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### boardwalk_planks — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/boardwalk_planks.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, boardwalk_planks. Wet wooden boardwalk planks running horizontally, dark weathered wood #3a3028 to #5c4b3b, gaps between planks, metal brackets and bolts. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### canal_stone_wall — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/canal_stone_wall.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, canal_stone_wall. Wet stone blocks of a canal wall, dark slate #2e333b to #4d545e, uneven ashlar blocks, damp streaks, small moss in joints. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### gas_station_tiles — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/gas_station_tiles.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, gas_station_tiles. Square floor tiles of a gas station forecourt, cool gray #4a505a to #6e7480, dark grout lines, oil stains and tire marks. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### highway_asphalt_worn — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/highway_asphalt_worn.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, highway_asphalt_worn. Worn highway asphalt, charcoal #24272d to #43474f, crack network, darker sealed crack lines, rectangular patch repairs, no lane markings. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### scaffold_planks — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/scaffold_planks.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, scaffold_planks. Scaffolding walk boards, weathered wood #5a4a38 to #7d6a50 with galvanized steel edge strips #6a717c at both ends of each plank, planks running horizontally. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
+```
+
+### hazard_stripes_worn — surfaces, 1024×1024
+
+Plik: `public/assets/textures/surfaces/hazard_stripes_worn.webp`.
+
+```text
+Use case: stylized-concept. Generate ONE square seamless tileable game texture, hazard_stripes_worn. Worn diagonal hazard stripes, alternating amber #c8902a and graphite #24272d, chipped paint, scratches, grime. Flat orthographic head-on, evenly lit, stylized painted readable shapes, not photorealistic. Fill entire image. Opposite edges must match seamlessly. No text, perspective, border, red, cyan, magenta, neon, objects or watermark.
 ```

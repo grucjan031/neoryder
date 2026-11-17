@@ -1008,5 +1008,205 @@
     "dominantColor": "#3c464c",
     "description": "Blacha HVAC z kratkami wentylacyjnymi",
     "bytes": 88714
+  },
+  {
+    "id": "ship_hull_paint",
+    "category": "surfaces",
+    "path": "surfaces/ship_hull_paint.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#273952",
+    "description": "Granatowa farba poszycia kadłuba ze spawami i zaciekami",
+    "bytes": 26834
+  },
+  {
+    "id": "ship_deck_steel",
+    "category": "surfaces",
+    "path": "surfaces/ship_deck_steel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#535b65",
+    "description": "Szara antypoślizgowa stal pokładu ze spawami",
+    "bytes": 154726
+  },
+  {
+    "id": "rail_ballast",
+    "category": "surfaces",
+    "path": "surfaces/rail_ballast.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#74767c",
+    "description": "Podsypka kolejowa z betonowymi podkładami",
+    "bytes": 87902
+  },
+  {
+    "id": "rail_sleeper_concrete",
+    "category": "surfaces",
+    "path": "surfaces/rail_sleeper_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#5a626b",
+    "description": "Zużyty beton peronu z plamami oleju",
+    "bytes": 82820
+  },
+  {
+    "id": "maglev_body_panel",
+    "category": "surfaces",
+    "path": "surfaces/maglev_body_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#383c43",
+    "description": "Grafitowe panele nadwozia pociągu maglev",
+    "bytes": 13470
+  },
+  {
+    "id": "snow_asphalt",
+    "category": "surfaces",
+    "path": "surfaces/snow_asphalt.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#444c57",
+    "description": "Ciemny asfalt z cienką warstwą ubitego śniegu",
+    "bytes": 131704
+  },
+  {
+    "id": "snow_concrete",
+    "category": "surfaces",
+    "path": "surfaces/snow_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#4d5663",
+    "description": "Chłodny beton z zamarzniętym śniegiem w pęknięciach",
+    "bytes": 131490
+  },
+  {
+    "id": "formwork_plywood",
+    "category": "surfaces",
+    "path": "surfaces/formwork_plywood.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#87623c",
+    "description": "Mokra sklejka szalunkowa z zaciekami betonu",
+    "bytes": 71206
+  },
+  {
+    "id": "concrete_raw_cast",
+    "category": "surfaces",
+    "path": "surfaces/concrete_raw_cast.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#6c737a",
+    "description": "Surowy beton lany z odciskiem szalunku i otworami",
+    "bytes": 70168
+  },
+  {
+    "id": "excavation_dirt",
+    "category": "surfaces",
+    "path": "surfaces/excavation_dirt.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#55443b",
+    "description": "Błotnista glina wykopu z śladami opon",
+    "bytes": 99318
+  },
+  {
+    "id": "slag_heap",
+    "category": "surfaces",
+    "path": "surfaces/slag_heap.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#373638",
+    "description": "Żużel i popiół, ziarniste ciemnoszare grudki",
+    "bytes": 146550
+  },
+  {
+    "id": "cooling_tower_concrete",
+    "category": "surfaces",
+    "path": "surfaces/cooling_tower_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#757a81",
+    "description": "Beton chłodni kominowej z pionowymi zaciekami",
+    "bytes": 39442
+  },
+  {
+    "id": "turbine_hall_floor",
+    "category": "surfaces",
+    "path": "surfaces/turbine_hall_floor.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#4a5548",
+    "description": "Szaro-zielona posadzka epoksydowa hali turbin",
+    "bytes": 37014
+  },
+  {
+    "id": "flood_brick_algae",
+    "category": "surfaces",
+    "path": "surfaces/flood_brick_algae.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#46372d",
+    "description": "Ceglany mur z linią powodzi, glonami i mułem",
+    "bytes": 77834
+  },
+  {
+    "id": "boardwalk_planks",
+    "category": "surfaces",
+    "path": "surfaces/boardwalk_planks.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#463327",
+    "description": "Mokre deski pomostu z metalowymi wspornikami",
+    "bytes": 98978
+  },
+  {
+    "id": "canal_stone_wall",
+    "category": "surfaces",
+    "path": "surfaces/canal_stone_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#34393b",
+    "description": "Mokre kamienne bloki ściany kanału z mchem",
+    "bytes": 81914
+  },
+  {
+    "id": "gas_station_tiles",
+    "category": "surfaces",
+    "path": "surfaces/gas_station_tiles.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#575a64",
+    "description": "Szare płytki placu stacji paliw z plamami oleju",
+    "bytes": 65308
+  },
+  {
+    "id": "highway_asphalt_worn",
+    "category": "surfaces",
+    "path": "surfaces/highway_asphalt_worn.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#434549",
+    "description": "Zużyty asfalt estakady z siecią pęknięć i łatami",
+    "bytes": 202864
+  },
+  {
+    "id": "scaffold_planks",
+    "category": "surfaces",
+    "path": "surfaces/scaffold_planks.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#654b35",
+    "description": "Deski rusztowania ze stalowymi okuciami końców",
+    "bytes": 104442
+  },
+  {
+    "id": "hazard_stripes_worn",
+    "category": "surfaces",
+    "path": "surfaces/hazard_stripes_worn.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#292b2e",
+    "description": "Wytarte ukośne pasy ostrzegawcze bursztyn i grafit",
+    "bytes": 113306
   }
 ]
