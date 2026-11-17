@@ -24,7 +24,7 @@ styl: `docs/adr/0006-neon-noir.md`.
     (`posters/<texture>.webp`, ładowany przez `HubDecor`, bo `dressingSchema` nie ma tej kategorii), a `tunnel` to
     malowany proceduralnie wylot tunelu (płótno: żebra obudowy, szyny i podkłady zbiegające się w mroku, kable, zielony
     i bursztynowy sygnał; materiał nieoświetlony z bloomem, bez pliku tekstury — `texture` jest tylko nazwą);
-  - `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, seat?: { heightM, offset {x,y,z} } }[]` — postacie (sekcja „NPC”);
+  - `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, route?, look?, seat?: { heightM, offset {x,y,z} } }[]` — postacie (sekcja „NPC”);
   - `blocks[].shape: 'barrel'` — otwarta beczka z blachy (walec z obręczami i ciemnym wnętrzem), z koliderem walca;
   - `fires: { position, size? }[]` — płomień w beczce (skrzyżowane płaszczyzny z gradientem, addytywnie, bloom, migotanie w `HubDecor.update`).
 - Walidacja układu używa `validateLayout` z `roomSchema.ts` (ta sama co spawny pokoi): środki stref i stojących NPC muszą
@@ -67,12 +67,12 @@ zastępują lada, blat, słupki i daszek, pozostawiające miejsce za ladą. Pozy
 spawn i pięć istniejących NPC pozostają bez zmian. Ekrany i gotowe neony wystarczają do oznaczenia
 nowych wnętrz; format danych i kod oprawy nie wymagają rozszerzenia.
 
-### Rezerwacje miejsc dla przyszłych NPC
+### Miejsca mieszkańców i rezerwacje
 
-To wyłącznie przygotowanie scenografii: `npcs` i teksty dialogów nie zawierają nowych postaci.
+Miejsca poniżej zajmują mieszkańcy z listy NPC; jedzący C i D pozostają wolnymi rezerwacjami.
 Wszystkie pozycje mają poziom podłogi y = 0. Obrót NPC: 0 = +Z, 90 = +X, 180 = −Z.
 Siedziska mają górną powierzchnię y = 0,48; środek pod miednicą podano w tabeli.
-Przyszłe siedzące postacie używają tego samego `seat.heightM: 0.48` i
+Siedzące postacie używają tego samego `seat.heightM: 0.48` i
 `seat.offset: { x: -0.002812, y: -0.48, z: 0.333626 }` co Tomasz i Bajt.
 
 | Rola                           | position {x,z}        | rotationDeg | Siedzisko: środek {x,y,z}, wysokość    |
@@ -92,10 +92,15 @@ Przyszłe siedzące postacie używają tego samego `seat.heightM: 0.48` i
 | Tancerka                       | {x: −6,5, z: 12,8}    | 180         | wolny kwadrat 2 × 2 m                  |
 | Bokser                         | {x: 16,1, z: −2,4}    | 90          | wolny kwadrat 2 × 2 m                  |
 
-### Proponowane trasy piesze
+### Trasy piesze
 
 Punkty `(x, z)` mają y = 0 i są łączone odcinkami prostymi. Trasy ii i iii są zamknięte,
-trasę i można przechodzić w obu kierunkach. Korytarze mają co najmniej 2 m szerokości; test
+trasę i Kuba przechodzi w obu kierunkach (`pingpong`, bez postoju). Paweł korzysta z trasy ii
+(`loop`, `Walk_Loop`, postoje 1,5 s), Ola i Staś z trasy iii (`loop`, `Jog_Fwd_Loop`, 2,2 m/s,
+bez postoju). Ola zaczyna w (0,5; 11), Staś w przeciwległym (6; 13,5), z tą samą kolejnością obiegu.
+W danych pętle nie powtarzają pierwszego punktu na końcu — zamyka je `mode: loop`.
+Wszyscy chodzący mają `pauseAnimation: Idle_Loop`, aby podczas postoju i zatrzymania na rozmowę stać w miejscu.
+Korytarze mają co najmniej 2 m szerokości; test
 `hubLayout.test.ts` sprawdza podłogę, metr odstępu od brył i 0,9 m od obecnych oraz zarezerwowanych NPC
 wzdłuż całych odcinków (próbki co najwyżej 0,1 m).
 
@@ -154,16 +159,49 @@ Stacje: `talents` (terminal drzewek, kącik łączności), `workshop` (stół w 
 
 ## NPC
 
-Pięć postaci (nie wrogowie): Mira (mechaniczka, wagon-warsztat), Doktor Wolan (badaczka Rezonansu, przy terminalu),
+21 postaci (nie wrogowie). Pięć kluczowych: Mira (mechaniczka, wagon-warsztat), Doktor Wolan (badaczka Rezonansu, przy terminalu),
 Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekranach w kąciku łączności), Stary Tomasz
 (weteran, siedzi przy beczce z ogniem).
 
-- **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, seat?, route? }[]`
+16 mieszkańców poniżej ma `position.y = 0`; pozycja chodzących oznacza początek trasy.
+Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt współrzędnych.
+
+| id    | Miejsce / zajęcie              | position (x; z) | rotationDeg | animation            | look: shade / headwear / torso / prop |
+| ----- | ------------------------------ | --------------- | ----------- | -------------------- | ------------------------------------- |
+| hela  | kuchnia, za ladą               | −17; −18,4      | 0           | PickUp_Table         | 5 / bandana / apron / none            |
+| jarek | ława przy pierwszym stole      | −17,6; −13,55   | 180         | Sitting_Talking_Loop | 1 / headphones / jacket / satchel     |
+| ewa   | przeciwległa ława              | −17,6; −16,05   | 0           | Sitting_Idle_Loop    | 6 / hood / jacket / pouches           |
+| lena  | radio, stołek przed mikrofonem | 5; −15,9        | 180         | Sitting_Talking_Loop | 8 / headphones / vest / none          |
+| zofia | przy łóżku polowym             | −3,5; −13,4     | 90          | Fixing_Kneeling      | 4 / none / coat / satchel             |
+| teo   | krawędź pryczy                 | −6,5; −16,4     | 0           | Sitting_Idle_Loop    | 9 / cap / coat / none                 |
+| iga   | rozdzielnia w korytarzu        | −10; −8,7       | 0           | Crouch_Idle_Loop     | 7 / goggles / vest / toolbelt         |
+| marek | za ladą na targu               | −25; 15,4       | 180         | Idle_Talking_Loop    | 6 / beanie / coat / satchel           |
+| grzes | wejście na targ                | −22,5; 10,7     | 0           | Idle_Torch_Loop      | 2 / cap_stripe / jacket / pouches     |
+| rudy  | za barem                       | −3; 15,2        | 180         | Idle_Loop            | 5 / none / apron / none               |
+| nina  | parkiet                        | −6,5; 12,8      | 180         | Dance_Loop           | 9 / glasses / jacket / none           |
+| witek | przed workiem treningowym      | 16,1; −2,4      | 90          | Punch_Jab            | 0 / bandana / vest / none             |
+| kuba  | trasa i                        | −30; 13         | 90          | Walk_Loop            | 3 / beanie / vest / backpack          |
+| pawel | trasa ii                       | −7; −2,5        | 90          | Walk_Loop            | 7 / cap_stripe / jacket / pouches     |
+| ola   | trasa iii, scale 0,68          | 0,5; 11         | 90          | Jog_Fwd_Loop         | 8 / beanie / jacket / backpack        |
+| stas  | trasa iii, scale 0,6           | 6; 13,5         | 270         | Jog_Fwd_Loop         | 2 / cap / jacket / none               |
+
+- **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, seat?, route?, look? }[]`
   (`hubNpcSchema`, `src/world/hubSchema.ts`). `rotationDeg` to kierunek patrzenia na podłodze: 0 = +Z (w stronę
   torów), 90 = +X, 180 = −Z. `animation` to klip z `public/assets/models/npc_anims.glb` (`Idle_Loop`, `Idle_Talking_Loop`,
   `Idle_Torch_Loop`, `Sitting_Idle_Loop`, `Sitting_Talking_Loop`, `Fixing_Kneeling`, `Crouch_Idle_Loop`, `Interact`, `Walk_Loop`, `Jog_Fwd_Loop`, `Dance_Loop`, `PickUp_Table`,
   `Punch_Jab`, `Punch_Cross`, `Sword_Idle`, `Spell_Simple_Idle_Loop`, `Push_Loop`;
-  domyślnie `Idle_Loop`), `accent` ∈ `amber|green|violet|blue|white` (paleta ADR 0006; każdy NPC inny).
+  domyślnie `Idle_Loop`), `accent` ∈ `amber|green|violet|blue|white` (paleta ADR 0006; pięć kluczowych NPC
+  zachowuje unikalne akcenty, wśród mieszkańców rozkład wynosi 4/3/3/3/3).
+- **Wygląd z danych:** opcjonalne `look` zawiera wyłącznie opcjonalne pola:
+  `shade` — liczba całkowita 0–9; `headwear` — `none|cap|cap_stripe|beanie|goggles|glasses|headphones|bandana|hood`;
+  `torso` — `vest|apron|coat|jacket|none`; `prop` — `none|pouches|backpack|wrench|satchel|toolbelt`.
+  Brak odcienia zachowuje dotychczasowy wybór z pierwszych pięciu kolorów według kolejności NPC;
+  brak nakrycia głowy lub rekwizytu zachowuje wariant per id, brak `torso` daje kamizelkę.
+  Jawne `none` pomija daną część. Pięć kluczowych postaci nie ma `look`, zachowując dotychczasowe bryły i kolory.
+  Paleta ma 10 ciemnych odcieni grafitu, granatu, szarości, oliwki, brązu i śliwki; sąsiedzi mają różne odcienie.
+  Fartuch ma płaski przód od pasa w dół, czapka `beanie` nie ma daszka, kaptur odsłania twarz,
+  torba `satchel` ma ukośny pasek, `toolbelt` ma kieszenie i narzędzia. Geometrie prymitywów są
+  współdzielone pomiędzy NPC w jednym `HubNpcs` i zwalniane raz przy `dispose`.
 - **Siedziska:** dla siedzących `position` oznacza punkt na podłodze pod miednicą i środkiem siedziska.
   `seat.heightM` to wysokość jego górnej powierzchni nad tym punktem, a `seat.offset` to wektor od środka tej
   powierzchni do korzenia modelu, w lokalnych osiach NPC. `npcRootPosition` obraca offset wraz z tułowiem,
@@ -175,7 +213,7 @@ Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekrana
   `hubSeating.test.ts` sprawdza prawdziwy klip w 121 próbkach i trzech kątach tułowia: ±0,08 m nad siedziskiem,
   podparcie w X/Z oraz obie stopy i skórkowaną podeszwę przy podłodze.
 - **Wygląd (`src/scenes/hubNpcs.ts`, `HubNpcs`):** ten sam manekin UAL co wrogowie (`enemy_trooper.glb`, tylko ciało
-  `armored_body`, bez płyt, broni i wizjera) w materiale toon grafit/granat (każdy NPC inny odcień) ze słabą poświatą
+  `armored_body`, bez płyt, broni i wizjera) w materiale toon z przygaszonej palety `BODY_COLORS` ze słabą poświatą
   krawędzi w kolorze akcentu (bez czerwieni wrogów). Niebojowe akcesoria na głowie (czapka, gogle, okulary,
   słuchawki) i ubiór na kościach `DEF-spine003` / `DEF-hips`: kamizelka w jaśniejszym odcieniu, kołnierz, pas
   ze świecącą klamrą i pasek akcentu oraz rekwizyt roli (Mira — ładownice i klucz, Wolan — poły płaszcza,
@@ -197,7 +235,7 @@ Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekrana
 
 ### Skala, trasy i podsłuchane rozmowy
 
-- `scale` jest opcjonalne (0,55–1,15; domyślnie 1; dzieci: 0,68). Skaluje model, promień i wysokość
+- `scale` jest opcjonalne (0,55–1,15; domyślnie 1; Ola: 0,68, Staś: 0,6). Skaluje model, promień i wysokość
   walca, focus oraz lokalny `seat.offset`. `seat.heightM` pozostaje fizyczną wysokością istniejącego siedziska.
 - `route`: `points` (co najmniej 2 punkty X/Z), `mode` (`loop`, domyślnie, albo `pingpong`),
   `speedMS` (domyślnie `npcWalkSpeedMS`), `pauseS` (domyślnie 0, także w punkcie startowym),
@@ -239,7 +277,9 @@ Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekrana
   `query('npcs')` zawiera aktualne X/Y/Z i yaw chodzących NPC.
 - Testy: `hubNpcLife.test.ts` (trasy loop/pingpong, postoje, ustępowanie, dialog, determinizm i JSON,
   skala/focus/siedzisko, walidacja tras i rozmów, 17 klipów i brak poziomego ruchu korzenia),
-  `hubNpcView.test.ts` (prawdziwe GLB: interpolacja/skala, crossfade, pętle, sumowanie dt odległych mixerów),
+  `hubNpcView.test.ts` (bez WebGL, prawdziwe GLB: wygląd mieszkańców na kościach, zachowanie wyglądu pięciu
+  kluczowych postaci, paleta, współdzielenie i zwalnianie geometrii, interpolacja/skala, crossfade, pętle,
+  sumowanie dt odległych mixerów),
   `hubChatter.test.ts` (promień, środek ruchomych uczestników, czas, przerwy, odnowienie, przerwania,
   jedna rozmowa, debug, determinizm), `hubChatterUi.test.ts` (jsdom i brak zbędnych zmian DOM),
   `hubScene.test.ts` z `tests/fixtures/hubLife.ts` (bez DOM: ruch, E/stacja/debug, zdarzenie i kolizja

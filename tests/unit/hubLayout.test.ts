@@ -4,7 +4,7 @@ import { expect, it } from 'vitest';
 import hideoutData from '../../src/data/hub/hideout.json';
 import { HUB_STATION_IDS } from '../../src/core/metaTypes';
 import { themeDefinitions } from '../../src/render/themes';
-import { loadHubLayout } from '../../src/world/hubSchema';
+import { hubNpcSchema, loadHubLayout } from '../../src/world/hubSchema';
 import { wallDecalFitsBlock } from '../../src/world/dressingSchema';
 
 const layout = loadHubLayout(hideoutData);
@@ -214,13 +214,48 @@ it('stacja odgrodzona od playerSpawn jest odrzucona jako nieosiągalna', () => {
   ).toBe(true);
 });
 
-it('układ ma pięciu NPC z akcentami z palety, każdy z innym akcentem, na podłodze i poza blokami', () => {
+it('układ ma 21 NPC na poziomie 0, pięć kluczowych postaci zachowuje unikalne akcenty', () => {
   const npcs = layout.npcs ?? [];
-  expect(npcs.map((npc) => npc.id).sort()).toEqual(
-    ['bajt', 'mira', 'szron', 'tomasz', 'wolan'].sort(),
+  expect(npcs).toHaveLength(21);
+  const keyIds = ['bajt', 'mira', 'szron', 'tomasz', 'wolan'];
+  const keyNpcs = npcs.filter((npc) => keyIds.includes(npc.id));
+  expect(keyNpcs).toHaveLength(5);
+  expect(new Set(keyNpcs.map((npc) => npc.accent)).size).toBe(5);
+  expect(keyNpcs.every((npc) => !npc.look)).toBe(true);
+  const residents = npcs.filter((npc) => !keyIds.includes(npc.id));
+  expect(residents.every((npc) => npc.look?.shade !== undefined)).toBe(true);
+  const counts = ['amber', 'green', 'violet', 'blue', 'white'].map(
+    (accent) => residents.filter((npc) => npc.accent === accent).length,
   );
-  expect(new Set(npcs.map((npc) => npc.accent)).size).toBe(npcs.length);
+  expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
   for (const npc of npcs) expect(npc.position.y ?? 0).toBe(0);
+});
+
+it.each([
+  { shade: -1 },
+  { shade: 10 },
+  { shade: 1.5 },
+  { shade: NaN },
+  { headwear: 'helmet' },
+  { torso: 'armor' },
+  { prop: 'rifle' },
+])('look odrzuca niedozwoloną wartość %j', (look) => {
+  expect(hubNpcSchema.safeParse({ ...layout.npcs![0], look }).success).toBe(
+    false,
+  );
+});
+
+it('look jest opcjonalny i dopuszcza częściowy opis oraz skrajne odcienie', () => {
+  for (const look of [
+    undefined,
+    {},
+    { shade: 0 },
+    { shade: 9 },
+    { headwear: 'none', torso: 'none', prop: 'none' },
+  ])
+    expect(hubNpcSchema.safeParse({ ...layout.npcs![0], look }).success).toBe(
+      true,
+    );
 });
 
 it('schemat odrzuca NPC w bloku, poza podłogą i z powtórzonym id; siedzący stoi na bloku', () => {
@@ -349,7 +384,7 @@ it('stacje mają ciemne korpusy z jasnym akcentem wewnątrz zachowanego focusu',
     ).toBe(true);
 });
 
-// Rezerwacje opisane w docs/systems/hub.md; nie tworzą NPC w danych gry.
+// Miejsca mieszkańców i dwa wolne miejsca przy drugim stole, opisane w docs/systems/hub.md.
 const futurePlaces = [
   { role: 'kucharka', x: -17, z: -18.4 },
   { role: 'jedzący A', x: -17.6, z: -13.55, yaw: 180, seat: true },
@@ -393,6 +428,43 @@ const walkingRoutes = [
     [0.5, 11],
   ],
 ];
+
+it('mieszkańcy korzystają z trzech wyznaczonych tras, dzieci biegną w tym samym kierunku z przeciwnych punktów', () => {
+  const npc = (id: string) => layout.npcs!.find((npc) => npc.id === id)!;
+  for (const id of ['kuba', 'pawel', 'ola', 'stas'])
+    expect(npc(id).route!.pauseAnimation).toBe('Idle_Loop');
+  const points = (id: string) =>
+    npc(id).route!.points.map(({ x, z }) => [x, z]);
+  expect(points('kuba')).toEqual(walkingRoutes[0]);
+  expect(npc('kuba').route).toMatchObject({
+    mode: 'pingpong',
+    pauseS: 0,
+    moveAnimation: 'Walk_Loop',
+  });
+  expect(points('pawel')).toEqual(walkingRoutes[1]!.slice(0, -1));
+  expect(npc('pawel').route).toMatchObject({
+    mode: 'loop',
+    pauseS: 1.5,
+    moveAnimation: 'Walk_Loop',
+  });
+  const children = walkingRoutes[2]!.slice(0, -1);
+  expect(points('ola')).toEqual(children);
+  expect(points('stas')).toEqual([
+    ...children.slice(2),
+    ...children.slice(0, 2),
+  ]);
+  for (const [id, scale] of [
+    ['ola', 0.68],
+    ['stas', 0.6],
+  ] as const) {
+    expect(npc(id).scale).toBe(scale);
+    expect(npc(id).route).toMatchObject({
+      mode: 'loop',
+      speedMS: 2.2,
+      moveAnimation: 'Jog_Fwd_Loop',
+    });
+  }
+});
 const floorBlocks = layout.blocks.filter(
   (b) => b.position.y + b.size.y / 2 === 0,
 );
@@ -455,7 +527,7 @@ it('trzy trasy zachowują przejście 2 m i margines 0,9 m od rezerwacji oraz ist
           ).toBeGreaterThanOrEqual(1 - 1e-6);
         for (const npc of [
           ...futurePlaces,
-          ...(layout.npcs ?? []).map((n) => n.position),
+          ...(layout.npcs ?? []).filter((n) => !n.route).map((n) => n.position),
         ])
           expect(Math.hypot(x - npc.x, z - npc.z), at).toBeGreaterThanOrEqual(
             0.9,

@@ -17,9 +17,12 @@ import { loadHubLayout } from '../../src/world/hubSchema';
 import { selectHubTarget } from '../../src/world/hubStations';
 
 const layout = loadHubLayout(hideoutData);
-const texts = loadNpcTexts(npcTexts);
+const texts = loadNpcTexts(npcTexts, layout.npcs);
 
 it('teksty NPC są poprawne i obejmują każdego NPC z układu (po jednej lub więcej kwestii)', () => {
+  expect(texts.npcs.map(({ id }) => id).sort()).toEqual(
+    layout.npcs!.map(({ id }) => id).sort(),
+  );
   expect(texts.talkPrompt.length).toBeGreaterThan(0);
   for (const npc of layout.npcs ?? []) {
     const entry = texts.npcs.find(({ id }) => id === npc.id);
@@ -27,6 +30,16 @@ it('teksty NPC są poprawne i obejmują każdego NPC z układu (po jednej lub wi
     expect(entry!.name.length).toBeGreaterThan(0);
     expect(entry!.role.length).toBeGreaterThan(0);
     expect(entry!.lines.length).toBeGreaterThanOrEqual(1);
+  }
+});
+
+it('dziesięć rozmów wskazuje istniejących uczestników i mówców', () => {
+  expect(texts.conversations).toHaveLength(10);
+  const ids = new Set(layout.npcs!.map(({ id }) => id));
+  for (const conversation of texts.conversations!) {
+    for (const id of conversation.npcs) expect(ids.has(id), id).toBe(true);
+    for (const line of conversation.lines)
+      expect(ids.has(line.npc), line.npc).toBe(true);
   }
 });
 

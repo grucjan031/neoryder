@@ -42,8 +42,19 @@ const ACCENT_COLORS: Record<NpcAccent, string> = {
   blue: '#3d7bff',
   white: '#fff1d6',
 };
-/** Stonowane materiały ubioru: grafit i granat (odcień zależy od kolejności NPC). */
-const BODY_COLORS = ['#3b4254', '#2f3f66', '#424856', '#2c3f63', '#4a4e5a'];
+/** Pierwsze pięć odcieni zachowuje wygląd kluczowych NPC; dalej oliwka, brąz i śliwka. */
+const BODY_COLORS = [
+  '#3b4254',
+  '#2f3f66',
+  '#424856',
+  '#2c3f63',
+  '#4a4e5a',
+  '#4b5040',
+  '#50463c',
+  '#383c34',
+  '#55585c',
+  '#484052',
+];
 const RIM_STRENGTH = 0.55;
 const RIM_POWER = 2.6;
 const BODY_MESH = 'armored_body';
@@ -85,8 +96,8 @@ interface NpcView {
   neck?: Object3D;
   head?: Object3D;
   skins: SkinnedMesh[];
-  /** Geometrie i materiały akcesoriów (własność widoku). */
-  owned: (BufferGeometry | Material)[];
+  /** Materiały akcesoriów (geometrie są współdzielone w HubNpcs). */
+  owned: Material[];
 }
 
 const yawAxis = new Vector3(0, 1, 0);
@@ -116,6 +127,7 @@ function yawBone(bone: Object3D, yaw: number): void {
 export class HubNpcs {
   readonly root = new Group();
   private readonly views: NpcView[] = [];
+  private readonly geometries = new Map<string, BufferGeometry>();
   private disposed = false;
   private readonly position = { x: 0, y: 0, z: 0 };
   private readonly rootPosition = { x: 0, y: 0, z: 0 };
@@ -141,11 +153,24 @@ export class HubNpcs {
         animDt: 0,
         animFrames:
           index % Math.max(1, Math.round(tuning.hub.npcAnimFarFrames)),
-        material: this.material(def.accent, index),
+        material: this.material(def.accent, def.look?.shade ?? index % 5),
         skins: [],
         owned: [],
       });
     });
+  }
+
+  private geometry(
+    geometry: BoxGeometry | SphereGeometry | CylinderGeometry | TorusGeometry,
+  ): BufferGeometry {
+    const key = `${geometry.type}:${JSON.stringify(geometry.parameters)}`;
+    const shared = this.geometries.get(key);
+    if (shared) {
+      geometry.dispose();
+      return shared;
+    }
+    this.geometries.set(key, geometry);
+    return geometry;
   }
 
   private material(accent: NpcAccent, index: number): MeshToonMaterial {
@@ -226,7 +251,7 @@ export class HubNpcs {
     });
     view.owned.push(accent, cloth);
     const add = (
-      geometry: BufferGeometry,
+      geometry: BoxGeometry | SphereGeometry | CylinderGeometry | TorusGeometry,
       material: Material,
       x: number,
       y: number,
@@ -234,8 +259,8 @@ export class HubNpcs {
       rx = 0,
       rz = 0,
     ): void => {
-      view.owned.push(geometry);
-      const mesh = new Mesh(geometry, material);
+      const mesh = new Mesh(this.geometry(geometry), material);
+      mesh.name = `headwear:${view.def.look?.headwear ?? view.def.id}`;
       mesh.position.set(x, y, z);
       mesh.rotation.set(rx, 0, rz);
       mesh.userData.noOutline = true;
@@ -253,12 +278,14 @@ export class HubNpcs {
       if (stripe)
         add(new BoxGeometry(0.1, 0.012, 0.004), accent, 0, 0.133, 0.15);
     };
-    switch (view.def.id) {
+    const headwear = view.def.look?.headwear ?? view.def.id;
+    switch (headwear) {
       case 'mira':
         add(new BoxGeometry(0.215, 0.03, 0.2), cloth, 0, 0.158, 0.0);
         add(new BoxGeometry(0.11, 0.014, 0.004), accent, 0, 0.158, 0.102);
         break;
       case 'wolan':
+      case 'goggles':
         for (const side of [-1, 1])
           add(
             new BoxGeometry(0.072, 0.045, 0.008),
@@ -270,9 +297,11 @@ export class HubNpcs {
         add(new BoxGeometry(0.02, 0.008, 0.008), accent, 0, 0.114, 0.106);
         break;
       case 'szron':
+      case 'cap_stripe':
         cap(true);
         break;
       case 'bajt':
+      case 'headphones':
         add(
           new TorusGeometry(0.112, 0.01, 6, 18, Math.PI),
           cloth,
@@ -294,8 +323,82 @@ export class HubNpcs {
           );
         break;
       case 'tomasz':
+      case 'cap':
         cap(false);
-        add(new BoxGeometry(0.17, 0.03, 0.02), accent, 0, 0.07, 0.108);
+        if (headwear === 'tomasz')
+          add(new BoxGeometry(0.17, 0.03, 0.02), accent, 0, 0.07, 0.108);
+        break;
+      case 'beanie':
+        add(
+          new SphereGeometry(0.116, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+          cloth,
+          0,
+          0.12,
+          -0.004,
+        );
+        add(
+          new CylinderGeometry(0.117, 0.117, 0.035, 14),
+          cloth,
+          0,
+          0.125,
+          -0.004,
+        );
+        add(new BoxGeometry(0.045, 0.02, 0.006), accent, 0.04, 0.13, 0.108);
+        break;
+      case 'glasses':
+        for (const side of [-1, 1]) {
+          add(
+            new TorusGeometry(0.033, 0.006, 6, 12),
+            accent,
+            side * 0.04,
+            0.11,
+            0.108,
+          );
+          add(
+            new BoxGeometry(0.007, 0.007, 0.1),
+            cloth,
+            side * 0.078,
+            0.11,
+            0.06,
+          );
+        }
+        add(new BoxGeometry(0.02, 0.008, 0.008), cloth, 0, 0.11, 0.108);
+        break;
+      case 'bandana':
+        add(
+          new CylinderGeometry(0.113, 0.113, 0.042, 14, 1, true),
+          cloth,
+          0,
+          0.155,
+          0,
+        );
+        add(new BoxGeometry(0.12, 0.018, 0.008), accent, 0, 0.155, 0.11);
+        add(
+          new BoxGeometry(0.045, 0.09, 0.025),
+          cloth,
+          0.075,
+          0.11,
+          -0.1,
+          0,
+          0.3,
+        );
+        break;
+      case 'hood':
+        add(
+          new SphereGeometry(0.143, 14, 10, Math.PI, Math.PI),
+          cloth,
+          0,
+          0.1,
+          -0.015,
+        );
+        for (const side of [-1, 1])
+          add(
+            new BoxGeometry(0.035, 0.18, 0.11),
+            cloth,
+            side * 0.115,
+            0.07,
+            0.035,
+          );
         break;
     }
   }
@@ -312,9 +415,7 @@ export class HubNpcs {
       (resource): resource is MeshBasicMaterial =>
         resource instanceof MeshBasicMaterial,
     );
-    const shade = new Color(
-      BODY_COLORS[this.views.indexOf(view) % BODY_COLORS.length]!,
-    );
+    const shade = view.material.color.clone();
     const jacket = new MeshToonMaterial({
       color: shade.multiplyScalar(1.35),
       gradientMap,
@@ -326,15 +427,16 @@ export class HubNpcs {
     view.owned.push(jacket, cloth);
     const add = (
       boneName: string,
-      geometry: BufferGeometry,
+      geometry: BoxGeometry,
       material: Material,
       position: [number, number, number],
       rotation: [number, number, number] = [0, 0, 0],
+      name = `prop:${view.def.look?.prop ?? view.def.id}`,
     ): void => {
       const bone = instance.getObjectByName(boneName);
       if (!bone) return;
-      view.owned.push(geometry);
-      const mesh = new Mesh(geometry, material);
+      const mesh = new Mesh(this.geometry(geometry), material);
+      mesh.name = name;
       new Matrix4()
         .copy(toInstance)
         .multiply(bone.matrixWorld)
@@ -350,28 +452,82 @@ export class HubNpcs {
     };
     const chest = 'DEF-spine003';
     const hips = 'DEF-hips';
-    add(chest, new BoxGeometry(0.34, 0.3, 0.25), jacket, [0, 1.3, 0.01]);
-    add(chest, new BoxGeometry(0.26, 0.07, 0.22), cloth, [0, 1.47, -0.005]);
-    add(hips, new BoxGeometry(0.33, 0.055, 0.23), cloth, [0, 0.99, 0.01]);
-    if (accent) {
-      add(hips, new BoxGeometry(0.05, 0.035, 0.01), accent, [0, 0.99, 0.13]);
-      add(chest, new BoxGeometry(0.012, 0.2, 0.01), accent, [0.09, 1.31, 0.14]);
+    const torso = view.def.look?.torso ?? 'vest';
+    const garment = (
+      bone: string,
+      size: [number, number, number],
+      material: Material,
+      position: [number, number, number],
+      rotation: [number, number, number] = [0, 0, 0],
+    ): void =>
+      add(
+        bone,
+        new BoxGeometry(...size),
+        material,
+        position,
+        rotation,
+        `torso:${torso}`,
+      );
+    if (torso !== 'none') {
+      garment(chest, [0.34, 0.3, 0.25], jacket, [0, 1.3, 0.01]);
+      garment(chest, [0.26, 0.07, 0.22], cloth, [0, 1.47, -0.005]);
+      garment(hips, [0.33, 0.055, 0.23], cloth, [0, 0.99, 0.01]);
+      if (accent) {
+        garment(hips, [0.05, 0.035, 0.01], accent, [0, 0.99, 0.13]);
+        garment(chest, [0.012, 0.2, 0.01], accent, [0.09, 1.31, 0.14]);
+      }
     }
-    switch (view.def.id) {
+    if (torso === 'apron') {
+      garment(chest, [0.25, 0.28, 0.025], cloth, [0, 1.27, 0.15]);
+      garment(hips, [0.34, 0.53, 0.025], cloth, [0, 0.72, 0.15]);
+    }
+    if (torso === 'jacket') {
+      for (const side of [-1, 1]) {
+        garment(chest, [0.13, 0.12, 0.22], jacket, [side * 0.2, 1.42, 0]);
+        garment(
+          chest,
+          [0.06, 0.24, 0.025],
+          cloth,
+          [side * 0.055, 1.34, 0.15],
+          [0, 0, side * 0.18],
+        );
+      }
+    }
+    if (torso === 'coat') {
+      garment(
+        hips,
+        [0.36, 0.62, 0.03],
+        jacket,
+        [0, 0.66, -0.14],
+        [-0.08, 0, 0],
+      );
+      for (const side of [-1, 1])
+        garment(
+          hips,
+          [0.13, 0.55, 0.03],
+          jacket,
+          [side * 0.12, 0.7, 0.13],
+          [0.06, 0, 0],
+        );
+    }
+    const prop = view.def.look?.prop ?? view.def.id;
+    switch (prop) {
       case 'mira':
+      case 'pouches':
         for (const side of [-1, 1])
           add(hips, new BoxGeometry(0.07, 0.1, 0.06), cloth, [
             side * 0.13,
             0.94,
             0.08,
           ]);
-        add(
-          hips,
-          new BoxGeometry(0.03, 0.16, 0.03),
-          jacket,
-          [0.17, 0.9, 0.0],
-          [0, 0, 0.2],
-        );
+        if (prop === 'mira')
+          add(
+            hips,
+            new BoxGeometry(0.03, 0.16, 0.03),
+            jacket,
+            [0.17, 0.9, 0.0],
+            [0, 0, 0.2],
+          );
         break;
       case 'wolan':
         add(
@@ -406,6 +562,7 @@ export class HubNpcs {
           );
         break;
       case 'bajt':
+      case 'backpack':
         add(chest, new BoxGeometry(0.28, 0.32, 0.12), cloth, [0, 1.28, -0.18]);
         if (accent)
           add(
@@ -419,6 +576,58 @@ export class HubNpcs {
         for (const x of [-0.1, 0, 0.1])
           add(chest, new BoxGeometry(0.07, 0.09, 0.05), cloth, [x, 1.22, 0.15]);
         add(chest, new BoxGeometry(0.3, 0.3, 0.06), jacket, [0, 1.3, -0.15]);
+        break;
+      case 'satchel':
+        add(
+          chest,
+          new BoxGeometry(0.035, 0.43, 0.025),
+          cloth,
+          [0, 1.23, 0.155],
+          [0, 0, -0.55],
+        );
+        add(hips, new BoxGeometry(0.16, 0.2, 0.12), cloth, [0.22, 0.87, 0]);
+        if (accent)
+          add(
+            hips,
+            new BoxGeometry(0.05, 0.025, 0.012),
+            accent,
+            [0.22, 0.88, 0.065],
+          );
+        break;
+      case 'wrench':
+        add(
+          hips,
+          new BoxGeometry(0.025, 0.18, 0.025),
+          jacket,
+          [0.19, 0.89, 0.03],
+        );
+        for (const side of [-1, 1])
+          add(hips, new BoxGeometry(0.018, 0.045, 0.025), jacket, [
+            0.19 + side * 0.025,
+            0.99,
+            0.03,
+          ]);
+        break;
+      case 'toolbelt':
+        add(hips, new BoxGeometry(0.37, 0.07, 0.25), cloth, [0, 0.98, 0]);
+        for (const side of [-1, 1]) {
+          add(hips, new BoxGeometry(0.09, 0.12, 0.07), cloth, [
+            side * 0.14,
+            0.9,
+            0.11,
+          ]);
+          add(hips, new BoxGeometry(0.025, 0.19, 0.025), jacket, [
+            side * 0.2,
+            0.9,
+            0.02,
+          ]);
+          if (accent)
+            add(hips, new BoxGeometry(0.06, 0.025, 0.03), accent, [
+              side * 0.2,
+              1,
+              0.02,
+            ]);
+        }
         break;
     }
   }
@@ -497,6 +706,8 @@ export class HubNpcs {
       for (const resource of view.owned) resource.dispose();
     }
     this.views.length = 0;
+    for (const geometry of this.geometries.values()) geometry.dispose();
+    this.geometries.clear();
     this.root.removeFromParent();
     this.root.clear();
   }
