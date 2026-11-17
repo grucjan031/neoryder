@@ -127,6 +127,29 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 - **P2** · Wykonawca · Cz 1 · Ag S · zależności: S2-02
 - **Kryteria:** nowe kwestie NPC i zmiana otoczenia wg `zarys-fabuly.md` sekcja 10.
 
+## S2b — tryby areny (decyzja właściciela 17 XI 2026)
+
+Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na strefach i celach z ADR 0008. Wejście z kryjówki obok zwykłego runu; nagrody jak za run (bez bonusu kampanii). Poziom zagrożenia działa.
+
+### S2b-01 Przejęcie
+
+- **Cel:** walka o punkty zamiast czyszczenia pokoju. **P1** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaplanowane
+- **Zależności:** S2-02 (strefy z paskiem postępu, fale z białą listą wrogów).
+- **Kryteria:** arena z 3 punktami A/B/C; gracz przejmuje punkt, stojąc w strefie; wrogowie przejmują i odbijają punkty (AI idzie do najbliższego punktu nie-wroga); pula posiłków wroga spada szybciej, gdy gracz trzyma większość punktów; zwycięstwo przy wyczerpaniu puli, porażka przy śmierci; HUD: stan punktów i pula. Liczby w `tuning`.
+- **Weryfikacja:** testy logiki punktów i puli, bot e2e (przejęcie cheatem → zwycięstwo), zrzuty HUD i stref, granie właściciela.
+
+### S2b-02 Szturm
+
+- **Cel:** front przesuwany przez wysadzanie par stacji. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaplanowane
+- **Zależności:** S2b-01, cel `sabotage`.
+- **Kryteria:** sektory po 2 stacje; zniszczenie obu przesuwa front; limit posiłków gracza (dodatkowe życia) zamiast pojedynczej śmierci.
+
+### S2b-03 Kradzież rdzenia
+
+- **Cel:** zabrać rdzeń z bazy wroga i donieść do ewakuacji. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaplanowane
+- **Zależności:** S2b-01, cele `pickup` i `exit`.
+- **Kryteria:** z rdzeniem wolniejszy ruch i brak dasha, wszyscy wrogowie gonią nosiciela; śmierć upuszcza rdzeń, wróg może go odnieść do bazy.
+
 ## S3 — „List przewozowy”
 
 ### S3-01 Cel obrony strefy
