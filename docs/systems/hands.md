@@ -62,6 +62,46 @@ natychmiast i kasuje bufor/zamianę.
 
 ## Render przegubowych dłoni
 
+### Model i chwyt ostrza — szlif FPP
+
+Generator `build_player_arm` w `tools/blender/build_assets.py` zachowuje ciągłą
+skinowaną siatkę, 18 kości i wszystkie dotychczasowe nazwy gniazd. Pełniejsza
+dłoń i nadgarstek mają wspólne, zaokrąglone przekroje z rękawem; kłąb kciuka
+łączy się z dłonią bez osobnego klocka. Owalne paliczki zwężają się łagodniej,
+mają pełniejsze stawy i zaokrąglone opuszki. Jeden zastosowany poziom subdivision
+wygładza przekrój i przejścia między paliczkami. Cztery niskie, fazowane osłony
+`plate_knuckle_*` podążają za pierwszymi kośćmi palców. Model ma 10 440 trójkątów
+na rękę (w dotychczasowym budżecie 6–12 tys.). Materiał rękawicy jest grafitowy,
+akcenty są cyan, a `resonance_core` zostaje magentowy (kolor Rezonansu), jak przed szlifem.
+
+`src/data/hands/bladeGrip.json` zawiera liczby wspólne dla gry i podglądów:
+
+- `socketPosition`: `[0, 0.039, -0.08544]` m względem roota dłoni — rękojeść
+  jest o 3,2 mm bliżej wnętrza dłoni, między kciukiem a zgiętymi palcami.
+  Blender zapisuje gniazdo w obu GLB; po zmianie tej wartości przebuduj modele.
+- `idlePosition`: `[0.24, -0.30, -0.40]` m w układzie kamery — o 4 cm niżej.
+- `idleRotation`: `[0.923, -0.477, 1.09]` rad Euler **YXZ** — dawna poza
+  `[0.9, -0.7, 0.8]` obrócona w układzie kamery o 0,16 rad wokół osi widzenia
+  (czubek ku środkowi) i o 0,08 rad do przodu. Na ekranie ostrze pochyla się
+  o kilka stopni ku środkowi kadru zamiast na zewnątrz; ręka nadal wchodzi z prawego
+  dolnego rogu. Test `handRig.test.ts` mierzy to pochylenie w rzucie perspektywicznym.
+- `offhandDropM`: `0.02` m — lewy chwyt bliźniaczych jest lustrzany i niższy.
+
+Dane waliduje zod w `src/render/handPoses.ts`; `FppBlade` używa ich dla
+`plasmaBlade`, `staffBlade` i `twinBlades`. `HandRig` używa tej samej pozycji
+gniazda w modelu zastępczym. Kąty palców pozostają w `handPoses.json`; w `gripBlade`
+zgięcie kciuka rozłożono bardziej na drugi staw. Pozy walki, czasy animacji,
+gniazda broni palnej i podparcia pozostają bez zmian.
+
+Budowanie: `--only player_arm_L,player_arm_R`; komplet podglądów:
+`--only hand_previews`. W `tools/blender/previews/` pliki
+`player_arm_R_before.png` i `player_arm_L_before.png` są kopiami stanu przed
+zmianą. Porównuj je z `player_arm_R.png` i `player_arm_L.png`. Dodatkowo
+`hand_fpp_plasmaBlade.png`, `hand_fpp_staffBlade.png`, `hand_fpp_twinBlades.png`
+pokazują tę samą pozę co gra (kamera 70°, 16:9, bez efektów gry), a
+`hand_grip_<wariant>_detail.png` pokazują zamknięcie chwytu. Podglądy broni palnej
+kontrolują zachowanie dotychczasowego chwytu po pogrubieniu dłoni.
+
 `src/render/handRig.ts` ładuje `player_arm_R.glb` i `player_arm_L.glb` przez
 wspólny cache z `applyStyle`. Każda instancja klonuje hierarchię przegubów;
 geometria i materiały stylu pozostają współdzielone. Brak pliku albo
@@ -124,7 +164,7 @@ Bez `support` pojawia się tylko na czas gestu. Przy trzymanych bliźniaczych
 ostrzach wolna dłoń i gest są wyłączone. `resonance_core` i dodatkowy blask
 na `palm_center` wzmacniają magentę; materiał jest własny dla instancji,
 więc gest nie zmienia materiałów innych obiektów. Po zakończeniu wraca jasność
-spoczynkowa. Nasłuch zdarzenia jest odpinany w `dispose()`.
+spoczynkowa i kolor cyan. Nasłuch zdarzenia jest odpinany w `dispose()`.
 
 ### Zamiana i kołysanie
 
@@ -151,8 +191,9 @@ RoomScene korzysta z tego samego gestu mocy, zamiany i kołysania co Arena.
 | `swayAmount`, `swayMax`, `swayReturn`                | Reakcja na obrót, limit w radianach, sztywność powrotu                    |
 | `bobAmount`, `bobFrequency`, `bobSpeed`, `bobReturn` | Amplituda w m, faza na metr ruchu, prędkość pełnej amplitudy, wygładzanie |
 
-Pozycje i kąty widoku do strojenia są w stałych na górze `fppBlade.ts`,
-`fppBlaster.ts`, `fppOffhand.ts`; pozy przegubów pozostają w JSON.
+Spoczynkowa pozycja ostrza i jego chwyt są w `src/data/hands/bladeGrip.json`.
+Pozostałe pozy walki są na górze `fppBlade.ts`, pozy broni i wolnej dłoni
+w `fppBlaster.ts`, `fppOffhand.ts`; pozy przegubów pozostają w `handPoses.json`.
 
 ## Kontrola w 30 sekund
 
