@@ -1,8 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
+// `mission start` przeładowuje stronę; odpytanie w trakcie nawigacji zwraca undefined zamiast wyjątku.
 const query = (page: Page, key: string) =>
-  page.evaluate((name) => window.__neoryder?.query(name), key);
+  page
+    .evaluate((name) => window.__neoryder?.query(name), key)
+    .catch(() => undefined);
 const command = (page: Page, line: string) =>
   page.evaluate((text) => window.__neoryder?.command(text), line);
 const waitPlaying = (page: Page) =>
