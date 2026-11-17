@@ -16,6 +16,7 @@ import { createStarterMetaState } from '../../src/progression/progressionSchema'
 import type { ChatterLine } from '../../src/world/hubChatter';
 import { tuning } from '../../src/core/tuning';
 import { HubScene } from '../../src/scenes/hub';
+import { loadHubLayout } from '../../src/world/hubSchema';
 import type { HubSceneOptions } from '../../src/scenes/hub';
 import { lifeLayout, lifeTexts } from '../fixtures/hubLife';
 import type { HubScreenActions, HubScreens } from '../../src/ui/hubScreens';
@@ -608,6 +609,7 @@ it('powitanie po opóźnieniu wybiera NPC najbliższego spawn i zapisuje klucz p
     key: 'first-visit',
     greetedNpc: null,
     reacted: [],
+    pending: ['kid', 'friend'],
   });
   expect(scene.query('hubChatter')).toBeNull();
   for (let i = 0; i < 149; i++) scene.step(SIM_DT, idle);
@@ -631,7 +633,7 @@ it('E daje reakcję każdemu NPC raz, potem zwykłe kwestie; powitanie nie zuży
   const { scene, commands } = await setup('', options);
   advanceArrival(scene);
   const greeting = scene.query('hubChatter') as ChatterLine;
-  for (const id of ['friend', 'kid']) {
+  for (const id of ['kid', 'friend']) {
     const npc = npcSpot(scene, id);
     commands.execute(`hub tp ${npc.x} ${npc.z + 2}`);
     commands.execute(`hub look ${id}`);
@@ -651,7 +653,7 @@ it('E daje reakcję każdemu NPC raz, potem zwykłe kwestie; powitanie nie zuży
     });
   }
   expect(scene.query('hubArrival')).toMatchObject({
-    reacted: ['friend', 'kid'],
+    reacted: ['kid', 'friend'],
   });
 });
 
@@ -757,6 +759,7 @@ it('debug wymusza kontekst, czyści reakcje i deterministycznie odtwarza powitan
       key: `debug:${kind}`,
       greetedNpc: null,
       reacted: [],
+      pending: ['kid', 'friend'],
     });
     advanceArrival(scene);
     const first = scene.query('hubChatter');
@@ -829,4 +832,120 @@ it('hub open zamyka otwarty plan', async () => {
   scene.step(SIM_DT, mapKey);
   commands.execute('hub open missions');
   expect(hubMap.isOpen).toBe(false);
+});
+
+const moveKey: InputSnapshot = { ...idle, pressed: new Set(['moveForward']) };
+const SEAT_ID = 'seat_canteen_bench';
+const seatDef = () =>
+  loadHubLayout(hideout).props!.find((p) => p.id === SEAT_ID)!;
+const look = (scene: HubScene) =>
+  scene.query('playerLook') as { yaw: number; pitch: number };
+
+async function atSeat(params = '', options: HubSceneOptions = {}) {
+  const env = await setup(params, options);
+  env.commands.execute('hub tp -16.1 -11.4');
+  env.commands.execute(`hub look ${SEAT_ID}`);
+  env.scene.step(SIM_DT, idle);
+  return env;
+}
+
+function settle(scene: HubScene): void {
+  for (let i = 0; i < Math.ceil(tuning.hub.sitBlendS / SIM_DT) + 3; i++)
+    scene.step(SIM_DT, idle);
+}
+
+it('E na siedzisku siada, ruch jest ignorowany, E albo WASD wstaje bez zmiany pozycji', async () => {
+  const { scene } = await atSeat();
+  expect(scene.query('hubSeat')).toBeNull();
+  const before = { ...position(scene) };
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubSeat')).toBe(SEAT_ID);
+  scene.step(SIM_DT, idle);
+  for (let i = 0; i < 30; i++)
+    scene.step(SIM_DT, {
+      ...walkForward,
+      held: new Set(['jump', 'dash', 'moveForward']),
+    });
+  // Samo przytrzymanie ruchu nie wstaje; pozycja ciała stoi.
+  expect(scene.query('hubSeat')).toBe(SEAT_ID);
+  expect(position(scene).x).toBeCloseTo(before.x, 2);
+  expect(position(scene).z).toBeCloseTo(before.z, 2);
+  expect(position(scene).y).toBeCloseTo(before.y, 2);
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubSeat')).toBeNull();
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubSeat')).toBe(SEAT_ID);
+  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, moveKey);
+  expect(scene.query('hubSeat')).toBeNull();
+  expect(position(scene).z).toBeCloseTo(before.z, 2);
+});
+
+it('siedząc, yaw jest ograniczony do sitYawLimitDeg wokół yawDeg, pitch jak zwykle', async () => {
+  const { scene } = await atSeat();
+  scene.step(SIM_DT, interact);
+  settle(scene);
+  const center = (seatDef().sit!.yawDeg * Math.PI) / 180;
+  const limit = (tuning.hub.sitYawLimitDeg * Math.PI) / 180;
+  for (const x of [-1e5, 1e5]) {
+    scene.step(SIM_DT, { ...idle, lookDelta: { x, y: 0 } });
+    const yaw = look(scene).yaw;
+    expect(Math.abs(yaw - center)).toBeLessThanOrEqual(limit + 1e-6);
+    expect(Math.abs(yaw - center)).toBeGreaterThan(limit - 1e-3);
+  }
+  scene.step(SIM_DT, { ...idle, lookDelta: { x: 0, y: -1e5 } });
+  expect(look(scene).pitch).toBeGreaterThan(0.5);
+});
+
+it('mapa, stacja i dymek blokują siadanie; hub sit / hub stand działają', async () => {
+  const { scene, commands } = await atSeat('', { hubMap: new FakeMap() });
+  scene.step(SIM_DT, mapKey);
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubSeat')).toBeNull();
+  expect(commands.execute(`hub sit ${SEAT_ID}`)).toContain('Nie można');
+  scene.step(SIM_DT, mapKey);
+  commands.execute('hub open missions');
+  expect(commands.execute(`hub sit ${SEAT_ID}`)).toContain('Nie można');
+  commands.execute('hub close');
+  commands.execute('hub talk tomasz');
+  expect(scene.query('hubTalk')).not.toBeNull();
+  expect(commands.execute(`hub sit ${SEAT_ID}`)).toContain('Nie można');
+  for (let i = 0; i < 400 && scene.query('hubTalk'); i++)
+    scene.step(SIM_DT, idle);
+  expect(commands.execute('hub sit')).toContain('hub sit');
+  expect(commands.execute('hub sit jukebox')).toContain('Nie można');
+  expect(commands.execute(`hub sit ${SEAT_ID}`)).toContain(SEAT_ID);
+  expect(scene.query('hubSeat')).toBe(SEAT_ID);
+  expect(commands.execute(`hub sit ${SEAT_ID}`)).toContain('Nie można');
+  expect(commands.execute('hub stand')).toContain('Wstałeś');
+  expect(scene.query('hubSeat')).toBeNull();
+  expect(commands.execute('hub stand')).toContain('Nie siedzisz');
+});
+
+it('hub tp zdejmuje siedzenie, a reset też', async () => {
+  const { scene, commands } = await atSeat();
+  commands.execute(`hub sit ${SEAT_ID}`);
+  commands.execute('hub tp 0 0');
+  expect(scene.query('hubSeat')).toBeNull();
+  commands.execute(`hub sit ${SEAT_ID}`);
+  scene.reset();
+  expect(scene.query('hubSeat')).toBeNull();
+});
+
+it('znacznik reakcji: pending po wejściu z kontekstem, znika po rozmowie, brak bez kontekstu', async () => {
+  const { scene, commands } = await setup('', arrivalOptions());
+  const pending = () =>
+    (scene.query('hubArrival') as { pending: string[] }).pending;
+  expect(pending()).toEqual(['kid', 'friend']);
+  commands.execute('hub talk kid');
+  expect(pending()).toEqual(['friend']);
+  commands.execute('hub talk kid');
+  expect(pending()).toEqual(['friend']);
+  commands.execute('hub talk friend');
+  expect(pending()).toEqual([]);
+  const none = await setup('', {
+    ...arrivalOptions(),
+    greetings: { last: () => 'first-visit', mark: vi.fn() },
+  });
+  expect(none.scene.query('hubArrival')).toBeNull();
 });

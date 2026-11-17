@@ -852,6 +852,18 @@ export const tuning = {
     /** Dymek rozmowy z NPC znika po tylu sekundach (albo po odejściu gracza). */
     npcLineS: 5,
     arrivalDelayS: 2.5,
+    /** Siadanie: czas przejścia kamery do punktu oka i z powrotem (s) oraz zakres obrotu głowy wokół kierunku siedziska (stopnie). */
+    sitBlendS: 0.4,
+    sitYawLimitDeg: 100,
+    /** Znacznik niewykorzystanej reakcji nad NPC: wysokość nad stopami, obniżenie dla siedzących i niskich póz, rozmiar (m), szerokość względem wysokości, jasność (HDR, bloom), pulsowanie (Hz, amplituda). */
+    markerHeightM: 2.25,
+    markerSeatedDropM: 0.5,
+    markerLowDropM: 0.7,
+    markerSizeM: 0.12,
+    markerWidthRatio: 0.45,
+    markerGlow: 1.8,
+    markerPulseHz: 0.8,
+    markerPulseAmp: 0.18,
     npcYieldRadiusM: 1.2,
     npcYieldConeCos: 0.5,
     /** Zapas (m) ponad sumę promieni NPC i gracza, przy którym NPC na trasie czeka zamiast go dosunąć. */

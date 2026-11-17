@@ -226,11 +226,13 @@ export function hubMapModel(
       color: HUB_MAP_STATION_COLORS[station.id] ?? 'white',
       point: point(station.position.x, station.position.z),
     })),
-    props: (layout.props ?? []).map((prop) => ({
-      id: prop.id,
-      label: prop.label,
-      point: point(prop.focus.position.x, prop.focus.position.z),
-    })),
+    props: (layout.props ?? [])
+      .filter((prop) => prop.kind !== 'seat')
+      .map((prop) => ({
+        id: prop.id,
+        label: prop.label,
+        point: point(prop.focus.position.x, prop.focus.position.z),
+      })),
     player: hubMapPlayer(frame, playerPos, playerYaw),
   };
 }

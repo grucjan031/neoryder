@@ -2,7 +2,7 @@
 
 ## Rekwizyty
 
-`hideout.json.props` definiuje `id`, `kind` (`jukebox`, `noodles`, `radio`, `bag`),
+`hideout.json.props` definiuje `id`, `kind` (`jukebox`, `noodles`, `radio`, `bag`, `seat`),
 `label` i `focus` o dodatnich wymiarach, takim jak dla stacji. Id są unikalne.
 E używa najbliższego trafienia promieniem z oka spośród stacji, NPC i rekwizytów
 w `interactRangeM`; podpowiedź pokazuje E i etykietę. Przytrzymanie nie powtarza
@@ -478,6 +478,8 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 - komendy meta (`registerMetaCommands`): `meta state|xp|data|cores|threat|unlock all|reset`; `meta threat <n>` ustawia
   `threat.max` (odblokowanie kolejnych Poziomów zagrożenia bez grania); po każdej komendzie pasek i panel się odświeżają;
 - `hub map` — przełącza plan stacji, `query('hubMap')` → `{ open }`;
+- `hub sit <seatId>` / `hub stand` — siadanie i wstawanie (patrz „Siadanie”), `query('hubSeat')` → id siedziska albo `null`,
+  `query('playerLook')` → `{ yaw, pitch }`;
 - `reset` wraca na `playerSpawn`.
 
 ## Zwierzęta
@@ -668,7 +670,7 @@ pętli. Zapisanie powitania nie usuwa kontekstu trwającej wizyty.
 
 Ręczna próba w 30 s: `?scene=hub&debug=1`, komenda `hub arrive victory`, odczekaj
 około 2,5 s i sprawdź napis. `window.__neoryder.query('hubArrival')` zwraca
-`{ kind, key, greetedNpc, reacted }` albo `null`. Podejdź do witającego NPC
+`{ kind, key, greetedNpc, reacted, pending }` albo `null`. Podejdź do witającego NPC
 lub użyj `hub talk <greetedNpc>`: pierwsza kwestia jest inną reakcją, druga zwykłym
 tekstem. Powtórz z `hub arrive death` i `hub arrive firstVisit`; komenda czyści
 stan reakcji i ponownie planuje powitanie (klucz `debug:<kind>`).
@@ -676,6 +678,39 @@ stan reakcji i ponownie planuje powitanie (klucz `debug:<kind>`).
 Testy: `hubArrival.test.ts`, `hubGreetings.test.ts`, rozszerzone `hubScene.test.ts`,
 `hubNpcs.test.ts` i `hubChatter.test.ts` (kontekst, opóźnienie, odległość, losowanie,
 rozmowy E, pamięć między wizytami i brak localStorage).
+
+## Siadanie
+
+Rekwizyt `seat` ma dodatkowe pole `sit: { position, yawDeg }` (wymagane dla `seat`, niedozwolone dla
+pozostałych rodzajów): `position` to punkt oka gracza po usiądnięciu (ok. 1,15 m nad podłogą), `yawDeg` kierunek
+patrzenia (0 = −Z, jak w `hub tp`). Etykiety „Usiądź” i „Wstań” są w `props.pl.json` (`labels.seat`, `labels.stand`).
+Cztery siedziska gracza w `hideout.json`, wszystkie poza miejscami NPC: `seat_platform_couch` (kanapa na peronie B
+przy beczce z ogniem), `seat_canteen_bench` (wolne miejsce na ławie w jadłodajni), `seat_bar_stool` (stołek przy
+barze), `seat_bunk_edge` (krawędź pryczy w kwaterach).
+
+E na siedzisku siada: kamera płynnie (`hub.sitBlendS`, 0,4 s) przechodzi do `sit.position`, a obrót ciągnie się
+do `yawDeg`. Potem mysz obraca widok w zakresie ±`hub.sitYawLimitDeg` (100°) wokół `yawDeg`, pitch jak zwykle.
+Ciało gracza stoi w miejscu (kontroler jest krokowany z pustym wejściem poza ruchem myszy), więc WASD, skok i dash
+są ignorowane. Podpowiedź pokazuje „E — Wstań”. Ponowne E albo naciśnięcie klawisza ruchu (WASD) wstaje: kamera
+wraca na pozycję przed siedziskiem. Otwarty plan stacji (M), stacja i dymek rozmowy blokują siadanie jak inne
+interakcje (komenda `hub sit` również); `hub tp` i `reset` zdejmują siedzenie od razu. Siedzenie nie emituje
+`hub_prop_used`. Stan: `query('hubSeat')`. Ręczna próba w 30 s: `hub tp -16.1 -11.4`, `hub look seat_canteen_bench`,
+E; albo `hub sit seat_bar_stool`, poruszaj myszą, `hub stand`.
+
+Testy: `hubScene.test.ts` (siadanie, wstawanie E i WASD, ograniczenie yaw, blokady, komendy), `hubProps.test.ts`
+(schemat `seat`, brak siedzisk na NPC), e2e `hub.spec.ts`.
+
+## Znaczniki reakcji
+
+Gdy kontekst przybycia (`HubArrival`) jest aktywny, NPC z jeszcze niewykorzystaną reakcją (pierwsza rozmowa E da
+reakcję) mają nad głową mały znacznik: pionowy romb w ciepłej bieli (#fff1d6, jasność HDR dla bloomu), ok. 0,12 m,
+lekko pulsujący w czasie klatki. Wysokość jest obniżona dla siedzących i niskich póz. Znacznik znika, gdy gracz z tym
+NPC rozmawia, i po wykorzystaniu reakcji; bez kontekstu przybycia nie ma żadnych. Geometria i materiał są
+współdzielone przez wszystkich NPC (`HubNpcs`), bez alokacji w klatce (`HubArrival.isPending(id)`). Liczby w
+`hub.marker*` (`tuning.ts`, lil-gui). `query('hubArrival')` zawiera `pending: string[]` (id NPC ze znacznikiem).
+
+Testy: `hubArrival.test.ts` (`pending`, `isPending`) i `hubScene.test.ts` (pending po wejściu z kontekstem, znika po
+rozmowie, brak bez kontekstu). Ręcznie: `hub arrive victory` i rozejrzyj się po NPC.
 
 ## Dźwięk otoczenia i pociąg
 

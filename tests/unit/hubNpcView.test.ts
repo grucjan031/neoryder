@@ -197,9 +197,9 @@ it('ubiera mieszkańców z look na prawdziwych kościach, zachowuje kluczowych N
         )!;
         expect(skirt, def.id).toBeDefined();
         root.updateWorldMatrix(true, true);
-        const point = root.children[0]!.worldToLocal(
-          skirt.getWorldPosition(new Vector3()),
-        );
+        const point = root.children
+          .find((child) => child.type !== 'Mesh')!
+          .worldToLocal(skirt.getWorldPosition(new Vector3()));
         expect(point.y).toBeCloseTo(0.72);
         expect(point.z).toBeCloseTo(0.15);
       }

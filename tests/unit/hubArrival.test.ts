@@ -64,7 +64,12 @@ it('najbliższy NPC z reakcją wita deterministycznie; pierwsza rozmowa nie powt
   expect(b.react('kid')).toEqual(reaction);
   expect(a.react('kid')).toBeNull();
   expect(a.react('friend')).toBeNull();
-  expect(a.state).toEqual({ ...context, greetedNpc: 'kid', reacted: ['kid'] });
+  expect(a.state).toEqual({
+    ...context,
+    greetedNpc: 'kid',
+    reacted: ['kid'],
+    pending: [],
+  });
   a.state.reacted.push('friend');
   expect(a.state.reacted).toEqual(['kid']);
 });
@@ -102,4 +107,24 @@ it('bez NPC z reakcją nie ma powitania ani reakcji', () => {
   );
   expect(arrival.greet()).toBeNull();
   expect(arrival.react('kid')).toBeNull();
+});
+
+it('pending i isPending listują NPC z niewykorzystaną reakcją', () => {
+  const layout = lifeLayout();
+  const texts = lifeTexts().npcs;
+  texts[0]!.reactions = { victory: ['Brawo!', 'Wróciłeś!'] };
+  const arrival = new HubArrival(
+    { kind: 'victory', key: 'seed:1' },
+    texts,
+    layout.npcs!,
+    layout.playerSpawn,
+  );
+  expect(arrival.state.pending).toEqual(['kid']);
+  expect(arrival.isPending('kid')).toBe(true);
+  expect(arrival.isPending('friend')).toBe(false);
+  arrival.greet();
+  expect(arrival.isPending('kid')).toBe(true);
+  arrival.react('kid');
+  expect(arrival.isPending('kid')).toBe(false);
+  expect(arrival.state.pending).toEqual([]);
 });

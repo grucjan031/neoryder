@@ -54,6 +54,38 @@ describe('dane rekwizytów', () => {
     for (const p of layout.props!) expect(p.label).toBe(texts.labels[p.kind]);
   });
 
+  it('seat wymaga sit, a pozostałe rodzaje go nie przyjmują', () => {
+    const seats = layout.props!.filter((p) => p.kind === 'seat');
+    expect(seats).toHaveLength(4);
+    for (const s of seats)
+      expect(hubPropSchema.safeParse(s).success).toBe(true);
+    const seat = seats[0]!;
+    expect(hubPropSchema.safeParse({ ...seat, sit: undefined }).success).toBe(
+      false,
+    );
+    expect(
+      hubPropSchema.safeParse({ ...layout.props![0]!, sit: seat.sit }).success,
+    ).toBe(false);
+    expect(
+      hubPropSchema.safeParse({
+        ...seat,
+        sit: { ...seat.sit, yawDeg: Infinity },
+      }).success,
+    ).toBe(false);
+  });
+
+  it('siedziska gracza nie leżą na NPC', () => {
+    for (const s of layout.props!.filter((p) => p.kind === 'seat'))
+      for (const npc of layout.npcs!)
+        expect(
+          Math.hypot(
+            s.sit!.position.x - npc.position.x,
+            s.sit!.position.z - npc.position.z,
+          ),
+          `${s.id} / ${npc.id}`,
+        ).toBeGreaterThan(0.8);
+  });
+
   it('wybiera najbliższe trafienie rekwizytu przed NPC i stacją oraz odrzuca zasięg i pudło', () => {
     const focus = (z: number) => ({
       position: { x: 0, y: 1.6, z },

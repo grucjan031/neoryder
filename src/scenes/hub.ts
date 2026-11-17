@@ -49,7 +49,7 @@ import type { HubPanelRegistry, HubScreens } from '../ui/hubScreens';
 import { registerMetaCommands } from '../ui/metaCommands';
 import type { CommandHost } from '../ui/metaCommands';
 import { loadHubLayout } from '../world/hubSchema';
-import type { HubLayout } from '../world/hubSchema';
+import type { HubLayout, HubPropDef } from '../world/hubSchema';
 import {
   NpcRuntime,
   npcRadius,
@@ -119,6 +119,13 @@ const stationList = HUB_STATION_IDS.join('|');
 const lookList = `${stationList}|<npc>|<propId>`;
 // E jest przypisane do power2; w kryjówce nie ma walki ani mocy.
 const HUB_INTERACT_ACTION = 'power2';
+const SEAT_MOVE_ACTIONS = [
+  'moveForward',
+  'moveBack',
+  'moveLeft',
+  'moveRight',
+] as const;
+const EMPTY_ACTIONS: ReadonlySet<never> = new Set();
 
 /** Kryjówka ruchu oporu (F4-07): peron nieczynnej stacji metra, FPP bez wrogów, stacje jako strefy z nakładkami UI. */
 export class HubScene implements Scene {
@@ -185,6 +192,13 @@ export class HubScene implements Scene {
   private pendingLook: { yaw: number; pitch: number } | null = null;
   private discardInteractAfterClose = false;
   private lookScale = 1;
+  /** Siedzisko, na którym gracz siedzi; `seatPose` zostaje do końca powrotu kamery. */
+  private seat: HubPropDef | null = null;
+  private seatPose: HubPropDef | null = null;
+  private seatBlend = 0;
+  private previousSeatBlend = 0;
+  private readonly isArrivalPending = (id: string): boolean =>
+    this.arrival?.isPending(id) === true;
   private disposed = false;
 
   constructor(options: HubSceneOptions = {}) {
@@ -574,11 +588,70 @@ export class HubScene implements Scene {
 
   private useProp(id: string): boolean {
     if (this.stations.opened) return false;
+    const def = this.layout.props?.find((p) => p.id === id);
+    if (def?.kind === 'seat') return this.toggleSeat(id);
     return this.props.use(
       id,
       this.player.getState().yaw,
       this.chatter.activeId === 'lena_radio_broadcast',
     );
+  }
+
+  private toggleSeat(id: string): boolean {
+    if (this.seat) return this.stand();
+    return this.sit(id);
+  }
+
+  private sit(id: string): boolean {
+    const def = this.layout.props?.find((p) => p.id === id);
+    if (
+      !def?.sit ||
+      this.seat ||
+      this.stations.opened ||
+      this.hubMap?.isOpen === true ||
+      this.talk !== null
+    )
+      return false;
+    this.seat = def;
+    this.seatPose = def;
+    this.chatter.interrupt();
+    return true;
+  }
+
+  private stand(instant = false): boolean {
+    if (!this.seat) return false;
+    this.seat = null;
+    if (instant) {
+      this.seatPose = null;
+      this.seatBlend = this.previousSeatBlend = 0;
+    }
+    return true;
+  }
+
+  /** Siedząc, gracz nie rusza się, a obrót głowy jest ograniczony do zakresu wokół kierunku siedziska. */
+  private seatedInput(input: InputSnapshot, dt: number): InputSnapshot {
+    const sit = this.seat!.sit!;
+    const t = this.ctx.tuning.hub;
+    const state = this.player.getState();
+    let yaw = state.yaw - input.lookDelta.x * this.lookScale;
+    const center = (sit.yawDeg * Math.PI) / 180;
+    const nearest =
+      center + Math.round((state.yaw - center) / (2 * Math.PI)) * 2 * Math.PI;
+    if (this.seatBlend >= 1) {
+      const limit = (t.sitYawLimitDeg * Math.PI) / 180;
+      yaw = Math.max(nearest - limit, Math.min(nearest + limit, yaw));
+    } else
+      yaw +=
+        (nearest - yaw) * (1 - Math.exp(-dt / Math.max(1e-3, t.sitBlendS / 3)));
+    return {
+      held: EMPTY_ACTIONS,
+      pressed: EMPTY_ACTIONS,
+      released: EMPTY_ACTIONS,
+      lookDelta: {
+        x: this.lookScale > 0 ? (state.yaw - yaw) / this.lookScale : 0,
+        y: input.lookDelta.y,
+      },
+    };
   }
 
   private onPropUsed(
@@ -702,6 +775,16 @@ export class HubScene implements Scene {
     if (input.pressed.has('map') && this.talk === null) this.hubMap?.toggle();
     const mapOpen = this.hubMap?.isOpen === true;
     this.props.step(dt);
+    const seated = this.seat !== null;
+    if (seated && SEAT_MOVE_ACTIONS.some((a) => input.pressed.has(a)))
+      this.stand();
+    this.previousSeatBlend = this.seatBlend;
+    const blendStep = dt / Math.max(1e-3, this.ctx.tuning.hub.sitBlendS);
+    this.seatBlend = Math.max(
+      0,
+      Math.min(1, this.seatBlend + (this.seat ? blendStep : -blendStep)),
+    );
+    if (!this.seat && this.seatBlend === 0) this.seatPose = null;
     this.fauna?.step(dt, this.previous);
     const player = this.player.getState().position;
     for (const state of this.npcStates)
@@ -722,11 +805,22 @@ export class HubScene implements Scene {
       entry.body.setNextKinematicTranslation(entry.translation);
     }
     this.soundscape?.step(dt, player);
-    this.player.step(dt, this.withPendingLook(input));
+    this.player.step(
+      dt,
+      this.seat ? this.seatedInput(input, dt) : this.withPendingLook(input),
+    );
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
-    const target = this.focusedTarget();
+    if (
+      seated &&
+      this.seat &&
+      !mapOpen &&
+      !discardInteract &&
+      input.pressed.has(HUB_INTERACT_ACTION)
+    )
+      this.stand();
+    const target = seated ? null : this.focusedTarget();
     if (
       !mapOpen &&
       !discardInteract &&
@@ -775,8 +869,13 @@ export class HubScene implements Scene {
       const state = this.player.getState();
       this.hubMap?.update(state.position, state.yaw);
     }
-    const target = this.focusedTarget();
-    if (target?.kind === 'npc') {
+    const target = this.seat ? null : this.focusedTarget();
+    if (this.seat) {
+      this.prompt?.update(
+        this.props.texts.labels.stand,
+        this.stations.opened !== null || mapOpen,
+      );
+    } else if (target?.kind === 'npc') {
       const name =
         this.npcTexts.npcs.find(({ id }) => id === target.id)?.name ??
         target.id;
@@ -810,6 +909,7 @@ export class HubScene implements Scene {
       frameDt,
       this.ctx.camera?.position ?? this.player.getState().position,
       this.talk?.line.id ?? this.chatter.line?.npc ?? null,
+      this.arrival ? this.isArrivalPending : null,
     );
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
@@ -825,6 +925,16 @@ export class HubScene implements Scene {
       this.player.getState(),
       alpha,
     );
+    const sit = this.seatPose?.sit;
+    if (sit) {
+      const linear =
+        this.previousSeatBlend +
+        (this.seatBlend - this.previousSeatBlend) * alpha;
+      const e = linear * linear * (3 - 2 * linear);
+      pose.position.x += (sit.position.x - pose.position.x) * e;
+      pose.position.y += (sit.position.y - pose.position.y) * e;
+      pose.position.z += (sit.position.z - pose.position.z) * e;
+    }
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
@@ -844,6 +954,7 @@ export class HubScene implements Scene {
 
   reset(): void {
     if (this.stations.opened) this.closeStation();
+    this.stand(true);
     this.player.teleport(this.spawnPosition());
     this.previous = this.player.getState();
   }
@@ -875,6 +986,12 @@ export class HubScene implements Scene {
         return this.talk ? { ...this.talk.line } : null;
       case 'hubChatter':
         return this.chatter.line ? { ...this.chatter.line } : null;
+      case 'playerLook': {
+        const { yaw, pitch } = this.player.getState();
+        return { yaw, pitch };
+      }
+      case 'hubSeat':
+        return this.seat?.id ?? null;
       case 'hubArrival':
         return this.arrival?.state ?? null;
       case 'npcs':
@@ -927,6 +1044,13 @@ export class HubScene implements Scene {
       if (args.length !== 1 || !args[0]) return 'hub use <propId>';
       return String(this.useProp(args[0]));
     });
+    register('hub sit', 'hub sit <seatId> — usiądź na siedzisku', (args) => {
+      if (args.length !== 1 || !args[0]) return 'hub sit <seatId>';
+      return this.sit(args[0]) ? `Siedzisz: ${args[0]}` : 'Nie można usiąść.';
+    });
+    register('hub stand', 'hub stand — wstań', () =>
+      this.stand() ? 'Wstałeś.' : 'Nie siedzisz.',
+    );
     register(
       'hub arrive',
       'hub arrive <firstVisit|victory|death> — odtwórz przybycie do kryjówki',
@@ -991,6 +1115,7 @@ export class HubScene implements Scene {
           [x, z, yaw, pitch].some((value) => !Number.isFinite(value))
         )
           return 'Użycie: hub tp <x> <z> [yawDeg] [pitchDeg]';
+        this.stand(true);
         this.player.teleport({ ...this.spawnPosition(), x: x!, z: z! });
         this.previous = this.player.getState();
         this.pendingLook = {

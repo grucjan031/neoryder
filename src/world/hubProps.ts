@@ -6,7 +6,14 @@ import type { HubPropDef } from './hubSchema';
 
 const text = z.string().trim().min(1);
 export const hubPropTextsSchema = z.object({
-  labels: z.object({ jukebox: text, noodles: text, radio: text, bag: text }),
+  labels: z.object({
+    jukebox: text,
+    noodles: text,
+    radio: text,
+    bag: text,
+    seat: text,
+    stand: text,
+  }),
   jukebox: z.object({ speaker: text, tracks: z.tuple([text, text, text]) }),
   noodles: z.object({ lines: z.array(text).min(2) }),
 });
@@ -56,6 +63,7 @@ export class HubProps {
     const prop = this.defs.find((p) => p.id === id);
     if (
       !prop ||
+      prop.kind === 'seat' ||
       ((this.cooldowns.get(id) ?? 0) > 0 &&
         !(prop.kind === 'radio' && interruptRadio))
     )

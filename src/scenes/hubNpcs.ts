@@ -10,6 +10,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshToonMaterial,
+  OctahedronGeometry,
   SphereGeometry,
   TorusGeometry,
   Quaternion,
@@ -30,7 +31,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { gradientMap } from '../render/materials';
-import { npcRootPosition, wrapAngle } from '../world/hubNpcs';
+import { isSeated, npcRootPosition, wrapAngle } from '../world/hubNpcs';
 import type { NpcRuntime } from '../world/hubNpcs';
 import type { HubNpcDef, NpcAccent, NpcAnimation } from '../world/hubSchema';
 
@@ -59,6 +60,12 @@ const RIM_STRENGTH = 0.55;
 const RIM_POWER = 2.6;
 const BODY_MESH = 'armored_body';
 const NECK_SHARE = 0.4;
+/** Ciepła biel z palety ADR 0006 (obiekty interaktywne). */
+const MARKER_COLOR = '#fff1d6';
+const LOW_POSES: readonly NpcAnimation[] = [
+  'Crouch_Idle_Loop',
+  'Fixing_Kneeling',
+];
 
 const loader = new GLTFLoader();
 let bodyTemplate: Promise<Object3D | null> | undefined;
@@ -96,6 +103,7 @@ interface NpcView {
   neck?: Object3D;
   head?: Object3D;
   skins: SkinnedMesh[];
+  marker: Mesh;
   /** Materiały akcesoriów (geometrie są współdzielone w HubNpcs). */
   owned: Material[];
 }
@@ -131,11 +139,23 @@ export class HubNpcs {
   private disposed = false;
   private readonly position = { x: 0, y: 0, z: 0 };
   private readonly rootPosition = { x: 0, y: 0, z: 0 };
+  private readonly markerGeometry = new OctahedronGeometry(0.5);
+  private readonly markerMaterial = new MeshBasicMaterial({
+    color: new Color(MARKER_COLOR),
+    transparent: true,
+    toneMapped: false,
+    depthWrite: false,
+    fog: false,
+  });
+  private time = 0;
 
   constructor(
     states: readonly NpcRuntime[],
     private readonly tuning: Tuning,
   ) {
+    this.markerMaterial.color.multiplyScalar(tuning.hub.markerGlow);
+    // Biel jest za mało nasycona dla heurystyki bloomu, a kontur rysowałby wokół znacznika ciemną obwódkę.
+    this.markerMaterial.userData.bloom = true;
     states.forEach((state, index) => {
       const def = state.def;
       const root = new Group();
@@ -145,7 +165,20 @@ export class HubNpcs {
       root.rotation.y = baseYaw;
       root.scale.setScalar(def.scale ?? 1);
       this.root.add(root);
+      const marker = new Mesh(this.markerGeometry, this.markerMaterial);
+      marker.name = `npcMarker:${def.id}`;
+      marker.visible = false;
+      marker.userData.noOutline = true;
+      marker.position.y =
+        tuning.hub.markerHeightM -
+        (isSeated(def)
+          ? tuning.hub.markerSeatedDropM
+          : def.animation && LOW_POSES.includes(def.animation)
+            ? tuning.hub.markerLowDropM
+            : 0);
+      root.add(marker);
       this.views.push({
+        marker,
         def,
         root,
         state,
@@ -638,10 +671,27 @@ export class HubNpcs {
     dt: number,
     camera: Vec3,
     speaker: string | null,
+    pending: ((id: string) => boolean) | null = null,
   ): void {
     const t = this.tuning.hub;
+    this.time += dt;
+    const pulse =
+      1 +
+      Math.sin(this.time * t.markerPulseHz * Math.PI * 2) * t.markerPulseAmp;
+    this.markerMaterial.opacity = Math.min(1, 0.75 + (pulse - 1) * 1.4);
     for (const view of this.views) {
       const state = view.state;
+      const showMarker =
+        pending !== null && speaker !== view.def.id && pending(view.def.id);
+      view.marker.visible = showMarker;
+      if (showMarker) {
+        const s = t.markerSizeM * pulse;
+        view.marker.scale.set(
+          s * t.markerWidthRatio,
+          s,
+          s * t.markerWidthRatio,
+        );
+      }
       const yaw =
         state.previousBodyYaw +
         wrapAngle(state.look.bodyYaw - state.previousBodyYaw) * alpha;
@@ -706,6 +756,8 @@ export class HubNpcs {
       for (const resource of view.owned) resource.dispose();
     }
     this.views.length = 0;
+    this.markerGeometry.dispose();
+    this.markerMaterial.dispose();
     for (const geometry of this.geometries.values()) geometry.dispose();
     this.geometries.clear();
     this.root.removeFromParent();

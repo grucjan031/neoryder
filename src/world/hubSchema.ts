@@ -69,12 +69,23 @@ export const hubFocusSchema = z.object({
   position: vec3Schema,
   size: z.object({ x: positive, y: positive, z: positive }),
 });
-export const hubPropSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  kind: z.enum(['jukebox', 'noodles', 'radio', 'bag']),
-  label: z.string().trim().min(1),
-  focus: hubFocusSchema,
-});
+export const hubPropSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_]+$/),
+    kind: z.enum(['jukebox', 'noodles', 'radio', 'bag', 'seat']),
+    label: z.string().trim().min(1),
+    focus: hubFocusSchema,
+    /** Punkt oka i kierunek patrzenia po usiądnięciu (tylko `seat`). */
+    sit: z.object({ position: vec3Schema, yawDeg: finite }).optional(),
+  })
+  .superRefine((prop, ctx) => {
+    if ((prop.kind === 'seat') !== (prop.sit !== undefined))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['sit'],
+        message: 'Pole sit jest wymagane dla seat i niedozwolone dla reszty.',
+      });
+  });
 export type HubPropDef = z.infer<typeof hubPropSchema>;
 
 export const hubStationSchema = z.object({

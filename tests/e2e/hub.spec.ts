@@ -306,3 +306,16 @@ test('hub: hub map pokazuje i chowa plan stacji', async ({ page }) => {
   expect(await query(page, 'hubMap')).toEqual({ open: false });
   expect(errors).toEqual([]);
 });
+
+test('hub: hub sit <id> siada, hub stand wstaje', async ({ page }) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  expect(await query(page, 'hubSeat')).toBeNull();
+  await command(page, 'hub tp -16.1 -11.4');
+  await command(page, 'hub sit seat_canteen_bench');
+  expect(await query(page, 'hubSeat')).toBe('seat_canteen_bench');
+  await waitSimSteps(page, 30);
+  await command(page, 'hub stand');
+  expect(await query(page, 'hubSeat')).toBeNull();
+  expect(errors).toEqual([]);
+});

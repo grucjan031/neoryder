@@ -33,6 +33,7 @@ export class HubArrival {
   private readonly reacted = new Set<string>();
   private readonly greeter: NpcText | null;
   private greetedNpc: string | null = null;
+  private readonly eligible = new Set<string>();
 
   constructor(
     private readonly context: HubArrivalContext,
@@ -45,6 +46,7 @@ export class HubArrival {
     for (const npc of npcs) {
       const text = texts.find(({ id }) => id === npc.id);
       if (!text?.reactions?.[context.kind]) continue;
+      this.eligible.add(npc.id);
       const distance = Math.hypot(
         npc.position.x - spawn.x,
         (npc.position.y ?? 0) - spawn.y,
@@ -62,7 +64,13 @@ export class HubArrival {
       ...this.context,
       greetedNpc: this.greetedNpc,
       reacted: [...this.reacted],
+      pending: [...this.eligible].filter((id) => !this.reacted.has(id)),
     };
+  }
+
+  /** Czy NPC ma jeszcze niewykorzystaną reakcję w tej wizycie (bez alokacji; używane co klatkę). */
+  isPending(id: string): boolean {
+    return this.eligible.has(id) && !this.reacted.has(id);
   }
 
   private greetingText(npc: NpcText): string {

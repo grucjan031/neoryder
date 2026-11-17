@@ -3,7 +3,9 @@
     "jukebox": "Przełącz utwór",
     "noodles": "Zjedz miskę",
     "radio": "Włącz / wyłącz audycję",
-    "bag": "Uderz w worek"
+    "bag": "Uderz w worek",
+    "seat": "Usiądź",
+    "stand": "Wstań"
   },
   "jukebox": {
     "speaker": "Szafa grająca",
