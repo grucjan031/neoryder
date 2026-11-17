@@ -17,6 +17,7 @@ export const dialogueLineSchema = z.object({
     'wolan',
     'nadia',
     'tymon',
+    'brandt',
   ]),
   text: id,
 });
@@ -40,6 +41,13 @@ export const missionObjectiveSchema = z.discriminatedUnion('kind', [
   z.object({
     ...base,
     kind: z.literal('exit'),
+    position: vec3Schema,
+    holdS: positive,
+    unlockAfter: z.array(id),
+  }),
+  z.object({
+    ...base,
+    kind: z.literal('interact'),
     position: vec3Schema,
     holdS: positive,
     unlockAfter: z.array(id),
@@ -107,6 +115,9 @@ export const missionSchema = z
       )
       .min(1),
     objectives: z.array(missionObjectiveSchema),
+    interlude: z
+      .object({ title: id, lines: z.array(dialogueLineSchema).min(1) })
+      .optional(),
     briefing: z.array(dialogueLineSchema),
     debrief: z.array(dialogueLineSchema),
     radio: z.array(
@@ -114,7 +125,7 @@ export const missionSchema = z
         trigger: z
           .string()
           .regex(
-            /^(runStart|objectivesDone|enterNode:[1-9]\d*|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/,
+            /^(runStart|objectivesDone|boss:phase:[23]|boss:defeated|enterNode:[1-9]\d*|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/,
           ),
         lines: z.array(dialogueLineSchema).min(1),
       }),
@@ -180,7 +191,7 @@ export const missionSchema = z
       const deps =
         objective.kind === 'pickup'
           ? [objective.spawnAfter]
-          : objective.kind === 'exit'
+          : objective.kind === 'exit' || objective.kind === 'interact'
             ? objective.unlockAfter
             : [];
       for (const dependency of deps) visit(dependency);
