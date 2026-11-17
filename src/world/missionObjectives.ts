@@ -17,7 +17,7 @@ export class MissionObjectives {
   private readonly pauseAnnounced = new Set<string>();
   private readonly started = new Set<string>();
   constructor(
-    readonly mission: MissionDefinition,
+    readonly mission: Pick<MissionDefinition, 'objectives'>,
     readonly ids: readonly string[],
     state: Pick<RunState, 'objectives' | 'objectiveProgress'>,
     private readonly hooks: ObjectiveHooks,

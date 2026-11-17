@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ModeId } from '../../world/modeSchema';
 import modeText from '../../data/ui/modes.pl.json';
 import { missionDefinitions } from '../../world/missions';
 import type { MissionDefinition } from '../../world/missionSchema';
@@ -119,7 +120,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   status.setAttribute('role', 'status');
 
   let selectedMission: MissionDefinition | undefined;
-  let selectedMode = false;
+  let selectedMode: ModeId | undefined;
   const choices = el('section');
   choices.dataset.missionList = '';
   const briefing = el('section');
@@ -133,7 +134,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       button.dataset.mission = mission.id;
       button.addEventListener('click', () => {
         selectedMission = mission;
-        selectedMode = false;
+        selectedMode = undefined;
         describe(mission);
         const back = el('button', 'mission-choice', missionText.back);
         back.type = 'button';
@@ -170,7 +171,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   regular.type = 'button';
   regular.dataset.mission = 'regular';
   regular.addEventListener('click', () => {
-    selectedMode = false;
+    selectedMode = undefined;
     selectedMission = undefined;
     describe();
     briefing.hidden = true;
@@ -183,7 +184,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   conquest.type = 'button';
   conquest.dataset.mode = 'conquest';
   conquest.addEventListener('click', () => {
-    selectedMode = true;
+    selectedMode = 'conquest';
     selectedMission = undefined;
     sectorName.textContent = modeText.conquest;
     sectorDescription.textContent = modeText.description;
@@ -191,6 +192,18 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     start.focus();
   });
   choices.append(conquest);
+  const assault = el('button', 'mission-choice', modeText.assault.title);
+  assault.type = 'button';
+  assault.dataset.mode = 'assault';
+  assault.addEventListener('click', () => {
+    selectedMode = 'assault';
+    selectedMission = undefined;
+    sectorName.textContent = modeText.assault.title;
+    sectorDescription.textContent = modeText.assault.description;
+    start.textContent = modeText.assault.start;
+    start.focus();
+  });
+  choices.append(assault);
   for (const title of modeText.soon) {
     const button = el('button', 'mission-choice', title);
     button.type = 'button';
@@ -252,7 +265,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       seed: seedInput.value.trim() || randomSeed(),
     });
     if (selectedMission) params.set('mission', selectedMission.id);
-    if (selectedMode) params.set('mode', 'conquest');
+    if (selectedMode) params.set('mode', selectedMode);
     ctx.navigate(`?${params}`);
   });
 

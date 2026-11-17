@@ -1,5 +1,7 @@
 import { Conquest } from '../world/conquest';
-import { conquestDefinition } from '../world/modes';
+import { conquestDefinition, assaultDefinition } from '../world/modes';
+import { Assault } from '../world/assault';
+import { AssaultView } from '../ui/assaultUi';
 import { ConquestView } from '../ui/conquestUi';
 import { MissionObjectives } from '../world/missionObjectives';
 import { missionDefinitions } from '../world/missions';
@@ -271,6 +273,8 @@ export class RoomScene implements Scene {
   private readonly missionSignal: ((trigger: string) => void) | undefined;
   private mission?: MissionObjectives;
   private conquest?: Conquest;
+  private assault?: Assault;
+  private assaultView?: AssaultView;
   private conquestView?: ConquestView;
   private missionView?: MissionView;
   private missionHud?: MissionHud;
@@ -648,6 +652,16 @@ export class RoomScene implements Scene {
         this.root.add(this.conquestView.root);
       }
     }
+    if (this.run.modeId === 'assault') {
+      this.assault = new Assault(assaultDefinition, {
+        signal: () => {},
+        explode: (objective) => this.explodeMission(objective, playerId),
+      });
+      if (typeof document !== 'undefined') {
+        this.assaultView = new AssaultView(this.assault);
+        this.root.add(this.assaultView.root);
+      }
+    }
     const mission = missionDefinitions.get(this.run.missionId ?? '');
     if (mission) {
       this.mission = new MissionObjectives(
@@ -711,7 +725,7 @@ export class RoomScene implements Scene {
       });
       this.root.add(this.bossFx.root);
       this.spawnBoss(this.layout.bossEnemy);
-    } else if (!this.conquest) this.director.start();
+    } else if (!this.conquest && !this.assault) this.director.start();
     if (this.manualEncounter) this.director.stop();
     if (this.health.dead) this.onPlayerDied();
     this.render(1);
@@ -1131,6 +1145,10 @@ export class RoomScene implements Scene {
     this.dressing?.step(dt);
     this.previous = this.player.getState();
     if (this.state === 'dead') {
+      if (this.assault) {
+        if (this.assault.stepRespawn(dt)) this.respawnAssault();
+        return;
+      }
       this.manager.step(dt);
       return;
     }
@@ -1167,20 +1185,19 @@ export class RoomScene implements Scene {
     this.damage.step(dt);
     this.hazards.step(dt);
     if (!this.health.dead && !this.cleared) {
-      if (this.conquest) {
+      const arena = this.conquest ?? this.assault;
+      if (arena) {
         const player = this.player.getState().position;
         const positions: Vec3[] = [];
         this.manager.forEach((enemy) => {
           if (!enemy.removed && enemy.current.state !== 'dead') {
             positions.push(enemy.current.position);
-            enemy.moveGoal = this.conquest!.moveGoal(
-              enemy.current.position,
-              player,
-            );
+            enemy.moveGoal = arena.moveGoal(enemy.current.position, player);
           }
         });
-        this.conquest.step(dt, player, positions);
-        const spawn = this.conquest.spawnPosition(
+        this.conquest?.step(dt, player, positions);
+        this.assault?.step(dt, player);
+        const spawn = arena.spawnPosition(
           this.layout,
           player,
           positions,
@@ -1189,12 +1206,12 @@ export class RoomScene implements Scene {
         if (
           spawn &&
           this.spawnEnemy(
-            this.ctx.rng.pick(this.conquest.definition.enemies),
+            this.ctx.rng.pick(arena.definition.enemies),
             spawn,
           ) !== null
         )
-          this.conquest.spawned();
-        if (this.conquest.outcome === 'victory') this.completeRoom();
+          arena.spawned();
+        if (arena.outcome === 'victory') this.completeRoom();
       }
       this.mission?.step(dt, this.player.getState().position);
       this.openMissionDock();
@@ -1239,6 +1256,7 @@ export class RoomScene implements Scene {
     this.hazardView.update(this.hazards.state(), alpha);
     this.missionView?.update();
     this.conquestView?.update();
+    this.assaultView?.update();
     const ids = this.seenEnemyIds;
     ids.clear();
     this.manager.forEach((enemy) => {
@@ -1360,6 +1378,8 @@ export class RoomScene implements Scene {
   }
 
   private onPlayerDied(): void {
+    if (this.state === 'dead') return;
+    this.assault?.died();
     this.state = 'dead';
     this.heldItem.cancelAim();
     this.player.setAim(0);
@@ -1367,7 +1387,37 @@ export class RoomScene implements Scene {
     this.powers.reset();
     this.weapon.cool(0);
     this.director.stop();
-    if (typeof document !== 'undefined') document.exitPointerLock?.();
+    if (this.assault) this.hud?.setLoadout(this.loadout);
+    if (!this.assault && typeof document !== 'undefined')
+      document.exitPointerLock?.();
+  }
+
+  private respawnAssault(): void {
+    if (!this.assault || this.assault.outcome) return;
+    this.statuses.reset();
+    this.projectiles.dispose();
+    this.powers.reset();
+    this.blade.reset();
+    for (const weapon of this.weapons) weapon.reset();
+    this.selectWeapon(0);
+    this.health.reset();
+    this.registerPlayer();
+    this.hud?.setLoadout(this.loadout);
+    this.energy.set(this.energy.max);
+    this.player.stamina.set(this.player.stamina.max);
+    const spawn = this.assault.sector.playerSpawn;
+    this.player.teleport({
+      ...spawn,
+      y:
+        spawn.y +
+        this.ctx.tuning.player.capsuleHeight / 2 +
+        this.ctx.tuning.player.controllerOffset,
+    });
+    this.lookAtDegrees(0, 0);
+    this.previous = this.player.getState();
+    this.heldItem.reset(this.loadout.startHeld);
+    this.state = 'playing';
+    this.emitHealth();
   }
 
   missionState(): Pick<RunState, 'objectives' | 'objectiveProgress'> {
@@ -1568,6 +1618,7 @@ export class RoomScene implements Scene {
 
   private completeRoom(): void {
     if (this.conquest && this.conquest.outcome !== 'victory') return;
+    if (this.assault && this.assault.outcome !== 'victory') return;
     if (this.node.fixed?.objectives.length && !this.mission?.complete) return;
     if (this.cleared || this.state === 'dead' || this.disposed) return;
     this.cleared = true;
@@ -1626,6 +1677,16 @@ export class RoomScene implements Scene {
       args.length === 1 && this.conquest?.capture(args[0]!)
         ? 'Punkt przejęty.'
         : 'Nieprawidłowy punkt.',
+    );
+    register('assault destroy', 'assault destroy <A|B>', (args) =>
+      args.length === 1 && this.assault?.destroy(args[0]!)
+        ? 'Stacja zniszczona.'
+        : 'Stacja niedostępna.',
+    );
+    register('assault lives', 'assault lives <n>', (args) =>
+      args.length === 1 && this.assault?.setLives(Number(args[0]))
+        ? 'Pula ustawiona.'
+        : 'Nieprawidłowa pula.',
     );
     register('conquest tickets', 'conquest tickets <n>', (args) =>
       args.length === 1 && this.conquest?.setTickets(Number(args[0]))
@@ -1873,6 +1934,8 @@ export class RoomScene implements Scene {
     switch (name) {
       case 'conquest':
         return this.conquest?.snapshot() ?? null;
+      case 'assault':
+        return this.assault?.snapshot() ?? null;
       case 'missionObjectives':
         return this.mission
           ? {
@@ -2011,6 +2074,7 @@ export class RoomScene implements Scene {
   private disposeParts(): void {
     this.hazardView?.dispose();
     this.conquestView?.dispose();
+    this.assaultView?.dispose();
     this.missionView?.dispose();
     this.missionHud?.dispose();
     for (const director of this.reinforcements) director.dispose();

@@ -1,5 +1,5 @@
 import { modeIdSchema } from '../world/modeSchema';
-import { conquestDefinition } from '../world/modes';
+import { modeDefinitions } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -834,7 +834,7 @@ export class RunScene implements Scene {
             firstBreakS: 0,
             breakS: 0,
             maxAlive: state.modeId
-              ? conquestDefinition.maxAlive
+              ? modeDefinitions[state.modeId].maxAlive
               : bossRoom
                 ? (layout.maxAlive ?? 1)
                 : 1,
@@ -980,6 +980,15 @@ export class RunScene implements Scene {
         this.rewardDelayRemainingS = null;
         this.schedule('clear');
       }
+    }
+    if (
+      this.manager.active &&
+      this.manager.state.modeId === 'assault' &&
+      (this.room?.query?.('assault') as { outcome?: string } | null)
+        ?.outcome === 'death'
+    ) {
+      this.manager.setHp(0);
+      this.manager.finish('death');
     }
     this.syncMission();
     this.flushTransitions();
@@ -1159,6 +1168,8 @@ export class RunScene implements Scene {
     for (const name of [
       'conquest capture',
       'conquest tickets',
+      'assault destroy',
+      'assault lives',
       'tp',
       'hold',
       'status',

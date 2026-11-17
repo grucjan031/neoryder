@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { modeIdSchema, type ModeId } from './modeSchema';
-import { conquestDefinition } from './modes';
+import { modeDefinitions } from './modes';
 import type { MissionDefinition } from './missionSchema';
 import type { EntityId, EventBus } from '../core/events';
 import {
@@ -264,6 +264,7 @@ export class RunManager {
       bus.on('player_died', ({ id }) => {
         if (!this.isRunActive() || !this.currentState) return;
         if (this.playerId !== null && id !== this.playerId) return;
+        if (this.currentState.modeId === 'assault') return;
         this.currentState.hp = 0;
         this.finish('death');
       }),
@@ -318,12 +319,15 @@ export class RunManager {
           layers: [
             [
               {
-                id: 'conquest',
+                id: options.modeId,
                 layer: 1,
                 index: 0,
                 type: 'combat' as const,
                 next: [],
-                fixed: { roomId: conquestDefinition.roomId, objectives: [] },
+                fixed: {
+                  roomId: modeDefinitions[options.modeId].roomId,
+                  objectives: [],
+                },
               },
             ],
           ],
@@ -721,7 +725,7 @@ export class RunManager {
       kills: this.currentState.stats.kills,
       roomsCleared: this.currentState.modeId
         ? outcome === 'victory'
-          ? conquestDefinition.rewardRooms
+          ? modeDefinitions[this.currentState.modeId].rewardRooms
           : 0
         : this.clearedNodes.size,
       elitesCleared: this.countClearedElites(),

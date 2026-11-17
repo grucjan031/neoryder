@@ -1,8 +1,9 @@
 # Tryby areny
 
 Przejęcie (S2b-01) uruchamia się z tablicy misji, sekcja „Tryby areny”, albo
-`?scene=run&mode=conquest&loadout=classic&debug=1`. Szturm i Kradzież rdzenia
-są nieaktywne. Tryb wyklucza parametr misji i nie zmienia kampanii.
+`?scene=run&mode=conquest&loadout=classic&debug=1`. Szturm jest drugim aktywnym
+trybem; Kradzież rdzenia pozostaje nieaktywna. Tryb wyklucza parametr misji
+i nie zmienia kampanii.
 
 ## Dane i reguły
 
@@ -62,3 +63,59 @@ i archetypów, kontroler czystej symulacji oraz integrację hosta i widoku.
 Udostępnij pozycję tablicy w tekstach PL, debug query i testy reguł, zapisu
 oraz pełnej ścieżki. Nowe zasady nagród lub trwały stan wymagają osobnego
 kontraktu; nie omijaj `finish()` i istniejącego rozliczania.
+
+## Szturm (S2b-02)
+
+Start: tablica → „Tryby areny” → „Szturm” → „Rozpocznij Szturm” albo
+`?scene=run&mode=assault&loadout=classic&debug=1`. Jeden węzeł, trzy kolejne
+sektory w `combatCorridor`. Płaska podłoga 16×32 m i wejście od dodatniego Z
+dają czytelny kierunek natarcia ku ujemnemu Z. Stacje omijają osłony i ściany;
+istniejące przewężenie między sektorami pozostawia przejście środkiem.
+
+Wszystkie pozycje poniżej mają Y=0 (podłoga):
+
+| Sektor | Stacja A (X,Z) | Stacja B (X,Z) | Odrodzenie (X,Z) | Posiłki wroga (X,Z) |
+| --- | --- | --- | --- | --- |
+| 1 | −4, 9 | 4, 9 | 0, 12 | −5, 0,5 oraz 5, 0,5 |
+| 2 | −4, 1 | 4, 1 | 0, 4 | −5, −9 oraz 5, −9 |
+| 3 | −4, −9 | 4, −9 | 0, −4 | −5, −13 oraz 5, −13 |
+
+`src/data/modes/assault.json`: 3 życia łącznie (dwa możliwe odrodzenia),
+odrodzenie po 2 s, maksymalnie 6 wrogów, jeden spawn co 3 s, archetypy
+`assaulter`/`gunner`. Strefa 1,5 m, podkładanie 3 s, lont 3 s, wybuch 3 m
+i 80 obrażeń także dla gracza. Postęp podkładania utrzymuje się poza strefą;
+lont działa bez obecności gracza. Wspólne `MissionObjectives` i `MissionView`
+zachowują reguły, wybuch, maszt, pasek i krąg sabotażu z misji.
+
+Dopiero obie zniszczone stacje aktywują nową parę i przesuwają punkty spawnu.
+Komunikat „Front przesunięty” trwa 3 s. Żywi wrogowie pozostają w pokoju,
+a `moveGoal` kieruje ich do najbliższej niezniszczonej stacji. Gracz w promieniu
+8 m przywraca zwykłą walkę. Spawn wymaga wolnej podłogi z marginesem 0,8 m,
+5 m od gracza i 1,6 m od innych wrogów; brak bezpiecznego punktu odracza spawn.
+Walidacja sprawdza też osiągalność, kolejność sektorów, rozdzielenie stref,
+odrodzenia i punkty posiłków po stronie końca pokoju względem stacji.
+
+Śmierć odejmuje jedno życie tylko raz. Podczas 2 s oczekiwania symulacja pokoju
+(także lonty i wrogowie) czeka, HUD pokazuje odliczanie. Gracz wraca nad podłogę
+początku aktywnego sektora z pełnym zdrowiem, energią i wytrzymałością,
+wyzerowanymi statusami, mocami i ostrzem; broń wraca do stanu startowego
+(slot 0, reset ciepła, przeładowania i stanu strzału), przedmiot w ręku według
+loadoutu. Stacje i żywi wrogowie zachowują stan. Brak żyć oznacza porażkę;
+śmiertelny wybuch przy ostatnim życiu ma pierwszeństwo przed zwycięstwem.
+
+Ostatnia para kończy arenę przez istniejące `completeRoom()`/`finish()`.
+`summary.modeId = 'assault'`, `rewardRooms = 6` przy zwycięstwie, 0 przy porażce.
+Brak bonusu kampanii, bez migracji zapisu v4 i bez zmiany kolejności nagród.
+Wznowienie niezakończonej areny rozpoczyna ją od pierwszego sektora z nową pulą.
+
+HUD: sektor 1/3, stacje A/B (cała / podkładanie / lont / zniszczona), życia,
+odliczanie i komunikat frontu. Bursztyn #ffae1a oznacza gracza i jego postęp,
+czerwień #e0262b stacje wroga. Na 390×844 panel jest pod kredytami;
+stan jest opisany tekstem, a nie samym kolorem.
+
+Debug: `assault destroy A`, `assault destroy B`, `assault lives 1`,
+`query('assault')`. W 30 s: włącz `god`, niszcz obie stacje w każdym sektorze,
+sprawdź nowe pary, finał, nagrodę i powrót. Osobno bez `god`: `hurt 99999`
+trzy razy, czekając na odrodzenia; sprawdź pełne zdrowie, pozycję i porażkę.
+Ręczny feel: podejdź do kręgu, podłóż ładunek, odejdź przed końcem lontu;
+oceń tempo natarcia i czy obrońcy nie blokują przejścia.

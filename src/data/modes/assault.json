@@ -1,0 +1,55 @@
+{
+  "id": "assault",
+  "title": "Szturm",
+  "roomId": "combatCorridor",
+  "enemies": ["assaulter", "gunner"],
+  "maxAlive": 6,
+  "spawnIntervalS": 3,
+  "rewardRooms": 6,
+  "lives": 3,
+  "respawnS": 2,
+  "noticeS": 3,
+  "radiusM": 1.5,
+  "holdS": 3,
+  "fuseS": 3,
+  "blastRadiusM": 3,
+  "blastDamage": 80,
+  "detectRangeM": 8,
+  "minSpawnDistanceM": 5,
+  "spawnClearanceM": 0.8,
+  "sectors": [
+    {
+      "playerSpawn": { "x": 0, "y": 0, "z": 12 },
+      "stations": [
+        { "x": -4, "y": 0, "z": 9 },
+        { "x": 4, "y": 0, "z": 9 }
+      ],
+      "spawnPoints": [
+        { "x": -5, "y": 0, "z": 0.5 },
+        { "x": 5, "y": 0, "z": 0.5 }
+      ]
+    },
+    {
+      "playerSpawn": { "x": 0, "y": 0, "z": 4 },
+      "stations": [
+        { "x": -4, "y": 0, "z": 1 },
+        { "x": 4, "y": 0, "z": 1 }
+      ],
+      "spawnPoints": [
+        { "x": -5, "y": 0, "z": -9 },
+        { "x": 5, "y": 0, "z": -9 }
+      ]
+    },
+    {
+      "playerSpawn": { "x": 0, "y": 0, "z": -4 },
+      "stations": [
+        { "x": -4, "y": 0, "z": -9 },
+        { "x": 4, "y": 0, "z": -9 }
+      ],
+      "spawnPoints": [
+        { "x": -5, "y": 0, "z": -13 },
+        { "x": 5, "y": 0, "z": -13 }
+      ]
+    }
+  ]
+}
