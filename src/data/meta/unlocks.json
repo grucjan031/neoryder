@@ -1,4 +1,6 @@
 [
+  { "id": "module:collimator", "cost": { "data": 140 }, "minLevel": 2 },
+  { "id": "module:scope", "cost": { "data": 220 }, "minLevel": 5 },
   { "id": "module:ricochet", "cost": { "data": 160 }, "minLevel": 3 },
   { "id": "module:pierce", "cost": { "data": 180 }, "minLevel": 4 },
   { "id": "module:incendiary", "cost": { "data": 200 }, "minLevel": 4 },

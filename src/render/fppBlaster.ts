@@ -22,6 +22,7 @@ import type { Settings } from '../core/save';
 import { applyStyle, getMaterial } from './materials';
 import { palette } from './palette';
 import { HandRig } from './handRig';
+import { attachModuleVisuals } from './weaponModuleVisuals';
 import {
   applyFppSurfaces,
   fppGlowMaterial,
@@ -70,6 +71,7 @@ const HEAT_GLOW_SIZE = 0.09;
 export interface FppBlasterOptions {
   /** Nazwa modelu (`<nazwa>.glb`) dla id broni; brak = model blastera. */
   modelOf?: (weaponId: string) => string | undefined;
+  modulesOf?: (weaponId: string) => readonly string[];
   tuning?: Pick<Tuning, 'weapons' | 'player'>;
   /** Ustawienia dostępności (domyślnie zapisane ustawienia gracza). */
   settings?: Pick<Settings, 'flashes'>;
@@ -137,6 +139,9 @@ export class FppBlaster {
   private loadModels = false;
   private current: Object3D | null = null;
   private wanted = FALLBACK_MODEL;
+  private weaponId: string | undefined;
+  private readonly modulesOf: (weaponId: string) => readonly string[];
+  private detachModules: (() => void) | undefined;
   private heat = 0;
   private overheated = false;
   private recoil = 0;
@@ -155,6 +160,7 @@ export class FppBlaster {
   constructor(bus: EventBus, owner: EntityId, options: FppBlasterOptions = {}) {
     this.tuning = options.tuning ?? defaultTuning;
     this.modelOf = options.modelOf ?? (() => undefined);
+    this.modulesOf = options.modulesOf ?? (() => []);
     this.settings = options.settings;
     this.root.matrixAutoUpdate = false;
     this.root.add(this.fallback);
@@ -173,6 +179,7 @@ export class FppBlaster {
       }),
       bus.on('weapon_switched', ({ owner: who, weapon }) => {
         if (who !== owner) return;
+        this.weaponId = weapon;
         this.wanted = this.modelOf(weapon) ?? FALLBACK_MODEL;
         void this.show(this.wanted);
       }),
@@ -191,21 +198,20 @@ export class FppBlaster {
     let model = await this.fetchModel(name);
     if (!model && name !== FALLBACK_MODEL)
       model = await this.fetchModel(FALLBACK_MODEL);
-    if (
-      this.disposed ||
-      name !== this.wanted ||
-      !model ||
-      model === this.current
-    )
-      return;
+    if (this.disposed || name !== this.wanted || !model) return;
     this.setCurrent(model);
   }
 
   private setCurrent(model: Object3D): void {
+    this.detachModules?.();
     if (this.current) this.root.remove(this.current);
     this.root.remove(this.fallback);
     this.current = model;
     this.root.add(model);
+    this.detachModules =
+      this.weaponId === undefined
+        ? undefined
+        : attachModuleVisuals(model, this.modulesOf(this.weaponId));
     this.flashLeft = 0;
   }
 
@@ -257,6 +263,7 @@ export class FppBlaster {
 
   private attachFlash(model: Object3D, muzzle: Object3D): void {
     const flash = new Group();
+    flash.name = 'module_muzzle_flash';
     flash.visible = false;
     // Gwiazda (addytywna, bez konturu) w płaszczyźnie XY, miękki biały rdzeń
     // i dwa skrzyżowane „płatki” wzdłuż lufy, widoczne z boku broni.
@@ -371,6 +378,7 @@ export class FppBlaster {
 
   dispose(): void {
     this.disposed = true;
+    this.detachModules?.();
     this.hand.dispose();
     for (const off of this.off.splice(0)) off();
     this.heatMaterial.dispose();

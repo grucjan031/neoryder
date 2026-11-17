@@ -49,7 +49,11 @@ export const createWorkshopPanel: HubPanelFactory = (
 
   /** Wykonuje zmianę meta, zapisuje i odświeża; błąd trafia do linii statusu. */
   const run = async (change: () => void): Promise<void> => {
-    if (busy || disposed) return;
+    if (disposed) return;
+    if (busy) {
+      refresh();
+      return;
+    }
     busy = true;
     try {
       change();
@@ -255,11 +259,7 @@ export const createWorkshopPanel: HubPanelFactory = (
       weapon.slots.forEach((slot, index) => {
         const label = el('label', 'workshop__module-slot');
         label.append(
-          el(
-            'span',
-            undefined,
-            fill(text.equipment.moduleSlot, { n: index + 1 }),
-          ),
+          el('span', undefined, text.equipment.moduleSlots[slot.slot]),
         );
         const select = el('select', 'workshop__module-select');
         select.dataset.weapon = weapon.weaponId;
@@ -279,16 +279,26 @@ export const createWorkshopPanel: HubPanelFactory = (
           slot.options.find((option) => option.id === slot.selected)
             ?.description ?? '';
         select.addEventListener('change', () => {
-          void setChoice(
-            nextModuleLoadout(
-              ctx.manager,
-              weapon.weaponId,
-              index,
-              select.value,
+          void run(() =>
+            ctx.manager.setLoadout(
+              nextModuleLoadout(
+                ctx.manager,
+                weapon.weaponId,
+                index,
+                select.value,
+              ),
             ),
           );
         });
         label.append(select);
+        const description = el(
+          'span',
+          'workshop__module-description',
+          select.title,
+        );
+        description.id = `module-description-${weapon.weaponId}-${slot.slot}`;
+        select.setAttribute('aria-describedby', description.id);
+        label.append(description);
         group.append(label);
       });
       section.querySelector('[data-group="weapons"]')!.append(group);

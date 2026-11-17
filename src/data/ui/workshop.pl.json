@@ -29,7 +29,8 @@
     "fullHint": "Limit slotów wyczerpany",
     "lastHint": "Wymagana co najmniej jedna pozycja",
     "moduleSlot": "Moduł {n}",
-    "emptyModule": "Pusty"
+    "moduleSlots": { "muzzle": "Wylot", "cell": "Ogniwo", "optic": "Optyka" },
+    "emptyModule": "— brak —"
   },
   "bladeNames": {
     "plasmaBlade": "Ostrze plazmowe",
