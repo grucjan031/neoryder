@@ -93,6 +93,36 @@ it('okładziny kryjówki są jednostronne i zwrócone od ściany do wnętrza', (
   decor.dispose();
 });
 
+it('neonTexts walidują flicker i HubDecor zmienia jasność napisu jak dla stacji', () => {
+  vi.stubGlobal('document', {
+    createElement: () => ({ getContext: () => null }),
+  });
+  const layout = loadHubLayout(hideoutData);
+  const neon = layout.neonTexts!.find((n) => n.text === 'NA ANTENIE')!;
+  expect(neon.flicker?.pattern).toBe('pulse');
+  expect(() =>
+    loadHubLayout({
+      ...layout,
+      neonTexts: [{ ...neon, flicker: { pattern: 'unknown' } }],
+    }),
+  ).toThrow();
+  const decor = new HubDecor([], [], [], tuning.hub, [neon]);
+  const mesh = decor.root.getObjectByName(`neonText:${neon.text}`) as Mesh<
+    PlaneGeometry,
+    MeshBasicMaterial
+  >;
+  decor.update(0);
+  const initial = mesh.material.color.r;
+  const values: number[] = [];
+  for (let i = 0; i < 40; i++) {
+    decor.update(0.1);
+    values.push(mesh.material.color.r);
+  }
+  expect(values.some((v) => Math.abs(v - initial) > 0.01)).toBe(true);
+  expect(values.every((v) => v >= 0 && v <= 1)).toBe(true);
+  decor.dispose();
+});
+
 it('płomień ma mały zasięg, ograniczoną jasność i test głębi również po migotaniu', () => {
   vi.stubGlobal('document', {
     createElement: () => ({ getContext: () => null }),

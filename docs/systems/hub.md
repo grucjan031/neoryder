@@ -1,5 +1,59 @@
 # Kryjówka (hub) — F4-07
 
+## Rekwizyty
+
+`hideout.json.props` definiuje `id`, `kind` (`jukebox`, `noodles`, `radio`, `bag`),
+`label` i `focus` o dodatnich wymiarach, takim jak dla stacji. Id są unikalne.
+E używa najbliższego trafienia promieniem z oka spośród stacji, NPC i rekwizytów
+w `interactRangeM`; podpowiedź pokazuje E i etykietę. Przytrzymanie nie powtarza
+użycia. Teksty i nazwy utworów są w walidowanym `src/data/hub/props.pl.json`.
+
+- Szafa grająca na peronie B przełącza utwory 0→1→2→0 (start: „Ostatni peron”,
+  dalej „Deszcz na kredyt”, „Świt odwołany”). Trzy oryginalne frazy basu i padów
+  mają inne tempa i akordy; źródło ambience otrzymuje `track`. Chatter podaje
+  nazwę utworu jako „Szafa grająca”.
+- Lada Heli: „Zjedz miskę” losuje kwestię z danych przez `Rng.fork('hub-props')`.
+  Przez 2 s ciepłe przyciemnienie krawędzi zanika nad canvasem. CSS wyłącza je
+  przy `prefers-reduced-motion: reduce`, pozostawiając komunikat.
+- Radio na biurku Leny wymusza `lena_radio_broadcast`; następne E wyłącza
+  audycję także podczas przerwy między kwestiami i przed końcem cooldownu.
+- Worek w hali ma osobną siatkę `fabric` z obręczą `rubber` i liną do sufitu.
+  E lub zbocze ataku w zasięgu nadaje impuls w kierunku spojrzenia. Wahadło X/Z
+  integruje kąt i prędkość w `step()`, render interpoluje poprzedni i bieżący kąt.
+  Tłumienie zatrzymuje ruch; brak collidera zapobiega zakleszczeniu gracza.
+  Reguła `hub_prop_used` z `kind: 'bag'` wybiera miękki dźwięk `bagHit`.
+
+Każde zaakceptowane użycie emituje `hub_prop_used { prop, kind }`.
+Cooldown per id: `tuning.hub.propCooldownS = 1`, dla miski
+`noodlesCooldownS = 20`. Parametry wahadła i wyglądu liny: `tuning.hub.bag*`.
+`hub use <propId>` pomija dystans, zachowuje cooldown; `query('hubProps')`
+zwraca `{ id, kind, cooldownLeft, track?, angle? }[]`. `hub look <propId>`
+ustawia spojrzenie do testu E.
+
+Kamery do sprawdzenia w `?scene=hub&debug=1` (po teleportacji można użyć
+`hub look <propId>`):
+
+| Rekwizyt      | Kamera                     |
+| ------------- | -------------------------- |
+| Szafa grająca | `hub tp -6.8 13.9 180 -10` |
+| Makaron       | `hub tp -17 -15.5 0 -16`   |
+| Radio         | `hub tp 5 -18.3 180 -24`   |
+| Worek         | `hub tp 18.3 0 0 12`       |
+| Korytarz      | `hub tp 4.5 -9.75 90 -8`   |
+
+## Migotanie i korytarz północny
+
+`neonTexts[].flicker` korzysta z tego samego schematu i `HubDecor` co napisy
+stacji: „NA ANTENIE” łagodnie pulsuje, „TARG” lekko brzęczy, „KWATERY” ma
+rzadką awarię co 25 s. Dwie lampy korytarza mają `fail` (17/21 s), lampa
+przy wschodnim generatorze i neon metra — słabe `buzz`.
+
+Trzy strzałki ze ściany hali leżą teraz na podłodze korytarza na y=0,012 m,
+z=−9,75 m: dwie kierują na zachód ku jadłodajni, jedna na wschód ku radiu.
+Jaśniejsze okładziny `tiles_wall` na istniejących ścianach poprawiają orientację
+bez dodatkowych świateł (nadal 28) i colliderów. Drzwi, przejście ≥2 m,
+pozycje NPC oraz ich trasy pozostają bez zmian.
+
 Opcjonalne `lights[].flicker`, `signs[].flicker` oraz `stations[].sign.flicker`
 przyjmują `{ pattern: 'buzz' | 'fail' | 'pulse', strength?: 0..1, periodS?: >0 }`.
 `CityDressing` aktualizuje światła i napisy teksturowe, `HubDecor.update(frameDt)`
@@ -23,7 +77,7 @@ styl: `docs/adr/0006-neon-noir.md`.
   - `stations: { id, position {x,z}, radius, focus {position {x,y,z}, size {x,y,z}}, label, sign? }[]` — `id` z `HUB_STATION_IDS`, środek strefy na podłodze;
     `focus` określa środek i dodatnie wymiary bryły obiektu (dla poligonu: wejścia tunelu);
     `sign` (pozycja, rozmiar, `yaw`, `color`) to neonowy napis z tekstu `label` (płótno, mieszanie addytywne);
-  - `neonTexts?: { text, position {x,y,z}, size {w,h}, yaw, color }[]` — niezależne napisy oprawy,
+  - `neonTexts?: { text, position {x,y,z}, size {w,h}, yaw, color, flicker? }[]` — niezależne napisy oprawy,
     rysowane tak samo jak `sign` stacji; `color` to wyłącznie `#ffae1a`, `#6dff4a`, `#8a5cff`,
     `#3d7bff` lub `#fff1d6`. Oznaczenia: NA ANTENIE, JADŁODAJNIA, KWATERY, RADIO ISKRA i TARG;
   - `blocks[].yaw` — obrót modelu `city_*` wokół środka (wielokrotność 90°; `size` jest już w osiach świata);
@@ -316,12 +370,22 @@ Przykład NPC do `npcs` w układzie (pozycje wymagają wolnej podłogi):
 
 ```json
 {
-  "id": "ada", "position": { "x": 0, "z": 0 }, "rotationDeg": 90,
-  "scale": 0.68, "accent": "amber", "animation": "Idle_Loop",
+  "id": "ada",
+  "position": { "x": 0, "z": 0 },
+  "rotationDeg": 90,
+  "scale": 0.68,
+  "accent": "amber",
+  "animation": "Idle_Loop",
   "route": {
-    "points": [{ "x": 0, "z": 0 }, { "x": 4, "z": 0 }],
-    "mode": "pingpong", "speedMS": 1.3, "pauseS": 2,
-    "moveAnimation": "Walk_Loop", "pauseAnimation": "Idle_Loop"
+    "points": [
+      { "x": 0, "z": 0 },
+      { "x": 4, "z": 0 }
+    ],
+    "mode": "pingpong",
+    "speedMS": 1.3,
+    "pauseS": 2,
+    "moveAnimation": "Walk_Loop",
+    "pauseAnimation": "Idle_Loop"
   }
 }
 ```
@@ -330,7 +394,9 @@ Przykład wpisu do `conversations` w tekstach (oba id muszą istnieć w układzi
 
 ```json
 {
-  "id": "ada_mira", "npcs": ["ada", "mira"], "radiusM": 5,
+  "id": "ada_mira",
+  "npcs": ["ada", "mira"],
+  "radiusM": 5,
   "lines": [
     { "npc": "ada", "text": "Mogę pomóc przy naprawie?" },
     { "npc": "mira", "text": "Podaj mi klucz z półki." }

@@ -48,11 +48,17 @@ export class HubChatter {
     }));
   }
 
+  get activeId(): string | null {
+    return this.active?.def.id ?? null;
+  }
+
   get line(): ChatterLine | null {
     return this.current;
   }
 
-  interrupt(): void {
+  interrupt(cooldown = false): void {
+    if (cooldown && this.active)
+      this.active.cooldown = this.tuning.chatterCooldownS;
     this.active = null;
     this.current = null;
     this.forced = false;

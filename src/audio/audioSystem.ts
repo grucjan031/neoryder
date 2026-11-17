@@ -36,6 +36,7 @@ interface Voice {
 
 /** Pola zdarzenia użyte w warunkach reguł. */
 interface EventFacts {
+  kind?: GameEvents['hub_prop_used']['kind'];
   tags?: readonly string[];
   killed?: boolean;
   target?: EntityId | null;
@@ -264,6 +265,8 @@ export class AudioSystem {
 
   private facts(event: SfxEvent, p: GameEvents[SfxEvent]): EventFacts {
     switch (event) {
+      case 'hub_prop_used':
+        return { kind: (p as GameEvents['hub_prop_used']).kind };
       case 'damage_dealt': {
         const e = p as GameEvents['damage_dealt'];
         return {
@@ -305,6 +308,7 @@ export class AudioSystem {
 
   private matches(when: SfxWhen, f: EventFacts): boolean {
     const player = this.playerId;
+    if (when.kind !== undefined && f.kind !== when.kind) return false;
     if (when.tagsAny && !when.tagsAny.some((t) => f.tags?.includes(t)))
       return false;
     if (when.tagsNone && when.tagsNone.some((t) => f.tags?.includes(t)))

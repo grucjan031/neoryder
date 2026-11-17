@@ -3773,45 +3773,6 @@
     },
     {
       "size": {
-        "x": 0.06,
-        "y": 2,
-        "z": 0.06
-      },
-      "position": {
-        "x": 18.3,
-        "y": 4,
-        "z": -2.4
-      },
-      "material": "rubber"
-    },
-    {
-      "size": {
-        "x": 0.6,
-        "y": 1.8,
-        "z": 0.6
-      },
-      "position": {
-        "x": 18.3,
-        "y": 2.1,
-        "z": -2.4
-      },
-      "material": "fabric"
-    },
-    {
-      "size": {
-        "x": 0.62,
-        "y": 0.1,
-        "z": 0.62
-      },
-      "position": {
-        "x": 18.3,
-        "y": 1.25,
-        "z": -2.4
-      },
-      "material": "rubber"
-    },
-    {
-      "size": {
         "x": 0.9,
         "y": 1.8,
         "z": 0.65
@@ -7482,6 +7443,86 @@
         "h": 0.9
       },
       "yaw": 0
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -9,
+        "y": 1.45,
+        "z": -8.015
+      },
+      "size": {
+        "w": 23.6,
+        "h": 2.8
+      },
+      "yaw": 3.141592653589793,
+      "tileM": 1,
+      "tint": "#c5c8ce"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -18,
+        "y": 1.45,
+        "z": -10.985
+      },
+      "size": {
+        "w": 3.8,
+        "h": 2.8
+      },
+      "yaw": 0,
+      "tileM": 1,
+      "tint": "#c5c8ce"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -9,
+        "y": 1.45,
+        "z": -10.985
+      },
+      "size": {
+        "w": 5.8,
+        "h": 2.8
+      },
+      "yaw": 0,
+      "tileM": 1,
+      "tint": "#c5c8ce"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": 0,
+        "y": 1.45,
+        "z": -10.985
+      },
+      "size": {
+        "w": 5.8,
+        "h": 2.8
+      },
+      "yaw": 0,
+      "tileM": 1,
+      "tint": "#c5c8ce"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": 7,
+        "y": 1.45,
+        "z": -10.985
+      },
+      "size": {
+        "w": 1.8,
+        "h": 2.8
+      },
+      "yaw": 0,
+      "tileM": 1,
+      "tint": "#c5c8ce"
     }
   ],
   "npcs": [
@@ -7999,7 +8040,12 @@
         "h": 0.25
       },
       "yaw": 0,
-      "color": "#ffae1a"
+      "color": "#ffae1a",
+      "flicker": {
+        "pattern": "pulse",
+        "strength": 0.2,
+        "periodS": 4
+      }
     },
     {
       "text": "JADŁODAJNIA",
@@ -8027,7 +8073,12 @@
         "h": 0.32
       },
       "yaw": 0,
-      "color": "#fff1d6"
+      "color": "#fff1d6",
+      "flicker": {
+        "pattern": "fail",
+        "strength": 0.55,
+        "periodS": 25
+      }
     },
     {
       "text": "RADIO ISKRA",
@@ -8055,7 +8106,12 @@
         "h": 0.55
       },
       "yaw": 1.5708,
-      "color": "#6dff4a"
+      "color": "#6dff4a",
+      "flicker": {
+        "pattern": "buzz",
+        "strength": 0.07,
+        "periodS": 0.35
+      }
     }
   ],
   "signs": [
@@ -8116,7 +8172,12 @@
         "w": 3.6,
         "h": 1.8
       },
-      "yaw": 3.1416
+      "yaw": 3.1416,
+      "flicker": {
+        "pattern": "buzz",
+        "strength": 0.08,
+        "periodS": 0.4
+      }
     },
     {
       "kind": "neon",
@@ -8205,7 +8266,12 @@
       },
       "color": "#3d7bff",
       "intensity": 2.2,
-      "range": 7
+      "range": 7,
+      "flicker": {
+        "pattern": "buzz",
+        "strength": 0.08,
+        "periodS": 0.3
+      }
     },
     {
       "position": {
@@ -8375,7 +8441,12 @@
       },
       "color": "#fff1d6",
       "intensity": 1.6,
-      "range": 6
+      "range": 6,
+      "flicker": {
+        "pattern": "fail",
+        "strength": 0.55,
+        "periodS": 21
+      }
     },
     {
       "position": {
@@ -8445,7 +8516,12 @@
       },
       "color": "#fff1d6",
       "intensity": 1.5,
-      "range": 4.3
+      "range": 4.3,
+      "flicker": {
+        "pattern": "fail",
+        "strength": 0.55,
+        "periodS": 17
+      }
     },
     {
       "position": {
@@ -8938,43 +9014,43 @@
       "texture": "floor_arrow",
       "position": {
         "x": -15.2,
-        "y": 2.35,
-        "z": -8.037
+        "y": 0.012,
+        "z": -9.75
       },
       "size": {
         "w": 0.85,
         "h": 0.65
       },
-      "yaw": 3.14159,
-      "surface": "wall"
+      "yaw": 1.5707963267948966,
+      "surface": "floor"
     },
     {
       "texture": "floor_arrow",
       "position": {
         "x": -7,
-        "y": 2.35,
-        "z": -8.037
+        "y": 0.012,
+        "z": -9.75
       },
       "size": {
         "w": 0.85,
         "h": 0.65
       },
-      "yaw": 3.14159,
-      "surface": "wall"
+      "yaw": 1.5707963267948966,
+      "surface": "floor"
     },
     {
       "texture": "floor_arrow",
       "position": {
         "x": 1.7,
-        "y": 2.35,
-        "z": -8.037
+        "y": 0.012,
+        "z": -9.75
       },
       "size": {
         "w": 0.85,
         "h": 0.65
       },
-      "yaw": 3.14159,
-      "surface": "wall"
+      "yaw": -1.5707963267948966,
+      "surface": "floor"
     }
   ],
   "ambientFx": [
@@ -9510,6 +9586,76 @@
       },
       "scale": 1.1,
       "yaw": 0
+    }
+  ],
+  "props": [
+    {
+      "id": "jukebox",
+      "kind": "jukebox",
+      "label": "Przełącz utwór",
+      "focus": {
+        "position": {
+          "x": -6.8,
+          "y": 0.9,
+          "z": 15.4
+        },
+        "size": {
+          "x": 0.9,
+          "y": 1.8,
+          "z": 0.65
+        }
+      }
+    },
+    {
+      "id": "noodles",
+      "kind": "noodles",
+      "label": "Zjedz miskę",
+      "focus": {
+        "position": {
+          "x": -17,
+          "y": 1.15,
+          "z": -17.6
+        },
+        "size": {
+          "x": 3.4,
+          "y": 0.4,
+          "z": 0.85
+        }
+      }
+    },
+    {
+      "id": "radio",
+      "kind": "radio",
+      "label": "Włącz / wyłącz audycję",
+      "focus": {
+        "position": {
+          "x": 5.1,
+          "y": 1.1,
+          "z": -16.9
+        },
+        "size": {
+          "x": 0.85,
+          "y": 0.45,
+          "z": 0.58
+        }
+      }
+    },
+    {
+      "id": "bag",
+      "kind": "bag",
+      "label": "Uderz w worek",
+      "focus": {
+        "position": {
+          "x": 18.3,
+          "y": 2.1,
+          "z": -2.4
+        },
+        "size": {
+          "x": 0.6,
+          "y": 1.8,
+          "z": 0.6
+        }
+      }
     }
   ]
 }

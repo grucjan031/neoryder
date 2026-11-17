@@ -49,7 +49,9 @@ function lookDirection(yaw: number, pitch: number): Vec3 {
 
 /** Cel interakcji w kryjówce: stacja albo NPC. */
 export type HubTarget =
-  { kind: 'station'; id: HubStationId } | { kind: 'npc'; id: string };
+  | { kind: 'station'; id: HubStationId }
+  | { kind: 'npc'; id: string }
+  | { kind: 'prop'; id: string };
 
 /** Wybiera najbliższy cel (stację lub NPC) trafiony promieniem z oka w zasięgu (yaw/pitch w radianach). */
 export function selectHubTarget(
@@ -60,6 +62,7 @@ export function selectHubTarget(
   pitch: number,
   interactRangeM: number,
   focusPaddingM: number,
+  props: readonly { id: string; focus: HubFocusBox }[] = [],
 ): HubTarget | null {
   const forward = lookDirection(yaw, pitch);
   let nearest = Infinity;
@@ -75,6 +78,8 @@ export function selectHubTarget(
     consider(zone.focus, () => ({ kind: 'station', id: zone.id }));
   for (const npc of npcs)
     consider(npc.focus, () => ({ kind: 'npc', id: npc.id }));
+  for (const prop of props)
+    consider(prop.focus, () => ({ kind: 'prop', id: prop.id }));
   return target;
 }
 

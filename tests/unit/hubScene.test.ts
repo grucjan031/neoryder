@@ -118,6 +118,65 @@ async function setup(params = '', options: HubSceneOptions = {}) {
 const position = (scene: HubScene) =>
   scene.query('playerPos') as { x: number; y: number; z: number };
 
+it('rekwizyty działają przez E, debug i atak; przytrzymane E i cooldown nie powtarzają użycia', async () => {
+  const { scene, commands, bus } = await setup();
+  const used: string[] = [];
+  bus.on('hub_prop_used', ({ prop }) => used.push(prop));
+  commands.execute('hub tp -6.8 13.9');
+  commands.execute('hub look jukebox');
+  scene.step(SIM_DT, interact);
+  expect(used).toEqual(['jukebox']);
+  expect(scene.query('hubProps')).toContainEqual({
+    id: 'jukebox',
+    kind: 'jukebox',
+    cooldownLeft: tuning.hub.propCooldownS,
+    track: 1,
+  });
+  expect(scene.query('hubChatter')).toMatchObject({
+    npc: 'Szafa grająca',
+    text: 'Deszcz na kredyt',
+  });
+  for (let i = 0; i < 70; i++) scene.step(SIM_DT, holdInteract);
+  expect(used).toEqual(['jukebox']);
+  scene.step(SIM_DT, interact);
+  expect(used).toEqual(['jukebox', 'jukebox']);
+  expect(commands.execute('hub use jukebox')).toBe('false');
+  expect(commands.execute('hub use noodles')).toBe('true');
+  expect(scene.query('hubChatter')).toMatchObject({ npc: 'hela' });
+  expect(commands.execute('hub use noodles')).toBe('false');
+  commands.execute('hub tp 18.3 0');
+  commands.execute('hub look bag');
+  scene.step(SIM_DT, { ...idle, pressed: new Set(['attack']) });
+  expect(used.at(-1)).toBe('bag');
+  expect(scene.query('hubProps')).toContainEqual(
+    expect.objectContaining({ id: 'bag', angle: { x: 0, z: 0 } }),
+  );
+  scene.step(SIM_DT, idle);
+  const props = scene.query('hubProps') as {
+    id: string;
+    angle?: { z: number };
+  }[];
+  expect(props.find((p) => p.id === 'bag')!.angle!.z).toBeLessThan(0);
+});
+
+it('radio wymusza audycję i drugie E przerywa ją również przed końcem cooldownu', async () => {
+  const { scene, commands } = await setup();
+  commands.execute('hub tp 5 -18.3');
+  commands.execute('hub look radio');
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubChatter')).toMatchObject({
+    conversation: 'lena_radio_broadcast',
+  });
+  scene.step(SIM_DT, holdInteract);
+  expect(scene.query('hubChatter')).toMatchObject({
+    conversation: 'lena_radio_broadcast',
+  });
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubChatter')).toBeNull();
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubChatter')).toBeNull();
+});
+
 it('startuje na playerSpawn bez otwartej stacji i bez wrogów', async () => {
   const { scene, screens } = await setup();
   expect(scene.id).toBe('hub');

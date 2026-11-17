@@ -11,7 +11,7 @@ export interface AmbienceGraph {
 
 /** Bufory i grafy współdzielą kontekst AudioSystem; brak timerów i własnego zegara. */
 export class AmbienceSynth {
-  private readonly buffers = new Map<AmbienceKind, AudioBuffer>();
+  private readonly buffers = new Map<string, AudioBuffer>();
 
   constructor(
     private readonly ctx: AudioBackend,
@@ -24,6 +24,7 @@ export class AmbienceSynth {
     kind: AmbienceKind | 'train',
     out: AudioNode,
     hub?: Tuning['hub'],
+    track = 0,
   ): AmbienceGraph {
     const { ctx, t } = this;
     const nodes: AudioNode[] = [];
@@ -47,7 +48,7 @@ export class AmbienceSynth {
         source = ctx.createBufferSource();
         source.buffer =
           wave === 'buffer' && kind !== 'train'
-            ? this.buffer(kind)
+            ? this.buffer(kind, track)
             : this.noise;
         source.loop = true;
       } else {
@@ -151,12 +152,19 @@ export class AmbienceSynth {
     };
   }
 
-  private buffer(kind: AmbienceKind): AudioBuffer {
-    const cached = this.buffers.get(kind);
+  private buffer(kind: AmbienceKind, track: number): AudioBuffer {
+    const key = `${kind}:${kind === 'jukebox' ? track : 0}`;
+    const cached = this.buffers.get(key);
     if (cached) return cached;
     const { t, ctx } = this;
     const rng = this.rng.fork(kind);
-    const beatS = 60 / t.ambienceJukeboxBpm;
+    const phrase =
+      track === 1
+        ? t.ambienceJukeboxPhrases.rain
+        : track === 2
+          ? t.ambienceJukeboxPhrases.dawn
+          : null;
+    const beatS = 60 / (phrase?.bpm ?? t.ambienceJukeboxBpm);
     const barS = beatS * t.ambienceJukeboxBeatsPerBar;
     const duration =
       kind === 'jukebox' ? barS * t.ambienceJukeboxBars : t.ambienceLoopS;
@@ -165,7 +173,7 @@ export class AmbienceSynth {
     const data = buffer.getChannelData(0);
     if (kind === 'jukebox') {
       // Oryginalna fraza bez melodii: osiem taktów basu i minorowych padów.
-      const roots = t.ambienceJukeboxRoots;
+      const roots = phrase?.roots ?? t.ambienceJukeboxRoots;
       for (let i = 0; i < length; i++) {
         const time = i / ctx.sampleRate;
         const root =
@@ -174,7 +182,8 @@ export class AmbienceSynth {
         const beat = (time % beatS) / beatS;
         const padEnv = Math.sin((Math.PI * (time % barS)) / barS) ** 2;
         let pad = 0;
-        for (const semitone of t.ambienceJukeboxChordSemitones)
+        for (const semitone of phrase?.chordSemitones ??
+          t.ambienceJukeboxChordSemitones)
           pad += Math.sin(
             2 * Math.PI * root * 2 ** (semitone / 12) * (time % barS),
           );
@@ -232,7 +241,7 @@ export class AmbienceSynth {
           (length - 1 - i) / ctx.sampleRate / t.ambienceFireCrackleS,
         );
     }
-    this.buffers.set(kind, buffer);
+    this.buffers.set(key, buffer);
     return buffer;
   }
 }

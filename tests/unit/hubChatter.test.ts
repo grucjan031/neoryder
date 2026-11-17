@@ -136,6 +136,19 @@ it('wyjście podczas przerwy też przerywa; domyślny promień z tuning', () => 
   expect(chatter.line?.npc).toBe('kid');
 });
 
+it('activeId rozpoznaje wymuszoną rozmowę w przerwie i jawne wyłączenie nakłada cooldown', () => {
+  const { chatter } = setup();
+  chatter.force('hello');
+  chatter.step(1.8, player, false);
+  expect(chatter.line).toBeNull();
+  expect(chatter.activeId).toBe('hello');
+  chatter.interrupt(true);
+  chatter.step(0.1, player, false);
+  expect(chatter.activeId).toBeNull();
+  expect(chatter.force('hello')).toBe(true);
+  expect(chatter.activeId).toBe('hello');
+});
+
 it('te same kroki i pozycje dają te same zdarzenia', () => {
   const a = setup(),
     b = setup();

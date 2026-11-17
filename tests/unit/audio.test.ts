@@ -166,6 +166,15 @@ describe('dane dźwięków', () => {
 });
 
 describe('AudioSystem — reguły', () => {
+  it('tylko worek wybiera miękki bagHit ze zdarzenia rekwizytu', () => {
+    const c = setup();
+    c.bus.emit('hub_prop_used', { prop: 'radio', kind: 'radio' });
+    expect(c.audio.lastSound).toBeNull();
+    c.bus.emit('hub_prop_used', { prop: 'bag', kind: 'bag' });
+    expect(c.audio.lastSound).toBe('bagHit');
+    expect(c.fake.log.started).toBe(2);
+    c.audio.dispose();
+  });
   it('wybuch gra niski grzmot: szum lowpass w dół i sinus 55–40 Hz przez 0,6 s', () => {
     const c = setup();
     c.bus.emit('explosion', {

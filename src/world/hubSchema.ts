@@ -64,15 +64,24 @@ export const hubNeonTextSchema = hubStationSignSchema.extend({
 });
 export type HubNeonTextDef = z.infer<typeof hubNeonTextSchema>;
 
+export const hubFocusSchema = z.object({
+  position: vec3Schema,
+  size: z.object({ x: positive, y: positive, z: positive }),
+});
+export const hubPropSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  kind: z.enum(['jukebox', 'noodles', 'radio', 'bag']),
+  label: z.string().trim().min(1),
+  focus: hubFocusSchema,
+});
+export type HubPropDef = z.infer<typeof hubPropSchema>;
+
 export const hubStationSchema = z.object({
   id: z.enum(HUB_STATION_IDS),
   /** Środek strefy na podłodze. */
   position: roomSpawnPointSchema,
   radius: positive,
-  focus: z.object({
-    position: vec3Schema,
-    size: z.object({ x: positive, y: positive, z: positive }),
-  }),
+  focus: hubFocusSchema,
   label: z.string().min(1),
   sign: hubStationSignSchema.optional(),
 });
@@ -237,6 +246,7 @@ export const hubLayoutSchema = z
     neonTexts: z.array(hubNeonTextSchema).optional(),
     npcs: z.array(hubNpcSchema).optional(),
     fires: z.array(hubFireSchema).optional(),
+    props: z.array(hubPropSchema).optional(),
   })
   .superRefine((layout, ctx) => {
     const ids = new Set<string>();
@@ -264,6 +274,16 @@ export const hubLayoutSchema = z
             message: `Strefy ${first.id} i ${second.id} nachodzą na siebie.`,
           });
       }
+    const propIds = new Set<string>();
+    (layout.props ?? []).forEach((prop, index) => {
+      if (propIds.has(prop.id))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['props', index, 'id'],
+          message: `Duplicate prop: ${prop.id}`,
+        });
+      propIds.add(prop.id);
+    });
     const npcIds = new Set<string>();
     (layout.npcs ?? []).forEach((npc, index) => {
       if (npcIds.has(npc.id))
