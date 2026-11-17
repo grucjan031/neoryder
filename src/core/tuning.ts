@@ -660,6 +660,11 @@ export const tuning = {
       /** Fala uderzenia w chwili trafienia: czas (s) i siła. */
       slamWaveS: 0.28,
       slamWaveStrength: 1.3,
+      /**
+       * Przyciemnienie podłogi pod pierścieniem fali (mnożenie barwą `bossShadeColor`, 0–1):
+       * na fioletowej podłodze samo dodawanie czerwieni dawało róż bliski magencie Rezonansu.
+       */
+      waveShadeStrength: 0.85,
     },
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
