@@ -638,7 +638,20 @@ export class RoomScene implements Scene {
       ctx.bus.on('enemy_killed', ({ id, killer }) => {
         if (killer === playerId) this.kills++;
         if (this.enemy(id)) this.conquest?.killed();
-        if (this.boss && id === this.boss.id) this.completeRoom();
+        if (this.boss && id === this.boss.id) {
+          if (this.mission) {
+            this.missionSignal?.('boss:defeated');
+            for (const objective of this.mission.mission.objectives)
+              if (objective.kind === 'killBoss')
+                this.mission.done(objective.id);
+            this.dissolveRemainingEnemies();
+          }
+          this.completeRoom();
+        }
+      }),
+      ctx.bus.on('boss_phase', ({ id, phase }) => {
+        if (this.boss?.id === id && (phase === 2 || phase === 3))
+          this.missionSignal?.(`boss:phase:${phase}`);
       }),
     );
     if (this.run.modeId === 'conquest') {
@@ -1343,9 +1356,12 @@ export class RoomScene implements Scene {
       value: 0,
       source: 'victory-hold',
     });
-    // Pozostali wrogowie rozpadają się normalnym efektem śmierci. Zabija ich świat (source null),
-    // więc nie liczą się do zabójstw ani kredytów gracza, a podsumowanie (liczone przy run_ended,
-    // przed ciszą) się nie zmienia.
+    this.dissolveRemainingEnemies();
+  }
+
+  private dissolveRemainingEnemies(): void {
+    // Świat (source null) uruchamia normalny rozpad bez zabójstw i kredytów gracza.
+    // W misji ten sam efekt działa przed ewakuacją, bez kończenia runu.
     const remaining: EntityId[] = [];
     this.manager.forEach((enemy) => {
       if (!enemy.removed && enemy.current.state !== 'dead')
@@ -1559,6 +1575,16 @@ export class RoomScene implements Scene {
   /** API hosta runu i komendy room-test; bez restartowania ani leczenia gracza. */
   clear(): void {
     if (this.cleared || this.state === 'dead' || this.disposed) return;
+    // Nie usuwamy żywego bossa bez zdarzenia śmierci potrzebnego celom misji.
+    if (
+      this.mission?.mission.objectives.some(
+        (objective) =>
+          objective.kind === 'killBoss' &&
+          this.mission!.ids.includes(objective.id) &&
+          this.mission!.objectives[objective.id] !== 'done',
+      )
+    )
+      return;
     this.director.stop();
     this.manager.despawnAll();
     this.statuses.reset();

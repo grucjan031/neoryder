@@ -11,6 +11,7 @@ export function dialogueLines(lines: readonly DialogueLine[]): HTMLElement {
     const paragraph = document.createElement('p');
     const speaker = document.createElement('strong');
     speaker.dataset.speaker = line.speaker;
+    if (line.speaker === 'brandt') speaker.style.color = '#ff5050';
     speaker.textContent = `${text.speakers[line.speaker]}: `;
     paragraph.append(speaker, document.createTextNode(line.text));
     root.append(paragraph);
@@ -102,6 +103,8 @@ export function showDebrief(
   dialog.dataset.missionDebrief = mission.id;
   const heading = document.createElement('h2');
   heading.textContent = text.debrief;
+  heading.tabIndex = -1;
+  heading.setAttribute('autofocus', '');
   const button = document.createElement('button');
   button.textContent = text.close;
   const finish = async () => {
@@ -165,6 +168,11 @@ export class MissionRadio {
     document.body.append(this.root);
   }
   signal(trigger: string): void {
+    // Faza i ostatnie słowa muszą odpowiadać bieżącej walce, nie zaległej kolejce.
+    if (trigger === 'boss:defeated' || /^boss:phase:[23]$/.test(trigger)) {
+      this.queue.length = 0;
+      this.remaining = 0;
+    }
     for (const event of this.mission.radio)
       if (event.trigger === trigger) this.queue.push(...event.lines);
   }

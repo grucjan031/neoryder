@@ -53,7 +53,7 @@ export class MissionObjectives {
   unlocked(objective: MissionObjective): boolean {
     return objective.kind === 'pickup'
       ? this.objectives[objective.spawnAfter] === 'done'
-      : objective.kind === 'exit'
+      : objective.kind === 'exit' || objective.kind === 'interact'
         ? objective.unlockAfter.every((id) => this.objectives[id] === 'done')
         : true;
   }

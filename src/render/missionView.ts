@@ -79,6 +79,15 @@ export class MissionView {
       } else if (objective.kind === 'pickup') {
         cube(0, 0.3, 0, 0.6, 0.4, 0.4, this.white);
         cube(0, 0.51, 0, 0.4, 0.02, 0.12, this.metal);
+      } else if (objective.kind === 'interact') {
+        cube(0, 0.08, -0.5, 3.2, 0.16, 2.4);
+        cube(0, 1.25, -0.5, 1.6, 2.3, 0.8);
+        for (const y of [0.5, 0.9, 1.3, 1.7, 2.1]) {
+          cube(0, y, -0.08, 1.3, 0.28, 0.04, this.white);
+          cube(0.45, y, -0.04, 0.12, 0.08, 0.04, this.amber);
+        }
+        cube(0, 0.7, 0.4, 1.2, 1.2, 0.5);
+        cube(0, 1.32, 0.4, 1.3, 0.06, 0.6, this.white);
       } else if (objective.kind === 'defend') {
         cube(0, 0.08, 0, 2.4, 0.16, 1.8);
         cube(0, 0.65, 0, 1.6, 1.1, 0.8);
@@ -96,7 +105,8 @@ export class MissionView {
         objective.kind === 'exit' &&
         objective.unlockAfter.some((id) =>
           model.mission.objectives.some(
-            (o) => o.id === id && o.kind === 'defend',
+            (o) =>
+              o.id === id && (o.kind === 'defend' || o.kind === 'interact'),
           ),
         )
       ) {
@@ -107,6 +117,17 @@ export class MissionView {
         cube(0, 3.2, 0, 2.2, 0.3, 0.4);
         cube(0, 3.2, 0.22, 1.6, 0.1, 0.05, this.white);
         gate = cube(0, 1.5, 0, 1.8, 3, 0.16);
+        if (
+          objective.unlockAfter.some((id) =>
+            model.mission.objectives.some(
+              (o) => o.id === id && o.kind === 'interact',
+            ),
+          )
+        ) {
+          cube(0, 0.06, 0.7, 2.2, 0.12, 2);
+          for (const x of [-1, 1])
+            cube(x, 0.14, 0.7, 0.08, 0.04, 2, this.amber);
+        }
       } else {
         cube(0, 0.05, 0, 1.6, 0.1, 1.6, this.metal);
         for (const edge of [-0.75, 0.75]) {
@@ -158,7 +179,8 @@ export class MissionView {
       if (view.gate) view.gate.visible = !this.model.unlocked(objective);
       view.object.visible =
         (this.model.objectives[objective.id] !== 'done' ||
-          objective.kind === 'defend') &&
+          objective.kind === 'defend' ||
+          objective.kind === 'interact') &&
         (objective.kind !== 'pickup' || this.model.unlocked(objective));
       view.ring.visible =
         this.model.unlocked(objective) &&
