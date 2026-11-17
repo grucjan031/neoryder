@@ -283,14 +283,18 @@ export class HubScene implements Scene {
     );
     three.add(this.root);
     this.root.add(this.lights);
-    await this.buildBlocks();
+    // Bryły, modele i dekoracje scalane razem: ten sam materiał z różnych korzeni to jedna siatka na komórkę.
+    const staticWorld = new Group();
+    staticWorld.name = 'static-world';
+    this.root.add(staticWorld);
+    await this.buildBlocks(staticWorld);
     if (this.disposed) return;
     const staticDecor = new Group();
     staticDecor.name = 'static-decor';
-    this.root.add(staticDecor);
+    staticWorld.add(staticDecor);
     await loadDecor(staticDecor, this.layout.decor, this.loadModels);
     if (this.disposed) return;
-    batchStaticGeometry(staticDecor, this.geometries, {
+    batchStaticGeometry(staticWorld, this.geometries, {
       cellSize: HUB_BATCH_CELL_M,
     });
     this.dressing = new CityDressing(
@@ -395,13 +399,13 @@ export class HubScene implements Scene {
 
   // ----------------------------------------------------------------- budowa
 
-  /** Bryły, beczki i modele `city_*` są statyczne: po wczytaniu scalane po materiale (jak w pokojach). */
-  private async buildBlocks(): Promise<void> {
+  /** Bryły, beczki i modele `city_*` są statyczne: scala je `init` po materiale (jak w pokojach). */
+  private async buildBlocks(staticWorld: Group): Promise<void> {
     const blocks = new Group();
     blocks.name = 'static-blocks';
     const models = new Group();
     models.name = 'static-models';
-    this.root.add(blocks, models);
+    staticWorld.add(blocks, models);
     await Promise.all(
       this.layout.blocks.map(
         async ({
@@ -494,13 +498,6 @@ export class HubScene implements Scene {
         },
       ),
     );
-    if (this.disposed) return;
-    batchStaticGeometry(blocks, this.geometries, {
-      cellSize: HUB_BATCH_CELL_M,
-    });
-    batchStaticGeometry(models, this.geometries, {
-      cellSize: HUB_BATCH_CELL_M,
-    });
   }
 
   /** NPC: widok (`HubNpcs`) i collider walca, przez który gracz nie przechodzi. */

@@ -53,8 +53,9 @@ const posterTextures = new Map<string, Texture>();
  * Komórka scalania statycznej geometrii kryjówki (m). Scalanie w jedną siatkę na
  * materiał wyłączało frustum culling (≈ +70% trójkątów w kadrach z większością
  * kryjówki poza widokiem); komórki XZ zostawiają odrzucanie przy niewielu draw calls.
+ * 20 m zamiast 10 m: hala 815 → 656 wywołań rysowania, kosztem ok. +9–26% trójkątów (docs/systems/render.md).
  */
-export const HUB_BATCH_CELL_M = 10;
+export const HUB_BATCH_CELL_M = 20;
 
 /**
  * Kosmetyczna oprawa kryjówki spoza `dressingSchema`: okładziny ścian z kafli, ekrany

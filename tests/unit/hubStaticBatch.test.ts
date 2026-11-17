@@ -77,10 +77,12 @@ it('kryjówka: geometria statyczna scalona w komórkach, bez utraty trójkątów
   let before = 0;
   let after = 0;
   let merged = 0;
+  const roots: string[] = [];
   const batch = staticBatch.batchStaticGeometry;
   vi.spyOn(staticBatch, 'batchStaticGeometry').mockImplementation(
     (root, owned, options) => {
       expect(options?.cellSize).toBe(HUB_BATCH_CELL_M);
+      roots.push(root.name);
       const pre = stats(root);
       const limit = HUB_BATCH_CELL_M + largestExtent(root) + 0.001;
       const bounds = new Box3().setFromObject(root);
@@ -129,6 +131,11 @@ it('kryjówka: geometria statyczna scalona w komórkach, bez utraty trójkątów
       new ThreeScene(),
     );
     expect(merged).toBeGreaterThan(0);
+    // Bryły, modele i dekoracje scalane jednym przebiegiem: wspólny materiał = jedna siatka na komórkę.
+    expect(roots.filter((name) => name === 'static-world')).toHaveLength(1);
+    expect(roots).not.toContain('static-blocks');
+    expect(roots).not.toContain('static-models');
+    expect(roots).not.toContain('static-decor');
     expect(after * MIN_STATIC_REDUCTION).toBeLessThanOrEqual(before);
   } finally {
     scene.dispose();

@@ -155,6 +155,43 @@ do zachowania stanu użyć `structuredClone(...)`.
 przebiegi pipeline'u). Sonda wyłącza `info.autoReset` i zeruje liczniki przed pipeline'em, więc nie
 pokazuje tylko ostatniego przebiegu; profiler odczytuje liczniki po niej.
 
+### Rozbiór wywołań rysowania kryjówki (hala, `hub tp 0 2 0 -5`)
+
+Domyślny preset to `medium` (kontur + bloom, bez odbić); headless SwiftShader używa zapisu jakości z
+localStorage (`neoryder.settings.quality`), więc preset wymusza się zapisem tego klucza przed
+załadowaniem strony. Rozbiór zrobiono jednorazowym opakowaniem `renderer.renderBufferDirect`
+(liczenie po przebiegu i korzeniu sceny; narzędzia nie zostawiono w repozytorium).
+
+| Przebieg (hala)                          | low | medium | high |
+| ---------------------------------------- | --: | -----: | ---: |
+| kolor (+ viewmodel 15)                   | 421 |    426 |  426 |
+| normalne/kontur (+ viewmodel 12)         |   — |    282 |  282 |
+| maska bloomu (+ viewmodel 15)            |   — |    104 |  104 |
+| maska odbić (kamera lustrzana, wszystko) |   — |      — |  357 |
+| razem (`renderInfo.calls`)               | 421 |    815 | 1173 |
+
+Źródła w przebiegu koloru medium (ok. 412 bez rąk): NPC i akcesoria na kościach 149 (nie da się scalić
+statycznie; po ~8–17 wywołań na NPC, każdy z własnymi materiałami kurtki/stroju/akcentu), scalone statyczne
+bryły/modele/dekoracje 162, rekwizyty i plakaty HubDecor 37, światła/stożki/plamy CityDressing ok. 50
+(osobny materiał na źródło, przezroczyste, `noOutline`: tylko kolor), ręce i ostrze 15. Kontur rysuje
+statyczne komórki i NPC (pomija `noOutline`), bloom tylko emisję (akcenty NPC, neony).
+
+Zmiana (bez zmiany wyglądu, zrzuty identyczne): (1) bryły, modele i dekoracje kryjówki scala jedno wywołanie
+`batchStaticGeometry` na wspólnym korzeniu `static-world` (ten sam materiał z różnych korzeni daje jedną
+siatkę na komórkę); (2) `HUB_BATCH_CELL_M` 10 → 20 m (dotyczy też okładzin HubDecor). Koszt: mniej dokładny
+culling, więcej trójkątów (hala +9%, peron B +26%).
+
+| Miejsce (medium) | calls przed | calls po | trójkąty przed → po |
+| ---------------- | ----------: | -------: | ------------------: |
+| hala             |         815 |      656 |      171k → 187k    |
+| peron B          |         304 |      279 |       75k → 95k     |
+| jadłodajnia      |         236 |      222 |       92k → 100k    |
+
+Większe przebudowy (nie wykonane): scalanie akcesoriów NPC per kość i materiał (ok. −40% wywołań akcesoriów, w hali rzędu −100 we wszystkich przebiegach, wymaga zmiany testów liczących akcesoria i własnej geometrii do zwolnienia); udostępnienie
+materiału stroju między NPC (bez scalania nic nie daje); instancje/atlas dla plakatów HubDecor (ok. −30);
+jeden materiał z atrybutem na światła/stożki CityDressing (ok. −40, zmiana shaderów); maska odbić w high
+rysuje całą scenę ponownie (357): ograniczenie do obiektów w zasięgu odbić dałoby do −250 w high.
+
 Pomiar architekta na działającym serwerze (osobny skrypt Node + Playwright,
 bez uruchamiania testów ani budowania aplikacji):
 
