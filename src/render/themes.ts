@@ -1,3 +1,4 @@
+import { reapplyLook } from './lookPresets';
 import { tuning } from '../core/tuning';
 import { themeSchema } from './themeSchema';
 import type { Theme } from './themeSchema';
@@ -40,6 +41,8 @@ export function resolveTheme(
 export function applyTheme(theme: Theme): () => void {
   const previous = { ...tuning.render };
   Object.assign(tuning.render, theme.render);
+  // Próbka stylu (?look=) ma pierwszeństwo przed konturem motywu.
+  reapplyLook();
   let restored = false;
   return () => {
     if (restored) return;

@@ -6,6 +6,7 @@ import { GameLoop } from './core/loop';
 import { FeelSystem } from './core/feel';
 import { Input } from './core/input';
 import { tuning, createTuningGui } from './core/tuning';
+import { applyLookPreset } from './render/lookPresets';
 import type { GameContext } from './core/context';
 import { scenes } from './scenes';
 import { defaultCommands as commands } from './ui/debugCommands';
@@ -41,6 +42,7 @@ async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) throw new Error('Brak elementu aplikacji.');
   const params = new URLSearchParams(location.search);
+  applyLookPreset(location.search);
   configureFx(params);
   const requested = params.get('scene');
   // Odczyt meta-zapisu nie wstrzymuje startu; w fx=lite nakładka nie ma obrazu, więc go pomijamy.

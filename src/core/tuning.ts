@@ -320,6 +320,23 @@ export const tuning = {
     outlineFadeFar: 16,
     outlineFarNormal: 0,
     outlineFarOuter: 1,
+    /**
+     * Styl komiksowy (próbki kierunku „Borderlands”, 0 = wyłączone, wygląd bez zmian):
+     * inkNearScale pogrubia kontur blisko kamery (mnożnik grubości przy far = 0),
+     * celBands > 0 dzieli jasność na pasma (celStrength = siła), hatchStrength przyciemnia
+     * kreskowaniem w cieniach (poniżej hatchThreshold, odstęp linii hatchSpacing px),
+     * paintStrength dokłada plamistą fakturę farby. Mocno nasycone piksele (wrogowie, neony,
+     * efekty) są pomijane przez cel/kreski: czytelność walki ponad styl.
+     */
+    inkNearScale: 1,
+    /** Grubość tuszu w px po pogrubieniu maski krawędzi (0 = zwykły kontur). */
+    inkWidth: 0,
+    celBands: 0,
+    celStrength: 0,
+    hatchStrength: 0,
+    hatchThreshold: 0.22,
+    hatchSpacing: 5,
+    paintStrength: 0,
     hemiIntensity: 0.6,
     keyIntensity: 2.4,
     /** Przełączniki jakości: 0 pomija pass (słaby sprzęt). */

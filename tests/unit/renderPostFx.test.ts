@@ -198,10 +198,10 @@ it('dispose zwalnia cele i materiały bloomu oraz kompozycji i odpina zdarzenia'
   const targets = vi.spyOn(WebGLRenderTarget.prototype, 'dispose');
   const materials = vi.spyOn(ShaderMaterial.prototype, 'dispose');
   pipeline.dispose();
-  // kolor, normalne, maska, dwa rozmycia, wejście passu impulsów
-  expect(targets).toHaveBeenCalledTimes(6);
-  // tło nieba, kompozycja, rozmycie, pass impulsów
-  expect(materials).toHaveBeenCalledTimes(4);
+  // kolor, normalne, krawędzie tuszu, maska, dwa rozmycia, wejście passu impulsów
+  expect(targets).toHaveBeenCalledTimes(7);
+  // tło nieba, kompozycja, krawędzie tuszu, rozmycie, pass impulsów
+  expect(materials).toHaveBeenCalledTimes(5);
   pipeline.fxState.reset();
   bus.emit('entity_spawned', { id: 1, kind: 'player' });
   bus.emit('health_changed', { id: 1, current: 100, max: 100 });
