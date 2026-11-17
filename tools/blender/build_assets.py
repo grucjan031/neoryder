@@ -27,6 +27,8 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT_DIR = os.path.join(ROOT, "public", "assets", "models")
 PREVIEW_DIR = os.path.join(ROOT, "tools", "blender", "previews")
 HAND_POSES = os.path.join(ROOT, "src", "data", "hands", "handPoses.json")
+with open(os.path.join(ROOT, "src", "data", "hands", "bladeGrip.json"), encoding="utf-8") as source:
+    BLADE_GRIP = json.load(source)
 # Zmiana bazy glTF -> Blender; także dla lokalnych układów przegubów.
 HAND_BASIS = Matrix.Rotation(math.pi / 2, 4, "X")
 
@@ -1323,9 +1325,9 @@ def build_player_arm(side: str):
         (.275, .046, .034), (.235, .043, .032), (.190, .041, .030),
         (.145, .037, .027), (.100, .033, .025), (.066, .031, .024),
         (.047, .031, .024), (.043, .029, .023), (.038, .029, .023),
-        (.033, .027, .021), (.018, .025, .019), (.002, .025, .017),
-        (-.017, .029, .017), (-.036, .036, .020), (-.055, .040, .020),
-        (-.072, .041, .018), (-.083, .041, .016), (None, None, None),
+        (.033, .028, .022), (.018, .027, .021), (.002, .027, .020),
+        (-.017, .031, .020), (-.036, .037, .022), (-.055, .041, .022),
+        (-.072, .041, .019), (-.083, .041, .017), (None, None, None),
     )
     rings = []
     for row, (z, width, depth) in enumerate(sections):
@@ -1344,7 +1346,7 @@ def build_player_arm(side: str):
                         if j >= 4:
                             y += .0025 * math.exp(-((endpoint.x - .023) / .018) ** 2)
                         else:
-                            y -= .0014 * math.exp(-((j - 1.5) / .9) ** 2)
+                            y -= .004 * math.exp(-((j - 1.5) / .9) ** 2)
                     if z > .047:
                         y += .0013 * math.cos(u * 4.5 + row * 1.7) * math.exp(-((z - .105) / .095) ** 2)
                     center_x = .006 * max(0, z) / .34
@@ -1412,9 +1414,9 @@ def build_player_arm(side: str):
             if name == "thumb" and distance <= .016:
                 continue
             t = distance / total
-            taper = 1 - .26 * t
+            taper = 1 - .22 * t
             tip = min(1, max(.22, (total - distance) / .007)) ** .5
-            bulge = 1 + .10 * sum(math.exp(-((distance - joint) / .004) ** 2) for joint in joints[1:])
+            bulge = 1 + .18 * sum(math.exp(-((distance - joint) / .006) ** 2) for joint in joints[1:])
             influence = {f"{name}_{min(3, 1 + sum(distance > joint for joint in joints[1:]))}": 1}
             for joint_index, joint in enumerate(joints[1:], 1):
                 if abs(distance - joint) <= .006:
@@ -1489,6 +1491,14 @@ def build_player_arm(side: str):
     # Subdivision is baked before linear skinning, including interpolated vertex weights.
     arm_modifier.use_deform_preserve_volume = False
 
+    # Low-profile bevelled knuckle guards follow the proximal bones, leaving flexion free.
+    for name, _, _, lengths, radius, _ in fingers:
+        guard = bm_box(radius * 1.65, .006, lengths[0] * .48,
+                       center=(0, -radius * .92, -lengths[0] * .28), bevel=.0025)
+        bmesh.ops.transform(guard, matrix=frames[name], verts=list(guard.verts))
+        _fpp_hand_part(f"plate_knuckle_{name}", guard, "mat_interactive",
+                       rig, f"{name}_1", basis, side)
+
     def palm_detail(obj, position=(0, 0, 0)):
         obj.data.transform(basis)
         if side == "L":
@@ -1519,8 +1529,8 @@ def build_player_arm(side: str):
         bm.free()
     _hand_bone_child(cuff, rig, "forearm", Matrix.Identity(4))
     for name, size, position, mat in (
-        ("resonance_mount", (.014, .004, .019), (0, -.020, -.047), "mat_interactive"),
-        ("resonance_core", (.0105, .0032, .0145), (0, -.023, -.047), "mat_power_magenta"),
+        ("resonance_mount", (.014, .004, .019), (0, -.025, -.047), "mat_interactive"),
+        ("resonance_core", (.0105, .0032, .0145), (0, -.028, -.047), "mat_power_magenta"),
     ):
         obj = mesh_object(name, bm_ico(1, subdiv=3, scale=size), mat)
         for polygon in obj.data.polygons:
@@ -1532,7 +1542,7 @@ def build_player_arm(side: str):
     for name, loc, rotation in (
         ("palm_center", (0, .018, -.049), Matrix.Rotation(math.pi / 2, 4, "X")),
         ("socket_gun", (.06158, .04108, -.11575), gun_rotation),
-        ("socket_blade", (0, .0422, -.08544), blade_rotation),
+        ("socket_blade", BLADE_GRIP["socketPosition"], blade_rotation),
         ("socket_support", (.00420, .03100, -.10321), Matrix.Rotation(math.radians(55), 4, "Y")),
     ):
         obj = empty(name, size=.012)
@@ -2600,6 +2610,33 @@ def render_hand_previews():
                                   @ socket.matrix_world.to_quaternion().inverted().to_matrix().to_4x4())
             bpy.context.view_layer.update()
             hand_preview("hand_fpp_view.png", fpp=True)
+
+    # The same item-space socket and YXZ camera pose as FppBlade, including the mirrored twin.
+    for name, builder in (("plasmaBlade", build_plasma_blade),
+                          ("staffBlade", build_blade_staff), ("twinBlades", build_blade_twin)):
+        reset_scene()
+        for side in (("R", "L") if name == "twinBlades" else ("R",)):
+            hand = build_player_arm(side)
+            hand_pose(hand, "gripBlade")
+            item = builder()
+            attach_hand_item(hand, item, "socket_blade")
+            if side == "L":
+                item.scale.x = -1
+            position = list(BLADE_GRIP["idlePosition"])
+            pitch, yaw, roll = BLADE_GRIP["idleRotation"]
+            if side == "L":
+                position[0] *= -1
+                position[1] -= BLADE_GRIP["offhandDropM"]
+                yaw, roll = -yaw, -roll
+            pose = (Matrix.Translation(position) @ Matrix.Rotation(yaw, 4, "Y")
+                    @ Matrix.Rotation(pitch, 4, "X") @ Matrix.Rotation(roll, 4, "Z"))
+            socket = hand_object(hand, "socket_blade")
+            hand.matrix_world = (HAND_BASIS @ pose @ HAND_BASIS.inverted()
+                                 @ socket.matrix_world.inverted())
+            bpy.context.view_layer.update()
+        hand_preview(f"hand_fpp_{name}.png", fpp=True)
+        hand_preview(f"hand_grip_{name}_detail.png", target=BLADE_GRIP["idlePosition"],
+                     direction=(-.4, .5, .8), span=.29)
 
 
 def main() -> None:

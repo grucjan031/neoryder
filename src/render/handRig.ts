@@ -12,7 +12,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { applyStyle, getMaterial } from './materials';
 import { fppMaterial, surfaceFor } from './fppMaterials';
-import { handNodes, handPoses } from './handPoses';
+import { bladeGrip, handNodes, handPoses } from './handPoses';
 import type { HandPose, HandSocket } from './handPoses';
 
 // Przybliżona geometria zastępcza i położenia przegubów zgodne z osiami GLB (metry).
@@ -54,7 +54,7 @@ const FINGERS = [
   },
 ] as const;
 const SOCKETS = {
-  socket_blade: { pos: [0, 0.033, -0.11], q: [-0.5, -0.5, 0.5, 0.5] },
+  socket_blade: { pos: bladeGrip.socketPosition, q: [-0.5, -0.5, 0.5, 0.5] },
   socket_gun: {
     pos: [0.049, 0.038, -0.12],
     q: [0, 0, -Math.SQRT1_2, Math.SQRT1_2],
@@ -285,7 +285,7 @@ export class HandRig {
 
   setGlow(amount: number, gain = 1): void {
     this.glowMaterial.color
-      .copy(getMaterial('power').color)
+      .copy(getMaterial(amount > 0 ? 'power' : 'player').color)
       .multiplyScalar(1 + amount * gain);
     this.glow.visible = amount > 0;
   }

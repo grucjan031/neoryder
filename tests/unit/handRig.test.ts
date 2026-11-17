@@ -14,6 +14,7 @@ import { EventBus } from '../../src/core/events';
 import { tuning } from '../../src/core/tuning';
 import { HandRig } from '../../src/render/handRig';
 import {
+  bladeGrip,
   handNodes,
   handPoses,
   handPosesSchema,
@@ -24,6 +25,7 @@ import { FppOffhand } from '../../src/render/fppOffhand';
 import { FppMotion, shownHeld } from '../../src/render/fppMotion';
 import { getMaterial } from '../../src/render/materials';
 import {
+  plasmaBladeDefinition,
   staffBladeDefinition,
   twinBladesDefinition,
 } from '../../src/combat/melee/bladeSchema';
@@ -151,6 +153,43 @@ describe('hand data and joints', () => {
 });
 
 describe('FPP items and offhand', () => {
+  it.each([plasmaBladeDefinition, staffBladeDefinition, twinBladesDefinition])(
+    'keeps $id below the centre with its tip inclined inward and forward',
+    async (definition) => {
+      const blade = keep(new FppBlade(definition));
+      await blade.load(false);
+      blade.place(identity, idle);
+      const items = blade.root.children.filter(
+        (node) => node.name !== 'hand_R' && node.name !== 'hand_L',
+      );
+      for (const [index, rig] of (definition.offhand
+        ? [blade.mainHand, blade.offHand]
+        : [blade.mainHand]
+      ).entries()) {
+        const item = items[index]!;
+        const direction = new Vector3(0, 0, -1).transformDirection(item.matrix);
+        // Pochylenie liczone na ekranie (rzut perspektywiczny z kamery w 0, patrzącej w -Z),
+        // bo tak gracz widzi ostrze: część „do przodu” zbiega ku środkowi kadru.
+        const hilt = new Vector3().setFromMatrixPosition(item.matrix);
+        const tip = hilt.clone().addScaledVector(direction, 0.9);
+        const dx = tip.x / -tip.z - hilt.x / -hilt.z;
+        const dy = tip.y / -tip.z - hilt.y / -hilt.z;
+        const inward = (Math.atan2(Math.abs(dx), dy) * 180) / Math.PI;
+        expect(inward).toBeGreaterThanOrEqual(2);
+        expect(inward).toBeLessThanOrEqual(12);
+        expect(dx * hilt.x).toBeLessThan(0);
+        expect(direction.z).toBeLessThan(0);
+        expect(item.matrix.elements[13]).toBeLessThanOrEqual(-0.3);
+        const socket = rig.root.matrix
+          .clone()
+          .multiply(rig.socketMatrix('socket_blade'));
+        const unmirrored = item.matrix.clone();
+        if (index === 1) unmirrored.scale(new Vector3(-1, 1, 1));
+        closeMatrix(socket, unmirrored);
+      }
+    },
+  );
+
   it('attaches blade hands without mirroring the left rig', async () => {
     const blade = keep(new FppBlade(twinBladesDefinition));
     await blade.load(false);
@@ -336,7 +375,8 @@ describe('FPP items and offhand', () => {
     ).toBe(false);
     left.place(identity, tuning.hands.castS, 'blade', false);
     expect(
-      material instanceof MeshBasicMaterial && material.color.equals(original),
+      material instanceof MeshBasicMaterial &&
+        material.color.equals(getMaterial('player').color),
     ).toBe(true);
   });
 });
@@ -393,6 +433,12 @@ it('loads and caches both actual GLBs with independent joints and support transf
     expect(a.root.getObjectByName('resonance_mount')).toBeDefined();
     for (const name of handNodes)
       expect(a.root.getObjectByName(name)).toBeDefined();
+    const bladeSocket = new Vector3().setFromMatrixPosition(
+      a.socketMatrix('socket_blade'),
+    );
+    expect(
+      bladeSocket.distanceTo(new Vector3(...bladeGrip.socketPosition)),
+    ).toBeLessThan(1e-6);
     const rest = b.root.getObjectByName('thumb_1')!.quaternion.clone();
     a.setPose('gripBlade', 'gripBlade', 0);
     expect(b.root.getObjectByName('thumb_1')!.quaternion.equals(rest)).toBe(
