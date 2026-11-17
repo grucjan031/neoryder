@@ -812,5 +812,166 @@
     "height": 1024,
     "description": "Blacha HVAC z kratkami wentylacyjnymi",
     "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: roof HVAC equipment sheet metal albedo, cool dark steel with repeating ventilation grilles, narrow louvers, small fasteners and weathered edges, flat orthographic detail. Flat orthographic head-on/top-down, evenly lit, stylized painted shapes, not photorealistic, no perspective, no text, brands, borders or glow. Opposite edges must match seamlessly. No red, cyan, magenta, pink. Fill entire square."
+  },
+  {
+    "id": "ship_hull_paint",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Granatowa farba poszycia kadłuba ze spawami i zaciekami",
+    "subject": "Steel ship hull plates, dark navy paint #1d2a40 to #34466a, horizontal welded plate seams, rust streaks running down in muted brown #5a4636, small chips, slight grime."
+  },
+  {
+    "id": "ship_deck_steel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Szara antypoślizgowa stal pokładu ze spawami",
+    "subject": "Steel ship deck, gray anti-slip paint #3a4250 to #5b6575, worn walking paths showing darker steel, weld lines in a grid, small scuffs."
+  },
+  {
+    "id": "rail_ballast",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Podsypka kolejowa z betonowymi podkładami",
+    "subject": "Railway ballast of crushed dark gray stone #2b2f36 to #565c66 with concrete sleepers crossing horizontally at regular spacing (sleepers pale gray #6b707a), top-down, tiles seamlessly along both axes."
+  },
+  {
+    "id": "rail_sleeper_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Zużyty beton peronu z plamami oleju",
+    "subject": "Worn concrete slab of a railway platform, cool gray #3a414c to #66707e, oil stains, hairline cracks, small chips."
+  },
+  {
+    "id": "maglev_body_panel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Grafitowe panele nadwozia pociągu maglev",
+    "subject": "Train body panels, dark graphite #22262e to #3e4450, thin panel seams in a rectangular grid, flush rivets, fine scratches, subtle satin sheen painted flat."
+  },
+  {
+    "id": "snow_asphalt",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ciemny asfalt z cienką warstwą ubitego śniegu",
+    "subject": "Dark asphalt #23262d partially covered by thin compacted snow #b9c4d4 to #dfe6ef, tire ruts exposing dark asphalt strips, slushy edges."
+  },
+  {
+    "id": "snow_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Chłodny beton z zamarzniętym śniegiem w pęknięciach",
+    "subject": "Cool concrete #3b424d with frozen snow #c3cdda filling cracks and low hollows, frost speckles, patchy coverage about 40 percent."
+  },
+  {
+    "id": "formwork_plywood",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Mokra sklejka szalunkowa z zaciekami betonu",
+    "subject": "Wet formwork plywood sheets, muted ochre-brown #6b5a43 to #8a7556, rectangular sheet joints, gray concrete splashes and stains, nail holes."
+  },
+  {
+    "id": "concrete_raw_cast",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Surowy beton lany z odciskiem szalunku i otworami",
+    "subject": "Freshly cast raw concrete wall, gray #4a505a to #747b86, imprint of formwork board lines, regular round tie holes in a grid, small air pores."
+  },
+  {
+    "id": "excavation_dirt",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Błotnista glina wykopu z śladami opon",
+    "subject": "Muddy clay earth of a construction pit, dark brown #3a2f28 to #5e4c3e, tire tracks, scattered small stones, wet patches darker.",
+    "saturation": 0.45
+  },
+  {
+    "id": "slag_heap",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Żużel i popiół, ziarniste ciemnoszare grudki",
+    "subject": "Industrial slag and ash, dark gray #24262b to #4a4c52 granular clumps, occasional warm amber-gray glints #7a6a55, rough texture."
+  },
+  {
+    "id": "cooling_tower_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Beton chłodni kominowej z pionowymi zaciekami",
+    "subject": "Cooling tower concrete, light cool gray #5a616c to #7d8592, vertical water stains and dark streaks, faint horizontal formwork bands."
+  },
+  {
+    "id": "turbine_hall_floor",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Szaro-zielona posadzka epoksydowa hali turbin",
+    "subject": "Industrial epoxy floor, muted gray-green #3a453f to #56625a, worn amber safety lane lines #b88a2e, scuffs and oil stains."
+  },
+  {
+    "id": "flood_brick_algae",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ceglany mur z linią powodzi, glonami i mułem",
+    "subject": "Old brick wall, dark brown-gray bricks #3d3330 to #5a4a42, a horizontal flood line across the middle, below it dark green algae #2f3f2c and silt deposits."
+  },
+  {
+    "id": "boardwalk_planks",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Mokre deski pomostu z metalowymi wspornikami",
+    "subject": "Wet wooden boardwalk planks running horizontally, dark weathered wood #3a3028 to #5c4b3b, gaps between planks, metal brackets and bolts."
+  },
+  {
+    "id": "canal_stone_wall",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Mokre kamienne bloki ściany kanału z mchem",
+    "subject": "Wet stone blocks of a canal wall, dark slate #2e333b to #4d545e, uneven ashlar blocks, damp streaks, small moss in joints."
+  },
+  {
+    "id": "gas_station_tiles",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Szare płytki placu stacji paliw z plamami oleju",
+    "subject": "Square floor tiles of a gas station forecourt, cool gray #4a505a to #6e7480, dark grout lines, oil stains and tire marks."
+  },
+  {
+    "id": "highway_asphalt_worn",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Zużyty asfalt estakady z siecią pęknięć i łatami",
+    "subject": "Worn highway asphalt, charcoal #24272d to #43474f, crack network, darker sealed crack lines, rectangular patch repairs, no lane markings."
+  },
+  {
+    "id": "scaffold_planks",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Deski rusztowania ze stalowymi okuciami końców",
+    "subject": "Scaffolding walk boards, weathered wood #5a4a38 to #7d6a50 with galvanized steel edge strips #6a717c at both ends of each plank, planks running horizontally."
+  },
+  {
+    "id": "hazard_stripes_worn",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Wytarte ukośne pasy ostrzegawcze bursztyn i grafit",
+    "subject": "Worn diagonal hazard stripes, alternating amber #c8902a and graphite #24272d, chipped paint, scratches, grime."
   }
 ]
