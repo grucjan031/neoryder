@@ -50,6 +50,15 @@ export const missionObjectiveSchema = z.discriminatedUnion('kind', [
     position: vec3Schema,
     radiusM: positive,
     durationS: positive,
+    holdS: z.number().finite().nonnegative().default(0),
+    waves: z
+      .array(
+        z.object({
+          atProgress: z.number().finite().gt(0).max(1),
+          wave: id,
+        }),
+      )
+      .optional(),
   }),
   z.object({ ...base, kind: z.literal('killBoss') }),
 ]);
@@ -88,7 +97,8 @@ export const missionSchema = z
               z.object({
                 enemy: id,
                 count: z.number().int().positive(),
-                nearObjective: id,
+                nearObjective: id.optional(),
+                position: vec3Schema.optional(),
                 radiusM: positive,
               }),
             )
@@ -104,7 +114,7 @@ export const missionSchema = z
         trigger: z
           .string()
           .regex(
-            /^(runStart|objectivesDone|enterNode:[1-9]\d*|objective:[^:]+:(started|done))$/,
+            /^(runStart|objectivesDone|enterNode:[1-9]\d*|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/,
           ),
         lines: z.array(dialogueLineSchema).min(1),
       }),
@@ -137,7 +147,15 @@ export const missionSchema = z
         assigned.add(objective);
       }
       for (const guard of node.guards ?? []) {
-        if (!node.objectives.includes(guard.nearObjective))
+        if (
+          (guard.nearObjective === undefined) ===
+          (guard.position === undefined)
+        )
+          fail('Osłona wymaga dokładnie jednego punktu: celu lub pozycji.');
+        if (
+          guard.nearObjective &&
+          !node.objectives.includes(guard.nearObjective)
+        )
           fail('Osłona wymaga celu bieżącego węzła.');
         if (mission.enemies && !mission.enemies.includes(guard.enemy))
           fail('Osłona spoza listy wrogów misji.');

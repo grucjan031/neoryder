@@ -1,0 +1,413 @@
+{
+  "id": "m03-list-przewozowy",
+  "number": 3,
+  "title": "List przewozowy",
+  "act": 1,
+  "summary": "Trop od Nadii prowadzi Iskrę do Magazynu 9 w porcie towarowym Hut, gdzie trafiali zatrzymani po pozytywnym skanie implantów. Kurier wchodzi do strzeżonego portu, stawia czoło nowym oddziałom Kurogane z Tarczownikami i dronami, a następnie utrzymuje pozycję przy terminalu spedycji, dopóki dekoder Bajta nie pobierze ksiąg wywozowych.",
+  "sectorId": "kurogane",
+  "requires": ["m01-maszty"],
+  "layers": 7,
+  "splashAct": 1,
+  "enemies": ["assaulter", "gunner", "turret", "shielder", "drone"],
+  "fixedNodes": [
+    {
+      "layer": 3,
+      "type": "combat",
+      "roomId": "combatLaserYard",
+      "objectives": [],
+      "guards": [
+        {
+          "enemy": "shielder",
+          "count": 1,
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": -5
+          },
+          "radiusM": 2
+        },
+        {
+          "enemy": "drone",
+          "count": 2,
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": -7
+          },
+          "radiusM": 2
+        }
+      ]
+    },
+    {
+      "layer": 6,
+      "type": "combat",
+      "roomId": "combatWarehouse",
+      "objectives": [],
+      "guards": [
+        {
+          "enemy": "turret",
+          "count": 1,
+          "position": {
+            "x": -9,
+            "y": 0,
+            "z": -6
+          },
+          "radiusM": 2
+        },
+        {
+          "enemy": "turret",
+          "count": 1,
+          "position": {
+            "x": 9,
+            "y": 0,
+            "z": -6
+          },
+          "radiusM": 2
+        },
+        {
+          "enemy": "shielder",
+          "count": 2,
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": -4
+          },
+          "radiusM": 2
+        }
+      ]
+    },
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatWarehouse",
+      "objectives": ["terminal", "exit"],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "terminal",
+      "kind": "defend",
+      "label": "Pobierz list przewozowy",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "durationS": 90,
+      "radiusM": 6,
+      "waves": [
+        {
+          "atProgress": 0.25,
+          "wave": "missionPatrol"
+        },
+        {
+          "atProgress": 0.55,
+          "wave": "missionDockShields"
+        },
+        {
+          "atProgress": 0.85,
+          "wave": "missionPatrol"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Opuść magazyn przez bramę dokową",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -10
+      },
+      "holdS": 2,
+      "unlockAfter": ["terminal"]
+    }
+  ],
+  "typeWeights": [
+    {
+      "fromLayer": 1,
+      "toLayer": 1,
+      "weights": {
+        "combat": 1
+      }
+    },
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "weights": {
+        "combat": 1,
+        "shop": 1
+      }
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "weights": {
+        "combat": 2,
+        "rest": 1
+      }
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "weights": {
+        "combat": 2,
+        "shop": 1,
+        "rest": 1
+      }
+    }
+  ],
+  "roomPools": [
+    {
+      "fromLayer": 1,
+      "toLayer": 1,
+      "type": "combat",
+      "rooms": ["combatCorridor", "alleyUnderpassMission"]
+    },
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "type": "combat",
+      "rooms": ["combatYard"]
+    },
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "type": "shop",
+      "rooms": ["shopRoom"]
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "type": "combat",
+      "rooms": ["combatPlatforms", "combatFloodedTunnel"]
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "type": "rest",
+      "rooms": ["restRoom"]
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "type": "combat",
+      "rooms": ["combatPillars"]
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "type": "shop",
+      "rooms": ["shopRoom"]
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "type": "rest",
+      "rooms": ["restRoom"]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "nadia",
+      "text": "Zmiana na nabrzeżu przechodzi o północy, ale w Magazynie 9 nie gaszą już lamp w ogóle. Od wczoraj stoi tam podwójny patrol."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Dobrze cię słyszeć z góry, Nadia. To urządzenie wygląda jak kostka do lutowania, ale ma antenę kierunkową krótkiego zasięgu. Wpinasz w terminal spedycji i stoisz w promieniu sześciu metrów."
+    },
+    {
+      "speaker": "mira",
+      "text": "Dlaczego, kurwa, nie możesz tego zgrać z zewnątrz, tylko trzeba warować przy biurku jak stróż nocny?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Bo port ma własną sieć w miedzianym oplocie, odciętą od linii miejskich. Jak wyjdziesz poza krąg, bufor staje. Jak wyrwą wtyczkę, zaczynamy od zera."
+    },
+    {
+      "speaker": "szron",
+      "text": "Nowy problem w porcie: wyciągnęli z magazynów drużyny z tarczami balistycznymi i lekkie drony bojowe."
+    },
+    {
+      "speaker": "mira",
+      "text": "Na tarcze nie pchaj się od frontu. Obejdź z boku albo przestaw ich z miejsca Rezonansem. Drony zdejmuj od razu, zanim wejdą ci nad głowę."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Przejście pod nabrzeżem jest wąskie i śliskie po przypływie. Jeśli zaczną zamykać śluzy, uciekaj w stronę kanału wodnego, nie wracaj przez plac celny."
+    },
+    {
+      "speaker": "szron",
+      "text": "Bierz kostkę i ruszaj. Potrzebujemy wiedzieć, dokąd wyjeżdżają ludzie z tych skanów."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "bajt",
+      "text": "Dobra, przegrzało mi się pieprzone gniazdo w dekoderze, ale rejestr z trzech miesięcy jest czysty. Tylko... to się nie klei z żadnym transportem więziennym."
+    },
+    {
+      "speaker": "szron",
+      "text": "Mów krótko. Gdzie są ludzie z Niecki?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "W papierach spedycji nie ma ludzi. Jest jedna powtarzająca się pozycja co siedem dni: „ładunek biologiczny klasy K”, waga brutto czterysta dwadzieścia kilogramów, kontener chłodniczy z własnym zasilaniem."
+    },
+    {
+      "speaker": "mira",
+      "text": "Czterysta kilo z agregatem? To akurat jeden człowiek w ciężkiej skrzyni z aparaturą. Dokąd to jedzie?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Wyłącznie koleją towarową na północ, przez główną windę towarową na Taras. Odbiorca: Helixa Dynamics, Zakład Kalibracji."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Czyli nie zamykają ich w więzieniu w Hutach. Wywożą ich na górę, do laboratoriów."
+    },
+    {
+      "speaker": "mira",
+      "text": "Sprawdź rozkład, Bajt. Kiedy następny skład?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Za dwie noce, w środę o drugiej dwadzieścia. Wyjeżdża z trzeciego toru rozrządni, zanim przeładują go na pionowy szyb towarowy."
+    },
+    {
+      "speaker": "szron",
+      "text": "Dwa dni to wystarczająco mało, żeby nic nie poszło zgodnie z planem, jeśli nie ruszymy ich na torach. W Zakładzie na Tarasie nikt ich już nie wyciągnie."
+    },
+    {
+      "speaker": "mira",
+      "text": "Jeśli jedzie torami z Hut, to mój teren. Potrzebuję tylko planu zwrotnic przy rozrządni. Przejmiemy im ten wagon po drodze."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Zaczekajcie tylko, aż sprawdzimy, co właściwie siedzi w tym kontenerze. Żeby nie wciągnąć do tunelu czegoś, czego nie utrzymamy przy życiu."
+    },
+    {
+      "speaker": "szron",
+      "text": "Zbierajcie dane o wagonie. Za dwie noce stajemy na rozjeździe."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jesteś w kanale kablowym pod pierwszym pirsem. Woda niska, czujniki ruchu przy studzience wyłączone — Nadia mówiła prawdę o konserwacji."
+        },
+        {
+          "speaker": "nadia",
+          "text": "Uważaj za załomem przy starych żurawiach. Wyłożyli tam tymczasowe bramki laserowe."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:3",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Uwaga, przed tobą ciężka tarcza i dwa drony na górze. Nie stój w świetle bramki."
+        },
+        {
+          "speaker": "mira",
+          "text": "Widzisz, jak ta płyta zasłania im cały tułów? Zmuś ich do obrotu albo strąć drona z boku. Z tym nie wygrasz na cierpliwość."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Dobry refleks. Dron miał rejestrator wideo, ale nie zdążył wysłać pakietu do centrali."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:6",
+      "lines": [
+        {
+          "speaker": "nadia",
+          "text": "Ten wysoki budynek z zielonym numerem dziewięć nad wrotami to stary magazyn chłodniczy. Ostatnia brama przed samą halą jest uzbrojona."
+        },
+        {
+          "speaker": "szron",
+          "text": "Wyczyść przedpole i wejdź do środka. Po wpięciu dekodera nie będzie już czasu na rozglądanie się po kątach."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:7",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Terminal spedycji stoi na podeście pośrodku hali, widać stąd błękitne diody serwera. Jeśli chcesz sprawdzić manifesty na bocznych rampach, zrób to teraz, zanim włączymy transmisję."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:terminal:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Mam połączenie! Nie odchodź od konsoli dalej niż na sześć metrów, bo sygnał rwie się na stalowych regałach."
+        },
+        {
+          "speaker": "szron",
+          "text": "Pierwsza zmiana wchodzi z galerii po lewej. Trzymaj środek hali."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:terminal:paused",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Transfer stanął, cholera! Wracaj pod terminal, tracimy okno przed zmianą warty!"
+        }
+      ]
+    },
+    {
+      "trigger": "objective:terminal:progress:50",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Wypuszczają tarczowników po schodach z obu stron, skurwiele. Chcą cię zepchnąć z podestu za osłony!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Drony nad głową, najpierw strąć obserwatorów, potem rozbij szyk na dole. Została niecała minuta."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:terminal:progress:90",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Ostatnia paczka plików idzie przez bufor, dziewięćdziesiąt procent! Słyszę, jak otwierają ciężką bramę z tyłu — kończę i odblokowuję wyjście dokowe!"
+        }
+      ]
+    },
+    {
+      "trigger": "objective:terminal:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Mam wszystko! Wyciągaj dekoder i zjeżdżaj na wschodni dok, grodzie są otwarte!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Nie walcz z posiłkami na środku hali. Przebij się prosto do kanału, łódź czeka za śluzą."
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 95,
+      "cores": 1
+    }
+  }
+}

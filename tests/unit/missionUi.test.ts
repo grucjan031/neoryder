@@ -3,8 +3,47 @@ import { expect, it, vi } from 'vitest';
 import { MetaManager } from '../../src/progression/meta';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { createMissionsPanel } from '../../src/ui/hub/missionsPanel';
-import { MissionRadio, splitRadioText } from '../../src/ui/missionUi';
+import {
+  MissionHud,
+  MissionRadio,
+  splitRadioText,
+} from '../../src/ui/missionUi';
+import { MissionObjectives } from '../../src/world/missionObjectives';
 import { missionDefinitions } from '../../src/world/missions';
+
+it('HUD M03 rozróżnia podłączenie, transfer i pauzę bez zerowania paska', () => {
+  const model = new MissionObjectives(
+    missionDefinitions.get('m03-list-przewozowy')!,
+    ['terminal', 'exit'],
+    {},
+    { signal() {}, explode() {} },
+    1.6,
+    1,
+  );
+  const hud = new MissionHud(model);
+  try {
+    hud.step();
+    const root = document.querySelector('.mission-hud')!;
+    expect(root.textContent).toContain('Podłączanie dekodera: 0%');
+    model.step(2, { x: 0, y: 0, z: 1 });
+    hud.step();
+    expect(root.textContent).toContain('Transfer: 0%');
+    expect(root.querySelector('progress')!.value).toBe(0);
+    model.step(22.5, { x: 0, y: 0, z: 1 });
+    hud.step();
+    expect(root.textContent).toContain('Transfer: 25%');
+    model.step(10, { x: 0, y: 0, z: 7 });
+    hud.step();
+    expect(root.textContent).toContain('TRANSFER WSTRZYMANY — wróć do strefy');
+    expect(root.querySelector('progress')!.value).toBe(0.25);
+    model.step(9, { x: 0, y: 0, z: 1 });
+    hud.step();
+    expect(root.textContent).toContain('Transfer: 35%');
+    expect(root.textContent).not.toContain('WSTRZYMANY');
+  } finally {
+    hud.dispose();
+  }
+});
 
 it('wybór misji pokazuje odprawę, powrót przywraca listę, start przekazuje id', () => {
   const manager = new MetaManager(createStarterMetaState());

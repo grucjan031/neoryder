@@ -61,11 +61,31 @@ export class MissionHud {
       const done = this.model.objectives[objective.id] === 'done';
       const fuse = this.model.fuses[objective.id];
       row.label.textContent = `${objective.label}${fuse === undefined ? (this.model.unlocked(objective) ? '' : ` · ${text.locked}`) : ` · ${text.fuse}: ${fuse.toFixed(1)} s`}`;
+      if (objective.kind === 'defend') {
+        const connected =
+          (this.model.progress[`${objective.id}:connection`] ?? 0) >= 1 ||
+          (this.model.progress[objective.id] ?? 0) > 0;
+        const percent = Math.floor(
+          (this.model.progress[objective.id] ?? 0) * 100,
+        );
+        row.label.textContent =
+          connected || done
+            ? `${text.transfer}: ${percent}%${!done && this.model.paused[objective.id] ? `\n${text.transferPaused}` : ''}`
+            : `${text.connecting}: ${Math.floor((this.model.progress[`${objective.id}:connection`] ?? 0) * 100)}%`;
+        row.label.style.whiteSpace = 'normal';
+      }
       row.label.style.textDecoration = done ? 'line-through' : 'none';
       row.label.parentElement!.dataset.current = String(
         objective.id === current,
       );
       row.bar.value = this.model.progress[objective.id] ?? 0;
+      if (
+        objective.kind === 'defend' &&
+        !done &&
+        (this.model.progress[`${objective.id}:connection`] ?? 0) < 1 &&
+        !this.model.progress[objective.id]
+      )
+        row.bar.value = this.model.progress[`${objective.id}:connection`] ?? 0;
     }
   }
   dispose(): void {
