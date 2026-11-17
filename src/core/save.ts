@@ -5,7 +5,7 @@ import { metaStateSchema } from '../progression/metaStateSchema';
 import { createStarterMetaState } from '../progression/progressionSchema';
 import { runStateSchema } from '../world/run';
 import type { MetaState } from './metaTypes';
-import type { RunState } from './runTypes';
+import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';
 
 export const SAVE_VERSION = 3;
@@ -15,11 +15,21 @@ export interface MetaSave {
   updatedAt: number;
   meta: MetaState;
 }
+/**
+ * Zakończony, jeszcze nierozliczony run (ADR 0007 pkt 2): wynik i podsumowanie dla `applyRun`.
+ * Zapis runu z tym polem znika dopiero po udanym zapisie meta.
+ */
+export interface RunEnded {
+  runId: string;
+  summary: RunSummary;
+}
 export interface RunSave {
   saveVersion: number;
   seed: string;
   startedAt: number;
   run: RunState;
+  /** Opcjonalne i zgodne wstecz: brak pola = run w toku (zapisy sprzed tej zmiany). */
+  ended?: RunEnded;
 }
 export type Migration = (
   data: Record<string, unknown>,
@@ -45,6 +55,12 @@ export function migrate(
 
 export interface SaveStore {
   loadMeta(): Promise<MetaSave | null>;
+  /**
+   * Odczyt meta odróżniający brak zapisu (null) od zapisu nieczytelnego (uszkodzony, nowszej
+   * wersji, błąd bazy: wyjątek). Używany przy rozliczaniu nagród, żeby nie nadpisać meta stanem
+   * startowym. Opcjonalny: bez niego `loadMetaManagerStrict` korzysta z `loadMeta`.
+   */
+  loadMetaStrict?(): Promise<MetaSave | null>;
   saveMeta(data: MetaSave): Promise<void>;
   loadRun(): Promise<RunSave | null>;
   saveRun(data: RunSave): Promise<void>;
@@ -57,11 +73,34 @@ const metaSchema: z.ZodType<MetaSave> = z.object({
   updatedAt: z.number().finite(),
   meta: metaStateSchema,
 });
+const count = z.number().int().nonnegative();
+const runEndedSchema: z.ZodType<RunEnded> = z.object({
+  runId: z.string().min(1),
+  summary: z.object({
+    outcome: z.enum(['victory', 'death']),
+    seed: z.string(),
+    loadoutId: z.string().min(1),
+    elapsedS: z.number().finite().nonnegative(),
+    kills: count,
+    roomsCleared: count,
+    elitesCleared: count,
+    threatLevel: count,
+    layerReached: count,
+    implants: z.array(z.string()),
+    damage: z.object({
+      melee: z.number().finite(),
+      power: z.number().finite(),
+      gun: z.number().finite(),
+      other: z.number().finite(),
+    }),
+  }),
+});
 const runSchema: z.ZodType<RunSave> = z.object({
   saveVersion: z.literal(SAVE_VERSION),
   seed: z.string(),
   startedAt: z.number().finite(),
   run: runStateSchema,
+  ended: runEndedSchema.optional(),
 });
 const legacyRunV1Schema = z.object({
   saveVersion: z.literal(1),
@@ -145,6 +184,14 @@ function decode<T>(
   }
 }
 
+/** Jak `decode` dla meta, ale nieczytelny zapis rzuca zamiast udawać brak zapisu. */
+function decodeMetaStrict(raw: unknown): MetaSave | null {
+  if (raw == null) return null;
+  if (isFuture(raw)) throw new Error('Zapis pochodzi z nowszej wersji gry.');
+  const record = recordSchema.parse(raw);
+  return metaSchema.parse(migrate(record, metaMigrations, SAVE_VERSION));
+}
+
 function assertWritable(raw: unknown): void {
   if (isFuture(raw)) {
     console.warn('Odmowa nadpisania zapisu z nowszej wersji gry.');
@@ -157,6 +204,7 @@ export function createMemorySaveStore(): SaveStore {
   let run: unknown = null;
   return {
     loadMeta: async () => decode(meta, metaSchema, metaMigrations),
+    loadMetaStrict: async () => decodeMetaStrict(meta),
     saveMeta: async (data) => {
       assertWritable(meta);
       meta = structuredClone(metaSchema.parse(data));
@@ -240,6 +288,7 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   return {
     loadMeta: async () =>
       decode(await read('meta'), metaSchema, metaMigrations),
+    loadMetaStrict: async () => decodeMetaStrict(await read('meta')),
     saveMeta: async (data) => write('meta', metaSchema.parse(data)),
     loadRun: async () => decode(await read('run'), runSchema, runMigrations),
     saveRun: async (data) => write('run', runSchema.parse(data)),

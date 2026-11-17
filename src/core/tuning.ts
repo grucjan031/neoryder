@@ -786,7 +786,13 @@ export const tuning = {
     },
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
-  run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },
+  run: {
+    transitionS: 0.6,
+    fadeS: 0.35,
+    rewardDelayS: 1,
+    /** Po tylu sekundach wiszące rozliczenie nagrody pokazuje błąd i pozwala ponowić (kolejka zapisów). */
+    rewardSaveTimeoutS: 10,
+  },
   /** Kryjówka: zasięg od oka i margines bryły interakcji (m). */
   hub: {
     /** Margines planu stacji wokół stref (m). */

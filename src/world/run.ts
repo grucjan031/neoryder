@@ -670,6 +670,17 @@ export class RunManager {
     return this.serialize();
   }
 
+  /**
+   * Odtwarza zakończony run z zapisu (stan + podsumowanie) prosto na ekran `summary`,
+   * bez ponownego `run_ended`: rozliczenie nagród prowadzi `RunScene`.
+   */
+  restoreEnded(state: RunState, summary: RunSummary): RunState {
+    this.restore(state);
+    this.currentScreen = 'summary';
+    this.lastSummary = structuredClone(summary);
+    return this.serialize();
+  }
+
   /** Odpina nasłuchiwacze `EventBus`. */
   dispose(): void {
     for (const off of this.off.splice(0)) off();

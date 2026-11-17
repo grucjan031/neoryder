@@ -28,6 +28,26 @@ export async function loadMetaManager(
   );
 }
 
+/**
+ * Jak `loadMetaManager`, ale do rozliczania nagród: brak zapisu daje stan startowy (wolno go
+ * zapisać), a zapis nieczytelny albo błąd bazy rzuca, żeby nie nadpisać meta gracza.
+ */
+export async function loadMetaManagerStrict(
+  store: SaveStore,
+  bus?: EventBus,
+  rules?: MetaRules,
+): Promise<MetaManager> {
+  const save = store.loadMetaStrict
+    ? await store.loadMetaStrict()
+    : await store.loadMeta();
+  if (save) return MetaManager.restore(save.meta, bus, rules);
+  return new MetaManager(
+    createStarterMetaState(rules?.progression.starter),
+    bus,
+    rules,
+  );
+}
+
 const queues = new WeakMap<SaveStore, Promise<void>>();
 
 /**
