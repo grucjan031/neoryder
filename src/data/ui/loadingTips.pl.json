@@ -1,0 +1,164 @@
+{
+  "tips": [
+    {
+      "text": "Sprint i wciśnięcie przysiadu pozwalają wykonać ślizg pod przeszkodą.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Talent Podwójny skok w drzewku Hybryd pozwala odbić się raz w powietrzu kosztem 25 wytrzymałości.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Trzy krótkie ataki ostrzem plazmowym tworzą combo. Trzecie cięcie ma największy zasięg i odrzuca wroga.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Przytrzymaj przycisk ataku, by naładować ciężki cios ostrzem i przebić tarczę przeciwnika.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Wciśnij blok tuż przed trafieniem pocisku, by go odbić. Między odbiciami puszczaj przycisk.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Blokowanie ostrzem pochłania energię za każde trafienie i nie zatrzymuje stu procent obrażeń.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Ostrzem można też rzucić z dystansu — leci do 16 metrów i wraca z powrotem w dłoń.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Ostrza bliźniacze atakują szybciej i mają 4-ciosowe combo, ale słabiej chronią w bloku.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Ostrze dwustronne ma szeroki łuk parowania 240 stopni i obrotowy ciężki atak.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Ciągły ogień przegrzewa broń palną. Gdy wskaźnik ciepła dojdzie do limitu, puść spust i poczekaj na chłodzenie.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Pistolet i Snajperka nie strzelają ogniem ciągłym, ale zadają wysokie obrażenia pojedynczym strzałem.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Snajperka przebija do 3 celów naraz, a Rozpraszacz wystrzeliwuje 8 śrucin na bliski dystans.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Granat EMP wybucha na obszarze i nakłada dwa stosy przeciążenia na trafionych wrogów.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Laser ciągły zadaje stałe obrażenia w promieniu 12 metrów, ale szybko nagrzewa broń.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Pchnięcie Rezonansu zadaje dodatkowe obrażenia, jeśli rzucisz wrogiem prosto w ścianę.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Chwyt i rzut pozwala podnieść lekkie cele, takie jak drony, i cisnąć nimi z dużą siłą.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Błyskawica przeskakuje między pobliskimi wrogami i nakłada przeciążenie. Fala uderzeniowa odpycha dookoła.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Bariera tworzy przed tobą tarczę odbijającą pociski, a Skupienie spowalnia czas świata.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "W Terminalu drzewek rozwiniesz talenty Ostrza, Rezonansu, Strzelca i Hybryd. Reset punktów jest darmowy.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "W Warsztacie kupisz nowe bronie, ostrza, moce, dodatkowe sloty ekwipunku i moduły za Dane oraz Rdzenie.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Do każdej broni palnej włożysz dwa moduły: Rykoszet, Przebicie, Podpalenie lub Nadprzewodnik.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Wyższy Poziom zagrożenia na Tablicy misji wzmacnia wrogów, ale zwiększa nagrody i daje dodatkowe Rdzenie.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Elitarni przeciwnicy upuszczają Rdzenie, a Kredyty zebrane w akcji trzeba wydać przed śmiercią.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Poligon w tunelu kryjówki pozwala bez stawki przetestować ekwipunek przeciwko falom wrogów.",
+      "kind": "gameplay"
+    },
+    {
+      "text": "Niecka to najstarsza, zalewowa dzielnica Neo-Ryd pełna wilgoci, pomp i targów pod estakadami.",
+      "kind": "lore"
+    },
+    {
+      "text": "Komórka ruchu oporu Iskra ukrywa się w nieczynnej stacji metra Kamienna i liczy około trzydziestu osób.",
+      "kind": "lore"
+    },
+    {
+      "text": "Iskrę założył dwanaście lat temu Stary Tomasz, który do dziś pilnuje ognia w beczce na peronie B.",
+      "kind": "lore"
+    },
+    {
+      "text": "Operacjami Iskry kieruje Kapitan Szron, były porucznik ochrony Kurogane, znany z oszczędności w słowach.",
+      "kind": "lore"
+    },
+    {
+      "text": "Iskra przetrwała głównie dlatego, że korporacje Koalicji uważają ją za zbyt małą, by wysłać pełne siły.",
+      "kind": "lore"
+    },
+    {
+      "text": "Kurogane Arms kontroluje zbrojenia, ochronę, drony patrolowe i maszty nasłuchowe w Neo-Ryd.",
+      "kind": "lore"
+    },
+    {
+      "text": "Helixa Dynamics prowadzi darmowe przychodnie i produkuje implanty, ale niewielu mieszkańców Niecki jej ufa.",
+      "kind": "lore"
+    },
+    {
+      "text": "Orbis Grid zarządza siecią miejską, kamerami monitoringu oraz mediami w całym Neo-Ryd.",
+      "kind": "lore"
+    },
+    {
+      "text": "Haker Bajt pracował kiedyś w Sali Monitorów Orbisu, zanim przeszedł na stronę Iskry.",
+      "kind": "lore"
+    },
+    {
+      "text": "Mechaniczka Mira utrzymuje sprzęt Iskry w ruchu. Jej młodszy brat Tymon zaginął rok temu.",
+      "kind": "lore"
+    },
+    {
+      "text": "Kurier stał się celem obławy po nocy, w której powstrzymał spadający kontener samym Rezonansem.",
+      "kind": "lore"
+    },
+    {
+      "text": "Koalicja ściga Rezonantów, ponieważ nie potrafi w pełni kontrolować ich mocy umysłu.",
+      "kind": "lore"
+    },
+    {
+      "text": "Doktor Wolan bada naturę Rezonansu i pomaga ocalałym w ukryciu przed skanerami Koalicji.",
+      "kind": "lore"
+    },
+    {
+      "text": "Zamknięte linie metra pod Niecką łączą zalane tunele z zapleczem przemysłowych sektorów miasta.",
+      "kind": "lore"
+    },
+    {
+      "text": "Pirackie radio Iskry nadaje krótkie nocne audycje dla mieszkańców Niecki, zanim zdołają je namierzyć.",
+      "kind": "lore"
+    },
+    {
+      "text": "Iskra sabotuje infrastrukturę Koalicji, odbija zatrzymanych i wykrada korporacyjne dane.",
+      "kind": "lore"
+    }
+  ]
+}

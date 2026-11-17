@@ -60,6 +60,404 @@
         "Widziałem, jak powstawała Iskra z garstki uciekinierów z górnych poziomów. Nie zmarnuj tego, co tu zbudowaliśmy.",
         "Usiądź na chwilę przy ogniu, jeśli ręce ci drżą. W tym mieście nawet weterani muszą czasem odłożyć ostrze."
       ]
+    },
+    {
+      "id": "hela",
+      "name": "Hela",
+      "role": "Kucharka",
+      "lines": [
+        "Usiądź jak człowiek, Kurierze, na stojąco to ci nawet najlepszy bulion nie pójdzie w nogi. Kuba znów przytargał z targu więcej rzepy niż makaronu, ale głodny nie wyjdziesz.",
+        "W tym mieście wszyscy gonią za Danymi, a zapominają zjeść coś ciepłego. Zanim ruszysz na akcję, wejdź do tunelu na poligon — tam przynajmniej nikt nie strzela na ostro.",
+        "Na wyższym Poziomie zagrożenia w sektorze Kurogane robi się naprawdę gęsto, więc nie zgrywaj bohatera na pusty brzuch. Większe nagrody nic ci nie dadzą, jak nie wrócisz.",
+        "Niech no tylko Szron znowu powie, że nie ma czasu na miskę. Dziewięć lat w podziemiu, a chudy jak przewód od pompy."
+      ]
+    },
+    {
+      "id": "jarek",
+      "name": "Jarek",
+      "role": "Monter sieci",
+      "lines": [
+        "Słyszałeś? Na górze Orbis Grid znowu zmienił szyfry na kamerach przy estakadzie, a i tak trzy ulice dalej ciągną transmisję po starym kablu. Ludzie gadają, że sam Szron cię tu przyprowadził.",
+        "Podpinam się pod magistrale Orbisu między trzecią a czwartą w nocy, jak pół Niecki śpi. Wtedy nawet ich algorytmy nie widzą, że ktoś im podbiera pasmo.",
+        "Podobno na rampie towarowej w Hutach zatrzymano kontener gołymi myślami — no, przynajmniej tak plotkują na targu pod estakadą. Ale cicho, przy Szronie nic nie słyszałeś.",
+        "Ewa mówi, że za dużo gadam, ale ktoś w tej dziurze musi wiedzieć, co się dzieje na powierzchni. Od niej wyciągniesz dwa słowa na zmianę i koniec."
+      ]
+    },
+    {
+      "id": "ewa",
+      "name": "Ewa",
+      "role": "Zwiadowczyni",
+      "lines": [
+        "Jarek myśli, że z kradzionego kabla widać wszystko, a potem dziwi się, że na estakadzie stoją nowe maszty Kurogane. Zejdź na dół w deszczu, to pogadamy.",
+        "Drony zwiadowcze lecą teraz w parach nad kanałem zrzutowym, co cztery minuty robią nawrót przy starym szyldzie Helixy. Przynajmniej są punktualne, w przeciwieństwie do tutejszej kawy.",
+        "Wróciłam godzinę temu, buty jeszcze chlupią wodą z Niecki. Jak chcesz wiedzieć, gdzie nie wchodzić, to pytaj krótko, bo oczy same mi się zamykają.",
+        "Mówią o tobie „nowy od kontenera”, jakbyś był atrakcją z Bulwaru. Dla mnie liczy się tylko to, czy umiesz patrzeć pod nogi, jak wyjdziesz na powierzchnię."
+      ]
+    },
+    {
+      "id": "lena",
+      "name": "Lena",
+      "role": "Radio Iskry",
+      "lines": [
+        "Dobrze cię widzieć po naszej stronie torów, Kurierze. Nocą w Niecce każdy słucha szumu pomp albo oficjalnych komunikatów Orbisu, więc puszczam im czasem coś prawdziwego.",
+        "Nadajemy krótko, z ruchomego przekaźnika pod estakadą, żeby wozy nasłuchowe Kurogane nie zdążyły namierzyć sygnału. Trzy minuty prawdy i znikamy w eterze.",
+        "Ludzie w zalewowych kwartałach nie chcą wielkich haseł. Czasem wystarczy im usłyszeć w starym odbiorniku, że ktoś jeszcze nie złożył broni i nie sprzedał się Koalicji.",
+        "Jak wrócisz z górnych sektorów, daj znać, co mówią na ulicy. Dobry głos w nocy niesie dalej niż najlepsze szyfry Bajta."
+      ]
+    },
+    {
+      "id": "zofia",
+      "name": "Zofia",
+      "role": "Sanitariuszka",
+      "lines": [
+        "Pokaż ręce, zanim usiądziesz. W „darmowych” przychodniach Helixy Dynamics łatają ludziom rany tak, że po miesiącu i tak wracają po kolejną dawkę — u mnie dostaniesz zwykły bandaż i święty spokój.",
+        "Jeśli zobaczysz czerwony promień lasera snajpera, nie czekaj na cud — masz niewiele ponad sekundę, żeby zejść z linii ognia albo przygotować blok.",
+        "Kiedy wróg chwieje się z pulsującym znacznikiem, nie wahaj się podejść z ostrzem i wykończyć go z bliska. W sektorze nikt nie dostaje drugiej szansy za darmo.",
+        "Wilgoć w Kamiennej nie pomaga nikomu, zwłaszcza starszym jak Teo. Dobrze, że Tomasz pilnuje ognia na peronie, bo bez tego połowa z nas dawno by się rozchorowała."
+      ]
+    },
+    {
+      "id": "teo",
+      "name": "Teo",
+      "role": "Były motorniczy",
+      "lines": [
+        "Trzydzieści lat temu wjeżdżałem tu składem punktualnie o szóstej rano. Zanim woda zalała dolny poziom Niecki, peron B pachniał ozonem i smarem, nie pleśnią.",
+        "Tunele za Kamienną ciągną się pod pół miasta, ale połowę zawalono, kiedy zamknęli linię. Jak zgaśnie światło, po samym echu poznasz, czy idziesz w stronę rzeki, czy pod fabryki.",
+        "Młodzi myślą, że ta stacja zawsze była kryjówką. A ja pamiętam, jak ludzie biegli tędy do pracy w Hutach, zanim korporacje postawiły mury i bramki.",
+        "Zofia znowu krzyczy, że siedzę w przeciągu, ale człowiek po tylu latach w kabinie nie umie wysiedzieć w kącie. Przynajmniej tu na dole nie słychać dronów."
+      ]
+    },
+    {
+      "id": "iga",
+      "name": "Iga",
+      "role": "Elektryczka",
+      "lines": [
+        "Nie stawaj na tym kablu, bo jeszcze nie zaizolowałam mostka. Ciągniemy lewy prąd z podstacji Kurogane, więc jak światło mrugnie, to znaczy, że znowu grzebią w sieci.",
+        "Mira zabrała mi z rozdzielni ostatnie sprawne przekaźniki do swojego warsztatu. Ładnie to tak okradać koleżankę, która pilnuje, żeby pompy nie stanęły?",
+        "Jak pompy w dolnym szybie staną na dwie godziny, to woda z Niecki wejdzie nam aż na peron. Ale nie, według Miry ważniejsze jest strojenie kolejnego ostrza.",
+        "Stara instalacja metra pamięta lepsze czasy niż połowa sprzętu na powierzchni. Trzeba tylko wiedzieć, w którą puszkę kopnąć, a którą obejść z daleka."
+      ]
+    },
+    {
+      "id": "marek",
+      "name": "Marek",
+      "role": "Handlarz",
+      "lines": [
+        "W zachodnim tunelu nic nie leży za darmo — części za baterie, baterie za czyste filtry, wszystko ma swoją cenę. Nawet cisza, którą trzyma przy wejściu Grzesiek.",
+        "Jeśli zbierasz Dane i Rdzenie z akcji, zajrzyj do warsztatu Miry. Odblokujesz tam nie tylko nowe bronie i moce, ale też dodatkowe sloty na ekwipunek.",
+        "Do każdej broni palnej wkręcisz dwa moduły — od Rykoszetu i Przebicia po Podpalenie czy Nadprzewodnik. Dobry mod zmienia zwykły pistolet w poważny argument.",
+        "Na targu pod estakadami coraz trudniej o nieskażone leki spoza obiegu Helixy. Jak ktoś pyta o pochodzenie towaru, to znaczy, że nie stać go na resztę."
+      ]
+    },
+    {
+      "id": "grzes",
+      "name": "Grzesiek",
+      "role": "Wartownik",
+      "lines": [
+        "Spokojnie, Kurierze, po tej stronie kraty nic się nie rusza bez mojej wiedzy. Siedzę tu i słucham, czy nad kanałem nie brzęczy któryś z dronów Kurogane.",
+        "Wartowanie w zachodnim tunelu to dziewięć godzin gapienia się w wilgotny beton i jedna minuta, kiedy woda kapie w innym rytmie. Wtedy człowiek naprawdę się budzi.",
+        "Marek pilnuje swojego straganu jak skarbca Orbisu, choć połowa tego złomu nie przetrwałaby jednego deszczu w Niecce. Ale nie mów mu, bo przestanie nosić mi suchary.",
+        "Jak wychodzisz poza tunel, nie hałasuj przy studzienkach. Echo w zamkniętych liniach metra niesie się dalej, niż ci się wydaje."
+      ]
+    },
+    {
+      "id": "rudy",
+      "name": "Rudy",
+      "role": "Barman",
+      "lines": [
+        "Nalać ci czegoś na odwagę, czy dopiero wróciłeś z góry? Destyluję tu ze wszystkiego, co nie świeci w ciemności i nie ma logo Helixy na etykiecie.",
+        "Mój bimber ma jedną zaletę względem wody z Niecki — zabija wszystkie bakterie, łącznie z tymi, które wpadłyby na pomysł, żeby się w nim rozmnażać.",
+        "Na peronie B bywa chłodno, więc albo siadasz przy beczce Tomasza, albo bierzesz kieliszek ode mnie. Obie opcje grzeją, tylko moja zostawia ciekawszy posmak.",
+        "Ludzie mówią, że powinienem otworzyć lokal na Bulwarze. Pewnie, i od razu podać ochronie Kurogane adres na paragonie."
+      ]
+    },
+    {
+      "id": "nina",
+      "name": "Nina",
+      "role": "Szmuglerka",
+      "lines": [
+        "Ta stara szafa grająca ma więcej charakteru niż cała stacja. Jak człowiek przez pół nocy omija patrole między Bulwarem a Niecką, to potem musi rozruszać nogi.",
+        "Przewózka z górnych dzielnic to prosta robota, dopóki masz dobre papiery przewozowe i wiesz, który celnik lubi słuchać muzyki zamiast sprawdzać dno skrzyni.",
+        "Wszyscy tu wyglądają, jakby nieśli na plecach cały ciężar Neo-Ryd. Ktoś musi czasem włączyć głośniejszą płytę, inaczej oszalejemy od tego szumu pomp.",
+        "Nie patrz tak, jakbym nie wiedziała, co dzieje się na górze. Po prostu wolę nie chwalić się każdym przemyconym transportem przy całym peronie."
+      ]
+    },
+    {
+      "id": "witek",
+      "name": "Witek",
+      "role": "Instruktor walki",
+      "lines": [
+        "W nielegalnych klatkach w Hutach szybko uczyłeś się, że siła bez rytmu to tylko krótsza droga na deski. Worek przynajmniej nie oddaje, ale też nie wybacza złej pracy nóg.",
+        "Z ostrzem nie machaj na oślep — trzy szybkie kliknięcia dają combo, a przytrzymany ciężki cios rozbija tarcze. Dash połączony z cięciem też potrafi otworzyć drogę.",
+        "Kiedy leci w ciebie seria, wciśnij blok tuż przed trafieniem, żeby odbić pociski. Między strzałami puszczaj gardę, bo ciągłe trzymanie tylko zżera energię.",
+        "Szron przysłał tu kiedyś dwóch rekrutów z górnych poziomów, którzy myśleli, że bójka to jak w reklamach Orbisu. Po dziesięciu minutach przy worku przestali się uśmiechać."
+      ]
+    },
+    {
+      "id": "kuba",
+      "name": "Kuba",
+      "role": "Tragarz",
+      "lines": [
+        "Trzydzieści dwa schodki z zachodniego tunelu na górę i z powrotem, po cztery razy dziennie. Moje kolana pamiętają każdy worek kaszy, który tu wniosłem.",
+        "Na targu pod estakadą znów podnieśli ceny za suchy prowiant, bo korporacyjni zamknęli boczny przejazd. Ale spróbuj powiedzieć o tym Heli, to cię odeśle z pustą skrzynią.",
+        "Jak widzę, że ktoś stawia tu nową skrzynkę z narzędziami, od razu czuję ból w krzyżu. Każdy mówi „tylko kilka kilo”, a potem ledwo wlekę to pod górę.",
+        "Przynajmniej w Kamiennej nie pada za kołnierz. Na targu pod wiaduktem zawsze kapie z rur prosto na plecy."
+      ]
+    },
+    {
+      "id": "pawel",
+      "name": "Paweł",
+      "role": "Patrolowy",
+      "lines": [
+        "Zamek przy grodzi południowej sprawdzony, plomba nienaruszona. W tej komórce każdy powinien znać procedury alarmowe, inaczej skończymy jak poprzednie skrytki na obrzeżach.",
+        "Kapitan Szron mówi krótko i konkretnie, bo w ochronie nie ma czasu na wiersze. Gdyby wszyscy brali z niego przykład, mniej osób kręciłoby się bez celu po peronie.",
+        "Obchodzę halę co czterdzieści minut, nawet jak Iga narzeka, że hałasuję butami przy rozdzielni. Dyscyplina trzyma nas przy życiu bardziej niż te pordzewiałe drzwi.",
+        "Masz zezwolenie na wyjście w sektor, Kurierze, więc trzymaj się planu. Zamelduj się przy tablicy misji, zanim ruszysz w głąb tunelu."
+      ]
+    },
+    {
+      "id": "ola",
+      "name": "Ola",
+      "role": "Dziecko z peronu",
+      "lines": [
+        "Ej, to ty jesteś tym Kurierem! Jarek mówił, że zatrzymałeś wielką skrzynię samymi oczami i błysnęło na różowo — pokażesz jeszcze raz, jak wrócisz?",
+        "Wiem, że nie wolno podchodzić do beczki Tomasza bez dorosłych, ale Stasiowi marzną ręce. Zresztą ze Stasiem pilnujemy pociągu, nawet jeśli już nigdy nie pojedzie.",
+        "Jak urosnę, to nie będę nosić skrzynek jak Kuba, tylko wezmę świecące ostrze jak ty. Tylko Mira nie pozwala nam nawet dotknąć śrubokręta w warsztacie.",
+        "Widzieliśmy ze Stasiem zwiadowcę z góry, jak wchodził przez stare zejście, ale Szron kazał nam siedzieć cicho na peronie."
+      ]
+    },
+    {
+      "id": "stas",
+      "name": "Staś",
+      "role": "Dziecko z peronu",
+      "lines": [
+        "Ola mówi, że umiesz podnosić ciężkie rzeczy bez rąk. Ja próbowałem wczoraj podnieść kamień przy torach, ale nawet nie drgnął.",
+        "Trochę się boję, jak w tunelu wyje pompa, ale Ola zawsze idzie pierwsza. Tomasz mówi, że w Kamiennej nic złego nam nie zrobią.",
+        "Lubię makaron u Heli, bo zawsze dolewa więcej zupy, jak nikt nie patrzy. Tylko nie pozwala biegać z miską po schodach.",
+        "Widziałem u pani doktor na ekranie taki magentowy błysk — twój też tak świeci, jak robisz sztuczki Rezonansem?"
+      ]
+    }
+  ],
+  "conversations": [
+    {
+      "id": "hela_kuba_market",
+      "npcs": ["hela", "kuba"],
+      "lines": [
+        {
+          "npc": "kuba",
+          "text": "Hela, znowu rzepa i suszona soja. Pod estakadą zabuliliśmy za ten worek dwa razy więcej niż tydzień temu."
+        },
+        {
+          "npc": "hela",
+          "text": "Bo jak widzą twoją zmęczoną minę, Kuba, to od razu doliczają podatek od naiwności. Postaw to przy garnkach, zaraz coś z tego wyczaruję."
+        },
+        {
+          "npc": "kuba",
+          "text": "Moje kolana nie znają słowa „zaraz”. Następnym razem wyślij Pawła, niech im pomacha przepisami."
+        },
+        {
+          "npc": "hela",
+          "text": "Paweł by im zrobił kontrolę wagi i wrócilibyśmy bez kolacji. Masz, napij się ciepłego wywaru i siadaj na chwilę."
+        }
+      ]
+    },
+    {
+      "id": "jarek_ewa_courier",
+      "npcs": ["jarek", "ewa"],
+      "lines": [
+        {
+          "npc": "jarek",
+          "text": "Mówię ci, Ewa, słyszałem to prosto od chłopaków z przekaźnika — ten nowy naprawdę zatrzymał kontener samym Rezonansem."
+        },
+        {
+          "npc": "ewa",
+          "text": "Jarek, ty słyszałeś też, że w czerwcu Orbis wyłączy kamery na Bulwarze. Zamiast plotek lepiej popatrz na trasy dronów nad kanałem."
+        },
+        {
+          "npc": "jarek",
+          "text": "Patrzyłem! Dwa przelatują nad starym szyldem Helixy, potem odbijają na maszty Kurogane. Ale i tak uważam, że Szron przyprowadził tu asa."
+        },
+        {
+          "npc": "ewa",
+          "text": "Oby ten as umiał też schować głowę, kiedy snajper odpala laser. Reszta wyjdzie w praniu."
+        }
+      ]
+    },
+    {
+      "id": "rudy_nina_jukebox",
+      "npcs": ["rudy", "nina"],
+      "lines": [
+        {
+          "npc": "nina",
+          "text": "Rudy, przestaw tę szafę o pół tonu, bo przy basie znowu trzeszczy jak zepsuty głośnik Orbisu."
+        },
+        {
+          "npc": "rudy",
+          "text": "To nie szafa, Nina, tylko moje szklanki drżą przed twoim kolejnym kursem z Bulwaru. Co przywiozłaś tym razem?"
+        },
+        {
+          "npc": "nina",
+          "text": "Trochę czystych filtrów i jedną starą płytę, której nikt na górze już nie słucha. Celnik na bramce wolał patrzeć w telefon."
+        },
+        {
+          "npc": "rudy",
+          "text": "Za dobrą muzykę polewam podwójnie. Tylko uważaj następnym razem, bo na Bulwarze coraz częściej zmieniają warty."
+        }
+      ]
+    },
+    {
+      "id": "tomasz_rudy_barrel",
+      "npcs": ["tomasz", "rudy"],
+      "lines": [
+        {
+          "npc": "tomasz",
+          "text": "Dwanaście lat minęło, Rudy, a ta beczka na peronie B grzeje lepiej niż połowa grzejników w starych blokach Niecki."
+        },
+        {
+          "npc": "rudy",
+          "text": "I dym z niej gryzie w oczy tak samo jak pierwszego dnia, Tomasz. Pamiętasz, jak w sześciu siedzieliśmy tu po ciemku bez jednej lampy?"
+        },
+        {
+          "npc": "tomasz",
+          "text": "Pamiętam. Wtedy nikt nie wierzył, że przetrwamy do zimy, a teraz mamy warsztat, radio i nawet dzieciaki biegają po torach."
+        },
+        {
+          "npc": "rudy",
+          "text": "Dopóki Koalicja myśli, że jesteśmy tylko garstką cieni w starym metrze, możemy jeszcze chwilę spokojnie podkładać do ognia."
+        }
+      ]
+    },
+    {
+      "id": "marek_grzes_tunnel",
+      "npcs": ["marek", "grzes"],
+      "lines": [
+        {
+          "npc": "grzes",
+          "text": "Marek, w zachodnim tunelu od godziny jest podejrzanie cicho. Nawet szczury przy kratce przestały skrobać."
+        },
+        {
+          "npc": "marek",
+          "text": "To pewnie dlatego, że wyprzedałem cały zapas suszonego mięsa. Jak nie ma jedzenia, to i gryzonie idą pod estakadę."
+        },
+        {
+          "npc": "grzes",
+          "text": "Mówię poważnie. Nad kanałem znowu krążył zwiadowca, a ty tu układasz ogniwa jak na wystawie."
+        },
+        {
+          "npc": "marek",
+          "text": "Spokojnie, Grzesiek. Jak usłyszysz coś więcej niż kapiącą wodę, wtedy będziemy pakować stragan. Na razie pilnuj wejścia."
+        }
+      ]
+    },
+    {
+      "id": "lena_radio_broadcast",
+      "npcs": ["lena"],
+      "lines": [
+        {
+          "npc": "lena",
+          "text": "Tu nocne pasmo z głębi Niecki, dla wszystkich, którzy jeszcze nie śpią przy wyłączonym świetle."
+        },
+        {
+          "npc": "lena",
+          "text": "W oficjalnych wiadomościach Orbis Grid znów mówi o spokoju i wzroście wydajności. Wy dobrze wiecie, ile kosztuje ta cisza za oknem."
+        },
+        {
+          "npc": "lena",
+          "text": "Uważajcie przy estakadach po północy i nie ufajcie darmowym punktom medycznym przy kanale. Pamiętajcie — na dole wciąż ktoś czuwa."
+        },
+        {
+          "npc": "lena",
+          "text": "Zostawiam was z kawałkiem starego sygnału sprzed powodzi. Zanim nas namierzą, wyłączam nadajnik. Do usłyszenia jutro."
+        }
+      ]
+    },
+    {
+      "id": "zofia_teo_station",
+      "npcs": ["zofia", "teo"],
+      "lines": [
+        {
+          "npc": "zofia",
+          "text": "Teo, znowu zdjąłeś ciepłą kamizelkę. Chcesz skończyć z zapaleniem płuc i wylądować u tych rzeźników z Helixy?"
+        },
+        {
+          "npc": "teo",
+          "text": "Prędzej zamarznę w tunelu, Zofia, niż dam sobie wbić ich darmową igłę. Kiedyś na Kamiennej mieliśmy normalną dyżurkę na górnym poziomie."
+        },
+        {
+          "npc": "zofia",
+          "text": "Pamiętam tę dyżurkę, czasem tam zaglądałam po zmianie. Zanim woda odcięła tory, ludzie chociaż wiedzieli, co biorą."
+        },
+        {
+          "npc": "teo",
+          "text": "I pociągi chodziły co dziesięć minut. Teraz przynajmniej mamy ciebie i czyste bandaże, to też sporo jak na takie czasy."
+        }
+      ]
+    },
+    {
+      "id": "ola_stas_game",
+      "npcs": ["ola", "stas"],
+      "lines": [
+        {
+          "npc": "ola",
+          "text": "Dobra, Staś, teraz ty jesteś dronem Kurogane i lecisz nad torami, a ja jestem Kurierem i odbijam twoje strzały!"
+        },
+        {
+          "npc": "stas",
+          "text": "Ale ja nie chcę być dronem! Zawsze każesz mi być tym złym, a potem spadam za ławkę."
+        },
+        {
+          "npc": "ola",
+          "text": "Ktoś musi, inaczej Iskra nie ma z kim walczyć! Potem się zamienimy i ty będziesz miał ostrze plazmowe z kija."
+        },
+        {
+          "npc": "stas",
+          "text": "Obiecujesz? Tylko nie uderzaj tak mocno jak wczoraj, bo Zofia znowu będzie sprawdzać mi łokieć."
+        }
+      ]
+    },
+    {
+      "id": "wolan_bajt_night_shift",
+      "npcs": ["wolan", "bajt"],
+      "lines": [
+        {
+          "npc": "bajt",
+          "text": "Doktor Wolan, te pakiety z szyfrowanych kanałów Orbisu mają dziwny narzut przy pomiarach aktywności sieci w Niecce."
+        },
+        {
+          "npc": "wolan",
+          "text": "Zostaw na razie wykresy sieciowe, Bajt, i porównaj je z odczytami Rezonansu z ostatnich dni. Interesuje mnie próg obciążenia kory."
+        },
+        {
+          "npc": "bajt",
+          "text": "Jasne, już wrzucam na drugi ekran. Szkoda tylko, że w tej wilgoci połowa serwerów grzeje się jak stary blaster."
+        },
+        {
+          "npc": "wolan",
+          "text": "Dopóki nikt z góry nie patrzy na nasze logi, możemy pracować spokojnie. Za godzinę zmienimy się na nocnej wachcie."
+        }
+      ]
+    },
+    {
+      "id": "witek_bag_drill",
+      "npcs": ["witek"],
+      "lines": [
+        {
+          "npc": "witek",
+          "text": "Raz, dwa, trzy — wyjście z biodra. Nie zatrzymuj ręki po trzecim cięciu, bo w klatce od razu dostaniesz kontrę."
+        },
+        {
+          "npc": "witek",
+          "text": "Garda wysoko, łokieć przy żebrach. Parowanie to ułamek sekundy, nie czekaj, aż pocisk sam zwolni."
+        },
+        {
+          "npc": "witek",
+          "text": "Oddech, krok w bok, ciężkie zejście. Jeszcze dziesięć serii, zanim w tej hali zapadnie cisza."
+        },
+        {
+          "npc": "witek",
+          "text": "Kurwa, szew znowu puszcza na worku. Mira mnie zabije, jak znowu przyjdę po łatę z taśmy."
+        }
+      ]
     }
   ]
 }
