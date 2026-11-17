@@ -26,7 +26,7 @@ const amount = (args: readonly string[]): number | null => {
 
 /**
  * Komendy debug meta-progresu (ADR 0007 pkt 11): `meta state`, `meta xp <n>`, `meta data <n>`,
- * `meta cores <n>`, `meta threat <n>`, `meta unlock all`, `meta reset`. Każda zmiana zapisuje meta przez `SaveStore`.
+ * `meta cores <n>`, `meta threat <n>`, `meta unlock all`, `meta reset`, `achievement grant <id>`. Każda zmiana zapisuje meta przez `SaveStore`.
  * `host` to `ctx.commands` sceny (może być `undefined` poza trybem debug).
  */
 export function registerMetaCommands(
@@ -84,6 +84,20 @@ export function registerMetaCommands(
       persist();
       const { max, selected } = manager.state.threat;
       return `Poziom zagrożenia: max ${max}, wybrany ${selected}`;
+    },
+  );
+  register(
+    'achievement grant',
+    'achievement grant <id> — oznacz naszywkę jako zdobytą (bez nagrody)',
+    (args) => {
+      if (args.length !== 1) return 'Użycie: achievement grant <id>';
+      try {
+        manager.debugGrantAchievement(args[0]!);
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+      persist();
+      return `Naszywki: ${manager.state.achievements.unlocked.length}`;
     },
   );
   register('meta reset', 'meta reset — stan startowy meta', () => {

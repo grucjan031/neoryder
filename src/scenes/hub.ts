@@ -1083,6 +1083,8 @@ export class HubScene implements Scene {
         return this.soundscape?.query() ?? [];
       case 'meta':
         return this.meta.state;
+      case 'achievements':
+        return this.meta.state.achievements;
       case 'level':
         return {
           ...this.meta.xpProgress,

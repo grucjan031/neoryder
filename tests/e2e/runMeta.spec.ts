@@ -43,9 +43,10 @@ test('run z kryjówki: ekwipunek z meta, zwycięstwo zapisuje nagrody i pokazuje
   await expect
     .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
     .toBe('map');
+  // Dane: 30 za run + 20 za naszywkę „Pierwsze zwycięstwo”.
   expect(await query('meta')).toMatchObject({
     xp: 90,
-    data: 30,
+    data: 50,
     cores: 3,
     stats: { runs: 1, victories: 1 },
   });
