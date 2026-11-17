@@ -49,7 +49,6 @@ test('naszywki: zwycięstwo daje Pierwsze zwycięstwo w podsumowaniu, panelu kry
   const box = page.getByTestId('run-achievements');
   await expect(box).toBeVisible();
   await expect(box).toContainText('Pierwsze zwycięstwo');
-  await expect(box).toContainText('20 Danych');
   await expect.poll(() => query(page, 'savePending')).toBe(false);
   const state = (await query(page, 'achievements')) as Achievements;
   expect(state.unlocked).toContain('pierwsze-zwyciestwo');

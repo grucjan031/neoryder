@@ -536,13 +536,16 @@ export class HtmlRunScreens implements RunScreens {
       icon.className = 'run-screen__patch-icon';
       icon.append(createAchievementIcon(def?.icon ?? 'spark'));
       const label = document.createElement('span');
-      label.textContent = fill(achievementText.summary.line, {
-        title: def?.title ?? unlock.id,
-        reward: rewardLabel({
-          ...(unlock.reward.data ? { data: unlock.reward.data } : {}),
-          ...(unlock.reward.cores ? { cores: unlock.reward.cores } : {}),
-        }),
+      const reward = rewardLabel({
+        ...(unlock.reward.data ? { data: unlock.reward.data } : {}),
+        ...(unlock.reward.cores ? { cores: unlock.reward.cores } : {}),
       });
+      label.textContent = fill(
+        reward
+          ? achievementText.summary.line
+          : achievementText.summary.lineNoReward,
+        { title: def?.title ?? unlock.id, reward },
+      );
       row.append(icon, label);
       box.append(row);
     }

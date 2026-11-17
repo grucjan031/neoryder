@@ -128,10 +128,6 @@ describe('zapis v5: osiągnięcia', () => {
         layerReached: 1,
         implants: [],
         damage: { melee: 1, power: 0, gun: 0, other: 0 },
-        achievements: {
-          counters: { victories: 1 },
-          flags: ['pierwsze-zwyciestwo'],
-        },
       },
       'new-run',
     );
@@ -139,9 +135,49 @@ describe('zapis v5: osiągnięcia', () => {
     const again = (await store.loadMetaStrict!())!;
     expect(again.saveVersion).toBe(5);
     expect(again.meta.achievements).toEqual({
-      unlocked: ['pierwsze-zwyciestwo'],
-      counters: { victories: 1 },
+      unlocked: ['droga-ostrza', 'pierwsze-zwyciestwo'],
+      counters: { runs_ended: 1, victories: 1 },
     });
+  });
+
+  it('migracja weterana: liczniki ze stats i od razu progi, bez wypłaty nagród walutowych', async () => {
+    const legacy = legacyMeta();
+    legacy.stats = {
+      runs: 12,
+      victories: 6,
+      deaths: 6,
+      kills: 99,
+      bestVictoryS: 9,
+    };
+    legacy.xp = 3000;
+    legacy.unlocks = [
+      'blade:plasmaBlade',
+      'weapon:blaster',
+      'weapon:pistol',
+      'power:push',
+      'weapon:rifle',
+    ];
+    await seed('ach-vet', {
+      saveVersion: 4,
+      createdAt: 1,
+      updatedAt: 2,
+      meta: legacy,
+    });
+    const saved =
+      (await createIndexedDbSaveStore('ach-vet').loadMetaStrict!())!;
+    const { achievements } = saved.meta;
+    expect(achievements.counters).toEqual({ runs_ended: 12, victories: 6 });
+    expect([...achievements.unlocked].sort()).toEqual(
+      [
+        'dziesiec-prob',
+        'pierwsze-zwyciestwo',
+        'pierwszy-zakup',
+        'poziom-10',
+        'weteran-hut',
+      ].sort(),
+    );
+    // Sama naszywka: waluty nietknięte.
+    expect(saved.meta).toMatchObject({ data: 321, cores: 4, xp: 3000 });
   });
 
   it('zapis runu v4 z zakończeniem bez achievements czyta się w v5, a z achievements zachowuje je', async () => {

@@ -1,6 +1,8 @@
 import type { AchievementsState } from '../core/metaTypes';
 import type { RunAchievementProgress, RunSummary } from '../core/runTypes';
+import { achievementDefinitions } from './achievementsSchema';
 import type { AchievementDefinition } from './achievementsSchema';
+import { progression } from './progressionSchema';
 
 /**
  * Reguły warunków, których dane osiągnięć (`achievements.json`) nie wyrażają: progi zdarzeń
@@ -154,4 +156,39 @@ export function achievementProgress(
     ? target
     : Math.min(target, state.counters[def.counter ?? ''] ?? 0);
   return { current, target };
+}
+
+function characterLevel(xp: number): number {
+  let level = 1;
+  let remaining = xp;
+  for (const need of progression.levels.xpToNext) {
+    if (remaining < need) break;
+    remaining -= need;
+    level += 1;
+  }
+  return level;
+}
+
+/**
+ * Migracja meta 4→5: zasila liczniki `victories` i `runs_ended` ze statystyk i od razu
+ * odblokowuje osiągnięcia, których progi gracz już przekroczył (sama naszywka, bez nagrody walutowej).
+ */
+export function seedAchievementsFromMeta(meta: {
+  xp: number;
+  unlocks: readonly string[];
+  stats: { runs: number; victories: number };
+}): AchievementsState {
+  const counters: Record<string, number> = {};
+  if (meta.stats.runs > 0) counters.runs_ended = meta.stats.runs;
+  if (meta.stats.victories > 0) counters.victories = meta.stats.victories;
+  const flags = new Set<string>();
+  if (meta.stats.victories > 0) flags.add(ACHIEVEMENT_IDS.firstVictory);
+  if (meta.unlocks.length > progression.starter.unlocks.length)
+    flags.add(ACHIEVEMENT_IDS.firstPurchase);
+  if (characterLevel(meta.xp) >= ACHIEVEMENT_RULES.characterLevel)
+    flags.add(ACHIEVEMENT_IDS.level);
+  const unlocked = [...achievementDefinitions.values()]
+    .filter((def) => isAchieved(def, counters, flags))
+    .map((def) => def.id);
+  return { unlocked, counters };
 }

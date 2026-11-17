@@ -16,6 +16,7 @@
     "missing": "Nie zdobyta",
     "progress": "{current} / {target}",
     "reward": "Nagroda: {reward}",
+    "noReward": "Nagroda: sama naszywka",
     "unlocksPurchase": "Pozwala kupić: {item}"
   },
   "reward": {
@@ -26,7 +27,8 @@
   "toast": { "prefix": "Naszywka" },
   "summary": {
     "heading": "Nowe naszywki Iskry",
-    "line": "{title} — {reward}"
+    "line": "{title} — {reward}",
+    "lineNoReward": "{title}"
   },
   "workshop": { "requires": "Wymaga naszywki: {title}" }
 }

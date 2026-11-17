@@ -71,6 +71,8 @@ export interface RunState {
     kills: number;
     damage: RunDamageStats;
   };
+  /** Przyrosty osiągnięć z pokoi tego runu (zapis i `continue=1`); brak pola = nic nie zebrano. */
+  achievementProgress?: RunAchievementProgress;
 }
 
 /** Przyrosty liczników i spełnione flagi osiągnięć z jednego runu (S4b-01). */

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { EventBus } from '../../src/core/events';
-import type { RunSummary } from '../../src/core/runTypes';
 import { AchievementTracker } from '../../src/progression/achievementTracker';
 import type { AchievementTrackerOptions } from '../../src/progression/achievementTracker';
 
@@ -46,20 +45,6 @@ function setup(options: Partial<AchievementTrackerOptions> = {}) {
     },
   };
 }
-
-const summary = (outcome: 'victory' | 'death' = 'victory'): RunSummary => ({
-  outcome,
-  seed: 's',
-  loadoutId: 'custom',
-  elapsedS: 10,
-  kills: 1,
-  roomsCleared: 1,
-  elitesCleared: 0,
-  threatLevel: 0,
-  layerReached: 1,
-  implants: [],
-  damage: { melee: 1, power: 1, gun: 1, other: 1 },
-});
 
 describe('AchievementTracker', () => {
   it('przypisuje zabójstwo do kategorii ostatniego obrażenia gracza na wrogu', () => {
@@ -153,16 +138,24 @@ describe('AchievementTracker', () => {
     expect(t.tracker.tracked.flags).toContain('bez-zadrasniecia');
   });
 
-  it('trzy punkty: A, B i C naraz w jednym runie, utrata punktu zeruje', () => {
+  it('trzy punkty: flaga tylko przy 3x gracz w migawce właścicieli', () => {
     const t = setup();
-    const capture = (id: 'A' | 'B' | 'C', owner: 'player' | 'enemy') =>
-      t.bus.emit('conquest_captured', { id, owner });
-    capture('A', 'player');
-    capture('B', 'player');
-    capture('B', 'enemy');
-    capture('C', 'player');
+    type Owner = 'player' | 'enemy' | 'neutral';
+    const owners = { A: 'neutral', B: 'neutral', C: 'neutral' } as Record<
+      'A' | 'B' | 'C',
+      Owner
+    >;
+    const change = (id: 'A' | 'B' | 'C', owner: Owner) => {
+      owners[id] = owner;
+      t.bus.emit('conquest_captured', { id, owner, owners: { ...owners } });
+    };
+    change('A', 'player');
+    change('B', 'player');
+    // Scenariusz z recenzji: A zbite do neutralnego, potem przejęte C.
+    change('A', 'neutral');
+    change('C', 'player');
     expect(t.tracker.tracked.flags).not.toContain('trzy-punkty');
-    capture('B', 'player');
+    change('A', 'player');
     expect(t.tracker.tracked.flags).toContain('trzy-punkty');
   });
 
@@ -213,19 +206,26 @@ describe('AchievementTracker', () => {
     expect(t.tracker.tracked.counters).toEqual({});
   });
 
-  it('collect dokłada postęp z podsumowania i jest powtarzalne', () => {
-    const t = setup();
-    t.bus.emit('dash_used', { user: PLAYER, dir: V });
-    const first = t.tracker.collect(summary());
-    expect(first).toEqual({
-      counters: { dash_used: 1, runs_ended: 1, victories: 1 },
-      flags: ['pierwsze-zwyciestwo'],
+  it('restore odtwarza przyrosty bez ponownego komunikatu, a setBase wycisza zdobyte w zostawionym runie', () => {
+    const t = setup({
+      base: { unlocked: [], counters: { parry_success: 24 } },
     });
-    expect(t.tracker.collect(summary())).toEqual(first);
-    expect(t.tracker.collect(summary('death'))).toEqual({
-      counters: { dash_used: 1, runs_ended: 1 },
-      flags: [],
+    t.tracker.restore({
+      counters: { parry_success: 1 },
+      flags: ['pierwsza-krew'],
     });
+    expect(t.earned).toEqual([]);
+    expect(t.tracker.tracked).toEqual({
+      counters: { parry_success: 1 },
+      flags: ['pierwsza-krew'],
+    });
+    t.kill(10);
+    expect(t.earned).toEqual([]);
+
+    const left = setup();
+    left.tracker.setBase({ unlocked: ['pierwsza-krew'], counters: {} });
+    left.kill(11);
+    expect(left.earned).toEqual([]);
   });
 
   it('dispose odpina nasłuchiwanie', () => {

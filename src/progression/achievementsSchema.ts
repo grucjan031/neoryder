@@ -23,6 +23,32 @@ export const ACHIEVEMENT_COUNTERS = [
 ] as const;
 export type AchievementCounter = (typeof ACHIEVEMENT_COUNTERS)[number];
 
+/** Flagi, które tracker może ustawić ze zdarzeń w runie (reszta wynika z podsumowania albo z meta). */
+export const RUN_EVENT_FLAGS = [
+  'pierwsza-krew',
+  'seria',
+  'bez-zadrasniecia',
+  'trzy-punkty',
+  'upadek-brandta',
+] as const;
+
+/** Najwyższy przyrost jednego licznika z jednego runu (ochrona przed uszkodzonym zapisem). */
+export const MAX_RUN_COUNTER = 10_000;
+
+/** Postęp osiągnięć z runu zapisywany w `RunState` i `RunSummary` (tylko znane klucze i ograniczone wartości). */
+export const runAchievementProgressSchema = z.object({
+  counters: z
+    .record(z.string(), z.number().int().min(0).max(MAX_RUN_COUNTER))
+    .refine(
+      (counters) =>
+        Object.keys(counters).every((key) =>
+          (ACHIEVEMENT_COUNTERS as readonly string[]).includes(key),
+        ),
+      'Nieznany licznik osiągnięć.',
+    ),
+  flags: z.array(z.enum(RUN_EVENT_FLAGS)),
+});
+
 /** Klucze ikon rysowanych w `src/ui/achievementIcons.ts` (paleta: bursztyn, ciepła biel, zieleń). */
 export const ACHIEVEMENT_ICONS = [
   'spark',
@@ -52,13 +78,10 @@ export const ACHIEVEMENT_ICONS = [
 
 const amount = z.number().int().min(0);
 
+/** Pusta nagroda `{}` oznacza samą naszywkę (bez waluty). */
 export const achievementRewardSchema = z
   .object({ data: amount.optional(), cores: amount.optional() })
-  .strict()
-  .refine(
-    (reward) => (reward.data ?? 0) + (reward.cores ?? 0) > 0,
-    'Nagroda wymaga Danych lub Rdzeni.',
-  );
+  .strict();
 
 export const achievementSchema = z
   .object({

@@ -6,7 +6,7 @@
     "hint": "Wejdź do dowolnego pokoju z wrogami i pokonaj jednego z nich.",
     "category": "walka",
     "kind": "flag",
-    "reward": { "data": 10 },
+    "reward": {},
     "icon": "spark"
   },
   {
@@ -18,7 +18,9 @@
     "kind": "counter",
     "counter": "parry_success",
     "target": 25,
-    "reward": { "data": 20 },
+    "reward": {
+      "data": 20
+    },
     "icon": "mirror"
   },
   {
@@ -30,7 +32,9 @@
     "kind": "counter",
     "counter": "parry_success",
     "target": 150,
-    "reward": { "cores": 1 },
+    "reward": {
+      "cores": 1
+    },
     "icon": "mirror"
   },
   {
@@ -42,7 +46,9 @@
     "kind": "counter",
     "counter": "execute_performed",
     "target": 25,
-    "reward": { "data": 25 },
+    "reward": {
+      "data": 25
+    },
     "icon": "execute"
   },
   {
@@ -52,7 +58,9 @@
     "hint": "Zwiń walkę w jedno cięcie: grupa wrogów blisko siebie i szybkie zabójstwa.",
     "category": "walka",
     "kind": "flag",
-    "reward": { "data": 25 },
+    "reward": {
+      "data": 25
+    },
     "icon": "chain"
   },
   {
@@ -64,7 +72,9 @@
     "kind": "counter",
     "counter": "synergy_triggered",
     "target": 20,
-    "reward": { "data": 20 },
+    "reward": {
+      "data": 20
+    },
     "icon": "rings"
   },
   {
@@ -76,7 +86,9 @@
     "kind": "counter",
     "counter": "dash_used",
     "target": 200,
-    "reward": { "data": 15 },
+    "reward": {
+      "data": 15
+    },
     "icon": "dash"
   },
   {
@@ -86,7 +98,9 @@
     "hint": "Wejdź do pokoju elity i wyczyść go, nie dając się trafić.",
     "category": "walka",
     "kind": "flag",
-    "reward": { "cores": 2 },
+    "reward": {
+      "cores": 2
+    },
     "icon": "aegis"
   },
   {
@@ -98,7 +112,9 @@
     "kind": "counter",
     "counter": "kills_melee",
     "target": 150,
-    "reward": { "data": 30 },
+    "reward": {
+      "data": 30
+    },
     "icon": "blade"
   },
   {
@@ -110,7 +126,9 @@
     "kind": "counter",
     "counter": "kills_power",
     "target": 120,
-    "reward": { "data": 30 },
+    "reward": {
+      "data": 30
+    },
     "icon": "wave"
   },
   {
@@ -122,7 +140,9 @@
     "kind": "counter",
     "counter": "kills_gun",
     "target": 200,
-    "reward": { "data": 30 },
+    "reward": {
+      "data": 30
+    },
     "icon": "gun"
   },
   {
@@ -132,7 +152,9 @@
     "hint": "Wygraj, walcząc prawie wyłącznie ostrzem.",
     "category": "sciezki",
     "kind": "flag",
-    "reward": { "cores": 2 },
+    "reward": {
+      "cores": 2
+    },
     "icon": "crown"
   },
   {
@@ -142,7 +164,9 @@
     "hint": "Wygraj, walcząc prawie wyłącznie mocami Rezonansu.",
     "category": "sciezki",
     "kind": "flag",
-    "reward": { "cores": 2 },
+    "reward": {
+      "cores": 2
+    },
     "icon": "crown"
   },
   {
@@ -152,7 +176,9 @@
     "hint": "Wygraj, walcząc prawie wyłącznie bronią palną.",
     "category": "sciezki",
     "kind": "flag",
-    "reward": { "cores": 2 },
+    "reward": {
+      "cores": 2
+    },
     "icon": "crown"
   },
   {
@@ -162,7 +188,9 @@
     "hint": "Wykonaj misję 01 z tablicy misji.",
     "category": "misje",
     "kind": "flag",
-    "reward": { "data": 20 },
+    "reward": {
+      "data": 20
+    },
     "icon": "antenna"
   },
   {
@@ -172,7 +200,9 @@
     "hint": "Wykonaj misję 03 z tablicy misji.",
     "category": "misje",
     "kind": "flag",
-    "reward": { "data": 25 },
+    "reward": {
+      "data": 25
+    },
     "icon": "letter"
   },
   {
@@ -182,7 +212,9 @@
     "hint": "Wykonaj misję 06 z tablicy misji.",
     "category": "misje",
     "kind": "flag",
-    "reward": { "cores": 2 },
+    "reward": {
+      "cores": 2
+    },
     "icon": "foundry"
   },
   {
@@ -192,7 +224,9 @@
     "hint": "Wybierz Podbój na tablicy misji i doprowadź go do zwycięstwa.",
     "category": "misje",
     "kind": "flag",
-    "reward": { "data": 25 },
+    "reward": {
+      "data": 25
+    },
     "icon": "flag"
   },
   {
@@ -202,7 +236,9 @@
     "hint": "Zdobądź wszystkie trzy punkty i utrzymaj je, zanim wróg któryś odbije.",
     "category": "misje",
     "kind": "flag",
-    "reward": { "cores": 1 },
+    "reward": {
+      "cores": 1
+    },
     "icon": "triad"
   },
   {
@@ -212,7 +248,7 @@
     "hint": "Przejdź sektor i pokonaj bossa.",
     "category": "progres",
     "kind": "flag",
-    "reward": { "data": 20 },
+    "reward": {},
     "icon": "trophy"
   },
   {
@@ -224,7 +260,9 @@
     "kind": "counter",
     "counter": "runs_ended",
     "target": 10,
-    "reward": { "data": 30 },
+    "reward": {
+      "data": 30
+    },
     "icon": "repeat"
   },
   {
@@ -234,7 +272,9 @@
     "hint": "Dotrzyj do pokoju bossa i zniszcz go.",
     "category": "progres",
     "kind": "flag",
-    "reward": { "cores": 1 },
+    "reward": {
+      "cores": 1
+    },
     "icon": "target"
   },
   {
@@ -244,7 +284,9 @@
     "hint": "Odblokuj wyższe Poziomy zagrożenia zwycięstwami i wygraj na trzecim.",
     "category": "progres",
     "kind": "flag",
-    "reward": { "cores": 2 },
+    "reward": {
+      "cores": 2
+    },
     "icon": "alert"
   },
   {
@@ -256,7 +298,9 @@
     "kind": "counter",
     "counter": "victories",
     "target": 5,
-    "reward": { "cores": 1 },
+    "reward": {
+      "cores": 1
+    },
     "icon": "chevrons"
   },
   {
@@ -266,7 +310,7 @@
     "hint": "Wydaj Dane w warsztacie w kryjówce.",
     "category": "progres",
     "kind": "flag",
-    "reward": { "data": 10 },
+    "reward": {},
     "icon": "cart"
   },
   {
@@ -276,7 +320,9 @@
     "hint": "Zbieraj doświadczenie za runy.",
     "category": "progres",
     "kind": "flag",
-    "reward": { "cores": 2 },
+    "reward": {
+      "cores": 2
+    },
     "icon": "level"
   }
 ]

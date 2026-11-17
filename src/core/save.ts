@@ -2,7 +2,9 @@ import { z } from 'zod';
 import { modeIdSchema } from '../world/modeSchema';
 import { actionSchema, isBindingCode } from './input';
 import { loadoutDefinitions } from '../progression/loadout';
+import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { metaStateSchema } from '../progression/metaStateSchema';
+import { seedAchievementsFromMeta } from '../progression/achievements';
 import { createStarterMetaState } from '../progression/progressionSchema';
 import { runStateSchema } from '../world/run';
 import type { MetaState } from './metaTypes';
@@ -97,12 +99,7 @@ const runEndedSchema: z.ZodType<RunEnded> = z.object({
       gun: z.number().finite(),
       other: z.number().finite(),
     }),
-    achievements: z
-      .object({
-        counters: z.record(z.string().min(1), count),
-        flags: z.array(z.string().min(1)),
-      })
-      .optional(),
+    achievements: runAchievementProgressSchema.optional(),
   }),
 });
 const runSchema: z.ZodType<RunSave> = z.object({
@@ -140,11 +137,18 @@ const metaMigrations: readonly Migration[] = [
   }),
   (data) => {
     const meta = recordSchema.parse(data.meta);
+    if (meta.achievements !== undefined) return { ...data, meta };
+    const stats = z
+      .object({ runs: count, victories: count })
+      .catch({ runs: 0, victories: 0 })
+      .parse(meta.stats);
+    const unlocks = z.array(z.string()).catch([]).parse(meta.unlocks);
+    const xp = count.catch(0).parse(meta.xp);
     return {
       ...data,
       meta: {
         ...meta,
-        achievements: meta.achievements ?? { unlocked: [], counters: {} },
+        achievements: seedAchievementsFromMeta({ xp, unlocks, stats }),
       },
     };
   },

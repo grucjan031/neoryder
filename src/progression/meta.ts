@@ -10,9 +10,16 @@ import {
   type TreeId,
 } from '../core/metaTypes';
 import type { RunAchievementProgress, RunSummary } from '../core/runTypes';
-import { ACHIEVEMENT_IDS, ACHIEVEMENT_RULES } from './achievements';
+import {
+  ACHIEVEMENT_IDS,
+  ACHIEVEMENT_RULES,
+  mergeProgress,
+  summaryProgress,
+} from './achievements';
 import {
   ACHIEVEMENT_COUNTERS,
+  MAX_RUN_COUNTER,
+  RUN_EVENT_FLAGS,
   achievementDefinitions,
 } from './achievementsSchema';
 import type { AchievementDefinition } from './achievementsSchema';
@@ -290,12 +297,22 @@ export class MetaManager {
       s.threat.max += 1;
       threatUnlocked = true;
     }
+    // Postęp z podsumowania liczy tu `MetaManager`; tracker dostarcza tylko przyrosty ze zdarzeń
+    // (tylko znane liczniki i flagi zdarzeniowe, ograniczone wartości).
+    const tracked = summary.achievements;
     const achievements = this.addAchievementProgress(
-      summary.achievements,
+      mergeProgress(summaryProgress(summary), {
+        counters: tracked?.counters ?? {},
+        flags: (tracked?.flags ?? []).filter((flag) =>
+          (RUN_EVENT_FLAGS as readonly string[]).includes(flag),
+        ),
+      }),
       this.level >= ACHIEVEMENT_RULES.characterLevel
         ? [ACHIEVEMENT_IDS.level]
         : [],
     );
+    if (achievements.length > 0)
+      record.achievements = achievements.map((unlock) => unlock.id);
     const levelAfter = this.level;
     this.events?.emit('meta_rewards', {
       runId,
@@ -337,7 +354,9 @@ export class MetaManager {
     for (const name of ACHIEVEMENT_COUNTERS) {
       const delta = progress?.counters[name];
       if (typeof delta === 'number' && Number.isFinite(delta) && delta > 0)
-        state.counters[name] = (state.counters[name] ?? 0) + Math.floor(delta);
+        state.counters[name] =
+          (state.counters[name] ?? 0) +
+          Math.min(MAX_RUN_COUNTER, Math.floor(delta));
     }
     const flags = new Set([...(progress?.flags ?? []), ...extraFlags]);
     const unlocks: AchievementUnlock[] = [];

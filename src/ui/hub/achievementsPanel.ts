@@ -96,7 +96,9 @@ export function createAchievementsPanel(
       el(
         'p',
         'achv-card__reward',
-        fill(text.panel.reward, { reward: rewardLabel(def.reward) }),
+        rewardLabel(def.reward)
+          ? fill(text.panel.reward, { reward: rewardLabel(def.reward) })
+          : text.panel.noReward,
       ),
     );
     const gated = gatedItem(def.id);

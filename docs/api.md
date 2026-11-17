@@ -1647,8 +1647,9 @@ loadAchievements(data: unknown): AchievementDefinition[];
 // src/progression/achievementTracker.ts
 class AchievementTracker {
   constructor(bus: EventBus, options: { base: AchievementsState; clock: () => number; active?: () => boolean });
-  get tracked(): RunAchievementProgress;                 // przyrosty z samych zdarzeń
-  collect(summary: RunSummary): RunAchievementProgress;  // + postęp z podsumowania (do RunSummary.achievements)
+  get tracked(): RunAchievementProgress;                 // przyrosty ze zdarzeń (do RunSummary.achievements)
+  restore(progress?: RunAchievementProgress): void;      // z RunState.achievementProgress przy continue=1
+  setBase(base: AchievementsState): void;                // po rozliczeniu zostawionego runu
   dispose(): void;
 }
 
@@ -1659,7 +1660,7 @@ MetaManager.debugGrantAchievement(id: string): void;     // bez nagrody, konsola
 // UnlockDefinition.requiresAchievement?: string — buyUnlock rzuca „Wymagana naszywka: <tytuł>.”
 ```
 
-Zdarzenia: `achievement_earned: { id: string }` (tracker w trakcie runu, komunikat w HUD) i `achievement_unlocked: { id: string }` (`MetaManager`: rozliczenie runu, zakup, debug). Komenda debug `achievement grant <id>`, zapytania `query('achievements' | 'runAchievements')`. Zapis: `SAVE_VERSION = 5` (migracja meta 4→5: puste osiągnięcia).
+`RunState.achievementProgress?` (opcjonalne) trzyma przyrosty trackera w zapisie runu. `conquest_captured` ma teraz `owner: 'player' | 'enemy' | 'neutral'` i `owners` (migawka A/B/C); `conquestUi` ignoruje `neutral`. Zdarzenia: `achievement_earned: { id: string }` (tracker w trakcie runu, komunikat w HUD) i `achievement_unlocked: { id: string }` (`MetaManager`: rozliczenie runu, zakup, debug). Komenda debug `achievement grant <id>`, zapytania `query('achievements' | 'runAchievements')`. Zapis: `SAVE_VERSION = 5` (migracja meta 4→5: puste osiągnięcia).
 
 ### Kryjówka — `src/ui/hubScreens.ts`, `src/world/hubSchema.ts`, `src/world/hubStations.ts` (F4-07)
 

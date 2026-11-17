@@ -17,6 +17,7 @@ export const achievementText = z
       missing: z.string(),
       progress: z.string(),
       reward: z.string(),
+      noReward: z.string(),
       unlocksPurchase: z.string(),
     }),
     reward: z.object({
@@ -25,7 +26,11 @@ export const achievementText = z
       join: z.string(),
     }),
     toast: z.object({ prefix: z.string() }),
-    summary: z.object({ heading: z.string(), line: z.string() }),
+    summary: z.object({
+      heading: z.string(),
+      line: z.string(),
+      lineNoReward: z.string(),
+    }),
     workshop: z.object({ requires: z.string() }),
   })
   .parse(textData);

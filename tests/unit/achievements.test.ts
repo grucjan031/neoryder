@@ -53,9 +53,8 @@ describe('dane osiągnięć (S4b-01)', () => {
     const icons = new Set(achievementIconKeys());
     expect([...icons].sort()).toEqual([...ACHIEVEMENT_ICONS].sort());
     for (const def of achievementDefinitions.values()) {
-      expect((def.reward.data ?? 0) + (def.reward.cores ?? 0)).toBeGreaterThan(
-        0,
-      );
+      expect(def.reward.data ?? 0).toBeGreaterThanOrEqual(0);
+      expect(def.reward.cores ?? 0).toBeGreaterThanOrEqual(0);
       expect(icons.has(def.icon)).toBe(true);
       if (def.kind === 'counter')
         expect(ACHIEVEMENT_COUNTERS).toContain(def.counter);
@@ -70,9 +69,9 @@ describe('dane osiągnięć (S4b-01)', () => {
     expect(() =>
       loadAchievements([{ ...valid, counter: 'dash_used', target: 3 }]),
     ).toThrow('nie ma pól');
-    expect(() => loadAchievements([{ ...valid, reward: {} }])).toThrow(
-      'Nagroda',
-    );
+    expect(() =>
+      loadAchievements([{ ...valid, reward: { data: -1 } }]),
+    ).toThrow();
     expect(() => loadAchievements([{ ...valid, icon: 'nie-ma' }])).toThrow();
     expect(() => loadAchievements([{ ...valid, category: 'inne' }])).toThrow();
     expect(() => loadAchievements([{ ...valid, extra: 1 }])).toThrow();

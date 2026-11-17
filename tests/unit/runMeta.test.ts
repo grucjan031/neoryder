@@ -15,6 +15,7 @@ import {
   loadMetaManagerStrict,
   saveMetaManager,
 } from '../../src/progression/metaSave';
+import { metaStateSchema } from '../../src/progression/metaStateSchema';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { RunScene } from '../../src/scenes/run';
 import type { RunRoom, RunSavePort } from '../../src/scenes/run';
@@ -1077,9 +1078,8 @@ it('naszywki: ponowienie zapisu po błędzie i wznowienie nie dublują licznikó
   await first.scene.whenReady();
   expect(first.screens.view.rewardError).toBe('save');
   // Zakończenie z przyrostami czeka w zapisie runu (przeżywa odświeżenie).
-  expect(save.ended?.summary.achievements?.counters).toMatchObject({
+  expect(save.ended?.summary.achievements?.counters).toEqual({
     dash_used: 1,
-    victories: 1,
   });
   control.fail = false;
   first.screens.actions.retrySave!();
@@ -1096,4 +1096,91 @@ it('naszywki: ponowienie zapisu po błędzie i wznowienie nie dublują licznikó
   await setup('continue=1', { store, save, navigate });
   expect(navigate).toHaveBeenCalledExactlyOnceWith('/');
   expect((await store.loadMeta())!.meta).toEqual(afterRetry);
+});
+
+it('postęp naszywek z pokoi przed odświeżeniem trafia do meta po Kontynuuj', async () => {
+  const store = createMemorySaveStore();
+  const save = new MemoryRunSave();
+  const first = await setup('seed=a3&loadout=meta', { store, save });
+  first.bus.emit('entity_spawned', { id: 1, kind: 'player' });
+  for (let i = 0; i < 3; i += 1)
+    first.bus.emit('dash_used', { user: 1, dir: { x: 0, y: 0, z: 1 } });
+  (first.scene as unknown as { showMap(): void }).showMap();
+  await first.scene.whenReady();
+  expect(save.state?.achievementProgress?.counters).toEqual({ dash_used: 3 });
+  first.scene.dispose();
+  const second = await setup('continue=1', { store, save });
+  expect(second.scene.query('runAchievements')).toMatchObject({
+    counters: { dash_used: 3 },
+  });
+  second.commands.execute('run end lose');
+  await second.scene.whenReady();
+  expect((await store.loadMeta())!.meta.achievements.counters).toMatchObject({
+    dash_used: 3,
+    runs_ended: 1,
+  });
+});
+
+it('naszywka z zostawionego runu nie pokazuje się ponownie w HUD nowego runu', async () => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const { store, control } = flakyStore();
+  const save = new MemoryRunSave();
+  const first = await setup('seed=a4&loadout=meta', { store, save });
+  first.bus.emit('entity_spawned', { id: 1, kind: 'player' });
+  first.bus.emit('enemy_killed', { id: 9, killer: 1, tags: [] });
+  first.commands.execute('run end lose');
+  await first.scene.whenReady();
+  expect(first.screens.view.rewardError).toBe('save');
+  first.scene.dispose();
+  control.fail = false;
+  const bus = new EventBus();
+  const earned: string[] = [];
+  bus.on('achievement_earned', ({ id }) => earned.push(id));
+  const second = await setup('seed=a5&loadout=meta', { store, save, bus });
+  await second.scene.whenReady();
+  expect((await store.loadMeta())!.meta.achievements.unlocked).toContain(
+    'pierwsza-krew',
+  );
+  bus.emit('entity_spawned', { id: 1, kind: 'player' });
+  bus.emit('enemy_killed', { id: 10, killer: 1, tags: [] });
+  expect(earned).toEqual([]);
+});
+
+it('dane odrzucone przez walidację zapisu meta to błąd „apply” (Porzuć nagrodę), nie „save”', async () => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const inner = createMemorySaveStore();
+  const store: SaveStore = {
+    ...inner,
+    saveMeta: async () => {
+      metaStateSchema.parse({});
+    },
+  };
+  const { scene, screens, commands } = await setup('seed=a6&loadout=meta', {
+    store,
+  });
+  commands.execute('run end win');
+  await scene.whenReady();
+  expect(screens.view.rewardError).toBe('apply');
+  expect(screens.actions.abandonReward).toBeTypeOf('function');
+  expect(screens.actions.retrySave).toBeUndefined();
+});
+
+it('podsumowanie po odświeżeniu pokazuje naszywki zdobyte w rozliczonym runie', async () => {
+  const store = createMemorySaveStore();
+  const first = await setup('seed=a7&loadout=meta', { store });
+  const snapshot = first.scene.query('runState') as RunState;
+  first.commands.execute('run end win');
+  await first.scene.whenReady();
+  expect(
+    first.screens.view.meta!.achievements!.map((unlock) => unlock.id),
+  ).toContain('pierwsze-zwyciestwo');
+  first.scene.dispose();
+  const save = new MemoryRunSave();
+  save.state = snapshot;
+  const second = await setup('continue=1', { store, save });
+  second.commands.execute('run end win');
+  await second.scene.whenReady();
+  expect(
+    second.screens.view.meta!.achievements!.map((unlock) => unlock.id),
+  ).toContain('pierwsze-zwyciestwo');
 });

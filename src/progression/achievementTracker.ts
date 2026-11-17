@@ -1,6 +1,6 @@
 import type { EventBus, EntityId } from '../core/events';
 import type { AchievementsState } from '../core/metaTypes';
-import type { RunAchievementProgress, RunSummary } from '../core/runTypes';
+import type { RunAchievementProgress } from '../core/runTypes';
 import {
   ACHIEVEMENT_IDS,
   ACHIEVEMENT_RULES,
@@ -9,7 +9,6 @@ import {
   emptyProgress,
   isAchieved,
   mergeProgress,
-  summaryProgress,
 } from './achievements';
 import type { DamageCategory } from './achievements';
 import { achievementDefinitions } from './achievementsSchema';
@@ -38,7 +37,6 @@ export class AchievementTracker {
   private readonly kinds = new Map<EntityId, string>();
   private readonly lastCategory = new Map<EntityId, DamageCategory>();
   private readonly killTimes: number[] = [];
-  private readonly heldPoints = new Set<string>();
   private readonly definitions: ReadonlyMap<string, AchievementDefinition>;
   private playerId: EntityId | null = null;
   private eliteRoom = false;
@@ -99,12 +97,13 @@ export class AchievementTracker {
           this.setFlag(ACHIEVEMENT_IDS.noScratch);
         this.eliteRoom = false;
       }),
-      bus.on('conquest_captured', ({ id, owner }) => {
+      bus.on('conquest_captured', ({ owners }) => {
         if (!this.live()) return;
-        if (owner === 'player') this.heldPoints.add(id);
-        else this.heldPoints.delete(id);
+        // Faktyczny stan wszystkich punktów (także po utracie na rzecz neutralnego).
         if (
-          ACHIEVEMENT_RULES.conquestPoints.every((p) => this.heldPoints.has(p))
+          ACHIEVEMENT_RULES.conquestPoints.every(
+            (p) => owners[p as 'A'] === 'player',
+          )
         )
           this.setFlag(ACHIEVEMENT_IDS.threePoints);
       }),
@@ -116,9 +115,19 @@ export class AchievementTracker {
     return mergeProgress(this.progress);
   }
 
-  /** Przyrosty z runu połączone z postępem wynikającym z podsumowania (do `RunSummary.achievements`). */
-  collect(summary: RunSummary): RunAchievementProgress {
-    return mergeProgress(this.progress, summaryProgress(summary));
+  /** Odtwarza przyrosty z zapisanego runu (`continue=1`); progi już przekroczone nie wywołają komunikatu. */
+  restore(progress: RunAchievementProgress | undefined): void {
+    this.progress.counters = { ...(progress?.counters ?? {}) };
+    this.progress.flags = [...(progress?.flags ?? [])];
+    this.flags.clear();
+    for (const flag of this.progress.flags) this.flags.add(flag);
+    this.announce(false);
+  }
+
+  /** Nowa baza (stan meta po rozliczeniu zostawionego runu): bez ponownych komunikatów. */
+  setBase(base: AchievementsState): void {
+    this.options.base = base;
+    this.announce(false);
   }
 
   dispose(): void {
@@ -155,7 +164,7 @@ export class AchievementTracker {
   }
 
   /** Progi przekroczone w tym runie, których meta jeszcze nie zna: jednorazowy komunikat. */
-  private announce(): void {
+  private announce(emit = true): void {
     const { base } = this.options;
     const counters = { ...base.counters };
     for (const [name, delta] of Object.entries(this.progress.counters))
@@ -165,7 +174,7 @@ export class AchievementTracker {
         continue;
       if (!isAchieved(def, counters, this.flags)) continue;
       this.announced.add(def.id);
-      this.bus.emit('achievement_earned', { id: def.id });
+      if (emit) this.bus.emit('achievement_earned', { id: def.id });
     }
   }
 }

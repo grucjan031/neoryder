@@ -3,6 +3,7 @@ import { EventBus } from '../../src/core/events';
 import { createMemorySaveStore } from '../../src/core/save';
 import type { RunSummary } from '../../src/core/runTypes';
 import { MetaManager } from '../../src/progression/meta';
+import { runAchievementProgressSchema } from '../../src/progression/achievementsSchema';
 import { metaStateSchema } from '../../src/progression/metaStateSchema';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { CommandRegistry } from '../../src/ui/debugCommands';
@@ -37,14 +38,17 @@ describe('MetaManager: naszywki Iskry', () => {
     expect(state.achievements).toEqual({ unlocked: [], counters: {} });
     expect(metaStateSchema.safeParse(state).success).toBe(true);
     expect(
-      metaStateSchema.safeParse({ ...state, achievements: undefined }).success,
-    ).toBe(false);
-    expect(
-      metaStateSchema.safeParse({
-        ...state,
-        achievements: { unlocked: [], counters: { x: -1 } },
-      }).success,
-    ).toBe(false);
+      metaStateSchema.parse({ ...state, achievements: undefined }).achievements,
+    ).toEqual({ unlocked: [], counters: {} });
+    // Uszkodzone osiągnięcia nie unieważniają reszty meta (wracają puste).
+    const broken = metaStateSchema.parse({
+      ...state,
+      data: 77,
+      xp: 12,
+      achievements: { unlocked: [], counters: { x: -1 } },
+    });
+    expect(broken.achievements).toEqual({ unlocked: [], counters: {} });
+    expect(broken).toMatchObject({ data: 77, xp: 12, unlocks: state.unlocks });
   });
 
   it('applyRun dolicza liczniki także przy porażce i nie odblokowuje poniżej progu', () => {
@@ -54,7 +58,7 @@ describe('MetaManager: naszywki Iskry', () => {
     expect(result.achievements).toEqual([]);
     expect(meta.state.achievements).toEqual({
       unlocked: [],
-      counters: { dash_used: 40 },
+      counters: { dash_used: 40, runs_ended: 1 },
     });
   });
 
@@ -89,7 +93,10 @@ describe('MetaManager: naszywki Iskry', () => {
     expect(result.achievements).toEqual([
       { id: 'bez-zadrasniecia', reward: { data: 0, cores: 2 } },
     ]);
-    expect(meta.state.achievements.counters).toEqual({ parry_success: 3 });
+    expect(meta.state.achievements.counters).toEqual({
+      parry_success: 3,
+      runs_ended: 1,
+    });
     expect(meta.state.cores).toBe(result.rewards.cores + 2);
   });
 
@@ -116,7 +123,11 @@ describe('MetaManager: naszywki Iskry', () => {
     const meta = make();
     const result = meta.applyRun(summary(), 'r1');
     expect(result.achievements).toEqual([]);
-    expect(meta.state.achievements).toEqual({ unlocked: [], counters: {} });
+    // Postęp z podsumowania liczy sam MetaManager.
+    expect(meta.state.achievements).toEqual({
+      unlocked: [],
+      counters: { runs_ended: 1 },
+    });
   });
 
   it('poziom 10 odblokowuje się po rozliczeniu runu i po dodaniu XP (debug)', () => {
@@ -139,9 +150,9 @@ describe('MetaManager: naszywki Iskry', () => {
     meta.debugAddData(500);
     meta.buyUnlock('weapon:rifle');
     expect(meta.hasAchievement('pierwszy-zakup')).toBe(true);
-    expect(meta.state.data).toBe(500 - 80 + 10);
+    expect(meta.state.data).toBe(500 - 80);
     meta.buyUnlock('power:grab');
-    expect(meta.state.data).toBe(500 - 80 + 10 - 80);
+    expect(meta.state.data).toBe(500 - 80 - 80);
   });
 
   it('bramka: odblokowanie wymagające naszywki nie kupi się bez niej', () => {
@@ -183,17 +194,62 @@ describe('MetaManager: naszywki Iskry', () => {
     expect(meta.state.data).toBe(0);
   });
 
-  it('zwycięski run bez zdarzeń: nagroda za pierwsze zwycięstwo z danych podsumowania', () => {
+  it('zwycięski run bez zdarzeń: naszywka z samego podsumowania, bez nagrody walutowej', () => {
     const meta = make();
-    const run = withProgress(
-      { runs_ended: 1, victories: 1 },
-      ['pierwsze-zwyciestwo'],
-      { outcome: 'victory' },
+    const result = meta.applyRun(
+      summary({
+        outcome: 'victory',
+        damage: { melee: 1, power: 1, gun: 1, other: 1 },
+      }),
+      'r1',
     );
-    const result = meta.applyRun(run, 'r1');
     expect(result.achievements).toEqual([
-      { id: 'pierwsze-zwyciestwo', reward: { data: 20, cores: 0 } },
+      { id: 'pierwsze-zwyciestwo', reward: { data: 0, cores: 0 } },
     ]);
+    expect(meta.state.achievements.counters).toEqual({
+      runs_ended: 1,
+      victories: 1,
+    });
+    expect(meta.state.lastRuns[0]!.achievements).toEqual([
+      'pierwsze-zwyciestwo',
+    ]);
+  });
+
+  it('tracker nie ma wpływu na postęp z podsumowania: podwójnie podane liczniki zwycięstw nie dublują się z derywacją', () => {
+    const meta = make();
+    meta.applyRun(
+      withProgress({}, ['pierwsze-zwyciestwo', 'poziom-10'], {
+        outcome: 'victory',
+        damage: { melee: 1, power: 1, gun: 1, other: 1 },
+      }),
+      'r1',
+    );
+    // Flagi spoza listy zdarzeniowych z zapisu są odrzucane (poziom-10 bez poziomu).
+    expect(meta.hasAchievement('poziom-10')).toBe(false);
+    expect(meta.state.achievements.counters.victories).toBe(1);
+  });
+
+  it('licznik 1e308 z uszkodzonego zapisu jest obcięty do limitu runu', () => {
+    const meta = make();
+    meta.applyRun(withProgress({ dash_used: 1e308 }), 'r1');
+    expect(meta.state.achievements.counters.dash_used).toBe(10_000);
+    expect(metaStateSchema.safeParse(meta.state).success).toBe(true);
+  });
+
+  it('zapis podsumowania odrzuca liczniki ponad limit, nieznane klucze i flagi spoza listy', () => {
+    const ok = runAchievementProgressSchema.safeParse({
+      counters: { dash_used: 5 },
+      flags: ['seria'],
+    });
+    expect(ok.success).toBe(true);
+    for (const bad of [
+      { counters: { dash_used: 1e308 }, flags: [] },
+      { counters: { dash_used: 10_001 }, flags: [] },
+      { counters: { nieznany: 1 }, flags: [] },
+      { counters: {}, flags: ['pierwszy-zakup'] },
+      { counters: {}, flags: ['poziom-10'] },
+    ])
+      expect(runAchievementProgressSchema.safeParse(bad).success).toBe(false);
   });
 });
 

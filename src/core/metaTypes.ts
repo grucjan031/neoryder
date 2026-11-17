@@ -38,6 +38,8 @@ export interface MetaRunRecord {
   layerReached: number;
   threatLevel: number;
   rewards: RunRewards;
+  /** Id naszywek zdobytych w tym runie (podsumowanie po odświeżeniu). */
+  achievements?: string[];
 }
 
 export interface MetaState {

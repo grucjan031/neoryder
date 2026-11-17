@@ -78,9 +78,16 @@ describe('Przejęcie', () => {
     expect(point.owner).toBe('player');
     expect(captured.mock.calls.map((c) => c[0].owner)).toEqual([
       'player',
+      'neutral',
       'enemy',
+      'neutral',
       'player',
     ]);
+    expect(captured.mock.calls.at(-1)![0].owners).toEqual({
+      A: 'player',
+      B: 'neutral',
+      C: 'neutral',
+    });
   });
   it.each([0, 1, 2, 3])('upływ puli przy %i punktach', (held) => {
     const model = create();

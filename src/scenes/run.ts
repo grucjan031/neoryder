@@ -1,3 +1,4 @@
+import { ZodError } from 'zod';
 import { modeIdSchema } from '../world/modeSchema';
 import { conquestDefinition } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
@@ -41,6 +42,7 @@ import { RunManager } from '../world/run';
 import { generateSectorMap, generateMissionMap } from '../world/sectorMap';
 import { missionDefinitions } from '../world/missions';
 import { MissionRadio } from '../ui/missionUi';
+import { achievementDefinitions } from '../progression/achievementsSchema';
 import { AchievementToast } from '../ui/achievementToast';
 import { AchievementTracker } from '../progression/achievementTracker';
 import type { SectorDefinition } from '../world/sectorSchema';
@@ -247,7 +249,7 @@ export class RunScene implements Scene {
         // Przyrosty osiągnięć dochodzą do podsumowania przed zapisem `ended`, więc przeżywają odświeżenie.
         this.finishMeta(
           this.tracker
-            ? { ...summary, achievements: this.tracker.collect(summary) }
+            ? { ...summary, achievements: this.tracker.tracked }
             : summary,
         );
       }),
@@ -288,6 +290,7 @@ export class RunScene implements Scene {
       if (state.loadoutId !== CUSTOM_LOADOUT_ID)
         this.validateLoadout(state.loadoutId);
       this.manager.restore(state);
+      this.tracker?.restore(state.achievementProgress);
     } else {
       // Nowy run nadpisze zapis runu: zostawiony, nierozliczony run najpierw rozliczamy.
       // Gdy się nie uda, zostajemy na jego podsumowaniu (ponowienie albo porzucenie nagrody).
@@ -420,7 +423,12 @@ export class RunScene implements Scene {
     try {
       await this.save.saveRun(this.manager.serialize(), ended);
     } catch (error) {
-      fail('save', 'Nie można zapisać zakończenia runu.', error);
+      // Dane odrzucone przez walidację nie zmienią się po ponowieniu: zostaje „Porzuć nagrodę”.
+      fail(
+        error instanceof ZodError ? 'apply' : 'save',
+        'Nie można zapisać zakończenia runu.',
+        error,
+      );
       return;
     }
     const store = this.getMetaStore();
@@ -446,7 +454,11 @@ export class RunScene implements Scene {
       try {
         await saveMetaManager(store, meta);
       } catch (error) {
-        fail('save', 'Nie można zapisać meta-progresu.', error);
+        fail(
+          error instanceof ZodError ? 'apply' : 'save',
+          'Nie można zapisać meta-progresu.',
+          error,
+        );
         return;
       }
     }
@@ -474,16 +486,26 @@ export class RunScene implements Scene {
     return {
       applied: false,
       rewards: record.rewards,
+      achievements: (record.achievements ?? []).map((id) => {
+        const def = achievementDefinitions.get(id);
+        return {
+          id,
+          reward: {
+            data: def?.reward.data ?? 0,
+            cores: def?.reward.cores ?? 0,
+          },
+        };
+      }),
       levelBefore: level,
       levelAfter: level,
       threatUnlocked: false,
-      achievements: [],
     };
   }
 
   /** Świeżo wczytany i rozliczony stan meta staje się stanem sceny (także dla komend meta). */
   private adoptMeta(meta: MetaManager): void {
     this.meta = meta;
+    this.tracker?.setBase(meta.state.achievements);
     if (!this.metaCommands) return;
     this.metaCommands.dispose();
     this.metaCommands = registerMetaCommands(
@@ -706,6 +728,7 @@ export class RunScene implements Scene {
   }
 
   private showMap(): void {
+    if (this.tracker) this.manager.setAchievementProgress(this.tracker.tracked);
     const state = this.manager.serialize();
     this.persist(async () => {
       await this.save.saveRun(state);
