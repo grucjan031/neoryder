@@ -192,6 +192,7 @@ export function updateNpcLook(
   state: NpcLookState,
   baseYaw: number,
   npc: Vec3,
+  /** Cel spojrzenia: domyślnie gracz, w rozmowach podsłuchanych mówiący uczestnik. */
   player: Vec3,
   dt: number,
   params: NpcLookParams,
@@ -382,6 +383,7 @@ export class NpcRuntime {
     talking: boolean,
     playerRadiusM?: number,
     speaking = false,
+    lookAt?: Vec3 | null,
   ): void {
     this.stepIdleVariety(dt, talking || speaking);
     Object.assign(this.previousPosition, this.position);
@@ -408,10 +410,11 @@ export class NpcRuntime {
         this.look,
         this.def.route ? this.route.yaw : this.baseYaw,
         this.position,
-        player,
+        lookAt ?? player,
         dt,
         {
-          rangeM: this.def.route && talking ? Infinity : t.npcTurnRangeM,
+          rangeM:
+            lookAt || (this.def.route && talking) ? Infinity : t.npcTurnRangeM,
           turnSpeedRadS: t.npcTurnSpeedRadS,
           headMaxRad: t.npcHeadMaxRad,
           bodyMaxRad: this.def.route

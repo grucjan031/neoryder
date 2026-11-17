@@ -700,6 +700,9 @@ export class HubScene implements Scene {
         this.talk?.line.id === state.def.id,
         this.ctx.tuning.player.capsuleRadius,
         this.chatter.line?.npc === state.def.id,
+        this.talk?.line.id === state.def.id
+          ? null
+          : this.chatter.lookTargetFor(state.def.id),
       );
     for (const entry of this.npcBodies) {
       entry.translation.x = entry.state.position.x;
@@ -784,7 +787,7 @@ export class HubScene implements Scene {
       alpha,
       frameDt,
       this.ctx.camera?.position ?? this.player.getState().position,
-      this.chatter.line?.npc ?? null,
+      this.talk?.line.id ?? this.chatter.line?.npc ?? null,
     );
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
@@ -857,7 +860,10 @@ export class HubScene implements Scene {
           y: state.position.y,
           z: state.position.z,
           bodyYaw: state.look.bodyYaw,
-          clip: state.animation(this.chatter.line?.npc === state.def.id),
+          clip: state.animation(
+            this.talk?.line.id === state.def.id ||
+              this.chatter.line?.npc === state.def.id,
+          ),
         }));
       case 'playerPos':
         return { ...this.player.getState().position };

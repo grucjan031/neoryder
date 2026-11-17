@@ -20,6 +20,7 @@ export class HubChatter {
   private readonly conversations: Conversation[];
   private active: Conversation | null = null;
   private current: ChatterLine | null = null;
+  private lastSpeaker = -1;
   private index = 0;
   private left = 0;
   private gap = false;
@@ -61,7 +62,35 @@ export class HubChatter {
       this.active.cooldown = this.tuning.chatterCooldownS;
     this.active = null;
     this.current = null;
+    this.lastSpeaker = -1;
     this.forced = false;
+  }
+
+  /**
+   * Cel spojrzenia uczestnika podsłuchanej rozmowy wieloosobowej: słuchacz patrzy na mówiącego
+   * (także w przerwie między kwestiami), mówiący na najbliższego innego uczestnika.
+   * `null` = rozmowa jednoosobowa, powitanie albo NPC spoza rozmowy (patrzy jak dotąd na gracza).
+   */
+  lookTargetFor(npcId: string): Vec3 | null {
+    const entry = this.active;
+    if (!entry || entry.positions.length < 2 || this.lastSpeaker < 0)
+      return null;
+    const own = entry.def.npcs.indexOf(npcId);
+    if (own < 0) return null;
+    if (own !== this.lastSpeaker) return entry.positions[this.lastSpeaker]!;
+    const from = entry.positions[own]!;
+    let best: Vec3 | null = null;
+    let bestDistance = Infinity;
+    for (let i = 0; i < entry.positions.length; i++) {
+      if (i === own) continue;
+      const other = entry.positions[i]!;
+      const distance = Math.hypot(other.x - from.x, other.z - from.z);
+      if (distance < bestDistance) {
+        best = other;
+        bestDistance = distance;
+      }
+    }
+    return best;
   }
 
   force(id: string): boolean {
@@ -109,6 +138,7 @@ export class HubChatter {
 
   private showLine(): void {
     this.current = this.active!.lines[this.index]!;
+    this.lastSpeaker = this.active!.def.npcs.indexOf(this.current.npc);
     this.gap = false;
     this.left =
       this.tuning.chatterLineBaseS +

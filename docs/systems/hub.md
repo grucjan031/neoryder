@@ -241,27 +241,29 @@ Stacje: `talents` (terminal drzewek, kącik łączności), `workshop` (stół w 
 Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekranach w kąciku łączności), Stary Tomasz
 (weteran, siedzi przy beczce z ogniem).
 
-16 mieszkańców poniżej ma `position.y = 0`; pozycja chodzących oznacza początek trasy.
+18 mieszkańców poniżej ma `position.y = 0`; pozycja chodzących oznacza początek trasy.
 Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt współrzędnych.
 
-| id    | Miejsce / zajęcie              | position (x; z) | rotationDeg | animation            | look: shade / headwear / torso / prop |
-| ----- | ------------------------------ | --------------- | ----------- | -------------------- | ------------------------------------- |
-| hela  | kuchnia, za ladą               | −17; −18,4      | 0           | PickUp_Table         | 5 / bandana / apron / none            |
-| jarek | ława przy pierwszym stole      | −17,6; −13,55   | 180         | Sitting_Talking_Loop | 1 / headphones / jacket / satchel     |
-| ewa   | przeciwległa ława              | −17,6; −16,05   | 0           | Sitting_Idle_Loop    | 6 / hood / jacket / pouches           |
-| lena  | radio, stołek przed mikrofonem | 5; −15,9        | 180         | Sitting_Talking_Loop | 8 / headphones / vest / none          |
-| zofia | przy łóżku polowym             | −3,5; −13,4     | 90          | Fixing_Kneeling      | 4 / none / coat / satchel             |
-| teo   | krawędź pryczy                 | −6,5; −16,4     | 0           | Sitting_Idle_Loop    | 9 / cap / coat / none                 |
-| iga   | rozdzielnia w korytarzu        | −10; −8,7       | 0           | Crouch_Idle_Loop     | 7 / goggles / vest / toolbelt         |
-| marek | za ladą na targu               | −25; 15,4       | 180         | Idle_Talking_Loop    | 6 / beanie / coat / satchel           |
-| grzes | wejście na targ                | −22,5; 10,7     | 0           | Idle_Torch_Loop      | 2 / cap_stripe / jacket / pouches     |
-| rudy  | za barem                       | −3; 15,2        | 180         | Idle_Loop            | 5 / none / apron / none               |
-| nina  | parkiet                        | −6,5; 12,8      | 180         | Dance_Loop           | 9 / glasses / jacket / none           |
-| witek | przed workiem treningowym      | 17,35; −2,4     | 90          | Punch_Jab            | 0 / bandana / vest / none             |
-| kuba  | trasa i                        | −30; 13         | 90          | Walk_Loop            | 3 / beanie / vest / backpack          |
-| pawel | trasa ii                       | −7; −2,5        | 90          | Walk_Loop            | 7 / cap_stripe / jacket / pouches     |
-| ola   | trasa iii, scale 0,68          | 0,5; 11         | 90          | Jog_Fwd_Loop         | 8 / beanie / jacket / backpack        |
-| stas  | trasa iii, scale 0,6           | 6; 13,5         | 270         | Jog_Fwd_Loop         | 2 / cap / jacket / none               |
+| id     | Miejsce / zajęcie              | position (x; z) | rotationDeg | animation            | look: shade / headwear / torso / prop |
+| ------ | ------------------------------ | --------------- | ----------- | -------------------- | ------------------------------------- |
+| hela   | kuchnia, za ladą               | −17; −18,4      | 0           | PickUp_Table         | 5 / bandana / apron / none            |
+| jarek  | ława przy pierwszym stole      | −17,6; −13,55   | 180         | Sitting_Talking_Loop | 1 / headphones / jacket / satchel     |
+| ewa    | przeciwległa ława              | −17,6; −16,05   | 0           | Sitting_Idle_Loop    | 6 / hood / jacket / pouches           |
+| bogna  | drugi stół, ława               | −10,5; −13,55   | 180         | Sitting_Talking_Loop | 7 / bandana / apron / none            |
+| feliks | drugi stół, przeciwległa ława  | −10,5; −16,05   | 0           | Sitting_Idle_Loop    | 4 / glasses / vest / toolbelt         |
+| lena   | radio, stołek przed mikrofonem | 5; −15,9        | 180         | Sitting_Talking_Loop | 8 / headphones / vest / none          |
+| zofia  | przy łóżku polowym             | −3,5; −13,4     | 90          | Fixing_Kneeling      | 4 / none / coat / satchel             |
+| teo    | krawędź pryczy                 | −6,5; −16,4     | 0           | Sitting_Idle_Loop    | 9 / cap / coat / none                 |
+| iga    | rozdzielnia w korytarzu        | −10; −8,7       | 0           | Crouch_Idle_Loop     | 7 / goggles / vest / toolbelt         |
+| marek  | za ladą na targu               | −25; 15,4       | 180         | Idle_Talking_Loop    | 6 / beanie / coat / satchel           |
+| grzes  | wejście na targ                | −22,5; 10,7     | 0           | Idle_Torch_Loop      | 2 / cap_stripe / jacket / pouches     |
+| rudy   | za barem                       | −3; 15,2        | 180         | Idle_Loop            | 5 / none / apron / none               |
+| nina   | parkiet                        | −6,5; 12,8      | 180         | Dance_Loop           | 9 / glasses / jacket / none           |
+| witek  | przed workiem treningowym      | 17,35; −2,4     | 90          | Punch_Jab            | 0 / bandana / vest / none             |
+| kuba   | trasa i                        | −30; 13         | 90          | Walk_Loop            | 3 / beanie / vest / backpack          |
+| pawel  | trasa ii                       | −7; −2,5        | 90          | Walk_Loop            | 7 / cap_stripe / jacket / pouches     |
+| ola    | trasa iii, scale 0,68          | 0,5; 11         | 90          | Jog_Fwd_Loop         | 8 / beanie / jacket / backpack        |
+| stas   | trasa iii, scale 0,6           | 6; 13,5         | 270         | Jog_Fwd_Loop         | 2 / cap / jacket / none               |
 
 - **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, seat?, route?, look? }[]`
   (`hubNpcSchema`, `src/world/hubSchema.ts`). `rotationDeg` to kierunek patrzenia na podłodze: 0 = +Z (w stronę
@@ -302,6 +304,12 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   obrót wokół osi Y świata, `npcHeadMaxRad`) i powoli tułów (`npcTurnSpeedRadS`, do `npcStandBodyMaxRad` /
   `npcSeatedBodyMaxRad` od kierunku bazowego); po odejściu gracza wraca do pozy bazowej. Czysta logika:
   `updateNpcLook` (`src/world/hubNpcs.ts`).
+  Cel spojrzenia to domyślnie gracz; w podsłuchanej rozmowie wieloosobowej (`HubChatter.lookTargetFor`) słuchacze
+  patrzą na aktualnie mówiącego uczestnika (także w przerwie między kwestiami), mówiący na najbliższego innego
+  uczestnika — tym samym `updateNpcLook` (parametr celu), w dotychczasowych limitach głowy i tułowia. Rozmowy
+  jednoosobowe i powitania (`arrival`) patrzą na gracza jak dotąd, a NPC w rozmowie z graczem przez dymek zawsze
+  patrzy na niego (dymek ma pierwszeństwo). Podczas dymka NPC z bazą `Idle_Loop` / `Sitting_Idle_Loop` gra
+  `Idle_Talking_Loop` / `Sitting_Talking_Loop` (jak mówiący w podsłuchanej rozmowie), potem wraca do bazowej.
 - **Kolizja:** statyczny NPC ma nieruchomy collider walca (promień 0,4 m; 1,8 m wysokości, siedzący 1,35 m), grupa świata.
   `focus` NPC wylicza `npcFocusBox` z tego kolidera.
 - **Rozmowa:** spojrzenie na NPC w zasięgu pokazuje „[E] Porozmawiaj” z imieniem; E pokazuje u dołu ekranu dymek
