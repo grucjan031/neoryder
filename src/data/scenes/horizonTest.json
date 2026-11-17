@@ -1,0 +1,153 @@
+{
+  "id": "horizonTest",
+  "name": "Horyzont",
+  "type": "combat",
+  "theme": "neonStreet",
+  "weather": "clearNight",
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "blocks": [
+    {
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 600,
+        "y": 1,
+        "z": 600
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 8.0,
+        "z": -50
+      },
+      "size": {
+        "x": 12,
+        "y": 16,
+        "z": 10
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 42,
+        "y": 19.0,
+        "z": -144
+      },
+      "size": {
+        "x": 12,
+        "y": 38,
+        "z": 10
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": 28.5,
+        "z": -240
+      },
+      "size": {
+        "x": 12,
+        "y": 57,
+        "z": 10
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 294,
+        "y": 32.0,
+        "z": 160
+      },
+      "size": {
+        "x": 12,
+        "y": 64,
+        "z": 10
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": -294,
+        "y": 29.0,
+        "z": -140
+      },
+      "size": {
+        "x": 12,
+        "y": 58,
+        "z": 10
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 110,
+        "y": 32.5,
+        "z": 294
+      },
+      "size": {
+        "x": 12,
+        "y": 65,
+        "z": 10
+      },
+      "material": "concrete"
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -16,
+      "z": 20
+    },
+    {
+      "x": -8,
+      "z": 20
+    },
+    {
+      "x": 8,
+      "z": 20
+    },
+    {
+      "x": 16,
+      "z": 20
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": 20,
+        "y": 1,
+        "z": 299
+      },
+      "size": {
+        "x": 2,
+        "y": 2,
+        "z": 1
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 20,
+        "y": 1,
+        "z": -299
+      },
+      "size": {
+        "x": 2,
+        "y": 2,
+        "z": 1
+      }
+    }
+  ]
+}

@@ -699,3 +699,40 @@ instancjami w komórkach. Zwalnianie obejmuje bufory InstancedMesh.
 Kontrakty i ograniczenia: [weather.md](weather.md), [arenas.md](arenas.md).
 Pomiar strukturalny portu: 286 → 123 siatek. Pomiar wywołań GPU pozostaje
 zablokowany przez sandbox i nie jest zastępowany liczbą siatek.
+
+## Horyzont i zasięg widzenia
+
+Pokój, arena, poziom misji i kryjówka liczą jedną obwiednię z brył
+statycznych, z uwzględnieniem obrotu. Promień XZ to połowa przekątnej
+obwiedni. Dla małych układów pozostają płaszczyzny 0,1 i 220 m
+oraz pierścienie 66, 92, 124 i 162 m. Na większych mapach środek
+panoramy przesuwa się do środka obwiedni, a pierwsza warstwa
+zaczyna się z zapasem. Daleki zasięg kamery liczy także odległość od
+przeciwległej krawędzi areny do tła. Ciemny grunt bez collidera
+ciągnie się pod pierścieniami i poza zasięg kamery.
+
+Parametry są w `tuning.horizon` i w lil-gui. Na dużych mapach mgła
+skaluje zasięgi profilu względem zasięgu kamery, ogranicza `fogFar`
+przed płaszczyzną odcięcia i w pełni kryje geometrię od `fogFar`.
+`clearNight` zachowuje dłuższą widoczność niż smog. Małe układy
+zachowują także siłę mgły z motywu lub profilu. Obrys korzysta z
+metrycznej głębi odtworzonej z aktualnych płaszczyzn, a jego próg
+jest względny wobec odległości. Przy `horizonTest` i 24 bitach
+kwantyzacja głębi to ok. 1,1 cm przy 300 m, czyli ok. 0,004% tej
+odległości (bazowy próg obrysu to 2,5%). Stosunek `far/near` jest
+ograniczony do 2200. Warstwa FPP zachowuje bliską płaszczyznę
+0,1 m. Logarytmiczny bufor nie jest potrzebny do realizacji tego zakresu.
+
+Sprawdzenie w 30 sekund
+
+1. Otwórz `?scene=horizonTest&debug=1`. Spójrz na wysokie bryły
+   na 50, 150 i 300 m oraz na dalszą panoramę.
+2. Przełącz `clearNight` na smog przyciskami u góry. W konsoli
+   przeglądarki sprawdź `window.__neoryder.query('horizon')`.
+   Pierścienie mają być za obwiednią, a `domeRadiusM` i `fogFar`
+   mniejsze od `far`.
+3. Użyj `window.__neoryder.command('fly')` i przechwyć mysz.
+   `WASD`, skok i kucanie poruszają kamerą. Unieś się nad
+   krawędzią i obejrzyj podłoże oraz mgłę. Sprawdź migotanie
+   stykających się powierzchni oraz kontury odległych brył.
+   Ponowne `fly` wraca do kamery gracza.

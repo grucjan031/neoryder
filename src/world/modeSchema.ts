@@ -3,13 +3,14 @@ import type { Vec3 } from '../core/math';
 import type { RoomDefinition } from './roomSchema';
 import { loadRoom, vec3Schema } from './roomSchema';
 import { tuning } from '../core/tuning';
-import { capturePointsSchema } from './roomSchema';
+import { capturePointsSchema, pointIdSchema } from './roomSchema';
+import { arenaSpawnPoints } from './arenaSpawns';
 import { ArenaNavigation } from './arenaNavigation';
 import { Rng } from '../core/rng';
 
 export const modeIdSchema = z.enum(['conquest', 'assault', 'heist']);
 export type ModeId = z.infer<typeof modeIdSchema>;
-export const pointIdSchema = z.enum(['A', 'B', 'C']);
+export { pointIdSchema };
 export type PointId = z.infer<typeof pointIdSchema>;
 const positive = z.number().finite().positive();
 export const conquestSchema = z.object({
@@ -129,7 +130,13 @@ export function modeForArena(
   const points =
     room.arena?.points ?? (mode.roomId === room.id ? mode.points : undefined);
   if (!points) throw new Error(`Brak punktów areny: ${room.id}`);
-  return { ...mode, roomId: room.id, points };
+  return {
+    ...mode,
+    roomId: room.id,
+    points,
+    maxAlive: room.arena?.maxAlive ?? mode.maxAlive,
+    enemyTickets: room.arena?.enemyTickets ?? mode.enemyTickets,
+  };
 }
 
 export function freeModePosition(
@@ -237,6 +244,17 @@ export function validateMode(
     loadRoom({ ...room, spawnPoints: [...room.spawnPoints, ...positions] });
     return;
   }
+  capturePointsSchema.parse(mode.points);
+  if (mode.maxAlive > tuning.modes.conquest.maxAlive)
+    throw new Error('Limit żywych wrogów Przejęcia przekracza limit areny.');
+  const spawns = arenaSpawnPoints(room);
+  if (room.arena?.spawnRing) {
+    const unique = new Set(spawns.map((p) => JSON.stringify(p)));
+    if (unique.size < tuning.modes.conquest.minRingSpawns)
+      throw new Error(
+        `Pierścień posiłków wymaga co najmniej ${tuning.modes.conquest.minRingSpawns} różnych spawnów.`,
+      );
+  }
   for (const point of mode.points) {
     if (!freeModePosition(room, point.position, point.radiusM))
       throw new Error(`Strefa ${point.id} poza wolną podłogą.`);
@@ -251,13 +269,7 @@ export function validateMode(
         throw new Error('Punkty trybu są zbyt blisko.');
   }
   if (room.arena) {
-    for (const spawn of [
-      room.playerSpawn,
-      ...(room.arena.spawnPoints ?? room.spawnPoints).map((p) => ({
-        ...p,
-        y: room.playerSpawn.y,
-      })),
-    ]) {
+    for (const spawn of [room.playerSpawn, ...spawns]) {
       if (!freeModePosition(room, spawn, room.arena.navigationClearanceM))
         throw new Error('Spawn areny nie ma wolnego marginesu.');
       if (
@@ -272,13 +284,7 @@ export function validateMode(
   }
   if (room.blocks.some((b) => b.walkable)) {
     const navigation = new ArenaNavigation(room);
-    for (const start of [
-      room.playerSpawn,
-      ...(room.arena?.spawnPoints ?? room.spawnPoints).map((p) => ({
-        ...p,
-        y: room.playerSpawn.y,
-      })),
-    ])
+    for (const start of [room.playerSpawn, ...spawns])
       for (const point of mode.points)
         if (!navigation.path(start, point.position).length)
           throw new Error(

@@ -6,6 +6,43 @@ definicją pokoju combat z metadanymi `arena`; nie ma osobnego loadera geometrii
 combatRing mają dodatkowe punkty/spawny trybu, bez zmiany zwykłego układu.
 Wybór, zgodność `roomId` i zapis: [modes.md](modes.md).
 
+## Silnik dużych map
+
+Arenę definiuje się w formacie pokoju. `arena.points` zawiera 3–5 stref
+z kolejnymi literami od A do E. `arena.maxAlive` może zwiększyć domyślny
+limit z 8 do 12, a `arena.enemyTickets` może nadpisać domyślną pulę 120.
+Wysokie punkty potrzebują płyt i ramp oznaczonych `walkable`, wraz z
+`navigationMaxRiseM` i `navigationHeadroomM`.
+
+`arena.spawnRing: { minM, maxM }` włącza wybór z co najmniej 16 różnych
+pozycji w `arena.spawnPoints` (lub z puli pokoju). Pozycja w puli areny
+może podać `y`. Domyślnie spawn jest na wysokości podłogi gracza.
+Silnik odrzuca zajęte miejsca, pozycje bez wolnego marginesu i miejsca
+bliższe niż minimum mapy lub wspólne 15 m. W pierścieniu najpierw wybiera
+spośród punktów zasłoniętych geometrią w raycaście Rapiera. Z tej puli
+bierze miejsce najbliższe spornej strefie lub potencjalnemu celowi wroga.
+Jeśli pierścień jest pusty, wybiera najbliższy dozwolony spawn za jego
+zewnętrzną krawędzią. Remisy rozstrzyga `Rng`.
+
+Nawigacja warstwowa używa pól `Int32Array` budowanych na żądanie,
+a w kroku symulacji przegląda tylko prosty odcinek do zakrętu. Dla
+syntetycznej areny 450×300 m test używa komórek 2 m, dwóch ramp,
+trzech poziomów i pięciu stref. Sprawdza dojście ze wszystkich
+spawnów w walidatorze, a także ruch Szturmowca do każdej strefy
+w scenie z Rapierem.
+
+| Pomiar z `arenaPerf.test.ts`                               |         Wynik | Budżet ADR 0011 |
+| ---------------------------------------------------------- | ------------: | --------------: |
+| `ArenaSurfaceNavigation`, siatka i pięć pól                |     237,60 ms |        ≤ 500 ms |
+| `ArenaNavigation`, siatka i pięć pól                       |     245,73 ms |        ≤ 500 ms |
+| `RoomScene`, 12 wrogów, średnia z 600 kroków po rozgrzewce | 0,759 ms/krok |     ≤ 2 ms/krok |
+
+Pole odległości zajmuje cztery bajty na węzeł i punkt docelowy. Dane
+areny określają `batchCellM` i `navigationCellM`. Budżet 800 wywołań
+rysowania przy jakości medium i 5 s wczytywania wymaga pomiaru w
+przeglądarce na docelowej arenie. Test widoku i zmiany pogody opisano
+w [render.md](render.md#horyzont-i-zasięg-widzenia).
+
 ## Port kontenerowy
 
 Główna ciągła podłoga: 100×100 m, granice XZ −50…50 m, zamknięte statycznymi

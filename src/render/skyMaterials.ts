@@ -301,7 +301,7 @@ const trafficVertex = /* glsl */ `
   void main() {
     vUv = uv * 2.0 - 1.0;
     float a = lane.w + lane.z * time + light.x / lane.x;
-    vec3 center = vec3(sin(a) * lane.x, lane.y + sin(time * 0.6 + lane.w * 3.0) * 0.8, cos(a) * lane.x);
+    vec3 center = modelMatrix[3].xyz + vec3(sin(a) * lane.x, lane.y + sin(time * 0.6 + lane.w * 3.0) * 0.8, cos(a) * lane.x);
     vColor = light.y;
     // Pojazd przelatuje odcinek łuku i gaśnie (znika za zabudową, nie krąży bez końca).
     float cycle = fract((lane.z * time + lane.w) * 0.35);
@@ -443,7 +443,7 @@ const skyVertex = /* glsl */ `
   varying vec3 vDir;
   void main() {
     vDir = position;
-    vec4 clip = projectionMatrix * viewMatrix * vec4(cameraPosition + position * 100.0, 1.0);
+    vec4 clip = projectionMatrix * viewMatrix * vec4(cameraPosition + position * length(modelMatrix[0].xyz), 1.0);
     // Zawsze za całą geometrią sceny (bez zapisu głębi: kompozycja traktuje to jako niebo).
     clip.z = clip.w * 0.99999;
     gl_Position = clip;

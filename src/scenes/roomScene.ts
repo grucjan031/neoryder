@@ -20,6 +20,8 @@ import type {
   MissionDefinition,
   MissionObjective,
 } from '../world/missionSchema';
+import { spawnOcclusion } from '../world/arenaSpawns';
+import { worldEnvelope } from '../render/horizon';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { HazardSystem } from '../world/hazards';
 import type { HazardTarget } from '../world/hazards';
@@ -375,28 +377,19 @@ export class RoomScene implements Scene {
       position: (id) => this.enemyPosition(id),
       targets: () => this.enemyIds(),
     });
-    let panoramaExclusion: Box3 | undefined;
-    if (this.options.linearMission) {
-      panoramaExclusion = new Box3();
-      const blockBounds = new Box3();
-      for (const block of this.layout.blocks) {
-        blockBounds.setFromCenterAndSize(
-          new Vector3(block.position.x, block.position.y, block.position.z),
-          new Vector3(block.size.x, block.size.y, block.size.z),
-        );
-        panoramaExclusion.union(blockBounds);
-      }
-    }
+    const envelope = worldEnvelope(this.layout.blocks, this.layout.playerSpawn);
     this.atmosphere = new SceneAtmosphere(
       three,
       this.layout.theme,
       this.layout.id,
       this.layout.playerSpawn.y,
-      panoramaExclusion,
+      this.options.linearMission ? envelope.bounds : undefined,
+      envelope,
+      ctx.camera,
     );
     three.add(this.root);
     this.root.add(this.lights);
-    if (this.layout.arena?.exclusive) {
+    if (this.layout.arena?.exclusive || this.layout.arena?.spawnRing) {
       this.staticWorld = new Group();
       this.staticWorld.name = 'static-world';
       this.root.add(this.staticWorld);
@@ -744,7 +737,7 @@ export class RoomScene implements Scene {
         modeForArena(conquestMode, this.layout),
         ctx.bus,
       );
-      if (this.layout.arena?.exclusive)
+      if (this.layout.arena?.exclusive || this.layout.arena?.spawnRing)
         this.navigation = new ArenaNavigation(this.layout);
       if (typeof document !== 'undefined') {
         this.conquestView = new ConquestView(this.conquest, ctx.bus);
@@ -1491,6 +1484,14 @@ export class RoomScene implements Scene {
           player,
           positions,
           this.ctx.rng,
+          this.conquest && this.layout.arena?.spawnRing
+            ? spawnOcclusion(
+                this.aim().origin,
+                this.ctx.tuning.modes.conquest.spawnSightHeightM,
+                (origin, direction, length) =>
+                  this.castWall(origin, direction, length),
+              )
+            : undefined,
         );
         if (
           spawn &&
@@ -1533,7 +1534,11 @@ export class RoomScene implements Scene {
     this.executeTarget = this.execute.targetId();
   }
 
-  render(alpha: number, frameDt = 1 / 60): void {
+  render(
+    alpha: number,
+    frameDt = 1 / 60,
+    cameraOverride?: { position: Vector3; rotation: Euler },
+  ): void {
     const executable = this.execute.readyIds();
     this.hud?.setExecuteHint(
       this.state === 'playing' &&
@@ -1619,6 +1624,10 @@ export class RoomScene implements Scene {
       this.barrierView.render(barrier, pose);
     else this.barrierView.root.visible = false;
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    if (cameraOverride) {
+      camera.position.copy(cameraOverride.position);
+      camera.rotation.copy(cameraOverride.rotation);
+    }
     this.hud?.setViewYaw(pose.yaw);
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
       camera.fov = pose.fov;
@@ -1631,7 +1640,7 @@ export class RoomScene implements Scene {
       blade: this.blade.view(),
       held: this.heldView(),
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
-      visible: this.state === 'playing',
+      visible: !cameraOverride && this.state === 'playing',
       aim: this.heldItem.aim,
     });
     this.beamView.advance(frameDt);
@@ -2098,7 +2107,7 @@ export class RoomScene implements Scene {
           ? `Pogoda: ${args[0]}`
           : 'Nieznany profil pogody.',
     );
-    register('conquest capture', 'conquest capture <A|B|C>', (args) =>
+    register('conquest capture', 'conquest capture <A|B|C|D|E>', (args) =>
       args.length === 1 && this.conquest?.capture(args[0]!)
         ? 'Punkt przejęty.'
         : 'Nieprawidłowy punkt.',
@@ -2356,6 +2365,7 @@ export class RoomScene implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'horizon') return this.atmosphere?.horizon();
     if (name === 'weather') return this.dressing?.weatherId ?? null;
     if (name === 'executable') return this.execute.readyIds();
     switch (name) {

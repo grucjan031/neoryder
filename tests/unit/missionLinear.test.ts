@@ -91,10 +91,13 @@ it('bryły panoramy nie przecinają podłogi na żadnym odcinku M01', async () =
     );
     const bounds = new Box3();
     const matrix = new Matrix4();
+    buildings.updateWorldMatrix(true, false);
     let count = 0;
     for (let i = 0; i < buildings.count; i++) {
       buildings.getMatrixAt(i, matrix);
-      bounds.copy(unitBox).applyMatrix4(matrix);
+      bounds
+        .copy(unitBox)
+        .applyMatrix4(matrix.premultiply(buildings.matrixWorld));
       if (floor.some((block) => block.intersectsBox(bounds))) count++;
     }
     return count;

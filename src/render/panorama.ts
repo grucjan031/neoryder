@@ -13,6 +13,7 @@ import {
 } from 'three';
 import type { BufferGeometry, Material } from 'three';
 import { tuning } from '../core/tuning';
+import type { horizonParameters } from './horizon';
 import { buildSkyline } from './skyline';
 import {
   createAdMaterial,
@@ -55,7 +56,7 @@ export class Panorama extends Group {
     dome.userData.noOutline = true;
     this.sky.add(dome);
   }
-  sync(dt: number): void {
+  sync(dt: number, horizon?: ReturnType<typeof horizonParameters>): void {
     const t = tuning.render;
     const c = tuning.city;
     this.visible = t.panoramaEnabled > 0;
@@ -67,13 +68,42 @@ export class Panorama extends Group {
     u.glowStrength.value = c.skyGlowStrength;
     u.cloudStrength.value = c.skyCloudStrength;
     u.cloudSpeed.value = c.skyCloudSpeed;
-    const signature = `${t.panoramaDensity}:${t.panoramaHeight}:${c.panoramaTraffic}`;
+    this.sky.scale.setScalar(
+      horizon?.domeRadiusM ?? tuning.horizon.legacyDomeM,
+    );
+    this.position.set(
+      horizon?.expanded ? horizon.center.x : 0,
+      0,
+      horizon?.expanded ? horizon.center.z : 0,
+    );
+    const h = tuning.horizon;
+    const signature = [
+      t.panoramaDensity,
+      t.panoramaHeight,
+      c.panoramaTraffic,
+      h.firstLandmarkM,
+      h.secondLandmarkM,
+      h.thirdLandmarkM,
+      h.trafficMinM,
+      h.trafficMaxM,
+      h.freestandingAdM,
+      ...(horizon?.ringsM ?? [
+        h.firstRingM,
+        h.secondRingM,
+        h.thirdRingM,
+        h.fourthRingM,
+      ]),
+    ].join(':');
     if (!this.visible || signature === this.signature) return;
     this.signature = signature;
     this.release();
     this.add(this.sky);
     const layout = buildSkyline(this.seed, {
       floorY: this.floorY,
+      ...(horizon && {
+        ringsM: horizon.ringsM,
+        ringOffsetM: horizon.ringOffsetM,
+      }),
       density: t.panoramaDensity,
       height: t.panoramaHeight,
       traffic: c.panoramaTraffic,
@@ -103,6 +133,7 @@ export class Panorama extends Group {
             !worldBounds
               .copy(cubeBounds)
               .applyMatrix4(buildingMatrix(b))
+              .translate(this.position)
               .intersectsBox(this.exclusion!),
         )
       : layout.buildings;

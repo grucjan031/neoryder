@@ -1,3 +1,4 @@
+import type { horizonParameters } from './horizon';
 import {
   Color,
   DepthTexture,
@@ -469,14 +470,19 @@ export class StylePipeline {
     uniforms.reflectionDistortion.value = t.reflectionDistortion;
     uniforms.reflectionPuddles.value = t.reflectionPuddles;
     uniforms.floorTolerance.value = Math.max(t.reflectionFloorTolerance, 0.001);
-    uniforms.fogStrength.value = t.fogStrength;
+    const horizon = scene.userData.horizon as
+      ReturnType<typeof horizonParameters> | undefined;
+    uniforms.fogStrength.value = horizon ? 1 : t.fogStrength;
     uniforms.skyFlash.value = loadSettings().flashes ? t.skyFlash : 0;
     // Stary błysk zachowuje dokładne składowe liniowe, profile wybierają ciepłą biel.
     if (tuning.weather.skyFlashColor === '#9eadef')
       uniforms.skyFlashColor.value.setRGB(0.62, 0.68, 0.95);
     else uniforms.skyFlashColor.value.set(tuning.weather.skyFlashColor);
-    uniforms.fogNear.value = t.fogNear;
-    uniforms.fogFar.value = Math.max(t.fogFar, t.fogNear + 1e-3);
+    uniforms.fogNear.value = horizon?.fogNear ?? t.fogNear;
+    uniforms.fogFar.value = Math.max(
+      horizon?.fogFar ?? t.fogFar,
+      uniforms.fogNear.value + 1e-3,
+    );
     uniforms.fogColor.value.set(t.fogColor);
     const bloomOn = quality.bloom > 0 && t.bloom > 0 && t.bloomStrength > 0;
     const postFxOn = t.postFx > 0;

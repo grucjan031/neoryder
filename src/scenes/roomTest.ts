@@ -2,6 +2,7 @@ import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import type { RunState } from '../core/runTypes';
 import { loadWaves } from '../world/waves';
+import type { RoomDefinition } from '../world/roomSchema';
 import { roomDefinitions } from '../world/rooms';
 import { threatLevelDef } from '../world/threat';
 import { loadoutDefinitions } from '../progression/loadout';
@@ -9,12 +10,15 @@ import playerData from '../data/scenes/roomPlayer.json';
 import wavesData from '../data/waves/roomTest.json';
 import { RoomScene } from './roomScene';
 
-export function createRoomTest(loadModels = true): RoomScene {
+export function createRoomTest(
+  loadModels = true,
+  layout?: RoomDefinition,
+): RoomScene {
   const params = new URLSearchParams(
     typeof location === 'undefined' ? '' : location.search,
   );
   const roomId = params.get('room') ?? 'combatYard';
-  const room = roomDefinitions.get(roomId);
+  const room = layout ?? roomDefinitions.get(roomId);
   if (!room) throw new Error(`Nieznany pokój: ${roomId}`);
   const loadoutId = params.get('loadout') ?? 'classic';
   const loadout = loadoutDefinitions.get(loadoutId);

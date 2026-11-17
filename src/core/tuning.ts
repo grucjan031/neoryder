@@ -1,6 +1,29 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  horizon: {
+    legacyNearM: 0.1,
+    legacyFarM: 220,
+    legacyRadiusM: 50,
+    firstRingM: 66,
+    secondRingM: 92,
+    thirdRingM: 124,
+    fourthRingM: 162,
+    firstLandmarkM: 108,
+    secondLandmarkM: 132,
+    thirdLandmarkM: 118,
+    trafficMinM: 74,
+    trafficMaxM: 140,
+    freestandingAdM: 90,
+    legacyDomeM: 100,
+    ringClearanceM: 20,
+    domeClearanceM: 40,
+    clipClearanceM: 32,
+    nearRatio: 2200,
+    groundOffsetM: 0.12,
+    groundColor: '#151923',
+    flySpeedMps: 55,
+  },
   level: {
     maxAlive: 12,
     staticCellSizeM: 24,
@@ -8,6 +31,9 @@ export const tuning = {
   },
   modes: {
     conquest: {
+      maxAlive: 12,
+      minRingSpawns: 16,
+      spawnSightHeightM: 1.5,
       minPointDistanceM: 12,
       minSpawnDistanceM: 15,
       detectRangeM: 10,

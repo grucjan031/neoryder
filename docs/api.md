@@ -2061,3 +2061,15 @@ rozjaśnionym wierzchem przez wspólne uniformy urbanMaterials. Opcjonalny
 `sky.horizonColor` ustawia istniejącą łunę nieba; brak przywraca kolor motywu.
 Ambience profilu dopuszcza istniejącą warstwę `generator` z miksem `gain`.
 Zmiany pozostają kosmetyczne; CityDressing przy wyjściu przywraca uniformy i łunę.
+
+## Duże areny (ADR 0011)
+
+`conquest_captured` zawiera identyfikator A–E. Mapa `owners` obejmuje tylko
+punkty używane przez arenę. `Conquest.spawnPosition` przyjmuje opcjonalny
+predykat zasłonięcia posiłków przez geometrię Rapiera.
+
+`worldEnvelope(blocks, origin)` zwraca obwiednię obracanych brył, jej środek,
+promień XZ i wysokość. `SceneAtmosphere` przyjmuje obwiednię oraz kamerę
+perspektywiczną i przywraca projekcję kamery przy zwalnianiu sceny.
+`query('horizon')` zwraca bieżące parametry projekcji, panoramy i mgły.
+`RoomScene.render` może otrzymać pozycję i obrót wolnej kamery debug.

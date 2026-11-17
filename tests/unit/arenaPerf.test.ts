@@ -20,6 +20,12 @@ import { loadWaves } from '../../src/world/waves';
 import wavesData from '../../src/data/waves/roomTest.json';
 import type { EnemyManager } from '../../src/enemies/manager';
 import { freeModePosition } from '../../src/world/modeSchema';
+import { modeForArena, validateMode } from '../../src/world/modeSchema';
+import { conquestMode } from '../../src/world/modes';
+import { ArenaNavigation } from '../../src/world/arenaNavigation';
+import { ArenaSurfaceNavigation } from '../../src/world/arenaSurfaceNavigation';
+import { largeArena } from './largeArenaFixture';
+import type { Conquest } from '../../src/world/conquest';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -29,6 +35,98 @@ const idle: InputSnapshot = {
 };
 
 const active: Arena[] = [];
+
+it('arena 450 × 300 m: 3 poziomy, 5 stref i 12 wrogów', async () => {
+  const room = largeArena();
+  const definition = modeForArena(conquestMode, room);
+  validateMode(definition, room, definition.enemies);
+  for (const Navigation of [ArenaSurfaceNavigation, ArenaNavigation]) {
+    const start = performance.now();
+    const nav = new Navigation(room);
+    for (const point of definition.points) {
+      const path = nav.path(room.playerSpawn, point.position);
+      expect(path.at(-1)).toEqual(point.position);
+    }
+    const buildMs = performance.now() - start;
+    console.info(
+      `[perf] ${Navigation.name}: ${buildMs.toFixed(2)} ms (siatka i 5 pól)`,
+    );
+    expect(buildMs).toBeLessThanOrEqual(500);
+  }
+
+  const bus = new EventBus();
+  const commands = new CommandRegistry();
+  const run = new RunManager(bus, {
+    generateMap: () => ({ sectorId: 'unused', layers: [] }),
+  });
+  run.newRun('large-arena-perf', 'classic', { modeId: 'conquest' });
+  run.selectNode('conquest');
+  const scene = new RoomScene(
+    room,
+    run.state,
+    loadWaves({ ...wavesData, spawnPoints: room.spawnPoints }),
+    { loadModels: false },
+  );
+  try {
+    await scene.init(
+      {
+        bus,
+        rng: new Rng('large-arena-perf'),
+        loop: new GameLoop({ step() {}, render() {} }),
+        tuning: structuredClone(tuning),
+        debug: false,
+        commands,
+        camera: new PerspectiveCamera(),
+      },
+      new ThreeScene(),
+    );
+    commands.execute('god');
+    const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+    room.spawnPoints
+      .slice(0, definition.maxAlive)
+      .forEach((position, index) => {
+        enemies.spawn(index % 3 === 0 ? 'gunner' : 'assaulter', {
+          ...position,
+          y: 0,
+        });
+      });
+    for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+    expect(scene.query('enemies')).toBe(12);
+    const steps = 600;
+    const start = performance.now();
+    for (let i = 0; i < steps; i++) scene.step(SIM_DT, idle);
+    const perStepMs = (performance.now() - start) / steps;
+    console.info(`[perf] arena 450 × 300 m: ${perStepMs.toFixed(3)} ms/krok`);
+    expect(scene.query('enemies')).toBe(12);
+    expect(perStepMs).toBeLessThanOrEqual(2);
+
+    const conquest = Reflect.get(scene, 'conquest') as Conquest;
+    for (const target of conquest.points) {
+      commands.execute('kill all');
+      conquest.setTickets(0);
+      for (const point of conquest.points) {
+        point.owner = point === target ? 'neutral' : 'enemy';
+        point.progress = point === target ? 0 : -1;
+      }
+      const enemy = enemies.spawn('assaulter', { x: -120, y: 0, z: -60 });
+      const arrived = () => {
+        const p = enemy.current.position;
+        return (
+          Math.hypot(p.x - target.position.x, p.z - target.position.z) <=
+            target.radiusM &&
+          Math.abs(p.y - target.position.y) < tuning.modes.conquest.zoneHeightM
+        );
+      };
+      for (let i = 0; i < 9000 && !arrived(); i++) scene.step(SIM_DT, idle);
+      expect(
+        arrived(),
+        `${target.id}: ${JSON.stringify(enemy.current.position)}`,
+      ).toBe(true);
+    }
+  } finally {
+    scene.dispose();
+  }
+}, 60_000);
 
 it.each(['arenaOverpass', 'arenaRooftops'])(
   '%s: 30 wrogów, nawigacja i Rapier poniżej 6 ms/krok',

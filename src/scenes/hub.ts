@@ -30,6 +30,7 @@ import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
 import { createStyleLights } from '../render/lights';
 import { getMaterial } from '../render/materials';
+import { worldEnvelope } from '../render/horizon';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { batchStaticGeometry } from '../render/staticBatch';
 import { createMetaBar } from '../ui/hub/metaBar';
@@ -289,6 +290,9 @@ export class HubScene implements Scene {
       this.layout.theme,
       this.layout.id,
       floorY,
+      undefined,
+      worldEnvelope(this.layout.blocks, this.layout.playerSpawn),
+      ctx.camera,
     );
     three.add(this.root);
     this.root.add(this.lights);
@@ -1073,6 +1077,7 @@ export class HubScene implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'horizon') return this.atmosphere?.horizon();
     if (name === 'hubFauna') return this.fauna?.runtime.query();
     if (name === 'hubKidsCat') return this.kidsCat?.query() ?? null;
     switch (name) {

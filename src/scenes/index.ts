@@ -23,6 +23,7 @@ import { RunScene } from './run';
 import { MissionScene } from './mission';
 import { HubScene } from './hub';
 import { Tutorial } from './tutorial';
+import { HorizonTest } from './horizonTest';
 import { WeatherTest } from './weatherTest';
 
 export interface Scene {
@@ -44,6 +45,7 @@ export const scenes: Record<string, SceneFactory> = {
   hub: () => new HubScene(),
   run: () => new RunScene(),
   conquest: () => new RunScene(),
+  horizonTest: () => new HorizonTest(),
   weatherTest: () => new WeatherTest(),
   mission: () => new MissionScene(),
   'map-test': () => new MapTest(),

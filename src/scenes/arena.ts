@@ -1,4 +1,5 @@
 import { blockMaterialSchema, dressingFields } from '../world/dressingSchema';
+import { worldEnvelope } from '../render/horizon';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { batchStaticGeometry } from '../render/staticBatch';
 import { CityDressing } from '../render/city/dressing';
@@ -233,6 +234,9 @@ export class Arena implements Scene {
       layout.theme,
       'arena',
       layout.playerSpawn.y,
+      undefined,
+      worldEnvelope(layout.blocks, layout.playerSpawn),
+      ctx.camera,
     );
     three.add(this.root);
     this.root.add(this.lights);
@@ -1269,6 +1273,7 @@ export class Arena implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'horizon') return this.atmosphere?.horizon();
     if (name === 'executable') return this.execute.readyIds();
     switch (name) {
       case 'wave':
