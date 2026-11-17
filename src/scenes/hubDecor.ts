@@ -15,6 +15,7 @@ import type { BufferGeometry, Texture } from 'three';
 import { tuning } from '../core/tuning';
 import { Rng } from '../core/rng';
 import { loadSettings } from '../core/save';
+import { getPowerLevel } from '../render/powerLevel';
 import { sourceFlicker } from '../render/city/flicker';
 import type { FlickerDef } from '../world/dressingSchema';
 import type { Tuning } from '../core/tuning';
@@ -120,9 +121,10 @@ export class HubDecor {
   update(dt: number): void {
     this.timeS += Math.max(0, dt);
     const flashes = loadSettings().flashes;
+    const power = getPowerLevel();
     for (const label of this.labels)
       label.material.color.setScalar(
-        sourceFlicker(label.flicker, this.timeS, label.seed, flashes),
+        power * sourceFlicker(label.flicker, this.timeS, label.seed, flashes),
       );
     const t = this.hubTuning;
     for (const flame of this.flames) {

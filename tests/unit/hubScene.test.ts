@@ -949,3 +949,22 @@ it('znacznik reakcji: pending po wejściu z kontekstem, znika po rozmowie, brak 
   });
   expect(none.scene.query('hubArrival')).toBeNull();
 });
+
+it('hub dip: zdarzenie, hubPower i komentarz najbliższego mieszkańca po powrocie prądu', async () => {
+  const { scene, commands, bus } = await setup();
+  const dips: number[] = [];
+  bus.on('hub_power_dip', ({ durationS }) => dips.push(durationS));
+  expect(scene.query('hubPower')).toMatchObject({ level: 1, active: false });
+  commands.execute('hub tp 10 5');
+  for (let i = 0; i < 60 * 20; i++) scene.step(SIM_DT, idle);
+  expect(scene.query('hubChatter')).toBeNull();
+  expect(commands.execute('hub dip extra')).toContain('Użycie');
+  commands.execute('hub dip');
+  expect(dips).toEqual([tuning.hub.powerDipDurationS]);
+  expect(scene.query('hubPower')).toMatchObject({ active: true });
+  for (let i = 0; i < 60 * 3; i++) scene.step(SIM_DT, idle);
+  expect(scene.query('hubPower')).toMatchObject({ level: 1, active: false });
+  expect(scene.query('hubChatter')).toMatchObject({
+    conversation: 'power_dip',
+  });
+});

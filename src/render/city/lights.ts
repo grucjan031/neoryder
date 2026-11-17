@@ -15,6 +15,7 @@ import { tuning } from '../../core/tuning';
 import { Rng } from '../../core/rng';
 import { loadSettings } from '../../core/save';
 import { sourceFlicker } from './flicker';
+import { getPowerLevel } from '../powerLevel';
 import { getQuality } from '../quality';
 import type { CityLightDef } from '../../world/dressingSchema';
 import {
@@ -184,6 +185,7 @@ export class CityLights {
     if (this.disposed) return;
     this.timeS += Math.max(0, dtRealS);
     const flashes = loadSettings().flashes;
+    const power = getPowerLevel();
     const limit = Math.max(
       0,
       Math.floor(
@@ -227,6 +229,7 @@ export class CityLights {
         this.baseIntensities[slot]! *= 1 - fade;
         light.intensity =
           this.baseIntensities[slot]! *
+          power *
           sourceFlicker(
             this.defs[index]!.flicker,
             this.timeS,
@@ -258,6 +261,7 @@ export class CityLights {
         fade;
       light.intensity =
         this.baseIntensities[slot]! *
+        power *
         sourceFlicker(
           this.defs[index]!.flicker,
           this.timeS,
@@ -272,6 +276,7 @@ export class CityLights {
       if (def) {
         object.material.uniforms.opacity.value =
           tuning.city.lightSpotOpacity *
+          power *
           sourceFlicker(
             def.flicker,
             this.timeS,

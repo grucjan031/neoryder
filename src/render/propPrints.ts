@@ -7,6 +7,12 @@ export type PrintMaterial = MeshStandardMaterial | MeshBasicMaterial;
 const PRINT_NAME = /^mat_((label|screen)_[a-z0-9_]+)$/;
 const prints = new Map<string, PrintMaterial>();
 
+/** Ekrany (materiały świecące) przygasają razem z siecią; naklejki bez zmian. */
+export function syncPrintPower(level: number): void {
+  for (const [name, material] of prints)
+    if (name.startsWith('mat_screen_')) material.color.setScalar(level);
+}
+
 export function isPrintMaterialName(name: string): boolean {
   return PRINT_NAME.test(name);
 }

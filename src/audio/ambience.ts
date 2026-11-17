@@ -49,6 +49,14 @@ export function selectAmbience(
     .map(({ index }) => index);
 }
 
+/** Źródła zasilane z sieci: przy spadku napięcia cichną proporcjonalnie do poziomu zasilania. */
+export const POWERED_AMBIENCE = new Set([
+  'generator',
+  'screens',
+  'jukebox',
+  'radio',
+]);
+
 export class Ambience {
   private readonly bus: GainNode;
   private readonly synth: AmbienceSynth;
@@ -83,6 +91,7 @@ export class Ambience {
     paused: boolean,
     trainProgress: number | null,
     hub?: Tuning['hub'],
+    power = 1,
   ): void {
     const now = this.ctx.currentTime;
     this.bus.gain.setValueAtTime(this.t.ambienceGain, now);
@@ -115,7 +124,12 @@ export class Ambience {
       }
       const gain =
         (source.gain ?? this.t.ambienceProfiles[source.kind].gain) *
-        ambienceAttenuation(source.position, listener.position, source.radiusM);
+        ambienceAttenuation(
+          source.position,
+          listener.position,
+          source.radiusM,
+        ) *
+        (POWERED_AMBIENCE.has(source.kind) ? power : 1);
       graph.gain.gain.setValueAtTime(gain, now);
       graph.pan.pan.setValueAtTime(
         spatialize(source.position, listener, this.t.refDistance, this.t.maxPan)

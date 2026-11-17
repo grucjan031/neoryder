@@ -6,6 +6,7 @@ import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
+import type { Rng } from '../core/rng';
 import { HUB_STATION_IDS } from '../core/metaTypes';
 import type { HubStationId } from '../core/metaTypes';
 import { createIndexedDbSaveStore, loadSettings } from '../core/save';
@@ -13,6 +14,7 @@ import type { SaveStore } from '../core/save';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import hideoutData from '../data/hub/hideout.json';
 import npcTextData from '../data/hub/npcs.pl.json';
+import eventData from '../data/hub/events.pl.json';
 import propTextData from '../data/hub/props.pl.json';
 import { HubProps, hubPropTextsSchema } from '../world/hubProps';
 import { HubPropView } from './hubPropView';
@@ -39,6 +41,13 @@ import { createWorkshopPanel } from '../ui/hub/workshopPanel';
 import { HtmlHubScreens } from '../ui/hubScreens';
 import { HubChatterUi } from '../ui/hubChatter';
 import { HubChatter } from '../world/hubChatter';
+import {
+  HubPowerDip,
+  loadHubEvents,
+  pickDipComment,
+} from '../world/hubPowerDip';
+import type { HubEvents } from '../world/hubPowerDip';
+import { setPowerLevel } from '../render/powerLevel';
 import { HubArrival, hubArrivalContext } from '../world/hubArrival';
 import type { HubArrivalContext, HubGreetings } from '../world/hubArrival';
 import { HubDialog } from '../ui/hubDialog';
@@ -160,6 +169,9 @@ export class HubScene implements Scene {
   private propView?: HubPropView;
   private warmth?: HubWarmth;
   private chatter!: HubChatter;
+  private powerDip!: HubPowerDip;
+  private hubEvents!: HubEvents;
+  private dipRng!: Rng;
   private greetings!: HubGreetings;
   private arrival: HubArrival | null = null;
   private arrivalElapsedS = 0;
@@ -246,6 +258,11 @@ export class HubScene implements Scene {
     );
     if (this.screensOption === undefined)
       this.chatterUi = new HubChatterUi(this.layout.npcs ?? [], this.npcTexts);
+    // Walidacja względem danych gry; sceny testowe z własnymi NPC po prostu pomijają wpisy bez NPC.
+    this.hubEvents = loadHubEvents(
+      eventData,
+      new Set(npcTextData.npcs.map(({ id }) => id)),
+    );
     this.dialogue = new NpcDialogue(this.npcTexts.npcs);
     this.greetings = this.options.greetings ?? createHubGreetings();
     this.setArrival(hubArrivalContext(this.meta.state, this.greetings.last()));
@@ -310,6 +327,12 @@ export class HubScene implements Scene {
       ctx.tuning.hub,
       ctx.bus,
     );
+    this.powerDip = new HubPowerDip(
+      ctx.rng.fork('hub-power-dip'),
+      ctx.tuning.hub,
+      ctx.bus,
+    );
+    this.dipRng = ctx.rng.fork('hub-power-dip-comment');
     if (this.loadModels) await this.npcs?.load();
     if (this.disposed) return;
 
@@ -741,6 +764,30 @@ export class HubScene implements Scene {
     this.greetings.mark(this.arrival.state.key);
   }
 
+  /** Po powrocie prądu najbliższy mieszkaniec z komentarzem mówi kwestię (o ile nic innego nie trwa). */
+  private commentPowerDip(player: Vec3): void {
+    const blocked =
+      this.talk !== null ||
+      this.chatter.line !== null ||
+      this.chatter.activeId !== null ||
+      this.stations.opened !== null ||
+      this.hubMap?.isOpen === true;
+    const comment = pickDipComment(
+      this.hubEvents.powerDip,
+      this.npcStates.map(({ def, position }) => ({ id: def.id, position })),
+      player,
+      this.ctx.tuning.hub.powerDipCommentRadiusM,
+      this.dipRng,
+      blocked,
+    );
+    if (comment)
+      this.chatter.say({
+        conversation: 'power_dip',
+        npc: comment.npc,
+        text: comment.text,
+      });
+  }
+
   /** Dymek znika po `npcLineS` s albo gdy gracz odejdzie od NPC. */
   private tickTalk(dt: number): void {
     const talk = this.talk;
@@ -805,6 +852,7 @@ export class HubScene implements Scene {
       entry.body.setNextKinematicTranslation(entry.translation);
     }
     this.soundscape?.step(dt, player);
+    if (this.powerDip.step(dt)) this.commentPowerDip(player);
     this.player.step(
       dt,
       this.seat ? this.seatedInput(input, dt) : this.withPendingLook(input),
@@ -902,6 +950,9 @@ export class HubScene implements Scene {
       this.props.warmthLeft,
       this.ctx.tuning.hub.noodlesWarmthS,
     );
+    const power = this.powerDip.level(loadSettings().flashes);
+    setPowerLevel(power);
+    this.ctx.audio?.setPowerLevel(power);
     this.decor?.update(frameDt);
     this.chatterUi?.update(this.chatter.line);
     this.npcs?.render(
@@ -964,6 +1015,12 @@ export class HubScene implements Scene {
     switch (name) {
       case 'hubProps':
         return this.props.snapshot;
+      case 'hubPower':
+        return {
+          level: this.powerDip.level(loadSettings().flashes),
+          active: this.powerDip.active,
+          nextInS: this.powerDip.nextInS,
+        };
       case 'hubAmbience':
         return this.soundscape?.query() ?? [];
       case 'meta':
@@ -1155,6 +1212,11 @@ export class HubScene implements Scene {
         return `Rozmowa: ${args[0]}`;
       },
     );
+    register('hub dip', 'hub dip — wymuś spadek napięcia', (args) => {
+      if (args.length) return 'Użycie: hub dip';
+      this.powerDip.force();
+      return 'Prąd przygasa.';
+    });
     register('hub map', 'hub map — przełącz plan stacji', () => {
       if (!this.hubMap) return 'Plan stacji niedostępny.';
       if (this.stations.opened || this.talk !== null)
@@ -1193,6 +1255,8 @@ export class HubScene implements Scene {
         this.entities.destroy(this.playerId);
       this.world?.free();
     } finally {
+      setPowerLevel(1);
+      this.ctx?.audio?.setPowerLevel(1);
       this.decor?.dispose();
       this.soundscape?.dispose();
       this.fauna?.dispose();

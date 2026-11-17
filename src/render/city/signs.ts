@@ -13,6 +13,7 @@ import type { Camera } from 'three';
 import { Rng } from '../../core/rng';
 import { loadSettings } from '../../core/save';
 import { sourceFlicker } from './flicker';
+import { getPowerLevel } from '../powerLevel';
 import { tuning } from '../../core/tuning';
 import type {
   CityLightDef,
@@ -248,6 +249,7 @@ export class SignRenderer {
     const dt = Math.max(0, dtRealS);
     const t = tuning.city;
     const flashes = loadSettings().flashes;
+    const power = getPowerLevel();
     for (const sign of this.signs) {
       sign.time += dt;
       sign.outage = Math.max(0, sign.outage - dt);
@@ -278,11 +280,13 @@ export class SignRenderer {
             Math.sin(sign.time * t.signBuzzHz * Math.PI * 2) *
               sign.flicker *
               t.signBuzzAmount;
-      const brightness = sign.pattern
-        ? sourceFlicker(sign.pattern, sign.time, sign.seed, flashes)
-        : flashes
-          ? legacyBrightness
-          : 1;
+      const brightness =
+        power *
+        (sign.pattern
+          ? sourceFlicker(sign.pattern, sign.time, sign.seed, flashes)
+          : flashes
+            ? legacyBrightness
+            : 1);
       u.time!.value = sign.time;
       u.brightness!.value = t.signBrightness * brightness;
       u.partial!.value = flashes && sign.partial > 0 ? 1 : 0;

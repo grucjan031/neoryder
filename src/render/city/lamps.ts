@@ -12,6 +12,7 @@ import type { Camera } from 'three';
 import { tuning } from '../../core/tuning';
 import type { CityLightDef, DecorDef } from '../../world/dressingSchema';
 import { cityColor, disposeCityGroup } from './resources';
+import { getPowerLevel } from '../powerLevel';
 
 /** Model latarni z `public/assets/models/city/`; punkt lampy opisuje `tuning.city.lamp*`. */
 export const LAMP_MODEL = 'city_street_lamp';
@@ -132,7 +133,7 @@ export class LampCones {
     if (this.disposed || !mesh) return;
     const t = tuning.city;
     const u = mesh.material.uniforms;
-    u.opacity!.value = t.lampConeOpacity;
+    u.opacity!.value = t.lampConeOpacity * getPowerLevel();
     u.heightPower!.value = t.lampConePower;
     u.edgePower!.value = t.lampConeEdgePower;
     const slope = Math.tan((t.lampConeAngleDeg * Math.PI) / 180);

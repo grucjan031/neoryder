@@ -1,0 +1,68 @@
+{
+  "powerDip": [
+    {
+      "npc": "iga",
+      "text": "Szlag by to, ta przedpotopowa skrzynka znów trzyma się na słowo honoru i taśmę."
+    },
+    {
+      "npc": "iga",
+      "text": "Mira znów podkręca spawarkę na lewym bezpieczniku, a potem ja łatam cały peron!"
+    },
+    {
+      "npc": "mira",
+      "text": "Kurwa, znowu zwarcie na linii — jeszcze chwila i stopi mi styki w warsztacie."
+    },
+    {
+      "npc": "mira",
+      "text": "Kurogane chyba właśnie sprawdziło liczniki, bo na chwilę odcięło nam fazę."
+    },
+    {
+      "npc": "rudy",
+      "text": "Światło padło na dwie sekundy, a już myślałem, że będę musiał lać po ciemku na węch."
+    },
+    {
+      "npc": "rudy",
+      "text": "Mój bimber chociaż świeci własnym blaskiem, w przeciwieństwie do lamp na tej stacji."
+    },
+    {
+      "npc": "tomasz",
+      "text": "Spokojnie, prąd zawsze wraca, a ogień w beczce i tak grzeje pewniej niż te żarówki."
+    },
+    {
+      "npc": "tomasz",
+      "text": "Bywały noce, że siedzieliśmy tu całkiem po ciemku, więc dwie sekundy to żaden kłopot."
+    },
+    {
+      "npc": "hela",
+      "text": "Całe szczęście, że zupa stoi na ogniu, bo z tym ich prądem nigdy nic nie wiadomo."
+    },
+    {
+      "npc": "hela",
+      "text": "Jeszcze raz tak mrugnie i wleję komuś chochlę wrzątku za kołnierz zamiast do miski!"
+    },
+    {
+      "npc": "ola",
+      "text": "O rany, jak wszystko zgasło, to przez chwilę wyglądało jak w prawdziwym tunelu duchów!"
+    },
+    {
+      "npc": "ola",
+      "text": "Staś, nie puszczaj ręki! Uff, już wróciło, ale serce wali mi jak młotem."
+    },
+    {
+      "npc": "bajt",
+      "text": "Hej, znowu szarpnęło napięciem — jeszcze jeden taki skok i spali mi dyski z nasłuchem!"
+    },
+    {
+      "npc": "szron",
+      "text": "Zwykłe wahnięcie na linii Kurogane. Zostać na stanowiskach."
+    },
+    {
+      "npc": "teo",
+      "text": "Kiedyś przy takim spadku napięcia cały skład stawał w tunelu i światła gasły w sekundę."
+    },
+    {
+      "npc": "lena",
+      "text": "No pięknie, znowu wywaliło mi przekaźnik w połowie zdania na nocnym paśmie."
+    }
+  ]
+}

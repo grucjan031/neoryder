@@ -16,7 +16,8 @@ import {
   syncUrbanMaterials,
 } from './urbanMaterials';
 import type { UrbanKind } from './urbanMaterials';
-import { printMaterial } from './propPrints';
+import { printMaterial, syncPrintPower } from './propPrints';
+import { getPowerLevel } from './powerLevel';
 
 export type MaterialKind =
   | 'world'
@@ -64,6 +65,15 @@ const emissiveKinds = new Set<StyleKind>([
   'enemyGlow',
   'player',
   'power',
+  'neon_amber',
+  'neon_green',
+  'neon_violet',
+  'neon_blue',
+  'neon_white',
+  'light_white',
+]);
+/** Neony i światło z sieci gasną razem ze spadkiem napięcia (gracz, Rezonans i wrogowie nie). */
+const mainsKinds = new Set<StyleKind>([
   'neon_amber',
   'neon_green',
   'neon_violet',
@@ -144,7 +154,9 @@ function addFloorGrid(material: MeshToonMaterial): void {
 function colorFor(kind: StyleKind, target = new Color()): Color {
   if (kind === 'enemyDark')
     return target.set(tuning.render.enemy).multiplyScalar(ENEMY_DARK_SHADE);
-  return target.set(tuning.render[kind]);
+  target.set(tuning.render[kind]);
+  if (mainsKinds.has(kind)) target.multiplyScalar(getPowerLevel());
+  return target;
 }
 
 export function getMaterial(kind: StyleKind): StyleMaterial {
@@ -205,6 +217,7 @@ export function syncMaterials(): void {
   for (const [kind, material] of cache) {
     colorFor(kind, material.color);
   }
+  syncPrintPower(getPowerLevel());
 }
 
 function materialForName(name: string): StyleMaterial {

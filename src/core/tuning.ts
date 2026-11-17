@@ -825,6 +825,23 @@ export const tuning = {
     ratRetryS: 1,
     ratBurstHz: 8,
     ratBurstFraction: 0.12,
+    /** Spadek napięcia: odstęp od początku do początku i pierwszy po wejściu (s), czas trwania (s), poziom minimalny (0-1), promień wyboru komentującego NPC (m). */
+    powerDipIntervalS: { min: 240, max: 480 },
+    powerDipFirstS: { min: 90, max: 180 },
+    powerDipDurationS: 2.5,
+    powerDipMinLevel: 0.15,
+    powerDipCommentRadiusM: 14,
+    /** Krzywa z błyskami: liczba mrugnięć na początku, czas przygaszenia i przerwy (s), poziom w mrugnięciu, spadek do minimum i powrót (s), przerwa przed dodatkowym mrugnięciem przy powrocie (s). */
+    powerDipBlinkCount: 3,
+    powerDipBlinkS: 0.09,
+    powerDipBlinkGapS: 0.07,
+    powerDipBlinkLevel: 0.4,
+    powerDipFallS: 0.25,
+    powerDipRiseS: 0.25,
+    powerDipReturnGapS: 0.1,
+    /** Krzywa bez błysków (ustawienie dostępności): łagodny spadek i powrót (s). */
+    powerDipSoftFallS: 0.5,
+    powerDipSoftRiseS: 0.6,
     trainIntervalS: { min: 70, max: 140 },
     trainFirstS: { min: 25, max: 40 },
     trainDurationS: 7,

@@ -97,6 +97,23 @@ FpsCamera). `progress` udostępnia postęp lub null. Moduł sceny `HubSoundscape
 `hubAmbience` i sprząta przy opuszczeniu sceny. Render interpoluje stan pyłu;
 harmonogram i ruch cząstek działają wyłącznie w step.
 
+### Spadek napięcia w kryjówce
+
+`HubPowerDip` (`src/world/hubPowerDip.ts`, bez Three.js/DOM) przyjmuje Rng, tuning
+kryjówki i EventBus. `step(dt)` odmierza czas symulacji i zwraca true w kroku powrotu
+prądu; `force()` zaczyna spadek natychmiast i losuje kolejny odstęp. Na początku emituje
+`hub_power_dip: { durationS: number }`. `level(flashes)` zwraca poziom zasilania 0–1
+(`powerLevel(ageS, tuning, flashes)` to czysta krzywa), `active`, `nextInS`.
+`loadHubEvents(data, npcIds)` waliduje `src/data/hub/events.pl.json` (zod, `npc` musi istnieć
+w `npcs.pl.json`); `pickDipComment(...)` wybiera najbliższego NPC z wpisem.
+
+Mnożnik jasności: `setPowerLevel(level)` / `getPowerLevel()` w `src/render/powerLevel.ts`
+(0–1, domyślnie 1). Mnożą go z migotaniem: `CityLights` (światła i plamy), `SignRenderer`,
+`LampCones`, napisy `HubDecor`, wspólne materiały `neon_*`/`light_white` (przez
+`syncMaterials`) i ekrany `mat_screen_*`. Audio: `AudioSystem.setPowerLevel(level)` ścisza
+źródła `generator`, `screens`, `jukebox`, `radio` proporcjonalnie. Scena ustawia oba w `render`
+i zeruje do 1 w `dispose`.
+
 ## Napisy oprawy kryjówki
 
 `HubLayout.neonTexts?` zawiera `{ text, position, size, yaw, color }[]` (kolory hex z palety Neon Noir).

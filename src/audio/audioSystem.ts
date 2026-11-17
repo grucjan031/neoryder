@@ -68,6 +68,7 @@ export class AudioSystem {
   private ambience: Ambience | null = null;
   private ambienceSources: readonly AmbienceSource[] | null = null;
   private trainProgress: number | null = null;
+  private powerLevel = 1;
   private trainTuning: Tuning['hub'] | undefined;
   private disposed = false;
   /** Ostatnio odtworzony dźwięk (debug, testy). */
@@ -126,6 +127,11 @@ export class AudioSystem {
     source.gain = Math.max(0, gain);
   }
 
+  /** Poziom zasilania (0-1): mnoży głośność źródeł zasilanych z sieci. */
+  setPowerLevel(level: number): void {
+    this.powerLevel = Math.max(0, Math.min(1, level));
+  }
+
   get activeAmbience(): { kind: string; gain: number }[] {
     return this.ambience?.snapshot ?? [];
   }
@@ -157,6 +163,7 @@ export class AudioSystem {
       paused,
       this.trainProgress,
       this.trainTuning,
+      this.powerLevel,
     );
   }
 

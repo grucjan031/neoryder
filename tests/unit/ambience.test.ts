@@ -364,6 +364,36 @@ describe('przestrzenne otoczenie', () => {
     },
   );
 
+  it('spadek napięcia ścisza generator, ekrany, jukebox i radio proporcjonalnie, ogień i tłum zostają', () => {
+    const c = setup();
+    const kinds = [
+      'generator',
+      'screens',
+      'jukebox',
+      'radio',
+      'fire',
+      'crowd',
+    ] as const;
+    c.audio.setAmbience(kinds.map((kind) => ({ ...source(), kind })));
+    const gains = () =>
+      Object.fromEntries(
+        c.audio.activeAmbience.map(({ kind, gain }) => [kind, gain]),
+      );
+    c.audio.updateAmbience();
+    const full = gains();
+    c.audio.setPowerLevel(0.25);
+    c.audio.updateAmbience();
+    const dimmed = gains();
+    for (const kind of ['generator', 'screens', 'jukebox', 'radio'] as const)
+      expect(dimmed[kind]).toBeCloseTo(full[kind]! * 0.25);
+    for (const kind of ['fire', 'crowd'] as const)
+      expect(dimmed[kind]).toBeCloseTo(full[kind]!);
+    c.audio.setPowerLevel(1);
+    c.audio.updateAmbience();
+    expect(gains().radio).toBeCloseTo(full.radio!);
+    c.audio.dispose();
+  });
+
   it('dudnienie narasta i cichnie, przechodzi z zachodu na wschód i sprząta graf po przejeździe', () => {
     const c = setup();
     c.audio.setAmbience([]);

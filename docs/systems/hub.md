@@ -733,3 +733,25 @@ ich sterowanie jest prywatne w `src/render/**`.
 Ręczna próba w 30 s: otwórz `?scene=hub&debug=1`, odblokuj audio kliknięciem,
 w konsoli wykonaj `hub train`; po około 3,5 s sprawdź delikatny wstrząs i pył.
 `window.__neoryder.query('hubAmbience')` zwraca aktywne źródła i ich gain.
+
+## Spadek napięcia
+
+Co losowy czas (`hub.powerDipIntervalS`, domyślnie 240–480 s od początku poprzedniego;
+pierwszy po `powerDipFirstS` 90–180 s, Rng `hub-power-dip`) prąd w kryjówce przygasa na
+`powerDipDurationS` (2,5 s). Krzywa (`powerLevel`, `src/world/hubPowerDip.ts`): 3 szybkie
+mrugnięcia do `powerDipBlinkLevel`, spadek do `powerDipMinLevel` (0,15), ok. 1 s ciemności,
+powrót z jednym dodatkowym mrugnięciem. Przy wyłączonym ustawieniu „Błyski ekranu” zamiast
+mrugnięć jest łagodny spadek i powrót bez skoków (`powerDipSoftFallS/RiseS`).
+
+Gasną światła punktowe i plamy, lampy, napisy, neony (`neon_*`, `light_white`) i ekrany
+(globalny mnożnik `setPowerLevel`, mnożony z migotaniem). Ogień w beczkach i płomienie nie
+gasną. Generator, ekrany, jukebox i radio w audio otoczenia cichną proporcjonalnie do poziomu.
+Światła kluczowe sceny (ambient, kierunkowe) nie są zmieniane, więc przy minimum ogólna
+jasność hali spada tylko o część pochodzącą ze świateł punktowych i emisji.
+
+Po powrocie prądu najbliższy graczowi mieszkaniec z wpisem w `src/data/hub/events.pl.json`
+(promień `powerDipCommentRadiusM`, 14 m) mówi losową kwestię przez `HubChatter.say`
+(`conversation: 'power_dip'`), o ile nie trwa dymek, rozmowa podsłuchana ani otwarta
+stacja/plan. Zdarzenie `hub_power_dip { durationS }` jest emitowane na początku.
+
+Debug: `hub dip` wymusza spadek, `query('hubPower')` → `{ level, active, nextInS }`.
