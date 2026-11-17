@@ -100,12 +100,12 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotna nagroda',
     timeout: LOAD_TIMEOUT,
   });
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
+  // firstClear daje 60 Danych; naszywki Iskry mogą przy pierwszym ukończeniu dodać własną nagrodę.
   await expect
     .poll(() => query(page, 'meta'))
-    .toMatchObject({
-      data: before.data + 60,
-      campaign: { completed: ['m01-maszty'] },
-    });
+    .toMatchObject({ campaign: { completed: ['m01-maszty'] } });
+  const afterFirst = ((await query(page, 'meta')) as { data: number }).data;
+  expect(afterFirst - before.data).toBeGreaterThanOrEqual(60);
 
   // Druga próba nie przyznaje firstClear ponownie.
   await command(page, 'mission start m01-maszty');
@@ -121,7 +121,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotna nagroda',
     .click();
   await expect
     .poll(() => query(page, 'meta'), { timeout: LOAD_TIMEOUT })
-    .toMatchObject({ data: before.data + 60 });
+    .toMatchObject({ data: afterFirst });
   expect(errors).toEqual([]);
 });
 
