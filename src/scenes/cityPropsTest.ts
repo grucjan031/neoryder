@@ -10,7 +10,7 @@ import type { MaterialKind } from '../render/materials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import type { Scene } from './index';
 
-type Mount = 'block' | 'ground' | 'wall' | 'span';
+type Mount = 'block' | 'ground' | 'wall' | 'span' | 'exhibit';
 interface Slot {
   model: string;
   mount: Mount;
@@ -47,6 +47,19 @@ export const CITY_PROP_MODELS = [
   'city_lantern_string',
   'city_ad_screen',
   'city_kiosk',
+  'city_overpass_pillar',
+  'city_overpass_deck',
+  'city_highway_barrier',
+  'city_highway_sign_gantry',
+  'city_wrecked_car',
+  'city_smog_scrubber',
+  'city_roof_water_tank',
+  'city_roof_hvac_unit',
+  'city_market_stall_canopy',
+  'city_market_stall_canopy_violet',
+  'city_roof_bridge',
+  'city_neon_sign_frame',
+  'city_satellite_cluster',
 ] as const;
 
 const HALF_WIDTH = 5;
@@ -77,6 +90,14 @@ const span = (model: string, z: number, y: number): Slot => ({
   dist: 0,
   y,
 });
+const exhibit = (model: string, column: number, row: number): Slot => ({
+  model,
+  mount: 'exhibit',
+  side: 1,
+  dist: 30 + column * 25,
+  z: -36 + row * 24,
+  y: 0,
+});
 const slots: Slot[] = [
   slot('city_dumpster', 'block', -1, 0),
   slot('city_vending', 'block', -1, 1),
@@ -102,6 +123,19 @@ const slots: Slot[] = [
   wallSlot('city_ad_screen', 1, 2, 0.6),
   span('city_cable_span', -6, 5.6),
   span('city_lantern_string', 6, 5),
+  exhibit('city_overpass_pillar', 0, 0),
+  exhibit('city_overpass_deck', 0, 1),
+  exhibit('city_highway_barrier', 0, 2),
+  exhibit('city_highway_sign_gantry', 0, 3),
+  exhibit('city_wrecked_car', 0, 4),
+  exhibit('city_smog_scrubber', 0, 5),
+  exhibit('city_roof_water_tank', 1, 0),
+  exhibit('city_roof_hvac_unit', 1, 1),
+  exhibit('city_market_stall_canopy', 1, 2),
+  exhibit('city_market_stall_canopy_violet', 1, 3),
+  exhibit('city_roof_bridge', 1, 4),
+  exhibit('city_neon_sign_frame', 1, 5),
+  exhibit('city_satellite_cluster', 1, 6),
 ];
 
 const LIGHT_COLORS = ['#ffae1a', '#8a5cff', '#6dff4a', '#3d7bff', '#fff1d6'];
@@ -110,13 +144,15 @@ const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
   { from: [0.7, 1.75, 23], to: [-0.2, 2.6, -14] },
   { from: [-0.7, 1.75, -21], to: [0.2, 2.6, 14] },
   { from: [0, 17, 36], to: [0, 0, 0] },
+  { from: [58, 60, 142], to: [30, 0, 25] },
+  { from: [83, 60, 150], to: [55, 0, 35] },
 ];
 const DEFAULT_YAW_DEG = 35;
 const FILL_RATIO = 0.65;
 const PROP_ELEVATION = 0.2;
 
 function slotYaw(s: Slot): number {
-  if (s.mount === 'span') return 0;
+  if (s.mount === 'span' || s.mount === 'exhibit') return 0;
   return s.side < 0 ? Math.PI / 2 : -Math.PI / 2;
 }
 
@@ -150,6 +186,7 @@ export class CityPropsTest implements Scene {
     this.root.name = this.id;
     three.add(this.root);
     this.root.add(this.lights);
+    this.box([52, 0.3, 166], [42.5, -0.15, 36], 'asphalt');
     const length = SPACING * COUNT + 4;
     this.box([6, 0.3, length], [0, -0.15, 0], 'asphalt');
     for (const side of [-1, 1]) {
@@ -170,7 +207,10 @@ export class CityPropsTest implements Scene {
         console.warn(`city-props-test: nieznany model "${requested}"`);
     }
     const view = Number(this.params.get('view') ?? 0);
-    this.view = Number.isInteger(view) && view >= 0 && view <= 2 ? view : 0;
+    this.view =
+      Number.isInteger(view) && view >= 0 && view < REVIEW_VIEWS.length
+        ? view
+        : 0;
     this.dressing = new CityDressing(
       this.root,
       this.layout(),
@@ -194,20 +234,21 @@ export class CityPropsTest implements Scene {
     }
     const f = this.focus;
     if (f) {
-      const x = f.mount === 'span' ? 0 : f.side * 3;
-      const y = f.mount === 'span' ? f.y - 1 : 2.4;
+      const isExhibit = f.mount === 'exhibit';
+      const x = f.mount === 'span' ? 0 : f.side * (isExhibit ? f.dist : 3);
+      const y = f.mount === 'span' ? f.y - 1 : isExhibit ? 6 : 2.4;
       lights.push(
         {
           position: { x, y, z: f.z + 2.5 },
           color: '#fff1d6',
           intensity: 26,
-          range: 9,
+          range: isExhibit ? 22 : 9,
         },
         {
           position: { x, y, z: f.z - 2.5 },
           color: '#3d7bff',
           intensity: 22,
-          range: 9,
+          range: isExhibit ? 22 : 9,
         },
       );
     }

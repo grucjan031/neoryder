@@ -288,6 +288,79 @@ Collider bloku to zawsze prostopadłościan `size` z JSON pokoju; widoczny model
 
 Test: `tests/unit/roomBlockModelFit.test.ts` (wszystkie pokoje, prawdziwe GLB).
 
+### Zestaw aren Przejęcia: estakada i targ na dachach
+
+12 nowych modeli i dodatkowy fioletowy wariant straganu (13 GLB). Własne,
+proceduralne geometrie bez tekstur, nadruków, marek i napisów. Prefiks `city_`
+zachowuje ścieżki oraz obsługę materiałów miejskich. Pliki:
+`public/assets/models/city/<nazwa>.glb`, podglądy:
+`tools/blender/previews/city/<nazwa>.png`. Areny, pogoda i collidery będą
+integrowane osobno; modele nie zawierają colliderów ani świateł punktowych.
+
+Tabela zawiera **zmierzone AABB GLB (X × Y × Z, metry)** oraz rzeczywiste liczby
+trójkątów wszystkich instancji siatek. **P** = początek w środku podstawy AABB,
+spód na y = 0, środek x = z = 0; przód +Z. Każdy model ma korzeń o swojej nazwie.
+W kolumnie materiałów pominięto wspólny prefiks **`mat_`**.
+
+| Nazwa | AABB X × Y × Z [m] | Punkt odniesienia | Materiały (`mat_…`) | Trójkąty / budżet |
+| --- | --- | --- | --- | ---: |
+| `city_overpass_pillar` | 2,500 × 10,000 × 2,513 | P | concrete, hazard, metal, trim | 412 / 1500 |
+| `city_overpass_deck` | 14,000 × 2,600 × 12,000 | P; jezdnia y = 1,6 | asphalt, concrete, hivis, rubber, trim | 436 / 1500 |
+| `city_highway_barrier` | 4,000 × 1,093 × 0,808 | P; długość w X | concrete, hivis, metal, trim | 228 / 1500 |
+| `city_highway_sign_gantry` | 14,000 × 7,000 × 1,400 | P; rozpiętość w X | concrete, metal, neon_amber, neon_green, trim | 632 / 1500 |
+| `city_wrecked_car` | 2,150 × 1,580 × 3,950 | P; przód +Z | cable, glass, hivis, lacquer, metal, plastic, rubber, rust, trim | 676 / 1500 |
+| `city_smog_scrubber` | 3,000 × 4,000 × 3,000 | P | cable, concrete, machine, metal, neon_green, paint, trim | 672 / 1500 |
+| `city_roof_water_tank` | 3,000 × 5,000 × 3,000 | P | concrete, metal, rust, trim, wood | 708 / 1500 |
+| `city_roof_hvac_unit` | 4,000 × 1,998 × 2,052 | P | cable, machine, metal, neon_green, trim | 1000 / 1500 |
+| `city_market_stall_canopy` | 3,024 × 2,612 × 2,000 | P; lada w +Z | cable, lacquer, metal, neon_amber, paint, trim, wood | 596 / 1500 |
+| `city_market_stall_canopy_violet` | 3,024 × 2,612 × 2,000 | P; lada w +Z | cable, fabric, metal, neon_amber, paint, trim, wood | 596 / 1500 |
+| `city_roof_bridge` | 1,600 × 1,390 × 8,000 | P; pomost y = 0,2 | hivis, metal, neon_amber, trim | 276 / 1500 |
+| `city_neon_sign_frame` | 6,000 × 3,000 × 1,800 | P; panel w +Z | concrete, machine, metal, neon_amber, neon_violet, trim | 208 / 800 |
+| `city_satellite_cluster` | 3,000 × 3,400 × 2,000 | P; czasze w +Z | cable, concrete, machine, metal, trim | 492 / 800 |
+
+**Montaż elementów chodzonych:** węzeł `walk_slab` wyznacza zamkniętą płytę.
+W GLTFLoader jest grupą prymitywów podzielonych według materiałów.
+
+- Estakada: płyta **14 × 1,6 × 12 m**, środek collidera `(0; 0,8; 0)`,
+  górna płaszczyzna y = 1,6, końce segmentu z = ±6. Bariery są wewnątrz
+  szerokości 14 m, sięgają y = 2,6; wolny pas między ich podstawami ma 12,4 m.
+  Dylatacje i pasy jezdni to rozłączne pola tej samej płaszczyzny, bez uskoku
+  i bez nakładających się ścian. Segmenty można łączyć co 12 m w osi Z.
+- Kładka: płyta **1,6 × 0,2 × 8 m**, środek collidera `(0; 0,1; 0)`,
+  górna płaszczyzna y = 0,2, końce z = ±4. Poręcze do y = 1,39;
+  przejście między listwami ma 1,4 m (1,378 m między wystającymi lampami).
+  Oznaczenia końców są płaskie.
+- Collider płyty musi używać powyższych wymiarów, **nie AABB całego modelu
+  z poręczami**. Bariery i poręcze wymagają osobnych prostopadłościanów przy
+  przyszłej integracji. Nie dodano kolizji w tym zadaniu.
+
+Granatowy brezent używa istniejącego `mat_lacquer` (powlekana powierzchnia),
+fioletowy `mat_fabric`; oba warianty mają tę samą ugiętą geometrię i wymiary.
+Nie dodano nazw materiałów ani tekstur. Panele bramownicy są puste, bursztynowy
+i zielony; szyld dachowy ma pusty fioletowy panel z bursztynowymi krawędziami.
+Wrak to krótki hatchback w osi Z z pogniecioną maską, zapadniętym dachem,
+odsłoniętą kabiną, odłamkiem szyby i wyrwanym błotnikiem.
+
+Eksport wyłącznie tego zestawu:
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only city_overpass_pillar,city_overpass_deck,city_highway_barrier,city_highway_sign_gantry,city_wrecked_car,city_smog_scrubber,city_roof_water_tank,city_roof_hvac_unit,city_market_stall_canopy,city_market_stall_canopy_violet,city_roof_bridge,city_neon_sign_frame,city_satellite_cluster
+```
+
+Obejrzano wszystkie 13 PNG. Po pierwszej ocenie usunięto nakładanie powierzchni
+jezdni i oznaczeń kładki, zakotwiono osłony wentylatorów, dodano kołnierze HVAC,
+ugięto brezent i odsłonięto lampy straganów oraz mocniej zdeformowano wrak.
+W trzeciej, ostatniej iteracji wraku obniżono fotel i słupek, aby nie przebijały
+dachu; w kładce ujednolicono metalowy materiał boków płyty. Pozostałe modele
+wymagały jednej lub dwóch iteracji. Wszystkie końcowe PNG zostały obejrzane.
+
+Kontrola: `tests/unit/cityModels.test.ts` sprawdza komplet galerii (37 modeli),
+wymiary, punkt odniesienia, paletę/emisję, budżety, obecność charakterystycznych
+części i podglądów oraz wysokość, pole i drożność płaskich powierzchni pomostów.
+Ręcznie: `?scene=city-props-test&prop=city_overpass_deck` lub dowolna nazwa z tabeli;
+`yaw=145` pokazuje tył, `view=3` przegląd estakady, `view=4` targu dachowego.
+Galeria nie symuluje chodzenia ani kolizji; ocenę ruchu zostawiono integracji aren.
+
 ## Uwagi do F1
 
 - Modele to placeholdery w docelowym stylu. Dopracowanie (więcej archetypów, warianty frakcji) w kolejnych fazach.
