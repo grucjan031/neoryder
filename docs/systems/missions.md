@@ -1,5 +1,7 @@
 # Misje fabularne
 
+Pole `summary` zawiera krótki opis wyświetlany na tablicy po wyborze misji. Radio mierzy tekst w bieżącej szerokości: cała kwestia pozostaje razem, jeśli mieści się w dwóch liniach, a dłuższe dzieli tylko między zdaniami. Pojedyncze zbyt długie zdanie dopasowuje rozmiarem tekstu, bez urywania treści.
+
 Misja jest runem sektora z mapą i celami opisanymi w `src/data/missions`. Kontrakt: ADR 0008 wraz z uzupełnieniem 2a. Rejestr `missions.ts` waliduje schemat, przypisania celów, zależności oraz typy pokojów. `generateMissionMap` zachowuje jedno przejście przez każdą warstwę stałą; nie dokłada bossa ani gwarancji elit zwykłego sektora.
 
 M01 ma siedem warstw. Wariant `alleyUnderpassMission` zachowuje geometrię oryginału, ale jest walką. Zwykły run wyklucza pokoje z sufiksem `Mission`. Pule misji ograniczają wybór pokojów warstw 2, 4 i 6. Biała lista ogranicza planowanie fal; osłona celów powstaje niezależnie od budżetu.

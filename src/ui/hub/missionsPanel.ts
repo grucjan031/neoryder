@@ -96,10 +96,17 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   root.dataset.panel = 'missions';
 
   const sector = el('section', 'missions-panel__sector');
-  sector.append(
-    el('h2', 'missions-panel__sector-name', text.sector.name),
-    el('p', 'missions-panel__sector-text', text.sector.description),
+  const sectorName = el('h2', 'missions-panel__sector-name', text.sector.name);
+  const sectorDescription = el(
+    'p',
+    'missions-panel__sector-text',
+    text.sector.description,
   );
+  sector.append(sectorName, sectorDescription);
+  const describe = (mission?: MissionDefinition) => {
+    sectorName.textContent = mission?.title ?? text.sector.name;
+    sectorDescription.textContent = mission?.summary ?? text.sector.description;
+  };
 
   const heading = el('h3', 'missions-panel__heading', text.threat.heading);
   const list = el('div', 'missions-panel__levels');
@@ -124,10 +131,12 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       button.dataset.mission = mission.id;
       button.addEventListener('click', () => {
         selectedMission = mission;
+        describe(mission);
         const back = el('button', 'mission-choice', missionText.back);
         back.type = 'button';
         back.addEventListener('click', () => {
           selectedMission = undefined;
+          describe();
           briefing.hidden = true;
           choices.hidden = false;
           sector.hidden = false;
@@ -143,13 +152,13 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
         );
         briefing.hidden = false;
         choices.hidden = true;
-        sector.hidden = true;
+        sector.hidden = false;
         heading.hidden = true;
         list.hidden = true;
         start.textContent = missionText.start;
         briefing.tabIndex = -1;
         briefing.focus({ preventScroll: true });
-        briefing.scrollIntoView({ block: 'start' });
+        sector.scrollIntoView({ block: 'start' });
       });
       choices.append(button);
       return { mission, button };
@@ -159,6 +168,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   regular.dataset.mission = 'regular';
   regular.addEventListener('click', () => {
     selectedMission = undefined;
+    describe();
     briefing.hidden = true;
     start.textContent = text.start;
     start.focus();

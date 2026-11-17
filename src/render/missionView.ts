@@ -3,9 +3,12 @@ import {
   Group,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
+  type Material,
   RingGeometry,
 } from 'three';
 import type { MissionObjectives } from '../world/missionObjectives';
+import { tuning } from '../core/tuning';
 
 /** Oprawa celów nie uczestniczy w symulacji ani kolizjach. */
 export class MissionView {
@@ -17,7 +20,12 @@ export class MissionView {
   private readonly box = new BoxGeometry(1, 1, 1);
   private readonly ringGeometry: RingGeometry;
   private readonly metal = new MeshBasicMaterial({ color: '#56627a' });
-  private readonly red = new MeshBasicMaterial({ color: '#e0262b' });
+  private readonly red = new MeshStandardMaterial({
+    color: '#e0262b',
+    emissive: '#e0262b',
+    emissiveIntensity: tuning.mission.mastEmissionMin,
+    toneMapped: false,
+  });
   private readonly white = new MeshBasicMaterial({ color: '#fff1d6' });
   private readonly amber = new MeshBasicMaterial({ color: '#ffae1a', side: 2 });
   constructor(
@@ -39,7 +47,7 @@ export class MissionView {
         sx: number,
         sy: number,
         sz: number,
-        material = this.metal,
+        material: Material = this.metal,
       ): Mesh => {
         const mesh = new Mesh(this.box, material);
         mesh.position.set(x, y, z);
@@ -57,8 +65,15 @@ export class MissionView {
           brace.rotation.z = Math.PI / 4;
         }
         cube(0, 0.3, 0, 0.8, 0.6, 0.7);
-        cube(0, 0.35, 0.36, 0.45, 0.12, 0.04, this.red);
-        lamp = cube(0, 3.1, 0, 0.3, 0.2, 0.3, this.red);
+        for (const side of [-1, 1]) {
+          for (const offset of [-0.22, 0, 0.22]) {
+            cube(offset, 0.4, side * 0.36, 0.1, 0.08, 0.04, this.red);
+            cube(side * 0.41, 0.4, offset, 0.04, 0.08, 0.1, this.red);
+          }
+        }
+        cube(0, 3.02, 0, 0.6, 0.08, 0.6);
+        lamp = cube(0, 3.24, 0, 0.46, 0.36, 0.46, this.red);
+        cube(0, 3.46, 0, 0.6, 0.08, 0.6);
       } else if (objective.kind === 'pickup') {
         cube(0, 0.3, 0, 0.6, 0.4, 0.4, this.white);
         cube(0, 0.51, 0, 0.4, 0.02, 0.12, this.metal);
@@ -93,7 +108,7 @@ export class MissionView {
       this.root.add(object);
     }
   }
-  update(): void {
+  update(timeS = performance.now() / 1000): void {
     for (const objective of this.model.mission.objectives) {
       const view = this.entries.get(objective.id);
       if (!view) continue;
@@ -103,9 +118,15 @@ export class MissionView {
       view.ring.visible = this.model.unlocked(objective);
       view.bar.scale.x = Math.max(0.01, this.model.progress[objective.id] ?? 0);
       const fuse = this.model.fuses[objective.id];
-      if (view.lamp)
-        view.lamp.visible =
-          fuse === undefined || Math.floor(fuse * 4) % 2 === 0;
+      if (view.lamp) {
+        const config = tuning.mission;
+        const frequency =
+          fuse === undefined ? config.mastPulseHz : config.mastFusePulseHz;
+        const pulse = (1 + Math.sin(timeS * Math.PI * 2 * frequency)) / 2;
+        this.red.emissiveIntensity =
+          config.mastEmissionMin +
+          pulse * (config.mastEmissionMax - config.mastEmissionMin);
+      }
     }
   }
   dispose(): void {

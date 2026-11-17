@@ -5,7 +5,10 @@ export const tuning = {
     zoneRadiusM: 1.6,
     pickupRadiusM: 1,
     radioMinS: 3,
-    radioChunkChars: 65,
+    mastPulseHz: 0.5,
+    mastFusePulseHz: 2,
+    mastEmissionMin: 1.5,
+    mastEmissionMax: 4,
     radioCharsPerS: 16,
   },
   ui: {

@@ -58,6 +58,7 @@ export const missionSchema = z
     id,
     number: z.number().int().positive(),
     title: id,
+    summary: id,
     act: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     sectorId: id,
     requires: z.array(id),
