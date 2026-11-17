@@ -145,6 +145,35 @@ export const hubNpcSchema = z
     position: z.object({ x: finite, y: finite.optional(), z: finite }),
     rotationDeg: finite,
     scale: finite.min(0.55).max(1.15).optional(),
+    look: z
+      .object({
+        shade: z.number().int().min(0).max(9).optional(),
+        headwear: z
+          .enum([
+            'none',
+            'cap',
+            'cap_stripe',
+            'beanie',
+            'goggles',
+            'glasses',
+            'headphones',
+            'bandana',
+            'hood',
+          ])
+          .optional(),
+        torso: z.enum(['vest', 'apron', 'coat', 'jacket', 'none']).optional(),
+        prop: z
+          .enum([
+            'none',
+            'pouches',
+            'backpack',
+            'wrench',
+            'satchel',
+            'toolbelt',
+          ])
+          .optional(),
+      })
+      .optional(),
     route: npcRouteSchema.optional(),
     animation: z.enum(NPC_ANIMATIONS).optional(),
     accent: z.enum(NPC_ACCENTS),

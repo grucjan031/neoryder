@@ -4834,6 +4834,430 @@
           "z": 0.333626
         }
       }
+    },
+    {
+      "id": "hela",
+      "position": {
+        "x": -17,
+        "y": 0,
+        "z": -18.4
+      },
+      "rotationDeg": 0,
+      "animation": "PickUp_Table",
+      "accent": "amber",
+      "look": {
+        "shade": 5,
+        "headwear": "bandana",
+        "torso": "apron",
+        "prop": "none"
+      }
+    },
+    {
+      "id": "jarek",
+      "position": {
+        "x": -17.6,
+        "y": 0,
+        "z": -13.55
+      },
+      "rotationDeg": 180,
+      "animation": "Sitting_Talking_Loop",
+      "accent": "green",
+      "look": {
+        "shade": 1,
+        "headwear": "headphones",
+        "torso": "jacket",
+        "prop": "satchel"
+      },
+      "seat": {
+        "heightM": 0.48,
+        "offset": {
+          "x": -0.002812,
+          "y": -0.48,
+          "z": 0.333626
+        }
+      }
+    },
+    {
+      "id": "ewa",
+      "position": {
+        "x": -17.6,
+        "y": 0,
+        "z": -16.05
+      },
+      "rotationDeg": 0,
+      "animation": "Sitting_Idle_Loop",
+      "accent": "violet",
+      "look": {
+        "shade": 6,
+        "headwear": "hood",
+        "torso": "jacket",
+        "prop": "pouches"
+      },
+      "seat": {
+        "heightM": 0.48,
+        "offset": {
+          "x": -0.002812,
+          "y": -0.48,
+          "z": 0.333626
+        }
+      }
+    },
+    {
+      "id": "lena",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": -15.9
+      },
+      "rotationDeg": 180,
+      "animation": "Sitting_Talking_Loop",
+      "accent": "blue",
+      "look": {
+        "shade": 8,
+        "headwear": "headphones",
+        "torso": "vest",
+        "prop": "none"
+      },
+      "seat": {
+        "heightM": 0.48,
+        "offset": {
+          "x": -0.002812,
+          "y": -0.48,
+          "z": 0.333626
+        }
+      }
+    },
+    {
+      "id": "zofia",
+      "position": {
+        "x": -3.5,
+        "y": 0,
+        "z": -13.4
+      },
+      "rotationDeg": 90,
+      "animation": "Fixing_Kneeling",
+      "accent": "white",
+      "look": {
+        "shade": 4,
+        "headwear": "none",
+        "torso": "coat",
+        "prop": "satchel"
+      }
+    },
+    {
+      "id": "teo",
+      "position": {
+        "x": -6.5,
+        "y": 0,
+        "z": -16.4
+      },
+      "rotationDeg": 0,
+      "animation": "Sitting_Idle_Loop",
+      "accent": "amber",
+      "look": {
+        "shade": 9,
+        "headwear": "cap",
+        "torso": "coat",
+        "prop": "none"
+      },
+      "seat": {
+        "heightM": 0.48,
+        "offset": {
+          "x": -0.002812,
+          "y": -0.48,
+          "z": 0.333626
+        }
+      }
+    },
+    {
+      "id": "iga",
+      "position": {
+        "x": -10,
+        "y": 0,
+        "z": -8.7
+      },
+      "rotationDeg": 0,
+      "animation": "Crouch_Idle_Loop",
+      "accent": "green",
+      "look": {
+        "shade": 7,
+        "headwear": "goggles",
+        "torso": "vest",
+        "prop": "toolbelt"
+      }
+    },
+    {
+      "id": "marek",
+      "position": {
+        "x": -25,
+        "y": 0,
+        "z": 15.4
+      },
+      "rotationDeg": 180,
+      "animation": "Idle_Talking_Loop",
+      "accent": "violet",
+      "look": {
+        "shade": 6,
+        "headwear": "beanie",
+        "torso": "coat",
+        "prop": "satchel"
+      }
+    },
+    {
+      "id": "grzes",
+      "position": {
+        "x": -22.5,
+        "y": 0,
+        "z": 10.7
+      },
+      "rotationDeg": 0,
+      "animation": "Idle_Torch_Loop",
+      "accent": "blue",
+      "look": {
+        "shade": 2,
+        "headwear": "cap_stripe",
+        "torso": "jacket",
+        "prop": "pouches"
+      }
+    },
+    {
+      "id": "rudy",
+      "position": {
+        "x": -3,
+        "y": 0,
+        "z": 15.2
+      },
+      "rotationDeg": 180,
+      "animation": "Idle_Loop",
+      "accent": "white",
+      "look": {
+        "shade": 5,
+        "headwear": "none",
+        "torso": "apron",
+        "prop": "none"
+      }
+    },
+    {
+      "id": "nina",
+      "position": {
+        "x": -6.5,
+        "y": 0,
+        "z": 12.8
+      },
+      "rotationDeg": 180,
+      "animation": "Dance_Loop",
+      "accent": "amber",
+      "look": {
+        "shade": 9,
+        "headwear": "glasses",
+        "torso": "jacket",
+        "prop": "none"
+      }
+    },
+    {
+      "id": "witek",
+      "position": {
+        "x": 16.1,
+        "y": 0,
+        "z": -2.4
+      },
+      "rotationDeg": 90,
+      "animation": "Punch_Jab",
+      "accent": "green",
+      "look": {
+        "shade": 0,
+        "headwear": "bandana",
+        "torso": "vest",
+        "prop": "none"
+      }
+    },
+    {
+      "id": "kuba",
+      "position": {
+        "x": -30,
+        "y": 0,
+        "z": 13
+      },
+      "rotationDeg": 90,
+      "animation": "Walk_Loop",
+      "accent": "violet",
+      "look": {
+        "shade": 3,
+        "headwear": "beanie",
+        "torso": "vest",
+        "prop": "backpack"
+      },
+      "route": {
+        "points": [
+          {
+            "x": -30,
+            "z": 13
+          },
+          {
+            "x": -10,
+            "z": 13
+          },
+          {
+            "x": -10,
+            "z": 11
+          },
+          {
+            "x": 5.5,
+            "z": 11
+          },
+          {
+            "x": 5.5,
+            "z": -2.5
+          },
+          {
+            "x": 4.5,
+            "z": -2.5
+          },
+          {
+            "x": 4.5,
+            "z": -9.75
+          },
+          {
+            "x": -14,
+            "z": -9.75
+          },
+          {
+            "x": -14,
+            "z": -12.5
+          }
+        ],
+        "mode": "pingpong",
+        "pauseS": 0,
+        "moveAnimation": "Walk_Loop",
+        "pauseAnimation": "Idle_Loop"
+      }
+    },
+    {
+      "id": "pawel",
+      "position": {
+        "x": -7,
+        "y": 0,
+        "z": -2.5
+      },
+      "rotationDeg": 90,
+      "animation": "Walk_Loop",
+      "accent": "blue",
+      "look": {
+        "shade": 7,
+        "headwear": "cap_stripe",
+        "torso": "jacket",
+        "prop": "pouches"
+      },
+      "route": {
+        "points": [
+          {
+            "x": -7,
+            "z": -2.5
+          },
+          {
+            "x": 6,
+            "z": -2.5
+          },
+          {
+            "x": 6,
+            "z": -0.5
+          },
+          {
+            "x": -7,
+            "z": -0.5
+          }
+        ],
+        "mode": "loop",
+        "pauseS": 1.5,
+        "moveAnimation": "Walk_Loop",
+        "pauseAnimation": "Idle_Loop"
+      }
+    },
+    {
+      "id": "ola",
+      "position": {
+        "x": 0.5,
+        "y": 0,
+        "z": 11
+      },
+      "rotationDeg": 90,
+      "animation": "Jog_Fwd_Loop",
+      "accent": "white",
+      "look": {
+        "shade": 8,
+        "headwear": "beanie",
+        "torso": "jacket",
+        "prop": "backpack"
+      },
+      "route": {
+        "points": [
+          {
+            "x": 0.5,
+            "z": 11
+          },
+          {
+            "x": 6,
+            "z": 11
+          },
+          {
+            "x": 6,
+            "z": 13.5
+          },
+          {
+            "x": 0.5,
+            "z": 13.5
+          }
+        ],
+        "mode": "loop",
+        "pauseS": 0,
+        "moveAnimation": "Jog_Fwd_Loop",
+        "pauseAnimation": "Idle_Loop",
+        "speedMS": 2.2
+      },
+      "scale": 0.68
+    },
+    {
+      "id": "stas",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "z": 13.5
+      },
+      "rotationDeg": 270,
+      "animation": "Jog_Fwd_Loop",
+      "accent": "amber",
+      "look": {
+        "shade": 2,
+        "headwear": "cap",
+        "torso": "jacket",
+        "prop": "none"
+      },
+      "route": {
+        "points": [
+          {
+            "x": 6,
+            "z": 13.5
+          },
+          {
+            "x": 0.5,
+            "z": 13.5
+          },
+          {
+            "x": 0.5,
+            "z": 11
+          },
+          {
+            "x": 6,
+            "z": 11
+          }
+        ],
+        "mode": "loop",
+        "pauseS": 0,
+        "moveAnimation": "Jog_Fwd_Loop",
+        "pauseAnimation": "Idle_Loop",
+        "speedMS": 2.2
+      },
+      "scale": 0.6
     }
   ],
   "fires": [

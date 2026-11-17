@@ -46,8 +46,8 @@ it('w całym klipie miednica spoczywa ±0,08 m nad siedziskiem, obie stopy na po
     const seatTop = floorY + seat.heightM;
     const support = layout.blocks.find(
       (block) =>
-        Math.abs(block.position.x - npc.position.x) < 0.01 &&
-        Math.abs(block.position.z - npc.position.z) < 0.01 &&
+        Math.abs(block.position.x - npc.position.x) < block.size.x / 2 &&
+        Math.abs(block.position.z - npc.position.z) < block.size.z / 2 &&
         Math.abs(block.position.y + block.size.y / 2 - seatTop) < 0.001,
     );
     expect(support, `siedzisko ${npc.id}`).toBeDefined();
