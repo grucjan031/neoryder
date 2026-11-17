@@ -603,6 +603,142 @@
           "text": "Kurwa, szew znowu puszcza na worku. Mira mnie zabije, jak znowu przyjdę po łatę z taśmy."
         }
       ]
+    },
+    {
+      "id": "hela_jarek_ewa_supper",
+      "npcs": ["hela", "jarek", "ewa"],
+      "lines": [
+        {
+          "npc": "hela",
+          "text": "Ewa, podsuń miskę, doleję ci jeszcze gorącej zupy. Po powrocie z Niecki nawet nie zdążyłaś ściągnąć przemoczonej kurtki."
+        },
+        {
+          "npc": "jarek",
+          "text": "A słyszeliście, co gadają pod estakadą? Podobno w nocy przy wieży Orbisu zniknął cały patrol i nikt nie wie, kto ich zgarnął."
+        },
+        {
+          "npc": "hela",
+          "text": "Jarek, daj dziewczynie zjeść w spokoju. Ledwo weszła z deszczu, a ty już jej serwujesz bajki z targu zamiast kolacji."
+        },
+        {
+          "npc": "jarek",
+          "text": "To nie bajki, Hela! Chłopaki z nocnej zmiany na przekaźniku mówili, że nawet sygnatury zniknęły z..."
+        },
+        {
+          "npc": "ewa",
+          "text": "Jarek, zamknij się i jedz swoją rzepę. O północy mam kolejną zmianę przy kanale i nie chcę słuchać twoich plotek."
+        }
+      ]
+    },
+    {
+      "id": "tomasz_nina_dance",
+      "npcs": ["tomasz", "nina"],
+      "lines": [
+        {
+          "npc": "nina",
+          "text": "Tomasz, zostaw na chwilę tę beczkę i chodź pod szafę. Znalazłam na Bulwarze stary winyl, jeszcze nie całkiem zjechany."
+        },
+        {
+          "npc": "tomasz",
+          "text": "Moje kolana nadają się już tylko do siedzenia przy ogniu, Nina. Taniec zostaw młodym, zanim jeszcze mają siłę w nogach."
+        },
+        {
+          "npc": "nina",
+          "text": "Nie wykręcaj się wiekiem. Wszyscy tu chodzą sztywni jak strażnicy Kurogane, a jeden kawałek jeszcze nikogo nie zabił."
+        },
+        {
+          "npc": "tomasz",
+          "text": "Ech, pamiętam dawne potańcówki tuż przy peronie, zanim korporacje odcięły nam niebo. Ktoś wtedy ciągnął prąd prosto z lamp."
+        },
+        {
+          "npc": "nina",
+          "text": "To właśnie o to chodzi, stary. Puśćmy płytę chociaż na trzy minuty — niech ta stacja przypomni sobie, że żyje."
+        }
+      ]
+    },
+    {
+      "id": "mira_workbench",
+      "npcs": ["mira"],
+      "lines": [
+        {
+          "npc": "mira",
+          "text": "Dobra, jeszcze ten jeden styk przy cewce emitera i powinno trzymać napięcie bez pływania po skali."
+        },
+        {
+          "npc": "mira",
+          "text": "Kto to lutował wcześniej, w rękawicach spawalniczych? Cała szyna krzywa, a cyna wylazła bokiem."
+        },
+        {
+          "npc": "mira",
+          "text": "Kurwa, znowu zwarcie na masie. Dobrze, że zdjęłam palce z obudowy, zanim strzelił łuk."
+        },
+        {
+          "npc": "mira",
+          "text": "Nic, trzeba wstawić ten zapasowy przekaźnik od Igi. Jak nie zauważy do wieczora, to może przeżyję."
+        }
+      ]
+    },
+    {
+      "id": "iga_wiring",
+      "npcs": ["iga"],
+      "lines": [
+        {
+          "npc": "iga",
+          "text": "No świetnie, znowu mruga na lewej fazie. Ta instalacja pamięta jeszcze pierwsze składy przed powodzią."
+        },
+        {
+          "npc": "iga",
+          "text": "Szlag by to trafił, cała skrzynka zielona od wilgoci, a bezpieczniki trzymają się już tylko na słowo honoru."
+        },
+        {
+          "npc": "iga",
+          "text": "I oczywiście brakuje dwóch przekaźników. Mira znowu zrobiła sobie ze ściany swój prywatny magazyn części."
+        },
+        {
+          "npc": "iga",
+          "text": "Jak w nocy staną pompy i woda z Niecki zaleje nam buty, to jej osobiście zatkam tym złomem spawarkę."
+        }
+      ]
+    },
+    {
+      "id": "teo_old_trains",
+      "npcs": ["teo"],
+      "lines": [
+        {
+          "npc": "teo",
+          "text": "Szósta zero dwie, skład z Kamiennej zawsze ruszał bez minuty spóźnienia... nawet jak na górze lało jak z cebra."
+        },
+        {
+          "npc": "teo",
+          "text": "Przed drugim rozjazdem zawsze lekko stukało na złączu szyn. Człowiek z zamkniętymi oczami wiedział, kiedy hamować."
+        },
+        {
+          "npc": "teo",
+          "text": "Na peronie B pachniało wtedy smarem i ozonem, a ludzie z Hut przysypiali na ławkach po nocnej zmianie."
+        },
+        {
+          "npc": "teo",
+          "text": "Teraz słychać tylko pompy i deszcz za kratą. Ale jak przymknę oczy, to jeszcze czuję drganie torów pod pryczą."
+        }
+      ]
+    },
+    {
+      "id": "szron_planning",
+      "npcs": ["szron"],
+      "lines": [
+        {
+          "npc": "szron",
+          "text": "Dwie drużyny zwiadu wracają o czwartej. Trzecia zostaje przy zachodnim zejściu, dopóki nie ucichną skanery."
+        },
+        {
+          "npc": "szron",
+          "text": "Brakuje nam jednego człowieka na północną flankę i trzech godzin snu na głowę. Znowu trzeba ciąć harmonogram."
+        },
+        {
+          "npc": "szron",
+          "text": "Północ, okno na sześć minut między zmianą patroli Kurogane. Tyle wystarczy, jeśli nikt się nie spóźni."
+        }
+      ]
     }
   ]
 }
