@@ -65,6 +65,68 @@ Nawierzchnie dziedziczą ciemne barwy asfaltu i betonu z motywu `neonStreet`,
 a barwy czterech wariantów kontenerów pochodzą z danych materiałowych.
 Modele GLB, generator Blendera i system pogody nie zostały zmienione.
 
+## Estakada w smogu
+
+`arenaOverpass`: 100×100 m, `smog`, asfalt ulicy, beton estakady i ściany
+`smog_soot_wall`. Jezdnia na 11,6 m biegnie wzdłuż Z przy x = −12.
+Sześć filarów 2,5×10×2,513 m podtrzymuje segmenty; wraki, bariery i cztery
+oczyszczacze rozbijają szerokie ulice. Dwie rampy mają 36 m biegu, 8 m
+szerokości i 11,6 m wzniosu, przy z = ±24. Płyta segmentu GLB ma collider
+14×1,6×12 m, osobne bariery; bramownice mają wyłącznie nogi i poprzeczkę.
+Przy rampach segmenty GLB zastępują zwykłe płyty i osobne bariery, żeby
+wbudowana boczna bariera modelu nie zamykała wjazdu.
+
+| Punkt | X/Y/Z (m)       | Miejsce                                  |
+| ----- | --------------- | ---------------------------------------- |
+| A     | −12 / 0 / −12   | Ulica pod jezdnią, między filarami       |
+| B     | −12 / 11,6 / 12 | Jezdnia, dojście obiema rampami          |
+| C     | 32 / 0 / 10     | Plac przy wrakach, poza obrysem wiaduktu |
+
+Promienie 4 m, odległości XZ około 24 / 49 / 44 m. Gracz (−38, 0, 35),
+sześć spawnów na obrzeżach. Światła ciepłej bieli na jezdni, zielone
+oczyszczacze i bursztyn/błękit/fiolet na ulicy; brak opadu, gęsty pył i smog.
+
+## Targ na dachach
+
+`arenaRooftops`: 90×90 m, `drizzleWind`. Ciągły niski dach na y = 0,
+tarasy wschodnie na 2 i 6 m. Szerokie rampy X mają 24 m biegu i 8 m
+szerokości; łączą dolny dach z tarasami przy z = −24 i 24. Dachy pokrywa
+`roof_tar`, parapety i schody `roof_hvac_metal`, zadaszenia `market_tarp`.
+Stragany obu kolorów, zbiorniki, HVAC, anteny i szyldy używają oryginalnych
+materiałów GLB (wszystkie nazwy były już zarejestrowane). Wymiary colliderów
+rekwizytów odpowiadają AABB w `docs/assets.md`.
+
+| Punkt | X/Y/Z (m)    | Miejsce                       |
+| ----- | ------------ | ----------------------------- |
+| A     | −28 / 0 / 0  | Niski zachodni dach targowy   |
+| B     | 28 / 2 / −24 | Północny dach z wieżą ciśnień |
+| C     | 28 / 6 / 24  | Wysoki południowy dach        |
+
+Promienie 4 m, odległości XZ około 61 / 48 / 61 m. Gracz (−35, 0, 32),
+sześć spawnów na niskim dachu poza punktami. Dwie kładki `city_roof_bridge`
+przy x = 34 i 38 łączą tarasy na y = 6, nad niższym kanałem serwisowym.
+Z północnego dachu prowadzą dwa biegi po 20 stopni, 0,2 m wzniosu i 0,4 m
+głębokości. Płyta kładki ma 1,6×0,2×8 m, osobne poręcze do wysokości
+modelu 1,39 m. Parapety mają przerwy przy rampach i kładkach. Granice areny
+mają dodatkową niewidoczną kolizję do 8 m; kapsuła nie wypada poza arenę.
+
+## Nawigacja nowych aren
+
+Wysokich punktów nie przeniesiono na grunt. `blocks[].walkable` oznacza
+płyty i rampy; `ArenaSurfaceNavigation` pod istniejącym `ArenaNavigation`
+buduje warstwy 1 m, margines 0,8 m, prześwit 2 m i maksymalny wznios
+między sąsiadami 0,35 m. Połączenie różnych powierzchni rampy istnieje
+wyłącznie na końcach, więc wróg nie próbuje wejść przez boczny próg.
+Przeszkody nad ulicą nie blokują przejścia pod estakadą. Skracanie trasy
+sprawdza wysokość oraz kolejne połączenia, bez skrótów między dachami.
+Naziemna ścieżka portu pozostaje zachowana.
+
+AI wybiera szerokie rampy: wąskie kładki o przejściu 1,378 m nie mieszczą
+pełnego marginesu nawigacji 0,8 m i służą graczowi. Wszystkie punkty są
+osiągalne bez nich. Walidacja trybu wymaga wolnego koła na wysokości punktu
+oraz drogi od gracza i każdego spawnu do A/B/C. Posiłki zachowują istniejący
+warunek 15 m od gracza i odstępu od innych wrogów.
+
 ## Wydajność i pomiar
 
 Port wykorzystuje wzorzec commita `0ade40c`: jeden `static-world` dla brył,
@@ -82,6 +144,19 @@ Pomiar strukturalny 2026-11-17, prawdziwe GLB, `arenaStaticBatch.test.ts`:
 | ---------------------------------------------- | --------------: | ----------: |
 | Statyczne siatki portu (łącznie z instancjami) |             776 |         326 |
 | Partie instancji kontenerów                    |              53 |          53 |
+
+Ten sam pomiar nowych aren (rzeczywiste GLB, komórki 20 m, pojedyncza faza
+scalania, bez zmiany progów):
+
+| Arena    | Siatki przed | Siatki po | Partie InstancedMesh |
+| -------- | -----------: | --------: | -------------------: |
+| Estakada |          630 |       216 |                   75 |
+| Targ     |          877 |       198 |                   40 |
+
+`arenaPerf.test.ts` obejmuje także prawdziwy host Przejęcia obu nowych aren,
+30 wrogów (20 szturmowców, 10 strzelców), nawigację i Rapiera. Lokalny pomiar
+po optymalizacji wyboru waypointu: estakada 0,803 ms/krok, targ 0,792 ms/krok; limit nadal
+6 ms/krok. Test przeciążeniowy omija wyłącznie limit liczby posiłków 8.
 
 To liczba siatek, **nie zmierzona liczba wywołań rysowania całej klatki**:
 frustum culling i przebiegi koloru, normalnych, odbić oraz bloom zmieniają wynik.
@@ -107,7 +182,17 @@ Otwórz `?scene=conquest&arena=arenaContainerPort&debug=1`, wpisz `god`, obejrzy
 plac i podesty. Komendy `tp -32 -28`, `tp 32 -23`, `tp 0 33` pozwalają szybko
 obejrzeć trzy różne strefy. Sprawdź `query('room')`, `query('weather')` i
 `query('conquest')`. `?scene=weatherTest&debug=1` udostępnia pięć przycisków pogody.
-`?scene=conquest&arena=combatRing&debug=1` sprawdza drugą arenę.
+`?scene=conquest&arena=combatRing&debug=1` sprawdza mały pierścień.
+
+Nowe areny: `?scene=conquest&arena=arenaOverpass&debug=1` oraz
+`?scene=conquest&arena=arenaRooftops&debug=1`. Wpisz `god`, przejdź A–B–C
+bez skoków, potem drugą rampę estakady i schody/kładki targu. Sprawdź `room`,
+`weather` i `conquest` przez query; profil powinien wynosić odpowiednio
+`smog` i `drizzleWind`. Oceń czytelność wrogów w pyle i mżawce, drogi posiłków
+na B/C, osłony, śliską wizualnie papę i zabezpieczenie zewnętrznych krawędzi.
+Galeria: `?scene=city-props-test&view=4` (estakada), `&view=5` (targ).
+Testy traversal/enemies/staticBatch obejmują wszystkie trzy duże areny;
+e2e startu nowych aren jest napisany, bez uruchamiania w sandboxie.
 
 Dłuższy przegląd feel: przejdź naziemne drogi A–B–C, wejdź obiema rampami,
 przejdź po kładce i oboma biegami schodów suwnicy. Sprawdź czytelność czerwonych

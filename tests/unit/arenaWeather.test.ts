@@ -9,7 +9,12 @@ import {
   loadWeatherDefinitions,
 } from '../../src/render/weatherSchema';
 import { themeDefinitions } from '../../src/render/themes';
-import { urbanUniforms } from '../../src/render/urbanMaterials';
+import {
+  urbanUniforms,
+  arenaKinds,
+  urbanLooks,
+  createUrbanMaterial,
+} from '../../src/render/urbanMaterials';
 import { Weather } from '../../src/vfx/weather';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import {
@@ -163,7 +168,7 @@ describe('areny Przejęcia', () => {
       );
       selected.add(selectArena(conquestMode, seed));
     }
-    expect([...selected].sort()).toEqual(['arenaContainerPort', 'combatRing']);
+    expect([...selected].sort()).toEqual([...conquestMode.arenas!].sort());
     expect(selectArena(conquestMode, 'any', 'combatRing', true)).toBe(ring.id);
     expect(() => selectArena(conquestMode, 'any', 'unknown', true)).toThrow();
   });
@@ -187,7 +192,9 @@ describe('areny Przejęcia', () => {
   });
   it('waliduje granice punktów, osiągalność i spawny poza strefami', () => {
     expect(() => loadRoomDefinitions([port])).not.toThrow();
-    for (const room of [port, ring])
+    for (const room of conquestMode.arenas!.map((id) =>
+      roomDefinitions.get(id)!,
+    ))
       validateMode(
         modeForArena(conquestMode, room),
         room,
@@ -211,6 +218,40 @@ describe('areny Przejęcia', () => {
         conquestMode.enemies,
       ),
     ).toThrow('Spawn');
+  });
+  it.each(['arenaOverpass', 'arenaRooftops'])(
+    '%s: wysokie punkty wymagają ramp, fałszywa wysokość jest odrzucana',
+    (id) => {
+      const room = structuredClone(roomDefinitions.get(id)!);
+      const mode = modeForArena(conquestMode, room);
+      validateMode(mode, room, mode.enemies);
+      const navigation = new ArenaNavigation(room);
+      for (const point of mode.points) {
+        const path = navigation.path(room.playerSpawn, point.position);
+        expect(path.length).toBeGreaterThan(0);
+        for (let i = 1; i < path.length; i++)
+          expect(Math.abs(path[i]!.y - path[i - 1]!.y)).toBeLessThanOrEqual(
+            room.arena!.navigationMaxRiseM!,
+          );
+      }
+      const wrongHeight = structuredClone(mode);
+      wrongHeight.points[1]!.position.y += 1;
+      expect(() => validateMode(wrongHeight, room, mode.enemies)).toThrow(
+        'podłogą',
+      );
+      room.blocks = room.blocks.filter((b) => !(b.walkable && b.rotation));
+      expect(() => validateMode(mode, room, mode.enemies)).toThrow(
+        'Nieosiągalna',
+      );
+    },
+  );
+  it('pięć powierzchni aren używa własnych tekstur i parametrów mokrości', () => {
+    for (const kind of arenaKinds) {
+      expect(urbanLooks[kind].texture).toBe(kind);
+      const material = createUrbanMaterial(kind);
+      expect(material.userData.wetness).toBe(urbanLooks[kind].wetness);
+      material.dispose();
+    }
   });
   it('siatka prowadzi z każdego spawnu do każdego punktu bez przecinania osłon', () => {
     const navigation = new ArenaNavigation(port);

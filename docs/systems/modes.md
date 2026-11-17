@@ -11,7 +11,8 @@ Skrót korzysta z tego samego hosta RunScene (debug `sceneId()` zwraca `run`).
 `src/data/modes/conquest.json` przechodzi `modeSchema` i walidację geometrii:
 trzy różne punkty A/B/C, wolne koła na podłodze, odstęp minimum 12 m,
 osiągalność jak w `validateLayout`, znany pokój combat i obsługiwana biała lista
-wrogów. Pole `arenas` zawiera `arenaContainerPort` oraz `combatRing`.
+wrogów. Pole `arenas` zawiera kolejno `arenaContainerPort`, `arenaOverpass`,
+`arenaRooftops`, `combatRing`.
 Punkty są w `room.arena.points`, spawny w pokoju lub opcjonalnym
 `room.arena.spawnPoints`. Stary format `roomId` + `points` nadal jest odczytywany.
 Port ma 100×100 m, pogodę storm i punkty A (−32, 0, −28), B (32, 0, −23),
@@ -19,6 +20,11 @@ C (0, 0, 33), każdy o promieniu 4 m. Zachowany combatRing ma punkty
 A (−10, 0, −9), B (10, 0, −9), C (0, 0, 0), promienie 2,75 / 2,75 / 3,5 m.
 Spawny trybu są walidowane poza strefami z marginesem; zwykłe spawny combatRing
 nie są zmieniane. Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
+
+Estakada (100×100 m, `smog`): A (−12, 0, −12), B (−12, 11,6, 12),
+C (32, 0, 10). Targ (90×90 m, `drizzleWind`): A (−28, 0, 0),
+B (28, 2, −24), C (28, 6, 24). Promienie 4 m. Wyższe punkty mają
+rzeczywiste dojścia rampami dla gracza i obu archetypów przeciwników.
 
 Bez wpisanego seeda start z tablicy i bezpośredniego URL wybiera pierwszą arenę
 (port), a run nadal dostaje losowy seed. Wpisany `?seed=` wybiera arenę przez
@@ -70,7 +76,11 @@ sprawdź nagrodę i powrót do kryjówki. Osobno `hurt 99999` sprawdza porażkę
 W zwykłej grze sprawdź czytelność stref, tempo przejęcia i omijanie filarów
 przez posiłki. Port korzysta z naziemnej siatki `ArenaNavigation`: pola odległości
 do A/B/C i widoczne waypointy trafiają do istniejącego `Enemy.moveGoal`.
-Punkty są na gruncie, a wyższe trasy są skrótami dla gracza. CombatRing zachowuje
+W porcie punkty są na gruncie, a wyższe trasy są skrótami dla gracza.
+Estakada i targ oznaczają powierzchnie `walkable`; warstwy wysokości i rampy
+rozszerzają tę samą nawigację, bez zmian zachowań walki. Walidacja sprawdza
+dojście do punktu na jego wysokości, również ze wszystkich spawnów.
+CombatRing zachowuje
 lokalne unikanie przeszkód; zwykłe runy nie korzystają z nowej nawigacji.
 
 ## Dodanie trybu

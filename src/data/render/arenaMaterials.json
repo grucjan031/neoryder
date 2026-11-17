@@ -1,0 +1,47 @@
+{
+  "overpass_concrete": {
+    "texture": "overpass_concrete",
+    "themeTint": "concrete",
+    "scale": 0.25,
+    "roughness": 0.8,
+    "metalness": 0,
+    "bump": 0.6,
+    "wetness": 0.4
+  },
+  "smog_soot_wall": {
+    "texture": "smog_soot_wall",
+    "themeTint": "concrete",
+    "scale": 0.25,
+    "roughness": 0.9,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.2
+  },
+  "roof_tar": {
+    "texture": "roof_tar",
+    "tint": "#303847",
+    "scale": 0.25,
+    "roughness": 0.85,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.65
+  },
+  "roof_hvac_metal": {
+    "texture": "roof_hvac_metal",
+    "tint": "#465266",
+    "scale": 0.5,
+    "roughness": 0.55,
+    "metalness": 0.6,
+    "bump": 0.5,
+    "wetness": 0.5
+  },
+  "market_tarp": {
+    "texture": "market_tarp",
+    "tint": "#4c4664",
+    "scale": 0.5,
+    "roughness": 0.9,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.2
+  }
+}

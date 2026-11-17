@@ -55,6 +55,7 @@ export const roomBlockSchema = z.object({
   model: z.string().min(1).optional(),
   rotation: vec3Schema.optional(),
   instance: z.boolean().optional(),
+  walkable: z.boolean().optional(),
   visible: z.boolean().optional(),
 });
 
@@ -81,6 +82,8 @@ export const arenaSchema = z.object({
   points: capturePointsSchema,
   batchCellM: positive,
   navigationCellM: positive,
+  navigationMaxRiseM: positive.optional(),
+  navigationHeadroomM: positive.optional(),
   navigationClearanceM: positive,
 });
 

@@ -1923,3 +1923,18 @@ Materiały `container_navy/olive/ochre/graphite`, `crane_paint`,
 z miejskiego shadera i uniformu mokrości; parametry są w walidowanym
 `src/data/render/portMaterials.json`. Światła masztów są definicjami
 `lights[]` pokoju i konkurują o istniejącą pulę `CityLights`.
+
+## Wielopoziomowe areny Przejęcia
+
+`RoomDefinition.blocks[].walkable?: boolean` jawnie oznacza powierzchnie
+chodzone nowych aren. Płyty są poziome lub obrócone wyłącznie wokół Z
+(rampy w osi X). `arena.navigationMaxRiseM?` ogranicza różnicę wysokości
+sąsiednich komórek, `arena.navigationHeadroomM?` określa wolną wysokość.
+Oba parametry są wymagane przy blokach walkable. ArenaNavigation zachowuje
+naziemną ścieżkę portu; dla walkable buduje warstwy wysokości i łączy je
+wyłącznie przez ciągłe płyty/rampy. path/next zwracają Vec3 powierzchni,
+Enemy.moveGoal nadal steruje ruchem XZ, a wysokość rozwiązuje Rapier.
+Walidacja trybu sprawdza pełne koła punktów i drogę od gracza oraz spawnów
+do każdego punktu; nie rzutuje wysokich punktów na grunt. Zwykłe spawny
+posiłków pozostają na playerSpawn.y; dotychczasowa preferencja punktów wroga
+zachowuje wysokość danego punktu. Brak zmian kontraktu walki i zapisu.

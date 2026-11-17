@@ -4,6 +4,7 @@ import type { RoomDefinition } from './roomSchema';
 import { loadRoom } from './roomSchema';
 import { tuning } from '../core/tuning';
 import { capturePointsSchema } from './roomSchema';
+import { ArenaNavigation } from './arenaNavigation';
 import { Rng } from '../core/rng';
 
 export const modeIdSchema = z.enum(['conquest']);
@@ -85,7 +86,7 @@ export function freeModePosition(
     !room.blocks.some(
       (b) =>
         b.position.y - b.size.y / 2 <= point.y &&
-        b.position.y + b.size.y / 2 > point.y &&
+        b.position.y + b.size.y / 2 > point.y + 1e-6 &&
         Math.hypot(
           Math.max(0, Math.abs(point.x - b.position.x) - b.size.x / 2),
           Math.max(0, Math.abs(point.z - b.position.z) - b.size.z / 2),
@@ -141,6 +142,22 @@ export function validateMode(
       )
         throw new Error('Spawn areny znajduje się w punkcie przejęcia.');
     }
+  }
+  if (room.blocks.some((b) => b.walkable)) {
+    const navigation = new ArenaNavigation(room);
+    for (const start of [
+      room.playerSpawn,
+      ...(room.arena?.spawnPoints ?? room.spawnPoints).map((p) => ({
+        ...p,
+        y: room.playerSpawn.y,
+      })),
+    ])
+      for (const point of mode.points)
+        if (!navigation.path(start, point.position).length)
+          throw new Error(
+            `Nieosiągalna strefa ${point.id} z ${JSON.stringify(start)}.`,
+          );
+    return;
   }
   // Ta sama walidacja osiągalności co punkty spawnu pokoju.
   loadRoom({

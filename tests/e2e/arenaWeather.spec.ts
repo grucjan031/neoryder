@@ -1,6 +1,46 @@
 import { expect, test } from '@playwright/test';
 import { LOAD_TIMEOUT } from './helpers';
 
+for (const [arena, weather] of [
+  ['arenaOverpass', 'smog'],
+  ['arenaRooftops', 'drizzleWind'],
+] as const) {
+  test(`Przejęcie: ${arena}, profil ${weather}`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {
+      if (message.type() === 'error') errors.push(message.text());
+    });
+    await page.goto(`/?scene=conquest&arena=${arena}&debug=1`);
+    await expect
+      .poll(() => page.evaluate(() => window.__neoryder?.query('room')), {
+        timeout: LOAD_TIMEOUT,
+      })
+      .toBe(arena);
+    await expect
+      .poll(() => page.evaluate(() => window.__neoryder?.query('loading')), {
+        timeout: LOAD_TIMEOUT,
+      })
+      .toBe(false);
+    await expect
+      .poll(() => page.evaluate(() => window.__neoryder?.query('weather')))
+      .toBe(weather);
+    await page.evaluate(() => window.__neoryder?.command('god'));
+    const conquest = await page.evaluate(() =>
+      window.__neoryder?.query('conquest'),
+    );
+    expect(conquest).toMatchObject({
+      points: [{ id: 'A' }, { id: 'B' }, { id: 'C' }],
+    });
+    await expect
+      .poll(() => page.evaluate(() => window.__neoryder?.query('enemies')), {
+        timeout: LOAD_TIMEOUT,
+      })
+      .toBeGreaterThan(0);
+    expect(errors).toEqual([]);
+  });
+}
+
 test('Przejęcie startuje w porcie; pięć profili przełącza się bez błędów', async ({
   page,
 }) => {

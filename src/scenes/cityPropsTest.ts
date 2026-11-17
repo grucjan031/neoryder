@@ -94,7 +94,7 @@ const exhibit = (model: string, column: number, row: number): Slot => ({
   model,
   mount: 'exhibit',
   side: 1,
-  dist: 30 + column * 25,
+  dist: -60 + column * 25,
   z: -36 + row * 24,
   y: 0,
 });
@@ -242,8 +242,8 @@ const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
   { from: [-0.7, 1.75, -21], to: [0.2, 2.6, 14] },
   { from: [0, 17, 36], to: [0, 0, 0] },
   { from: [14, 13, 32], to: [31, 3, -4] },
-  { from: [58, 60, 142], to: [30, 0, 25] },
-  { from: [83, 60, 150], to: [55, 0, 35] },
+  { from: [-88, 60, 142], to: [-60, 0, 25] },
+  { from: [-63, 60, 150], to: [-35, 0, 35] },
 ];
 const DEFAULT_YAW_DEG = 35;
 const FILL_RATIO = 0.65;
@@ -285,7 +285,7 @@ export class CityPropsTest implements Scene {
     this.root.name = this.id;
     three.add(this.root);
     this.root.add(this.lights);
-    this.box([52, 0.3, 166], [42.5, -0.15, 36], 'asphalt');
+    this.box([52, 0.3, 166], [-47.5, -0.15, 36], 'asphalt');
     const length = SPACING * COUNT + 4;
     this.box([6, 0.3, length], [0, -0.15, 0], 'asphalt');
     // Plac portu za prawą pierzeją: mokry asfalt do krawędzi nabrzeża i ciemna woda za nią.

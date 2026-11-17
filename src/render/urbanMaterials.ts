@@ -8,6 +8,7 @@ import {
 import type { WebGLProgramParametersWithUniforms } from 'three';
 import { z } from 'zod';
 import portData from '../data/render/portMaterials.json';
+import arenaData from '../data/render/arenaMaterials.json';
 import { tuning } from '../core/tuning';
 import { assetTexture, surfaceTexture } from './surfaceTextures';
 import type { SurfaceTexture } from './surfaceTextures';
@@ -24,9 +25,17 @@ export const portKinds = [
   'steel_grating',
 ] as const;
 
+export const arenaKinds = [
+  'overpass_concrete',
+  'smog_soot_wall',
+  'roof_tar',
+  'roof_hvac_metal',
+  'market_tarp',
+] as const;
+
 const portLooks = z
   .record(
-    z.enum(portKinds),
+    z.enum([...portKinds, ...arenaKinds]),
     z.object({
       texture: z.enum([
         'container_corrugated_navy',
@@ -38,6 +47,7 @@ const portLooks = z
         'quay_lines',
         'rubber_fender',
         'steel_grating',
+        ...arenaKinds,
       ]),
       tint: z
         .string()
@@ -51,10 +61,11 @@ const portLooks = z
       wetness: z.number().min(0).max(1),
     }),
   )
-  .parse(portData);
+  .parse({ ...portData, ...arenaData });
 
 export const urbanKinds = [
   ...portKinds,
+  ...arenaKinds,
   'concrete',
   'asphalt',
   'metal',
@@ -234,12 +245,12 @@ const glsl = (value: number) => value.toFixed(4);
 
 export function urbanColor(kind: UrbanKind): string {
   if (kind in portLooks) {
-    const config = portLooks[kind as (typeof portKinds)[number]];
+    const config = portLooks[kind as keyof typeof portLooks];
     if (config.themeTint) return tuning.render[config.themeTint];
     if (config.tint && tuning.render.citySurfaceDetail > 0) return config.tint;
     return '#ffffff';
   }
-  return tuning.render[kind as Exclude<UrbanKind, (typeof portKinds)[number]>];
+  return tuning.render[kind as Exclude<UrbanKind, keyof typeof portLooks>];
 }
 
 export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {

@@ -1,5 +1,6 @@
 import type { Vec3 } from '../core/math';
 import type { RoomDefinition } from './roomSchema';
+import { ArenaSurfaceNavigation } from './arenaSurfaceNavigation';
 import { freeModePosition } from './modeSchema';
 
 /** Pola odległości po gruncie; bez fizyki, renderu i losowości. */
@@ -7,10 +8,15 @@ export class ArenaNavigation {
   private readonly cells = new Map<string, Vec3>();
   private readonly fields = new Map<string, Map<string, number>>();
   private readonly cell: number;
+  private readonly surface?: ArenaSurfaceNavigation;
   constructor(private readonly room: RoomDefinition) {
     const config = room.arena;
     if (!config) throw new Error('Nawigacja wymaga danych areny.');
     this.cell = config.navigationCellM;
+    if (room.blocks.some((b) => b.walkable)) {
+      this.surface = new ArenaSurfaceNavigation(room);
+      return;
+    }
     const floors = room.blocks.filter(
       (b) => !b.rotation && b.position.y + b.size.y / 2 === room.playerSpawn.y,
     );
@@ -76,6 +82,7 @@ export class ArenaNavigation {
   }
 
   path(start: Vec3, goal: Vec3): Vec3[] {
+    if (this.surface) return this.surface.path(start, goal);
     const field = this.field(goal);
     let key = this.key(start);
     // Pozycje tuż przy ścianie mogą wypaść w odrzuconej komórce: najbliższa sąsiednia.
@@ -107,6 +114,7 @@ export class ArenaNavigation {
   }
 
   next(start: Vec3, goal: Vec3): Vec3 {
+    if (this.surface) return this.surface.next(start, goal);
     if (start.x === goal.x && start.z === goal.z) return { ...goal };
     const path = this.path(start, goal);
     let next = path[0] ?? start;

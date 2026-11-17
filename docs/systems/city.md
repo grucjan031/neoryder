@@ -328,6 +328,12 @@ Parametry: `prop=<nazwa>` (np. `city_overpass_deck`, kamera 3/4 kadrowana wedłu
 
 Wymiary, materiały, budżety i punkty montażu: tabela zestawu aren Przejęcia w `docs/assets.md`. Modele nie dodają aren, pogody ani kolizji; galeria służy do oceny sylwetki, skali i materiałów. Płaskie płyty estakady i kładki oraz komplet 37 plików sprawdza `tests/unit/cityModels.test.ts`.
 
+Plac estakady/targu przeniesiono na zachód: x −73,5…−21,5 m,
+z −47…119 m, środek (−47,5; 0; 36). Kolumny modeli stoją przy x = −60
+i −35. Poprzedni plac x 16,5…68,5 nachodził na port x 9…44,4, z ±23.
+Po przesunięciu obwiednie nie przecinają się. `view=3` nadal pokazuje port,
+`view=4` estakadę, `view=5` targ; kadry 4/5 podążają za nowym położeniem.
+Parametr `prop` nadal kadruje rzeczywiste AABB modelu.
 
 Za prawą pierzeją (x 9–44,4 m, z ±23 m, wewnątrz pierwszego pierścienia panoramy) stoi plac portu ze wszystkimi 15 modelami `port_*.glb` (`PORT_PROP_MODELS`): suwnica nad trzema rzędami kontenerów (stosy do 3 warstw), kładka na dwóch stosach 20 ft, wózek podnoszący kontener, maszt oświetleniowy, 11 modułów krawędzi nabrzeża (wierzch na poziomie placu, ciemna woda za nimi) i pachołki. Dodatkowe światła placu (ciepła biel masztu i suwnicy, bursztyn, błękit, fiolet) dołączają do puli `CityLights`. `prop=port_<nazwa>` kadruje pierwsze wystąpienie modelu (np. `prop=port_reach_stacker`, `prop=port_lashing_platform`). Galeria używa wspólnego loadera i `applyStyle`, tak samo jak gra; zastępstwo `PORT_PREVIEW` zostało usunięte. Plac używa `quay_lines`.
 
