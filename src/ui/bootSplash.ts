@@ -42,7 +42,7 @@ export function readSplashAct(
 
 /**
  * Nakładka startowa z `index.html` (`#boot-splash`) pokazuje się, zanim ruszy JS. Tu dokładamy
- * splashart wybrany deterministycznie z parametrów sceny; w `fx=lite` zostaje samo tło.
+ * losowy splashart z odblokowanych aktów; w `fx=lite` zostaje samo tło.
  * Do `dismiss()` nakładka przechwytuje zdarzenia, a `#app` jest `inert`; po zdjęciu nic nie blokuje.
  */
 export function showBootSplash(
@@ -59,14 +59,10 @@ export function showBootSplash(
   let tip: ReturnType<typeof createLoadingTip> | undefined;
   let done = false;
   const key = `${sceneId ?? 'menu'}:${params.get('seed') ?? ''}`;
-  const hint = {
-    scene: sceneId ?? 'menu',
-    theme: sceneId === 'hub' ? 'hideout' : undefined,
-  };
   const mountArt = (act: SplashAct): void => {
     if (done) return;
     try {
-      const entry = pickSplash(key, hint, act);
+      const entry = pickSplash(act);
       if (!entry) throw new Error('Brak splasharów.');
       const image = document.createElement('img');
       image.className = 'boot-splash__img';
@@ -98,9 +94,7 @@ export function showBootSplash(
     }
   };
   if (!lite) {
-    // Gdy akt nie zmienia wyboru (np. menu ma tylko obrazy aktu 1), obraz od razu, bez czekania.
     if (typeof maxAct === 'number') mountArt(maxAct);
-    else if (pickSplash(key, hint, 1) === pickSplash(key, hint, 4)) mountArt(1);
     else void maxAct.then(mountArt, () => mountArt(1));
   }
   return {
