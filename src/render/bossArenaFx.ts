@@ -60,7 +60,7 @@ const vertex = /* glsl */ `
 `;
 
 const head = /* glsl */ `
-  uniform vec3 uColor, uHot, uShade;
+  uniform vec3 uColor, uHot, uShade, uEdge;
   uniform float uOpacity, uTime, uProgress, uMode, uSpread, uRays, uSize;
   uniform float uNearM, uFarM, uNearFill, uNearEdge;
   varying vec2 vUv;
@@ -159,12 +159,15 @@ const shadeFragment = /* glsl */ `
     } else if (uMode < 3.5) {
       amount = 0.4 * (1.0 - r * 0.5) * rim;
     } else if (uMode < 4.5) {
-      amount = pow(max(0.0, 1.0 - r), 1.4) * 0.7;
+      // Pierścień poświaty (r ≈ 0,57) też przyciemniamy: sam rozjaśniał fiolet do różu.
+      float ring = smoothstep(0.52, 0.56, r) * (1.0 - smoothstep(0.58, 0.62, r));
+      amount = max(pow(max(0.0, 1.0 - r), 1.4) * 0.7, ring * 0.95);
     } else {
-      // Cień pod falą (uMode 5): ten sam pierścień co w waveFragment, mocniejszy ślad.
+      // Cień pod falą (uMode 5): ten sam pierścień co w waveFragment.
       float front = smoothstep(1.0 - uProgress, 0.97, r) * (1.0 - smoothstep(0.97, 1.0, r));
       float edge = smoothstep(0.93, 0.975, r) * (1.0 - smoothstep(0.975, 1.0, r));
-      amount = front * 0.9 + edge;
+      // Cień pokrywa cały ślad fali z zapasem (×2,5 jej krycia), żeby fiolet nie prześwitywał.
+      amount = (front * 0.45 + edge) * 2.5;
     }
     // Fale (uMode 5) nie gasną z bliska: samą falę też rysujemy bez tłumienia.
     float near = uMode > 4.5 ? 1.0 : mix(1.0, uNearFill, nearCamera());
@@ -183,7 +186,7 @@ const waveFragment = /* glsl */ `
     if (r > 1.0) discard;
     float front = smoothstep(1.0 - uProgress, 0.97, r) * (1.0 - smoothstep(0.97, 1.0, r));
     float edge = smoothstep(0.93, 0.975, r) * (1.0 - smoothstep(0.975, 1.0, r));
-    vec3 color = mix(uColor, uHot, edge * 0.8);
+    vec3 color = mix(uColor, uEdge, clamp(0.4 + edge * 0.6, 0.0, 1.0));
     gl_FragColor = vec4(color * 1.3, clamp((front * 0.45 + edge) * uOpacity, 0.0, 1.0));
   }
 `;
@@ -276,6 +279,7 @@ export class BossArenaFx {
   private readonly color: Color;
   private readonly hot: Color;
   private readonly shade: Color;
+  private readonly waveEdge: Color;
   private readonly sparkRed: number;
   private readonly sparkHot: number;
   private readonly plane = new PlaneGeometry(2, 2).rotateX(-Math.PI / 2);
@@ -322,6 +326,7 @@ export class BossArenaFx {
     this.color = new Color(t.bossColor);
     this.hot = new Color(t.bossHotColor);
     this.shade = new Color(t.bossShadeColor);
+    this.waveEdge = new Color(t.bossWaveEdgeColor);
     this.sparkRed = this.color.getHex();
     this.sparkHot = this.hot.getHex();
     this.glowShade = this.mesh(this.plane, shadeFragment, MultiplyBlending);
@@ -435,6 +440,7 @@ export class BossArenaFx {
         uColor: { value: this.color },
         uHot: { value: this.hot },
         uShade: { value: this.shade },
+        uEdge: { value: this.waveEdge },
         uNearM: { value: t.bossTelegraphNearM },
         uFarM: { value: t.bossTelegraphFarM },
         uNearFill: { value: t.bossTelegraphNearFill },

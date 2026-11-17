@@ -617,6 +617,11 @@ export const tuning = {
     bossHotColor: '#ffd2c4',
     bossShadeColor: '#ff3a14',
     /**
+     * Krawędź pierścieni fal (zmiana fazy, rozpad): nasycony pomarańcz zamiast bladej `bossHotColor`,
+     * bo dodana do fioletowej podłogi blada barwa dawała róż zbliżony do magenty Rezonansu.
+     */
+    bossWaveEdgeColor: '#ff8a3c',
+    /**
      * Telegraf z bliska: od `NearM` do `FarM` (m od kamery) wypełnienie gaśnie do `NearFill`,
      * a krawędzie do `NearEdge`, więc pole pod nogami gracza nie zalewa ekranu.
      */
@@ -664,7 +669,7 @@ export const tuning = {
        * Przyciemnienie podłogi pod pierścieniem fali (mnożenie barwą `bossShadeColor`, 0–1):
        * na fioletowej podłodze samo dodawanie czerwieni dawało róż bliski magencie Rezonansu.
        */
-      waveShadeStrength: 0.85,
+      waveShadeStrength: 1,
     },
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
