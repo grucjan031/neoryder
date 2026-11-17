@@ -1,4 +1,5 @@
-import { FrontSide, Mesh, MeshBasicMaterial } from 'three';
+import { AdditiveBlending, FrontSide, Mesh, MeshBasicMaterial } from 'three';
+import type { PlaneGeometry } from 'three';
 import { afterEach, expect, it, vi } from 'vitest';
 import hideoutData from '../../src/data/hub/hideout.json';
 import { tuning } from '../../src/core/tuning';
@@ -7,6 +8,56 @@ import { loadHubLayout } from '../../src/world/hubSchema';
 import { wallDecalFitsBlock } from '../../src/world/dressingSchema';
 
 afterEach(() => vi.unstubAllGlobals());
+
+it('napisy układu i stacji rysują tekst na płótnie i zwalniają zasoby', () => {
+  const context = {
+    clearRect: vi.fn(),
+    strokeRect: vi.fn(),
+    measureText: () => ({ width: 200 }),
+    fillText: vi.fn(),
+    fillStyle: '',
+  };
+  vi.stubGlobal('document', {
+    createElement: () => ({ getContext: () => context }),
+  });
+  const layout = loadHubLayout(hideoutData);
+  const station = layout.stations.find(({ sign }) => sign)!;
+  const text = layout.neonTexts![0]!;
+  const decor = new HubDecor([], [station], [], tuning.hub, [text]);
+  expect(context.fillText.mock.calls.map(([value]) => value)).toEqual([
+    station.label,
+    text.text,
+  ]);
+  expect(context.fillStyle).toBe(text.color);
+  const mesh = decor.root.getObjectByName(`neonText:${text.text}`) as Mesh<
+    PlaneGeometry,
+    MeshBasicMaterial
+  >;
+  expect(mesh).toBeInstanceOf(Mesh);
+  expect(mesh.position.toArray()).toEqual([
+    text.position.x,
+    text.position.y,
+    text.position.z,
+  ]);
+  expect(mesh.rotation.y).toBe(text.yaw);
+  expect(mesh.geometry.parameters).toMatchObject({
+    width: text.size.w,
+    height: text.size.h,
+  });
+  expect(mesh.material.blending).toBe(AdditiveBlending);
+  expect(mesh.material.userData.bloom).toBe(true);
+  expect(mesh.material.depthTest).toBe(true);
+  expect(mesh.material.depthWrite).toBe(false);
+  expect(mesh.material.map).not.toBeNull();
+  const disposeGeometry = vi.spyOn(mesh.geometry, 'dispose');
+  const disposeMaterial = vi.spyOn(mesh.material, 'dispose');
+  const disposeTexture = vi.spyOn(mesh.material.map!, 'dispose');
+  decor.dispose();
+  expect(disposeGeometry).toHaveBeenCalledOnce();
+  expect(disposeMaterial).toHaveBeenCalledOnce();
+  expect(disposeTexture).toHaveBeenCalledOnce();
+  expect(decor.root.children).toHaveLength(0);
+});
 
 it('okładziny kryjówki są jednostronne i zwrócone od ściany do wnętrza', () => {
   const panels = loadHubLayout(hideoutData).panels!.filter(

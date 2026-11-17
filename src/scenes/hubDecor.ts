@@ -19,6 +19,7 @@ import { batchStaticGeometry } from '../render/staticBatch';
 import { assetTexture } from '../render/surfaceTextures';
 import type {
   HubFireDef,
+  HubNeonTextDef,
   HubPanelDef,
   HubStationDef,
 } from '../world/hubSchema';
@@ -72,6 +73,7 @@ export class HubDecor {
     stations: readonly HubStationDef[],
     fires: readonly HubFireDef[] = [],
     private readonly hubTuning: Tuning['hub'] = tuning.hub,
+    neonTexts: readonly HubNeonTextDef[] = [],
   ) {
     // Nieruchome okładziny (kafle, plakaty, ekrany) scalane po materiale; wylot tunelu
     // (własny `bloomMaterial`), napisy i płomienie zostają osobnymi siatkami.
@@ -91,7 +93,14 @@ export class HubDecor {
     this.geometries.push(...merged);
     this.root.add(...statics.children);
     for (const station of stations)
-      if (station.sign) this.root.add(this.label(station));
+      if (station.sign)
+        this.root.add(
+          this.label(station.label, station.sign, `label:${station.id}`),
+        );
+    for (const neonText of neonTexts)
+      this.root.add(
+        this.label(neonText.text, neonText, `neonText:${neonText.text}`),
+      );
     fires.forEach((fire, index) => this.fire(fire, index));
   }
 
@@ -456,9 +465,12 @@ export class HubDecor {
     return texture;
   }
 
-  /** Neonowy napis z `label` stacji (tekst rysowany na płótnie, mieszanie addytywne). */
-  private label(station: HubStationDef): Mesh {
-    const sign = station.sign!;
+  /** Wspólne rysowanie neonowych etykiet stacji i napisów układu. */
+  private label(
+    text: string,
+    sign: NonNullable<HubStationDef['sign']>,
+    name: string,
+  ): Mesh {
     const { geometry, place } = this.plane({
       position: sign.position,
       size: sign.size,
@@ -475,7 +487,7 @@ export class HubDecor {
     this.materials.push(material);
     if (typeof document !== 'undefined') {
       const texture = this.labelTexture(
-        station.label,
+        text,
         sign.size,
         sign.color ?? DEFAULT_LABEL_COLOR,
       );
@@ -486,7 +498,7 @@ export class HubDecor {
     }
     const mesh = new Mesh(geometry, material);
     mesh.userData.noOutline = true;
-    mesh.name = `label:${station.id}`;
+    mesh.name = name;
     place(mesh);
     return mesh;
   }

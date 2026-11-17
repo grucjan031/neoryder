@@ -1,5 +1,11 @@
 # API między modułami (kontrakty)
 
+## Napisy oprawy kryjówki
+
+`HubLayout.neonTexts?` zawiera `{ text, position, size, yaw, color }[]` (kolory hex z palety Neon Noir).
+`HubDecor` przyjmuje tę tablicę jako piąty argument, po `hubTuning`; napisy są kosmetyczne,
+bez colliderów i korzystają z tego samego rysowania co etykiety stacji.
+
 ## Z16 — Wieżyczka, Dron-haker i zagłuszenie
 
 `PowerDeps.statuses?: StatusQuery` udostępnia statusy właściciela mocy.

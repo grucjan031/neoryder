@@ -15,6 +15,9 @@ styl: `docs/adr/0006-neon-noir.md`.
   - `stations: { id, position {x,z}, radius, focus {position {x,y,z}, size {x,y,z}}, label, sign? }[]` — `id` z `HUB_STATION_IDS`, środek strefy na podłodze;
     `focus` określa środek i dodatnie wymiary bryły obiektu (dla poligonu: wejścia tunelu);
     `sign` (pozycja, rozmiar, `yaw`, `color`) to neonowy napis z tekstu `label` (płótno, mieszanie addytywne);
+  - `neonTexts?: { text, position {x,y,z}, size {w,h}, yaw, color }[]` — niezależne napisy oprawy,
+    rysowane tak samo jak `sign` stacji; `color` to wyłącznie `#ffae1a`, `#6dff4a`, `#8a5cff`,
+    `#3d7bff` lub `#fff1d6`. Oznaczenia: NA ANTENIE, JADŁODAJNIA, KWATERY, RADIO ISKRA i TARG;
   - `blocks[].yaw` — obrót modelu `city_*` wokół środka (wielokrotność 90°; `size` jest już w osiach świata);
     `blocks[].material` ma poza materiałami pokoju także `wood`, `fabric`, `machine`, `paint`, `lacquer`, `plastic`,
     `rubber` i świecące paski `neon_amber|green|violet|blue|white` (bloom);
@@ -34,7 +37,7 @@ styl: `docs/adr/0006-neon-noir.md`.
   stacja każdego `id`, jeden NPC każdego `id`, strefy nie nachodzą na siebie (odległość środków ≥ suma promieni).
   Siedzący NPC (`animation` zaczyna się od `Sitting`) wymaga `seat` i siedziska pod miednicą, więc nie podlega walidacji bloków dla stojących postaci.
 - Motyw `hideout` (`src/data/themes/hideout.json`, na bazie `neonStreet`): bez deszczu i burzy, bez panoramy
-  miasta, ciemniejsza ciepła mgła, słabsze światło kluczowe. Układ definiuje 26 świateł (limit testu: 28), a
+  miasta, ciemniejsza ciepła mgła, słabsze światło kluczowe. Układ definiuje 28 świateł (limit testu: 28), a
   `CityLights` włącza naraz 8 najbliższych kamery (`tuning.city.maxLights`); reszta to emisja i poświata (neony,
   paski `neon_*`, płomień, lampy w wagonie).
 
@@ -64,8 +67,21 @@ Kanapę przy zachodniej ścianie peronu B obrócono i przestawiono pod ścianę 
 dodatkowy stołek przesunięto obok. Dwie niepalące się beczki stoją teraz na targu. Dzięki temu wejście
 z targu ma wolne dojście przez peron. Bar zachowuje neon i stołki; jego pełny collider `city_stall`
 zastępują lada, blat, słupki i daszek, pozostawiające miejsce za ladą. Pozycje stacji, ich `focus`,
-spawn i pięć istniejących NPC pozostają bez zmian. Ekrany i gotowe neony wystarczają do oznaczenia
-nowych wnętrz; format danych i kod oprawy nie wymagają rozszerzenia.
+spawn i pięć istniejących NPC pozostają bez zmian. Ekrany i gotowe neony uzupełniają oznaczenia
+nowych wnętrz z opcjonalnej tablicy `neonTexts`.
+
+Uzupełnienie oprawy skrzydła północnego: kwatery mają pięć miejsc do spania (dwie prycze piętrowe),
+zasłony, koce z przygaszonymi akcentami tkanin `tiles/tarp`, walizki, dywaniki, ubrania na wieszaku,
+pranie pod sufitem, książki, kubki, plakaty, puszkę farby i grzejnik. Dolna prycza mieszkańca zachowuje
+siedzisko na 0,48 m. Radio ma wysunięty regał odbiorników z ekranami i błękitnymi paskami, mikrofon
+na wysięgniku, słuchawki, mikser, wiązki kabli, wygłuszenie `tarp`/`rubber` i baner Iskry. W korytarzu
+dodano rury, przewody, lampy kratowe co 4 m (naprzemiennie bursztyn i ciepła biel), skrzynki, beczki,
+kratkę z parą, kapanie, graffiti, naklejki i malowane strzałki. Dwa nowe światła punktowe korytarza mają
+krótki zasięg; kwatery korzystają z dwóch istniejących. Mniejszy neon METRO przy treningu przesunięto
+wyżej i wzdłuż ściany, poza bezpośrednie tło worka; istniejące światło skierowano na jego widoczną stronę.
+Budżety scalania, stacje, `npcs`, rezerwacje i trasy pozostają bez zmian. Kontrola z kamer:
+`hub tp -4.5 -12 0 -15`, `hub tp 4.5 -12.5 0 -12`, `hub tp 4.5 -9.75 90 -8`,
+`hub tp 15.5 -1 -120 -10`.
 
 ### Rezerwacje miejsc dla przyszłych NPC
 
