@@ -56,21 +56,16 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
       { timeout: LOAD_TIMEOUT },
     )
     .toBe(true);
-  await page.locator('[data-mission="m03-list-przewozowy"]').click();
-  await expect(page.locator('[data-mission-interlude] h3')).toHaveText(
-    'Tymczasem w Iskrze',
-  );
   await expect(
-    page.locator('[data-mission-briefing] .mission-dialogue p').first(),
-  ).toHaveText(
-    'Szron: Po masztach Kurogane zrobiło obławę na kurierów z implantami. Trzymali zatrzymanych w kontenerach na bocznicy.',
+    page.locator('[data-mission="m03-list-przewozowy"]'),
+  ).toBeDisabled();
+  await expect(
+    page.locator('[data-mission="m03-list-przewozowy"]'),
+  ).toContainText('Wkrótce');
+  // D6: stary wariant pozostaje do sprawdzenia przez bezpośredni URL.
+  await page.goto(
+    '/?scene=run&mission=m03-list-przewozowy&loadout=meta&debug=1&fx=lite',
   );
-  await expect(page.locator('[data-mission-briefing]')).toContainText(
-    'Zmiana na nabrzeżu przechodzi o północy',
-  );
-  await page
-    .getByRole('button', { name: 'Rozpocznij misję', exact: true })
-    .click();
   // Nieśmiertelność na cały run, zanim wejdziemy do pierwszego pokoju (fx=lite na wolnym CI).
   await expect
     .poll(() => page.evaluate(() => window.__neoryder?.query('screen')), {
@@ -138,7 +133,7 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
   await page.evaluate(() => window.__neoryder?.command('hub open missions'));
   await expect(
     page.locator('[data-mission="m03-list-przewozowy"]'),
-  ).toContainText('Ukończona');
+  ).toContainText('Wkrótce');
   await page.reload();
   await expect
     .poll(() => query(page, 'meta'), { timeout: LOAD_TIMEOUT })

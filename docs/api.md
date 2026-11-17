@@ -413,7 +413,7 @@ Obiekt jest mutowalny: kod czyta wartość przy użyciu (`tuning.time.hitstopLig
 ## Zapis — `src/core/save.ts`
 
 ```ts
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 5;
 
 export interface MetaSave { saveVersion: number; createdAt: number; updatedAt: number; meta: MetaState }
 export interface RunSave  { saveVersion: number; seed: string; startedAt: number; run: RunState }
@@ -1530,8 +1530,10 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `userData.wetness` materiału oznacza odbicia
   (asphalt 1, paving 0.45, concrete 0.22, plaster 0.1), `userData.bloomMaterial` opcjonalnie dostarcza
   materiał samej emisji dla maski bloomu i odbić (okna fasad).
-- `SceneAtmosphere(three, themeId, seed, floorY)` nakłada motyw, ustawia
+- `SceneAtmosphere(three, themeId, seed, floorY, panoramaExclusion?)` nakłada motyw, ustawia
   `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.
+  Opcjonalny `panoramaExclusion` (`Box3` w przestrzeni świata) wyklucza bryły
+  panoramy przecinające obszar poziomu liniowego.
   `sync(dt)` odświeża oprawę; wyłącznie render, bez zmian symulacji.
 - Pola `signs/lights/decals/ambientFx` pozostają danymi dla integratora.
 
@@ -1991,3 +1993,40 @@ Walidacja trybu sprawdza pełne koła punktów i drogę od gracza oraz spawnów
 do każdego punktu; nie rzutuje wysokich punktów na grunt. Zwykłe spawny
 posiłków pozostają na playerSpawn.y; dotychczasowa preferencja punktów wroga
 zachowuje wysokość danego punktu. Brak zmian kontraktu walki i zapisu.
+
+# Misja liniowa M01 (kontrakt D1–D8)
+
+`MissionDefinition.level?: string` wybiera scenę `mission`; brak pola zachowuje misję-run.
+`LevelDefinition` (`world/levelSchema.ts`) reużywa pola schematu pokoju i dodaje
+`objectiveOrder`, `objectivePositions`, `encounters`, `checkpoints`, `gates`, `sections`.
+Zależność ma postać `{ kind: 'objective' | 'encounter', id }`; strefa to box (pełne
+`size`) albo sphere (`radiusM`). `loadLevel(data, mission, waves)` waliduje referencje.
+`LevelRuntime` jest czystą symulacją wyzwalaczy i bram; nie zna renderu ani RunState.
+
+`RoomCombatState` to minimalny stan wyposażenia i zasobów bez mapy runu.
+`RoomSceneOptions.linearMission` przekazuje definicję, kolejność i zapisane stany
+celów; `reinforce(wave, key)` deleguje posiłki do hosta. `manualEncounter` wyłącza
+automatyczne kończenie pokoju tylko przy `linearMission`.
+`objectiveModel()`, `setLevelGate(id, block, open)`, `teleportPlayer(position, yawDeg)`,
+`resetLevelCombat(position, yawDeg)` i `removeEncounterEnemies(ids)` są API hosta
+misji; spawn przez istniejące `spawnEncounterEnemy` respektuje wspólny limit.
+`staticCellSize` w opcjach włącza scalanie statyki w komórkach.
+`HudOptions.deathScreen=false` pozwala hostowi misji odradzać bez nakładki śmierci;
+`showWaves=false` ukrywa etykiety i banery fal, gdy HUD pokazuje bieżący cel.
+Scena nie zwalnia pointer lock przy automatycznym odrodzeniu; rzeczywista utrata fokusu nadal pauzuje grę w core/input.
+
+SaveStore v6 dodaje osobny rekord `mission`: `loadMission`, `saveMission`,
+`clearMission` (opcjonalne w portach starszych testów; wymagane przez scenę mission).
+Migracja meta/run 5→6 jest tożsamościowa: nowy rekord nie istniał w v5 (v5 = naszywki Iskry).
+`MissionSave` zawiera id próby, misji i poziomu, seed, checkpoint, stany celów,
+spotkania zakończone przed checkpointem, czas, zamrożony ekwipunek i flagę ukończenia.
+Zapisy są szeregowane. Cel done jest zapisywany od razu; śmierć zachowuje cele done,
+zeruje częściowe interakcje i spotkania po checkpoincie. Ukończony rekord pozostaje
+do udanego rozliczenia meta, potem jest usuwany. `MetaManager.applyRun` dla misji z
+`level` nalicza wyłącznie firstClear, chroniony przez appliedRunIds i campaign.completed.
+
+Scena: `?scene=mission&mission=m01-maszty[&continue=1]`. Debug: `mission start <id>`,
+`checkpoint <id>`, `objective done <id>`, `encounter clear`; `query('mission')`
+zwraca cele, checkpoint, aktywne/zakończone spotkania, otwarte bramy i stan hosta.
+Tablica udostępnia misje z poziomem; pozostałe pokazuje jako „Wkrótce”. Opcjonalny
+`HubPanelContext.missionSave` udostępnia checkpoint dla przycisku kontynuacji.

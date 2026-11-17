@@ -1,3 +1,4 @@
+import type { MissionSave } from '../../core/save';
 import type { MetaManager } from '../../progression/meta';
 
 /**
@@ -8,6 +9,7 @@ import type { MetaManager } from '../../progression/meta';
  */
 export interface HubPanelContext {
   readonly manager: MetaManager;
+  readonly missionSave?: MissionSave | null;
   /** Zapisuje meta (`saveMetaManager`); rozwiązuje się po zapisie. */
   save(): Promise<void>;
   /** Przejście przez URL (zachowuje `debug=1` po stronie hosta). */

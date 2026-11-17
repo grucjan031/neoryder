@@ -593,6 +593,10 @@ ekranu liczone jest zaburzenie normalnej (bez UV), skalowane przez
 `tuning.render.cityBumpStrength` × `bump` rodzaju. Gaśnie z odległością, gdy piksel
 obejmuje kilka tekseli (`smoothstep(1, 4, texeli na piksel)`), co ogranicza
 migotanie. Wartość 0 daje powierzchnie płaskie (motyw `white`); neonStreet używa 1.
+Strażnik w `cityPerturbNormal`: gdy pochodne ekranowe pozycji są zerowe albo NaN
+(zdarzało się na podłodze kilka metrów przed kamerą przy patrzeniu wzdłuż ulicy) lub
+wektor przed `normalize` jest zerowy, shader zwraca niezaburzoną normalną — bez tego
+NaN dawał czarny pas na dole kadru (test `urbanBumpGuard.test.ts`).
 Roughness jest dodatkowo modulowany jasnością tekstury. Całość wyłącza
 `citySurfaceDetail` = 0.
 

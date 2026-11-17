@@ -15,6 +15,7 @@ import { MainMenu } from './ui/mainMenu';
 import { PauseMenu } from './ui/pauseMenu';
 import { SettingsScreen } from './ui/settingsScreen';
 import type { RunState } from './core/runTypes';
+import { missionDefinitions } from './world/missions';
 import { AudioSystem } from './audio/audioSystem';
 import { loadSfx } from './audio/sfxSchema';
 import sfxData from './data/audio/sfx.json';
@@ -43,6 +44,15 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(location.search);
   configureFx(params);
   const requested = params.get('scene');
+  if (
+    requested === 'run' &&
+    params.get('continue') !== '1' &&
+    missionDefinitions.get(params.get('mission') ?? '')?.level
+  ) {
+    params.set('scene', 'mission');
+    location.replace(`?${params}`);
+    return;
+  }
   // Odczyt meta-zapisu nie wstrzymuje startu; w fx=lite nakładka nie ma obrazu, więc go pomijamy.
   bootSplash = showBootSplash(
     params,
@@ -188,11 +198,13 @@ async function main(): Promise<void> {
   app.append(hint);
   const ownsInterface = (): boolean =>
     document.querySelector(
-      '.run-screen:not([hidden]), .hub-screen:not([hidden]), .build-select:not([hidden]), .hud__death:not([hidden])',
+      '.run-screen:not([hidden]), .hub-screen:not([hidden]), .build-select:not([hidden]), .hud__death:not([hidden]), [data-mission-summary][open]',
     ) !== null;
   const canReturnToHub = (): boolean =>
-    scene.id === 'run' &&
-    (scene.query?.('runState') as RunState | undefined)?.loadoutId === 'custom';
+    scene.id === 'mission' ||
+    (scene.id === 'run' &&
+      (scene.query?.('runState') as RunState | undefined)?.loadoutId ===
+        'custom');
   const settingsScreen = new SettingsScreen(
     settings,
     () => {
@@ -298,6 +310,21 @@ async function main(): Promise<void> {
       ),
     ),
   ];
+  if (scene.id !== 'run' && scene.id !== 'mission')
+    builtinOff.push(
+      commands.register('mission start', 'mission start m01-maszty', (args) => {
+        if (args.length !== 1 || !missionDefinitions.get(args[0] ?? '')?.level)
+          return 'Nieznana misja liniowa.';
+        const target = new URLSearchParams({
+          scene: 'mission',
+          mission: args[0]!,
+          debug: '1',
+        });
+        preserveLiteFx(params, target);
+        location.assign(`/?${target}`);
+        return 'Start misji.';
+      }),
+    );
   const command = (line: string): string => commands.execute(line);
   if (profiler) {
     builtinOff.push(

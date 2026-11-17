@@ -1,6 +1,11 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  level: {
+    maxAlive: 12,
+    staticCellSizeM: 24,
+    respawnDelayS: 1.2,
+  },
   modes: {
     conquest: {
       minPointDistanceM: 12,

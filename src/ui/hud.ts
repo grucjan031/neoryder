@@ -10,6 +10,8 @@ import { synergyDefinitions } from '../progression/synergies';
 type HudLoadout = Pick<Loadout, 'weapons' | 'powers'>;
 
 interface HudOptions {
+  deathScreen?: boolean;
+  showWaves?: boolean;
   playerId: EntityId;
   root?: HTMLElement;
   onRetry?: () => void;
@@ -489,6 +491,7 @@ export class Hud {
         if (this.remaining > 0) this.setRemaining(this.remaining - 1);
       }),
       bus.on('wave_started', ({ wave: number, count }) => {
+        if (opts.showWaves === false) return;
         this.wave.hidden = false;
         const total = opts.totalWaves;
         setText(
@@ -499,6 +502,7 @@ export class Hud {
         this.showBanner(`${text.wave} ${number}`, false);
       }),
       bus.on('wave_cleared', () => {
+        if (opts.showWaves === false) return;
         this.setRemaining(0);
         this.showBanner(text.waveCleared, true);
       }),
@@ -518,7 +522,12 @@ export class Hud {
       }),
       bus.on('player_died', ({ id }) => {
         if (id === opts.playerId) this.setJammed(false);
-        if (id !== opts.playerId || !this.death.hidden) return;
+        if (
+          id !== opts.playerId ||
+          opts.deathScreen === false ||
+          !this.death.hidden
+        )
+          return;
         this.previousFocus =
           document.activeElement instanceof HTMLElement
             ? document.activeElement

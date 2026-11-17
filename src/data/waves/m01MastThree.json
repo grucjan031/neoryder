@@ -1,0 +1,32 @@
+{
+  "id": "m01MastThree",
+  "firstBreakS": 0,
+  "breakS": 0,
+  "maxAlive": 8,
+  "minSpawnDistance": 6,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 4
+        },
+        {
+          "enemy": "gunner",
+          "count": 3
+        },
+        {
+          "enemy": "turret",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

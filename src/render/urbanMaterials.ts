@@ -199,13 +199,18 @@ export function worldPositionShader(
     }
     // Relief bez UV (Mikkelsen, jak bumpmap three.js): wysokość różniczkowana w przestrzeni ekranu.
     vec3 cityPerturbNormal(vec3 surfPos, vec3 surfNorm, vec2 dHdxy, float faceDir) {
-      vec3 sigmaX = normalize(dFdx(surfPos));
-      vec3 sigmaY = normalize(dFdy(surfPos));
+      vec3 dPosX = dFdx(surfPos);
+      vec3 dPosY = dFdy(surfPos);
+      // Zerowe pochodne (trójkąt rozciągnięty przy kamerze) dałyby normalize(0) = NaN i czarny piksel.
+      if (!(dot(dPosX, dPosX) > 1e-16 && dot(dPosY, dPosY) > 1e-16)) return surfNorm;
+      vec3 sigmaX = normalize(dPosX);
+      vec3 sigmaY = normalize(dPosY);
       vec3 r1 = cross(sigmaY, surfNorm);
       vec3 r2 = cross(surfNorm, sigmaX);
       float det = dot(sigmaX, r1) * faceDir;
       vec3 grad = sign(det) * (dHdxy.x * r1 + dHdxy.y * r2);
-      return normalize(abs(det) * surfNorm - grad);
+      vec3 bumped = abs(det) * surfNorm - grad;
+      return dot(bumped, bumped) > 1e-12 ? normalize(bumped) : surfNorm;
     }`,
   );
   Object.assign(shader.uniforms, urbanUniforms);

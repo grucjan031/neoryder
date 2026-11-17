@@ -10,7 +10,10 @@ import { missionDefinitions } from '../world/missions';
 import { MissionView } from '../render/missionView';
 import { MissionHud } from '../ui/missionUi';
 import { loadWaves } from '../world/waves';
-import type { MissionObjective } from '../world/missionSchema';
+import type {
+  MissionDefinition,
+  MissionObjective,
+} from '../world/missionSchema';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { HazardSystem } from '../world/hazards';
 import type { HazardTarget } from '../world/hazards';
@@ -122,7 +125,30 @@ const playerDefaults = z
   })
   .parse(playerData);
 
+export type RoomCombatState = Pick<
+  RunState,
+  | 'hp'
+  | 'energy'
+  | 'loadout'
+  | 'talents'
+  | 'threatLevel'
+  | 'credits'
+  | 'implants'
+  | 'modeId'
+  | 'missionId'
+  | 'objectives'
+  | 'objectiveProgress'
+>;
+
 export interface RoomSceneOptions {
+  node?: MapNode;
+  staticCellSize?: number;
+  linearMission?: {
+    definition: MissionDefinition;
+    order: readonly string[];
+    objectives: Record<string, 'pending' | 'active' | 'done'>;
+  };
+  reinforce?: (wave: string, key: string) => void;
   missionSignal?: (trigger: string) => void;
   /** Host sam rozpoczyna kolejne ćwiczenia; standardowy pokój nadal startuje fale. */
   manualEncounter?: boolean;
@@ -255,6 +281,10 @@ export class RoomScene implements Scene {
   private readonly initialImplantIds: string[];
   private implantSystem!: ImplantSystem;
   private readonly loadModels: boolean;
+  private readonly levelGates = new Map<
+    string,
+    { mesh: Mesh; collider: Collider }
+  >();
   private readonly doors = new Map<
     string,
     { role: 'entry' | 'exit'; mesh: Mesh; collider: Collider }
@@ -291,15 +321,17 @@ export class RoomScene implements Scene {
 
   constructor(
     private readonly layout: RoomDefinition,
-    private readonly run: RunState,
+    private readonly run: RoomCombatState | RunState,
     private readonly waves: WavesDefinition,
-    options: RoomSceneOptions = {},
+    private readonly options: RoomSceneOptions = {},
   ) {
     this.missionSignal = options.missionSignal;
     this.manualEncounter = options.manualEncounter ?? false;
-    const node = run.map.layers
-      .flat()
-      .find((node) => node.id === run.currentNodeId);
+    const node =
+      options.node ??
+      ('map' in run
+        ? run.map.layers.flat().find((node) => node.id === run.currentNodeId)
+        : undefined);
     if (!node)
       throw new Error('RoomScene wymaga bieżącego węzła w mapie runu.');
     this.node = { ...node, next: [...node.next] };
@@ -335,11 +367,24 @@ export class RoomScene implements Scene {
       position: (id) => this.enemyPosition(id),
       targets: () => this.enemyIds(),
     });
+    let panoramaExclusion: Box3 | undefined;
+    if (this.options.linearMission) {
+      panoramaExclusion = new Box3();
+      const blockBounds = new Box3();
+      for (const block of this.layout.blocks) {
+        blockBounds.setFromCenterAndSize(
+          new Vector3(block.position.x, block.position.y, block.position.z),
+          new Vector3(block.size.x, block.size.y, block.size.z),
+        );
+        panoramaExclusion.union(blockBounds);
+      }
+    }
     this.atmosphere = new SceneAtmosphere(
       three,
       this.layout.theme,
       this.layout.id,
       this.layout.playerSpawn.y,
+      panoramaExclusion,
     );
     three.add(this.root);
     this.root.add(this.lights);
@@ -359,14 +404,17 @@ export class RoomScene implements Scene {
       batchStaticGeometry(this.staticWorld, this.geometries, {
         cellSize: this.layout.arena!.batchCellM,
       });
-    else batchStaticGeometry(decor, this.geometries);
+    else
+      batchStaticGeometry(decor, this.geometries, {
+        cellSize: this.options.staticCellSize,
+      });
     this.dressing = new CityDressing(
       this.root,
       this.layout,
       this.atmosphere.theme,
       this.layout.playerSpawn.y,
       this.layout.weather
-        ? `${this.run.seed}:${this.layout.id}`
+        ? `${'seed' in this.run ? this.run.seed : 'level'}:${this.layout.id}`
         : this.layout.id,
       ctx.audio,
     );
@@ -513,7 +561,11 @@ export class RoomScene implements Scene {
         playerId,
         loadout: this.loadout,
         totalWaves: this.waves.waves.length,
-        run: { credits: this.run.credits, implants: this.run.implants },
+        ...(this.options.linearMission
+          ? { deathScreen: false, showWaves: false }
+          : {
+              run: { credits: this.run.credits, implants: this.run.implants },
+            }),
       });
     this.player.stamina.set(this.player.stamina.max);
     this.energy = new PlayerEnergy(
@@ -699,12 +751,16 @@ export class RoomScene implements Scene {
         this.root.add(this.assaultView.root);
       }
     }
-    const mission = missionDefinitions.get(this.run.missionId ?? '');
+    const mission =
+      this.options.linearMission?.definition ??
+      missionDefinitions.get(this.run.missionId ?? '');
     if (mission) {
       this.mission = new MissionObjectives(
         mission,
-        this.node.fixed?.objectives ?? [],
-        this.run,
+        this.options.linearMission?.order ?? this.node.fixed?.objectives ?? [],
+        this.options.linearMission
+          ? { objectives: this.options.linearMission.objectives }
+          : this.run,
         {
           signal: (trigger) => this.missionSignal?.(trigger),
           explode: (objective) => this.explodeMission(objective, playerId),
@@ -712,6 +768,7 @@ export class RoomScene implements Scene {
         },
         ctx.tuning.mission.zoneRadiusM,
         ctx.tuning.mission.pickupRadiusM,
+        this.options.linearMission?.order,
       );
       this.missionView = new MissionView(
         this.mission,
@@ -719,11 +776,15 @@ export class RoomScene implements Scene {
       );
       this.root.add(this.missionView.root);
       if (typeof document !== 'undefined')
-        this.missionHud = new MissionHud(this.mission);
+        this.missionHud = new MissionHud(
+          this.mission,
+          Boolean(this.options.linearMission),
+        );
       this.missionSignal?.(`enterNode:${this.node.layer}`);
-      const guards =
-        mission.fixedNodes.find((node) => node.layer === this.node.layer)
-          ?.guards ?? [];
+      const guards = this.options.linearMission
+        ? []
+        : (mission.fixedNodes.find((node) => node.layer === this.node.layer)
+            ?.guards ?? []);
       for (const guard of guards) {
         const objective = mission.objectives.find(
           (o) => o.id === guard.nearObjective,
@@ -956,8 +1017,12 @@ export class RoomScene implements Scene {
       models.add(mesh);
     }
     if (!this.staticWorld) {
-      batchStaticGeometry(blocks, this.geometries);
-      batchStaticGeometry(models, this.geometries);
+      batchStaticGeometry(blocks, this.geometries, {
+        cellSize: this.options.staticCellSize,
+      });
+      batchStaticGeometry(models, this.geometries, {
+        cellSize: this.options.staticCellSize,
+      });
     }
     for (const door of this.layout.doors) {
       const { size, position } = door;
@@ -1570,7 +1635,11 @@ export class RoomScene implements Scene {
     this.weapon.cool(0);
     this.director.stop();
     if (this.assault) this.hud?.setLoadout(this.loadout);
-    if (!this.assault && typeof document !== 'undefined')
+    if (
+      !this.assault &&
+      !this.options.linearMission &&
+      typeof document !== 'undefined'
+    )
       document.exitPointerLock?.();
   }
 
@@ -1675,6 +1744,10 @@ export class RoomScene implements Scene {
   }
 
   private reinforceMission(wave: string, key: string): void {
+    if (this.options.reinforce) {
+      this.options.reinforce(wave, key);
+      return;
+    }
     const modules = import.meta.glob('../data/waves/*.json', {
       eager: true,
       import: 'default',
@@ -1694,6 +1767,74 @@ export class RoomScene implements Scene {
     );
     this.reinforcements.push(director);
     director.start();
+  }
+
+  objectiveModel(): MissionObjectives | undefined {
+    return this.mission;
+  }
+
+  setLevelGate(
+    id: string,
+    block: RoomDefinition['blocks'][number],
+    open: boolean,
+  ): void {
+    let gate = this.levelGates.get(id);
+    if (!gate) {
+      const { size, position } = block;
+      const geometry = new BoxGeometry(size.x, size.y, size.z);
+      this.geometries.add(geometry);
+      const mesh = new Mesh(geometry, getMaterial(block.material ?? 'metal'));
+      mesh.position.copy(position);
+      mesh.name = `gate:${id}`;
+      this.root.add(mesh);
+      const collider = this.world.createCollider(
+        this.rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
+          .setTranslation(position.x, position.y, position.z)
+          .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
+      );
+      gate = { mesh, collider };
+      this.levelGates.set(id, gate);
+    }
+    gate.mesh.visible = !open;
+    gate.collider.setEnabled(!open);
+  }
+
+  teleportPlayer(position: Vec3, yawDeg: number): void {
+    this.player.teleport({
+      ...position,
+      y:
+        position.y +
+        this.ctx.tuning.player.capsuleHeight / 2 +
+        this.ctx.tuning.player.controllerOffset,
+    });
+    this.lookAtDegrees(yawDeg, 0);
+    this.previous = this.player.getState();
+  }
+
+  resetLevelCombat(position: Vec3, yawDeg: number): void {
+    const god = this.god;
+    this.prepareEncounter({ invulnerable: god, passive: false });
+    this.teleportPlayer(position, yawDeg);
+    if (this.mission) {
+      for (const id of this.mission.ids) {
+        if (this.mission.objectives[id] !== 'done')
+          this.mission.progress[id] = 0;
+        delete this.mission.fuses[id];
+      }
+    }
+  }
+
+  removeEncounterEnemies(ids: readonly EntityId[]): void {
+    // Usunięcie debug przechodzi przez wspólne obrażenia bez kredytu gracza.
+    for (const id of ids) {
+      const health = this.damage.health(id);
+      if (health && !health.dead)
+        this.damage.deal(id, {
+          source: null,
+          amount: health.current,
+          tags: ['#hazard'],
+        });
+    }
   }
 
   exportState(): Pick<RunState, 'hp' | 'energy'> {
@@ -1809,6 +1950,7 @@ export class RoomScene implements Scene {
   }
 
   private completeRoom(): void {
+    if (this.options.linearMission) return;
     if (this.conquest && this.conquest.outcome !== 'victory') return;
     if (this.assault && this.assault.outcome !== 'victory') return;
     if (this.node.fixed?.objectives.length && !this.mission?.complete) return;
@@ -1893,12 +2035,13 @@ export class RoomScene implements Scene {
         ? 'Pula ustawiona.'
         : 'Nieprawidłowa pula.',
     );
-    register('objective done', 'objective done <id> — ukończ cel', (args) => {
-      if (!this.mission || args.length !== 1 || !this.mission.done(args[0]!))
-        return 'Cel niedostępny.';
-      if (this.mission.complete) this.completeRoom();
-      return 'Cel ukończony.';
-    });
+    if (!this.options.linearMission)
+      register('objective done', 'objective done <id> — ukończ cel', (args) => {
+        if (!this.mission || args.length !== 1 || !this.mission.done(args[0]!))
+          return 'Cel niedostępny.';
+        if (this.mission.complete) this.completeRoom();
+        return 'Cel ukończony.';
+      });
     register('tp', 'tp <x> <z> [yawDeg] [pitchDeg]', (args) => {
       const [x, z, yaw = 0, pitch = 0] = args.map(Number);
       if (

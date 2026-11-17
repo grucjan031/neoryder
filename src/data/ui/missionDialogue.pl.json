@@ -24,5 +24,13 @@
     "nadia": "Nadia",
     "tymon": "Tymon",
     "brandt": "Brandt"
-  }
+  },
+  "soon": "Wkrótce",
+  "continueMission": "Kontynuuj misję",
+  "victory": "Misja ukończona",
+  "returnHub": "Wróć do kryjówki",
+  "direction": "{label} · {distance} m",
+  "respawning": "Powrót do punktu kontrolnego…",
+  "saveError": "Nie udało się zapisać misji. Ponów zapis przed wyjściem.",
+  "retrySave": "Ponów zapis"
 }
