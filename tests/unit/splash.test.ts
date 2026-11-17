@@ -67,16 +67,6 @@ it('sceny splasharów są zarejestrowane (menu oznacza brak parametru sceny)', (
   for (const entry of getSplashes())
     for (const scene of entry.scenes ?? [])
       expect(['menu', ...registered], entry.file).toContain(scene);
-  for (const scene of ['menu', 'hub', 'arena', 'tutorial']) {
-    for (let i = 0; i < 10; i++)
-      expect(
-        pickSplash(`s${i}`, { scene, room: 'eliteFoundry', theme: 'hideout' })
-          ?.scenes,
-      ).toContain(scene);
-  }
-  expect(
-    pickSplash('x', { scene: 'unknown', room: 'eliteFoundry' })?.file,
-  ).toContain('odlewnia');
 });
 
 it('start pokazuje poradę z nagłówkiem, rotuje i usuwa timer przy dismiss', () => {
@@ -213,20 +203,49 @@ it('schemat odrzuca duplikaty i złe nazwy plików', () => {
   ).toThrow();
 });
 
-it('wybór jest deterministyczny i respektuje pokój oraz motyw', () => {
-  expect(pickSplash('ziarno:L1N1')).toEqual(pickSplash('ziarno:L1N1'));
-  expect(pickSplash('x', {}, 4, [])).toBeNull();
-  const keys = Array.from({ length: 40 }, (_, i) => `s${i}:N`);
+it('wybór jest losowy, respektuje wstrzyknięty generator, limit aktu i brak powtórzeń', () => {
+  expect(pickSplash(4, [])).toBeNull();
   expect(
-    new Set(keys.map((key) => pickSplash(key)!.file)).size,
-  ).toBeGreaterThan(10);
-  expect(pickSplash('x', { room: 'eliteFoundry' })!.file).toContain('odlewnia');
-  for (const key of keys)
-    expect(pickSplash(key, { theme: 'hideout' })!.themes).toContain('hideout');
-  // Nieznany motyw i pokój: pełna lista.
-  expect(pickSplash('x', { theme: 'brak', room: 'brak' })).toEqual(
-    pickSplash('x'),
-  );
+    pickSplash(1, [{ file: 'locked.webp', title: 'Locked', act: 2 }]),
+  ).toBeNull();
+
+  const sample = [
+    { file: 'test-a.webp', title: 'A', act: 1 as const },
+    { file: 'test-b.webp', title: 'B', act: 1 as const },
+    { file: 'test-c.webp', title: 'C', act: 1 as const },
+  ];
+  // Krótka jednoelementowa pula resetuje pamięć poprzedniego obrazu przed testem skrajnych wartości.
+  pickSplash(1, [{ file: 'dummy-1.webp', title: 'D', act: 1 }]);
+  expect(pickSplash(1, sample, () => 0)).toEqual(sample[0]);
+  pickSplash(1, [{ file: 'dummy-2.webp', title: 'D', act: 1 }]);
+  expect(pickSplash(1, sample, () => 0.999)).toEqual(sample[2]);
+
+  const mixed = [
+    { file: 'act-1.webp', title: 'A1', act: 1 as const },
+    { file: 'act-2.webp', title: 'A2', act: 2 as const },
+    { file: 'act-3.webp', title: 'A3', act: 3 as const },
+    { file: 'act-4.webp', title: 'A4', act: 4 as const },
+  ];
+  for (const maxAct of [1, 2, 3, 4] as const) {
+    for (const r of [0, 0.25, 0.5, 0.75, 0.999]) {
+      const picked = pickSplash(maxAct, mixed, () => r)!;
+      expect(picked.act).toBeLessThanOrEqual(maxAct);
+    }
+  }
+
+  const pair = [
+    { file: 'pair-a.webp', title: 'PA', act: 1 as const },
+    { file: 'pair-b.webp', title: 'PB', act: 1 as const },
+  ];
+  const first = pickSplash(1, pair, () => 0);
+  const second = pickSplash(1, pair, () => 0);
+  expect(first).not.toBeNull();
+  expect(second).not.toBeNull();
+  expect(second).not.toEqual(first);
+
+  const single = [{ file: 'single.webp', title: 'S', act: 1 as const }];
+  expect(pickSplash(1, single, () => 0)).toEqual(single[0]);
+  expect(pickSplash(1, single, () => 0)).toEqual(single[0]);
 });
 
 const nodes = [
@@ -332,7 +351,7 @@ it('nakładka startowa: obraz poza fx=lite, #app inert do dismiss, potem wygasze
 
 it('błędne dane splasharów nie blokują startu (pusta lista, brak obrazu)', () => {
   expect(() => loadSplashes([{ file: 'x', title: '' }])).toThrow();
-  expect(pickSplash('k', {}, 4, [])).toBeNull();
+  expect(pickSplash(4, [])).toBeNull();
 });
 
 it('stary obraz tła nie zdejmuje nowego po błędzie', () => {
@@ -405,7 +424,7 @@ it('progi zwycięstw z tuningu odblokowują kolejne akty', () => {
     const pool = new Set(
       Array.from(
         { length: 500 },
-        (_, i) => pickSplash(`act:${i}`, {}, act)!.act,
+        (_, i) => pickSplash(act, undefined, () => i / 500)!.act,
       ),
     );
     expect(Math.max(...pool)).toBe(act);
@@ -414,49 +433,29 @@ it('progi zwycięstw z tuningu odblokowują kolejne akty', () => {
 
 it('przy 0 zwycięstw nigdy nie wypada szczyt masztu ani epilog', () => {
   const act = unlockedSplashAct(0);
-  const hints = [
-    {},
-    ...['menu', 'hub', 'arena', 'tutorial', 'run'].map((scene) => ({ scene })),
-    ...[...themeDefinitions.keys()].map((theme) => ({ theme })),
-    ...[...roomDefinitions.values()].map((room) => ({
-      room: room.id,
-      theme: room.theme,
-    })),
-  ];
-  for (const hint of hints)
-    for (let i = 0; i < 500; i++) {
-      const entry = pickSplash(`seed${i}:L1N1`, hint, act)!;
-      expect(entry.act, JSON.stringify(hint)).toBe(1);
-      expect(numberOf(entry.file)).not.toBe(16);
-      expect(numberOf(entry.file)).not.toBe(17);
-    }
+  for (let i = 0; i < 500; i++) {
+    const entry = pickSplash(act, undefined, () => i / 500)!;
+    expect(entry.act).toBe(1);
+    expect(numberOf(entry.file)).not.toBe(16);
+    expect(numberOf(entry.file)).not.toBe(17);
+  }
 });
 
-it('zablokowane dopasowanie pokoju, motywu i sceny nie wygrywa', () => {
-  // Podstacja (akt III) to jedyny obraz pokoju combatSubstation.
-  for (let i = 0; i < 50; i++) {
-    const key = `k${i}`;
-    expect(pickSplash(key, { room: 'combatSubstation' }, 1)!.act).toBe(1);
-    expect(pickSplash(key, { room: 'combatSubstation' }, 2)).toEqual(
-      pickSplash(key, {}, 2),
-    );
-    expect(pickSplash(key, { room: 'combatSubstation' }, 3)!.file).toContain(
-      'podstacja',
-    );
-    expect(pickSplash(key, { room: 'alleyMarket' }, 1)!.file).not.toBe(
-      'splash-08-bulwar.webp',
-    );
-    expect(
-      pickSplash(key, { scene: 'hub', theme: 'hideout' }, 3)!.file,
-    ).not.toContain('epilog');
+it('wybór losuje z pełnej odblokowanej puli bez faworyzowania sceny, pokoju czy motywu', () => {
+  for (const maxAct of [1, 2, 3] as const) {
+    for (let i = 0; i < 200; i++) {
+      expect(
+        pickSplash(maxAct, undefined, () => i / 200)!.act,
+      ).toBeLessThanOrEqual(maxAct);
+    }
   }
-  const hubAll = new Set(
+  const act4All = new Set(
     Array.from(
-      { length: 200 },
-      (_, i) => pickSplash(`h${i}`, { scene: 'hub' }, 4)!.file,
+      { length: 500 },
+      (_, i) => pickSplash(4, undefined, () => i / 500)!.file,
     ),
   );
-  expect(hubAll).toContain('splash-17-epilog.webp');
+  expect(act4All).toContain('splash-17-epilog.webp');
 });
 
 it('odczyt aktu z meta-zapisu: brak lub uszkodzony zapis daje akt 1', async () => {
@@ -485,35 +484,28 @@ it('odczyt aktu z meta-zapisu: brak lub uszkodzony zapis daje akt 1', async () =
 });
 
 it('nakładka startowa czeka na akt bez blokowania i nie dokłada obrazu po zdjęciu', async () => {
-  // Ziarno, dla którego wybór zależy od aktu (scena run = cała pula).
-  const seed = Array.from({ length: 50 }, (_, i) => `s${i}`).find(
-    (s) =>
-      pickSplash(`run:${s}`, { scene: 'run' }, 1) !==
-      pickSplash(`run:${s}`, { scene: 'run' }, 4),
-  )!;
-  expect(seed).toBeDefined();
   const flush = async (): Promise<void> => {
     for (let i = 0; i < 3; i++) await Promise.resolve();
   };
   let resolveAct: (act: SplashAct) => void = () => {};
   const root = mountBoot();
   const boot = showBootSplash(
-    new URLSearchParams(`seed=${seed}`),
+    new URLSearchParams('seed=s1'),
     'run',
     new Promise<SplashAct>((resolve) => (resolveAct = resolve)),
   );
   expect(root.querySelector('img')).toBeNull();
   resolveAct(4);
   await flush();
-  expect(root.querySelector('img')?.getAttribute('src')).toBe(
-    `/assets/splash/${pickSplash(`run:${seed}`, { scene: 'run' }, 4)!.file}`,
+  expect(root.querySelector('img')?.getAttribute('src')).toMatch(
+    /^\/assets\/splash\/[a-z0-9-]+\.webp$/,
   );
   boot.dismiss();
   document.body.replaceChildren();
   const late = mountBoot();
   let resolveLate: (act: SplashAct) => void = () => {};
   const second = showBootSplash(
-    new URLSearchParams(`seed=${seed}`),
+    new URLSearchParams('seed=s1'),
     'run',
     new Promise<SplashAct>((resolve) => (resolveLate = resolve)),
   );
@@ -523,15 +515,25 @@ it('nakładka startowa czeka na akt bez blokowania i nie dokłada obrazu po zdj�
   expect(late.querySelector('img')).toBeNull();
 });
 
-it('nakładka startowa nie czeka, gdy akt nie zmienia wyboru (menu)', () => {
-  const root = mountBoot();
-  const boot = showBootSplash(
+it('nakładka startowa montuje od razu dla liczby i wraca do aktu 1 przy błędzie obietnicy', async () => {
+  const syncRoot = mountBoot();
+  const syncBoot = showBootSplash(new URLSearchParams(), null, 1);
+  expect(syncRoot.querySelector('img')?.getAttribute('src')).toMatch(
+    /^\/assets\/splash\/[a-z0-9-]+\.webp$/,
+  );
+  syncBoot.dismiss();
+  document.body.replaceChildren();
+
+  const errRoot = mountBoot();
+  const errBoot = showBootSplash(
     new URLSearchParams(),
-    null,
-    new Promise<SplashAct>(() => {}),
+    'menu',
+    Promise.reject(new Error('błąd odczytu')),
   );
-  expect(root.querySelector('img')?.getAttribute('src')).toBe(
-    `/assets/splash/${pickSplash('menu:', { scene: 'menu' }, 1)!.file}`,
+  expect(errRoot.querySelector('img')).toBeNull();
+  for (let i = 0; i < 3; i++) await Promise.resolve();
+  expect(errRoot.querySelector('img')?.getAttribute('src')).toMatch(
+    /^\/assets\/splash\/[a-z0-9-]+\.webp$/,
   );
-  boot.dismiss();
+  errBoot.dismiss();
 });

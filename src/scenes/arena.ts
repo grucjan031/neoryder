@@ -496,19 +496,24 @@ export class Arena implements Scene {
           const fallback = new Mesh(geometry, getMaterial(material));
           fallback.position.set(position.x, position.y, position.z);
           blocks.add(fallback);
-          const file = model?.startsWith('city_')
-            ? model
-            : model
-              ? MODEL_FILES[model]
-              : undefined;
+          const file =
+            model?.startsWith('city_') || model?.startsWith('port_')
+              ? model
+              : model
+                ? MODEL_FILES[model]
+                : undefined;
           if (!file || !this.loadModels) return;
           try {
             // Ten sam montaż co w pokojach (cache szablonów + placeBlockModel).
-            const scene = file.startsWith('city_')
-              ? await cloneCityModel(file)
-              : await cloneRoomModel(file);
+            const scene =
+              file.startsWith('city_') || file.startsWith('port_')
+                ? await cloneCityModel(file)
+                : await cloneRoomModel(file);
             if (!scene || this.disposed) return;
-            if (blockMaterial && !file.startsWith('city_'))
+            if (
+              blockMaterial &&
+              !(file.startsWith('city_') || file.startsWith('port_'))
+            )
               scene.traverse((node) => {
                 if (node instanceof Mesh)
                   node.material = getMaterial(blockMaterial);

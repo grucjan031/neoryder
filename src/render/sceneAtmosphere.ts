@@ -1,5 +1,5 @@
 import { Color } from 'three';
-import type { Scene } from 'three';
+import type { Box3, Scene } from 'three';
 import { tuning } from '../core/tuning';
 import { Panorama } from './panorama';
 import { applyTheme, resolveTheme } from './themes';
@@ -16,6 +16,7 @@ export class SceneAtmosphere {
     themeId: string | undefined,
     private readonly seed: string,
     private readonly floorY: number,
+    private readonly panoramaExclusion?: Box3,
   ) {
     this.theme = resolveTheme(themeId);
     this.background = scene.background;
@@ -28,7 +29,11 @@ export class SceneAtmosphere {
   sync(dt: number): void {
     if (this.disposed) return;
     if (!this.panorama && tuning.render.panoramaEnabled > 0) {
-      this.panorama = new Panorama(this.seed, this.floorY);
+      this.panorama = new Panorama(
+        this.seed,
+        this.floorY,
+        this.panoramaExclusion,
+      );
       this.scene.add(this.panorama);
     }
     this.panorama?.sync(dt);

@@ -3,12 +3,17 @@ import { EventBus } from '../../src/core/events';
 import { Rng } from '../../src/core/rng';
 import { createMemorySaveStore, SAVE_VERSION } from '../../src/core/save';
 import { Conquest } from '../../src/world/conquest';
-import { conquestDefinition as definition } from '../../src/world/modes';
-import { modeSchema, validateMode } from '../../src/world/modeSchema';
+import { conquestMode } from '../../src/world/modes';
+import {
+  modeSchema,
+  modeForArena,
+  validateMode,
+} from '../../src/world/modeSchema';
 import { roomDefinitions } from '../../src/world/rooms';
 import { RunManager } from '../../src/world/run';
 
-const room = roomDefinitions.get(definition.roomId)!;
+const room = roomDefinitions.get('combatRing')!;
+const definition = modeForArena(conquestMode, room);
 // Wolne miejsce poza wszystkimi strefami (C stoi na środku pierścienia).
 const away = { x: 0, y: 0, z: 10 };
 const create = () => new Conquest(definition, new EventBus());
@@ -169,7 +174,7 @@ describe('Przejęcie', () => {
       const saved = await store.loadRun();
       expect(saved?.ended?.summary).toEqual(summary);
       expect(saved?.run.modeId).toBe('conquest');
-      expect(SAVE_VERSION).toBe(5);
+      expect(SAVE_VERSION).toBe(6);
     },
   );
   it('stary zapis pozostaje bez modeId, a wznowiona arena ma dostępny pokój', () => {

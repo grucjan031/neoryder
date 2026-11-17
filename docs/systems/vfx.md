@@ -278,3 +278,12 @@ własny cień mnożący pod sobą oraz cieplejszą bazę (`airWarmth`, poświata
 `glowWarmth`). Odbić kałuż (post) cień nie obejmuje. Pomiar:
 `node tools/vfx/hueCheck.mjs --url <serwer> --out <katalog> --label <nazwa>`
 (GPU, 1280x720; udział odcieni 290–340° w obszarze efektu na podłodze < 2%).
+
+## Profile pogody
+
+Istniejący `Weather` obsługuje teraz opcjonalny `WeatherProfile`:
+smugi deszczu/mżawki, wiatr XZ z porywami, wyładowania z deterministycznych
+odstępów i dodatkową pulę pyłu. Bez profilu pozostaje stara ścieżka deszczu,
+rozbryzgów, stref bez deszczu i burzy. Wszystko jest kosmetyczne, aktualizowane
+czasem świata i sprzątane z właścicielem sceny. Dane, limity i test 30 s:
+[weather.md](weather.md).

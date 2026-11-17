@@ -1,0 +1,4717 @@
+{
+  "id": "m01-maszty",
+  "name": "Niecka — Maszty",
+  "type": "combat",
+  "theme": "neonStreet",
+  "playerSpawn": {
+    "x": 5,
+    "y": 0,
+    "z": 0
+  },
+  "blocks": [
+    {
+      "position": {
+        "x": 2,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 6,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 10,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 14,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 18,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 22,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 26,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 30,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 34,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 38,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 42,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 22,
+        "y": 6,
+        "z": -7
+      },
+      "size": {
+        "x": 44,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 8,
+        "y": 0.6,
+        "z": -4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 20,
+        "y": 0.6,
+        "z": -4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 32,
+        "y": 0.6,
+        "z": -4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 22,
+        "y": 6,
+        "z": 7
+      },
+      "size": {
+        "x": 44,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 8,
+        "y": 0.6,
+        "z": 4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 20,
+        "y": 0.6,
+        "z": 4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 32,
+        "y": 0.6,
+        "z": 4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 22,
+        "y": 7,
+        "z": 0
+      },
+      "size": {
+        "x": 44,
+        "y": 1,
+        "z": 12
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 46,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 50,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 54,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 58,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 62,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 66,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 70,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 74,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 78,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 82,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 86,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 90,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 22
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 68,
+        "y": 6,
+        "z": -12
+      },
+      "size": {
+        "x": 48,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 52,
+        "y": 0.6,
+        "z": -9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 64,
+        "y": 0.6,
+        "z": -9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 76,
+        "y": 0.6,
+        "z": -9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 88,
+        "y": 0.6,
+        "z": -9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 68,
+        "y": 6,
+        "z": 12
+      },
+      "size": {
+        "x": 48,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 52,
+        "y": 0.6,
+        "z": 9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 64,
+        "y": 0.6,
+        "z": 9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 76,
+        "y": 0.6,
+        "z": 9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 88,
+        "y": 0.6,
+        "z": 9
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_stall"
+    },
+    {
+      "position": {
+        "x": 44,
+        "y": 6,
+        "z": -8.5
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 5
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 44,
+        "y": 6,
+        "z": 8.5
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 5
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 94,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 98,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 102,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 106,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 110,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 118,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 122,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 126,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 130,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 134,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 10
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": 6,
+        "z": -6
+      },
+      "size": {
+        "x": 44,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 100,
+        "y": 0.6,
+        "z": -3
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 112,
+        "y": 0.6,
+        "z": -3
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 124,
+        "y": 0.6,
+        "z": -3
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": 6,
+        "z": 6
+      },
+      "size": {
+        "x": 44,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 100,
+        "y": 0.6,
+        "z": 3
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 112,
+        "y": 0.6,
+        "z": 3
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 124,
+        "y": 0.6,
+        "z": 3
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 92,
+        "y": 6,
+        "z": -8
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 6
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 92,
+        "y": 6,
+        "z": 8
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 6
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": 7,
+        "z": 0
+      },
+      "size": {
+        "x": 44,
+        "y": 1,
+        "z": 10
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 138,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 142,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 146,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 150,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 154,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 158,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 162,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 166,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 170,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 174,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 178,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 182,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 26
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 160,
+        "y": 6,
+        "z": -14
+      },
+      "size": {
+        "x": 48,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 144,
+        "y": 0.6,
+        "z": -11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 156,
+        "y": 0.6,
+        "z": -11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 168,
+        "y": 0.6,
+        "z": -11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": 0.6,
+        "z": -11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 160,
+        "y": 6,
+        "z": 14
+      },
+      "size": {
+        "x": 48,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 144,
+        "y": 0.6,
+        "z": 11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 156,
+        "y": 0.6,
+        "z": 11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 168,
+        "y": 0.6,
+        "z": 11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": 0.6,
+        "z": 11
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 136,
+        "y": 6,
+        "z": -9
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 8
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 136,
+        "y": 6,
+        "z": 9
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 8
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 186,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 190,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 194,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 198,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 202,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 210,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 214,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 218,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 222,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 226,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 14
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 6,
+        "z": -8
+      },
+      "size": {
+        "x": 44,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 192,
+        "y": 0.6,
+        "z": -5
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 204,
+        "y": 0.6,
+        "z": -5
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 216,
+        "y": 0.6,
+        "z": -5
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 6,
+        "z": 8
+      },
+      "size": {
+        "x": 44,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 192,
+        "y": 0.6,
+        "z": 5
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 204,
+        "y": 0.6,
+        "z": 5
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 216,
+        "y": 0.6,
+        "z": 5
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 184,
+        "y": 6,
+        "z": -10
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 6
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 184,
+        "y": 6,
+        "z": 10
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 6
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 4,
+        "z": -5.5
+      },
+      "size": {
+        "x": 24,
+        "y": 0.5,
+        "z": 2
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 196,
+        "y": 2,
+        "z": -5.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 4,
+        "z": 0.5
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 216,
+        "y": 2,
+        "z": -5.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 4,
+        "z": 0.5
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 4,
+        "z": 5.5
+      },
+      "size": {
+        "x": 24,
+        "y": 0.5,
+        "z": 2
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 196,
+        "y": 2,
+        "z": 5.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 4,
+        "z": 0.5
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 216,
+        "y": 2,
+        "z": 5.5
+      },
+      "size": {
+        "x": 0.5,
+        "y": 4,
+        "z": 0.5
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 230,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 234,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 238,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 242,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 246,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 250,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 254,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 258,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 262,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 266,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 270,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 274,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 278,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 28
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 254,
+        "y": 6,
+        "z": -15
+      },
+      "size": {
+        "x": 52,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 236,
+        "y": 0.6,
+        "z": -12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 248,
+        "y": 0.6,
+        "z": -12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 260,
+        "y": 0.6,
+        "z": -12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 272,
+        "y": 0.6,
+        "z": -12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 254,
+        "y": 6,
+        "z": 15
+      },
+      "size": {
+        "x": 52,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 236,
+        "y": 0.6,
+        "z": 12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 248,
+        "y": 0.6,
+        "z": 12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 260,
+        "y": 0.6,
+        "z": 12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 272,
+        "y": 0.6,
+        "z": 12
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 228,
+        "y": 6,
+        "z": -10.5
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 7
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 228,
+        "y": 6,
+        "z": 10.5
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 7
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 282,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 286,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 290,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 294,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 298,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 302,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 306,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 310,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 314,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 318,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 12
+      },
+      "material": "asphalt"
+    },
+    {
+      "position": {
+        "x": 300,
+        "y": 6,
+        "z": -7
+      },
+      "size": {
+        "x": 40,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 288,
+        "y": 0.6,
+        "z": -4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 300,
+        "y": 0.6,
+        "z": -4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 312,
+        "y": 0.6,
+        "z": -4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 300,
+        "y": 6,
+        "z": 7
+      },
+      "size": {
+        "x": 40,
+        "y": 12,
+        "z": 2
+      },
+      "material": "facade"
+    },
+    {
+      "position": {
+        "x": 288,
+        "y": 0.6,
+        "z": 4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 300,
+        "y": 0.6,
+        "z": 4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 312,
+        "y": 0.6,
+        "z": 4
+      },
+      "size": {
+        "x": 2,
+        "y": 1.2,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
+        "x": 280,
+        "y": 6,
+        "z": -10
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 8
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 280,
+        "y": 6,
+        "z": 10
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 8
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 6,
+        "z": 0
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 12
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 320,
+        "y": 6,
+        "z": 0
+      },
+      "size": {
+        "x": 2,
+        "y": 12,
+        "z": 12
+      },
+      "material": "concrete"
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": 30,
+      "z": -3
+    },
+    {
+      "x": 30,
+      "z": 3
+    },
+    {
+      "x": 34,
+      "z": -3
+    },
+    {
+      "x": 34,
+      "z": 3
+    },
+    {
+      "x": 82,
+      "z": -3
+    },
+    {
+      "x": 82,
+      "z": 3
+    },
+    {
+      "x": 86,
+      "z": -3
+    },
+    {
+      "x": 86,
+      "z": 3
+    },
+    {
+      "x": 127,
+      "z": -3
+    },
+    {
+      "x": 127,
+      "z": 3
+    },
+    {
+      "x": 131,
+      "z": -3
+    },
+    {
+      "x": 131,
+      "z": 3
+    },
+    {
+      "x": 169,
+      "z": -3
+    },
+    {
+      "x": 169,
+      "z": 3
+    },
+    {
+      "x": 173,
+      "z": -3
+    },
+    {
+      "x": 173,
+      "z": 3
+    },
+    {
+      "x": 216,
+      "z": -3
+    },
+    {
+      "x": 216,
+      "z": 3
+    },
+    {
+      "x": 220,
+      "z": -3
+    },
+    {
+      "x": 220,
+      "z": 3
+    },
+    {
+      "x": 247,
+      "z": -3
+    },
+    {
+      "x": 247,
+      "z": 3
+    },
+    {
+      "x": 251,
+      "z": -3
+    },
+    {
+      "x": 251,
+      "z": 3
+    },
+    {
+      "x": 272,
+      "z": -3
+    },
+    {
+      "x": 272,
+      "z": 3
+    },
+    {
+      "x": 276,
+      "z": -3
+    },
+    {
+      "x": 276,
+      "z": 3
+    }
+  ],
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "warsztat",
+      "position": {
+        "x": 22,
+        "y": 4,
+        "z": -5.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#ffae1a"
+    },
+    {
+      "kind": "neon",
+      "texture": "warsztat",
+      "position": {
+        "x": 22,
+        "y": 4,
+        "z": 5.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#ffae1a"
+    },
+    {
+      "kind": "neon",
+      "texture": "ramen",
+      "position": {
+        "x": 68,
+        "y": 4,
+        "z": -10.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#fff1d6"
+    },
+    {
+      "kind": "neon",
+      "texture": "ramen",
+      "position": {
+        "x": 68,
+        "y": 4,
+        "z": 10.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#fff1d6"
+    },
+    {
+      "kind": "neon",
+      "texture": "metro",
+      "position": {
+        "x": 114,
+        "y": 4,
+        "z": -4.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#3d7bff"
+    },
+    {
+      "kind": "neon",
+      "texture": "metro",
+      "position": {
+        "x": 114,
+        "y": 4,
+        "z": 4.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#3d7bff"
+    },
+    {
+      "kind": "neon",
+      "texture": "repair",
+      "position": {
+        "x": 160,
+        "y": 4,
+        "z": -12.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "neon",
+      "texture": "repair",
+      "position": {
+        "x": 160,
+        "y": 4,
+        "z": 12.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "neon",
+      "texture": "warsztat",
+      "position": {
+        "x": 206,
+        "y": 4,
+        "z": -6.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#8a5cff"
+    },
+    {
+      "kind": "neon",
+      "texture": "warsztat",
+      "position": {
+        "x": 206,
+        "y": 4,
+        "z": 6.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#8a5cff"
+    },
+    {
+      "kind": "neon",
+      "texture": "pharmacy",
+      "position": {
+        "x": 254,
+        "y": 4,
+        "z": -13.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#fff1d6"
+    },
+    {
+      "kind": "neon",
+      "texture": "pharmacy",
+      "position": {
+        "x": 254,
+        "y": 4,
+        "z": 13.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#fff1d6"
+    },
+    {
+      "kind": "neon",
+      "texture": "metro",
+      "position": {
+        "x": 300,
+        "y": 4,
+        "z": -5.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 0,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "neon",
+      "texture": "metro",
+      "position": {
+        "x": 300,
+        "y": 4,
+        "z": 5.85
+      },
+      "size": {
+        "w": 5,
+        "h": 2
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#6dff4a"
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": 22,
+        "y": 4,
+        "z": -4
+      },
+      "color": "#ffae1a",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 22,
+        "y": 4,
+        "z": 4
+      },
+      "color": "#ffae1a",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 10,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 18,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 26,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 34,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 42,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 68,
+        "y": 4,
+        "z": -9
+      },
+      "color": "#fff1d6",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 68,
+        "y": 4,
+        "z": 9
+      },
+      "color": "#fff1d6",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": 4,
+        "z": -3
+      },
+      "color": "#3d7bff",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": 4,
+        "z": 3
+      },
+      "color": "#3d7bff",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 94,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 102,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 110,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 118,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 126,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 134,
+        "y": 5.8,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 40,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 160,
+        "y": 4,
+        "z": -11
+      },
+      "color": "#6dff4a",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 160,
+        "y": 4,
+        "z": 11
+      },
+      "color": "#6dff4a",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 4,
+        "z": -5
+      },
+      "color": "#8a5cff",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 4,
+        "z": 5
+      },
+      "color": "#8a5cff",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 198,
+        "y": 3.3,
+        "z": -5.5
+      },
+      "color": "#fff1d6",
+      "intensity": 16,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 3.3,
+        "z": -5.5
+      },
+      "color": "#fff1d6",
+      "intensity": 16,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 214,
+        "y": 3.3,
+        "z": -5.5
+      },
+      "color": "#fff1d6",
+      "intensity": 16,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 198,
+        "y": 3.3,
+        "z": 5.5
+      },
+      "color": "#fff1d6",
+      "intensity": 16,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": 3.3,
+        "z": 5.5
+      },
+      "color": "#fff1d6",
+      "intensity": 16,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 214,
+        "y": 3.3,
+        "z": 5.5
+      },
+      "color": "#fff1d6",
+      "intensity": 16,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": 254,
+        "y": 4,
+        "z": -12
+      },
+      "color": "#fff1d6",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 254,
+        "y": 4,
+        "z": 12
+      },
+      "color": "#fff1d6",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 300,
+        "y": 4,
+        "z": -4
+      },
+      "color": "#6dff4a",
+      "intensity": 14,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 300,
+        "y": 4,
+        "z": 4
+      },
+      "color": "#6dff4a",
+      "intensity": 14,
+      "range": 18
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 8,
+        "y": 4,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 11,
+        "y": 0,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 20,
+        "y": 4,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 23,
+        "y": 0,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 32,
+        "y": 4,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 35,
+        "y": 0,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "z": -5
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 8,
+        "y": 4,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 11,
+        "y": 0,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 20,
+        "y": 4,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 23,
+        "y": 0,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 32,
+        "y": 4,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 35,
+        "y": 0,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "z": 5
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 52,
+        "y": 4,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 55,
+        "y": 0,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 64,
+        "y": 4,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 67,
+        "y": 0,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 76,
+        "y": 4,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 79,
+        "y": 0,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 88,
+        "y": 4,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 91,
+        "y": 0,
+        "z": -10.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 50,
+        "y": 0,
+        "z": -10
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 52,
+        "y": 4,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 55,
+        "y": 0,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 64,
+        "y": 4,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 67,
+        "y": 0,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 76,
+        "y": 4,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 79,
+        "y": 0,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 88,
+        "y": 4,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 91,
+        "y": 0,
+        "z": 10.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 50,
+        "y": 0,
+        "z": 10
+      }
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 56,
+        "y": 5,
+        "z": 0
+      }
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 76,
+        "y": 5,
+        "z": 0
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 100,
+        "y": 4,
+        "z": -4.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 103,
+        "y": 0,
+        "z": -4.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 112,
+        "y": 4,
+        "z": -4.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 115,
+        "y": 0,
+        "z": -4.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 124,
+        "y": 4,
+        "z": -4.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 127,
+        "y": 0,
+        "z": -4.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 98,
+        "y": 0,
+        "z": -4
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 100,
+        "y": 4,
+        "z": 4.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 103,
+        "y": 0,
+        "z": 4.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 112,
+        "y": 4,
+        "z": 4.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 115,
+        "y": 0,
+        "z": 4.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 124,
+        "y": 4,
+        "z": 4.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 127,
+        "y": 0,
+        "z": 4.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 98,
+        "y": 0,
+        "z": 4
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 144,
+        "y": 4,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 147,
+        "y": 0,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 156,
+        "y": 4,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 159,
+        "y": 0,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 168,
+        "y": 4,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 171,
+        "y": 0,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 180,
+        "y": 4,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 183,
+        "y": 0,
+        "z": -12.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 142,
+        "y": 0,
+        "z": -12
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 144,
+        "y": 4,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 147,
+        "y": 0,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 156,
+        "y": 4,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 159,
+        "y": 0,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 168,
+        "y": 4,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 171,
+        "y": 0,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 180,
+        "y": 4,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 183,
+        "y": 0,
+        "z": 12.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 142,
+        "y": 0,
+        "z": 12
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 192,
+        "y": 4,
+        "z": -6.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 195,
+        "y": 0,
+        "z": -6.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 204,
+        "y": 4,
+        "z": -6.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 207,
+        "y": 0,
+        "z": -6.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 216,
+        "y": 4,
+        "z": -6.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 219,
+        "y": 0,
+        "z": -6.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 190,
+        "y": 0,
+        "z": -6
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 192,
+        "y": 4,
+        "z": 6.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 195,
+        "y": 0,
+        "z": 6.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 204,
+        "y": 4,
+        "z": 6.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 207,
+        "y": 0,
+        "z": 6.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 216,
+        "y": 4,
+        "z": 6.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 219,
+        "y": 0,
+        "z": 6.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 190,
+        "y": 0,
+        "z": 6
+      }
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 206,
+        "y": 0,
+        "z": -6
+      }
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 206,
+        "y": 0,
+        "z": 6
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 236,
+        "y": 4,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 239,
+        "y": 0,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 248,
+        "y": 4,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 251,
+        "y": 0,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 260,
+        "y": 4,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 263,
+        "y": 0,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 272,
+        "y": 4,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 275,
+        "y": 0,
+        "z": -13.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 234,
+        "y": 0,
+        "z": -13
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 236,
+        "y": 4,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 239,
+        "y": 0,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 248,
+        "y": 4,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 251,
+        "y": 0,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 260,
+        "y": 4,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 263,
+        "y": 0,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 272,
+        "y": 4,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 275,
+        "y": 0,
+        "z": 13.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 234,
+        "y": 0,
+        "z": 13
+      }
+    },
+    {
+      "model": "city_holo_projector",
+      "position": {
+        "x": 254,
+        "y": 0,
+        "z": 10
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 288,
+        "y": 4,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 291,
+        "y": 0,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 300,
+        "y": 4,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 303,
+        "y": 0,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 312,
+        "y": 4,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 315,
+        "y": 0,
+        "z": -5.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 286,
+        "y": 0,
+        "z": -5
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 288,
+        "y": 4,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 291,
+        "y": 0,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 300,
+        "y": 4,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 303,
+        "y": 0,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 312,
+        "y": 4,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 315,
+        "y": 0,
+        "z": 5.7
+      }
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 286,
+        "y": 0,
+        "z": 5
+      }
+    }
+  ],
+  "ambientFx": [
+    {
+      "kind": "drip",
+      "position": {
+        "x": 22,
+        "y": 6,
+        "z": 2
+      },
+      "rate": 5
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 29,
+        "y": 0,
+        "z": 3
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 75,
+        "y": 0,
+        "z": 8
+      },
+      "rate": 2
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": 114,
+        "y": 6,
+        "z": 2
+      },
+      "rate": 5
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 121,
+        "y": 0,
+        "z": 2
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 167,
+        "y": 0,
+        "z": 10
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 213,
+        "y": 0,
+        "z": 4
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 261,
+        "y": 0,
+        "z": 11
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 307,
+        "y": 0,
+        "z": 3
+      },
+      "rate": 2
+    }
+  ],
+  "rainShelters": [
+    {
+      "position": {
+        "x": 22,
+        "y": 3,
+        "z": 0
+      },
+      "size": {
+        "x": 44,
+        "y": 8,
+        "z": 12
+      }
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": 3,
+        "z": 0
+      },
+      "size": {
+        "x": 44,
+        "y": 8,
+        "z": 10
+      }
+    }
+  ],
+  "hazards": [],
+  "sections": [
+    {
+      "id": "sluza",
+      "name": "Śluza pod estakadą",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 22,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 44,
+          "y": 8,
+          "z": 12
+        }
+      }
+    },
+    {
+      "id": "targ",
+      "name": "Nocny targ",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 68,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 48,
+          "y": 8,
+          "z": 22
+        }
+      },
+      "radio": "enterNode:3"
+    },
+    {
+      "id": "tunel",
+      "name": "Zalane przejście",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 114,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 44,
+          "y": 8,
+          "z": 10
+        }
+      }
+    },
+    {
+      "id": "dziedziniec",
+      "name": "Podwórze nadajników",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 160,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 48,
+          "y": 8,
+          "z": 26
+        }
+      },
+      "radio": "enterNode:5"
+    },
+    {
+      "id": "zaplecze",
+      "name": "Zaplecze rusztowań",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 206,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 44,
+          "y": 8,
+          "z": 14
+        }
+      }
+    },
+    {
+      "id": "plac",
+      "name": "Plac Helixa",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 254,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 52,
+          "y": 8,
+          "z": 28
+        }
+      },
+      "radio": "enterNode:7"
+    },
+    {
+      "id": "kanal",
+      "name": "Kanał zrzutowy",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 300,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 40,
+          "y": 8,
+          "z": 12
+        }
+      }
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "start",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 5,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 6,
+          "y": 8,
+          "z": 36
+        }
+      }
+    },
+    {
+      "id": "po-maszcie-1",
+      "position": {
+        "x": 104,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 104,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 6,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "after": {
+        "kind": "objective",
+        "id": "mast-1"
+      }
+    },
+    {
+      "id": "po-helixie",
+      "position": {
+        "x": 192,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 192,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 6,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "after": {
+        "kind": "objective",
+        "id": "helix"
+      }
+    },
+    {
+      "id": "ewakuacja",
+      "position": {
+        "x": 292,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 292,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 6,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "after": {
+        "kind": "objective",
+        "id": "mast-3"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "patrol-wejscie",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 18,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 20,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "m01Approach",
+      "spawnPoints": [
+        {
+          "x": 30,
+          "z": -3
+        },
+        {
+          "x": 30,
+          "z": 3
+        },
+        {
+          "x": 34,
+          "z": -3
+        },
+        {
+          "x": 34,
+          "z": 3
+        }
+      ]
+    },
+    {
+      "id": "oslona-pierwszego",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 56,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 20,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "m01MastOne",
+      "spawnPoints": [
+        {
+          "x": 82,
+          "z": -3
+        },
+        {
+          "x": 82,
+          "z": 3
+        },
+        {
+          "x": 86,
+          "z": -3
+        },
+        {
+          "x": 86,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-wejscie"
+      }
+    },
+    {
+      "id": "patrol-tunel",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 116,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 20,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "m01Patrol",
+      "spawnPoints": [
+        {
+          "x": 127,
+          "z": -3
+        },
+        {
+          "x": 127,
+          "z": 3
+        },
+        {
+          "x": 131,
+          "z": -3
+        },
+        {
+          "x": 131,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "objective",
+        "id": "mast-1"
+      }
+    },
+    {
+      "id": "oslona-drugiego",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 148,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 20,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "m01MastTwo",
+      "spawnPoints": [
+        {
+          "x": 169,
+          "z": -3
+        },
+        {
+          "x": 169,
+          "z": 3
+        },
+        {
+          "x": 173,
+          "z": -3
+        },
+        {
+          "x": 173,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-tunel"
+      }
+    },
+    {
+      "id": "patrol-rusztowania",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 200,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 20,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "m01Patrol",
+      "spawnPoints": [
+        {
+          "x": 216,
+          "z": -3
+        },
+        {
+          "x": 216,
+          "z": 3
+        },
+        {
+          "x": 220,
+          "z": -3
+        },
+        {
+          "x": 220,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "objective",
+        "id": "helix"
+      }
+    },
+    {
+      "id": "patrol-plac",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 234,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 20,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "m01Assault",
+      "spawnPoints": [
+        {
+          "x": 247,
+          "z": -3
+        },
+        {
+          "x": 247,
+          "z": 3
+        },
+        {
+          "x": 251,
+          "z": -3
+        },
+        {
+          "x": 251,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-rusztowania"
+      }
+    },
+    {
+      "id": "oslona-trzeciego",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 258,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 20,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "m01MastThree",
+      "spawnPoints": [
+        {
+          "x": 272,
+          "z": -3
+        },
+        {
+          "x": 272,
+          "z": 3
+        },
+        {
+          "x": 276,
+          "z": -3
+        },
+        {
+          "x": 276,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-plac"
+      }
+    },
+    {
+      "id": "reinforce-mast-1",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 82,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 24,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "missionPatrol",
+      "spawnPoints": [
+        {
+          "x": 75,
+          "z": -3
+        },
+        {
+          "x": 88,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "objective",
+        "id": "mast-1"
+      },
+      "reinforcementFor": "mast-1"
+    },
+    {
+      "id": "reinforce-mast-2",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 174,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 24,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "missionPatrol",
+      "spawnPoints": [
+        {
+          "x": 167,
+          "z": -3
+        },
+        {
+          "x": 180,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "objective",
+        "id": "mast-2"
+      },
+      "reinforcementFor": "mast-2"
+    },
+    {
+      "id": "reinforce-mast-3",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 270,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 24,
+          "y": 8,
+          "z": 36
+        }
+      },
+      "wave": "missionPatrol",
+      "spawnPoints": [
+        {
+          "x": 263,
+          "z": -3
+        },
+        {
+          "x": 276,
+          "z": 3
+        }
+      ],
+      "after": {
+        "kind": "objective",
+        "id": "mast-3"
+      },
+      "reinforcementFor": "mast-3"
+    }
+  ],
+  "gates": [
+    {
+      "id": "gate-patrol-wejscie",
+      "block": {
+        "position": {
+          "x": 38,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 12
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-wejscie"
+      }
+    },
+    {
+      "id": "gate-oslona-pierwszego",
+      "block": {
+        "position": {
+          "x": 96,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 10
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "oslona-pierwszego"
+      }
+    },
+    {
+      "id": "gate-patrol-tunel",
+      "block": {
+        "position": {
+          "x": 140,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 26
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-tunel"
+      }
+    },
+    {
+      "id": "gate-oslona-drugiego",
+      "block": {
+        "position": {
+          "x": 181,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 26
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "oslona-drugiego"
+      }
+    },
+    {
+      "id": "gate-patrol-rusztowania",
+      "block": {
+        "position": {
+          "x": 224,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 14
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-rusztowania"
+      }
+    },
+    {
+      "id": "gate-patrol-plac",
+      "block": {
+        "position": {
+          "x": 255,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 28
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "patrol-plac"
+      }
+    },
+    {
+      "id": "gate-oslona-trzeciego",
+      "block": {
+        "position": {
+          "x": 282,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 12
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "oslona-trzeciego"
+      }
+    },
+    {
+      "id": "gate-mast-1",
+      "block": {
+        "position": {
+          "x": 100,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 10
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "objective",
+        "id": "mast-1"
+      }
+    },
+    {
+      "id": "gate-mast-2",
+      "block": {
+        "position": {
+          "x": 184,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 14
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "objective",
+        "id": "mast-2"
+      }
+    },
+    {
+      "id": "gate-helix",
+      "block": {
+        "position": {
+          "x": 188,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 14
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "objective",
+        "id": "helix"
+      }
+    },
+    {
+      "id": "gate-mast-3",
+      "block": {
+        "position": {
+          "x": 288,
+          "y": 6,
+          "z": 0
+        },
+        "size": {
+          "x": 1,
+          "y": 12,
+          "z": 12
+        },
+        "material": "metal"
+      },
+      "after": {
+        "kind": "objective",
+        "id": "mast-3"
+      }
+    }
+  ],
+  "maxAlive": 12,
+  "objectiveOrder": ["mast-1", "mast-2", "helix", "mast-3", "exit"],
+  "objectivePositions": {
+    "mast-1": {
+      "x": 82,
+      "y": 0,
+      "z": 0
+    },
+    "mast-2": {
+      "x": 174,
+      "y": 0,
+      "z": 0
+    },
+    "helix": {
+      "x": 175.5,
+      "y": 0,
+      "z": 0
+    },
+    "mast-3": {
+      "x": 270,
+      "y": 0,
+      "z": 0
+    },
+    "exit": {
+      "x": 312,
+      "y": 0,
+      "z": 0
+    }
+  }
+}

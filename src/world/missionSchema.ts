@@ -78,6 +78,7 @@ export const missionSchema = z
     summary: id,
     act: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     sectorId: id,
+    level: id.optional(),
     requires: z.array(id),
     layers: z.number().int().positive(),
     typeWeights: z.array(layerTypeWeightsSchema).optional(),

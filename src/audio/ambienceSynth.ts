@@ -103,6 +103,12 @@ export class AmbienceSynth {
     } else if (kind !== 'train') {
       const p = t.ambienceProfiles[kind];
       switch (kind) {
+        case 'rain':
+          layer('noise', 0, 'highpass', p.filterHz);
+          break;
+        case 'wind':
+          layer('noise', 0, 'lowpass', p.filterHz);
+          break;
         case 'purr':
           layer('noise', 0, 'lowpass', p.filterHz);
           break;

@@ -1,0 +1,2747 @@
+{
+  "id": "arenaContainerPort",
+  "name": "Port kontenerowy",
+  "type": "combat",
+  "theme": "neonStreet",
+  "weather": "storm",
+  "playerSpawn": {
+    "x": -38,
+    "y": 0,
+    "z": 39
+  },
+  "blocks": [
+    {
+      "size": {
+        "x": 100,
+        "y": 1,
+        "z": 100
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "material": "quay_lines"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 8,
+        "z": 100
+      },
+      "position": {
+        "x": -50,
+        "y": 4,
+        "z": 0
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 8,
+        "z": 100
+      },
+      "position": {
+        "x": 50,
+        "y": 4,
+        "z": 0
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 100,
+        "y": 8,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 4,
+        "z": -50
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 100,
+        "y": 1,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 0.5,
+        "z": 50
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 96,
+        "y": 0.3,
+        "z": 20
+      },
+      "position": {
+        "x": 0,
+        "y": -0.15,
+        "z": 39
+      },
+      "material": "quay_concrete"
+    },
+    {
+      "size": {
+        "x": 130,
+        "y": 0.3,
+        "z": 32
+      },
+      "position": {
+        "x": 0,
+        "y": -2,
+        "z": 68
+      },
+      "material": "glass"
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -24,
+        "y": 1.2955,
+        "z": -14
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -24,
+        "y": 3.8865,
+        "z": -14
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -24,
+        "y": 1.2955,
+        "z": -7.5
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -24,
+        "y": 3.8865,
+        "z": -7.5
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -24,
+        "y": 1.2955,
+        "z": -1
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -24,
+        "y": 3.8865,
+        "z": -1
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -24,
+        "y": 1.2955,
+        "z": 8
+      },
+      "material": "container_ochre",
+      "model": "port_container_40_ochre",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -6,
+        "y": 1.2955,
+        "z": -19
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -6,
+        "y": 3.8865,
+        "z": -19
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -6,
+        "y": 6.4775,
+        "z": -19
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 10,
+        "y": 1.2955,
+        "z": -6
+      },
+      "material": "container_graphite",
+      "model": "port_container_40_graphite",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -6,
+        "y": 1.2955,
+        "z": 6
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 14,
+        "y": 1.2955,
+        "z": 16
+      },
+      "material": "container_ochre",
+      "model": "port_container_40_ochre",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 14,
+        "y": 3.8865,
+        "z": 16
+      },
+      "material": "container_ochre",
+      "model": "port_container_40_ochre",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 14,
+        "y": 6.4775,
+        "z": 16
+      },
+      "material": "container_ochre",
+      "model": "port_container_40_ochre",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 32,
+        "y": 1.2955,
+        "z": 5
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 32,
+        "y": 3.8865,
+        "z": 5
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 32,
+        "y": 1.2955,
+        "z": 16
+      },
+      "material": "container_graphite",
+      "model": "port_container_40_graphite",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 2,
+        "y": 1.2955,
+        "z": -35
+      },
+      "material": "container_graphite",
+      "model": "port_container_40_graphite",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 2,
+        "y": 3.8865,
+        "z": -35
+      },
+      "material": "container_graphite",
+      "model": "port_container_40_graphite",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 31,
+        "y": 1.2955,
+        "z": -32
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 31,
+        "y": 3.8865,
+        "z": -32
+      },
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -25,
+        "y": 1.2955,
+        "z": -39
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -25,
+        "y": 3.8865,
+        "z": -39
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -25,
+        "y": 6.4775,
+        "z": -39
+      },
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -12,
+        "y": 1.2955,
+        "z": 34
+      },
+      "material": "container_graphite",
+      "model": "port_container_20_graphite",
+      "instance": true,
+      "rotation": {
+        "x": 0,
+        "y": 0.25,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -35,
+        "y": 1.2955,
+        "z": 32
+      },
+      "material": "container_olive",
+      "model": "port_container_20_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -35,
+        "y": 3.8865,
+        "z": 32
+      },
+      "material": "container_olive",
+      "model": "port_container_20_olive",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 18,
+        "y": 1.2955,
+        "z": 34
+      },
+      "material": "container_navy",
+      "model": "port_container_20_navy",
+      "instance": true,
+      "rotation": {
+        "x": 0,
+        "y": -0.25,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -4,
+        "y": 1.2955,
+        "z": 22
+      },
+      "material": "container_ochre",
+      "model": "port_container_20_ochre",
+      "instance": true,
+      "rotation": {
+        "x": 0,
+        "y": 0.3,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 13,
+        "y": 1.2955,
+        "z": -39
+      },
+      "material": "container_ochre",
+      "model": "port_container_20_ochre",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": -39,
+        "y": 1.2955,
+        "z": -6
+      },
+      "material": "container_graphite",
+      "model": "port_container_20_graphite",
+      "instance": true,
+      "rotation": {
+        "x": 0,
+        "y": 1.570796327,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "position": {
+        "x": 39,
+        "y": 1.2955,
+        "z": 25
+      },
+      "material": "container_navy",
+      "model": "port_container_20_navy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 0.1,
+        "z": 1.2
+      },
+      "position": {
+        "x": -24,
+        "y": 5.232,
+        "z": -10.75
+      },
+      "material": "metal",
+      "visible": false,
+      "rotation": {
+        "x": 0,
+        "y": 1.570796327,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 1.14,
+        "z": 0.07
+      },
+      "position": {
+        "x": -24.65,
+        "y": 5.852,
+        "z": -10.75
+      },
+      "material": "metal",
+      "visible": false,
+      "rotation": {
+        "x": 0,
+        "y": 1.570796327,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 1.14,
+        "z": 0.07
+      },
+      "position": {
+        "x": -23.35,
+        "y": 5.852,
+        "z": -10.75
+      },
+      "material": "metal",
+      "visible": false,
+      "rotation": {
+        "x": 0,
+        "y": 1.570796327,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 0.1,
+        "z": 1.2
+      },
+      "position": {
+        "x": -24,
+        "y": 5.232,
+        "z": -4.25
+      },
+      "material": "metal",
+      "visible": false,
+      "rotation": {
+        "x": 0,
+        "y": 1.570796327,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 1.14,
+        "z": 0.07
+      },
+      "position": {
+        "x": -24.65,
+        "y": 5.852,
+        "z": -4.25
+      },
+      "material": "metal",
+      "visible": false,
+      "rotation": {
+        "x": 0,
+        "y": 1.570796327,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 1.14,
+        "z": 0.07
+      },
+      "position": {
+        "x": -23.35,
+        "y": 5.852,
+        "z": -4.25
+      },
+      "material": "metal",
+      "visible": false,
+      "rotation": {
+        "x": 0,
+        "y": 1.570796327,
+        "z": 0
+      }
+    },
+    {
+      "size": {
+        "x": 24,
+        "y": 0.5,
+        "z": 9
+      },
+      "position": {
+        "x": 32,
+        "y": 4.932,
+        "z": -23
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.4,
+        "z": 4
+      },
+      "position": {
+        "x": 22,
+        "y": 2.391,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.4,
+        "z": 8
+      },
+      "position": {
+        "x": 35,
+        "y": 4.982,
+        "z": -17
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 20,
+        "y": 6.55,
+        "z": -26
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 20,
+        "y": 6.55,
+        "z": -20
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 1,
+        "z": 8.6
+      },
+      "position": {
+        "x": 20,
+        "y": 0.5,
+        "z": -23
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 44,
+        "y": 6.55,
+        "z": -26
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 44,
+        "y": 6.55,
+        "z": -20
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 1,
+        "z": 8.6
+      },
+      "position": {
+        "x": 44,
+        "y": 0.5,
+        "z": -23
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 0,
+        "y": 6.55,
+        "z": 13
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 0,
+        "y": 6.55,
+        "z": 19
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 1,
+        "z": 8.6
+      },
+      "position": {
+        "x": 0,
+        "y": 0.5,
+        "z": 16
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 24,
+        "y": 6.55,
+        "z": 13
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 13.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": 24,
+        "y": 6.55,
+        "z": 19
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 1,
+        "z": 8.6
+      },
+      "position": {
+        "x": 24,
+        "y": 0.5,
+        "z": 16
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 18.731073754592927,
+        "y": 0.3,
+        "z": 4
+      },
+      "position": {
+        "x": -39,
+        "y": 2.4468544995671726,
+        "z": -14
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.28030898427609047
+      }
+    },
+    {
+      "size": {
+        "x": 12.276533753466408,
+        "y": 0.3,
+        "z": 4
+      },
+      "position": {
+        "x": -12,
+        "y": 1.1488788090232107,
+        "z": 8
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.21265216067670803
+      }
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.3,
+        "z": 4
+      },
+      "position": {
+        "x": -28.5,
+        "y": 5.032,
+        "z": -14
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.17273333333333335,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.08636666666666667,
+        "z": -5.0
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.3454666666666667,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.17273333333333335,
+        "z": -5.6
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.5182000000000001,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.25910000000000005,
+        "z": -6.2
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.6909333333333334,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.3454666666666667,
+        "z": -6.8
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 0.8636666666666667,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.43183333333333335,
+        "z": -7.4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.0364000000000002,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.5182000000000001,
+        "z": -8.0
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.2091333333333334,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.6045666666666667,
+        "z": -8.6
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.3818666666666668,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.6909333333333334,
+        "z": -9.2
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.5546,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.7773,
+        "z": -9.8
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.7273333333333334,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.8636666666666667,
+        "z": -10.399999999999999
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.9000666666666668,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 0.9500333333333334,
+        "z": -11.0
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2.0728000000000004,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 1.0364000000000002,
+        "z": -11.6
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2.2455333333333334,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 1.1227666666666667,
+        "z": -12.2
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2.418266666666667,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 1.2091333333333334,
+        "z": -12.8
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2.591,
+        "z": 0.6
+      },
+      "position": {
+        "x": 22,
+        "y": 1.2955,
+        "z": -13.4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 0.17273333333333335,
+        "z": 4
+      },
+      "position": {
+        "x": 24.3,
+        "y": 2.677366666666667,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 0.3454666666666667,
+        "z": 4
+      },
+      "position": {
+        "x": 24.900000000000002,
+        "y": 2.7637333333333336,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 0.5182000000000001,
+        "z": 4
+      },
+      "position": {
+        "x": 25.5,
+        "y": 2.8501,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 0.6909333333333334,
+        "z": 4
+      },
+      "position": {
+        "x": 26.1,
+        "y": 2.9364666666666666,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 0.8636666666666667,
+        "z": 4
+      },
+      "position": {
+        "x": 26.7,
+        "y": 3.0228333333333333,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 1.0364000000000002,
+        "z": 4
+      },
+      "position": {
+        "x": 27.3,
+        "y": 3.1092,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 1.2091333333333334,
+        "z": 4
+      },
+      "position": {
+        "x": 27.9,
+        "y": 3.195566666666667,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 1.3818666666666668,
+        "z": 4
+      },
+      "position": {
+        "x": 28.5,
+        "y": 3.2819333333333334,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 1.5546,
+        "z": 4
+      },
+      "position": {
+        "x": 29.1,
+        "y": 3.3683,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 1.7273333333333334,
+        "z": 4
+      },
+      "position": {
+        "x": 29.7,
+        "y": 3.4546666666666668,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 1.9000666666666668,
+        "z": 4
+      },
+      "position": {
+        "x": 30.3,
+        "y": 3.541033333333333,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 2.0728000000000004,
+        "z": 4
+      },
+      "position": {
+        "x": 30.9,
+        "y": 3.6274,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 2.2455333333333334,
+        "z": 4
+      },
+      "position": {
+        "x": 31.5,
+        "y": 3.7137666666666664,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 2.418266666666667,
+        "z": 4
+      },
+      "position": {
+        "x": 32.1,
+        "y": 3.8001333333333336,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 2.591,
+        "z": 4
+      },
+      "position": {
+        "x": 32.7,
+        "y": 3.8865000000000003,
+        "z": -15
+      },
+      "material": "steel_grating"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.3,
+        "z": 2
+      },
+      "position": {
+        "x": -37,
+        "y": 0.65,
+        "z": 21
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.3,
+        "z": 2
+      },
+      "position": {
+        "x": -12,
+        "y": 0.65,
+        "z": 24
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.3,
+        "z": 2
+      },
+      "position": {
+        "x": 12,
+        "y": 0.65,
+        "z": 27
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.3,
+        "z": 2
+      },
+      "position": {
+        "x": 26,
+        "y": 0.65,
+        "z": 32
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.3,
+        "z": 2
+      },
+      "position": {
+        "x": -2,
+        "y": 0.65,
+        "z": -6
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.3,
+        "z": 2
+      },
+      "position": {
+        "x": 12,
+        "y": 0.65,
+        "z": -29
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.3,
+        "z": 2
+      },
+      "position": {
+        "x": 38,
+        "y": 0.65,
+        "z": -5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -46,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -42,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -38,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -34,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -30,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -26,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -22,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -18,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -14,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -10,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -6,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": -2,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 2,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 6,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 10,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 14,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 18,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 22,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 26,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 30,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 34,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 38,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 42,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2,
+        "z": 1.6
+      },
+      "position": {
+        "x": 46,
+        "y": -1,
+        "z": 48.7
+      },
+      "material": "quay_concrete",
+      "model": "port_quay_edge"
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": -42,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": -30,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": -18,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": -6,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": 6,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": 18,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": 30,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.6,
+        "z": 0.62
+      },
+      "position": {
+        "x": 42,
+        "y": 0.3,
+        "z": 46
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2.8,
+        "z": 6
+      },
+      "position": {
+        "x": -8,
+        "y": 1.4,
+        "z": -30
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 2.8,
+        "z": 6
+      },
+      "position": {
+        "x": 31,
+        "y": 1.4,
+        "z": 32
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 18,
+        "z": 0.7
+      },
+      "position": {
+        "x": -36,
+        "y": 9,
+        "z": -36
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 18,
+        "z": 0.7
+      },
+      "position": {
+        "x": -35,
+        "y": 9,
+        "z": 18
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 18,
+        "z": 0.7
+      },
+      "position": {
+        "x": 35,
+        "y": 9,
+        "z": -11
+      },
+      "material": "metal",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 18,
+        "z": 0.7
+      },
+      "position": {
+        "x": 14,
+        "y": 9,
+        "z": 39
+      },
+      "material": "metal",
+      "visible": false
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -42,
+      "z": -40
+    },
+    {
+      "x": 42,
+      "z": -39
+    },
+    {
+      "x": 42,
+      "z": 39
+    },
+    {
+      "x": -42,
+      "z": 8
+    },
+    {
+      "x": 5,
+      "z": -43
+    },
+    {
+      "x": 43,
+      "z": 4
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": -38,
+        "y": 1.5,
+        "z": 49
+      },
+      "size": {
+        "x": 3,
+        "y": 3,
+        "z": 1
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": -49
+      },
+      "size": {
+        "x": 3,
+        "y": 3,
+        "z": 1
+      }
+    }
+  ],
+  "maxAlive": 8,
+  "minSpawnDistance": 15,
+  "props": [],
+  "arena": {
+    "points": [
+      {
+        "id": "A",
+        "position": {
+          "x": -32,
+          "y": 0,
+          "z": -28
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "B",
+        "position": {
+          "x": 32,
+          "y": 0,
+          "z": -23
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "C",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 33
+        },
+        "radiusM": 4
+      }
+    ],
+    "batchCellM": 20,
+    "navigationCellM": 1,
+    "navigationClearanceM": 0.8,
+    "exclusive": true
+  },
+  "decor": [
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": -40,
+        "y": 0,
+        "z": -18
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": -40,
+        "y": 0,
+        "z": 25
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 40,
+        "y": 0,
+        "z": -30
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 40,
+        "y": 0,
+        "z": 26
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 3,
+        "y": 0,
+        "z": 41
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": -44,
+        "y": 0,
+        "z": 31
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": -17,
+        "y": 0,
+        "z": 33
+      },
+      "yaw": 0.3,
+      "scale": 1
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": 20,
+        "y": 0,
+        "z": 39
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_kiosk",
+      "position": {
+        "x": 40,
+        "y": 0,
+        "z": 32
+      },
+      "yaw": -1.57,
+      "scale": 1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": -49,
+        "y": 0,
+        "z": -12
+      },
+      "yaw": 1.57,
+      "scale": 1
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 32,
+        "y": 9,
+        "z": -23
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 43,
+        "y": 0,
+        "z": -23
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_trash_bags",
+      "position": {
+        "x": -44,
+        "y": 0,
+        "z": 34
+      },
+      "yaw": 0.3,
+      "scale": 1
+    },
+    {
+      "model": "city_holo_projector",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 40
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_lashing_platform",
+      "position": {
+        "x": -24,
+        "y": 5.182,
+        "z": -10.75
+      },
+      "yaw": 1.5707963267948966,
+      "scale": 1
+    },
+    {
+      "model": "port_lashing_platform",
+      "position": {
+        "x": -24,
+        "y": 5.182,
+        "z": -4.25
+      },
+      "yaw": 1.5707963267948966,
+      "scale": 1
+    },
+    {
+      "model": "port_gantry_crane",
+      "position": {
+        "x": 32,
+        "y": 0,
+        "z": -23
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_gantry_crane",
+      "position": {
+        "x": 12,
+        "y": 0,
+        "z": 16
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard",
+      "position": {
+        "x": -42,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard_rope",
+      "position": {
+        "x": -30,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard",
+      "position": {
+        "x": -18,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard_rope",
+      "position": {
+        "x": -6,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard_rope",
+      "position": {
+        "x": 18,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard",
+      "position": {
+        "x": 30,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_bollard_rope",
+      "position": {
+        "x": 42,
+        "y": 0,
+        "z": 46
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_reach_stacker",
+      "position": {
+        "x": -8,
+        "y": 0,
+        "z": -30
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_reach_stacker",
+      "position": {
+        "x": 31,
+        "y": 0,
+        "z": 32
+      },
+      "yaw": 3.141592653589793,
+      "scale": 1
+    },
+    {
+      "model": "port_light_tower",
+      "position": {
+        "x": -36,
+        "y": 0,
+        "z": -36
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_light_tower",
+      "position": {
+        "x": -35,
+        "y": 0,
+        "z": 18
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_light_tower",
+      "position": {
+        "x": 35,
+        "y": 0,
+        "z": -11
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "port_light_tower",
+      "position": {
+        "x": 14,
+        "y": 0,
+        "z": 39
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": -18,
+        "y": 0,
+        "z": -33
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": -37,
+        "y": 0,
+        "z": -23
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "z": 29
+      },
+      "yaw": 0.3,
+      "scale": 1
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": 14,
+        "y": 0,
+        "z": -16
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": -28,
+        "y": 0,
+        "z": 24
+      },
+      "yaw": 0.2,
+      "scale": 1
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 12,
+        "y": 12,
+        "z": 16
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": -24,
+        "y": 9,
+        "z": -7.5
+      },
+      "yaw": 1.5707963267948966,
+      "scale": 1
+    },
+    {
+      "model": "city_trash_bags",
+      "position": {
+        "x": -16,
+        "y": 0,
+        "z": -30
+      },
+      "yaw": 0.5,
+      "scale": 1
+    },
+    {
+      "model": "city_traffic_cone",
+      "position": {
+        "x": 24,
+        "y": 0,
+        "z": 35
+      },
+      "yaw": 0,
+      "scale": 1
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": -32,
+        "y": 5,
+        "z": -28
+      },
+      "color": "#ffae1a",
+      "intensity": 32,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 32,
+        "y": 5,
+        "z": -23
+      },
+      "color": "#6dff4a",
+      "intensity": 32,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 5,
+        "z": 33
+      },
+      "color": "#8a5cff",
+      "intensity": 32,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": -36,
+        "y": 18.5,
+        "z": -36
+      },
+      "color": "#fff1d6",
+      "intensity": 120,
+      "range": 34
+    },
+    {
+      "position": {
+        "x": -35,
+        "y": 18.5,
+        "z": 18
+      },
+      "color": "#fff1d6",
+      "intensity": 120,
+      "range": 34
+    },
+    {
+      "position": {
+        "x": 35,
+        "y": 18.5,
+        "z": -11
+      },
+      "color": "#fff1d6",
+      "intensity": 120,
+      "range": 34
+    },
+    {
+      "position": {
+        "x": 14,
+        "y": 18.5,
+        "z": 39
+      },
+      "color": "#fff1d6",
+      "intensity": 120,
+      "range": 34
+    }
+  ],
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "open",
+      "position": {
+        "x": -32,
+        "y": 6.5,
+        "z": -34
+      },
+      "size": {
+        "w": 3,
+        "h": 1.2
+      },
+      "yaw": 0,
+      "tint": "#ffae1a"
+    },
+    {
+      "kind": "neon",
+      "texture": "open",
+      "position": {
+        "x": 32,
+        "y": 6.5,
+        "z": -29
+      },
+      "size": {
+        "w": 3,
+        "h": 1.2
+      },
+      "yaw": 0,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "neon",
+      "texture": "open",
+      "position": {
+        "x": 0,
+        "y": 6.5,
+        "z": 27
+      },
+      "size": {
+        "w": 3,
+        "h": 1.2
+      },
+      "yaw": 0,
+      "tint": "#8a5cff"
+    }
+  ],
+  "decals": [
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": -32,
+        "y": 0.01,
+        "z": -26
+      },
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": 32,
+        "y": 0.01,
+        "z": -22
+      },
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": 0,
+        "y": 0.01,
+        "z": 32
+      },
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": -12,
+        "y": 0.01,
+        "z": 28
+      },
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": 12,
+        "y": 0.01,
+        "z": -29
+      },
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.65
+    },
+    {
+      "texture": "puddle1",
+      "position": {
+        "x": -24,
+        "y": 0.01,
+        "z": 20
+      },
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "yaw": 0.4,
+      "surface": "floor",
+      "opacity": 0.65
+    }
+  ],
+  "rainShelters": [
+    {
+      "position": {
+        "x": -24,
+        "y": 2.59,
+        "z": -7.5
+      },
+      "size": {
+        "x": 1.2,
+        "y": 5.18,
+        "z": 17
+      }
+    },
+    {
+      "position": {
+        "x": 32,
+        "y": 2.35,
+        "z": -23
+      },
+      "size": {
+        "x": 24,
+        "y": 4.7,
+        "z": 9
+      }
+    }
+  ]
+}

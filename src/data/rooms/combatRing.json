@@ -1001,5 +1001,57 @@
   },
   "maxAlive": 8,
   "minSpawnDistance": 6,
-  "props": []
+  "props": [],
+  "arena": {
+    "points": [
+      {
+        "id": "A",
+        "position": {
+          "x": -10,
+          "y": 0,
+          "z": -9
+        },
+        "radiusM": 2.75
+      },
+      {
+        "id": "B",
+        "position": {
+          "x": 10,
+          "y": 0,
+          "z": -9
+        },
+        "radiusM": 2.75
+      },
+      {
+        "id": "C",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 3.5
+      }
+    ],
+    "batchCellM": 20,
+    "navigationCellM": 1,
+    "navigationClearanceM": 0.8,
+    "spawnPoints": [
+      {
+        "x": -12,
+        "z": -12
+      },
+      {
+        "x": 12,
+        "z": -12
+      },
+      {
+        "x": -12,
+        "z": 12
+      },
+      {
+        "x": 12,
+        "z": 12
+      }
+    ]
+  }
 }

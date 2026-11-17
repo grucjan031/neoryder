@@ -1,0 +1,62 @@
+{
+  "id": "storm",
+  "title": "Burza portowa",
+  "precipitation": {
+    "kind": "rain",
+    "density": 1,
+    "speed": 27,
+    "color": "#8294b0",
+    "opacity": 0.32,
+    "exposureS": 0.032,
+    "widthM": 0.015
+  },
+  "wind": {
+    "direction": {
+      "x": 0.8,
+      "z": 0.6
+    },
+    "strength": 7,
+    "gustStrength": 0.55,
+    "gustPeriodS": 6
+  },
+  "fog": {
+    "color": "#2b1f3d",
+    "density": 0.035,
+    "heightM": 5,
+    "strength": 0.65,
+    "nearM": 25,
+    "farM": 145
+  },
+  "surface": {
+    "gloss": 0.9,
+    "reflections": 1,
+    "puddles": 1
+  },
+  "lightning": {
+    "enabled": true,
+    "minIntervalS": 5,
+    "maxIntervalS": 13,
+    "brightness": 1.4,
+    "color": "#fff1d6",
+    "decayS": 0.28
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.12,
+    "opacity": 0.12,
+    "color": "#8991a0",
+    "lifeS": 8
+  },
+  "ambience": [
+    {
+      "kind": "rain",
+      "gain": 0.85,
+      "radiusM": 100
+    },
+    {
+      "kind": "wind",
+      "gain": 0.5,
+      "radiusM": 100
+    }
+  ]
+}

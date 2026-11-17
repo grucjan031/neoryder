@@ -1,0 +1,62 @@
+{
+  "id": "drizzleWind",
+  "title": "Mżawka i wiatr",
+  "precipitation": {
+    "kind": "drizzle",
+    "density": 0.4,
+    "speed": 8,
+    "color": "#8294b0",
+    "opacity": 0.19,
+    "exposureS": 0.014,
+    "widthM": 0.009
+  },
+  "wind": {
+    "direction": {
+      "x": -0.6,
+      "z": 0.8
+    },
+    "strength": 10,
+    "gustStrength": 0.7,
+    "gustPeriodS": 4
+  },
+  "fog": {
+    "color": "#2b1f3d",
+    "density": 0.035,
+    "heightM": 3,
+    "strength": 0.6,
+    "nearM": 15,
+    "farM": 130
+  },
+  "surface": {
+    "gloss": 0.5,
+    "reflections": 0.65,
+    "puddles": 0.65
+  },
+  "lightning": {
+    "enabled": false,
+    "minIntervalS": 25,
+    "maxIntervalS": 55,
+    "brightness": 1,
+    "color": "#fff1d6",
+    "decayS": 0.18
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.12,
+    "opacity": 0.12,
+    "color": "#8991a0",
+    "lifeS": 8
+  },
+  "ambience": [
+    {
+      "kind": "rain",
+      "gain": 0.2,
+      "radiusM": 100
+    },
+    {
+      "kind": "wind",
+      "gain": 0.7,
+      "radiusM": 100
+    }
+  ]
+}

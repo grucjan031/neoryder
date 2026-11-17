@@ -1,6 +1,6 @@
 # Tekstury uliczek NEORYDER — Neon Noir
 
-Pakiet 88 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra i 2 atlasy okien) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
+Pakiet 101 bitmap (33 z pierwszego pakietu, 17 z drugiego, 24 z trzeciego, 12 dla kryjówki Iskra 2 atlasy okien i 13 powierzchni dużych aren) wygenerowanych wbudowanym narzędziem imagegen na potrzeby projektu — własne. Nie użyto zdjęć, zewnętrznych bibliotek obrazów ani prawdziwych marek. Źródła PNG są lokalnie w `tools/textures/raw/` i są ignorowane przez Git. Do repo trafiają WebP, manifest, katalog, skrypt i opis promptów.
 
 Kierunek artystyczny pochodzi z briefu właściciela gry dotyczącego ADR 0006. W chwili wykonania tego zadania plik ADR 0006 nie był obecny w tym worktree. Istniejący kontrakt `src/world/dressingSchema.ts` określa ścieżki oraz sposób użycia signs, holo i decals. Pakiet nie zmienia kodu gry ani tego kontraktu.
 
@@ -55,7 +55,7 @@ python tools/textures/process.py validate
 python tools/textures/process.py previews
 ```
 
-Walidator sprawdza dokładny zestaw 88 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Posters wymagają pełnej nieprzezroczystości oraz zera pikseli z G > 120 i G − max(R, B) > 85 w skali 0–255; nie wymagają kafelkowania ani przezroczystych rogów. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
+Walidator sprawdza dokładny zestaw 101 plików, WebP, wymiary, RGB/RGBA, zgodność manifestu, czarne rogi signs/holo/screens (średnia z czterech kwadratów 24×24 < 3/255), zerową alfę rogów decals/labels oraz maksymalną alfę ≥ 200, skalę szarości masek, pokrycie kałuż 20–30%, przeciwległe krawędzie surfaces (średnia różnica kanału ≤ 6/255) oraz budżet całego katalogu tekstur ≤ 12 000 000 bajtów. Każda powierzchnia ma dodatkowo podgląd 2×2 do oceny wzoru i łączeń wzrokiem. Posters wymagają pełnej nieprzezroczystości oraz zera pikseli z G > 120 i G − max(R, B) > 85 w skali 0–255; nie wymagają kafelkowania ani przezroczystych rogów. Kontrola napisów, marek i kolorów wymaga obejrzenia planszy.
 
 Podgląd zbiorczy: `%TEMP%/neoryder-textures/contact-sheet.png`. Podglądy kafelkowania: `%TEMP%/neoryder-textures/<id>-2x2.png`. Raport wymiarów, bajtów, rogów i krawędzi: `%TEMP%/neoryder-textures/validation.json`.
 
@@ -65,3 +65,26 @@ Do ręcznego review: obejrzeć podglądy 2×2 pod kątem łączeń i widocznego 
 ## Atlasy (`atlas/`)
 
 `atlas/` zawiera nieprzezroczyste tekstury RGB 1024?1024 bez kafelkowania. `windows_lit` i `windows_dark` s? siatkami 4?4, ka?da z 16 oknami; pojedyncza kom?rka ma 256?256 px. UV kom?rki w uk?adzie tekstury od lewego g?rnego rogu: kolumna `c` i wiersz `r` (0?3) zajmuje `u=[c/4,(c+1)/4]`, `v=[r/4,(r+1)/4]`. Przy UV z pocz?tkiem na dole obrazu nale?y odwr?ci? wiersz: `v=[1-(r+1)/4,1-r/4]`. Zostaw margines filtracji przy granicach kom?rki; ka?da kom?rka ma w?asn? cienk? ciemn? ram?, by ogranicza? zlewanie s?siad?w.
+
+
+## Powierzchnie dużych aren — 2026-11-17
+
+Wszystkie nowe tekstury: surfaces, RGB, 1024×1024, kafelkowanie w obu osiach.
+
+| Id | Materiał |
+| --- | --- |
+| container_corrugated_navy | Granatowa blacha falista kontenera |
+| container_corrugated_olive | Oliwkowa blacha falista kontenera |
+| container_corrugated_ochre | Ochrowa blacha falista kontenera |
+| container_corrugated_graphite | Grafitowa blacha falista kontenera |
+| quay_concrete | Beton nabrzeża z olejem i spękaniami |
+| quay_lines | Mokry asfalt z bursztynowymi liniami |
+| steel_grating | Stalowa kratownica, jasny ażur w RGB |
+| rubber_fender | Ciemna starta guma odbojnicy |
+| crane_paint | Bursztynowa stal suwnicy z nitami |
+| overpass_concrete | Beton estakady z zaciekami i smogiem |
+| smog_soot_wall | Chłodna szara ściana pokryta sadzą |
+| market_tarp | Wyblakły granatowo-fioletowy brezent |
+| roof_hvac_metal | Blacha HVAC z kratkami wentylacyjnymi |
+
+`steel_grating` to nieprzezroczyste albedo: jasny ażur jest kolorem, nie maską alfa. Istniejąca tekstura `roof_tar` pozostaje bez zmian. Pełne prompty i liczba ponowień są w README narzędzi.

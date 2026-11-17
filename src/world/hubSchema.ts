@@ -194,7 +194,9 @@ export const hubNpcSchema = z
             'hood',
           ])
           .optional(),
-        torso: z.enum(['vest', 'apron', 'coat', 'jacket', 'none']).optional(),
+        torso: z
+          .enum(['vest', 'apron', 'coat', 'jacket', 'hoodie', 'none'])
+          .optional(),
         prop: z
           .enum([
             'none',

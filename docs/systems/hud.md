@@ -359,22 +359,23 @@ gradient pod spodem. Pasek przy napisie ładowania sygnalizuje pracę.
 `prefers-reduced-motion` wyłącza animację zmiany i paska; `fx=lite` wyłącza
 obrazy, porady i pasek splashu.
 
-Opcjonalne `scenes: string[]` w `src/data/ui/splash.json` ma priorytet:
-scena → pokój → motyw → pełna lista. `menu` oznacza stronę bez `?scene=`;
-pozostałe identyfikatory pochodzą z `src/scenes/index.ts`. Menu wybiera panoramę
-Neo-Ryd, kuriera lub dachy przed świtem; arena trening i walkę; tutorial rampę
-lub poligon; hub obrazy `hideout`, budkę z makaronem i bar hutników.
-Run zachowuje dobór według pokoju/motywu.
+`pickSplash(maxAct = 1, all = getSplashes(), random = Math.random)` wybiera
+jednostajnie losowo spośród wszystkich odblokowanych splashartów (`entry.act <= maxAct`),
+bez powtórzenia ostatnio wybranego obrazu, gdy pula ma co najmniej 2 obrazy
+(pamięć w zmiennej modułu). Opcjonalne pola `scenes`, `rooms` i `themes` w
+`src/data/ui/splash.json` pozostają w danych i schemacie jako metadane, ale
+nie wpływają na wybór. Domyślny generator `Math.random` jest tu dozwolony jako
+kosmetyka UI poza symulacją.
 
 Splasharty nie zdradzają fabuły: każdy wpis ma wymagane `act` (1 prolog, akt I
 i neutralne, 2 akt II, 3 akt III, 4 epilog), a `pickSplash` bierze pod uwagę
-tylko `act <= maxAct`, także przy dopasowaniu sceny, pokoju i motywu. Misje nie
-są podpięte, więc `unlockedSplashAct(stats.victories)` liczy akt z liczby
-zwycięstw w meta-zapisie i progów `tuning.ui.splashActVictories` (domyślnie
-0/1/3/5); brak lub błąd zapisu daje akt 1. Nakładka startowa nie czeka z
-uruchomieniem gry: gdy akt nie zmienia wyboru (np. menu), obraz jest od razu,
-inaczej po odczycie zapisu (IndexedDB), najdłużej po
-`tuning.ui.splashMetaTimeoutMs`.
+wyłącznie `act <= maxAct`. `unlockedSplashAct` wyznacza akt z ukończonych misji
+kampanii lub (przy pustej kampanii) ze zwycięstw w meta-zapisie i progów
+`tuning.ui.splashActVictories` (domyślnie 0/1/3/5); brak lub błąd zapisu daje
+akt 1. Nakładka startowa nie czeka z uruchomieniem gry: gdy `maxAct` jest liczbą,
+obraz montuje się od razu; gdy jest obietnicą (odczyt z IndexedDB, najdłużej po
+`tuning.ui.splashMetaTimeoutMs`), montuje się po jej rozwiązaniu, a przy błędzie
+z aktem 1.
 
 Kontrola: `/`, `?scene=hub`, `?scene=arena`, `?scene=tutorial` i `?scene=run`.
 Przy spowolnionym ładowaniu sprawdź czytelność i zmianę porady po 7 s;

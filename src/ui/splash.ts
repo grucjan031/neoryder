@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { missionDefinitions } from '../world/missions';
-import { hashSeed } from '../core/rng';
 import { tuning } from '../core/tuning';
 import splashData from '../data/ui/splash.json';
 
@@ -68,42 +67,34 @@ export function getSplashes(): readonly SplashEntry[] {
   return cached ?? [];
 }
 
-export interface SplashHint {
-  scene?: string;
-  theme?: string;
-  room?: string;
-}
+let lastSplashFile: string | null = null;
 
 /**
- * Wybór splashartu bez `Math.random`: najpierw obrazy przypisane do sceny, potem pokoju i motywu,
- * w ostateczności cała lista; w obrębie grupy deterministycznie z klucza (ziarno + węzeł).
- * Obrazy z aktu wyższego niż `maxAct` w ogóle nie biorą udziału (także w dopasowaniu).
+ * Losuje splashart jednostajnie spośród wszystkich odblokowanych obrazów (`entry.act <= maxAct`),
+ * bez powtórzenia ostatnio wybranego obrazu, gdy pula ma co najmniej 2 elementy.
+ * Domyślnie używa `Math.random` — to kosmetyka UI poza pętlą symulacji (`AGENTS.md` zakazuje
+ * `Math.random` tylko w symulacji).
  */
 export function pickSplash(
-  key: string,
-  hint: SplashHint = {},
   maxAct: SplashAct = 1,
   all: readonly SplashEntry[] = getSplashes(),
+  // eslint-disable-next-line no-restricted-properties -- kosmetyka ekranu ładowania, poza symulacją
+  random: () => number = Math.random,
 ): SplashEntry | null {
-  const list = all.filter((entry) => entry.act <= maxAct);
-  const byScene = hint.scene
-    ? list.filter((entry) => entry.scenes?.includes(hint.scene!))
-    : [];
-  const byRoom = hint.room
-    ? list.filter((entry) => entry.rooms?.includes(hint.room!))
-    : [];
-  const byTheme = hint.theme
-    ? list.filter((entry) => entry.themes?.includes(hint.theme!))
-    : [];
-  const pool = byScene.length
-    ? byScene
-    : byRoom.length
-      ? byRoom
-      : byTheme.length
-        ? byTheme
-        : list;
-  const entry = pool[hashSeed(key) % pool.length];
-  return entry ?? null;
+  const unlocked = all.filter((entry) => entry.act <= maxAct);
+  if (unlocked.length === 0) return null;
+  const withoutLast =
+    unlocked.length >= 2 && lastSplashFile !== null
+      ? unlocked.filter((entry) => entry.file !== lastSplashFile)
+      : unlocked;
+  const pool = withoutLast.length > 0 ? withoutLast : unlocked;
+  const index = Math.min(
+    pool.length - 1,
+    Math.max(0, Math.floor(random() * pool.length)),
+  );
+  const entry = pool[index] ?? null;
+  if (entry) lastSplashFile = entry.file;
+  return entry;
 }
 
 export function splashUrl(entry: Pick<SplashEntry, 'file'>): string {

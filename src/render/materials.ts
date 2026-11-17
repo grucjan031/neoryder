@@ -12,6 +12,7 @@ import type { Object3D, WebGLProgramParametersWithUniforms } from 'three';
 import { tuning } from '../core/tuning';
 import {
   createUrbanMaterial,
+  urbanColor,
   urbanKinds,
   syncUrbanMaterials,
 } from './urbanMaterials';
@@ -154,7 +155,11 @@ function addFloorGrid(material: MeshToonMaterial): void {
 function colorFor(kind: StyleKind, target = new Color()): Color {
   if (kind === 'enemyDark')
     return target.set(tuning.render.enemy).multiplyScalar(ENEMY_DARK_SHADE);
-  target.set(tuning.render[kind]);
+  if (urbanKinds.includes(kind as UrbanKind))
+    return target.set(urbanColor(kind as UrbanKind));
+  target.set(
+    tuning.render[kind as Exclude<StyleKind, UrbanKind | 'enemyDark'>],
+  );
   if (mainsKinds.has(kind)) target.multiplyScalar(getPowerLevel());
   return target;
 }

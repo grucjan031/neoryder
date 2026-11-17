@@ -55,8 +55,8 @@ function legacyMeta() {
 }
 
 describe('zapis v5: osiągnięcia', () => {
-  it('SAVE_VERSION to 5', () => {
-    expect(SAVE_VERSION).toBe(5);
+  it('SAVE_VERSION to 6 (v5 naszywki, v6 rekord misji liniowej)', () => {
+    expect(SAVE_VERSION).toBe(6);
   });
 
   it('migruje meta v4 -> v5: puste osiągnięcia, reszta nietknięta', async () => {
@@ -68,7 +68,7 @@ describe('zapis v5: osiągnięcia', () => {
     });
     const saved = await createIndexedDbSaveStore('ach-v4').loadMetaStrict!();
     expect(saved).toMatchObject({
-      saveVersion: 5,
+      saveVersion: SAVE_VERSION,
       createdAt: 1,
       meta: {
         data: 321,
@@ -96,7 +96,7 @@ describe('zapis v5: osiągnięcia', () => {
     });
     const saved = await createIndexedDbSaveStore('ach-v3').loadMetaStrict!();
     expect(saved).toMatchObject({
-      saveVersion: 5,
+      saveVersion: SAVE_VERSION,
       meta: {
         data: 321,
         campaign: { completed: [], pendingDebrief: null },
@@ -133,7 +133,7 @@ describe('zapis v5: osiągnięcia', () => {
     );
     await store.saveMeta({ ...loaded, meta: meta.serialize() });
     const again = (await store.loadMetaStrict!())!;
-    expect(again.saveVersion).toBe(5);
+    expect(again.saveVersion).toBe(SAVE_VERSION);
     expect(again.meta.achievements).toEqual({
       unlocked: ['droga-ostrza', 'pierwsze-zwyciestwo'],
       counters: { runs_ended: 1, victories: 1 },

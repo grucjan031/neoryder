@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { modeIdSchema, type ModeId } from './modeSchema';
-import { modeDefinitions } from './modes';
+import { modeIdSchema, selectArena, type ModeId } from './modeSchema';
+import { conquestMode, modeDefinitions } from './modes';
 import type { MissionDefinition } from './missionSchema';
 import type { EntityId, EventBus } from '../core/events';
 import {
@@ -53,6 +53,7 @@ export interface RunManagerOptions {
 
 /** Opcje startu runu zamrożone w `RunState` (ADR 0007): ekwipunek z kryjówki, talenty, Poziom zagrożenia. */
 export interface NewRunOptions {
+  arenaId?: string;
   modeId?: ModeId;
   mission?: MissionDefinition;
   /** Pełny ekwipunek; domyślnie preset `loadoutId`. */
@@ -332,7 +333,15 @@ export class RunManager {
                 type: 'combat' as const,
                 next: [],
                 fixed: {
-                  roomId: modeDefinitions[options.modeId].roomId,
+                  roomId:
+                    options.modeId === 'conquest'
+                      ? selectArena(
+                          conquestMode,
+                          seed,
+                          options.arenaId,
+                          !!options.arenaId,
+                        )
+                      : modeDefinitions[options.modeId].roomId,
                   objectives: [],
                 },
               },

@@ -1,3 +1,4 @@
+import type { MissionSave } from '../core/save';
 import { z } from 'zod';
 import { HUB_STATION_IDS } from '../core/metaTypes';
 import type { HubStationId } from '../core/metaTypes';
@@ -41,6 +42,7 @@ export type HubPanelRegistry = Partial<Record<HubStationId, HubPanelFactory>>;
 /** Zależności paneli (kontekst `HubPanelContext` bez `close`, który zapewnia nakładka). */
 export interface HubPanelHost {
   readonly manager: MetaManager;
+  readonly missionSave?: MissionSave | null;
   save(): Promise<void>;
   navigate(url: string): void;
 }
@@ -95,6 +97,7 @@ export class HtmlHubScreens implements HubScreens {
     if (factory && host) {
       this.hosted = factory({
         manager: host.manager,
+        missionSave: host.missionSave,
         save: () => host.save(),
         navigate: (url) => host.navigate(url),
         close: actions.close,

@@ -413,7 +413,7 @@ Obiekt jest mutowalny: kod czyta wartość przy użyciu (`tuning.time.hitstopLig
 ## Zapis — `src/core/save.ts`
 
 ```ts
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 5;
 
 export interface MetaSave { saveVersion: number; createdAt: number; updatedAt: number; meta: MetaState }
 export interface RunSave  { saveVersion: number; seed: string; startedAt: number; run: RunState }
@@ -1530,8 +1530,10 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `userData.wetness` materiału oznacza odbicia
   (asphalt 1, paving 0.45, concrete 0.22, plaster 0.1), `userData.bloomMaterial` opcjonalnie dostarcza
   materiał samej emisji dla maski bloomu i odbić (okna fasad).
-- `SceneAtmosphere(three, themeId, seed, floorY)` nakłada motyw, ustawia
+- `SceneAtmosphere(three, themeId, seed, floorY, panoramaExclusion?)` nakłada motyw, ustawia
   `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.
+  Opcjonalny `panoramaExclusion` (`Box3` w przestrzeni świata) wyklucza bryły
+  panoramy przecinające obszar poziomu liniowego.
   `sync(dt)` odświeża oprawę; wyłącznie render, bez zmian symulacji.
 - Pola `signs/lights/decals/ambientFx` pozostają danymi dla integratora.
 
@@ -1957,3 +1959,95 @@ ogłuszenie ani kontrolę Rezonansem. Bez carry zachowanie pozostaje dotychczaso
 `loadMission` waliduje dane i zgodność pokojów. `generateMissionMap(mission, sector, seed)` generuje stałe węzły. `MapNode.fixed` przechowuje pokój, cele i finał. Opcjonalne `RunState.missionId`, `objectives`, `objectiveProgress` zachowują zgodność dawnych runów. `RunManager` blokuje ukończenie pokoju do wykonania jego celów. `RunSummary.missionCompleted` oznacza ukończony finał. Kampania w meta przechowuje ukończone misje i jednorazowy debrief; firstClear jest rozliczany przez applyRun.
 
 `RoomScene.missionState()` eksportuje migawkę celów do hosta; `RunManager.updateObjectives()` aktualizuje ją wyłącznie w aktywnej misji. `RoomSceneOptions.missionSignal(trigger)` przekazuje wyzwalacze radia do kolejki `MissionRadio` hostowanej przez run (kolejka przeżywa zmianę pokoju). Obrażenia i efekty eksplozji korzystają z istniejącego DamageSystem i EventBus.
+
+## Pogoda i areny Przejęcia
+
+- `RoomDefinition.weather?: string`: id profilu z `src/data/weather`; brak zachowuje
+  pogodę motywu bez zmiany parametrów. `CityDressing.setWeather(id)` przełącza
+  oprawę i tło audio bez wpływu na symulację. `dispose()` przywraca ustawienia.
+- `RoomDefinition.arena?`: punkty A/B/C oraz parametry scalania i nawigacji areny;
+  opcjonalne `spawnPoints` nadpisuje spawny tylko dla trybu, `exclusive` wyłącza
+  pokój ze zwykłych pul. Spawny gracza pozostają w danych pokoju. `blocks[].instance?`
+  oznacza powtarzalną bryłę do InstancedMesh; `blocks[].rotation?` opisuje obrót
+  identycznej bryły renderu i statycznego collidera (radiany XYZ).
+- `ModeDefinition.arenas`: uporządkowana lista id pokoi; odczyt starego `roomId`
+  i `points` pozostaje obsługiwany. `selectArena(mode, seed?, override?, debug?)`
+  wybiera pierwszy pokój bez seeda, a z seedem deterministycznie przez `Rng`.
+  Debug dopuszcza override wyłącznie z listy. `modeForArena` wiąże punkty z pokojem.
+- `NewRunOptions.arenaId?`: wybrana arena, utrwalana jako istniejące
+  `MapNode.fixed.roomId`; brak nowej wersji zapisu. Stare zapisy combatRing działają.
+- `ArenaNavigation`: czysta siatka przechodniości i pola odległości A/B/C;
+  host RoomScene przekazuje następny widoczny waypoint przez istniejące
+  `Enemy.moveGoal`. Zwykłe AI i zwykłe runy nie korzystają z tej nawigacji.
+- `AudioSystem.setAmbience` obsługuje także syntetyczne warstwy `rain` i `wind`.
+  Pogoda podąża źródłami za kamerą, wykorzystując istniejące odblokowanie i pauzę.
+
+## Integracja modeli portu
+
+`city_*` i `port_*` bloków używają wspólnego cache `cloneCityModel`
+(`/assets/models/city/`) i zachowują materiały nazwane w GLB.
+`blocks[].instance` w arenie grupuje siatki modelu w komórkach `batchCellM`.
+Okucia i nadruki wariantów koloru tego samego kontenera współdzielą partie;
+pojedyncze sztuki trafiają do zwykłego scalania statyki. Bez modelu pozostaje
+instancjonowana bryła. Obrót stosuje się wokół środka collidera w `RoomScene`.
+`RoomDefinition.blocks[].visible?: boolean` (domyślnie true) pozwala opisać
+wyłącznie collider rekwizytu z `decor` (nogi suwnicy, nadwozie wózka,
+maszt, płyta i balustrady pomostu), bez dodatkowej widocznej bryły.
+Modele `port_lashing_platform` mają osobne collidery płyty i balustrad.
+Materiały `container_navy/olive/ochre/graphite`, `crane_paint`,
+`quay_concrete`, `quay_lines`, `rubber_fender`, `steel_grating` korzystają
+z miejskiego shadera i uniformu mokrości; parametry są w walidowanym
+`src/data/render/portMaterials.json`. Światła masztów są definicjami
+`lights[]` pokoju i konkurują o istniejącą pulę `CityLights`.
+
+## Wielopoziomowe areny Przejęcia
+
+`RoomDefinition.blocks[].walkable?: boolean` jawnie oznacza powierzchnie
+chodzone nowych aren. Płyty są poziome lub obrócone wyłącznie wokół Z
+(rampy w osi X). `arena.navigationMaxRiseM?` ogranicza różnicę wysokości
+sąsiednich komórek, `arena.navigationHeadroomM?` określa wolną wysokość.
+Oba parametry są wymagane przy blokach walkable. ArenaNavigation zachowuje
+naziemną ścieżkę portu; dla walkable buduje warstwy wysokości i łączy je
+wyłącznie przez ciągłe płyty/rampy. path/next zwracają Vec3 powierzchni,
+Enemy.moveGoal nadal steruje ruchem XZ, a wysokość rozwiązuje Rapier.
+Walidacja trybu sprawdza pełne koła punktów i drogę od gracza oraz spawnów
+do każdego punktu; nie rzutuje wysokich punktów na grunt. Zwykłe spawny
+posiłków pozostają na playerSpawn.y; dotychczasowa preferencja punktów wroga
+zachowuje wysokość danego punktu. Brak zmian kontraktu walki i zapisu.
+
+# Misja liniowa M01 (kontrakt D1–D8)
+
+`MissionDefinition.level?: string` wybiera scenę `mission`; brak pola zachowuje misję-run.
+`LevelDefinition` (`world/levelSchema.ts`) reużywa pola schematu pokoju i dodaje
+`objectiveOrder`, `objectivePositions`, `encounters`, `checkpoints`, `gates`, `sections`.
+Zależność ma postać `{ kind: 'objective' | 'encounter', id }`; strefa to box (pełne
+`size`) albo sphere (`radiusM`). `loadLevel(data, mission, waves)` waliduje referencje.
+`LevelRuntime` jest czystą symulacją wyzwalaczy i bram; nie zna renderu ani RunState.
+
+`RoomCombatState` to minimalny stan wyposażenia i zasobów bez mapy runu.
+`RoomSceneOptions.linearMission` przekazuje definicję, kolejność i zapisane stany
+celów; `reinforce(wave, key)` deleguje posiłki do hosta. `manualEncounter` wyłącza
+automatyczne kończenie pokoju tylko przy `linearMission`.
+`objectiveModel()`, `setLevelGate(id, block, open)`, `teleportPlayer(position, yawDeg)`,
+`resetLevelCombat(position, yawDeg)` i `removeEncounterEnemies(ids)` są API hosta
+misji; spawn przez istniejące `spawnEncounterEnemy` respektuje wspólny limit.
+`staticCellSize` w opcjach włącza scalanie statyki w komórkach.
+`HudOptions.deathScreen=false` pozwala hostowi misji odradzać bez nakładki śmierci;
+`showWaves=false` ukrywa etykiety i banery fal, gdy HUD pokazuje bieżący cel.
+Scena nie zwalnia pointer lock przy automatycznym odrodzeniu; rzeczywista utrata fokusu nadal pauzuje grę w core/input.
+
+SaveStore v6 dodaje osobny rekord `mission`: `loadMission`, `saveMission`,
+`clearMission` (opcjonalne w portach starszych testów; wymagane przez scenę mission).
+Migracja meta/run 5→6 jest tożsamościowa: nowy rekord nie istniał w v5 (v5 = naszywki Iskry).
+`MissionSave` zawiera id próby, misji i poziomu, seed, checkpoint, stany celów,
+spotkania zakończone przed checkpointem, czas, zamrożony ekwipunek i flagę ukończenia.
+Zapisy są szeregowane. Cel done jest zapisywany od razu; śmierć zachowuje cele done,
+zeruje częściowe interakcje i spotkania po checkpoincie. Ukończony rekord pozostaje
+do udanego rozliczenia meta, potem jest usuwany. `MetaManager.applyRun` dla misji z
+`level` nalicza wyłącznie firstClear, chroniony przez appliedRunIds i campaign.completed.
+
+Scena: `?scene=mission&mission=m01-maszty[&continue=1]`. Debug: `mission start <id>`,
+`checkpoint <id>`, `objective done <id>`, `encounter clear`; `query('mission')`
+zwraca cele, checkpoint, aktywne/zakończone spotkania, otwarte bramy i stan hosta.
+Tablica udostępnia misje z poziomem; pozostałe pokazuje jako „Wkrótce”. Opcjonalny
+`HubPanelContext.missionSave` udostępnia checkpoint dla przycisku kontynuacji.

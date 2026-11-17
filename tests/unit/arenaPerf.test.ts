@@ -13,6 +13,13 @@ import { Rng } from '../../src/core/rng';
 import { GameLoop, SIM_DT } from '../../src/core/loop';
 import { tuning } from '../../src/core/tuning';
 import type { InputSnapshot } from '../../src/core/input';
+import { RoomScene } from '../../src/scenes/roomScene';
+import { roomDefinitions } from '../../src/world/rooms';
+import { RunManager } from '../../src/world/run';
+import { loadWaves } from '../../src/world/waves';
+import wavesData from '../../src/data/waves/roomTest.json';
+import type { EnemyManager } from '../../src/enemies/manager';
+import { freeModePosition } from '../../src/world/modeSchema';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -22,6 +29,65 @@ const idle: InputSnapshot = {
 };
 
 const active: Arena[] = [];
+
+it.each(['arenaOverpass', 'arenaRooftops'])(
+  '%s: 30 wrogów, nawigacja i Rapier poniżej 6 ms/krok',
+  async (id) => {
+    const room = roomDefinitions.get(id)!;
+    const bus = new EventBus();
+    const commands = new CommandRegistry();
+    const run = new RunManager(bus, {
+      generateMap: () => ({ sectorId: 'unused', layers: [] }),
+    });
+    run.newRun('arena-perf', 'classic', { modeId: 'conquest', arenaId: id });
+    run.selectNode('conquest');
+    const scene = new RoomScene(
+      room,
+      run.state,
+      loadWaves({ ...wavesData, spawnPoints: room.spawnPoints }),
+      { loadModels: false },
+    );
+    try {
+      await scene.init(
+        {
+          bus,
+          rng: new Rng('arena-perf'),
+          loop: new GameLoop({ step() {}, render() {} }),
+          tuning: structuredClone(tuning),
+          debug: false,
+          commands,
+          camera: new PerspectiveCamera(),
+        },
+        new ThreeScene(),
+      );
+      commands.execute('god');
+      // Test przeciążeniowy omija limit posiłków 8, zachowuje rzeczywisty host trybu.
+      const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+      let count = 0;
+      for (let x = -40; x <= 40 && count < 30; x += 8)
+        for (let z = -40; z <= 40 && count < 30; z += 8) {
+          const position = { x, y: room.playerSpawn.y, z };
+          if (
+            !freeModePosition(room, position, 1.5) ||
+            Math.hypot(x - room.playerSpawn.x, z - room.playerSpawn.z) < 15
+          )
+            continue;
+          enemies.spawn(count++ < 20 ? 'assaulter' : 'gunner', position);
+        }
+      expect(scene.query('enemies')).toBe(30);
+      for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+      const start = performance.now();
+      for (let i = 0; i < 600; i++) scene.step(SIM_DT, idle);
+      const perStepMs = (performance.now() - start) / 600;
+      console.info(`[perf] ${id}: ${perStepMs.toFixed(3)} ms/krok, 30 wrogów`);
+      expect(scene.query('enemies')).toBeGreaterThanOrEqual(30);
+      expect(perStepMs).toBeLessThan(6);
+    } finally {
+      scene.dispose();
+    }
+  },
+  60_000,
+);
 afterEach(() => {
   for (const scene of active.splice(0)) scene.dispose();
 });

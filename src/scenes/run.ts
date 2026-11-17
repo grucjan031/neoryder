@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
-import { modeIdSchema } from '../world/modeSchema';
-import { modeDefinitions } from '../world/modes';
+import { modeIdSchema, selectArena } from '../world/modeSchema';
+import { conquestMode, modeDefinitions } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -312,9 +312,13 @@ export class RunScene implements Scene {
         this.metaResult = null;
         this.rewardAlreadySaved = false;
       }
-      const modeId = params.has('mode')
-        ? modeIdSchema.parse(params.get('mode'))
-        : undefined;
+      const modeId =
+        params.get('scene') === 'conquest' ||
+        params.get('scene') === 'weatherTest'
+          ? 'conquest'
+          : params.has('mode')
+            ? modeIdSchema.parse(params.get('mode'))
+            : undefined;
       if (modeId && params.has('mission'))
         throw new Error('Tryb i misja wykluczają się.');
       const missionId = params.get('mission');
@@ -328,11 +332,20 @@ export class RunScene implements Scene {
         throw new Error('Misja jest zablokowana.');
       const loadout = params.get('loadout') ?? 'classic';
       const seed = params.get('seed') ?? String(ctx.rng.getState());
+      const arenaId = modeId
+        ? selectArena(
+            conquestMode,
+            params.get('seed') ?? undefined,
+            params.get('arena'),
+            ctx.debug,
+          )
+        : undefined;
       if (loadout === 'meta') {
         const meta = this.meta.state;
         this.manager.newRun(seed, CUSTOM_LOADOUT_ID, {
           mission,
           modeId,
+          arenaId,
           loadout: this.meta.loadout(),
           talents: meta.talents,
           threatLevel: meta.threat.selected,
@@ -340,7 +353,7 @@ export class RunScene implements Scene {
         });
       } else {
         this.validateLoadout(loadout);
-        this.manager.newRun(seed, loadout, { mission, modeId });
+        this.manager.newRun(seed, loadout, { mission, modeId, arenaId });
       }
     }
     const mission = missionDefinitions.get(this.manager.state.missionId ?? '');
@@ -801,12 +814,16 @@ export class RunScene implements Scene {
       : [...this.rooms.values()].filter((room) => room.type === node.type);
     // Zapas dla sektorów bez puli danego typu: układ zwykłej walki.
     const eligible = candidates.filter(
-      (room) => mission || !room.id.endsWith('Mission'),
+      (room) =>
+        !room.arena?.exclusive && (mission || !room.id.endsWith('Mission')),
     );
     const available = eligible.length
       ? eligible
       : [...this.rooms.values()].filter(
-          (room) => room.type === 'combat' && !room.id.endsWith('Mission'),
+          (room) =>
+            room.type === 'combat' &&
+            !room.arena?.exclusive &&
+            !room.id.endsWith('Mission'),
         );
     return rng
       .fork(`room-layout:${node.id}`)
@@ -814,28 +831,18 @@ export class RunScene implements Scene {
   }
 
   /**
-   * Splashart ekranu ładowania pokoju: z pokoju/motywu docelowego węzła, inaczej z ziarna runu
-   * i numeru węzła. W `fx=lite` (testy) bez obrazu. Bez `Math.random`.
+   * Losowy splashart ekranu ładowania pokoju spośród odblokowanych aktów.
+   * W `fx=lite` (testy) bez obrazu.
    */
   private loadingSplash(): { file: string; title: string } | undefined {
-    const node = this.manager.currentNode;
     if (
       getLiteFx() ||
       this.manager.screen !== 'room' ||
       this.roomReady ||
-      !node
+      !this.manager.currentNode
     )
       return undefined;
-    const seed = this.manager.state.seed;
-    let layout: RoomDefinition | undefined;
-    try {
-      layout = this.chooseRoom(node, new Rng(seed));
-    } catch {
-      // Błąd puli pokoi zgłosi openRoom(); tu wystarczy wybór z samego ziarna.
-    }
     const entry = pickSplash(
-      `${seed}:${node.id}`,
-      { room: layout?.id, theme: layout?.theme },
       unlockedSplashAct(
         this.meta.state.campaign.completed.length
           ? this.meta.state.campaign.completed
@@ -1145,7 +1152,7 @@ export class RunScene implements Scene {
         )
           return 'Misja niedostępna.';
         const params = new URLSearchParams({
-          scene: 'run',
+          scene: mission.level ? 'mission' : 'run',
           loadout: 'meta',
           mission: mission.id,
           debug: '1',
@@ -1228,6 +1235,7 @@ export class RunScene implements Scene {
       'heist drop',
       'heist extract',
       'heist lives',
+      'weather',
       'tp',
       'hold',
       'status',

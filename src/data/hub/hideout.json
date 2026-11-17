@@ -7993,7 +7993,7 @@
       "look": {
         "shade": 8,
         "headwear": "beanie",
-        "torso": "jacket",
+        "torso": "hoodie",
         "prop": "backpack"
       },
       "route": {
@@ -8036,7 +8036,7 @@
       "look": {
         "shade": 2,
         "headwear": "cap",
-        "torso": "jacket",
+        "torso": "hoodie",
         "prop": "none"
       },
       "route": {

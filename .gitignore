@@ -5,6 +5,8 @@ playwright-report/
 perf-report/
 .vite/
 .npm-cache/
-graphify-out/
+# graphify: w repo tylko graf, raport i podgląd; cache i stan budowy lokalne
+graphify-out/cache/
+graphify-out/.graphify_*
 tools/textures/raw/
 debug.log

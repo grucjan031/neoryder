@@ -188,6 +188,22 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     start.focus();
   });
   choices.append(regular);
+  if (ctx.missionSave) {
+    const saved = ctx.missionSave;
+    const resume = el(
+      'button',
+      'mission-choice',
+      `${missionText.continueMission} · ${missionDefinitions.get(saved.missionId)?.title ?? saved.missionId}`,
+    );
+    resume.type = 'button';
+    resume.dataset.action = 'continue-mission';
+    resume.addEventListener('click', () =>
+      ctx.navigate(
+        `?scene=mission&mission=${encodeURIComponent(saved.missionId)}&continue=1`,
+      ),
+    );
+    choices.prepend(resume);
+  }
   choices.append(el('h3', 'missions-panel__heading', modeText.heading));
   const conquest = el('button', 'mission-choice', modeText.conquest);
   conquest.type = 'button';
@@ -281,10 +297,11 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   start.dataset.action = 'start-run';
   start.addEventListener('click', () => {
     const params = new URLSearchParams({
-      scene: 'run',
+      scene: selectedMission?.level ? 'mission' : 'run',
       loadout: 'meta',
-      seed: seedInput.value.trim() || randomSeed(),
     });
+    const seed = seedInput.value.trim();
+    if (seed || !selectedMode) params.set('seed', seed || randomSeed());
     if (selectedMission) params.set('mission', selectedMission.id);
     if (selectedMode) params.set('mode', selectedMode);
     ctx.navigate(`?${params}`);
@@ -306,12 +323,14 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     const completed = manager.state.campaign.completed;
     for (const { mission, button } of missionButtons) {
       const missing = mission.requires.filter((id) => !completed.includes(id));
-      button.disabled = missing.length > 0;
-      const state = missing.length
-        ? `${missionText.locked} · ${missionText.requires}${missing.join(', ')}`
-        : completed.includes(mission.id)
-          ? missionText.completed
-          : missionText.available;
+      button.disabled = !mission.level || missing.length > 0;
+      const state = !mission.level
+        ? missionText.soon
+        : missing.length
+          ? `${missionText.locked} · ${missionText.requires}${missing.join(', ')}`
+          : completed.includes(mission.id)
+            ? missionText.completed
+            : missionText.available;
       button.textContent = `${String(mission.number).padStart(2, '0')} · ${mission.title} — ${state}`;
     }
     const { max, selected } = manager.state.threat;
