@@ -9,12 +9,14 @@ export type EntityId = number;
 export type Team = 'player' | 'enemy' | 'neutral';
 
 /** Mapa wszystkich zdarzeń gry. Nowe zdarzenia dopisuje Architekt po zatwierdzeniu w docs/api.md. */
+type ConquestPointId = 'A' | 'B' | 'C' | 'D' | 'E';
+
 export interface GameEvents {
   /** Zmiana właściciela punktu (także na neutralnego); `owners` to migawka wszystkich punktów po zmianie. */
   conquest_captured: {
-    id: 'A' | 'B' | 'C';
+    id: ConquestPointId;
     owner: 'player' | 'enemy' | 'neutral';
-    owners: Record<'A' | 'B' | 'C', 'player' | 'enemy' | 'neutral'>;
+    owners: Partial<Record<ConquestPointId, 'player' | 'enemy' | 'neutral'>>;
   };
   hub_fauna_sound: { kind: 'meow' | 'rat'; point: Vec3 };
   hub_train_passed: { durationS: number };

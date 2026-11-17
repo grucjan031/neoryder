@@ -8,10 +8,12 @@ const EPSILON = 1e-5;
 /** Warstwy płyt i ramp X; obwiednie przeszkód uwzględniają wysokość kapsuły. */
 export class ArenaSurfaceNavigation {
   private readonly cells: Cell[] = [];
-  private readonly columns = new Map<string, number[]>();
-  private readonly fields = new Map<number, Map<number, number>>();
+  private readonly columns = new Map<number, number[]>();
+  private readonly fields = new Map<number, Int32Array>();
   private readonly cell: number;
   private readonly rise: number;
+  private readonly firstZ: number;
+  private readonly widthZ: number;
 
   constructor(room: RoomDefinition) {
     const config = room.arena!;
@@ -22,6 +24,16 @@ export class ArenaSurfaceNavigation {
       );
     this.rise = config.navigationMaxRiseM;
     const surfaces = room.blocks.filter((b) => b.walkable);
+    this.firstZ = Math.floor(
+      Math.min(...surfaces.map((b) => b.position.z - b.size.z / 2)) / this.cell,
+    );
+    this.widthZ =
+      Math.ceil(
+        Math.max(...surfaces.map((b) => b.position.z + b.size.z / 2)) /
+          this.cell,
+      ) -
+      this.firstZ +
+      1;
     for (const b of surfaces) {
       if (b.rotation?.x || b.rotation?.y)
         throw new Error('Powierzchnia nawigacji obsługuje wyłącznie obrót Z.');
@@ -157,8 +169,10 @@ export class ArenaSurfaceNavigation {
       b.size.y / (2 * Math.cos(angle))
     );
   }
-  private key(p: Vec3): string {
-    return `${Math.floor(p.x / this.cell)},${Math.floor(p.z / this.cell)}`;
+  private key(p: Vec3): number {
+    const z = Math.floor(p.z / this.cell) - this.firstZ;
+    if (z < 0 || z >= this.widthZ) return NaN;
+    return Math.floor(p.x / this.cell) * this.widthZ + z;
   }
   private locate(p: Vec3): number | undefined {
     return this.columns
@@ -173,17 +187,20 @@ export class ArenaSurfaceNavigation {
         undefined,
       );
   }
-  private field(goal: number): Map<number, number> {
+  private field(goal: number): Int32Array {
     const cached = this.fields.get(goal);
     if (cached) return cached;
-    const field = new Map([[goal, 0]]);
-    const queue = [goal];
-    for (let i = 0; i < queue.length; i++) {
+    const field = new Int32Array(this.cells.length).fill(-1);
+    const queue = new Int32Array(this.cells.length);
+    field[goal] = 0;
+    queue[0] = goal;
+    let length = 1;
+    for (let i = 0; i < length; i++) {
       const current = queue[i]!;
       for (const next of this.cells[current]!.neighbors) {
-        if (field.has(next)) continue;
-        field.set(next, field.get(current)! + 1);
-        queue.push(next);
+        if (field[next] !== -1) continue;
+        field[next] = field[current]! + 1;
+        queue[length++] = next;
       }
     }
     this.fields.set(goal, field);
@@ -195,11 +212,11 @@ export class ArenaSurfaceNavigation {
     if (origin === undefined || target === undefined) return [];
     let current: number = origin;
     const field = this.field(target);
-    if (!field.has(current)) return [];
+    if (field[current] === -1) return [];
     const result = [this.cells[current]!.position];
     while (current !== target) {
       const next = this.cells[current]!.neighbors.find(
-        (n) => field.get(n) === field.get(current!)! - 1,
+        (n) => field[n] === field[current]! - 1,
       );
       if (next === undefined) return [];
       current = next;
@@ -208,29 +225,45 @@ export class ArenaSurfaceNavigation {
     return [...result, goal];
   }
   next(start: Vec3, goal: Vec3): Vec3 {
-    const path = this.path(start, goal);
-    if (!path.length) return { ...start };
-    let end = Math.min(1, path.length - 1);
-    const direction = (i: number) => ({
-      x: Math.sign(path[i]!.x - path[i - 1]!.x),
-      z: Math.sign(path[i]!.z - path[i - 1]!.z),
-    });
-    if (end) {
-      const first = direction(end);
-      while (end + 1 < path.length) {
-        const next = direction(end + 1);
-        if (first.x !== next.x || first.z !== next.z) break;
-        end++;
-      }
+    const origin = this.locate(start);
+    const target = this.locate(goal);
+    if (origin === undefined || target === undefined) return { ...start };
+    const field = this.field(target);
+    if (field[origin] === -1) return { ...start };
+    let current = origin;
+    const first = this.cells[origin]!.position;
+    const path = [first];
+    let signX = 0;
+    let signZ = 0;
+    // Potrzebny jest tylko pierwszy prosty odcinek pola, do najbliższego zakrętu.
+    while (true) {
+      const previous = this.cells[current]!.position;
+      const next =
+        current === target
+          ? undefined
+          : this.cells[current]!.neighbors.find(
+              (n) => field[n] === field[current]! - 1,
+            );
+      if (next === undefined && current !== target) break;
+      const point = next === undefined ? goal : this.cells[next]!.position;
+      const dx = Math.sign(point.x - previous.x);
+      const dz = Math.sign(point.z - previous.z);
+      if (path.length > 1 && (dx !== signX || dz !== signZ)) break;
+      path.push(point);
+      signX = dx;
+      signZ = dz;
+      if (next === undefined) break;
+      current = next;
     }
+    const end = path.length - 1;
     // Skracanie wyłącznie po spójnym odcinku wysokości: nie przeskakuje dachów.
     // Sprawdzamy cały prosty odcinek raz zamiast każdy jego coraz dłuższy prefiks.
     const clearTo = (point: Vec3): boolean => {
       const steps = Math.ceil(
         Math.hypot(point.x - start.x, point.z - start.z) / (this.cell / 2),
       );
-      let previous = this.locate(start);
-      let clear = previous !== undefined;
+      let previous: number | undefined = origin;
+      let clear = true;
       for (let i = 1; clear && i <= steps; i++) {
         const t = i / steps;
         const sample = {

@@ -169,7 +169,9 @@ describe('areny Przejęcia', () => {
       selected.add(selectArena(conquestMode, seed));
     }
     expect([...selected].sort()).toEqual([...conquestMode.arenas!].sort());
-    expect(selectArena(conquestMode, 'any', 'combatRing', true)).toBe(ring.id);
+    expect(() =>
+      selectArena(conquestMode, 'any', 'combatRing', true),
+    ).toThrow();
     expect(() => selectArena(conquestMode, 'any', 'unknown', true)).toThrow();
   });
   it('czyta stary roomId i punkty, zachowuje wybraną arenę w istniejącym zapisie', () => {

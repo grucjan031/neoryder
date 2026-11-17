@@ -11,6 +11,7 @@ import {
 } from '../../src/world/modeSchema';
 import { roomDefinitions } from '../../src/world/rooms';
 import { RunManager } from '../../src/world/run';
+import { largeArena } from './largeArenaFixture';
 
 const room = roomDefinitions.get('combatRing')!;
 const definition = modeForArena(conquestMode, room);
@@ -28,6 +29,66 @@ const manager = () =>
   });
 
 describe('Przejęcie', () => {
+  it('waliduje 5 punktów i przekazuje punkty D/E do HUD i zdarzeń', () => {
+    const layout = largeArena();
+    const rules = modeForArena(conquestMode, layout);
+    expect(rules.maxAlive).toBe(12);
+    expect(rules.enemyTickets).toBe(180);
+    expect(modeSchema.safeParse(rules).success).toBe(true);
+    expect(() => validateMode(rules, layout, rules.enemies)).not.toThrow();
+    for (const points of [
+      rules.points.slice(0, 2),
+      rules.points.slice(1),
+      [...rules.points, rules.points[0]!],
+      [...rules.points.slice(0, 4), rules.points[0]!],
+    ])
+      expect(modeSchema.safeParse({ ...rules, points }).success).toBe(false);
+    expect(() =>
+      validateMode({ ...rules, maxAlive: 13 }, layout, rules.enemies),
+    ).toThrow();
+    const bus = new EventBus();
+    const captured = vi.fn();
+    bus.on('conquest_captured', captured);
+    const model = new Conquest(rules, bus);
+    model.capture('D');
+    model.capture('E');
+    expect(model.snapshot()).toMatchObject({
+      tickets: 180,
+      points: [
+        { id: 'A', owner: 'neutral' },
+        { id: 'B', owner: 'neutral' },
+        { id: 'C', owner: 'neutral' },
+        { id: 'D', owner: 'player', progress: 1 },
+        { id: 'E', owner: 'player', progress: 1 },
+      ],
+    });
+    expect(captured).toHaveBeenLastCalledWith({
+      id: 'E',
+      owner: 'player',
+      owners: {
+        A: 'neutral',
+        B: 'neutral',
+        C: 'neutral',
+        D: 'player',
+        E: 'player',
+      },
+    });
+    for (const [count, rates] of [
+      [4, [0, 0, 0, 1, 3]],
+      [5, [0, 0, 0, 1, 2, 3]],
+    ] as const) {
+      for (const [held, rate] of rates.entries()) {
+        const conquest = new Conquest(
+          { ...rules, points: rules.points.slice(0, count) },
+          bus,
+        );
+        for (const p of conquest.points.slice(0, held)) conquest.capture(p.id);
+        conquest.step(2, layout.playerSpawn, []);
+        expect(conquest.tickets).toBe(180 - rate * 2);
+      }
+    }
+  });
+
   it('waliduje punkty, odległości, podłogę i białą listę', () => {
     expect(() =>
       validateMode(definition, room, ['assaulter', 'gunner']),

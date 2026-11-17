@@ -1,3 +1,4 @@
+import { tuning } from '../core/tuning';
 import { Rng } from '../core/rng';
 
 /**
@@ -85,6 +86,8 @@ export interface SkylineLayout {
 
 export interface SkylineOptions {
   floorY: number;
+  ringOffsetM?: number;
+  ringsM?: readonly number[];
   /** 0..1, gęstość zabudowy. */
   density: number;
   /** Typowa wysokość bliskiej warstwy [m]. */
@@ -94,17 +97,22 @@ export interface SkylineOptions {
 }
 
 const LAYERS = [
-  { radius: 66, jitter: 4, w: [7, 13], h: [0.55, 0.95], tone: 0.62 },
-  { radius: 92, jitter: 6, w: [9, 16], h: [0.85, 1.35], tone: 0.5 },
-  { radius: 124, jitter: 7, w: [10, 19], h: [1.15, 1.8], tone: 0.4 },
-  { radius: 162, jitter: 8, w: [12, 24], h: [1.4, 2.2], tone: 0.32 },
+  { jitter: 4, w: [7, 13], h: [0.55, 0.95], tone: 0.62 },
+  { jitter: 6, w: [9, 16], h: [0.85, 1.35], tone: 0.5 },
+  { jitter: 7, w: [10, 19], h: [1.15, 1.8], tone: 0.4 },
+  { jitter: 8, w: [12, 24], h: [1.4, 2.2], tone: 0.32 },
 ] as const;
 
 /** Kąty punktów orientacyjnych (rad, 0 = +Z, π = −Z — typowy kierunek widoku ze spawnu). */
 const LANDMARKS = [
-  { angle: Math.PI + 0.3, radius: 108, height: 3.3, width: 15 },
-  { angle: 0.55, radius: 132, height: 2.7, width: 13 },
-  { angle: Math.PI * 0.5 + 0.2, radius: 118, height: 2.4, width: 12 },
+  { angle: Math.PI + 0.3, radius: 'firstLandmarkM', height: 3.3, width: 15 },
+  { angle: 0.55, radius: 'secondLandmarkM', height: 2.7, width: 13 },
+  {
+    angle: Math.PI * 0.5 + 0.2,
+    radius: 'thirdLandmarkM',
+    height: 2.4,
+    width: 12,
+  },
 ] as const;
 
 function windowColor(rng: Rng): number {
@@ -121,6 +129,18 @@ function angularGap(a: number, b: number): number {
 }
 
 export function buildSkyline(seed: string, o: SkylineOptions): SkylineLayout {
+  const t = tuning.horizon;
+  const offset = o.ringOffsetM ?? 0;
+  const rings = o.ringsM ?? [
+    t.firstRingM,
+    t.secondRingM,
+    t.thirdRingM,
+    t.fourthRingM,
+  ];
+  const landmarks = LANDMARKS.map((landmark) => ({
+    ...landmark,
+    radius: t[landmark.radius] + offset,
+  }));
   const rng = new Rng(seed).fork('skyline');
   const density = Math.min(1, Math.max(0, o.density));
   const baseHeight = Math.max(1, o.height);
@@ -133,7 +153,7 @@ export function buildSkyline(seed: string, o: SkylineOptions): SkylineLayout {
   const top = (height: number): number => o.floorY + height;
 
   const landmarkClear = (angle: number, radius: number): boolean =>
-    LANDMARKS.every(
+    landmarks.every(
       (l) =>
         angularGap(angle, l.angle) * radius > l.width * 1.4 + 6 ||
         Math.abs(radius - l.radius) > 22,
@@ -146,7 +166,7 @@ export function buildSkyline(seed: string, o: SkylineOptions): SkylineLayout {
     const gap = 0.25 + (1 - density) * 1.6;
     while (angle < end - 0.02) {
       const width = rng.float(layer.w[0], layer.w[1]);
-      const radius = layer.radius + rng.float(-layer.jitter, layer.jitter);
+      const radius = rings[index]! + rng.float(-layer.jitter, layer.jitter);
       const step = width / radius;
       const a = angle + step / 2;
       angle += step * (1 + rng.float(0, gap));
@@ -229,7 +249,7 @@ export function buildSkyline(seed: string, o: SkylineOptions): SkylineLayout {
   });
 
   // Punkty orientacyjne: smukła wieża z uskokami, maszt i bursztynowe światła ostrzegawcze.
-  LANDMARKS.forEach((l, i) => {
+  landmarks.forEach((l, i) => {
     const x = Math.sin(l.angle) * l.radius;
     const z = Math.cos(l.angle) * l.radius;
     const yaw = l.angle + Math.PI;
@@ -343,9 +363,9 @@ export function buildSkyline(seed: string, o: SkylineOptions): SkylineLayout {
     if (!best) {
       // Brak budynku w sektorze (rzadka zabudowa): wolny hologram nad dachami.
       ads.push({
-        x: Math.sin(center) * 90,
+        x: Math.sin(center) * (t.freestandingAdM + offset),
         y: o.floorY + baseHeight * 0.9,
-        z: Math.cos(center) * 90,
+        z: Math.cos(center) * (t.freestandingAdM + offset),
         yaw: center + Math.PI,
         width: 10,
         height: style === 1 ? 4.5 : 12,
@@ -380,7 +400,7 @@ export function buildSkyline(seed: string, o: SkylineOptions): SkylineLayout {
   const vehicles = Math.round(Math.min(1, Math.max(0, o.traffic)) * 16);
   for (let i = 0; i < vehicles; i++) {
     lanes.push({
-      radius: rng.float(74, 140),
+      radius: rng.float(t.trafficMinM, t.trafficMaxM) + offset,
       height: o.floorY + rng.float(22, 58),
       speed: (rng.float(0, 1) < 0.5 ? -1 : 1) * rng.float(0.12, 0.26),
       phase: rng.float(0, Math.PI * 2),

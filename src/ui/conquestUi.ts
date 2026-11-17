@@ -32,6 +32,7 @@ export class ConquestView {
     bus: EventBus,
   ) {
     this.hud.className = 'conquest-hud';
+    this.hud.style.setProperty('--point-count', String(model.points.length));
     this.hud.setAttribute('aria-label', text.conquest);
     this.entries = model.points.map((point) => {
       const node = document.createElement('div');

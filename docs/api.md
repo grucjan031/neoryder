@@ -2051,3 +2051,15 @@ Scena: `?scene=mission&mission=m01-maszty[&continue=1]`. Debug: `mission start <
 zwraca cele, checkpoint, aktywne/zakończone spotkania, otwarte bramy i stan hosta.
 Tablica udostępnia misje z poziomem; pozostałe pokazuje jako „Wkrótce”. Opcjonalny
 `HubPanelContext.missionSave` udostępnia checkpoint dla przycisku kontynuacji.
+
+## Duże areny (ADR 0011)
+
+`conquest_captured` zawiera identyfikator A–E. Mapa `owners` obejmuje tylko
+punkty używane przez arenę. `Conquest.spawnPosition` przyjmuje opcjonalny
+predykat zasłonięcia posiłków przez geometrię Rapiera.
+
+`worldEnvelope(blocks, origin)` zwraca obwiednię obracanych brył, jej środek,
+promień XZ i wysokość. `SceneAtmosphere` przyjmuje obwiednię oraz kamerę
+perspektywiczną i przywraca projekcję kamery przy zwalnianiu sceny.
+`query('horizon')` zwraca bieżące parametry projekcji, panoramy i mgły.
+`RoomScene.render` może otrzymać pozycję i obrót wolnej kamery debug.

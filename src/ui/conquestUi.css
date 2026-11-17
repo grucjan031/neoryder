@@ -4,7 +4,7 @@
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(3, 76px) 130px;
+  grid-template-columns: repeat(var(--point-count, 3), 76px) 130px;
   gap: 8px;
   z-index: 12;
   color: #fff1d6;
@@ -53,7 +53,9 @@
 @media (max-width: 600px) {
   .conquest-hud {
     top: max(88px, calc(env(safe-area-inset-top) + 80px));
-    grid-template-columns: repeat(3, 57px) 106px;
+    grid-template-columns: repeat(var(--point-count, 3), minmax(0, 57px)) 106px;
+    width: max-content;
+    max-width: calc(100vw - 16px);
     gap: 4px;
     font-size: 10px;
   }

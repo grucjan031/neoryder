@@ -15,29 +15,7 @@ export class WeatherTest implements Scene {
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     await this.run.init(ctx, three);
     ctx.commands?.execute('god');
-    if (typeof document === 'undefined') return;
-    const controls = document.createElement('div');
-    controls.dataset.weatherControls = '';
-    Object.assign(controls.style, {
-      position: 'fixed',
-      top: '12px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: '30',
-      display: 'flex',
-      gap: '6px',
-    });
-    for (const profile of weatherDefinitions.values()) {
-      const button = document.createElement('button');
-      button.textContent = profile.title;
-      button.dataset.weather = profile.id;
-      button.addEventListener('click', () =>
-        ctx.commands?.execute(`weather ${profile.id}`),
-      );
-      controls.append(button);
-    }
-    document.body.append(controls);
-    this.controls = controls;
+    this.controls = mountWeatherControls(ctx);
   }
   step(dt: number, input: InputSnapshot): void {
     this.run.step(dt, input);
@@ -52,4 +30,32 @@ export class WeatherTest implements Scene {
     this.controls?.remove();
     this.run.dispose();
   }
+}
+
+export function mountWeatherControls(
+  ctx: GameContext,
+): HTMLDivElement | undefined {
+  if (typeof document === 'undefined') return undefined;
+  const controls = document.createElement('div');
+  controls.dataset.weatherControls = '';
+  Object.assign(controls.style, {
+    position: 'fixed',
+    top: '12px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: '30',
+    display: 'flex',
+    gap: '6px',
+  });
+  for (const profile of weatherDefinitions.values()) {
+    const button = document.createElement('button');
+    button.textContent = profile.title;
+    button.dataset.weather = profile.id;
+    button.addEventListener('click', () =>
+      ctx.commands?.execute(`weather ${profile.id}`),
+    );
+    controls.append(button);
+  }
+  document.body.append(controls);
+  return controls;
 }

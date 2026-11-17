@@ -117,7 +117,12 @@ async function main(): Promise<void> {
     });
   updateQuality();
   const three = new ThreeScene();
-  const camera = new PerspectiveCamera(tuning.camera.fov, 1, 0.1, 220);
+  const camera = new PerspectiveCamera(
+    tuning.camera.fov,
+    1,
+    tuning.horizon.legacyNearM,
+    tuning.horizon.legacyFarM,
+  );
   camera.position.set(8, 6, 10);
   camera.lookAt(0, 2, 0);
   const scene = factory();

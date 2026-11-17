@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { tuning } from '../core/tuning';
 import { blockMaterialSchema, dressingFields } from './dressingSchema';
 import { NODE_TYPES } from '../core/runTypes';
 import { directorConfigSchema } from '../enemies/director';
@@ -59,24 +60,35 @@ export const roomBlockSchema = z.object({
   visible: z.boolean().optional(),
 });
 
+export const pointIdSchema = z.enum(['A', 'B', 'C', 'D', 'E']);
+
 export const capturePointsSchema = z
   .array(
     z.object({
-      id: z.enum(['A', 'B', 'C']),
+      id: pointIdSchema,
       position: vec3Schema,
       radiusM: positive,
     }),
   )
-  .length(3)
-  .refine(
-    (points) => new Set(points.map((p) => p.id)).size === 3,
-    'Wymagane różne punkty A/B/C.',
-  );
+  .min(3)
+  .max(pointIdSchema.options.length)
+  .refine((points) => {
+    const ids = new Set(points.map((p) => p.id));
+    return pointIdSchema.options
+      .slice(0, points.length)
+      .every((id) => ids.has(id));
+  }, 'Punkty muszą mieć kolejne identyfikatory od A.');
 
 export const arenaSchema = z.object({
   exclusive: z.boolean().optional(),
+  maxAlive: positive.int().max(tuning.modes.conquest.maxAlive).optional(),
+  enemyTickets: positive.int().optional(),
+  spawnRing: z
+    .object({ minM: nonnegative, maxM: positive })
+    .refine(({ minM, maxM }) => maxM > minM)
+    .optional(),
   spawnPoints: z
-    .array(z.object({ x: finite, z: finite }))
+    .array(z.object({ x: finite, y: finite.optional(), z: finite }))
     .min(4)
     .optional(),
   points: capturePointsSchema,

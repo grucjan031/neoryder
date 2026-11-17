@@ -4,6 +4,7 @@ import type { Rng } from '../core/rng';
 import { tuning } from '../core/tuning';
 import type { ResolvedModeDefinition, PointId } from './modeSchema';
 import { freeModePosition } from './modeSchema';
+import { arenaSpawnPoints, selectArenaSpawn } from './arenaSpawns';
 import type { RoomDefinition } from './roomSchema';
 
 export type PointOwner = 'neutral' | 'player' | 'enemy';
@@ -55,10 +56,7 @@ export class Conquest {
   private own(point: ConquestPoint, owner: PointOwner): void {
     if (point.owner === owner) return;
     point.owner = owner;
-    const owners = { A: 'neutral', B: 'neutral', C: 'neutral' } as Record<
-      'A' | 'B' | 'C',
-      PointOwner
-    >;
+    const owners: Partial<Record<PointId, PointOwner>> = {};
     for (const p of this.points) owners[p.id] = p.owner;
     this.bus.emit('conquest_captured', { id: point.id, owner, owners });
   }
@@ -99,11 +97,16 @@ export class Conquest {
       }
     }
     const held = this.points.filter((p) => p.owner === 'player').length;
+    const total = this.points.length;
+    const majority = Math.floor(total / 2) + 1;
+    const { holdTwoPerS, holdThreePerS } = this.definition.bleed;
     const rate =
-      held === 3
-        ? this.definition.bleed.holdThreePerS
-        : held === 2
-          ? this.definition.bleed.holdTwoPerS
+      held === total
+        ? holdThreePerS
+        : held >= majority
+          ? holdTwoPerS +
+            ((holdThreePerS - holdTwoPerS) * (held - majority)) /
+              (total - majority)
           : 0;
     this.tickets = Math.max(0, this.tickets - rate * dt);
     if (this.tickets === 0 && this.alive === 0) this.outcome = 'victory';
@@ -123,6 +126,7 @@ export class Conquest {
     player: Vec3,
     enemies: readonly Vec3[],
     rng: Rng,
+    occluded?: (position: Vec3) => boolean,
   ): Vec3 | null {
     if (
       this.outcome ||
@@ -136,6 +140,20 @@ export class Conquest {
       freeModePosition(room, p, cfg.spawnClearanceM) &&
       distance(p, player) >= cfg.minSpawnDistanceM &&
       enemies.every((e) => distance(e, p) >= cfg.spawnClearanceM * 2);
+    if (room.arena?.spawnRing) {
+      const contested = this.points.filter((p) => p.contested);
+      const targets = contested.length
+        ? contested
+        : this.points.filter((p) => p.owner !== 'enemy');
+      return selectArenaSpawn(
+        room.arena.spawnRing,
+        arenaSpawnPoints(room).filter(safe),
+        player,
+        targets.map((p) => p.position),
+        rng,
+        occluded,
+      );
+    }
     const owned = this.points
       .filter((p) => p.owner === 'enemy')
       .map((p) => p.position)
@@ -154,11 +172,7 @@ export class Conquest {
         ),
       )
       .filter(safe);
-    const spawns = room.arena
-      ? (room.arena.spawnPoints ?? room.spawnPoints)
-          .map((p) => ({ ...p, y: room.playerSpawn.y }))
-          .filter(safe)
-      : edges;
+    const spawns = room.arena ? arenaSpawnPoints(room).filter(safe) : edges;
     const candidates = owned.length ? owned : spawns;
     return candidates.length ? { ...rng.pick(candidates) } : null;
   }

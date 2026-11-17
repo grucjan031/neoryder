@@ -65,7 +65,12 @@ export function renderWithViewmodel(
     e[2] = s * e[2]! + (s - 1) * e[3]!;
     e[6] = s * e[6]! + (s - 1) * e[7]!;
     e[10] = s * e[10]! + (s - 1) * e[11]!;
-    e[14] = s * e[14]! + (s - 1) * e[15]!;
+    // Zachowaj bliskie odci?cie FPP przy skalowaniu obu p?aszczyzn ?wiata.
+    const clipScale =
+      'isPerspectiveCamera' in camera
+        ? Math.min(1, tuning.horizon.legacyNearM / camera.near)
+        : 1;
+    e[14] = s * e[14]! * clipScale + (s - 1) * e[15]!;
     // Światła są zbierane z tą samą maską warstw co obiekty, więc viewmodel potrzebuje ich na swojej warstwie.
     scene.traverse((object) => {
       if ('isLight' in object) object.layers.enable(VIEWMODEL_LAYER);
