@@ -1530,8 +1530,10 @@ odświeżenie strony wznawiało zapis; seed/loadout zostają usunięte z URL.
   `userData.wetness` materiału oznacza odbicia
   (asphalt 1, paving 0.45, concrete 0.22, plaster 0.1), `userData.bloomMaterial` opcjonalnie dostarcza
   materiał samej emisji dla maski bloomu i odbić (okna fasad).
-- `SceneAtmosphere(three, themeId, seed, floorY)` nakłada motyw, ustawia
+- `SceneAtmosphere(three, themeId, seed, floorY, panoramaExclusion?)` nakłada motyw, ustawia
   `three.userData.reflectionFloorY`, posiada panoramę i przywraca stan w dispose.
+  Opcjonalny `panoramaExclusion` (`Box3` w przestrzeni świata) wyklucza bryły
+  panoramy przecinające obszar poziomu liniowego.
   `sync(dt)` odświeża oprawę; wyłącznie render, bez zmian symulacji.
 - Pola `signs/lights/decals/ambientFx` pozostają danymi dla integratora.
 

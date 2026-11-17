@@ -356,11 +356,24 @@ export class RoomScene implements Scene {
       position: (id) => this.enemyPosition(id),
       targets: () => this.enemyIds(),
     });
+    let panoramaExclusion: Box3 | undefined;
+    if (this.options.linearMission) {
+      panoramaExclusion = new Box3();
+      const blockBounds = new Box3();
+      for (const block of this.layout.blocks) {
+        blockBounds.setFromCenterAndSize(
+          new Vector3(block.position.x, block.position.y, block.position.z),
+          new Vector3(block.size.x, block.size.y, block.size.z),
+        );
+        panoramaExclusion.union(blockBounds);
+      }
+    }
     this.atmosphere = new SceneAtmosphere(
       three,
       this.layout.theme,
       this.layout.id,
       this.layout.playerSpawn.y,
+      panoramaExclusion,
     );
     three.add(this.root);
     this.root.add(this.lights);

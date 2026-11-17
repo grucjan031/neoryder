@@ -1,5 +1,11 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { Scene as ThreeScene } from 'three';
+import {
+  Box3,
+  InstancedMesh,
+  Matrix4,
+  Scene as ThreeScene,
+  Vector3,
+} from 'three';
 import { MissionScene } from '../../src/scenes/mission';
 import { EventBus } from '../../src/core/events';
 import { GameLoop, SIM_DT } from '../../src/core/loop';
@@ -9,6 +15,7 @@ import { tuning } from '../../src/core/tuning';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 import type { InputSnapshot } from '../../src/core/input';
 import { levelDefinitions } from '../../src/world/levels';
+import { Panorama } from '../../src/render/panorama';
 import {
   loadMetaManagerStrict,
   saveMetaManager,
@@ -65,6 +72,45 @@ const state = (scene: MissionScene) =>
 function steps(scene: MissionScene, count: number) {
   for (let index = 0; index < count; index++) scene.step(SIM_DT, idle);
 }
+
+it('bryły panoramy nie przecinają podłogi na żadnym odcinku M01', async () => {
+  const { three } = await setup();
+  const floor = levelDefinitions
+    .get('m01-maszty')!
+    .blocks.filter((block) => block.material === 'asphalt')
+    .map(({ position, size }) =>
+      new Box3().setFromCenterAndSize(
+        new Vector3(position.x, position.y, position.z),
+        new Vector3(size.x, size.y, size.z),
+      ),
+    );
+  const intersections = (buildings: InstancedMesh) => {
+    const unitBox = new Box3(
+      new Vector3(-0.5, -0.5, -0.5),
+      new Vector3(0.5, 0.5, 0.5),
+    );
+    const bounds = new Box3();
+    const matrix = new Matrix4();
+    let count = 0;
+    for (let i = 0; i < buildings.count; i++) {
+      buildings.getMatrixAt(i, matrix);
+      bounds.copy(unitBox).applyMatrix4(matrix);
+      if (floor.some((block) => block.intersectsBox(bounds))) count++;
+    }
+    return count;
+  };
+  const original = new Panorama('m01-maszty', 0);
+  original.sync(0);
+  expect(
+    intersections(
+      original.getObjectByName('skyline-buildings') as InstancedMesh,
+    ),
+  ).toBeGreaterThan(0);
+  expect(
+    intersections(three.getObjectByName('skyline-buildings') as InstancedMesh),
+  ).toBe(0);
+  original.dispose();
+});
 
 it('nie tworzy stanu runu, ładuje całą geometrię i blokuje cele poza kolejnością', async () => {
   const { scene, commands, store, three } = await setup();

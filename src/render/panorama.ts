@@ -1,4 +1,5 @@
 import {
+  Box3,
   BoxGeometry,
   Group,
   InstancedBufferAttribute,
@@ -41,6 +42,7 @@ export class Panorama extends Group {
   constructor(
     private readonly seed: string,
     private readonly floorY: number,
+    private readonly exclusion?: Box3,
   ) {
     super();
     this.name = 'city-panorama';
@@ -84,18 +86,35 @@ export class Panorama extends Group {
 
     // Wieżowce: jedna instancja na bryłę; parametry okien w atrybutach instancji.
     const box = new BoxGeometry(1, 1, 1);
-    const n = layout.buildings.length;
+    const cubeBounds = new Box3(
+      new Vector3(-0.5, -0.5, -0.5),
+      new Vector3(0.5, 0.5, 0.5),
+    );
+    const worldBounds = new Box3();
+    const buildingMatrix = (b: (typeof layout.buildings)[number]) => {
+      rotation.setFromAxisAngle(up, b.yaw);
+      position.set(b.x, b.baseY + b.height / 2, b.z);
+      scale.set(b.width, b.height, b.depth);
+      return matrix.compose(position, rotation, scale);
+    };
+    const visibleBuildings = this.exclusion
+      ? layout.buildings.filter(
+          (b) =>
+            !worldBounds
+              .copy(cubeBounds)
+              .applyMatrix4(buildingMatrix(b))
+              .intersectsBox(this.exclusion!),
+        )
+      : layout.buildings;
+    const n = visibleBuildings.length;
     const params = new Float32Array(n * 4);
     const params2 = new Float32Array(n * 4);
     box.setAttribute('params', new InstancedBufferAttribute(params, 4));
     box.setAttribute('params2', new InstancedBufferAttribute(params2, 4));
     const buildings = new InstancedMesh(box, this.buildingMaterial, n);
     buildings.name = 'skyline-buildings';
-    layout.buildings.forEach((b, i) => {
-      rotation.setFromAxisAngle(up, b.yaw);
-      position.set(b.x, b.baseY + b.height / 2, b.z);
-      scale.set(b.width, b.height, b.depth);
-      buildings.setMatrixAt(i, matrix.compose(position, rotation, scale));
+    visibleBuildings.forEach((b, i) => {
+      buildings.setMatrixAt(i, buildingMatrix(b));
       params.set([b.seed, b.kind, b.windowColor, b.lit], i * 4);
       params2.set([b.accent, b.tone, b.layer, 0], i * 4);
     });

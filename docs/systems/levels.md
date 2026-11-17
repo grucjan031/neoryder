@@ -48,6 +48,21 @@ trafiają do repo. Siedem odcinków ma łącznie 320 m; szerokości zmieniają s
 10 m w tunelu do 28 m na placu. Neon Noir: ciemne fasady, mokry asfalt, dach
 przejścia, stragany, rusztowania, istniejące neony z dozwolonej palety i deszcz.
 
+Zadaszenia M01 mają lokalne, niemigające światła w ciepłej bieli `#fff1d6`:
+pod stropami x=0–44 i x=92–136 co 8 m, na y=5,8, z=0 (intensywność 40,
+zasięg 14 m), a pod bocznymi podestami rusztowań x=194–218 przy z=±5,5
+na x=198/206/214, y=3,3 (intensywność 16, zasięg 9 m). Istniejący renderer
+tworzy też plamy światła na podłodze i zachowuje limit puli aktywnych świateł.
+Wcześniejsze źródła przy środkach odcinków nie pokrywały całej długości
+zadaszonej podłogi; `rainShelters` wycina wyłącznie deszcz, nie odbicia ani światła.
+Generator zachowuje to oświetlenie przy ponownym zbudowaniu danych poziomu.
+
+Panorama jest generowana wokół początku świata, a jej budynki nie mają kolizji.
+W poziomie liniowym render pomija bryły panoramy przecinające obwiednię bloków
+poziomu: w M01 mogły one wcześniej nachodzić na trasę m.in. przy x=87–95,
+x=120–127 i x=146–170. Pozostała panorama i niebo zostają dostępne w tle.
+Test `missionLinear.test.ts` sprawdza całą asfaltową podłogę względem brył panoramy.
+
 ## Sprawdzenie w 30 sekund
 
 1. Otwórz `?scene=mission&mission=m01-maszty&debug=1`, w konsoli wpisz `god`.
@@ -64,6 +79,17 @@ i bram, różnicę ciasnego tunelu i szerokiego placu, linie ostrzału wieżycze
 osłony po bokach, czas ucieczki po podłożeniu ładunku i tempo siedmiu starć.
 Sprawdź checkpoint po Helixie oraz kontynuację z tablicy po przeładowaniu gry.
 Równocześnie zwróć uwagę na FPS podczas deszczu i spojrzenia wzdłuż całej ulicy.
+
+Kontrola oświetlenia w scenie `mission` (włącz `god`):
+
+- `checkpoint start`: x=5, z=0; obejrzyj podłogę i boczne osłony aż do x=44.
+- `checkpoint po-maszcie-1`: x=104, z=0; sprawdź asfalt, boki i wyjście
+  spod stropu x=92–136, także patrząc z powrotem w stronę wejścia.
+- `checkpoint po-helixie`: x=192, z=0; podejdź pod oba podesty
+  x=194–218, z=±5,5. Sprawdź podłogę i słupy przy x=196/216.
+
+Test danych `level.test.ts` sprawdza lokalne światło z zapasem zasięgu na siatce
+podłogi pod wszystkimi czterema zadaszeniami; ocenę kontrastu i jasności wykonaj w grze.
 
 Testy: `level.test.ts`, `missionCheckpoint.test.ts`, `missionLinear.test.ts`,
 `missionsPanel.test.ts`; `tests/e2e/missionLinear.spec.ts` przygotowany do uruchomienia

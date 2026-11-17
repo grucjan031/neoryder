@@ -136,6 +136,13 @@ for (const [
   }
   if (index === 0 || index === 2) {
     level.blocks.push(block(center, 7, 0, length, 1, width, 'concrete'));
+    for (let x = from + 2; x < from + length; x += 8)
+      level.lights.push({
+        position: v(x, 5.8),
+        color: '#fff1d6',
+        intensity: 40,
+        range: 14,
+      });
     level.rainShelters.push({
       position: v(center, 3),
       size: v(length, 8, width),
@@ -148,6 +155,13 @@ for (const [
   if (index === 4)
     for (const side of [-1, 1]) {
       level.blocks.push(block(center, 4, side * 5.5, 24, 0.5, 2, 'metal'));
+      for (const x of [center - 8, center, center + 8])
+        level.lights.push({
+          position: v(x, 3.3, side * 5.5),
+          color: '#fff1d6',
+          intensity: 16,
+          range: 9,
+        });
       for (const x of [center - 10, center + 10])
         level.blocks.push(block(x, 2, side * 5.5, 0.5, 4, 0.5, 'metal'));
       level.decor.push({

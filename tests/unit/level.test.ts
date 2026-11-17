@@ -8,6 +8,48 @@ import { missionDefinitions } from '../../src/world/missions';
 const level = levelDefinitions.get('m01-maszty')!;
 const mission = missionDefinitions.get('m01-maszty')!;
 
+it('oświetla podłogę na całej szerokości i długości każdego zadaszenia M01', () => {
+  const roofs = level.blocks.filter(
+    ({ position, size }) =>
+      position.y - size.y / 2 > 2 && size.y <= 1 && size.x >= 8 && size.z >= 2,
+  );
+  expect(roofs).toHaveLength(4);
+  for (const roof of roofs) {
+    const underside = roof.position.y - roof.size.y / 2;
+    const lights = (level.lights ?? []).filter(
+      ({ position, color, intensity, flicker }) =>
+        color === '#fff1d6' &&
+        intensity >= 16 &&
+        !flicker &&
+        position.y > 0 &&
+        position.y < underside &&
+        Math.abs(position.x - roof.position.x) <= roof.size.x / 2 &&
+        Math.abs(position.z - roof.position.z) <= roof.size.z / 2,
+    );
+    for (
+      let x = roof.position.x - roof.size.x / 2;
+      x <= roof.position.x + roof.size.x / 2;
+      x += 2
+    ) {
+      for (
+        let z = roof.position.z - roof.size.z / 2;
+        z <= roof.position.z + roof.size.z / 2;
+        z += 2
+      ) {
+        // Zapas przed końcem zasięgu: tam światło punktowe już zanika.
+        expect(
+          lights.some(
+            ({ position, range }) =>
+              Math.hypot(position.x - x, position.y, position.z - z) <=
+              range * 0.75,
+          ),
+          `Brak lokalnego światła pod zadaszeniem przy (${x}, 0, ${z})`,
+        ).toBe(true);
+      }
+    }
+  }
+});
+
 it('ładuje ciągłą mapę M01 z siedmioma odcinkami, dziesięcioma spotkaniami i kolejnością celów', () => {
   expect(loadLevel(data, mission, levelWaves)).toEqual(level);
   expect(level.sections).toHaveLength(7);
