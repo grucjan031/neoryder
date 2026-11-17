@@ -29,6 +29,7 @@ import {
   preserveLiteFx,
 } from './render/fxMode';
 import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
+import { RenderInfoProbe } from './render/renderInfo';
 import { showBootSplash } from './ui/bootSplash';
 import type { BootSplash } from './ui/bootSplash';
 import './ui/styles.css';
@@ -85,6 +86,7 @@ async function main(): Promise<void> {
   const pipeline = createRenderPipeline(renderer);
   const profiler = debug ? new FrameProfiler(renderer) : undefined;
   setFrameProfiler(profiler);
+  const renderInfo = debug ? new RenderInfoProbe(renderer) : undefined;
   const updateQuality = (): void =>
     applyQuality(loadSettings().quality, {
       renderer,
@@ -128,11 +130,13 @@ async function main(): Promise<void> {
         } finally {
           profiler?.end();
         }
+        renderInfo?.beginFrame();
         profiler?.begin('pipeline');
         try {
           pipeline.render(three, camera, frameDt);
         } finally {
           profiler?.end();
+          renderInfo?.endFrame();
           profiler?.endFrame(three, frameDt);
         }
         stats?.end();
@@ -312,13 +316,15 @@ async function main(): Promise<void> {
       query: (name: string) =>
         name === 'frameProfile'
           ? profiler?.averages
-          : name === 'audioState'
-            ? audio.state
-            : name === 'lastSound'
-              ? audio.lastSound
-              : name === 'recentSounds'
-                ? [...audio.recentSounds]
-                : scene.query?.(name),
+          : name === 'renderInfo'
+            ? renderInfo?.snapshot
+            : name === 'audioState'
+              ? audio.state
+              : name === 'lastSound'
+                ? audio.lastSound
+                : name === 'recentSounds'
+                  ? [...audio.recentSounds]
+                  : scene.query?.(name),
       command,
     });
   }

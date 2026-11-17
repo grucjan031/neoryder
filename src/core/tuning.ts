@@ -893,6 +893,13 @@ export const tuning = {
     npcIdleVarietyLenS: [3, 5],
     npcAnimFarM: 18,
     npcAnimFarFrames: 3,
+    /** Co ile klatek aktualizuje się mixer NPC poza kadrem i dalej niż `npcAnimFarM` (dt się sumuje). */
+    npcAnimHiddenFrames: 20,
+    /** Sfera ograniczająca ciała NPC w układzie siatki: środek (m, oś Y) i promień (m); cullowanie kadrem. */
+    npcBoundsCenterM: 0.9,
+    npcBoundsRadiusM: 1.3,
+    /** Zapas (m) ponad sferę NPC w teście kadru. */
+    npcCullMarginM: 0.3,
     npcRouteSampleM: 0.25,
     npcRouteStaticClearanceM: 0.9,
     chatterRadiusM: 5,

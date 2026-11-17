@@ -353,6 +353,14 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   `npcRouteStaticClearanceM` (0,9 m) od statycznych NPC. Istniejąca walidacja osiągalności startu pozostaje.
 - Odległe od kamery postacie (ponad `npcAnimFarM`, 18 m) krokują mixer co `npcAnimFarFrames` (3) klatki,
   sumując dt. Interpolacja pozycji nadal działa co klatkę; pętla widoków nie tworzy obiektów tymczasowych.
+- Cullowanie NPC: siatka ciała ma `frustumCulled` i stałą sferę (`npcBoundsCenterM`, `npcBoundsRadiusM`,
+  zweryfikowaną testem na pozach wszystkich klipów); akcesoria na kościach są cullowane domyślnie.
+  `HubNpcs.cull(camera)` (po ustawieniu kamery w klatce) testuje sferę NPC z zapasem `npcCullMarginM`.
+  NPC poza kadrem krokuje mixer co `npcAnimFarFrames` (bliski) lub `npcAnimHiddenFrames` (20, dalszy niż
+  `npcAnimFarM`), sumując dt; wracający do kadru dostaje zaległy dt od razu, bez skoku. NPC nie rzucają
+  cieni. Debug: `query('hubNpcVisible')` — liczba NPC w kadrze.
+- Akcesoria to ok. 11 siatek na NPC (267 siatek, 159 grup kość+materiał na 23 NPC); scalanie per kość i materiał
+  odłożone: oszczędziłoby ok. 40% wywołań akcesoriów, ale wymaga unikalnych geometrii na NPC i przepisania testów.
 - Teksty mogą zawierać `conversations: [{ id, npcs: [id], radiusM?, lines: [{ npc, text }] }]`.
   Uczestników jest 1–3, każda kwestia należy do uczestnika, wszystkie id muszą istnieć w układzie;
   scena sprawdza to przez `loadNpcTexts(data, layout.npcs)`.

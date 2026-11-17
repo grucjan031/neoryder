@@ -4,6 +4,7 @@ import {
   Color,
   CylinderGeometry,
   Euler,
+  Frustum,
   Group,
   LoopRepeat,
   Matrix4,
@@ -20,6 +21,7 @@ import {
 } from 'three';
 import type {
   AnimationClip,
+  Camera,
   AnimationAction,
   BufferGeometry,
   Material,
@@ -82,6 +84,19 @@ const loadClips = (): Promise<AnimationClip[]> =>
     .catch(() => []));
 
 /** Deterministyczna liczba z [0, 1) z identyfikatora (przesunięcie animacji; to nie losowość symulacji). */
+/** Czy mixer NPC ma się teraz zaktualizować (dt sumuje się między aktualizacjami). */
+export function npcAnimDue(
+  near: boolean,
+  visible: boolean,
+  frames: number,
+  farFrames: number,
+  hiddenFrames: number,
+): boolean {
+  if (visible && near) return true;
+  const every = visible || near ? farFrames : hiddenFrames;
+  return frames >= Math.max(1, Math.round(every));
+}
+
 const hash = (text: string): number => {
   let value = 2166136261;
   for (const char of text)
@@ -98,6 +113,7 @@ interface NpcView {
   animation?: NpcAnimation;
   animDt: number;
   animFrames: number;
+  visible: boolean;
   material: MeshToonMaterial;
   mixer?: AnimationMixer;
   neck?: Object3D;
@@ -106,6 +122,25 @@ interface NpcView {
   marker: Mesh;
   /** Materiały akcesoriów (geometrie są współdzielone w HubNpcs). */
   owned: Material[];
+}
+
+const frustum = new Frustum();
+const frustumMatrix = new Matrix4();
+const cullSphere = new Sphere();
+
+function npcInFrustum(
+  frustum: Frustum,
+  view: NpcView,
+  t: Tuning['hub'],
+): boolean {
+  const scale = view.root.scale.y;
+  cullSphere.center.set(
+    view.root.position.x,
+    view.root.position.y + t.npcBoundsCenterM * scale,
+    view.root.position.z,
+  );
+  cullSphere.radius = t.npcBoundsRadiusM * scale + t.npcCullMarginM;
+  return frustum.intersectsSphere(cullSphere);
 }
 
 const yawAxis = new Vector3(0, 1, 0);
@@ -148,6 +183,7 @@ export class HubNpcs {
     fog: false,
   });
   private time = 0;
+  private alpha = 1;
 
   constructor(
     states: readonly NpcRuntime[],
@@ -184,6 +220,7 @@ export class HubNpcs {
         state,
         actions: new Map(),
         animDt: 0,
+        visible: true,
         animFrames:
           index % Math.max(1, Math.round(tuning.hub.npcAnimFarFrames)),
         material: this.material(def.accent, def.look?.shade ?? index % 5),
@@ -242,9 +279,12 @@ export class HubNpcs {
           return;
         }
         node.material = view.material;
-        node.frustumCulled = false;
         if (node instanceof SkinnedMesh) {
-          node.boundingSphere = new Sphere(new Vector3(0, 0.9, 0), 2);
+          node.frustumCulled = true;
+          node.boundingSphere = new Sphere(
+            new Vector3(0, this.tuning.hub.npcBoundsCenterM, 0),
+            this.tuning.hub.npcBoundsRadiusM,
+          );
           view.skins.push(node);
         }
       });
@@ -675,6 +715,7 @@ export class HubNpcs {
   ): void {
     const t = this.tuning.hub;
     this.time += dt;
+    this.alpha = alpha;
     const pulse =
       1 +
       Math.sin(this.time * t.markerPulseHz * Math.PI * 2) * t.markerPulseAmp;
@@ -720,25 +761,63 @@ export class HubNpcs {
       if (!view.mixer) continue;
       view.animDt += dt;
       view.animFrames++;
-      const far =
+      const near =
         Math.hypot(
           camera.x - this.position.x,
           camera.y - this.position.y,
           camera.z - this.position.z,
-        ) > t.npcAnimFarM;
-      if (far && view.animFrames < Math.max(1, Math.round(t.npcAnimFarFrames)))
+        ) <= t.npcAnimFarM;
+      if (
+        !npcAnimDue(
+          near,
+          view.visible,
+          view.animFrames,
+          t.npcAnimFarFrames,
+          t.npcAnimHiddenFrames,
+        )
+      )
         continue;
-      view.mixer.update(view.animDt);
-      view.animDt = 0;
-      view.animFrames = 0;
-      const headYaw =
-        state.previousHeadYaw +
-        (state.look.headYaw - state.previousHeadYaw) * alpha;
-      view.root.updateMatrixWorld(true);
-      if (view.neck) yawBone(view.neck, headYaw * NECK_SHARE);
-      if (view.head) yawBone(view.head, headYaw * (1 - NECK_SHARE));
-      for (const skin of view.skins) skin.skeleton.update();
+      this.pose(view);
     }
+  }
+
+  /**
+   * Test kadru NPC po ustawieniu kamery w bieżącej klatce. NPC wracający do kadru z zaległym dt
+   * dostaje od razu aktualną pozę, więc po powrocie nie ma skoku animacji.
+   */
+  cull(camera: Camera): void {
+    const t = this.tuning.hub;
+    frustumMatrix.multiplyMatrices(
+      camera.projectionMatrix,
+      camera.matrixWorldInverse,
+    );
+    frustum.setFromProjectionMatrix(frustumMatrix);
+    for (const view of this.views) {
+      const visible = npcInFrustum(frustum, view, t);
+      if (visible && !view.visible && view.mixer && view.animDt > 0)
+        this.pose(view);
+      view.visible = visible;
+    }
+  }
+
+  private pose(view: NpcView): void {
+    const state = view.state;
+    const alpha = this.alpha;
+    view.mixer!.update(view.animDt);
+    view.animDt = 0;
+    view.animFrames = 0;
+    const headYaw =
+      state.previousHeadYaw +
+      (state.look.headYaw - state.previousHeadYaw) * alpha;
+    view.root.updateMatrixWorld(true);
+    if (view.neck) yawBone(view.neck, headYaw * NECK_SHARE);
+    if (view.head) yawBone(view.head, headYaw * (1 - NECK_SHARE));
+    for (const skin of view.skins) skin.skeleton.update();
+  }
+
+  /** Liczba NPC aktualnie w kadrze (debug). */
+  get visibleCount(): number {
+    return this.views.reduce((sum, view) => sum + (view.visible ? 1 : 0), 0);
   }
 
   bodyYaw(id: string): number | undefined {

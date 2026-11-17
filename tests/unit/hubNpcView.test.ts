@@ -5,13 +5,16 @@ import {
   LoopRepeat,
   Mesh,
   MeshToonMaterial,
+  PerspectiveCamera,
+  SkinnedMesh,
   Vector3,
 } from 'three';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { BufferGeometry, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { expect, it, vi } from 'vitest';
 import { tuning } from '../../src/core/tuning';
-import { HubNpcs } from '../../src/scenes/hubNpcs';
+import { HubNpcs, npcAnimDue } from '../../src/scenes/hubNpcs';
 import { NpcRuntime } from '../../src/world/hubNpcs';
 import { lifeLayout } from '../fixtures/hubLife';
 import hideoutData from '../../src/data/hub/hideout.json';
@@ -217,6 +220,109 @@ it('ubiera mieszkańców z look na prawdziwych kościach, zachowuje kluczowych N
     view.dispose();
     view.dispose();
     for (const disposal of disposals) expect(disposal).toHaveBeenCalledOnce();
+  } finally {
+    view.dispose();
+    load.mockRestore();
+    vi.restoreAllMocks();
+  }
+});
+
+it('polityka aktualizacji mixera: widoczni bliscy co klatkę, dalecy rzadziej, poza kadrem najrzadziej', () => {
+  expect(npcAnimDue(true, true, 0, 3, 20)).toBe(true);
+  expect(npcAnimDue(false, true, 2, 3, 20)).toBe(false);
+  expect(npcAnimDue(false, true, 3, 3, 20)).toBe(true);
+  expect(npcAnimDue(true, false, 2, 3, 20)).toBe(false);
+  expect(npcAnimDue(true, false, 3, 3, 20)).toBe(true);
+  expect(npcAnimDue(false, false, 19, 3, 20)).toBe(false);
+  expect(npcAnimDue(false, false, 20, 3, 20)).toBe(true);
+  expect(npcAnimDue(false, false, 0, 0, 0)).toBe(false);
+});
+
+it('sfera ograniczająca siatki obejmuje wszystkie wierzchołki w pozach wszystkich klipów', async () => {
+  const [body, clips] = await Promise.all([
+    parse('enemy_trooper.glb'),
+    parse('npc_anims.glb'),
+  ]);
+  const instance = clone(body.scene);
+  let skin: SkinnedMesh | undefined;
+  instance.traverse((node) => {
+    if (node instanceof SkinnedMesh && node.name === 'armored_body')
+      skin = node;
+  });
+  const mesh = skin!;
+  const { npcBoundsCenterM, npcBoundsRadiusM } = tuning.hub;
+  const center = new Vector3(0, npcBoundsCenterM, 0);
+  const mixer = new AnimationMixer(instance);
+  const point = new Vector3();
+  const count = mesh.geometry.getAttribute('position').count;
+  let worst = 0;
+  for (const clip of clips.animations) {
+    const action = mixer.clipAction(clip);
+    action.play();
+    for (let step = 0; step < 6; step++) {
+      mixer.setTime((clip.duration * step) / 6);
+      instance.updateMatrixWorld(true);
+      mesh.skeleton.update();
+      for (let i = 0; i < count; i += 3)
+        worst = Math.max(
+          worst,
+          mesh.getVertexPosition(i, point).distanceTo(center),
+        );
+    }
+    action.stop();
+  }
+  expect(worst).toBeLessThan(npcBoundsRadiusM);
+});
+
+it('NPC poza kadrem nie animuje się często, a po powrocie do kadru dostaje zaległy dt od razu', async () => {
+  const [body, clips] = await Promise.all([
+    parse('enemy_trooper.glb'),
+    parse('npc_anims.glb'),
+  ]);
+  const load = vi
+    .spyOn(GLTFLoader.prototype, 'loadAsync')
+    .mockImplementation(async (url) =>
+      url.includes('npc_anims') ? clips : body,
+    );
+  const t = structuredClone(tuning);
+  const npc = new NpcRuntime(lifeLayout().npcs![0]!, t.hub);
+  const view = new HubNpcs([npc], t);
+  try {
+    await view.load();
+    npc.step(1, { x: -100, y: 0, z: -100 }, false);
+    view.render(1, 0, npc.position, null);
+    const camera = new PerspectiveCamera(60, 1, 0.1, 100);
+    const place = (x: number, z: number, yaw: number): void => {
+      camera.position.set(x, 1.6, z);
+      camera.rotation.set(0, yaw, 0);
+      camera.updateMatrixWorld();
+    };
+    const root = view.root.children[0]!;
+    // Kamera obok NPC, patrzy w przeciwną stronę.
+    place(root.position.x, root.position.z + 3, Math.PI);
+    view.cull(camera);
+    expect(view.visibleCount).toBe(0);
+    const update = vi.spyOn(AnimationMixer.prototype, 'update');
+    const far = { x: 100, y: 0, z: 100 };
+    const framesToUpdate = (): number => {
+      update.mockClear();
+      let frames = 0;
+      while (update.mock.calls.length === 0 && frames < 100) {
+        view.render(1, 0.01, far, null);
+        frames++;
+      }
+      return frames;
+    };
+    framesToUpdate();
+    expect(framesToUpdate()).toBe(t.hub.npcAnimHiddenFrames);
+    update.mockClear();
+    view.render(1, 0.01, far, null);
+    view.render(1, 0.01, far, null);
+    expect(update).not.toHaveBeenCalled();
+    place(root.position.x, root.position.z + 3, 0);
+    view.cull(camera);
+    expect(view.visibleCount).toBe(1);
+    expect(update).toHaveBeenCalledExactlyOnceWith(0.02);
   } finally {
     view.dispose();
     load.mockRestore();

@@ -993,6 +993,7 @@ export class HubScene implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
+    this.npcs?.cull(camera);
     this.soundscape?.render(alpha, this.stations.opened !== null);
     this.dressing?.render(frameDt, camera);
     const velocity = this.player.getState().velocity;
@@ -1013,6 +1014,8 @@ export class HubScene implements Scene {
   query(name: string): unknown {
     if (name === 'hubFauna') return this.fauna?.runtime.query();
     switch (name) {
+      case 'hubNpcVisible':
+        return this.npcs?.visibleCount ?? 0;
       case 'hubProps':
         return this.props.snapshot;
       case 'hubPower':

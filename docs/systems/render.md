@@ -150,6 +150,11 @@ Profiler Z14 (`src/render/frameProfiler.ts`) istnieje tylko w trybie debug
 `off` zachowuje ostatnie średnie. Odczyt zwraca współdzielony bufor raportu;
 do zachowania stanu użyć `structuredClone(...)`.
 
+`query('renderInfo')` (`src/render/renderInfo.ts`, tylko debug) zwraca
+`{ calls, triangles, geometries, textures }` z `renderer.info` za całą ostatnią klatkę (wszystkie
+przebiegi pipeline'u). Sonda wyłącza `info.autoReset` i zeruje liczniki przed pipeline'em, więc nie
+pokazuje tylko ostatniego przebiegu; profiler odczytuje liczniki po niej.
+
 Pomiar architekta na działającym serwerze (osobny skrypt Node + Playwright,
 bez uruchamiania testów ani budowania aplikacji):
 
