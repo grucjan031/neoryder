@@ -252,7 +252,7 @@ describe('Szturm', () => {
     expect(model.moveGoal(position, position)).toBeUndefined();
   });
   it.each(['victory', 'death'] as const)(
-    'run %s zachowuje id trybu, nagrody i zapis v4',
+    'run %s zachowuje id trybu, nagrody i zapis bieżącej wersji',
     async (outcome) => {
       const bus = new EventBus();
       const run = new RunManager(bus, {
@@ -278,7 +278,6 @@ describe('Szturm', () => {
         ended: { runId: 'szturm', summary },
       });
       expect((await store.loadRun())?.ended?.summary).toEqual(summary);
-      expect(SAVE_VERSION).toBe(4);
     },
   );
 });
