@@ -2595,7 +2595,7 @@
         "z": 0.4
       },
       "position": {
-        "x": -18.0,
+        "x": -18,
         "y": 2.5,
         "z": -11.2
       },
@@ -2608,7 +2608,7 @@
         "z": 0.4
       },
       "position": {
-        "x": -9.0,
+        "x": -9,
         "y": 2.5,
         "z": -11.2
       },
@@ -2621,7 +2621,7 @@
         "z": 0.4
       },
       "position": {
-        "x": 0.0,
+        "x": 0,
         "y": 2.5,
         "z": -11.2
       },
@@ -2634,7 +2634,7 @@
         "z": 0.4
       },
       "position": {
-        "x": 7.0,
+        "x": 7,
         "y": 2.5,
         "z": -11.2
       },
@@ -2647,7 +2647,7 @@
         "z": 0.4
       },
       "position": {
-        "x": -14.0,
+        "x": -14,
         "y": 4.25,
         "z": -11.2
       },
@@ -3117,7 +3117,7 @@
       "position": {
         "x": -5.6,
         "y": 0.22,
-        "z": -18.0
+        "z": -18
       },
       "material": "plastic"
     },
@@ -3182,7 +3182,7 @@
       "position": {
         "x": -1.1,
         "y": 0.22,
-        "z": -18.0
+        "z": -18
       },
       "material": "plastic"
     },
@@ -3247,7 +3247,7 @@
       "position": {
         "x": -1.1,
         "y": 0.22,
-        "z": -14.0
+        "z": -14
       },
       "material": "plastic"
     },
@@ -3415,7 +3415,7 @@
       },
       "position": {
         "x": 4.5,
-        "y": 1.0,
+        "y": 1,
         "z": -17
       },
       "material": "metal"
@@ -6912,12 +6912,12 @@
       "texture": "screen_menu",
       "position": {
         "x": -17,
-        "y": 2.0,
+        "y": 2,
         "z": -18.98
       },
       "size": {
         "w": 2.4,
-        "h": 1.0
+        "h": 1
       },
       "yaw": 0
     },
@@ -7116,7 +7116,7 @@
       },
       "size": {
         "w": 1.6,
-        "h": 1.0
+        "h": 1
       },
       "yaw": 0
     },
@@ -7649,6 +7649,56 @@
         "headwear": "hood",
         "torso": "jacket",
         "prop": "pouches"
+      },
+      "seat": {
+        "heightM": 0.48,
+        "offset": {
+          "x": -0.002812,
+          "y": -0.48,
+          "z": 0.333626
+        }
+      }
+    },
+    {
+      "id": "bogna",
+      "position": {
+        "x": -10.5,
+        "y": 0,
+        "z": -13.55
+      },
+      "rotationDeg": 180,
+      "animation": "Sitting_Talking_Loop",
+      "accent": "green",
+      "look": {
+        "shade": 7,
+        "headwear": "bandana",
+        "torso": "apron",
+        "prop": "none"
+      },
+      "seat": {
+        "heightM": 0.48,
+        "offset": {
+          "x": -0.002812,
+          "y": -0.48,
+          "z": 0.333626
+        }
+      }
+    },
+    {
+      "id": "feliks",
+      "position": {
+        "x": -10.5,
+        "y": 0,
+        "z": -16.05
+      },
+      "rotationDeg": 0,
+      "animation": "Sitting_Idle_Loop",
+      "accent": "violet",
+      "look": {
+        "shade": 4,
+        "headwear": "glasses",
+        "torso": "vest",
+        "prop": "toolbelt"
       },
       "seat": {
         "heightM": 0.48,

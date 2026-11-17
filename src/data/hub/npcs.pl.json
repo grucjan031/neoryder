@@ -381,6 +381,28 @@
         "Lubię makaron u Heli, bo zawsze dolewa więcej zupy, jak nikt nie patrzy. Tylko nie pozwala biegać z miską po schodach.",
         "Widziałem u pani doktor na ekranie taki magentowy błysk — twój też tak świeci, jak robisz sztuczki Rezonansem?"
       ]
+    },
+    {
+      "id": "bogna",
+      "name": "Bogna",
+      "role": "Praczka",
+      "lines": [
+        "W misce z deszczówką schodzi prawie wszystko — smar z Hut, rdza z kanałów, czasem krew. Po plamach poznam, kto gdzie był, zanim jeszcze zdąży usiąść przy stole.",
+        "Cała stacja przechodzi przez moje ręce, rękaw po rękawie. Chcesz plotek? Nie słuchaj Bajta na łączach, tylko spójrz, kto przynosi kurtkę w błocie z Niecki.",
+        "Siedzę tu w jadłodajni nad stertą cudzego życia i ceruję, póki nitka trzyma. Tylko nie kładź mokrego płaszcza na świeżo zszytych rzeczach Feliksa, bo cię wygoni szydłem.",
+        "Zanim wyjdziesz na górę, zajrzyj do warsztatu Miry i dobierz ekwipunek pod swój wypad. Dobre cerowanie nie zastąpi sprzętu, kiedy w sektorze zrobi się ciasno."
+      ]
+    },
+    {
+      "id": "feliks",
+      "name": "Feliks",
+      "role": "Szewc",
+      "lines": [
+        "Równy szew, woskowana dratwa, zero pośpiechu. Zwiadowcy wracają z rozdartą podeszwą, a potem oczekują cudu w pięć minut.",
+        "Kiedyś szyłem skóry i teczki na Bulwarze dla gości w czystych płaszczach. Teraz łatam tu buty i kurtki — mniej gadania, więcej sensu.",
+        "Bogna po drugiej stronie stołu gada za dwoje, ja wolę liczyć ściegi. Chcesz oddać przemoczoną kurtkę, najpierw wytrzep piach z kieszeni.",
+        "Krzywa łata obetrze piętę po jednym biegu w Niecce. Zostaw buty przy nodze stołu, równo. Zajmę się nimi, jak skończę tę cholewkę."
+      ]
     }
   ],
   "conversations": [
@@ -737,6 +759,32 @@
         {
           "npc": "szron",
           "text": "Północ, okno na sześć minut między zmianą patroli Kurogane. Tyle wystarczy, jeśli nikt się nie spóźni."
+        }
+      ]
+    },
+    {
+      "id": "bogna_feliks_mending",
+      "npcs": ["bogna", "feliks"],
+      "lines": [
+        {
+          "npc": "bogna",
+          "text": "Patrz na te buty, Feliks. Ktoś po nocnej zmianie wlókł się chyba prosto przez kanał w Niecce — podeszwa aż chlupie."
+        },
+        {
+          "npc": "feliks",
+          "text": "Ewa. Tylko ona wraca z takiego błota bez słowa. Postaw je bliżej ciepła, jak wyschną, to złapię szwem."
+        },
+        {
+          "npc": "bogna",
+          "text": "Podeszwa pękła przy samym czubku, a cholewka ledwo się trzyma. Myślałam, że pójdą już do kosza."
+        },
+        {
+          "npc": "feliks",
+          "text": "Szkoda dobrej skóry. Wytnę łatę ze starego pasa i pociągnę woskiem — jeszcze parę nocnych obchodów wytrzymają."
+        },
+        {
+          "npc": "bogna",
+          "text": "Święta racja. W Kamiennej nic się nie marnuje — co nie wróci na nogi zwiadowcy, skończy u mnie jako ścierka."
         }
       ]
     }

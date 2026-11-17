@@ -259,7 +259,7 @@ test('hub: NPC (pięć kluczowych postaci i mieszkańcy), spojrzenie pokazuje �
     z: number;
   }[];
   const ids = npcs.map((npc) => npc.id);
-  expect(ids).toHaveLength(21);
+  expect(ids).toHaveLength(23);
   expect(ids).toEqual(
     expect.arrayContaining(['bajt', 'mira', 'szron', 'tomasz', 'wolan']),
   );

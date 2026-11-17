@@ -239,9 +239,9 @@ it('stacja odgrodzona od playerSpawn jest odrzucona jako nieosiągalna', () => {
   ).toBe(true);
 });
 
-it('układ ma 21 NPC na poziomie 0, pięć kluczowych postaci zachowuje unikalne akcenty', () => {
+it('układ ma 23 NPC na poziomie 0, pięć kluczowych postaci zachowuje unikalne akcenty', () => {
   const npcs = layout.npcs ?? [];
-  expect(npcs).toHaveLength(21);
+  expect(npcs).toHaveLength(23);
   const keyIds = ['bajt', 'mira', 'szron', 'tomasz', 'wolan'];
   const keyNpcs = npcs.filter((npc) => keyIds.includes(npc.id));
   expect(keyNpcs).toHaveLength(5);
