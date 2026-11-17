@@ -65,6 +65,22 @@ export class HubChatter {
     return true;
   }
 
+  say(line: ChatterLine): void {
+    this.start(
+      {
+        def: {
+          id: line.conversation,
+          npcs: [line.npc],
+          lines: [{ npc: line.npc, text: line.text }],
+        },
+        positions: [],
+        lines: [line],
+        cooldown: 0,
+      },
+      true,
+    );
+  }
+
   private distance(entry: Conversation, player: Vec3): number {
     let x = 0,
       z = 0;

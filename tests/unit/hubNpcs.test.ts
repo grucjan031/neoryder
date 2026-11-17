@@ -53,6 +53,49 @@ it('schemat tekstów odrzuca NPC bez kwestii i pusty prompt', () => {
   expect(() => loadNpcTexts({ talkPrompt: '', npcs: [] })).toThrow();
 });
 
+it('schemat zachowuje reakcje dziesięciu mieszkańców bez zmiany tekstów', () => {
+  const residents = [
+    'szron',
+    'mira',
+    'wolan',
+    'bajt',
+    'tomasz',
+    'hela',
+    'witek',
+    'zofia',
+    'rudy',
+    'ola',
+  ];
+  for (const id of residents) {
+    const npc = texts.npcs.find((entry) => entry.id === id)!;
+    const original = npcTexts.npcs.find((entry) => entry.id === id)!;
+    expect(npc.reactions).toEqual(original.reactions);
+    for (const kind of ['firstVisit', 'victory', 'death'] as const)
+      expect(npc.reactions?.[kind]?.length).toBeGreaterThan(0);
+  }
+});
+
+it.each([{ lines: [] }, { lines: [''] }, { lines: ['   '] }])(
+  'schemat odrzuca pustą listę lub tekst reakcji: $lines',
+  ({ lines }) => {
+    for (const kind of ['firstVisit', 'victory', 'death'])
+      expect(() =>
+        loadNpcTexts({
+          talkPrompt: 'x',
+          npcs: [
+            {
+              id: 'a',
+              name: 'A',
+              role: 'R',
+              lines: ['x'],
+              reactions: { [kind]: lines },
+            },
+          ],
+        }),
+      ).toThrow();
+  },
+);
+
 it('kwestie idą po kolei w pętli, osobno dla każdego NPC', () => {
   const dialogue = new NpcDialogue([
     { id: 'a', name: 'A', role: 'R', lines: ['1', '2', '3'] },

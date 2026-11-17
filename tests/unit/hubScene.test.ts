@@ -7,7 +7,13 @@ import { GameLoop, SIM_DT } from '../../src/core/loop';
 import type { HubStationId } from '../../src/core/metaTypes';
 import { Rng } from '../../src/core/rng';
 import { createMemorySaveStore } from '../../src/core/save';
-import { loadMetaManager } from '../../src/progression/metaSave';
+import {
+  loadMetaManager,
+  saveMetaManager,
+} from '../../src/progression/metaSave';
+import { MetaManager } from '../../src/progression/meta';
+import { createStarterMetaState } from '../../src/progression/progressionSchema';
+import type { ChatterLine } from '../../src/world/hubChatter';
 import { tuning } from '../../src/core/tuning';
 import { HubScene } from '../../src/scenes/hub';
 import type { HubSceneOptions } from '../../src/scenes/hub';
@@ -62,6 +68,7 @@ afterEach(() => {
   for (const scene of active) scene.dispose();
   active.clear();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 async function setup(params = '', options: HubSceneOptions = {}) {
@@ -487,4 +494,210 @@ it('fixture życia: kinematyczny NPC ma skalowany walec i zatrzymuje character c
   for (let i = 0; i < 300; i++) scene.step(SIM_DT, idle);
   expect(body.translation().x).toBeCloseTo(npcSpot(scene, 'kid').x, 5);
   expect(npcSpot(scene, 'kid').x).toBeGreaterThan(0);
+});
+
+function arrivalOptions(): HubSceneOptions {
+  const layout = lifeLayout();
+  // Obaj NPC poza promieniem podsłuchiwanych rozmów; friend bliżej spawnu.
+  delete layout.npcs![0]!.route;
+  layout.npcs![0]!.position.z = -9;
+  layout.npcs![1]!.position.z = -6;
+  const npcTexts = lifeTexts();
+  for (const npc of npcTexts.npcs)
+    npc.reactions = {
+      firstVisit: [`${npc.id} pierwszy A`, `${npc.id} pierwszy B`],
+      victory: [`${npc.id} wygrana A`, `${npc.id} wygrana B`],
+      death: [`${npc.id} porażka A`, `${npc.id} porażka B`],
+    };
+  return { layout, npcTexts };
+}
+
+function advanceArrival(
+  scene: HubScene,
+  seconds = tuning.hub.arrivalDelayS,
+): void {
+  for (let i = 0; i < Math.ceil(seconds / SIM_DT) + 1; i++)
+    scene.step(SIM_DT, idle);
+}
+
+it('powitanie po opóźnieniu wybiera NPC najbliższego spawn i zapisuje klucz przez fałszywe greetings', async () => {
+  const greetings = { last: vi.fn(() => null), mark: vi.fn() };
+  const { scene, bus, commands } = await setup('', {
+    ...arrivalOptions(),
+    greetings,
+  });
+  const lines: ChatterLine[] = [];
+  bus.on('hub_chatter_line', (line) => lines.push(line));
+  expect(greetings.last).toHaveBeenCalledOnce();
+  expect(scene.query('hubArrival')).toEqual({
+    kind: 'firstVisit',
+    key: 'first-visit',
+    greetedNpc: null,
+    reacted: [],
+  });
+  expect(scene.query('hubChatter')).toBeNull();
+  for (let i = 0; i < 149; i++) scene.step(SIM_DT, idle);
+  expect(lines).toEqual([]);
+  expect(greetings.mark).not.toHaveBeenCalled();
+  // Po wejściu gracz podchodzi do kid; wybór nadal odnosi się do spawnu.
+  commands.execute('hub tp 8 -9');
+  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, idle);
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toMatchObject({ conversation: 'arrival', npc: 'friend' });
+  expect(greetings.mark).toHaveBeenCalledExactlyOnceWith('first-visit');
+  expect(scene.query('hubArrival')).toMatchObject({
+    greetedNpc: 'friend',
+    reacted: [],
+  });
+});
+
+it('E daje reakcję każdemu NPC raz, potem zwykłe kwestie; powitanie nie zużywa reakcji', async () => {
+  const options = arrivalOptions();
+  const { scene, commands } = await setup('', options);
+  advanceArrival(scene);
+  const greeting = scene.query('hubChatter') as ChatterLine;
+  for (const id of ['friend', 'kid']) {
+    const npc = npcSpot(scene, id);
+    commands.execute(`hub tp ${npc.x} ${npc.z + 2}`);
+    commands.execute(`hub look ${id}`);
+    scene.step(SIM_DT, idle);
+    expect(scene.query('hubNpc')).toBe(id);
+    scene.step(SIM_DT, interact);
+    const reaction = scene.query('hubTalk') as { line: string };
+    const text = options.npcTexts!.npcs.find((npc) => npc.id === id)!;
+    expect(text.reactions!.firstVisit).toContain(reaction.line);
+    if (id === greeting.npc) expect(reaction.line).not.toBe(greeting.text);
+    expect(scene.query('hubChatter')).toBeNull();
+    scene.step(SIM_DT, interact);
+    expect(scene.query('hubTalk')).toMatchObject({ line: text.lines[0] });
+    scene.step(SIM_DT, interact);
+    expect(scene.query('hubTalk')).toMatchObject({
+      line: text.lines[1 % text.lines.length],
+    });
+  }
+  expect(scene.query('hubArrival')).toMatchObject({
+    reacted: ['friend', 'kid'],
+  });
+});
+
+it('już przywitany kontekst nie emituje powitania ani reakcji w rozmowie', async () => {
+  const greetings = { last: () => 'first-visit', mark: vi.fn() };
+  const { scene, bus, commands } = await setup('', {
+    ...arrivalOptions(),
+    greetings,
+  });
+  const lines: ChatterLine[] = [];
+  bus.on('hub_chatter_line', (line) => lines.push(line));
+  advanceArrival(scene);
+  expect(scene.query('hubArrival')).toBeNull();
+  expect(lines).toEqual([]);
+  expect(greetings.mark).not.toHaveBeenCalled();
+  commands.execute('hub talk friend');
+  expect(scene.query('hubTalk')).toMatchObject({ line: 'Witaj.' });
+});
+
+it.each(['victory', 'death'] as const)(
+  'wczytany run %s ustawia reakcję i pamięta powitanie między wizytami',
+  async (outcome) => {
+    const metaStore = createMemorySaveStore();
+    const meta = createStarterMetaState();
+    meta.stats.runs = 1;
+    meta.lastRuns = [
+      {
+        runId: 'saved:42',
+        outcome,
+        elapsedS: 10,
+        layerReached: 1,
+        threatLevel: 0,
+        rewards: { xp: 0, data: 0, cores: 0 },
+      },
+    ];
+    await saveMetaManager(metaStore, new MetaManager(meta));
+    let greeted: string | null = null;
+    const greetings = {
+      last: () => greeted,
+      mark: (key: string) => {
+        greeted = key;
+      },
+    };
+    const options = { ...arrivalOptions(), metaStore, greetings };
+    const a = await setup('', options);
+    expect(a.scene.query('hubArrival')).toMatchObject({
+      kind: outcome,
+      key: 'saved:42',
+    });
+    advanceArrival(a.scene);
+    const line = a.scene.query('hubChatter') as ChatterLine;
+    expect(options.npcTexts!.npcs[1]!.reactions![outcome]).toContain(line.text);
+    expect(greeted).toBe('saved:42');
+    const b = await setup('', options);
+    expect(b.scene.query('hubArrival')).toBeNull();
+    b.commands.execute('hub talk friend');
+    expect(b.scene.query('hubTalk')).toMatchObject({ line: 'Witaj.' });
+  },
+);
+
+it('brak localStorage nie powtarza powitania w obrębie wizyty', async () => {
+  vi.stubGlobal('localStorage', undefined);
+  const { scene, bus } = await setup('', arrivalOptions());
+  const lines: ChatterLine[] = [];
+  bus.on('hub_chatter_line', (line) => lines.push(line));
+  advanceArrival(scene, 20);
+  expect(lines.filter((line) => line.conversation === 'arrival')).toHaveLength(
+    1,
+  );
+  expect(scene.query('hubArrival')).toMatchObject({ greetedNpc: 'friend' });
+});
+
+it('powitanie czeka na zamknięcie stacji i koniec rozmowy E', async () => {
+  const greetings = { last: () => null, mark: vi.fn() };
+  const { scene, commands } = await setup('', {
+    ...arrivalOptions(),
+    greetings,
+  });
+  commands.execute('hub open missions');
+  advanceArrival(scene);
+  expect(greetings.mark).not.toHaveBeenCalled();
+  commands.execute('hub close');
+  commands.execute('hub talk friend');
+  advanceArrival(scene);
+  expect(greetings.mark).not.toHaveBeenCalled();
+  advanceArrival(scene, tuning.hub.npcLineS);
+  expect(greetings.mark).toHaveBeenCalledOnce();
+});
+
+it('debug wymusza kontekst, czyści reakcje i deterministycznie odtwarza powitanie', async () => {
+  const greetings = { last: () => 'first-visit', mark: vi.fn() };
+  const { scene, commands } = await setup('', {
+    ...arrivalOptions(),
+    greetings,
+  });
+  expect(commands.execute('hub arrive bogus')).toContain('Użycie');
+  expect(commands.execute('hub arrive')).toContain('Użycie');
+  expect(commands.execute('hub arrive victory extra')).toContain('Użycie');
+  for (const kind of ['firstVisit', 'victory', 'death']) {
+    expect(commands.execute(`hub arrive ${kind}`)).toBe(`Przybycie: ${kind}`);
+    expect(scene.query('hubArrival')).toEqual({
+      kind,
+      key: `debug:${kind}`,
+      greetedNpc: null,
+      reacted: [],
+    });
+    advanceArrival(scene);
+    const first = scene.query('hubChatter');
+    commands.execute('hub talk friend');
+    expect(scene.query('hubArrival')).toMatchObject({ reacted: ['friend'] });
+    const reaction = scene.query('hubTalk');
+    commands.execute(`hub arrive ${kind}`);
+    expect(scene.query('hubTalk')).toBeNull();
+    expect(scene.query('hubArrival')).toMatchObject({
+      greetedNpc: null,
+      reacted: [],
+    });
+    advanceArrival(scene);
+    expect(scene.query('hubChatter')).toEqual(first);
+    commands.execute('hub talk friend');
+    expect(scene.query('hubTalk')).toEqual(reaction);
+  }
 });

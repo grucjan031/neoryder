@@ -27,6 +27,7 @@ import { getMaterial } from '../render/materials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { batchStaticGeometry } from '../render/staticBatch';
 import { createMetaBar } from '../ui/hub/metaBar';
+import { createHubGreetings } from '../ui/hub/greetings';
 import type { MetaBar } from '../ui/hub/metaBar';
 import { createMissionsPanel } from '../ui/hub/missionsPanel';
 import { createTalentsPanel } from '../ui/hub/talentsPanel';
@@ -34,6 +35,8 @@ import { createWorkshopPanel } from '../ui/hub/workshopPanel';
 import { HtmlHubScreens } from '../ui/hubScreens';
 import { HubChatterUi } from '../ui/hubChatter';
 import { HubChatter } from '../world/hubChatter';
+import { HubArrival, hubArrivalContext } from '../world/hubArrival';
+import type { HubArrivalContext, HubGreetings } from '../world/hubArrival';
 import { HubDialog } from '../ui/hubDialog';
 import { HubPrompt } from '../ui/hubPrompt';
 import type { HubPanelRegistry, HubScreens } from '../ui/hubScreens';
@@ -66,6 +69,8 @@ export interface HubSceneOptions {
   loadModels?: boolean;
   /** Teksty rozmów NPC (domyślnie `src/data/hub/npcs.pl.json`). */
   npcTexts?: NpcTexts;
+  /** Pamięć ostatniego powitania (domyślnie adapter UI na localStorage). */
+  greetings?: HubGreetings;
   /** Zapis meta (domyślnie IndexedDB); w testach pamięć. */
   metaStore?: SaveStore;
   /** Fabryki paneli stacji (domyślnie tablica misji, talenty i warsztat). */
@@ -135,6 +140,10 @@ export class HubScene implements Scene {
     translation: Vec3;
   }[] = [];
   private chatter!: HubChatter;
+  private greetings!: HubGreetings;
+  private arrival: HubArrival | null = null;
+  private arrivalElapsedS = 0;
+  private arrivalPending = false;
   private chatterUi: HubChatterUi | null = null;
   private talk: {
     line: NpcLine;
@@ -207,6 +216,8 @@ export class HubScene implements Scene {
     if (this.screensOption === undefined)
       this.chatterUi = new HubChatterUi(this.layout.npcs ?? [], this.npcTexts);
     this.dialogue = new NpcDialogue(this.npcTexts.npcs);
+    this.greetings = this.options.greetings ?? createHubGreetings();
+    this.setArrival(hubArrivalContext(this.meta.state, this.greetings.last()));
     this.rapier = await initPhysics();
     if (this.disposed) return;
     this.world = new this.rapier.World({
@@ -528,7 +539,7 @@ export class HubScene implements Scene {
 
   /** Pokazuje kolejną kwestię NPC (E przy spojrzeniu albo `hub talk`, które nie wymaga bliskości); `null`, gdy brak tekstów NPC. */
   private talkTo(id: string, anywhere = false): NpcLine | null {
-    const line = this.dialogue.talk(id);
+    const line = this.arrival?.react(id) ?? this.dialogue.talk(id);
     if (!line) return null;
     this.chatter.interrupt();
     const state = this.npcById.get(id);
@@ -541,6 +552,39 @@ export class HubScene implements Scene {
   private endTalk(): void {
     this.talk = null;
     this.dialogUi?.hide();
+  }
+
+  private setArrival(context: HubArrivalContext | null): void {
+    this.arrival = context
+      ? new HubArrival(
+          context,
+          this.npcTexts.npcs,
+          this.layout.npcs ?? [],
+          this.layout.playerSpawn,
+        )
+      : null;
+    this.arrivalElapsedS = 0;
+    this.arrivalPending = context !== null;
+  }
+
+  private tickArrival(dt: number): void {
+    if (!this.arrivalPending || !this.arrival) return;
+    this.arrivalElapsedS += dt;
+    if (
+      this.arrivalElapsedS < this.ctx.tuning.hub.arrivalDelayS ||
+      this.stations.opened ||
+      this.talk
+    )
+      return;
+    this.arrivalPending = false;
+    const line = this.arrival.greet();
+    if (!line) return;
+    this.chatter.say({
+      conversation: 'arrival',
+      npc: line.id,
+      text: line.line,
+    });
+    this.greetings.mark(this.arrival.state.key);
   }
 
   /** Dymek znika po `npcLineS` s albo gdy gracz odejdzie od NPC. */
@@ -599,6 +643,7 @@ export class HubScene implements Scene {
       this.player.getState().position,
       this.stations.opened !== null || this.talk !== null,
     );
+    this.tickArrival(dt);
   }
 
   /** Komenda debug `hub tp`: ustawia kierunek patrzenia jako jednorazowy ruch myszy w następnym kroku. */
@@ -702,6 +747,8 @@ export class HubScene implements Scene {
         return this.talk ? { ...this.talk.line } : null;
       case 'hubChatter':
         return this.chatter.line ? { ...this.chatter.line } : null;
+      case 'hubArrival':
+        return this.arrival?.state ?? null;
       case 'npcs':
         return this.npcStates.map((state) => ({
           id: state.def.id,
@@ -744,6 +791,22 @@ export class HubScene implements Scene {
     };
     const metaCommands = registerMetaCommands(host, this.meta, this.metaStore!);
     this.off.push(() => metaCommands.dispose());
+    register(
+      'hub arrive',
+      'hub arrive <firstVisit|victory|death> — odtwórz przybycie do kryjówki',
+      (args) => {
+        const kind = args[0];
+        if (
+          args.length !== 1 ||
+          (kind !== 'firstVisit' && kind !== 'victory' && kind !== 'death')
+        )
+          return 'Użycie: hub arrive <firstVisit|victory|death>';
+        this.endTalk();
+        this.chatter.interrupt();
+        this.setArrival({ kind, key: `debug:${kind}` });
+        return `Przybycie: ${kind}`;
+      },
+    );
     register(
       'hub open',
       `hub open <${stationList}> — otwórz nakładkę stacji`,
