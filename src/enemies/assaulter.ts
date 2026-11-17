@@ -16,6 +16,7 @@ import type { EnemyDefinition } from './enemySchema';
 import { EnemyBody } from './enemyBody';
 import type {
   Enemy,
+  EnemyCarry,
   EnemyDependencies,
   EnemySnapshot,
   EnemyState,
@@ -36,6 +37,7 @@ export class Assaulter implements Enemy {
   current: EnemySnapshot;
   removed = false;
   moveGoal?: Vec3;
+  private carry: EnemyCarry | null = null;
   private readonly body: EnemyBody;
   private readonly off: (() => void)[] = [];
   private readonly geometry;
@@ -304,6 +306,23 @@ export class Assaulter implements Enemy {
     };
   }
 
+  setCarry(carry: EnemyCarry | null): void {
+    if (
+      carry?.speedMultiplier === this.carry?.speedMultiplier &&
+      carry?.defendRangeM === this.carry?.defendRangeM
+    )
+      return;
+    this.carry = carry ? { ...carry } : null;
+    this.stats.removeBySource('heistCarry');
+    if (carry)
+      this.stats.add({
+        stat: 'moveSpeed',
+        type: 'mult',
+        value: carry.speedMultiplier,
+        source: 'heistCarry',
+      });
+  }
+
   step(dt: number): void {
     if (this.removed) return;
     this.previous = copy(this.current);
@@ -333,7 +352,9 @@ export class Assaulter implements Enemy {
         Math.hypot(
           target.position.x - s.position.x,
           target.position.z - s.position.z,
-        ) > this.ctx.tuning.modes.conquest.detectRangeM)
+        ) >
+          (this.carry?.defendRangeM ??
+            this.ctx.tuning.modes.conquest.detectRangeM))
         ? this.moveGoal
         : undefined;
     const dx = target ? target.position.x - s.position.x : 0;
@@ -344,6 +365,9 @@ export class Assaulter implements Enemy {
     if (s.state === 'stunned') {
       if (s.stateTimeS + epsilon >= this.stunS)
         this.transition(target ? 'chase' : 'idle');
+    } else if (march && this.carry) {
+      this.releaseToken();
+      if (s.state !== 'chase') this.transition('chase');
     } else if (s.state === 'telegraph') {
       if (s.stateTimeS + epsilon >= d.telegraphS) this.transition('swing');
     } else if (s.state === 'swing') {

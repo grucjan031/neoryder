@@ -1,8 +1,10 @@
 import data from '../data/modes/conquest.json';
 import assaultData from '../data/modes/assault.json';
+import heistData from '../data/modes/heist.json';
 import {
   assaultSchema,
   conquestModeSchema,
+  heistSchema,
   modeForArena,
   selectArena,
   validateMode,
@@ -26,7 +28,12 @@ export const assaultDefinition = assaultSchema.parse(assaultData);
 const assaultRoom = roomDefinitions.get(assaultDefinition.roomId);
 if (!assaultRoom) throw new Error('Brak pokoju Szturmu.');
 validateMode(assaultDefinition, assaultRoom, [...enemyDefinitions.keys()]);
+export const heistDefinition = heistSchema.parse(heistData);
+const heistRoom = roomDefinitions.get(heistDefinition.roomId);
+if (!heistRoom) throw new Error('Brak pokoju Kradzieży rdzenia.');
+validateMode(heistDefinition, heistRoom, [...enemyDefinitions.keys()]);
 export const modeDefinitions = {
   conquest: conquestDefinition,
   assault: assaultDefinition,
+  heist: heistDefinition,
 };

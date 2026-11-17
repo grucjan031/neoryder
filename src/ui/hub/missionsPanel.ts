@@ -229,6 +229,18 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     start.focus();
   });
   choices.append(assault);
+  const heist = el('button', 'mission-choice', modeText.heist.title);
+  heist.type = 'button';
+  heist.dataset.mode = 'heist';
+  heist.addEventListener('click', () => {
+    selectedMode = 'heist';
+    selectedMission = undefined;
+    sectorName.textContent = modeText.heist.title;
+    sectorDescription.textContent = modeText.heist.description;
+    start.textContent = modeText.heist.start;
+    start.focus();
+  });
+  choices.append(heist);
   for (const title of modeText.soon) {
     const button = el('button', 'mission-choice', title);
     button.type = 'button';

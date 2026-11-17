@@ -1036,9 +1036,13 @@ export class RunScene implements Scene {
     }
     if (
       this.manager.active &&
-      this.manager.state.modeId === 'assault' &&
-      (this.room?.query?.('assault') as { outcome?: string } | null)
-        ?.outcome === 'death'
+      (this.manager.state.modeId === 'assault' ||
+        this.manager.state.modeId === 'heist') &&
+      (
+        this.room?.query?.(this.manager.state.modeId) as {
+          outcome?: string;
+        } | null
+      )?.outcome === 'death'
     ) {
       this.manager.setHp(0);
       this.manager.finish('death');
@@ -1227,6 +1231,10 @@ export class RunScene implements Scene {
       'conquest tickets',
       'assault destroy',
       'assault lives',
+      'heist grab',
+      'heist drop',
+      'heist extract',
+      'heist lives',
       'weather',
       'tp',
       'hold',

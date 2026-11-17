@@ -1,0 +1,28 @@
+{
+  "id": "heist",
+  "title": "Kradzież rdzenia",
+  "roomId": "combatRing",
+  "enemies": ["assaulter", "gunner"],
+  "maxAlive": 6,
+  "spawnIntervalS": 3,
+  "rewardRooms": 6,
+  "lives": 3,
+  "respawnS": 2,
+  "carrySpeed": 0.75,
+  "enemyCarrySpeed": 0.55,
+  "enemyDefendRangeM": 2,
+  "pickupRadiusM": 1.2,
+  "extractRadiusM": 2,
+  "extractS": 3,
+  "timeLimitS": 0,
+  "minSpawnDistanceM": 5,
+  "spawnClearanceM": 0.8,
+  "base": { "x": 0, "y": 0, "z": -11.5 },
+  "extraction": { "x": 0, "y": 0, "z": 10 },
+  "spawnPoints": [
+    { "x": -10, "y": 0, "z": -10 },
+    { "x": 10, "y": 0, "z": -10 },
+    { "x": -5, "y": 0, "z": -11 },
+    { "x": 5, "y": 0, "z": -11 }
+  ]
+}

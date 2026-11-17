@@ -17,10 +17,10 @@ for (const outcome of ['victory', 'death'] as const) {
     await page.evaluate(() => window.__neoryder?.command('hub open missions'));
     await expect(
       page.getByRole('button', {
-        name: 'Kradzież rdzenia — Wkrótce',
+        name: 'Kradzież rdzenia',
         exact: true,
       }),
-    ).toBeDisabled();
+    ).toBeEnabled();
     await page.locator('[data-mode="conquest"]').click();
     await page
       .getByRole('button', { name: 'Rozpocznij Przejęcie', exact: true })

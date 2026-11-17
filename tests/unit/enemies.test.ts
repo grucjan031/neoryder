@@ -30,6 +30,10 @@ import {
 import { ProjectileSystem } from '../../src/combat/weapons/projectiles';
 import gunnerRaw from '../../src/data/enemies/gunner.json';
 import raw from '../../src/data/enemies/assaulter.json';
+import { Assaulter } from '../../src/enemies/assaulter';
+import { Gunner } from '../../src/enemies/gunner';
+import { Heist } from '../../src/world/heist';
+import { heistDefinition } from '../../src/world/modes';
 
 let rapier: Awaited<ReturnType<typeof initPhysics>>;
 beforeAll(async () => {
@@ -61,6 +65,92 @@ it.each(['assaulter', 'gunner'])(
 );
 afterEach(() => {
   for (const dispose of cleanup.splice(0)) dispose();
+});
+
+describe('Nosiciel rdzenia — regresja AI', () => {
+  const carry = {
+    speedMultiplier: heistDefinition.enemyCarrySpeed,
+    defendRangeM: heistDefinition.enemyDefendRangeM,
+  };
+  it.each(['assaulter', 'gunner'])(
+    '%s wraca do bazy ze spowolnieniem i oddaje rdzeń',
+    (kind) => {
+      const { enemy, steps } = setup('heist-return', 8, kind);
+      if (!(enemy instanceof Assaulter || enemy instanceof Gunner))
+        throw new Error('Nieobsługiwany nosiciel');
+      const base = { x: 6, y: 0, z: 0 };
+      const player = { x: 0, y: 0, z: 8 };
+      const heist = new Heist({ ...heistDefinition, base });
+      heist.grab();
+      heist.drop(enemy.current.position);
+      const sync = () => {
+        heist.step(SIM_DT, player, [
+          { id: enemy.id, position: enemy.current.position },
+        ]);
+        enemy.moveGoal = heist.moveGoal(enemy.id, player);
+        enemy.setCarry(heist.carrierId === enemy.id ? carry : null);
+      };
+      sync();
+      expect(heist.state).toBe('enemy');
+      for (let i = 0; i < 10; i++) enemy.setCarry({ ...carry });
+      expect(
+        enemy.stats
+          .modifiers('moveSpeed')
+          .filter((m) => m.source === 'heistCarry'),
+      ).toHaveLength(1);
+      steps(30);
+      expect(enemy.current.position.x).toBeCloseTo(
+        enemy.definition.moveSpeed * carry.speedMultiplier * 0.5,
+        1,
+      );
+      expect(Math.abs(enemy.current.position.z)).toBeLessThan(0.1);
+      for (let i = 0; i < 240 && heist.state === 'enemy'; i++) {
+        steps();
+        sync();
+      }
+      expect(heist.state).toBe('base');
+      expect(heist.position).toEqual(base);
+      expect(enemy.stats.get('moveSpeed')).toBe(enemy.definition.moveSpeed);
+      expect(
+        enemy.stats.modifiers().some((m) => m.source === 'heistCarry'),
+      ).toBe(false);
+    },
+  );
+  it.each(['assaulter', 'gunner'])(
+    '%s przerywa atak na rzecz powrotu, ale broni się przy bliskim graczu',
+    (kind) => {
+      const { enemy, steps, moveTarget } = setup('heist-priority', 8, kind);
+      enemy.moveGoal = { x: 6, y: 0, z: 0 };
+      enemy.setCarry!(carry);
+      const attack = kind === 'assaulter' ? 'telegraph' : 'aim';
+      enemy.current.state = attack;
+      steps();
+      expect(enemy.current.state).toBe(
+        kind === 'assaulter' ? 'chase' : 'reposition',
+      );
+      moveTarget(enemy.current.position.z + 1.5, enemy.current.position.x);
+      enemy.current.state = attack;
+      enemy.current.stateTimeS = 0;
+      steps();
+      expect(enemy.current.state).toBe(attack);
+    },
+  );
+  it.each(['assaulter', 'gunner'])(
+    '%s bez rdzenia zachowuje identyczny ruch i stan po usunięciu modyfikatora',
+    (kind) => {
+      const normal = setup('heist-regression', 8, kind);
+      const restored = setup('heist-regression', 8, kind);
+      for (const ctx of [normal, restored])
+        ctx.enemy.moveGoal = { x: 6, y: 0, z: 0 };
+      restored.enemy.setCarry!(carry);
+      restored.enemy.setCarry!(null);
+      for (let i = 0; i < 120; i++) {
+        normal.steps();
+        restored.steps();
+        expect(restored.enemy.current).toEqual(normal.enemy.current);
+      }
+    },
+  );
 });
 
 function setup(seed = 'enemies', targetZ = 1.5, kind = 'assaulter') {

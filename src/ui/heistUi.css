@@ -1,0 +1,59 @@
+.heist-hud {
+  --heist-amber: #ffae1a;
+  --heist-enemy: #e0262b;
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(340px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-top: 2px solid var(--heist-amber);
+  background: #101827ed;
+  color: #fff1d6;
+  font: 12px/1.5 monospace;
+  font-variant-numeric: tabular-nums;
+  z-index: 12;
+  pointer-events: none;
+}
+.heist-hud header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.heist-hud header span {
+  white-space: nowrap;
+  color: var(--heist-amber);
+}
+.heist-hud > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--heist-amber);
+  margin-top: 4px;
+}
+.heist-hud b {
+  display: inline-block;
+  font-size: 24px;
+  line-height: 1;
+}
+.heist-hud progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--heist-amber);
+}
+.heist-hud p {
+  margin: 4px 0 0;
+}
+.heist-hud p:empty {
+  display: none;
+}
+.heist-hud[data-state='enemy'] {
+  border-color: var(--heist-enemy);
+}
+@media (max-width: 600px) {
+  .heist-hud {
+    top: max(88px, calc(env(safe-area-inset-top) + 80px));
+    padding: 8px 10px;
+  }
+}

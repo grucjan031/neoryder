@@ -3,7 +3,22 @@
   "conquest": "Przejęcie",
   "description": "Zajmij punkty A, B i C. Utrzymuj co najmniej dwa, aby wyczerpać posiłki Koalicji. Jedno życie — utrzymaj pozycję.",
   "start": "Rozpocznij Przejęcie",
-  "soon": ["Kradzież rdzenia — Wkrótce"],
+  "soon": [],
+  "heist": {
+    "title": "Kradzież rdzenia",
+    "description": "Wykradnij rdzeń Koalicji i utrzymaj ewakuację przez 3 sekundy. Rdzeń spowalnia ruch i blokuje sprint oraz dash. Masz trzy życia — odzyskaj rdzeń, gdy upadnie.",
+    "start": "Rozpocznij Kradzież rdzenia",
+    "base": "W bazie Koalicji",
+    "player": "Niesiesz rdzeń",
+    "dropped": "Leży — odzyskaj",
+    "enemy": "Wróg odnosi rdzeń",
+    "core": "RDZEŃ",
+    "extraction": "EWAKUACJA",
+    "carry": "Ruch 75% · bez sprintu i dasha",
+    "lives": "Życia",
+    "respawn": "Odrodzenie za",
+    "progress": "Postęp ewakuacji"
+  },
   "assault": {
     "title": "Szturm",
     "description": "Wysadź stacje A i B, aby przesunąć front. Przebij się przez trzy sektory. Masz trzy życia; po śmierci wracasz na początek sektora.",
