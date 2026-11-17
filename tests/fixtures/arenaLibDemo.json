@@ -1,0 +1,2655 @@
+{
+  "arena": {
+    "batchCellM": 20,
+    "exclusive": true,
+    "navigationCellM": 1,
+    "navigationClearanceM": 0.8,
+    "navigationHeadroomM": 2,
+    "navigationMaxRiseM": 0.35,
+    "points": [
+      {
+        "id": "A",
+        "position": {
+          "x": 5,
+          "y": 0,
+          "z": 80
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "B",
+        "position": {
+          "x": 145,
+          "y": 0,
+          "z": 65
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "C",
+        "position": {
+          "x": 84,
+          "y": 0,
+          "z": 55
+        },
+        "radiusM": 4
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "material": "asphalt",
+      "position": {
+        "x": 50,
+        "y": -0.2,
+        "z": 40
+      },
+      "size": {
+        "x": 100,
+        "y": 0.4,
+        "z": 80
+      },
+      "walkable": true
+    },
+    {
+      "material": "asphalt",
+      "position": {
+        "x": 145,
+        "y": -0.2,
+        "z": 40
+      },
+      "size": {
+        "x": 30,
+        "y": 0.4,
+        "z": 80
+      },
+      "walkable": true
+    },
+    {
+      "material": "asphalt",
+      "position": {
+        "x": 115,
+        "y": -0.2,
+        "z": 15
+      },
+      "size": {
+        "x": 30,
+        "y": 0.4,
+        "z": 30
+      },
+      "walkable": true
+    },
+    {
+      "material": "asphalt",
+      "position": {
+        "x": 115,
+        "y": -0.2,
+        "z": 67.5
+      },
+      "size": {
+        "x": 30,
+        "y": 0.4,
+        "z": 25
+      },
+      "walkable": true
+    },
+    {
+      "material": "asphalt",
+      "position": {
+        "x": 50,
+        "y": -0.2,
+        "z": 100
+      },
+      "size": {
+        "x": 100,
+        "y": 0.4,
+        "z": 40
+      },
+      "walkable": true
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 30,
+        "y": 4,
+        "z": 12
+      },
+      "size": {
+        "x": 36,
+        "y": 8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 19.75,
+        "y": 4,
+        "z": 40
+      },
+      "size": {
+        "x": 15.5,
+        "y": 8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 30,
+        "y": 5.5,
+        "z": 40
+      },
+      "size": {
+        "x": 5,
+        "y": 5,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 40.25,
+        "y": 4,
+        "z": 40
+      },
+      "size": {
+        "x": 15.5,
+        "y": 8,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 12,
+        "y": 4,
+        "z": 26
+      },
+      "size": {
+        "x": 0.4,
+        "y": 8,
+        "z": 28
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 48,
+        "y": 4,
+        "z": 17.5
+      },
+      "size": {
+        "x": 0.4,
+        "y": 8,
+        "z": 11
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 48,
+        "y": 2.25,
+        "z": 26
+      },
+      "size": {
+        "x": 0.4,
+        "y": 4.5,
+        "z": 6
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 48,
+        "y": 7.25,
+        "z": 26
+      },
+      "size": {
+        "x": 0.4,
+        "y": 1.5,
+        "z": 6
+      },
+      "walkable": false
+    },
+    {
+      "material": "facade",
+      "position": {
+        "x": 48,
+        "y": 4,
+        "z": 34.5
+      },
+      "size": {
+        "x": 0.4,
+        "y": 8,
+        "z": 11
+      },
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 30,
+        "y": -0.2,
+        "z": 26
+      },
+      "size": {
+        "x": 36,
+        "y": 0.4,
+        "z": 28
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 13,
+        "y": 3.8,
+        "z": 26
+      },
+      "size": {
+        "x": 2,
+        "y": 0.4,
+        "z": 28
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 41,
+        "y": 3.8,
+        "z": 26
+      },
+      "size": {
+        "x": 14,
+        "y": 0.4,
+        "z": 28
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 24,
+        "y": 3.8,
+        "z": 13
+      },
+      "size": {
+        "x": 20,
+        "y": 0.4,
+        "z": 2
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 24,
+        "y": 3.8,
+        "z": 28.5
+      },
+      "size": {
+        "x": 20,
+        "y": 0.4,
+        "z": 23
+      },
+      "walkable": true
+    },
+    {
+      "material": "roof_tar",
+      "position": {
+        "x": 13,
+        "y": 7.8,
+        "z": 26
+      },
+      "size": {
+        "x": 2,
+        "y": 0.4,
+        "z": 28
+      },
+      "walkable": true
+    },
+    {
+      "material": "roof_tar",
+      "position": {
+        "x": 41,
+        "y": 7.8,
+        "z": 26
+      },
+      "size": {
+        "x": 14,
+        "y": 0.4,
+        "z": 28
+      },
+      "walkable": true
+    },
+    {
+      "material": "roof_tar",
+      "position": {
+        "x": 24,
+        "y": 7.8,
+        "z": 13
+      },
+      "size": {
+        "x": 20,
+        "y": 0.4,
+        "z": 2
+      },
+      "walkable": true
+    },
+    {
+      "material": "roof_tar",
+      "position": {
+        "x": 24,
+        "y": 7.8,
+        "z": 28.5
+      },
+      "size": {
+        "x": 20,
+        "y": 0.4,
+        "z": 23
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 14.5,
+        "y": 0.1,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 15.5,
+        "y": 0.30000000000000004,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 16.5,
+        "y": 0.5000000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 17.5,
+        "y": 0.7000000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 18.5,
+        "y": 0.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 19.5,
+        "y": 1.1,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 20.5,
+        "y": 1.3,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 21.5,
+        "y": 1.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 22.5,
+        "y": 1.7,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 23.5,
+        "y": 1.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 24.5,
+        "y": 2.1,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 25.5,
+        "y": 2.3000000000000003,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 26.5,
+        "y": 2.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 27.5,
+        "y": 2.7,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 28.5,
+        "y": 2.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 29.5,
+        "y": 3.1,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 30.5,
+        "y": 3.3000000000000003,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 31.5,
+        "y": 3.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 32.5,
+        "y": 3.7,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 33.5,
+        "y": 3.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 14.5,
+        "y": 4.1000000000000005,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 15.5,
+        "y": 4.300000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 16.5,
+        "y": 4.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 17.5,
+        "y": 4.7,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 18.5,
+        "y": 4.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 19.5,
+        "y": 5.1000000000000005,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 20.5,
+        "y": 5.300000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 21.5,
+        "y": 5.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 22.5,
+        "y": 5.7,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 23.5,
+        "y": 5.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 24.5,
+        "y": 6.1000000000000005,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 25.5,
+        "y": 6.300000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 26.5,
+        "y": 6.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 27.5,
+        "y": 6.700000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 28.5,
+        "y": 6.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 29.5,
+        "y": 7.1000000000000005,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 30.5,
+        "y": 7.300000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 31.5,
+        "y": 7.5,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 32.5,
+        "y": 7.700000000000001,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 33.5,
+        "y": 7.9,
+        "z": 15.5
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "corrugated",
+      "position": {
+        "x": 73.5,
+        "y": 5,
+        "z": 12
+      },
+      "size": {
+        "x": 37,
+        "y": 10,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "corrugated",
+      "position": {
+        "x": 61.5,
+        "y": 5,
+        "z": 45
+      },
+      "size": {
+        "x": 13,
+        "y": 10,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "corrugated",
+      "position": {
+        "x": 71,
+        "y": 6.5,
+        "z": 45
+      },
+      "size": {
+        "x": 6,
+        "y": 7,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "corrugated",
+      "position": {
+        "x": 83,
+        "y": 5,
+        "z": 45
+      },
+      "size": {
+        "x": 18,
+        "y": 10,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "corrugated",
+      "position": {
+        "x": 55,
+        "y": 5,
+        "z": 28.5
+      },
+      "size": {
+        "x": 0.4,
+        "y": 10,
+        "z": 33
+      },
+      "walkable": false
+    },
+    {
+      "material": "corrugated",
+      "position": {
+        "x": 92,
+        "y": 5,
+        "z": 28.5
+      },
+      "size": {
+        "x": 0.4,
+        "y": 10,
+        "z": 33
+      },
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 73.5,
+        "y": -0.2,
+        "z": 28.5
+      },
+      "size": {
+        "x": 37,
+        "y": 0.4,
+        "z": 33
+      },
+      "walkable": true
+    },
+    {
+      "material": "roof_tar",
+      "position": {
+        "x": 73.5,
+        "y": 9.8,
+        "z": 28.5
+      },
+      "size": {
+        "x": 37,
+        "y": 0.4,
+        "z": 33
+      },
+      "walkable": false
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 88.5,
+        "y": 2.8,
+        "z": 28.5
+      },
+      "size": {
+        "x": 7,
+        "y": 0.4,
+        "z": 33
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 70.5,
+        "y": 0.1,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 71.5,
+        "y": 0.30000000000000004,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 72.5,
+        "y": 0.5000000000000001,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 73.5,
+        "y": 0.7000000000000001,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 74.5,
+        "y": 0.9,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 75.5,
+        "y": 1.1,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 76.5,
+        "y": 1.3,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 77.5,
+        "y": 1.5,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 78.5,
+        "y": 1.7,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 79.5,
+        "y": 1.9,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 80.5,
+        "y": 2.1,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 81.5,
+        "y": 2.3000000000000003,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 82.5,
+        "y": 2.5,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 83.5,
+        "y": 2.7,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 84.5,
+        "y": 2.9,
+        "z": 16
+      },
+      "size": {
+        "x": 1,
+        "y": 0.2,
+        "z": 3
+      },
+      "walkable": true
+    },
+    {
+      "material": "plaster",
+      "position": {
+        "x": 14.25,
+        "y": 1.5,
+        "z": 49
+      },
+      "size": {
+        "x": 12.5,
+        "y": 3,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "plaster",
+      "position": {
+        "x": 23,
+        "y": 2.75,
+        "z": 49
+      },
+      "size": {
+        "x": 5,
+        "y": 0.5,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "plaster",
+      "position": {
+        "x": 32.75,
+        "y": 1.5,
+        "z": 49
+      },
+      "size": {
+        "x": 14.5,
+        "y": 3,
+        "z": 0.5
+      },
+      "walkable": false
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 37.5,
+        "y": 1.8,
+        "z": 73
+      },
+      "size": {
+        "x": 15,
+        "y": 0.4,
+        "z": 14
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 71.5,
+        "y": 1.8,
+        "z": 73
+      },
+      "size": {
+        "x": 13,
+        "y": 0.4,
+        "z": 14
+      },
+      "walkable": true
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 20.0199007438042,
+        "y": 0.8009925619580022,
+        "z": 73
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.09966865249116204
+      },
+      "size": {
+        "x": 20.09975124224178,
+        "y": 0.4,
+        "z": 5
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 55,
+        "y": 1.85,
+        "z": 73
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "x": 20,
+        "y": 0.3,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 55,
+        "y": 2.55,
+        "z": 70.94
+      },
+      "size": {
+        "x": 20,
+        "y": 1.1,
+        "z": 0.12
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 55,
+        "y": 2.55,
+        "z": 75.06
+      },
+      "size": {
+        "x": 20,
+        "y": 1.1,
+        "z": 0.12
+      },
+      "walkable": false
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 97,
+        "y": 0.1,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 95,
+        "y": 0.30000000000000004,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 93,
+        "y": 0.5000000000000001,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 91,
+        "y": 0.7000000000000001,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 89,
+        "y": 0.9,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 87,
+        "y": 1.1,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 85,
+        "y": 1.3,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 83,
+        "y": 1.5,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 81,
+        "y": 1.7,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "material": "steel_grating",
+      "position": {
+        "x": 79,
+        "y": 1.9,
+        "z": 73
+      },
+      "size": {
+        "x": 2,
+        "y": 0.2,
+        "z": 4
+      },
+      "walkable": true
+    },
+    {
+      "instance": true,
+      "material": "container_navy",
+      "model": "port_container_20_navy",
+      "position": {
+        "x": 15,
+        "y": 1.2955,
+        "z": 102
+      },
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "container_navy",
+      "model": "port_container_20_navy",
+      "position": {
+        "x": 30,
+        "y": 1.2955,
+        "z": 102
+      },
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "container_olive",
+      "model": "port_container_20_olive",
+      "position": {
+        "x": 30,
+        "y": 3.8865000000000003,
+        "z": 102
+      },
+      "size": {
+        "x": 6.058,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "container_navy",
+      "model": "port_container_40_navy",
+      "position": {
+        "x": 45,
+        "y": 1.2955,
+        "z": 102
+      },
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "container_olive",
+      "model": "port_container_40_olive",
+      "position": {
+        "x": 45,
+        "y": 3.8865000000000003,
+        "z": 102
+      },
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "walkable": false
+    },
+    {
+      "instance": true,
+      "material": "container_ochre",
+      "model": "port_container_40_ochre",
+      "position": {
+        "x": 45,
+        "y": 6.477500000000001,
+        "z": 102
+      },
+      "size": {
+        "x": 12.192,
+        "y": 2.591,
+        "z": 2.438
+      },
+      "walkable": false
+    },
+    {
+      "material": "quay_concrete",
+      "position": {
+        "x": 115,
+        "y": -3.2,
+        "z": 42.5
+      },
+      "size": {
+        "x": 30,
+        "y": 0.4,
+        "z": 25
+      },
+      "walkable": true
+    },
+    {
+      "material": "quay_concrete",
+      "position": {
+        "x": 115,
+        "y": -1.5,
+        "z": 30
+      },
+      "size": {
+        "x": 30,
+        "y": 3,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "quay_concrete",
+      "position": {
+        "x": 115,
+        "y": -1.5,
+        "z": 55
+      },
+      "size": {
+        "x": 30,
+        "y": 3,
+        "z": 0.4
+      },
+      "walkable": false
+    },
+    {
+      "material": "quay_concrete",
+      "position": {
+        "x": 100,
+        "y": -1.5,
+        "z": 35
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3,
+        "z": 10
+      },
+      "walkable": false
+    },
+    {
+      "material": "quay_concrete",
+      "position": {
+        "x": 100,
+        "y": -1.5,
+        "z": 50
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3,
+        "z": 10
+      },
+      "walkable": false
+    },
+    {
+      "material": "quay_concrete",
+      "position": {
+        "x": 130,
+        "y": -1.5,
+        "z": 42.5
+      },
+      "size": {
+        "x": 0.4,
+        "y": 3,
+        "z": 25
+      },
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 109.97033190941396,
+        "y": -1.6977872705736594,
+        "z": 42.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.14888994760949725
+      },
+      "size": {
+        "x": 20.223748416156685,
+        "y": 0.4,
+        "z": 5
+      },
+      "walkable": true
+    },
+    {
+      "material": "quay_concrete",
+      "position": {
+        "x": 45,
+        "y": -1,
+        "z": 117
+      },
+      "size": {
+        "x": 40,
+        "y": 2,
+        "z": 6
+      },
+      "walkable": true
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 80,
+        "y": 2,
+        "z": 0
+      },
+      "size": {
+        "x": 160,
+        "y": 4,
+        "z": 0.15
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 160,
+        "y": 2,
+        "z": 40
+      },
+      "size": {
+        "x": 0.15,
+        "y": 4,
+        "z": 80
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 130,
+        "y": 2,
+        "z": 80
+      },
+      "size": {
+        "x": 60,
+        "y": 4,
+        "z": 0.15
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 100,
+        "y": 2,
+        "z": 100
+      },
+      "size": {
+        "x": 0.15,
+        "y": 4,
+        "z": 40
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 50,
+        "y": 2,
+        "z": 120
+      },
+      "size": {
+        "x": 100,
+        "y": 4,
+        "z": 0.15
+      },
+      "walkable": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 0,
+        "y": 2,
+        "z": 60
+      },
+      "size": {
+        "x": 0.15,
+        "y": 4,
+        "z": 120
+      },
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 80,
+        "y": 4,
+        "z": -1
+      },
+      "size": {
+        "x": 162,
+        "y": 8,
+        "z": 0.3
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 161,
+        "y": 4,
+        "z": 40
+      },
+      "size": {
+        "x": 0.3,
+        "y": 8,
+        "z": 82
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 131,
+        "y": 4,
+        "z": 81
+      },
+      "size": {
+        "x": 60,
+        "y": 8,
+        "z": 0.3
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 101,
+        "y": 4,
+        "z": 101
+      },
+      "size": {
+        "x": 0.3,
+        "y": 8,
+        "z": 40
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": 50,
+        "y": 4,
+        "z": 121
+      },
+      "size": {
+        "x": 102,
+        "y": 8,
+        "z": 0.3
+      },
+      "visible": false,
+      "walkable": false
+    },
+    {
+      "material": "concrete",
+      "position": {
+        "x": -1,
+        "y": 4,
+        "z": 60
+      },
+      "size": {
+        "x": 0.3,
+        "y": 8,
+        "z": 122
+      },
+      "visible": false,
+      "walkable": false
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_stall",
+      "position": {
+        "x": 53.6236309283413,
+        "y": 0,
+        "z": 97.48019723990001
+      },
+      "yaw": 5.307776582039557
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 69.39441154245287,
+        "y": 0,
+        "z": 110.15272643393837
+      },
+      "yaw": 2.444194369866271
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 66.85343227768317,
+        "y": 0,
+        "z": 106.02399479248561
+      },
+      "yaw": 1.4280080877087429
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": 81.60337914992124,
+        "y": 0,
+        "z": 101.80824409099296
+      },
+      "yaw": 6.121038764690965
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 78.2449276628904,
+        "y": 0,
+        "z": 91.71295376564376
+      },
+      "yaw": 0.3986970063249314
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 55.01016768394038,
+        "y": 0,
+        "z": 107.7559926463291
+      },
+      "yaw": 1.6096907147194148
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 76.09622782561928,
+        "y": 0,
+        "z": 110.5145654741209
+      },
+      "yaw": 2.0666202138614116
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": 91.36059681512415,
+        "y": 0,
+        "z": 102.30377408652566
+      },
+      "yaw": 5.674359762831895
+    },
+    {
+      "model": "city_stall",
+      "position": {
+        "x": 53.49821525486186,
+        "y": 0,
+        "z": 103.38858465035446
+      },
+      "yaw": 2.708676191075729
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 62.79172106971964,
+        "y": 0,
+        "z": 91.83565188432112
+      },
+      "yaw": 5.277023254228584
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 68.30930806044489,
+        "y": 0,
+        "z": 94.49131399742328
+      },
+      "yaw": 2.6311019580146895
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 61.26848693424836,
+        "y": 0,
+        "z": 109.85717981983908
+      },
+      "yaw": 5.2217946164541384
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 85.14547075238079,
+        "y": 0,
+        "z": 114.89949668524787
+      },
+      "yaw": 1.7736461875972478
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 59.657661547418684,
+        "y": 0,
+        "z": 94.3720581063535
+      },
+      "yaw": 2.284108084167043
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 63.52289197361097,
+        "y": 0,
+        "z": 103.32687245868146
+      },
+      "yaw": 0.5750327306613592
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": 56.66471806354821,
+        "y": 0,
+        "z": 88.12682328489609
+      },
+      "yaw": 2.573770536422286
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 85.52810898935422,
+        "y": 0,
+        "z": 94.36420864681713
+      },
+      "yaw": 4.1795988036266865
+    },
+    {
+      "model": "city_holo_projector",
+      "position": {
+        "x": 56.39255707664415,
+        "y": 0,
+        "z": 111.67386463889852
+      },
+      "yaw": 5.446340092188793
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 63.32856440497562,
+        "y": 0,
+        "z": 95.26696530473419
+      },
+      "yaw": 3.5106960355414834
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 94.64582780981436,
+        "y": 0,
+        "z": 107.50390973733738
+      },
+      "yaw": 3.9691511519687066
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 88.5548287294805,
+        "y": 0,
+        "z": 88.15317495120689
+      },
+      "yaw": 3.321786616625921
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 94.47934345109388,
+        "y": 0,
+        "z": 102.14671158976853
+      },
+      "yaw": 4.376079489230182
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 66.61280556116253,
+        "y": 0,
+        "z": 100.15840723412111
+      },
+      "yaw": 2.5675648086716727
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": 74.25054477667436,
+        "y": 0,
+        "z": 107.93996115284972
+      },
+      "yaw": 5.837257859002888
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 58.06506941374391,
+        "y": 0,
+        "z": 107.85684277070686
+      },
+      "yaw": 6.121390712059557
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 58.5693383961916,
+        "y": 0,
+        "z": 90.94126916257665
+      },
+      "yaw": 5.917707425364529
+    },
+    {
+      "model": "city_stall",
+      "position": {
+        "x": 91.99578874465078,
+        "y": 0,
+        "z": 96.70387054397725
+      },
+      "yaw": 0.7017964576908362
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 67.66771581023932,
+        "y": 0,
+        "z": 89.5225802862551
+      },
+      "yaw": 1.096556628579341
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 79.7392021426931,
+        "y": 0,
+        "z": 114.7267277885694
+      },
+      "yaw": 3.8848275693358802
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": 83.25399585487321,
+        "y": 0,
+        "z": 90.85893332748674
+      },
+      "yaw": 2.9366116839496335
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 86.5961513351649,
+        "y": 0,
+        "z": 104.10316948895343
+      },
+      "yaw": 3.0787459021017614
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 62.21132203377783,
+        "y": 0,
+        "z": 106.545036788797
+      },
+      "yaw": 1.0766954412354528
+    },
+    {
+      "model": "city_stall",
+      "position": {
+        "x": 93.99029085692018,
+        "y": 0,
+        "z": 110.83986876020208
+      },
+      "yaw": 0.9382845646440175
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 70.33578446367756,
+        "y": 0,
+        "z": 105.43050852254964
+      },
+      "yaw": 5.605031295320089
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 82.84352127276361,
+        "y": 0,
+        "z": 107.03674615151249
+      },
+      "yaw": 4.1384718929943505
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 82.53664669394493,
+        "y": 0,
+        "z": 113.27499553258531
+      },
+      "yaw": 5.489806551152707
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 88.72797842649743,
+        "y": 0,
+        "z": 108.51151377591304
+      },
+      "yaw": 4.002064946457503
+    },
+    {
+      "model": "city_holo_projector",
+      "position": {
+        "x": 72.78314626729116,
+        "y": 0,
+        "z": 92.1419524634257
+      },
+      "yaw": 0.9043758702907914
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 56.51694216299802,
+        "y": 0,
+        "z": 96.40625890763476
+      },
+      "yaw": 3.973958716245913
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 57.162708051968366,
+        "y": 0,
+        "z": 100.27078281273134
+      },
+      "yaw": 5.666699645814418
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": 89.61437551071867,
+        "y": 0,
+        "z": 112.46861299360171
+      },
+      "yaw": 1.9804567791399323
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 60.319447385147214,
+        "y": 0,
+        "z": 103.38311921153218
+      },
+      "yaw": 6.004255812349387
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 79.74328434886411,
+        "y": 0,
+        "z": 108.77836931147613
+      },
+      "yaw": 2.872798375172039
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 67.07478033890948,
+        "y": 0,
+        "z": 113.78312741988339
+      },
+      "yaw": 3.0009261548140684
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": 65.66521491063759,
+        "y": 0,
+        "z": 109.4765373209957
+      },
+      "yaw": 4.336292779794035
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 53.328751992899925,
+        "y": 0,
+        "z": 93.95720748486929
+      },
+      "yaw": 4.573112552219557
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 94.86642067693174,
+        "y": 0,
+        "z": 114.42809995124117
+      },
+      "yaw": 1.8271010986431415
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 76.65697153331712,
+        "y": 0,
+        "z": 89.09606865630485
+      },
+      "yaw": 4.671972511047943
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": 91.89228711696342,
+        "y": 0,
+        "z": 88.16739559802227
+      },
+      "yaw": 3.4748551584879492
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 60.94902859022841,
+        "y": 0,
+        "z": 113.21506195981055
+      },
+      "yaw": 5.217431703201289
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 90.00701659079641,
+        "y": 0,
+        "z": 92.10425125597976
+      },
+      "yaw": 0.0823473631724964
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 56.47593015618622,
+        "y": 0,
+        "z": 93.20883243274875
+      },
+      "yaw": 2.0173321543244658
+    },
+    {
+      "model": "city_fire_escape",
+      "position": {
+        "x": 54.26081875804812,
+        "y": 0,
+        "z": 114.52422283310443
+      },
+      "yaw": 0.8408693646927813
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": 93.70332115376368,
+        "y": 0,
+        "z": 94.13250491465442
+      },
+      "yaw": 3.283406374186197
+    },
+    {
+      "model": "city_stall",
+      "position": {
+        "x": 81.68090614676476,
+        "y": 0,
+        "z": 94.97316468926147
+      },
+      "yaw": 0.08772730877739687
+    },
+    {
+      "model": "city_car",
+      "position": {
+        "x": 59.69705937290564,
+        "y": 0,
+        "z": 88.0294738644734
+      },
+      "yaw": 5.782182281958321
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 94.90101567050442,
+        "y": 0,
+        "z": 98.68576237908565
+      },
+      "yaw": 4.747225169188925
+    },
+    {
+      "model": "city_barrier",
+      "position": {
+        "x": 76.78376635257155,
+        "y": 0,
+        "z": 113.95870839897543
+      },
+      "yaw": 2.0512245795657327
+    },
+    {
+      "model": "city_holo_projector",
+      "position": {
+        "x": 94.68103548977524,
+        "y": 0,
+        "z": 90.99630291783251
+      },
+      "yaw": 1.590176126315621
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 61.484251368325204,
+        "y": 0,
+        "z": 97.64659027848393
+      },
+      "yaw": 4.405179514803053
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 64.03503847541288,
+        "y": 0,
+        "z": 112.7876592790708
+      },
+      "yaw": 4.8216550822021285
+    },
+    {
+      "model": "city_awning",
+      "position": {
+        "x": 70.33167496463284,
+        "y": 0,
+        "z": 102.06902055069804
+      },
+      "yaw": 0.04311910808392773
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 89.08708875905722,
+        "y": 0,
+        "z": 99.16321421251632
+      },
+      "yaw": 0.35903513207724136
+    },
+    {
+      "model": "city_street_lamp",
+      "position": {
+        "x": 84.55226839566603,
+        "y": 0,
+        "z": 100.37554337154143
+      },
+      "yaw": 2.246240696918368
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "position": {
+        "x": 4,
+        "y": 0,
+        "z": 4
+      },
+      "role": "entry",
+      "size": {
+        "x": 3,
+        "y": 3,
+        "z": 1
+      }
+    },
+    {
+      "id": "exit",
+      "position": {
+        "x": 156,
+        "y": 0,
+        "z": 116
+      },
+      "role": "exit",
+      "size": {
+        "x": 3,
+        "y": 3,
+        "z": 1
+      }
+    }
+  ],
+  "id": "arenaLibDemo",
+  "lights": [
+    {
+      "color": "#ffae1a",
+      "intensity": 40,
+      "position": {
+        "x": 30,
+        "y": 6,
+        "z": 43
+      },
+      "range": 20
+    },
+    {
+      "color": "#fff1d6",
+      "intensity": 40,
+      "position": {
+        "x": 75,
+        "y": 8,
+        "z": 30
+      },
+      "range": 20
+    }
+  ],
+  "maxAlive": 12,
+  "name": "Laboratorium generatorów aren",
+  "playerSpawn": {
+    "x": 5,
+    "y": 0,
+    "z": 60
+  },
+  "rainShelters": [
+    {
+      "position": {
+        "x": 30,
+        "y": 4,
+        "z": 26
+      },
+      "size": {
+        "x": 36,
+        "y": 8,
+        "z": 28
+      }
+    },
+    {
+      "position": {
+        "x": 73.5,
+        "y": 5,
+        "z": 28.5
+      },
+      "size": {
+        "x": 37,
+        "y": 10,
+        "z": 33
+      }
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": 5,
+      "z": 5
+    },
+    {
+      "x": 50,
+      "z": 5
+    },
+    {
+      "x": 95,
+      "z": 5
+    },
+    {
+      "x": 130,
+      "z": 5
+    },
+    {
+      "x": 150,
+      "z": 5
+    },
+    {
+      "x": 5,
+      "z": 45
+    },
+    {
+      "x": 50,
+      "z": 55
+    },
+    {
+      "x": 95,
+      "z": 55
+    },
+    {
+      "x": 145,
+      "z": 25
+    },
+    {
+      "x": 145,
+      "z": 50
+    },
+    {
+      "x": 155,
+      "z": 75
+    },
+    {
+      "x": 5,
+      "z": 110
+    },
+    {
+      "x": 30,
+      "z": 115
+    },
+    {
+      "x": 50,
+      "z": 115
+    },
+    {
+      "x": 90,
+      "z": 115
+    },
+    {
+      "x": 95,
+      "z": 85
+    }
+  ],
+  "theme": "neonStreet",
+  "type": "combat",
+  "weather": "rain"
+}

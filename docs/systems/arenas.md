@@ -1,5 +1,8 @@
 # Areny Przejęcia
 
+Wspólna biblioteka generatorów dużych aren (ADR 0011 / D5), API prymitywów,
+walidacja i rzuty SVG: [arena-generators.md](arena-generators.md).
+
 `src/data/modes/conquest.json` wskazuje listę `arenas`. Arena jest istniejącą
 definicją pokoju combat z metadanymi `arena`; nie ma osobnego loadera geometrii.
 `arena.exclusive` wyłącza port z puli zwykłego runu. Dotychczasowe dane
