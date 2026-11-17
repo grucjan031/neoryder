@@ -49,7 +49,11 @@ export const createWorkshopPanel: HubPanelFactory = (
 
   /** Wykonuje zmianę meta, zapisuje i odświeża; błąd trafia do linii statusu. */
   const run = async (change: () => void): Promise<void> => {
-    if (busy || disposed) return;
+    if (disposed) return;
+    if (busy) {
+      refresh();
+      return;
+    }
     busy = true;
     try {
       change();
@@ -275,12 +279,14 @@ export const createWorkshopPanel: HubPanelFactory = (
           slot.options.find((option) => option.id === slot.selected)
             ?.description ?? '';
         select.addEventListener('change', () => {
-          void setChoice(
-            nextModuleLoadout(
-              ctx.manager,
-              weapon.weaponId,
-              index,
-              select.value,
+          void run(() =>
+            ctx.manager.setLoadout(
+              nextModuleLoadout(
+                ctx.manager,
+                weapon.weaponId,
+                index,
+                select.value,
+              ),
             ),
           );
         });

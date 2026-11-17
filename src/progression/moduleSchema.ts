@@ -3,6 +3,7 @@ import type { DefinitionPatch } from '../core/metaTypes';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import type { Loadout } from './loadout';
 import { PATCH_OPS } from './patchSchema';
+import progression from '../data/meta/progression.json';
 
 export const MODULE_SLOTS = ['muzzle', 'cell', 'optic'] as const;
 export type ModuleSlot = (typeof MODULE_SLOTS)[number];
@@ -104,28 +105,48 @@ export function moduleFitsWeapon(
   );
 }
 
+export function sanitizeModules(
+  weapons: readonly string[],
+  modules: Record<string, readonly string[]> | undefined,
+): Record<string, string[]> {
+  return Object.fromEntries(
+    weapons.flatMap((weaponId) => {
+      const installed = modules?.[weaponId];
+      if (!installed) return [];
+      const slots = new Set<ModuleSlot>();
+      const ids = installed.filter((id) => {
+        const module = moduleDefinitions.get(id);
+        if (
+          !module ||
+          !moduleFitsWeapon(module, weaponId) ||
+          slots.has(module.slot) ||
+          slots.size >= progression.moduleSlotsPerWeapon
+        )
+          return false;
+        slots.add(module.slot);
+        return true;
+      });
+      return [[weaponId, ids]];
+    }),
+  );
+}
+
 /** Cele łatek wynikają z broni; sloty określają stabilną kolejność łatek. */
 export function modulePatches(
   loadout: Pick<Loadout, 'weapons' | 'modules'>,
 ): DefinitionPatch[] {
+  const modules = sanitizeModules(loadout.weapons, loadout.modules);
   return loadout.weapons.flatMap((weaponId) =>
-    (loadout.modules?.[weaponId] ?? [])
-      .map((id) => {
-        const module = moduleDefinitions.get(id);
-        if (!module) throw new Error(`Nieznany moduł: ${id}.`);
-        return module;
-      })
+    (modules[weaponId] ?? [])
+      .flatMap((id) => moduleDefinitions.get(id) ?? [])
       .sort(
         (a, b) => MODULE_SLOTS.indexOf(a.slot) - MODULE_SLOTS.indexOf(b.slot),
       )
-      .flatMap((module) => {
-        const id = module.id;
-        if (!moduleFitsWeapon(module, weaponId))
-          throw new Error(`Moduł ${id} nie pasuje do broni ${weaponId}.`);
-        return module.patches.map((patch): DefinitionPatch => ({
+      .flatMap((module) =>
+        module.patches.map((patch): DefinitionPatch => ({
           ...structuredClone(patch),
           target: `weapon:${weaponId}`,
-        }));
-      }),
+        })),
+      ),
   );
 }

@@ -33,7 +33,11 @@ import { threatLevels } from './threatSchema';
 import type { ThreatLevel } from './threatSchema';
 import { unlockDefinitions } from './unlocksSchema';
 import type { UnlockDefinition } from './unlocksSchema';
-import { moduleDefinitions, moduleFitsWeapon } from './moduleSchema';
+import {
+  moduleDefinitions,
+  moduleFitsWeapon,
+  sanitizeModules,
+} from './moduleSchema';
 
 export const CUSTOM_LOADOUT_NAME = 'Własny';
 
@@ -231,7 +235,7 @@ export class MetaManager {
       weapons: [...weapons],
       powers: [...powers],
       tags: [],
-      modules: structuredClone(modules),
+      modules: sanitizeModules(weapons, modules),
     };
   }
 
@@ -422,7 +426,11 @@ export class MetaManager {
       throw new Error(`Ostrze nieodblokowane: ${choice.blade}.`);
     this.checkList(choice.weapons, 'weapon', 'broń', this.weaponSlots);
     this.checkList(choice.powers, 'power', 'moc', this.powerSlots);
-    for (const [weaponId, ids] of Object.entries(choice.modules)) {
+    for (const [weaponId, installed] of Object.entries(choice.modules)) {
+      const ids = installed.filter((id) => {
+        const module = moduleDefinitions.get(id);
+        return module !== undefined && moduleFitsWeapon(module, weaponId);
+      });
       if (!choice.weapons.includes(weaponId))
         throw new Error(
           `Moduły przypisane do broni spoza ekwipunku: ${weaponId}.`,
@@ -436,8 +444,6 @@ export class MetaManager {
         const module = moduleDefinitions.get(id);
         if (!module || !this.isUnlocked(`module:${id}`))
           throw new Error(`Moduł nieodblokowany lub nieznany: ${id}.`);
-        if (!moduleFitsWeapon(module, weaponId))
-          throw new Error(`Moduł ${id} nie pasuje do broni ${weaponId}.`);
         if (slots.has(module.slot))
           throw new Error(`Slot ${module.slot} jest już zajęty: ${weaponId}.`);
         slots.add(module.slot);

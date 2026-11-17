@@ -345,13 +345,16 @@ export function nextModuleLoadout(
   if (moduleId && moduleDefinitions.get(moduleId)?.slot !== target)
     throw new Error('Moduł nie pasuje do slotu.');
   const ids = (current.modules[weaponId] ?? []).filter(
-    (id) => moduleDefinitions.get(id)?.slot !== target,
+    (id) =>
+      moduleDefinitions.has(id) && moduleDefinitions.get(id)?.slot !== target,
   );
   if (moduleId) ids.push(moduleId);
   ids.sort(
     (a, b) =>
-      MODULE_SLOTS.indexOf(moduleDefinitions.get(a)!.slot) -
-      MODULE_SLOTS.indexOf(moduleDefinitions.get(b)!.slot),
+      MODULE_SLOTS.findIndex(
+        (slot) => moduleDefinitions.get(a)?.slot === slot,
+      ) -
+      MODULE_SLOTS.findIndex((slot) => moduleDefinitions.get(b)?.slot === slot),
   );
   const modules = { ...current.modules };
   const selected = ids.filter(Boolean);

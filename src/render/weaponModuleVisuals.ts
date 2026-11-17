@@ -11,7 +11,7 @@ import {
 } from 'three';
 import type { BufferGeometry, Material, Object3D } from 'three';
 import { moduleDefinitions } from '../progression/moduleSchema';
-import type { ModuleDefinition } from '../progression/moduleSchema';
+import type { ModuleDefinition, ModuleSlot } from '../progression/moduleSchema';
 import { fppMaterial } from './fppMaterials';
 
 type Shape = ModuleDefinition['visual']['shape'];
@@ -210,16 +210,19 @@ export function attachModuleVisuals(
       : barrelDiameter(frame, gunRoot, frameBox);
   const center = frameBox.getCenter(new Vector3());
   const added: Object3D[] = [];
-  const moved: { node: Object3D; position: Vector3 }[] = [];
+  const moved = new Map<Object3D, Vector3>();
+  const slots = new Set<ModuleSlot>();
   const cellBox = cell ? bounds(cell, gunRoot) : null;
   for (const id of moduleIds) {
     const module = moduleDefinitions.get(id);
     if (
       !module ||
+      slots.has(module.slot) ||
       (module.slot === 'muzzle' && !muzzle) ||
       (module.slot === 'cell' && (!cellBox || cellBox.isEmpty()))
     )
       continue;
+    slots.add(module.slot);
     const visual = createModuleVisual(module.visual.shape, module.visual.color);
     const shape = module.visual.shape;
     const raw = new Box3().setFromObject(visual).getSize(new Vector3());
@@ -235,7 +238,7 @@ export function attachModuleVisuals(
       for (const child of muzzle.children) {
         if (child.name !== 'module_muzzle_flash' && child.name !== 'heat_glow')
           continue;
-        moved.push({ node: child, position: child.position.clone() });
+        if (!moved.has(child)) moved.set(child, child.position.clone());
         const tip = visual.localToWorld(new Vector3(0, 0, -raw.z));
         child.position.copy(muzzle.worldToLocal(tip));
       }
@@ -282,7 +285,7 @@ export function attachModuleVisuals(
   return () => {
     if (disposed) return;
     disposed = true;
-    for (const { node, position } of moved) node.position.copy(position);
+    for (const [node, position] of moved) node.position.copy(position);
     const geometries = new Set<BufferGeometry>();
     const materials = new Set<Material>();
     for (const visual of added) {

@@ -8,6 +8,7 @@ import {
   equipmentState,
   groupRows,
   nextLoadout,
+  nextModuleLoadout,
   toggleSelection,
   unlockRows,
 } from '../../src/ui/hub/workshopState';
@@ -46,6 +47,15 @@ const status = (root: HTMLElement) =>
   root.querySelector('[role="status"]')!.textContent;
 
 describe('workshopState', () => {
+  it('zmiana modułu pomija nieznane id w starym zapisie i sortuje po slotach', () => {
+    const state = createStarterMetaState();
+    state.loadout.modules = { blaster: ['scope', 'unknown', 'incendiary'] };
+    const manager = new MetaManager(state);
+    expect(nextModuleLoadout(manager, 'blaster', 0, 'pierce').modules).toEqual({
+      blaster: ['pierce', 'incendiary', 'scope'],
+    });
+    expect(manager.state).toEqual(state);
+  });
   it('statusy wierszy: posiadane, poziom, Dane, Rdzenie, do kupienia', () => {
     const manager = new MetaManager(createStarterMetaState());
     let rows = unlockRows(manager);
@@ -106,6 +116,83 @@ describe('workshopState', () => {
 });
 
 describe('createWorkshopPanel', () => {
+  it('odrzucona zmiana podczas zapisu przywraca select do stanu meta', async () => {
+    const { manager, save, panel } = setup((m) => m.debugUnlockAll());
+    let finishSave: () => void = () => {};
+    save.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishSave = resolve;
+        }),
+    );
+    const spy = vi.spyOn(manager, 'setLoadout');
+    const select = (slot: number) =>
+      panel.root.querySelector<HTMLSelectElement>(
+        `select[data-weapon="blaster"][data-slot="${slot}"]`,
+      )!;
+    select(0).value = 'pierce';
+    select(0).dispatchEvent(new Event('change'));
+    select(1).value = 'incendiary';
+    select(1).dispatchEvent(new Event('change'));
+    expect(select(0).value).toBe('pierce');
+    expect(select(1).value).toBe('');
+    expect(manager.state.loadout.modules).toEqual({ blaster: ['pierce'] });
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledTimes(1);
+    finishSave();
+    await flush();
+    expect(select(1).value).toBe('');
+    select(1).value = 'incendiary';
+    select(1).dispatchEvent(new Event('change'));
+    await flush();
+    expect(manager.state.loadout.modules.blaster).toEqual([
+      'pierce',
+      'incendiary',
+    ]);
+  });
+
+  it('błąd obliczenia modułów trafia do statusu, a select wraca do meta', async () => {
+    const { manager, save, panel } = setup((m) => m.debugUnlockAll());
+    const select = panel.root.querySelector<HTMLSelectElement>(
+      'select[data-weapon="blaster"][data-slot="0"]',
+    )!;
+    const invalid = document.createElement('option');
+    invalid.value = 'scope';
+    select.append(invalid);
+    select.value = 'scope';
+    select.dispatchEvent(new Event('change'));
+    await flush();
+    expect(status(panel.root)).toBe('Moduł nie pasuje do slotu.');
+    expect(panel.root.querySelector<HTMLSelectElement>('select')!.value).toBe(
+      '',
+    );
+    expect(manager.state.loadout.modules).toEqual({});
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('błąd setLoadout i odrzucony zapis odświeżają select ze stanu meta', async () => {
+    const { manager, save, panel } = setup((m) => m.debugUnlockAll());
+    const select = () =>
+      panel.root.querySelector<HTMLSelectElement>(
+        'select[data-weapon="blaster"][data-slot="0"]',
+      )!;
+    vi.spyOn(manager, 'setLoadout').mockImplementationOnce(() => {
+      throw new Error('Odrzucono moduł.');
+    });
+    select().value = 'pierce';
+    select().dispatchEvent(new Event('change'));
+    await flush();
+    expect(status(panel.root)).toBe('Odrzucono moduł.');
+    expect(select().value).toBe('');
+    expect(save).not.toHaveBeenCalled();
+    save.mockRejectedValueOnce(new Error('Błąd zapisu.'));
+    select().value = 'ricochet';
+    select().dispatchEvent(new Event('change'));
+    await flush();
+    expect(status(panel.root)).toBe('Błąd zapisu.');
+    expect(select().value).toBe('ricochet');
+    expect(manager.state.loadout.modules).toEqual({ blaster: ['ricochet'] });
+  });
   it('montuje i usuwa moduły przez setLoadout i save, filtruje duplikaty oraz typ broni', async () => {
     const { manager, save, panel } = setup((m) => m.debugUnlockAll());
     const spy = vi.spyOn(manager, 'setLoadout');

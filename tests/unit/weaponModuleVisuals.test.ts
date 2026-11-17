@@ -26,13 +26,29 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
       .spyOn(HandRig.prototype, 'load')
       .mockResolvedValue(undefined);
     const bus = new EventBus();
+    const modulesOf = vi.fn((id: string) =>
+      id === 'blaster' ? ['pierce', 'incendiary'] : ['scope'],
+    );
     const gun = new FppBlaster(bus, 1, {
       modelOf: () => 'blaster',
-      modulesOf: (id) =>
-        id === 'blaster' ? ['pierce', 'incendiary'] : ['scope'],
+      modulesOf,
     });
     try {
       await gun.load();
+      expect(modulesOf).not.toHaveBeenCalled();
+      expect(gun.root.getObjectByName('module_rail')).toBeUndefined();
+      bus.emit('weapon_switched', { owner: 2, weapon: 'blaster', slot: 0 });
+      expect(modulesOf).not.toHaveBeenCalled();
+      bus.emit('weapon_switched', { owner: 1, weapon: 'pistol', slot: 0 });
+      await vi.waitFor(() =>
+        expect(gun.root.getObjectByName('module_scope')).toBeDefined(),
+      );
+      expect(modulesOf).toHaveBeenCalledWith('pistol');
+      expect(gun.root.getObjectByName('module_rail')).toBeUndefined();
+      bus.emit('weapon_switched', { owner: 1, weapon: 'blaster', slot: 1 });
+      await vi.waitFor(() =>
+        expect(gun.root.getObjectByName('module_rail')).toBeDefined(),
+      );
       const rail = gun.root.getObjectByName('module_rail')!;
       expect(rail).toBeDefined();
       const mesh = rail.children.find((node) => node instanceof Mesh) as Mesh;
@@ -82,7 +98,39 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
       const flash = new Group();
       flash.name = 'module_muzzle_flash';
       muzzle.add(flash);
+      const glow = new Group();
+      glow.name = 'heat_glow';
+      glow.position.set(0.001, -0.002, 0.003);
+      muzzle.add(glow);
+      const originalFlash = flash.position.clone();
+      const originalGlow = glow.position.clone();
       const childCount = root.children.length;
+      for (let cycle = 0; cycle < 5; cycle++) {
+        for (const ids of [
+          ['pierce', 'ricochet'],
+          ['ricochet', 'pierce'],
+        ]) {
+          const detach = attachModuleVisuals(root, ids);
+          expect(root.children).toHaveLength(childCount + 1);
+          expect(
+            root.getObjectByName(
+              ids[0] === 'pierce' ? 'module_rail' : 'module_brake',
+            ),
+          ).toBeDefined();
+          expect(
+            root.getObjectByName(
+              ids[0] === 'pierce' ? 'module_brake' : 'module_rail',
+            ),
+          ).toBeUndefined();
+          expect(flash.position.equals(originalFlash)).toBe(false);
+          expect(glow.position.equals(originalGlow)).toBe(false);
+          detach();
+          detach();
+          expect(flash.position).toEqual(originalFlash);
+          expect(glow.position).toEqual(originalGlow);
+          expect(root.children).toHaveLength(childCount);
+        }
+      }
       const shared = vi.spyOn(fppMaterial('armor'), 'dispose');
       for (const module of moduleDefinitions.values()) {
         const detach = attachModuleVisuals(root, [module.id]);
@@ -159,6 +207,7 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
         detach();
         expect(root.children.length).toBe(childCount);
         expect(flash.position.toArray()).toEqual([0, 0, 0]);
+        expect(glow.position).toEqual(originalGlow);
         for (const spy of spies) expect(spy).toHaveBeenCalledTimes(1);
         expect(shared).not.toHaveBeenCalled();
       }

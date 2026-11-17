@@ -1,7 +1,7 @@
 {
   "id": "collimator",
   "name": "Kolimator",
-  "description": "Celowanie (PPM) wchodzi dwa razy szybciej i mniej przybliża; rozrzut w celowaniu jeszcze mniejszy.",
+  "description": "Celowanie (PPM) wchodzi dwa razy szybciej i mniej przybliża; pociski rozrzucają się w celowaniu jeszcze mniej.",
   "slot": "optic",
   "visual": { "shape": "reddot", "color": "green" },
   "tags": ["#optic"],

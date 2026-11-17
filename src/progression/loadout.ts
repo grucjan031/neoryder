@@ -2,37 +2,43 @@ import { z } from 'zod';
 import { bladeDefinitions } from '../combat/melee/bladeSchema';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { powerDefinitions } from '../combat/powers/registry';
-import { moduleDefinitions } from './moduleSchema';
+import { sanitizeModules } from './moduleSchema';
 
 const uniqueIds = (ids: string[]): boolean => new Set(ids).size === ids.length;
 
-export const loadoutSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  blade: z.string().refine((id) => bladeDefinitions.has(id), 'Nieznane ostrze'),
-  startHeld: z.enum(['blade', 'gun']).default('blade'),
-  weapons: z
-    .array(
-      z.string().refine((id) => weaponDefinitions.has(id), 'Nieznana broń'),
-    )
-    .min(1)
-    .max(3)
-    .refine(uniqueIds, 'Powtórzone id broni'),
-  powers: z
-    .array(z.string().refine((id) => powerDefinitions.has(id), 'Nieznana moc'))
-    .min(1)
-    .max(2)
-    .refine(uniqueIds, 'Powtórzone id mocy'),
-  tags: z.array(z.string().startsWith('#')),
-  modules: z
-    .record(
-      z.string().min(1),
-      z.array(
-        z.string().refine((id) => moduleDefinitions.has(id), 'Nieznany moduł'),
-      ),
-    )
-    .optional(),
-});
+export const loadoutSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    blade: z
+      .string()
+      .refine((id) => bladeDefinitions.has(id), 'Nieznane ostrze'),
+    startHeld: z.enum(['blade', 'gun']).default('blade'),
+    weapons: z
+      .array(
+        z.string().refine((id) => weaponDefinitions.has(id), 'Nieznana broń'),
+      )
+      .min(1)
+      .max(3)
+      .refine(uniqueIds, 'Powtórzone id broni'),
+    powers: z
+      .array(
+        z.string().refine((id) => powerDefinitions.has(id), 'Nieznana moc'),
+      )
+      .min(1)
+      .max(2)
+      .refine(uniqueIds, 'Powtórzone id mocy'),
+    tags: z.array(z.string().startsWith('#')),
+    modules: z.record(z.string().min(1), z.array(z.string())).optional(),
+  })
+  .transform((loadout) =>
+    loadout.modules === undefined
+      ? loadout
+      : {
+          ...loadout,
+          modules: sanitizeModules(loadout.weapons, loadout.modules),
+        },
+  );
 
 export type Loadout = z.infer<typeof loadoutSchema>;
 

@@ -139,7 +139,7 @@ export class FppBlaster {
   private loadModels = false;
   private current: Object3D | null = null;
   private wanted = FALLBACK_MODEL;
-  private weaponId = 'blaster';
+  private weaponId: string | undefined;
   private readonly modulesOf: (weaponId: string) => readonly string[];
   private detachModules: (() => void) | undefined;
   private heat = 0;
@@ -208,10 +208,10 @@ export class FppBlaster {
     this.root.remove(this.fallback);
     this.current = model;
     this.root.add(model);
-    this.detachModules = attachModuleVisuals(
-      model,
-      this.modulesOf(this.weaponId),
-    );
+    this.detachModules =
+      this.weaponId === undefined
+        ? undefined
+        : attachModuleVisuals(model, this.modulesOf(this.weaponId));
     this.flashLeft = 0;
   }
 

@@ -52,20 +52,18 @@ describe('sloty modułów S4c', () => {
     expect(meta.state.loadout.modules.blaster).toHaveLength(3);
   });
 
-  it('wczytuje stary zapis: pierwszy moduł slotu zostaje, reszta postępu bez zmian', () => {
+  it('zachowuje stary zapis meta, a do gry zwraca pierwszy moduł każdego slotu', () => {
     const old = createStarterMetaState();
     old.loadout.modules = {
       blaster: ['pierce', 'ricochet', 'incendiary', 'superconductor'],
     };
     const snapshot = structuredClone(old);
-    const restored = MetaManager.restore(old).state;
-    expect(restored).toEqual({
-      ...old,
-      loadout: {
-        ...old.loadout,
-        modules: { blaster: ['pierce', 'incendiary'] },
-      },
+    const restored = MetaManager.restore(old);
+    expect(restored.state).toEqual(old);
+    expect(restored.loadout().modules).toEqual({
+      blaster: ['pierce', 'incendiary'],
     });
+    expect(restored.serialize()).toEqual(old);
     expect(old).toEqual(snapshot);
   });
 
