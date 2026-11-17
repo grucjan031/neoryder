@@ -832,3 +832,8 @@
     animation: none;
   }
 }
+.run-screen--splash p.run-screen__loading {
+  color: #b8f6ff;
+  font-weight: 600;
+  animation: none;
+}
