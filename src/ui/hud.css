@@ -1306,6 +1306,18 @@
     top: 120px;
     width: 65vw;
   }
+  .run-hud__boss {
+    width: calc(100vw - 32px);
+  }
+  .run-hud__boss-name {
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    gap: 6px;
+  }
+  .hud:has(.run-hud__boss:not([hidden])) .run-hud__implants {
+    top: 222px;
+    max-width: calc(100vw - 32px);
+  }
   .hud__banner {
     top: 195px;
     font-size: 22px;
