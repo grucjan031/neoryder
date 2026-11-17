@@ -33,8 +33,8 @@ it('teksty NPC są poprawne i obejmują każdego NPC z układu (po jednej lub wi
   }
 });
 
-it('dziesięć rozmów wskazuje istniejących uczestników i mówców', () => {
-  expect(texts.conversations).toHaveLength(10);
+it('rozmowy wskazują istniejących uczestników i mówców', () => {
+  expect(texts.conversations!.length).toBeGreaterThanOrEqual(16);
   const ids = new Set(layout.npcs!.map(({ id }) => id));
   for (const conversation of texts.conversations!) {
     for (const id of conversation.npcs) expect(ids.has(id), id).toBe(true);
