@@ -1,6 +1,7 @@
 [
   {
     "file": "splash-01-neo-ryd.webp",
+    "scenes": ["menu"],
     "title": "Neo-Ryd"
   },
   {
@@ -10,11 +11,13 @@
   },
   {
     "file": "splash-03-kamienna.webp",
+    "scenes": ["hub"],
     "title": "Kamienna",
     "themes": ["hideout"]
   },
   {
     "file": "splash-04-rampa.webp",
+    "scenes": ["tutorial"],
     "title": "Rampa"
   },
   {
@@ -71,11 +74,13 @@
   },
   {
     "file": "splash-17-epilog.webp",
+    "scenes": ["hub"],
     "title": "Kryjówka",
     "themes": ["hideout"]
   },
   {
     "file": "splash-18-neoryder.webp",
+    "scenes": ["menu"],
     "title": "Neoryder"
   },
   {
@@ -105,22 +110,26 @@
   },
   {
     "file": "splash-25-budka-z-makaronem.webp",
+    "scenes": ["hub"],
     "title": "Budka z makaronem",
     "themes": ["neonStreet"],
     "rooms": ["noodleShop"]
   },
   {
     "file": "splash-26-warsztat-miry.webp",
+    "scenes": ["hub"],
     "title": "Warsztat Miry",
     "themes": ["hideout"]
   },
   {
     "file": "splash-27-kacik-bajta.webp",
+    "scenes": ["hub"],
     "title": "Kącik Bajta",
     "themes": ["hideout"]
   },
   {
     "file": "splash-28-poligon.webp",
+    "scenes": ["arena", "tutorial", "hub"],
     "title": "Poligon",
     "themes": ["hideout"]
   },
@@ -131,10 +140,12 @@
   },
   {
     "file": "splash-30-sciana-tarcz.webp",
+    "scenes": ["arena"],
     "title": "Ściana tarcz"
   },
   {
     "file": "splash-31-pojedynek.webp",
+    "scenes": ["arena"],
     "title": "Pojedynek"
   },
   {
@@ -161,6 +172,7 @@
   },
   {
     "file": "splash-37-sciana-zaginionych.webp",
+    "scenes": ["hub"],
     "title": "Ściana zaginionych",
     "themes": ["hideout"]
   },
@@ -218,6 +230,7 @@
   },
   {
     "file": "splash-50-radio-iskry.webp",
+    "scenes": ["hub"],
     "title": "Radio Iskry",
     "themes": ["hideout"]
   },
@@ -243,10 +256,12 @@
   },
   {
     "file": "splash-56-bar-hutnikow.webp",
+    "scenes": ["hub"],
     "title": "Bar Hutników"
   },
   {
     "file": "splash-57-przed-switem.webp",
+    "scenes": ["menu"],
     "title": "Przed świtem"
   }
 ]

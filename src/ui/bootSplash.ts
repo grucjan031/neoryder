@@ -1,5 +1,6 @@
 import { getLiteFx } from '../render/fxMode';
 import { pickSplash, splashUrl } from './splash';
+import { createLoadingTip } from './loadingTipView';
 
 export interface BootSplash {
   /** Zdejmuje nakładkę startową (krótkie wygaszenie); wielokrotne wołanie jest bezpieczne. */
@@ -23,11 +24,13 @@ export function showBootSplash(
   const app = document.getElementById('app');
   if (app) app.inert = true;
   const lite = getLiteFx();
+  let tip: ReturnType<typeof createLoadingTip> | undefined;
   if (!lite) {
     try {
       const entry = pickSplash(
         `${sceneId ?? 'menu'}:${params.get('seed') ?? ''}`,
         {
+          scene: sceneId ?? 'menu',
           theme: sceneId === 'hub' ? 'hideout' : undefined,
         },
       );
@@ -40,7 +43,8 @@ export function showBootSplash(
       image.addEventListener('load', () => image.classList.add('is-loaded'));
       image.addEventListener('error', () => {
         image.remove();
-        caption.remove();
+        copy.remove();
+        tip?.dispose();
         root.classList.remove('boot-splash--art');
       });
       image.src = splashUrl(entry);
@@ -48,9 +52,16 @@ export function showBootSplash(
       caption.className = 'boot-splash__caption';
       caption.setAttribute('aria-hidden', 'true');
       caption.textContent = entry.title;
+      const copy = document.createElement('div');
+      copy.className = 'loading-copy';
+      copy.setAttribute('aria-hidden', 'true');
+      tip = createLoadingTip(
+        `${sceneId ?? 'menu'}:${params.get('seed') ?? ''}`,
+      );
+      copy.append(caption, tip.root);
       root.classList.add('boot-splash--art');
       root.prepend(image);
-      root.append(caption);
+      root.append(copy);
     } catch (error) {
       console.warn('Nie można wybrać splashartu.', error);
     }
@@ -60,6 +71,7 @@ export function showBootSplash(
     dismiss() {
       if (done) return;
       done = true;
+      tip?.dispose();
       if (app) app.inert = false;
       const instant =
         lite ||
