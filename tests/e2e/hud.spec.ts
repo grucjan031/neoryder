@@ -43,21 +43,40 @@ test('mobilny HUD misji rozdziela cel, fale, implanty i radio od mocy', async ({
       )
       .toBe(true);
     if (layer === 1) {
-      await expect(page.locator('.mission-radio--run')).toBeVisible();
-      const radio = await page
-        .locator('.mission-radio--run')
-        .evaluate((node) => {
-          const paragraph = node.querySelector('p')!;
-          const powers = [
-            ...document.querySelectorAll('.hud__power-list'),
-          ].find((el) => el.getBoundingClientRect().height > 0)!;
-          return {
-            bottom: node.getBoundingClientRect().bottom,
-            powersTop: powers.getBoundingClientRect().top,
-            height: paragraph.getBoundingClientRect().height,
-            lineHeight: parseFloat(getComputedStyle(paragraph).lineHeight),
-          };
-        });
+      // Widoczność i pomiar w jednym evaluate: w fx=lite na wolnym runnerze kwestia radia
+      // gaśnie szybciej niż kolejne zapytanie testu, więc w razie potrzeby wywołujemy ją ponownie.
+      let radio: {
+        bottom: number;
+        powersTop: number;
+        height: number;
+        lineHeight: number;
+      } | null = null;
+      await expect
+        .poll(
+          async () =>
+            (radio = await page.evaluate(() => {
+              const node = document.querySelector<HTMLElement>(
+                '.mission-radio--run',
+              );
+              const paragraph = node?.querySelector('p');
+              if (!node || node.hidden || !paragraph) {
+                window.__neoryder?.command('mission radio runStart');
+                return null;
+              }
+              const powers = [
+                ...document.querySelectorAll('.hud__power-list'),
+              ].find((el) => el.getBoundingClientRect().height > 0)!;
+              return {
+                bottom: node.getBoundingClientRect().bottom,
+                powersTop: powers.getBoundingClientRect().top,
+                height: paragraph.getBoundingClientRect().height,
+                lineHeight: parseFloat(getComputedStyle(paragraph).lineHeight),
+              };
+            })),
+          { timeout: LOAD_TIMEOUT, intervals: [50] },
+        )
+        .not.toBeNull();
+      radio = radio!;
       expect(radio.bottom).toBeLessThan(radio.powersTop);
       expect(radio.height).toBeLessThanOrEqual(2 * radio.lineHeight + 1);
     }
