@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { hashSeed } from '../core/rng';
+import { tuning } from '../core/tuning';
 import splashData from '../data/ui/splash.json';
 
 /** Splasharty Gracjana (`docs/fabula/splash`) w wersji zoptymalizowanej: `public/assets/splash/`. */
@@ -11,8 +12,27 @@ const splashSchema = z.object({
   /** Id pokoi (`src/data/rooms`), do których obraz oczywiście pasuje. */
   rooms: z.array(z.string()).optional(),
   scenes: z.array(z.string()).optional(),
+  /** Akt fabuły (`docs/fabula/zarys-fabuly.md`): 1 prolog/akt I/neutralne, 2–3 akty II–III, 4 epilog. */
+  act: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
 });
 export type SplashEntry = z.infer<typeof splashSchema>;
+export type SplashAct = SplashEntry['act'];
+
+/**
+ * Najwyższy akt splasharów bez spoilerów. Misje nie są podpięte, więc postęp fabuły przybliża
+ * liczba zwycięstw z meta-zapisu (`stats.victories`) i progi `tuning.ui.splashActVictories`.
+ */
+export function unlockedSplashAct(
+  victories: number,
+  thresholds: readonly number[] = tuning.ui.splashActVictories,
+): SplashAct {
+  let act: SplashAct = 1;
+  for (const next of [2, 3, 4] as const) {
+    const need = thresholds[next - 1];
+    if (need !== undefined && victories >= need) act = next;
+  }
+  return act;
+}
 
 export function loadSplashes(data: unknown): SplashEntry[] {
   const list = z.array(splashSchema).min(1).parse(data);
@@ -49,12 +69,15 @@ export interface SplashHint {
 /**
  * Wybór splashartu bez `Math.random`: najpierw obrazy przypisane do sceny, potem pokoju i motywu,
  * w ostateczności cała lista; w obrębie grupy deterministycznie z klucza (ziarno + węzeł).
+ * Obrazy z aktu wyższego niż `maxAct` w ogóle nie biorą udziału (także w dopasowaniu).
  */
 export function pickSplash(
   key: string,
   hint: SplashHint = {},
-  list: readonly SplashEntry[] = getSplashes(),
+  maxAct: SplashAct = 1,
+  all: readonly SplashEntry[] = getSplashes(),
 ): SplashEntry | null {
+  const list = all.filter((entry) => entry.act <= maxAct);
   const byScene = hint.scene
     ? list.filter((entry) => entry.scenes?.includes(hint.scene!))
     : [];
@@ -75,6 +98,6 @@ export function pickSplash(
   return entry ?? null;
 }
 
-export function splashUrl(entry: SplashEntry): string {
+export function splashUrl(entry: Pick<SplashEntry, 'file'>): string {
   return `/assets/splash/${entry.file}`;
 }

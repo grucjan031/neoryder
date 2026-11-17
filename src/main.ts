@@ -30,7 +30,7 @@ import {
 } from './render/fxMode';
 import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
 import { RenderInfoProbe } from './render/renderInfo';
-import { showBootSplash } from './ui/bootSplash';
+import { readSplashAct, showBootSplash } from './ui/bootSplash';
 import type { BootSplash } from './ui/bootSplash';
 import './ui/styles.css';
 import './ui/pointerLockHint.css';
@@ -43,7 +43,12 @@ async function main(): Promise<void> {
   const params = new URLSearchParams(location.search);
   configureFx(params);
   const requested = params.get('scene');
-  bootSplash = showBootSplash(params, requested);
+  // Odczyt meta-zapisu nie wstrzymuje startu; w fx=lite nakładka nie ma obrazu, więc go pomijamy.
+  bootSplash = showBootSplash(
+    params,
+    requested,
+    getLiteFx() ? 1 : readSplashAct(),
+  );
   const debug = import.meta.env.DEV || params.get('debug') === '1';
   if (requested === null) {
     if (debug && params.get('scenes') === '1') {

@@ -1,5 +1,10 @@
+import { createIndexedDbSaveStore } from '../core/save';
+import type { SaveStore } from '../core/save';
+import { tuning } from '../core/tuning';
+import { loadMetaManager } from '../progression/metaSave';
 import { getLiteFx } from '../render/fxMode';
-import { pickSplash, splashUrl } from './splash';
+import { pickSplash, splashUrl, unlockedSplashAct } from './splash';
+import type { SplashAct } from './splash';
 import { createLoadingTip } from './loadingTipView';
 
 export interface BootSplash {
@@ -10,6 +15,28 @@ export interface BootSplash {
 const FADE_MS = 320;
 
 /**
+ * Akt splasharów z meta-zapisu tym samym odczytem co menu i run (`loadMetaManager`). Zapis jest
+ * w IndexedDB (tylko asynchronicznie), więc nakładka nie czeka na niego ze startem: brak, błąd
+ * albo przekroczenie `tuning.ui.splashMetaTimeoutMs` daje 0 zwycięstw, czyli akt 1.
+ */
+export function readSplashAct(
+  store?: SaveStore,
+  timeoutMs: number = tuning.ui.splashMetaTimeoutMs,
+): Promise<SplashAct> {
+  const read = (async (): Promise<SplashAct> => {
+    const meta = await loadMetaManager(store ?? createIndexedDbSaveStore());
+    return unlockedSplashAct(meta.state.stats.victories);
+  })().catch((): SplashAct => 1);
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(1), timeoutMs);
+    void read.then((act) => {
+      clearTimeout(timer);
+      resolve(act);
+    });
+  });
+}
+
+/**
  * Nakładka startowa z `index.html` (`#boot-splash`) pokazuje się, zanim ruszy JS. Tu dokładamy
  * splashart wybrany deterministycznie z parametrów sceny; w `fx=lite` zostaje samo tło.
  * Do `dismiss()` nakładka przechwytuje zdarzenia, a `#app` jest `inert`; po zdjęciu nic nie blokuje.
@@ -17,6 +44,7 @@ const FADE_MS = 320;
 export function showBootSplash(
   params: URLSearchParams,
   sceneId: string | null,
+  maxAct: SplashAct | Promise<SplashAct> = 1,
 ): BootSplash {
   const root = document.getElementById('boot-splash');
   if (!root) return { dismiss() {} };
@@ -25,15 +53,16 @@ export function showBootSplash(
   if (app) app.inert = true;
   const lite = getLiteFx();
   let tip: ReturnType<typeof createLoadingTip> | undefined;
-  if (!lite) {
+  let done = false;
+  const key = `${sceneId ?? 'menu'}:${params.get('seed') ?? ''}`;
+  const hint = {
+    scene: sceneId ?? 'menu',
+    theme: sceneId === 'hub' ? 'hideout' : undefined,
+  };
+  const mountArt = (act: SplashAct): void => {
+    if (done) return;
     try {
-      const entry = pickSplash(
-        `${sceneId ?? 'menu'}:${params.get('seed') ?? ''}`,
-        {
-          scene: sceneId ?? 'menu',
-          theme: sceneId === 'hub' ? 'hideout' : undefined,
-        },
-      );
+      const entry = pickSplash(key, hint, act);
       if (!entry) throw new Error('Brak splasharów.');
       const image = document.createElement('img');
       image.className = 'boot-splash__img';
@@ -55,9 +84,7 @@ export function showBootSplash(
       const copy = document.createElement('div');
       copy.className = 'loading-copy';
       copy.setAttribute('aria-hidden', 'true');
-      tip = createLoadingTip(
-        `${sceneId ?? 'menu'}:${params.get('seed') ?? ''}`,
-      );
+      tip = createLoadingTip(key);
       copy.append(caption, tip.root);
       root.classList.add('boot-splash--art');
       root.prepend(image);
@@ -65,8 +92,13 @@ export function showBootSplash(
     } catch (error) {
       console.warn('Nie można wybrać splashartu.', error);
     }
+  };
+  if (!lite) {
+    // Gdy akt nie zmienia wyboru (np. menu ma tylko obrazy aktu 1), obraz od razu, bez czekania.
+    if (typeof maxAct === 'number') mountArt(maxAct);
+    else if (pickSplash(key, hint, 1) === pickSplash(key, hint, 4)) mountArt(1);
+    else void maxAct.then(mountArt, () => mountArt(1));
   }
-  let done = false;
   return {
     dismiss() {
       if (done) return;

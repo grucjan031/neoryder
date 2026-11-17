@@ -23,7 +23,7 @@ import type { SaveStore } from '../core/save';
 import { loadoutDefinitions } from '../progression/loadout';
 import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
-import { pickSplash } from '../ui/splash';
+import { pickSplash, unlockedSplashAct } from '../ui/splash';
 import type { RunScreens } from '../ui/runScreens';
 import { CommandRegistry } from '../ui/debugCommands';
 import { preserveLiteFx } from '../render/fxMode';
@@ -475,10 +475,11 @@ export class RunScene implements Scene {
     } catch {
       // Błąd puli pokoi zgłosi openRoom(); tu wystarczy wybór z samego ziarna.
     }
-    const entry = pickSplash(`${seed}:${node.id}`, {
-      room: layout?.id,
-      theme: layout?.theme,
-    });
+    const entry = pickSplash(
+      `${seed}:${node.id}`,
+      { room: layout?.id, theme: layout?.theme },
+      unlockedSplashAct(this.meta.state.stats.victories),
+    );
     return entry ? { file: entry.file, title: entry.title } : undefined;
   }
 
