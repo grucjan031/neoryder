@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "src/audio/audioSystem.ts": {
-    "mtime": 1794952785.8113904,
-    "seen": 1794952817.6212144,
-    "ast_hash": "69222bfe5b3f0689f45424e6a1d6d7c6",
+    "mtime": 1794956622.5539153,
+    "seen": 1794956688.6530054,
+    "ast_hash": "6396b99e8c01a1b7c7b5935b5a025e8a",
     "semantic_hash": ""
   },
   "src/audio/sfxSchema.ts": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "src/core/tuning.ts": {
-    "mtime": 1794952785.867244,
-    "seen": 1794952817.6217282,
-    "ast_hash": "4b00018750ea8ae71f0ec843b43d411b",
+    "mtime": 1794956622.5617914,
+    "seen": 1794956688.6530054,
+    "ast_hash": "71a0cf86a8dd855fc44357d85475f94c",
     "semantic_hash": ""
   },
   "src/data/audio/sfx.json": {
@@ -1416,9 +1416,9 @@
     "semantic_hash": ""
   },
   "src/data/ui/settings.pl.json": {
-    "mtime": 1794952786.0408804,
-    "seen": 1794952817.6217282,
-    "ast_hash": "46e189a7aa5d6f4c0fbd6da54e0e4161",
+    "mtime": 1794956622.5665145,
+    "seen": 1794956688.6535199,
+    "ast_hash": "d36093c162e0765cb0b435ecdca4fa16",
     "semantic_hash": ""
   },
   "src/data/ui/splash.json": {
@@ -1704,9 +1704,9 @@
     "semantic_hash": ""
   },
   "src/main.ts": {
-    "mtime": 1794952786.0911658,
-    "seen": 1794952817.6217282,
-    "ast_hash": "77034c7f12a4e1c268c041b42bc2f85b",
+    "mtime": 1794956622.5713122,
+    "seen": 1794956688.6535199,
+    "ast_hash": "a02d5b6c5b67d239e26572448f2b02da",
     "semantic_hash": ""
   },
   "src/physics/grabPhysics.ts": {
@@ -4908,9 +4908,9 @@
     "semantic_hash": ""
   },
   "docs/systems/audio.md": {
-    "mtime": 1794952785.3010254,
-    "seen": 1794952817.6227567,
-    "ast_hash": "9a136642a3cd11e29a9e2dc7c31827a6",
+    "mtime": 1794956622.5506816,
+    "seen": 1794956688.6545565,
+    "ast_hash": "b3f7b960d9ba0c476eae4dce65938ddd",
     "semantic_hash": ""
   },
   "docs/systems/balance.md": {
@@ -7425,6 +7425,42 @@
     "mtime": 1794952786.433191,
     "seen": 1794952817.6222432,
     "ast_hash": "ff568a91de5f0feb20fbc192a4e56083",
+    "semantic_hash": ""
+  },
+  "src/audio/music.ts": {
+    "mtime": 1794956622.5554955,
+    "seen": 1794956688.6530054,
+    "ast_hash": "f76319999c09435cae68c506c1d9161d",
+    "semantic_hash": ""
+  },
+  "src/audio/musicDirector.ts": {
+    "mtime": 1794956622.5570655,
+    "seen": 1794956688.6530054,
+    "ast_hash": "fe53c260ab6cfab5cd37b4ab6596862a",
+    "semantic_hash": ""
+  },
+  "src/audio/musicSchema.ts": {
+    "mtime": 1794956622.5586555,
+    "seen": 1794956688.6530054,
+    "ast_hash": "0d172025cff735a13b5cc672949704f5",
+    "semantic_hash": ""
+  },
+  "src/data/audio/music.json": {
+    "mtime": 1794956622.563898,
+    "seen": 1794956688.6530054,
+    "ast_hash": "a9dc1787458195491c35132d6d0970e3",
+    "semantic_hash": ""
+  },
+  "tests/unit/music.test.ts": {
+    "mtime": 1794956622.5734088,
+    "seen": 1794956688.6545565,
+    "ast_hash": "1e230b64ab07d70db961c5ffb460ef81",
+    "semantic_hash": ""
+  },
+  "tools/audio/renderMusic.mjs": {
+    "mtime": 1794956622.5765655,
+    "seen": 1794956688.6545565,
+    "ast_hash": "f902cacafffbf67a619a41ef615786fa",
     "semantic_hash": ""
   },
   "package-lock.json": {

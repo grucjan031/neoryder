@@ -491,6 +491,8 @@ export const tuning = {
     maxPan: 0.8,
     ambienceMaxActive: 8,
     ambienceGain: 0.32,
+    /** Poziom muzyki względem efektów (S7-02); mnoży masterGain × masterVolume × musicVolume. */
+    musicGain: 0.35,
     ambienceScreenClusterM: 4,
     ambienceLoopS: 12,
     ambienceLfoHz: 0.18,
