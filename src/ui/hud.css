@@ -256,12 +256,18 @@
 .hud__weapon-name {
   flex: 1;
   min-width: 0;
-  overflow-wrap: anywhere;
+  /* Łamanie tylko między słowami; długie pojedyncze słowo zmniejsza krój (--long). */
+  overflow-wrap: normal;
+  word-break: keep-all;
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   transform: skewX(-8deg);
+}
+.hud__weapon-name--long {
+  font-size: 21px;
+  letter-spacing: 0.02em;
 }
 .hud__slots {
   grid-column: 2;
@@ -1305,6 +1311,18 @@
   .run-hud__boss-verdict {
     top: 120px;
     width: 65vw;
+  }
+  .run-hud__boss {
+    width: calc(100vw - 32px);
+  }
+  .run-hud__boss-name {
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    gap: 6px;
+  }
+  .hud:has(.run-hud__boss:not([hidden])) .run-hud__implants {
+    top: 222px;
+    max-width: calc(100vw - 32px);
   }
   .hud__banner {
     top: 195px;

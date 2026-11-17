@@ -154,6 +154,15 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
           dialogueLines(mission.briefing),
           back,
         );
+        if (mission.interlude) {
+          const interlude = el('section', 'missions-panel__interlude');
+          interlude.dataset.missionInterlude = '';
+          interlude.append(
+            el('h3', undefined, mission.interlude.title),
+            dialogueLines(mission.interlude.lines),
+          );
+          briefing.prepend(interlude);
+        }
         briefing.hidden = false;
         choices.hidden = true;
         sector.hidden = false;

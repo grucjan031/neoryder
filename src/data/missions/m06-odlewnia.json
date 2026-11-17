@@ -1,0 +1,473 @@
+{
+  "id": "m06-odlewnia",
+  "number": 6,
+  "title": "Odlewnia",
+  "act": 1,
+  "summary": "Wejdź do siedziby ochrony Kurogane w Hutach. Pokonaj Oskara Brandta, zgraj główny serwer ochrony i opuść Odlewnię windą towarową.",
+  "sectorId": "kurogane",
+  "requires": ["m03-list-przewozowy"],
+  "layers": 7,
+  "splashAct": 2,
+  "enemies": [
+    "assaulter",
+    "gunner",
+    "shielder",
+    "drone",
+    "turret",
+    "sniper",
+    "executor"
+  ],
+  "fixedNodes": [
+    {
+      "layer": 1,
+      "type": "combat",
+      "roomId": "combatCorridor",
+      "objectives": []
+    },
+    {
+      "layer": 3,
+      "type": "elite",
+      "roomId": "eliteFoundry",
+      "objectives": []
+    },
+    {
+      "layer": 6,
+      "type": "elite",
+      "roomId": "eliteHall",
+      "objectives": [],
+      "guards": [
+        {
+          "enemy": "executor",
+          "count": 1,
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": -8
+          },
+          "radiusM": 1
+        },
+        {
+          "enemy": "shielder",
+          "count": 1,
+          "position": {
+            "x": -4,
+            "y": 0,
+            "z": -7
+          },
+          "radiusM": 1
+        },
+        {
+          "enemy": "sniper",
+          "count": 1,
+          "position": {
+            "x": 7,
+            "y": 0,
+            "z": -12
+          },
+          "radiusM": 1
+        }
+      ]
+    },
+    {
+      "layer": 7,
+      "type": "boss",
+      "roomId": "bossRoom",
+      "objectives": ["brandt", "server", "exit"],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "brandt",
+      "kind": "killBoss",
+      "label": "Pokonaj Oskara Brandta"
+    },
+    {
+      "id": "server",
+      "kind": "interact",
+      "label": "Zgraj serwer ochrony",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -12
+      },
+      "holdS": 3,
+      "unlockAfter": ["brandt"]
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Opuść Odlewnię windą towarową",
+      "position": {
+        "x": -11,
+        "y": 0,
+        "z": -11
+      },
+      "holdS": 2,
+      "unlockAfter": ["server"]
+    }
+  ],
+  "typeWeights": [
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "weights": {
+        "combat": 1,
+        "shop": 1
+      }
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "weights": {
+        "combat": 1,
+        "rest": 1
+      }
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "weights": {
+        "combat": 2,
+        "shop": 1,
+        "rest": 1
+      }
+    }
+  ],
+  "roomPools": [
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "type": "combat",
+      "rooms": ["combatYard"]
+    },
+    {
+      "fromLayer": 2,
+      "toLayer": 2,
+      "type": "shop",
+      "rooms": ["shopRoom"]
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "type": "rest",
+      "rooms": ["restRoom"]
+    },
+    {
+      "fromLayer": 4,
+      "toLayer": 4,
+      "type": "combat",
+      "rooms": ["combatPillars"]
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "type": "combat",
+      "rooms": ["combatPlatforms"]
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "type": "shop",
+      "rooms": ["shopRoom"]
+    },
+    {
+      "fromLayer": 5,
+      "toLayer": 5,
+      "type": "rest",
+      "rooms": ["restRoom"]
+    }
+  ],
+  "interlude": {
+    "title": "Tymczasem w Iskrze",
+    "lines": [
+      {
+        "speaker": "szron",
+        "text": "Dwie noce temu Mira przestawiła zwrotnicę na rozrządni i przejęła wagon z kontenerem klasy K."
+      },
+      {
+        "speaker": "mira",
+        "text": "W środku nie było towaru. Była kobieta w aparaturze podtrzymującej. Oznaczenie K-112."
+      },
+      {
+        "speaker": "bajt",
+        "text": "Ma na imię Ida. Na chwilę otworzyła oczy i jednym wyładowaniem wyrwała drzwi kontenera. Od tamtej pory śpi."
+      },
+      {
+        "speaker": "wolan",
+        "text": "Leży przy stanowisku Bajta. Zostanę przy aparaturze."
+      },
+      {
+        "speaker": "szron",
+        "text": "Brandt w odpowiedzi zamknął Huty. Kontakt Nadii zatrzymał konwój jego adiutantki, porucznik Wirskiej. Oddała kartę do sieci ochrony bez walki."
+      },
+      {
+        "speaker": "bajt",
+        "text": "Puściliśmy ją, a ona zdążyła złożyć meldunek. W Odlewni będą na nas czekać."
+      }
+    ]
+  },
+  "briefing": [
+    {
+      "speaker": "szron",
+      "text": "Karta otwiera chłodnicze wejście serwisowe od wschodu. Po meldunku Wirskiej na górze nie będzie już elementu zaskoczenia — wejdą wszystkie zmiany."
+    },
+    {
+      "speaker": "mira",
+      "text": "Brandt nie wychodzi z hali bez ciężkiego pancerza wspomaganego. Ma zamontowany miotacz wachlarzowy i siłowniki skokowe — jak uderzy z góry o stalową płytę, nie stój blisko krawędzi."
+    },
+    {
+      "speaker": "mira",
+      "text": "I jeszcze jedno: jeśli uruchomi tarczę energetyczną, zwykłe ostrze ześlizgnie się jak po szkle. Trzeba ją najpierw przełamać ciężką serią albo Rezonansem."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Jak już padnie, serwer stoi pod tylną ścianą jego gabinetu, za hartowaną szybą. Wystarczy włożyć mój dysk w wolny port i poczekać trzy sekundy, resztę zrobi skrypt zrzutu."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Odlewnia jest duża i głośna, w nocy łatwo stracić orientację między piecami. Pamiętaj, którędy prowadzą wyjścia na windę towarową."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Jeśli na tym serwerze są listy transportowe z ostatnich lat... sprawdźcie szczególnie oznaczenia partii z Tarasu. Może być napisane, co zrobili z ludźmi sprzed K-112."
+    },
+    {
+      "speaker": "szron",
+      "text": "Zajmij się Brandtem i weź serwer. Na rozmowy przyjdzie czas po powrocie."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "bajt",
+      "text": "Mam cały serwer Brandta. Sześć lat dokumentów bez jednej dziury. Wszystko zaczyna się od tego samego kontraktu z Helixą Dynamics."
+    },
+    {
+      "speaker": "mira",
+      "text": "Pokaż liczby. Ilu naszych wywieźli na górę?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Kilkuset. Dokładnie trzysta osiemnaście osób z rejestrów „przekazań”, wszystkie oznaczone datą i wynikiem skanu kory ruchowej. Ale w samej korespondencji powtarzają się bez przerwy dwa słowa, których nie widziałem w żadnej specyfikacji."
+    },
+    {
+      "speaker": "mira",
+      "text": "Trzysta osiemnaście osób. Kurwa."
+    },
+    {
+      "speaker": "szron",
+      "text": "Jakie to słowa?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "„Akord” i „kamerton”. Całe rozliczenie z Helixą opiera się na liczbie sprawnych kamertonów i partiach Akordu schodzących z Zakładu Kalibracji."
+    },
+    {
+      "speaker": "wolan",
+      "text": "...Zatem zmienili nazewnictwo handlowe. Ale nie ma tu jeszcze opisu samej procedury z Tarasu?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Nie, to tylko logistyka z Hut: kto, kiedy i ile ton. Żeby zrozumieć, co robią w środku, musimy wejść wyżej — na Bulwar i Taras, prosto do laboratoriów Helixa."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Przynajmniej Huty mamy na razie z głowy. Bez Brandta miną tygodnie, zanim złoży im się nowa komenda na dole."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Jest jeszcze jedna rzecz. Na samym dole partycji Brandta leży ukryty folder z lokalnym szyfrem, niepodpiętym do sieci Kurogane. Nazwa pliku: „Palacz”."
+    },
+    {
+      "speaker": "mira",
+      "text": "Nazwisko? Kryptonim?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Nie wiem. Klucz jest podwójny, ręcznie mieszany. Puszczam skrypt łamiący w tle — zajmie mi to trochę czasu, może do końca następnych akcji na górze."
+    },
+    {
+      "speaker": "szron",
+      "text": "Zostaw go, niech chodzi w tle. Od dzisiejszej nocy mamy otwarte przejście wyżej."
+    },
+    {
+      "speaker": "szron",
+      "text": "Nadia zgłasza z Bulwaru bezpłatną przychodnię Helixa, w której zapisują ludzi na dziwne implanty ruchowe. Doktor Wolan zostaje przy aparaturze Idy, a my przenosimy rozpoznanie na poziom estakad."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Karta Wirskiej przeszła przez zamek bez błędu! Śluza chłodnicza otwarta, jesteś w głównym ciągu pod halami."
+        },
+        {
+          "speaker": "szron",
+          "text": "Idź prosto na hale formowania. Pamiętaj, że znają już twój profil walki z raportów."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:3",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Dwa zawory głównego chłodzenia masz po bokach tej hali. Jak je rozwalisz, w górnych przewodach spadnie ciśnienie — na dalszych poziomach będzie mniej pary i część automatycznych wieżyczek straci zasilanie."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Z prawej idą tarczownicy, z góry szykują drony. Wyczyść halę, zanim wejdziesz na rozdzielnię."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:6",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Ostatnia linia przed gabinetem Brandta. Za nimi są tylko pancerne wrota centrum dowodzenia."
+        },
+        {
+          "speaker": "bajt",
+          "text": "W dyżurce z boku widać aktywny terminal nadzorcy. Jak masz trzy sekundy spokoju po walce, zgraj rejestr kadr — przyda się przy porównaniu z serwerem."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:7",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Jesteś w środku. Uważaj na górny podest, Brandt wychodzi z..."
+        },
+        {
+          "speaker": "brandt",
+          "text": "Zostaw ten kanał otwarty, poruczniku. Poznałem twój akcent jeszcze na pierwszym słowie."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Kurwa, wlazł nam na pasmo kierownicze!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Brandt."
+        },
+        {
+          "speaker": "brandt",
+          "text": "Wirska mówiła, że w eterze kręci się stary głos z Kurogane. Dziewięć lat, Szron. Cały ten czas siedziałeś w kanałach pod Niecką?"
+        },
+        {
+          "speaker": "szron",
+          "text": "Ktoś musiał pilnować dołu, skoro ty zająłeś się łapankami na zlecenie korporacji."
+        },
+        {
+          "speaker": "brandt",
+          "text": "Pilnowałem kontraktu. Wtedy przy przepompowni i dzisiaj tutaj. Kiedy zamknąłem twoje akta z adnotacją o utonięciu, zrobiłem ci przysługę — przynajmniej nikt z góry nie szukał cię przez dekadę."
+        },
+        {
+          "speaker": "szron",
+          "text": "Szkoda tylko, że za ten spokój płacą kurierzy z ulicy. Zrobiłeś z oddziału ochronę transportu dla laboratoriów Helixa."
+        },
+        {
+          "speaker": "brandt",
+          "text": "Zrobiłem to, co było w zleceniu. A teraz zobaczę, kogo właściwie przysłałeś zamiast siebie."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:7",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Skacze, kurwa! Odsuń się ze strefy lądowania, jak tylko ugnie nogi w pancerzu!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Między wachlarzem pocisków masz krótkie okno z boku. Nie daj się przypiąć do barierki."
+        }
+      ]
+    },
+    {
+      "trigger": "boss:phase:2",
+      "lines": [
+        {
+          "speaker": "brandt",
+          "text": "Otworzyć boczne śluzy. Drużyny przechwytujące na główną płytę."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Podniósł tarczę polową i wezwał wsparcie z boków! Przebij osłonę Rezonansem albo ciężkim ogniem, inaczej nic mu nie zrobisz!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Zdejmij najpierw tych, którzy wchodzą przez śluzy, żeby nie zaszli cię od pleców podczas rozbijania tarczy."
+        }
+      ]
+    },
+    {
+      "trigger": "boss:phase:3",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Pancerz ma już popękany na przegubach! Znowu ładuje tarczę — tym razem ma krótszy cykl, wciśnij go w środek płyty, zanim się zregeneruje!"
+        },
+        {
+          "speaker": "brandt",
+          "text": "Do końca procedury. Zamykać wyjścia."
+        },
+        {
+          "speaker": "szron",
+          "text": "Ostatnie wsparcie na hali. Dokończ to, Kurier."
+        }
+      ]
+    },
+    {
+      "trigger": "boss:defeated",
+      "lines": [
+        {
+          "speaker": "brandt",
+          "text": "...Bez różnicy. Przyślą następnego."
+        },
+        {
+          "speaker": "brandt",
+          "text": "...Ja tylko dowożę."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:brandt:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Sprawdź puls. ...Dobrze. Podpinaj dysk do głównego serwera pod ścianą."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:server:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Już ciągnie! Trzy sekundy... mamy pełny zrzut partycji ochrony i dodatkowy zbiór z prywatnego dysku!"
+        }
+      ]
+    },
+    {
+      "trigger": "objective:server:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Winda towarowa po lewej stronie odblokowana. Wyjeżdżaj na zewnątrz, zanim zlecą się oddziały z Bulwaru."
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 150,
+      "cores": 3
+    }
+  }
+}

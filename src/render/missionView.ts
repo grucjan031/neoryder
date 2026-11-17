@@ -9,13 +9,21 @@ import {
 } from 'three';
 import type { MissionObjectives } from '../world/missionObjectives';
 import { tuning } from '../core/tuning';
+import { createUrbanMaterial } from './urbanMaterials';
 
 /** Oprawa celów nie uczestniczy w symulacji ani kolizjach. */
 export class MissionView {
   readonly root = new Group();
   private readonly entries = new Map<
     string,
-    { object: Group; bar: Mesh; ring: Mesh; lamp?: Mesh; gate?: Mesh }
+    {
+      object: Group;
+      bar: Mesh;
+      ring: Mesh;
+      lamp?: Mesh;
+      gate?: Mesh;
+      serverLeds: Mesh<BoxGeometry, MeshStandardMaterial>[];
+    }
   >();
   private readonly box = new BoxGeometry(1, 1, 1);
   private readonly ringGeometry: RingGeometry;
@@ -29,10 +37,15 @@ export class MissionView {
   });
   private readonly white = new MeshBasicMaterial({ color: '#fff1d6' });
   private readonly amber = new MeshBasicMaterial({ color: '#ffae1a', side: 2 });
+  private readonly serverMetal = createUrbanMaterial('metal');
+  private readonly serverPanels = createUrbanMaterial('machine');
+  private readonly serverLedMaterials: MeshStandardMaterial[] = [];
   constructor(
     private readonly model: MissionObjectives,
     radius: number,
   ) {
+    this.serverMetal.color.set('#263344');
+    this.serverPanels.color.set('#121d2b');
     this.ringGeometry = new RingGeometry(radius - 0.06, radius, 48);
     for (const objective of model.mission.objectives.filter((o) =>
       model.ids.includes(o.id),
@@ -58,6 +71,7 @@ export class MissionView {
       };
       let lamp: Mesh | undefined;
       let gate: Mesh | undefined;
+      const serverLeds: Mesh<BoxGeometry, MeshStandardMaterial>[] = [];
       if (objective.kind === 'sabotage') {
         for (const x of [-0.25, 0.25])
           for (const z of [-0.25, 0.25]) cube(x, 1.5, z, 0.07, 3, 0.07);
@@ -79,6 +93,33 @@ export class MissionView {
       } else if (objective.kind === 'pickup') {
         cube(0, 0.3, 0, 0.6, 0.4, 0.4, this.white);
         cube(0, 0.51, 0, 0.4, 0.02, 0.12, this.metal);
+      } else if (objective.kind === 'interact') {
+        cube(0, 1.25, -0.5, 1.6, 2.5, 0.8, this.serverMetal);
+        for (const x of [-0.73, 0.73])
+          cube(x, 1.25, -0.065, 0.08, 2.4, 0.08, this.serverMetal);
+        for (const y of [0.35, 0.7, 1.05, 1.4, 1.75, 2.1]) {
+          cube(0, y, -0.07, 1.3, 0.28, 0.06, this.serverPanels);
+          for (const x of [-0.48, -0.32, -0.16, 0, 0.16])
+            cube(x, y, -0.03, 0.045, 0.16, 0.02, this.serverMetal);
+          for (const [x, color] of [
+            [0.36, '#ffae1a'],
+            [0.53, '#6dff4a'],
+          ] as const) {
+            const material = new MeshStandardMaterial({
+              color,
+              emissive: color,
+              emissiveIntensity: 0.5,
+              toneMapped: false,
+            });
+            material.userData.bloom = true;
+            this.serverLedMaterials.push(material);
+            const led = new Mesh(this.box, material);
+            led.position.set(x, y, -0.025);
+            led.scale.set(0.09, 0.025, 0.025);
+            object.add(led);
+            serverLeds.push(led);
+          }
+        }
       } else if (objective.kind === 'defend') {
         cube(0, 0.08, 0, 2.4, 0.16, 1.8);
         cube(0, 0.65, 0, 1.6, 1.1, 0.8);
@@ -96,7 +137,8 @@ export class MissionView {
         objective.kind === 'exit' &&
         objective.unlockAfter.some((id) =>
           model.mission.objectives.some(
-            (o) => o.id === id && o.kind === 'defend',
+            (o) =>
+              o.id === id && (o.kind === 'defend' || o.kind === 'interact'),
           ),
         )
       ) {
@@ -107,6 +149,17 @@ export class MissionView {
         cube(0, 3.2, 0, 2.2, 0.3, 0.4);
         cube(0, 3.2, 0.22, 1.6, 0.1, 0.05, this.white);
         gate = cube(0, 1.5, 0, 1.8, 3, 0.16);
+        if (
+          objective.unlockAfter.some((id) =>
+            model.mission.objectives.some(
+              (o) => o.id === id && o.kind === 'interact',
+            ),
+          )
+        ) {
+          cube(0, 0.06, 0.7, 2.2, 0.12, 2);
+          for (const x of [-1, 1])
+            cube(x, 0.14, 0.7, 0.08, 0.04, 2, this.amber);
+        }
       } else {
         cube(0, 0.05, 0, 1.6, 0.1, 1.6, this.metal);
         for (const edge of [-0.75, 0.75]) {
@@ -147,7 +200,14 @@ export class MissionView {
         0.08,
         this.amber,
       );
-      this.entries.set(objective.id, { object, ring, bar, lamp, gate });
+      this.entries.set(objective.id, {
+        object,
+        ring,
+        bar,
+        lamp,
+        gate,
+        serverLeds,
+      });
       this.root.add(object);
     }
   }
@@ -158,12 +218,21 @@ export class MissionView {
       if (view.gate) view.gate.visible = !this.model.unlocked(objective);
       view.object.visible =
         (this.model.objectives[objective.id] !== 'done' ||
-          objective.kind === 'defend') &&
+          objective.kind === 'defend' ||
+          objective.kind === 'interact') &&
         (objective.kind !== 'pickup' || this.model.unlocked(objective));
       view.ring.visible =
         this.model.unlocked(objective) &&
         this.model.objectives[objective.id] !== 'done';
       view.bar.scale.x = Math.max(0.01, this.model.progress[objective.id] ?? 0);
+      const progress = this.model.progress[objective.id] ?? 0;
+      for (let i = 0; i < view.serverLeds.length; i++) {
+        const led = view.serverLeds[i]!;
+        const row = Math.floor(i / 2);
+        const filled = progress >= (row + 1) / (view.serverLeds.length / 2);
+        const pulse = (1 + Math.sin(timeS * Math.PI * 2 - row)) / 2;
+        led.material.emissiveIntensity = filled ? 0.8 : 0.15 + pulse * 0.25;
+      }
       const fuse = this.model.fuses[objective.id];
       if (view.lamp) {
         const config = tuning.mission;
@@ -181,7 +250,15 @@ export class MissionView {
     this.box.dispose();
     this.ringGeometry.dispose();
     for (const geometry of this.zoneGeometries) geometry.dispose();
-    for (const material of [this.metal, this.red, this.white, this.amber])
+    for (const material of [
+      this.metal,
+      this.red,
+      this.white,
+      this.amber,
+      this.serverMetal,
+      this.serverPanels,
+      ...this.serverLedMaterials,
+    ])
       material.dispose();
   }
 }
