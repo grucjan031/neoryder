@@ -361,6 +361,10 @@ export class NpcRuntime {
   /** Bieżąca wstawka animacji (null = bazowa) i czas do jej końca lub do następnej. */
   idleClip: NpcAnimation | null = null;
   idleLeftS: number;
+  /** Zewnętrzne sterowanie (spotkanie z kotem): trasa i patrzenie wstrzymane, pozycję i yaw ustawia sterujący. */
+  controlled = false;
+  /** Wymuszona poza animacji w czasie sterowania (null = bazowa). */
+  pose: NpcAnimation | null = null;
   private readonly idleRng: Rng;
   constructor(
     readonly def: HubNpcDef,
@@ -390,7 +394,10 @@ export class NpcRuntime {
     this.previousBodyYaw = this.look.bodyYaw;
     this.previousHeadYaw = this.look.headYaw;
     const t = this.tuning;
-    if (this.def.route) {
+    if (this.controlled) {
+      this.look.bodyYaw = this.route.yaw;
+      this.look.headYaw = 0;
+    } else if (this.def.route) {
       stepNpcRoute(this.route, this.def.route, dt, {
         player,
         talking,
@@ -405,7 +412,7 @@ export class NpcRuntime {
         this.look.headYaw = 0;
       }
     }
-    if (!this.def.route || talking) {
+    if (!this.controlled && (!this.def.route || talking)) {
       this.look = updateNpcLook(
         this.look,
         this.def.route ? this.route.yaw : this.baseYaw,
@@ -461,6 +468,7 @@ export class NpcRuntime {
         ? (this.def.route.moveAnimation ?? 'Walk_Loop')
         : (this.def.route.pauseAnimation ?? this.def.animation ?? 'Idle_Loop')
       : (this.def.animation ?? 'Idle_Loop');
+    if (this.controlled && this.pose) return this.pose;
     if (!speaking) return this.idleClip ?? base;
     return base === 'Idle_Loop'
       ? 'Idle_Talking_Loop'

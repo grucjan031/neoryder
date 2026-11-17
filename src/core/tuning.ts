@@ -807,6 +807,13 @@ export const tuning = {
     catMeowChance: 0.16,
     catMeowCooldownS: 25,
     catDebugDistanceM: 2,
+    /** Dzieci przy kocie: zasięg (m) od dziecka do odpoczywającego kota, odnowienie (s), czas głaskania (s), odległość od kota (m), zasięg dołączenia drugiego dziecka (m), odległość kota od trasy w debugu (m). */
+    kidsCatRangeM: 2.5,
+    kidsCatCooldownS: 60,
+    kidsCatPetS: 6,
+    kidsCatStandM: 0.7,
+    kidsCatJoinM: 4,
+    kidsCatDebugM: 1.5,
     catStrideM: 0.7,
     catLegSwingRad: 0.55,
     catTailHz: 1.4,

@@ -74,6 +74,7 @@ import { HUB_BATCH_CELL_M, HubDecor } from './hubDecor';
 import { HubNpcs } from './hubNpcs';
 import { HubSoundscape } from './hubSoundscape';
 import { HubFauna } from './hubFauna';
+import { KIDS_CAT_CONVERSATION, KidsCatEncounter } from '../world/hubKidsCat';
 import type { Scene } from './index';
 import { preserveLiteFx } from '../render/fxMode';
 
@@ -197,6 +198,7 @@ export class HubScene implements Scene {
   private decor?: HubDecor;
   private soundscape?: HubSoundscape;
   private fauna?: HubFauna;
+  private kidsCat?: KidsCatEncounter;
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private readonly geometries = new Set<BufferGeometry>();
@@ -387,6 +389,13 @@ export class HubScene implements Scene {
     this.fauna = new HubFauna(ctx, this.root, this.layout, () =>
       this.player.getState(),
     );
+    if (this.fauna.runtime.cat)
+      this.kidsCat = new KidsCatEncounter(
+        this.npcStates,
+        this.fauna.runtime.cat,
+        this.fauna.runtime.ground,
+        ctx.tuning.hub,
+      );
     this.soundscape = new HubSoundscape(
       ctx,
       this.root,
@@ -842,6 +851,7 @@ export class HubScene implements Scene {
           ? null
           : this.chatter.lookTargetFor(state.def.id),
       );
+    this.stepKidsCat(dt, player);
     for (const entry of this.npcBodies) {
       entry.translation.x = entry.state.position.x;
       entry.translation.y = entry.state.position.y + entry.height / 2;
@@ -890,6 +900,37 @@ export class HubScene implements Scene {
       this.stations.opened !== null || this.talk !== null,
     );
     this.tickArrival(dt);
+  }
+
+  /** Dzieci przy kocie; rozmowa raz na spotkanie, gdy nic innego nie trwa i gracz jest w zasięgu. */
+  private stepKidsCat(dt: number, player: Vec3): void {
+    const encounter = this.kidsCat;
+    if (!encounter) return;
+    encounter.step(dt, this.talk?.line.id ?? null);
+    if (
+      !encounter.chatPending ||
+      this.talk !== null ||
+      this.chatter.line !== null ||
+      this.chatter.activeId !== null ||
+      this.stations.opened !== null ||
+      this.hubMap?.isOpen === true
+    )
+      return;
+    const ids = encounter.activeIds();
+    let x = 0,
+      z = 0;
+    for (const id of ids) {
+      const p = this.npcById.get(id)!.position;
+      x += p.x;
+      z += p.z;
+    }
+    if (
+      Math.hypot(player.x - x / ids.length, player.z - z / ids.length) >
+      this.ctx.tuning.hub.chatterRadiusM
+    )
+      return;
+    encounter.markChatted();
+    this.chatter.force(KIDS_CAT_CONVERSATION);
   }
 
   /** Komenda debug `hub tp`: ustawia kierunek patrzenia jako jednorazowy ruch myszy w następnym kroku. */
@@ -1010,6 +1051,7 @@ export class HubScene implements Scene {
 
   query(name: string): unknown {
     if (name === 'hubFauna') return this.fauna?.runtime.query();
+    if (name === 'hubKidsCat') return this.kidsCat?.query() ?? null;
     switch (name) {
       case 'hubNpcVisible':
         return this.npcs?.visibleCount ?? 0;
@@ -1193,6 +1235,36 @@ export class HubScene implements Scene {
           return `Stacja otwarta: ${this.stations.opened}`;
         const line = this.talkTo(id, true);
         return line ? `${line.name}: ${line.line}` : `Brak NPC: ${id}`;
+      },
+    );
+    register(
+      'hub kidscat',
+      'hub kidscat — kot odpoczywa przy trasie dzieci, wymuś spotkanie',
+      (args) => {
+        const kidsCat = this.kidsCat,
+          runtime = this.fauna?.runtime,
+          ola = this.npcById.get('ola');
+        if (args.length || !kidsCat || !runtime || !ola)
+          return 'Użycie: hub kidscat (wymaga kota i dzieci na trasie)';
+        const t = this.ctx.tuning.hub;
+        const route = ola.def.route!.points;
+        const to =
+          route[
+            (ola.route.segment + ola.route.direction + route.length) %
+              route.length
+          ]!;
+        const dx = to.x - ola.position.x,
+          dz = to.z - ola.position.z,
+          d = Math.hypot(dx, dz) || 1;
+        for (const side of [1, -1]) {
+          const x = ola.position.x - (dz / d) * t.kidsCatDebugM * side,
+            z = ola.position.z + (dx / d) * t.kidsCatDebugM * side;
+          if (runtime.placeCatAt(x, z, t.kidsCatPetS + 12)) {
+            kidsCat.force();
+            return 'Węgielek odpoczywa przy trasie dzieci.';
+          }
+        }
+        return 'Brak bezpiecznego miejsca dla kota przy trasie Oli.';
       },
     );
     register(

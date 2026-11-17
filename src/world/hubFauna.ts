@@ -272,10 +272,16 @@ export class HubFaunaRuntime {
 
   /** Debug zachowuje bezpieczny odcinek powrotny do bieżącej trasy. */
   placeCat(player: Vec3, yaw: number): boolean {
+    return this.placeCatAt(
+      player.x - Math.sin(yaw) * this.t.catDebugDistanceM,
+      player.z - Math.cos(yaw) * this.t.catDebugDistanceM,
+    );
+  }
+
+  /** Jak `placeCat`, ale w podanym punkcie; `minRestS` wydłuża odpoczynek (debug spotkań). */
+  placeCatAt(x: number, z: number, minRestS = 0): boolean {
     const c = this.cat;
     if (!c) return false;
-    const x = player.x - Math.sin(yaw) * this.t.catDebugDistanceM,
-      z = player.z - Math.cos(yaw) * this.t.catDebugDistanceM;
     if (!this.ground.safe(x, z)) return false;
     const route = this.layout.fauna!.cat!.route;
     let best = -1,
@@ -294,6 +300,7 @@ export class HubFaunaRuntime {
     c.point = (best - 1 + route.length) % route.length;
     c.fleeCooldownS = this.t.catFleeCooldownS;
     this.rest();
+    if (minRestS > 0) c.restLeftS = Math.max(c.restLeftS, minRestS);
     remember(c);
     return true;
   }

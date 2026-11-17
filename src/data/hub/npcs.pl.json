@@ -583,6 +583,29 @@
       ]
     },
     {
+      "id": "ola_stas_cat",
+      "npcs": ["ola", "stas"],
+      "radiusM": 0.001,
+      "lines": [
+        {
+          "npc": "stas",
+          "text": "Ola, patrz, Węgielek się nie boi! Chyba mruczy, słyszysz?"
+        },
+        {
+          "npc": "ola",
+          "text": "Cicho, bo go spłoszysz. Mruczy, mruczy! Ale ciepły, jak mały piecyk."
+        },
+        {
+          "npc": "stas",
+          "text": "A może go zabierzemy do naszych kwater? Byłby nasz na zawsze."
+        },
+        {
+          "npc": "ola",
+          "text": "Tomasz mówił, że Węgielek jest kotem całej stacji. Ale możemy go odwiedzać, kiedy tylko chcemy."
+        }
+      ]
+    },
+    {
       "id": "wolan_bajt_night_shift",
       "npcs": ["wolan", "bajt"],
       "lines": [

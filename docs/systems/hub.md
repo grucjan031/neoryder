@@ -500,6 +500,14 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
   bar, kładka nad torami). Idzie do kolejnego punktu, odpoczywa losowo `restS` (siedzi albo leży), czasem się myje.
   Zatrzymuje się, gdy gracz stoi na drodze bliżej niż 0,8 m; gdy gracz biegnie w jego stronę bliżej niż 2 m, odbiega
   w bok (tylko po bezpiecznej podłodze) i wraca na punkt opuszczenia trasy.
+- Dzieci przy kocie (`src/world/hubKidsCat.ts`, `KidsCatEncounter`; `tuning.hub.kidsCat*`): gdy Węgielek odpoczywa
+  (siedzi, leży, myje się) w zasięgu `kidsCatRangeM` od `ola` lub `stas` i minęło odnowienie `kidsCatCooldownS`,
+  dziecko schodzi z trasy, podchodzi truchtem na `kidsCatStandM` od kota (tylko gdy odcinek leży na podłodze fauny,
+  inaczej stoi na trasie), patrzy na kota i kuca (`Crouch_Idle_Loop`) przez `kidsCatPetS`, po czym wraca w punkt
+  zejścia i biegnie dalej. Drugie dziecko w `kidsCatJoinM` od kota dołącza z drugiej strony. Kot nie reaguje na dzieci;
+  gdy przestanie odpoczywać (np. ucieczka przed graczem), dzieci wracają na trasę. Raz na spotkanie scena wymusza
+  rozmowę `ola_stas_cat` (promień 0,001 m, żeby sama się nie włączała), o ile nic innego nie trwa i gracz jest w
+  `chatterRadiusM`. Debug: `hub kidscat`, `query('hubKidsCat')` → `{ active, kids, cooldownLeft }`.
 - Szczury: 2-3 pasy po dnie niecki torów i pod ścianą targu; co `intervalS` przebiega losowy pas (2,5-3,5 m/s,
   drobne zrywy) i znika; gdy gracz jest bliżej niż 3 m od startu pasa, wybierany jest inny pas albo czekanie;
   maksymalnie 2 naraz (pooling).
