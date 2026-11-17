@@ -168,7 +168,7 @@ Siedzące postacie używają tego samego `seat.heightM: 0.48` i
 | Wartownik przy wejściu         | {x: −22,5, z: 10,7}   | 0           | —                                      |
 | Barman                         | {x: −3, z: 15,2}      | 180         | —                                      |
 | Tancerka                       | {x: −6,5, z: 12,8}    | 180         | wolny kwadrat 2 × 2 m                  |
-| Bokser                         | {x: 16,1, z: −2,4}    | 90          | wolny kwadrat 2 × 2 m                  |
+| Bokser                         | {x: 17,35, z: −2,4}   | 90          | wolny kwadrat 2 × 2 m                  |
 
 ### Trasy piesze
 
@@ -257,7 +257,7 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
 | grzes | wejście na targ                | −22,5; 10,7     | 0           | Idle_Torch_Loop      | 2 / cap_stripe / jacket / pouches     |
 | rudy  | za barem                       | −3; 15,2        | 180         | Idle_Loop            | 5 / none / apron / none               |
 | nina  | parkiet                        | −6,5; 12,8      | 180         | Dance_Loop           | 9 / glasses / jacket / none           |
-| witek | przed workiem treningowym      | 16,1; −2,4      | 90          | Punch_Jab            | 0 / bandana / vest / none             |
+| witek | przed workiem treningowym      | 17,35; −2,4     | 90          | Punch_Jab            | 0 / bandana / vest / none             |
 | kuba  | trasa i                        | −30; 13         | 90          | Walk_Loop            | 3 / beanie / vest / backpack          |
 | pawel | trasa ii                       | −7; −2,5        | 90          | Walk_Loop            | 7 / cap_stripe / jacket / pouches     |
 | ola   | trasa iii, scale 0,68          | 0,5; 11         | 90          | Jog_Fwd_Loop         | 8 / beanie / jacket / backpack        |
