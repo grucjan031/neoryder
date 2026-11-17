@@ -248,7 +248,7 @@ for (const station of hideout.stations) {
   });
 }
 
-test('hub: pięciu NPC, spojrzenie pokazuje „Porozmawiaj” z imieniem, E daje kolejne kwestie i dymek znika po odejściu', async ({
+test('hub: NPC (pięć kluczowych postaci i mieszkańcy), spojrzenie pokazuje „Porozmawiaj” z imieniem, E daje kolejne kwestie i dymek znika po odejściu', async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -258,13 +258,11 @@ test('hub: pięciu NPC, spojrzenie pokazuje „Porozmawiaj” z imieniem, E daje
     x: number;
     z: number;
   }[];
-  expect(npcs.map((npc) => npc.id).sort()).toEqual([
-    'bajt',
-    'mira',
-    'szron',
-    'tomasz',
-    'wolan',
-  ]);
+  const ids = npcs.map((npc) => npc.id);
+  expect(ids).toHaveLength(21);
+  expect(ids).toEqual(
+    expect.arrayContaining(['bajt', 'mira', 'szron', 'tomasz', 'wolan']),
+  );
   const mira = npcs.find((npc) => npc.id === 'mira')!;
   await command(page, `hub tp ${mira.x - 1.6} ${mira.z - 0.4}`);
   await command(page, 'hub look mira');
