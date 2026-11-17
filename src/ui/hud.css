@@ -256,12 +256,18 @@
 .hud__weapon-name {
   flex: 1;
   min-width: 0;
-  overflow-wrap: anywhere;
+  /* Łamanie tylko między słowami; długie pojedyncze słowo zmniejsza krój (--long). */
+  overflow-wrap: normal;
+  word-break: keep-all;
   font-size: 28px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   transform: skewX(-8deg);
+}
+.hud__weapon-name--long {
+  font-size: 21px;
+  letter-spacing: 0.02em;
 }
 .hud__slots {
   grid-column: 2;
