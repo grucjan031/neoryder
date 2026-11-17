@@ -129,6 +129,8 @@ const MODEL_FILES: Record<string, string> = {
  * Rekwizyty `city_*` i skrzynie zachowują proporcje i skalę 1.
  */
 const STRETCH_MODELS = new Set(['pillar', 'cover_low', 'wall_segment']);
+/** Tag obrażeń, którymi cisza po zwycięstwie rozpada pozostałych wrogów pokoju. */
+const VICTORY_HOLD_TAG = '#victory_hold';
 
 /**
  * Ustawia model bloku: początek układu modelu (spód, środek podstawy) w środku
@@ -449,6 +451,8 @@ export class RoomScene implements Scene {
         const state = this.player.getState();
         const radius = ctx.tuning.player.capsuleRadius;
         hazardTargets.length = 0;
+        // Cisza po zwycięstwie: hazardy nie mają kogo ranić (ani gracza, ani wrogów).
+        if (this.victoryHold) return hazardTargets;
         if (!this.health.dead)
           addHazardTarget(
             playerId,
@@ -1211,13 +1215,27 @@ export class RoomScene implements Scene {
     this.director.stop();
     this.projectiles.dispose();
     this.statuses.reset();
-    // Zagrożenia, beczki i sługi dalej żyją w tle, ale nie zadają już graczowi obrażeń.
+    // Gracz jest nietykalny, zanim cokolwiek zacznie się rozpadać.
     this.playerStats.add({
       stat: 'damageTaken',
       type: 'mult',
       value: 0,
       source: 'victory-hold',
     });
+    // Pozostali wrogowie rozpadają się normalnym efektem śmierci. Zabija ich świat (source null),
+    // więc nie liczą się do zabójstw ani kredytów gracza, a podsumowanie (liczone przy run_ended,
+    // przed ciszą) się nie zmienia.
+    const remaining: EntityId[] = [];
+    this.manager.forEach((enemy) => {
+      if (!enemy.removed && enemy.current.state !== 'dead')
+        remaining.push(enemy.id);
+    });
+    for (const id of remaining)
+      this.damage.deal(id, {
+        source: null,
+        amount: Number.MAX_VALUE,
+        tags: [VICTORY_HOLD_TAG],
+      });
   }
 
   private onPlayerDied(): void {

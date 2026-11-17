@@ -7,6 +7,7 @@ import textData from '../data/ui/run.pl.json';
 import metaTextData from '../data/ui/meta.pl.json';
 import './runScreens.css';
 import { MapScreen } from './mapScreen';
+import { splashUrl } from './splash';
 
 const text = z
   .object({
@@ -93,6 +94,8 @@ export interface RunScreenView {
   /** Nagrody meta za zakończony run (brak = sekcja nie jest pokazywana). */
   meta?: RunMetaView;
   busy: boolean;
+  /** Splashart tła ekranu ładowania pokoju (`busy`); brak = ekran jak dotąd. */
+  splash?: { file: string; title: string };
   error: string | null;
   offers?: readonly {
     id: string;
@@ -131,6 +134,7 @@ export class HtmlRunScreens implements RunScreens {
   private readonly root = document.createElement('section');
   private readonly panel = document.createElement('div');
   private buttons: HTMLButtonElement[] = [];
+  private splashFile: string | null = null;
   private readonly map: MapScreen;
   private readonly onKey = (event: KeyboardEvent): void => {
     if (
@@ -181,6 +185,8 @@ export class HtmlRunScreens implements RunScreens {
     this.root.dataset.screen = view.screen;
     this.buttons = [];
     this.map.hide();
+    if (!(view.busy && !view.error && view.splash?.file === this.splashFile))
+      this.clearSplash();
     this.panel.replaceChildren();
     const heading = document.createElement('h1');
     heading.textContent = text.titles[view.screen];
@@ -191,6 +197,7 @@ export class HtmlRunScreens implements RunScreens {
       this.line(view.error);
       this.button(text.menu, actions.menu);
     } else if (view.busy) {
+      if (view.splash) this.showSplash(view.splash);
       this.line(text.loading).classList.add('run-screen__loading');
     } else if (view.screen === 'map') {
       this.panel.append(this.map.root);
@@ -292,6 +299,39 @@ export class HtmlRunScreens implements RunScreens {
       this.line(text.placeholder);
       this.button(text.next, actions.next);
     }
+  }
+
+  private clearSplash(): void {
+    this.splashFile = null;
+    this.root.classList.remove('run-screen--splash');
+    this.root.querySelector('.run-screen__splash')?.remove();
+  }
+
+  /** Dekoracyjne tło ekranu ładowania; błąd ładowania obrazu przywraca ekran bez tła. */
+  private showSplash(splash: { file: string; title: string }): void {
+    if (this.splashFile === splash.file) return;
+    this.clearSplash();
+    this.splashFile = splash.file;
+    const backdrop = document.createElement('div');
+    backdrop.className = 'run-screen__splash';
+    backdrop.setAttribute('aria-hidden', 'true');
+    const image = document.createElement('img');
+    image.className = 'run-screen__splash-img';
+    image.alt = '';
+    image.decoding = 'async';
+    image.addEventListener('load', () => image.classList.add('is-loaded'));
+    image.addEventListener('error', () => {
+      // Błąd starego obrazu nie może zdjąć nowego tła.
+      if (image.isConnected && this.splashFile === splash.file)
+        this.clearSplash();
+    });
+    image.src = splashUrl(splash);
+    const caption = document.createElement('span');
+    caption.className = 'run-screen__splash-title';
+    caption.textContent = splash.title;
+    backdrop.append(image, caption);
+    this.root.prepend(backdrop);
+    this.root.classList.add('run-screen--splash');
   }
 
   /** Zdrowie i Kredyty jako odczyt wizjera; tekst zostaje „Zdrowie: N · Kredyty: N”. */
@@ -489,6 +529,7 @@ export class HtmlRunScreens implements RunScreens {
 
   hide(): void {
     this.map.hide();
+    this.clearSplash();
     this.root.hidden = true;
     this.buttons = [];
   }

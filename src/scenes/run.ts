@@ -23,6 +23,7 @@ import type { SaveStore } from '../core/save';
 import { loadoutDefinitions } from '../progression/loadout';
 import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
+import { pickSplash } from '../ui/splash';
 import type { RunScreens } from '../ui/runScreens';
 import { CommandRegistry } from '../ui/debugCommands';
 import { preserveLiteFx } from '../render/fxMode';
@@ -274,6 +275,7 @@ export class RunScene implements Scene {
         summary: this.manager.summary,
         meta: this.metaResult?.applied ? this.metaResult : undefined,
         busy: this.manager.screen === 'room' && !this.roomReady,
+        splash: this.loadingSplash(),
         error: this.runError,
         offers: (() => {
           const definitions =
@@ -451,6 +453,33 @@ export class RunScene implements Scene {
     return rng
       .fork(`room-layout:${node.id}`)
       .pick(available.sort((a, b) => a.id.localeCompare(b.id)));
+  }
+
+  /**
+   * Splashart ekranu ładowania pokoju: z pokoju/motywu docelowego węzła, inaczej z ziarna runu
+   * i numeru węzła. W `fx=lite` (testy) bez obrazu. Bez `Math.random`.
+   */
+  private loadingSplash(): { file: string; title: string } | undefined {
+    const node = this.manager.currentNode;
+    if (
+      getLiteFx() ||
+      this.manager.screen !== 'room' ||
+      this.roomReady ||
+      !node
+    )
+      return undefined;
+    const seed = this.manager.state.seed;
+    let layout: RoomDefinition | undefined;
+    try {
+      layout = this.chooseRoom(node, new Rng(seed));
+    } catch {
+      // Błąd puli pokoi zgłosi openRoom(); tu wystarczy wybór z samego ziarna.
+    }
+    const entry = pickSplash(`${seed}:${node.id}`, {
+      room: layout?.id,
+      theme: layout?.theme,
+    });
+    return entry ? { file: entry.file, title: entry.title } : undefined;
   }
 
   private async openRoom(): Promise<void> {

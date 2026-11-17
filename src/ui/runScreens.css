@@ -761,3 +761,79 @@
 .run-screen[data-screen='rest'] .run-screen__card {
   min-height: 0;
 }
+
+/* Ekran ładowania pokoju ze splashartem w tle. */
+.run-screen--splash {
+  place-items: end center;
+  overflow: hidden;
+  background: #05060a;
+  backdrop-filter: none;
+}
+.run-screen__splash {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.run-screen__splash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(2, 4, 9, 0.95) 0,
+    rgba(2, 4, 9, 0.6) 38%,
+    rgba(2, 4, 9, 0.12) 72%,
+    transparent
+  );
+}
+.run-screen__splash-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 400ms ease-out;
+  animation: run-splash-zoom 14s ease-out forwards;
+}
+.run-screen__splash-img.is-loaded {
+  opacity: 1;
+}
+.run-screen__splash-title {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+  padding: 4px 10px;
+  background: rgba(2, 4, 9, 0.72);
+  color: #d6e4f2;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.run-screen--splash .run-screen__panel {
+  width: min(520px, 100%);
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  text-align: center;
+  text-shadow: 0 1px 8px #000;
+}
+@keyframes run-splash-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .run-screen__splash-img {
+    transition: none;
+    animation: none;
+  }
+}
+.run-screen--splash p.run-screen__loading {
+  color: #b8f6ff;
+  font-weight: 600;
+  animation: none;
+}

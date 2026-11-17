@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
-    <meta name="description" content="NEORYDER — FPP roguelite w świecie cyberpunk." />
+    <meta
+      name="description"
+      content="NEORYDER — FPP roguelite w świecie cyberpunk."
+    />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -12,8 +15,114 @@
     <meta property="og:title" content="NEORYDER" />
     <meta property="og:image" content="/icon-512.png" />
     <title>NEORYDER</title>
+    <style>
+      /* Nakładka startowa: widoczna przed uruchomieniem JS, zdejmowana przez src/ui/bootSplash.ts. */
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 10px;
+        overflow: hidden;
+        background: #05060a;
+        color: #edf7ff;
+        font:
+          600 15px/1.2 Rajdhani,
+          'Segoe UI',
+          sans-serif;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        pointer-events: auto;
+        transition: opacity 320ms ease-out;
+      }
+      #boot-splash.boot-splash--out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .boot-splash__brand {
+        position: relative;
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 0.32em;
+        text-shadow: 0 2px 12px #000;
+      }
+      .boot-splash__loading {
+        position: relative;
+        color: #9fb4c8;
+        text-shadow: 0 1px 6px #000;
+      }
+      .boot-splash__img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 400ms ease-out;
+        animation: boot-splash-zoom 16s ease-out forwards;
+      }
+      .boot-splash__img.is-loaded {
+        opacity: 1;
+      }
+      #boot-splash.boot-splash--art {
+        place-content: end center;
+        padding-bottom: 10vh;
+      }
+      .boot-splash--art .boot-splash__loading {
+        color: #c4d4e4;
+      }
+      .boot-splash--art::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(
+          to top,
+          rgba(2, 4, 9, 0.94) 0,
+          rgba(2, 4, 9, 0.55) 40%,
+          rgba(2, 4, 9, 0.15) 75%,
+          transparent
+        );
+      }
+      .boot-splash--art .boot-splash__brand,
+      .boot-splash--art .boot-splash__loading {
+        z-index: 2;
+      }
+      .boot-splash__caption {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 2;
+        padding: 4px 10px;
+        background: rgba(2, 4, 9, 0.72);
+        color: #d6e4f2;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+      }
+      @keyframes boot-splash-zoom {
+        from {
+          transform: scale(1);
+        }
+        to {
+          transform: scale(1.04);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash,
+        .boot-splash__img {
+          transition: none;
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="boot-splash">
+      <div class="boot-splash__brand">NEORYDER</div>
+      <div class="boot-splash__loading" aria-live="polite">Ładowanie…</div>
+    </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
