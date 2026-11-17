@@ -103,6 +103,44 @@
   font-size: 0.8em;
   white-space: nowrap;
 }
+.workshop__preview-block {
+  margin: 8px 0 12px;
+}
+.workshop__preview-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.hub-screen .workshop .workshop__preview-switch .workshop__choice {
+  flex: 0 1 auto;
+  width: auto;
+}
+.workshop__preview {
+  width: 100%;
+  max-width: 360px;
+  background: radial-gradient(ellipse at 50% 55%, #12203a 0%, #070d1a 75%);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  border-left: 4px solid #ffae1a;
+}
+.workshop__preview-canvas {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 360 / 220;
+  height: auto;
+  cursor: grab;
+  touch-action: none;
+}
+.workshop__preview-canvas:active {
+  cursor: grabbing;
+}
+.workshop__preview-note {
+  margin: 0;
+  padding: 12px;
+  color: #8894a8;
+  font-size: 0.85em;
+}
 .workshop__status {
   min-height: 1.4em;
   margin: 16px 0 0;

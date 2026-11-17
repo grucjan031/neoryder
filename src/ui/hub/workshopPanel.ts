@@ -4,13 +4,21 @@ import {
   equipmentState,
   groupRows,
   nextLoadout,
+  itemName,
   nextModuleLoadout,
+  previewTarget,
   unlockRows,
   workshopText as text,
 } from './workshopState';
 import type { ChoiceOption, LoadoutPart, UnlockRow } from './workshopState';
 import { achievementText } from '../achievementText';
 import { createLockIcon } from '../achievementIcons';
+import {
+  PREVIEW_HEIGHT,
+  PREVIEW_WIDTH,
+  WeaponPreview,
+  canCreateWeaponPreview,
+} from '../../render/weaponPreview';
 import './workshopPanel.css';
 
 const fill = (template: string, values: Record<string, string | number>) =>
@@ -43,6 +51,34 @@ export const createWorkshopPanel: HubPanelFactory = (
   let status = '';
   let disposed = false;
   let busy = false;
+  let wantedPreview: string | undefined;
+  let shownPreview = '';
+
+  // Kontener podglądu żyje między odświeżeniami (canvas i kontekst WebGL powstają raz).
+  const previewBox = el('div', 'workshop__preview');
+  previewBox.dataset.testid = 'weapon-preview';
+  const previewCanvas = el('canvas', 'workshop__preview-canvas');
+  previewCanvas.width = PREVIEW_WIDTH;
+  previewCanvas.height = PREVIEW_HEIGHT;
+  previewCanvas.setAttribute('role', 'img');
+  previewCanvas.setAttribute('aria-label', text.preview.title);
+  const previewNote = el(
+    'p',
+    'workshop__preview-note',
+    text.preview.unavailable,
+  );
+  previewNote.hidden = true;
+  previewBox.append(previewCanvas, previewNote);
+  let preview: WeaponPreview | null = null;
+  if (canCreateWeaponPreview()) {
+    try {
+      preview = new WeaponPreview(previewCanvas);
+    } catch {
+      preview = null;
+    }
+  }
+  previewCanvas.hidden = preview === null;
+  previewNote.hidden = preview !== null;
 
   const message = (error: unknown): string =>
     error instanceof Error ? error.message : text.errors.generic;
@@ -208,11 +244,52 @@ export const createWorkshopPanel: HubPanelFactory = (
     return group;
   };
 
+  /** Podgląd 3D wybranej broni: przełącznik broni i trwały kontener z canvasem. */
+  const renderPreview = (): HTMLElement => {
+    const block = el('div', 'workshop__preview-block');
+    block.dataset.group = 'preview';
+    block.append(el('h3', undefined, text.preview.title));
+    const target = previewTarget(ctx.manager, wantedPreview);
+    const weapons = ctx.manager.state.loadout.weapons;
+    if (weapons.length > 1) {
+      const switcher = el('div', 'workshop__preview-switch');
+      switcher.setAttribute('role', 'group');
+      switcher.setAttribute('aria-label', text.preview.switchLabel);
+      for (const id of weapons) {
+        const button = el('button', 'workshop__choice', itemName('weapon', id));
+        button.type = 'button';
+        button.dataset.action = 'preview';
+        button.dataset.item = id;
+        button.dataset.key = `preview:${id}`;
+        button.setAttribute('aria-pressed', String(id === target?.weaponId));
+        button.addEventListener('click', () => {
+          wantedPreview = id;
+          refresh();
+        });
+        switcher.append(button);
+      }
+      block.append(switcher);
+    }
+    previewBox.hidden = target === null;
+    if (target) {
+      previewBox.dataset.weapon = target.weaponId;
+      previewBox.dataset.modules = target.moduleIds.join(',');
+      const key = `${target.weaponId}|${target.moduleIds.join(',')}`;
+      if (preview && key !== shownPreview) {
+        shownPreview = key;
+        preview.show(target.weaponId, target.moduleIds).catch(() => {});
+      }
+    }
+    block.append(previewBox);
+    return block;
+  };
+
   const renderEquipment = (): HTMLElement => {
     const equipment = equipmentState(ctx.manager);
     const section = el('section', 'workshop__section');
     section.dataset.section = 'equipment';
     section.append(el('h2', undefined, text.equipment.title));
+    section.append(renderPreview());
 
     const blades = el('div', 'workshop__group');
     blades.dataset.group = 'blade';
@@ -332,6 +409,8 @@ export const createWorkshopPanel: HubPanelFactory = (
     refresh,
     dispose() {
       disposed = true;
+      preview?.dispose();
+      preview = null;
       root.replaceChildren();
     },
   };

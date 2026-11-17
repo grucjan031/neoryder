@@ -414,4 +414,16 @@ describe('createWorkshopPanel', () => {
       'Drugi slot mocy',
     );
   });
+
+  it('bez WebGL (jsdom) podgląd się nie tworzy, a panel działa i niesie atrybuty', () => {
+    const { panel } = setup();
+    const box = panel.root.querySelector<HTMLElement>(
+      '[data-testid="weapon-preview"]',
+    )!;
+    expect(box.dataset.weapon).toBe('blaster');
+    expect(box.dataset.modules).toBe('');
+    expect(box.querySelector('canvas')!.hidden).toBe(true);
+    expect(box.querySelector('p')!.hidden).toBe(false);
+    expect(() => panel.refresh()).not.toThrow();
+  });
 });

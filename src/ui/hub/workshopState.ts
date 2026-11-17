@@ -12,6 +12,7 @@ import {
   type ModuleSlot,
   moduleDefinitions,
   moduleFitsWeapon,
+  sanitizeModules,
 } from '../../progression/moduleSchema';
 import textData from '../../data/ui/workshop.pl.json';
 
@@ -37,6 +38,11 @@ export const workshopText = z
       level: z.string(),
     }),
     currency: z.object({ data: z.string(), cores: z.string() }),
+    preview: z.object({
+      title: z.string(),
+      unavailable: z.string(),
+      switchLabel: z.string(),
+    }),
     equipment: z.object({
       title: z.string(),
       blade: z.string(),
@@ -308,6 +314,30 @@ export function equipmentState(view: MetaView): EquipmentState {
         })),
       };
     }),
+  };
+}
+
+export interface PreviewTarget {
+  weaponId: string;
+  /** Moduły widoczne na podglądzie: tylko poprawne, zgodne i w limicie slotów. */
+  moduleIds: string[];
+}
+
+/**
+ * Broń pokazywana w podglądzie 3D: wybrana (`wanted`), o ile jest w ekwipunku,
+ * inaczej pierwsza z ekwipunku; `null`, gdy ekwipunek jest pusty.
+ */
+export function previewTarget(
+  view: MetaView,
+  wanted?: string,
+): PreviewTarget | null {
+  const { weapons, modules } = view.state.loadout;
+  const weaponId =
+    wanted !== undefined && weapons.includes(wanted) ? wanted : weapons[0];
+  if (weaponId === undefined) return null;
+  return {
+    weaponId,
+    moduleIds: sanitizeModules([weaponId], modules)[weaponId] ?? [],
   };
 }
 

@@ -13,22 +13,17 @@ import {
   Vector3,
 } from 'three';
 import type { Object3D } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { EntityId, EventBus } from '../core/events';
 import { tuning as defaultTuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { loadSettings } from '../core/save';
 import type { Settings } from '../core/save';
-import { applyStyle, getMaterial } from './materials';
+import { getMaterial } from './materials';
 import { palette } from './palette';
 import { HandRig } from './handRig';
 import { attachModuleVisuals } from './weaponModuleVisuals';
-import {
-  applyFppSurfaces,
-  fppGlowMaterial,
-  fppGlowTexture,
-  markGlow,
-} from './fppMaterials';
+import { loadWeaponScene } from './weaponModelLoader';
+import { fppGlowMaterial, fppGlowTexture, markGlow } from './fppMaterials';
 
 /** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
@@ -226,14 +221,10 @@ export class FppBlaster {
 
   private async loadModel(name: string): Promise<Object3D | null> {
     try {
-      const gltf = await new GLTFLoader().loadAsync(
-        `/assets/models/${name}.glb`,
-      );
-      applyStyle(gltf.scene);
-      applyFppSurfaces(gltf.scene);
+      const scene = await loadWeaponScene(name);
       // Własny materiał dla elementów ciepła — współdzielony materiał gracza zostaje cyan.
       let muzzle: Object3D | null = null;
-      gltf.scene.traverse((node: Object3D) => {
+      scene.traverse((node: Object3D) => {
         if (node.name === 'muzzle') muzzle = node;
         if (
           (node.name === 'heat_vents' || node.name === 'heat_cell') &&
@@ -241,8 +232,8 @@ export class FppBlaster {
         )
           node.material = this.heatMaterial;
       });
-      if (muzzle) this.attachFlash(gltf.scene, muzzle);
-      return gltf.scene;
+      if (muzzle) this.attachFlash(scene, muzzle);
+      return scene;
     } catch {
       return null;
     }
