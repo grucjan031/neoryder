@@ -275,3 +275,21 @@ it('GLB zawiera wszystkie 17 klipów, korzeń chodu i truchtu ma zerowe X/Z', ()
     }
   }
 });
+
+it('strefa kontaktu: NPC czeka, gdy w następnym kroku wszedłby w gracza obok trasy; gracz za plecami nie blokuje', () => {
+  const npc = walker(),
+    route = npc.route!;
+  const contactRadiusM = npcRadius(npc) + tuning.player.capsuleRadius;
+  const ctx = { ...context, contactRadiusM };
+  const beside = { x: 0.39, y: 0, z: 0.7 };
+  const state = createNpcRouteState(npc);
+  for (let i = 0; i < 180; i++)
+    stepNpcRoute(state, route, 1 / 60, { ...ctx, player: beside });
+  expect(state.position.x).toBeLessThan(0.1);
+  expect(state.moving).toBe(false);
+  stepNpcRoute(state, route, 1, { ...ctx, player: far });
+  expect(state.position.x).toBeGreaterThan(0.9);
+  const behind = createNpcRouteState(npc);
+  stepNpcRoute(behind, route, 0.5, { ...ctx, player: { x: -0.5, y: 0, z: 0 } });
+  expect(behind.position.x).toBeCloseTo(0.5);
+});

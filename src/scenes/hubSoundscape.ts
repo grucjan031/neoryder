@@ -59,7 +59,8 @@ export class HubSoundscape {
     this.dust.step(dt);
   }
 
-  render(alpha: number): void {
+  /** `suspended`: stacja otwarta - zegar przejazdu stoi, więc audio jak przy pauzie. */
+  render(alpha: number, suspended = false): void {
     const hub = this.ctx.tuning.hub;
     let count = 0;
     for (const p of this.dust.particles) {
@@ -78,7 +79,7 @@ export class HubSoundscape {
     this.mesh.count = count;
     this.mesh.instanceMatrix.needsUpdate = true;
     this.ctx.audio?.setTrainPass(this.train.progress, hub);
-    this.ctx.audio?.updateAmbience(this.ctx.loop.paused);
+    this.ctx.audio?.updateAmbience(this.ctx.loop.paused || suspended);
   }
 
   query(): unknown {

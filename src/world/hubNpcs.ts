@@ -240,10 +240,15 @@ export function createNpcRouteState(npc: HubNpcDef): NpcRouteState {
     moving: false,
   };
 }
+/** Gracz dalej za NPC niż tyle (m) wzdłuż kierunku ruchu nie blokuje trasy. */
+const NPC_CONTACT_BEHIND_M = 0.2;
+
 export interface NpcRouteContext {
   player: Vec3;
   talking: boolean;
   tuning: Tuning['hub'];
+  /** Suma promieni kolidera NPC i kapsuły gracza (bez zapasu); brak = bez strefy kontaktu. */
+  contactRadiusM?: number;
 }
 
 function arriveAtRoutePoint(
@@ -305,6 +310,16 @@ export function stepNpcRoute(
       return;
     const speed = route.speedMS ?? ctx.tuning.npcWalkSpeedMS;
     if (!(speed > 0)) return;
+    if (ctx.contactRadiusM !== undefined) {
+      const reach = Math.min(speed * left, distance) / distance;
+      const along = (px * dx + pz * dz) / distance;
+      if (
+        along >= -NPC_CONTACT_BEHIND_M &&
+        Math.hypot(px - dx * reach, pz - dz * reach) <
+          ctx.contactRadiusM + ctx.tuning.npcContactMarginM
+      )
+        return;
+    }
     const travelS = Math.min(left, distance / speed);
     const amount = Math.min(1, (travelS * speed) / distance);
     state.position.x += dx * amount;
@@ -343,7 +358,12 @@ export class NpcRuntime {
     this.previousBodyYaw = this.baseYaw;
     this.focus = npcFocusBox(def, this.position);
   }
-  step(dt: number, player: Vec3, talking: boolean): void {
+  step(
+    dt: number,
+    player: Vec3,
+    talking: boolean,
+    playerRadiusM?: number,
+  ): void {
     Object.assign(this.previousPosition, this.position);
     this.previousBodyYaw = this.look.bodyYaw;
     this.previousHeadYaw = this.look.headYaw;
@@ -353,6 +373,10 @@ export class NpcRuntime {
         player,
         talking,
         tuning: t,
+        contactRadiusM:
+          playerRadiusM === undefined
+            ? undefined
+            : npcRadius(this.def) + playerRadiusM,
       });
       if (!talking) {
         this.look.bodyYaw = this.route.yaw;

@@ -778,6 +778,8 @@ export const tuning = {
     arrivalDelayS: 2.5,
     npcYieldRadiusM: 1.2,
     npcYieldConeCos: 0.5,
+    /** Zapas (m) ponad sumę promieni NPC i gracza, przy którym NPC na trasie czeka zamiast go dosunąć. */
+    npcContactMarginM: 0.15,
     npcWalkSpeedMS: 1.3,
     npcWalkTurnRadS: 3,
     npcAnimFadeS: 0.25,

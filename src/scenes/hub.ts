@@ -621,7 +621,12 @@ export class HubScene implements Scene {
     if (this.stations.opened || !(dt > 0)) return;
     const player = this.player.getState().position;
     for (const state of this.npcStates)
-      state.step(dt, player, this.talk?.line.id === state.def.id);
+      state.step(
+        dt,
+        player,
+        this.talk?.line.id === state.def.id,
+        this.ctx.tuning.player.capsuleRadius,
+      );
     for (const entry of this.npcBodies) {
       entry.translation.x = entry.state.position.x;
       entry.translation.y = entry.state.position.y + entry.height / 2;
@@ -694,7 +699,7 @@ export class HubScene implements Scene {
     const camera = this.ctx.camera;
     if (!camera) {
       this.dressing?.render(frameDt, undefined);
-      this.soundscape?.render(alpha);
+      this.soundscape?.render(alpha, this.stations.opened !== null);
       return;
     }
     const pose = this.fpsCamera.update(
@@ -710,7 +715,7 @@ export class HubScene implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
-    this.soundscape?.render(alpha);
+    this.soundscape?.render(alpha, this.stations.opened !== null);
     this.dressing?.render(frameDt, camera);
     const velocity = this.player.getState().velocity;
     this.fppView.place(camera.matrixWorld, frameDt, {

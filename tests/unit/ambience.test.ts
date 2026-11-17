@@ -415,6 +415,34 @@ describe('pociąg w kryjówce', () => {
     expect(commands.execute('hub train')).toContain('Nieznana');
   });
 
+  it('otwarta stacja przełącza audio w tryb pauzy, zamknięcie wznawia', () => {
+    const c = setup();
+    const ctx = {
+      bus: new EventBus(),
+      commands: new CommandRegistry(),
+      tuning: c.t,
+      rng: new Rng('suspend'),
+      loop: { paused: false },
+      audio: c.audio,
+    } as unknown as GameContext;
+    const soundscape = new HubSoundscape(
+      ctx,
+      new Group(),
+      loadHubLayout(hideout),
+    );
+    ctx.commands!.execute('hub train');
+    for (let i = 0; i < 210; i++) soundscape.step(1 / 60, { x: 0, y: 1, z: 0 });
+    soundscape.render(0.5);
+    expect(c.audio.activeAmbience.length).toBeGreaterThan(0);
+    soundscape.render(0.5, true);
+    expect(c.audio.activeAmbience).toEqual([]);
+    expect(c.fake.log.stopped).toBe(c.fake.log.started);
+    soundscape.render(0.5, false);
+    expect(c.audio.activeAmbience.length).toBeGreaterThan(0);
+    soundscape.dispose();
+    c.audio.dispose();
+  });
+
   it('pył używa stałej puli, jest deterministyczny i znika po czasie życia', () => {
     const layout = loadHubLayout(hideout);
     const a = new TrainDust(new Rng('dust'), tuning.hub, layout),

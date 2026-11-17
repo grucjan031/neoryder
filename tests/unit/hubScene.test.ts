@@ -496,6 +496,21 @@ it('fixture życia: kinematyczny NPC ma skalowany walec i zatrzymuje character c
   expect(npcSpot(scene, 'kid').x).toBeGreaterThan(0);
 });
 
+it('gracz stojący obok trasy NPC nie jest wleczony, a NPC rusza po jego odejściu', async () => {
+  const { scene, commands } = await setup('', {
+    layout: lifeLayout(),
+    npcTexts: lifeTexts(),
+  });
+  commands.execute('hub tp 0.39 0.7');
+  for (let i = 0; i < 180; i++) scene.step(SIM_DT, idle);
+  expect(Math.abs(position(scene).x - 0.39)).toBeLessThan(0.05);
+  expect(Math.abs(position(scene).z - 0.7)).toBeLessThan(0.05);
+  expect(npcSpot(scene, 'kid').x).toBeLessThan(0.5);
+  commands.execute('hub tp -8 -8');
+  for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+  expect(npcSpot(scene, 'kid').x).toBeGreaterThan(1);
+});
+
 function arrivalOptions(): HubSceneOptions {
   const layout = lifeLayout();
   // Obaj NPC poza promieniem podsłuchiwanych rozmów; friend bliżej spawnu.

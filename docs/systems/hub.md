@@ -268,7 +268,10 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
 - `stepNpcRoute` i `NpcRuntime` w `src/world/hubNpcs.ts` działają w stałym kroku bez Three.js/DOM/RNG.
   Stan trasy (pozycja, segment, kierunek, yaw, pozostały postój, ruch) można zapisać jako JSON.
   Tułów obraca się z `npcWalkTurnRadS`. Gracz w stożku kierunku ruchu (`npcYieldConeCos`) bliżej niż
-  `npcYieldRadiusM` zatrzymuje NPC do zwolnienia drogi. Dymek E zatrzymuje adresata i kieruje jego wzrok
+  `npcYieldRadiusM` zatrzymuje NPC do zwolnienia drogi. Strefa kontaktu: NPC też czeka, gdy w następnym kroku odległość pozioma
+  od gracza spadłaby poniżej promienia walca NPC (ze `scale`) + `player.capsuleRadius` + `npcContactMarginM`
+  (0,15 m), chyba że gracz jest ponad 0,2 m za nim wzdłuż kierunku ruchu; dzięki temu kinematyczny walec
+  nie wlecze stojącego obok gracza. Dymek E zatrzymuje adresata i kieruje jego wzrok
   do gracza; po dialogu postać wraca na trasę. Statyczni NPC zachowują dotychczasowy zakres patrzenia,
   ale stan obrotu jest teraz aktualizowany w `step`, a nie w renderze.
 - Trasy mają walce na `kinematicPositionBased`, przesuwane przed krokiem świata fizyki; zatrzymują
@@ -563,7 +566,9 @@ Przejazd trwa 7 s i emituje `hub_train_passed` na początku; w szczycie lekki
 `camera_shake` respektowany przez FpsCamera (`screenShake`) i ciepłoszary pył
 z kilku skupisk pod sufitem w pobliżu gracza. Pył ma stałą pulę i interpolowany
 render, nie tworzy ciał Rapiera; parametry są w `hub.train*` i lil-gui.
-Pauza zamraża harmonogram i wycisza audio. Światła pozostają bez zmian:
+Pauza zamraża harmonogram i wycisza audio; to samo dzieje się przy otwartej stacji (zegar stoi, więc
+`HubScene` przekazuje `render(alpha, suspended)`, a audio dostaje `loop.paused || stacja otwarta`),
+nawet bez pointer locka, np. po `hub open`. Po zamknięciu stacji dźwięk wraca. Światła pozostają bez zmian:
 ich sterowanie jest prywatne w `src/render/**`.
 
 Ręczna próba w 30 s: otwórz `?scene=hub&debug=1`, odblokuj audio kliknięciem,
