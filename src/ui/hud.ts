@@ -46,6 +46,9 @@ export function damageIndicatorAngle(
   return Math.atan2(right, forward) * RAD_TO_DEG;
 }
 
+/** Liczba znaków słowa, od której nazwa broni dostaje mniejszy krój. */
+const WEAPON_NAME_LONG_WORD = 8;
+
 export function heatLevel(ratio: number): 'cool' | 'warm' | 'hot' {
   return ratio >= HEAT_HOT ? 'hot' : ratio >= HEAT_WARM ? 'warm' : 'cool';
 }
@@ -412,10 +415,7 @@ export class Hud {
       }),
       bus.on('weapon_switched', ({ owner, weapon, slot }) => {
         if (owner !== opts.playerId) return;
-        setText(
-          this.weaponName,
-          weaponDefinitions.get(weapon)?.name ?? text.empty,
-        );
+        this.setWeaponName(weaponDefinitions.get(weapon)?.name ?? text.empty);
         this.setActiveSlot(slot);
       }),
       bus.on('weapon_fired', ({ owner }) => {
@@ -535,8 +535,7 @@ export class Hud {
     for (const slot of this.powerSlots) slot.denial.dispose();
     this.powerSlots = [];
     this.powers.replaceChildren();
-    setText(
-      this.weaponName,
+    this.setWeaponName(
       weaponDefinitions.get(loadout.weapons[0] ?? '')?.name ?? text.empty,
     );
     this.slotCount = Math.min(loadout.weapons.length, MAX_WEAPON_SLOTS);
@@ -632,6 +631,19 @@ export class Hud {
     if (!force && angle === this.shownAngle) return;
     this.shownAngle = angle;
     this.damageDir.node.style.setProperty('--angle', `${angle}deg`);
+  }
+
+  /** Długie jedno słowo (np. „Rozpraszacz”) dostaje mniejszy krój zamiast łamania w środku słowa. */
+  private setWeaponName(name: string): void {
+    setText(this.weaponName, name);
+    const longest = Math.max(
+      0,
+      ...name.split(/\s+/).map((word) => word.length),
+    );
+    this.weaponName.classList.toggle(
+      'hud__weapon-name--long',
+      longest > WEAPON_NAME_LONG_WORD,
+    );
   }
 
   private setActiveSlot(slot: number): void {

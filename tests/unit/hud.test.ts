@@ -304,7 +304,15 @@ describe('Hud', () => {
       overheated: false,
     });
     expect(query('.hud__weapon-name').textContent).toBe('Rozpraszacz');
+    // Długie jedno słowo: mniejszy krój zamiast łamania „ROZPRASZA / CZ”.
+    expect(
+      query('.hud__weapon-name').classList.contains('hud__weapon-name--long'),
+    ).toBe(true);
     expect(query('.hud__meter--heat .hud__value').textContent).toBe('28 / 100');
+    bus.emit('weapon_switched', { owner: 1, weapon: 'rifle', slot: 0 });
+    expect(
+      query('.hud__weapon-name').classList.contains('hud__weapon-name--long'),
+    ).toBe(false);
   });
 
   it('counts down both data cooldowns from power_cooldown, freezes in hitstop and flashes the denied slot', () => {
