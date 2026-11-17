@@ -61,7 +61,7 @@ const vertex = /* glsl */ `
 
 const head = /* glsl */ `
   uniform vec3 uColor, uHot, uShade, uEdge;
-  uniform float uCover;
+  uniform float uCover, uMargin, uWarm;
   uniform float uOpacity, uTime, uProgress, uMode, uSpread, uRays, uSize;
   uniform float uNearM, uFarM, uNearFill, uNearEdge;
   varying vec2 vUv;
@@ -142,12 +142,16 @@ const zoneFragment = /* glsl */ `
 const shadeFragment = /* glsl */ `
   ${head}
   void main() {
-    vec2 p = vUv * 2.0 - 1.0;
+    // Siatka cienia jest o uMargin większa od efektu: r = 1 to brzeg efektu, dalej miękki zapas
+    // pod poświatą bloomu, która na fiolecie też różowiała.
+    float scale = 1.0 + uMargin;
+    vec2 p = (vUv * 2.0 - 1.0) * scale;
     float r = length(p);
-    if (r > 1.0) discard;
+    if (r > scale) discard;
     float a = atan(p.x, -p.y);
     float amount = 0.0;
     float rim = 1.0 - smoothstep(0.96, 1.0, r);
+    float halo = (1.0 - smoothstep(1.0 + uMargin * 0.5, scale, r)) * step(0.0001, uMargin);
     if (uMode < 0.5) {
       float inside = 1.0 - smoothstep(uProgress - 0.03, uProgress, r);
       amount = (0.3 + 0.4 * inside) * rim;
@@ -157,6 +161,8 @@ const shadeFragment = /* glsl */ `
       // Ciemny pas pod każdym promieniem i lekki cień całego wycinka.
       float lane = fanRay(a, r * 0.6);
       amount = (sector * 0.35 * (1.0 - r * 0.7) + lane * 0.6) * reach * smoothstep(0.03, 0.09, r);
+      // Zapas wachlarza tylko w jego wycinku.
+      halo *= sector * reach;
     } else if (uMode < 3.5) {
       amount = 0.4 * (1.0 - r * 0.5) * rim;
     } else if (uMode < 4.5) {
@@ -167,9 +173,11 @@ const shadeFragment = /* glsl */ `
       // Cień pod falą (uMode 5): ten sam pierścień co w waveFragment.
       float front = smoothstep(1.0 - uProgress, 0.97, r) * (1.0 - smoothstep(0.97, 1.0, r));
       float edge = smoothstep(0.93, 0.975, r) * (1.0 - smoothstep(0.975, 1.0, r));
-      // Cień pokrywa cały ślad fali z zapasem (uCover × jej krycia), żeby fiolet nie prześwitywał.
-      amount = (front * 0.45 + edge) * uCover;
+      // Cały ślad fali, także słabnący tył pierścienia: tam przy dodawaniu zostawał róż.
+      float trail = smoothstep(1.0 - uProgress - 0.12, 1.0 - uProgress + 0.06, r) * rim;
+      amount = max(front * 0.45 + edge, trail);
     }
+    amount = max(amount, halo) * uCover;
     // Fale (uMode 5) nie gasną z bliska: samą falę też rysujemy bez tłumienia.
     float near = uMode > 4.5 ? 1.0 : mix(1.0, uNearFill, nearCamera());
     amount = clamp(amount * uOpacity * near, 0.0, 1.0);
@@ -199,7 +207,9 @@ const glowFragment = /* glsl */ `
     float glow = pow(max(0.0, 1.0 - r), 3.0) * 0.6;
     float ring = smoothstep(0.52, 0.56, r) * (1.0 - smoothstep(0.58, 0.62, r));
     float a = (glow * mix(1.0, uNearFill, nearCamera()) + ring * (0.25 + 0.35 * uProgress)) * uOpacity;
-    gl_FragColor = vec4(mix(uColor, uHot, glow * 0.35), clamp(a, 0.0, 1.0));
+    // Baza cieplejsza o uWarm: odbicia neonów w kałużach dodają błękit już po cieniu mnożącym.
+    vec3 base = mix(uColor, uEdge, uWarm);
+    gl_FragColor = vec4(mix(base, uHot, glow * 0.35), clamp(a, 0.0, 1.0));
   }
 `;
 
@@ -212,7 +222,13 @@ const auraFragment = /* glsl */ `
     float bands = pow(abs(sin((vLocal.y * 5.0 - uTime * 2.2) * PI)), 14.0);
     float lattice = pow(abs(sin(atan(vLocal.x, vLocal.z) * 6.0)), 30.0) * 0.5;
     float a = fres * 1.1 + (bands + lattice) * (0.25 + fres * 0.6) + 0.04;
-    gl_FragColor = vec4(mix(uColor, uHot, clamp(fres * 0.8 + bands * 0.4, 0.0, 1.0)) * 1.3, clamp(a * uOpacity, 0.0, 1.0));
+    // Baza cieplejsza o uWarm: czerwony bloom na fioletowym i niebieskim tle nie daje różu.
+    vec3 base = mix(uColor, uEdge, uWarm);
+    gl_FragColor = vec4(mix(base, uHot, clamp(fres * 0.8 + bands * 0.4, 0.0, 1.0)) * 1.3, clamp(a * uOpacity, 0.0, 1.0));
+    #ifdef AIR_SHADE
+      float amount = clamp(gl_FragColor.a * uCover, 0.0, 1.0);
+      gl_FragColor = vec4(uShade * amount, amount);
+    #endif
   }
 `;
 
@@ -225,7 +241,12 @@ const flareFragment = /* glsl */ `
     float core = exp(-length(p * vec2(1.0, 3.2)) * 7.0);
     float halo = exp(-length(p * vec2(1.0, 3.2)) * 2.6) * 0.35;
     float a = streak * 0.9 + core * 1.4 + halo;
-    gl_FragColor = vec4(mix(uColor, uHot, clamp(core * 1.6 + streak * 0.5, 0.0, 1.0)) * 1.4, clamp(a * uOpacity, 0.0, 1.0));
+    vec3 base = mix(uColor, uEdge, uWarm);
+    gl_FragColor = vec4(mix(base, uHot, clamp(core * 1.6 + streak * 0.5, 0.0, 1.0)) * 1.4, clamp(a * uOpacity, 0.0, 1.0));
+    #ifdef AIR_SHADE
+      float amount = clamp(gl_FragColor.a * uCover, 0.0, 1.0);
+      gl_FragColor = vec4(uShade * amount, amount);
+    #endif
   }
 `;
 
@@ -237,7 +258,12 @@ const columnFragment = /* glsl */ `
     float body = pow(facing, 1.5);
     float rise = pow(1.0 - vUv.y, 1.6);
     float streaks = 0.75 + 0.25 * sin(vUv.x * PI * 16.0 + uTime * 3.0);
-    gl_FragColor = vec4(mix(uColor, uHot, body * rise) * 1.3, clamp(body * rise * streaks * uOpacity, 0.0, 1.0));
+    vec3 base = mix(uColor, uEdge, uWarm);
+    gl_FragColor = vec4(mix(base, uHot, body * rise) * 1.3, clamp(body * rise * streaks * uOpacity, 0.0, 1.0));
+    #ifdef AIR_SHADE
+      float amount = clamp(gl_FragColor.a * uCover, 0.0, 1.0);
+      gl_FragColor = vec4(uShade * amount, amount);
+    #endif
   }
 `;
 
@@ -328,22 +354,37 @@ export class BossArenaFx {
     this.hot = new Color(t.bossHotColor);
     this.shade = new Color(t.bossShadeColor);
     this.waveEdge = new Color(t.bossWaveEdgeColor);
-    this.sparkRed = this.color.getHex();
+    // Iskry rozpadu lecą nad podłogą i ścianami jak efekty w powietrzu: ta sama cieplejsza baza.
+    this.sparkRed = this.color
+      .clone()
+      .lerp(this.waveEdge, t.bossArena.airWarmth)
+      .getHex();
     this.sparkHot = this.hot.getHex();
+    const a = t.bossArena;
     this.glowShade = this.mesh(this.plane, shadeFragment, MultiplyBlending);
     this.glowShade.material.uniforms.uMode!.value = 4;
+    this.glowShade.material.uniforms.uCover!.value = a.glowShadeCover;
+    this.glowShade.material.uniforms.uMargin!.value = a.shadeMargin;
     this.zoneShade = this.mesh(this.plane, shadeFragment, MultiplyBlending);
+    this.zoneShade.material.uniforms.uCover!.value = a.zoneShadeCover;
+    this.zoneShade.material.uniforms.uMargin!.value = a.shadeMargin;
     this.glow = this.mesh(this.plane, glowFragment);
+    this.glow.material.uniforms.uWarm!.value = a.glowWarmth;
     this.zone = this.mesh(this.plane, zoneFragment);
     this.aura = this.mesh(this.shell, auraFragment);
     this.flare = this.mesh(this.quad, flareFragment);
-    this.flare.onBeforeRender = (_r, _s, camera) => {
+    const faceCamera: FxMesh['onBeforeRender'] = (_r, _s, camera) => {
       this.flare.quaternion.copy(camera.quaternion);
       this.flare.updateMatrixWorld();
     };
+    this.flare.onBeforeRender = faceCamera;
+    this.airShade(this.aura);
+    // Cień rysuje się przed rozbłyskiem, więc to on pierwszy obraca billboard do kamery.
+    this.airShade(this.flare).onBeforeRender = faceCamera;
     for (let i = 0; i < WAVES; i++) {
       const waveShade = this.mesh(this.plane, shadeFragment, MultiplyBlending);
       waveShade.material.uniforms.uMode!.value = 5;
+      waveShade.material.uniforms.uMargin!.value = a.waveShadeMargin;
       this.waves.push({
         shade: waveShade,
         mesh: this.mesh(this.plane, waveFragment),
@@ -354,15 +395,18 @@ export class BossArenaFx {
         strength: 1,
       });
     }
-    for (let i = 0; i < COLUMNS; i++)
+    for (let i = 0; i < COLUMNS; i++) {
+      const column = this.mesh(this.tube, columnFragment);
+      this.airShade(column);
       this.columns.push({
-        mesh: this.mesh(this.tube, columnFragment),
+        mesh: column,
         age: 0,
         life: 0,
         radius: 1,
         height: 1,
         soft: false,
       });
+    }
     if (this.lite) return;
     this.off.push(
       bus.on('boss_spawned', ({ id, phaseThresholds }) => {
@@ -443,6 +487,8 @@ export class BossArenaFx {
         uShade: { value: this.shade },
         uEdge: { value: this.waveEdge },
         uCover: { value: t.bossArena.waveShadeCover },
+        uMargin: { value: 0 },
+        uWarm: { value: t.bossArena.airWarmth },
         uNearM: { value: t.bossTelegraphNearM },
         uFarM: { value: t.bossTelegraphFarM },
         uNearFill: { value: t.bossTelegraphNearFill },
@@ -472,6 +518,37 @@ export class BossArenaFx {
     mesh.renderOrder = multiply ? SHADE_ORDER : LINE_ORDER;
     this.root.add(mesh);
     return mesh;
+  }
+
+  /**
+   * Cień mnożący pod efektem w powietrzu (ta sama bryła i krycie, `AIR_SHADE`): przyciemnia
+   * niebieskie i fioletowe tło za rozbłyskiem, powłoką i słupem, zanim doda się czerwień.
+   * Dziecko efektu, więc dzieli jego położenie, skalę i widoczność; uniformy są wspólne.
+   */
+  private airShade(main: FxMesh): FxMesh {
+    const material = new ShaderMaterial({
+      vertexShader: main.material.vertexShader,
+      fragmentShader: main.material.fragmentShader,
+      uniforms: { ...main.material.uniforms },
+      defines: { AIR_SHADE: '' },
+      transparent: true,
+      depthWrite: false,
+      side: DoubleSide,
+      blending: MultiplyBlending,
+      premultipliedAlpha: true,
+      toneMapped: false,
+    });
+    material.uniforms.uCover = {
+      value: this.opts.tuning.vfx.bossArena.airShadeCover,
+    };
+    material.userData.bloom = false;
+    this.materials.push(material);
+    const shade = new Mesh(main.geometry, material);
+    shade.userData.noOutline = true;
+    shade.frustumCulled = false;
+    shade.renderOrder = SHADE_ORDER;
+    main.add(shade);
+    return shade;
   }
 
   private wave(
@@ -614,8 +691,16 @@ export class BossArenaFx {
         this.glow.scale.setScalar(t.bossGlowRadiusM * (1.4 + k * 1.6));
         this.glow.material.uniforms.uOpacity!.value = (1 - k) * 0.9;
       }
+      // Gasnąca poświata rozpadu też leży na fiolecie: cień idzie za nią do końca.
+      this.glowShade.visible = this.glow.visible;
+      if (this.glowShade.visible) {
+        this.glowShade.scale
+          .copy(this.glow.scale)
+          .multiplyScalar(1 + t.bossArena.shadeMargin);
+        this.glowShade.material.uniforms.uOpacity!.value =
+          1 - this.deathS / glowS;
+      }
       this.zone.visible = this.zoneShade.visible = this.aura.visible = false;
-      this.glowShade.visible = false;
       this.flare.visible = this.deathS >= 0 && this.flarePulse > 0.01;
       if (this.flare.visible) {
         this.flare.position.set(
@@ -688,7 +773,9 @@ export class BossArenaFx {
     this.glow.material.uniforms.uProgress!.value = this.phase / this.phases;
     this.glowShade.visible = this.glow.visible;
     this.glowShade.position.copy(this.glow.position);
-    this.glowShade.scale.copy(this.glow.scale);
+    this.glowShade.scale
+      .copy(this.glow.scale)
+      .multiplyScalar(1 + t.bossArena.shadeMargin);
     this.glowShade.material.uniforms.uOpacity!.value = presence;
 
     this.zone.visible = this.zoneShade.visible = false;
@@ -727,7 +814,7 @@ export class BossArenaFx {
         shade.position.copy(this.zone.position);
         shade.position.y -= 0.005;
         shade.rotation.y = yaw;
-        shade.scale.setScalar(radius);
+        shade.scale.setScalar(radius * (1 + t.bossArena.shadeMargin));
         const su = shade.material.uniforms;
         for (const key of SHADE_SYNC) su[key]!.value = u[key]!.value;
         su.uOpacity!.value = clamp01(time / 0.08);
@@ -779,7 +866,9 @@ export class BossArenaFx {
       w.mesh.visible = w.shade.visible = k < 1;
       const radius = Math.max(0.01, w.radius * easeOut(k));
       w.mesh.scale.setScalar(radius);
-      w.shade.scale.setScalar(radius);
+      w.shade.scale.setScalar(
+        radius * (1 + this.opts.tuning.vfx.bossArena.waveShadeMargin),
+      );
       const u = w.mesh.material.uniforms;
       u.uProgress!.value = 0.12 + 0.3 * (1 - k);
       u.uOpacity!.value = (1 - k) ** 1.5 * w.strength;

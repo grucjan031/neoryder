@@ -264,3 +264,17 @@ Nowe liczby są w `tuning.vfx` (panel lil-gui); istniejące wartości bez zmian.
   mieszanie), bo kompozycja bloomu przyciemnia obraz alfą maski.
 - Ukryte pule efektów mają `userData.vfxPool = true`; `roomStaticBatch.test.ts`
   odejmuje je od pomiaru siatek Z19 (jak rdzenie i pierścienie wybuchów).
+
+## Arena bossa bez różu (ADR 0006)
+
+Czerwień bossa dodana do fioletowej podłogi dawała róż bliski magencie
+Rezonansu. Poprawka tylko w pokoju bossa (`BossArenaFx` i `bossRoom.json`):
+światła punktowe areny mają stalowy granat `#8a96b0` zamiast fioletu i
+błękitu (neony na ścianach bez zmian); cień mnożący (`bossShadeColor`, bez
+błękitu) leży pod polem rażenia, poświatą (także gasnącą po rozpadzie) i całym
+śladem fal, z zapasem promienia na bloom (`tuning.vfx.bossArena.*ShadeCover`,
+`shadeMargin`, `waveShadeMargin`). Rozbłysk, powłoka fazy i słup rozpadu mają
+własny cień mnożący pod sobą oraz cieplejszą bazę (`airWarmth`, poświata
+`glowWarmth`). Odbić kałuż (post) cień nie obejmuje. Pomiar:
+`node tools/vfx/hueCheck.mjs --url <serwer> --out <katalog> --label <nazwa>`
+(GPU, 1280x720; udział odcieni 290–340° w obszarze efektu na podłodze < 2%).

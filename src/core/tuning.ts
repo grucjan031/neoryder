@@ -707,7 +707,7 @@ export const tuning = {
      */
     bossColor: '#ff4a1c',
     bossHotColor: '#ffd2c4',
-    bossShadeColor: '#ff3a14',
+    bossShadeColor: '#ff4a00',
     /**
      * Krawędź pierścieni fal (zmiana fazy, rozpad): nasycony pomarańcz zamiast bladej `bossHotColor`,
      * bo dodana do fioletowej podłogi blada barwa dawała róż zbliżony do magenty Rezonansu.
@@ -764,6 +764,25 @@ export const tuning = {
       waveShadeStrength: 1,
       /** Zapas krycia cienia pod falą względem krycia samej fali (mnożnik). */
       waveShadeCover: 2.5,
+      /**
+       * Cień pod polem rażenia i poświatą bossa: mnożnik krycia (1 = jak dawniej) oraz zapas
+       * promienia poza brzeg efektu (ułamek promienia), który gasi róż z bloomu na fioletowej
+       * podłodze. `waveShadeMargin` to ten sam zapas dla fal.
+       */
+      zoneShadeCover: 2.5,
+      glowShadeCover: 2.5,
+      shadeMargin: 0.25,
+      waveShadeMargin: 0.3,
+      /**
+       * Efekty w powietrzu (rozbłysk wizjera, powłoka fazy, słup rozpadu): udział pomarańczu
+       * `bossWaveEdgeColor` w bazowej czerwieni (0–1). Dodane do niebieskich i fioletowych
+       * neonów tła różowiały; tło pod nimi przyciemnia też cień mnożący (`airShadeCover`).
+       */
+      airWarmth: 0.8,
+      /** To samo dla poświaty pod bossem (leży na podłodze, ale jej pierścień łapie odbicia neonów). */
+      glowWarmth: 0.8,
+      /** Krycie cienia mnożącego pod efektami w powietrzu względem ich krycia (mnożnik). */
+      airShadeCover: 2,
     },
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */

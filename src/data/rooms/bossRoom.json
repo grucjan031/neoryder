@@ -544,7 +544,7 @@
         "y": 6,
         "z": -11.5
       },
-      "color": "#3d7bff",
+      "color": "#8a96b0",
       "intensity": 6,
       "range": 12
     },
@@ -554,7 +554,7 @@
         "y": 5.5,
         "z": -12
       },
-      "color": "#8a5cff",
+      "color": "#8a96b0",
       "intensity": 5.5,
       "range": 12
     },
@@ -564,7 +564,7 @@
         "y": 5.5,
         "z": -12
       },
-      "color": "#3d7bff",
+      "color": "#8a96b0",
       "intensity": 5.5,
       "range": 12
     },
@@ -584,7 +584,7 @@
         "y": 5.5,
         "z": -7
       },
-      "color": "#8a5cff",
+      "color": "#8a96b0",
       "intensity": 5,
       "range": 12
     },
@@ -604,7 +604,7 @@
         "y": 5.5,
         "z": 2
       },
-      "color": "#3d7bff",
+      "color": "#8a96b0",
       "intensity": 5,
       "range": 12
     },
@@ -614,7 +614,7 @@
         "y": 3.5,
         "z": -3
       },
-      "color": "#3d7bff",
+      "color": "#8a96b0",
       "intensity": 4,
       "range": 10
     },
@@ -624,7 +624,7 @@
         "y": 3.5,
         "z": -3
       },
-      "color": "#8a5cff",
+      "color": "#8a96b0",
       "intensity": 4.5,
       "range": 10
     },
@@ -634,7 +634,7 @@
         "y": 5,
         "z": 8
       },
-      "color": "#8a5cff",
+      "color": "#8a96b0",
       "intensity": 4,
       "range": 12
     }
