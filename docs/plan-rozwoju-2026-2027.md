@@ -46,6 +46,7 @@ Publiczne demo przeglądarkowe w maju 2027: dopracowana walka, działająca kamp
 | **S3**  | 4         | „List przewozowy” (obrona)                              | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem                             |
 | **S4**  | 5         | „Odlewnia” + prototypy NPC i wagonu                     | 3 misje = wewnętrzne demo; raport kosztu prototypów                                      |
 | **S4b** | 5b        | Osiągnięcia i naszywki Iskry                            | Osiągnięcia liczone, naszywki w kryjówce, bramki tylko na rzadkie odblokowania           |
+| **S4c** | 5c        | Warsztat broni z widocznymi modułami                    | Sloty Wylot/Ogniwo/Optyka, element na modelu, podgląd 3D w kryjówce                      |
 | **S5**  | 6         | Testy nowych graczy, tura 1                             | 4–6 osób, trzy najważniejsze problemy wybrane                                            |
 | **S6**  | 7         | Poprawki + tura 2; warunkowo Punkt kontrolny            | Decyzja o „Ładunku klasy K”                                                              |
 | **S7**  | 8         | Zawartość: narracja, kryjówka, audio                    | Konsekwencje w kryjówce po każdej misji dema                                             |

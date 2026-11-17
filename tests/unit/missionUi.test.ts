@@ -11,6 +11,34 @@ import {
 import { MissionObjectives } from '../../src/world/missionObjectives';
 import { missionDefinitions } from '../../src/world/missions';
 
+it('radio M06 natychmiast reaguje na fazę i śmierć bossa, Brandt ma czerwień wroga', () => {
+  const radio = new MissionRadio(missionDefinitions.get('m06-odlewnia')!);
+  try {
+    radio.signal('enterNode:7');
+    radio.step(0);
+    radio.signal('boss:phase:2');
+    radio.step(0);
+    const root = document.querySelector('.mission-radio--run')!;
+    expect(root.textContent).toContain('Otworzyć boczne śluzy.');
+    expect(
+      root.querySelector<HTMLElement>('[data-speaker="brandt"]')!.style.color,
+    ).toBe('rgb(255, 80, 80)');
+    radio.signal('boss:defeated');
+    radio.step(0);
+    expect(root.textContent).toContain('...Bez różnicy.');
+    const ending = [root.textContent];
+    for (let i = 0; i < 5; i++) {
+      radio.step(100);
+      ending.push(root.textContent);
+    }
+    expect(ending.join(' ')).toContain('...Ja tylko dowożę.');
+    expect(ending.join(' ')).not.toContain('Otworzyć');
+    expect(root.textContent).toBe('');
+  } finally {
+    radio.dispose();
+  }
+});
+
 it('HUD M03 rozróżnia podłączenie, transfer i pauzę bez zerowania paska', () => {
   const model = new MissionObjectives(
     missionDefinitions.get('m03-list-przewozowy')!,

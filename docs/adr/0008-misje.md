@@ -43,7 +43,7 @@ interface MissionDefinition {
 }
 interface DialogueLine {
   speaker:
-    'szron' | 'mira' | 'bajt' | 'tomasz' | 'ida' | 'wolan' | 'nadia' | 'tymon';
+    'szron' | 'mira' | 'bajt' | 'tomasz' | 'ida' | 'wolan' | 'nadia' | 'tymon' | 'brandt';
   text: string;
 }
 type MissionObjective =
@@ -67,7 +67,7 @@ type MissionObjective =
     }
   | {
       id: string;
-      kind: 'exit';
+      kind: 'exit' | 'interact'; // interact: np. serwer M06, bez samodzielnego kończenia pokoju
       label: string;
       position: Vec3;
       holdS: number;
@@ -84,6 +84,7 @@ type MissionObjective =
   | { id: string; kind: 'killBoss'; label: string }; // M06
 type RadioTrigger =
   | 'runStart'
+  | 'boss:phase:2' | 'boss:phase:3' | 'boss:defeated'
   | `enterNode:${number}`
   | `objective:${string}:started`
   | `objective:${string}:done`
@@ -114,7 +115,7 @@ W runie `E` to `power2`, a `F` to `power`, więc cele **nie** używają klawisza
 ## 5. Stan próby (run) a stan kampanii (meta)
 
 - **Run** (`RunState`, zapis runu): opcjonalne `missionId?: string` i `objectives?: Record<string, 'pending' | 'active' | 'done'>`, `objectiveProgress?: Record<string, number>` (0..1). Pola opcjonalne → stare zapisy runu wczytują się bez migracji. Śmierć resetuje cele (nowa próba = nowy run).
-- **Ukończenie misji:** ukończenie węzła `final` przy wszystkich celach tego węzła `done` → `finish('victory')`. Pokój bossa kończy run zwycięstwem tylko w zwykłym runie albo gdy jest węzłem `final` misji z celem `killBoss` (M06 rozszerzy to o dane i ewakuację).
+- **Ukończenie misji:** ukończenie węzła `final` przy wszystkich celach tego węzła `done` → `finish('victory')`. W zwykłym runie śmierć bossa kończy run jak dotąd. W M06 śmierć bossa kończy tylko cel `killBoss`, a pozostali wrogowie rozpadają się ze źródłem null (bez statystyk zabójstw). Następnie serwer (`interact`, 3 s) odblokowuje windę (`exit`, 2 s). Dopiero winda kończy pokój i run, uruchamiając zwykłą ciszę po zwycięstwie oraz podsumowanie. Bez zmiany wersji zapisu, rozliczania nagród i balansu bossa.
 - **`RunSummary`**: opcjonalne `missionId?: string`, `missionCompleted?: boolean`.
 - **Kampania** (metazapis): `campaign: { completed: string[]; pendingDebrief: string | null }`. Nowa wersja metazapisu + migracja: stare zapisy dostają `{ completed: [], pendingDebrief: null }`.
 - **Nagrody:** zwykłe nagrody runu jak dziś; przy pierwszym ukończeniu dodatkowo `rewards.firstClear`. Kolejne ukończenia — tylko zwykłe nagrody. Idempotencja przez istniejące `appliedRunIds` (`applyRun` nie nalicza dwa razy tego samego runu) i przez `campaign.completed` (bonus pierwszego ukończenia tylko gdy misji jeszcze tam nie ma).
@@ -126,7 +127,7 @@ W runie `E` to `power2`, a `F` to `power`, więc cele **nie** używają klawisza
 - **Cel w HUD**: krótka lista aktywnych celów bieżącego pokoju z postępem; ukończony cel przekreślony. Nie zasłania celownika ani pasków zdrowia/energii.
 - **Radio**: napisy w dolnej części ekranu (nazwa mówcy + tekst), kolejka, czas wyświetlania z długości tekstu, maks. 2 linie naraz; nie zasłania wskaźników obrażeń i celów. Teksty z danych misji.
 - **Po powrocie**: kryjówka przy wejściu pokazuje `debrief` jako krótką rozmowę (jednorazowo, `pendingDebrief`), potem czyści pole.
-- **Odprawa Odlewni (D3)**: karta do sieci Brandta przekazana w odprawie M06 (Szron: Wirska oddała ją kontaktowi Nadii), bez misji M05.
+- **Odprawa Odlewni (D3)**: karta do sieci Brandta przekazana w odprawie M06, bez misji M05. Pierwsza kwestia Szrona: „Karta Wirskiej już jest. Kontakt Nadii zdjął ją z konwoju, zanim Brandt zamknął Huty.”
 
 ## 7. Poza zakresem pierwszej implementacji
 

@@ -209,6 +209,27 @@
       "rooms": ["restRoom"]
     }
   ],
+  "interlude": {
+    "title": "Tymczasem w Iskrze",
+    "lines": [
+      {
+        "speaker": "szron",
+        "text": "Po masztach Kurogane zrobiło obławę na kurierów z implantami. Trzymali zatrzymanych w kontenerach na bocznicy."
+      },
+      {
+        "speaker": "mira",
+        "text": "Druga ekipa otworzyła trzy kontenery, zanim przyjechał transport. Wyszło dwanaścioro ludzi."
+      },
+      {
+        "speaker": "bajt",
+        "text": "Jedna z nich to Nadia. Zna nabrzeże w Hutach jak własną kieszeń i od dziś siedzi na naszym kanale."
+      },
+      {
+        "speaker": "szron",
+        "text": "Mówi, że zatrzymanych z zeszłego miesiąca wywieźli do Magazynu 9 w porcie. Tam idziesz."
+      }
+    ]
+  },
   "briefing": [
     {
       "speaker": "nadia",
