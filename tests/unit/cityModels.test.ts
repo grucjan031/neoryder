@@ -1,9 +1,20 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { Box3, Mesh, MeshStandardMaterial, Vector3 } from 'three';
+import {
+  Box3,
+  Mesh,
+  MeshStandardMaterial,
+  Raycaster,
+  Triangle,
+  Vector3,
+} from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { expect, it } from 'vitest';
-import { CITY_PROP_MODELS } from '../../src/scenes/cityPropsTest';
+import { applyStyle } from '../../src/render/materials';
+import {
+  CITY_PROP_MODELS,
+  CONSTRUCTION_POWER_PROP_MODELS,
+} from '../../src/scenes/cityPropsTest';
 
 const folder = join(__dirname, '../../public/assets/models/city');
 const colliders = {
@@ -100,6 +111,181 @@ const glowColors: Record<string, number> = {
   mat_neon_white: 0xfff1d6,
   mat_light_white: 0xfff1d6,
 };
+
+const constructionPowerModels: Record<
+  string,
+  { size: readonly [number, number, number]; budget: number }
+> = {
+  build_hoarding_fence: { size: [4, 2.4, 1.1], budget: 400 },
+  build_mixer_truck: { size: [2.51, 3.55, 9.02], budget: 1600 },
+  build_pipe_stack: { size: [3.02, 2.79321, 3], budget: 650 },
+  build_precast_stack: { size: [6, 1.6, 2.406], budget: 500 },
+  build_rebar_bundle: { size: [6, 0.58963, 1.01986], budget: 700 },
+  build_scaffold_bay: { size: [2.5, 3.1, 1.2], budget: 600 },
+  build_site_office: { size: [6.058, 2.591, 2.438], budget: 750 },
+  build_site_office_stairs: { size: [5.87091, 3.691, 1.68], budget: 750 },
+  build_tower_crane: { size: [6.325, 65.25, 64.0962], budget: 4000 },
+  build_unfinished_column: { size: [0.605, 4.8, 0.605], budget: 350 },
+  power_chimney: { size: [10, 120, 10], budget: 2700 },
+  power_cooling_tower: { size: [50, 70, 50], budget: 3600 },
+  power_cooling_tower_breach: { size: [50, 70, 49.55186], budget: 3700 },
+  power_hv_pylon: { size: [16.5, 30, 7.2], budget: 2700 },
+  power_pipe_rack: { size: [12, 7.3, 4.02], budget: 1800 },
+  power_slag_heap: { size: [26, 7, 26], budget: 300 },
+  power_transformer: { size: [6, 5, 4], budget: 1550 },
+  power_turbine_housing: { size: [20, 7.1, 6], budget: 2000 },
+};
+
+// Prostokąty wolne od poręczy; dane do osadzenia colliderów w przyszłych arenach.
+const constructionPowerDecks: Record<
+  string,
+  { y: number; x: [number, number]; z: [number, number] }
+> = {
+  build_scaffold_bay: { y: 2, x: [-1.25, 1.25], z: [-0.49, 0.49] },
+  build_precast_stack: { y: 1.6, x: [-2.975, 2.975], z: [-1.175, 1.175] },
+  build_site_office: { y: 2.591, x: [-3.029, 3.029], z: [-1.219, 1.219] },
+  build_site_office_stairs: { y: 2.591, x: [2, 3], z: [-0.7, 0.7] },
+  power_cooling_tower: { y: 0, x: [-16, 16], z: [-16, 16] },
+  power_cooling_tower_breach: { y: 0, x: [-16, 16], z: [-16, 16] },
+  power_turbine_housing: { y: 6, x: [-9.8, 9.8], z: [-2.8, 2.8] },
+  power_pipe_rack: { y: 6.2, x: [-6, 6], z: [0.55, 1.95] },
+};
+
+function expectWalkableDeck(
+  meshes: Mesh[],
+  { y, x, z }: (typeof constructionPowerDecks)[string],
+): void {
+  const down = new Vector3(0, -1, 0);
+  const inset = 0.001;
+  for (const px of [x[0] + inset, (x[0] + x[1]) / 2, x[1] - inset]) {
+    for (const pz of [z[0] + inset, (z[0] + z[1]) / 2, z[1] - inset]) {
+      const ray = new Raycaster(new Vector3(px, y + 0.05, pz), down, 0, 0.1);
+      const [hit] = ray.intersectObjects(meshes, false);
+      expect(hit, `Brak podestu w (${px}, ${y}, ${pz})`).toBeDefined();
+      expect(hit!.point.y).toBeCloseTo(y, 5);
+    }
+  }
+}
+
+function expectWalkableSlagSlopes(meshes: Mesh[]): void {
+  const triangle = new Triangle();
+  const normal = new Vector3();
+  let slopeFaces = 0;
+  for (const mesh of meshes) {
+    const positions = mesh.geometry.getAttribute('position');
+    const index = mesh.geometry.index;
+    for (let i = 0; i < (index?.count ?? positions.count); i += 3) {
+      [triangle.a, triangle.b, triangle.c].forEach((point, offset) => {
+        const vertex = index?.getX(i + offset) ?? i + offset;
+        point
+          .set(
+            positions.getX(vertex),
+            positions.getY(vertex),
+            positions.getZ(vertex),
+          )
+          .applyMatrix4(mesh.matrixWorld);
+      });
+      if (Math.max(triangle.a.y, triangle.b.y, triangle.c.y) < 0.00001)
+        continue;
+      triangle.getNormal(normal);
+      expect(normal.y).toBeGreaterThanOrEqual(Math.cos(Math.PI / 6) - 0.00001);
+      slopeFaces++;
+    }
+  }
+  expect(slopeFaces).toBeGreaterThan(0);
+}
+
+function expectCoolingTowerBreach(meshes: Mesh[]): void {
+  const inward = new Vector3(0, 0, -1);
+  for (const y of [0.1, 3.9, 4.1, 7, 9.9]) {
+    for (const x of [-4, -2, 0, 2, 4]) {
+      const ray = new Raycaster(new Vector3(x, y, 27), inward, 0, 9);
+      expect(
+        ray.intersectObjects(meshes, false),
+        `Przejście w (${x}, ${y})`,
+      ).toHaveLength(0);
+    }
+  }
+  const above = new Raycaster(new Vector3(0, 10.1, 27), inward, 0, 9);
+  expect(above.intersectObjects(meshes, false).length).toBeGreaterThan(0);
+}
+
+it('udostępnia w galerii wszystkie modele budowy i elektrowni', () => {
+  const expected = Object.keys(constructionPowerModels).sort();
+  const files = readdirSync(folder).filter((file) =>
+    /^(build|power)_/.test(file),
+  );
+  expect(files.sort()).toEqual(expected.map((id) => `${id}.glb`));
+  expect([...CONSTRUCTION_POWER_PROP_MODELS].sort()).toEqual(expected);
+});
+
+it.each(Object.entries(constructionPowerModels))(
+  '%s: AABB, budżet i materiały budowy i elektrowni',
+  async (name, spec) => {
+    const file = readFileSync(join(folder, `${name}.glb`));
+    const { scene } = await new GLTFLoader().parseAsync(
+      file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength),
+      '',
+    );
+    expect(scene.getObjectByName(name)).toBeDefined();
+    expect(
+      existsSync(
+        join(__dirname, `../../tools/blender/previews/city/${name}.png`),
+      ),
+    ).toBe(true);
+    const bounds = new Box3().setFromObject(scene, true);
+    expect(bounds.min.y).toBeCloseTo(0, 5);
+    for (const [axis, size] of bounds
+      .getSize(new Vector3())
+      .toArray()
+      .entries())
+      expect(size).toBeCloseTo(spec.size[axis]!, 2);
+
+    let triangles = 0;
+    const originalNames = new Map<Mesh, string[]>();
+    scene.traverse((node) => {
+      if (!(node instanceof Mesh)) return;
+      const position = node.geometry.getAttribute('position');
+      triangles += (node.geometry.index?.count ?? position.count) / 3;
+      const used = Array.isArray(node.material)
+        ? node.material
+        : [node.material];
+      originalNames.set(
+        node,
+        used.map((material) => material.name),
+      );
+      for (const material of used) {
+        expect(material).toBeInstanceOf(MeshStandardMaterial);
+        if (!(material instanceof MeshStandardMaterial)) continue;
+        expect(material.map).toBeNull();
+        expect(material.name).not.toBe('mat_world');
+        expect(material.emissive.getHex(), material.name).toBe(
+          glowColors[material.name] ?? 0,
+        );
+        if (glowColors[material.name] !== undefined)
+          expect(material.emissiveIntensity).toBeGreaterThan(0);
+      }
+    });
+    expect(triangles).toBeGreaterThan(0);
+    expect(triangles).toBeLessThanOrEqual(spec.budget);
+    const meshes = [...originalNames.keys()];
+    const walkable = constructionPowerDecks[name];
+    if (walkable) expectWalkableDeck(meshes, walkable);
+    if (name === 'power_slag_heap') expectWalkableSlagSlopes(meshes);
+    if (name === 'power_cooling_tower_breach') expectCoolingTowerBreach(meshes);
+    applyStyle(scene);
+    for (const [node, names] of originalNames) {
+      const used = Array.isArray(node.material)
+        ? node.material
+        : [node.material];
+      expect(used.map((material) => material.name)).toEqual(names);
+      for (const material of used)
+        expect(Boolean(material.userData.bloom), material.name).toBe(
+          glowColors[material.name] !== undefined,
+        );
+    }
+  },
+);
 const landmarks: Record<string, string[]> = {
   city_dumpster: ['lid', 'wheel', 'handle'],
   city_vending: ['header', 'display', 'pickup'],

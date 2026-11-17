@@ -289,6 +289,80 @@ Uwagi integracyjne: `RoomScene`/`Arena` rozpoznają własne materiały modeli po
 `city_` (`model?.startsWith('city_')`) — modele `port_*` trzeba tam dopisać. Część krawędzi
 nabrzeża poniżej placu (`y < 0`) wpada w mgłę wysokościową motywu `neonStreet`.
 
+## Budowa i elektrownia
+
+Zestaw zawiera 18 modeli dla przyszłych aren `arenaConstructionSite` i
+`arenaPowerPlant`. Generator zapisuje GLB w `public/assets/models/city/`,
+a podglądy PNG w `tools/blender/previews/city/`.
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/sets/construction_power.py
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/sets/construction_power.py -- --only build_scaffold_bay,power_pipe_rack
+```
+
+Galeria całego zestawu: `?scene=city-props-test&view=6`. Do oceny detali
+wybierz np. `?scene=city-props-test&prop=power_cooling_tower_breach&yaw=0`.
+Zestaw jest w metrach, w układzie glTF Y-up, z przodem +Z i spodem na
+`y = 0`. Pozycje powierzchni podano względem punktu montażu modelu. AABB
+obejmuje też poręcze, dlatego do kolizji używaj wymiarów podestów z tabeli.
+Modele nie zawierają colliderów. Dla porównania `port_gantry_crane` ma
+2140 trójkątów i budżet 3000.
+
+Kolory zastępcze nowych powierzchni są zapisane w
+`src/data/render/arenaMaterials.json`. Identyfikator przyszłej tekstury
+jest nazwą materiału bez prefiksu `mat_`. Po dostarczeniu tekstury
+integracja może usunąć `flat: true` z wpisu i dostroić parametry powierzchni.
+
+| Model | AABB X × Y × Z [m] | Punkt montażu | Powierzchnie chodzenia [m] | Materiały (`mat_…`) | Trójkąty |
+| --- | ---: | --- | --- | --- | ---: |
+| `build_tower_crane` | 6,325 × 65,25 × 64,096 | oś masztu na środku podstawy 6 × 6 m | — | `cable`, `concrete`, `concrete_raw_cast`, `crane_paint`, `glass`, `hivis`, `light_white`, `machine`, `metal`, `neon_amber` | 3892 |
+| `build_scaffold_bay` | 2,5 × 3,1 × 1,2 | środek podstawy, łączenie w X | Y = 2, X ±1,25 i Z ±0,49 (wolny pas); deski 2,5 × 1,2 m; poręcz w +Z | `formwork_plywood`, `hivis`, `metal` | 468 |
+| `build_unfinished_column` | 0,605 × 4,8 × 0,605 | oś słupa | — | `concrete`, `concrete_raw_cast`, `rust` | 212 |
+| `build_rebar_bundle` | 6 × 0,59 × 1,02 | środek podstawy | — | `formwork_plywood`, `rust`, `trim` | 508 |
+| `build_precast_stack` | 6 × 1,6 × 2,406 | środek podstawy | Y = 1,6; X ±2,975 i Z ±1,175 | `concrete_raw_cast`, `formwork_plywood`, `trim` | 368 |
+| `build_pipe_stack` | 3,02 × 2,793 × 3 | środek podstawy, osie rur w Z | — | `concrete_raw_cast`, `formwork_plywood` | 504 |
+| `build_mixer_truck` | 2,51 × 3,55 × 9,02 | środek podwozia, długość w Z | — | `container_navy`, `crane_paint`, `glass`, `hivis`, `light_white`, `machine`, `metal`, `rubber`, `steel_grating`, `trim` | 1340 |
+| `build_site_office` | 6,058 × 2,591 × 2,438 | środek podstawy, drzwi w +Z | Y = 2,591; X ±3,029 i Z ±1,219 | `container_graphite`, `container_navy`, `corrugated`, `glass`, `hivis`, `metal` | 540 |
+| `build_site_office_stairs` | 5,871 × 3,691 × 1,68 | X = 0 na biegu; środek szerokości, wejście od −X | stopnie: 15 × 0,32 m biegu; Z ±0,7; spocznik Y = 2,591, X 2…3 i Z ±0,7 | `hivis`, `metal`, `steel_grating` | 528 |
+| `build_hoarding_fence` | 4 × 2,4 × 1,1 | środek rozstawu słupków, wsporniki w −Z | — | `concrete`, `container_graphite`, `hivis`, `metal`, `trim` | 216 |
+| `power_cooling_tower` | 50 × 70 × 50 | oś chłodni | Y = 0, posadzka o promieniu 24,3 m; prostokąt pewnego dojścia X/Z ±16 m | `concrete`, `concrete_raw_cast`, `cooling_tower_concrete`, `turbine_hall_floor` | 3458 |
+| `power_cooling_tower_breach` | 50 × 70 × 49,552 | oś chłodni, wejście w +Z | jak chłodnia pełna; wolny wlot od +Z, co najmniej X ±4 i Y 0…9,9 m | `concrete`, `concrete_raw_cast`, `cooling_tower_concrete`, `rust`, `turbine_hall_floor` | 3518 |
+| `power_turbine_housing` | 20 × 7,1 × 6 | środek podstawy; pomost wzdłuż X | Y = 6; X ±9,8 i Z ±2,8 | `concrete_raw_cast`, `container_graphite`, `hivis`, `machine`, `metal`, `neon_green`, `trim`, `turbine_hall_floor` | 1624 |
+| `power_transformer` | 6 × 5 × 4 | środek podstawy | — | `concrete_raw_cast`, `container_graphite`, `glass`, `machine`, `metal`, `neon_green`, `paint` | 1216 |
+| `power_hv_pylon` | 16,5 × 30 × 7,2 | oś słupa, ramiona w X | — | `concrete_raw_cast`, `glass`, `metal` | 2516 |
+| `power_pipe_rack` | 12 × 7,3 × 4,02 | środek modułu; łączenie w X | Y = 6,2; X ±6 i Z 0,55…1,95 | `concrete_raw_cast`, `hivis`, `machine`, `metal`, `steel_grating`, `trim` | 1668 |
+| `power_chimney` | 10 × 120 × 10 | oś komina | — | `concrete`, `concrete_raw_cast`, `hivis`, `metal`, `neon_amber` | 2236 |
+| `power_slag_heap` | 26 × 7 × 26 | oś podstawy i położenie szczytu | profil pochyły, patrz niżej | `asphalt`, `slag_heap` | 32 |
+
+Rusztowania można układać co 2,5 m w X i co 2 m w Y. Cienkie spoiny między
+deskami przykrywa wspólna kolizja podestu. Biura stoją w warstwach co 2,591 m.
+Schody mają wznios stopnia 2,591/15 m i bieg 4,8 m przed spocznikiem.
+Przy wejściu do biura obróć bieg tak, żeby otwarty koniec spocznika
+dochodził do drzwi. Podesty turbiny i estakady pozostają otwarte na końcach w X.
+Na estakadzie ramy są w X = −5,85 / 0 / 5,85 m, dzięki czemu ich stopy
+mieszczą się w 12-metrowym module.
+
+Chłodnia ma dolną krawędź powłoki na Y = 4 m i przewężenie o średnicy
+30 m na Y = 46,667 m. Wejście przez wyrwę prowadzi od +Z na posadzkę na
+poziomie gruntu. Jej okrągły obrys można odwzorować kilkoma prostokątami
+lub wykorzystać płaski grunt areny na tej samej wysokości.
+
+**Profil hałdy.** Podstawa mieści się w X/Z ±13 m, szczyt jest w (0; 7; 0).
+Krawędź na Y = 0 ma 32 wierzchołki. Dla indeksu `i = 0…31` kąt wynosi
+`a = 2πi/32`, promień `r = 13` na osiach, w pozostałych punktach
+`r = 12,8 + 0,2·cos(1,7i)`; współrzędne to `X = r·cos(a), Z = r·sin(a)`.
+Ściany są płaskimi trójkątami od każdego odcinka obrzeża do szczytu.
+Wzdłuż dowolnego promienia wysokość rośnie liniowo od krawędzi do 7 m.
+Najstromsza ściana ma 29,057°. Dla colliderów użyj ramp skierowanych ku
+szczytowi, z początkiem na Y = 0 i biegiem 12,6–13 m od obrzeża do środka.
+Docelowy obrys 26 × 26 m pozwala zachować wysokość 7 m oraz limit 30°.
+
+Żuraw ma wysięgnik 50 m w +Z, przeciwwysięgnik 14 m w −Z i wierzchołek
+na 65,25 m z lampą. Dla kolizji przy gruncie użyj podstawy 6 × 6 m.
+Do przeglądu sylwetki użyj widoku całego zestawu, a do przeglądu wyrwy,
+łączeń podestów i świateł użyj zbliżeń `prop=`. Sprawdzenie przejścia
+kapsułą przy odbiorze aren zależy od ich colliderów.
+
 ## Wrogowie — manekin CC0 ze szkieletem
 
 Pięć humanoidów powstaje przez `build_enemy_cc0(archetype)` z manekina

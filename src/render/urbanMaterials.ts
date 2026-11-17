@@ -34,9 +34,17 @@ export const arenaKinds = [
   'market_tarp',
 ] as const;
 
+const constructionPowerKinds = [
+  'formwork_plywood',
+  'concrete_raw_cast',
+  'slag_heap',
+  'cooling_tower_concrete',
+  'turbine_hall_floor',
+] as const;
+
 const portLooks = z
   .record(
-    z.enum([...portKinds, ...arenaKinds]),
+    z.enum([...portKinds, ...arenaKinds, ...constructionPowerKinds]),
     z.object({
       texture: z.enum([
         'container_corrugated_navy',
@@ -49,6 +57,7 @@ const portLooks = z
         'rubber_fender',
         'steel_grating',
         ...arenaKinds,
+        ...constructionPowerKinds,
       ]),
       tint: z
         .string()
@@ -60,6 +69,7 @@ const portLooks = z
       metalness: z.number().min(0).max(1),
       bump: z.number().nonnegative(),
       wetness: z.number().min(0).max(1),
+      flat: z.literal(true).optional(),
     }),
   )
   .parse({ ...portData, ...arenaData });
@@ -67,6 +77,7 @@ const portLooks = z
 export const urbanKinds = [
   ...portKinds,
   ...arenaKinds,
+  ...constructionPowerKinds,
   'concrete',
   'asphalt',
   'metal',
@@ -270,7 +281,8 @@ export function urbanColor(kind: UrbanKind): string {
   if (kind in portLooks) {
     const config = portLooks[kind as keyof typeof portLooks];
     if (config.themeTint) return tuning.render[config.themeTint];
-    if (config.tint && tuning.render.citySurfaceDetail > 0) return config.tint;
+    if (config.tint && (config.flat || tuning.render.citySurfaceDetail > 0))
+      return config.tint;
     return '#ffffff';
   }
   return tuning.render[kind as Exclude<UrbanKind, keyof typeof portLooks>];
@@ -284,6 +296,8 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
     metalness: config.metalness,
   });
   material.userData.wetness = config.wetness;
+  if (kind in portLooks && portLooks[kind as keyof typeof portLooks].flat)
+    return material;
   const scale = glsl(config.scale);
   // Kafel tekstury ma 1024 px: relief gaśnie, gdy piksel ekranu obejmuje kilka tekseli.
   const texelsPerPixel = glsl(config.scale * 1024);
