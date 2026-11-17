@@ -49,6 +49,9 @@ const text = z
     damage: z.string(),
     seed: z.string(),
     newRun: z.string(),
+    rewardSaveError: z.string(),
+    rewardApplyError: z.string(),
+    retrySave: z.string(),
     noImplants: z.string(),
     synergies: z.string(),
     nextRarity: z.string(),
@@ -95,6 +98,8 @@ export interface RunScreenView {
   summary: RunSummary | null;
   /** Nagrody meta za zakończony run (brak = sekcja nie jest pokazywana). */
   meta?: RunMetaView;
+  /** Nagroda nie trafiła do zapisu (`save`) albo nie dała się naliczyć (`apply`). */
+  rewardError?: 'save' | 'apply' | null;
   busy: boolean;
   /** Splashart tła ekranu ładowania pokoju (`busy`); brak = ekran jak dotąd. */
   splash?: { file: string; title: string };
@@ -123,6 +128,8 @@ export interface RunScreenActions {
   newRun?(): void;
   /** Powrót do kryjówki (`?scene=hub`); przycisk pokazywany tylko, gdy akcja jest podana. */
   hub?(): void;
+  /** Ponowienie zapisu nagrody po błędzie; przycisk tylko, gdy akcja jest podana. */
+  retrySave?(): void;
 }
 
 export interface RunScreens {
@@ -259,6 +266,18 @@ export class HtmlRunScreens implements RunScreens {
         }
       }
       if (view.meta) this.metaRewards(view.meta, summary?.threatLevel ?? 0);
+      if (view.rewardError) {
+        const box = this.group('run-screen__reward-error');
+        box.setAttribute('role', 'alert');
+        const message = document.createElement('p');
+        message.textContent =
+          view.rewardError === 'save'
+            ? text.rewardSaveError
+            : text.rewardApplyError;
+        box.append(message);
+        const retry = actions.retrySave;
+        if (retry) this.button(text.retrySave, retry, box);
+      }
       const row = this.group('run-screen__actions');
       const hub = actions.hub;
       if (hub) {

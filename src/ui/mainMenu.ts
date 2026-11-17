@@ -23,6 +23,7 @@ const text = z
       seedPlaceholder: z.string(),
       loading: z.string(),
       noSave: z.string(),
+      unsettled: z.string(),
       saveError: z.string(),
       back: z.string(),
       debug: z.string(),
@@ -153,9 +154,11 @@ export class MainMenu {
         const node = save?.run.map.layers
           .flat()
           .find((node) => node.id === save.run.currentNodeId);
-        status.textContent = save
-          ? `${text.layer}: ${node?.layer ?? 1} · ${text.hp}: ${save.run.hp}`
-          : t.noSave;
+        status.textContent = save?.ended
+          ? t.unsettled
+          : save
+            ? `${text.layer}: ${node?.layer ?? 1} · ${text.hp}: ${save.run.hp}`
+            : t.noSave;
       })
       .catch(() => {
         if (!this.disposed) status.textContent = t.saveError;

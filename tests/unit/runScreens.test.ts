@@ -333,3 +333,30 @@ it('podsumowanie bez awansu i odblokowania nie pokazuje tych wierszy, a bez meta
   screens.show(summaryView, { selectNode() {}, next() {}, menu() {} });
   expect(document.querySelector('[data-testid="run-meta-rewards"]')).toBeNull();
 });
+
+it('podsumowanie z błędem zapisu nagrody pokazuje komunikat i „Ponów zapis”; błąd naliczenia bez ponowienia', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const retrySave = vi.fn();
+  screens.show(
+    { ...summaryView, rewardError: 'save' },
+    { selectNode() {}, next() {}, menu() {}, retrySave },
+  );
+  const box = document.querySelector('.run-screen__reward-error')!;
+  expect(box.getAttribute('role')).toBe('alert');
+  expect(box.textContent).toContain('Nie udało się zapisać nagrody.');
+  const retry = [...box.querySelectorAll('button')].find(
+    (b) => b.textContent === 'Ponów zapis',
+  )!;
+  retry.click();
+  expect(retrySave).toHaveBeenCalledOnce();
+  screens.show(
+    { ...summaryView, rewardError: 'apply' },
+    { selectNode() {}, next() {}, menu() {} },
+  );
+  const apply = document.querySelector('.run-screen__reward-error')!;
+  expect(apply.textContent).toContain('Nie udało się rozliczyć nagrody.');
+  expect(apply.querySelector('button')).toBeNull();
+  screens.show(summaryView, { selectNode() {}, next() {}, menu() {} });
+  expect(document.querySelector('.run-screen__reward-error')).toBeNull();
+});

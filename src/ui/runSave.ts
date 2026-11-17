@@ -7,12 +7,14 @@ export function createRunSavePort(
 ): RunSavePort {
   return {
     loadRun: async () => (await store.loadRun())?.run ?? null,
-    saveRun: (run) =>
+    loadEnded: async () => (await store.loadRun())?.ended ?? null,
+    saveRun: (run, ended) =>
       store.saveRun({
         saveVersion: SAVE_VERSION,
         seed: run.seed,
         startedAt: run.startedAtMs,
         run,
+        ...(ended ? { ended } : {}),
       }),
     clearRun: () => store.clearRun(),
   };

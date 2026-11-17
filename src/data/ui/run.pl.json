@@ -57,6 +57,7 @@
     "seedPlaceholder": "Puste pole — nowy seed",
     "loading": "Odczytywanie zapisu…",
     "noSave": "Brak zapisanego runu",
+    "unsettled": "Nierozliczony run — Kontynuuj zapisze nagrodę",
     "saveError": "Nie można odczytać zapisu.",
     "back": "Wróć",
     "debug": "Sceny debug"
@@ -66,6 +67,9 @@
   "damage": "Obrażenia",
   "seed": "Seed",
   "newRun": "Nowy run",
+  "rewardSaveError": "Nie udało się zapisać nagrody.",
+  "rewardApplyError": "Nie udało się rozliczyć nagrody. Zapis runu zostaje do ponownej próby po aktualizacji gry.",
+  "retrySave": "Ponów zapis",
   "noImplants": "Brak implantów",
   "synergies": "Nowe synergie",
   "nextRarity": "Następna rzadkość",

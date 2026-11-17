@@ -1446,7 +1446,12 @@ Fabryka dostaje definicję pokoju, kopię RunState i WavesDefinition.
 `RunScreens` (`src/ui/runScreens.ts`) udostępnia `show(view, actions)`, `hide()`,
 `dispose()`; view zawiera ekran, kopię stanu, dostępne węzły, podsumowanie i stan ładowania.
 Akcje: `selectNode(id)`, `next()`, `menu()`. `RunSavePort` udostępnia asynchroniczne
-`loadRun(): Promise<RunState | null>`, `saveRun(state): Promise<void>`, `clearRun(): Promise<void>`.
+`loadRun(): Promise<RunState | null>`, `saveRun(state, ended?): Promise<void>`, `clearRun(): Promise<void>`
+oraz opcjonalne `loadEnded(): Promise<RunEnded | null>`. `RunSave.ended?: RunEnded` (`{ runId, summary }`,
+`src/core/save.ts`) oznacza zakończony, nierozliczony run; pole jest opcjonalne, więc zapisy bez niego
+wczytują się jak dotąd (bez zmiany `SAVE_VERSION`). `continue=1` z `ended` pokazuje podsumowanie i rozlicza
+run zamiast go wznawiać; `RunManager.restoreEnded(state, summary)` odtwarza ekran `summary` bez `run_ended`.
+Podsumowanie: `RunScreenView.rewardError?: 'save' | 'apply' | null`, akcja `retrySave?()`.
 Domyślny port opakowuje IndexedDB SaveStore v2 przez `createRunSavePort(store?)` z `src/ui/runSave.ts`. Operacje zapisu są kolejkowane.
 `RunScene.whenReady()` czeka na ładowanie pokoju i kolejkę zapisu (przydatne w testach).
 Query: `screen`, `runState`, `map`, `room` (id układu lub null), `runLog`,

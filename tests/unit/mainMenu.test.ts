@@ -201,3 +201,29 @@ it('pusty seed generuje seed w URL, a błąd odczytu pozostawia Kontynuuj wyłą
     ).searchParams.get('seed'),
   ).toBeTruthy();
 });
+
+it('zakończony, nierozliczony run: status „Nierozliczony run”, Kontynuuj prowadzi do rozliczenia', async () => {
+  const save = createMemorySaveStore();
+  const manager = new RunManager(new EventBus(), {
+    generateMap: (seed) => generateSectorMap(kuroganeSector, seed),
+  });
+  const run = manager.newRun('menu-ended', 'blade');
+  const summary = manager.finish('death');
+  manager.dispose();
+  await save.saveRun({
+    saveVersion: SAVE_VERSION,
+    seed: run.seed,
+    startedAt: run.startedAtMs,
+    run,
+    ended: { runId: `${run.seed}:${run.startedAtMs}`, summary },
+  });
+  const navigate = vi.fn();
+  const menu = new MainMenu({ root: document.body, save, navigate });
+  active.push(menu);
+  await menu.ready;
+  expect(document.querySelector('[role=status]')?.textContent).toContain(
+    'Nierozliczony run',
+  );
+  button('Kontynuuj run').click();
+  expect(navigate).toHaveBeenCalledExactlyOnceWith('?scene=run&continue=1');
+});

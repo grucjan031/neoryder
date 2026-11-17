@@ -5,8 +5,8 @@ import { EventBus } from '../../src/core/events';
 import { GameLoop } from '../../src/core/loop';
 import { Rng } from '../../src/core/rng';
 import type { RunState } from '../../src/core/runTypes';
-import { createMemorySaveStore } from '../../src/core/save';
-import type { MetaSave, SaveStore } from '../../src/core/save';
+import { createMemorySaveStore, SAVE_VERSION } from '../../src/core/save';
+import type { MetaSave, RunEnded, SaveStore } from '../../src/core/save';
 import { tuning } from '../../src/core/tuning';
 import playerData from '../../src/data/scenes/roomPlayer.json';
 import { MetaManager, runIdOf } from '../../src/progression/meta';
@@ -18,6 +18,7 @@ import { createStarterMetaState } from '../../src/progression/progressionSchema'
 import { RunScene } from '../../src/scenes/run';
 import type { RunRoom, RunSavePort } from '../../src/scenes/run';
 import { CommandRegistry } from '../../src/ui/debugCommands';
+import { createRunSavePort } from '../../src/ui/runSave';
 import { registerMetaCommands } from '../../src/ui/metaCommands';
 import type {
   RunScreenActions,
@@ -40,17 +41,38 @@ class Screens implements RunScreens {
 
 class MemoryRunSave implements RunSavePort {
   state: RunState | null = null;
+  ended: RunEnded | null = null;
   constructor(private readonly calls: string[] = []) {}
   async loadRun(): Promise<RunState | null> {
     return structuredClone(this.state);
   }
-  async saveRun(state: RunState): Promise<void> {
+  async loadEnded(): Promise<RunEnded | null> {
+    return this.state ? structuredClone(this.ended) : null;
+  }
+  async saveRun(state: RunState, ended?: RunEnded): Promise<void> {
     this.state = structuredClone(state);
+    this.ended = ended ? structuredClone(ended) : null;
   }
   async clearRun(): Promise<void> {
     this.calls.push('clearRun');
     this.state = null;
+    this.ended = null;
   }
+}
+
+/** Store meta, którego zapis można „zepsuć” i „naprawić” w trakcie testu. */
+function flakyStore(calls: string[] = []) {
+  const inner = createMemorySaveStore();
+  const control = { fail: true };
+  const store: SaveStore = {
+    ...inner,
+    saveMeta: async (data) => {
+      calls.push('saveMeta');
+      if (control.fail) throw new Error('dysk pełny');
+      await inner.saveMeta(data);
+    },
+  };
+  return { store, control };
 }
 
 class FakeRoom implements RunRoom {
@@ -253,27 +275,229 @@ it('wznowiony run z ekwipunkiem własnym (custom) nie wymaga presetu', async () 
   expect(second.scene.query('runState')).toEqual(snapshot);
 });
 
-it('błąd zapisu meta jest logowany, nie blokuje clearRun ani podsumowania', async () => {
+it('błąd zapisu meta: zapis runu zostaje z zakończeniem, podsumowanie pokazuje błąd i ponowienie', async () => {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   const calls: string[] = [];
-  const store: SaveStore = {
-    ...createMemorySaveStore(),
-    saveMeta: async () => {
-      calls.push('saveMeta');
-      throw new Error('dysk pełny');
-    },
-  };
+  const { store } = flakyStore(calls);
   const save = new MemoryRunSave(calls);
   const { scene, screens, commands } = await setup('seed=m7&loadout=meta', {
     store,
     save,
   });
+  const snapshot = scene.query('runState') as RunState;
   commands.execute('run end lose');
   await scene.whenReady();
-  expect(calls).toEqual(['saveMeta', 'clearRun']);
+  expect(calls).toEqual(['saveMeta']);
+  expect(save.state).not.toBeNull();
+  expect(save.ended).toMatchObject({
+    runId: runIdOf(snapshot),
+    summary: { outcome: 'death', seed: 'm7' },
+  });
   expect(screens.view.screen).toBe('summary');
-  expect(screens.view.meta).toBeDefined();
+  expect(screens.view.rewardError).toBe('save');
+  expect(screens.view.meta).toBeUndefined();
+  expect(screens.actions.retrySave).toBeTypeOf('function');
+  expect(await store.loadMeta()).toBeNull();
   expect(warn).toHaveBeenCalled();
+});
+
+it('ponowienie po naprawie zapisu: nagroda na dysku raz, zapis runu usunięty, komunikat znika', async () => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const calls: string[] = [];
+  const { store, control } = flakyStore(calls);
+  const save = new MemoryRunSave(calls);
+  const { scene, screens, commands } = await setup('seed=m10&loadout=meta', {
+    store,
+    save,
+  });
+  commands.execute('run end win');
+  await scene.whenReady();
+  expect(screens.view.rewardError).toBe('save');
+  control.fail = false;
+  screens.actions.retrySave!();
+  await scene.whenReady();
+  expect(calls).toEqual(['saveMeta', 'saveMeta', 'clearRun']);
+  expect(save.state).toBeNull();
+  expect(screens.view.rewardError).toBeNull();
+  const rewards = screens.view.meta!.rewards;
+  expect(rewards.data).toBeGreaterThan(0);
+  const saved = (await store.loadMeta())!.meta;
+  const starter = createStarterMetaState();
+  expect(saved.data).toBe(starter.data + rewards.data);
+  expect(saved.cores).toBe(starter.cores + rewards.cores);
+  expect(saved.stats.runs).toBe(1);
+  expect(saved.appliedRunIds).toHaveLength(1);
+});
+
+it('dwukrotne ponowienie nalicza waluty raz', async () => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const { store, control } = flakyStore();
+  const save = new MemoryRunSave();
+  const { scene, screens, commands } = await setup('seed=m11&loadout=meta', {
+    store,
+    save,
+  });
+  commands.execute('run end win');
+  await scene.whenReady();
+  screens.actions.retrySave!();
+  await scene.whenReady();
+  expect(screens.view.rewardError).toBe('save');
+  control.fail = false;
+  screens.actions.retrySave!();
+  screens.actions.retrySave!();
+  await scene.whenReady();
+  screens.actions.retrySave?.();
+  await scene.whenReady();
+  const rewards = screens.view.meta!.rewards;
+  const saved = (await store.loadMeta())!.meta;
+  expect(saved.data).toBe(createStarterMetaState().data + rewards.data);
+  expect(saved.stats.runs).toBe(1);
+  expect(save.state).toBeNull();
+});
+
+it('odświeżenie po błędzie (continue=1 na tym samym zapisie) rozlicza run raz i pokazuje podsumowanie', async () => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const { store, control } = flakyStore();
+  const save = new MemoryRunSave();
+  const first = await setup('seed=m12&loadout=meta', { store, save });
+  first.commands.execute('run end win');
+  await first.scene.whenReady();
+  expect(first.screens.view.rewardError).toBe('save');
+  first.scene.dispose();
+  control.fail = false;
+  const second = await setup('continue=1', { store, save });
+  await second.scene.whenReady();
+  expect(second.screens.view.screen).toBe('summary');
+  expect(second.screens.view.summary?.outcome).toBe('victory');
+  expect(second.screens.view.rewardError).toBeNull();
+  const rewards = second.screens.view.meta!.rewards;
+  expect(rewards.cores).toBeGreaterThan(0);
+  const saved = (await store.loadMeta())!.meta;
+  expect(saved.cores).toBe(createStarterMetaState().cores + rewards.cores);
+  expect(saved.stats.runs).toBe(1);
+  expect(save.state).toBeNull();
+  // Kolejne odświeżenie nie ma już czego rozliczać ani wznawiać.
+  second.scene.dispose();
+  await expect(setup('continue=1', { store, save })).rejects.toThrow(
+    /Brak zapisu runu/,
+  );
+  expect((await store.loadMeta())!.meta).toEqual(saved);
+});
+
+it('zakończony run, którego nagroda jest już na dysku, nie nalicza się drugi raz przy wznowieniu', async () => {
+  const store = createMemorySaveStore();
+  const save = new MemoryRunSave();
+  const first = await setup('seed=m13&loadout=meta', { store, save });
+  const snapshot = first.scene.query('runState') as RunState;
+  first.commands.execute('run end win');
+  await first.scene.whenReady();
+  const afterFirst = (await store.loadMeta())!.meta;
+  first.scene.dispose();
+  // Zapis meta się udał, ale clearRun nie zdążył (np. zamknięta karta).
+  save.state = snapshot;
+  save.ended = {
+    runId: runIdOf(snapshot),
+    summary: first.screens.view.summary!,
+  };
+  const second = await setup('continue=1', { store, save });
+  await second.scene.whenReady();
+  expect(second.screens.view.screen).toBe('summary');
+  expect((await store.loadMeta())!.meta).toEqual(afterFirst);
+  expect(save.state).toBeNull();
+});
+
+it('błąd applyRun (uszkodzone dane): zapis runu zostaje, komunikat bez pętli ponowień', async () => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const calls: string[] = [];
+  const store = recordingStore(calls);
+  const save = new MemoryRunSave(calls);
+  const first = await setup('seed=m14&loadout=classic', { store, save });
+  const snapshot = first.scene.query('runState') as RunState;
+  first.scene.dispose();
+  save.state = snapshot;
+  save.ended = {
+    runId: runIdOf(snapshot),
+    summary: {
+      outcome: 'victory',
+      seed: 'm14',
+      loadoutId: 'classic',
+      elapsedS: 10,
+      kills: 1,
+      roomsCleared: 1,
+      elitesCleared: 0,
+      threatLevel: 99,
+      layerReached: 1,
+      implants: [],
+      damage: { melee: 0, power: 0, gun: 0, other: 0 },
+    },
+  };
+  const ended = structuredClone(save.ended);
+  calls.length = 0;
+  const { scene, screens } = await setup('continue=1', { store, save });
+  await scene.whenReady();
+  expect(screens.view.screen).toBe('summary');
+  expect(screens.view.rewardError).toBe('apply');
+  expect(screens.actions.retrySave).toBeUndefined();
+  expect(calls).toEqual([]);
+  expect(save.state).toEqual(snapshot);
+  expect(save.ended).toEqual(ended);
+});
+
+it('stary zapis runu bez pola zakończenia wczytuje się i wznawia jak dotąd', async () => {
+  const store = createMemorySaveStore();
+  const first = await setup('seed=m15&loadout=classic', { store });
+  const snapshot = first.scene.query('runState') as RunState;
+  first.scene.dispose();
+  await store.saveRun({
+    saveVersion: SAVE_VERSION,
+    seed: snapshot.seed,
+    startedAt: snapshot.startedAtMs,
+    run: snapshot,
+  });
+  const port = createRunSavePort(store);
+  expect(await port.loadEnded!()).toBeNull();
+  const screens = new Screens();
+  const scene = new RunScene({
+    params: new URLSearchParams('continue=1'),
+    screens,
+    save: port,
+    metaStore: store,
+    implantDefinitions: new Map(),
+    createRoom: (_layout, run) => new FakeRoom(run),
+  });
+  active.add(scene);
+  await scene.init(
+    {
+      bus: new EventBus(),
+      commands: new CommandRegistry(),
+      rng: new Rng('meta'),
+      loop: new GameLoop({ step() {}, render() {} }),
+      tuning: structuredClone(tuning),
+      debug: true,
+      resume: vi.fn(),
+    },
+    new ThreeScene(),
+  );
+  expect(screens.view.screen).toBe('map');
+  expect(scene.query('runState')).toEqual(snapshot);
+});
+
+it('zapis runu z zakończeniem przechodzi przez SaveStore i port', async () => {
+  const store = createMemorySaveStore();
+  const port = createRunSavePort(store);
+  const first = await setup('seed=m16&loadout=classic', { store });
+  const snapshot = first.scene.query('runState') as RunState;
+  first.commands.execute('run end lose');
+  await first.scene.whenReady();
+  const summary = first.screens.view.summary!;
+  await port.saveRun(snapshot, { runId: runIdOf(snapshot), summary });
+  expect(await port.loadRun()).toEqual(snapshot);
+  expect(await port.loadEnded!()).toEqual({
+    runId: runIdOf(snapshot),
+    summary,
+  });
+  await port.saveRun(snapshot);
+  expect(await port.loadEnded!()).toBeNull();
 });
 
 it('podsumowanie dostaje akcje hub i newRun', async () => {
