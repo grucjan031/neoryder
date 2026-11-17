@@ -34,23 +34,88 @@ styl: `docs/adr/0006-neon-noir.md`.
   stacja każdego `id`, jeden NPC każdego `id`, strefy nie nachodzą na siebie (odległość środków ≥ suma promieni).
   Siedzący NPC (`animation` zaczyna się od `Sitting`) wymaga `seat` i siedziska pod miednicą, więc nie podlega walidacji bloków dla stojących postaci.
 - Motyw `hideout` (`src/data/themes/hideout.json`, na bazie `neonStreet`): bez deszczu i burzy, bez panoramy
-  miasta, ciemniejsza ciepła mgła, słabsze światło kluczowe. Układ definiuje 14 świateł (limit testu: 16), a
+  miasta, ciemniejsza ciepła mgła, słabsze światło kluczowe. Układ definiuje 26 świateł (limit testu: 28), a
   `CityLights` włącza naraz 8 najbliższych kamery (`tuning.city.maxLights`); reszta to emisja i poświata (neony,
   paski `neon_*`, płomień, lampy w wagonie).
 
-## Układ (≈ 2× powierzchni)
+## Układ (dwa skrzydła mieszkalne)
 
-Współrzędne: +Z w stronę torów i peronu B, +X na wschód; sufit na 5 m, granice jak w podziemiu (ściany boczne ±20 m).
+Współrzędne: +Z w stronę torów i peronu B, +X na wschód; sufit na 5 m. Obrys podłóg obejmuje
+x −34…20, z −19…16. Nowe skrzydła dodają 448 m² podłogi na poziomie 0 (336 m² północ, 112 m² zachód).
 
-| Strefa          | Zakres                       | Zawartość                                                                                                                                                                                                                 |
-| --------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hala (peron A)  | x −20…20, z −7…3             | główna hala ze spawnem (0; 0,8); tylna ściana: antresola, tablica misji (stacja `missions`, Kapitan Szron), neon ISKRA, automat, kiosk, generator, wejście na poligon w tunelu (x 12,5…15,5; stacja `arena`)              |
-| Antresola       | x −20…−11, z −7…−3, y 2,4    | podest z barierką i kolizyjnymi stopniami (12 × 0,2 m, bieg 0,3 m; autostep gracza 0,35 m), skrzynie, pod spodem magazyn z zielonym światłem                                                                              |
-| Tory            | z 3…8, dno y −0,8            | niecka z szynami i podkładami; skok (`jumpVelocity` 8 m/s ≈ 1,6 m) wyprowadza z niej na peron, więc nie ma pułapek                                                                                                        |
-| Wagon-warsztat  | x −16…−3, z 3…7, podłoga y 0 | wrak wagonu metra na torach: dwoje drzwi od strony hali (x −13…−11 i −8…−6), okna od strony peronu B, stół warsztatowy (stacja `workshop`), ławki, generator, Mira                                                        |
-| Kładka          | x 4…7, z 3…8, poziom peronu  | metalowy pomost z barierkami nad torami, łączy halę z peronem B                                                                                                                                                           |
-| Peron B         | x −20…20, z 8…16             | zachód: strefa wypoczynku (bar z modelu `city_stall` i neon `sign_bar`, beczka z ogniem i Stary Tomasz, dwie kanapy, stolik, skrzynie, mural `mural_spark`, baner `banner_iskra`, sznury lampek); środek: automat i kiosk |
-| Kącik łączności | x 8…20, z 8…16               | pomieszczenie z wejściem 3 m (z 10…13): szafy serwerowe z ekranami, terminal drzew (stacja `talents`, Doktor Wolan), biurko Bajta z ekranem `screen_comms`, hologram Kurogane, projektor, antena, kable                   |
+| Strefa             | Zakres                       | Zawartość                                                                                                                                                                                                            |
+| ------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hala (peron A)     | x −20…20, z −7…3             | główna hala ze spawnem (0; 0,8); tylna ściana: antresola, tablica misji (stacja `missions`, Kapitan Szron), neon ISKRA, automat, kiosk, generator, wejście na poligon w tunelu (x 12,5…15,5; stacja `arena`)         |
+| Antresola          | x −20…−11, z −7…−3, y 2,4    | podest z barierką i kolizyjnymi stopniami (12 × 0,2 m, bieg 0,3 m; autostep gracza 0,35 m), skrzynie, pod spodem magazyn z zielonym światłem                                                                         |
+| Tory               | z 3…8, dno y −0,8            | niecka z szynami i podkładami; skok (`jumpVelocity` 8 m/s ≈ 1,6 m) wyprowadza z niej na peron, więc nie ma pułapek                                                                                                   |
+| Wagon-warsztat     | x −16…−3, z 3…7, podłoga y 0 | wrak wagonu metra na torach: dwoje drzwi od strony hali (x −13…−11 i −8…−6), okna od strony peronu B, stół warsztatowy (stacja `workshop`), ławki, generator, Mira                                                   |
+| Kładka             | x 4…7, z 3…8, poziom peronu  | metalowy pomost z barierkami nad torami, łączy halę z peronem B                                                                                                                                                      |
+| Peron B            | x −20…20, z 8…16             | zachód: strefa wypoczynku (otwarty bar i neon `sign_bar`, beczka z ogniem i Stary Tomasz, dwie kanapy, stolik, skrzynie, mural `mural_spark`, sznury lampek); środek: automat i kiosk; baner `banner_iskra` na targu |
+| Kącik łączności    | x 8…20, z 8…16               | pomieszczenie z wejściem 3 m (z 10…13): szafy serwerowe z ekranami, terminal drzew (stacja `talents`, Doktor Wolan), biurko Bajta z ekranem `screen_comms`, hologram Kurogane, projektor, antena, kable              |
+| Przejście północne | x −20…8, z −11…−8            | poprzeczny korytarz 3 m; wejście z hali x 3…6 przez ścianę z −8…−7, wysokość 3,5 m; rozdzielnia i wnęka robocza elektryczki                                                                                          |
+| Jadłodajnia        | x −20…−8, z −19…−11          | wejście x −16…−12; budka z makaronem, garnki z parą, menu i neon `noodles`, dwa stoły z czterema ławami na wysokości 0,48 m, zapasy i lampiony; bursztyn/ciepła biel                                                 |
+| Kwatery            | x −8…1, z −19…−11            | wejście x −6…−3; trzy łóżka ze skrzyń i materacy `fabric`, zasłony, szafka medyczna, rzeczy osobiste, przygaszona ciepła biel                                                                                        |
+| Radio Iskry        | x 1…8, z −19…−11             | wejście x 3…6; biurko z otwartą przestrzenią na nogi, stołek 0,48 m, mikrofon, sześć odbiorników z ekranami, antena i kable; błękit                                                                                  |
+| Targ wymiany       | x −34…−20, z 8…16            | wejście przez zachodnią ścianę x −21…−20, z 11…15 (4 m), z dala od baru; `city_stall`, `city_kiosk`, skrzynie, lada handlarza, plandeka, lampki; zieleń/fiolet                                                       |
+| Trening w hali     | x 15,1…19, z −3,4…−1,4       | worek `fabric`/`rubber` na linie; wolny kwadrat 2 × 2 m obok                                                                                                                                                         |
+| Bar i parkiet      | x −7,5…−1,4, z 11,8…16       | szafa grająca z paskami zieleni/fioletu, parkiet 2 × 2 m, otwarta lada z miejscem dla barmana                                                                                                                        |
+
+Kanapę przy zachodniej ścianie peronu B obrócono i przestawiono pod ścianę południową, stolik oraz
+dodatkowy stołek przesunięto obok. Dwie niepalące się beczki stoją teraz na targu. Dzięki temu wejście
+z targu ma wolne dojście przez peron. Bar zachowuje neon i stołki; jego pełny collider `city_stall`
+zastępują lada, blat, słupki i daszek, pozostawiające miejsce za ladą. Pozycje stacji, ich `focus`,
+spawn i pięć istniejących NPC pozostają bez zmian. Ekrany i gotowe neony wystarczają do oznaczenia
+nowych wnętrz; format danych i kod oprawy nie wymagają rozszerzenia.
+
+### Rezerwacje miejsc dla przyszłych NPC
+
+To wyłącznie przygotowanie scenografii: `npcs` i teksty dialogów nie zawierają nowych postaci.
+Wszystkie pozycje mają poziom podłogi y = 0. Obrót NPC: 0 = +Z, 90 = +X, 180 = −Z.
+Siedziska mają górną powierzchnię y = 0,48; środek pod miednicą podano w tabeli.
+Przyszłe siedzące postacie używają tego samego `seat.heightM: 0.48` i
+`seat.offset: { x: -0.002812, y: -0.48, z: 0.333626 }` co Tomasz i Bajt.
+
+| Rola                           | position {x,z}        | rotationDeg | Siedzisko: środek {x,y,z}, wysokość    |
+| ------------------------------ | --------------------- | ----------- | -------------------------------------- |
+| Kucharka stojąca               | {x: −17, z: −18,4}    | 0           | —                                      |
+| Jedzący A                      | {x: −17,6, z: −13,55} | 180         | {x: −17,6, y: 0,48, z: −13,55}, 0,48 m |
+| Jedzący B, naprzeciw A         | {x: −17,6, z: −16,05} | 0           | {x: −17,6, y: 0,48, z: −16,05}, 0,48 m |
+| Jedzący C, drugi stół          | {x: −10,5, z: −13,55} | 180         | {x: −10,5, y: 0,48, z: −13,55}, 0,48 m |
+| Jedzący D, drugi stół          | {x: −10,5, z: −16,05} | 0           | {x: −10,5, y: 0,48, z: −16,05}, 0,48 m |
+| Radiowa siedząca               | {x: 5, z: −15,9}      | 180         | {x: 5, y: 0,48, z: −15,9}, 0,48 m      |
+| Sanitariuszka klęcząca         | {x: −3,5, z: −13,4}   | 90          | wolny kwadrat 1 × 1 m przy łóżku       |
+| Mieszkaniec na krawędzi pryczy | {x: −6,5, z: −16,4}   | 0           | {x: −6,5, y: 0,48, z: −16,4}, 0,48 m   |
+| Elektryczka kucająca           | {x: −10, z: −8,7}     | 0           | wolny kwadrat 1 × 1 m przed puszką     |
+| Handlarz                       | {x: −25, z: 15,4}     | 180         | —                                      |
+| Wartownik przy wejściu         | {x: −22,5, z: 10,7}   | 0           | —                                      |
+| Barman                         | {x: −3, z: 15,2}      | 180         | —                                      |
+| Tancerka                       | {x: −6,5, z: 12,8}    | 180         | wolny kwadrat 2 × 2 m                  |
+| Bokser                         | {x: 16,1, z: −2,4}    | 90          | wolny kwadrat 2 × 2 m                  |
+
+### Proponowane trasy piesze
+
+Punkty `(x, z)` mają y = 0 i są łączone odcinkami prostymi. Trasy ii i iii są zamknięte,
+trasę i można przechodzić w obu kierunkach. Korytarze mają co najmniej 2 m szerokości; test
+`hubLayout.test.ts` sprawdza podłogę, metr odstępu od brył i 0,9 m od obecnych oraz zarezerwowanych NPC
+wzdłuż całych odcinków (próbki co najwyżej 0,1 m).
+
+| Trasa                                                    | Kolejne punkty (x, z)                                                                                                  |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| i: targ → peron B → kładka → hala → północ → jadłodajnia | (−30, 13) → (−10, 13) → (−10, 11) → (5.5, 11) → (5.5, −2.5) → (4.5, −2.5) → (4.5, −9.75) → (−14, −9.75) → (−14, −12.5) |
+| ii: pętla hali                                           | (−7, −2.5) → (6, −2.5) → (6, −0.5) → (−7, −0.5) → (−7, −2.5)                                                           |
+| iii: pętla dzieci na peronie B                           | (0.5, 11) → (6, 11) → (6, 13.5) → (0.5, 13.5) → (0.5, 11)                                                              |
+
+Kamery kontrolne nowych stref (`?scene=hub&debug=1`; yaw kamery 0 = −Z, pitch ujemny = w dół):
+
+| Strefa       | Komenda                   | Co sprawdzić                                                    |
+| ------------ | ------------------------- | --------------------------------------------------------------- |
+| Jadłodajnia  | `hub tp -14 -12.5 0 -12`  | dwa stoły, ławy 0,48 m, kuchnia z parą i zapasami               |
+| Kwatery      | `hub tp -4.5 -12 0 -15`   | materace, odsłonięta krawędź pryczy, miejsce przy łóżku polowym |
+| Radio Iskry  | `hub tp 4.5 -12.5 0 -12`  | mikrofon, odbiorniki, stołek i przestrzeń na nogi               |
+| Korytarz     | `hub tp 4.5 -9.75 90 -8`  | wolny korytarz, przejścia do stref, rozdzielnia na końcu        |
+| Targ         | `hub tp -22 13 90 -10`    | stragany, plandeka, miejsce za ladą, przejście na peron         |
+| Trening      | `hub tp 15.5 -1 -120 -10` | worek na linie i wolne miejsce obok                             |
+| Bar / taniec | `hub tp -6.5 11 180 -10`  | szafa grająca, parkiet i otwarta przestrzeń barmana             |
 
 Wszystkie perony i przejścia są na poziomie 0, więc strefy są osiągalne bez skoków (podwójny skok jest talentem);
 antresola jest opcjonalna. Na obu końcach niecki torów (x ±20, z 3…8) są wyloty tunelu (`panels` kind `tunnel`) z parą

@@ -4,6 +4,7 @@ import hideoutData from '../../src/data/hub/hideout.json';
 import { tuning } from '../../src/core/tuning';
 import { HubDecor } from '../../src/scenes/hubDecor';
 import { loadHubLayout } from '../../src/world/hubSchema';
+import { wallDecalFitsBlock } from '../../src/world/dressingSchema';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -27,10 +28,16 @@ it('okładziny kryjówki są jednostronne i zwrócone od ściany do wnętrza', (
   for (const panel of panels) {
     const nx = Math.sin(panel.yaw);
     const nz = Math.cos(panel.yaw);
-    if (Math.abs(panel.position.x) > 19)
-      expect(panel.position.x * nx).toBeLessThan(0);
-    if (Math.abs(panel.position.z) > 6 && Math.abs(nz) > 0.9)
-      expect(panel.position.z * nz).toBeLessThan(0);
+    // Skrzydła mają własne wnętrza: normalna prowadzi od nośnika w wolną przestrzeń.
+    const blocks = loadHubLayout(hideoutData).blocks;
+    const support = blocks.find((block) =>
+      wallDecalFitsBlock({ ...panel, surface: 'wall' }, block, 0.04),
+    );
+    expect(support).toBeDefined();
+    expect(
+      (panel.position.x - support!.position.x) * nx +
+        (panel.position.z - support!.position.z) * nz,
+    ).toBeGreaterThan(0);
   }
   decor.dispose();
 });
