@@ -451,6 +451,8 @@ export class RoomScene implements Scene {
         const state = this.player.getState();
         const radius = ctx.tuning.player.capsuleRadius;
         hazardTargets.length = 0;
+        // Cisza po zwycięstwie: hazardy nie mają kogo ranić (ani gracza, ani wrogów).
+        if (this.victoryHold) return hazardTargets;
         if (!this.health.dead)
           addHazardTarget(
             playerId,
@@ -1088,8 +1090,7 @@ export class RoomScene implements Scene {
     this.energy.step(pdt);
     this.synergies.step(pdt);
     this.damage.step(dt);
-    // W ciszy po zwycięstwie hazardy zastygają: beczki i lasery nie wybuchają ani nie tykają.
-    if (!this.victoryHold) this.hazards.step(dt);
+    this.hazards.step(dt);
     this.statuses.step(dt);
     this.execute.step(dt);
     this.projectileView.capturePrevious();
@@ -1214,6 +1215,13 @@ export class RoomScene implements Scene {
     this.director.stop();
     this.projectiles.dispose();
     this.statuses.reset();
+    // Gracz jest nietykalny, zanim cokolwiek zacznie się rozpadać.
+    this.playerStats.add({
+      stat: 'damageTaken',
+      type: 'mult',
+      value: 0,
+      source: 'victory-hold',
+    });
     // Pozostali wrogowie rozpadają się normalnym efektem śmierci. Zabija ich świat (source null),
     // więc nie liczą się do zabójstw ani kredytów gracza, a podsumowanie (liczone przy run_ended,
     // przed ciszą) się nie zmienia.
@@ -1228,13 +1236,6 @@ export class RoomScene implements Scene {
         amount: Number.MAX_VALUE,
         tags: [VICTORY_HOLD_TAG],
       });
-    // Gracz jest nietykalny także wobec tego, co jeszcze zostało na planszy.
-    this.playerStats.add({
-      stat: 'damageTaken',
-      type: 'mult',
-      value: 0,
-      source: 'victory-hold',
-    });
   }
 
   private onPlayerDied(): void {

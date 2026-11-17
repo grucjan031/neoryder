@@ -670,6 +670,8 @@ export const tuning = {
        * na fioletowej podłodze samo dodawanie czerwieni dawało róż bliski magencie Rezonansu.
        */
       waveShadeStrength: 1,
+      /** Zapas krycia cienia pod falą względem krycia samej fali (mnożnik). */
+      waveShadeCover: 2.5,
     },
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */

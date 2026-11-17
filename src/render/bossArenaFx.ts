@@ -61,6 +61,7 @@ const vertex = /* glsl */ `
 
 const head = /* glsl */ `
   uniform vec3 uColor, uHot, uShade, uEdge;
+  uniform float uCover;
   uniform float uOpacity, uTime, uProgress, uMode, uSpread, uRays, uSize;
   uniform float uNearM, uFarM, uNearFill, uNearEdge;
   varying vec2 vUv;
@@ -166,8 +167,8 @@ const shadeFragment = /* glsl */ `
       // Cień pod falą (uMode 5): ten sam pierścień co w waveFragment.
       float front = smoothstep(1.0 - uProgress, 0.97, r) * (1.0 - smoothstep(0.97, 1.0, r));
       float edge = smoothstep(0.93, 0.975, r) * (1.0 - smoothstep(0.975, 1.0, r));
-      // Cień pokrywa cały ślad fali z zapasem (×2,5 jej krycia), żeby fiolet nie prześwitywał.
-      amount = (front * 0.45 + edge) * 2.5;
+      // Cień pokrywa cały ślad fali z zapasem (uCover × jej krycia), żeby fiolet nie prześwitywał.
+      amount = (front * 0.45 + edge) * uCover;
     }
     // Fale (uMode 5) nie gasną z bliska: samą falę też rysujemy bez tłumienia.
     float near = uMode > 4.5 ? 1.0 : mix(1.0, uNearFill, nearCamera());
@@ -441,6 +442,7 @@ export class BossArenaFx {
         uHot: { value: this.hot },
         uShade: { value: this.shade },
         uEdge: { value: this.waveEdge },
+        uCover: { value: t.bossArena.waveShadeCover },
         uNearM: { value: t.bossTelegraphNearM },
         uFarM: { value: t.bossTelegraphFarM },
         uNearFill: { value: t.bossTelegraphNearFill },

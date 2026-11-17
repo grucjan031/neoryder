@@ -24,7 +24,20 @@ export function loadSplashes(data: unknown): SplashEntry[] {
   return list;
 }
 
-export const splashes: readonly SplashEntry[] = loadSplashes(splashData);
+let cached: readonly SplashEntry[] | null | undefined;
+
+/** Leniwa walidacja `splash.json`: błąd danych nie blokuje startu gry, tylko wyłącza splashe. */
+export function getSplashes(): readonly SplashEntry[] {
+  if (cached === undefined) {
+    try {
+      cached = loadSplashes(splashData);
+    } catch (error) {
+      console.warn('Nieprawidłowe dane splasharów; brak splasha.', error);
+      cached = null;
+    }
+  }
+  return cached ?? [];
+}
 
 export interface SplashHint {
   theme?: string;
@@ -38,8 +51,8 @@ export interface SplashHint {
 export function pickSplash(
   key: string,
   hint: SplashHint = {},
-  list: readonly SplashEntry[] = splashes,
-): SplashEntry {
+  list: readonly SplashEntry[] = getSplashes(),
+): SplashEntry | null {
   const byRoom = hint.room
     ? list.filter((entry) => entry.rooms?.includes(hint.room!))
     : [];
@@ -48,8 +61,7 @@ export function pickSplash(
     : [];
   const pool = byRoom.length ? byRoom : byTheme.length ? byTheme : list;
   const entry = pool[hashSeed(key) % pool.length];
-  if (!entry) throw new Error('Brak splasharów.');
-  return entry;
+  return entry ?? null;
 }
 
 export function splashUrl(entry: SplashEntry): string {

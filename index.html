@@ -34,11 +34,12 @@
           sans-serif;
         letter-spacing: 0.2em;
         text-transform: uppercase;
-        pointer-events: none;
+        pointer-events: auto;
         transition: opacity 320ms ease-out;
       }
       #boot-splash.boot-splash--out {
         opacity: 0;
+        pointer-events: none;
       }
       .boot-splash__brand {
         position: relative;
@@ -120,7 +121,7 @@
   <body>
     <div id="boot-splash">
       <div class="boot-splash__brand">NEORYDER</div>
-      <div class="boot-splash__loading">Ładowanie…</div>
+      <div class="boot-splash__loading" aria-live="polite">Ładowanie…</div>
     </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>

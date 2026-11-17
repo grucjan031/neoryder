@@ -320,7 +320,11 @@ export class HtmlRunScreens implements RunScreens {
     image.alt = '';
     image.decoding = 'async';
     image.addEventListener('load', () => image.classList.add('is-loaded'));
-    image.addEventListener('error', () => this.clearSplash());
+    image.addEventListener('error', () => {
+      // Błąd starego obrazu nie może zdjąć nowego tła.
+      if (image.isConnected && this.splashFile === splash.file)
+        this.clearSplash();
+    });
     image.src = splashUrl(splash);
     const caption = document.createElement('span');
     caption.className = 'run-screen__splash-title';

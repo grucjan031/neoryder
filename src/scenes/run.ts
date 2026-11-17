@@ -475,11 +475,11 @@ export class RunScene implements Scene {
     } catch {
       // Błąd puli pokoi zgłosi openRoom(); tu wystarczy wybór z samego ziarna.
     }
-    const { file, title } = pickSplash(`${seed}:${node.id}`, {
+    const entry = pickSplash(`${seed}:${node.id}`, {
       room: layout?.id,
       theme: layout?.theme,
     });
-    return { file, title };
+    return entry ? { file: entry.file, title: entry.title } : undefined;
   }
 
   private async openRoom(): Promise<void> {

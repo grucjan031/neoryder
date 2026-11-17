@@ -4,10 +4,12 @@ import { resolve } from 'node:path';
 import { afterEach, expect, it } from 'vitest';
 import { configureFx } from '../../src/render/fxMode';
 import { showBootSplash } from '../../src/ui/bootSplash';
-import { loadSplashes, pickSplash, splashes } from '../../src/ui/splash';
+import { getSplashes, loadSplashes, pickSplash } from '../../src/ui/splash';
 import { HtmlRunScreens } from '../../src/ui/runScreens';
 import type { RunScreenView } from '../../src/ui/runScreens';
 import { loadoutDefinitions } from '../../src/progression/loadout';
+import { roomDefinitions } from '../../src/world/rooms';
+import { themeDefinitions } from '../../src/render/themes';
 
 afterEach(() => {
   configureFx(new URLSearchParams());
@@ -15,10 +17,23 @@ afterEach(() => {
 });
 
 it('lista splasharów odpowiada plikom w public/assets/splash i mieści się w budżecie', () => {
-  for (const entry of splashes) {
+  for (const entry of getSplashes()) {
     const path = resolve(__dirname, '../../public/assets/splash', entry.file);
     expect(existsSync(path), entry.file).toBe(true);
     expect(statSync(path).size, entry.file).toBeLessThanOrEqual(190 * 1024);
+  }
+});
+
+it('rooms[] i themes[] wskazują istniejące pokoje i motywy', () => {
+  for (const entry of getSplashes()) {
+    for (const room of entry.rooms ?? [])
+      expect(roomDefinitions.has(room), `${entry.file}: pokój ${room}`).toBe(
+        true,
+      );
+    for (const theme of entry.themes ?? [])
+      expect(themeDefinitions.has(theme), `${entry.file}: motyw ${theme}`).toBe(
+        true,
+      );
   }
 });
 
@@ -34,13 +49,14 @@ it('schemat odrzuca duplikaty i złe nazwy plików', () => {
 
 it('wybór jest deterministyczny i respektuje pokój oraz motyw', () => {
   expect(pickSplash('ziarno:L1N1')).toEqual(pickSplash('ziarno:L1N1'));
+  expect(pickSplash('x', {}, [])).toBeNull();
   const keys = Array.from({ length: 40 }, (_, i) => `s${i}:N`);
-  expect(new Set(keys.map((key) => pickSplash(key).file)).size).toBeGreaterThan(
-    10,
-  );
-  expect(pickSplash('x', { room: 'eliteFoundry' }).file).toContain('odlewnia');
+  expect(
+    new Set(keys.map((key) => pickSplash(key)!.file)).size,
+  ).toBeGreaterThan(10);
+  expect(pickSplash('x', { room: 'eliteFoundry' })!.file).toContain('odlewnia');
   for (const key of keys)
-    expect(pickSplash(key, { theme: 'hideout' }).themes).toContain('hideout');
+    expect(pickSplash(key, { theme: 'hideout' })!.themes).toContain('hideout');
   // Nieznany motyw i pokój: pełna lista.
   expect(pickSplash('x', { theme: 'brak', room: 'brak' })).toEqual(
     pickSplash('x'),
@@ -120,6 +136,13 @@ it('błąd ładowania obrazu przywraca ekran bez pustej ramki', () => {
   screens.dispose();
 });
 
+function mountApp(): HTMLElement {
+  const node = document.createElement('div');
+  node.id = 'app';
+  document.body.append(node);
+  return node;
+}
+
 function mountBoot(): HTMLElement {
   const node = document.createElement('div');
   node.id = 'boot-splash';
@@ -127,24 +150,50 @@ function mountBoot(): HTMLElement {
   return node;
 }
 
-it('nakładka startowa: obraz poza fx=lite, zdjęcie przy dismiss, bez blokowania klików', () => {
+it('nakładka startowa: obraz poza fx=lite, #app inert do dismiss, potem wygaszenie', () => {
   const root = mountBoot();
+  const app = mountApp();
   const boot = showBootSplash(new URLSearchParams('scene=hub'), 'hub');
+  expect(app.inert).toBe(true);
   const image = root.querySelector('img')!;
   expect(image.getAttribute('src')).toMatch(/^\/assets\/splash\//);
   expect(image.alt).toBe('');
   boot.dismiss();
+  expect(app.inert).toBe(false);
   expect(root.classList.contains('boot-splash--out')).toBe(true);
   boot.dismiss();
+});
+
+it('błędne dane splasharów nie blokują startu (pusta lista, brak obrazu)', () => {
+  expect(() => loadSplashes([{ file: 'x', title: '' }])).toThrow();
+  expect(pickSplash('k', {}, [])).toBeNull();
+});
+
+it('stary obraz tła nie zdejmuje nowego po błędzie', () => {
+  const screens = new HtmlRunScreens();
+  screens.show(busyView, actions);
+  const root = document.querySelector('.run-screen')!;
+  const oldImage = root.querySelector('.run-screen__splash-img')!;
+  screens.show(
+    { ...busyView, splash: { file: 'splash-08-bulwar.webp', title: 'Bulwar' } },
+    actions,
+  );
+  expect(root.querySelector('.run-screen__splash-img')).not.toBe(oldImage);
+  oldImage.dispatchEvent(new Event('error'));
+  expect(root.querySelector('.run-screen__splash')).not.toBeNull();
+  screens.dispose();
 });
 
 it('nakładka startowa w fx=lite jest samym tłem i znika od razu', () => {
   const params = new URLSearchParams('debug=1&fx=lite');
   configureFx(params);
   const root = mountBoot();
+  const app = mountApp();
   const boot = showBootSplash(params, 'run');
   expect(root.querySelector('img')).toBeNull();
+  expect(app.inert).toBe(true);
   boot.dismiss();
+  expect(app.inert).toBe(false);
   expect(document.getElementById('boot-splash')).toBeNull();
 });
 

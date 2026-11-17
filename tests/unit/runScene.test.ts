@@ -778,22 +778,37 @@ async function victoryWithExtras(extras: readonly string[]) {
   const damage = Reflect.get(room, 'damage') as DamageSystem;
   const boss = run.scene.query('boss') as { id: number };
   const killed: { id: number; killer: number | null }[] = [];
+  const synergies: string[] = [];
   const ctx = Reflect.get(run.scene, 'ctx') as GameContext;
   ctx.bus.on('enemy_killed', ({ id, killer }) => killed.push({ id, killer }));
+  ctx.bus.on('synergy_triggered', ({ synergy }) => synergies.push(synergy));
   const aliveBefore = room.query('enemies') as number;
   damage.deal(boss.id, {
     source: room.playerId,
     amount: Number.MAX_VALUE,
     tags: ['#debug'],
   });
-  return { ...run, room, manager, killed, aliveBefore };
+  return {
+    ...run,
+    room,
+    manager,
+    killed,
+    synergies,
+    aliveBefore,
+    bossId: boss.id,
+  };
 }
 
-it('cisza po zwycięstwie: pozostali wrogowie rozpadają się, a podsumowanie zostaje takie samo', async () => {
+it('cisza po zwycięstwie: pozostali wrogowie rozpadają się od świata, a wynik zostaje taki sam', async () => {
+  const snapshot = (room: RoomScene) => ({
+    kills: room.query('kills'),
+    energy: room.exportState().energy,
+  });
   const control = await victoryWithExtras([]);
   for (let i = 0; i < 3; i++) control.scene.step(SIM_DT, idle);
   await control.scene.whenReady();
   expect(control.scene.query('victoryHold')).toBeGreaterThan(0);
+  const expectedRoom = snapshot(control.room);
   advanceVictoryHold(control.scene);
   await control.scene.whenReady();
   const expected = control.screens.view.summary;
@@ -804,12 +819,16 @@ it('cisza po zwycięstwie: pozostali wrogowie rozpadają się, a podsumowanie zo
   const run = await victoryWithExtras(['gunner', 'drone', 'shielder']);
   expect(run.aliveBefore).toBe(4);
   await run.scene.whenReady();
+  for (let i = 0; i < 3; i++) run.scene.step(SIM_DT, idle);
   expect(run.scene.query('victoryHold')).toBeGreaterThan(0);
   expect(run.room.query('enemies')).toBe(0);
   run.manager.forEach((e) => expect(e.current.state).toBe('dead'));
-  // Sługi giną od świata, nie od gracza: bez zabójstw i kredytów w wyniku runu.
-  const worldKills = run.killed.filter((entry) => entry.killer === null);
-  expect(worldKills.length).toBeGreaterThanOrEqual(3);
+  // Dodatkowi wrogowie giną od świata: każde zabójstwo bez sprawcy, bez synergii i energii.
+  const extrasKilled = run.killed.filter((entry) => entry.id !== run.bossId);
+  expect(extrasKilled).toHaveLength(3);
+  for (const entry of extrasKilled) expect(entry.killer).toBeNull();
+  expect(run.synergies).toEqual([]);
+  expect(snapshot(run.room)).toEqual(expectedRoom);
   for (let i = 0; i < 30; i++) run.scene.step(SIM_DT, idle);
   expect(run.room.query('enemies')).toBe(0);
   advanceVictoryHold(run.scene);
@@ -818,4 +837,41 @@ it('cisza po zwycięstwie: pozostali wrogowie rozpadają się, a podsumowanie zo
   expect((run.scene.query('runState') as RunState).credits).toBe(
     expectedCredits,
   );
+});
+
+it('splashart ekranu ładowania nie zmienia przebiegu runu (pełne fx vs lite)', async () => {
+  const play = async (lite: boolean) => {
+    configureFx(new URLSearchParams(lite ? 'debug=1&fx=lite' : ''));
+    const rooms: RoomScene[] = [];
+    const { scene, screens } = await setup({
+      params: new URLSearchParams('seed=splash-det&loadout=classic'),
+      createRoom: (layout, run, waves) => {
+        const room = new RoomScene(layout, run, waves, { loadModels: false });
+        rooms.push(room);
+        return room;
+      },
+    });
+    screens.actions.selectNode(screens.view.nodes[0]!.id);
+    const splash = screens.view.splash;
+    await scene.whenReady();
+    for (let i = 0; i < 200; i++) scene.step(SIM_DT, idle);
+    const result = {
+      splash,
+      room: scene.query('room'),
+      spawnLog: rooms.at(-1)!.query('spawnLog'),
+    };
+    scene.dispose();
+    return result;
+  };
+  try {
+    const full = await play(false);
+    const lite = await play(true);
+    expect(full.splash?.file).toMatch(/\.webp$/);
+    expect(lite.splash).toBeUndefined();
+    expect(full.room).toBe(lite.room);
+    expect(full.spawnLog).toEqual(lite.spawnLog);
+    expect((full.spawnLog as unknown[]).length).toBeGreaterThan(0);
+  } finally {
+    configureFx(new URLSearchParams());
+  }
 });

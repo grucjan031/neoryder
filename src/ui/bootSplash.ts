@@ -11,7 +11,7 @@ const FADE_MS = 320;
 /**
  * Nakładka startowa z `index.html` (`#boot-splash`) pokazuje się, zanim ruszy JS. Tu dokładamy
  * splashart wybrany deterministycznie z parametrów sceny; w `fx=lite` zostaje samo tło.
- * Nakładka ma `pointer-events: none`, więc nigdy nie blokuje kliknięć.
+ * Do `dismiss()` nakładka przechwytuje zdarzenia, a `#app` jest `inert`; po zdjęciu nic nie blokuje.
  */
 export function showBootSplash(
   params: URLSearchParams,
@@ -19,6 +19,9 @@ export function showBootSplash(
 ): BootSplash {
   const root = document.getElementById('boot-splash');
   if (!root) return { dismiss() {} };
+  // Nieprzezroczysta nakładka przechwytuje myszy, a ukryty interfejs nie łapie fokusu ani Tab.
+  const app = document.getElementById('app');
+  if (app) app.inert = true;
   const lite = getLiteFx();
   if (!lite) {
     try {
@@ -28,6 +31,7 @@ export function showBootSplash(
           theme: sceneId === 'hub' ? 'hideout' : undefined,
         },
       );
+      if (!entry) throw new Error('Brak splasharów.');
       const image = document.createElement('img');
       image.className = 'boot-splash__img';
       image.alt = '';
@@ -42,6 +46,7 @@ export function showBootSplash(
       image.src = splashUrl(entry);
       const caption = document.createElement('span');
       caption.className = 'boot-splash__caption';
+      caption.setAttribute('aria-hidden', 'true');
       caption.textContent = entry.title;
       root.classList.add('boot-splash--art');
       root.prepend(image);
@@ -55,6 +60,7 @@ export function showBootSplash(
     dismiss() {
       if (done) return;
       done = true;
+      if (app) app.inert = false;
       const instant =
         lite ||
         (typeof matchMedia === 'function' &&
