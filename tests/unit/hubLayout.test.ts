@@ -40,14 +40,16 @@ it('kryjówka ma po jednej stacji każdego rodzaju, a spawn leży na poziomie 0'
   expect(layout.playerSpawn.y).toBe(0);
 });
 
-it('układ to dwa perony 36–44 m po obu stronach niecki torów, z sufitem', () => {
+it('układ obejmuje dwa perony i skrzydła północne oraz zachodnie, z sufitem', () => {
   const floors = layout.blocks.filter(
     (block) => block.position.y + block.size.y / 2 === 0,
   );
   const minX = Math.min(...floors.map((b) => b.position.x - b.size.x / 2));
   const maxX = Math.max(...floors.map((b) => b.position.x + b.size.x / 2));
-  expect(maxX - minX).toBeGreaterThanOrEqual(36);
-  expect(maxX - minX).toBeLessThanOrEqual(44);
+  expect(minX).toBe(-34);
+  expect(maxX).toBe(20);
+  expect(Math.min(...floors.map((b) => b.position.z - b.size.z / 2))).toBe(-19);
+  expect(Math.max(...floors.map((b) => b.position.z + b.size.z / 2))).toBe(16);
   const ceiling = layout.blocks.find(
     (block) => block.position.y - block.size.y / 2 >= 5,
   );
@@ -123,7 +125,7 @@ it('tekstury i modele z danych istnieją w public/assets', () => {
 });
 
 it('oprawa: definicje świateł (renderer włącza 8 najbliższych) i paleta Neon Noir bez czerwieni, cyanu i magenty', () => {
-  expect((layout.lights ?? []).length).toBeLessThanOrEqual(16);
+  expect((layout.lights ?? []).length).toBeLessThanOrEqual(28);
   const allowed = new Set([
     '#ffae1a',
     '#6dff4a',
@@ -345,4 +347,171 @@ it('stacje mają ciemne korpusy z jasnym akcentem wewnątrz zachowanego focusu',
             0.001,
       ),
     ).toBe(true);
+});
+
+// Rezerwacje opisane w docs/systems/hub.md; nie tworzą NPC w danych gry.
+const futurePlaces = [
+  { role: 'kucharka', x: -17, z: -18.4 },
+  { role: 'jedzący A', x: -17.6, z: -13.55, yaw: 180, seat: true },
+  { role: 'jedzący B', x: -17.6, z: -16.05, yaw: 0, seat: true },
+  { role: 'jedzący C', x: -10.5, z: -13.55, yaw: 180, seat: true },
+  { role: 'jedzący D', x: -10.5, z: -16.05, yaw: 0, seat: true },
+  { role: 'radiowa', x: 5, z: -15.9, yaw: 180, seat: true },
+  { role: 'sanitariuszka', x: -3.5, z: -13.4 },
+  { role: 'mieszkaniec', x: -6.5, z: -16.4, yaw: 0, seat: true },
+  { role: 'elektryczka', x: -10, z: -8.7 },
+  { role: 'handlarz', x: -25, z: 15.4 },
+  { role: 'wartownik', x: -22.5, z: 10.7 },
+  { role: 'barman', x: -3, z: 15.2 },
+  { role: 'tancerka', x: -6.5, z: 12.8 },
+  { role: 'bokser', x: 16.1, z: -2.4 },
+];
+const walkingRoutes = [
+  [
+    [-30, 13],
+    [-10, 13],
+    [-10, 11],
+    [5.5, 11],
+    [5.5, -2.5],
+    [4.5, -2.5],
+    [4.5, -9.75],
+    [-14, -9.75],
+    [-14, -12.5],
+  ],
+  [
+    [-7, -2.5],
+    [6, -2.5],
+    [6, -0.5],
+    [-7, -0.5],
+    [-7, -2.5],
+  ],
+  [
+    [0.5, 11],
+    [6, 11],
+    [6, 13.5],
+    [0.5, 13.5],
+    [0.5, 11],
+  ],
+];
+const floorBlocks = layout.blocks.filter(
+  (b) => b.position.y + b.size.y / 2 === 0,
+);
+const bodyBlocks = layout.blocks.filter(
+  (b) =>
+    b.position.y + b.size.y / 2 > 0.35 && b.position.y - b.size.y / 2 < 1.8,
+);
+const onFloor = (x: number, z: number): boolean =>
+  floorBlocks.some(
+    (b) =>
+      Math.abs(x - b.position.x) <= b.size.x / 2 + 1e-6 &&
+      Math.abs(z - b.position.z) <= b.size.z / 2 + 1e-6,
+  );
+const distanceToBlock = (
+  x: number,
+  z: number,
+  b: (typeof bodyBlocks)[number],
+): number =>
+  Math.hypot(
+    Math.max(0, Math.abs(x - b.position.x) - b.size.x / 2),
+    Math.max(0, Math.abs(z - b.position.z) - b.size.z / 2),
+  );
+
+it('rezerwacje stojące są osiągalne od spawnu na siatce 1 m', () => {
+  expect(() =>
+    loadHubLayout({
+      ...hideoutData,
+      npcs: [
+        ...hideoutData.npcs,
+        ...futurePlaces
+          .filter((place) => !place.seat)
+          .map((place, index) => ({
+            id: `reserved_${index}`,
+            position: { x: place.x, z: place.z },
+            rotationDeg: 0,
+            accent: 'white',
+          })),
+      ],
+    }),
+  ).not.toThrow();
+});
+
+it('trzy trasy zachowują przejście 2 m i margines 0,9 m od rezerwacji oraz istniejących NPC', () => {
+  for (const route of walkingRoutes)
+    for (let i = 1; i < route.length; i++) {
+      const [ax, az] = route[i - 1]!;
+      const [bx, bz] = route[i]!;
+      const steps = Math.ceil(Math.hypot(bx! - ax!, bz! - az!) * 10);
+      for (let step = 0; step <= steps; step++) {
+        const x = ax! + ((bx! - ax!) * step) / steps;
+        const z = az! + ((bz! - az!) * step) / steps;
+        const at = `${x.toFixed(2)}, ${z.toFixed(2)}`;
+        for (const dx of [-1, 0, 1])
+          for (const dz of [-1, 0, 1])
+            expect(onFloor(x + dx, z + dz), at).toBe(true);
+        for (const b of bodyBlocks)
+          expect(
+            distanceToBlock(x, z, b),
+            `${at}: ${JSON.stringify(b.position)}`,
+          ).toBeGreaterThanOrEqual(1 - 1e-6);
+        for (const npc of [
+          ...futurePlaces,
+          ...(layout.npcs ?? []).map((n) => n.position),
+        ])
+          expect(Math.hypot(x - npc.x, z - npc.z), at).toBeGreaterThanOrEqual(
+            0.9,
+          );
+      }
+    }
+});
+
+it('nowe siedziska mają wierzch 0,48 m, podparcie miednicy i wolną przestrzeń na nogi', () => {
+  for (const place of futurePlaces) {
+    expect(onFloor(place.x, place.z), place.role).toBe(true);
+    if (!place.seat) {
+      for (const b of bodyBlocks)
+        expect(
+          distanceToBlock(place.x, place.z, b),
+          place.role,
+        ).toBeGreaterThan(0);
+      continue;
+    }
+    expect(
+      layout.blocks.some(
+        (b) =>
+          Math.abs(b.position.y + b.size.y / 2 - 0.48) < 1e-6 &&
+          Math.abs(place.x - b.position.x) < b.size.x / 2 &&
+          Math.abs(place.z - b.position.z) < b.size.z / 2,
+      ),
+      place.role,
+    ).toBe(true);
+    const yaw = (place.yaw! * Math.PI) / 180;
+    for (const forward of [0.5, 0.75, 1])
+      for (const side of [-0.2, 0, 0.2]) {
+        const x = place.x + Math.sin(yaw) * forward + Math.cos(yaw) * side;
+        const z = place.z + Math.cos(yaw) * forward - Math.sin(yaw) * side;
+        expect(onFloor(x, z), place.role).toBe(true);
+        for (const b of layout.blocks.filter(
+          (b) =>
+            b.position.y + b.size.y / 2 > 0.02 &&
+            b.position.y - b.size.y / 2 < 0.7,
+        ))
+          expect(distanceToBlock(x, z, b), place.role).toBeGreaterThan(0);
+      }
+  }
+});
+
+it('miejsca aktywności mają pełne wolne kwadraty: taniec i boks 2 m, sanitariuszka i elektryczka 1 m', () => {
+  for (const [x, z, width] of [
+    [-6.5, 12.8, 2],
+    [16.1, -2.4, 2],
+    [-3.5, -13.4, 1],
+    [-10, -8.7, 1],
+  ]) {
+    for (const dx of [-width! / 2, 0, width! / 2])
+      for (const dz of [-width! / 2, 0, width! / 2]) {
+        expect(onFloor(x! + dx, z! + dz)).toBe(true);
+        for (const b of bodyBlocks)
+          expect(distanceToBlock(x! + dx, z! + dz, b)).toBeGreaterThan(0);
+      }
+  }
 });

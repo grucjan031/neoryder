@@ -465,19 +465,6 @@
     },
     {
       "size": {
-        "x": 33.5,
-        "y": 5,
-        "z": 1
-      },
-      "position": {
-        "x": -4.25,
-        "y": 2.5,
-        "z": -7.5
-      },
-      "material": "concrete"
-    },
-    {
-      "size": {
         "x": 5.5,
         "y": 5,
         "z": 1
@@ -551,19 +538,6 @@
         "x": 14,
         "y": -0.5,
         "z": -10.5
-      },
-      "material": "concrete"
-    },
-    {
-      "size": {
-        "x": 1,
-        "y": 6.8,
-        "z": 25
-      },
-      "position": {
-        "x": -20.5,
-        "y": 1.6,
-        "z": 4.5
       },
       "material": "concrete"
     },
@@ -1714,20 +1688,6 @@
     },
     {
       "size": {
-        "x": 3,
-        "y": 2.6,
-        "z": 2.025
-      },
-      "position": {
-        "x": -3,
-        "y": 1.3,
-        "z": 14.9
-      },
-      "model": "city_stall",
-      "yaw": 3.1416
-    },
-    {
-      "size": {
         "x": 0.4,
         "y": 0.6,
         "z": 0.4
@@ -1786,7 +1746,7 @@
         "z": 0.7
       },
       "position": {
-        "x": -19.2,
+        "x": -31.2,
         "y": 0.475,
         "z": 15.25
       },
@@ -1800,7 +1760,7 @@
         "z": 0.7
       },
       "position": {
-        "x": -18.5,
+        "x": -30.5,
         "y": 0.475,
         "z": 15.5
       },
@@ -1809,53 +1769,53 @@
     },
     {
       "size": {
-        "x": 0.9,
+        "x": 2.6,
         "y": 0.45,
-        "z": 2.6
+        "z": 0.9
       },
       "position": {
-        "x": -18.15,
+        "x": -17.5,
         "y": 0.225,
-        "z": 11.5
+        "z": 15.15
       },
       "material": "fabric"
     },
     {
       "size": {
-        "x": 0.3,
+        "x": 2.6,
         "y": 1,
-        "z": 2.6
+        "z": 0.3
       },
       "position": {
-        "x": -18.75,
+        "x": -17.5,
         "y": 0.5,
-        "z": 11.5
+        "z": 15.75
       },
       "material": "fabric"
     },
     {
       "size": {
-        "x": 0.9,
+        "x": 0.25,
         "y": 0.15,
-        "z": 0.25
+        "z": 0.9
       },
       "position": {
-        "x": -18.15,
+        "x": -18.675,
         "y": 0.525,
-        "z": 10.325
+        "z": 15.15
       },
       "material": "fabric"
     },
     {
       "size": {
-        "x": 0.9,
+        "x": 0.25,
         "y": 0.15,
-        "z": 0.25
+        "z": 0.9
       },
       "position": {
-        "x": -18.15,
+        "x": -16.325,
         "y": 0.525,
-        "z": 12.675
+        "z": 15.15
       },
       "material": "fabric"
     },
@@ -1918,9 +1878,9 @@
         "z": 0.8
       },
       "position": {
-        "x": -16.2,
+        "x": -15.5,
         "y": 0.2,
-        "z": 11
+        "z": 15.2
       },
       "material": "wood"
     },
@@ -1933,7 +1893,7 @@
       "position": {
         "x": -14.15,
         "y": 0.225,
-        "z": 13.25
+        "z": 14.8
       },
       "material": "wood"
     },
@@ -2380,6 +2340,1540 @@
         "z": 13.35
       },
       "material": "metal"
+    },
+    {
+      "size": {
+        "x": 24,
+        "y": 5,
+        "z": 1
+      },
+      "position": {
+        "x": -9,
+        "y": 2.5,
+        "z": -7.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 6.5,
+        "y": 5,
+        "z": 1
+      },
+      "position": {
+        "x": 9.25,
+        "y": 2.5,
+        "z": -7.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.5,
+        "z": 1
+      },
+      "position": {
+        "x": 4.5,
+        "y": 4.25,
+        "z": -7.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 6.8,
+        "z": 19
+      },
+      "position": {
+        "x": -20.5,
+        "y": 1.6,
+        "z": 1.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 6.8,
+        "z": 2
+      },
+      "position": {
+        "x": -20.5,
+        "y": 1.6,
+        "z": 16
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1.5,
+        "z": 4
+      },
+      "position": {
+        "x": -20.5,
+        "y": 4.25,
+        "z": 13
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1,
+        "z": 0.65
+      },
+      "position": {
+        "x": -3,
+        "y": 0.5,
+        "z": 14.05
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 3.2,
+        "y": 0.08,
+        "z": 0.85
+      },
+      "position": {
+        "x": -3,
+        "y": 1.04,
+        "z": 14.05
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3.4,
+        "y": 0.15,
+        "z": 2.4
+      },
+      "position": {
+        "x": -3,
+        "y": 2.65,
+        "z": 14.35
+      },
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 0.08,
+        "y": 2.6,
+        "z": 0.08
+      },
+      "position": {
+        "x": -4.6,
+        "y": 1.3,
+        "z": 14.9
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.08,
+        "y": 2.6,
+        "z": 0.08
+      },
+      "position": {
+        "x": -1.4,
+        "y": 1.3,
+        "z": 14.9
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2.8,
+        "y": 0.06,
+        "z": 0.04
+      },
+      "position": {
+        "x": -3,
+        "y": 0.8,
+        "z": 13.6
+      },
+      "material": "neon_amber"
+    },
+    {
+      "size": {
+        "x": 28,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -6,
+        "y": -0.5,
+        "z": -13
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 30,
+        "y": 1,
+        "z": 13
+      },
+      "position": {
+        "x": -6,
+        "y": 5.5,
+        "z": -13.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 30,
+        "y": 5,
+        "z": 1
+      },
+      "position": {
+        "x": -6,
+        "y": 2.5,
+        "z": -19.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 5,
+        "z": 12
+      },
+      "position": {
+        "x": -20.5,
+        "y": 2.5,
+        "z": -13
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 5,
+        "z": 12
+      },
+      "position": {
+        "x": 8.5,
+        "y": 2.5,
+        "z": -13
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 0.3,
+        "y": 5,
+        "z": 8
+      },
+      "position": {
+        "x": -8,
+        "y": 2.5,
+        "z": -15
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 0.3,
+        "y": 5,
+        "z": 8
+      },
+      "position": {
+        "x": 1,
+        "y": 2.5,
+        "z": -15
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 5,
+        "z": 0.4
+      },
+      "position": {
+        "x": -18.0,
+        "y": 2.5,
+        "z": -11.2
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 5,
+        "z": 0.4
+      },
+      "position": {
+        "x": -9.0,
+        "y": 2.5,
+        "z": -11.2
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 5,
+        "z": 0.4
+      },
+      "position": {
+        "x": 0.0,
+        "y": 2.5,
+        "z": -11.2
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 5,
+        "z": 0.4
+      },
+      "position": {
+        "x": 7.0,
+        "y": 2.5,
+        "z": -11.2
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.5,
+        "z": 0.4
+      },
+      "position": {
+        "x": -14.0,
+        "y": 4.25,
+        "z": -11.2
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.5,
+        "z": 0.4
+      },
+      "position": {
+        "x": -4.5,
+        "y": 4.25,
+        "z": -11.2
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.5,
+        "z": 0.4
+      },
+      "position": {
+        "x": 4.5,
+        "y": 4.25,
+        "z": -11.2
+      },
+      "material": "plaster"
+    },
+    {
+      "size": {
+        "x": 3.4,
+        "y": 1,
+        "z": 0.65
+      },
+      "position": {
+        "x": -17,
+        "y": 0.5,
+        "z": -17.6
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 3.6,
+        "y": 0.08,
+        "z": 0.85
+      },
+      "position": {
+        "x": -17,
+        "y": 1.04,
+        "z": -17.6
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3.8,
+        "y": 0.12,
+        "z": 1.6
+      },
+      "position": {
+        "x": -17,
+        "y": 2.7,
+        "z": -17.6
+      },
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 0.08,
+        "y": 2.7,
+        "z": 0.08
+      },
+      "position": {
+        "x": -18.7,
+        "y": 1.35,
+        "z": -17.9
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.08,
+        "y": 2.7,
+        "z": 0.08
+      },
+      "position": {
+        "x": -15.3,
+        "y": 1.35,
+        "z": -17.9
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 0.28,
+        "z": 0.4
+      },
+      "position": {
+        "x": -17.8,
+        "y": 1.22,
+        "z": -17.6
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.44,
+        "y": 0.04,
+        "z": 0.44
+      },
+      "position": {
+        "x": -17.8,
+        "y": 1.38,
+        "z": -17.6
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 0.28,
+        "z": 0.4
+      },
+      "position": {
+        "x": -16.2,
+        "y": 1.22,
+        "z": -17.6
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.44,
+        "y": 0.04,
+        "z": 0.44
+      },
+      "position": {
+        "x": -16.2,
+        "y": 1.38,
+        "z": -17.6
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.12,
+        "z": 0.9
+      },
+      "position": {
+        "x": -17,
+        "y": 0.94,
+        "z": -14.8
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.88,
+        "z": 0.65
+      },
+      "position": {
+        "x": -18.25,
+        "y": 0.44,
+        "z": -14.8
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.88,
+        "z": 0.65
+      },
+      "position": {
+        "x": -15.75,
+        "y": 0.44,
+        "z": -14.8
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.48,
+        "z": 0.56
+      },
+      "position": {
+        "x": -17,
+        "y": 0.24,
+        "z": -13.55
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.48,
+        "z": 0.56
+      },
+      "position": {
+        "x": -17,
+        "y": 0.24,
+        "z": -16.05
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.12,
+        "z": 0.9
+      },
+      "position": {
+        "x": -10.5,
+        "y": 0.94,
+        "z": -14.8
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.88,
+        "z": 0.65
+      },
+      "position": {
+        "x": -11.75,
+        "y": 0.44,
+        "z": -14.8
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.88,
+        "z": 0.65
+      },
+      "position": {
+        "x": -9.25,
+        "y": 0.44,
+        "z": -14.8
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.48,
+        "z": 0.56
+      },
+      "position": {
+        "x": -10.5,
+        "y": 0.24,
+        "z": -13.55
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.48,
+        "z": 0.56
+      },
+      "position": {
+        "x": -10.5,
+        "y": 0.24,
+        "z": -16.05
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 0.65,
+        "y": 0.08,
+        "z": 2.8
+      },
+      "position": {
+        "x": -19.5,
+        "y": 0.35,
+        "z": -16
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 0.65,
+        "y": 0.08,
+        "z": 2.8
+      },
+      "position": {
+        "x": -19.5,
+        "y": 1.15,
+        "z": -16
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 0.65,
+        "y": 0.08,
+        "z": 2.8
+      },
+      "position": {
+        "x": -19.5,
+        "y": 1.95,
+        "z": -16
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 0.5,
+        "y": 0.55,
+        "z": 0.55
+      },
+      "position": {
+        "x": -19.5,
+        "y": 0.7,
+        "z": -16.8
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.5,
+        "y": 0.55,
+        "z": 0.55
+      },
+      "position": {
+        "x": -19.5,
+        "y": 0.7,
+        "z": -16
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.5,
+        "y": 0.55,
+        "z": 0.55
+      },
+      "position": {
+        "x": -19.5,
+        "y": 0.7,
+        "z": -15.2
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.2,
+        "y": 0.08,
+        "z": 0.2
+      },
+      "position": {
+        "x": -17.7,
+        "y": 1.04,
+        "z": -14.8
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.2,
+        "y": 0.08,
+        "z": 0.2
+      },
+      "position": {
+        "x": -16.3,
+        "y": 1.04,
+        "z": -14.8
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.2,
+        "y": 0.08,
+        "z": 0.2
+      },
+      "position": {
+        "x": -11.2,
+        "y": 1.04,
+        "z": -14.8
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.2,
+        "y": 0.08,
+        "z": 0.2
+      },
+      "position": {
+        "x": -9.8,
+        "y": 1.04,
+        "z": -14.8
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 1.4,
+        "y": 0.34,
+        "z": 2.4
+      },
+      "position": {
+        "x": -6.5,
+        "y": 0.17,
+        "z": -17.4
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 1.4,
+        "y": 0.14,
+        "z": 2.4
+      },
+      "position": {
+        "x": -6.5,
+        "y": 0.41,
+        "z": -17.4
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.95,
+        "y": 0.12,
+        "z": 0.45
+      },
+      "position": {
+        "x": -6.5,
+        "y": 0.54,
+        "z": -18.25
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 1.3,
+        "y": 0.1,
+        "z": 0.9
+      },
+      "position": {
+        "x": -6.5,
+        "y": 0.53,
+        "z": -17.6
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.35,
+        "y": 0.44,
+        "z": 0.5
+      },
+      "position": {
+        "x": -5.6,
+        "y": 0.22,
+        "z": -18.0
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 1.4,
+        "y": 0.34,
+        "z": 2.4
+      },
+      "position": {
+        "x": -2,
+        "y": 0.17,
+        "z": -17.4
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 1.4,
+        "y": 0.14,
+        "z": 2.4
+      },
+      "position": {
+        "x": -2,
+        "y": 0.41,
+        "z": -17.4
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.95,
+        "y": 0.12,
+        "z": 0.45
+      },
+      "position": {
+        "x": -2,
+        "y": 0.54,
+        "z": -18.25
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 1.3,
+        "y": 0.1,
+        "z": 1.4
+      },
+      "position": {
+        "x": -2,
+        "y": 0.53,
+        "z": -17.25
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.35,
+        "y": 0.44,
+        "z": 0.5
+      },
+      "position": {
+        "x": -1.1,
+        "y": 0.22,
+        "z": -18.0
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 1.4,
+        "y": 0.34,
+        "z": 2.4
+      },
+      "position": {
+        "x": -2,
+        "y": 0.17,
+        "z": -13.4
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 1.4,
+        "y": 0.14,
+        "z": 2.4
+      },
+      "position": {
+        "x": -2,
+        "y": 0.41,
+        "z": -13.4
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.95,
+        "y": 0.12,
+        "z": 0.45
+      },
+      "position": {
+        "x": -2,
+        "y": 0.54,
+        "z": -14.25
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 1.3,
+        "y": 0.1,
+        "z": 1.4
+      },
+      "position": {
+        "x": -2,
+        "y": 0.53,
+        "z": -13.25
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.35,
+        "y": 0.44,
+        "z": 0.5
+      },
+      "position": {
+        "x": -1.1,
+        "y": 0.22,
+        "z": -14.0
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.06,
+        "y": 2.8,
+        "z": 2.8
+      },
+      "position": {
+        "x": -7.6,
+        "y": 1.7,
+        "z": -17.4
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.06,
+        "y": 0.06,
+        "z": 2.8
+      },
+      "position": {
+        "x": -7.6,
+        "y": 3.2,
+        "z": -17.4
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.06,
+        "y": 2.8,
+        "z": 2.8
+      },
+      "position": {
+        "x": -0.2,
+        "y": 1.7,
+        "z": -17.4
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.06,
+        "y": 0.06,
+        "z": 2.8
+      },
+      "position": {
+        "x": -0.2,
+        "y": 3.2,
+        "z": -17.4
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.1,
+        "y": 1.4,
+        "z": 0.65
+      },
+      "position": {
+        "x": -4.1,
+        "y": 0.7,
+        "z": -18.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 0.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": -4.1,
+        "y": 1.5,
+        "z": -18.5
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.55,
+        "y": 0.06,
+        "z": 0.14
+      },
+      "position": {
+        "x": -6.5,
+        "y": 2.7,
+        "z": -18.9
+      },
+      "material": "neon_white"
+    },
+    {
+      "size": {
+        "x": 0.55,
+        "y": 0.06,
+        "z": 0.14
+      },
+      "position": {
+        "x": -2,
+        "y": 2.7,
+        "z": -18.9
+      },
+      "material": "neon_white"
+    },
+    {
+      "size": {
+        "x": 2.8,
+        "y": 0.08,
+        "z": 1
+      },
+      "position": {
+        "x": 5,
+        "y": 0.86,
+        "z": -17
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.82,
+        "z": 0.8
+      },
+      "position": {
+        "x": 3.75,
+        "y": 0.41,
+        "z": -17
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.12,
+        "y": 0.82,
+        "z": 0.8
+      },
+      "position": {
+        "x": 6.25,
+        "y": 0.41,
+        "z": -17
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.56,
+        "y": 0.48,
+        "z": 0.56
+      },
+      "position": {
+        "x": 5,
+        "y": 0.24,
+        "z": -15.9
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.3,
+        "y": 0.2,
+        "z": 0.3
+      },
+      "position": {
+        "x": 4.5,
+        "y": 1.0,
+        "z": -17
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.05,
+        "y": 0.4,
+        "z": 0.05
+      },
+      "position": {
+        "x": 4.5,
+        "y": 1.3,
+        "z": -17
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.15,
+        "y": 0.12,
+        "z": 0.3
+      },
+      "position": {
+        "x": 4.5,
+        "y": 1.52,
+        "z": -17
+      },
+      "material": "rubber"
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 0.55,
+        "z": 0.8
+      },
+      "position": {
+        "x": 2,
+        "y": 0.3,
+        "z": -18.4
+      },
+      "material": "machine"
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 0.55,
+        "z": 0.8
+      },
+      "position": {
+        "x": 2,
+        "y": 0.9,
+        "z": -18.4
+      },
+      "material": "machine"
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 0.55,
+        "z": 0.8
+      },
+      "position": {
+        "x": 2,
+        "y": 1.5,
+        "z": -18.4
+      },
+      "material": "machine"
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 0.55,
+        "z": 0.8
+      },
+      "position": {
+        "x": 2.8,
+        "y": 0.3,
+        "z": -18.4
+      },
+      "material": "machine"
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 0.55,
+        "z": 0.8
+      },
+      "position": {
+        "x": 2.8,
+        "y": 0.9,
+        "z": -18.4
+      },
+      "material": "machine"
+    },
+    {
+      "size": {
+        "x": 0.7,
+        "y": 0.55,
+        "z": 0.8
+      },
+      "position": {
+        "x": 2.8,
+        "y": 1.5,
+        "z": -18.4
+      },
+      "material": "machine"
+    },
+    {
+      "size": {
+        "x": 2.6,
+        "y": 0.06,
+        "z": 0.08
+      },
+      "position": {
+        "x": 5,
+        "y": 3.4,
+        "z": -18.95
+      },
+      "material": "neon_blue"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 0.8,
+        "z": 0.16
+      },
+      "position": {
+        "x": -10,
+        "y": 1.05,
+        "z": -7.95
+      },
+      "material": "machine"
+    },
+    {
+      "size": {
+        "x": 0.08,
+        "y": 0.45,
+        "z": 0.03
+      },
+      "position": {
+        "x": -10,
+        "y": 1.05,
+        "z": -8.05
+      },
+      "material": "neon_green"
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1,
+        "z": 8
+      },
+      "position": {
+        "x": -27,
+        "y": -0.5,
+        "z": 12
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 16,
+        "y": 1,
+        "z": 10
+      },
+      "position": {
+        "x": -27,
+        "y": 5.5,
+        "z": 12
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 5,
+        "z": 8
+      },
+      "position": {
+        "x": -34.5,
+        "y": 2.5,
+        "z": 12
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 15,
+        "y": 5,
+        "z": 1
+      },
+      "position": {
+        "x": -27.5,
+        "y": 2.5,
+        "z": 7.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 15,
+        "y": 5,
+        "z": 1
+      },
+      "position": {
+        "x": -27.5,
+        "y": 2.5,
+        "z": 16.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 2.6,
+        "z": 2.025
+      },
+      "position": {
+        "x": -28,
+        "y": 1.3,
+        "z": 9.1
+      },
+      "model": "city_stall"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 2.2,
+        "z": 0.62
+      },
+      "position": {
+        "x": -32.7,
+        "y": 1.1,
+        "z": 9
+      },
+      "model": "city_kiosk"
+    },
+    {
+      "size": {
+        "x": 1.2,
+        "y": 1.6,
+        "z": 1.2
+      },
+      "position": {
+        "x": -24,
+        "y": 0.8,
+        "z": 9
+      },
+      "model": "city_crates"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 1.02,
+        "z": 0.7
+      },
+      "position": {
+        "x": -25,
+        "y": 0.51,
+        "z": 14.5
+      },
+      "material": "wood"
+    },
+    {
+      "size": {
+        "x": 3.2,
+        "y": 0.08,
+        "z": 0.9
+      },
+      "position": {
+        "x": -25,
+        "y": 1.06,
+        "z": 14.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.08,
+        "y": 3,
+        "z": 0.08
+      },
+      "position": {
+        "x": -26.5,
+        "y": 1.5,
+        "z": 14.7
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.08,
+        "y": 3,
+        "z": 0.08
+      },
+      "position": {
+        "x": -23.5,
+        "y": 1.5,
+        "z": 14.7
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3.6,
+        "y": 0.1,
+        "z": 2.6
+      },
+      "position": {
+        "x": -25,
+        "y": 3.05,
+        "z": 14.5
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 2.4,
+        "y": 0.06,
+        "z": 0.06
+      },
+      "position": {
+        "x": -29,
+        "y": 3.5,
+        "z": 8.15
+      },
+      "material": "neon_green"
+    },
+    {
+      "size": {
+        "x": 2.4,
+        "y": 0.06,
+        "z": 0.06
+      },
+      "position": {
+        "x": -25,
+        "y": 3.5,
+        "z": 8.15
+      },
+      "material": "neon_green"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 0.06,
+        "z": 0.06
+      },
+      "position": {
+        "x": -25,
+        "y": 2.8,
+        "z": 15.85
+      },
+      "material": "neon_violet"
+    },
+    {
+      "size": {
+        "x": 0.06,
+        "y": 2,
+        "z": 0.06
+      },
+      "position": {
+        "x": 18.3,
+        "y": 4,
+        "z": -2.4
+      },
+      "material": "rubber"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 1.8,
+        "z": 0.6
+      },
+      "position": {
+        "x": 18.3,
+        "y": 2.1,
+        "z": -2.4
+      },
+      "material": "fabric"
+    },
+    {
+      "size": {
+        "x": 0.62,
+        "y": 0.1,
+        "z": 0.62
+      },
+      "position": {
+        "x": 18.3,
+        "y": 1.25,
+        "z": -2.4
+      },
+      "material": "rubber"
+    },
+    {
+      "size": {
+        "x": 0.9,
+        "y": 1.8,
+        "z": 0.65
+      },
+      "position": {
+        "x": -6.8,
+        "y": 0.9,
+        "z": 15.4
+      },
+      "material": "plastic"
+    },
+    {
+      "size": {
+        "x": 0.05,
+        "y": 1.65,
+        "z": 0.04
+      },
+      "position": {
+        "x": -7.2,
+        "y": 0.95,
+        "z": 15.04
+      },
+      "material": "neon_violet"
+    },
+    {
+      "size": {
+        "x": 0.05,
+        "y": 1.65,
+        "z": 0.04
+      },
+      "position": {
+        "x": -6.4,
+        "y": 0.95,
+        "z": 15.04
+      },
+      "material": "neon_violet"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 0.05,
+        "z": 0.04
+      },
+      "position": {
+        "x": -6.8,
+        "y": 0.35,
+        "z": 15.04
+      },
+      "material": "neon_green"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 0.05,
+        "z": 0.04
+      },
+      "position": {
+        "x": -6.8,
+        "y": 1.55,
+        "z": 15.04
+      },
+      "material": "neon_green"
     }
   ],
   "stations": [
@@ -2513,21 +4007,6 @@
       "texture": "tiles_wall",
       "tint": "#c9d2e3",
       "position": {
-        "x": -3.75,
-        "y": 1.1,
-        "z": -6.99
-      },
-      "size": {
-        "w": 32.5,
-        "h": 2.2
-      },
-      "yaw": 0
-    },
-    {
-      "kind": "tiles",
-      "texture": "tiles_wall",
-      "tint": "#c9d2e3",
-      "position": {
         "x": 17.75,
         "y": 1.1,
         "z": -6.99
@@ -2597,21 +4076,6 @@
         "h": 2.2
       },
       "yaw": 3.1416
-    },
-    {
-      "kind": "tiles",
-      "texture": "tiles_wall",
-      "tint": "#c9d2e3",
-      "position": {
-        "x": -19.99,
-        "y": 1.1,
-        "z": 12
-      },
-      "size": {
-        "w": 8,
-        "h": 2.2
-      },
-      "yaw": 1.5708
     },
     {
       "kind": "tiles",
@@ -2891,9 +4355,9 @@
       "kind": "poster",
       "texture": "banner_iskra",
       "position": {
-        "x": -19.98,
+        "x": -33.98,
         "y": 2.3,
-        "z": 13.5
+        "z": 12
       },
       "size": {
         "w": 2.4,
@@ -2919,7 +4383,7 @@
       "kind": "poster",
       "texture": "poster_koalicja_defaced",
       "position": {
-        "x": 5,
+        "x": 8.5,
         "y": 1.9,
         "z": -6.985
       },
@@ -2956,6 +4420,352 @@
         "h": 5.3
       },
       "yaw": -1.5708
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -8.5,
+        "y": 1.1,
+        "z": -6.99
+      },
+      "size": {
+        "w": 23,
+        "h": 2.2
+      },
+      "yaw": 0,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": 9.25,
+        "y": 1.1,
+        "z": -6.99
+      },
+      "size": {
+        "w": 6.5,
+        "h": 2.2
+      },
+      "yaw": 0,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -19.99,
+        "y": 1.1,
+        "z": 9.5
+      },
+      "size": {
+        "w": 3,
+        "h": 2.2
+      },
+      "yaw": 1.5708,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -19.99,
+        "y": 1.1,
+        "z": 15.5
+      },
+      "size": {
+        "w": 1,
+        "h": 2.2
+      },
+      "yaw": 1.5708,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -6,
+        "y": 1.1,
+        "z": -18.99
+      },
+      "size": {
+        "w": 28,
+        "h": 2.2
+      },
+      "yaw": 0,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -19.99,
+        "y": 1.1,
+        "z": -13
+      },
+      "size": {
+        "w": 12,
+        "h": 2.2
+      },
+      "yaw": 1.5708,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tech_panel",
+      "position": {
+        "x": 7.99,
+        "y": 1.1,
+        "z": -13
+      },
+      "size": {
+        "w": 12,
+        "h": 2.2
+      },
+      "yaw": -1.5708,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_menu",
+      "position": {
+        "x": -17,
+        "y": 2.0,
+        "z": -18.98
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.0
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "poster",
+      "texture": "poster_iskra_recruit",
+      "position": {
+        "x": -13.8,
+        "y": 2.2,
+        "z": -18.98
+      },
+      "size": {
+        "w": 1.5,
+        "h": 1.5
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "poster",
+      "texture": "banner_iskra",
+      "position": {
+        "x": -4.5,
+        "y": 2.8,
+        "z": -18.98
+      },
+      "size": {
+        "w": 2.2,
+        "h": 1.1
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_status",
+      "position": {
+        "x": 2,
+        "y": 0.3,
+        "z": -17.985
+      },
+      "size": {
+        "w": 0.55,
+        "h": 0.3
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_status",
+      "position": {
+        "x": 2,
+        "y": 0.9,
+        "z": -17.985
+      },
+      "size": {
+        "w": 0.55,
+        "h": 0.3
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_status",
+      "position": {
+        "x": 2,
+        "y": 1.5,
+        "z": -17.985
+      },
+      "size": {
+        "w": 0.55,
+        "h": 0.3
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_status",
+      "position": {
+        "x": 2.8,
+        "y": 0.3,
+        "z": -17.985
+      },
+      "size": {
+        "w": 0.55,
+        "h": 0.3
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_status",
+      "position": {
+        "x": 2.8,
+        "y": 0.9,
+        "z": -17.985
+      },
+      "size": {
+        "w": 0.55,
+        "h": 0.3
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_status",
+      "position": {
+        "x": 2.8,
+        "y": 1.5,
+        "z": -17.985
+      },
+      "size": {
+        "w": 0.55,
+        "h": 0.3
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_comms",
+      "position": {
+        "x": 5,
+        "y": 2.4,
+        "z": -18.98
+      },
+      "size": {
+        "w": 2.6,
+        "h": 1.3
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "poster",
+      "texture": "poster_iskra_recruit",
+      "position": {
+        "x": 7.98,
+        "y": 2,
+        "z": -14.4
+      },
+      "size": {
+        "w": 1.2,
+        "h": 1.5
+      },
+      "yaw": -1.5708
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -33.99,
+        "y": 1.1,
+        "z": 12
+      },
+      "size": {
+        "w": 8,
+        "h": 2.2
+      },
+      "yaw": 1.5708,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -27.5,
+        "y": 1.1,
+        "z": 8.01
+      },
+      "size": {
+        "w": 13,
+        "h": 2.2
+      },
+      "yaw": 0,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "tiles",
+      "texture": "tiles_wall",
+      "position": {
+        "x": -27.5,
+        "y": 1.1,
+        "z": 15.99
+      },
+      "size": {
+        "w": 13,
+        "h": 2.2
+      },
+      "yaw": 3.1416,
+      "tint": "#8a97b0"
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_map",
+      "position": {
+        "x": -24,
+        "y": 2.4,
+        "z": 8.02
+      },
+      "size": {
+        "w": 1.6,
+        "h": 1.0
+      },
+      "yaw": 0
+    },
+    {
+      "kind": "poster",
+      "texture": "poster_koalicja_defaced",
+      "position": {
+        "x": -29,
+        "y": 2.6,
+        "z": 15.98
+      },
+      "size": {
+        "w": 1.8,
+        "h": 1.8
+      },
+      "yaw": 3.1416
+    },
+    {
+      "kind": "screen",
+      "texture": "screen_menu",
+      "position": {
+        "x": -6.8,
+        "y": 1.1,
+        "z": 15.035
+      },
+      "size": {
+        "w": 0.6,
+        "h": 0.5
+      },
+      "yaw": 3.1416
     }
   ],
   "npcs": [
@@ -3138,6 +4948,20 @@
         "h": 1.1
       },
       "yaw": -1.5708
+    },
+    {
+      "kind": "neon",
+      "texture": "noodles",
+      "position": {
+        "x": -17,
+        "y": 3.5,
+        "z": -18.95
+      },
+      "size": {
+        "w": 3,
+        "h": 1.5
+      },
+      "yaw": 0
     }
   ],
   "lights": [
@@ -3280,6 +5104,126 @@
       "color": "#8a5cff",
       "intensity": 3,
       "range": 8
+    },
+    {
+      "position": {
+        "x": -16,
+        "y": 3.8,
+        "z": -15
+      },
+      "color": "#ffae1a",
+      "intensity": 2.8,
+      "range": 9
+    },
+    {
+      "position": {
+        "x": -10,
+        "y": 3.8,
+        "z": -15
+      },
+      "color": "#fff1d6",
+      "intensity": 1.8,
+      "range": 7
+    },
+    {
+      "position": {
+        "x": -5,
+        "y": 3.5,
+        "z": -17
+      },
+      "color": "#fff1d6",
+      "intensity": 0.8,
+      "range": 6
+    },
+    {
+      "position": {
+        "x": -2,
+        "y": 3.5,
+        "z": -13
+      },
+      "color": "#fff1d6",
+      "intensity": 0.7,
+      "range": 5
+    },
+    {
+      "position": {
+        "x": 5,
+        "y": 3.8,
+        "z": -16
+      },
+      "color": "#3d7bff",
+      "intensity": 2.4,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 4.5,
+        "y": 4,
+        "z": -9
+      },
+      "color": "#fff1d6",
+      "intensity": 1.6,
+      "range": 6
+    },
+    {
+      "position": {
+        "x": -11,
+        "y": 3.8,
+        "z": -9
+      },
+      "color": "#ffae1a",
+      "intensity": 1.5,
+      "range": 7
+    },
+    {
+      "position": {
+        "x": -28,
+        "y": 3.8,
+        "z": 10
+      },
+      "color": "#6dff4a",
+      "intensity": 2.4,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": -25,
+        "y": 3.8,
+        "z": 14
+      },
+      "color": "#8a5cff",
+      "intensity": 2.4,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": -21.5,
+        "y": 3.8,
+        "z": 13
+      },
+      "color": "#6dff4a",
+      "intensity": 1.5,
+      "range": 6
+    },
+    {
+      "position": {
+        "x": -6.8,
+        "y": 2.5,
+        "z": 14.5
+      },
+      "color": "#8a5cff",
+      "intensity": 1.2,
+      "range": 5
+    },
+    {
+      "position": {
+        "x": 18,
+        "y": 3.8,
+        "z": -2.4
+      },
+      "color": "#fff1d6",
+      "intensity": 1,
+      "range": 5
     }
   ],
   "decals": [
@@ -3384,15 +5328,15 @@
     {
       "texture": "graffiti_tag3",
       "position": {
-        "x": -19.98,
+        "x": -22.5,
         "y": 1.5,
-        "z": 9.8
+        "z": 8.02
       },
       "size": {
         "w": 1.8,
         "h": 1.8
       },
-      "yaw": 1.5708,
+      "yaw": 0,
       "surface": "wall"
     },
     {
@@ -3631,6 +5575,76 @@
       "yaw": 2.2,
       "surface": "floor",
       "opacity": 0.7
+    },
+    {
+      "texture": "sticker_cluster",
+      "position": {
+        "x": -19.98,
+        "y": 1.4,
+        "z": -13
+      },
+      "size": {
+        "w": 1,
+        "h": 1
+      },
+      "yaw": 1.5708,
+      "surface": "wall"
+    },
+    {
+      "texture": "sticker_cluster",
+      "position": {
+        "x": -6,
+        "y": 1.5,
+        "z": -18.98
+      },
+      "size": {
+        "w": 1,
+        "h": 1
+      },
+      "yaw": 0,
+      "surface": "wall"
+    },
+    {
+      "texture": "sticker_cluster",
+      "position": {
+        "x": 7.98,
+        "y": 1.2,
+        "z": -17.2
+      },
+      "size": {
+        "w": 0.8,
+        "h": 0.8
+      },
+      "yaw": -1.5708,
+      "surface": "wall"
+    },
+    {
+      "texture": "graffiti_resist",
+      "position": {
+        "x": -33.98,
+        "y": 2,
+        "z": 10
+      },
+      "size": {
+        "w": 1.6,
+        "h": 1.6
+      },
+      "yaw": 1.5708,
+      "surface": "wall"
+    },
+    {
+      "texture": "sticker_cluster",
+      "position": {
+        "x": -22.5,
+        "y": 1.5,
+        "z": 15.98
+      },
+      "size": {
+        "w": 1,
+        "h": 1
+      },
+      "yaw": 3.1416,
+      "surface": "wall"
     }
   ],
   "ambientFx": [
@@ -3714,6 +5728,60 @@
         "z": 4.2
       },
       "rate": 0.45
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -17.8,
+        "y": 1.42,
+        "z": -17.6
+      },
+      "rate": 0.55
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -16.2,
+        "y": 1.42,
+        "z": -17.6
+      },
+      "rate": 0.55
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -18.8,
+        "y": 4.9,
+        "z": -12
+      },
+      "rate": 0.25
+    },
+    {
+      "kind": "sparks",
+      "position": {
+        "x": -10,
+        "y": 1.6,
+        "z": -8.05
+      },
+      "rate": 0.08
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": -33,
+        "y": 0.1,
+        "z": 14
+      },
+      "rate": 0.4
+    },
+    {
+      "kind": "drip",
+      "position": {
+        "x": -29,
+        "y": 4.9,
+        "z": 12
+      },
+      "rate": 0.35
     }
   ],
   "decor": [
@@ -4014,6 +6082,86 @@
       },
       "yaw": -0.2,
       "scale": 0.16
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": -14,
+        "y": 4.7,
+        "z": -14
+      },
+      "scale": 1.3,
+      "yaw": 0
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": -14,
+        "y": 4.85,
+        "z": -16.5
+      },
+      "scale": 1.1,
+      "yaw": 0
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": -4,
+        "y": 4.8,
+        "z": -14.8
+      },
+      "scale": 0.7,
+      "yaw": 0
+    },
+    {
+      "model": "city_antenna",
+      "position": {
+        "x": 6.9,
+        "y": 0,
+        "z": -18
+      },
+      "scale": 0.5,
+      "yaw": 0
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": 4.6,
+        "y": 4.8,
+        "z": -16
+      },
+      "scale": 0.6,
+      "yaw": 0
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": -8,
+        "y": 4.7,
+        "z": -9.5
+      },
+      "scale": 1.8,
+      "yaw": 0
+    },
+    {
+      "model": "city_cable_span",
+      "position": {
+        "x": -27,
+        "y": 4.9,
+        "z": 12
+      },
+      "scale": 1.2,
+      "yaw": 0
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": -27,
+        "y": 4.7,
+        "z": 12
+      },
+      "scale": 1.1,
+      "yaw": 0
     }
   ]
 }
