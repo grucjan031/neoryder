@@ -7,6 +7,7 @@ import {
   InstancedMesh,
   Matrix4,
   MeshBasicMaterial,
+  NormalBlending,
   PlaneGeometry,
   Quaternion,
   Vector3,
@@ -73,6 +74,15 @@ export class Weather {
   private readonly direction = new Vector3();
   private readonly up = new Vector3(0, 1, 0);
   private readonly splashColor = new Color();
+  private readonly flakeColor = new Color();
+  private readonly flakeMask = { value: 0 };
+  private readonly flakeSoftEdge = { value: tuning.weather.flakeSoftEdge };
+  private readonly ashEdgeRoughness = {
+    value: tuning.weather.ashEdgeRoughness,
+  };
+  private readonly ashEdgeFrequency = {
+    value: tuning.weather.ashEdgeFrequency,
+  };
   private readonly floorPoint = new Vector3();
   private readonly rainHalfSize = new Vector3();
   private readonly splashLimit: number;
@@ -124,6 +134,49 @@ export class Weather {
       toneMapped: false,
     });
     material.userData.bloom = false;
+    material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, {
+        flakeMask: this.flakeMask,
+        flakeSoftEdge: this.flakeSoftEdge,
+        ashEdgeRoughness: this.ashEdgeRoughness,
+        ashEdgeFrequency: this.ashEdgeFrequency,
+      });
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          '#include <common>',
+          '#include <common>\nvarying vec2 vFlakeUv;',
+        )
+        .replace(
+          '#include <uv_vertex>',
+          '#include <uv_vertex>\nvFlakeUv = uv;',
+        );
+      shader.fragmentShader = shader.fragmentShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+          varying vec2 vFlakeUv;
+          uniform float flakeMask, flakeSoftEdge, ashEdgeRoughness, ashEdgeFrequency;
+          float ashHash(vec2 cell) {
+            return fract(sin(dot(cell, vec2(127.1, 311.7))) * 43758.5453);
+          }`,
+        )
+        .replace(
+          '#include <alphamap_fragment>',
+          `#include <alphamap_fragment>
+          if (flakeMask > 0.0) {
+            vec2 p = vFlakeUv * 2.0 - 1.0;
+            float edge = 1.0;
+            if (flakeMask > 1.0) {
+              vec2 pos = p * ashEdgeFrequency;
+              vec2 cell = floor(pos), f = smoothstep(vec2(0.0), vec2(1.0), fract(pos));
+              float noise = mix(mix(ashHash(cell), ashHash(cell + vec2(1, 0)), f.x),
+                mix(ashHash(cell + vec2(0, 1)), ashHash(cell + vec2(1, 1)), f.x), f.y);
+              edge -= ashEdgeRoughness * noise;
+            }
+            diffuseColor.a *= 1.0 - smoothstep(edge - flakeSoftEdge, edge, length(p));
+          }`,
+        );
+    };
     this.rain = new InstancedMesh(
       new PlaneGeometry(1, 1),
       material,
@@ -164,6 +217,22 @@ export class Weather {
       color: p.color,
       opacity: p.opacity,
     });
+    const flakes = p.kind === 'snow' || p.kind === 'ash' ? p.flakes : undefined;
+    this.flakeMask.value = flakes ? (p.kind === 'ash' ? 2 : 1) : 0;
+    this.rain.material.blending = flakes ? NormalBlending : AdditiveBlending;
+    this.rain.material.needsUpdate = true;
+    if (flakes) {
+      this.rain.material.color.set('#ffffff');
+      for (let i = 0; i < this.capacity; i++) {
+        this.flakeColor.set(i % 2 === 0 ? p.color : flakes.secondaryColor);
+        this.rain.setColorAt(i, this.flakeColor);
+      }
+    } else if (this.rain.instanceColor) {
+      this.flakeColor.set('#ffffff');
+      for (let i = 0; i < this.capacity; i++)
+        this.rain.setColorAt(i, this.flakeColor);
+    }
+    if (this.rain.instanceColor) this.rain.instanceColor.needsUpdate = true;
     this.stormEnabled = profile.lightning.enabled;
     this.flash = 0;
     this.elapsed = 0;
@@ -219,7 +288,17 @@ export class Weather {
         )
       : 0;
     this.rain.count = count;
-    this.rain.material.color.set(this.params.color);
+    const flakes =
+      profile &&
+      (profile.precipitation.kind === 'snow' ||
+        profile.precipitation.kind === 'ash')
+        ? profile.precipitation.flakes
+        : undefined;
+    this.rain.material.color.set(flakes ? '#ffffff' : this.params.color);
+    this.flakeSoftEdge.value = tuning.weather.flakeSoftEdge;
+    this.ashEdgeRoughness.value = tuning.weather.ashEdgeRoughness;
+    this.ashEdgeFrequency.value = tuning.weather.ashEdgeFrequency;
+    const flakeNearSq = tuning.weather.flakeNearM ** 2;
     this.rain.material.opacity = this.params.opacity;
     this.splashes.setOpacity(this.params.opacity);
     this.splashDrops.setOpacity(this.params.opacity);
@@ -233,9 +312,11 @@ export class Weather {
       .set(-this.params.windX, Math.max(0, this.params.speed), -this.windZ)
       .normalize();
     const length =
+      flakes?.sizeM ??
       Math.hypot(this.params.windX, this.params.speed, this.windZ) *
-      (profile?.precipitation.exposureS ?? t.rainExposureS);
-    const width = profile?.precipitation.widthM ?? t.rainStreakWidthM;
+        (profile?.precipitation.exposureS ?? t.rainExposureS);
+    const width =
+      flakes?.sizeM ?? profile?.precipitation.widthM ?? t.rainStreakWidthM;
     // Konserwatywna obwiednia całej smugi zapobiega wystawaniu końca spod dachu.
     this.rainHalfSize.set(
       (Math.abs(this.direction.x) * length + width) / 2,
@@ -258,7 +339,7 @@ export class Weather {
     this.rainState.center.copy(center);
     // Pochylenie smugi jest wspólne dla klatki; kropla dokłada tylko obrót wokół Y do kamery.
     const q = this.tiltMatrix.makeRotationFromQuaternion(
-      this.tilt.setFromUnitVectors(this.up, this.direction),
+      this.tilt.setFromUnitVectors(this.up, flakes ? this.up : this.direction),
     ).elements;
     const q0x = q[0]!,
       q0y = q[1]!,
@@ -283,11 +364,20 @@ export class Weather {
         );
       const oldY = p.y;
       if (i < count) {
-        p.x += this.params.windX * dt;
-        p.z += this.windZ * dt;
+        if (flakes) {
+          const phase = (this.elapsed * Math.PI * 2) / flakes.swayPeriodS + i;
+          const flutter = flakes.swayM * ((Math.PI * 2) / flakes.swayPeriodS);
+          const scatter = 1 + flakes.windScatter * Math.sin(i);
+          p.x += (this.params.windX * scatter + Math.cos(phase) * flutter) * dt;
+          p.z += (this.windZ * scatter + Math.sin(phase) * flutter) * dt;
+        } else {
+          p.x += this.params.windX * dt;
+          p.z += this.windZ * dt;
+        }
         p.y -= Math.max(0, this.params.speed) * dt;
       }
       if (
+        !flakes &&
         i < count &&
         oldY > this.floorY &&
         p.y <= this.floorY &&
@@ -330,6 +420,7 @@ export class Weather {
       out[o + 15] = 1;
       if (
         p.y < this.floorY ||
+        (flakes && p.distanceToSquared(center) < flakeNearSq) ||
         isRainSheltered(p, this.shelters, this.rainHalfSize)
       ) {
         out.fill(0, o, o + 11);

@@ -75,6 +75,15 @@ export const tuning = {
   },
   /** Oprawa miasta: wyłącznie render, metry i sekundy. Limity pul ustalane przy tworzeniu. */
   weather: {
+    flakeNearM: 1.5,
+    flakeSoftEdge: 0.24,
+    ashEdgeRoughness: 0.16,
+    ashEdgeFrequency: 11,
+    snowPatchFrequency: 0.55,
+    snowWearFrequency: 1.8,
+    snowWearStretch: 0.28,
+    snowMaskLow: 0.32,
+    snowMaskHigh: 0.62,
     dustMax: 240,
     wetRoughnessScale: 0.45,
     skyFlashColor: '#9eadef',
