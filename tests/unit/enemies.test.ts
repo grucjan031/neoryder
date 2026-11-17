@@ -36,6 +36,29 @@ beforeAll(async () => {
   rapier = await initPhysics();
 });
 const cleanup: (() => void)[] = [];
+
+it.each(['assaulter', 'gunner'])(
+  '%s maszeruje do celu trybu, zatrzymuje się i wraca do walki',
+  (kind) => {
+    const { enemy, steps, moveTarget } = setup('conquest-march', 25, kind);
+    enemy.moveGoal = { x: 6, y: 0, z: 0 };
+    steps(360);
+    expect(enemy.current.position.x).toBeGreaterThan(5);
+    expect(Math.abs(enemy.current.position.z)).toBeLessThan(1);
+    const position = { ...enemy.current.position };
+    steps(60);
+    expect(
+      Math.hypot(
+        enemy.current.position.x - position.x,
+        enemy.current.position.z - position.z,
+      ),
+    ).toBeLessThan(0.2);
+    moveTarget(2, 6);
+    steps(60);
+    expect(enemy.current.state).not.toBe('idle');
+    expect(Math.abs(enemy.current.yaw)).toBeLessThan(1);
+  },
+);
 afterEach(() => {
   for (const dispose of cleanup.splice(0)) dispose();
 });

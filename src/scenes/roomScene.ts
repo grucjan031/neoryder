@@ -1,3 +1,6 @@
+import { Conquest } from '../world/conquest';
+import { conquestDefinition } from '../world/modes';
+import { ConquestView } from '../ui/conquestUi';
 import { MissionObjectives } from '../world/missionObjectives';
 import { missionDefinitions } from '../world/missions';
 import { MissionView } from '../render/missionView';
@@ -267,6 +270,8 @@ export class RoomScene implements Scene {
   private synergies!: SynergySystem;
   private readonly missionSignal: ((trigger: string) => void) | undefined;
   private mission?: MissionObjectives;
+  private conquest?: Conquest;
+  private conquestView?: ConquestView;
   private missionView?: MissionView;
   private missionHud?: MissionHud;
   private readonly reinforcements: WaveDirector[] = [];
@@ -632,9 +637,17 @@ export class RoomScene implements Scene {
       }),
       ctx.bus.on('enemy_killed', ({ id, killer }) => {
         if (killer === playerId) this.kills++;
+        if (this.enemy(id)) this.conquest?.killed();
         if (this.boss && id === this.boss.id) this.completeRoom();
       }),
     );
+    if (this.run.modeId === 'conquest') {
+      this.conquest = new Conquest(conquestDefinition, ctx.bus);
+      if (typeof document !== 'undefined') {
+        this.conquestView = new ConquestView(this.conquest, ctx.bus);
+        this.root.add(this.conquestView.root);
+      }
+    }
     const mission = missionDefinitions.get(this.run.missionId ?? '');
     if (mission) {
       this.mission = new MissionObjectives(
@@ -698,7 +711,7 @@ export class RoomScene implements Scene {
       });
       this.root.add(this.bossFx.root);
       this.spawnBoss(this.layout.bossEnemy);
-    } else this.director.start();
+    } else if (!this.conquest) this.director.start();
     if (this.manualEncounter) this.director.stop();
     if (this.health.dead) this.onPlayerDied();
     this.render(1);
@@ -1154,6 +1167,35 @@ export class RoomScene implements Scene {
     this.damage.step(dt);
     this.hazards.step(dt);
     if (!this.health.dead && !this.cleared) {
+      if (this.conquest) {
+        const player = this.player.getState().position;
+        const positions: Vec3[] = [];
+        this.manager.forEach((enemy) => {
+          if (!enemy.removed && enemy.current.state !== 'dead') {
+            positions.push(enemy.current.position);
+            enemy.moveGoal = this.conquest!.moveGoal(
+              enemy.current.position,
+              player,
+            );
+          }
+        });
+        this.conquest.step(dt, player, positions);
+        const spawn = this.conquest.spawnPosition(
+          this.layout,
+          player,
+          positions,
+          this.ctx.rng,
+        );
+        if (
+          spawn &&
+          this.spawnEnemy(
+            this.ctx.rng.pick(this.conquest.definition.enemies),
+            spawn,
+          ) !== null
+        )
+          this.conquest.spawned();
+        if (this.conquest.outcome === 'victory') this.completeRoom();
+      }
       this.mission?.step(dt, this.player.getState().position);
       this.openMissionDock();
 
@@ -1196,6 +1238,7 @@ export class RoomScene implements Scene {
     this.hazardView.advance(frameDt);
     this.hazardView.update(this.hazards.state(), alpha);
     this.missionView?.update();
+    this.conquestView?.update();
     const ids = this.seenEnemyIds;
     ids.clear();
     this.manager.forEach((enemy) => {
@@ -1524,6 +1567,7 @@ export class RoomScene implements Scene {
   }
 
   private completeRoom(): void {
+    if (this.conquest && this.conquest.outcome !== 'victory') return;
     if (this.node.fixed?.objectives.length && !this.mission?.complete) return;
     if (this.cleared || this.state === 'dead' || this.disposed) return;
     this.cleared = true;
@@ -1578,6 +1622,16 @@ export class RoomScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('conquest capture', 'conquest capture <A|B|C>', (args) =>
+      args.length === 1 && this.conquest?.capture(args[0]!)
+        ? 'Punkt przejęty.'
+        : 'Nieprawidłowy punkt.',
+    );
+    register('conquest tickets', 'conquest tickets <n>', (args) =>
+      args.length === 1 && this.conquest?.setTickets(Number(args[0]))
+        ? 'Pula ustawiona.'
+        : 'Nieprawidłowa pula.',
+    );
     register('objective done', 'objective done <id> — ukończ cel', (args) => {
       if (!this.mission || args.length !== 1 || !this.mission.done(args[0]!))
         return 'Cel niedostępny.';
@@ -1817,6 +1871,8 @@ export class RoomScene implements Scene {
   query(name: string): unknown {
     if (name === 'executable') return this.execute.readyIds();
     switch (name) {
+      case 'conquest':
+        return this.conquest?.snapshot() ?? null;
       case 'missionObjectives':
         return this.mission
           ? {
@@ -1954,6 +2010,7 @@ export class RoomScene implements Scene {
   /** Może rzucić przy niedokończonym `init()`; dispose() i tak sprząta motyw i korzeń sceny. */
   private disposeParts(): void {
     this.hazardView?.dispose();
+    this.conquestView?.dispose();
     this.missionView?.dispose();
     this.missionHud?.dispose();
     for (const director of this.reinforcements) director.dispose();

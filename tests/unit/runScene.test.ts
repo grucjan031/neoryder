@@ -41,6 +41,22 @@ const idle = {
 };
 const active = new Set<RunScene>();
 
+it('arena otwiera jeden pokój bez wywołania resume podczas init', async () => {
+  const { scene, rooms, resume, screens } = await setup({
+    params: new URLSearchParams('mode=conquest&loadout=classic&seed=arena'),
+  });
+  expect(resume).not.toHaveBeenCalled();
+  expect(scene.query('screen')).toBe('room');
+  expect(rooms).toHaveLength(1);
+  rooms[0]!.clear();
+  advanceRewardDelay(scene);
+  advanceVictoryHold(scene);
+  await scene.whenReady();
+  expect(scene.query('screen')).toBe('summary');
+  expect(screens.view.summary?.modeId).toBe('conquest');
+  expect(screens.view.summary?.roomsCleared).toBe(6);
+});
+
 class Screens implements RunScreens {
   view!: RunScreenView;
   actions!: RunScreenActions;

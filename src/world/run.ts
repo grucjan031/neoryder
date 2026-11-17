@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { modeIdSchema, type ModeId } from './modeSchema';
+import { conquestDefinition } from './modes';
 import type { MissionDefinition } from './missionSchema';
 import type { EntityId, EventBus } from '../core/events';
 import {
@@ -49,6 +51,7 @@ export interface RunManagerOptions {
 
 /** Opcje startu runu zamrożone w `RunState` (ADR 0007): ekwipunek z kryjówki, talenty, Poziom zagrożenia. */
 export interface NewRunOptions {
+  modeId?: ModeId;
   mission?: MissionDefinition;
   /** Pełny ekwipunek; domyślnie preset `loadoutId`. */
   loadout?: Loadout;
@@ -97,6 +100,7 @@ export const runDamageStatsSchema: z.ZodType<RunDamageStats> = z.object({
 
 export const runStateSchema: z.ZodType<RunState> = z
   .object({
+    modeId: modeIdSchema.optional(),
     missionId: z.string().min(1).optional(),
     objectives: z
       .record(z.string(), z.enum(['pending', 'active', 'done']))
@@ -306,7 +310,25 @@ export class RunManager {
   ): RunState {
     if (!this.generateMap)
       throw new Error('Brak funkcji generującej mapę sektora (generateMap).');
-    const rawMap = this.generateMap(seed);
+    if (options.modeId && options.mission)
+      throw new Error('Tryb i misja wykluczają się.');
+    const rawMap = options.modeId
+      ? {
+          sectorId: options.modeId,
+          layers: [
+            [
+              {
+                id: 'conquest',
+                layer: 1,
+                index: 0,
+                type: 'combat' as const,
+                next: [],
+                fixed: { roomId: conquestDefinition.roomId, objectives: [] },
+              },
+            ],
+          ],
+        }
+      : this.generateMap(seed);
     const map = sectorMapSchema.parse(structuredClone(rawMap));
     this.rebuildNodeIndex(map);
     const loadout = options.loadout ?? loadoutDefinitions.get(loadoutId);
@@ -323,6 +345,7 @@ export class RunManager {
       throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
 
     this.currentState = {
+      ...(options.modeId ? { modeId: options.modeId } : {}),
       ...(options.mission
         ? {
             missionId: options.mission.id,
@@ -371,6 +394,7 @@ export class RunManager {
 
     const current = this.nodeIndex.get(this.currentState.currentNodeId);
     if (!current) return [];
+    if (this.currentState.modeId) return [current];
     const result: MapNode[] = [];
     for (const nextId of current.next) {
       const node = this.nodeIndex.get(nextId);
@@ -444,6 +468,10 @@ export class RunManager {
     this.clearedNodes.add(node.id);
     this.maxLayerReached = Math.max(this.maxLayerReached, node.layer);
 
+    if (this.currentState.modeId) {
+      this.finish('victory');
+      return true;
+    }
     if (this.currentState.missionId && node.fixed?.final) {
       this.finish('victory');
       return true;
@@ -679,6 +707,7 @@ export class RunManager {
     }
 
     const summary: RunSummary = {
+      ...(this.currentState.modeId ? { modeId: this.currentState.modeId } : {}),
       ...(this.currentState.missionId
         ? {
             missionId: this.currentState.missionId,
@@ -690,7 +719,11 @@ export class RunManager {
       loadoutId: this.currentState.loadoutId,
       elapsedS: this.currentState.elapsedS,
       kills: this.currentState.stats.kills,
-      roomsCleared: this.clearedNodes.size,
+      roomsCleared: this.currentState.modeId
+        ? outcome === 'victory'
+          ? conquestDefinition.rewardRooms
+          : 0
+        : this.clearedNodes.size,
       elitesCleared: this.countClearedElites(),
       threatLevel: this.currentState.threatLevel,
       layerReached: this.computeLayerReached(),
