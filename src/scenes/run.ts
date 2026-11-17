@@ -814,28 +814,18 @@ export class RunScene implements Scene {
   }
 
   /**
-   * Splashart ekranu ładowania pokoju: z pokoju/motywu docelowego węzła, inaczej z ziarna runu
-   * i numeru węzła. W `fx=lite` (testy) bez obrazu. Bez `Math.random`.
+   * Losowy splashart ekranu ładowania pokoju spośród odblokowanych aktów.
+   * W `fx=lite` (testy) bez obrazu.
    */
   private loadingSplash(): { file: string; title: string } | undefined {
-    const node = this.manager.currentNode;
     if (
       getLiteFx() ||
       this.manager.screen !== 'room' ||
       this.roomReady ||
-      !node
+      !this.manager.currentNode
     )
       return undefined;
-    const seed = this.manager.state.seed;
-    let layout: RoomDefinition | undefined;
-    try {
-      layout = this.chooseRoom(node, new Rng(seed));
-    } catch {
-      // Błąd puli pokoi zgłosi openRoom(); tu wystarczy wybór z samego ziarna.
-    }
     const entry = pickSplash(
-      `${seed}:${node.id}`,
-      { room: layout?.id, theme: layout?.theme },
       unlockedSplashAct(
         this.meta.state.campaign.completed.length
           ? this.meta.state.campaign.completed
