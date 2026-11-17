@@ -1,3 +1,4 @@
+import type { ModeId } from '../world/modeSchema';
 import type { Rng } from './rng';
 import type { Loadout } from '../progression/loadout';
 import type { RoomDefinition } from '../world/roomSchema';
@@ -41,6 +42,7 @@ export interface RunDamageStats {
 }
 
 export interface RunState {
+  modeId?: ModeId;
   missionId?: string;
   objectives?: Record<string, 'pending' | 'active' | 'done'>;
   objectiveProgress?: Record<string, number>;
@@ -72,6 +74,7 @@ export interface RunState {
 }
 
 export interface RunSummary {
+  modeId?: ModeId;
   missionId?: string;
   missionCompleted?: boolean;
   outcome: RunOutcome;

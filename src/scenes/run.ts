@@ -1,3 +1,5 @@
+import { modeIdSchema } from '../world/modeSchema';
+import { conquestDefinition } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -289,6 +291,11 @@ export class RunScene implements Scene {
         this.metaResult = null;
         this.rewardAlreadySaved = false;
       }
+      const modeId = params.has('mode')
+        ? modeIdSchema.parse(params.get('mode'))
+        : undefined;
+      if (modeId && params.has('mission'))
+        throw new Error('Tryb i misja wykluczają się.');
       const missionId = params.get('mission');
       const mission = missionId ? missionDefinitions.get(missionId) : undefined;
       if (
@@ -304,6 +311,7 @@ export class RunScene implements Scene {
         const meta = this.meta.state;
         this.manager.newRun(seed, CUSTOM_LOADOUT_ID, {
           mission,
+          modeId,
           loadout: this.meta.loadout(),
           talents: meta.talents,
           threatLevel: meta.threat.selected,
@@ -311,7 +319,7 @@ export class RunScene implements Scene {
         });
       } else {
         this.validateLoadout(loadout);
-        this.manager.newRun(seed, loadout, { mission });
+        this.manager.newRun(seed, loadout, { mission, modeId });
       }
     }
     const mission = missionDefinitions.get(this.manager.state.missionId ?? '');
@@ -323,6 +331,11 @@ export class RunScene implements Scene {
     this.registerCommands();
     this.showMap();
     await this.saving;
+    if (this.manager.state.modeId) {
+      const node = this.manager.state.map.layers[0]![0]!;
+      this.selectNode(node.id, false);
+      await this.loading;
+    }
   }
 
   private getMetaStore(): SaveStore {
@@ -649,6 +662,8 @@ export class RunScene implements Scene {
                 ? 'meta'
                 : this.manager.state.loadoutId,
           });
+          if (this.manager.state.modeId)
+            params.set('mode', this.manager.state.modeId);
           this.leave(() => this.navigate(`/?${params}`));
         },
         hub: () => {
@@ -705,11 +720,11 @@ export class RunScene implements Scene {
       });
   }
 
-  private selectNode(id: string): boolean {
+  private selectNode(id: string, resume = true): boolean {
     if (this.disposed || this.loading || !this.manager.selectNode(id))
       return false;
     this.show();
-    this.ctx.resume?.();
+    if (resume) this.ctx.resume?.();
     this.loading = this.openRoom()
       .catch((error: unknown) => {
         this.runError = error instanceof Error ? error.message : String(error);
@@ -813,12 +828,16 @@ export class RunScene implements Scene {
       }
     }
     const waves: WavesDefinition =
-      node.type === 'shop' || node.type === 'rest' || bossRoom
+      state.modeId || node.type === 'shop' || node.type === 'rest' || bossRoom
         ? {
             id: `room:${node.id}`,
             firstBreakS: 0,
             breakS: 0,
-            maxAlive: bossRoom ? (layout.maxAlive ?? 1) : 1,
+            maxAlive: state.modeId
+              ? conquestDefinition.maxAlive
+              : bossRoom
+                ? (layout.maxAlive ?? 1)
+                : 1,
             minSpawnDistance: 0,
             spawnPoints: [],
             waves: [],
@@ -1123,6 +1142,8 @@ export class RunScene implements Scene {
       return 'Obrażenia zadane.';
     });
     for (const name of [
+      'conquest capture',
+      'conquest tickets',
       'tp',
       'hold',
       'status',

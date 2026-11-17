@@ -1,6 +1,17 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  modes: {
+    conquest: {
+      minPointDistanceM: 12,
+      minSpawnDistanceM: 15,
+      detectRangeM: 10,
+      zoneHeightM: 2,
+      spawnClearanceM: 0.8,
+      edgeInsetM: 2,
+      goalStopM: 0.5,
+    },
+  },
   mission: {
     zoneRadiusM: 1.6,
     pickupRadiusM: 1,

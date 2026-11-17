@@ -1,0 +1,68 @@
+.conquest-hud {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(3, 76px) 130px;
+  gap: 8px;
+  z-index: 12;
+  color: #fff1d6;
+  font: 12px/1.4 monospace;
+  pointer-events: none;
+}
+.conquest-hud__point,
+.conquest-hud__reserve {
+  position: relative;
+  overflow: hidden;
+  padding: 6px 8px;
+  background: #101827ed;
+  border: 1px solid var(--point-color, #56627a);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.conquest-hud__point b {
+  font-size: 20px;
+}
+.conquest-hud__point i {
+  position: absolute;
+  inset: auto 0 0;
+  height: 4px;
+  transform-origin: left;
+}
+.conquest-hud__point[data-contested='true'] {
+  border-style: dashed;
+  border-color: #fff1d6;
+}
+.conquest-hud__reserve strong {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.conquest-hud__reserve progress {
+  width: 100%;
+  height: 5px;
+  accent-color: #e0262b;
+}
+.conquest-hud__notice {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin: 0;
+  text-shadow: 0 1px 3px #000;
+}
+@media (max-width: 600px) {
+  .conquest-hud {
+    top: max(88px, calc(env(safe-area-inset-top) + 80px));
+    grid-template-columns: repeat(3, 57px) 106px;
+    gap: 4px;
+    font-size: 10px;
+  }
+  .conquest-hud__point,
+  .conquest-hud__reserve {
+    padding: 4px;
+  }
+  .conquest-hud__point b,
+  .conquest-hud__reserve strong {
+    font-size: 16px;
+  }
+}

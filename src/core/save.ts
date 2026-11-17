@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { modeIdSchema } from '../world/modeSchema';
 import { actionSchema, isBindingCode } from './input';
 import { loadoutDefinitions } from '../progression/loadout';
 import { metaStateSchema } from '../progression/metaStateSchema';
@@ -77,6 +78,7 @@ const count = z.number().int().nonnegative();
 const runEndedSchema: z.ZodType<RunEnded> = z.object({
   runId: z.string().min(1),
   summary: z.object({
+    modeId: modeIdSchema.optional(),
     missionId: z.string().min(1).optional(),
     missionCompleted: z.boolean().optional(),
     outcome: z.enum(['victory', 'death']),
