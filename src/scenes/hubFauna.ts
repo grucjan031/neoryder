@@ -1,31 +1,84 @@
 import {
+  AnimationMixer,
   Color,
-  ConeGeometry,
   CylinderGeometry,
   Group,
+  LoopRepeat,
   Mesh,
   MeshToonMaterial,
+  SkinnedMesh,
   SphereGeometry,
 } from 'three';
-import type { BufferGeometry, Object3D } from 'three';
+import type {
+  AnimationAction,
+  BufferGeometry,
+  Material,
+  Object3D,
+} from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { AmbienceSource } from '../audio/ambienceSchema';
 import type { GameContext } from '../core/context';
+import type { Tuning } from '../core/tuning';
 import type { PlayerState } from '../player/playerController';
 import { gradientMap } from '../render/materials';
 import { HubFaunaRuntime } from '../world/hubFauna';
-import type { FaunaPose } from '../world/hubFauna';
+import type { CatRuntime, FaunaPose } from '../world/hubFauna';
 import { wrapAngle } from '../world/hubNpcs';
 import type { HubLayout } from '../world/hubSchema';
 
 interface AnimalView {
   root: Group;
-  body: Mesh;
-  head: Group;
   legs: Group[];
   tail: Group[];
 }
 
-/** Siatki współdzielą trzy geometrie. Dwa szczury są ukrywane, nigdy tworzone podczas ruchu. */
+/** Klipy `hub_cat.glb` (Blender, `build_hub_cat`). */
+export type CatClip = 'idle' | 'walk' | 'sit' | 'lie' | 'groom';
+
+/** Klip i tempo odtwarzania dla stanu kota (zachowanie w `HubFaunaRuntime` bez zmian). */
+export function catClip(
+  cat: Pick<CatRuntime, 'state' | 'moving'>,
+  t: Tuning['hub'],
+  routeSpeedMS = t.catSpeedMS,
+): { clip: CatClip; timeScale: number } {
+  switch (cat.state) {
+    case 'sit':
+    case 'lie':
+    case 'groom':
+      return { clip: cat.state, timeScale: 1 };
+    default: {
+      if (!cat.moving) return { clip: 'idle', timeScale: 1 };
+      const speed =
+        cat.state === 'flee' || cat.state === 'return'
+          ? t.catFleeSpeedMS
+          : routeSpeedMS;
+      return {
+        clip: 'walk',
+        timeScale: Math.min(
+          t.catWalkMaxTimeScale,
+          speed / t.catWalkClipSpeedMS,
+        ),
+      };
+    }
+  }
+}
+
+interface CatView {
+  root: Group;
+  mixer?: AnimationMixer;
+  actions: Map<string, AnimationAction>;
+  action?: AnimationAction;
+  clip?: CatClip;
+  /** Czas symulacji (s) ostatniej aktualizacji mixera. */
+  time: number;
+}
+
+const loader = new GLTFLoader();
+
+/**
+ * Kot Węgielek: model `hub_cat.glb` ze szkieletem i klipami (idle, walk, sit, lie, groom).
+ * Szczury: proceduralne siatki ze współdzielonych geometrii; dwa szczury są ukrywane, nigdy tworzone podczas ruchu.
+ */
 export class HubFauna {
   readonly runtime: HubFaunaRuntime;
   readonly sources: AmbienceSource[];
@@ -34,14 +87,15 @@ export class HubFauna {
   private readonly fur: MeshToonMaterial;
   private readonly ratFur: MeshToonMaterial;
   private readonly eyes: MeshToonMaterial;
-  private readonly cat: AnimalView | null;
+  private readonly cat: CatView | null;
   private readonly rats: AnimalView[];
   private readonly off: (() => void)[] = [];
+  private disposed = false;
 
   constructor(
     private readonly ctx: GameContext,
     parent: Object3D,
-    layout: HubLayout,
+    private readonly layout: HubLayout,
     private readonly player: () => PlayerState,
   ) {
     this.runtime = new HubFaunaRuntime(
@@ -53,7 +107,6 @@ export class HubFauna {
     const t = ctx.tuning.hub;
     this.geometries = [
       new SphereGeometry(1, 8, 6),
-      new ConeGeometry(1, 1, 4),
       new CylinderGeometry(1, 1, 1, 6),
     ];
     this.fur = new MeshToonMaterial({
@@ -86,9 +139,14 @@ export class HubFauna {
       emissive: t.catEyeColor,
       emissiveIntensity: t.catEyeGain,
     });
-    this.cat = this.runtime.cat ? this.build(false) : null;
-    if (this.cat) this.cat.root.name = 'hub-cat-wegielek';
-    this.rats = this.runtime.rats.map(() => this.build(true));
+    this.cat = this.runtime.cat
+      ? { root: new Group(), actions: new Map(), time: 0 }
+      : null;
+    if (this.cat) {
+      this.cat.root.name = 'hub-cat-wegielek';
+      this.root.add(this.cat.root);
+    }
+    this.rats = this.runtime.rats.map(() => this.buildRat());
     this.sources = this.runtime.cat
       ? [
           {
@@ -132,10 +190,37 @@ export class HubFauna {
     );
   }
 
-  private build(rat: boolean): AnimalView {
-    const root = new Group(),
-      head = new Group();
-    const material = rat ? this.ratFur : this.fur;
+  /** Wczytuje model kota; bez modelu (testy, błąd ładowania) kot nie ma widoku, symulacja i dźwięk działają. */
+  async load(): Promise<void> {
+    const view = this.cat;
+    if (!view) return;
+    const gltf = await loader
+      .loadAsync('/assets/models/hub_cat.glb')
+      .catch(() => null);
+    if (!gltf || this.disposed) return;
+    const model = gltf.scene;
+    model.traverse((node) => {
+      if (!(node instanceof Mesh)) return;
+      const name = (node.material as Material).name;
+      (node.material as Material).dispose();
+      node.material = name === 'mat_cat_eye' ? this.eyes : this.fur;
+      if (name === 'mat_cat_eye') node.userData.noOutline = true;
+      // Kot jest mały: stała sfera zamiast przeliczania granic skórowanej siatki.
+      if (node instanceof SkinnedMesh) node.frustumCulled = false;
+    });
+    view.root.add(model);
+    const mixer = new AnimationMixer(model);
+    for (const clip of gltf.animations) {
+      const action = mixer.clipAction(clip);
+      action.setLoop(LoopRepeat, Infinity);
+      view.actions.set(clip.name, action);
+    }
+    view.mixer = mixer;
+  }
+
+  private buildRat(): AnimalView {
+    const root = new Group();
+    const material = this.ratFur;
     const add = (
       parent: Object3D,
       geometry: number,
@@ -153,12 +238,13 @@ export class HubFauna {
       parent.add(mesh);
       return mesh;
     };
-    const body = add(root, 0, 0, 0.35, 0, 0.16, 0.19, 0.33);
+    add(root, 0, 0, 0.35, 0, 0.16, 0.19, 0.33);
+    const head = new Group();
     head.position.set(0, 0.52, 0.28);
     root.add(head);
     add(head, 0, 0, 0, 0, 0.125, 0.12, 0.12);
     for (const side of [-1, 1]) {
-      add(head, rat ? 0 : 1, side * 0.085, 0.115, 0, 0.055, 0.14, 0.045);
+      add(head, 0, side * 0.085, 0.115, 0, 0.055, 0.14, 0.045);
       const eye = add(
         head,
         0,
@@ -187,33 +273,22 @@ export class HubFauna {
       const joint = new Group();
       joint.position.set(0, i === 0 ? 0.4 : 0, i === 0 ? -0.28 : -0.11);
       tailParent.add(joint);
-      const segment = add(
-        joint,
-        2,
-        0,
-        0,
-        -0.055,
-        rat ? 0.014 : 0.025,
-        0.12,
-        rat ? 0.014 : 0.025,
-      );
+      const segment = add(joint, 1, 0, 0, -0.055, 0.014, 0.12, 0.014);
       segment.rotation.x = Math.PI / 2;
       tail.push(joint);
       tailParent = joint;
     }
-    if (rat) {
-      root.scale.setScalar(0.45);
-      root.visible = false;
-    }
+    root.scale.setScalar(0.45);
+    root.visible = false;
     this.root.add(root);
-    return { root, body, head, legs, tail };
+    return { root, legs, tail };
   }
 
   step(dt: number, p: PlayerState): void {
     this.runtime.step(dt, p.position, p.velocity);
   }
 
-  private place(view: AnimalView, pose: FaunaPose, alpha: number): number {
+  private place(view: { root: Group }, pose: FaunaPose, alpha: number): number {
     view.root.position.set(
       pose.previous.x + (pose.position.x - pose.previous.x) * alpha,
       pose.previous.y + (pose.position.y - pose.previous.y) * alpha,
@@ -232,52 +307,31 @@ export class HubFauna {
       view = this.cat;
     this.eyes.emissiveIntensity = t.catEyeGain;
     if (c && view) {
-      const distance = this.place(view, c, alpha);
+      this.place(view, c, alpha);
       const time = c.previousAgeS + (c.ageS - c.previousAgeS) * alpha;
       const rest =
         c.state === 'sit' || c.state === 'lie' || c.state === 'groom';
-      const lie = c.state === 'lie',
-        groom = c.state === 'groom';
-      view.body.position.y = lie ? 0.16 : rest ? 0.29 : 0.35;
-      view.body.rotation.x = lie ? 0 : rest ? -0.65 : 0;
-      view.body.scale.set(
-        lie ? 0.23 : 0.16,
-        lie ? 0.13 : 0.19,
-        lie ? 0.25 : 0.33,
-      );
-      view.head.position.set(
-        lie ? 0.14 : 0,
-        lie ? 0.23 : rest ? 0.54 : 0.52,
-        lie ? 0.12 : 0.28,
-      );
-      view.head.rotation.set(
-        groom ? 0.6 + Math.sin(time * t.catGroomHz) * 0.18 : lie ? 0.25 : 0,
-        lie ? -0.9 : 0,
-        0,
-      );
-      for (let i = 0; i < view.legs.length; i++) {
-        const leg = view.legs[i]!;
-        leg.rotation.x = lie
-          ? 1.3
-          : groom && i === 1
-            ? -1.1
-            : rest
-              ? i % 2 === 0
-                ? 1
-                : 0
-              : Math.sin(
-                  (distance / t.catStrideM) * Math.PI * 2 +
-                    (i === 0 || i === 3 ? 0 : Math.PI),
-                ) * t.catLegSwingRad;
-        leg.scale.y = rest ? 0.7 : 1;
+      if (view.mixer) {
+        const { clip, timeScale } = catClip(
+          c,
+          t,
+          this.layout.fauna?.cat?.speedMS,
+        );
+        if (clip !== view.clip) {
+          const action = view.actions.get(clip);
+          if (action) {
+            action.reset().setEffectiveWeight(1).play();
+            if (view.action)
+              view.action.crossFadeTo(action, t.catAnimFadeS, false);
+            view.action = action;
+            view.clip = clip;
+          }
+        }
+        view.action?.setEffectiveTimeScale(timeScale);
+        // Mixer idzie czasem symulacji: pauza gry zatrzymuje kota.
+        view.mixer.update(Math.max(0, time - view.time));
       }
-      for (let i = 0; i < view.tail.length; i++) {
-        const tail = view.tail[i]!;
-        tail.rotation.y = lie
-          ? 0.65
-          : Math.sin(time * t.catTailHz - i * 0.65) * t.catTailSwingRad;
-        tail.rotation.x = rest ? -0.15 : 0.25;
-      }
+      view.time = time;
       const source = this.sources[0]!;
       Object.assign(source.position, view.root.position);
       source.radiusM = this.ctx.tuning.audio.ambienceProfiles.purr.radiusM;
@@ -300,6 +354,15 @@ export class HubFauna {
   }
 
   dispose(): void {
+    this.disposed = true;
+    if (this.cat?.mixer) {
+      this.cat.mixer.stopAllAction();
+      this.cat.mixer.uncacheRoot(this.cat.mixer.getRoot());
+    }
+    this.cat?.root.traverse((node) => {
+      if (node instanceof Mesh) node.geometry.dispose();
+      if (node instanceof SkinnedMesh) node.skeleton.dispose();
+    });
     for (const off of this.off) off();
     this.root.removeFromParent();
     this.root.clear();

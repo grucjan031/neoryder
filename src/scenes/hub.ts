@@ -391,6 +391,8 @@ export class HubScene implements Scene {
     this.fauna = new HubFauna(ctx, this.root, this.layout, () =>
       this.player.getState(),
     );
+    if (this.loadModels) await this.fauna.load();
+    if (this.disposed) return;
     if (this.fauna.runtime.cat)
       this.kidsCat = new KidsCatEncounter(
         this.npcStates,

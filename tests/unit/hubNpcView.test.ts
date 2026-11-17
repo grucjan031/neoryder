@@ -14,7 +14,12 @@ import type { BufferGeometry, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { expect, it, vi } from 'vitest';
 import { tuning } from '../../src/core/tuning';
-import { HubNpcs, npcAnimDue } from '../../src/scenes/hubNpcs';
+import {
+  HubNpcs,
+  inOutfit,
+  npcAnimDue,
+  npcOutfit,
+} from '../../src/scenes/hubNpcs';
 import { NpcRuntime } from '../../src/world/hubNpcs';
 import { lifeLayout } from '../fixtures/hubLife';
 import hideoutData from '../../src/data/hub/hideout.json';
@@ -30,7 +35,7 @@ const parse = (file: string) => {
 
 it('interpoluje model i yaw, zapętla klipy, robi crossfade oraz sumuje dt odległych mixerów', async () => {
   const [body, clips] = await Promise.all([
-    parse('enemy_trooper.glb'),
+    parse('npc_civilian.glb'),
     parse('npc_anims.glb'),
   ]);
   const load = vi
@@ -98,9 +103,9 @@ it('interpoluje model i yaw, zapętla klipy, robi crossfade oraz sumuje dt odleg
   }
 });
 
-it('ubiera mieszkańców z look na prawdziwych kościach, zachowuje kluczowych NPC i współdzieli geometrie bez WebGL', async () => {
+it('ubiera NPC wariantami npc_civilian.glb według look: skórowany strój bez brył na tułowiu, wspólny szkielet', async () => {
   const [body, clips] = await Promise.all([
-    parse('enemy_trooper.glb'),
+    parse('npc_civilian.glb'),
     parse('npc_anims.glb'),
   ]);
   const load = vi
@@ -115,22 +120,30 @@ it('ubiera mieszkańców z look na prawdziwych kościach, zachowuje kluczowych N
     id: 'bare',
     look: { shade: 0, headwear: 'none', torso: 'none', prop: 'none' },
   } as const;
-  const wrench = {
+  const hooded = {
     ...bare,
-    id: 'wrench',
-    look: { ...bare.look, prop: 'wrench' },
+    id: 'hooded',
+    look: { ...bare.look, headwear: 'hood', torso: 'hoodie', prop: 'wrench' },
   } as const;
+  const all = [...defs, bare, hooded];
   const view = new HubNpcs(
-    [...defs, bare, wrench].map((def) => new NpcRuntime(def, tuning.hub)),
+    all.map((def) => new NpcRuntime(def, tuning.hub)),
     tuning,
   );
-  const accessories = (root: Object3D, prefix: string): Mesh[] => {
-    const meshes: Mesh[] = [];
+  const meshes = (root: Object3D, prefix = ''): Mesh[] => {
+    const out: Mesh[] = [];
     root.traverse((node) => {
-      if (node instanceof Mesh && node.name.startsWith(prefix))
-        meshes.push(node);
+      if (node instanceof Mesh && node.name.startsWith(prefix)) out.push(node);
     });
-    return meshes;
+    return out;
+  };
+  const outer: Record<string, string | null> = {
+    none: null,
+    vest: 'over_vest',
+    apron: 'over_apron',
+    jacket: 'top_jacket',
+    hoodie: 'top_hoodie',
+    coat: 'top_coat',
   };
   try {
     await view.load();
@@ -139,81 +152,95 @@ it('ubiera mieszkańców z look na prawdziwych kościach, zachowuje kluczowych N
       cap: 2,
       cap_stripe: 3,
       beanie: 3,
-      goggles: 3,
+      goggles: 4,
       glasses: 5,
       headphones: 3,
       bandana: 3,
-      hood: 3,
+      hood: 0,
     };
-    const torsoCounts = { none: 0, vest: 5, jacket: 9, coat: 8, apron: 7 };
-    const propCounts = {
-      none: 0,
-      pouches: 2,
-      backpack: 2,
-      satchel: 3,
-      toolbelt: 7,
-      wrench: 3,
-    };
-    const old = [
-      { id: 'mira', color: '3b4254', head: 2, prop: 3 },
-      { id: 'wolan', color: '2f3f66', head: 3, prop: 3 },
-      { id: 'szron', color: '424856', head: 3, prop: 3 },
-      { id: 'bajt', color: '2c3f63', head: 3, prop: 2 },
-      { id: 'tomasz', color: '4a4e5a', head: 3, prop: 4 },
-    ];
-    for (const legacy of old) {
-      const root = view.root.getObjectByName(`npc:${legacy.id}`)!;
-      const material = (root.getObjectByName('armored_body') as Mesh)
-        .material as MeshToonMaterial;
-      expect(material.color.getHexString(), legacy.id).toBe(legacy.color);
-      expect(accessories(root, 'headwear:')).toHaveLength(legacy.head);
-      expect(accessories(root, 'torso:')).toHaveLength(5);
-      expect(accessories(root, 'prop:')).toHaveLength(legacy.prop);
-    }
-    const colors = new Map<number, string>();
-    for (const def of [...defs.filter((def) => def.look), bare, wrench]) {
+    for (const def of all) {
       const root = view.root.getObjectByName(`npc:${def.id}`)!;
-      const look = def.look!;
-      const head = accessories(root, 'headwear:');
-      const torso = accessories(root, 'torso:');
-      const props = accessories(root, 'prop:');
-      expect(head, def.id).toHaveLength(headCounts[look.headwear!]);
-      expect(torso, def.id).toHaveLength(torsoCounts[look.torso!]);
-      expect(props, def.id).toHaveLength(propCounts[look.prop!]);
-      expect(head.every((mesh) => mesh.parent?.name === 'DEF-head')).toBe(true);
+      const parts = npcOutfit(def);
+      const garments = meshes(root).filter(
+        (mesh) =>
+          !mesh.name.startsWith('headwear:') &&
+          !mesh.name.startsWith('npcMarker:'),
+      );
+      // Tylko części stroju NPC, każda obecna; dokładnie jedna góra.
       expect(
-        [...torso, ...props].every((mesh) =>
-          ['DEF-spine003', 'DEF-hips'].includes(mesh.parent!.name),
-        ),
+        garments.every((mesh) => inOutfit(mesh.name, parts)),
+        def.id,
       ).toBe(true);
-      const material = (root.getObjectByName('armored_body') as Mesh)
+      for (const part of parts)
+        expect(
+          garments.some((mesh) => inOutfit(mesh.name, [part])),
+          `${def.id}: ${part}`,
+        ).toBe(true);
+      expect(
+        garments.filter((mesh) =>
+          /^top_(shirt|jacket|hoodie|coat)$/.test(mesh.name),
+        ),
+        def.id,
+      ).toHaveLength(1);
+      expect(
+        garments.some((mesh) => mesh.geometry instanceof BoxGeometry),
+      ).toBe(false);
+      const skins = garments.filter(
+        (mesh): mesh is SkinnedMesh => mesh instanceof SkinnedMesh,
+      );
+      expect(skins.length).toBeGreaterThanOrEqual(4);
+      expect(new Set(skins.map((skin) => skin.skeleton)).size).toBe(1);
+      const head = meshes(root, 'headwear:');
+      const headwear = def.look?.headwear;
+      if (headwear) expect(head, def.id).toHaveLength(headCounts[headwear]);
+      expect(head.every((mesh) => mesh.parent?.name === 'DEF-head')).toBe(true);
+    }
+    const legacy = [
+      {
+        id: 'mira',
+        color: '3b4254',
+        parts: ['over_vest', 'prop_wrench', 'prop_pouches_'],
+      },
+      { id: 'wolan', color: '2f3f66', parts: ['top_coat'] },
+      { id: 'szron', color: '424856', parts: ['top_jacket', 'role_szron_'] },
+      { id: 'bajt', color: '2c3f63', parts: ['over_vest', 'prop_backpack'] },
+      { id: 'tomasz', color: '4a4e5a', parts: ['over_vest', 'prop_pouches_'] },
+    ];
+    for (const npc of legacy) {
+      const root = view.root.getObjectByName(`npc:${npc.id}`)!;
+      for (const part of npc.parts)
+        expect(meshes(root, part).length, `${npc.id}: ${part}`).toBeGreaterThan(
+          0,
+        );
+      const garment = root.getObjectByName(npc.parts[0]!) as Mesh;
+      expect(
+        (garment.material as MeshToonMaterial).color.getHexString(),
+        npc.id,
+      ).toBe(npc.color);
+    }
+    expect(
+      meshes(view.root.getObjectByName('npc:hooded')!, 'head_hood').length,
+    ).toBe(1);
+    const colors = new Map<number, string>();
+    for (const def of [...defs.filter((def) => def.look), hooded]) {
+      const look = def.look!;
+      const name = outer[look.torso ?? 'vest'];
+      if (!name) continue;
+      const root = view.root.getObjectByName(`npc:${def.id}`)!;
+      const material = (root.getObjectByName(name) as Mesh)
         .material as MeshToonMaterial;
       expect(material).toBeInstanceOf(MeshToonMaterial);
       const color = material.color.getHexString();
       if (colors.has(look.shade!)) expect(color).toBe(colors.get(look.shade!));
       colors.set(look.shade!, color);
-      if (look.torso === 'apron') {
-        const skirt = torso.find(
-          (mesh) =>
-            mesh.geometry instanceof BoxGeometry &&
-            mesh.geometry.parameters.height === 0.53,
-        )!;
-        expect(skirt, def.id).toBeDefined();
-        root.updateWorldMatrix(true, true);
-        const point = root.children
-          .find((child) => child.type !== 'Mesh')!
-          .worldToLocal(skirt.getWorldPosition(new Vector3()));
-        expect(point.y).toBeCloseTo(0.72);
-        expect(point.z).toBeCloseTo(0.15);
-      }
     }
     expect(colors.size).toBe(10);
     expect(new Set(colors.values()).size).toBe(10);
-    const meshes = accessories(view.root, 'torso:');
+    const headwear = meshes(view.root, 'headwear:');
     const geometries = new Set<BufferGeometry>(
-      meshes.map((mesh) => mesh.geometry),
+      headwear.map((mesh) => mesh.geometry),
     );
-    expect(geometries.size).toBeLessThan(meshes.length / 2);
+    expect(geometries.size).toBeLessThan(headwear.length / 2);
     const disposals = [...geometries].map((geometry) =>
       vi.spyOn(geometry, 'dispose'),
     );
@@ -240,21 +267,19 @@ it('polityka aktualizacji mixera: widoczni bliscy co klatkę, dalecy rzadziej, p
 
 it('sfera ograniczająca siatki obejmuje wszystkie wierzchołki w pozach wszystkich klipów', async () => {
   const [body, clips] = await Promise.all([
-    parse('enemy_trooper.glb'),
+    parse('npc_civilian.glb'),
     parse('npc_anims.glb'),
   ]);
   const instance = clone(body.scene);
-  let skin: SkinnedMesh | undefined;
+  const skins: SkinnedMesh[] = [];
   instance.traverse((node) => {
-    if (node instanceof SkinnedMesh && node.name === 'armored_body')
-      skin = node;
+    if (node instanceof SkinnedMesh) skins.push(node);
   });
-  const mesh = skin!;
+  expect(skins.length).toBeGreaterThan(5);
   const { npcBoundsCenterM, npcBoundsRadiusM } = tuning.hub;
   const center = new Vector3(0, npcBoundsCenterM, 0);
   const mixer = new AnimationMixer(instance);
   const point = new Vector3();
-  const count = mesh.geometry.getAttribute('position').count;
   let worst = 0;
   for (const clip of clips.animations) {
     const action = mixer.clipAction(clip);
@@ -262,12 +287,15 @@ it('sfera ograniczająca siatki obejmuje wszystkie wierzchołki w pozach wszystk
     for (let step = 0; step < 6; step++) {
       mixer.setTime((clip.duration * step) / 6);
       instance.updateMatrixWorld(true);
-      mesh.skeleton.update();
-      for (let i = 0; i < count; i += 3)
-        worst = Math.max(
-          worst,
-          mesh.getVertexPosition(i, point).distanceTo(center),
-        );
+      for (const mesh of skins) {
+        mesh.skeleton.update();
+        const count = mesh.geometry.getAttribute('position').count;
+        for (let i = 0; i < count; i += 3)
+          worst = Math.max(
+            worst,
+            mesh.getVertexPosition(i, point).distanceTo(center),
+          );
+      }
     }
     action.stop();
   }
@@ -276,7 +304,7 @@ it('sfera ograniczająca siatki obejmuje wszystkie wierzchołki w pozach wszystk
 
 it('NPC poza kadrem nie animuje się często, a po powrocie do kadru dostaje zaległy dt od razu', async () => {
   const [body, clips] = await Promise.all([
-    parse('enemy_trooper.glb'),
+    parse('npc_civilian.glb'),
     parse('npc_anims.glb'),
   ]);
   const load = vi

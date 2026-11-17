@@ -906,11 +906,14 @@ export const tuning = {
     kidsCatStandM: 0.7,
     kidsCatJoinM: 4,
     kidsCatDebugM: 1.5,
+    /** Szczury: długość kroku i wychylenia łap/ogona (proceduralny widok). */
     catStrideM: 0.7,
     catLegSwingRad: 0.55,
-    catTailHz: 1.4,
     catTailSwingRad: 0.2,
-    catGroomHz: 5,
+    /** Kot (`hub_cat.glb`): przenikanie klipów, prędkość klipu `walk` bez poślizgu łap i limit przyspieszenia. */
+    catAnimFadeS: 0.3,
+    catWalkClipSpeedMS: 0.55,
+    catWalkMaxTimeScale: 2.5,
     catRimGain: 0.025,
     catEyeGain: 0.3,
     catColor: '#25282d',
@@ -997,6 +1000,16 @@ export const tuning = {
     /** Sfera ograniczająca ciała NPC w układzie siatki: środek (m, oś Y) i promień (m); cullowanie kadrem. */
     npcBoundsCenterM: 0.9,
     npcBoundsRadiusM: 1.3,
+    /**
+     * Kolory stroju cywilów (`npc_civilian.glb`): koszula i spodnie wybierane deterministycznie z id NPC,
+     * reszta wspólna. Wierzchnią warstwę barwi `look.shade`.
+     */
+    npcShirtColors: ['#5b5852', '#4f535a', '#625a50', '#4a4844'],
+    npcPantsColors: ['#20232b', '#272624', '#1c2130'],
+    npcBootsColor: '#141416',
+    npcSkinColor: '#8a8279',
+    npcGearColor: '#2f2c28',
+    npcMetalColor: '#6d737b',
     /** Zapas (m) ponad sferę NPC w teście kadru. */
     npcCullMarginM: 0.3,
     npcRouteSampleM: 0.25,

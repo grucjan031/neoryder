@@ -256,6 +256,65 @@ klipy i materiały, a stan AI mapuje na klipy `AnimationMixer` z przenikaniem.
 Śmierć nadal uruchamia niezależny od części modelu rozpad `enemyShatter`;
 `Death01` nie jest eksportowany. Dron zachowuje dotychczasową budowę i animację.
 
+## Kryjówka — cywil NPC i kot
+
+### `npc_civilian.glb` (mieszkańcy kryjówki)
+
+`build_npc_civilian()` importuje ten sam manekin UAL co wrogowie i robi tę samą decymację, więc skala
+(`1.84 / wysokość`), kości `Rig` (53) i stopy na y=0 są identyczne jak w `enemy_trooper.glb` — klipy z
+`npc_anims.glb` i pomiary siedzisk działają bez zmian. Z manekina zostają tylko głowa, szyja i dłonie
+(`civ_skin`, 1867 tri). Strój to własne, proceduralne siatki skórowane do szkieletu: przekroje tułowia, rękawów
+i nogawek są dopasowane do sylwetki manekina (otoczka przekroju + zapas), wagi kości liczone analitycznie
+(płynne przejścia w stawach). Bez płyt, ładownic i brył przypiętych do pojedynczej kości. Cieniowanie gładkie
+z ostrymi krawędziami powyżej 38–50°, jak ciało wrogów (kontur rysuje sylwetkę, nie fasetki).
+Klipów w pliku nie ma (eksport `animations=False`); węzły kości są w pozie T.
+
+| Węzeł (prefiks)                                            | Materiał                          | Co to                                                                       |
+| ---------------------------------------------------------- | --------------------------------- | --------------------------------------------------------------------------- |
+| `civ_skin`                                                 | `mat_npc_skin`                    | głowa, szyja, dłonie manekina                                               |
+| `civ_pants`, `civ_boots`                                   | `mat_npc_pants` / `mat_npc_boots` | spodnie (miednica + nogawki), buty z podeszwą na y=0 i cholewką             |
+| `top_shirt`                                                | `mat_npc_shirt`                   | koszula z długim rękawem (pod kamizelką i fartuchem)                        |
+| `top_jacket` (+ `top_jacket__accent`)                      | `mat_npc_outer`                   | kurtka do bioder ze stójką, zamek w akcencie                                |
+| `top_hoodie` (+ `_pocket`, `__accent_L/R`)                 | `mat_npc_outer`                   | bluza z kieszenią, zsuniętym kapturem i trokami w akcencie                  |
+| `top_coat`                                                 | `mat_npc_outer`                   | płaszcz z wykładanym kołnierzem, poły do kolan z rozcięciem (przód z udami) |
+| `over_vest` (+ `__accent`)                                 | `mat_npc_outer`                   | kamizelka bez rękawów na koszuli, zamek w akcencie                          |
+| `over_apron` (+ `_strap`, `_tie`)                          | `mat_npc_outer`                   | fartuch od piersi do kolan, pasek na karku, troki                           |
+| `head_hood`                                                | `mat_npc_outer`                   | kaptur na głowie z otworem twarzy, opada na kark                            |
+| `prop_pouches_L/R`                                         | `mat_npc_gear`                    | saszetki przy pasie (kość `DEF-hips`)                                       |
+| `prop_backpack` (+ `_strap_L/R`, `__accent`)               | `mat_npc_gear`                    | plecak (kość `DEF-spine.003`), skórowane szelki, ekranik w akcencie         |
+| `prop_satchel` (+ `_strap`, `__accent`)                    | `mat_npc_gear`                    | torba przy lewym biodrze, skórowany pas na ukos przez prawy bark            |
+| `prop_toolbelt` (+ `_pocket_L/R`, `_tool_L/R`, `__accent`) | `mat_npc_gear` / `mat_npc_metal`  | pas z kieszeniami, narzędzia, klamra                                        |
+| `prop_wrench`                                              | `mat_npc_metal`                   | klucz przy lewym biodrze                                                    |
+| `role_szron_L/R` (+ `__accent`)                            | `mat_npc_outer`                   | pagony (kości `DEF-shoulder.L/R`) i naszywka Kapitana Szrona                |
+
+Gra pokazuje części według `look` (`npcOutfit`, `docs/systems/hub.md`) i podmienia materiały po nazwie; kolory
+są w `tuning.hub` (`npcShirtColors`, `npcPantsColors`, `npcBootsColor`, `npcSkinColor`, `npcGearColor`,
+`npcMetalColor`) i w odcieniach `look.shade`. Wszystkie warianty razem: ok. 7700 tri; jeden NPC: ok. 3,7–4,3 tys.
+Podgląd `tools/blender/previews/npc_civilian.png`: dziewięć ujęć (koszula z torbą, kurtka z plecakiem, bluza,
+płaszcz w chodzie, kamizelka z pasem, fartuch z saszetkami, kaptur z pagonami, siedzenie, klęczenie).
+
+### `hub_cat.glb` (kot Węgielek)
+
+`build_hub_cat()` buduje własny szkielet (23 kości: `hips`, `spine`, `chest`, `neck`, `head`, `tail1`–`tail4`,
+przednie `upperarm`/`forearm`/`hand`, tylne `thigh`/`shin`/`foot`/`toe`, strony `.L`/`.R`) i siatkę z pierścieni
+(950 tri): smukły tułów, głowa z policzkami i małym pyszczkiem, trójkątne uszy, łapy, długi zwężający się ogon.
+Materiały: `mat_cat_fur` (`cat_body`), `mat_cat_eye` (migdałowe oczy, `cat_eyes`), `mat_cat_nose` (`cat_nose`).
+Przód +Z glTF, łapy na y=0, długość ok. 0,5 m bez ogona, wysokość z uszami ok. 0,46 m.
+Klipy (30 kl./s, zapętlone; pozy łap liczone dwuczłonowym IK w płaszczyźnie YZ):
+
+| Klip    | Długość | Co robi                                                                 |
+| ------- | ------- | ----------------------------------------------------------------------- |
+| `idle`  | 2,4 s   | stoi: oddech, lekki ruch głowy, kołysanie ogona                         |
+| `walk`  | 0,67 s  | chód (kolejność LT, LP, PT, PP), ogon w górze; łapa w podporze 0,55 m/s |
+| `sit`   | 3 s     | siedzi, ogon owinięty z boku, drganie końca ogona                       |
+| `lie`   | 4 s     | leży „bochenkiem”, przednie łapy przed sobą, wolny oddech               |
+| `groom` | 1,2 s   | siedzi i myje się: prawa łapa przy pyszczku, ruch głowy                 |
+
+Budowa: `--only npc_civilian,hub_cat` (wrogowie, ręce i bronie zostają nietknięte). Podglądy:
+`tools/blender/previews/hub_cat.png` (idle, dwie fazy chodu, sit, lie, groom). Porównanie w grze przed i po:
+`tools/blender/previews/npc_*_before.png` / `npc_*_after.png`, `cat_*_before.png` / `cat_*_after.png`.
+Testy: `tests/unit/hubNpcView.test.ts`, `hubSeating.test.ts`, `hubCatView.test.ts`.
+
 ## Katalog
 
 | Plik                                   | Co to                                                                                                                                                                            | Węzły dla kodu                                                                                                                   |

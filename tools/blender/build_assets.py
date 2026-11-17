@@ -2445,9 +2445,1274 @@ def build_city_assets():
     )}
 
 
+# --------------------------------------------------------------------------- NPC kryjówki: cywil
+
+# Materiały cywila: gra podmienia je po nazwie (kolory z tuning.hub i odcienia NPC).
+for _name, _color, _glow in (
+    ("mat_npc_outer", (0.13, 0.16, 0.24, 1), None),
+    ("mat_npc_shirt", (0.40, 0.38, 0.35, 1), None),
+    ("mat_npc_pants", (0.085, 0.095, 0.12, 1), None),
+    ("mat_npc_boots", (0.045, 0.045, 0.05, 1), None),
+    ("mat_npc_skin", (0.56, 0.51, 0.47, 1), None),
+    ("mat_npc_gear", (0.17, 0.155, 0.135, 1), None),
+    ("mat_npc_metal", (0.46, 0.48, 0.51, 1), None),
+    ("mat_npc_accent", (1.0, 0.682, 0.102, 1), 3.0),
+):
+    PALETTE.setdefault(_name, (_color, _glow))
+
+_NPC_SKIN = ("DEF-head", "DEF-neck", "DEF-hand.", "DEF-f_", "DEF-thumb.")
+_NPC_TORSO = ("DEF-hips", "DEF-spine.001", "DEF-spine.002", "DEF-spine.003", "DEF-shoulder.")
+
+
+def _ss(e0, e1, x):
+    """smoothstep; e0 > e1 odwraca kierunek."""
+    t = max(0.0, min(1.0, (x - e0) / (e1 - e0)))
+    return t * t * (3 - 2 * t)
+
+
+def _wmix(a, b, t):
+    out = {}
+    for k, w in a.items():
+        out[k] = out.get(k, 0.0) + w * (1 - t)
+    for k, w in b.items():
+        out[k] = out.get(k, 0.0) + w * t
+    return {k: w for k, w in out.items() if w > 1e-4}
+
+
+def _side(x):
+    return "L" if x >= 0 else "R"
+
+
+def _w_spine(z):
+    w = {"DEF-hips": 1.0}
+    for bone, z0 in (("DEF-spine.001", 1.04), ("DEF-spine.002", 1.175), ("DEF-spine.003", 1.315)):
+        t = _ss(z0 - .045, z0 + .045, z)
+        if t <= 0:
+            break
+        w = _wmix(w, {bone: 1.0}, t)
+    return _wmix(w, {"DEF-neck": 1.0}, .5 * _ss(1.54, 1.6, z))
+
+
+def _w_torso(p):
+    w = _w_spine(p.z)
+    k = _ss(.06, .15, abs(p.x)) * _ss(1.25, 1.38, p.z)
+    return _wmix(w, {f"DEF-shoulder.{_side(p.x)}": 1.0}, k) if k > 0 else w
+
+
+def _w_arm(p):
+    s, ax = _side(p.x), abs(p.x)
+    w = _wmix({f"DEF-shoulder.{s}": 1.0}, {f"DEF-upper_arm.{s}": 1.0}, _ss(.13, .22, ax))
+    w = _wmix(w, {f"DEF-forearm.{s}": 1.0}, _ss(.43, .50, ax))
+    return _wmix(w, {f"DEF-hand.{s}": 1.0}, _ss(.74, .79, ax))
+
+
+def _w_leg(p):
+    s = _side(p.x)
+    w = _wmix({"DEF-hips": 1.0}, {f"DEF-thigh.{s}": 1.0}, _ss(.98, .88, p.z))
+    w = _wmix(w, {f"DEF-shin.{s}": 1.0}, _ss(.57, .50, p.z))
+    return _wmix(w, {f"DEF-foot.{s}": 1.0}, _ss(.12, .07, p.z))
+
+
+def _w_pelvis(p):
+    f = .5 * _ss(.95, .84, p.z)
+    left = _ss(-.05, .05, p.x)
+    return {"DEF-hips": 1 - f, "DEF-thigh.L": f * left, "DEF-thigh.R": f * (1 - left)}
+
+
+def _w_skirt(p, front_y):
+    """Poły płaszcza i fartucha: przód idzie z udami, tył zostaje przy biodrach."""
+    front = _ss(front_y + .2, front_y, p.y)
+    f = _ss(.97, .62, p.z) * (.35 + .55 * front)
+    left = _ss(-.06, .06, p.x)
+    return {"DEF-hips": 1 - f, "DEF-thigh.L": f * left, "DEF-thigh.R": f * (1 - left)}
+
+
+def _w_boot(p):
+    s = _side(p.x)
+    w = _wmix({f"DEF-shin.{s}": 1.0}, {f"DEF-foot.{s}": 1.0}, _ss(.15, .09, p.z))
+    return _wmix(w, {f"DEF-toe.{s}": 1.0}, _ss(-.095, -.15, p.y))
+
+
+def _w_head(p):
+    w = _wmix({"DEF-head": 1.0}, {"DEF-neck": 1.0}, _ss(1.62, 1.55, p.z))
+    return _wmix(w, {"DEF-spine.003": 1.0}, _ss(1.55, 1.49, p.z))
+
+
+class _SkinMesh:
+    """Siatka składana z pierścieni; każdy wierzchołek niesie wagi kości."""
+
+    def __init__(self):
+        self.v, self.f, self.w = [], [], []
+
+    def ring(self, points, weights):
+        start = len(self.v)
+        for p in points:
+            self.v.append(Vector(p))
+            self.w.append(weights(Vector(p)))
+        return list(range(start, len(self.v)))
+
+    def bridge(self, a, b, skip=()):
+        n = len(a)
+        for j in range(n):
+            if j in skip:
+                continue
+            self.f.append((a[j], a[(j + 1) % n], b[(j + 1) % n], b[j]))
+
+    def strip(self, a, b):
+        for j in range(len(a) - 1):
+            self.f.append((a[j], a[j + 1], b[j + 1], b[j]))
+
+    def cap(self, ring):
+        self.f.append(tuple(ring))
+
+    def loft(self, rings, weights, cap_start=False, cap_end=False, skip=lambda i: ()):
+        ids = [self.ring(r, weights) for r in rings]
+        for i in range(len(ids) - 1):
+            self.bridge(ids[i], ids[i + 1], skip(i))
+        if cap_start:
+            self.cap(ids[0])
+        if cap_end:
+            self.cap(ids[-1])
+        return ids
+
+
+def _orient_out(mesh, faces, center_of):
+    """Odwraca ściany części tak, by normalne wskazywały na zewnątrz osi części."""
+    score = 0.0
+    for f in faces:
+        pts = [mesh.v[i] for i in f]
+        c = sum(pts, Vector()) / len(pts)
+        n = (pts[1] - pts[0]).cross(pts[2] - pts[0])
+        score += n.dot(c - center_of(c))
+    if score < 0:
+        for k, f in enumerate(faces):
+            faces[k] = tuple(reversed(f))
+
+
+def _npc_skinned(name, mesh, mat, rig, smooth=None):
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(v) for v in mesh.v], [], mesh.f)
+    me.update()
+    obj = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(obj)
+    me.materials.append(material(mat))
+    obj.parent = rig
+    obj.matrix_parent_inverse = Matrix.Identity(4)
+    obj.matrix_basis = Matrix.Identity(4)
+    groups = {}
+    for index, weights in enumerate(mesh.w):
+        total = sum(weights.values()) or 1.0
+        for bone, weight in weights.items():
+            if bone not in groups:
+                groups[bone] = obj.vertex_groups.new(name=bone)
+            groups[bone].add([index], weight / total, "REPLACE")
+    modifier = obj.modifiers.new("Armature", "ARMATURE")
+    modifier.object = rig
+    for polygon in me.polygons:
+        polygon.use_smooth = False
+    if smooth:
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth), keep_sharp_edges=False)
+    return obj
+
+
+def _support(points, center, u, v, n, phase=0.0):
+    """Funkcja podparcia przekroju (otoczka wypukła) w n kierunkach płaszczyzny (u, v)."""
+    out = []
+    for k in range(n):
+        a = phase + 2 * math.pi * k / n
+        d = u * math.cos(a) + v * math.sin(a)
+        out.append(max([(p - center).dot(d) for p in points], default=0.0))
+    return out
+
+
+def _fill_rings(table):
+    """Wypełnia dziury przekrojów (segmentowany manekin) sąsiednimi pierścieniami."""
+    for i in range(len(table)):
+        for k in range(len(table[i])):
+            near = [table[j][k] for j in (i - 1, i + 1) if 0 <= j < len(table)]
+            if near:
+                table[i][k] = max(table[i][k], .5 * sum(near) * .97 if len(near) == 2 else 0)
+    for row in table:
+        n = len(row)
+        row[:] = [max(row[k], .5 * (row[k - 1] + row[(k + 1) % n]) * .96) for k in range(n)]
+        for _ in range(2):  # wygładzenie obwodu: bez kolców po pojedynczych wierzchołkach
+            row[:] = [.5 * row[k] + .25 * (row[k - 1] + row[(k + 1) % n]) for k in range(n)]
+    for i in range(1, len(table) - 1):
+        table[i] = [max(r, .25 * (a + b) + .5 * r * .98) for r, a, b in zip(table[i], table[i - 1], table[i + 1])]
+    return table
+
+
+def _npc_ring(center, u, v, radii, margin, phase=0.0, scale=None):
+    n = len(radii)
+    out = []
+    for k in range(n):
+        a = phase + 2 * math.pi * k / n
+        r = max(radii[k], .0) + margin
+        if scale:
+            r *= scale(a)
+        out.append(Vector(center) + (u * math.cos(a) + v * math.sin(a)) * r)
+    return out
+
+
+class _NpcBody:
+    """Pomiary manekina UAL w pozie T (układ riga, metry manekina)."""
+
+    TORSO_Z = (.93, .99, 1.05, 1.11, 1.17, 1.23, 1.29, 1.35, 1.41, 1.46, 1.505, 1.54)
+    TORSO_N = 16
+    TORSO_C = Vector((0, .02, 0))
+
+    def __init__(self, source):
+        groups = [g.name for g in source.vertex_groups]
+        self.points = {}
+        for v in source.data.vertices:
+            if not v.groups:
+                continue
+            name = groups[max(v.groups, key=lambda g: g.weight).group]
+            self.points.setdefault(name, []).append(v.co.copy())
+        self.lo = min(v.co.z for v in source.data.vertices)
+
+    def group(self, *prefixes, where=lambda p: True):
+        return [p for name, pts in self.points.items() if name.startswith(prefixes) for p in pts if where(p)]
+
+    def torso(self):
+        # Boki barków obcięte przy osi stawu ramiennego: resztę barku przykrywa nasada rękawa.
+        pts = self.group(*_NPC_TORSO, where=lambda p: abs(p.x) < .2 - .045 * _ss(1.3, 1.42, p.z))
+        pts += self.group("DEF-neck", where=lambda p: p.z < 1.53)
+        # Dół tułowia obejmuje też górę ud, więc brzeg ubrania przykrywa spodnie.
+        pts += self.group("DEF-thigh.", where=lambda p: p.z > .88)
+        table = []
+        for z in self.TORSO_Z:
+            window = [p for p in pts if abs(p.z - z) < .03]
+            table.append(_support(window, Vector((0, self.TORSO_C.y, z)), Vector((1, 0, 0)),
+                                  Vector((0, 1, 0)), self.TORSO_N, -math.pi / 2))
+        return _fill_rings(table)
+
+    def neck(self, z):
+        pts = self.group("DEF-neck", where=lambda p: abs(p.z - z) < .03)
+        center = Vector((0, .035, z))
+        return center, _support(pts, center, Vector((1, 0, 0)), Vector((0, 1, 0)), 12, -math.pi / 2)
+
+    def arm(self, side, xs):
+        sign = 1 if side == "L" else -1
+        pts = self.group(f"DEF-upper_arm.{side}", f"DEF-forearm.{side}", f"DEF-shoulder.{side}",
+                         where=lambda p: p.x * sign > .1)
+        table = []
+        for x in xs:
+            window = [p for p in pts if abs(p.x * sign - x) < .03]
+            table.append(_support(window, Vector((x * sign, .066, 1.441)), Vector((0, 1, 0)),
+                                  Vector((0, 0, 1)), 10))
+        return _fill_rings(table)
+
+    def leg(self, side, zs):
+        sign = 1 if side == "L" else -1
+        pts = self.group(f"DEF-thigh.{side}", f"DEF-shin.{side}", where=lambda p: p.x * sign > .0)
+        table = []
+        for z in zs:
+            window = [p for p in pts if abs(p.z - z) < .03]
+            table.append(_support(window, self.leg_center(side, z), Vector((1, 0, 0)), Vector((0, 1, 0)), 10))
+        return _fill_rings(table)
+
+    @staticmethod
+    def leg_center(side, z):
+        sign = 1 if side == "L" else -1
+        y = .0 if z > .53 else .001 + (.53 - z) / (.53 - .104) * .035
+        return Vector((sign * .089, y, z))
+
+    def pelvis(self, zs):
+        pts = self.group("DEF-hips", "DEF-thigh.", where=lambda p: p.z > .8)
+        table = []
+        for z in zs:
+            window = [p for p in pts if abs(p.z - z) < .03]
+            table.append(_support(window, Vector((0, .005, z)), Vector((1, 0, 0)), Vector((0, 1, 0)),
+                                  self.TORSO_N, -math.pi / 2))
+        return _fill_rings(table)
+
+    def foot(self, side):
+        pts = self.group(f"DEF-foot.{side}", f"DEF-toe.{side}")
+        xs = [p.x for p in pts]
+        ys = [p.y for p in pts]
+        return min(xs), max(xs), min(ys), max(ys), max(p.z for p in pts)
+
+
+def _npc_torso_rings(body, table, margin, z_from=None, z_to=None, flare=None):
+    rings = []
+    for z, radii in zip(body.TORSO_Z, table):
+        if (z_from is not None and z < z_from - 1e-6) or (z_to is not None and z > z_to + 1e-6):
+            continue
+        m = margin + (flare(z) if flare else 0) + .012 * _ss(1.02, .93, z)
+        rings.append(_npc_ring(Vector((0, body.TORSO_C.y, z)), Vector((1, 0, 0)), Vector((0, 1, 0)),
+                               radii, m, -math.pi / 2))
+    return rings
+
+
+def _npc_neck_rings(body, levels):
+    """Kołnierz: (z, margines, mnożnik tyłu) wokół szyi."""
+    rings = []
+    for z, margin, back in levels:
+        center, radii = body.neck(min(z, 1.575))
+        center = Vector((center.x, center.y, z))
+
+        def scale(a, back=back):
+            return 1 + (back - 1) * max(0.0, math.sin(a)) ** 2
+
+        rings.append(_npc_ring(center, Vector((1, 0, 0)), Vector((0, 1, 0)), radii, margin, -math.pi / 2, scale))
+    return rings
+
+
+def _npc_resample(ring, n):
+    """Przepróbkowanie pierścienia do n punktów (połączenie torsu 16 z kołnierzem 12)."""
+    out = []
+    for k in range(n):
+        t = k * len(ring) / n
+        i = int(t)
+        f = t - i
+        out.append(ring[i % len(ring)].lerp(ring[(i + 1) % len(ring)], f))
+    return out
+
+
+_NPC_ARM_X = (.13, .2, .27, .34, .41, .47, .53, .6, .67, .735)
+
+
+def _npc_top(name, body, rig, margin, hem, collar, sleeve_margin, cuff=None, flare=None,
+             skirt=None, slit=False, mat="mat_npc_outer", sleeves=True):
+    """Góra ubrania: tułów z rękawami i kołnierzem, opcjonalnie poły (płaszcz)."""
+    mesh = _SkinMesh()
+    table = body.torso()
+    rings = _npc_torso_rings(body, table, margin, z_from=hem, flare=flare)
+    top = _npc_neck_rings(body, collar)
+    rings += [_npc_resample(r, body.TORSO_N) for r in top]
+    hem_rings = []
+    if skirt:
+        pelvis = body.pelvis([z for z, _ in skirt])
+        for (z, extra), radii in zip(skirt, pelvis):
+            radii = [max(r, t + .01) for r, t in zip(radii, table[0])]
+            hem_rings.append(_npc_ring(Vector((0, .005, z)), Vector((1, 0, 0)), Vector((0, 1, 0)),
+                                       radii, margin + extra, -math.pi / 2))
+        hem_rings.reverse()
+    all_rings = hem_rings + rings
+    front_skip = (body.TORSO_N - 1, 0) if slit else ()
+    mesh.loft(all_rings, lambda p: _w_skirt(p, -.16) if p.z < .9 else _w_torso(p),
+              skip=lambda i: front_skip if i < len(hem_rings) else ())
+    _orient_out(mesh, mesh.f, lambda c: Vector((0, .02, c.z)))
+    for side in (("L", "R") if sleeves else ()):
+        sign = 1 if side == "L" else -1
+        radii = body.arm(side, _NPC_ARM_X)
+        arm_rings = []
+        for x, r in zip(_NPC_ARM_X, radii):
+            m = sleeve_margin + (cuff(x) if cuff else 0)
+            arm_rings.append(_npc_ring(Vector((sign * x, .066, 1.441)), Vector((0, 1, 0)), Vector((0, 0, 1)), r, m))
+        first = len(mesh.f)
+        mesh.loft(arm_rings, _w_arm)
+        faces = mesh.f[first:]
+        _orient_out(mesh, faces, lambda c: Vector((c.x, .066, 1.441)))
+        mesh.f[first:] = faces
+    return _npc_skinned(name, mesh, mat, rig, smooth=50)
+
+
+def _npc_strip(name, body, rig, margin, z_from, z_to, width, mat="mat_npc_accent"):
+    """Pasek akcentu (zamek) na środku przodu, skórowany jak tułów."""
+    mesh = _SkinMesh()
+    table = body.torso()
+    rows = []
+    for z, radii in zip(body.TORSO_Z, table):
+        if z < z_from - 1e-6 or z > z_to + 1e-6:
+            continue
+        y = body.TORSO_C.y - radii[0] - margin - .004
+        rows.append(mesh.ring([(-width / 2, y, z), (width / 2, y, z)], _w_torso))
+    for a, b in zip(rows, rows[1:]):
+        mesh.f.append((a[0], a[1], b[1], b[0]))
+    _orient_out(mesh, mesh.f, lambda c: Vector((0, .5, c.z)))
+    obj = _npc_skinned(name, mesh, mat, rig)
+    return obj
+
+
+def _npc_pants(body, rig):
+    mesh = _SkinMesh()
+    zs = (1.06, 1.0, .94, .88)
+    table = body.pelvis(zs)
+    rings = [_npc_ring(Vector((0, .005, z)), Vector((1, 0, 0)), Vector((0, 1, 0)), r, .016, -math.pi / 2)
+             for z, r in zip(zs, table)]
+    crotch = [Vector((p.x * .45, .005 + (p.y - .005) * .7, .83)) for p in rings[-1]]
+    ids = mesh.loft(rings + [crotch], _w_pelvis, cap_end=True)
+    _orient_out(mesh, mesh.f, lambda c: Vector((0, .005, c.z)))
+    leg_z = (.97, .9, .82, .74, .66, .58, .52, .45, .37, .29, .21, .14, .115)
+    for side in ("L", "R"):
+        radii = body.leg(side, leg_z)
+        rings = []
+        for z, r in zip(leg_z, radii):
+            m = .014 + (.012 if z < .2 else 0)
+            rings.append(_npc_ring(body.leg_center(side, z), Vector((1, 0, 0)), Vector((0, 1, 0)), r, m))
+        first = len(mesh.f)
+        mesh.loft(rings, _w_leg)
+        faces = mesh.f[first:]
+        _orient_out(mesh, faces, lambda c, s=side: body.leg_center(s, c.z))
+        mesh.f[first:] = faces
+    return _npc_skinned("civ_pants", mesh, "mat_npc_pants", rig, smooth=50)
+
+
+def _npc_boots(body, rig):
+    mesh = _SkinMesh()
+    lo = body.lo
+    for side in ("L", "R"):
+        x0, x1, y0, y1, top = body.foot(side)
+        xc, w = (x0 + x1) / 2, (x1 - x0) / 2 + .014
+        sections = (  # y, mnożnik szerokości, wysokość cholewki nad podeszwą
+            (y1 + .016, .78, .10), (y1 - .01, .97, .135), (.02, 1.0, .14), (-.05, 1.0, .115),
+            (-.11, .98, .085), (-.16, .92, .068), (y0 - .004, .78, .056), (y0 - .018, .55, .045),
+        )
+        rings = []
+        for y, k, h in sections:
+            hw = w * k
+            ring = [
+                (xc - hw - .006, y, lo), (xc - hw - .006, y, lo + .02), (xc - hw, y, lo + .026),
+                (xc - hw, y, lo + h * .6), (xc - hw * .55, y, lo + h), (xc + hw * .55, y, lo + h),
+                (xc + hw, y, lo + h * .6), (xc + hw, y, lo + .026), (xc + hw + .006, y, lo + .02),
+                (xc + hw + .006, y, lo),
+            ]
+            rings.append(ring)
+        first = len(mesh.f)
+        mesh.loft(rings, _w_boot, cap_start=True, cap_end=True)
+        faces = mesh.f[first:]
+        _orient_out(mesh, faces, lambda c, xc=xc: Vector((xc, c.y, lo + .05)))
+        mesh.f[first:] = faces
+        # Cholewka wokół kostki (spodnie zachodzą na nią).
+        zs = (.07, .12, .175)
+        radii = body.leg(side, zs)
+        shaft = [_npc_ring(body.leg_center(side, z), Vector((1, 0, 0)), Vector((0, 1, 0)), r, .02)
+                 for z, r in zip(zs, radii)]
+        first = len(mesh.f)
+        mesh.loft(shaft, _w_boot)
+        faces = mesh.f[first:]
+        _orient_out(mesh, faces, lambda c, s=side: body.leg_center(s, c.z))
+        mesh.f[first:] = faces
+    return _npc_skinned("civ_boots", mesh, "mat_npc_boots", rig, smooth=38)
+
+
+def _npc_hood(body, rig, name):
+    """Kaptur na głowie: elipsoida wokół głowy z otworem twarzy, dół opada na kark i barki."""
+    mesh = _SkinMesh()
+    head = body.group("DEF-head")
+    lo = Vector(tuple(min(p[i] for p in head) for i in range(3)))
+    hi = Vector(tuple(max(p[i] for p in head) for i in range(3)))
+    center = (lo + hi) / 2 + Vector((0, .008, .004))
+    radius = (hi - lo) / 2 + Vector((.026, .03, .024))
+    n, lats = 12, (.0, .28, .55, .85, 1.15, 1.45, 1.75, 2.05, 2.3)
+    rings = []
+    for lat in lats[1:]:
+        ring = []
+        for k in range(n):
+            a = -math.pi / 2 + 2 * math.pi * k / n
+            back = max(0.0, math.sin(a))
+            x = math.sin(lat) * math.cos(a) * radius.x
+            y = math.sin(lat) * math.sin(a) * radius.y * (1 + .14 * back * _ss(.4, 1.0, lat))
+            z = math.cos(lat) * radius.z
+            p = center + Vector((x, y, z))
+            if lat > 2.0:  # dół kaptura opada na kark i barki
+                p = Vector((p.x * 1.25, center.y + (p.y - center.y) * (1.2 + .25 * back), 1.535))
+            ring.append(p)
+        rings.append(ring)
+    top = mesh.ring([center + Vector((0, .01, radius.z))], _w_head)[0]
+    ids = [mesh.ring(r, _w_head) for r in rings]
+    for k in range(n):
+        mesh.f.append((top, ids[0][(k + 1) % n], ids[0][k]))
+    face = (0, 1, n - 1, n - 2)
+    for i in range(len(ids) - 1):
+        mesh.bridge(ids[i], ids[i + 1], face if 2 <= i <= 5 else ())
+    _orient_out(mesh, mesh.f, lambda c: center)
+    return _npc_skinned(name, mesh, "mat_npc_outer", rig, smooth=38)
+
+
+def _npc_band(name, body, rig, z, height, margin, mat, weights=None):
+    """Pas wokół bioder (pasek na narzędzia, troki fartucha)."""
+    mesh = _SkinMesh()
+    zs = (z - height / 2, z + height / 2)
+    table = body.pelvis(zs)
+    rings = [_npc_ring(Vector((0, .005, zz)), Vector((1, 0, 0)), Vector((0, 1, 0)), r, margin, -math.pi / 2)
+             for zz, r in zip(zs, table)]
+    mesh.loft(rings, weights or (lambda p: {"DEF-hips": 1.0}))
+    _orient_out(mesh, mesh.f, lambda c: Vector((0, .005, c.z)))
+    return _npc_skinned(name, mesh, mat, rig, smooth=38)
+
+
+def _npc_apron(body, rig):
+    """Fartuch: panel z przodu od piersi do kolan, pasek na karku i troki."""
+    mesh = _SkinMesh()
+    table = body.torso()
+    pelvis = body.pelvis((.93, .87))
+    rows = []
+    cols = (-1, -.5, 0, .5, 1)
+    levels = [(z, r) for z, r in zip(body.TORSO_Z, table) if .99 <= z <= 1.35]
+    for z, radii in reversed(levels):
+        half = .1 + .07 * _ss(1.35, 1.1, z)
+        y = body.TORSO_C.y - radii[0] - .03
+        rows.append([(c * half, y + abs(c) * .02, z) for c in cols])
+    front = body.TORSO_C.y - max(pelvis[0][0], pelvis[1][0]) - .035
+    for z in (.9, .78, .66, .56):
+        half = .19
+        rows.append([(c * half, front + abs(c) * .025, z) for c in cols])
+    ids = [mesh.ring(r, lambda p: _w_skirt(p, -.15) if p.z < .97 else _w_torso(p)) for r in rows]
+    for a, b in zip(ids, ids[1:]):
+        mesh.strip(a, b)
+    _orient_out(mesh, mesh.f, lambda c: Vector((0, .5, c.z)))
+    apron = _npc_skinned("over_apron", mesh, "mat_npc_outer", rig, smooth=38)
+    # Pasek na karku: pętla od górnych rogów fartucha za szyją.
+    strap = _SkinMesh()
+    center, radii = body.neck(1.53)
+    loop = []
+    for k in range(9):
+        a = math.pi * (k / 8)  # od lewego boku przez tył do prawego
+        loop.append(Vector((math.cos(a) * (radii[3] + .03), center.y + math.sin(a) * (radii[6] + .03), 1.53)))
+    top = rows[0]
+    path = [Vector(top[-1])] + loop + [Vector(top[0])]
+    lower = [p + Vector((0, 0, -.018)) for p in path]
+    a = strap.ring(path, _w_torso)
+    b = strap.ring(lower, _w_torso)
+    strap.strip(b, a)
+    _orient_out(strap, strap.f, lambda c: Vector((0, .02, 1.3)))
+    _npc_skinned("over_apron_strap", strap, "mat_npc_outer", rig)
+    _npc_band("over_apron_tie", body, rig, 1.01, .035, .03, "mat_npc_outer")
+    return apron
+
+
+def _npc_rigid(rig, name, bone, bm, mat, pos, rot=(0, 0, 0)):
+    return _enemy_piece(rig, name, bone, bm, mat, pos, rot)
+
+
+def _npc_props(body, rig):
+    """Rekwizyty ról (sztywne, przypięte do kości) i pasy skórowane."""
+    # Saszetki przy pasie.
+    for s, sign in (("L", 1), ("R", -1)):
+        _npc_rigid(rig, f"prop_pouches_{s}", "DEF-hips", bm_merge(
+            bm_box(.075, .05, .085, bevel=.014),
+            bm_box(.082, .056, .024, center=(0, 0, .036), bevel=.008),
+        ), "mat_npc_gear", (sign * .135, -.122, .95), (0, 0, sign * 14))
+    # Plecak.
+    _npc_rigid(rig, "prop_backpack", "DEF-spine.003", bm_merge(
+        bm_box(.27, .12, .31, bevel=.035, taper_top=(.9, .85)),
+        bm_box(.2, .045, .12, center=(0, .07, -.06), bevel=.015),
+        bm_box(.26, .13, .05, center=(0, -.005, .165), bevel=.02),
+    ), "mat_npc_gear", (0, .265, 1.28))
+    _npc_rigid(rig, "prop_backpack__accent", "DEF-spine.003", bm_box(.15, .008, .05),
+               "mat_npc_accent", (0, .3195, 1.31))
+    for s, sign in (("L", 1), ("R", -1)):
+        strap = _SkinMesh()
+        path = [(sign * .085, .2, 1.43), (sign * .1, .1, 1.535), (sign * .105, -.03, 1.54),
+                (sign * .11, -.15, 1.43), (sign * .12, -.155, 1.3), (sign * .135, -.14, 1.18)]
+        a = strap.ring([Vector(p) + Vector((-.022, 0, 0)) for p in path], _w_torso)
+        b = strap.ring([Vector(p) + Vector((.022, 0, 0)) for p in path], _w_torso)
+        strap.strip(a, b)
+        _orient_out(strap, strap.f, lambda c: Vector((c.x, .02, 1.3)))
+        _npc_skinned(f"prop_backpack_strap_{s}", strap, "mat_npc_gear", rig)
+    # Torba na ukos: torba przy lewym biodrze, pas przez prawy bark.
+    _npc_rigid(rig, "prop_satchel", "DEF-hips", bm_merge(
+        bm_box(.075, .2, .17, bevel=.025),
+        bm_box(.085, .205, .07, center=(0, 0, .055), bevel=.012),
+    ), "mat_npc_gear", (.215, .005, .88), (0, 0, 0))
+    _npc_rigid(rig, "prop_satchel__accent", "DEF-hips", bm_box(.008, .04, .02),
+               "mat_npc_accent", (.257, .005, .9))
+    sling = _SkinMesh()
+    path = [(.2, -.08, .97), (.12, -.17, 1.12), (.0, -.185, 1.27), (-.1, -.16, 1.41), (-.13, -.06, 1.535),
+            (-.13, .08, 1.54), (-.11, .21, 1.43), (.0, .22, 1.26), (.12, .19, 1.11), (.2, .08, .97)]
+    pts = [Vector(p) for p in path]
+    a = sling.ring([p + Vector((0, 0, .022)) for p in pts], _w_torso)
+    b = sling.ring([p + Vector((0, 0, -.022)) for p in pts], _w_torso)
+    sling.strip(b, a)
+    _orient_out(sling, sling.f, lambda c: Vector((0, .02, c.z)))
+    _npc_skinned("prop_satchel_strap", sling, "mat_npc_gear", rig)
+    # Pas z narzędziami.
+    _npc_band("prop_toolbelt", body, rig, .975, .055, .042, "mat_npc_gear")
+    for s, sign in (("L", 1), ("R", -1)):
+        _npc_rigid(rig, f"prop_toolbelt_pocket_{s}", "DEF-hips", bm_box(.095, .06, .115, bevel=.016),
+                   "mat_npc_gear", (sign * .14, -.13, .92), (0, 0, sign * 12))
+        _npc_rigid(rig, f"prop_toolbelt_tool_{s}", "DEF-hips",
+                   bm_prism(.17, .013, .013, sides=6, top_at_origin=False), "mat_npc_metal",
+                   (sign * .205, -.03, .86))
+    _npc_rigid(rig, "prop_toolbelt__accent", "DEF-hips", bm_box(.05, .012, .032, bevel=.004),
+               "mat_npc_accent", (0, -.163, .975))
+    # Klucz przy lewym biodrze.
+    wrench = bm_merge(
+        bm_box(.022, .011, .17, center=(0, 0, -.085), bevel=.004),
+        bm_box(.05, .013, .026, center=(0, 0, .0), bevel=.004),
+        bm_box(.014, .013, .03, center=(-.018, 0, .025)),
+        bm_box(.014, .013, .03, center=(.018, 0, .025)),
+    )
+    _npc_rigid(rig, "prop_wrench", "DEF-hips", wrench, "mat_npc_metal", (.2, -.06, .96), (0, 0, 8))
+    # Pagony i naszywka (Kapitan Szron).
+    for s, sign in (("L", 1), ("R", -1)):
+        _npc_rigid(rig, f"role_szron_{s}", f"DEF-shoulder.{s}", bm_box(.12, .1, .018, bevel=.006),
+                   "mat_npc_outer", (sign * .155, .035, 1.555), (0, -sign * 12, 0))
+    _npc_rigid(rig, "role_szron__accent", "DEF-spine.003", bm_box(.06, .006, .018),
+               "mat_npc_accent", (.085, -.168, 1.38))
+
+
+def build_npc_civilian():
+    source = os.path.join(ROOT, "tools", "blender", "sources", "ual", "AnimationLibrary_Godot_Standard.glb")
+    bpy.ops.import_scene.gltf(filepath=source)
+    rig = bpy.data.objects["Rig"]
+    body = bpy.data.objects["Mannequin"]
+    rig.animation_data_clear()
+    for bone in rig.pose.bones:
+        bone.matrix_basis = Matrix.Identity(4)
+    for obj in list(bpy.context.scene.objects):
+        if obj not in (rig, body):
+            bpy.data.objects.remove(obj, do_unlink=True)
+    # Pomiary z pełnej siatki, skóra (głowa, dłonie) z tej samej decymacji co wrogowie,
+    # więc skala i położenie stóp są identyczne jak w enemy_trooper.
+    measure = _NpcBody(body)
+    body.name = "civ_skin"
+    body.data.materials.clear()
+    body.data.materials.append(material("mat_npc_skin"))
+    before = sum(len(p.vertices) - 2 for p in body.data.polygons)
+    bpy.context.view_layer.objects.active = body
+    body.select_set(True)
+    decimate = body.modifiers.new("npc_budget", "DECIMATE")
+    decimate.ratio = 4000 / before
+    decimate.use_collapse_triangulate = True
+    bpy.ops.object.modifier_move_up(modifier=decimate.name)
+    bpy.ops.object.modifier_apply(modifier=decimate.name)
+    lo = min(v.co.z for v in body.data.vertices)
+    hi = max(v.co.z for v in body.data.vertices)
+    groups = [g.name for g in body.vertex_groups]
+    bm = bmesh.new()
+    bm.from_mesh(body.data)
+    deform = bm.verts.layers.deform.active
+    drop = []
+    for face in bm.faces:
+        keep = True
+        for v in face.verts:
+            weights = v[deform]
+            if not weights:
+                keep = False
+                break
+            name = groups[max(weights.items(), key=lambda kv: kv[1])[0]]
+            if not name.startswith(_NPC_SKIN):
+                keep = False
+                break
+        if not keep:
+            drop.append(face)
+    bmesh.ops.delete(bm, geom=drop, context="FACES")
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context="VERTS")
+    bm.to_mesh(body.data)
+    bm.free()
+    bpy.ops.object.select_all(action="DESELECT")
+    body.select_set(True)
+    bpy.context.view_layer.objects.active = body
+    bpy.ops.object.shade_smooth_by_angle(angle=math.radians(50), keep_sharp_edges=False)
+    root = empty("npc_civilian")
+    rig.parent = root
+    body.parent = rig
+    scale = 1.84 / (hi - lo)
+    root.scale = (scale,) * 3
+    rig.location.z = -lo
+    bpy.context.view_layer.update()
+    measure.lo = lo
+
+    # Góry ubrania (dokładnie jedna widoczna) i nakładki.
+    shirt_collar = ((1.565, .012, 1.0),)
+    _npc_top("top_shirt", measure, rig, .012, .93, shirt_collar, .012, mat="mat_npc_shirt",
+             cuff=lambda x: .004 * _ss(.66, .735, x))
+    _npc_top("top_jacket", measure, rig, .03, .93, ((1.565, .028, 1.05), (1.6, .03, 1.05), (1.625, .032, 1.05)),
+             .028, cuff=lambda x: -.004 * _ss(.66, .735, x), flare=lambda z: .006 * _ss(1.0, .93, z))
+    _npc_strip("top_jacket__accent", measure, rig, .03, .93, 1.505, .012)
+    _npc_top("top_hoodie", measure, rig, .034, .93, ((1.56, .032, 1.35), (1.59, .048, 1.6), (1.62, .044, 1.55)),
+             .03, cuff=lambda x: -.008 * _ss(.66, .735, x), flare=lambda z: -.006 * _ss(.99, .93, z))
+    for s, sign in (("L", 1), ("R", -1)):
+        _npc_rigid(rig, f"top_hoodie__accent_{s}", "DEF-spine.003",
+                   bm_box(.008, .008, .09, center=(0, 0, -.045)), "mat_npc_accent",
+                   (sign * .035, -.15, 1.47))
+    pocket = _SkinMesh()
+    table = measure.torso()
+    rows = []
+    for z, radii in zip(measure.TORSO_Z, table):
+        if .99 <= z <= 1.17:
+            y = measure.TORSO_C.y - radii[0] - .034 - .012
+            half = .12 if z < 1.1 else .085
+            rows.append(pocket.ring([(-half, y + .02, z), (-half * .5, y, z), (half * .5, y, z), (half, y + .02, z)],
+                                    _w_torso))
+    for a, b in zip(rows, rows[1:]):
+        pocket.strip(a, b)
+    _orient_out(pocket, pocket.f, lambda c: Vector((0, .5, c.z)))
+    _npc_skinned("top_hoodie_pocket", pocket, "mat_npc_outer", rig, smooth=38)
+    _npc_top("top_coat", measure, rig, .036, .93, ((1.555, .03, 1.0), (1.585, .05, 1.0), (1.61, .075, 1.0)),
+             .032, skirt=((.87, .02), (.77, .04), (.66, .06), (.57, .075)), slit=True,
+             cuff=lambda x: .008 * _ss(.62, .735, x))
+    _npc_top("over_vest", measure, rig, .032, .99, ((1.5, .028, 1.0),), .0, sleeves=False)
+    _npc_strip("over_vest__accent", measure, rig, .032, .99, 1.46, .012)
+    _npc_apron(measure, rig)
+    _npc_pants(measure, rig)
+    _npc_boots(measure, rig)
+    _npc_hood(measure, rig, "head_hood")
+    _npc_props(measure, rig)
+    rig.data.pose_position = "POSE"
+    bpy.context.view_layer.update()
+    tris = sum(len(p.vertices) - 2 for p in body.data.polygons)
+    print(f"[neoryder] npc_civilian skin tris={tris} scale={scale:.6f}")
+    return root
+
+
+NPC_PREVIEW = (  # podpis, widoczne prefiksy, klip, klatka
+    ("koszula + torba", ("top_shirt", "prop_satchel"), "Idle_Loop", 0),
+    ("kurtka + plecak", ("top_jacket", "prop_backpack"), "Idle_Loop", 0),
+    ("bluza", ("top_hoodie",), "Idle_Talking_Loop", 10),
+    ("płaszcz", ("top_coat",), "Walk_Loop", 8),
+    ("kamizelka + pas", ("top_shirt", "over_vest", "prop_toolbelt", "prop_wrench"), "Idle_Loop", 0),
+    ("fartuch + saszetki", ("top_shirt", "over_apron", "prop_pouches"), "PickUp_Table", 20),
+    ("kaptur + kurtka", ("top_jacket", "head_hood", "role_szron"), "Idle_Loop", 0),
+    ("siedzi (kurtka)", ("top_jacket",), "Sitting_Idle_Loop", 30),
+    ("klęczy (płaszcz)", ("top_coat", "prop_satchel"), "Fixing_Kneeling", 20),
+)
+
+
+def _stitch(paths, out, cols):
+    import numpy as np
+
+    tiles = []
+    for path in paths:
+        image = bpy.data.images.load(path)
+        w, h = image.size
+        pixels = np.empty(w * h * 4, dtype=np.float32)
+        image.pixels.foreach_get(pixels)
+        tiles.append(pixels.reshape(h, w, 4))
+        bpy.data.images.remove(image)
+    h, w = tiles[0].shape[:2]
+    rows = (len(tiles) + cols - 1) // cols
+    sheet = np.ones((rows * h, cols * w, 4), dtype=np.float32)
+    for i, tile in enumerate(tiles):
+        r, c = divmod(i, cols)
+        sheet[(rows - 1 - r) * h:(rows - r) * h, c * w:(c + 1) * w] = tile
+    image = bpy.data.images.new("sheet", cols * w, rows * h, alpha=True)
+    image.pixels.foreach_set(sheet.ravel())
+    image.filepath_raw = out
+    image.file_format = "PNG"
+    image.save()
+    bpy.data.images.remove(image)
+
+
+def _preview_scene(size, background):
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_WORKBENCH"
+    shading = scene.display.shading
+    shading.light = "STUDIO"
+    shading.color_type = "MATERIAL"
+    shading.show_cavity = True
+    shading.show_object_outline = True
+    shading.show_shadows = True
+    scene.render.resolution_x, scene.render.resolution_y = size
+    scene.render.resolution_percentage = 100
+    scene.render.film_transparent = False
+    scene.display.render_aa = "16"
+    world = bpy.data.worlds.new("preview_world")
+    world.color = background
+    scene.world = world
+    return scene
+
+
+def _preview_camera(scene, target, direction, distance, lens=50):
+    data = bpy.data.cameras.new("preview_cam")
+    data.lens = lens
+    cam = bpy.data.objects.new("preview_cam", data)
+    scene.collection.objects.link(cam)
+    cam.location = Vector(target) + Vector(direction).normalized() * distance
+    cam.rotation_euler = (Vector(target) - cam.location).to_track_quat("-Z", "Y").to_euler()
+    scene.camera = cam
+    return cam
+
+
+def _pose(rig, action, frame):
+    rig.animation_data_create()
+    rig.animation_data.action = bpy.data.actions[action]
+    rig.animation_data.action_slot = bpy.data.actions[action].slots[0]
+    bpy.context.scene.frame_set(frame)
+    bpy.context.view_layer.update()
+
+
+def render_npc_previews(root, path):
+    import tempfile
+
+    rig = next(o for o in root.children_recursive if o.type == "ARMATURE")
+    scene = _preview_scene((420, 640), (0.5, 0.52, 0.56))
+    _preview_camera(scene, (0, 0, .93), (.55, -1.0, .2), 3.3)
+    meshes = [o for o in root.children_recursive if o.type == "MESH"]
+    tmp = tempfile.mkdtemp(prefix="npc_preview_")
+    paths = []
+    for i, (label, prefixes, action, frame) in enumerate(NPC_PREVIEW):
+        for o in meshes:
+            o.hide_render = not o.name.startswith(("civ_",) + prefixes)
+        _pose(rig, action, frame)
+        scene.render.filepath = os.path.join(tmp, f"{i}.png")
+        bpy.ops.render.render(write_still=True)
+        paths.append(scene.render.filepath)
+        print(f"[neoryder] preview {label}")
+    _stitch(paths, path, 5)
+
+
+# --------------------------------------------------------------------------- kot kryjówki (Węgielek)
+
+PALETTE.setdefault("mat_cat_fur", ((0.075, 0.08, 0.09, 1), None))
+PALETTE.setdefault("mat_cat_eye", ((1.0, 0.682, 0.102, 1), 2.0))
+PALETTE.setdefault("mat_cat_nose", ((0.03, 0.03, 0.035, 1), None))
+
+CAT_FPS = 30
+# Kości kota w pozie spoczynkowej (stoi): głowa, ogon (4 człony), cztery łapy. Przód = -Y Blendera.
+CAT_BONES = {
+    "hips": ((0, .13, .26), (0, .03, .27), None),
+    "spine": ((0, .03, .27), (0, -.08, .275), "hips"),
+    "chest": ((0, -.08, .275), (0, -.15, .28), "spine"),
+    "neck": ((0, -.15, .28), (0, -.2, .345), "chest"),
+    "head": ((0, -.2, .345), (0, -.28, .36), "neck"),
+    "tail1": ((0, .17, .262), (0, .245, .29), "hips"),
+    "tail2": ((0, .245, .29), (0, .325, .305), "tail1"),
+    "tail3": ((0, .325, .305), (0, .405, .305), "tail2"),
+    "tail4": ((0, .405, .305), (0, .48, .295), "tail3"),
+}
+for _s, _x in (("L", .045), ("R", -.045)):
+    CAT_BONES[f"upperarm.{_s}"] = ((_x, -.13, .235), (_x, -.115, .135), "chest")
+    CAT_BONES[f"forearm.{_s}"] = ((_x, -.115, .135), (_x, -.135, .035), f"upperarm.{_s}")
+    CAT_BONES[f"hand.{_s}"] = ((_x, -.135, .035), (_x, -.168, .012), f"forearm.{_s}")
+for _s, _x in (("L", .05), ("R", -.05)):
+    CAT_BONES[f"thigh.{_s}"] = ((_x, .145, .235), (_x, .095, .145), "hips")
+    CAT_BONES[f"shin.{_s}"] = ((_x, .095, .145), (_x, .165, .075), f"thigh.{_s}")
+    CAT_BONES[f"foot.{_s}"] = ((_x, .165, .075), (_x, .15, .014), f"shin.{_s}")
+    CAT_BONES[f"toe.{_s}"] = ((_x, .15, .014), (_x, .115, .01), f"foot.{_s}")
+
+
+def _cat_rig(root):
+    arm = bpy.data.armatures.new("cat_rig")
+    rig = bpy.data.objects.new("cat_rig", arm)
+    bpy.context.scene.collection.objects.link(rig)
+    rig.parent = root
+    bpy.ops.object.select_all(action="DESELECT")
+    rig.select_set(True)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode="EDIT")
+    for name, (head, tail, _) in CAT_BONES.items():
+        bone = arm.edit_bones.new(name)
+        bone.head, bone.tail, bone.roll = head, tail, 0.0
+    for name, (_, _, parent) in CAT_BONES.items():
+        bone = arm.edit_bones[name]
+        if parent:
+            bone.parent = arm.edit_bones[parent]
+            bone.use_connect = False
+        # Oś X każdej kości = +X świata: obrót wokół X to pochylenie w płaszczyźnie YZ.
+        if bone.x_axis.x < 0:
+            bone.roll += math.pi
+    bpy.ops.object.mode_set(mode="OBJECT")
+    for bone in rig.pose.bones:
+        bone.rotation_mode = "XYZ"
+    return rig
+
+
+def _cat_tube(mesh, centers, radii, weights, flat=None, sides=6, cap_start=False, cap_end=True):
+    """Rura wzdłuż osi w płaszczyźnie YZ (łapy, ogon, szyja); `flat` spłaszcza przekrój w X."""
+    rings = []
+    for i, c in enumerate(centers):
+        c = Vector(c)
+        a = Vector(centers[max(0, i - 1)])
+        b = Vector(centers[min(len(centers) - 1, i + 1)])
+        tangent = (b - a).normalized()
+        u = Vector((1, 0, 0))
+        v = tangent.cross(u).normalized()
+        sx = flat[i] if flat else 1.0
+        ring = []
+        for k in range(sides):
+            ang = 2 * math.pi * k / sides + math.pi / sides
+            ring.append(c + u * math.cos(ang) * radii[i] * sx + v * math.sin(ang) * radii[i])
+        rings.append(ring)
+    first = len(mesh.f)
+    ids = [mesh.ring(r, w) for r, w in zip(rings, weights)]
+    for i in range(len(ids) - 1):
+        mesh.bridge(ids[i], ids[i + 1])
+    if cap_start:
+        mesh.cap(ids[0])
+    if cap_end:
+        tip = mesh.ring([Vector(centers[-1]) + (Vector(centers[-1]) - Vector(centers[-2])).normalized() * radii[-1] * .6],
+                        lambda p, w=weights[-1]: w(p))[0]
+        last = ids[-1]
+        for k in range(len(last)):
+            mesh.f.append((last[k], last[(k + 1) % len(last)], tip))
+    faces = mesh.f[first:]
+    axis = [Vector(c) for c in centers]
+
+    def center_of(p):
+        return min(axis, key=lambda c: (c - p).length)
+
+    _orient_out(mesh, faces, center_of)
+    mesh.f[first:] = faces
+
+
+def _cat_const(bones):
+    return lambda p, b=bones: dict(b)
+
+
+def _cat_mesh(rig):
+    fur = _SkinMesh()
+
+    def w_body(p):
+        w = {"hips": 1.0}
+        w = _wmix(w, {"spine": 1.0}, _ss(.1, .03, p.y))
+        w = _wmix(w, {"chest": 1.0}, _ss(-.03, -.1, p.y))
+        return _wmix(w, {"neck": 1.0}, _ss(-.165, -.2, p.y))
+
+    # Tułów: od zadu do karku, przekroje (y, półszerokość, półwysokość, środek z).
+    body = ((.218, .022, .026, .27), (.2, .046, .052, .262), (.165, .064, .07, .25), (.11, .067, .074, .243),
+            (.05, .063, .071, .238), (-.01, .062, .072, .238), (-.07, .066, .08, .243), (-.12, .064, .082, .252),
+            (-.16, .052, .07, .27), (-.185, .04, .05, .3))
+    n = 10
+    rings = []
+    for y, hw, hh, zc in body:
+        ring = []
+        for k in range(n):
+            a = 2 * math.pi * k / n - math.pi / 2
+            ca, sa = math.cos(a), math.sin(a)
+            # Grzbiet nieco płaski, brzuch zaokrąglony.
+            z = zc + sa * hh * (0.92 if sa > 0 else 1.0)
+            ring.append(Vector((ca * hw, y, z)))
+        rings.append(ring)
+    first = len(fur.f)
+    ids = [fur.ring(r, w_body) for r in rings]
+    for i in range(len(ids) - 1):
+        fur.bridge(ids[i], ids[i + 1])
+    fur.cap(ids[0])
+    faces = fur.f[first:]
+    _orient_out(fur, faces, lambda c: Vector((0, c.y, .25 if c.y > -.15 else .29)))
+    fur.f[first:] = faces
+    # Szyja: z karku do potylicy, wagi szyja -> głowa.
+    _cat_tube(fur, [(0, -.15, .275), (0, -.175, .3), (0, -.198, .335), (0, -.212, .362)], [.058, .05, .044, .04],
+              [_cat_const({"chest": .7, "neck": .3}), _cat_const({"chest": .3, "neck": .7}), _cat_const({"neck": 1.0}),
+               _cat_const({"neck": .4, "head": .6})],
+              flat=[1.1, 1.1, 1.15, 1.25], sides=10, cap_end=False)
+    # Głowa: loft od potylicy do nosa, szerokie policzki, mały pyszczek.
+    head = ((-.195, .03, .034, .365), (-.21, .05, .046, .372), (-.232, .058, .05, .372), (-.255, .054, .046, .366),
+            (-.272, .036, .034, .356), (-.285, .02, .022, .352), (-.292, .009, .01, .354))
+    rings = []
+    for y, hw, hh, zc in head:
+        ring = []
+        for k in range(n):
+            a = 2 * math.pi * k / n - math.pi / 2
+            ring.append(Vector((math.cos(a) * hw, y, zc + math.sin(a) * hh)))
+        rings.append(ring)
+    first = len(fur.f)
+    ids = [fur.ring(r, _cat_const({"head": 1.0})) for r in rings]
+    for i in range(len(ids) - 1):
+        fur.bridge(ids[i], ids[i + 1])
+    fur.cap(ids[0])
+    fur.cap(ids[-1])
+    faces = fur.f[first:]
+    _orient_out(fur, faces, lambda c: Vector((0, c.y, .366)))
+    fur.f[first:] = faces
+    # Uszy: trójkątne ostrosłupy na czubku głowy, lekko na zewnątrz.
+    for s in (1, -1):
+        base = [Vector((s * .02, -.218, .404)), Vector((s * .05, -.214, .396)), Vector((s * .036, -.232, .398)),
+                Vector((s * .034, -.2, .396))]
+        tip = Vector((s * .048, -.212, .452))
+        first = len(fur.f)
+        b = fur.ring(base, _cat_const({"head": 1.0}))
+        t = fur.ring([tip], _cat_const({"head": 1.0}))[0]
+        for k in range(4):
+            fur.f.append((b[k], b[(k + 1) % 4], t))
+        fur.cap(b)
+        faces = fur.f[first:]
+        _orient_out(fur, faces, lambda c, s=s: Vector((s * .035, -.215, .41)))
+        fur.f[first:] = faces
+    # Łapy przednie: ramię, przedramię, dłoń (spłaszczona).
+    for s, x in (("L", .045), ("R", -.045)):
+        pts = [(x, -.128, .26), (x, -.13, .235), (x, -.12, .185), (x, -.115, .135), (x, -.125, .085),
+               (x, -.135, .035), (x, -.15, .022), (x, -.168, .014)]
+        w = [_cat_const({"chest": .6, f"upperarm.{s}": .4}), _cat_const({f"upperarm.{s}": 1.0}),
+             _cat_const({f"upperarm.{s}": 1.0}), _cat_const({f"upperarm.{s}": .5, f"forearm.{s}": .5}),
+             _cat_const({f"forearm.{s}": 1.0}), _cat_const({f"forearm.{s}": .5, f"hand.{s}": .5}),
+             _cat_const({f"hand.{s}": 1.0}), _cat_const({f"hand.{s}": 1.0})]
+        _cat_tube(fur, pts, [.038, .033, .027, .022, .019, .018, .021, .017], w,
+                  flat=[1, 1, 1, 1, 1, 1.05, 1.25, 1.2])
+    # Łapy tylne: udo (szerokie), podudzie, śródstopie, palce.
+    for s, x in (("L", .05), ("R", -.05)):
+        pts = [(x * .9, .14, .27), (x, .145, .235), (x, .12, .19), (x, .095, .145), (x, .13, .11), (x, .165, .075),
+               (x, .158, .045), (x, .15, .014), (x, .132, .012), (x, .115, .011)]
+        w = [_cat_const({"hips": .7, f"thigh.{s}": .3}), _cat_const({"hips": .3, f"thigh.{s}": .7}),
+             _cat_const({f"thigh.{s}": 1.0}), _cat_const({f"thigh.{s}": .5, f"shin.{s}": .5}),
+             _cat_const({f"shin.{s}": 1.0}), _cat_const({f"shin.{s}": .5, f"foot.{s}": .5}),
+             _cat_const({f"foot.{s}": 1.0}), _cat_const({f"foot.{s}": .5, f"toe.{s}": .5}),
+             _cat_const({f"toe.{s}": 1.0}), _cat_const({f"toe.{s}": 1.0})]
+        _cat_tube(fur, pts, [.056, .054, .041, .026, .021, .019, .017, .018, .021, .016], w,
+                  flat=[1, .9, .85, 1, 1, 1, 1, 1.1, 1.25, 1.2])
+    # Ogon: długi, zwężający się, cztery człony.
+    pts = [(0, .19, .262), (0, .21, .27), (0, .245, .29), (0, .285, .3), (0, .325, .305), (0, .365, .306),
+           (0, .405, .305), (0, .445, .3), (0, .48, .295)]
+    w = [_cat_const({"hips": .6, "tail1": .4}), _cat_const({"tail1": 1.0}), _cat_const({"tail1": .5, "tail2": .5}),
+         _cat_const({"tail2": 1.0}), _cat_const({"tail2": .5, "tail3": .5}), _cat_const({"tail3": 1.0}),
+         _cat_const({"tail3": .5, "tail4": .5}), _cat_const({"tail4": 1.0}), _cat_const({"tail4": 1.0})]
+    _cat_tube(fur, pts, [.028, .026, .024, .022, .021, .02, .019, .017, .014], w, sides=6)
+    body_obj = _npc_skinned("cat_body", fur, "mat_cat_fur", rig, smooth=40)
+    # Oczy: migdałowe, lekko na boki; nos.
+    eyes = _SkinMesh()
+    for s in (1, -1):
+        bm = bm_ico(1, subdiv=1, scale=(.014, .006, .009))
+        bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(-s * 28), 3, "Z"))
+        start = len(eyes.v)
+        for v in bm.verts:
+            eyes.v.append(v.co + Vector((s * .026, -.268, .378)))
+            eyes.w.append({"head": 1.0})
+        for f in bm.faces:
+            eyes.f.append(tuple(start + v.index for v in f.verts))
+        bm.free()
+    _npc_skinned("cat_eyes", eyes, "mat_cat_eye", rig, smooth=80)
+    nose = _SkinMesh()
+    tri = nose.ring([(-.009, -.291, .362), (.009, -.291, .362), (0, -.296, .352), (0, -.286, .366)],
+                    _cat_const({"head": 1.0}))
+    nose.f += [(tri[0], tri[1], tri[2]), (tri[0], tri[3], tri[1]), (tri[1], tri[3], tri[2]), (tri[2], tri[3], tri[0])]
+    _orient_out(nose, nose.f, lambda c: Vector((0, -.285, .36)))
+    _npc_skinned("cat_nose", nose, "mat_cat_nose", rig)
+    return body_obj
+
+
+# ----- pozy i klipy
+
+def _cat_angle(pb):
+    d = pb.tail - pb.head
+    return math.atan2(d.z, d.y)
+
+
+def _cat_aim(pb, angle):
+    bpy.context.view_layer.update()
+    delta = (angle - _cat_angle(pb) + math.pi) % (2 * math.pi) - math.pi
+    pb.rotation_euler.x += delta
+
+
+def _cat_ik(a, p, l1, l2, back):
+    """Dwa człony w płaszczyźnie YZ: kąt pierwszego i drugiego członu (back: staw zgięty do tyłu, +Y)."""
+    d = p - a
+    dist = max(abs(l1 - l2) + 1e-4, min(l1 + l2 - 1e-4, d.length))
+    base = math.atan2(d.y, d.x)
+    k = math.acos(max(-1.0, min(1.0, (l1 * l1 + dist * dist - l2 * l2) / (2 * l1 * dist))))
+    first = base + k if back else base - k
+    joint = a + Vector((math.cos(first), math.sin(first))) * l1
+    target = a + d.normalized() * dist
+    second = math.atan2(target.y - joint.y, target.x - joint.x)
+    return first, second
+
+
+def _yz(v):
+    return Vector((v.y, v.z))
+
+
+def _cat_set_pose(rig, body, legs):
+    """body: {kość: (rx, ry, rz)}, 'hips_loc': (dy, dz); legs: {strona/łapa: dane IK}."""
+    bones = rig.pose.bones
+    for pb in bones:
+        pb.rotation_euler = (0, 0, 0)
+        pb.location = (0, 0, 0)
+    dy, dz = body.get("hips_loc", (0, 0))
+    hips = rig.data.bones["hips"]
+    bones["hips"].location = hips.matrix_local.to_3x3().inverted() @ Vector((0, dy, dz))
+    for name, rot in body.items():
+        if name != "hips_loc":
+            bones[name].rotation_euler = rot
+    bpy.context.view_layer.update()
+    lengths = {b.name: b.length for b in rig.data.bones}
+    for s in ("L", "R"):
+        front = legs[f"front.{s}"]
+        upper, fore, hand = bones[f"upperarm.{s}"], bones[f"forearm.{s}"], bones[f"hand.{s}"]
+        a = _yz(upper.head)
+        if "wrist" in front:
+            t = Vector(front["wrist"])
+        elif "wrist_nose" in front:
+            t = _yz(bones["head"].tail) + Vector(front["wrist_nose"])
+        else:
+            t = Vector((a.x + front["wrist_dy"], front["wrist_z"]))
+        first, second = _cat_ik(a, t, lengths[upper.name], lengths[fore.name], back=True)
+        _cat_aim(upper, first)
+        _cat_aim(fore, second)
+        _cat_aim(hand, front["hand"])
+        hind = legs[f"hind.{s}"]
+        thigh, shin, foot, toe = (bones[f"{b}.{s}"] for b in ("thigh", "shin", "foot", "toe"))
+        a = _yz(thigh.head)
+        paw = Vector(hind["paw"]) if "paw" in hind else Vector((a.x + hind["paw_dy"], hind["paw_z"]))
+        hock = paw - Vector((math.cos(hind["foot"]), math.sin(hind["foot"]))) * lengths[foot.name]
+        first, second = _cat_ik(a, hock, lengths[thigh.name], lengths[shin.name], back=False)
+        _cat_aim(thigh, first)
+        _cat_aim(shin, second)
+        _cat_aim(foot, hind["foot"])
+        _cat_aim(toe, hind["toe"])
+    bpy.context.view_layer.update()
+
+
+def _cat_key(rig, frame):
+    for pb in rig.pose.bones:
+        pb.keyframe_insert("rotation_euler", frame=frame)
+        if pb.name == "hips":
+            pb.keyframe_insert("location", frame=frame)
+
+
+REST_FRONT = (-.135, .035)
+REST_HIND = (.15, .014)
+FOOT_REST = math.atan2(.014 - .075, .15 - .165)
+HAND_REST = math.atan2(.012 - .035, -.168 + .135)
+TOE_REST = math.atan2(.01 - .014, .115 - .15)
+FLAT = math.pi  # skierowane do przodu (-Y), poziomo
+
+
+def _tail(pitch, yaw):
+    return {f"tail{i + 1}": (pitch[i], 0, yaw[i]) for i in range(4)}
+
+
+def _stand_legs(front=None, hind=None):
+    legs = {}
+    for s in ("L", "R"):
+        legs[f"front.{s}"] = {"wrist": REST_FRONT, "hand": HAND_REST}
+        legs[f"hind.{s}"] = {"paw": REST_HIND, "foot": FOOT_REST, "toe": TOE_REST}
+    for k, v in (front or {}).items():
+        legs[k].update(v)
+    for k, v in (hind or {}).items():
+        legs[k].update(v)
+    return legs
+
+
+def _cat_clip_idle(t):
+    w = 2 * math.pi * t
+    body = {"spine": (.012 * math.sin(w), 0, 0), "chest": (-.02 * math.sin(w), 0, 0),
+            "neck": (.03 * math.sin(w * .5), 0, 0), "head": (0, 0, .18 * math.sin(w * .5))}
+    body.update(_tail([.12, .05, -.08, -.12], [.22 * math.sin(w - i * .8) for i in range(4)]))
+    return body, _stand_legs()
+
+
+# Przesunięcie łapy w fazie podporu (m); prędkość klipu = WALK_STRIDE / (WALK_DUTY * 20/30 s) ≈ 0,55 m/s
+# (tuning.hub.catWalkClipSpeedMS).
+WALK_STRIDE = .2
+WALK_DUTY = .55
+
+
+def _walk_track(u, y0, z0, lift):
+    if u < WALK_DUTY:
+        return y0 + WALK_STRIDE * (u / WALK_DUTY - .5), z0, 0.0
+    v = (u - WALK_DUTY) / (1 - WALK_DUTY)
+    s = v * v * (3 - 2 * v)
+    return y0 + WALK_STRIDE * (.5 - s), z0 + lift * math.sin(math.pi * v), math.sin(math.pi * v)
+
+
+def _cat_clip_walk(t):
+    w = 2 * math.pi * t
+    body = {"hips_loc": (0, -.006 * math.cos(2 * w)), "spine": (0, 0, .03 * math.sin(w)),
+            "chest": (0, 0, -.03 * math.sin(w)), "neck": (.02 * math.cos(2 * w), 0, 0), "head": (0, 0, 0)}
+    body.update(_tail([.5, .2, -.05, -.25], [.12 * math.sin(w - i * .7) for i in range(4)]))
+    legs = {}
+    for leg, phase in (("hind.L", 0), ("front.L", .25), ("hind.R", .5), ("front.R", .75)):
+        u = (t + phase) % 1
+        if leg.startswith("front"):
+            y, z, swing = _walk_track(u, REST_FRONT[0] + .02, REST_FRONT[1], .035)
+            legs[leg] = {"wrist": (y, z + .01 * swing), "hand": HAND_REST + 1.0 * swing}
+        else:
+            y, z, swing = _walk_track(u, REST_HIND[0] + .01, REST_HIND[1], .045)
+            legs[leg] = {"paw": (y, z), "foot": FOOT_REST - .35 * swing, "toe": TOE_REST + 1.0 * swing}
+    return body, legs
+
+
+SIT_BODY = {"hips_loc": (0, -.11), "hips": (-.56, 0, 0), "spine": (-.04, 0, 0), "chest": (.0, 0, 0),
+            "neck": (.36, 0, 0), "head": (.3, 0, 0)}
+
+
+def _sit_legs():
+    legs = {}
+    for s in ("L", "R"):
+        legs[f"front.{s}"] = {"wrist_dy": .004, "wrist_z": REST_FRONT[1], "hand": HAND_REST + .05}
+        legs[f"hind.{s}"] = {"paw_dy": -.075, "paw_z": REST_HIND[1], "foot": FLAT - .05, "toe": FLAT + .08}
+    return legs
+
+
+def _cat_clip_sit(t):
+    w = 2 * math.pi * t
+    body = dict(SIT_BODY)
+    body["chest"] = (.015 * math.sin(w), 0, 0)
+    body["head"] = (.32, 0, .12 * math.sin(w * .5))
+    body.update(_tail([-.55, -.15, -.05, 0], [.3, .75, .75, .55 + .25 * math.sin(w * 2)]))
+    return body, _sit_legs()
+
+
+def _cat_clip_lie(t):
+    w = 2 * math.pi * t
+    body = {"hips_loc": (0, -.125), "hips": (0, 0, 0), "spine": (.012 * math.sin(w), 0, 0),
+            "chest": (-.03 - .012 * math.sin(w), 0, 0), "neck": (-.12, 0, 0), "head": (.22, 0, .1 * math.sin(w * .5))}
+    body.update(_tail([-.45, -.05, 0, 0], [.55, .8, .8, .55 + .2 * math.sin(w * 2)]))
+    legs = {}
+    for s in ("L", "R"):
+        legs[f"front.{s}"] = {"wrist_dy": -.11, "wrist_z": .022, "hand": FLAT - .05}
+        legs[f"hind.{s}"] = {"paw_dy": -.11, "paw_z": REST_HIND[1], "foot": FLAT, "toe": FLAT + .05}
+    return body, legs
+
+
+def _cat_clip_groom(t):
+    w = 2 * math.pi * t
+    body = dict(SIT_BODY)
+    body["neck"] = (.5, 0, -.1)
+    body["head"] = (.62 + .14 * math.sin(2 * w), 0, -.2)
+    body.update(_tail([-.55, -.15, -.05, 0], [.3, .75, .75, .55]))
+    legs = _sit_legs()
+    legs["front.R"] = {"wrist_nose": (.045 + .012 * math.sin(2 * w), -.065 + .015 * math.sin(2 * w)),
+                       "hand": math.radians(115)}
+    return body, legs
+
+
+CAT_CLIPS = (  # nazwa klipu, długość (klatki), krok próbkowania, funkcja pozy
+    ("idle", 72, 3, _cat_clip_idle),
+    ("walk", 20, 1, _cat_clip_walk),
+    ("sit", 90, 3, _cat_clip_sit),
+    ("lie", 120, 4, _cat_clip_lie),
+    ("groom", 36, 2, _cat_clip_groom),
+)
+
+
+def _cat_bake(rig):
+    for name, frames, step, fn in CAT_CLIPS:
+        action = bpy.data.actions.new(name)
+        action.use_fake_user = True
+        rig.animation_data_create()
+        rig.animation_data.action = action
+        for frame in list(range(0, frames, step)) + [frames]:
+            body, legs = fn((frame % frames) / frames)
+            _cat_set_pose(rig, body, legs)
+            _cat_key(rig, frame)
+        action.frame_range = (0, frames)
+        action.use_frame_range = True
+
+
+def build_hub_cat():
+    bpy.context.scene.render.fps = CAT_FPS
+    root = empty("hub_cat")
+    rig = _cat_rig(root)
+    _cat_mesh(rig)
+    _cat_bake(rig)
+    rig.animation_data.action = bpy.data.actions["idle"]
+    rig.animation_data.action_slot = bpy.data.actions["idle"].slots[0]
+    bpy.context.scene.frame_set(0)
+    return root
+
+
+def render_cat_preview(root, path):
+    import tempfile
+
+    rig = next(o for o in root.children_recursive if o.type == "ARMATURE")
+    scene = _preview_scene((520, 420), (0.5, 0.52, 0.56))
+    _preview_camera(scene, (0, -.02, .2), (1.0, -.55, .45), 1.55)
+    tmp = tempfile.mkdtemp(prefix="cat_preview_")
+    paths = []
+    for i, (name, frame) in enumerate((("idle", 0), ("walk", 4), ("walk", 14), ("sit", 0), ("lie", 0),
+                                       ("groom", 9))):
+        action = bpy.data.actions[name]
+        rig.animation_data.action = action
+        rig.animation_data.action_slot = action.slots[0]
+        scene.frame_set(frame)
+        bpy.context.view_layer.update()
+        scene.render.filepath = os.path.join(tmp, f"{i}.png")
+        bpy.ops.render.render(write_still=True)
+        paths.append(scene.render.filepath)
+    _stitch(paths, path, 3)
+
+
 # --------------------------------------------------------------------------- export / preview
 
-def export_glb(root, path: str) -> None:
+def export_glb(root, path: str, animations: bool = True) -> None:
     bpy.ops.object.select_all(action="DESELECT")
     for o in [root, *root.children_recursive]:
         o.select_set(True)
@@ -2455,7 +3720,7 @@ def export_glb(root, path: str) -> None:
     bpy.ops.export_scene.gltf(
         filepath=path, export_format="GLB", use_selection=True, export_apply=True,
         export_yup=True, export_extras=False, export_cameras=False, export_lights=False,
-        export_materials="EXPORT",
+        export_materials="EXPORT", export_animations=animations,
     )
 
 
@@ -2665,6 +3930,8 @@ def main() -> None:
         "blade_staff": build_blade_staff,
         "player_arm_R": lambda: build_player_arm("R"),
         "player_arm_L": lambda: build_player_arm("L"),
+        "npc_civilian": build_npc_civilian,
+        "hub_cat": build_hub_cat,
         **build_props(),
         **build_city_assets(),
     }
@@ -2679,9 +3946,14 @@ def main() -> None:
         preview_dir = os.path.join(PREVIEW_DIR, "city") if name.startswith("city_") else PREVIEW_DIR
         os.makedirs(asset_dir, exist_ok=True)
         os.makedirs(preview_dir, exist_ok=True)
-        export_glb(root, os.path.join(asset_dir, f"{name}.glb"))
+        # Cywil NPC nie niesie klipów: animacje są w npc_anims.glb.
+        export_glb(root, os.path.join(asset_dir, f"{name}.glb"), animations=name != "npc_civilian")
         if preview:
-            if name.startswith("player_arm_"):
+            if name == "npc_civilian":
+                render_npc_previews(root, os.path.join(preview_dir, f"{name}.png"))
+            elif name == "hub_cat":
+                render_cat_preview(root, os.path.join(preview_dir, f"{name}.png"))
+            elif name.startswith("player_arm_"):
                 hand_pose(root, "relaxed")
                 hand_preview(f"{name}.png", target=(0, 0, 0.065), span=0.61)
             else:

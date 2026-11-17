@@ -51,12 +51,12 @@ it('w całym klipie miednica spoczywa ±0,08 m nad siedziskiem, obie stopy na po
         Math.abs(block.position.y + block.size.y / 2 - seatTop) < 0.001,
     );
     expect(support, `siedzisko ${npc.id}`).toBeDefined();
-    const { scene } = await load('enemy_trooper.glb');
+    const { scene } = await load('npc_civilian.glb');
     const clip = library.animations.find(({ name }) => name === npc.animation)!;
     const mixer = new AnimationMixer(scene);
     mixer.clipAction(clip).play();
     const hips = scene.getObjectByName('DEF-hips')!;
-    const body = scene.getObjectByName('armored_body') as SkinnedMesh;
+    const body = scene.getObjectByName('civ_boots') as SkinnedMesh;
     const point = new Vector3();
     for (const turn of [
       -tuning.hub.npcSeatedBodyMaxRad,
