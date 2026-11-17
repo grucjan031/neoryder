@@ -2401,6 +2401,315 @@ def build_city_kiosk():
     return root
 
 
+# --------------------------------------------------------------------------- takeover arena props
+
+def build_city_overpass_pillar():
+    root = _city_root("city_overpass_pillar")
+    _city_box(root, "footing", (2.5, .45, 2.5), (0, .225, 0), "mat_concrete", .09)
+    _city_box(root, "shaft", (1.65, 8.3, 1.8), (0, 4.6, 0), "mat_concrete", .12)
+    _city_box(root, "capital", (1.65, .8, 1.8), (0, 9.1, 0), "mat_concrete", .06,
+              taper=(2.5 / 1.65, 2.5 / 1.8))
+    _city_box(root, "cap", (2.5, .5, 2.5), (0, 9.75, 0), "mat_concrete", .06)
+    # Tapered dark facets read as run-off channels without decals or textures.
+    for x, height in ((-.53, 5.4), (.15, 3.2), (.48, 4.6)):
+        _city_box(root, "runoff_facet", (.08, height, .035), (x, 8.7 - height / 2, .89),
+                  "mat_trim", .012, taper=(1.8, 1))
+    _city_tube(root, "drainpipe", [(1.05, .2, -.7), (1.05, .4, -.95),
+                                  (1.05, 9.2, -.95), (.8, 9.4, -.95)], .085, "mat_metal", 6)
+    for y in (1, 3.5, 6, 8.5):
+        _city_box(root, "pipe_clamp", (.4, .10, .20), (.95, y, -.95), "mat_trim")
+    _city_box(root, "foot_marker", (1.0, .16, .025), (0, .35, 1.25), "mat_hazard")
+    return root
+
+
+def _city_jersey(root, name, length, x=0, y=0, z=0, along_z=False):
+    profile = [(-.4, 0), (.4, 0), (.4, .18), (.22, .52), (.13, 1),
+               (-.13, 1), (-.22, .52), (-.4, .18)]
+    rings = [[(x + side, y + h, z + end) if along_z else (x + end, y + h, z + side)
+              for side, h in profile] for end in (-length / 2, length / 2)]
+    return _city_hull(root, name, rings, "mat_concrete")
+
+
+def _city_inlaid_slab(root, xs, zs, height, top_material, base_material="mat_concrete"):
+    """Closed slab with a tiled, coplanar top: markings never overlap the road."""
+    bm = bmesh.new()
+    top = [[bm.verts.new(_city_point((x, height, z))) for z in zs] for x in xs]
+    bottom = [[bm.verts.new(_city_point((x, 0, z))) for z in zs] for x in xs]
+    mats = [base_material] + [m for m in ("mat_concrete", "mat_asphalt", "mat_hivis", "mat_rubber", "mat_metal")
+                              if m != base_material]
+    for i in range(len(xs) - 1):
+        for j in range(len(zs) - 1):
+            face = bm.faces.new((top[i][j], top[i + 1][j], top[i + 1][j + 1], top[i][j + 1]))
+            face.material_index = mats.index(top_material((xs[i] + xs[i + 1]) / 2, (zs[j] + zs[j + 1]) / 2))
+            bm.faces.new((bottom[i][j], bottom[i][j + 1], bottom[i + 1][j + 1], bottom[i + 1][j]))
+        for j in (0, len(zs) - 1):
+            bm.faces.new((bottom[i][j], bottom[i + 1][j], top[i + 1][j], top[i][j]))
+    for j in range(len(zs) - 1):
+        for i in (0, len(xs) - 1):
+            bm.faces.new((bottom[i][j], top[i][j], top[i][j + 1], bottom[i][j + 1]))
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    obj = mesh_object("walk_slab", bm, mats[0], parent=root)
+    for mat in mats[1:]:
+        obj.data.materials.append(material(mat))
+    return obj
+
+
+def build_city_overpass_deck():
+    root = _city_root("city_overpass_deck")
+    # One box defines the entire walkable slab, including the flush asphalt top.
+    def surface(x, z):
+        if abs(x) > 6.4:
+            return "mat_concrete"
+        if 5.84 < abs(z) < 5.96:
+            return "mat_rubber"
+        if abs(x) < .06 and (abs(z) < .9 or 3.1 < abs(z) < 4.9):
+            return "mat_hivis"
+        return "mat_asphalt"
+    _city_inlaid_slab(root, [-7, -6.4, -.06, .06, 6.4, 7],
+                      [-6, -5.96, -5.84, -4.9, -3.1, -.9, .9, 3.1, 4.9, 5.84, 5.96, 6], 1.6, surface)
+    for x in (-6.6, 6.6):
+        _city_jersey(root, "side_barrier", 12, x, 1.6, along_z=True)
+        for z in (-4.5, 0, 4.5):
+            _city_box(root, "reflector", (.02, .16, .35), (x - math.copysign(.14, x), 2.34, z),
+                      "mat_hivis")
+    for x in (-4.5, 4.5):
+        _city_box(root, "fascia", (.16, .7, 12), (x, .4, 0), "mat_trim")
+    return root
+
+
+def build_city_highway_barrier():
+    root = _city_root("city_highway_barrier")
+    _city_jersey(root, "concrete_body", 4)
+    for x in (-1.6, 1.6):
+        _city_box(root, "reflector_mount", (.32, .18, .02), (x, .82, .17), "mat_trim")
+        _city_box(root, "reflector", (.20, .12, .02), (x, .82, .185), "mat_hivis")
+    for x in (-1.2, 1.2):
+        _city_ring(root, "lifting_loop", (x, 1.015, 0), .06, "z", .018, "mat_metal", 8)
+        _city_box(root, "foot_recess", (.46, .11, .016), (x, .08, .4), "mat_trim")
+    return root
+
+
+def build_city_highway_sign_gantry():
+    root = _city_root("city_highway_sign_gantry")
+    for x in (-6.6, 6.6):
+        _city_box(root, "footing", (.8, .25, 1.4), (x, .125, 0), "mat_concrete", .04)
+        for z in (-.42, .42):
+            _city_rod(root, "upright", (x, .25, z), (x, 6.85, z), .12, "mat_metal", 4)
+        for y in (1, 2.6, 4.2, 5.8):
+            _city_rod(root, "post_diagonal", (x, y, -.42), (x, y + .9, .42), .045, "mat_trim", 4)
+    for y in (6.05, 6.9):
+        for z in (-.42, .42):
+            _city_box(root, "truss_chord", (14, .20, .16), (0, y, z), "mat_metal")
+    for i in range(8):
+        x = -6.6 + i * 1.65
+        for z in (-.42, .42):
+            _city_rod(root, "truss_diagonal", (x, 6.05, z), (x + 1.65, 6.9, z), .045, "mat_trim", 4)
+    for x, glow in ((-3.3, "mat_neon_amber"), (3.3, "mat_neon_green")):
+        _city_box(root, "sign_housing", (4.7, 1.5, .28), (x, 5.7, .5), "mat_trim", .05)
+        _city_box(root, "blank_panel", (4.35, 1.15, .04), (x, 5.7, .66), glow)
+        for dx in (-1.6, 1.6):
+            _city_box(root, "sign_hanger", (.10, 1.6, .12), (x + dx, 6.1, .4), "mat_metal")
+    return root
+
+
+def build_city_wrecked_car():
+    root = _city_root("city_wrecked_car")
+    # Compact hatchback along +Z: a crumpled nose and missing windscreen, unlike city_car.
+    _city_hull(root, "crumpled_body", [
+        [(-w, low, z), (w, low, z), (w * .94, high, z), (-w * .94, high, z)]
+        for z, w, low, high in ((-2, .82, .25, .95), (-1.45, .97, .3, 1.06),
+                                (.65, .96, .27, .94), (1.35, .8, .25, .78), (1.85, .72, .32, .57))
+    ], "mat_lacquer")
+    _city_box(root, "cabin_floor", (1.45, .16, 1.65), (0, 1.01, -.5), "mat_cable")
+    for x in (-.4, .4):
+        _city_box(root, "seat", (.45, .22, .28), (x, 1.14, -.48), "mat_rubber", .03)
+    _city_hull(root, "bent_roof", [
+        [(-.76, 1.48, -1.43), (.76, 1.48, -1.43), (.76, 1.58, -1.43), (-.76, 1.58, -1.43)],
+        [(-.67, 1.12, .18), (.63, 1.5, .18), (.63, 1.58, .18), (-.67, 1.20, .18)],
+    ], "mat_lacquer")
+    for side in (-1, 1):
+        for z in (-1.4, -.5, .55):
+            roof_y = 1.5 - (.38 * max(0, (z + 1.18) / 1.61) if side < 0 and z < .55 else 0)
+            _city_rod(root, "window_pillar", (side * .86, .94, z),
+                      (side * .70, roof_y, z - .25), .045, "mat_trim", 4)
+        _city_box(root, "door_seam", (.02, .42, .035), (side * .945, .68, -.3), "mat_rust")
+        for z in (-1.25, 1.15):
+            wheel_y = .32 if (side == -1 and z > 0) else .36
+            _city_rod(root, "flat_tire" if wheel_y < .35 else "wheel", (side * .80, wheel_y, z),
+                      (side * 1.02, wheel_y, z), .32, "mat_rubber", 10)
+            _city_rod(root, "rim", (side * 1.02, wheel_y, z),
+                      (side * 1.035, wheel_y, z), .18, "mat_metal", 8)
+    _city_box(root, "exposed_radiator", (1.05, .24, .08), (0, .5, 1.86), "mat_trim")
+    for x in (-.4, -.2, 0, .2, .4):
+        _city_box(root, "radiator_fin", (.055, .21, .04), (x, .5, 1.91), "mat_metal")
+    _city_box(root, "broken_headlight", (.28, .12, .06), (.54, .65, 1.68), "mat_plastic", .015)
+    _city_box(root, "rear_lamp", (.55, .10, .02), (0, .87, -2.01), "mat_hivis")
+    _city_hull(root, "glass_shard", [[(-.7, 1.02, .56), (-.32, 1.05, .56), (-.6, 1.32, .31)],
+                                     [(-.7, 1.02, .58), (-.32, 1.05, .58), (-.6, 1.32, .33)]], "mat_glass")
+    _city_box(root, "loose_bumper", (1.4, .12, .15), (-.13, .23, 1.8), "mat_rust", spin=-8)
+    _city_hull(root, "buckled_hood", [
+        [(-.7, .95, .68), (.7, .96, .68), (.7, 1, .68), (-.7, .99, .68)],
+        [(-.6, 1.18, 1.08), (.4, .85, 1.08), (.4, .89, 1.08), (-.6, 1.22, 1.08)],
+        [(-.5, .76, 1.52), (.55, .72, 1.52), (.55, .76, 1.52), (-.5, .8, 1.52)],
+    ], "mat_rust")
+    _city_rod(root, "torn_fender", (-.88, .60, 1.1), (-1.02, 1.04, 1.4), .10, "mat_lacquer", 3)
+    return root
+
+
+def _city_arena_fan(root, center, radius, horizontal=False):
+    x, y, z = center
+    axis = "y" if horizontal else "z"
+    def point(u, v, depth=0):
+        return (x + u, y + depth, z + v) if horizontal else (x + u, y + v, z + depth)
+    _city_rod(root, "fan_recess", point(0, 0, -.06), point(0, 0), radius, "mat_cable", 12)
+    _city_ring(root, "fan_rim", center, radius, axis, .045, "mat_metal", 12)
+    for i in range(5):
+        angle = i * math.tau / 5
+        coords = [(r * math.cos(angle + a), r * math.sin(angle + a))
+                  for r, a in ((.12, 0), (radius * .8, .25), (radius * .75, .65), (.18, .9))]
+        _city_hull(root, "fan_blade", [[point(u, v, d) for u, v in coords] for d in (.015, .045)], "mat_machine")
+    _city_rod(root, "fan_hub", point(0, 0, .02), point(0, 0, .12), .14, "mat_metal", 8)
+    for offset in (-.42, 0, .42):
+        offset *= radius
+        span = math.sqrt(radius * radius - offset * offset)
+        _city_tube(root, "fan_guard", [point(offset, -span, .015), point(offset, -span * .7, .14),
+                                       point(offset, span * .7, .14), point(offset, span, .015)],
+                   .018, "mat_trim", 4)
+
+
+def build_city_smog_scrubber():
+    root = _city_root("city_smog_scrubber")
+    _city_box(root, "plinth", (3, .35, 3), (0, .175, 0), "mat_concrete", .08)
+    _city_box(root, "housing", (2.6, 2.8, 2.45), (0, 1.75, 0), "mat_machine", .10)
+    _city_arena_fan(root, (0, 1.95, 1.24), 1.02)
+    _city_rod(root, "exhaust_collar", (0, 3.1, -.3), (0, 3.5, -.3), .83, "mat_trim", 10)
+    _city_rod(root, "exhaust_cowl", (0, 3.5, -.3), (0, 4, -.3), 1.05, "mat_metal", 10, tip_radius=.85)
+    for side in (-1, 1):
+        for y in (.85, 1.15, 1.45, 1.75, 2.05, 2.35):
+            _city_box(root, "filter_louvre", (.05, .10, 1.7), (side * 1.31, y, -.12), "mat_trim")
+    _city_box(root, "service_panel", (1.1, .36, .05), (0, .62, 1.26), "mat_paint", .02)
+    _city_box(root, "status", (.65, .12, .04), (0, .64, 1.30), "mat_neon_green")
+    return root
+
+
+def build_city_roof_water_tank():
+    root = _city_root("city_roof_water_tank")
+    for x in (-.95, .95):
+        for z in (-.95, .95):
+            _city_box(root, "foot", (.42, .15, .42), (x, .075, z), "mat_concrete")
+            _city_rod(root, "leg", (x, .15, z), (x, 2, z), .09, "mat_metal", 4)
+        _city_rod(root, "cross_brace", (x, .25, -.95), (x, 1.85, .95), .045, "mat_trim", 4)
+        _city_rod(root, "cross_brace", (x, .25, .95), (x, 1.85, -.95), .045, "mat_trim", 4)
+    _city_rod(root, "wood_tank", (0, 1.85, 0), (0, 4.4, 0), 1.42, "mat_wood", 12)
+    for y in (1.95, 3.1, 4.28):
+        _city_ring(root, "steel_hoop", (0, y, 0), 1.43, "y", .055, "mat_metal", 12)
+    for i in range(12):
+        a = i * math.tau / 12
+        _city_rod(root, "stave_seam", (1.42 * math.cos(a), 2, 1.42 * math.sin(a)),
+                  (1.42 * math.cos(a), 4.28, 1.42 * math.sin(a)), .018, "mat_trim", 4)
+    _city_rod(root, "conical_roof", (0, 4.4, 0), (0, 5, 0), 1.5, "mat_metal", 12, tip_radius=.16)
+    _city_tube(root, "outlet", [(0, 1.85, 0), (0, 1.3, 0), (.6, 1.3, 0), (.6, .2, 0)], .085, "mat_rust", 6)
+    return root
+
+
+def build_city_roof_hvac_unit():
+    root = _city_root("city_roof_hvac_unit")
+    for x in (-1.55, 1.55):
+        _city_box(root, "skid", (.35, .2, 2), (x, .1, 0), "mat_trim")
+    _city_box(root, "housing", (4, 1.5, 2), (0, .95, 0), "mat_machine", .07)
+    for x in (-1, 1):
+        _city_rod(root, "fan_collar", (x, 1.68, 0), (x, 1.84, 0), .82, "mat_trim", 12)
+        _city_arena_fan(root, (x, 1.84, 0), .78, horizontal=True)
+        _city_box(root, "access_panel", (1.7, 1.15, .035), (x, .95, 1.005), "mat_trim", .025)
+        for y in (.6, .8, 1, 1.2, 1.4):
+            _city_box(root, "louvre", (1.4, .065, .045), (x, y, 1.03), "mat_metal")
+    _city_box(root, "status", (.25, .07, .03), (1.65, .35, 1.03), "mat_neon_green")
+    return root
+
+
+def _city_market_stall_canopy(name, fabric):
+    root = _city_root(name)
+    for x in (-1.3, 1.3):
+        for z in (-.8, .8):
+            _city_box(root, "foot", (.20, .08, .20), (x, .04, z), "mat_trim")
+            _city_rod(root, "post", (x, .08, z), (x, 2.28, z), .035, "mat_metal", 6)
+    # Closed folded tarp, ridge and low eaves; no texture or text.
+    _city_hull(root, "canopy", [[(x, y + sag, z) for z, y in
+                                ((-1, 2.23), (0, 2.6), (1, 2.23), (1, 2.18), (0, 2.55), (-1, 2.18))]
+                               for x, sag in ((-1.5, 0), (-.75, -.09), (0, 0), (.75, -.09), (1.5, 0))], fabric)
+    for x in (-1.5, 0, 1.5):
+        _city_tube(root, "tarp_seam", [(x, 2.23, -.98), (x, 2.60, 0), (x, 2.23, .98)], .012, "mat_trim", 4)
+    _city_hull(root, "valance", [[(x, 2.23 + sag, .96), (x, 2.23 + sag, 1),
+                                  (x, 2.05 + sag, 1), (x, 2.05 + sag, .96)]
+                                 for x, sag in ((-1.5, 0), (-.75, -.09), (0, 0), (.75, -.09), (1.5, 0))], fabric)
+    _city_box(root, "counter_base", (2.6, .85, .7), (0, .425, .48), "mat_wood", .025)
+    _city_box(root, "counter", (2.8, .10, .85), (0, .9, .48), "mat_metal", .02)
+    for x in (-.8, 0, .8):
+        _city_box(root, "crate", (.64, .35, .52), (x, 1.125, .48), "mat_paint", .02)
+        _city_box(root, "crate_opening", (.53, .015, .42), (x, 1.305, .48), "mat_cable")
+        _city_box(root, "crate_handle", (.21, .06, .02), (x, 1.16, .75), "mat_trim")
+    _city_box(root, "lamp", (1.6, .045, .045), (0, 1.92, .85), "mat_neon_amber")
+    _city_rod(root, "rear_brace", (-1.3, .3, -.8), (1.3, 1.7, -.8), .025, "mat_trim", 4)
+    return root
+
+
+def build_city_market_stall_canopy():
+    return _city_market_stall_canopy("city_market_stall_canopy", "mat_lacquer")
+
+
+def build_city_market_stall_canopy_violet():
+    return _city_market_stall_canopy("city_market_stall_canopy_violet", "mat_fabric")
+
+
+def build_city_roof_bridge():
+    root = _city_root("city_roof_bridge")
+    _city_inlaid_slab(root, [-.8, -.7, .7, .8], [-4, -3.84, 3.84, 4], .2,
+                      lambda x, z: "mat_hivis" if abs(x) < .7 and abs(z) > 3.84 else "mat_metal", "mat_metal")
+    for x in (-.75, .75):
+        _city_box(root, "toe_rail", (.10, .16, 8), (x, .28, 0), "mat_trim")
+        for y in (.78, 1.35):
+            _city_box(root, "handrail", (.08, .08, 8), (x, y, 0), "mat_metal")
+        for z in (-3.85, -1.92, 0, 1.92, 3.85):
+            _city_box(root, "rail_post", (.08, 1.15, .08), (x, .775, z), "mat_trim")
+        _city_box(root, "edge_light", (.02, .045, 7.8), (x - math.copysign(.051, x), .29, 0), "mat_neon_amber")
+    return root
+
+
+def build_city_neon_sign_frame():
+    root = _city_root("city_neon_sign_frame")
+    for x in (-2.5, 2.5):
+        _city_box(root, "foot", (.6, .16, 1.8), (x, .08, 0), "mat_concrete")
+        _city_box(root, "upright", (.13, 2.85, .13), (x, 1.425, .42), "mat_metal")
+        _city_rod(root, "rear_brace", (x, .16, -.8), (x, 2.65, .42), .06, "mat_trim", 4)
+    _city_rod(root, "diagonal", (-2.5, .5, .3), (2.5, 2.85, .3), .04, "mat_trim", 4)
+    _city_box(root, "panel_housing", (6, 2.05, .22), (0, 1.975, .5), "mat_trim", .045)
+    _city_box(root, "blank_panel", (5.65, 1.7, .04), (0, 1.975, .63), "mat_neon_violet")
+    for y in (.98, 2.97):
+        _city_box(root, "amber_edge", (5.9, .04, .03), (0, y, .63), "mat_neon_amber")
+    _city_box(root, "junction_box", (.42, .38, .24), (2.5, .6, .4), "mat_machine", .02)
+    return root
+
+
+def build_city_satellite_cluster():
+    root = _city_root("city_satellite_cluster")
+    _city_box(root, "common_base", (3, .2, 2), (0, .1, 0), "mat_concrete", .04)
+    for x, y, r in ((-.75, 1.45, .66), (.72, 1.05, .48)):
+        _city_rod(root, "dish_mount", (x, .2, -.2), (x, y, -.2), .07, "mat_trim", 6)
+        rings = [[(x + math.cos(i * math.tau / 10) * radius,
+                   y + math.sin(i * math.tau / 10) * radius, depth)
+                  for i in range(10)] for radius, depth in ((r * .18, -.08), (r, .22), (r, .18), (r * .18, -.12))]
+        _city_hull(root, "dish", rings, "mat_metal")
+        _city_rod(root, "receiver_arm", (x, y - r, .18), (x, y, .64), .025, "mat_trim", 4)
+        _city_rod(root, "receiver", (x, y, .57), (x, y, .7), .065, "mat_machine", 6)
+    for x, height in ((-.9, 3.4), (.9, 2.8)):
+        _city_rod(root, "mast", (x, .2, -.7), (x, height, -.7), .04, "mat_metal", 6)
+        for y in (height - .3, height - .65, height - 1):
+            _city_rod(root, "aerial", (x - .4, y, -.7), (x + .4, y, -.7), .018, "mat_metal", 4)
+    _city_box(root, "junction_box", (.5, .4, .4), (0, .4, -.5), "mat_machine", .02)
+    _city_tube(root, "coax", [(-.9, 2, -.7), (-.9, .3, -.7), (0, .3, -.5), (.72, .3, -.2), (.72, 1, -.2)], .025)
+    return root
+
+
 def _city_finish(builder):
     root = builder()
     meshes = [o for o in root.children_recursive if o.type == "MESH"]
@@ -2432,6 +2741,11 @@ def build_city_assets():
         "city_street_lamp", "city_vent_grate", "city_trash_bags", "city_traffic_cone",
         "city_holo_projector", "city_antenna", "city_cable_span", "city_lantern_string",
         "city_ad_screen", "city_kiosk",
+        "city_overpass_pillar", "city_overpass_deck", "city_highway_barrier",
+        "city_highway_sign_gantry", "city_wrecked_car", "city_smog_scrubber",
+        "city_roof_water_tank", "city_roof_hvac_unit", "city_market_stall_canopy",
+        "city_market_stall_canopy_violet", "city_roof_bridge", "city_neon_sign_frame",
+        "city_satellite_cluster",
     )}
 
 
