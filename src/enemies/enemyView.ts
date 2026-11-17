@@ -1,6 +1,9 @@
 import {
+  AdditiveBlending,
   AnimationMixer,
   BoxGeometry,
+  BufferAttribute,
+  BufferGeometry as PointsGeometry,
   CylinderGeometry,
   Euler,
   Group,
@@ -9,6 +12,9 @@ import {
   Matrix4,
   Mesh,
   MeshBasicMaterial,
+  Points,
+  PointsMaterial,
+  Quaternion,
   SkinnedMesh,
   Sphere,
   TorusGeometry,
@@ -18,6 +24,7 @@ import type { AnimationAction, BufferGeometry, Object3D } from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { tuning } from '../core/tuning';
 import { selectEnemyAnimation } from './enemyAnimation';
+import { knockdownFrame } from './enemyKnockdown';
 import { HeldShield } from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
@@ -30,6 +37,9 @@ const BOSS_SHIELD_BAR_M = 0.07;
 /** Pierścień korony bossa w metrach modelu Egzekutora: promień, wysokość środka, odsunięcie w tył. */
 const BOSS_HALO: [number, number, number] = [0.36, 2.02, -0.3];
 const laserFrom = new Vector3();
+const knockAxis = new Vector3();
+const knockPivot = new Vector3();
+const knockQuat = new Quaternion();
 
 /** Humanoid z karabinem: Strzelec i Snajper (F2-13) dzielą model i animację. */
 const rifleman = (kind: string): boolean =>
@@ -97,6 +107,10 @@ export class EnemyView {
   private heldShield?: HeldShield;
   private readonly fallbackGeometries: BufferGeometry[] = [];
   private shieldMaterial?: MeshBasicMaterial;
+  /** Iskry lądowania z kip-upu (kosmetyka; prędkości losowane przy każdym lądowaniu). */
+  private sparks?: Points<PointsGeometry, PointsMaterial>;
+  private sparkVelocity: number[] = [];
+  private sparkSeeded = false;
   private readonly rest = new Map<
     Object3D,
     {
@@ -511,6 +525,7 @@ export class EnemyView {
     const delta = Math.atan2(Math.sin(b.yaw - a.yaw), Math.cos(b.yaw - a.yaw));
     this.root.rotation.y = a.yaw + delta * t;
     this.root.visible = b.state !== 'dead' && !this.enemy.removed;
+    this.applyKnockdown();
     if (this.shield) this.shield.visible = b.shieldUp === true;
     this.renderLaser();
     const anim = definition.animation;
@@ -519,6 +534,8 @@ export class EnemyView {
     for (const [node, rest] of this.rest) {
       if (this.mixer && (node.type === 'Bone' || node instanceof SkinnedMesh))
         continue;
+      // Korzeń modelu ustawia przewrócenie (applyKnockdown), nie poza spoczynkowa.
+      if (node === this.model) continue;
       node.rotation.set(rest.x, rest.y, rest.z);
       node.position.copy(rest.position);
       node.scale.copy(rest.scale);
@@ -610,6 +627,120 @@ export class EnemyView {
     }
   }
 
+  /**
+   * Przewrócenie przy mocnym odrzucie: obrót korzenia modelu wokół bioder w kierunku odrzutu
+   * (upadek na plecy), obniżenie do ziemi, potem kip-up z podskokiem i lądowaniem. Poza
+   * przewróceniem model wraca do pozy bazowej. Hitbox (kapsuła symulacji) bez zmian.
+   */
+  private applyKnockdown(): void {
+    const { current: b, definition } = this.enemy;
+    const k = tuning.vfx.enemyKnockdown;
+    const pose = knockdownFrame(definition, b, k);
+    const baseScale = definition.boss?.modelScale ?? 1;
+    if (!pose || !b.knockdown) {
+      this.model.position.set(0, 0, 0);
+      this.model.quaternion.identity();
+      this.model.scale.setScalar(baseScale);
+      this.sparkSeeded = false;
+      if (this.sparks) this.sparks.visible = false;
+      return;
+    }
+    // Kierunek odrzutu w układzie korzenia (korzeń obrócony o yaw).
+    const yaw = this.root.rotation.y;
+    const c = Math.cos(yaw),
+      s = Math.sin(yaw);
+    const lx = b.knockdown.x * c - b.knockdown.z * s;
+    const lz = b.knockdown.x * s + b.knockdown.z * c;
+    // Oś obrotu prostopadła do kierunku: głowa leci w stronę odrzutu.
+    knockAxis.set(lz, 0, -lx).normalize();
+    const tilt = (pose.tiltDeg * Math.PI) / 180;
+    knockQuat.setFromAxisAngle(knockAxis, tilt);
+    const hip = definition.body?.centerY ?? 0.9;
+    const lower = -(hip - k.lieRestM) * Math.max(0, Math.sin(tilt));
+    // Obrót wokół bioder: pozycja = (0, biodra + przesunięcie) − R·(0, biodra, 0).
+    knockPivot.set(0, hip, 0).applyQuaternion(knockQuat);
+    this.model.quaternion.copy(knockQuat);
+    this.model.position.set(
+      -knockPivot.x,
+      hip + lower + pose.liftM - knockPivot.y,
+      -knockPivot.z,
+    );
+    const widen = 1 + (1 - pose.squash) * 0.5;
+    this.model.scale.set(
+      baseScale * widen,
+      baseScale * pose.squash,
+      baseScale * widen,
+    );
+    this.renderLandingSparks(pose.landedAgoS);
+  }
+
+  private renderLandingSparks(agoS: number | null): void {
+    const k = tuning.vfx.enemyKnockdown;
+    if (agoS === null || agoS > k.sparkS || k.sparks <= 0) {
+      if (this.sparks) this.sparks.visible = false;
+      if (agoS === null) this.sparkSeeded = false;
+      return;
+    }
+    const count = Math.floor(k.sparks);
+    if (!this.sparks || this.sparkVelocity.length !== count * 3) {
+      if (this.sparks) {
+        this.root.remove(this.sparks);
+        this.sparks.geometry.dispose();
+        this.sparks.material.dispose();
+      }
+      const geometry = new PointsGeometry();
+      geometry.setAttribute(
+        'position',
+        new BufferAttribute(new Float32Array(count * 3), 3),
+      );
+      const material = new PointsMaterial({
+        color: k.sparkColor,
+        size: k.sparkSize,
+        transparent: true,
+        depthWrite: false,
+        blending: AdditiveBlending,
+        toneMapped: false,
+      });
+      this.sparks = new Points(geometry, material);
+      this.sparks.frustumCulled = false;
+      this.sparks.userData.noOutline = true;
+      this.root.add(this.sparks);
+      this.sparkVelocity = new Array<number>(count * 3).fill(0);
+      this.sparkSeeded = false;
+    }
+    if (!this.sparkSeeded) {
+      // Pył i iskry spod stóp: rozprysk po ziemi, lekko w górę; rozrzut z id wroga (bez Math.random).
+      const rand = (n: number): number => {
+        const x = Math.sin(n * 12.9898 + this.enemy.id * 78.233) * 43758.5453;
+        return x - Math.floor(x);
+      };
+      for (let i = 0; i < count; i++) {
+        const angle = (i / count) * Math.PI * 2 + rand(i * 3 + 0) * 0.4;
+        const speed = k.sparkSpeed * (0.55 + 0.45 * rand(i * 3 + 1));
+        this.sparkVelocity[i * 3] = Math.cos(angle) * speed;
+        this.sparkVelocity[i * 3 + 1] = 0.8 + rand(i * 3 + 2) * 1.2;
+        this.sparkVelocity[i * 3 + 2] = Math.sin(angle) * speed;
+      }
+      this.sparkSeeded = true;
+    }
+    const position = this.sparks.geometry.getAttribute(
+      'position',
+    ) as BufferAttribute;
+    for (let i = 0; i < count; i++)
+      position.setXYZ(
+        i,
+        this.sparkVelocity[i * 3]! * agoS,
+        Math.max(
+          0.02,
+          0.05 + this.sparkVelocity[i * 3 + 1]! * agoS - 4.9 * agoS * agoS,
+        ),
+        this.sparkVelocity[i * 3 + 2]! * agoS,
+      );
+    position.needsUpdate = true;
+    this.sparks.material.opacity = 1 - agoS / k.sparkS;
+    this.sparks.visible = true;
+  }
+
   private strideFor(name: string): number {
     const anim = this.enemy.definition.animation;
     const perClip = anim?.clipStrideM?.[name as 'Walk_Loop' | 'Jog_Fwd_Loop'];
@@ -696,6 +827,8 @@ export class EnemyView {
     this.root.clear();
     for (const geometry of this.fallbackGeometries) geometry.dispose();
     this.shieldMaterial?.dispose();
+    this.sparks?.geometry.dispose();
+    this.sparks?.material.dispose();
     this.laser?.geometry.dispose();
     this.rest.clear();
   }

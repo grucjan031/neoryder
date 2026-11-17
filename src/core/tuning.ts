@@ -738,6 +738,32 @@ export const tuning = {
     /** Przy wyłączonych błyskach (ustawienia): rozbłysk wizjera tylko w tej części, bez błysku świateł. */
     bossNoFlashFlare: 0.3,
     /** Szczegóły oprawy bossa (BossArenaFx): promienie pól, fale, słupy światła, iskry rozpadu. */
+    /**
+     * Przewrócenie wroga humanoidalnego przy mocnym odrzucie (proceduralnie na korzeniu modelu):
+     * upadek na plecy (`fallS`), leżenie (reszta ogłuszenia), kip-up (`kipS`); całość mieści się
+     * w `stunOnHeavyS`. Kąty w stopniach, odległości w m, ułamki kip-upu: koniec podciągnięcia
+     * nóg (`tuckAt`) i lądowanie (`landAt`). Iskry przy lądowaniu w czerwieni wroga.
+     */
+    enemyKnockdown: {
+      fallS: 0.22,
+      kipS: 0.32,
+      lieTiltDeg: 86,
+      lieRestM: 0.24,
+      bounceM: 0.07,
+      bounceS: 0.09,
+      tuckDeg: 26,
+      tuckSquash: 0.12,
+      tuckAt: 0.3,
+      overshootDeg: 10,
+      jumpM: 0.34,
+      landAt: 0.78,
+      landSquash: 0.14,
+      sparks: 16,
+      sparkSpeed: 2.6,
+      sparkS: 0.35,
+      sparkSize: 0.07,
+      sparkColor: '#ff5050',
+    },
     bossArena: {
       /** Promień pola telegrafu wezwania i tarczy (m). */
       summonRadiusM: 3.2,
