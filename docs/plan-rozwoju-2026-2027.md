@@ -37,21 +37,22 @@ Publiczne demo przeglądarkowe w maju 2027: dopracowana walka, działająca kamp
 
 ## 4. Etapy (kolejność)
 
-| Etap    | Kolejność | Cel                                           | Bramka na koniec                                                                         |
-| ------- | --------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **S0**  | 1         | Domknięcie podstaw                            | Bezpieczny zapis nagrody; playtesty F2/F4 zapisane; decyzje D1–D4; poprawki z S0 scalone |
-| **S1**  | 2         | Kontrakt misji i kampanii                     | ADR 0008 (misje), schemat danych misji, stan kampanii w zapisie z migracją               |
-| **S2**  | 3         | „Maszty” od odprawy do powrotu                | Maszty do ukończenia bez debug; porażka/ponowienie/wczytanie bez zepsutego stanu         |
-| **S3**  | 4         | „List przewozowy” (obrona)                    | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem                             |
-| **S4**  | 5         | „Odlewnia” + prototypy NPC i wagonu           | 3 misje = wewnętrzne demo; raport kosztu prototypów                                      |
-| **S5**  | 6         | Testy nowych graczy, tura 1                   | 4–6 osób, trzy najważniejsze problemy wybrane                                            |
-| **S6**  | 7         | Poprawki + tura 2; warunkowo Punkt kontrolny  | Decyzja o „Ładunku klasy K”                                                              |
-| **S7**  | 8         | Zawartość: narracja, kryjówka, audio          | Konsekwencje w kryjówce po każdej misji dema                                             |
-| **S8**  | 9         | Zamknięcie zakresu; warunkowo Ładunek klasy K | Decyzja 3 vs 5 misji; od tej chwili nowe pomysły → backlog                               |
-| **S9**  | 10        | Wydajność i niezawodność                      | Raport sprzętowy; godzinna sesja bez błędów                                              |
-| **S10** | 11        | Czytelność i pierwsze minuty                  | Kandydat do wydania                                                                      |
-| **S11** | 12        | Ostatnia tura testów, publikacja              | Publiczne demo z numerem wersji                                                          |
-| **S12** | 13        | Zgłoszenia i pierwsza aktualizacja            | Priorytety zgłoszeń, aktualizacja 1                                                      |
+| Etap    | Kolejność | Cel                                                     | Bramka na koniec                                                                         |
+| ------- | --------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **S0**  | 1         | Domknięcie podstaw                                      | Bezpieczny zapis nagrody; playtesty F2/F4 zapisane; decyzje D1–D4; poprawki z S0 scalone |
+| **S1**  | 2         | Kontrakt misji i kampanii                               | ADR 0008 (misje), schemat danych misji, stan kampanii w zapisie z migracją               |
+| **S2**  | 3         | „Maszty” od odprawy do powrotu                          | Maszty do ukończenia bez debug; porażka/ponowienie/wczytanie bez zepsutego stanu         |
+| **S2b** | 3b        | Tryby areny: Przejęcie (potem Szturm, Kradzież rdzenia) | Przejęcie grywalne z kryjówki, nagrody jak za run; decyzja właściciela 17 XI 2026        |
+| **S3**  | 4         | „List przewozowy” (obrona)                              | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem                             |
+| **S4**  | 5         | „Odlewnia” + prototypy NPC i wagonu                     | 3 misje = wewnętrzne demo; raport kosztu prototypów                                      |
+| **S5**  | 6         | Testy nowych graczy, tura 1                             | 4–6 osób, trzy najważniejsze problemy wybrane                                            |
+| **S6**  | 7         | Poprawki + tura 2; warunkowo Punkt kontrolny            | Decyzja o „Ładunku klasy K”                                                              |
+| **S7**  | 8         | Zawartość: narracja, kryjówka, audio                    | Konsekwencje w kryjówce po każdej misji dema                                             |
+| **S8**  | 9         | Zamknięcie zakresu; warunkowo Ładunek klasy K           | Decyzja 3 vs 5 misji; od tej chwili nowe pomysły → backlog                               |
+| **S9**  | 10        | Wydajność i niezawodność                                | Raport sprzętowy; godzinna sesja bez błędów                                              |
+| **S10** | 11        | Czytelność i pierwsze minuty                            | Kandydat do wydania                                                                      |
+| **S11** | 12        | Ostatnia tura testów, publikacja                        | Publiczne demo z numerem wersji                                                          |
+| **S12** | 13        | Zgłoszenia i pierwsza aktualizacja                      | Priorytety zgłoszeń, aktualizacja 1                                                      |
 
 Przejście do kolejnego etapu zależy wyłącznie od grywalnego wyniku bramki; gdy bramka nie przechodzi, najpierw poprawki. Kolejność zależności zostaje. Misje (S1–S4) idą od razu po domknięciu S0 (decyzja D1).
 
