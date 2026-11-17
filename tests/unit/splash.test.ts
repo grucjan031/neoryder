@@ -9,7 +9,16 @@ import { createLoadingTip } from '../../src/ui/loadingTipView';
 import { readFileSync } from 'node:fs';
 import { configureFx } from '../../src/render/fxMode';
 import { showBootSplash } from '../../src/ui/bootSplash';
-import { getSplashes, loadSplashes, pickSplash } from '../../src/ui/splash';
+import {
+  getSplashes,
+  loadSplashes,
+  pickSplash,
+  unlockedSplashAct,
+} from '../../src/ui/splash';
+import type { SplashAct } from '../../src/ui/splash';
+import { readSplashAct } from '../../src/ui/bootSplash';
+import { createMemorySaveStore, SAVE_VERSION } from '../../src/core/save';
+import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { HtmlRunScreens } from '../../src/ui/runScreens';
 import type { RunScreenView } from '../../src/ui/runScreens';
 import { loadoutDefinitions } from '../../src/progression/loadout';
@@ -190,16 +199,23 @@ it('rooms[] i themes[] wskazują istniejące pokoje i motywy', () => {
 it('schemat odrzuca duplikaty i złe nazwy plików', () => {
   expect(() =>
     loadSplashes([
-      { file: 'a.webp', title: 'A' },
-      { file: 'a.webp', title: 'B' },
+      { file: 'a.webp', title: 'A', act: 1 },
+      { file: 'a.webp', title: 'B', act: 1 },
     ]),
   ).toThrow(/Powtórzony/);
-  expect(() => loadSplashes([{ file: '../a.png', title: 'A' }])).toThrow();
+  expect(() =>
+    loadSplashes([{ file: '../a.png', title: 'A', act: 1 }]),
+  ).toThrow();
+  // Akt jest wymagany i ograniczony do 1–4.
+  expect(() => loadSplashes([{ file: 'a.webp', title: 'A' }])).toThrow();
+  expect(() =>
+    loadSplashes([{ file: 'a.webp', title: 'A', act: 5 }]),
+  ).toThrow();
 });
 
 it('wybór jest deterministyczny i respektuje pokój oraz motyw', () => {
   expect(pickSplash('ziarno:L1N1')).toEqual(pickSplash('ziarno:L1N1'));
-  expect(pickSplash('x', {}, [])).toBeNull();
+  expect(pickSplash('x', {}, 4, [])).toBeNull();
   const keys = Array.from({ length: 40 }, (_, i) => `s${i}:N`);
   expect(
     new Set(keys.map((key) => pickSplash(key)!.file)).size,
@@ -316,7 +332,7 @@ it('nakładka startowa: obraz poza fx=lite, #app inert do dismiss, potem wygasze
 
 it('błędne dane splasharów nie blokują startu (pusta lista, brak obrazu)', () => {
   expect(() => loadSplashes([{ file: 'x', title: '' }])).toThrow();
-  expect(pickSplash('k', {}, [])).toBeNull();
+  expect(pickSplash('k', {}, 4, [])).toBeNull();
 });
 
 it('stary obraz tła nie zdejmuje nowego po błędzie', () => {
@@ -351,4 +367,171 @@ it('brak elementu nakładki nie psuje startu', () => {
   expect(() =>
     showBootSplash(new URLSearchParams(), null).dismiss(),
   ).not.toThrow();
+});
+
+const ACT_2 = [8, 9, 10, 11, 22, 33, 41, 46, 47];
+const ACT_3 = [12, 13, 14, 15, 16, 23, 35, 44];
+const numberOf = (file: string): number =>
+  Number(/^splash-(\d+)-/.exec(file)?.[1]);
+
+it('każdy splash ma akt zgodny z przypisaniem do aktów fabuły', () => {
+  const list = getSplashes();
+  expect(list).toHaveLength(57);
+  for (const entry of list) {
+    const n = numberOf(entry.file);
+    const expected = ACT_2.includes(n)
+      ? 2
+      : ACT_3.includes(n)
+        ? 3
+        : n === 17
+          ? 4
+          : 1;
+    expect(entry.act, entry.file).toBe(expected);
+  }
+});
+
+it('progi zwycięstw z tuningu odblokowują kolejne akty', () => {
+  const [, two, three, four] = tuning.ui.splashActVictories;
+  expect(unlockedSplashAct(0)).toBe(1);
+  expect(unlockedSplashAct(-3)).toBe(1);
+  expect(unlockedSplashAct(two! - 1)).toBe(1);
+  expect(unlockedSplashAct(two!)).toBe(2);
+  expect(unlockedSplashAct(three! - 1)).toBe(2);
+  expect(unlockedSplashAct(three!)).toBe(3);
+  expect(unlockedSplashAct(four! - 1)).toBe(3);
+  expect(unlockedSplashAct(four!)).toBe(4);
+  expect(unlockedSplashAct(1000)).toBe(4);
+  for (const act of [1, 2, 3, 4] as const) {
+    const pool = new Set(
+      Array.from(
+        { length: 500 },
+        (_, i) => pickSplash(`act:${i}`, {}, act)!.act,
+      ),
+    );
+    expect(Math.max(...pool)).toBe(act);
+  }
+});
+
+it('przy 0 zwycięstw nigdy nie wypada szczyt masztu ani epilog', () => {
+  const act = unlockedSplashAct(0);
+  const hints = [
+    {},
+    ...['menu', 'hub', 'arena', 'tutorial', 'run'].map((scene) => ({ scene })),
+    ...[...themeDefinitions.keys()].map((theme) => ({ theme })),
+    ...[...roomDefinitions.values()].map((room) => ({
+      room: room.id,
+      theme: room.theme,
+    })),
+  ];
+  for (const hint of hints)
+    for (let i = 0; i < 500; i++) {
+      const entry = pickSplash(`seed${i}:L1N1`, hint, act)!;
+      expect(entry.act, JSON.stringify(hint)).toBe(1);
+      expect(numberOf(entry.file)).not.toBe(16);
+      expect(numberOf(entry.file)).not.toBe(17);
+    }
+});
+
+it('zablokowane dopasowanie pokoju, motywu i sceny nie wygrywa', () => {
+  // Podstacja (akt III) to jedyny obraz pokoju combatSubstation.
+  for (let i = 0; i < 50; i++) {
+    const key = `k${i}`;
+    expect(pickSplash(key, { room: 'combatSubstation' }, 1)!.act).toBe(1);
+    expect(pickSplash(key, { room: 'combatSubstation' }, 2)).toEqual(
+      pickSplash(key, {}, 2),
+    );
+    expect(pickSplash(key, { room: 'combatSubstation' }, 3)!.file).toContain(
+      'podstacja',
+    );
+    expect(pickSplash(key, { room: 'alleyMarket' }, 1)!.file).not.toBe(
+      'splash-08-bulwar.webp',
+    );
+    expect(
+      pickSplash(key, { scene: 'hub', theme: 'hideout' }, 3)!.file,
+    ).not.toContain('epilog');
+  }
+  const hubAll = new Set(
+    Array.from(
+      { length: 200 },
+      (_, i) => pickSplash(`h${i}`, { scene: 'hub' }, 4)!.file,
+    ),
+  );
+  expect(hubAll).toContain('splash-17-epilog.webp');
+});
+
+it('odczyt aktu z meta-zapisu: brak lub uszkodzony zapis daje akt 1', async () => {
+  const empty = createMemorySaveStore();
+  expect(await readSplashAct(empty)).toBe(1);
+  const meta = createStarterMetaState();
+  meta.stats.victories = tuning.ui.splashActVictories[2]!;
+  const store = createMemorySaveStore();
+  await store.saveMeta({
+    saveVersion: SAVE_VERSION,
+    createdAt: 0,
+    updatedAt: 0,
+    meta,
+  });
+  expect(await readSplashAct(store)).toBe(3);
+  const broken = {
+    ...createMemorySaveStore(),
+    loadMeta: () => Promise.reject(new Error('uszkodzony')),
+  };
+  expect(await readSplashAct(broken)).toBe(1);
+  const hanging = {
+    ...createMemorySaveStore(),
+    loadMeta: () => new Promise<never>(() => {}),
+  };
+  expect(await readSplashAct(hanging, 5)).toBe(1);
+});
+
+it('nakładka startowa czeka na akt bez blokowania i nie dokłada obrazu po zdjęciu', async () => {
+  // Ziarno, dla którego wybór zależy od aktu (scena run = cała pula).
+  const seed = Array.from({ length: 50 }, (_, i) => `s${i}`).find(
+    (s) =>
+      pickSplash(`run:${s}`, { scene: 'run' }, 1) !==
+      pickSplash(`run:${s}`, { scene: 'run' }, 4),
+  )!;
+  expect(seed).toBeDefined();
+  const flush = async (): Promise<void> => {
+    for (let i = 0; i < 3; i++) await Promise.resolve();
+  };
+  let resolveAct: (act: SplashAct) => void = () => {};
+  const root = mountBoot();
+  const boot = showBootSplash(
+    new URLSearchParams(`seed=${seed}`),
+    'run',
+    new Promise<SplashAct>((resolve) => (resolveAct = resolve)),
+  );
+  expect(root.querySelector('img')).toBeNull();
+  resolveAct(4);
+  await flush();
+  expect(root.querySelector('img')?.getAttribute('src')).toBe(
+    `/assets/splash/${pickSplash(`run:${seed}`, { scene: 'run' }, 4)!.file}`,
+  );
+  boot.dismiss();
+  document.body.replaceChildren();
+  const late = mountBoot();
+  let resolveLate: (act: SplashAct) => void = () => {};
+  const second = showBootSplash(
+    new URLSearchParams(`seed=${seed}`),
+    'run',
+    new Promise<SplashAct>((resolve) => (resolveLate = resolve)),
+  );
+  second.dismiss();
+  resolveLate(4);
+  await flush();
+  expect(late.querySelector('img')).toBeNull();
+});
+
+it('nakładka startowa nie czeka, gdy akt nie zmienia wyboru (menu)', () => {
+  const root = mountBoot();
+  const boot = showBootSplash(
+    new URLSearchParams(),
+    null,
+    new Promise<SplashAct>(() => {}),
+  );
+  expect(root.querySelector('img')?.getAttribute('src')).toBe(
+    `/assets/splash/${pickSplash('menu:', { scene: 'menu' }, 1)!.file}`,
+  );
+  boot.dismiss();
 });

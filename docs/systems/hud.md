@@ -366,6 +366,16 @@ Neo-Ryd, kuriera lub dachy przed świtem; arena trening i walkę; tutorial ramp�
 lub poligon; hub obrazy `hideout`, budkę z makaronem i bar hutników.
 Run zachowuje dobór według pokoju/motywu.
 
+Splasharty nie zdradzają fabuły: każdy wpis ma wymagane `act` (1 prolog, akt I
+i neutralne, 2 akt II, 3 akt III, 4 epilog), a `pickSplash` bierze pod uwagę
+tylko `act <= maxAct`, także przy dopasowaniu sceny, pokoju i motywu. Misje nie
+są podpięte, więc `unlockedSplashAct(stats.victories)` liczy akt z liczby
+zwycięstw w meta-zapisie i progów `tuning.ui.splashActVictories` (domyślnie
+0/1/3/5); brak lub błąd zapisu daje akt 1. Nakładka startowa nie czeka z
+uruchomieniem gry: gdy akt nie zmienia wyboru (np. menu), obraz jest od razu,
+inaczej po odczycie zapisu (IndexedDB), najdłużej po
+`tuning.ui.splashMetaTimeoutMs`.
+
 Kontrola: `/`, `?scene=hub`, `?scene=arena`, `?scene=tutorial` i `?scene=run`.
 Przy spowolnionym ładowaniu sprawdź czytelność i zmianę porady po 7 s;
 test jsdom `splash.test.ts` sprawdza rotację zegarem pozorowanym.

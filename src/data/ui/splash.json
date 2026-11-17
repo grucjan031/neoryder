@@ -2,266 +2,323 @@
   {
     "file": "splash-01-neo-ryd.webp",
     "scenes": ["menu"],
-    "title": "Neo-Ryd"
+    "title": "Neo-Ryd",
+    "act": 1
   },
   {
     "file": "splash-02-niecka.webp",
     "title": "Niecka",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 1
   },
   {
     "file": "splash-03-kamienna.webp",
     "scenes": ["hub"],
     "title": "Kamienna",
-    "themes": ["hideout"]
+    "themes": ["hideout"],
+    "act": 1
   },
   {
     "file": "splash-04-rampa.webp",
     "scenes": ["tutorial"],
-    "title": "Rampa"
+    "title": "Rampa",
+    "act": 1
   },
   {
     "file": "splash-05-maszty.webp",
-    "title": "Maszty"
+    "title": "Maszty",
+    "act": 1
   },
   {
     "file": "splash-06-odlewnia.webp",
     "title": "Odlewnia",
-    "rooms": ["eliteFoundry"]
+    "rooms": ["eliteFoundry"],
+    "act": 1
   },
   {
     "file": "splash-07-ladunek.webp",
-    "title": "Ładunek"
+    "title": "Ładunek",
+    "act": 1
   },
   {
     "file": "splash-08-bulwar.webp",
     "title": "Bulwar",
     "themes": ["neonStreet"],
-    "rooms": ["alleyMarket"]
+    "rooms": ["alleyMarket"],
+    "act": 2
   },
   {
     "file": "splash-09-kwarantanna.webp",
-    "title": "Kwarantanna"
+    "title": "Kwarantanna",
+    "act": 2
   },
   {
     "file": "splash-10-zaklad-kalibracji.webp",
-    "title": "Zakład Kalibracji"
+    "title": "Zakład Kalibracji",
+    "act": 2
   },
   {
     "file": "splash-11-nadajnik.webp",
-    "title": "Nadajnik"
+    "title": "Nadajnik",
+    "act": 2
   },
   {
     "file": "splash-12-sala-monitorow.webp",
-    "title": "Sala Monitorów"
+    "title": "Sala Monitorów",
+    "act": 3
   },
   {
     "file": "splash-13-zaciemnienie.webp",
     "title": "Zaciemnienie",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 3
   },
   {
     "file": "splash-14-chor.webp",
-    "title": "Chór"
+    "title": "Chór",
+    "act": 3
   },
   {
     "file": "splash-15-pion.webp",
-    "title": "Pion"
+    "title": "Pion",
+    "act": 3
   },
   {
     "file": "splash-16-szczyt-masztu.webp",
-    "title": "Szczyt Masztu"
+    "title": "Szczyt Masztu",
+    "act": 3
   },
   {
     "file": "splash-17-epilog.webp",
     "scenes": ["hub"],
     "title": "Kryjówka",
-    "themes": ["hideout"]
+    "themes": ["hideout"],
+    "act": 4
   },
   {
     "file": "splash-18-neoryder.webp",
     "scenes": ["menu"],
-    "title": "Neoryder"
+    "title": "Neoryder",
+    "act": 1
   },
   {
     "file": "splash-19-winda-towarowa.webp",
-    "title": "Winda towarowa"
+    "title": "Winda towarowa",
+    "act": 1
   },
   {
     "file": "splash-20-przepompownia.webp",
-    "title": "Przepompownia"
+    "title": "Przepompownia",
+    "act": 1
   },
   {
     "file": "splash-21-port-hut.webp",
-    "title": "Port w Hutach"
+    "title": "Port w Hutach",
+    "act": 1
   },
   {
     "file": "splash-22-ogrody-tarasu.webp",
-    "title": "Ogrody Tarasu"
+    "title": "Ogrody Tarasu",
+    "act": 2
   },
   {
     "file": "splash-23-ladowiska-korony.webp",
-    "title": "Lądowiska Korony"
+    "title": "Lądowiska Korony",
+    "act": 3
   },
   {
     "file": "splash-24-bloki-bulwaru.webp",
     "title": "Bloki Bulwaru",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 1
   },
   {
     "file": "splash-25-budka-z-makaronem.webp",
     "scenes": ["hub"],
     "title": "Budka z makaronem",
     "themes": ["neonStreet"],
-    "rooms": ["noodleShop"]
+    "rooms": ["noodleShop"],
+    "act": 1
   },
   {
     "file": "splash-26-warsztat-miry.webp",
     "scenes": ["hub"],
     "title": "Warsztat Miry",
-    "themes": ["hideout"]
+    "themes": ["hideout"],
+    "act": 1
   },
   {
     "file": "splash-27-kacik-bajta.webp",
     "scenes": ["hub"],
     "title": "Kącik Bajta",
-    "themes": ["hideout"]
+    "themes": ["hideout"],
+    "act": 1
   },
   {
     "file": "splash-28-poligon.webp",
     "scenes": ["arena", "tutorial", "hub"],
     "title": "Poligon",
-    "themes": ["hideout"]
+    "themes": ["hideout"],
+    "act": 1
   },
   {
     "file": "splash-29-patrol-dronow.webp",
     "title": "Patrol dronów",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 1
   },
   {
     "file": "splash-30-sciana-tarcz.webp",
     "scenes": ["arena"],
-    "title": "Ściana tarcz"
+    "title": "Ściana tarcz",
+    "act": 1
   },
   {
     "file": "splash-31-pojedynek.webp",
     "scenes": ["arena"],
-    "title": "Pojedynek"
+    "title": "Pojedynek",
+    "act": 1
   },
   {
     "file": "splash-32-rezonans.webp",
-    "title": "Rezonans"
+    "title": "Rezonans",
+    "act": 1
   },
   {
     "file": "splash-33-fabryka-akordu.webp",
-    "title": "Fabryka Akordu"
+    "title": "Fabryka Akordu",
+    "act": 2
   },
   {
     "file": "splash-34-zalany-tunel.webp",
     "title": "Zalany tunel",
-    "rooms": ["combatFloodedTunnel"]
+    "rooms": ["combatFloodedTunnel"],
+    "act": 1
   },
   {
     "file": "splash-35-gabinet-w-koronie.webp",
-    "title": "Gabinet w Koronie"
+    "title": "Gabinet w Koronie",
+    "act": 3
   },
   {
     "file": "splash-36-zlomowisko.webp",
     "title": "Złomowisko",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 1
   },
   {
     "file": "splash-37-sciana-zaginionych.webp",
     "scenes": ["hub"],
     "title": "Ściana zaginionych",
-    "themes": ["hideout"]
+    "themes": ["hideout"],
+    "act": 1
   },
   {
     "file": "splash-38-skok-po-dachach.webp",
     "title": "Skok po dachach",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 1
   },
   {
     "file": "splash-39-pralnia.webp",
     "title": "Pralnia",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 1
   },
   {
     "file": "splash-40-nielegalna-klinika.webp",
-    "title": "Nielegalna klinika"
+    "title": "Nielegalna klinika",
+    "act": 1
   },
   {
     "file": "splash-41-kolejka-do-przychodni.webp",
-    "title": "Kolejka do przychodni"
+    "title": "Kolejka do przychodni",
+    "act": 2
   },
   {
     "file": "splash-42-dzieci-w-zaulku.webp",
     "title": "Dzieci w zaułku",
-    "themes": ["neonStreet"]
+    "themes": ["neonStreet"],
+    "act": 1
   },
   {
     "file": "splash-43-tama.webp",
-    "title": "Tama"
+    "title": "Tama",
+    "act": 1
   },
   {
     "file": "splash-44-podstacja.webp",
     "title": "Podstacja",
-    "rooms": ["combatSubstation"]
+    "rooms": ["combatSubstation"],
+    "act": 3
   },
   {
     "file": "splash-45-dworzec.webp",
-    "title": "Dworzec"
+    "title": "Dworzec",
+    "act": 1
   },
   {
     "file": "splash-46-akordowiec.webp",
-    "title": "Akordowiec"
+    "title": "Akordowiec",
+    "act": 2
   },
   {
     "file": "splash-47-rozstrojony.webp",
-    "title": "Rozstrojony"
+    "title": "Rozstrojony",
+    "act": 2
   },
   {
     "file": "splash-48-pokoj-przesluchan.webp",
-    "title": "Pokój przesłuchań"
+    "title": "Pokój przesłuchań",
+    "act": 1
   },
   {
     "file": "splash-49-magazyn-chlodniczy.webp",
-    "title": "Magazyn chłodniczy"
+    "title": "Magazyn chłodniczy",
+    "act": 1
   },
   {
     "file": "splash-50-radio-iskry.webp",
     "scenes": ["hub"],
     "title": "Radio Iskry",
-    "themes": ["hideout"]
+    "themes": ["hideout"],
+    "act": 1
   },
   {
     "file": "splash-51-pionowy-cmentarz.webp",
-    "title": "Pionowy cmentarz"
+    "title": "Pionowy cmentarz",
+    "act": 1
   },
   {
     "file": "splash-52-burza-nad-masztem.webp",
-    "title": "Burza nad Masztem"
+    "title": "Burza nad Masztem",
+    "act": 1
   },
   {
     "file": "splash-53-snajper.webp",
-    "title": "Snajper"
+    "title": "Snajper",
+    "act": 1
   },
   {
     "file": "splash-54-kolej-nadziemna.webp",
-    "title": "Kolej nadziemna"
+    "title": "Kolej nadziemna",
+    "act": 1
   },
   {
     "file": "splash-55-rezonantka.webp",
-    "title": "Rezonantka"
+    "title": "Rezonantka",
+    "act": 1
   },
   {
     "file": "splash-56-bar-hutnikow.webp",
     "scenes": ["hub"],
-    "title": "Bar Hutników"
+    "title": "Bar Hutników",
+    "act": 1
   },
   {
     "file": "splash-57-przed-switem.webp",
     "scenes": ["menu"],
-    "title": "Przed świtem"
+    "title": "Przed świtem",
+    "act": 1
   }
 ]

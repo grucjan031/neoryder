@@ -1,7 +1,13 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
-  ui: { loadingTipS: 7 },
+  ui: {
+    loadingTipS: 7,
+    /** Splasharty bez spoilerów: zwycięstwa (meta) potrzebne do aktu 1..4 (`unlockedSplashAct`). */
+    splashActVictories: [0, 1, 3, 5],
+    /** Nakładka startowa czeka na odczyt meta-zapisu najwyżej tyle (ms), potem zostaje przy akcie 1. */
+    splashMetaTimeoutMs: 400,
+  },
   /** Ograniczenia oprawy nakładane na motyw; pixelRatio=0 zachowuje DPR urządzenia. */
   quality: {
     low: {

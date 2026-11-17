@@ -1842,6 +1842,9 @@ lub pustą listę, `getTips()` waliduje dane leniwie, `pickTip(key)` wybiera
 deterministycznie przez `hashSeed`. Wspólny dekoracyjny widok porad rotuje
 co `tuning.ui.loadingTipS`, a jego `dispose()` usuwa timer. Klucz startowy:
 scena + seed; klucz pokoju: run + seed + currentNodeId.
+`pickSplash(key, hint?, maxAct = 1, list?)` losuje tylko spośród `act <= maxAct`;
+`unlockedSplashAct(victories)` zwraca akt 1–4 z `tuning.ui.splashActVictories`,
+a `readSplashAct(store?)` z `bootSplash.ts` czyta go z meta-zapisu (błąd = 1).
 
 ## Fauna kryjówki
 
