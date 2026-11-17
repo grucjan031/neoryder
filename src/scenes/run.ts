@@ -18,7 +18,7 @@ import type { ImplantDefinition } from '../progression/implantSchema';
 import { implantDefinitions } from '../progression/implants';
 import { RunEconomy } from '../progression/runEconomy';
 import { runIdOf } from '../progression/meta';
-import type { ApplyRunResult, MetaManager } from '../progression/meta';
+import { MetaManager, type ApplyRunResult } from '../progression/meta';
 import {
   loadMetaManager,
   loadMetaManagerStrict,
@@ -1090,6 +1090,21 @@ export class RunScene implements Scene {
         preserveLiteFx(new URLSearchParams(window.location.search), params);
         this.navigate(`?${params.toString()}`);
         return 'Start misji.';
+      },
+    );
+    register(
+      'campaign complete',
+      'campaign complete <id> — ukończ misję bez nagród (debug)',
+      (args) => {
+        const mission = missionDefinitions.get(args[0] ?? '');
+        if (args.length !== 1 || !mission) return 'Podaj istniejące id misji.';
+        const state = this.meta.serialize();
+        if (state.campaign.completed.includes(mission.id))
+          return 'Misja już ukończona.';
+        state.campaign.completed.push(mission.id);
+        this.adoptMeta(MetaManager.restore(state, this.ctx.bus));
+        this.persist(() => saveMetaManager(this.getMetaStore(), this.meta));
+        return 'Zapis kampanii zlecony.';
       },
     );
     register(

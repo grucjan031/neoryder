@@ -11,6 +11,9 @@
   "back": "Wróć do tablicy",
   "close": "Zakończ rozmowę",
   "fuse": "Do wybuchu",
+  "connecting": "Podłączanie dekodera",
+  "transfer": "Transfer",
+  "transferPaused": "TRANSFER WSTRZYMANY — wróć do strefy",
   "speakers": {
     "szron": "Szron",
     "mira": "Mira",

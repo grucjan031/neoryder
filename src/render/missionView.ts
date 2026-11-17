@@ -15,10 +15,11 @@ export class MissionView {
   readonly root = new Group();
   private readonly entries = new Map<
     string,
-    { object: Group; bar: Mesh; ring: Mesh; lamp?: Mesh }
+    { object: Group; bar: Mesh; ring: Mesh; lamp?: Mesh; gate?: Mesh }
   >();
   private readonly box = new BoxGeometry(1, 1, 1);
   private readonly ringGeometry: RingGeometry;
+  private readonly zoneGeometries: RingGeometry[] = [];
   private readonly metal = new MeshBasicMaterial({ color: '#56627a' });
   private readonly red = new MeshStandardMaterial({
     color: '#e0262b',
@@ -56,6 +57,7 @@ export class MissionView {
         return mesh;
       };
       let lamp: Mesh | undefined;
+      let gate: Mesh | undefined;
       if (objective.kind === 'sabotage') {
         for (const x of [-0.25, 0.25])
           for (const z of [-0.25, 0.25]) cube(x, 1.5, z, 0.07, 3, 0.07);
@@ -77,6 +79,34 @@ export class MissionView {
       } else if (objective.kind === 'pickup') {
         cube(0, 0.3, 0, 0.6, 0.4, 0.4, this.white);
         cube(0, 0.51, 0, 0.4, 0.02, 0.12, this.metal);
+      } else if (objective.kind === 'defend') {
+        cube(0, 0.08, 0, 2.4, 0.16, 1.8);
+        cube(0, 0.65, 0, 1.6, 1.1, 0.8);
+        const console = cube(0, 1.24, 0, 1.9, 0.12, 1.1);
+        console.rotation.x = 0.18;
+        cube(0, 1.35, -0.12, 1.35, 0.04, 0.55, this.white);
+        cube(0, 1.75, -0.3, 1.55, 0.8, 0.14);
+        cube(0, 1.75, -0.22, 1.35, 0.6, 0.03, this.amber);
+        for (const y of [1.6, 1.75, 1.9])
+          cube(-0.1, y, -0.19, 0.95, 0.04, 0.02, this.metal);
+        cube(0.55, 1.38, 0.3, 0.35, 0.12, 0.25, this.amber);
+        for (const x of [-0.85, 0.85])
+          cube(x, 0.7, 0.45, 0.05, 1, 0.05, this.amber);
+      } else if (
+        objective.kind === 'exit' &&
+        objective.unlockAfter.some((id) =>
+          model.mission.objectives.some(
+            (o) => o.id === id && o.kind === 'defend',
+          ),
+        )
+      ) {
+        for (const x of [-1, 1]) {
+          cube(x, 1.6, 0, 0.2, 3.2, 0.3);
+          cube(x, 1.6, 0.18, 0.06, 3, 0.04, this.amber);
+        }
+        cube(0, 3.2, 0, 2.2, 0.3, 0.4);
+        cube(0, 3.2, 0.22, 1.6, 0.1, 0.05, this.white);
+        gate = cube(0, 1.5, 0, 1.8, 3, 0.16);
       } else {
         cube(0, 0.05, 0, 1.6, 0.1, 1.6, this.metal);
         for (const edge of [-0.75, 0.75]) {
@@ -91,20 +121,33 @@ export class MissionView {
         cube(0, 0.2, 0, 0.08, 0.4, 0.08, this.white);
         cube(0, 0.25, 0, 0.6, 0.06, 0.06, this.white);
       }
-      const ring = new Mesh(this.ringGeometry, this.amber);
+      let geometry = this.ringGeometry;
+      if (objective.kind === 'defend') {
+        geometry = new RingGeometry(
+          objective.radiusM - 0.1,
+          objective.radiusM,
+          96,
+        );
+        this.zoneGeometries.push(geometry);
+      }
+      const ring = new Mesh(geometry, this.amber);
       ring.rotation.x = -Math.PI / 2;
       ring.position.y = 0.03;
       object.add(ring);
       const bar = cube(
         0,
-        objective.kind === 'sabotage' ? 1.1 : 0.9,
+        objective.kind === 'sabotage'
+          ? 1.1
+          : objective.kind === 'defend'
+            ? 1.5
+            : 0.9,
         0.5,
         1,
         0.08,
         0.08,
         this.amber,
       );
-      this.entries.set(objective.id, { object, ring, bar, lamp });
+      this.entries.set(objective.id, { object, ring, bar, lamp, gate });
       this.root.add(object);
     }
   }
@@ -112,10 +155,14 @@ export class MissionView {
     for (const objective of this.model.mission.objectives) {
       const view = this.entries.get(objective.id);
       if (!view) continue;
+      if (view.gate) view.gate.visible = !this.model.unlocked(objective);
       view.object.visible =
-        this.model.objectives[objective.id] !== 'done' &&
+        (this.model.objectives[objective.id] !== 'done' ||
+          objective.kind === 'defend') &&
         (objective.kind !== 'pickup' || this.model.unlocked(objective));
-      view.ring.visible = this.model.unlocked(objective);
+      view.ring.visible =
+        this.model.unlocked(objective) &&
+        this.model.objectives[objective.id] !== 'done';
       view.bar.scale.x = Math.max(0.01, this.model.progress[objective.id] ?? 0);
       const fuse = this.model.fuses[objective.id];
       if (view.lamp) {
@@ -133,6 +180,7 @@ export class MissionView {
     this.root.removeFromParent();
     this.box.dispose();
     this.ringGeometry.dispose();
+    for (const geometry of this.zoneGeometries) geometry.dispose();
     for (const material of [this.metal, this.red, this.white, this.amber])
       material.dispose();
   }

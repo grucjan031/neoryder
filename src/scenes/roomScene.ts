@@ -657,6 +657,7 @@ export class RoomScene implements Scene {
         {
           signal: (trigger) => this.missionSignal?.(trigger),
           explode: (objective) => this.explodeMission(objective, playerId),
+          reinforce: (wave, key) => this.reinforceMission(wave, key),
         },
         ctx.tuning.mission.zoneRadiusM,
         ctx.tuning.mission.pickupRadiusM,
@@ -675,8 +676,10 @@ export class RoomScene implements Scene {
       for (const guard of guards) {
         const objective = mission.objectives.find(
           (o) => o.id === guard.nearObjective,
-        )!;
-        const origin = this.mission.position(objective);
+        );
+        const origin =
+          guard.position ??
+          (objective ? this.mission.position(objective) : null);
         if (!origin) continue;
         for (let i = 0; i < guard.count; i++) {
           const angle = Math.PI / 2 + (i * Math.PI * 2) / guard.count;
@@ -1194,6 +1197,7 @@ export class RoomScene implements Scene {
         if (this.conquest.outcome === 'victory') this.completeRoom();
       }
       this.mission?.step(dt, this.player.getState().position);
+      this.openMissionDock();
 
       if (this.node.fixed?.objectives.length && this.mission?.complete)
         this.completeRoom();
@@ -1375,6 +1379,30 @@ export class RoomScene implements Scene {
       : {};
   }
 
+  /** Transfer otwiera dok; zwycięstwo nadal wymaga osobnego celu exit. */
+  private openMissionDock(): void {
+    const model = this.mission;
+    if (!model) return;
+    const dockReady = model.mission.objectives.some(
+      (objective) =>
+        objective.kind === 'exit' &&
+        model.ids.includes(objective.id) &&
+        model.unlocked(objective) &&
+        objective.unlockAfter.some((id) =>
+          model.mission.objectives.some(
+            (dependency) =>
+              dependency.id === id && dependency.kind === 'defend',
+          ),
+        ),
+    );
+    if (!dockReady) return;
+    for (const door of this.doors.values()) {
+      if (door.role !== 'exit') continue;
+      door.collider.setEnabled(false);
+      door.mesh.visible = false;
+    }
+  }
+
   private explodeMission(
     objective: Extract<MissionObjective, { kind: 'sabotage' }>,
     playerId: EntityId,
@@ -1410,26 +1438,30 @@ export class RoomScene implements Scene {
         });
     }
     if (objective.reinforcements) {
-      const modules = import.meta.glob('../data/waves/*.json', {
-        eager: true,
-        import: 'default',
-      });
-      const data = modules[`../data/waves/${objective.reinforcements}.json`];
-      if (!data) throw new Error(`Nieznana fala: ${objective.reinforcements}`);
-      const definition = loadWaves(data);
-      definition.spawnPoints = this.layout.spawnPoints;
-      const director = new WaveDirector(
-        definition,
-        {
-          spawn: (enemy, position) => this.spawnEnemy(enemy, position),
-          playerPosition: () => this.player.getState().position,
-        },
-        this.ctx.bus,
-        this.ctx.rng.fork(`reinforcement:${objective.id}`),
-      );
-      this.reinforcements.push(director);
-      director.start();
+      this.reinforceMission(objective.reinforcements, objective.id);
     }
+  }
+
+  private reinforceMission(wave: string, key: string): void {
+    const modules = import.meta.glob('../data/waves/*.json', {
+      eager: true,
+      import: 'default',
+    });
+    const data = modules[`../data/waves/${wave}.json`];
+    if (!data) throw new Error(`Nieznana fala: ${wave}`);
+    const definition = loadWaves(data);
+    definition.spawnPoints = this.layout.spawnPoints;
+    const director = new WaveDirector(
+      definition,
+      {
+        spawn: (enemy, position) => this.spawnEnemy(enemy, position),
+        playerPosition: () => this.player.getState().position,
+      },
+      this.ctx.bus,
+      this.ctx.rng.fork(`reinforcement:${key}`),
+    );
+    this.reinforcements.push(director);
+    director.start();
   }
 
   exportState(): Pick<RunState, 'hp' | 'energy'> {
@@ -1847,6 +1879,10 @@ export class RoomScene implements Scene {
               objectives: this.mission.objectives,
               progress: this.mission.progress,
               fuses: this.mission.fuses,
+              paused: this.mission.paused,
+              reinforcements: this.reinforcements.map(
+                (director) => director.spawnLog,
+              ),
             }
           : null;
       case 'hazards':
