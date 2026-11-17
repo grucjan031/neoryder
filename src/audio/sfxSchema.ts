@@ -3,6 +3,7 @@ import { z } from 'zod';
 /** Zdarzenia, które moduł audio umie obsłużyć (podzbiór GameEvents). */
 export const SFX_EVENTS = [
   'hub_prop_used',
+  'hub_fauna_sound',
   'execute_performed',
   'explosion',
   'damage_dealt',
@@ -62,6 +63,7 @@ export type SfxSound = z.infer<typeof soundSchema>;
 const whenSchema = z
   .object({
     kind: z.enum(['jukebox', 'noodles', 'radio', 'bag']).optional(),
+    faunaKind: z.enum(['meow', 'rat']).optional(),
     tagsAny: z.array(z.string()).optional(),
     tagsNone: z.array(z.string()).optional(),
     killed: z.boolean().optional(),

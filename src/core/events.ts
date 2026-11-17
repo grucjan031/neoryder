@@ -10,6 +10,7 @@ export type Team = 'player' | 'enemy' | 'neutral';
 
 /** Mapa wszystkich zdarzeń gry. Nowe zdarzenia dopisuje Architekt po zatwierdzeniu w docs/api.md. */
 export interface GameEvents {
+  hub_fauna_sound: { kind: 'meow' | 'rat'; point: Vec3 };
   hub_train_passed: { durationS: number };
   enemy_executable: { id: EntityId; ready: boolean };
   execute_performed: { attacker: EntityId; target: EntityId; point: Vec3 };

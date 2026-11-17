@@ -10,6 +10,7 @@ export const ambienceKindSchema = z.enum([
   'radio',
   'jukebox',
   'cooking',
+  'purr',
 ]);
 export type AmbienceKind = z.infer<typeof ambienceKindSchema>;
 export const ambienceSourceSchema = z

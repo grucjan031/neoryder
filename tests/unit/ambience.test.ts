@@ -33,6 +33,8 @@ function fakeBackend() {
     gains: [] as { value: number }[],
     pans: [] as { value: number }[],
     buffers: [] as Float32Array[],
+    oscillators: [] as { frequency: { value: number } }[],
+    filters: [] as { frequency: { value: number }; type: string }[],
   };
   const param = (value = 0) => {
     const p = {
@@ -86,17 +88,21 @@ function fakeBackend() {
       log.pans.push(pan);
       return { ...node(), pan };
     },
-    createOscillator: () => ({
-      ...source(),
-      frequency: param(440),
-      type: 'sine',
-    }),
-    createBiquadFilter: () => ({
-      ...node(),
-      frequency: param(),
-      Q: param(),
-      type: 'lowpass',
-    }),
+    createOscillator: () => {
+      const osc = { ...source(), frequency: param(440), type: 'sine' };
+      log.oscillators.push(osc);
+      return osc;
+    },
+    createBiquadFilter: () => {
+      const filter = {
+        ...node(),
+        frequency: param(),
+        Q: param(),
+        type: 'lowpass',
+      };
+      log.filters.push(filter);
+      return filter;
+    },
     createBufferSource: () => ({
       ...source(),
       buffer: null,
@@ -514,4 +520,42 @@ describe('pociąg w kryjówce', () => {
       true,
     );
   });
+});
+
+it('purr: 25 Hz szumu lowpass, ruch ?r?d?a bez restartu, cisza poza zasi?giem i przy pauzie', () => {
+  const { audio, fake, listener, t } = setup();
+  const profile = t.audio.ambienceProfiles.purr;
+  audio.setAmbience([
+    {
+      kind: 'purr',
+      position: { x: 0, y: 0, z: 0 },
+      radiusM: profile.radiusM,
+      gain: profile.gain,
+    },
+  ]);
+  audio.updateAmbience();
+  expect(audio.activeAmbience).toEqual([{ kind: 'purr', gain: profile.gain }]);
+  expect(fake.log.oscillators.at(-1)!.frequency.value).toBe(25);
+  expect(fake.log.filters.at(-1)!.type).toBe('lowpass');
+  expect(fake.log.filters.at(-1)!.frequency.value).toBe(profile.filterHz);
+  const started = fake.log.started;
+  audio.updateAmbienceSource(0, { x: 1, y: 0, z: 0 }, profile.gain);
+  audio.updateAmbience();
+  expect(fake.log.started).toBe(started);
+  expect(audio.activeAmbience[0]!.gain).toBeLessThan(profile.gain);
+  expect(fake.log.pans.at(-1)!.value).toBeGreaterThan(0);
+  listener.position.x = 4;
+  audio.updateAmbience();
+  expect(audio.activeAmbience).toEqual([]);
+  listener.position.x = 1;
+  audio.updateAmbienceSource(0, { x: 1, y: 0, z: 0 }, 0);
+  audio.updateAmbience();
+  expect(audio.activeAmbience).toEqual([]);
+  audio.updateAmbienceSource(0, { x: 1, y: 0, z: 0 }, profile.gain);
+  audio.updateAmbience();
+  expect(audio.activeAmbience).toHaveLength(1);
+  audio.updateAmbience(true);
+  expect(audio.activeAmbience).toEqual([]);
+  audio.dispose();
+  expect(fake.log.stopped).toBe(fake.log.started);
 });

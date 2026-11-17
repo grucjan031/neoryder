@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { tuning } from '../core/tuning';
+import { FaunaGround } from './hubFaunaGround';
 import { npcHeight, npcRadius } from './hubNpcs';
 import { HUB_STATION_IDS } from '../core/metaTypes';
 import {
@@ -233,6 +234,42 @@ export const hubFireSchema = z.object({
 });
 export type HubFireDef = z.infer<typeof hubFireSchema>;
 
+const timeRange = z
+  .tuple([positive, positive])
+  .refine(([min, max]) => min <= max, 'Minimum czasu przekracza maksimum.');
+export const hubFaunaSchema = z
+  .object({
+    cat: z
+      .object({
+        route: z.array(z.object({ x: finite, z: finite }).strict()).min(3),
+        restS: timeRange,
+        speedMS: positive.optional(),
+      })
+      .strict()
+      .optional(),
+    rats: z
+      .object({
+        lanes: z
+          .array(
+            z
+              .object({ from: vec3Schema, to: vec3Schema })
+              .strict()
+              .refine(
+                ({ from, to }) =>
+                  from.y === to.y &&
+                  Math.hypot(to.x - from.x, to.z - from.z) > 0,
+                'Pas szczurów wymaga różnych końców na tym samym poziomie.',
+              ),
+          )
+          .min(1),
+        intervalS: timeRange,
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+export type HubFaunaDef = z.infer<typeof hubFaunaSchema>;
+
 /** Układ kryjówki: format pokoju (bez drzwi, spawnów wrogów i walki) plus stacje. */
 export const hubLayoutSchema = z
   .object({
@@ -247,6 +284,7 @@ export const hubLayoutSchema = z
     npcs: z.array(hubNpcSchema).optional(),
     fires: z.array(hubFireSchema).optional(),
     props: z.array(hubPropSchema).optional(),
+    fauna: hubFaunaSchema.optional(),
   })
   .superRefine((layout, ctx) => {
     const ids = new Set<string>();
@@ -296,6 +334,49 @@ export const hubLayoutSchema = z
     });
     // Środki stref (i NPC stojących) przechodzą tę samą walidację co punkty spawnu pokoju: w podłodze, poza blokami, osiągalne od playerSpawn.
     validateNpcRoutes(layout, ctx);
+    const catRoute = layout.fauna?.cat?.route;
+    if (catRoute) {
+      const ground = new FaunaGround(layout, tuning.hub, layout.playerSpawn.y);
+      catRoute.forEach((from, index) => {
+        const to = catRoute[(index + 1) % catRoute.length]!;
+        if (!ground.segment(from.x, from.z, to.x, to.z))
+          ctx.addIssue({
+            code: 'custom',
+            path: ['fauna', 'cat', 'route', index],
+            message:
+              'Trasa kota poza podłogą, przez blok albo bliżej niż 0,6 m od NPC.',
+          });
+      });
+    }
+    layout.fauna?.rats?.lanes.forEach((lane, index) => {
+      const samples = Math.max(
+        1,
+        Math.ceil(
+          Math.hypot(lane.to.x - lane.from.x, lane.to.z - lane.from.z) /
+            tuning.hub.faunaSampleM,
+        ),
+      );
+      for (let i = 0; i <= samples; i++) {
+        const x = lane.from.x + ((lane.to.x - lane.from.x) * i) / samples;
+        const z = lane.from.z + ((lane.to.z - lane.from.z) * i) / samples;
+        if (
+          !layout.blocks.some(
+            (b) =>
+              Math.abs(b.position.y + b.size.y / 2 - lane.from.y) <
+                Number.EPSILON * 8 &&
+              Math.abs(x - b.position.x) <= b.size.x / 2 &&
+              Math.abs(z - b.position.z) <= b.size.z / 2,
+          )
+        ) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['fauna', 'rats', 'lanes', index],
+            message: 'Pas szczurów poza podłogą.',
+          });
+          break;
+        }
+      }
+    });
     validateLayout(
       {
         playerSpawn: layout.playerSpawn,

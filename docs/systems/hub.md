@@ -442,6 +442,26 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
   `threat.max` (odblokowanie kolejnych Poziomów zagrożenia bez grania); po każdej komendzie pasek i panel się odświeżają;
 - `reset` wraca na `playerSpawn`.
 
+## Zwierzęta
+
+Czysto kosmetyczne, bez interakcji E (`selectHubTarget` i `HubPrompt` bez zmian). Układ: `fauna` w `hideout.json`
+(`HubLayout.fauna`, walidacja w `hubSchema.ts`; trasa kota jak trasy NPC: podłoga, poza blokami, min. 0,6 m od
+statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
+
+- Kot stacji „Węgielek”: pętla tras przez spokojne miejsca (beczka Tomasza na peronie B, budka z makaronem, kwatery,
+  bar, kładka nad torami). Idzie do kolejnego punktu, odpoczywa losowo `restS` (siedzi albo leży), czasem się myje.
+  Zatrzymuje się, gdy gracz stoi na drodze bliżej niż 0,8 m; gdy gracz biegnie w jego stronę bliżej niż 2 m, odbiega
+  w bok (tylko po bezpiecznej podłodze) i wraca na punkt opuszczenia trasy.
+- Szczury: 2-3 pasy po dnie niecki torów i pod ścianą targu; co `intervalS` przebiega losowy pas (2,5-3,5 m/s,
+  drobne zrywy) i znika; gdy gracz jest bliżej niż 3 m od startu pasa, wybierany jest inny pas albo czekanie;
+  maksymalnie 2 naraz (pooling).
+- Wygląd (`src/scenes/hubFauna.ts`): proceduralne siatki z prymitywów, ciemnografitowy toon, małe bursztynowe oczy;
+  współdzielone geometrie; render interpoluje stan symulacji.
+- Dźwięk: mruczenie `purr` (ruchome źródło ambience, ok. 3 m, gdy kot odpoczywa), rzadkie miau i pisk szczura przez
+  zdarzenie `hub_fauna_sound` (zob. `audio.md`, `api.md`).
+- Debug: `hub cat` (kot 2 m przed graczem, odpoczynek), `hub rat` (przebieg najbliższym pasem),
+  `query('hubFauna')` → `{ cat: { x, z, state } | null, rats }`.
+
 ## Testy
 
 `tests/unit/hubLayout.test.ts` (walidacja układu: stacje w granicach i osiągalne, strefy rozłączne, paleta, zasoby),

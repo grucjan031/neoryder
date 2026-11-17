@@ -37,6 +37,7 @@ interface Voice {
 /** Pola zdarzenia użyte w warunkach reguł. */
 interface EventFacts {
   kind?: GameEvents['hub_prop_used']['kind'];
+  faunaKind?: 'meow' | 'rat';
   tags?: readonly string[];
   killed?: boolean;
   target?: EntityId | null;
@@ -116,6 +117,13 @@ export class AudioSystem {
     this.ambience?.dispose();
     this.ambience = null;
     this.trainProgress = null;
+  }
+
+  updateAmbienceSource(index: number, position: Vec3, gain: number): void {
+    const source = this.ambienceSources?.[index];
+    if (!source) return;
+    Object.assign(source.position, position);
+    source.gain = Math.max(0, gain);
   }
 
   get activeAmbience(): { kind: string; gain: number }[] {
@@ -267,6 +275,10 @@ export class AudioSystem {
     switch (event) {
       case 'hub_prop_used':
         return { kind: (p as GameEvents['hub_prop_used']).kind };
+      case 'hub_fauna_sound': {
+        const e = p as GameEvents['hub_fauna_sound'];
+        return { faunaKind: e.kind, point: e.point };
+      }
       case 'damage_dealt': {
         const e = p as GameEvents['damage_dealt'];
         return {
@@ -309,6 +321,8 @@ export class AudioSystem {
   private matches(when: SfxWhen, f: EventFacts): boolean {
     const player = this.playerId;
     if (when.kind !== undefined && f.kind !== when.kind) return false;
+    if (when.faunaKind !== undefined && when.faunaKind !== f.faunaKind)
+      return false;
     if (when.tagsAny && !when.tagsAny.some((t) => f.tags?.includes(t)))
       return false;
     if (when.tagsNone && when.tagsNone.some((t) => f.tags?.includes(t)))

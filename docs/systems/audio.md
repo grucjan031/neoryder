@@ -93,3 +93,11 @@ komenda i pula pyłu), `tests/e2e/hub.spec.ts` (odblokowanie, źródła, przejaz
 błędów Web Audio). Ręcznie: `?scene=hub&debug=1`, kliknij grę, przejdź od beczki
 przez generatory i ekrany do baru/Bajta; obróć kamerę, zmień głośność efektów,
 sprawdź ciszę po Esc i wznowienie, następnie wykonaj `hub train`.
+
+### Fauna kryjówki
+
+Rodzaj ambience `purr` (pulsujący niski szum, `ambiencePurrPulseHz`/`ambiencePurrDepth`, zasięg ok. 3 m) jest
+ruchomym źródłem: `AudioSystem.updateAmbienceSource(index, position, gain)` przesuwa je bez restartu grafów, a
+`HubSoundscape` dodaje je na końcu listy źródeł; gain > 0 tylko gdy kot odpoczywa. Zdarzenie `hub_fauna_sound
+{ kind: 'meow' | 'rat'; point }` mapują reguły sfx z warunkiem `faunaKind` na przepisy `hub_meow` (rzadkie miau) i
+`hub_rat` (cichy pisk/tupanie), odtwarzane przestrzennie w `point`.

@@ -17,11 +17,13 @@ export class HubSoundscape {
   private readonly mesh: InstancedMesh;
   private readonly transform = new Object3D();
   private readonly off?: () => void;
+  private readonly extraOffset: number;
 
   constructor(
     private readonly ctx: GameContext,
     parent: Object3D,
     layout: HubLayout,
+    private readonly extraSources: readonly AmbienceSource[] = [],
   ) {
     this.train = new HubTrain(
       ctx.rng.fork('hub-train'),
@@ -47,7 +49,8 @@ export class HubSoundscape {
       loadAmbience(ambienceData),
       ctx.tuning.audio,
     );
-    ctx.audio?.setAmbience(this.sources);
+    this.extraOffset = this.sources.length;
+    ctx.audio?.setAmbience([...this.sources, ...extraSources]);
     this.off = ctx.commands?.register(
       'hub train',
       'hub train — wymuś przejazd pociągu',
@@ -62,7 +65,7 @@ export class HubSoundscape {
   setJukeboxTrack(track: number): void {
     for (const source of this.sources)
       if (source.kind === 'jukebox') source.track = track;
-    this.ctx.audio?.setAmbience(this.sources);
+    this.ctx.audio?.setAmbience([...this.sources, ...this.extraSources]);
   }
 
   step(dt: number, player: Vec3): void {
@@ -90,6 +93,14 @@ export class HubSoundscape {
     this.mesh.count = count;
     this.mesh.instanceMatrix.needsUpdate = true;
     this.ctx.audio?.setTrainPass(this.train.progress, hub);
+    for (let i = 0; i < this.extraSources.length; i++) {
+      const source = this.extraSources[i]!;
+      this.ctx.audio?.updateAmbienceSource(
+        this.extraOffset + i,
+        source.position,
+        source.gain ?? this.ctx.tuning.audio.ambienceProfiles[source.kind].gain,
+      );
+    }
     this.ctx.audio?.updateAmbience(this.ctx.loop.paused || suspended);
   }
 

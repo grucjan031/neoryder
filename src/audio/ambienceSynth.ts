@@ -62,17 +62,25 @@ export class AmbienceSynth {
       filter.Q.setValueAtTime(q, ctx.currentTime);
       const amp = ctx.createGain();
       amp.gain.setValueAtTime(
-        level * (1 - t.ambienceLfoDepth),
+        level *
+          (1 -
+            (kind === 'purr' ? t.ambiencePurrDepth / 2 : t.ambienceLfoDepth)),
         ctx.currentTime,
       );
       const lfo = ctx.createOscillator();
       lfo.frequency.setValueAtTime(
-        t.ambienceLfoHz *
-          this.rng.float(t.ambienceLfoRateMin, t.ambienceLfoRateMax),
+        kind === 'purr'
+          ? t.ambiencePurrPulseHz
+          : t.ambienceLfoHz *
+              this.rng.float(t.ambienceLfoRateMin, t.ambienceLfoRateMax),
         ctx.currentTime,
       );
       const depth = ctx.createGain();
-      depth.gain.setValueAtTime(level * t.ambienceLfoDepth, ctx.currentTime);
+      depth.gain.setValueAtTime(
+        level *
+          (kind === 'purr' ? t.ambiencePurrDepth / 2 : t.ambienceLfoDepth),
+        ctx.currentTime,
+      );
       lfo.connect(depth);
       depth.connect(amp.gain);
       source.connect(filter);
@@ -95,6 +103,9 @@ export class AmbienceSynth {
     } else if (kind !== 'train') {
       const p = t.ambienceProfiles[kind];
       switch (kind) {
+        case 'purr':
+          layer('noise', 0, 'lowpass', p.filterHz);
+          break;
         case 'generator':
           layer('sawtooth', p.toneHz, 'lowpass', p.filterHz);
           break;

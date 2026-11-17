@@ -62,6 +62,7 @@ import type { HubTarget } from '../world/hubStations';
 import { HUB_BATCH_CELL_M, HubDecor } from './hubDecor';
 import { HubNpcs } from './hubNpcs';
 import { HubSoundscape } from './hubSoundscape';
+import { HubFauna } from './hubFauna';
 import type { Scene } from './index';
 import { preserveLiteFx } from '../render/fxMode';
 
@@ -171,6 +172,7 @@ export class HubScene implements Scene {
   private dressing?: CityDressing;
   private decor?: HubDecor;
   private soundscape?: HubSoundscape;
+  private fauna?: HubFauna;
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private readonly geometries = new Set<BufferGeometry>();
@@ -333,7 +335,15 @@ export class HubScene implements Scene {
       ),
     );
     this.registerCommands();
-    this.soundscape = new HubSoundscape(ctx, this.root, this.layout);
+    this.fauna = new HubFauna(ctx, this.root, this.layout, () =>
+      this.player.getState(),
+    );
+    this.soundscape = new HubSoundscape(
+      ctx,
+      this.root,
+      this.layout,
+      this.fauna.sources,
+    );
     this.world.step();
     this.render(1);
   }
@@ -677,6 +687,7 @@ export class HubScene implements Scene {
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
     if (this.stations.opened || !(dt > 0)) return;
     this.props.step(dt);
+    this.fauna?.step(dt, this.previous);
     const player = this.player.getState().position;
     for (const state of this.npcStates)
       state.step(
@@ -733,6 +744,7 @@ export class HubScene implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
+    this.fauna?.render(alpha);
     const target = this.focusedTarget();
     if (target?.kind === 'npc') {
       const name =
@@ -807,6 +819,7 @@ export class HubScene implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'hubFauna') return this.fauna?.runtime.query();
     switch (name) {
       case 'hubProps':
         return this.props.snapshot;
@@ -1011,6 +1024,7 @@ export class HubScene implements Scene {
     } finally {
       this.decor?.dispose();
       this.soundscape?.dispose();
+      this.fauna?.dispose();
       this.dressing?.dispose();
       this.root.removeFromParent();
       this.root.clear();
