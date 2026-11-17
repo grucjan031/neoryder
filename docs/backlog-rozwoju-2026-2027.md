@@ -186,6 +186,19 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 - **P1** · Właściciel + Architekt · Cz 3 · zależności: D2, D3
 
+## S4b — osiągnięcia i naszywki Iskry (decyzja właściciela 17 XI 2026)
+
+### S4b-01 Osiągnięcia z naszywkami
+
+- **Cel:** powód do kolejnego runu (filar 3) i zachęta do grania każdą ścieżką (filar 2). **P2** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaplanowane
+- **Zależności:** S4-02 (wszystkie trzy misje dema), S0-01 (bezpieczne rozliczenie).
+- **Kryteria:** ok. 25–30 osiągnięć w danych (walka, czyste ścieżki Ostrze/Moc/Strzelec, misje i tryby, progres); liczenie z istniejących zdarzeń `EventBus`; stan w metazapisie z migracją; jednorazowa nagroda w Danych/Rdzeniach (idempotentnie, jak nagrody runu); komunikat w HUD przy zdobyciu; panel „Naszywki Iskry” w kryjówce (zdobyte świecą, brakujące szare z podpowiedzią) i komentarz NPC; ikony w palecie bursztyn/biel/zieleń (bez cyanu i magenty).
+- **Zasady projektu:**
+  - Osiągnięcie **pozwala kupić** przedmiot, nie daje go za darmo (balans waluty zostaje).
+  - Bramkujemy tylko rzadkie odblokowania za Rdzenie (Skupienie, dwustronne ostrze, Nadprzewodnik, slot broni 3) — nie wpływa to na bramkę F4 (5 runów: poziom 7, 4 zakupy).
+  - Żadne osiągnięcie bramkujące nie wymaga przedmiotu, który samo odblokowuje.
+- **Weryfikacja:** testy liczników i idempotencji, symulacja balansu F4 bez zmian, zrzuty panelu i komunikatu, granie właściciela.
+
 ## S5–S6 — testy nowych graczy
 
 ### S5-01 Tura testów 1 (4–6 osób)
