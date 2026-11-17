@@ -205,8 +205,56 @@
       "text": "Trzy maszty w Niecce. Stanęły dziś w nocy, wszystkie na tym samym paśmie, które złapało cię na rampie."
     },
     {
+      "speaker": "bajt",
+      "text": "O szóstej kończą kalibrację. Jak się zestroją, każdy skok Rezonansu w dolnym sektorze zaświeci im jak latarnia na dachu."
+    },
+    {
+      "speaker": "szron",
+      "text": "Masz na to czas do świtu. Ładunki są od Miry."
+    },
+    {
       "speaker": "mira",
       "text": "Trzy sztuki, z krótkim zapalnikiem. Przykładaj do skrzynki zasilania u podstawy, nie do samej kratownicy."
+    },
+    {
+      "speaker": "mira",
+      "text": "I nie stój w promieniu czterech metrów, kiedy tyka. Zapasowych kurierów tu nie trzymamy."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Mówi to osoba, która spawała te zapalniki z zegarków z bazaru."
+    },
+    {
+      "speaker": "mira",
+      "text": "Zegarki działają. W przeciwieństwie do twojego skanera częstotliwości w zeszłym tygodniu."
+    },
+    {
+      "speaker": "szron",
+      "text": "Dosyć. Przy każdym maszcie stoi co najmniej jedna wieżyczka, a wybuch ściągnie patrole z sąsiednich ulic. Nie wdawaj się w długą wymianę ognia, jeśli nie musisz."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Ja poprowadzę przez radio. Znam pod estakadą każdy suchy zaułek i każdą ślepą bramę."
+    },
+    {
+      "speaker": "szron",
+      "text": "Na pewno? Ostatnio chodziłeś tamtędy, kiedy jeszcze działały pompy."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Beton się nie rusza, Szron. A patrole chodzą zawsze tam, gdzie wygodnie im nie zamoczyć butów."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Łączność ustawiona na krótki kanał. Wchodzisz śluzą pod trzecim filarem, kryptonim w eterze: Kurier."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Weź ze sobą łyk czegoś ciepłego, zanim zejdziesz w ten deszcz. Tam na dole wiatr ciągnie od rzeki."
+    },
+    {
+      "speaker": "szron",
+      "text": "Ruszaj. Po trzecim maszcie schodzisz starym kanałem zrzutowym prosto na Kamienną."
     }
   ],
   "debrief": [
@@ -217,6 +265,42 @@
     {
       "speaker": "szron",
       "text": "Do łączności?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Właśnie nie. Znam ten układ ze starych specyfikacji z Bulwaru — to przerobiony czujnik medyczny do badania implantów ruchowych. Wyciągnęli z niego głowicę i podpięli pod wzmacniacz radiowy."
+    },
+    {
+      "speaker": "mira",
+      "text": "Po co, do cholery, zbrojeniówce skaner medyczny w zaułku pod estakadą?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Nie mam pojęcia. Szukał nie tylko samego wyładowania, ale konkretnej sygnatury w korze ruchowej. Jakby ktoś sprawdzał, kto z ulicy nosi w sobie coś więcej niż zwykły drut na raty."
+    },
+    {
+      "speaker": "szron",
+      "text": "Czyli to nie był przypadek z tą rampą w Hutach. A w Niecce połowa kurierów ma ten sam tani implant co ty."
+    },
+    {
+      "speaker": "mira",
+      "text": "Zostało tam jeszcze coś w jednym kawałku, czy wszystko poszło z dymem?"
+    },
+    {
+      "speaker": "bajt",
+      "text": "Ten jeden wystarczy. Zaraz przepuszczę numer partii przez stare rejestry dostaw, może wyjdzie, skąd je ciągną."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Zostaw to do jutra, Bajt. Masz podkrążone oczy jak po nocnej zmianie."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Usiądź przy beczce, Kurier. Herbata jeszcze ciepła."
+    },
+    {
+      "speaker": "szron",
+      "text": "Rano sprawdzimy, kogo jeszcze zwinęli tej nocy, zanim maszty zgasły. Idź odpocząć."
     }
   ],
   "radio": [
@@ -226,6 +310,27 @@
         {
           "speaker": "tomasz",
           "text": "Słychać mnie dobrze? Jesteś pod trzecią podporą, za plecami masz zejście do kanału."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "Idź wzdłuż muru na wschód. Tam jeszcze wczoraj wisiała spalona latarnia z bursztynowym kloszem, za nią zaczynają się pierwsze alejki."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Sygnał z masztów wchodzi czysto. Pierwszy stoi tuż za skrzyżowaniem, sto metrów dalej."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:3",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Wieżyczka na wprost wejścia. Najpierw ją zdejmij albo odetnij jej linię strzału."
+        },
+        {
+          "speaker": "mira",
+          "text": "Pamiętaj, cztery metry. Jak zgaśnie czerwona dioda na górze, nie wracaj, kurwa, po nic."
         }
       ]
     },
@@ -239,20 +344,58 @@
       ]
     },
     {
+      "trigger": "objective:mast-1:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Dwa oddziały z bocznej ulicy. Nie zatrzymuj się na placu, wykorzystaj osłony."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "W prawo, w przejście za kontenerem na gruz. Zawsze zostawiają tam pół metra prześwitu, żeby śmieciarka mogła zawrócić."
+        }
+      ]
+    },
+    {
+      "trigger": "enterNode:5",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Drugi nadajnik stoi na starym targu, za opuszczonymi roletami. Ktoś podłączył go na krótko do skrzynki miejskiej."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "Z tego placyku wyjście prowadzi tylko na zachód albo przez kramy. Wybierz drogę, zanim zamkną wejścia."
+        }
+      ]
+    },
+    {
       "trigger": "objective:mast-2:done",
       "lines": [
         {
           "speaker": "mira",
           "text": "Czekaj — coś w tym pieprzonym złomie jeszcze nie zgasło. Pod pokrywą leży nienaruszony moduł. Zgarnij go, przyda się w warsztacie."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Chwila... zanim schowasz, wyłapałem jego identyfikator serwisowy. To nie jest blok Kurogane. To ma sygnaturę Helixa Dynamics."
+        },
+        {
+          "speaker": "szron",
+          "text": "Zostaw zgadywanie na później. Pakuj to do torby i ruszaj pod trzeci maszt, patrole już idą po śladzie."
         }
       ]
     },
     {
-      "trigger": "objective:helix:done",
+      "trigger": "enterNode:7",
       "lines": [
         {
-          "speaker": "bajt",
-          "text": "Chwila... zanim schowasz, wyłapałem jego identyfikator serwisowy. To nie jest blok Kurogane. To ma sygnaturę Helixa Dynamics."
+          "speaker": "tomasz",
+          "text": "Przy kanale zrzutowym uważaj na kładki po bokach. Od lat tak zamykają wylot, kiedy kogoś szukają na dole."
+        },
+        {
+          "speaker": "szron",
+          "text": "Dwie wieżyczki kryją plac na krzyż. Jeśli wejdziesz w środek przed czasem, posiłki przygniotą cię przy ścianie."
         }
       ]
     },
@@ -269,8 +412,16 @@
       "trigger": "objective:exit:started",
       "lines": [
         {
+          "speaker": "szron",
+          "text": "Z placu rusza cięższa grupa. Właz do tunelu jest przy wschodnim murze, za transformatorem."
+        },
+        {
           "speaker": "mira",
           "text": "Otwieraj i schodź. Jak przekręcisz zawór od środka, nie przejdą bez palników."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Jeszcze kilka metrów, Kurier. Zamykam za tobą kanał nasłuchowy."
         }
       ]
     }

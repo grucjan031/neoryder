@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import data from '../../src/data/missions/m01-maszty.json';
 import { loadMission, missionSchema } from '../../src/world/missionSchema';
@@ -5,6 +6,34 @@ import { missionDefinitions } from '../../src/world/missions';
 import { roomDefinitions } from '../../src/world/rooms';
 
 describe('Dane misji', () => {
+  it.each([
+    ['Odprawa (kryjówka)', data.briefing],
+    ['W trakcie misji (radio)', data.radio.flatMap((entry) => entry.lines)],
+    ['Po misji (kryjówka)', data.debrief],
+  ] as const)(
+    'zachowuje wszystkie kwestie M01 ze źródła: %s',
+    (heading, lines) => {
+      const source = readFileSync(
+        new URL('../../docs/fabula/misje/misja-01-maszty.md', import.meta.url),
+        'utf8',
+      );
+      const dialogue = source.split(/^## Dialogi\r?$/m)[1]?.split(/^## /m)[0];
+      const section = dialogue
+        ?.split(/^### /m)
+        .find((part) => part.split(/\r?\n/)[0] === heading);
+      expect(section).toBeDefined();
+      const sourceLines = section!.split(/\r?\n/).flatMap((line) => {
+        const match = line.match(/^\*\*(\p{L}+):\*\* (.+)$/u);
+        return match
+          ? [{ speaker: match[1]!.toLowerCase(), text: match[2]! }]
+          : [];
+      });
+      expect(sourceLines.length).toBeGreaterThan(0);
+      expect(lines).toHaveLength(sourceLines.length);
+      for (const line of lines) expect(section).toContain(line.text);
+      expect(lines).toEqual(sourceLines);
+    },
+  );
   it('wczytuje M01 z poprawnymi pokojami i osłoną', () => {
     const mission = missionDefinitions.get('m01-maszty')!;
     expect(
