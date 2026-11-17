@@ -10,6 +10,8 @@ import { createMemorySaveStore } from '../../src/core/save';
 import { loadMetaManager } from '../../src/progression/metaSave';
 import { tuning } from '../../src/core/tuning';
 import { HubScene } from '../../src/scenes/hub';
+import type { HubSceneOptions } from '../../src/scenes/hub';
+import { lifeLayout, lifeTexts } from '../fixtures/hubLife';
 import type { HubScreenActions, HubScreens } from '../../src/ui/hubScreens';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 
@@ -62,7 +64,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-async function setup(params = '') {
+async function setup(params = '', options: HubSceneOptions = {}) {
   const bus = new EventBus();
   const baseline = handlerCount(bus);
   const commands = new CommandRegistry();
@@ -76,6 +78,7 @@ async function setup(params = '') {
     navigate,
     params: new URLSearchParams(params),
     loadModels: false,
+    ...options,
   });
   const opened: HubStationId[] = [];
   bus.on('hub_station_opened', ({ station }) => opened.push(station));
@@ -399,11 +402,89 @@ it('NPC zwraca się do gracza w zasięgu i wraca do pozy bazowej po jego odejśc
   const szron = npcSpot(scene, 'szron');
   commands.execute(`hub tp ${szron.x + 2} ${szron.z + 2}`);
   scene.step(SIM_DT, idle);
-  for (let i = 0; i < 90; i++) scene.render(1, 1 / 60);
+  for (let i = 0; i < 90; i++) {
+    scene.step(SIM_DT, idle);
+    scene.render(1, SIM_DT);
+  }
   // Gracz stoi za plecami Szrona (+X/+Z): tułów obraca się do granicy zakresu, głowa dokończy obrót.
   expect(yawOf('szron')).toBeCloseTo(base + tuning.hub.npcStandBodyMaxRad, 1);
   commands.execute('hub tp 0 0.8');
   scene.step(SIM_DT, idle);
-  for (let i = 0; i < 180; i++) scene.render(1, 1 / 60);
+  for (let i = 0; i < 180; i++) {
+    scene.step(SIM_DT, idle);
+    scene.render(1, SIM_DT);
+  }
   expect(Math.cos(yawOf('szron') - base)).toBeCloseTo(1, 2);
+});
+
+it('fixture życia: ruch działa bez renderu/DOM, rozmowy emitują zdarzenia, debug i E je przerywają', async () => {
+  const { scene, commands, bus } = await setup('', {
+    layout: lifeLayout(),
+    npcTexts: lifeTexts(),
+  });
+  const lines: string[] = [];
+  const off = bus.on('hub_chatter_line', ({ npc }) => lines.push(npc));
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubChatter')).toMatchObject({
+    conversation: 'hello',
+    npc: 'kid',
+  });
+  expect(lines).toEqual(['kid']);
+  for (let i = 0; i < 30; i++) scene.step(SIM_DT, idle);
+  expect(npcSpot(scene, 'kid').x).toBeGreaterThan(0.4);
+  const beforeRender = npcSpot(scene, 'kid').x;
+  for (let i = 0; i < 10; i++) scene.render(0.5, SIM_DT);
+  expect(npcSpot(scene, 'kid').x).toBe(beforeRender);
+  commands.execute(`hub tp ${beforeRender} 2`);
+  commands.execute('hub look kid');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubNpc')).toBe('kid');
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubTalk')).toMatchObject({ id: 'kid' });
+  expect(scene.query('hubChatter')).toBeNull();
+  const stopped = npcSpot(scene, 'kid').x;
+  for (let i = 0; i < 60; i++) scene.step(SIM_DT, idle);
+  expect(npcSpot(scene, 'kid').x).toBe(stopped);
+  expect(scene.query('hubChatter')).toBeNull();
+  commands.execute('hub tp -8 -8');
+  for (let i = 0; i < 60; i++) scene.step(SIM_DT, idle);
+  expect(npcSpot(scene, 'kid').x).toBeGreaterThan(stopped);
+  expect(commands.execute('hub chatter hello')).toBe('Rozmowa: hello');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubChatter')).toMatchObject({ conversation: 'hello' });
+  commands.execute('hub talk friend');
+  expect(scene.query('hubChatter')).toBeNull();
+  commands.execute('hub chatter hello');
+  commands.execute('hub open missions');
+  expect(scene.query('hubChatter')).toBeNull();
+  off();
+});
+
+it('fixture życia: kinematyczny NPC ma skalowany walec i zatrzymuje character controller', async () => {
+  const { scene, commands } = await setup('', {
+    layout: lifeLayout(),
+    npcTexts: lifeTexts(),
+  });
+  // Debugowa rozmowa zatrzymuje trasę także daleko od gracza.
+  commands.execute('hub talk kid');
+  commands.execute('hub tp 0 2 0');
+  for (let i = 0; i < 20; i++) scene.step(SIM_DT, idle);
+  for (let i = 0; i < 50; i++) scene.step(SIM_DT, walkForward);
+  const kid = npcSpot(scene, 'kid');
+  expect(kid.x).toBe(0);
+  expect(position(scene).z).toBeGreaterThan(
+    0.4 * 0.68 + tuning.player.capsuleRadius - 0.05,
+  );
+  expect(position(scene).z).toBeLessThan(1);
+  const bodies = Reflect.get(scene, 'npcBodies') as {
+    body: import('@dimforge/rapier3d-compat').RigidBody;
+  }[];
+  const body = bodies[0]!.body;
+  expect(body.isKinematic()).toBe(true);
+  expect(body.collider(0).radius()).toBeCloseTo(0.4 * 0.68);
+  expect(body.collider(0).halfHeight()).toBeCloseTo((1.8 * 0.68) / 2);
+  commands.execute('hub tp -8 -8');
+  for (let i = 0; i < 300; i++) scene.step(SIM_DT, idle);
+  expect(body.translation().x).toBeCloseTo(npcSpot(scene, 'kid').x, 5);
+  expect(npcSpot(scene, 'kid').x).toBeGreaterThan(0);
 });

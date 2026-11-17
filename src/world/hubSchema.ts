@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { tuning } from '../core/tuning';
+import { npcHeight, npcRadius } from './hubNpcs';
 import { HUB_STATION_IDS } from '../core/metaTypes';
 import { BLOCK_MATERIALS, dressingFields } from './dressingSchema';
 import {
@@ -101,8 +103,37 @@ export const NPC_ANIMATIONS = [
   'Fixing_Kneeling',
   'Crouch_Idle_Loop',
   'Interact',
+  'Walk_Loop',
+  'Jog_Fwd_Loop',
+  'Dance_Loop',
+  'PickUp_Table',
+  'Punch_Jab',
+  'Punch_Cross',
+  'Sword_Idle',
+  'Spell_Simple_Idle_Loop',
+  'Push_Loop',
 ] as const;
 export type NpcAnimation = (typeof NPC_ANIMATIONS)[number];
+
+export const npcRouteSchema = z
+  .object({
+    points: z.array(roomSpawnPointSchema).min(2),
+    mode: z.enum(['loop', 'pingpong']).optional(),
+    speedMS: positive.optional(),
+    pauseS: finite.nonnegative().optional(),
+    moveAnimation: z.enum(NPC_ANIMATIONS).optional(),
+    pauseAnimation: z.enum(NPC_ANIMATIONS).optional(),
+  })
+  .superRefine((route, ctx) => {
+    for (const key of ['moveAnimation', 'pauseAnimation'] as const)
+      if (route[key]?.startsWith('Sitting'))
+        ctx.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'Trasa nie może używać animacji siedzącej.',
+        });
+  });
+export type NpcRoute = z.infer<typeof npcRouteSchema>;
 
 /**
  * Postać niezależna kryjówki. `rotationDeg` to kierunek patrzenia na płaszczyźnie podłogi:
@@ -113,12 +144,29 @@ export const hubNpcSchema = z
     id: z.string().regex(/^[a-z0-9_]+$/),
     position: z.object({ x: finite, y: finite.optional(), z: finite }),
     rotationDeg: finite,
+    scale: finite.min(0.55).max(1.15).optional(),
+    route: npcRouteSchema.optional(),
     animation: z.enum(NPC_ANIMATIONS).optional(),
     accent: z.enum(NPC_ACCENTS),
     /** Wysokość blatu siedziska nad position.y i lokalny offset korzenia od jego środka (metry). */
     seat: z.object({ heightM: positive, offset: vec3Schema }).optional(),
   })
   .superRefine((npc, ctx) => {
+    if (npc.route) {
+      if (npc.seat || npc.animation?.startsWith('Sitting'))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['route'],
+          message: 'NPC z trasą nie może siedzieć.',
+        });
+      const start = npc.route.points[0]!;
+      if (start && (npc.position.x !== start.x || npc.position.z !== start.z))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['route', 'points', 0],
+          message: 'Początek trasy musi być równy position NPC.',
+        });
+    }
     if (npc.animation?.startsWith('Sitting') && !npc.seat)
       ctx.addIssue({
         code: 'custom',
@@ -185,6 +233,7 @@ export const hubLayoutSchema = z
       npcIds.add(npc.id);
     });
     // Środki stref (i NPC stojących) przechodzą tę samą walidację co punkty spawnu pokoju: w podłodze, poza blokami, osiągalne od playerSpawn.
+    validateNpcRoutes(layout, ctx);
     validateLayout(
       {
         playerSpawn: layout.playerSpawn,
@@ -231,4 +280,107 @@ export type HubLayout = z.infer<typeof hubLayoutSchema>;
 
 export function loadHubLayout(data: unknown): HubLayout {
   return hubLayoutSchema.parse(data);
+}
+
+/** Próbki trasy sprawdzają cały zapas kolidera, także na styku sąsiednich podłóg. */
+function validateNpcRoutes(layout: HubLayout, ctx: z.RefinementCtx): void {
+  const ground = layout.playerSpawn.y;
+  const floors = layout.blocks.filter(
+    (b) => b.position.y + b.size.y / 2 === ground,
+  );
+  const onFloor = (x: number, z: number, radius: number): boolean => {
+    const xs = [x - radius, x + radius];
+    const zs = [z - radius, z + radius];
+    for (const b of floors) {
+      for (const edge of [
+        b.position.x - b.size.x / 2,
+        b.position.x + b.size.x / 2,
+      ])
+        if (edge > x - radius && edge < x + radius) xs.push(edge);
+      for (const edge of [
+        b.position.z - b.size.z / 2,
+        b.position.z + b.size.z / 2,
+      ])
+        if (edge > z - radius && edge < z + radius) zs.push(edge);
+    }
+    xs.sort((a, b) => a - b);
+    zs.sort((a, b) => a - b);
+    for (let a = 1; a < xs.length; a++)
+      for (let b = 1; b < zs.length; b++) {
+        const px = (xs[a - 1]! + xs[a]!) / 2,
+          pz = (zs[b - 1]! + zs[b]!) / 2;
+        if (
+          !floors.some(
+            (f) =>
+              Math.abs(px - f.position.x) <= f.size.x / 2 &&
+              Math.abs(pz - f.position.z) <= f.size.z / 2,
+          )
+        )
+          return false;
+      }
+    return true;
+  };
+  (layout.npcs ?? []).forEach((npc, index) => {
+    if (!npc.route) return;
+    const issue = (message: string) =>
+      ctx.addIssue({
+        code: 'custom',
+        path: ['npcs', index, 'route'],
+        message,
+      });
+    if ((npc.position.y ?? 0) !== ground) {
+      issue('Trasa NPC musi leżeć na poziomie playerSpawn.y.');
+      return;
+    }
+    const points = npc.route.points;
+    const segments =
+      npc.route.mode === 'pingpong' ? points.length - 1 : points.length;
+    const radius = npcRadius(npc);
+    const obstacles = layout.blocks.filter(
+      (block) =>
+        block.position.y - block.size.y / 2 < ground + npcHeight(npc) &&
+        block.position.y + block.size.y / 2 > ground,
+    );
+    for (let segment = 0; segment < segments; segment++) {
+      const from = points[segment]!,
+        to = points[(segment + 1) % points.length]!;
+      const samples = Math.ceil(
+        Math.hypot(to.x - from.x, to.z - from.z) / tuning.hub.npcRouteSampleM,
+      );
+      for (let sample = 0; sample <= samples; sample++) {
+        const t = samples === 0 ? 0 : sample / samples;
+        const x = from.x + (to.x - from.x) * t,
+          z = from.z + (to.z - from.z) * t;
+        if (!onFloor(x, z, radius)) {
+          issue('Trasa NPC poza podłogą lub bez zapasu promienia kolidera.');
+          return;
+        }
+        if (
+          obstacles.some(
+            (b) =>
+              Math.hypot(
+                Math.max(0, Math.abs(x - b.position.x) - b.size.x / 2),
+                Math.max(0, Math.abs(z - b.position.z) - b.size.z / 2),
+              ) < radius,
+          )
+        ) {
+          issue('Trasa NPC przechodzi przez blok lub zapas kolidera.');
+          return;
+        }
+        if (
+          (layout.npcs ?? []).some(
+            (other) =>
+              !other.route &&
+              Math.hypot(x - other.position.x, z - other.position.z) <
+                tuning.hub.npcRouteStaticClearanceM,
+          )
+        ) {
+          issue(
+            'Trasa NPC przechodzi zbyt blisko statycznego NPC (minimum 0,9 m).',
+          );
+          return;
+        }
+      }
+    }
+  });
 }

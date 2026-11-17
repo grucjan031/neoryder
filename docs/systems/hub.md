@@ -158,10 +158,11 @@ Pięć postaci (nie wrogowie): Mira (mechaniczka, wagon-warsztat), Doktor Wolan 
 Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekranach w kąciku łączności), Stary Tomasz
 (weteran, siedzi przy beczce z ogniem).
 
-- **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, seat? }[]`
+- **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, seat?, route? }[]`
   (`hubNpcSchema`, `src/world/hubSchema.ts`). `rotationDeg` to kierunek patrzenia na podłodze: 0 = +Z (w stronę
   torów), 90 = +X, 180 = −Z. `animation` to klip z `public/assets/models/npc_anims.glb` (`Idle_Loop`, `Idle_Talking_Loop`,
-  `Idle_Torch_Loop`, `Sitting_Idle_Loop`, `Sitting_Talking_Loop`, `Fixing_Kneeling`, `Crouch_Idle_Loop`, `Interact`;
+  `Idle_Torch_Loop`, `Sitting_Idle_Loop`, `Sitting_Talking_Loop`, `Fixing_Kneeling`, `Crouch_Idle_Loop`, `Interact`, `Walk_Loop`, `Jog_Fwd_Loop`, `Dance_Loop`, `PickUp_Table`,
+  `Punch_Jab`, `Punch_Cross`, `Sword_Idle`, `Spell_Simple_Idle_Loop`, `Push_Loop`;
   domyślnie `Idle_Loop`), `accent` ∈ `amber|green|violet|blue|white` (paleta ADR 0006; każdy NPC inny).
 - **Siedziska:** dla siedzących `position` oznacza punkt na podłodze pod miednicą i środkiem siedziska.
   `seat.heightM` to wysokość jego górnej powierzchni nad tym punktem, a `seat.offset` to wektor od środka tej
@@ -179,13 +180,13 @@ Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekrana
   słuchawki) i ubiór na kościach `DEF-spine003` / `DEF-hips`: kamizelka w jaśniejszym odcieniu, kołnierz, pas
   ze świecącą klamrą i pasek akcentu oraz rekwizyt roli (Mira — ładownice i klucz, Wolan — poły płaszcza,
   Szron — pagony i naszywka, Bajt — plecak z ekranem, Tomasz — ładownice i płyta na plecach). Klipy bezczynne z `npc_anims.glb` (wycięte z Quaternius UAL CC0 skryptem
-  `tools/hub/extractNpcAnimations.mjs`, ~1,6 MB; źródło `tools/blender/sources/ual/`), przesunięte w czasie i lekko
+  `tools/hub/extractNpcAnimations.mjs`, 2 851 548 bajtów; źródło `tools/blender/sources/ual/`), przesunięte w czasie i lekko
   różne tempem, żeby NPC nie byli zsynchronizowani. Bez modelu (testy, `loadModels: false`) zostają collider i dialog.
 - **Obrót do gracza:** w zasięgu `tuning.hub.npcTurnRangeM` NPC obraca głowę i szyję (kości `DEF-head`, `DEF-neck`;
   obrót wokół osi Y świata, `npcHeadMaxRad`) i powoli tułów (`npcTurnSpeedRadS`, do `npcStandBodyMaxRad` /
   `npcSeatedBodyMaxRad` od kierunku bazowego); po odejściu gracza wraca do pozy bazowej. Czysta logika:
   `updateNpcLook` (`src/world/hubNpcs.ts`).
-- **Kolizja:** każdy NPC ma nieruchomy collider walca (promień 0,4 m; 1,8 m wysokości, siedzący 1,35 m), grupa świata.
+- **Kolizja:** statyczny NPC ma nieruchomy collider walca (promień 0,4 m; 1,8 m wysokości, siedzący 1,35 m), grupa świata.
   `focus` NPC wylicza `npcFocusBox` z tego kolidera.
 - **Rozmowa:** spojrzenie na NPC w zasięgu pokazuje „[E] Porozmawiaj” z imieniem; E pokazuje u dołu ekranu dymek
   (`HubDialog`, `src/ui/hubDialog.ts`, styl „wizjer”): imię, rola i jedna kwestia. Kolejne E (na tego samego NPC)
@@ -193,6 +194,87 @@ Kapitan Szron (koordynator, przy tablicy misji), Bajt (haker, siedzi przy ekrana
   po odejściu gracza dalej niż zasięg interakcji + 1 m; otwarcie stacji też go zamyka. Podczas rozmowy podpowiedź
   jest ukryta. Teksty: `src/data/hub/npcs.pl.json` (`{ talkPrompt, npcs: [{ id, name, role, lines[] }] }`, schemat
   `npcTextsSchema`; id muszą pasować do `hideout.json`).
+
+### Skala, trasy i podsłuchane rozmowy
+
+- `scale` jest opcjonalne (0,55–1,15; domyślnie 1; dzieci: 0,68). Skaluje model, promień i wysokość
+  walca, focus oraz lokalny `seat.offset`. `seat.heightM` pozostaje fizyczną wysokością istniejącego siedziska.
+- `route`: `points` (co najmniej 2 punkty X/Z), `mode` (`loop`, domyślnie, albo `pingpong`),
+  `speedMS` (domyślnie `npcWalkSpeedMS`), `pauseS` (domyślnie 0, także w punkcie startowym),
+  `moveAnimation` (domyślnie `Walk_Loop`) i `pauseAnimation` (domyślnie animacja NPC albo `Idle_Loop`).
+  `position` musi równać się pierwszemu punktowi; trasa wyklucza siedzenie i animacje siedzące.
+- `stepNpcRoute` i `NpcRuntime` w `src/world/hubNpcs.ts` działają w stałym kroku bez Three.js/DOM/RNG.
+  Stan trasy (pozycja, segment, kierunek, yaw, pozostały postój, ruch) można zapisać jako JSON.
+  Tułów obraca się z `npcWalkTurnRadS`. Gracz w stożku kierunku ruchu (`npcYieldConeCos`) bliżej niż
+  `npcYieldRadiusM` zatrzymuje NPC do zwolnienia drogi. Dymek E zatrzymuje adresata i kieruje jego wzrok
+  do gracza; po dialogu postać wraca na trasę. Statyczni NPC zachowują dotychczasowy zakres patrzenia,
+  ale stan obrotu jest teraz aktualizowany w `step`, a nie w renderze.
+- Trasy mają walce na `kinematicPositionBased`, przesuwane przed krokiem świata fizyki; zatrzymują
+  character controller gracza tak samo jak statyczne walce. Focus i debug używają bieżącej pozycji.
+  Render interpoluje poprzednią i bieżącą pozycję oraz yaw (najkrótszy łuk). Zmiana klipu używa
+  `npcAnimFadeS`; wszystkie klipy, także `PickUp_Table` i `Punch_*`, są zapętlone. Ekstraktor zeruje
+  poziome translacje kości `root` w `Walk_Loop` i `Jog_Fwd_Loop`: przesunięcie pochodzi tylko z trasy.
+- Walidacja sprawdza punkty i odcinki co `npcRouteSampleM` (0,25 m), w `loop` również ostatni→pierwszy:
+  podłoga na `playerSpawn.y`, zapas promienia walca od krawędzi i bloków, co najmniej
+  `npcRouteStaticClearanceM` (0,9 m) od statycznych NPC. Istniejąca walidacja osiągalności startu pozostaje.
+- Odległe od kamery postacie (ponad `npcAnimFarM`, 18 m) krokują mixer co `npcAnimFarFrames` (3) klatki,
+  sumując dt. Interpolacja pozycji nadal działa co klatkę; pętla widoków nie tworzy obiektów tymczasowych.
+- Teksty mogą zawierać `conversations: [{ id, npcs: [id], radiusM?, lines: [{ npc, text }] }]`.
+  Uczestników jest 1–3, każda kwestia należy do uczestnika, wszystkie id muszą istnieć w układzie;
+  scena sprawdza to przez `loadNpcTexts(data, layout.npcs)`.
+- `HubChatter` (`src/world/hubChatter.ts`) wybiera jedną najbliższą rozmowę w `radiusM` (domyślnie
+  `chatterRadiusM`, 5 m) od środka bieżących pozycji uczestników. Otwarcie stacji lub dymek E blokuje
+  start i przerywa aktywną rozmowę. Kwestia trwa `chatterLineBaseS + chatterLineCharS * text.length`,
+  między kwestiami jest `chatterGapS`. Po ostatniej kwestii odnowienie tej rozmowy trwa `chatterCooldownS`
+  (45 s). Wyjście poza promień + `chatterExitMarginM` przerywa; powrót zaczyna od pierwszej kwestii.
+  Przerwanie nie nakłada odnowienia. Każda nowa kwestia emituje `hub_chatter_line { conversation, npc, text }`.
+- Mówca w bezczynności przechodzi w `Idle_Talking_Loop` lub `Sitting_Talking_Loop`, z crossfade;
+  po kwestii wraca do swojego klipu. Ruch i inne zajęcia zachowują swój klip. `HubChatterUi`
+  (`src/ui/hubChatter.ts`, CSS) rysuje mniejsze, półprzezroczyste napisy nad dymkiem/podpowiedzią,
+  z imieniem w akcencie NPC. DOM zmienia się tylko w renderze i przy zmianie kwestii; wejście jest
+  łagodne, a `prefers-reduced-motion` wyłącza animację.
+- Strojenie wszystkich nowych parametrów znajduje się w `tuning.hub`, automatycznie widocznym w lil-gui.
+- Debug: `hub chatter <id>` wymusza start bez zasięgu i odnowienia (cała wymuszona rozmowa ignoruje
+  dystans; E/stacja nadal ją przerywa). `query('hubChatter')` → `{ conversation, npc, text } | null`;
+  `query('npcs')` zawiera aktualne X/Y/Z i yaw chodzących NPC.
+- Testy: `hubNpcLife.test.ts` (trasy loop/pingpong, postoje, ustępowanie, dialog, determinizm i JSON,
+  skala/focus/siedzisko, walidacja tras i rozmów, 17 klipów i brak poziomego ruchu korzenia),
+  `hubNpcView.test.ts` (prawdziwe GLB: interpolacja/skala, crossfade, pętle, sumowanie dt odległych mixerów),
+  `hubChatter.test.ts` (promień, środek ruchomych uczestników, czas, przerwy, odnowienie, przerwania,
+  jedna rozmowa, debug, determinizm), `hubChatterUi.test.ts` (jsdom i brak zbędnych zmian DOM),
+  `hubScene.test.ts` z `tests/fixtures/hubLife.ts` (bez DOM: ruch, E/stacja/debug, zdarzenie i kolizja
+  skalowanego ciała kinematycznego). Dane produkcyjne nie są potrzebne do demonstracji tych rozszerzeń.
+
+Przykład NPC do `npcs` w układzie (pozycje wymagają wolnej podłogi):
+
+```json
+{
+  "id": "ada", "position": { "x": 0, "z": 0 }, "rotationDeg": 90,
+  "scale": 0.68, "accent": "amber", "animation": "Idle_Loop",
+  "route": {
+    "points": [{ "x": 0, "z": 0 }, { "x": 4, "z": 0 }],
+    "mode": "pingpong", "speedMS": 1.3, "pauseS": 2,
+    "moveAnimation": "Walk_Loop", "pauseAnimation": "Idle_Loop"
+  }
+}
+```
+
+Przykład wpisu do `conversations` w tekstach (oba id muszą istnieć w układzie):
+
+```json
+{
+  "id": "ada_mira", "npcs": ["ada", "mira"], "radiusM": 5,
+  "lines": [
+    { "npc": "ada", "text": "Mogę pomóc przy naprawie?" },
+    { "npc": "mira", "text": "Podaj mi klucz z półki." }
+  ]
+}
+```
+
+Kontrola ręczna: na `?scene=hub&debug=1` po dodaniu takich danych przez autora układu podejść do trasy,
+zasłonić drogę, nacisnąć E przy NPC i odejść. Sprawdzić płynność obrotu/crossfade, brak poślizgu korzenia,
+kolizję z dzieckiem, napisy oraz powrót do trasy po dialogu. `hub chatter ada_mira` pozwala sprawdzić napisy
+bez czekania na zasięg lub odnowienie.
 
 ## Nakładki (`HubScreens`)
 

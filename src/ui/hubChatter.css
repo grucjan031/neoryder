@@ -1,0 +1,52 @@
+.hub-chatter {
+  position: absolute;
+  bottom: 26%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(76vw, 760px);
+  padding: 0.5rem 0.9rem;
+  border-radius: 3px;
+  background: rgb(9 12 20 / 55%);
+  color: rgb(239 238 231 / 82%);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  text-align: center;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+  z-index: 12;
+  animation: hub-chatter-in 240ms ease-out;
+}
+.hub-chatter[hidden] {
+  display: none;
+}
+.hub-chatter__name {
+  font-weight: 600;
+}
+.hub-chatter[data-accent='amber'] .hub-chatter__name {
+  color: #ffae1a;
+}
+.hub-chatter[data-accent='green'] .hub-chatter__name {
+  color: #6dff4a;
+}
+.hub-chatter[data-accent='violet'] .hub-chatter__name {
+  color: #8a5cff;
+}
+.hub-chatter[data-accent='blue'] .hub-chatter__name {
+  color: #3d7bff;
+}
+.hub-chatter[data-accent='white'] .hub-chatter__name {
+  color: #fff1d6;
+}
+@keyframes hub-chatter-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-chatter {
+    animation: none;
+  }
+}

@@ -19,6 +19,7 @@ import {
 } from 'three';
 import type {
   AnimationClip,
+  AnimationAction,
   BufferGeometry,
   Material,
   Object3D,
@@ -29,9 +30,9 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { gradientMap } from '../render/materials';
-import { isSeated, npcRootPosition, updateNpcLook } from '../world/hubNpcs';
-import type { NpcLookState } from '../world/hubNpcs';
-import type { HubNpcDef, NpcAccent } from '../world/hubSchema';
+import { npcRootPosition, wrapAngle } from '../world/hubNpcs';
+import type { NpcRuntime } from '../world/hubNpcs';
+import type { HubNpcDef, NpcAccent, NpcAnimation } from '../world/hubSchema';
 
 /** Akcenty z palety ADR 0006 (bez czerwieni, cyanu i magenty). */
 const ACCENT_COLORS: Record<NpcAccent, string> = {
@@ -73,9 +74,12 @@ const hash = (text: string): number => {
 interface NpcView {
   def: HubNpcDef;
   root: Group;
-  baseYaw: number;
-  look: NpcLookState;
-  seated: boolean;
+  state: NpcRuntime;
+  actions: Map<string, AnimationAction>;
+  action?: AnimationAction;
+  animation?: NpcAnimation;
+  animDt: number;
+  animFrames: number;
   material: MeshToonMaterial;
   mixer?: AnimationMixer;
   neck?: Object3D;
@@ -113,24 +117,30 @@ export class HubNpcs {
   readonly root = new Group();
   private readonly views: NpcView[] = [];
   private disposed = false;
+  private readonly position = { x: 0, y: 0, z: 0 };
+  private readonly rootPosition = { x: 0, y: 0, z: 0 };
 
   constructor(
-    defs: readonly HubNpcDef[],
+    states: readonly NpcRuntime[],
     private readonly tuning: Tuning,
   ) {
-    defs.forEach((def, index) => {
+    states.forEach((state, index) => {
+      const def = state.def;
       const root = new Group();
       root.name = `npc:${def.id}`;
       const baseYaw = (def.rotationDeg * Math.PI) / 180;
       root.position.copy(npcRootPosition(def));
       root.rotation.y = baseYaw;
+      root.scale.setScalar(def.scale ?? 1);
       this.root.add(root);
       this.views.push({
         def,
         root,
-        baseYaw,
-        look: { bodyYaw: baseYaw, headYaw: 0 },
-        seated: isSeated(def),
+        state,
+        actions: new Map(),
+        animDt: 0,
+        animFrames:
+          index % Math.max(1, Math.round(tuning.hub.npcAnimFarFrames)),
         material: this.material(def.accent, index),
         skins: [],
         owned: [],
@@ -185,16 +195,17 @@ export class HubNpcs {
       if (view.head) this.dress(view, view.head);
       this.dressBody(view, instance);
       view.neck = instance.getObjectByName('DEF-neck');
-      const clip = clips.find(
-        ({ name }) => name === (view.def.animation ?? 'Idle_Loop'),
-      );
-      if (!clip) continue;
       const mixer = new AnimationMixer(instance);
-      const action = mixer.clipAction(clip);
-      action.setLoop(LoopRepeat, Infinity);
-      action.time = hash(view.def.id) * clip.duration;
-      action.setEffectiveTimeScale(0.92 + hash(`${view.def.id}!`) * 0.16);
-      action.play();
+      for (const clip of clips) {
+        const action = mixer.clipAction(clip);
+        action.setLoop(LoopRepeat, Infinity);
+        action.time = hash(view.def.id) * clip.duration;
+        action.setEffectiveTimeScale(0.92 + hash(`${view.def.id}!`) * 0.16);
+        view.actions.set(clip.name, action);
+      }
+      view.animation = view.state.animation(false);
+      view.action = view.actions.get(view.animation);
+      view.action?.play();
       view.mixer = mixer;
     }
   }
@@ -412,39 +423,67 @@ export class HubNpcs {
     }
   }
 
-  /** Obrót do gracza i animacja; wołane z renderu. */
-  update(dt: number, player: Vec3): void {
+  /** Interpolacja stanu symulacji i kosmetyczne mixery. Bez alokacji w pętli widoków. */
+  render(
+    alpha: number,
+    dt: number,
+    camera: Vec3,
+    speaker: string | null,
+  ): void {
     const t = this.tuning.hub;
     for (const view of this.views) {
-      view.look = updateNpcLook(
-        view.look,
-        view.baseYaw,
-        { ...view.def.position, y: view.def.position.y ?? 0 },
-        player,
-        dt,
-        {
-          rangeM: t.npcTurnRangeM,
-          turnSpeedRadS: t.npcTurnSpeedRadS,
-          headMaxRad: t.npcHeadMaxRad,
-          bodyMaxRad: view.seated
-            ? t.npcSeatedBodyMaxRad
-            : t.npcStandBodyMaxRad,
-        },
-      );
-      view.root.rotation.y = view.look.bodyYaw;
-      view.root.position.copy(npcRootPosition(view.def, view.look.bodyYaw));
+      const state = view.state;
+      const yaw =
+        state.previousBodyYaw +
+        wrapAngle(state.look.bodyYaw - state.previousBodyYaw) * alpha;
+      this.position.x =
+        state.previousPosition.x +
+        (state.position.x - state.previousPosition.x) * alpha;
+      this.position.y =
+        state.previousPosition.y +
+        (state.position.y - state.previousPosition.y) * alpha;
+      this.position.z =
+        state.previousPosition.z +
+        (state.position.z - state.previousPosition.z) * alpha;
+      view.root.rotation.y = yaw;
+      npcRootPosition(view.def, yaw, this.position, this.rootPosition);
+      view.root.position.copy(this.rootPosition);
+      const animation = state.animation(speaker === view.def.id);
+      if (animation !== view.animation) {
+        const action = view.actions.get(animation);
+        if (action) {
+          action.reset().setEffectiveWeight(1).play();
+          view.action?.crossFadeTo(action, t.npcAnimFadeS, false);
+          view.action = action;
+          view.animation = animation;
+        }
+      }
       if (!view.mixer) continue;
-      view.mixer.update(dt);
+      view.animDt += dt;
+      view.animFrames++;
+      const far =
+        Math.hypot(
+          camera.x - this.position.x,
+          camera.y - this.position.y,
+          camera.z - this.position.z,
+        ) > t.npcAnimFarM;
+      if (far && view.animFrames < Math.max(1, Math.round(t.npcAnimFarFrames)))
+        continue;
+      view.mixer.update(view.animDt);
+      view.animDt = 0;
+      view.animFrames = 0;
+      const headYaw =
+        state.previousHeadYaw +
+        (state.look.headYaw - state.previousHeadYaw) * alpha;
       view.root.updateMatrixWorld(true);
-      if (view.neck) yawBone(view.neck, view.look.headYaw * NECK_SHARE);
-      if (view.head) yawBone(view.head, view.look.headYaw * (1 - NECK_SHARE));
+      if (view.neck) yawBone(view.neck, headYaw * NECK_SHARE);
+      if (view.head) yawBone(view.head, headYaw * (1 - NECK_SHARE));
       for (const skin of view.skins) skin.skeleton.update();
     }
   }
 
-  /** Aktualny kierunek patrzenia tułowia NPC (testy, debug). */
   bodyYaw(id: string): number | undefined {
-    return this.views.find((view) => view.def.id === id)?.look.bodyYaw;
+    return this.views.find((view) => view.def.id === id)?.state.look.bodyYaw;
   }
 
   dispose(): void {

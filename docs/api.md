@@ -1515,13 +1515,35 @@ unlock_purchased: { id: string };
 loadout_changed: { loadout: LoadoutChoice };
 threat_selected: { level: number };
 hub_station_opened: { station: HubStationId };
+hub_chatter_line: { conversation: string; npc: string; text: string };
 ```
 
-Emitują: `MetaManager` (wszystkie poza ostatnim) i scena kryjówki (`hub_station_opened`).
+Emitują: `MetaManager` (zdarzenia meta), scena kryjówki (`hub_station_opened`) i `HubChatter` (`hub_chatter_line`).
 
 ### Kryjówka — `src/ui/hubScreens.ts`, `src/world/hubSchema.ts`, `src/world/hubStations.ts` (F4-07)
 
 Szczegóły: `docs/systems/hub.md`.
+
+NPC: `HubNpcDef.scale?` (0,55–1,15, domyślnie 1) oraz `route?`:
+`{ points: {x,z}[]; mode?: 'loop'|'pingpong'; speedMS?; pauseS?; moveAnimation?; pauseAnimation? }`.
+Początek trasy musi równać się `position`; trasy nie dotyczą siedzących NPC.
+`src/world/hubNpcs.ts`: `createNpcRouteState(npc)` i `stepNpcRoute(state, route, dt, ctx)`
+mutują wyłącznie serializowalny stan; kontekst zawiera gracza, aktywność rozmowy i `tuning.hub`.
+`NpcRuntime` przechowuje bieżącą/poprzednią pozycję i kierunek; `step(dt, player, talking)`
+jest jedynym miejscem ruchu. `HubNpcs.render(alpha, dt, camera, speaker)` interpoluje widok,
+przełącza klipy z crossfade i ogranicza aktualizacje odległych mixerów.
+`npcRadius`, `npcHeight`, `npcFocusBox` i `npcRootPosition` uwzględniają skalę;
+`npcFocusBox` przyjmuje opcjonalnie bieżącą pozycję NPC.
+
+`NpcTexts.conversations?`: `{ id; npcs: string[]; radiusM?; lines: {npc; text}[] }[]`.
+`loadNpcTexts(data, npcs?)` sprawdza schemat i przy przekazanym układzie także id uczestników.
+`src/world/hubChatter.ts`: `HubChatter.step(dt, player, blocked)` wybiera najbliższą rozmowę
+w promieniu od środka bieżących pozycji uczestników, obsługuje kwestie, przerwy i odnowienie.
+`interrupt()` przerywa bez odnowienia; `force(id)` pomija odległość i odnowienie do końca rozmowy.
+`line` to `{ conversation, npc, text } | null`; nowe kwestie emitują `hub_chatter_line`.
+`HubChatterUi.update(line)` aktualizuje DOM tylko przy zmianie kwestii, wyłącznie z renderu sceny.
+Komenda `hub chatter <id>` wymusza rozmowę; `query('hubChatter')` zwraca `line`,
+`query('npcs')` zawiera bieżące pozycje i yaw także chodzących postaci.
 
 ```ts
 interface HubScreenActions {

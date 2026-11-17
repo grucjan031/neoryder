@@ -147,6 +147,7 @@ export interface GameEvents {
   loadout_changed: { loadout: LoadoutChoice };
   threat_selected: { level: number };
   hub_station_opened: { station: HubStationId };
+  hub_chatter_line: { conversation: string; npc: string; text: string };
 }
 
 export type EventType = keyof GameEvents;
