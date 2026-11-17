@@ -4,15 +4,35 @@ Przejęcie (S2b-01) uruchamia się z tablicy misji, sekcja „Tryby areny”, al
 `?scene=run&mode=conquest&loadout=classic&debug=1`. Szturm jest drugim aktywnym
 trybem; Kradzież rdzenia pozostaje nieaktywna. Tryb wyklucza parametr misji
 i nie zmienia kampanii.
+Skrót uruchomienia Przejęcia: `?scene=conquest&arena=arenaContainerPort&debug=1`.
+Skrót korzysta z tego samego hosta RunScene (debug `sceneId()` zwraca `run`).
 
 ## Dane i reguły
 
 `src/data/modes/conquest.json` przechodzi `modeSchema` i walidację geometrii:
 trzy różne punkty A/B/C, wolne koła na podłodze, odstęp minimum 12 m,
 osiągalność jak w `validateLayout`, znany pokój combat i obsługiwana biała lista
-wrogów. `combatRing` ma podłogę 28×28 m, bez przenośnych skrzyń. Punkty:
-A (−10, 0, −9), B (10, 0, −9), C (0, 0, 9); promienie 2 m. Odległości
-20 m i około 20,59 m. Strefy omijają filary i osłony.
+wrogów. Pole `arenas` zawiera kolejno `arenaContainerPort`, `arenaOverpass`,
+`arenaRooftops`, `combatRing`.
+Punkty są w `room.arena.points`, spawny w pokoju lub opcjonalnym
+`room.arena.spawnPoints`. Stary format `roomId` + `points` nadal jest odczytywany.
+Port ma 100×100 m, pogodę storm i punkty A (−32, 0, −28), B (32, 0, −23),
+C (0, 0, 33), każdy o promieniu 4 m. Zachowany combatRing ma punkty
+A (−10, 0, −9), B (10, 0, −9), C (0, 0, 0), promienie 2,75 / 2,75 / 3,5 m.
+Spawny trybu są walidowane poza strefami z marginesem; zwykłe spawny combatRing
+nie są zmieniane. Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
+
+Estakada (100×100 m, `smog`): A (−12, 0, −12), B (−12, 11,6, 12),
+C (32, 0, 10). Targ (90×90 m, `drizzleWind`): A (−28, 0, 0),
+B (28, 2, −24), C (28, 6, 24). Promienie 4 m. Wyższe punkty mają
+rzeczywiste dojścia rampami dla gracza i obu archetypów przeciwników.
+
+Bez wpisanego seeda start z tablicy i bezpośredniego URL wybiera pierwszą arenę
+(port), a run nadal dostaje losowy seed. Wpisany `?seed=` wybiera arenę przez
+osobny strumień `Rng(seed).fork('conquest-arena')`. Debugowy `?arena=<id>` ma
+pierwszeństwo i akceptuje tylko id z listy; poza debug jest ignorowany.
+Wybrany id jest zapisany w istniejącym `MapNode.fixed.roomId`, więc wznowienie
+nie losuje areny ponownie i zachowuje stare zapisy combatRing.
 
 Pula 120, maksymalnie 8 żywych, jeden spawn co 3 s, przejęcie neutralnego
 punktu 6 s. Gracz przesuwa postęp ku +1, wróg ku −1, wspólna obecność
@@ -27,8 +47,9 @@ i strzelec poza promieniem wykrycia 10 m idą do najbliższego obcego punktu;
 po wykryciu gracza wracają do zwykłej walki. Wszystkie punkty wroga oznaczają
 pozostanie na stanowisku. Bez `moveGoal` AI działa jak przed dodaniem trybu.
 
-Spawn preferuje punkty wroga, następnie narożniki podłogi odsunięte od krawędzi
-o 2 m. Zawsze zachowuje 15 m od gracza, wolny margines 0,8 m i odstęp od
+Spawn preferuje punkty wroga, następnie spawny konkretnej areny. Stary układ
+bez danych areny zachowuje narożniki podłogi odsunięte od krawędzi o 2 m.
+Zawsze zachowuje 15 m od gracza, wolny margines 0,8 m i odstęp od
 żywych wrogów. Brak bezpiecznego miejsca odracza spawn. Losowanie korzysta
 z `Rng`. Wspólne odległości i wysokość strefy są w `tuning.modes.conquest`
 (automatycznie widoczne w lil-gui). Wieżyczki nie uczestniczą.
@@ -54,7 +75,14 @@ Debug: `conquest capture A`, `conquest tickets 0`, `kill all`,
 wejdź na arenę, przejmij A/B/C komendami, wyzeruj pulę i zabij wrogów;
 sprawdź nagrodę i powrót do kryjówki. Osobno `hurt 99999` sprawdza porażkę.
 W zwykłej grze sprawdź czytelność stref, tempo przejęcia i omijanie filarów
-przez posiłki (lokalne unikanie przeszkód, bez nowego pathfindingu).
+przez posiłki. Port korzysta z naziemnej siatki `ArenaNavigation`: pola odległości
+do A/B/C i widoczne waypointy trafiają do istniejącego `Enemy.moveGoal`.
+W porcie punkty są na gruncie, a wyższe trasy są skrótami dla gracza.
+Estakada i targ oznaczają powierzchnie `walkable`; warstwy wysokości i rampy
+rozszerzają tę samą nawigację, bez zmian zachowań walki. Walidacja sprawdza
+dojście do punktu na jego wysokości, również ze wszystkich spawnów.
+CombatRing zachowuje
+lokalne unikanie przeszkód; zwykłe runy nie korzystają z nowej nawigacji.
 
 ## Dodanie trybu
 
@@ -75,10 +103,10 @@ istniejące przewężenie między sektorami pozostawia przejście środkiem.
 Wszystkie pozycje poniżej mają Y=0 (podłoga):
 
 | Sektor | Stacja A (X,Z) | Stacja B (X,Z) | Odrodzenie (X,Z) | Posiłki wroga (X,Z) |
-| --- | --- | --- | --- | --- |
-| 1 | −4, 9 | 4, 9 | 0, 12 | −5, 0,5 oraz 5, 0,5 |
-| 2 | −4, 1 | 4, 1 | 0, 4 | −5, −9 oraz 5, −9 |
-| 3 | −4, −9 | 4, −9 | 0, −4 | −5, −13 oraz 5, −13 |
+| ------ | -------------- | -------------- | ---------------- | ------------------- |
+| 1      | −4, 9          | 4, 9           | 0, 12            | −5, 0,5 oraz 5, 0,5 |
+| 2      | −4, 1          | 4, 1           | 0, 4             | −5, −9 oraz 5, −9   |
+| 3      | −4, −9         | 4, −9          | 0, −4            | −5, −13 oraz 5, −13 |
 
 `src/data/modes/assault.json`: 3 życia łącznie (dwa możliwe odrodzenia),
 odrodzenie po 2 s, maksymalnie 6 wrogów, jeden spawn co 3 s, archetypy

@@ -1,13 +1,26 @@
 import data from '../data/modes/conquest.json';
 import assaultData from '../data/modes/assault.json';
-import { conquestSchema, assaultSchema, validateMode } from './modeSchema';
+import {
+  assaultSchema,
+  conquestModeSchema,
+  modeForArena,
+  selectArena,
+  validateMode,
+} from './modeSchema';
 import { roomDefinitions } from './rooms';
 import { enemyDefinitions } from '../enemies/registry';
 
-export const conquestDefinition = conquestSchema.parse(data);
-const room = roomDefinitions.get(conquestDefinition.roomId);
+export const conquestMode = conquestModeSchema.parse(data);
+const room = roomDefinitions.get(selectArena(conquestMode));
 if (!room) throw new Error('Brak pokoju Przejęcia.');
-validateMode(conquestDefinition, room, [...enemyDefinitions.keys()]);
+export const conquestDefinition = modeForArena(conquestMode, room);
+for (const id of conquestMode.arenas ?? [conquestMode.roomId!]) {
+  const arena = roomDefinitions.get(id);
+  if (!arena) throw new Error(`Brak areny: ${id}`);
+  validateMode(modeForArena(conquestMode, arena), arena, [
+    ...enemyDefinitions.keys(),
+  ]);
+}
 
 export const assaultDefinition = assaultSchema.parse(assaultData);
 const assaultRoom = roomDefinitions.get(assaultDefinition.roomId);

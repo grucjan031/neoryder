@@ -94,6 +94,10 @@ test('Maszty: odprawa, siedem warstw, zwycięstwo, debrief i trwała kampania', 
     timeout: LOAD_TIMEOUT,
   });
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
+  // Okno znika dopiero po zapisie meta; przeładowanie wcześniej gubi wyczyszczony debrief.
+  await expect(page.locator('[data-mission-debrief]')).toBeHidden({
+    timeout: LOAD_TIMEOUT,
+  });
   await page.evaluate(() => window.__neoryder?.command('hub open missions'));
   await expect(page.locator('[data-mission="m01-maszty"]')).toContainText(
     'Ukończona',

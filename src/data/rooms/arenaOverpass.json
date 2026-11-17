@@ -1,0 +1,1166 @@
+{
+  "id": "arenaOverpass",
+  "name": "Estakada w smogu",
+  "type": "combat",
+  "theme": "neonStreet",
+  "weather": "smog",
+  "playerSpawn": {
+    "x": -38,
+    "y": 0,
+    "z": 35
+  },
+  "blocks": [
+    {
+      "size": {
+        "x": 100,
+        "y": 1,
+        "z": 100
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "material": "asphalt",
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 15,
+        "z": 100
+      },
+      "position": {
+        "x": -50.0,
+        "y": 7.5,
+        "z": 0
+      },
+      "material": "smog_soot_wall"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 15,
+        "z": 100
+      },
+      "position": {
+        "x": 50.0,
+        "y": 7.5,
+        "z": 0
+      },
+      "material": "smog_soot_wall"
+    },
+    {
+      "size": {
+        "x": 100,
+        "y": 15,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 7.5,
+        "z": -50.0
+      },
+      "material": "smog_soot_wall"
+    },
+    {
+      "size": {
+        "x": 100,
+        "y": 15,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 7.5,
+        "z": 50.0
+      },
+      "material": "smog_soot_wall"
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1.6,
+        "z": 12
+      },
+      "position": {
+        "x": -12,
+        "y": 10.8,
+        "z": -24
+      },
+      "material": "overpass_concrete",
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -18.6,
+        "y": 12.1,
+        "z": -24
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1.6,
+        "z": 12
+      },
+      "position": {
+        "x": -12,
+        "y": 10.8,
+        "z": -12
+      },
+      "material": "overpass_concrete",
+      "walkable": true,
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -18.6,
+        "y": 12.1,
+        "z": -12
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -5.4,
+        "y": 12.1,
+        "z": -12
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1.6,
+        "z": 12
+      },
+      "position": {
+        "x": -12,
+        "y": 10.8,
+        "z": 0
+      },
+      "material": "overpass_concrete",
+      "walkable": true,
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -18.6,
+        "y": 12.1,
+        "z": 0
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -5.4,
+        "y": 12.1,
+        "z": 0
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1.6,
+        "z": 12
+      },
+      "position": {
+        "x": -12,
+        "y": 10.8,
+        "z": 12
+      },
+      "material": "overpass_concrete",
+      "walkable": true,
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -18.6,
+        "y": 12.1,
+        "z": 12
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -5.4,
+        "y": 12.1,
+        "z": 12
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1.6,
+        "z": 12
+      },
+      "position": {
+        "x": -12,
+        "y": 10.8,
+        "z": 24
+      },
+      "material": "overpass_concrete",
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 1,
+        "z": 12
+      },
+      "position": {
+        "x": -18.6,
+        "y": 12.1,
+        "z": 24
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 2.5,
+        "y": 10,
+        "z": 2.513
+      },
+      "position": {
+        "x": -16,
+        "y": 5,
+        "z": -24
+      },
+      "material": "overpass_concrete",
+      "model": "city_overpass_pillar",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.5,
+        "y": 10,
+        "z": 2.513
+      },
+      "position": {
+        "x": -16,
+        "y": 5,
+        "z": 0
+      },
+      "material": "overpass_concrete",
+      "model": "city_overpass_pillar",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.5,
+        "y": 10,
+        "z": 2.513
+      },
+      "position": {
+        "x": -16,
+        "y": 5,
+        "z": 24
+      },
+      "material": "overpass_concrete",
+      "model": "city_overpass_pillar",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.5,
+        "y": 10,
+        "z": 2.513
+      },
+      "position": {
+        "x": -8,
+        "y": 5,
+        "z": -24
+      },
+      "material": "overpass_concrete",
+      "model": "city_overpass_pillar",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.5,
+        "y": 10,
+        "z": 2.513
+      },
+      "position": {
+        "x": -8,
+        "y": 5,
+        "z": 0
+      },
+      "material": "overpass_concrete",
+      "model": "city_overpass_pillar",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.5,
+        "y": 10,
+        "z": 2.513
+      },
+      "position": {
+        "x": -8,
+        "y": 5,
+        "z": 24
+      },
+      "material": "overpass_concrete",
+      "model": "city_overpass_pillar",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 37.822744480008325,
+        "y": 0.4,
+        "z": 8
+      },
+      "position": {
+        "x": 13.0,
+        "y": 5.589873641777731,
+        "z": -24
+      },
+      "material": "asphalt",
+      "walkable": true,
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3117174462492664
+      }
+    },
+    {
+      "size": {
+        "x": 37.822744480008325,
+        "y": 1,
+        "z": 0.4
+      },
+      "position": {
+        "x": 13,
+        "y": 6.3,
+        "z": -28.6
+      },
+      "material": "overpass_concrete",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3117174462492664
+      }
+    },
+    {
+      "size": {
+        "x": 37.822744480008325,
+        "y": 1,
+        "z": 0.4
+      },
+      "position": {
+        "x": 13,
+        "y": 6.3,
+        "z": -19.4
+      },
+      "material": "overpass_concrete",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3117174462492664
+      }
+    },
+    {
+      "size": {
+        "x": 37.822744480008325,
+        "y": 0.4,
+        "z": 8
+      },
+      "position": {
+        "x": 13.0,
+        "y": 5.589873641777731,
+        "z": 24
+      },
+      "material": "asphalt",
+      "walkable": true,
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3117174462492664
+      }
+    },
+    {
+      "size": {
+        "x": 37.822744480008325,
+        "y": 1,
+        "z": 0.4
+      },
+      "position": {
+        "x": 13,
+        "y": 6.3,
+        "z": 19.4
+      },
+      "material": "overpass_concrete",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3117174462492664
+      }
+    },
+    {
+      "size": {
+        "x": 37.822744480008325,
+        "y": 1,
+        "z": 0.4
+      },
+      "position": {
+        "x": 13,
+        "y": 6.3,
+        "z": 28.6
+      },
+      "material": "overpass_concrete",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3117174462492664
+      }
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 7,
+        "z": 1.4
+      },
+      "position": {
+        "x": -18.5,
+        "y": 15.1,
+        "z": -6
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 7,
+        "z": 1.4
+      },
+      "position": {
+        "x": -5.5,
+        "y": 15.1,
+        "z": -6
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1,
+        "z": 1.4
+      },
+      "position": {
+        "x": -12,
+        "y": 18.1,
+        "z": -6
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 7,
+        "z": 1.4
+      },
+      "position": {
+        "x": -18.5,
+        "y": 15.1,
+        "z": 18
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 7,
+        "z": 1.4
+      },
+      "position": {
+        "x": -5.5,
+        "y": 15.1,
+        "z": 18
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 14,
+        "y": 1,
+        "z": 1.4
+      },
+      "position": {
+        "x": -12,
+        "y": 18.1,
+        "z": 18
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": -34,
+        "y": 0.79,
+        "z": -25
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": -30,
+        "y": 0.79,
+        "z": 15
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": 8,
+        "y": 0.79,
+        "z": -5
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": 28,
+        "y": 0.79,
+        "z": 30
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": 36,
+        "y": 0.79,
+        "z": -10
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": -32,
+        "y": 0.79,
+        "z": 30
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": 15,
+        "y": 0.79,
+        "z": 8
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 2.15,
+        "y": 1.58,
+        "z": 3.95
+      },
+      "position": {
+        "x": 15,
+        "y": 0.79,
+        "z": -38
+      },
+      "material": "metal",
+      "model": "city_wrecked_car",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 4,
+        "z": 3
+      },
+      "position": {
+        "x": -30,
+        "y": 2,
+        "z": -5
+      },
+      "material": "metal",
+      "model": "city_smog_scrubber",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 4,
+        "z": 3
+      },
+      "position": {
+        "x": 5,
+        "y": 2,
+        "z": 12
+      },
+      "material": "metal",
+      "model": "city_smog_scrubber",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 4,
+        "z": 3
+      },
+      "position": {
+        "x": 20,
+        "y": 2,
+        "z": 36
+      },
+      "material": "metal",
+      "model": "city_smog_scrubber",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 4,
+        "z": 3
+      },
+      "position": {
+        "x": 34,
+        "y": 2,
+        "z": -36
+      },
+      "material": "metal",
+      "model": "city_smog_scrubber",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": -40,
+        "y": 0.5465,
+        "z": -44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": -40,
+        "y": 0.5465,
+        "z": 44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": -28,
+        "y": 0.5465,
+        "z": -44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": -28,
+        "y": 0.5465,
+        "z": 44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 4,
+        "y": 0.5465,
+        "z": -44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 4,
+        "y": 0.5465,
+        "z": 44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 16,
+        "y": 0.5465,
+        "z": -44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 16,
+        "y": 0.5465,
+        "z": 44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 28,
+        "y": 0.5465,
+        "z": -44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 28,
+        "y": 0.5465,
+        "z": 44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 40,
+        "y": 0.5465,
+        "z": -44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.093,
+        "z": 0.808
+      },
+      "position": {
+        "x": 40,
+        "y": 0.5465,
+        "z": 44
+      },
+      "material": "overpass_concrete",
+      "model": "city_highway_barrier",
+      "instance": true
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -42.0,
+      "z": -42.0
+    },
+    {
+      "x": -42.0,
+      "z": 42.0
+    },
+    {
+      "x": 42.0,
+      "z": -42.0
+    },
+    {
+      "x": 0,
+      "z": 42.0
+    },
+    {
+      "x": 0,
+      "z": -42.0
+    },
+    {
+      "x": -42.0,
+      "z": 10
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": -50.0,
+        "y": 1.5,
+        "z": 35
+      },
+      "size": {
+        "x": 1,
+        "y": 3,
+        "z": 3
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 50.0,
+        "y": 1.5,
+        "z": -35
+      },
+      "size": {
+        "x": 1,
+        "y": 3,
+        "z": 3
+      }
+    }
+  ],
+  "maxAlive": 8,
+  "minSpawnDistance": 15,
+  "arena": {
+    "exclusive": true,
+    "batchCellM": 20,
+    "navigationCellM": 1,
+    "navigationClearanceM": 0.8,
+    "navigationMaxRiseM": 0.35,
+    "navigationHeadroomM": 2,
+    "points": [
+      {
+        "id": "A",
+        "position": {
+          "x": -12,
+          "y": 0,
+          "z": -12
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "B",
+        "position": {
+          "x": -12,
+          "y": 11.6,
+          "z": 12
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "C",
+        "position": {
+          "x": 32,
+          "y": 0,
+          "z": 10
+        },
+        "radiusM": 4
+      }
+    ]
+  },
+  "decor": [
+    {
+      "model": "city_overpass_deck",
+      "position": {
+        "x": -12,
+        "y": 10,
+        "z": -12
+      }
+    },
+    {
+      "model": "city_overpass_deck",
+      "position": {
+        "x": -12,
+        "y": 10,
+        "z": 0
+      }
+    },
+    {
+      "model": "city_overpass_deck",
+      "position": {
+        "x": -12,
+        "y": 10,
+        "z": 12
+      }
+    },
+    {
+      "model": "city_highway_sign_gantry",
+      "position": {
+        "x": -12,
+        "y": 11.6,
+        "z": -6
+      }
+    },
+    {
+      "model": "city_highway_sign_gantry",
+      "position": {
+        "x": -12,
+        "y": 11.6,
+        "z": 18
+      }
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": -30,
+        "y": 4.2,
+        "z": -5
+      },
+      "color": "#6dff4a",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 5,
+        "y": 4.2,
+        "z": 12
+      },
+      "color": "#6dff4a",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 20,
+        "y": 4.2,
+        "z": 36
+      },
+      "color": "#6dff4a",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 34,
+        "y": 4.2,
+        "z": -36
+      },
+      "color": "#6dff4a",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": -24,
+        "y": 14,
+        "z": -12
+      },
+      "color": "#ffae1a",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": -12,
+        "y": 14,
+        "z": 12
+      },
+      "color": "#fff1d6",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 32,
+        "y": 14,
+        "z": 10
+      },
+      "color": "#3d7bff",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": -40,
+        "y": 14,
+        "z": 30
+      },
+      "color": "#8a5cff",
+      "intensity": 50,
+      "range": 18
+    }
+  ],
+  "ambientFx": [
+    {
+      "kind": "steam",
+      "position": {
+        "x": -30,
+        "y": 4,
+        "z": -5
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 5,
+        "y": 4,
+        "z": 12
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 20,
+        "y": 4,
+        "z": 36
+      },
+      "rate": 2
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 34,
+        "y": 4,
+        "z": -36
+      },
+      "rate": 2
+    }
+  ]
+}

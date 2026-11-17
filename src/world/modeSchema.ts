@@ -3,6 +3,9 @@ import type { Vec3 } from '../core/math';
 import type { RoomDefinition } from './roomSchema';
 import { loadRoom, vec3Schema } from './roomSchema';
 import { tuning } from '../core/tuning';
+import { capturePointsSchema } from './roomSchema';
+import { ArenaNavigation } from './arenaNavigation';
+import { Rng } from '../core/rng';
 
 export const modeIdSchema = z.enum(['conquest', 'assault']);
 export type ModeId = z.infer<typeof modeIdSchema>;
@@ -12,24 +15,13 @@ const positive = z.number().finite().positive();
 export const conquestSchema = z.object({
   id: z.literal('conquest'),
   title: z.string().min(1),
-  roomId: z.string().min(1),
-  points: z
-    .array(
-      z.object({
-        id: pointIdSchema,
-        position: z.object({
-          x: z.number().finite(),
-          y: z.number().finite(),
-          z: z.number().finite(),
-        }),
-        radiusM: positive,
-      }),
-    )
-    .length(3)
-    .refine(
-      (points) => new Set(points.map((p) => p.id)).size === 3,
-      'Wymagane różne punkty A/B/C.',
-    ),
+  roomId: z.string().min(1).optional(),
+  arenas: z
+    .array(z.string().min(1))
+    .min(1)
+    .refine((ids) => new Set(ids).size === ids.length)
+    .optional(),
+  points: capturePointsSchema.optional(),
   enemies: z.array(z.string().min(1)).min(1),
   enemyTickets: positive.int(),
   maxAlive: positive.int(),
@@ -41,7 +33,16 @@ export const conquestSchema = z.object({
   }),
   rewardRooms: positive.int(),
 });
+/** Przejęcie: lista aren (`arenas`) albo dawne pojedyncze `roomId`. */
+export const conquestModeSchema = conquestSchema.refine(
+  (m) => !!m.arenas?.length || !!m.roomId,
+  'Brak aren trybu.',
+);
 export type ModeDefinition = z.infer<typeof conquestSchema>;
+export type ResolvedModeDefinition = ModeDefinition & {
+  roomId: string;
+  points: z.infer<typeof capturePointsSchema>;
+};
 
 export const assaultSchema = z.object({
   id: z.literal('assault'),
@@ -78,6 +79,34 @@ export const modeSchema = z.discriminatedUnion('id', [
   assaultSchema,
 ]);
 
+export function selectArena(
+  mode: ModeDefinition,
+  seed?: string,
+  override?: string | null,
+  debug = false,
+): string {
+  const ids = mode.arenas ?? (mode.roomId ? [mode.roomId] : []);
+  if (debug && override) {
+    if (!ids.includes(override))
+      throw new Error(`Arena poza listą trybu: ${override}`);
+    return override;
+  }
+  if (!ids.length) throw new Error('Brak aren trybu.');
+  return seed === undefined
+    ? ids[0]!
+    : new Rng(seed).fork('conquest-arena').pick(ids);
+}
+
+export function modeForArena(
+  mode: ModeDefinition,
+  room: RoomDefinition,
+): ResolvedModeDefinition {
+  const points =
+    room.arena?.points ?? (mode.roomId === room.id ? mode.points : undefined);
+  if (!points) throw new Error(`Brak punktów areny: ${room.id}`);
+  return { ...mode, roomId: room.id, points };
+}
+
 export function freeModePosition(
   room: RoomDefinition,
   point: Vec3,
@@ -95,7 +124,7 @@ export function freeModePosition(
     !room.blocks.some(
       (b) =>
         b.position.y - b.size.y / 2 <= point.y &&
-        b.position.y + b.size.y / 2 > point.y &&
+        b.position.y + b.size.y / 2 > point.y + 1e-6 &&
         Math.hypot(
           Math.max(0, Math.abs(point.x - b.position.x) - b.size.x / 2),
           Math.max(0, Math.abs(point.z - b.position.z) - b.size.z / 2),
@@ -105,7 +134,7 @@ export function freeModePosition(
 }
 
 export function validateMode(
-  mode: ModeDefinition | AssaultDefinition,
+  mode: ResolvedModeDefinition | AssaultDefinition,
   room: RoomDefinition,
   enemyIds: readonly string[],
 ): void {
@@ -171,9 +200,48 @@ export function validateMode(
       )
         throw new Error('Punkty trybu są zbyt blisko.');
   }
+  if (room.arena) {
+    for (const spawn of [
+      room.playerSpawn,
+      ...(room.arena.spawnPoints ?? room.spawnPoints).map((p) => ({
+        ...p,
+        y: room.playerSpawn.y,
+      })),
+    ]) {
+      if (!freeModePosition(room, spawn, room.arena.navigationClearanceM))
+        throw new Error('Spawn areny nie ma wolnego marginesu.');
+      if (
+        mode.points.some(
+          (p) =>
+            Math.hypot(p.position.x - spawn.x, p.position.z - spawn.z) <=
+            p.radiusM + room.arena!.navigationClearanceM,
+        )
+      )
+        throw new Error('Spawn areny znajduje się w punkcie przejęcia.');
+    }
+  }
+  if (room.blocks.some((b) => b.walkable)) {
+    const navigation = new ArenaNavigation(room);
+    for (const start of [
+      room.playerSpawn,
+      ...(room.arena?.spawnPoints ?? room.spawnPoints).map((p) => ({
+        ...p,
+        y: room.playerSpawn.y,
+      })),
+    ])
+      for (const point of mode.points)
+        if (!navigation.path(start, point.position).length)
+          throw new Error(
+            `Nieosiągalna strefa ${point.id} z ${JSON.stringify(start)}.`,
+          );
+    return;
+  }
   // Ta sama walidacja osiągalności co punkty spawnu pokoju.
   loadRoom({
     ...room,
-    spawnPoints: [...room.spawnPoints, ...mode.points.map((p) => p.position)],
+    spawnPoints: [
+      ...(room.arena?.spawnPoints ?? room.spawnPoints),
+      ...mode.points.map((p) => p.position),
+    ],
   });
 }

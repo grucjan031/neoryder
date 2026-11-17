@@ -878,5 +878,135 @@
     "dominantColor": "#141729",
     "description": "Atlas 16 dark or dim windows, 4x4 grid",
     "bytes": 100926
+  },
+  {
+    "id": "container_corrugated_navy",
+    "category": "surfaces",
+    "path": "surfaces/container_corrugated_navy.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#253447",
+    "description": "Granatowa blacha falista kontenera",
+    "bytes": 23404
+  },
+  {
+    "id": "container_corrugated_olive",
+    "category": "surfaces",
+    "path": "surfaces/container_corrugated_olive.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#555a32",
+    "description": "Oliwkowa blacha falista kontenera",
+    "bytes": 31892
+  },
+  {
+    "id": "container_corrugated_ochre",
+    "category": "surfaces",
+    "path": "surfaces/container_corrugated_ochre.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#93682b",
+    "description": "Ochrowa blacha falista kontenera",
+    "bytes": 26384
+  },
+  {
+    "id": "container_corrugated_graphite",
+    "category": "surfaces",
+    "path": "surfaces/container_corrugated_graphite.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#373d41",
+    "description": "Grafitowa blacha falista kontenera",
+    "bytes": 18950
+  },
+  {
+    "id": "quay_concrete",
+    "category": "surfaces",
+    "path": "surfaces/quay_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#5a646c",
+    "description": "Beton nabrzeża z olejem i spękaniami",
+    "bytes": 85256
+  },
+  {
+    "id": "quay_lines",
+    "category": "surfaces",
+    "path": "surfaces/quay_lines.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#2c343a",
+    "description": "Mokry asfalt z bursztynowymi liniami",
+    "bytes": 183532
+  },
+  {
+    "id": "steel_grating",
+    "category": "surfaces",
+    "path": "surfaces/steel_grating.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#323741",
+    "description": "Stalowa kratownica, jasny ażur w RGB",
+    "bytes": 12632
+  },
+  {
+    "id": "rubber_fender",
+    "category": "surfaces",
+    "path": "surfaces/rubber_fender.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#262728",
+    "description": "Ciemna starta guma odbojnicy",
+    "bytes": 51980
+  },
+  {
+    "id": "crane_paint",
+    "category": "surfaces",
+    "path": "surfaces/crane_paint.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#f09e12",
+    "description": "Bursztynowa stal suwnicy z nitami",
+    "bytes": 45462
+  },
+  {
+    "id": "overpass_concrete",
+    "category": "surfaces",
+    "path": "surfaces/overpass_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#535d66",
+    "description": "Beton estakady z zaciekami i smogiem",
+    "bytes": 53158
+  },
+  {
+    "id": "smog_soot_wall",
+    "category": "surfaces",
+    "path": "surfaces/smog_soot_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#5a636a",
+    "description": "Chłodna szara ściana pokryta sadzą",
+    "bytes": 68662
+  },
+  {
+    "id": "market_tarp",
+    "category": "surfaces",
+    "path": "surfaces/market_tarp.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#373957",
+    "description": "Wyblakły granatowo-fioletowy brezent",
+    "bytes": 143904
+  },
+  {
+    "id": "roof_hvac_metal",
+    "category": "surfaces",
+    "path": "surfaces/roof_hvac_metal.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3c464c",
+    "description": "Blacha HVAC z kratkami wentylacyjnymi",
+    "bytes": 88714
   }
 ]

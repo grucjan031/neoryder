@@ -1,0 +1,1770 @@
+{
+  "id": "arenaRooftops",
+  "name": "Targ na dachach",
+  "type": "combat",
+  "theme": "neonStreet",
+  "weather": "drizzleWind",
+  "playerSpawn": {
+    "x": -35,
+    "y": 0,
+    "z": 32
+  },
+  "blocks": [
+    {
+      "size": {
+        "x": 90,
+        "y": 1,
+        "z": 90
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "material": "roof_tar",
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 8,
+        "z": 90
+      },
+      "position": {
+        "x": -45.0,
+        "y": 4.0,
+        "z": 0
+      },
+      "material": "smog_soot_wall",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 8,
+        "z": 90
+      },
+      "position": {
+        "x": 45.0,
+        "y": 4.0,
+        "z": 0
+      },
+      "material": "smog_soot_wall",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 90,
+        "y": 8,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 4.0,
+        "z": -45.0
+      },
+      "material": "smog_soot_wall",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 90,
+        "y": 8,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 4.0,
+        "z": 45.0
+      },
+      "material": "smog_soot_wall",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 32,
+        "y": 2,
+        "z": 38
+      },
+      "position": {
+        "x": 28,
+        "y": 1,
+        "z": -23
+      },
+      "material": "roof_tar",
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 32,
+        "y": 6,
+        "z": 38
+      },
+      "position": {
+        "x": 28,
+        "y": 3,
+        "z": 23
+      },
+      "material": "roof_tar",
+      "walkable": true
+    },
+    {
+      "size": {
+        "x": 24.08318915758459,
+        "y": 0.4,
+        "z": 8
+      },
+      "position": {
+        "x": 0.0,
+        "y": 0.7993067570201284,
+        "z": -24
+      },
+      "material": "roof_tar",
+      "walkable": true,
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.08314123188844123
+      }
+    },
+    {
+      "size": {
+        "x": 24.73863375370596,
+        "y": 0.4,
+        "z": 8
+      },
+      "position": {
+        "x": 0.0,
+        "y": 2.793844718719117,
+        "z": 24
+      },
+      "material": "roof_tar",
+      "walkable": true,
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.24497866312686414
+      }
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 1.2,
+        "z": 14
+      },
+      "position": {
+        "x": 12,
+        "y": 2.6,
+        "z": -35
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 1.2,
+        "z": 14
+      },
+      "position": {
+        "x": 12,
+        "y": 2.6,
+        "z": -11
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 1.2,
+        "z": 14
+      },
+      "position": {
+        "x": 12,
+        "y": 6.6,
+        "z": 11
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 1.2,
+        "z": 14
+      },
+      "position": {
+        "x": 12,
+        "y": 6.6,
+        "z": 35
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 5,
+        "z": 3
+      },
+      "position": {
+        "x": -34,
+        "y": 2.5,
+        "z": -24
+      },
+      "material": "metal",
+      "model": "city_roof_water_tank",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 5,
+        "z": 3
+      },
+      "position": {
+        "x": -20,
+        "y": 2.5,
+        "z": 22
+      },
+      "material": "metal",
+      "model": "city_roof_water_tank",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 5,
+        "z": 3
+      },
+      "position": {
+        "x": 36,
+        "y": 4.5,
+        "z": -34
+      },
+      "material": "metal",
+      "model": "city_roof_water_tank",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 5,
+        "z": 3
+      },
+      "position": {
+        "x": 36,
+        "y": 8.5,
+        "z": 34
+      },
+      "material": "metal",
+      "model": "city_roof_water_tank",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.998,
+        "z": 2.052
+      },
+      "position": {
+        "x": -38,
+        "y": 0.999,
+        "z": 12
+      },
+      "material": "roof_hvac_metal",
+      "model": "city_roof_hvac_unit",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.998,
+        "z": 2.052
+      },
+      "position": {
+        "x": -18,
+        "y": 0.999,
+        "z": -12
+      },
+      "material": "roof_hvac_metal",
+      "model": "city_roof_hvac_unit",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.998,
+        "z": 2.052
+      },
+      "position": {
+        "x": 20,
+        "y": 2.999,
+        "z": -36
+      },
+      "material": "roof_hvac_metal",
+      "model": "city_roof_hvac_unit",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.998,
+        "z": 2.052
+      },
+      "position": {
+        "x": 20,
+        "y": 6.999,
+        "z": 36
+      },
+      "material": "roof_hvac_metal",
+      "model": "city_roof_hvac_unit",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.998,
+        "z": 2.052
+      },
+      "position": {
+        "x": 40,
+        "y": 2.999,
+        "z": -16
+      },
+      "material": "roof_hvac_metal",
+      "model": "city_roof_hvac_unit",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.998,
+        "z": 2.052
+      },
+      "position": {
+        "x": 20,
+        "y": 6.999,
+        "z": 10
+      },
+      "material": "roof_hvac_metal",
+      "model": "city_roof_hvac_unit",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": -38,
+        "y": 1.306,
+        "z": -5
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": -18,
+        "y": 1.306,
+        "z": -5
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy_violet",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": -34,
+        "y": 1.306,
+        "z": 10
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": -18,
+        "y": 1.306,
+        "z": 10
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy_violet",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 20,
+        "y": 3.306,
+        "z": -18
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 36,
+        "y": 3.306,
+        "z": -18
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy_violet",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 20,
+        "y": 3.306,
+        "z": -30
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 30,
+        "y": 3.306,
+        "z": -30
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy_violet",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 20,
+        "y": 7.306,
+        "z": 18
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 36,
+        "y": 7.306,
+        "z": 18
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy_violet",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 20,
+        "y": 7.306,
+        "z": 30
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 3.024,
+        "y": 2.612,
+        "z": 2
+      },
+      "position": {
+        "x": 30,
+        "y": 7.306,
+        "z": 30
+      },
+      "material": "market_tarp",
+      "model": "city_market_stall_canopy_violet",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 8,
+        "y": 0.12,
+        "z": 2
+      },
+      "position": {
+        "x": -28,
+        "y": 3.2,
+        "z": 16
+      },
+      "material": "market_tarp"
+    },
+    {
+      "size": {
+        "x": 0.16,
+        "y": 3.2,
+        "z": 0.16
+      },
+      "position": {
+        "x": -32,
+        "y": 1.6,
+        "z": 16
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.16,
+        "y": 3.2,
+        "z": 0.16
+      },
+      "position": {
+        "x": -24,
+        "y": 1.6,
+        "z": 16
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 8,
+        "y": 0.12,
+        "z": 2
+      },
+      "position": {
+        "x": 28,
+        "y": 5.2,
+        "z": -10
+      },
+      "material": "market_tarp"
+    },
+    {
+      "size": {
+        "x": 0.16,
+        "y": 3.2,
+        "z": 0.16
+      },
+      "position": {
+        "x": 24,
+        "y": 3.6,
+        "z": -10
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.16,
+        "y": 3.2,
+        "z": 0.16
+      },
+      "position": {
+        "x": 32,
+        "y": 3.6,
+        "z": -10
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 8,
+        "y": 0.12,
+        "z": 2
+      },
+      "position": {
+        "x": 28,
+        "y": 9.2,
+        "z": 10
+      },
+      "material": "market_tarp"
+    },
+    {
+      "size": {
+        "x": 0.16,
+        "y": 3.2,
+        "z": 0.16
+      },
+      "position": {
+        "x": 24,
+        "y": 7.6,
+        "z": 10
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.16,
+        "y": 3.2,
+        "z": 0.16
+      },
+      "position": {
+        "x": 32,
+        "y": 7.6,
+        "z": 10
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 3.4,
+        "z": 2
+      },
+      "position": {
+        "x": -40,
+        "y": 1.7,
+        "z": -36
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 3.4,
+        "z": 2
+      },
+      "position": {
+        "x": 40,
+        "y": 3.7,
+        "z": -38
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 3.4,
+        "z": 2
+      },
+      "position": {
+        "x": 40,
+        "y": 7.7,
+        "z": 38
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 3,
+        "z": 1.8
+      },
+      "position": {
+        "x": -28,
+        "y": 1.5,
+        "z": -32
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 3,
+        "z": 1.8
+      },
+      "position": {
+        "x": 28,
+        "y": 3.5,
+        "z": -40
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 3,
+        "z": 1.8
+      },
+      "position": {
+        "x": 28,
+        "y": 7.5,
+        "z": 40
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.20000000000000018,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.1,
+        "z": -11.8
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.3999999999999999,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.2,
+        "z": -11.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.6000000000000001,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.3,
+        "z": -11.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.7999999999999998,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.4,
+        "z": -10.600000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.5,
+        "z": -10.200000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.2000000000000002,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.6,
+        "z": -9.8
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.4000000000000004,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.7,
+        "z": -9.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.6,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.8,
+        "z": -9.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.7999999999999998,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 2.9,
+        "z": -8.600000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.0,
+        "z": -8.200000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.1,
+        "z": -7.800000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.4000000000000004,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.2,
+        "z": -7.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.5999999999999996,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.3,
+        "z": -7.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.8000000000000007,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.4000000000000004,
+        "z": -6.6000000000000005
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.5,
+        "z": -6.2
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.6,
+        "z": -5.800000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.4000000000000004,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.7,
+        "z": -5.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.5999999999999996,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.8,
+        "z": -5.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.8000000000000007,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 3.9000000000000004,
+        "z": -4.6000000000000005
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 4.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 34,
+        "y": 4.0,
+        "z": -4.2
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.2,
+        "z": 8
+      },
+      "position": {
+        "x": 34,
+        "y": 5.9,
+        "z": 0
+      },
+      "material": "roof_hvac_metal",
+      "walkable": true,
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.1,
+        "y": 1.19,
+        "z": 8
+      },
+      "position": {
+        "x": 33.25,
+        "y": 6.595,
+        "z": 0
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.1,
+        "y": 1.19,
+        "z": 8
+      },
+      "position": {
+        "x": 34.75,
+        "y": 6.595,
+        "z": 0
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.20000000000000018,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.1,
+        "z": -11.8
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.3999999999999999,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.2,
+        "z": -11.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.6000000000000001,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.3,
+        "z": -11.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.7999999999999998,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.4,
+        "z": -10.600000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.5,
+        "z": -10.200000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.2000000000000002,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.6,
+        "z": -9.8
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.4000000000000004,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.7,
+        "z": -9.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.6,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.8,
+        "z": -9.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.7999999999999998,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 2.9,
+        "z": -8.600000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.0,
+        "z": -8.200000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.1,
+        "z": -7.800000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.4000000000000004,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.2,
+        "z": -7.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.5999999999999996,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.3,
+        "z": -7.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 2.8000000000000007,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.4000000000000004,
+        "z": -6.6000000000000005
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.5,
+        "z": -6.2
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.6,
+        "z": -5.800000000000001
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.4000000000000004,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.7,
+        "z": -5.4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.5999999999999996,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.8,
+        "z": -5.0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 3.8000000000000007,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 3.9000000000000004,
+        "z": -4.6000000000000005
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 4.0,
+        "z": 0.4
+      },
+      "position": {
+        "x": 38,
+        "y": 4.0,
+        "z": -4.2
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 0.2,
+        "z": 8
+      },
+      "position": {
+        "x": 38,
+        "y": 5.9,
+        "z": 0
+      },
+      "material": "roof_hvac_metal",
+      "walkable": true,
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.1,
+        "y": 1.19,
+        "z": 8
+      },
+      "position": {
+        "x": 37.25,
+        "y": 6.595,
+        "z": 0
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 0.1,
+        "y": 1.19,
+        "z": 8
+      },
+      "position": {
+        "x": 38.75,
+        "y": 6.595,
+        "z": 0
+      },
+      "material": "concrete",
+      "visible": false
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.998,
+        "z": 2.052
+      },
+      "position": {
+        "x": 26,
+        "y": 6.999,
+        "z": 36
+      },
+      "material": "roof_hvac_metal",
+      "model": "city_roof_hvac_unit",
+      "instance": true
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1.2,
+        "z": 90
+      },
+      "position": {
+        "x": -45,
+        "y": 0.6,
+        "z": 0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1.2,
+        "z": 90
+      },
+      "position": {
+        "x": 45,
+        "y": 0.6,
+        "z": 0
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 90,
+        "y": 1.2,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 0.6,
+        "z": -45
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 90,
+        "y": 1.2,
+        "z": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 0.6,
+        "z": 45
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 32,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 28,
+        "y": 2.6,
+        "z": -42
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 1.2,
+        "z": 38
+      },
+      "position": {
+        "x": 44,
+        "y": 2.6,
+        "z": -23
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 20.8,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 22.4,
+        "y": 2.6,
+        "z": -4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 2.4,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 36,
+        "y": 2.6,
+        "z": -4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 4.8,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 41.6,
+        "y": 2.6,
+        "z": -4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 32,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 28,
+        "y": 6.6,
+        "z": 42
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 0.4,
+        "y": 1.2,
+        "z": 38
+      },
+      "position": {
+        "x": 44,
+        "y": 6.6,
+        "z": 23
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 20.8,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 22.4,
+        "y": 6.6,
+        "z": 4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 2.4,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 36,
+        "y": 6.6,
+        "z": 4
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "size": {
+        "x": 4.8,
+        "y": 1.2,
+        "z": 0.4
+      },
+      "position": {
+        "x": 41.6,
+        "y": 6.6,
+        "z": 4
+      },
+      "material": "roof_hvac_metal"
+    }
+  ],
+  "spawnPoints": [
+    {
+      "x": -40,
+      "z": -40
+    },
+    {
+      "x": -40,
+      "z": -8
+    },
+    {
+      "x": -8,
+      "z": -40
+    },
+    {
+      "x": -8,
+      "z": 40
+    },
+    {
+      "x": -25,
+      "z": -40
+    },
+    {
+      "x": -8,
+      "z": 0
+    }
+  ],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": -45.0,
+        "y": 1.5,
+        "z": 35
+      },
+      "size": {
+        "x": 1,
+        "y": 3,
+        "z": 3
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 45.0,
+        "y": 1.5,
+        "z": -35
+      },
+      "size": {
+        "x": 1,
+        "y": 3,
+        "z": 3
+      }
+    }
+  ],
+  "maxAlive": 8,
+  "minSpawnDistance": 15,
+  "arena": {
+    "exclusive": true,
+    "batchCellM": 20,
+    "navigationCellM": 1,
+    "navigationClearanceM": 0.8,
+    "navigationMaxRiseM": 0.35,
+    "navigationHeadroomM": 2,
+    "points": [
+      {
+        "id": "A",
+        "position": {
+          "x": -28,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "B",
+        "position": {
+          "x": 28,
+          "y": 2,
+          "z": -24
+        },
+        "radiusM": 4
+      },
+      {
+        "id": "C",
+        "position": {
+          "x": 28,
+          "y": 6,
+          "z": 24
+        },
+        "radiusM": 4
+      }
+    ]
+  },
+  "decor": [
+    {
+      "model": "city_satellite_cluster",
+      "position": {
+        "x": -40,
+        "y": 0,
+        "z": -36
+      }
+    },
+    {
+      "model": "city_satellite_cluster",
+      "position": {
+        "x": 40,
+        "y": 2,
+        "z": -38
+      }
+    },
+    {
+      "model": "city_satellite_cluster",
+      "position": {
+        "x": 40,
+        "y": 6,
+        "z": 38
+      }
+    },
+    {
+      "model": "city_neon_sign_frame",
+      "position": {
+        "x": -28,
+        "y": 0,
+        "z": -32
+      }
+    },
+    {
+      "model": "city_neon_sign_frame",
+      "position": {
+        "x": 28,
+        "y": 2,
+        "z": -40
+      }
+    },
+    {
+      "model": "city_neon_sign_frame",
+      "position": {
+        "x": 28,
+        "y": 6,
+        "z": 40
+      }
+    },
+    {
+      "model": "city_roof_bridge",
+      "position": {
+        "x": 34,
+        "y": 5.8,
+        "z": 0
+      }
+    },
+    {
+      "model": "city_roof_bridge",
+      "position": {
+        "x": 38,
+        "y": 5.8,
+        "z": 0
+      }
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": -28,
+        "y": 3,
+        "z": -32
+      },
+      "color": "#8a5cff",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 5,
+        "z": -40
+      },
+      "color": "#8a5cff",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 9,
+        "z": 40
+      },
+      "color": "#8a5cff",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": -28,
+        "y": 10,
+        "z": 0
+      },
+      "color": "#ffae1a",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 10,
+        "z": -24
+      },
+      "color": "#6dff4a",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 10,
+        "z": 24
+      },
+      "color": "#fff1d6",
+      "intensity": 50,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": -10,
+        "y": 10,
+        "z": 32
+      },
+      "color": "#3d7bff",
+      "intensity": 50,
+      "range": 18
+    }
+  ],
+  "ambientFx": []
+}

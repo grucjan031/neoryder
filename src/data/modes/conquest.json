@@ -1,36 +1,6 @@
 {
   "id": "conquest",
   "title": "Przejęcie",
-  "roomId": "combatRing",
-  "points": [
-    {
-      "id": "A",
-      "position": {
-        "x": -10,
-        "y": 0,
-        "z": -9
-      },
-      "radiusM": 2.75
-    },
-    {
-      "id": "B",
-      "position": {
-        "x": 10,
-        "y": 0,
-        "z": -9
-      },
-      "radiusM": 2.75
-    },
-    {
-      "id": "C",
-      "position": {
-        "x": 0,
-        "y": 0,
-        "z": 0
-      },
-      "radiusM": 3.5
-    }
-  ],
   "enemies": ["assaulter", "gunner"],
   "enemyTickets": 120,
   "maxAlive": 8,
@@ -40,5 +10,11 @@
     "holdTwoPerS": 1,
     "holdThreePerS": 3
   },
-  "rewardRooms": 6
+  "rewardRooms": 6,
+  "arenas": [
+    "arenaContainerPort",
+    "arenaOverpass",
+    "arenaRooftops",
+    "combatRing"
+  ]
 }

@@ -1,0 +1,62 @@
+{
+  "id": "rain",
+  "title": "Deszcz",
+  "precipitation": {
+    "kind": "rain",
+    "density": 0.65,
+    "speed": 18,
+    "color": "#8294b0",
+    "opacity": 0.26,
+    "exposureS": 0.025,
+    "widthM": 0.013
+  },
+  "wind": {
+    "direction": {
+      "x": 1,
+      "z": 0
+    },
+    "strength": 1,
+    "gustStrength": 0,
+    "gustPeriodS": 8
+  },
+  "fog": {
+    "color": "#2b1f3d",
+    "density": 0.025,
+    "heightM": 2.0833333333333335,
+    "strength": 0.72,
+    "nearM": 18,
+    "farM": 135
+  },
+  "surface": {
+    "gloss": 0,
+    "reflections": 0.95,
+    "puddles": 1
+  },
+  "lightning": {
+    "enabled": true,
+    "minIntervalS": 25,
+    "maxIntervalS": 55,
+    "brightness": 1,
+    "color": "#fff1d6",
+    "decayS": 0.18
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.12,
+    "opacity": 0.12,
+    "color": "#8991a0",
+    "lifeS": 8
+  },
+  "ambience": [
+    {
+      "kind": "rain",
+      "gain": 0.5,
+      "radiusM": 100
+    },
+    {
+      "kind": "wind",
+      "gain": 0.1,
+      "radiusM": 100
+    }
+  ]
+}

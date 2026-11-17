@@ -271,8 +271,9 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     const params = new URLSearchParams({
       scene: 'run',
       loadout: 'meta',
-      seed: seedInput.value.trim() || randomSeed(),
     });
+    const seed = seedInput.value.trim();
+    if (seed || !selectedMode) params.set('seed', seed || randomSeed());
     if (selectedMission) params.set('mission', selectedMission.id);
     if (selectedMode) params.set('mode', selectedMode);
     ctx.navigate(`?${params}`);

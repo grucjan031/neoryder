@@ -19,6 +19,20 @@ const size2 = z.object({ w: positive, h: positive });
 
 /** Materiał bloku układu; `world` = dotychczasowy materiał świata. */
 export const BLOCK_MATERIALS = [
+  'container_navy',
+  'container_olive',
+  'container_ochre',
+  'container_graphite',
+  'crane_paint',
+  'quay_concrete',
+  'quay_lines',
+  'rubber_fender',
+  'steel_grating',
+  'overpass_concrete',
+  'smog_soot_wall',
+  'roof_tar',
+  'roof_hvac_metal',
+  'market_tarp',
   'world',
   'concrete',
   'asphalt',
@@ -141,6 +155,10 @@ export type DecorDef = z.infer<typeof decorSchema>;
 
 /** Pola oprawy dołączane do schematu pokoju i układu areny. */
 export const dressingFields = {
+  weather: z
+    .string()
+    .regex(/^[a-zA-Z0-9_]+$/)
+    .optional(),
   /** Id motywu z `src/data/themes/<id>.json`; brak = `white` (dotychczasowy wygląd). */
   theme: z
     .string()

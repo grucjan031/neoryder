@@ -6,11 +6,66 @@ import {
   Vector4,
 } from 'three';
 import type { WebGLProgramParametersWithUniforms } from 'three';
+import { z } from 'zod';
+import portData from '../data/render/portMaterials.json';
+import arenaData from '../data/render/arenaMaterials.json';
 import { tuning } from '../core/tuning';
 import { assetTexture, surfaceTexture } from './surfaceTextures';
 import type { SurfaceTexture } from './surfaceTextures';
 
+export const portKinds = [
+  'container_navy',
+  'container_olive',
+  'container_ochre',
+  'container_graphite',
+  'crane_paint',
+  'quay_concrete',
+  'quay_lines',
+  'rubber_fender',
+  'steel_grating',
+] as const;
+
+export const arenaKinds = [
+  'overpass_concrete',
+  'smog_soot_wall',
+  'roof_tar',
+  'roof_hvac_metal',
+  'market_tarp',
+] as const;
+
+const portLooks = z
+  .record(
+    z.enum([...portKinds, ...arenaKinds]),
+    z.object({
+      texture: z.enum([
+        'container_corrugated_navy',
+        'container_corrugated_olive',
+        'container_corrugated_ochre',
+        'container_corrugated_graphite',
+        'crane_paint',
+        'quay_concrete',
+        'quay_lines',
+        'rubber_fender',
+        'steel_grating',
+        ...arenaKinds,
+      ]),
+      tint: z
+        .string()
+        .regex(/^#[0-9a-fA-F]{6}$/)
+        .optional(),
+      themeTint: z.enum(['asphalt', 'concrete']).optional(),
+      scale: z.number().positive(),
+      roughness: z.number().min(0).max(1),
+      metalness: z.number().min(0).max(1),
+      bump: z.number().nonnegative(),
+      wetness: z.number().min(0).max(1),
+    }),
+  )
+  .parse({ ...portData, ...arenaData });
+
 export const urbanKinds = [
+  ...portKinds,
+  ...arenaKinds,
   'concrete',
   'asphalt',
   'metal',
@@ -56,6 +111,7 @@ const look = (
   wetness = 0,
 ): UrbanLook => ({ texture, scale, roughness, metalness, wetness, bump });
 export const urbanLooks: Record<UrbanKind, UrbanLook> = {
+  ...portLooks,
   concrete: look('concrete', 0.25, 0.8, 0, 0.5, 0.22),
   asphalt: look('asphalt', 0.25, 0.3, 0, 0.25, 1),
   metal: look('metal_panel', 0.25, 0.8, 0.35, 0.5),
@@ -79,6 +135,7 @@ export const urbanLooks: Record<UrbanKind, UrbanLook> = {
 };
 
 export const urbanUniforms = {
+  weatherGloss: { value: 0 },
   cityDetail: { value: 0 },
   cityBump: { value: 0 },
   hazardPeriod: { value: 0.3 },
@@ -124,6 +181,7 @@ export function worldPositionShader(
     varying vec3 vCityWorld;
     uniform float cityDetail;
     uniform float cityBump;
+    uniform float weatherGloss;
     uniform float hazardPeriod;
     uniform vec3 windowWarm;
     uniform vec3 windowCool;
@@ -185,10 +243,20 @@ const windowCode = /* glsl */ `
 
 const glsl = (value: number) => value.toFixed(4);
 
+export function urbanColor(kind: UrbanKind): string {
+  if (kind in portLooks) {
+    const config = portLooks[kind as keyof typeof portLooks];
+    if (config.themeTint) return tuning.render[config.themeTint];
+    if (config.tint && tuning.render.citySurfaceDetail > 0) return config.tint;
+    return '#ffffff';
+  }
+  return tuning.render[kind as Exclude<UrbanKind, keyof typeof portLooks>];
+}
+
 export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
   const config = urbanLooks[kind];
   const material = new MeshStandardMaterial({
-    color: tuning.render[kind],
+    color: urbanColor(kind),
     roughness: config.roughness,
     metalness: config.metalness,
   });
@@ -254,7 +322,7 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
       .replace(
         '#include <roughnessmap_fragment>',
         `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(roughnessFactor * mix(1.0, 0.8 + cityHeight * 0.5, cityDetail * surfaceReady), 0.04, 1.0);`,
+        roughnessFactor = clamp(roughnessFactor * mix(1.0, 0.8 + cityHeight * 0.5, cityDetail * surfaceReady) * (1.0 - weatherGloss), 0.04, 1.0);`,
       )
       .replace(
         '#include <normal_fragment_maps>',

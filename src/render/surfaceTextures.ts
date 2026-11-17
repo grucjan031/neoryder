@@ -1,6 +1,20 @@
 import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 
 export type SurfaceTexture =
+  | 'container_corrugated_navy'
+  | 'container_corrugated_olive'
+  | 'container_corrugated_ochre'
+  | 'container_corrugated_graphite'
+  | 'crane_paint'
+  | 'quay_concrete'
+  | 'quay_lines'
+  | 'rubber_fender'
+  | 'steel_grating'
+  | 'overpass_concrete'
+  | 'smog_soot_wall'
+  | 'roof_tar'
+  | 'roof_hvac_metal'
+  | 'market_tarp'
   | 'concrete'
   | 'asphalt'
   | 'asphalt_puddles'

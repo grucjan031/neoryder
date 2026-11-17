@@ -141,6 +141,10 @@ test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i 
     page.locator('[data-mission-debrief] p').first(),
   ).toBeInViewport();
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
+  // Okno znika dopiero po zapisie meta; przeładowanie wcześniej gubi wyczyszczony debrief.
+  await expect(page.locator('[data-mission-debrief]')).toBeHidden({
+    timeout: LOAD_TIMEOUT,
+  });
   await page.evaluate(() => window.__neoryder?.command('hub open missions'));
   await expect(page.locator('[data-mission="m06-odlewnia"]')).toContainText(
     'Ukończona',
