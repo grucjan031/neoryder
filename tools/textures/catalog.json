@@ -708,5 +708,109 @@
     "height": 1024,
     "description": "Atlas 16 dark or dim windows, 4x4 grid",
     "subject": "Square opaque 4 by 4 atlas of sixteen distinct complete dark or dim exterior building windows at night, each exact 256x256 cell with thin dark edge frame. Dark glass with navy and violet city glow reflections, slightly open blinds with barely visible light, empty unlit rooms, subtle rain droplets, varied subdued interiors. Orthographic Neon Noir facade. No text, brands, red, cyan, or magenta."
+  },
+  {
+    "id": "container_corrugated_navy",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Granatowa blacha falista kontenera",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture 1024x1024: navy painted corrugated container steel with exactly eight uniformly spaced straight vertical ribs running continuously through top and bottom edges. Restrained fine rain streaks, tiny paint chips and sparse dark brown weathering spread uniformly across the image. CRITICAL no horizontal seam, no horizontal row of wear along top or bottom, no border, no framing, no large blotches at edges; uninterrupted vertical corrugation. Top and bottom must match without a horizontal line when tiled. Dark cool navy #26334a. Flat orthographic head-on, even lighting, stylized painted shapes, not photorealistic. No perspective, text, brands, glow, red, cyan, magenta or pink. Opposite edges match seamlessly. Fill entire square."
+  },
+  {
+    "id": "container_corrugated_olive",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Oliwkowa blacha falista kontenera",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: olive green corrugated shipping container steel, broad vertical ribs, rain streaks, small chipped paint, subtle dark brown rust. Muted olive #555b3b and deep charcoal. Flat orthographic head-on, evenly lit, stylized painted shapes, no photorealism, no perspective, no text, brands, borders or glow. Edges tile seamlessly. No red, cyan, magenta, pink. Fill entire square."
+  },
+  {
+    "id": "container_corrugated_ochre",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ochrowa blacha falista kontenera",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture 1024x1024: ochre amber painted corrugated container steel with exactly eight uniformly spaced straight vertical ribs running continuously through top and bottom edges. Restrained fine rain streaks, tiny paint chips and sparse dark brown weathering spread uniformly across the image. CRITICAL no horizontal seam, no horizontal row of wear along top or bottom, no border, no framing, no large blotches at edges; uninterrupted vertical corrugation. Top and bottom must match without a horizontal line when tiled. Muted ochre amber #9a7136. Flat orthographic head-on, even lighting, stylized painted shapes, not photorealistic. No perspective, text, brands, glow, red, cyan, magenta or pink. Opposite edges match seamlessly. Fill entire square."
+  },
+  {
+    "id": "container_corrugated_graphite",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Grafitowa blacha falista kontenera",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture 1024x1024: graphite painted corrugated container steel with exactly eight uniformly spaced straight vertical ribs running continuously through top and bottom edges. Restrained fine rain streaks, tiny paint chips and sparse dark brown weathering spread uniformly across the image. CRITICAL no horizontal seam, no horizontal row of wear along top or bottom, no border, no framing, no large blotches at edges; uninterrupted vertical corrugation. Top and bottom must match without a horizontal line when tiled. Dark cool graphite #343a44. Flat orthographic head-on, even lighting, stylized painted shapes, not photorealistic. No perspective, text, brands, glow, red, cyan, magenta or pink. Opposite edges match seamlessly. Fill entire square."
+  },
+  {
+    "id": "quay_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Beton nabrzeża z olejem i spękaniami",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: cool gray quay concrete albedo: broad worn slab surface with oil stains, fine cracks, subtle damp mottling, palette cold blue gray #394554 to #68727b. Flat orthographic top-down, evenly lit, stylized painted readable shapes, not photorealistic, no perspective, no objects, text, brands, border, glow, red, cyan, magenta or pink. Opposite edges must match seamlessly. Fill entire square."
+  },
+  {
+    "id": "quay_lines",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Mokry asfalt z bursztynowymi liniami",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture 1024x1024 of wet terminal asphalt, dark cool charcoal blue gray, fine aggregate and subtle damp patches. Exactly TWO straight horizontal parallel yellow amber maneuvering yard lines at 25 percent and 75 percent image height, extending continuously from left edge to right edge at identical heights and widths. No vertical lines, no curves, no intersections, no line ends. Top and bottom edges only uniform asphalt. Flat orthographic top-down, evenly lit, stylized painted readable shapes, no photorealism, no perspective, no objects, text, brands, borders or glow. No red, cyan, magenta, pink. Opposite edges match seamlessly. Fill entire square."
+  },
+  {
+    "id": "steel_grating",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Stalowa kratownica, jasny ażur w RGB",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture 1024x1024: dark steel industrial walkway grating with light cool gray openings represented as opaque color, no alpha. Flat graphic 8 by 8 perfectly regular grid of identical square openings. The dark steel bars have a uniform flat graphite color, with NO bevel shading, NO shadows, NO highlights, NO edge wear anywhere in the outer 80 pixels of the image. Image boundaries run through uniform dark steel bars. The entire outer 16 pixels on all four sides must be exactly the same flat graphite #343a44, allowing smooth repeat; openings never reach the boundary. Subtle small scratches only in the central area. Stylized painted game material, absolutely flat orthographic, uniform illumination, no perspective, no text, brands, glow, red, cyan, magenta or pink. Opposite edges match seamlessly. Fill entire square."
+  },
+  {
+    "id": "rubber_fender",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ciemna starta guma odbojnicy",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: close-up flat orthographic texture of plain dark black graphite quay rubber fender material, repeating rounded vertical rubber ribs with fine scuffs, worn matte surface and subtle cool gray highlights. Entire image only dark rubber, no safety paint, NO stripes, NO yellow, no markings, no bolts, no text, no perspective, no objects, no brands, no glow. Stylized painted game surface, even lighting, opaque RGB. Opposite edges tile seamlessly. No red, cyan, magenta or pink. Fill entire square."
+  },
+  {
+    "id": "crane_paint",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Bursztynowa stal suwnicy z nitami",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture 1024x1024: warm dirty yellow amber painted steel of a container crane, restrained scratches and chips exposing dark graphite steel, sparse subtle dirt. Exactly four by four small round rivet heads arranged on a regular grid at cell centers, with generous equal spacing so none touch the image boundaries. Uniform paint tone and weathering density everywhere, no dark border, no panel frame, no edge wear band, no directional lighting gradient. Flat orthographic head-on, evenly lit, stylized painted shapes, not photorealistic. Opposite edges tile seamlessly. No text, brands, perspective, glow, red, cyan, magenta or pink. Fill entire square."
+  },
+  {
+    "id": "overpass_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Beton estakady z zaciekami i smogiem",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: cool gray concrete underside of an urban overpass, seamless stains, downward rain streaks, subtle smog marks, fine cracks, blue gray #394454 to #626b75. Flat orthographic head-on, evenly lit, stylized painted shapes, not photorealistic, no perspective, no text, brands, borders or glow. Opposite edges must match seamlessly. No red, cyan, magenta, pink. Fill entire square."
+  },
+  {
+    "id": "smog_soot_wall",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Chłodna szara ściana pokryta sadzą",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: cold gray wall surface covered with soot, charcoal dark streaks and soft uneven deposits, blue gray concrete underlayer, restrained low contrast. Flat orthographic head-on, evenly lit, stylized painted shapes, not photorealistic, no perspective, no text, brands, borders or glow. Opposite edges must match seamlessly. No red, cyan, magenta, pink. Fill entire square."
+  },
+  {
+    "id": "market_tarp",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Wyblakły granatowo-fioletowy brezent",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: faded navy violet market stall canopy tarp fabric, woven texture, broad loose folds and seam lines, muted dark blue and dusty purple, subtle rain stains. Flat orthographic head-on/top-down, evenly lit, stylized painted shapes, not photorealistic, no perspective, no text, brands, borders or glow. Opposite edges must match seamlessly. No red, cyan, magenta, pink. Fill entire square."
+  },
+  {
+    "id": "roof_hvac_metal",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Blacha HVAC z kratkami wentylacyjnymi",
+    "subject": "Use case: stylized-concept. Generate ONE seamless square tileable game albedo texture, 1024x1024: roof HVAC equipment sheet metal albedo, cool dark steel with repeating ventilation grilles, narrow louvers, small fasteners and weathered edges, flat orthographic detail. Flat orthographic head-on/top-down, evenly lit, stylized painted shapes, not photorealistic, no perspective, no text, brands, borders or glow. Opposite edges must match seamlessly. No red, cyan, magenta, pink. Fill entire square."
   }
 ]

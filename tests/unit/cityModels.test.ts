@@ -106,9 +106,9 @@ const landmarks: Record<string, string[]> = {
 };
 
 it('zawiera cały zestaw 24 modeli miasta', () => {
-  expect(readdirSync(folder).sort()).toEqual(
-    names.map((n) => `${n}.glb`).sort(),
-  );
+  // Modele portu (port_*) leżą w tym samym folderze; sprawdza je portModels.test.ts.
+  const city = readdirSync(folder).filter((file) => file.startsWith('city_'));
+  expect(city.sort()).toEqual(names.map((n) => `${n}.glb`).sort());
 });
 
 it.each(names)('%s: geometria, paleta, budżet i montaż GLB', async (name) => {

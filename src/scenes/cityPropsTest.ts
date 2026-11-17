@@ -1,12 +1,20 @@
 import { BoxGeometry, Box3, Group, Mesh, Vector3 } from 'three';
-import type { BufferGeometry, Object3D, Scene as ThreeScene } from 'three';
+import type {
+  BufferGeometry,
+  Material,
+  Object3D,
+  Scene as ThreeScene,
+} from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { GameContext } from '../core/context';
 import { CityDressing } from '../render/city/dressing';
 import type { DressingLayout } from '../render/city/dressing';
 import { cloneCityModel } from '../render/cityModels';
 import { createStyleLights } from '../render/lights';
-import { getMaterial, syncMaterials } from '../render/materials';
+import { applyStyle, getMaterial, syncMaterials } from '../render/materials';
 import type { MaterialKind } from '../render/materials';
+import { createUrbanMaterial } from '../render/urbanMaterials';
+import type { UrbanKind } from '../render/urbanMaterials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import type { Scene } from './index';
 
@@ -104,12 +112,172 @@ const slots: Slot[] = [
   span('city_lantern_string', 6, 5),
 ];
 
+/** Modele portu (arena „Port kontenerowy”), plac za prawą pierzeją uliczki. */
+export const PORT_PROP_MODELS = [
+  'port_container_20_navy',
+  'port_container_20_olive',
+  'port_container_20_ochre',
+  'port_container_20_graphite',
+  'port_container_40_navy',
+  'port_container_40_olive',
+  'port_container_40_ochre',
+  'port_container_40_graphite',
+  'port_gantry_crane',
+  'port_light_tower',
+  'port_bollard',
+  'port_bollard_rope',
+  'port_reach_stacker',
+  'port_quay_edge',
+  'port_lashing_platform',
+] as const;
+
+/** Rekwizyt portu: pozycja świata i obrót wokół Y (radiany). */
+interface PortSlot {
+  model: string;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+}
+const QUARTER = Math.PI / 2;
+const CONTAINER_H = 2.591;
+/** Plac: od pierzei (x = 9) do krawędzi nabrzeża (x = 44,4), wewnątrz pierścienia panoramy. */
+const YARD = { x0: 9, x1: 44.4, half: 23 };
+const QUAY_X = 45.2;
+/** Stos kontenerów wzdłuż Z (drzwi w −Z); kolory od dołu. */
+function stack(
+  size: 20 | 40,
+  x: number,
+  z: number,
+  paints: string[],
+): PortSlot[] {
+  return paints.map((paint, tier) => ({
+    model: `port_container_${size}_${paint}`,
+    x,
+    y: tier * CONTAINER_H,
+    z,
+    yaw: QUARTER,
+  }));
+}
+/** Pierwsze wystąpienie modelu kadruje `prop=`; suwnica stoi nad trzema rzędami. */
+const portSlots: PortSlot[] = [
+  ...stack(20, 28.8, -15, ['graphite']),
+  ...stack(20, 28.8, -5, ['navy', 'ochre']),
+  ...stack(20, 28.8, 5, ['olive', 'graphite']),
+  ...stack(40, 23, -13, ['navy', 'graphite', 'olive']),
+  ...stack(40, 23, 0, ['olive', 'navy']),
+  ...stack(40, 23, 13, ['ochre', 'graphite', 'navy']),
+  ...stack(40, 25.9, -13, ['graphite', 'ochre']),
+  ...stack(40, 25.9, 0, ['ochre']),
+  ...stack(40, 25.9, 13, ['navy']),
+  {
+    model: 'port_lashing_platform',
+    x: 28.8,
+    y: 2 * CONTAINER_H,
+    z: 0,
+    yaw: QUARTER,
+  },
+  { model: 'port_gantry_crane', x: 29, y: 0, z: 0, yaw: Math.PI },
+  // Wózek podnosi kontener 20 ft: rama chwytaka wisi 4,33 m przed środkiem modelu.
+  { model: 'port_reach_stacker', x: 37, y: 0, z: 6, yaw: 0 },
+  { model: 'port_container_20_ochre', x: 37, y: 0, z: 10.33, yaw: 0 },
+  { model: 'port_light_tower', x: 13.5, y: 0, z: 18, yaw: 0 },
+  { model: 'port_bollard', x: 43.6, y: 0, z: -16, yaw: -QUARTER },
+  { model: 'port_bollard_rope', x: 43.6, y: 0, z: 16, yaw: -QUARTER },
+  { model: 'port_bollard', x: 43.6, y: 0, z: -4, yaw: -QUARTER },
+  ...Array.from({ length: 11 }, (_, i) => ({
+    model: 'port_quay_edge',
+    x: QUAY_X,
+    y: -2,
+    z: -20 + i * 4,
+    yaw: QUARTER,
+  })),
+];
+const portLight = (
+  x: number,
+  y: number,
+  z: number,
+  color: string,
+  intensity: number,
+  range: number,
+) => ({ position: { x, y, z }, color, intensity, range });
+const PORT_LIGHTS = [
+  portLight(15, 18.5, 16.5, '#fff1d6', 120, 30),
+  portLight(29, 14.5, 0, '#fff1d6', 90, 24),
+  portLight(37, 4.5, 9, '#ffae1a', 40, 11),
+  portLight(42, 3, 6, '#3d7bff', 40, 12),
+  portLight(19, 6, -8, '#8a5cff', 40, 12),
+];
+
+/**
+ * Materiały portu spoza rejestru gry (`docs/assets.md`, „Port kontenerowy”): do czasu
+ * integracji galeria rysuje je istniejącym wyglądem miasta, w razie potrzeby z barwą podglądu.
+ */
+const PORT_PREVIEW: Record<string, { kind: UrbanKind; color?: string }> = {
+  mat_container_navy: { kind: 'paint', color: '#283a62' },
+  mat_container_olive: { kind: 'paint', color: '#4e5638' },
+  mat_container_ochre: { kind: 'paint', color: '#a97c26' },
+  mat_container_graphite: { kind: 'paint', color: '#343a44' },
+  mat_crane_paint: { kind: 'paint', color: '#9c7430' },
+  mat_quay_concrete: { kind: 'concrete' },
+  mat_rubber_fender: { kind: 'rubber' },
+  mat_steel_grating: { kind: 'metal' },
+};
+const portTints = new Map<string, Material>();
+function portPreviewMaterial(name: string): Material | undefined {
+  const preview = PORT_PREVIEW[name];
+  if (!preview) return undefined;
+  if (!preview.color) return getMaterial(preview.kind);
+  let material = portTints.get(name);
+  if (!material) {
+    const tinted = createUrbanMaterial(preview.kind);
+    tinted.color.set(preview.color);
+    tinted.name = name;
+    portTints.set(name, tinted);
+    material = tinted;
+  }
+  return material;
+}
+/** Jak `cloneCityModel`, z podglądem materiałów portu; cache posiada geometrię i materiały. */
+const portTemplates = new Map<string, Promise<Object3D | null>>();
+async function clonePortModel(model: string): Promise<Object3D | null> {
+  let template = portTemplates.get(model);
+  if (!template) {
+    const path = `/assets/models/city/${model}.glb`;
+    template = new GLTFLoader()
+      .loadAsync(path)
+      .then(({ scene }) => {
+        scene.traverse((node) => {
+          if (!(node instanceof Mesh)) return;
+          const original = node.material as Material | Material[];
+          const preview = Array.isArray(original)
+            ? undefined
+            : portPreviewMaterial(original.name);
+          if (preview) node.material = preview;
+          else applyStyle(node);
+          for (const material of Array.isArray(original)
+            ? original
+            : [original])
+            material.dispose();
+        });
+        return scene;
+      })
+      .catch(() => {
+        console.warn(`Brak modelu ${path}; pominięto w galerii.`);
+        return null;
+      });
+    portTemplates.set(model, template);
+  }
+  return (await template)?.clone(true) ?? null;
+}
+
 const LIGHT_COLORS = ['#ffae1a', '#8a5cff', '#6dff4a', '#3d7bff', '#fff1d6'];
 type V3 = [number, number, number];
 const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
   { from: [0.7, 1.75, 23], to: [-0.2, 2.6, -14] },
   { from: [-0.7, 1.75, -21], to: [0.2, 2.6, 14] },
   { from: [0, 17, 36], to: [0, 0, 0] },
+  { from: [14, 13, 32], to: [31, 3, -4] },
 ];
 const DEFAULT_YAW_DEG = 35;
 const FILL_RATIO = 0.65;
@@ -134,6 +302,7 @@ export class CityPropsTest implements Scene {
     typeof location === 'undefined' ? '' : location.search,
   );
   private focus?: Slot;
+  private portFocus?: PortSlot;
   private view = 0;
   private readonly cameraPos = new Vector3();
   private readonly cameraTarget = new Vector3();
@@ -152,6 +321,13 @@ export class CityPropsTest implements Scene {
     this.root.add(this.lights);
     const length = SPACING * COUNT + 4;
     this.box([6, 0.3, length], [0, -0.15, 0], 'asphalt');
+    // Plac portu za prawą pierzeją: mokry asfalt do krawędzi nabrzeża i ciemna woda za nią.
+    this.box(
+      [YARD.x1 - YARD.x0, 0.3, YARD.half * 2],
+      [(YARD.x0 + YARD.x1) / 2, -0.15, 0],
+      'asphalt',
+    );
+    this.box([7, 0.2, YARD.half * 2], [YARD.x1 + 5.1, -1.85, 0], 'cable');
     for (const side of [-1, 1]) {
       this.box([2.4, 0.3, length], [side * 4.2, -0.15, 0], 'concrete');
       this.box([0.12, 0.15, length], [side * 3.06, 0.075, 0], 'trim');
@@ -166,11 +342,15 @@ export class CityPropsTest implements Scene {
     const requested = this.params.get('prop');
     if (requested) {
       this.focus = slots.find((s) => s.model === requested);
-      if (!this.focus)
+      this.portFocus = portSlots.find((s) => s.model === requested);
+      if (!this.focus && !this.portFocus)
         console.warn(`city-props-test: nieznany model "${requested}"`);
     }
     const view = Number(this.params.get('view') ?? 0);
-    this.view = Number.isInteger(view) && view >= 0 && view <= 2 ? view : 0;
+    this.view =
+      Number.isInteger(view) && view >= 0 && view < REVIEW_VIEWS.length
+        ? view
+        : 0;
     this.dressing = new CityDressing(
       this.root,
       this.layout(),
@@ -183,7 +363,7 @@ export class CityPropsTest implements Scene {
   }
 
   private layout(): DressingLayout {
-    const lights = [];
+    const lights = [...PORT_LIGHTS];
     for (let i = 0; i < 8; i++) {
       lights.push({
         position: { x: (i % 2 ? 1 : -1) * 3.4, y: 4, z: -19 + i * 5.4 },
@@ -211,13 +391,28 @@ export class CityPropsTest implements Scene {
         },
       );
     }
+    const p = this.portFocus;
+    if (p) {
+      const yaw = p.yaw + this.cameraYawDeg() * (Math.PI / 180);
+      lights.push(
+        portLight(
+          p.x + Math.sin(yaw) * 6,
+          p.y + 5,
+          p.z + Math.cos(yaw) * 6,
+          '#fff1d6',
+          40,
+          14,
+        ),
+      );
+    }
     return { lights };
   }
 
   private async loadModels(): Promise<void> {
     const placed = new Map<Slot, Object3D>();
-    await Promise.all(
-      slots.map(async (s) => {
+    const placedPort = new Map<PortSlot, Object3D>();
+    await Promise.all([
+      ...slots.map(async (s) => {
         const model = await cloneCityModel(s.model);
         if (!model || this.disposed) return;
         model.name = s.model;
@@ -226,23 +421,38 @@ export class CityPropsTest implements Scene {
         this.root.add(model);
         placed.set(s, model);
       }),
-    );
+      ...portSlots.map(async (s) => {
+        const model = await clonePortModel(s.model);
+        if (!model || this.disposed) return;
+        model.name = s.model;
+        model.position.set(s.x, s.y, s.z);
+        model.rotation.y = s.yaw;
+        this.root.add(model);
+        placedPort.set(s, model);
+      }),
+    ]);
     if (this.disposed) return;
-    if (this.focus) this.frameProp(placed.get(this.focus), this.focus);
+    if (this.focus) this.frameProp(placed.get(this.focus), slotYaw(this.focus));
+    else if (this.portFocus)
+      this.frameProp(placedPort.get(this.portFocus), this.portFocus.yaw);
     if (typeof document !== 'undefined')
       document.body.dataset.cityPropsReady = '1';
   }
 
-  private frameProp(model: Object3D | undefined, s: Slot): void {
+  private cameraYawDeg(): number {
+    const parsed = Number(this.params.get('yaw') ?? DEFAULT_YAW_DEG);
+    return Number.isFinite(parsed) ? parsed : DEFAULT_YAW_DEG;
+  }
+
+  /** Kamera 3/4 wokół modelu: `modelYaw` to jego obrót, parametr `yaw` dodaje kąt w stopniach. */
+  private frameProp(model: Object3D | undefined, modelYaw: number): void {
     const camera = this.ctx?.camera;
     if (!model || !camera) return;
     model.updateMatrixWorld(true);
     const box = new Box3().setFromObject(model);
     const size = box.getSize(new Vector3());
     const center = box.getCenter(new Vector3());
-    const parsed = Number(this.params.get('yaw') ?? DEFAULT_YAW_DEG);
-    const deg = Number.isFinite(parsed) ? parsed : DEFAULT_YAW_DEG;
-    const yaw = slotYaw(s) + deg * (Math.PI / 180);
+    const yaw = modelYaw + this.cameraYawDeg() * (Math.PI / 180);
     const tan = Math.tan((camera.fov * Math.PI) / 360);
     const horizontal = Math.max(size.x, size.z);
     const need = Math.max(
