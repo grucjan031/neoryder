@@ -3,7 +3,7 @@ import {
   BoxGeometry,
   Color,
   CylinderGeometry,
-  Euler,
+  DoubleSide,
   Frustum,
   Group,
   LoopRepeat,
@@ -60,8 +60,48 @@ const BODY_COLORS = [
 ];
 const RIM_STRENGTH = 0.55;
 const RIM_POWER = 2.6;
-const BODY_MESH = 'armored_body';
 const NECK_SHARE = 0.4;
+type NpcTorso = NonNullable<NonNullable<HubNpcDef['look']>['torso']>;
+/** Siatki `npc_civilian.glb` widoczne dla każdego wariantu górnej części stroju. */
+const TORSO_PARTS: Record<NpcTorso, readonly string[]> = {
+  none: ['top_shirt'],
+  vest: ['top_shirt', 'over_vest'],
+  apron: ['top_shirt', 'over_apron'],
+  jacket: ['top_jacket'],
+  hoodie: ['top_hoodie'],
+  coat: ['top_coat'],
+};
+/** Pięć kluczowych postaci bez `look`: strój i rekwizyty ról. */
+const KEY_OUTFITS: Record<
+  string,
+  { torso: NpcTorso; parts: readonly string[] }
+> = {
+  mira: { torso: 'vest', parts: ['prop_pouches', 'prop_wrench'] },
+  wolan: { torso: 'coat', parts: [] },
+  szron: { torso: 'jacket', parts: ['role_szron'] },
+  bajt: { torso: 'vest', parts: ['prop_backpack'] },
+  tomasz: { torso: 'vest', parts: ['prop_pouches'] },
+};
+const ALWAYS_PARTS = ['civ_skin', 'civ_pants', 'civ_boots'];
+
+/** Nazwy części `npc_civilian.glb` w stroju NPC (część obejmuje też węzły `<nazwa>_*`). */
+export function npcOutfit(def: HubNpcDef): string[] {
+  const key = KEY_OUTFITS[def.id];
+  const torso = def.look?.torso ?? key?.torso ?? 'vest';
+  const prop = def.look?.prop;
+  const props =
+    prop === undefined
+      ? (key?.parts ?? [])
+      : prop === 'none'
+        ? []
+        : [`prop_${prop}`];
+  const head = def.look?.headwear === 'hood' ? ['head_hood'] : [];
+  return [...ALWAYS_PARTS, ...TORSO_PARTS[torso], ...props, ...head];
+}
+
+/** Czy węzeł modelu należy do którejś z części stroju. */
+export const inOutfit = (name: string, parts: readonly string[]): boolean =>
+  parts.some((part) => name === part || name.startsWith(`${part}_`));
 /** Ciepła biel z palety ADR 0006 (obiekty interaktywne). */
 const MARKER_COLOR = '#fff1d6';
 const LOW_POSES: readonly NpcAnimation[] = [
@@ -74,7 +114,7 @@ let bodyTemplate: Promise<Object3D | null> | undefined;
 let clipLibrary: Promise<AnimationClip[]> | undefined;
 const loadBody = (): Promise<Object3D | null> =>
   (bodyTemplate ??= loader
-    .loadAsync('/assets/models/enemy_trooper.glb')
+    .loadAsync('/assets/models/npc_civilian.glb')
     .then(({ scene }) => scene)
     .catch(() => null));
 const loadClips = (): Promise<AnimationClip[]> =>
@@ -114,13 +154,15 @@ interface NpcView {
   animDt: number;
   animFrames: number;
   visible: boolean;
+  /** Wierzchnia warstwa stroju w odcieniu NPC z poświatą krawędzi w akcencie. */
   material: MeshToonMaterial;
+  accent: MeshBasicMaterial;
   mixer?: AnimationMixer;
   neck?: Object3D;
   head?: Object3D;
   skins: SkinnedMesh[];
   marker: Mesh;
-  /** Materiały akcesoriów (geometrie są współdzielone w HubNpcs). */
+  /** Materiały na wyłączność NPC (geometrie i materiały wspólne są w HubNpcs). */
   owned: Material[];
 }
 
@@ -163,14 +205,16 @@ function yawBone(bone: Object3D, yaw: number): void {
 }
 
 /**
- * Postacie kryjówki: manekin UAL z modelu wrogów w stonowanym materiale (grafit/granat ze słabym akcentem
- * z palety neonów, bez czerwonej poświaty i bez wyposażenia bojowego), animacje bezczynne z `npc_anims.glb`.
- * Obrót głowy i tułowia w stronę gracza: `updateNpcLook`.
+ * Postacie kryjówki: cywil `npc_civilian.glb` na szkielecie UAL (skórowane warianty stroju wybierane
+ * przez `look`, rekwizyty na kościach), animacje z `npc_anims.glb`. Wierzchnia warstwa w odcieniu NPC
+ * ze słabą poświatą krawędzi w akcencie z palety neonów. Obrót głowy i tułowia: `updateNpcLook`.
  */
 export class HubNpcs {
   readonly root = new Group();
   private readonly views: NpcView[] = [];
   private readonly geometries = new Map<string, BufferGeometry>();
+  /** Materiały wspólne dla wszystkich NPC (skóra, buty, koszule, spodnie, rekwizyty), klucz: kolor. */
+  private readonly shared = new Map<string, MeshToonMaterial>();
   private disposed = false;
   private readonly position = { x: 0, y: 0, z: 0 };
   private readonly rootPosition = { x: 0, y: 0, z: 0 };
@@ -224,6 +268,7 @@ export class HubNpcs {
         animFrames:
           index % Math.max(1, Math.round(tuning.hub.npcAnimFarFrames)),
         material: this.material(def.accent, def.look?.shade ?? index % 5),
+        accent: this.accentMaterial(def.accent),
         skins: [],
         owned: [],
       });
@@ -243,10 +288,59 @@ export class HubNpcs {
     return geometry;
   }
 
+  private accentMaterial(accent: NpcAccent): MeshBasicMaterial {
+    const material = new MeshBasicMaterial({
+      color: new Color(ACCENT_COLORS[accent]),
+      toneMapped: false,
+    });
+    material.userData.bloom = true;
+    return material;
+  }
+
+  /** Wspólny materiał tkaniny/rekwizytu w danym kolorze (dwustronny: otwarte rękawy i brzegi). */
+  private cloth(color: string): MeshToonMaterial {
+    let material = this.shared.get(color);
+    if (!material) {
+      material = new MeshToonMaterial({
+        color: new Color(color),
+        gradientMap,
+        side: DoubleSide,
+      });
+      this.shared.set(color, material);
+    }
+    return material;
+  }
+
+  /** Materiał części stroju po nazwie materiału z Blendera. */
+  private partMaterial(view: NpcView, name: string): Material {
+    const t = this.tuning.hub;
+    const pick = (colors: readonly string[], salt: string): string =>
+      colors[Math.floor(hash(`${view.def.id}${salt}`) * colors.length)]!;
+    switch (name) {
+      case 'mat_npc_outer':
+        return view.material;
+      case 'mat_npc_accent':
+        return view.accent;
+      case 'mat_npc_shirt':
+        return this.cloth(pick(t.npcShirtColors, ':shirt'));
+      case 'mat_npc_pants':
+        return this.cloth(pick(t.npcPantsColors, ':pants'));
+      case 'mat_npc_boots':
+        return this.cloth(t.npcBootsColor);
+      case 'mat_npc_skin':
+        return this.cloth(t.npcSkinColor);
+      case 'mat_npc_metal':
+        return this.cloth(t.npcMetalColor);
+      default:
+        return this.cloth(t.npcGearColor);
+    }
+  }
+
   private material(accent: NpcAccent, index: number): MeshToonMaterial {
     const material = new MeshToonMaterial({
       color: new Color(BODY_COLORS[index % BODY_COLORS.length]!),
       gradientMap,
+      side: DoubleSide,
     });
     const rim = { value: new Color(ACCENT_COLORS[accent]) };
     material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
@@ -272,13 +366,17 @@ export class HubNpcs {
     if (this.disposed || !template) return;
     for (const view of this.views) {
       const instance = clone(template);
+      const parts = npcOutfit(view.def);
+      const unused: Object3D[] = [];
       instance.traverse((node) => {
         if (!(node instanceof Mesh)) return;
-        if (node.name !== BODY_MESH) {
-          node.visible = false;
+        if (!inOutfit(node.name, parts)) {
+          unused.push(node);
           return;
         }
-        node.material = view.material;
+        const name = (node.material as Material).name;
+        node.material = this.partMaterial(view, name);
+        if (name === 'mat_npc_accent') node.userData.noOutline = true;
         if (node instanceof SkinnedMesh) {
           node.frustumCulled = true;
           node.boundingSphere = new Sphere(
@@ -288,10 +386,15 @@ export class HubNpcs {
           view.skins.push(node);
         }
       });
+      for (const node of unused) node.removeFromParent();
+      // Skórowane części stroju dzielą jeden szkielet: jedna aktualizacja macierzy kości na NPC.
+      const [first, ...rest] = view.skins;
+      if (first)
+        for (const skin of rest) skin.bind(first.skeleton, skin.bindMatrix);
+      view.skins.length = Math.min(view.skins.length, 1);
       view.root.add(instance);
       view.head = instance.getObjectByName('DEF-head');
       if (view.head) this.dress(view, view.head);
-      this.dressBody(view, instance);
       view.neck = instance.getObjectByName('DEF-neck');
       const mixer = new AnimationMixer(instance);
       for (const clip of clips) {
@@ -310,19 +413,16 @@ export class HubNpcs {
 
   /**
    * Niebojowe akcesoria na głowie (czapka, gogle, okulary, słuchawki) w osi lokalnej kości:
-   * +Y w górę, +Z do przodu; głowa ma środek w y ≈ 0,1 m i promień ≈ 0,1 m.
+   * +Y w górę, +Z do przodu; głowa ma środek w y ≈ 0,1 m i promień ≈ 0,1 m. Kaptur jest częścią
+   * `npc_civilian.glb` (`head_hood`).
    */
   private dress(view: NpcView, head: Object3D): void {
-    const accent = new MeshBasicMaterial({
-      color: new Color(ACCENT_COLORS[view.def.accent]),
-      toneMapped: false,
-    });
-    accent.userData.bloom = true;
+    const accent = view.accent;
     const cloth = new MeshToonMaterial({
       color: new Color('#262b36'),
       gradientMap,
     });
-    view.owned.push(accent, cloth);
+    view.owned.push(cloth);
     const add = (
       geometry: BoxGeometry | SphereGeometry | CylinderGeometry | TorusGeometry,
       material: Material,
@@ -354,20 +454,34 @@ export class HubNpcs {
     const headwear = view.def.look?.headwear ?? view.def.id;
     switch (headwear) {
       case 'mira':
-        add(new BoxGeometry(0.215, 0.03, 0.2), cloth, 0, 0.158, 0.0);
-        add(new BoxGeometry(0.11, 0.014, 0.004), accent, 0, 0.158, 0.102);
+        add(
+          new CylinderGeometry(0.11, 0.11, 0.03, 14, 1, true),
+          cloth,
+          0,
+          0.155,
+          0,
+        );
+        add(new BoxGeometry(0.11, 0.014, 0.004), accent, 0, 0.155, 0.111);
         break;
       case 'wolan':
       case 'goggles':
+        add(
+          new CylinderGeometry(0.112, 0.112, 0.02, 14, 1, true),
+          cloth,
+          0,
+          0.106,
+          0,
+        );
         for (const side of [-1, 1])
           add(
-            new BoxGeometry(0.072, 0.045, 0.008),
+            new CylinderGeometry(0.024, 0.024, 0.014, 10),
             accent,
             side * 0.042,
             0.106,
-            0.106,
+            0.108,
+            Math.PI / 2,
           );
-        add(new BoxGeometry(0.02, 0.008, 0.008), accent, 0, 0.114, 0.106);
+        add(new BoxGeometry(0.02, 0.008, 0.008), accent, 0, 0.108, 0.112);
         break;
       case 'szron':
       case 'cap_stripe':
@@ -455,252 +569,6 @@ export class HubNpcs {
           0,
           0.3,
         );
-        break;
-      case 'hood':
-        add(
-          new SphereGeometry(0.143, 14, 10, Math.PI, Math.PI),
-          cloth,
-          0,
-          0.1,
-          -0.015,
-        );
-        for (const side of [-1, 1])
-          add(
-            new BoxGeometry(0.035, 0.18, 0.11),
-            cloth,
-            side * 0.115,
-            0.07,
-            0.035,
-          );
-        break;
-    }
-  }
-
-  /**
-   * Ubiór na tułowiu (kamizelka, kołnierz, pas) i rekwizyt roli; części wiszą na kościach
-   * `DEF-spine003` / `DEF-hips`, a pozycje podaje się w metrach modelu w pozie spoczynkowej
-   * (+Y w górę, +Z przód). Akcenty w kolorze NPC, bez czerwieni wrogów.
-   */
-  private dressBody(view: NpcView, instance: Object3D): void {
-    instance.updateWorldMatrix(true, true);
-    const toInstance = new Matrix4().copy(instance.matrixWorld).invert();
-    const accent = view.owned.find(
-      (resource): resource is MeshBasicMaterial =>
-        resource instanceof MeshBasicMaterial,
-    );
-    const shade = view.material.color.clone();
-    const jacket = new MeshToonMaterial({
-      color: shade.multiplyScalar(1.35),
-      gradientMap,
-    });
-    const cloth = new MeshToonMaterial({
-      color: new Color('#262b36'),
-      gradientMap,
-    });
-    view.owned.push(jacket, cloth);
-    const add = (
-      boneName: string,
-      geometry: BoxGeometry,
-      material: Material,
-      position: [number, number, number],
-      rotation: [number, number, number] = [0, 0, 0],
-      name = `prop:${view.def.look?.prop ?? view.def.id}`,
-    ): void => {
-      const bone = instance.getObjectByName(boneName);
-      if (!bone) return;
-      const mesh = new Mesh(this.geometry(geometry), material);
-      mesh.name = name;
-      new Matrix4()
-        .copy(toInstance)
-        .multiply(bone.matrixWorld)
-        .invert()
-        .multiply(
-          new Matrix4()
-            .makeRotationFromEuler(new Euler(...rotation))
-            .setPosition(...position),
-        )
-        .decompose(mesh.position, mesh.quaternion, mesh.scale);
-      if (material === accent) mesh.userData.noOutline = true;
-      bone.add(mesh);
-    };
-    const chest = 'DEF-spine003';
-    const hips = 'DEF-hips';
-    const torso = view.def.look?.torso ?? 'vest';
-    const garment = (
-      bone: string,
-      size: [number, number, number],
-      material: Material,
-      position: [number, number, number],
-      rotation: [number, number, number] = [0, 0, 0],
-    ): void =>
-      add(
-        bone,
-        new BoxGeometry(...size),
-        material,
-        position,
-        rotation,
-        `torso:${torso}`,
-      );
-    if (torso !== 'none') {
-      garment(chest, [0.34, 0.3, 0.25], jacket, [0, 1.3, 0.01]);
-      garment(chest, [0.26, 0.07, 0.22], cloth, [0, 1.47, -0.005]);
-      garment(hips, [0.33, 0.055, 0.23], cloth, [0, 0.99, 0.01]);
-      if (accent) {
-        garment(hips, [0.05, 0.035, 0.01], accent, [0, 0.99, 0.13]);
-        garment(chest, [0.012, 0.2, 0.01], accent, [0.09, 1.31, 0.14]);
-      }
-    }
-    if (torso === 'apron') {
-      garment(chest, [0.25, 0.28, 0.025], cloth, [0, 1.27, 0.15]);
-      garment(hips, [0.34, 0.53, 0.025], cloth, [0, 0.72, 0.15]);
-    }
-    if (torso === 'jacket') {
-      for (const side of [-1, 1]) {
-        garment(chest, [0.13, 0.12, 0.22], jacket, [side * 0.2, 1.42, 0]);
-        garment(
-          chest,
-          [0.06, 0.24, 0.025],
-          cloth,
-          [side * 0.055, 1.34, 0.15],
-          [0, 0, side * 0.18],
-        );
-      }
-    }
-    if (torso === 'coat') {
-      garment(
-        hips,
-        [0.36, 0.62, 0.03],
-        jacket,
-        [0, 0.66, -0.14],
-        [-0.08, 0, 0],
-      );
-      for (const side of [-1, 1])
-        garment(
-          hips,
-          [0.13, 0.55, 0.03],
-          jacket,
-          [side * 0.12, 0.7, 0.13],
-          [0.06, 0, 0],
-        );
-    }
-    const prop = view.def.look?.prop ?? view.def.id;
-    switch (prop) {
-      case 'mira':
-      case 'pouches':
-        for (const side of [-1, 1])
-          add(hips, new BoxGeometry(0.07, 0.1, 0.06), cloth, [
-            side * 0.13,
-            0.94,
-            0.08,
-          ]);
-        if (prop === 'mira')
-          add(
-            hips,
-            new BoxGeometry(0.03, 0.16, 0.03),
-            jacket,
-            [0.17, 0.9, 0.0],
-            [0, 0, 0.2],
-          );
-        break;
-      case 'wolan':
-        add(
-          hips,
-          new BoxGeometry(0.36, 0.62, 0.03),
-          jacket,
-          [0, 0.66, -0.14],
-          [-0.08, 0, 0],
-        );
-        for (const side of [-1, 1])
-          add(
-            hips,
-            new BoxGeometry(0.13, 0.55, 0.03),
-            jacket,
-            [side * 0.12, 0.7, 0.13],
-            [0.06, 0, 0],
-          );
-        break;
-      case 'szron':
-        for (const side of [-1, 1])
-          add(chest, new BoxGeometry(0.13, 0.04, 0.16), jacket, [
-            side * 0.2,
-            1.47,
-            0,
-          ]);
-        if (accent)
-          add(
-            chest,
-            new BoxGeometry(0.06, 0.012, 0.01),
-            accent,
-            [-0.08, 1.38, 0.14],
-          );
-        break;
-      case 'bajt':
-      case 'backpack':
-        add(chest, new BoxGeometry(0.28, 0.32, 0.12), cloth, [0, 1.28, -0.18]);
-        if (accent)
-          add(
-            chest,
-            new BoxGeometry(0.16, 0.08, 0.01),
-            accent,
-            [0, 1.33, -0.245],
-          );
-        break;
-      case 'tomasz':
-        for (const x of [-0.1, 0, 0.1])
-          add(chest, new BoxGeometry(0.07, 0.09, 0.05), cloth, [x, 1.22, 0.15]);
-        add(chest, new BoxGeometry(0.3, 0.3, 0.06), jacket, [0, 1.3, -0.15]);
-        break;
-      case 'satchel':
-        add(
-          chest,
-          new BoxGeometry(0.035, 0.43, 0.025),
-          cloth,
-          [0, 1.23, 0.155],
-          [0, 0, -0.55],
-        );
-        add(hips, new BoxGeometry(0.16, 0.2, 0.12), cloth, [0.22, 0.87, 0]);
-        if (accent)
-          add(
-            hips,
-            new BoxGeometry(0.05, 0.025, 0.012),
-            accent,
-            [0.22, 0.88, 0.065],
-          );
-        break;
-      case 'wrench':
-        add(
-          hips,
-          new BoxGeometry(0.025, 0.18, 0.025),
-          jacket,
-          [0.19, 0.89, 0.03],
-        );
-        for (const side of [-1, 1])
-          add(hips, new BoxGeometry(0.018, 0.045, 0.025), jacket, [
-            0.19 + side * 0.025,
-            0.99,
-            0.03,
-          ]);
-        break;
-      case 'toolbelt':
-        add(hips, new BoxGeometry(0.37, 0.07, 0.25), cloth, [0, 0.98, 0]);
-        for (const side of [-1, 1]) {
-          add(hips, new BoxGeometry(0.09, 0.12, 0.07), cloth, [
-            side * 0.14,
-            0.9,
-            0.11,
-          ]);
-          add(hips, new BoxGeometry(0.025, 0.19, 0.025), jacket, [
-            side * 0.2,
-            0.9,
-            0.02,
-          ]);
-          if (accent)
-            add(hips, new BoxGeometry(0.06, 0.025, 0.03), accent, [
-              side * 0.2,
-              1,
-              0.02,
-            ]);
-        }
         break;
     }
   }
@@ -832,9 +700,12 @@ export class HubNpcs {
       view.mixer?.uncacheRoot(view.mixer.getRoot());
       for (const skin of view.skins) skin.skeleton.dispose();
       view.material.dispose();
+      view.accent.dispose();
       for (const resource of view.owned) resource.dispose();
     }
     this.views.length = 0;
+    for (const material of this.shared.values()) material.dispose();
+    this.shared.clear();
     this.markerGeometry.dispose();
     this.markerMaterial.dispose();
     for (const geometry of this.geometries.values()) geometry.dispose();

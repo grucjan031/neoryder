@@ -15,7 +15,7 @@ const library = await load('public/assets/models/npc_anims.glb');
 for (const clip of library.animations.filter((c) =>
   c.name.startsWith('Sitting'),
 )) {
-  const { scene } = await load('public/assets/models/enemy_trooper.glb');
+  const { scene } = await load('public/assets/models/npc_civilian.glb');
   const mixer = new AnimationMixer(scene);
   mixer.clipAction(clip).play();
   const names = ['DEF-hips', 'DEF-footL', 'DEF-footR', 'DEF-toeL', 'DEF-toeR'];
@@ -41,8 +41,7 @@ for (const clip of library.animations.filter((c) =>
       });
     }
     scene.traverse((node) => {
-      if (!(node instanceof SkinnedMesh) || node.name !== 'armored_body')
-        return;
+      if (!(node instanceof SkinnedMesh) || node.name !== 'civ_boots') return;
       node.skeleton.update();
       for (
         let vertex = 0;
