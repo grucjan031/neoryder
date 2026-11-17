@@ -144,6 +144,31 @@ it('oprawa: definicje świateł (renderer włącza 8 najbliższych) i paleta Neo
     expect(allowed.has(color.toLowerCase())).toBe(true);
 });
 
+it('neonTexts są opcjonalne i dopuszczają wyłącznie kolory palety Neon Noir', () => {
+  expect(layout.neonTexts?.map(({ text }) => text)).toEqual([
+    'NA ANTENIE',
+    'JADŁODAJNIA',
+    'KWATERY',
+    'RADIO ISKRA',
+    'TARG',
+  ]);
+  expect(
+    loadHubLayout({ ...hideoutData, neonTexts: undefined }).neonTexts,
+  ).toBeUndefined();
+  const text = layout.neonTexts![0]!;
+  for (const color of ['#ffae1a', '#6dff4a', '#8a5cff', '#3d7bff', '#fff1d6'])
+    expect(() =>
+      loadHubLayout({ ...hideoutData, neonTexts: [{ ...text, color }] }),
+    ).not.toThrow();
+  for (const color of ['#e0262b', '#00e5ff', '#ff2bd6', '#ffffff', 'amber'])
+    expect(
+      paths({ ...hideoutData, neonTexts: [{ ...text, color }] }),
+    ).toContain('neonTexts.0.color');
+  expect(
+    paths({ ...hideoutData, neonTexts: [{ ...text, text: ' ' }] }),
+  ).toContain('neonTexts.0.text');
+});
+
 it('stacje: strefy się nie nachodzą i mają jasne obiekty interaktywne', () => {
   for (const a of layout.stations)
     for (const b of layout.stations) {

@@ -246,6 +246,7 @@ export class HubScene implements Scene {
       this.layout.stations,
       this.layout.fires ?? [],
       ctx.tuning.hub,
+      this.layout.neonTexts ?? [],
     );
     this.root.add(this.decor.root);
 

@@ -52,6 +52,13 @@ export const hubStationSignSchema = z.object({
   color: hexColor.optional(),
 });
 
+/** Kosmetyczny napis układu, niezależny od stacji; wyłącznie paleta Neon Noir. */
+export const hubNeonTextSchema = hubStationSignSchema.extend({
+  text: z.string().trim().min(1),
+  color: z.enum(['#ffae1a', '#6dff4a', '#8a5cff', '#3d7bff', '#fff1d6']),
+});
+export type HubNeonTextDef = z.infer<typeof hubNeonTextSchema>;
+
 export const hubStationSchema = z.object({
   id: z.enum(HUB_STATION_IDS),
   /** Środek strefy na podłodze. */
@@ -222,6 +229,7 @@ export const hubLayoutSchema = z
     blocks: z.array(hubBlockSchema),
     stations: z.array(hubStationSchema).min(1),
     panels: z.array(hubPanelSchema).optional(),
+    neonTexts: z.array(hubNeonTextSchema).optional(),
     npcs: z.array(hubNpcSchema).optional(),
     fires: z.array(hubFireSchema).optional(),
   })
