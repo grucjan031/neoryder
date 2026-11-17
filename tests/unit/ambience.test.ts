@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Group } from 'three';
 import { AudioSystem } from '../../src/audio/audioSystem';
+import { AmbienceSynth } from '../../src/audio/ambienceSynth';
 import { ambienceAttenuation, selectAmbience } from '../../src/audio/ambience';
 import {
   ambienceKindSchema,
@@ -146,6 +147,59 @@ const source = (x = 0): AmbienceSource => ({
   position: { x, y: 0, z: 0 },
   radiusM: 10,
   gain: 1,
+});
+
+it('trzy frazy jukebox mają różne tempa, bufory i akordy, a źródło przekazuje track', () => {
+  const { ctx, log } = fakeBackend();
+  const synth = new AmbienceSynth(
+    ctx,
+    ctx.createBuffer(1, 1, ctx.sampleRate),
+    tuning.audio,
+    new Rng('tracks'),
+  );
+  const out = ctx.createGain();
+  const graphs = [0, 1, 2].map((track) =>
+    synth.create('jukebox', out, undefined, track),
+  );
+  const buffers = log.buffers.slice(1);
+  expect(new Set(buffers.map((b) => b.length)).size).toBe(3);
+  expect(tuning.audio.ambienceJukeboxPhrases.rain.chordSemitones).not.toEqual(
+    tuning.audio.ambienceJukeboxChordSemitones,
+  );
+  expect(tuning.audio.ambienceJukeboxPhrases.dawn.chordSemitones).not.toEqual(
+    tuning.audio.ambienceJukeboxChordSemitones,
+  );
+  const count = log.buffers.length;
+  graphs.push(synth.create('jukebox', out, undefined, 1));
+  expect(log.buffers).toHaveLength(count);
+  for (const graph of graphs) graph.dispose();
+  const a = setup();
+  a.audio.setAmbience([{ ...source(), kind: 'jukebox', track: 2 }]);
+  a.audio.updateAmbience(false);
+  expect(a.fake.log.buffers.at(-1)!.length).toBe(buffers[2]!.length);
+  a.audio.dispose();
+});
+
+it('soundscape przekazuje utwór 0→1→2→0 do źródła jukebox', () => {
+  const c = setup();
+  const setAmbience = vi.spyOn(c.audio, 'setAmbience');
+  const soundscape = new HubSoundscape(
+    {
+      audio: c.audio,
+      bus: new EventBus(),
+      rng: new Rng('source'),
+      tuning,
+    } as GameContext,
+    new Group(),
+    loadHubLayout(hideout),
+  );
+  for (const track of [1, 2, 0]) {
+    soundscape.setJukeboxTrack(track);
+    const sources = setAmbience.mock.calls.at(-1)![0]!;
+    expect(sources.find((s) => s.kind === 'jukebox')?.track).toBe(track);
+  }
+  soundscape.dispose();
+  c.audio.dispose();
 });
 
 describe('źródła kryjówki', () => {

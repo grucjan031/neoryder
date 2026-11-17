@@ -24,6 +24,7 @@ export const ambienceSourceSchema = z
       .strict(),
     radiusM: z.number().finite().positive(),
     gain: z.number().finite().nonnegative().optional(),
+    track: z.number().int().min(0).max(2).optional(),
   })
   .strict();
 export type AmbienceSource = z.infer<typeof ambienceSourceSchema>;

@@ -1,0 +1,17 @@
+.hub-warmth {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 45%,
+    rgb(84 44 12 / 48%) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-warmth {
+    display: none;
+  }
+}

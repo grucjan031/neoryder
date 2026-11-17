@@ -1,5 +1,35 @@
 # API między modułami (kontrakty)
 
+## Rekwizyty kryjówki
+
+`HubLayout.props?`: `{ id: string, kind: 'jukebox' | 'noodles' | 'radio' | 'bag',
+label: string, focus: { position: Vec3, size: Vec3 } }[]`. Id są unikalne,
+wymiary focus dodatnie. `label` pochodzi z walidowanego `hub/props.pl.json`.
+`selectHubTarget(..., focusPaddingM, props = [])` wybiera najbliższe trafienie
+spośród stacji, NPC i rekwizytów; cel rekwizytu ma `{ kind: 'prop', id }`.
+
+`HubProps` jest stanem symulacji bez DOM/Three.js: `step(dt)`,
+`use(id, yaw, interruptRadio = false): boolean`, `snapshot` oraz `bags` (kąt X/Z, poprzedni kąt,
+prędkość). Przy zaakceptowanym użyciu emituje
+`hub_prop_used: { prop: string; kind: 'jukebox' | 'noodles' | 'radio' | 'bag' }`.
+Cooldown jest osobny dla każdego id; radio może zostać przerwane również w
+czasie cooldownu. `HubChatter.activeId` identyfikuje rozmowę także w przerwach
+między kwestiami. `interrupt(true)` nakłada cooldown przerwanej rozmowy;
+domyślne `interrupt()` zachowuje możliwość natychmiastowego powrotu.
+Scena kieruje jukebox do `HubSoundscape.setJukeboxTrack(track)` i pokazuje
+kwestię `say`; makaron do Heli i kosmetycznej nakładki; radio przełącza
+`force('lena_radio_broadcast')` / `interrupt()`. Audio filtruje regułę
+`hub_prop_used` przez `when.kind` (np. `bag` → `bagHit`).
+
+`AmbienceSource.track?: number` (całkowite 0..2) wybiera frazę jukebox;
+brak oznacza 0. `AmbienceSynth.create(kind, out, hub?, track = 0)` uwzględnia
+utwór w kluczu bufora. `query('hubProps')` zwraca
+`[{ id, kind, cooldownLeft, track?, angle? }]`; `hub use <id>` używa tego samego
+cooldownu i efektów co E, bez wymogu bliskości. Atak działa tylko na worek
+wybrany promieniem w zasięgu. Ruch worka nie ma collidera.
+
+`neonTexts[].flicker` używa `FlickerDef`, identycznie jak napisy stacji.
+
 ## Migotanie oprawy
 
 `FlickerDef` (`src/world/dressingSchema.ts`): `{ pattern: 'buzz' | 'fail' |

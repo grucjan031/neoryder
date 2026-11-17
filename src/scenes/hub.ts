@@ -13,6 +13,10 @@ import type { SaveStore } from '../core/save';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import hideoutData from '../data/hub/hideout.json';
 import npcTextData from '../data/hub/npcs.pl.json';
+import propTextData from '../data/hub/props.pl.json';
+import { HubProps, hubPropTextsSchema } from '../world/hubProps';
+import { HubPropView } from './hubPropView';
+import { HubWarmth } from '../ui/hubWarmth';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
 import { PlayerController } from '../player/playerController';
@@ -107,7 +111,7 @@ const IDLE_BLADE: BladeView = {
 };
 
 const stationList = HUB_STATION_IDS.join('|');
-const lookList = `${stationList}|<npc>`;
+const lookList = `${stationList}|<npc>|<propId>`;
 // E jest przypisane do power2; w kryjówce nie ma walki ani mocy.
 const HUB_INTERACT_ACTION = 'power2';
 
@@ -139,6 +143,9 @@ export class HubScene implements Scene {
     height: number;
     translation: Vec3;
   }[] = [];
+  private props!: HubProps;
+  private propView?: HubPropView;
+  private warmth?: HubWarmth;
   private chatter!: HubChatter;
   private greetings!: HubGreetings;
   private arrival: HubArrival | null = null;
@@ -261,6 +268,16 @@ export class HubScene implements Scene {
       `${this.layout.id}:labels`,
     );
     this.root.add(this.decor.root);
+    this.props = new HubProps(
+      this.layout.props ?? [],
+      ctx.tuning.hub,
+      ctx.bus,
+      ctx.rng.fork('hub-props'),
+      hubPropTextsSchema.parse(propTextData),
+    );
+    this.propView = new HubPropView(this.props, ctx.tuning.hub);
+    this.root.add(this.propView.root);
+    if (this.screensOption === undefined) this.warmth = new HubWarmth();
 
     this.buildNpcs();
     this.chatter = new HubChatter(
@@ -305,6 +322,9 @@ export class HubScene implements Scene {
       ctx.bus,
     );
     this.off.push(
+      ctx.bus.on('hub_prop_used', ({ prop, kind }) =>
+        this.onPropUsed(prop, kind),
+      ),
       ctx.bus.on('hub_station_opened', ({ station }) =>
         this.showStation(station),
       ),
@@ -525,7 +545,44 @@ export class HubScene implements Scene {
       state.pitch,
       t.interactRangeM,
       t.focusPaddingM,
+      this.layout.props ?? [],
     );
+  }
+
+  private useProp(id: string): boolean {
+    if (this.stations.opened) return false;
+    return this.props.use(
+      id,
+      this.player.getState().yaw,
+      this.chatter.activeId === 'lena_radio_broadcast',
+    );
+  }
+
+  private onPropUsed(
+    id: string,
+    kind: 'jukebox' | 'noodles' | 'radio' | 'bag',
+  ): void {
+    if (kind === 'bag') return;
+    this.endTalk();
+    // First-use arrival must not replace a prop's explicit message.
+    this.arrivalPending = false;
+    if (kind === 'jukebox') {
+      const track = this.props.track(id);
+      this.soundscape?.setJukeboxTrack(track);
+      this.chatter.say({
+        conversation: id,
+        npc: this.props.texts.jukebox.speaker,
+        text: this.props.texts.jukebox.tracks[track]!,
+      });
+    } else if (kind === 'noodles') {
+      this.chatter.say({
+        conversation: id,
+        npc: 'hela',
+        text: this.props.noodleLine(),
+      });
+    } else if (this.chatter.activeId === 'lena_radio_broadcast')
+      this.chatter.interrupt(true);
+    else this.chatter.force('lena_radio_broadcast');
   }
 
   private focusedStation(): HubStationId | null {
@@ -619,6 +676,7 @@ export class HubScene implements Scene {
     this.previous = this.player.getState();
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
     if (this.stations.opened || !(dt > 0)) return;
+    this.props.step(dt);
     const player = this.player.getState().position;
     for (const state of this.npcStates)
       state.step(dt, player, this.talk?.line.id === state.def.id);
@@ -636,8 +694,15 @@ export class HubScene implements Scene {
     const target = this.focusedTarget();
     if (!discardInteract && target && input.pressed.has(HUB_INTERACT_ACTION)) {
       if (target.kind === 'station') this.stations.open(target.id);
+      else if (target.kind === 'prop') this.useProp(target.id);
       else this.talkTo(target.id);
     }
+    if (
+      target?.kind === 'prop' &&
+      input.pressed.has('attack') &&
+      this.layout.props?.find((p) => p.id === target.id)?.kind === 'bag'
+    )
+      this.useProp(target.id);
     this.tickTalk(dt);
     this.chatter.step(
       dt,
@@ -674,6 +739,11 @@ export class HubScene implements Scene {
         this.stations.opened !== null || this.talk !== null,
         name,
       );
+    } else if (target?.kind === 'prop') {
+      this.prompt?.update(
+        this.layout.props?.find((p) => p.id === target.id)?.label ?? null,
+        this.stations.opened !== null,
+      );
     } else
       this.prompt?.update(
         this.layout.stations.find(
@@ -681,6 +751,11 @@ export class HubScene implements Scene {
         )?.label ?? null,
         this.stations.opened !== null,
       );
+    this.propView?.render(alpha);
+    this.warmth?.update(
+      this.props.warmthLeft,
+      this.ctx.tuning.hub.noodlesWarmthS,
+    );
     this.decor?.update(frameDt);
     this.chatterUi?.update(this.chatter.line);
     this.npcs?.render(
@@ -728,6 +803,8 @@ export class HubScene implements Scene {
 
   query(name: string): unknown {
     switch (name) {
+      case 'hubProps':
+        return this.props.snapshot;
       case 'hubAmbience':
         return this.soundscape?.query() ?? [];
       case 'meta':
@@ -792,6 +869,10 @@ export class HubScene implements Scene {
     };
     const metaCommands = registerMetaCommands(host, this.meta, this.metaStore!);
     this.off.push(() => metaCommands.dispose());
+    register('hub use', 'hub use <propId>', (args) => {
+      if (args.length !== 1 || !args[0]) return 'hub use <propId>';
+      return String(this.useProp(args[0]));
+    });
     register(
       'hub arrive',
       'hub arrive <firstVisit|victory|death> — odtwórz przybycie do kryjówki',
@@ -829,7 +910,9 @@ export class HubScene implements Scene {
         const station = this.layout.stations.find(({ id }) => id === args[0]);
         const npc = this.layout.npcs?.find(({ id }) => id === args[0]);
         const focus =
-          station?.focus ?? (npc ? this.npcById.get(npc.id)?.focus : undefined);
+          station?.focus ??
+          (npc ? this.npcById.get(npc.id)?.focus : undefined) ??
+          this.layout.props?.find((p) => p.id === args[0])?.focus;
         if (args.length !== 1 || !focus)
           return `Użycie: hub look <${lookList}>`;
         const eye = this.eyePosition();
@@ -908,6 +991,8 @@ export class HubScene implements Scene {
       this.stations?.dispose();
       this.screens?.dispose();
       this.prompt?.dispose();
+      this.propView?.dispose();
+      this.warmth?.dispose();
       this.dialogUi?.dispose();
       this.chatterUi?.dispose();
       this.npcs?.dispose();

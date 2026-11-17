@@ -464,6 +464,18 @@ export const tuning = {
     ambienceRadioToneS: 0.16,
     ambienceRadioToneGain: 0.18,
     ambienceJukeboxBpm: 90,
+    ambienceJukeboxPhrases: {
+      rain: {
+        bpm: 76,
+        roots: [0, -4, -7, -2],
+        chordSemitones: [12, 15, 19, 26],
+      },
+      dawn: {
+        bpm: 104,
+        roots: [-2, -7, 0, -5],
+        chordSemitones: [12, 17, 19, 22],
+      },
+    },
     ambienceJukeboxBars: 8,
     ambienceJukeboxBeatsPerBar: 4,
     ambienceJukeboxRootHz: 55,
@@ -749,6 +761,19 @@ export const tuning = {
   run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },
   /** Kryjówka: zasięg od oka i margines bryły interakcji (m). */
   hub: {
+    propCooldownS: 1,
+    noodlesCooldownS: 20,
+    noodlesWarmthS: 2,
+    bagImpulseRadS: 0.8,
+    bagGravityRadS2: 3.4,
+    bagDamping: 0.75,
+    bagMaxAngleRad: 0.5,
+    bagRestEpsilon: 0.001,
+    bagCeilingM: 5,
+    bagRopeRadiusM: 0.018,
+    bagRopeSegments: 8,
+    bagRimExtraM: 0.02,
+    bagRimHeightM: 0.1,
     trainIntervalS: { min: 70, max: 140 },
     trainFirstS: { min: 25, max: 40 },
     trainDurationS: 7,

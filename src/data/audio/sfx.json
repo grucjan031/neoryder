@@ -1,5 +1,33 @@
 {
   "sounds": {
+    "bagHit": {
+      "variants": [
+        [
+          {
+            "wave": "sine",
+            "freq": 95,
+            "freqEnd": 42,
+            "durationS": 0.22,
+            "attackS": 0.008,
+            "gain": 0.65
+          },
+          {
+            "wave": "noise",
+            "durationS": 0.12,
+            "attackS": 0.005,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq": 320,
+              "q": 0.7
+            }
+          }
+        ]
+      ],
+      "volume": 0.5,
+      "pitch": [0.92, 1.06],
+      "cooldownS": 0.15
+    },
     "explosion": {
       "volume": 0.9,
       "pitch": [0.96, 1.04],
@@ -607,6 +635,7 @@
     },
     { "event": "enemy_telegraph", "sound": "telegraph" },
     { "event": "wave_started", "sound": "waveStart" },
-    { "event": "wave_cleared", "sound": "waveCleared" }
+    { "event": "wave_cleared", "sound": "waveCleared" },
+    { "event": "hub_prop_used", "when": { "kind": "bag" }, "sound": "bagHit" }
   ]
 }

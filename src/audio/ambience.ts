@@ -105,7 +105,12 @@ export class Ambience {
       const source = this.sources[index]!;
       let graph = this.graphs.get(index);
       if (!graph) {
-        graph = this.synth.create(source.kind, this.bus);
+        graph = this.synth.create(
+          source.kind,
+          this.bus,
+          undefined,
+          source.track ?? 0,
+        );
         this.graphs.set(index, graph);
       }
       const gain =

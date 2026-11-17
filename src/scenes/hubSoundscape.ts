@@ -2,6 +2,7 @@ import { BoxGeometry, InstancedMesh, MeshBasicMaterial, Object3D } from 'three';
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import { loadAmbience } from '../audio/ambienceSchema';
+import type { AmbienceSource } from '../audio/ambienceSchema';
 import ambienceData from '../data/hub/ambience.json';
 import { hubAmbienceSources } from '../world/hubAmbience';
 import type { HubLayout } from '../world/hubSchema';
@@ -10,6 +11,7 @@ import { TrainDust } from '../vfx/trainDust';
 
 /** Podpięcie audio i kosmetyki bez zależności od NPC i modułu renderującego. */
 export class HubSoundscape {
+  private readonly sources: AmbienceSource[];
   private readonly train: HubTrain;
   private readonly dust: TrainDust;
   private readonly mesh: InstancedMesh;
@@ -40,9 +42,12 @@ export class HubSoundscape {
     this.mesh.frustumCulled = false;
     this.mesh.count = 0;
     parent.add(this.mesh);
-    ctx.audio?.setAmbience(
-      hubAmbienceSources(layout, loadAmbience(ambienceData), ctx.tuning.audio),
+    this.sources = hubAmbienceSources(
+      layout,
+      loadAmbience(ambienceData),
+      ctx.tuning.audio,
     );
+    ctx.audio?.setAmbience(this.sources);
     this.off = ctx.commands?.register(
       'hub train',
       'hub train — wymuś przejazd pociągu',
@@ -52,6 +57,12 @@ export class HubSoundscape {
         return 'Pociąg przejeżdża za ścianą.';
       },
     );
+  }
+
+  setJukeboxTrack(track: number): void {
+    for (const source of this.sources)
+      if (source.kind === 'jukebox') source.track = track;
+    this.ctx.audio?.setAmbience(this.sources);
   }
 
   step(dt: number, player: Vec3): void {

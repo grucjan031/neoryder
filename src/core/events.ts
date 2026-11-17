@@ -146,6 +146,10 @@ export interface GameEvents {
   unlock_purchased: { id: string };
   loadout_changed: { loadout: LoadoutChoice };
   threat_selected: { level: number };
+  hub_prop_used: {
+    prop: string;
+    kind: 'jukebox' | 'noodles' | 'radio' | 'bag';
+  };
   hub_station_opened: { station: HubStationId };
   hub_chatter_line: { conversation: string; npc: string; text: string };
 }
