@@ -8,7 +8,7 @@ import type { MetaState } from './metaTypes';
 import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export interface MetaSave {
   saveVersion: number;
   createdAt: number;
@@ -77,6 +77,8 @@ const count = z.number().int().nonnegative();
 const runEndedSchema: z.ZodType<RunEnded> = z.object({
   runId: z.string().min(1),
   summary: z.object({
+    missionId: z.string().min(1).optional(),
+    missionCompleted: z.boolean().optional(),
     outcome: z.enum(['victory', 'death']),
     seed: z.string(),
     loadoutId: z.string().min(1),
@@ -118,6 +120,13 @@ const metaMigrations: readonly Migration[] = [
     data.meta === undefined
       ? { ...data, meta: createStarterMetaState() }
       : { ...data },
+  (data) => ({
+    ...data,
+    meta: {
+      ...recordSchema.parse(data.meta),
+      campaign: { completed: [], pendingDebrief: null },
+    },
+  }),
 ];
 
 /** Run 2→3: dopisuje ekwipunek z presetu `loadoutId`, talenty i Poziom zagrożenia; nieznany preset = zapis nieczytelny. */
@@ -145,6 +154,7 @@ const runMigrations: readonly Migration[] = [
       },
     };
   },
+  identity,
 ];
 
 function isFuture(data: unknown): boolean {

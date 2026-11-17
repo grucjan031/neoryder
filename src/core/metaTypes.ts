@@ -41,6 +41,7 @@ export interface MetaRunRecord {
 }
 
 export interface MetaState {
+  campaign: { completed: string[]; pendingDebrief: string | null };
   /** Łączne doświadczenie; poziom wynika z krzywej w danych. */
   xp: number;
   /** Dane. */

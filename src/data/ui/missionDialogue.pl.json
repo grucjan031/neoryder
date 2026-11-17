@@ -1,0 +1,24 @@
+{
+  "heading": "Cele misji",
+  "locked": "Zablokowane",
+  "available": "Dostępna",
+  "completed": "Ukończona",
+  "requires": "Wymagane misje: ",
+  "regular": "Zwykły run",
+  "briefing": "Odprawa",
+  "debrief": "Powrót na Kamienną",
+  "start": "Rozpocznij misję",
+  "back": "Wróć do tablicy",
+  "close": "Zakończ rozmowę",
+  "fuse": "Do wybuchu",
+  "speakers": {
+    "szron": "Szron",
+    "mira": "Mira",
+    "bajt": "Bajt",
+    "tomasz": "Tomasz",
+    "ida": "Ida",
+    "wolan": "Wolan",
+    "nadia": "Nadia",
+    "tymon": "Tymon"
+  }
+}

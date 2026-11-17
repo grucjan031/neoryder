@@ -564,7 +564,7 @@ it('saveMetaManager: zachowuje createdAt, ustawia updatedAt i wersję 3', async 
   await saveMetaManager(store, manager, () => 250);
   const saved = (await store.loadMeta())!;
   expect(saved).toMatchObject({
-    saveVersion: 3,
+    saveVersion: 4,
     createdAt: 100,
     updatedAt: 250,
   });

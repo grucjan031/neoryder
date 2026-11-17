@@ -92,6 +92,13 @@ type RadioTrigger =
 
 Walidacja przy starcie (jak inne dane): `roomId` istnieje i ma typ zgodny z `type`; każdy cel z `fixedNodes` jest zdefiniowany; `spawnAfter`/`unlockAfter` wskazują istniejące cele; dokładnie jeden węzeł `final`; warstwy w zakresie `1..layers`.
 
+### 2a. Uzupełnienie 17 XI 2026 (po eskalacji wykonawcy)
+
+- **Pule pokojów:** opcjonalne `roomPools?: { fromLayer: number; toLayer: number; type: NodeType; rooms: string[] }[]` — dla węzłów niestałych danego typu w zakresie warstw losujemy pokój tylko z tej listy (deterministycznie z ziarna). Bez wpisu — zwykłe losowanie sektora.
+- **Wrogowie misji:** opcjonalne `enemies?: string[]` — biała lista archetypów dla planowania fal we wszystkich pokojach misji (budżet zagrożenia sektora bez zmian, wybór tylko z listy). Ograniczenia warstw sektora (np. wieżyczki od warstwy 4) w misji nie obowiązują dla archetypów z listy. M01: `assaulter`, `gunner`, `turret`.
+- **Osłona celów:** opcjonalne `guards?: { enemy: string; count: number; nearObjective: string; radiusM: number }[]` przy węźle stałym — wrogowie ustawieni na starcie pokoju przy celu (np. wieżyczki przy masztach: 1, 1, 2), niezależnie od fal; pokój kończy się, gdy cele są `done` (osłona nie musi zginąć).
+- **Typ pokoju vs węzeł:** walidacja wymaga zgodności typów. Gdy misja potrzebuje geometrii pokoju o innym typie (M01 warstwa 1: `alleyUnderpass` ma typ `elite`), tworzymy wariant danych `<id>Mission` z tą samą geometrią i właściwym typem (`alleyUnderpassMission`, `combat`); oryginał bez zmian, zwykły run go nie losuje (pokoje `*Mission` wykluczone z puli sektora).
+
 ## 3. Interakcja: strefy z paskiem postępu, bez nowego klawisza
 
 W runie `E` to `power2`, a `F` to `power`, więc cele **nie** używają klawisza interakcji. Każdy cel interaktywny to **strefa**: gracz stoi w niej przez `holdS`, pasek postępu w świecie i w HUD rośnie; wyjście ze strefy zatrzymuje postęp (nie zeruje). Ten sam mechanizm obsługuje `defend` (M03: postęp tylko, gdy gracz jest w strefie). `pickup` zbiera się przez wejście w mały promień.

@@ -1,4 +1,5 @@
 import type { EventBus } from '../core/events';
+import { missionDefinitions } from '../world/missions';
 import {
   MAX_APPLIED_RUN_IDS,
   MAX_LAST_RUNS,
@@ -230,6 +231,16 @@ export class MetaManager {
       this.rules.progression.rewards,
     );
     const victory = summary.outcome === 'victory';
+    if (victory && summary.missionCompleted && summary.missionId) {
+      const mission = missionDefinitions.get(summary.missionId);
+      if (!mission) throw new Error(`Nieznana misja: ${summary.missionId}`);
+      if (!s.campaign.completed.includes(mission.id)) {
+        rewards.data += mission.rewards.firstClear.data;
+        rewards.cores += mission.rewards.firstClear.cores ?? 0;
+        s.campaign.completed.push(mission.id);
+      }
+      s.campaign.pendingDebrief = mission.id;
+    }
     s.xp += rewards.xp;
     s.data += rewards.data;
     s.cores += rewards.cores;
@@ -271,6 +282,10 @@ export class MetaManager {
     for (let level = levelBefore + 1; level <= levelAfter; level += 1)
       this.events?.emit('level_up', { level });
     return { applied: true, rewards, levelBefore, levelAfter, threatUnlocked };
+  }
+
+  clearDebrief(): void {
+    this.current.campaign.pendingDebrief = null;
   }
 
   buyUnlock(id: string): void {

@@ -25,7 +25,11 @@ export function readSplashAct(
 ): Promise<SplashAct> {
   const read = (async (): Promise<SplashAct> => {
     const meta = await loadMetaManager(store ?? createIndexedDbSaveStore());
-    return unlockedSplashAct(meta.state.stats.victories);
+    return unlockedSplashAct(
+      meta.state.campaign.completed.length
+        ? meta.state.campaign.completed
+        : meta.state.stats.victories,
+    );
   })().catch((): SplashAct => 1);
   return new Promise((resolve) => {
     const timer = setTimeout(() => resolve(1), timeoutMs);

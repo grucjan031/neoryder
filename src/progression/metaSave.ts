@@ -51,7 +51,7 @@ export async function loadMetaManagerStrict(
 const queues = new WeakMap<SaveStore, Promise<void>>();
 
 /**
- * Zapisuje bieżący stan `MetaManager` jako `MetaSave` v3 (zachowuje `createdAt` istniejącego
+ * Zapisuje bieżący stan `MetaManager` jako `MetaSave` v4 (zachowuje `createdAt` istniejącego
  * zapisu, ustawia `updatedAt`). Migawka stanu powstaje w chwili wywołania, a zapisy do jednego
  * `SaveStore` idą po kolei, więc starszy stan nie nadpisze nowszego. Błąd zapisu odrzuca obietnicę.
  */

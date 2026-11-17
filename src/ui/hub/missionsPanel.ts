@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import { missionDefinitions } from '../../world/missions';
+import type { MissionDefinition } from '../../world/missionSchema';
+import { dialogueLines } from '../missionUi';
+import missionText from '../../data/ui/missionDialogue.pl.json';
 import textData from '../../data/ui/missions.pl.json';
 import { threatLevels } from '../../progression/threatSchema';
 import type { ThreatLevel } from '../../progression/threatSchema';
@@ -92,10 +96,17 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   root.dataset.panel = 'missions';
 
   const sector = el('section', 'missions-panel__sector');
-  sector.append(
-    el('h2', 'missions-panel__sector-name', text.sector.name),
-    el('p', 'missions-panel__sector-text', text.sector.description),
+  const sectorName = el('h2', 'missions-panel__sector-name', text.sector.name);
+  const sectorDescription = el(
+    'p',
+    'missions-panel__sector-text',
+    text.sector.description,
   );
+  sector.append(sectorName, sectorDescription);
+  const describe = (mission?: MissionDefinition) => {
+    sectorName.textContent = mission?.title ?? text.sector.name;
+    sectorDescription.textContent = mission?.summary ?? text.sector.description;
+  };
 
   const heading = el('h3', 'missions-panel__heading', text.threat.heading);
   const list = el('div', 'missions-panel__levels');
@@ -106,6 +117,63 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   const status = el('p', 'missions-panel__status');
   status.setAttribute('role', 'status');
 
+  let selectedMission: MissionDefinition | undefined;
+  const choices = el('section');
+  choices.dataset.missionList = '';
+  const briefing = el('section');
+  briefing.dataset.missionBriefing = '';
+  briefing.hidden = true;
+  const missionButtons = [...missionDefinitions.values()]
+    .sort((a, b) => a.number - b.number)
+    .map((mission) => {
+      const button = el('button', 'mission-choice');
+      button.type = 'button';
+      button.dataset.mission = mission.id;
+      button.addEventListener('click', () => {
+        selectedMission = mission;
+        describe(mission);
+        const back = el('button', 'mission-choice', missionText.back);
+        back.type = 'button';
+        back.addEventListener('click', () => {
+          selectedMission = undefined;
+          describe();
+          briefing.hidden = true;
+          choices.hidden = false;
+          sector.hidden = false;
+          heading.hidden = false;
+          list.hidden = false;
+          start.textContent = text.start;
+          button.focus();
+        });
+        briefing.replaceChildren(
+          el('h3', undefined, `${missionText.briefing} · ${mission.title}`),
+          dialogueLines(mission.briefing),
+          back,
+        );
+        briefing.hidden = false;
+        choices.hidden = true;
+        sector.hidden = false;
+        heading.hidden = true;
+        list.hidden = true;
+        start.textContent = missionText.start;
+        briefing.tabIndex = -1;
+        briefing.focus({ preventScroll: true });
+        sector.scrollIntoView({ block: 'start' });
+      });
+      choices.append(button);
+      return { mission, button };
+    });
+  const regular = el('button', 'mission-choice', missionText.regular);
+  regular.type = 'button';
+  regular.dataset.mission = 'regular';
+  regular.addEventListener('click', () => {
+    selectedMission = undefined;
+    describe();
+    briefing.hidden = true;
+    start.textContent = text.start;
+    start.focus();
+  });
+  choices.append(regular);
   let disposed = false;
   let busy = false;
 
@@ -160,12 +228,34 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       loadout: 'meta',
       seed: seedInput.value.trim() || randomSeed(),
     });
+    if (selectedMission) params.set('mission', selectedMission.id);
     ctx.navigate(`?${params}`);
   });
 
-  root.append(sector, heading, list, details, status, seedLabel, start);
+  root.append(
+    sector,
+    choices,
+    briefing,
+    heading,
+    list,
+    details,
+    status,
+    seedLabel,
+    start,
+  );
 
   function refresh(): void {
+    const completed = manager.state.campaign.completed;
+    for (const { mission, button } of missionButtons) {
+      const missing = mission.requires.filter((id) => !completed.includes(id));
+      button.disabled = missing.length > 0;
+      const state = missing.length
+        ? `${missionText.locked} · ${missionText.requires}${missing.join(', ')}`
+        : completed.includes(mission.id)
+          ? missionText.completed
+          : missionText.available;
+      button.textContent = `${String(mission.number).padStart(2, '0')} · ${mission.title} — ${state}`;
+    }
     const { max, selected } = manager.state.threat;
     for (const { level, button, note } of buttons) {
       const locked = level.level > max;

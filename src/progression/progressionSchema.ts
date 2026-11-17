@@ -117,5 +117,6 @@ export function createStarterMetaState(
     stats: { runs: 0, victories: 0, deaths: 0, kills: 0, bestVictoryS: null },
     lastRuns: [],
     appliedRunIds: [],
+    campaign: { completed: [], pendingDebrief: null },
   };
 }

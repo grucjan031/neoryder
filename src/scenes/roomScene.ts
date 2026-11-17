@@ -1,3 +1,9 @@
+import { MissionObjectives } from '../world/missionObjectives';
+import { missionDefinitions } from '../world/missions';
+import { MissionView } from '../render/missionView';
+import { MissionHud } from '../ui/missionUi';
+import { loadWaves } from '../world/waves';
+import type { MissionObjective } from '../world/missionSchema';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { HazardSystem } from '../world/hazards';
 import type { HazardTarget } from '../world/hazards';
@@ -108,6 +114,7 @@ const playerDefaults = z
   .parse(playerData);
 
 export interface RoomSceneOptions {
+  missionSignal?: (trigger: string) => void;
   /** Host sam rozpoczyna kolejne ćwiczenia; standardowy pokój nadal startuje fale. */
   manualEncounter?: boolean;
   loadModels?: boolean;
@@ -258,6 +265,11 @@ export class RoomScene implements Scene {
   private hitSparks!: HitSparks;
   private hitSparksView!: HitSparksRenderer;
   private synergies!: SynergySystem;
+  private readonly missionSignal: ((trigger: string) => void) | undefined;
+  private mission?: MissionObjectives;
+  private missionView?: MissionView;
+  private missionHud?: MissionHud;
+  private readonly reinforcements: WaveDirector[] = [];
   private hazards!: HazardSystem;
   private hazardView!: HazardView;
 
@@ -267,6 +279,7 @@ export class RoomScene implements Scene {
     private readonly waves: WavesDefinition,
     options: RoomSceneOptions = {},
   ) {
+    this.missionSignal = options.missionSignal;
     this.manualEncounter = options.manualEncounter ?? false;
     const node = run.map.layers
       .flat()
@@ -622,6 +635,46 @@ export class RoomScene implements Scene {
         if (this.boss && id === this.boss.id) this.completeRoom();
       }),
     );
+    const mission = missionDefinitions.get(this.run.missionId ?? '');
+    if (mission) {
+      this.mission = new MissionObjectives(
+        mission,
+        this.node.fixed?.objectives ?? [],
+        this.run,
+        {
+          signal: (trigger) => this.missionSignal?.(trigger),
+          explode: (objective) => this.explodeMission(objective, playerId),
+        },
+        ctx.tuning.mission.zoneRadiusM,
+        ctx.tuning.mission.pickupRadiusM,
+      );
+      this.missionView = new MissionView(
+        this.mission,
+        ctx.tuning.mission.zoneRadiusM,
+      );
+      this.root.add(this.missionView.root);
+      if (typeof document !== 'undefined')
+        this.missionHud = new MissionHud(this.mission);
+      this.missionSignal?.(`enterNode:${this.node.layer}`);
+      const guards =
+        mission.fixedNodes.find((node) => node.layer === this.node.layer)
+          ?.guards ?? [];
+      for (const guard of guards) {
+        const objective = mission.objectives.find(
+          (o) => o.id === guard.nearObjective,
+        )!;
+        const origin = this.mission.position(objective);
+        if (!origin) continue;
+        for (let i = 0; i < guard.count; i++) {
+          const angle = Math.PI / 2 + (i * Math.PI * 2) / guard.count;
+          this.spawnEnemy(guard.enemy, {
+            x: origin.x + Math.cos(angle) * guard.radiusM,
+            y: origin.y,
+            z: origin.z + Math.sin(angle) * guard.radiusM,
+          });
+        }
+      }
+    }
     this.registerCommands(playerId);
     this.emitHealth();
     this.heldItem.reset(this.loadout.startHeld);
@@ -1097,6 +1150,15 @@ export class RoomScene implements Scene {
     this.synergies.step(pdt);
     this.damage.step(dt);
     this.hazards.step(dt);
+    if (!this.health.dead && !this.cleared) {
+      this.mission?.step(dt, this.player.getState().position);
+
+      if (this.node.fixed?.objectives.length && this.mission?.complete)
+        this.completeRoom();
+    }
+    if (!this.health.dead)
+      for (const director of this.reinforcements) director.step(dt);
+    this.missionHud?.step();
     this.statuses.step(dt);
     this.execute.step(dt);
     this.projectileView.capturePrevious();
@@ -1129,6 +1191,7 @@ export class RoomScene implements Scene {
     );
     this.hazardView.advance(frameDt);
     this.hazardView.update(this.hazards.state(), alpha);
+    this.missionView?.update();
     const ids = this.seenEnemyIds;
     ids.clear();
     this.manager.forEach((enemy) => {
@@ -1260,6 +1323,72 @@ export class RoomScene implements Scene {
     if (typeof document !== 'undefined') document.exitPointerLock?.();
   }
 
+  missionState(): Pick<RunState, 'objectives' | 'objectiveProgress'> {
+    return this.mission
+      ? {
+          objectives: { ...this.mission.objectives },
+          objectiveProgress: { ...this.mission.progress },
+        }
+      : {};
+  }
+
+  private explodeMission(
+    objective: Extract<MissionObjective, { kind: 'sabotage' }>,
+    playerId: EntityId,
+  ): void {
+    const point = { ...objective.position, y: objective.position.y + 0.5 };
+    const tags = ['#hazard', '#explosion', '#friendly_fire'];
+    const targets = [
+      { id: playerId, position: this.player.getState().position },
+    ];
+    this.manager.forEach((enemy) => {
+      if (!enemy.removed && enemy.current.state !== 'dead')
+        targets.push({ id: enemy.id, position: { ...enemy.current.position } });
+    });
+    this.ctx.bus.emit('explosion', {
+      point,
+      radiusM: objective.blastRadiusM,
+      owner: playerId,
+      tags,
+    });
+    for (const target of targets) {
+      if (
+        Math.hypot(
+          target.position.x - point.x,
+          target.position.y - point.y,
+          target.position.z - point.z,
+        ) <= objective.blastRadiusM
+      )
+        this.damage.deal(target.id, {
+          source: null,
+          amount: objective.blastDamage,
+          point: target.position,
+          tags,
+        });
+    }
+    if (objective.reinforcements) {
+      const modules = import.meta.glob('../data/waves/*.json', {
+        eager: true,
+        import: 'default',
+      });
+      const data = modules[`../data/waves/${objective.reinforcements}.json`];
+      if (!data) throw new Error(`Nieznana fala: ${objective.reinforcements}`);
+      const definition = loadWaves(data);
+      definition.spawnPoints = this.layout.spawnPoints;
+      const director = new WaveDirector(
+        definition,
+        {
+          spawn: (enemy, position) => this.spawnEnemy(enemy, position),
+          playerPosition: () => this.player.getState().position,
+        },
+        this.ctx.bus,
+        this.ctx.rng.fork(`reinforcement:${objective.id}`),
+      );
+      this.reinforcements.push(director);
+      director.start();
+    }
+  }
+
   exportState(): Pick<RunState, 'hp' | 'energy'> {
     return { hp: this.health.current, energy: this.energy.current };
   }
@@ -1363,6 +1492,7 @@ export class RoomScene implements Scene {
   }
 
   private completeRoom(): void {
+    if (this.node.fixed?.objectives.length && !this.mission?.complete) return;
     if (this.cleared || this.state === 'dead' || this.disposed) return;
     this.cleared = true;
     for (const door of this.doors.values())
@@ -1416,6 +1546,12 @@ export class RoomScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('objective done', 'objective done <id> — ukończ cel', (args) => {
+      if (!this.mission || args.length !== 1 || !this.mission.done(args[0]!))
+        return 'Cel niedostępny.';
+      if (this.mission.complete) this.completeRoom();
+      return 'Cel ukończony.';
+    });
     register('tp', 'tp <x> <z> [yawDeg] [pitchDeg]', (args) => {
       const [x, z, yaw = 0, pitch = 0] = args.map(Number);
       if (
@@ -1649,6 +1785,14 @@ export class RoomScene implements Scene {
   query(name: string): unknown {
     if (name === 'executable') return this.execute.readyIds();
     switch (name) {
+      case 'missionObjectives':
+        return this.mission
+          ? {
+              objectives: this.mission.objectives,
+              progress: this.mission.progress,
+              fuses: this.mission.fuses,
+            }
+          : null;
       case 'hazards':
         return this.hazards.state();
       case 'wave':
@@ -1774,6 +1918,9 @@ export class RoomScene implements Scene {
   /** Może rzucić przy niedokończonym `init()`; dispose() i tak sprząta motyw i korzeń sceny. */
   private disposeParts(): void {
     this.hazardView?.dispose();
+    this.missionView?.dispose();
+    this.missionHud?.dispose();
+    for (const director of this.reinforcements) director.dispose();
     this.hazards?.dispose();
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();

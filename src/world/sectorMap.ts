@@ -1,4 +1,5 @@
 import { Rng } from '../core/rng';
+import type { MissionDefinition } from './missionSchema';
 import { NODE_TYPES } from '../core/runTypes';
 import type { MapNode, NodeType, SectorMap } from '../core/runTypes';
 import { loadSector } from './sectorSchema';
@@ -178,5 +179,73 @@ export function generateSectorMap(
   for (let i = 0; i < map.layers.length - 1; i++)
     connectLayers(map.layers[i]!, map.layers[i + 1]!, rng, def.extraEdgeChance);
   assignTypes(map, def, rng);
+  return map;
+}
+
+/** Mapa misji nie dziedziczy bossa, odpoczynku ani gwarancji elit zwykłego sektora. */
+export function generateMissionMap(
+  mission: MissionDefinition,
+  sector: SectorDefinition,
+  seed: string,
+): SectorMap {
+  const rng = new Rng(seed).fork('mission-map');
+  const map: SectorMap = { sectorId: sector.id, layers: [] };
+  for (let layer = 1; layer <= mission.layers; layer++) {
+    const fixed = mission.fixedNodes.find((node) => node.layer === layer);
+    const count = fixed
+      ? 1
+      : rng.int(sector.nodesPerLayer.min, sector.nodesPerLayer.max);
+    const weights = (mission.typeWeights ?? sector.typeWeights).filter(
+      (entry) => entry.fromLayer <= layer && entry.toLayer >= layer,
+    );
+    if (!fixed && weights.length !== 1)
+      throw new Error(`Warstwa ${layer} wymaga jednego zestawu wag.`);
+    const nodes: MapNode[] = [];
+    for (let index = 0; index < count; index++) {
+      let type: NodeType = fixed?.type ?? 'combat';
+      if (!fixed) {
+        const choices = NODE_TYPES.filter(
+          (type) => (weights[0]!.weights[type] ?? 0) > 0,
+        );
+        const total = choices.reduce(
+          (sum, type) => sum + weights[0]!.weights[type]!,
+          0,
+        );
+        if (!(total > 0)) throw new Error('Brak dodatnich wag warstwy misji.');
+        let draw = rng.float(0, total);
+        for (const choice of choices) {
+          draw -= weights[0]!.weights[choice]!;
+          if (draw < 0) {
+            type = choice;
+            break;
+          }
+        }
+      }
+      nodes.push({
+        id: `L${layer}N${index + 1}`,
+        layer,
+        index,
+        type,
+        next: [],
+        ...(fixed
+          ? {
+              fixed: {
+                roomId: fixed.roomId,
+                objectives: [...fixed.objectives],
+                ...(fixed.final ? { final: true } : {}),
+              },
+            }
+          : {}),
+      });
+    }
+    map.layers.push(nodes);
+  }
+  for (let index = 0; index < map.layers.length - 1; index++)
+    connectLayers(
+      map.layers[index]!,
+      map.layers[index + 1]!,
+      rng,
+      sector.extraEdgeChance,
+    );
   return map;
 }

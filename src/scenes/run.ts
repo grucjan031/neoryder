@@ -36,7 +36,9 @@ import type { MetaCommandsHandle } from '../ui/metaCommands';
 import { roomDefinitions } from '../world/rooms';
 import type { RoomDefinition } from '../world/roomSchema';
 import { RunManager } from '../world/run';
-import { generateSectorMap } from '../world/sectorMap';
+import { generateSectorMap, generateMissionMap } from '../world/sectorMap';
+import { missionDefinitions } from '../world/missions';
+import { MissionRadio } from '../ui/missionUi';
 import type { SectorDefinition } from '../world/sectorSchema';
 import { kuroganeSector } from '../world/sectors';
 import { roomPlanner } from '../world/threat';
@@ -64,6 +66,7 @@ export interface RunSavePort {
 
 export interface RunRoom extends Scene {
   clear(): void;
+  missionState?(): Pick<RunState, 'objectives' | 'objectiveProgress'>;
   /** Cisza po zwycięstwie: pokój tylko „dogrywa” oprawę, gracz nie może już zginąć. */
   enterVictoryHold?(): void;
   exportState(): Pick<RunState, 'hp' | 'energy'>;
@@ -124,6 +127,7 @@ export class RunScene implements Scene {
   private readonly save: RunSavePort;
   private readonly sector: SectorDefinition;
   private readonly rooms: ReadonlyMap<string, RoomDefinition>;
+  private missionRadio?: MissionRadio;
   private room: RunRoom | null = null;
   private roomId: string | null = null;
   private roomReady = false;
@@ -159,7 +163,19 @@ export class RunScene implements Scene {
     this.three = three;
     this.screens = this.options.screens ?? new HtmlRunScreens();
     this.manager = new RunManager(ctx.bus, {
-      generateMap: (seed) => generateSectorMap(this.sector, seed),
+      generateMap: (seed) => {
+        const id = (
+          this.options.params ??
+          new URLSearchParams(
+            typeof location === 'undefined' ? '' : location.search,
+          )
+        ).get('mission');
+        const mission = id ? missionDefinitions.get(id) : undefined;
+        if (id && !mission) throw new Error(`Nieznana misja: ${id}`);
+        return mission
+          ? generateMissionMap(mission, this.sector, seed)
+          : generateSectorMap(this.sector, seed);
+      },
       sector: this.sector,
       initialHp: playerData.maxHealth,
       initialEnergy: playerData.maxEnergy,
@@ -273,11 +289,21 @@ export class RunScene implements Scene {
         this.metaResult = null;
         this.rewardAlreadySaved = false;
       }
+      const missionId = params.get('mission');
+      const mission = missionId ? missionDefinitions.get(missionId) : undefined;
+      if (
+        mission &&
+        !mission.requires.every((id) =>
+          this.meta.state.campaign.completed.includes(id),
+        )
+      )
+        throw new Error('Misja jest zablokowana.');
       const loadout = params.get('loadout') ?? 'classic';
       const seed = params.get('seed') ?? String(ctx.rng.getState());
       if (loadout === 'meta') {
         const meta = this.meta.state;
         this.manager.newRun(seed, CUSTOM_LOADOUT_ID, {
+          mission,
           loadout: this.meta.loadout(),
           talents: meta.talents,
           threatLevel: meta.threat.selected,
@@ -285,8 +311,14 @@ export class RunScene implements Scene {
         });
       } else {
         this.validateLoadout(loadout);
-        this.manager.newRun(seed, loadout);
+        this.manager.newRun(seed, loadout, { mission });
       }
+    }
+    const mission = missionDefinitions.get(this.manager.state.missionId ?? '');
+    if (mission && typeof document !== 'undefined') {
+      this.missionRadio = new MissionRadio(mission);
+      if (!this.manager.state.visited.length)
+        this.missionRadio.signal('runStart');
     }
     this.registerCommands();
     this.showMap();
@@ -690,7 +722,19 @@ export class RunScene implements Scene {
   }
 
   private chooseRoom(node: MapNode, rng: Rng): RoomDefinition {
-    const pool = this.sector.roomPools?.[node.type];
+    const mission = missionDefinitions.get(this.manager.state.missionId ?? '');
+    if (node.fixed) {
+      const room = this.rooms.get(node.fixed.roomId);
+      if (!room) throw new Error(`Nieznany pokój: ${node.fixed.roomId}`);
+      return room;
+    }
+    const pool =
+      mission?.roomPools?.find(
+        (entry) =>
+          entry.type === node.type &&
+          entry.fromLayer <= node.layer &&
+          entry.toLayer >= node.layer,
+      )?.rooms ?? this.sector.roomPools?.[node.type];
     const candidates = pool
       ? pool.map((id) => {
           const room = this.rooms.get(id);
@@ -699,9 +743,14 @@ export class RunScene implements Scene {
         })
       : [...this.rooms.values()].filter((room) => room.type === node.type);
     // Zapas dla sektorów bez puli danego typu: układ zwykłej walki.
-    const available = candidates.length
-      ? candidates
-      : [...this.rooms.values()].filter((room) => room.type === 'combat');
+    const eligible = candidates.filter(
+      (room) => mission || !room.id.endsWith('Mission'),
+    );
+    const available = eligible.length
+      ? eligible
+      : [...this.rooms.values()].filter(
+          (room) => room.type === 'combat' && !room.id.endsWith('Mission'),
+        );
     return rng
       .fork(`room-layout:${node.id}`)
       .pick(available.sort((a, b) => a.id.localeCompare(b.id)));
@@ -730,7 +779,11 @@ export class RunScene implements Scene {
     const entry = pickSplash(
       `${seed}:${node.id}`,
       { room: layout?.id, theme: layout?.theme },
-      unlockedSplashAct(this.meta.state.stats.victories),
+      unlockedSplashAct(
+        this.meta.state.campaign.completed.length
+          ? this.meta.state.campaign.completed
+          : this.meta.state.stats.victories,
+      ),
     );
     return entry ? { file: entry.file, title: entry.title } : undefined;
   }
@@ -745,6 +798,20 @@ export class RunScene implements Scene {
     // Sklep i odpoczynek nie mają fal (nakładka otwiera się od razu po wejściu);
     // pokój bossa (layout.bossEnemy) też nie: walkę prowadzi boss, nie WaveDirector.
     const bossRoom = node.type === 'boss' && layout.bossEnemy !== undefined;
+    const mission = missionDefinitions.get(state.missionId ?? '');
+    const missionSector = structuredClone(this.sector);
+    if (mission?.enemies && missionSector.threat) {
+      missionSector.threat.unlockLayer = {};
+      for (const type of ['combat', 'elite'] as const) {
+        const pool = missionSector.threat.pools[type];
+        if (pool)
+          missionSector.threat.pools[type] = Object.fromEntries(
+            Object.entries(pool).filter(([id]) =>
+              mission.enemies!.includes(id),
+            ),
+          );
+      }
+    }
     const waves: WavesDefinition =
       node.type === 'shop' || node.type === 'rest' || bossRoom
         ? {
@@ -758,7 +825,7 @@ export class RunScene implements Scene {
           }
         : (this.options.planner ?? roomPlanner).planWaves(
             layout,
-            this.sector,
+            missionSector,
             node.type === 'combat' || node.type === 'elite'
               ? node
               : { ...node, type: 'combat' },
@@ -769,6 +836,7 @@ export class RunScene implements Scene {
       this.options.createRoom?.(layout, state, waves) ??
       new RoomScene(layout, state, waves, {
         implantDefinitions: this.options.implantDefinitions,
+        missionSignal: (trigger) => this.missionRadio?.signal(trigger),
       });
     this.room = room;
     this.roomId = layout.id;
@@ -826,6 +894,7 @@ export class RunScene implements Scene {
       this.show();
       return;
     }
+    this.syncMission();
     if (!this.room || !this.manager.completeRoom(this.room.exportState()))
       return;
     if (this.manager.screen === 'shop' || this.manager.screen === 'rest') {
@@ -853,9 +922,19 @@ export class RunScene implements Scene {
     this.enemyKinds.clear();
   }
 
+  private syncMission(): void {
+    const state = this.room?.missionState?.();
+    if (state?.objectives)
+      this.manager.updateObjectives(
+        state.objectives,
+        state.objectiveProgress ?? {},
+      );
+  }
+
   step(dt: number, input: InputSnapshot): void {
     if (this.disposed) return;
     this.manager.step(dt);
+    this.missionRadio?.step(dt);
     const waitingForReward = this.rewardDelayRemainingS !== null;
     const holding = this.victoryHoldRemainingS !== null;
     // W ciszy pokój krokuje dalej (rozpad, odłamki, spowolnienie), ale bez wejścia gracza.
@@ -883,6 +962,7 @@ export class RunScene implements Scene {
         this.schedule('clear');
       }
     }
+    this.syncMission();
     this.flushTransitions();
   }
 
@@ -903,6 +983,15 @@ export class RunScene implements Scene {
 
   query(name: string): unknown {
     switch (name) {
+      case 'mission':
+        return this.manager.state.missionId
+          ? {
+              id: this.manager.state.missionId,
+              objectives:
+                this.room?.missionState?.().objectives ??
+                this.manager.state.objectives,
+            }
+          : null;
       case 'screen':
         // Wynik jest już zapisany, ale podsumowanie pojawi się dopiero po ciszy.
         return this.victoryHoldRemainingS !== null
@@ -961,6 +1050,48 @@ export class RunScene implements Scene {
         ? 'Wczytywanie pokoju.'
         : 'Węzeł niedostępny.',
     );
+    register(
+      'mission start',
+      'mission start <id> — rozpocznij misję',
+      (args) => {
+        const mission = missionDefinitions.get(args[0] ?? '');
+        if (
+          !mission ||
+          !mission.requires.every((id) =>
+            this.meta.state.campaign.completed.includes(id),
+          )
+        )
+          return 'Misja niedostępna.';
+        const params = new URLSearchParams({
+          scene: 'run',
+          loadout: 'meta',
+          mission: mission.id,
+          debug: '1',
+        });
+        preserveLiteFx(new URLSearchParams(window.location.search), params);
+        this.navigate(`?${params.toString()}`);
+        return 'Start misji.';
+      },
+    );
+    register(
+      'mission radio',
+      'mission radio <wyzwalacz> — odtwórz komunikaty radia misji',
+      (args) => {
+        if (!this.missionRadio || args.length !== 1)
+          return 'Brak radia misji albo wyzwalacza.';
+        this.missionRadio.signal(args[0]!);
+        return `Radio: ${args[0]}.`;
+      },
+    );
+    register('objective done', 'objective done <id> — ukończ cel', (args) => {
+      if (!this.roomReady || this.manager.screen !== 'room')
+        return 'Brak aktywnego pokoju.';
+      const result = this.roomCommands!.execute(
+        ['objective done', ...args].join(' '),
+      );
+      this.syncMission();
+      return result;
+    });
     register('run clear', 'run clear — wyczyść pokój', () => {
       if (!this.roomReady || this.manager.screen !== 'room')
         return 'Brak aktywnego pokoju.';
@@ -992,6 +1123,7 @@ export class RunScene implements Scene {
       return 'Obrażenia zadane.';
     });
     for (const name of [
+      'tp',
       'hold',
       'status',
       'spawn',
@@ -1039,6 +1171,7 @@ export class RunScene implements Scene {
     for (const off of this.off.splice(0)) off();
     this.disposeRoom();
     this.manager?.dispose();
+    this.missionRadio?.dispose();
     this.screens?.dispose();
   }
 }

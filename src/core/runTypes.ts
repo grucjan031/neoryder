@@ -20,6 +20,7 @@ export interface MapNode {
   index: number;
   type: NodeType;
   next: string[];
+  fixed?: { roomId: string; objectives: string[]; final?: boolean };
 }
 
 export interface SectorMap {
@@ -40,6 +41,9 @@ export interface RunDamageStats {
 }
 
 export interface RunState {
+  missionId?: string;
+  objectives?: Record<string, 'pending' | 'active' | 'done'>;
+  objectiveProgress?: Record<string, number>;
   seed: string;
   sectorId: string;
   loadoutId: string;
@@ -68,6 +72,8 @@ export interface RunState {
 }
 
 export interface RunSummary {
+  missionId?: string;
+  missionCompleted?: boolean;
   outcome: RunOutcome;
   seed: string;
   loadoutId: string;
