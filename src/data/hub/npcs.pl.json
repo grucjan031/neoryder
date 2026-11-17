@@ -11,7 +11,23 @@
         "Pancerze Kurogane Arms są grube, ale ich chłodzenie broni to żart. Pilnuj własnego przegrzania, bo zostaniesz z gorącym złomem.",
         "Ostrze plazmowe trzyma kalibrację idealnie, sam je stroiłam. Jak je zarysujesz na tarczy, to sam będziesz je polerował.",
         "Ta stara stacja metra sypie się szybciej niż tanie implanty Helixy, ale mój warsztat przeżyje nas wszystkich."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Widziałam cię na poligonie. Ostrze trzyma łuk równo, więc zanim wyjdziesz na miasto, zajrzyj do stołu i dobierz sprzęt pod siebie.",
+          "Nowa twarz na peronie, a już pół stacji o tobie gada. Zostaw wrażenia na później i sprawdź u mnie ekwipunek przed pierwszym wyjściem."
+        ],
+        "victory": [
+          "Wróciłeś w jednym kawałku i nawet pancerz ma jeszcze trochę lakieru. Masz jakieś Dane? Stół czeka, możemy odblokować coś cięższego.",
+          "Kurogane pewnie jeszcze liczy rozwalone drony, a ty stoisz tu jak gdyby nigdy nic. Dobra robota, Kurierze — rzucę okiem na twoje ostrze.",
+          "Słyszałam, że wyczyściłeś sektor szybciej, niż Iga łata bezpieczniki. Przynieś łupy do warsztatu, to podkręcimy ci resztę zabawek."
+        ],
+        "death": [
+          "Ledwo cię wnieśli z tunelu, a ja już musiałam prostować ci obudowę emitera. Następnym razem nie testuj twardości ich pancerza własną głową.",
+          "Dobrze, że znów stoisz na nogach, bo sprzęt po tym wypadzie wyglądał jak złom z Niecki. Podkręciłam styki, ale resztę musisz wyćwiczyć sam.",
+          "Chłopaki z patrolu zdążyli cię wyciągnąć w ostatniej chwili, choć rękojeść była cała osmalona. Weź oddech i sprawdź mody, zanim ruszysz znów."
+        ]
+      }
     },
     {
       "id": "wolan",
@@ -23,7 +39,23 @@
         "Przekierowanie Rezonansu do kończyn odblokuje podwójny skok i zwiększy wytrzymałość. Na górze bardzo się to przyda.",
         "Koalicja poluje na Rezonantów, bo nie potrafi nas w pełni kontrolować. Tutaj, w Iskrze, jesteś wśród swoich.",
         "Pamiętaj o ukryciu sygnatury implantu przed skanerami. Nawet najlepsi agenci potrzebują chwili na regenerację."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Twoje odczyty po ćwiczeniach na poligonie są zaskakująco stabilne. Jeśli chcesz dostroić ścieżki przed pierwszym wyjściem, terminal jest gotowy.",
+          "Witaj w Kamiennej, Kurierze. Zanim wejdziesz w głąb sektorów, poświęć chwilę na kalibrację swoich węzłów — na górze nikt nie da ci na to czasu."
+        ],
+        "victory": [
+          "Znakomity wynik, a poziom obciążenia kory mieści się w bezpiecznych granicach. Możemy spokojnie rozwinąć kolejne połączenia w terminalu.",
+          "Wróciłeś z czystą sygnaturą i kompletem odczytów z sektora. Rezonans współpracuje z tobą coraz płynniej, widać to na każdym wykresie.",
+          "Wracasz z akcji spokojny i skoncentrowany, bez śladu rozstrojenia. Takie wypady pokazują, że decyzja o przyjęciu cię do Iskry była słuszna."
+        ],
+        "death": [
+          "Spokojnie, już jesteś w kryjówce — zespół wyciągnął cię z sektora, gdy straciłeś przytomność. Układ nerwowy potrzebuje chwili, ale wszystko wraca do normy.",
+          "Przeciążenie po takim starciu potrafi zwalić z nóg, nawet przy silnym Rezonansie. Jeśli czujesz, że obecny układ węzłów cię hamuje, zmień go w terminalu.",
+          "Dobrze, że otworzyłeś oczy. Zofia zajęła się ranami, a ja wyciszyłam skoki napięcia w implancie — nie spiesz się z kolejnym wyjściem."
+        ]
+      }
     },
     {
       "id": "szron",
@@ -35,7 +67,23 @@
         "Elitarne jednostki niosą Rdzenie. Jeśli masz czysty strzał i zapas energii, zdejmuj je w pierwszej kolejności.",
         "Przed wejściem na arenę bossa weź oddech i uzupełnij zasoby. Martwy agent nie przyniesie nam żadnych Danych.",
         "Góra ma kredyty i pancerze, my mamy determinację i przejście na poligon. Rozgrzej się, zanim wyjdziesz w tunel."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Poligon masz za sobą, teraz zaczyna się prawdziwa robota. Podejdź do tablicy misji, kiedy będziesz gotowy na pierwszy sektor.",
+          "Dobrze cię widzieć na stanowisku, Kurierze. Iskra nie potrzebuje cudów, tylko chłodnej głowy i sprawnego powrotu z zadaniami."
+        ],
+        "victory": [
+          "Zadanie wykonane, sektor oczyszczony — tak ma wyglądać każdy wypad. Zgłoś się do Miry z Danymi i szykuj do kolejnego zejścia.",
+          "Czysta robota. Pokazałeś korporacyjnym, że nawet za ich murami nie mają już pełnej kontroli nad Neo-Rydem.",
+          "Wróciłeś z kompletem i bez zbędnego zamieszania na łączach. Jeśli czujesz się pewnie, następnym razem możemy podnieść poprzeczkę."
+        ],
+        "death": [
+          "Zwiad wyciągnął cię spod ognia, zanim zamknęli kwartał. Żadnych wymówek — przeanalizuj, co poszło nie tak, i wróć tam mądrzejszy.",
+          "Zdarza się nawet najlepszym, kiedy sektor zagęści ogień. Najważniejsze, że znów stoisz na peronie i mamy czas na poprawkę.",
+          "Tym razem góra okazała się twardsza, ale nasi ludzie nie zostawiają swoich na betonie. Opatrz rany, przeładuj sprzęt i próbujemy jeszcze raz."
+        ]
+      }
     },
     {
       "id": "bajt",
@@ -47,7 +95,23 @@
         "Zgarniasz Kredyty podczas akcji? Wydawaj je w sklepie po drodze, w sieci po śmierci i tak przepadną.",
         "Przechwyciłem pingi od Helixy Dynamics — znowu testują jakieś stymulanty na ochronie Kurogane. Dobrze wiedzieć, nie?",
         "Mam czysty kanał na twój komunikator, zero szumów. Jak tylko złamię kolejny węzeł Orbisu, zrzucę ci dane na HUD."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Widziałem twoje logi z poligonu, całkiem zgrabny czas reakcji. Jak wejdziesz do sektora, wrzucę ci na HUD świeże znaczniki z nasłuchu.",
+          "Łącze z twoim komunikatorem już śmiga bez opóźnień. Zanim ruszysz pierwszy raz w miasto, pamiętaj tylko nie stać na otwartej linii ognia."
+        ],
+        "victory": [
+          "Ale im namieszałeś w logach Kurogane! Na ich kanale alarmowym połowa patroli dalej szuka ducha, a ty już pijesz herbatę w metrze.",
+          "Piękny przebieg, zero śladu na głównych węzłach Orbisu. Takie pakiety z akcji to ja mogę dekodować do rana.",
+          "Widziałem na telemetrii, jak złożyłeś ich garnizon bez zadyszki. Zanieś Dane do warsztatu i możemy planować kolejny rajd."
+        ],
+        "death": [
+          "Gdy twój sygnał nagle zjechał do zera, prawie wysłałem tu pół peronu z noszami. Dobrze, że patrol zdążył zgarnąć cię z ulicy przed skanerami.",
+          "Auć, ten wykres tętna na moim ekranie wyglądał paskudnie. Przynajmniej odzyskaliśmy cię z sektora, a sieć szybko zapomni o całym zamieszaniu.",
+          "Zostawiłeś w sektorze wszystkie Kredyty z akcji, ale ważniejsze, że sam wróciłeś pod ziemię. Zresetuję ci kanał i lecimy dalej, jak dojdziesz do siebie."
+        ]
+      }
     },
     {
       "id": "tomasz",
@@ -59,7 +123,23 @@
         "Nigdy nie walcz w otwartym polu, kiedy mają przewagę ognia. Szukaj osłon, bo nawet najlepszy pancerz ma swoje granice.",
         "Widziałem, jak powstawała Iskra z garstki uciekinierów z górnych poziomów. Nie zmarnuj tego, co tu zbudowaliśmy.",
         "Usiądź na chwilę przy ogniu, jeśli ręce ci drżą. W tym mieście nawet weterani muszą czasem odłożyć ostrze."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Słyszałem trzask ostrza na poligonie, młody — masz pewną rękę. Zanim wyjdziesz na deszcz, ogrzej dłonie przy beczce i nie spiesz się pod lufy.",
+          "Pierwszy wypad pamięta się najdłużej, więc nie noś na plecach całego miasta. Zrób swoje i wróć przed zmianą warty."
+        ],
+        "victory": [
+          "Wiedziałem po oczach, że wrócisz o własnych siłach. Usiądź przy ogniu na minutę, zanim znów zaczną cię ciągnąć po tunelach.",
+          "Dobra robota, młody. Od dawna nikt nie utarł nosa ochronie Kurogane tak czysto, żeby aż w Iskrze zrobiło się cieplej.",
+          "Przyniosłeś z góry coś więcej niż Dane — przyniosłeś nam jeszcze jeden spokojny wieczór na peronie. Szanuj ten ogień, bo sam wiesz, jak łatwo gaśnie."
+        ],
+        "death": [
+          "Spokojnie, młody, jesteś już przy beczce. Chłopaki wyciągnęli cię z zaułka całego w sadzy, ale najważniejsze, że znów oddychasz tutejszym powietrzem.",
+          "Każdy, kto walczył z korporacją, zaliczył kiedyś twarde lądowanie na mokrym asfalcie. Dobrze, że nasi byli blisko i nie dali ci tam zostać.",
+          "Nie patrz tak na swoje ręce, każdemu czasem zabraknie sekundy. Odpocznij przy ogniu, a jutro znów przypomnisz im, dlaczego boją się ciemności."
+        ]
+      }
     },
     {
       "id": "hela",
@@ -70,7 +150,20 @@
         "W tym mieście wszyscy gonią za Danymi, a zapominają zjeść coś ciepłego. Zanim ruszysz na akcję, wejdź do tunelu na poligon — tam przynajmniej nikt nie strzela na ostro.",
         "Na wyższym Poziomie zagrożenia w sektorze Kurogane robi się naprawdę gęsto, więc nie zgrywaj bohatera na pusty brzuch. Większe nagrody nic ci nie dadzą, jak nie wrócisz.",
         "Niech no tylko Szron znowu powie, że nie ma czasu na miskę. Dziewięć lat w podziemiu, a chudy jak przewód od pompy."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Zanim w ogóle wystawisz nos poza tunel, zjedz porządną miskę kaszy z gulaszem. Na pusty żołądek nawet najlepszy refleks z poligonu nic nie znaczy."
+        ],
+        "victory": [
+          "No nareszcie wróciłeś cały i głodny! Zostawiłam dla ciebie podwójną porcję gorącego makaronu w garnku, siadaj od razu do stołu.",
+          "Słyszałam, że ładnie pogoniłeś tych z góry, więc dzisiaj dorzucam do bulionu ekstra kawałek suszonego mięsa. Zasłużyłeś na ciepły posiłek."
+        ],
+        "death": [
+          "Jak tylko wnieśli cię z sektora, od razu nastawiłam mocny wywar na kościach. Zjedz choć pół miski na spokojnie, to szybciej staniesz na nogi.",
+          "Koniec zgrywania twardziela bez obiadu, Kurierze. Masz tu ciepły chleb i gorącą zupę — zanim ruszysz znów, musisz odzyskać trochę sił."
+        ]
+      }
     },
     {
       "id": "jarek",
@@ -114,7 +207,20 @@
         "Jeśli zobaczysz czerwony promień lasera snajpera, nie czekaj na cud — masz niewiele ponad sekundę, żeby zejść z linii ognia albo przygotować blok.",
         "Kiedy wróg chwieje się z pulsującym znacznikiem, nie wahaj się podejść z ostrzem i wykończyć go z bliska. W sektorze nikt nie dostaje drugiej szansy za darmo.",
         "Wilgoć w Kamiennej nie pomaga nikomu, zwłaszcza starszym jak Teo. Dobrze, że Tomasz pilnuje ognia na peronie, bo bez tego połowa z nas dawno by się rozchorowała."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Świetnie się składa, że rzuciłam okiem na twoje dłonie przed pierwszym wyjściem. Mam zapas czystych bandaży, ale wolałabym nie testować ich dzisiaj na tobie."
+        ],
+        "victory": [
+          "Widzę, że tym razem obeszło się bez głębszych zadrapań. Oby więcej takich powrotów, bo moje zapasy gazy wcale nie rosną na torach.",
+          "Tętno masz równe i nie ciągniesz lewej nogi — to najlepszy raport medyczny, jaki mogłam dostać po akcji. Tak trzymaj."
+        ],
+        "death": [
+          "Nie ruszaj gwałtownie ramieniem, dopiero co założyłam ci świeży opatrunek i zszyłam rozcięcie. Gdyby patrol nie zdążył, leżałbyś pod ich lampami znacznie dłużej.",
+          "Zmyłam ci z twarzy pół kanału i przewinęłam żebra ciasnym bandażem. Przez następną godzinę siedzisz spokojnie, aż żel pod opatrunkiem przestanie piec."
+        ]
+      }
     },
     {
       "id": "teo",
@@ -169,7 +275,20 @@
         "Mój bimber ma jedną zaletę względem wody z Niecki — zabija wszystkie bakterie, łącznie z tymi, które wpadłyby na pomysł, żeby się w nim rozmnażać.",
         "Na peronie B bywa chłodno, więc albo siadasz przy beczce Tomasza, albo bierzesz kieliszek ode mnie. Obie opcje grzeją, tylko moja zostawia ciekawszy posmak.",
         "Ludzie mówią, że powinienem otworzyć lokal na Bulwarze. Pewnie, i od razu podać ochronie Kurogane adres na paragonie."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Pierwszy kurs pod niebo, co? Wpadnij po wszystkim na szklankę mojego specyfiku — albo uczcimy sukces, albo przepłuczemy kurz z płuc."
+        ],
+        "victory": [
+          "No proszę, bohater wraca z sektora bez jednej rysy na szklance! Pierwsza kolejka idzie na koszt firmy, zanim Bajt zajmie cały bar.",
+          "Słyszałem, że narobiłeś na górze niezłego bałaganu. Usiądź przy ladzie, poleję czegoś mocniejszego niż deszcz w Niecce."
+        ],
+        "death": [
+          "Wyglądasz, jakbyś próbował zatrzymać pociąg własną klatką, Kurierze. Zofia nie pozwala ci jeszcze pić bimbru, więc masz tu przynajmniej czystą wodę.",
+          "Po takim zderzeniu z asfaltem nawet mój destylat wydałby ci się za łagodny. Dobrze, że nasi wyciągnęli cię w porę — następny kieliszek wypijemy już po wygranej."
+        ]
+      }
     },
     {
       "id": "nina",
@@ -191,7 +310,20 @@
         "Z ostrzem nie machaj na oślep — trzy szybkie kliknięcia dają combo, a przytrzymany ciężki cios rozbija tarcze. Dash połączony z cięciem też potrafi otworzyć drogę.",
         "Kiedy leci w ciebie seria, wciśnij blok tuż przed trafieniem, żeby odbić pociski. Między strzałami puszczaj gardę, bo ciągłe trzymanie tylko zżera energię.",
         "Szron przysłał tu kiedyś dwóch rekrutów z górnych poziomów, którzy myśleli, że bójka to jak w reklamach Orbisu. Po dziesięciu minutach przy worku przestali się uśmiechać."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Ruch na poligonie masz niezły, ale w sektorze nie oszczędzaj nóg. Pamiętaj o ciężkim ciosie na tarcze i puszczaj gardę między seriami, żeby nie spalić energii."
+        ],
+        "victory": [
+          "Dobre tempo, ale widziałem po śladach na ostrzu, że za długo trzymałeś blok pod ogniem. Następnym razem paruj w ostatniej chwili i tnij z dasha.",
+          "Wyszarpany wynik, choć przy dużym tłoku pamiętaj o rytmie trzech cięć zamiast machać na ślepo. Wykorzystuj osłony i nie dawaj się zamknąć w kącie."
+        ],
+        "death": [
+          "Za bardzo pchałeś się w otwarte pole bez krycia. Następnym razem zejdź z linii czerwonego lasera snajpera, zanim w ogóle pomyślisz o kontrataku.",
+          "Kiedy przeciwnik chwieje się po ciosie, dobijaj go od razu z bliska zamiast cofać się pod cudzy ogień. Popraw pracę nóg na worku i wracasz do gry."
+        ]
+      }
     },
     {
       "id": "kuba",
@@ -224,7 +356,20 @@
         "Wiem, że nie wolno podchodzić do beczki Tomasza bez dorosłych, ale Stasiowi marzną ręce. Zresztą ze Stasiem pilnujemy pociągu, nawet jeśli już nigdy nie pojedzie.",
         "Jak urosnę, to nie będę nosić skrzynek jak Kuba, tylko wezmę świecące ostrze jak ty. Tylko Mira nie pozwala nam nawet dotknąć śrubokręta w warsztacie.",
         "Widzieliśmy ze Stasiem zwiadowcę z góry, jak wchodził przez stare zejście, ale Szron kazał nam siedzieć cicho na peronie."
-      ]
+      ],
+      "reactions": {
+        "firstVisit": [
+          "Idziesz już na górę pierwszy raz? Jak zobaczysz tam coś błyszczącego albo wielkiego robota, to zapamiętaj wszystko i opowiesz nam ze Stasiem po powrocie!"
+        ],
+        "victory": [
+          "Wróciłeś! Staś zakładał się, że twoje ostrze świeci jeszcze jaśniej niż przed wyjściem — włączysz je na sekundę, żebym mogła sprawdzić?",
+          "Jarek mówił, że narobiłeś na górze strasznego hałasu i wszystkie drony pogubiły drogę. Pokażesz nam kiedyś, jak robisz ten różowy błysk?"
+        ],
+        "death": [
+          "Wszyscy kazali nam ze Stasiem siedzieć cicho na końcu peronu, jak wracałeś z tunelu, ale już wyglądasz dużo lepiej. Przyniosłam ci stary bilet z pociągu na szczęście!",
+          "Pani Zofia mówiła, że tylko trochę się poobijałeś na schodach w mieście i musisz odpocząć. Jak już odzyskasz siły, to pobawimy się znowu w odbijanie strzałów?"
+        ]
+      }
     },
     {
       "id": "stas",
