@@ -57,8 +57,14 @@ test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i 
   await expect(
     page.locator('[data-mission-briefing] .mission-dialogue p').first(),
   ).toHaveText(
-    'Szron: Karta Wirskiej już jest. Kontakt Nadii zdjął ją z konwoju, zanim Brandt zamknął Huty.',
+    'Szron: Dwie noce temu Mira przestawiła zwrotnicę na rozrządni i przejęła wagon z kontenerem klasy K.',
   );
+  await expect(page.locator('[data-mission-interlude] h3')).toHaveText(
+    'Tymczasem w Iskrze',
+  );
+  await expect(
+    page.locator('[data-mission-briefing] > .mission-dialogue p').first(),
+  ).toContainText('Karta otwiera chłodnicze wejście serwisowe od wschodu.');
   await page
     .getByRole('button', { name: 'Rozpocznij misję', exact: true })
     .click();

@@ -55,7 +55,7 @@ it('M06: kontrakt danych, osłony, pokoje i wymuszone warstwy dla różnych seed
 });
 
 it.each([
-  ['Odprawa (kryjówka)', data.briefing.slice(1)],
+  ['Odprawa (kryjówka)', data.briefing],
   ['W trakcie misji (radio i hala bossa)', data.radio.flatMap((r) => r.lines)],
   ['Po misji (kryjówka)', data.debrief],
 ] as const)(
@@ -82,13 +82,6 @@ it.each([
     expect(lines).toEqual(expected);
   },
 );
-
-it('D3 jest osobną pierwszą kwestią Szrona', () => {
-  expect(data.briefing[0]).toEqual({
-    speaker: 'szron',
-    text: 'Karta Wirskiej już jest. Kontakt Nadii zdjął ją z konwoju, zanim Brandt zamknął Huty.',
-  });
-});
 
 it.each(['boss:phase:1', 'boss:phase:4', 'boss:phase:2:extra', 'boss:death'])(
   'schemat odrzuca niezatwierdzony wyzwalacz %s',

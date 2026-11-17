@@ -178,11 +178,36 @@
       "rooms": ["restRoom"]
     }
   ],
+  "interlude": {
+    "title": "Tymczasem w Iskrze",
+    "lines": [
+      {
+        "speaker": "szron",
+        "text": "Dwie noce temu Mira przestawiła zwrotnicę na rozrządni i przejęła wagon z kontenerem klasy K."
+      },
+      {
+        "speaker": "mira",
+        "text": "W środku nie było towaru. Była kobieta w aparaturze podtrzymującej. Oznaczenie K-112."
+      },
+      {
+        "speaker": "bajt",
+        "text": "Ma na imię Ida. Na chwilę otworzyła oczy i jednym wyładowaniem wyrwała drzwi kontenera. Od tamtej pory śpi."
+      },
+      {
+        "speaker": "wolan",
+        "text": "Leży przy stanowisku Bajta. Zostanę przy aparaturze."
+      },
+      {
+        "speaker": "szron",
+        "text": "Brandt w odpowiedzi zamknął Huty. Kontakt Nadii zatrzymał konwój jego adiutantki, porucznik Wirskiej. Oddała kartę do sieci ochrony bez walki."
+      },
+      {
+        "speaker": "bajt",
+        "text": "Puściliśmy ją, a ona zdążyła złożyć meldunek. W Odlewni będą na nas czekać."
+      }
+    ]
+  },
   "briefing": [
-    {
-      "speaker": "szron",
-      "text": "Karta Wirskiej już jest. Kontakt Nadii zdjął ją z konwoju, zanim Brandt zamknął Huty."
-    },
     {
       "speaker": "szron",
       "text": "Karta otwiera chłodnicze wejście serwisowe od wschodu. Po meldunku Wirskiej na górze nie będzie już elementu zaskoczenia — wejdą wszystkie zmiany."

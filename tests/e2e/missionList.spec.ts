@@ -57,6 +57,14 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
     )
     .toBe(true);
   await page.locator('[data-mission="m03-list-przewozowy"]').click();
+  await expect(page.locator('[data-mission-interlude] h3')).toHaveText(
+    'Tymczasem w Iskrze',
+  );
+  await expect(
+    page.locator('[data-mission-briefing] .mission-dialogue p').first(),
+  ).toHaveText(
+    'Szron: Po masztach Kurogane zrobiło obławę na kurierów z implantami. Trzymali zatrzymanych w kontenerach na bocznicy.',
+  );
   await expect(page.locator('[data-mission-briefing]')).toContainText(
     'Zmiana na nabrzeżu przechodzi o północy',
   );

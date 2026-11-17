@@ -115,6 +115,9 @@ export const missionSchema = z
       )
       .min(1),
     objectives: z.array(missionObjectiveSchema),
+    interlude: z
+      .object({ title: id, lines: z.array(dialogueLineSchema).min(1) })
+      .optional(),
     briefing: z.array(dialogueLineSchema),
     debrief: z.array(dialogueLineSchema),
     radio: z.array(

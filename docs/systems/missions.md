@@ -22,7 +22,9 @@ Opcjonalne `defend.waves: { atProgress: number; wave: string }[]` uruchamia posi
 
 M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Sprawdzenie: `?scene=run&mission=m03-list-przewozowy&debug=1` po odblokowaniu M01, `objective done terminal`, następnie `objective done exit`. `run clear` nie omija terminala ani bramy.
 
-M06 „Odlewnia” wymaga M03. Siedem warstw, stałe pokoje: 1 — combatCorridor, 3 — eliteFoundry, 6 — eliteHall (executor, shielder, sniper), 7 — bossRoom. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Odprawa zaczyna się kwestią D3 o karcie Wirskiej; pozostałe dialogi zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów.
+M06 „Odlewnia” wymaga M03. Siedem warstw, stałe pokoje: 1 — combatCorridor, 3 — eliteFoundry, 6 — eliteHall (executor, shielder, sniper), 7 — bossRoom. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Dialogi odprawy zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów.
+
+Opcjonalne `interlude: { title, lines: DialogueLine[] }` wyświetla się przed odprawą M03 i M06: przerywnik zastępuje wydarzenia misji, których nie ma w grze; usuwamy go, gdy brakująca misja powstanie.
 
 `interact` ma `position`, `holdS` oraz `unlockAfter`, tak jak `exit`. Zwiększa postęp tylko w strefie, zachowuje go po odejściu i nie kończy pokoju, gdy pozostają inne cele. Serwer (`server`, 3 s) odblokowuje się po celu `brandt` (`killBoss`), winda (`exit`, 2 s) po serwerze. Stan używa istniejących pól zapisu. Czerwony mówca `brandt` jest dostępny także w radiu.
 
