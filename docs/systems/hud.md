@@ -146,8 +146,8 @@ Test E2E i ocenę wyglądu na 1280×720 oraz 1920×1080 wykonuje architekt.
 
 ## Układ
 
-W arenie LPM — atak/strzał, R — zamiana ostrze/broń, PPM — natychmiast ostrze
-i blok, środkowy przycisk — ostrze i rzut, 1/2/3 — slot broni i jej dobycie.
+W arenie LPM — atak/strzał, R — zamiana ostrze/broń, PPM — blok z ostrzem,
+celowanie z bronią (celownik się zwęża), środkowy przycisk — ostrze i rzut, 1/2/3 — slot broni i jej dobycie.
 HUD słucha `held_item_changed` dla gracza: `held: 'blade'` dodaje
 `.hud__weapon--inactive` (opacity 0,6), `held: 'gun'` ją usuwa. Ciepło i nazwa
 wybranego slotu pozostają widoczne. Reset areny publikuje początkowy stan ręki.
