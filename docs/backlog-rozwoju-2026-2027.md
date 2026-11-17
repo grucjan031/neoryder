@@ -34,8 +34,9 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S0-04 Decyzje zakresowe D1, D2 (wstępnie), D4
 
-- **Cel:** ustalić, czy misje wchodzą do kodu, wstępny zakres dema i ocenę bramek. **P0** · Właściciel · Cz 2 · status: zaplanowane
+- **Cel:** ustalić, czy misje wchodzą do kodu, wstępny zakres dema i ocenę bramek. **P0** · Właściciel · Cz 2 · status: w realizacji
 - **Kryteria:** decyzje dopisane w planie, sekcja 6.
+- **Stan 17 XI 2026:** D1 tak (misje do kodu od S1), D2 wstępnie 3 + 2 warunkowo. D4 czeka na playtesty S0-02 i S0-03.
 
 ### S0-05 Splasharty wg aktu fabuły
 

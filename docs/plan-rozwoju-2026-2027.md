@@ -3,7 +3,8 @@
 - **Opracowanie:** 17 listopada 2026, na podstawie propozycji `NEORYDER_plan_rozwoju_2026-2027.md` (właściciel) i przeglądu repozytorium.
 - **Stan odniesienia:** `main` = `1999b06` (ten sam commit, na którym oparto propozycję).
 - **Backlog zadań:** [`backlog-rozwoju-2026-2027.md`](backlog-rozwoju-2026-2027.md). Pomysły „po demie” zostają w [`backlog.md`](backlog.md).
-- **Status dokumentu:** plan roboczy. Zakres dema (3 lub 5 misji) i bramki F2/F4 wymagają decyzji właściciela, nie są zatwierdzone (sekcja 6).
+- **Status dokumentu:** plan przyjęty 17 XI 2026. Zatwierdzone przez właściciela: D1 (misje wchodzą do kodu od S1) i D2 wstępnie (3 misje bazowe, 5 warunkowo). Bramki F2/F4 nadal czekają na playtest (sekcja 6).
+- **Decyzje właściciela 17 XI 2026:** D1 — tak; D2 — 3 bazowe + 2 warunkowo, ostatecznie w S8; playtest walki (S0-02) po scaleniu S0-07 i S0-08.
 
 ## 1. Stan repozytorium — co potwierdzono
 
