@@ -683,3 +683,15 @@ lewą dłoń, podparcie na `support` broni i gest mocy z własnym magentowym mat
 `FppMotion` dodaje opad zamiany, sway i bob wyłącznie w renderze. Strojenie:
 `tuning.hands` w lil-gui oraz stałe pozycji/kątów na górze plików FPP.
 Szczegóły i kontrola ręczna: [hands.md](hands.md#render-przegubowych-dłoni).
+
+## Render pogody i portu
+
+Opcjonalny profil `weather` w pokoju steruje istniejącą mgłą wysokościową,
+odbiciami neonów, maską kałuż i uniformem połysku materiałów miejskich.
+Kompozycja błysku ma kolor z profilu (ciepła biel); bez profilu zachowuje
+poprzednie składowe liniowe. Port scala jeden wspólny korzeń statyczny w
+komórkach 20 m według wzorca kryjówki z `0ade40c`; kontenery i bolardy są
+instancjami w komórkach. Zwalnianie obejmuje bufory InstancedMesh.
+Kontrakty i ograniczenia: [weather.md](weather.md), [arenas.md](arenas.md).
+Pomiar strukturalny portu: 286 → 123 siatek. Pomiar wywołań GPU pozostaje
+zablokowany przez sandbox i nie jest zastępowany liczbą siatek.

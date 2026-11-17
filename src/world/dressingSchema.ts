@@ -141,6 +141,10 @@ export type DecorDef = z.infer<typeof decorSchema>;
 
 /** Pola oprawy dołączane do schematu pokoju i układu areny. */
 export const dressingFields = {
+  weather: z
+    .string()
+    .regex(/^[a-zA-Z0-9_]+$/)
+    .optional(),
   /** Id motywu z `src/data/themes/<id>.json`; brak = `white` (dotychczasowy wygląd). */
   theme: z
     .string()

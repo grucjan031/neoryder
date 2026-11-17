@@ -101,3 +101,13 @@ ruchomym źródłem: `AudioSystem.updateAmbienceSource(index, position, gain)` p
 `HubSoundscape` dodaje je na końcu listy źródeł; gain > 0 tylko gdy kot odpoczywa. Zdarzenie `hub_fauna_sound
 { kind: 'meow' | 'rat'; point }` mapują reguły sfx z warunkiem `faunaKind` na przepisy `hub_meow` (rzadkie miau) i
 `hub_rat` (cichy pisk/tupanie), odtwarzane przestrzennie w `point`.
+
+## Warstwy pogody
+
+Profile pogody mogą włączyć `rain` (szum filtrowany górnoprzepustowo) i `wind`
+(szum dolnoprzepustowy) w istniejącym `AmbienceSynth`. Parametry filtrów są
+w `tuning.audio.ambienceProfiles`, poziomy w danych pogody. `CityDressing`
+przekazuje źródła przez `AudioSystem.setAmbience` i przesuwa je do kamery przez
+`updateAmbienceSource`; istniejące odblokowanie gestem, pauza i głośność pozostają
+wspólne. Profile bez pola weather nie tworzą audio pogody. Szczegóły cyklu życia
+i odsłuchu: [weather.md](weather.md).

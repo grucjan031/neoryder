@@ -1883,3 +1883,25 @@ jak wznowienie pokoju zwykłego runu; zakończona arena zachowuje podsumowanie.
 `loadMission` waliduje dane i zgodność pokojów. `generateMissionMap(mission, sector, seed)` generuje stałe węzły. `MapNode.fixed` przechowuje pokój, cele i finał. Opcjonalne `RunState.missionId`, `objectives`, `objectiveProgress` zachowują zgodność dawnych runów. `RunManager` blokuje ukończenie pokoju do wykonania jego celów. `RunSummary.missionCompleted` oznacza ukończony finał. Kampania w meta przechowuje ukończone misje i jednorazowy debrief; firstClear jest rozliczany przez applyRun.
 
 `RoomScene.missionState()` eksportuje migawkę celów do hosta; `RunManager.updateObjectives()` aktualizuje ją wyłącznie w aktywnej misji. `RoomSceneOptions.missionSignal(trigger)` przekazuje wyzwalacze radia do kolejki `MissionRadio` hostowanej przez run (kolejka przeżywa zmianę pokoju). Obrażenia i efekty eksplozji korzystają z istniejącego DamageSystem i EventBus.
+
+## Pogoda i areny Przejęcia
+
+- `RoomDefinition.weather?: string`: id profilu z `src/data/weather`; brak zachowuje
+  pogodę motywu bez zmiany parametrów. `CityDressing.setWeather(id)` przełącza
+  oprawę i tło audio bez wpływu na symulację. `dispose()` przywraca ustawienia.
+- `RoomDefinition.arena?`: punkty A/B/C oraz parametry scalania i nawigacji areny;
+  opcjonalne `spawnPoints` nadpisuje spawny tylko dla trybu, `exclusive` wyłącza
+  pokój ze zwykłych pul. Spawny gracza pozostają w danych pokoju. `blocks[].instance?`
+  oznacza powtarzalną bryłę do InstancedMesh; `blocks[].rotation?` opisuje obrót
+  identycznej bryły renderu i statycznego collidera (radiany XYZ).
+- `ModeDefinition.arenas`: uporządkowana lista id pokoi; odczyt starego `roomId`
+  i `points` pozostaje obsługiwany. `selectArena(mode, seed?, override?, debug?)`
+  wybiera pierwszy pokój bez seeda, a z seedem deterministycznie przez `Rng`.
+  Debug dopuszcza override wyłącznie z listy. `modeForArena` wiąże punkty z pokojem.
+- `NewRunOptions.arenaId?`: wybrana arena, utrwalana jako istniejące
+  `MapNode.fixed.roomId`; brak nowej wersji zapisu. Stare zapisy combatRing działają.
+- `ArenaNavigation`: czysta siatka przechodniości i pola odległości A/B/C;
+  host RoomScene przekazuje następny widoczny waypoint przez istniejące
+  `Enemy.moveGoal`. Zwykłe AI i zwykłe runy nie korzystają z tej nawigacji.
+- `AudioSystem.setAmbience` obsługuje także syntetyczne warstwy `rain` i `wind`.
+  Pogoda podąża źródłami za kamerą, wykorzystując istniejące odblokowanie i pauzę.

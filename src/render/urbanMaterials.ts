@@ -79,6 +79,7 @@ export const urbanLooks: Record<UrbanKind, UrbanLook> = {
 };
 
 export const urbanUniforms = {
+  weatherGloss: { value: 0 },
   cityDetail: { value: 0 },
   cityBump: { value: 0 },
   hazardPeriod: { value: 0.3 },
@@ -124,6 +125,7 @@ export function worldPositionShader(
     varying vec3 vCityWorld;
     uniform float cityDetail;
     uniform float cityBump;
+    uniform float weatherGloss;
     uniform float hazardPeriod;
     uniform vec3 windowWarm;
     uniform vec3 windowCool;
@@ -254,7 +256,7 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
       .replace(
         '#include <roughnessmap_fragment>',
         `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(roughnessFactor * mix(1.0, 0.8 + cityHeight * 0.5, cityDetail * surfaceReady), 0.04, 1.0);`,
+        roughnessFactor = clamp(roughnessFactor * mix(1.0, 0.8 + cityHeight * 0.5, cityDetail * surfaceReady) * (1.0 - weatherGloss), 0.04, 1.0);`,
       )
       .replace(
         '#include <normal_fragment_maps>',

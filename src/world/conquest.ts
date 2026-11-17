@@ -2,7 +2,7 @@ import type { EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Rng } from '../core/rng';
 import { tuning } from '../core/tuning';
-import type { ModeDefinition, PointId } from './modeSchema';
+import type { ResolvedModeDefinition, PointId } from './modeSchema';
 import { freeModePosition } from './modeSchema';
 import type { RoomDefinition } from './roomSchema';
 
@@ -25,7 +25,7 @@ export class Conquest {
   outcome: 'victory' | 'death' | null = null;
   private spawnS = 0;
   constructor(
-    readonly definition: ModeDefinition,
+    readonly definition: ResolvedModeDefinition,
     private readonly bus: EventBus,
   ) {
     this.points = definition.points.map((p) => ({
@@ -150,7 +150,12 @@ export class Conquest {
         ),
       )
       .filter(safe);
-    const candidates = owned.length ? owned : edges;
+    const spawns = room.arena
+      ? (room.arena.spawnPoints ?? room.spawnPoints)
+          .map((p) => ({ ...p, y: room.playerSpawn.y }))
+          .filter(safe)
+      : edges;
+    const candidates = owned.length ? owned : spawns;
     return candidates.length ? { ...rng.pick(candidates) } : null;
   }
   spawned(): void {

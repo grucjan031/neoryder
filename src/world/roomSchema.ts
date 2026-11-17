@@ -53,6 +53,34 @@ export const roomBlockSchema = z.object({
   position: vec3Schema,
   material: blockMaterialSchema.optional(),
   model: z.string().min(1).optional(),
+  rotation: vec3Schema.optional(),
+  instance: z.boolean().optional(),
+});
+
+export const capturePointsSchema = z
+  .array(
+    z.object({
+      id: z.enum(['A', 'B', 'C']),
+      position: vec3Schema,
+      radiusM: positive,
+    }),
+  )
+  .length(3)
+  .refine(
+    (points) => new Set(points.map((p) => p.id)).size === 3,
+    'Wymagane różne punkty A/B/C.',
+  );
+
+export const arenaSchema = z.object({
+  exclusive: z.boolean().optional(),
+  spawnPoints: z
+    .array(z.object({ x: finite, z: finite }))
+    .min(4)
+    .optional(),
+  points: capturePointsSchema,
+  batchCellM: positive,
+  navigationCellM: positive,
+  navigationClearanceM: positive,
 });
 
 export const roomSpawnPointSchema = z.object({
@@ -80,6 +108,7 @@ export const roomSchema = z
     name: z.string().min(1),
     type: z.enum(NODE_TYPES),
     playerSpawn: vec3Schema,
+    arena: arenaSchema.optional(),
     blocks: z.array(roomBlockSchema),
     spawnPoints: z.array(roomSpawnPointSchema),
     doors: z.array(roomDoorSchema),

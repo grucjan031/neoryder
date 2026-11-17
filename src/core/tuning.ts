@@ -69,6 +69,11 @@ export const tuning = {
     },
   },
   /** Oprawa miasta: wyłącznie render, metry i sekundy. Limity pul ustalane przy tworzeniu. */
+  weather: {
+    dustMax: 240,
+    wetRoughnessScale: 0.45,
+    skyFlashColor: '#9eadef',
+  },
   city: {
     /**
      * Panorama i niebo motywów z `panoramaEnabled` (tylko tło, bez świateł punktowych).
@@ -528,6 +533,8 @@ export const tuning = {
     ambiencePurrPulseHz: 25,
     ambiencePurrDepth: 0.85,
     ambienceProfiles: {
+      rain: { radiusM: 100, gain: 0.6, filterHz: 2400, toneHz: 0 },
+      wind: { radiusM: 100, gain: 0.45, filterHz: 380, toneHz: 0 },
       purr: { radiusM: 3, gain: 0.2, filterHz: 160, toneHz: 0 },
       fire: { radiusM: 10, gain: 0.65, filterHz: 550, toneHz: 0 },
       generator: { radiusM: 13, gain: 0.32, filterHz: 190, toneHz: 52 },

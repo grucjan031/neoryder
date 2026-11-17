@@ -1,5 +1,7 @@
 import { Conquest } from '../world/conquest';
-import { conquestDefinition } from '../world/modes';
+import { conquestMode } from '../world/modes';
+import { modeForArena } from '../world/modeSchema';
+import { ArenaNavigation } from '../world/arenaNavigation';
 import { ConquestView } from '../ui/conquestUi';
 import { MissionObjectives } from '../world/missionObjectives';
 import { missionDefinitions } from '../world/missions';
@@ -26,6 +28,8 @@ import {
   BoxGeometry,
   Euler,
   Group,
+  InstancedMesh,
+  Matrix4,
   Mesh,
   Quaternion,
   Vector3,
@@ -271,6 +275,9 @@ export class RoomScene implements Scene {
   private readonly missionSignal: ((trigger: string) => void) | undefined;
   private mission?: MissionObjectives;
   private conquest?: Conquest;
+  private navigation?: ArenaNavigation;
+  private staticWorld?: Group;
+  private readonly staticInstances: InstancedMesh[] = [];
   private conquestView?: ConquestView;
   private missionView?: MissionView;
   private missionHud?: MissionHud;
@@ -332,20 +339,32 @@ export class RoomScene implements Scene {
     );
     three.add(this.root);
     this.root.add(this.lights);
+    if (this.layout.arena?.exclusive) {
+      this.staticWorld = new Group();
+      this.staticWorld.name = 'static-world';
+      this.root.add(this.staticWorld);
+    }
     await this.buildLayout();
     if (this.disposed) return;
     const decor = new Group();
     decor.name = 'static-decor';
-    this.root.add(decor);
+    (this.staticWorld ?? this.root).add(decor);
     await loadDecor(decor, this.layout.decor, this.loadModels);
     if (this.disposed) return;
-    batchStaticGeometry(decor, this.geometries);
+    if (this.staticWorld)
+      batchStaticGeometry(this.staticWorld, this.geometries, {
+        cellSize: this.layout.arena!.batchCellM,
+      });
+    else batchStaticGeometry(decor, this.geometries);
     this.dressing = new CityDressing(
       this.root,
       this.layout,
       this.atmosphere.theme,
       this.layout.playerSpawn.y,
-      this.layout.id,
+      this.layout.weather
+        ? `${this.run.seed}:${this.layout.id}`
+        : this.layout.id,
+      ctx.audio,
     );
 
     const playerId = this.entities.create('player', 'player');
@@ -655,7 +674,12 @@ export class RoomScene implements Scene {
       }),
     );
     if (this.run.modeId === 'conquest') {
-      this.conquest = new Conquest(conquestDefinition, ctx.bus);
+      this.conquest = new Conquest(
+        modeForArena(conquestMode, this.layout),
+        ctx.bus,
+      );
+      if (this.layout.arena?.exclusive)
+        this.navigation = new ArenaNavigation(this.layout);
       if (typeof document !== 'undefined') {
         this.conquestView = new ConquestView(this.conquest, ctx.bus);
         this.root.add(this.conquestView.root);
@@ -738,17 +762,55 @@ export class RoomScene implements Scene {
     blocks.name = 'static-blocks';
     const models = new Group();
     models.name = 'static-models';
-    this.root.add(blocks, models);
+    (this.staticWorld ?? this.root).add(blocks, models);
+    const instances = new Map<
+      string,
+      {
+        size: Vec3;
+        material: Parameters<typeof getMaterial>[0];
+        matrices: Matrix4[];
+      }
+    >();
     await Promise.all(
       this.layout.blocks.map(
-        async ({ size, position, model, material: blockMaterial }) => {
+        async ({
+          size,
+          position,
+          model,
+          material: blockMaterial,
+          rotation,
+          instance,
+        }) => {
+          const quaternion = new Quaternion().setFromEuler(
+            new Euler(rotation?.x ?? 0, rotation?.y ?? 0, rotation?.z ?? 0),
+          );
           this.world.createCollider(
             this.rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
               .setTranslation(position.x, position.y, position.z)
+              .setRotation(quaternion)
               .setCollisionGroups(
                 interactionGroups(CollisionGroup.World, 0xffff),
               ),
           );
+          if (instance && this.staticWorld) {
+            const cell = this.layout.arena!.batchCellM;
+            const material = blockMaterial ?? 'world';
+            const key = `${Math.floor(position.x / cell)},${Math.floor(position.z / cell)}:${material}:${size.x},${size.y},${size.z}`;
+            const group = instances.get(key) ?? {
+              size,
+              material,
+              matrices: [],
+            };
+            group.matrices.push(
+              new Matrix4().compose(
+                new Vector3(position.x, position.y, position.z),
+                quaternion,
+                new Vector3(1, 1, 1),
+              ),
+            );
+            instances.set(key, group);
+            return;
+          }
           const geometry = new BoxGeometry(size.x, size.y, size.z);
           this.geometries.add(geometry);
           const material =
@@ -756,6 +818,7 @@ export class RoomScene implements Scene {
             (model?.startsWith('crate') ? 'interactive' : 'world');
           const fallback = new Mesh(geometry, getMaterial(material));
           fallback.position.set(position.x, position.y, position.z);
+          fallback.quaternion.copy(quaternion);
           blocks.add(fallback);
           const file = model?.startsWith('city_')
             ? model
@@ -782,8 +845,24 @@ export class RoomScene implements Scene {
         },
       ),
     );
-    batchStaticGeometry(blocks, this.geometries);
-    batchStaticGeometry(models, this.geometries);
+    for (const { size, material, matrices } of instances.values()) {
+      const geometry = new BoxGeometry(size.x, size.y, size.z);
+      this.geometries.add(geometry);
+      const mesh = new InstancedMesh(
+        geometry,
+        getMaterial(material),
+        matrices.length,
+      );
+      this.staticInstances.push(mesh);
+      matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.computeBoundingSphere();
+      blocks.add(mesh);
+    }
+    if (!this.staticWorld) {
+      batchStaticGeometry(blocks, this.geometries);
+      batchStaticGeometry(models, this.geometries);
+    }
     for (const door of this.layout.doors) {
       const { size, position } = door;
       const geometry = new BoxGeometry(size.x, size.y, size.z);
@@ -1190,6 +1269,11 @@ export class RoomScene implements Scene {
               enemy.current.position,
               player,
             );
+            if (enemy.moveGoal && this.navigation)
+              enemy.moveGoal = this.navigation.next(
+                enemy.current.position,
+                enemy.moveGoal,
+              );
           }
         });
         this.conquest.step(dt, player, positions);
@@ -1648,6 +1732,14 @@ export class RoomScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register(
+      'weather',
+      'weather <rain|storm|smog|drizzleWind|clearNight>',
+      (args) =>
+        args.length === 1 && this.dressing?.setWeather(args[0]!)
+          ? `Pogoda: ${args[0]}`
+          : 'Nieznany profil pogody.',
+    );
     register('conquest capture', 'conquest capture <A|B|C>', (args) =>
       args.length === 1 && this.conquest?.capture(args[0]!)
         ? 'Punkt przejęty.'
@@ -1895,6 +1987,7 @@ export class RoomScene implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'weather') return this.dressing?.weatherId ?? null;
     if (name === 'executable') return this.execute.readyIds();
     switch (name) {
       case 'conquest':
@@ -2027,6 +2120,7 @@ export class RoomScene implements Scene {
       if (this.initDone) throw error;
     } finally {
       this.dressing?.dispose();
+      for (const mesh of this.staticInstances.splice(0)) mesh.dispose();
       this.root.removeFromParent();
       this.root.clear();
       this.atmosphere?.dispose();

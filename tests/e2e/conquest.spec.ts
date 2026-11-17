@@ -31,6 +31,7 @@ for (const outcome of ['victory', 'death'] as const) {
               !game ||
               game.query('loading') !== false ||
               game.query('screen') !== 'room' ||
+              game.query('room') !== 'arenaContainerPort' ||
               !game.query('conquest')
             )
               return false;
