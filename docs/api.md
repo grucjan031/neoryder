@@ -2051,3 +2051,13 @@ Scena: `?scene=mission&mission=m01-maszty[&continue=1]`. Debug: `mission start <
 zwraca cele, checkpoint, aktywne/zakończone spotkania, otwarte bramy i stan hosta.
 Tablica udostępnia misje z poziomem; pozostałe pokazuje jako „Wkrótce”. Opcjonalny
 `HubPanelContext.missionSave` udostępnia checkpoint dla przycisku kontynuacji.
+
+### Profile śniegu i popiołu (ADR 0011 D6)
+`WeatherProfile.precipitation.kind` obejmuje `snow` i `ash`. Te rodzaje wymagają
+`flakes: { sizeM, swayM, swayPeriodS, windScatter, secondaryColor }`; `speed`
+pozostaje prędkością opadania w m/s. Pozostałe rodzaje ignorują `flakes`.
+`surface.snowCoverage` (0..1, domyślnie 0) i `snowColor` sterują matowym,
+rozjaśnionym wierzchem przez wspólne uniformy urbanMaterials. Opcjonalny
+`sky.horizonColor` ustawia istniejącą łunę nieba; brak przywraca kolor motywu.
+Ambience profilu dopuszcza istniejącą warstwę `generator` z miksem `gain`.
+Zmiany pozostają kosmetyczne; CityDressing przy wyjściu przywraca uniformy i łunę.

@@ -45,6 +45,7 @@ export class CityDressing {
   private readonly ambient?: AmbientFx;
   weather?: Weather;
   weatherId?: string;
+  private baseSkyHorizon = tuning.render.skyHorizon;
   private restoreWeather?: () => void;
   private worldDt = 0;
   private disposed = false;
@@ -109,6 +110,7 @@ export class CityDressing {
     if (!this.restoreWeather) {
       const r = tuning.render;
       const previous = {
+        skyHorizon: r.skyHorizon,
         fogColor: r.fogColor,
         heightFogDensity: r.heightFogDensity,
         heightFogFalloff: r.heightFogFalloff,
@@ -119,10 +121,15 @@ export class CityDressing {
         reflectionPuddles: r.reflectionPuddles,
       };
       const gloss = urbanUniforms.weatherGloss.value;
+      const snowCoverage = urbanUniforms.snowCoverage.value;
+      const snowColor = urbanUniforms.snowColor.value.clone();
+      this.baseSkyHorizon = r.skyHorizon;
       const flashColor = tuning.weather.skyFlashColor;
       this.restoreWeather = () => {
         Object.assign(tuning.render, previous);
         urbanUniforms.weatherGloss.value = gloss;
+        urbanUniforms.snowCoverage.value = snowCoverage;
+        urbanUniforms.snowColor.value.copy(snowColor);
         tuning.weather.skyFlashColor = flashColor;
         this.audio?.setAmbience(null);
       };
@@ -141,6 +148,7 @@ export class CityDressing {
       this.weather.setProfile(profile);
     }
     Object.assign(tuning.render, {
+      skyHorizon: profile.sky?.horizonColor ?? this.baseSkyHorizon,
       fogColor: profile.fog.color,
       heightFogDensity: profile.fog.density,
       heightFogFalloff: 1 / profile.fog.heightM,
@@ -152,6 +160,8 @@ export class CityDressing {
     });
     urbanUniforms.weatherGloss.value =
       profile.surface.gloss * tuning.weather.wetRoughnessScale;
+    urbanUniforms.snowCoverage.value = profile.surface.snowCoverage;
+    urbanUniforms.snowColor.value.set(profile.surface.snowColor);
     tuning.weather.skyFlashColor = profile.lightning.color;
     this.audio?.setAmbience(
       profile.ambience.map((a) => ({ ...a, position: { x: 0, y: 0, z: 0 } })),

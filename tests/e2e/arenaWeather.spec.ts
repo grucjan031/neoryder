@@ -41,7 +41,7 @@ for (const [arena, weather] of [
   });
 }
 
-test('Przejęcie startuje w porcie; pięć profili przełącza się bez błędów', async ({
+test('Przejęcie startuje w porcie; siedem profili przełącza się bez błędów', async ({
   page,
 }) => {
   test.setTimeout(6 * LOAD_TIMEOUT);
@@ -76,7 +76,15 @@ test('Przejęcie startuje w porcie; pięć profili przełącza się bez błędó
       timeout: LOAD_TIMEOUT,
     })
     .toBe(false);
-  for (const id of ['rain', 'storm', 'smog', 'drizzleWind', 'clearNight']) {
+  for (const id of [
+    'rain',
+    'storm',
+    'smog',
+    'drizzleWind',
+    'clearNight',
+    'snow',
+    'ashfall',
+  ]) {
     await page.locator(`[data-weather="${id}"]`).click();
     await expect
       .poll(() => page.evaluate(() => window.__neoryder?.query('weather')))

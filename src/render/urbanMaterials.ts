@@ -3,6 +3,7 @@ import {
   MeshBasicMaterial,
   MeshStandardMaterial,
   Vector2,
+  Vector3,
   Vector4,
 } from 'three';
 import type { WebGLProgramParametersWithUniforms } from 'three';
@@ -136,6 +137,10 @@ export const urbanLooks: Record<UrbanKind, UrbanLook> = {
 
 export const urbanUniforms = {
   weatherGloss: { value: 0 },
+  snowCoverage: { value: 0 },
+  snowColor: { value: new Color() },
+  snowPattern: { value: new Vector3() },
+  snowMaskRange: { value: new Vector2() },
   cityDetail: { value: 0 },
   cityBump: { value: 0 },
   hazardPeriod: { value: 0.3 },
@@ -165,7 +170,10 @@ export function worldPositionShader(
   shader: WebGLProgramParametersWithUniforms,
 ): void {
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', '#include <common>\nvarying vec3 vCityWorld;')
+    .replace(
+      '#include <common>',
+      '#include <common>\nvarying vec3 vCityWorld;\nvarying float vCityUp;',
+    )
     .replace(
       '#include <begin_vertex>',
       `#include <begin_vertex>
@@ -173,15 +181,25 @@ export function worldPositionShader(
       #ifdef USE_INSTANCING
         cityWorld = instanceMatrix * cityWorld;
       #endif
-      vCityWorld = (modelMatrix * cityWorld).xyz;`,
+      vCityWorld = (modelMatrix * cityWorld).xyz;
+      #ifdef STANDARD
+        vCityUp = inverseTransformDirection(normalize(transformedNormal), viewMatrix).y;
+      #else
+        vCityUp = 0.0;
+      #endif`,
     );
   shader.fragmentShader = shader.fragmentShader.replace(
     '#include <common>',
     `#include <common>
     varying vec3 vCityWorld;
+    varying float vCityUp;
     uniform float cityDetail;
     uniform float cityBump;
     uniform float weatherGloss;
+    uniform float snowCoverage;
+    uniform vec3 snowColor;
+    uniform vec3 snowPattern;
+    uniform vec2 snowMaskRange;
     uniform float hazardPeriod;
     uniform vec3 windowWarm;
     uniform vec3 windowCool;
@@ -291,6 +309,12 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
       .replace(
         '#include <color_fragment>',
         `#include <color_fragment>
+        float citySnow = snowCoverage * max(0.0, vCityUp);
+        if (citySnow > 0.0) {
+          float snowPatch = cityNoise(vCityWorld.xz * snowPattern.x);
+          float wear = cityNoise(vCityWorld.xz * vec2(snowPattern.y * snowPattern.z, snowPattern.y));
+          citySnow *= smoothstep(snowMaskRange.x, snowMaskRange.y, min(snowPatch, wear));
+        }
         float cityHeight = 0.0;
         if (cityDetail > 0.0) {
           vec3 nCross = cross(dFdx(vCityWorld), dFdy(vCityWorld));
@@ -314,6 +338,7 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
               : ''
           }
         }
+        diffuseColor.rgb = mix(diffuseColor.rgb, snowColor, citySnow);
         ${kind === 'metal' ? 'diffuseColor.rgb *= 1.0 - cityDetail * 0.3 * step(0.97,fract(vCityWorld.y*1.5));' : ''}
         ${
           kind === 'facade'
@@ -327,7 +352,13 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
       .replace(
         '#include <roughnessmap_fragment>',
         `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(roughnessFactor * mix(1.0, 0.8 + cityHeight * 0.5, cityDetail * surfaceReady) * (1.0 - weatherGloss), 0.04, 1.0);`,
+        roughnessFactor = clamp(roughnessFactor * mix(1.0, 0.8 + cityHeight * 0.5, cityDetail * surfaceReady) * (1.0 - weatherGloss), 0.04, 1.0);
+        roughnessFactor = mix(roughnessFactor, 1.0, citySnow);`,
+      )
+      .replace(
+        '#include <metalnessmap_fragment>',
+        `#include <metalnessmap_fragment>
+        metalnessFactor *= 1.0 - citySnow;`,
       )
       .replace(
         '#include <normal_fragment_maps>',
@@ -370,6 +401,16 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
 }
 
 export function syncUrbanMaterials(): void {
+  const weather = tuning.weather;
+  urbanUniforms.snowPattern.value.set(
+    weather.snowPatchFrequency,
+    weather.snowWearFrequency,
+    weather.snowWearStretch,
+  );
+  urbanUniforms.snowMaskRange.value.set(
+    weather.snowMaskLow,
+    weather.snowMaskHigh,
+  );
   urbanUniforms.cityDetail.value = tuning.render.citySurfaceDetail;
   urbanUniforms.cityBump.value = tuning.render.cityBumpStrength;
   urbanUniforms.hazardPeriod.value = tuning.render.cityHazardPeriod;

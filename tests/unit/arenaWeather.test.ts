@@ -63,12 +63,14 @@ describe('pogoda z danych', () => {
       dressing.dispose();
     }
   });
-  it('waliduje pięć profili, limity i kolory wyładowań', () => {
+  it('waliduje siedem profili, limity i kolory wyładowań', () => {
     expect([...weatherDefinitions.keys()].sort()).toEqual([
+      'ashfall',
       'clearNight',
       'drizzleWind',
       'rain',
       'smog',
+      'snow',
       'storm',
     ]);
     for (const profile of weatherDefinitions.values())
@@ -83,6 +85,131 @@ describe('pogoda z danych', () => {
       expect(weatherSchema.safeParse(invalid).success).toBe(false);
     expect(() => loadWeatherDefinitions([rain, rain])).toThrow('Powtórzona');
   });
+  it.each(['snow', 'ashfall'])(
+    '%s: wymaga poprawnych parametrów płatków',
+    (id) => {
+      const profile = weatherDefinitions.get(id)!;
+      expect(weatherSchema.safeParse(profile).success).toBe(true);
+      for (const flakes of [
+        undefined,
+        { ...profile.precipitation.flakes, sizeM: 0 },
+        { ...profile.precipitation.flakes, swayM: -1 },
+        { ...profile.precipitation.flakes, swayPeriodS: 0 },
+        { ...profile.precipitation.flakes, windScatter: -1 },
+        { ...profile.precipitation.flakes, secondaryColor: 'grey' },
+      ])
+        expect(
+          weatherSchema.safeParse({
+            ...profile,
+            precipitation: { ...profile.precipitation, flakes },
+          }).success,
+        ).toBe(false);
+      expect(
+        weatherSchema.safeParse({
+          ...profile,
+          surface: { ...profile.surface, snowCoverage: 2 },
+        }).success,
+      ).toBe(false);
+    },
+  );
+  it('kolory wszystkich profili omijają zarezerwowane zakresy barw', () => {
+    const checkColors = (value: unknown): void => {
+      if (typeof value === 'string' && /^#[\da-f]{6}$/i.test(value)) {
+        const [r, g, b] = [1, 3, 5].map(
+          (i) => parseInt(value.slice(i, i + 2), 16) / 255,
+        ) as [number, number, number];
+        const max = Math.max(r, g, b),
+          min = Math.min(r, g, b),
+          delta = max - min;
+        if (max === 0 || delta / max < 0.35) return;
+        const hue =
+          ((max === r
+            ? (g - b) / delta
+            : max === g
+              ? (b - r) / delta + 2
+              : (r - g) / delta + 4) *
+            60 +
+            360) %
+          360;
+        expect(
+          hue < 15 ||
+            hue > 345 ||
+            (hue >= 170 && hue <= 195) ||
+            (hue >= 285 && hue <= 335),
+          value,
+        ).toBe(false);
+      } else if (value && typeof value === 'object')
+        Object.values(value).forEach(checkColors);
+    };
+    for (const profile of weatherDefinitions.values()) checkColors(profile);
+  });
+  it('stare profile mają neutralne nowe pola', () => {
+    for (const id of ['rain', 'storm', 'smog', 'drizzleWind', 'clearNight']) {
+      const profile = weatherDefinitions.get(id)!;
+      expect(profile.surface.snowCoverage).toBe(0);
+      expect(profile.precipitation.flakes).toBeUndefined();
+      expect(profile.sky).toBeUndefined();
+    }
+  });
+  it.each(['snow', 'ashfall'])(
+    '%s: ukrywa płatek po zbliżeniu kamery nawet podczas pauzy',
+    (id) => {
+      const weather = new Weather({}, 0, 'near-flake');
+      const camera = new PerspectiveCamera();
+      const matrix = new Matrix4();
+      weather.setProfile(weatherDefinitions.get(id)!);
+      try {
+        weather.update(0, 0, camera);
+        let visible = 0;
+        for (; visible < weather.rain.count; visible++) {
+          weather.rain.getMatrixAt(visible, matrix);
+          if (matrix.determinant() !== 0) break;
+        }
+        expect(visible).toBeLessThan(weather.rain.count);
+        camera.position.setFromMatrixPosition(matrix);
+        weather.update(0, 0, camera);
+        weather.rain.getMatrixAt(visible, matrix);
+        expect(matrix.determinant()).toBe(0);
+      } finally {
+        weather.dispose();
+      }
+    },
+  );
+  it.each(['snow', 'ashfall'])(
+    '%s: deterministyczne płatki bez rozbryzgów i błysków',
+    (id) => {
+      const a = new Weather({}, 0, 'flakes'),
+        b = new Weather({}, 0, 'flakes');
+      const camera = new PerspectiveCamera();
+      a.setProfile(weatherDefinitions.get(id)!);
+      b.setProfile(weatherDefinitions.get(id)!);
+      try {
+        for (let i = 0; i < 180; i++) {
+          a.update(1 / 60, 1 / 60, camera);
+          b.update(1 / 60, 1 / 60, camera);
+        }
+        expect(a.rain.instanceMatrix.array).toEqual(
+          b.rain.instanceMatrix.array,
+        );
+        expect(a.splashCount).toBe(0);
+        expect(a.flash).toBe(0);
+        const paused = a.rain.instanceMatrix.array.slice();
+        a.update(0, 1, camera);
+        expect(a.rain.instanceMatrix.array).toEqual(paused);
+        a.setProfile(rain);
+        a.update(0, 0, camera);
+        expect(a.rain.material.color.getHexString()).toBe(
+          rain.precipitation.color.slice(1),
+        );
+        expect(a.rain.instanceColor!.array.every((value) => value === 1)).toBe(
+          true,
+        );
+      } finally {
+        a.dispose();
+        b.dispose();
+      }
+    },
+  );
   it('profil rain odwzorowuje parametry dotychczasowego motywu', () => {
     const legacy = themeDefinitions.get('neonStreet')!;
     for (const key of ['density', 'speed', 'color', 'opacity'] as const)
@@ -94,6 +221,8 @@ describe('pogoda z danych', () => {
   it('przełącza wszystkie profile, przywraca render i sprząta audio', () => {
     const previous = structuredClone(tuning.render);
     const gloss = urbanUniforms.weatherGloss.value;
+    const coverage = urbanUniforms.snowCoverage.value;
+    const snowColor = urbanUniforms.snowColor.value.clone();
     const audio = { setAmbience: vi.fn(), updateAmbienceSource: vi.fn() };
     const root = new Group();
     const dressing = new CityDressing(
@@ -116,12 +245,18 @@ describe('pogoda z danych', () => {
           : Math.floor(dressing.weather!.capacity * p.precipitation.density),
       );
       expect(tuning.render.fogColor).toBe(p.fog.color);
+      expect(urbanUniforms.snowCoverage.value).toBe(p.surface.snowCoverage);
+      expect(tuning.render.skyHorizon).toBe(
+        p.sky?.horizonColor ?? previous.skyHorizon,
+      );
     }
     expect(dressing.setWeather('missing')).toBe(false);
     dressing.dispose();
     dressing.dispose();
     expect(tuning.render).toEqual(previous);
     expect(urbanUniforms.weatherGloss.value).toBe(gloss);
+    expect(urbanUniforms.snowCoverage.value).toBe(coverage);
+    expect(urbanUniforms.snowColor.value).toEqual(snowColor);
     expect(audio.setAmbience).toHaveBeenLastCalledWith(null);
     expect(root.children).toHaveLength(0);
   });
