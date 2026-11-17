@@ -25,6 +25,29 @@ const openHub = async (page: Page, extra = '') => {
   await waitSimSteps(page, 5);
 };
 
+test('hub: odblokowane otoczenie i wymuszony przejazd nie zgłaszają błędów Web Audio', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  await page.keyboard.press('KeyG');
+  await expect.poll(() => query(page, 'audioState')).toBe('running');
+  await expect
+    .poll(async () => ((await query(page, 'hubAmbience')) as unknown[]).length)
+    .toBeGreaterThan(0);
+  const sources = (await query(page, 'hubAmbience')) as {
+    kind: string;
+    gain: number;
+  }[];
+  expect(sources.length).toBeLessThanOrEqual(8);
+  expect(sources.every((s) => typeof s.kind === 'string' && s.gain > 0)).toBe(
+    true,
+  );
+  expect(await command(page, 'hub train')).toContain('Pociąg');
+  await waitSimSteps(page, 250);
+  expect(errors).toEqual([]);
+});
+
 test('menu → Kryjówka → scena hub startuje bez błędów konsoli', async ({
   page,
 }) => {

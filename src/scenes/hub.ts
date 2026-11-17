@@ -51,6 +51,7 @@ import { HubStations, selectHubTarget } from '../world/hubStations';
 import type { HubTarget } from '../world/hubStations';
 import { HUB_BATCH_CELL_M, HubDecor } from './hubDecor';
 import { HubNpcs } from './hubNpcs';
+import { HubSoundscape } from './hubSoundscape';
 import type { Scene } from './index';
 import { preserveLiteFx } from '../render/fxMode';
 
@@ -138,6 +139,7 @@ export class HubScene implements Scene {
   private atmosphere?: SceneAtmosphere;
   private dressing?: CityDressing;
   private decor?: HubDecor;
+  private soundscape?: HubSoundscape;
   private readonly root = new Group();
   private readonly lights = createStyleLights();
   private readonly geometries = new Set<BufferGeometry>();
@@ -272,6 +274,7 @@ export class HubScene implements Scene {
       ),
     );
     this.registerCommands();
+    this.soundscape = new HubSoundscape(ctx, this.root, this.layout);
     this.world.step();
     this.render(1);
   }
@@ -518,6 +521,7 @@ export class HubScene implements Scene {
     this.previous = this.player.getState();
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
     if (this.stations.opened || !(dt > 0)) return;
+    this.soundscape?.step(dt, this.player.getState().position);
     this.player.step(dt, this.withPendingLook(input));
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
@@ -571,6 +575,7 @@ export class HubScene implements Scene {
     const camera = this.ctx.camera;
     if (!camera) {
       this.dressing?.render(frameDt, undefined);
+      this.soundscape?.render(alpha);
       return;
     }
     const pose = this.fpsCamera.update(
@@ -586,6 +591,7 @@ export class HubScene implements Scene {
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
+    this.soundscape?.render(alpha);
     this.dressing?.render(frameDt, camera);
     const velocity = this.player.getState().velocity;
     this.fppView.place(camera.matrixWorld, frameDt, {
@@ -603,6 +609,8 @@ export class HubScene implements Scene {
 
   query(name: string): unknown {
     switch (name) {
+      case 'hubAmbience':
+        return this.soundscape?.query() ?? [];
       case 'meta':
         return this.meta.state;
       case 'level':
@@ -753,6 +761,7 @@ export class HubScene implements Scene {
       this.world?.free();
     } finally {
       this.decor?.dispose();
+      this.soundscape?.dispose();
       this.dressing?.dispose();
       this.root.removeFromParent();
       this.root.clear();

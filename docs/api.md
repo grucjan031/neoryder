@@ -1,5 +1,29 @@
 # API między modułami (kontrakty)
 
+## Otoczenie kryjówki i przejazd pociągu
+
+`AudioSystem.setAmbience(sources | null)` przyjmuje źródła `{ kind, position: Vec3,
+radiusM, gain? }` (fire, generator, drip, steam, screens, crowd, radio, jukebox,
+cooking). `updateAmbience(paused = false)` aktualizuje panoramę i głośność względem
+istniejącego listenera; pauza zatrzymuje grafy. `activeAmbience` zwraca aktywne
+`{ kind, gain }`. `setTrainPass(progress | null, hubTuning)` steruje kosmetycznym
+dudnieniem (postęp 0..1, kierunek świata zachód → wschód). Wszystkie grafy należą
+do AudioSystem, korzystają ze wspólnego kontekstu i szyny ambience → master/SFX.
+`setAmbience(null)` sprząta również graf pociągu; `dispose` zwalnia całość.
+
+`hubAmbienceSources(layout, extra, audioTuning?)` jest czystą funkcją ekstrakcji;
+ekrany w promieniu `ambienceScreenClusterM` są łączone w skupiska. `loadAmbience`
+waliduje jawne źródła z `src/data/hub/ambience.json` schematem zod.
+
+`HubTrain` (bez Three.js/DOM) przyjmuje Rng i tuning kryjówki. `step(dt)` odmierza
+czas symulacji; `force()` rozpoczyna przejazd natychmiast i losuje kolejny odstęp.
+Na początku emituje `hub_train_passed: { durationS: number }` przez EventBus;
+w szczycie emituje istniejące `camera_shake` (ustawienie screenShake respektuje
+FpsCamera). `progress` udostępnia postęp lub null. Moduł sceny `HubSoundscape`
+łączy harmonogram, audio i pulę pyłu, rejestruje `hub train`, udostępnia query
+`hubAmbience` i sprząta przy opuszczeniu sceny. Render interpoluje stan pyłu;
+harmonogram i ruch cząstek działają wyłącznie w step.
+
 ## Z16 — Wieżyczka, Dron-haker i zagłuszenie
 
 `PowerDeps.statuses?: StatusQuery` udostępnia statusy właściciela mocy.

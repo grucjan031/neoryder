@@ -6,6 +6,8 @@ import { SFX_EVENTS } from './sfxSchema';
 import type { SfxDefinition, SfxEvent, SfxWhen } from './sfxSchema';
 import { createNoiseBuffer, playLayers } from './synth';
 import type { AudioBackend } from './synth';
+import { Ambience } from './ambience';
+import type { AmbienceSource } from './ambienceSchema';
 
 export interface Listener {
   position: Vec3;
@@ -61,6 +63,11 @@ export class AudioSystem {
   private playerId: EntityId | null = null;
   private readonly off: (() => void)[] = [];
   private unlockCleanup: (() => void) | null = null;
+  private ambience: Ambience | null = null;
+  private ambienceSources: readonly AmbienceSource[] | null = null;
+  private trainProgress: number | null = null;
+  private trainTuning: Tuning['hub'] | undefined;
+  private disposed = false;
   /** Ostatnio odtworzony dźwięk (debug, testy). */
   lastSound: string | null = null;
   /** Ostatnie odtworzone dźwięki, najnowszy na końcu (debug, testy). */
@@ -100,6 +107,48 @@ export class AudioSystem {
 
   get soundNames(): string[] {
     return Object.keys(this.def.sounds);
+  }
+
+  setAmbience(sources: readonly AmbienceSource[] | null): void {
+    this.ambienceSources =
+      sources?.map((s) => ({ ...s, position: { ...s.position } })) ?? null;
+    this.ambience?.dispose();
+    this.ambience = null;
+    this.trainProgress = null;
+  }
+
+  get activeAmbience(): { kind: string; gain: number }[] {
+    return this.ambience?.snapshot ?? [];
+  }
+
+  setTrainPass(progress: number | null, hubTuning: Tuning['hub']): void {
+    this.trainProgress =
+      progress === null ? null : Math.max(0, Math.min(1, progress));
+    this.trainTuning = hubTuning;
+  }
+
+  updateAmbience(paused = false): void {
+    if (this.disposed || (!this.ambienceSources && this.trainProgress === null))
+      return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.master || !this.noise) return;
+    this.updateVolume();
+    if (!this.ambience) {
+      this.ambience = new Ambience(
+        ctx,
+        this.master,
+        this.noise,
+        this.opts.tuning.audio,
+        `${this.opts.seed ?? 'audio'}:ambience`,
+      );
+      this.ambience.setSources(this.ambienceSources);
+    }
+    this.ambience.update(
+      this.opts.listener?.() ?? null,
+      paused,
+      this.trainProgress,
+      this.trainTuning,
+    );
   }
 
   /** Odblokowanie po pierwszej interakcji (polityka autoodtwarzania przeglądarek). */
@@ -191,6 +240,8 @@ export class AudioSystem {
   }
 
   dispose(): void {
+    this.disposed = true;
+    this.setAmbience(null);
     for (const off of this.off.splice(0)) off();
     this.unlockCleanup?.();
     this.unlockCleanup = null;
