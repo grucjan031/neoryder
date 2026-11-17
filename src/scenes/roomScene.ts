@@ -1,7 +1,13 @@
 import { Conquest } from '../world/conquest';
-import { conquestDefinition, assaultDefinition } from '../world/modes';
+import {
+  conquestDefinition,
+  assaultDefinition,
+  heistDefinition,
+} from '../world/modes';
+import { Heist, type HeistEnemy } from '../world/heist';
 import { Assault } from '../world/assault';
 import { AssaultView } from '../ui/assaultUi';
+import { HeistView } from '../ui/heistUi';
 import { ConquestView } from '../ui/conquestUi';
 import { MissionObjectives } from '../world/missionObjectives';
 import { missionDefinitions } from '../world/missions';
@@ -274,6 +280,8 @@ export class RoomScene implements Scene {
   private mission?: MissionObjectives;
   private conquest?: Conquest;
   private assault?: Assault;
+  private heist?: Heist;
+  private heistView?: HeistView;
   private assaultView?: AssaultView;
   private conquestView?: ConquestView;
   private missionView?: MissionView;
@@ -642,6 +650,8 @@ export class RoomScene implements Scene {
       ctx.bus.on('enemy_killed', ({ id, killer }) => {
         if (killer === playerId) this.kills++;
         if (this.enemy(id)) this.conquest?.killed();
+        const carrier = this.enemy(id);
+        if (carrier) this.heist?.killed(id, carrier.current.position);
         if (this.boss && id === this.boss.id) {
           if (this.mission) {
             this.missionSignal?.('boss:defeated');
@@ -673,6 +683,13 @@ export class RoomScene implements Scene {
       if (typeof document !== 'undefined') {
         this.assaultView = new AssaultView(this.assault);
         this.root.add(this.assaultView.root);
+      }
+    }
+    if (this.run.modeId === 'heist') {
+      this.heist = new Heist(heistDefinition);
+      if (typeof document !== 'undefined') {
+        this.heistView = new HeistView(this.heist);
+        this.root.add(this.heistView.root);
       }
     }
     const mission = missionDefinitions.get(this.run.missionId ?? '');
@@ -738,7 +755,8 @@ export class RoomScene implements Scene {
       });
       this.root.add(this.bossFx.root);
       this.spawnBoss(this.layout.bossEnemy);
-    } else if (!this.conquest && !this.assault) this.director.start();
+    } else if (!this.conquest && !this.assault && !this.heist)
+      this.director.start();
     if (this.manualEncounter) this.director.stop();
     if (this.health.dead) this.onPlayerDied();
     this.render(1);
@@ -1158,8 +1176,9 @@ export class RoomScene implements Scene {
     this.dressing?.step(dt);
     this.previous = this.player.getState();
     if (this.state === 'dead') {
-      if (this.assault) {
-        if (this.assault.stepRespawn(dt)) this.respawnAssault();
+      const arena = this.assault ?? this.heist;
+      if (arena) {
+        if (arena.stepRespawn(dt)) this.respawnAssault();
         return;
       }
       this.manager.step(dt);
@@ -1186,6 +1205,7 @@ export class RoomScene implements Scene {
         this.player.getState().dashS <= 0,
     });
     this.player.setAim(this.heldItem.aim);
+    this.syncHeistCarry();
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
     this.powers.step(pdt, input);
@@ -1198,18 +1218,42 @@ export class RoomScene implements Scene {
     this.damage.step(dt);
     this.hazards.step(dt);
     if (!this.health.dead && !this.cleared) {
-      const arena = this.conquest ?? this.assault;
+      const arena = this.conquest ?? this.assault ?? this.heist;
       if (arena) {
         const player = this.player.getState().position;
         const positions: Vec3[] = [];
+        const heistEnemies: HeistEnemy[] = [];
         this.manager.forEach((enemy) => {
           if (!enemy.removed && enemy.current.state !== 'dead') {
             positions.push(enemy.current.position);
-            enemy.moveGoal = arena.moveGoal(enemy.current.position, player);
+            heistEnemies.push({
+              id: enemy.id,
+              position: enemy.current.position,
+            });
+            if (!this.heist)
+              enemy.moveGoal = (this.conquest ?? this.assault)!.moveGoal(
+                enemy.current.position,
+                player,
+              );
           }
         });
         this.conquest?.step(dt, player, positions);
         this.assault?.step(dt, player);
+        this.heist?.step(dt, player, heistEnemies);
+        if (this.heist) {
+          this.manager.forEach((enemy) => {
+            enemy.moveGoal = this.heist!.moveGoal(enemy.id, player);
+            enemy.setCarry?.(
+              this.heist!.carrierId === enemy.id
+                ? {
+                    speedMultiplier: this.heist!.definition.enemyCarrySpeed,
+                    defendRangeM: this.heist!.definition.enemyDefendRangeM,
+                  }
+                : null,
+            );
+          });
+          this.syncHeistCarry();
+        }
         const spawn = arena.spawnPosition(
           this.layout,
           player,
@@ -1270,6 +1314,10 @@ export class RoomScene implements Scene {
     this.missionView?.update();
     this.conquestView?.update();
     this.assaultView?.update();
+    this.heistView?.update(
+      this.player.getState().position,
+      this.player.getState().yaw,
+    );
     const ids = this.seenEnemyIds;
     ids.clear();
     this.manager.forEach((enemy) => {
@@ -1396,6 +1444,8 @@ export class RoomScene implements Scene {
   private onPlayerDied(): void {
     if (this.state === 'dead') return;
     this.assault?.died();
+    this.heist?.died(this.player.getState().position);
+    this.syncHeistCarry();
     this.state = 'dead';
     this.heldItem.cancelAim();
     this.player.setAim(0);
@@ -1403,13 +1453,14 @@ export class RoomScene implements Scene {
     this.powers.reset();
     this.weapon.cool(0);
     this.director.stop();
-    if (this.assault) this.hud?.setLoadout(this.loadout);
-    if (!this.assault && typeof document !== 'undefined')
+    if (this.assault || this.heist) this.hud?.setLoadout(this.loadout);
+    if (!this.assault && !this.heist && typeof document !== 'undefined')
       document.exitPointerLock?.();
   }
 
   private respawnAssault(): void {
-    if (!this.assault || this.assault.outcome) return;
+    const arena = this.assault ?? this.heist;
+    if (!arena || arena.outcome) return;
     this.statuses.reset();
     this.projectiles.dispose();
     this.powers.reset();
@@ -1421,7 +1472,8 @@ export class RoomScene implements Scene {
     this.hud?.setLoadout(this.loadout);
     this.energy.set(this.energy.max);
     this.player.stamina.set(this.player.stamina.max);
-    const spawn = this.assault.sector.playerSpawn;
+    const spawn =
+      this.heist?.definition.extraction ?? this.assault!.sector.playerSpawn;
     this.player.teleport({
       ...spawn,
       y:
@@ -1645,6 +1697,7 @@ export class RoomScene implements Scene {
   private completeRoom(): void {
     if (this.conquest && this.conquest.outcome !== 'victory') return;
     if (this.assault && this.assault.outcome !== 'victory') return;
+    if (this.heist && this.heist.outcome !== 'victory') return;
     if (this.node.fixed?.objectives.length && !this.mission?.complete) return;
     if (this.cleared || this.state === 'dead' || this.disposed) return;
     this.cleared = true;
@@ -1690,6 +1743,13 @@ export class RoomScene implements Scene {
     return true;
   }
 
+  private syncHeistCarry(): void {
+    if (this.heist)
+      this.player.setCarry(
+        this.heist.state === 'player' ? this.heist.definition.carrySpeed : null,
+      );
+  }
+
   private registerCommands(playerId: EntityId): void {
     const register = (
       name: string,
@@ -1699,6 +1759,27 @@ export class RoomScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    register('heist grab', 'heist grab', (args) => {
+      const ok = args.length === 0 && this.heist?.grab();
+      this.syncHeistCarry();
+      return ok ? 'Rdzeń podniesiony.' : 'Rdzeń niedostępny.';
+    });
+    register('heist drop', 'heist drop', (args) => {
+      const ok =
+        args.length === 0 && this.heist?.drop(this.player.getState().position);
+      this.syncHeistCarry();
+      return ok ? 'Rdzeń upuszczony.' : 'Nie niesiesz rdzenia.';
+    });
+    register('heist extract', 'heist extract', (args) => {
+      if (args.length || !this.heist?.extract()) return 'Nie niesiesz rdzenia.';
+      this.completeRoom();
+      return 'Rdzeń ewakuowany.';
+    });
+    register('heist lives', 'heist lives <n>', (args) =>
+      args.length === 1 && this.heist?.setLives(Number(args[0]))
+        ? 'Pula ustawiona.'
+        : 'Nieprawidłowa pula.',
+    );
     register('conquest capture', 'conquest capture <A|B|C>', (args) =>
       args.length === 1 && this.conquest?.capture(args[0]!)
         ? 'Punkt przejęty.'
@@ -1962,6 +2043,15 @@ export class RoomScene implements Scene {
         return this.conquest?.snapshot() ?? null;
       case 'assault':
         return this.assault?.snapshot() ?? null;
+      case 'heist':
+        return this.heist
+          ? {
+              ...this.heist.snapshot(),
+              moveSpeed: this.player.stats.get('moveSpeed'),
+              dashS: this.player.getState().dashS,
+              sprinting: this.player.getState().sprinting,
+            }
+          : null;
       case 'missionObjectives':
         return this.mission
           ? {
@@ -2101,6 +2191,7 @@ export class RoomScene implements Scene {
     this.hazardView?.dispose();
     this.conquestView?.dispose();
     this.assaultView?.dispose();
+    this.heistView?.dispose();
     this.missionView?.dispose();
     this.missionHud?.dispose();
     for (const director of this.reinforcements) director.dispose();

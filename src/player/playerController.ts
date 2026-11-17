@@ -160,7 +160,8 @@ export class PlayerController {
       s.jumpBufferMs = t.jumpBufferMs;
       this.jumpDenialNotified = false;
     }
-    if (input.pressed.has('dash')) this.dashQueued = true;
+    if (input.pressed.has('dash') && this.carrySpeed === null)
+      this.dashQueued = true;
     if (input.pressed.has('crouch')) this.crouchQueued = true;
     if (dt <= 0) return;
 
@@ -186,6 +187,7 @@ export class PlayerController {
 
     if (
       this.crouchQueued &&
+      this.carrySpeed === null &&
       s.grounded &&
       !s.sliding &&
       s.dashS <= 0 &&
@@ -195,6 +197,7 @@ export class PlayerController {
     this.crouchQueued = false;
 
     s.sprinting =
+      this.carrySpeed === null &&
       this.aim <= 0 &&
       input.held.has('sprint') &&
       move.forward > 0 &&
@@ -283,6 +286,28 @@ export class PlayerController {
   private crouchQueued = false;
   /** Postęp celowania 0–1 (ustawiany przez scenę z `HeldItem.aim`). */
   private aim = 0;
+  private carrySpeed: number | null = null;
+
+  setCarry(speed: number | null): void {
+    if (speed === this.carrySpeed) return;
+    this.carrySpeed = speed;
+    this.stats.removeBySource('heistCarry');
+    if (speed !== null) {
+      this.stats.add({
+        stat: 'moveSpeed',
+        type: 'mult',
+        value: speed,
+        source: 'heistCarry',
+      });
+      this.dashQueued = false;
+      this.dashEnded = false;
+      this.state.dashS = 0;
+      this.state.sprinting = false;
+      this.state.sliding = false;
+      this.state.velocity.x = 0;
+      this.state.velocity.z = 0;
+    }
+  }
 
   /**
    * Celowanie: czułość myszy i prędkość ruchu skalowane `tuning.player.aim` (prędkość przez

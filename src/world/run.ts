@@ -264,7 +264,11 @@ export class RunManager {
       bus.on('player_died', ({ id }) => {
         if (!this.isRunActive() || !this.currentState) return;
         if (this.playerId !== null && id !== this.playerId) return;
-        if (this.currentState.modeId === 'assault') return;
+        if (
+          this.currentState.modeId === 'assault' ||
+          this.currentState.modeId === 'heist'
+        )
+          return;
         this.currentState.hp = 0;
         this.finish('death');
       }),

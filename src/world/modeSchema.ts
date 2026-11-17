@@ -4,7 +4,7 @@ import type { RoomDefinition } from './roomSchema';
 import { loadRoom, vec3Schema } from './roomSchema';
 import { tuning } from '../core/tuning';
 
-export const modeIdSchema = z.enum(['conquest', 'assault']);
+export const modeIdSchema = z.enum(['conquest', 'assault', 'heist']);
 export type ModeId = z.infer<typeof modeIdSchema>;
 export const pointIdSchema = z.enum(['A', 'B', 'C']);
 export type PointId = z.infer<typeof pointIdSchema>;
@@ -73,9 +73,34 @@ export const assaultSchema = z.object({
     .length(3),
 });
 export type AssaultDefinition = z.infer<typeof assaultSchema>;
+export const heistSchema = z.object({
+  id: z.literal('heist'),
+  title: z.string().min(1),
+  roomId: z.string().min(1),
+  enemies: z.array(z.string().min(1)).min(1),
+  maxAlive: positive.int(),
+  spawnIntervalS: positive,
+  rewardRooms: positive.int(),
+  lives: positive.int(),
+  respawnS: positive,
+  carrySpeed: positive.max(1),
+  enemyCarrySpeed: positive.max(1),
+  enemyDefendRangeM: positive,
+  pickupRadiusM: positive,
+  extractRadiusM: positive,
+  extractS: positive,
+  timeLimitS: z.number().finite().nonnegative(),
+  minSpawnDistanceM: positive,
+  spawnClearanceM: positive,
+  base: vec3Schema,
+  extraction: vec3Schema,
+  spawnPoints: z.array(vec3Schema).min(1),
+});
+export type HeistDefinition = z.infer<typeof heistSchema>;
 export const modeSchema = z.discriminatedUnion('id', [
   conquestSchema,
   assaultSchema,
+  heistSchema,
 ]);
 
 export function freeModePosition(
@@ -105,7 +130,7 @@ export function freeModePosition(
 }
 
 export function validateMode(
-  mode: ModeDefinition | AssaultDefinition,
+  mode: ModeDefinition | AssaultDefinition | HeistDefinition,
   room: RoomDefinition,
   enemyIds: readonly string[],
 ): void {
@@ -119,6 +144,31 @@ export function validateMode(
     throw new Error('Nieobsługiwany wróg trybu.');
   if (room.maxAlive !== undefined && mode.maxAlive > room.maxAlive)
     throw new Error('Limit trybu przekracza limit pokoju.');
+  if (mode.id === 'heist') {
+    if (
+      !freeModePosition(room, mode.base, mode.pickupRadiusM) ||
+      !freeModePosition(room, mode.extraction, mode.extractRadiusM) ||
+      Math.hypot(
+        mode.base.x - mode.extraction.x,
+        mode.base.z - mode.extraction.z,
+      ) <=
+        mode.pickupRadiusM + mode.extractRadiusM ||
+      mode.spawnPoints.some(
+        (p) => !freeModePosition(room, p, mode.spawnClearanceM),
+      )
+    )
+      throw new Error('Nieprawidłowe strefy Kradzieży rdzenia.');
+    loadRoom({
+      ...room,
+      spawnPoints: [
+        ...room.spawnPoints,
+        mode.base,
+        mode.extraction,
+        ...mode.spawnPoints,
+      ],
+    });
+    return;
+  }
   if (mode.id === 'assault') {
     const positions: Vec3[] = [];
     for (const [index, sector] of mode.sectors.entries()) {

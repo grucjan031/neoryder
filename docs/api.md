@@ -1867,7 +1867,7 @@ a `readSplashAct(store?)` z `bootSplash.ts` czyta go z meta-zapisu (błąd = 1).
 
 ## Tryby areny S2b-01
 
-`ModeId` pochodzi ze schematu danych trybów (`conquest` | `assault`). Opcjonalne `RunState.modeId`
+`ModeId` pochodzi ze schematu danych trybów (`conquest` | `assault` | `heist`). Opcjonalne `RunState.modeId`
 i `RunSummary.modeId` są zachowywane przez zapis v4. Tryb i misja wykluczają się.
 `Conquest` prowadzi punkty, pulę, wybór spawnu i celów ruchu; host pokoju dostarcza
 żywych wrogów i pozycję gracza. `conquest_captured: { id: 'A' | 'B' | 'C';
@@ -1895,6 +1895,27 @@ istniejące `finish('death')` wyłącznie dla `query('assault').outcome === 'dea
 Zapis pozostaje v4, rozliczenie nagród i pozostałe tryby nie zmieniają reguł.
 Debug: `assault destroy <A|B>`, `assault lives <n>`, `query('assault')` zwraca
 sektor, liczbę sektorów, stacje z postępem i lontem, życia, czas odrodzenia i wynik.
+
+### Kradzież rdzenia S2b-03
+
+`Heist` jest modelem bez renderu: `step(dt, player, enemies)` otrzymuje pozycję
+gracza i żywych wrogów (`id`, `position`). Stan rdzenia: `base`, `player`,
+`dropped`, `enemy`; `carrierId` wskazuje nosiciela. `killed(id, position)` upuszcza
+rdzeń natychmiast przy śmierci nosiciela. `died(position)` upuszcza rdzeń gracza
+i odejmuje życie raz; `stepRespawn(dt)` zgłasza odrodzenie przy ewakuacji.
+`grab`, `drop`, `extract`, `setLives` służą debugowaniu; `extract` wymaga rdzenia.
+`snapshot()` przekazuje HUD-owi pozycję, stan, nosiciela, postęp ewakuacji,
+życia, czas odrodzenia, czas gry i wynik. Spawny wybiera `spawnPosition` jak
+w Szturmie. `PlayerController.setCarry(speed | null)` nakłada modyfikator
+`heistCarry` na `moveSpeed`, przerywa dash/slide i blokuje sprint/dash nosiciela.
+Host kończy run dopiero po wyniku modelu; zapis v4 i kolejność nagród pozostają.
+
+`Enemy.setCarry?(carry: EnemyCarry | null)` otrzymuje `speedMultiplier` oraz
+`defendRangeM`. Host heist ustawia je wyłącznie aktualnemu nosicielowi, a po
+utracie rdzenia przekazuje `null`. Assaulter/Gunner nakładają odwracalny
+StatModifier `heistCarry` i używają `defendRangeM` zamiast zwykłego zasięgu
+reakcji przy `moveGoal`. Marsz przerywa atak poza tym promieniem, lecz nie
+ogłuszenie ani kontrolę Rezonansem. Bez carry zachowanie pozostaje dotychczasowe.
 
 ## Misje (ADR 0008)
 

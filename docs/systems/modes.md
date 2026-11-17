@@ -2,10 +2,60 @@
 
 Przejęcie (S2b-01) uruchamia się z tablicy misji, sekcja „Tryby areny”, albo
 `?scene=run&mode=conquest&loadout=classic&debug=1`. Szturm jest drugim aktywnym
-trybem; Kradzież rdzenia pozostaje nieaktywna. Tryb wyklucza parametr misji
+trybem; Kradzież rdzenia jest dostępna z tablicy oraz przez URL. Tryb wyklucza parametr misji
 i nie zmienia kampanii.
 
 ## Dane i reguły
+
+### Kradzież rdzenia — S2b-03
+
+Uruchomienie: `?scene=run&mode=heist&debug=1`. Jeden węzeł w istniejącym
+`combatRing`, największej arenie combat (28×28 m). Przeciwległe końce osi Z
+oddzielają bazę `(0, 0, -11.5)` od ewakuacji `(0, 0, 10)` o 21,5 m.
+Kolumny zapewniają osłony i boczne drogi; baza leży za niską osłoną,
+z odstępem pozwalającym zmieścić pełny promień podniesienia. Dane pokoju bez zmian.
+
+W `src/data/modes/heist.json`: 3 życia, odrodzenie po 2 s, promień podniesienia
+1,2 m, ewakuacji 2 m, wymagany nieprzerwany pobyt z rdzeniem 3 s.
+Wyjście ze strefy zeruje postęp. `carrySpeed=0.75` nakłada `StatModifier`
+na ruch; dash, sprint i ślizg są blokowane na czas niesienia. Podniesienie
+przerywa trwający dash/ślizg. Śmierć zostawia rdzeń na podłodze w miejscu
+gracza i odejmuje jedno życie; odrodzenie przy ewakuacji resetuje zasoby
+i wyposażenie tak jak w Szturmie. Przy zerze żyć następuje porażka.
+Limit czasu `timeLimitS=0` jest wyłączony; dodatnia wartość kończy próbę
+porażką. Zegar i symulacja czekają podczas odrodzenia.
+
+Rdzeń ma stany `base`, `player`, `dropped`, `enemy`. Wróg dotykający
+upuszczonego rdzenia staje się nosicielem; `moveGoal` wskazuje mu bazę.
+Dotarcie do bazy odkłada rdzeń, śmierć nosiciela upuszcza go w aktualnej pozycji.
+Pozostali wrogowie otrzymują cel na gracza z rdzeniem albo na sam rdzeń.
+Nosiciel otrzymuje `enemyCarrySpeed=0.55` przez `Stats` oraz priorytet marszu:
+ignoruje gracza poza `enemyDefendRangeM=2` m. W tym promieniu wraca do zwykłej
+reakcji bojowej swojego archetypu; nadal niesie rdzeń i pozostaje spowolniony.
+Powrót przerywa rozpoczęty atak, ale nie ogłuszenie ani kontrolę Rezonansem.
+Odłożenie lub utrata rdzenia usuwa modyfikator i przywraca poprzedni zasięg
+reakcji. Pozostali wrogowie i pozostałe tryby nie dostają tych ustawień.
+
+Posiłki: maksymalnie 6 żywych, spawn co 3 s, `assaulter`/`gunner`, punkty
+`(-10,0,-10)`, `(10,0,-10)`, `(-5,0,-11)`, `(5,0,-11)`. Minimum 5 m od
+gracza, 1,6 m od wrogów i 0,8 m wolnej podłogi. Brak bezpiecznego punktu
+odracza spawn. Zwycięstwo rozlicza `rewardRooms=6`, porażka 0, `modeId=heist`;
+bez zmiany wersji zapisu ani kolejności nagród. Wznowienie rozpoczyna arenę od nowa.
+
+HUD pokazuje stan opisowo, życia, kierunek i dystans do celu, pasek ewakuacji
+i ograniczenia ruchu. Bursztyn `#ffae1a` oznacza rdzeń/gracza, czerwień
+`#e0262b` nosiciela wroga. Rdzeń ma emisyjne pasy i bursztynowe światło,
+podczas niesienia znajduje się nad nosicielem. Na telefonie HUD zajmuje pas
+pod kredytami. Nowy tryb nie modyfikuje celów misji.
+
+Debug: `heist grab`, `heist drop`, `heist extract`, `heist lives <n>`,
+`query('heist')`. `extract` wymaga niesionego rdzenia i pomija odliczanie tylko
+jako komenda debug. Po debugowym `drop` trzeba odejść ze strefy, aby znów
+podnieść rdzeń. Ręcznie: dojść do bazy, podnieść rdzeń, sprawdzić brak dasha
+i sprintu, wrócić do pierścienia ewakuacji i utrzymać go przez 3 s.
+Osobno: zginąć z rdzeniem, odzyskać go po odrodzeniu i sprawdzić finał życia.
+
+### Przejęcie
 
 `src/data/modes/conquest.json` przechodzi `modeSchema` i walidację geometrii:
 trzy różne punkty A/B/C, wolne koła na podłodze, odstęp minimum 12 m,
