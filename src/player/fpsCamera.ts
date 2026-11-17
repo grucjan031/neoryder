@@ -95,11 +95,17 @@ export class FpsCamera {
     return this.fov;
   }
 
+  /**
+   * `aim` 0–1 (celowanie): FOV zbliża się do bazowego × `aimFovScale` (domyślnie
+   * `tuning.player.aim.fovScale`); bez dodatkowego wstrząsu.
+   */
   update(
     frameDt: number,
     prev: PlayerState,
     cur: PlayerState,
     alpha: number,
+    aim = 0,
+    aimFovScale = this.tuning.player.aim.fovScale,
   ): CameraPose {
     const c = this.tuning.camera;
     const p = this.tuning.player;
@@ -157,7 +163,7 @@ export class FpsCamera {
       pitch: pitch + shakePitch,
       yaw: yaw + shakeYaw,
       roll,
-      fov: this.fov,
+      fov: this.fov * (1 + (aimFovScale - 1) * Math.min(1, Math.max(0, aim))),
     };
   }
 

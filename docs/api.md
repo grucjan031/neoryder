@@ -1082,7 +1082,7 @@ held_item_changed: { owner: EntityId; held: HeldKind; weapon: string | null };
 ```
 
 Arena rozdziela wejście przed PlasmaBlade.step i Weapon.step. W zamianie blokuje
-atak, blok i rzut ostrzem oraz spust; PPM i środkowy przycisk przerywają zamianę,
+atak, blok i rzut ostrzem oraz spust; PPM (w zamianie) i środkowy przycisk przerywają zamianę,
 przywracają ostrze i przekazują wejście w tym samym kroku. `bladeBusy` oznacza stan
 inny niż idle, z wyjątkiem throwing (lot nie blokuje zamiany). Bufor żądania
 ostrze → broń trwa najwyżej swapBufferS. Klawisze 1/2/3 wybierają istniejący slot

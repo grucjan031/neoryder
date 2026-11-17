@@ -368,6 +368,26 @@ export class AiTest implements Scene {
         : 'Podaj skończone, nieujemne obrażenia.';
     });
     register('kill all', 'kill all', () => hit(Number.MAX_VALUE));
+    register(
+      'knock',
+      'knock — mocny odrzut wszystkich wrogów od gracza (przewrócenie i kip-up)',
+      () => {
+        const from = this.player.getState().position;
+        this.manager.forEach((enemy) => {
+          const dx = enemy.current.position.x - from.x;
+          const dz = enemy.current.position.z - from.z;
+          const length = Math.hypot(dx, dz) || 1;
+          this.damage.deal(enemy.id, {
+            source: id,
+            amount: 1,
+            tags: ['#debug'],
+            dir: { x: dx / length, y: 0, z: dz / length },
+            knockback: ctx.tuning.enemies.stunKnockback + 2,
+          });
+        });
+        return 'Odrzut zadany.';
+      },
+    );
     register('boss phase', 'boss phase <n> — faza bossa od 1', (args) => {
       const phase = Number(args[0]);
       let changed = false;

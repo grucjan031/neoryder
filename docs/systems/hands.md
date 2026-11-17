@@ -16,9 +16,17 @@ slotu (`gun`). Moce F/E pozostają niezależne od tego wyboru.
   `tuning.hands.swapBufferS` (0,4 s), potem przepada. Hitstop zatrzymuje zegary,
   ale pozwala zapamiętać naciśnięcie R. Kolejne żądania w trwającej zamianie
   nie rozpoczynają nowej zamiany.
-- PPM (`block`) przy broni lub w zamianie natychmiast przywraca ostrze,
-  anuluje zamianę i bufor, przekazuje blok do ostrza w tym samym kroku.
-  Okno parowania zaczyna się bez opóźnienia wynikającego z zamiany.
+- PPM (`block`) w trakcie zamiany natychmiast przywraca ostrze, anuluje zamianę
+  i bufor, przekazuje blok do ostrza w tym samym kroku. Z bronią palną w ręce (bez
+  zamiany) PPM to celowanie — patrz niżej.
+- Celowanie (ADS, S0-07): z bronią palną w ręce (poza zamianą) PPM to celowanie
+  (akcja `aim`, opcjonalnie też klawisz), a nie blok — nie wymusza ostrza. Liczby w
+  `tuning.player.aim`: wejście 0,18 s, wyjście 0,15 s, FOV × 0,72 (broń może mieć
+  `aimFovScale`, snajperka 0,45), czułość × 0,7, ruch × 0,6 (`StatModifier` źródła `aim`),
+  brak sprintu, rozrzut × 0,4, odrzut broni w widoku × 0,7, broń przy oku, węższy celownik.
+  Celowanie kończą: przełączenie broni (ponowne wciśnięcie PPM), przegrzanie, dash, zamiana
+  na ostrze, ŚPM i śmierć; puszczenie wejścia przy pauzie/utracie fokusu kończy je w następnym
+  kroku. Żeby blokować z bronią, przełącz na ostrze (R).
 - Środkowy przycisk (`bladeThrow`) analogicznie natychmiast przywraca ostrze
   i przekazuje rzut. Zasady dostępności rzutu i bloku w samym ostrzu pozostają
   takie jak w module walki wręcz.
@@ -149,7 +157,7 @@ Pozycje i kąty widoku do strojenia są w stałych na górze `fppBlade.ts`,
 ## Kontrola w 30 sekund
 
 Otwórz arenę z gunner, włącz `god`. LPM strzela. R, odczekanie 0,24 s i kliknięcie
-LPM daje cięcie bez strzału. PPM podczas strzelania ma od razu blokować i parować;
+LPM daje cięcie bez strzału. PPM podczas strzelania celuje (przybliżenie), bez ostrza;
 środkowy przycisk ma od razu rzucać ostrzem. Podczas lotu wciśnij 2, a następnie
 LPM — wybrana broń strzela. Po resecie wraca karabin w ręku.
 

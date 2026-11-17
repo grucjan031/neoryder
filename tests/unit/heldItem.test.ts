@@ -101,7 +101,8 @@ describe('HeldItem', () => {
     expect(hands.step(SIM_DT, input(), ready).triggerHeld).toBe(false);
   });
 
-  it.each(['block', 'bladeThrow'] as const)(
+  // PPM (block) z bronią to teraz celowanie (aim.test.ts); ostrze wyciąga tylko ŚPM.
+  it.each(['bladeThrow'] as const)(
     '%s immediately restores the blade and passes the action in the same step',
     (action) => {
       const { hands, changed } = setup('gun');

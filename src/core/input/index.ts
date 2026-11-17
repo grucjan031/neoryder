@@ -13,6 +13,8 @@ export const actionSchema = z.enum([
   'crouch',
   'attack',
   'block',
+  /** Celowanie (ADS): PPM z bronią palną w ręce (mapuje `HeldItem`), opcjonalnie klawisz. */
+  'aim',
   'swap',
   'power',
   'power2',

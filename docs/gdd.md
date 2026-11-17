@@ -62,7 +62,7 @@ Mapowanie w danych, zgodne z typem `Action` z `docs/api.md`. Ustawienia (czuło�
 | `power` | F | Pchnięcie Rezonansu |
 | pauza | Esc | pointer lock i fokus obsługuje `src/core/input/` |
 
-Gracz trzyma jeden przedmiot: ostrze albo broń. PPM natychmiast przywraca ostrze i blok, środkowy przycisk przywraca ostrze i rzuca. 1/2/3 wybierają slot broni i żądają jej dobycia. F/E działają niezależnie od ręki.
+Gracz trzyma jeden przedmiot: ostrze albo broń. PPM z ostrzem to blok, z bronią palną celowanie (przybliżenie); środkowy przycisk przywraca ostrze i rzuca. 1/2/3 wybierają slot broni i żądają jej dobycia. F/E działają niezależnie od ręki.
 
 ## 5. Trzy ścieżki buildów i hybrydy
 

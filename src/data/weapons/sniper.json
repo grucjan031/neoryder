@@ -12,5 +12,6 @@
   "tags": ["#gun"],
   "pierceCount": 3,
   "pierceFalloff": 0.25,
-  "model": "sniper_rifle"
+  "model": "sniper_rifle",
+  "aimFovScale": 0.45
 }

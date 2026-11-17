@@ -631,3 +631,17 @@ po czym `kill all` — ma pozostać rozpad na odłamki. Dla feel zwróć uwagę 
 czytelność zapowiedzi, szybki cios w dotychczasowym oknie obrażeń oraz recoil
 każdego strzału. Do obciążenia użyj `kill all`, `spawn assaulter 30` i obróć
 kamerę od grupy; mixery poza kadrem mają przestać aktualizować kości.
+
+## Przewrócenie i kip-up (S0-08, tylko widok)
+
+Trafienie z odrzutem `knockback >= tuning.enemies.stunKnockback` u humanoidów
+chodzących (assaulter, gunner, sniper, shielder, executor; bez dronów, hakera,
+wieżyczki i bossa) zapisuje w snapshocie `knockdown` (kierunek odrzutu). Czas
+ogłuszenia (`stunOnHeavyS`) i obrażenia bez zmian. `EnemyView` obraca korzeń modelu
+wokół bioder (`enemyKnockdown.ts`): upadek na plecy 0,22 s, leżenie (reszta ogłuszenia),
+kip-up 0,32 s z podskokiem 0,34 m i lądowaniem w `Sword_Idle` / `Pistol_Idle_Loop`
+oraz czerwonymi iskrami. Przy krótszym ogłuszeniu ruchy skalują się, nic się nie wydłuża.
+Liczby: `tuning.vfx.enemyKnockdown`. Hitbox to pionowa kapsuła symulacji (bez zmian,
+także w leżeniu; wróg dalej przyjmuje trafienia). Śmierć w leżeniu: zwykły rozpad.
+Ogłuszenie bez mocnego odrzutu (`PIERCE_BLOCK_TAG`, status) — jak dotąd `Hit_Chest`.
+Kontrola: `?scene=ai-test&debug=1`, `spawn assaulter 3`, `knock` (`timescale 0.1` zwalnia).

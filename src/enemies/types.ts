@@ -36,6 +36,11 @@ export interface EnemySnapshot {
   aim?: Vec3;
   /** Boss: bieżący wzorzec ataku (czasy dla animacji); brak poza atakiem. */
   attack?: { kind: string; telegraphS: number; recoveryS: number };
+  /**
+   * Ogłuszenie z mocnego odrzutu (`knockback >= stunKnockback`): kierunek przewrócenia w świecie
+   * (poziomy, jednostkowy). Tylko dla widoku (upadek i kip-up w czasie `stunOnHeavyS`).
+   */
+  knockdown?: { x: number; z: number };
 }
 export interface Enemy {
   readonly id: EntityId;
