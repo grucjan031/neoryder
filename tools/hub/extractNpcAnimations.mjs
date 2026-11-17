@@ -13,6 +13,15 @@ const CLIPS = [
   'Fixing_Kneeling',
   'Crouch_Idle_Loop',
   'Interact',
+  'Walk_Loop',
+  'Jog_Fwd_Loop',
+  'Dance_Loop',
+  'PickUp_Table',
+  'Punch_Jab',
+  'Punch_Cross',
+  'Sword_Idle',
+  'Spell_Simple_Idle_Loop',
+  'Push_Loop',
 ];
 const COMPONENT_BYTES = {
   5120: 1,
@@ -43,8 +52,9 @@ const accessors = [];
 const bufferViews = [];
 const chunks = [];
 let offset = 0;
-const copyAccessor = (index) => {
-  if (remap.has(index)) return remap.get(index);
+const copyAccessor = (index, inPlace = false) => {
+  const key = `${index}:${inPlace}`;
+  if (remap.has(key)) return remap.get(key);
   const accessor = json.accessors[index];
   const view = json.bufferViews[accessor.bufferView];
   const size =
@@ -54,6 +64,14 @@ const copyAccessor = (index) => {
   if (view.byteStride) throw new Error('Nieobsługiwany byteStride');
   const start = (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
   const data = Buffer.from(bin.subarray(start, start + size));
+  if (inPlace) {
+    if (accessor.componentType !== 5126 || accessor.type !== 'VEC3')
+      throw new Error('Ruch korzenia wymaga VEC3 float');
+    for (let frame = 0; frame < accessor.count; frame++) {
+      data.writeFloatLE(0, frame * 12);
+      data.writeFloatLE(0, frame * 12 + 8);
+    }
+  }
   const padded = Buffer.concat([data, Buffer.alloc((4 - (size % 4)) % 4)]);
   bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: size });
   chunks.push(padded);
@@ -63,17 +81,30 @@ const copyAccessor = (index) => {
     bufferView: bufferViews.length - 1,
     byteOffset: 0,
   };
+  if (inPlace) {
+    if (copy.min) copy.min = [0, copy.min[1], 0];
+    if (copy.max) copy.max = [0, copy.max[1], 0];
+  }
   accessors.push(copy);
-  remap.set(index, accessors.length - 1);
+  remap.set(key, accessors.length - 1);
   return accessors.length - 1;
 };
 const outAnimations = animations.map((clip) => ({
   name: clip.name,
   channels: clip.channels,
-  samplers: clip.samplers.map((sampler) => ({
+  samplers: clip.samplers.map((sampler, index) => ({
     ...sampler,
     input: copyAccessor(sampler.input),
-    output: copyAccessor(sampler.output),
+    output: copyAccessor(
+      sampler.output,
+      ['Walk_Loop', 'Jog_Fwd_Loop'].includes(clip.name) &&
+        clip.channels.some(
+          (channel) =>
+            channel.sampler === index &&
+            channel.target.path === 'translation' &&
+            json.nodes[channel.target.node].name === 'root',
+        ),
+    ),
   })),
 }));
 const nodes = json.nodes.map((node) => {

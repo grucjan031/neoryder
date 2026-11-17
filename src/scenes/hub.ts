@@ -1,6 +1,6 @@
 import { BoxGeometry, CylinderGeometry, Group, Mesh } from 'three';
 import type { BufferGeometry, Scene as ThreeScene } from 'three';
-import type { World } from '@dimforge/rapier3d-compat';
+import type { RigidBody, World } from '@dimforge/rapier3d-compat';
 import type { GameContext } from '../core/context';
 import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
@@ -32,6 +32,8 @@ import { createMissionsPanel } from '../ui/hub/missionsPanel';
 import { createTalentsPanel } from '../ui/hub/talentsPanel';
 import { createWorkshopPanel } from '../ui/hub/workshopPanel';
 import { HtmlHubScreens } from '../ui/hubScreens';
+import { HubChatterUi } from '../ui/hubChatter';
+import { HubChatter } from '../world/hubChatter';
 import { HubDialog } from '../ui/hubDialog';
 import { HubPrompt } from '../ui/hubPrompt';
 import type { HubPanelRegistry, HubScreens } from '../ui/hubScreens';
@@ -40,7 +42,8 @@ import type { CommandHost } from '../ui/metaCommands';
 import { loadHubLayout } from '../world/hubSchema';
 import type { HubLayout } from '../world/hubSchema';
 import {
-  NPC_RADIUS_M,
+  NpcRuntime,
+  npcRadius,
   NpcDialogue,
   loadNpcTexts,
   npcFocusBox,
@@ -120,6 +123,18 @@ export class HubScene implements Scene {
   private npcTexts!: NpcTexts;
   private dialogue!: NpcDialogue;
   private npcs?: HubNpcs;
+  private readonly npcStates: NpcRuntime[] = [];
+  private readonly npcById = new Map<string, NpcRuntime>();
+  private npcTargets: { id: string; focus: ReturnType<typeof npcFocusBox> }[] =
+    [];
+  private readonly npcBodies: {
+    state: NpcRuntime;
+    body: RigidBody;
+    height: number;
+    translation: Vec3;
+  }[] = [];
+  private chatter!: HubChatter;
+  private chatterUi: HubChatterUi | null = null;
   private talk: {
     line: NpcLine;
     remainingS: number;
@@ -183,7 +198,12 @@ export class HubScene implements Scene {
       this.prompt = new HubPrompt();
       this.dialogUi = new HubDialog();
     }
-    this.npcTexts = this.options.npcTexts ?? loadNpcTexts(npcTextData);
+    this.npcTexts = loadNpcTexts(
+      this.options.npcTexts ?? npcTextData,
+      this.layout.npcs ?? [],
+    );
+    if (this.screensOption === undefined)
+      this.chatterUi = new HubChatterUi(this.layout.npcs ?? [], this.npcTexts);
     this.dialogue = new NpcDialogue(this.npcTexts.npcs);
     this.rapier = await initPhysics();
     if (this.disposed) return;
@@ -228,6 +248,12 @@ export class HubScene implements Scene {
     this.root.add(this.decor.root);
 
     this.buildNpcs();
+    this.chatter = new HubChatter(
+      this.npcTexts.conversations ?? [],
+      new Map(this.npcStates.map((state) => [state.def.id, state.position])),
+      ctx.tuning.hub,
+      ctx.bus,
+    );
     if (this.loadModels) await this.npcs?.load();
     if (this.disposed) return;
 
@@ -389,20 +415,45 @@ export class HubScene implements Scene {
   /** NPC: widok (`HubNpcs`) i collider walca, przez który gracz nie przechodzi. */
   private buildNpcs(): void {
     const defs = this.layout.npcs ?? [];
-    this.npcs = new HubNpcs(defs, this.ctx.tuning);
-    this.root.add(this.npcs.root);
     for (const npc of defs) {
+      const state = new NpcRuntime(npc, this.ctx.tuning.hub);
+      this.npcStates.push(state);
+      this.npcById.set(npc.id, state);
       const height = npcHeight(npc);
-      this.world.createCollider(
-        this.rapier.ColliderDesc.cylinder(height / 2, NPC_RADIUS_M)
-          .setTranslation(
-            npc.position.x,
-            (npc.position.y ?? 0) + height / 2,
-            npc.position.z,
-          )
-          .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
-      );
+      const collider = this.rapier.ColliderDesc.cylinder(
+        height / 2,
+        npcRadius(npc),
+      ).setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff));
+      if (npc.route) {
+        const translation = {
+          x: state.position.x,
+          y: state.position.y + height / 2,
+          z: state.position.z,
+        };
+        const body = this.world.createRigidBody(
+          this.rapier.RigidBodyDesc.kinematicPositionBased().setTranslation(
+            translation.x,
+            translation.y,
+            translation.z,
+          ),
+        );
+        this.world.createCollider(collider, body);
+        this.npcBodies.push({ state, body, height, translation });
+      } else {
+        collider.setTranslation(
+          state.position.x,
+          state.position.y + height / 2,
+          state.position.z,
+        );
+        this.world.createCollider(collider);
+      }
     }
+    this.npcTargets = this.npcStates.map((state) => ({
+      id: state.def.id,
+      focus: state.focus,
+    }));
+    this.npcs = new HubNpcs(this.npcStates, this.ctx.tuning);
+    this.root.add(this.npcs.root);
   }
 
   private spawnPosition(): Vec3 {
@@ -421,6 +472,7 @@ export class HubScene implements Scene {
     if (this.disposed) return;
     this.prompt?.update(null);
     this.endTalk();
+    this.chatter.interrupt();
     this.screens.show(station, {
       close: () => this.closeStation(),
       ...(station === 'arena'
@@ -451,10 +503,7 @@ export class HubScene implements Scene {
     const t = this.ctx.tuning.hub;
     return selectHubTarget(
       this.layout.stations,
-      (this.layout.npcs ?? []).map((npc) => ({
-        id: npc.id,
-        focus: npcFocusBox(npc),
-      })),
+      this.npcTargets,
       this.eyePosition(),
       state.yaw,
       state.pitch,
@@ -477,6 +526,9 @@ export class HubScene implements Scene {
   private talkTo(id: string, anywhere = false): NpcLine | null {
     const line = this.dialogue.talk(id);
     if (!line) return null;
+    this.chatter.interrupt();
+    const state = this.npcById.get(id);
+    if (state?.def.route) state.route.moving = false;
     this.talk = { line, remainingS: this.ctx.tuning.hub.npcLineS, anywhere };
     this.dialogUi?.show(line);
     return line;
@@ -492,7 +544,7 @@ export class HubScene implements Scene {
     const talk = this.talk;
     if (!talk) return;
     talk.remainingS -= dt;
-    const npc = this.layout.npcs?.find(({ id }) => id === talk.line.id);
+    const npc = this.npcById.get(talk.line.id);
     const player = this.player.getState().position;
     const away =
       !talk.anywhere &&
@@ -518,6 +570,15 @@ export class HubScene implements Scene {
     this.previous = this.player.getState();
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
     if (this.stations.opened || !(dt > 0)) return;
+    const player = this.player.getState().position;
+    for (const state of this.npcStates)
+      state.step(dt, player, this.talk?.line.id === state.def.id);
+    for (const entry of this.npcBodies) {
+      entry.translation.x = entry.state.position.x;
+      entry.translation.y = entry.state.position.y + entry.height / 2;
+      entry.translation.z = entry.state.position.z;
+      entry.body.setNextKinematicTranslation(entry.translation);
+    }
     this.player.step(dt, this.withPendingLook(input));
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
@@ -528,6 +589,11 @@ export class HubScene implements Scene {
       else this.talkTo(target.id);
     }
     this.tickTalk(dt);
+    this.chatter.step(
+      dt,
+      this.player.getState().position,
+      this.stations.opened !== null || this.talk !== null,
+    );
   }
 
   /** Komenda debug `hub tp`: ustawia kierunek patrzenia jako jednorazowy ruch myszy w następnym kroku. */
@@ -565,7 +631,13 @@ export class HubScene implements Scene {
         this.stations.opened !== null,
       );
     this.decor?.update(frameDt);
-    this.npcs?.update(frameDt, this.player.getState().position);
+    this.chatterUi?.update(this.chatter.line);
+    this.npcs?.render(
+      alpha,
+      frameDt,
+      this.ctx.camera?.position ?? this.player.getState().position,
+      this.chatter.line?.npc ?? null,
+    );
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
     const camera = this.ctx.camera;
@@ -619,12 +691,15 @@ export class HubScene implements Scene {
         return this.focusedNpc();
       case 'hubTalk':
         return this.talk ? { ...this.talk.line } : null;
+      case 'hubChatter':
+        return this.chatter.line ? { ...this.chatter.line } : null;
       case 'npcs':
-        return (this.layout.npcs ?? []).map(({ id, position }) => ({
-          id,
-          x: position.x,
-          z: position.z,
-          bodyYaw: this.npcs?.bodyYaw(id) ?? null,
+        return this.npcStates.map((state) => ({
+          id: state.def.id,
+          x: state.position.x,
+          y: state.position.y,
+          z: state.position.z,
+          bodyYaw: state.look.bodyYaw,
         }));
       case 'playerPos':
         return { ...this.player.getState().position };
@@ -680,7 +755,8 @@ export class HubScene implements Scene {
       (args) => {
         const station = this.layout.stations.find(({ id }) => id === args[0]);
         const npc = this.layout.npcs?.find(({ id }) => id === args[0]);
-        const focus = station?.focus ?? (npc ? npcFocusBox(npc) : undefined);
+        const focus =
+          station?.focus ?? (npc ? this.npcById.get(npc.id)?.focus : undefined);
         if (args.length !== 1 || !focus)
           return `Użycie: hub look <${lookList}>`;
         const eye = this.eyePosition();
@@ -727,6 +803,23 @@ export class HubScene implements Scene {
         return line ? `${line.name}: ${line.line}` : `Brak NPC: ${id}`;
       },
     );
+    register(
+      'hub chatter',
+      'hub chatter <id> — wymuś podsłuchiwaną rozmowę',
+      (args) => {
+        if (this.stations.opened)
+          return `Stacja otwarta: ${this.stations.opened}`;
+        if (
+          args.length !== 1 ||
+          !args[0] ||
+          !this.npcTexts.conversations?.some((c) => c.id === args[0])
+        )
+          return 'Użycie: hub chatter <id rozmowy>';
+        this.endTalk();
+        this.chatter.force(args[0]);
+        return `Rozmowa: ${args[0]}`;
+      },
+    );
     register('hub close', 'hub close — zamknij nakładkę stacji', () => {
       const closed = this.stations.opened;
       this.closeStation();
@@ -743,6 +836,7 @@ export class HubScene implements Scene {
       this.screens?.dispose();
       this.prompt?.dispose();
       this.dialogUi?.dispose();
+      this.chatterUi?.dispose();
       this.npcs?.dispose();
       this.metaBar?.dispose();
       this.fppView?.dispose();
