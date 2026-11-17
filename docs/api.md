@@ -1905,3 +1905,21 @@ jak wznowienie pokoju zwykłego runu; zakończona arena zachowuje podsumowanie.
   `Enemy.moveGoal`. Zwykłe AI i zwykłe runy nie korzystają z tej nawigacji.
 - `AudioSystem.setAmbience` obsługuje także syntetyczne warstwy `rain` i `wind`.
   Pogoda podąża źródłami za kamerą, wykorzystując istniejące odblokowanie i pauzę.
+
+## Integracja modeli portu
+
+`city_*` i `port_*` bloków używają wspólnego cache `cloneCityModel`
+(`/assets/models/city/`) i zachowują materiały nazwane w GLB.
+`blocks[].instance` w arenie grupuje siatki modelu w komórkach `batchCellM`.
+Okucia i nadruki wariantów koloru tego samego kontenera współdzielą partie;
+pojedyncze sztuki trafiają do zwykłego scalania statyki. Bez modelu pozostaje
+instancjonowana bryła. Obrót stosuje się wokół środka collidera w `RoomScene`.
+`RoomDefinition.blocks[].visible?: boolean` (domyślnie true) pozwala opisać
+wyłącznie collider rekwizytu z `decor` (nogi suwnicy, nadwozie wózka,
+maszt, płyta i balustrady pomostu), bez dodatkowej widocznej bryły.
+Modele `port_lashing_platform` mają osobne collidery płyty i balustrad.
+Materiały `container_navy/olive/ochre/graphite`, `crane_paint`,
+`quay_concrete`, `quay_lines`, `rubber_fender`, `steel_grating` korzystają
+z miejskiego shadera i uniformu mokrości; parametry są w walidowanym
+`src/data/render/portMaterials.json`. Światła masztów są definicjami
+`lights[]` pokoju i konkurują o istniejącą pulę `CityLights`.

@@ -55,6 +55,7 @@ export const roomBlockSchema = z.object({
   model: z.string().min(1).optional(),
   rotation: vec3Schema.optional(),
   instance: z.boolean().optional(),
+  visible: z.boolean().optional(),
 });
 
 export const capturePointsSchema = z

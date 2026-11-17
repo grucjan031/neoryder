@@ -5,9 +5,11 @@ import {
   Group,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   MeshToonMaterial,
   NearestFilter,
 } from 'three';
+import type { WebGLProgramParametersWithUniforms, WebGLRenderer } from 'three';
 import { tuning } from '../../src/core/tuning';
 import {
   applyStyle,
@@ -16,15 +18,34 @@ import {
 } from '../../src/render/materials';
 import type { MaterialKind } from '../../src/render/materials';
 import { createStyleLights } from '../../src/render/lights';
+import {
+  portKinds,
+  urbanLooks,
+  urbanUniforms,
+} from '../../src/render/urbanMaterials';
+import { surfaceTexture } from '../../src/render/surfaceTextures';
+import { applyTheme, themeDefinitions } from '../../src/render/themes';
 
-const mappings: [string, MaterialKind][] = [
+const portExpected = {
+  container_navy: ['container_corrugated_navy', '283a62'],
+  container_olive: ['container_corrugated_olive', '4e5638'],
+  container_ochre: ['container_corrugated_ochre', 'a97c26'],
+  container_graphite: ['container_corrugated_graphite', '343a44'],
+  quay_lines: ['quay_lines', '2a3344'],
+  quay_concrete: ['quay_concrete', '56627a'],
+  crane_paint: ['crane_paint', 'ffffff'],
+  rubber_fender: ['rubber_fender', 'ffffff'],
+  steel_grating: ['steel_grating', 'ffffff'],
+} as const;
+
+const mappings = [
   ['mat_world', 'world'],
   ['mat_enemy', 'enemy'],
   ['mat_enemy_glow', 'enemyGlow'],
   ['mat_interactive', 'interactive'],
   ['mat_player_cyan', 'player'],
   ['mat_power_magenta', 'power'],
-];
+] as const satisfies readonly (readonly [string, MaterialKind])[];
 const defaults = { ...tuning.render };
 
 afterEach(() => {
@@ -34,6 +55,56 @@ afterEach(() => {
 });
 
 describe('rejestr materiałów stylu', () => {
+  it.each(portKinds)(
+    'port: %s zachowuje teksturę i wspólną mokrość po applyStyle i sync',
+    (kind) => {
+      applyTheme(themeDefinitions.get('neonStreet')!);
+      const [texture, color] = portExpected[kind];
+      const source = new MeshBasicMaterial();
+      source.name = `mat_${kind}`;
+      const mesh = new Mesh(new BoxGeometry(), source);
+      const warn = vi.spyOn(console, 'warn');
+      applyStyle(mesh);
+      const material = mesh.material as unknown as MeshStandardMaterial;
+      expect(material).toBeInstanceOf(MeshStandardMaterial);
+      expect(material).toBe(getMaterial(kind));
+      expect(material.userData.wetness).toBeGreaterThan(0);
+      const shader = {
+        uniforms: {},
+        vertexShader: '#include <common>\n#include <begin_vertex>',
+        fragmentShader:
+          '#include <common>\n#include <color_fragment>\n#include <roughnessmap_fragment>\n#include <normal_fragment_maps>',
+      } as unknown as WebGLProgramParametersWithUniforms;
+      material.onBeforeCompile(shader, {} as WebGLRenderer);
+      expect(shader.uniforms.surfaceMap).toBe(surfaceTexture(texture).map);
+      expect(urbanLooks[kind].texture).toBe(texture);
+      expect(shader.uniforms.weatherGloss).toBe(urbanUniforms.weatherGloss);
+      syncMaterials();
+      expect(getMaterial(kind)).toBe(material);
+      expect(material.color.getHexString()).toBe(color);
+      expect(warn).not.toHaveBeenCalled();
+      mesh.geometry.dispose();
+      source.dispose();
+    },
+  );
+  it('nawierzchnie portu przejmują kolory motywu, również po ponownej synchronizacji', () => {
+    applyTheme(themeDefinitions.get('neonStreet')!);
+    const yard = getMaterial('quay_lines');
+    const quay = getMaterial('quay_concrete');
+    syncMaterials();
+    expect(yard.color.getHexString()).toBe('2a3344');
+    expect(quay.color.getHexString()).toBe('56627a');
+    tuning.render.asphalt = '#182a3c';
+    tuning.render.concrete = '#324456';
+    syncMaterials();
+    expect(yard.color.getHexString()).toBe('182a3c');
+    expect(quay.color.getHexString()).toBe('324456');
+    applyTheme(themeDefinitions.get('white')!);
+    syncMaterials();
+    expect(yard.color.getHexString()).toBe('ffffff');
+    expect(quay.color.getHexString()).toBe('ffffff');
+    expect(getMaterial('container_navy').color.getHexString()).toBe('ffffff');
+  });
   it.each(mappings)('%s mapuje się na współdzielony %s', (name, kind) => {
     const material = getMaterial(kind);
     expect(getMaterial(kind)).toBe(material);

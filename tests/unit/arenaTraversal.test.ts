@@ -89,20 +89,24 @@ it('port: kapsuła FPP chodzi do A/B/C, po obu rampach i schodach bez skoku', as
       expect(player.getState().position.y).toBeCloseTo(height, 1);
     }
     teleport(-46, -14);
-    walk({ x: -28, y: 6, z: -14 });
-    expect(player.getState().position.y).toBeCloseTo(6 + height, 1);
-    walk({ x: -24, y: 6, z: -14 });
-    walk({ x: -24, y: 6, z: 8 });
-    expect(player.getState().position.y).toBeCloseTo(6 + height, 1);
+    const roof = 2 * 2.591;
+    walk({ x: -28, y: roof, z: -14 });
+    expect(player.getState().position.y).toBeCloseTo(roof + height, 1);
+    walk({ x: -24, y: roof, z: -14 });
+    for (const z of [-10.75, -7.5, -4.25, -0.5]) {
+      walk({ x: -24, y: roof, z });
+      const deck = z < -1 ? 0.1 : 0;
+      expect(player.getState().position.y).toBeCloseTo(roof + deck + height, 1);
+    }
     teleport(-4, 8);
-    walk({ x: -20, y: 3, z: 8 });
-    expect(player.getState().position.y).toBeGreaterThan(3 + height - 0.1);
+    walk({ x: -20, y: 2.591, z: 8 });
+    expect(player.getState().position.y).toBeCloseTo(2.591 + height, 1);
     teleport(22, -3);
-    walk({ x: 22, y: 3, z: -15 });
-    expect(player.getState().position.y).toBeCloseTo(3 + height, 1);
-    walk({ x: 35, y: 6, z: -15 });
-    walk({ x: 32, y: 6, z: -23 });
-    expect(player.getState().position.y).toBeCloseTo(6 + height, 1);
+    walk({ x: 22, y: 2.591, z: -15 });
+    expect(player.getState().position.y).toBeCloseTo(2.591 + height, 1);
+    walk({ x: 35, y: roof, z: -15 });
+    walk({ x: 32, y: roof, z: -23 });
+    expect(player.getState().position.y).toBeCloseTo(roof + height, 1);
   } finally {
     player.dispose();
     world.free();

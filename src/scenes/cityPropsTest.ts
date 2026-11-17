@@ -1,20 +1,12 @@
 import { BoxGeometry, Box3, Group, Mesh, Vector3 } from 'three';
-import type {
-  BufferGeometry,
-  Material,
-  Object3D,
-  Scene as ThreeScene,
-} from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { BufferGeometry, Object3D, Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
 import { CityDressing } from '../render/city/dressing';
 import type { DressingLayout } from '../render/city/dressing';
 import { cloneCityModel } from '../render/cityModels';
 import { createStyleLights } from '../render/lights';
-import { applyStyle, getMaterial, syncMaterials } from '../render/materials';
+import { getMaterial, syncMaterials } from '../render/materials';
 import type { MaterialKind } from '../render/materials';
-import { createUrbanMaterial } from '../render/urbanMaterials';
-import type { UrbanKind } from '../render/urbanMaterials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import type { Scene } from './index';
 
@@ -209,68 +201,6 @@ const PORT_LIGHTS = [
   portLight(19, 6, -8, '#8a5cff', 40, 12),
 ];
 
-/**
- * Materiały portu spoza rejestru gry (`docs/assets.md`, „Port kontenerowy”): do czasu
- * integracji galeria rysuje je istniejącym wyglądem miasta, w razie potrzeby z barwą podglądu.
- */
-const PORT_PREVIEW: Record<string, { kind: UrbanKind; color?: string }> = {
-  mat_container_navy: { kind: 'paint', color: '#283a62' },
-  mat_container_olive: { kind: 'paint', color: '#4e5638' },
-  mat_container_ochre: { kind: 'paint', color: '#a97c26' },
-  mat_container_graphite: { kind: 'paint', color: '#343a44' },
-  mat_crane_paint: { kind: 'paint', color: '#9c7430' },
-  mat_quay_concrete: { kind: 'concrete' },
-  mat_rubber_fender: { kind: 'rubber' },
-  mat_steel_grating: { kind: 'metal' },
-};
-const portTints = new Map<string, Material>();
-function portPreviewMaterial(name: string): Material | undefined {
-  const preview = PORT_PREVIEW[name];
-  if (!preview) return undefined;
-  if (!preview.color) return getMaterial(preview.kind);
-  let material = portTints.get(name);
-  if (!material) {
-    const tinted = createUrbanMaterial(preview.kind);
-    tinted.color.set(preview.color);
-    tinted.name = name;
-    portTints.set(name, tinted);
-    material = tinted;
-  }
-  return material;
-}
-/** Jak `cloneCityModel`, z podglądem materiałów portu; cache posiada geometrię i materiały. */
-const portTemplates = new Map<string, Promise<Object3D | null>>();
-async function clonePortModel(model: string): Promise<Object3D | null> {
-  let template = portTemplates.get(model);
-  if (!template) {
-    const path = `/assets/models/city/${model}.glb`;
-    template = new GLTFLoader()
-      .loadAsync(path)
-      .then(({ scene }) => {
-        scene.traverse((node) => {
-          if (!(node instanceof Mesh)) return;
-          const original = node.material as Material | Material[];
-          const preview = Array.isArray(original)
-            ? undefined
-            : portPreviewMaterial(original.name);
-          if (preview) node.material = preview;
-          else applyStyle(node);
-          for (const material of Array.isArray(original)
-            ? original
-            : [original])
-            material.dispose();
-        });
-        return scene;
-      })
-      .catch(() => {
-        console.warn(`Brak modelu ${path}; pominięto w galerii.`);
-        return null;
-      });
-    portTemplates.set(model, template);
-  }
-  return (await template)?.clone(true) ?? null;
-}
-
 const LIGHT_COLORS = ['#ffae1a', '#8a5cff', '#6dff4a', '#3d7bff', '#fff1d6'];
 type V3 = [number, number, number];
 const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
@@ -325,7 +255,7 @@ export class CityPropsTest implements Scene {
     this.box(
       [YARD.x1 - YARD.x0, 0.3, YARD.half * 2],
       [(YARD.x0 + YARD.x1) / 2, -0.15, 0],
-      'asphalt',
+      'quay_lines',
     );
     this.box([7, 0.2, YARD.half * 2], [YARD.x1 + 5.1, -1.85, 0], 'cable');
     for (const side of [-1, 1]) {
@@ -422,7 +352,7 @@ export class CityPropsTest implements Scene {
         placed.set(s, model);
       }),
       ...portSlots.map(async (s) => {
-        const model = await clonePortModel(s.model);
+        const model = await cloneCityModel(s.model);
         if (!model || this.disposed) return;
         model.name = s.model;
         model.position.set(s.x, s.y, s.z);

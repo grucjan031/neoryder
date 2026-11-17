@@ -19,6 +19,15 @@ const size2 = z.object({ w: positive, h: positive });
 
 /** Materiał bloku układu; `world` = dotychczasowy materiał świata. */
 export const BLOCK_MATERIALS = [
+  'container_navy',
+  'container_olive',
+  'container_ochre',
+  'container_graphite',
+  'crane_paint',
+  'quay_concrete',
+  'quay_lines',
+  'rubber_fender',
+  'steel_grating',
   'world',
   'concrete',
   'asphalt',

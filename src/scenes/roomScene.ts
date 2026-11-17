@@ -768,6 +768,8 @@ export class RoomScene implements Scene {
       {
         size: Vec3;
         material: Parameters<typeof getMaterial>[0];
+        model?: string;
+        cell: string;
         matrices: Matrix4[];
       }
     >();
@@ -780,6 +782,7 @@ export class RoomScene implements Scene {
           material: blockMaterial,
           rotation,
           instance,
+          visible,
         }) => {
           const quaternion = new Quaternion().setFromEuler(
             new Euler(rotation?.x ?? 0, rotation?.y ?? 0, rotation?.z ?? 0),
@@ -792,13 +795,16 @@ export class RoomScene implements Scene {
                 interactionGroups(CollisionGroup.World, 0xffff),
               ),
           );
+          if (visible === false) return;
           if (instance && this.staticWorld) {
             const cell = this.layout.arena!.batchCellM;
             const material = blockMaterial ?? 'world';
-            const key = `${Math.floor(position.x / cell)},${Math.floor(position.z / cell)}:${material}:${size.x},${size.y},${size.z}`;
+            const key = `${Math.floor(position.x / cell)},${Math.floor(position.z / cell)}:${model ?? ''}:${material}:${size.x},${size.y},${size.z}`;
             const group = instances.get(key) ?? {
               size,
               material,
+              model,
+              cell: `${Math.floor(position.x / cell)},${Math.floor(position.z / cell)}`,
               matrices: [],
             };
             group.matrices.push(
@@ -820,23 +826,34 @@ export class RoomScene implements Scene {
           fallback.position.set(position.x, position.y, position.z);
           fallback.quaternion.copy(quaternion);
           blocks.add(fallback);
-          const file = model?.startsWith('city_')
-            ? model
-            : model
-              ? MODEL_FILES[model]
-              : undefined;
+          const file =
+            model?.startsWith('city_') || model?.startsWith('port_')
+              ? model
+              : model
+                ? MODEL_FILES[model]
+                : undefined;
           if (!file || !this.loadModels) return;
           try {
-            const scene = file.startsWith('city_')
-              ? await cloneCityModel(file)
-              : await cloneRoomModel(file);
+            const scene =
+              file.startsWith('city_') || file.startsWith('port_')
+                ? await cloneCityModel(file)
+                : await cloneRoomModel(file);
             if (!scene || this.disposed) return;
-            if (blockMaterial && !file.startsWith('city_'))
+            if (
+              blockMaterial &&
+              !(file.startsWith('city_') || file.startsWith('port_'))
+            )
               scene.traverse((node) => {
                 if (node instanceof Mesh)
                   node.material = getMaterial(blockMaterial);
               });
             placeBlockModel(scene, file, size, position);
+            // Obrót modelu wokół środka tej samej bryły co collider.
+            scene.position
+              .sub(new Vector3(position.x, position.y, position.z))
+              .applyQuaternion(quaternion)
+              .add(new Vector3(position.x, position.y, position.z));
+            scene.quaternion.premultiply(quaternion);
             blocks.remove(fallback);
             models.add(scene);
           } catch {
@@ -845,7 +862,48 @@ export class RoomScene implements Scene {
         },
       ),
     );
-    for (const { size, material, matrices } of instances.values()) {
+    const modelInstances = new Map<
+      string,
+      { source: Mesh; matrices: Matrix4[]; name: string }
+    >();
+    for (const {
+      size,
+      material,
+      model,
+      matrices,
+      cell,
+    } of instances.values()) {
+      const template =
+        model && this.loadModels ? await cloneCityModel(model) : null;
+      if (this.disposed) return;
+      if (template) {
+        placeBlockModel(template, model!, size, { x: 0, y: 0, z: 0 });
+        template.updateMatrixWorld(true);
+        template.traverse((node) => {
+          if (!(node instanceof Mesh)) return;
+          // Warianty farby mają identyczną geometrię okuć i nadruków kontenera.
+          const shape = model!.replace(
+            /^(port_container_(?:20|40))_(?:navy|olive|ochre|graphite)$/,
+            '$1',
+          );
+          const materials = Array.isArray(node.material)
+            ? node.material
+            : [node.material];
+          const key = `${cell}:${shape}:${node.name}:${materials.map((m) => m.uuid).join(',')}`;
+          const group: { source: Mesh; matrices: Matrix4[]; name: string } =
+            modelInstances.get(key) ?? {
+              source: node,
+              matrices: [],
+              name: `instances:${shape}:${node.name}`,
+            };
+          for (const matrix of matrices)
+            group.matrices.push(
+              new Matrix4().multiplyMatrices(matrix, node.matrixWorld),
+            );
+          modelInstances.set(key, group);
+        });
+        continue;
+      }
       const geometry = new BoxGeometry(size.x, size.y, size.z);
       this.geometries.add(geometry);
       const mesh = new InstancedMesh(
@@ -858,6 +916,30 @@ export class RoomScene implements Scene {
       mesh.instanceMatrix.needsUpdate = true;
       mesh.computeBoundingSphere();
       blocks.add(mesh);
+    }
+    for (const { source, matrices, name } of modelInstances.values()) {
+      // Pojedyncza sztuka nie zyskuje na instancingu; może scalić się z inną statyką.
+      if (matrices.length === 1) {
+        const mesh = new Mesh(source.geometry, source.material);
+        mesh.name = name;
+        mesh.userData = { ...source.userData };
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.copy(matrices[0]!);
+        models.add(mesh);
+        continue;
+      }
+      const mesh = new InstancedMesh(
+        source.geometry,
+        source.material,
+        matrices.length,
+      );
+      mesh.name = name;
+      mesh.userData = { ...source.userData };
+      this.staticInstances.push(mesh);
+      matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.computeBoundingSphere();
+      models.add(mesh);
     }
     if (!this.staticWorld) {
       batchStaticGeometry(blocks, this.geometries);
