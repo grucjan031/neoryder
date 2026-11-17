@@ -132,6 +132,8 @@ export class RunScene implements Scene {
   private missionRadio?: MissionRadio;
   private room: RunRoom | null = null;
   private roomId: string | null = null;
+  /** Debug: nieśmiertelność nakładana na każdy nowy pokój runu. */
+  private godRun = false;
   private roomReady = false;
   private roomCommands: CommandRegistry | null = null;
   private playerId: EntityId | null = null;
@@ -885,6 +887,10 @@ export class RunScene implements Scene {
       this.room = null;
       return;
     }
+    // Debug/testy: `god` wydane poza pokojem włącza nieśmiertelność na cały run — każdy pokój
+    // dostaje ją przed pierwszym krokiem symulacji (fx=lite na wolnym CI liczy wiele kroków na
+    // klatkę, więc strażnicy zdążali zabić gracza, zanim test włączył ją w pokoju).
+    if (this.godRun) this.roomCommands.execute('god');
     this.roomReady = true;
     if (!this.manager.active) {
       this.schedule('end');
@@ -1187,7 +1193,6 @@ export class RunScene implements Scene {
       'boss phase',
       'boss pattern',
       'wave',
-      'god',
     ]) {
       register(name, `${name} — komenda aktywnego pokoju`, (args) =>
         this.roomReady && this.manager.screen === 'room'
@@ -1195,6 +1200,12 @@ export class RunScene implements Scene {
           : 'Brak aktywnego pokoju.',
       );
     }
+    register('god', 'god — nieśmiertelność (poza pokojem: na cały run)', () => {
+      if (this.roomReady && this.manager.screen === 'room')
+        return this.roomCommands!.execute('god');
+      this.godRun = !this.godRun;
+      return `Nieśmiertelność w runie: ${this.godRun ? 'włączona' : 'wyłączona'}`;
+    });
     register('credits', 'credits <n> — dodaj Kredyty', (args) => {
       if (args.length !== 1 || !this.manager.addCredits(Number(args[0])))
         return 'Podaj dodatnią liczbę Kredytów.';

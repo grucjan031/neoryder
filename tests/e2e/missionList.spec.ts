@@ -71,6 +71,13 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
   await page
     .getByRole('button', { name: 'Rozpocznij misję', exact: true })
     .click();
+  // Nieśmiertelność na cały run, zanim wejdziemy do pierwszego pokoju (fx=lite na wolnym CI).
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.query('screen')), {
+      timeout: LOAD_TIMEOUT,
+    })
+    .toBe('map');
+  await page.evaluate(() => window.__neoryder?.command('god'));
   for (let layer = 1; layer <= 7; layer++) {
     await expect
       .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
@@ -85,7 +92,6 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
             const screen = game.query('screen');
             if (screen === 'shop' || screen === 'rest') return true;
             if (screen !== 'room') return false;
-            game.command('god');
             game.command('run clear');
             if (final) {
               const blocked = game.command('objective done exit');
