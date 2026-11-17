@@ -53,3 +53,43 @@ obsługę zdarzenia na atrapie Web Audio sprawdza `audio.test.ts`.
 ## Testy
 
 `tests/unit/audio.test.ts` (atrapa AudioContext: wybór dźwięku dla zdarzeń, warunki i zbocze przegrzania, cooldown, limit głosów, wygasanie, pitch w zakresie, panorama, odblokowanie, brak Web Audio), `tests/e2e/sfxTest.spec.ts` (kontekst `running` po kliknięciu), `tests/e2e/arena.spec.ts` (zabicie gra `kill`).
+
+## Otoczenie
+
+`AudioSystem.setAmbience(sources | null)` zarządza zapętlonymi grafami na wspólnym
+kontekście. `ambience.ts` wybiera najbliższe źródła (maksymalnie
+`audio.ambienceMaxActive`, startowo 8). Tłumienie smoothstep uwzględnia trzy osie,
+osiąga dokładne zero na `radiusM`; panorama używa tej samej osi kamery co SFX.
+Źródła poza zasięgiem, niewybrane, podczas pauzy albo zawieszenia kontekstu są
+zatrzymywane i odłączane, a nie tylko ściszane. Powrót odtwarza graf z buforów.
+Szyna ambience ma gain `audio.ambienceGain`, następnie przechodzi przez istniejący
+master: `audio.masterGain × Settings.masterVolume × Settings.sfxVolume`.
+Odblokowanie nadal odbywa się wyłącznie w `AudioSystem.attachUnlock`.
+
+`ambienceSynth.ts` syntezuje ogień (szum i krótkie trzaski), generator (piła przez
+lowpass), krople (losowo rozstawione pingi), parę i skwierczenie (highpass), ekrany
+(110 Hz z harmonicznymi), gwar (trzy pasma bandpass), radio (szum i przerywane
+tony) oraz szafę grającą (oryginalna fraza basu i minorowych padów: 90 BPM,
+osiem taktów, bez melodii). Wszystkie grafy mają wolną modulację amplitudy;
+bufory impulsów i frazy powstają raz dla danego rodzaju i są współdzielone.
+Kosmetyczny `Rng` zapewnia powtarzalność bez zużywania losowości symulacji.
+Parametry syntezy, domyślne zasięgi i gainy są w `audio.ambience*`, dostępne w GUI.
+
+`hubAmbienceSources` wyciąga źródła z `fires`, modeli generatora w blokach,
+kapania/pary `ambientFx` i skupisk ekranów (promień 4 m od pierwszego ekranu).
+Łączy je z `src/data/hub/ambience.json`, walidowanym przez zod: rodzaj, skończona
+pozycja, dodatni promień, opcjonalny nieujemny gain; nieznane pola są błędem.
+Plik dodaje gwar hali, jukebox przy barze i radio przy Bajcie.
+
+Pociąg ma oddzielny graf na szynie ambience: szum lowpass i sinus 38 Hz,
+obwiednia narastająca i opadająca w czasie symulacji oraz panorama zachód →
+wschód zależna od obrotu słuchacza. `setAmbience(null)` i `dispose` zwalniają
+wszystkie grafy, także pociąg. `query('hubAmbience')` pokazuje aktywne
+`{ kind, gain }` przed mnożnikami szyn, a `hub train` wymusza przejazd.
+
+Weryfikacja: `tests/unit/ambience.test.ts` (ekstrakcja, schemat, przestrzeń,
+limit, pauza, brak Web Audio, sprzątanie każdego rodzaju i pociągu, harmonogram,
+komenda i pula pyłu), `tests/e2e/hub.spec.ts` (odblokowanie, źródła, przejazd bez
+błędów Web Audio). Ręcznie: `?scene=hub&debug=1`, kliknij grę, przejdź od beczki
+przez generatory i ekrany do baru/Bajta; obróć kamerę, zmień głośność efektów,
+sprawdź ciszę po Esc i wznowienie, następnie wykonaj `hub train`.

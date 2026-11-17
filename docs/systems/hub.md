@@ -363,3 +363,23 @@ Odświeża się po zdarzeniach `meta_rewards`, `level_up`, `talents_changed`, `u
 `threat_selected` oraz po każdej komendzie meta (te nie zawsze emitują zdarzenia). Scena tworzy pasek, gdy sama
 tworzy nakładki (opcja `metaBar` pozwala to zmienić). Teksty: `missions.pl.json`, sekcja `bar`.
 Testy: `tests/unit/metaBar.test.ts`.
+
+## Dźwięk otoczenia i pociąg
+
+`HubSoundscape` podpina do AudioSystem źródła wyciągane z układu i jawne wpisy
+`src/data/hub/ambience.json`: gwar hali, jukebox przy barze na peronie B oraz
+radio przy biurku Bajta. Nowe skrzydła mogą dopisywać źródła do tego pliku.
+Szczegóły syntezy, głośności i limitów opisuje sekcja „Otoczenie” w audio.md.
+
+`HubTrain` działa w stałym kroku: pierwszy przejazd po 25–40 s, kolejne co
+70–140 s od początku poprzedniego, według `ctx.rng.fork('hub-train')`.
+Przejazd trwa 7 s i emituje `hub_train_passed` na początku; w szczycie lekki
+`camera_shake` respektowany przez FpsCamera (`screenShake`) i ciepłoszary pył
+z kilku skupisk pod sufitem w pobliżu gracza. Pył ma stałą pulę i interpolowany
+render, nie tworzy ciał Rapiera; parametry są w `hub.train*` i lil-gui.
+Pauza zamraża harmonogram i wycisza audio. Światła pozostają bez zmian:
+ich sterowanie jest prywatne w `src/render/**`.
+
+Ręczna próba w 30 s: otwórz `?scene=hub&debug=1`, odblokuj audio kliknięciem,
+w konsoli wykonaj `hub train`; po około 3,5 s sprawdź delikatny wstrząs i pył.
+`window.__neoryder.query('hubAmbience')` zwraca aktywne źródła i ich gain.
