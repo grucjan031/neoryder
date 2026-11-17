@@ -1073,6 +1073,16 @@ export class RunScene implements Scene {
         return 'Start misji.';
       },
     );
+    register(
+      'mission radio',
+      'mission radio <wyzwalacz> — odtwórz komunikaty radia misji',
+      (args) => {
+        if (!this.missionRadio || args.length !== 1)
+          return 'Brak radia misji albo wyzwalacza.';
+        this.missionRadio.signal(args[0]!);
+        return `Radio: ${args[0]}.`;
+      },
+    );
     register('objective done', 'objective done <id> — ukończ cel', (args) => {
       if (!this.roomReady || this.manager.screen !== 'room')
         return 'Brak aktywnego pokoju.';
