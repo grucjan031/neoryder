@@ -350,3 +350,28 @@ describe('AudioSystem — głosy i wariacje', () => {
     bus.emit('damage_dealt', hit({ killed: true }));
   });
 });
+
+it('regu?y fauny dobieraj? przestrzenne miau i pisk z tupaniem, z osobnymi cooldownami', () => {
+  const { bus, audio, fake } = setup();
+  const point = { x: 2, y: 0, z: 0 };
+  bus.emit('hub_fauna_sound', { kind: 'meow', point });
+  expect(audio.lastSound).toBe('hub_meow');
+  expect(fake.log.panners.at(-1)).toBeGreaterThan(0);
+  bus.emit('hub_fauna_sound', { kind: 'meow', point });
+  expect(audio.recentSounds).toEqual(['hub_meow']);
+  bus.emit('hub_fauna_sound', { kind: 'rat', point });
+  expect(audio.lastSound).toBe('hub_rat');
+  expect(audio.recentSounds).toEqual(['hub_meow', 'hub_rat']);
+  fake.ctx.currentTime = 1;
+  bus.emit('hub_fauna_sound', { kind: 'rat', point });
+  expect(audio.recentSounds).toEqual(['hub_meow', 'hub_rat', 'hub_rat']);
+  const meow = def.sounds.hub_meow!;
+  expect(meow.spatial).toBe(true);
+  expect(meow.variants[0]![0]!.filter!.freqEnd).toBeLessThan(
+    meow.variants[0]![0]!.filter!.freq,
+  );
+  expect(
+    def.sounds.hub_rat!.variants[0]!.filter((l) => l.wave === 'noise').length,
+  ).toBeGreaterThan(1);
+  audio.dispose();
+});

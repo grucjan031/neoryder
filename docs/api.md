@@ -1795,3 +1795,11 @@ lub pustą listę, `getTips()` waliduje dane leniwie, `pickTip(key)` wybiera
 deterministycznie przez `hashSeed`. Wspólny dekoracyjny widok porad rotuje
 co `tuning.ui.loadingTipS`, a jego `dispose()` usuwa timer. Klucz startowy:
 scena + seed; klucz pokoju: run + seed + currentNodeId.
+
+## Fauna kryjówki
+
+- `HubLayout.fauna?`: `cat?: { route: {x,z}[]; restS: [min,max]; speedMS? }` (pętla, minimum 3 punkty) i `rats?: { lanes: {from: Vec3; to: Vec3}[]; intervalS: [min,max] }`.
+- `HubFaunaRuntime(layout, rng, tuning.hub, bus?)`: czysta symulacja; `step(dt, playerPosition, playerVelocity)`, `placeCat(playerPosition, yaw)`, `forceRat(playerPosition)`. Stan pozycji poprzednich/bieżących oraz dystans chodu służą interpolacji widoku. Bez koliderów i interakcji.
+- `hub_fauna_sound: { kind: 'meow' | 'rat'; point: Vec3 }`: kosmetyczne zdarzenie przestrzennego SFX. Mruczenie jest ruchomym źródłem ambience `purr`, aktywnym podczas odpoczynku kota.
+- `AudioSystem.updateAmbienceSource(index, position, gain)`: aktualizuje istniejące źródło skopiowane przez `setAmbience`, bez restartu grafów. `HubSoundscape` przyjmuje opcjonalne dodatkowe źródła na końcu listy.
+- Debug: `hub cat`, `hub rat`; `query('hubFauna')` zwraca `{ cat: {x,z,state} | null, rats: number }`. Teleport kota wymaga bezpiecznej drogi do trasy; przy przeszkodzie komenda zgłasza brak miejsca.

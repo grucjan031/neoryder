@@ -536,6 +536,77 @@
           }
         ]
       ]
+    },
+    "hub_meow": {
+      "variants": [
+        [
+          {
+            "wave": "sawtooth",
+            "freq": 620,
+            "freqEnd": 380,
+            "durationS": 0.32,
+            "attackS": 0.045,
+            "gain": 0.13,
+            "filter": {
+              "type": "bandpass",
+              "freq": 1400,
+              "freqEnd": 780,
+              "q": 3
+            }
+          }
+        ]
+      ],
+      "volume": 0.22,
+      "pitch": [0.94, 1.06],
+      "spatial": true,
+      "cooldownS": 20
+    },
+    "hub_rat": {
+      "variants": [
+        [
+          {
+            "wave": "sine",
+            "freq": 2200,
+            "freqEnd": 3300,
+            "durationS": 0.09,
+            "attackS": 0.015,
+            "gain": 0.1
+          },
+          {
+            "wave": "noise",
+            "durationS": 0.035,
+            "gain": 0.1,
+            "filter": {
+              "type": "lowpass",
+              "freq": 950
+            }
+          },
+          {
+            "wave": "noise",
+            "durationS": 0.025,
+            "gain": 0.07,
+            "delayS": 0.12,
+            "filter": {
+              "type": "lowpass",
+              "freq": 850
+            }
+          },
+          {
+            "wave": "noise",
+            "durationS": 0.025,
+            "gain": 0.06,
+            "delayS": 0.24,
+            "filter": {
+              "type": "lowpass",
+              "freq": 850
+            }
+          }
+        ]
+      ],
+      "volume": 0.14,
+      "pitch": [0.95, 1.08],
+      "spatial": true,
+      "cooldownS": 0.5
     }
   },
   "rules": [
@@ -607,6 +678,20 @@
     },
     { "event": "enemy_telegraph", "sound": "telegraph" },
     { "event": "wave_started", "sound": "waveStart" },
-    { "event": "wave_cleared", "sound": "waveCleared" }
+    { "event": "wave_cleared", "sound": "waveCleared" },
+    {
+      "event": "hub_fauna_sound",
+      "when": {
+        "faunaKind": "meow"
+      },
+      "sound": "hub_meow"
+    },
+    {
+      "event": "hub_fauna_sound",
+      "when": {
+        "faunaKind": "rat"
+      },
+      "sound": "hub_rat"
+    }
   ]
 }
