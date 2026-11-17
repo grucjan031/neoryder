@@ -31,6 +31,7 @@ import type {
 import { kuroganeSector } from '../../src/world/sectors';
 import { configureFx } from '../../src/render/fxMode';
 import type { DamageSystem } from '../../src/combat/damage';
+import type { EnemyManager } from '../../src/enemies/manager';
 
 const idle = {
   held: new Set<never>(),
@@ -763,4 +764,58 @@ it('fx=lite pomija ciszę po zwycięstwie', async () => {
   } finally {
     configureFx(new URLSearchParams());
   }
+});
+
+/** Boss w ostatniej fazie + (opcjonalnie) dodatkowi wrogowie, potem tylko śmierć bossa. */
+async function victoryWithExtras(extras: readonly string[]) {
+  const run = await bossToLastPhase();
+  const room = run.rooms.at(-1)!;
+  const manager = Reflect.get(room, 'manager') as EnemyManager;
+  const player = run.scene.query('playerPos') as { x: number; z: number };
+  extras.forEach((kind, index) =>
+    manager.spawn(kind, { x: player.x + 3 + index * 1.5, y: 0, z: player.z }),
+  );
+  const damage = Reflect.get(room, 'damage') as DamageSystem;
+  const boss = run.scene.query('boss') as { id: number };
+  const killed: { id: number; killer: number | null }[] = [];
+  const ctx = Reflect.get(run.scene, 'ctx') as GameContext;
+  ctx.bus.on('enemy_killed', ({ id, killer }) => killed.push({ id, killer }));
+  const aliveBefore = room.query('enemies') as number;
+  damage.deal(boss.id, {
+    source: room.playerId,
+    amount: Number.MAX_VALUE,
+    tags: ['#debug'],
+  });
+  return { ...run, room, manager, killed, aliveBefore };
+}
+
+it('cisza po zwycięstwie: pozostali wrogowie rozpadają się, a podsumowanie zostaje takie samo', async () => {
+  const control = await victoryWithExtras([]);
+  for (let i = 0; i < 3; i++) control.scene.step(SIM_DT, idle);
+  await control.scene.whenReady();
+  expect(control.scene.query('victoryHold')).toBeGreaterThan(0);
+  advanceVictoryHold(control.scene);
+  await control.scene.whenReady();
+  const expected = control.screens.view.summary;
+  expect(expected?.outcome).toBe('victory');
+  const expectedCredits = (control.scene.query('runState') as RunState).credits;
+  control.scene.dispose();
+
+  const run = await victoryWithExtras(['gunner', 'drone', 'shielder']);
+  expect(run.aliveBefore).toBe(4);
+  await run.scene.whenReady();
+  expect(run.scene.query('victoryHold')).toBeGreaterThan(0);
+  expect(run.room.query('enemies')).toBe(0);
+  run.manager.forEach((e) => expect(e.current.state).toBe('dead'));
+  // Sługi giną od świata, nie od gracza: bez zabójstw i kredytów w wyniku runu.
+  const worldKills = run.killed.filter((entry) => entry.killer === null);
+  expect(worldKills.length).toBeGreaterThanOrEqual(3);
+  for (let i = 0; i < 30; i++) run.scene.step(SIM_DT, idle);
+  expect(run.room.query('enemies')).toBe(0);
+  advanceVictoryHold(run.scene);
+  await run.scene.whenReady();
+  expect(run.screens.view.summary).toEqual(expected);
+  expect((run.scene.query('runState') as RunState).credits).toBe(
+    expectedCredits,
+  );
 });
