@@ -111,3 +111,37 @@ przekazuje źródła przez `AudioSystem.setAmbience` i przesuwa je do kamery prz
 `updateAmbienceSource`; istniejące odblokowanie gestem, pauza i głośność pozostają
 wspólne. Profile bez pola weather nie tworzą audio pogody. Szczegóły cyklu życia
 i odsłuchu: [weather.md](weather.md).
+
+## Muzyka
+
+Syntezowana w locie (Web Audio, bez plików i cudzych próbek), trzy pętle w `src/data/audio/music.json`
+(walidacja zod: `src/audio/musicSchema.ts`): **calm** (kryjówka, mapa, poza walką; 74 BPM, pad + puls basu +
+delikatne arpeggio, bez perkusji), **combat** (126 BPM, bas ósemkowy, kick/snare/hat z szumu, stabsy) i
+**boss** (140 BPM, 16-kowy bas, klastry z półtonami i trytonem, „alarm”). Każda pętla ma 16 taktów.
+
+- **Dane.** Pętla = `bpm`, `beatsPerBar`, `stepsPerBeat`, `bars` (8–16) i ścieżki. Ścieżka `tone` ma barwę
+  (`wave`, `detuneCents`, `attackS`, `releaseS`, `filter` z przemiataniem, `pan`), ścieżki `kick`/`snare`/`hat` są
+  perkusją. `pattern` to tablica napisów, po jednym na takt, używana cyklicznie (jej długość musi dzielić `bars`);
+  każdy takt ma dokładnie `beatsPerBar × stepsPerBeat` tokenów. Token tonowy: `.` pauza, `A1`, akord `A3+C4+E4`,
+  długość w krokach `*4`, głośność `@0.6` (np. `A3+C4*16@0.8`); perkusja: `.`, `x` (mocne), `o` (ciche).
+- **`MusicSystem`** (`music.ts`): `setState('calm'|'combat'|'boss'|'off')`, `update()`, `dispose()`. Harmonogram z
+  wyprzedzeniem (1,5 s) na `AudioContext.currentTime`: tyknięcie co 250 ms planuje kroki aż do horyzontu,
+  więc opóźnienie timera i zawieszony kontekst (przed pierwszym gestem) nie rozjeżdżają rytmu ani nie
+  kumulują nut. Zmiana stanu to crossfade `fadeS` (1,8 s) między szynami pętli; nowa pętla startuje od taktu 1.
+- **Kontekst i głośność.** Ten sam `AudioContext` co SFX (`AudioSystem.getContext()`), odblokowywany tylko w
+  `attachUnlock`. Własna szyna idzie wprost do `destination`: `masterGain × masterVolume × musicVolume ×
+musicGain` (`tuning.audio.musicGain` = 0,35; bez `sfxVolume`). `Settings.musicVolume` (domyślnie 0,7)
+  ma suwak w ustawieniach obok głośności głównej; wartość jest czytana na każdym tyknięciu.
+- **`MusicDirector`** (`musicDirector.ts`, czysta logika): `scene_loaded` zeruje stan; `wave_started` →
+  combat do `wave_cleared` + 4 s; obrażenia z udziałem gracza i `enemy_killed` przedłużają walkę o 4 s
+  (histereza); `boss_spawned` → boss (priorytet) do `entity_despawned`/`enemy_killed` bossa, potem walka
+  jeszcze 4 s; `player_died` i `run_ended` → calm do następnej sceny lub nowego gracza. Sceny nie muszą
+  nic przekazywać.
+- **Podpięcie** w `main.ts` (obok `AudioSystem`). Wyłączona przy `?fx=lite` i pod automatem
+  (`navigator.webdriver`: Playwright), więc e2e nie płacą za syntezę. W menu głównym (bez sceny) muzyki nie ma.
+- **Debug.** Komenda `music <calm|combat|boss|off|auto>` (konsola `` ` ``; `auto` wraca do dyrektora),
+  `window.__neoryder.query('music')` → `{ state, playing }`. Odsłuch bez gry:
+  `node tools/audio/renderMusic.mjs [katalog] [calm|combat|boss]` renderuje pętle do WAV uproszczoną syntezą
+  offline i wypisuje szczyt/RMS (przybliżenie brzmienia, nie kopia Web Audio).
+- **Testy:** `tests/unit/music.test.ts` (schemat, dyrektor, harmonogram na atrapie kontekstu, crossfade,
+  `dispose`, głośność, `musicVolume`).
