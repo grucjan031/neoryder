@@ -9,17 +9,17 @@
 
 Oznaczenia: **[kod]** potwierdzone w kodzie, **[dok]** tylko w dokumentacji, **[rek]** rekomendacja.
 
-| Obszar | Stan | Źródło |
-|---|---|---|
-| Walka | Ostrze (3 warianty), 7 broni, 6 mocy, statusy, implanty, synergie. PPM = blok; z bronią palną PPM wymusza ostrze. Wrogowie nie przewracają się (ogłuszenie = klip `Hit_Chest`). | [kod] `src/data/inputBindings.json`, `src/combat/heldItem.ts`, `src/enemies/enemyAnimation.ts` |
-| Pętla runu | Sektor Kurogane, mapa, pokoje, nagrody, sklep, odpoczynek, boss `securityChief`, cisza po zwycięstwie. Pokój bossa kończy run zwycięstwem. | [kod] `src/world/run.ts`, `src/scenes/run.ts` |
-| Meta i zapis | Waluty, poziomy, drzewka, warsztat, zagrożenie. `applyRun` jest idempotentne (`appliedRunIds`), ale `finishMeta()` przy błędzie zapisu meta i tak woła `clearRun()` → **ryzyko utraty nagrody**. | [kod] `src/scenes/run.ts` `finishMeta`, `src/progression/meta.ts` |
-| Kryjówka | Stacja Kamienna: NPC, reakcje, siadanie, spadek napięcia, dzieci i kot, scalanie statyki (komórki 20 m). | [kod] `src/scenes/hub*.ts`, `docs/systems/hub.md` |
-| Fabuła | 20 misji w 3 aktach — wyłącznie dokumenty. Tablica misji uruchamia zwykły run (zagrożenie + ziarno), brak systemu kampanii. | [dok] `docs/fabula/`; [kod] `src/ui/hub/missionsPanel.ts` |
-| Splasharty | 57 ilustracji na ekranach ładowania. W toku (gałąź `szlif-fabula`): podział na akty, odblokowanie po zwycięstwach — tymczasowo, do czasu postępu kampanii. | [kod] `src/ui/splash.ts` |
-| Bramki | F2: zadania 01–18 gotowe, czeka playtest człowieka. F4: 01–12 gotowe, czeka playtest wg `docs/playtest-F4.md`. F3 zaakceptowana 2026-11-15. | [dok] `docs/issues/F2–F4/README.md` |
-| Wydajność | `perf.spec.ts` raportuje FPS bez progu; Playwright renderuje programowo (SwiftShader) — nie mierzy sprzętu docelowego. | [kod] `tests/e2e/perf.spec.ts`, `playwright.config.ts` |
-| Wdrożenie | Produkcja i podglądy PR przez Vercel (integracja z GitHubem). `netlify.toml` w repo jest pozostałością. | [kod] repo; [rek] usunąć albo opisać `netlify.toml` |
+| Obszar       | Stan                                                                                                                                                                                             | Źródło                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Walka        | Ostrze (3 warianty), 7 broni, 6 mocy, statusy, implanty, synergie. PPM = blok; z bronią palną PPM wymusza ostrze. Wrogowie nie przewracają się (ogłuszenie = klip `Hit_Chest`).                  | [kod] `src/data/inputBindings.json`, `src/combat/heldItem.ts`, `src/enemies/enemyAnimation.ts` |
+| Pętla runu   | Sektor Kurogane, mapa, pokoje, nagrody, sklep, odpoczynek, boss `securityChief`, cisza po zwycięstwie. Pokój bossa kończy run zwycięstwem.                                                       | [kod] `src/world/run.ts`, `src/scenes/run.ts`                                                  |
+| Meta i zapis | Waluty, poziomy, drzewka, warsztat, zagrożenie. `applyRun` jest idempotentne (`appliedRunIds`), ale `finishMeta()` przy błędzie zapisu meta i tak woła `clearRun()` → **ryzyko utraty nagrody**. | [kod] `src/scenes/run.ts` `finishMeta`, `src/progression/meta.ts`                              |
+| Kryjówka     | Stacja Kamienna: NPC, reakcje, siadanie, spadek napięcia, dzieci i kot, scalanie statyki (komórki 20 m).                                                                                         | [kod] `src/scenes/hub*.ts`, `docs/systems/hub.md`                                              |
+| Fabuła       | 20 misji w 3 aktach — wyłącznie dokumenty. Tablica misji uruchamia zwykły run (zagrożenie + ziarno), brak systemu kampanii.                                                                      | [dok] `docs/fabula/`; [kod] `src/ui/hub/missionsPanel.ts`                                      |
+| Splasharty   | 57 ilustracji na ekranach ładowania. W toku (gałąź `szlif-fabula`): podział na akty, odblokowanie po zwycięstwach — tymczasowo, do czasu postępu kampanii.                                       | [kod] `src/ui/splash.ts`                                                                       |
+| Bramki       | F2: zadania 01–18 gotowe, czeka playtest człowieka. F4: 01–12 gotowe, czeka playtest wg `docs/playtest-F4.md`. F3 zaakceptowana 2026-11-15.                                                      | [dok] `docs/issues/F2–F4/README.md`                                                            |
+| Wydajność    | `perf.spec.ts` raportuje FPS bez progu; Playwright renderuje programowo (SwiftShader) — nie mierzy sprzętu docelowego.                                                                           | [kod] `tests/e2e/perf.spec.ts`, `playwright.config.ts`                                         |
+| Wdrożenie    | Produkcja i podglądy PR przez Vercel (integracja z GitHubem). `netlify.toml` w repo jest pozostałością.                                                                                          | [kod] repo; [rek] usunąć albo opisać `netlify.toml`                                            |
 
 **Różnice względem propozycji:** brak nowych funkcji od `1999b06`. Nieaktualne: wzmianka o `netlify.toml` jako dystrybucji. Dodatkowo w toku są cztery poprawki spoza propozycji (zadania S0-05…S0-08 w backlogu): splasharty wg aktów, róż podłogi areny bossa, celowanie pod PPM przy broni palnej, przewracanie i wstawanie wrogów.
 
@@ -36,21 +36,21 @@ Publiczne demo przeglądarkowe w maju 2027: dopracowana walka, działająca kamp
 
 ## 4. Sprinty
 
-| Sprint | Daty | Cel | Bramka na koniec |
-|---|---|---|---|
-| **S0** | 17–30 XI 2026 | Domknięcie podstaw | Bezpieczny zapis nagrody; playtesty F2/F4 zapisane; decyzje D1–D4; poprawki z S0 scalone |
-| **S1** | 1–14 XII | Kontrakt misji i kampanii | ADR 0008 (misje), schemat danych misji, stan kampanii w zapisie z migracją |
-| **S2** | 15–31 XII (½) | „Maszty” od odprawy do powrotu | Maszty do ukończenia bez debug; porażka/ponowienie/wczytanie bez zepsutego stanu |
-| **S3** | 4–17 I 2027 | „List przewozowy” (obrona) | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem |
-| **S4** | 18–31 I | „Odlewnia” + prototypy NPC i wagonu | 3 misje = wewnętrzne demo; raport kosztu prototypów |
-| **S5** | 1–14 II | Testy nowych graczy, tura 1 | 4–6 osób, trzy najważniejsze problemy wybrane |
-| **S6** | 15–28 II | Poprawki + tura 2; warunkowo Punkt kontrolny | Decyzja o „Ładunku klasy K” |
-| **S7** | 1–14 III | Zawartość: narracja, kryjówka, audio | Konsekwencje w kryjówce po każdej misji dema |
-| **S8** | 15–31 III | Zamknięcie zakresu; warunkowo Ładunek klasy K | Decyzja 3 vs 5 misji; od tej chwili nowe pomysły → backlog |
-| **S9** | 1–14 IV | Wydajność i niezawodność | Raport sprzętowy; godzinna sesja bez błędów |
-| **S10** | 15–30 IV | Czytelność i pierwsze minuty | Kandydat do wydania |
-| **S11** | 1–15 V | Ostatnia tura testów, publikacja | Publiczne demo z numerem wersji |
-| **S12** | 16–31 V | Zgłoszenia i pierwsza aktualizacja | Priorytety zgłoszeń, aktualizacja 1 |
+| Sprint  | Daty          | Cel                                           | Bramka na koniec                                                                         |
+| ------- | ------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **S0**  | 17–30 XI 2026 | Domknięcie podstaw                            | Bezpieczny zapis nagrody; playtesty F2/F4 zapisane; decyzje D1–D4; poprawki z S0 scalone |
+| **S1**  | 1–14 XII      | Kontrakt misji i kampanii                     | ADR 0008 (misje), schemat danych misji, stan kampanii w zapisie z migracją               |
+| **S2**  | 15–31 XII (½) | „Maszty” od odprawy do powrotu                | Maszty do ukończenia bez debug; porażka/ponowienie/wczytanie bez zepsutego stanu         |
+| **S3**  | 4–17 I 2027   | „List przewozowy” (obrona)                    | Obrona strefy z postępem pobierania i czytelnym zatrzymaniem                             |
+| **S4**  | 18–31 I       | „Odlewnia” + prototypy NPC i wagonu           | 3 misje = wewnętrzne demo; raport kosztu prototypów                                      |
+| **S5**  | 1–14 II       | Testy nowych graczy, tura 1                   | 4–6 osób, trzy najważniejsze problemy wybrane                                            |
+| **S6**  | 15–28 II      | Poprawki + tura 2; warunkowo Punkt kontrolny  | Decyzja o „Ładunku klasy K”                                                              |
+| **S7**  | 1–14 III      | Zawartość: narracja, kryjówka, audio          | Konsekwencje w kryjówce po każdej misji dema                                             |
+| **S8**  | 15–31 III     | Zamknięcie zakresu; warunkowo Ładunek klasy K | Decyzja 3 vs 5 misji; od tej chwili nowe pomysły → backlog                               |
+| **S9**  | 1–14 IV       | Wydajność i niezawodność                      | Raport sprzętowy; godzinna sesja bez błędów                                              |
+| **S10** | 15–30 IV      | Czytelność i pierwsze minuty                  | Kandydat do wydania                                                                      |
+| **S11** | 1–15 V        | Ostatnia tura testów, publikacja              | Publiczne demo z numerem wersji                                                          |
+| **S12** | 16–31 V       | Zgłoszenia i pierwsza aktualizacja            | Priorytety zgłoszeń, aktualizacja 1                                                      |
 
 Daty są celami planistycznymi. Przejście dalej zależy od grywalnego wyniku bramki; gdy bramka nie przechodzi, najpierw poprawki, potem przesunięcie kolejnych sprintów z zachowaniem kolejności zależności.
 
@@ -67,28 +67,28 @@ Splasharty wg aktu (S0-05) przechodzą na postęp kampanii, gdy powstanie S1-03 
 
 ## 6. Decyzje właściciela
 
-| # | Decyzja | Rekomendacja | Termin |
-|---|---|---|---|
-| D1 | Czy misje z `docs/fabula/misje` wchodzą do kodu (dotąd: tylko dokumenty). | Tak, od S1, zaczynając od kontraktu; pozostałe misje dalej tylko w dokumentach. | koniec S0 |
-| D2 | Zakres dema: 3 czy 5 misji. | 3 bazowe, 5 warunkowo po prototypach (S4) — decyzja ostateczna w S8. | wstępnie S0, ostatecznie S8 |
-| D3 | Karta do Odlewni bez misji M5 „Adiutant”. | Karta przekazana na odprawie jako wynik działania innego członka Iskry. | S1 |
-| D4 | Ocena bramek F2 i F4 po playtestach. | Zapisać wyniki w `docs/playtest-F4.md` i README faz; akceptacja tylko przez właściciela. | koniec S0 |
-| D5 | Komputer referencyjny, rozdzielczość i profil jakości do pomiaru 60 FPS. | Laptop średniej klasy właściciela, 1920×1080, profil „średni”. | S1 |
-| D6 | Zasady powtarzania misji (nagroda za pierwsze ukończenie vs kolejne). | Pierwsze ukończenie: nagroda fabularna + waluta; kolejne: tylko zwykłe nagrody runu. | S1 |
-| D7 | Wspierane przeglądarki demo. | Chrome i Edge (desktop); Firefox „najlepiej jak się da”. | S9 |
-| D8 | Build desktopowy / Steam w maju. | Nie obiecywać; prototyp tylko przy zapasie w S10. | S10 |
+| #   | Decyzja                                                                   | Rekomendacja                                                                             | Termin                      |
+| --- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------- |
+| D1  | Czy misje z `docs/fabula/misje` wchodzą do kodu (dotąd: tylko dokumenty). | Tak, od S1, zaczynając od kontraktu; pozostałe misje dalej tylko w dokumentach.          | koniec S0                   |
+| D2  | Zakres dema: 3 czy 5 misji.                                               | 3 bazowe, 5 warunkowo po prototypach (S4) — decyzja ostateczna w S8.                     | wstępnie S0, ostatecznie S8 |
+| D3  | Karta do Odlewni bez misji M5 „Adiutant”.                                 | Karta przekazana na odprawie jako wynik działania innego członka Iskry.                  | S1                          |
+| D4  | Ocena bramek F2 i F4 po playtestach.                                      | Zapisać wyniki w `docs/playtest-F4.md` i README faz; akceptacja tylko przez właściciela. | koniec S0                   |
+| D5  | Komputer referencyjny, rozdzielczość i profil jakości do pomiaru 60 FPS.  | Laptop średniej klasy właściciela, 1920×1080, profil „średni”.                           | S1                          |
+| D6  | Zasady powtarzania misji (nagroda za pierwsze ukończenie vs kolejne).     | Pierwsze ukończenie: nagroda fabularna + waluta; kolejne: tylko zwykłe nagrody runu.     | S1                          |
+| D7  | Wspierane przeglądarki demo.                                              | Chrome i Edge (desktop); Firefox „najlepiej jak się da”.                                 | S9                          |
+| D8  | Build desktopowy / Steam w maju.                                          | Nie obiecywać; prototyp tylko przy zapasie w S10.                                        | S10                         |
 
 ## 7. Ryzyka
 
-| Ryzyko | Skutek | Ograniczenie |
-|---|---|---|
-| Utrata nagrody przy błędzie zapisu | Utrata zaufania testerów | S0-01 przed jakimikolwiek testami z ludźmi |
-| Misje eskortowe i ratunkowe (pathfinding sojuszników, poruszający się wagon) | Przekroczenie harmonogramu | Prototypy w S4, wariant 3 misji jako bezpieczny |
-| Brak pomiaru na sprzęcie | „60 FPS” niesprawdzone, przycięcia u graczy | D5 + raport w S1, powtórka w S9 |
-| Zielone testy brane za akceptację | Demo nudne mimo braku błędów | Każda bramka = granie człowieka i zapis w playteście |
-| Zmiana zapisu (stan kampanii) | Utrata postępu starych zapisów | Migracja wersji + testy starych zapisów (S1-04) |
-| Rozrost zakresu (nowe pomysły w trakcie) | Brak czasu na testy | Od S8 nowe pomysły tylko do `backlog.md`; kolejność cięć z sekcji 8 |
-| Wolne CI / niestabilne e2e | Spowolnione scalanie | Testy atomowe (jak `runBot.spec.ts`), shardy, semafor lokalnie |
+| Ryzyko                                                                       | Skutek                                      | Ograniczenie                                                        |
+| ---------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------- |
+| Utrata nagrody przy błędzie zapisu                                           | Utrata zaufania testerów                    | S0-01 przed jakimikolwiek testami z ludźmi                          |
+| Misje eskortowe i ratunkowe (pathfinding sojuszników, poruszający się wagon) | Przekroczenie harmonogramu                  | Prototypy w S4, wariant 3 misji jako bezpieczny                     |
+| Brak pomiaru na sprzęcie                                                     | „60 FPS” niesprawdzone, przycięcia u graczy | D5 + raport w S1, powtórka w S9                                     |
+| Zielone testy brane za akceptację                                            | Demo nudne mimo braku błędów                | Każda bramka = granie człowieka i zapis w playteście                |
+| Zmiana zapisu (stan kampanii)                                                | Utrata postępu starych zapisów              | Migracja wersji + testy starych zapisów (S1-04)                     |
+| Rozrost zakresu (nowe pomysły w trakcie)                                     | Brak czasu na testy                         | Od S8 nowe pomysły tylko do `backlog.md`; kolejność cięć z sekcji 8 |
+| Wolne CI / niestabilne e2e                                                   | Spowolnione scalanie                        | Testy atomowe (jak `runBot.spec.ts`), shardy, semafor lokalnie      |
 
 ## 8. Co odkładamy i kolejność cięć
 
@@ -98,18 +98,18 @@ Cięcia przy opóźnieniu, w tej kolejności: (1) dekoracje i poboczne interakcj
 
 ## 9. Pierwszy sprint (S0, 17–30 XI 2026)
 
-| Zadanie | Kto | Cz | Ag |
-|---|---|---|---|
-| S0-01 Bezpieczne rozliczenie runu po błędzie zapisu | agent + odbiór | 2 | M |
-| S0-02 Playtest F2: trzy czyste ścieżki na arenie | człowiek | 4 | — |
-| S0-03 Playtest F4: 5 runów od zera | człowiek | 6 | — |
-| S0-04 Decyzje D1, D2 (wstępnie), D4 | właściciel | 2 | — |
-| S0-05 Splasharty wg aktów (bez spoilerów) | agent + odbiór | 0,5 | S |
-| S0-06 Róż podłogi areny bossa | agent + odbiór | 0,5 | S |
-| S0-07 Celowanie pod PPM z bronią palną | agent + odbiór | 1,5 | M |
-| S0-08 Przewracanie i wstawanie wrogów | agent + odbiór | 1,5 | M |
-| S0-09 Statusy w roadmapie i backlogu (gotowe i ocenione → … → odłożone) | agent | 0,5 | S |
-| S0-10 Porządek wdrożenia: `netlify.toml` | agent | 0,25 | S |
-| **Suma** | | **≈ 19 h** | |
+| Zadanie                                                                 | Kto            | Cz         | Ag  |
+| ----------------------------------------------------------------------- | -------------- | ---------- | --- |
+| S0-01 Bezpieczne rozliczenie runu po błędzie zapisu                     | agent + odbiór | 2          | M   |
+| S0-02 Playtest F2: trzy czyste ścieżki na arenie                        | człowiek       | 4          | —   |
+| S0-03 Playtest F4: 5 runów od zera                                      | człowiek       | 6          | —   |
+| S0-04 Decyzje D1, D2 (wstępnie), D4                                     | właściciel     | 2          | —   |
+| S0-05 Splasharty wg aktów (bez spoilerów)                               | agent + odbiór | 0,5        | S   |
+| S0-06 Róż podłogi areny bossa                                           | agent + odbiór | 0,5        | S   |
+| S0-07 Celowanie pod PPM z bronią palną                                  | agent + odbiór | 1,5        | M   |
+| S0-08 Przewracanie i wstawanie wrogów                                   | agent + odbiór | 1,5        | M   |
+| S0-09 Statusy w roadmapie i backlogu (gotowe i ocenione → … → odłożone) | agent          | 0,5        | S   |
+| S0-10 Porządek wdrożenia: `netlify.toml`                                | agent          | 0,25       | S   |
+| **Suma**                                                                |                | **≈ 19 h** |     |
 
 S0-07 i S0-08 zmieniają odczucie walki, więc playtest F2 (S0-02) najlepiej zrobić **po** ich scaleniu.
