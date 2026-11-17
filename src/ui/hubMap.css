@@ -1,0 +1,183 @@
+/* Plan stacji jak plan metra: neonowe obrysy stref, cyan = gracz (kolor zarezerwowany). */
+.hub-map {
+  --map-amber: var(--ui-amber, #ffae1a);
+  --map-green: var(--ui-green, #6dff4a);
+  --map-violet: var(--ui-violet-text, #ad92ff);
+  --map-blue: var(--ui-blue-text, #7aa4ff);
+  --map-white: var(--ui-warm, #fff1d6);
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 95;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: fit-content;
+  max-width: 90vw;
+  max-height: 90vh;
+  padding: 18px 24px 16px;
+  box-sizing: border-box;
+  pointer-events: none;
+  background:
+    var(--ui-frame),
+    linear-gradient(rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 / 32px
+      32px,
+    linear-gradient(90deg, rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 /
+      32px 32px,
+    var(--ui-panel, rgba(6, 12, 24, 0.92));
+  border: 1px solid var(--ui-line, rgba(0, 229, 255, 0.22));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  color: var(--ui-text, #edf7ff);
+  font: 500 15px/1.35 var(--ui-font, Rajdhani, 'Segoe UI', sans-serif);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+.hub-map[hidden] {
+  display: none;
+}
+.hub-map__kicker {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--ui-faint, #7d93a3);
+}
+.hub-map h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--ui-cyan, #00e5ff);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+}
+.hub-map__frame {
+  position: relative;
+  width: min(calc(90vw - 50px), calc((80vh - 150px) * var(--map-aspect, 1.5)));
+  aspect-ratio: var(--map-aspect, 1.5);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  background: rgba(3, 7, 14, 0.7);
+}
+.hub-map__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hub-map__zone,
+.hub-map__station {
+  --zone-color: var(--map-white);
+}
+.hub-map [data-color='amber'] {
+  --zone-color: var(--map-amber);
+}
+.hub-map [data-color='green'] {
+  --zone-color: var(--map-green);
+}
+.hub-map [data-color='violet'] {
+  --zone-color: var(--map-violet);
+}
+.hub-map [data-color='blue'] {
+  --zone-color: var(--map-blue);
+}
+.hub-map [data-color='white'] {
+  --zone-color: var(--map-white);
+}
+.hub-map__zone rect {
+  fill: rgba(5, 10, 20, 0.72);
+  stroke: var(--zone-color);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+.hub-map__zone-label {
+  font-size: 2.3px;
+  dominant-baseline: hanging;
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  fill: var(--zone-color);
+  opacity: 0.75;
+  paint-order: stroke;
+  stroke: #050a14;
+  stroke-width: 0.5px;
+}
+.hub-map__prop {
+  fill: var(--ui-muted, #a9bccb);
+  opacity: 0.8;
+}
+.hub-map__station circle {
+  fill: #050a14;
+  stroke: var(--zone-color);
+  stroke-width: 0.5px;
+}
+.hub-map__station-pad {
+  fill: rgba(3, 7, 14, 0.88);
+  stroke: var(--zone-color);
+  stroke-opacity: 0.5;
+  stroke-width: 0.25px;
+}
+.hub-map__station-label {
+  font-size: 3.2px;
+  font-weight: 700;
+  letter-spacing: 0.12px;
+  text-anchor: middle;
+  dominant-baseline: hanging;
+  fill: var(--zone-color);
+  filter: brightness(1.25);
+}
+.hub-map__player path {
+  fill: var(--ui-cyan, #00e5ff);
+  stroke: #050a14;
+  stroke-width: 0.3px;
+}
+.hub-map__north {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ui-faint, #7d93a3);
+}
+.hub-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 18px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--ui-muted, #a9bccb);
+}
+.hub-map__legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hub-map__legend-mark {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+}
+.hub-map__legend-mark--station {
+  border: 2px solid var(--map-amber);
+  border-radius: 50%;
+}
+.hub-map__legend-mark--prop {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ui-muted, #a9bccb);
+}
+.hub-map__legend-mark--player {
+  background: var(--ui-cyan, #00e5ff);
+  clip-path: polygon(50% 0, 100% 100%, 50% 70%, 0 100%);
+}
+.hub-map__hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ui-faint, #7d93a3);
+}

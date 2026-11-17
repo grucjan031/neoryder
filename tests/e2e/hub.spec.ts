@@ -291,3 +291,18 @@ test('hub: NPC (pięć kluczowych postaci i mieszkańcy), spojrzenie pokazuje �
   await expect(dialog).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('hub: hub map pokazuje i chowa plan stacji', async ({ page }) => {
+  const errors = collectErrors(page);
+  await openHub(page);
+  const map = page.getByRole('dialog', { name: 'Plan stacji Kamienna' });
+  await expect(map).toBeHidden();
+  await command(page, 'hub map');
+  await expect(map).toBeVisible();
+  await expect(map.getByRole('heading')).toHaveText('Plan stacji Kamienna');
+  expect(await query(page, 'hubMap')).toEqual({ open: true });
+  await command(page, 'hub map');
+  await expect(map).toBeHidden();
+  expect(await query(page, 'hubMap')).toEqual({ open: false });
+  expect(errors).toEqual([]);
+});

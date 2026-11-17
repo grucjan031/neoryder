@@ -764,6 +764,14 @@ export const tuning = {
   run: { transitionS: 0.6, fadeS: 0.35, rewardDelayS: 1 },
   /** Kryjówka: zasięg od oka i margines bryły interakcji (m). */
   hub: {
+    /** Margines planu stacji wokół stref (m). */
+    mapPaddingM: 2,
+    /** Podpis strefy na planie: minimalna szerokość i głębokość strefy, margines od rogu, szacunkowa szerokość znaku i wysokość podpisu (m). */
+    mapLabelMinWidthM: 5,
+    mapLabelMinDepthM: 3,
+    mapLabelMarginM: 0.5,
+    mapLabelCharM: 0.7,
+    mapLabelHeightM: 1.6,
     propCooldownS: 1,
     noodlesCooldownS: 20,
     noodlesWarmthS: 2,

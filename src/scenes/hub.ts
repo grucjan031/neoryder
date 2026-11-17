@@ -42,6 +42,8 @@ import { HubChatter } from '../world/hubChatter';
 import { HubArrival, hubArrivalContext } from '../world/hubArrival';
 import type { HubArrivalContext, HubGreetings } from '../world/hubArrival';
 import { HubDialog } from '../ui/hubDialog';
+import { HubMap } from '../ui/hubMap';
+import type { HubMapView } from '../ui/hubMap';
 import { HubPrompt } from '../ui/hubPrompt';
 import type { HubPanelRegistry, HubScreens } from '../ui/hubScreens';
 import { registerMetaCommands } from '../ui/metaCommands';
@@ -69,6 +71,8 @@ import { preserveLiteFx } from '../render/fxMode';
 export interface HubSceneOptions {
   layout?: HubLayout;
   screens?: HubScreens;
+  /** Plan stacji (M); domyślnie nakładka HTML, w testach atrapa. */
+  hubMap?: HubMapView;
   params?: URLSearchParams;
   navigate?: (url: string) => void;
   loadModels?: boolean;
@@ -131,6 +135,7 @@ export class HubScene implements Scene {
   private screens!: HubScreens;
   private prompt: HubPrompt | null = null;
   private dialogUi: HubDialog | null = null;
+  private hubMap: HubMapView | null = null;
   private npcTexts!: NpcTexts;
   private dialogue!: NpcDialogue;
   private npcs?: HubNpcs;
@@ -218,6 +223,9 @@ export class HubScene implements Scene {
       this.prompt = new HubPrompt();
       this.dialogUi = new HubDialog();
     }
+    this.hubMap =
+      this.options.hubMap ??
+      (this.screensOption === undefined ? new HubMap(this.layout) : null);
     this.npcTexts = loadNpcTexts(
       this.options.npcTexts ?? npcTextData,
       this.layout.npcs ?? [],
@@ -521,6 +529,7 @@ export class HubScene implements Scene {
   private showStation(station: HubStationId): void {
     if (this.disposed) return;
     this.prompt?.update(null);
+    this.hubMap?.close();
     this.endTalk();
     this.chatter.interrupt();
     this.screens.show(station, {
@@ -690,6 +699,8 @@ export class HubScene implements Scene {
     this.previous = this.player.getState();
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
     if (this.stations.opened || !(dt > 0)) return;
+    if (input.pressed.has('map') && this.talk === null) this.hubMap?.toggle();
+    const mapOpen = this.hubMap?.isOpen === true;
     this.props.step(dt);
     this.fauna?.step(dt, this.previous);
     const player = this.player.getState().position;
@@ -716,12 +727,18 @@ export class HubScene implements Scene {
     this.world.timestep = dt;
     this.world.step();
     const target = this.focusedTarget();
-    if (!discardInteract && target && input.pressed.has(HUB_INTERACT_ACTION)) {
+    if (
+      !mapOpen &&
+      !discardInteract &&
+      target &&
+      input.pressed.has(HUB_INTERACT_ACTION)
+    ) {
       if (target.kind === 'station') this.stations.open(target.id);
       else if (target.kind === 'prop') this.useProp(target.id);
       else this.talkTo(target.id);
     }
     if (
+      !mapOpen &&
       target?.kind === 'prop' &&
       input.pressed.has('attack') &&
       this.layout.props?.find((p) => p.id === target.id)?.kind === 'bag'
@@ -753,6 +770,11 @@ export class HubScene implements Scene {
 
   render(alpha: number, frameDt = 1 / 60): void {
     this.fauna?.render(alpha);
+    const mapOpen = this.hubMap?.isOpen === true;
+    if (mapOpen) {
+      const state = this.player.getState();
+      this.hubMap?.update(state.position, state.yaw);
+    }
     const target = this.focusedTarget();
     if (target?.kind === 'npc') {
       const name =
@@ -761,20 +783,20 @@ export class HubScene implements Scene {
       // Podczas rozmowy dymek zajmuje miejsce podpowiedzi (E dalej daje następną kwestię).
       this.prompt?.update(
         this.npcTexts.talkPrompt,
-        this.stations.opened !== null || this.talk !== null,
+        this.stations.opened !== null || this.talk !== null || mapOpen,
         name,
       );
     } else if (target?.kind === 'prop') {
       this.prompt?.update(
         this.layout.props?.find((p) => p.id === target.id)?.label ?? null,
-        this.stations.opened !== null,
+        this.stations.opened !== null || mapOpen,
       );
     } else
       this.prompt?.update(
         this.layout.stations.find(
           ({ id }) => target?.kind === 'station' && id === target.id,
         )?.label ?? null,
-        this.stations.opened !== null,
+        this.stations.opened !== null || mapOpen,
       );
     this.propView?.render(alpha);
     this.warmth?.update(
@@ -843,6 +865,8 @@ export class HubScene implements Scene {
         };
       case 'hubStation':
         return this.stations.opened;
+      case 'hubMap':
+        return { open: this.hubMap?.isOpen === true };
       case 'hubFocus':
         return this.focusedStation();
       case 'hubNpc':
@@ -1006,6 +1030,15 @@ export class HubScene implements Scene {
         return `Rozmowa: ${args[0]}`;
       },
     );
+    register('hub map', 'hub map — przełącz plan stacji', () => {
+      if (!this.hubMap) return 'Plan stacji niedostępny.';
+      if (this.stations.opened || this.talk !== null)
+        return 'Plan stacji niedostępny przy otwartej stacji lub rozmowie.';
+      this.hubMap.toggle();
+      return this.hubMap.isOpen
+        ? 'Plan stacji: otwarty'
+        : 'Plan stacji: zamknięty';
+    });
     register('hub close', 'hub close — zamknij nakładkę stacji', () => {
       const closed = this.stations.opened;
       this.closeStation();
@@ -1024,6 +1057,7 @@ export class HubScene implements Scene {
       this.propView?.dispose();
       this.warmth?.dispose();
       this.dialogUi?.dispose();
+      this.hubMap?.dispose();
       this.chatterUi?.dispose();
       this.npcs?.dispose();
       this.metaBar?.dispose();

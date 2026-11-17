@@ -270,6 +270,30 @@ export const hubFaunaSchema = z
   .strict();
 export type HubFaunaDef = z.infer<typeof hubFaunaSchema>;
 
+/** Kolory stref planu stacji: wyłącznie paleta neonów (bez zarezerwowanych cyan, czerwieni i magenty). */
+export const HUB_ZONE_COLORS = [
+  'amber',
+  'green',
+  'violet',
+  'blue',
+  'white',
+] as const;
+export type HubZoneColor = (typeof HUB_ZONE_COLORS)[number];
+
+/** Strefa planu stacji: prostokąt w osiach świata (x0 < x1, z0 < z1). */
+export const hubZoneSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  label: z.string().trim().min(1),
+  rect: z
+    .object({ x0: finite, z0: finite, x1: finite, z1: finite })
+    .refine(
+      ({ x0, z0, x1, z1 }) => x0 < x1 && z0 < z1,
+      'Prostokąt strefy wymaga x0 < x1 i z0 < z1.',
+    ),
+  color: z.enum(HUB_ZONE_COLORS).optional(),
+});
+export type HubZoneDef = z.infer<typeof hubZoneSchema>;
+
 /** Układ kryjówki: format pokoju (bez drzwi, spawnów wrogów i walki) plus stacje. */
 export const hubLayoutSchema = z
   .object({
@@ -285,8 +309,38 @@ export const hubLayoutSchema = z
     fires: z.array(hubFireSchema).optional(),
     props: z.array(hubPropSchema).optional(),
     fauna: hubFaunaSchema.optional(),
+    zones: z.array(hubZoneSchema).optional(),
   })
   .superRefine((layout, ctx) => {
+    const zoneIds = new Set<string>();
+    const minX = Math.min(
+      ...layout.blocks.map((b) => b.position.x - b.size.x / 2),
+    );
+    const maxX = Math.max(
+      ...layout.blocks.map((b) => b.position.x + b.size.x / 2),
+    );
+    const minZ = Math.min(
+      ...layout.blocks.map((b) => b.position.z - b.size.z / 2),
+    );
+    const maxZ = Math.max(
+      ...layout.blocks.map((b) => b.position.z + b.size.z / 2),
+    );
+    (layout.zones ?? []).forEach((zone, index) => {
+      if (zoneIds.has(zone.id))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['zones', index, 'id'],
+          message: `Powtórzona strefa: ${zone.id}.`,
+        });
+      zoneIds.add(zone.id);
+      const { x0, z0, x1, z1 } = zone.rect;
+      if (x0 < minX || x1 > maxX || z0 < minZ || z1 > maxZ)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['zones', index, 'rect'],
+          message: 'Strefa wykracza poza obrys układu.',
+        });
+    });
     const ids = new Set<string>();
     layout.stations.forEach((station, index) => {
       if (ids.has(station.id))

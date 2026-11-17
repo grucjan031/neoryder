@@ -9844,5 +9844,161 @@
       ],
       "intervalS": [8, 18]
     }
-  }
+  },
+  "zones": [
+    {
+      "id": "hall",
+      "label": "Hala (peron A)",
+      "rect": {
+        "x0": -20,
+        "z0": -7,
+        "x1": 20,
+        "z1": 3
+      },
+      "color": "amber"
+    },
+    {
+      "id": "tracks",
+      "label": "Tory",
+      "rect": {
+        "x0": -20,
+        "z0": 3,
+        "x1": 20,
+        "z1": 8
+      },
+      "color": "white"
+    },
+    {
+      "id": "platform_b",
+      "label": "Peron B",
+      "rect": {
+        "x0": -20,
+        "z0": 8,
+        "x1": 20,
+        "z1": 16
+      },
+      "color": "amber"
+    },
+    {
+      "id": "corridor",
+      "label": "Korytarz",
+      "rect": {
+        "x0": -20,
+        "z0": -11,
+        "x1": 8,
+        "z1": -8
+      },
+      "color": "white"
+    },
+    {
+      "id": "canteen",
+      "label": "Jadłodajnia",
+      "rect": {
+        "x0": -20,
+        "z0": -19,
+        "x1": -8,
+        "z1": -11
+      },
+      "color": "amber"
+    },
+    {
+      "id": "quarters",
+      "label": "Kwatery",
+      "rect": {
+        "x0": -8,
+        "z0": -19,
+        "x1": 1,
+        "z1": -11
+      },
+      "color": "white"
+    },
+    {
+      "id": "radio",
+      "label": "Radio Iskry",
+      "rect": {
+        "x0": 1,
+        "z0": -19,
+        "x1": 8,
+        "z1": -11
+      },
+      "color": "blue"
+    },
+    {
+      "id": "market",
+      "label": "Targ wymiany",
+      "rect": {
+        "x0": -34,
+        "z0": 8,
+        "x1": -20,
+        "z1": 16
+      },
+      "color": "green"
+    },
+    {
+      "id": "comms",
+      "label": "Kącik łączności",
+      "rect": {
+        "x0": 8,
+        "z0": 8,
+        "x1": 20,
+        "z1": 16
+      },
+      "color": "violet"
+    },
+    {
+      "id": "bar",
+      "label": "Bar i parkiet",
+      "rect": {
+        "x0": -7.5,
+        "z0": 11.8,
+        "x1": -1.4,
+        "z1": 16
+      },
+      "color": "violet"
+    },
+    {
+      "id": "mezzanine",
+      "label": "Antresola",
+      "rect": {
+        "x0": -20,
+        "z0": -7,
+        "x1": -11,
+        "z1": -3
+      },
+      "color": "white"
+    },
+    {
+      "id": "wagon",
+      "label": "Wagon",
+      "rect": {
+        "x0": -16,
+        "z0": 3,
+        "x1": -3,
+        "z1": 7
+      },
+      "color": "green"
+    },
+    {
+      "id": "footbridge",
+      "label": "Kładka",
+      "rect": {
+        "x0": 4,
+        "z0": 3,
+        "x1": 7,
+        "z1": 8
+      },
+      "color": "white"
+    },
+    {
+      "id": "training",
+      "label": "Trening",
+      "rect": {
+        "x0": 15.1,
+        "z0": -3.4,
+        "x1": 19,
+        "z1": -1.4
+      },
+      "color": "blue"
+    }
+  ]
 }

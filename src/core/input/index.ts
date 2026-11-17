@@ -20,6 +20,7 @@ export const actionSchema = z.enum([
   'weapon2',
   'weapon3',
   'bladeThrow',
+  'map',
 ]);
 /** Pojedyncze zdarzenie ruchu myszy większe niż to (px) to artefakt przeglądarki, nie gest. */
 const MAX_MOUSE_DELTA = 400;

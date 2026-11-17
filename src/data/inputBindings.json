@@ -15,7 +15,8 @@
     "KeyE": "power2",
     "Digit1": "weapon1",
     "Digit2": "weapon2",
-    "Digit3": "weapon3"
+    "Digit3": "weapon3",
+    "KeyM": "map"
   },
   "mouse": { "0": "attack", "1": "bladeThrow", "2": "block" }
 }

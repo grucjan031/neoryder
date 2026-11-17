@@ -775,3 +775,58 @@ it('debug wymusza kontekst, czyści reakcje i deterministycznie odtwarza powitan
     expect(scene.query('hubTalk')).toEqual(reaction);
   }
 });
+
+class FakeMap {
+  isOpen = false;
+  disposed = 0;
+  toggle(): void {
+    this.isOpen = !this.isOpen;
+  }
+  close(): void {
+    this.isOpen = false;
+  }
+  update(): void {}
+  dispose(): void {
+    this.disposed++;
+  }
+}
+const mapKey: InputSnapshot = { ...idle, pressed: new Set(['map']) };
+
+it('M przełącza plan stacji, query i komenda hub map działają', async () => {
+  const hubMap = new FakeMap();
+  const { scene, commands } = await setup('', { hubMap });
+  expect(scene.query('hubMap')).toEqual({ open: false });
+  scene.step(SIM_DT, mapKey);
+  expect(scene.query('hubMap')).toEqual({ open: true });
+  scene.step(SIM_DT, mapKey);
+  expect(scene.query('hubMap')).toEqual({ open: false });
+  expect(commands.execute('hub map')).toContain('otwarty');
+  expect(hubMap.isOpen).toBe(true);
+  scene.dispose();
+  expect(hubMap.disposed).toBe(1);
+});
+
+it('otwarty plan blokuje E, a otwarta stacja blokuje M', async () => {
+  const hubMap = new FakeMap();
+  const { scene, commands, opened } = await setup('', { hubMap });
+  commands.execute('hub tp -6 -4.4');
+  commands.execute('hub look missions');
+  scene.step(SIM_DT, idle);
+  scene.step(SIM_DT, mapKey);
+  scene.step(SIM_DT, interact);
+  expect(opened).toEqual([]);
+  scene.step(SIM_DT, mapKey);
+  scene.step(SIM_DT, interact);
+  expect(opened).toEqual(['missions']);
+  scene.step(SIM_DT, mapKey);
+  expect(hubMap.isOpen).toBe(false);
+  expect(commands.execute('hub map')).toContain('niedostępny');
+});
+
+it('hub open zamyka otwarty plan', async () => {
+  const hubMap = new FakeMap();
+  const { scene, commands } = await setup('', { hubMap });
+  scene.step(SIM_DT, mapKey);
+  commands.execute('hub open missions');
+  expect(hubMap.isOpen).toBe(false);
+});

@@ -23,7 +23,17 @@
     "closeHint": "Esc zamyka okno. Spójrz na stację i naciśnij E, by otworzyć ją ponownie.",
     "interact": "Interakcja",
     "interactKey": "E",
-    "toArena": "Przejdź na poligon"
+    "toArena": "Przejdź na poligon",
+    "map": {
+      "kicker": "KRYJÓWKA ISKRY // PLAN",
+      "title": "Plan stacji Kamienna",
+      "hint": "M — zamknij",
+      "north": "Północ",
+      "legendLabel": "Legenda planu",
+      "legendStation": "Stacja",
+      "legendProp": "Rekwizyt",
+      "legendPlayer": "Ty"
+    }
   },
   "summary": {
     "rewards": "Nagrody za run",

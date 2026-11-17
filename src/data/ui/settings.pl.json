@@ -58,6 +58,7 @@
     "weapon1": "Broń 1",
     "weapon2": "Broń 2",
     "weapon3": "Broń 3",
-    "bladeThrow": "Rzut ostrzem"
+    "bladeThrow": "Rzut ostrzem",
+    "map": "Plan stacji"
   }
 }

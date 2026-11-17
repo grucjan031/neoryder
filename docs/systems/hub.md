@@ -433,6 +433,28 @@ oraz „Zamknij” (Esc też zamyka). Nawigacja zachowuje `?debug=1`. Teksty za�
 sekcja `hub`. `HubScreens` ma opcjonalne `refresh()`: scena woła je po zdarzeniach meta, a nakładka przekazuje je
 do otwartego panelu.
 
+## Plan stacji
+
+Klawisz M (akcja `map`, `src/data/inputBindings.json`; M było wolne, więc Tab nie jest potrzebny) przełącza nakładkę
+„Plan stacji Kamienna” (`src/ui/hubMap.ts` + `hubMap.css`, ten sam język „wizjera” co mapa sektorów).
+
+- Dane: opcjonalne `zones: { id, label, rect { x0, z0, x1, z1 }, color? }[]` w `hideout.json` (schemat `hubZoneSchema`
+  w `hubSchema.ts`). Prostokąty są w osiach świata (x0 < x1, z0 < z1), muszą mieścić się w obrysie bloków układu,
+  `id` są unikalne, `color` to wyłącznie `amber|green|violet|blue|white` (domyślnie `white`; cyan, czerwień i magenta
+  są zarezerwowane). Strefy odpowiadają wierszom tabeli „Układ”: Hala (peron A), Tory, Peron B, Korytarz,
+  Jadłodajnia, Kwatery, Radio Iskry, Targ wymiany, Kącik łączności, Bar i parkiet, Antresola, Wagon-warsztat, Kładka,
+  Trening. Strefy zagnieżdżone (np. Antresola w hali) są rysowane później, więc leżą na wierzchu.
+- Model: `hubMapModel(layout, playerPos, playerYaw)` w `src/world/hubMap.ts` (czysta funkcja). Plan północą w górę (−Z u góry, +X w prawo), współrzędne x i y w 0..1 osobno dla osi względem obszaru stref z marginesem `tuning.hub.mapPaddingM`; proporcje niesie `aspect` (ramka UI ma te same proporcje i może być szersza niż wyższa). Strefy są posortowane od największej, więc zagnieżdżone rysują się nad rodzicem. Podpis strefy (`caption`) leży w lewym górnym rogu, a gdy zajmuje go strefa zagnieżdżona albo stacja, w prawym; strefa węższa niż 5 m lub płytsza niż 3 m nie ma podpisu (tylko `<title>`; progi w `tuning.hub.mapLabel*`). Zwraca też stacje (kolor napisu: misje bursztyn, warsztat zieleń, talenty fiolet, poligon błękit), rekwizyty jako punkty i gracza (punkt, `headingRad` = −yaw). NPC nie są na planie. Podpisy stacji: pod znacznikiem, na ciemnej podkładce, większe i jaśniejsze niż podpisy stref.
+- UI: SVG budowany raz przy pierwszym otwarciu (obrysy stref w kolorze strefy, półprzezroczyste ciemne wypełnienie,
+  podpisy, znaczniki stacji z etykietą, kropki rekwizytów); w `render()` scena przesuwa wyłącznie znacznik gracza
+  (strzałka w cyanie), tylko gdy plan jest otwarty. `role="dialog"`, `aria-label`, `pointer-events: none`. Teksty:
+  `src/data/ui/meta.pl.json`, `hub.map`.
+- Zachowanie: plan nie zatrzymuje symulacji i nie rusza pointer locka; zamyka go M, Esc, otwarcie stacji
+  (`hub open`, E). Otwarty plan blokuje interakcję (E, uderzenie w worek) i chowa podpowiedź. Przy otwartej stacji
+  albo trwającej rozmowie z NPC M nic nie robi.
+- Debug: `hub map` (przełącza), `query('hubMap')` → `{ open }`. Testy: `tests/unit/hubMap.test.ts`,
+  `hubMapUi.test.ts`, `hubScene.test.ts`, e2e `hub: hub map ...`.
+
 ## Menu główne
 
 `src/ui/mainMenu.ts`: „Kryjówka” (główny przycisk → `?scene=hub`), „Kontynuuj run”, „Poligon”. „Nowy run (presety)”
@@ -455,6 +477,7 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
   (stan meta), `query('level')` (poziom, XP, punkty);
 - komendy meta (`registerMetaCommands`): `meta state|xp|data|cores|threat|unlock all|reset`; `meta threat <n>` ustawia
   `threat.max` (odblokowanie kolejnych Poziomów zagrożenia bez grania); po każdej komendzie pasek i panel się odświeżają;
+- `hub map` — przełącza plan stacji, `query('hubMap')` → `{ open }`;
 - `reset` wraca na `playerSpawn`.
 
 ## Zwierzęta
