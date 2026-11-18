@@ -9,6 +9,7 @@ import { CollisionGroup, interactionGroups } from '../physics';
 import { gunnerFields } from './enemySchema';
 import type { EnemyDefinition } from './enemySchema';
 import { EnemyBody } from './enemyBody';
+import { clearWorld } from './tactics';
 import type {
   Enemy,
   EnemyCarry,
@@ -30,6 +31,16 @@ export class Gunner implements Enemy {
   current: EnemySnapshot;
   removed = false;
   moveGoal?: Vec3;
+  tacticalGoal?: Vec3;
+  private coverPhase: 'travel' | 'hold' | 'exit' | null = null;
+  private coverExit: Vec3 | null = null;
+  private coverS = 0;
+  private coverCheckS = 0;
+  private coverHidden = false;
+  private tacticRetryS = 0;
+  private evadeS = 0;
+  private pressureSeen = false;
+  private pressureReady = false;
   private carry: EnemyCarry | null = null;
   private readonly body: EnemyBody;
   private readonly off: (() => void)[] = [];
@@ -83,6 +94,37 @@ export class Gunner implements Enemy {
     };
     this.previous = copy(this.current);
     this.off.push(
+      ctx.bus.on('dash_used', ({ user, dir }) => {
+        const target = deps.getTarget();
+        const t = ctx.tuning.enemies;
+        const dx = this.current.position.x - (target?.position.x ?? 0);
+        const dz = this.current.position.z - (target?.position.z ?? 0);
+        const distance = Math.hypot(dx, dz);
+        const directionLength = Math.hypot(dir.x, dir.z);
+        if (
+          definition.stationary ||
+          user !== target?.id ||
+          this.current.controlled ||
+          !['aim', 'reposition', 'cooldown'].includes(this.current.state) ||
+          distance <= epsilon ||
+          distance > t.dashThreatRangeM ||
+          directionLength <= epsilon ||
+          (dx * dir.x + dz * dir.z) / (distance * directionLength) <
+            t.threatFacingDot ||
+          !this.rng.chance(deps.difficulty?.dashDodgeChance ?? 0)
+        )
+          return;
+        const side = this.rng.chance(0.5) ? 1 : -1;
+        const travel = this.stats.get('moveSpeed') * t.evadeS;
+        this.coverPhase = null;
+        this.transition('reposition');
+        this.tacticalGoal = {
+          x: this.current.position.x + (dz / distance) * side * travel,
+          y: this.current.position.y,
+          z: this.current.position.z - (dx / distance) * side * travel,
+        };
+        this.evadeS = t.evadeS;
+      }),
       ctx.bus.on('damage_dealt', (event) => {
         if (
           event.target !== this.id ||
@@ -125,6 +167,11 @@ export class Gunner implements Enemy {
   }
 
   private transition(state: EnemyState): void {
+    if (state === 'stunned' || state === 'dead' || state === 'idle') {
+      this.coverPhase = null;
+      this.tacticalGoal = undefined;
+      this.evadeS = 0;
+    }
     this.current.state = state;
     this.current.stateTimeS = 0;
     delete this.current.knockdown;
@@ -245,6 +292,112 @@ export class Gunner implements Enemy {
     });
   }
 
+  private seekCover(target: Vec3): void {
+    const t = this.ctx.tuning.enemies;
+    // Osłona tylko dla Strzelca: Snajper po strzale zostaje na pozycji (F2-13).
+    if (
+      this.definition.kind !== 'gunner' ||
+      this.definition.stationary ||
+      this.coverPhase ||
+      this.evadeS > 0 ||
+      this.tacticRetryS > 0
+    )
+      return;
+    this.tacticRetryS = t.tacticRetryS;
+    if (!this.rng.chance(this.deps.difficulty?.coverUse ?? 0)) return;
+    const p = this.current.position;
+    const lift = this.ranged.muzzle.y;
+    const from = { ...p, y: p.y + lift };
+    const offset = this.rng.float(0, Math.PI * 2);
+    for (const radius of [t.coverRadiusM / 2, t.coverRadiusM]) {
+      for (let i = 0; i < t.coverSamples; i++) {
+        const angle = offset + (i * Math.PI * 2) / t.coverSamples;
+        const goal = {
+          x: p.x + Math.sin(angle) * radius,
+          y: p.y,
+          z: p.z + Math.cos(angle) * radius,
+        };
+        const eye = { ...goal, y: goal.y + lift };
+        if (
+          clearWorld(this.deps, eye, target) ||
+          !clearWorld(this.deps, from, eye) ||
+          clearWorld(this.deps, eye, {
+            ...goal,
+            y: goal.y - t.coverGroundProbeM,
+          })
+        )
+          continue;
+        // Promienie na bokach kapsuły eliminują punkty przy zbyt wąskich przejściach.
+        const width = this.definition.body!.radius;
+        if (
+          ![1, -1].every((side) =>
+            clearWorld(
+              this.deps,
+              {
+                x: from.x + Math.cos(angle) * width * side,
+                y: from.y,
+                z: from.z - Math.sin(angle) * width * side,
+              },
+              {
+                x: eye.x + Math.cos(angle) * width * side,
+                y: eye.y,
+                z: eye.z - Math.sin(angle) * width * side,
+              },
+            ),
+          )
+        )
+          continue;
+        this.coverExit = { ...p };
+        this.tacticalGoal = goal;
+        this.coverPhase = 'travel';
+        this.coverS = t.coverTravelS;
+        this.coverCheckS = 0;
+        this.transition('reposition');
+        return;
+      }
+    }
+  }
+
+  private updateCover(dt: number, target: Vec3): void {
+    if (!this.coverPhase) return;
+    this.coverS -= dt;
+    const p = this.current.position;
+    // Widoczność z osłony sprawdzana co `coverCheckS` (cache), nie co klatkę.
+    this.coverCheckS -= dt;
+    if (this.coverCheckS <= epsilon) {
+      this.coverCheckS = this.ctx.tuning.enemies.coverCheckS;
+      this.coverHidden =
+        !this.hasLos(target) &&
+        !clearWorld(this.deps, { ...p, y: p.y + this.ranged.muzzle.y }, target);
+    }
+    const hidden = this.coverHidden;
+    if (this.coverPhase === 'travel' && hidden) {
+      this.coverPhase = 'hold';
+      this.coverS = this.ctx.tuning.enemies.coverHoldS;
+      this.tacticalGoal = undefined;
+      this.transition('cooldown');
+    } else if (
+      this.coverPhase === 'hold' &&
+      (this.coverS <= epsilon || !hidden)
+    ) {
+      this.coverPhase = 'exit';
+      this.coverS = this.ctx.tuning.enemies.coverTravelS;
+      this.tacticalGoal = this.coverExit ?? undefined;
+      this.transition('reposition');
+    } else if (
+      this.coverPhase !== 'hold' &&
+      (this.coverS <= epsilon ||
+        (this.coverPhase === 'exit' &&
+          this.tacticalGoal &&
+          Math.hypot(this.tacticalGoal.x - p.x, this.tacticalGoal.z - p.z) <=
+            this.ctx.tuning.enemies.tacticArrivalM))
+    ) {
+      this.coverPhase = null;
+      this.tacticalGoal = undefined;
+      this.transition('reposition');
+    }
+  }
+
   /** Status 'stunned' (F2-02) działa jak ogłuszenie ciosem i trwa, dopóki trwa status. */
   private holdStun(): void {
     const remaining = this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
@@ -327,6 +480,10 @@ export class Gunner implements Enemy {
       return;
     }
     this.holdStun();
+    this.tacticRetryS = Math.max(0, this.tacticRetryS - dt);
+    this.evadeS = Math.max(0, this.evadeS - dt);
+    if (this.evadeS <= epsilon && !this.coverPhase)
+      this.tacticalGoal = undefined;
     const target = this.deps.getTarget();
     const march =
       this.moveGoal &&
@@ -343,6 +500,27 @@ export class Gunner implements Enemy {
     const dz = target ? target.position.z - s.position.z : 0;
     const distance = Math.hypot(dx, dz);
     const los = target !== null && this.hasLos(target.position);
+    if (target && !march && !s.controlled && s.state !== 'stunned') {
+      const health = this.deps.damage.health(this.id);
+      if (
+        health &&
+        health.current / health.max <= this.ctx.tuning.enemies.coverLowHp
+      )
+        this.seekCover(target.position);
+      this.updateCover(dt, target.position);
+    }
+    const pressure = this.deps.director?.pressure?.() ?? false;
+    if (!pressure) {
+      this.pressureSeen = false;
+      this.pressureReady = false;
+    } else if (!this.pressureSeen) {
+      this.pressureSeen = true;
+      this.pressureReady = this.rng.chance(
+        this.deps.difficulty?.groupAttack ?? 0,
+      );
+      if (this.pressureReady && s.state === 'cooldown' && !this.coverPhase)
+        this.transition('reposition');
+    }
     if (s.state === 'stunned') {
       if (s.stateTimeS + epsilon >= this.stunS)
         this.transition(target ? 'reposition' : 'idle');
@@ -350,6 +528,8 @@ export class Gunner implements Enemy {
       if (s.state !== 'reposition') this.transition('reposition');
     } else if (!target) {
       if (s.state !== 'idle') this.transition('idle');
+    } else if (this.coverPhase || this.evadeS > epsilon) {
+      // Taktyczne przemieszczenie i pełny czas za osłoną blokują rozpoczęcie celowania.
     } else {
       // Po zamrożeniu celu Snajper patrzy w zamrożony punkt i nie przerywa strzału,
       // gdy gracz zejdzie z linii albo schowa się — strzał leci w zapowiedziane miejsce.
@@ -366,7 +546,7 @@ export class Gunner implements Enemy {
       if (
         s.state === 'reposition' &&
         los &&
-        (d.stationary
+        ((this.pressureReady && distance <= d.attackRange) || d.stationary
           ? distance <= d.attackRange
           : Math.abs(distance - r.preferredRange) <=
             r.rangeTolerance + epsilon) &&
@@ -383,7 +563,10 @@ export class Gunner implements Enemy {
         this.fire(this.aimPoint ?? target.position);
         this.shots++;
         this.nextShotS += r.burstIntervalS;
-        if (this.shots >= r.burstCount) this.transition('cooldown');
+        if (this.shots >= r.burstCount) {
+          this.transition('cooldown');
+          this.seekCover(target.position);
+        }
       }
     }
     if (d.stationary) return;
@@ -391,12 +574,13 @@ export class Gunner implements Enemy {
       vz = 0;
     // Z dyrektorem i widocznym celem: czekanie na token w slocie na preferowanym dystansie.
     const goal =
-      march && s.state === 'reposition'
+      this.tacticalGoal ??
+      (march && s.state === 'reposition'
         ? march
         : s.state === 'reposition' && target && los
           ? (this.deps.director?.slot(this.id, 'shot', r.preferredRange) ??
             null)
-          : null;
+          : null);
     if (goal) {
       const gx = goal.x - s.position.x,
         gz = goal.z - s.position.z;
@@ -408,7 +592,12 @@ export class Gunner implements Enemy {
         vx = Math.sin(heading) * speed;
         vz = Math.cos(heading) * speed;
       }
-    } else if (s.state === 'reposition' && target && distance > epsilon) {
+    } else if (
+      s.state === 'reposition' &&
+      !this.coverPhase &&
+      target &&
+      distance > epsilon
+    ) {
       const radial =
         !los || distance > r.preferredRange + r.rangeTolerance
           ? 1
@@ -430,6 +619,7 @@ export class Gunner implements Enemy {
       vz = ((dz * radial - dx * lateral) / distance / norm) * speed;
     }
     for (const neighbor of this.deps.getNeighbors?.() ?? []) {
+      if (this.coverPhase === 'hold') break;
       if (neighbor.id === this.id || neighbor.current.state === 'dead')
         continue;
       let x = s.position.x - neighbor.current.position.x,

@@ -25,7 +25,8 @@ import { loadMusic } from './audio/musicSchema';
 import type { MusicState } from './audio/musicSchema';
 import sfxData from './data/audio/sfx.json';
 import musicData from './data/audio/music.json';
-import { loadSettings } from './core/save';
+import { loadSettings, saveSettings } from './core/save';
+import { setDifficultyOverride } from './world/difficulty';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
 import {
@@ -48,6 +49,11 @@ async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) throw new Error('Brak elementu aplikacji.');
   const params = new URLSearchParams(location.search);
+  setDifficultyOverride(params.get('difficulty'));
+  // Decyzja właściciela 18.11: nowy gracz startuje na Trudnym (Normalny ≈ dawna gra).
+  // Automaty (webdriver) zostają na Normalnym — testy e2e pilnują jego liczb.
+  if (loadSettings().difficulty === undefined && !navigator.webdriver)
+    saveSettings({ ...loadSettings(), difficulty: 'hard' });
   applyLookPreset(location.search);
   configureFx(params);
   const requested = params.get('scene');

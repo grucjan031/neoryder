@@ -299,9 +299,7 @@ export class Arena implements Scene {
         hurtboxes: this.hurtboxes,
         statuses: this.statuses,
         getTarget: () =>
-          this.health.dead
-            ? null
-            : { id: playerId, position: this.player.getState().position },
+          this.health.dead ? null : { id: playerId, ...this.player.getState() },
       },
       layout.director ? { director: layout.director } : {},
     );

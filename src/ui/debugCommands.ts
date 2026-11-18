@@ -1,3 +1,5 @@
+import { selectedDifficulty, setDifficultyOverride } from '../world/difficulty';
+
 interface Command {
   help: string;
   run: (args: string[]) => string;
@@ -24,6 +26,12 @@ export class CommandRegistry {
 
   execute(line: string): string {
     const parts = line.trim().split(/\s+/);
+    // Wbudowana (poza help() sceny): działa od następnego runu lub sceny walki.
+    if (parts[0]?.toLowerCase() === 'difficulty') {
+      if (parts.length !== 2 || !setDifficultyOverride(parts[1]))
+        return 'Użycie: difficulty <easy|normal|hard|nightmare>';
+      return `Trudność następnego runu: ${selectedDifficulty()}`;
+    }
     for (const length of [2, 1]) {
       if (parts.length < length) continue;
       const command = this.commands.get(

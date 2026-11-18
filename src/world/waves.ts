@@ -2,6 +2,11 @@ import { z } from 'zod';
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Rng } from '../core/rng';
+import {
+  combatDifficulty,
+  difficulties,
+  type DifficultyId,
+} from './difficulty';
 
 const point = z.object({ x: z.number().finite(), z: z.number().finite() });
 
@@ -44,6 +49,7 @@ export function loadWaves(data: unknown): WavesDefinition {
 export type WavePhase = 'break' | 'spawning' | 'fighting' | 'done' | 'stopped';
 
 export interface WaveDirectorDeps {
+  difficulty?: DifficultyId | (() => DifficultyId);
   /** Tworzy wroga danego archetypu w punkcie; zwraca id encji albo null (np. limit ciał). */
   spawn(enemy: string, position: Vec3): EntityId | null;
   playerPosition(): Vec3;
@@ -57,6 +63,7 @@ export interface WaveDirectorDeps {
  * Po ostatniej zdefiniowanej fali — faza 'done'.
  */
 export class WaveDirector {
+  private difficulty: DifficultyId = 'normal';
   private phase: WavePhase = 'stopped';
   private waveIndex = -1;
   private timerS = 0;
@@ -102,6 +109,11 @@ export class WaveDirector {
    * (np. ctx.rng.fork('waves')): ten sam seed daje wtedy ten sam przebieg także po „Jeszcze raz”.
    */
   start(wave = 1, rng?: Rng): void {
+    const choice = this.deps.difficulty;
+    this.difficulty =
+      typeof choice === 'function'
+        ? choice()
+        : (choice ?? combatDifficulty(this.bus));
     if (rng) this.rng = rng;
     this.spawnLog.length = 0;
     this.alive.clear();
@@ -136,7 +148,13 @@ export class WaveDirector {
     while (
       this.timerS <= 0 &&
       this.queue.length > 0 &&
-      this.alive.size < this.def.maxAlive
+      this.alive.size <
+        Math.max(
+          1,
+          Math.round(
+            this.def.maxAlive * difficulties[this.difficulty].maxAlive,
+          ),
+        )
     ) {
       const enemy = this.queue[0] as string;
       const point = this.pickSpawnPoint();
@@ -170,7 +188,16 @@ export class WaveDirector {
     const wave = this.currentWave();
     const queue: string[] = [];
     for (const group of wave.groups)
-      for (let i = 0; i < group.count; i++) queue.push(group.enemy);
+      for (
+        let i = 0;
+        i <
+        Math.max(
+          1,
+          Math.round(group.count * difficulties[this.difficulty].count),
+        );
+        i++
+      )
+        queue.push(group.enemy);
     this.queue = this.rng.shuffle(queue);
     this.phase = 'spawning';
     this.timerS = 0;

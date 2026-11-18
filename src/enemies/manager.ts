@@ -9,8 +9,25 @@ import type { DirectorConfig } from './director';
 import type { StatModifier } from '../core/stats';
 import { createEnemy } from './registry';
 import type { Enemy, EnemyDependencies } from './types';
+import {
+  difficulties,
+  difficultyModifiers,
+  selectedDifficulty,
+  bindCombatDifficulty,
+  runDifficulty,
+  type DifficultyId,
+  type DifficultyProfile,
+} from '../world/difficulty';
+
+/** Liczba tokenów typowego pokoju walki dziś (`src/data/rooms/*.json`). */
+export const REFERENCE_TOKENS = { melee: 3, shot: 2 } as const;
 
 export interface EnemyManagerOptions {
+  difficulty?: DifficultyId;
+  /** Stan runu (zamrożona trudność) albo stan walki misji. */
+  run?: object;
+  /** Testy i symulacja: profil spoza danych, np. linia bazowa bez taktyk. */
+  profile?: DifficultyProfile;
   /** Dane `director` sceny; bez nich wrogowie atakują bez koordynacji (F1). */
   director?: DirectorConfig;
   /** F3-17: punkty spawnu pokoju dla wezwań bossa (opcjonalne). */
@@ -18,6 +35,7 @@ export interface EnemyManagerOptions {
 }
 
 export class EnemyManager {
+  readonly difficulty: DifficultyId;
   private enemies: Enemy[] = [];
   /** Numer spawnu w runie — źródło losowości AI niezależne od rosnących ID encji. */
   private sequence = 0;
@@ -29,35 +47,79 @@ export class EnemyManager {
     deps: EnemyDependencies,
     options: EnemyManagerOptions = {},
   ) {
-    this.director = options.director
-      ? new EnemyDirector(ctx.bus, options.director, {
-          target: () => deps.getTarget(),
-          position: (id) => this.position(id),
-          clear: (from, to) => {
-            const dx = to.x - from.x,
-              dy = to.y - from.y,
-              dz = to.z - from.z;
-            const length = Math.hypot(dx, dy, dz);
-            if (length <= 1e-6) return true;
-            return (
-              deps.world.castRay(
-                new Ray(from, {
-                  x: dx / length,
-                  y: dy / length,
-                  z: dz / length,
-                }),
-                length,
-                true,
-                undefined,
-                interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
-              ) === null
-            );
+    this.difficulty =
+      options.difficulty ??
+      // RunState ma `seed`; stan walki misji (bez runu) bierze bieżące ustawienie.
+      (options.run && 'seed' in options.run
+        ? runDifficulty(options.run)
+        : selectedDifficulty());
+    bindCombatDifficulty(ctx.bus, this.difficulty);
+    const profile = options.profile ?? difficulties[this.difficulty];
+    // Tokeny w danych dotyczą typowego pokoju (3 wręcz, 2 strzały); inne pokoje przesuwa ta sama różnica.
+    const tokens = (room: number, level: number, reference: number) =>
+      Math.max(1, room + level - reference);
+    const directorConfig = options.director
+      ? {
+          ...options.director,
+          attackTokens: tokens(
+            options.director.attackTokens,
+            profile.attackTokens,
+            REFERENCE_TOKENS.melee,
+          ),
+          shotTokens: tokens(
+            options.director.shotTokens,
+            profile.shotTokens,
+            REFERENCE_TOKENS.shot,
+          ),
+        }
+      : undefined;
+    this.director = directorConfig
+      ? new EnemyDirector(
+          ctx.bus,
+          directorConfig,
+          {
+            target: () => deps.getTarget(),
+            position: (id) => this.position(id),
+            clear: (from, to) => {
+              const dx = to.x - from.x,
+                dy = to.y - from.y,
+                dz = to.z - from.z;
+              const length = Math.hypot(dx, dy, dz);
+              if (length <= 1e-6) return true;
+              return (
+                deps.world.castRay(
+                  new Ray(from, {
+                    x: dx / length,
+                    y: dy / length,
+                    z: dz / length,
+                  }),
+                  length,
+                  true,
+                  undefined,
+                  interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
+                ) === null
+              );
+            },
           },
-        })
+          {
+            profile,
+            rng: ctx.rng.fork('coordination'),
+            tuning: ctx.tuning.enemies,
+          },
+        )
       : null;
-    const readModifiers = () => this.spawnModifiers;
+    const baseModifiers = difficultyModifiers(profile);
+    const readModifiers = () => [...baseModifiers, ...this.spawnModifiers];
     this.deps = {
       ...deps,
+      difficulty: profile,
+      targetForward: () => {
+        if (deps.targetForward) return deps.targetForward();
+        const yaw = deps.getTarget()?.yaw;
+        return yaw === undefined
+          ? { x: 0, y: 0, z: 0 }
+          : { x: -Math.sin(yaw), y: 0, z: -Math.cos(yaw) };
+      },
       getNeighbors: () => this.enemies,
       get spawnModifiers() {
         return readModifiers();
