@@ -282,9 +282,9 @@
     "semantic_hash": ""
   },
   "src/combat/weapons/weaponSchema.ts": {
-    "mtime": 1794958013.0531282,
-    "seen": 1794958038.001086,
-    "ast_hash": "f3a41426cd31ba4f649d3b4a70625445",
+    "mtime": 1794965659.0121088,
+    "seen": 1794965680.9545527,
+    "ast_hash": "17e83504231f9814f48e3cb01bc17f44",
     "semantic_hash": ""
   },
   "src/core/context.ts": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "src/core/tuning.ts": {
-    "mtime": 1794956622.5617914,
-    "seen": 1794956688.6530054,
-    "ast_hash": "71a0cf86a8dd855fc44357d85475f94c",
+    "mtime": 1794965659.013657,
+    "seen": 1794965680.9545527,
+    "ast_hash": "d834cfebda93255f9e75e0d96b6744ff",
     "semantic_hash": ""
   },
   "src/data/audio/sfx.json": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "src/data/hands/handPoses.json": {
-    "mtime": 1794952785.8825152,
-    "seen": 1794952817.6217282,
-    "ast_hash": "94fb55887eaa5241519c1648d87c1f28",
+    "mtime": 1794965659.0146625,
+    "seen": 1794965680.9545527,
+    "ast_hash": "418d6c2782a829bcc8a451069c14e8a4",
     "semantic_hash": ""
   },
   "src/data/hub/ambience.json": {
@@ -1314,9 +1314,9 @@
     "semantic_hash": ""
   },
   "src/data/themes/white.json": {
-    "mtime": 1794952786.0206676,
-    "seen": 1794952817.6217282,
-    "ast_hash": "1da38444ff9bf526d64837be083af0b4",
+    "mtime": 1794965659.0156624,
+    "seen": 1794965680.9545527,
+    "ast_hash": "0d67dfa49d6e45d01aac1a30609ebfac",
     "semantic_hash": ""
   },
   "src/data/tutorial/config.json": {
@@ -1506,45 +1506,45 @@
     "semantic_hash": ""
   },
   "src/data/weapons/beam.json": {
-    "mtime": 1794952786.0562086,
-    "seen": 1794952817.6217282,
-    "ast_hash": "49a6bad560db27517ec26cc0eb9d613a",
+    "mtime": 1794965659.0166602,
+    "seen": 1794965680.9545527,
+    "ast_hash": "6c996b690864dfecd9e56d5cd75368dd",
     "semantic_hash": ""
   },
   "src/data/weapons/blaster.json": {
-    "mtime": 1794952786.0567434,
-    "seen": 1794952817.6217282,
-    "ast_hash": "167c0c57a0d62d301958449cdb6ceff3",
+    "mtime": 1794965659.0181627,
+    "seen": 1794965680.9545527,
+    "ast_hash": "b1cbabb9d9b2645eb23577cc1e44691e",
     "semantic_hash": ""
   },
   "src/data/weapons/emp.json": {
-    "mtime": 1794952786.0577893,
-    "seen": 1794952817.6217282,
-    "ast_hash": "aae12539059ada4615746cfac43f3813",
+    "mtime": 1794965659.0181627,
+    "seen": 1794965680.9545527,
+    "ast_hash": "8231f83ae1662d018bbae4eb045d6830",
     "semantic_hash": ""
   },
   "src/data/weapons/pistol.json": {
-    "mtime": 1794952786.0583165,
-    "seen": 1794952817.6217282,
-    "ast_hash": "fcb6639df963eaac3aded5521467c401",
+    "mtime": 1794965659.0191655,
+    "seen": 1794965680.9545527,
+    "ast_hash": "039f8b349e6d817494bda9132c105d46",
     "semantic_hash": ""
   },
   "src/data/weapons/rifle.json": {
-    "mtime": 1794952786.059348,
-    "seen": 1794952817.6217282,
-    "ast_hash": "0b00151515d4c02400398f4de3640b23",
+    "mtime": 1794965659.0201654,
+    "seen": 1794965680.9545527,
+    "ast_hash": "a1e8e312303c48d1ba197579e2a39ac6",
     "semantic_hash": ""
   },
   "src/data/weapons/scatter.json": {
-    "mtime": 1794952786.0598662,
-    "seen": 1794952817.6217282,
-    "ast_hash": "703ce8ad74836b1e8c6b4e971a131a4b",
+    "mtime": 1794965659.0211654,
+    "seen": 1794965680.9545527,
+    "ast_hash": "d19190883a5f950f203b5617a34fb5e2",
     "semantic_hash": ""
   },
   "src/data/weapons/sniper.json": {
-    "mtime": 1794952786.0608988,
-    "seen": 1794952817.6217282,
-    "ast_hash": "d0316c44600482d7cb0acb76d0ed2554",
+    "mtime": 1794965659.0221653,
+    "seen": 1794965680.9545527,
+    "ast_hash": "9486ee59b54f17b93fdb9b705784c0ef",
     "semantic_hash": ""
   },
   "src/data/weather/clearNight.json": {
@@ -1704,9 +1704,9 @@
     "semantic_hash": ""
   },
   "src/main.ts": {
-    "mtime": 1794956622.5713122,
-    "seen": 1794956688.6535199,
-    "ast_hash": "a02d5b6c5b67d239e26572448f2b02da",
+    "mtime": 1794965659.0221653,
+    "seen": 1794965680.9545527,
+    "ast_hash": "9832d3cdcfd85f8d689391ebcaa34a24",
     "semantic_hash": ""
   },
   "src/physics/grabPhysics.ts": {
@@ -1980,9 +1980,9 @@
     "semantic_hash": ""
   },
   "src/render/fppBlaster.ts": {
-    "mtime": 1794960344.432178,
-    "seen": 1794960371.3712995,
-    "ast_hash": "c84d5f728d8fd09e3896b548983b901b",
+    "mtime": 1794965659.0231652,
+    "seen": 1794965680.9555593,
+    "ast_hash": "dd7bb6ae9e29c222c002acfcef9ae29e",
     "semantic_hash": ""
   },
   "src/render/fppMaterials.ts": {
@@ -1998,15 +1998,15 @@
     "semantic_hash": ""
   },
   "src/render/fppOffhand.ts": {
-    "mtime": 1794952786.1438122,
-    "seen": 1794952817.6217282,
-    "ast_hash": "79a0d14423827eb374dd7f5ee7dd25b0",
+    "mtime": 1794965659.0241654,
+    "seen": 1794965680.9555593,
+    "ast_hash": "5b513815fca65b5312b57e318703bf1c",
     "semantic_hash": ""
   },
   "src/render/fppViewModel.ts": {
-    "mtime": 1794958013.0726612,
-    "seen": 1794958038.0021408,
-    "ast_hash": "17468122b461d36e898960218623e7c1",
+    "mtime": 1794965659.0251653,
+    "seen": 1794965680.9555593,
+    "ast_hash": "b2f00afb570830629a2ea40ce0c4a347",
     "semantic_hash": ""
   },
   "src/render/frameClock.ts": {
@@ -2040,15 +2040,15 @@
     "semantic_hash": ""
   },
   "src/render/handPoses.ts": {
-    "mtime": 1794952786.1516998,
-    "seen": 1794952817.6222432,
-    "ast_hash": "a076963048cada3cfc2013eb60791f89",
+    "mtime": 1794965659.0261652,
+    "seen": 1794965680.9555593,
+    "ast_hash": "8287d5ea25aa8a02e0c9d6edef652f9e",
     "semantic_hash": ""
   },
   "src/render/handRig.ts": {
-    "mtime": 1794952786.1522183,
-    "seen": 1794952817.6222432,
-    "ast_hash": "4ca5af935820b29e6fdecebdd7d058bc",
+    "mtime": 1794965659.0261652,
+    "seen": 1794965680.9555593,
+    "ast_hash": "190a429c1d4803c1fee6041a77c4531e",
     "semantic_hash": ""
   },
   "src/render/hazardView.ts": {
@@ -2082,15 +2082,15 @@
     "semantic_hash": ""
   },
   "src/render/noOutline.ts": {
-    "mtime": 1794952786.1585033,
-    "seen": 1794952817.6222432,
-    "ast_hash": "1c283f323a4ef23fbd4cc82a1a3b666f",
+    "mtime": 1794965659.0281653,
+    "seen": 1794965680.9555593,
+    "ast_hash": "352d8028d088b2d3b5702496f7a47908",
     "semantic_hash": ""
   },
   "src/render/outline.ts": {
-    "mtime": 1794952786.159028,
-    "seen": 1794952817.6222432,
-    "ast_hash": "f0ae03365106e9f355186c628e68ef14",
+    "mtime": 1794965659.0281653,
+    "seen": 1794965680.9555593,
+    "ast_hash": "706a7e92e99c6a1e2d976eb2b3123aa6",
     "semantic_hash": ""
   },
   "src/render/palette.ts": {
@@ -2184,15 +2184,15 @@
     "semantic_hash": ""
   },
   "src/render/themeSchema.ts": {
-    "mtime": 1794952786.174734,
-    "seen": 1794952817.6222432,
-    "ast_hash": "7c603e401008842cb032cc0bedc349cd",
+    "mtime": 1794965659.0296674,
+    "seen": 1794965680.9555593,
+    "ast_hash": "967ad56869ba30c3ca70c9fa613554e7",
     "semantic_hash": ""
   },
   "src/render/themes.ts": {
-    "mtime": 1794952786.175828,
-    "seen": 1794952817.6222432,
-    "ast_hash": "b41ec3ca8205e4b683dd616fabd2c6aa",
+    "mtime": 1794965659.0306704,
+    "seen": 1794965680.9555593,
+    "ast_hash": "a223087d6dac10100e6b1b2b8489ec1f",
     "semantic_hash": ""
   },
   "src/render/urbanMaterials.ts": {
@@ -3594,9 +3594,9 @@
     "semantic_hash": ""
   },
   "tests/unit/handRig.test.ts": {
-    "mtime": 1794952786.4299886,
-    "seen": 1794952817.6222432,
-    "ast_hash": "68c13f6453ffbb4314fc5b880f0abb9d",
+    "mtime": 1794965659.0336704,
+    "seen": 1794965680.9555593,
+    "ast_hash": "ce277474a993495ac9b9bafacf836fe1",
     "semantic_hash": ""
   },
   "tests/unit/hazards.test.ts": {
@@ -4062,9 +4062,9 @@
     "semantic_hash": ""
   },
   "tests/unit/renderPostFx.test.ts": {
-    "mtime": 1794952786.546395,
-    "seen": 1794952817.6227567,
-    "ast_hash": "fad85568613622f32df3d0b8b5244abb",
+    "mtime": 1794965659.0356703,
+    "seen": 1794965680.9555593,
+    "ast_hash": "68d0ffe91a16b678cbc323bbbbfcb2b6",
     "semantic_hash": ""
   },
   "tests/unit/resonanceWaveFx.test.ts": {
@@ -4392,9 +4392,9 @@
     "semantic_hash": ""
   },
   "tools/blender/build_assets.py": {
-    "mtime": 1794952786.5984843,
-    "seen": 1794952817.6227567,
-    "ast_hash": "9c15c62d207cf31676fc6dbb9c1a0339",
+    "mtime": 1794965659.0391748,
+    "seen": 1794965680.9555593,
+    "ast_hash": "c3183ae20a82c25296a09b3ce48ef77e",
     "semantic_hash": ""
   },
   "tools/hub/extractNpcAnimations.mjs": {
@@ -4554,9 +4554,9 @@
     "semantic_hash": ""
   },
   "docs/assets.md": {
-    "mtime": 1794952785.0209498,
-    "seen": 1794952817.6227567,
-    "ast_hash": "d17fc968a112e98d50c904758c29f333",
+    "mtime": 1794965658.9854445,
+    "seen": 1794965680.9555593,
+    "ast_hash": "ee919c501b0774f7285e9aefc61e4365",
     "semantic_hash": ""
   },
   "docs/backlog-rozwoju-2026-2027.md": {
@@ -4944,9 +4944,9 @@
     "semantic_hash": ""
   },
   "docs/systems/hands.md": {
-    "mtime": 1794952785.3060958,
-    "seen": 1794952817.6227567,
-    "ast_hash": "55384e8a24b0f7d3fb8d844360ad4452",
+    "mtime": 1794965658.9864445,
+    "seen": 1794965680.9555593,
+    "ast_hash": "9ba3e8554145750e9f8a010b231bf09a",
     "semantic_hash": ""
   },
   "docs/systems/hazards.md": {
@@ -5022,9 +5022,9 @@
     "semantic_hash": ""
   },
   "docs/systems/render.md": {
-    "mtime": 1794952785.3192437,
-    "seen": 1794952817.6227567,
-    "ast_hash": "030f38a7d47f5a72a9833726301b662e",
+    "mtime": 1794965658.9874444,
+    "seen": 1794965680.9555593,
+    "ast_hash": "843585ab85edf43eb0a14333ccd8984b",
     "semantic_hash": ""
   },
   "docs/systems/roomScene.md": {
@@ -6684,9 +6684,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/__screenshots__/style.spec.ts/style-test.png": {
-    "mtime": 1794952786.3151703,
-    "seen": 1794952817.6232724,
-    "ast_hash": "4c6d4a7becc3ecc9c54eaa2c545900ce",
+    "mtime": 1794965659.0326705,
+    "seen": 1794965680.956559,
+    "ast_hash": "7e6acb2d19488282c896a3aebb5a9a4f",
     "semantic_hash": ""
   },
   "tools/blender/previews/beam.png": {
@@ -7128,117 +7128,117 @@
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_fist_inner.png": {
-    "mtime": 1794952786.7992752,
-    "seen": 1794952817.6237912,
-    "ast_hash": "3ca087f8a27223bec5026ea9e6d95c52",
+    "mtime": 1794965659.0517318,
+    "seen": 1794965680.956559,
+    "ast_hash": "02a1c35bbeff320c6cd348cdb983d3a3",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_fpp_plasmaBlade.png": {
-    "mtime": 1794952786.8049574,
-    "seen": 1794952817.6237912,
-    "ast_hash": "ef37daa03a469a759206b11ae698a627",
+    "mtime": 1794965659.087387,
+    "seen": 1794965680.956559,
+    "ast_hash": "89c5e4cbc13aa8204b8f99c0ffc9043d",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_fpp_staffBlade.png": {
-    "mtime": 1794952786.8107026,
-    "seen": 1794952817.6237912,
-    "ast_hash": "fc2b63c544585ffec7ba9dad3b3f649c",
+    "mtime": 1794965659.113774,
+    "seen": 1794965680.956559,
+    "ast_hash": "a0d0a3b2849a19571d0290e68d72098b",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_fpp_twinBlades.png": {
-    "mtime": 1794952786.8164215,
-    "seen": 1794952817.6237912,
-    "ast_hash": "5410bc8dcc71335965b4089f6306d899",
+    "mtime": 1794965659.1207848,
+    "seen": 1794965680.956559,
+    "ast_hash": "f1e3e14e98a4721edfbe0aa6f7999162",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_fpp_view.png": {
-    "mtime": 1794952786.8230925,
-    "seen": 1794952817.6237912,
-    "ast_hash": "10045353bac8b3bb9514deb7d70b2593",
+    "mtime": 1794965659.1302874,
+    "seen": 1794965680.956559,
+    "ast_hash": "6aeac1dd2f0e100f943f06186ccf6857",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_blade.png": {
-    "mtime": 1794952786.827854,
-    "seen": 1794952817.6237912,
-    "ast_hash": "9f4a09020107e6a41f45b83780f7f562",
+    "mtime": 1794965659.1499443,
+    "seen": 1794965680.956559,
+    "ast_hash": "f93a63cf8305b202dd09573b39b4e4c2",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_blade_inner.png": {
-    "mtime": 1794952786.834571,
-    "seen": 1794952817.6237912,
-    "ast_hash": "beb445389b1603ea22ffe1175d25c040",
+    "mtime": 1794965659.156944,
+    "seen": 1794965680.956559,
+    "ast_hash": "61796fc2ac7544135736959a6aeb4b5d",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_blaster.png": {
-    "mtime": 1794952786.8397462,
-    "seen": 1794952817.6237912,
-    "ast_hash": "8153c1e29b879bc338cc5166b4d38da0",
+    "mtime": 1794965659.166037,
+    "seen": 1794965680.956559,
+    "ast_hash": "79fd9de676d81ccb0bfa1a252b1f01a2",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_pistol.png": {
-    "mtime": 1794952786.845023,
-    "seen": 1794952817.6237912,
-    "ast_hash": "c3c8d670ca1eb396f79f9437d62b1453",
+    "mtime": 1794965659.1831908,
+    "seen": 1794965680.956559,
+    "ast_hash": "a35885aa7acf9965cacf9c1892a4ce0b",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_pistol_fire.png": {
-    "mtime": 1794952786.8507106,
-    "seen": 1794952817.6237912,
-    "ast_hash": "faca2cc0afd771f301638cd70c676735",
+    "mtime": 1794965659.1922512,
+    "seen": 1794965680.956559,
+    "ast_hash": "834ffee78fea996797fa889ea7526cca",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_pistol_inner.png": {
-    "mtime": 1794952786.8553636,
-    "seen": 1794952817.6237912,
-    "ast_hash": "39be13ba286f161a13a66cfe12249b22",
+    "mtime": 1794965659.197264,
+    "seen": 1794965680.956559,
+    "ast_hash": "387595c734de330f06ac4a994fd2e786",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_plasmaBlade_detail.png": {
-    "mtime": 1794952786.8606446,
-    "seen": 1794952817.6237912,
-    "ast_hash": "f722b6e3cb8705db5e407616d126086e",
+    "mtime": 1794965659.204609,
+    "seen": 1794965680.956559,
+    "ast_hash": "314fede753a0689908d409b02c81cb66",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_rifle.png": {
-    "mtime": 1794952786.8663175,
-    "seen": 1794952817.6237912,
-    "ast_hash": "66c415b7b9dfba69202d644a1171d0f4",
+    "mtime": 1794965659.2110617,
+    "seen": 1794965680.956559,
+    "ast_hash": "6c232edc818569d92e389e426a3763fd",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_staffBlade_detail.png": {
-    "mtime": 1794952786.8709931,
-    "seen": 1794952817.6237912,
-    "ast_hash": "a02d954a3a087cf11e224c6d84af14f5",
+    "mtime": 1794965659.2356367,
+    "seen": 1794965680.956559,
+    "ast_hash": "6cd88b56bc5ef540923e02eb766fa4ed",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_grip_twinBlades_detail.png": {
-    "mtime": 1794952786.875717,
-    "seen": 1794952817.6237912,
-    "ast_hash": "adc389ac23571ac75bed248937ffd9a5",
+    "mtime": 1794965659.2426372,
+    "seen": 1794965680.956559,
+    "ast_hash": "a85abd0fe13db9779bdc905dfc0d1763",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_pose_fist.png": {
-    "mtime": 1794952786.8803413,
-    "seen": 1794952817.6237912,
-    "ast_hash": "2ec669478e6f5b571b70b4609616abef",
+    "mtime": 1794965659.2543268,
+    "seen": 1794965680.956559,
+    "ast_hash": "4cd5c48f2df68afff8a298bd90df35b8",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_pose_open.png": {
-    "mtime": 1794952786.8860214,
-    "seen": 1794952817.6237912,
-    "ast_hash": "f8f56bb10fa7bd89e193b3a1d344e896",
+    "mtime": 1794965659.2623346,
+    "seen": 1794965680.956559,
+    "ast_hash": "44c3d5a8f58c034ff11b95f7913f9f17",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_relaxed_detail.png": {
-    "mtime": 1794952786.8917375,
-    "seen": 1794952817.6237912,
-    "ast_hash": "de7744a6736ac0cfad1eeed3917fcd6d",
+    "mtime": 1794965659.2702763,
+    "seen": 1794965680.956559,
+    "ast_hash": "4595fafc432a31cb6817ce5ce9e09ccd",
     "semantic_hash": ""
   },
   "tools/blender/previews/hand_support_rifle.png": {
-    "mtime": 1794952786.8953576,
-    "seen": 1794952817.6237912,
-    "ast_hash": "8199499b43df25c51c78c9d7beedbcdb",
+    "mtime": 1794965659.2921147,
+    "seen": 1794965680.956559,
+    "ast_hash": "6e5bcd474ae0a54023400b9ffa5cbd1c",
     "semantic_hash": ""
   },
   "tools/blender/previews/hub_cat.png": {
@@ -7350,27 +7350,27 @@
     "semantic_hash": ""
   },
   "tools/blender/previews/player_arm_L.png": {
-    "mtime": 1794952786.9496257,
-    "seen": 1794952817.6237912,
-    "ast_hash": "2c598a681cfe8b41768a77aafddd4168",
+    "mtime": 1794965659.3203077,
+    "seen": 1794965680.956559,
+    "ast_hash": "92a64c5536b8e29305aeec89294f94fa",
     "semantic_hash": ""
   },
   "tools/blender/previews/player_arm_L_before.png": {
-    "mtime": 1794952786.954283,
-    "seen": 1794952817.6237912,
-    "ast_hash": "15d7cb326f5bcd9bd919fe4028683852",
+    "mtime": 1794965659.3243117,
+    "seen": 1794965680.956559,
+    "ast_hash": "be7162d346bc6e75a971ccc8f7dcfbd5",
     "semantic_hash": ""
   },
   "tools/blender/previews/player_arm_R.png": {
-    "mtime": 1794952786.9594734,
-    "seen": 1794952817.6237912,
-    "ast_hash": "829d217de60abc400f038a8664bc5ce7",
+    "mtime": 1794965659.3283117,
+    "seen": 1794965680.956559,
+    "ast_hash": "64e205cb18ba30917ab862d2ebca1c43",
     "semantic_hash": ""
   },
   "tools/blender/previews/player_arm_R_before.png": {
-    "mtime": 1794952786.9652505,
-    "seen": 1794952817.6237912,
-    "ast_hash": "2fca21ccca38a4fd49ac248f70eaee77",
+    "mtime": 1794965659.332312,
+    "seen": 1794965680.956559,
+    "ast_hash": "d51004a5bfb3feae2f4bf5c102a63f20",
     "semantic_hash": ""
   },
   "tools/blender/previews/rifle.png": {
@@ -7533,6 +7533,516 @@
     "mtime": 1794960344.441393,
     "seen": 1794960371.372403,
     "ast_hash": "168a21b440e75834fed10eb74ddfe214",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/manifest.json": {
+    "mtime": 1794965659.0005102,
+    "seen": 1794965680.9545527,
+    "ast_hash": "f2f1f45b7c9c231a8b4f4181ab1dac2f",
+    "semantic_hash": ""
+  },
+  "src/render/lookPresets.ts": {
+    "mtime": 1794965659.0271654,
+    "seen": 1794965680.9555593,
+    "ast_hash": "69038d36997a74a3a7b2d9260a7c19a5",
+    "semantic_hash": ""
+  },
+  "tests/unit/noOutline.test.ts": {
+    "mtime": 1794965659.0346704,
+    "seen": 1794965680.9555593,
+    "ast_hash": "fe62e9672d93e34ac7e75513ac6b6140",
+    "semantic_hash": ""
+  },
+  "tests/unit/supportForearm.test.ts": {
+    "mtime": 1794965659.0356703,
+    "seen": 1794965680.9555593,
+    "ast_hash": "1bac2428999e336949df602d060ff334",
+    "semantic_hash": ""
+  },
+  "tests/unit/weaponGrip.test.ts": {
+    "mtime": 1794965659.0356703,
+    "seen": 1794965680.9555593,
+    "ast_hash": "b9133752ee7168ba7a17335c47b82890",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/build.py": {
+    "mtime": 1794965659.3348215,
+    "seen": 1794965680.9555593,
+    "ast_hash": "687f1c22734e02ee90ba04399cbe0b90",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/catalog.json": {
+    "mtime": 1794965659.335825,
+    "seen": 1794965680.9555593,
+    "ast_hash": "c525053ecbf39f42030b3a0b5c198477",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/palette-corrections.json": {
+    "mtime": 1794965659.3369093,
+    "seen": 1794965680.9555593,
+    "ast_hash": "703c8205c1f959e7f26c86b50fe019ff",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/round2-cleanup.json": {
+    "mtime": 1794965659.3498294,
+    "seen": 1794965680.9555593,
+    "ast_hash": "1719fc156d87370ae075f9ca609992ca",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/round2-report.json": {
+    "mtime": 1794965659.3498294,
+    "seen": 1794965680.9555593,
+    "ast_hash": "b8ca5f2650a59c0ff4261e4f69a42079",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/round2_review.py": {
+    "mtime": 1794965659.351334,
+    "seen": 1794965680.9555593,
+    "ast_hash": "60956f05aa344ad2368c10923b340bbe",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/sources.json": {
+    "mtime": 1794965659.3520203,
+    "seen": 1794965680.9555593,
+    "ast_hash": "28bce65dd430db81c5eb3fa8a6069a30",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/validation.json": {
+    "mtime": 1794965659.353025,
+    "seen": 1794965680.9555593,
+    "ast_hash": "2a12219affb5de823b07b24e65053ad5",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/versions/round2-before.json": {
+    "mtime": 1794965659.3545637,
+    "seen": 1794965680.9555593,
+    "ast_hash": "015c1b39fd76e9bda7c2e26e293ff60d",
+    "semantic_hash": ""
+  },
+  "docs/textures-komiks.md": {
+    "mtime": 1794965658.9884446,
+    "seen": 1794965680.9555593,
+    "ast_hash": "cd42673b4bdb166b70245ca8e9a3a4ca",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/decals/komiks_chipped_paint.webp": {
+    "mtime": 1794965658.9954443,
+    "seen": 1794965680.956559,
+    "ast_hash": "f0d607c357859e62351623076c868491",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/decals/komiks_crack.webp": {
+    "mtime": 1794965658.9959486,
+    "seen": 1794965680.956559,
+    "ast_hash": "8d2a81560dd937ef8a87a24f23dc5d0d",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/decals/komiks_grime_corner.webp": {
+    "mtime": 1794965658.9975085,
+    "seen": 1794965680.956559,
+    "ast_hash": "fb7f12ec906d8fb0a16be724536aacb7",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/decals/komiks_hatch_patch.webp": {
+    "mtime": 1794965658.9985101,
+    "seen": 1794965680.956559,
+    "ast_hash": "ac597e7dc4e4d56e0bf873c495305db5",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/decals/komiks_ink_splatter.webp": {
+    "mtime": 1794965658.9995103,
+    "seen": 1794965680.956559,
+    "ast_hash": "37bc6e421184bde19a0b83211b3a4e13",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_asphalt.webp": {
+    "mtime": 1794965659.0015113,
+    "seen": 1794965680.956559,
+    "ast_hash": "78f75a2f80c19ba0b74516a1d01c12ed",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_brick.webp": {
+    "mtime": 1794965659.0025656,
+    "seen": 1794965680.956559,
+    "ast_hash": "7d705e84203c0654dad9b60d00e631a6",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_concrete.webp": {
+    "mtime": 1794965659.0035098,
+    "seen": 1794965680.956559,
+    "ast_hash": "ea87a317c37728be8c39d7214939f7f0",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_corrugated.webp": {
+    "mtime": 1794965659.0045104,
+    "seen": 1794965680.956559,
+    "ast_hash": "7f5e204807e7f88516ebb92439a9c46a",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_metal_panel.webp": {
+    "mtime": 1794965659.00551,
+    "seen": 1794965680.956559,
+    "ast_hash": "4154474a882dcf7ce6b4233e1970e83a",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_paving.webp": {
+    "mtime": 1794965659.00651,
+    "seen": 1794965680.956559,
+    "ast_hash": "23545b375aac2a8582bbecc399ccb6f8",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_plaster.webp": {
+    "mtime": 1794965659.0075104,
+    "seen": 1794965680.956559,
+    "ast_hash": "3c0f6ee6f24671e35c5fc627918abdb8",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_roof_tar.webp": {
+    "mtime": 1794965659.0085626,
+    "seen": 1794965680.956559,
+    "ast_hash": "8dd3fae0d00cd76f9a28265382c3d8ab",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_rust_metal.webp": {
+    "mtime": 1794965659.0085626,
+    "seen": 1794965680.956559,
+    "ast_hash": "f670511316037eb33f076ae12451d07d",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_tiles_wall.webp": {
+    "mtime": 1794965659.009596,
+    "seen": 1794965680.956559,
+    "ast_hash": "125bd87d665b4fc608d44b3a0f109687",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_tread_plate.webp": {
+    "mtime": 1794965659.0105915,
+    "seen": 1794965680.956559,
+    "ast_hash": "6b5be7422564c06b9eca3e72aa165a3c",
+    "semantic_hash": ""
+  },
+  "public/assets/textures/komiks/surfaces/komiks_wood_planks.webp": {
+    "mtime": 1794965659.0105915,
+    "seen": 1794965680.956559,
+    "ast_hash": "7cad230142b3445ed47f8d358156ae77",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_dorsal_detail.png": {
+    "mtime": 1794965659.0431745,
+    "seen": 1794965680.956559,
+    "ast_hash": "9eba867beb3f9e054c450f588b3d0d48",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fist_front.png": {
+    "mtime": 1794965659.047729,
+    "seen": 1794965680.956559,
+    "ast_hash": "8e0ea5387d946c6b4456c4dc3d6c42be",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fist_inner_before.png": {
+    "mtime": 1794965659.0557318,
+    "seen": 1794965680.956559,
+    "ast_hash": "914657f240642250e7478fdc3fc30cdf",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fist_side.png": {
+    "mtime": 1794965659.0592363,
+    "seen": 1794965680.956559,
+    "ast_hash": "ca89aa0766075728869c75a840842577",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_beam.png": {
+    "mtime": 1794965659.0653243,
+    "seen": 1794965680.956559,
+    "ast_hash": "859c825b410c08f5ae441209dad39bf1",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_blaster.png": {
+    "mtime": 1794965659.0713224,
+    "seen": 1794965680.956559,
+    "ast_hash": "15343d22bbfd74cfea7d207fe5dbfc38",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_emp_launcher.png": {
+    "mtime": 1794965659.077323,
+    "seen": 1794965680.956559,
+    "ast_hash": "ec991e7af0cfea0064afd6177d9a36b3",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_pistol.png": {
+    "mtime": 1794965659.0823872,
+    "seen": 1794965680.956559,
+    "ast_hash": "3d373b157b02dd1b2caed79766b7dca4",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_plasmaBlade_before.png": {
+    "mtime": 1794965659.0913875,
+    "seen": 1794965680.956559,
+    "ast_hash": "d090ad9d3ed7756b0221435e4f804f07",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_rifle.png": {
+    "mtime": 1794965659.098484,
+    "seen": 1794965680.956559,
+    "ast_hash": "9f8e8aa08c6f8cb3cdba4390a006e46e",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_scatter.png": {
+    "mtime": 1794965659.1042519,
+    "seen": 1794965680.956559,
+    "ast_hash": "d09f2da8a7bcc6559fccd2f8171b9ce9",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_sniper_rifle.png": {
+    "mtime": 1794965659.1092532,
+    "seen": 1794965680.956559,
+    "ast_hash": "1c0fff3a28b23d612540f4379db3ae64",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_staffBlade_before.png": {
+    "mtime": 1794965659.1167881,
+    "seen": 1794965680.956559,
+    "ast_hash": "9fa145e2805f86ccb23fb18e07c8ea47",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_twinBlades_before.png": {
+    "mtime": 1794965659.1237845,
+    "seen": 1794965680.956559,
+    "ast_hash": "c07d466da5daf2b44e0866ace60c8faf",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_view_before.png": {
+    "mtime": 1794965659.1348372,
+    "seen": 1794965680.956559,
+    "ast_hash": "1c997a689ef253d7cf44b08489815421",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_fpp_view_detail.png": {
+    "mtime": 1794965659.138837,
+    "seen": 1794965680.956559,
+    "ast_hash": "f3aaae869d8be075c19c9988e5536189",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_beam.png": {
+    "mtime": 1794965659.142838,
+    "seen": 1794965680.956559,
+    "ast_hash": "8dee2e887fe886f45af569c4b4f837c8",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_beam_detail.png": {
+    "mtime": 1794965659.145837,
+    "seen": 1794965680.956559,
+    "ast_hash": "61704b17a4de36a4add9a186f4fed16a",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_blade_before.png": {
+    "mtime": 1794965659.1529443,
+    "seen": 1794965680.956559,
+    "ast_hash": "f4fa7e40416432e6e846945f6717a121",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_blade_inner_before.png": {
+    "mtime": 1794965659.161944,
+    "seen": 1794965680.956559,
+    "ast_hash": "e2c8df553d89bec25753f8620a00c551",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_blaster_before.png": {
+    "mtime": 1794965659.1691072,
+    "seen": 1794965680.956559,
+    "ast_hash": "296055115f915ba1efcc230e01a9f42b",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_blaster_detail.png": {
+    "mtime": 1794965659.1721072,
+    "seen": 1794965680.956559,
+    "ast_hash": "47b667a5636f9820167bbd0d2af6bf54",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_emp_launcher.png": {
+    "mtime": 1794965659.1761067,
+    "seen": 1794965680.956559,
+    "ast_hash": "c1de393b96a94761532cae0ba6321949",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_emp_launcher_detail.png": {
+    "mtime": 1794965659.1801064,
+    "seen": 1794965680.956559,
+    "ast_hash": "482411d0dc66c20048faa563adf2216d",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_pistol_before.png": {
+    "mtime": 1794965659.1862504,
+    "seen": 1794965680.956559,
+    "ast_hash": "3204c97b7958ed9cb6b73acddc73846a",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_pistol_detail.png": {
+    "mtime": 1794965659.1892567,
+    "seen": 1794965680.956559,
+    "ast_hash": "4658ef455ec0d97794b0a11250d4d85f",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_pistol_fire_before.png": {
+    "mtime": 1794965659.195255,
+    "seen": 1794965680.956559,
+    "ast_hash": "c0289a511ab3ca2d6184d78f0eba580d",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_pistol_inner_before.png": {
+    "mtime": 1794965659.201606,
+    "seen": 1794965680.956559,
+    "ast_hash": "1a097e43627028fcd950daf503b26391",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_plasmaBlade_detail_before.png": {
+    "mtime": 1794965659.2076063,
+    "seen": 1794965680.956559,
+    "ast_hash": "819802f04fa83f9f0a5da20fc45b6beb",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_rifle_before.png": {
+    "mtime": 1794965659.2140756,
+    "seen": 1794965680.956559,
+    "ast_hash": "4cd21e098379fbb567134fd8ec23ecfe",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_rifle_detail.png": {
+    "mtime": 1794965659.2175944,
+    "seen": 1794965680.956559,
+    "ast_hash": "316d5f676e01f923fda87b0b39a51708",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_scatter.png": {
+    "mtime": 1794965659.222126,
+    "seen": 1794965680.956559,
+    "ast_hash": "1d3142e524896971dda4efc1c0c54d43",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_scatter_detail.png": {
+    "mtime": 1794965659.2261276,
+    "seen": 1794965680.956559,
+    "ast_hash": "62d45be5ae9adda7ba7924cf7a2e2932",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_sniper_rifle.png": {
+    "mtime": 1794965659.2291267,
+    "seen": 1794965680.956559,
+    "ast_hash": "92ac7d6f8a5e2c399dc5ebf5e330fac3",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_sniper_rifle_detail.png": {
+    "mtime": 1794965659.2321272,
+    "seen": 1794965680.956559,
+    "ast_hash": "110416ea36c851ddf6f7f769316c65a7",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_staffBlade_detail_before.png": {
+    "mtime": 1794965659.2386365,
+    "seen": 1794965680.956559,
+    "ast_hash": "442bd71faece0fd11b482a46f4f88ef8",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_grip_twinBlades_detail_before.png": {
+    "mtime": 1794965659.2456427,
+    "seen": 1794965680.956559,
+    "ast_hash": "392236106d6ac9a08b65a4aa04f2b371",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_palm_detail.png": {
+    "mtime": 1794965659.2501433,
+    "seen": 1794965680.956559,
+    "ast_hash": "e7ef7efcbd49562478822b5d2af16c4f",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_pose_fist_before.png": {
+    "mtime": 1794965659.2583356,
+    "seen": 1794965680.956559,
+    "ast_hash": "374a87509948e1ba73aa644a8f56f1bb",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_pose_open_before.png": {
+    "mtime": 1794965659.2663434,
+    "seen": 1794965680.956559,
+    "ast_hash": "b23d6058955e2f79f7e53c5ce4f33985",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_relaxed_detail_before.png": {
+    "mtime": 1794965659.274276,
+    "seen": 1794965680.956559,
+    "ast_hash": "8a7b650729abf4499220775be9f36638",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_beam.png": {
+    "mtime": 1794965659.278276,
+    "seen": 1794965680.956559,
+    "ast_hash": "c199c16ab618aa3ba66d4402617e4033",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_beam_below.png": {
+    "mtime": 1794965659.281276,
+    "seen": 1794965680.956559,
+    "ast_hash": "b86007a3803150ac37f85d794d52c142",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_emp_launcher.png": {
+    "mtime": 1794965659.28378,
+    "seen": 1794965680.956559,
+    "ast_hash": "c85bd0868f83fd9463385c70260d884c",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_emp_launcher_below.png": {
+    "mtime": 1794965659.2891152,
+    "seen": 1794965680.956559,
+    "ast_hash": "92a93c478b6a3def7a1cb4b7e9e9941f",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_rifle_before.png": {
+    "mtime": 1794965659.295115,
+    "seen": 1794965680.956559,
+    "ast_hash": "d7b9134baf6b1f2a5b3c058ecb474e06",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_rifle_below.png": {
+    "mtime": 1794965659.2991152,
+    "seen": 1794965680.956559,
+    "ast_hash": "0c9f3d9f181c81c3693b5d3d110797ab",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_scatter.png": {
+    "mtime": 1794965659.301633,
+    "seen": 1794965680.956559,
+    "ast_hash": "410c9223e5018307ee2dea28284ec506",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_scatter_below.png": {
+    "mtime": 1794965659.3056462,
+    "seen": 1794965680.956559,
+    "ast_hash": "b11579c9d1d99a9140bd4fd283aba8ea",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_sniper_rifle.png": {
+    "mtime": 1794965659.3086462,
+    "seen": 1794965680.956559,
+    "ast_hash": "da13ad942242d37c02b185840297063f",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_support_sniper_rifle_below.png": {
+    "mtime": 1794965659.3126464,
+    "seen": 1794965680.956559,
+    "ast_hash": "8578d3f28325b43824d78d8df48c722f",
+    "semantic_hash": ""
+  },
+  "tools/blender/previews/hand_wrist_detail.png": {
+    "mtime": 1794965659.3156471,
+    "seen": 1794965680.956559,
+    "ast_hash": "b79930226112984627346c451da7c891",
+    "semantic_hash": ""
+  },
+  "tools/textures/komiks/podglad.png": {
+    "mtime": 1794965659.34883,
+    "seen": 1794965680.956559,
+    "ast_hash": "4a36e5cfe83f5c53af3b4dcc9750bf2e",
     "semantic_hash": ""
   },
   "package-lock.json": {
