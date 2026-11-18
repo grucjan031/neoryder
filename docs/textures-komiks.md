@@ -2,9 +2,14 @@
 
 Odizolowany pakiet własnych tekstur Neon Noir: gruby czarny tusz, płaskie tony,
 kreskowanie i rysowane ślady zużycia. Zawiera 12 powierzchni i 5 nakładek.
-**Tekstury nie są jeszcze podpięte do gry.** Są przeznaczone pod wariant stylu
-wybierany przez `?look=` na gałęzi `styl-borderlands`. Wartość parametru i integracja
-pozostają zadaniem wykonawcy renderera; ten pakiet ich nie definiuje.
+**Podpięcie (18.11.2026):** w stylu komiksowym (`?look=a|b|c`, domyślnie `b`)
+`assetTexture` ładuje `komiks/surfaces/komiks_<id>.webp` zamiast `surfaces/<id>.webp`
+dla 12 powierzchni o tym samym id oraz aliasów dużych aren (`overpass_concrete`,
+`quay_concrete` → beton). Mapowanie: `src/render/comicSurfaces.ts`. `?look=off`
+przywraca dawne tekstury. Maski (`grime`, `asphalt_puddles`) i barwne powierzchnie
+zestawów (kontenery, dźwig, odbijacze) zostają bez zmian. Materiały, skale UV i dane
+aren nie są zmieniane — podmiana dotyczy tylko pliku bitmapy. Nakładki (`decals/`)
+nie są jeszcze używane.
 
 ## Zawartość i skróty promptów
 
