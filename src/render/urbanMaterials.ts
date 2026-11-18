@@ -63,6 +63,13 @@ export const overpassRoofsDocksKinds = [
   'canal_stone_wall',
 ] as const;
 
+/** Nawierzchnie bloków budowy (arenaConstructionSite), tekstury z tools/textures. */
+export const constructionSiteKinds = [
+  'excavation_dirt',
+  'scaffold_planks',
+  'hazard_stripes_worn',
+] as const;
+
 const portLooks = z
   .record(
     z.enum([
@@ -73,6 +80,7 @@ const portLooks = z
       ...overpassRoofsDocksKinds,
       'canal_water',
       'power_quay_floor',
+      ...constructionSiteKinds,
     ]),
     z.object({
       texture: z.enum([
@@ -90,6 +98,7 @@ const portLooks = z
         ...constructionPowerKinds,
         ...portRailKinds,
         ...overpassRoofsDocksKinds,
+        ...constructionSiteKinds,
       ]),
       tint: z
         .string()
@@ -115,6 +124,7 @@ export const urbanKinds = [
   ...overpassRoofsDocksKinds,
   'canal_water',
   'power_quay_floor',
+  ...constructionSiteKinds,
   'concrete',
   'asphalt',
   'metal',

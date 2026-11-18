@@ -17,12 +17,21 @@ import { arenaSpawnPoints } from '../../src/world/arenaSpawns';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
+// Duża budowa: kilka spawnów z różnych stref i poziomów zamiast pełnej puli (czas testu).
+const CONSTRUCTION_SPAWNS = [
+  { x: -30, y: -8, z: 0 },
+  { x: 36.5, y: 16, z: -52.5 },
+  { x: -18, y: 0, z: -95 },
+  { x: 78, y: 0, z: 64 },
+];
+
 it.each(
   [
     'arenaContainerPort',
     'arenaOverpass',
     'arenaRooftops',
     'arenaPowerPlant',
+    'arenaConstructionSite',
   ].flatMap((id) => ['assaulter', 'gunner'].map((kind) => [id, kind] as const)),
 )(
   '%s: %s dociera ze spawnów do wszystkich punktów',
@@ -73,7 +82,10 @@ it.each(
     const navigation = new ArenaNavigation(room);
     world.step();
     try {
-      const spawns = arenaSpawnPoints(room);
+      const spawns =
+        id === 'arenaConstructionSite'
+          ? CONSTRUCTION_SPAWNS
+          : arenaSpawnPoints(room);
       const sampled =
         id === 'arenaPowerPlant'
           ? [2, 8, 11, 17, 21, 29].map((i) => spawns[i]!)
@@ -82,7 +94,16 @@ it.each(
         for (const point of room.arena!.points) {
           const enemy = manager.spawn(kind, spawn);
           let arrived = false;
-          for (let i = 0; i < (id === 'arenaPowerPlant' ? 12000 : 7200); i++) {
+          for (
+            let i = 0;
+            i <
+            (id === 'arenaPowerPlant'
+              ? 12000
+              : id === 'arenaConstructionSite'
+                ? 14400
+                : 7200);
+            i++
+          ) {
             if (
               Math.hypot(
                 enemy.current.position.x - point.position.x,
@@ -113,5 +134,5 @@ it.each(
       world.free();
     }
   },
-  60_000,
+  180_000,
 );

@@ -104,3 +104,34 @@ export function verticalRange(block, x, z) {
   }
   return min <= max + EPS ? { min, max } : undefined;
 }
+
+/**
+ * Prostokąt pomniejszony o otwory: rozłączne prostokąty pokrywające resztę.
+ * Kolejne otwory tną kawałki pasami wzdłuż Z (lewy/prawy pas na całą głębokość).
+ */
+export function subtractRects(rect, holes = []) {
+  let pieces = [{ ...rect }];
+  for (const hole of holes) {
+    const next = [];
+    for (const r of pieces) {
+      const cut = {
+        minX: Math.max(r.minX, hole.minX),
+        maxX: Math.min(r.maxX, hole.maxX),
+        minZ: Math.max(r.minZ, hole.minZ),
+        maxZ: Math.min(r.maxZ, hole.maxZ),
+      };
+      if (cut.maxX - cut.minX < EPS || cut.maxZ - cut.minZ < EPS) {
+        next.push(r);
+        continue;
+      }
+      if (cut.minX - r.minX > EPS) next.push({ ...r, maxX: cut.minX });
+      if (r.maxX - cut.maxX > EPS) next.push({ ...r, minX: cut.maxX });
+      if (cut.minZ - r.minZ > EPS)
+        next.push({ ...cut, minZ: r.minZ, maxZ: cut.minZ });
+      if (r.maxZ - cut.maxZ > EPS)
+        next.push({ ...cut, minZ: cut.maxZ, maxZ: r.maxZ });
+    }
+    pieces = next;
+  }
+  return pieces;
+}

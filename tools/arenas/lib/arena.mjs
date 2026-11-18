@@ -3,6 +3,9 @@ import { dirname } from 'node:path';
 
 export const vec = (x, y = 0, z = 0) => ({ x, y, z });
 
+/** Identyfikatory punktów zgodne z `pointIdSchema` (silnik dużych map). */
+export const POINT_IDS = ['A', 'B', 'C', 'D', 'E'];
+
 export function createRng(seed) {
   let state = 2166136261;
   for (const character of String(seed)) {
@@ -140,14 +143,27 @@ export function createArena({
     spawn(position) {
       if (position.y !== undefined && position.y !== room.playerSpawn.y)
         throw new Error(
-          'roomSchema zapisuje spawny w XZ; nie obsługuje osobnej wysokości.',
+          'roomSchema zapisuje spawny w XZ; nie obsługuje osobnej wysokości. Spawn z wysokością: arenaSpawn().',
         );
       room.spawnPoints.push({ x: position.x, z: position.z });
       return builder;
     },
+    arenaSpawn(position) {
+      const y = position.y ?? room.playerSpawn.y;
+      if (![position.x, y, position.z].every(Number.isFinite))
+        throw new Error('Spawn areny wymaga skończonych x, y, z.');
+      // Osobna pula trybu (arena.spawnPoints) może mieć wysokość; spawnRing jej wymaga.
+      room.arena.spawnPoints = [
+        ...(room.arena.spawnPoints ?? []),
+        { x: position.x, y, z: position.z },
+      ];
+      return builder;
+    },
     point(pointId, position, radiusM = 4) {
-      if (!['A', 'B', 'C', 'D', 'E'].includes(pointId))
-        throw new Error('Punkt roomSchema musi mieć identyfikator A–E.');
+      if (!POINT_IDS.includes(pointId))
+        throw new Error(
+          `roomSchema obsługuje punkty ${POINT_IDS.join('/')}; nieznany punkt ${pointId}.`,
+        );
       if (room.arena.points.some((point) => point.id === pointId))
         throw new Error(`Powtórzony punkt ${pointId}.`);
       room.arena.points.push({

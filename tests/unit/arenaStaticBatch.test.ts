@@ -26,6 +26,8 @@ import * as staticBatch from '../../src/render/staticBatch';
 // Szablony GLB są współdzielone przez sceny w tym pliku testowym.
 const loaded = new Set<string>();
 afterEach(() => vi.restoreAllMocks());
+// Szablony GLB są współdzielone między testami pliku: model wczytany wcześniej też się liczy.
+const loadedInSuite = new Set<string>();
 
 function meshCount(root: Object3D): number {
   let count = 0;
@@ -40,13 +42,15 @@ it.each([
   'arenaOverpass',
   'arenaRooftops',
   'arenaPowerPlant',
+  'arenaConstructionSite',
 ])(
-  '%s: jedno scalanie w komórkach 20 m, kontenery jako instancje, rzeczywiste GLB',
+  '%s: jedno scalanie w komórkach batchCellM, kontenery jako instancje, rzeczywiste GLB',
   async (id) => {
     const warnings = vi.spyOn(console, 'warn');
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
       async (url) => {
         loaded.add(String(url));
+        loadedInSuite.add(String(url));
         const data = await readFile(`public${url}`);
         return new GLTFLoader().parseAsync(
           data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength),
@@ -65,7 +69,9 @@ it.each([
       (root, owned, options) => {
         calls++;
         expect(root.name).toBe('static-world');
-        expect(options?.cellSize).toBe(20);
+        expect(options?.cellSize).toBe(
+          roomDefinitions.get(id)!.arena!.batchCellM,
+        );
         before = meshCount(root);
         root.updateWorldMatrix(true, true);
         const containers = roomDefinitions
@@ -73,12 +79,12 @@ it.each([
           .blocks.filter((b) => b.model?.startsWith('port_container_'));
         let renderedContainers = 0;
         root.traverse((o) => {
+          // Instancje bloków kontenerów (biura i ciężarówki budowy też mają lakier kontenera).
           if (
             o instanceof Mesh &&
             !Array.isArray(o.material) &&
-            o.material.name.startsWith('mat_container_') &&
-            (id !== 'arenaPowerPlant' ||
-              o.name.startsWith('instances:port_container_'))
+            o.name.startsWith('instances:port_container_') &&
+            o.material.name.startsWith('mat_container_')
           ) {
             expect(o.material.color.getHexString()).not.toBe('ffffff');
             containerColors.add(o.material.name);
@@ -147,6 +153,9 @@ it.each([
       loadWaves({ ...wavesData, spawnPoints: room.spawnPoints }),
     );
     try {
+      expect(room.arena!.batchCellM).toBe(
+        id === 'arenaConstructionSite' ? 240 : 20,
+      );
       await scene.init(
         {
           bus,
@@ -183,7 +192,10 @@ it.each([
               ...(room.decor ?? []).map((d) => d.model),
             ]),
           ])
-        expect(loaded.has(`/assets/models/city/${model}.glb`)).toBe(true);
+        expect(
+          loadedInSuite.has(`/assets/models/city/${model}.glb`),
+          model,
+        ).toBe(true);
       expect(
         warnings.mock.calls.filter(([message]) =>
           String(message).includes('Nieznany'),

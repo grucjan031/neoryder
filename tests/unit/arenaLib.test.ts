@@ -390,10 +390,101 @@ describe('biblioteka generatorów aren', () => {
     expect(arena.metadata.warnings).toEqual([]);
   });
 
-  it('odrzuca powtórzony punkt i spawn pokoju na innej wysokości', () => {
+  it('ograniczenia schematu są jawne; punkty A–E i spawny z wysokością w puli areny', () => {
     const arena = blank();
     arena.point('D', vec(10, 0, 10));
-    expect(() => arena.point('D', vec(11, 0, 10))).toThrow('Powtórzony');
+    arena.point('E', vec(30, 0, 10));
+    expect(() => arena.point('F' as 'A', vec(10, 0, 10))).toThrow('roomSchema');
+    expect(() => arena.point('D', vec(20, 0, 20))).toThrow('Powtórzony');
     expect(() => arena.spawn(vec(10, 4, 10))).toThrow('wysokości');
+    arena.arenaSpawn(vec(10, 4, 10)).arenaSpawn({ x: 12, z: 14 });
+    const room = arena.toRoom();
+    expect(room.arena!.spawnPoints).toEqual([vec(10, 4, 10), vec(12, 0, 14)]);
+    expect(room.spawnPoints).toEqual([]);
+    expect(room.arena!.points.map((p) => p.id)).toEqual(['D', 'E']);
+  });
+
+  it('płyta z otworami pokrywa resztę rozłącznymi prostokątami', () => {
+    const arena = blank(),
+      p = createPrimitives(arena);
+    const holes = [
+      rect(10, 20, 10, 20),
+      rect(30, 35, 0, 50),
+      rect(15, 25, 15, 30),
+    ];
+    const result = p.slab({
+      rect: rect(0, 60, 0, 50),
+      y: 4,
+      holes,
+      material: 'concrete_raw_cast',
+    });
+    const area = result.pieces.reduce(
+      (sum, r) => sum + (r.maxX - r.minX) * (r.maxZ - r.minZ),
+      0,
+    );
+    // 3000 − 100 − 250 − 150 + część wspólna 25 (otwory 1 i 3) = 2525.
+    expect(area).toBeCloseTo(2525);
+    for (const [i, a] of result.pieces.entries())
+      for (const b of result.pieces.slice(i + 1))
+        expect(
+          a.minX < b.maxX &&
+            a.maxX > b.minX &&
+            a.minZ < b.maxZ &&
+            a.maxZ > b.minZ,
+        ).toBe(false);
+    for (const r of result.pieces)
+      for (const h of holes)
+        expect(
+          r.minX < h.maxX &&
+            r.maxX > h.minX &&
+            r.minZ < h.maxZ &&
+            r.maxZ > h.minZ,
+        ).toBe(false);
+    expect(
+      result.blocks.every(
+        (b) => b.walkable && b.position.y + b.size.y / 2 === 4,
+      ),
+    ).toBe(true);
+  });
+
+  it('schody wzdłuż Z są osiowe (bez obrotu Y) i przechodzą nawigację', () => {
+    const arena = blank(),
+      p = createPrimitives(arena);
+    p.floor(rect(0, 60, 0, 50));
+    p.floor(rect(20, 30, 0, 8), 4);
+    arena.roomMeta({ playerSpawn: vec(25, 0, 45) });
+    const flight = p.stairs({
+      from: vec(25, 0, 40),
+      to: vec(25, 4, 8),
+      width: 3,
+      stepRise: 0.34,
+      stepDepth: 1,
+    });
+    expect(flight.blocks.every((b) => !b.rotation)).toBe(true);
+    expect(flight.blocks[0]!.size).toEqual(vec(3, 4 / 12, 32 / 12));
+    expect(arena.metadata.warnings.map((w) => w.code)).not.toContain(
+      'navigation-rotation',
+    );
+    for (const id of ['A', 'B', 'C'] as const) arena.point(id, vec(5, 0, 5));
+    const room = arena.toRoom();
+    expect(
+      new ArenaNavigation(room).path(room.playerSpawn, vec(25, 4, 4)).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('ogrodzenie rozstawia skalowane moduły co moduleM', () => {
+    const arena = blank(),
+      p = createPrimitives(arena);
+    p.fence({
+      from: vec(0, 0, 0),
+      to: vec(24, 0, 0),
+      model: 'build_hoarding_fence',
+      moduleM: 6,
+      scale: 1.5,
+      height: 3.6,
+    });
+    const decor = arena.toRoom().decor!;
+    expect(decor.map((d) => d.position.x)).toEqual([3, 9, 15, 21]);
+    expect(decor.every((d) => d.scale === 1.5)).toBe(true);
   });
 });

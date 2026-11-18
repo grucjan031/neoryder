@@ -3,33 +3,33 @@ import type { RoomDefinition } from './roomSchema';
 
 type Block = RoomDefinition['blocks'][number];
 type Cell = { position: Vec3; neighbors: number[]; surface: Block };
-const EPSILON = 1e-5;
+/** Stałe bryły liczone raz: obwiednia z obrotem Y, cos/tan nachylenia Z. */
+type Shape = {
+  block: Block;
+  x: number;
+  y: number;
+  z: number;
+  sizeY: number;
+  walkable: boolean;
+  extentX: number;
+  extentZ: number;
+  cos: number;
+  tan: number;
+  lift: number;
+};
 
-// Indeks używa tej samej konserwatywnej obwiedni XZ co top(). Margines
-// obejmuje także próbki stawiane poza środkiem komórki przez test prześwitu.
-function nearbyBlocks(blocks: readonly Block[], margin: number) {
-  const bucketM = 16;
-  const buckets = new Map<string, Block[]>();
-  const bucket = (coordinate: number) => Math.floor(coordinate / bucketM);
-  for (const block of blocks) {
-    const yaw = block.rotation?.y ?? 0;
-    const cos = Math.abs(Math.cos(yaw));
-    const sin = Math.abs(Math.sin(yaw));
-    const { x, z } = block.position;
-    const halfX = (cos * block.size.x + sin * block.size.z) / 2 + margin;
-    const halfZ = (sin * block.size.x + cos * block.size.z) / 2 + margin;
-    for (let bx = bucket(x - halfX); bx <= bucket(x + halfX); bx++)
-      for (let bz = bucket(z - halfZ); bz <= bucket(z + halfZ); bz++) {
-        const key = `${bx},${bz}`;
-        const list = buckets.get(key);
-        if (list) list.push(block);
-        else buckets.set(key, [block]);
-      }
-  }
-  const empty: readonly Block[] = [];
-  return (x: number, z: number): readonly Block[] =>
-    buckets.get(`${bucket(x)},${bucket(z)}`) ?? empty;
+/** Wierzch bryły w (x, z) albo undefined poza obwiednią (z marginesem). */
+function topOf(s: Shape, x: number, z: number, margin = 0): number | undefined {
+  if (
+    Math.abs(x - s.x) > s.extentX + margin ||
+    Math.abs(z - s.z) > s.extentZ + margin
+  )
+    return undefined;
+  return s.y + s.tan * (x - s.x) + s.lift;
 }
+const EPSILON = 1e-5;
+/** Kubełki indeksu brył (m); wynik nawigacji nie zależy od tej wartości. */
+const INDEX_CELL_M = 2;
 
 /** Warstwy płyt i ramp X; obwiednie przeszkód uwzględniają wysokość kapsuły. */
 export class ArenaSurfaceNavigation {
@@ -40,6 +40,7 @@ export class ArenaSurfaceNavigation {
   private readonly rise: number;
   private readonly firstZ: number;
   private readonly widthZ: number;
+  private readonly shapes = new Map<Block, Shape>();
 
   constructor(room: RoomDefinition) {
     const config = room.arena!;
@@ -51,7 +52,37 @@ export class ArenaSurfaceNavigation {
     this.rise = config.navigationMaxRiseM;
     const surfaces = room.blocks.filter((b) => b.walkable);
     const margin = config.navigationClearanceM;
-    const nearby = nearbyBlocks(room.blocks, margin);
+    const rise = this.rise;
+    const headroom = config.navigationHeadroomM;
+    // Indeks XZ: bryła trafia do kubełków całego obszaru, w którym top() z marginesem
+    // może zwrócić wysokość, więc lokalne kandydaty dają ten sam wynik co pełna lista.
+    const surfaceIndex = this.index(surfaces, margin);
+    const blockIndex = this.index(room.blocks, margin);
+    const offsets = [-margin, 0, margin, 0, 0, -margin, 0, margin];
+    const supported = (x: number, z: number, y: number): boolean => {
+      for (const s of this.near(surfaceIndex, x, z)) {
+        const top = topOf(s, x, z);
+        if (top !== undefined && Math.abs(top - y) <= rise) return true;
+      }
+      return false;
+    };
+    const obstructed = (
+      own: Block,
+      x: number,
+      z: number,
+      y: number,
+    ): boolean => {
+      for (const o of this.near(blockIndex, x, z)) {
+        if (o.block === own) continue;
+        const top = topOf(o, x, z, margin);
+        if (top === undefined) continue;
+        if (o.walkable && top <= y + rise && topOf(o, x, z) === undefined)
+          continue;
+        const bottom = top - o.sizeY / o.cos;
+        if (top > y + EPSILON && bottom < y + headroom) return true;
+      }
+      return false;
+    };
     this.firstZ = Math.floor(
       Math.min(...surfaces.map((b) => b.position.z - b.size.z / 2)) / this.cell,
     );
@@ -67,6 +98,7 @@ export class ArenaSurfaceNavigation {
         throw new Error('Powierzchnia nawigacji obsługuje wyłącznie obrót Z.');
       const angle = b.rotation?.z ?? 0;
       const halfX = (b.size.x * Math.cos(angle)) / 2;
+      const own = this.shape(b);
       for (
         let x = Math.floor((b.position.x - halfX) / this.cell);
         (x + 0.5) * this.cell <= b.position.x + halfX;
@@ -82,45 +114,13 @@ export class ArenaSurfaceNavigation {
             y: 0,
             z: (z + 0.5) * this.cell,
           };
-          const y = this.top(b, p.x, p.z);
+          const y = topOf(own, p.x, p.z);
           if (y === undefined) continue;
           p.y = y;
-          const candidates = nearby(p.x, p.z);
-          if (
-            [
-              [-margin, 0],
-              [margin, 0],
-              [0, -margin],
-              [0, margin],
-            ].some(
-              ([dx, dz]) =>
-                !candidates.some((s) => {
-                  if (!s.walkable) return false;
-                  const top = this.top(s, p.x + dx!, p.z + dz!);
-                  return top !== undefined && Math.abs(top - y) <= this.rise;
-                }),
-            )
-          )
-            continue;
-          if (
-            candidates.some((obstacle) => {
-              if (obstacle === b) return false;
-              const top = this.top(obstacle, p.x, p.z, margin);
-              if (top === undefined) return false;
-              if (
-                obstacle.walkable &&
-                top <= y + this.rise &&
-                this.top(obstacle, p.x, p.z) === undefined
-              )
-                return false;
-              const bottom =
-                top - obstacle.size.y / Math.cos(obstacle.rotation?.z ?? 0);
-              return (
-                top > y + EPSILON && bottom < y + config.navigationHeadroomM!
-              );
-            })
-          )
-            continue;
+          let free = true;
+          for (let i = 0; free && i < offsets.length; i += 2)
+            free = supported(p.x + offsets[i]!, p.z + offsets[i + 1]!, y);
+          if (!free || obstructed(b, p.x, p.z, y)) continue;
           const key = this.key(p);
           const column = this.columns.get(key) ?? [];
           if (
@@ -175,7 +175,40 @@ export class ArenaSurfaceNavigation {
     return true;
   }
 
-  private top(b: Block, x: number, z: number, margin = 0): number | undefined {
+  private index(
+    blocks: readonly Block[],
+    margin: number,
+  ): Map<number, Shape[]> {
+    const buckets = new Map<number, Shape[]>();
+    for (const b of blocks) {
+      const shape = this.shape(b);
+      const halfX = Math.abs(shape.extentX) + margin + EPSILON;
+      const halfZ = shape.extentZ + margin + EPSILON;
+      const x0 = Math.floor((b.position.x - halfX) / INDEX_CELL_M);
+      const x1 = Math.floor((b.position.x + halfX) / INDEX_CELL_M);
+      const z0 = Math.floor((b.position.z - halfZ) / INDEX_CELL_M);
+      const z1 = Math.floor((b.position.z + halfZ) / INDEX_CELL_M);
+      for (let x = x0; x <= x1; x++)
+        for (let z = z0; z <= z1; z++) {
+          const key = x * 65536 + z;
+          const bucket = buckets.get(key);
+          if (bucket) bucket.push(shape);
+          else buckets.set(key, [shape]);
+        }
+    }
+    return buckets;
+  }
+  private near(index: Map<number, Shape[]>, x: number, z: number): Shape[] {
+    return (
+      index.get(
+        Math.floor(x / INDEX_CELL_M) * 65536 + Math.floor(z / INDEX_CELL_M),
+      ) ?? []
+    );
+  }
+
+  private shape(b: Block): Shape {
+    const cached = this.shapes.get(b);
+    if (cached) return cached;
     const angle = b.rotation?.z ?? 0;
     // Obrócone wokół Y rekwizyty: konserwatywna obwiednia, nigdy powierzchnia.
     const yaw = b.rotation?.y ?? 0;
@@ -187,17 +220,23 @@ export class ArenaSurfaceNavigation {
       (Math.abs(Math.sin(yaw)) * b.size.x +
         Math.abs(Math.cos(yaw)) * b.size.z) /
       2;
-    if (
-      Math.abs(x - b.position.x) > halfX * Math.cos(angle) + margin ||
-      Math.abs(z - b.position.z) > halfZ + margin
-    )
-      return undefined;
-    return (
-      b.position.y +
-      Math.tan(angle) * (x - b.position.x) +
-      b.size.y / (2 * Math.cos(angle))
-    );
+    const shape = {
+      block: b,
+      x: b.position.x,
+      y: b.position.y,
+      z: b.position.z,
+      sizeY: b.size.y,
+      walkable: b.walkable === true,
+      extentX: halfX * Math.cos(angle),
+      extentZ: halfZ,
+      cos: Math.cos(angle),
+      tan: Math.tan(angle),
+      lift: b.size.y / (2 * Math.cos(angle)),
+    };
+    this.shapes.set(b, shape);
+    return shape;
   }
+
   private key(p: Vec3): number {
     const z = Math.floor(p.z / this.cell) - this.firstZ;
     if (z < 0 || z >= this.widthZ) return NaN;

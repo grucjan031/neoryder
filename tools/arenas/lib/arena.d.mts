@@ -33,6 +33,8 @@ export interface ArenaBuilder {
     },
   ): NonNullable<RoomDefinition['lights']>[number];
   spawn(position: { x: number; z: number; y?: number }): ArenaBuilder;
+  /** Spawn osobnej puli trybu (`arena.spawnPoints`) z wysokością; domyślnie y startu. */
+  arenaSpawn(position: { x: number; z: number; y?: number }): ArenaBuilder;
   point(
     id: 'A' | 'B' | 'C' | 'D' | 'E',
     position: Vec3,
@@ -52,6 +54,7 @@ export interface ArenaBuilder {
   write(path: string): void;
 }
 export function vec(x: number, y?: number, z?: number): Vec3;
+export const POINT_IDS: readonly ['A', 'B', 'C', 'D', 'E'];
 export function createRng(seed: string | number): Rng;
 export function stableJson(value: unknown): string;
 export function writeJson(path: string, value: unknown): void;

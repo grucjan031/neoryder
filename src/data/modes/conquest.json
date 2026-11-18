@@ -15,6 +15,7 @@
     "arenaContainerPort",
     "arenaOverpass",
     "arenaRooftops",
-    "arenaPowerPlant"
+    "arenaPowerPlant",
+    "arenaConstructionSite"
   ]
 }

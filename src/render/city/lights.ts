@@ -133,7 +133,7 @@ export class CityLights {
 
   constructor(
     private readonly defs: readonly CityLightDef[],
-    floorY = 0,
+    floorY: number | readonly number[] = 0,
     seed: string | number = 'city-lights',
   ) {
     const rng = new Rng(seed);
@@ -146,7 +146,7 @@ export class CityLights {
     this.baseIntensities = this.pool.map(() => 0);
     this.root.add(...this.pool);
     const geometry = new PlaneGeometry(1, 1);
-    for (const def of defs) {
+    for (const [index, def] of defs.entries()) {
       const material = new ShaderMaterial({
         vertexShader: cityVertex,
         fragmentShader: radialFragment,
@@ -167,7 +167,8 @@ export class CityLights {
       spot.rotation.x = -Math.PI / 2;
       spot.position.set(
         def.position.x,
-        floorY + tuning.city.surfaceOffsetM,
+        (typeof floorY === 'number' ? floorY : (floorY[index] ?? 0)) +
+          tuning.city.surfaceOffsetM,
         def.position.z,
       );
       spot.userData.noOutline = true;

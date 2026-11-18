@@ -46,21 +46,21 @@
   },
   "formwork_plywood": {
     "texture": "formwork_plywood",
-    "tint": "#625544",
+    "tint": "#5f5344",
     "scale": 0.25,
-    "roughness": 0.85,
+    "roughness": 0.8,
     "metalness": 0,
-    "bump": 0.5,
-    "wetness": 0
+    "bump": 0.4,
+    "wetness": 0.1
   },
   "concrete_raw_cast": {
     "texture": "concrete_raw_cast",
-    "tint": "#566072",
+    "tint": "#4e586a",
     "scale": 0.25,
     "roughness": 0.85,
     "metalness": 0,
-    "bump": 0.5,
-    "wetness": 0
+    "bump": 0.6,
+    "wetness": 0.15
   },
   "slag_heap": {
     "texture": "slag_heap",
@@ -161,5 +161,23 @@
     "metalness": 0,
     "bump": 0.45,
     "wetness": 0
+  },
+  "excavation_dirt": {
+    "texture": "excavation_dirt",
+    "tint": "#4a4139",
+    "scale": 0.2,
+    "roughness": 0.95,
+    "metalness": 0,
+    "bump": 0.8,
+    "wetness": 0.35
+  },
+  "scaffold_planks": {
+    "texture": "scaffold_planks",
+    "tint": "#5c5145",
+    "scale": 0.5,
+    "roughness": 0.85,
+    "metalness": 0.05,
+    "bump": 0.6,
+    "wetness": 0.1
   }
 }

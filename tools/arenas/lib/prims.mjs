@@ -1,5 +1,5 @@
 import { assertRect, vec } from './arena.mjs';
-import { EPS, contains, rotate } from './geometry.mjs';
+import { EPS, contains, rotate, subtractRects } from './geometry.mjs';
 
 // Kopia limitów kontrolera na potrzeby czystego Node; test pilnuje zgodności z tuning.ts.
 export const CONTROLLER_LIMITS = {
@@ -36,6 +36,25 @@ export function floor(arena, rect, y = 0, material = 'concrete', opts = {}) {
     ...rest,
   });
   return { rect: { ...rect }, y, blocks: [block] };
+}
+
+/** Płyta (strop) z otworami: rozłączne prostokąty na wspólnej wysokości y. */
+export function slab(
+  arena,
+  { rect, y = 0, holes = [], material = 'concrete', ...opts },
+) {
+  assertRect(rect);
+  holes.forEach(assertRect);
+  const pieces = subtractRects(rect, holes);
+  return {
+    rect: { ...rect },
+    y,
+    holes: structuredClone(holes),
+    pieces,
+    blocks: pieces.flatMap(
+      (piece) => floor(arena, piece, y, material, opts).blocks,
+    ),
+  };
 }
 
 export function wall(
@@ -125,7 +144,7 @@ export function wall(
 
 export function ramp(
   arena,
-  { from, to, width, material = 'concrete', thickness = 0.4 },
+  { from, to, width, material = 'concrete', thickness = 0.4, visible },
 ) {
   positive(width, 'Szerokość rampy');
   positive(thickness, 'Grubość rampy');
@@ -150,6 +169,7 @@ export function ramp(
     rotation,
     material,
     walkable: true,
+    ...(visible === false ? { visible: false } : {}),
   });
   const config = arena.toRoom().arena;
   if ((Math.abs(angle) * 180) / Math.PI > CONTROLLER_LIMITS.maxSlopeDeg + EPS)
@@ -191,6 +211,7 @@ export function stairs(
     stepDepth = 0.4,
     material = 'concrete',
     walkable = true,
+    visible,
   },
 ) {
   positive(width, 'Szerokość schodów');
@@ -214,10 +235,14 @@ export function stairs(
   for (let i = 0; i < count; i++) {
     const h = (i + 1) * actualRise;
     // Osobne bryły stopni bez szczelin; ostatni wierzch dokładnie na to.y.
-    const yaw = Math.abs(dir.dz) < EPS ? 0 : dir.yaw;
+    // Bieg wzdłuż osi Z zamienia wymiary zamiast obrotu (nawigacja bez obrotu Y).
+    const alongZ = Math.abs(dir.dx) < EPS;
+    const yaw = Math.abs(dir.dz) < EPS || alongZ ? 0 : dir.yaw;
     blocks.push(
       arena.block({
-        size: vec(actualDepth, actualRise, width),
+        size: alongZ
+          ? vec(width, actualRise, actualDepth)
+          : vec(actualDepth, actualRise, width),
         position: vec(
           start.x + dir.dx * (i + 0.5) * actualDepth,
           start.y + h - actualRise / 2,
@@ -226,6 +251,7 @@ export function stairs(
         ...(yaw ? { rotation: vec(0, yaw, 0) } : {}),
         material,
         walkable,
+        ...(visible === false ? { visible: false } : {}),
       }),
     );
   }
@@ -581,8 +607,10 @@ export function containerStack(
 
 export function fence(
   arena,
-  { from, to, height = 3, model, thickness = 0.15 },
+  { from, to, height = 3, model, thickness = 0.15, moduleM = 4, scale = 1 },
 ) {
+  positive(moduleM, 'Długość modułu ogrodzenia');
+  positive(scale, 'Skala modelu ogrodzenia');
   const direction = segment(from, to);
   const result = wall(
     arena,
@@ -594,16 +622,19 @@ export function fence(
     model ? { visible: false } : {},
   );
   if (model)
-    for (let at = 0; at < direction.run; at += 4)
+    for (let at = 0; at < direction.run - EPS; at += moduleM) {
+      const middle = at + Math.min(moduleM, direction.run - at) / 2;
       arena.decor(
         model,
         vec(
-          from.x + direction.dx * (at + Math.min(4, direction.run - at) / 2),
+          from.x + direction.dx * middle,
           from.y ?? 0,
-          from.z + direction.dz * (at + Math.min(4, direction.run - at) / 2),
+          from.z + direction.dz * middle,
         ),
         direction.yaw,
+        scale === 1 ? {} : { scale },
       );
+    }
   return result;
 }
 
@@ -745,6 +776,7 @@ export function createPrimitives(arena) {
       building,
       hall,
       ramp,
+      slab,
       stairs,
       bridge,
       containerStack,

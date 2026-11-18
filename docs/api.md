@@ -39,7 +39,10 @@ formatu. Napisy zachowują także starszy format liczbowy 0..1.
 `flickerIntensity(pattern, t, seed, strength?, periodS?)` w
 `src/render/city/flicker.ts` zwraca mnożnik 0..1 bez Three.js, DOM, stanu i alokacji.
 Czas w sekundach pochodzi z renderu; seed źródła z osobnego `Rng` sceny.
-`CityLights(defs, floorY?, seed?)` przyjmuje kosmetyczne ziarno sceny.
+`CityLights(defs, floorY?, seed?)` przyjmuje kosmetyczne ziarno sceny; `floorY` może być
+liczbą albo tablicą wysokości plam (indeks jak `defs`). `CityDressing` liczy ją przez
+`lightSpotFloors(defs, floorY, layout.blocks)`: światło niżej niż `floorY` (np. w wykopie)
+kładzie plamę na najwyższej nieobróconej bryle pod sobą; pozostałe zostają na `floorY`.
 `lights[].groundGlow: false` pomija addytywną plamę pod źródłem.
 Źródło nadal konkuruje o pulę świateł punktowych.
 `HubDecor(panels, stations, fires?, hubTuning?, neonTexts?, seed?)` przyjmuje je dla napisów.
@@ -1876,7 +1879,8 @@ nie snapshot. Sceny wykorzystują pulę `ExecuteEnemy` i jedną tablicę.
 Render czyta gotowość i cel zapisany po ostatnim kroku symulacji.
 
 Komendy `RoomScene` i `Arena`: `tp <x> <z> [yawDeg] [pitchDeg]` teleportuje
-na aktualnej wysokości i ustawia obrót (domyślnie 0, 0);
+na aktualnej wysokości i ustawia obrót (domyślnie 0, 0); w `RoomScene` opcjonalny
+piąty argument `floorY` stawia gracza na podłodze tej wysokości (piętra, wykopy);
 `look <yawDeg> [pitchDeg]` ustawia sam obrót (pitch domyślnie 0).
 Yaw 0 = -Z; pitch ograniczony przez `tuning.player.maxPitchDeg`.
 Zmiana stanu i interpolacji jest natychmiastowa, także w pauzie.
