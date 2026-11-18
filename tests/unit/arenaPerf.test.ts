@@ -128,10 +128,25 @@ it('arena 450 × 300 m: 3 poziomy, 5 stref i 12 wrogów', async () => {
   }
 }, 60_000);
 
-it.each(['arenaOverpass', 'arenaRooftops'])(
-  '%s: 30 wrogów, nawigacja i Rapier poniżej 6 ms/krok',
+it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
+  '%s: nawigacja i Rapier z docelową liczbą wrogów',
   async (id) => {
     const room = roomDefinitions.get(id)!;
+    const port = id === 'arenaContainerPort';
+    const limit = port ? 12 : 30;
+    if (port) {
+      const start = performance.now();
+      const navigation = new ArenaNavigation(room);
+      for (const point of room.arena!.points)
+        expect(
+          navigation.path(room.playerSpawn, point.position).length,
+        ).toBeGreaterThan(0);
+      const elapsed = performance.now() - start;
+      console.info(
+        `[perf] ${id}: nawigacja i pięć pól ${elapsed.toFixed(2)} ms`,
+      );
+      expect(elapsed).toBeLessThanOrEqual(500);
+    }
     const bus = new EventBus();
     const commands = new CommandRegistry();
     const run = new RunManager(bus, {
@@ -162,8 +177,15 @@ it.each(['arenaOverpass', 'arenaRooftops'])(
       // Test przeciążeniowy omija limit posiłków 8, zachowuje rzeczywisty host trybu.
       const enemies = Reflect.get(scene, 'manager') as EnemyManager;
       let count = 0;
-      for (let x = -40; x <= 40 && count < 30; x += 8)
-        for (let z = -40; z <= 40 && count < 30; z += 8) {
+      if (port) {
+        for (const position of room.arena!.spawnPoints!.slice(0, limit))
+          enemies.spawn(count++ < 8 ? 'assaulter' : 'gunner', {
+            ...position,
+            y: position.y ?? 0,
+          });
+      }
+      for (let x = -40; x <= 40 && count < limit; x += 8)
+        for (let z = -40; z <= 40 && count < limit; z += 8) {
           const position = { x, y: room.playerSpawn.y, z };
           if (
             !freeModePosition(room, position, 1.5) ||
@@ -172,14 +194,16 @@ it.each(['arenaOverpass', 'arenaRooftops'])(
             continue;
           enemies.spawn(count++ < 20 ? 'assaulter' : 'gunner', position);
         }
-      expect(scene.query('enemies')).toBe(30);
+      expect(scene.query('enemies')).toBe(limit);
       for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
       const start = performance.now();
       for (let i = 0; i < 600; i++) scene.step(SIM_DT, idle);
       const perStepMs = (performance.now() - start) / 600;
-      console.info(`[perf] ${id}: ${perStepMs.toFixed(3)} ms/krok, 30 wrogów`);
-      expect(scene.query('enemies')).toBeGreaterThanOrEqual(30);
-      expect(perStepMs).toBeLessThan(6);
+      console.info(
+        `[perf] ${id}: ${perStepMs.toFixed(3)} ms/krok, ${limit} wrogów`,
+      );
+      expect(scene.query('enemies')).toBeGreaterThanOrEqual(limit);
+      expect(perStepMs).toBeLessThanOrEqual(port ? 2 : 6);
     } finally {
       scene.dispose();
     }

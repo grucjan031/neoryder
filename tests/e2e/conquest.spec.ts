@@ -40,7 +40,7 @@ for (const outcome of ['victory', 'death'] as const) {
               return false;
             if (outcome === 'victory') {
               game.command('god');
-              for (const id of ['A', 'B', 'C'])
+              for (const id of ['A', 'B', 'C', 'D', 'E'])
                 game.command(`conquest capture ${id}`);
               game.command('conquest tickets 0');
               game.command('kill all');

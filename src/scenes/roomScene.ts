@@ -390,6 +390,7 @@ export class RoomScene implements Scene {
       this.options.linearMission ? envelope.bounds : undefined,
       envelope,
       ctx.camera,
+      this.layout.arena?.water,
     );
     three.add(this.root);
     this.root.add(this.lights);

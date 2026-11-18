@@ -2077,4 +2077,6 @@ predykat zasłonięcia posiłków przez geometrię Rapiera.
 promień XZ i wysokość. `SceneAtmosphere` przyjmuje obwiednię oraz kamerę
 perspektywiczną i przywraca projekcję kamery przy zwalnianiu sceny.
 `query('horizon')` zwraca bieżące parametry projekcji, panoramy i mgły.
+`arena.water: { shoreZ, y, color }` przekazuje do `SceneAtmosphere` parametry
+kosmetycznej tafli na południe od kei, rozciągniętej do horyzontu bez collidera.
 `RoomScene.render` może otrzymać pozycję i obrót wolnej kamery debug.

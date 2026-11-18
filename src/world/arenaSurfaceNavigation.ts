@@ -24,6 +24,41 @@ export class ArenaSurfaceNavigation {
       );
     this.rise = config.navigationMaxRiseM;
     const surfaces = room.blocks.filter((b) => b.walkable);
+    const bucketSize = config.batchCellM;
+    const margin = config.navigationClearanceM;
+    const buckets = new Map<string, { blocks: Block[]; surfaces: Block[] }>();
+    for (const block of room.blocks) {
+      const yaw = block.rotation?.y ?? 0;
+      const halfX =
+        (Math.abs(Math.cos(yaw)) * block.size.x +
+          Math.abs(Math.sin(yaw)) * block.size.z) /
+          2 +
+        margin;
+      const halfZ =
+        (Math.abs(Math.sin(yaw)) * block.size.x +
+          Math.abs(Math.cos(yaw)) * block.size.z) /
+          2 +
+        margin;
+      for (
+        let x = Math.floor((block.position.x - halfX) / bucketSize);
+        x <= Math.floor((block.position.x + halfX) / bucketSize);
+        x++
+      )
+        for (
+          let z = Math.floor((block.position.z - halfZ) / bucketSize);
+          z <= Math.floor((block.position.z + halfZ) / bucketSize);
+          z++
+        ) {
+          const key = `${x},${z}`;
+          let bucket = buckets.get(key);
+          if (!bucket) {
+            bucket = { blocks: [], surfaces: [] };
+            buckets.set(key, bucket);
+          }
+          bucket.blocks.push(block);
+          if (block.walkable) bucket.surfaces.push(block);
+        }
+    }
     this.firstZ = Math.floor(
       Math.min(...surfaces.map((b) => b.position.z - b.size.z / 2)) / this.cell,
     );
@@ -57,7 +92,9 @@ export class ArenaSurfaceNavigation {
           const y = this.top(b, p.x, p.z);
           if (y === undefined) continue;
           p.y = y;
-          const margin = config.navigationClearanceM;
+          const nearby = buckets.get(
+            `${Math.floor(p.x / bucketSize)},${Math.floor(p.z / bucketSize)}`,
+          )!;
           if (
             [
               [-margin, 0],
@@ -66,7 +103,7 @@ export class ArenaSurfaceNavigation {
               [0, margin],
             ].some(
               ([dx, dz]) =>
-                !surfaces.some((s) => {
+                !nearby.surfaces.some((s) => {
                   const top = this.top(s, p.x + dx!, p.z + dz!);
                   return top !== undefined && Math.abs(top - y) <= this.rise;
                 }),
@@ -74,7 +111,7 @@ export class ArenaSurfaceNavigation {
           )
             continue;
           if (
-            room.blocks.some((obstacle) => {
+            nearby.blocks.some((obstacle) => {
               if (obstacle === b) return false;
               const top = this.top(obstacle, p.x, p.z, margin);
               if (top === undefined) return false;
