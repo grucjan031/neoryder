@@ -54,6 +54,7 @@ import { getLiteFx } from '../render/fxMode';
 import { RoomScene } from './roomScene';
 
 const CUSTOM_LOADOUT_ID = 'custom';
+const REWARD_SAVE_INTERVAL_MS = 2000;
 const IDLE_INPUT: InputSnapshot = {
   held: new Set(),
   pressed: new Set(),
@@ -148,6 +149,8 @@ export class RunScene implements Scene {
   private loading: Promise<void> | null = null;
   private saving: Promise<void> = Promise.resolve();
   private pendingSaves = 0;
+  private rewardSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  private immediateRewardSave = false;
   private pending: 'clear' | 'end' | null = null;
   private rewardDelayRemainingS: number | null = null;
   /** Cisza po zwycięstwie: pokój bossa zostaje na ekranie, zanim pojawi się podsumowanie. */
@@ -234,10 +237,14 @@ export class RunScene implements Scene {
           options: [...options],
         }),
       ),
-      ctx.bus.on('implant_acquired', ({ id }) =>
-        this.log.push({ event: 'implant_acquired', id }),
-      ),
+      ctx.bus.on('implant_acquired', ({ id }) => {
+        this.log.push({ event: 'implant_acquired', id });
+        this.scheduleRewardSave(true);
+      }),
+      ctx.bus.on('currency_changed', () => this.scheduleRewardSave(false)),
+      ctx.bus.on('shop_purchase', () => this.scheduleRewardSave(true)),
       ctx.bus.on('run_ended', ({ outcome, summary, cause }) => {
+        this.cancelRewardSave();
         this.defeatCause = outcome === 'death' ? cause : undefined;
         this.log.push({ event: 'run_ended', outcome });
         // Opóźniamy tylko pokazanie ekranu (w fx=lite bez opóźnienia).
@@ -746,6 +753,7 @@ export class RunScene implements Scene {
   }
 
   private showMap(): void {
+    this.cancelRewardSave();
     if (this.tracker) this.manager.setAchievementProgress(this.tracker.tracked);
     const state = this.manager.serialize();
     this.persist(async () => {
@@ -776,6 +784,38 @@ export class RunScene implements Scene {
       .finally(() => {
         this.pendingSaves--;
       });
+  }
+
+  private cancelRewardSave(): void {
+    if (this.rewardSaveTimer !== null) clearTimeout(this.rewardSaveTimer);
+    this.rewardSaveTimer = null;
+    this.immediateRewardSave = false;
+  }
+
+  private scheduleRewardSave(immediate: boolean): void {
+    if (this.disposed || !this.manager.active) return;
+    if (immediate) {
+      if (this.immediateRewardSave) return;
+      this.cancelRewardSave();
+      this.immediateRewardSave = true;
+      // Koszt, implant i leczenie muszą znaleźć się w tej samej migawce.
+      queueMicrotask(() => {
+        if (!this.immediateRewardSave) return;
+        this.immediateRewardSave = false;
+        this.saveRewards();
+      });
+    } else if (this.rewardSaveTimer === null && !this.immediateRewardSave) {
+      this.rewardSaveTimer = setTimeout(() => {
+        this.rewardSaveTimer = null;
+        this.saveRewards();
+      }, REWARD_SAVE_INTERVAL_MS);
+    }
+  }
+
+  private saveRewards(): void {
+    if (this.disposed || !this.manager.active) return;
+    const state = this.manager.checkpoint();
+    this.persist(() => this.save.saveRun(state));
   }
 
   private selectNode(id: string, resume = true): boolean {
@@ -1112,7 +1152,11 @@ export class RunScene implements Scene {
       case 'runError':
         return this.runError;
       case 'savePending':
-        return this.pendingSaves > 0;
+        return (
+          this.pendingSaves > 0 ||
+          this.rewardSaveTimer !== null ||
+          this.immediateRewardSave
+        );
       case 'saveError':
         return this.saveError;
       case 'rewardError':
@@ -1289,6 +1333,7 @@ export class RunScene implements Scene {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.cancelRewardSave();
     for (const off of this.off.splice(0)) off();
     this.disposeRoom();
     this.manager?.dispose();
