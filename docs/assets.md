@@ -11,15 +11,15 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 
 ## Konwencje (obowiązkowe dla nowych modeli)
 
-| Zasada               | Wartość                                                                                            |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| Jednostki            | metry, glTF Y-up                                                                                   |
-| Postacie i rekwizyty | patrzą w **+Z** (zgodnie z `Object3D.lookAt`), spód / stopy na `y = 0`, środek w `x = z = 0`       |
-| Broń gracza          | celuje w **-Z** (kierunek kamery), początek układu w punkcie chwytu                                |
-| Ręce gracza (FPP)    | początek = nadgarstek, palce w spoczynku w **-Z**, wnętrze dłoni w **+Y**, przedramię w **+Z**     |
-| Strona prawa postaci | **-X** (postać patrzy w +Z)                                                                        |
-| Cieniowanie          | płaskie (flat), low-poly, bez tekstur                                                              |
-| Budżet               | humanoid ≤ 6000 trójkątów (ciało ≈ 4000), dron ≤ 1500, rekwizyt ≤ 500, broń ≤ 400, ręka FPP ≤ 3000 |
+| Zasada               | Wartość                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Jednostki            | metry, glTF Y-up                                                                                                                     |
+| Postacie i rekwizyty | patrzą w **+Z** (zgodnie z `Object3D.lookAt`), spód / stopy na `y = 0`, środek w `x = z = 0`                                         |
+| Broń gracza          | celuje w **-Z** (kierunek kamery), początek układu w punkcie chwytu                                                                  |
+| Ręce gracza (FPP)    | początek = nadgarstek, palce w spoczynku w **-Z**, wnętrze dłoni w **+Y**, przedramię w **+Z**                                       |
+| Strona prawa postaci | **-X** (postać patrzy w +Z)                                                                                                          |
+| Cieniowanie          | płaskie (flat), low-poly, bez tekstur                                                                                                |
+| Budżet               | humanoid ≤ 6000 trójkątów (ciało ≈ 4000), dron ≤ 1500, rekwizyt ≤ 500, broń ≤ 1000 (szlif komiksowy 18.11: 488–852), ręka FPP ≤ 3000 |
 
 ### Materiały (rozpoznawane po nazwie — shader stylu może je podmienić)
 
@@ -422,7 +422,7 @@ Testy: `tests/unit/hubNpcView.test.ts`, `hubSeating.test.ts`, `hubCatView.test.t
 | `enemy_executor.glb`                   | Egzekutor (5395 tri): manekin 1,2×, zakręcone rogi, ogromne naramienniki z kolcami, fartuch kata, świecący kręgosłup, rdzeń w ramie                                              | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
 | `enemy_drone.glb`                      | Dron (936 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, duże oko, lufa; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
 | `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                                                          | — (do `InstancedMesh`)                                                                                                           |
-| `plasma_blade.glb`                     | ostrze plazmowe (284 tri): rękojeść z gumowym chwytem, pierścieniami i pazurami emitera                                                                                          | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
+| `plasma_blade.glb`                     | ostrze plazmowe (488 tri): rękojeść z gumowym chwytem, fazowanym gardłem, głowicą i pazurami emitera                                                                             | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
 | `blaster.glb`                          | blaster z przegrzaniem                                                                                                                                                           | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |
 | `player_arm_R.glb`, `player_arm_L.glb` | rękawica taktyczna z rękawem i cybernetycznym karwaszem FPP (10 264 tri na rękę)                                                                                                 | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
 | `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut), obręcze, narożniki i ukośne zastrzały na bokach (356 tri)                                                                     | —                                                                                                                                |
@@ -536,17 +536,29 @@ pancerz z chłodną krawędzią, `trim` stal, `grip` guma), niezależnie od moty
 jasny cyjanowy rdzeń, poświatę zwróconą do kamery i smugę cięcia (`src/render/fppBladeFx.ts`).
 Ciepło broni przechodzi z cyanu w biel rozgrzanego metalu (nie w czerwień — zarezerwowana dla wrogów).
 
-| Plik               | Sylwetka                                                    | Węzły dla kodu                                                                                                          | Trójkąty |
-| ------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
-| `blaster.glb`      | średni pistolet energetyczny, kołpak lufy                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 368      |
-| `pistol.glb`       | zwarty, krótki zamek, trzy cyjanowe nacięcia                | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 260      |
-| `rifle.glb`        | długi, kolba, ogniwo ciepła jak magazynek                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 324      |
-| `scatter.glb`      | szeroki, dwie grube lufy, pompa                             | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 352      |
-| `sniper_rifle.glb` | bardzo długi, luneta z cyjanową soczewką, ogniwo pod komorą | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 396      |
-| `beam.glb`         | gruby emiter z cewkami w klatce prętów i soczewką (`lens`)  | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 376      |
-| `emp_launcher.glb` | gruba tuba z bębnem i rozszerzonym wylotem                  | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 324      |
-| `blade_twin.glb`   | krótsza rękojeść z poprzeczną osłoną                        | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 284      |
-| `blade_staff.glb`  | długa rękojeść (0,8 m), emitery z pazurami na obu końcach   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 380      |
+Szlif komiksowy (Borderlands + Neon Noir, 18.11.2026): bryły budują pomocnicze `slab` (profil boczny
+Y–Z wyciągnięty po X z fazą obrysu), `lathe` / `band` (bryły obrotowe z fazowanymi czołami, płaska
+ściana na górze) i `_vent_bars` (skośne cyjanowe nacięcia). Fazy mają co najmniej 3 mm, żeby gruby
+tusz rysował czytelne krawędzie zamiast czarnej plamy. Każda broń ma trzy płaskie strefy: grafitowy
+`frame`, jasna stal `trim` (wierzchnia zamka lub komory, obręcze, celowniki) i guma `grip` (chwyt,
+kolba zwężona ku gumowej stopce, pompa), plus jeden świecący element w cyjanie gracza. Chwyty
+pistoletowe, łoża pod lewą dłonią, gniazda (`muzzle`, `support`) i obrys `frame` (od niego zależą
+moduły warsztatu) zostały w dawnych położeniach.
+
+| Plik               | Sylwetka                                                                     | Węzły dla kodu                                                                                                          | Trójkąty |
+| ------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| `blaster.glb`      | masywny zamek z garbem i stalową płytą, klin pod lufą, kabłąk z hakiem       | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 676      |
+| `pistol.glb`       | ścięty nos zamka, stalowa wierzchnia, kurek, trzy skośne nacięcia            | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 520      |
+| `rifle.glb`        | klinowa kolba z poduszką, stalowa komora, gniazdo i pochylony magazynek      | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 608      |
+| `scatter.glb`      | szeroka komora z radiatorem, dwie grube lufy, osłona z klinem i stalą, pompa | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 600      |
+| `sniper_rifle.glb` | luneta z dzwonami i wieżyczkami, hamulec z portami, zamek z gałką            | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 828      |
+| `beam.glb`         | emiter z czaszą, cewki, żebra radiatora, moduł zasilania z oknem ogniwa      | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 708      |
+| `emp_launcher.glb` | gruba tuba, fazowany bęben ze stalową piastą i pokrywami, dzwon wylotu       | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 852      |
+| `blade_twin.glb`   | krótsza rękojeść, fazowana poprzeczna osłona zwężona ku końcom               | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 552      |
+| `blade_staff.glb`  | długa rękojeść (0,8 m), fazowane gardła i pancerne tuleje, pazury emiterów   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 724      |
+
+Budżet broni i rękojeści po szlifie: ≤ 3000 trójkątów (test `tests/unit/weaponModels.test.ts`);
+modele mieszczą się w 500–850.
 
 Pivoty `blade` i `blade_back` leżą u emiterów, długość ostrza 1 m przy skali 1 (skaluj po Z).
 Model broni wskazuje pole `model` w `src/data/weapons/<id>.json`.
