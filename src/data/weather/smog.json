@@ -20,10 +20,10 @@
     "gustPeriodS": 11
   },
   "fog": {
-    "color": "#414250",
-    "density": 0.07,
+    "color": "#2e3040",
+    "density": 0.035,
     "heightM": 9,
-    "strength": 0.85,
+    "strength": 0.75,
     "nearM": 8,
     "farM": 100
   },
