@@ -1,7 +1,7 @@
 {
   "id": "cryoVentsRare",
   "name": "Radiator kriogeniczny Mk II",
-  "description": "Rozbudowany wymiennik ciepła powiększa pojemność cieplną i wzmacnia siłę ognia.",
+  "description": "Limit ciepła +30, tempo chłodzenia +22%, wszystkie obrażenia +8%.",
   "rarity": "rare",
   "tags": ["#gun"],
   "modifiers": [

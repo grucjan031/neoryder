@@ -1,7 +1,7 @@
 {
   "id": "stormSynapse",
   "name": "Synapsa burzowa Mk I",
-  "description": "Przewody impulsowe przyspieszają obieg energii i ruch agenta.",
+  "description": "Regeneracja energii +3/s, szybkość ruchu +6%.",
   "rarity": "common",
   "tags": ["#power", "#elektrycznosc"],
   "modifiers": [

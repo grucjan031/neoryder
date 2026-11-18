@@ -3,7 +3,7 @@
   "slot": "muzzle",
   "visual": { "shape": "brake", "color": "amber" },
   "name": "Rykoszet",
-  "description": "Pocisk odbija się raz od ściany.",
+  "description": "Pocisk odbija się od ściany 1 raz.",
   "tags": ["#ricochet"],
   "weaponKinds": ["projectile", "spread", "pierce", "lob"],
   "patches": [{ "op": "set", "path": "ricochets", "value": 1 }]

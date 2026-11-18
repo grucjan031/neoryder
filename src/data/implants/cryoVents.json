@@ -1,7 +1,7 @@
 {
   "id": "cryoVents",
   "name": "Radiator kriogeniczny Mk I",
-  "description": "Kanały chłodzące w przedramieniu odprowadzają ciepło z broni strzeleckiej.",
+  "description": "Limit ciepła +15, tempo chłodzenia +12%.",
   "rarity": "common",
   "tags": ["#gun"],
   "modifiers": [

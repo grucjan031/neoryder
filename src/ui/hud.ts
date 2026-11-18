@@ -10,7 +10,7 @@ import {
 import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
-import { RunHud, type RunHudSeed } from './runHud';
+import { RunHud, defeatMessage, type RunHudSeed } from './runHud';
 import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
 
@@ -220,6 +220,8 @@ export class Hud {
     text.changeBuild,
   );
   private readonly death = element('section', 'hud__death');
+  private readonly deathCause = element('p', 'hud__death-cause');
+  private readonly deathTip = element('p', 'hud__death-tip');
   private readonly denial = createFlash('hud__denial');
   private readonly damage = createFlash('hud__damage');
   private readonly lowHealth = element('div', 'hud__lowhp');
@@ -365,7 +367,12 @@ export class Hud {
     const actions = element('div', 'hud__actions');
     actions.append(this.retryButton);
     if (opts.onChangeBuild) actions.append(this.changeBuildButton);
-    this.death.append(element('h1', 'hud__death-title', text.died), actions);
+    this.death.append(
+      element('h1', 'hud__death-title', text.died),
+      this.deathCause,
+      this.deathTip,
+      actions,
+    );
     this.runHud = new RunHud(bus, opts.run);
     this.root.append(
       this.runHud.node,
@@ -544,7 +551,7 @@ export class Hud {
       bus.on('blade_returned', ({ owner }) => {
         if (owner === opts.playerId) this.blade.hidden = true;
       }),
-      bus.on('player_died', ({ id }) => {
+      bus.on('player_died', ({ id, cause }) => {
         if (id === opts.playerId) this.setJammed(false);
         if (
           id !== opts.playerId ||
@@ -556,6 +563,9 @@ export class Hud {
           document.activeElement instanceof HTMLElement
             ? document.activeElement
             : null;
+        const message = defeatMessage(cause);
+        this.deathCause.textContent = message.cause;
+        this.deathTip.textContent = message.tip;
         this.death.hidden = false;
         this.retryButton.focus();
       }),

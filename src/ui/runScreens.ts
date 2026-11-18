@@ -13,6 +13,7 @@ import { createLoadingTip } from './loadingTipView';
 import { createAchievementIcon } from './achievementIcons';
 import { achievementText, fill, rewardLabel } from './achievementText';
 import { achievementDefinitions } from '../progression/achievementsSchema';
+import { defeatMessage } from './runHud';
 
 const text = z
   .object({
@@ -107,6 +108,8 @@ export interface RunScreenView {
   state: RunState;
   nodes: readonly MapNode[];
   summary: RunSummary | null;
+  /** Przyczyna z run_ended; brak w starym zapisie daje uczciwy komunikat zastępczy. */
+  cause?: string;
   /** Nagrody meta za zakończony run (brak = sekcja nie jest pokazywana). */
   meta?: RunMetaView;
   /** Nagroda nie trafiła do zapisu (`save`) albo nie dała się naliczyć (`apply`). */
@@ -198,7 +201,7 @@ export class HtmlRunScreens implements RunScreens {
 
   constructor(parent = document.querySelector('#app') ?? document.body) {
     this.root.className = 'run-screen';
-    this.root.setAttribute('aria-label', 'Run');
+    this.root.setAttribute('aria-label', 'Wyprawa');
     this.panel.className = 'run-screen__panel';
     this.root.append(this.panel);
     this.map = new MapScreen(this.panel);
@@ -249,6 +252,11 @@ export class HtmlRunScreens implements RunScreens {
         outcome.className = 'run-screen__outcome';
         outcome.dataset.outcome = summary.outcome;
         this.panel.dataset.outcome = summary.outcome;
+        if (summary.outcome === 'death') {
+          const message = defeatMessage(view.cause);
+          this.line(message.cause);
+          this.line(message.tip);
+        }
         const stats = document.createElement('div');
         stats.className = 'run-screen__stats';
         const time = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;

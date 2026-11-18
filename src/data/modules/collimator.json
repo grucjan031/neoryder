@@ -1,7 +1,7 @@
 {
   "id": "collimator",
   "name": "Kolimator",
-  "description": "Celowanie (PPM) wchodzi dwa razy szybciej i mniej przybliża; pociski rozrzucają się w celowaniu jeszcze mniej.",
+  "description": "Celowanie: czas wejścia ×0,5, pole widzenia 85% zwykłego. Rozrzut ×0,6 względem bazowego celowania.",
   "slot": "optic",
   "visual": { "shape": "reddot", "color": "green" },
   "tags": ["#optic"],

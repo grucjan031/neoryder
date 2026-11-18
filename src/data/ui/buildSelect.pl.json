@@ -1,6 +1,6 @@
 {
-  "title": "Wybierz build",
-  "subtitle": "Ekwipunek na cały run: 12 fal Koalicji.",
+  "title": "Wybierz zestaw",
+  "subtitle": "Wybierz ekwipunek i styl walki przed rozpoczęciem akcji.",
   "hybridsTitle": "Hybrydy",
   "weapons": "Bronie",
   "powers": "Moce",
@@ -11,12 +11,12 @@
       {
         "id": "plasmaBlade",
         "name": "Plazmowe",
-        "description": "Zrównoważone: trzy cięcia combo, mocny blok."
+        "description": "Zrównoważone: seria 3 cięć, mocny blok."
       },
       {
         "id": "twinBlades",
         "name": "Bliźniacze",
-        "description": "Szybkie czteroetapowe combo, słabszy blok."
+        "description": "Szybka seria 4 cięć, słabszy blok."
       },
       {
         "id": "staffBlade",
@@ -28,7 +28,7 @@
   "builds": [
     {
       "id": "blade",
-      "description": "Ostrze w centrum walki: combo, parowanie i dash. Pistolet tylko na dystans."
+      "description": "Ostrze w centrum walki: serie cięć, parowanie i doskok. Pistolet wspiera walkę na dystans."
     },
     {
       "id": "resonance",
@@ -41,17 +41,17 @@
     {
       "id": "bladeDancer",
       "hybrid": true,
-      "description": "Udane parowanie oddaje energię i skraca odnowienie dashu."
+      "description": "Parowanie przywraca 10 energii i skraca odnowienie doskoku o 50% na 3 s."
     },
     {
       "id": "resonancePistolero",
       "hybrid": true,
-      "description": "Zabójstwo mocą w pełni chłodzi broń: strzelaj bez przerwy."
+      "description": "Zabójstwo mocą w pełni chłodzi broń."
     },
     {
       "id": "stormGunner",
       "hybrid": true,
-      "description": "Błyskawica przeciąża wrogów, a strzał w przeciążonego przeskakuje dalej."
+      "description": "Strzał w przeciążony cel wyzwala łuk do 6 m za 50% obrażeń trafienia."
     }
   ]
 }

@@ -265,7 +265,7 @@ export class RunManager {
         else if (tags.includes('#gun')) dmg.gun += amount;
         else dmg.other += amount;
       }),
-      bus.on('player_died', ({ id }) => {
+      bus.on('player_died', ({ id, cause }) => {
         if (!this.isRunActive() || !this.currentState) return;
         if (this.playerId !== null && id !== this.playerId) return;
         if (
@@ -274,7 +274,7 @@ export class RunManager {
         )
           return;
         this.currentState.hp = 0;
-        this.finish('death');
+        this.finish('death', cause);
       }),
     );
   }
@@ -710,7 +710,7 @@ export class RunManager {
    * Kończy run ze wskazanym wynikiem (`'victory' | 'death'`), przechodzi do ekranu `summary`
    * i emituje `run_ended` z podsumowaniem `RunSummary`. Wywołanie powtórne jest idempotentne.
    */
-  finish(outcome: RunOutcome): RunSummary {
+  finish(outcome: RunOutcome, cause?: string): RunSummary {
     if (!this.currentState)
       throw new Error('Run nie został jeszcze rozpoczęty ani wczytany.');
     if (this.currentScreen === 'summary' && this.lastSummary)
@@ -762,6 +762,7 @@ export class RunManager {
     this.bus.emit('run_ended', {
       outcome,
       summary: structuredClone(summary),
+      ...(outcome === 'death' && cause !== undefined ? { cause } : {}),
     });
     return structuredClone(summary);
   }

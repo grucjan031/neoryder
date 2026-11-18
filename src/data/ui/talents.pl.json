@@ -1,5 +1,5 @@
 {
-  "freePoints": "Wolne punkty: {n}",
+  "freePoints": "Punkty talentów: {n}",
   "level": "Poziom {n}",
   "trees": {
     "blade": "Ostrze",
@@ -10,7 +10,7 @@
   "tier": "Próg {tier}",
   "tierRequirement": "{need} pkt w drzewku (wydane: {spent})",
   "tierOpen": "bez wymagań (wydane: {spent})",
-  "cost": "Koszt: {n}",
+  "cost": "Koszt: {n} pkt talentów",
   "states": {
     "bought": "kupiony",
     "available": "dostępny",
@@ -25,7 +25,7 @@
     "treeJoin": " i "
   },
   "detailsHint": "Najedź na węzeł lub wybierz go klawiaturą, by zobaczyć opis.",
-  "detailsCost": "Koszt: {n}",
+  "detailsCost": "Koszt: {n} pkt talentów",
   "reset": "Resetuj talenty",
   "resetConfirm": "Potwierdź reset",
   "resetDone": "Talenty zresetowane.",
