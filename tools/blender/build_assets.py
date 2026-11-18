@@ -1049,12 +1049,61 @@ def _fpp_trigger(y, z_top, depth=.022):
     return block(-.004, .004, y - .006, y + .004, z_top - depth, z_top, taper_top=(1, 1.6))
 
 
+# Szlif FPP, runda 2: kamera gracza widzi broń od tyłu, z góry i z lewego boku (-X), więc tam
+# idą czytelne kształty: przyrządy celownicze z profilu czołowego, szyny z poprzecznymi żebrami,
+# świecące kanały rdzenia na wierzchu (cyjan w `heat_vents`), stalowe panele z ciemną plakietką
+# i 2–3 dużymi śrubami. Obrys `frame`, `grip`, `heat_cell` i długość modelu zostają (moduły warsztatu).
+
+def slab_xz(pts, y0, y1, ch=0.0):
+    """Bryła z profilu czołowego (x, z) wyciągnięta po Y: od tyłu widać dokładnie ten kształt."""
+    bm = slab(pts, y0, y1, ch)
+    for v in bm.verts:
+        v.co.x, v.co.y = v.co.y, v.co.x
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
+def _u_sight(y0, y1, half, z0, z1, notch, z_notch, ch=0.0):
+    """Szczerbinka w kształcie U (profil czołowy): dwa uszy i wycięcie na linię celowania."""
+    return slab_xz([(-half, z0), (half, z0), (half, z1), (notch, z1), (notch, z_notch), (-notch, z_notch),
+                    (-notch, z1), (-half, z1)], y0, y1, ch)
+
+
+def _ribbed_rail(y0, y1, n, z0, z1, z2, half_x, fill=0.5):
+    """Szyna z poprzecznymi żebrami: podstawa z0..z1 i n żeber do z2 (jeden profil grzebienia)."""
+    step = (y1 - y0) / n
+    pts = [(y0, z0), (y1, z0), (y1, z1)]
+    for i in reversed(range(n)):
+        a = y0 + i * step + step * (1 - fill) / 2
+        b = a + step * fill
+        pts += [(b, z1), (b, z2), (a, z2), (a, z1)]
+    pts.append((y0, z1))
+    return slab(pts, -half_x, half_x)
+
+
+def _side_plaque(x, y0, y1, z0, z1, depth=0.003):
+    """Plakietka numeru seryjnego na lewym boku (x < 0): płaski, ciemniejszy prostokąt bez tekstu."""
+    return block(x - depth, x + 0.0005, y0, y1, z0, z1)
+
+
+def _side_bolts(x, points, size=0.007, depth=0.003):
+    """Duże kwadratowe śruby na lewym boku: 2–3 sztuki zamiast drobnicy."""
+    return [block(x - depth, x + 0.0005, y - size / 2, y + size / 2, z - size / 2, z + size / 2,
+                  taper_top=(0.7, 0.7)) for y, z in points]
+
+
+def _chevron(y0, y1, zb, half, h, t):
+    """Żebro radiatora w kształcie litery V (profil czołowy), ramiona wystają poza boki zamka."""
+    return slab_xz([(-t, zb), (t, zb), (half, zb + h - t), (half, zb + h), (half - t * 1.6, zb + h),
+                    (0, zb + t * 1.2), (-half + t * 1.6, zb + h), (-half, zb + h), (-half, zb + h - t)], y0, y1)
+
+
 def build_blaster():
-    """Blaster gracza z przegrzaniem: masywny pistolet energetyczny z garbem zamka i kołpakiem lufy."""
+    """Blaster gracza z przegrzaniem: masywny zamek z garbem, tylny radiator V, żebrowana szyna."""
     frame = bm_merge(
         # zamek z garbem nad chwytem i ściętym nosem
-        slab([(-0.074, 0.03), (0.17, 0.03), (0.19, 0.046), (0.19, 0.09), (0.172, 0.1), (0.022, 0.1),
-              (0.004, 0.108), (-0.05, 0.108), (-0.064, 0.1), (-0.076, 0.07)], -0.025, 0.025, ch=0.006),
+        slab([(-0.068, 0.03), (0.17, 0.03), (0.19, 0.046), (0.19, 0.09), (0.172, 0.1), (0.022, 0.1),
+              (0.004, 0.108), (-0.056, 0.108), (-0.068, 0.096)], -0.025, 0.025, ch=0.006),
         # osłona pod lufą: cięższy przód, klin w dół
         slab([(0.07, 0.016), (0.196, 0.016), (0.214, 0.03), (0.214, 0.044), (0.07, 0.044)], -0.017, 0.017,
              ch=0.004),
@@ -1064,29 +1113,44 @@ def build_blaster():
              ch=0.003),
         lathe([(0.185, 0.021), (0.29, 0.017)], z=0.07),  # lufa
         lathe([(0.28, 0.021), (0.289, 0.027), (0.318, 0.027), (0.326, 0.021)], z=0.07),  # kołpak lufy
-        block(-0.008, -0.003, -0.062, -0.034, 0.104, 0.12, taper_top=(1, 0.7)),  # szczerbinka (dwa słupki)
-        block(0.003, 0.008, -0.062, -0.034, 0.104, 0.12, taper_top=(1, 0.7)),
+        _u_sight(-0.046, -0.034, 0.015, 0.104, 0.122, 0.0045, 0.111),  # szczerbinka U na garbie
         block(-0.004, 0.004, 0.158, 0.178, 0.098, 0.118, taper_top=(1, 0.5)),  # muszka
+        _side_plaque(-0.0285, -0.05, -0.022, 0.058, 0.076),  # plakietka na stalowym panelu
+        *_side_bolts(-0.0285, [(-0.058, 0.053), (-0.058, 0.083), (-0.012, 0.053)]),
+        # żebra tylnego radiatora V na stalowej tarczy (grafit na stali: kontrast z oczu gracza)
+        _chevron(-0.0765, -0.072, 0.04, 0.02, 0.024, 0.005),
+        _chevron(-0.0765, -0.072, 0.074, 0.031, 0.034, 0.005),
     )
     grip = block(-0.021, 0.021, -0.05, 0.01, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.006)
     trim = bm_merge(
-        block(-0.009, 0.009, 0.026, 0.15, 0.098, 0.106, bevel=0.002),  # szyna na zamku
-        slab([(-0.0645, 0.0995), (0.024, 0.0995), (0.005, 0.1088), (-0.05, 0.1088)], -0.0205, 0.0205,
+        _ribbed_rail(0.03, 0.15, 5, 0.098, 0.103, 0.111, 0.009),  # szyna z poprzecznymi żebrami
+        slab([(-0.066, 0.097), (0.024, 0.097), (0.005, 0.1088), (-0.0555, 0.1088)], -0.0205, 0.0205,
              ch=0.003),  # stalowa płyta garbu
-        *_fpp_plate(0.0255, -0.062, -0.012, 0.045, 0.088),  # płytki boczne tyłu zamka
+        # tylna tarcza radiatora w kształcie V: szersza niż zamek, czytelna sylwetka od tyłu
+        slab_xz([(0.0, 0.03), (0.033, 0.07), (0.033, 0.112), (-0.033, 0.112), (-0.033, 0.07)], -0.0725, -0.067),
+        # duży stalowy panel lewego boku (od strony kamery) i płytka prawa
+        slab([(-0.066, 0.044), (-0.004, 0.044), (-0.004, 0.08), (-0.018, 0.094), (-0.056, 0.094),
+              (-0.066, 0.084)], -0.0285, -0.0245),
+        block(0.0245, 0.0275, -0.062, -0.012, 0.045, 0.088),
         band(0.298, 0.312, 0.029, 0.003, z=0.07),  # pierścień kołpaka
         lathe([(0.17, 0.024), (0.19, 0.021)], z=0.07),  # nasada lufy
         _fpp_trigger(0.035, 0.03),
         block(-0.023, 0.023, -0.047, 0.007, -0.088, -0.082),  # obejma ogniwa
         slab([(0.07, 0.044), (0.2, 0.044), (0.2, 0.05), (0.07, 0.05)], -0.012, 0.012),  # listwa osłony
     )
-    vents = bm_merge(*_vent_bars(4, 0.0, 0.035, 0.018, 0.045, 0.085, 0.027))
+    vents = bm_merge(
+        *_vent_bars(4, 0.0, 0.035, 0.018, 0.045, 0.085, 0.027),
+        # kanały rdzenia po obu stronach szyny: energia widoczna z góry
+        block(-0.017, -0.011, 0.032, 0.148, 0.098, 0.1025),
+        block(0.011, 0.017, 0.032, 0.148, 0.098, 0.1025),
+        _chevron(-0.0755, -0.072, 0.056, 0.026, 0.028, 0.005),  # świecące V między żebrami radiatora
+    )
     cell = block(-0.023, 0.023, -0.045, 0.005, -0.12, -0.092, bevel=0.003)
     return weapon_root("blaster", frame, vents, cell, (0, 0.33, 0.07), trim=trim, grip=grip)
 
 
 def build_pistol():
-    """Pistolet: zwarty, ścięty nos zamka, pochylony chwyt, trzy skośne cyjanowe nacięcia."""
+    """Pistolet: wysoka szczerbinka U z kropkami, świecąca szczelina na zamku, ryflowanie, kurek."""
     frame = bm_merge(
         # zamek: ścięty nos i pochylony tył
         slab([(-0.042, 0.022), (0.118, 0.022), (0.128, 0.03), (0.128, 0.058), (0.112, 0.075),
@@ -1097,26 +1161,43 @@ def build_pistol():
         slab([(0.002, 0.012), (0.002, 0.0), (0.044, 0.0), (0.052, 0.006), (0.052, 0.012), (0.046, 0.012),
               (0.046, 0.0065), (0.042, 0.0045), (0.008, 0.0045), (0.008, 0.012)], -0.006, 0.006, ch=0.0015),
         lathe([(0.12, 0.012), (0.142, 0.012), (0.15, 0.0095)], z=0.052),  # wylot lufy
-        block(-0.007, -0.003, -0.036, -0.018, 0.074, 0.09, taper_top=(1, 0.7)),  # szczerbinka
-        block(0.003, 0.007, -0.036, -0.018, 0.074, 0.09, taper_top=(1, 0.7)),
+        _u_sight(-0.038, -0.024, 0.016, 0.074, 0.1, 0.005, 0.087),  # wysoka szczerbinka U
+        _side_plaque(-0.021, -0.003, 0.015, 0.036, 0.062),  # plakietka na stalowym panelu
     )
     grip = block(-0.018, 0.018, -0.04, 0.0, -0.09, 0.02, taper_top=(1.0, 1.2), bevel=0.005)
     trim = bm_merge(
-        # stalowa wierzchnia zamka: druga strefa koloru widoczna z oczu gracza
-        slab([(-0.042, 0.06), (0.126, 0.06), (0.112, 0.0758), (-0.03, 0.0758)], -0.0205, 0.0205, ch=0.003),
-        block(-0.003, 0.003, 0.094, 0.106, 0.078, 0.091, taper_top=(1, 0.5)),  # muszka
-        *_fpp_plate(0.0205, -0.036, 0.012, 0.03, 0.068),  # płytki tyłu zamka
+        # stalowa wierzchnia zamka: dwie szyny nad świecącą szczeliną
+        slab([(-0.042, 0.06), (0.126, 0.06), (0.11, 0.08), (-0.03, 0.08)], -0.0205, -0.0075, ch=0.003),
+        slab([(-0.042, 0.06), (0.126, 0.06), (0.11, 0.08), (-0.03, 0.08)], 0.0075, 0.0205, ch=0.003),
+        block(-0.003, 0.003, 0.094, 0.106, 0.076, 0.091, taper_top=(1, 0.5)),  # muszka w szczelinie
+        # ryflowanie tyłu zamka: dwa grube skośne żebra
+        *[slab([(y, 0.03), (y + 0.007, 0.03), (y + 0.011, 0.068), (y + 0.004, 0.068)], -0.0235, 0.0235)
+          for y in (-0.036, -0.021)],
+        block(-0.0215, -0.0195, -0.006, 0.018, 0.031, 0.067),  # stalowy panel pod plakietką
         band(0.136, 0.146, 0.0155, 0.002, z=0.052),  # pierścień wylotu
         _fpp_trigger(0.025, 0.02, depth=0.018),
-        slab([(-0.053, 0.048), (-0.04, 0.048), (-0.04, 0.066), (-0.05, 0.063)], -0.006, 0.006, ch=0.002),  # kurek
+        # tylna płyta zamka: dwie stalowe połówki wokół pionowej świecącej szczeliny
+        block(-0.019, -0.0045, -0.048, -0.042, 0.025, 0.06),
+        block(0.0045, 0.019, -0.048, -0.042, 0.025, 0.06),
+        # kurek z ostrogą nad tyłem zamka
+        slab([(-0.052, 0.046), (-0.041, 0.046), (-0.041, 0.072), (-0.046, 0.081), (-0.053, 0.081),
+              (-0.053, 0.075), (-0.049, 0.069)], -0.007, 0.007, ch=0.002),
     )
-    vents = bm_merge(*_vent_bars(3, 0.02, 0.03, 0.016, 0.035, 0.065, 0.0215))
+    vents = bm_merge(
+        *_vent_bars(3, 0.02, 0.03, 0.016, 0.035, 0.065, 0.0215),
+        block(-0.0075, 0.0075, -0.022, 0.108, 0.07, 0.077),  # świecąca szczelina na wierzchu zamka
+        block(-0.0045, 0.0045, -0.047, -0.042, 0.028, 0.046),  # szczelina w tylnej płycie (pod kurkiem)
+        # kropki szczerbinki i muszki (od strony oka)
+        block(-0.0125, -0.0065, -0.0395, -0.0375, 0.089, 0.095),
+        block(0.0065, 0.0125, -0.0395, -0.0375, 0.089, 0.095),
+        block(-0.002, 0.002, 0.0925, 0.0942, 0.081, 0.087),
+    )
     cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09, bevel=0.002)
     return weapon_root("pistol", frame, vents, cell, (0, 0.155, 0.052), trim=trim, grip=grip)
 
 
 def build_rifle():
-    """Karabin: klinowa kolba, komora z gniazdem magazynka, łoże z fazami, tłumik."""
+    """Karabin: klinowa kolba, żebrowana szyna z uszami celowników, świecące kanały łoża, dźwignia."""
     frame = bm_merge(
         slab([(-0.08, 0.0), (0.2, 0.0), (0.2, 0.1), (-0.052, 0.1), (-0.082, 0.072)], -0.025, 0.025,
              ch=0.006),  # komora
@@ -1125,6 +1206,8 @@ def build_rifle():
              -0.022, 0.022, ch=0.005),  # łoże
         lathe([(0.42, 0.014), (0.575, 0.012)], z=0.05),  # lufa
         lathe([(0.565, 0.017), (0.574, 0.021), (0.612, 0.021), (0.62, 0.016)], z=0.05),  # tłumik
+        _side_plaque(-0.0285, -0.034, 0.02, 0.042, 0.064),
+        *_side_bolts(-0.0285, [(-0.058, 0.03), (-0.058, 0.074), (0.046, 0.03)]),
     )
     grip = bm_merge(
         # kolba klinowa: górna linia przedłuża komorę, spód ścięty ku chwytowi
@@ -1136,15 +1219,28 @@ def build_rifle():
     trim = bm_merge(
         slab([(-0.07, 0.084), (0.2, 0.084), (0.2, 0.1008), (-0.052, 0.1008)], -0.0255, 0.0255,
              ch=0.004),  # stalowa górna komora
-        block(-0.008, 0.008, 0.0, 0.24, 0.1, 0.112, bevel=0.002),  # szyna
-        slab([(0.018, 0.112), (0.052, 0.112), (0.048, 0.138), (0.026, 0.138)], -0.012, 0.012, ch=0.002),  # celownik
-        block(-0.006, 0.006, 0.2, 0.22, 0.112, 0.136, taper_top=(1, 0.5)),  # muszka
+        _ribbed_rail(0.0, 0.24, 8, 0.1, 0.105, 0.113, 0.0085),  # szyna z poprzecznymi żebrami
+        _u_sight(0.018, 0.034, 0.015, 0.11, 0.138, 0.0045, 0.122),  # tylny celownik: uszy i wycięcie
+        # muszka w uszach ochronnych
+        slab_xz([(-0.013, 0.11), (0.013, 0.11), (0.013, 0.136), (0.007, 0.136), (0.007, 0.118),
+                 (0.002, 0.118), (0.002, 0.13), (-0.002, 0.13), (-0.002, 0.118), (-0.007, 0.118),
+                 (-0.007, 0.136), (-0.013, 0.136)], 0.2, 0.214),
         *_fpp_plate(0.0255, -0.07, 0.06, 0.02, 0.085),  # płyty komory
+        block(-0.0055, 0.0055, 0.214, 0.398, 0.084, 0.091),  # grzbiet łoża między kanałami
         band(0.598, 0.612, 0.0235, 0.003, z=0.05),  # czoło tłumika
         block(-0.018, 0.018, -0.17, -0.1, 0.07, 0.09, taper_top=(0.8, 0.9)),  # poduszka policzkowa
+        block(-0.034, 0.034, -0.074, -0.062, 0.093, 0.1, bevel=0.002),  # dźwignia przeładowania (T)
+        block(-0.018, -0.0105, -0.058, -0.004, 0.099, 0.108),  # grzbiety okna rdzenia na komorze
+        block(0.0105, 0.018, -0.058, -0.004, 0.099, 0.108),
         _fpp_trigger(-0.005, 0.0),
     )
-    vents = bm_merge(*_vent_bars(4, 0.24, 0.045, 0.022, 0.03, 0.07, 0.0235))
+    vents = bm_merge(
+        *_vent_bars(4, 0.24, 0.045, 0.022, 0.03, 0.07, 0.0235),
+        block(-0.0155, -0.0085, 0.216, 0.396, 0.082, 0.0875),  # kanały rdzenia na wierzchu łoża
+        block(0.0085, 0.0155, 0.216, 0.396, 0.082, 0.0875),
+        block(-0.0015, 0.0015, 0.1995, 0.201, 0.124, 0.13),  # kropka muszki
+        block(-0.0105, 0.0105, -0.056, -0.006, 0.099, 0.104),  # okno rdzenia na wierzchu komory
+    )
     # ogniwo jak magazynek: pochylony do przodu, lekko wygięty
     cell = slab([(0.07, 0.0), (0.14, 0.0), (0.145, -0.05), (0.148, -0.096), (0.088, -0.1), (0.077, -0.05)],
                 -0.019, 0.019, ch=0.003)
@@ -1152,13 +1248,15 @@ def build_rifle():
 
 
 def build_scatter():
-    """Rozpraszacz: szeroka komora z radiatorem, dwie grube lufy, osłona z klinem, pompa."""
+    """Rozpraszacz: szeroka komora z radiatorem nad rdzeniem, dwie lufy, osłona z kanałem, pompa."""
     frame = bm_merge(
         slab([(0.0, 0.0), (0.2, 0.0), (0.2, 0.1), (0.032, 0.1), (0.0, 0.078)], -0.05, 0.05, ch=0.008),  # komora
         lathe([(0.2, 0.028), (0.41, 0.028), (0.42, 0.024)], x=-0.03, z=0.07),
         lathe([(0.2, 0.028), (0.41, 0.028), (0.42, 0.024)], x=0.03, z=0.07),
         slab([(0.2, 0.035), (0.29, 0.035), (0.31, 0.058), (0.31, 0.105), (0.2, 0.105)], -0.06, 0.06,
              ch=0.008),  # osłona
+        _side_plaque(-0.062, 0.222, 0.27, 0.07, 0.09),
+        *_side_bolts(-0.062, [(0.282, 0.08), (0.212, 0.056)], size=0.007),
     )
     grip = bm_merge(
         block(-0.034, 0.034, 0.22, 0.34, -0.005, 0.03, bevel=0.005),  # pompa
@@ -1168,22 +1266,32 @@ def build_scatter():
         block(-0.022, 0.022, -0.148, -0.134, -0.027, 0.088, bevel=0.004),  # gumowa stopka
     )
     trim = bm_merge(
-        # radiator na komorze: pięć poprzecznych żeber
-        *[block(-0.03, 0.03, 0.04 + i * 0.03, 0.054 + i * 0.03, 0.098, 0.114, taper_top=(0.8, 0.6))
+        # radiator na komorze: pięć poprzecznych żeber nad świecącym rdzeniem
+        *[block(-0.034, 0.034, 0.05 + i * 0.03, 0.064 + i * 0.03, 0.098, 0.116, taper_top=(0.8, 0.6))
           for i in range(5)],
+        _u_sight(0.026, 0.04, 0.02, 0.094, 0.13, 0.0065, 0.114),  # duża szczerbinka nad tyłem komory
         block(-0.062, 0.062, 0.385, 0.405, 0.035, 0.105, bevel=0.003),  # opaska luf
-        slab([(0.2, 0.09), (0.31, 0.09), (0.31, 0.1058), (0.2, 0.1058)], -0.0605, 0.0605, ch=0.004),  # stalowy dach
+        # stalowy dach osłony rozcięty kanałem rdzenia
+        slab([(0.2, 0.09), (0.31, 0.09), (0.31, 0.11), (0.2, 0.11)], -0.0605, -0.011, ch=0.003),
+        slab([(0.2, 0.09), (0.31, 0.09), (0.31, 0.11), (0.2, 0.11)], 0.011, 0.0605, ch=0.003),
+        block(-0.004, 0.004, 0.292, 0.306, 0.104, 0.122, taper_top=(1, 0.5)),  # muszka na dachu
         *[block(-0.036, 0.036, 0.235 + i * 0.03, 0.245 + i * 0.03, -0.009, 0.0) for i in range(3)],  # żeberka pompy
         *_fpp_plate(0.0505, 0.0, 0.2, 0.012, 0.04),  # listwy boczne komory
+        slab([(0.208, 0.046), (0.296, 0.046), (0.296, 0.098), (0.208, 0.098)], -0.0615, -0.0595,
+             ch=0.0),  # stalowy panel boku osłony
         _fpp_trigger(0.0, 0.0),
     )
-    vents = bm_merge(*_vent_bars(4, 0.02, 0.045, 0.018, 0.045, 0.092, 0.052))
+    vents = bm_merge(
+        *_vent_bars(4, 0.02, 0.045, 0.018, 0.045, 0.092, 0.052),
+        block(-0.03, 0.03, 0.044, 0.196, 0.098, 0.108),  # rdzeń pod radiatorem
+        block(-0.011, 0.011, 0.204, 0.306, 0.1, 0.106),  # kanał w dachu osłony
+    )
     cell = block(-0.025, 0.025, -0.01, 0.06, -0.15, -0.115, bevel=0.003)
     return weapon_root("scatter", frame, vents, cell, (0, 0.43, 0.07), trim=trim, grip=grip)
 
 
 def build_sniper_rifle():
-    """Snajperka: bardzo długa lufa z hamulcem z portami, luneta z dzwonami, kolba z poduszką, zamek."""
+    """Snajperka: luneta ze świecącym okularem, hamulec z portami, łoże z kanałami, kolba z poduszką."""
     frame = bm_merge(
         slab([(-0.08, 0.0), (0.2, 0.0), (0.2, 0.085), (-0.058, 0.085), (-0.082, 0.064)], -0.02, 0.02,
              ch=0.005),  # komora
@@ -1197,6 +1305,8 @@ def build_sniper_rifle():
         # luneta: cienka tuba, dzwon okularu i obiektywu
         lathe([(-0.062, 0.024), (-0.055, 0.031), (-0.012, 0.031), (0.004, 0.024), (0.29, 0.024),
                (0.33, 0.036), (0.4, 0.036)], z=0.145),
+        _side_plaque(-0.021, -0.03, 0.02, 0.03, 0.052),
+        *_side_bolts(-0.021, [(-0.054, 0.024), (0.034, 0.024)]),
     )
     grip = bm_merge(
         _taper_x(slab([(-0.242, -0.04), (-0.214, -0.04), (-0.13, 0.012), (-0.078, 0.02), (-0.078, 0.085),
@@ -1216,9 +1326,16 @@ def build_sniper_rifle():
         block(0.018, 0.04, 0.03, 0.042, 0.066, 0.076),  # rączka zamka (przed dłonią)
         bm_ico(0.009, center=(0.044, 0.036, 0.068), subdiv=1),  # gałka zamka
         block(-0.019, 0.019, -0.19, -0.1, 0.07, 0.092, taper_top=(0.8, 0.9)),  # poduszka policzkowa
+        block(-0.0215, -0.0195, -0.062, 0.04, 0.014, 0.062),  # stalowy panel lewego boku komory
+        block(-0.0045, 0.0045, 0.22, 0.528, 0.069, 0.075),  # grzbiet łoża między kanałami
         _fpp_trigger(-0.005, 0.0),
     )
-    vents = bm_merge(*_vent_bars(4, 0.3, 0.055, 0.02, 0.03, 0.062, 0.0195))
+    vents = bm_merge(
+        *_vent_bars(4, 0.3, 0.055, 0.02, 0.03, 0.062, 0.0195),
+        lathe([(-0.0645, 0.0185), (-0.06, 0.0185)], z=0.145),  # świecący okular lunety (od strony oka)
+        block(-0.0125, -0.0065, 0.222, 0.526, 0.067, 0.0715),  # kanały rdzenia na wierzchu łoża
+        block(0.0065, 0.0125, 0.222, 0.526, 0.067, 0.0715),
+    )
     # ogniwo ciepła jako magazynek pod komorą (na kolbie świeciło tuż przy kamerze)
     cell = slab([(0.05, 0.0), (0.11, 0.0), (0.118, -0.068), (0.062, -0.07)], -0.015, 0.015, ch=0.002)
     lens = tube(0.395, 0.405, 0.03, 0.03, sides=8, z=0.145)
@@ -1227,13 +1344,15 @@ def build_sniper_rifle():
 
 
 def build_beam():
-    """Laser: gruby emiter z czaszą na froncie, cewki i żebra radiatora, moduł zasilania z oknem ogniwa."""
+    """Laser: emiter z czaszą, cewki i żebra, moduł zasilania z kanałem rdzenia i przeziernikiem."""
     frame = bm_merge(
         lathe([(0.0, 0.034), (0.02, 0.037), (0.3, 0.042)], z=0.07, flat=False),  # rura emitera
-        slab([(-0.1, 0.035), (0.02, 0.035), (0.02, 0.09), (-0.068, 0.09), (-0.1, 0.07)], -0.024, 0.024,
+        slab([(-0.094, 0.035), (0.02, 0.035), (0.02, 0.09), (-0.068, 0.09), (-0.094, 0.072)], -0.024, 0.024,
              ch=0.005),  # moduł zasilania
         block(-0.014, 0.014, 0.03, 0.09, 0.0, 0.012, bevel=0.003),  # kabłąk
         lathe([(0.296, 0.045), (0.312, 0.058), (0.336, 0.058), (0.342, 0.052)], z=0.07),  # czasza emitera
+        _side_plaque(-0.0275, -0.07, -0.03, 0.054, 0.072),
+        *_side_bolts(-0.0275, [(-0.08, 0.05), (-0.015, 0.05)]),
     )
     grip = block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.004)
     trim = bm_merge(
@@ -1242,19 +1361,28 @@ def build_beam():
         block(-0.006, 0.006, 0.07, 0.25, 0.108, 0.116),  # grzbiet łączący żebra
         *[block(s * 0.05 - 0.004, s * 0.05 + 0.004, 0.03, 0.3, 0.064, 0.076) for s in (-1, 1)],  # pręty klatki cewek
         band(0.33, 0.346, 0.061, 0.003, z=0.07),  # obręcz czaszy
-        slab([(-0.0905, 0.076), (0.02, 0.076), (0.02, 0.0908), (-0.068, 0.0908)], -0.0245, 0.0245,
-             ch=0.003),  # stalowa pokrywa modułu zasilania
+        # stalowa pokrywa modułu zasilania rozcięta kanałem rdzenia
+        slab([(-0.0882, 0.076), (0.02, 0.076), (0.02, 0.094), (-0.068, 0.094)], -0.0245, -0.007, ch=0.003),
+        slab([(-0.0882, 0.076), (0.02, 0.076), (0.02, 0.094), (-0.068, 0.094)], 0.007, 0.0245, ch=0.003),
+        # tylna płyta modułu: dwie stalowe połówki wokół świecącej szczeliny
+        block(-0.025, -0.006, -0.1, -0.093, 0.035, 0.071),
+        block(0.006, 0.025, -0.1, -0.093, 0.035, 0.071),
+        _u_sight(-0.062, -0.05, 0.016, 0.092, 0.118, 0.005, 0.105),  # przeziernik na tyle modułu
         *_fpp_plate(0.0245, -0.09, 0.01, 0.045, 0.08),
         _fpp_trigger(0.06, 0.0, depth=0.02),
     )
-    coils = bm_merge(*[band(0.04 + i * 0.065, 0.062 + i * 0.065, 0.053, 0.003, z=0.07) for i in range(4)])
+    coils = bm_merge(
+        *[band(0.04 + i * 0.065, 0.062 + i * 0.065, 0.053, 0.003, z=0.07) for i in range(4)],
+        block(-0.007, 0.007, -0.074, 0.018, 0.086, 0.0915),  # kanał rdzenia na wierzchu modułu
+        block(-0.006, 0.006, -0.098, -0.093, 0.039, 0.067),  # szczelina rdzenia w tylnej płycie
+    )
     lens = tube(0.34, 0.352, 0.044, 0.01, sides=8, z=0.07)
     cell = slab([(-0.094, 0.04), (-0.03, 0.04), (-0.03, 0.08), (-0.068, 0.08), (-0.094, 0.064)], -0.026, 0.026)
     return weapon_root("beam", frame, coils, cell, (0, 0.36, 0.07), extra=[("lens", lens)], trim=trim, grip=grip)
 
 
 def build_emp_launcher():
-    """Granatnik EMP: gruba tuba, fazowany bęben, dzwon wylotu, kondensator na grzbiecie."""
+    """Granatnik EMP: gruba tuba, bęben ze świecącym pierścieniem komór od tyłu, żebrowana szyna."""
     frame = bm_merge(
         lathe([(0.03, 0.05), (0.375, 0.05)], z=0.07, flat=False),  # tuba (jak dawniej: dłoń podpierająca)
         lathe([(0.37, 0.052), (0.39, 0.058), (0.43, 0.07), (0.45, 0.07)], z=0.07),  # dzwon wylotu
@@ -1268,7 +1396,13 @@ def build_emp_launcher():
         block(-0.014, 0.014, 0.1, 0.16, -0.02, 0.01),  # chwyt przedni
     )
     trim = bm_merge(
-        block(-0.007, 0.007, 0.2, 0.3, 0.112, 0.13, bevel=0.002),  # szyna
+        _ribbed_rail(0.2, 0.3, 4, 0.112, 0.12, 0.13, 0.007),  # szyna z poprzecznymi żebrami
+        # krzyż X na tyle bębna: dzieli świecący pierścień na cztery komory
+        *[slab_xz([(0.058 * c - 0.0045 * s, 0.07 + 0.058 * s + 0.0045 * c),
+                   (-0.058 * c - 0.0045 * s, 0.07 - 0.058 * s + 0.0045 * c),
+                   (-0.058 * c + 0.0045 * s, 0.07 - 0.058 * s - 0.0045 * c),
+                   (0.058 * c + 0.0045 * s, 0.07 + 0.058 * s - 0.0045 * c)], -0.025, -0.019)
+          for c, s in ((0.7071, 0.7071), (0.7071, -0.7071))],
         lathe([(-0.026, 0.03), (-0.022, 0.042), (-0.014, 0.042)], z=0.07),  # stalowa piasta bębna (widok z tyłu)
         band(-0.004, 0.006, 0.077, 0.002, z=0.07),  # obręcze bębna
         band(0.074, 0.084, 0.077, 0.002, z=0.07),
@@ -1277,8 +1411,10 @@ def build_emp_launcher():
         band(0.44, 0.456, 0.073, 0.003, z=0.07),  # krawędź wylotu
         _fpp_trigger(0.05, 0.0),
     )
-    rings = bm_merge(*[band(0.14 + i * 0.07, 0.16 + i * 0.07, 0.055, 0.003, z=0.07, flat=False)
-                       for i in range(3)])
+    rings = bm_merge(
+        *[band(0.14 + i * 0.07, 0.16 + i * 0.07, 0.055, 0.003, z=0.07, flat=False) for i in range(3)],
+        lathe([(-0.0225, 0.056), (-0.019, 0.056)], z=0.07),  # świecący pierścień komór (tył bębna)
+    )
     cell = slab([(0.0, 0.142), (0.08, 0.142), (0.08, 0.154), (0.072, 0.162), (0.008, 0.162), (0.0, 0.154)],
                 -0.018, 0.018, ch=0.003)
     return weapon_root("emp_launcher", frame, rings, cell, (0, 0.46, 0.07), trim=trim, grip=grip)
