@@ -19,6 +19,7 @@ import {
 import type { UrbanKind } from './urbanMaterials';
 import { printMaterial, syncPrintPower } from './propPrints';
 import { getPowerLevel } from './powerLevel';
+import { addEnemyRim, syncEnemyRim } from './enemyRim';
 
 export type MaterialKind =
   | 'world'
@@ -88,9 +89,7 @@ const gridUniforms = {
   gridLineWidth: { value: 1 },
 };
 const cache = new Map<StyleKind, StyleMaterial>();
-/** Jasność kombinezonu wroga względem jego czerwieni (liniowo). */
-const ENEMY_DARK_SHADE = 0.16;
-/** Siła poświaty krawędzi kombinezonu względem płyt. */
+/** Siła poświaty krawędzi kombinezonu względem płyt (część klucza programu). */
 const ENEMY_DARK_RIM = 0.6;
 const warnedNames = new Set<string>();
 export const gradientMap = new DataTexture(
@@ -151,10 +150,12 @@ function addFloorGrid(material: MeshToonMaterial): void {
   material.customProgramCacheKey = () => 'floorGrid';
 }
 
-/** Kolor materiału; ciemny kombinezon wroga wynika z czerwieni wroga (bez osobnej wartości w tuning). */
+/** Kolor materiału; ciemny kombinezon wroga wynika z czerwieni wroga (`tuning.vfx.enemyDarkShade`). */
 function colorFor(kind: StyleKind, target = new Color()): Color {
   if (kind === 'enemyDark')
-    return target.set(tuning.render.enemy).multiplyScalar(ENEMY_DARK_SHADE);
+    return target
+      .set(tuning.render.enemy)
+      .multiplyScalar(tuning.vfx.enemyDarkShade);
   if (urbanKinds.includes(kind as UrbanKind))
     return target.set(urbanColor(kind as UrbanKind));
   target.set(
@@ -179,23 +180,9 @@ export function getMaterial(kind: StyleKind): StyleMaterial {
       ? new MeshToonMaterial({ color, gradientMap })
       : new MeshBasicMaterial({ color, toneMapped: false });
   if (emissiveKinds.has(kind)) material.userData.bloom = true;
-  if (kind === 'enemy' || kind === 'enemyDark') {
+  if (kind === 'enemy' || kind === 'enemyDark')
     // Poświata krawędzi zawsze w czerwieni wroga; na kombinezonie słabsza, żeby płyty odcinały się od niego.
-    const rim = kind === 'enemyDark' ? ENEMY_DARK_RIM.toFixed(2) : '1.0';
-    material.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, rimUniforms);
-      shader.fragmentShader = shader.fragmentShader
-        .replace(
-          '#include <common>',
-          '#include <common>\nuniform float enemyRimStrength; uniform float enemyRimPower; uniform vec3 enemyRimColor;',
-        )
-        .replace(
-          '#include <emissivemap_fragment>',
-          `#include <emissivemap_fragment>\ntotalEmissiveRadiance += enemyRimColor * enemyRimStrength * ${rim} * pow(max(0.0, 1.0 - abs(dot(normal, normalize(vViewPosition)))), max(enemyRimPower, 1e-4));`,
-        );
-    };
-    material.customProgramCacheKey = () => `enemyRim${rim}`;
-  }
+    addEnemyRim(material, kind === 'enemyDark' ? ENEMY_DARK_RIM : 1);
   if (kind === 'world') addFloorGrid(material as MeshToonMaterial);
   material.name = [...names].find(([, value]) => value === kind)![0];
   cache.set(kind, material);
@@ -203,16 +190,9 @@ export function getMaterial(kind: StyleKind): StyleMaterial {
 }
 
 /** Współdzielone materiały należą do rejestru, nie do pojedynczej sceny. */
-const rimUniforms = {
-  enemyRimStrength: { value: 0 },
-  enemyRimPower: { value: 2.5 },
-  enemyRimColor: { value: new Color() },
-};
 export function syncMaterials(): void {
   syncUrbanMaterials();
-  rimUniforms.enemyRimStrength.value = tuning.render.enemyRimStrength;
-  rimUniforms.enemyRimPower.value = tuning.render.enemyRimPower;
-  rimUniforms.enemyRimColor.value.set(tuning.render.enemy);
+  syncEnemyRim();
   gridUniforms.gridSize.value = Math.max(tuning.render.gridSize, 0.01);
   gridUniforms.gridContrast.value = tuning.render.gridContrast;
   gridUniforms.gridLineWidth.value = Math.max(
