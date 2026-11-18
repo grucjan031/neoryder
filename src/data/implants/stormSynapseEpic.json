@@ -1,7 +1,7 @@
 {
   "id": "stormSynapseEpic",
   "name": "Łuk synaptyczny Orbis",
-  "description": "Sieć wyładowań w układzie nerwowym przesyła łuk elektryczny do pobliskiego celu przy trafieniu mocą.",
+  "description": "Regeneracja energii +8/s, maks. energia +25, ruch +14%. Trafienie mocą: łuk do 5 m za 35% obrażeń trafienia; odnowienie 1,5 s.",
   "rarity": "epic",
   "tags": ["#power", "#elektrycznosc"],
   "modifiers": [

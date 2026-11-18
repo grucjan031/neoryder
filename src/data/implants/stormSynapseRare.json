@@ -1,7 +1,7 @@
 {
   "id": "stormSynapseRare",
   "name": "Synapsa burzowa Mk II",
-  "description": "Wysokonapięciowe złącze nerwowe zwiększa regenerację energii i zwraca ładunek po odbiciu pocisku.",
+  "description": "Regeneracja energii +5/s, maks. energia +15, ruch +10%. Odbicie pocisku: +8 energii; odnowienie 1 s.",
   "rarity": "rare",
   "tags": ["#power", "#elektrycznosc"],
   "modifiers": [

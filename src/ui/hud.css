@@ -5,6 +5,15 @@
   font-weight: 500;
   font-display: swap;
 }
+.hud__death-cause,
+.hud__death-tip {
+  max-width: min(42rem, calc(100% - 32px));
+  margin: 0;
+  color: #c8d6e2;
+  text-align: center;
+  line-height: 1.5;
+}
+
 @font-face {
   font-family: Rajdhani;
   src: url('/assets/fonts/Rajdhani-SemiBold.ttf') format('truetype');

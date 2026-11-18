@@ -1,7 +1,7 @@
 {
   "id": "cryoVentsApex",
   "name": "Zero Bezwzględne",
-  "description": "Kriogeniczny rdzeń strzelecki drastycznie zwiększa limit ciepła i całkowicie schładza broń po eliminacji celu.",
+  "description": "Limit ciepła +70, chłodzenie +50%, obrażenia +24%. Zabójstwo bronią palną: pełne chłodzenie i +10 energii; odnowienie 1 s.",
   "rarity": "legendary",
   "tags": ["#gun"],
   "modifiers": [

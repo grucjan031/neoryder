@@ -1,7 +1,7 @@
 {
   "id": "subdermalWeaveEpic",
   "name": "Tytanowy splot podskórny",
-  "description": "Warstwowy pancerz podskórny wzmacnia ciosy wręcz i odzyskuje energię po obaleniu wroga ostrzem.",
+  "description": "Maks. zdrowie +50, wszystkie obrażenia +16%, otrzymywane ×0,85. Zabójstwo ostrzem: +10 energii; odnowienie 1,5 s.",
   "rarity": "epic",
   "tags": ["#melee"],
   "modifiers": [

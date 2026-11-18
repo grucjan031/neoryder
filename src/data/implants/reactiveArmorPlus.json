@@ -1,7 +1,7 @@
 {
   "id": "reactiveArmorPlus",
   "name": "Pancerz reaktywny II",
-  "description": "Otrzymanie obrażeń wyzwala falę za 13 obrażeń z silniejszym odrzutem w promieniu 3,5 m, co 6,5 s.",
+  "description": "Otrzymanie obrażeń: fala za 13 obrażeń, odrzut 18, promień 3,5 m. Odnowienie: 6,5 s.",
   "rarity": "epic",
   "tags": ["#melee", "#elektrycznosc"],
   "modifiers": [],

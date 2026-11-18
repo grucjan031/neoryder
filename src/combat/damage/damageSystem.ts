@@ -128,6 +128,7 @@ export class DamageSystem {
     if (invulnMs > 0) entry.invulnUntilS = this.timeS + invulnMs / 1000;
 
     const killed = entry.health.dead;
+    const cause = killed ? this.deathCause(info) : undefined;
     this.bus.emit('damage_dealt', {
       source: info.source,
       target,
@@ -146,7 +147,10 @@ export class DamageSystem {
     });
     if (killed) {
       if (this.registry.team(target) === 'player')
-        this.bus.emit('player_died', { id: target });
+        this.bus.emit('player_died', {
+          id: target,
+          ...(cause !== undefined ? { cause } : {}),
+        });
       else if (this.registry.team(target) !== 'neutral')
         this.bus.emit('enemy_killed', {
           id: target,
@@ -155,5 +159,21 @@ export class DamageSystem {
         });
     }
     return dealt;
+  }
+
+  private deathCause(info: DamageInfo): string {
+    if (info.tags.includes('#hazard')) {
+      if (info.tags.includes('#explosion')) return 'explosion';
+      if (info.tags.includes('#laser')) return 'laserHazard';
+      if (info.tags.includes('#elektrycznosc')) return 'electricHazard';
+      return 'hazard';
+    }
+    if (info.tags.includes('#status')) {
+      if (info.tags.includes('#fire')) return 'burning';
+      if (info.tags.includes('#elektrycznosc')) return 'overload';
+    }
+    return info.source === null
+      ? 'unknown'
+      : (this.registry.kind(info.source) ?? 'unknown');
   }
 }

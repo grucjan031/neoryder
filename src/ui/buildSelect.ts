@@ -10,6 +10,21 @@ import { loadoutDefinitions } from '../progression/loadout';
 import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
 import type { SynergyDefinition } from '../progression/synergies';
+import descriptionText from '../data/ui/descriptions.pl.json';
+
+const descriptions = new Map([
+  ...Object.entries(descriptionText.powers).map(
+    ([id, description]) =>
+      [powerDefinitions.get(id)?.name ?? id, description] as const,
+  ),
+  ...Object.entries(descriptionText.synergies).map(
+    ([id, description]) =>
+      [
+        synergyDefinitions.find((entry) => entry.id === id)?.name ?? id,
+        description,
+      ] as const,
+  ),
+]);
 
 const buildSelectSchema = z.object({
   title: z.string().min(1),
@@ -248,10 +263,18 @@ export class BuildSelect {
         ? 'build-select__line build-select__line--synergy'
         : 'build-select__line',
     );
-    node.append(
-      element('span', 'build-select__label', label),
-      element('span', 'build-select__items', items.join(', ')),
-    );
+    const values = element('span', 'build-select__items');
+    items.forEach((name, index) => {
+      if (index > 0) values.append(', ');
+      const item = element('span', '', name);
+      const description = descriptions.get(name);
+      if (description) {
+        item.title = description;
+        item.setAttribute('aria-label', `${name}: ${description}`);
+      }
+      values.append(item);
+    });
+    node.append(element('span', 'build-select__label', label), values);
     return node;
   }
 
