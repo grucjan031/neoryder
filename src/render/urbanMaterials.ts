@@ -85,6 +85,8 @@ const portLooks = z
       ...overpassRoofsDocksKinds,
       'canal_water',
       'power_quay_floor',
+      'overpass_street',
+      'overpass_forecourt',
       ...constructionSiteKinds,
     ]),
     z.object({
@@ -129,6 +131,8 @@ export const urbanKinds = [
   ...overpassRoofsDocksKinds,
   'canal_water',
   'power_quay_floor',
+  'overpass_street',
+  'overpass_forecourt',
   ...constructionSiteKinds,
   'concrete',
   'asphalt',
@@ -340,6 +344,8 @@ export function urbanColor(kind: UrbanKind): string {
       (config.flat ||
         kind === 'turbine_hall_floor' ||
         kind === 'power_quay_floor' ||
+        kind === 'overpass_street' ||
+        kind === 'overpass_forecourt' ||
         tuning.render.citySurfaceDetail > 0)
     )
       return config.tint;

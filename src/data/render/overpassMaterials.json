@@ -1,4 +1,22 @@
 {
+  "overpass_street": {
+    "texture": "highway_asphalt_worn",
+    "tint": "#202a38",
+    "scale": 0.25,
+    "roughness": 0.68,
+    "metalness": 0,
+    "bump": 0.4,
+    "wetness": 0.38
+  },
+  "overpass_forecourt": {
+    "texture": "gas_station_tiles",
+    "tint": "#313c49",
+    "scale": 0.25,
+    "roughness": 0.72,
+    "metalness": 0,
+    "bump": 0.4,
+    "wetness": 0.3
+  },
   "scaffold_planks": {
     "texture": "scaffold_planks",
     "tint": "#58545a",

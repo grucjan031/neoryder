@@ -57,6 +57,8 @@ export const BLOCK_MATERIALS = [
   'highway_asphalt_worn',
   'flood_brick_algae',
   'boardwalk_planks',
+  'overpass_street',
+  'overpass_forecourt',
   'world',
   'concrete',
   'asphalt',
