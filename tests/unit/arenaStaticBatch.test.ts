@@ -43,6 +43,7 @@ it.each([
   'arenaRooftops',
   'arenaPowerPlant',
   'arenaConstructionSite',
+  'arenaFloodedDocks',
 ])(
   '%s: jedno scalanie w komórkach batchCellM, kontenery jako instancje, rzeczywiste GLB',
   async (id) => {

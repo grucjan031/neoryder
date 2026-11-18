@@ -55,6 +55,8 @@ export const BLOCK_MATERIALS = [
   'scaffold_planks',
   'gas_station_tiles',
   'highway_asphalt_worn',
+  'flood_brick_algae',
+  'boardwalk_planks',
   'world',
   'concrete',
   'asphalt',

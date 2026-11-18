@@ -506,6 +506,62 @@ komenda `god`, odczyty `query('weather')`, `query('conquest')`, `query('horizon'
 czytelność czerwonych wrogów na śniegu, gęstość osłon i posiłków, przejścia
 otwartych wagonów, przydatność dachów oraz widok spod/znad kładki.
 
+## Zalane Doki
+
+`arenaFloodedDocks` to sześć wysp w obrysie 300×280 m (X −150…150, Z
+−140…140). Południowy wschód wcina zatoka o trzech załamaniach nabrzeża.
+Na pozostałych obrzeżach stoją wysokie kamienice. Niewidoczna granica
+zabezpiecza krawędzie, a za nimi oprawa bez kolizji przechodzi w panoramę.
+Profil `rain`, bursztynowe nabrzeża, chłodna woda z błękitnymi i zielonymi
+akcentami oraz fioletowe szyldy barki.
+
+| Punkt | X / Y / Z (m) | Strefa i dojścia |
+| --- | --- | --- |
+| A | −110 / 0 / −80 | Plac przepompowni. Podejście przez most przy X −102 albo rampy północnego kanału. |
+| B | 60 / 1,2 / 50 | Targ na barce. Dwa trapy z niezależnymi rampami na północnym i południowym nabrzeżu. |
+| C | 0 / −1,2 / 0 | Skrzyżowanie kanału z poprzeczną odnogą cumowniczą. Rampy przy Z 0 oraz przy Z −12 i 12. |
+| D | 90 / 0 / −70 | Targ na wyspie północno-wschodniej. Mosty przy X 46 i 110 oraz dojścia po dnie kanału. |
+| E | −80 / 0 / 80 | Dziedziniec między kamienicami z zalaną niecką przy zachodnim boku. Mosty przy X −105 i −51, z alternatywą po dnie. |
+
+Centralne kamienice mają przechodnie partery, osłony wewnątrz i alejki między
+kwartałami. Południowy wschód łączy warsztaty i targ z górnym przejściem śluzy
+na Y 6 przy Z 110. Północno-zachodnią strefę wyróżnia `dock_pump_house`
+przy (−110, 0, −100); na południu orientację zapewniają `dock_barge`
+i `dock_lock_gate`. Mosty kamienne i kładki dają płaskie przejścia obok
+tras schodzących na Y −1,2. Tafla na Y −0,4 korzysta z `arena.water`,
+wartości są oddzielone od geometrii dna. Pomosty i `dock_pontoon`
+dochodzą do Y 0,5, pokład barki ma Y −0,4 − 1,0 + 2,6 = 1,2.
+
+Materiały `flood_brick_algae`, `canal_stone_wall` i `boardwalk_planks`
+odróżniają kamienice, brzegi i pomosty. Przy przepompowni dominują generatory
+i skrzynie, na placach targowych stragany i kioski, przy kei łodzie, zatopione
+wraki oraz pale cumownicze. Pula świateł wybiera oprawę z 46 źródeł.
+24 pozycje posiłków obejmują sześć stref. Pierścień 25–90 m, 12 żywych
+wrogów, 190 biletów. Start (−140, 0, 130), wszystkie promienie 5 m.
+Generator mierzy ok. 74 098 m² chodzenia przy próbkowaniu co metr.
+
+| Pomiar | Wynik |
+| --- | ---: |
+| Nawigacja, siatka 1,5 m i pięć pól (ArenaSurfaceNavigation / ArenaNavigation) | 194,57 / 193,54 ms |
+| 12 wrogów w RoomScene, średnia z 600 kroków po rozgrzewce | 0,747 ms/krok |
+| Statyczne siatki z rzeczywistych GLB przed / po scaleniu w komórkach 20 m | 5643 / 1929 |
+| Partie instancji | 201 |
+
+Pokrycie fizyki obejmuje wejście na barkę z obu brzegów, przejście śluzy
+i dojście kapsuły oraz obu archetypów do A–E. Liczba siatek opisuje całą
+scenę przed cullingiem. Pomiar wywołań rysowania przy jakości medium
+i czasu wczytania pozostaje do sprawdzenia w przeglądarce.
+
+**Sprawdzenie w 30 sekund.** Otwórz
+`?scene=conquest&arena=arenaFloodedDocks&debug=1` i wpisz `god`.
+Użyj kolejno `tp -110 -80` (przepompownia), `tp 90 -70` (targ na wyspie),
+`tp -113 3` (kamienice), `tp 0 0` (brodzenie), `tp -80 80` (dziedziniec),
+`tp 76 39` (wejście na barkę) i `tp -43 110` (wejście na śluzę).
+`tp` zachowuje Y, dlatego na pokład i śluzę wchodzi się rampami.
+Sprawdź tempo obejść pod ostrzałem, czytelność czerwonych wrogów w deszczu,
+czy dojścia na barkę widać z obu brzegów i jak odbiera się zmianę poziomu
+przy wejściu do wody. [Rzut areny](../arenas/arenaFloodedDocks.svg).
+
 ## Nawigacja nowych aren
 
 Wysokich punktów nie przeniesiono na grunt. `blocks[].walkable` oznacza

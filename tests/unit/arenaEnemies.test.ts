@@ -33,11 +33,13 @@ it.each(
     'arenaPowerPlant',
     'arenaConstructionSite',
     'arenaRailYard',
+    'arenaFloodedDocks',
   ].flatMap((id) => ['assaulter', 'gunner'].map((kind) => [id, kind] as const)),
 )(
   '%s: %s dociera ze spawnów do wszystkich punktów',
   async (id, kind) => {
     const room = roomDefinitions.get(id)!;
+    const docks = id === 'arenaFloodedDocks';
     const rapier = await initPhysics();
     const bus = new EventBus();
     const entities = new EntityRegistry(bus);
@@ -96,7 +98,9 @@ it.each(
               ? [0, 14, 24, 27, 30].map((index) => spawns[index]!)
               : id === 'arenaRailYard'
                 ? [0, 4, 10, 17, 22, 26, 28].map((index) => spawns[index]!)
-                : spawns;
+                : docks
+                  ? spawns.filter((_, index) => index % 4 === 0)
+                  : spawns;
       for (const spawn of sampled) {
         for (const point of room.arena!.points) {
           const enemy = manager.spawn(kind, spawn);
@@ -108,8 +112,10 @@ it.each(
               ? 12000
               : id === 'arenaOverpass'
                 ? 18000
-                : id === 'arenaRailYard'
-                  ? 14400
+                : id === 'arenaRailYard' || docks
+                  ? docks
+                    ? 18000
+                    : 14400
                   : id === 'arenaConstructionSite'
                     ? 14400
                     : 7200);
@@ -134,7 +140,7 @@ it.each(
           }
           expect(
             arrived,
-            `${kind}: ${JSON.stringify(spawn)} → ${point.id}, pozycja ${JSON.stringify(enemy.current.position)}`,
+            `${kind}: ${JSON.stringify(spawn)} → ${point.id}, pozycja ${JSON.stringify(enemy.current.position)} cel ${JSON.stringify(enemy.moveGoal)}`,
           ).toBe(true);
           enemy.dispose();
         }

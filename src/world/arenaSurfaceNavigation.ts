@@ -15,6 +15,7 @@ type Shape = {
   extentZ: number;
   cos: number;
   tan: number;
+  tanX: number;
   lift: number;
 };
 
@@ -25,13 +26,13 @@ function topOf(s: Shape, x: number, z: number, margin = 0): number | undefined {
     Math.abs(z - s.z) > s.extentZ + margin
   )
     return undefined;
-  return s.y + s.tan * (x - s.x) + s.lift;
+  return s.y + s.tan * (x - s.x) - s.tanX * (z - s.z) + s.lift;
 }
 const EPSILON = 1e-5;
 /** Kubełki indeksu brył (m); wynik nawigacji nie zależy od tej wartości. */
 const INDEX_CELL_M = 2;
 
-/** Warstwy płyt i ramp X; obwiednie przeszkód uwzględniają wysokość kapsuły. */
+/** Warstwy płyt i ramp osiowych (X i Z); obwiednie przeszkód uwzględniają wysokość kapsuły. */
 export class ArenaSurfaceNavigation {
   private readonly cells: Cell[] = [];
   private readonly columns = new Map<number, number[]>();
@@ -94,10 +95,10 @@ export class ArenaSurfaceNavigation {
       this.firstZ +
       1;
     for (const b of surfaces) {
-      if (b.rotation?.x || b.rotation?.y)
-        throw new Error('Powierzchnia nawigacji obsługuje wyłącznie obrót Z.');
-      const angle = b.rotation?.z ?? 0;
-      const halfX = (b.size.x * Math.cos(angle)) / 2;
+      if (b.rotation?.y || (b.rotation?.x && b.rotation?.z))
+        throw new Error('Powierzchnia nawigacji wymaga rampy w osi X lub Z.');
+      const halfX = (b.size.x * Math.cos(b.rotation?.z ?? 0)) / 2;
+      const halfZ = (b.size.z * Math.cos(b.rotation?.x ?? 0)) / 2;
       const own = this.shape(b);
       for (
         let x = Math.floor((b.position.x - halfX) / this.cell);
@@ -105,8 +106,8 @@ export class ArenaSurfaceNavigation {
         x++
       ) {
         for (
-          let z = Math.floor((b.position.z - b.size.z / 2) / this.cell);
-          (z + 0.5) * this.cell <= b.position.z + b.size.z / 2;
+          let z = Math.floor((b.position.z - halfZ) / this.cell);
+          (z + 0.5) * this.cell <= b.position.z + halfZ;
           z++
         ) {
           const p = {
@@ -165,11 +166,13 @@ export class ArenaSurfaceNavigation {
       [a, b],
       [b, a],
     ]) {
-      const angle = ramp!.surface.rotation?.z ?? 0;
+      const surface = ramp!.surface;
+      const axis = surface.rotation?.x ? 'z' : 'x';
+      const angle = surface.rotation?.x || surface.rotation?.z;
       if (!angle) continue;
-      const half = (ramp!.surface.size.x * Math.cos(angle)) / 2;
+      const half = (surface.size[axis] * Math.cos(angle)) / 2;
       // Zmiana powierzchni wyłącznie na końcach rampy, nigdy przez boczny próg.
-      if (Math.abs(other!.position.x - ramp!.surface.position.x) < half)
+      if (Math.abs(other!.position[axis] - surface.position[axis]) < half)
         return false;
     }
     return true;
@@ -209,7 +212,9 @@ export class ArenaSurfaceNavigation {
   private shape(b: Block): Shape {
     const cached = this.shapes.get(b);
     if (cached) return cached;
-    const angle = b.rotation?.z ?? 0;
+    const angleX = b.rotation?.x ?? 0;
+    const angleZ = b.rotation?.z ?? 0;
+    const angle = angleX || angleZ;
     // Obrócone wokół Y rekwizyty: konserwatywna obwiednia, nigdy powierzchnia.
     const yaw = b.rotation?.y ?? 0;
     const halfX =
@@ -227,10 +232,11 @@ export class ArenaSurfaceNavigation {
       z: b.position.z,
       sizeY: b.size.y,
       walkable: b.walkable === true,
-      extentX: halfX * Math.cos(angle),
-      extentZ: halfZ,
+      extentX: halfX * Math.cos(angleZ),
+      extentZ: halfZ * Math.cos(angleX),
       cos: Math.cos(angle),
-      tan: Math.tan(angle),
+      tan: Math.tan(angleZ),
+      tanX: Math.tan(angleX),
       lift: b.size.y / (2 * Math.cos(angle)),
     };
     this.shapes.set(b, shape);

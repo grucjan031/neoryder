@@ -21,6 +21,7 @@ it.each([
   'arenaPowerPlant',
   'arenaConstructionSite',
   'arenaRailYard',
+  'arenaFloodedDocks',
 ])(
   '%s: kapsuła FPP chodzi do punktów, po trasach bocznych, rampach i schodach bez skoku',
   async (id) => {
@@ -69,7 +70,9 @@ it.each([
           ? -3
           : id === 'arenaOverpass'
             ? -4.1
-            : -0.1;
+            : id === 'arenaFloodedDocks'
+              ? -1.3 + height
+              : -0.1;
     const walk = (goal: Vec3) => {
       for (let i = 0; i < 2400; i++) {
         const state = player.getState();
@@ -115,17 +118,21 @@ it.each([
           ).toBeLessThan(id === 'arenaOverpass' ? 0.12 : 0.05);
         }
       };
-      if (id === 'arenaRailYard')
-        for (const start of [
-          room.playerSpawn,
-          room.spawnPoints[0]!,
-          room.spawnPoints[10]!,
-          room.spawnPoints[22]!,
-        ]) {
-          teleport(start.x, start.z);
-          walkPoints();
-        }
-      else walkPoints();
+      const starts =
+        id === 'arenaRailYard'
+          ? [
+              room.playerSpawn,
+              room.spawnPoints[0]!,
+              room.spawnPoints[10]!,
+              room.spawnPoints[22]!,
+            ]
+          : id === 'arenaFloodedDocks'
+            ? [room.playerSpawn, room.spawnPoints[4]!, room.spawnPoints[20]!]
+            : [null];
+      for (const start of starts) {
+        if (start) teleport(start.x, start.z);
+        walkPoints();
+      }
       if (id === 'arenaPowerPlant') {
         const spawns = arenaSpawnPoints(room);
         for (const index of [17, 28]) {
@@ -216,6 +223,22 @@ it.each([
           walk({ x: to, y, z });
           expect(player.getState().position.y).toBeCloseTo(y + height, 1);
         }
+        return;
+      }
+      if (id === 'arenaFloodedDocks') {
+        for (const z of [39, 62]) {
+          teleport(77, z);
+          walk({ x: 60, y: 1.2, z });
+          walk({ x: 60, y: 1.2, z: 50 });
+          expect(player.getState().position.y).toBeCloseTo(1.2 + height, 1);
+        }
+        teleport(-43, 110);
+        for (const x of [-7, 0, 7]) {
+          walk({ x, y: 6, z: 110 });
+          expect(player.getState().position.y).toBeCloseTo(6 + height, 1);
+        }
+        walk({ x: 43, y: 0, z: 110 });
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
         return;
       }
       if (id === 'arenaOverpass') {

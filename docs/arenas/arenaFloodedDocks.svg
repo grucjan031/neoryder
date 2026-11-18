@@ -1,0 +1,1079 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 336 340" width="1200" role="img" aria-labelledby="title desc">
+<title id="title">Zalane Doki — rzut z góry</title>
+<desc id="desc">Wysokość brył: granat (nisko) do bursztynu (wysoko). Zielony obrys: powierzchnie chodzenia. Przerywane: niewidoczna kolizja. Okręgi: punkty. Krzyżyki: spawny. Trójkąt: gracz. Północ: −Z.</desc>
+<rect width="100%" height="100%" fill="#101820"/>
+<g font-family="sans-serif" font-size="2.8" fill="#fff1d6">
+<text x="18" y="7" font-size="4">Zalane Doki · 300 × 280 m · N ↑ (−Z)</text>
+<g id="blocks">
+<polygon points="161,18 175,18 175,298 161,298" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="146,152 161,152 161,164 146,164" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="175,152 190,152 190,164 175,164" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="18,90 161,90 161,106 18,106" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="175,94 318,94 318,108 175,108" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="18,200 161,200 161,216 18,216" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="175,200 318,200 318,216 175,216" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="74,231 83,231 83,246 74,246" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch -1.2 m; chodzenie</title></polygon>
+<polygon points="17.82,18 18.18,18 18.18,90 17.82,90" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="160.82,18 161.18,18 161.18,90 160.82,90" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="18,17.82 161,17.82 161,18.18 18,18.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="18,89.82 161,89.82 161,90.18 18,90.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="174.82,18 175.18,18 175.18,94 174.82,94" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="317.82,18 318.18,18 318.18,94 317.82,94" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,17.82 318,17.82 318,18.18 175,18.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,93.82 318,93.82 318,94.18 175,94.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="17.82,106 18.18,106 18.18,200 17.82,200" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="160.82,106 161.18,106 161.18,200 160.82,200" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="18,105.82 161,105.82 161,106.18 18,106.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="18,199.82 161,199.82 161,200.18 18,200.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="174.82,108 175.18,108 175.18,200 174.82,200" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="317.82,108 318.18,108 318.18,200 317.82,200" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,107.82 318,107.82 318,108.18 175,108.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,199.82 318,199.82 318,200.18 175,200.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="17.82,216 18.18,216 18.18,298 17.82,298" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="160.82,216 161.18,216 161.18,298 160.82,298" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="18,215.82 161,215.82 161,216.18 18,216.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="18,297.82 161,297.82 161,298.18 18,298.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="174.82,216 175.18,216 175.18,246 174.82,246" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="262.82,216 263.18,216 263.18,246 262.82,246" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,215.82 263,215.82 263,216.18 175,216.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,245.82 263,245.82 263,246.18 175,246.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="174.82,246 175.18,246 175.18,270 174.82,270" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="231.82,246 232.18,246 232.18,270 231.82,270" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,245.82 232,245.82 232,246.18 175,246.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,269.82 232,269.82 232,270.18 175,270.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="174.82,270 175.18,270 175.18,298 174.82,298" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="205.82,270 206.18,270 206.18,298 205.82,298" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,269.82 206,269.82 206,270.18 175,270.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="175,297.82 206,297.82 206,298.18 175,298.18" fill="hsl(213.81 35% 24.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1.02 m</title></polygon>
+<polygon points="76,234 81,234 81,236 76,236" fill="hsl(213.67 35% 24.23%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1 m</title></polygon>
+<polygon points="21.5,100 24.5,100 24.5,102 21.5,102" fill="hsl(213.67 35% 24.23%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1 m</title></polygon>
+<polygon points="25,210 29,210 29,212 25,212" fill="hsl(213.67 35% 24.23%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1 m</title></polygon>
+<polygon points="304,96 308,96 308,98 304,98" fill="hsl(213.67 35% 24.23%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1 m</title></polygon>
+<polygon points="149,204 153,204 153,206 149,206" fill="hsl(213.67 35% 24.23%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -1 m</title></polygon>
+<polygon points="76,236 81,236 81,238 76,238" fill="hsl(212.35 35% 24.45%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.8 m</title></polygon>
+<polygon points="21.5,98 24.5,98 24.5,100 21.5,100" fill="hsl(212.35 35% 24.45%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.8 m</title></polygon>
+<polygon points="25,208 29,208 29,210 25,210" fill="hsl(212.35 35% 24.45%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.8 m</title></polygon>
+<polygon points="304,98 308,98 308,100 304,100" fill="hsl(212.35 35% 24.45%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.8 m</title></polygon>
+<polygon points="149,206 153,206 153,208 149,208" fill="hsl(212.35 35% 24.45%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.8 m</title></polygon>
+<polygon points="76,238 81,238 81,240 76,240" fill="hsl(211.02 35% 24.68%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.6 m</title></polygon>
+<polygon points="21.5,96 24.5,96 24.5,98 21.5,98" fill="hsl(211.02 35% 24.68%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.6 m</title></polygon>
+<polygon points="25,206 29,206 29,208 25,208" fill="hsl(211.02 35% 24.68%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.6 m</title></polygon>
+<polygon points="304,100 308,100 308,102 304,102" fill="hsl(211.02 35% 24.68%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.6 m</title></polygon>
+<polygon points="149,208 153,208 153,210 149,210" fill="hsl(211.02 35% 24.68%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.6 m</title></polygon>
+<polygon points="76,240 81,240 81,242 76,242" fill="hsl(209.7 35% 24.91%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.4 m</title></polygon>
+<polygon points="21.5,94 24.5,94 24.5,96 21.5,96" fill="hsl(209.7 35% 24.91%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.4 m</title></polygon>
+<polygon points="25,204 29,204 29,206 25,206" fill="hsl(209.7 35% 24.91%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.4 m</title></polygon>
+<polygon points="304,102 308,102 308,104 304,104" fill="hsl(209.7 35% 24.91%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.4 m</title></polygon>
+<polygon points="149,210 153,210 153,212 149,212" fill="hsl(209.7 35% 24.91%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.4 m</title></polygon>
+<polygon points="73.9,231 74.1,231 74.1,246 73.9,246" fill="hsl(209.37 35% 24.97%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.35 m</title></polygon>
+<polygon points="82.9,231 83.1,231 83.1,246 82.9,246" fill="hsl(209.37 35% 24.97%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.35 m</title></polygon>
+<polygon points="76,242 81,242 81,244 76,244" fill="hsl(208.37 35% 25.14%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.2 m</title></polygon>
+<polygon points="21.5,92 24.5,92 24.5,94 21.5,94" fill="hsl(208.37 35% 25.14%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.2 m</title></polygon>
+<polygon points="25,202 29,202 29,204 25,204" fill="hsl(208.37 35% 25.14%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.2 m</title></polygon>
+<polygon points="304,104 308,104 308,106 304,106" fill="hsl(208.37 35% 25.14%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.2 m</title></polygon>
+<polygon points="149,212 153,212 153,214 149,214" fill="hsl(208.37 35% 25.14%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch -0.2 m</title></polygon>
+<polygon points="18,18 161,18 161,90 18,90" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>quay_lines; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="175,18 318,18 318,94 175,94" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>paving; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,106 146,106 146,200 18,200" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>asphalt; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="146,106 161,106 161,152 146,152" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>asphalt; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="146,164 161,164 161,200 146,200" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>asphalt; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="190,108 318,108 318,200 190,200" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="175,108 190,108 190,152 175,152" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="175,164 190,164 190,200 175,200" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,216 74,216 74,298 18,298" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>paving; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="83,216 161,216 161,298 83,298" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>paving; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="74,216 83,216 83,231 74,231" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>paving; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="74,246 83,246 83,298 74,298" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>paving; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="175,216 263,216 263,246 175,246" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="175,246 232,246 232,270 175,270" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="175,270 206,270 206,298 175,298" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="146.1,155.5 156,155.5 156,160.5 146.1,160.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="180,155.5 189.9,155.5 189.9,160.5 180,160.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="76,244 81,244 81,246 76,246" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="21.5,90 24.5,90 24.5,92 21.5,92" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="25,200 29,200 29,202 25,202" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="304,106 308,106 308,108 304,108" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="149,214 153,214 153,216 149,216" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="63.5,89 68.5,89 68.5,107 63.5,107" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="113.5,89 118.5,89 118.5,107 113.5,107" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="211.5,93 216.5,93 216.5,109 211.5,109" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="275.5,93 280.5,93 280.5,109 275.5,109" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="60.5,199 65.5,199 65.5,217 60.5,217" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="114.5,199 119.5,199 119.5,217 114.5,217" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="184.5,199 189.5,199 189.5,217 184.5,217" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="160,49.5 176,49.5 176,54.5 160,54.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="160,124.5 176,124.5 176,129.5 160,129.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="160,175.5 176,175.5 176,180.5 160,180.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="160,234.5 176,234.5 176,239.5 160,239.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="25,88.5 46,88.5 46,90 25,90" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="94,90 107,90 107,92.5 94,92.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="262,108 274,108 274,110 262,110" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="54,200 60,200 60,202 54,202" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="195,214 212,214 212,216 195,216" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="281,198 306,198 306,200 281,200" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="54.25,89 55.75,89 55.75,93 54.25,93" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 0 m</title></polygon>
+<polygon points="60.25,89 61.75,89 61.75,93 60.25,93" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 0 m</title></polygon>
+<polygon points="32.2,90.35 37.8,90.35 37.8,92.05 32.2,92.05" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="46.2,200.35 51.8,200.35 51.8,202.05 46.2,202.05" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="265.2,105.95 270.8,105.95 270.8,107.65 265.2,107.65" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="200.2,213.95 205.8,213.95 205.8,215.65 200.2,215.65" fill="hsl(207.05 35% 25.36%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="37.5,90.08 42.5,90.08 42.5,101 37.5,101" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="45.5,95 50.5,95 50.5,105.92 45.5,105.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="81.5,90.08 86.5,90.08 86.5,101 81.5,101" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="89.5,95 94.5,95 94.5,105.92 89.5,105.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="133.5,90.08 138.5,90.08 138.5,101 133.5,101" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="141.5,95 146.5,95 146.5,105.92 141.5,105.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="193.5,94.08 198.5,94.08 198.5,105 193.5,105" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="201.5,97 206.5,97 206.5,107.92 201.5,107.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="235.5,94.08 240.5,94.08 240.5,105 235.5,105" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="243.5,97 248.5,97 248.5,107.92 243.5,107.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="287.5,94.08 292.5,94.08 292.5,105 287.5,105" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="295.5,97 300.5,97 300.5,107.92 295.5,107.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="35.5,200.08 40.5,200.08 40.5,211 35.5,211" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="43.5,205 48.5,205 48.5,215.92 43.5,215.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="82.5,200.08 87.5,200.08 87.5,211 82.5,211" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="90.5,205 95.5,205 95.5,215.92 90.5,215.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="131.5,200.08 136.5,200.08 136.5,211 131.5,211" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="139.5,205 144.5,205 144.5,215.92 139.5,215.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="186.5,200.08 191.5,200.08 191.5,211 186.5,211" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="194.5,205 199.5,205 199.5,215.92 194.5,215.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="244.5,200.08 249.5,200.08 249.5,211 244.5,211" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="252.5,205 257.5,205 257.5,215.92 252.5,215.92" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,37.5 169.15,37.5 169.15,42.5 161.15,42.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,56.5 174.85,56.5 174.85,61.5 166.85,61.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,69.5 169.15,69.5 169.15,74.5 161.15,74.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,79.5 174.85,79.5 174.85,84.5 166.85,84.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,117.5 169.15,117.5 169.15,122.5 161.15,122.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,130.5 174.85,130.5 174.85,135.5 166.85,135.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,143.5 169.15,143.5 169.15,148.5 161.15,148.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,167.5 174.85,167.5 174.85,172.5 166.85,172.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,180.5 169.15,180.5 169.15,185.5 161.15,185.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,189.5 174.85,189.5 174.85,194.5 166.85,194.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,224.5 169.15,224.5 169.15,229.5 161.15,229.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,233.5 174.85,233.5 174.85,238.5 166.85,238.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,248.5 169.15,248.5 169.15,253.5 161.15,253.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,255.5 174.85,255.5 174.85,260.5 166.85,260.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="161.15,283.5 169.15,283.5 169.15,288.5 161.15,288.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="166.85,287.5 174.85,287.5 174.85,292.5 166.85,292.5" fill="hsl(207.05 35% 25.36%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="50.1,53.7 65.9,53.7 65.9,62.3 50.1,62.3" fill="none" stroke="#d8bd87" stroke-width="0.3" stroke-dasharray="1 1"><title>canal_stone_wall; wierzch 0.1 m; chodzenie</title></polygon>
+<polygon points="281.01,205.46 282.99,205.46 282.99,206.54 281.01,206.54" fill="hsl(206.18 35% 25.51%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 0.13 m</title></polygon>
+<polygon points="284.01,205.46 285.99,205.46 285.99,206.54 284.01,206.54" fill="hsl(206.18 35% 25.51%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 0.13 m</title></polygon>
+<polygon points="32.2,88 37.8,88 37.8,90 32.2,90" fill="hsl(205.39 35% 25.65%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0.25 m; chodzenie</title></polygon>
+<polygon points="46.2,198 51.8,198 51.8,200 46.2,200" fill="hsl(205.39 35% 25.65%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0.25 m; chodzenie</title></polygon>
+<polygon points="265.2,108 270.8,108 270.8,110 265.2,110" fill="hsl(205.39 35% 25.65%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0.25 m; chodzenie</title></polygon>
+<polygon points="200.2,216 205.8,216 205.8,218 200.2,218" fill="hsl(205.39 35% 25.65%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 0.25 m; chodzenie</title></polygon>
+<polygon points="32,90 38,90 38,92.4 32,92.4" fill="hsl(203.73 35% 25.93%)" stroke="#90be85" stroke-width="0.3"><title>dock_pontoon; wierzch 0.5 m; chodzenie</title></polygon>
+<polygon points="46,200 52,200 52,202.4 46,202.4" fill="hsl(203.73 35% 25.93%)" stroke="#90be85" stroke-width="0.3"><title>dock_pontoon; wierzch 0.5 m; chodzenie</title></polygon>
+<polygon points="265,105.6 271,105.6 271,108 265,108" fill="hsl(203.73 35% 25.93%)" stroke="#90be85" stroke-width="0.3"><title>dock_pontoon; wierzch 0.5 m; chodzenie</title></polygon>
+<polygon points="200,213.6 206,213.6 206,216 200,216" fill="hsl(203.73 35% 25.93%)" stroke="#90be85" stroke-width="0.3"><title>dock_pontoon; wierzch 0.5 m; chodzenie</title></polygon>
+<polygon points="168.7,140.02 162.5,140.02 162.5,137.98 168.7,137.98" fill="hsl(203.6 35% 25.95%)" stroke="#50606e" stroke-width="0.15"><title>dock_skiff; wierzch 0.52 m</title></polygon>
+<polygon points="36.1,208.02 29.9,208.02 29.9,205.98 36.1,205.98" fill="hsl(203.6 35% 25.95%)" stroke="#50606e" stroke-width="0.15"><title>dock_skiff; wierzch 0.52 m</title></polygon>
+<polygon points="285.9,203.98 292.1,203.98 292.1,206.02 285.9,206.02" fill="hsl(203.6 35% 25.95%)" stroke="#50606e" stroke-width="0.15"><title>dock_skiff; wierzch 0.52 m</title></polygon>
+<polygon points="213.5,204.15 242.5,204.15 242.5,211.85 213.5,211.85" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 0.85 m</title></polygon>
+<polygon points="76,76.75 78,76.75 78,77.25 76,77.25" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="290.75,53 290.75,51 291.25,51 291.25,53" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="125,194.75 127,194.75 127,195.25 125,195.25" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="181,142.75 183,142.75 183,143.25 181,143.25" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="312.75,160 312.75,158 313.25,158 313.25,160" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="76.75,249 76.75,247 77.25,247 77.25,249" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="209.75,263 209.75,261 210.25,261 210.25,263" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="299,165.75 301,165.75 301,166.25 299,166.25" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="303,165.75 305,165.75 305,166.25 303,166.25" fill="hsl(200.89 35% 26.42%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="263,215.65 318,215.65 318,216.35 263,216.35" fill="hsl(200.09 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.05 m</title></polygon>
+<polygon points="262.65,216 263.35,216 263.35,246 262.65,246" fill="hsl(200.09 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.05 m</title></polygon>
+<polygon points="232,245.65 263,245.65 263,246.35 232,246.35" fill="hsl(200.09 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.05 m</title></polygon>
+<polygon points="231.65,246 232.35,246 232.35,270 231.65,270" fill="hsl(200.09 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.05 m</title></polygon>
+<polygon points="206,269.65 232,269.65 232,270.35 206,270.35" fill="hsl(200.09 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.05 m</title></polygon>
+<polygon points="205.65,270 206.35,270 206.35,298 205.65,298" fill="hsl(200.09 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.05 m</title></polygon>
+<polygon points="68.5,89 68.62,89 68.62,107 68.5,107" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="63.38,89 63.5,89 63.5,107 63.38,107" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="118.5,89 118.62,89 118.62,107 118.5,107" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="113.38,89 113.5,89 113.5,107 113.38,107" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="216.5,93 216.62,93 216.62,109 216.5,109" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="211.38,93 211.5,93 211.5,109 211.38,109" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="280.5,93 280.62,93 280.62,109 280.5,109" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="275.38,93 275.5,93 275.5,109 275.38,109" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="65.5,199 65.62,199 65.62,217 65.5,217" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="60.38,199 60.5,199 60.5,217 60.38,217" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="119.5,199 119.62,199 119.62,217 119.5,217" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="114.38,199 114.5,199 114.5,217 114.38,217" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="189.5,199 189.62,199 189.62,217 189.5,217" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="184.38,199 184.5,199 184.5,217 184.38,217" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,49.38 176,49.38 176,49.5 160,49.5" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,54.5 176,54.5 176,54.62 160,54.62" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,124.38 176,124.38 176,124.5 160,124.5" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,129.5 176,129.5 176,129.62 160,129.62" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,175.38 176,175.38 176,175.5 160,175.5" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,180.5 176,180.5 176,180.62 160,180.62" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,234.38 176,234.38 176,234.5 160,234.5" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="160,239.5 176,239.5 176,239.62 160,239.62" fill="hsl(199.75 35% 26.61%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="54.25,68 55.75,68 55.75,72 54.25,72" fill="hsl(199.42 35% 26.67%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.15 m</title></polygon>
+<polygon points="60.25,68 61.75,68 61.75,72 60.25,72" fill="hsl(199.42 35% 26.67%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.15 m</title></polygon>
+<polygon points="317.65,200 318.35,200 318.35,216 317.65,216" fill="hsl(199.42 35% 26.67%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.15 m</title></polygon>
+<polygon points="213,202 243,202 243,214 213,214" fill="none" stroke="#d8bd87" stroke-width="0.3" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 1.2 m; chodzenie</title></polygon>
+<polygon points="213,202 243,202 243,204 213,204" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>boardwalk_planks; wierzch 1.2 m</title></polygon>
+<polygon points="213,212 243,212 243,214 213,214" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>boardwalk_planks; wierzch 1.2 m</title></polygon>
+<polygon points="232.1,195 244,195 244,199 232.1,199" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 1.2 m; chodzenie</title></polygon>
+<polygon points="225,195 232.1,195 232.1,199 225,199" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 1.2 m; chodzenie</title></polygon>
+<polygon points="226,199 230,199 230,202 226,202" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 1.2 m; chodzenie</title></polygon>
+<polygon points="232.1,218 244,218 244,222 232.1,222" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 1.2 m; chodzenie</title></polygon>
+<polygon points="225,218 232.1,218 232.1,222 225,222" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 1.2 m; chodzenie</title></polygon>
+<polygon points="226,214 230,214 230,218 226,218" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 1.2 m; chodzenie</title></polygon>
+<polygon points="169.44,192.89 171.56,192.89 171.56,197.11 169.44,197.11" fill="hsl(198.5 35% 26.83%)" stroke="#50606e" stroke-width="0.15"><title>dock_half_sunken_car; wierzch 1.29 m</title></polygon>
+<polygon points="297.94,98.89 300.06,98.89 300.06,103.11 297.94,103.11" fill="hsl(198.5 35% 26.83%)" stroke="#50606e" stroke-width="0.15"><title>dock_half_sunken_car; wierzch 1.29 m</title></polygon>
+<polygon points="96.02,45.46 97.98,45.46 97.98,46.54 96.02,46.54" fill="hsl(198.23 35% 26.88%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
+<polygon points="35.01,151.46 36.99,151.46 36.99,152.54 35.01,152.54" fill="hsl(198.23 35% 26.88%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
+<polygon points="37.46,197.99 37.46,196.01 38.54,196.01 38.54,197.99" fill="hsl(198.23 35% 26.88%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
+<polygon points="270.01,152.46 271.99,152.46 271.99,153.54 270.01,153.54" fill="hsl(198.23 35% 26.88%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
+<polygon points="63.02,254.46 64.98,254.46 64.98,255.54 63.02,255.54" fill="hsl(198.23 35% 26.88%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
+<polygon points="198.01,251.46 199.99,251.46 199.99,252.54 198.01,252.54" fill="hsl(198.23 35% 26.88%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
+<polygon points="34.2,56.5 35.8,56.5 35.8,57.5 34.2,57.5" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="103.5,152.8 103.5,151.2 104.5,151.2 104.5,152.8" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="212.2,170.5 213.8,170.5 213.8,171.5 212.2,171.5" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="293.2,195.5 294.8,195.5 294.8,196.5 293.2,196.5" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="99.2,255.5 100.8,255.5 100.8,256.5 99.2,256.5" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="200.5,238.8 200.5,237.2 201.5,237.2 201.5,238.8" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="66.2,72.5 67.8,72.5 67.8,73.5 66.2,73.5" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="63.2,72.5 64.8,72.5 64.8,73.5 63.2,73.5" fill="hsl(197.77 35% 26.95%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="117.03,61.21 117.03,56.79 118.97,56.79 118.97,61.21" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="254.79,36.03 259.21,36.03 259.21,37.97 254.79,37.97" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="54.03,163.21 54.03,158.79 55.97,158.79 55.97,163.21" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="134.79,125.03 139.21,125.03 139.21,126.97 134.79,126.97" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="214.03,139.21 214.03,134.79 215.97,134.79 215.97,139.21" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="267.79,195.03 272.21,195.03 272.21,196.97 267.79,196.97" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="37.03,276.21 37.03,271.79 38.97,271.79 38.97,276.21" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="150.79,282.03 155.21,282.03 155.21,283.97 150.79,283.97" fill="hsl(197.37 35% 27.02%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
+<polygon points="40.37,75.61 40.37,74.39 41.63,74.39 41.63,75.61" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="309.37,90.61 309.37,89.39 310.63,89.39 310.63,90.61" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="74.39,180.37 75.61,180.37 75.61,181.63 74.39,181.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="225.39,181.37 226.61,181.37 226.61,182.63 225.39,182.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="39.39,253.37 40.61,253.37 40.61,254.63 39.39,254.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="132.39,233.37 133.61,233.37 133.61,234.63 132.39,234.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="189.39,225.37 190.61,225.37 190.61,226.63 189.39,226.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="37.39,56.37 38.61,56.37 38.61,57.63 37.39,57.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="41.39,56.37 42.61,56.37 42.61,57.63 41.39,57.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="77.39,253.37 78.61,253.37 78.61,254.63 77.39,254.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="74.39,253.37 75.61,253.37 75.61,254.63 74.39,254.63" fill="hsl(196.51 35% 27.17%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="39,35 42,35 42,38 39,38" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="83.5,36 86.5,36 86.5,39 83.5,39" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="122,29.5 125,29.5 125,32.5 122,32.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="149.5,60 152.5,60 152.5,63 149.5,63" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="98,59 101,59 101,62 98,62" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="119.5,77 122.5,77 122.5,80 119.5,80" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="198.5,32 201.5,32 201.5,35 198.5,35" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="237,32 240,32 240,35 237,35" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="297.5,34.5 300.5,34.5 300.5,37.5 297.5,37.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="297.5,67.5 300.5,67.5 300.5,70.5 297.5,70.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="214.5,66 217.5,66 217.5,69 214.5,69" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="42,129 45,129 45,132 42,132" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="84,123.5 87,123.5 87,126.5 84,126.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="125,126 128,126 128,129 125,129" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="134,158.5 137,158.5 137,161.5 134,161.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="78,157.5 81,157.5 81,160.5 78,160.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="41,180 44,180 44,183 41,183" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="114.5,178.5 117.5,178.5 117.5,181.5 114.5,181.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="148.5,187.5 151.5,187.5 151.5,190.5 148.5,190.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="199,124.5 202,124.5 202,127.5 199,127.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="237.5,123.5 240.5,123.5 240.5,126.5 237.5,126.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="282,128 285,128 285,131 282,131" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="305.5,158.5 308.5,158.5 308.5,161.5 305.5,161.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="258,159.5 261,159.5 261,162.5 258,162.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="206,159 209,159 209,162 206,162" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="209,186 212,186 212,189 209,189" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="268.5,186.5 271.5,186.5 271.5,189.5 268.5,189.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="306,185.5 309,185.5 309,188.5 306,188.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="41,233.5 44,233.5 44,236.5 41,236.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="70,237.5 73,237.5 73,240.5 70,240.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="115,235 118,235 118,238 115,238" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="140.5,248.5 143.5,248.5 143.5,251.5 140.5,251.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="69.5,270.5 72.5,270.5 72.5,273.5 69.5,273.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="110,274 113,274 113,277 110,277" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="141.5,285.5 144.5,285.5 144.5,288.5 141.5,288.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="224.5,226.5 227.5,226.5 227.5,229.5 224.5,229.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="255,230.5 258,230.5 258,233.5 255,233.5" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="221,252 224,252 224,255 221,255" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="193.5,285 196.5,285 196.5,288 193.5,288" fill="hsl(195.78 35% 27.3%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 1.7 m</title></polygon>
+<polygon points="52,59.4 64,59.4 64,61.8 52,61.8" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>canal_stone_wall; wierzch 1.9 m</title></polygon>
+<polygon points="149.49,34.59 150.51,34.59 150.51,35.41 149.49,35.41" fill="hsl(193.79 35% 27.64%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="229.49,81.59 230.51,81.59 230.51,82.41 229.49,82.41" fill="hsl(193.79 35% 27.64%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="87.49,142.59 88.51,142.59 88.51,143.41 87.49,143.41" fill="hsl(193.79 35% 27.64%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="243.59,193.51 243.59,192.49 244.41,192.49 244.41,193.51" fill="hsl(193.79 35% 27.64%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="75.49,224.59 76.51,224.59 76.51,225.41 75.49,225.41" fill="hsl(193.79 35% 27.64%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="220,201.91 225.6,201.91 225.6,202.09 220,202.09" fill="hsl(193.13 35% 27.75%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.1 m</title></polygon>
+<polygon points="230.4,201.91 235,201.91 235,202.09 230.4,202.09" fill="hsl(193.13 35% 27.75%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.1 m</title></polygon>
+<polygon points="220,213.91 225.6,213.91 225.6,214.09 220,214.09" fill="hsl(193.13 35% 27.75%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.1 m</title></polygon>
+<polygon points="230.4,213.91 235,213.91 235,214.09 230.4,214.09" fill="hsl(193.13 35% 27.75%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.1 m</title></polygon>
+<polygon points="213,204 222,204 222,204.25 213,204.25" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 2.1 m</title></polygon>
+<polygon points="234,204 243,204 243,204.25 234,204.25" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 2.1 m</title></polygon>
+<polygon points="213,211.75 222,211.75 222,212 213,212" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 2.1 m</title></polygon>
+<polygon points="234,211.75 243,211.75 243,212 234,212" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 2.1 m</title></polygon>
+<polygon points="125.6,78.69 126.4,78.69 126.4,79.31 125.6,79.31" fill="hsl(192.23 35% 27.9%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="234.69,54.4 234.69,53.6 235.31,53.6 235.31,54.4" fill="hsl(192.23 35% 27.9%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="120.6,158.69 121.4,158.69 121.4,159.31 120.6,159.31" fill="hsl(192.23 35% 27.9%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="282.6,172.69 283.4,172.69 283.4,173.31 282.6,173.31" fill="hsl(192.23 35% 27.9%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="113.69,221.4 113.69,220.6 114.31,220.6 114.31,221.4" fill="hsl(192.23 35% 27.9%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="179.6,272.69 180.4,272.69 180.4,273.31 179.6,273.31" fill="hsl(192.23 35% 27.9%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="230,199 230.12,199 230.12,202 230,202" fill="hsl(191.8 35% 27.98%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.3 m</title></polygon>
+<polygon points="225.88,199 226,199 226,202 225.88,202" fill="hsl(191.8 35% 27.98%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.3 m</title></polygon>
+<polygon points="225.88,214 226,214 226,218 225.88,218" fill="hsl(191.8 35% 27.98%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.3 m</title></polygon>
+<polygon points="230,214 230.12,214 230.12,218 230,218" fill="hsl(191.8 35% 27.98%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 2.3 m</title></polygon>
+<polygon points="189.49,36 192.51,36 192.51,38 189.49,38" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy; wierzch 2.61 m</title></polygon>
+<polygon points="267.49,66 270.51,66 270.51,68 267.49,68" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy_violet; wierzch 2.61 m</title></polygon>
+<polygon points="246.49,81 249.51,81 249.51,83 246.49,83" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy; wierzch 2.61 m</title></polygon>
+<polygon points="219.49,238 222.51,238 222.51,240 219.49,240" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy; wierzch 2.61 m</title></polygon>
+<polygon points="241.49,241 244.51,241 244.51,243 241.49,243" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy_violet; wierzch 2.61 m</title></polygon>
+<polygon points="260.49,70 263.51,70 263.51,72 260.49,72" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy; wierzch 2.61 m</title></polygon>
+<polygon points="264.49,70 267.51,70 267.51,72 264.49,72" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy; wierzch 2.61 m</title></polygon>
+<polygon points="300.49,87 303.51,87 303.51,89 300.49,89" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy_violet; wierzch 2.61 m</title></polygon>
+<polygon points="304.49,87 307.51,87 307.51,89 304.49,89" fill="hsl(189.73 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy_violet; wierzch 2.61 m</title></polygon>
+<polygon points="271.5,83.98 274.5,83.98 274.5,86.02 271.5,86.02" fill="hsl(189.66 35% 28.34%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
+<polygon points="110.5,292.98 113.5,292.98 113.5,295.02 110.5,295.02" fill="hsl(189.66 35% 28.34%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
+<polygon points="215.49,207 218.51,207 218.51,209 215.49,209" fill="hsl(181.78 35% 29.7%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy; wierzch 3.81 m</title></polygon>
+<polygon points="234.49,207 237.51,207 237.51,209 234.49,209" fill="hsl(181.78 35% 29.7%)" stroke="#50606e" stroke-width="0.15"><title>city_market_stall_canopy_violet; wierzch 3.81 m</title></polygon>
+<polygon points="25,28 44,28 44,45 25,45" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="65,28 93,28 93,47 65,47" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="104,21 131,21 131,41 104,41" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="135,53 155,53 155,70 135,70" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="79,52 108,52 108,69 79,69" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="101,72 129,72 129,85 101,85" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="181,22 207,22 207,45 181,45" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="219,24 246,24 246,43 219,43" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="277,26 309,26 309,46 277,46" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="280,59 306,59 306,79 280,79" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="198,58 222,58 222,77 198,77" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="23,120 52,120 52,141 23,141" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="66,116 93,116 93,134 66,134" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="107,117 134,117 134,138 107,138" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="119,148 140,148 140,172 119,172" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="59,148 88,148 88,170 59,170" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="25,172 48,172 48,191 25,191" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="96,171 124,171 124,189 96,189" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="134,184 154,184 154,194 134,194" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="182,116 207,116 207,136 182,136" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="221,115 245,115 245,135 221,135" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="263,119 292,119 292,140 263,140" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="291,149 311,149 311,171 291,171" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="239,151 268,151 268,171 239,171" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="193,152 210,152 210,169 193,169" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="193,181 216,181 216,194 193,194" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="251,182 277,182 277,194 251,194" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="290,181 313,181 313,193 290,193" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="23,225 50,225 50,245 23,245" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="58,229 73,229 73,249 58,249" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="98,227 123,227 123,246 98,246" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="122,241 150,241 150,259 122,259" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="53,262 77,262 77,282 53,282" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="92,264 119,264 119,287 92,287" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="126,279 148,279 148,295 126,295" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="208,222 232,222 232,234 208,234" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="242,225 259,225 259,239 242,239" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="206,248 227,248 227,259 206,259" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="181,280 197,280 197,293 181,293" fill="hsl(181.19 35% 29.8%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 3.9 m</title></polygon>
+<polygon points="239.2,206.2 242.4,206.2 242.4,209.8 239.2,209.8" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 5.2 m</title></polygon>
+<polygon points="162,266.8 174,266.8 174,269.2 162,269.2" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>canal_stone_wall; wierzch 5.7 m</title></polygon>
+<polygon points="161,267.3 175,267.3 175,268.7 161,268.7" fill="none" stroke="#d8bd87" stroke-width="0.3" stroke-dasharray="1 1"><title>boardwalk_planks; wierzch 6 m; chodzenie</title></polygon>
+<polygon points="125,266 161,266 161,270 125,270" fill="hsl(167.27 35% 32.18%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 6 m; chodzenie</title></polygon>
+<polygon points="161,265.5 163,265.5 163,270.5 161,270.5" fill="hsl(167.27 35% 32.18%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 6 m; chodzenie</title></polygon>
+<polygon points="175,266 211,266 211,270 175,270" fill="hsl(167.27 35% 32.18%)" stroke="#90be85" stroke-width="0.3"><title>boardwalk_planks; wierzch 6 m; chodzenie</title></polygon>
+<polygon points="173,265.5 175,265.5 175,270.5 173,270.5" fill="hsl(167.27 35% 32.18%)" stroke="#90be85" stroke-width="0.3"><title>canal_stone_wall; wierzch 6 m; chodzenie</title></polygon>
+<polygon points="162,267.15 174,267.15 174,267.29 162,267.29" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 7.05 m</title></polygon>
+<polygon points="162,268.71 174,268.71 174,268.85 162,268.85" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 7.05 m</title></polygon>
+<polygon points="208,221.8 217.5,221.8 217.5,222.2 208,222.2" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="217.5,221.8 222.5,221.8 222.5,222.2 217.5,222.2" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="222.5,221.8 232,221.8 232,222.2 222.5,222.2" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="208,233.8 217.5,233.8 217.5,234.2 208,234.2" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="217.5,233.8 222.5,233.8 222.5,234.2 217.5,234.2" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="222.5,233.8 232,233.8 232,234.2 222.5,234.2" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="207.8,222 208.2,222 208.2,234 207.8,234" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="231.8,222 232.2,222 232.2,234 231.8,234" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 9 m</title></polygon>
+<polygon points="208,222 232,222 232,234 208,234" fill="hsl(147.39 35% 35.59%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 9 m</title></polygon>
+<polygon points="50.1,53 50.6,53 50.6,55 50.1,55" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="50.1,58 50.6,58 50.6,63 50.1,63" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="50.1,55 50.6,55 50.6,58 50.1,58" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="65.4,53 65.9,53 65.9,55 65.4,55" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="65.4,58 65.9,58 65.9,63 65.4,63" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="65.4,55 65.9,55 65.9,58 65.4,58" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="50.1,53 65.9,53 65.9,53.5 50.1,53.5" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="50.1,62.5 65.9,62.5 65.9,63 50.1,63" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="239,150.8 251,150.8 251,151.2 239,151.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="251,150.8 256,150.8 256,151.2 251,151.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="256,150.8 268,150.8 268,151.2 256,151.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="239,170.8 251,170.8 251,171.2 239,171.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="251,170.8 256,170.8 256,171.2 251,171.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="256,170.8 268,170.8 268,171.2 256,171.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="238.8,151 239.2,151 239.2,171 238.8,171" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="267.8,151 268.2,151 268.2,171 267.8,171" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="239,151 268,151 268,171 239,171" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 10 m</title></polygon>
+<polygon points="126,278.8 134.5,278.8 134.5,279.2 126,279.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="134.5,278.8 139.5,278.8 139.5,279.2 134.5,279.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="139.5,278.8 148,278.8 148,279.2 139.5,279.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="126,294.8 134.5,294.8 134.5,295.2 126,295.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="134.5,294.8 139.5,294.8 139.5,295.2 134.5,295.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="139.5,294.8 148,294.8 148,295.2 139.5,295.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="125.8,279 126.2,279 126.2,295 125.8,295" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="147.8,279 148.2,279 148.2,295 147.8,295" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="126,279 148,279 148,295 126,295" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 10 m</title></polygon>
+<polygon points="206,247.8 214,247.8 214,248.2 206,248.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="214,247.8 219,247.8 219,248.2 214,248.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="219,247.8 227,247.8 227,248.2 219,248.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="206,258.8 214,258.8 214,259.2 206,259.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="214,258.8 219,258.8 219,259.2 214,259.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="219,258.8 227,258.8 227,259.2 219,259.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="205.8,248 206.2,248 206.2,259 205.8,259" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="226.8,248 227.2,248 227.2,259 226.8,259" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="206,248 227,248 227,259 206,259" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 10 m</title></polygon>
+<polygon points="181,279.8 186.5,279.8 186.5,280.2 181,280.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="186.5,279.8 191.5,279.8 191.5,280.2 186.5,280.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="191.5,279.8 197,279.8 197,280.2 191.5,280.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="181,292.8 186.5,292.8 186.5,293.2 181,293.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="186.5,292.8 191.5,292.8 191.5,293.2 186.5,293.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="191.5,292.8 197,292.8 197,293.2 191.5,293.2" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="180.8,280 181.2,280 181.2,293 180.8,293" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="196.8,280 197.2,280 197.2,293 196.8,293" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 10 m</title></polygon>
+<polygon points="181,280 197,280 197,293 181,293" fill="hsl(140.76 35% 36.73%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 10 m</title></polygon>
+<polygon points="50,53 66,53 66,63 50,63" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>flood_brick_algae; wierzch 10.5 m</title></polygon>
+<polygon points="134,183.8 141.5,183.8 141.5,184.2 134,184.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="141.5,183.8 146.5,183.8 146.5,184.2 141.5,184.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="146.5,183.8 154,183.8 154,184.2 146.5,184.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="134,193.8 141.5,193.8 141.5,194.2 134,194.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="141.5,193.8 146.5,193.8 146.5,194.2 141.5,194.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="146.5,193.8 154,193.8 154,194.2 146.5,194.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="133.8,184 134.2,184 134.2,194 133.8,194" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="153.8,184 154.2,184 154.2,194 153.8,194" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="134,184 154,184 154,194 134,194" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 11 m</title></polygon>
+<polygon points="193,180.8 202,180.8 202,181.2 193,181.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="202,180.8 207,180.8 207,181.2 202,181.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="207,180.8 216,180.8 216,181.2 207,181.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="193,193.8 202,193.8 202,194.2 193,194.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="202,193.8 207,193.8 207,194.2 202,194.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="207,193.8 216,193.8 216,194.2 207,194.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="192.8,181 193.2,181 193.2,194 192.8,194" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="215.8,181 216.2,181 216.2,194 215.8,194" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="193,181 216,181 216,194 193,194" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 11 m</title></polygon>
+<polygon points="122,240.8 133.5,240.8 133.5,241.2 122,241.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="133.5,240.8 138.5,240.8 138.5,241.2 133.5,241.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="138.5,240.8 150,240.8 150,241.2 138.5,241.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="122,258.8 133.5,258.8 133.5,259.2 122,259.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="133.5,258.8 138.5,258.8 138.5,259.2 133.5,259.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="138.5,258.8 150,258.8 150,259.2 138.5,259.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="121.8,241 122.2,241 122.2,259 121.8,259" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="149.8,241 150.2,241 150.2,259 149.8,259" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="122,241 150,241 150,259 122,259" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 11 m</title></polygon>
+<polygon points="242,224.8 248,224.8 248,225.2 242,225.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="248,224.8 253,224.8 253,225.2 248,225.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="253,224.8 259,224.8 259,225.2 253,225.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="242,238.8 248,238.8 248,239.2 242,239.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="248,238.8 253,238.8 253,239.2 248,239.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="253,238.8 259,238.8 259,239.2 253,239.2" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="241.8,225 242.2,225 242.2,239 241.8,239" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="258.8,225 259.2,225 259.2,239 258.8,239" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 11 m</title></polygon>
+<polygon points="242,225 259,225 259,239 242,239" fill="hsl(134.13 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 11 m</title></polygon>
+<polygon points="79,51.8 91,51.8 91,52.2 79,52.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="91,51.8 96,51.8 96,52.2 91,52.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="96,51.8 108,51.8 108,52.2 96,52.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="79,68.8 91,68.8 91,69.2 79,69.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="91,68.8 96,68.8 96,69.2 91,69.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="96,68.8 108,68.8 108,69.2 96,69.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="78.8,52 79.2,52 79.2,69 78.8,69" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="107.8,52 108.2,52 108.2,69 107.8,69" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="79,52 108,52 108,69 79,69" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 12 m</title></polygon>
+<polygon points="198,57.8 207.5,57.8 207.5,58.2 198,58.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="207.5,57.8 212.5,57.8 212.5,58.2 207.5,58.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="212.5,57.8 222,57.8 222,58.2 212.5,58.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="198,76.8 207.5,76.8 207.5,77.2 198,77.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="207.5,76.8 212.5,76.8 212.5,77.2 207.5,77.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="212.5,76.8 222,76.8 222,77.2 212.5,77.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="197.8,58 198.2,58 198.2,77 197.8,77" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="221.8,58 222.2,58 222.2,77 221.8,77" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="198,58 222,58 222,77 198,77" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 12 m</title></polygon>
+<polygon points="119,147.8 127,147.8 127,148.2 119,148.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="127,147.8 132,147.8 132,148.2 127,148.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="132,147.8 140,147.8 140,148.2 132,148.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="119,171.8 127,171.8 127,172.2 119,172.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="127,171.8 132,171.8 132,172.2 127,172.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="132,171.8 140,171.8 140,172.2 132,172.2" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="118.8,148 119.2,148 119.2,172 118.8,172" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="139.8,148 140.2,148 140.2,172 139.8,172" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 12 m</title></polygon>
+<polygon points="119,148 140,148 140,172 119,172" fill="hsl(127.5 35% 39%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 12 m</title></polygon>
+<polygon points="135,52.8 142.5,52.8 142.5,53.2 135,53.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="142.5,52.8 147.5,52.8 147.5,53.2 142.5,53.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="147.5,52.8 155,52.8 155,53.2 147.5,53.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="135,69.8 142.5,69.8 142.5,70.2 135,70.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="142.5,69.8 147.5,69.8 147.5,70.2 142.5,70.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="147.5,69.8 155,69.8 155,70.2 147.5,70.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="134.8,53 135.2,53 135.2,70 134.8,70" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="154.8,53 155.2,53 155.2,70 154.8,70" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="135,53 155,53 155,70 135,70" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 13 m</title></polygon>
+<polygon points="280,58.8 290.5,58.8 290.5,59.2 280,59.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="290.5,58.8 295.5,58.8 295.5,59.2 290.5,59.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="295.5,58.8 306,58.8 306,59.2 295.5,59.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="280,78.8 290.5,78.8 290.5,79.2 280,79.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="290.5,78.8 295.5,78.8 295.5,79.2 290.5,79.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="295.5,78.8 306,78.8 306,79.2 295.5,79.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="279.8,59 280.2,59 280.2,79 279.8,79" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="305.8,59 306.2,59 306.2,79 305.8,79" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="280,59 306,59 306,79 280,79" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 13 m</title></polygon>
+<polygon points="59,147.8 71,147.8 71,148.2 59,148.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="71,147.8 76,147.8 76,148.2 71,148.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="76,147.8 88,147.8 88,148.2 76,148.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="59,169.8 71,169.8 71,170.2 59,170.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="71,169.8 76,169.8 76,170.2 71,170.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="76,169.8 88,169.8 88,170.2 76,170.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="58.8,148 59.2,148 59.2,170 58.8,170" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="87.8,148 88.2,148 88.2,170 87.8,170" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="59,148 88,148 88,170 59,170" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 13 m</title></polygon>
+<polygon points="251,181.8 261.5,181.8 261.5,182.2 251,182.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="261.5,181.8 266.5,181.8 266.5,182.2 261.5,182.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="266.5,181.8 277,181.8 277,182.2 266.5,182.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="251,193.8 261.5,193.8 261.5,194.2 251,194.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="261.5,193.8 266.5,193.8 266.5,194.2 261.5,194.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="266.5,193.8 277,193.8 277,194.2 266.5,194.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="250.8,182 251.2,182 251.2,194 250.8,194" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="276.8,182 277.2,182 277.2,194 276.8,194" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="251,182 277,182 277,194 251,194" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 13 m</title></polygon>
+<polygon points="290,180.8 299,180.8 299,181.2 290,181.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="299,180.8 304,180.8 304,181.2 299,181.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="304,180.8 313,180.8 313,181.2 304,181.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="290,192.8 299,192.8 299,193.2 290,193.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="299,192.8 304,192.8 304,193.2 299,193.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="304,192.8 313,192.8 313,193.2 304,193.2" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="289.8,181 290.2,181 290.2,193 289.8,193" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="312.8,181 313.2,181 313.2,193 312.8,193" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 13 m</title></polygon>
+<polygon points="290,181 313,181 313,193 290,193" fill="hsl(120.87 35% 40.14%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 13 m</title></polygon>
+<polygon points="96,170.8 107.5,170.8 107.5,171.2 96,171.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="107.5,170.8 112.5,170.8 112.5,171.2 107.5,171.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="112.5,170.8 124,170.8 124,171.2 112.5,171.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="96,188.8 107.5,188.8 107.5,189.2 96,189.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="107.5,188.8 112.5,188.8 112.5,189.2 107.5,189.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="112.5,188.8 124,188.8 124,189.2 112.5,189.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="95.8,171 96.2,171 96.2,189 95.8,189" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="123.8,171 124.2,171 124.2,189 123.8,189" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="96,171 124,171 124,189 96,189" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 14 m</title></polygon>
+<polygon points="193,151.8 199,151.8 199,152.2 193,152.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="199,151.8 204,151.8 204,152.2 199,152.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="204,151.8 210,151.8 210,152.2 204,152.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="193,168.8 199,168.8 199,169.2 193,169.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="199,168.8 204,168.8 204,169.2 199,169.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="204,168.8 210,168.8 210,169.2 204,169.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="192.8,152 193.2,152 193.2,169 192.8,169" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="209.8,152 210.2,152 210.2,169 209.8,169" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="193,152 210,152 210,169 193,169" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 14 m</title></polygon>
+<polygon points="53,261.8 62.5,261.8 62.5,262.2 53,262.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="62.5,261.8 67.5,261.8 67.5,262.2 62.5,262.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="67.5,261.8 77,261.8 77,262.2 67.5,262.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="53,281.8 62.5,281.8 62.5,282.2 53,282.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="62.5,281.8 67.5,281.8 67.5,282.2 62.5,282.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="67.5,281.8 77,281.8 77,282.2 67.5,282.2" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="52.8,262 53.2,262 53.2,282 52.8,282" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="76.8,262 77.2,262 77.2,282 76.8,282" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 14 m</title></polygon>
+<polygon points="53,262 77,262 77,282 53,282" fill="hsl(114.24 35% 41.27%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 14 m</title></polygon>
+<polygon points="25,27.8 32,27.8 32,28.2 25,28.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="32,27.8 37,27.8 37,28.2 32,28.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="37,27.8 44,27.8 44,28.2 37,28.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="25,44.8 32,44.8 32,45.2 25,45.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="32,44.8 37,44.8 37,45.2 32,45.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="37,44.8 44,44.8 44,45.2 37,45.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="24.8,28 25.2,28 25.2,45 24.8,45" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="43.8,28 44.2,28 44.2,45 43.8,45" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="25,28 44,28 44,45 25,45" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 15 m</title></polygon>
+<polygon points="101,71.8 112.5,71.8 112.5,72.2 101,72.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="112.5,71.8 117.5,71.8 117.5,72.2 112.5,72.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="117.5,71.8 129,71.8 129,72.2 117.5,72.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="101,84.8 112.5,84.8 112.5,85.2 101,85.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="112.5,84.8 117.5,84.8 117.5,85.2 112.5,85.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="117.5,84.8 129,84.8 129,85.2 117.5,85.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="100.8,72 101.2,72 101.2,85 100.8,85" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="128.8,72 129.2,72 129.2,85 128.8,85" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="101,72 129,72 129,85 101,85" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 15 m</title></polygon>
+<polygon points="66,115.8 77,115.8 77,116.2 66,116.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="77,115.8 82,115.8 82,116.2 77,116.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="82,115.8 93,115.8 93,116.2 82,116.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="66,133.8 77,133.8 77,134.2 66,134.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="77,133.8 82,133.8 82,134.2 77,134.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="82,133.8 93,133.8 93,134.2 82,134.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="65.8,116 66.2,116 66.2,134 65.8,134" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="92.8,116 93.2,116 93.2,134 92.8,134" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="66,116 93,116 93,134 66,134" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 15 m</title></polygon>
+<polygon points="182,115.8 192,115.8 192,116.2 182,116.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="192,115.8 197,115.8 197,116.2 192,116.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="197,115.8 207,115.8 207,116.2 197,116.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="182,135.8 192,135.8 192,136.2 182,136.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="192,135.8 197,135.8 197,136.2 192,136.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="197,135.8 207,135.8 207,136.2 197,136.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="181.8,116 182.2,116 182.2,136 181.8,136" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="206.8,116 207.2,116 207.2,136 206.8,136" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="182,116 207,116 207,136 182,136" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 15 m</title></polygon>
+<polygon points="58,228.8 63,228.8 63,229.2 58,229.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="63,228.8 68,228.8 68,229.2 63,229.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="68,228.8 73,228.8 73,229.2 68,229.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="58,248.8 63,248.8 63,249.2 58,249.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="63,248.8 68,248.8 68,249.2 63,249.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="68,248.8 73,248.8 73,249.2 68,249.2" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="57.8,229 58.2,229 58.2,249 57.8,249" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="72.8,229 73.2,229 73.2,249 72.8,249" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15 m</title></polygon>
+<polygon points="58,229 73,229 73,249 58,249" fill="hsl(107.61 35% 42.41%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 15 m</title></polygon>
+<polygon points="86,296 108,296 108,300 86,300" fill="hsl(102.97 35% 43.2%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15.7 m</title></polygon>
+<polygon points="316,23 320,23 320,45 316,45" fill="hsl(102.31 35% 43.32%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 15.8 m</title></polygon>
+<polygon points="219,23.8 230,23.8 230,24.2 219,24.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="230,23.8 235,23.8 235,24.2 230,24.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="235,23.8 246,23.8 246,24.2 235,24.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="219,42.8 230,42.8 230,43.2 219,43.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="230,42.8 235,42.8 235,43.2 230,43.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="235,42.8 246,42.8 246,43.2 235,43.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="218.8,24 219.2,24 219.2,43 218.8,43" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="245.8,24 246.2,24 246.2,43 245.8,43" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="219,24 246,24 246,43 219,43" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 16 m</title></polygon>
+<polygon points="25,171.8 34,171.8 34,172.2 25,172.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="34,171.8 39,171.8 39,172.2 34,172.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="39,171.8 48,171.8 48,172.2 39,172.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="25,190.8 34,190.8 34,191.2 25,191.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="34,190.8 39,190.8 39,191.2 34,191.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="39,190.8 48,190.8 48,191.2 39,191.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="24.8,172 25.2,172 25.2,191 24.8,191" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="47.8,172 48.2,172 48.2,191 47.8,191" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="25,172 48,172 48,191 25,191" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 16 m</title></polygon>
+<polygon points="291,148.8 298.5,148.8 298.5,149.2 291,149.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="298.5,148.8 303.5,148.8 303.5,149.2 298.5,149.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="303.5,148.8 311,148.8 311,149.2 303.5,149.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="291,170.8 298.5,170.8 298.5,171.2 291,171.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="298.5,170.8 303.5,170.8 303.5,171.2 298.5,171.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="303.5,170.8 311,170.8 311,171.2 303.5,171.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="290.8,149 291.2,149 291.2,171 290.8,171" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="310.8,149 311.2,149 311.2,171 310.8,171" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="291,149 311,149 311,171 291,171" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 16 m</title></polygon>
+<polygon points="98,226.8 108,226.8 108,227.2 98,227.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="108,226.8 113,226.8 113,227.2 108,227.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="113,226.8 123,226.8 123,227.2 113,227.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="98,245.8 108,245.8 108,246.2 98,246.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="108,245.8 113,245.8 113,246.2 108,246.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="113,245.8 123,245.8 123,246.2 113,246.2" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="97.8,227 98.2,227 98.2,246 97.8,246" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="122.8,227 123.2,227 123.2,246 122.8,246" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16 m</title></polygon>
+<polygon points="98,227 123,227 123,246 98,246" fill="hsl(100.98 35% 43.55%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 16 m</title></polygon>
+<polygon points="316,45 320,45 320,67 316,67" fill="hsl(97.01 35% 44.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 16.6 m</title></polygon>
+<polygon points="107,116.8 118,116.8 118,117.2 107,117.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="118,116.8 123,116.8 123,117.2 118,117.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="123,116.8 134,116.8 134,117.2 123,117.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="107,137.8 118,137.8 118,138.2 107,138.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="118,137.8 123,137.8 123,138.2 118,138.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="123,137.8 134,137.8 134,138.2 123,138.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="106.8,117 107.2,117 107.2,138 106.8,138" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="133.8,117 134.2,117 134.2,138 133.8,138" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="107,117 134,117 134,138 107,138" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 17 m</title></polygon>
+<polygon points="221,114.8 230.5,114.8 230.5,115.2 221,115.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="230.5,114.8 235.5,114.8 235.5,115.2 230.5,115.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="235.5,114.8 245,114.8 245,115.2 235.5,115.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="221,134.8 230.5,134.8 230.5,135.2 221,135.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="230.5,134.8 235.5,134.8 235.5,135.2 230.5,135.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="235.5,134.8 245,134.8 245,135.2 235.5,135.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="220.8,115 221.2,115 221.2,135 220.8,135" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="244.8,115 245.2,115 245.2,135 244.8,135" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="221,115 245,115 245,135 221,135" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 17 m</title></polygon>
+<polygon points="92,263.8 103,263.8 103,264.2 92,264.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="103,263.8 108,263.8 108,264.2 103,264.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="108,263.8 119,263.8 119,264.2 108,264.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="92,286.8 103,286.8 103,287.2 92,287.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="103,286.8 108,286.8 108,287.2 103,287.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="108,286.8 119,286.8 119,287.2 108,287.2" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="91.8,264 92.2,264 92.2,287 91.8,287" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="118.8,264 119.2,264 119.2,287 118.8,287" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17 m</title></polygon>
+<polygon points="92,264 119,264 119,287 92,287" fill="hsl(94.36 35% 44.68%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 17 m</title></polygon>
+<polygon points="64,296 86,296 86,300 64,300" fill="hsl(93.69 35% 44.8%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17.1 m</title></polygon>
+<polygon points="152,296 174,296 174,300 152,300" fill="hsl(93.69 35% 44.8%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17.1 m</title></polygon>
+<polygon points="316,67 320,67 320,89 316,89" fill="hsl(91.7 35% 45.14%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17.4 m</title></polygon>
+<polygon points="16,67 20,67 20,89 16,89" fill="hsl(90.38 35% 45.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17.6 m</title></polygon>
+<polygon points="16,133 20,133 20,155 16,155" fill="hsl(90.38 35% 45.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 17.6 m</title></polygon>
+<polygon points="65,27.8 76.5,27.8 76.5,28.2 65,28.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="76.5,27.8 81.5,27.8 81.5,28.2 76.5,28.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="81.5,27.8 93,27.8 93,28.2 81.5,28.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="65,46.8 76.5,46.8 76.5,47.2 65,47.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="76.5,46.8 81.5,46.8 81.5,47.2 76.5,47.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="81.5,46.8 93,46.8 93,47.2 81.5,47.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="64.8,28 65.2,28 65.2,47 64.8,47" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="92.8,28 93.2,28 93.2,47 92.8,47" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="65,28 93,28 93,47 65,47" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 18 m</title></polygon>
+<polygon points="181,21.8 191.5,21.8 191.5,22.2 181,22.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="191.5,21.8 196.5,21.8 196.5,22.2 191.5,22.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="196.5,21.8 207,21.8 207,22.2 196.5,22.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="181,44.8 191.5,44.8 191.5,45.2 181,45.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="191.5,44.8 196.5,44.8 196.5,45.2 191.5,45.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="196.5,44.8 207,44.8 207,45.2 196.5,45.2" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="180.8,22 181.2,22 181.2,45 180.8,45" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="206.8,22 207.2,22 207.2,45 206.8,45" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18 m</title></polygon>
+<polygon points="181,22 207,22 207,45 181,45" fill="hsl(87.73 35% 45.82%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 18 m</title></polygon>
+<polygon points="316,89 320,89 320,111 316,111" fill="hsl(86.4 35% 46.05%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18.2 m</title></polygon>
+<polygon points="42,296 64,296 64,300 42,300" fill="hsl(84.41 35% 46.39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18.5 m</title></polygon>
+<polygon points="130,296 152,296 152,300 130,300" fill="hsl(84.41 35% 46.39%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18.5 m</title></polygon>
+<polygon points="106,16 128,16 128,20 106,20" fill="hsl(82.42 35% 46.73%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 18.8 m</title></polygon>
+<polygon points="23,224.8 34,224.8 34,225.2 23,225.2" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="34,224.8 39,224.8 39,225.2 34,225.2" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="39,224.8 50,224.8 50,225.2 39,225.2" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="23,244.8 34,244.8 34,245.2 23,245.2" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="34,244.8 39,244.8 39,245.2 34,245.2" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="39,244.8 50,244.8 50,245.2 39,245.2" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="22.8,225 23.2,225 23.2,245 22.8,245" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="49.8,225 50.2,225 50.2,245 49.8,245" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="23,225 50,225 50,245 23,245" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 19 m</title></polygon>
+<polygon points="316,111 320,111 320,133 316,133" fill="hsl(81.1 35% 46.95%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19 m</title></polygon>
+<polygon points="18,17.85 318,17.85 318,18.15 18,18.15" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="317.85,18 318.15,18 318.15,216 317.85,216" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="263,215.85 318,215.85 318,216.15 263,216.15" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="262.85,216 263.15,216 263.15,246 262.85,246" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="232,245.85 263,245.85 263,246.15 232,246.15" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="231.85,246 232.15,246 232.15,270 231.85,270" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="206,269.85 232,269.85 232,270.15 206,270.15" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="205.85,270 206.15,270 206.15,298 205.85,298" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="18,297.85 206,297.85 206,298.15 18,298.15" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="17.85,18 18.15,18 18.15,298 17.85,298" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 19 m</title></polygon>
+<polygon points="16,45 20,45 20,67 16,67" fill="hsl(79.77 35% 47.18%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19.2 m</title></polygon>
+<polygon points="16,111 20,111 20,133 16,133" fill="hsl(79.77 35% 47.18%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19.2 m</title></polygon>
+<polygon points="62,16 84,16 84,20 62,20" fill="hsl(77.12 35% 47.64%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19.6 m</title></polygon>
+<polygon points="316,133 320,133 320,155 316,155" fill="hsl(75.8 35% 47.86%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19.8 m</title></polygon>
+<polygon points="20,296 42,296 42,300 20,300" fill="hsl(75.13 35% 47.98%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19.9 m</title></polygon>
+<polygon points="108,296 130,296 130,300 108,300" fill="hsl(75.13 35% 47.98%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 19.9 m</title></polygon>
+<polygon points="277,25.8 290.5,25.8 290.5,26.2 277,26.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="290.5,25.8 295.5,25.8 295.5,26.2 290.5,26.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="295.5,25.8 309,25.8 309,26.2 295.5,26.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="277,45.8 290.5,45.8 290.5,46.2 277,46.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="290.5,45.8 295.5,45.8 295.5,46.2 290.5,46.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="295.5,45.8 309,45.8 309,46.2 295.5,46.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="276.8,26 277.2,26 277.2,46 276.8,46" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="308.8,26 309.2,26 309.2,46 308.8,46" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="277,26 309,26 309,46 277,46" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 20 m</title></polygon>
+<polygon points="263,118.8 275,118.8 275,119.2 263,119.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="275,118.8 280,118.8 280,119.2 275,119.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="280,118.8 292,118.8 292,119.2 280,119.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="263,139.8 275,139.8 275,140.2 263,140.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="275,139.8 280,139.8 280,140.2 275,140.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="280,139.8 292,139.8 292,140.2 280,140.2" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="262.8,119 263.2,119 263.2,140 262.8,140" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="291.8,119 292.2,119 292.2,140 291.8,140" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20 m</title></polygon>
+<polygon points="263,119 292,119 292,140 263,140" fill="hsl(74.47 35% 48.09%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 20 m</title></polygon>
+<polygon points="18,16 40,16 40,20 18,20" fill="hsl(71.82 35% 48.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.4 m</title></polygon>
+<polygon points="128,16 150,16 150,20 128,20" fill="hsl(71.82 35% 48.55%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.4 m</title></polygon>
+<polygon points="316,155 320,155 320,177 316,177" fill="hsl(70.49 35% 48.77%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.6 m</title></polygon>
+<polygon points="16,23 20,23 20,45 16,45" fill="hsl(69.17 35% 49%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.8 m</title></polygon>
+<polygon points="16,89 20,89 20,111 16,111" fill="hsl(69.17 35% 49%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.8 m</title></polygon>
+<polygon points="16,155 20,155 20,177 16,177" fill="hsl(69.17 35% 49%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.8 m</title></polygon>
+<polygon points="16,221 20,221 20,243 16,243" fill="hsl(69.17 35% 49%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.8 m</title></polygon>
+<polygon points="16,287 20,287 20,309 16,309" fill="hsl(69.17 35% 49%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 20.8 m</title></polygon>
+<polygon points="104,20.8 115,20.8 115,21.2 104,21.2" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="115,20.8 120,20.8 120,21.2 115,21.2" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="120,20.8 131,20.8 131,21.2 120,21.2" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="104,40.8 115,40.8 115,41.2 104,41.2" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="115,40.8 120,40.8 120,41.2 115,41.2" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="120,40.8 131,40.8 131,41.2 120,41.2" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="103.8,21 104.2,21 104.2,41 103.8,41" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="130.8,21 131.2,21 131.2,41 130.8,41" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21 m</title></polygon>
+<polygon points="104,21 131,21 131,41 104,41" fill="hsl(67.84 35% 49.23%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 21 m</title></polygon>
+<polygon points="84,16 106,16 106,20 84,20" fill="hsl(66.52 35% 49.45%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21.2 m</title></polygon>
+<polygon points="174,296 196,296 196,300 174,300" fill="hsl(65.85 35% 49.57%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21.3 m</title></polygon>
+<polygon points="316,177 320,177 320,199 316,199" fill="hsl(65.19 35% 49.68%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 21.4 m</title></polygon>
+<polygon points="23,119.8 35,119.8 35,120.2 23,120.2" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="35,119.8 40,119.8 40,120.2 35,120.2" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="40,119.8 52,119.8 52,120.2 40,120.2" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="23,140.8 35,140.8 35,141.2 23,141.2" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="35,140.8 40,140.8 40,141.2 35,141.2" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="40,140.8 52,140.8 52,141.2 40,141.2" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="22.8,120 23.2,120 23.2,141 22.8,141" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="51.8,120 52.2,120 52.2,141 51.8,141" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="23,120 52,120 52,141 23,141" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>roof_tar; wierzch 22 m</title></polygon>
+<polygon points="40,16 62,16 62,20 40,20" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="150,16 172,16 172,20 150,20" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="260,16 282,16 282,20 260,20" fill="hsl(61.21 35% 50.36%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22 m</title></polygon>
+<polygon points="16,199 20,199 20,221 16,221" fill="hsl(58.56 35% 50.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22.4 m</title></polygon>
+<polygon points="16,265 20,265 20,287 16,287" fill="hsl(58.56 35% 50.82%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22.4 m</title></polygon>
+<polygon points="216,16 238,16 238,20 216,20" fill="hsl(55.91 35% 51.27%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 22.8 m</title></polygon>
+<polygon points="172,16 194,16 194,20 172,20" fill="hsl(50.61 35% 52.18%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 23.6 m</title></polygon>
+<polygon points="282,16 304,16 304,20 282,20" fill="hsl(50.61 35% 52.18%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 23.6 m</title></polygon>
+<polygon points="16,177 20,177 20,199 16,199" fill="hsl(47.95 35% 52.64%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 24 m</title></polygon>
+<polygon points="16,243 20,243 20,265 16,265" fill="hsl(47.95 35% 52.64%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 24 m</title></polygon>
+<polygon points="238,16 260,16 260,20 238,20" fill="hsl(45.3 35% 53.09%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 24.4 m</title></polygon>
+<polygon points="194,16 216,16 216,20 194,20" fill="hsl(40 35% 54%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 25.2 m</title></polygon>
+<polygon points="304,16 326,16 326,20 304,20" fill="hsl(40 35% 54%)" stroke="#50606e" stroke-width="0.15"><title>flood_brick_algae; wierzch 25.2 m</title></polygon>
+</g><g id="grid" stroke="#c2d1da" stroke-opacity="0.15" stroke-width="0.15">
+<path d="M18 18v280"/>
+<path d="M28 18v280"/>
+<path d="M38 18v280"/>
+<path d="M48 18v280"/>
+<path d="M58 18v280"/>
+<path d="M68 18v280"/>
+<path d="M78 18v280"/>
+<path d="M88 18v280"/>
+<path d="M98 18v280"/>
+<path d="M108 18v280"/>
+<path d="M118 18v280"/>
+<path d="M128 18v280"/>
+<path d="M138 18v280"/>
+<path d="M148 18v280"/>
+<path d="M158 18v280"/>
+<path d="M168 18v280"/>
+<path d="M178 18v280"/>
+<path d="M188 18v280"/>
+<path d="M198 18v280"/>
+<path d="M208 18v280"/>
+<path d="M218 18v280"/>
+<path d="M228 18v280"/>
+<path d="M238 18v280"/>
+<path d="M248 18v280"/>
+<path d="M258 18v280"/>
+<path d="M268 18v280"/>
+<path d="M278 18v280"/>
+<path d="M288 18v280"/>
+<path d="M298 18v280"/>
+<path d="M308 18v280"/>
+<path d="M318 18v280"/>
+<path d="M18 18h300"/>
+<path d="M18 28h300"/>
+<path d="M18 38h300"/>
+<path d="M18 48h300"/>
+<path d="M18 58h300"/>
+<path d="M18 68h300"/>
+<path d="M18 78h300"/>
+<path d="M18 88h300"/>
+<path d="M18 98h300"/>
+<path d="M18 108h300"/>
+<path d="M18 118h300"/>
+<path d="M18 128h300"/>
+<path d="M18 138h300"/>
+<path d="M18 148h300"/>
+<path d="M18 158h300"/>
+<path d="M18 168h300"/>
+<path d="M18 178h300"/>
+<path d="M18 188h300"/>
+<path d="M18 198h300"/>
+<path d="M18 208h300"/>
+<path d="M18 218h300"/>
+<path d="M18 228h300"/>
+<path d="M18 238h300"/>
+<path d="M18 248h300"/>
+<path d="M18 258h300"/>
+<path d="M18 268h300"/>
+<path d="M18 278h300"/>
+<path d="M18 288h300"/>
+<path d="M18 298h300"/>
+</g><g id="zones">
+<rect x="19" y="20" width="141" height="69" fill="none" stroke="#ffbd57" stroke-width="0.5" stroke-dasharray="2 1"/><text x="20" y="24" fill="#ffbd57" stroke="#101820" stroke-width="0.5" paint-order="stroke">Plac przepompowni (open)</text>
+<rect x="176" y="20" width="141" height="74" fill="none" stroke="#a8c984" stroke-width="0.5" stroke-dasharray="2 1"/><text x="177" y="24" fill="#a8c984" stroke="#101820" stroke-width="0.5" paint-order="stroke">Targ na wyspie (dense)</text>
+<rect x="19" y="107" width="141" height="92" fill="none" stroke="#baa1d8" stroke-width="0.5" stroke-dasharray="2 1"/><text x="20" y="111" fill="#baa1d8" stroke="#101820" stroke-width="0.5" paint-order="stroke">Kamienice nad kanałem (interior)</text>
+<rect x="161" y="110" width="156" height="88" fill="none" stroke="#8caee8" stroke-width="0.5" stroke-dasharray="2 1"/><text x="162" y="114" fill="#8caee8" stroke="#101820" stroke-width="0.5" paint-order="stroke">Brodzenie i warsztaty (low)</text>
+<rect x="19" y="217" width="141" height="80" fill="none" stroke="#c7ba98" stroke-width="0.5" stroke-dasharray="2 1"/><text x="20" y="221" fill="#c7ba98" stroke="#101820" stroke-width="0.5" paint-order="stroke">Zalane podwórza (interior)</text>
+<rect x="161" y="200" width="101" height="74" fill="none" stroke="#ffbd57" stroke-width="0.5" stroke-dasharray="2 1"/><text x="162" y="204" fill="#ffbd57" stroke="#101820" stroke-width="0.5" paint-order="stroke">Barka i śluza (high)</text>
+</g><g id="props" fill="#d6c8ad" fill-opacity="0.7">
+<circle cx="58" cy="58" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="228" cy="208" r="0.5"><title>dock_barge</title></circle>
+<circle cx="27" cy="92" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="42" cy="92" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="38" cy="203" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="51" cy="203" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="220" cy="212.4" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="236" cy="203.4" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="200" cy="213" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="208" cy="213" r="0.5"><title>dock_mooring_post</title></circle>
+<circle cx="168" cy="268" r="0.5"><title>dock_lock_gate</title></circle>
+<circle cx="34.5" cy="45.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="41" cy="45.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="28" cy="45.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="79" cy="47.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="90" cy="47.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="68" cy="47.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="117.5" cy="41.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="128" cy="41.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="107" cy="41.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="145" cy="70.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="152" cy="70.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="93.5" cy="69.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="105" cy="69.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="115" cy="85.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="126" cy="85.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="104" cy="85.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="194" cy="45.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="204" cy="45.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="184" cy="45.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="232.5" cy="43.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="243" cy="43.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="222" cy="43.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="293" cy="46.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="306" cy="46.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="280" cy="46.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="293" cy="79.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="303" cy="79.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="210" cy="77.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="219" cy="77.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="37.5" cy="141.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="49" cy="141.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="26" cy="141.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="79.5" cy="134.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="90" cy="134.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="69" cy="134.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="120.5" cy="138.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="131" cy="138.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="110" cy="138.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="129.5" cy="172.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="137" cy="172.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="73.5" cy="170.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="85" cy="170.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="36.5" cy="191.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="45" cy="191.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="28" cy="191.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="110" cy="189.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="121" cy="189.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="99" cy="189.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="144" cy="194.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="151" cy="194.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="194.5" cy="136.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="204" cy="136.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="185" cy="136.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="233" cy="135.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="242" cy="135.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="224" cy="135.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="277.5" cy="140.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="289" cy="140.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="266" cy="140.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="301" cy="171.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="308" cy="171.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="294" cy="171.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="253.5" cy="171.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="265" cy="171.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="201.5" cy="169.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="207" cy="169.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="196" cy="169.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="204.5" cy="194.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="213" cy="194.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="264" cy="194.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="274" cy="194.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="301.5" cy="193.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="310" cy="193.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="36.5" cy="245.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="47" cy="245.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="26" cy="245.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="65.5" cy="249.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="70" cy="249.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="61" cy="249.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="110.5" cy="246.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="120" cy="246.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="101" cy="246.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="136" cy="259.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="147" cy="259.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="65" cy="282.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="74" cy="282.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="56" cy="282.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="105.5" cy="287.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="116" cy="287.28" r="0.5"><title>city_fire_escape</title></circle>
+<circle cx="95" cy="287.27" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="137" cy="295.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="145" cy="295.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="220" cy="234.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="229" cy="234.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="250.5" cy="239.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="256" cy="239.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="216.5" cy="259.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="224" cy="259.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="189" cy="293.6" r="0.5"><title>city_sign_box</title></circle>
+<circle cx="194" cy="293.28" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="33" cy="59" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="43" cy="76.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="75" cy="79" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="99" cy="47.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="116" cy="61" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="128" cy="80.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="148" cy="37" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="189" cy="39" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="237" cy="55.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="255" cy="39" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="271" cy="68.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="289" cy="54" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="232" cy="83.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="271" cy="87" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="312" cy="91.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="246" cy="84" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="34" cy="154" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="57" cy="162.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="73" cy="183" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="90" cy="144.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="102" cy="154" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="123" cy="160.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="124" cy="197" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="40" cy="198.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="135" cy="128" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="180" cy="145" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="217" cy="138.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="211" cy="173" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="228" cy="183.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="242" cy="195" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="273" cy="154.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="281" cy="175" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="315" cy="160.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="268" cy="198" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="296" cy="197.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="38" cy="256" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="40" cy="275.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="62" cy="257" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="78" cy="226.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="75" cy="250" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="102" cy="257.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="110" cy="296" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="116" cy="222.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="131" cy="236" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="155" cy="284.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="188" cy="228" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="203" cy="239.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="219" cy="241" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="245" cy="243.4" r="0.5"><title>city_trash_bags</title></circle>
+<circle cx="208" cy="264" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="201" cy="253.4" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="178" cy="275" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="53" cy="138" r="0.5"><title>city_cable_span</title></circle>
+<circle cx="133" cy="146" r="0.5"><title>city_cable_span</title></circle>
+<circle cx="216" cy="144" r="0.5"><title>city_cable_span</title></circle>
+<circle cx="287" cy="176" r="0.5"><title>city_cable_span</title></circle>
+<circle cx="82" cy="261" r="0.5"><title>city_cable_span</title></circle>
+<circle cx="150" cy="241" r="0.5"><title>city_cable_span</title></circle>
+<circle cx="-4" cy="32" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="-9" cy="84" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="3" cy="180" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="-8" cy="236" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="36" cy="-8" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="112" cy="-14" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="200" cy="-13" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="282" cy="-12" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="342" cy="63" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="339" cy="137" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="72" cy="326" r="0.5"><title>dock_pump_house</title></circle>
+<circle cx="143" cy="331" r="0.5"><title>dock_pump_house</title></circle>
+</g><g id="spawns" stroke="#e6d6b0" stroke-width="0.45">
+<path d="M28 64l2 2m-2 0l2 -2"><title>Spawn 1</title></path>
+<path d="M72 39l2 2m-2 0l2 -2"><title>Spawn 2</title></path>
+<path d="M89 80l2 2m-2 0l2 -2"><title>Spawn 3</title></path>
+<path d="M143 41l2 2m-2 0l2 -2"><title>Spawn 4</title></path>
+<path d="M185 49l2 2m-2 0l2 -2"><title>Spawn 5</title></path>
+<path d="M252 39l2 2m-2 0l2 -2"><title>Spawn 6</title></path>
+<path d="M286 90l2 2m-2 0l2 -2"><title>Spawn 7</title></path>
+<path d="M307 49l2 2m-2 0l2 -2"><title>Spawn 8</title></path>
+<path d="M35 113l2 2m-2 0l2 -2"><title>Spawn 9</title></path>
+<path d="M55 144l2 2m-2 0l2 -2"><title>Spawn 10</title></path>
+<path d="M104 143l2 2m-2 0l2 -2"><title>Spawn 11</title></path>
+<path d="M144 178l2 2m-2 0l2 -2"><title>Spawn 12</title></path>
+<path d="M184 137l2 2m-2 0l2 -2"><title>Spawn 13</title></path>
+<path d="M214 148l2 2m-2 0l2 -2"><title>Spawn 14</title></path>
+<path d="M275 174l2 2m-2 0l2 -2"><title>Spawn 15</title></path>
+<path d="M304 141l2 2m-2 0l2 -2"><title>Spawn 16</title></path>
+<path d="M35 249l2 2m-2 0l2 -2"><title>Spawn 17</title></path>
+<path d="M79 268l2 2m-2 0l2 -2"><title>Spawn 18</title></path>
+<path d="M87 252l2 2m-2 0l2 -2"><title>Spawn 19</title></path>
+<path d="M127 222l2 2m-2 0l2 -2"><title>Spawn 20</title></path>
+<path d="M184 232l2 2m-2 0l2 -2"><title>Spawn 21</title></path>
+<path d="M215 242l2 2m-2 0l2 -2"><title>Spawn 22</title></path>
+<path d="M187 257l2 2m-2 0l2 -2"><title>Spawn 23</title></path>
+<path d="M196 273l2 2m-2 0l2 -2"><title>Spawn 24</title></path>
+</g><g id="points">
+<circle cx="58" cy="78" r="5" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="58" y="79.5" text-anchor="middle" font-size="5">A<title>y = 0 m</title></text>
+<circle cx="228" cy="208" r="5" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="228" y="209.5" text-anchor="middle" font-size="5">B<title>y = 1.2 m</title></text>
+<circle cx="168" cy="158" r="5" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="168" y="159.5" text-anchor="middle" font-size="5">C<title>y = -1.2 m</title></text>
+<circle cx="258" cy="88" r="5" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="258" y="89.5" text-anchor="middle" font-size="5">D<title>y = 0 m</title></text>
+<circle cx="88" cy="238" r="5" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="88" y="239.5" text-anchor="middle" font-size="5">E<title>y = 0 m</title></text>
+</g><g id="player" fill="#a4e5bc"><path d="M28 286l-1.8 4h3.6Z"/><text x="31" y="289">START</text></g>
+<path d="M18 305v4m0 -2h50m0 -2v4" fill="none" stroke="#fff1d6" stroke-width="0.5"/><text x="43" y="313" text-anchor="middle">50 m · siatka 10 m</text>
+<text x="78" y="307">Wierzch: -1.2…25.2 m · zielony obrys: chodzenie</text>
+<text x="78" y="312">Linia przerywana: zabezpieczenie · × spawn · △ gracz</text>
+</g></svg>

@@ -17,6 +17,7 @@
     "arenaRooftops",
     "arenaPowerPlant",
     "arenaConstructionSite",
-    "arenaRailYard"
+    "arenaRailYard",
+    "arenaFloodedDocks"
   ]
 }
