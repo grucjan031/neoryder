@@ -44,7 +44,7 @@ Jednostki: metry i radiany. `vec(x, y = 0, z = 0)` tworzy pozycję XYZ.
 | `decor(model, position, rotationY = 0, {scale?})`                                       | Model bez kolizji, zapisywany z polem `yaw`; pozycja przy podstawie modelu.                                                            |
 | `light(position, color?, intensity?, range?, {flicker?})`                               | Światło; domyślnie ciepła biel, intensywność 30, zasięg 15 m.                                                                          |
 | `spawn(position)`                                                                       | Dodaje zwykły spawn XZ. Inna wysokość niż start gracza powoduje błąd.                                                                  |
-| `point(id, position, radiusM = 4)`                                                      | Dodaje unikalny punkt A/B/C. D/E są zablokowane do rozszerzenia schematu.                                                              |
+| `point(id, position, radiusM = 4)`                                                      | Dodaje unikalny punkt A–E. Schemat pokoju wymaga kolejnych identyfikatorów od A.                                                              |
 | `zone(name, rect, kind)`                                                                | Metadane raportu i SVG; `open`, `dense`, `interior`, `high`, `low`.                                                                    |
 | `arenaMeta(obj)`                                                                        | Scala pola `arena`, np. parametry nawigacji i osobną pulę `spawnPoints`.                                                               |
 | `roomMeta(obj)`                                                                         | Ustawia np. `playerSpawn`, `doors`, `hazards`, `rainShelters`, `maxAlive`, oprawę. Nie nadpisuje id, geometrii, arena ani spawnPoints. |
@@ -97,6 +97,9 @@ spocznik i kończy schody na ostatnim piętrze albo dostępnym dachu. Stopnie
 tworzą cienką płytę schodkową, dzięki czemu kolejny bieg nie zatyka prześwitu.
 Dla AI na siatce 1 m zalecane `stepDepth: 1` i szerokość ≥3 m; typowe krótsze
 stopnie są trasą gracza i mogą nie przejść limitu wzniosu nawigacji.
+Schody z `walkable: false` zachowują bryły i test limitów kontrolera,
+ale nie są powierzchnią nawigacji AI. Używaj ich, gdy cel ma osobne
+dojście po parterze lub rampie.
 Hala domyślnie używa szerokości 3 m, wzniosu ≤0,2 m i głębokości ≥1 m.
 
 ```js
@@ -139,10 +142,8 @@ nie ma automatycznego ignorowania takich zgłoszeń.
 
 Ograniczenia zastanego schematu/silnika, pozostawione do pracy integratora:
 
-- `arena.points` ma dokładnie A/B/C; dodanie D/E przez `point` zgłasza błąd.
-  Rzut SVG już potrafi wyświetlić A–E z dostarczonych danych.
-- Spawny są XZ; brak wysokości i wskazania warstwy. Domyślna pula trafia do
-  `room.spawnPoints`; osobną pulę trybu można podać przez `arenaMeta`.
+- Spawny pokoju są XZ. Osobna pula Przejęcia (`arenaMeta({spawnPoints})`)
+  przy włączonym `spawnRing` może zawierać także wysokość Y.
 - `validateLayout` w roomSchema używa płaskich, nieobróconych obwiedni na
   wysokości gracza. Nie potwierdza pięter; bryły obrócone mogą powodować
   konserwatywne odrzucenie poprawnej geometrii. Osiowe ściany generatora

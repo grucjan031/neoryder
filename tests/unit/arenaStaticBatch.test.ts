@@ -23,6 +23,8 @@ import { loadWaves } from '../../src/world/waves';
 import wavesData from '../../src/data/waves/roomTest.json';
 import * as staticBatch from '../../src/render/staticBatch';
 
+// Szablony GLB są współdzielone przez sceny w tym pliku testowym.
+const loaded = new Set<string>();
 afterEach(() => vi.restoreAllMocks());
 
 function meshCount(root: Object3D): number {
@@ -33,10 +35,14 @@ function meshCount(root: Object3D): number {
   return count;
 }
 
-it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
+it.each([
+  'arenaContainerPort',
+  'arenaOverpass',
+  'arenaRooftops',
+  'arenaPowerPlant',
+])(
   '%s: jedno scalanie w komórkach 20 m, kontenery jako instancje, rzeczywiste GLB',
   async (id) => {
-    const loaded = new Set<string>();
     const warnings = vi.spyOn(console, 'warn');
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
       async (url) => {
@@ -70,7 +76,9 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
           if (
             o instanceof Mesh &&
             !Array.isArray(o.material) &&
-            o.material.name.startsWith('mat_container_')
+            o.material.name.startsWith('mat_container_') &&
+            (id !== 'arenaPowerPlant' ||
+              o.name.startsWith('instances:port_container_'))
           ) {
             expect(o.material.color.getHexString()).not.toBe('ffffff');
             containerColors.add(o.material.name);

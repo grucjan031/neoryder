@@ -40,11 +40,19 @@ const constructionPowerKinds = [
   'slag_heap',
   'cooling_tower_concrete',
   'turbine_hall_floor',
+  'canal_stone_wall',
+  'rail_ballast',
+  'hazard_stripes_worn',
 ] as const;
 
 const portLooks = z
   .record(
-    z.enum([...portKinds, ...arenaKinds, ...constructionPowerKinds]),
+    z.enum([
+      ...portKinds,
+      ...arenaKinds,
+      ...constructionPowerKinds,
+      'canal_water',
+    ]),
     z.object({
       texture: z.enum([
         'container_corrugated_navy',
@@ -57,6 +65,7 @@ const portLooks = z
         'rubber_fender',
         'steel_grating',
         ...arenaKinds,
+        'asphalt',
         ...constructionPowerKinds,
       ]),
       tint: z
@@ -78,6 +87,7 @@ export const urbanKinds = [
   ...portKinds,
   ...arenaKinds,
   ...constructionPowerKinds,
+  'canal_water',
   'concrete',
   'asphalt',
   'metal',

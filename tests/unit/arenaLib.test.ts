@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { Euler, Quaternion, Vector3 } from 'three';
 import { roomSchema } from '../../src/world/roomSchema';
-import type { RoomDefinition } from '../../src/world/roomSchema';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { tuning } from '../../src/core/tuning';
 import generate from '../../tools/arenas/arenaLibDemo.mjs';
@@ -374,25 +373,27 @@ describe('biblioteka generatorów aren', () => {
       expect(svg).toContain(`id="${id}"`);
     expect(svg).toContain('50 m');
     expect(svg).toContain('Mapa &lt;test&gt; &amp; &quot;opis&quot;');
-    const room: RoomDefinition = arena.toRoom();
-    const extended = {
-      ...room,
-      arena: {
-        ...room.arena!,
-        points: [
-          ...room.arena!.points,
-          { id: 'D', position: vec(10, 0, 10), radiusM: 4 },
-          { id: 'E', position: vec(20, 0, 10), radiusM: 4 },
-        ],
-      },
-    };
-    // Sam rzut potrafi wyświetlić przyszłe punkty D/E, bez rozszerzania kontraktu gry.
-    expect(arenaSvg(extended as RoomDefinition)).toContain('>E<title>');
+    arena.point('D', vec(10, 0, 10)).point('E', vec(20, 0, 10));
+    expect(arenaSvg(arena)).toContain('>E<title>');
   });
 
-  it('ograniczenia schematu są jawne', () => {
+  it('schody gracza zachowują kolizję bez narzucania kroku siatki AI', () => {
     const arena = blank();
-    expect(() => arena.point('D', vec(10, 0, 10))).toThrow('roomSchema');
+    const flight = createPrimitives(arena).stairs({
+      from: vec(10, 0, 10),
+      to: vec(16, 3, 10),
+      width: 2,
+      walkable: false,
+    });
+    expect(flight.blocks).toHaveLength(15);
+    expect(flight.blocks.every((block) => block.walkable === false)).toBe(true);
+    expect(arena.metadata.warnings).toEqual([]);
+  });
+
+  it('odrzuca powtórzony punkt i spawn pokoju na innej wysokości', () => {
+    const arena = blank();
+    arena.point('D', vec(10, 0, 10));
+    expect(() => arena.point('D', vec(11, 0, 10))).toThrow('Powtórzony');
     expect(() => arena.spawn(vec(10, 4, 10))).toThrow('wysokości');
   });
 });

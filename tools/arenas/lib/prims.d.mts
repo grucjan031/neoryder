@@ -33,6 +33,7 @@ export type StairOptions = {
   width?: number;
   stepRise?: number;
   stepDepth?: number;
+  walkable?: boolean;
   material?: Material;
 };
 export type Stairs = {

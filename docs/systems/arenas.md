@@ -248,3 +248,112 @@ odbojnice pod krawędzią kei, liny, skalę suwnic i położenie reflektorów.
 `arenaStaticBatch.test.ts` dodatkowo porównuje obwiednie wszystkich powłok
 kontenerów z colliderami (także po obrocie), sprawdza ładowanie rekwizytów
 i brak nierozpoznanych materiałów GLB.
+
+## Elektrownia
+
+`arenaPowerPlant` ma obwiednię 380 × 300 m (X −190…190, Z −150…150).
+Woda od Z 115 oddziela nabrzeże od obrysu hałd. Północ zamyka ogrodzenie z zatoką rozładunkową 46 × 22 m (X −118…−72).
+Od wschodu teren zamyka nasyp bocznicy, a od zachodu mur serwisowy. Za granicami są niekolizyjne
+słupy WN, przewody, zwałowiska i wieża ujęcia. Silnik domyka tło gruntem
+zewnętrznym i panoramą. Pogoda `ashfall` daje bursztynową łunę. Reflektory
+ciepłej bieli oświetlają przejścia, zielone lampy wskazują sprawne urządzenia,
+a bursztynowe światło podkreśla chłodnie, komin i węzły rurociągów.
+79 źródeł współdzieli istniejącą pulę aktywnych świateł.
+
+| Punkt | X / Y / Z (m) | Strefa i drogi |
+| --- | --- | --- |
+| A | −120 / 0 / 15 | Wnętrze chłodni. Wyrwa prowadzi na wschód, między gruzem i wiązkami rur. Rampa przez kołnierz 0,8 m prowadzi do płytkiej niecki na poziomie posadzki. |
+| B | 25 / 0 / −25 | Hala 90 × 40 × 18 m, z bramami N/S i drzwiami E/W. Trzy turbiny mają połączone pomosty na 6 m. Schody na obu końcach prowadzą na antresolę sterowni na 8 m. |
+| C | 130 / 0 / −65 | Rozdzielnia. Siatka transformatorów, bramownice i niskie ogrodzenia z przerwami. Dwa pola elektryczne można obejść od północy lub południa. |
+| D | 120 / 0 / 80 | Skład między pięcioma hałdami na 7 m i zasiekami. Pod przenośnikiem biegnie droga na wschód, do wagonów przy dwóch torach. |
+| E | −60 / −3 / 100 | Nabrzeże ujęcia. Wejście szeroką rampą lub schodami od wschodu i rampą od zachodu. Przepompownia ma dwa wejścia. Kładka do wieży w kanale jest częścią oprawy. |
+
+Kotłownia na północy ma dostępny parter, zewnętrzną wieżę schodową i dach
+na 14 m. Komin na (45, 0, −135) ma 120 m, obie chłodnie mają po 70 m.
+Podstawę chłodni przybliża w Rapierze 32-segmentowy pierścień z niewidocznych
+brył o grubości 0,95 m, wysokości 9 m i promieniu osi 24,55 m. W chłodni A
+pominięto trzy wschodnie segmenty. Pierścień zamyka pozostałe szczeliny
+między podporami w podstawie modelu. Kolizję każdej hałdy przybliżają
+równoległe pasy skierowane wzdłuż X. Na osi głównej każdy stok ma 13 m biegu
+i 7 m wzniosu. Na skraju rozbieżność z obrysem 32 trójkątnych ścian
+modelu jest większa. Najczytelniejsze wejścia prowadzą od wschodu i zachodu.
+
+A–B i B–C prowadzą zarówno placem, jak i wąskim pomostem rurociągu
+na 6,2 m. Wejścia do hali pozwalają zejść z pomostu osobnymi schodami.
+Gracz może przejść C–D pod estakadą serwisową albo wejść na jej pomost
+schodami na obu końcach. Z D do E można zejść z przenośnika przy
+wschodniej rampie nabrzeża lub przejść niżej między zasiekami. Z A do E
+prowadzi zachodnia rampa przy ścianie kanału albo pomost serwisowy ze
+schodami na poziomy 0 i −3 m. AI korzysta z parteru i szerokich ramp.
+
+Pomiędzy strefami drogi serwisowe mają kierunkowe oznakowanie i przerywane
+krawężniki. Od startu do kotłowni stoją wartownia, magazyn i farma trzech
+zbiorników z pomostem na 3 m. Na południe od hali są warsztat i laboratorium.
+W przejściu do hałd i rozdzielni stoi mały budynek serwisowy. Bramki
+w ogrodzeniach, podwozia pojazdów, stosy kontenerów, kioski, naziemne
+rurociągi i doposażone maszty dzielą długie osie między strefami.
+Schody mają kolizje i są jawnie przeznaczone dla gracza. Drogi AI do
+wszystkich punktów używają parteru i szerokiej rampy nabrzeża. Generator
+raportuje zero ostrzeżeń `stairs-navigation-slope`.
+
+Punkty mają promień 5 m. Gracz zaczyna na (−180, 0, −140). Jest 30 spawnów,
+w tym cztery na nabrzeżu (−3 m). Pierścień posiłków 25–100 m, maksymalnie
+12 żywych wrogów i 200 biletów. Nawigacja używa komórek 2 m, statyka
+partii 20 m. Lista trybu i SVG są w
+[`conquest.json`](../../src/data/modes/conquest.json) i
+[rzucie areny](../arenas/arenaPowerPlant.svg).
+
+Podstawowe powierzchnie to `cooling_tower_concrete`, `turbine_hall_floor`,
+`concrete_raw_cast`, `steel_grating`, `slag_heap`, `rail_ballast` i
+`canal_stone_wall`. Pasy `hazard_stripes_worn` oznaczają obejścia w
+rozdzielni. Wagony mają stalowe podwozia i boki z blachy falistej; część
+platform przewozi kontenery `port_container_20_*`.
+Otwarte: po dostarczeniu GLB podmienić bryły w `railYard()` w generatorze
+na `port_freight_boxcar` i `port_flatcar`. Zachować obrys kolizji wagonów i
+posadowienie kontenerów.
+
+Pomiar generatora z próbkowaniem co 1 m: około 95 665 m² powierzchni
+chodzenia. Po zagęszczeniu 984 → 1246 bloków, 131 → 197 rekwizytów i
+52 → 79 świateł. Najczęstszy model to rura `city_pipe_run`
+(19 z 197, 9,6%). Największy kwadrat bez osłon poza rozdzielnią ma około
+43 × 43 m (X 89–132, Z 62–105). Szacunek używa rastra 1 m na poziomach
+0 i −3 m, rzutów colliderów osłon o wysokości co najmniej 1 m oraz
+największego kwadratu wspartego na płaskim gruncie. Właściwy odstęp osłon
+wzdłuż trasy zależy od kierunku ruchu i skarp.
+Pomiar w Node na docelowej geometrii:
+
+| Pomiar | Wynik | Budżet lub zakres |
+| --- | ---: | --- |
+| Budowa siatki i pięciu pól | 69,27 ms | ≤ 500 ms |
+| Krok `RoomScene`, 12 wrogów, 600 kroków po rozgrzewce | 0,399 ms | ≤ 2 ms |
+| Rzeczywiste GLB, statyczne siatki przed → po scaleniu | 3719 → 1237 | 90 partii instancji po scaleniu |
+
+Nawigacja zawęża test prześwitu i podparcia do pobliskich brył według
+indeksu przestrzennego. Używa tej samej obwiedni i tych samych reguł
+łączenia komórek. Test kapsuły sprawdza A–E ze startu oraz ze spawnów
+rozdzielni i nabrzeża. Pokrywa także estakady na 6,2 m, dach kotłowni i
+stok hałdy. Test posiłków prowadzi oba archetypy fizycznie po Rapierze
+z sześciu spawnów do wszystkich pięciu punktów.
+
+Sprawdzenie w 30 sekund: `?scene=conquest&arena=arenaPowerPlant&debug=1`.
+Wpisz `god`, a potem w konsoli debug użyj po kolei:
+
+| Polecenie | Widok |
+| --- | --- |
+| `tp -120 15 -90` | Wnętrze A i wyrwa na wschód |
+| `tp 25 -25 180` | Turbiny B i pomosty |
+| `tp 33 -108 0` | Parter kotłowni; schody po wschodniej stronie |
+| `tp 130 -65 0` | Rozdzielnia C |
+| `tp 120 80 -90` | Hałdy D, przenośnik i bocznica |
+| `tp -60 100 180` | Spadek na nabrzeże E i widok kanału |
+
+Przy `tp` wysokość pozostaje bieżąca do następnego kroku fizyki. Na E
+gracz opadnie z poziomu placu. Na wyższe podesty wejdź schodami. Z E
+na plac wróć rampą przy (40, 96).
+
+Do oceny w grze: rytm osłon w przejściach między strefami, czytelność
+czerwonych wrogów w popiele, sygnał pól elektrycznych, tempo pierwszych
+posiłków oraz wygoda wymijania na wąskich trasach. Sprawdź sylwetkę komina
+i widok poza ogrodzeniem z dachu kotłowni. GPU i czas wczytania wymagają
+pomiaru w przeglądarce w trybie medium, szczególnie przy spojrzeniu z dachu
+w stronę pozostałych stref.

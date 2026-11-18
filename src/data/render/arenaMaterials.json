@@ -50,9 +50,8 @@
     "scale": 0.25,
     "roughness": 0.85,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.4,
+    "wetness": 0
   },
   "concrete_raw_cast": {
     "texture": "concrete_raw_cast",
@@ -60,9 +59,8 @@
     "scale": 0.25,
     "roughness": 0.85,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.4,
+    "wetness": 0
   },
   "slag_heap": {
     "texture": "slag_heap",
@@ -70,9 +68,8 @@
     "scale": 0.25,
     "roughness": 0.95,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.4,
+    "wetness": 0
   },
   "cooling_tower_concrete": {
     "texture": "cooling_tower_concrete",
@@ -80,9 +77,8 @@
     "scale": 0.25,
     "roughness": 0.9,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.4,
+    "wetness": 0
   },
   "turbine_hall_floor": {
     "texture": "turbine_hall_floor",
@@ -90,8 +86,44 @@
     "scale": 0.25,
     "roughness": 0.8,
     "metalness": 0,
+    "bump": 0.4,
+    "wetness": 0
+  },
+  "canal_stone_wall": {
+    "texture": "canal_stone_wall",
+    "tint": "#697891",
+    "scale": 0.32,
+    "roughness": 0.83,
+    "metalness": 0,
+    "bump": 0.45,
+    "wetness": 0
+  },
+  "canal_water": {
+    "texture": "asphalt",
+    "tint": "#24324a",
+    "scale": 0.08,
+    "roughness": 0.24,
+    "metalness": 0,
     "bump": 0,
     "wetness": 0,
     "flat": true
+  },
+  "rail_ballast": {
+    "texture": "rail_ballast",
+    "tint": "#6c7080",
+    "scale": 0.3,
+    "roughness": 0.95,
+    "metalness": 0,
+    "bump": 0.45,
+    "wetness": 0
+  },
+  "hazard_stripes_worn": {
+    "texture": "hazard_stripes_worn",
+    "tint": "#a79370",
+    "scale": 0.55,
+    "roughness": 0.77,
+    "metalness": 0,
+    "bump": 0.45,
+    "wetness": 0
   }
 }

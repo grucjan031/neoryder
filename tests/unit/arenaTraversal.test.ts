@@ -11,10 +11,16 @@ import {
 } from '../../src/physics';
 import { PlayerController } from '../../src/player/playerController';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
+import { arenaSpawnPoints } from '../../src/world/arenaSpawns';
 import { roomDefinitions } from '../../src/world/rooms';
 
-it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
-  '%s: kapsuła FPP chodzi do A/B/C, po obu rampach i schodach bez skoku',
+it.each([
+  'arenaContainerPort',
+  'arenaOverpass',
+  'arenaRooftops',
+  'arenaPowerPlant',
+])(
+  '%s: kapsuła FPP chodzi do punktów i po trasach bocznych bez skoku',
   async (id) => {
     const room = roomDefinitions.get(id)!;
     const rapier = await initPhysics();
@@ -69,7 +75,9 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
           },
         });
         world.step();
-        expect(player.getState().position.y).toBeGreaterThan(-0.1);
+        expect(player.getState().position.y).toBeGreaterThan(
+          id === 'arenaPowerPlant' ? -3 : -0.1,
+        );
       }
       throw new Error(
         `Kapsuła utknęła: ${JSON.stringify(player.getState().position)} → ${JSON.stringify(goal)}`,
@@ -82,17 +90,59 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
     try {
       world.step();
       const navigation = new ArenaNavigation(room);
-      for (const point of room.arena!.points) {
-        const path = navigation.path(
-          player.getState().position,
-          point.position,
-        );
-        expect(path.length).toBeGreaterThan(0);
-        for (const waypoint of path) walk(waypoint);
-        expect(player.getState().position.y).toBeCloseTo(
-          point.position.y + height,
-          1,
-        );
+      const walkPoints = () => {
+        for (const point of room.arena!.points) {
+          const path = navigation.path(
+            player.getState().position,
+            point.position,
+          );
+          expect(path.length, point.id).toBeGreaterThan(0);
+          for (const waypoint of path) walk(waypoint);
+          if (id === 'arenaPowerPlant') for (let i = 0; i < 10; i++) tick();
+          expect(player.getState().position.y).toBeCloseTo(
+            point.position.y + height,
+            1,
+          );
+        }
+      };
+      walkPoints();
+      if (id === 'arenaPowerPlant') {
+        const spawns = arenaSpawnPoints(room);
+        for (const index of [17, 28]) {
+          const spawn = spawns[index]!;
+          teleport(spawn.x, spawn.z, spawn.y);
+          walkPoints();
+        }
+        teleport(-110, -24.25);
+        walk({ x: -95, y: 6.2, z: -24.25 });
+        walk({ x: -21, y: 6.2, z: -24.25 });
+        walk({ x: 96, y: 6.2, z: -24.25 });
+        expect(player.getState().position.y).toBeCloseTo(6.2 + height, 1);
+        teleport(119, -42);
+        walk({ x: 134.6, y: 6.2, z: -42 });
+        walk({ x: 135, y: 6.2, z: 72 });
+        walk({ x: 149, y: 0, z: 72 });
+        for (let i = 0; i < 20; i++) tick();
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
+
+        teleport(64.5, -119);
+        for (const point of [
+          { x: 77.2, y: 3.5, z: -119 },
+          { x: 77.1, y: 3.5, z: -116 },
+          { x: 62.7, y: 7, z: -116 },
+          { x: 62.8, y: 7, z: -113 },
+          { x: 77.2, y: 10.5, z: -113 },
+          { x: 77.1, y: 10.5, z: -110 },
+          { x: 61.9, y: 14, z: -110 },
+          { x: 55, y: 14, z: -110 },
+        ])
+          walk(point);
+        expect(player.getState().position.y).toBeCloseTo(14 + height, 1);
+
+        teleport(66, 44);
+        walk({ x: 81.8, y: 7, z: 44 });
+        expect(player.getState().position.y).toBeGreaterThan(6.5 + height);
+        return;
       }
       if (id === 'arenaOverpass') {
         for (const z of [-24, 24]) {
@@ -150,4 +200,5 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
       world.free();
     }
   },
+  30_000,
 );
