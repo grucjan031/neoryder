@@ -11,6 +11,7 @@ import { z } from 'zod';
 import portData from '../data/render/portMaterials.json';
 import arenaData from '../data/render/arenaMaterials.json';
 import portRailData from '../data/render/portRailMaterials.json';
+import overpassData from '../data/render/overpassMaterials.json';
 import { tuning } from '../core/tuning';
 import { assetTexture, surfaceTexture } from './surfaceTextures';
 import type { SurfaceTexture } from './surfaceTextures';
@@ -57,6 +58,8 @@ export const portRailKinds = [
 export const overpassRoofsDocksKinds = [
   'gas_station_tiles',
   'highway_asphalt_worn',
+  'scaffold_planks',
+  'hazard_stripes_worn',
   'flood_brick_algae',
   'boardwalk_planks',
   'canal_stone_wall',
@@ -101,7 +104,7 @@ const portLooks = z
       flat: z.literal(true).optional(),
     }),
   )
-  .parse({ ...portData, ...arenaData, ...portRailData });
+  .parse({ ...portData, ...arenaData, ...portRailData, ...overpassData });
 
 export const urbanKinds = [
   ...portKinds,

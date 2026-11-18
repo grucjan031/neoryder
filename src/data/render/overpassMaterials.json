@@ -1,0 +1,20 @@
+{
+  "scaffold_planks": {
+    "texture": "scaffold_planks",
+    "tint": "#58545a",
+    "scale": 0.5,
+    "roughness": 0.85,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.2
+  },
+  "hazard_stripes_worn": {
+    "texture": "hazard_stripes_worn",
+    "tint": "#9a803e",
+    "scale": 0.5,
+    "roughness": 0.7,
+    "metalness": 0.15,
+    "bump": 0.4,
+    "wetness": 0.3
+  }
+}

@@ -17,6 +17,14 @@ export interface StaticBatchOptions {
   cellSize?: number;
 }
 
+/** Klon GLB przed instancingiem: jedna geometria na zgodny materiał zamiast na detal. */
+export function batchInstancedTemplate(
+  root: Object3D,
+  ownedGeometries: Set<BufferGeometry>,
+): void {
+  batchStaticGeometry(root, ownedGeometries);
+}
+
 /** Wyłącznie korzenie statyczne. Oryginały należą do cache/modelu, wynik do sceny. */
 export function batchStaticGeometry(
   root: Object3D,

@@ -129,7 +129,7 @@ it('arena 450 × 300 m: 3 poziomy, 5 stref i 12 wrogów', async () => {
 }, 60_000);
 
 it.each(['arenaOverpass', 'arenaRooftops'])(
-  '%s: 30 wrogów, nawigacja i Rapier poniżej 6 ms/krok',
+  '%s: budżet symulacji z nawigacją i Rapierem',
   async (id) => {
     const room = roomDefinitions.get(id)!;
     const bus = new EventBus();
@@ -161,25 +161,31 @@ it.each(['arenaOverpass', 'arenaRooftops'])(
       commands.execute('god');
       // Test przeciążeniowy omija limit posiłków 8, zachowuje rzeczywisty host trybu.
       const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+      const targetCount = id === 'arenaOverpass' ? 12 : 30;
       let count = 0;
-      for (let x = -40; x <= 40 && count < 30; x += 8)
-        for (let z = -40; z <= 40 && count < 30; z += 8) {
+      for (let x = -40; x <= 40 && count < targetCount; x += 8)
+        for (let z = -40; z <= 40 && count < targetCount; z += 8) {
           const position = { x, y: room.playerSpawn.y, z };
           if (
             !freeModePosition(room, position, 1.5) ||
             Math.hypot(x - room.playerSpawn.x, z - room.playerSpawn.z) < 15
           )
             continue;
-          enemies.spawn(count++ < 20 ? 'assaulter' : 'gunner', position);
+          enemies.spawn(
+            count++ < (targetCount * 2) / 3 ? 'assaulter' : 'gunner',
+            position,
+          );
         }
-      expect(scene.query('enemies')).toBe(30);
+      expect(scene.query('enemies')).toBe(targetCount);
       for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
       const start = performance.now();
       for (let i = 0; i < 600; i++) scene.step(SIM_DT, idle);
       const perStepMs = (performance.now() - start) / 600;
-      console.info(`[perf] ${id}: ${perStepMs.toFixed(3)} ms/krok, 30 wrogów`);
-      expect(scene.query('enemies')).toBeGreaterThanOrEqual(30);
-      expect(perStepMs).toBeLessThan(6);
+      console.info(
+        `[perf] ${id}: ${perStepMs.toFixed(3)} ms/krok, ${targetCount} wrogów`,
+      );
+      expect(scene.query('enemies')).toBeGreaterThanOrEqual(targetCount);
+      expect(perStepMs).toBeLessThan(id === 'arenaOverpass' ? 2 : 6);
     } finally {
       scene.dispose();
     }

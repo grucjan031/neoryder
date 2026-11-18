@@ -386,13 +386,18 @@ describe('biblioteka generatorów aren', () => {
         ],
       },
     };
-    // Sam rzut potrafi wyświetlić przyszłe punkty D/E, bez rozszerzania kontraktu gry.
     expect(arenaSvg(extended as RoomDefinition)).toContain('>E<title>');
   });
 
   it('ograniczenia schematu są jawne', () => {
     const arena = blank();
-    expect(() => arena.point('D', vec(10, 0, 10))).toThrow('roomSchema');
+    arena.point('D', vec(10, 0, 10));
+    arena.point('E', vec(20, 0, 10));
+    expect(arena.toRoom().arena!.points.map((point) => point.id)).toEqual([
+      'D',
+      'E',
+    ]);
+    expect(() => arena.point('D', vec(10, 0, 10))).toThrow('Powtórzony');
     expect(() => arena.spawn(vec(10, 4, 10))).toThrow('wysokości');
   });
 });

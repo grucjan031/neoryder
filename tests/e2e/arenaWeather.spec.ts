@@ -30,7 +30,10 @@ for (const [arena, weather] of [
       window.__neoryder?.query('conquest'),
     );
     expect(conquest).toMatchObject({
-      points: [{ id: 'A' }, { id: 'B' }, { id: 'C' }],
+      points: (arena === 'arenaOverpass'
+        ? ['A', 'B', 'C', 'D', 'E']
+        : ['A', 'B', 'C']
+      ).map((id) => ({ id })),
     });
     await expect
       .poll(() => page.evaluate(() => window.__neoryder?.query('enemies')), {

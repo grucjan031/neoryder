@@ -24,6 +24,7 @@ import wavesData from '../../src/data/waves/roomTest.json';
 import * as staticBatch from '../../src/render/staticBatch';
 
 afterEach(() => vi.restoreAllMocks());
+const loaded = new Set<string>();
 
 function meshCount(root: Object3D): number {
   let count = 0;
@@ -34,9 +35,8 @@ function meshCount(root: Object3D): number {
 }
 
 it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
-  '%s: jedno scalanie w komórkach 20 m, kontenery jako instancje, rzeczywiste GLB',
+  '%s: jedno scalanie w komórkach areny, instancje i rzeczywiste GLB',
   async (id) => {
-    const loaded = new Set<string>();
     const warnings = vi.spyOn(console, 'warn');
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
       async (url) => {
@@ -59,7 +59,9 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
       (root, owned, options) => {
         calls++;
         expect(root.name).toBe('static-world');
-        expect(options?.cellSize).toBe(20);
+        expect(options?.cellSize).toBe(
+          roomDefinitions.get(id)!.arena!.batchCellM,
+        );
         before = meshCount(root);
         root.updateWorldMatrix(true, true);
         const containers = roomDefinitions
@@ -68,6 +70,7 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
         let renderedContainers = 0;
         root.traverse((o) => {
           if (
+            id === 'arenaContainerPort' &&
             o instanceof Mesh &&
             !Array.isArray(o.material) &&
             o.material.name.startsWith('mat_container_')
@@ -118,7 +121,8 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
             disposals.push(vi.spyOn(o, 'dispose'));
           }
         });
-        expect(renderedContainers).toBe(containers.length);
+        if (id === 'arenaContainerPort')
+          expect(renderedContainers).toBe(containers.length);
         batch(root, owned, options);
         after = meshCount(root);
       },
@@ -191,6 +195,7 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
         }),
       );
       expect(after).toBeLessThan(before / 2);
+      if (id === 'arenaOverpass') expect(after).toBeLessThan(800);
     } finally {
       scene.dispose();
     }

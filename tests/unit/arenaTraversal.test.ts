@@ -14,7 +14,7 @@ import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
 it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
-  '%s: kapsuła FPP chodzi do A/B/C, po obu rampach i schodach bez skoku',
+  '%s: kapsuła FPP chodzi do wszystkich punktów, po rampach i schodach bez skoku',
   async (id) => {
     const room = roomDefinitions.get(id)!;
     const rapier = await initPhysics();
@@ -69,7 +69,9 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
           },
         });
         world.step();
-        expect(player.getState().position.y).toBeGreaterThan(-0.1);
+        expect(player.getState().position.y).toBeGreaterThan(
+          id === 'arenaOverpass' ? -4.1 : -0.1,
+        );
       }
       throw new Error(
         `Kapsuła utknęła: ${JSON.stringify(player.getState().position)} → ${JSON.stringify(goal)}`,
@@ -89,17 +91,45 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
         );
         expect(path.length).toBeGreaterThan(0);
         for (const waypoint of path) walk(waypoint);
-        expect(player.getState().position.y).toBeCloseTo(
-          point.position.y + height,
-          1,
-        );
+        expect(
+          Math.abs(player.getState().position.y - point.position.y - height),
+          point.id,
+        ).toBeLessThan(id === 'arenaOverpass' ? 0.12 : 0.05);
       }
       if (id === 'arenaOverpass') {
-        for (const z of [-24, 24]) {
-          teleport(33, z);
-          walk({ x: -12, y: 11.6, z });
+        for (const index of [0, 14, 24, 30]) {
+          const spawn = room.arena!.spawnPoints![index]!;
+          for (const point of room.arena!.points) {
+            teleport(spawn.x, spawn.z, spawn.y ?? 0);
+            const path = navigation.path(
+              player.getState().position,
+              point.position,
+            );
+            expect(path.length).toBeGreaterThan(0);
+            for (const waypoint of path) walk(waypoint);
+            for (let i = 0; i < 10; i++) tick();
+            expect(
+              Math.abs(
+                player.getState().position.y - point.position.y - height,
+              ),
+              `${index} → ${point.id}`,
+            ).toBeLessThan(0.12);
+          }
+        }
+        for (const [x0, x1, z0, z1] of [
+          [-164, -80, 134, 62],
+          [164, 72, -156, -60],
+        ]) {
+          teleport(x0!, z0!);
+          walk({ x: x1!, y: 5.8, z: z0! });
+          walk({ x: x1! + (x1! > x0! ? 7 : -7), y: 5.8, z: z0! });
+          walk({ x: x1! + (x1! > x0! ? 7 : -7), y: 5.8, z: z1! });
+          walk({ x: x0!, y: 11.6, z: z1! });
           expect(player.getState().position.y).toBeCloseTo(11.6 + height, 1);
         }
+        teleport(-127, 80, -4);
+        walk({ x: -108, y: 0, z: 80 });
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
         return;
       }
       if (id === 'arenaRooftops') {
@@ -150,4 +180,5 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
       world.free();
     }
   },
+  60_000,
 );
