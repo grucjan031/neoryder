@@ -1,129 +1,92 @@
 @import './mainMenu.css';
 
+/* Ekran ustawień celowo prostszy niż HUD: jedna ramka, bez skanów, narożników i poświat.
+   Turkus zostaje tylko jako akcent stanu (aktywna zakładka, wartości, zaznaczenie, fokus). */
 .settings-screen {
   --settings-accent: var(--ui-cyan);
+  --settings-line: rgba(169, 188, 203, 0.14);
+  --settings-field: rgba(255, 255, 255, 0.04);
   box-sizing: border-box;
-  width: min(760px, calc(100vw - 32px));
+  width: min(680px, calc(100vw - 32px));
   max-height: calc((100dvh - 48px) / var(--ui-zoom, 1));
-  padding: 26px 32px 24px;
-  border: 1px solid var(--ui-line);
-  background:
-    var(--ui-frame), var(--ui-scan),
-    linear-gradient(180deg, rgba(0, 229, 255, 0.05), transparent 30%),
-    var(--ui-panel-solid);
+  padding: 24px 28px 20px;
+  border: 1px solid var(--settings-line);
+  border-radius: 6px;
+  background: var(--ui-panel-solid);
   color: var(--ui-text);
   font: 500 17px/1.4 var(--ui-font);
-  letter-spacing: 0.03em;
   color-scheme: dark;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
 }
 .settings-screen[open] {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   animation: ui-rise var(--ui-in);
 }
 .settings-screen::backdrop {
-  background: radial-gradient(
-    ellipse at center,
-    rgb(2 5 11 / 70%),
-    rgb(2 5 11 / 94%)
-  );
-  backdrop-filter: blur(3px);
+  background: rgb(2 5 11 / 82%);
 }
 .settings-screen h1,
 .settings-screen p {
   margin: 0;
 }
 .settings-screen h1 {
-  position: relative;
-  padding-bottom: 12px;
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ui-cyan);
-  text-shadow:
-    0 1px 3px #000,
-    0 0 14px rgba(0, 229, 255, 0.4);
-}
-.settings-screen h1::before {
-  content: 'ISKRA // KALIBRACJA IMPLANTU';
-  content: 'ISKRA // KALIBRACJA IMPLANTU' / '';
-  display: block;
-  margin-bottom: 6px;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  color: var(--ui-faint);
-  text-shadow: none;
-}
-.settings-screen h1::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, var(--ui-line-strong), transparent);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--ui-text);
 }
 .settings-screen__tabs {
   display: flex;
   gap: 4px;
-  border-bottom: 1px solid var(--ui-line);
+  border-bottom: 1px solid var(--settings-line);
 }
 .settings-screen .settings-screen__tabs button {
   min-height: 40px;
-  padding: 8px 18px;
+  padding: 8px 14px;
   margin-bottom: -1px;
-  border: 1px solid transparent;
+  border: 0;
   border-bottom: 2px solid transparent;
+  border-radius: 0;
   background: transparent;
   color: var(--ui-muted);
   font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  box-shadow: none;
 }
 .settings-screen .settings-screen__tabs button:hover {
   color: var(--ui-text);
-  background: rgba(0, 229, 255, 0.06);
-  border-color: transparent;
+  background: transparent;
 }
 .settings-screen .settings-screen__tabs button[aria-selected='true'] {
-  color: var(--ui-cyan);
-  background: linear-gradient(0deg, rgba(0, 229, 255, 0.14), transparent);
-  border-bottom-color: var(--ui-cyan);
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+  color: var(--ui-text);
+  border-bottom-color: var(--settings-accent);
 }
 .settings-screen__content {
   overflow-y: auto;
   min-height: 0;
-  padding: 4px 10px 4px 0;
-  scrollbar-color: rgba(0, 229, 255, 0.35) transparent;
+  padding: 0 8px 0 0;
+  scrollbar-color: rgba(169, 188, 203, 0.3) transparent;
   scrollbar-width: thin;
 }
+/* Podpowiedzi: zwykły drobny tekst pod ustawieniem, bez ramki. */
 .settings-screen__content p {
-  margin: 14px 0 6px;
-  padding: 8px 12px;
+  padding: 10px 4px;
   font-size: 14px;
-  color: var(--ui-muted);
-  border-left: 2px solid rgba(255, 174, 26, 0.6);
-  background: rgba(255, 174, 26, 0.05);
+  line-height: 1.35;
+  color: var(--ui-faint);
+  border-bottom: 1px solid var(--settings-line);
 }
 .settings-screen__row {
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 48px;
-  padding: 4px 6px;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.08);
-  transition: background-color 0.15s ease;
-}
-.settings-screen__row:hover,
-.settings-screen__row:focus-within {
-  background: rgba(0, 229, 255, 0.05);
+  min-height: 52px;
+  padding: 4px;
+  border-bottom: 1px solid var(--settings-line);
 }
 .settings-screen__row > :first-child,
 .settings-screen__row > input:first-of-type,
@@ -144,129 +107,135 @@
 }
 .settings-screen input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
-  background: linear-gradient(
-    90deg,
-    rgba(0, 229, 255, 0.55),
-    rgba(0, 229, 255, 0.2)
-  );
-  box-shadow: inset 0 0 0 1px rgba(0, 229, 255, 0.25);
+  border-radius: 2px;
+  background: rgba(169, 188, 203, 0.25);
 }
 .settings-screen input[type='range']::-webkit-slider-thumb {
   appearance: none;
-  width: 12px;
-  height: 18px;
-  margin-top: -7px;
-  background: var(--ui-cyan);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
-  clip-path: polygon(50% 0, 100% 25%, 100% 100%, 0 100%, 0 25%);
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--ui-text);
+}
+.settings-screen input[type='range']:hover::-webkit-slider-thumb,
+.settings-screen input[type='range']:focus-visible::-webkit-slider-thumb {
+  background: var(--settings-accent);
 }
 .settings-screen input[type='range']::-moz-range-track {
   height: 4px;
-  background: rgba(0, 229, 255, 0.3);
+  border-radius: 2px;
+  background: rgba(169, 188, 203, 0.25);
 }
 .settings-screen input[type='range']::-moz-range-thumb {
-  width: 12px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border: 0;
-  border-radius: 0;
-  background: var(--ui-cyan);
+  border-radius: 50%;
+  background: var(--ui-text);
 }
 .settings-screen input[type='checkbox'] {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   margin: 0 0 0 auto;
-  border: 1px solid var(--ui-line-strong);
-  background: rgba(6, 12, 24, 0.6);
+  border: 1px solid rgba(169, 188, 203, 0.5);
+  border-radius: 4px;
+  background: var(--settings-field);
   appearance: none;
   cursor: pointer;
 }
+.settings-screen input[type='checkbox']:checked {
+  border-color: var(--settings-accent);
+  background: var(--settings-accent);
+}
 .settings-screen input[type='checkbox']::after {
   content: '';
-  width: 12px;
-  height: 12px;
-  background: var(--ui-cyan);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.7);
-  transform: scale(0);
+  width: 6px;
+  height: 11px;
+  margin-top: -2px;
+  border: solid var(--ui-bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
   transition: transform 0.12s ease;
 }
 .settings-screen input[type='checkbox']:checked::after {
-  transform: scale(1);
+  transform: rotate(45deg) scale(1);
 }
 .settings-screen output {
-  min-width: 52px;
+  min-width: 48px;
   text-align: right;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--ui-cyan);
+  color: var(--ui-text);
 }
 .settings-screen button,
 .settings-screen select {
   min-height: 44px;
   padding: 8px 16px;
   color: inherit;
-  background: rgba(6, 12, 24, 0.6);
-  border: 1px solid var(--ui-line);
-  border-bottom-color: rgba(0, 229, 255, 0.5);
+  background: var(--settings-field);
+  border: 1px solid var(--settings-line);
+  border-radius: 4px;
   font: inherit;
-  letter-spacing: 0.08em;
   cursor: pointer;
   transition:
     background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+    border-color 0.15s ease;
 }
 .settings-screen select {
+  min-width: 160px;
   padding-right: 32px;
 }
-/* Przypisania klawiszy wyglądają jak klawisze. */
+/* Przypisania klawiszy: prosty klawisz, bez poświaty. */
 .settings-screen button[data-action] {
   min-width: 52px;
-  min-height: 40px;
-  padding: 6px 12px;
+  min-height: 38px;
+  padding: 5px 12px;
   font-weight: 600;
   text-align: center;
-  color: var(--ui-cyan);
-  border: 1px solid rgba(0, 229, 255, 0.45);
-  border-bottom-width: 3px;
-  border-radius: 3px;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 229, 255, 0.1),
-    rgba(6, 12, 24, 0.7)
-  );
+  border-bottom-width: 2px;
 }
 .settings-screen button:hover,
 .settings-screen select:hover {
-  border-color: var(--ui-cyan);
-  background: rgba(0, 229, 255, 0.12);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+  border-color: rgba(169, 188, 203, 0.45);
+  background: rgba(255, 255, 255, 0.08);
 }
 .settings-screen :focus-visible {
   outline: 2px solid var(--settings-accent);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 .settings-screen button:active {
-  background: rgba(0, 229, 255, 0.24);
+  background: rgba(255, 255, 255, 0.12);
 }
-/* Wróć — główne wyjście z ekranu. */
+/* Klawisz czekający na wciśnięcie. */
+.settings-screen button[data-action]:focus-visible {
+  border-color: var(--settings-accent);
+}
+/* Przywróć domyślne — drugorzędne, w treści pod listą klawiszy. */
+.settings-screen__content > button {
+  margin-top: 14px;
+}
+/* Wróć — główne wyjście z ekranu, wyrównane do prawej. */
 .settings-screen > button:last-child {
-  margin-top: 4px;
+  align-self: flex-end;
+  min-width: 160px;
   font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ui-cyan);
-  border-color: var(--ui-line-strong);
-  background: rgba(0, 229, 255, 0.08);
+  color: var(--ui-bg);
+  border-color: var(--settings-accent);
+  background: var(--settings-accent);
+}
+.settings-screen > button:last-child:hover {
+  border-color: #7ff2ff;
+  background: #7ff2ff;
 }
 .settings-screen [role='status'] {
   padding: 8px 12px;
   color: var(--ui-amber);
-  border-left: 2px solid var(--ui-amber);
-  background: rgba(255, 174, 26, 0.08);
+  border-radius: 4px;
+  background: rgba(255, 174, 26, 0.1);
   font-weight: 600;
-  letter-spacing: 0.08em;
 }
 .settings-screen [role='status']:empty {
   display: none;
@@ -275,9 +244,34 @@
   .settings-screen {
     padding: 16px;
   }
-  .settings-screen__row {
-    flex-wrap: wrap;
-    gap: 8px;
+  .settings-screen h1 {
+    font-size: 22px;
+  }
+  .settings-screen .settings-screen__tabs button {
+    flex: 1 1 0;
+    padding: 8px 4px;
+    font-size: 15px;
+  }
+  /* Suwak z wartością w osobnym wierszu pod nazwą, żeby wartość nie spadała sama. */
+  .settings-screen__row:has(input[type='range']) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    padding: 8px 4px;
+  }
+  .settings-screen__row:has(input[type='range']) input[type='range'] {
+    grid-column: 1;
+    width: 100%;
+    margin: 0;
+  }
+  .settings-screen__row:has(input[type='range']) output {
+    grid-column: 2;
+  }
+  .settings-screen select {
+    min-width: 0;
+  }
+  .settings-screen > button:last-child {
+    align-self: stretch;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -286,7 +280,6 @@
   }
   .settings-screen button,
   .settings-screen select,
-  .settings-screen__row,
   .settings-screen input[type='checkbox']::after {
     transition: none;
   }
