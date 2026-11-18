@@ -79,6 +79,7 @@ it.each(
         damage,
         hurtboxes,
         projectiles,
+        stepClimbing: true,
         getTarget: () => target,
       },
     );

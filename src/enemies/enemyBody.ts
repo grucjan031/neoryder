@@ -106,9 +106,11 @@ export class EnemyBody {
     if (!this.stepping) {
       // Wróg wchodzi po stopniach tak jak gracz: nawigacja aren prowadzi go schodami.
       const t = tuning.enemies;
-      this.controller.enableAutostep(t.stepHeight, t.stepMinWidth, false);
-      if (t.snapToGroundDistance > 0)
-        this.controller.enableSnapToGround(t.snapToGroundDistance);
+      if (this.deps.stepClimbing) {
+        this.controller.enableAutostep(t.stepHeight, t.stepMinWidth, false);
+        if (t.snapToGroundDistance > 0)
+          this.controller.enableSnapToGround(t.snapToGroundDistance);
+      }
       this.stepping = true;
     }
     this.verticalSpeed += tuning.physics.gravity * dt;

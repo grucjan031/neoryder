@@ -481,6 +481,9 @@ export class RoomScene implements Scene {
         damage: this.damage,
         hurtboxes: this.hurtboxes,
         statuses: this.statuses,
+        stepClimbing: !!(
+          this.layout.arena?.exclusive || this.layout.arena?.spawnRing
+        ),
         getTarget: () =>
           this.passiveEncounter
             ? null

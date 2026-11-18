@@ -64,6 +64,8 @@ export interface Enemy {
 }
 export interface EnemyDependencies {
   difficulty?: DifficultyProfile;
+  /** ADR 0011: autostep po schodach tylko na dużych arenach z nawigacją powierzchni; w pokojach i testach wyłączony. */
+  stepClimbing?: boolean;
   targetForward?(): Vec3;
   projectiles?: ProjectileSystem;
   world: World;
