@@ -48,64 +48,96 @@ rysowania przy jakości medium i 5 s wczytywania wymaga pomiaru w
 przeglądarce na docelowej arenie. Test widoku i zmiany pogody opisano
 w [render.md](render.md#horyzont-i-zasięg-widzenia).
 
-## Port kontenerowy
+## Terminal kontenerowy
 
-Główna ciągła podłoga: 100×100 m, granice XZ −50…50 m, zamknięte statycznymi
-colliderami. Plac manewrowy używa `quay_lines`, nabrzeże `quay_concrete`.
-Dalsza tafla za
-południową granicą jest oprawą niedostępną dla gracza. Pogoda: `storm`.
+`arenaContainerPort` ma obwiednię projektową 340 × 220 m. Ląd zajmuje
+X −170…170 i Z −110…70, z basenem manewrowym wciętym od wschodu
+między X 126–146 i Z 57–70. Generator szacuje 53 099 m² powierzchni
+chodzenia, wliczając poziomy. Pogoda `storm`, granatowe
+poszycie i mokry plac, bursztynowe akcenty oraz reflektory w ciepłej bieli.
 
-| Strefa | Pozycja X/Y/Z (m) | Charakter i dojścia                                                       |
-| ------ | ----------------- | ------------------------------------------------------------------------- |
-| A      | −32 / 0 / −28     | Plac przy zachodnich stosach, dojście zachodem i przez środkowe przejazdy |
-| B      | 32 / 0 / −23      | Pod suwnicą, cztery słupy, dostęp od północy, zachodu i wschodu           |
-| C      | 0 / 0 / 33        | Szerokie nabrzeże, niskie osłony, dostęp z obu boków oraz ze środka       |
+| Punkt | X / Y / Z (m) | Strefa |
+| --- | --- | --- |
+| A | −148 / 0 / −25 | Wnętrze hali |
+| B | 0 / 0 / −5 | Skrzyżowanie alei placu |
+| C | −65 / 12,8 / 88 | Wyrównane pokrywy luków sekcji środkowej statku |
+| D | 60 / 0 / −90 | Wolny odcinek bocznicy |
+| E | 140 / 0 / 0 | Wjazd przed biurem |
 
-Promień każdego punktu: 4 m. Odległości między środkami: ok. 64 / 69 / 65 m.
-Gracz zaczyna przy (−38, 0, 39), posiłki mają sześć pozycji na obrzeżach
-oddzielonych od stref. Wspólny bezpieczny odstęp od gracza nadal wynosi 15 m.
+Promienie punktów wynoszą 5 m. Gracz zaczyna na zachodniej kei (−150, 0, 55).
+Przejęcie ma 200 biletów i limit 12 żywych przeciwników. 32 pozycje posiłków,
+w tym trzy na pokładzie, korzystają z pierścienia 25–95 m.
 
-Kontenery GLB mają rzeczywiste wymiary ISO: 20 ft = 6,058×2,591×2,438 m,
-40 ft = 12,192×2,591×2,438 m (X/Y/Z). Kolizje pozostają płaskimi
-prostopadłościanami; stosy mają 1–3 warstwy, w granacie, oliwce, ochrze
-i graficie. Krótsze, przesunięte i obrócone kontenery tworzą niskie osłony,
-zaułki i przerwy między rzędami.
+- **Hala** ma trzy bramy od placu, drzwi ku kei i wyjście ku bocznicy.
+  Panele `port_warehouse_shell_panel` i kratownice `port_warehouse_roof_truss`
+  tworzą obudowę. Regały i skrzynie dzielą parter. Schody z obu końców
+  prowadzą na antresolę 5 m przy zachodniej ścianie.
+- **Plac** dzielą dwie aleje wschód–zachód i trzy północ–południe o nominalnej
+  szerokości 10–12 m. Rzędy długości ok. 43–55 m tworzą zwarte bloki
+  stosów liczących 1–4 warstwy. Między blokami biegną ok. 3-metrowe zaułki.
+  Przy B są szersze narożniki, a obrócone otwarte kontenery tworzą dwa
+  poprzeczne przejścia. Pomosty `port_lashing_platform` i rampy łączą
+  dachy trzech bloków na 5,182 i 7,773 m. Stosy zajmują ok. 50,8% rzutu placu.
+- **Keja** korzysta z `quay_concrete`, `quay_lines`, krawędzi
+  `port_quay_edge`, pachołków z linami, budek, masztów i wózków. Kontenery
+  oczekujące na załadunek i bariery tworzą osłony na podejściach.
+  Dwie suwnice STS przy X −70 i −10 górują nad nabrzeżem. Tafla wypełnia
+  basen i sięga do panoramy.
+- **Statek** składa się z rufy z nadbudówką, środkowego pokładu, otwartej
+  ładowni i dziobu. Dwa trapy prowadzą na y = 12 m. Najazdy po obu stronach
+  wspólnej płyty pokryw podnoszą gracza na 12,8 m. Suwnica ma cztery biegi
+  schodów na 12 m i kładkę na płytę. Łagodna rampa serwisowa daje AI
+  drogę do tej samej kładki. Dno ładowni na 3 m łączy się z uzbrojonym
+  pokładem przez trzy biegi przechodzące przez lukę w zrębnicy.
+- **Bocznica** zawiera szyny, podsypkę, otwarte i zamknięte wagony,
+  platformy z ładunkiem i kozioł oporowy. Otwarte wagony mają przejście
+  ze stopniami po obu stronach. Nasyp z torami poza północnym ogrodzeniem
+  służy oprawie.
+- **Brama i biuro** skupiają budki, szlabany i parking z wrakami. Parter
+  biura ma dwa wejścia, a na dach prowadzą dwa biegi zewnętrzne.
+  Wschodnia keja przechodzi w skład pustych kontenerów.
 
-Zachodnia rampa (18 m biegu) prowadzi na dach 5,182 m; druga (12 m biegu)
-na 2,591 m. Dwa pomosty `port_lashing_platform`, obrócone wzdłuż Z,
-łączą zachodnie stosy przy z = −14 / −7,5 / −1 m. Szczeliny mają 4,062 m,
-pomosty 6 m z oparciem na dachach; wierzch płyty jest na 5,282 m.
-Płyta i balustrady mają oddzielne collidery, przejście pozostaje otwarte.
-Dwa biegi schodów po 15 stopni (wznios 2,591/15 m, głębokość 0,6 m)
-prowadzą przez spocznik 2,591 m do podestu serwisowego 5,182 m przy B.
-Schody, rampy i podesty serwisowe używają `steel_grating`.
-Wymiary i obroty są w JSON-ie; render i Rapier dostają tę samą transformację.
-Wszystkie punkty są na gruncie, wyższe poziomy służą flankowaniu.
+A–B można przejść środkiem przez bramy i aleję albo wyjść ku kei i wejść
+na dachy stosów. B–C prowadzi przez nabrzeże do trapów albo na kładkę
+suwnicy. B–D ma dojście wzdłuż przejazdów i bocznicy lub obejście dachami
+w stronę wschodniego przejazdu. D–E można przejść placem albo po dachu
+biura. Zachodnia i wschodnia droga między placem i keją mają odcinki
+osłonięte barierami, agregatami i składem. Oznakowane dojazdy między halą,
+bramą i bocznicą prowadzą obok kontenerów, platform kolejowych i odcinków
+ogrodzenia z przerwami. Niewidoczne collidery zabezpieczają
+ogrodzenia i krawędzie nad wodą. Materiały pokładu i poszycia korzystają z
+`ship_deck_steel` i `ship_hull_paint`, a torowisko z `rail_ballast`
+i `rail_sleeper_concrete`.
 
-`ArenaNavigation` buduje naziemną siatkę 1 m z marginesem 0,8 m i pola odległości
-do punktów. Wygładza trasę do widocznego waypointu. `RoomScene` przekazuje go
-przez istniejące `Enemy.moveGoal`; blisko gracza nadal działa zwykła walka.
-Rampy są omijane przez naziemną nawigację, bez zmiany AI innych scen.
-Walidacja obejmuje wolne koła stref, ich odległości, granice, dostępność,
-wolny margines spawnów i ich położenie poza punktami.
+[Rzut SVG](../arenas/arenaContainerPort.svg). Generator zapisuje 2079 bloków,
+1718 instancji modeli i 46 źródeł światła. Najczęstszy wariant stanowi 13,0%
+instancji.
+Na siatce 0,25 m największy pusty kwadrat na placu ma bok 18,75 m,
+a na całym lądzie 28,5 m. Największy pusty prostokąt na placu to fragment
+długiej alei 230 × 11,5 m, a na lądzie pas bocznicy 334,5 × 13 m.
+Port używa komórek
+statyki 20 m i nawigacji 2 m. Krótkie strome biegi i trapy są trasami
+gracza. Test kapsuły obejmuje punkty, oba trapy, schody suwnicy, ładownię
+i dachy stosów. Oba archetypy mają fizyczne testy dojścia do A–E z ośmiu
+spawnów, a walidator trybu sprawdza drogi ze wszystkich 32 pozycji.
 
-Oprawa wykorzystuje wszystkie 15 dostarczonych wariantów `port_*.glb`:
-kontenery, dwie suwnice nad rzędami (32, −23) i (12, 16), cztery maszty,
-dwa wózki przeładunkowe, pomosty, 24 moduły nabrzeża i osiem pachołków,
-co drugi z liną. Moduły kei stoją na y = −2 m (wierzch na poziomie placu),
-odbojnice patrzą na wodę w +Z. Niewidoczna niska granica przy z = 50
-zatrzymuje gracza, pozostawiając widok na wodę. Nogi i progi suwnic,
-nadwozia wózków oraz maszty mają proste collidery `visible: false`;
-nie ma dużych colliderów wypełniających przestrzeń pod wysięgnikami.
+Otwórz `?scene=conquest&arena=arenaContainerPort&debug=1` i wpisz `god`.
+Konsola `tp <x> <z>` zachowuje wysokość. Na poziomie kei:
 
-Generatory, bariery, latarnie, skrzynie, kiosk, kable i inne `city_*`
-uzupełniają plac. Reflektory masztów (ciepła biel, y = 18,5 m) korzystają
-z istniejącej puli `CityLights`. Kolory neonów: bursztyn, zieleń, fiolet,
-błękit i ciepła biel. Rejestr gry obsługuje materiały modeli portu i nowe
-tekstury przez miejski shader z mokrością profilu `storm`.
-Nawierzchnie dziedziczą ciemne barwy asfaltu i betonu z motywu `neonStreet`,
-a barwy czterech wariantów kontenerów pochodzą z danych materiałowych.
-Modele GLB, generator Blendera i system pogody nie zostały zmienione.
+| Miejsce | Komenda |
+| --- | --- |
+| Nabrzeże | `tp -150 55` |
+| Hala / A | `tp -148 -25` |
+| Plac / B | `tp 0 -5` |
+| Bocznica / D | `tp 60 -90` |
+| Brama / E | `tp 140 0` |
+| Statek / C | `tp -124 69`; podejdź do początku trapu, wejdź na pokład i skręć na pokrywy luków |
+
+W grze sprawdź czytelność sylwetek w ulewie przy zmianie stref, tempo dojścia
+posiłków, możliwość zerwania kontaktu ogniowego w alejach oraz przejścia
+między gruntem, dachami i pokładem. Z pokładu obejrzyj widok w stronę wody
+i porównaj wysokości suwnic z halą. Progi GPU i wczytania sprawdza profil
+przeglądarkowy opisany poniżej.
 
 ## Estakada w smogu
 
@@ -289,13 +321,12 @@ między sąsiadami 0,35 m. Połączenie różnych powierzchni rampy istnieje
 wyłącznie na końcach, więc wróg nie próbuje wejść przez boczny próg.
 Przeszkody nad ulicą nie blokują przejścia pod estakadą. Skracanie trasy
 sprawdza wysokość oraz kolejne połączenia, bez skrótów między dachami.
-Naziemna ścieżka portu pozostaje zachowana.
 
 AI wybiera szerokie rampy: wąskie kładki o przejściu 1,378 m nie mieszczą
 pełnego marginesu nawigacji 0,8 m i służą graczowi. Wszystkie punkty są
 osiągalne bez nich. Walidacja trybu wymaga wolnego koła na wysokości punktu
-oraz drogi od gracza i każdego spawnu do A/B/C. Posiłki zachowują istniejący
-warunek 15 m od gracza i odstępu od innych wrogów.
+oraz drogi od gracza i każdego spawnu do wszystkich punktów. Posiłki zachowują wspólny
+minimalny odstęp 15 m, który pierścień areny może zwiększyć, i odstęp od innych wrogów.
 
 ## Wydajność i pomiar
 
@@ -308,12 +339,17 @@ Pozostałe pokoje zachowują swój dotychczasowy sposób scalania. Collider każ
 bloku jest statyczny. Smugi i rozbryzgi mają istniejące pule, bez tworzenia
 obiektów na każdą kroplę. Bufory instancji i scalone geometrie są zwalniane.
 
-Pomiar strukturalny 2026-11-17, prawdziwe GLB, `arenaStaticBatch.test.ts`:
+Pomiar Terminalu kontenerowego w Vitest:
 
-| Zakres                                         | Przed scalaniem | Po scalaniu |
-| ---------------------------------------------- | --------------: | ----------: |
-| Statyczne siatki portu (łącznie z instancjami) |             776 |         326 |
-| Partie instancji kontenerów                    |              53 |          53 |
+| Pomiar | Wynik |
+| --- | ---: |
+| Statyczne siatki przed i po scalaniu, rzeczywiste GLB | 6 681 → 2 929 |
+| Partie instancji | 1090 |
+| Nawigacja z pięcioma polami | 47,77 ms |
+| 12 wrogów w hoście Przejęcia, średnia z 600 kroków | 0,418 ms/krok |
+
+Sortowanie przeszkód nawigacji według komórek ogranicza przygotowanie
+siatki do sprawdzania brył w sąsiedztwie próbki.
 
 Ten sam pomiar nowych aren (rzeczywiste GLB, komórki 20 m, pojedyncza faza
 scalania, bez zmiany progów):
@@ -348,11 +384,7 @@ wrogów i jakością. Nie uruchamiać go z `fx=lite` przy ocenie oprawy.
 
 ## Sprawdzenie w 30 sekund
 
-Otwórz `?scene=conquest&arena=arenaContainerPort&debug=1`, wpisz `god`, obejrzyj
-plac i podesty. Komendy `tp -32 -28`, `tp 32 -23`, `tp 0 33` pozwalają szybko
-obejrzeć trzy różne strefy. Sprawdź `query('room')`, `query('weather')` i
-`query('conquest')`. `?scene=weatherTest&debug=1` udostępnia pięć przycisków pogody.
-`?scene=conquest&arena=combatRing&debug=1` sprawdza mały pierścień.
+Komendy dla Terminalu kontenerowego są w sekcji tej areny.
 
 Nowe areny: `?scene=conquest&arena=arenaOverpass&debug=1` oraz
 `?scene=conquest&arena=arenaRooftops&debug=1`. Wpisz `god`, przejdź A–B–C
@@ -364,20 +396,9 @@ Galeria: `?scene=city-props-test&view=4` (estakada), `&view=5` (targ).
 Testy traversal/enemies/staticBatch obejmują wszystkie cztery duże areny;
 e2e startu nowych aren jest napisany, bez uruchamiania w sandboxie.
 
-Dłuższy przegląd feel: przejdź naziemne drogi A–B–C, wejdź obiema rampami,
-przejdź po kładce i oboma biegami schodów suwnicy. Sprawdź czytelność czerwonych
-wrogów w ulewie, osłony, możliwość flankowania i tempo dochodzenia posiłków.
-Przejście kapsuły bez skoków po gruncie, rampach, kładce i schodach pokrywa
-`arenaTraversal.test.ts`; obydwa archetypy ze wszystkich sześciu spawnów do A/B/C
-sprawdza `arenaEnemies.test.ts` na prawdziwym Rapierze. Ocena widoku i dźwięku
-pozostaje ręczna. Test e2e jest napisany, nieuruchomiony zgodnie z briefem.
-
-Galeria `?scene=city-props-test&view=3` pokazuje te same materiały i modele.
-Sprawdź żebrowanie oraz kolory kontenerów, mokry plac z liniami, gumowe
-odbojnice pod krawędzią kei, liny, skalę suwnic i położenie reflektorów.
-`arenaStaticBatch.test.ts` dodatkowo porównuje obwiednie wszystkich powłok
-kontenerów z colliderami (także po obrocie), sprawdza ładowanie rekwizytów
-i brak nierozpoznanych materiałów GLB.
+Galeria `?scene=city-props-test&view=3` pokazuje materiały portu.
+`arenaStaticBatch.test.ts` porównuje obwiednie samodzielnych kontenerów
+z colliderami i sprawdza ładowanie modeli bez nierozpoznanych materiałów.
 
 ## Elektrownia
 

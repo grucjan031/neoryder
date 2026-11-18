@@ -199,12 +199,14 @@ it('arenaConstructionSite: nawigacja ≤ 500 ms, 12 wrogów na poziomach ≤ 2 m
 it.each([
   ['arenaOverpass', 30, 6],
   ['arenaRooftops', 30, 6],
+  ['arenaContainerPort', 12, 2],
   ['arenaPowerPlant', 12, 2],
 ] as const)(
   '%s: %i wrogów, nawigacja i Rapier poniżej %i ms/krok',
   async (id, limit, budget) => {
     const room = roomDefinitions.get(id)!;
-    if (id === 'arenaPowerPlant') {
+    const port = id === 'arenaContainerPort';
+    if (id === 'arenaPowerPlant' || port) {
       const start = performance.now();
       const nav = new ArenaNavigation(room);
       for (const point of room.arena!.points)
@@ -245,6 +247,13 @@ it.each([
       // Test przeciążeniowy omija limit posiłków 8, zachowuje rzeczywisty host trybu.
       const enemies = Reflect.get(scene, 'manager') as EnemyManager;
       let count = 0;
+      if (port) {
+        for (const position of room.arena!.spawnPoints!.slice(0, limit))
+          enemies.spawn(count++ < 8 ? 'assaulter' : 'gunner', {
+            ...position,
+            y: position.y ?? 0,
+          });
+      }
       for (let x = -40; x <= 40 && count < limit; x += 8)
         for (let z = -40; z <= 40 && count < limit; z += 8) {
           const position = { x, y: room.playerSpawn.y, z };

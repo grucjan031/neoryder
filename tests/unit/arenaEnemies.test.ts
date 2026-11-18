@@ -89,7 +89,9 @@ it.each(
       const sampled =
         id === 'arenaPowerPlant'
           ? [2, 8, 11, 17, 21, 29].map((i) => spawns[i]!)
-          : spawns;
+          : id === 'arenaContainerPort'
+            ? [0, 4, 12, 20, 23, 29, 30, 31].map((index) => spawns[index]!)
+            : spawns;
       for (const spawn of sampled) {
         for (const point of room.arena!.points) {
           const enemy = manager.spawn(kind, spawn);

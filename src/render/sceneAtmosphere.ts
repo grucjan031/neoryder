@@ -12,6 +12,7 @@ export class SceneAtmosphere {
   private readonly previousFloor: unknown;
   private readonly previousClip: { near: number; far: number } | undefined;
   private ground?: Mesh<PlaneGeometry, MeshBasicMaterial>;
+  private waterPlane?: Mesh<PlaneGeometry, MeshBasicMaterial>;
   private panorama?: Panorama;
   private disposed = false;
   constructor(
@@ -22,6 +23,7 @@ export class SceneAtmosphere {
     private readonly panoramaExclusion?: Box3,
     private readonly envelope?: WorldEnvelope,
     private readonly camera?: PerspectiveCamera,
+    private readonly water?: { shoreZ: number; y: number; color: string },
   ) {
     this.previousClip = camera && { near: camera.near, far: camera.far };
     this.theme = resolveTheme(themeId);
@@ -71,11 +73,30 @@ export class SceneAtmosphere {
       );
       this.ground.scale.setScalar(horizon.far + horizon.radiusM);
       this.ground.material.color.set(tuning.horizon.groundColor);
+      if (this.water) {
+        if (!this.waterPlane) {
+          this.waterPlane = new Mesh(
+            new PlaneGeometry(1, 1),
+            new MeshBasicMaterial({ color: this.water.color }),
+          );
+          this.waterPlane.name = 'outer-water';
+          this.waterPlane.rotation.x = -Math.PI / 2;
+          this.scene.add(this.waterPlane);
+        }
+        const extent = horizon.far + horizon.radiusM;
+        this.waterPlane.position.set(
+          horizon.center.x,
+          this.water.y,
+          this.water.shoreZ + extent / 2,
+        );
+        this.waterPlane.scale.set(2 * extent, extent, 1);
+      }
       (this.scene.background as Color).set(tuning.render.fogColor);
     } else if (this.ground) {
       (this.scene.background as Color).set(tuning.render.world);
     }
     if (this.ground) this.ground.visible = !!horizon?.expanded;
+    if (this.waterPlane) this.waterPlane.visible = !!horizon?.expanded;
     if (!this.panorama && tuning.render.panoramaEnabled > 0) {
       this.panorama = new Panorama(
         this.seed,
@@ -93,6 +114,9 @@ export class SceneAtmosphere {
     this.ground?.removeFromParent();
     this.ground?.geometry.dispose();
     this.ground?.material.dispose();
+    this.waterPlane?.removeFromParent();
+    this.waterPlane?.geometry.dispose();
+    this.waterPlane?.material.dispose();
     delete this.scene.userData.horizon;
     if (this.camera && this.previousClip) {
       this.camera.near = this.previousClip.near;

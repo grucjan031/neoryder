@@ -211,28 +211,87 @@ it.each([
         expect(player.getState().position.y).toBeGreaterThan(6);
         return;
       }
-      teleport(-46, -14);
-      const roof = 2 * 2.591;
-      walk({ x: -28, y: roof, z: -14 });
-      expect(player.getState().position.y).toBeCloseTo(roof + height, 1);
-      walk({ x: -24, y: roof, z: -14 });
-      for (const z of [-10.75, -7.5, -4.25, -0.5]) {
-        walk({ x: -24, y: roof, z });
-        const deck = z < -1 ? 0.1 : 0;
-        expect(player.getState().position.y).toBeCloseTo(
-          roof + deck + height,
-          1,
-        );
+      const point = room.arena!.points.find(({ id }) => id === 'C')!;
+      for (const start of [
+        room.arena!.spawnPoints![12]!,
+        room.arena!.spawnPoints![20]!,
+      ]) {
+        teleport(start.x, start.z, start.y ?? 0);
+        for (const goal of room.arena!.points) {
+          const state = player.getState().position;
+          const path = navigation.path(
+            { ...state, y: state.y - height },
+            goal.position,
+          );
+          expect(path.length).toBeGreaterThan(0);
+          for (const waypoint of path) walk(waypoint);
+          for (let step = 0; step < 12; step++) tick();
+          expect(player.getState().position.y).toBeCloseTo(
+            goal.position.y + height,
+            1,
+          );
+        }
       }
-      teleport(-4, 8);
-      walk({ x: -20, y: 2.591, z: 8 });
-      expect(player.getState().position.y).toBeCloseTo(2.591 + height, 1);
-      teleport(22, -3);
-      walk({ x: 22, y: 2.591, z: -15 });
-      expect(player.getState().position.y).toBeCloseTo(2.591 + height, 1);
-      walk({ x: 35, y: roof, z: -15 });
-      walk({ x: 32, y: roof, z: -23 });
-      expect(player.getState().position.y).toBeCloseTo(roof + height, 1);
+
+      for (const [foot, landing] of [
+        [-122, -95],
+        [-62, -35],
+      ] as const) {
+        teleport(foot - 2, 69);
+        walk({ x: foot - 2, y: 0, z: 70.9 });
+        walk({ x: landing, y: 12, z: 70.9 });
+        walk({ x: landing, y: 12, z: 73.4 });
+        expect(player.getState().position.y).toBeCloseTo(12 + height, 1);
+        const approach =
+          landing === -95
+            ? [
+                { x: -84, z: 73.4 },
+                { x: -84, z: 78 },
+                { x: -75, z: 78 },
+                { x: -65, z: 78 },
+              ]
+            : [
+                { x: -55, z: 73.4 },
+                { x: -53, z: 77 },
+                { x: -65, z: 77 },
+              ];
+        for (const pos of approach) walk({ ...pos, y: 12.8 });
+        walk(point.position);
+        expect(player.getState().position.y).toBeCloseTo(12.8 + height, 1);
+      }
+      teleport(-78, 41);
+      for (const waypoint of [
+        { x: -63.5, y: 3, z: 41 },
+        { x: -63.5, y: 3, z: 45 },
+        { x: -77.5, y: 6, z: 45 },
+        { x: -77.5, y: 6, z: 49 },
+        { x: -63.5, y: 9, z: 49 },
+        { x: -63.5, y: 9, z: 53 },
+        { x: -77.5, y: 12, z: 53 },
+        { x: -77.5, y: 12, z: 57 },
+        { x: -66, y: 12.8, z: 57 },
+        { x: -65, y: 12.8, z: 79 },
+        point.position,
+      ])
+        walk(waypoint);
+      expect(player.getState().position.y).toBeCloseTo(12.8 + height, 1);
+
+      teleport(-45.8, 77, 3);
+      walk({ x: -45.8, y: 3, z: 76.1 });
+      walk({ x: -29, y: 12, z: 76.1 });
+      walk({ x: -29, y: 12, z: 74 });
+      expect(player.getState().position.y).toBeCloseTo(12 + height, 1);
+
+      const roofZ = 17.819;
+      teleport(-140, roofZ);
+      walk({ x: -111, y: 5.182, z: roofZ });
+      expect(player.getState().position.y).toBeCloseTo(5.182 + height, 1);
+      walk({ x: -46, y: 5.182, z: roofZ });
+      walk({ x: 31, y: 7.773, z: roofZ });
+      expect(player.getState().position.y).toBeCloseTo(7.773 + height, 1);
+      walk({ x: 31, y: 7.773, z: 15 });
+      walk({ x: 57, y: 0, z: 15 });
+      expect(player.getState().position.y).toBeCloseTo(height, 1);
     } finally {
       player.dispose();
       world.free();

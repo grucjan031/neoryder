@@ -176,22 +176,10 @@ it.each([
           'mat_container_ochre',
           'mat_container_olive',
         ]);
-      for (const model of id === 'arenaContainerPort'
-        ? [
-            'port_gantry_crane',
-            'port_light_tower',
-            'port_reach_stacker',
-            'port_lashing_platform',
-            'port_quay_edge',
-            'port_bollard',
-            'port_bollard_rope',
-          ]
-        : [
-            ...new Set([
-              ...room.blocks.flatMap((b) => (b.model ? [b.model] : [])),
-              ...(room.decor ?? []).map((d) => d.model),
-            ]),
-          ])
+      for (const model of new Set([
+        ...room.blocks.flatMap((b) => (b.model ? [b.model] : [])),
+        ...(room.decor ?? []).map((d) => d.model),
+      ]))
         expect(
           loadedInSuite.has(`/assets/models/city/${model}.glb`),
           model,

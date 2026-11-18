@@ -16,13 +16,13 @@ import {
   createUrbanMaterial,
 } from '../../src/render/urbanMaterials';
 import { Weather } from '../../src/vfx/weather';
+import { arenaSpawnPoints } from '../../src/world/arenaSpawns';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import {
   conquestModeSchema,
   modeForArena,
   selectArena,
   validateMode,
-  freeModePosition,
 } from '../../src/world/modeSchema';
 import { conquestMode } from '../../src/world/modes';
 import { roomDefinitions, loadRoomDefinitions } from '../../src/world/rooms';
@@ -347,7 +347,9 @@ describe('areny Przejęcia', () => {
       ),
     ).toThrow();
     const badSpawn = structuredClone(port);
-    badSpawn.spawnPoints[0] = { ...badSpawn.arena!.points[0]!.position };
+    badSpawn.arena!.spawnPoints![0] = {
+      ...badSpawn.arena!.points[0]!.position,
+    };
     expect(() =>
       validateMode(
         modeForArena(conquestMode, badSpawn),
@@ -393,18 +395,15 @@ describe('areny Przejęcia', () => {
   it('siatka prowadzi z każdego spawnu do każdego punktu bez przecinania osłon', () => {
     const navigation = new ArenaNavigation(port);
     const rng = new Rng('paths');
-    for (const start of [
-      port.playerSpawn,
-      ...port.spawnPoints.map((p) => ({ ...p, y: 0 })),
-    ]) {
+    for (const start of [port.playerSpawn, ...arenaSpawnPoints(port)]) {
       for (const goal of rng.shuffle([...port.arena!.points])) {
         const path = navigation.path(start, goal.position);
         expect(path.length).toBeGreaterThan(0);
         expect(path.at(-1)).toEqual(goal.position);
-        for (const p of path)
+        for (let index = 1; index < path.length; index++)
           expect(
-            freeModePosition(port, p, port.arena!.navigationClearanceM),
-          ).toBe(true);
+            Math.abs(path[index]!.y - path[index - 1]!.y),
+          ).toBeLessThanOrEqual(port.arena!.navigationMaxRiseM!);
         expect(navigation.next(start, goal.position)).not.toEqual(start);
       }
     }

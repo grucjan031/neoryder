@@ -83,6 +83,13 @@ export const arenaSchema = z.object({
   exclusive: z.boolean().optional(),
   maxAlive: positive.int().max(tuning.modes.conquest.maxAlive).optional(),
   enemyTickets: positive.int().optional(),
+  water: z
+    .object({
+      shoreZ: finite,
+      y: finite,
+      color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+    })
+    .optional(),
   spawnRing: z
     .object({ minM: nonnegative, maxM: positive })
     .refine(({ minM, maxM }) => maxM > minM)
