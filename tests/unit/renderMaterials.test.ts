@@ -19,6 +19,7 @@ import {
 import type { MaterialKind } from '../../src/render/materials';
 import { createStyleLights } from '../../src/render/lights';
 import {
+  createUrbanMaterial,
   portKinds,
   urbanLooks,
   urbanUniforms,
@@ -35,7 +36,7 @@ const portExpected = {
   quay_concrete: ['quay_concrete', '56627a'],
   crane_paint: ['crane_paint', 'ffffff'],
   rubber_fender: ['rubber_fender', 'ffffff'],
-  steel_grating: ['steel_grating', 'ffffff'],
+  steel_grating: ['steel_grating', '4b5462'],
 } as const;
 
 const mappings = [
@@ -55,6 +56,31 @@ afterEach(() => {
 });
 
 describe('rejestr materiałów stylu', () => {
+  it('synchronizuje materiał utworzony bezpośrednio przed zmianą motywu', () => {
+    applyTheme(themeDefinitions.get('white')!);
+    const material = createUrbanMaterial('steel_grating');
+    const fixed = createUrbanMaterial('metal', '#263344');
+    try {
+      const cached = getMaterial('steel_grating');
+      syncMaterials();
+      expect(material.color.getHexString()).toBe('ffffff');
+      expect(cached.color.getHexString()).toBe('ffffff');
+
+      const restore = applyTheme(themeDefinitions.get('neonStreet')!);
+      syncMaterials();
+      expect(material.color.getHexString()).toBe('4b5462');
+      expect(cached.color.getHexString()).toBe('4b5462');
+      expect(fixed.color.getHexString()).toBe('263344');
+
+      restore();
+      syncMaterials();
+      expect(material.color.getHexString()).toBe('ffffff');
+      expect(cached.color.getHexString()).toBe('ffffff');
+    } finally {
+      material.dispose();
+      fixed.dispose();
+    }
+  });
   it.each(portKinds)(
     'port: %s zachowuje teksturę i wspólną mokrość po applyStyle i sync',
     (kind) => {

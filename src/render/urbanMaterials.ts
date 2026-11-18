@@ -326,11 +326,13 @@ const windowCode = /* glsl */ `
 `;
 
 const glsl = (value: number) => value.toFixed(4);
+const themedMaterials = new Map<MeshStandardMaterial, UrbanKind>();
 
 export function urbanColor(kind: UrbanKind): string {
   if (kind in portLooks) {
     const config = portLooks[kind as keyof typeof portLooks];
     if (config.themeTint) return tuning.render[config.themeTint];
+    // Zachowujemy barwy obu posadzek bez detalu do czasu weryfikacji ich wyglądu w WebGL.
     if (
       config.tint &&
       (config.flat ||
@@ -344,13 +346,22 @@ export function urbanColor(kind: UrbanKind): string {
   return tuning.render[kind as Exclude<UrbanKind, keyof typeof portLooks>];
 }
 
-export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
+export function createUrbanMaterial(
+  kind: UrbanKind,
+  fixedColor?: string,
+): MeshStandardMaterial {
   const config = urbanLooks[kind];
   const material = new MeshStandardMaterial({
-    color: urbanColor(kind),
+    color: fixedColor ?? urbanColor(kind),
     roughness: config.roughness,
     metalness: config.metalness,
   });
+  if (fixedColor === undefined) {
+    themedMaterials.set(material, kind);
+    material.addEventListener('dispose', () => {
+      themedMaterials.delete(material);
+    });
+  }
   material.userData.wetness = config.wetness;
   if (kind in portLooks && portLooks[kind as keyof typeof portLooks].flat)
     return material;
@@ -471,6 +482,9 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
 }
 
 export function syncUrbanMaterials(): void {
+  for (const [material, kind] of themedMaterials) {
+    material.color.set(urbanColor(kind));
+  }
   const weather = tuning.weather;
   urbanUniforms.snowPattern.value.set(
     weather.snowPatchFrequency,

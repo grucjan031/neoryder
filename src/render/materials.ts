@@ -12,7 +12,6 @@ import type { Object3D, WebGLProgramParametersWithUniforms } from 'three';
 import { tuning } from '../core/tuning';
 import {
   createUrbanMaterial,
-  urbanColor,
   urbanKinds,
   syncUrbanMaterials,
 } from './urbanMaterials';
@@ -37,6 +36,11 @@ export type MaterialKind =
 
 /** Rodzaje bez własnego koloru w tuning (kolor pochodny). */
 type StyleKind = MaterialKind | 'enemyDark';
+type PaletteKind = Exclude<StyleKind, UrbanKind>;
+
+function isUrbanKind(kind: StyleKind): kind is UrbanKind {
+  return urbanKinds.includes(kind as UrbanKind);
+}
 
 type StyleMaterial =
   MeshToonMaterial | MeshBasicMaterial | MeshStandardMaterial;
@@ -152,14 +156,10 @@ function addFloorGrid(material: MeshToonMaterial): void {
 }
 
 /** Kolor materiału; ciemny kombinezon wroga wynika z czerwieni wroga (bez osobnej wartości w tuning). */
-function colorFor(kind: StyleKind, target = new Color()): Color {
+function colorFor(kind: PaletteKind, target = new Color()): Color {
   if (kind === 'enemyDark')
     return target.set(tuning.render.enemy).multiplyScalar(ENEMY_DARK_SHADE);
-  if (urbanKinds.includes(kind as UrbanKind))
-    return target.set(urbanColor(kind as UrbanKind));
-  target.set(
-    tuning.render[kind as Exclude<StyleKind, UrbanKind | 'enemyDark'>],
-  );
+  target.set(tuning.render[kind]);
   if (mainsKinds.has(kind)) target.multiplyScalar(getPowerLevel());
   return target;
 }
@@ -169,15 +169,14 @@ export function getMaterial(kind: StyleKind): StyleMaterial {
     throw new Error(`Nieznany rodzaj materiału: ${kind}`);
   const existing = cache.get(kind);
   if (existing) return existing;
-  const color = colorFor(kind);
-  const material = urbanKinds.includes(kind as UrbanKind)
-    ? createUrbanMaterial(kind as UrbanKind)
+  const material = isUrbanKind(kind)
+    ? createUrbanMaterial(kind)
     : kind === 'world' ||
         kind === 'enemy' ||
         kind === 'enemyDark' ||
         kind === 'interactive'
-      ? new MeshToonMaterial({ color, gradientMap })
-      : new MeshBasicMaterial({ color, toneMapped: false });
+      ? new MeshToonMaterial({ color: colorFor(kind), gradientMap })
+      : new MeshBasicMaterial({ color: colorFor(kind), toneMapped: false });
   if (emissiveKinds.has(kind)) material.userData.bloom = true;
   if (kind === 'enemy' || kind === 'enemyDark') {
     // Poświata krawędzi zawsze w czerwieni wroga; na kombinezonie słabsza, żeby płyty odcinały się od niego.
@@ -220,7 +219,7 @@ export function syncMaterials(): void {
     0.01,
   );
   for (const [kind, material] of cache) {
-    colorFor(kind, material.color);
+    if (!isUrbanKind(kind)) colorFor(kind, material.color);
   }
   syncPrintPower(getPowerLevel());
 }
