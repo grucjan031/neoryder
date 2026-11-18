@@ -2043,9 +2043,9 @@ Walidacja trybu sprawdza pełne koła punktów i drogę od gracza oraz spawnów
 do każdego punktu; nie rzutuje wysokich punktów na grunt. Zwykłe spawny
 posiłków pozostają na playerSpawn.y; dotychczasowa preferencja punktów wroga
 zachowuje wysokość danego punktu. Brak zmian kontraktu walki i zapisu.
-Kapsuła wroga (`EnemyBody`) ma autostep i przyciąganie do podłoża z
-`tuning.enemies.stepHeight/stepMinWidth/snapToGroundDistance`, więc wchodzi
-po schodach, które nawigacja uznaje za chodzone (wznios ≤ `navigationMaxRiseM`).
+Kapsuła wroga (`EnemyBody`) ma autostep z `tuning.enemies.stepHeight/stepMinWidth`
+(przyciąganie do podłoża `snapToGroundDistance` domyślnie 0 = wyłączone: gubiło
+trasę przy barierze wykopu Budowy), więc wchodzi po schodach, które nawigacja uznaje za chodzone (wznios ≤ `navigationMaxRiseM`).
 
 # Misja liniowa M01 (kontrakt D1–D8)
 

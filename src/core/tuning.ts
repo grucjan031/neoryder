@@ -636,8 +636,8 @@ export const tuning = {
     /** Autostep kapsuły wroga (m): schody aren, które nawigacja uznaje za chodzone (≤ 0,35 m). */
     stepHeight: 0.35,
     stepMinWidth: 0.2,
-    /** Przyciąganie do podłoża przy schodzeniu po stopniach (m). */
-    snapToGroundDistance: 0.3,
+    /** Przyciąganie do podłoża przy schodzeniu (m); 0 = wyłączone (snap gubił trasę przy barierze wykopu Budowy). */
+    snapToGroundDistance: 0,
   },
   vfx: {
     barrierRadiusM: 1.25,
