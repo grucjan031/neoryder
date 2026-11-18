@@ -116,6 +116,15 @@ const fragmentShader = /* glsl */ `
   uniform float vignetteStrength;
   uniform float vignetteRadius;
   uniform float vignetteSoftness;
+  uniform float inkNearScale;
+  uniform float inkWidth;
+  uniform sampler2D edgeMap;
+  uniform float celBands;
+  uniform float celStrength;
+  uniform float hatchStrength;
+  uniform float hatchThreshold;
+  uniform float hatchSpacing;
+  uniform float paintStrength;
   varying vec2 vUv;
 
   float viewDepth(vec2 uv) {
@@ -131,9 +140,24 @@ const fragmentShader = /* glsl */ `
     return texture2D(normalMap, uv).xyz * 2.0 - 1.0;
   }
 
+  float hash3(vec3 p) {
+    p = fract(p * 0.3183099 + 0.1);
+    p *= 17.0;
+    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+  }
+  float valueNoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(mix(hash3(i), hash3(i + vec3(1,0,0)), f.x),
+                   mix(hash3(i + vec3(0,1,0)), hash3(i + vec3(1,1,0)), f.x), f.y),
+               mix(mix(hash3(i + vec3(0,0,1)), hash3(i + vec3(1,0,1)), f.x),
+                   mix(hash3(i + vec3(0,1,1)), hash3(i + vec3(1,1,1)), f.x), f.y), f.z);
+  }
+
   void main() {
-    vec2 offset = texelSize * thickness;
     float centerDepth = max(viewDepth(vUv), cameraNear);
+    vec2 offset = texelSize * thickness;
     float dx = 0.0;
     float dy = 0.0;
     vec3 nx = vec3(0.0);
@@ -164,6 +188,29 @@ const fragmentShader = /* glsl */ `
     float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
     float edge = max(depthLine, normalLine);
     if (thickness <= 0.0) edge = 0.0;
+    if (inkWidth > 0.0 && thickness > 0.0) {
+      // Tusz komiksowy: ostra maska krawędzi (1 px, osobny przebieg) pogrubiona dylatacją.
+      // Blisko kamery grubiej (inkNearScale), daleko cieniej.
+      float inkNear = 1.0 - smoothstep(outlineFadeNear * 0.5, outlineFadeFar, centerDepth);
+      float radius = inkWidth * mix(1.0, inkNearScale, inkNear);
+      // Broń i ręce (viewmodel) z cieńszym tuszem: inaczej giną pod czernią.
+      if (texture2D(depthMap, vUv).x < viewmodelDepth) radius = min(radius, 1.2);
+      float core = texture2D(edgeMap, vUv).r;
+      float ink = core;
+      float hits = 0.0;
+      for (int i = 0; i < 12; i++) {
+        float a = float(i) * 0.5235988;
+        vec2 dir = vec2(cos(a), sin(a)) * texelSize;
+        float outer = texture2D(edgeMap, vUv + dir * radius).r;
+        float inner = texture2D(edgeMap, vUv + dir * radius * 0.5).r;
+        ink = max(ink, max(outer, inner));
+        hits += outer + inner;
+      }
+      // Gęsty detal (kratki, siatki, drobne panele): pogrubione linie zlewają się w czarną
+      // plamę — tam zostaje sama cienka maska 1 px.
+      float density = hits / 24.0;
+      edge = max(core, ink * (1.0 - smoothstep(0.5, 0.8, density)));
+    }
     vec4 color = texture2D(colorMap, vUv);
     vec3 rgb = color.rgb;
     vec3 line = outlineColor;
@@ -188,6 +235,41 @@ const fragmentShader = /* glsl */ `
       float fresnel = 0.25+0.75*pow(1.0-abs(normalize(eyePosition-worldPoint).y),3.0);
       rgb += texture2D(reflectionMap,reflectionUv).rgb * reflectionStrength * wet * floorMask * puddle * fresnel * inside;
     }
+    if ((celStrength > 0.0 || hatchStrength > 0.0 || paintStrength > 0.0) &&
+        rawDepth > viewmodelDepth && rawDepth < 1.0) {
+      float luma = dot(rgb, vec3(0.299, 0.587, 0.114));
+      float hi = max(max(rgb.r, rgb.g), rgb.b);
+      float lo = min(min(rgb.r, rgb.g), rgb.b);
+      float saturation = hi > 1e-3 ? (hi - lo) / hi : 0.0;
+      // Wrogowie, neony i efekty (nasycone lub jasne) zostają czyste.
+      float plain = (1.0 - smoothstep(0.45, 0.7, saturation)) * (1.0 - smoothstep(0.75, 0.95, luma));
+      if (celStrength > 0.0 && celBands > 0.0 && luma > 1e-3) {
+        // Pasma tylko przyciemniają (dół pasma): cienie robią się płaskie i ciemne, nie mgliste.
+        // Tylko cienie i półcienie — jasne gradienty świateł (lampy, plamy światła) zostają
+        // miękkie, inaczej robią się z nich koncentryczne pierścienie.
+        float shadowOnly = 1.0 - smoothstep(0.38, 0.55, luma);
+        // Krótkie, miękkie przejście między pasmami (a nie skok o 1 px) i łagodniejszy dół:
+        // płaskie plamy na bryłach, bez twardych pierścieni na gradientach światła.
+        float bandT = luma * celBands;
+        float bandStep = floor(bandT) + smoothstep(0.78, 1.0, fract(bandT));
+        float banded = max(bandStep / celBands, luma * 0.6);
+        rgb *= mix(1.0, min(banded / luma, 1.0), celStrength * plain * shadowOnly);
+      }
+      if (paintStrength > 0.0) {
+        float blot = valueNoise(worldPoint * 1.7) * 0.6 + valueNoise(worldPoint * 6.0) * 0.4;
+        rgb *= 1.0 + (blot - 0.5) * paintStrength * plain;
+      }
+      if (hatchStrength > 0.0) {
+        // Kreski tuszem tylko w półcieniach (nie w czerni i nie w świetle), rzadkie i grube.
+        float mid = smoothstep(hatchThreshold * 0.25, hatchThreshold * 0.6, luma)
+          * (1.0 - smoothstep(hatchThreshold * 0.8, hatchThreshold * 1.4, luma));
+        vec2 px = gl_FragCoord.xy / max(hatchSpacing, 1.0);
+        float stroke = abs(fract(px.x * 0.7 + px.y) - 0.5) * 2.0;
+        float wobble = valueNoise(vec3(gl_FragCoord.xy * 0.02, 0.0));
+        float hatch = (1.0 - smoothstep(0.18, 0.32, stroke)) * mid * step(0.35, wobble);
+        rgb = mix(rgb, outlineColor, hatch * hatchStrength * plain);
+      }
+    }
     // Brak geometrii w buforze głębi koloru = niebo. Gradient nieba jest już w buforze koloru
     // (tło rysowane w przebiegu koloru przed obiektami przezroczystymi, skyBackgroundFragment),
     // więc hologramy, deszcz i viewmodel na niebie mają poprawne krycie; tu tylko błysk burzy
@@ -211,6 +293,15 @@ const fragmentShader = /* glsl */ `
       vec3 flashedFog = fogColor + skyFlashColor * skyFlash;
       rgb = mix(rgb, flashedFog, fog);
       line = mix(line, flashedFog, fog);
+    }
+    if (inkWidth > 0.0) {
+      // Świecące (neony, ostrze, efekty) zostają czyste: tusz ich nie zalewa. Tylko jasne
+      // i nasycone — białe ściany i jasne niebo dostają normalny czarny tusz (inaczej
+      // pogrubiony tusz na jasnym tle robi się bladoszarą aureolą).
+      float glowMax = max(color.r, max(color.g, color.b));
+      float glowMin = min(color.r, min(color.g, color.b));
+      float glowSat = glowMax > 1e-3 ? (glowMax - glowMin) / glowMax : 0.0;
+      edge *= 1.0 - smoothstep(0.7, 0.95, glowMax) * smoothstep(0.25, 0.5, glowSat);
     }
     rgb = mix(rgb, line, edge);
     if (bloomStrength > 0.0) {
@@ -243,6 +334,59 @@ const skyBackgroundVertex = /* glsl */ `
     gl_Position = vec4(position.xy, 1.0, 1.0);
   }
 `;
+
+/** Ostra maska krawędzi (1 px) dla tuszu komiksowego; pogrubiana w kompozycji. */
+const edgeFragmentShader = /* glsl */ `
+  #include <packing>
+  uniform sampler2D normalMap;
+  uniform sampler2D depthMap;
+  uniform vec2 texelSize;
+  uniform float depthThreshold;
+  uniform float normalThreshold;
+  uniform float outlineFadeNear;
+  uniform float outlineFadeFar;
+  uniform float outlineFarNormal;
+  uniform float outlineFarOuter;
+  uniform float cameraNear;
+  uniform float cameraFar;
+  uniform float viewmodelDepth;
+  uniform bool perspective;
+  varying vec2 vUv;
+  float viewDepth(vec2 uv) {
+    float depth = texture2D(depthMap, uv).x;
+    if (depth < viewmodelDepth) depth /= viewmodelDepth;
+    return -(perspective
+      ? perspectiveDepthToViewZ(depth, cameraNear, cameraFar)
+      : orthographicDepthToViewZ(depth, cameraNear, cameraFar));
+  }
+  vec3 normalAt(vec2 uv) { return texture2D(normalMap, uv).xyz * 2.0 - 1.0; }
+  void main() {
+    float centerDepth = max(viewDepth(vUv), cameraNear);
+    float dx = 0.0; float dy = 0.0;
+    vec3 nx = vec3(0.0); vec3 ny = vec3(0.0);
+    float nearest = centerDepth;
+    for (int y = -1; y <= 1; y++) {
+      for (int x = -1; x <= 1; x++) {
+        vec2 uv = vUv + vec2(float(x), float(y)) * texelSize;
+        float wx = float(x) * (y == 0 ? 2.0 : 1.0);
+        float wy = float(y) * (x == 0 ? 2.0 : 1.0);
+        float sampleDepth = viewDepth(uv);
+        nearest = min(nearest, sampleDepth);
+        float depth = (sampleDepth - centerDepth) / centerDepth;
+        dx += depth * wx; dy += depth * wy;
+        nx += normalAt(uv) * wx; ny += normalAt(uv) * wy;
+      }
+    }
+    float depthEdge = length(vec2(dx, dy)) / 8.0;
+    float normalEdge = sqrt(dot(nx, nx) + dot(ny, ny)) / 8.0;
+    float far = smoothstep(outlineFadeNear, max(outlineFadeFar, outlineFadeNear + 1e-3), centerDepth);
+    float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
+    float depthLine = step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
+    float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
+    gl_FragColor = vec4(max(depthLine, normalLine), 0.0, 0.0, 1.0);
+  }
+`;
+
 export const skyBackgroundFragment = /* glsl */ `
   uniform float skyGradient;
   uniform float skyHeight;
@@ -327,12 +471,35 @@ export class StylePipeline {
     vignetteStrength: { value: 0 },
     vignetteRadius: { value: 0.55 },
     vignetteSoftness: { value: 0.6 },
+    inkNearScale: { value: 1 },
+    inkWidth: { value: 0 },
+    edgeMap: { value: null as Texture | null },
+    celBands: { value: 0 },
+    celStrength: { value: 0 },
+    hatchStrength: { value: 0 },
+    hatchThreshold: { value: 0.22 },
+    hatchSpacing: { value: 5 },
+    paintStrength: { value: 0 },
   };
   private readonly composite = new FullscreenPass(
     new ShaderMaterial({
       uniforms: this.uniforms,
       vertexShader: fullscreenVertex,
       fragmentShader,
+      depthTest: false,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  private readonly edgeTarget = new WebGLRenderTarget(1, 1, {
+    minFilter: NearestFilter,
+    magFilter: NearestFilter,
+  });
+  private readonly edgePass = new FullscreenPass(
+    new ShaderMaterial({
+      uniforms: this.uniforms,
+      vertexShader: fullscreenVertex,
+      fragmentShader: edgeFragmentShader,
       depthTest: false,
       depthWrite: false,
       toneMapped: false,
@@ -390,6 +557,7 @@ export class StylePipeline {
     const h = Math.max(1, Math.floor(height * ratio));
     this.colorTarget.setSize(w, h);
     this.normalTarget.setSize(w, h);
+    this.edgeTarget.setSize(w, h);
     this.uniforms.texelSize.value.set(1 / w, 1 / h);
     this.uniforms.aspect.value = w / h;
     this.bloom?.setSize(w, h);
@@ -483,6 +651,14 @@ export class StylePipeline {
     uniforms.vignetteStrength.value = postFxOn ? t.vignetteStrength : 0;
     uniforms.vignetteRadius.value = t.vignetteRadius;
     uniforms.vignetteSoftness.value = t.vignetteSoftness;
+    uniforms.inkNearScale.value = t.inkNearScale;
+    uniforms.inkWidth.value = t.inkWidth;
+    uniforms.celBands.value = t.celBands;
+    uniforms.celStrength.value = t.celStrength;
+    uniforms.hatchStrength.value = t.hatchStrength;
+    uniforms.hatchThreshold.value = t.hatchThreshold;
+    uniforms.hatchSpacing.value = t.hatchSpacing;
+    uniforms.paintStrength.value = t.paintStrength;
     const impulse = postFxOn && this.postFxState.active;
 
     const renderer = this.renderer;
@@ -550,6 +726,10 @@ export class StylePipeline {
       scene.overrideMaterial = override;
       scene.background = background;
       renderer.setClearColor(this.clearColor, clearAlpha);
+      if (t.inkWidth > 0) {
+        this.edgePass.render(renderer, this.edgeTarget, 'composite');
+        uniforms.edgeMap.value = this.edgeTarget.texture;
+      }
       if (impulse) {
         if (!this.postFx) {
           this.postFx = new PostFxPass(this.postFxState);
@@ -581,6 +761,8 @@ export class StylePipeline {
     this.skyBackground.geometry.dispose();
     this.skyBackground.material.dispose();
     this.composite.dispose();
+    this.edgePass.dispose();
+    this.edgeTarget.dispose();
     this.postFx?.dispose();
     this.bloom?.dispose();
     this.reflections?.dispose();
