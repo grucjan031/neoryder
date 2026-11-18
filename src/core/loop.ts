@@ -17,7 +17,18 @@ export interface FrameScheduler {
 }
 
 export class GameLoop {
-  paused = false;
+  private isPaused = false;
+
+  get paused(): boolean {
+    return this.isPaused;
+  }
+
+  set paused(value: boolean) {
+    if (value === this.isPaused) return;
+    this.isPaused = value;
+    // Ukryta karta może nie dostać ani jednej klatki przed wznowieniem.
+    this.lastMs = this.clock.now();
+  }
   timeScale = 1;
   private ticks = 0;
   private accumulator = 0;
