@@ -712,24 +712,30 @@ def build_enemy_drone():
 # --------------------------------------------------------------------------- player weapons
 
 def _fpp_hilt_parts(length, radius, y_front, grip_len, prongs=True):
-    """Rękojeść ostrza: korpus, gardło emitera, gumowy chwyt, pierścienie i pazury emitera.
+    """Rękojeść ostrza: korpus, rozszerzone gardło emitera, gumowy chwyt, pierścienie i pazury.
 
     Zwraca listy (korpus, chwyt, wykończenia). Oś rękojeści = +Y Blendera, środek chwytu w 0.
+    Szlif komiksowy: fazowane gardło i głowica dają czytelną sylwetkę; chwyt bez zmian (dłoń).
     """
     y0 = -length / 2
+    r = radius
     body = [
-        tube(y0 + .025, y_front - .03, radius * .92, radius * .92, sides=8),
-        tube(y_front - .03, y_front, radius * 1.1, radius * 1.38, sides=8),  # gardło
-        tube(y0, y0 + .025, radius * 1.2, radius, sides=8),  # głowica
+        tube(y0 + .025, y_front - .03, r * .92, r * .92, sides=8),
+        # gardło: kołnierz, stożek i fazowana krawędź emitera
+        lathe([(y_front - .034, r * 1.0), (y_front - .026, r * 1.16), (y_front - .012, r * 1.4),
+               (y_front - .004, r * 1.4), (y_front, r * 1.26)], flat=False),
+        # głowica: fazowany ośmiokąt z wąską szyjką
+        lathe([(y0, r * .95), (y0 + .006, r * 1.24), (y0 + .018, r * 1.24), (y0 + .026, r * .98)], flat=False),
     ]
-    grip = [tube(-grip_len / 2, grip_len / 2, radius * 1.07, radius * 1.07, sides=8)]
+    grip = [tube(-grip_len / 2, grip_len / 2, r * 1.07, r * 1.07, sides=8)]
     trim = [
-        tube(grip_len / 2, grip_len / 2 + .008, radius * 1.25, radius * 1.25, sides=8),
-        tube(-grip_len / 2 - .008, -grip_len / 2, radius * 1.25, radius * 1.25, sides=8),
-        block(radius * .9, radius * 1.45, .0, .045, -.007, .007, bevel=.002),  # przycisk aktywacji
+        band(grip_len / 2, grip_len / 2 + .009, r * 1.27, .002, flat=False),
+        band(-grip_len / 2 - .009, -grip_len / 2, r * 1.27, .002, flat=False),
+        block(r * .9, r * 1.45, .0, .045, -.007, .007, bevel=.002),  # przycisk aktywacji
+        band(y0 - .004, y0 + .002, r * .8, .0015, flat=False),  # stalowa nakładka głowicy
     ]
     if prongs:
-        trim += _fpp_prongs(radius * 1.15, y_front - .02, y_front + .028)
+        trim += _fpp_prongs(r * 1.15, y_front - .02, y_front + .028)
     return body, grip, trim
 
 
@@ -780,6 +786,83 @@ def block(x0, x1, y0, y1, z0, z1, taper_top=(1.0, 1.0), bevel=0.0):
                   taper_top=taper_top, bevel=bevel)
 
 
+# Szlif komiksowy (gruby tusz + płaskie pasy cienia): bryły z profilu bocznego z dużymi fazami.
+# Faza 45° daje osobny pas światła i dwie linie tuszu, więc stosujemy je tylko na dużych krawędziach
+# (≥ 3 mm), a drobnicę ograniczamy, żeby kontur nie zlewał się w czarną plamę.
+
+def _inset(pts, d):
+    """Wielokąt (y, z) przesunięty do środka o d (dwusieczne; ostre kąty przycięte)."""
+    n = len(pts)
+    area = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n))
+    sign = 1.0 if area > 0 else -1.0
+    out = []
+    for i in range(n):
+        p0, p1, p2 = Vector(pts[i - 1]), Vector(pts[i]), Vector(pts[(i + 1) % n])
+        e1, e2 = (p1 - p0).normalized(), (p2 - p1).normalized()
+        n1 = Vector((-e1.y, e1.x)) * sign
+        n2 = Vector((-e2.y, e2.x)) * sign
+        m = n1 + n2
+        m = n1 if m.length < 1e-6 else m.normalized()
+        out.append(p1 + m * (d / max(m.dot(n1), 0.35)))
+    return out
+
+
+def slab(pts, x0, x1, ch=0.0):
+    """Bryła z profilu bocznego (y, z) wyciągnięta po X od x0 do x1; ch = faza obrysu z obu stron."""
+    bm = bmesh.new()
+    if ch > 0:
+        inner = [tuple(p) for p in _inset(pts, ch)]
+        layers = [(x0, inner), (x0 + ch, pts), (x1 - ch, pts), (x1, inner)]
+    else:
+        layers = [(x0, pts), (x1, pts)]
+    rings = [[bm.verts.new((x, p[0], p[1])) for p in ring] for x, ring in layers]
+    n = len(pts)
+    for a, b in zip(rings, rings[1:]):
+        for i in range(n):
+            bm.faces.new((a[i], a[(i + 1) % n], b[(i + 1) % n], b[i]))
+    bm.faces.new(list(reversed(rings[0])))
+    bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
+def lathe(rings, sides=8, x=0.0, z=0.0, flat=True):
+    """Bryła obrotowa wzdłuż Y: rings = [(y, promień), ...]; flat = płaska ściana na górze."""
+    bm = bmesh.new()
+    off = math.pi / sides if flat else 0.0
+    loops = []
+    for y, r in rings:
+        loops.append([bm.verts.new((x + r * math.cos(off + 2 * math.pi * i / sides), y,
+                                    z + r * math.sin(off + 2 * math.pi * i / sides))) for i in range(sides)])
+    for a, b in zip(loops, loops[1:]):
+        for i in range(sides):
+            bm.faces.new((a[i], a[(i + 1) % sides], b[(i + 1) % sides], b[i]))
+    bm.faces.new(list(reversed(loops[0])))
+    bm.faces.new(loops[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
+def band(y0, y1, r, ch, sides=8, x=0.0, z=0.0, flat=True):
+    """Pierścień / walec z fazowanymi krawędziami czołowymi."""
+    return lathe([(y0, r - ch), (y0 + ch, r), (y1 - ch, r), (y1, r - ch)], sides, x, z, flat)
+
+
+def _vent_bars(count, y0, step, width, z0, z1, half_x, lean=0.008):
+    """Skośne cyjanowe nacięcia (pochylone do przodu jak żaluzje): czytelny rytm w tuszu."""
+    return [slab([(y0 + i * step, z0), (y0 + i * step + width, z0),
+                  (y0 + i * step + width + lean, z1), (y0 + i * step + lean, z1)], -half_x, half_x)
+            for i in range(count)]
+
+
+def _taper_x(bm, y0, y1, scale):
+    """Zwęża bryłę po X liniowo od y0 (1.0) do y1 (scale): kolba węższa ku stopce."""
+    for v in bm.verts:
+        t = min(max((v.co.y - y0) / (y1 - y0), 0.0), 1.0)
+        v.co.x *= 1 + (scale - 1) * t
+    return bm
+
+
 def weapon_root(name, frame, vents, cell, muzzle_pos, extra=(), trim=None, grip=None):
     root = empty(name, size=0.1)
     mesh_object("frame", frame, "mat_interactive", parent=root)
@@ -815,176 +898,237 @@ def _fpp_trigger(y, z_top, depth=.022):
 
 
 def build_blaster():
-    """Blaster gracza z przegrzaniem: średni pistolet energetyczny z kołpakiem lufy."""
+    """Blaster gracza z przegrzaniem: masywny pistolet energetyczny z garbem zamka i kołpakiem lufy."""
     frame = bm_merge(
-        block(-0.025, 0.025, -0.07, 0.19, 0.03, 0.1, taper_top=(0.9, 0.95), bevel=0.008),  # zamek
-        block(-0.015, 0.015, 0.01, 0.06, 0.0, 0.012),  # kabłąk
-        block(-0.012, 0.012, 0.06, 0.07, -0.03, 0.012),
-        tube(0.19, 0.31, 0.02, 0.016, sides=8, z=0.07),  # lufa
-        tube(0.285, 0.325, 0.026, 0.026, sides=8, z=0.07),  # kołpak lufy
-        block(-0.006, 0.006, -0.06, -0.03, 0.1, 0.12),  # szczerbinka
-        block(-0.004, 0.004, 0.16, 0.18, 0.1, 0.118),  # muszka
+        # zamek z garbem nad chwytem i ściętym nosem
+        slab([(-0.074, 0.03), (0.17, 0.03), (0.19, 0.046), (0.19, 0.09), (0.172, 0.1), (0.022, 0.1),
+              (0.004, 0.108), (-0.05, 0.108), (-0.064, 0.1), (-0.076, 0.07)], -0.025, 0.025, ch=0.006),
+        # osłona pod lufą: cięższy przód, klin w dół
+        slab([(0.07, 0.016), (0.196, 0.016), (0.214, 0.03), (0.214, 0.044), (0.07, 0.044)], -0.017, 0.017,
+             ch=0.004),
+        # kabłąk z oknem na spust i przednim hakiem
+        slab([(0.006, 0.03), (0.006, 0.0), (0.06, 0.0), (0.06, -0.03), (0.072, -0.03), (0.072, 0.03),
+              (0.064, 0.03), (0.064, 0.008), (0.056, 0.006), (0.012, 0.006), (0.012, 0.03)], -0.012, 0.012,
+             ch=0.003),
+        lathe([(0.185, 0.021), (0.29, 0.017)], z=0.07),  # lufa
+        lathe([(0.28, 0.021), (0.289, 0.027), (0.318, 0.027), (0.326, 0.021)], z=0.07),  # kołpak lufy
+        block(-0.008, -0.003, -0.062, -0.034, 0.104, 0.12, taper_top=(1, 0.7)),  # szczerbinka (dwa słupki)
+        block(0.003, 0.008, -0.062, -0.034, 0.104, 0.12, taper_top=(1, 0.7)),
+        block(-0.004, 0.004, 0.158, 0.178, 0.098, 0.118, taper_top=(1, 0.5)),  # muszka
     )
     grip = block(-0.021, 0.021, -0.05, 0.01, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.006)
     trim = bm_merge(
-        block(-0.009, 0.009, -0.025, 0.15, 0.1, 0.108),  # szyna na zamku
+        block(-0.009, 0.009, 0.026, 0.15, 0.098, 0.106, bevel=0.002),  # szyna na zamku
+        slab([(-0.0645, 0.0995), (0.024, 0.0995), (0.005, 0.1088), (-0.05, 0.1088)], -0.0205, 0.0205,
+             ch=0.003),  # stalowa płyta garbu
         *_fpp_plate(0.0255, -0.062, -0.012, 0.045, 0.088),  # płytki boczne tyłu zamka
-        tube(0.30, 0.312, 0.029, 0.029, sides=8, z=0.07),  # pierścień kołpaka
-        tube(0.17, 0.19, 0.024, 0.021, sides=8, z=0.07),  # nasada lufy
+        band(0.298, 0.312, 0.029, 0.003, z=0.07),  # pierścień kołpaka
+        lathe([(0.17, 0.024), (0.19, 0.021)], z=0.07),  # nasada lufy
         _fpp_trigger(0.035, 0.03),
         block(-0.023, 0.023, -0.047, 0.007, -0.088, -0.082),  # obejma ogniwa
+        slab([(0.07, 0.044), (0.2, 0.044), (0.2, 0.05), (0.07, 0.05)], -0.012, 0.012),  # listwa osłony
     )
-    vents = bm_merge(*[block(-0.027, 0.027, 0.0 + i * 0.035, 0.018 + i * 0.035, 0.045, 0.085) for i in range(4)])
-    cell = block(-0.023, 0.023, -0.045, 0.005, -0.12, -0.092)
+    vents = bm_merge(*_vent_bars(4, 0.0, 0.035, 0.018, 0.045, 0.085, 0.027))
+    cell = block(-0.023, 0.023, -0.045, 0.005, -0.12, -0.092, bevel=0.003)
     return weapon_root("blaster", frame, vents, cell, (0, 0.33, 0.07), trim=trim, grip=grip)
 
 
 def build_pistol():
-    """Pistolet: zwarty, krótki zamek, pochylony chwyt, trzy cyjanowe nacięcia."""
+    """Pistolet: zwarty, ścięty nos zamka, pochylony chwyt, trzy skośne cyjanowe nacięcia."""
     frame = bm_merge(
-        block(-0.02, 0.02, -0.04, 0.12, 0.02, 0.075, taper_top=(0.85, 1.0), bevel=0.005),  # zamek
-        tube(0.12, 0.15, 0.012, 0.012, sides=6, z=0.052),  # wylot
-        block(-0.012, 0.012, 0.0, 0.05, 0.0, 0.012),  # kabłąk
-        block(-0.005, 0.005, -0.035, -0.015, 0.075, 0.09),  # szczerbinka
+        # zamek: ścięty nos i pochylony tył
+        slab([(-0.042, 0.022), (0.118, 0.022), (0.128, 0.03), (0.128, 0.058), (0.112, 0.075),
+              (-0.03, 0.075), (-0.044, 0.06)], -0.02, 0.02, ch=0.004),
+        # szkielet pod zamkiem (osłona z fazą z przodu)
+        slab([(0.0, 0.01), (0.108, 0.01), (0.12, 0.018), (0.12, 0.024), (0.0, 0.024)], -0.015, 0.015, ch=0.003),
+        # kabłąk z oknem na spust
+        slab([(0.002, 0.012), (0.002, 0.0), (0.044, 0.0), (0.052, 0.006), (0.052, 0.012), (0.046, 0.012),
+              (0.046, 0.0065), (0.042, 0.0045), (0.008, 0.0045), (0.008, 0.012)], -0.006, 0.006, ch=0.0015),
+        lathe([(0.12, 0.012), (0.142, 0.012), (0.15, 0.0095)], z=0.052),  # wylot lufy
+        block(-0.007, -0.003, -0.036, -0.018, 0.074, 0.09, taper_top=(1, 0.7)),  # szczerbinka
+        block(0.003, 0.007, -0.036, -0.018, 0.074, 0.09, taper_top=(1, 0.7)),
     )
     grip = block(-0.018, 0.018, -0.04, 0.0, -0.09, 0.02, taper_top=(1.0, 1.2), bevel=0.005)
     trim = bm_merge(
-        block(-0.007, 0.007, 0.0, 0.11, 0.075, 0.082),  # szyna
-        block(-0.004, 0.004, 0.1, 0.112, 0.082, 0.092),  # muszka
+        # stalowa wierzchnia zamka: druga strefa koloru widoczna z oczu gracza
+        slab([(-0.042, 0.06), (0.126, 0.06), (0.112, 0.0758), (-0.03, 0.0758)], -0.0205, 0.0205, ch=0.003),
+        block(-0.003, 0.003, 0.094, 0.106, 0.078, 0.091, taper_top=(1, 0.5)),  # muszka
         *_fpp_plate(0.0205, -0.036, 0.012, 0.03, 0.068),  # płytki tyłu zamka
-        tube(0.138, 0.146, 0.016, 0.016, sides=6, z=0.052),  # pierścień wylotu
+        band(0.136, 0.146, 0.0155, 0.002, z=0.052),  # pierścień wylotu
         _fpp_trigger(0.025, 0.02, depth=0.018),
+        slab([(-0.053, 0.048), (-0.04, 0.048), (-0.04, 0.066), (-0.05, 0.063)], -0.006, 0.006, ch=0.002),  # kurek
     )
-    vents = bm_merge(*[block(-0.0215, 0.0215, 0.02 + i * 0.03, 0.036 + i * 0.03, 0.035, 0.065) for i in range(3)])
-    cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09)
+    vents = bm_merge(*_vent_bars(3, 0.02, 0.03, 0.016, 0.035, 0.065, 0.0215))
+    cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09, bevel=0.002)
     return weapon_root("pistol", frame, vents, cell, (0, 0.155, 0.052), trim=trim, grip=grip)
 
 
 def build_rifle():
-    """Karabin: długi, kolba, rączka, ogniwo ciepła jak magazynek pod komorą."""
+    """Karabin: klinowa kolba, komora z gniazdem magazynka, łoże z fazami, tłumik."""
     frame = bm_merge(
-        block(-0.025, 0.025, -0.08, 0.2, 0.0, 0.1, taper_top=(0.9, 1.0), bevel=0.006),  # komora
-        block(-0.022, 0.022, 0.2, 0.42, 0.015, 0.085, bevel=0.005),  # łoże
-        tube(0.42, 0.6, 0.014, 0.012, sides=8, z=0.05),  # lufa
-        tube(0.57, 0.62, 0.02, 0.02, sides=6, z=0.05),  # tłumik
+        slab([(-0.08, 0.0), (0.2, 0.0), (0.2, 0.1), (-0.052, 0.1), (-0.082, 0.072)], -0.025, 0.025,
+             ch=0.006),  # komora
+        slab([(0.06, -0.012), (0.152, -0.012), (0.156, 0.0), (0.056, 0.0)], -0.023, 0.023, ch=0.003),  # gniazdo
+        slab([(0.2, 0.015), (0.4, 0.015), (0.425, 0.03), (0.425, 0.072), (0.41, 0.085), (0.2, 0.085)],
+             -0.022, 0.022, ch=0.005),  # łoże
+        lathe([(0.42, 0.014), (0.575, 0.012)], z=0.05),  # lufa
+        lathe([(0.565, 0.017), (0.574, 0.021), (0.612, 0.021), (0.62, 0.016)], z=0.05),  # tłumik
     )
     grip = bm_merge(
-        block(-0.02, 0.02, -0.22, -0.08, -0.035, 0.085, taper_top=(0.9, 0.7)),  # kolba
+        # kolba klinowa: górna linia przedłuża komorę, spód ścięty ku chwytowi
+        _taper_x(slab([(-0.222, -0.045), (-0.198, -0.045), (-0.12, 0.012), (-0.078, 0.02), (-0.078, 0.085),
+                       (-0.222, 0.088)], -0.02, 0.02, ch=0.005), -0.1, -0.222, 0.8),
         block(-0.018, 0.018, -0.07, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.0175, 0.0175, -0.228, -0.214, -0.042, 0.09, bevel=0.004),  # gumowa stopka
     )
     trim = bm_merge(
-        block(-0.008, 0.008, 0.0, 0.24, 0.1, 0.118),  # szyna z celownikiem
-        block(-0.012, 0.012, 0.02, 0.05, 0.118, 0.14, taper_top=(0.7, 0.6)),  # celownik tylny
-        block(-0.006, 0.006, 0.2, 0.22, 0.118, 0.138),  # muszka
+        slab([(-0.07, 0.084), (0.2, 0.084), (0.2, 0.1008), (-0.052, 0.1008)], -0.0255, 0.0255,
+             ch=0.004),  # stalowa górna komora
+        block(-0.008, 0.008, 0.0, 0.24, 0.1, 0.112, bevel=0.002),  # szyna
+        slab([(0.018, 0.112), (0.052, 0.112), (0.048, 0.138), (0.026, 0.138)], -0.012, 0.012, ch=0.002),  # celownik
+        block(-0.006, 0.006, 0.2, 0.22, 0.112, 0.136, taper_top=(1, 0.5)),  # muszka
         *_fpp_plate(0.0255, -0.07, 0.06, 0.02, 0.085),  # płyty komory
-        tube(0.6, 0.612, 0.023, 0.023, sides=6, z=0.05),  # czoło tłumika
-        block(-0.021, 0.021, -0.225, -0.21, -0.045, 0.09),  # stopka kolby
+        band(0.598, 0.612, 0.0235, 0.003, z=0.05),  # czoło tłumika
+        block(-0.018, 0.018, -0.17, -0.1, 0.07, 0.09, taper_top=(0.8, 0.9)),  # poduszka policzkowa
         _fpp_trigger(-0.005, 0.0),
     )
-    vents = bm_merge(*[block(-0.0235, 0.0235, 0.24 + i * 0.045, 0.262 + i * 0.045, 0.03, 0.07) for i in range(4)])
-    cell = block(-0.02, 0.02, 0.07, 0.14, -0.1, 0.0)
+    vents = bm_merge(*_vent_bars(4, 0.24, 0.045, 0.022, 0.03, 0.07, 0.0235))
+    # ogniwo jak magazynek: pochylony do przodu, lekko wygięty
+    cell = slab([(0.07, 0.0), (0.14, 0.0), (0.145, -0.05), (0.148, -0.096), (0.088, -0.1), (0.077, -0.05)],
+                -0.019, 0.019, ch=0.003)
     return weapon_root("rifle", frame, vents, cell, (0, 0.625, 0.05), trim=trim, grip=grip)
 
 
 def build_scatter():
-    """Rozpraszacz: szeroki, dwie grube lufy w jednej osłonie, pompa, krótka kolba."""
+    """Rozpraszacz: szeroka komora z radiatorem, dwie grube lufy, osłona z klinem, pompa."""
     frame = bm_merge(
-        block(-0.05, 0.05, 0.0, 0.2, 0.0, 0.1, taper_top=(0.9, 1.0), bevel=0.008),  # szeroka komora
-        tube(0.2, 0.42, 0.028, 0.028, sides=6, x=-0.03, z=0.07),
-        tube(0.2, 0.42, 0.028, 0.028, sides=6, x=0.03, z=0.07),
-        block(-0.06, 0.06, 0.2, 0.3, 0.035, 0.105, bevel=0.006),  # osłona
+        slab([(0.0, 0.0), (0.2, 0.0), (0.2, 0.1), (0.032, 0.1), (0.0, 0.078)], -0.05, 0.05, ch=0.008),  # komora
+        lathe([(0.2, 0.028), (0.41, 0.028), (0.42, 0.024)], x=-0.03, z=0.07),
+        lathe([(0.2, 0.028), (0.41, 0.028), (0.42, 0.024)], x=0.03, z=0.07),
+        slab([(0.2, 0.035), (0.29, 0.035), (0.31, 0.058), (0.31, 0.105), (0.2, 0.105)], -0.06, 0.06,
+             ch=0.008),  # osłona
     )
     grip = bm_merge(
         block(-0.034, 0.034, 0.22, 0.34, -0.005, 0.03, bevel=0.005),  # pompa
-        block(-0.026, 0.026, -0.14, 0.0, -0.03, 0.09, taper_top=(0.9, 0.8)),  # kolba
+        _taper_x(slab([(-0.14, -0.03), (-0.112, -0.03), (-0.045, 0.02), (0.0, 0.03), (0.0, 0.09),
+                       (-0.14, 0.084)], -0.026, 0.026, ch=0.006), -0.02, -0.14, 0.8),  # kolba
         block(-0.02, 0.02, -0.06, 0.02, -0.13, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.022, 0.022, -0.148, -0.134, -0.027, 0.088, bevel=0.004),  # gumowa stopka
     )
     trim = bm_merge(
-        block(-0.01, 0.01, 0.02, 0.19, 0.1, 0.11),  # szyna
-        block(-0.062, 0.062, 0.385, 0.405, 0.035, 0.105),  # opaska luf
+        # radiator na komorze: pięć poprzecznych żeber
+        *[block(-0.03, 0.03, 0.04 + i * 0.03, 0.054 + i * 0.03, 0.098, 0.114, taper_top=(0.8, 0.6))
+          for i in range(5)],
+        block(-0.062, 0.062, 0.385, 0.405, 0.035, 0.105, bevel=0.003),  # opaska luf
+        slab([(0.2, 0.09), (0.31, 0.09), (0.31, 0.1058), (0.2, 0.1058)], -0.0605, 0.0605, ch=0.004),  # stalowy dach
         *[block(-0.036, 0.036, 0.235 + i * 0.03, 0.245 + i * 0.03, -0.009, 0.0) for i in range(3)],  # żeberka pompy
         *_fpp_plate(0.0505, 0.0, 0.2, 0.012, 0.04),  # listwy boczne komory
         _fpp_trigger(0.0, 0.0),
     )
-    vents = bm_merge(*[block(-0.052, 0.052, 0.02 + i * 0.045, 0.038 + i * 0.045, 0.045, 0.095) for i in range(4)])
-    cell = block(-0.025, 0.025, -0.01, 0.06, -0.15, -0.115)
+    vents = bm_merge(*_vent_bars(4, 0.02, 0.045, 0.018, 0.045, 0.092, 0.052))
+    cell = block(-0.025, 0.025, -0.01, 0.06, -0.15, -0.115, bevel=0.003)
     return weapon_root("scatter", frame, vents, cell, (0, 0.43, 0.07), trim=trim, grip=grip)
 
 
 def build_sniper_rifle():
-    """Snajperka: bardzo długa, smukła lufa, duża luneta z cyjanową soczewką."""
+    """Snajperka: bardzo długa lufa z hamulcem z portami, luneta z dzwonami, kolba z poduszką, zamek."""
     frame = bm_merge(
-        block(-0.02, 0.02, -0.08, 0.2, 0.0, 0.085, bevel=0.005),  # komora
-        block(-0.017, 0.017, 0.2, 0.55, 0.02, 0.07),  # łoże
-        tube(0.55, 0.86, 0.011, 0.01, sides=8, z=0.045),  # lufa
-        block(-0.02, 0.02, 0.86, 0.92, 0.025, 0.068),  # hamulec wylotowy
-        tube(0.0, 0.34, 0.03, 0.03, sides=8, z=0.145),  # luneta
-        tube(0.34, 0.4, 0.036, 0.036, sides=8, z=0.145),  # osłona obiektywu
-        tube(-0.06, 0.0, 0.026, 0.03, sides=8, z=0.145),
+        slab([(-0.08, 0.0), (0.2, 0.0), (0.2, 0.085), (-0.058, 0.085), (-0.082, 0.064)], -0.02, 0.02,
+             ch=0.005),  # komora
+        slab([(0.2, 0.02), (0.53, 0.02), (0.55, 0.034), (0.55, 0.06), (0.54, 0.07), (0.2, 0.07)],
+             -0.017, 0.017, ch=0.004),  # łoże
+        lathe([(0.55, 0.011), (0.86, 0.0095)], z=0.045),  # lufa
+        # hamulec wylotowy: porty wycięte w górnej krawędzi
+        slab([(0.858, 0.025), (0.92, 0.025), (0.92, 0.068), (0.906, 0.068), (0.906, 0.052), (0.896, 0.052),
+              (0.896, 0.068), (0.882, 0.068), (0.882, 0.052), (0.872, 0.052), (0.872, 0.068), (0.858, 0.068)],
+             -0.02, 0.02, ch=0.003),
+        # luneta: cienka tuba, dzwon okularu i obiektywu
+        lathe([(-0.062, 0.024), (-0.055, 0.031), (-0.012, 0.031), (0.004, 0.024), (0.29, 0.024),
+               (0.33, 0.036), (0.4, 0.036)], z=0.145),
     )
     grip = bm_merge(
-        block(-0.022, 0.022, -0.24, -0.08, -0.04, 0.085, taper_top=(0.9, 0.6)),  # kolba
+        _taper_x(slab([(-0.242, -0.04), (-0.214, -0.04), (-0.13, 0.012), (-0.078, 0.02), (-0.078, 0.085),
+                       (-0.242, 0.085)], -0.022, 0.022, ch=0.005), -0.1, -0.242, 0.8),  # kolba
         block(-0.016, 0.016, -0.065, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.0185, 0.0185, -0.248, -0.234, -0.02, 0.087, bevel=0.004),  # gumowa stopka
     )
     trim = bm_merge(
-        block(-0.008, 0.008, 0.04, 0.09, 0.085, 0.118),  # mocowania lunety
-        block(-0.008, 0.008, 0.23, 0.28, 0.085, 0.118),
-        tube(0.05, 0.075, 0.033, 0.033, sides=8, z=0.145),  # obejmy lunety
-        tube(0.245, 0.27, 0.033, 0.033, sides=8, z=0.145),
-        block(-0.022, 0.022, 0.885, 0.895, 0.02, 0.073),  # szczelina hamulca
+        slab([(-0.066, 0.072), (0.2, 0.072), (0.2, 0.0858), (-0.058, 0.0858)], -0.0205, 0.0205,
+             ch=0.003),  # stalowa górna komora
+        block(-0.008, 0.008, 0.04, 0.09, 0.085, 0.122),  # mocowania lunety
+        block(-0.008, 0.008, 0.23, 0.28, 0.085, 0.122),
+        band(0.05, 0.075, 0.0275, 0.003, z=0.145),  # obejmy lunety
+        band(0.245, 0.27, 0.0275, 0.003, z=0.145),
+        block(-0.011, 0.011, 0.14, 0.168, 0.164, 0.18, bevel=0.003),  # wieżyczka elewacji
+        block(-0.036, -0.022, 0.142, 0.166, 0.134, 0.156, bevel=0.003),  # wieżyczka boczna
+        block(0.018, 0.04, 0.03, 0.042, 0.066, 0.076),  # rączka zamka (przed dłonią)
+        bm_ico(0.009, center=(0.044, 0.036, 0.068), subdiv=1),  # gałka zamka
+        block(-0.019, 0.019, -0.19, -0.1, 0.07, 0.092, taper_top=(0.8, 0.9)),  # poduszka policzkowa
         _fpp_trigger(-0.005, 0.0),
     )
-    vents = bm_merge(*[block(-0.0195, 0.0195, 0.3 + i * 0.055, 0.32 + i * 0.055, 0.03, 0.062) for i in range(4)])
+    vents = bm_merge(*_vent_bars(4, 0.3, 0.055, 0.02, 0.03, 0.062, 0.0195))
     # ogniwo ciepła jako magazynek pod komorą (na kolbie świeciło tuż przy kamerze)
-    cell = block(-0.015, 0.015, 0.05, 0.11, -0.07, 0.0, taper_top=(1.0, 1.0))
+    cell = slab([(0.05, 0.0), (0.11, 0.0), (0.118, -0.068), (0.062, -0.07)], -0.015, 0.015, ch=0.002)
     lens = tube(0.395, 0.405, 0.03, 0.03, sides=8, z=0.145)
     return weapon_root("sniper_rifle", frame, vents, cell, (0, 0.93, 0.045), extra=[("scope_lens", lens)],
                        trim=trim, grip=grip)
 
 
 def build_beam():
-    """Laser: gruby emiter z soczewką na froncie, cewki dookoła rury, chwyt pistoletowy."""
+    """Laser: gruby emiter z czaszą na froncie, cewki i żebra radiatora, moduł zasilania z oknem ogniwa."""
     frame = bm_merge(
-        tube(0.0, 0.3, 0.036, 0.042, sides=8, z=0.07),  # rura emitera
-        block(-0.03, 0.03, -0.1, 0.02, 0.03, 0.09, bevel=0.006),  # moduł zasilania z tyłu
-        block(-0.014, 0.014, 0.03, 0.09, 0.0, 0.012),  # kabłąk
-        tube(0.3, 0.34, 0.052, 0.058, sides=8, z=0.07),  # kołnierz lufy
+        lathe([(0.0, 0.034), (0.02, 0.037), (0.3, 0.042)], z=0.07, flat=False),  # rura emitera
+        slab([(-0.1, 0.035), (0.02, 0.035), (0.02, 0.09), (-0.068, 0.09), (-0.1, 0.07)], -0.024, 0.024,
+             ch=0.005),  # moduł zasilania
+        block(-0.014, 0.014, 0.03, 0.09, 0.0, 0.012, bevel=0.003),  # kabłąk
+        lathe([(0.296, 0.045), (0.312, 0.058), (0.336, 0.058), (0.342, 0.052)], z=0.07),  # czasza emitera
     )
-    grip = block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15))
+    grip = block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.004)
     trim = bm_merge(
-        block(-0.006, 0.006, 0.05, 0.16, 0.108, 0.128),  # grzebień
+        # żebra radiatora między cewkami
+        *[block(-0.03, 0.03, y, y + 0.01, 0.1, 0.124, taper_top=(0.7, 1.0)) for y in (0.075, 0.14, 0.205)],
+        block(-0.006, 0.006, 0.07, 0.25, 0.108, 0.116),  # grzbiet łączący żebra
         *[block(s * 0.05 - 0.004, s * 0.05 + 0.004, 0.03, 0.3, 0.064, 0.076) for s in (-1, 1)],  # pręty klatki cewek
-        tube(0.335, 0.345, 0.061, 0.061, sides=8, z=0.07),  # obręcz kołnierza
-        *_fpp_plate(0.0305, -0.09, 0.01, 0.045, 0.08),
+        band(0.33, 0.346, 0.061, 0.003, z=0.07),  # obręcz czaszy
+        slab([(-0.0905, 0.076), (0.02, 0.076), (0.02, 0.0908), (-0.068, 0.0908)], -0.0245, 0.0245,
+             ch=0.003),  # stalowa pokrywa modułu zasilania
+        *_fpp_plate(0.0245, -0.09, 0.01, 0.045, 0.08),
         _fpp_trigger(0.06, 0.0, depth=0.02),
     )
-    coils = bm_merge(*[tube(0.04 + i * 0.065, 0.062 + i * 0.065, 0.052, 0.052, sides=8, z=0.07) for i in range(4)])
+    coils = bm_merge(*[band(0.04 + i * 0.065, 0.062 + i * 0.065, 0.053, 0.003, z=0.07) for i in range(4)])
     lens = tube(0.34, 0.352, 0.044, 0.01, sides=8, z=0.07)
-    cell = block(-0.026, 0.026, -0.095, -0.03, 0.04, 0.08)
+    cell = slab([(-0.094, 0.04), (-0.03, 0.04), (-0.03, 0.08), (-0.068, 0.08), (-0.094, 0.064)], -0.026, 0.026)
     return weapon_root("beam", frame, coils, cell, (0, 0.36, 0.07), extra=[("lens", lens)], trim=trim, grip=grip)
 
 
 def build_emp_launcher():
-    """Granatnik EMP: gruba tuba, bęben, rozszerzony wylot i kondensator."""
+    """Granatnik EMP: gruba tuba, fazowany bęben, dzwon wylotu, kondensator na grzbiecie."""
     frame = bm_merge(
-        tube(0.04, 0.38, 0.05, 0.05, sides=8, z=0.07),  # tuba
-        tube(0.38, 0.45, 0.05, 0.07, sides=8, z=0.07),  # rozszerzony wylot
-        tube(-0.02, 0.1, 0.074, 0.074, sides=8, z=0.07),  # bęben
+        lathe([(0.03, 0.05), (0.375, 0.05)], z=0.07, flat=False),  # tuba (jak dawniej: dłoń podpierająca)
+        lathe([(0.37, 0.052), (0.39, 0.058), (0.43, 0.07), (0.45, 0.07)], z=0.07),  # dzwon wylotu
+        lathe([(-0.02, 0.06), (-0.008, 0.074), (0.088, 0.074), (0.1, 0.06)], z=0.07),  # bęben
     )
     grip = bm_merge(
-        block(-0.026, 0.026, -0.14, -0.02, -0.01, 0.09, taper_top=(0.9, 0.8)),  # kolba
+        _taper_x(slab([(-0.14, -0.01), (-0.114, -0.01), (-0.06, 0.03), (-0.02, 0.04), (-0.02, 0.09),
+                       (-0.14, 0.084)], -0.026, 0.026, ch=0.006), -0.03, -0.14, 0.8),  # kolba
+        block(-0.022, 0.022, -0.148, -0.134, -0.007, 0.086, bevel=0.004),  # gumowa stopka
         block(-0.02, 0.02, 0.0, 0.07, -0.12, 0.0, taper_top=(1.0, 1.2)),  # chwyt
         block(-0.014, 0.014, 0.1, 0.16, -0.02, 0.01),  # chwyt przedni
     )
     trim = bm_merge(
-        block(-0.007, 0.007, 0.2, 0.3, 0.125, 0.145),  # szyna
-        tube(-0.028, -0.018, 0.077, 0.077, sides=8, z=0.07),  # obręcze bębna
-        tube(0.098, 0.108, 0.077, 0.077, sides=8, z=0.07),
-        tube(0.44, 0.455, 0.073, 0.073, sides=8, z=0.07),  # krawędź wylotu
+        block(-0.007, 0.007, 0.2, 0.3, 0.112, 0.13, bevel=0.002),  # szyna
+        lathe([(-0.026, 0.03), (-0.022, 0.042), (-0.014, 0.042)], z=0.07),  # stalowa piasta bębna (widok z tyłu)
+        band(-0.004, 0.006, 0.077, 0.002, z=0.07),  # obręcze bębna
+        band(0.074, 0.084, 0.077, 0.002, z=0.07),
+        # komory bębna: cztery wypukłe pokrywy po bokach
+        *[block(s * 0.074 - 0.006, s * 0.074 + 0.006, 0.012, 0.066, 0.05, 0.09, bevel=0.003) for s in (-1, 1)],
+        band(0.44, 0.456, 0.073, 0.003, z=0.07),  # krawędź wylotu
         _fpp_trigger(0.05, 0.0),
     )
-    rings = bm_merge(*[tube(0.14 + i * 0.07, 0.16 + i * 0.07, 0.054, 0.054, sides=8, z=0.07) for i in range(3)])
-    cell = block(-0.018, 0.018, 0.0, 0.08, 0.142, 0.162)
+    rings = bm_merge(*[band(0.14 + i * 0.07, 0.16 + i * 0.07, 0.055, 0.003, z=0.07, flat=False)
+                       for i in range(3)])
+    cell = slab([(0.0, 0.142), (0.08, 0.142), (0.08, 0.154), (0.072, 0.162), (0.008, 0.162), (0.0, 0.154)],
+                -0.018, 0.018, ch=0.003)
     return weapon_root("emp_launcher", frame, rings, cell, (0, 0.46, 0.07), trim=trim, grip=grip)
 
 
@@ -992,8 +1136,12 @@ def build_blade_twin():
     """Rękojeść wariantu bliźniaczego: krótsza, z poprzeczną osłoną. Węzły jak plasma_blade."""
     root = empty("blade_twin", size=0.1)
     body, grip, trim = _fpp_hilt_parts(.19, .024, .09, .07, prongs=False)
-    body.append(bm_box(0.1, 0.012, 0.016, center=(0, 0.056, 0)))  # poprzeczna osłona
-    trim.append(bm_box(0.11, 0.006, 0.02, center=(0, 0.063, 0)))  # krawędź osłony
+    # poprzeczna osłona: fazowana belka zwężona ku końcom (sylwetka strzały z boku)
+    guard = bm_box(0.1, 0.012, 0.018, center=(0, 0.056, 0), bevel=0.003)
+    for v in guard.verts:
+        v.co.z *= 1 - 0.45 * abs(v.co.x) / 0.05
+    body.append(guard)
+    trim.append(bm_box(0.11, 0.006, 0.02, center=(0, 0.063, 0), taper_top=(0.85, 1.0), bevel=0.002))
     mesh_object("hilt", bm_merge(*body), "mat_interactive", parent=root)
     mesh_object("grip", bm_merge(*grip), "mat_interactive", parent=root)
     mesh_object("trim", bm_merge(*trim), "mat_interactive", parent=root)
@@ -1011,13 +1159,17 @@ def build_blade_staff():
     root = empty("blade_staff", size=0.1)
     hilt = bm_merge(
         tube(-0.37, 0.37, 0.019, 0.019, sides=8),
-        tube(0.37, 0.4, 0.024, 0.03, sides=8),  # gardła emiterów
-        tube(-0.4, -0.37, 0.03, 0.024, sides=8),
+        # gardła emiterów: kołnierz, stożek i fazowana krawędź
+        lathe([(0.362, 0.021), (0.372, 0.025), (0.392, 0.032), (0.398, 0.032), (0.402, 0.028)], flat=False),
+        lathe([(-0.402, 0.028), (-0.398, 0.032), (-0.392, 0.032), (-0.372, 0.025), (-0.362, 0.021)], flat=False),
+        # pancerne tuleje w połowie drzewca
+        lathe([(0.17, 0.019), (0.18, 0.024), (0.235, 0.024), (0.245, 0.019)], flat=False),
+        lathe([(-0.245, 0.019), (-0.235, 0.024), (-0.18, 0.024), (-0.17, 0.019)], flat=False),
     )
     mesh_object("hilt", hilt, "mat_interactive", parent=root)
     mesh_object("grip", tube(-0.06, 0.06, 0.024, 0.024, sides=8), "mat_interactive", parent=root)
     trim = bm_merge(
-        *[tube(y - 0.005, y + 0.005, 0.027, 0.027, sides=8) for y in (-0.065, 0.065, -0.25, 0.25)],
+        *[band(y - 0.005, y + 0.005, 0.027, 0.002, flat=False) for y in (-0.065, 0.065, -0.25, 0.25)],
         block(0.018, 0.03, -0.04, 0.04, -0.01, 0.01),  # przycisk
         *_fpp_prongs(0.034, 0.38, 0.425),
         *_fpp_prongs(0.034, -0.425, -0.38, sign=-1),
