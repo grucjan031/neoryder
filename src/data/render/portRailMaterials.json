@@ -1,0 +1,56 @@
+{
+  "ship_hull_paint": {
+    "texture": "ship_hull_paint",
+    "tint": "#2f3a4d",
+    "scale": 0.25,
+    "roughness": 0.6,
+    "metalness": 0.3,
+    "bump": 0.4,
+    "wetness": 0.5
+  },
+  "ship_deck_steel": {
+    "texture": "ship_deck_steel",
+    "tint": "#434d4c",
+    "scale": 0.5,
+    "roughness": 0.7,
+    "metalness": 0.35,
+    "bump": 0.5,
+    "wetness": 0.6
+  },
+  "rail_ballast": {
+    "texture": "rail_ballast",
+    "tint": "#57544f",
+    "scale": 1,
+    "roughness": 0.95,
+    "metalness": 0,
+    "bump": 1,
+    "wetness": 0.2
+  },
+  "rail_sleeper_concrete": {
+    "texture": "rail_sleeper_concrete",
+    "tint": "#6b717b",
+    "scale": 0.5,
+    "roughness": 0.85,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.3
+  },
+  "maglev_body_panel": {
+    "texture": "maglev_body_panel",
+    "tint": "#4b586c",
+    "scale": 0.25,
+    "roughness": 0.35,
+    "metalness": 0.45,
+    "bump": 0.3,
+    "wetness": 0.5
+  },
+  "snow": {
+    "texture": "snow",
+    "tint": "#c8d2e0",
+    "scale": 0.5,
+    "roughness": 0.95,
+    "metalness": 0,
+    "bump": 0.3,
+    "wetness": 0
+  }
+}

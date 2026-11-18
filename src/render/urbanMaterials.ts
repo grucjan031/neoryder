@@ -10,6 +10,7 @@ import type { WebGLProgramParametersWithUniforms } from 'three';
 import { z } from 'zod';
 import portData from '../data/render/portMaterials.json';
 import arenaData from '../data/render/arenaMaterials.json';
+import portRailData from '../data/render/portRailMaterials.json';
 import { tuning } from '../core/tuning';
 import { assetTexture, surfaceTexture } from './surfaceTextures';
 import type { SurfaceTexture } from './surfaceTextures';
@@ -42,9 +43,19 @@ const constructionPowerKinds = [
   'turbine_hall_floor',
 ] as const;
 
+/** Zestaw „port i zajezdnia” (ADR 0011): tekstury podepnie integracja, do tego czasu barwa zastępcza. */
+export const portRailKinds = [
+  'ship_hull_paint',
+  'ship_deck_steel',
+  'rail_ballast',
+  'rail_sleeper_concrete',
+  'maglev_body_panel',
+  'snow',
+] as const;
+
 const portLooks = z
   .record(
-    z.enum([...portKinds, ...arenaKinds, ...constructionPowerKinds]),
+    z.enum([...portKinds, ...arenaKinds, ...constructionPowerKinds, ...portRailKinds]),
     z.object({
       texture: z.enum([
         'container_corrugated_navy',
@@ -58,6 +69,7 @@ const portLooks = z
         'steel_grating',
         ...arenaKinds,
         ...constructionPowerKinds,
+        ...portRailKinds,
       ]),
       tint: z
         .string()
@@ -72,12 +84,13 @@ const portLooks = z
       flat: z.literal(true).optional(),
     }),
   )
-  .parse({ ...portData, ...arenaData });
+  .parse({ ...portData, ...arenaData, ...portRailData });
 
 export const urbanKinds = [
   ...portKinds,
   ...arenaKinds,
   ...constructionPowerKinds,
+  ...portRailKinds,
   'concrete',
   'asphalt',
   'metal',

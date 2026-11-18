@@ -258,12 +258,135 @@ const constructionPowerSlots: PortSlot[] = [
 export const CONSTRUCTION_POWER_PROP_MODELS = constructionPowerSlots.map(
   ({ model }) => model,
 );
+/** Widoki: 6 = budowa i elektrownia (osobny plac), 7 = nabrzeże, 8 = zajezdnia (zestaw „port i zajezdnia”). */
 const CONSTRUCTION_POWER_VIEW = 6;
 const CONSTRUCTION_POWER_LIGHTS = [
   portLight(-63, 10, 15, '#fff1d6', 155, 38),
   portLight(-26, 14, 8, '#3d7bff', 220, 60),
   portLight(32, 12, -2, '#fff1d6', 250, 65),
   portLight(62, 12, 20, '#ffae1a', 155, 42),
+];
+/** Zestaw „port i zajezdnia” (ADR 0011): kontenerowiec, suwnica STS, wagony, hala i zajezdnia maglev. */
+export const PORT_RAIL_PROP_MODELS = [
+  'port_ship_bow',
+  'port_ship_mid',
+  'port_ship_mid_hold',
+  'port_ship_stern',
+  'port_sts_crane',
+  'port_gangway',
+  'port_freight_boxcar',
+  'port_freight_boxcar_open',
+  'port_flatcar',
+  'port_warehouse_shell_panel',
+  'port_warehouse_roof_truss',
+  'rail_track_straight',
+  'rail_track_buffer',
+  'rail_maglev_car',
+  'rail_maglev_car_open',
+  'rail_maglev_head',
+  'rail_catenary_mast',
+  'rail_signal_gantry',
+  'rail_control_tower',
+  'rail_platform_canopy',
+  'rail_turntable',
+  'rail_snow_drift',
+  'rail_snow_drift_long',
+  'rail_snow_drift_patch',
+] as const;
+
+/**
+ * Plac zestawu daleko na północy (z ok. −440…−260), poza pierścieniami panoramy (r ≤ 170 m),
+ * więc wieżowce tła nie przecinają statku ani suwnicy. Współrzędne slotów są względne.
+ */
+const SET_ORIGIN = { x: 0, z: -330 };
+const HALF_TURN = Math.PI;
+/** Wagon maglev stoi na torze: y modelu = 0,65 m nad spodem toru (wierzch prowadnicy 1,0 m). */
+const MAGLEV_Y = 0.65;
+const PLATFORM_Y = MAGLEV_Y + 1.1;
+const setSlot = (
+  model: string,
+  x: number,
+  y: number,
+  z: number,
+  yaw = 0,
+): PortSlot => ({
+  model,
+  x: SET_ORIGIN.x + x,
+  y,
+  z: SET_ORIGIN.z + z,
+  yaw,
+});
+const TRACK_ZS = [22, 27, 32, 37];
+const setSlots: PortSlot[] = [
+  // Nabrzeże: kontenerowiec burtą przy krawędzi kei (z = −40), suwnica nad nim, trap do luki w relingu.
+  setSlot('port_ship_stern', -45, 0, -56),
+  setSlot('port_ship_mid', -15, 0, -56),
+  setSlot('port_ship_mid_hold', 15, 0, -56),
+  setSlot('port_ship_bow', 44, 0, -56),
+  ...[0, 1, 2, 3].flatMap((row) =>
+    [0, 1].map((tier) =>
+      setSlot(
+        `port_container_40_${['navy', 'olive', 'ochre', 'graphite'][(row + tier) % 4]}`,
+        -22.4,
+        12.8 + tier * CONTAINER_H,
+        -56 - 10.97 + row * 2.438,
+      ),
+    ),
+  ),
+  ...[5, 6, 7].map((row) =>
+    setSlot(
+      `port_container_40_${['graphite', 'navy', 'olive'][row % 3]}`,
+      -7.6,
+      12.8,
+      -56 - 10.97 + row * 2.438,
+    ),
+  ),
+  setSlot('port_sts_crane', 25, 0, -21, QUARTER),
+  setSlot('port_gangway', -2, 0, -39, HALF_TURN),
+  setSlot('port_freight_boxcar', -53, 0, 3),
+  setSlot('port_freight_boxcar_open', -39, 0, 3),
+  setSlot('port_flatcar', -25, 0, 3),
+  // Fragment hali 12 × 30 m: dwa moduły ścian po każdej stronie i dwie kratownice na 10 m.
+  ...[58, 64].flatMap((x) => [
+    setSlot('port_warehouse_shell_panel', x, 0, -30, HALF_TURN),
+    setSlot('port_warehouse_shell_panel', x, 0, 0),
+    setSlot('port_warehouse_roof_truss', x, 10, -15, QUARTER),
+  ]),
+  // Zajezdnia: cztery tory wzdłuż X, kozły na zachodzie, peron z wiatami przy torze z = 37.
+  ...TRACK_ZS.flatMap((z) => [
+    ...Array.from({ length: 9 }, (_, i) =>
+      setSlot('rail_track_straight', -30 + i * 12, 0, z),
+    ),
+    setSlot('rail_track_buffer', -38, 0, z, HALF_TURN),
+  ]),
+  setSlot('rail_maglev_car_open', 2.5, MAGLEV_Y, 37),
+  setSlot('rail_maglev_car', -22.5, MAGLEV_Y, 37),
+  setSlot('rail_maglev_head', 28.5, MAGLEV_Y, 37),
+  setSlot('rail_maglev_head', 0, MAGLEV_Y, 27, HALF_TURN),
+  ...[-30, -6, 18, 42].map((x) => setSlot('rail_catenary_mast', x, 0, 18.4)),
+  setSlot('rail_signal_gantry', 63, 0, 29.5),
+  ...[-12, 0, 12].map((x) =>
+    setSlot('rail_platform_canopy', x, PLATFORM_Y, 42.1),
+  ),
+  setSlot('rail_control_tower', 76, 0, 52),
+  setSlot('rail_turntable', -54, -1.5, 30),
+  setSlot('rail_snow_drift', -20, 0, 48),
+  setSlot('rail_snow_drift_long', 10, 0, 16.5),
+  setSlot('rail_snow_drift_patch', 40, 0, 47.5),
+  setSlot('rail_snow_drift', -62, 0, 47),
+  setSlot('rail_snow_drift_long', 66, 0, 45, QUARTER),
+  setSlot('rail_snow_drift_patch', 55, 0, 15),
+];
+const SET_LIGHTS = [
+  portLight(SET_ORIGIN.x - 15, 15, SET_ORIGIN.z - 48, '#fff1d6', 120, 30),
+  portLight(SET_ORIGIN.x - 43, 26, SET_ORIGIN.z - 46, '#fff1d6', 120, 30),
+  portLight(SET_ORIGIN.x + 25, 38, SET_ORIGIN.z - 45, '#fff1d6', 140, 36),
+  portLight(SET_ORIGIN.x - 39, 4, SET_ORIGIN.z + 6, '#ffae1a', 40, 12),
+  portLight(SET_ORIGIN.x + 61, 7, SET_ORIGIN.z - 15, '#fff1d6', 60, 18),
+  portLight(SET_ORIGIN.x, 5.5, SET_ORIGIN.z + 42, '#fff1d6', 60, 18),
+  portLight(SET_ORIGIN.x + 20, 4, SET_ORIGIN.z + 30, '#3d7bff', 50, 16),
+  portLight(SET_ORIGIN.x + 76, 13, SET_ORIGIN.z + 52, '#fff1d6', 60, 18),
+  portLight(SET_ORIGIN.x + 63, 6, SET_ORIGIN.z + 30, '#ffae1a', 40, 14),
 ];
 
 const LIGHT_COLORS = ['#ffae1a', '#8a5cff', '#6dff4a', '#3d7bff', '#fff1d6'];
@@ -276,6 +399,14 @@ const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
   { from: [-88, 60, 142], to: [-60, 0, 25] },
   { from: [-63, 60, 150], to: [-35, 0, 35] },
   { from: [0, 55, 122], to: [-5, 45, -19] },
+  {
+    from: [SET_ORIGIN.x + 60, 45, SET_ORIGIN.z + 55],
+    to: [SET_ORIGIN.x - 5, 8, SET_ORIGIN.z - 45],
+  },
+  {
+    from: [SET_ORIGIN.x - 75, 30, SET_ORIGIN.z + 85],
+    to: [SET_ORIGIN.x + 5, 2, SET_ORIGIN.z + 32],
+  },
 ];
 const DEFAULT_YAW_DEG = 35;
 const FILL_RATIO = 0.65;
@@ -341,7 +472,9 @@ export class CityPropsTest implements Scene {
       this.buildStreet();
       if (requested) {
         this.focus = slots.find((s) => s.model === requested);
-        this.portFocus = portSlots.find((s) => s.model === requested);
+        this.portFocus =
+          portSlots.find((s) => s.model === requested) ??
+          setSlots.find((s) => s.model === requested);
         if (!this.focus && !this.portFocus)
           console.warn(`city-props-test: nieznany model "${requested}"`);
       }
@@ -368,6 +501,7 @@ export class CityPropsTest implements Scene {
       'quay_lines',
     );
     this.box([7, 0.2, YARD.half * 2], [YARD.x1 + 5.1, -1.85, 0], 'cable');
+    this.buildSetGround();
     for (const side of [-1, 1]) {
       this.box([2.4, 0.3, length], [side * 4.2, -0.15, 0], 'concrete');
       this.box([0.12, 0.15, length], [side * 3.06, 0.075, 0], 'trim');
@@ -382,9 +516,9 @@ export class CityPropsTest implements Scene {
   }
 
   private layout(): DressingLayout {
-    const lights = [
-      ...(this.constructionPower ? CONSTRUCTION_POWER_LIGHTS : PORT_LIGHTS),
-    ];
+    const lights = this.constructionPower
+      ? [...CONSTRUCTION_POWER_LIGHTS]
+      : [...PORT_LIGHTS, ...SET_LIGHTS];
     for (let i = 0; !this.constructionPower && i < 8; i++) {
       lights.push({
         position: { x: (i % 2 ? 1 : -1) * 3.4, y: 4, z: -19 + i * 5.4 },
@@ -437,7 +571,7 @@ export class CityPropsTest implements Scene {
       ? this.portFocus
         ? [this.portFocus]
         : constructionPowerSlots
-      : portSlots;
+      : [...portSlots, ...setSlots];
     await Promise.all([
       ...(this.constructionPower ? [] : slots).map(async (s) => {
         const model = await cloneCityModel(s.model);
@@ -492,6 +626,23 @@ export class CityPropsTest implements Scene {
     this.cameraPos.copy(center).addScaledVector(dir.normalize(), dist);
     this.cameraPos.y = Math.max(this.cameraPos.y, 0.4);
     this.hasPropCamera = true;
+  }
+
+  /** Podłoże placu zestawu: keja, woda, plac zajezdni z otworem na obrotnicę i peron. */
+  private buildSetGround(): void {
+    const { x, z } = SET_ORIGIN;
+    this.box([150, 0.3, 50], [x + 5, -0.15, z - 15], 'quay_lines');
+    this.box([150, 0.2, 70], [x + 5, -0.15, z - 75], 'cable');
+    // Plac zajezdni z = 10…70 bez kwadratu 24 × 24 m pod obrotnicą (środek x = −54, z = 30).
+    this.box([150, 0.3, 8], [x + 5, -0.15, z + 14], 'concrete');
+    this.box([150, 0.3, 28], [x + 5, -0.15, z + 56], 'concrete');
+    this.box([4, 0.3, 24], [x - 68, -0.15, z + 30], 'concrete');
+    this.box([122, 0.3, 24], [x + 19, -0.15, z + 30], 'concrete');
+    this.box(
+      [42, PLATFORM_Y, 6.2],
+      [x + 1, PLATFORM_Y / 2, z + 42.15],
+      'concrete',
+    );
   }
 
   private box(size: V3, position: V3, kind: MaterialKind): void {

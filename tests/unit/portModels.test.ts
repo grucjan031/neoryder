@@ -11,6 +11,7 @@ import {
 import type { Color, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { expect, it } from 'vitest';
+import { PORT_RAIL_PROP_MODELS } from '../../src/scenes/cityPropsTest';
 
 const folder = join(__dirname, '../../public/assets/models/city');
 const textures = join(__dirname, '../../public/assets/textures');
@@ -148,7 +149,12 @@ function reserved(color: Color): boolean {
 }
 
 it('folder miasta zawiera komplet modeli portu', () => {
-  const port = readdirSync(folder).filter((file) => file.startsWith('port_'));
+  // Zestaw „port i zajezdnia” (statek, suwnica STS, wagony, hala) sprawdza cityModels.test.ts.
+  const set: readonly string[] = PORT_RAIL_PROP_MODELS;
+  const port = readdirSync(folder).filter(
+    (file) =>
+      file.startsWith('port_') && !set.includes(file.replace('.glb', '')),
+  );
   expect(port.sort()).toEqual(names.map((n) => `${n}.glb`).sort());
 });
 
