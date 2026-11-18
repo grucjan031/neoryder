@@ -1,0 +1,146 @@
+{
+  "tool": "built-in imagegen",
+  "calls": 17,
+  "regenerations": 0,
+  "python": "3.12.10",
+  "pillow": "13.0.0",
+  "numpy": "2.5.4",
+  "files": [
+    {
+      "id": "komiks_concrete",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "6be7bda450638bdad33393bd002dc9a0061a0162fbdb183d641dbb316399468d"
+    },
+    {
+      "id": "komiks_asphalt",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "a7dfe516df08305a92b53dfd72a354adcd79c562810fd1aa9c36f973598c0a11"
+    },
+    {
+      "id": "komiks_brick",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "855afe824a8dd0fb82388ddab42da810284a717bd0f94ba41c9b85663a453a6e"
+    },
+    {
+      "id": "komiks_metal_panel",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "a08e5a5b31e1eb85966ccc92eb5ec8aff9b1c2bbbf2ce20ad1ca0da1037c2066"
+    },
+    {
+      "id": "komiks_rust_metal",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "fa6400eac16c967284f4cab81d2ea31bce820253a9a4af6244f69e5e6b42882c"
+    },
+    {
+      "id": "komiks_corrugated",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "ee3411bf058421b094f25020cc84e60713272421c397edcf02766c524ccbed09"
+    },
+    {
+      "id": "komiks_plaster",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "90c3ff865c5f5ed4d32eda2277a837febbbcf5d822858ed4215a1a50be5689d1"
+    },
+    {
+      "id": "komiks_tiles_wall",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "2800322af52a57a910e9247d4240a92861d9514ae78fbd8445791d1b235e6973"
+    },
+    {
+      "id": "komiks_wood_planks",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "31cbdd1a02e51d636dd4e5d09a477d541c710a721077c86400d88259bab96e89"
+    },
+    {
+      "id": "komiks_tread_plate",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "8c8768edf3d5f77f62e19a520bbd60a6d432fa8bac75ecb0780cdb696306babb"
+    },
+    {
+      "id": "komiks_roof_tar",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "963a59d2caed55596f871ea1618be49f7bac743662183ea514897ee43b6cdeec"
+    },
+    {
+      "id": "komiks_paving",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "c30b392a76dc3740b7f23666083034d1dbbad46ed2c76c626d6e1428b04869f2"
+    },
+    {
+      "id": "komiks_crack",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "317682b0785fb4b83625dded9b5f00de0370ee290429a298f33af46811b4cdfb"
+    },
+    {
+      "id": "komiks_ink_splatter",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "98abdb0ef8eafaeb7b3ee0a8744bc8cc5b226288e6b8c97214d98839e736e7bd"
+    },
+    {
+      "id": "komiks_grime_corner",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "55641ba72ae1fea42f0e427001c43fcf391f77c7dd7b84a1212203d0d2df0dfe"
+    },
+    {
+      "id": "komiks_chipped_paint",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "9e577c8554ab73099e465b82774d78b0c7749fb4088698e2d56e2d5247d9b28b"
+    },
+    {
+      "id": "komiks_hatch_patch",
+      "size": [
+        1254,
+        1254
+      ],
+      "sha256": "b06642987df212b4cb026d0f02e033541d6c7c04967b63051c06257f3732a157"
+    }
+  ]
+}
