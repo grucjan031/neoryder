@@ -717,3 +717,26 @@ Domyślnie działa wariant `b` z `src/render/lookPresets.ts` (nakładany po moty
 - Porównania: `?look=a` (sam tusz), `?look=c` (z kreskowaniem i plamami farby), `?look=off`
   (dawny wygląd). Koszt: bez zmiany FPS w scenach testowych (kryjówka, uliczka, 3 areny Przejęcia, M01).
 - Pakiet tekstur „komiks” (`public/assets/textures/komiks/`) czeka na podpięcie w arenach.
+
+### Czytelność wrogów z daleka — poświata krawędzi (`src/render/enemyRim.ts`)
+
+Ciemne kombinezony wrogów na ciemnych, zamglonych arenach zlewały się z tłem (widać było
+tylko świecące akcenty). `mat_enemy` i `mat_enemy_dark` mają w `onBeforeCompile` poświatę
+krawędzi (fresnel) w czerwieni wroga, rosnącą z odległością od kamery:
+
+- z bliska siła i wykładnik z motywu (`tuning.render.enemyRimStrength`/`enemyRimPower`,
+  motyw biały = 0, więc bez poświaty); na kombinezonie mnożnik 0,6 (płyty odcinają się od niego);
+- od `tuning.vfx.enemyRimNearM` do `enemyRimFarM` siła rośnie do `× enemyRimFarGain`, wykładnik
+  spada do `enemyRimFarPower` (szersza krawędź), a bryłę wypełnia płaska czerwień
+  `enemyRimFarFill` — z 20–30 m wróg jest czerwoną sylwetką z tuszem, z 5 m wygląda jak dotąd;
+- mgła jest w kompozycji (`outline.ts`, po materiale), więc emisja jest z góry dzielona przez
+  `1 − mgła` (ta sama krzywa `fogNear/fogFar/fogStrength` + przybliżona mgła wysokościowa na
+  wysokości oka 1,6 m), z dolną granicą 0,25; `enemyRimFogCompensation` (0..1) to wyłącza;
+- `tuning.vfx.enemyDarkShade` (0,3, wcześniej stałe 0,16) rozjaśnia kombinezon, nadal jako
+  nasycona czerwień, więc pasy cienia stylu go nie spłaszczają.
+
+Wszystko na wspólnych uniformach (`syncEnemyRim()` w `syncMaterials()`), klucze programu
+stałe: `enemyRim1.00` i `enemyRim0.60`. Poświata jest częścią materiału, więc działa też przy
+`?look=off`. Zapowiedź ciosu nie do zablokowania (bursztyn) klonuje tylko materiały
+`mat_enemy_glow` (wizjer, końcówka pałki, rdzeń, ostrze), które poświaty nie mają.
+`enemyRimAt()` to odpowiednik shadera w TS do testów (`tests/unit/enemyRim.test.ts`).
