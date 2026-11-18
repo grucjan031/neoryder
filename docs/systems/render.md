@@ -183,9 +183,9 @@ culling, więcej trójkątów (hala +9%, peron B +26%).
 
 | Miejsce (medium) | calls przed | calls po | trójkąty przed → po |
 | ---------------- | ----------: | -------: | ------------------: |
-| hala             |         815 |      656 |      171k → 187k    |
-| peron B          |         304 |      279 |       75k → 95k     |
-| jadłodajnia      |         236 |      222 |       92k → 100k    |
+| hala             |         815 |      656 |         171k → 187k |
+| peron B          |         304 |      279 |           75k → 95k |
+| jadłodajnia      |         236 |      222 |          92k → 100k |
 
 Większe przebudowy (nie wykonane): scalanie akcesoriów NPC per kość i materiał (ok. −40% wywołań akcesoriów, w hali rzędu −100 we wszystkich przebiegach, wymaga zmiany testów liczących akcesoria i własnej geometrii do zwolnienia); udostępnienie
 materiału stroju między NPC (bez scalania nic nie daje); instancje/atlas dla plakatów HubDecor (ok. −30);
@@ -699,3 +699,21 @@ instancjami w komórkach. Zwalnianie obejmuje bufory InstancedMesh.
 Kontrakty i ograniczenia: [weather.md](weather.md), [arenas.md](arenas.md).
 Pomiar strukturalny portu: 286 → 123 siatek. Pomiar wywołań GPU pozostaje
 zablokowany przez sandbox i nie jest zastępowany liczbą siatek.
+
+## Styl komiksowy Neon Noir (domyślny od 18 XI 2026)
+
+Decyzja właściciela: gra przechodzi na styl inspirowany Borderlands z elementami Neon Noir.
+Domyślnie działa wariant `b` z `src/render/lookPresets.ts` (nakładany po motywie przez
+`reapplyLook()`, bo motywy nadpisują kontur):
+
+- **Tusz:** ostra maska krawędzi 1 px (osobny przebieg) pogrubiona dylatacją w kompozycji
+  (`inkWidth`, grubiej blisko kamery `inkNearScale`); broń i ręce z cieńszym tuszem; na neonach
+  i jasnych efektach tusz zanika; przy gęstym detalu (kratki, siatki) zostaje sama linia 1 px.
+- **Płaskie cienie:** `celBands`/`celStrength` przyciemniają tylko cienie i półcienie
+  (jasność < ~0,5), z krótkim miękkim przejściem między pasmami — światła lamp zostają miękkie.
+  Nasycone i jasne piksele (neony, wrogowie, efekty) są nietknięte.
+- **Bez konturu:** obiekty z `userData.noOutline` oraz automatycznie przezroczyste materiały
+  addytywne albo bez zapisu głębi (poświaty, stożki światła) — `src/render/noOutline.ts`.
+- Porównania: `?look=a` (sam tusz), `?look=c` (z kreskowaniem i plamami farby), `?look=off`
+  (dawny wygląd). Koszt: bez zmiany FPS w scenach testowych (kryjówka, uliczka, 3 areny Przejęcia, M01).
+- Pakiet tekstur „komiks” (`public/assets/textures/komiks/`) czeka na podpięcie w arenach.
