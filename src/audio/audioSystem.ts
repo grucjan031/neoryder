@@ -46,6 +46,10 @@ interface EventFacts {
   team?: Team;
   speed?: number;
   overheatRising?: boolean;
+  heatWarningRising?: boolean;
+  lowHealthRising?: boolean;
+  telegraphKind?: string;
+  positiveDelta?: boolean;
   point?: Vec3 | null;
 }
 
@@ -62,6 +66,8 @@ export class AudioSystem {
   private readonly voices: Voice[] = [];
   private readonly lastPlayed = new Map<string, number>();
   private readonly overheated = new Map<EntityId, boolean>();
+  private heatWarning = false;
+  private lowHealth = false;
   private playerId: EntityId | null = null;
   private readonly off: (() => void)[] = [];
   private unlockCleanup: (() => void) | null = null;
@@ -84,10 +90,27 @@ export class AudioSystem {
     this.rng = new Rng(opts.seed ?? 'audio');
     this.off.push(
       bus.on('entity_spawned', ({ id, kind }) => {
-        if (kind === 'player') this.playerId = id;
+        if (kind === 'player') {
+          this.resetAlerts();
+          this.playerId = id;
+        }
       }),
       bus.on('entity_despawned', ({ id }) => {
-        if (id === this.playerId) this.playerId = null;
+        this.overheated.delete(id);
+        if (id === this.playerId) {
+          this.playerId = null;
+          this.resetAlerts();
+        }
+      }),
+      bus.on('scene_loaded', () => {
+        this.resetAlerts();
+      }),
+      bus.on('run_started', () => this.resetAlerts()),
+      bus.on('weapon_switched', ({ owner }) => {
+        if (owner === this.playerId) {
+          this.heatWarning = false;
+          this.overheated.delete(owner);
+        }
       }),
     );
     for (const event of SFX_EVENTS)
@@ -273,6 +296,13 @@ export class AudioSystem {
 
   // ------------------------------------------------------------------ reguły
 
+  private resetAlerts(): void {
+    this.overheated.clear();
+    this.heatWarning = false;
+    this.lowHealth = false;
+    this.lastPlayed.clear();
+  }
+
   private onEvent(event: SfxEvent, payload: GameEvents[SfxEvent]): void {
     const facts = this.facts(event, payload);
     for (const rule of this.def.rules) {
@@ -285,6 +315,25 @@ export class AudioSystem {
 
   private facts(event: SfxEvent, p: GameEvents[SfxEvent]): EventFacts {
     switch (event) {
+      case 'enemy_telegraph':
+        return { telegraphKind: (p as GameEvents['enemy_telegraph']).kind };
+      case 'currency_changed':
+        return {
+          positiveDelta: (p as GameEvents['currency_changed']).delta > 0,
+        };
+      case 'health_changed': {
+        const e = p as GameEvents['health_changed'];
+        const alerts = this.def.alerts;
+        if (e.id !== this.playerId || !alerts || e.max <= 0) return {};
+        const ratio = e.current / e.max;
+        const was = this.lowHealth;
+        if (ratio >= alerts.healthReset) this.lowHealth = false;
+        else if (ratio < alerts.healthThreshold) this.lowHealth = true;
+        return {
+          actor: e.id,
+          lowHealthRising: e.current > 0 && !was && this.lowHealth,
+        };
+      }
       case 'hub_prop_used':
         return { kind: (p as GameEvents['hub_prop_used']).kind };
       case 'hub_fauna_sound': {
@@ -321,9 +370,21 @@ export class AudioSystem {
       }
       case 'heat_changed': {
         const e = p as GameEvents['heat_changed'];
+        if (e.id !== this.playerId || e.max <= 0) return {};
         const was = this.overheated.get(e.id) ?? false;
         this.overheated.set(e.id, e.overheated);
-        return { actor: e.id, overheatRising: e.overheated && !was };
+        const alerts = this.def.alerts;
+        const warned = this.heatWarning;
+        if (alerts) {
+          if (e.current / e.max <= alerts.heatReset) this.heatWarning = false;
+          else if (e.current / e.max >= alerts.heatThreshold)
+            this.heatWarning = true;
+        }
+        return {
+          actor: e.id,
+          overheatRising: e.overheated && !was,
+          heatWarningRising: !e.overheated && !warned && this.heatWarning,
+        };
       }
       default:
         return {};
@@ -332,6 +393,18 @@ export class AudioSystem {
 
   private matches(when: SfxWhen, f: EventFacts): boolean {
     const player = this.playerId;
+    for (const key of [
+      'heatWarningRising',
+      'lowHealthRising',
+      'positiveDelta',
+    ] as const)
+      if (when[key] !== undefined && (f[key] ?? false) !== when[key])
+        return false;
+    if (
+      when.telegraphKind !== undefined &&
+      f.telegraphKind !== when.telegraphKind
+    )
+      return false;
     if (when.kind !== undefined && f.kind !== when.kind) return false;
     if (when.faunaKind !== undefined && when.faunaKind !== f.faunaKind)
       return false;
