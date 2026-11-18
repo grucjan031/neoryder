@@ -35,6 +35,9 @@ const weaponFields = {
   aimFovScale: z.number().finite().min(0.2).max(1).optional(),
   /** Chwyt prawej i podpierającej dłoni dla modelu FPP; brak = chwyt domyślny. */
   grip: weaponGripSchema.optional(),
+  aimInScale: z.number().finite().positive().optional(),
+  aimSpreadScale: z.number().finite().positive().optional(),
+  aimSensitivityScale: z.number().finite().positive().optional(),
   statuses: z
     .array(
       z.object({

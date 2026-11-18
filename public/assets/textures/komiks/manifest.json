@@ -1,0 +1,172 @@
+[
+  {
+    "id": "komiks_concrete",
+    "category": "surfaces",
+    "path": "surfaces/komiks_concrete.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#55595f",
+    "description": "Beton z pęknięciami, zaciekami i tuszowanymi ubytkami",
+    "bytes": 75058
+  },
+  {
+    "id": "komiks_asphalt",
+    "category": "surfaces",
+    "path": "surfaces/komiks_asphalt.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#26282a",
+    "description": "Asfalt z rysowanym kruszywem i spękanymi łatami",
+    "bytes": 114386
+  },
+  {
+    "id": "komiks_brick",
+    "category": "surfaces",
+    "path": "surfaces/komiks_brick.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#545648",
+    "description": "Cegły grafitowo-oliwkowe z czarną fugą i kreskowaniem",
+    "bytes": 86544
+  },
+  {
+    "id": "komiks_metal_panel",
+    "category": "surfaces",
+    "path": "surfaces/komiks_metal_panel.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#272e32",
+    "description": "Stalowe panele z nitami i rysowanymi odpryskami",
+    "bytes": 56614
+  },
+  {
+    "id": "komiks_rust_metal",
+    "category": "surfaces",
+    "path": "surfaces/komiks_rust_metal.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#35373b",
+    "description": "Skorodowany metal z bursztynowymi plamami",
+    "bytes": 107768
+  },
+  {
+    "id": "komiks_corrugated",
+    "category": "surfaces",
+    "path": "surfaces/komiks_corrugated.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#5e6777",
+    "description": "Blacha falista z grubym tuszem w rowkach",
+    "bytes": 98080
+  },
+  {
+    "id": "komiks_plaster",
+    "category": "surfaces",
+    "path": "surfaces/komiks_plaster.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#616366",
+    "description": "Drobny szary tynk z odpryskami odsłaniającymi jaśniejszą warstwę",
+    "bytes": 146814
+  },
+  {
+    "id": "komiks_tiles_wall",
+    "category": "surfaces",
+    "path": "surfaces/komiks_tiles_wall.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#69717a",
+    "description": "Ceramiczne płytki ścienne z popękaną glazurą",
+    "bytes": 98138
+  },
+  {
+    "id": "komiks_wood_planks",
+    "category": "surfaces",
+    "path": "surfaces/komiks_wood_planks.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#3c3528",
+    "description": "Ciemnobrązowe deski o bursztynowym tonie z rysowanymi słojami",
+    "bytes": 67348
+  },
+  {
+    "id": "komiks_tread_plate",
+    "category": "surfaces",
+    "path": "surfaces/komiks_tread_plate.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#30343e",
+    "description": "Stalowa blacha ryflowana z kreskowaniem",
+    "bytes": 114044
+  },
+  {
+    "id": "komiks_roof_tar",
+    "category": "surfaces",
+    "path": "surfaces/komiks_roof_tar.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#212123",
+    "description": "Papa dachowa z łatami i śladami zużycia",
+    "bytes": 54204
+  },
+  {
+    "id": "komiks_paving",
+    "category": "surfaces",
+    "path": "surfaces/komiks_paving.webp",
+    "width": 1024,
+    "height": 1024,
+    "dominantColor": "#44464a",
+    "description": "Kamienna kostka z inkowanymi fugami",
+    "bytes": 76310
+  },
+  {
+    "id": "komiks_crack",
+    "category": "decals",
+    "path": "decals/komiks_crack.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#060a1d",
+    "description": "Rozgałęzione pęknięcie tuszem",
+    "bytes": 18934
+  },
+  {
+    "id": "komiks_ink_splatter",
+    "category": "decals",
+    "path": "decals/komiks_ink_splatter.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#06091b",
+    "description": "Rozbryzg czarnego tuszu",
+    "bytes": 22262
+  },
+  {
+    "id": "komiks_grime_corner",
+    "category": "decals",
+    "path": "decals/komiks_grime_corner.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#060b25",
+    "description": "Narożny brud z rysowanymi zaciekami",
+    "bytes": 19498
+  },
+  {
+    "id": "komiks_chipped_paint",
+    "category": "decals",
+    "path": "decals/komiks_chipped_paint.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#fedc33",
+    "description": "Odpryski bursztynowej farby z czarnym konturem",
+    "bytes": 30736
+  },
+  {
+    "id": "komiks_hatch_patch",
+    "category": "decals",
+    "path": "decals/komiks_hatch_patch.webp",
+    "width": 512,
+    "height": 512,
+    "dominantColor": "#07091b",
+    "description": "Kreskowanie tuszem do cieni",
+    "bytes": 56320
+  }
+]

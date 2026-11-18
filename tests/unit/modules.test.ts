@@ -30,11 +30,13 @@ const loadout = (weaponId: string, ids: string[]) =>
   });
 
 describe('moduły broni', () => {
-  it('ładuje cztery moduły, waliduje prefiks odblokowań, operacje i brak target', () => {
+  it('ładuje sześć modułów, waliduje prefiks odblokowań, operacje i brak target', () => {
     expect([...moduleDefinitions.keys()].sort()).toEqual([
+      'collimator',
       'incendiary',
       'pierce',
       'ricochet',
+      'scope',
       'superconductor',
     ]);
     const sample = moduleDefinitions.get('incendiary')!;
@@ -80,7 +82,7 @@ describe('moduły broni', () => {
     }
   });
 
-  it('Przebicie dodaje cel pistoletowi i zachowuje przebicie snajperki oraz spadek obrażeń', () => {
+  it('Przebicie dodaje cel pistoletowi i zachowuje przebicie snajperki oraz spadek obrażeń; konflikt slotu jest pomijany', () => {
     for (const id of ['pistol', 'sniper']) {
       const choice = loadout(id, ['pierce', 'ricochet']);
       const result = resolveLoadout(choice, modulePatches(choice)).weapons[0]!;
@@ -97,9 +99,9 @@ describe('moduły broni', () => {
         dir: { x: 0, y: 0, z: -1 },
       });
       expect(spawn.mock.calls[0]![0]).toMatchObject({
-        ricochets: 1,
         pierce: { count: base.pierceCount + 1, falloff: base.pierceFalloff },
       });
+      expect(spawn.mock.calls[0]![0].ricochets ?? 0).toBe(0);
     }
   });
 
@@ -114,20 +116,29 @@ describe('moduły broni', () => {
   });
 
   it('łatki mają cel wybranej broni, respektują kolejność slotów i nie mutują modułu', () => {
-    const choice = loadout('pistol', ['ricochet', 'pierce']);
-    const original = structuredClone(moduleDefinitions.get('ricochet'));
+    const choice = loadout('pistol', ['incendiary', 'pierce']);
+    const original = structuredClone(moduleDefinitions.get('incendiary'));
     const patches = modulePatches(choice);
     expect(patches.map(({ target, path }) => [target, path])).toEqual([
-      ['weapon:pistol', 'ricochets'],
       ['weapon:pistol', 'pierceCount'],
+      ['weapon:pistol', 'statuses'],
     ]);
-    patches[0]!.value = 99;
-    expect(moduleDefinitions.get('ricochet')).toEqual(original);
-    expect(() =>
+    patches[1]!.value = 99;
+    expect(moduleDefinitions.get('incendiary')).toEqual(original);
+    expect(
       modulePatches({ weapons: ['pistol'], modules: { pistol: ['unknown'] } }),
-    ).toThrow('Nieznany moduł');
-    expect(() =>
+    ).toEqual([]);
+    expect(
       modulePatches({ weapons: ['beam'], modules: { beam: ['ricochet'] } }),
-    ).toThrow('nie pasuje');
+    ).toEqual([]);
+    expect(
+      modulePatches({
+        weapons: ['pistol'],
+        modules: {
+          pistol: ['pierce', 'pierce', 'ricochet'],
+          blaster: ['incendiary'],
+        },
+      }),
+    ).toEqual(modulePatches(loadout('pistol', ['pierce'])));
   });
 });

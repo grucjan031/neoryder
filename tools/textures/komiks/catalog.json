@@ -1,0 +1,155 @@
+[
+  {
+    "id": "komiks_concrete",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Beton z pęknięciami, zaciekami i tuszowanymi ubytkami",
+    "subject": "poured concrete wall, irregular large concrete fields with fine branching cracks, angular chipped edges, drawn rain grime.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Subject: poured concrete wall, irregular large concrete fields with fine branching cracks, angular chipped edges, drawn rain grime. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs drawn with a brush, NOT photographic texture and no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344 and steel blue #56627a with near-black ink #080d16. No bright accents needed. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material, no framing, no perspective, no vignette, no central composition. Make opposing edges match seamlessly in BOTH axes, continuous irregular texture extending outside every edge. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene, props. Do not copy any specific game's assets or style; original comic interpretation."
+  },
+  {
+    "id": "komiks_asphalt",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Asfalt z rysowanym kruszywem i spękanymi łatami",
+    "subject": "dark asphalt road aggregate, irregular small angular stone chips in flat charcoal, a few branching black fissures and broad patched asphalt shapes. No road markings, no reflections, no puddles.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: dark asphalt road aggregate, irregular small angular stone chips in flat charcoal, a few branching black fissures and broad patched asphalt shapes. No road markings, no reflections, no puddles."
+  },
+  {
+    "id": "komiks_brick",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Cegły grafitowo-oliwkowe z czarną fugą i kreskowaniem",
+    "subject": "old cool blue-gray brickwork in evenly staggered running bond, chunky irregular bricks, deep near-black mortar, inked chipped corners and small crosshatched recesses. No red or terracotta bricks.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: old cool blue-gray brickwork in evenly staggered running bond, chunky irregular bricks, deep near-black mortar, inked chipped corners and small crosshatched recesses. No red or terracotta bricks."
+  },
+  {
+    "id": "komiks_metal_panel",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Stalowe panele z nitami i rysowanymi odpryskami",
+    "subject": "industrial painted sheet metal rectangular panels, regular panel seams, small rivets, angular hand-inked scratches and worn paint chips. Sparse tiny amber #ffae1a paint flecks only. No labels, no hazard signs.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: industrial painted sheet metal rectangular panels, regular panel seams, small rivets, angular hand-inked scratches and worn paint chips. Sparse tiny amber #ffae1a paint flecks only. No labels, no hazard signs."
+  },
+  {
+    "id": "komiks_rust_metal",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Skorodowany metal z bursztynowymi plamami",
+    "subject": "dark weathered steel with scattered jagged flat ochre-amber #ffae1a oxidation islands outlined in black, drawn chips, short rain streaks and black hatching. Oxidation restricted to amber and dark desaturated ochre, absolutely no red or orange-red rust. Cool dark steel remains dominant.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: dark weathered steel with scattered jagged flat ochre-amber #ffae1a oxidation islands outlined in black, drawn chips, short rain streaks and black hatching. Oxidation restricted to amber and dark desaturated ochre, absolutely no red or orange-red rust. Cool dark steel remains dominant."
+  },
+  {
+    "id": "komiks_corrugated",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Blacha falista z grubym tuszem w rowkach",
+    "subject": "vertical corrugated sheet metal, regular narrow parallel ridges continuing through top and bottom edges, repeated steel-blue flat highlight strips and near-black ink troughs, sparse angular scratches and hand-drawn grime. No perspective or cast shadows.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: vertical corrugated sheet metal, regular narrow parallel ridges continuing through top and bottom edges, repeated steel-blue flat highlight strips and near-black ink troughs, sparse angular scratches and hand-drawn grime. No perspective or cast shadows."
+  },
+  {
+    "id": "komiks_plaster",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Drobny szary tynk z odpryskami odsłaniającymi jaśniejszą warstwę",
+    "subject": "old cold blue-gray wall plaster with broad peeling flat islands, thick black ink defining lifted chipped edges, hairline cracks and hatch marks in exposed recesses. No brickwork, no bright white wall, no photographic pores.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: old cold blue-gray wall plaster with broad peeling flat islands, thick black ink defining lifted chipped edges, hairline cracks and hatch marks in exposed recesses. No brickwork, no bright white wall, no photographic pores."
+  },
+  {
+    "id": "komiks_tiles_wall",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ceramiczne płytki ścienne z popękaną glazurą",
+    "subject": "square ceramic wall tiles in a regular 8 by 8 repeating grid, charcoal grout, desaturated cool steel-blue glaze, scattered chipped corners and thin black cracks, hand-drawn dirt along grout and sparse hatch marks. Keep exact aligned square grid at edges.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: square ceramic wall tiles in a regular 8 by 8 repeating grid, charcoal grout, desaturated cool steel-blue glaze, scattered chipped corners and thin black cracks, hand-drawn dirt along grout and sparse hatch marks. Keep exact aligned square grid at edges."
+  },
+  {
+    "id": "komiks_wood_planks",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Ciemnobrązowe deski o bursztynowym tonie z rysowanymi słojami",
+    "subject": "horizontal weathered wood planks painted dark navy-gray, bold near-black seams, stylized angular grain and a few simple knots, flat steel-blue chips and ink hatching. Wood must be recognizably wood yet cold navy and graphite, no warm brown or red tones.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: horizontal weathered wood planks painted dark navy-gray, bold near-black seams, stylized angular grain and a few simple knots, flat steel-blue chips and ink hatching. Wood must be recognizably wood yet cold navy and graphite, no warm brown or red tones."
+  },
+  {
+    "id": "komiks_tread_plate",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Stalowa blacha ryflowana z kreskowaniem",
+    "subject": "industrial steel diamond tread plate, repeating raised short diagonal lozenges in alternating orientation, dark cool steel-blue base, thick ink edging and flat steel-blue wear on ridge tops, drawn scratches and grime in recesses. Tile the regular diamond pattern perfectly in both directions.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: industrial steel diamond tread plate, repeating raised short diagonal lozenges in alternating orientation, dark cool steel-blue base, thick ink edging and flat steel-blue wear on ridge tops, drawn scratches and grime in recesses. Tile the regular diamond pattern perfectly in both directions."
+  },
+  {
+    "id": "komiks_roof_tar",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Papa dachowa z łatami i śladami zużycia",
+    "subject": "dark graphite roofing tar membrane, irregular broad overlapping horizontal strips and a few rectangular tar repair patches, thick near-black inked overlap seams, sparse angular aggregate chips and hatching. No reflections, no gradient, no rooftop props.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: dark graphite roofing tar membrane, irregular broad overlapping horizontal strips and a few rectangular tar repair patches, thick near-black inked overlap seams, sparse angular aggregate chips and hatching. No reflections, no gradient, no rooftop props."
+  },
+  {
+    "id": "komiks_paving",
+    "category": "surfaces",
+    "width": 1024,
+    "height": 1024,
+    "description": "Kamienna kostka z inkowanymi fugami",
+    "subject": "cool dark blue-gray rectangular urban paving stones in a staggered bond, bold black grout, angular chipped corners, simple flat two-tone stone faces, sparse hand-drawn dirt and hatch shadows. Orthographic overhead, no sidewalk edge, no road markings.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE seamless tileable square game albedo texture, 1024x1024. Original hand-painted ink comic Neon Noir aesthetic: thick confident near-black contour lines on cracks and material edges, hard flat shapes in only 2–3 tonal values, sparse expressive black crosshatching in recesses, scuffs and dirt drawn with a brush, NOT photographic texture, no smooth shading. Palette strictly cool navy #1b2436, graphite #2a3344, steel blue #56627a and near-black ink #080d16; any accent specified below is sparse flat paint rather than glow. Orthographic straight-on, completely flat uniform albedo lighting, edge-to-edge square filled with material. Make opposing edges match seamlessly in BOTH axes, continuous texture extending beyond every edge, no outer border, no edge darkening or vignette, no perspective, no central focal composition. No text, letters, numbers, symbols, logos, brands, watermark, red, cyan, turquoise, magenta, pink, scene or props. Do not copy any specific game's assets or style; original comic interpretation. Subject: cool dark blue-gray rectangular urban paving stones in a staggered bond, bold black grout, angular chipped corners, simple flat two-tone stone faces, sparse hand-drawn dirt and hatch shadows. Orthographic overhead, no sidewalk edge, no road markings."
+  },
+  {
+    "id": "komiks_crack",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Rozgałęzione pęknięcie tuszem",
+    "subject": "one irregular branching fracture, jagged black main crack and thinner side branches, tiny graphite chipped fragments and sparse ink hatching alongside the widest gaps. Fracture only, no backing patch.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE isolated square game overlay decal, for conversion to 512x512 RGBA. Original hand-painted ink comic Neon Noir aesthetic, thick confident near-black ink #080d16 and graphite #2a3344, crisp brush-drawn irregular edges, bold readable shape, sparse steel blue #56627a where specified. Place every mark inside central 75 percent of square, with generous completely clean margin on ALL sides. Background perfectly uniform chroma green #00ff00, used ONLY as removable background, never in the subject. No shadows cast on background, no floor, no wall, no scene, no perspective, no frame, no text, letters, numbers, logos, brands, watermark, red, cyan, magenta, pink. No glow, no photographic details. Subject: one irregular branching fracture, jagged black main crack and thinner side branches, tiny graphite chipped fragments and sparse ink hatching alongside the widest gaps. Fracture only, no backing patch."
+  },
+  {
+    "id": "komiks_ink_splatter",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Rozbryzg czarnego tuszu",
+    "subject": "one organic near-black ink splatter, irregular dense center, several dynamic radial brush spurts and scattered smaller droplets. Entire splatter including all droplets safely inside margin, absolutely no colored paint.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE isolated square game overlay decal, for conversion to 512x512 RGBA. Original hand-painted ink comic Neon Noir aesthetic, thick confident near-black ink #080d16 and graphite #2a3344, crisp brush-drawn irregular edges, bold readable shape, sparse steel blue #56627a where specified. Place every mark inside central 75 percent of square, with generous completely clean margin on ALL sides. Background perfectly uniform chroma green #00ff00, used ONLY as removable background, never in the subject. No shadows cast on background, no floor, no wall, no scene, no perspective, no frame, no text, letters, numbers, logos, brands, watermark, red, cyan, magenta, pink. No glow, no photographic details. Subject: one organic near-black ink splatter, irregular dense center, several dynamic radial brush spurts and scattered smaller droplets. Entire splatter including all droplets safely inside margin, absolutely no colored paint."
+  },
+  {
+    "id": "komiks_grime_corner",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Narożny brud z rysowanymi zaciekami",
+    "subject": "one L-shaped corner buildup of graphite grime, densest at the interior elbow, tapering outward along two perpendicular arms, a few irregular downward drips, brush-stipple and hatch strokes. Isolated dirt only; no solid wall or slab behind it.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE isolated square game overlay decal, for conversion to 512x512 RGBA. Original hand-painted ink comic Neon Noir aesthetic, thick confident near-black ink #080d16 and graphite #2a3344, crisp brush-drawn irregular edges, bold readable shape, sparse steel blue #56627a where specified. Place every mark inside central 75 percent of square, with generous completely clean margin on ALL sides. Background perfectly uniform chroma green #00ff00, used ONLY as removable background, never in the subject. No shadows cast on background, no floor, no wall, no scene, no perspective, no frame, no text, letters, numbers, logos, brands, watermark, red, cyan, magenta, pink. No glow, no photographic details. Subject: one L-shaped corner buildup of graphite grime, densest at the interior elbow, tapering outward along two perpendicular arms, a few irregular downward drips, brush-stipple and hatch strokes. Isolated dirt only; no solid wall or slab behind it."
+  },
+  {
+    "id": "komiks_chipped_paint",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Odpryski bursztynowej farby z czarnym konturem",
+    "subject": "one scattered cluster of angular chipped AMBER #ffae1a paint fragments, bold black ink outlines, tiny graphite shadows painted inside fragments, varied shard size, empty green gaps between fragments. No wall rectangle, no text, no red or orange-red.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE isolated square game overlay decal, for conversion to 512x512 RGBA. Original hand-painted ink comic Neon Noir aesthetic, thick confident near-black ink #080d16 and graphite #2a3344, crisp brush-drawn irregular edges, bold readable shape, sparse steel blue #56627a where specified. Place every mark inside central 75 percent of square, with generous completely clean margin on ALL sides. Background perfectly uniform chroma green #00ff00, used ONLY as removable background, never in the subject. No shadows cast on background, no floor, no wall, no scene, no perspective, no frame, no text, letters, numbers, logos, brands, watermark, red, cyan, magenta, pink. No glow, no photographic details. Subject: one scattered cluster of angular chipped AMBER #ffae1a paint fragments, bold black ink outlines, tiny graphite shadows painted inside fragments, varied shard size, empty green gaps between fragments. No wall rectangle, no text, no red or orange-red."
+  },
+  {
+    "id": "komiks_hatch_patch",
+    "category": "decals",
+    "width": 512,
+    "height": 512,
+    "description": "Kreskowanie tuszem do cieni",
+    "subject": "one irregular patch of hand-drawn black diagonal crosshatching, two crossing sets of sparse confident tapered ink lines, dense towards center and feathering to widely spaced individual strokes at edges. Open green gaps between every line for transparent overlay. No gray paper or opaque background patch.",
+    "prompt": "Use case: stylized-concept. Asset type: ONE isolated square game overlay decal, for conversion to 512x512 RGBA. Original hand-painted ink comic Neon Noir aesthetic, thick confident near-black ink #080d16 and graphite #2a3344, crisp brush-drawn irregular edges, bold readable shape, sparse steel blue #56627a where specified. Place every mark inside central 75 percent of square, with generous completely clean margin on ALL sides. Background perfectly uniform chroma green #00ff00, used ONLY as removable background, never in the subject. No shadows cast on background, no floor, no wall, no scene, no perspective, no frame, no text, letters, numbers, logos, brands, watermark, red, cyan, magenta, pink. No glow, no photographic details. Subject: one irregular patch of hand-drawn black diagonal crosshatching, two crossing sets of sparse confident tapered ink lines, dense towards center and feathering to widely spaced individual strokes at edges. Open green gaps between every line for transparent overlay. No gray paper or opaque background patch."
+  }
+]

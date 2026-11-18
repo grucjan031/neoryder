@@ -16,6 +16,7 @@ import { applyViewmodelLayer, registerViewmodel } from './viewmodelLayer';
 export interface FppViewModelOptions {
   bladeDefinition?: BladeDefinition;
   modelOf?: FppBlasterOptions['modelOf'];
+  modulesOf?: (weaponId: string) => readonly string[];
   tuning?: Pick<Tuning, 'hands' | 'weapons' | 'player'>;
 }
 
@@ -51,6 +52,7 @@ export class FppViewModel {
     const t = options.tuning ?? tuning;
     this.blaster = new FppBlaster(bus, owner, {
       modelOf: options.modelOf,
+      modulesOf: options.modulesOf,
       tuning: t,
     });
     this.motion = new FppMotion(t);

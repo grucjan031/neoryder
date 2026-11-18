@@ -13,25 +13,21 @@ import {
   Vector3,
 } from 'three';
 import type { Object3D } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { EntityId, EventBus } from '../core/events';
 import { tuning as defaultTuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { loadSettings } from '../core/save';
 import type { Settings } from '../core/save';
-import { applyStyle, getMaterial } from './materials';
+import { getMaterial } from './materials';
 import { palette } from './palette';
 import { HandRig } from './handRig';
 import { isHandPose } from './handPoses';
 import type { HandPose } from './handPoses';
 import { weaponGripOfModel } from '../combat/weapons/weaponSchema';
 import type { WeaponGrip } from '../combat/weapons/weaponSchema';
-import {
-  applyFppSurfaces,
-  fppGlowMaterial,
-  fppGlowTexture,
-  markGlow,
-} from './fppMaterials';
+import { attachModuleVisuals } from './weaponModuleVisuals';
+import { loadWeaponScene } from './weaponModelLoader';
+import { fppGlowMaterial, fppGlowTexture, markGlow } from './fppMaterials';
 
 /** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
@@ -106,6 +102,7 @@ const HEAT_GLOW_SIZE = 0.09;
 export interface FppBlasterOptions {
   /** Nazwa modelu (`<nazwa>.glb`) dla id broni; brak = model blastera. */
   modelOf?: (weaponId: string) => string | undefined;
+  modulesOf?: (weaponId: string) => readonly string[];
   tuning?: Pick<Tuning, 'weapons' | 'player'>;
   /** Ustawienia dostępności (domyślnie zapisane ustawienia gracza). */
   settings?: Pick<Settings, 'flashes'>;
@@ -175,6 +172,9 @@ export class FppBlaster {
   private grip: ResolvedGrip = DEFAULT_GRIP;
   private readonly grips = new Map<string, ResolvedGrip>();
   private wanted = FALLBACK_MODEL;
+  private weaponId: string | undefined;
+  private readonly modulesOf: (weaponId: string) => readonly string[];
+  private detachModules: (() => void) | undefined;
   private heat = 0;
   private overheated = false;
   private recoil = 0;
@@ -193,6 +193,7 @@ export class FppBlaster {
   constructor(bus: EventBus, owner: EntityId, options: FppBlasterOptions = {}) {
     this.tuning = options.tuning ?? defaultTuning;
     this.modelOf = options.modelOf ?? (() => undefined);
+    this.modulesOf = options.modulesOf ?? (() => []);
     this.settings = options.settings;
     this.root.matrixAutoUpdate = false;
     this.root.add(this.fallback);
@@ -211,6 +212,7 @@ export class FppBlaster {
       }),
       bus.on('weapon_switched', ({ owner: who, weapon }) => {
         if (who !== owner) return;
+        this.weaponId = weapon;
         this.wanted = this.modelOf(weapon) ?? FALLBACK_MODEL;
         void this.show(this.wanted);
       }),
@@ -232,13 +234,7 @@ export class FppBlaster {
       model = await this.fetchModel(FALLBACK_MODEL);
       shown = FALLBACK_MODEL;
     }
-    if (
-      this.disposed ||
-      name !== this.wanted ||
-      !model ||
-      model === this.current
-    )
-      return;
+    if (this.disposed || name !== this.wanted || !model) return;
     this.setCurrent(model);
     this.grip = this.gripOf(shown);
   }
@@ -253,10 +249,15 @@ export class FppBlaster {
   }
 
   private setCurrent(model: Object3D): void {
+    this.detachModules?.();
     if (this.current) this.root.remove(this.current);
     this.root.remove(this.fallback);
     this.current = model;
     this.root.add(model);
+    this.detachModules =
+      this.weaponId === undefined
+        ? undefined
+        : attachModuleVisuals(model, this.modulesOf(this.weaponId));
     this.flashLeft = 0;
   }
 
@@ -271,14 +272,10 @@ export class FppBlaster {
 
   private async loadModel(name: string): Promise<Object3D | null> {
     try {
-      const gltf = await new GLTFLoader().loadAsync(
-        `/assets/models/${name}.glb`,
-      );
-      applyStyle(gltf.scene);
-      applyFppSurfaces(gltf.scene);
+      const scene = await loadWeaponScene(name);
       // Własny materiał dla elementów ciepła — współdzielony materiał gracza zostaje cyan.
       let muzzle: Object3D | null = null;
-      gltf.scene.traverse((node: Object3D) => {
+      scene.traverse((node: Object3D) => {
         if (node.name === 'muzzle') muzzle = node;
         if (
           (node.name === 'heat_vents' || node.name === 'heat_cell') &&
@@ -286,8 +283,8 @@ export class FppBlaster {
         )
           node.material = this.heatMaterial;
       });
-      if (muzzle) this.attachFlash(gltf.scene, muzzle);
-      return gltf.scene;
+      if (muzzle) this.attachFlash(scene, muzzle);
+      return scene;
     } catch {
       return null;
     }
@@ -308,6 +305,7 @@ export class FppBlaster {
 
   private attachFlash(model: Object3D, muzzle: Object3D): void {
     const flash = new Group();
+    flash.name = 'module_muzzle_flash';
     flash.visible = false;
     // Gwiazda (addytywna, bez konturu) w płaszczyźnie XY, miękki biały rdzeń
     // i dwa skrzyżowane „płatki” wzdłuż lufy, widoczne z boku broni.
@@ -428,6 +426,7 @@ export class FppBlaster {
 
   dispose(): void {
     this.disposed = true;
+    this.detachModules?.();
     this.hand.dispose();
     for (const off of this.off.splice(0)) off();
     this.heatMaterial.dispose();

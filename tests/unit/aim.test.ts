@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { World } from '@dimforge/rapier3d-compat';
 import { HeldItem } from '../../src/combat/heldItem';
+import { Weapon } from '../../src/combat/weapons/weapon';
+import { Stats } from '../../src/core/stats';
 import type { HeldKind } from '../../src/combat/heldItem';
 import { fireProjectile } from '../../src/combat/weapons/fireModes/projectile';
 import type { ProjectileSpec } from '../../src/combat/weapons/projectiles';
@@ -114,6 +116,48 @@ describe('celowanie (PPM zależnie od przedmiotu w ręce)', () => {
 });
 
 describe('mnożniki celowania', () => {
+  it('Weapon przekazuje mnożnik rozrzutu optyki tylko podczas celowania', () => {
+    const shots = (scale: number | undefined, aim: number) => {
+      const def = loadWeapon({ ...scatterData, aimSpreadScale: scale });
+      const spawn = vi.fn<(spec: ProjectileSpec) => number>(() => 1);
+      const weapon = new Weapon(
+        1,
+        { bus: new EventBus(), tuning, rng: new Rng('optic-spread') },
+        new Stats({ heatCapacity: 100, coolingRate: 10 }),
+        { projectiles: { spawn } },
+        def,
+      );
+      weapon.step(SIM_DT, {
+        triggerHeld: true,
+        origin: { x: 0, y: 0, z: 0 },
+        dir: { x: 0, y: 0, z: -1 },
+        aim,
+      });
+      return spawn.mock.calls.map(([spec]) => spec.dir);
+    };
+    expect(shots(undefined, 1)).toEqual(shots(1, 1));
+    expect(shots(0.6, 0)).toEqual(shots(undefined, 0));
+    const normal = shots(undefined, 1);
+    const optic = shots(0.6, 1);
+    expect(normal.length).toBeGreaterThan(0);
+    normal.forEach((dir, i) => {
+      expect(Math.acos(-optic[i]!.z)).toBeCloseTo(Math.acos(-dir.z) * 0.6, 5);
+    });
+  });
+  it.each([undefined, 1, 0.5, 1.6])(
+    'czas wejścia skaluje się przez aimInScale=%s, wyjście pozostaje bez zmian',
+    (scale) => {
+      const { item, t } = hands('gun');
+      const ctx = { ...ready, aimInScale: scale };
+      item.step((t.player.aim.inS * (scale ?? 1)) / 2, input(['aim']), ctx);
+      expect(item.aim).toBeCloseTo(0.5);
+      item.step((t.player.aim.inS * (scale ?? 1)) / 2, input(['aim']), ctx);
+      expect(item.aim).toBe(1);
+      item.step(t.player.aim.outS / 2, input(), ctx);
+      expect(item.aim).toBeCloseTo(0.5);
+      item.dispose();
+    },
+  );
   it('rozrzut: stożek zwężony o tuning.player.aim.spread', () => {
     const def = loadWeapon(scatterData);
     if (def.fireMode === 'beam') throw new Error('oczekiwano strzelby');
@@ -232,5 +276,28 @@ describe('ruch w celowaniu (prawdziwy Rapier)', () => {
     );
     player.setAim(0);
     expect(player.stats.get('moveSpeed')).toBeCloseTo(tuning.player.walkSpeed);
+  });
+
+  it('luneta skaluje czułość także przy zmianie optyki bez zmiany postępu celowania', async () => {
+    const { player } = await setup();
+    const look = input();
+    look.lookDelta = { x: 100, y: 0 };
+    for (const scale of [undefined, 0.6, 1]) {
+      player.setAim(1, scale);
+      const before = player.getState().yaw;
+      player.step(0, look);
+      expect(player.getState().yaw - before).toBeCloseTo(
+        -100 *
+          tuning.player.lookSensitivity *
+          tuning.player.aim.sensitivity *
+          (scale ?? 1),
+      );
+    }
+    player.setAim(0, 0.6);
+    const before = player.getState().yaw;
+    player.step(0, look);
+    expect(player.getState().yaw - before).toBeCloseTo(
+      -100 * tuning.player.lookSensitivity,
+    );
   });
 });

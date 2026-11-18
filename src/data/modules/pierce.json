@@ -1,5 +1,7 @@
 {
   "id": "pierce",
+  "slot": "muzzle",
+  "visual": { "shape": "rail", "color": "white" },
   "name": "Przebicie",
   "description": "Pocisk przechodzi przez jednego dodatkowego wroga.",
   "tags": ["#pierce"],
