@@ -1440,9 +1440,9 @@
     "semantic_hash": ""
   },
   "src/data/ui/workshop.pl.json": {
-    "mtime": 1794958013.0628653,
-    "seen": 1794958038.0016088,
-    "ast_hash": "4ea5b28687ba83ff952e8a54b0f4010c",
+    "mtime": 1794960344.431159,
+    "seen": 1794960371.3712995,
+    "ast_hash": "7e10476784ef27c791c9b05afce01be7",
     "semantic_hash": ""
   },
   "src/data/waves/arena.json": {
@@ -1980,9 +1980,9 @@
     "semantic_hash": ""
   },
   "src/render/fppBlaster.ts": {
-    "mtime": 1794958013.0711148,
-    "seen": 1794958038.0021408,
-    "ast_hash": "15f81cdfc8d43a3e7e6dfc0d69383f40",
+    "mtime": 1794960344.432178,
+    "seen": 1794960371.3712995,
+    "ast_hash": "c84d5f728d8fd09e3896b548983b901b",
     "semantic_hash": ""
   },
   "src/render/fppMaterials.ts": {
@@ -2538,15 +2538,15 @@
     "semantic_hash": ""
   },
   "src/ui/hub/workshopPanel.ts": {
-    "mtime": 1794958013.0783725,
-    "seen": 1794958038.0021408,
-    "ast_hash": "64b120e0eef95b229793333aca7efd76",
+    "mtime": 1794960344.4362671,
+    "seen": 1794960371.3718214,
+    "ast_hash": "5fb8b00bef80c85b6e35aa51b4e18b7a",
     "semantic_hash": ""
   },
   "src/ui/hub/workshopState.ts": {
-    "mtime": 1794958013.0799074,
-    "seen": 1794958038.0021408,
-    "ast_hash": "f8556e1a3d44f48b02e93b5130625a71",
+    "mtime": 1794960344.4372914,
+    "seen": 1794960371.3718214,
+    "ast_hash": "ea0a1df94517ed54caa30f70ccd05d21",
     "semantic_hash": ""
   },
   "src/ui/hud.ts": {
@@ -4386,9 +4386,9 @@
     "semantic_hash": ""
   },
   "tests/unit/workshopPanel.test.ts": {
-    "mtime": 1794958013.090258,
-    "seen": 1794958038.002656,
-    "ast_hash": "a2ad1f32840c41ac1c0ce2f4d003f011",
+    "mtime": 1794960344.440375,
+    "seen": 1794960371.372403,
+    "ast_hash": "2f9c33ae511115adb974c64fa88f1a0f",
     "semantic_hash": ""
   },
   "tools/blender/build_assets.py": {
@@ -5094,9 +5094,9 @@
     "semantic_hash": ""
   },
   "docs/systems/weaponModules.md": {
-    "mtime": 1794958013.049562,
-    "seen": 1794958038.003179,
-    "ast_hash": "f01c2915dc63b5a6b413742707966737",
+    "mtime": 1794960344.4296305,
+    "seen": 1794960371.372403,
+    "ast_hash": "b612cce4e7f0dc463a360b6816fcfc9d",
     "semantic_hash": ""
   },
   "docs/systems/weapons.md": {
@@ -7503,6 +7503,36 @@
     "mtime": 1794958013.091838,
     "seen": 1794958038.002656,
     "ast_hash": "8db874044087b9012194e503306e3cb4",
+    "semantic_hash": ""
+  },
+  "src/render/weaponModelLoader.ts": {
+    "mtime": 1794960344.4331975,
+    "seen": 1794960371.3718214,
+    "ast_hash": "41ed6767480cde2f32d49d14e8fbb19a",
+    "semantic_hash": ""
+  },
+  "src/render/weaponPreview.ts": {
+    "mtime": 1794960344.4337063,
+    "seen": 1794960371.3718214,
+    "ast_hash": "e6f011273e2d572d9593a8f88e0b4ddb",
+    "semantic_hash": ""
+  },
+  "tests/e2e/workshopPreview.spec.ts": {
+    "mtime": 1794960344.4383216,
+    "seen": 1794960371.3718214,
+    "ast_hash": "9a9497ad32bd1ed6715370f8e6213c7e",
+    "semantic_hash": ""
+  },
+  "tests/unit/weaponPreview.test.ts": {
+    "mtime": 1794960344.4393542,
+    "seen": 1794960371.372403,
+    "ast_hash": "d620ce9e76afcf093764f57157ac37e6",
+    "semantic_hash": ""
+  },
+  "tests/unit/workshopPreview.test.ts": {
+    "mtime": 1794960344.441393,
+    "seen": 1794960371.372403,
+    "ast_hash": "168a21b440e75834fed10eb74ddfe214",
     "semantic_hash": ""
   },
   "package-lock.json": {
