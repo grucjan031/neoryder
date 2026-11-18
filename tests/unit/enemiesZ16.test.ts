@@ -221,7 +221,7 @@ describe('Z16 — Wieżyczka', () => {
     expect(shotYaw).toBeLessThan(Math.PI / 2);
   });
 
-  it('telegraphs before three slow shots and the blade can parry a real shot', () => {
+  it('telegraphs before three fast shots and the blade can parry a real shot', () => {
     const c = setup();
     let shots = 0;
     c.bus.on('projectile_spawned', () => shots++);
@@ -253,9 +253,11 @@ describe('Z16 — Wieżyczka', () => {
       parried = true;
     });
     let blocking = false;
-    for (let i = 0; i < 180 && !parried; i++) {
-      c.projectiles.forEachActive((_id, p) => {
-        if (p.z > -1.2) blocking = true;
+    // Cała seria: wszystkie 3 strzały mają zostać odbite.
+    for (let i = 0; i < 180 && shots < 3; i++) {
+      // Strzał po laserze jest szybki (60 m/s): gracz blokuje od wystrzału, laser jest zapowiedzią.
+      c.projectiles.forEachActive(() => {
+        blocking = true;
       });
       blade.step(SIM_DT, {
         held: new Set(blocking ? ['block'] : []),
@@ -267,7 +269,8 @@ describe('Z16 — Wieżyczka', () => {
     }
     expect(parried).toBe(true);
     expect(shots).toBe(3);
-    expect(c.damage.health(c.player)?.current).toBe(100);
+    // Pierwszy strzał sparowany, kolejne zatrzymane blokiem (tylko drobne obrażenia przez blok).
+    expect(c.damage.health(c.player)?.current).toBeGreaterThanOrEqual(90);
   });
 });
 

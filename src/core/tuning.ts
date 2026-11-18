@@ -604,6 +604,8 @@ export const tuning = {
     muzzleFlashSize: 0.14,
   },
   enemies: {
+    /** Odstęp tarczy od hełmu podczas animacji UAL (metry). */
+    shieldHeadClearanceM: 0.03,
     animationFadeS: 0.12,
     animationActionFadeS: 0.04,
     phaseShiftS: 1,

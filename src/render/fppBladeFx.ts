@@ -455,7 +455,14 @@ export class FppBladeFx {
           const base = t.base.copy(t.a).lerp(t.b, TRAIL_INNER);
           base.applyMatrix4(t.camInv);
           const tip = t.tip.copy(t.b).applyMatrix4(t.camInv);
-          if (-tip.z > TRAIL_MIN_DEPTH_M && -base.z > TRAIL_MIN_DEPTH_M) {
+          const last = trail.count ? this.sample(trail, trail.count - 1) : null;
+          if (
+            -tip.z > TRAIL_MIN_DEPTH_M &&
+            -base.z > TRAIL_MIN_DEPTH_M &&
+            (!last ||
+              last.base.distanceToSquared(base) > 1e-8 ||
+              last.tip.distanceToSquared(tip) > 1e-8)
+          ) {
             if (trail.count === TRAIL_SAMPLES)
               trail.start = (trail.start + 1) % TRAIL_SAMPLES;
             else trail.count++;
