@@ -1,7 +1,7 @@
 {
   "id": "scope",
   "name": "Luneta",
-  "description": "Mocne przybliżenie w celowaniu, wolniejsze wejście i spokojniejsza mysz.",
+  "description": "Celowanie: pole widzenia 50% zwykłego, czas wejścia ×1,6, czułość myszy ×0,6 względem bazowego celowania.",
   "slot": "optic",
   "visual": { "shape": "scope", "color": "white" },
   "tags": ["#optic"],

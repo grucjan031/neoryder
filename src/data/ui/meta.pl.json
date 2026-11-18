@@ -3,11 +3,11 @@
     "stations": {
       "talents": {
         "title": "Terminal drzewek",
-        "description": "Tu wydasz punkty talentów w drzewkach Ostrza, Mocy i Strzelca oraz w ścieżkach hybrydowych."
+        "description": "Punkty talentów zdobywasz przy awansie. Wydasz je na Ostrze, Rezonans, Strzelca i Hybrydy."
       },
       "workshop": {
         "title": "Warsztat",
-        "description": "Tu kupisz odblokowania broni, mocy i ostrzy oraz złożysz swój ekwipunek."
+        "description": "Dane i Rdzenie płacą za trwałe odblokowania broni, mocy, ostrzy, miejsc ekwipunku i modułów. Cena jest przy zakupie."
       },
       "missions": {
         "title": "Tablica misji",

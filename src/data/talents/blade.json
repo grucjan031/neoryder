@@ -6,7 +6,7 @@
     {
       "id": "bladeRoot",
       "name": "Rdzeń Ostrza",
-      "description": "Odblokowuje styl Ostrza (#build_blade) i zwiększa zasięg cięć w combo o 10%.",
+      "description": "Odblokowuje styl Ostrza. Zasięg cięć w serii +10%.",
       "tier": 1,
       "cost": 1,
       "requires": [],
@@ -79,7 +79,7 @@
     {
       "id": "bladeRiposte",
       "name": "Kontra parowania",
-      "description": "Udane parowanie regeneruje 10 energii i skraca czas odnowienia dashu o 30% na 3 s.",
+      "description": "Parowanie: +10 energii i odnowienie doskoku −30% na 3 s. Efekt nie częściej niż co 1 s.",
       "tier": 2,
       "cost": 1,
       "requires": ["bladeRoot"],
@@ -105,7 +105,7 @@
     {
       "id": "bladeDashCut",
       "name": "Cięcie w ślizgu",
-      "description": "Zwiększa obrażenia cięcia z dashu o 25% oraz jego szerokość o 0.5 m dla wszystkich ostrzy.",
+      "description": "Cięcie z doskoku: obrażenia +25%, szerokość +0,5 m. Działa ze wszystkimi ostrzami.",
       "tier": 2,
       "cost": 2,
       "requires": ["bladeRoot"],
@@ -153,7 +153,7 @@
     {
       "id": "bladeServoFrame",
       "name": "Serwomotory klingi",
-      "description": "Zwiększa szybkość ataku o 12% i wytrzymałość o 15 pkt zdrowia.",
+      "description": "Szybkość ataku +12%, maksymalne zdrowie +15.",
       "tier": 2,
       "cost": 2,
       "requires": ["bladeRoot"],
@@ -167,7 +167,7 @@
     {
       "id": "bladeThrowEdge",
       "name": "Bumerang plazmowy",
-      "description": "Rzut ostrzem plazmowym zadaje o 25% więcej obrażeń, leci o 4 m dalej i zapewnia 30 kredytów na start runu.",
+      "description": "Rzut każdym ostrzem: obrażenia +25%, zasięg +4 m. Na start wyprawy: +30 Kredytów.",
       "tier": 3,
       "cost": 2,
       "requires": ["bladeDashCut"],
@@ -216,7 +216,7 @@
     {
       "id": "bladeAegisBlock",
       "name": "Defleksyjna garda",
-      "description": "Zmniejsza obrażenia przyjmowane w bloku o 0.1 oraz koszt energii za trafienie o 2 pkt.",
+      "description": "Blok przepuszcza o 10 punktów procentowych mniej obrażeń. Koszt bloku za trafienie: −2 energii.",
       "tier": 3,
       "cost": 2,
       "requires": ["bladeRiposte"],
@@ -264,7 +264,7 @@
     {
       "id": "bladeHeavyBreaker",
       "name": "Rozbijacz pancerza",
-      "description": "Ciężki atak ostrzem zyskuje +25% obrażeń i +3 odrzutu, a każde ciężkie trafienie zwiększa obrażenia o 10% na 4 s.",
+      "description": "Ciężki atak: +25% obrażeń, +3 odrzutu. Ciężkie trafienie: +10% obrażeń na 4 s; odnowienie efektu 2 s.",
       "tier": 4,
       "cost": 3,
       "requires": ["bladeThrowEdge"],
@@ -327,7 +327,7 @@
     {
       "id": "bladePhantomStep",
       "name": "Widmowy krok",
-      "description": "Zabójstwo w zwarciu przyspiesza ruch o 20% na 3 s i skraca odnowienie dashu o 25% na 3 s, a obrażenia rosną o 10%.",
+      "description": "Stale +10% obrażeń. Zabójstwo ostrzem: +20% ruchu i −25% odnowienia doskoku na 3 s; odnowienie efektu 1,5 s.",
       "tier": 4,
       "cost": 3,
       "requires": ["bladeAegisBlock"],

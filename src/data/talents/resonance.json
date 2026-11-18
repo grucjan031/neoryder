@@ -6,7 +6,7 @@
     {
       "id": "resonanceRoot",
       "name": "Rdzeń Rezonansu",
-      "description": "Odblokowuje styl Rezonansu (#build_resonance) i obniża koszt energii wszystkich zdolności Rezonansu o 15%.",
+      "description": "Odblokowuje styl Rezonansu. Początkowy koszt energii wszystkich mocy −15%; koszt podtrzymania bez zmian.",
       "tier": 1,
       "cost": 1,
       "requires": [],
@@ -150,7 +150,7 @@
     {
       "id": "resonanceGrabThrow",
       "name": "Chwyt i rzut: przeciążenie",
-      "description": "Chwyt i rzut podnosi cięższe cele (+50 kg), zadaje o 30% większe obrażenia przy zderzeniu i daje 25 kredytów na start runu.",
+      "description": "Chwyt i rzut: limit masy +50 kg, obrażenia przy zderzeniu +30%. Na start wyprawy: +25 Kredytów.",
       "tier": 3,
       "cost": 2,
       "requires": ["resonanceChainSplit"],
@@ -175,7 +175,7 @@
     {
       "id": "resonanceArcConduct",
       "name": "Przewodnictwo burzowe",
-      "description": "Trafienia elektrycznością przeskakują na cel w promieniu 5.5 m za 45% obrażeń i zwiększają obrażenia o 10% na 3 s.",
+      "description": "Trafienie elektrycznością: łuk do 5,5 m za 45% obrażeń i +10% obrażeń na 3 s. Odnowienie efektu: 1,5 s.",
       "tier": 4,
       "cost": 3,
       "requires": ["resonanceGrabThrow"],
@@ -206,7 +206,7 @@
     {
       "id": "resonanceFluxReturn",
       "name": "Odbicie fazowe",
-      "description": "Odbicie pocisku przywraca 8 energii i schładza broń o 20 pkt, a bazowe obrażenia i zdrowie rosną o 12% i 15 pkt.",
+      "description": "Stale +12% obrażeń i +15 maks. zdrowia. Odbicie pocisku: +8 energii i −20 ciepła; odnowienie 1 s.",
       "tier": 4,
       "cost": 3,
       "requires": ["resonanceBarrierFocus"],

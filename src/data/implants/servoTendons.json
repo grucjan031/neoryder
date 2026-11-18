@@ -1,7 +1,7 @@
 {
   "id": "servoTendons",
   "name": "Serwo-ścięgna Mk I",
-  "description": "Syntetyczne włókna nadgarstka przyspieszają cięcia ostrzem plazmowym i krok bojowy.",
+  "description": "Szybkość ataku +10%, szybkość ruchu +5%.",
   "rarity": "common",
   "tags": ["#melee"],
   "modifiers": [

@@ -1,7 +1,7 @@
 {
   "id": "overclock",
   "name": "Przetaktowanie rdzenia",
-  "description": "Podkręcony koprocesor walki zwiększa obrażenia oraz zdrowie i ładuje energię po udanym parowaniu.",
+  "description": "Obrażenia +15%, maks. zdrowie +20. Parowanie przywraca 8 energii; odnowienie 1,5 s.",
   "rarity": "rare",
   "tags": ["#melee", "#power", "#gun"],
   "modifiers": [

@@ -1,7 +1,7 @@
 {
   "id": "cortexCapacitorApex",
   "name": "Korona Rezonansu",
-  "description": "Szczytowy układ neuro-energetyczny radykalnie zwiększa zasoby energii i wzmacnia obrażenia po wyzwoleniu mocy.",
+  "description": "Maks. energia +75, jej regeneracja +50%, obrażenia +22%. Użycie mocy: −35 ciepła i +20% obrażeń na 3 s; odnowienie 2 s.",
   "rarity": "legendary",
   "tags": ["#power"],
   "modifiers": [

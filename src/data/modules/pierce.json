@@ -3,7 +3,7 @@
   "slot": "muzzle",
   "visual": { "shape": "rail", "color": "white" },
   "name": "Przebicie",
-  "description": "Pocisk przechodzi przez jednego dodatkowego wroga.",
+  "description": "Pocisk przebija o 1 cel więcej.",
   "tags": ["#pierce"],
   "weaponKinds": ["projectile", "spread", "pierce"],
   "patches": [{ "op": "add", "path": "pierceCount", "value": 1 }]

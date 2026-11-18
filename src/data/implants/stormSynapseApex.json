@@ -1,7 +1,7 @@
 {
   "id": "stormSynapseApex",
   "name": "Rdzeń burzy plazmowej",
-  "description": "Eksperymentalny generator wyładowań wyzwala silne łuki elektryczne przy trafieniach mocą lub ostrzem.",
+  "description": "Regeneracja energii +12/s, maks. energia +40, ruch +18%. Trafienie mocą lub ostrzem: łuk do 6,5 m za 50% obrażeń; odnowienie 1 s.",
   "rarity": "legendary",
   "tags": ["#power", "#elektrycznosc"],
   "modifiers": [

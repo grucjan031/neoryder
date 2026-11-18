@@ -1,7 +1,7 @@
 {
   "id": "servoTendonsApex",
   "name": "Nadprzewodzące Serwo-ścięgna",
-  "description": "Prototypowe włókna o zerowym oporze maksymalizują szybkość cięć i napędzają ruch po każdym zrywie.",
+  "description": "Szybkość ataku +35%, ruch +16%, odnowienie doskoku −28%. Doskok: +25% szybkości ataku na 2,5 s i +6 energii; odnowienie efektu 2 s.",
   "rarity": "legendary",
   "tags": ["#melee"],
   "modifiers": [

@@ -25,6 +25,8 @@ describe('modele broni', () => {
 
 /** Budżet szlifu komiksowego: bryły z fazami, ale bez drobnicy (docs/assets.md). */
 const TRIANGLE_BUDGET = 3000;
+/** Budżet pojedynczej broni palnej z tabeli budżetów w docs/assets.md. */
+const GUN_BUDGET = 1000;
 
 async function load(model: string): Promise<Object3D> {
   const bytes = readFileSync(
@@ -74,6 +76,14 @@ describe('modele broni: kontrakt GLB po szlifie', () => {
       expect(root.getObjectByName(name), `${model}: ${name}`).toBeDefined();
     expect(triangles(root)).toBeLessThanOrEqual(TRIANGLE_BUDGET);
   });
+
+  it.each(guns)(
+    '%s: mieści się w budżecie broni z docs/assets.md',
+    async (model) => {
+      // Szlif FPP (runda 2): szczegóły z oczu gracza, ale broń nadal ≤ 1000 trójkątów.
+      expect(triangles(await load(model))).toBeLessThanOrEqual(GUN_BUDGET);
+    },
+  );
 
   it.each(blades)('%s: węzły rękojeści i budżet trójkątów', async (model) => {
     const root = await load(model);

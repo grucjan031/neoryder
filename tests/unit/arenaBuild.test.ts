@@ -133,11 +133,14 @@ it('„Zmień build” po śmierci i komenda build wracają do ekranu na czystej
   card('blade').click();
   run(Math.ceil(4 / SIM_DT));
   expect(scene.query('enemies')).toBeGreaterThan(0);
-  bus.emit('player_died', { id: player() });
+  bus.emit('player_died', { id: player(), cause: 'executor' });
   expect(scene.query('state')).toBe('dead');
+  expect(document.querySelector('.hud__death')?.textContent).toContain(
+    'Bursztynowa zapowiedź = cios przebija blok. Uskocz.',
+  );
   const change =
     document.querySelector<HTMLButtonElement>('.hud__change-build');
-  expect(change?.textContent).toBe('Zmień build');
+  expect(change?.textContent).toBe('Zmień zestaw');
   change!.click();
   expect(scene.query('state')).toBe('select');
   expect(scene.query('buildSelect')).toBe(true);

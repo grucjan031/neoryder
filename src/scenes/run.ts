@@ -119,6 +119,7 @@ export class RunScene implements Scene {
   private tracker: AchievementTracker | null = null;
   private achievementToast: AchievementToast | null = null;
   private metaResult: ApplyRunResult | null = null;
+  private defeatCause: string | undefined;
   /** Zakończony run czekający na trwały zapis nagrody (null = rozliczony albo w toku). */
   private ended: RunEnded | null = null;
   /** Błąd rozliczenia pokazywany w podsumowaniu: zapis meta albo samo naliczenie. */
@@ -236,7 +237,8 @@ export class RunScene implements Scene {
       ctx.bus.on('implant_acquired', ({ id }) =>
         this.log.push({ event: 'implant_acquired', id }),
       ),
-      ctx.bus.on('run_ended', ({ outcome, summary }) => {
+      ctx.bus.on('run_ended', ({ outcome, summary, cause }) => {
+        this.defeatCause = outcome === 'death' ? cause : undefined;
         this.log.push({ event: 'run_ended', outcome });
         // Opóźniamy tylko pokazanie ekranu (w fx=lite bez opóźnienia).
         const holdS =
@@ -609,6 +611,7 @@ export class RunScene implements Scene {
         state: this.manager.serialize(),
         nodes: structuredClone(this.manager.availableNodes()),
         summary: this.manager.summary,
+        cause: this.defeatCause,
         // Nagrody dopiero po potwierdzonym zapisie meta.
         meta:
           this.metaResult && !this.rewardError && !this.settling

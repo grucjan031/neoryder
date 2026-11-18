@@ -617,6 +617,19 @@ export const tuning = {
     wallProbe: 1.5,
   },
   vfx: {
+    /**
+     * Czytelność wrogów z daleka (render/enemyRim.ts): jasność kombinezonu `mat_enemy_dark`
+     * względem czerwieni wroga; poświata krawędzi rośnie od enemyRimNearM do enemyRimFarM [m]
+     * (mnożnik siły motywu, szerszy wykładnik, płaskie wypełnienie bryły czerwienią) i jest
+     * kompensowana o mgłę kompozycji (0 = bez kompensacji, 1 = pełna).
+     */
+    enemyDarkShade: 0.3,
+    enemyRimNearM: 4,
+    enemyRimFarM: 20,
+    enemyRimFarGain: 2.5,
+    enemyRimFarPower: 1.3,
+    enemyRimFarFill: 0.2,
+    enemyRimFogCompensation: 1,
     heavyTelegraphColor: '#ffd27a',
     heavyTelegraphEndColor: '#fff4dc',
     heavyTelegraphEndFraction: 0.3,

@@ -1,7 +1,7 @@
 {
   "id": "overclockApex",
   "name": "Nadbiegunowe Przetaktowanie",
-  "description": "Pełne odblokowanie limitów rdzenia bojowego potęguje wszystkie ścieżki walki i nagradza każde parowanie.",
+  "description": "Obrażenia +32%, maks. zdrowie +55, chłodzenie i regeneracja energii +25%. Parowanie: +18 energii, pełne chłodzenie; odnowienie 1 s.",
   "rarity": "legendary",
   "tags": ["#melee", "#power", "#gun"],
   "modifiers": [

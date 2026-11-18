@@ -35,7 +35,9 @@ it('pokazuje poziom, doświadczenie, Dane, Rdzenie i wolne punkty ze stanu meta'
   );
   expect(text('[data-stat=data]')).toBe(`Dane: ${manager.state.data}`);
   expect(text('[data-stat=cores]')).toBe(`Rdzenie: ${manager.state.cores}`);
-  expect(text('.meta-bar__free')).toBe(`Wolne punkty: ${manager.freePoints}`);
+  expect(text('.meta-bar__free')).toBe(
+    `Punkty talentów: ${manager.freePoints}`,
+  );
 });
 
 it('odświeża się po zdarzeniu meta i wyróżnia wolne punkty, gdy jest ich więcej niż 0', () => {
@@ -46,7 +48,9 @@ it('odświeża się po zdarzeniu meta i wyróżnia wolne punkty, gdy jest ich wi
   // debugAddXp emituje level_up, więc pasek odświeża się sam.
   expect(text('.meta-bar__level')).toBe(`Poziom ${manager.level}`);
   expect(manager.level).toBeGreaterThan(1);
-  expect(text('.meta-bar__free')).toBe(`Wolne punkty: ${manager.freePoints}`);
+  expect(text('.meta-bar__free')).toBe(
+    `Punkty talentów: ${manager.freePoints}`,
+  );
   expect(free.dataset.active).toBe('true');
 });
 
