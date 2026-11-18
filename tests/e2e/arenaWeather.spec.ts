@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test';
 import { LOAD_TIMEOUT } from './helpers';
 
 for (const [arena, weather, points] of [
-  ['arenaOverpass', 'smog', 'ABC'],
+  ['arenaContainerPort', 'storm', 'ABCDE'],
+  ['arenaOverpass', 'smog', 'ABCDE'],
   ['arenaRooftops', 'drizzleWind', 'ABCDE'],
   ['arenaPowerPlant', 'ashfall', 'ABCDE'],
   ['arenaConstructionSite', 'clearNight', 'ABCDE'],
