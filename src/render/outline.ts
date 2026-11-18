@@ -295,9 +295,13 @@ const fragmentShader = /* glsl */ `
       line = mix(line, flashedFog, fog);
     }
     if (inkWidth > 0.0) {
-      // Świecące (neony, ostrze, efekty) zostają czyste: tusz ich nie zalewa.
+      // Świecące (neony, ostrze, efekty) zostają czyste: tusz ich nie zalewa. Tylko jasne
+      // i nasycone — białe ściany i jasne niebo dostają normalny czarny tusz (inaczej
+      // pogrubiony tusz na jasnym tle robi się bladoszarą aureolą).
       float glowMax = max(color.r, max(color.g, color.b));
-      edge *= 1.0 - smoothstep(0.7, 0.95, glowMax);
+      float glowMin = min(color.r, min(color.g, color.b));
+      float glowSat = glowMax > 1e-3 ? (glowMax - glowMin) / glowMax : 0.0;
+      edge *= 1.0 - smoothstep(0.7, 0.95, glowMax) * smoothstep(0.25, 0.5, glowSat);
     }
     rgb = mix(rgb, line, edge);
     if (bloomStrength > 0.0) {
