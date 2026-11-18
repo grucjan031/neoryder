@@ -1,5 +1,47 @@
-import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
+import { Box3, Euler, Matrix4, Mesh, Quaternion, Vector3 } from 'three';
 import type { Object3D } from 'three';
+
+/** Ogranicza wysokość tarczy do dolnej krawędzi hełmu po obliczeniu pozy ręki. */
+export class ShieldHeadClearance {
+  private readonly inverse = new Matrix4();
+  private readonly matrix = new Matrix4();
+  private readonly shieldBox = new Box3();
+  private readonly headBox = new Box3();
+  private readonly partBox = new Box3();
+
+  constructor(
+    private readonly shield: Object3D,
+    private readonly head: Object3D,
+    private readonly root: Object3D,
+    private readonly clearanceM: () => number,
+  ) {}
+
+  private bounds(node: Object3D, box: Box3): void {
+    box.makeEmpty();
+    node.traverse((part) => {
+      if (!(part instanceof Mesh)) return;
+      if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
+      this.matrix.multiplyMatrices(this.inverse, part.matrixWorld);
+      box.union(
+        this.partBox.copy(part.geometry.boundingBox!).applyMatrix4(this.matrix),
+      );
+    });
+  }
+
+  update(): void {
+    if (this.shield.parent !== this.root) return;
+    this.shield.updateWorldMatrix(true, true);
+    this.head.updateWorldMatrix(true, true);
+    this.inverse.copy(this.root.matrixWorld).invert();
+    this.bounds(this.shield, this.shieldBox);
+    this.bounds(this.head, this.headBox);
+    const lowerBy =
+      this.shieldBox.max.y - this.headBox.min.y + this.clearanceM();
+    if (!(lowerBy > 0)) return;
+    this.shield.position.y -= lowerBy;
+    this.shield.updateWorldMatrix(false, true);
+  }
+}
 
 export interface ShieldHold {
   bone: string;

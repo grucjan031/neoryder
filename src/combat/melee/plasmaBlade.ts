@@ -51,6 +51,10 @@ export interface BladeDeps {
 
 /** Stan do animacji ostrza (render) i do testów. */
 export interface BladeView {
+  /** Zegar gracza: efekty FPP starzeją się razem z ostrzem, także w slowmo/hitstopie. */
+  animationTimeS?: number;
+  /** Czysto wizualne cięcie wykończenia; nie otwiera hitboxa ani combo. */
+  execution?: { phase: SwingPhase; phaseT: number } | null;
   flight: {
     previous: Vec3;
     position: Vec3;
@@ -79,6 +83,8 @@ export interface BladeView {
  * zadaje ciężki cios przebijający blok.
  */
 export class PlasmaBlade {
+  private animationTimeS = 0;
+  private executionS: number | null = null;
   private flight: NonNullable<BladeView['flight']> | null = null;
   private flightDir: Vec3 = { x: 0, y: 0, z: -1 };
   private flightDistance = 0;
@@ -136,7 +142,19 @@ export class PlasmaBlade {
   }
 
   view(): BladeView {
+    const activeS = this.tuning.melee.lightActiveS * this.def.timeScale;
+    const recoveryS = this.tuning.melee.lightRecoveryS * this.def.timeScale;
     return {
+      animationTimeS: this.animationTimeS,
+      execution:
+        this.executionS === null
+          ? null
+          : this.executionS < activeS
+            ? { phase: 'active', phaseT: this.executionS / activeS }
+            : {
+                phase: 'recovery',
+                phaseT: (this.executionS - activeS) / recoveryS,
+              },
       flight: this.flight
         ? {
             ...this.flight,
@@ -203,6 +221,18 @@ export class PlasmaBlade {
   }
 
   step(dt: number, input: InputSnapshot): void {
+    if (dt > 0) {
+      this.animationTimeS += dt;
+      if (this.executionS !== null) {
+        this.executionS += dt;
+        if (
+          this.executionS >=
+          (this.tuning.melee.lightActiveS + this.tuning.melee.lightRecoveryS) *
+            this.def.timeScale
+        )
+          this.executionS = null;
+      }
+    }
     const m = this.tuning.melee;
     const dashReadyAtStepStart = this.canDashCut();
     if (dt > 0) {
@@ -353,6 +383,7 @@ export class PlasmaBlade {
 
   /** Stan początkowy (nowy run): bez zamachu, bloku, buforów i blokady gardy. */
   reset(): void {
+    this.executionS = null;
     this.exitBlock();
     this.flight = null;
     this.dashStart = null;
@@ -551,9 +582,11 @@ export class PlasmaBlade {
   }
 
   private startLight(): void {
+    this.executionS = null;
     if (this.deps.tryExecute?.()) {
       this.endSwing();
       this.clearAttack();
+      this.executionS = 0;
       return;
     }
     const withinCombo =
