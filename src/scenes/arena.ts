@@ -65,6 +65,7 @@ import { getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { BuildSelect } from '../ui/buildSelect';
 import { Hud } from '../ui/hud';
+import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
 import { EnemyShatter } from '../vfx/enemyShatter';
@@ -117,6 +118,7 @@ type ArenaState = 'select' | 'playing' | 'dead';
 export class Arena implements Scene {
   readonly id = 'arena';
   private ctx!: GameContext;
+  private inventory?: RunInventoryMenu;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
   private world!: World;
   private entities!: EntityRegistry;
@@ -322,6 +324,10 @@ export class Arena implements Scene {
           ? { onChangeBuild: () => this.openBuildSelect() }
           : {}),
       });
+    if (typeof document !== 'undefined')
+      this.inventory = new RunInventoryMenu(ctx, () =>
+        buildRunInventoryView({ loadout: this.loadout }),
+      );
     this.player.stamina.set(this.player.stamina.max);
     this.energy = new PlayerEnergy(
       playerId,
@@ -809,6 +815,7 @@ export class Arena implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     this.dressing?.step(dt);
+    if (this.state === 'playing') this.inventory?.step(input);
     this.previous = this.player.getState();
     if (this.state === 'select') return;
     if (this.state === 'dead') {
@@ -1355,6 +1362,7 @@ export class Arena implements Scene {
     this.disposed = true;
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
+    this.inventory?.dispose();
     this.buildSelect?.dispose();
     this.synergies?.dispose();
     this.powers?.reset();

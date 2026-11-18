@@ -65,6 +65,7 @@
   box-sizing: border-box;
   max-width: min(640px, 92vw);
   max-height: 85vh;
+  max-height: calc(100dvh - 32px);
   overflow: auto;
   background: #0f172a;
   color: #fff1d6;

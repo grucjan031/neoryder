@@ -16,7 +16,8 @@
     "Digit1": "weapon1",
     "Digit2": "weapon2",
     "Digit3": "weapon3",
-    "KeyM": "map"
+    "KeyM": "map",
+    "Tab": "inventory"
   },
   "mouse": { "0": "attack", "1": "bladeThrow", "2": "block" }
 }
