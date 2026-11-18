@@ -33,7 +33,7 @@ import { loadSettings } from '../core/save';
 import { PIERCE_BLOCK_TAG } from '../combat/damage';
 import { selectEnemyAnimation } from './enemyAnimation';
 import { knockdownFrame } from './enemyKnockdown';
-import { HeldShield } from './heldShield';
+import { HeldShield, ShieldHeadClearance } from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
@@ -113,6 +113,7 @@ export class EnemyView {
   private shield?: Object3D;
   private fallbackShield?: Mesh;
   private heldShield?: HeldShield;
+  private shieldHeadClearance?: ShieldHeadClearance;
   private readonly fallbackGeometries: BufferGeometry[] = [];
   private readonly heavyMaterials = new Map<
     Mesh,
@@ -464,6 +465,14 @@ export class EnemyView {
     idle.reset().play();
     this.mixer.setTime(0);
     this.heldShield = HeldShield.mount(node, this.root, hold) ?? undefined;
+    const helmet = this.model.getObjectByName('helmet');
+    if (this.heldShield && helmet)
+      this.shieldHeadClearance = new ShieldHeadClearance(
+        node,
+        helmet,
+        this.root,
+        () => tuning.enemies.shieldHeadClearanceM,
+      );
     idle.stop();
   }
 
@@ -900,6 +909,7 @@ export class EnemyView {
     this.mixer.update(this.pendingAnimationS);
     this.model.updateWorldMatrix(true, true);
     this.heldShield?.update();
+    this.shieldHeadClearance?.update();
     // Renderer zbiera listę obiektów przed onBeforeRender; odśwież też jego macierze skina.
     for (const skin of this.skins) skin.skeleton.update();
   }

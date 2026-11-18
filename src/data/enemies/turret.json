@@ -34,7 +34,7 @@
   "aimTelegraphS": 0.9,
   "burstCount": 3,
   "burstIntervalS": 0.3,
-  "projectileSpeed": 9,
+  "projectileSpeed": 60,
   "projectileDamage": 10,
   "projectileLifetimeS": 4,
   "spreadDeg": 0,

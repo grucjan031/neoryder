@@ -151,6 +151,7 @@ export class FppBlade {
     { key: 'off', model: null, visible: false, slashing: false },
   ];
   private def: BladeDefinition;
+  private animationTimeS: number | undefined;
   private generation = 0;
   private readonly tmp = {
     m: new Matrix4(),
@@ -344,6 +345,15 @@ export class FppBlade {
     frameDt = 1 / 60,
     fxActive = true,
   ): void {
+    const fxDt =
+      view.animationTimeS === undefined
+        ? frameDt
+        : this.animationTimeS === undefined
+          ? 0
+          : Math.max(0, view.animationTimeS - this.animationTimeS);
+    this.animationTimeS = view.animationTimeS;
+    if (view.state === 'idle' && view.execution)
+      view = { ...view, state: 'light', stage: 1, ...view.execution };
     this.root.visible = true;
     const spinning =
       view.state === 'heavy' &&
@@ -396,7 +406,7 @@ export class FppBlade {
     else
       this.fx.update(
         cameraMatrix,
-        Math.max(0, Math.min(frameDt, 0.1)),
+        Math.max(0, Math.min(fxDt, 0.1)),
         this.fxItems,
       );
   }
