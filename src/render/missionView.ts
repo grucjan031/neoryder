@@ -37,15 +37,13 @@ export class MissionView {
   });
   private readonly white = new MeshBasicMaterial({ color: '#fff1d6' });
   private readonly amber = new MeshBasicMaterial({ color: '#ffae1a', side: 2 });
-  private readonly serverMetal = createUrbanMaterial('metal');
-  private readonly serverPanels = createUrbanMaterial('machine');
+  private readonly serverMetal = createUrbanMaterial('metal', '#263344');
+  private readonly serverPanels = createUrbanMaterial('machine', '#121d2b');
   private readonly serverLedMaterials: MeshStandardMaterial[] = [];
   constructor(
     private readonly model: MissionObjectives,
     radius: number,
   ) {
-    this.serverMetal.color.set('#263344');
-    this.serverPanels.color.set('#121d2b');
     this.ringGeometry = new RingGeometry(radius - 0.06, radius, 48);
     for (const objective of model.mission.objectives.filter((o) =>
       model.ids.includes(o.id),
