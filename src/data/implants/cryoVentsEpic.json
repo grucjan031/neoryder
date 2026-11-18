@@ -1,7 +1,7 @@
 {
   "id": "cryoVentsEpic",
   "name": "Kriokomora zamkowa",
-  "description": "Układ ciekłego azotu błyskawicznie chłodzi komorę broni po każdym zabójstwie strzałem.",
+  "description": "Limit ciepła +45, chłodzenie +35%, obrażenia +15%. Zabójstwo bronią palną usuwa 25 ciepła; odnowienie 1,2 s.",
   "rarity": "epic",
   "tags": ["#gun"],
   "modifiers": [

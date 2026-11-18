@@ -1,0 +1,21 @@
+{
+  "title": "Menu ulepszeń",
+  "credits": "Kredyty",
+  "implants": "Implanty",
+  "noImplants": "Brak implantów. Zdobywaj je w nagrodach, sklepach i na odpoczynku.",
+  "noDescription": "Brak opisu.",
+  "synergies": "Synergie",
+  "noSynergies": "Brak aktywnych synergii.",
+  "powers": "Moce",
+  "weapons": "Broń i moduły",
+  "noModules": "bez modułów",
+  "blade": "Ostrze",
+  "close": "Wróć do gry",
+  "hint": "Tab lub Esc: wróć do gry",
+  "rarities": {
+    "common": "Zwykły",
+    "rare": "Rzadki",
+    "epic": "Epicki",
+    "legendary": "Legendarny"
+  }
+}

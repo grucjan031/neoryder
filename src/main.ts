@@ -6,6 +6,7 @@ import { GameLoop } from './core/loop';
 import { FeelSystem } from './core/feel';
 import { Input } from './core/input';
 import { tuning, createTuningGui } from './core/tuning';
+import { applyLookPreset } from './render/lookPresets';
 import type { GameContext } from './core/context';
 import { scenes } from './scenes';
 import { defaultCommands as commands } from './ui/debugCommands';
@@ -24,7 +25,8 @@ import { loadMusic } from './audio/musicSchema';
 import type { MusicState } from './audio/musicSchema';
 import sfxData from './data/audio/sfx.json';
 import musicData from './data/audio/music.json';
-import { loadSettings } from './core/save';
+import { loadSettings, saveSettings } from './core/save';
+import { setDifficultyOverride } from './world/difficulty';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
 import {
@@ -47,6 +49,12 @@ async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) throw new Error('Brak elementu aplikacji.');
   const params = new URLSearchParams(location.search);
+  setDifficultyOverride(params.get('difficulty'));
+  // Decyzja właściciela 18.11: nowy gracz startuje na Trudnym (Normalny ≈ dawna gra).
+  // Automaty (webdriver) zostają na Normalnym — testy e2e pilnują jego liczb.
+  if (loadSettings().difficulty === undefined && !navigator.webdriver)
+    saveSettings({ ...loadSettings(), difficulty: 'hard' });
+  applyLookPreset(location.search);
   configureFx(params);
   const requested = params.get('scene');
   if (
@@ -143,6 +151,7 @@ async function main(): Promise<void> {
         }
       },
       render: (alpha, frameDt) => {
+        syncAudioPause();
         stats?.begin();
         if (camera.fov !== tuning.camera.fov) {
           camera.fov = tuning.camera.fov;
@@ -170,18 +179,40 @@ async function main(): Promise<void> {
     getLiteFx() ? { maxStepsPerFrame: LITE_MAX_STEPS_PER_FRAME } : {},
   );
   // Dźwięk przed sceną: musi usłyszeć entity_spawned gracza z init() sceny.
+  let audioContext: AudioContext | null = null;
   const audio = new AudioSystem(bus, loadSfx(sfxData), {
-    createContext: () =>
-      typeof AudioContext === 'undefined' ? null : new AudioContext(),
+    createContext: () => {
+      audioContext =
+        typeof AudioContext === 'undefined' ? null : new AudioContext();
+      return audioContext;
+    },
     tuning,
     masterVolume: () => settings.masterVolume,
     sfxVolume: () => settings.sfxVolume,
     listener: () => ({ position: camera.position, yaw: camera.rotation.y }),
   });
-  audio.attachUnlock(window);
+  let audioPaused = false;
+  const syncAudioPause = (): void => {
+    if (loop.paused && !audioPaused && audioContext) {
+      audioPaused = true;
+      void audioContext.suspend().catch(() => undefined);
+    } else if (!loop.paused && audioPaused && audioContext) {
+      audioPaused = false;
+      void audioContext.resume().catch(() => undefined);
+    }
+  };
+  const unlockAudio = (): void => {
+    if (!loop.paused)
+      void audio
+        .getContext()
+        ?.resume()
+        .catch(() => undefined);
+  };
+  const unlockEvents = ['pointerdown', 'keydown', 'touchstart'] as const;
+  for (const event of unlockEvents) window.addEventListener(event, unlockAudio);
   // Muzyka (S7-02): ten sam AudioContext; wyłączona w fx=lite i pod automatem (webdriver).
   const musicEnabled = !getLiteFx() && !navigator.webdriver;
-  const musicClock = (): number => performance.now() / 1000;
+  const musicClock = (): number => audioContext?.currentTime ?? 0;
   let director: MusicDirector | undefined;
   const music = musicEnabled
     ? new MusicSystem(loadMusic(musicData), {
@@ -267,6 +298,7 @@ async function main(): Promise<void> {
   });
   const pause = (): void => {
     loop.paused = true;
+    syncAudioPause();
     input.clear();
     if (ownsInterface() || settingsScreen.visible || pauseMenu.visible) return;
     pauseMenu.show(canReturnToHub());
@@ -289,8 +321,11 @@ async function main(): Promise<void> {
   };
   window.addEventListener('keydown', pauseKey, true);
   const resume = (): void => {
+    if (document.hidden) return;
     pauseMenu.hide();
     loop.paused = false;
+    syncAudioPause();
+    unlockAudio();
     input.requestPointerLock();
     hint.textContent = debug
       ? `NEORYDER / ${scene.id} · \` konsola`
@@ -409,6 +444,7 @@ async function main(): Promise<void> {
   if (scene.id !== 'run') bus.emit('run_started', { seed });
   bus.once('scene_loaded', () => bootSplash?.dismiss());
   bus.emit('scene_loaded', { sceneId: scene.id });
+  if (document.hidden) pause();
   loop.start();
   let disposed = false;
   const dispose = (): void => {
@@ -424,6 +460,8 @@ async function main(): Promise<void> {
     director?.dispose();
     music?.dispose();
     audio.dispose();
+    for (const event of unlockEvents)
+      window.removeEventListener(event, unlockAudio);
     input.dispose();
     disposeConsole?.();
     gui?.destroy();

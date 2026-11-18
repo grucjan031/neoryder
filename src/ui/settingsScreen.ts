@@ -161,6 +161,7 @@ export class SettingsScreen {
       button.tabIndex = selected ? 0 : -1;
     }
     if (tab === 'controls') {
+      this.difficultySelect();
       this.range(
         'mouseSensitivity',
         SETTINGS_RANGES.mouseSensitivity.min,
@@ -283,6 +284,30 @@ export class SettingsScreen {
     update();
     label.append(input, output);
     this.content.append(label);
+  }
+
+  private difficultySelect(): void {
+    const label = document.createElement('label');
+    label.className = 'settings-screen__row';
+    label.append(text.difficulty);
+    const select = document.createElement('select');
+    select.dataset.setting = 'difficulty';
+    for (const value of ['easy', 'normal', 'hard', 'nightmare'] as const) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = text.difficulties[value];
+      select.append(option);
+    }
+    select.value = this.settings.difficulty ?? 'normal';
+    select.addEventListener('change', () => {
+      this.settings.difficulty = select.value as NonNullable<
+        Settings['difficulty']
+      >;
+      this.persist();
+    });
+    label.append(select);
+    this.content.append(label);
+    this.note(text.difficultyHint);
   }
 
   private checkbox(key: 'invertY' | 'flashes'): void {

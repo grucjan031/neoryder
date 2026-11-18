@@ -14,6 +14,11 @@ import { runStateSchema } from '../world/run';
 import type { MetaState } from './metaTypes';
 import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';
+import {
+  difficultyIdSchema,
+  registerDifficultySetting,
+  type DifficultyId,
+} from '../world/difficulty';
 
 export const SAVE_VERSION = 6;
 export interface MissionSave extends MissionCheckpoint {
@@ -208,6 +213,24 @@ function isFuture(data: unknown): boolean {
   );
 }
 
+function showSaveWarning(message: string): void {
+  if (typeof document === 'undefined') return;
+  let notice = document.getElementById('save-warning');
+  if (!notice) {
+    notice = document.createElement('p');
+    notice.id = 'save-warning';
+    notice.setAttribute('role', 'alert');
+    notice.setAttribute('popover', 'manual');
+    document.body.append(notice);
+  }
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = 'Zamknij komunikat';
+  close.addEventListener('click', () => notice.remove());
+  notice.replaceChildren(document.createTextNode(message), close);
+  notice.showPopover?.();
+}
+
 function decode<T>(
   raw: unknown,
   schema: z.ZodType<T>,
@@ -215,6 +238,9 @@ function decode<T>(
 ): T | null {
   if (raw == null) return null;
   if (isFuture(raw)) {
+    showSaveWarning(
+      'Zapis pochodzi z nowszej wersji gry. Otwórz nowszą wersję, aby kontynuować; zapis jest chroniony przed zmianami.',
+    );
     console.warn(
       'Zapis pochodzi z nowszej wersji gry; pozostaje nienaruszony.',
     );
@@ -231,6 +257,9 @@ function decode<T>(
       return null;
     return schema.parse(migrated);
   } catch (error) {
+    showSaveWarning(
+      'Nie można odczytać zapisu. Zachowano oryginał i kopię bezpieczeństwa; ten postęp nie może zostać wznowiony.',
+    );
     console.warn('Nie można odczytać zapisu.', error);
     return null;
   }
@@ -248,6 +277,22 @@ function assertWritable(raw: unknown): void {
   if (isFuture(raw)) {
     console.warn('Odmowa nadpisania zapisu z nowszej wersji gry.');
     throw new Error('Zapis pochodzi z nowszej wersji gry.');
+  }
+}
+
+function backupCorrupt(store: IDBObjectStore, key: string, raw: unknown): void {
+  if (raw == null || isFuture(raw)) return;
+  try {
+    const record = recordSchema.parse(raw);
+    if (key === 'meta') decodeMetaStrict(raw);
+    else if (key === 'mission') missionSaveSchema.parse(raw);
+    else {
+      const migrated = migrate(record, runMigrations, SAVE_VERSION);
+      if (record.run === undefined && migrated.run === null) return;
+      runSchema.parse(migrated);
+    }
+  } catch {
+    store.put(raw, ['corrupt', key, Date.now(), crypto.randomUUID()]);
   }
 }
 
@@ -303,8 +348,12 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   async function read(key: string): Promise<unknown> {
     const db = await open();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction('saves', 'readonly');
+      const tx = db.transaction('saves', 'readwrite');
       const request = tx.objectStore('saves').get(key);
+      request.onsuccess = () => {
+        // Kopia i odczyt należą do jednej transakcji; oryginał zostaje nietknięty.
+        backupCorrupt(tx.objectStore('saves'), key, request.result);
+      };
       tx.oncomplete = () => {
         db.close();
         resolve(request.result as unknown);
@@ -332,6 +381,7 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
       request.onsuccess = () => {
         try {
           assertWritable(request.result);
+          backupCorrupt(store, key, request.result);
           if (value === undefined) store.delete(key);
           else store.put(value, key);
         } catch (error) {
@@ -356,7 +406,7 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   return {
     loadMission: async () => {
       const raw = await read('mission');
-      return raw == null ? null : missionSaveSchema.parse(raw);
+      return decode(raw, missionSaveSchema, []);
     },
     saveMission: async (data) =>
       write('mission', missionSaveSchema.parse(data)),
@@ -372,6 +422,8 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
 }
 
 export interface Settings {
+  /** Brak w starym zapisie = normal. */
+  difficulty?: DifficultyId;
   mouseSensitivity: number;
   fov: number;
   masterVolume: number;
@@ -397,6 +449,7 @@ function clampedSetting(range: { min: number; max: number }, fallback: number) {
 }
 
 const settingsSchema = z.object({
+  difficulty: difficultyIdSchema.optional().catch(undefined),
   mouseSensitivity: clampedSetting(SETTINGS_RANGES.mouseSensitivity, 1),
   fov: clampedSetting(SETTINGS_RANGES.fov, 90),
   masterVolume: z.number().min(0).max(1).catch(1),
@@ -465,3 +518,5 @@ export function saveSettings(s: Settings, storage?: Storage): void {
     console.warn('Nie można zapisać ustawień.', error);
   }
 }
+
+registerDifficultySetting(() => loadSettings().difficulty);

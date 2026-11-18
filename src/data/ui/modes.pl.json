@@ -6,7 +6,7 @@
   "soon": [],
   "heist": {
     "title": "Kradzież rdzenia",
-    "description": "Wykradnij rdzeń Koalicji i utrzymaj ewakuację przez 3 sekundy. Rdzeń spowalnia ruch i blokuje sprint oraz dash. Masz trzy życia — odzyskaj rdzeń, gdy upadnie.",
+    "description": "Wykradnij rdzeń i utrzymaj ewakuację przez 3 s. Ruch z rdzeniem: 75%, bez sprintu i doskoku. Masz 3 życia. Upuszczony rdzeń odzyskaj.",
     "start": "Rozpocznij Kradzież rdzenia",
     "base": "W bazie Koalicji",
     "player": "Niesiesz rdzeń",
@@ -14,7 +14,7 @@
     "enemy": "Wróg odnosi rdzeń",
     "core": "RDZEŃ",
     "extraction": "EWAKUACJA",
-    "carry": "Ruch 75% · bez sprintu i dasha",
+    "carry": "Ruch 75% · bez sprintu i doskoku",
     "lives": "Życia",
     "respawn": "Odrodzenie za",
     "progress": "Postęp ewakuacji"
@@ -34,9 +34,9 @@
     "respawn": "Odrodzenie za"
   },
   "tickets": "Pula Koalicji",
-  "player": "Twoje",
-  "enemy": "Koalicja",
-  "neutral": "Neutralny",
-  "contested": "Sporny",
+  "player": "Pod twoją kontrolą",
+  "enemy": "Pod kontrolą Koalicji",
+  "neutral": "Nieprzejęty",
+  "contested": "Walka o punkt",
   "captured": "Przejęcie punktu"
 }

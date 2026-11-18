@@ -86,6 +86,7 @@ canvas {
 }
 .scene-menu {
   min-height: 100vh;
+  min-height: 100dvh;
   box-sizing: border-box;
   padding: 40px 24px;
   background: #050505;
@@ -647,14 +648,19 @@ body:has(.hud) .hint {
   }
 }
 
-/* Duże ekrany: panele rosną razem z rozdzielczością, żeby nie były „znaczkiem” na środku. */
+/* Duże ekrany: panele rosną razem z rozdzielczością, żeby nie były „znaczkiem” na środku.
+   `--ui-zoom` czytają też `max-height` paneli (dzielą przez zoom), inaczej panel 1,2x wyższy
+   niż okno byłby ucięty u góry i na dole. */
 @media (min-width: 1600px) and (min-height: 900px) {
+  :root {
+    --ui-zoom: 1.2;
+  }
   .run-screen__panel,
   .hub-screen__panel,
   .build-select__panel,
   .pause-menu,
   .settings-screen {
-    zoom: 1.2;
+    zoom: var(--ui-zoom);
   }
 }
 

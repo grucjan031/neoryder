@@ -1,0 +1,14 @@
+{
+  "id": "collimator",
+  "name": "Kolimator",
+  "description": "Celowanie: czas wejścia ×0,5, pole widzenia 85% zwykłego. Rozrzut ×0,6 względem bazowego celowania.",
+  "slot": "optic",
+  "visual": { "shape": "reddot", "color": "green" },
+  "tags": ["#optic"],
+  "weaponKinds": ["projectile", "spread", "lob", "beam"],
+  "patches": [
+    { "op": "set", "path": "aimInScale", "value": 0.5 },
+    { "op": "set", "path": "aimFovScale", "value": 0.85 },
+    { "op": "set", "path": "aimSpreadScale", "value": 0.6 }
+  ]
+}

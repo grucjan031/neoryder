@@ -5,6 +5,38 @@ modułów symulacji. Style są w `src/ui/hud.css`, importowanym przez `src/ui/st
 
 ## Styl — wizjer hełmu
 
+### S10-01: zapowiedzi ataków
+
+Opcjonalne `HudOptions.threats` dostarcza snapshoty `{ id, removed, current:
+{ position, state, stateTimeS } }`, a `threatOrigin` pozycję gracza. Arena i RoomScene
+czytają je przez `EnemyManager.forEach` i `player.getState()`. Obrót pochodzi
+z istniejącego `setViewYaw(pose.yaw)`. Rodzaj i czas trwania zapowiedzi dostarcza
+`enemy_telegraph`; postęp to `stateTimeS / durationS`, więc respektuje czas świata.
+Nieaktywny stan, usunięcie wroga lub koniec czasu usuwa sygnał.
+
+`threatIndicator.ts` wybiera maksymalnie cztery najbliższe zagrożenia w promieniu
+22 m (odległość 3D), poza poziomym stożkiem ±40°. Kąt względem przodu i prawej
+kamery obraca wskaźnik wokół celownika: prawo +90°, tył 180°. Nie bada przesłon
+ani pionowego pola widzenia. Strzałka czerwona oznacza atak wręcz, podwójna
+bursztynowa — `heavy`, cienka czerwona linia z wypełnieniem — `aim`.
+Jasność rośnie bez migania. Powrót do stożka ukrywa wskaźnik.
+
+EnemyView dla `telegraph` z `PIERCE_BLOCK_TAG` klonuje materiały wizjera,
+końcówki pałki/ostrza i rdzenia per siatka. Bursztyn przechodzi do ciepłej bieli
+w ostatnich 30% zapowiedzi. Po przerwaniu/końcu, wymianie modelu i `dispose()`
+wracają dokładne referencje oryginalnych materiałów, a klony są zwalniane.
+Puls ma mnożnik 2; `loadSettings().flashes === false` daje stałą skalę.
+Kolory, końcowa frakcja, mnożnik pulsu, promień, półkąt i limit są w `tuning.vfx`
+i automatycznie pojawiają się w panelu debug. Czasy ataków pozostają bez zmian.
+
+Kontrola ręczna: `?scene=arena&debug=1`, wybierz build, otwórz konsolę debug,
+wykonaj `god`, `kill all`, `look 0`, `spawn executor 1`, `look 180`.
+Po zamknięciu konsoli wróg podejdzie od tyłu i rozpocznie `heavy`.
+`look 0` pozwala obejrzeć bursztynowe elementy modelu i znikanie wskaźnika.
+`spawn gunner 1` pozwala sprawdzić celowanie. `ai-test` ma `spawn`, ale nie ten HUD;
+`melee-test` służy do manekinów, więc pełny test sygnałów wykonuj na arenie.
+Ocena renderu i zrzutów należy do zamawiającego.
+
 HUD to unoszące się holograficzne grupy bez paneli, pełnych teł i ramek.
 `frame_*.webp` nie są używane w HUD walki, meta ani podpowiedzi interakcji.
 Lokalny Rajdhani (OFL w `public/assets/fonts/Rajdhani-OFL.txt`) daje duże,

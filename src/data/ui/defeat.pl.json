@@ -1,0 +1,96 @@
+{
+  "causeLabel": "Przyczyna",
+  "tipLabel": "Wskazówka",
+  "causes": {
+    "unknown": {
+      "label": "Nieustalone źródło ostatniego trafienia",
+      "tips": ["Zmieniaj pozycję i wykorzystuj osłony, gdy zdrowie spada."]
+    },
+    "assaulter": {
+      "label": "Szturmowiec",
+      "tips": ["Uskocz poza zasięg ciosu, potem odpowiedz ostrzem."]
+    },
+    "gunner": {
+      "label": "Strzelec",
+      "tips": ["Przerwij linię ostrzału osłoną albo odbij pocisk ostrzem."]
+    },
+    "drone": {
+      "label": "Dron",
+      "tips": ["Namierz drona nad polem walki. Zestrzel go lub użyj Chwytu."]
+    },
+    "executor": {
+      "label": "Egzekutor",
+      "tips": ["Bursztynowa zapowiedź = cios przebija blok. Uskocz."]
+    },
+    "shielder": {
+      "label": "Tarczownik",
+      "tips": ["Naładuj ciężki cios, aby przebić tarczę."]
+    },
+    "sniper": {
+      "label": "Snajper",
+      "tips": ["Gdy widzisz linię celowania, schowaj się za osłoną."]
+    },
+    "turret": {
+      "label": "Wieżyczka",
+      "tips": [
+        "Przerwij linię ostrzału. Atakuj z osłony zamiast stać przed lufą."
+      ]
+    },
+    "hacker": {
+      "label": "Haker",
+      "tips": [
+        "Zagłuszenie blokuje nowe moce. Przerwij linię ataku i użyj broni lub ostrza."
+      ]
+    },
+    "boss": {
+      "label": "Dyrektor Ochrony Kurogane Arms",
+      "tips": [
+        "Omijaj zapowiedziane uderzenia. Atakuj, gdy osłona fazowa zniknie."
+      ]
+    },
+    "burning": {
+      "label": "Podpalenie",
+      "tips": [
+        "Ogień zadaje obrażenia także po trafieniu. Przy niskim zdrowiu szukaj leczenia."
+      ]
+    },
+    "overload": {
+      "label": "Wyładowanie Przeciążenia",
+      "tips": [
+        "Odsuń się od przeciążonych celów — ich wyładowanie razi otoczenie."
+      ]
+    },
+    "electricHazard": {
+      "label": "Zagrożenie elektryczne",
+      "tips": [
+        "Opuść naelektryzowaną strefę. Nie zatrzymuj się w niej podczas walki."
+      ]
+    },
+    "laserHazard": {
+      "label": "Laser otoczenia",
+      "tips": ["Obserwuj cykl lasera i przejdź, gdy wiązka zgaśnie."]
+    },
+    "explosion": {
+      "label": "Wybuch otoczenia",
+      "tips": [
+        "Zachowaj dystans od wybuchowych obiektów, także gdy sam je ostrzeliwujesz."
+      ]
+    },
+    "hazard": {
+      "label": "Zagrożenie otoczenia",
+      "tips": ["Wyjdź ze strefy zagrożenia, zanim wrócisz do walki."]
+    },
+    "timeout": {
+      "label": "Upłynął czas",
+      "tips": [
+        "Idź do aktywnego celu. Walcz tylko tam, gdzie blokuje to postęp."
+      ]
+    },
+    "objectiveLost": {
+      "label": "Utrata celu",
+      "tips": [
+        "Pilnuj stanu celu na HUD-zie. Odzyskaj strefę, zanim wrócisz do pościgu za wrogami."
+      ]
+    }
+  }
+}

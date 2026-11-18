@@ -23,6 +23,8 @@ export const actionSchema = z.enum([
   'weapon3',
   'bladeThrow',
   'map',
+  /** Menu ulepszeń w runie (Tab): lista implantów, synergii, mocy i modułów w pauzie. */
+  'inventory',
 ]);
 /** Pojedyncze zdarzenie ruchu myszy większe niż to (px) to artefakt przeglądarki, nie gest. */
 const MAX_MOUSE_DELTA = 400;

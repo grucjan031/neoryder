@@ -13,6 +13,10 @@ export const SFX_EVENTS = [
   'weapon_fired',
   'projectile_spawned',
   'heat_changed',
+  'health_changed',
+  'currency_changed',
+  'implant_acquired',
+  'meta_rewards',
   'power_used',
   'power_denied',
   'player_landed',
@@ -75,12 +79,29 @@ const whenSchema = z
     minSpeed: z.number().optional(),
     /** heat_changed: tylko przejście przegrzania false → true. */
     overheatRising: z.boolean().optional(),
+    heatWarningRising: z.boolean().optional(),
+    lowHealthRising: z.boolean().optional(),
+    telegraphKind: z.string().optional(),
+    positiveDelta: z.boolean().optional(),
   })
   .strict();
 export type SfxWhen = z.infer<typeof whenSchema>;
 
 export const sfxSchema = z
   .object({
+    alerts: z
+      .object({
+        heatThreshold: z.number().min(0).max(1),
+        heatReset: z.number().min(0).max(1),
+        healthThreshold: z.number().min(0).max(1),
+        healthReset: z.number().min(0).max(1),
+      })
+      .refine(
+        (a) =>
+          a.heatReset < a.heatThreshold && a.healthReset > a.healthThreshold,
+        'Progi resetu muszą zapewniać histerezę',
+      )
+      .optional(),
     sounds: z.record(z.string(), soundSchema),
     /** Reguły sprawdzane po kolei; dla zdarzenia gra pierwsza pasująca. */
     rules: z.array(

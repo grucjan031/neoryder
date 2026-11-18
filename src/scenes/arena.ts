@@ -70,6 +70,7 @@ import { getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { BuildSelect } from '../ui/buildSelect';
 import { Hud } from '../ui/hud';
+import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
 import { EnemyShatter } from '../vfx/enemyShatter';
@@ -122,6 +123,7 @@ type ArenaState = 'select' | 'playing' | 'dead';
 export class Arena implements Scene {
   readonly id = 'arena';
   private ctx!: GameContext;
+  private inventory?: RunInventoryMenu;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
   private world!: World;
   private entities!: EntityRegistry;
@@ -307,9 +309,7 @@ export class Arena implements Scene {
         hurtboxes: this.hurtboxes,
         statuses: this.statuses,
         getTarget: () =>
-          this.health.dead
-            ? null
-            : { id: playerId, position: this.player.getState().position },
+          this.health.dead ? null : { id: playerId, ...this.player.getState() },
       },
       layout.director ? { director: layout.director } : {},
     );
@@ -317,6 +317,12 @@ export class Arena implements Scene {
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
         playerId,
+        threats: () => {
+          const sources: Enemy[] = [];
+          this.manager.forEach((enemy) => sources.push(enemy));
+          return sources;
+        },
+        threatOrigin: () => this.player.getState().position,
         loadout: this.loadout,
         totalWaves: waves.waves.length,
         onRetry: () => this.retry(),
@@ -324,6 +330,10 @@ export class Arena implements Scene {
           ? { onChangeBuild: () => this.openBuildSelect() }
           : {}),
       });
+    if (typeof document !== 'undefined')
+      this.inventory = new RunInventoryMenu(ctx, () =>
+        buildRunInventoryView({ loadout: this.loadout }),
+      );
     this.player.stamina.set(this.player.stamina.max);
     this.energy = new PlayerEnergy(
       playerId,
@@ -806,6 +816,7 @@ export class Arena implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     this.dressing?.step(dt);
+    if (this.state === 'playing') this.inventory?.step(input);
     this.previous = this.player.getState();
     if (this.state === 'select') return;
     if (this.state === 'dead') {
@@ -1353,35 +1364,36 @@ export class Arena implements Scene {
     this.disposed = true;
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
+    this.inventory?.dispose();
     this.buildSelect?.dispose();
-    this.synergies.dispose();
-    this.powers.reset();
-    this.beamView.dispose();
-    this.lightningView.dispose();
-    this.explosionView.dispose();
-    this.shatter.dispose();
-    this.debrisView.dispose();
-    this.statusVfx.dispose();
-    this.statusView.dispose();
-    this.hitSparks.dispose();
-    this.hitSparksView.dispose();
+    this.synergies?.dispose();
+    this.powers?.reset();
+    this.beamView?.dispose();
+    this.lightningView?.dispose();
+    this.explosionView?.dispose();
+    this.shatter?.dispose();
+    this.debrisView?.dispose();
+    this.statusVfx?.dispose();
+    this.statusView?.dispose();
+    this.hitSparks?.dispose();
+    this.hitSparksView?.dispose();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
-    this.director.dispose();
-    this.manager.dispose();
-    this.statuses.dispose();
-    this.blade.dispose();
+    this.director?.dispose();
+    this.manager?.dispose();
+    this.statuses?.dispose();
+    this.blade?.dispose();
     this.execute?.dispose();
-    this.heldItem.dispose();
-    this.energy.dispose();
-    this.fppView.dispose();
-    this.flyingBlade.dispose();
-    this.barrierView.dispose();
-    this.projectileView.dispose();
-    this.projectiles.dispose();
-    this.fpsCamera.dispose();
-    this.player.dispose();
-    this.world.free();
+    this.heldItem?.dispose();
+    this.energy?.dispose();
+    this.fppView?.dispose();
+    this.flyingBlade?.dispose();
+    this.barrierView?.dispose();
+    this.projectileView?.dispose();
+    this.projectiles?.dispose();
+    this.fpsCamera?.dispose();
+    this.player?.dispose();
+    this.world?.free();
     for (const g of this.geometries) g.dispose();
     this.geometries.clear();
     this.dressing?.dispose();

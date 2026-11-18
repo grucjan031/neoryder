@@ -1,7 +1,7 @@
 {
   "id": "cortexCapacitor",
   "name": "Kondensator kory Mk I",
-  "description": "Dodatkowe ogniwo w korze ruchowej powiększa pulę energii Rezonansu.",
+  "description": "Maks. energia +20, regeneracja energii +12%.",
   "rarity": "common",
   "tags": ["#power"],
   "modifiers": [

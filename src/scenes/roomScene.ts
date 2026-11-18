@@ -486,10 +486,11 @@ export class RoomScene implements Scene {
             ? null
             : this.health.dead
               ? null
-              : { id: playerId, position: this.player.getState().position },
+              : { id: playerId, ...this.player.getState() },
       },
       {
         ...(this.layout.director ? { director: this.layout.director } : {}),
+        run: this.run,
         spawnPoints: this.layout.spawnPoints.map((p) => ({
           x: p.x,
           y: 0,
@@ -568,6 +569,12 @@ export class RoomScene implements Scene {
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
         playerId,
+        threats: () => {
+          const sources: Enemy[] = [];
+          this.manager.forEach((enemy) => sources.push(enemy));
+          return sources;
+        },
+        threatOrigin: () => this.player.getState().position,
         loadout: this.loadout,
         totalWaves: this.waves.waves.length,
         ...(this.options.linearMission
@@ -671,6 +678,7 @@ export class RoomScene implements Scene {
     this.root.add(this.hitSparksView.root);
 
     this.fppView = new FppViewModel(ctx.bus, playerId, {
+      modulesOf: (id) => this.run.loadout.modules?.[id] ?? [],
       bladeDefinition: this.blade.definition,
       modelOf: (id) =>
         this.resolved.weapons.find((weapon) => weapon.id === id)?.model ??
@@ -1432,13 +1440,17 @@ export class RoomScene implements Scene {
     // Przedmiot w ręce przed graczem: PPM z bronią to celowanie, które zmienia ruch i czułość.
     const bladeState = this.blade.view().state;
     const { bladeInput, triggerHeld } = this.heldItem.step(pdt, input, {
+      aimInScale: this.weapon.definition.aimInScale,
       bladeBusy: bladeState !== 'idle' && bladeState !== 'throwing',
       canAim:
         this.state === 'playing' &&
         !this.weapon.overheated &&
         this.player.getState().dashS <= 0,
     });
-    this.player.setAim(this.heldItem.aim);
+    this.player.setAim(
+      this.heldItem.aim,
+      this.weapon.definition.aimSensitivityScale,
+    );
     this.syncHeistCarry();
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
@@ -2538,7 +2550,7 @@ export class RoomScene implements Scene {
     }
   }
 
-  /** Może rzucić przy niedokończonym `init()`; dispose() i tak sprząta motyw i korzeń sceny. */
+  /** Sprząta również zasoby utworzone przed przerwaniem asynchronicznego init(). */
   private disposeParts(): void {
     this.hazardView?.dispose();
     this.conquestView?.dispose();
@@ -2550,35 +2562,35 @@ export class RoomScene implements Scene {
     this.hazards?.dispose();
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
-    this.synergies.dispose();
-    this.powers.reset();
-    this.beamView.dispose();
-    this.lightningView.dispose();
-    this.explosionView.dispose();
+    this.synergies?.dispose();
+    this.powers?.reset();
+    this.beamView?.dispose();
+    this.lightningView?.dispose();
+    this.explosionView?.dispose();
     this.bossFx?.dispose();
-    this.shatter.dispose();
-    this.debrisView.dispose();
-    this.statusVfx.dispose();
-    this.statusView.dispose();
-    this.hitSparks.dispose();
-    this.hitSparksView.dispose();
+    this.shatter?.dispose();
+    this.debrisView?.dispose();
+    this.statusVfx?.dispose();
+    this.statusView?.dispose();
+    this.hitSparks?.dispose();
+    this.hitSparksView?.dispose();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
-    this.director.dispose();
-    this.manager.dispose();
-    this.statuses.dispose();
-    this.blade.dispose();
+    this.director?.dispose();
+    this.manager?.dispose();
+    this.statuses?.dispose();
+    this.blade?.dispose();
     this.execute?.dispose();
-    this.heldItem.dispose();
-    this.energy.dispose();
-    this.fppView.dispose();
-    this.flyingBlade.dispose();
-    this.barrierView.dispose();
-    this.projectileView.dispose();
-    this.projectiles.dispose();
-    this.fpsCamera.dispose();
-    this.player.dispose();
-    this.world.free();
+    this.heldItem?.dispose();
+    this.energy?.dispose();
+    this.fppView?.dispose();
+    this.flyingBlade?.dispose();
+    this.barrierView?.dispose();
+    this.projectileView?.dispose();
+    this.projectiles?.dispose();
+    this.fpsCamera?.dispose();
+    this.player?.dispose();
+    this.world?.free();
     this.doors.clear();
     for (const g of this.geometries) g.dispose();
     this.geometries.clear();

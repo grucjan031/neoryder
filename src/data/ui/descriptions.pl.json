@@ -1,0 +1,32 @@
+{
+  "powers": {
+    "barrier": "Odbija pociski w łuku 160° przez 2 s. Koszt: 20 energii +5 za odbicie. Odnowienie: 4 s.",
+    "chain": "60 obrażeń, zasięg 14 m; 3 przeskoki do 5 m, każdy −25% obrażeń. Przeciążenie: 4 s. Koszt: 10 energii. Odnowienie: 0,4 s.",
+    "focus": "Świat działa z 30% prędkości przez maks. 3 s. Koszt: 20 energii +15/s. Odnowienie: 4 s.",
+    "grab": "Chwyt do 12 m i 100 kg przez maks. 5 s; rzut zadaje 35 obrażeń przy zderzeniu. Koszt: 20 energii +12/s. Odnowienie: 1,5 s.",
+    "push": "Odpycha w stożku 70° do 7 m: 35 obrażeń, +30 za zderzenie ze ścianą. Koszt: 10 energii. Odnowienie: 0,6 s.",
+    "shockwave": "Odpycha dookoła do 4 m: 10 obrażeń, +20 za zderzenie ze ścianą. Koszt: 40 energii. Odnowienie: 1,5 s."
+  },
+  "synergies": {
+    "bladeDancer": "Style Ostrza i Rezonansu. Parowanie: +10 energii, odnowienie doskoku −50% na 3 s.",
+    "bladeMastery": "Wymaga 3 tagów Ostrza. Zabójstwo przywraca 8 energii; odnowienie 2 s.",
+    "closeCircuit": "Wymaga 2 tagów Ostrza i 1 Mocy. Trafienie ostrzem przeciążonego celu: +8 energii i +3 zdrowia; odnowienie 4 s.",
+    "emberRelay": "Style Rezonansu i Strzelca. Trafienie mocą płonącego celu: wybuch za 8 obrażeń w promieniu 2 m; odnowienie 3 s.",
+    "executionVent": "Style Ostrza i Strzelca. Wykończenie: −30 ciepła i ruch ×1,12 na 2 s; odnowienie 3 s.",
+    "gunMastery": "Wymaga 3 tagów Broni. Zabójstwo usuwa 15 ciepła broni; odnowienie 2 s.",
+    "killSwitch": "Style Ostrza i Strzelca. Zabójstwo bronią palną: +6 energii, odnowienie doskoku −40% na 2 s; odnowienie efektu 3 s.",
+    "mirrorBurst": "Wymaga 3 tagów elektryczności. Odbicie pocisku: wybuch wokół ciebie za 8 obrażeń w promieniu 2,5 m; odnowienie 4 s.",
+    "parryLock": "Style Ostrza i Rezonansu. Parowanie ogłusza wrogów w promieniu 2,5 m na 0,6 s; odnowienie 4 s.",
+    "resonanceMastery": "Wymaga 3 tagów Mocy. Użycie mocy: +15% obrażeń na 3 s; odnowienie 2 s.",
+    "resonancePistolero": "Style Rezonansu i Strzelca. Zabójstwo mocą usuwa całe ciepło broni.",
+    "resonanceSiphon": "Style Rezonansu i Strzelca. Zabójstwo mocą przywraca 4 zdrowia; odnowienie 4 s.",
+    "shockFracture": "Style Ostrza i Rezonansu. Trafienie ostrzem ogłuszonego celu: wybuch za 8 obrażeń w promieniu 2 m; odnowienie 3 s.",
+    "stormGunner": "Style Strzelca i Rezonansu. Trafienie bronią palną przeciążonego celu: łuk do 6 m za 50% obrażeń trafienia."
+  },
+  "statuses": {
+    "burning": "Zadaje 4 obrażenia co 0,5 s. Maks. 1 ładunek; ponowne podpalenie może wydłużyć czas.",
+    "overload": "+25% otrzymywanych obrażeń za ładunek. Przy 3: zużywa ładunki, ogłusza na 1,5 s i razi inne cele za 12 obrażeń w promieniu 4 m.",
+    "jammed": "Blokuje użycie nowych mocy Rezonansu. Nie przerywa już aktywnych mocy. Czas zależy od źródła zagłuszenia.",
+    "stunned": "Przerywa atak wroga i uniemożliwia kolejne ataki podczas działania. Czas zależy od źródła ogłuszenia."
+  }
+}

@@ -291,6 +291,161 @@
           ]
         }
       ]
+    },
+    "calmRain": {
+      "bpm": 62,
+      "beatsPerBar": 4,
+      "stepsPerBeat": 4,
+      "bars": 16,
+      "tracks": [
+        {
+          "id": "pad",
+          "kind": "tone",
+          "wave": "triangle",
+          "detuneCents": 6,
+          "gain": 0.42,
+          "attackS": 2.2,
+          "releaseS": 2.6,
+          "filter": {
+            "type": "lowpass",
+            "freq": 520,
+            "freqEnd": 900,
+            "q": 0.6
+          },
+          "pattern": [
+            "D2+A2+E3+F3*16 . . . . . . . . . . . . . . .",
+            "Bb1+F2+A2+D3*16 . . . . . . . . . . . . . . .",
+            "G1+D2+A2+Bb2*16 . . . . . . . . . . . . . . .",
+            "A1+E2+G2+C#3*16 . . . . . . . . . . . . . . ."
+          ]
+        },
+        {
+          "id": "bas",
+          "kind": "tone",
+          "wave": "sine",
+          "gain": 0.5,
+          "attackS": 0.03,
+          "releaseS": 0.8,
+          "filter": {
+            "type": "lowpass",
+            "freq": 140
+          },
+          "pattern": [
+            "D1*8 . . . . . . . D1*4@0.6 . . . . . . .",
+            "Bb1*8 . . . . . . . Bb1*4@0.6 . . . . . . .",
+            "G1*8 . . . . . . . G1*4@0.6 . . . . . . .",
+            "A1*8 . . . . . . . A1*4@0.6 . . . . . . ."
+          ]
+        },
+        {
+          "id": "dzwonek",
+          "kind": "tone",
+          "wave": "sine",
+          "gain": 0.2,
+          "attackS": 0.005,
+          "releaseS": 1.6,
+          "pan": -0.3,
+          "filter": {
+            "type": "lowpass",
+            "freq": 3200,
+            "q": 0.5
+          },
+          "pattern": [
+            "A4*4@0.7 . . . . . . . E5*4@0.5 . . . . . D5*3@0.4 .",
+            "F4*4@0.7 . . . . . . . D5*4@0.5 . . . . . A4*3@0.4 .",
+            "G4*4@0.7 . . . . . . . Bb4*4@0.5 . . . . . D5*3@0.4 .",
+            "E4*4@0.7 . . . . . . . G4*4@0.5 . . . . . C#5*3@0.4 ."
+          ]
+        },
+        {
+          "id": "deszcz",
+          "kind": "hat",
+          "gain": 0.03,
+          "pattern": [
+            "o o . o o . o o o . o o . o o .",
+            "o . o o . o o . o o . o . o o o"
+          ]
+        }
+      ]
+    },
+    "calmDawn": {
+      "bpm": 92,
+      "beatsPerBar": 4,
+      "stepsPerBeat": 4,
+      "bars": 16,
+      "tracks": [
+        {
+          "id": "pad",
+          "kind": "tone",
+          "wave": "sawtooth",
+          "detuneCents": 12,
+          "gain": 0.26,
+          "attackS": 0.8,
+          "releaseS": 1.8,
+          "filter": {
+            "type": "lowpass",
+            "freq": 900,
+            "freqEnd": 1800,
+            "q": 0.7
+          },
+          "pattern": [
+            "E2+B2+D3+G3*16 . . . . . . . . . . . . . . .",
+            "C2+G2+B2+E3*16 . . . . . . . . . . . . . . .",
+            "G1+D2+G2+B2*16 . . . . . . . . . . . . . . .",
+            "D2+A2+C3+F#3*16 . . . . . . . . . . . . . . ."
+          ]
+        },
+        {
+          "id": "puls",
+          "kind": "tone",
+          "wave": "triangle",
+          "gain": 0.55,
+          "attackS": 0.01,
+          "releaseS": 0.3,
+          "filter": {
+            "type": "lowpass",
+            "freq": 220
+          },
+          "pattern": [
+            "E1*2 . . . E1*2@0.5 . . . E1*2@0.8 . . E1*2@0.5 . E1*2@0.6 . .",
+            "C1*2 . . . C1*2@0.5 . . . C1*2@0.8 . . C1*2@0.5 . C1*2@0.6 . .",
+            "G1*2 . . . G1*2@0.5 . . . G1*2@0.8 . . G1*2@0.5 . G1*2@0.6 . .",
+            "D1*2 . . . D1*2@0.5 . . . D1*2@0.8 . . D1*2@0.5 . D1*2@0.6 . ."
+          ]
+        },
+        {
+          "id": "arpeggio",
+          "kind": "tone",
+          "wave": "triangle",
+          "gain": 0.24,
+          "attackS": 0.01,
+          "releaseS": 0.6,
+          "pan": 0.25,
+          "filter": {
+            "type": "lowpass",
+            "freq": 3000,
+            "q": 0.8
+          },
+          "pattern": [
+            "E4@0.8 G4@0.5 B4@0.6 G4@0.5 E5@0.8 B4@0.5 G4@0.6 B4@0.5 E4@0.8 G4@0.5 B4@0.6 D5@0.5 E5@0.8 D5@0.5 B4@0.6 G4@0.5",
+            "C4@0.8 E4@0.5 G4@0.6 E4@0.5 B4@0.8 G4@0.5 E4@0.6 G4@0.5 C4@0.8 E4@0.5 G4@0.6 B4@0.5 C5@0.8 B4@0.5 G4@0.6 E4@0.5",
+            "G3@0.8 B3@0.5 D4@0.6 B3@0.5 G4@0.8 D4@0.5 B3@0.6 D4@0.5 G3@0.8 B3@0.5 D4@0.6 G4@0.5 B4@0.8 G4@0.5 D4@0.6 B3@0.5",
+            "D4@0.8 F#4@0.5 A4@0.6 F#4@0.5 C5@0.8 A4@0.5 F#4@0.6 A4@0.5 D4@0.8 F#4@0.5 A4@0.6 C5@0.5 D5@0.8 C5@0.5 A4@0.6 F#4@0.5"
+          ]
+        },
+        {
+          "id": "stopa",
+          "kind": "kick",
+          "gain": 0.35,
+          "pattern": ["x . . . . . . . x . . x . . . ."]
+        },
+        {
+          "id": "szum",
+          "kind": "hat",
+          "gain": 0.05,
+          "pattern": [". . o . . . o . . . o . . . o o"]
+        }
+      ]
     }
   }
 }

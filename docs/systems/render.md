@@ -183,9 +183,9 @@ culling, więcej trójkątów (hala +9%, peron B +26%).
 
 | Miejsce (medium) | calls przed | calls po | trójkąty przed → po |
 | ---------------- | ----------: | -------: | ------------------: |
-| hala             |         815 |      656 |      171k → 187k    |
-| peron B          |         304 |      279 |       75k → 95k     |
-| jadłodajnia      |         236 |      222 |       92k → 100k    |
+| hala             |         815 |      656 |         171k → 187k |
+| peron B          |         304 |      279 |           75k → 95k |
+| jadłodajnia      |         236 |      222 |          92k → 100k |
 
 Większe przebudowy (nie wykonane): scalanie akcesoriów NPC per kość i materiał (ok. −40% wywołań akcesoriów, w hali rzędu −100 we wszystkich przebiegach, wymaga zmiany testów liczących akcesoria i własnej geometrii do zwolnienia); udostępnienie
 materiału stroju między NPC (bez scalania nic nie daje); instancje/atlas dla plakatów HubDecor (ok. −30);
@@ -695,6 +695,12 @@ lewą dłoń, podparcie na `support` broni i gest mocy z własnym magentowym mat
 `tuning.hands` w lil-gui oraz stałe pozycji/kątów na górze plików FPP.
 Szczegóły i kontrola ręczna: [hands.md](hands.md#render-przegubowych-dłoni).
 
+Klinga ostrza (`FppBladeFx`) to komiksowa plazma na quadzie zwróconym do kamery: dwa stałe programy
+(`fppPlasmaBlade:solid` — biały rdzeń i jasny cyjan, nieprzezroczyste z zapisem głębi; `:halo` —
+półprzezroczysta otoczka), strefy z twardą granicą zamiast gradientu i płaskie pasma energii płynące
+od emitera (uniformy z `tuning.vfx.blade*`, w cięciu szybciej). Przy wyłączonych „Błyskach ekranu”
+pasma dryfują powoli, a szerokość nie pulsuje. Oba quady mają `noOutline` (bez tuszu), bloom: tak.
+
 ## Render pogody i portu
 
 Opcjonalny profil `weather` w pokoju steruje istniejącą mgłą wysokościową,
@@ -743,3 +749,44 @@ Sprawdzenie w 30 sekund
    krawędzią i obejrzyj podłoże oraz mgłę. Sprawdź migotanie
    stykających się powierzchni oraz kontury odległych brył.
    Ponowne `fly` wraca do kamery gracza.
+
+## Styl komiksowy Neon Noir (domyślny od 18 XI 2026)
+
+Decyzja właściciela: gra przechodzi na styl inspirowany Borderlands z elementami Neon Noir.
+Domyślnie działa wariant `b` z `src/render/lookPresets.ts` (nakładany po motywie przez
+`reapplyLook()`, bo motywy nadpisują kontur):
+
+- **Tusz:** ostra maska krawędzi 1 px (osobny przebieg) pogrubiona dylatacją w kompozycji
+  (`inkWidth`, grubiej blisko kamery `inkNearScale`); broń i ręce z cieńszym tuszem; na neonach
+  i jasnych efektach tusz zanika; przy gęstym detalu (kratki, siatki) zostaje sama linia 1 px.
+- **Płaskie cienie:** `celBands`/`celStrength` przyciemniają tylko cienie i półcienie
+  (jasność < ~0,5), z krótkim miękkim przejściem między pasmami — światła lamp zostają miękkie.
+  Nasycone i jasne piksele (neony, wrogowie, efekty) są nietknięte.
+- **Bez konturu:** obiekty z `userData.noOutline` oraz automatycznie przezroczyste materiały
+  addytywne albo bez zapisu głębi (poświaty, stożki światła) — `src/render/noOutline.ts`.
+- Porównania: `?look=a` (sam tusz), `?look=c` (z kreskowaniem i plamami farby), `?look=off`
+  (dawny wygląd). Koszt: bez zmiany FPS w scenach testowych (kryjówka, uliczka, 3 areny Przejęcia, M01).
+- Pakiet tekstur „komiks” (`public/assets/textures/komiks/`) czeka na podpięcie w arenach.
+
+### Czytelność wrogów z daleka — poświata krawędzi (`src/render/enemyRim.ts`)
+
+Ciemne kombinezony wrogów na ciemnych, zamglonych arenach zlewały się z tłem (widać było
+tylko świecące akcenty). `mat_enemy` i `mat_enemy_dark` mają w `onBeforeCompile` poświatę
+krawędzi (fresnel) w czerwieni wroga, rosnącą z odległością od kamery:
+
+- z bliska siła i wykładnik z motywu (`tuning.render.enemyRimStrength`/`enemyRimPower`,
+  motyw biały = 0, więc bez poświaty); na kombinezonie mnożnik 0,6 (płyty odcinają się od niego);
+- od `tuning.vfx.enemyRimNearM` do `enemyRimFarM` siła rośnie do `× enemyRimFarGain`, wykładnik
+  spada do `enemyRimFarPower` (szersza krawędź), a bryłę wypełnia płaska czerwień
+  `enemyRimFarFill` — z 20–30 m wróg jest czerwoną sylwetką z tuszem, z 5 m wygląda jak dotąd;
+- mgła jest w kompozycji (`outline.ts`, po materiale), więc emisja jest z góry dzielona przez
+  `1 − mgła` (ta sama krzywa `fogNear/fogFar/fogStrength` + przybliżona mgła wysokościowa na
+  wysokości oka 1,6 m), z dolną granicą 0,25; `enemyRimFogCompensation` (0..1) to wyłącza;
+- `tuning.vfx.enemyDarkShade` (0,3, wcześniej stałe 0,16) rozjaśnia kombinezon, nadal jako
+  nasycona czerwień, więc pasy cienia stylu go nie spłaszczają.
+
+Wszystko na wspólnych uniformach (`syncEnemyRim()` w `syncMaterials()`), klucze programu
+stałe: `enemyRim1.00` i `enemyRim0.60`. Poświata jest częścią materiału, więc działa też przy
+`?look=off`. Zapowiedź ciosu nie do zablokowania (bursztyn) klonuje tylko materiały
+`mat_enemy_glow` (wizjer, końcówka pałki, rdzeń, ostrze), które poświaty nie mają.
+`enemyRimAt()` to odpowiednik shadera w TS do testów (`tests/unit/enemyRim.test.ts`).

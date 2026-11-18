@@ -5,6 +5,7 @@ import {
   BufferAttribute,
   BufferGeometry as PointsGeometry,
   CylinderGeometry,
+  Color,
   Euler,
   Group,
   LoopOnce,
@@ -20,12 +21,19 @@ import {
   TorusGeometry,
   Vector3,
 } from 'three';
-import type { AnimationAction, BufferGeometry, Object3D } from 'three';
+import type {
+  AnimationAction,
+  BufferGeometry,
+  Object3D,
+  Material,
+} from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { tuning } from '../core/tuning';
+import { loadSettings } from '../core/save';
+import { PIERCE_BLOCK_TAG } from '../combat/damage';
 import { selectEnemyAnimation } from './enemyAnimation';
 import { knockdownFrame } from './enemyKnockdown';
-import { HeldShield } from './heldShield';
+import { HeldShield, ShieldHeadClearance } from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
@@ -105,7 +113,17 @@ export class EnemyView {
   private shield?: Object3D;
   private fallbackShield?: Mesh;
   private heldShield?: HeldShield;
+  private shieldHeadClearance?: ShieldHeadClearance;
   private readonly fallbackGeometries: BufferGeometry[] = [];
+  private readonly heavyMaterials = new Map<
+    Mesh,
+    {
+      original: Material | Material[];
+      clones: Material[];
+    }
+  >();
+  private readonly heavyColor = new Color();
+  private readonly heavyEndColor = new Color();
   private shieldMaterial?: MeshBasicMaterial;
   /** Iskry lądowania z kip-upu (kosmetyka; prędkości losowane przy każdym lądowaniu). */
   private sparks?: Points<PointsGeometry, PointsMaterial>;
@@ -285,6 +303,7 @@ export class EnemyView {
         enemy.definition.model ?? defaultModel(enemy.definition.kind),
       ).then((source) => {
         if (!source || this.disposed) return;
+        this.restoreHeavyMaterials();
         this.root.remove(this.model);
         this.model = new Group();
         this.model.scale.setScalar(enemy.definition.boss?.modelScale ?? 1);
@@ -446,6 +465,14 @@ export class EnemyView {
     idle.reset().play();
     this.mixer.setTime(0);
     this.heldShield = HeldShield.mount(node, this.root, hold) ?? undefined;
+    const helmet = this.model.getObjectByName('helmet');
+    if (this.heldShield && helmet)
+      this.shieldHeadClearance = new ShieldHeadClearance(
+        node,
+        helmet,
+        this.root,
+        () => tuning.enemies.shieldHeadClearanceM,
+      );
     idle.stop();
   }
 
@@ -528,6 +555,14 @@ export class EnemyView {
     this.applyKnockdown();
     if (this.shield) this.shield.visible = b.shieldUp === true;
     this.renderLaser();
+    const heavy =
+      b.state === 'telegraph' &&
+      definition.attackTags?.includes(PIERCE_BLOCK_TAG) === true;
+    const flashes = loadSettings().flashes;
+    this.updateHeavyMaterials(
+      heavy,
+      b.stateTimeS / Math.max(definition.telegraphS, Number.EPSILON),
+    );
     const anim = definition.animation;
     if (this.mixer) this.prepareAnimation(t);
     if (!anim) return;
@@ -616,7 +651,18 @@ export class EnemyView {
           b.state === 'telegraph' || b.state === 'aim'
             ? 1 +
               anim.pulseScale *
-                (1 + Math.sin(time * anim.pulseHz * Math.PI * 2))
+                (1 +
+                  (flashes
+                    ? Math.sin(
+                        time *
+                          anim.pulseHz *
+                          (heavy
+                            ? tuning.vfx.heavyTelegraphPulseMultiplier
+                            : 1) *
+                          Math.PI *
+                          2,
+                      )
+                    : 0))
             : 1;
         tip.scale.set(
           restScale.x * pulse,
@@ -624,6 +670,59 @@ export class EnemyView {
           restScale.z * pulse,
         );
       }
+    }
+  }
+
+  private restoreHeavyMaterials(): void {
+    for (const [mesh, { original, clones }] of this.heavyMaterials) {
+      mesh.material = original;
+      for (const material of clones) material.dispose();
+    }
+    this.heavyMaterials.clear();
+  }
+
+  private updateHeavyMaterials(active: boolean, progress: number): void {
+    if (!active) {
+      this.restoreHeavyMaterials();
+      return;
+    }
+    const k = tuning.vfx;
+    const white = Math.max(
+      0,
+      Math.min(
+        1,
+        (progress - (1 - k.heavyTelegraphEndFraction)) /
+          Math.max(k.heavyTelegraphEndFraction, Number.EPSILON),
+      ),
+    );
+    this.heavyColor
+      .set(k.heavyTelegraphColor)
+      .lerp(this.heavyEndColor.set(k.heavyTelegraphEndColor), white);
+    for (const name of ['visor', 'baton_tip', 'executor_blade', 'chest_core']) {
+      this.model.getObjectByName(name)?.traverse((node) => {
+        if (!(node instanceof Mesh)) return;
+        let entry = this.heavyMaterials.get(node);
+        if (!entry) {
+          const original = node.material as Material | Material[];
+          const clones = (Array.isArray(original) ? original : [original]).map(
+            (material) => {
+              const cloned = material.clone();
+              cloned.onBeforeCompile = material.onBeforeCompile;
+              cloned.customProgramCacheKey = material.customProgramCacheKey;
+              return cloned;
+            },
+          );
+          entry = { original, clones };
+          this.heavyMaterials.set(node, entry);
+          node.material = Array.isArray(original) ? clones : clones[0]!;
+        }
+        for (const material of entry.clones) {
+          if ('color' in material && material.color instanceof Color)
+            material.color.copy(this.heavyColor);
+          if ('emissive' in material && material.emissive instanceof Color)
+            material.emissive.copy(this.heavyColor);
+        }
+      });
     }
   }
 
@@ -810,12 +909,14 @@ export class EnemyView {
     this.mixer.update(this.pendingAnimationS);
     this.model.updateWorldMatrix(true, true);
     this.heldShield?.update();
+    this.shieldHeadClearance?.update();
     // Renderer zbiera listę obiektów przed onBeforeRender; odśwież też jego macierze skina.
     for (const skin of this.skins) skin.skeleton.update();
   }
 
   dispose(): void {
     this.disposed = true;
+    this.restoreHeavyMaterials();
     if (this.mixer) {
       this.mixer.stopAllAction();
       this.mixer.uncacheRoot(this.mixer.getRoot());

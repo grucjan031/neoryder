@@ -1,8 +1,20 @@
 import type { EventBus } from '../core/events';
 import type { Rarity } from '../core/runTypes';
 import text from '../data/ui/hud.pl.json';
+import defeatText from '../data/ui/defeat.pl.json';
 import { implantDefinitions } from '../progression/implants';
 import { BossBar } from './bossBar';
+
+/** Nieznane i stare zdarzenia nie ujawniają graczowi technicznych identyfikatorów. */
+export function defeatMessage(cause?: string): { cause: string; tip: string } {
+  const entry = Object.hasOwn(defeatText.causes, cause ?? '')
+    ? defeatText.causes[cause as keyof typeof defeatText.causes]
+    : defeatText.causes.unknown;
+  return {
+    cause: `${defeatText.causeLabel}: ${entry.label}`,
+    tip: `${defeatText.tipLabel}: ${entry.tips[0]}`,
+  };
+}
 
 /** Stan runu potrzebny do odtworzenia HUD po wejściu do nowego pokoju. */
 export interface RunHudSeed {

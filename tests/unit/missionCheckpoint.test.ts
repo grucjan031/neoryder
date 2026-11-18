@@ -30,6 +30,64 @@ const checkpoint: MissionSave = {
   threatLevel: 0,
 };
 
+it.each([
+  { ids: ['pierce', 'ricochet'], expected: ['pierce'] },
+  { ids: ['unknown', 'incendiary'], expected: ['incendiary'] },
+])(
+  'wczytuje stary run i checkpoint z modułami $ids i pozwala kontynuować',
+  async ({ ids, expected }) => {
+    const name = `old-module-save-${ids.join('-')}`;
+    const manager = new RunManager(new EventBus(), {
+      generateMap: (seed) => generateSectorMap(kuroganeSector, seed),
+    });
+    manager.newRun('old-module-save', 'classic');
+    const run = manager.serialize();
+    run.loadout.modules = { blaster: ids };
+    manager.dispose();
+    const mission = {
+      ...checkpoint,
+      loadout: { ...checkpoint.loadout, modules: { blaster: ids } },
+    };
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open(name, 1);
+      request.onupgradeneeded = () => request.result.createObjectStore('saves');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('saves', 'readwrite');
+        const saves = tx.objectStore('saves');
+        saves.put({ saveVersion: 6, seed: run.seed, startedAt: 1, run }, 'run');
+        saves.put(mission, 'mission');
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+        tx.onabort = () => {
+          db.close();
+          reject(tx.error);
+        };
+      };
+    });
+    const store = createIndexedDbSaveStore(name);
+    const loaded = await store.loadRun();
+    expect(loaded).not.toBeNull();
+    expect(loaded!.run.loadout.modules).toEqual({ blaster: expected });
+    expect((await store.loadMission!())?.loadout.modules).toEqual({
+      blaster: expected,
+    });
+    const restored = new RunManager(new EventBus());
+    try {
+      restored.restore(loaded!.run);
+      expect(restored.active).toBe(true);
+      expect(restored.selectNode(restored.availableNodes()[0]!.id)).toBe(true);
+      expect(restored.screen).toBe('room');
+    } finally {
+      restored.dispose();
+    }
+    expect(run.loadout.modules.blaster).toEqual(ids);
+  },
+);
+
 it.each(['memory', 'indexeddb'])(
   'zapisuje osobny checkpoint, zwraca kopię i usuwa go bez zmiany meta (%s)',
   async (kind) => {

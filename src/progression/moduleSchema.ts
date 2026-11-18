@@ -3,6 +3,23 @@ import type { DefinitionPatch } from '../core/metaTypes';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import type { Loadout } from './loadout';
 import { PATCH_OPS } from './patchSchema';
+import progression from '../data/meta/progression.json';
+
+export const MODULE_SLOTS = ['muzzle', 'cell', 'optic'] as const;
+export type ModuleSlot = (typeof MODULE_SLOTS)[number];
+export const MODULE_SHAPES = [
+  'brake',
+  'rail',
+  'coil',
+  'canister',
+  'reddot',
+  'scope',
+] as const;
+const shapesBySlot: Record<ModuleSlot, readonly string[]> = {
+  muzzle: ['brake', 'rail'],
+  cell: ['coil', 'canister'],
+  optic: ['reddot', 'scope'],
+};
 
 export const modulePatchSchema = z
   .object({
@@ -34,11 +51,26 @@ export const moduleSchema = z
     id: z.string().min(1),
     name: z.string().min(1),
     description: z.string().min(1),
+    slot: z.enum(MODULE_SLOTS),
+    visual: z
+      .object({
+        shape: z.enum(MODULE_SHAPES),
+        color: z.enum(['amber', 'white', 'green']),
+      })
+      .strict(),
     tags: z.array(z.string()),
     weaponKinds: z.array(z.string().min(1)).optional(),
     patches: z.array(modulePatchSchema).min(1),
   })
-  .strict();
+  .strict()
+  .superRefine((module, ctx) => {
+    if (!shapesBySlot[module.slot].includes(module.visual.shape))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['visual', 'shape'],
+        message: 'Kształt nie pasuje do slotu.',
+      });
+  });
 
 export type ModuleDefinition = z.infer<typeof moduleSchema>;
 
@@ -73,20 +105,48 @@ export function moduleFitsWeapon(
   );
 }
 
-/** Cele łatek wynikają z broni; kolejność tablicy modułów jest kolejnością slotów. */
+export function sanitizeModules(
+  weapons: readonly string[],
+  modules: Record<string, readonly string[]> | undefined,
+): Record<string, string[]> {
+  return Object.fromEntries(
+    weapons.flatMap((weaponId) => {
+      const installed = modules?.[weaponId];
+      if (!installed) return [];
+      const slots = new Set<ModuleSlot>();
+      const ids = installed.filter((id) => {
+        const module = moduleDefinitions.get(id);
+        if (
+          !module ||
+          !moduleFitsWeapon(module, weaponId) ||
+          slots.has(module.slot) ||
+          slots.size >= progression.moduleSlotsPerWeapon
+        )
+          return false;
+        slots.add(module.slot);
+        return true;
+      });
+      return [[weaponId, ids]];
+    }),
+  );
+}
+
+/** Cele łatek wynikają z broni; sloty określają stabilną kolejność łatek. */
 export function modulePatches(
   loadout: Pick<Loadout, 'weapons' | 'modules'>,
 ): DefinitionPatch[] {
+  const modules = sanitizeModules(loadout.weapons, loadout.modules);
   return loadout.weapons.flatMap((weaponId) =>
-    (loadout.modules?.[weaponId] ?? []).flatMap((id) => {
-      const module = moduleDefinitions.get(id);
-      if (!module) throw new Error(`Nieznany moduł: ${id}.`);
-      if (!moduleFitsWeapon(module, weaponId))
-        throw new Error(`Moduł ${id} nie pasuje do broni ${weaponId}.`);
-      return module.patches.map((patch): DefinitionPatch => ({
-        ...structuredClone(patch),
-        target: `weapon:${weaponId}`,
-      }));
-    }),
+    (modules[weaponId] ?? [])
+      .flatMap((id) => moduleDefinitions.get(id) ?? [])
+      .sort(
+        (a, b) => MODULE_SLOTS.indexOf(a.slot) - MODULE_SLOTS.indexOf(b.slot),
+      )
+      .flatMap((module) =>
+        module.patches.map((patch): DefinitionPatch => ({
+          ...structuredClone(patch),
+          target: `weapon:${weaponId}`,
+        })),
+      ),
   );
 }

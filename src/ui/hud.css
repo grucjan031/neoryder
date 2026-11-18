@@ -5,6 +5,15 @@
   font-weight: 500;
   font-display: swap;
 }
+.hud__death-cause,
+.hud__death-tip {
+  max-width: min(42rem, calc(100% - 32px));
+  margin: 0;
+  color: #c8d6e2;
+  text-align: center;
+  line-height: 1.5;
+}
+
 @font-face {
   font-family: Rajdhani;
   src: url('/assets/fonts/Rajdhani-SemiBold.ttf') format('truetype');
@@ -47,6 +56,62 @@
 }
 .hud [hidden] {
   display: none;
+}
+.hud__threat {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: rotate(var(--angle));
+  color: var(--threat-color);
+  opacity: calc(0.7 + var(--progress) * 0.3);
+  /* Komiksowy kontur: twardy czarny obrys zamiast miękkiego cienia. */
+  filter: drop-shadow(0 0 0.6px #000) drop-shadow(0 0 0.6px #000)
+    drop-shadow(0 0 1.2px #000) drop-shadow(0 0 6px #0008);
+}
+.hud__threat-mark {
+  position: absolute;
+  width: 56px;
+  height: 26px;
+  left: -28px;
+  bottom: clamp(90px, 30vmin, 320px);
+  transform: scale(calc(0.85 + var(--progress) * 0.3));
+  transform-origin: 50% 100%;
+  background: currentColor;
+  clip-path: polygon(50% 0, 100% 100%, 50% 65%, 0 100%);
+}
+.hud__threat[data-kind='heavy'] {
+  color: color-mix(
+    in srgb,
+    var(--threat-color),
+    var(--threat-end) var(--white)
+  );
+}
+.hud__threat[data-kind='heavy'] .hud__threat-mark {
+  height: 40px;
+  clip-path: polygon(
+    50% 0,
+    100% 50%,
+    65% 50%,
+    100% 100%,
+    50% 75%,
+    0 100%,
+    35% 50%,
+    0 50%
+  );
+}
+.hud__threat[data-kind='aim'] .hud__threat-mark {
+  height: 7px;
+  width: 76px;
+  left: -38px;
+  clip-path: none;
+  background: linear-gradient(
+    to right,
+    currentColor calc(var(--progress) * 100%),
+    #000b 0
+  );
+  border: 1px solid currentColor;
 }
 .hud__micro,
 .hud__meter-label,

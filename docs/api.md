@@ -144,6 +144,19 @@ HUD reaguje na `status_applied`/`status_expired` gracza.
 
 ## Warsztat modułów broni
 
+Rozszerzenie S4c-A: `MODULE_SLOTS = ['muzzle', 'cell', 'optic']`, typ `ModuleSlot`.
+Moduł wymaga `slot` i `visual: { shape, color }` (kształt zgodny ze slotem).
+`modulePatches` sortuje moduły według `MODULE_SLOTS`. Limit wynosi 3, po jednym
+module na slot; wczytywanie meta zachowuje pierwszy moduł każdego slotu.
+Format zapisu i `SAVE_VERSION = 6` pozostają bez zmian.
+`HeldItem.step` przyjmuje opcjonalne `ctx.aimInScale`; `PlayerController.setAim(aim,
+sensitivityScale = 1)` skaluje czułość. `Weapon` czyta `definition.aimSpreadScale`.
+Wszystkie trzy skale domyślnie wynoszą 1; `aimFovScale` nadal określa ułamek FOV.
+`FppViewModelOptions.modulesOf?: (weaponId: string) => readonly string[]` przekazuje
+montaż do `FppBlaster`. `createModuleVisual(shape, color): Object3D` tworzy bryłę,
+`attachModuleVisuals(gunRoot, moduleIds): () => void` zwraca idempotentny demontaż
+zwalniający własne geometrie i materiały, bez zwalniania wspólnego gradientu FPP.
+
 `moduleSchema` / `loadModuleDefinitions(data[])` / `moduleDefinitions` w
 `src/progression/moduleSchema.ts` walidują `src/data/modules/*.json`:
 `{ id, name, description, tags: string[], weaponKinds?: string[], patches }`.
@@ -162,7 +175,7 @@ bez zmiany wersji. Pełny `Loadout` ma opcjonalne `modules`; `MetaManager.loadou
 zwraca ich głęboką kopię, a `RunManager.newRun` zamraża ją razem z ekwipunkiem.
 `MetaManager.setLoadout` wymaga odblokowanych `module:<id>`, broni obecnej w zestawie,
 zgodnego `weaponKinds`, braku duplikatów i limitu `progression.moduleSlotsPerWeapon`
-(startowo 2). Ten sam moduł może być zamontowany w kilku broniach.
+(3, po jednym na slot). Ten sam moduł może być zamontowany w kilku broniach.
 `unlockIdSchema` weryfikuje prefiks `module:` przeciw `moduleDefinitions`.
 
 Bronie pociskowe mają opcjonalne `ricochets` (licznik odbić od świata).

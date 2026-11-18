@@ -10,6 +10,38 @@ import { enemySchema } from './enemySchema';
 import type { EnemyDefinition } from './enemySchema';
 import type { Enemy, EnemyDependencies } from './types';
 
+/** Czasy i rozrzut są kopią danych; HP/obrażenia przechodzą przez Stats managera. */
+function definitionFor(
+  id: string,
+  deps: EnemyDependencies,
+): EnemyDefinition | undefined {
+  const base = enemyDefinitions.get(id);
+  const profile = deps.difficulty;
+  if (!base || !profile) return base;
+  const definition = structuredClone(base);
+  definition.telegraphS *= profile.telegraph;
+  definition.cooldownS *= profile.burstBreak;
+  if (definition.aimTelegraphS !== undefined)
+    definition.aimTelegraphS *= profile.telegraph;
+  if (definition.aimLockS !== undefined)
+    definition.aimLockS *= profile.telegraph;
+  if (definition.spreadDeg !== undefined)
+    definition.spreadDeg = Math.min(
+      90,
+      (definition.spreadDeg * profile.spread) / profile.accuracy,
+    );
+  if (definition.hack) {
+    definition.hack.hackTelegraphS *= profile.telegraph;
+    definition.hack.hackCooldownS *= profile.burstBreak;
+  }
+  for (const phase of definition.boss?.phases ?? [])
+    for (const pattern of phase.patterns) {
+      pattern.telegraphS *= profile.telegraph;
+      pattern.cooldownS *= profile.burstBreak;
+    }
+  return definition;
+}
+
 export type EnemyFactory = (
   ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
   deps: EnemyDependencies,
@@ -22,7 +54,7 @@ const factories = new Map<string, EnemyFactory>([
   [
     'boss',
     (ctx, deps, id, position) => {
-      const definition = enemyDefinitions.get(id);
+      const definition = definitionFor(id, deps);
       if (!definition) throw new Error(`Nieznany wróg: ${id}`);
       return new Boss(ctx, deps, definition, position);
     },
@@ -30,7 +62,7 @@ const factories = new Map<string, EnemyFactory>([
   [
     'gunner',
     (ctx, deps, id, position) => {
-      const definition = enemyDefinitions.get(id);
+      const definition = definitionFor(id, deps);
       if (!definition) throw new Error(`Nieznany wróg: ${id}`);
       return new Gunner(ctx, deps, definition, position);
     },
@@ -39,7 +71,7 @@ const factories = new Map<string, EnemyFactory>([
     // F2-13: Snajper to Strzelec z innymi danymi (długi telegraf, blokada celu, laser).
     'sniper',
     (ctx, deps, id, position) => {
-      const definition = enemyDefinitions.get(id);
+      const definition = definitionFor(id, deps);
       if (!definition) throw new Error(`Nieznany wróg: ${id}`);
       return new Gunner(ctx, deps, definition, position);
     },
@@ -47,7 +79,7 @@ const factories = new Map<string, EnemyFactory>([
   [
     'drone',
     (ctx, deps, id, position) => {
-      const definition = enemyDefinitions.get(id);
+      const definition = definitionFor(id, deps);
       if (!definition) throw new Error(`Nieznany wróg: ${id}`);
       return new Drone(ctx, deps, definition, position);
     },
@@ -55,7 +87,7 @@ const factories = new Map<string, EnemyFactory>([
   [
     'assaulter',
     (ctx, deps, id, position) => {
-      const definition = enemyDefinitions.get(id);
+      const definition = definitionFor(id, deps);
       if (!definition) throw new Error(`Nieznany wróg: ${id}`);
       return new Assaulter(ctx, deps, definition, position);
     },
@@ -66,13 +98,13 @@ for (const [kind, EnemyClass] of [
   ['hacker', Hacker],
 ] as const)
   factories.set(kind, (ctx, deps, id, position) => {
-    const definition = enemyDefinitions.get(id);
+    const definition = definitionFor(id, deps);
     if (!definition) throw new Error(`Nieznany wróg: ${id}`);
     return new EnemyClass(ctx, deps, definition, position);
   });
 for (const kind of ['shielder', 'executor'])
   factories.set(kind, (ctx, deps, id, position) => {
-    const definition = enemyDefinitions.get(id);
+    const definition = definitionFor(id, deps);
     if (!definition) throw new Error(`Nieznany wróg: ${id}`);
     return new Assaulter(ctx, deps, definition, position);
   });

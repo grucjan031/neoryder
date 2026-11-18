@@ -1,15 +1,24 @@
 import type { EntityId, EventBus } from '../core/events';
 import { loadSettings } from '../core/save';
+import { tuning } from '../core/tuning';
+import type { Vec3 } from '../core/math';
+import {
+  selectThreatIndicators,
+  type ThreatSource,
+  type ThreatTelegraph,
+} from './threatIndicator';
 import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
-import { RunHud, type RunHudSeed } from './runHud';
+import { RunHud, defeatMessage, type RunHudSeed } from './runHud';
 import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
 
 type HudLoadout = Pick<Loadout, 'weapons' | 'powers'>;
 
 interface HudOptions {
+  threats?: () => readonly ThreatSource[];
+  threatOrigin?: () => Vec3;
   deathScreen?: boolean;
   showWaves?: boolean;
   playerId: EntityId;
@@ -211,6 +220,8 @@ export class Hud {
     text.changeBuild,
   );
   private readonly death = element('section', 'hud__death');
+  private readonly deathCause = element('p', 'hud__death-cause');
+  private readonly deathTip = element('p', 'hud__death-tip');
   private readonly denial = createFlash('hud__denial');
   private readonly damage = createFlash('hud__damage');
   private readonly lowHealth = element('div', 'hud__lowhp');
@@ -258,6 +269,8 @@ export class Hud {
   private activeSlot = -1;
   private damageDirection: { x: number; z: number } | null = null;
   private viewYaw = 0;
+  private readonly telegraphs = new Map<EntityId, ThreatTelegraph>();
+  private readonly threatNodes: HTMLElement[] = [];
   private shownAngle = 0;
   private previousFocus: HTMLElement | null = null;
   private readonly runHud: RunHud;
@@ -316,6 +329,16 @@ export class Hud {
     this.damage.node.setAttribute('aria-hidden', 'true');
     this.damageDir.node.setAttribute('aria-hidden', 'true');
     this.damageDir.node.append(element('span', 'hud__dmgdir-arc'));
+    if (opts.threats && opts.threatOrigin) {
+      for (let i = 0; i < 4; i++) {
+        const node = element('div', 'hud__threat');
+        node.hidden = true;
+        node.setAttribute('aria-hidden', 'true');
+        node.append(element('span', 'hud__threat-mark'));
+        this.threatNodes.push(node);
+        this.root.append(node);
+      }
+    }
     this.hitMarker.node.setAttribute('aria-hidden', 'true');
     this.hitMarker.node.append(
       element('span', 'hud__hit-bar'),
@@ -344,7 +367,12 @@ export class Hud {
     const actions = element('div', 'hud__actions');
     actions.append(this.retryButton);
     if (opts.onChangeBuild) actions.append(this.changeBuildButton);
-    this.death.append(element('h1', 'hud__death-title', text.died), actions);
+    this.death.append(
+      element('h1', 'hud__death-title', text.died),
+      this.deathCause,
+      this.deathTip,
+      actions,
+    );
     this.runHud = new RunHud(bus, opts.run);
     this.root.append(
       this.runHud.node,
@@ -372,6 +400,9 @@ export class Hud {
     this.crosshairTicks.addEventListener('animationend', this.endFire);
     let overheated = false;
     this.unsubscribe = [
+      bus.on('enemy_telegraph', ({ id, kind, durationS }) => {
+        if (opts.threats) this.telegraphs.set(id, { kind, durationS });
+      }),
       bus.on('health_changed', ({ id, current, max }) => {
         if (id !== opts.playerId) return;
         const ratio = health.update(current, max);
@@ -520,7 +551,7 @@ export class Hud {
       bus.on('blade_returned', ({ owner }) => {
         if (owner === opts.playerId) this.blade.hidden = true;
       }),
-      bus.on('player_died', ({ id }) => {
+      bus.on('player_died', ({ id, cause }) => {
         if (id === opts.playerId) this.setJammed(false);
         if (
           id !== opts.playerId ||
@@ -532,6 +563,9 @@ export class Hud {
           document.activeElement instanceof HTMLElement
             ? document.activeElement
             : null;
+        const message = defeatMessage(cause);
+        this.deathCause.textContent = message.cause;
+        this.deathTip.textContent = message.tip;
         this.death.hidden = false;
         this.retryButton.focus();
       }),
@@ -540,6 +574,8 @@ export class Hud {
 
   /** Dane startowe ekwipunku; dalsze zmiany zasobów pochodzą wyłącznie ze zdarzeń. */
   setLoadout(loadout: HudLoadout): void {
+    this.telegraphs.clear();
+    for (const node of this.threatNodes) node.hidden = true;
     this.jammed = false;
     for (const slot of this.powerSlots) slot.denial.dispose();
     this.powerSlots = [];
@@ -608,6 +644,7 @@ export class Hud {
   setViewYaw(yaw: number): void {
     if (this.disposed) return;
     this.refreshFlashes();
+    this.updateThreats(yaw);
     if (yaw === this.viewYaw) return;
     this.viewYaw = yaw;
     if (!this.damageDir.node.hidden) this.placeDamageDir(false);
@@ -630,6 +667,62 @@ export class Hud {
     const disabled = !loadSettings().flashes;
     if (this.root.classList.contains('hud--no-flashes') !== disabled)
       this.root.classList.toggle('hud--no-flashes', disabled);
+  }
+
+  private updateThreats(yaw: number): void {
+    if (!this.opts.threats || !this.opts.threatOrigin) return;
+    const sources = this.opts.threats();
+    const active = new Set(
+      sources
+        .filter(
+          (s) =>
+            !s.removed &&
+            (s.current.state === 'telegraph' || s.current.state === 'aim'),
+        )
+        .map((s) => s.id),
+    );
+    for (const id of this.telegraphs.keys())
+      if (!active.has(id)) this.telegraphs.delete(id);
+    const k = tuning.vfx;
+    const indicators = selectThreatIndicators(
+      sources,
+      this.telegraphs,
+      this.opts.threatOrigin(),
+      yaw,
+      {
+        radiusM: k.threatRadiusM,
+        halfAngleDeg: k.threatHalfAngleDeg,
+        maxIndicators: k.threatMaxIndicators,
+      },
+    );
+    this.threatNodes.forEach((node, index) => {
+      const indicator = indicators[index];
+      node.hidden = !indicator;
+      if (!indicator) return;
+      node.dataset.kind = indicator.kind;
+      node.style.setProperty('--angle', `${indicator.angleDeg}deg`);
+      node.style.setProperty('--progress', String(indicator.progress));
+      node.style.setProperty(
+        '--threat-color',
+        indicator.kind === 'heavy'
+          ? k.heavyTelegraphColor
+          : tuning.render.enemy,
+      );
+      node.style.setProperty('--threat-end', k.heavyTelegraphEndColor);
+      node.style.setProperty(
+        '--white',
+        `${
+          Math.max(
+            0,
+            Math.min(
+              1,
+              (indicator.progress - (1 - k.heavyTelegraphEndFraction)) /
+                Math.max(k.heavyTelegraphEndFraction, Number.EPSILON),
+            ),
+          ) * 100
+        }%`,
+      );
+    });
   }
 
   private placeDamageDir(force: boolean): void {

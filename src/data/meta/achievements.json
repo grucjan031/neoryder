@@ -80,8 +80,8 @@
   {
     "id": "akrobata",
     "title": "Akrobata",
-    "description": "Wykonaj 200 zrywów.",
-    "hint": "Uciekaj zrywem przed ciosami i pociskami.",
+    "description": "Wykonaj 200 doskoków.",
+    "hint": "Uciekaj doskokiem przed ciosami i pociskami.",
     "category": "walka",
     "kind": "counter",
     "counter": "dash_used",
@@ -220,8 +220,8 @@
   {
     "id": "pelna-kontrola",
     "title": "Pełna kontrola",
-    "description": "Wygraj tryb Podbój.",
-    "hint": "Wybierz Podbój na tablicy misji i doprowadź go do zwycięstwa.",
+    "description": "Wygraj tryb Przejęcie.",
+    "hint": "Wybierz Przejęcie na tablicy misji i doprowadź je do zwycięstwa.",
     "category": "misje",
     "kind": "flag",
     "reward": {
@@ -232,7 +232,7 @@
   {
     "id": "trzy-punkty",
     "title": "Trzy punkty",
-    "description": "W trybie Podbój przejmij punkty A, B i C jednocześnie.",
+    "description": "W trybie Przejęcie kontroluj punkty A, B i C jednocześnie.",
     "hint": "Zdobądź wszystkie trzy punkty i utrzymaj je, zanim wróg któryś odbije.",
     "category": "misje",
     "kind": "flag",

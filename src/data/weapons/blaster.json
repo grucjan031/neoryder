@@ -10,5 +10,10 @@
   "name": "Blaster",
   "fireMode": "projectile",
   "automatic": true,
-  "model": "blaster"
+  "model": "blaster",
+  "grip": {
+    "offset": [0.0013, -0.014, 0.002],
+    "pose": "gripGun",
+    "firePose": "gripGunFire"
+  }
 }

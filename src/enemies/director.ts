@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
+import type { Rng } from '../core/rng';
+import type { Tuning } from '../core/tuning';
+import type { DifficultyProfile } from '../world/difficulty';
 
 const positive = z.number().finite().positive();
 const slotPool = z.object({
@@ -27,6 +30,8 @@ export type DirectorConfig = z.infer<typeof directorConfigSchema>;
 export type TokenKind = 'melee' | 'shot';
 
 export interface EnemyDirectorApi {
+  requestGroupToken?(id: EntityId, ready?: boolean): boolean | undefined;
+  pressure?(): boolean;
   /** true = może atakować teraz. Wołane co krok, gdy wróg chce zacząć atak; kolejka FIFO. */
   requestToken(id: EntityId, kind: TokenKind): boolean;
   /** Koniec ataku, ogłuszenie, śmierć. Bez tokenu nic nie robi. */
@@ -70,6 +75,12 @@ interface Pool {
  * Właściciel (EnemyManager) woła `step` raz na krok symulacji, po krokach wrogów.
  */
 export class EnemyDirector implements EnemyDirectorApi {
+  private clockS = 0;
+  private pressureS = 0;
+  private readonly grouping = new Map<
+    EntityId,
+    { at: number; group: boolean; paired?: boolean }
+  >();
   private readonly holders = new Map<
     EntityId,
     { kind: TokenKind; heldS: number }
@@ -90,6 +101,11 @@ export class EnemyDirector implements EnemyDirectorApi {
     bus: EventBus,
     private readonly config: DirectorConfig,
     private readonly deps: DirectorDeps,
+    private readonly tactics?: {
+      profile: DifficultyProfile;
+      rng: Rng;
+      tuning: Tuning['enemies'];
+    },
   ) {
     const pool = ({ count, offsetDeg }: DirectorConfig['slots']['melee']) => ({
       angles: Array.from(
@@ -110,6 +126,15 @@ export class EnemyDirector implements EnemyDirectorApi {
       bus.on('status_applied', ({ target, status }) => {
         if (status === 'stunned') this.releaseToken(target);
       }),
+      bus.on('melee_blocked', ({ defender, attacker }) => {
+        if (
+          this.tactics &&
+          this.deps.target()?.id === defender &&
+          attacker !== null &&
+          this.holders.get(attacker)?.kind === 'melee'
+        )
+          this.pressureS = this.tactics.tuning.blockPressureS;
+      }),
     ];
   }
 
@@ -121,6 +146,71 @@ export class EnemyDirector implements EnemyDirectorApi {
     let n = 0;
     for (const holder of this.holders.values()) if (holder.kind === kind) n++;
     return n;
+  }
+
+  pressure(): boolean {
+    return this.pressureS > 0 && (this.tactics?.profile.groupAttack ?? 0) > 0;
+  }
+
+  /** Pierwszy gotowy czeka na partnera; obaj dostają token w tym samym kroku. */
+  requestGroupToken(id: EntityId, ready = true): boolean | undefined {
+    if (!ready) {
+      this.grouping.delete(id);
+      return undefined;
+    }
+    const tactics = this.tactics;
+    if (
+      !tactics ||
+      tactics.profile.groupAttack === 0 ||
+      this.capacity('melee') < 2
+    )
+      return undefined;
+    if (this.holders.get(id)?.kind !== 'melee') return false;
+    let request = this.grouping.get(id);
+    if (!request) {
+      request = {
+        at: this.clockS,
+        group: tactics.rng.chance(tactics.profile.groupAttack),
+      };
+      this.grouping.set(id, request);
+    }
+    if (
+      request.paired ||
+      !request.group ||
+      this.clockS - request.at >= tactics.tuning.groupWindowS
+    )
+      return this.requestToken(id, 'melee');
+    const target = this.deps.target()?.position;
+    const from = this.deps.position(id);
+    if (!target || !from) return false;
+    const ax = from.x - target.x,
+      az = from.z - target.z;
+    for (const [other, pending] of this.grouping) {
+      if (
+        other === id ||
+        !pending.group ||
+        pending.paired ||
+        this.holders.get(other)?.kind !== 'melee' ||
+        this.clockS - pending.at > tactics.tuning.groupWindowS
+      )
+        continue;
+      const point = this.deps.position(other);
+      if (!point) continue;
+      const bx = point.x - target.x,
+        bz = point.z - target.z;
+      const length = Math.hypot(ax, az) * Math.hypot(bx, bz);
+      if (
+        length <= epsilon ||
+        (ax * bx + az * bz) / length >
+          Math.cos((tactics.tuning.groupMinAngleDeg * Math.PI) / 180) + epsilon
+      )
+        continue;
+      this.holders.set(id, { kind: 'melee', heldS: 0 });
+      this.holders.set(other, { kind: 'melee', heldS: 0 });
+      request.paired = pending.paired = true;
+      return true;
+    }
+    return false;
   }
 
   requestToken(id: EntityId, kind: TokenKind): boolean {
@@ -138,6 +228,7 @@ export class EnemyDirector implements EnemyDirectorApi {
   }
 
   releaseToken(id: EntityId): void {
+    this.grouping.delete(id);
     this.holders.delete(id);
     for (const kind of KINDS) {
       const queue = this.waiting[kind];
@@ -171,6 +262,14 @@ export class EnemyDirector implements EnemyDirectorApi {
 
   step(dt: number): void {
     if (!(dt > 0)) return;
+    this.clockS += dt;
+    this.pressureS = Math.max(0, this.pressureS - dt);
+    for (const [id, request] of this.grouping)
+      if (
+        !this.holders.has(id) &&
+        this.clockS - request.at > (this.tactics?.tuning.groupWindowS ?? 0) * 2
+      )
+        this.grouping.delete(id);
     for (const [id, holder] of this.holders) {
       holder.heldS += dt;
       if (holder.heldS > this.config.maxHoldS + epsilon)
@@ -213,6 +312,9 @@ export class EnemyDirector implements EnemyDirectorApi {
   }
 
   reset(): void {
+    this.grouping.clear();
+    this.clockS = 0;
+    this.pressureS = 0;
     this.holders.clear();
     for (const kind of KINDS) {
       this.waiting[kind] = [];

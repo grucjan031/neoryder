@@ -365,6 +365,23 @@ export const tuning = {
     outlineFadeFar: 16,
     outlineFarNormal: 0,
     outlineFarOuter: 1,
+    /**
+     * Styl komiksowy (próbki kierunku „Borderlands”, 0 = wyłączone, wygląd bez zmian):
+     * inkNearScale pogrubia kontur blisko kamery (mnożnik grubości przy far = 0),
+     * celBands > 0 dzieli jasność na pasma (celStrength = siła), hatchStrength przyciemnia
+     * kreskowaniem w cieniach (poniżej hatchThreshold, odstęp linii hatchSpacing px),
+     * paintStrength dokłada plamistą fakturę farby. Mocno nasycone piksele (wrogowie, neony,
+     * efekty) są pomijane przez cel/kreski: czytelność walki ponad styl.
+     */
+    inkNearScale: 1,
+    /** Grubość tuszu w px po pogrubieniu maski krawędzi (0 = zwykły kontur). */
+    inkWidth: 0,
+    celBands: 0,
+    celStrength: 0,
+    hatchStrength: 0,
+    hatchThreshold: 0.22,
+    hatchSpacing: 5,
+    paintStrength: 0,
     hemiIntensity: 0.6,
     keyIntensity: 2.4,
     /** Przełączniki jakości: 0 pomija pass (słaby sprzęt). */
@@ -622,6 +639,29 @@ export const tuning = {
     muzzleFlashSize: 0.14,
   },
   enemies: {
+    flankMinDeg: 60,
+    flankMaxDeg: 120,
+    flankArcStepDeg: 15,
+    flankTimeoutS: 3,
+    tacticRetryS: 1.5,
+    tacticArrivalM: 0.25,
+    coverRadiusM: 6,
+    coverSamples: 16,
+    coverHoldS: 1.2,
+    /** Odstęp sprawdzania widoczności z osłony (raycast z cache). */
+    coverCheckS: 0.25,
+    coverTravelS: 3,
+    coverGroundProbeM: 2,
+    coverLowHp: 0.35,
+    groupWindowS: 0.35,
+    groupMinAngleDeg: 60,
+    blockPressureS: 1.2,
+    evadeS: 0.35,
+    evadeRangeM: 5,
+    dashThreatRangeM: 10,
+    threatFacingDot: 0.5,
+    /** Odstęp tarczy od hełmu podczas animacji UAL (metry). */
+    shieldHeadClearanceM: 0.03,
     animationFadeS: 0.12,
     animationActionFadeS: 0.04,
     phaseShiftS: 1,
@@ -640,6 +680,26 @@ export const tuning = {
     snapToGroundDistance: 0,
   },
   vfx: {
+    /**
+     * Czytelność wrogów z daleka (render/enemyRim.ts): jasność kombinezonu `mat_enemy_dark`
+     * względem czerwieni wroga; poświata krawędzi rośnie od enemyRimNearM do enemyRimFarM [m]
+     * (mnożnik siły motywu, szerszy wykładnik, płaskie wypełnienie bryły czerwienią) i jest
+     * kompensowana o mgłę kompozycji (0 = bez kompensacji, 1 = pełna).
+     */
+    enemyDarkShade: 0.3,
+    enemyRimNearM: 4,
+    enemyRimFarM: 20,
+    enemyRimFarGain: 2.5,
+    enemyRimFarPower: 1.3,
+    enemyRimFarFill: 0.2,
+    enemyRimFogCompensation: 1,
+    heavyTelegraphColor: '#ffd27a',
+    heavyTelegraphEndColor: '#fff4dc',
+    heavyTelegraphEndFraction: 0.3,
+    heavyTelegraphPulseMultiplier: 2,
+    threatRadiusM: 22,
+    threatHalfAngleDeg: 40,
+    threatMaxIndicators: 4,
     barrierRadiusM: 1.25,
     barrierHeightM: 1.1,
     barrierDistanceM: 0.9,
@@ -661,6 +721,24 @@ export const tuning = {
     grabGlowOpacity: 1.1,
     grabOrbM: 0.2,
     beamRadiusM: 0.018,
+    /**
+     * Klinga ostrza FPP (render/fppBladeFx.ts), komiksowa plazma: płaskie strefy w poprzek poświaty
+     * (granice jako ułamek półszerokości quada poświaty: biały rdzeń, jasny cyjan, ciemniejsza otoczka
+     * i jej krycie)
+     * oraz płaskie pasma energii płynące od emitera do czubka (liczba na klingę, ułamek okresu,
+     * poszerzenie rdzenia w paśmie, prędkość w pasmach/s; spokojna prędkość przy wyłączonych
+     * „Błyskach ekranu”, mnożnik prędkości w trakcie cięcia).
+     */
+    bladeCoreFrac: 0.07,
+    bladeInnerFrac: 0.3,
+    bladeOuterFrac: 0.44,
+    bladeOuterOpacity: 0.85,
+    bladeBands: 4,
+    bladeBandWidth: 0.35,
+    bladeBandSwell: 0.02,
+    bladeBandSpeed: 1.4,
+    bladeBandSpeedCalm: 0.15,
+    bladeBandSlashBoost: 2.5,
     /**
      * Błyskawica (render): szerokość wstęgi rdzenia i poświaty (m), krycie poświaty, kolor rdzenia,
      * ułamek życia łuku na uderzenie, migotanie (Hz, głębokość 0..1), odnogi (szansa na wierzchołek,

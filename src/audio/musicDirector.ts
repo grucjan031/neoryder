@@ -1,4 +1,5 @@
 import type { EntityId, EventBus } from '../core/events';
+import { JUKEBOX_LOOPS } from './musicSchema';
 import type { MusicState } from './musicSchema';
 
 export interface MusicDirectorOptions {
@@ -25,6 +26,8 @@ export class MusicDirector {
   private combatUntil = -Infinity;
   /** Po śmierci gracza/końcu runu: ignoruj walkę do następnej sceny lub nowego gracza. */
   private silenced = false;
+  /** Numer utworu szafy grającej (0 = domyślny calm); kryjówka startuje od 0. */
+  private jukebox = 0;
   private override: MusicState | null = null;
   private current: MusicState | null = null;
   private readonly off: (() => void)[] = [];
@@ -46,7 +49,13 @@ export class MusicDirector {
         if (id === this.bossId) this.bossEnded();
         this.poll();
       }),
+      bus.on('hub_prop_used', ({ kind }) => {
+        if (kind !== 'jukebox') return;
+        this.jukebox = (this.jukebox + 1) % JUKEBOX_LOOPS.length;
+        this.poll();
+      }),
       bus.on('scene_loaded', () => {
+        this.jukebox = 0;
         this.bossId = null;
         this.waveActive = false;
         this.combatUntil = -Infinity;
@@ -89,6 +98,11 @@ export class MusicDirector {
     return this.current ?? 'calm';
   }
 
+  /** Numer utworu szafy (0..2). */
+  get jukeboxTrack(): number {
+    return this.jukebox;
+  }
+
   /** Ręczne wymuszenie stanu (komenda debug); null = tryb automatyczny. */
   setOverride(state: MusicState | null): void {
     this.override = state;
@@ -112,7 +126,7 @@ export class MusicDirector {
     if (this.silenced) return 'calm';
     if (this.bossId !== null) return 'boss';
     if (this.waveActive || this.opts.now() < this.combatUntil) return 'combat';
-    return 'calm';
+    return JUKEBOX_LOOPS[this.jukebox] ?? 'calm';
   }
 
   private touchCombat(): void {

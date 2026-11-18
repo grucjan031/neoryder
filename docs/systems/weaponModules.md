@@ -8,26 +8,26 @@ zużywalnym przedmiotem: jeden moduł może działać równocześnie w kilku bro
 
 Definicje: `src/data/modules/*.json`, schemat zod i rejestr:
 `src/progression/moduleSchema.ts`. Pola: `id`, polskie `name` i `description`,
-`tags: string[]`, opcjonalne `weaponKinds: string[]` oraz `patches`.
+`tags: string[]`, wymagane `slot` i `visual`, opcjonalne `weaponKinds: string[]` oraz `patches`.
 `weaponKinds` odnosi się do `fireMode` broni; jego brak dopuszcza wszystkie tryby.
 Łatka modułu zawiera wyłącznie `op`, `path`, `value`; cel wynika z montażu.
 
-`progression.json.moduleSlotsPerWeapon` ustala limit (2). W
+`progression.json.moduleSlotsPerWeapon` ustala limit (3). W
 `LoadoutChoice.modules` kluczem jest id broni, a wartością uporządkowane id modułów.
 Puste sloty nie mają wpisu; po usunięciu modułu pozostałe zachowują kolejność.
 `MetaManager.setLoadout` sprawdza odblokowania, obecność broni w ekwipunku,
-limit, brak duplikatów w broni i zgodność trybu. Walidacja poprzedza zmianę stanu.
+limit, brak duplikatów i konfliktów slotów w broni oraz zgodność trybu. Walidacja poprzedza zmianę stanu.
 Zmiana w panelu wywołuje `setLoadout`, potem zapis meta. Usunięcie broni czyści
 jej przypisania modułów.
 
 ## Moduły startowe
 
-| Id | Nazwa | Działanie | Odblokowanie | Tryby broni |
-| --- | --- | --- | --- | --- |
-| `ricochet` | Rykoszet | Jedno odbicie od geometrii świata | 160 Danych, poziom 3 | projectile, spread, pierce, lob |
-| `pierce` | Przebicie | `pierceCount +1`: jeden dodatkowy cel, zachowany `pierceFalloff` | 180 Danych, poziom 4 | projectile, spread, pierce |
-| `incendiary` | Podpalenie | Dopisuje `burning` na 3 s do statusów trafienia | 200 Danych, poziom 4 | wszystkie |
-| `superconductor` | Nadprzewodnik | Prędkość pocisku +20%, ciepło na strzał −15% | 6 Rdzeni, poziom 5 | projectile, spread, pierce, lob |
+| Id               | Nazwa         | Działanie                                                        | Odblokowanie         | Tryby broni                     |
+| ---------------- | ------------- | ---------------------------------------------------------------- | -------------------- | ------------------------------- |
+| `ricochet`       | Rykoszet      | Jedno odbicie od geometrii świata                                | 160 Danych, poziom 3 | projectile, spread, pierce, lob |
+| `pierce`         | Przebicie     | `pierceCount +1`: jeden dodatkowy cel, zachowany `pierceFalloff` | 180 Danych, poziom 4 | projectile, spread, pierce      |
+| `incendiary`     | Podpalenie    | Dopisuje `burning` na 3 s do statusów trafienia                  | 200 Danych, poziom 4 | wszystkie                       |
+| `superconductor` | Nadprzewodnik | Prędkość pocisku +20%, ciepło na strzał −15%                     | 6 Rdzeni, poziom 5   | projectile, spread, pierce, lob |
 
 Nadprzewodnik używa wariantu awaryjnego ustalonego w briefie. Istniejący
 `DamageSystem` nie ma warunku obrażeń zależnego od statusu celu. Efekty
@@ -66,7 +66,46 @@ W 30 sekund: `?scene=hub&debug=1`, `meta unlock all`, otwórz Warsztat,
 wybierz pistolet i zamontuj Podpalenie oraz Rykoszet. Uruchom run z ekwipunkiem
 meta; `query('resolvedLoadout')` pokazuje statusy i `ricochets: 1`.
 Strzel do wroga i pod kątem w ścianę. Oceń czytelność odbicia, podpalania
-i obu slotów w ciemnym panelu warsztatu.
+i trzech slotów w ciemnym panelu warsztatu.
+
+## Sloty i optyka (S4c, runda A)
+
+Kolejność łatek jest stała: Wylot (`muzzle`), Ogniwo (`cell`), Optyka (`optic`),
+niezależnie od kolejności tablicy. Po jednym module na slot. Przy wczytywaniu meta
+starszy konflikt (np. Przebicie + Rykoszet) zachowuje pierwszy wpis slotu.
+`SAVE_VERSION` nadal 6; nie zmienia się struktura zapisu.
+
+| Slot   | Moduł         | Kształt / akcent |
+| ------ | ------------- | ---------------- |
+| Wylot  | Przebicie     | rail / white     |
+| Wylot  | Rykoszet      | brake / amber    |
+| Ogniwo | Podpalenie    | canister / amber |
+| Ogniwo | Nadprzewodnik | coil / green     |
+| Optyka | Kolimator     | reddot / green   |
+| Optyka | Luneta        | scope / white    |
+
+Kolimator: 140 Danych, poziom 2, wszystkie tryby poza `pierce`; czas wejścia ADS
+×0,5, FOV ×0,85 względem bazowego, rozrzut ADS ×0,6 względem tuningu.
+Luneta: 220 Danych, poziom 5, `projectile` i `beam`; czas wejścia ×1,6,
+FOV ×0,5, czułość ADS ×0,6. Bez optyki nowe mnożniki wynoszą 1.
+Wyjście z celowania i ruch pozostają bez zmian. Panel pokazuje tylko odblokowane,
+zgodne moduły danego slotu, nazwę slotu, „— brak —” i opis efektu pod wyborem.
+
+Fabryka `weaponModuleVisuals.ts` tworzy proceduralne bryły z własnymi materiałami
+FPP i umiarkowaną emisją (0,25). Zaczepy wynikają z bbox `frame`, `heat_cell` i
+położenia `muzzle`; optyka stoi na 60% długości korpusu od tyłu. Błysk i poświata
+wylotu przesuwają się na koniec dodatku, demontaż przywraca ich pozycję.
+`modulesOf` dostarcza zamrożone moduły runu w `RoomScene` (także misja liniowa).
+Zmiana broni i dispose zdejmują dodatki. Ręce i pozy FPP pozostają istniejące.
+
+Kontrola wizualna dla Claude: uruchom `npm run dev`, następnie
+`node tools/screens/moduleVisuals.mjs http://localhost:5173 artifacts/module-visuals`.
+Skrypt wymaga deweloperskiego serwera Vite i Chromium Playwright. Tworzy 84 PNG
+(7 modeli × 6 kształtów × biodro/poza ADS) oraz manifest. Używa prawdziwego
+`FppViewModel` na neutralnym tle; kombinacje niedostępne w grze są oznaczone jako
+kontrola geometrii. To kontrola brył i póz, bez symulowania FOV optyki ani bloomu
+rozgrywki; bloom i czytelność w scenie należy sprawdzić ręcznie. Skrypt nie był
+uruchamiany w rundzie Codexa zgodnie ze zleceniem. Podgląd kryjówki 3D opisuje następna sekcja.
 
 Vitest: `modules.test.ts` (dane, schematy, kopie, zgodność, przebicie i transport
 parametrów), `patches.test.ts` (`append` i błędne dane),
@@ -75,3 +114,21 @@ parametrów), `patches.test.ts` (`append` i błędne dane),
 wróg, czas życia i ponowne użycie puli), `roomPatches.test.ts`
 (pistolet rzeczywiście nakłada `burning`), `workshopPanel.test.ts`
 (montaż, zapis, usuwanie i filtrowanie).
+
+## Podgląd 3D w warsztacie (runda B)
+
+Sekcja Ekwipunek warsztatu ma podgląd wybranej broni z założonymi modułami
+(`src/render/weaponPreview.ts`, klasa `WeaponPreview`). Model ładuje wspólna funkcja
+`loadWeaponScene` (`weaponModelLoader.ts`, ta sama co FPP: styl gry i `applyFppSurfaces`),
+moduły dodaje `attachModuleVisuals` na KLONIE modelu, więc cache FPP się nie zmienia.
+Własny `WebGLRenderer` (przezroczyste tło, `preserveDrawingBuffer`) rysuje klatki tylko,
+gdy canvas jest widoczny (`IntersectionObserver`, także `start()/stop()`) i coś się zmienia:
+przeciąganie (pointer events, mysz i dotyk; obrót Y i nachylenie ±25°), autoobrót 15°/s
+(od razu po otwarciu i 3 s po puszczeniu), nowa broń lub rozmiar. Przy
+`prefers-reduced-motion: reduce` nie ma autoobrotu (osobnego ustawienia w `Settings` brak).
+Bez WebGL2 (jsdom, stare przeglądarki) podgląd się nie tworzy, a panel pokazuje notkę.
+Kontener ma `data-testid="weapon-preview"`, `data-weapon` i `data-modules` (id po przecinku,
+po `sanitizeModules`). Wybór broni: przyciski `data-action="preview"` nad podglądem
+(widoczne od dwóch broni w ekwipunku); stan pomocniczy w `previewTarget` (`workshopState.ts`).
+Testy: `weaponPreview.test.ts`, `workshopPreview.test.ts`, `workshopPanel.test.ts`
+(fallback), e2e `workshopPreview.spec.ts` (kryjówka `?scene=hub&debug=1&fx=lite`).

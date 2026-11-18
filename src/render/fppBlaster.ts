@@ -13,21 +13,21 @@ import {
   Vector3,
 } from 'three';
 import type { Object3D } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { EntityId, EventBus } from '../core/events';
 import { tuning as defaultTuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { loadSettings } from '../core/save';
 import type { Settings } from '../core/save';
-import { applyStyle, getMaterial } from './materials';
+import { getMaterial } from './materials';
 import { palette } from './palette';
 import { HandRig } from './handRig';
-import {
-  applyFppSurfaces,
-  fppGlowMaterial,
-  fppGlowTexture,
-  markGlow,
-} from './fppMaterials';
+import { isHandPose } from './handPoses';
+import type { HandPose } from './handPoses';
+import { weaponGripOfModel } from '../combat/weapons/weaponSchema';
+import type { WeaponGrip } from '../combat/weapons/weaponSchema';
+import { attachModuleVisuals } from './weaponModuleVisuals';
+import { loadWeaponScene } from './weaponModelLoader';
+import { fppGlowMaterial, fppGlowTexture, markGlow } from './fppMaterials';
 
 /** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
@@ -58,6 +58,38 @@ const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;
 const RECOIL_RECOVER = 14;
 const FALLBACK_MODEL = 'blaster';
+
+/** Chwyt dłoni dla bieżącego modelu: macierze gniazd w układzie broni i pozy palców. */
+interface ResolvedGrip {
+  hand: Matrix4;
+  pose: HandPose;
+  firePose: HandPose;
+  support: Matrix4 | null;
+  supportPose: HandPose;
+}
+
+function gripMatrix(offset: readonly number[], rotation?: readonly number[]) {
+  const [x = 0, y = 0, z = 0] = offset;
+  const [rx = 0, ry = 0, rz = 0] = rotation ?? [];
+  return new Matrix4()
+    .makeRotationFromEuler(new Euler(rx, ry, rz, 'XYZ'))
+    .setPosition(x, y, z);
+}
+
+function resolveGrip(grip: WeaponGrip | undefined): ResolvedGrip {
+  const pose = (name: string | undefined, fallback: HandPose): HandPose =>
+    name !== undefined && isHandPose(name) ? name : fallback;
+  return {
+    hand: grip ? gripMatrix(grip.offset, grip.rotation) : new Matrix4(),
+    pose: pose(grip?.pose, 'gripGun'),
+    firePose: pose(grip?.firePose, 'gripGunFire'),
+    support: grip?.support
+      ? gripMatrix(grip.support.offset, grip.support.rotation)
+      : null,
+    supportPose: pose(grip?.support?.pose, 'support'),
+  };
+}
+const DEFAULT_GRIP = resolveGrip(undefined);
 const FLASH_POINTS = 8;
 const FLASH_INNER = 0.3;
 /** Ciepło: cyan -> biel rozgrzanego metalu (czerwień jest zarezerwowana dla wrogów). */
@@ -70,6 +102,7 @@ const HEAT_GLOW_SIZE = 0.09;
 export interface FppBlasterOptions {
   /** Nazwa modelu (`<nazwa>.glb`) dla id broni; brak = model blastera. */
   modelOf?: (weaponId: string) => string | undefined;
+  modulesOf?: (weaponId: string) => readonly string[];
   tuning?: Pick<Tuning, 'weapons' | 'player'>;
   /** Ustawienia dostępności (domyślnie zapisane ustawienia gracza). */
   settings?: Pick<Settings, 'flashes'>;
@@ -136,7 +169,12 @@ export class FppBlaster {
   private readonly modelOf: (weaponId: string) => string | undefined;
   private loadModels = false;
   private current: Object3D | null = null;
+  private grip: ResolvedGrip = DEFAULT_GRIP;
+  private readonly grips = new Map<string, ResolvedGrip>();
   private wanted = FALLBACK_MODEL;
+  private weaponId: string | undefined;
+  private readonly modulesOf: (weaponId: string) => readonly string[];
+  private detachModules: (() => void) | undefined;
   private heat = 0;
   private overheated = false;
   private recoil = 0;
@@ -155,6 +193,7 @@ export class FppBlaster {
   constructor(bus: EventBus, owner: EntityId, options: FppBlasterOptions = {}) {
     this.tuning = options.tuning ?? defaultTuning;
     this.modelOf = options.modelOf ?? (() => undefined);
+    this.modulesOf = options.modulesOf ?? (() => []);
     this.settings = options.settings;
     this.root.matrixAutoUpdate = false;
     this.root.add(this.fallback);
@@ -173,6 +212,7 @@ export class FppBlaster {
       }),
       bus.on('weapon_switched', ({ owner: who, weapon }) => {
         if (who !== owner) return;
+        this.weaponId = weapon;
         this.wanted = this.modelOf(weapon) ?? FALLBACK_MODEL;
         void this.show(this.wanted);
       }),
@@ -188,24 +228,36 @@ export class FppBlaster {
 
   private async show(name: string): Promise<void> {
     if (!this.loadModels) return;
+    let shown = name;
     let model = await this.fetchModel(name);
-    if (!model && name !== FALLBACK_MODEL)
+    if (!model && name !== FALLBACK_MODEL) {
       model = await this.fetchModel(FALLBACK_MODEL);
-    if (
-      this.disposed ||
-      name !== this.wanted ||
-      !model ||
-      model === this.current
-    )
-      return;
+      shown = FALLBACK_MODEL;
+    }
+    if (this.disposed || name !== this.wanted || !model) return;
     this.setCurrent(model);
+    this.grip = this.gripOf(shown);
+  }
+
+  private gripOf(name: string): ResolvedGrip {
+    let grip = this.grips.get(name);
+    if (!grip) {
+      grip = resolveGrip(weaponGripOfModel(name));
+      this.grips.set(name, grip);
+    }
+    return grip;
   }
 
   private setCurrent(model: Object3D): void {
+    this.detachModules?.();
     if (this.current) this.root.remove(this.current);
     this.root.remove(this.fallback);
     this.current = model;
     this.root.add(model);
+    this.detachModules =
+      this.weaponId === undefined
+        ? undefined
+        : attachModuleVisuals(model, this.modulesOf(this.weaponId));
     this.flashLeft = 0;
   }
 
@@ -220,14 +272,10 @@ export class FppBlaster {
 
   private async loadModel(name: string): Promise<Object3D | null> {
     try {
-      const gltf = await new GLTFLoader().loadAsync(
-        `/assets/models/${name}.glb`,
-      );
-      applyStyle(gltf.scene);
-      applyFppSurfaces(gltf.scene);
+      const scene = await loadWeaponScene(name);
       // Własny materiał dla elementów ciepła — współdzielony materiał gracza zostaje cyan.
       let muzzle: Object3D | null = null;
-      gltf.scene.traverse((node: Object3D) => {
+      scene.traverse((node: Object3D) => {
         if (node.name === 'muzzle') muzzle = node;
         if (
           (node.name === 'heat_vents' || node.name === 'heat_cell') &&
@@ -235,8 +283,8 @@ export class FppBlaster {
         )
           node.material = this.heatMaterial;
       });
-      if (muzzle) this.attachFlash(gltf.scene, muzzle);
-      return gltf.scene;
+      if (muzzle) this.attachFlash(scene, muzzle);
+      return scene;
     } catch {
       return null;
     }
@@ -257,6 +305,7 @@ export class FppBlaster {
 
   private attachFlash(model: Object3D, muzzle: Object3D): void {
     const flash = new Group();
+    flash.name = 'module_muzzle_flash';
     flash.visible = false;
     // Gwiazda (addytywna, bez konturu) w płaszczyźnie XY, miękki biały rdzeń
     // i dwa skrzyżowane „płatki” wzdłuż lufy, widoczne z boku broni.
@@ -331,8 +380,8 @@ export class FppBlaster {
     m.compose(v, q, s);
     this.root.matrix.multiplyMatrices(cameraMatrix, m);
     this.root.matrixWorldNeedsUpdate = true;
-    this.hand.setPose('gripGun', 'gripGunFire', recoil);
-    this.hand.placeAt(m.identity(), 'socket_gun');
+    this.hand.setPose(this.grip.pose, this.grip.firePose, recoil);
+    this.hand.placeAt(this.grip.hand, 'socket_gun');
 
     const flash = this.current ? this.flashes.get(this.current) : undefined;
     if (flash) {
@@ -366,11 +415,18 @@ export class FppBlaster {
         .multiply(this.tmp.m.makeTranslation(0, 0, TWO_HAND_SUPPORT_FORWARD))
         .multiply(this.tmp.m.makeRotationY(TWO_HAND_SUPPORT_YAW))
         .multiply(this.tmp.m.makeRotationX(TWO_HAND_SUPPORT_PITCH));
+    if (this.grip.support) matrix.multiply(this.grip.support);
     return matrix;
+  }
+
+  /** Poza palców dłoni podpierającej dla bieżącego modelu. */
+  get supportPose(): HandPose {
+    return this.grip.supportPose;
   }
 
   dispose(): void {
     this.disposed = true;
+    this.detachModules?.();
     this.hand.dispose();
     for (const off of this.off.splice(0)) off();
     this.heatMaterial.dispose();

@@ -6,6 +6,8 @@ import { MusicSystem } from '../../src/audio/music';
 import type { MusicTimer } from '../../src/audio/music';
 import { MusicDirector } from '../../src/audio/musicDirector';
 import {
+  ALL_MUSIC_LOOPS,
+  CALM_VARIANTS,
   MUSIC_LOOPS,
   compileTrack,
   loadMusic,
@@ -30,6 +32,19 @@ describe('schemat muzyki', () => {
       for (const track of loop.tracks)
         expect(compileTrack(loop, track).length).toBeGreaterThan(0);
     }
+  });
+
+  it('warianty spokoju szafy mają inne tempo niż calm i poprawne wzorce', () => {
+    const def = loadMusic(musicData);
+    expect(ALL_MUSIC_LOOPS).toHaveLength(MUSIC_LOOPS.length + 2);
+    const bpms = new Set<number>([def.loops.calm.bpm]);
+    for (const id of CALM_VARIANTS) {
+      const loop = def.loops[id];
+      bpms.add(loop.bpm);
+      for (const track of loop.tracks)
+        expect(compileTrack(loop, track).length).toBeGreaterThan(0);
+    }
+    expect(bpms.size).toBe(3);
   });
 
   it('parsuje nazwy nut', () => {
@@ -200,6 +215,33 @@ describe('MusicDirector', () => {
     bus.emit('wave_started', { wave: 1, count: 1 });
     director.setOverride(null);
     expect(director.state).toBe('combat');
+  });
+
+  it('szafa grająca przełącza utwór spokoju po kolei i wraca do calm', () => {
+    const { bus, director, states } = setup();
+    const use = () =>
+      bus.emit('hub_prop_used', { prop: 'jukebox', kind: 'jukebox' });
+    use();
+    expect(director.state).toBe('calmRain');
+    use();
+    expect(director.state).toBe('calmDawn');
+    use();
+    expect(director.state).toBe('calm');
+    use();
+    expect(states.slice(-2)).toEqual(['calm', 'calmRain']);
+  });
+
+  it('inne rekwizyty nie ruszają muzyki, a walka ma pierwszeństwo przed utworem szafy', () => {
+    const { bus, director } = setup();
+    bus.emit('hub_prop_used', { prop: 'radio', kind: 'radio' });
+    expect(director.state).toBe('calm');
+    bus.emit('hub_prop_used', { prop: 'jukebox', kind: 'jukebox' });
+    bus.emit('wave_started', { wave: 1, count: 1 });
+    expect(director.state).toBe('combat');
+    bus.emit('wave_cleared', { wave: 1 });
+    bus.emit('scene_loaded', { sceneId: 'hub' });
+    expect(director.state).toBe('calm');
+    expect(director.jukeboxTrack).toBe(0);
   });
 
   it('dispose odpina słuchaczy', () => {

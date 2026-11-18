@@ -1,7 +1,7 @@
 {
   "id": "thermalFusePlus",
   "name": "Bezpiecznik termiczny II",
-  "description": "Zabójstwo z broni wywołuje wybuch za 21 obrażeń w promieniu 3 m i podpala na 2,5 s, co 2,5 s.",
+  "description": "Zabójstwo bronią palną: wybuch za 21 obrażeń, odrzut 2,5, promień 3 m i podpalenie na 2,5 s. Odnowienie: 2,5 s.",
   "rarity": "epic",
   "tags": ["#gun"],
   "modifiers": [],

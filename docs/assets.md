@@ -11,15 +11,15 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 
 ## Konwencje (obowiązkowe dla nowych modeli)
 
-| Zasada               | Wartość                                                                                            |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| Jednostki            | metry, glTF Y-up                                                                                   |
-| Postacie i rekwizyty | patrzą w **+Z** (zgodnie z `Object3D.lookAt`), spód / stopy na `y = 0`, środek w `x = z = 0`       |
-| Broń gracza          | celuje w **-Z** (kierunek kamery), początek układu w punkcie chwytu                                |
-| Ręce gracza (FPP)    | początek = nadgarstek, palce w spoczynku w **-Z**, wnętrze dłoni w **+Y**, przedramię w **+Z**     |
-| Strona prawa postaci | **-X** (postać patrzy w +Z)                                                                        |
-| Cieniowanie          | płaskie (flat), low-poly, bez tekstur                                                              |
-| Budżet               | humanoid ≤ 6000 trójkątów (ciało ≈ 4000), dron ≤ 1500, rekwizyt ≤ 500, broń ≤ 400, ręka FPP ≤ 3000 |
+| Zasada               | Wartość                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Jednostki            | metry, glTF Y-up                                                                                                                     |
+| Postacie i rekwizyty | patrzą w **+Z** (zgodnie z `Object3D.lookAt`), spód / stopy na `y = 0`, środek w `x = z = 0`                                         |
+| Broń gracza          | celuje w **-Z** (kierunek kamery), początek układu w punkcie chwytu                                                                  |
+| Ręce gracza (FPP)    | początek = nadgarstek, palce w spoczynku w **-Z**, wnętrze dłoni w **+Y**, przedramię w **+Z**                                       |
+| Strona prawa postaci | **-X** (postać patrzy w +Z)                                                                                                          |
+| Cieniowanie          | płaskie (flat), low-poly, bez tekstur                                                                                                |
+| Budżet               | humanoid ≤ 6000 trójkątów (ciało ≈ 4000), dron ≤ 1500, rekwizyt ≤ 500, broń ≤ 1000 (szlif komiksowy 18.11: 488–940), ręka FPP ≤ 3000 |
 
 ### Materiały (rozpoznawane po nazwie — shader stylu może je podmienić)
 
@@ -470,12 +470,19 @@ cieniowanie z ostrymi krawędziami powyżej 50° (kontur rysuje sylwetkę i pły
 a nie fasetki po decymacji) i ciemny kombinezon `mat_enemy_dark`; płyty pancerza
 (`mat_enemy`) i broń mają płaskie normalne i fazowane krawędzie, akcenty świetlne
 (`mat_enemy_glow`: wizjer, linie na piersi, naramiennikach i kolanach, klamra) nie
-mają konturu w grze. Wspólne: kask z wizjerem i ciemną osłoną szczęki, kołnierz,
-pas z klamrą. Sylwetki ról: Szturmowiec — grzebień na kasku ze światłem i akumulator
-na plecach, Strzelec — daszek, gogle, radio z anteną, Snajper — szpiczasty kaptur,
-monokular, płaszcz na plecach i poły, Tarczownik — osłona twarzy i tarcza z ciemnym
-licem, wizjerem, szewronem i szynami światła, Egzekutor — rogi, kolce naramienników,
-rdzeń w ramie i świecący kręgosłup. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
+mają konturu w grze. Wspólne: kask z wizjerem, kołnierz, pas z klamrą. Wyposażenie
+to duże, płaskie płyty bez drobnicy (małe ciemne elementy tusz zamieniał w plamy);
+role rozróżnia sylwetka czytelna z 20–30 m, a we mgle — kształt świecących akcentów.
+Sylwetki ról: Szturmowiec — legionista: poprzeczny grzebień-wachlarz ze świecącym
+rdzeniem, okrągłe naramienniki, fartuchy ud, długa pałka z dużą głowicą; Strzelec —
+piechur: kanciasty hełm z daszkiem, goglami i nausznikami, płaskie naramienniki, płyty ud,
+plecak z radiem i wysoką anteną ze świecącym szczytem, karabin; Snajper — smukły: wysoki
+szpiczasty kaptur z monokularem, wąskie barki, płaszcz i poły do łydek ze świecącymi
+krawędziami z przodu, długi karabin; Tarczownik — szeroki: piętrowe naramienniki, garb
+nad karkiem, hełm prewencyjny z płaską osłoną twarzy, tarcza z ciemnym licem, wizjerem,
+szewronem i szynami światła; Egzekutor — masywny: zakręcone rogi z trzech segmentów,
+ogromne naramienniki z dwoma kolcami, fartuch kata z przodu i z tyłu, rdzeń w ramie
+i świecący kręgosłup. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
 ma 2,208 m (1,2×). Dodatkowa skala `boss.modelScale` nadal działa w widoku.
 Stopy w pozycji wiązania leżą na y=0, przód to +Z glTF, prawa strona to -X.
 
@@ -572,14 +579,14 @@ Testy: `tests/unit/hubNpcView.test.ts`, `hubSeating.test.ts`, `hubCatView.test.t
 
 | Plik                                   | Co to                                                                                                                                                                            | Węzły dla kodu                                                                                                                   |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `enemy_trooper.glb`                    | Szturmowiec (5215 tri): hełm z grzebieniem i wizjerem, naramienniki z liniami światła, ładownice, akumulator na plecach, pałka z cewkami                                         | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
-| `enemy_gunner.glb`                     | Strzelec (5315 tri): hełm z daszkiem i goglami, ładownice, radio z anteną, karabin z liniami światła                                                                             | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
-| `enemy_sniper.glb`                     | Snajper (5458 tri): szpiczasty kaptur z monokularem, płaszcz i poły z lamówką, długi karabin ze świecącą lunetą                                                                  | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
-| `enemy_shielder.glb`                   | Tarczownik (5307 tri): ciężkie płyty, osłona twarzy, pałka i tarcza (ciemne lico, wizjer, szewron, szyny światła — dzieci `shield`)                                              | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
-| `enemy_executor.glb`                   | Egzekutor (5251 tri): manekin 1,2×, rogi, kolce naramienników, egzoszkielet ze świecącym kręgosłupem, rdzeń w ramie                                                              | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
-| `enemy_drone.glb`                      | Dron (948 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
+| `enemy_trooper.glb`                    | Szturmowiec (5107 tri): grzebień-wachlarz ze świecącym rdzeniem, okrągłe naramienniki, fartuchy ud, akumulator na plecach, długa pałka z cewkami                                 | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
+| `enemy_gunner.glb`                     | Strzelec (5251 tri): kanciasty hełm z daszkiem i goglami, płyty ud, plecak z radiem i anteną ze świecącym szczytem, karabin                                                      | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
+| `enemy_sniper.glb`                     | Snajper (5268 tri): wysoki szpiczasty kaptur z monokularem, wąskie barki, płaszcz i poły do łydek ze świecącymi krawędziami, długi karabin                                       | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
+| `enemy_shielder.glb`                   | Tarczownik (5299 tri): piętrowe naramienniki, garb, hełm z osłoną twarzy, pałka i tarcza (ciemne lico, wizjer, szewron, szyny światła — dzieci `shield`)                         | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
+| `enemy_executor.glb`                   | Egzekutor (5395 tri): manekin 1,2×, zakręcone rogi, ogromne naramienniki z kolcami, fartuch kata, świecący kręgosłup, rdzeń w ramie                                              | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
+| `enemy_drone.glb`                      | Dron (936 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, duże oko, lufa; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
 | `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                                                          | — (do `InstancedMesh`)                                                                                                           |
-| `plasma_blade.glb`                     | ostrze plazmowe (284 tri): rękojeść z gumowym chwytem, pierścieniami i pazurami emitera                                                                                          | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
+| `plasma_blade.glb`                     | ostrze plazmowe (872 tri): rękojeść z owijką 4 pasów, widełkami emitera, szczeliną mocy i pierścieniem głowicy                                                                   | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
 | `blaster.glb`                          | blaster z przegrzaniem                                                                                                                                                           | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |
 | `player_arm_R.glb`, `player_arm_L.glb` | rękawica taktyczna z rękawem i cybernetycznym karwaszem FPP (10 264 tri na rękę)                                                                                                 | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
 | `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut), obręcze, narożniki i ukośne zastrzały na bokach (356 tri)                                                                     | —                                                                                                                                |
@@ -614,21 +621,21 @@ trójkątów wszystkich instancji siatek. **P** = początek w środku podstawy A
 spód na y = 0, środek x = z = 0; przód +Z. Każdy model ma korzeń o swojej nazwie.
 W kolumnie materiałów pominięto wspólny prefiks **`mat_`**.
 
-| Nazwa | AABB X × Y × Z [m] | Punkt odniesienia | Materiały (`mat_…`) | Trójkąty / budżet |
-| --- | --- | --- | --- | ---: |
-| `city_overpass_pillar` | 2,500 × 10,000 × 2,513 | P | concrete, hazard, metal, trim | 412 / 1500 |
-| `city_overpass_deck` | 14,000 × 2,600 × 12,000 | P; jezdnia y = 1,6 | asphalt, concrete, hivis, rubber, trim | 436 / 1500 |
-| `city_highway_barrier` | 4,000 × 1,093 × 0,808 | P; długość w X | concrete, hivis, metal, trim | 228 / 1500 |
-| `city_highway_sign_gantry` | 14,000 × 7,000 × 1,400 | P; rozpiętość w X | concrete, metal, neon_amber, neon_green, trim | 632 / 1500 |
-| `city_wrecked_car` | 2,150 × 1,580 × 3,950 | P; przód +Z | cable, glass, hivis, lacquer, metal, plastic, rubber, rust, trim | 676 / 1500 |
-| `city_smog_scrubber` | 3,000 × 4,000 × 3,000 | P | cable, concrete, machine, metal, neon_green, paint, trim | 672 / 1500 |
-| `city_roof_water_tank` | 3,000 × 5,000 × 3,000 | P | concrete, metal, rust, trim, wood | 708 / 1500 |
-| `city_roof_hvac_unit` | 4,000 × 1,998 × 2,052 | P | cable, machine, metal, neon_green, trim | 1000 / 1500 |
-| `city_market_stall_canopy` | 3,024 × 2,612 × 2,000 | P; lada w +Z | cable, lacquer, metal, neon_amber, paint, trim, wood | 596 / 1500 |
-| `city_market_stall_canopy_violet` | 3,024 × 2,612 × 2,000 | P; lada w +Z | cable, fabric, metal, neon_amber, paint, trim, wood | 596 / 1500 |
-| `city_roof_bridge` | 1,600 × 1,390 × 8,000 | P; pomost y = 0,2 | hivis, metal, neon_amber, trim | 276 / 1500 |
-| `city_neon_sign_frame` | 6,000 × 3,000 × 1,800 | P; panel w +Z | concrete, machine, metal, neon_amber, neon_violet, trim | 208 / 800 |
-| `city_satellite_cluster` | 3,000 × 3,400 × 2,000 | P; czasze w +Z | cable, concrete, machine, metal, trim | 492 / 800 |
+| Nazwa                             | AABB X × Y × Z [m]      | Punkt odniesienia  | Materiały (`mat_…`)                                              | Trójkąty / budżet |
+| --------------------------------- | ----------------------- | ------------------ | ---------------------------------------------------------------- | ----------------: |
+| `city_overpass_pillar`            | 2,500 × 10,000 × 2,513  | P                  | concrete, hazard, metal, trim                                    |        412 / 1500 |
+| `city_overpass_deck`              | 14,000 × 2,600 × 12,000 | P; jezdnia y = 1,6 | asphalt, concrete, hivis, rubber, trim                           |        436 / 1500 |
+| `city_highway_barrier`            | 4,000 × 1,093 × 0,808   | P; długość w X     | concrete, hivis, metal, trim                                     |        228 / 1500 |
+| `city_highway_sign_gantry`        | 14,000 × 7,000 × 1,400  | P; rozpiętość w X  | concrete, metal, neon_amber, neon_green, trim                    |        632 / 1500 |
+| `city_wrecked_car`                | 2,150 × 1,580 × 3,950   | P; przód +Z        | cable, glass, hivis, lacquer, metal, plastic, rubber, rust, trim |        676 / 1500 |
+| `city_smog_scrubber`              | 3,000 × 4,000 × 3,000   | P                  | cable, concrete, machine, metal, neon_green, paint, trim         |        672 / 1500 |
+| `city_roof_water_tank`            | 3,000 × 5,000 × 3,000   | P                  | concrete, metal, rust, trim, wood                                |        708 / 1500 |
+| `city_roof_hvac_unit`             | 4,000 × 1,998 × 2,052   | P                  | cable, machine, metal, neon_green, trim                          |       1000 / 1500 |
+| `city_market_stall_canopy`        | 3,024 × 2,612 × 2,000   | P; lada w +Z       | cable, lacquer, metal, neon_amber, paint, trim, wood             |        596 / 1500 |
+| `city_market_stall_canopy_violet` | 3,024 × 2,612 × 2,000   | P; lada w +Z       | cable, fabric, metal, neon_amber, paint, trim, wood              |        596 / 1500 |
+| `city_roof_bridge`                | 1,600 × 1,390 × 8,000   | P; pomost y = 0,2  | hivis, metal, neon_amber, trim                                   |        276 / 1500 |
+| `city_neon_sign_frame`            | 6,000 × 3,000 × 1,800   | P; panel w +Z      | concrete, machine, metal, neon_amber, neon_violet, trim          |         208 / 800 |
+| `city_satellite_cluster`          | 3,000 × 3,400 × 2,000   | P; czasze w +Z     | cable, concrete, machine, metal, trim                            |         492 / 800 |
 
 **Montaż elementów chodzonych:** węzeł `walk_slab` wyznacza zamkniętą płytę.
 W GLTFLoader jest grupą prymitywów podzielonych według materiałów.
@@ -800,22 +807,54 @@ stal) i `grip` (chwyt, kolba, pompa — guma). W GLB to nadal `mat_interactive`;
 materiały widoku FPP po nazwie węzła (`src/render/fppMaterials.ts`: `frame`/`hilt` grafitowy
 pancerz z chłodną krawędzią, `trim` stal, `grip` guma), niezależnie od motywu — w motywie neon
 `mat_interactive` jest jasny i broń wyglądała jak biała zabawka. `blade_core` dostaje w grze
-jasny cyjanowy rdzeń, poświatę zwróconą do kamery i smugę cięcia (`src/render/fppBladeFx.ts`).
+biało-gorący rdzeń, komiksową klingę zwróconą do kamery (płaskie strefy i pasma energii) i smugę
+cięcia (`src/render/fppBladeFx.ts`).
 Ciepło broni przechodzi z cyanu w biel rozgrzanego metalu (nie w czerwień — zarezerwowana dla wrogów).
 
-| Plik               | Sylwetka                                                    | Węzły dla kodu                                                                                                          | Trójkąty |
-| ------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
-| `blaster.glb`      | średni pistolet energetyczny, kołpak lufy                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 368      |
-| `pistol.glb`       | zwarty, krótki zamek, trzy cyjanowe nacięcia                | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 260      |
-| `rifle.glb`        | długi, kolba, ogniwo ciepła jak magazynek                   | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 324      |
-| `scatter.glb`      | szeroki, dwie grube lufy, pompa                             | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 352      |
-| `sniper_rifle.glb` | bardzo długi, luneta z cyjanową soczewką, ogniwo pod komorą | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 396      |
-| `beam.glb`         | gruby emiter z cewkami w klatce prętów i soczewką (`lens`)  | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 376      |
-| `emp_launcher.glb` | gruba tuba z bębnem i rozszerzonym wylotem                  | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 324      |
-| `blade_twin.glb`   | krótsza rękojeść z poprzeczną osłoną                        | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 284      |
-| `blade_staff.glb`  | długa rękojeść (0,8 m), emitery z pazurami na obu końcach   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 380      |
+Szlif komiksowy (Borderlands + Neon Noir, 18.11.2026): bryły budują pomocnicze `slab` (profil boczny
+Y–Z wyciągnięty po X z fazą obrysu), `lathe` / `band` (bryły obrotowe z fazowanymi czołami, płaska
+ściana na górze) i `_vent_bars` (skośne cyjanowe nacięcia). Fazy mają co najmniej 3 mm, żeby gruby
+tusz rysował czytelne krawędzie zamiast czarnej plamy. Każda broń ma trzy płaskie strefy: grafitowy
+`frame`, jasna stal `trim` (wierzchnia zamka lub komory, obręcze, celowniki) i guma `grip` (chwyt,
+kolba zwężona ku gumowej stopce, pompa), plus jeden świecący element w cyjanie gracza. Chwyty
+pistoletowe, łoża pod lewą dłonią, gniazda (`muzzle`, `support`) i obrys `frame` (od niego zależą
+moduły warsztatu) zostały w dawnych położeniach.
+
+Szlif FPP, runda 2 (18.11.2026): kamera gracza widzi broń od tyłu, z góry i z lewego boku (-X),
+więc tam trafiły czytelne kształty. Pomocnicze `slab_xz` (profil czołowy X–Z wyciągnięty po Y),
+`_u_sight` (szczerbinka U), `_ribbed_rail` (szyna z poprzecznymi żebrami), `_chevron` (żebro V),
+`_side_plaque` i `_side_bolts` (płaska ciemna plakietka bez tekstu i 2–3 duże śruby, wypukłe o 3 mm,
+bo cieńsze uskoki tusz rysował kropkowaną linią). Nowe świecące elementy (kanały rdzenia na
+wierzchu, kropki celowników, szczeliny w tylnych płytach, okular lunety, pierścień bębna) należą
+do siatki `heat_vents`, więc też reagują na ciepło; `heat_cell`, `grip`, gniazda i długość modelu
+są bez zmian, obrys `frame` zmienił się o najwyżej 10 mm. Kontrola przenikania dłoni: bez zmian.
+
+| Plik               | Sylwetka                                                                              | Węzły dla kodu                                                                                                          | Trójkąty |
+| ------------------ | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| `blaster.glb`      | tylna tarcza V z żebrami i świecącym V, żebrowana szyna z kanałami, szczerbinka U     | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 912      |
+| `pistol.glb`       | wysoka szczerbinka U z kropkami, świecąca szczelina na zamku i w tylnej płycie, kurek | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 684      |
+| `rifle.glb`        | żebrowana szyna, uszy celowników, okno rdzenia na komorze, kanały łoża, dźwignia T    | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 912      |
+| `scatter.glb`      | rdzeń między żebrami radiatora, duża szczerbinka U, dach osłony z kanałem, pompa      | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 740      |
+| `sniper_rifle.glb` | świecący okular lunety, wieżyczki, kanały łoża, hamulec z portami, zamek z gałką      | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 940      |
+| `beam.glb`         | emiter z czaszą, cewki, moduł z kanałem rdzenia, przeziernikiem i tylną szczeliną     | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 848      |
+| `emp_launcher.glb` | gruba tuba, bęben ze świecącym pierścieniem komór i krzyżem X, żebrowana szyna        | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 936      |
+| `blade_twin.glb`   | krótsza rękojeść, osłona-rogi wygięte ku klindze, cyjanowa listwa, kolec              | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 756      |
+| `blade_staff.glb`  | długa rękojeść (0,8 m), dwie szczeliny mocy przy chwycie, widełki emiterów            | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 980      |
+
+Budżet broni i rękojeści po szlifie: ≤ 3000 trójkątów (test `tests/unit/weaponModels.test.ts`);
+bronie palne mają 684–940 (budżet z tabeli wyżej: ≤ 1000, osobny test), rękojeści 756–980.
 
 Pivoty `blade` i `blade_back` leżą u emiterów, długość ostrza 1 m przy skali 1 (skaluj po Z).
+
+Szlif FPP rękojeści (18.11.2026): z oka gracza widać grzbiet (+X Blendera, strona przycisku) i wierzch
+(gardło emitera), więc tam są elementy rozpoznawcze. Owijka chwytu (`_fpp_wrap`) to 3–4 grube pasy
+o promieniu dawnego walca chwytu ze skośnymi rowkami (grubość i położenie części chwytanej bez zmian).
+Szczelina mocy (`_fpp_power_slot`) to ciemna obudowa w `trim` i cyjanowe ogniwa dołączone do
+`emitter_ring` (`mat_player_cyan`, bez nowych węzłów). Widełki emitera (`_fpp_forks`) stoją po bokach
+(±Z, lewo/prawo z oka). Warianty: `plasma_blade` — widełki, 3 ogniwa, pierścień głowicy (`_fpp_ring`);
+`blade_twin` — rogi osłony i listwa mocy na jej grzbiecie, kolec głowicy, owijka 3 pasów; `blade_staff` —
+dwie szczeliny po obu stronach chwytu i widełki na obu emiterach. Budżet rękojeści (bez rdzeni klingi)
+≤ 1000 trójkątów; gniazda klingi i chwyt pilnuje `tests/unit/bladeHilts.test.ts`.
 Model broni wskazuje pole `model` w `src/data/weapons/<id>.json`.
 
 ### Punkt podparcia broni
@@ -838,27 +877,27 @@ Położenia w metrach, w osiach glTF:
 ## Przegubowe ręce FPP
 
 Ręce FPP są wyjątkiem od ogólnego budżetu i płaskiego cieniowania: każda ma
-**10 264 trójkąty** (budżet 6–12 tys.; rękawica 10 012 + karwasz 252), smooth shading i skin glTF. `tactical_glove`
-to jedna zamknięta, połączona siatka rękawicy, przedramienia i rękawa kurtki.
-Subdivision Surface (Catmull–Clark, jeden poziom) jest zastosowany przed eksportem.
-Przedramię z rękawem ma ok. 0,34 m, dłoń od nadgarstka do środkowego palca ok. 0,19 m.
+**11 898 trójkątów** (budżet 6–12 tys.; rękawica `tactical_glove` 7 312, rękaw z karwaszem
+i mankietem `plate_bracer` 1 790, reszta to płytki, paski i akcenty), 16 siatek, smooth
+shading i skin glTF; GLB ok. 342 kB. `tactical_glove` to jedna zamknięta, ciągła siatka
+rękawicy (od wnętrza rękawa po opuszki) — jedyna skinowana. Subdivision Surface
+(Catmull–Clark, jeden poziom) jest zastosowany przed eksportem. Dłoń od nadgarstka do
+czubka środkowego ma ok. 0,19 m, rękaw ok. 0,27 m.
 
-Owalne palce mają proporcjonalne paliczki, zaokrąglone opuszki i wspólne błony
-międzypalcowe. Poduszki dłoni, łagodna nasada kciuka, kostki i delikatne ścięgna
-są częścią powierzchni rękawicy. Nie ma osobnych klocków paliczków ani przegubów.
-Rękaw kurtki ma subtelne nierówności materiału i czarny mankiet, bez bieli.
+Palce mają różne długości i paliczki w proporcji ok. 1 : 0,65 : 0,5, spłaszczony przekrój,
+kłykcie, bruzdy zgięć, poduszki i opuszki; kciuk wyrasta nisko z kłębu, z osią zgięcia
+skręconą ku palcom. Wnętrze dłoni jest wklęsłe, z kłębem małego palca.
 
-Rękawica i rękaw używają matowego `mat_interactive` (roughness 0,85).
-Cienka linia `dorsal_trace` i lamówka `wrist_light` mają `mat_player_cyan`.
-Owalny, gładki `resonance_core` z `mat_power_magenta` jest osadzony w niskim
-czarnym `resonance_mount`. Dekoracje są małymi osobnymi siatkami, cała rękawica
-pozostaje jednym skinowanym obiektem. Materiały należą do `PALETTE`, bez tekstur.
-
-Cybernetyczny karwasz (sztywne siatki na kości `forearm`, płaskie cieniowanie):
-`plate_bracer` — dwie wygięte, fazowane płyty pancerza na grzbiecie przedramienia;
-`bracer_light` (`mat_player_cyan`) — listwa światła w szczelinie i wzdłuż grzbietu;
-`trim_bracer` — śruby i sześciokątny port złącza nad nadgarstkiem. Gra nadaje
-rękawicy, płytom i wykończeniom materiały widoku FPP po nazwie (`src/render/fppMaterials.ts`).
+Sztywne części (na kościach, gładkie łuki i ostre krawędzie > 40°):
+`plate_knuckle_*` (paliczki bliższe), `plate_tip_index`, `plate_tip_thumb`, `plate_hand`
+(płyta grzbietu pod `resonance_core`, segment przy nadgarstku i poduszka wnętrza dłoni),
+`plate_bracer` (rękaw kurtki z kołnierzem i fałdami, obudowa karwasza, mankiet rękawicy),
+`trim_bracer` (panel karwasza, śruby, klamra), `grip_strap` (paski), światło
+`mat_player_cyan`: `bracer_light`, `wrist_light`, `dorsal_trace`; `resonance_core`
+(`mat_power_magenta`) w `resonance_mount`. Wszystkie czarne części mają `mat_interactive`;
+gra nadaje im materiały FPP po nazwie (`src/render/fppMaterials.ts`: `plate_*` pancerz,
+`trim_*` stal, `grip_*` guma, `tactical_glove` rękawica). Części o tej samej kości
+i materiale są scalone (budżet liczby siatek sceny w `roomStaticBatch.test.ts`).
 
 ### Szkielet i skinning
 
@@ -867,15 +906,15 @@ player_arm_R / player_arm_L
 └─ hand_skeleton_R / hand_skeleton_L (armatura)
    ├─ tactical_glove               (skin → 18 kości)
    └─ forearm                     (kość)
-      ├─ wrist_light, plate_bracer, bracer_light, trim_bracer
+      ├─ plate_bracer, trim_bracer, grip_strap, bracer_light, wrist_light
       └─ wrist                    (kość, pivot w nadgarstku)
          └─ palm                  (kość, pivot w nadgarstku)
-            ├─ index_1  → index_2  → index_3
-            ├─ middle_1 → middle_2 → middle_3
-            ├─ ring_1   → ring_2   → ring_3
-            ├─ pinky_1  → pinky_2  → pinky_3
-            ├─ thumb_1  → thumb_2  → thumb_3
-            ├─ dorsal_trace, resonance_mount, resonance_core
+            ├─ index_1  → index_2  → index_3   (plate_knuckle_index, plate_tip_index)
+            ├─ middle_1 → middle_2 → middle_3  (plate_knuckle_middle)
+            ├─ ring_1   → ring_2   → ring_3    (plate_knuckle_ring)
+            ├─ pinky_1  → pinky_2  → pinky_3   (plate_knuckle_pinky)
+            ├─ thumb_1  → thumb_2  → thumb_3   (plate_tip_thumb)
+            ├─ plate_hand, dorsal_trace, resonance_mount, resonance_core
             ├─ palm_center
             ├─ socket_blade
             ├─ socket_gun
@@ -890,12 +929,9 @@ Deformacja jest liniowa, bez zależności od blenderowego Preserve Volume,
 bez klipów animacji i bez niezastosowanego Subdivision w GLB.
 
 **Wymaganie integracyjne skina:** Three.js odczytuje `tactical_glove` jako
-`SkinnedMesh`. Instancję trzeba klonować z przepisaniem referencji kości
-(np. `SkeletonUtils.clone`). Obecne `model.clone(true)` w `src/render/handRig.ts`
-klonuje węzły, ale zachowuje oryginalny `Skeleton` i jego kości: obroty sklonowanych
-przegubów nie deformują siatki instancji. To odrębna konieczna poprawka renderera.
-Test `handRig.test.ts` sprawdza hierarchię i gniazda, lecz nie powiązanie kości skina.
-Kontrakt nazw, póz i macierzy gniazd pozostaje zgodny.
+`SkinnedMesh`; `src/render/handRig.ts` klonuje instancję przez `SkeletonUtils.clone`,
+więc każda dłoń ma własne kości. Test `player_arm GLB contract` w
+`tests/unit/handRig.test.ts` sprawdza 18 kości skina, gniazda i nazwy części.
 
 ### Osie i gniazda
 
@@ -912,15 +948,17 @@ Gniazda i `palm_center` są pustymi dziećmi kości `palm`; `resonance_core` jes
 siatką również pod `palm`. Nie mają odbicia ani skali, wyznaczniki wynoszą +1.
 Pozycje poniżej są **względem roota R**, nie lokalnego układu kości:
 
-| Gniazdo          | Pozycja [x, y, z], m         | Użycie                                                                               |
-| ---------------- | ---------------------------- | ------------------------------------------------------------------------------------ |
-| `socket_blade`   | [0, 0.0422, -0.08544]        | `gripBlade`; rękojeść poprzecznie, emiter po stronie wskazującego                    |
-| `socket_gun`     | [0.06158, 0.04108, -0.11575] | `gripGun` / `gripGunFire`; pochylenie chwytu o 0,05 rad zostawia miejsce przy kolbie |
-| `socket_support` | [0.00420, 0.03100, -0.10321] | `support`; skręt 55° względem spoczynku dłoni                                        |
+| Gniazdo          | Pozycja [x, y, z], m       | Użycie                                                                               |
+| ---------------- | -------------------------- | ------------------------------------------------------------------------------------ |
+| `socket_blade`   | [0, 0.039, -0.08544]       | `gripBlade`; rękojeść poprzecznie, emiter po stronie wskazującego (`bladeGrip.json`) |
+| `socket_gun`     | [0.040, 0.0425, -0.094]    | chwyty broni palnej; wnętrze dłoni na boku chwytu, palce na przedniej krawędzi       |
+| `socket_support` | [0.0042, 0.0215, -0.10321] | dłoń podpierająca; skręt 55° względem spoczynku dłoni                                |
 
-Dołącz przedmiot z jednostkową transformacją w gnieździe. Dla podparcia dopasuj
-światową macierz `socket_support` do `support` broni:
-`M_hand = M_weapon_support * inverse(M_hand_socket_relative)`.
+Broń palna nie siedzi w gnieździe jednostkowo: pole `grip` w `src/data/weapons/*.json`
+podaje położenie gniazda w układzie modelu broni (`offset`, opcjonalnie `rotation`
+Euler XYZ) i pozy palców, osobno dla dłoni podpierającej (`grip.support`, względem macierzy
+węzła `support` po stałych dwuręcznych). `M_hand = M_weapon * M_grip * inverse(M_socket)`;
+szczegóły w `docs/systems/hands.md`.
 `socket_gun` ma obrót `Rz(-π/2) * Rx(-0.05)` w układzie roota R.
 `socket_blade` zachowuje poprzednią orientację osi przedmiotu.
 
@@ -945,11 +983,12 @@ Format nie zmienia się:
 }
 ```
 
-Plik zawiera siedem pełnych póz po 15 przegubów palców: `relaxed`, `open`, `fist`,
-`gripBlade`, `gripGun`, `gripGunFire`, `support`. `relaxed` ma stopniowo mocniej
-ugięte dalsze palce i kciuk przy wskazującym. `open` otwiera dłoń do mocy bez
-przeprostów, `fist` zawija opuszki ku dłoni, chwyty dopasowano do przedmiotów.
-`gripGunFire` zmienia wskazujący, pozostałe palce zachowują stabilny chwyt.
+Plik zawiera pełne pozy po 15 przegubów palców: `relaxed`, `open`, `fist`, `gripBlade`,
+`gripGun`/`gripGunFire` (blaster i domyślny chwyt), chwyty dopasowane do modeli broni
+(`gripPistol`, `gripRifle`, `gripScatter`, `gripSniper`, `gripBeam`, `gripEmp` z wariantami
+`…Fire`) oraz dłoń podpierającą: `support` (domyślna) i `supportRifle`, `supportScatter`,
+`supportSniper`, `supportBeam`, `supportEmp`. Wybór pozy i położenie dłoni względem broni
+podaje pole `grip` w danych broni (`docs/systems/hands.md`).
 
 Wartości to **radiany Euler XYZ w lokalnych osiach kości glTF**, jak w Three.js
 (`Rx * Ry * Rz`). Pominięte węzły wracają do spoczynku. Należy liczyć od
@@ -973,19 +1012,24 @@ oświetlenia studyjnego i cavity, aby pokazać przekroje i zgięcia:
 - `hand_relaxed_detail.png`: grzbiet, nasada kciuka i naturalny łuk palców;
 - `hand_pose_open.png`, `hand_pose_fist.png`: obie dłonie, wspólne kąty;
 - `hand_fist_inner.png`: zbliżenie obu pięści od strony opuszek;
-- `hand_grip_blade.png`, `hand_grip_pistol.png`, `hand_grip_blaster.png`,
-  `hand_grip_pistol_fire.png`, `hand_grip_rifle.png`: chwyty przedmiotów;
-- `hand_grip_blade_inner.png`, `hand_grip_pistol_inner.png`, `hand_support_rifle.png`:
-  styki z rękojeścią, chwytem i łożem;
-- `hand_fpp_view.png`: kamera gracza w początku, -Z, pionowe FOV 70°, 16:9;
-  prawy nadgarstek przy [0.22, -0.24, -0.45] m, ręka w prawym dolnym rogu.
+- `hand_grip_blade.png`, `hand_grip_blade_inner.png`: chwyt ostrza;
+- `hand_grip_<model>.png`, `hand_grip_<model>_detail.png` dla wszystkich 7 modeli broni
+  (`pistol`, `blaster`, `rifle`, `scatter`, `sniper_rifle`, `beam`, `emp_launcher`):
+  chwyt z pola `grip`, obie dłonie jak w grze;
+- `hand_support_<model>.png`, `hand_support_<model>_below.png`: dłoń podpierająca
+  broni dwuręcznych;
+- `hand_grip_pistol_inner.png`, `hand_grip_pistol_fire.png`: wskazujący na spuście;
+- `hand_fpp_<model>.png`: kadr gry (`POSE` / `TWO_HAND_POSE`, kamera w początku, -Z,
+  pionowe FOV 70°, 16:9); `hand_fpp_view.png` i `hand_fpp_view_detail.png` — pistolet.
+- `hand_dorsal_detail.png`, `hand_palm_detail.png`, `hand_wrist_detail.png`,
+  `hand_fist_side.png`, `hand_fist_front.png`: zbliżenia anatomii i rękawicy.
 
 Kontrola ręczna: opuszki obejmują chwyt, kciuk przeciwstawia się palcom, zgięcia
 są gładkie i nie zapadają się, obie dłonie zginają się lustrzanie. Sprawdź nasadę
 kciuka, lamówkę i proporcje FPP. Podgląd ostrza kadruje rękojeść i dłoń,
 koniec pełnego ostrza jest poza kadrem. Sprawdzono też przecięcia powierzchni
 rękawicy z ostrzem, pistoletem, blasterem i karabinem (`gripGun`, `gripGunFire`)
-oraz z karabinem dla lewej ręki `support`: brak przecięć.
+oraz dłoń podpierającą: pomiar dla wszystkich broni jest w `docs/systems/hands.md`.
 
 ## Splasharty ekranów ładowania
 

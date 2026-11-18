@@ -123,7 +123,7 @@ afterEach(() => {
 describe('createTalentsPanel', () => {
   it('pokazuje nagłówek, drzewka i stany kart', () => {
     mount(managerWithPoints(1));
-    expect(free()).toBe('Wolne punkty: 1');
+    expect(free()).toBe('Punkty talentów: 1');
     expect(document.querySelector('.talents-panel__level')!.textContent).toBe(
       'Poziom 2',
     );
@@ -155,7 +155,7 @@ describe('createTalentsPanel', () => {
     card('bladeRoot').click();
     await flush();
     expect(save).toHaveBeenCalledTimes(1);
-    expect(free()).toBe('Wolne punkty: 1');
+    expect(free()).toBe('Punkty talentów: 1');
     expect(card('bladeRoot').dataset.state).toBe('bought');
     expect(card('bladeRiposte').dataset.state).toBe('available');
     expect(meta.state.talents).toEqual(['bladeRoot']);
@@ -186,7 +186,7 @@ describe('createTalentsPanel', () => {
     const { save } = mount(meta);
     card('bladeRoot').click();
     await flush();
-    expect(free()).toBe('Wolne punkty: 0');
+    expect(free()).toBe('Punkty talentów: 0');
     const reset = document.querySelector<HTMLButtonElement>(
       '.talents-panel__reset',
     )!;
@@ -196,7 +196,7 @@ describe('createTalentsPanel', () => {
     reset.click();
     await flush();
     expect(meta.state.talents).toEqual([]);
-    expect(free()).toBe('Wolne punkty: 1');
+    expect(free()).toBe('Punkty talentów: 1');
     expect(save).toHaveBeenCalledTimes(2);
     expect(reset.textContent).toBe('Resetuj talenty');
   });

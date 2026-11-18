@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import {
+  difficultyIdSchema,
+  selectedDifficulty,
+  type DifficultyId,
+  type DifficultyRunState,
+} from './difficulty';
 import { modeIdSchema, selectArena, type ModeId } from './modeSchema';
 import { conquestMode, modeDefinitions } from './modes';
 import type { MissionDefinition } from './missionSchema';
@@ -53,6 +59,7 @@ export interface RunManagerOptions {
 
 /** Opcje startu runu zamrożone w `RunState` (ADR 0007): ekwipunek z kryjówki, talenty, Poziom zagrożenia. */
 export interface NewRunOptions {
+  difficulty?: DifficultyId;
   arenaId?: string;
   modeId?: ModeId;
   mission?: MissionDefinition;
@@ -101,8 +108,14 @@ export const runDamageStatsSchema: z.ZodType<RunDamageStats> = z.object({
   other: z.number().finite().nonnegative(),
 });
 
-export const runStateSchema: z.ZodType<RunState> = z
+export type CheckpointRunState = RunState & {
+  difficulty?: DifficultyId;
+  roomCredits?: Record<string, number>;
+};
+
+export const runStateSchema: z.ZodType<CheckpointRunState> = z
   .object({
+    difficulty: difficultyIdSchema.optional(),
     modeId: modeIdSchema.optional(),
     missionId: z.string().min(1).optional(),
     objectives: z
@@ -130,6 +143,9 @@ export const runStateSchema: z.ZodType<RunState> = z
     hp: z.number().finite().nonnegative(),
     energy: z.number().finite().nonnegative(),
     credits: z.number().finite().nonnegative(),
+    roomCredits: z
+      .record(z.string(), z.number().int().nonnegative())
+      .optional(),
     implants: z
       .array(z.string().min(1))
       .refine(
@@ -184,7 +200,10 @@ export class RunManager {
   private readonly now: () => number;
   private readonly sectorIdOverride?: string;
 
-  private currentState: RunState | null = null;
+  private currentState: (RunState & DifficultyRunState) | null = null;
+  private roomCredits: Record<string, number> = {};
+  private roomEarned = 0;
+  private beforeRoom: RunState | null = null;
   private currentScreen: RunScreen = 'map';
   private lastSummary: RunSummary | null = null;
   private nodeIndex = new Map<string, MapNode>();
@@ -265,7 +284,7 @@ export class RunManager {
         else if (tags.includes('#gun')) dmg.gun += amount;
         else dmg.other += amount;
       }),
-      bus.on('player_died', ({ id }) => {
+      bus.on('player_died', ({ id, cause }) => {
         if (!this.isRunActive() || !this.currentState) return;
         if (this.playerId !== null && id !== this.playerId) return;
         if (
@@ -274,7 +293,7 @@ export class RunManager {
         )
           return;
         this.currentState.hp = 0;
-        this.finish('death');
+        this.finish('death', cause);
       }),
     );
   }
@@ -364,7 +383,11 @@ export class RunManager {
     if (!Number.isInteger(threatLevel) || threatLevel < 0)
       throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
 
+    const difficulty = difficultyIdSchema.parse(
+      options.difficulty ?? selectedDifficulty(),
+    );
     this.currentState = {
+      ...(difficulty === 'normal' ? {} : { difficulty }),
       ...(options.modeId ? { modeId: options.modeId } : {}),
       ...(options.mission
         ? {
@@ -397,6 +420,9 @@ export class RunManager {
     };
     this.currentScreen = 'map';
     this.lastSummary = null;
+    this.roomCredits = {};
+    this.beforeRoom = null;
+    this.roomEarned = 0;
     this.clearedNodes.clear();
     this.maxLayerReached = 0;
     this.playerId = null;
@@ -438,6 +464,8 @@ export class RunManager {
     const node = this.nodeIndex.get(id);
     if (!node) return false;
 
+    this.beforeRoom = this.serialize();
+    this.roomEarned = 0;
     this.currentState.currentNodeId = node.id;
     if (!this.currentState.visited.includes(node.id))
       this.currentState.visited.push(node.id);
@@ -578,8 +606,9 @@ export class RunManager {
       return 0;
     const gained = Math.round(threatCost * this.creditsPerThreat);
     if (gained <= 0) return 0;
+    const before = this.state.credits;
     this.addCredits(gained);
-    return gained;
+    return this.state.credits - before;
   }
 
   /** Dodaje Kredyty (> 0) i emituje `currency_changed`. Zwraca false dla wartości <= 0 lub po końcu runu. */
@@ -591,8 +620,16 @@ export class RunManager {
       !(amount > 0)
     )
       return false;
-    const delta = Math.round(amount);
+    let delta = Math.round(amount);
     if (delta <= 0) return false;
+    const nodeId = this.currentState.currentNodeId;
+    if (this.beforeRoom && nodeId && this.currentScreen !== 'map') {
+      this.roomEarned += delta;
+      const paid = this.roomCredits[nodeId] ?? 0;
+      delta = Math.max(0, this.roomEarned - paid);
+      this.roomCredits[nodeId] = Math.max(paid, this.roomEarned);
+    }
+    if (delta === 0) return true;
     this.currentState.credits += delta;
     this.bus.emit('currency_changed', {
       currency: 'credits',
@@ -710,7 +747,7 @@ export class RunManager {
    * Kończy run ze wskazanym wynikiem (`'victory' | 'death'`), przechodzi do ekranu `summary`
    * i emituje `run_ended` z podsumowaniem `RunSummary`. Wywołanie powtórne jest idempotentne.
    */
-  finish(outcome: RunOutcome): RunSummary {
+  finish(outcome: RunOutcome, cause?: string): RunSummary {
     if (!this.currentState)
       throw new Error('Run nie został jeszcze rozpoczęty ani wczytany.');
     if (this.currentScreen === 'summary' && this.lastSummary)
@@ -762,15 +799,34 @@ export class RunManager {
     this.bus.emit('run_ended', {
       outcome,
       summary: structuredClone(summary),
+      ...(outcome === 'death' && cause !== undefined ? { cause } : {}),
     });
     return structuredClone(summary);
   }
 
   /** Zwraca głęboką, czysto serializowalną kopię `RunState`. */
-  serialize(): RunState {
+  serialize(): CheckpointRunState {
     if (!this.currentState)
       throw new Error('Run nie został jeszcze rozpoczęty ani wczytany.');
-    return structuredClone(this.currentState);
+    return structuredClone({
+      ...this.currentState,
+      ...(Object.keys(this.roomCredits).length
+        ? { roomCredits: this.roomCredits }
+        : {}),
+    });
+  }
+
+  /** Nagrody zostają, ale walka i pozycja na mapie wracają przed wejście. */
+  checkpoint(): CheckpointRunState {
+    const state = this.serialize();
+    if (this.currentScreen === 'map' || !this.beforeRoom) return state;
+    return {
+      ...structuredClone(this.beforeRoom),
+      credits: state.credits,
+      implants: state.implants,
+      ...(this.currentScreen === 'shop' ? { hp: state.hp } : {}),
+      roomCredits: state.roomCredits,
+    };
   }
 
   /**
@@ -781,6 +837,9 @@ export class RunManager {
     const parsed = runStateSchema.parse(structuredClone(state));
     this.rebuildNodeIndex(parsed.map);
     this.currentState = parsed;
+    this.roomCredits = parsed.roomCredits ?? {};
+    this.beforeRoom = null;
+    this.roomEarned = 0;
     this.currentScreen = 'map';
     this.lastSummary = null;
     this.clearedNodes.clear();

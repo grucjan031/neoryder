@@ -395,6 +395,20 @@ def _enemy_spike(length, base, sides=4):
     return bm_prism(length, base * 0.18, base, sides=sides, top_at_origin=False, offset=(0, 0, length / 2))
 
 
+def _enemy_fin(profile, thickness, x=0.0):
+    """Płaska płetwa: wypukły wielokąt `profile` [(y, z)] wyciągnięty wzdłuż X na grubość `thickness`."""
+    bm = bmesh.new()
+    left = [bm.verts.new((x - thickness / 2, y, z)) for y, z in profile]
+    right = [bm.verts.new((x + thickness / 2, y, z)) for y, z in profile]
+    bm.faces.new(left)
+    bm.faces.new(list(reversed(right)))
+    for i in range(len(profile)):
+        j = (i + 1) % len(profile)
+        bm.faces.new((left[i], left[j], right[j], right[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
 def _enemy_baton(hand, executor=False):
     """Pałka ogłuszająca w układzie hand_R (oś pałki -Y, czubek na -Y)."""
     baton = empty("baton" if not executor else "blade_hilt")
@@ -402,29 +416,30 @@ def _enemy_baton(hand, executor=False):
     if executor:
         # Tylko rękojeść; ostrze z danych dokłada EnemyView.
         mesh_object("baton_shaft", bm_merge(
-            bm_box(.05, .2, .05, center=(0, -.06, 0), bevel=.008),
-            bm_box(.13, .035, .07, center=(0, -.165, 0), taper_top=(.7, 1.0)),  # jelec
+            bm_box(.055, .2, .055, center=(0, -.06, 0)),
+            bm_box(.17, .04, .08, center=(0, -.165, 0), taper_top=(.6, 1.0)),  # jelec
         ), DARK).parent = baton
-        tip = mesh_object("baton_tip", bm_box(.06, .05, .06, bevel=.01), GLOW)
+        tip = mesh_object("baton_tip", bm_box(.07, .05, .07, bevel=.01), GLOW)
         tip.parent = baton
         tip.location.y = -.2
     else:
+        # Długi, gruby trzon i duża świecąca głowica: z 25 m pałka czyta się jak broń do walki wręcz.
         mesh_object("baton_shaft", bm_merge(
-            bm_box(.036, .44, .036, center=(0, -.25, 0)),
-            bm_box(.05, .15, .05, center=(0, .02, 0), bevel=.008),  # rękojeść
-            bm_box(.085, .03, .065, center=(0, -.065, 0)),  # osłona dłoni
+            bm_box(.05, .5, .05, center=(0, -.27, 0)),
+            bm_box(.06, .15, .06, center=(0, .02, 0)),  # rękojeść
+            bm_box(.11, .035, .08, center=(0, -.065, 0)),  # osłona dłoni
         ), DARK).parent = baton
         coil = mesh_object("baton_coil", bm_merge(
-            bm_box(.058, .014, .058, center=(0, -.3, 0)),
-            bm_box(.058, .014, .058, center=(0, -.36, 0)),
+            bm_box(.078, .022, .078, center=(0, -.34, 0)),
+            bm_box(.078, .022, .078, center=(0, -.41, 0)),
         ), GLOW)
         coil.parent = baton
-        tip = mesh_object("baton_tip", bm_box(.06, .12, .06, bevel=.01), GLOW)
+        tip = mesh_object("baton_tip", bm_box(.085, .16, .085, bevel=.012), GLOW)
         tip.parent = baton
-        tip.location.y = -.48
+        tip.location.y = -.57
     hit = empty("baton_hit")
     hit.parent = baton
-    hit.location.y = -.54 if not executor else -.25
+    hit.location.y = -.64 if not executor else -.25
     return baton
 
 
@@ -477,107 +492,191 @@ def build_enemy_cc0(archetype):
     def piece(name, bone, bm, mat, offset=(0, 0, 0), rot=(0, 0, 0)):
         return _enemy_piece(rig, name, bone, bm, mat, at(bone, offset), rot)
 
+    def horn(name, bone, base, segments, radius):
+        """Róg z kilku stożków ściętych: [(długość, rx, ry)] w stopniach, każdy od końca poprzedniego."""
+        pos = Vector(base)
+        for i, (length, rx, ry) in enumerate(segments):
+            last = i == len(segments) - 1
+            r0 = radius * (1 - .3 * i)
+            bm = (_enemy_spike(length, r0) if last else
+                  bm_prism(length, r0 * .7, r0, sides=4, top_at_origin=False, offset=(0, 0, length / 2)))
+            piece(f"{name}_{i}", bone, bm, RED, tuple(pos), (rx, ry, 0))
+            pos = pos + _enemy_rot(rx, ry).to_3x3() @ Vector((0, 0, length * .92))
+
+    # Sylwetki ról (czytelne z 20–30 m, w konturze tuszu):
+    # Szturmowiec — legionista: wysoka płetwa na hełmie, okrągłe naramienniki, fartuchy ud, długa pałka.
+    # Strzelec — piechur: kanciasty hełm z daszkiem, płaskie naramienniki, plecak z wysoką anteną, karabin.
+    # Snajper — smukły: szpiczasty kaptur, wąskie barki bez naramienników, płaszcz do łydek, długi karabin.
+    # Tarczownik — szeroki: piętrowe naramienniki, garb kołnierza, masywne nogi, tarcza.
+    # Egzekutor — masywny (1,2×): zakręcone rogi, ogromne naramienniki z kolcami, fartuch kata, rdzeń.
     heavy = archetype in ("shielder", "executor")
     head = "DEF-head"
     chest = "DEF-spine.003"
+    hips = "DEF-hips"
     # --- głowa: kask, wizjer (czerwony pas światła) i ciemna osłona szczęki
-    helmet_scale = (.135, .135, .16) if heavy else (.125, .125, .155)
-    helmet = mesh_object("helmet" if archetype != "sniper" else "hood", bm_ico(1, subdiv=2, scale=helmet_scale), RED)
-    _enemy_bone_child(helmet, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .005, .10))))
+    if archetype == "gunner":
+        # Kanciasty hełm piechoty: płaska góra zamiast kuli.
+        helmet = mesh_object("helmet", bm_box(.25, .27, .2, bevel=.03, taper_top=(.9, .88)), RED)
+        _enemy_bone_child(helmet, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .01, .135))))
+    else:
+        helmet_scale = {"shielder": (.15, .15, .165), "executor": (.14, .14, .16)}.get(archetype, (.125, .13, .155))
+        helmet = mesh_object("helmet" if archetype != "sniper" else "hood", bm_ico(1, subdiv=2, scale=helmet_scale), RED)
+        _enemy_bone_child(helmet, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .005, .10))))
     if archetype == "sniper":
         plate("visor", head, (.11, .026, .022), (.035, -.122, .108), True, .006)
     elif archetype == "shielder":
-        plate("visor", head, (.2, .03, .024), (0, -.127, .11), True, .006)
+        plate("visor", head, (.24, .03, .03), (0, -.152, .12), True, .006)
+    elif archetype == "gunner":
+        plate("visor", head, (.2, .03, .03), (0, -.128, .095), True, .006)
     else:
         plate("visor", head, (.215, .03, .038), (0, -.123, .108), True, .008)
-    plate("jaw_guard", head, (.15, .05, .075), (0, -.096, .04), mat=DARK, bevel=.012, taper=(1.25, 1.0))
-    piece("collar", "DEF-neck", bm_prism(.08, .078, .095, sides=8), DARK, (0, 0, .055))
-    if archetype == "gunner":
-        for sign in (-1, 1):
-            plate("goggle_" + str(sign), head, (.073, .045, .052), (sign*.055, -.117, .105), True, .012)
-        plate("cap_brim", head, (.2, .09, .022), (0, -.12, .168), bevel=.008)
+    if archetype != "shielder":
+        plate("jaw_guard", head, (.15, .05, .075), (0, -.096, .04), mat=DARK, bevel=.012, taper=(1.25, 1.0))
+    collar_r = {"shielder": .15, "executor": .12}.get(archetype, .085)
+    piece("collar", "DEF-neck", bm_prism(.09, collar_r * .82, collar_r, sides=8), DARK, (0, .01, .06))
     if archetype == "trooper":
-        plate("crest", head, (.03, .26, .1), (0, .01, .245), bevel=.008, taper=(.6, .8))
-        plate("crest_light", head, (.012, .2, .014), (0, .01, .3), True, 0)
-    if archetype == "shielder":
-        plate("face_shield", head, (.2, .05, .13), (0, -.12, .07), mat=DARK, bevel=.015, taper=(1.1, 1.0))
-        plate("brow", head, (.23, .07, .04), (0, -.115, .15), bevel=.012)
-    if archetype == "executor":
+        # Poprzeczny grzebień-wachlarz (jak u centuriona): wróg patrzy na gracza, więc znak Szturmowca
+        # musi być szeroki od przodu, nie tylko z profilu. Świecący rdzeń wachlarza bez konturu.
+        fan = [(-.2, .19), (-.18, .3), (-.11, .37), (0, .395), (.11, .37), (.18, .3), (.2, .19), (0, .14)]
+        piece("crest", head, _enemy_fin(fan, .04), RED, (0, .015, 0), (0, 0, 90))
+        core = [(y * .62, .275 + (z - .275) * .62) for y, z in fan]
+        piece("crest_light", head, _enemy_fin(core, .05), GLOW, (0, .015, 0), (0, 0, 90))
+    if archetype == "gunner":
+        # Daszek z przodu i nauszniki łączności: szeroki, płaski czubek głowy.
+        plate("cap_brim", head, (.27, .12, .025), (0, -.15, .2), bevel=0)
         for sign in (-1, 1):
-            piece("horn_" + str(sign), head, _enemy_spike(.2, .04), RED, (sign*.1, .03, .19), (-30, sign*38, 0))
+            plate("goggle_" + str(sign), head, (.07, .03, .045), (sign * .052, -.135, .15), True, 0)
+            plate("ear_" + str(sign), head, (.05, .1, .1), (sign * .14, .0, .1), mat=DARK, bevel=.01)
+    if archetype == "shielder":
+        # Hełm prewencyjny: płaska osłona twarzy z wizjerem i szeroki daszek.
+        plate("face_shield", head, (.26, .05, .17), (0, -.13, .07), mat=DARK, bevel=.012, taper=(1.1, 1.0))
+        plate("brow", head, (.3, .1, .05), (0, -.12, .17), bevel=.01)
+    if archetype == "executor":
+        # Zakręcone rogi: najpierw na boki, potem w górę i do tyłu.
+        for sign in (-1, 1):
+            horn("horn_" + str(sign), head, (sign * .1, .02, .18),
+                 ((.12, -10, sign * 72), (.12, -20, sign * 35), (.2, -25, sign * 2)), .05)
+        plate("crown_light", head, (.2, .02, .025), (0, -.118, .175), True, 0)
     if archetype == "sniper":
         hood = bm_ico(1, subdiv=2, scale=(.17, .18, .2))
-        # Szpic kaptura z tyłu głowy: sylwetka inna niż kask Strzelca.
+        # Wysoki szpic kaptura cofnięty nad kark: sylwetka inna niż kask Strzelca.
         for v in hood.verts:
-            if v.co.y > .05 and v.co.z > .05:
-                v.co.y += .05 * (v.co.z / .2)
-                v.co.z += .03
+            if v.co.z > .02:
+                k = v.co.z / .2
+                v.co.z += .14 * k * k
+                v.co.y += .1 * k * k
+                v.co.x *= 1 - .35 * k * k
         # Curved shell with an open face and hanging rear edge.
         opening = [f for f in hood.faces if f.calc_center_median().y < -.035 and f.calc_center_median().z < .09]
         bmesh.ops.delete(hood, geom=opening, context="FACES")
         obj = mesh_object("hood_shell", hood, RED)
         _enemy_bone_child(obj, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .025, .09))))
         # Płaszcz na plecach: od barków do pasa, z czerwoną lamówką.
-        plate("cloak", chest, (.36, .035, .62), (0, .175, -.2), mat=DARK, bevel=.008, taper=(1.15, 1.0))
+        plate("cloak", chest, (.34, .035, .66), (0, .175, -.22), mat=DARK, bevel=0, taper=(1.0, 1.0))
         for sign in (-1, 1):
-            plate("cloak_trim_" + str(sign), chest, (.02, .02, .5), (sign*.17, .2, -.22), True, 0)
+            plate("cloak_trim_" + str(sign), chest, (.022, .02, .56), (sign * .16, .2, -.24), True, 0)
         # Monokular celownika nad prawym okiem.
-        piece("monocle", head, bm_prism(.05, .028, .032, sides=8, axis="Y", top_at_origin=False), GLOW,
-              (-.05, -.135, .105))
+        piece("monocle", head, bm_prism(.06, .03, .034, sides=8, axis="Y", top_at_origin=False), GLOW,
+              (-.05, -.14, .105))
     # --- tułów: płyty, pas z klamrą, linie światła
-    chest_w = .39 if heavy else .33
-    plate("chest_plate", chest, (chest_w, .10, .32), (0, -.103, -.035), bevel=.025, taper=(1.08, 1.0))
+    chest_w = {"shielder": .44, "executor": .42, "sniper": .29}.get(archetype, .34)
+    plate("chest_plate", chest, (chest_w, .10, .32), (0, -.103, -.035), bevel=.02, taper=(1.08, 1.0))
     for sign in (-1, 1):
-        plate("chest_light_" + str(sign), chest, (.024, .012, .16), (sign*chest_w*.3, -.158, -.02), True, 0)
-    plate("back_plate", chest, (.32, .085, .30), (0, .12, -.035), bevel=.02)
-    plate("abdomen_plate", "DEF-spine.001", (.27, .08, .15), (0, -.12, .04), mat=DARK)
-    piece("belt", "DEF-hips", bm_prism(.07, .165, .165, sides=8), DARK, (0, -.03, .12))
-    plate("belt_buckle", "DEF-hips", (.06, .02, .04), (0, -.2, .085), True, .005)
-    if archetype in ("gunner", "trooper"):
-        for i in range(3):
-            plate("pouch_"+str(i), chest, (.075, .06, .115), ((i-1)*.095, -.175, -.13), bevel=.009, mat=DARK)
+        plate("chest_light_" + str(sign), chest, (.026, .012, .17), (sign * chest_w * .3, -.158, -.02), True, 0)
+    plate("back_plate", chest, (chest_w * .92, .085, .30), (0, .12, -.035), bevel=.02)
+    plate("abdomen_plate", "DEF-spine.001", (.27, .08, .15), (0, -.12, .04), mat=DARK, bevel=.01)
+    piece("belt", hips, bm_prism(.07, .165, .165, sides=8), DARK, (0, -.03, .12))
+    plate("belt_buckle", hips, (.07, .02, .045), (0, -.2, .085), True, 0)
     if archetype == "trooper":
-        plate("battery", chest, (.24, .12, .27), (0, .215, -.02), mat=DARK, bevel=.02)
+        plate("battery", chest, (.22, .12, .26), (0, .215, -.03), mat=DARK, bevel=.01)
         for sign in (-1, 1):
-            plate("battery_light_" + str(sign), chest, (.02, .012, .19), (sign*.07, .278, -.02), True, 0)
+            plate("battery_light_" + str(sign), chest, (.022, .012, .19), (sign * .065, .278, -.03), True, 0)
     if archetype == "gunner":
-        plate("radio", chest, (.2, .1, .24), (0, .21, -.04), mat=DARK, bevel=.015)
-        piece("antenna", chest, bm_box(.014, .014, .46, center=(0, 0, .23)), DARK, (.075, .23, .07), (-8, 0, 0))
-        piece("antenna_tip", chest, bm_box(.03, .03, .03), GLOW, (.075, .23 + .064, .07 + .456), (-8, 0, 0))
+        # Plecak z radiem i wysoka antena: pionowa kreska nad barkiem widoczna z każdej strony.
+        plate("radio", chest, (.28, .15, .34), (0, .23, -.06), mat=DARK, bevel=.015)
+        plate("radio_lid", chest, (.3, .17, .06), (0, .23, .13), bevel=.01)
+        piece("antenna", chest, bm_box(.024, .024, .62, center=(0, 0, .31)), DARK, (.09, .25, .14), (-8, 0, 0))
+        # Górny odcinek anteny świeci: pionowa kreska czytelna także we mgle z 30 m.
+        piece("antenna_light", chest, bm_box(.032, .032, .2, center=(0, 0, .5)), GLOW, (.09, .25, .14), (-8, 0, 0))
+        tip = _enemy_rot(-8).to_3x3() @ Vector((0, 0, .62))
+        piece("antenna_tip", chest, bm_box(.055, .055, .055), GLOW, (.09, .25 + tip.y, .14 + tip.z), (-8, 0, 0))
     if archetype == "executor":
-        plate("chest_core", chest, (.10, .03, .13), (0, -.168, .02), True, .015)
-        plate("core_frame", chest, (.16, .03, .19), (0, -.158, .02), mat=DARK, bevel=.01)
-        plate("exo_spine", chest, (.08, .07, .43), (0, .17, -.08), mat=DARK)
+        plate("chest_core", chest, (.12, .03, .15), (0, -.172, .02), True, .015)
+        plate("core_frame", chest, (.19, .03, .22), (0, -.16, .02), mat=DARK, bevel=.01)
+        plate("exo_spine", chest, (.09, .08, .45), (0, .175, -.08), mat=DARK, bevel=.01)
         for i in range(3):
-            plate("spine_light_" + str(i), chest, (.04, .02, .05), (0, .21, .06 - i * .11), True, 0)
+            plate("spine_light_" + str(i), chest, (.045, .02, .06), (0, .22, .06 - i * .12), True, 0)
+        # Fartuch kata: długi pas przed i za udami.
+        plate("tabard", hips, (.26, .03, .5), (0, -.17, -.2), mat=DARK, bevel=0, taper=(1.25, 1.0))
+        plate("tabard_trim", hips, (.24, .02, .03), (0, -.19, -.43), True, 0)
+        plate("tabard_back", hips, (.3, .03, .48), (0, .17, -.19), mat=DARK, bevel=0, taper=(1.2, 1.0))
+    if archetype == "shielder":
+        # Garb nad karkiem: masa bez szyi, jak w pancerzu prewencyjnym.
+        plate("hunch", chest, (.36, .16, .14), (0, .14, .17), bevel=.02, taper=(.8, .8))
     # --- kończyny
     for side, sign in (("L", 1), ("R", -1)):
-        upper = "DEF-upper_arm."+side
-        forearm = "DEF-forearm."+side
-        thigh = "DEF-thigh."+side
-        shin = "DEF-shin."+side
-        pad_w = .22 if heavy else .18
-        plate("shoulder_pad_"+side, upper, (pad_w, .23, .15), (sign*.07, 0, .045), bevel=.025, taper=(.85, .9))
-        plate("shoulder_light_"+side, upper, (.016, .2, .03), (sign*(.07 + pad_w*.5 + .004), 0, .0), True, 0)
-        if heavy:
-            plate("forearm_plate_"+side, forearm, (.24, .15, .14), (sign*.13, -.025, 0), bevel=.02)
-            plate("forearm_light_"+side, forearm, (.17, .012, .016), (sign*.13, -.104, .02), True, 0)
-            plate("thigh_plate_"+side, thigh, (.19, .10, .29), (0, -.09, -.17), bevel=.02)
-            plate("shin_plate_"+side, shin, (.16, .09, .29), (0, -.065, -.17), bevel=.018)
+        upper = "DEF-upper_arm." + side
+        forearm = "DEF-forearm." + side
+        thigh = "DEF-thigh." + side
+        shin = "DEF-shin." + side
+        if archetype == "trooper":
+            # Okrągły, opadający naramiennik.
+            pad = bm_ico(1, subdiv=1, scale=(.12, .13, .1))
+            pad = bm_merge(pad, bm_box(.2, .22, .03, center=(0, 0, -.045)))
+            for v in pad.verts:
+                v.co.z = max(v.co.z, -.06)
+            piece("shoulder_pad_" + side, upper, pad, RED, (sign * .08, 0, .05), (0, sign * 18, 0))
+            plate("shoulder_light_" + side, upper, (.016, .2, .03), (sign * .19, 0, .0), True, 0)
+        elif archetype == "gunner":
+            plate("shoulder_pad_" + side, upper, (.19, .24, .1), (sign * .07, 0, .055), bevel=.012, taper=(.9, .9))
+            plate("shoulder_light_" + side, upper, (.016, .2, .025), (sign * .168, 0, .02), True, 0)
+        elif archetype == "sniper":
+            # Wąskie barki: tylko płaska nakładka, bez rozszerzania sylwetki.
+            plate("shoulder_pad_" + side, upper, (.11, .16, .05), (sign * .05, 0, .07), bevel=.01, taper=(.8, .9))
+        elif archetype == "shielder":
+            # Piętrowe naramienniki: górna płyta i szeroki fartuch ramienia.
+            plate("shoulder_pad_" + side, upper, (.27, .3, .16), (sign * .085, 0, .06), bevel=.02, taper=(.8, .85))
+            plate("shoulder_skirt_" + side, upper, (.2, .27, .14), (sign * .17, 0, -.02), bevel=.015,
+                  taper=(1.0, 1.0))
+            plate("shoulder_light_" + side, upper, (.016, .24, .03), (sign * .272, 0, -.02), True, 0)
         else:
-            plate("bracer_"+side, forearm, (.17, .1, .1), (sign*.14, 0, 0), bevel=.012)
-            plate("shin_plate_"+side, shin, (.12, .06, .24), (0, -.06, -.17), bevel=.012)
-        if archetype == "executor":
-            piece("pauldron_spike_"+side, upper, _enemy_spike(.17, .05), RED, (sign*.1, .02, .11), (0, sign*30, 0))
-        plate("knee_pad_"+side, shin, (.15, .085, .13), (0, -.08, -.01), bevel=.02)
-        plate("knee_light_"+side, shin, (.05, .012, .02), (0, -.127, -.01), True, 0)
+            # Egzekutor: ogromny naramiennik z dwoma kolcami.
+            plate("shoulder_pad_" + side, upper, (.3, .32, .18), (sign * .09, 0, .07), bevel=.02, taper=(.75, .8))
+            plate("shoulder_skirt_" + side, upper, (.22, .28, .12), (sign * .19, 0, -.01), bevel=.015)
+            piece("pauldron_spike_" + side, upper, _enemy_spike(.28, .07), RED, (sign * .1, .0, .14), (0, sign * 28, 0))
+            piece("pauldron_spike_b_" + side, upper, _enemy_spike(.18, .05), RED, (sign * .2, .06, .1),
+                  (10, sign * 55, 0))
+            plate("shoulder_light_" + side, upper, (.016, .26, .03), (sign * .305, 0, -.01), True, 0)
+        if heavy:
+            plate("forearm_plate_" + side, forearm, (.24, .15, .14), (sign * .13, -.025, 0), bevel=.02)
+            plate("forearm_light_" + side, forearm, (.17, .012, .016), (sign * .13, -.104, .02), True, 0)
+            plate("thigh_plate_" + side, thigh, (.2, .11, .3), (0, -.09, -.17), bevel=.02)
+            plate("shin_plate_" + side, shin, (.17, .1, .31), (0, -.065, -.17), bevel=.018)
+        elif archetype == "sniper":
+            plate("bracer_" + side, forearm, (.14, .08, .08), (sign * .14, 0, 0), bevel=.01)
+            plate("shin_plate_" + side, shin, (.1, .05, .22), (0, -.055, -.17), bevel=.01)
+        else:
+            plate("bracer_" + side, forearm, (.17, .1, .1), (sign * .14, 0, 0), bevel=.012)
+            plate("shin_plate_" + side, shin, (.12, .06, .24), (0, -.06, -.17), bevel=.012)
+            if archetype == "gunner":
+                # Czerwona płyta uda: mniej ciemnego kombinezonu, wyraźna strefa koloru z daleka.
+                plate("thigh_plate_" + side, thigh, (.15, .07, .24), (0, -.085, -.15), bevel=.012)
+        plate("knee_pad_" + side, shin, (.15, .085, .13), (0, -.08, -.01), bevel=.02)
+        plate("knee_light_" + side, shin, (.06, .012, .022), (0, -.127, -.01), True, 0)
+        if archetype == "trooper":
+            # Fartuchy ud (pteryges) z linią światła: dolna połowa sylwetki jak u legionisty.
+            plate("tasset_" + side, thigh, (.17, .05, .22), (sign * .01, -.1, -.1), bevel=.01, taper=(1.0, 1.0))
+            plate("tasset_light_" + side, thigh, (.12, .012, .018), (sign * .01, -.128, -.17), True, 0)
         if archetype == "sniper":
-            for label, offset, size in (
-                ("back", (0, .14, -.24), (.20, .035, .52)),
-                ("side", (sign*.105, .025, -.22), (.035, .25, .48)),
+            # Poły płaszcza do łydek, rozchylone ku dołowi.
+            for label, offset, size, taper in (
+                ("back", (0, .14, -.33), (.24, .035, .7), (.75, 1.0)),
+                ("side", (sign * .11, .025, -.31), (.035, .27, .66), (1.0, .8)),
             ):
-                plate("coat_"+label+"_"+side, thigh, size, offset, bevel=.008, mat=DARK)
-            plate("coat_trim_"+side, thigh, (.03, .02, .44), (sign*.06, .16, -.22), True, 0)
+                plate("coat_" + label + "_" + side, thigh, size, offset, bevel=0, mat=DARK, taper=taper)
+            plate("coat_trim_" + side, thigh, (.03, .02, .62), (sign * .07, .16, -.33), True, 0)
+            # Świecąca krawędź poły z przodu: dwie długie pionowe linie wzdłuż nóg = Snajper.
+            plate("coat_edge_" + side, thigh, (.045, .02, .6), (sign * .11, -.112, -.31), True, 0)
     if archetype == "shielder":
         rig.animation_data_create()
         idle = bpy.data.actions["Idle_Loop"]
@@ -588,12 +687,12 @@ def build_enemy_cc0(archetype):
         shield = plate("shield", chest, (.80, .12, 1.20), position=(.30, -.60, .97), bevel=.035)
         shield.matrix_basis = shield.matrix_basis @ Matrix.Rotation(math.radians(12), 4, "Z")
         # Front tarczy = -Y: ciemne lico w czerwonej ramie, wizjer i szewrony z czerwonego światła.
-        _enemy_local("shield_face", bm_box(.62, .02, 1.02, bevel=.01), DARK, shield, (0, -.06, 0))
-        _enemy_local("shield_slit", bm_box(.42, .02, .035), GLOW, shield, (0, -.072, .36))
+        _enemy_local("shield_face", bm_box(.62, .02, 1.02), DARK, shield, (0, -.06, 0))
+        _enemy_local("shield_slit", bm_box(.46, .02, .05), GLOW, shield, (0, -.072, .36))
         for sign in (-1, 1):
-            _enemy_local("shield_chevron_" + str(sign), bm_box(.26, .02, .045), GLOW, shield,
+            _enemy_local("shield_chevron_" + str(sign), bm_box(.28, .02, .055), GLOW, shield,
                          (sign * .1, -.072, -.05), (0, sign * 32, 0))
-            _enemy_local("shield_rail_" + str(sign), bm_box(.03, .02, .8), GLOW, shield, (sign * .345, -.072, -.05))
+            _enemy_local("shield_rail_" + str(sign), bm_box(.035, .02, .8), GLOW, shield, (sign * .345, -.072, -.05))
     # Calibrate held equipment in its actual aiming / sword-ready pose, not the T-pose.
     calibration = "Pistol_Aim_Neutral" if archetype in ("gunner", "sniper") else "Sword_Idle"
     rig.animation_data_create()
@@ -669,7 +768,6 @@ def build_enemy_drone():
         bm_ico(0.2, subdiv=1, scale=(1.0, 1.15, 0.62)),
         bm_box(0.2, 0.26, 0.05, center=(0, 0, 0.13), taper_top=(0.7, 0.8)),  # kopuła czujnika
         bm_box(0.06, 0.16, 0.05, center=(0, -FWD * 0.2, 0.0)),  # tylny statecznik
-        bm_box(0.012, 0.012, 0.18, center=(0, -FWD * 0.24, 0.1)),  # antena
         bm_box(0.14, 0.12, 0.05, center=(0, FWD * 0.02, -0.14), taper_top=(0.7, 0.7)),  # brzuch
         bm_prism(0.2, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.24, -0.11)),  # lufa
     ), RED, parent=root)
@@ -699,62 +797,122 @@ def build_enemy_drone():
                 bm_prism(0.025, 0.03, 0.03, sides=6, top_at_origin=False, offset=(0, 0, 0.012)),
             )
             part(f"rotor_{tag}", rotor, DARK, root, loc=(cx, cy, cz + 0.07))
-    part("eye_ring", bm_prism(0.04, 0.095, 0.1, sides=10, axis="Y", top_at_origin=False), DARK, root,
+    # Duże oko w ciemnym pierścieniu: z daleka dron czyta się jako czerwony punkt na krzyżu wirników.
+    part("eye_ring", bm_prism(0.045, 0.115, 0.12, sides=10, axis="Y", top_at_origin=False), DARK, root,
          loc=(0, FWD * 0.2, 0.01))
     for sx in (-1, 1):
         part(f"hull_light_{'L' if sx > 0 else 'R'}", bm_box(0.012, 0.2, 0.018), GLOW, root, loc=(sx * 0.2, 0.0, 0.0))
     part("tail_light", bm_box(0.05, 0.02, 0.03), GLOW, root, loc=(0, -FWD * 0.29, 0.0))
-    part("eye", bm_ico(0.075, subdiv=1), GLOW, root, loc=(0, FWD * 0.235, 0.01))
+    part("eye", bm_ico(0.092, subdiv=1), GLOW, root, loc=(0, FWD * 0.24, 0.01))
     node("muzzle", root, (0, FWD * 0.34, -0.11))
     return root
 
 
 # --------------------------------------------------------------------------- player weapons
 
-def _fpp_hilt_parts(length, radius, y_front, grip_len, prongs=True):
-    """Rękojeść ostrza: korpus, gardło emitera, gumowy chwyt, pierścienie i pazury emitera.
+def _fpp_hilt_parts(length, radius, y_front, grip_len, bands=4):
+    """Rękojeść ostrza: korpus, rozszerzone gardło emitera, owijka chwytu i wykończenia.
 
     Zwraca listy (korpus, chwyt, wykończenia). Oś rękojeści = +Y Blendera, środek chwytu w 0.
+    Szlif FPP: z oka gracza widać grzbiet (+X, strona przycisku) i wierzch (gardło emitera),
+    więc tam trafiają szczelina mocy i widełki; owijka ma grube pasy o promieniu dawnego chwytu.
     """
     y0 = -length / 2
+    r = radius
     body = [
-        tube(y0 + .025, y_front - .03, radius * .92, radius * .92, sides=8),
-        tube(y_front - .03, y_front, radius * 1.1, radius * 1.38, sides=8),  # gardło
-        tube(y0, y0 + .025, radius * 1.2, radius, sides=8),  # głowica
+        tube(y0 + .025, y_front - .03, r * .92, r * .92, sides=8),
+        # gardło: kołnierz, stożek i fazowana krawędź emitera
+        lathe([(y_front - .034, r * 1.0), (y_front - .026, r * 1.16), (y_front - .012, r * 1.4),
+               (y_front - .004, r * 1.4), (y_front, r * 1.26)], flat=False),
+        # głowica: fazowany ośmiokąt z wąską szyjką
+        lathe([(y0, r * .95), (y0 + .006, r * 1.24), (y0 + .018, r * 1.24), (y0 + .026, r * .98)], flat=False),
     ]
-    grip = [tube(-grip_len / 2, grip_len / 2, radius * 1.07, radius * 1.07, sides=8)]
+    grip = [_fpp_wrap(-grip_len / 2, grip_len / 2, r * 1.07, bands)]
     trim = [
-        tube(grip_len / 2, grip_len / 2 + .008, radius * 1.25, radius * 1.25, sides=8),
-        tube(-grip_len / 2 - .008, -grip_len / 2, radius * 1.25, radius * 1.25, sides=8),
-        block(radius * .9, radius * 1.45, .0, .045, -.007, .007, bevel=.002),  # przycisk aktywacji
+        band(grip_len / 2, grip_len / 2 + .009, r * 1.27, .002, flat=False),
+        band(-grip_len / 2 - .009, -grip_len / 2, r * 1.27, .002, flat=False),
+        block(r * .9, r * 1.45, .0, .045, -.007, .007, bevel=.002),  # przycisk aktywacji
+        band(y0 - .004, y0 + .002, r * .8, .0015, flat=False),  # stalowa nakładka głowicy
     ]
-    if prongs:
-        trim += _fpp_prongs(radius * 1.15, y_front - .02, y_front + .028)
     return body, grip, trim
 
 
-def _fpp_prongs(x, y0, y1, sign=1):
-    """Dwa pazury osłony emitera po bokach, zwężone ku ostrzu (sign=-1: emiter z tyłu)."""
+def _fpp_wrap(y0, y1, r, bands, groove=.0032, ch=.0022, depth=.1, slant=.0035):
+    """Owijka chwytu: `bands` grubych pasów o promieniu r rozdzielonych skośnymi rowkami.
+
+    Najgrubsze miejsce = r (jak dawny walec chwytu), więc dłoń trzyma tę samą grubość;
+    rowki są tylko wgłębieniami, a skos (slant) daje czytelny rytm owijki w tuszu.
+    """
+    rings = [(y0, r)]
+    for i in range(1, bands):
+        yc = y0 + (y1 - y0) * i / bands
+        rings += [(yc - groove - ch, r), (yc - groove, r * (1 - depth)),
+                  (yc + groove, r * (1 - depth)), (yc + groove + ch, r)]
+    rings.append((y1, r))
+    bm = lathe(rings, flat=False)
+    for v in bm.verts:
+        if y0 + 1e-6 < v.co.y < y1 - 1e-6:
+            v.co.y += slant * v.co.z / r
+    return bm
+
+
+def _fpp_power_slot(x, y0, y1, cells=3, half_z=.0085, bevel=.0015):
+    """Szczelina mocy na grzbiecie (+X, w stronę oka): ciemna obudowa i cyjanowe ogniwa.
+
+    Zwraca (obudowa, ogniwa); ogniwa idą do węzła `emitter_ring` (mat_player_cyan).
+    """
+    housing = block(x - .004, x + .0045, y0 - .004, y1 + .004, -half_z, half_z, bevel=bevel)
+    gap = .0022
+    step = (y1 - y0 + gap) / cells
+    glow = [block(x + .002, x + .0058, y0 + i * step, y0 + i * step + step - gap,
+                  -half_z * .52, half_z * .52) for i in range(cells)]
+    return housing, glow
+
+
+def _fpp_forks(y_base, y_tip, r_in, r_out, sign=1, half_x=.0055):
+    """Widełki emitera po bokach (±Z, lewo/prawo z oka gracza): wygięte pazury zachodzące nad ostrze.
+
+    sign=-1: emiter z tyłu (oś -Y). Profil boczny (y, z) wyciągnięty po X.
+    """
+    h = abs(y_tip - y_base)
+    profile = [(0.0, r_in), (0.0, r_out), (.45 * h, r_out * 1.1), (h, r_in * 1.12),
+               (.8 * h, r_in * .98), (.35 * h, r_in * 1.12)]
     parts = []
     for side in (-1, 1):
-        part = block(side * x - .005, side * x + .005, y0, y1, -.006, .006)
-        for v in part.verts:
-            if (v.co.y - (y0 + y1) / 2) * sign > 0:
-                v.co.x = side * x + (v.co.x - side * x) * .5
-                v.co.z *= .6
-        parts.append(part)
+        pts = [(y_base + sign * dy, side * z) for dy, z in profile]
+        parts.append(slab(pts, -half_x, half_x))
+    return parts
+
+
+def _fpp_ring(yc, r_out, r_in, half_x, segments=8):
+    """Pierścień w płaszczyźnie Y-Z (widoczny z boku i z oka gracza), z odcinków-płyt."""
+    parts = []
+    for i in range(segments):
+        a0 = 2 * math.pi * i / segments
+        a1 = 2 * math.pi * (i + 1) / segments
+        pts = [(yc + r_in * math.cos(a0), r_in * math.sin(a0)), (yc + r_out * math.cos(a0), r_out * math.sin(a0)),
+               (yc + r_out * math.cos(a1), r_out * math.sin(a1)), (yc + r_in * math.cos(a1), r_in * math.sin(a1))]
+        parts.append(slab(pts, -half_x, half_x))
     return parts
 
 
 def build_plasma_blade():
-    """Ostrze plazmowe. Początek w środku chwytu, ostrze wzdłuż +Y Blendera (-Z glTF)."""
+    """Ostrze plazmowe. Początek w środku chwytu, ostrze wzdłuż +Y Blendera (-Z glTF).
+
+    Rozpoznawalność z FPP: widełki emitera, trzy ogniwa szczeliny mocy, pierścień na głowicy.
+    """
     root = empty("plasma_blade", size=0.1)
-    body, grip, trim = _fpp_hilt_parts(.27, .022, .135, .1)
+    r = .022
+    body, grip, trim = _fpp_hilt_parts(.27, r, .135, .1)
+    housing, cells = _fpp_power_slot(r * .92, .066, .094)
+    trim += [housing, *_fpp_forks(.103, .185, r * 1.02, r * 1.62)]
+    # pierścień głowicy (zawieszka) w płaszczyźnie widocznej z oka gracza
+    trim += _fpp_ring(-.135 - .012, .015, .009, .0045)
     mesh_object("hilt", bm_merge(*body), "mat_interactive", parent=root)
     mesh_object("grip", bm_merge(*grip), "mat_interactive", parent=root)
     mesh_object("trim", bm_merge(*trim), "mat_interactive", parent=root)
     ring = bm_prism(0.012, 0.031, 0.031, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.105, 0))
-    mesh_object("emitter_ring", ring, "mat_player_cyan", parent=root)
+    mesh_object("emitter_ring", bm_merge(ring, *cells), "mat_player_cyan", parent=root)
     # ostrze jako osobny węzeł: skalowanie po Z lokalnym = wysuwanie (pivot u emitera)
     blade_pivot = empty("blade", parent=root, location=(0, 0.135, 0), size=0.05)
     core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
@@ -778,6 +936,83 @@ def tube(y0, y1, r0, r1, sides=8, x=0.0, z=0.0):
 def block(x0, x1, y0, y1, z0, z1, taper_top=(1.0, 1.0), bevel=0.0):
     return bm_box(x1 - x0, y1 - y0, z1 - z0, center=((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2),
                   taper_top=taper_top, bevel=bevel)
+
+
+# Szlif komiksowy (gruby tusz + płaskie pasy cienia): bryły z profilu bocznego z dużymi fazami.
+# Faza 45° daje osobny pas światła i dwie linie tuszu, więc stosujemy je tylko na dużych krawędziach
+# (≥ 3 mm), a drobnicę ograniczamy, żeby kontur nie zlewał się w czarną plamę.
+
+def _inset(pts, d):
+    """Wielokąt (y, z) przesunięty do środka o d (dwusieczne; ostre kąty przycięte)."""
+    n = len(pts)
+    area = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n))
+    sign = 1.0 if area > 0 else -1.0
+    out = []
+    for i in range(n):
+        p0, p1, p2 = Vector(pts[i - 1]), Vector(pts[i]), Vector(pts[(i + 1) % n])
+        e1, e2 = (p1 - p0).normalized(), (p2 - p1).normalized()
+        n1 = Vector((-e1.y, e1.x)) * sign
+        n2 = Vector((-e2.y, e2.x)) * sign
+        m = n1 + n2
+        m = n1 if m.length < 1e-6 else m.normalized()
+        out.append(p1 + m * (d / max(m.dot(n1), 0.35)))
+    return out
+
+
+def slab(pts, x0, x1, ch=0.0):
+    """Bryła z profilu bocznego (y, z) wyciągnięta po X od x0 do x1; ch = faza obrysu z obu stron."""
+    bm = bmesh.new()
+    if ch > 0:
+        inner = [tuple(p) for p in _inset(pts, ch)]
+        layers = [(x0, inner), (x0 + ch, pts), (x1 - ch, pts), (x1, inner)]
+    else:
+        layers = [(x0, pts), (x1, pts)]
+    rings = [[bm.verts.new((x, p[0], p[1])) for p in ring] for x, ring in layers]
+    n = len(pts)
+    for a, b in zip(rings, rings[1:]):
+        for i in range(n):
+            bm.faces.new((a[i], a[(i + 1) % n], b[(i + 1) % n], b[i]))
+    bm.faces.new(list(reversed(rings[0])))
+    bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
+def lathe(rings, sides=8, x=0.0, z=0.0, flat=True):
+    """Bryła obrotowa wzdłuż Y: rings = [(y, promień), ...]; flat = płaska ściana na górze."""
+    bm = bmesh.new()
+    off = math.pi / sides if flat else 0.0
+    loops = []
+    for y, r in rings:
+        loops.append([bm.verts.new((x + r * math.cos(off + 2 * math.pi * i / sides), y,
+                                    z + r * math.sin(off + 2 * math.pi * i / sides))) for i in range(sides)])
+    for a, b in zip(loops, loops[1:]):
+        for i in range(sides):
+            bm.faces.new((a[i], a[(i + 1) % sides], b[(i + 1) % sides], b[i]))
+    bm.faces.new(list(reversed(loops[0])))
+    bm.faces.new(loops[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
+def band(y0, y1, r, ch, sides=8, x=0.0, z=0.0, flat=True):
+    """Pierścień / walec z fazowanymi krawędziami czołowymi."""
+    return lathe([(y0, r - ch), (y0 + ch, r), (y1 - ch, r), (y1, r - ch)], sides, x, z, flat)
+
+
+def _vent_bars(count, y0, step, width, z0, z1, half_x, lean=0.008):
+    """Skośne cyjanowe nacięcia (pochylone do przodu jak żaluzje): czytelny rytm w tuszu."""
+    return [slab([(y0 + i * step, z0), (y0 + i * step + width, z0),
+                  (y0 + i * step + width + lean, z1), (y0 + i * step + lean, z1)], -half_x, half_x)
+            for i in range(count)]
+
+
+def _taper_x(bm, y0, y1, scale):
+    """Zwęża bryłę po X liniowo od y0 (1.0) do y1 (scale): kolba węższa ku stopce."""
+    for v in bm.verts:
+        t = min(max((v.co.y - y0) / (y1 - y0), 0.0), 1.0)
+        v.co.x *= 1 + (scale - 1) * t
+    return bm
 
 
 def weapon_root(name, frame, vents, cell, muzzle_pos, extra=(), trim=None, grip=None):
@@ -814,191 +1049,399 @@ def _fpp_trigger(y, z_top, depth=.022):
     return block(-.004, .004, y - .006, y + .004, z_top - depth, z_top, taper_top=(1, 1.6))
 
 
+# Szlif FPP, runda 2: kamera gracza widzi broń od tyłu, z góry i z lewego boku (-X), więc tam
+# idą czytelne kształty: przyrządy celownicze z profilu czołowego, szyny z poprzecznymi żebrami,
+# świecące kanały rdzenia na wierzchu (cyjan w `heat_vents`), stalowe panele z ciemną plakietką
+# i 2–3 dużymi śrubami. Obrys `frame`, `grip`, `heat_cell` i długość modelu zostają (moduły warsztatu).
+
+def slab_xz(pts, y0, y1, ch=0.0):
+    """Bryła z profilu czołowego (x, z) wyciągnięta po Y: od tyłu widać dokładnie ten kształt."""
+    bm = slab(pts, y0, y1, ch)
+    for v in bm.verts:
+        v.co.x, v.co.y = v.co.y, v.co.x
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
+def _u_sight(y0, y1, half, z0, z1, notch, z_notch, ch=0.0):
+    """Szczerbinka w kształcie U (profil czołowy): dwa uszy i wycięcie na linię celowania."""
+    return slab_xz([(-half, z0), (half, z0), (half, z1), (notch, z1), (notch, z_notch), (-notch, z_notch),
+                    (-notch, z1), (-half, z1)], y0, y1, ch)
+
+
+def _ribbed_rail(y0, y1, n, z0, z1, z2, half_x, fill=0.5):
+    """Szyna z poprzecznymi żebrami: podstawa z0..z1 i n żeber do z2 (jeden profil grzebienia)."""
+    step = (y1 - y0) / n
+    pts = [(y0, z0), (y1, z0), (y1, z1)]
+    for i in reversed(range(n)):
+        a = y0 + i * step + step * (1 - fill) / 2
+        b = a + step * fill
+        pts += [(b, z1), (b, z2), (a, z2), (a, z1)]
+    pts.append((y0, z1))
+    return slab(pts, -half_x, half_x)
+
+
+def _side_plaque(x, y0, y1, z0, z1, depth=0.003):
+    """Plakietka numeru seryjnego na lewym boku (x < 0): płaski, ciemniejszy prostokąt bez tekstu."""
+    return block(x - depth, x + 0.0005, y0, y1, z0, z1)
+
+
+def _side_bolts(x, points, size=0.007, depth=0.003):
+    """Duże kwadratowe śruby na lewym boku: 2–3 sztuki zamiast drobnicy."""
+    return [block(x - depth, x + 0.0005, y - size / 2, y + size / 2, z - size / 2, z + size / 2,
+                  taper_top=(0.7, 0.7)) for y, z in points]
+
+
+def _chevron(y0, y1, zb, half, h, t):
+    """Żebro radiatora w kształcie litery V (profil czołowy), ramiona wystają poza boki zamka."""
+    return slab_xz([(-t, zb), (t, zb), (half, zb + h - t), (half, zb + h), (half - t * 1.6, zb + h),
+                    (0, zb + t * 1.2), (-half + t * 1.6, zb + h), (-half, zb + h), (-half, zb + h - t)], y0, y1)
+
+
 def build_blaster():
-    """Blaster gracza z przegrzaniem: średni pistolet energetyczny z kołpakiem lufy."""
+    """Blaster gracza z przegrzaniem: masywny zamek z garbem, tylny radiator V, żebrowana szyna."""
     frame = bm_merge(
-        block(-0.025, 0.025, -0.07, 0.19, 0.03, 0.1, taper_top=(0.9, 0.95), bevel=0.008),  # zamek
-        block(-0.015, 0.015, 0.01, 0.06, 0.0, 0.012),  # kabłąk
-        block(-0.012, 0.012, 0.06, 0.07, -0.03, 0.012),
-        tube(0.19, 0.31, 0.02, 0.016, sides=8, z=0.07),  # lufa
-        tube(0.285, 0.325, 0.026, 0.026, sides=8, z=0.07),  # kołpak lufy
-        block(-0.006, 0.006, -0.06, -0.03, 0.1, 0.12),  # szczerbinka
-        block(-0.004, 0.004, 0.16, 0.18, 0.1, 0.118),  # muszka
+        # zamek z garbem nad chwytem i ściętym nosem
+        slab([(-0.068, 0.03), (0.17, 0.03), (0.19, 0.046), (0.19, 0.09), (0.172, 0.1), (0.022, 0.1),
+              (0.004, 0.108), (-0.056, 0.108), (-0.068, 0.096)], -0.025, 0.025, ch=0.006),
+        # osłona pod lufą: cięższy przód, klin w dół
+        slab([(0.07, 0.016), (0.196, 0.016), (0.214, 0.03), (0.214, 0.044), (0.07, 0.044)], -0.017, 0.017,
+             ch=0.004),
+        # kabłąk z oknem na spust i przednim hakiem
+        slab([(0.006, 0.03), (0.006, 0.0), (0.06, 0.0), (0.06, -0.03), (0.072, -0.03), (0.072, 0.03),
+              (0.064, 0.03), (0.064, 0.008), (0.056, 0.006), (0.012, 0.006), (0.012, 0.03)], -0.012, 0.012,
+             ch=0.003),
+        lathe([(0.185, 0.021), (0.29, 0.017)], z=0.07),  # lufa
+        lathe([(0.28, 0.021), (0.289, 0.027), (0.318, 0.027), (0.326, 0.021)], z=0.07),  # kołpak lufy
+        _u_sight(-0.046, -0.034, 0.015, 0.104, 0.122, 0.0045, 0.111),  # szczerbinka U na garbie
+        block(-0.004, 0.004, 0.158, 0.178, 0.098, 0.118, taper_top=(1, 0.5)),  # muszka
+        _side_plaque(-0.0285, -0.05, -0.022, 0.058, 0.076),  # plakietka na stalowym panelu
+        *_side_bolts(-0.0285, [(-0.058, 0.053), (-0.058, 0.083), (-0.012, 0.053)]),
+        # żebra tylnego radiatora V na stalowej tarczy (grafit na stali: kontrast z oczu gracza)
+        _chevron(-0.0765, -0.072, 0.04, 0.02, 0.024, 0.005),
+        _chevron(-0.0765, -0.072, 0.074, 0.031, 0.034, 0.005),
     )
     grip = block(-0.021, 0.021, -0.05, 0.01, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.006)
     trim = bm_merge(
-        block(-0.009, 0.009, -0.025, 0.15, 0.1, 0.108),  # szyna na zamku
-        *_fpp_plate(0.0255, -0.062, -0.012, 0.045, 0.088),  # płytki boczne tyłu zamka
-        tube(0.30, 0.312, 0.029, 0.029, sides=8, z=0.07),  # pierścień kołpaka
-        tube(0.17, 0.19, 0.024, 0.021, sides=8, z=0.07),  # nasada lufy
+        _ribbed_rail(0.03, 0.15, 5, 0.098, 0.103, 0.111, 0.009),  # szyna z poprzecznymi żebrami
+        slab([(-0.066, 0.097), (0.024, 0.097), (0.005, 0.1088), (-0.0555, 0.1088)], -0.0205, 0.0205,
+             ch=0.003),  # stalowa płyta garbu
+        # tylna tarcza radiatora w kształcie V: szersza niż zamek, czytelna sylwetka od tyłu
+        slab_xz([(0.0, 0.03), (0.033, 0.07), (0.033, 0.112), (-0.033, 0.112), (-0.033, 0.07)], -0.0725, -0.067),
+        # duży stalowy panel lewego boku (od strony kamery) i płytka prawa
+        slab([(-0.066, 0.044), (-0.004, 0.044), (-0.004, 0.08), (-0.018, 0.094), (-0.056, 0.094),
+              (-0.066, 0.084)], -0.0285, -0.0245),
+        block(0.0245, 0.0275, -0.062, -0.012, 0.045, 0.088),
+        band(0.298, 0.312, 0.029, 0.003, z=0.07),  # pierścień kołpaka
+        lathe([(0.17, 0.024), (0.19, 0.021)], z=0.07),  # nasada lufy
         _fpp_trigger(0.035, 0.03),
         block(-0.023, 0.023, -0.047, 0.007, -0.088, -0.082),  # obejma ogniwa
+        slab([(0.07, 0.044), (0.2, 0.044), (0.2, 0.05), (0.07, 0.05)], -0.012, 0.012),  # listwa osłony
     )
-    vents = bm_merge(*[block(-0.027, 0.027, 0.0 + i * 0.035, 0.018 + i * 0.035, 0.045, 0.085) for i in range(4)])
-    cell = block(-0.023, 0.023, -0.045, 0.005, -0.12, -0.092)
+    vents = bm_merge(
+        *_vent_bars(4, 0.0, 0.035, 0.018, 0.045, 0.085, 0.027),
+        # kanały rdzenia po obu stronach szyny: energia widoczna z góry
+        block(-0.017, -0.011, 0.032, 0.148, 0.098, 0.1025),
+        block(0.011, 0.017, 0.032, 0.148, 0.098, 0.1025),
+        _chevron(-0.0755, -0.072, 0.056, 0.026, 0.028, 0.005),  # świecące V między żebrami radiatora
+    )
+    cell = block(-0.023, 0.023, -0.045, 0.005, -0.12, -0.092, bevel=0.003)
     return weapon_root("blaster", frame, vents, cell, (0, 0.33, 0.07), trim=trim, grip=grip)
 
 
 def build_pistol():
-    """Pistolet: zwarty, krótki zamek, pochylony chwyt, trzy cyjanowe nacięcia."""
+    """Pistolet: wysoka szczerbinka U z kropkami, świecąca szczelina na zamku, ryflowanie, kurek."""
     frame = bm_merge(
-        block(-0.02, 0.02, -0.04, 0.12, 0.02, 0.075, taper_top=(0.85, 1.0), bevel=0.005),  # zamek
-        tube(0.12, 0.15, 0.012, 0.012, sides=6, z=0.052),  # wylot
-        block(-0.012, 0.012, 0.0, 0.05, 0.0, 0.012),  # kabłąk
-        block(-0.005, 0.005, -0.035, -0.015, 0.075, 0.09),  # szczerbinka
+        # zamek: ścięty nos i pochylony tył
+        slab([(-0.042, 0.022), (0.118, 0.022), (0.128, 0.03), (0.128, 0.058), (0.112, 0.075),
+              (-0.03, 0.075), (-0.044, 0.06)], -0.02, 0.02, ch=0.004),
+        # szkielet pod zamkiem (osłona z fazą z przodu)
+        slab([(0.0, 0.01), (0.108, 0.01), (0.12, 0.018), (0.12, 0.024), (0.0, 0.024)], -0.015, 0.015, ch=0.003),
+        # kabłąk z oknem na spust
+        slab([(0.002, 0.012), (0.002, 0.0), (0.044, 0.0), (0.052, 0.006), (0.052, 0.012), (0.046, 0.012),
+              (0.046, 0.0065), (0.042, 0.0045), (0.008, 0.0045), (0.008, 0.012)], -0.006, 0.006, ch=0.0015),
+        lathe([(0.12, 0.012), (0.142, 0.012), (0.15, 0.0095)], z=0.052),  # wylot lufy
+        _u_sight(-0.038, -0.024, 0.016, 0.074, 0.1, 0.005, 0.087),  # wysoka szczerbinka U
+        _side_plaque(-0.021, -0.003, 0.015, 0.036, 0.062),  # plakietka na stalowym panelu
     )
     grip = block(-0.018, 0.018, -0.04, 0.0, -0.09, 0.02, taper_top=(1.0, 1.2), bevel=0.005)
     trim = bm_merge(
-        block(-0.007, 0.007, 0.0, 0.11, 0.075, 0.082),  # szyna
-        block(-0.004, 0.004, 0.1, 0.112, 0.082, 0.092),  # muszka
-        *_fpp_plate(0.0205, -0.036, 0.012, 0.03, 0.068),  # płytki tyłu zamka
-        tube(0.138, 0.146, 0.016, 0.016, sides=6, z=0.052),  # pierścień wylotu
+        # stalowa wierzchnia zamka: dwie szyny nad świecącą szczeliną
+        slab([(-0.042, 0.06), (0.126, 0.06), (0.11, 0.08), (-0.03, 0.08)], -0.0205, -0.0075, ch=0.003),
+        slab([(-0.042, 0.06), (0.126, 0.06), (0.11, 0.08), (-0.03, 0.08)], 0.0075, 0.0205, ch=0.003),
+        block(-0.003, 0.003, 0.094, 0.106, 0.076, 0.091, taper_top=(1, 0.5)),  # muszka w szczelinie
+        # ryflowanie tyłu zamka: dwa grube skośne żebra
+        *[slab([(y, 0.03), (y + 0.007, 0.03), (y + 0.011, 0.068), (y + 0.004, 0.068)], -0.0235, 0.0235)
+          for y in (-0.036, -0.021)],
+        block(-0.0215, -0.0195, -0.006, 0.018, 0.031, 0.067),  # stalowy panel pod plakietką
+        band(0.136, 0.146, 0.0155, 0.002, z=0.052),  # pierścień wylotu
         _fpp_trigger(0.025, 0.02, depth=0.018),
+        # tylna płyta zamka: dwie stalowe połówki wokół pionowej świecącej szczeliny
+        block(-0.019, -0.0045, -0.048, -0.042, 0.025, 0.06),
+        block(0.0045, 0.019, -0.048, -0.042, 0.025, 0.06),
+        # kurek z ostrogą nad tyłem zamka
+        slab([(-0.052, 0.046), (-0.041, 0.046), (-0.041, 0.072), (-0.046, 0.081), (-0.053, 0.081),
+              (-0.053, 0.075), (-0.049, 0.069)], -0.007, 0.007, ch=0.002),
     )
-    vents = bm_merge(*[block(-0.0215, 0.0215, 0.02 + i * 0.03, 0.036 + i * 0.03, 0.035, 0.065) for i in range(3)])
-    cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09)
+    vents = bm_merge(
+        *_vent_bars(3, 0.02, 0.03, 0.016, 0.035, 0.065, 0.0215),
+        block(-0.0075, 0.0075, -0.022, 0.108, 0.07, 0.077),  # świecąca szczelina na wierzchu zamka
+        block(-0.0045, 0.0045, -0.047, -0.042, 0.028, 0.046),  # szczelina w tylnej płycie (pod kurkiem)
+        # kropki szczerbinki i muszki (od strony oka)
+        block(-0.0125, -0.0065, -0.0395, -0.0375, 0.089, 0.095),
+        block(0.0065, 0.0125, -0.0395, -0.0375, 0.089, 0.095),
+        block(-0.002, 0.002, 0.0925, 0.0942, 0.081, 0.087),
+    )
+    cell = block(-0.02, 0.02, -0.04, 0.0, -0.1, -0.09, bevel=0.002)
     return weapon_root("pistol", frame, vents, cell, (0, 0.155, 0.052), trim=trim, grip=grip)
 
 
 def build_rifle():
-    """Karabin: długi, kolba, rączka, ogniwo ciepła jak magazynek pod komorą."""
+    """Karabin: klinowa kolba, żebrowana szyna z uszami celowników, świecące kanały łoża, dźwignia."""
     frame = bm_merge(
-        block(-0.025, 0.025, -0.08, 0.2, 0.0, 0.1, taper_top=(0.9, 1.0), bevel=0.006),  # komora
-        block(-0.022, 0.022, 0.2, 0.42, 0.015, 0.085, bevel=0.005),  # łoże
-        tube(0.42, 0.6, 0.014, 0.012, sides=8, z=0.05),  # lufa
-        tube(0.57, 0.62, 0.02, 0.02, sides=6, z=0.05),  # tłumik
+        slab([(-0.08, 0.0), (0.2, 0.0), (0.2, 0.1), (-0.052, 0.1), (-0.082, 0.072)], -0.025, 0.025,
+             ch=0.006),  # komora
+        slab([(0.06, -0.012), (0.152, -0.012), (0.156, 0.0), (0.056, 0.0)], -0.023, 0.023, ch=0.003),  # gniazdo
+        slab([(0.2, 0.015), (0.4, 0.015), (0.425, 0.03), (0.425, 0.072), (0.41, 0.085), (0.2, 0.085)],
+             -0.022, 0.022, ch=0.005),  # łoże
+        lathe([(0.42, 0.014), (0.575, 0.012)], z=0.05),  # lufa
+        lathe([(0.565, 0.017), (0.574, 0.021), (0.612, 0.021), (0.62, 0.016)], z=0.05),  # tłumik
+        _side_plaque(-0.0285, -0.034, 0.02, 0.042, 0.064),
+        *_side_bolts(-0.0285, [(-0.058, 0.03), (-0.058, 0.074), (0.046, 0.03)]),
     )
     grip = bm_merge(
-        block(-0.02, 0.02, -0.22, -0.08, -0.035, 0.085, taper_top=(0.9, 0.7)),  # kolba
+        # kolba klinowa: górna linia przedłuża komorę, spód ścięty ku chwytowi
+        _taper_x(slab([(-0.222, -0.045), (-0.198, -0.045), (-0.12, 0.012), (-0.078, 0.02), (-0.078, 0.085),
+                       (-0.222, 0.088)], -0.02, 0.02, ch=0.005), -0.1, -0.222, 0.8),
         block(-0.018, 0.018, -0.07, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.0175, 0.0175, -0.228, -0.214, -0.042, 0.09, bevel=0.004),  # gumowa stopka
     )
     trim = bm_merge(
-        block(-0.008, 0.008, 0.0, 0.24, 0.1, 0.118),  # szyna z celownikiem
-        block(-0.012, 0.012, 0.02, 0.05, 0.118, 0.14, taper_top=(0.7, 0.6)),  # celownik tylny
-        block(-0.006, 0.006, 0.2, 0.22, 0.118, 0.138),  # muszka
+        slab([(-0.07, 0.084), (0.2, 0.084), (0.2, 0.1008), (-0.052, 0.1008)], -0.0255, 0.0255,
+             ch=0.004),  # stalowa górna komora
+        _ribbed_rail(0.0, 0.24, 8, 0.1, 0.105, 0.113, 0.0085),  # szyna z poprzecznymi żebrami
+        _u_sight(0.018, 0.034, 0.015, 0.11, 0.138, 0.0045, 0.122),  # tylny celownik: uszy i wycięcie
+        # muszka w uszach ochronnych
+        slab_xz([(-0.013, 0.11), (0.013, 0.11), (0.013, 0.136), (0.007, 0.136), (0.007, 0.118),
+                 (0.002, 0.118), (0.002, 0.13), (-0.002, 0.13), (-0.002, 0.118), (-0.007, 0.118),
+                 (-0.007, 0.136), (-0.013, 0.136)], 0.2, 0.214),
         *_fpp_plate(0.0255, -0.07, 0.06, 0.02, 0.085),  # płyty komory
-        tube(0.6, 0.612, 0.023, 0.023, sides=6, z=0.05),  # czoło tłumika
-        block(-0.021, 0.021, -0.225, -0.21, -0.045, 0.09),  # stopka kolby
+        block(-0.0055, 0.0055, 0.214, 0.398, 0.084, 0.091),  # grzbiet łoża między kanałami
+        band(0.598, 0.612, 0.0235, 0.003, z=0.05),  # czoło tłumika
+        block(-0.018, 0.018, -0.17, -0.1, 0.07, 0.09, taper_top=(0.8, 0.9)),  # poduszka policzkowa
+        block(-0.034, 0.034, -0.074, -0.062, 0.093, 0.1, bevel=0.002),  # dźwignia przeładowania (T)
+        block(-0.018, -0.0105, -0.058, -0.004, 0.099, 0.108),  # grzbiety okna rdzenia na komorze
+        block(0.0105, 0.018, -0.058, -0.004, 0.099, 0.108),
         _fpp_trigger(-0.005, 0.0),
     )
-    vents = bm_merge(*[block(-0.0235, 0.0235, 0.24 + i * 0.045, 0.262 + i * 0.045, 0.03, 0.07) for i in range(4)])
-    cell = block(-0.02, 0.02, 0.07, 0.14, -0.1, 0.0)
+    vents = bm_merge(
+        *_vent_bars(4, 0.24, 0.045, 0.022, 0.03, 0.07, 0.0235),
+        block(-0.0155, -0.0085, 0.216, 0.396, 0.082, 0.0875),  # kanały rdzenia na wierzchu łoża
+        block(0.0085, 0.0155, 0.216, 0.396, 0.082, 0.0875),
+        block(-0.0015, 0.0015, 0.1995, 0.201, 0.124, 0.13),  # kropka muszki
+        block(-0.0105, 0.0105, -0.056, -0.006, 0.099, 0.104),  # okno rdzenia na wierzchu komory
+    )
+    # ogniwo jak magazynek: pochylony do przodu, lekko wygięty
+    cell = slab([(0.07, 0.0), (0.14, 0.0), (0.145, -0.05), (0.148, -0.096), (0.088, -0.1), (0.077, -0.05)],
+                -0.019, 0.019, ch=0.003)
     return weapon_root("rifle", frame, vents, cell, (0, 0.625, 0.05), trim=trim, grip=grip)
 
 
 def build_scatter():
-    """Rozpraszacz: szeroki, dwie grube lufy w jednej osłonie, pompa, krótka kolba."""
+    """Rozpraszacz: szeroka komora z radiatorem nad rdzeniem, dwie lufy, osłona z kanałem, pompa."""
     frame = bm_merge(
-        block(-0.05, 0.05, 0.0, 0.2, 0.0, 0.1, taper_top=(0.9, 1.0), bevel=0.008),  # szeroka komora
-        tube(0.2, 0.42, 0.028, 0.028, sides=6, x=-0.03, z=0.07),
-        tube(0.2, 0.42, 0.028, 0.028, sides=6, x=0.03, z=0.07),
-        block(-0.06, 0.06, 0.2, 0.3, 0.035, 0.105, bevel=0.006),  # osłona
+        slab([(0.0, 0.0), (0.2, 0.0), (0.2, 0.1), (0.032, 0.1), (0.0, 0.078)], -0.05, 0.05, ch=0.008),  # komora
+        lathe([(0.2, 0.028), (0.41, 0.028), (0.42, 0.024)], x=-0.03, z=0.07),
+        lathe([(0.2, 0.028), (0.41, 0.028), (0.42, 0.024)], x=0.03, z=0.07),
+        slab([(0.2, 0.035), (0.29, 0.035), (0.31, 0.058), (0.31, 0.105), (0.2, 0.105)], -0.06, 0.06,
+             ch=0.008),  # osłona
+        _side_plaque(-0.062, 0.222, 0.27, 0.07, 0.09),
+        *_side_bolts(-0.062, [(0.282, 0.08), (0.212, 0.056)], size=0.007),
     )
     grip = bm_merge(
         block(-0.034, 0.034, 0.22, 0.34, -0.005, 0.03, bevel=0.005),  # pompa
-        block(-0.026, 0.026, -0.14, 0.0, -0.03, 0.09, taper_top=(0.9, 0.8)),  # kolba
+        _taper_x(slab([(-0.14, -0.03), (-0.112, -0.03), (-0.045, 0.02), (0.0, 0.03), (0.0, 0.09),
+                       (-0.14, 0.084)], -0.026, 0.026, ch=0.006), -0.02, -0.14, 0.8),  # kolba
         block(-0.02, 0.02, -0.06, 0.02, -0.13, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.022, 0.022, -0.148, -0.134, -0.027, 0.088, bevel=0.004),  # gumowa stopka
     )
     trim = bm_merge(
-        block(-0.01, 0.01, 0.02, 0.19, 0.1, 0.11),  # szyna
-        block(-0.062, 0.062, 0.385, 0.405, 0.035, 0.105),  # opaska luf
+        # radiator na komorze: pięć poprzecznych żeber nad świecącym rdzeniem
+        *[block(-0.034, 0.034, 0.05 + i * 0.03, 0.064 + i * 0.03, 0.098, 0.116, taper_top=(0.8, 0.6))
+          for i in range(5)],
+        _u_sight(0.026, 0.04, 0.02, 0.094, 0.13, 0.0065, 0.114),  # duża szczerbinka nad tyłem komory
+        block(-0.062, 0.062, 0.385, 0.405, 0.035, 0.105, bevel=0.003),  # opaska luf
+        # stalowy dach osłony rozcięty kanałem rdzenia
+        slab([(0.2, 0.09), (0.31, 0.09), (0.31, 0.11), (0.2, 0.11)], -0.0605, -0.011, ch=0.003),
+        slab([(0.2, 0.09), (0.31, 0.09), (0.31, 0.11), (0.2, 0.11)], 0.011, 0.0605, ch=0.003),
+        block(-0.004, 0.004, 0.292, 0.306, 0.104, 0.122, taper_top=(1, 0.5)),  # muszka na dachu
         *[block(-0.036, 0.036, 0.235 + i * 0.03, 0.245 + i * 0.03, -0.009, 0.0) for i in range(3)],  # żeberka pompy
         *_fpp_plate(0.0505, 0.0, 0.2, 0.012, 0.04),  # listwy boczne komory
+        slab([(0.208, 0.046), (0.296, 0.046), (0.296, 0.098), (0.208, 0.098)], -0.0615, -0.0595,
+             ch=0.0),  # stalowy panel boku osłony
         _fpp_trigger(0.0, 0.0),
     )
-    vents = bm_merge(*[block(-0.052, 0.052, 0.02 + i * 0.045, 0.038 + i * 0.045, 0.045, 0.095) for i in range(4)])
-    cell = block(-0.025, 0.025, -0.01, 0.06, -0.15, -0.115)
+    vents = bm_merge(
+        *_vent_bars(4, 0.02, 0.045, 0.018, 0.045, 0.092, 0.052),
+        block(-0.03, 0.03, 0.044, 0.196, 0.098, 0.108),  # rdzeń pod radiatorem
+        block(-0.011, 0.011, 0.204, 0.306, 0.1, 0.106),  # kanał w dachu osłony
+    )
+    cell = block(-0.025, 0.025, -0.01, 0.06, -0.15, -0.115, bevel=0.003)
     return weapon_root("scatter", frame, vents, cell, (0, 0.43, 0.07), trim=trim, grip=grip)
 
 
 def build_sniper_rifle():
-    """Snajperka: bardzo długa, smukła lufa, duża luneta z cyjanową soczewką."""
+    """Snajperka: luneta ze świecącym okularem, hamulec z portami, łoże z kanałami, kolba z poduszką."""
     frame = bm_merge(
-        block(-0.02, 0.02, -0.08, 0.2, 0.0, 0.085, bevel=0.005),  # komora
-        block(-0.017, 0.017, 0.2, 0.55, 0.02, 0.07),  # łoże
-        tube(0.55, 0.86, 0.011, 0.01, sides=8, z=0.045),  # lufa
-        block(-0.02, 0.02, 0.86, 0.92, 0.025, 0.068),  # hamulec wylotowy
-        tube(0.0, 0.34, 0.03, 0.03, sides=8, z=0.145),  # luneta
-        tube(0.34, 0.4, 0.036, 0.036, sides=8, z=0.145),  # osłona obiektywu
-        tube(-0.06, 0.0, 0.026, 0.03, sides=8, z=0.145),
+        slab([(-0.08, 0.0), (0.2, 0.0), (0.2, 0.085), (-0.058, 0.085), (-0.082, 0.064)], -0.02, 0.02,
+             ch=0.005),  # komora
+        slab([(0.2, 0.02), (0.53, 0.02), (0.55, 0.034), (0.55, 0.06), (0.54, 0.07), (0.2, 0.07)],
+             -0.017, 0.017, ch=0.004),  # łoże
+        lathe([(0.55, 0.011), (0.86, 0.0095)], z=0.045),  # lufa
+        # hamulec wylotowy: porty wycięte w górnej krawędzi
+        slab([(0.858, 0.025), (0.92, 0.025), (0.92, 0.068), (0.906, 0.068), (0.906, 0.052), (0.896, 0.052),
+              (0.896, 0.068), (0.882, 0.068), (0.882, 0.052), (0.872, 0.052), (0.872, 0.068), (0.858, 0.068)],
+             -0.02, 0.02, ch=0.003),
+        # luneta: cienka tuba, dzwon okularu i obiektywu
+        lathe([(-0.062, 0.024), (-0.055, 0.031), (-0.012, 0.031), (0.004, 0.024), (0.29, 0.024),
+               (0.33, 0.036), (0.4, 0.036)], z=0.145),
+        _side_plaque(-0.021, -0.03, 0.02, 0.03, 0.052),
+        *_side_bolts(-0.021, [(-0.054, 0.024), (0.034, 0.024)]),
     )
     grip = bm_merge(
-        block(-0.022, 0.022, -0.24, -0.08, -0.04, 0.085, taper_top=(0.9, 0.6)),  # kolba
+        _taper_x(slab([(-0.242, -0.04), (-0.214, -0.04), (-0.13, 0.012), (-0.078, 0.02), (-0.078, 0.085),
+                       (-0.242, 0.085)], -0.022, 0.022, ch=0.005), -0.1, -0.242, 0.8),  # kolba
         block(-0.016, 0.016, -0.065, -0.02, -0.11, 0.0, taper_top=(1.0, 1.2)),  # chwyt
+        block(-0.0185, 0.0185, -0.248, -0.234, -0.02, 0.087, bevel=0.004),  # gumowa stopka
     )
     trim = bm_merge(
-        block(-0.008, 0.008, 0.04, 0.09, 0.085, 0.118),  # mocowania lunety
-        block(-0.008, 0.008, 0.23, 0.28, 0.085, 0.118),
-        tube(0.05, 0.075, 0.033, 0.033, sides=8, z=0.145),  # obejmy lunety
-        tube(0.245, 0.27, 0.033, 0.033, sides=8, z=0.145),
-        block(-0.022, 0.022, 0.885, 0.895, 0.02, 0.073),  # szczelina hamulca
+        slab([(-0.066, 0.072), (0.2, 0.072), (0.2, 0.0858), (-0.058, 0.0858)], -0.0205, 0.0205,
+             ch=0.003),  # stalowa górna komora
+        block(-0.008, 0.008, 0.04, 0.09, 0.085, 0.122),  # mocowania lunety
+        block(-0.008, 0.008, 0.23, 0.28, 0.085, 0.122),
+        band(0.05, 0.075, 0.0275, 0.003, z=0.145),  # obejmy lunety
+        band(0.245, 0.27, 0.0275, 0.003, z=0.145),
+        block(-0.011, 0.011, 0.14, 0.168, 0.164, 0.18, bevel=0.003),  # wieżyczka elewacji
+        block(-0.036, -0.022, 0.142, 0.166, 0.134, 0.156, bevel=0.003),  # wieżyczka boczna
+        block(0.018, 0.04, 0.03, 0.042, 0.066, 0.076),  # rączka zamka (przed dłonią)
+        bm_ico(0.009, center=(0.044, 0.036, 0.068), subdiv=1),  # gałka zamka
+        block(-0.019, 0.019, -0.19, -0.1, 0.07, 0.092, taper_top=(0.8, 0.9)),  # poduszka policzkowa
+        block(-0.0215, -0.0195, -0.062, 0.04, 0.014, 0.062),  # stalowy panel lewego boku komory
+        block(-0.0045, 0.0045, 0.22, 0.528, 0.069, 0.075),  # grzbiet łoża między kanałami
         _fpp_trigger(-0.005, 0.0),
     )
-    vents = bm_merge(*[block(-0.0195, 0.0195, 0.3 + i * 0.055, 0.32 + i * 0.055, 0.03, 0.062) for i in range(4)])
+    vents = bm_merge(
+        *_vent_bars(4, 0.3, 0.055, 0.02, 0.03, 0.062, 0.0195),
+        lathe([(-0.0645, 0.0185), (-0.06, 0.0185)], z=0.145),  # świecący okular lunety (od strony oka)
+        block(-0.0125, -0.0065, 0.222, 0.526, 0.067, 0.0715),  # kanały rdzenia na wierzchu łoża
+        block(0.0065, 0.0125, 0.222, 0.526, 0.067, 0.0715),
+    )
     # ogniwo ciepła jako magazynek pod komorą (na kolbie świeciło tuż przy kamerze)
-    cell = block(-0.015, 0.015, 0.05, 0.11, -0.07, 0.0, taper_top=(1.0, 1.0))
+    cell = slab([(0.05, 0.0), (0.11, 0.0), (0.118, -0.068), (0.062, -0.07)], -0.015, 0.015, ch=0.002)
     lens = tube(0.395, 0.405, 0.03, 0.03, sides=8, z=0.145)
     return weapon_root("sniper_rifle", frame, vents, cell, (0, 0.93, 0.045), extra=[("scope_lens", lens)],
                        trim=trim, grip=grip)
 
 
 def build_beam():
-    """Laser: gruby emiter z soczewką na froncie, cewki dookoła rury, chwyt pistoletowy."""
+    """Laser: emiter z czaszą, cewki i żebra, moduł zasilania z kanałem rdzenia i przeziernikiem."""
     frame = bm_merge(
-        tube(0.0, 0.3, 0.036, 0.042, sides=8, z=0.07),  # rura emitera
-        block(-0.03, 0.03, -0.1, 0.02, 0.03, 0.09, bevel=0.006),  # moduł zasilania z tyłu
-        block(-0.014, 0.014, 0.03, 0.09, 0.0, 0.012),  # kabłąk
-        tube(0.3, 0.34, 0.052, 0.058, sides=8, z=0.07),  # kołnierz lufy
+        lathe([(0.0, 0.034), (0.02, 0.037), (0.3, 0.042)], z=0.07, flat=False),  # rura emitera
+        slab([(-0.094, 0.035), (0.02, 0.035), (0.02, 0.09), (-0.068, 0.09), (-0.094, 0.072)], -0.024, 0.024,
+             ch=0.005),  # moduł zasilania
+        block(-0.014, 0.014, 0.03, 0.09, 0.0, 0.012, bevel=0.003),  # kabłąk
+        lathe([(0.296, 0.045), (0.312, 0.058), (0.336, 0.058), (0.342, 0.052)], z=0.07),  # czasza emitera
+        _side_plaque(-0.0275, -0.07, -0.03, 0.054, 0.072),
+        *_side_bolts(-0.0275, [(-0.08, 0.05), (-0.015, 0.05)]),
     )
-    grip = block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15))
+    grip = block(-0.02, 0.02, -0.04, 0.03, -0.1, 0.03, taper_top=(1.0, 1.15), bevel=0.004)
     trim = bm_merge(
-        block(-0.006, 0.006, 0.05, 0.16, 0.108, 0.128),  # grzebień
+        # żebra radiatora między cewkami
+        *[block(-0.03, 0.03, y, y + 0.01, 0.1, 0.124, taper_top=(0.7, 1.0)) for y in (0.075, 0.14, 0.205)],
+        block(-0.006, 0.006, 0.07, 0.25, 0.108, 0.116),  # grzbiet łączący żebra
         *[block(s * 0.05 - 0.004, s * 0.05 + 0.004, 0.03, 0.3, 0.064, 0.076) for s in (-1, 1)],  # pręty klatki cewek
-        tube(0.335, 0.345, 0.061, 0.061, sides=8, z=0.07),  # obręcz kołnierza
-        *_fpp_plate(0.0305, -0.09, 0.01, 0.045, 0.08),
+        band(0.33, 0.346, 0.061, 0.003, z=0.07),  # obręcz czaszy
+        # stalowa pokrywa modułu zasilania rozcięta kanałem rdzenia
+        slab([(-0.0882, 0.076), (0.02, 0.076), (0.02, 0.094), (-0.068, 0.094)], -0.0245, -0.007, ch=0.003),
+        slab([(-0.0882, 0.076), (0.02, 0.076), (0.02, 0.094), (-0.068, 0.094)], 0.007, 0.0245, ch=0.003),
+        # tylna płyta modułu: dwie stalowe połówki wokół świecącej szczeliny
+        block(-0.025, -0.006, -0.1, -0.093, 0.035, 0.071),
+        block(0.006, 0.025, -0.1, -0.093, 0.035, 0.071),
+        _u_sight(-0.062, -0.05, 0.016, 0.092, 0.118, 0.005, 0.105),  # przeziernik na tyle modułu
+        *_fpp_plate(0.0245, -0.09, 0.01, 0.045, 0.08),
         _fpp_trigger(0.06, 0.0, depth=0.02),
     )
-    coils = bm_merge(*[tube(0.04 + i * 0.065, 0.062 + i * 0.065, 0.052, 0.052, sides=8, z=0.07) for i in range(4)])
+    coils = bm_merge(
+        *[band(0.04 + i * 0.065, 0.062 + i * 0.065, 0.053, 0.003, z=0.07) for i in range(4)],
+        block(-0.007, 0.007, -0.074, 0.018, 0.086, 0.0915),  # kanał rdzenia na wierzchu modułu
+        block(-0.006, 0.006, -0.098, -0.093, 0.039, 0.067),  # szczelina rdzenia w tylnej płycie
+    )
     lens = tube(0.34, 0.352, 0.044, 0.01, sides=8, z=0.07)
-    cell = block(-0.026, 0.026, -0.095, -0.03, 0.04, 0.08)
+    cell = slab([(-0.094, 0.04), (-0.03, 0.04), (-0.03, 0.08), (-0.068, 0.08), (-0.094, 0.064)], -0.026, 0.026)
     return weapon_root("beam", frame, coils, cell, (0, 0.36, 0.07), extra=[("lens", lens)], trim=trim, grip=grip)
 
 
 def build_emp_launcher():
-    """Granatnik EMP: gruba tuba, bęben, rozszerzony wylot i kondensator."""
+    """Granatnik EMP: gruba tuba, bęben ze świecącym pierścieniem komór od tyłu, żebrowana szyna."""
     frame = bm_merge(
-        tube(0.04, 0.38, 0.05, 0.05, sides=8, z=0.07),  # tuba
-        tube(0.38, 0.45, 0.05, 0.07, sides=8, z=0.07),  # rozszerzony wylot
-        tube(-0.02, 0.1, 0.074, 0.074, sides=8, z=0.07),  # bęben
+        lathe([(0.03, 0.05), (0.375, 0.05)], z=0.07, flat=False),  # tuba (jak dawniej: dłoń podpierająca)
+        lathe([(0.37, 0.052), (0.39, 0.058), (0.43, 0.07), (0.45, 0.07)], z=0.07),  # dzwon wylotu
+        lathe([(-0.02, 0.06), (-0.008, 0.074), (0.088, 0.074), (0.1, 0.06)], z=0.07),  # bęben
     )
     grip = bm_merge(
-        block(-0.026, 0.026, -0.14, -0.02, -0.01, 0.09, taper_top=(0.9, 0.8)),  # kolba
+        _taper_x(slab([(-0.14, -0.01), (-0.114, -0.01), (-0.06, 0.03), (-0.02, 0.04), (-0.02, 0.09),
+                       (-0.14, 0.084)], -0.026, 0.026, ch=0.006), -0.03, -0.14, 0.8),  # kolba
+        block(-0.022, 0.022, -0.148, -0.134, -0.007, 0.086, bevel=0.004),  # gumowa stopka
         block(-0.02, 0.02, 0.0, 0.07, -0.12, 0.0, taper_top=(1.0, 1.2)),  # chwyt
         block(-0.014, 0.014, 0.1, 0.16, -0.02, 0.01),  # chwyt przedni
     )
     trim = bm_merge(
-        block(-0.007, 0.007, 0.2, 0.3, 0.125, 0.145),  # szyna
-        tube(-0.028, -0.018, 0.077, 0.077, sides=8, z=0.07),  # obręcze bębna
-        tube(0.098, 0.108, 0.077, 0.077, sides=8, z=0.07),
-        tube(0.44, 0.455, 0.073, 0.073, sides=8, z=0.07),  # krawędź wylotu
+        _ribbed_rail(0.2, 0.3, 4, 0.112, 0.12, 0.13, 0.007),  # szyna z poprzecznymi żebrami
+        # krzyż X na tyle bębna: dzieli świecący pierścień na cztery komory
+        *[slab_xz([(0.058 * c - 0.0045 * s, 0.07 + 0.058 * s + 0.0045 * c),
+                   (-0.058 * c - 0.0045 * s, 0.07 - 0.058 * s + 0.0045 * c),
+                   (-0.058 * c + 0.0045 * s, 0.07 - 0.058 * s - 0.0045 * c),
+                   (0.058 * c + 0.0045 * s, 0.07 + 0.058 * s - 0.0045 * c)], -0.025, -0.019)
+          for c, s in ((0.7071, 0.7071), (0.7071, -0.7071))],
+        lathe([(-0.026, 0.03), (-0.022, 0.042), (-0.014, 0.042)], z=0.07),  # stalowa piasta bębna (widok z tyłu)
+        band(-0.004, 0.006, 0.077, 0.002, z=0.07),  # obręcze bębna
+        band(0.074, 0.084, 0.077, 0.002, z=0.07),
+        # komory bębna: cztery wypukłe pokrywy po bokach
+        *[block(s * 0.074 - 0.006, s * 0.074 + 0.006, 0.012, 0.066, 0.05, 0.09, bevel=0.003) for s in (-1, 1)],
+        band(0.44, 0.456, 0.073, 0.003, z=0.07),  # krawędź wylotu
         _fpp_trigger(0.05, 0.0),
     )
-    rings = bm_merge(*[tube(0.14 + i * 0.07, 0.16 + i * 0.07, 0.054, 0.054, sides=8, z=0.07) for i in range(3)])
-    cell = block(-0.018, 0.018, 0.0, 0.08, 0.142, 0.162)
+    rings = bm_merge(
+        *[band(0.14 + i * 0.07, 0.16 + i * 0.07, 0.055, 0.003, z=0.07, flat=False) for i in range(3)],
+        lathe([(-0.0225, 0.056), (-0.019, 0.056)], z=0.07),  # świecący pierścień komór (tył bębna)
+    )
+    cell = slab([(0.0, 0.142), (0.08, 0.142), (0.08, 0.154), (0.072, 0.162), (0.008, 0.162), (0.0, 0.154)],
+                -0.018, 0.018, ch=0.003)
     return weapon_root("emp_launcher", frame, rings, cell, (0, 0.46, 0.07), trim=trim, grip=grip)
 
 
 def build_blade_twin():
-    """Rękojeść wariantu bliźniaczego: krótsza, z poprzeczną osłoną. Węzły jak plasma_blade."""
+    """Rękojeść wariantu bliźniaczego: krótsza, z rogami osłony i kolcem głowicy. Węzły jak plasma_blade.
+
+    Rozpoznawalność z FPP: osłona-rogi wygięte ku ostrzu (lewo/prawo z oka), cyjanowa listwa
+    na jej grzbiecie, owijka z trzech pasów i kolec zamiast pierścienia.
+    """
     root = empty("blade_twin", size=0.1)
-    body, grip, trim = _fpp_hilt_parts(.19, .024, .09, .07, prongs=False)
-    body.append(bm_box(0.1, 0.012, 0.016, center=(0, 0.056, 0)))  # poprzeczna osłona
-    trim.append(bm_box(0.11, 0.006, 0.02, center=(0, 0.063, 0)))  # krawędź osłony
+    r = .024
+    body, grip, trim = _fpp_hilt_parts(.19, r, .09, .07, bands=3)
+    # osłona: dwa rogi w płaszczyźnie Y-Z, zwężone i wygięte do przodu (sylwetka półksiężyca)
+    for side in (-1, 1):
+        horn = [(.049, 0.0), (.050, .028), (.072, .062), (.080, .060), (.066, .026), (.066, 0.0)]
+        body.append(slab([(y, side * z) for y, z in horn], -.008, .008, ch=.0015))
+    # kolec głowicy
+    body.append(tube(-.095 - .03, -.095 + .002, .002, r * .78, sides=6))
+    trim.append(block(.006, .0095, .050, .066, -.034, .034, bevel=.0012))  # rama listwy mocy
+    glow = block(.008, .011, .054, .062, -.028, .028)
     mesh_object("hilt", bm_merge(*body), "mat_interactive", parent=root)
     mesh_object("grip", bm_merge(*grip), "mat_interactive", parent=root)
     mesh_object("trim", bm_merge(*trim), "mat_interactive", parent=root)
     ring = bm_prism(0.012, 0.034, 0.034, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.1, 0))
-    mesh_object("emitter_ring", ring, "mat_player_cyan", parent=root)
+    mesh_object("emitter_ring", bm_merge(ring, glow), "mat_player_cyan", parent=root)
     pivot = empty("blade", parent=root, location=(0, 0.106, 0), size=0.05)
     core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
     mesh_object("blade_core", core, "mat_player_cyan", parent=pivot, location=(0, 0.106, 0))
@@ -1007,25 +1450,36 @@ def build_blade_twin():
 
 
 def build_blade_staff():
-    """Kij: długa rękojeść (0,8 m) z emiterami na obu końcach; chwyt w środku."""
+    """Kij: długa rękojeść (0,8 m) z emiterami na obu końcach; chwyt w środku.
+
+    Rozpoznawalność z FPP: długie drzewce z dwiema szczelinami mocy po obu stronach chwytu
+    i widełkami na obu emiterach.
+    """
     root = empty("blade_staff", size=0.1)
     hilt = bm_merge(
         tube(-0.37, 0.37, 0.019, 0.019, sides=8),
-        tube(0.37, 0.4, 0.024, 0.03, sides=8),  # gardła emiterów
-        tube(-0.4, -0.37, 0.03, 0.024, sides=8),
+        # gardła emiterów: kołnierz, stożek i fazowana krawędź
+        lathe([(0.362, 0.021), (0.372, 0.025), (0.392, 0.032), (0.398, 0.032), (0.402, 0.028)], flat=False),
+        lathe([(-0.402, 0.028), (-0.398, 0.032), (-0.392, 0.032), (-0.372, 0.025), (-0.362, 0.021)], flat=False),
+        # pancerne tuleje w połowie drzewca
+        lathe([(0.17, 0.019), (0.18, 0.024), (0.235, 0.024), (0.245, 0.019)], flat=False),
+        lathe([(-0.245, 0.019), (-0.235, 0.024), (-0.18, 0.024), (-0.17, 0.019)], flat=False),
     )
     mesh_object("hilt", hilt, "mat_interactive", parent=root)
-    mesh_object("grip", tube(-0.06, 0.06, 0.024, 0.024, sides=8), "mat_interactive", parent=root)
+    mesh_object("grip", _fpp_wrap(-0.06, 0.06, 0.024, 3, slant=-.0035), "mat_interactive", parent=root)
+    slot_f, cells_f = _fpp_power_slot(0.019, 0.085, 0.155, bevel=0)
+    slot_b, cells_b = _fpp_power_slot(0.019, -0.155, -0.085, bevel=0)
     trim = bm_merge(
-        *[tube(y - 0.005, y + 0.005, 0.027, 0.027, sides=8) for y in (-0.065, 0.065, -0.25, 0.25)],
+        *[band(y - 0.005, y + 0.005, 0.027, 0.002, flat=False) for y in (-0.065, 0.065, -0.25, 0.25)],
         block(0.018, 0.03, -0.04, 0.04, -0.01, 0.01),  # przycisk
-        *_fpp_prongs(0.034, 0.38, 0.425),
-        *_fpp_prongs(0.034, -0.425, -0.38, sign=-1),
+        slot_f, slot_b,
+        *_fpp_forks(0.37, 0.455, 0.021, 0.04),
+        *_fpp_forks(-0.37, -0.455, 0.021, 0.04, sign=-1),
     )
     mesh_object("trim", trim, "mat_interactive", parent=root)
     ring_f = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.406, 0))
     ring_b = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.406, 0))
-    mesh_object("emitter_ring", bm_merge(ring_f, ring_b), "mat_player_cyan", parent=root)
+    mesh_object("emitter_ring", bm_merge(ring_f, ring_b, *cells_f, *cells_b), "mat_player_cyan", parent=root)
     front = empty("blade", parent=root, location=(0, 0.412, 0), size=0.05)
     core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
     mesh_object("blade_core", core, "mat_player_cyan", parent=front, location=(0, 0.412, 0))
@@ -1173,65 +1627,203 @@ def _hand_tube(name, centers, radii, mat, root, closed=False, sides=8):
     return _hand_surface(name, vertices, faces, mat, root)
 
 
-def _hand_dorsal_points(glove, basis):
-    from mathutils.bvhtree import BVHTree
+# Palce: (nazwa, x nasady, z nasady, długości paliczków, promień, rozchylenie). Dłoń ok. 19 cm od
+# nadgarstka do czubka środkowego; paliczki w proporcji ok. 1 : 0,65 : 0,5; mały wyraźnie krótszy.
+_HAND_FINGERS = (
+    ("pinky", -0.031, -0.082, (0.034, 0.022, 0.018), 0.0086, 0.105),
+    ("ring", -0.012, -0.091, (0.042, 0.027, 0.022), 0.0098, 0.035),
+    ("middle", 0.009, -0.095, (0.045, 0.029, 0.023), 0.0104, -0.012),
+    ("index", 0.030, -0.090, (0.041, 0.026, 0.021), 0.0100, -0.065),
+)
+_HAND_THUMB = ((0.030, 0.027, 0.023), 0.0118)
+# Przekrój rękawicy (z, półszerokość, półgłębokość): od wnętrza rękawa (z = 0,13) do kłykci.
+# Mankiet rękawicy jest prawie walcowy — bez „klepsydry” w nadgarstku.
+_GLOVE_SECTIONS = (
+    (.130, .035, .027), (.104, .034, .026), (.080, .0335, .0255), (.060, .032, .0245),
+    (.040, .031, .0235), (.022, .030, .0225), (.006, .0297, .0215), (-.010, .0312, .0215),
+    (-.026, .0352, .022), (-.042, .0392, .0225), (-.058, .0412, .022), (-.072, .0412, .019),
+    (-.083, .0412, .017),
+)
+# Gniazda broni palnej i podparcia (glTF, metry, względem roota dłoni); ostrze: bladeGrip.json.
+_SOCKET_GUN = (.040, .0425, -.094)
+_SOCKET_SUPPORT = (.0042, .0215, -.10321)
+# Wiersze przekroju, między którymi wyrasta kciuk (otwór po stronie promieniowej).
+_THUMB_ROWS = (7, 8, 9, 10)
+# Rękaw kurtki (z, półszerokość, półgłębokość); kończy się kołnierzem mankietu przy z = 0,066.
+_SLEEVE_SECTIONS = ((.340, .050, .040), (.250, .047, .0375), (.170, .0435, .035), (.100, .0405, .0325),
+                    (.066, .0395, .0315))
 
-    surface = BVHTree.FromPolygons([v.co for v in glove.data.vertices],
-                                   [p.vertices for p in glove.data.polygons])
-    inverse = basis.inverted()
-    points = []
-    for z in (-.020, -.029, -.044, -.060, -.071):
-        origin = basis @ Vector((.020, -.080, z))
-        direction = basis.to_3x3() @ Vector((0, 1, 0))
-        position, normal, _, _ = surface.ray_cast(origin, direction)
-        if position is None:
-            raise RuntimeError("Dorsal piping must stay on the glove surface")
-        points.append(inverse @ (position + normal * .0003))
-    return points
 
-
-# Przekrój przedramienia rękawicy (z, półszerokość, półgłębokość) — jak `sections` w build_player_arm.
-_FPP_FOREARM = ((.34, .048, .036), (.31, .048, .036), (.275, .046, .034), (.235, .043, .032),
-                (.19, .041, .030), (.145, .037, .027), (.10, .033, .025), (.066, .031, .024))
-
-
-def _fpp_forearm_size(z):
-    for (z0, w0, d0), (z1, w1, d1) in zip(_FPP_FOREARM, _FPP_FOREARM[1:]):
+def _interp_sections(table, z):
+    if z >= table[0][0]:
+        return table[0][1:]
+    for (z0, w0, d0), (z1, w1, d1) in zip(table, table[1:]):
         if z1 <= z <= z0:
             t = (z - z1) / (z0 - z1)
             return w1 + (w0 - w1) * t, d1 + (d0 - d1) * t
-    return _FPP_FOREARM[-1][1:]
+    return table[-1][1:]
 
 
-def _fpp_shell(z0, z1, u0, u1, gap, thick, segments=5, bevel=.0):
-    """Wygięta płyta pancerza nad grzbietem przedramienia (osie glTF, grzbiet = -Y)."""
+def _glove_profile(u):
+    return math.sqrt(max(.10, 1 - .82 * u * u))
+
+
+def _palm_point(u, z, side, off=0.0):
+    """Punkt powierzchni rękawicy (bez przejścia w palce): side=-1 grzbiet, +1 wnętrze dłoni."""
+    width, depth = _interp_sections(_GLOVE_SECTIONS, z)
+    x = u * (width + off) + .006 * max(0, z) / .34
+    y = depth * _glove_profile(u)
+    if side < 0:
+        # Ścięgna prostowników: niskie grzbiety nad kośćmi śródręcza.
+        ridge = sum(math.exp(-((x - fx) / .0065) ** 2) for _, fx, *_ in _HAND_FINGERS)
+        y += .0012 * ridge * math.exp(-((z + .052) / .022) ** 2)
+    else:
+        # Kłąb kciuka (thenar), kłąb małego palca, wklęsłe wnętrze i poduszki pod kłykciami.
+        y += .0065 * math.exp(-((x - .025) / .012) ** 2) * math.exp(-((z + .030) / .018) ** 2)
+        y += .0040 * math.exp(-((x + .027) / .011) ** 2) * math.exp(-((z + .046) / .022) ** 2)
+        y -= .0028 * math.exp(-((x - .002) / .014) ** 2) * math.exp(-((z + .050) / .014) ** 2)
+        y += .0022 * math.exp(-((z + .075) / .008) ** 2)
+    return Vector((x, side * (y + off), z))
+
+
+def _finger_section(lengths, radius, distance):
+    """(półszerokość, grzbiet, wnętrze) palca: spłaszczony owal, kłykcie, poduszki, opuszka."""
+    total = sum(lengths)
+    j1, j2 = lengths[0], lengths[0] + lengths[1]
+    taper = 1 - .20 * distance / total
+    tip = min(1, max(.22, (total - distance) / .008)) ** .5
+    knuckle = sum(math.exp(-((distance - j) / .0055) ** 2) for j in (j1, j2))
+    knuckle += .7 * math.exp(-(distance / .006) ** 2)
+    pads = sum(math.exp(-((distance - m) / (.28 * size)) ** 2)
+               for m, size in ((j1 * .5, lengths[0]), (j1 + lengths[1] * .5, lengths[1]),
+                               (j2 + lengths[2] * .55, lengths[2])))
+    scale = radius * taper * tip
+    return (scale * 1.05 * (1 + .07 * knuckle), scale * .80 * (1 + .20 * knuckle),
+            scale * .84 * (1 + .10 * pads - .10 * knuckle))
+
+
+def _finger_point(section, angle, z):
+    width, dorsal, palmar = section
+    s = math.sin(angle)
+    return Vector((width * math.cos(angle), (palmar if s > 0 else dorsal) * s, z))
+
+
+def _superellipse(u, power):
+    return (1 - min(1, abs(u)) ** (2 / power)) ** (power / 2)
+
+
+def _fpp_loft(rings, cap_start=False, cap_end=False, wrap=False, sharp=()):
+    """Siatka z pierścieni o równej liczbie punktów; `sharp` — indeksy pierścieni z ostrą krawędzią."""
     bm = bmesh.new()
-
-    def ring(z, offset, shrink):
-        w, d = _fpp_forearm_size(z)
-        pts = []
-        for i in range(segments + 1):
-            u = (u0 + (u1 - u0) * i / segments) * shrink
-            y = -(d * math.sqrt(max(.1, 1 - .82 * u * u)) + offset)
-            x = u * (w + offset) + .006 * z / .34
-            pts.append(bm.verts.new((x, y, z)))
-        return pts
-
-    # Fazowane czoła: zewnętrzna powierzchnia krótsza o `bevel` na obu końcach.
-    outer0, outer1 = ring(z0 + bevel, gap + thick, .96), ring(z1 - bevel, gap + thick, .96)
-    inner0, inner1 = ring(z0, gap, 1), ring(z1, gap, 1)
-    for a, b in ((outer0, outer1), (inner1, inner0), (inner0, outer0), (outer1, inner1)):
-        for i in range(segments):
-            bm.faces.new((a[i], a[i + 1], b[i + 1], b[i]))
-    for a, b, c, d in ((inner0[0], outer0[0], outer1[0], inner1[0]),
-                       (inner1[-1], outer1[-1], outer0[-1], inner0[-1])):
-        bm.faces.new((a, b, c, d))
+    loops = [[bm.verts.new(p) for p in ring] for ring in rings]
+    count = len(rings[0])
+    pairs = list(zip(loops, loops[1:])) + ([(loops[-1], loops[0])] if wrap else [])
+    for a, b in pairs:
+        for i in range(count):
+            bm.faces.new((a[i], a[(i + 1) % count], b[(i + 1) % count], b[i]))
+    if cap_start:
+        bm.faces.new(loops[0])
+    if cap_end:
+        bm.faces.new(loops[-1])
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    bm.edges.ensure_lookup_table()
+    for index in sharp:
+        ring = set(loops[index])
+        for edge in bm.edges:
+            if edge.verts[0] in ring and edge.verts[1] in ring:
+                edge.smooth = False
     return bm
 
 
-def _fpp_hand_part(name, bm, mat, rig, bone, basis, side):
-    """Sztywna część na kości ręki: geometria w osiach glTF, odbicie L z poprawnymi normalnymi."""
+def _fpp_surface_plate(point, z0, z1, u0, u1, gap, thick, segments=5, bevel=0.0, steps=1, far=None):
+    """Fazowana płytka na powierzchni opisanej `point(u, z, offset)`.
+
+    Przekrój: zewnętrzny łuk (gap + thick) i wewnętrzny (gap); końce i boki fazowane o `bevel`.
+    `far` = (u0, u1) na końcu z1 — płytka trapezowa.
+    """
+    direction = 1 if z1 > z0 else -1
+    zs = [z0 + (z1 - z0) * i / steps for i in range(steps + 1)]
+    if bevel:
+        zs = [z0] + [z0 + direction * bevel] + zs[1:-1] + [z1 - direction * bevel, z1]
+    rings = []
+    for k, z in enumerate(zs):
+        end = bevel and k in (0, len(zs) - 1)
+        t = (z - z0) / (z1 - z0)
+        a, b = (u0, u1) if far is None else (u0 + (far[0] - u0) * t, u1 + (far[1] - u1) * t)
+        middle, half = (a + b) / 2, (b - a) / 2
+        top_half = half - (bevel / .03 if bevel else 0) * (1.6 if end else 1)
+        outer = [point(middle - top_half + 2 * top_half * i / segments, z, gap + thick * (.35 if end else 1))
+                 for i in range(segments + 1)]
+        inner = [point(middle - half + 2 * half * i / segments, z, gap) for i in range(segments + 1)]
+        rings.append(outer + inner[::-1])
+    return _fpp_loft(rings, cap_start=True, cap_end=True)
+
+
+def _fpp_band(size, z0, z1, gap, thick, sides=24, bevel=0.0, power=.8, sharp=False):
+    """Opaska dookoła przekroju `size(z) -> (w, d, cx)` (superelipsa), z fazowanymi krawędziami."""
+    def ring(z, offset):
+        width, depth, center = size(z)
+        pts = []
+        for i in range(sides):
+            a = 2 * math.pi * (i + .5) / sides
+            c, s = math.cos(a), math.sin(a)
+            pts.append(Vector((center + (width + offset) * math.copysign(abs(c) ** power, c),
+                               (depth + offset) * math.copysign(abs(s) ** power, s), z)))
+        return pts
+
+    direction = 1 if z1 > z0 else -1
+    rings = [ring(z0, gap), ring(z0, gap + thick * .45), ring(z0 + direction * bevel, gap + thick),
+             ring(z1 - direction * bevel, gap + thick), ring(z1, gap + thick * .45), ring(z1, gap)]
+    return _fpp_loft(rings, wrap=True, sharp=(1, 2, 3, 4) if sharp else ())
+
+
+def _glove_size(z):
+    width, depth = _interp_sections(_GLOVE_SECTIONS, z)
+    return width * .985, depth, .006 * max(0, z) / .34
+
+
+def _sleeve_size(z):
+    width, depth = _interp_sections(_SLEEVE_SECTIONS, z)
+    return width, depth, .006 * z / .34
+
+
+def _fpp_sleeve():
+    """Rękaw kurtki: kołnierz mankietu z grubością brzegu, kilka miękkich fałd, owalny przekrój."""
+    sides, power = 24, .85
+
+    def ring(z, offset, fold=0.0):
+        width, depth, center = _sleeve_size(z)
+        pts = []
+        for i in range(sides):
+            a = 2 * math.pi * (i + .5) / sides
+            c, s = math.cos(a), math.sin(a)
+            # Fałdy: zmarszczenie zebranego rękawu, ukośne i mocniejsze od strony łokcia.
+            bump = (.5 + .5 * math.sin(2 * math.pi * (z - .094 + .005 * math.cos(a - .6)) / .021)) ** 2
+            extra = fold * bump * (.55 + .45 * math.cos(a + 1.9))
+            pts.append(Vector((center + (width + offset + extra) * math.copysign(abs(c) ** power, c),
+                               (depth + offset + extra) * math.copysign(abs(s) ** power, s), z)))
+        return pts
+
+    rings = [ring(.082, -.0052), ring(.067, -.0052), ring(.0645, -.0026), ring(.066, .0010),
+             ring(.072, .0024), ring(.085, .0024), ring(.0895, .0010), ring(.093, 0)]
+    for i in range(15):
+        z = .0975 + i * .0042
+        rings.append(ring(z, 0, fold=.0024 * min(1, (.165 - z) / .03, (z - .093) / .008)))
+    for z in (.168, .19, .22, .26, .30, .34):
+        rings.append(ring(z, 0))
+    # Ostre krawędzie: brzeg rękawa i kołnierz mankietu.
+    return _fpp_loft(rings, cap_end=True, sharp=(2, 3, 4, 5, 6))
+
+
+def _fpp_hand_part(name, bm, mat, rig, bone, basis, side, smooth="auto"):
+    """Sztywna część na kości ręki: geometria w osiach glTF, odbicie L z poprawnymi normalnymi.
+
+    smooth="auto": gładkie łuki, ostre krawędzie powyżej 40° (czytelny kontur bez prążków fasetek).
+    """
+    if smooth == "auto":
+        for edge in bm.edges:
+            if len(edge.link_faces) == 2 and edge.calc_face_angle(0) > math.radians(40):
+                edge.smooth = False
     obj = mesh_object(name, bm, mat)
     obj.data.transform(basis)
     if side == "L":
@@ -1240,43 +1832,70 @@ def _fpp_hand_part(name, bm, mat, rig, bone, basis, side):
         bmesh.ops.reverse_faces(mirrored, faces=list(mirrored.faces))
         mirrored.to_mesh(obj.data)
         mirrored.free()
+    if smooth:
+        for polygon in obj.data.polygons:
+            polygon.use_smooth = True
     _hand_bone_child(obj, rig, bone, Matrix.Identity(4))
     return obj
 
 
-def _fpp_bracer(rig, basis, side):
-    """Cybernetyczny karwasz: dwie płyty, listwa światła gracza, śruby i port przy nadgarstku.
+def _sleeve_point(u, z, off):
+    """Punkt na grzbiecie rękawa (superelipsa jak w `_fpp_sleeve`)."""
+    width, depth, center = _sleeve_size(z)
+    return Vector((center + u * (width + off), -((depth + off) * _superellipse(u, .85)), z))
 
-    Materiały po nazwie węzła w grze: `plate_*` pancerz, `trim_*` jasna stal (fppMaterials.ts).
+
+def _fpp_forearm_gear(rig, basis, side):
+    """Rękaw, karwasz z panelem i mankiet rękawicy z paskiem — sztywne części na kości `forearm`.
+
+    Części o tej samej kości i materiale są scalone (budżet liczby siatek sceny):
+    `plate_bracer` = rękaw + obudowa karwasza + mankiet rękawicy (pancerz),
+    `trim_bracer` = panel, śruby i klamra (stal), `grip_strap` = paski (guma).
     """
-    plates = bm_merge(
-        _fpp_shell(.215, .150, -.85, .85, .003, .005, bevel=.004),
-        _fpp_shell(.142, .078, -.8, .8, .003, .005, bevel=.004),
-    )
-    _fpp_hand_part("plate_bracer", plates, "mat_interactive", rig, "forearm", basis, side)
-    # Listwa światła w rowku między płytami i wzdłuż grzbietu.
-    w, d = _fpp_forearm_size(.146)
+    # Karwasz: niska obudowa na grzbiecie rękawa, przypięta dwoma paskami.
+    housing = _fpp_surface_plate(_sleeve_point, .252, .176, -.50, .50, .0028, .0065,
+                                 segments=6, bevel=.0045, steps=2)
+    cuff = _fpp_band(_glove_size, .012, .050, .0012, .0034, bevel=.0024, sharp=True)
+    _fpp_hand_part("plate_bracer", bm_merge(_fpp_sleeve(), housing, cuff), "mat_interactive",
+                   rig, "forearm", basis, side)
+    top = .0028 + .0065
+    trims = [_fpp_surface_plate(_sleeve_point, .240, .192, -.30, .30, top - .0004, .0014,
+                                segments=4, bevel=.0015)]
+    for z in (.184, .244):
+        for u in (-.40, .40):
+            p = _sleeve_point(u, z, top)
+            trims.append(bm_prism(.0016, .0016, .0019, sides=6, axis="Y", top_at_origin=True,
+                                  offset=(p.x, p.y, p.z)))
+    # Klamra paska po stronie grzbietowo-promieniowej (widoczna z kamery FPP).
+    width, depth, center = _glove_size(.030)
+    angle = -math.pi / 2 + .75
+    c, s = math.cos(angle), math.sin(angle)
+    offset = .0046 + .0013
+    anchor = Vector((center + (width + offset) * c ** .8, -(depth + offset) * abs(s) ** .8, .030))
+    buckle = bm_merge(bm_box(.011, .0026, .013, bevel=.0008),
+                      bm_box(.006, .0012, .007, center=(0, -.0016, 0)))
+    tilt = math.atan2(anchor.y, anchor.x - center) + math.pi / 2
+    bmesh.ops.transform(buckle, matrix=Matrix.Translation(anchor) @ Matrix.Rotation(tilt, 4, "Z"),
+                        verts=list(buckle.verts))
+    trims.append(buckle)
+    _fpp_hand_part("trim_bracer", bm_merge(*trims), "mat_interactive", rig, "forearm", basis, side)
     light = bm_merge(
-        _fpp_shell(.148, .144, -.7, .7, .006, .0025, segments=4),
-        block(-.0035, .0035, -(d + .0105), -(d + .0075), .085, .205),
+        _fpp_surface_plate(_sleeve_point, .234, .198, -.06, .06, top + .0008, .0009, segments=2),
+        _fpp_surface_plate(_sleeve_point, .190, .186, -.22, .22, top - .0006, .0012, segments=3),
     )
     _fpp_hand_part("bracer_light", light, "mat_player_cyan", rig, "forearm", basis, side)
-    trims = []
-    for z in (.205, .16, .132, .088):
-        w, d = _fpp_forearm_size(z)
-        for u in (-.62, .62):
-            x = u * (w + .008) + .006 * z / .34
-            y = -(d * math.sqrt(max(.1, 1 - .82 * u * u)) + .009)
-            trims.append(bm_box(.006, .006, .006, center=(x, y, z)))
-    # Port złącza nad nadgarstkiem: sześciokątna obejma.
-    w, d = _fpp_forearm_size(.066)
-    trims.append(bm_prism(.006, .009, .011, sides=6, axis="Y", top_at_origin=True,
-                          offset=(.012, -(d + .004), .058)))
-    _fpp_hand_part("trim_bracer", bm_merge(*trims), "mat_interactive", rig, "forearm", basis, side)
+    straps = bm_merge(
+        _fpp_band(_sleeve_size, .181, .189, .0006, .0018, sides=16, bevel=.0012, power=.85, sharp=True),
+        _fpp_band(_sleeve_size, .238, .246, .0006, .0018, sides=16, bevel=.0012, power=.85, sharp=True),
+        _fpp_band(_glove_size, .026, .036, .0046, .0013, bevel=.0010, sharp=True),
+    )
+    _fpp_hand_part("grip_strap", straps, "mat_interactive", rig, "forearm", basis, side)
+    light = _fpp_band(_glove_size, .0095, .0125, .0010, .0024, sides=24)
+    _fpp_hand_part("wrist_light", light, "mat_player_cyan", rig, "forearm", basis, side)
 
 
 def build_player_arm(side: str):
-    """Continuous tailored glove: quad palm/webs, joint loops and baked subdivision.
+    """Taktyczna rękawica na anatomicznej dłoni: ciągła skinowana siatka + sztywne części na kościach.
 
     Construction coordinates are glTF metres. Bone Y follows each finger; bone X
     is the flexion hinge and bone Z faces the palm. Positive X curls both hands.
@@ -1286,24 +1905,19 @@ def build_player_arm(side: str):
     reflection = Matrix.Diagonal((-1, 1, 1, 1)) if side == "L" else Matrix.Identity(4)
     basis = HAND_BASIS @ reflection
     forward_frame = Matrix.Rotation(-math.pi / 2, 4, "X")
-    fingers = (
-        ("pinky", -0.032, -0.083, (0.032, 0.020, 0.018), 0.0087, 0.105),
-        ("ring", -0.013, -0.093, (0.040, 0.025, 0.020), 0.0103, 0.035),
-        ("middle", 0.009, -0.096, (0.043, 0.027, 0.021), 0.0110, -0.012),
-        ("index", 0.031, -0.090, (0.039, 0.024, 0.020), 0.0105, -0.065),
-    )
+    fingers = _HAND_FINGERS
     # Distal edge: four dorsal vertices and four palmar vertices per finger.
     angles = [math.pi + (j + 0.5) * math.pi / 4 for j in range(8)]
     frames, lengths_by_name = {}, {}
     for name, x, z, lengths, radius, spread in fingers:
         frames[name] = Matrix.Translation((x, 0, z)) @ Matrix.Rotation(spread, 4, "Y")
         lengths_by_name[name] = lengths
-    # The metacarpal emerges from the thenar mound, diagonally forward, not sideways.
-    frames["thumb"] = (Matrix.Translation((0.034, 0.006, -0.034))
+    # Kciuk osadzony nisko i z boku, na kłębie; oś zgięcia skręcona ku palcom (opozycja).
+    frames["thumb"] = (Matrix.Translation((0.033, 0.008, -0.036))
                        @ Matrix.Rotation(-0.10, 4, "X")
-                       @ Matrix.Rotation(-0.60, 4, "Y")
-                       @ Matrix.Rotation(0.62, 4, "Z"))
-    lengths_by_name["thumb"] = (0.028, 0.025, 0.021)
+                       @ Matrix.Rotation(-0.62, 4, "Y")
+                       @ Matrix.Rotation(0.80, 4, "Z"))
+    lengths_by_name["thumb"] = _HAND_THUMB[0]
     vertices, faces, weights = [], [], []
 
     def vertex(point, influence):
@@ -1317,40 +1931,21 @@ def build_player_arm(side: str):
 
     distal = []
     for name, x, z, lengths, radius, spread in fingers:
-        distal.append([frames[name] @ Vector((radius * math.cos(a), radius * 0.89 * math.sin(a), 0)) for a in angles])
-    # Cross sections run from jacket opening to knuckle line. A distal scallop
-    # blends the four knuckle cushions into the back instead of adding armour boxes.
-    sections = (
-        (0.340, .048, .036), (.335, .049, .037), (.310, .048, .036),
-        (.275, .046, .034), (.235, .043, .032), (.190, .041, .030),
-        (.145, .037, .027), (.100, .033, .025), (.066, .031, .024),
-        (.047, .031, .024), (.043, .029, .023), (.038, .029, .023),
-        (.033, .028, .022), (.018, .027, .021), (.002, .027, .020),
-        (-.017, .031, .020), (-.036, .037, .022), (-.055, .041, .022),
-        (-.072, .041, .019), (-.083, .041, .017), (None, None, None),
-    )
+        section = _finger_section(lengths, radius, 0)
+        distal.append([frames[name] @ _finger_point(section, a, 0) for a in angles])
+    sections = list(_GLOVE_SECTIONS) + [None]
     rings = []
-    for row, (z, width, depth) in enumerate(sections):
+    for row, entry in enumerate(sections):
         dorsal, palmar = [], []
         for f, (name, *_) in enumerate(fingers):
             for j in range(8):
                 endpoint = distal[f][j]
-                if z is None:
+                if entry is None:
                     point = endpoint
                     influence = {"palm": .55, f"{name}_1": .45}
                 else:
-                    u = endpoint.x / .041
-                    y = (-1 if j < 4 else 1) * depth * math.sqrt(max(.10, 1 - .82 * u * u))
-                    # Palm pads and restrained dorsal tendon ridges.
-                    if z < -.015:
-                        if j >= 4:
-                            y += .0025 * math.exp(-((endpoint.x - .023) / .018) ** 2)
-                        else:
-                            y -= .004 * math.exp(-((j - 1.5) / .9) ** 2)
-                    if z > .047:
-                        y += .0013 * math.cos(u * 4.5 + row * 1.7) * math.exp(-((z - .105) / .095) ** 2)
-                    center_x = .006 * max(0, z) / .34
-                    point = Vector((u * width + center_x, y, z))
+                    z = entry[0]
+                    point = _palm_point(endpoint.x / .041, z, -1 if j < 4 else 1)
                     blend = max(0, min(1, (-z - .058) / .032))
                     point = point.lerp(endpoint, blend * .65)
                     if z > .040:
@@ -1370,7 +1965,7 @@ def build_player_arm(side: str):
             # Thumb opening on the radial side over three palm rows (8-edge boundary).
             previous = rings[row - 1]
             for j in range(32):
-                if j == 15 and row in (16, 17, 18):
+                if j == 15 and row in _THUMB_ROWS[1:]:
                     continue
                 faces.append((previous[j], previous[(j + 1) % 32], ring[(j + 1) % 32], ring[j]))
     faces.append(tuple(reversed(rings[0])))
@@ -1379,12 +1974,14 @@ def build_player_arm(side: str):
         # Real webbing between adjoining fingers, continuous with both palm surfaces.
         faces.append((last[f * 4 + 3], last[(f + 1) * 4], last[31 - (f + 1) * 4], last[28 - f * 4]))
 
-    finger_specs = list(fingers) + [("thumb", 0, 0, lengths_by_name["thumb"], .0113, 0)]
+    finger_specs = list(fingers) + [("thumb", 0, 0, lengths_by_name["thumb"], _HAND_THUMB[1], 0)]
     for f, (name, x, z, lengths, radius, spread) in enumerate(finger_specs):
         frame = frames[name]
         if name == "thumb":
-            previous = [rings[r][15] for r in (15, 16, 17, 18)] + [rings[r][16] for r in (18, 17, 16, 15)]
-            base_points = [frame @ Vector((radius * 1.25 * math.cos(a), radius * math.sin(a), -.016)) for a in angles]
+            previous = ([rings[r][15] for r in _THUMB_ROWS]
+                        + [rings[r][16] for r in reversed(_THUMB_ROWS)])
+            base_points = [frame @ Vector((radius * 1.30 * math.cos(a), radius * 1.05 * math.sin(a), -.016))
+                           for a in angles]
             # Match perimeter order geometrically: no crossed quads in the thumb web.
             candidates = []
             for order in (previous, list(reversed(previous))):
@@ -1398,7 +1995,9 @@ def build_player_arm(side: str):
             for index, point in zip(previous, base_points):
                 boundary = basis.inverted() @ vertices[index]
                 weights[index] = {"palm": .88, "thumb_1": .12}
-                transition.append(vertex(boundary.lerp(point, .48), {"palm": .78, "thumb_1": .22}))
+                # Pełny kłąb kciuka: przejście wypchnięte ku wnętrzu dłoni.
+                middle = boundary.lerp(point, .48) + Vector((.0012, .0016, 0))
+                transition.append(vertex(middle, {"palm": .78, "thumb_1": .22}))
                 base.append(vertex(point, {"palm": .25, "thumb_1": .75}))
             bridge(previous, transition)
             bridge(transition, base)
@@ -1407,16 +2006,12 @@ def build_player_arm(side: str):
             previous = [last[f * 4 + j] for j in range(4)] + [last[28 - f * 4 + j] for j in range(4)]
         total = sum(lengths)
         joints = (0, lengths[0], lengths[0] + lengths[1])
-        distances = sorted(set((.004, lengths[0] * .52, lengths[0] - .004, lengths[0],
-                                lengths[0] + .004, joints[2] - .004, joints[2], joints[2] + .004,
-                                total - .009, total - .004, total - .001)))
+        distances = sorted(set((.004, lengths[0] * .5, lengths[0] - .0045, lengths[0],
+                                lengths[0] + .0045, joints[2] - .0045, joints[1] + lengths[1] * .5,
+                                joints[2], joints[2] + .004, total - .010, total - .005, total - .0015)))
         for distance in distances:
             if name == "thumb" and distance <= .016:
                 continue
-            t = distance / total
-            taper = 1 - .22 * t
-            tip = min(1, max(.22, (total - distance) / .007)) ** .5
-            bulge = 1 + .18 * sum(math.exp(-((distance - joint) / .006) ** 2) for joint in joints[1:])
             influence = {f"{name}_{min(3, 1 + sum(distance > joint for joint in joints[1:]))}": 1}
             for joint_index, joint in enumerate(joints[1:], 1):
                 if abs(distance - joint) <= .006:
@@ -1426,14 +2021,8 @@ def build_player_arm(side: str):
             if distance < root_blend:
                 t_root = distance / root_blend
                 influence = {"palm": .45 * (1 - t_root), f"{name}_1": .55 + .45 * t_root}
-            ring = []
-            for a in angles:
-                # Oval pad, slightly full on the palm side; integrated knuckle cushion.
-                xx = radius * taper * tip * math.cos(a)
-                yy = radius * .88 * taper * tip * math.sin(a) * bulge
-                if math.sin(a) > 0:
-                    yy *= 1.06
-                ring.append(vertex(frame @ Vector((xx, yy, -distance)), influence))
+            section = _finger_section(lengths, radius, distance)
+            ring = [vertex(frame @ _finger_point(section, a, -distance), influence) for a in angles]
             bridge(previous, ring)
             previous = ring
         faces.append(tuple(previous))
@@ -1491,13 +2080,24 @@ def build_player_arm(side: str):
     # Subdivision is baked before linear skinning, including interpolated vertex weights.
     arm_modifier.use_deform_preserve_volume = False
 
-    # Low-profile bevelled knuckle guards follow the proximal bones, leaving flexion free.
+    def finger_plate(name, lengths, radius, d0, d1, thick, u=.66, bevel=.0014):
+        def point(uu, z, off):
+            width, dorsal, _ = _finger_section(lengths, radius, -z)
+            return Vector((uu * (width + off), -(dorsal * math.sqrt(max(.05, 1 - uu * uu)) + off), z))
+        plate = _fpp_surface_plate(point, -d0, -d1, -u, u, -.0003, thick, segments=5, bevel=bevel, steps=2)
+        bmesh.ops.transform(plate, matrix=frames[name], verts=list(plate.verts))
+        return plate
+
+    # Niskie fazowane płytki na paliczkach bliższych; staw międzypaliczkowy zostaje wolny.
     for name, _, _, lengths, radius, _ in fingers:
-        guard = bm_box(radius * 1.65, .006, lengths[0] * .48,
-                       center=(0, -radius * .92, -lengths[0] * .28), bevel=.0025)
-        bmesh.ops.transform(guard, matrix=frames[name], verts=list(guard.verts))
-        _fpp_hand_part(f"plate_knuckle_{name}", guard, "mat_interactive",
-                       rig, f"{name}_1", basis, side)
+        plate = finger_plate(name, lengths, radius, .0045, lengths[0] - .0055, .0016)
+        _fpp_hand_part(f"plate_knuckle_{name}", plate, "mat_interactive", rig, f"{name}_1", basis, side)
+    # Wzmocnione czubki palca wskazującego i kciuka (detal taktyczny).
+    for name, _, _, lengths, radius, _ in finger_specs:
+        if name in ("index", "thumb"):
+            joint = lengths[0] + lengths[1]
+            plate = finger_plate(name, lengths, radius, joint + .0035, sum(lengths) - .0022, .0013, u=.72)
+            _fpp_hand_part(f"plate_tip_{name}", plate, "mat_interactive", rig, f"{name}_3", basis, side)
 
     def palm_detail(obj, position=(0, 0, 0)):
         obj.data.transform(basis)
@@ -1510,29 +2110,27 @@ def build_player_arm(side: str):
         _hand_bone_child(obj, rig, "palm", Matrix.Translation(basis @ Vector(position)))
         return obj
 
-    # Thin light piping, seated in the glove surface rather than raised armour.
-    trace = _hand_tube("dorsal_trace", _hand_dorsal_points(glove, basis),
-                       [.0009] * 5, "mat_player_cyan", root)
+    # Pancerz grzbietu dłoni: główna płyta pod rdzeniem Rezonansu i wąski segment przy nadgarstku.
+    dorsal = lambda u, z, off: _palm_point(u, z, -1, off)  # noqa: E731
+    # Poduszka na kłębie małego palca (środek dłoni zostaje wklęsły) — ta sama siatka co pancerz grzbietu.
+    palmar = lambda u, z, off: _palm_point(u, z, 1, off)  # noqa: E731
+    plates = bm_merge(
+        _fpp_surface_plate(dorsal, -.031, -.069, -.62, .66, .0002, .0024, segments=8, bevel=.0026, steps=2,
+                           far=(-.84, .86)),
+        _fpp_surface_plate(dorsal, -.016, -.027, -.66, .70, .0002, .0018, segments=6, bevel=.0016),
+        _fpp_surface_plate(palmar, -.030, -.068, -.90, -.30, -.0004, .0020, segments=5, bevel=.0020,
+                           steps=3, far=(-.86, -.10)),
+    )
+    _fpp_hand_part("plate_hand", plates, "mat_interactive", rig, "palm", basis, side)
+    # Cienka linia światła wzdłuż promieniowej krawędzi płyty grzbietu.
+    trace_points = [_palm_point(.62, z, -1, .0002 + .0024 + .0003) for z in (-.034, -.042, -.050, -.058, -.066)]
+    trace = _hand_tube("dorsal_trace", trace_points, [.0008] * 5, "mat_player_cyan", root, sides=6)
     palm_detail(trace)
-    cuff_centers = []
-    for index in rings[11]:
-        point = basis.inverted() @ vertices[index]
-        outward = Vector((point.x, point.y, 0)).normalized()
-        cuff_centers.append(point + outward * .0008)
-    cuff = _hand_tube("wrist_light", cuff_centers, [.0011] * 32, "mat_player_cyan", root, closed=True)
-    cuff.data.transform(basis)
-    if side == "L":
-        bm = bmesh.new()
-        bm.from_mesh(cuff.data)
-        bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
-        bm.to_mesh(cuff.data)
-        bm.free()
-    _hand_bone_child(cuff, rig, "forearm", Matrix.Identity(4))
     for name, size, position, mat in (
         ("resonance_mount", (.014, .004, .019), (0, -.025, -.047), "mat_interactive"),
         ("resonance_core", (.0105, .0032, .0145), (0, -.028, -.047), "mat_power_magenta"),
     ):
-        obj = mesh_object(name, bm_ico(1, subdiv=3, scale=size), mat)
+        obj = mesh_object(name, bm_ico(1, subdiv=3 if name == "resonance_core" else 2, scale=size), mat)
         for polygon in obj.data.polygons:
             polygon.use_smooth = True
         palm_detail(obj, position)
@@ -1541,14 +2139,14 @@ def build_player_arm(side: str):
     blade_rotation = Matrix(((0, 0, -1), (0, 1, 0), (1, 0, 0))).to_4x4() @ Matrix.Rotation(math.pi / 2, 4, "Z")
     for name, loc, rotation in (
         ("palm_center", (0, .018, -.049), Matrix.Rotation(math.pi / 2, 4, "X")),
-        ("socket_gun", (.06158, .04108, -.11575), gun_rotation),
+        ("socket_gun", _SOCKET_GUN, gun_rotation),
         ("socket_blade", BLADE_GRIP["socketPosition"], blade_rotation),
-        ("socket_support", (.00420, .03100, -.10321), Matrix.Rotation(math.radians(55), 4, "Y")),
+        ("socket_support", _SOCKET_SUPPORT, Matrix.Rotation(math.radians(55), 4, "Y")),
     ):
         obj = empty(name, size=.012)
         world = HAND_BASIS @ reflection @ Matrix.Translation(loc) @ rotation @ reflection @ HAND_BASIS.inverted()
         _hand_bone_child(obj, rig, "palm", world)
-    _fpp_bracer(rig, basis, side)
+    _fpp_forearm_gear(rig, basis, side)
     bpy.context.view_layer.update()
     return root
 
@@ -4615,6 +5213,52 @@ def attach_hand_item(hand, item, socket_name):
     bpy.context.view_layer.update()
 
 
+def _weapon_grips():
+    """Pole `grip` z danych broni, według nazwy modelu (jak weaponGripOfModel w grze)."""
+    folder = os.path.join(ROOT, "src", "data", "weapons")
+    grips = {}
+    for name in sorted(os.listdir(folder)):
+        with open(os.path.join(folder, name), encoding="utf-8") as source:
+            data = json.load(source)
+        if data.get("model") and data.get("grip"):
+            grips.setdefault(data["model"], data["grip"])
+    return grips
+
+
+def _grip_matrix(offset, rotation=None):
+    """Macierz Three.js: przesunięcie i Euler XYZ (R = Rx Ry Rz), osie glTF -> Blender."""
+    x, y, z = rotation or (0, 0, 0)
+    local = (Matrix.Translation(offset) @ Matrix.Rotation(x, 4, "X") @ Matrix.Rotation(y, 4, "Y")
+             @ Matrix.Rotation(z, 4, "Z"))
+    return HAND_BASIS @ local @ HAND_BASIS.inverted()
+
+
+def _hold_weapon(item, model):
+    """Prawa dłoń na `socket_gun` i dłoń podpierająca na `support`, jak FppBlaster (broń w początku)."""
+    grip = _weapon_grips().get(model, {})
+    bpy.context.view_layer.update()
+    right = build_player_arm("R")
+    hand_pose(right, grip.get("pose", "gripGun"))
+    socket = hand_object(right, "socket_gun").matrix_world.copy()
+    right.matrix_world = item.matrix_world @ _grip_matrix(grip.get("offset", (0, 0, 0)),
+                                                          grip.get("rotation")) @ socket.inverted()
+    support = hand_object(item, "support")
+    two = (HAND_BASIS.inverted() @ support.matrix_world.translation).z < -.15
+    left = build_player_arm("L")
+    hand_pose(left, grip.get("support", {}).get("pose", "support"))
+    socket = hand_object(left, "socket_support").matrix_world.copy()
+    place = support.matrix_world.copy()
+    if two:
+        # TWO_HAND_SUPPORT_FORWARD, _YAW, _PITCH z fppBlaster.ts (osie glTF węzła).
+        place = place @ (HAND_BASIS @ (Matrix.Translation((0, 0, -.08)) @ Matrix.Rotation(-1.4, 4, "Y")
+                                       @ Matrix.Rotation(.8, 4, "X")) @ HAND_BASIS.inverted())
+    if "support" in grip:
+        place = place @ _grip_matrix(grip["support"]["offset"], grip["support"].get("rotation"))
+    left.matrix_world = place @ socket.inverted()
+    bpy.context.view_layer.update()
+    return right, left, two
+
+
 def render_hand_previews():
     for side in ("R", "L"):
         reset_scene()
@@ -4624,6 +5268,10 @@ def render_hand_previews():
         if side == "R":
             hand_preview("hand_relaxed_detail.png", target=(.008, 0, -.060),
                          direction=(.25, -1, -.4), span=.29)
+            # Zbliżenia: grzbiet z płytami, wnętrze dłoni z kciukiem, nadgarstek z mankietem.
+            hand_preview("hand_dorsal_detail.png", target=(0, 0, -.04), direction=(.05, -1, -.1), span=.30)
+            hand_preview("hand_palm_detail.png", target=(0, .01, -.07), direction=(.1, 1, -.25), span=.26)
+            hand_preview("hand_wrist_detail.png", target=(0, 0, .04), direction=(.6, -.8, -.2), span=.24)
     for pose in ("open", "fist"):
         reset_scene()
         right = build_player_arm("R")
@@ -4637,42 +5285,55 @@ def render_hand_previews():
         if pose == "fist":
             hand_preview("hand_fist_inner.png", target=(0, .02, -.06),
                          direction=(.10, 1, -.4), span=.42)
-    for name, builder, pose, socket in (
-        ("blade", build_plasma_blade, "gripBlade", "socket_blade"),
-        ("pistol", build_pistol, "gripGun", "socket_gun"),
-        ("pistol_fire", build_pistol, "gripGunFire", "socket_gun"),
-        ("blaster", build_blaster, "gripGun", "socket_gun"),
-        ("rifle", build_rifle, "gripGun", "socket_gun"),
-    ):
+            right.location.x = left.location.x = 0
+            left.hide_render = True
+            for child in left.children_recursive:
+                child.hide_render = True
+            bpy.context.view_layer.update()
+            hand_preview("hand_fist_side.png", target=(0, .01, -.06), direction=(1, .1, -.2), span=.22)
+            hand_preview("hand_fist_front.png", target=(0, 0, -.08), direction=(.15, -.3, -1), span=.2)
+    reset_scene()
+    right = build_player_arm("R")
+    hand_pose(right, "gripBlade")
+    attach_hand_item(right, build_plasma_blade(), "socket_blade")
+    hand_preview("hand_grip_blade.png", target=(0.01, 0.01, 0.035), direction=(0.9, -0.75, -0.5), span=0.65)
+    hand_preview("hand_grip_blade_inner.png", target=(0, 0.03, -0.1), direction=(-0.4, 1, -0.35), span=0.32)
+
+    # Broń palna: chwyt dopasowany do modelu (pole `grip` w src/data/weapons/*.json), jak FppBlaster.
+    for model, builder in (("pistol", build_pistol), ("blaster", build_blaster), ("rifle", build_rifle),
+                           ("scatter", build_scatter), ("sniper_rifle", build_sniper_rifle),
+                           ("beam", build_beam), ("emp_launcher", build_emp_launcher)):
         reset_scene()
-        right = build_player_arm("R")
-        hand_pose(right, pose)
         item = builder()
-        attach_hand_item(right, item, socket)
-        if name == "rifle":
-            left = build_player_arm("L")
-            hand_pose(left, "support")
-            support = hand_object(item, "support")
-            socket_left = hand_object(left, "socket_support")
-            left.matrix_world = support.matrix_world @ socket_left.matrix_world.inverted()
-            bpy.context.view_layer.update()
-        hand_preview(f"hand_grip_{name}.png", target=(0.01, 0.01, -0.18 if name == "rifle" else 0.035),
-                     direction=(0.9, -0.75, -0.5), span=0.65 if name != "rifle" else 1.22)
-        if name == "blade":
-            hand_preview("hand_grip_blade_inner.png", target=(0, 0.03, -0.1),
-                         direction=(-0.4, 1, -0.35), span=0.32)
-        if name == "rifle":
-            target = HAND_BASIS.inverted() @ support.matrix_world.translation
-            hand_preview("hand_support_rifle.png", target=target,
-                         direction=(-0.6, 0.9, -0.3), span=0.34)
-        if name == "pistol":
-            hand_preview("hand_grip_pistol_inner.png", target=(0.01, 0.025, -0.08),
-                         direction=(-0.6, 1, -0.5), span=0.30)
-            socket = hand_object(right, "socket_gun")
-            right.matrix_world = (Matrix.Translation(HAND_BASIS @ Vector((0.22, -0.24, -0.45)))
-                                  @ socket.matrix_world.to_quaternion().inverted().to_matrix().to_4x4())
-            bpy.context.view_layer.update()
+        right, left, two = _hold_weapon(item, model)
+        aim = HAND_BASIS.inverted() @ hand_object(right, "palm_center").matrix_world.translation
+        if two:
+            hand_preview(f"hand_grip_{model}.png", target=(0.01, 0.01, -0.18), direction=(0.9, -0.75, -0.5),
+                         span=1.22)
+            target = HAND_BASIS.inverted() @ hand_object(left, "palm_center").matrix_world.translation
+            hand_preview(f"hand_support_{model}.png", target=target, direction=(.9, -.45, .25), span=.30)
+            hand_preview(f"hand_support_{model}_below.png", target=target, direction=(-.4, -1, .35), span=.30)
+        else:
+            hand_preview(f"hand_grip_{model}.png", target=(0.01, 0.01, 0.035), direction=(0.9, -0.75, -0.5),
+                         span=0.65)
+        hand_preview(f"hand_grip_{model}_detail.png", target=aim, direction=(-1, .25, .2), span=.24)
+        if model == "pistol":
+            hand_preview("hand_grip_pistol_inner.png", target=aim, direction=(-0.6, 1, -0.5), span=0.30)
+            hand_pose(right, _weapon_grips()[model]["firePose"])
+            hand_preview("hand_grip_pistol_fire.png", target=aim, direction=(-1, .25, .2), span=.24)
+            hand_pose(right, _weapon_grips()[model]["pose"])
+        # Kadr gry: POSE / TWO_HAND_POSE z fppBlaster.ts (Euler YXZ), kamera 70° 16:9.
+        pos, rot = ((.15, -.27, -.45), (.1, .11, -.15)) if two else ((.23, -.17, -.41), (.08, .15, -.04))
+        frame = HAND_BASIS @ (Matrix.Translation(pos) @ Matrix.Rotation(rot[1], 4, "Y")
+                              @ Matrix.Rotation(rot[0], 4, "X") @ Matrix.Rotation(rot[2], 4, "Z")) @ HAND_BASIS.inverted()
+        for obj in (item, right, left):
+            if obj is not None:
+                obj.matrix_world = frame @ obj.matrix_world
+        bpy.context.view_layer.update()
+        hand_preview(f"hand_fpp_{model}.png", fpp=True)
+        if model == "pistol":
             hand_preview("hand_fpp_view.png", fpp=True)
+            hand_preview("hand_fpp_view_detail.png", target=(.20, -.22, -.40), direction=(-.2, .25, .45), span=.26)
 
     # The same item-space socket and YXZ camera pose as FppBlade, including the mirrored twin.
     for name, builder in (("plasmaBlade", build_plasma_blade),

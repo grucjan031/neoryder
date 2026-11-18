@@ -6,6 +6,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   Quaternion,
+  SkinnedMesh,
   Vector3,
 } from 'three';
 import type { Object3D } from 'three';
@@ -24,6 +25,7 @@ import { FppBlaster } from '../../src/render/fppBlaster';
 import { FppOffhand } from '../../src/render/fppOffhand';
 import { FppMotion, shownHeld } from '../../src/render/fppMotion';
 import { getMaterial } from '../../src/render/materials';
+import { surfaceFor } from '../../src/render/fppMaterials';
 import {
   plasmaBladeDefinition,
   staffBladeDefinition,
@@ -494,4 +496,61 @@ it('keeps the primitive hierarchy when a model file cannot load', async () => {
     expect(rig.root.getObjectByName(name)).toBeDefined();
   expect(rig.root.getObjectByName('armor')).toBeDefined();
   expect(loader).toHaveBeenCalledOnce();
+});
+
+describe('player_arm GLB contract', () => {
+  const bones = [
+    'forearm',
+    'wrist',
+    'palm',
+    ...['index', 'middle', 'ring', 'pinky', 'thumb'].flatMap((finger) =>
+      [1, 2, 3].map((joint) => `${finger}_${joint}`),
+    ),
+  ];
+  // Części bez przedrostka plate_/trim_/grip_ — jawnie, z materiałem FPP z surfaceFor().
+  const named: Record<string, string> = {
+    tactical_glove: 'glove',
+    resonance_mount: 'armor',
+  };
+
+  it.each(['R', 'L'] as const)(
+    '%s: 18 bones, sockets, one skinned glove, budget and FPP material names',
+    async (side) => {
+      const bytes = readFileSync(`public/assets/models/player_arm_${side}.glb`);
+      const { scene } = await new GLTFLoader().parseAsync(
+        new Uint8Array(bytes).buffer,
+        '',
+      );
+      const skins: SkinnedMesh[] = [];
+      let triangles = 0;
+      scene.traverse((node) => {
+        expect(node.scale.x * node.scale.y * node.scale.z).toBeGreaterThan(0);
+        if (!(node instanceof Mesh)) return;
+        if (node instanceof SkinnedMesh) skins.push(node);
+        triangles +=
+          (node.geometry.index?.count ??
+            node.geometry.getAttribute('position').count) / 3;
+        const material = node.material as { name: string };
+        expect([
+          'mat_interactive',
+          'mat_player_cyan',
+          'mat_power_magenta',
+        ]).toContain(material.name);
+        // Każda czarna część dostaje w grze właściwy materiał FPP po nazwie węzła.
+        if (material.name === 'mat_interactive') {
+          if (/^(plate_|trim_|grip_)/.test(node.name)) return;
+          expect(named[node.name], node.name).toBeDefined();
+          expect(surfaceFor(node.name)).toBe(named[node.name]);
+        }
+      });
+      expect(skins.map((skin) => skin.name)).toEqual(['tactical_glove']);
+      expect(skins[0]!.skeleton.bones.map((bone) => bone.name).sort()).toEqual(
+        [...bones].sort(),
+      );
+      for (const name of [...handNodes, 'resonance_mount'])
+        expect(scene.getObjectByName(name), name).toBeDefined();
+      expect(triangles).toBeGreaterThanOrEqual(6000);
+      expect(triangles).toBeLessThanOrEqual(12000);
+    },
+  );
 });

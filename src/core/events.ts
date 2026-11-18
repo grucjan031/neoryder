@@ -53,7 +53,7 @@ export interface GameEvents {
 
   // F1 — zdrowie (#01)
   health_changed: { id: EntityId; current: number; max: number };
-  player_died: { id: EntityId };
+  player_died: { id: EntityId; cause?: string };
   // F1 — ruch (#02, #04)
   player_jumped: { id: EntityId; double: boolean };
   player_landed: { id: EntityId; speed: number };
@@ -143,7 +143,11 @@ export interface GameEvents {
   };
   boss_phase: { id: EntityId; phase: number; phases: number };
   boss_shield: { id: EntityId; current: number; max: number };
-  run_ended: { outcome: 'victory' | 'death'; summary: RunSummary };
+  run_ended: {
+    outcome: 'victory' | 'death';
+    summary: RunSummary;
+    cause?: string;
+  };
   // F4 — meta-progres (#01)
   meta_rewards: {
     runId: string;
@@ -178,6 +182,12 @@ interface Subscription {
 
 export class EventBus {
   private readonly handlers = new Map<EventType, Subscription[]>();
+
+  get listenerCount(): number {
+    let count = 0;
+    for (const list of this.handlers.values()) count += list.length;
+    return count;
+  }
 
   on<K extends EventType>(type: K, h: Handler<K>): () => void {
     const entry: Subscription = {

@@ -8,5 +8,15 @@
   "rangeM": 12,
   "tickHz": 10,
   "tags": ["#gun", "#laser"],
-  "model": "beam"
+  "model": "beam",
+  "grip": {
+    "offset": [0.0012, -0.022, -0.026],
+    "pose": "gripBeam",
+    "firePose": "gripBeamFire",
+    "support": {
+      "offset": [0.0004, -0.0115, -0.0576],
+      "pose": "supportBeam",
+      "rotation": [-0.0, -0.3, 0.0]
+    }
+  }
 }

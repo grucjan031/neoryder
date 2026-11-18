@@ -32,6 +32,8 @@ export class HeldItem {
   private requested: HeldKind | null = null;
   private bufferS = 0;
   private weapon: string | null = null;
+  private weaponSlot = 0;
+  private weaponChanged = false;
   private readonly offWeapon: () => void;
   /** Postęp celowania 0–1 (liniowy; `aim` zwraca wygładzony). */
   private aimT = 0;
@@ -46,8 +48,12 @@ export class HeldItem {
     start: HeldKind,
   ) {
     this.current = this.target = start;
-    this.offWeapon = bus.on('weapon_switched', ({ owner, weapon }) => {
+    this.offWeapon = bus.on('weapon_switched', ({ owner, weapon, slot }) => {
       if (owner !== this.owner) return;
+      this.weaponChanged =
+        this.weapon !== null &&
+        (this.weapon !== weapon || this.weaponSlot !== slot);
+      this.weaponSlot = slot;
       this.weapon = weapon;
       // Przełączenie broni kończy celowanie (FOV wraca płynnie).
       if (this.aimingNow) this.aimLatch = true;
@@ -124,12 +130,12 @@ export class HeldItem {
     this.aimLatch = false;
   }
 
-  private stepAim(dt: number, wants: boolean): void {
+  private stepAim(dt: number, wants: boolean, inScale = 1): void {
     if (!wants && this.aimingNow) this.aimLatch = true;
     this.aimingNow = wants;
     if (!(dt > 0)) return;
     const a = this.tuning.player.aim;
-    const rate = 1 / Math.max(1e-3, wants ? a.inS : a.outS);
+    const rate = 1 / Math.max(1e-3, wants ? a.inS * inScale : a.outS);
     this.aimT = Math.min(1, Math.max(0, this.aimT + (wants ? dt : -dt) * rate));
   }
 
@@ -149,8 +155,16 @@ export class HeldItem {
   step(
     dt: number,
     input: InputSnapshot,
-    ctx: { bladeBusy: boolean; canAim?: boolean },
+    ctx: { bladeBusy: boolean; canAim?: boolean; aimInScale?: number },
   ): { bladeInput: InputSnapshot; triggerHeld: boolean } {
+    const slotAction = (['weapon1', 'weapon2', 'weapon3'] as const)[
+      this.weaponSlot
+    ];
+    const toggleSlot =
+      slotAction !== undefined &&
+      input.pressed.has(slotAction) &&
+      !this.weaponChanged;
+    this.weaponChanged = false;
     const gunReady = this.current === 'gun' && !this.swapping;
     const aimHeld = input.held.has('aim') || input.held.has('block');
     if (!aimHeld) this.aimLatch = false;
@@ -164,6 +178,7 @@ export class HeldItem {
       return { bladeInput: input, triggerHeld: false };
     }
     if (input.pressed.has('swap')) this.requestToggle();
+    else if (toggleSlot && this.current === 'gun') this.requestToggle();
     if (dt > 0 && this.requested !== null) {
       if (this.current === 'gun' || (!ctx.bladeBusy && !needsBlade)) {
         this.target = this.requested;
@@ -192,6 +207,7 @@ export class HeldItem {
         aimHeld &&
         !this.aimLatch &&
         (ctx.canAim ?? true),
+      ctx.aimInScale,
     );
     return {
       bladeInput:

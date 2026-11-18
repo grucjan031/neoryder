@@ -6,7 +6,7 @@
     {
       "id": "gunnerRoot",
       "name": "Rdzeń Strzelca",
-      "description": "Odblokowuje styl Strzelca (#build_gunner) i zmniejsza nagrzewanie wszystkich broni palnych o 15%.",
+      "description": "Odblokowuje styl Strzelca i zmniejsza nagrzewanie wszystkich broni palnych o 15%.",
       "tier": 1,
       "cost": 1,
       "requires": [],
@@ -135,7 +135,7 @@
     {
       "id": "gunnerSniperBeam",
       "name": "Snajperka i Laser ciągły: przebicie",
-      "description": "Snajperka przebija o 1 cel więcej przy mniejszym spadku obrażeń (−0.1), a Laser ciągły zyskuje +4 m zasięgu.",
+      "description": "Snajperka: +1 przebity cel, spadek obrażeń na cel mniejszy o 10 punktów procentowych. Laser ciągły: +4 m zasięgu.",
       "tier": 3,
       "cost": 2,
       "requires": ["gunnerRapidCaliber"],
@@ -160,7 +160,7 @@
     {
       "id": "gunnerEmpIncendiary",
       "name": "Granat EMP: wyładowanie wtórne",
-      "description": "Granat EMP zwiększa promień wybuchu o 1.5 m, nakłada o 1 stos przeciążenia więcej i daje 35 kredytów na start runu.",
+      "description": "Granat EMP: promień +1,5 m, +1 ładunek Przeciążenia. Na start wyprawy: +35 Kredytów.",
       "tier": 3,
       "cost": 2,
       "requires": ["gunnerScatterChoke"],
@@ -185,7 +185,7 @@
     {
       "id": "gunnerIncendiaryRounds",
       "name": "Pistolet i Karabin: amunicja termiczna",
-      "description": "Strzały Pistoletu i Karabinu podpalają cel na 3 s, a zabójstwo bronią palną schładza broń o 25 pkt.",
+      "description": "Pistolet i Karabin podpalają na 3 s. Zabójstwo bronią palną usuwa 25 ciepła; odnowienie 1 s.",
       "tier": 4,
       "cost": 3,
       "requires": ["gunnerSniperBeam"],
@@ -216,7 +216,7 @@
     {
       "id": "gunnerHeadhunter",
       "name": "Zimna precyzja",
-      "description": "Trafienia bronią palną przyspieszają chłodzenie o 25% na 3 s, a bazowe obrażenia i zdrowie rosną o 12% i 15 pkt.",
+      "description": "Stale +12% obrażeń i +15 maks. zdrowia. Trafienie bronią palną: +25% chłodzenia na 3 s; odnowienie 2 s.",
       "tier": 4,
       "cost": 3,
       "requires": ["gunnerCryoChamber"],

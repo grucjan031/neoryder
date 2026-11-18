@@ -33,6 +33,6 @@
     "xpMax": "MAX",
     "data": "Dane",
     "cores": "Rdzenie",
-    "freePoints": "Wolne punkty: {count}"
+    "freePoints": "Punkty talentów: {count}"
   }
 }

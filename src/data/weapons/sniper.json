@@ -13,5 +13,14 @@
   "pierceCount": 3,
   "pierceFalloff": 0.25,
   "model": "sniper_rifle",
-  "aimFovScale": 0.45
+  "aimFovScale": 0.45,
+  "grip": {
+    "offset": [0.0032, -0.014, 0.032],
+    "pose": "gripSniper",
+    "firePose": "gripSniperFire",
+    "support": {
+      "offset": [0.0362, 0.0049, 0.0025],
+      "pose": "supportSniper"
+    }
+  }
 }

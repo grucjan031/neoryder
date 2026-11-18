@@ -159,7 +159,12 @@ export class Weapon {
     )
       return;
     const aim = Math.min(1, Math.max(0, input.aim ?? 0));
-    const spreadScale = 1 + (this.ctx.tuning.player.aim.spread - 1) * aim;
+    const spreadScale =
+      1 +
+      (this.ctx.tuning.player.aim.spread *
+        (this.definition.aimSpreadScale ?? 1) -
+        1) *
+        aim;
     fireProjectile(
       this.definition,
       this.deps.projectiles,

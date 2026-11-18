@@ -2,25 +2,28 @@ import {
   AdditiveBlending,
   BufferAttribute,
   BufferGeometry,
-  DataTexture,
+  Color,
   DoubleSide,
   Group,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
   PlaneGeometry,
-  RGBAFormat,
   Vector3,
 } from 'three';
-import type { Object3D, Texture } from 'three';
+import type { Object3D } from 'three';
+import { loadSettings } from '../core/save';
+import type { Settings } from '../core/save';
+import { tuning as defaultTuning } from '../core/tuning';
+import type { Tuning } from '../core/tuning';
 import { fppGlowMaterial, fppGlowTexture, markGlow } from './fppMaterials';
 
 /** Szerokość poświaty wokół rdzenia ostrza (m) i jej pulsowanie. */
 const GLOW_WIDTH_M = 0.12;
 const GLOW_PULSE = 0.07;
 const EMITTER_FLARE_M = 0.1;
-/** Rdzeń modelu jest zwężany: biały-gorący środek, cyan daje poświata. */
-const CORE_THIN = 0.7;
+/** Rdzeń modelu jest mocno zwężany: wąska biała nić w środku, nasycony cyjan daje klinga. */
+const CORE_THIN = 0.35;
 /** Smuga cięcia: czas życia próbki (s), maks. liczba próbek, punkt startu wzdłuż ostrza. */
 const TRAIL_LIFE_S = 0.13;
 const TRAIL_SAMPLES = 24;
@@ -31,7 +34,14 @@ const TRAIL_INNER = 0.35;
  */
 const TRAIL_MIN_DEPTH_M = 0.35;
 
-const CORE_COLOR = '#7ff5ff';
+/** Rdzeń modelu: biały-gorący; cyjan dają płaskie strefy poświaty. */
+const CORE_COLOR = '#e8feff';
+/** Strefy klingi (komiks): jasny cyjan wokół rdzenia i ciemniejsza, półprzezroczysta otoczka. */
+const BLADE_INNER_COLOR = '#1ef2ff';
+const BLADE_OUTER_COLOR = '#00d2f0';
+/** Zaokrąglenie końców klingi: ułamek długości quada przy czubku i przy emiterze. */
+const BLADE_TIP_ROUND = 0.07;
+const BLADE_BASE_ROUND = 0.03;
 
 export interface BladeEdge {
   base: Object3D;
@@ -52,33 +62,108 @@ export function bladeEdges(model: Object3D): BladeEdge[] {
   return edges;
 }
 
-let bladeTexture: Texture | null = null;
-/** Profil poprzeczny: biały środek, cyan, miękki zanik; końce zaokrąglone wzdłuż osi. */
-function bladeGlowTexture(): Texture {
-  if (bladeTexture) return bladeTexture;
-  const w = 64;
-  const h = 64;
-  const data = new Uint8Array(w * h * 4);
-  for (let y = 0; y < h; y++) {
-    const v = y / (h - 1);
-    const ends = Math.min(1, Math.min(v, 1 - v) / 0.12);
-    for (let x = 0; x < w; x++) {
-      const u = Math.abs(x / (w - 1) - 0.5) * 2;
-      const core = Math.exp(-((u / 0.16) ** 2));
-      const halo = Math.exp(-((u / 0.55) ** 2)) * 0.55;
-      const a = Math.min(1, core + halo) * ends ** 1.5;
-      const white = core * ends;
-      const i = (y * w + x) * 4;
-      data[i] = Math.round(255 * white);
-      data[i + 1] = Math.round(255 * (0.9 + 0.1 * white));
-      data[i + 2] = 255;
-      data[i + 3] = Math.round(255 * a);
-    }
-  }
-  const texture = new DataTexture(data, w, h, RGBAFormat);
-  texture.needsUpdate = true;
-  bladeTexture = texture;
-  return texture;
+/** Uniformy klingi wspólne dla wszystkich quadów (i wariantu maski bloomu). */
+interface BladeUniforms {
+  bladePhase: { value: number };
+  bladeCore: { value: number };
+  bladeInner: { value: number };
+  bladeOuter: { value: number };
+  bladeOuterAlpha: { value: number };
+  bladeBands: { value: number };
+  bladeBandWidth: { value: number };
+  bladeBandSwell: { value: number };
+  bladeInnerColor: { value: Color };
+  bladeOuterColor: { value: Color };
+}
+
+const bladeVertexHead = /* glsl */ `#include <common>
+varying vec2 vBladeUv;`;
+
+const bladeFragmentHead = /* glsl */ `#include <common>
+varying vec2 vBladeUv;
+uniform float bladePhase;
+uniform float bladeCore;
+uniform float bladeInner;
+uniform float bladeOuter;
+uniform float bladeOuterAlpha;
+uniform float bladeBands;
+uniform float bladeBandWidth;
+uniform float bladeBandSwell;
+uniform vec3 bladeInnerColor;
+uniform vec3 bladeOuterColor;`;
+
+/**
+ * Profil klingi: zamiast gładkiego gradientu trzy płaskie strefy z twardą (1 px AA) granicą —
+ * biały rdzeń, jasny cyjan, ciemniejsza otoczka. Płaskie pasma (bladeBands na klingę) płyną od
+ * emitera do czubka: poszerzają rdzeń i rozjaśniają cyjan. Końce zaokrąglone zwężeniem profilu.
+ */
+const bladeFragment = /* glsl */ `#include <map_fragment>
+{
+  float bladeV = vBladeUv.y;
+  float bladeTaper = sqrt(clamp(min((1.0 - bladeV) / ${BLADE_TIP_ROUND.toFixed(3)}, bladeV / ${BLADE_BASE_ROUND.toFixed(3)}), 0.0, 1.0));
+  float bladeU = abs(vBladeUv.x - 0.5) * 2.0 / max(bladeTaper, 1e-3);
+  float bladeAa = fwidth(bladeU) + 1e-4;
+  float bladeRun = bladeV * bladeBands - bladePhase;
+  float bladeBandAa = fwidth(bladeRun) + 1e-4;
+  float bladeBand = 1.0 - smoothstep(bladeBandWidth * 0.5 - bladeBandAa, bladeBandWidth * 0.5 + bladeBandAa, abs(fract(bladeRun) - 0.5));
+  float bladeCoreEdge = bladeCore + bladeBand * bladeBandSwell;
+  float bladeCoreZone = 1.0 - smoothstep(bladeCoreEdge - bladeAa, bladeCoreEdge + bladeAa, bladeU);
+  float bladeInnerZone = 1.0 - smoothstep(bladeInner - bladeAa, bladeInner + bladeAa, bladeU);
+  float bladeOuterZone = 1.0 - smoothstep(bladeOuter - bladeAa, bladeOuter + bladeAa, bladeU);
+  // Pasmo: jaśniejszy cyjan (#7ff8ff w sRGB; tu w przestrzeni liniowej), nie biel.
+  vec3 bladeInnerTint = mix(bladeInnerColor, vec3(0.212, 0.94, 1.0), bladeBand * 0.6);
+  vec3 bladeColor = mix(mix(bladeOuterColor, bladeInnerTint, bladeInnerZone), vec3(1.0), bladeCoreZone);
+#ifdef BLADE_SOLID
+  // Rdzeń i jasny cyjan: nieprzezroczyste, z zapisem głębi (mgła kompozycji ich nie przygasza).
+  if (bladeInnerZone < 0.5) discard;
+  diffuseColor.rgb *= bladeColor;
+#else
+  diffuseColor *= vec4(bladeOuterColor, bladeOuterZone * (1.0 - bladeInnerZone) * bladeOuterAlpha);
+#endif
+}`;
+
+/**
+ * Materiał klingi: `solid` = rdzeń i jasny cyjan (nieprzezroczyste, zapis głębi, reszta odrzucona),
+ * inaczej półprzezroczysta otoczka. Dwa stałe programy (klucz cache), zmienne tylko w uniformach.
+ */
+function plasmaBladeMaterial(
+  uniforms: BladeUniforms,
+  solid: boolean,
+): MeshBasicMaterial {
+  const material = new MeshBasicMaterial({
+    color: '#ffffff',
+    transparent: !solid,
+    depthWrite: solid,
+    toneMapped: false,
+    fog: false,
+  });
+  if (solid) material.defines = { BLADE_SOLID: '' };
+  material.name = solid ? 'fpp_plasma_blade' : 'fpp_plasma_blade_halo';
+  material.userData.bloom = true;
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', bladeVertexHead)
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvBladeUv = uv;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', bladeFragmentHead)
+      .replace('#include <map_fragment>', bladeFragment);
+  };
+  const key = solid ? 'fppPlasmaBlade:solid' : 'fppPlasmaBlade:halo';
+  material.customProgramCacheKey = () => key;
+  return material;
+}
+
+/** Quad klingi razem z dzieckiem-otoczką (widoczność obu flag, także dla testów i zrzutów). */
+function showQuad(mesh: Mesh, visible: boolean): void {
+  mesh.visible = visible;
+  for (const child of mesh.children) child.visible = visible;
+}
+
+export interface FppBladeFxOptions {
+  /** Ustawienia gracza (testy); domyślnie loadSettings() co klatkę. */
+  settings?: Pick<Settings, 'flashes'>;
+  tuning?: Pick<Tuning, 'vfx'>;
 }
 
 interface TrailSample {
@@ -123,10 +208,22 @@ export class FppBladeFx {
   readonly root = new Group();
   private readonly trailRoot = new Group();
   private readonly quadGeometry = new PlaneGeometry(1, 1);
-  private readonly glowMaterial = fppGlowMaterial(
-    '#ffffff',
-    1,
-    bladeGlowTexture(),
+  private readonly bladeUniforms: BladeUniforms = {
+    bladePhase: { value: 0 },
+    bladeCore: { value: 0.07 },
+    bladeInner: { value: 0.3 },
+    bladeOuter: { value: 0.44 },
+    bladeOuterAlpha: { value: 0.85 },
+    bladeBands: { value: 4 },
+    bladeBandWidth: { value: 0.35 },
+    bladeBandSwell: { value: 0.02 },
+    bladeInnerColor: { value: new Color(BLADE_INNER_COLOR) },
+    bladeOuterColor: { value: new Color(BLADE_OUTER_COLOR) },
+  };
+  private readonly glowMaterial = plasmaBladeMaterial(this.bladeUniforms, true);
+  private readonly haloMaterial = plasmaBladeMaterial(
+    this.bladeUniforms,
+    false,
   );
   private readonly flareMaterial = fppGlowMaterial(
     '#7ff4ff',
@@ -149,6 +246,8 @@ export class FppBladeFx {
   private readonly flares: Mesh[] = [];
   private readonly trails = new Map<'main' | 'off', Trail>();
   private time = 0;
+  private readonly settings: Pick<Settings, 'flashes'> | undefined;
+  private readonly tuning: Pick<Tuning, 'vfx'>;
   private readonly tmp = {
     a: new Vector3(),
     b: new Vector3(),
@@ -166,7 +265,9 @@ export class FppBladeFx {
     camInv: new Matrix4(),
   };
 
-  constructor() {
+  constructor(options: FppBladeFxOptions = {}) {
+    this.settings = options.settings;
+    this.tuning = options.tuning ?? defaultTuning;
     this.coreMaterial.userData.bloom = true;
     this.trailMaterial.userData.bloom = true;
     this.root.name = 'blade_fx';
@@ -202,10 +303,19 @@ export class FppBladeFx {
       mesh.frustumCulled = false;
       mesh.userData.noOutline = true;
       mesh.renderOrder = 2;
+      if (!flare) {
+        // Otoczka klingi: ten sam quad (dziecko z macierzą jednostkową), osobny materiał.
+        const halo = new Mesh(this.quadGeometry, this.haloMaterial);
+        halo.matrixAutoUpdate = false;
+        halo.frustumCulled = false;
+        halo.userData.noOutline = true;
+        halo.renderOrder = 2;
+        mesh.add(halo);
+      }
       list.push(mesh);
       this.root.add(mesh);
     }
-    mesh.visible = true;
+    showQuad(mesh, true);
     return mesh;
   }
 
@@ -247,7 +357,7 @@ export class FppBladeFx {
 
   /** Ukrywa wszystkie efekty i czyści smugi (ostrze niewidoczne — bez liczenia). */
   hide(): void {
-    for (const mesh of this.glows) mesh.visible = false;
+    for (const mesh of this.glows) showQuad(mesh, false);
     for (const mesh of this.flares) mesh.visible = false;
     for (const trail of this.trails.values()) {
       trail.count = 0;
@@ -270,10 +380,19 @@ export class FppBladeFx {
     this.trailRoot.matrixWorldNeedsUpdate = true;
     let glow = 0;
     let flare = 0;
-    const pulse =
-      1 +
-      GLOW_PULSE *
-        (Math.sin(this.time * 37) * 0.6 + Math.sin(this.time * 91 + 1.3) * 0.4);
+    const flashes = (this.settings ?? loadSettings()).flashes;
+    // Bez błysków: szerokość stała (bez migotania), pasma tylko powoli dryfują.
+    const pulse = flashes
+      ? 1 +
+        GLOW_PULSE *
+          (Math.sin(this.time * 37) * 0.6 +
+            Math.sin(this.time * 91 + 1.3) * 0.4)
+      : 1;
+    this.updateBlade(
+      dt,
+      flashes,
+      items.some((item) => item.visible && item.slashing),
+    );
     for (const item of items) {
       const trail = this.trail(item.key);
       for (let i = 0; i < trail.count; i++) this.sample(trail, i).age += dt;
@@ -336,7 +455,14 @@ export class FppBladeFx {
           const base = t.base.copy(t.a).lerp(t.b, TRAIL_INNER);
           base.applyMatrix4(t.camInv);
           const tip = t.tip.copy(t.b).applyMatrix4(t.camInv);
-          if (-tip.z > TRAIL_MIN_DEPTH_M && -base.z > TRAIL_MIN_DEPTH_M) {
+          const last = trail.count ? this.sample(trail, trail.count - 1) : null;
+          if (
+            -tip.z > TRAIL_MIN_DEPTH_M &&
+            -base.z > TRAIL_MIN_DEPTH_M &&
+            (!last ||
+              last.base.distanceToSquared(base) > 1e-8 ||
+              last.tip.distanceToSquared(tip) > 1e-8)
+          ) {
             if (trail.count === TRAIL_SAMPLES)
               trail.start = (trail.start + 1) % TRAIL_SAMPLES;
             else trail.count++;
@@ -350,9 +476,26 @@ export class FppBladeFx {
       this.writeTrail(trail);
     }
     for (let i = glow; i < this.glows.length; i++)
-      this.glows[i]!.visible = false;
+      showQuad(this.glows[i]!, false);
     for (let i = flare; i < this.flares.length; i++)
       this.flares[i]!.visible = false;
+  }
+
+  /** Uniformy klingi z tuningu; faza pasm narasta płynnie (zmiana prędkości bez skoku). */
+  private updateBlade(dt: number, flashes: boolean, slashing: boolean): void {
+    const vfx = this.tuning.vfx;
+    const u = this.bladeUniforms;
+    const speed =
+      (flashes ? vfx.bladeBandSpeed : vfx.bladeBandSpeedCalm) *
+      (slashing && flashes ? vfx.bladeBandSlashBoost : 1);
+    u.bladePhase.value = (u.bladePhase.value + dt * speed) % 1;
+    u.bladeCore.value = vfx.bladeCoreFrac;
+    u.bladeInner.value = vfx.bladeInnerFrac;
+    u.bladeOuter.value = vfx.bladeOuterFrac;
+    u.bladeOuterAlpha.value = vfx.bladeOuterOpacity;
+    u.bladeBands.value = vfx.bladeBands;
+    u.bladeBandWidth.value = vfx.bladeBandWidth;
+    u.bladeBandSwell.value = vfx.bladeBandSwell;
   }
 
   private writeTrail(trail: Trail): void {
@@ -378,6 +521,7 @@ export class FppBladeFx {
   dispose(): void {
     this.quadGeometry.dispose();
     this.glowMaterial.dispose();
+    this.haloMaterial.dispose();
     this.flareMaterial.dispose();
     this.coreMaterial.dispose();
     this.trailMaterial.dispose();

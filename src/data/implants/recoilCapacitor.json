@@ -1,7 +1,7 @@
 {
   "id": "recoilCapacitor",
   "name": "Kondensator odrzutu",
-  "description": "Doskok zadaje pobliskim wrogom 6 obrażeń i odrzuca ich w promieniu 2,5 m, co 2 s.",
+  "description": "Doskok: 6 obrażeń, odrzut 8, promień 2,5 m. Odnowienie: 2 s.",
   "rarity": "rare",
   "tags": ["#melee", "#elektrycznosc"],
   "modifiers": [],

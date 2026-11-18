@@ -10,7 +10,7 @@
       "kind": "gameplay"
     },
     {
-      "text": "Trzy krótkie ataki ostrzem plazmowym tworzą combo. Trzecie cięcie ma największy zasięg i odrzuca wroga.",
+      "text": "Trzy krótkie ataki ostrzem plazmowym tworzą serię. Trzecie cięcie ma największy zasięg i odrzuca wroga.",
       "kind": "gameplay"
     },
     {
@@ -30,7 +30,7 @@
       "kind": "gameplay"
     },
     {
-      "text": "Ostrza bliźniacze atakują szybciej i mają 4-ciosowe combo, ale słabiej chronią w bloku.",
+      "text": "Ostrza bliźniacze atakują szybciej i mają serię 4 cięć, ale słabiej chronią w bloku.",
       "kind": "gameplay"
     },
     {
@@ -78,11 +78,11 @@
       "kind": "gameplay"
     },
     {
-      "text": "W Warsztacie kupisz nowe bronie, ostrza, moce, dodatkowe sloty ekwipunku i moduły za Dane oraz Rdzenie.",
+      "text": "Dane i Rdzenie zachowujesz po wyprawie. W Warsztacie kupisz za nie trwałe odblokowania sprzętu i miejsc ekwipunku.",
       "kind": "gameplay"
     },
     {
-      "text": "Do każdej broni palnej włożysz dwa moduły: Rykoszet, Przebicie, Podpalenie lub Nadprzewodnik.",
+      "text": "Broń ma 3 miejsca na moduły: wylot, ogniwo i optykę. Moduł musi pasować do rodzaju broni.",
       "kind": "gameplay"
     },
     {
@@ -90,7 +90,7 @@
       "kind": "gameplay"
     },
     {
-      "text": "Elitarni przeciwnicy upuszczają Rdzenie, a Kredyty zebrane w akcji trzeba wydać przed śmiercią.",
+      "text": "Kredyty wydasz w sklepie wyprawy na implanty i leczenie. Znikają po jej końcu. Rdzenie za elity otrzymasz w podsumowaniu.",
       "kind": "gameplay"
     },
     {

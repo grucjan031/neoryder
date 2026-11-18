@@ -1,0 +1,14 @@
+{
+  "id": "scope",
+  "name": "Luneta",
+  "description": "Celowanie: pole widzenia 50% zwykłego, czas wejścia ×1,6, czułość myszy ×0,6 względem bazowego celowania.",
+  "slot": "optic",
+  "visual": { "shape": "scope", "color": "white" },
+  "tags": ["#optic"],
+  "weaponKinds": ["projectile", "beam"],
+  "patches": [
+    { "op": "set", "path": "aimFovScale", "value": 0.5 },
+    { "op": "set", "path": "aimInScale", "value": 1.6 },
+    { "op": "set", "path": "aimSensitivityScale", "value": 0.6 }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "id": "overclockPlus",
   "name": "Przetaktowanie rdzenia+",
-  "description": "Wysokowydajny rdzeń bojowy podnosi obrażenia i przeżywalność oraz chłodzi broń przy każdym parowaniu.",
+  "description": "Obrażenia +22%, maks. zdrowie +35, chłodzenie +15%. Parowanie: +12 energii i −20 ciepła; odnowienie 1,2 s.",
   "rarity": "epic",
   "tags": ["#melee", "#power", "#gun"],
   "modifiers": [

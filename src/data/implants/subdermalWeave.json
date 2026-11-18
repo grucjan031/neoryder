@@ -1,7 +1,7 @@
 {
   "id": "subdermalWeave",
   "name": "Splot podskórny Mk I",
-  "description": "Kompozytowa siatka pod naskórkiem zwiększa maksymalne zdrowie podczas starć w zwarciu.",
+  "description": "Maks. zdrowie +20, wszystkie obrażenia +6%. Bonusy działają stale.",
   "rarity": "common",
   "tags": ["#melee"],
   "modifiers": [
