@@ -54,15 +54,15 @@
     "semantic_hash": ""
   },
   "src/audio/audioSystem.ts": {
-    "mtime": 1794956622.5539153,
-    "seen": 1794956688.6530054,
-    "ast_hash": "6396b99e8c01a1b7c7b5935b5a025e8a",
+    "mtime": 1795003715.0970755,
+    "seen": 1795003769.971427,
+    "ast_hash": "d21b42a4aa348118e8e5bdedfd194a62",
     "semantic_hash": ""
   },
   "src/audio/sfxSchema.ts": {
-    "mtime": 1794952785.8119116,
-    "seen": 1794952817.6212144,
-    "ast_hash": "39afaaf75d5ffd9c805c360c36ca3b01",
+    "mtime": 1795003715.0970755,
+    "seen": 1795003769.971427,
+    "ast_hash": "882ef1f32c583f3a7deb4ecaafc2c763",
     "semantic_hash": ""
   },
   "src/audio/synth.ts": {
@@ -366,15 +366,15 @@
     "semantic_hash": ""
   },
   "src/core/tuning.ts": {
-    "mtime": 1794965659.013657,
-    "seen": 1794965680.9545527,
-    "ast_hash": "d834cfebda93255f9e75e0d96b6744ff",
+    "mtime": 1795003715.1000981,
+    "seen": 1795003769.971427,
+    "ast_hash": "13552eec91be1e74dd243eefd19f7f13",
     "semantic_hash": ""
   },
   "src/data/audio/sfx.json": {
-    "mtime": 1794952785.8698761,
-    "seen": 1794952817.6217282,
-    "ast_hash": "057272d0bee4cd386eef69f401258cb2",
+    "mtime": 1795003715.1016111,
+    "seen": 1795003769.971427,
+    "ast_hash": "a0fffc8873ee97df0765e90a66e7f11e",
     "semantic_hash": ""
   },
   "src/data/blades/plasmaBlade.json": {
@@ -1644,9 +1644,9 @@
     "semantic_hash": ""
   },
   "src/enemies/enemyView.ts": {
-    "mtime": 1794952786.0806472,
-    "seen": 1794952817.6217282,
-    "ast_hash": "0c828d19ca3b7d740cb5c6ea96d05fd1",
+    "mtime": 1795003715.1031268,
+    "seen": 1795003769.971427,
+    "ast_hash": "7a05376af6fb615c88f707e0805f3117",
     "semantic_hash": ""
   },
   "src/enemies/gunner.ts": {
@@ -2178,9 +2178,9 @@
     "semantic_hash": ""
   },
   "src/render/surfaceTextures.ts": {
-    "mtime": 1794952786.1736958,
-    "seen": 1794952817.6222432,
-    "ast_hash": "773da1433f23fdabb9fd1f282cc7206a",
+    "mtime": 1795003715.106658,
+    "seen": 1795003769.971427,
+    "ast_hash": "8d88e215ab226a05a912d4714e85b645",
     "semantic_hash": ""
   },
   "src/render/themeSchema.ts": {
@@ -2220,9 +2220,9 @@
     "semantic_hash": ""
   },
   "src/scenes/arena.ts": {
-    "mtime": 1794952786.1815984,
-    "seen": 1794952817.6222432,
-    "ast_hash": "9c863cc5ea8c9d8882c47e1cdbf420b4",
+    "mtime": 1795003715.1081698,
+    "seen": 1795003769.9729419,
+    "ast_hash": "7a8e063afc27e55086ce292e3aac0096",
     "semantic_hash": ""
   },
   "src/scenes/blasterTest.ts": {
@@ -2346,9 +2346,9 @@
     "semantic_hash": ""
   },
   "src/scenes/roomScene.ts": {
-    "mtime": 1794958013.0757556,
-    "seen": 1794958038.0021408,
-    "ast_hash": "ced3147963b30f88c4906ad858e6018a",
+    "mtime": 1795003715.1112602,
+    "seen": 1795003769.9729419,
+    "ast_hash": "dd785100b6086f5260d8a98b90c2fdf6",
     "semantic_hash": ""
   },
   "src/scenes/roomTest.ts": {
@@ -2550,9 +2550,9 @@
     "semantic_hash": ""
   },
   "src/ui/hud.ts": {
-    "mtime": 1794952786.2503433,
-    "seen": 1794952817.6222432,
-    "ast_hash": "d2d489176fd3a668f30d51e9d6dd0d0b",
+    "mtime": 1795003715.114299,
+    "seen": 1795003769.9729419,
+    "ast_hash": "7d352daed1991a0e2ffe4c327a4177f7",
     "semantic_hash": ""
   },
   "src/ui/loadingTipView.ts": {
@@ -4362,9 +4362,9 @@
     "semantic_hash": ""
   },
   "tests/unit/weaponModels.test.ts": {
-    "mtime": 1794952786.59329,
-    "seen": 1794952817.6227567,
-    "ast_hash": "49729b86bebdfb4e3a453fb7a9d5e973",
+    "mtime": 1795003715.1223733,
+    "seen": 1795003769.9729419,
+    "ast_hash": "8a23ac26e3d5e6bc93bcef720d97f820",
     "semantic_hash": ""
   },
   "tests/unit/weapons.test.ts": {
@@ -4392,9 +4392,9 @@
     "semantic_hash": ""
   },
   "tools/blender/build_assets.py": {
-    "mtime": 1794965659.0391748,
-    "seen": 1794965680.9555593,
-    "ast_hash": "c3183ae20a82c25296a09b3ce48ef77e",
+    "mtime": 1795003715.1265025,
+    "seen": 1795003769.9729419,
+    "ast_hash": "dc5b05c52968b8c57442511ad0639047",
     "semantic_hash": ""
   },
   "tools/hub/extractNpcAnimations.mjs": {
@@ -4554,9 +4554,9 @@
     "semantic_hash": ""
   },
   "docs/assets.md": {
-    "mtime": 1794965658.9854445,
-    "seen": 1794965680.9555593,
-    "ast_hash": "ee919c501b0774f7285e9aefc61e4365",
+    "mtime": 1795003715.0731964,
+    "seen": 1795003769.9729419,
+    "ast_hash": "b9f8c2f385c0f35c941ce998d2f80b85",
     "semantic_hash": ""
   },
   "docs/backlog-rozwoju-2026-2027.md": {
@@ -4908,9 +4908,9 @@
     "semantic_hash": ""
   },
   "docs/systems/audio.md": {
-    "mtime": 1794956622.5506816,
-    "seen": 1794956688.6545565,
-    "ast_hash": "b3f7b960d9ba0c476eae4dce65938ddd",
+    "mtime": 1795003715.0747118,
+    "seen": 1795003769.9729419,
+    "ast_hash": "55220ca4efd76e85cd02d676681dfd16",
     "semantic_hash": ""
   },
   "docs/systems/balance.md": {
@@ -4962,9 +4962,9 @@
     "semantic_hash": ""
   },
   "docs/systems/hud.md": {
-    "mtime": 1794952785.309234,
-    "seen": 1794952817.6227567,
-    "ast_hash": "9219c33699a80f311e9e8740cd86bf62",
+    "mtime": 1795003715.077239,
+    "seen": 1795003769.9729419,
+    "ast_hash": "abb145897a784c192e37c3ce6ef5b673",
     "semantic_hash": ""
   },
   "docs/systems/implants.md": {
@@ -6690,27 +6690,27 @@
     "semantic_hash": ""
   },
   "tools/blender/previews/beam.png": {
-    "mtime": 1794952786.6027253,
-    "seen": 1794952817.6232724,
-    "ast_hash": "3015b4dca6dbfd4f1781b7b5708f8e13",
+    "mtime": 1795003715.1290615,
+    "seen": 1795003769.9744594,
+    "ast_hash": "89c91a2b2d2e33d4df9f0825d388da13",
     "semantic_hash": ""
   },
   "tools/blender/previews/blade_staff.png": {
-    "mtime": 1794952786.6058414,
-    "seen": 1794952817.6232724,
-    "ast_hash": "5cafa635e3de882fa9ec10b132884337",
+    "mtime": 1795003715.1316118,
+    "seen": 1795003769.9744594,
+    "ast_hash": "d5a3184a490438368eaa963a8f6cb3a3",
     "semantic_hash": ""
   },
   "tools/blender/previews/blade_twin.png": {
-    "mtime": 1794952786.6089654,
-    "seen": 1794952817.6232724,
-    "ast_hash": "3f18b2965642b70eb5245731319f0e5a",
+    "mtime": 1795003715.134161,
+    "seen": 1795003769.9744594,
+    "ast_hash": "15b4369d47de41cdb63449c96f26d116",
     "semantic_hash": ""
   },
   "tools/blender/previews/blaster.png": {
-    "mtime": 1794952786.6125906,
-    "seen": 1794952817.6232724,
-    "ast_hash": "5f1e20160493cc7ae890465055f5834b",
+    "mtime": 1795003715.1371887,
+    "seen": 1795003769.9744594,
+    "ast_hash": "f461dffb960f0350127a0eba8e772107",
     "semantic_hash": ""
   },
   "tools/blender/previews/cat_kids_after.png": {
@@ -7080,9 +7080,9 @@
     "semantic_hash": ""
   },
   "tools/blender/previews/emp_launcher.png": {
-    "mtime": 1794952786.7711196,
-    "seen": 1794952817.6237912,
-    "ast_hash": "d5511b9a3c476fedef2dcf3ed9aff683",
+    "mtime": 1795003715.1387005,
+    "seen": 1795003769.9744594,
+    "ast_hash": "17281d439625b0aba4e698e5959e94fa",
     "semantic_hash": ""
   },
   "tools/blender/previews/enemy_drone.png": {
@@ -7338,15 +7338,15 @@
     "semantic_hash": ""
   },
   "tools/blender/previews/pistol.png": {
-    "mtime": 1794952786.9412513,
-    "seen": 1794952817.6237912,
-    "ast_hash": "188906f32a759f02600d6b39bba6fa17",
+    "mtime": 1795003715.1422832,
+    "seen": 1795003769.9744594,
+    "ast_hash": "f325a55e3ee07a58a739ab86822ceb34",
     "semantic_hash": ""
   },
   "tools/blender/previews/plasma_blade.png": {
-    "mtime": 1794952786.944355,
-    "seen": 1794952817.6237912,
-    "ast_hash": "4e1a23a23a5e0239778fe65970e4508d",
+    "mtime": 1795003715.1443338,
+    "seen": 1795003769.9744594,
+    "ast_hash": "1f9c4eb69089bb53b98eac00a1d9d802",
     "semantic_hash": ""
   },
   "tools/blender/previews/player_arm_L.png": {
@@ -7374,21 +7374,21 @@
     "semantic_hash": ""
   },
   "tools/blender/previews/rifle.png": {
-    "mtime": 1794952786.9689116,
-    "seen": 1794952817.6237912,
-    "ast_hash": "3e8b144f9d6e50532e8783da7eac1f58",
+    "mtime": 1795003715.1473606,
+    "seen": 1795003769.9744594,
+    "ast_hash": "7676e8c1f9e3e7fad55dfaa30fb42bd2",
     "semantic_hash": ""
   },
   "tools/blender/previews/scatter.png": {
-    "mtime": 1794952786.9730773,
-    "seen": 1794952817.6237912,
-    "ast_hash": "48d85fd851236a3d284beb8da56059b4",
+    "mtime": 1795003715.1503835,
+    "seen": 1795003769.9744594,
+    "ast_hash": "2a4eb057ad2c422d98a12e9ca76a4f7d",
     "semantic_hash": ""
   },
   "tools/blender/previews/sniper_rifle.png": {
-    "mtime": 1794952786.9767005,
-    "seen": 1794952817.6237912,
-    "ast_hash": "5559689fd4e5b783d6c802fb69560263",
+    "mtime": 1795003715.1531115,
+    "seen": 1795003769.9744594,
+    "ast_hash": "e2940550b482a89609076a1bd5d0b978",
     "semantic_hash": ""
   },
   "tools/blender/previews/wall_segment.png": {
@@ -7542,9 +7542,9 @@
     "semantic_hash": ""
   },
   "src/render/lookPresets.ts": {
-    "mtime": 1794965659.0271654,
-    "seen": 1794965680.9555593,
-    "ast_hash": "69038d36997a74a3a7b2d9260a7c19a5",
+    "mtime": 1795003715.1051462,
+    "seen": 1795003769.971427,
+    "ast_hash": "16f3dd615f040773829b855d0bff0903",
     "semantic_hash": ""
   },
   "tests/unit/noOutline.test.ts": {
@@ -7620,9 +7620,9 @@
     "semantic_hash": ""
   },
   "docs/textures-komiks.md": {
-    "mtime": 1794965658.9884446,
-    "seen": 1794965680.9555593,
-    "ast_hash": "cd42673b4bdb166b70245ca8e9a3a4ca",
+    "mtime": 1795003715.0787504,
+    "seen": 1795003769.9729419,
+    "ast_hash": "aa1dd19f0127ad7eb6042d997020ac9e",
     "semantic_hash": ""
   },
   "public/assets/textures/komiks/decals/komiks_chipped_paint.webp": {
@@ -8043,6 +8043,54 @@
     "mtime": 1794965659.34883,
     "seen": 1794965680.956559,
     "ast_hash": "4a36e5cfe83f5c53af3b4dcc9750bf2e",
+    "semantic_hash": ""
+  },
+  "src/render/comicSurfaces.ts": {
+    "mtime": 1795003715.1036332,
+    "seen": 1795003769.971427,
+    "ast_hash": "c11eef71938c9047892e57653009341b",
+    "semantic_hash": ""
+  },
+  "src/ui/threatIndicator.ts": {
+    "mtime": 1795003715.1158109,
+    "seen": 1795003769.9729419,
+    "ast_hash": "e637621cc50b10b5df7e72df7a0fa058",
+    "semantic_hash": ""
+  },
+  "tests/unit/comicSurfaces.test.ts": {
+    "mtime": 1795003715.1158109,
+    "seen": 1795003769.9729419,
+    "ast_hash": "d00685e879341e1aada21b2caf28d98b",
+    "semantic_hash": ""
+  },
+  "tests/unit/enemyViewTelegraph.test.ts": {
+    "mtime": 1795003715.1173232,
+    "seen": 1795003769.9729419,
+    "ast_hash": "6355816e535a585368ccfc4ff77b9707",
+    "semantic_hash": ""
+  },
+  "tests/unit/sfxClarity.test.ts": {
+    "mtime": 1795003715.1188366,
+    "seen": 1795003769.9729419,
+    "ast_hash": "53caf293b8dcc1453b2e3a63501dcb4c",
+    "semantic_hash": ""
+  },
+  "tests/unit/threatIndicator.test.ts": {
+    "mtime": 1795003715.1188366,
+    "seen": 1795003769.9729419,
+    "ast_hash": "cc5133fa629f9e446100a840ea24389a",
+    "semantic_hash": ""
+  },
+  "tests/unit/threatIndicatorHud.test.ts": {
+    "mtime": 1795003715.1203525,
+    "seen": 1795003769.9729419,
+    "ast_hash": "2f728928ca5f54af20c8ac7e05fb032b",
+    "semantic_hash": ""
+  },
+  "tools/audio/render-sfx.mjs": {
+    "mtime": 1795003715.1233985,
+    "seen": 1795003769.9729419,
+    "ast_hash": "f1d2350ba6528e6b9b0b3c4ddd193ad1",
     "semantic_hash": ""
   },
   "package-lock.json": {
