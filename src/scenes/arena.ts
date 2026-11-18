@@ -309,6 +309,12 @@ export class Arena implements Scene {
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
         playerId,
+        threats: () => {
+          const sources: Enemy[] = [];
+          this.manager.forEach((enemy) => sources.push(enemy));
+          return sources;
+        },
+        threatOrigin: () => this.player.getState().position,
         loadout: this.loadout,
         totalWaves: waves.waves.length,
         onRetry: () => this.retry(),
