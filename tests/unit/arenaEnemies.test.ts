@@ -91,7 +91,9 @@ it.each(
           ? [2, 8, 11, 17, 21, 29].map((i) => spawns[i]!)
           : id === 'arenaContainerPort'
             ? [0, 4, 12, 20, 23, 29, 30, 31].map((index) => spawns[index]!)
-            : spawns;
+            : id === 'arenaOverpass'
+              ? [0, 14, 24, 27, 30].map((index) => spawns[index]!)
+              : spawns;
       for (const spawn of sampled) {
         for (const point of room.arena!.points) {
           const enemy = manager.spawn(kind, spawn);
@@ -101,9 +103,11 @@ it.each(
             i <
             (id === 'arenaPowerPlant'
               ? 12000
-              : id === 'arenaConstructionSite'
-                ? 14400
-                : 7200);
+              : id === 'arenaOverpass'
+                ? 18000
+                : id === 'arenaConstructionSite'
+                  ? 14400
+                  : 7200);
             i++
           ) {
             if (

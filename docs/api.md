@@ -1900,6 +1900,18 @@ scena + seed; klucz pokoju: run + seed + currentNodeId.
 `unlockedSplashAct(victories)` zwraca akt 1–4 z `tuning.ui.splashActVictories`,
 a `readSplashAct(store?)` z `bootSplash.ts` czyta go z meta-zapisu (błąd = 1).
 
+### Przygotowanie modeli instancji dużych aren (ADR 0011)
+
+`batchInstancedTemplate(root: Object3D, owned: Set<BufferGeometry>): void`
+(`render/staticBatch.ts`) scala zgodne siatki klonu GLB według materiału,
+z zachowaniem lokalnych transformacji. Geometrie wynikowe należą do sceny.
+Host dużej areny z `spawnRing` przygotowuje jeden szablon na model i rozmiar,
+potem tworzy instancje w komórkach `batchCellM`; cache źródłowych GLB pozostaje
+niemutowany. Końcowe scalanie świata nadal odbywa się raz.
+
+Materiały bloków Estakady: `gas_station_tiles`, `highway_asphalt_worn`,
+`scaffold_planks`, `hazard_stripes_worn`; odpowiadają identyfikatorom tekstur.
+
 ## Fauna kryjówki
 
 - `HubLayout.fauna?`: `cat?: { route: {x,z}[]; restS: [min,max]; speedMS? }` (pętla, minimum 3 punkty) i `rats?: { lanes: {from: Vec3; to: Vec3}[]; intervalS: [min,max] }`.

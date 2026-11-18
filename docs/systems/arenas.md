@@ -141,24 +141,113 @@ przeglądarkowy opisany poniżej.
 
 ## Estakada w smogu
 
-`arenaOverpass`: 100×100 m, `smog`, asfalt ulicy, beton estakady i ściany
-`smog_soot_wall`. Jezdnia na 11,6 m biegnie wzdłuż Z przy x = −12.
-Sześć filarów 2,5×10×2,513 m podtrzymuje segmenty; wraki, bariery i cztery
-oczyszczacze rozbijają szerokie ulice. Dwie rampy mają 36 m biegu, 8 m
-szerokości i 11,6 m wzniosu, przy z = ±24. Płyta segmentu GLB ma collider
-14×1,6×12 m, osobne bariery; bramownice mają wyłącznie nogi i poprzeczkę.
-Przy rampach segmenty GLB zastępują zwykłe płyty i osobne bariery, żeby
-wbudowana boczna bariera modelu nie zamykała wjazdu.
+`arenaOverpass`, „Węzeł Estakada”, przebudowa według ADR 0011.
+Generator: `tools/arenas/arenaOverpass.mjs`, seed `overpass-adr0011-v1`.
+Granice X/Z −180…180 m (360×360 m); wcięcia nasypów NW
+(X −180…−140, Z −180…−20) i SE (X 100…180, Z 100…180).
+Szacowana powierzchnia chodzenia: **135 261 m²**, rzut wypełniony w 87,4%.
+Ekrany akustyczne i ściany kwartałów zasłaniają zabezpieczenie kolizyjne.
+Za nimi stoją bezkolizyjne bryły zaplecza i wież w promieniu 285–317 m;
+ulica zewnętrzna, dalsze wieżowce i niebo pochodzą z silnika horyzontu.
+Pogoda `smog`. Tożsamość: zieleń oczyszczaczy i tuneli, bursztyn bramek,
+ciepła biel latarni; chłodny asfalt, beton i ściany pokryte sadzą.
 
-| Punkt | X/Y/Z (m)       | Miejsce                                  |
-| ----- | --------------- | ---------------------------------------- |
-| A     | −12 / 0 / −12   | Ulica pod jezdnią, między filarami       |
-| B     | −12 / 11,6 / 12 | Jezdnia, dojście obiema rampami          |
-| C     | 32 / 0 / 10     | Plac przy wrakach, poza obrysem wiaduktu |
+| Punkt | X/Y/Z (m)         | Strefa i charakter |
+| ----- | ----------------- | ------------------ |
+| A | 0 / 0 / 40 | Gęste obozowisko: namioty kopułowe i dwuspadowe, szopy, beczki, wraki; przejścia między osłonami |
+| B | −70 / 11,6 / −3 | Jezdnia poziomu 1 w osi X, wraki i zielone oczyszczacze; łącznik obsługi po zachodniej stronie |
+| C | 95 / 0 / −100 | Stacja paliw NE: wiata, cztery dystrybutory, sklep z dwoma wejściami i wyposażeniem |
+| D | −120 / −4 / 60 | Betonowy kanał burzowy w osi Z, niskie osłony i boczne wnętrza przepustów |
+| E | 27 / 23,2 / −110 | Jezdnia poziomu 2 przy urwanym północnym końcu; landmark `hw_broken_deck_end` przy Z −152 |
 
-Promienie 4 m, odległości XZ około 24 / 49 / 44 m. Gracz (−38, 0, 35),
-sześć spawnów na obrzeżach. Światła ciepłej bieli na jezdni, zielone
-oczyszczacze i bursztyn/błękit/fiolet na ulicy; brak opadu, gęsty pył i smog.
+Promienie wszystkich punktów: **5 m**. Szósta strefa to wentylatornia:
+`hw_vent_tower` przy (−60, 0, 90), krótki portal tunelu i dojście na −4 m.
+Start gracza: (−170, 0, 170). Pula 33 spawnów: 24 na ulicach, trzy w kanale,
+trzy na poziomie 1 i trzy na poziomie 2. `spawnRing` 25–100 m,
+`arena.maxAlive` i `room.maxAlive` 12, `arena.enemyTickets` 200.
+Arena pozostaje na istniejącej liście Przejęcia.
+
+### Poziomy i trasy
+
+- Ulice na 0 m tworzą połączone kwartały. Budynki serwisowe (część przechodnia),
+  murki z bramami, kioski, skrzynie, generatory, wraki i krawężniki przeplatają
+  się w siatce 26 m. Strzałki i linie zatrzymania oznaczają trasy do bramek.
+  Pierzeje na południu, wschodzie i północnym wschodzie mieszczą przechodnie
+  bary, warsztaty i magazyny. Auta, kontenery, kioski, śmietniki i ogrodzenia
+  z bramami dzielą pobocza. Pod płytami między filarami stoją stragany, budy
+  i auta, a przewody nad alejkami obozowiska wyznaczają sznury do suszenia.
+  Poza placem bramek największy kwadrat bez osłon zmalał z 66×66 do 40×40 m
+  (X 128…168, Z −180…−140). Pomiar sprawdza kwadraty równoległe do osi
+  na siatce 2 m i uwzględnia osłony sięgające co najmniej 0,85 m nad ulicą.
+- Główna jezdnia 11,6 m biegnie przez całe X, Z −10…4; filary GLB są wyłącznie
+  pod płytą. Pętla SW (X; Y; Z): (−164; 0; 134) → (−80; 5,8; 134) →
+  (−80; 5,8; 62) → (−164; 11,6; 62) → poziom 1. Pętla NE:
+  (164; 0; −156) → (72; 5,8; −156) → (72; 5,8; −60) →
+  (164; 11,6; −60) → poziom 1. Szerokości 12–14 m, spoczniki w zakrętach.
+  Krótsza rampa serwisowa: (−80; 0; −48) → (−8; 11,6; −48).
+- Jezdnia 23,2 m biegnie w osi Z, X 20…34. Dwie rampy z poziomu 1,
+  przy Z −64 i 28, mają bieg X −64…8 i szerokość 10 m.
+  Alternatywą jest rusztowanie: cztery biegi 56 m, po 5,8 m wzniosu,
+  przy Z −158 / −142 / −126 / −110, spoczniki i kładka przy Z −96 do E.
+  `build_scaffold_bay` stoi na spocznikach, deski pokrywają rampy i pomost.
+- Kanał ma szerokość 20 m i długość 300 m. Zjazdy od wschodu przy
+  Z −110 / 0 / 110, od zachodu przy Z −60 / 140; schody przy Z 80
+  są dodatkową trasą gracza. Dwa mosty przy Z ±30 pozwalają przejść nad
+  kanałem. Dwa `hw_storm_culvert` przy (−130,−4,±90) prowadzą 6 m w głąb.
+- Wentylatornia ma rampę od (−30,0,104) do (−50,−4,104) i krótki tunel
+  pod portalem przy (−60,−4,100). Zielone światła wskazują niski poziom.
+
+Między A–B można przejść rampą serwisową albo pętlą SW; B–C przez NE
+albo zejście centralne i ulice; C–E przez pętlę i rampy górne albo rusztowanie;
+A–D po gruncie i zjazdach kanału albo przez poziom 1 i mosty.
+Test odcina kolejno pętle, rusztowanie lub obie rampy górne i sprawdza,
+że każda para punktów nadal ma połączenie. Osłony na jezdniach co 28 m,
+w kanale co 24 m, w obozowisku co 16–17 m. Celowo otwarty jest plac bramek.
+
+### Materiały, statyka i pomiary
+
+Nawierzchnie: `highway_asphalt_worn`, `gas_station_tiles`, `scaffold_planks`,
+`overpass_concrete`; oznaczenia wysepek: `hazard_stripes_worn`;
+ściany: `smog_soot_wall`, `corrugated`; dachy: `roof_tar`.
+Nowe id bloków są połączone z istniejącymi teksturami, bez nadpisania materiałów
+używanych na innych mapach. Nie zmieniono GLB, tekstur ani profilu smogu.
+
+1489 bloków (483 z modelem), 144 dekoracje: łącznie **627 rekwizytów**,
+37 źródeł świateł wybieranych przez istniejącą pulę. Najczęstszy model:
+66 wraków, 10,5% instancji. Komórki statyki 180 m (cztery ćwiartki);
+nawigacja 2 m, margines 0,8 m, prześwit 2 m, dopuszczalny wznios 0,52 m.
+Większe partie statyki ograniczają liczbę siatek kosztem dokładności cullingu;
+do oceny na GPU pozostają widoki przez całą mapę.
+
+Niezbędne poprawki wydajności: lokalny indeks brył nawigacji zamiast pełnego
+skanu na każdą komórkę oraz scalenie zgodnych części klonu GLB przed
+instancingiem. Źródłowy cache modeli i transformacje pozostają zachowane.
+Kontrola GLB porównuje teraz obrócone obwiednie, zachowując tolerancję 5%.
+
+Pomiar lokalny: nawigacja i pięć pól 68 ms (budżet 500 ms); symulacja
+12 wrogów 0,371 ms/krok (budżet 2 ms); statyka rzeczywistych GLB
+3497 → **787 siatek**, w tym 504 partie instancji. To pomiar strukturalny,
+nie liczba wywołań całej klatki. GPU ≤800 wywołań i pełne wczytanie ≤5 s
+w przeglądarce wymagają sprawdzenia przez managera poza sandboxem.
+
+### Sprawdzenie Estakady w 30 sekund
+
+`npm run dev`, URL: `http://localhost:5173/?scene=conquest&arena=arenaOverpass&debug=1`.
+Wpisz `god`. Na gruncie: `tp 0 40` (A), `tp 95 -100` (C), `tp 148 -12`
+(bramki), `tp -120 60` (D, poczekaj na opadnięcie), `tp -29 104`
+(zejście do tunelu), `tp -62 -158` (rusztowanie i urwany wiadukt).
+`tp` zachowuje aktualne Y: po obejrzeniu kanału przeładuj scenę przed
+teleportem na ulice. Aby obejrzeć górę: od startu `tp -82 -48`, przejdź
+prosto w +X po rampie, potem `tp -70 -3` (B); `tp -66 -64`, przejdź
+po drugiej rampie w +X, następnie `tp 27 -110` (E).
+
+Rzut: [SVG](../arenas/arenaOverpass.svg), [PNG 1300 px](../arenas/arenaOverpass.png).
+PNG obejrzano pod kątem gęstości; Chromium z Playwrighta zwrócił `spawn EPERM`,
+więc rasteryzację wykonano przez resvg. E2E nie uruchamiano zgodnie z briefem;
+`arenaWeather.spec.ts` obejmuje id areny, smog i wszystkie A–E.
+Ręcznie oceń tempo przemieszczania się między poziomami, odległość od osłon,
+czytelność czerwonych wrogów w smogu, jasność pod wiaduktem i w tunelu,
+widoczność obu landmarków oraz napływ posiłków w pierścieniu.
 
 ## Targ na dachach
 
@@ -351,25 +440,24 @@ Pomiar Terminalu kontenerowego w Vitest:
 Sortowanie przeszkód nawigacji według komórek ogranicza przygotowanie
 siatki do sprawdzania brył w sąsiedztwie próbki.
 
-Ten sam pomiar nowych aren (rzeczywiste GLB, komórki 20 m, pojedyncza faza
-scalania, bez zmiany progów):
+Ten sam pomiar aren (rzeczywiste GLB, komórki z danych: Estakada 180 m,
+targ 20 m; jedno końcowe scalanie świata):
 
 | Arena    | Siatki przed | Siatki po | Partie InstancedMesh |
 | -------- | -----------: | --------: | -------------------: |
-| Estakada |          630 |       216 |                   75 |
+| Estakada |         3497 |       787 |                  504 |
 | Targ     |          877 |       198 |                   40 |
 
-`arenaPerf.test.ts` obejmuje także prawdziwy host Przejęcia obu nowych aren,
-30 wrogów (20 szturmowców, 10 strzelców), nawigację i Rapiera. Lokalny pomiar
-po optymalizacji wyboru waypointu: estakada 0,803 ms/krok, targ 0,792 ms/krok; limit nadal
-6 ms/krok. Test przeciążeniowy omija wyłącznie limit liczby posiłków 8.
+`arenaPerf.test.ts` obejmuje prawdziwy host Przejęcia, nawigację i Rapiera.
+Estakada sprawdza 12 wrogów (8 szturmowców, 4 strzelców), limit 2 ms/krok.
+Targ zachowuje test przeciążeniowy 30 wrogów, limit 6 ms/krok.
 
 To liczba siatek, **nie zmierzona liczba wywołań rysowania całej klatki**:
 frustum culling i przebiegi koloru, normalnych, odbić oraz bloom zmieniają wynik.
 Pomiar GPU i e2e pominięto zgodnie z briefem (sandbox). Manager powinien
 uzupełnić pomiar GPU i ocenę wizualną przed akceptacją areny. Test nadal
-wymaga redukcji poniżej połowy siatek; limit `arenaPerf.test.ts` pozostaje
-6 ms/krok symulacji.
+wymaga redukcji poniżej połowy siatek; Estakada dodatkowo mniej niż 800
+siatek statycznych. Obowiązuje osobny limit symulacji każdej areny.
 
 Na działającym serwerze poza sandboxem:
 
@@ -386,14 +474,14 @@ wrogów i jakością. Nie uruchamiać go z `fx=lite` przy ocenie oprawy.
 
 Komendy dla Terminalu kontenerowego są w sekcji tej areny.
 
-Nowe areny: `?scene=conquest&arena=arenaOverpass&debug=1` oraz
-`?scene=conquest&arena=arenaRooftops&debug=1`. Wpisz `god`, przejdź A–B–C
-bez skoków, potem drugą rampę estakady i schody/kładki targu. Sprawdź `room`,
+Estakadę i komendy do jej poziomów opisano w sekcji „Estakada w smogu”.
+Targ: `?scene=conquest&arena=arenaRooftops&debug=1`. Wpisz `god`, przejdź A–B–C
+bez skoków, potem schody/kładki targu. Sprawdź `room`,
 `weather` i `conquest` przez query; profil powinien wynosić odpowiednio
 `smog` i `drizzleWind`. Oceń czytelność wrogów w pyle i mżawce, drogi posiłków
 na B/C, osłony, śliską wizualnie papę i zabezpieczenie zewnętrznych krawędzi.
 Galeria: `?scene=city-props-test&view=4` (estakada), `&view=5` (targ).
-Testy traversal/enemies/staticBatch obejmują wszystkie cztery duże areny;
+Testy traversal/enemies/staticBatch obejmują wszystkie pięć dużych aren;
 e2e startu nowych aren jest napisany, bez uruchamiania w sandboxie.
 
 Galeria `?scene=city-props-test&view=3` pokazuje materiały portu.

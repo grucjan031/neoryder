@@ -48,6 +48,8 @@ export const BLOCK_MATERIALS = [
   'formwork_plywood',
   'excavation_dirt',
   'scaffold_planks',
+  'gas_station_tiles',
+  'highway_asphalt_worn',
   'world',
   'concrete',
   'asphalt',

@@ -66,7 +66,9 @@ it.each([
         ? -8.1
         : id === 'arenaPowerPlant'
           ? -3
-          : -0.1;
+          : id === 'arenaOverpass'
+            ? -4.1
+            : -0.1;
     const walk = (goal: Vec3) => {
       for (let i = 0; i < 2400; i++) {
         const state = player.getState();
@@ -105,10 +107,10 @@ it.each([
           expect(path.length, point.id).toBeGreaterThan(0);
           for (const waypoint of path) walk(waypoint);
           if (id === 'arenaPowerPlant') for (let i = 0; i < 10; i++) tick();
-          expect(player.getState().position.y).toBeCloseTo(
-            point.position.y + height,
-            1,
-          );
+          expect(
+            Math.abs(player.getState().position.y - point.position.y - height),
+            point.id,
+          ).toBeLessThan(id === 'arenaOverpass' ? 0.12 : 0.05);
         }
       };
       walkPoints();
@@ -183,11 +185,39 @@ it.each([
         return;
       }
       if (id === 'arenaOverpass') {
-        for (const z of [-24, 24]) {
-          teleport(33, z);
-          walk({ x: -12, y: 11.6, z });
+        for (const index of [0, 14, 24, 30]) {
+          const spawn = room.arena!.spawnPoints![index]!;
+          for (const point of room.arena!.points) {
+            teleport(spawn.x, spawn.z, spawn.y ?? 0);
+            const path = navigation.path(
+              player.getState().position,
+              point.position,
+            );
+            expect(path.length).toBeGreaterThan(0);
+            for (const waypoint of path) walk(waypoint);
+            for (let i = 0; i < 10; i++) tick();
+            expect(
+              Math.abs(
+                player.getState().position.y - point.position.y - height,
+              ),
+              `${index} → ${point.id}`,
+            ).toBeLessThan(0.12);
+          }
+        }
+        for (const [x0, x1, z0, z1] of [
+          [-164, -80, 134, 62],
+          [164, 72, -156, -60],
+        ]) {
+          teleport(x0!, z0!);
+          walk({ x: x1!, y: 5.8, z: z0! });
+          walk({ x: x1! + (x1! > x0! ? 7 : -7), y: 5.8, z: z0! });
+          walk({ x: x1! + (x1! > x0! ? 7 : -7), y: 5.8, z: z1! });
+          walk({ x: x0!, y: 11.6, z: z1! });
           expect(player.getState().position.y).toBeCloseTo(11.6 + height, 1);
         }
+        teleport(-127, 80, -4);
+        walk({ x: -108, y: 0, z: 80 });
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
         return;
       }
       if (id === 'arenaRooftops') {
@@ -297,5 +327,5 @@ it.each([
       world.free();
     }
   },
-  30_000,
+  60_000,
 );

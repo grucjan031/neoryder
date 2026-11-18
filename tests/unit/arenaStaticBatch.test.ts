@@ -81,6 +81,7 @@ it.each([
         root.traverse((o) => {
           // Instancje bloków kontenerów (biura i ciężarówki budowy też mają lakier kontenera).
           if (
+            id === 'arenaContainerPort' &&
             o instanceof Mesh &&
             !Array.isArray(o.material) &&
             o.name.startsWith('instances:port_container_') &&
@@ -132,7 +133,8 @@ it.each([
             disposals.push(vi.spyOn(o, 'dispose'));
           }
         });
-        expect(renderedContainers).toBe(containers.length);
+        if (id === 'arenaContainerPort')
+          expect(renderedContainers).toBe(containers.length);
         batch(root, owned, options);
         after = meshCount(root);
       },
@@ -154,7 +156,7 @@ it.each([
     );
     try {
       expect(room.arena!.batchCellM).toBe(
-        id === 'arenaConstructionSite' ? 240 : 20,
+        { arenaConstructionSite: 240, arenaOverpass: 180 }[id] ?? 20,
       );
       await scene.init(
         {
@@ -198,7 +200,12 @@ it.each([
           instancedBatches: instanced,
         }),
       );
-      expect(after).toBeLessThan(before / 2);
+      // Scalanie szablonów GLB przed instancingiem zmniejsza „before”, więc w terminalu
+      // (938 partii instancji) próg względem „before” jest łagodniejszy.
+      expect(after).toBeLessThan(
+        before * (id === 'arenaContainerPort' ? 0.65 : 0.5),
+      );
+      if (id === 'arenaOverpass') expect(after).toBeLessThan(800);
     } finally {
       scene.dispose();
     }

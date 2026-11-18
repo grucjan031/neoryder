@@ -29,6 +29,8 @@ export type SurfaceTexture =
   | 'snow'
   | 'gas_station_tiles'
   | 'highway_asphalt_worn'
+  | 'scaffold_planks'
+  | 'hazard_stripes_worn'
   | 'flood_brick_algae'
   | 'boardwalk_planks'
   | 'canal_stone_wall'

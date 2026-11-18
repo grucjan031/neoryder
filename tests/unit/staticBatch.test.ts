@@ -13,76 +13,88 @@ import {
   SkinnedMesh,
   Vector3,
 } from 'three';
-import { batchStaticGeometry } from '../../src/render/staticBatch';
+import {
+  batchInstancedTemplate,
+  batchStaticGeometry,
+} from '../../src/render/staticBatch';
 import { hideNoOutline } from '../../src/render/noOutline';
 import { Scene } from 'three';
 
-it('zachowuje światowe pozycje, normalne, UV, materiał i zasoby cache', () => {
-  const root = new Group();
-  root.position.set(3, 5, 7);
-  root.rotation.y = 0.7;
-  const parent = new Group();
-  parent.rotation.x = 0.3;
-  parent.scale.set(2, 3, 4);
-  root.add(parent);
-  const geometry = new BoxGeometry();
-  const material = new MeshBasicMaterial();
-  material.userData.bloom = true;
-  const original = geometry.getAttribute('position').array.slice();
-  const first = new Mesh(geometry, material);
-  const second = new Mesh(geometry, material);
-  second.position.set(4, 1, 2);
-  parent.add(first, second);
-  root.updateMatrixWorld(true);
-  const worldPositions = [first, second].flatMap((mesh) =>
-    Array.from(
-      { length: geometry.getAttribute('position').count },
-      (_, index) =>
+it.each([batchStaticGeometry, batchInstancedTemplate])(
+  'zachowuje światowe pozycje, normalne, UV, materiał i zasoby cache (%s)',
+  (batch) => {
+    const root = new Group();
+    root.position.set(3, 5, 7);
+    root.rotation.y = 0.7;
+    const parent = new Group();
+    parent.rotation.x = 0.3;
+    parent.scale.set(2, 3, 4);
+    root.add(parent);
+    const geometry = new BoxGeometry();
+    const material = new MeshBasicMaterial();
+    material.userData.bloom = true;
+    const original = geometry.getAttribute('position').array.slice();
+    const first = new Mesh(geometry, material);
+    const second = new Mesh(geometry, material);
+    second.position.set(4, 1, 2);
+    parent.add(first, second);
+    root.updateMatrixWorld(true);
+    const worldPositions = [first, second].flatMap((mesh) =>
+      Array.from(
+        { length: geometry.getAttribute('position').count },
+        (_, index) =>
+          new Vector3()
+            .fromBufferAttribute(geometry.getAttribute('position'), index)
+            .applyMatrix4(mesh.matrixWorld),
+      ),
+    );
+    const worldNormals = [first, second].flatMap((mesh) =>
+      Array.from(
+        { length: geometry.getAttribute('normal').count },
+        (_, index) =>
+          new Vector3()
+            .fromBufferAttribute(geometry.getAttribute('normal'), index)
+            .applyNormalMatrix(new Matrix3().getNormalMatrix(mesh.matrixWorld)),
+      ),
+    );
+    const disposeGeometry = vi.spyOn(geometry, 'dispose');
+    const disposeMaterial = vi.spyOn(material, 'dispose');
+    const owned = new Set<BufferGeometry>();
+    batch(root, owned);
+    const merged = root.children.find((child) => child instanceof Mesh) as Mesh;
+    root.updateMatrixWorld(true);
+    expect(owned.size).toBe(1);
+    expect(merged.material).toBe(material);
+    expect(geometry.getAttribute('position').array).toEqual(original);
+    const position = merged.geometry.getAttribute('position');
+    for (const [index, expected] of worldPositions.entries()) {
+      expect(
         new Vector3()
-          .fromBufferAttribute(geometry.getAttribute('position'), index)
-          .applyMatrix4(mesh.matrixWorld),
-    ),
-  );
-  const worldNormals = [first, second].flatMap((mesh) =>
-    Array.from({ length: geometry.getAttribute('normal').count }, (_, index) =>
-      new Vector3()
-        .fromBufferAttribute(geometry.getAttribute('normal'), index)
-        .applyNormalMatrix(new Matrix3().getNormalMatrix(mesh.matrixWorld)),
-    ),
-  );
-  const disposeGeometry = vi.spyOn(geometry, 'dispose');
-  const disposeMaterial = vi.spyOn(material, 'dispose');
-  const owned = new Set<BufferGeometry>();
-  batchStaticGeometry(root, owned);
-  const merged = root.children.find((child) => child instanceof Mesh) as Mesh;
-  root.updateMatrixWorld(true);
-  expect(owned.size).toBe(1);
-  expect(merged.material).toBe(material);
-  expect(geometry.getAttribute('position').array).toEqual(original);
-  const position = merged.geometry.getAttribute('position');
-  for (const [index, expected] of worldPositions.entries()) {
-    expect(
-      new Vector3()
-        .fromBufferAttribute(position, index)
-        .applyMatrix4(merged.matrixWorld)
-        .distanceTo(expected),
-    ).toBeLessThan(0.00001);
-    expect(
-      new Vector3()
-        .fromBufferAttribute(merged.geometry.getAttribute('normal'), index)
-        .applyNormalMatrix(new Matrix3().getNormalMatrix(merged.matrixWorld))
-        .distanceTo(worldNormals[index]!),
-    ).toBeLessThan(0.00001);
-    const uv = merged.geometry.getAttribute('uv');
-    const sourceIndex = index % geometry.getAttribute('uv').count;
-    expect(uv.getX(index)).toBe(geometry.getAttribute('uv').getX(sourceIndex));
-    expect(uv.getY(index)).toBe(geometry.getAttribute('uv').getY(sourceIndex));
-  }
-  expect(merged.geometry.getAttribute('normal').count).toBe(position.count);
-  for (const output of owned) output.dispose();
-  expect(disposeGeometry).not.toHaveBeenCalled();
-  expect(disposeMaterial).not.toHaveBeenCalled();
-});
+          .fromBufferAttribute(position, index)
+          .applyMatrix4(merged.matrixWorld)
+          .distanceTo(expected),
+      ).toBeLessThan(0.00001);
+      expect(
+        new Vector3()
+          .fromBufferAttribute(merged.geometry.getAttribute('normal'), index)
+          .applyNormalMatrix(new Matrix3().getNormalMatrix(merged.matrixWorld))
+          .distanceTo(worldNormals[index]!),
+      ).toBeLessThan(0.00001);
+      const uv = merged.geometry.getAttribute('uv');
+      const sourceIndex = index % geometry.getAttribute('uv').count;
+      expect(uv.getX(index)).toBe(
+        geometry.getAttribute('uv').getX(sourceIndex),
+      );
+      expect(uv.getY(index)).toBe(
+        geometry.getAttribute('uv').getY(sourceIndex),
+      );
+    }
+    expect(merged.geometry.getAttribute('normal').count).toBe(position.count);
+    for (const output of owned) output.dispose();
+    expect(disposeGeometry).not.toHaveBeenCalled();
+    expect(disposeMaterial).not.toHaveBeenCalled();
+  },
+);
 
 it('rozdziela warstwy i flagi, dziedziczy noOutline oraz bloom rodzica', () => {
   const root = new Scene();

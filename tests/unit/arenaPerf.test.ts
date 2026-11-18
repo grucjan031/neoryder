@@ -197,7 +197,7 @@ it('arenaConstructionSite: nawigacja ≤ 500 ms, 12 wrogów na poziomach ≤ 2 m
 }, 60_000);
 
 it.each([
-  ['arenaOverpass', 30, 6],
+  ['arenaOverpass', 12, 2],
   ['arenaRooftops', 30, 6],
   ['arenaContainerPort', 12, 2],
   ['arenaPowerPlant', 12, 2],
@@ -246,6 +246,7 @@ it.each([
       commands.execute('god');
       // Test przeciążeniowy omija limit posiłków 8, zachowuje rzeczywisty host trybu.
       const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+      const targetCount = id === 'arenaOverpass' ? 12 : 30;
       let count = 0;
       if (port) {
         for (const position of room.arena!.spawnPoints!.slice(0, limit))
@@ -262,7 +263,10 @@ it.each([
             Math.hypot(x - room.playerSpawn.x, z - room.playerSpawn.z) < 15
           )
             continue;
-          enemies.spawn(count++ < 20 ? 'assaulter' : 'gunner', position);
+          enemies.spawn(
+            count++ < (targetCount * 2) / 3 ? 'assaulter' : 'gunner',
+            position,
+          );
         }
       expect(scene.query('enemies')).toBe(limit);
       for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);

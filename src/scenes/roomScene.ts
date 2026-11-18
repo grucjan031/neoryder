@@ -32,7 +32,10 @@ import {
   isCityModelFile,
   loadDecor,
 } from '../render/cityModels';
-import { batchStaticGeometry } from '../render/staticBatch';
+import {
+  batchInstancedTemplate,
+  batchStaticGeometry,
+} from '../render/staticBatch';
 import { FppViewModel } from '../render/fppViewModel';
 import {
   queryBladeArc,
@@ -952,6 +955,10 @@ export class RoomScene implements Scene {
       string,
       { source: Mesh; matrices: Matrix4[]; name: string }
     >();
+    const instancingTemplates = new Map<
+      string,
+      Awaited<ReturnType<typeof cloneCityModel>>
+    >();
     for (const {
       size,
       material,
@@ -959,8 +966,16 @@ export class RoomScene implements Scene {
       matrices,
       cell,
     } of instances.values()) {
-      const template =
-        model && this.loadModels ? await cloneCityModel(model) : null;
+      const templateKey = JSON.stringify([model, size]);
+      if (!instancingTemplates.has(templateKey)) {
+        const prepared =
+          model && this.loadModels ? await cloneCityModel(model) : null;
+        if (this.disposed) return;
+        if (prepared && this.layout.arena?.spawnRing)
+          batchInstancedTemplate(prepared, this.geometries);
+        instancingTemplates.set(templateKey, prepared);
+      }
+      const template = instancingTemplates.get(templateKey);
       if (this.disposed) return;
       if (template) {
         placeBlockModel(template, model!, size, { x: 0, y: 0, z: 0 });
