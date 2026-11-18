@@ -306,12 +306,19 @@ cieniowanie z ostrymi krawędziami powyżej 50° (kontur rysuje sylwetkę i pły
 a nie fasetki po decymacji) i ciemny kombinezon `mat_enemy_dark`; płyty pancerza
 (`mat_enemy`) i broń mają płaskie normalne i fazowane krawędzie, akcenty świetlne
 (`mat_enemy_glow`: wizjer, linie na piersi, naramiennikach i kolanach, klamra) nie
-mają konturu w grze. Wspólne: kask z wizjerem i ciemną osłoną szczęki, kołnierz,
-pas z klamrą. Sylwetki ról: Szturmowiec — grzebień na kasku ze światłem i akumulator
-na plecach, Strzelec — daszek, gogle, radio z anteną, Snajper — szpiczasty kaptur,
-monokular, płaszcz na plecach i poły, Tarczownik — osłona twarzy i tarcza z ciemnym
-licem, wizjerem, szewronem i szynami światła, Egzekutor — rogi, kolce naramienników,
-rdzeń w ramie i świecący kręgosłup. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
+mają konturu w grze. Wspólne: kask z wizjerem, kołnierz, pas z klamrą. Wyposażenie
+to duże, płaskie płyty bez drobnicy (małe ciemne elementy tusz zamieniał w plamy);
+role rozróżnia sylwetka czytelna z 20–30 m, a we mgle — kształt świecących akcentów.
+Sylwetki ról: Szturmowiec — legionista: poprzeczny grzebień-wachlarz ze świecącym
+rdzeniem, okrągłe naramienniki, fartuchy ud, długa pałka z dużą głowicą; Strzelec —
+piechur: kanciasty hełm z daszkiem, goglami i nausznikami, płaskie naramienniki, płyty ud,
+plecak z radiem i wysoką anteną ze świecącym szczytem, karabin; Snajper — smukły: wysoki
+szpiczasty kaptur z monokularem, wąskie barki, płaszcz i poły do łydek ze świecącymi
+krawędziami z przodu, długi karabin; Tarczownik — szeroki: piętrowe naramienniki, garb
+nad karkiem, hełm prewencyjny z płaską osłoną twarzy, tarcza z ciemnym licem, wizjerem,
+szewronem i szynami światła; Egzekutor — masywny: zakręcone rogi z trzech segmentów,
+ogromne naramienniki z dwoma kolcami, fartuch kata z przodu i z tyłu, rdzeń w ramie
+i świecący kręgosłup. Wysokość ciała w pozycji wiązania to 1,84 m; Egzekutor
 ma 2,208 m (1,2×). Dodatkowa skala `boss.modelScale` nadal działa w widoku.
 Stopy w pozycji wiązania leżą na y=0, przód to +Z glTF, prawa strona to -X.
 
@@ -408,12 +415,12 @@ Testy: `tests/unit/hubNpcView.test.ts`, `hubSeating.test.ts`, `hubCatView.test.t
 
 | Plik                                   | Co to                                                                                                                                                                            | Węzły dla kodu                                                                                                                   |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `enemy_trooper.glb`                    | Szturmowiec (5215 tri): hełm z grzebieniem i wizjerem, naramienniki z liniami światła, ładownice, akumulator na plecach, pałka z cewkami                                         | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
-| `enemy_gunner.glb`                     | Strzelec (5315 tri): hełm z daszkiem i goglami, ładownice, radio z anteną, karabin z liniami światła                                                                             | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
-| `enemy_sniper.glb`                     | Snajper (5458 tri): szpiczasty kaptur z monokularem, płaszcz i poły z lamówką, długi karabin ze świecącą lunetą                                                                  | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
-| `enemy_shielder.glb`                   | Tarczownik (5307 tri): ciężkie płyty, osłona twarzy, pałka i tarcza (ciemne lico, wizjer, szewron, szyny światła — dzieci `shield`)                                              | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
-| `enemy_executor.glb`                   | Egzekutor (5251 tri): manekin 1,2×, rogi, kolce naramienników, egzoszkielet ze świecącym kręgosłupem, rdzeń w ramie                                                              | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
-| `enemy_drone.glb`                      | Dron (948 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, lufa pod okiem; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
+| `enemy_trooper.glb`                    | Szturmowiec (5107 tri): grzebień-wachlarz ze świecącym rdzeniem, okrągłe naramienniki, fartuchy ud, akumulator na plecach, długa pałka z cewkami                                 | `hand_R`, `baton`, `baton_tip`, `baton_hit`, `visor`                                                                             |
+| `enemy_gunner.glb`                     | Strzelec (5251 tri): kanciasty hełm z daszkiem i goglami, płyty ud, plecak z radiem i anteną ze świecącym szczytem, karabin                                                      | `hand_R`, `rifle`, `muzzle`, `visor`                                                                                             |
+| `enemy_sniper.glb`                     | Snajper (5268 tri): wysoki szpiczasty kaptur z monokularem, wąskie barki, płaszcz i poły do łydek ze świecącymi krawędziami, długi karabin                                       | `hand_R`, `rifle`, `muzzle`, `visor`, `eye` (soczewka lunety)                                                                    |
+| `enemy_shielder.glb`                   | Tarczownik (5299 tri): piętrowe naramienniki, garb, hełm z osłoną twarzy, pałka i tarcza (ciemne lico, wizjer, szewron, szyny światła — dzieci `shield`)                         | `hand_R`, `shield` (widoczność wg `shieldUp`), `baton`, `baton_tip`, `baton_hit`, `visor`                                        |
+| `enemy_executor.glb`                   | Egzekutor (5395 tri): manekin 1,2×, zakręcone rogi, ogromne naramienniki z kolcami, fartuch kata, świecący kręgosłup, rdzeń w ramie                                              | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
+| `enemy_drone.glb`                      | Dron (936 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, duże oko, lufa; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
 | `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                                                          | — (do `InstancedMesh`)                                                                                                           |
 | `plasma_blade.glb`                     | ostrze plazmowe (284 tri): rękojeść z gumowym chwytem, pierścieniami i pazurami emitera                                                                                          | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
 | `blaster.glb`                          | blaster z przegrzaniem                                                                                                                                                           | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |

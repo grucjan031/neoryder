@@ -395,6 +395,20 @@ def _enemy_spike(length, base, sides=4):
     return bm_prism(length, base * 0.18, base, sides=sides, top_at_origin=False, offset=(0, 0, length / 2))
 
 
+def _enemy_fin(profile, thickness, x=0.0):
+    """Płaska płetwa: wypukły wielokąt `profile` [(y, z)] wyciągnięty wzdłuż X na grubość `thickness`."""
+    bm = bmesh.new()
+    left = [bm.verts.new((x - thickness / 2, y, z)) for y, z in profile]
+    right = [bm.verts.new((x + thickness / 2, y, z)) for y, z in profile]
+    bm.faces.new(left)
+    bm.faces.new(list(reversed(right)))
+    for i in range(len(profile)):
+        j = (i + 1) % len(profile)
+        bm.faces.new((left[i], left[j], right[j], right[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return bm
+
+
 def _enemy_baton(hand, executor=False):
     """Pałka ogłuszająca w układzie hand_R (oś pałki -Y, czubek na -Y)."""
     baton = empty("baton" if not executor else "blade_hilt")
@@ -402,29 +416,30 @@ def _enemy_baton(hand, executor=False):
     if executor:
         # Tylko rękojeść; ostrze z danych dokłada EnemyView.
         mesh_object("baton_shaft", bm_merge(
-            bm_box(.05, .2, .05, center=(0, -.06, 0), bevel=.008),
-            bm_box(.13, .035, .07, center=(0, -.165, 0), taper_top=(.7, 1.0)),  # jelec
+            bm_box(.055, .2, .055, center=(0, -.06, 0)),
+            bm_box(.17, .04, .08, center=(0, -.165, 0), taper_top=(.6, 1.0)),  # jelec
         ), DARK).parent = baton
-        tip = mesh_object("baton_tip", bm_box(.06, .05, .06, bevel=.01), GLOW)
+        tip = mesh_object("baton_tip", bm_box(.07, .05, .07, bevel=.01), GLOW)
         tip.parent = baton
         tip.location.y = -.2
     else:
+        # Długi, gruby trzon i duża świecąca głowica: z 25 m pałka czyta się jak broń do walki wręcz.
         mesh_object("baton_shaft", bm_merge(
-            bm_box(.036, .44, .036, center=(0, -.25, 0)),
-            bm_box(.05, .15, .05, center=(0, .02, 0), bevel=.008),  # rękojeść
-            bm_box(.085, .03, .065, center=(0, -.065, 0)),  # osłona dłoni
+            bm_box(.05, .5, .05, center=(0, -.27, 0)),
+            bm_box(.06, .15, .06, center=(0, .02, 0)),  # rękojeść
+            bm_box(.11, .035, .08, center=(0, -.065, 0)),  # osłona dłoni
         ), DARK).parent = baton
         coil = mesh_object("baton_coil", bm_merge(
-            bm_box(.058, .014, .058, center=(0, -.3, 0)),
-            bm_box(.058, .014, .058, center=(0, -.36, 0)),
+            bm_box(.078, .022, .078, center=(0, -.34, 0)),
+            bm_box(.078, .022, .078, center=(0, -.41, 0)),
         ), GLOW)
         coil.parent = baton
-        tip = mesh_object("baton_tip", bm_box(.06, .12, .06, bevel=.01), GLOW)
+        tip = mesh_object("baton_tip", bm_box(.085, .16, .085, bevel=.012), GLOW)
         tip.parent = baton
-        tip.location.y = -.48
+        tip.location.y = -.57
     hit = empty("baton_hit")
     hit.parent = baton
-    hit.location.y = -.54 if not executor else -.25
+    hit.location.y = -.64 if not executor else -.25
     return baton
 
 
@@ -477,107 +492,191 @@ def build_enemy_cc0(archetype):
     def piece(name, bone, bm, mat, offset=(0, 0, 0), rot=(0, 0, 0)):
         return _enemy_piece(rig, name, bone, bm, mat, at(bone, offset), rot)
 
+    def horn(name, bone, base, segments, radius):
+        """Róg z kilku stożków ściętych: [(długość, rx, ry)] w stopniach, każdy od końca poprzedniego."""
+        pos = Vector(base)
+        for i, (length, rx, ry) in enumerate(segments):
+            last = i == len(segments) - 1
+            r0 = radius * (1 - .3 * i)
+            bm = (_enemy_spike(length, r0) if last else
+                  bm_prism(length, r0 * .7, r0, sides=4, top_at_origin=False, offset=(0, 0, length / 2)))
+            piece(f"{name}_{i}", bone, bm, RED, tuple(pos), (rx, ry, 0))
+            pos = pos + _enemy_rot(rx, ry).to_3x3() @ Vector((0, 0, length * .92))
+
+    # Sylwetki ról (czytelne z 20–30 m, w konturze tuszu):
+    # Szturmowiec — legionista: wysoka płetwa na hełmie, okrągłe naramienniki, fartuchy ud, długa pałka.
+    # Strzelec — piechur: kanciasty hełm z daszkiem, płaskie naramienniki, plecak z wysoką anteną, karabin.
+    # Snajper — smukły: szpiczasty kaptur, wąskie barki bez naramienników, płaszcz do łydek, długi karabin.
+    # Tarczownik — szeroki: piętrowe naramienniki, garb kołnierza, masywne nogi, tarcza.
+    # Egzekutor — masywny (1,2×): zakręcone rogi, ogromne naramienniki z kolcami, fartuch kata, rdzeń.
     heavy = archetype in ("shielder", "executor")
     head = "DEF-head"
     chest = "DEF-spine.003"
+    hips = "DEF-hips"
     # --- głowa: kask, wizjer (czerwony pas światła) i ciemna osłona szczęki
-    helmet_scale = (.135, .135, .16) if heavy else (.125, .125, .155)
-    helmet = mesh_object("helmet" if archetype != "sniper" else "hood", bm_ico(1, subdiv=2, scale=helmet_scale), RED)
-    _enemy_bone_child(helmet, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .005, .10))))
+    if archetype == "gunner":
+        # Kanciasty hełm piechoty: płaska góra zamiast kuli.
+        helmet = mesh_object("helmet", bm_box(.25, .27, .2, bevel=.03, taper_top=(.9, .88)), RED)
+        _enemy_bone_child(helmet, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .01, .135))))
+    else:
+        helmet_scale = {"shielder": (.15, .15, .165), "executor": (.14, .14, .16)}.get(archetype, (.125, .13, .155))
+        helmet = mesh_object("helmet" if archetype != "sniper" else "hood", bm_ico(1, subdiv=2, scale=helmet_scale), RED)
+        _enemy_bone_child(helmet, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .005, .10))))
     if archetype == "sniper":
         plate("visor", head, (.11, .026, .022), (.035, -.122, .108), True, .006)
     elif archetype == "shielder":
-        plate("visor", head, (.2, .03, .024), (0, -.127, .11), True, .006)
+        plate("visor", head, (.24, .03, .03), (0, -.152, .12), True, .006)
+    elif archetype == "gunner":
+        plate("visor", head, (.2, .03, .03), (0, -.128, .095), True, .006)
     else:
         plate("visor", head, (.215, .03, .038), (0, -.123, .108), True, .008)
-    plate("jaw_guard", head, (.15, .05, .075), (0, -.096, .04), mat=DARK, bevel=.012, taper=(1.25, 1.0))
-    piece("collar", "DEF-neck", bm_prism(.08, .078, .095, sides=8), DARK, (0, 0, .055))
-    if archetype == "gunner":
-        for sign in (-1, 1):
-            plate("goggle_" + str(sign), head, (.073, .045, .052), (sign*.055, -.117, .105), True, .012)
-        plate("cap_brim", head, (.2, .09, .022), (0, -.12, .168), bevel=.008)
+    if archetype != "shielder":
+        plate("jaw_guard", head, (.15, .05, .075), (0, -.096, .04), mat=DARK, bevel=.012, taper=(1.25, 1.0))
+    collar_r = {"shielder": .15, "executor": .12}.get(archetype, .085)
+    piece("collar", "DEF-neck", bm_prism(.09, collar_r * .82, collar_r, sides=8), DARK, (0, .01, .06))
     if archetype == "trooper":
-        plate("crest", head, (.03, .26, .1), (0, .01, .245), bevel=.008, taper=(.6, .8))
-        plate("crest_light", head, (.012, .2, .014), (0, .01, .3), True, 0)
-    if archetype == "shielder":
-        plate("face_shield", head, (.2, .05, .13), (0, -.12, .07), mat=DARK, bevel=.015, taper=(1.1, 1.0))
-        plate("brow", head, (.23, .07, .04), (0, -.115, .15), bevel=.012)
-    if archetype == "executor":
+        # Poprzeczny grzebień-wachlarz (jak u centuriona): wróg patrzy na gracza, więc znak Szturmowca
+        # musi być szeroki od przodu, nie tylko z profilu. Świecący rdzeń wachlarza bez konturu.
+        fan = [(-.2, .19), (-.18, .3), (-.11, .37), (0, .395), (.11, .37), (.18, .3), (.2, .19), (0, .14)]
+        piece("crest", head, _enemy_fin(fan, .04), RED, (0, .015, 0), (0, 0, 90))
+        core = [(y * .62, .275 + (z - .275) * .62) for y, z in fan]
+        piece("crest_light", head, _enemy_fin(core, .05), GLOW, (0, .015, 0), (0, 0, 90))
+    if archetype == "gunner":
+        # Daszek z przodu i nauszniki łączności: szeroki, płaski czubek głowy.
+        plate("cap_brim", head, (.27, .12, .025), (0, -.15, .2), bevel=0)
         for sign in (-1, 1):
-            piece("horn_" + str(sign), head, _enemy_spike(.2, .04), RED, (sign*.1, .03, .19), (-30, sign*38, 0))
+            plate("goggle_" + str(sign), head, (.07, .03, .045), (sign * .052, -.135, .15), True, 0)
+            plate("ear_" + str(sign), head, (.05, .1, .1), (sign * .14, .0, .1), mat=DARK, bevel=.01)
+    if archetype == "shielder":
+        # Hełm prewencyjny: płaska osłona twarzy z wizjerem i szeroki daszek.
+        plate("face_shield", head, (.26, .05, .17), (0, -.13, .07), mat=DARK, bevel=.012, taper=(1.1, 1.0))
+        plate("brow", head, (.3, .1, .05), (0, -.12, .17), bevel=.01)
+    if archetype == "executor":
+        # Zakręcone rogi: najpierw na boki, potem w górę i do tyłu.
+        for sign in (-1, 1):
+            horn("horn_" + str(sign), head, (sign * .1, .02, .18),
+                 ((.12, -10, sign * 72), (.12, -20, sign * 35), (.2, -25, sign * 2)), .05)
+        plate("crown_light", head, (.2, .02, .025), (0, -.118, .175), True, 0)
     if archetype == "sniper":
         hood = bm_ico(1, subdiv=2, scale=(.17, .18, .2))
-        # Szpic kaptura z tyłu głowy: sylwetka inna niż kask Strzelca.
+        # Wysoki szpic kaptura cofnięty nad kark: sylwetka inna niż kask Strzelca.
         for v in hood.verts:
-            if v.co.y > .05 and v.co.z > .05:
-                v.co.y += .05 * (v.co.z / .2)
-                v.co.z += .03
+            if v.co.z > .02:
+                k = v.co.z / .2
+                v.co.z += .14 * k * k
+                v.co.y += .1 * k * k
+                v.co.x *= 1 - .35 * k * k
         # Curved shell with an open face and hanging rear edge.
         opening = [f for f in hood.faces if f.calc_center_median().y < -.035 and f.calc_center_median().z < .09]
         bmesh.ops.delete(hood, geom=opening, context="FACES")
         obj = mesh_object("hood_shell", hood, RED)
         _enemy_bone_child(obj, rig, head, rig.matrix_world @ Matrix.Translation(at(head, (0, .025, .09))))
         # Płaszcz na plecach: od barków do pasa, z czerwoną lamówką.
-        plate("cloak", chest, (.36, .035, .62), (0, .175, -.2), mat=DARK, bevel=.008, taper=(1.15, 1.0))
+        plate("cloak", chest, (.34, .035, .66), (0, .175, -.22), mat=DARK, bevel=0, taper=(1.0, 1.0))
         for sign in (-1, 1):
-            plate("cloak_trim_" + str(sign), chest, (.02, .02, .5), (sign*.17, .2, -.22), True, 0)
+            plate("cloak_trim_" + str(sign), chest, (.022, .02, .56), (sign * .16, .2, -.24), True, 0)
         # Monokular celownika nad prawym okiem.
-        piece("monocle", head, bm_prism(.05, .028, .032, sides=8, axis="Y", top_at_origin=False), GLOW,
-              (-.05, -.135, .105))
+        piece("monocle", head, bm_prism(.06, .03, .034, sides=8, axis="Y", top_at_origin=False), GLOW,
+              (-.05, -.14, .105))
     # --- tułów: płyty, pas z klamrą, linie światła
-    chest_w = .39 if heavy else .33
-    plate("chest_plate", chest, (chest_w, .10, .32), (0, -.103, -.035), bevel=.025, taper=(1.08, 1.0))
+    chest_w = {"shielder": .44, "executor": .42, "sniper": .29}.get(archetype, .34)
+    plate("chest_plate", chest, (chest_w, .10, .32), (0, -.103, -.035), bevel=.02, taper=(1.08, 1.0))
     for sign in (-1, 1):
-        plate("chest_light_" + str(sign), chest, (.024, .012, .16), (sign*chest_w*.3, -.158, -.02), True, 0)
-    plate("back_plate", chest, (.32, .085, .30), (0, .12, -.035), bevel=.02)
-    plate("abdomen_plate", "DEF-spine.001", (.27, .08, .15), (0, -.12, .04), mat=DARK)
-    piece("belt", "DEF-hips", bm_prism(.07, .165, .165, sides=8), DARK, (0, -.03, .12))
-    plate("belt_buckle", "DEF-hips", (.06, .02, .04), (0, -.2, .085), True, .005)
-    if archetype in ("gunner", "trooper"):
-        for i in range(3):
-            plate("pouch_"+str(i), chest, (.075, .06, .115), ((i-1)*.095, -.175, -.13), bevel=.009, mat=DARK)
+        plate("chest_light_" + str(sign), chest, (.026, .012, .17), (sign * chest_w * .3, -.158, -.02), True, 0)
+    plate("back_plate", chest, (chest_w * .92, .085, .30), (0, .12, -.035), bevel=.02)
+    plate("abdomen_plate", "DEF-spine.001", (.27, .08, .15), (0, -.12, .04), mat=DARK, bevel=.01)
+    piece("belt", hips, bm_prism(.07, .165, .165, sides=8), DARK, (0, -.03, .12))
+    plate("belt_buckle", hips, (.07, .02, .045), (0, -.2, .085), True, 0)
     if archetype == "trooper":
-        plate("battery", chest, (.24, .12, .27), (0, .215, -.02), mat=DARK, bevel=.02)
+        plate("battery", chest, (.22, .12, .26), (0, .215, -.03), mat=DARK, bevel=.01)
         for sign in (-1, 1):
-            plate("battery_light_" + str(sign), chest, (.02, .012, .19), (sign*.07, .278, -.02), True, 0)
+            plate("battery_light_" + str(sign), chest, (.022, .012, .19), (sign * .065, .278, -.03), True, 0)
     if archetype == "gunner":
-        plate("radio", chest, (.2, .1, .24), (0, .21, -.04), mat=DARK, bevel=.015)
-        piece("antenna", chest, bm_box(.014, .014, .46, center=(0, 0, .23)), DARK, (.075, .23, .07), (-8, 0, 0))
-        piece("antenna_tip", chest, bm_box(.03, .03, .03), GLOW, (.075, .23 + .064, .07 + .456), (-8, 0, 0))
+        # Plecak z radiem i wysoka antena: pionowa kreska nad barkiem widoczna z każdej strony.
+        plate("radio", chest, (.28, .15, .34), (0, .23, -.06), mat=DARK, bevel=.015)
+        plate("radio_lid", chest, (.3, .17, .06), (0, .23, .13), bevel=.01)
+        piece("antenna", chest, bm_box(.024, .024, .62, center=(0, 0, .31)), DARK, (.09, .25, .14), (-8, 0, 0))
+        # Górny odcinek anteny świeci: pionowa kreska czytelna także we mgle z 30 m.
+        piece("antenna_light", chest, bm_box(.032, .032, .2, center=(0, 0, .5)), GLOW, (.09, .25, .14), (-8, 0, 0))
+        tip = _enemy_rot(-8).to_3x3() @ Vector((0, 0, .62))
+        piece("antenna_tip", chest, bm_box(.055, .055, .055), GLOW, (.09, .25 + tip.y, .14 + tip.z), (-8, 0, 0))
     if archetype == "executor":
-        plate("chest_core", chest, (.10, .03, .13), (0, -.168, .02), True, .015)
-        plate("core_frame", chest, (.16, .03, .19), (0, -.158, .02), mat=DARK, bevel=.01)
-        plate("exo_spine", chest, (.08, .07, .43), (0, .17, -.08), mat=DARK)
+        plate("chest_core", chest, (.12, .03, .15), (0, -.172, .02), True, .015)
+        plate("core_frame", chest, (.19, .03, .22), (0, -.16, .02), mat=DARK, bevel=.01)
+        plate("exo_spine", chest, (.09, .08, .45), (0, .175, -.08), mat=DARK, bevel=.01)
         for i in range(3):
-            plate("spine_light_" + str(i), chest, (.04, .02, .05), (0, .21, .06 - i * .11), True, 0)
+            plate("spine_light_" + str(i), chest, (.045, .02, .06), (0, .22, .06 - i * .12), True, 0)
+        # Fartuch kata: długi pas przed i za udami.
+        plate("tabard", hips, (.26, .03, .5), (0, -.17, -.2), mat=DARK, bevel=0, taper=(1.25, 1.0))
+        plate("tabard_trim", hips, (.24, .02, .03), (0, -.19, -.43), True, 0)
+        plate("tabard_back", hips, (.3, .03, .48), (0, .17, -.19), mat=DARK, bevel=0, taper=(1.2, 1.0))
+    if archetype == "shielder":
+        # Garb nad karkiem: masa bez szyi, jak w pancerzu prewencyjnym.
+        plate("hunch", chest, (.36, .16, .14), (0, .14, .17), bevel=.02, taper=(.8, .8))
     # --- kończyny
     for side, sign in (("L", 1), ("R", -1)):
-        upper = "DEF-upper_arm."+side
-        forearm = "DEF-forearm."+side
-        thigh = "DEF-thigh."+side
-        shin = "DEF-shin."+side
-        pad_w = .22 if heavy else .18
-        plate("shoulder_pad_"+side, upper, (pad_w, .23, .15), (sign*.07, 0, .045), bevel=.025, taper=(.85, .9))
-        plate("shoulder_light_"+side, upper, (.016, .2, .03), (sign*(.07 + pad_w*.5 + .004), 0, .0), True, 0)
-        if heavy:
-            plate("forearm_plate_"+side, forearm, (.24, .15, .14), (sign*.13, -.025, 0), bevel=.02)
-            plate("forearm_light_"+side, forearm, (.17, .012, .016), (sign*.13, -.104, .02), True, 0)
-            plate("thigh_plate_"+side, thigh, (.19, .10, .29), (0, -.09, -.17), bevel=.02)
-            plate("shin_plate_"+side, shin, (.16, .09, .29), (0, -.065, -.17), bevel=.018)
+        upper = "DEF-upper_arm." + side
+        forearm = "DEF-forearm." + side
+        thigh = "DEF-thigh." + side
+        shin = "DEF-shin." + side
+        if archetype == "trooper":
+            # Okrągły, opadający naramiennik.
+            pad = bm_ico(1, subdiv=1, scale=(.12, .13, .1))
+            pad = bm_merge(pad, bm_box(.2, .22, .03, center=(0, 0, -.045)))
+            for v in pad.verts:
+                v.co.z = max(v.co.z, -.06)
+            piece("shoulder_pad_" + side, upper, pad, RED, (sign * .08, 0, .05), (0, sign * 18, 0))
+            plate("shoulder_light_" + side, upper, (.016, .2, .03), (sign * .19, 0, .0), True, 0)
+        elif archetype == "gunner":
+            plate("shoulder_pad_" + side, upper, (.19, .24, .1), (sign * .07, 0, .055), bevel=.012, taper=(.9, .9))
+            plate("shoulder_light_" + side, upper, (.016, .2, .025), (sign * .168, 0, .02), True, 0)
+        elif archetype == "sniper":
+            # Wąskie barki: tylko płaska nakładka, bez rozszerzania sylwetki.
+            plate("shoulder_pad_" + side, upper, (.11, .16, .05), (sign * .05, 0, .07), bevel=.01, taper=(.8, .9))
+        elif archetype == "shielder":
+            # Piętrowe naramienniki: górna płyta i szeroki fartuch ramienia.
+            plate("shoulder_pad_" + side, upper, (.27, .3, .16), (sign * .085, 0, .06), bevel=.02, taper=(.8, .85))
+            plate("shoulder_skirt_" + side, upper, (.2, .27, .14), (sign * .17, 0, -.02), bevel=.015,
+                  taper=(1.0, 1.0))
+            plate("shoulder_light_" + side, upper, (.016, .24, .03), (sign * .272, 0, -.02), True, 0)
         else:
-            plate("bracer_"+side, forearm, (.17, .1, .1), (sign*.14, 0, 0), bevel=.012)
-            plate("shin_plate_"+side, shin, (.12, .06, .24), (0, -.06, -.17), bevel=.012)
-        if archetype == "executor":
-            piece("pauldron_spike_"+side, upper, _enemy_spike(.17, .05), RED, (sign*.1, .02, .11), (0, sign*30, 0))
-        plate("knee_pad_"+side, shin, (.15, .085, .13), (0, -.08, -.01), bevel=.02)
-        plate("knee_light_"+side, shin, (.05, .012, .02), (0, -.127, -.01), True, 0)
+            # Egzekutor: ogromny naramiennik z dwoma kolcami.
+            plate("shoulder_pad_" + side, upper, (.3, .32, .18), (sign * .09, 0, .07), bevel=.02, taper=(.75, .8))
+            plate("shoulder_skirt_" + side, upper, (.22, .28, .12), (sign * .19, 0, -.01), bevel=.015)
+            piece("pauldron_spike_" + side, upper, _enemy_spike(.28, .07), RED, (sign * .1, .0, .14), (0, sign * 28, 0))
+            piece("pauldron_spike_b_" + side, upper, _enemy_spike(.18, .05), RED, (sign * .2, .06, .1),
+                  (10, sign * 55, 0))
+            plate("shoulder_light_" + side, upper, (.016, .26, .03), (sign * .305, 0, -.01), True, 0)
+        if heavy:
+            plate("forearm_plate_" + side, forearm, (.24, .15, .14), (sign * .13, -.025, 0), bevel=.02)
+            plate("forearm_light_" + side, forearm, (.17, .012, .016), (sign * .13, -.104, .02), True, 0)
+            plate("thigh_plate_" + side, thigh, (.2, .11, .3), (0, -.09, -.17), bevel=.02)
+            plate("shin_plate_" + side, shin, (.17, .1, .31), (0, -.065, -.17), bevel=.018)
+        elif archetype == "sniper":
+            plate("bracer_" + side, forearm, (.14, .08, .08), (sign * .14, 0, 0), bevel=.01)
+            plate("shin_plate_" + side, shin, (.1, .05, .22), (0, -.055, -.17), bevel=.01)
+        else:
+            plate("bracer_" + side, forearm, (.17, .1, .1), (sign * .14, 0, 0), bevel=.012)
+            plate("shin_plate_" + side, shin, (.12, .06, .24), (0, -.06, -.17), bevel=.012)
+            if archetype == "gunner":
+                # Czerwona płyta uda: mniej ciemnego kombinezonu, wyraźna strefa koloru z daleka.
+                plate("thigh_plate_" + side, thigh, (.15, .07, .24), (0, -.085, -.15), bevel=.012)
+        plate("knee_pad_" + side, shin, (.15, .085, .13), (0, -.08, -.01), bevel=.02)
+        plate("knee_light_" + side, shin, (.06, .012, .022), (0, -.127, -.01), True, 0)
+        if archetype == "trooper":
+            # Fartuchy ud (pteryges) z linią światła: dolna połowa sylwetki jak u legionisty.
+            plate("tasset_" + side, thigh, (.17, .05, .22), (sign * .01, -.1, -.1), bevel=.01, taper=(1.0, 1.0))
+            plate("tasset_light_" + side, thigh, (.12, .012, .018), (sign * .01, -.128, -.17), True, 0)
         if archetype == "sniper":
-            for label, offset, size in (
-                ("back", (0, .14, -.24), (.20, .035, .52)),
-                ("side", (sign*.105, .025, -.22), (.035, .25, .48)),
+            # Poły płaszcza do łydek, rozchylone ku dołowi.
+            for label, offset, size, taper in (
+                ("back", (0, .14, -.33), (.24, .035, .7), (.75, 1.0)),
+                ("side", (sign * .11, .025, -.31), (.035, .27, .66), (1.0, .8)),
             ):
-                plate("coat_"+label+"_"+side, thigh, size, offset, bevel=.008, mat=DARK)
-            plate("coat_trim_"+side, thigh, (.03, .02, .44), (sign*.06, .16, -.22), True, 0)
+                plate("coat_" + label + "_" + side, thigh, size, offset, bevel=0, mat=DARK, taper=taper)
+            plate("coat_trim_" + side, thigh, (.03, .02, .62), (sign * .07, .16, -.33), True, 0)
+            # Świecąca krawędź poły z przodu: dwie długie pionowe linie wzdłuż nóg = Snajper.
+            plate("coat_edge_" + side, thigh, (.045, .02, .6), (sign * .11, -.112, -.31), True, 0)
     if archetype == "shielder":
         rig.animation_data_create()
         idle = bpy.data.actions["Idle_Loop"]
@@ -588,12 +687,12 @@ def build_enemy_cc0(archetype):
         shield = plate("shield", chest, (.80, .12, 1.20), position=(.30, -.60, .97), bevel=.035)
         shield.matrix_basis = shield.matrix_basis @ Matrix.Rotation(math.radians(12), 4, "Z")
         # Front tarczy = -Y: ciemne lico w czerwonej ramie, wizjer i szewrony z czerwonego światła.
-        _enemy_local("shield_face", bm_box(.62, .02, 1.02, bevel=.01), DARK, shield, (0, -.06, 0))
-        _enemy_local("shield_slit", bm_box(.42, .02, .035), GLOW, shield, (0, -.072, .36))
+        _enemy_local("shield_face", bm_box(.62, .02, 1.02), DARK, shield, (0, -.06, 0))
+        _enemy_local("shield_slit", bm_box(.46, .02, .05), GLOW, shield, (0, -.072, .36))
         for sign in (-1, 1):
-            _enemy_local("shield_chevron_" + str(sign), bm_box(.26, .02, .045), GLOW, shield,
+            _enemy_local("shield_chevron_" + str(sign), bm_box(.28, .02, .055), GLOW, shield,
                          (sign * .1, -.072, -.05), (0, sign * 32, 0))
-            _enemy_local("shield_rail_" + str(sign), bm_box(.03, .02, .8), GLOW, shield, (sign * .345, -.072, -.05))
+            _enemy_local("shield_rail_" + str(sign), bm_box(.035, .02, .8), GLOW, shield, (sign * .345, -.072, -.05))
     # Calibrate held equipment in its actual aiming / sword-ready pose, not the T-pose.
     calibration = "Pistol_Aim_Neutral" if archetype in ("gunner", "sniper") else "Sword_Idle"
     rig.animation_data_create()
@@ -669,7 +768,6 @@ def build_enemy_drone():
         bm_ico(0.2, subdiv=1, scale=(1.0, 1.15, 0.62)),
         bm_box(0.2, 0.26, 0.05, center=(0, 0, 0.13), taper_top=(0.7, 0.8)),  # kopuła czujnika
         bm_box(0.06, 0.16, 0.05, center=(0, -FWD * 0.2, 0.0)),  # tylny statecznik
-        bm_box(0.012, 0.012, 0.18, center=(0, -FWD * 0.24, 0.1)),  # antena
         bm_box(0.14, 0.12, 0.05, center=(0, FWD * 0.02, -0.14), taper_top=(0.7, 0.7)),  # brzuch
         bm_prism(0.2, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, FWD * 0.24, -0.11)),  # lufa
     ), RED, parent=root)
@@ -699,12 +797,13 @@ def build_enemy_drone():
                 bm_prism(0.025, 0.03, 0.03, sides=6, top_at_origin=False, offset=(0, 0, 0.012)),
             )
             part(f"rotor_{tag}", rotor, DARK, root, loc=(cx, cy, cz + 0.07))
-    part("eye_ring", bm_prism(0.04, 0.095, 0.1, sides=10, axis="Y", top_at_origin=False), DARK, root,
+    # Duże oko w ciemnym pierścieniu: z daleka dron czyta się jako czerwony punkt na krzyżu wirników.
+    part("eye_ring", bm_prism(0.045, 0.115, 0.12, sides=10, axis="Y", top_at_origin=False), DARK, root,
          loc=(0, FWD * 0.2, 0.01))
     for sx in (-1, 1):
         part(f"hull_light_{'L' if sx > 0 else 'R'}", bm_box(0.012, 0.2, 0.018), GLOW, root, loc=(sx * 0.2, 0.0, 0.0))
     part("tail_light", bm_box(0.05, 0.02, 0.03), GLOW, root, loc=(0, -FWD * 0.29, 0.0))
-    part("eye", bm_ico(0.075, subdiv=1), GLOW, root, loc=(0, FWD * 0.235, 0.01))
+    part("eye", bm_ico(0.092, subdiv=1), GLOW, root, loc=(0, FWD * 0.24, 0.01))
     node("muzzle", root, (0, FWD * 0.34, -0.11))
     return root
 
