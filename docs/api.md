@@ -1988,6 +1988,12 @@ ogłuszenie ani kontrolę Rezonansem. Bez carry zachowanie pozostaje dotychczaso
   pokój ze zwykłych pul. Spawny gracza pozostają w danych pokoju. `blocks[].instance?`
   oznacza powtarzalną bryłę do InstancedMesh; `blocks[].rotation?` opisuje obrót
   identycznej bryły renderu i statycznego collidera (radiany XYZ).
+- `RoomDefinition.weatherFloorY?: number` (pole oprawy): najniższa podłoga opadu
+  i efektów otoczenia (`Weather`, `AmbientFx`); brak = `playerSpawn.y`. Areny
+  wielopoziomowe (ulica pod dachami) podają tu dno, a bryły kamienic zasłaniają
+  deszcz `rainShelters`. `lights[].floorY?: number`: wysokość plamy światła na
+  podłodze pod światłem; brak = podłoga sceny. Latarnie z dekoracji dostają
+  `floorY` = podstawa latarni. Pola kosmetyczne, bez wpływu na symulację.
 - `ModeDefinition.arenas`: uporządkowana lista id pokoi; odczyt starego `roomId`
   i `points` pozostaje obsługiwany. `selectArena(mode, seed?, override?, debug?)`
   wybiera pierwszy pokój bez seeda, a z seedem deterministycznie przez `Rng`.
@@ -2037,6 +2043,9 @@ Walidacja trybu sprawdza pełne koła punktów i drogę od gracza oraz spawnów
 do każdego punktu; nie rzutuje wysokich punktów na grunt. Zwykłe spawny
 posiłków pozostają na playerSpawn.y; dotychczasowa preferencja punktów wroga
 zachowuje wysokość danego punktu. Brak zmian kontraktu walki i zapisu.
+Kapsuła wroga (`EnemyBody`) ma autostep i przyciąganie do podłoża z
+`tuning.enemies.stepHeight/stepMinWidth/snapToGroundDistance`, więc wchodzi
+po schodach, które nawigacja uznaje za chodzone (wznios ≤ `navigationMaxRiseM`).
 
 # Misja liniowa M01 (kontrakt D1–D8)
 

@@ -64,6 +64,11 @@ Maska płatka dodaje interpolowane UV i radialne wygładzanie alfa.
 Tylko popiół liczy cztery hasze i interpoluje szum krawędzi.
 Nowe pola starych pięciu profili są neutralne; ich pliki pozostają bez zmian.
 
+Opad i efekty otoczenia kończą się na `weatherFloorY` pokoju (domyślnie
+`playerSpawn.y`). Areny z ulicą pod dachami (`arenaRooftops`: −14 m) podają dno
+ulicy, a bryły kamienic są strefami bez deszczu, więc mżawka pada do ulicy,
+a nie przez dachy.
+
 `CityDressing.setWeather(id)` nakłada profil na istniejący `Weather`, ustawienia
 mgły/odbicia i wspólny uniform mokrości w `urbanMaterials`. Zwraca false dla
 nieznanego id. Pule opadu pozostają stałe; przełączenie czyści rozbryzgi i pył,

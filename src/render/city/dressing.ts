@@ -29,6 +29,8 @@ export interface DressingLayout {
   decals?: readonly DecalDef[];
   ambientFx?: readonly AmbientFxDef[];
   rainShelters?: readonly RainShelterDef[];
+  /** Najniższa podłoga opadu i efektów otoczenia; brak = `floorY` sceny. */
+  weatherFloorY?: number;
   /** Latarnie z dekoracji dostają stożek światła i światło punktowe. */
   decor?: readonly DecorDef[];
   /**
@@ -123,13 +125,17 @@ export class CityDressing {
       roots.push(this.decals.root);
     }
     if (layout.ambientFx?.length && !getLiteFx()) {
-      this.ambient = new AmbientFx(layout.ambientFx, floorY, `${seed}:ambient`);
+      this.ambient = new AmbientFx(
+        layout.ambientFx,
+        layout.weatherFloorY ?? floorY,
+        `${seed}:ambient`,
+      );
       roots.push(this.ambient.root);
     }
     if (theme.rain.enabled && !getLiteFx()) {
       this.weather = new Weather(
         theme.rain,
-        floorY,
+        layout.weatherFloorY ?? floorY,
         `${seed}:rain`,
         layout.rainShelters,
       );
@@ -176,7 +182,7 @@ export class CityDressing {
       if (!this.weather) {
         this.weather = new Weather(
           {},
-          this.floorY,
+          this.layout.weatherFloorY ?? this.floorY,
           `${this.seed}:rain`,
           this.layout.rainShelters,
         );

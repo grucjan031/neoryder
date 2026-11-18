@@ -257,29 +257,75 @@ Ręcznie oceń tempo przemieszczania się między poziomami, odległość od os�
 czytelność czerwonych wrogów w smogu, jasność pod wiaduktem i w tunelu,
 widoczność obu landmarków oraz napływ posiłków w pierścieniu.
 
-## Targ na dachach
+## Dachy Starego Miasta
 
-`arenaRooftops`: 90×90 m, `drizzleWind`. Ciągły niski dach na y = 0,
-tarasy wschodnie na 2 i 6 m. Szerokie rampy X mają 24 m biegu i 8 m
-szerokości; łączą dolny dach z tarasami przy z = −24 i 24. Dachy pokrywa
-`roof_tar`, parapety i schody `roof_hvac_metal`, zadaszenia `market_tarp`.
-Stragany obu kolorów, zbiorniki, HVAC, anteny i szyldy używają oryginalnych
-materiałów GLB (wszystkie nazwy były już zarejestrowane). Wymiary colliderów
-rekwizytów odpowiadają AABB w `docs/assets.md`.
+`arenaRooftops` (przebudowa wg ADR 0011): 300×260 m (x −150…150, z −130…130),
+pogoda `drizzleWind`, motyw `neonStreet`. Generator `tools/arenas/arenaRooftops.mjs`
+(`node tools/arenas/build.mjs arenaRooftops`), rzut `docs/arenas/arenaRooftops.svg`.
+Dzielnica kamienic: ulice na dnie (y = −14, chodniki −13,85), dachy na 0 / 4 / 8 / 12 m.
+Generator opisuje działki (prostokąty z wysokością dachu) w funkcjach kwartałów
+(`northWestLots`, `northMiddleLots`, `northEastLots`, `southWestLots`, `southMiddleLots`,
+`marketLots`, `streetLots`, `edgeLots`), połączenia (`connections`) i oprawę stref
+(`…Dress`); bryły, płyty dachów, parapety i ściany ogniowe buduje z mapy wysokości.
+Pokrycie rzutu jest sprawdzane (każdy metr to działka albo ulica).
+Powierzchnia chodzenia ≈ 65 900 m², wypełnienie obrysu 86,5% (wcięcia narożnymi
+wysokimi kamienicami), poziomy −14 / 0 / 4 / 8 / 12 m (+ spoczniki klatek).
+2114 bloków (757 chodzonych, 217 niewidocznych), 733 dekoracje, 1057 instancji
+41 modeli (najczęstszy `city_sign_box` 11,4%), 57 świateł + 7 latarni,
+22 napisy/hologramy, 24 naklejki, 9 efektów, 61 stref bez deszczu.
 
-| Punkt | X/Y/Z (m)    | Miejsce                       |
-| ----- | ------------ | ----------------------------- |
-| A     | −28 / 0 / 0  | Niski zachodni dach targowy   |
-| B     | 28 / 2 / −24 | Północny dach z wieżą ciśnień |
-| C     | 28 / 6 / 24  | Wysoki południowy dach        |
+| Strefa (rodzaj)              | Rzut (x / z)        | Charakter, materiały, rekwizyty                                                                                                                                                                                                        |
+| ---------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ulica Targowa, C (low)       | −150…150 / −10…10   | asfalt, chodniki `paving`, cokoły kamienic `facade` z oknami; targ uliczny z budami w dwóch kolorach, wraki i auta, kioski, automaty, latarnie, girlandy lampionów, holo nad ulicą; wyloty zamknięte blaszanym płotem z pasem `hazard` |
+| Zaułek i podwórze, D (dense) | −84…−36 / 10…93     | zaułek przy x = −60 (na północ do placyku Klatki Zegarowej), podwórze 48×40 m: `flood_brick_algae`, szopa, wrak, beczki z ogniem, agregat, pranie, graffiti, kapanie z rynien                                                          |
+| Nocny targ, A (open)         | 20…110 / 10…100     | największy dach (y = 0) z pokładem `boardwalk_planks`: wyspy straganów `city_market_stall_canopy` (granat i fiolet) w alejkach 5 m, lampiony, plac przy A z osłonami, daszki `market_tarp`, holo koi/meduza                            |
+| Kwartał Zegarowy, B (high)   | −150…−56 / −112…−10 | kamień `canal_stone_wall` i cegła z oknami, kominy, świetliki, zbiorniki, budki; wieża `roof_clock_tower` na dachu 8 m przy (−100, 8, −90), dach 12 m na zachodzie                                                                     |
+| Kwartał Szyldu, E (high)     | 44…150 / −118…−10   | beton/tynk, papa `roof_hvac_metal`/`corrugated`: HVAC, anteny satelitarne, oczyszczacze, blaszane komórki; `roof_giant_sign` przy (80, 12, −80)                                                                                        |
+| Pasaż i klatki (interior)    | −44…−19 / 10…68     | pasaż handlowy pod kamienicą (rolety, ekrany, automaty, neony) i trzy klatki schodowe przez wnętrza                                                                                                                                    |
 
-Promienie 4 m, odległości XZ około 61 / 48 / 61 m. Gracz (−35, 0, 32),
-sześć spawnów na niskim dachu poza punktami. Dwie kładki `city_roof_bridge`
-przy x = 34 i 38 łączą tarasy na y = 6, nad niższym kanałem serwisowym.
-Z północnego dachu prowadzą dwa biegi po 20 stopni, 0,2 m wzniosu i 0,4 m
-głębokości. Płyta kładki ma 1,6×0,2×8 m, osobne poręcze do wysokości
-modelu 1,39 m. Parapety mają przerwy przy rampach i kładkach. Granice areny
-mają dodatkową niewidoczną kolizję do 8 m; kapsuła nie wypada poza arenę.
+Pozostałe kwartały: obozowisko na niskich dachach południowego zachodu (start gracza,
+namioty, szałasy, beczki), kamienice w remoncie na południu (rusztowania przy ulicy,
+agregaty, skrzynie), wschodnie i południowe kamienice 4–8 m. Ściany ogniowe 1,2 m
+z przerwami dzielą dachy sąsiednich działek; komórki/nadbudówki z bloków i zbiorniki
+przerywają linie widoku na każdym dachu.
+
+| Punkt | X / Y / Z (m)  | Miejsce                       |
+| ----- | -------------- | ----------------------------- |
+| A     | 60 / 0 / 60    | nocny targ na dachu           |
+| B     | −95 / 8 / −75  | dach pod wieżą zegarową       |
+| C     | 0 / −14 / 0    | targ na ulicy głównej         |
+| D     | −60 / −14 / 70 | podwórze przy zaułku          |
+| E     | 80 / 12 / −70  | dach pod gigantycznym szyldem |
+
+Promienie 5 m. Start gracza (−140, 0, 120) na niskim dachu. Przejęcie: `maxAlive` 12,
+`arena.enemyTickets` 190, `spawnRing` 25–90 m, 41 spawnów z wysokością w `arena.spawnPoints`
+(12 na ulicach, podwórzu, uliczce i w pasażu, 8 na dachach 0 m, 10 na 4 m, 8 na 8 m,
+3 na 12 m); 4 spawny pokoju (XZ) na dachu startowym. Scalanie statyki w komórkach
+200 m (`batchCellM`), rekwizyty bez `instance`.
+
+**Połączenia (AI i gracz).** Ulica ↔ dachy: trzy klatki schodowe (biegi zabiegowe
+po 10 stopni 0,3 × 1 m, spoczniki co 3 m, nadbudówka z drzwiami 3,2 m):
+Klatka Zegarowa (placyk na końcu zaułka → dach 4 m przy B), Klatka Podwórzowa
+(podwórze D → dach 4 m), Klatka Szyldu (chodnik ulicy → dach 4 m przy E) oraz
+Schody Targowe (47 kamiennych stopni wzdłuż fasady, chodnik → targ A).
+Dachy ↔ dachy: 23 biegi kamiennych/stalowych schodów po 4 m (14 stopni 0,29 × 1 m),
+pięć szerokich mostów z desek (dwa nad ulicą główną na 0 m, nad zaułkiem na 0 m
+i 4 m, nad uliczką na 4 m). Gracz ma dodatkowo trzy kładki `city_roof_bridge` (1,4 m),
+pięć schodów pożarowych na fasadach (stalowe biegi 0,3 × 0,32 m, balkony
+`city_fire_escape`) i zeskoki z dachów. Każda para sąsiednich punktów ma trasę
+ulicą i trasę przez dachy (np. C–A: ulica + Schody Targowe albo most W i dachy
+0 m; C–D: zaułek, pasaż albo dachy i Klatka Podwórzowa; C–B i C–E: klatki albo
+mosty nad ulicą i schody dachowe).
+
+**Granica.** Północ i narożniki zamykają wysokie, niedostępne kamienice (16–20 m);
+na pozostałych krawędziach dachy kończą parapety, a ulica główna — blaszany płot.
+Niewidoczna ściana stoi na obwiedni (−14…32 m). Za nią ulice i pierścień kamienic
+oprawy (x ±164…186, z ±144…168) do panoramy.
+
+**Pogoda i światła.** Mżawka sięga ulicy: `weatherFloorY` = −14, bryły kamienic są
+strefami bez deszczu. Plamy świateł leżą na podłodze pod światłem (`lights[].floorY`).
+Paleta: bursztyn i fiolet szyldów, ciepła biel lampionów targu, zieleń i błękit
+w Kwartale Szyldu; brak czerwieni, cyjanu i magenty w otoczeniu.
 
 ## Budowa wieżowca
 
@@ -616,10 +662,22 @@ targ 20 m; jedno końcowe scalanie świata):
 | -------- | -----------: | --------: | -------------------: |
 | Estakada |         3740 |       796 |                  504 |
 | Targ     |          877 |       198 |                   40 |
+| Dachy (300×260, komórki 200 m, bez instancji) | 23319 | 194 | 0 |
 
 `arenaPerf.test.ts` obejmuje prawdziwy host Przejęcia, nawigację i Rapiera.
 Estakada sprawdza 12 wrogów (8 szturmowców, 4 strzelców), limit 2 ms/krok.
 Targ zachowuje test przeciążeniowy 30 wrogów, limit 6 ms/krok.
+Dachy mają też test budżetów ADR D8: nawigacja 170–190 ms (siatka 1 m i pięć
+pól, ≤ 500 ms), 12 wrogów z puli areny na ulicach i dachach 0,52 ms/krok (≤ 2 ms).
+
+Dachy: wywołania rysowania całej klatki (`query('renderInfo')`, 1280×720, jakość
+medium, swiftshader, bez wrogów, 2026-11-18): start (−140, 120) na NE 669, ulica
+(−130, 0) na wschód 759, dach 12 m (22, −105) na południe 718, dach 8 m (130, −20)
+na zachód 728, targ (60, 40) 311, dach zegarowy 223. Komórki 20 m dawały
+3000–7000 wywołań (ok. 1500 partii InstancedMesh); scalenie rekwizytów według
+materiału w ćwiartkach mapy, mniej napisów (każdy ≈ 5 wywołań) i świateł (plama
+= 1 wywołanie) zeszło poniżej 800. Każdy widoczny wróg dokłada ok. 70–80 wywołań
+(koszt silnika, nie areny): z dwoma wrogami w kadrze 895–912.
 
 To liczba siatek, **nie zmierzona liczba wywołań rysowania całej klatki**:
 frustum culling i przebiegi koloru, normalnych, odbić oraz bloom zmieniają wynik.
@@ -650,7 +708,19 @@ bez skoków, potem schody/kładki targu. Sprawdź `room`,
 `smog` i `drizzleWind`. Oceń czytelność wrogów w pyle i mżawce, drogi posiłków
 na B/C, osłony, śliską wizualnie papę i zabezpieczenie zewnętrznych krawędzi.
 Galeria: `?scene=city-props-test&view=4` (estakada), `&view=5` (targ).
-Testy traversal/enemies/staticBatch obejmują wszystkie pięć dużych aren;
+
+Dachy — `tp <x> <z> <yaw> <pitch> <podłoga>` (piąty argument to wysokość podłogi):
+`tp -140 120 -45 0 0` start i obozowisko, `tp 0 -8 90 0 -14` ulica i targ C,
+`tp 45 40 120 0 0` nocny targ A, `tp -85 -60 27 5 8` wieża zegarowa i B,
+`tp 95 -55 30 0 12` szyld i E, `tp -60 88 0 0 -14` podwórze D,
+`tp -41 14 180 0 -14` pasaż, `tp -66 -54 0 10 -14` wejście Klatki Zegarowej,
+`tp -48 -2 0 25 -14` schody pożarowe, `tp 20 13 -90 0 -13.85` Schody Targowe,
+`tp -32 -16 180 0 0` most z desek nad ulicą. Sprawdź wejście po klatce na dach,
+mżawkę na ulicy (pada do dna), plamy świateł na właściwych poziomach,
+wroga schodzącego ze schodów i czytelność czerwieni na tle neonów.
+Testy traversal/enemies/staticBatch obejmują wszystkie duże areny
+(dachy: kapsuła do A–E, Schody Targowe, most, kładka, schody pożarowe i dachowe;
+oba archetypy z pięciu spawnów na różnych poziomach do A–E);
 e2e startu nowych aren jest napisany, bez uruchamiania w sandboxie.
 
 Galeria `?scene=city-props-test&view=3` pokazuje materiały portu.

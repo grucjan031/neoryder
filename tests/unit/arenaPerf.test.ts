@@ -47,6 +47,79 @@ function medianBuildMs(build: () => void): number {
   return times.sort((a, b) => a - b)[1]!;
 }
 
+// Budżety ADR 0011 D8 (nawigacja ≤ 500 ms, krok ≤ 2 ms) mierzone w izolacji: ok. 180 ms i 0,5 ms.
+it('arenaRooftops 300 × 260 m: nawigacja i 12 wrogów z puli areny w budżecie', async () => {
+  const room = roomDefinitions.get('arenaRooftops')!;
+  const buildMs = medianBuildMs(() => {
+    const navigation = new ArenaNavigation(room);
+    for (const point of room.arena!.points)
+      expect(
+        navigation.path(room.playerSpawn, point.position).length,
+      ).toBeGreaterThan(0);
+  });
+  console.info(
+    `[perf] arenaRooftops: nawigacja ${buildMs.toFixed(2)} ms (siatka i 5 pól)`,
+  );
+  expect(buildMs).toBeLessThanOrEqual(500);
+  const bus = new EventBus();
+  const commands = new CommandRegistry();
+  const run = new RunManager(bus, {
+    generateMap: () => ({ sectorId: 'unused', layers: [] }),
+  });
+  run.newRun('rooftops-perf', 'classic', {
+    modeId: 'conquest',
+    arenaId: room.id,
+  });
+  run.selectNode('conquest');
+  const scene = new RoomScene(
+    room,
+    run.state,
+    loadWaves({ ...wavesData, spawnPoints: room.spawnPoints }),
+    { loadModels: false },
+  );
+  try {
+    await scene.init(
+      {
+        bus,
+        rng: new Rng('rooftops-perf'),
+        loop: new GameLoop({ step() {}, render() {} }),
+        tuning: structuredClone(tuning),
+        debug: false,
+        commands,
+        camera: new PerspectiveCamera(),
+      },
+      new ThreeScene(),
+    );
+    commands.execute('god');
+    commands.execute('kill all');
+    const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+    // Dwunastu wrogów z różnych stref i poziomów (ulice, dachy 0–12 m) idzie do punktów.
+    room
+      .arena!.spawnPoints!.filter((_, index) => index % 3 === 0)
+      .slice(0, 12)
+      .forEach((p, index) =>
+        enemies.spawn(index % 3 === 0 ? 'gunner' : 'assaulter', {
+          x: p.x,
+          y: p.y ?? 0,
+          z: p.z,
+        }),
+      );
+    expect(scene.query('enemies')).toBe(12);
+    for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+    const steps = 600;
+    const begin = performance.now();
+    for (let i = 0; i < steps; i++) scene.step(SIM_DT, idle);
+    const perStepMs = (performance.now() - begin) / steps;
+    console.info(
+      `[perf] arenaRooftops: ${perStepMs.toFixed(3)} ms/krok, 12 wrogów`,
+    );
+    expect(scene.query('enemies')).toBeGreaterThanOrEqual(12);
+    expect(perStepMs).toBeLessThan(6);
+  } finally {
+    scene.dispose();
+  }
+}, 60_000);
+
 it.each(['450 × 300 m', 'arenaFloodedDocks'])(
   '%s: budżet nawigacji i 12 wrogów',
   async (id) => {

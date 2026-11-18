@@ -167,7 +167,8 @@ export class CityLights {
       spot.rotation.x = -Math.PI / 2;
       spot.position.set(
         def.position.x,
-        (typeof floorY === 'number' ? floorY : (floorY[index] ?? 0)) +
+        (def.floorY ??
+          (typeof floorY === 'number' ? floorY : (floorY[index] ?? 0))) +
           tuning.city.surfaceOffsetM,
         def.position.z,
       );

@@ -157,7 +157,9 @@ it.each([
     );
     try {
       expect(room.arena!.batchCellM).toBe(
-        { arenaConstructionSite: 240, arenaOverpass: 180 }[id] ?? 20,
+        { arenaConstructionSite: 240, arenaOverpass: 180, arenaRooftops: 200 }[
+          id
+        ] ?? 20,
       );
       await scene.init(
         {
@@ -171,7 +173,8 @@ it.each([
       );
       expect(scene.query('weather')).toBe(room.weather);
       expect(calls).toBe(1);
-      expect(instanced).toBeGreaterThan(1);
+      if (room.blocks.some((b) => b.instance))
+        expect(instanced).toBeGreaterThan(1);
       if (id === 'arenaContainerPort')
         expect([...containerColors].sort()).toEqual([
           'mat_container_graphite',

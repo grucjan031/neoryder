@@ -3,7 +3,7 @@ import { LOAD_TIMEOUT } from './helpers';
 
 for (const [arena, weather, points] of [
   ['arenaOverpass', 'smog', 'ABC'],
-  ['arenaRooftops', 'drizzleWind', 'ABC'],
+  ['arenaRooftops', 'drizzleWind', 'ABCDE'],
   ['arenaPowerPlant', 'ashfall', 'ABCDE'],
   ['arenaConstructionSite', 'clearNight', 'ABCDE'],
   ['arenaRailYard', 'snow', 'ABCDE'],

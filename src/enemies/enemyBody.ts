@@ -17,6 +17,7 @@ export class EnemyBody {
   private readonly groups = interactionGroups(CollisionGroup.Enemy, 0xffff);
   private readonly impulse = { x: 0, z: 0 };
   private verticalSpeed = 0;
+  private stepping = false;
 
   constructor(
     private readonly deps: EnemyDependencies,
@@ -102,6 +103,13 @@ export class EnemyBody {
     vz: number,
     tuning: Tuning,
   ): { position: Vec3; distance: number } {
+    if (!this.stepping) {
+      // Wróg wchodzi po stopniach tak jak gracz: nawigacja aren prowadzi go schodami.
+      const t = tuning.enemies;
+      this.controller.enableAutostep(t.stepHeight, t.stepMinWidth, false);
+      this.controller.enableSnapToGround(t.snapToGroundDistance);
+      this.stepping = true;
+    }
     this.verticalSpeed += tuning.physics.gravity * dt;
     const center = this.body.translation();
     const separating = new Set<number>();
