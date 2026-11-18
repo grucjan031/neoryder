@@ -324,7 +324,7 @@ Skala modeli bloków w pokojach (`placeBlockModel` w `src/scenes/roomScene.ts`):
 
 Uliczka ok. 10 × 44 m zawiera pierwotne 24 modele `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy). Obok, na osobnym placu 52 × 166 m, stoją modele estakady i targu dachowego: 12 nowych brył oraz fioletowy wariant straganu, razem **37 modeli** w galerii. Rozstaw 24 m i dwie kolumny pozwalają oglądać duże segmenty bez przecinania fasad. Lista modeli w `src/scenes/cityPropsTest.ts`.
 
-Parametry: `prop=<nazwa>` (np. `city_overpass_deck`, kamera 3/4 kadrowana według AABB), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2|3|4|5` (ulica, odwrotnie, z góry, plac portu, zestaw estakady, zestaw targu). `prop` ma pierwszeństwo przed `view`; `yaw=145` pozwala ocenić tył modelu. Nowe stanowiska mają własne ustawienie świateł do zbliżeń. Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.
+Parametry: `prop=<nazwa>` (np. `city_overpass_deck`, kamera 3/4 kadrowana według AABB), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2|3|4|5|6|7` (ulica, odwrotnie, z góry, plac portu, zestaw estakady, zestaw targu, zestaw „port i zajezdnia”: nabrzeże, zajezdnia). `prop` ma pierwszeństwo przed `view`; `yaw=145` pozwala ocenić tył modelu. Nowe stanowiska mają własne ustawienie świateł do zbliżeń. Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.
 
 Wymiary, materiały, budżety i punkty montażu: tabela zestawu aren Przejęcia w `docs/assets.md`. Modele nie dodają aren, pogody ani kolizji; galeria służy do oceny sylwetki, skali i materiałów. Płaskie płyty estakady i kładki oraz komplet 37 plików sprawdza `tests/unit/cityModels.test.ts`.
 
@@ -334,6 +334,20 @@ i −35. Poprzedni plac x 16,5…68,5 nachodził na port x 9…44,4, z ±23.
 Po przesunięciu obwiednie nie przecinają się. `view=3` nadal pokazuje port,
 `view=4` estakadę, `view=5` targ; kadry 4/5 podążają za nowym położeniem.
 Parametr `prop` nadal kadruje rzeczywiste AABB modelu.
+
+Zestaw „port i zajezdnia” (24 modele `port_*` i `rail_*`, `PORT_RAIL_PROP_MODELS`, ADR 0011)
+stoi na osobnym placu daleko na północy: x −70…80 m, z −440…−260 m (`SET_ORIGIN` = (0; −330)),
+czyli poza pierścieniami panoramy (r ≤ ok. 170 m) — wieżowce tła nie przecinają statku ani
+suwnicy, a pozostałe widoki go nie widzą (dalej niż płaszczyzna odcięcia 220 m). Południe placu
+to keja i ciemna woda: kontenerowiec złożony z rufy, `port_ship_mid` z kontenerami 40 ft na
+pokrywach, `port_ship_mid_hold` i dziobu, suwnica STS z wysięgnikiem nad statkiem, trap do luki
+w relingu, wagony towarowe i fragment hali (cztery moduły ścian, dwie kratownice). Północ to
+zajezdnia: cztery tory po 9 modułów z kozłami, peron 1,75 m z trzema wiatami przy składzie
+(wagon, otwarty wagon, czoło), osobne czoło na drugim torze, słupy sieci, bramownica, nastawnia,
+obrotnica w otworze placu (model na y = −1,5) i zaspy. `view=6` pokazuje nabrzeże, `view=7`
+zajezdnię; `prop=<nazwa>` kadruje pierwsze wystąpienie. Dziewięć świateł placu (ciepła biel,
+bursztyn, błękit) dołącza do puli `CityLights`. Wymiary i powierzchnie chodzenia:
+`docs/assets.md`, „Zestaw port i zajezdnia”.
 
 Za prawą pierzeją (x 9–44,4 m, z ±23 m, wewnątrz pierwszego pierścienia panoramy) stoi plac portu ze wszystkimi 15 modelami `port_*.glb` (`PORT_PROP_MODELS`): suwnica nad trzema rzędami kontenerów (stosy do 3 warstw), kładka na dwóch stosach 20 ft, wózek podnoszący kontener, maszt oświetleniowy, 11 modułów krawędzi nabrzeża (wierzch na poziomie placu, ciemna woda za nimi) i pachołki. Dodatkowe światła placu (ciepła biel masztu i suwnicy, bursztyn, błękit, fiolet) dołączają do puli `CityLights`. `prop=port_<nazwa>` kadruje pierwsze wystąpienie modelu (np. `prop=port_reach_stacker`, `prop=port_lashing_platform`). Galeria używa wspólnego loadera i `applyStyle`, tak samo jak gra; zastępstwo `PORT_PREVIEW` zostało usunięte. Plac używa `quay_lines`.
 
@@ -347,6 +361,11 @@ metaliczności, szorstkości i udziału w mokrych odbiciach są w walidowanym zo
 barwy lakieru; plac i beton kei używają odpowiednio barw `asphalt` i `concrete`
 aktywnego motywu miasta. Pozostałe materiały portu zachowują biały mnożnik.
 W motywie `white`, przy wyłączonym detalu, również kontenery są białe.
+Materiały zestawu „port i zajezdnia” (`mat_ship_hull_paint`, `mat_ship_deck_steel`,
+`mat_rail_ballast`, `mat_rail_sleeper_concrete`, `mat_maglev_body_panel`, `mat_snow`) są
+w `urbanKinds` jako `portRailKinds` z danymi w `src/data/render/portRailMaterials.json`:
+płaska barwa zastępcza (`tint`) i nazwa tekstury równa nazwie rodzaju. Plików tekstur jeszcze
+nie ma — do ich dodania shader używa wzoru zastępczego i ostrzega raz na teksturę.
 Wspólny shader miejski zachowuje rzut trójplanarny, brud, relief, sterowanie
 detalem oraz `weatherGloss` profilu pogody; `syncMaterials` zachowuje ten wygląd.
 

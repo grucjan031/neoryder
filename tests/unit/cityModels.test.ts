@@ -1,9 +1,22 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { Box3, Mesh, MeshStandardMaterial, Vector3 } from 'three';
+import {
+  Box3,
+  Mesh,
+  MeshStandardMaterial,
+  Raycaster,
+  SRGBColorSpace,
+  Vector3,
+} from 'three';
+import type { Color, Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { expect, it } from 'vitest';
-import { CITY_PROP_MODELS } from '../../src/scenes/cityPropsTest';
+import { describe, expect, it } from 'vitest';
+import {
+  CITY_PROP_MODELS,
+  PORT_PROP_MODELS,
+  PORT_RAIL_PROP_MODELS,
+} from '../../src/scenes/cityPropsTest';
+import { urbanKinds } from '../../src/render/urbanMaterials';
 
 const folder = join(__dirname, '../../public/assets/models/city');
 const colliders = {
@@ -313,4 +326,425 @@ it.each(names)('%s: geometria, paleta, budżet i montaż GLB', async (name) => {
       ).toBe(true);
     });
   }
+});
+
+// --------------------------------------------------------------------------- zestaw „port i zajezdnia”
+
+/** Płaska powierzchnia chodzenia: wysokość i prostokąt XZ sprawdzany promieniami z góry. */
+interface Walk {
+  y: number;
+  x: readonly [number, number];
+  z: readonly [number, number];
+}
+interface SetSpec {
+  /** AABB X × Y × Z [m], ±5 mm. */
+  size: readonly [number, number, number];
+  budget: number;
+  landmarks: string[];
+  /** Środek AABB w x = z = 0 (inaczej punkt odniesienia opisuje docs/assets.md). */
+  centered: boolean;
+  walk?: readonly Walk[];
+  /** Odcinek, który ma przejść przez model bez trafienia (przejście, prześwit). */
+  clear?: readonly {
+    from: [number, number, number];
+    to: [number, number, number];
+  }[];
+}
+const d = (y: number, x: [number, number], z: [number, number]): Walk => ({
+  y,
+  x,
+  z,
+});
+const setSpecs: Record<string, SetSpec> = {
+  port_ship_bow: {
+    size: [28, 23.2, 32],
+    budget: 3500,
+    landmarks: ['hull', 'deck', 'railing', 'stairs', 'amber_light'],
+    centered: true,
+    walk: [d(12, [-13.9, -11.1], [-13.4, 13.4]), d(13, [-7, 2.5], [-9.5, 9.5])],
+  },
+  port_ship_mid: {
+    size: [30, 13.76, 32],
+    budget: 3500,
+    landmarks: ['hull', 'deck', 'railing', 'deck_light'],
+    centered: true,
+    walk: [
+      d(12.8, [-13.9, -0.9], [-12.9, 12.9]),
+      d(12.8, [0.9, 13.9], [-12.9, 12.9]),
+      d(12, [-14.9, 14.9], [13.15, 15.4]),
+      d(12, [-14.9, 14.9], [-15.4, -13.15]),
+      d(12, [-0.7, 0.7], [-12.9, 12.9]),
+      d(12, [14.05, 14.95], [-12.9, 12.9]),
+    ],
+    // Luka w relingu na trap (x −1,2…1,2) po obu burtach.
+    clear: [
+      { from: [0, 12.6, 17], to: [0, 12.6, 14] },
+      { from: [0, 12.6, -17], to: [0, 12.6, -14] },
+    ],
+  },
+  port_ship_mid_hold: {
+    size: [30, 13.76, 32],
+    budget: 3500,
+    landmarks: ['hull', 'deck', 'hold_lining', 'stairs', 'railing'],
+    centered: true,
+    walk: [
+      d(3, [-13.3, 13.3], [-10.9, 12.1]),
+      d(12, [-14.9, 14.9], [13.15, 15.4]),
+      d(12, [-14.9, 14.9], [-15.4, -13.15]),
+      d(12, [14.05, 14.95], [-12.5, 12.5]),
+      d(12, [5.45, 6.75], [-15.4, -11.25]),
+    ],
+  },
+  port_ship_stern: {
+    size: [30, 34.252, 32],
+    budget: 4000,
+    landmarks: [
+      'hull',
+      'railing',
+      'stairs',
+      'bridge_windows',
+      'lifeboat',
+      'deck_light',
+    ],
+    centered: true,
+    walk: [
+      d(12.8, [4.5, 13.9], [-12.9, 12.9]),
+      d(12, [-5.4, 3.1], [-15.4, -10.3]),
+      d(12, [-5.4, 3.1], [11.5, 15.4]),
+      ...[15, 18, 21].flatMap((y) => [
+        d(y, [2.1, 3.05], [-10, 10]),
+        d(y, [-5.4, 1.9], [9.1, 10.05]),
+        d(y, [-5.4, 1.9], [-10.05, -9.1]),
+      ]),
+      d(24, [-0.4, 2.3], [-14.5, -10.1]),
+      d(24, [-0.4, 2.3], [10.1, 14.5]),
+      d(27, [-2.5, 2.3], [-9.8, 9.8]),
+    ],
+  },
+  port_sts_crane: {
+    size: [96, 59.35, 24.8],
+    budget: 4000,
+    landmarks: [
+      'frame',
+      'machinery_house',
+      'cabin',
+      'spreader',
+      'floodlight',
+      'warning_light',
+    ],
+    centered: false,
+  },
+  port_gangway: {
+    size: [28, 13.15, 2.3],
+    budget: 1500,
+    landmarks: ['frame', 'railing', 'landing_lamp'],
+    centered: true,
+    walk: [d(12, [12.05, 13.8], [-0.9, 0.9])],
+  },
+  port_freight_boxcar: {
+    size: [14, 4.2, 3],
+    budget: 1500,
+    landmarks: ['body', 'underframe', 'roof', 'ladder'],
+    centered: true,
+    walk: [d(4.2, [-6.5, 6.5], [-1.4, 1.4])],
+  },
+  port_freight_boxcar_open: {
+    size: [14, 4.2, 3],
+    budget: 1500,
+    landmarks: ['body', 'underframe', 'roof', 'floor', 'ceiling_lamp'],
+    centered: true,
+    walk: [
+      d(4.2, [-6.5, 6.5], [-1.4, 1.4]),
+      d(1.2, [-6.3, 4.2], [-1.25, 1.25]),
+    ],
+    clear: [{ from: [0, 2.2, 3], to: [0, 2.2, -3] }],
+  },
+  port_flatcar: {
+    size: [14, 3.791, 3],
+    budget: 2000,
+    landmarks: ['deck', 'underframe', 'container_navy', 'container_ochre'],
+    centered: true,
+    walk: [
+      d(3.791, [-5.9, -0.35], [-1.15, 1.15]),
+      d(3.791, [0.35, 5.9], [-1.15, 1.15]),
+    ],
+  },
+  port_warehouse_shell_panel: {
+    size: [6, 10, 0.73],
+    budget: 800,
+    landmarks: ['cladding', 'window', 'column', 'plinth', 'wall_light'],
+    centered: false,
+  },
+  port_warehouse_roof_truss: {
+    size: [30, 3.3, 6],
+    budget: 1500,
+    landmarks: ['truss', 'purlin', 'lamp_lens'],
+    centered: true,
+  },
+  rail_track_straight: {
+    size: [12, 1, 4.6],
+    budget: 800,
+    landmarks: ['ballast', 'sleeper', 'guide_strip'],
+    centered: true,
+    walk: [d(1, [-5.9, 5.9], [-0.75, 0.75])],
+  },
+  rail_track_buffer: {
+    size: [4, 3, 4.6],
+    budget: 800,
+    landmarks: ['ballast', 'frame', 'buffer', 'warning_lamp'],
+    centered: true,
+  },
+  rail_maglev_car: {
+    size: [25, 4.1, 4],
+    budget: 1500,
+    landmarks: ['body', 'windows', 'led_stripe', 'skids', 'door_light'],
+    centered: true,
+    walk: [d(4.1, [-12, 12], [-1.5, 1.5])],
+  },
+  rail_maglev_car_open: {
+    size: [25, 4.1, 4],
+    budget: 1500,
+    landmarks: ['body', 'windows', 'seats', 'lights', 'skids'],
+    centered: true,
+    walk: [d(4.1, [-12, 12], [-1.5, 1.5]), d(1.1, [-11.9, 11.9], [-1.3, 1.3])],
+    clear: [
+      { from: [6.25, 2.2, 3], to: [6.25, 2.2, -3] },
+      { from: [-6.25, 2.2, 3], to: [-6.25, 2.2, -3] },
+    ],
+  },
+  rail_maglev_head: {
+    size: [27, 4.1, 4],
+    budget: 1500,
+    landmarks: ['body', 'windows', 'led_stripe', 'lights', 'skids'],
+    centered: true,
+    walk: [d(4.1, [-13, 5.3], [-1.5, 1.5])],
+  },
+  rail_catenary_mast: {
+    size: [0.7, 8, 3.954],
+    budget: 400,
+    landmarks: ['mast', 'foundation', 'lamp_lens'],
+    centered: false,
+  },
+  rail_signal_gantry: {
+    size: [1.4, 7, 23.2],
+    budget: 1500,
+    landmarks: [
+      'truss',
+      'signal_head',
+      'lamp_green',
+      'lamp_amber',
+      'lamp_white',
+    ],
+    centered: true,
+    // Prześwit nad czterema torami (z = ±2,5 i ±7,5, pas ±1,6 m) do wysokości 4,9 m.
+    clear: [-7.5, -2.5, 2.5, 7.5].flatMap((z) =>
+      [-1.6, 1.6].map((dz) => ({
+        from: [-3, 4.9, z + dz] as [number, number, number],
+        to: [3, 4.9, z + dz] as [number, number, number],
+      })),
+    ),
+  },
+  rail_control_tower: {
+    size: [10.6, 14, 8.4],
+    budget: 2500,
+    landmarks: ['shaft', 'cab_glass', 'gallery', 'railing', 'beacon'],
+    centered: false,
+    walk: [
+      d(10, [-4, 4], [3.05, 4.05]),
+      d(10, [-4, 4], [-4.05, -3.05]),
+      d(10, [3.05, 4.05], [-2.9, 2.9]),
+      d(10, [-4.1, -3.05], [-2.9, 2.9]),
+      d(10, [-6.3, -4.25], [1.4, 2.35]),
+    ],
+  },
+  rail_platform_canopy: {
+    size: [12, 3.99, 6.16],
+    budget: 1000,
+    landmarks: ['column', 'roof', 'bench', 'board_screen', 'led_line'],
+    centered: true,
+  },
+  rail_turntable: {
+    size: [24, 4.32, 24],
+    budget: 2000,
+    landmarks: ['rim', 'bridge', 'guide_beam', 'cabin', 'amber_light'],
+    centered: true,
+    walk: [
+      d(1.5, [-11.3, 11.3], [11.4, 11.9]),
+      d(1.5, [-10.6, 10.6], [0.9, 2]),
+      d(1.5, [-10.6, 10.6], [-2, -0.9]),
+      d(2.5, [-10.7, 10.7], [-0.75, 0.75]),
+      d(0, [-7, -3], [3, 7]),
+    ],
+  },
+  rail_snow_drift: {
+    size: [3, 0.45, 2.694],
+    budget: 300,
+    landmarks: ['snow'],
+    centered: true,
+  },
+  rail_snow_drift_long: {
+    size: [8, 0.35, 1.796],
+    budget: 300,
+    landmarks: ['snow'],
+    centered: true,
+  },
+  rail_snow_drift_patch: {
+    size: [2.6, 0.18, 1.944],
+    budget: 300,
+    landmarks: ['snow'],
+    centered: true,
+  },
+};
+const setNames = Object.keys(setSpecs);
+/** Materiały rozpoznawane przez rejestr gry (src/render/materials.ts). */
+const known = new Set([
+  ...urbanKinds.map((kind) => `mat_${kind}`),
+  ...Object.keys(glowColors),
+]);
+
+/** Barwy zarezerwowane (ADR 0006): czerwień wrogów, cyan gracza, magenta Rezonansu. */
+function reserved(color: Color): boolean {
+  const hsl = { h: 0, s: 0, l: 0 };
+  color.getHSL(hsl, SRGBColorSpace);
+  const hue = hsl.h * 360;
+  if (hsl.s < 0.35 || hsl.l < 0.08) return false;
+  return (
+    hue < 15 ||
+    hue >= 345 ||
+    (hue >= 170 && hue <= 200) ||
+    (hue >= 285 && hue <= 335)
+  );
+}
+
+async function loadSet(name: string): Promise<Object3D> {
+  const file = readFileSync(join(folder, `${name}.glb`));
+  const gltf = await new GLTFLoader().parseAsync(
+    file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength),
+    '',
+  );
+  gltf.scene.updateMatrixWorld(true);
+  return gltf.scene;
+}
+
+describe('zestaw „port i zajezdnia”', () => {
+  it('folder i galeria zawierają komplet 24 modeli zestawu', () => {
+    expect([...PORT_RAIL_PROP_MODELS].sort()).toEqual([...setNames].sort());
+    const oldPort: readonly string[] = PORT_PROP_MODELS;
+    const files = readdirSync(folder).filter(
+      (file) =>
+        file.startsWith('rail_') ||
+        (file.startsWith('port_') &&
+          !oldPort.includes(file.replace('.glb', ''))),
+    );
+    expect(files.sort()).toEqual(setNames.map((n) => `${n}.glb`).sort());
+  });
+
+  it.each(setNames)(
+    '%s: materiały, emisja, budżet, AABB i powierzchnie chodzenia',
+    async (name) => {
+      const spec = setSpecs[name]!;
+      const scene = await loadSet(name);
+      let triangles = 0;
+      scene.traverse((node) => {
+        if (!(node instanceof Mesh)) return;
+        triangles +=
+          (node.geometry.index?.count ??
+            node.geometry.getAttribute('position').count) / 3;
+        const used = Array.isArray(node.material)
+          ? node.material
+          : [node.material];
+        for (const mat of used) {
+          expect(mat).toBeInstanceOf(MeshStandardMaterial);
+          if (!(mat instanceof MeshStandardMaterial)) continue;
+          expect(known.has(mat.name), mat.name).toBe(true);
+          expect(mat.map).toBeNull();
+          expect(reserved(mat.color), `${mat.name} kolor`).toBe(false);
+          const glow = glowColors[mat.name];
+          if (glow === undefined)
+            expect(mat.emissive.getHex(), mat.name).toBe(0);
+          else {
+            expect(mat.emissive.getHex(), mat.name).toBe(glow);
+            expect(reserved(mat.emissive), `${mat.name} emisja`).toBe(false);
+          }
+        }
+      });
+      expect(triangles).toBeGreaterThan(0);
+      expect(triangles).toBeLessThanOrEqual(spec.budget);
+      expect(scene.getObjectByName(name)).toBeDefined();
+      for (const landmark of spec.landmarks)
+        expect(scene.getObjectByName(landmark), landmark).toBeDefined();
+      expect(
+        existsSync(
+          join(__dirname, `../../tools/blender/previews/city/${name}.png`),
+        ),
+      ).toBe(true);
+
+      const box = new Box3().setFromObject(scene, true);
+      const size = box.getSize(new Vector3()).toArray();
+      expect(box.min.y).toBeCloseTo(0, 3);
+      spec.size.forEach((expected, axis) =>
+        expect(size[axis], `oś ${axis}`).toBeCloseTo(expected, 2),
+      );
+      if (spec.centered) {
+        expect((box.min.x + box.max.x) / 2).toBeCloseTo(0, 2);
+        expect((box.min.z + box.max.z) / 2).toBeCloseTo(0, 2);
+      }
+      if (name.startsWith('rail_snow_drift'))
+        expect(size[1]).toBeLessThanOrEqual(0.6);
+
+      const ray = new Raycaster();
+      for (const { y, x, z } of spec.walk ?? []) {
+        // Promień z 1,9 m nad powierzchnią (wzrost gracza): wyżej mogą być stropy galerii.
+        for (let i = 0; i <= 6; i++)
+          for (let j = 0; j <= 4; j++) {
+            const px = x[0] + ((x[1] - x[0]) * i) / 6;
+            const pz = z[0] + ((z[1] - z[0]) * j) / 4;
+            ray.set(new Vector3(px, y + 1.9, pz), new Vector3(0, -1, 0));
+            ray.far = 10;
+            const hit = ray.intersectObject(scene, true)[0];
+            const at = `${name} y=${y} (${px.toFixed(2)}, ${pz.toFixed(2)})`;
+            expect(hit, at).toBeDefined();
+            expect(hit!.point.y, at).toBeCloseTo(y, 3);
+          }
+      }
+      for (const { from, to } of spec.clear ?? []) {
+        const a = new Vector3(...from);
+        const dir = new Vector3(...to).sub(a);
+        ray.set(a, dir.clone().normalize());
+        ray.far = dir.length();
+        const hit = ray.intersectObject(scene, true)[0];
+        expect(
+          hit,
+          `${name}: przeszkoda ${from.join()} → ${to.join()}`,
+        ).toBeUndefined();
+      }
+    },
+  );
+
+  it('trap: płaska rampa 26 m biegu i 12 m wzniosu (24,78°) do podestu', async () => {
+    const scene = await loadSet('port_gangway');
+    const ray = new Raycaster();
+    for (let i = 0; i <= 10; i++) {
+      const x = -13.4 + (24.8 * i) / 10;
+      for (const z of [-0.9, 0, 0.9]) {
+        const expected = ((x + 14) * 12) / 26;
+        ray.set(new Vector3(x, expected + 1.5, z), new Vector3(0, -1, 0));
+        const hit = ray.intersectObject(scene, true)[0];
+        expect(hit, `x=${x}`).toBeDefined();
+        expect(hit!.point.y).toBeCloseTo(expected, 3);
+      }
+    }
+  });
+
+  it('suwnica STS: wolny przejazd 27,6 × 15,6 m między stopami nóg do 17 m', async () => {
+    const scene = await loadSet('port_sts_crane');
+    const ray = new Raycaster();
+    for (let i = 0; i <= 8; i++)
+      for (let j = 0; j <= 4; j++) {
+        const x = -13.8 + (27.6 * i) / 8;
+        const z = -7.8 + (15.6 * j) / 4;
+        ray.set(new Vector3(x, 16.9, z), new Vector3(0, -1, 0));
+        expect(ray.intersectObject(scene, true)[0]).toBeUndefined();
+      }
+  });
 });

@@ -509,6 +509,116 @@ Ręcznie: `?scene=city-props-test&prop=city_overpass_deck` lub dowolna nazwa z t
 `yaw=145` pokazuje tył, `view=3` przegląd estakady, `view=4` targu dachowego.
 Galeria nie symuluje chodzenia ani kolizji; ocenę ruchu zostawiono integracji aren.
 
+### Zestaw „port i zajezdnia” (ADR 0011)
+
+24 modele do dużych aren `arenaContainerPort` (Terminal kontenerowy) i `arenaRailYard`
+(Zajezdnia Maglev): kontenerowiec z segmentów, suwnica nabrzeżowa STS, trap, wagony
+towarowe, moduły hali magazynowej oraz tor maglev, wagony, słup sieci, bramownica
+sygnałowa, nastawnia, wiata, obrotnica i zaspy. Osobny skrypt zestawu
+`tools/blender/sets/port_rail.py` importuje funkcje pomocnicze z `build_assets.py`
+(bez zmian w tym pliku), ma własny rejestr nazw i `--only`. Pliki
+`public/assets/models/city/<nazwa>.glb`, podglądy `tools/blender/previews/city/<nazwa>.png`
+jako arkusz 2 × 2: 3/4 z przodu, 3/4 z tyłu, z daleka na ciemnym tle (landmarki z 150–300 m)
+i zbliżenie szczegółu.
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/sets/port_rail.py
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/sets/port_rail.py -- --only port_ship_mid,rail_turntable --no-preview
+```
+
+Konwencje jak wyżej: metry, glTF Y-up, spód na y = 0, płaskie normalne, jedna siatka na
+materiał (węzły nazwane jak w kolumnie „Węzły” testu). **P** = środek podstawy AABB
+(x = z = 0, spód y = 0). AABB to zmierzony bounding box GLB **X × Y × Z** w metrach.
+Powierzchnie chodzenia są pojedynczymi płaszczyznami na podanej wysokości (prostokąty
+x × z w układzie modelu); test sprawdza je promieniami z 1,9 m nad powierzchnią, więc
+przeszkody niższe od gracza w tych prostokątach są błędem. W kolumnie materiałów pominięto
+prefiks `mat_`.
+
+| Nazwa | AABB X × Y × Z [m] | Punkt odniesienia | Powierzchnie chodzenia | Materiały | Trójkąty / budżet |
+| --- | --- | --- | --- | --- | ---: |
+| `port_ship_bow` | 28,000 × 23,200 × 32,000 | P; złącze z segmentem mid na x = −14, zaokrąglony dziób w +X (x = 14) | pokład główny y = 12: x −14…−11, z ±15,6; pokład dziobowy y = 13: od x = −11 do obrysu dziobu (wolny prostokąt x −7…2,5, z ±9,5; falochron w kształcie V na x −8,8…−7,6, h = 3 m, z ±12); schody 12 → 13 przy obu burtach: 5 × 0,2 m, stopień 0,3 m, pierwszy podstopień x = −12,2, z ±(13,6…15,5) | ship_hull_paint, ship_deck_steel, steel_grating, metal, trim, paint, machine, hivis, cable, light_white, neon_amber, neon_green | 1830 / 3500 |
+| `port_ship_mid` | 30,000 × 13,760 × 32,000 | P; złącza x = ±15 | pokrywy luków y = 12,8: x −14…−0,8 i 0,8…14, z ±13 (stosy 40 ft wzdłuż X, 10 rzędów, środki z = −10,97 + 2,438·i); pokład y = 12: chodniki burtowe z ±(13…15,6), pasy poprzeczne x −15…−14, −0,8…0,8 i 14…15 (z ±13); reling z = ±15,75 (1,1 m) z luką na trap x −1,2…1,2 po obu burtach | ship_hull_paint, ship_deck_steel, metal, trim, paint, machine, hazard, light_white, neon_amber | 1584 / 3500 |
+| `port_ship_mid_hold` | 30,000 × 13,760 × 32,000 | P; złącza x = ±15 | dno ładowni y = 3,0: x ±13,6, z ±12,6; zrębnica 0,4 m (wierzch y = 12,8, zewnętrznie x ±14, z ±13) z przerwą x 5,4…6,8 po −Z; pokład y = 12 jak w mid; schody przy ścianie −Z (z −12,6…−11,2, szer. 1,4 m): 3 biegi × 15 podstopni 0,2 m, stopień 0,3 m, pierwsze podstopnie x = −10,0 / −4,4 / 1,2 na y = 3 / 6 / 9, spoczniki 1,4 m: x −5,8…−4,4 (y 6), −0,2…1,2 (y 9), 5,4…6,8 (y 12, wyjście przez przerwę w zrębnicy); drabiny na ścianie +Z przy x = −6,5 i 8,5 | jak mid + steel_grating, hivis | 2896 / 3500 |
+| `port_ship_stern` | 30,000 × 34,252 × 32,000 | P; złącze x = +15, pawęż x = −15 | pokład y = 12 (wolne chodniki przy nadbudówce x −5,5…3,2: z −15,6…−10,3 i 11,4…15,6); pokrywa luku y = 12,8: x 4,4…14, z ±13; galerie y = 15 / 18 / 21: front x 2,0…3,2 (z ±10,2), boki x −5,5…2,0, z ±(9,0…10,2), parapet 1 m; skrzydła mostka y = 24: x −0,5…2,4, z ±(10…15,6); dach sterówki y = 27: x −5,2…2,6, z ±10,2 (maszt radaru x = −3,5); schody zewnętrzne tylko po +Z: 4 biegi 15 × 0,2 m, stopień 0,25 m, z 10,2…11,4, x −4,0…−0,5 (każdy bieg nad poprzednim), podesty górne x −0,5…0,7, dolne x −5,2…−4,0 | ship_hull_paint, ship_deck_steel, steel_grating, metal, trim, paint, machine, hivis, glass, light_white, neon_white, neon_amber | 3242 / 4000 |
+| `port_sts_crane` | 96,000 × 59,350 × 24,800 | środek między nogami na poziomie szyn: nogi x = ±15 (rozstaw 30 m), z = ±9 (18 m), jazda wzdłuż Z; wysięgnik nad wodą w +X (koniec x = 65, 50 m za nogami od wody), zaplecze do x = −31 | — (przejazd pod portalem wolny 27,6 × 15,6 m do y = 17) | crane_paint, machine, metal, trim, hazard, hivis, lacquer, glass, cable, steel_grating, light_white, neon_amber, neon_green | 2238 / 4000 |
+| `port_gangway` | 28,000 × 13,150 × 2,300 | P; bieg wzdłuż X, statek po +Z | rampa: płaszczyzna od (x −14, y 0) do (x 12, y 12) — bieg 26,0 m, wznios 12,0 m, kąt 24,78° (46,2%), długość 28,64 m, szerokość 2,0 m (z ±1); podest y = 12: x 12…14, z ±1, otwarty od +Z (krawędź z = +1 przykłada się do burty w luce relingu) | steel_grating, metal, hivis, concrete, rubber, neon_amber | 1024 / 1500 |
+| `port_freight_boxcar` | 14,000 × 4,200 × 3,000 | P; długość w X (sprzęgi x ±7), koła na y = 0 (szyna), rozstaw 1,435 m | dach y = 4,2: x ±6,62, z ±1,45 | rust, trim, metal, wood, hivis | 1356 / 1500 |
+| `port_freight_boxcar_open` | 14,000 × 4,200 × 3,000 | P | dach jw.; podłoga y = 1,2: x ±6,45, z ±1,32 (skrzynie i paleta przy x > 4,35); drzwi 3,0 × 2,55 m (x ±1,5, y 1,2…3,75) otwarte po obu stronach — przejście na wylot | jak boxcar + light_white | 1416 / 1500 |
+| `port_flatcar` | 14,000 × 3,791 × 3,000 | P | pokład y = 1,2: x ±6,8, z ±1,38; dachy dwóch kontenerów 20 ft (granat, ochra) y = 3,791: x −6,158…−0,1 i 0,1…6,158, z ±1,219 | wood, trim, metal, hivis, container_navy, container_ochre, cable | 1840 / 2000 |
+| `port_warehouse_shell_panel` | 6,000 × 10,000 × 0,730 | x = 0 środek modułu, spód y = 0; tył (wnętrze hali, słupy) z = 0, blacha falista na zewnątrz w +Z (grzbiety z = 0,45, lampa do 0,73); moduły co 6 m w X, połówki słupów na x = ±3 | — (ściana; cokół 0–1 m, świetliki 7,3–9,0 m) | corrugated, concrete, metal, paint, trim, glass, machine, light_white | 572 / 800 |
+| `port_warehouse_roof_truss` | 30,000 × 3,300 × 6,000 | P; rozpiętość w X, łożyska x = ±15 na y = 0 (wierzch ściany 10 m) | — (pas dolny y 0,6–0,85, górny 2,85–3,1, płatwie do y = 3,3 = spód płyty dachu; moduł pokrywa z ±3, kolejne co 6 m) | metal, trim, machine, light_white | 652 / 1500 |
+| `rail_track_straight` | 12,000 × 1,000 × 4,600 | P; tor wzdłuż X, moduły co 12 m | **wierzch prowadnicy y = 1,000** (półka z ±0,8, stalowe listwy do ±0,83); podsypka do y = 0,3 (wierzch z ±1,7, podstawa ±2,3); podkłady y 0,27–0,42 co 0,75 m (pierwszy x = −5,625); środnik belki z ±0,3, y 0,42–0,8 | rail_ballast, rail_sleeper_concrete, metal, trim | 516 / 800 |
+| `rail_track_buffer` | 4,000 × 3,000 × 4,600 | P; strona toru −X (środek kozła = koniec toru + 2 m), belka do x = 0,4, odbojniki y = 2,0, czoło zderzaków x = −0,4 | — | rail_ballast, rail_sleeper_concrete, hivis, hazard, machine, rubber, metal, trim, neon_amber | 504 / 800 |
+| `rail_maglev_car` | 25,000 × 4,100 × 4,000 | P; długość w X | dach y = 4,1: x ±12,2, z ±1,55 | maglev_body_panel, trim, glass, metal, rubber, neon_blue, neon_amber | 464 / 1500 |
+| `rail_maglev_car_open` | 25,000 × 4,100 × 4,000 | P | dach jw.; podłoga y = 1,1: x ±12,08, z ±1,82, wolny pas z ±1,35 (siedzenia wzdłuż ścian poza drzwiami), sufit y = 3,4; drzwi 1,5 × 2,2 m (x ±(5,5…7,0), y 1,1…3,3) naprzeciw siebie po obu stronach — przejście przez wagon | jak car + fabric, plastic, light_white | 872 / 1500 |
+| `rail_maglev_head` | 27,000 × 4,100 × 4,000 | P; nos w +X (x = 13,5), sprzęg w −X (x = −13,5) | dach y = 4,1: x −13,2…5,5, z ±1,55 (dalej opadający nos) | maglev_body_panel, trim, glass, metal, rubber, neon_blue, neon_amber, light_white | 592 / 1500 |
+| `rail_catenary_mast` | 0,700 × 8,000 × 3,954 | oś słupa (x = z = 0); wysięgnik w +Z do z = 3,6, przewód jezdny y = 5,5 nad z = 3,0 | — | metal, concrete, trim, machine, light_white | 184 / 400 |
+| `rail_signal_gantry` | 1,400 × 7,000 × 23,200 | P; rozpiętość w Z (nogi z = ±11), tory wzdłuż X na z = ±2,5 i ±7,5 (co 5 m); kratownica y 6,2–7,0; głowice dwustronne (±X) na z = −10 / −5 / 0 / 5, spód y = 4,95 | — (prześwit nad torami ±1,6 m do 4,9 m) | metal, concrete, trim, cable, light_white, neon_green, neon_amber | 1128 / 1500 |
+| `rail_control_tower` | 10,600 × 14,000 × 8,400 | oś wieży (x = z = 0); trzon 6 × 6 m do 10 m, kabina 10–13,2 m, dach 13,2–13,6 (±3,6); schody po −X | galeria y = 10,0: pierścień 1,2 m (x i z w ±4,2 poza kabiną ±3), balustrada 1,1 m z przerwą po −X na z 1,35…2,45; schody: pasy A x −6,4…−5,3 i B −5,3…−4,2, 5 biegów × 10 podstopni 0,2 m, stopień 0,3 m (bieg 2,7 m między z = −1,35 a 1,35), naprzemiennie A w +Z i B w −Z, spoczniki 1,1 m na z ±(1,35…2,45) na y = 2 / 4 / 6 / 8, górny y = 10 (z 1,35…2,45) przy galerii | concrete, trim, light_white, glass, steel_grating, hivis, metal, neon_amber | 1974 / 2500 |
+| `rail_platform_canopy` | 12,000 × 3,990 × 6,160 | P; stoi na wierzchu peronu, moduł co 12 m w X (słupy x = ±3) | — (peron to osobny blok areny; przy wagonie maglev wierzch peronu = podłoga wagonu 1,75 m nad spodem toru) | metal, trim, corrugated, wood, glass, machine, light_white, neon_blue, neon_amber, neon_green | 398 / 1000 |
+| `rail_turntable` | 24,000 × 4,320 × 24,000 | P; blok 24 × 24 m, kanał kołowy r = 11 m (śr. 22 m, głębokość 1,5 m) | dno kanału y = 0 (płaskie; szyna jezdna r 10,3–10,5 do y 0,2, filar r 1,2 do 0,3 i czop do 0,55); obrzeże y = 1,5; pomost y = 1,5: x ±10,8, z ±(0,8…2,25); wierzch prowadnicy na moście y = 2,5 (z ±0,8); kabina x 6,5…8,7, z 2,25…4,15 (poza pomostem); postaw model na y = −1,5, wtedy obrzeże i pomost licują z gruntem, a prowadnica z `rail_track_straight` | concrete, hazard, metal, machine, rail_sleeper_concrete, steel_grating, lacquer, trim, glass, neon_amber | 1098 / 2000 |
+| `rail_snow_drift` | 3,000 × 0,450 × 2,694 | P | — (bez kolizji) | snow | 96 / 300 |
+| `rail_snow_drift_long` | 8,000 × 0,350 × 1,796 | P; zaspa wzdłuż X, grzbiet po +Z | — | snow | 120 / 300 |
+| `rail_snow_drift_patch` | 2,600 × 0,180 × 1,944 | P | — | snow | 70 / 300 |
+
+**Składanie.** Kontenerowiec: rufa, dowolna liczba segmentów `port_ship_mid` /
+`port_ship_mid_hold` i dziób, wszystkie wzdłuż X ze środkami odległymi o sumę połówek
+długości (np. rufa x = −45, mid −15, mid_hold 15, dziób 44). Linia wody to y = 0 modelu;
+burta ma 12 m nad nią, więc trap o wzniosie 12 m łączy keję na wysokości linii wody
+z pokładem (inna wysokość kei wymaga innego wzniosu). Suwnica STS stoi wysięgnikiem nad
+wodą — przy statku wzdłuż X trzeba ją obrócić o 90°. Wagony towarowe stoją kołami na y = 0
+(główka szyny), rozstaw 1,435 m. Wagony maglev na torze: y modelu = **0,65 m** nad spodem
+toru — wtedy płozy (y 0–0,5, z ±0,55…1,05) obejmują półkę prowadnicy (spód półki 0,8, wierzch
+1,0), podłoga wagonu jest na 1,75 m, a dach na 4,75 m. Hala 60 × 30 m: 10 modułów ścian na
+dłuższych bokach, 5 na szczytach, kratownice co 6 m na wierzchu ścian (y = 10), płyta dachu
+na y = 13,3; antresola i zamknięcie szczytów nad 10 m (pas 30 × 3,3 m) to bloki areny.
+
+**Kolizje (propozycja dla integracji).** Kadłub segmentów jako prostopadłościany do y = 12
+(mid 30 × 12 × 32 m) i pokrywy 13,2 × 0,8 × 26 m; w ładowni dno na 3,0, ściany boczne
+z ±(12,6…16) i czołowe x ±(13,6…15) do 12, zrębnica 0,4 × 0,8 m; schody i rampy jak
+w tabeli. Suwnica: nogi 1,8 × 39,5 × 1,8 m (y 3–42,5) na (±15, ±9), stopy 2,2 × 0,7 × 2,2,
+wahacze z wózkami 1,4 × 2,3 × 6,8 m (y 0–2,3), belki 31,8 × 2 × 1,4 m na y 17–19.
+Trap: płyta rampy jako obrócony prostopadłościan (24,78°), poręcze osobno, wieża pod
+podestem 2 × 11,45 × 1,9 m. Bramownica: nogi 1,0 × 7 × 0,5 m na z = ±11. Zaspy bez kolizji.
+
+Nowe powierzchnie (`mat_<idTekstury>`) są zarejestrowane w grze w
+`src/data/render/portRailMaterials.json` (`portRailKinds` w `src/render/urbanMaterials.ts`)
+z płaską barwą zastępczą; tekstur `public/assets/textures/surfaces/<id>.webp` jeszcze nie ma
+(gra pisze jedno ostrzeżenie „Brak tekstury” na teksturę i używa wzoru zastępczego).
+
+| Materiał | Tekstura (surfaces) | Barwa zastępcza / podgląd |
+| --- | --- | --- |
+| `mat_ship_hull_paint` | `ship_hull_paint` | `#2f3a4d` |
+| `mat_ship_deck_steel` | `ship_deck_steel` | `#434d4c` |
+| `mat_rail_ballast` | `rail_ballast` | `#57544f` |
+| `mat_rail_sleeper_concrete` | `rail_sleeper_concrete` | `#6b717b` |
+| `mat_maglev_body_panel` | `maglev_body_panel` | `#4b586c` |
+| `mat_snow` | `snow` (spoza listy planowanych tekstur) | `#c8d2e0` — biel lekko błękitna, matowa (roughness 0,95) |
+
+Pozostałe materiały to istniejące nazwy miasta i portu. Światła tylko ciepła biel
+(`light_white`, `neon_white` — okna mostka), bursztyn, zieleń (światło burtowe, lampka
+kabiny, sygnały) i błękit (pasy LED wagonów i wiaty); czerwień, cyan i magenta nie występują
+(test sprawdza barwy i emisję). Brak napisów, marek i logotypów: tablica na wiacie i burta
+są puste.
+
+**Uwagi integracyjne.** `RoomScene` i `Arena` traktują jako modele z własnymi materiałami
+tylko bloki z prefiksem `city_` i `port_`; bloki `rail_*` trzeba tam dopisać przy budowie
+zajezdni (dekoracje `decor` działają z każdą nazwą). Stopnie 0,2 m mieszczą się w
+`stepHeight` 0,35 m, rampa trapu 24,78° w `maxSlopeDeg` 45°.
+
+Kontrola: `tests/unit/cityModels.test.ts` (opis „zestaw port i zajezdnia”) sprawdza komplet
+24 plików i wpisów galerii, rozpoznawane materiały, brak zakazanych barw i emisji, budżety,
+AABB, punkt odniesienia, węzły, podglądy, płaskie powierzchnie chodzenia z tabeli, rampę trapu,
+przejście przez otwarte wagony, prześwit pod bramownicą i wolny przejazd pod suwnicą.
+Galeria: `?scene=city-props-test&view=6` (port), `&view=7` (zajezdnia),
+`&prop=<nazwa>` kadruje model.
+
+Po obejrzeniu podglądów poprawiono: ostrzejszą linię wodną dziobu i pełniejszy pokład
+dziobowy, jaśniejszy pas burtowy i pas wodnicy, jaśniejsze pokrywy luków, łódź ratunkową
+zmieszczoną w obrysie rufy, tablicę kozła zwróconą do toru, nieregularne zaspy, szerokość
+wagonu krytego (3,0 m), reflektory czoła maglevu wysunięte z poszycia, nienakładające się
+wierzchy kontenerów na platformie oraz punkt odniesienia modułu ściany (wnętrze z = 0).
+
 ## Uwagi do F1
 
 - Modele to placeholdery w docelowym stylu. Dopracowanie (więcej archetypów, warianty frakcji) w kolejnych fazach.
