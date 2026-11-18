@@ -10,5 +10,14 @@
   "projectileLifetimeS": 2,
   "spreadDeg": 1.1,
   "tags": ["#gun"],
-  "model": "rifle"
+  "model": "rifle",
+  "grip": {
+    "offset": [0.0003, -0.014, 0.032],
+    "pose": "gripRifle",
+    "firePose": "gripRifleFire",
+    "support": {
+      "offset": [0.0165, 0.0024, 0.0001],
+      "pose": "supportRifle"
+    }
+  }
 }

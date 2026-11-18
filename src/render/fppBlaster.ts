@@ -22,6 +22,10 @@ import type { Settings } from '../core/save';
 import { applyStyle, getMaterial } from './materials';
 import { palette } from './palette';
 import { HandRig } from './handRig';
+import { isHandPose } from './handPoses';
+import type { HandPose } from './handPoses';
+import { weaponGripOfModel } from '../combat/weapons/weaponSchema';
+import type { WeaponGrip } from '../combat/weapons/weaponSchema';
 import {
   applyFppSurfaces,
   fppGlowMaterial,
@@ -58,6 +62,38 @@ const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;
 const RECOIL_RECOVER = 14;
 const FALLBACK_MODEL = 'blaster';
+
+/** Chwyt dłoni dla bieżącego modelu: macierze gniazd w układzie broni i pozy palców. */
+interface ResolvedGrip {
+  hand: Matrix4;
+  pose: HandPose;
+  firePose: HandPose;
+  support: Matrix4 | null;
+  supportPose: HandPose;
+}
+
+function gripMatrix(offset: readonly number[], rotation?: readonly number[]) {
+  const [x = 0, y = 0, z = 0] = offset;
+  const [rx = 0, ry = 0, rz = 0] = rotation ?? [];
+  return new Matrix4()
+    .makeRotationFromEuler(new Euler(rx, ry, rz, 'XYZ'))
+    .setPosition(x, y, z);
+}
+
+function resolveGrip(grip: WeaponGrip | undefined): ResolvedGrip {
+  const pose = (name: string | undefined, fallback: HandPose): HandPose =>
+    name !== undefined && isHandPose(name) ? name : fallback;
+  return {
+    hand: grip ? gripMatrix(grip.offset, grip.rotation) : new Matrix4(),
+    pose: pose(grip?.pose, 'gripGun'),
+    firePose: pose(grip?.firePose, 'gripGunFire'),
+    support: grip?.support
+      ? gripMatrix(grip.support.offset, grip.support.rotation)
+      : null,
+    supportPose: pose(grip?.support?.pose, 'support'),
+  };
+}
+const DEFAULT_GRIP = resolveGrip(undefined);
 const FLASH_POINTS = 8;
 const FLASH_INNER = 0.3;
 /** Ciepło: cyan -> biel rozgrzanego metalu (czerwień jest zarezerwowana dla wrogów). */
@@ -136,6 +172,8 @@ export class FppBlaster {
   private readonly modelOf: (weaponId: string) => string | undefined;
   private loadModels = false;
   private current: Object3D | null = null;
+  private grip: ResolvedGrip = DEFAULT_GRIP;
+  private readonly grips = new Map<string, ResolvedGrip>();
   private wanted = FALLBACK_MODEL;
   private heat = 0;
   private overheated = false;
@@ -188,9 +226,12 @@ export class FppBlaster {
 
   private async show(name: string): Promise<void> {
     if (!this.loadModels) return;
+    let shown = name;
     let model = await this.fetchModel(name);
-    if (!model && name !== FALLBACK_MODEL)
+    if (!model && name !== FALLBACK_MODEL) {
       model = await this.fetchModel(FALLBACK_MODEL);
+      shown = FALLBACK_MODEL;
+    }
     if (
       this.disposed ||
       name !== this.wanted ||
@@ -199,6 +240,16 @@ export class FppBlaster {
     )
       return;
     this.setCurrent(model);
+    this.grip = this.gripOf(shown);
+  }
+
+  private gripOf(name: string): ResolvedGrip {
+    let grip = this.grips.get(name);
+    if (!grip) {
+      grip = resolveGrip(weaponGripOfModel(name));
+      this.grips.set(name, grip);
+    }
+    return grip;
   }
 
   private setCurrent(model: Object3D): void {
@@ -331,8 +382,8 @@ export class FppBlaster {
     m.compose(v, q, s);
     this.root.matrix.multiplyMatrices(cameraMatrix, m);
     this.root.matrixWorldNeedsUpdate = true;
-    this.hand.setPose('gripGun', 'gripGunFire', recoil);
-    this.hand.placeAt(m.identity(), 'socket_gun');
+    this.hand.setPose(this.grip.pose, this.grip.firePose, recoil);
+    this.hand.placeAt(this.grip.hand, 'socket_gun');
 
     const flash = this.current ? this.flashes.get(this.current) : undefined;
     if (flash) {
@@ -366,7 +417,13 @@ export class FppBlaster {
         .multiply(this.tmp.m.makeTranslation(0, 0, TWO_HAND_SUPPORT_FORWARD))
         .multiply(this.tmp.m.makeRotationY(TWO_HAND_SUPPORT_YAW))
         .multiply(this.tmp.m.makeRotationX(TWO_HAND_SUPPORT_PITCH));
+    if (this.grip.support) matrix.multiply(this.grip.support);
     return matrix;
+  }
+
+  /** Poza palców dłoni podpierającej dla bieżącego modelu. */
+  get supportPose(): HandPose {
+    return this.grip.supportPose;
   }
 
   dispose(): void {

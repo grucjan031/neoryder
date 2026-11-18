@@ -102,6 +102,7 @@ export class FppViewModel {
       shown,
       this.definition.offhand,
       this.blaster.supportMatrix(),
+      this.blaster.supportPose,
     );
     this.offhand.root.visible &&= visible;
     applyViewmodelLayer(this.root);

@@ -4,6 +4,7 @@ import type { HeldKind } from '../combat/heldItem';
 import { tuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
 import { HandRig } from './handRig';
+import type { HandPose } from './handPoses';
 
 // Układ kamery, metry i radiany YXZ: spoczynek poza dolną krawędzią kadru; gest wnętrzem dłoni do przodu.
 const REST = {
@@ -50,6 +51,7 @@ export class FppOffhand {
     shown: HeldKind,
     twin: boolean,
     support: Matrix4 | null = null,
+    supportPose: HandPose = 'support',
   ): void {
     this.enabled = shown !== 'blade' || !twin;
     if (!this.enabled) this.elapsed = Infinity;
@@ -69,7 +71,7 @@ export class FppOffhand {
         ? 1 - (1 - t / peak) ** 2
         : (1 - (t - peak) / (1 - peak)) ** 2
       : 0;
-    const basePose = shown === 'gun' ? 'support' : 'relaxed';
+    const basePose = shown === 'gun' ? supportPose : 'relaxed';
     this.rig.setPose(basePose, 'open', amount);
     if (shown === 'gun' && support) {
       this.base

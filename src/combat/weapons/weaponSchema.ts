@@ -1,5 +1,30 @@
 import { z } from 'zod';
 
+const vec3 = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
+const poseName = z.string().min(1);
+
+/**
+ * Chwyt dłoni dopasowany do modelu broni (tylko widok FPP). `offset` i `rotation`
+ * (rad, Euler XYZ) to położenie gniazda dłoni w układzie modelu broni (m, osie glTF):
+ * prawa dłoń — `socket_gun` względem korzenia modelu; dłoń podpierająca —
+ * `socket_support` względem macierzy węzła `support` (po stałych dwuręcznych).
+ * Nazwy póz pochodzą z `src/data/hands/handPoses.json`.
+ */
+export const weaponGripSchema = z.strictObject({
+  offset: vec3,
+  rotation: vec3.optional(),
+  pose: poseName,
+  firePose: poseName,
+  support: z
+    .strictObject({ offset: vec3, rotation: vec3.optional(), pose: poseName })
+    .optional(),
+});
+export type WeaponGrip = z.infer<typeof weaponGripSchema>;
+
 const weaponFields = {
   id: z.string().min(1),
   name: z.string().min(1),
@@ -8,6 +33,8 @@ const weaponFields = {
   model: z.string().min(1).optional(),
   /** FOV w celowaniu jako ułamek bazowego (domyślnie `tuning.player.aim.fovScale`). */
   aimFovScale: z.number().finite().min(0.2).max(1).optional(),
+  /** Chwyt prawej i podpierającej dłoni dla modelu FPP; brak = chwyt domyślny. */
+  grip: weaponGripSchema.optional(),
   statuses: z
     .array(
       z.object({
@@ -101,4 +128,11 @@ export const blasterDefinition = loadedBlaster;
 
 export function weaponModelOf(id: string): string | undefined {
   return weaponDefinitions.get(id)?.model;
+}
+
+/** Chwyt dla nazwy modelu FPP (pierwsza broń z tym modelem i polem `grip`). */
+export function weaponGripOfModel(model: string): WeaponGrip | undefined {
+  for (const definition of weaponDefinitions.values())
+    if (definition.model === model && definition.grip) return definition.grip;
+  return undefined;
 }

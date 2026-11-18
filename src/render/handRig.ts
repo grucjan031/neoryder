@@ -15,51 +15,56 @@ import { fppMaterial, surfaceFor } from './fppMaterials';
 import { bladeGrip, handNodes, handPoses } from './handPoses';
 import type { HandPose, HandSocket } from './handPoses';
 
-// Przybliżona geometria zastępcza i położenia przegubów zgodne z osiami GLB (metry).
+// Przybliżona geometria zastępcza; przeguby i gniazda w tych samych miejscach co w GLB (metry,
+// układ roota dłoni; build_player_arm w tools/blender/build_assets.py).
 const FINGERS = [
   {
     name: 'index',
-    x: 0.029,
-    z: -0.1,
-    lengths: [0.041, 0.025, 0.023],
-    spread: -0.045,
+    x: 0.03,
+    z: -0.09,
+    lengths: [0.041, 0.026, 0.021],
+    spread: -0.065,
   },
   {
     name: 'middle',
     x: 0.009,
-    z: -0.098,
-    lengths: [0.043, 0.027, 0.025],
-    spread: -0.01,
+    z: -0.095,
+    lengths: [0.045, 0.029, 0.023],
+    spread: -0.012,
   },
   {
     name: 'ring',
     x: -0.012,
-    z: -0.1,
-    lengths: [0.04, 0.025, 0.023],
-    spread: 0.025,
+    z: -0.091,
+    lengths: [0.042, 0.027, 0.022],
+    spread: 0.035,
   },
   {
     name: 'pinky',
     x: -0.031,
-    z: -0.101,
-    lengths: [0.036, 0.021, 0.02],
-    spread: 0.09,
+    z: -0.082,
+    lengths: [0.034, 0.022, 0.018],
+    spread: 0.105,
   },
   {
     name: 'thumb',
-    x: 0.042,
-    z: -0.032,
-    lengths: [0.032, 0.026, 0.022],
+    x: 0.033,
+    z: -0.036,
+    lengths: [0.03, 0.027, 0.023],
     spread: 0,
   },
 ] as const;
 const SOCKETS = {
   socket_blade: { pos: bladeGrip.socketPosition, q: [-0.5, -0.5, 0.5, 0.5] },
+  // Obrót −90° wokół Z, potem −0,05 rad wokół X (jak gun_rotation w generatorze).
   socket_gun: {
-    pos: [0.049, 0.038, -0.12],
-    q: [0, 0, -Math.SQRT1_2, Math.SQRT1_2],
+    pos: [0.04, 0.0425, -0.094],
+    q: [-0.017676, 0.017676, -0.70689, 0.706889],
   },
-  socket_support: { pos: [0, 0.024, -0.108], q: [0, 0.4617486, 0, 0.8870108] },
+  socket_support: {
+    pos: [0.0042, 0.0215, -0.10321],
+    q: [0, 0.4617486, 0, 0.8870108],
+  },
 } as const;
 const GLOW_RADIUS_M = 0.012;
 const cache = new Map<string, Promise<Object3D | null>>();
@@ -128,7 +133,7 @@ function fallbackHand(side: 'R' | 'L'): Group {
       if (i === 0) {
         joint.position.set(
           sign * finger.x,
-          finger.name === 'thumb' ? -0.004 : 0,
+          finger.name === 'thumb' ? 0.008 : 0,
           finger.z,
         );
         joint.rotation.y = finger.spread * sign;
@@ -159,12 +164,12 @@ function fallbackHand(side: 'R' | 'L'): Group {
     palm,
     'resonance_core',
     [0.025, 0.009, 0.025],
-    [0, -0.024, -0.05],
+    [0, -0.028, -0.047],
   );
   core.material = getMaterial('power');
   const center = new Group();
   center.name = 'palm_center';
-  center.position.set(0, 0.024, -0.06);
+  center.position.set(0, 0.018, -0.049);
   center.rotation.x = Math.PI / 2;
   palm.add(center);
   return root;

@@ -4759,6 +4759,52 @@ def attach_hand_item(hand, item, socket_name):
     bpy.context.view_layer.update()
 
 
+def _weapon_grips():
+    """Pole `grip` z danych broni, według nazwy modelu (jak weaponGripOfModel w grze)."""
+    folder = os.path.join(ROOT, "src", "data", "weapons")
+    grips = {}
+    for name in sorted(os.listdir(folder)):
+        with open(os.path.join(folder, name), encoding="utf-8") as source:
+            data = json.load(source)
+        if data.get("model") and data.get("grip"):
+            grips.setdefault(data["model"], data["grip"])
+    return grips
+
+
+def _grip_matrix(offset, rotation=None):
+    """Macierz Three.js: przesunięcie i Euler XYZ (R = Rx Ry Rz), osie glTF -> Blender."""
+    x, y, z = rotation or (0, 0, 0)
+    local = (Matrix.Translation(offset) @ Matrix.Rotation(x, 4, "X") @ Matrix.Rotation(y, 4, "Y")
+             @ Matrix.Rotation(z, 4, "Z"))
+    return HAND_BASIS @ local @ HAND_BASIS.inverted()
+
+
+def _hold_weapon(item, model):
+    """Prawa dłoń na `socket_gun` i dłoń podpierająca na `support`, jak FppBlaster (broń w początku)."""
+    grip = _weapon_grips().get(model, {})
+    bpy.context.view_layer.update()
+    right = build_player_arm("R")
+    hand_pose(right, grip.get("pose", "gripGun"))
+    socket = hand_object(right, "socket_gun").matrix_world.copy()
+    right.matrix_world = item.matrix_world @ _grip_matrix(grip.get("offset", (0, 0, 0)),
+                                                          grip.get("rotation")) @ socket.inverted()
+    support = hand_object(item, "support")
+    two = (HAND_BASIS.inverted() @ support.matrix_world.translation).z < -.15
+    left = build_player_arm("L")
+    hand_pose(left, grip.get("support", {}).get("pose", "support"))
+    socket = hand_object(left, "socket_support").matrix_world.copy()
+    place = support.matrix_world.copy()
+    if two:
+        # TWO_HAND_SUPPORT_FORWARD, _YAW, _PITCH z fppBlaster.ts (osie glTF węzła).
+        place = place @ (HAND_BASIS @ (Matrix.Translation((0, 0, -.08)) @ Matrix.Rotation(-1.4, 4, "Y")
+                                       @ Matrix.Rotation(.8, 4, "X")) @ HAND_BASIS.inverted())
+    if "support" in grip:
+        place = place @ _grip_matrix(grip["support"]["offset"], grip["support"].get("rotation"))
+    left.matrix_world = place @ socket.inverted()
+    bpy.context.view_layer.update()
+    return right, left, two
+
+
 def render_hand_previews():
     for side in ("R", "L"):
         reset_scene()
@@ -4792,48 +4838,48 @@ def render_hand_previews():
             bpy.context.view_layer.update()
             hand_preview("hand_fist_side.png", target=(0, .01, -.06), direction=(1, .1, -.2), span=.22)
             hand_preview("hand_fist_front.png", target=(0, 0, -.08), direction=(.15, -.3, -1), span=.2)
-    for name, builder, pose, socket in (
-        ("blade", build_plasma_blade, "gripBlade", "socket_blade"),
-        ("pistol", build_pistol, "gripGun", "socket_gun"),
-        ("pistol_fire", build_pistol, "gripGunFire", "socket_gun"),
-        ("blaster", build_blaster, "gripGun", "socket_gun"),
-        ("rifle", build_rifle, "gripGun", "socket_gun"),
-    ):
+    reset_scene()
+    right = build_player_arm("R")
+    hand_pose(right, "gripBlade")
+    attach_hand_item(right, build_plasma_blade(), "socket_blade")
+    hand_preview("hand_grip_blade.png", target=(0.01, 0.01, 0.035), direction=(0.9, -0.75, -0.5), span=0.65)
+    hand_preview("hand_grip_blade_inner.png", target=(0, 0.03, -0.1), direction=(-0.4, 1, -0.35), span=0.32)
+
+    # Broń palna: chwyt dopasowany do modelu (pole `grip` w src/data/weapons/*.json), jak FppBlaster.
+    for model, builder in (("pistol", build_pistol), ("blaster", build_blaster), ("rifle", build_rifle),
+                           ("scatter", build_scatter), ("sniper_rifle", build_sniper_rifle),
+                           ("beam", build_beam), ("emp_launcher", build_emp_launcher)):
         reset_scene()
-        right = build_player_arm("R")
-        hand_pose(right, pose)
         item = builder()
-        attach_hand_item(right, item, socket)
-        if name == "rifle":
-            left = build_player_arm("L")
-            hand_pose(left, "support")
-            support = hand_object(item, "support")
-            socket_left = hand_object(left, "socket_support")
-            # Jak FppBlaster.supportMatrix(): TWO_HAND_SUPPORT_FORWARD, _YAW, _PITCH (osie glTF węzła).
-            extra = (Matrix.Translation((0, 0, -.08)) @ Matrix.Rotation(-1.4, 4, "Y")
-                     @ Matrix.Rotation(.8, 4, "X"))
-            left.matrix_world = (support.matrix_world @ (HAND_BASIS @ extra @ HAND_BASIS.inverted())
-                                 @ socket_left.matrix_world.inverted())
-            bpy.context.view_layer.update()
-        hand_preview(f"hand_grip_{name}.png", target=(0.01, 0.01, -0.18 if name == "rifle" else 0.035),
-                     direction=(0.9, -0.75, -0.5), span=0.65 if name != "rifle" else 1.22)
-        if name == "blade":
-            hand_preview("hand_grip_blade_inner.png", target=(0, 0.03, -0.1),
-                         direction=(-0.4, 1, -0.35), span=0.32)
-        if name == "rifle":
-            target = HAND_BASIS.inverted() @ support.matrix_world.translation
-            hand_preview("hand_support_rifle.png", target=target,
-                         direction=(-0.6, 0.9, -0.3), span=0.34)
-        if name == "pistol":
-            hand_preview("hand_grip_pistol_inner.png", target=(0.01, 0.025, -0.08),
-                         direction=(-0.6, 1, -0.5), span=0.30)
-            socket = hand_object(right, "socket_gun")
-            right.matrix_world = (Matrix.Translation(HAND_BASIS @ Vector((0.22, -0.24, -0.45)))
-                                  @ socket.matrix_world.to_quaternion().inverted().to_matrix().to_4x4())
-            bpy.context.view_layer.update()
+        right, left, two = _hold_weapon(item, model)
+        aim = HAND_BASIS.inverted() @ hand_object(right, "palm_center").matrix_world.translation
+        if two:
+            hand_preview(f"hand_grip_{model}.png", target=(0.01, 0.01, -0.18), direction=(0.9, -0.75, -0.5),
+                         span=1.22)
+            target = HAND_BASIS.inverted() @ hand_object(left, "palm_center").matrix_world.translation
+            hand_preview(f"hand_support_{model}.png", target=target, direction=(.9, -.45, .25), span=.30)
+            hand_preview(f"hand_support_{model}_below.png", target=target, direction=(-.4, -1, .35), span=.30)
+        else:
+            hand_preview(f"hand_grip_{model}.png", target=(0.01, 0.01, 0.035), direction=(0.9, -0.75, -0.5),
+                         span=0.65)
+        hand_preview(f"hand_grip_{model}_detail.png", target=aim, direction=(-1, .25, .2), span=.24)
+        if model == "pistol":
+            hand_preview("hand_grip_pistol_inner.png", target=aim, direction=(-0.6, 1, -0.5), span=0.30)
+            hand_pose(right, _weapon_grips()[model]["firePose"])
+            hand_preview("hand_grip_pistol_fire.png", target=aim, direction=(-1, .25, .2), span=.24)
+            hand_pose(right, _weapon_grips()[model]["pose"])
+        # Kadr gry: POSE / TWO_HAND_POSE z fppBlaster.ts (Euler YXZ), kamera 70° 16:9.
+        pos, rot = ((.15, -.27, -.45), (.1, .11, -.15)) if two else ((.23, -.17, -.41), (.08, .15, -.04))
+        frame = HAND_BASIS @ (Matrix.Translation(pos) @ Matrix.Rotation(rot[1], 4, "Y")
+                              @ Matrix.Rotation(rot[0], 4, "X") @ Matrix.Rotation(rot[2], 4, "Z")) @ HAND_BASIS.inverted()
+        for obj in (item, right, left):
+            if obj is not None:
+                obj.matrix_world = frame @ obj.matrix_world
+        bpy.context.view_layer.update()
+        hand_preview(f"hand_fpp_{model}.png", fpp=True)
+        if model == "pistol":
             hand_preview("hand_fpp_view.png", fpp=True)
-            # To samo ustawienie co w grze, z bliska od strony kamery.
-            hand_preview("hand_fpp_view_detail.png", target=(.20, -.25, -.40), direction=(-.2, .25, .45), span=.26)
+            hand_preview("hand_fpp_view_detail.png", target=(.20, -.22, -.40), direction=(-.2, .25, .45), span=.26)
 
     # The same item-space socket and YXZ camera pose as FppBlade, including the mirrored twin.
     for name, builder in (("plasmaBlade", build_plasma_blade),

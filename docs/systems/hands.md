@@ -116,21 +116,74 @@ Dane waliduje zod w `src/render/handPoses.ts`; `FppBlade` używa ich dla
 `plasmaBlade`, `staffBlade` i `twinBlades`. `HandRig` używa tej samej pozycji
 gniazda w modelu zastępczym. Kąty palców pozostają w `handPoses.json`.
 
-Pozy chwytów (`gripBlade`, `gripGun`, `gripGunFire`, `support`, `fist`) dobrano
-pomiarem w Blenderze: palce zamykano staw po stawie do kontaktu z bryłą broni.
-Jedna poza `gripGun` obsługuje pistolet i blaster (chwyt blastera jest o 2 cm
-głębszy): palce obejmują chwyt z luzem do ok. 8 mm na pistolecie i wnikają
-najwyżej ok. 2,5 mm w blaster; wskazujący leży pod kabłąkiem na spuście,
-`gripGunFire` dociąga go. `gripBlade` obejmuje rękojeść `plasmaBlade` (luz
-do 5 mm), w `twinBlades` wnika najwyżej ok. 2 mm. Gniazda broni w GLB:
-`socket_gun` przesunięte tak, by wnętrze dłoni leżało na boku chwytu, a palce
-na przedniej krawędzi (dawniej chwyt był na nasadach palców) —
-`(0.040, 0.0425, -0.094)`; `socket_support` 9,5 mm bliżej dłoni —
-`(0.0042, 0.0215, -0.1032)`. Obroty gniazd, pozy kadru (`POSE`, `TWO_HAND_POSE`,
-`AIM_POSE`, `idlePosition`, `idleRotation`) i czasy animacji są bez zmian.
-Chwyty karabinów (`rifle`, `sniper_rifle`) i `emp_launcher` leżą w modelach
-broni 2,5–5,5 cm od chwytu pistoletu, więc wspólne gniazdo pasuje do nich
-gorzej (prawa dłoń jest tam w większości zasłonięta przez broń).
+Pozy chwytów dobrano pomiarem w Blenderze: dłoń dosuwana wnętrzem do boku
+rękojeści (luz 0,5 mm), palce zamykane staw po stawie do kontaktu, potem lokalny
+szlif kątów. `gripBlade` obejmuje rękojeść `plasmaBlade` (luz do 5 mm), w `twinBlades`
+wnika najwyżej ok. 2 mm.
+
+#### Chwyt dopasowany do broni (pole `grip`)
+
+Każda broń w `src/data/weapons/*.json` ma pole `grip` (schemat `weaponGripSchema`
+w `src/combat/weapons/weaponSchema.ts`):
+
+```json
+"grip": {
+  "offset": [0.0003, -0.014, 0.032],
+  "pose": "gripRifle",
+  "firePose": "gripRifleFire",
+  "support": { "offset": [0.0165, 0.0024, 0.0001], "pose": "supportRifle" }
+}
+```
+
+- `offset` / `rotation` (opcjonalny, rad, Euler XYZ jak Three.js) — położenie gniazda
+  `socket_gun` prawej dłoni w układzie modelu broni (m, osie glTF). `FppBlaster`
+  stawia dłoń `placeAt(M_grip, 'socket_gun')` zamiast w początku modelu.
+- `pose` / `firePose` — pozy z `handPoses.json` dla chwytu i strzału (mieszane
+  odrzutem jak dawniej `gripGun` → `gripGunFire`).
+- `support` — dłoń podpierająca: `offset`/`rotation` gniazda `socket_support`
+  (w pozie dłoni) w układzie macierzy węzła `support` **po** stałych
+  `TWO_HAND_SUPPORT_*` i poza (`supportPose` przekazywana do `FppOffhand`). Brak
+  pola = `support`. Kierunek przedramienia zostaje taki jak bez korekty (łokieć pod
+  dolną krawędzią kadru): dane tylko przesuwają dłoń (do 5 cm wzdłuż łoża i w pionie)
+  i zginają nadgarstek w pozie (kość `wrist`, do 0,3 rad); `rotation` jest wtedy
+  dokładnie kompensacją zgięcia, a nie obrotem ręki. Pilnuje tego test
+  `tests/unit/supportForearm.test.ts`: łokieć (najdalszy narożnik bboxu `plate_bracer`)
+  w kadrze gry (FOV `tuning.camera.fov`, 16:9, spoczynek i celowanie) ma NDC y < −1
+  albo leży w lewym dolnym rogu, a rzut rękawa zajmuje najwyżej 25% szerokości kadru.
+- Chwyt wybiera się po nazwie wyświetlanego modelu (`weaponGripOfModel`), więc zastępczy
+  `blaster.glb` dostaje chwyt blastera; bryła zastępcza bez modelu — chwyt domyślny
+  (gniazdo w początku, `gripGun`/`gripGunFire`, `support`). Nieznana nazwa pozy też
+  wraca do domyślnej; test `weaponGrip.test.ts` pilnuje, by wszystkie istniały.
+
+Pozy: `gripGun`/`gripGunFire` (blaster), `gripPistol`, `gripRifle`, `gripScatter`,
+`gripSniper`, `gripBeam`, `gripEmp` (+ `…Fire`), `supportRifle`, `supportScatter`,
+`supportSniper`, `supportBeam`, `supportEmp`. Pozy kadru (`POSE`, `TWO_HAND_POSE`,
+`AIM_POSE`, `TWO_HAND_SUPPORT_*`), położenie broni w kadrze i ruch są bez zmian —
+przesuwa się tylko dłoń względem broni. Pistolet i blaster mają lewą dłoń pod
+chwytem z pozą `support` (bez zmian).
+
+Wynik pomiaru (mm; ujemne = przenikanie; luz liczony na paliczkach środkowego,
+serdecznego, małego i dystalnym wskazującego oraz `thumb_2/3`):
+
+| Broń           | prawa: min / maks. luz | wskazujący do spustu  | lewa: min / maks. luz |
+| -------------- | ---------------------- | --------------------- | --------------------- |
+| `pistol`       | +0,5 / 2,5             | 2,7                   | —                     |
+| `blaster`      | −0,2 / 2,4             | ok. 7 (pod kabłąkiem) | —                     |
+| `rifle`        | −0,3 / 4,5             | 1,2                   | −0,4 / 14,8           |
+| `scatter`      | −0,9 / 3,2             | 0 (przód chwytu)      | −1,2 / 12,6           |
+| `sniper_rifle` | +0,4 / 3,3             | 1,2                   | −0,5 / 12,0           |
+| `beam`         | −0,4 / 2,6             | 0,9                   | −0,2 / 5,9            |
+| `emp_launcher` | −0,6 / 7,7 (kciuk)     | 10,7 (przód chwytu)   | −0,6 / 9,6            |
+
+Spusty pistoletu i blastera są schowane w kabłąku, a `scatter` i `emp_launcher`
+— w chwycie; wtedy wskazujący leży pod kabłąkiem / na przedniej krawędzi chwytu
+tuż pod komorą. Pozy `…Fire` dociskają wskazujący (chwilowo do ok. 3 mm w bryłę).
+Dłoń podpierająca leży pod łożem z palcami wzdłuż niego i dociśniętymi opuszkami;
+przy zachowanym kierunku przedramienia palce nie owijają łoża w poprzek. Największe
+luzy (lewa kolumna, maks.) są na kciuku (do ok. 15 mm), paliczkach bliższych
+wskazującego i małego (w `scatter` wskazujący do 24 mm, środkowy do 11 mm). Gniazda w GLB: `socket_gun` `(0.040, 0.0425, -0.094)`,
+`socket_support` `(0.0042, 0.0215, -0.1032)`; bryła zastępcza w `handRig.ts`
+ma te same gniazda, `palm_center` i `resonance_core`.
 
 Budowanie: `--only player_arm_L,player_arm_R`; komplet podglądów:
 `--only hand_previews`. W `tools/blender/previews/` pliki
@@ -165,10 +218,11 @@ W locie ostrza prawa dłoń zostaje w spoczynkowym położeniu ostrza z pozą `o
 Podczas całej aktywnej fazy obrotu dwustronnego ostrza dłoń jest ukryta.
 
 Broń palna jest po prawej, przy pozycji `[0.23, -0.17, -0.41]` (`POSE` w `fppBlaster.ts`) w układzie
-kamery. Prawa dłoń używa `socket_gun` i `gripGun`; `weapon_fired` właściciela
-przełącza ją w `gripGunFire`, z powrotem razem z zanikiem odrzutu. Węzeł
-`support` aktualnego modelu broni wyznacza położenie lewej dłoni (`support`,
-`socket_support`). Gdy węzła nie ma, lewa dłoń nie podpiera broni.
+kamery. Prawa dłoń używa `socket_gun` i pozy z pola `grip` bieżącego modelu
+(domyślnie `gripGun`); `weapon_fired` właściciela przełącza ją w pozę strzału,
+z powrotem razem z zanikiem odrzutu. Węzeł `support` aktualnego modelu broni
+(z `grip.support`) wyznacza położenie lewej dłoni (`socket_support`, poza z
+`grip.support.pose`, domyślnie `support`). Gdy węzła nie ma, lewa dłoń nie podpiera broni.
 
 Cały viewmodel jest na osobnej warstwie i rysowany drugim przebiegiem z ściśniętą głębią, więc przedmiot i ręce nie wchodzą w ściany ani wrogów (szczegóły: `docs/systems/render.md`, „Viewmodel zawsze na wierzchu”).
 
