@@ -9,6 +9,7 @@ import type { StatModifier } from '../core/stats';
 import type { EnemyDirectorApi } from './director';
 import type { EnemyDefinition } from './enemySchema';
 import type { GrabTarget } from '../combat/powers/grabTypes';
+import type { DifficultyProfile } from '../world/difficulty';
 
 export type EnemyState =
   | 'idle'
@@ -47,6 +48,8 @@ export interface EnemyCarry {
   defendRangeM: number;
 }
 export interface Enemy {
+  /** Bieżący cel taktyczny (debug i testy symulacji). */
+  tacticalGoal?: Vec3;
   moveGoal?: Vec3;
   setCarry?(carry: EnemyCarry | null): void;
   readonly id: EntityId;
@@ -60,12 +63,14 @@ export interface Enemy {
   dispose(): void;
 }
 export interface EnemyDependencies {
+  difficulty?: DifficultyProfile;
+  targetForward?(): Vec3;
   projectiles?: ProjectileSystem;
   world: World;
   entities: EntityRegistry;
   damage: DamageSystem;
   hurtboxes: Hurtboxes;
-  getTarget(): { id: EntityId; position: Vec3 } | null;
+  getTarget(): { id: EntityId; position: Vec3; yaw?: number } | null;
   getNeighbors?(): readonly Enemy[];
   /** F2-12: tokeny ataku i sloty flankowania; bez dyrektora wróg atakuje jak w F1. */
   director?: EnemyDirectorApi;

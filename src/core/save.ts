@@ -14,6 +14,11 @@ import { runStateSchema } from '../world/run';
 import type { MetaState } from './metaTypes';
 import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';
+import {
+  difficultyIdSchema,
+  registerDifficultySetting,
+  type DifficultyId,
+} from '../world/difficulty';
 
 export const SAVE_VERSION = 6;
 export interface MissionSave extends MissionCheckpoint {
@@ -417,6 +422,8 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
 }
 
 export interface Settings {
+  /** Brak w starym zapisie = normal. */
+  difficulty?: DifficultyId;
   mouseSensitivity: number;
   fov: number;
   masterVolume: number;
@@ -442,6 +449,7 @@ function clampedSetting(range: { min: number; max: number }, fallback: number) {
 }
 
 const settingsSchema = z.object({
+  difficulty: difficultyIdSchema.optional().catch(undefined),
   mouseSensitivity: clampedSetting(SETTINGS_RANGES.mouseSensitivity, 1),
   fov: clampedSetting(SETTINGS_RANGES.fov, 90),
   masterVolume: z.number().min(0).max(1).catch(1),
@@ -510,3 +518,5 @@ export function saveSettings(s: Settings, storage?: Storage): void {
     console.warn('Nie można zapisać ustawień.', error);
   }
 }
+
+registerDifficultySetting(() => loadSettings().difficulty);

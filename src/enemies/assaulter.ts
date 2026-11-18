@@ -14,6 +14,7 @@ import { Stats } from '../core/stats';
 import { CollisionGroup, interactionGroups } from '../physics';
 import type { EnemyDefinition } from './enemySchema';
 import { EnemyBody } from './enemyBody';
+import { clearWorld, playerThreatens } from './tactics';
 import type {
   Enemy,
   EnemyCarry,
@@ -37,6 +38,10 @@ export class Assaulter implements Enemy {
   current: EnemySnapshot;
   removed = false;
   moveGoal?: Vec3;
+  tacticalGoal?: Vec3;
+  private tacticS = 0;
+  private flanking = false;
+  private tacticRetryS = 0;
   private carry: EnemyCarry | null = null;
   private readonly body: EnemyBody;
   private readonly off: (() => void)[] = [];
@@ -91,6 +96,42 @@ export class Assaulter implements Enemy {
     this.updateShield();
     this.previous = copy(this.current);
     this.off.push(
+      ctx.bus.on('melee_swing', ({ attacker, stage }) => {
+        const t = ctx.tuning.enemies;
+        if (
+          stage !== 'heavy' ||
+          attacker !== deps.getTarget()?.id ||
+          !['idle', 'chase', 'telegraph'].includes(this.current.state) ||
+          this.current.controlled ||
+          this.isStunned() ||
+          !playerThreatens(
+            deps,
+            this.id,
+            this.current.position,
+            t.evadeRangeM,
+            t.threatFacingDot,
+          ) ||
+          !this.rng.chance(deps.difficulty?.heavyDodgeChance ?? 0)
+        )
+          return;
+        const target = deps.getTarget()!;
+        const yaw = Math.atan2(
+          this.current.position.x - target.position.x,
+          this.current.position.z - target.position.z,
+        );
+        this.transition('chase');
+        this.tacticalGoal = {
+          x:
+            this.current.position.x +
+            Math.sin(yaw) * this.stats.get('moveSpeed') * t.evadeS,
+          y: this.current.position.y,
+          z:
+            this.current.position.z +
+            Math.cos(yaw) * this.stats.get('moveSpeed') * t.evadeS,
+        };
+        this.tacticS = t.evadeS;
+        this.flanking = false;
+      }),
       ctx.bus.on('damage_dealt', (event) => {
         if (
           event.target !== this.id ||
@@ -240,12 +281,16 @@ export class Assaulter implements Enemy {
   }
 
   private releaseToken(): void {
-    if (this.token) this.deps.director?.releaseToken(this.id);
+    this.deps.director?.releaseToken(this.id);
     this.token = false;
   }
 
   /** Bez dyrektora zawsze true. Z dyrektorem: token prosi wróg w zasięgu krążenia + ciosu. */
-  private engage(distance: number, flank: number): boolean {
+  private engage(distance: number, flank: number, ready = false): boolean {
+    if (this.tacticalGoal) {
+      this.releaseToken();
+      return false;
+    }
     const director = this.deps.director;
     if (!director) return true;
     // Gracz poza zasięgiem krążenia + ciosu albo cios się odnawia: token wraca do kolejki,
@@ -258,6 +303,12 @@ export class Assaulter implements Enemy {
       return false;
     }
     this.token = director.requestToken(this.id, 'melee');
+    if (this.token)
+      this.token =
+        director.requestGroupToken?.(
+          this.id,
+          ready && distance <= this.definition.attackRange + epsilon,
+        ) ?? this.token;
     return this.token;
   }
 
@@ -341,6 +392,17 @@ export class Assaulter implements Enemy {
       return;
     }
     this.cooldown = Math.max(0, this.cooldown - dt);
+    this.tacticS = Math.max(0, this.tacticS - dt);
+    this.tacticRetryS = Math.max(0, this.tacticRetryS - dt);
+    if (
+      this.tacticalGoal &&
+      (this.tacticS <= epsilon ||
+        Math.hypot(
+          this.tacticalGoal.x - s.position.x,
+          this.tacticalGoal.z - s.position.z,
+        ) <= this.ctx.tuning.enemies.tacticArrivalM)
+    )
+      this.tacticalGoal = undefined;
     this.shieldDownS = Math.max(0, this.shieldDownS - dt);
     this.parryCooldownS = Math.max(0, this.parryCooldownS - dt);
     this.holdStun();
@@ -361,6 +423,14 @@ export class Assaulter implements Enemy {
     const dz = target ? target.position.z - s.position.z : 0;
     const distance = Math.hypot(dx, dz);
     const flank = d.flankDistanceM ?? d.attackRange;
+    if (
+      !march &&
+      target &&
+      !this.tacticalGoal &&
+      this.tacticRetryS <= epsilon &&
+      ['idle', 'chase'].includes(s.state)
+    )
+      this.tryFlank(target.position, flank);
     let engaged = true;
     if (s.state === 'stunned') {
       if (s.stateTimeS + epsilon >= this.stunS)
@@ -381,11 +451,11 @@ export class Assaulter implements Enemy {
     } else if (!target) this.transition('idle');
     else {
       if (s.state === 'idle') this.transition('chase');
-      engaged = this.engage(distance, flank);
       const yaw = Math.atan2(dx, dz);
       const delta = Math.atan2(Math.sin(yaw - s.yaw), Math.cos(yaw - s.yaw));
       const turn = ((d.turnRateDegS * Math.PI) / 180) * dt;
       s.yaw += Math.max(-turn, Math.min(turn, delta));
+      engaged = this.engage(distance, flank, Math.abs(delta) <= turn + epsilon);
       if (
         engaged &&
         distance <= d.attackRange + epsilon &&
@@ -408,12 +478,42 @@ export class Assaulter implements Enemy {
         speed = gap / dt;
       }
     } else if (s.state === 'chase' && target) {
-      if (engaged) {
+      if (this.tacticalGoal) {
+        let goal = this.tacticalGoal;
+        if (this.flanking) {
+          this.deps.director?.slot(this.id, 'melee', flank);
+          const angle = Math.atan2(
+            s.position.x - target.position.x,
+            s.position.z - target.position.z,
+          );
+          const end = Math.atan2(
+            goal.x - target.position.x,
+            goal.z - target.position.z,
+          );
+          const delta = Math.atan2(
+            Math.sin(end - angle),
+            Math.cos(end - angle),
+          );
+          const limit =
+            (this.ctx.tuning.enemies.flankArcStepDeg * Math.PI) / 180;
+          const next = angle + Math.max(-limit, Math.min(limit, delta));
+          goal = {
+            x: target.position.x + Math.sin(next) * flank,
+            y: goal.y,
+            z: target.position.z + Math.cos(next) * flank,
+          };
+        }
+        heading = Math.atan2(goal.x - s.position.x, goal.z - s.position.z);
+        speed = Math.hypot(goal.x - s.position.x, goal.z - s.position.z) / dt;
+      } else if (engaged) {
         if (distance > d.attackRange) {
           heading = s.yaw;
           speed = (distance - d.attackRange) / dt;
         }
-      } else {
+      } else if (
+        distance > d.attackRange + epsilon ||
+        !this.deps.difficulty?.groupAttack
+      ) {
         // Bez tokenu: krążenie w slocie dyrektora, twarzą do celu.
         const goal = this.deps.director?.slot(this.id, 'melee', flank) ?? {
           x: target.position.x - (dx / Math.max(distance, epsilon)) * flank,
@@ -513,6 +613,54 @@ export class Assaulter implements Enemy {
         point: position,
       });
     }
+  }
+
+  private tryFlank(target: Vec3, radius: number): void {
+    const partner = this.deps
+      .getNeighbors?.()
+      .find(
+        (enemy) =>
+          enemy.id !== this.id &&
+          ['telegraph', 'swing'].includes(enemy.current.state) &&
+          ['assaulter', 'executor', 'shielder'].includes(enemy.definition.kind),
+      );
+    if (!partner) return;
+    const t = this.ctx.tuning.enemies;
+    this.tacticRetryS = t.tacticRetryS;
+    const ax = partner.current.position.x - target.x,
+      az = partner.current.position.z - target.z;
+    const bx = this.current.position.x - target.x,
+      bz = this.current.position.z - target.z;
+    const length = Math.hypot(ax, az) * Math.hypot(bx, bz);
+    // Z różnych stron już atakujemy poprawnie; nie przerywaj przyznanej pary.
+    if (
+      length <= epsilon ||
+      (ax * bx + az * bz) / length <=
+        Math.cos((t.flankMinDeg * Math.PI) / 180) + epsilon ||
+      !this.rng.chance(this.deps.difficulty?.flankChance ?? 0)
+    )
+      return;
+    const side = this.rng.chance(0.5) ? 1 : -1;
+    const angle =
+      Math.atan2(ax, az) +
+      (side * this.rng.float(t.flankMinDeg, t.flankMaxDeg) * Math.PI) / 180;
+    const goal = {
+      x: target.x + Math.sin(angle) * radius,
+      y: this.current.position.y,
+      z: target.z + Math.cos(angle) * radius,
+    };
+    const lift = this.geometry.centerY;
+    if (
+      !clearWorld(
+        this.deps,
+        { ...this.current.position, y: this.current.position.y + lift },
+        { ...goal, y: goal.y + lift },
+      )
+    )
+      return;
+    this.tacticalGoal = goal;
+    this.flanking = true;
+    this.tacticS = t.flankTimeoutS;
   }
 
   dispose(): void {

@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import {
+  difficultyIdSchema,
+  selectedDifficulty,
+  type DifficultyId,
+  type DifficultyRunState,
+} from './difficulty';
 import { modeIdSchema, selectArena, type ModeId } from './modeSchema';
 import { conquestMode, modeDefinitions } from './modes';
 import type { MissionDefinition } from './missionSchema';
@@ -53,6 +59,7 @@ export interface RunManagerOptions {
 
 /** Opcje startu runu zamrożone w `RunState` (ADR 0007): ekwipunek z kryjówki, talenty, Poziom zagrożenia. */
 export interface NewRunOptions {
+  difficulty?: DifficultyId;
   arenaId?: string;
   modeId?: ModeId;
   mission?: MissionDefinition;
@@ -102,11 +109,13 @@ export const runDamageStatsSchema: z.ZodType<RunDamageStats> = z.object({
 });
 
 export type CheckpointRunState = RunState & {
+  difficulty?: DifficultyId;
   roomCredits?: Record<string, number>;
 };
 
 export const runStateSchema: z.ZodType<CheckpointRunState> = z
   .object({
+    difficulty: difficultyIdSchema.optional(),
     modeId: modeIdSchema.optional(),
     missionId: z.string().min(1).optional(),
     objectives: z
@@ -191,7 +200,7 @@ export class RunManager {
   private readonly now: () => number;
   private readonly sectorIdOverride?: string;
 
-  private currentState: RunState | null = null;
+  private currentState: (RunState & DifficultyRunState) | null = null;
   private roomCredits: Record<string, number> = {};
   private roomEarned = 0;
   private beforeRoom: RunState | null = null;
@@ -374,7 +383,11 @@ export class RunManager {
     if (!Number.isInteger(threatLevel) || threatLevel < 0)
       throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
 
+    const difficulty = difficultyIdSchema.parse(
+      options.difficulty ?? selectedDifficulty(),
+    );
     this.currentState = {
+      ...(difficulty === 'normal' ? {} : { difficulty }),
       ...(options.modeId ? { modeId: options.modeId } : {}),
       ...(options.mission
         ? {

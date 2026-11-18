@@ -24,7 +24,11 @@
   "reserved": "Ten klawisz jest zarezerwowany lub nieobsługiwany. Wybierz inny; Esc anuluje.",
   "unbound": "Brak klawisza",
   "bindingHint": "Nowe przypisanie wygrywa konflikt. Poprzednia akcja wraca do wolnego domyślnego klawisza. Esc i ` są zarezerwowane.",
-  "qualities": { "low": "Niska", "medium": "Średnia", "high": "Wysoka" },
+  "qualities": {
+    "low": "Niska",
+    "medium": "Średnia",
+    "high": "Wysoka"
+  },
   "keys": {
     "Space": "Spacja",
     "ShiftLeft": "Lewy Shift",
@@ -62,5 +66,13 @@
     "bladeThrow": "Rzut ostrzem",
     "map": "Plan stacji",
     "inventory": "Menu ulepszeń (run)"
-  }
+  },
+  "difficulty": "Poziom trudności",
+  "difficulties": {
+    "easy": "Łatwy",
+    "normal": "Normalny",
+    "hard": "Trudny",
+    "nightmare": "Koszmar"
+  },
+  "difficultyHint": "Zmiana działa od następnego runu. Trudny: wrogowie flankują, kryją się i atakują razem."
 }

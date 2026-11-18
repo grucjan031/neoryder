@@ -485,10 +485,11 @@ export class RoomScene implements Scene {
             ? null
             : this.health.dead
               ? null
-              : { id: playerId, position: this.player.getState().position },
+              : { id: playerId, ...this.player.getState() },
       },
       {
         ...(this.layout.director ? { director: this.layout.director } : {}),
+        run: this.run,
         spawnPoints: this.layout.spawnPoints.map((p) => ({
           x: p.x,
           y: 0,
