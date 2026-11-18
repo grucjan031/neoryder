@@ -6,6 +6,7 @@ for (const [arena, weather, points] of [
   ['arenaRooftops', 'drizzleWind', 'ABC'],
   ['arenaPowerPlant', 'ashfall', 'ABCDE'],
   ['arenaConstructionSite', 'clearNight', 'ABCDE'],
+  ['arenaRailYard', 'snow', 'ABCDE'],
 ] as const) {
   test(`Przejęcie: ${arena}, profil ${weather}`, async ({ page }) => {
     const errors: string[] = [];

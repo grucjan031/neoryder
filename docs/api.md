@@ -2098,3 +2098,12 @@ perspektywiczną i przywraca projekcję kamery przy zwalnianiu sceny.
 `arena.water: { shoreZ, y, color }` przekazuje do `SceneAtmosphere` parametry
 kosmetycznej tafli na południe od kei, rozciągniętej do horyzontu bez collidera.
 `RoomScene.render` może otrzymać pozycję i obrót wolnej kamery debug.
+
+### Materiały i generator Zajezdni Maglev
+`BlockMaterial` dopuszcza `rail_ballast`, `rail_sleeper_concrete`,
+`maglev_body_panel`, `snow_asphalt` i `snow_concrete`. Nowe nazwy wskazują
+semantyczne tekstury surfaces, bez zmiany materiałów pozostałych map.
+`ArenaBuilder.point` przyjmuje A–E, zgodnie z istniejącym `capturePointsSchema`.
+`stairs` biblioteki narzędzi przyjmuje opcjonalne `walkable` (domyślnie true).
+False wyłącza powierzchnię i ostrzeżenia AI, zachowując kolizję oraz kontrolę
+limitów schodów gracza.

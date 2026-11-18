@@ -487,4 +487,18 @@ describe('biblioteka generatorów aren', () => {
     expect(decor.map((d) => d.position.x)).toEqual([3, 9, 15, 21]);
     expect(decor.every((d) => d.scale === 1.5)).toBe(true);
   });
+
+  it('schody gracza pomijają tylko ostrzeżenia nawigacji AI', () => {
+    const arena = blank();
+    const result = createPrimitives(arena).stairs({
+      from: vec(0, 0, 0),
+      to: vec(0, 2, 4),
+      width: 2,
+      stepRise: 0.2,
+      stepDepth: 0.4,
+      walkable: false,
+    });
+    expect(result.blocks.every((b) => b.walkable === false)).toBe(true);
+    expect(arena.metadata.warnings).toEqual([]);
+  });
 });

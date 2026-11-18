@@ -142,7 +142,7 @@ tożsamość kolorystyczna, naturalność granic i budżety GPU wymagają review
 Wykrywanie słupów jest heurystyczne i może wskazać cienki komin lub maszt;
 nie ma automatycznego ignorowania takich zgłoszeń.
 
-Ograniczenia zastanego schematu/silnika, pozostawione do pracy integratora:
+Ograniczenia schematu/silnika:
 
 - `room.spawnPoints` są XZ i walidator pokoju sprawdza je na wysokości startu
   (podłoga z wierzchem dokładnie na y startu, siatka 1 m bez ramp). Spawny

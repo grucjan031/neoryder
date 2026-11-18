@@ -52,6 +52,8 @@ export const portRailKinds = [
   'rail_ballast',
   'rail_sleeper_concrete',
   'maglev_body_panel',
+  'snow_asphalt',
+  'snow_concrete',
   'snow',
 ] as const;
 

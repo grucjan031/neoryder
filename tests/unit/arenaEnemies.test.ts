@@ -32,6 +32,7 @@ it.each(
     'arenaRooftops',
     'arenaPowerPlant',
     'arenaConstructionSite',
+    'arenaRailYard',
   ].flatMap((id) => ['assaulter', 'gunner'].map((kind) => [id, kind] as const)),
 )(
   '%s: %s dociera ze spawnów do wszystkich punktów',
@@ -66,7 +67,7 @@ it.each(
     );
     const target = {
       id: entities.create('player', 'player'),
-      position: { x: 200, y: 1, z: 200 },
+      position: { x: 1000, y: 1, z: 1000 },
     };
     const manager = new EnemyManager(
       { bus, rng: new Rng('port-ai'), tuning },
@@ -93,7 +94,9 @@ it.each(
             ? [0, 4, 12, 20, 23, 29, 30, 31].map((index) => spawns[index]!)
             : id === 'arenaOverpass'
               ? [0, 14, 24, 27, 30].map((index) => spawns[index]!)
-              : spawns;
+              : id === 'arenaRailYard'
+                ? [0, 4, 10, 17, 22, 26, 28].map((index) => spawns[index]!)
+                : spawns;
       for (const spawn of sampled) {
         for (const point of room.arena!.points) {
           const enemy = manager.spawn(kind, spawn);
@@ -105,9 +108,11 @@ it.each(
               ? 12000
               : id === 'arenaOverpass'
                 ? 18000
-                : id === 'arenaConstructionSite'
+                : id === 'arenaRailYard'
                   ? 14400
-                  : 7200);
+                  : id === 'arenaConstructionSite'
+                    ? 14400
+                    : 7200);
             i++
           ) {
             if (

@@ -401,6 +401,111 @@ czerwonych wrogów w ciemnym wykopie i na wysokich stropach, odczucie
 drobnych stopni klatek (0,083 m), ilość osłon na otwartym placu E,
 widoczność krawędzi bez barierek na 4–16 m.
 
+## Zajezdnia Maglev — `arenaRailYard`
+
+Generator: `tools/arenas/arenaRailYard.mjs`, stały seed `maglev-winter-1`.
+[Rzut SVG](../arenas/arenaRailYard.svg). Granice X −210…210, Z −90…90 m:
+420×180 m, wydłużenie 2,33. Powierzchnia chodzenia około 72 tys. m²
+(próbkowanie check co 1 m, z odejmowaniem przeszkód i sumowaniem pięter).
+Pogoda `snow`; grafit, chłodny błękit, ciepła biel lamp, zielone i bursztynowe
+sygnały. Początek gracza (−200, 0, 70). Posiłki: 29 pozycji (28 na gruncie
+i jedna na peronie), pierścień
+25–100 m, `arena.maxAlive = 12`, `arena.enemyTickets = 200`.
+
+| Strefa         | Zakres i charakter                                                                                                                                                                                                                                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pole torów     | Sześć osi X (Z −45/−35/−10/0/25/35). Cztery osie zajmują długie rzędy wagonów, z przejściami między grupami i przez otwarte wagony. Z=35 i większość Z=0 zachowują długie osie ostrzału. W międzytorzach stoją szafy, stosy podkładów i pojazdy techniczne. Dwa dodatkowe krótkie biegi schodów prowadzą na dachy 4,1 m.      |
+| Hala serwisowa | X −200…−110, Z −70…−10, dach 14 m. Trzy wschodnie bramy, boczne wyjścia, dwa kanały −1,5 m z zejściami, antresola biurowa 5 m z dwoma biegami, suwnica na przyściennych torach. Blacha, kraty, beton, stos rur, generator.                                                                                                    |
+| Kładka         | Przy X 20, Z −80…60, poziom 8 m. Dwa szerokie wejścia schodowe na końcach, trzecie przez boczny spocznik peronu. Podpory tylko pod podestami, poręcze i ciepłe lampy.                                                                                                                                                         |
+| Peron wyspowy  | X −40…80, Z 45…55, poziom 1,1 m. Dwie rampy na końcach, pięć modułów wiaty, automaty i ławki po północnej stronie, otwarta południowa ścieżka. Beton peronu i stal, błękitne akcenty.                                                                                                                                         |
+| Nastawnia      | Model `rail_control_tower` przy (120, 0, −60), galeria 10 m. Oryginalne schody modelu mają osobne collidery; szerokie schody od (48, 0, −76) dochodzą do zachodniego pomostu galerii. Obok otwarte biuro i kiosk. Landmark: jasna kabina ponad składami.                                                                      |
+| Obrotnica      | Przy (170, 0, 40), dno zagłębienia −1,5 m. Mechanizm modelu zagłębiony do −2,5 m pod tymczasowym mostem 28×12 m na poziomie 0; centralna prowadnica nie przecina wolnego koła E. Dwie rampy do kanału. Parowozownia X 150…205, Z 55…88: dostępne wnętrze, dwie bramy, zachowane boczne połacie dachu i krótki wachlarz torów. |
+
+| Punkt | X / Y / Z [m]  | Położenie                            |
+| ----- | -------------- | ------------------------------------ |
+| A     | −155 / 0 / −40 | Wolny środek hali, pomiędzy kanałami |
+| B     | −40 / 0 / −22  | Przestrzeń między składami           |
+| C     | 20 / 1,1 / 50  | Peron pod kładką                     |
+| D     | 120 / 0 / −40  | Przed nastawnią                      |
+| E     | 170 / 0 / 40   | Szeroki most serwisowy obrotnicy     |
+
+Wszystkie promienie wynoszą 5 m. Do A–E prowadzą trasy bez skoku.
+A–B: bramy wschodnie albo południowe hali, wariant przez antresolę.
+B–C: przejazdy i rampy peronu albo dach składu przy (−24, 25), dostępny
+z obu końców schodami. C–D: teren między składami albo kładka 8 m i
+galeria nastawni 10 m. D–E: zachodni koniec mostu albo wschodni objazd
+z zejściem do kanału obrotnicy. Drugi dostępny dach składu: (54, 0).
+Otwarte wagony mają osobne ściany z otworami, podłogę, sufit i schodki
+przy obu parach drzwi. Wąskie przejścia wagonów i schody są trasami gracza;
+AI korzysta z przejazdów oraz ramp. Siatka AI 2 m, margines 1,1 m.
+
+Droga techniczna na południu ma krawężniki, parking, pojazdy i bariery.
+Szesnaście małych warsztatów z wnętrzami, bramy i ogrodzenia dzielą zaplecze.
+W hali stoją dwa dwuwagonowe zestawy, regały i szafy. Ciepłe lampy
+i bursztynowe światła robocze oświetlają ich sąsiedztwo pod suwnicą.
+Granice: północny mur oporowy z zaspami i nasypem oprawy; południowe
+ogrodzenie; zamknięte końce torów na wschodzie i zachodzie. Niewidoczne
+zabezpieczenie jest za tymi granicami. Za nimi stoją dekoracje bez kolizji:
+ulica, lampy, samochody, zabudowa, zaspy i fragmenty estakady. Ciągłość
+zewnętrznego gruntu i panoramę zapewnia istniejący `SceneAtmosphere`.
+
+Materiały: `snow_asphalt`, `snow_concrete`, `rail_ballast`,
+`rail_sleeper_concrete`, `maglev_body_panel`, `steel_grating`, blacha,
+rdza i metal. Nowe nazwy bloków oraz dwie nawierzchnie śnieżne są podpięte
+do rejestru materiałów; `mat_snow` zasp używa istniejącej tekstury
+`snow_concrete` zamiast brakującego pliku `snow`. Pozostałe mapy nie używają
+tych zasp i zachowują swój wygląd.
+Światła są rozmieszczone w każdej strefie i korzystają z istniejącej puli.
+
+Wynik generatora: 1705 bloków (198 z modelem), 260 dekoracji, łącznie
+458 rekwizytów, 59 źródeł świateł i 29 spawnów trybu. Najczęstszy rekwizyt:
+52 × `rail_snow_drift_long` (11,4%). Check: 0 błędów, jedno przypomnienie
+o ręcznym sprawdzeniu naturalnych granic. Powierzchnia: 72 434 m².
+
+Największy kwadrat bez widocznych osłon naziemnych zmalał z 58×58 m do
+39×39 m. Największy prostokąt ma 310×9 m i biegnie wzdłuż drogi serwisowej.
+Pomiar w rzucie XZ na siatce 1 m uwzględnia widoczne bloki o wysokości
+co najmniej 0,75 m, sięgające co najmniej 1 m nad grunt i zaczynające się
+najwyżej 0,5 m nad nim.
+
+| Pomiar lokalny w Node przed zagęszczeniem             |         Wynik |     Budżet ADR 0011 |
+| ----------------------------------------------------- | ------------: | ------------------: |
+| Nawigacja powierzchniowa + pięć pól                   |      46,35 ms |             ≤500 ms |
+| `ArenaNavigation` + pięć pól                          |      63,01 ms |             ≤500 ms |
+| `RoomScene`, 12 wrogów, 600 kroków po rozgrzewce      | 0,431 ms/krok |          ≤2 ms/krok |
+| Rzeczywiste GLB: siatki statyczne przed → po scalaniu |   5444 → 2093 | pomiar strukturalny |
+| Partie `InstancedMesh`                                |            28 |                   — |
+
+Niezbędna poprawka wydajności silnika: `ArenaSurfaceNavigation` wybiera
+przeszkody z komórek o boku `batchCellM`, następnie wykonuje ten sam dokładny
+test co wcześniej. Usuwa pełny skan wszystkich bloków dla każdej próbki.
+Test porównuje ścieżki z indeksem 20 m i z komórkami większymi od całej mapy,
+również przy obrotach i na granicach komórek. Kontrakty AI bez zmian.
+
+Testy: `arenaRailYard` (check, zod, walidacja trybu, każda para spawn–punkt),
+`arenaTraversal` (kapsuła z początku i trzech spawnów, oba końce kładki,
+schody hali i nastawni, przejście przez otwarty wagon oraz dach składu),
+`arenaEnemies` (oba archetypy, siedem spawnów, w tym peron, do A–E),
+`arenaPerf` (12 wrogów i nawigacja),
+`arenaStaticBatch` (rzeczywiste GLB, instancje, jedno scalanie w komórkach).
+`arenaWeather.spec.ts` obejmuje start areny, profil snow i komplet A–E;
+e2e nie uruchamiano zgodnie z briefem. Budżety GPU ≤800 wywołań i wczytania
+≤5 s pozostają do pomiaru w przeglądarce przez managera. Liczba siatek
+statycznych po scalaniu nie jest pomiarem wywołań całej klatki. Duża liczba
+2093 siatek wymaga szczególnej kontroli najcięższego widoku przy medium.
+Rzut wyrenderowano do PNG i obejrzano. Chromium z Playwrighta nie startuje
+w sandboxie (`spawn EPERM`), więc użyto renderera SVG resvg; brak zrzutów gry.
+
+Sprawdzenie w 30 sekund: `?scene=conquest&arena=arenaRailYard&debug=1&seed=rail-review`,
+komenda `god`, odczyty `query('weather')`, `query('conquest')`, `query('horizon')`.
+`tp` zachowuje bieżącą wysokość; poniższe miejsca sprawdzaj z poziomu ulicy:
+`tp -155 -40` (hala/A), `tp -40 -22` (tory/B), `tp -50 50` (rampa peronu/C),
+`tp -34 -80` (północne schody kładki), `tp -34 60` (południowe),
+`tp 120 -40` (nastawnia/D), `tp 170 40` (obrotnica/E),
+`tp 178 70` (wnętrze parowozowni). Oceń tempo przemieszczania na osi 420 m,
+czytelność czerwonych wrogów na śniegu, gęstość osłon i posiłków, przejścia
+otwartych wagonów, przydatność dachów oraz widok spod/znad kładki.
+
 ## Nawigacja nowych aren
 
 Wysokich punktów nie przeniesiono na grunt. `blocks[].walkable` oznacza

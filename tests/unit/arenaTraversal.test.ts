@@ -20,6 +20,7 @@ it.each([
   'arenaRooftops',
   'arenaPowerPlant',
   'arenaConstructionSite',
+  'arenaRailYard',
 ])(
   '%s: kapsuła FPP chodzi do punktów, po trasach bocznych, rampach i schodach bez skoku',
   async (id) => {
@@ -107,13 +108,24 @@ it.each([
           expect(path.length, point.id).toBeGreaterThan(0);
           for (const waypoint of path) walk(waypoint);
           if (id === 'arenaPowerPlant') for (let i = 0; i < 10; i++) tick();
+          if (id === 'arenaRailYard') for (let i = 0; i < 15; i++) tick();
           expect(
             Math.abs(player.getState().position.y - point.position.y - height),
             point.id,
           ).toBeLessThan(id === 'arenaOverpass' ? 0.12 : 0.05);
         }
       };
-      walkPoints();
+      if (id === 'arenaRailYard')
+        for (const start of [
+          room.playerSpawn,
+          room.spawnPoints[0]!,
+          room.spawnPoints[10]!,
+          room.spawnPoints[22]!,
+        ]) {
+          teleport(start.x, start.z);
+          walkPoints();
+        }
+      else walkPoints();
       if (id === 'arenaPowerPlant') {
         const spawns = arenaSpawnPoints(room);
         for (const index of [17, 28]) {
@@ -182,6 +194,28 @@ it.each([
         walk({ x: 73.5, y: 2.591, z: 49.72 });
         walk({ x: 80, y: 2.591, z: 49.72 });
         level(2.591);
+        return;
+      }
+      if (id === 'arenaRailYard') {
+        teleport(-30.25, -50.5);
+        walk({ x: -30.25, y: 1.1, z: -45 });
+        expect(player.getState().position.y).toBeCloseTo(1.1 + height, 1);
+        walk({ x: -30.25, y: 0, z: -39.5 });
+        teleport(16, 0);
+        walk({ x: 44, y: 4.1, z: 0 });
+        expect(player.getState().position.y).toBeCloseTo(4.1 + height, 1);
+        walk({ x: 66, y: 4.1, z: 0 });
+        walk({ x: 92, y: 0, z: 0 });
+        for (const [from, to, z, y] of [
+          [-34, 20, -80, 8],
+          [-34, 20, 60, 8],
+          [48, 114, -76, 10],
+          [-192, -160, -56, 5],
+        ] as const) {
+          teleport(from, z);
+          walk({ x: to, y, z });
+          expect(player.getState().position.y).toBeCloseTo(y + height, 1);
+        }
         return;
       }
       if (id === 'arenaOverpass') {

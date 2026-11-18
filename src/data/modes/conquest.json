@@ -1,6 +1,6 @@
 {
   "id": "conquest",
-  "title": "Przejęcie",
+  "title": "PrzejÄ™cie",
   "enemies": ["assaulter", "gunner"],
   "enemyTickets": 120,
   "maxAlive": 8,
@@ -16,6 +16,7 @@
     "arenaOverpass",
     "arenaRooftops",
     "arenaPowerPlant",
-    "arenaConstructionSite"
+    "arenaConstructionSite",
+    "arenaRailYard"
   ]
 }

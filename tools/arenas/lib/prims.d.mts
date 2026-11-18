@@ -98,6 +98,7 @@ export function stairs(
     to: Vec3;
     width: number;
     visible?: boolean;
+    walkable?: boolean;
   },
 ): Stairs;
 export function slab(
