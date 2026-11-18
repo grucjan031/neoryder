@@ -64,3 +64,8 @@ export function applyLookPreset(search: string): LookId | null {
 export function reapplyLook(): void {
   if (active) Object.assign(tuning.render, LOOK_PRESETS[active]);
 }
+
+/** Aktywny wariant stylu komiksowego; `null` przy `?look=off` i przed startem gry (testy). */
+export function activeLook(): LookId | null {
+  return active;
+}

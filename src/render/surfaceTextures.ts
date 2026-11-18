@@ -1,4 +1,5 @@
 import { RepeatWrapping, SRGBColorSpace, Texture } from 'three';
+import { resolveTextureKey } from './comicSurfaces';
 
 export type SurfaceTexture =
   | 'container_corrugated_navy'
@@ -47,6 +48,10 @@ const available = new Set(
     ),
   ).map((path) => path.slice('/public'.length)),
 );
+for (const path of Object.keys(
+  import.meta.glob('/public/assets/textures/komiks/surfaces/*.webp'),
+))
+  available.add(path.slice('/public'.length));
 
 /**
  * Leniwe ładowanie współdzielonej tekstury; testy headless i motyw white nie
@@ -71,7 +76,7 @@ export function assetTexture(
   readyListeners.set(key, onReady ? [onReady] : []);
   if (typeof window !== 'undefined') {
     const target = entry;
-    const path = `/assets/textures/${key}.webp`;
+    const path = `/assets/textures/${resolveTextureKey(folder, id)}.webp`;
     if (!available.has(path)) {
       console.warn(`Brak tekstury ${path}; użyto wzoru zastępczego.`);
       return entry;
