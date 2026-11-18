@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "src/combat/heldItem.ts": {
-    "mtime": 1794958013.050579,
-    "seen": 1794958038.001086,
-    "ast_hash": "e77fee3d4d052531458b684d35d55113",
+    "mtime": 1795027795.8400495,
+    "seen": 1795027851.5701728,
+    "ast_hash": "9ea1e0bd6c839368af889dcd8210d891",
     "semantic_hash": ""
   },
   "src/combat/melee/bladeQueries.ts": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "src/combat/melee/plasmaBlade.ts": {
-    "mtime": 1794952785.8327973,
-    "seen": 1794952817.6212144,
-    "ast_hash": "c1ac55153566de05afbab228f0a26120",
+    "mtime": 1795027795.8437672,
+    "seen": 1795027851.5707004,
+    "ast_hash": "b7c6891cb9a2400a281574d3d86a6341",
     "semantic_hash": ""
   },
   "src/combat/powers/barrier.ts": {
@@ -312,9 +312,9 @@
     "semantic_hash": ""
   },
   "src/core/input/index.ts": {
-    "mtime": 1794952785.859375,
-    "seen": 1794952817.6217282,
-    "ast_hash": "6fccc3ab8295a6472c4ddf06cf0d3ff3",
+    "mtime": 1795027795.8469732,
+    "seen": 1795027851.5707004,
+    "ast_hash": "13ad2e933c7737e45f53bac04849053a",
     "semantic_hash": ""
   },
   "src/core/loop.ts": {
@@ -354,9 +354,9 @@
     "semantic_hash": ""
   },
   "src/core/save.ts": {
-    "mtime": 1795015477.1427722,
-    "seen": 1795015528.8359299,
-    "ast_hash": "1e74b33d4bddaecd4bd6863ea99f810b",
+    "mtime": 1795027795.8501847,
+    "seen": 1795027851.5707004,
+    "ast_hash": "e419a6fc248ada80e6139753ec7a274a",
     "semantic_hash": ""
   },
   "src/core/stats.ts": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "src/core/tuning.ts": {
-    "mtime": 1795015477.1443164,
-    "seen": 1795015528.8359299,
-    "ast_hash": "a96376586b886bd8e12e67153f5929ed",
+    "mtime": 1795027795.853955,
+    "seen": 1795027851.5707004,
+    "ast_hash": "74eed8899c2e23e18e507b0274ef0df6",
     "semantic_hash": ""
   },
   "src/data/audio/sfx.json": {
@@ -420,9 +420,9 @@
     "semantic_hash": ""
   },
   "src/data/enemies/hacker.json": {
-    "mtime": 1794952785.8777456,
-    "seen": 1794952817.6217282,
-    "ast_hash": "51cdf6ee309563e64b77b51ca945df1d",
+    "mtime": 1795027795.8613768,
+    "seen": 1795027851.5707004,
+    "ast_hash": "2e28955927c4bfcd2a6ab44b98ed3fe2",
     "semantic_hash": ""
   },
   "src/data/enemies/securityChief.json": {
@@ -438,15 +438,15 @@
     "semantic_hash": ""
   },
   "src/data/enemies/sniper.json": {
-    "mtime": 1794952785.8793356,
-    "seen": 1794952817.6217282,
-    "ast_hash": "89f33781961776b9fd86e48b39fc7c06",
+    "mtime": 1795027795.8635137,
+    "seen": 1795027851.5707004,
+    "ast_hash": "c8c5bcd4f9abba58d35c02867769559b",
     "semantic_hash": ""
   },
   "src/data/enemies/turret.json": {
-    "mtime": 1794952785.880388,
-    "seen": 1794952817.6217282,
-    "ast_hash": "9032f6ea6697da7be4929c9f2bb8249a",
+    "mtime": 1795027795.865652,
+    "seen": 1795027851.5707004,
+    "ast_hash": "9b98126eee24c6b910ad32f2cc308dba",
     "semantic_hash": ""
   },
   "src/data/hands/bladeGrip.json": {
@@ -756,9 +756,9 @@
     "semantic_hash": ""
   },
   "src/data/inputBindings.json": {
-    "mtime": 1794952785.9286354,
-    "seen": 1794952817.6217282,
-    "ast_hash": "49c7e3891031653cd47dccae3d6a2d6c",
+    "mtime": 1795027795.867219,
+    "seen": 1795027851.5707004,
+    "ast_hash": "d4f5b6190b857b17e5ed223419de2983",
     "semantic_hash": ""
   },
   "src/data/levels/m01-maszty.json": {
@@ -1416,9 +1416,9 @@
     "semantic_hash": ""
   },
   "src/data/ui/settings.pl.json": {
-    "mtime": 1795015477.2260597,
-    "seen": 1795015528.836666,
-    "ast_hash": "f21bfab74d9c224d47ecf594e316f4db",
+    "mtime": 1795027795.8727088,
+    "seen": 1795027851.5712373,
+    "ast_hash": "c0120e2d178903b193af7e4c70cd3275",
     "semantic_hash": ""
   },
   "src/data/ui/splash.json": {
@@ -1590,9 +1590,9 @@
     "semantic_hash": ""
   },
   "src/enemies/assaulter.ts": {
-    "mtime": 1794952786.0697045,
-    "seen": 1794952817.6217282,
-    "ast_hash": "fdcc2611764d12acbd7029a77927c220",
+    "mtime": 1795027795.8764284,
+    "seen": 1795027851.5712373,
+    "ast_hash": "dc30fe8ef344d0f8884154b9905b83bf",
     "semantic_hash": ""
   },
   "src/enemies/boss.ts": {
@@ -1602,9 +1602,9 @@
     "semantic_hash": ""
   },
   "src/enemies/director.ts": {
-    "mtime": 1794952786.0712674,
-    "seen": 1794952817.6217282,
-    "ast_hash": "ae2a911f5133836eedc9e0c1ec57b368",
+    "mtime": 1795027795.8796363,
+    "seen": 1795027851.5712373,
+    "ast_hash": "ba66cb1977266f0f56c04094c7e47e1b",
     "semantic_hash": ""
   },
   "src/enemies/drone.ts": {
@@ -1644,15 +1644,15 @@
     "semantic_hash": ""
   },
   "src/enemies/enemyView.ts": {
-    "mtime": 1795003715.1031268,
-    "seen": 1795003769.971427,
-    "ast_hash": "7a05376af6fb615c88f707e0805f3117",
+    "mtime": 1795027795.882301,
+    "seen": 1795027851.5712373,
+    "ast_hash": "ecd1787397bc3128749e5faa6f5b45c2",
     "semantic_hash": ""
   },
   "src/enemies/gunner.ts": {
-    "mtime": 1794952786.0822344,
-    "seen": 1794952817.6217282,
-    "ast_hash": "020ae1ec0b2c5377b1cfbae8535fb2a5",
+    "mtime": 1795027795.88508,
+    "seen": 1795027851.5712373,
+    "ast_hash": "f746aa0664cba04ee3a8a2eadffeff2c",
     "semantic_hash": ""
   },
   "src/enemies/hacker.ts": {
@@ -1662,21 +1662,21 @@
     "semantic_hash": ""
   },
   "src/enemies/heldShield.ts": {
-    "mtime": 1794952786.0839055,
-    "seen": 1794952817.6217282,
-    "ast_hash": "5ab949f019ba078ea9878c5b118f3f9f",
+    "mtime": 1795027795.8882415,
+    "seen": 1795027851.5712373,
+    "ast_hash": "f6b7a88b60032a3192e7574c3d6209a8",
     "semantic_hash": ""
   },
   "src/enemies/manager.ts": {
-    "mtime": 1794952786.0849388,
-    "seen": 1794952817.6217282,
-    "ast_hash": "ab8ba3699f0b4b744a4a519f65dced79",
+    "mtime": 1795027795.8908756,
+    "seen": 1795027851.5712373,
+    "ast_hash": "26faf4193af5d8791e6b26ed89e59c65",
     "semantic_hash": ""
   },
   "src/enemies/registry.ts": {
-    "mtime": 1794952786.0859697,
-    "seen": 1794952817.6217282,
-    "ast_hash": "1d8a88544b6c57943dd27010e5156509",
+    "mtime": 1795027795.8935313,
+    "seen": 1795027851.5712373,
+    "ast_hash": "4e81d73a1624923ad9d1493daac6e159",
     "semantic_hash": ""
   },
   "src/enemies/turret.ts": {
@@ -1692,9 +1692,9 @@
     "semantic_hash": ""
   },
   "src/enemies/types.ts": {
-    "mtime": 1794952786.0896108,
-    "seen": 1794952817.6217282,
-    "ast_hash": "07abee82a1df48a7313e2eae5b5bfa82",
+    "mtime": 1795027795.8977695,
+    "seen": 1795027851.5712373,
+    "ast_hash": "9e5cba70d4801f13a94b8d513daab098",
     "semantic_hash": ""
   },
   "src/enemies/views.ts": {
@@ -1704,9 +1704,9 @@
     "semantic_hash": ""
   },
   "src/main.ts": {
-    "mtime": 1795015477.2318664,
-    "seen": 1795015528.836666,
-    "ast_hash": "c2b9900c55b1fc55490c544a65ecf619",
+    "mtime": 1795027795.9021056,
+    "seen": 1795027851.5712373,
+    "ast_hash": "fc09be34b9ac15dcedbb30cfe6dc3946",
     "semantic_hash": ""
   },
   "src/physics/grabPhysics.ts": {
@@ -1968,15 +1968,15 @@
     "semantic_hash": ""
   },
   "src/render/fppBlade.ts": {
-    "mtime": 1794952786.1375365,
-    "seen": 1794952817.6217282,
-    "ast_hash": "5306d6d9435aae4b2ac94e60fd89a055",
+    "mtime": 1795027795.9052744,
+    "seen": 1795027851.5712373,
+    "ast_hash": "26b29cb085f6bcee2c603a8d4fa41359",
     "semantic_hash": ""
   },
   "src/render/fppBladeFx.ts": {
-    "mtime": 1795015477.2354872,
-    "seen": 1795015528.8372037,
-    "ast_hash": "309b3c452ff568a5aef5489895373860",
+    "mtime": 1795027795.9084635,
+    "seen": 1795027851.5712373,
+    "ast_hash": "2854167790ddbac0c17ad20cfd4ac8d7",
     "semantic_hash": ""
   },
   "src/render/fppBlaster.ts": {
@@ -2220,9 +2220,9 @@
     "semantic_hash": ""
   },
   "src/scenes/arena.ts": {
-    "mtime": 1795015477.2401698,
-    "seen": 1795015528.8372037,
-    "ast_hash": "1f489e02fd597dd5236c8287b44b6570",
+    "mtime": 1795027795.9127154,
+    "seen": 1795027851.5717542,
+    "ast_hash": "420c185da3e4bf59fee3c309602d9b2e",
     "semantic_hash": ""
   },
   "src/scenes/blasterTest.ts": {
@@ -2268,9 +2268,9 @@
     "semantic_hash": ""
   },
   "src/scenes/hub.ts": {
-    "mtime": 1794952786.1899862,
-    "seen": 1794952817.6222432,
-    "ast_hash": "a0792f1d99562f7c44b9093f17652ebd",
+    "mtime": 1795027795.9164855,
+    "seen": 1795027851.5717542,
+    "ast_hash": "e7cbd1dfeedcaa547a7be5c84d670b34",
     "semantic_hash": ""
   },
   "src/scenes/hubDecor.ts": {
@@ -2346,9 +2346,9 @@
     "semantic_hash": ""
   },
   "src/scenes/roomScene.ts": {
-    "mtime": 1795015477.243373,
-    "seen": 1795015528.8372037,
-    "ast_hash": "8de7640badc214856429424c8327a359",
+    "mtime": 1795027795.9206924,
+    "seen": 1795027851.5717542,
+    "ast_hash": "9a6d7c2dab774efa54cf2628c50b06d0",
     "semantic_hash": ""
   },
   "src/scenes/roomTest.ts": {
@@ -2358,9 +2358,9 @@
     "semantic_hash": ""
   },
   "src/scenes/run.ts": {
-    "mtime": 1795015477.2459967,
-    "seen": 1795015528.8372037,
-    "ast_hash": "2929efc1baa11feaff35798f39059e2a",
+    "mtime": 1795027795.923313,
+    "seen": 1795027851.5717542,
+    "ast_hash": "5b6675ec68c61921a092c656f4684605",
     "semantic_hash": ""
   },
   "src/scenes/sandbox.ts": {
@@ -2448,9 +2448,9 @@
     "semantic_hash": ""
   },
   "src/ui/debugCommands.ts": {
-    "mtime": 1794952786.224732,
-    "seen": 1794952817.6222432,
-    "ast_hash": "e5172d188a4f368199ecfb66391863de",
+    "mtime": 1795027795.925934,
+    "seen": 1795027851.5717542,
+    "ast_hash": "0bd1708fce5ff73cb92b3085c0938b64",
     "semantic_hash": ""
   },
   "src/ui/debugConsole.ts": {
@@ -2622,9 +2622,9 @@
     "semantic_hash": ""
   },
   "src/ui/settingsScreen.ts": {
-    "mtime": 1794952786.2680776,
-    "seen": 1794952817.6222432,
-    "ast_hash": "0e27a4995684d12bad5cd7bb4177a87f",
+    "mtime": 1795027795.948843,
+    "seen": 1795027851.5717542,
+    "ast_hash": "a92589c658822916ef44348a3ad968a9",
     "semantic_hash": ""
   },
   "src/ui/splash.ts": {
@@ -2886,9 +2886,9 @@
     "semantic_hash": ""
   },
   "src/world/run.ts": {
-    "mtime": 1795015477.2580528,
-    "seen": 1795015528.837729,
-    "ast_hash": "e938af0e05bc40ae97739ae6a3601c6c",
+    "mtime": 1795027795.9568658,
+    "seen": 1795027851.5717542,
+    "ast_hash": "85b47bccc279c8dea4d119d445a84509",
     "semantic_hash": ""
   },
   "src/world/sectorMap.ts": {
@@ -2916,9 +2916,9 @@
     "semantic_hash": ""
   },
   "src/world/waves.ts": {
-    "mtime": 1794952786.3109167,
-    "seen": 1794952817.6222432,
-    "ast_hash": "f364397d47c07e357d4d66ebdc7baa42",
+    "mtime": 1795027795.959721,
+    "seen": 1795027851.5717542,
+    "ast_hash": "e109e8676cd159da786caaf9ae95fa09",
     "semantic_hash": ""
   },
   "tests/e2e/achievements.spec.ts": {
@@ -3072,9 +3072,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/pushTest.spec.ts": {
-    "mtime": 1794952786.3462038,
-    "seen": 1794952817.6222432,
-    "ast_hash": "9dcebd92d44c8340b201d0259c5161a4",
+    "mtime": 1795027795.9623666,
+    "seen": 1795027851.5717542,
+    "ast_hash": "e63b8458eca729a32ac4657a6be3511b",
     "semantic_hash": ""
   },
   "tests/e2e/roomScene.spec.ts": {
@@ -3444,9 +3444,9 @@
     "semantic_hash": ""
   },
   "tests/unit/enemiesZ16.test.ts": {
-    "mtime": 1794952786.4043195,
-    "seen": 1794952817.6222432,
-    "ast_hash": "cf205364db2c84e27bf9382cfec5c2e9",
+    "mtime": 1795027795.9788954,
+    "seen": 1795027851.5722787,
+    "ast_hash": "d3d272c21005ec632764cb26aa4cb2d6",
     "semantic_hash": ""
   },
   "tests/unit/enemyAnimation.test.ts": {
@@ -7428,33 +7428,33 @@
     "semantic_hash": ""
   },
   "src/audio/music.ts": {
-    "mtime": 1794956622.5554955,
-    "seen": 1794956688.6530054,
-    "ast_hash": "f76319999c09435cae68c506c1d9161d",
+    "mtime": 1795027795.832494,
+    "seen": 1795027851.5701728,
+    "ast_hash": "d9e2f9a82a67c951df0cc983035ca3f5",
     "semantic_hash": ""
   },
   "src/audio/musicDirector.ts": {
-    "mtime": 1794956622.5570655,
-    "seen": 1794956688.6530054,
-    "ast_hash": "fe53c260ab6cfab5cd37b4ab6596862a",
+    "mtime": 1795027795.8346162,
+    "seen": 1795027851.5701728,
+    "ast_hash": "c6a39114518222bb160059a2e02b8ded",
     "semantic_hash": ""
   },
   "src/audio/musicSchema.ts": {
-    "mtime": 1794956622.5586555,
-    "seen": 1794956688.6530054,
-    "ast_hash": "0d172025cff735a13b5cc672949704f5",
+    "mtime": 1795027795.8367243,
+    "seen": 1795027851.5701728,
+    "ast_hash": "78870d04f4171c35fc5aa780dbe0342c",
     "semantic_hash": ""
   },
   "src/data/audio/music.json": {
-    "mtime": 1794956622.563898,
-    "seen": 1794956688.6530054,
-    "ast_hash": "a9dc1787458195491c35132d6d0970e3",
+    "mtime": 1795027795.8571432,
+    "seen": 1795027851.5707004,
+    "ast_hash": "1bd8f207c4f26441ea863bac26b0189b",
     "semantic_hash": ""
   },
   "tests/unit/music.test.ts": {
-    "mtime": 1794956622.5734088,
-    "seen": 1794956688.6545565,
-    "ast_hash": "1e230b64ab07d70db961c5ffb460ef81",
+    "mtime": 1795027795.98529,
+    "seen": 1795027851.5722787,
+    "ast_hash": "ac4b973b40f462084cd3f8d7f7d8a45a",
     "semantic_hash": ""
   },
   "tools/audio/renderMusic.mjs": {
@@ -8169,6 +8169,120 @@
     "mtime": 1795015477.091709,
     "seen": 1795015528.8398938,
     "ast_hash": "fc6eb03fa2f17ebe4d9e5e9b64e96b5b",
+    "semantic_hash": ""
+  },
+  "src/data/difficulty.json": {
+    "mtime": 1795027795.8587263,
+    "seen": 1795027851.5707004,
+    "ast_hash": "6adfc7c8d00ea87281fe319652793663",
+    "semantic_hash": ""
+  },
+  "src/data/ui/inventory.pl.json": {
+    "mtime": 1795027795.8700018,
+    "seen": 1795027851.5712373,
+    "ast_hash": "0f34f7febaaabb8672398ddef5aef6ee",
+    "semantic_hash": ""
+  },
+  "src/enemies/tactics.ts": {
+    "mtime": 1795027795.895125,
+    "seen": 1795027851.5712373,
+    "ast_hash": "3a3b1261dacc15713f706c199111f010",
+    "semantic_hash": ""
+  },
+  "src/render/hubStationMarkers.ts": {
+    "mtime": 1795027795.9100616,
+    "seen": 1795027851.5712373,
+    "ast_hash": "d0543c87eacf542fad764ab1735ffa57",
+    "semantic_hash": ""
+  },
+  "src/ui/runInventory.ts": {
+    "mtime": 1795027795.9413457,
+    "seen": 1795027851.5717542,
+    "ast_hash": "d256e4e13298474819937e89ca872780",
+    "semantic_hash": ""
+  },
+  "src/world/difficulty.ts": {
+    "mtime": 1795027795.9542112,
+    "seen": 1795027851.5717542,
+    "ast_hash": "6be62c8a2c77c8197d7015ea2cf42741",
+    "semantic_hash": ""
+  },
+  "tests/e2e/runInventory.spec.ts": {
+    "mtime": 1795027795.9644608,
+    "seen": 1795027851.5722787,
+    "ast_hash": "e2c02c9124b99cb8142370e85f158a6e",
+    "semantic_hash": ""
+  },
+  "tests/unit/combatSlowmoRegression.test.ts": {
+    "mtime": 1795027795.96656,
+    "seen": 1795027851.5722787,
+    "ast_hash": "5022e750c4e0abf43c35595a401c3077",
+    "semantic_hash": ""
+  },
+  "tests/unit/difficulty.test.ts": {
+    "mtime": 1795027795.9692214,
+    "seen": 1795027851.5722787,
+    "ast_hash": "3d071bfc85552eca20bbdde16fad3f34",
+    "semantic_hash": ""
+  },
+  "tests/unit/difficultyAi.test.ts": {
+    "mtime": 1795027795.971377,
+    "seen": 1795027851.5722787,
+    "ast_hash": "56a1a31705cd43bc2557e560860a4922",
+    "semantic_hash": ""
+  },
+  "tests/unit/difficultyHarness.ts": {
+    "mtime": 1795027795.9740198,
+    "seen": 1795027851.5722787,
+    "ast_hash": "0adc211b87e3ee567200c404ae9865f0",
+    "semantic_hash": ""
+  },
+  "tests/unit/difficultySim.test.ts": {
+    "mtime": 1795027795.975707,
+    "seen": 1795027851.5722787,
+    "ast_hash": "3bf6265f767c77e08c8534af1e965612",
+    "semantic_hash": ""
+  },
+  "tests/unit/hubStationMarkers.test.ts": {
+    "mtime": 1795027795.9804952,
+    "seen": 1795027851.5722787,
+    "ast_hash": "8dca8e2b723238173697563e3576b0eb",
+    "semantic_hash": ""
+  },
+  "tests/unit/laserShotRegression.test.ts": {
+    "mtime": 1795027795.9826384,
+    "seen": 1795027851.5722787,
+    "ast_hash": "302e4e4d0a385448c54231d1e51ecf4d",
+    "semantic_hash": ""
+  },
+  "tests/unit/runInventory.test.ts": {
+    "mtime": 1795027795.9868627,
+    "seen": 1795027851.572795,
+    "ast_hash": "686180298e7fcac5a29fb635a820f4ff",
+    "semantic_hash": ""
+  },
+  "tests/unit/shieldRunRegression.test.ts": {
+    "mtime": 1795027795.9895053,
+    "seen": 1795027851.572795,
+    "ast_hash": "4c5535ba0dabe05955cb7abf1b2064cc",
+    "semantic_hash": ""
+  },
+  "tests/unit/weaponToggleRegression.test.ts": {
+    "mtime": 1795027795.9917302,
+    "seen": 1795027851.572795,
+    "ast_hash": "e5af8f79d94b7996425c99743ff16554",
+    "semantic_hash": ""
+  },
+  "tests/unit/weaponToggleSceneRegression.test.ts": {
+    "mtime": 1795027795.9944017,
+    "seen": 1795027851.572795,
+    "ast_hash": "7bf6659064a2adb2ceb1b0b76c1a043a",
+    "semantic_hash": ""
+  },
+  "docs/systems/difficulty.md": {
+    "mtime": 1795027795.8298514,
+    "seen": 1795027851.572795,
+    "ast_hash": "23bc9c8263e4664a2636082aaa4db01e",
     "semantic_hash": ""
   },
   "package-lock.json": {
