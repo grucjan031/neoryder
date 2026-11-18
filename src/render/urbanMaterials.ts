@@ -33,9 +33,18 @@ export const arenaKinds = [
   'market_tarp',
 ] as const;
 
+/** Zestaw „estakada, dachy, doki”: planowane tekstury, do ich podpięcia płaska barwa (`flat`). */
+export const overpassRoofsDocksKinds = [
+  'gas_station_tiles',
+  'highway_asphalt_worn',
+  'flood_brick_algae',
+  'boardwalk_planks',
+  'canal_stone_wall',
+] as const;
+
 const portLooks = z
   .record(
-    z.enum([...portKinds, ...arenaKinds]),
+    z.enum([...portKinds, ...arenaKinds, ...overpassRoofsDocksKinds]),
     z.object({
       texture: z.enum([
         'container_corrugated_navy',
@@ -48,6 +57,7 @@ const portLooks = z
         'rubber_fender',
         'steel_grating',
         ...arenaKinds,
+        ...overpassRoofsDocksKinds,
       ]),
       tint: z
         .string()
@@ -59,6 +69,8 @@ const portLooks = z
       metalness: z.number().min(0).max(1),
       bump: z.number().nonnegative(),
       wetness: z.number().min(0).max(1),
+      /** Płaska barwa `tint` bez tekstury i shadera miasta (tekstura jeszcze nie istnieje). */
+      flat: z.literal(true).optional(),
     }),
   )
   .parse({ ...portData, ...arenaData });
@@ -66,6 +78,7 @@ const portLooks = z
 export const urbanKinds = [
   ...portKinds,
   ...arenaKinds,
+  ...overpassRoofsDocksKinds,
   'concrete',
   'asphalt',
   'metal',
@@ -252,7 +265,8 @@ export function urbanColor(kind: UrbanKind): string {
   if (kind in portLooks) {
     const config = portLooks[kind as keyof typeof portLooks];
     if (config.themeTint) return tuning.render[config.themeTint];
-    if (config.tint && tuning.render.citySurfaceDetail > 0) return config.tint;
+    if (config.tint && (config.flat || tuning.render.citySurfaceDetail > 0))
+      return config.tint;
     return '#ffffff';
   }
   return tuning.render[kind as Exclude<UrbanKind, keyof typeof portLooks>];
@@ -266,6 +280,8 @@ export function createUrbanMaterial(kind: UrbanKind): MeshStandardMaterial {
     metalness: config.metalness,
   });
   material.userData.wetness = config.wetness;
+  if (kind in portLooks && portLooks[kind as keyof typeof portLooks].flat)
+    return material;
   const scale = glsl(config.scale);
   // Kafel tekstury ma 1024 px: relief gaśnie, gdy piksel ekranu obejmuje kilka tekseli.
   const texelsPerPixel = glsl(config.scale * 1024);

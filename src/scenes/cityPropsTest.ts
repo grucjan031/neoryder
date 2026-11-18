@@ -235,6 +235,59 @@ const PORT_LIGHTS = [
   portLight(19, 6, -8, '#8a5cff', 40, 12),
 ];
 
+/**
+ * Zestaw „estakada, dachy, doki” (areny arenaOverpass, arenaRooftops, arenaFloodedDocks): osobny plac
+ * bez uliczki (`view=6` albo `prop=<model zestawu>`). Kolumny od zachodu: estakada, dachy, doki.
+ */
+const overpassRoofsDocksSlots: PortSlot[] = [
+  { model: 'hw_vent_tower', x: -64, y: 0, z: -30, yaw: 0 },
+  { model: 'hw_broken_deck_end', x: -48, y: 0, z: -28, yaw: 0 },
+  { model: 'hw_toll_booth', x: -35, y: 0, z: -28, yaw: 0 },
+  { model: 'hw_gas_canopy', x: -50, y: 0, z: 6, yaw: 0 },
+  { model: 'hw_gas_pump', x: -54.5, y: 0, z: 6, yaw: 0 },
+  { model: 'hw_gas_pump', x: -45.5, y: 0, z: 6, yaw: 0 },
+  { model: 'hw_storm_culvert', x: -70, y: 0, z: 26, yaw: 0 },
+  { model: 'hw_camp_tent_dome', x: -58, y: 0, z: 27, yaw: 0.4 },
+  { model: 'hw_camp_tent_ridge', x: -52, y: 0, z: 28, yaw: -0.3 },
+  { model: 'hw_camp_shack', x: -45, y: 0, z: 27, yaw: 0 },
+  { model: 'hw_fire_barrel', x: -50.5, y: 0, z: 32, yaw: 0 },
+  { model: 'roof_clock_tower', x: -12, y: 0, z: -28, yaw: 0 },
+  { model: 'roof_giant_sign', x: 8, y: 0, z: -28, yaw: 0 },
+  { model: 'roof_stairwell_hut', x: -12, y: 0, z: 6, yaw: 0 },
+  { model: 'roof_skylight', x: -3, y: 0, z: 6, yaw: 0 },
+  { model: 'roof_chimney_stack', x: 5, y: 0, z: 6, yaw: 0 },
+  { model: 'dock_pump_house', x: 50, y: 0, z: -34, yaw: 0 },
+  { model: 'dock_lock_gate', x: 32, y: 0, z: -6, yaw: 0 },
+  { model: 'dock_half_sunken_car', x: 69, y: 0, z: -6, yaw: 0.5 },
+  { model: 'dock_barge', x: 52, y: 0, z: 12, yaw: 0 },
+  { model: 'dock_pontoon', x: 52, y: 0, z: 27, yaw: 0 },
+  { model: 'dock_mooring_post', x: 44, y: 0, z: 27, yaw: 0 },
+  { model: 'dock_skiff', x: 64, y: 0, z: 27, yaw: 0 },
+];
+export const OVERPASS_ROOFS_DOCKS_PROP_MODELS = [
+  ...new Set(overpassRoofsDocksSlots.map(({ model }) => model)),
+];
+const OVERPASS_ROOFS_DOCKS_VIEW = 6;
+/** Plac zestawu i korytarz kamery przeglądu: panorama nie stawia tu wieżowców. */
+const OVERPASS_ROOFS_DOCKS_BOUNDS = new Box3(
+  new Vector3(-80, 0, -46),
+  new Vector3(80, 60, 112),
+);
+const OVERPASS_ROOFS_DOCKS_GROUND: readonly [V3, V3, MaterialKind][] = [
+  [[56, 0.3, 86], [-52, -0.15, -3], 'asphalt'],
+  [[48, 0.3, 86], [0, -0.15, -3], 'roof_tar'],
+  [[56, 0.3, 86], [52, -0.15, -3], 'quay_concrete'],
+];
+const OVERPASS_ROOFS_DOCKS_LIGHTS = [
+  portLight(-50, 4.8, 6, '#fff1d6', 120, 26),
+  portLight(-60, 12, -24, '#6dff4a', 90, 24),
+  portLight(-50, 2, 30, '#ffae1a', 60, 14),
+  portLight(-2, 14, -20, '#8a5cff', 140, 32),
+  portLight(-8, 6, 10, '#3d7bff', 60, 18),
+  portLight(50, 8, -20, '#ffae1a', 120, 30),
+  portLight(52, 6, 18, '#fff1d6', 90, 24),
+];
+
 const LIGHT_COLORS = ['#ffae1a', '#8a5cff', '#6dff4a', '#3d7bff', '#fff1d6'];
 type V3 = [number, number, number];
 const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
@@ -244,6 +297,7 @@ const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
   { from: [14, 13, 32], to: [31, 3, -4] },
   { from: [-88, 60, 142], to: [-60, 0, 25] },
   { from: [-63, 60, 150], to: [-35, 0, 35] },
+  { from: [0, 46, 76], to: [0, 0, -8] },
 ];
 const DEFAULT_YAW_DEG = 35;
 const FILL_RATIO = 0.65;
@@ -270,21 +324,61 @@ export class CityPropsTest implements Scene {
   private focus?: Slot;
   private portFocus?: PortSlot;
   private view = 0;
+  /** Plac zestawu estakady, dachów i doków zamiast uliczki i portu. */
+  private overpassRoofsDocks = false;
   private readonly cameraPos = new Vector3();
   private readonly cameraTarget = new Vector3();
   private hasPropCamera = false;
 
   init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
+    const requested = this.params.get('prop');
+    const view = Number(this.params.get('view') ?? 0);
+    this.view =
+      Number.isInteger(view) && view >= 0 && view < REVIEW_VIEWS.length
+        ? view
+        : 0;
+    const setFocus = overpassRoofsDocksSlots.find((s) => s.model === requested);
+    this.overpassRoofsDocks =
+      setFocus !== undefined ||
+      (!requested && this.view === OVERPASS_ROOFS_DOCKS_VIEW);
     this.atmosphere = new SceneAtmosphere(
       three,
       'neonStreet',
       'city-props-test',
       0,
+      this.overpassRoofsDocks ? OVERPASS_ROOFS_DOCKS_BOUNDS : undefined,
     );
     this.root.name = this.id;
     three.add(this.root);
     this.root.add(this.lights);
+    if (this.overpassRoofsDocks) {
+      this.portFocus = setFocus;
+      for (const [size, position, kind] of OVERPASS_ROOFS_DOCKS_GROUND)
+        this.box(size, position, kind);
+    } else {
+      if (this.view === OVERPASS_ROOFS_DOCKS_VIEW) this.view = 0;
+      this.buildStreet();
+      if (requested) {
+        this.focus = slots.find((s) => s.model === requested);
+        this.portFocus = portSlots.find((s) => s.model === requested);
+        if (!this.focus && !this.portFocus)
+          console.warn(`city-props-test: nieznany model "${requested}"`);
+      }
+    }
+    this.dressing = new CityDressing(
+      this.root,
+      this.layout(),
+      this.atmosphere.theme,
+      0,
+      'city-props-test',
+    );
+    this.render(0);
+    return this.loadModels();
+  }
+
+  /** Uliczka z pierwotnymi modelami, plac estakady/targu i plac portu. */
+  private buildStreet(): void {
     this.box([52, 0.3, 166], [-47.5, -0.15, 36], 'asphalt');
     const length = SPACING * COUNT + 4;
     this.box([6, 0.3, length], [0, -0.15, 0], 'asphalt');
@@ -306,32 +400,13 @@ export class CityPropsTest implements Scene {
         );
       }
     }
-    const requested = this.params.get('prop');
-    if (requested) {
-      this.focus = slots.find((s) => s.model === requested);
-      this.portFocus = portSlots.find((s) => s.model === requested);
-      if (!this.focus && !this.portFocus)
-        console.warn(`city-props-test: nieznany model "${requested}"`);
-    }
-    const view = Number(this.params.get('view') ?? 0);
-    this.view =
-      Number.isInteger(view) && view >= 0 && view < REVIEW_VIEWS.length
-        ? view
-        : 0;
-    this.dressing = new CityDressing(
-      this.root,
-      this.layout(),
-      this.atmosphere.theme,
-      0,
-      'city-props-test',
-    );
-    this.render(0);
-    return this.loadModels();
   }
 
   private layout(): DressingLayout {
-    const lights = [...PORT_LIGHTS];
-    for (let i = 0; i < 8; i++) {
+    const lights = [
+      ...(this.overpassRoofsDocks ? OVERPASS_ROOFS_DOCKS_LIGHTS : PORT_LIGHTS),
+    ];
+    for (let i = 0; !this.overpassRoofsDocks && i < 8; i++) {
       lights.push({
         position: { x: (i % 2 ? 1 : -1) * 3.4, y: 4, z: -19 + i * 5.4 },
         color: LIGHT_COLORS[i % LIGHT_COLORS.length] ?? '#fff1d6',
@@ -379,8 +454,14 @@ export class CityPropsTest implements Scene {
   private async loadModels(): Promise<void> {
     const placed = new Map<Slot, Object3D>();
     const placedPort = new Map<PortSlot, Object3D>();
+    // Zbliżenie modelu zestawu ładuje tylko ten model (sąsiednie bryły nie zasłaniają kadru).
+    const freestanding = this.overpassRoofsDocks
+      ? this.portFocus
+        ? [this.portFocus]
+        : overpassRoofsDocksSlots
+      : portSlots;
     await Promise.all([
-      ...slots.map(async (s) => {
+      ...(this.overpassRoofsDocks ? [] : slots).map(async (s) => {
         const model = await cloneCityModel(s.model);
         if (!model || this.disposed) return;
         model.name = s.model;
@@ -389,7 +470,7 @@ export class CityPropsTest implements Scene {
         this.root.add(model);
         placed.set(s, model);
       }),
-      ...portSlots.map(async (s) => {
+      ...freestanding.map(async (s) => {
         const model = await cloneCityModel(s.model);
         if (!model || this.disposed) return;
         model.name = s.model;

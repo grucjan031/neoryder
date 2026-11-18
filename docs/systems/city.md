@@ -324,9 +324,23 @@ Skala modeli bloków w pokojach (`placeBlockModel` w `src/scenes/roomScene.ts`):
 
 Uliczka ok. 10 × 44 m zawiera pierwotne 24 modele `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy). Obok, na osobnym placu 52 × 166 m, stoją modele estakady i targu dachowego: 12 nowych brył oraz fioletowy wariant straganu, razem **37 modeli** w galerii. Rozstaw 24 m i dwie kolumny pozwalają oglądać duże segmenty bez przecinania fasad. Lista modeli w `src/scenes/cityPropsTest.ts`.
 
-Parametry: `prop=<nazwa>` (np. `city_overpass_deck`, kamera 3/4 kadrowana według AABB), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2|3|4|5` (ulica, odwrotnie, z góry, plac portu, zestaw estakady, zestaw targu). `prop` ma pierwszeństwo przed `view`; `yaw=145` pozwala ocenić tył modelu. Nowe stanowiska mają własne ustawienie świateł do zbliżeń. Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.
+Parametry: `prop=<nazwa>` (np. `city_overpass_deck`, kamera 3/4 kadrowana według AABB), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2|3|4|5|6` (ulica, odwrotnie, z góry, plac portu, zestaw estakady, zestaw targu, plac zestawu „estakada, dachy, doki”). `prop` ma pierwszeństwo przed `view`; `yaw=145` pozwala ocenić tył modelu. Nowe stanowiska mają własne ustawienie świateł do zbliżeń. Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.
 
-Wymiary, materiały, budżety i punkty montażu: tabela zestawu aren Przejęcia w `docs/assets.md`. Modele nie dodają aren, pogody ani kolizji; galeria służy do oceny sylwetki, skali i materiałów. Płaskie płyty estakady i kładki oraz komplet 37 plików sprawdza `tests/unit/cityModels.test.ts`.
+Wymiary, materiały, budżety i punkty montażu: tabela zestawu aren Przejęcia w `docs/assets.md`.
+
+**Plac zestawu „estakada, dachy, doki” (`view=6`).** 22 modele `hw_*`, `roof_*`, `dock_*` dużych aren
+(ADR 0011) stoją na osobnym placu zamiast uliczki i portu: trzy pasy podłoża od zachodu — asfalt
+(estakada: wieża wentylacyjna, urwany wiadukt, bramka, wiata z dwoma dystrybutorami, kanał burzowy,
+obozowisko), papa dachowa (wieża zegarowa, szyld, wyjście z klatki, świetlik, komin) i beton nabrzeża
+(przepompownia, śluza, wrak, barka, ponton, pal, łódź). Lista: `OVERPASS_ROOFS_DOCKS_PROP_MODELS`
+w `src/scenes/cityPropsTest.ts`. Panorama nie stawia wieżowców w obwiedni placu i korytarza kamery
+(`panoramaExclusion` z `SceneAtmosphere`); plac ma własne światła (ciepła biel, zieleń, bursztyn,
+fiolet, błękit). `prop=<model zestawu>` (np. `prop=dock_pump_house&yaw=150`) przełącza na ten plac
+i ładuje tylko kadrowany model, żeby sąsiednie bryły nie zasłaniały ujęcia. Nowe materiały zestawu
+(`gas_station_tiles`, `highway_asphalt_worn`, `flood_brick_algae`, `boardwalk_planks`,
+`canal_stone_wall`) są w `urbanKinds` z płaską barwą zastępczą (`flat` w `arenaMaterials.json`) do czasu
+podpięcia tekstur. Wymiary, punkty odniesienia i powierzchnie chodzenia: sekcja „Estakada, dachy, doki”
+w `docs/assets.md`. Modele nie dodają aren, pogody ani kolizji; galeria służy do oceny sylwetki, skali i materiałów. Płaskie płyty estakady i kładki oraz komplet 37 plików sprawdza `tests/unit/cityModels.test.ts`.
 
 Plac estakady/targu przeniesiono na zachód: x −73,5…−21,5 m,
 z −47…119 m, środek (−47,5; 0; 36). Kolumny modeli stoją przy x = −60

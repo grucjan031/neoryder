@@ -565,6 +565,13 @@ materiałami Standard i przyjmują kolorowe PointLight (limit 8 obsługuje integ
 `bump` (mnożnik reliefu) i `wetness`. Rzut tekstur jest trójplanarny w przestrzeni
 świata.
 
+Rodzaje z danych (`src/data/render/portMaterials.json`, `arenaMaterials.json`, walidowane zod) mogą
+mieć `"flat": true`: materiał jest wtedy zwykłym `MeshStandardMaterial` w barwie `tint` (także
+w motywie `white`), bez tekstury, reliefu i shadera miasta. Służy jako ciemna barwa zastępcza dla
+materiałów, których tekstura jeszcze nie istnieje (zestaw „estakada, dachy, doki”:
+`gas_station_tiles`, `highway_asphalt_worn`, `flood_brick_algae`, `boardwalk_planks`,
+`canal_stone_wall`); po dodaniu pliku `surfaces/<id>.webp` wystarczy usunąć `flat`.
+
 | Rodzaj       | Tekstura (`surfaces/`) | Skala | Rough. | Metal. | Bump | Przeznaczenie                           |
 | ------------ | ---------------------- | ----: | -----: | -----: | ---: | --------------------------------------- |
 | `concrete`   | `concrete`             |  0,25 |    0,8 |      0 |  0,5 | beton, bariery, chodniki (wetness 0,22) |

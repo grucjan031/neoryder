@@ -1999,6 +1999,11 @@ Materiały `container_navy/olive/ochre/graphite`, `crane_paint`,
 z miejskiego shadera i uniformu mokrości; parametry są w walidowanym
 `src/data/render/portMaterials.json`. Światła masztów są definicjami
 `lights[]` pokoju i konkurują o istniejącą pulę `CityLights`.
+Rodzaje `gas_station_tiles`, `highway_asphalt_worn`, `flood_brick_algae`,
+`boardwalk_planks`, `canal_stone_wall` (modele `hw_*`, `roof_*`, `dock_*`,
+`overpassRoofsDocksKinds`) są w `src/data/render/arenaMaterials.json` z opcjonalnym
+polem `flat: true`: płaska barwa `tint` bez tekstury i shadera miasta do czasu
+dodania tekstury `surfaces/<id>.webp`.
 
 ## Wielopoziomowe areny Przejęcia
 
