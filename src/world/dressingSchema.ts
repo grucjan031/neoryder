@@ -49,6 +49,10 @@ export const BLOCK_MATERIALS = [
   'trim',
   'glass',
   'paving',
+  'light_white',
+  'neon_green',
+  'neon_amber',
+  'power_quay_floor',
   'plaster',
   'corrugated',
   'rust',
@@ -89,6 +93,7 @@ export const cityLightSchema = z.object({
   color: hexColor,
   intensity: positive,
   range: positive,
+  groundGlow: z.boolean().optional(),
   flicker: flickerSchema.optional(),
 });
 export type CityLightDef = z.infer<typeof cityLightSchema>;

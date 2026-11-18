@@ -28,6 +28,7 @@ export interface ArenaBuilder {
     intensity?: number,
     range?: number,
     opts?: {
+      groundGlow?: boolean;
       flicker?: NonNullable<RoomDefinition['lights']>[number]['flicker'];
     },
   ): NonNullable<RoomDefinition['lights']>[number];

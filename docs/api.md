@@ -40,6 +40,8 @@ formatu. Napisy zachowują także starszy format liczbowy 0..1.
 `src/render/city/flicker.ts` zwraca mnożnik 0..1 bez Three.js, DOM, stanu i alokacji.
 Czas w sekundach pochodzi z renderu; seed źródła z osobnego `Rng` sceny.
 `CityLights(defs, floorY?, seed?)` przyjmuje kosmetyczne ziarno sceny.
+`lights[].groundGlow: false` pomija addytywną plamę pod źródłem.
+Źródło nadal konkuruje o pulę świateł punktowych.
 `HubDecor(panels, stations, fires?, hubTuning?, neonTexts?, seed?)` przyjmuje je dla napisów.
 Wyłączenie `Settings.flashes` daje stałą jasność dla buzz/fail; pulse pozostaje.
 

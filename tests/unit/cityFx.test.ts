@@ -107,6 +107,18 @@ describe('światła miasta', () => {
       }
   });
 
+  it('światło bez plamy nadal zajmuje miejsce w puli punktowej', () => {
+    tuning.city.maxLights = 1;
+    const system = own(
+      new CityLights([{ ...light(0, -3), groundGlow: false }, light(0, -8)]),
+    );
+    system.update(1, 1, camera());
+    expect(system.pool[0]!.position.z).toBe(-3);
+    expect(system.pool[0]!.intensity).toBeGreaterThan(0);
+    const spots = system.root.children.filter((child) => child instanceof Mesh);
+    expect(spots.map((spot) => spot.visible)).toEqual([false, true]);
+  });
+
   it('nie tworzy nowych świateł po zmianie limitu w GUI', () => {
     tuning.city.maxLights = 2;
     const system = own(

@@ -163,6 +163,7 @@ export class CityLights {
       });
       material.userData.bloom = false;
       const spot = new Mesh(geometry, material);
+      spot.visible = def.groundGlow !== false;
       spot.rotation.x = -Math.PI / 2;
       spot.position.set(
         def.position.x,
@@ -270,7 +271,7 @@ export class CityLights {
         );
     });
     this.root.children.forEach((object, i) => {
-      if (!(object instanceof Mesh)) return;
+      if (!(object instanceof Mesh) || !object.visible) return;
       object.material.uniforms.power.value = tuning.city.lightSpotPower;
       const def = this.defs[i - this.pool.length];
       if (def) {
