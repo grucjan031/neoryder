@@ -19,7 +19,7 @@ Wynik: `public/assets/models/<nazwa>.glb` oraz podglądy `tools/blender/previews
 | Ręce gracza (FPP)    | początek = nadgarstek, palce w spoczynku w **-Z**, wnętrze dłoni w **+Y**, przedramię w **+Z**                                       |
 | Strona prawa postaci | **-X** (postać patrzy w +Z)                                                                                                          |
 | Cieniowanie          | płaskie (flat), low-poly, bez tekstur                                                                                                |
-| Budżet               | humanoid ≤ 6000 trójkątów (ciało ≈ 4000), dron ≤ 1500, rekwizyt ≤ 500, broń ≤ 1000 (szlif komiksowy 18.11: 488–852), ręka FPP ≤ 3000 |
+| Budżet               | humanoid ≤ 6000 trójkątów (ciało ≈ 4000), dron ≤ 1500, rekwizyt ≤ 500, broń ≤ 1000 (szlif komiksowy 18.11: 488–940), ręka FPP ≤ 3000 |
 
 ### Materiały (rozpoznawane po nazwie — shader stylu może je podmienić)
 
@@ -545,20 +545,29 @@ kolba zwężona ku gumowej stopce, pompa), plus jeden świecący element w cyjan
 pistoletowe, łoża pod lewą dłonią, gniazda (`muzzle`, `support`) i obrys `frame` (od niego zależą
 moduły warsztatu) zostały w dawnych położeniach.
 
-| Plik               | Sylwetka                                                                     | Węzły dla kodu                                                                                                          | Trójkąty |
-| ------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
-| `blaster.glb`      | masywny zamek z garbem i stalową płytą, klin pod lufą, kabłąk z hakiem       | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 676      |
-| `pistol.glb`       | ścięty nos zamka, stalowa wierzchnia, kurek, trzy skośne nacięcia            | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 520      |
-| `rifle.glb`        | klinowa kolba z poduszką, stalowa komora, gniazdo i pochylony magazynek      | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 608      |
-| `scatter.glb`      | szeroka komora z radiatorem, dwie grube lufy, osłona z klinem i stalą, pompa | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 600      |
-| `sniper_rifle.glb` | luneta z dzwonami i wieżyczkami, hamulec z portami, zamek z gałką            | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 828      |
-| `beam.glb`         | emiter z czaszą, cewki, żebra radiatora, moduł zasilania z oknem ogniwa      | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 708      |
-| `emp_launcher.glb` | gruba tuba, fazowany bęben ze stalową piastą i pokrywami, dzwon wylotu       | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 852      |
-| `blade_twin.glb`   | krótsza rękojeść, fazowana poprzeczna osłona zwężona ku końcom               | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 552      |
-| `blade_staff.glb`  | długa rękojeść (0,8 m), fazowane gardła i pancerne tuleje, pazury emiterów   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 724      |
+Szlif FPP, runda 2 (18.11.2026): kamera gracza widzi broń od tyłu, z góry i z lewego boku (-X),
+więc tam trafiły czytelne kształty. Pomocnicze `slab_xz` (profil czołowy X–Z wyciągnięty po Y),
+`_u_sight` (szczerbinka U), `_ribbed_rail` (szyna z poprzecznymi żebrami), `_chevron` (żebro V),
+`_side_plaque` i `_side_bolts` (płaska ciemna plakietka bez tekstu i 2–3 duże śruby, wypukłe o 3 mm,
+bo cieńsze uskoki tusz rysował kropkowaną linią). Nowe świecące elementy (kanały rdzenia na
+wierzchu, kropki celowników, szczeliny w tylnych płytach, okular lunety, pierścień bębna) należą
+do siatki `heat_vents`, więc też reagują na ciepło; `heat_cell`, `grip`, gniazda i długość modelu
+są bez zmian, obrys `frame` zmienił się o najwyżej 10 mm. Kontrola przenikania dłoni: bez zmian.
+
+| Plik               | Sylwetka                                                                              | Węzły dla kodu                                                                                                          | Trójkąty |
+| ------------------ | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| `blaster.glb`      | tylna tarcza V z żebrami i świecącym V, żebrowana szyna z kanałami, szczerbinka U     | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 912      |
+| `pistol.glb`       | wysoka szczerbinka U z kropkami, świecąca szczelina na zamku i w tylnej płycie, kurek | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 684      |
+| `rifle.glb`        | żebrowana szyna, uszy celowników, okno rdzenia na komorze, kanały łoża, dźwignia T    | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 912      |
+| `scatter.glb`      | rdzeń między żebrami radiatora, duża szczerbinka U, dach osłony z kanałem, pompa      | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `muzzle`                                                            | 740      |
+| `sniper_rifle.glb` | świecący okular lunety, wieżyczki, kanały łoża, hamulec z portami, zamek z gałką      | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 940      |
+| `beam.glb`         | emiter z czaszą, cewki, moduł z kanałem rdzenia, przeziernikiem i tylną szczeliną     | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 848      |
+| `emp_launcher.glb` | gruba tuba, bęben ze świecącym pierścieniem komór i krzyżem X, żebrowana szyna        | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 936      |
+| `blade_twin.glb`   | krótsza rękojeść, fazowana poprzeczna osłona zwężona ku końcom                        | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 552      |
+| `blade_staff.glb`  | długa rękojeść (0,8 m), fazowane gardła i pancerne tuleje, pazury emiterów            | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 724      |
 
 Budżet broni i rękojeści po szlifie: ≤ 3000 trójkątów (test `tests/unit/weaponModels.test.ts`);
-modele mieszczą się w 500–850.
+bronie palne mają 684–940 (budżet z tabeli wyżej: ≤ 1000, osobny test), rękojeści 488–724.
 
 Pivoty `blade` i `blade_back` leżą u emiterów, długość ostrza 1 m przy skali 1 (skaluj po Z).
 Model broni wskazuje pole `model` w `src/data/weapons/<id>.json`.
