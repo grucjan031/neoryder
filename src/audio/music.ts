@@ -1,7 +1,7 @@
 import { Rng } from '../core/rng';
 import type { Tuning } from '../core/tuning';
 import {
-  MUSIC_LOOPS,
+  ALL_MUSIC_LOOPS,
   compileTrack,
   loopSteps,
   stepSeconds,
@@ -91,7 +91,7 @@ export class MusicSystem {
     private readonly opts: MusicSystemOptions,
   ) {
     this.rng = new Rng(opts.seed ?? 'music');
-    for (const id of MUSIC_LOOPS) {
+    for (const id of ALL_MUSIC_LOOPS) {
       const loop = def.loops[id];
       const total = loopSteps(loop);
       const byStep: ScheduledEvent[][] = Array.from(

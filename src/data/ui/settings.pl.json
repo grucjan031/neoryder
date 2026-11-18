@@ -60,6 +60,7 @@
     "weapon2": "Broń 2",
     "weapon3": "Broń 3",
     "bladeThrow": "Rzut ostrzem",
-    "map": "Plan stacji"
+    "map": "Plan stacji",
+    "inventory": "Menu ulepszeń (run)"
   }
 }

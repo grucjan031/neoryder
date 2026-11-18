@@ -28,6 +28,7 @@ import { loadMetaManager, saveMetaManager } from '../progression/metaSave';
 import { CityDressing } from '../render/city/dressing';
 import { cloneCityModel, loadDecor } from '../render/cityModels';
 import { FppViewModel } from '../render/fppViewModel';
+import { HubStationMarkers } from '../render/hubStationMarkers';
 import { createStyleLights } from '../render/lights';
 import { getMaterial } from '../render/materials';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
@@ -195,6 +196,7 @@ export class HubScene implements Scene {
   private fpsCamera!: FpsCamera;
   private fppView!: FppViewModel;
   private stations!: HubStations;
+  private markers?: HubStationMarkers;
   private atmosphere?: SceneAtmosphere;
   private dressing?: CityDressing;
   private decor?: HubDecor;
@@ -322,6 +324,9 @@ export class HubScene implements Scene {
       `${this.layout.id}:labels`,
     );
     this.root.add(this.decor.root);
+    this.root.add(
+      (this.markers = new HubStationMarkers(this.layout.stations, floorY)).root,
+    );
     this.props = new HubProps(
       this.layout.props ?? [],
       ctx.tuning.hub,
@@ -1025,6 +1030,10 @@ export class HubScene implements Scene {
     );
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
+    this.markers?.update(
+      frameDt ?? 1 / 60,
+      this.ctx.camera?.position ?? this.player.getState().position,
+    );
     const camera = this.ctx.camera;
     if (!camera) {
       this.dressing?.render(frameDt, undefined);
@@ -1336,6 +1345,7 @@ export class HubScene implements Scene {
     try {
       for (const off of this.off.splice(0)) off();
       this.stations?.dispose();
+      this.markers?.dispose();
       this.screens?.dispose();
       this.prompt?.dispose();
       this.propView?.dispose();
