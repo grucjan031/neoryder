@@ -31,6 +31,39 @@ export interface DressingLayout {
   rainShelters?: readonly RainShelterDef[];
   /** Latarnie z dekoracji dostają stożek światła i światło punktowe. */
   decor?: readonly DecorDef[];
+  /**
+   * Bryły układu (pokój/arena). Światło poniżej podłogi startu (np. w wykopie)
+   * kładzie plamę na najwyższej płaskiej bryle pod sobą zamiast na floorY.
+   */
+  blocks?: readonly {
+    position: { x: number; y: number; z: number };
+    size: { x: number; y: number; z: number };
+    rotation?: { x: number; y: number; z: number } | undefined;
+  }[];
+}
+
+/** Wysokości plam świateł: floorY, a dla świateł pod nią wierzch bryły pod światłem. */
+export function lightSpotFloors(
+  defs: readonly CityLightDef[],
+  floorY: number,
+  blocks: DressingLayout['blocks'],
+): number[] {
+  return defs.map(({ position: p }) => {
+    if (p.y >= floorY || !blocks) return floorY;
+    let best: number | undefined;
+    for (const b of blocks) {
+      if (b.rotation?.x || b.rotation?.y || b.rotation?.z) continue;
+      const top = b.position.y + b.size.y / 2;
+      if (
+        top <= p.y &&
+        (best === undefined || top > best) &&
+        Math.abs(p.x - b.position.x) <= b.size.x / 2 &&
+        Math.abs(p.z - b.position.z) <= b.size.z / 2
+      )
+        best = top;
+    }
+    return best ?? floorY;
+  });
 }
 
 /**
@@ -74,7 +107,11 @@ export class CityDressing {
     const fixtures = lampFixtures(layout.decor);
     const lightDefs = [...(layout.lights ?? []), ...lampLightDefs(fixtures)];
     if (lightDefs.length) {
-      this.lights = new CityLights(lightDefs, floorY, `${seed}:lights`);
+      this.lights = new CityLights(
+        lightDefs,
+        lightSpotFloors(lightDefs, floorY, layout.blocks),
+        `${seed}:lights`,
+      );
       roots.push(this.lights.root);
     }
     if (fixtures.length) {

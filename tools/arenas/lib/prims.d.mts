@@ -87,12 +87,30 @@ export function ramp(
     width: number;
     material?: Material;
     thickness?: number;
+    visible?: boolean;
   },
 ): Ramp;
 export function stairs(
   arena: ArenaBuilder,
-  options: StairOptions & { from: Vec3; to: Vec3; width: number },
+  options: StairOptions & {
+    from: Vec3;
+    to: Vec3;
+    width: number;
+    visible?: boolean;
+  },
 ): Stairs;
+export function slab(
+  arena: ArenaBuilder,
+  options: {
+    rect: Rect;
+    y?: number;
+    holes?: Rect[];
+    material?: Material;
+    thickness?: number;
+    walkable?: boolean;
+    visible?: boolean;
+  },
+): Surface & { holes: Rect[]; pieces: Rect[] };
 export function building(
   arena: ArenaBuilder,
   options: {
@@ -152,6 +170,8 @@ export function fence(
     height?: number;
     model?: string;
     thickness?: number;
+    moduleM?: number;
+    scale?: number;
   },
 ): { blocks: Block[] };
 export function pit(
@@ -211,6 +231,7 @@ type Primitives = {
   building: typeof building;
   hall: typeof hall;
   ramp: typeof ramp;
+  slab: typeof slab;
   stairs: typeof stairs;
   bridge: typeof bridge;
   containerStack: typeof containerStack;

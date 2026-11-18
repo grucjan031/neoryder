@@ -13,8 +13,13 @@ import { PlayerController } from '../../src/player/playerController';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
-it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
-  '%s: kapsuła FPP chodzi do A/B/C, po obu rampach i schodach bez skoku',
+it.each([
+  'arenaContainerPort',
+  'arenaOverpass',
+  'arenaRooftops',
+  'arenaConstructionSite',
+])(
+  '%s: kapsuła FPP chodzi do wszystkich punktów, po rampach i schodach bez skoku',
   async (id) => {
     const room = roomDefinitions.get(id)!;
     const rapier = await initPhysics();
@@ -53,6 +58,8 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
       player.step(SIM_DT, idle);
       world.step();
     };
+    // Wykop budowy schodzi na −8 m; pozostałe areny nie mają niższych poziomów.
+    const lowestFloor = id === 'arenaConstructionSite' ? -8.1 : -0.1;
     const walk = (goal: Vec3) => {
       for (let i = 0; i < 2400; i++) {
         const state = player.getState();
@@ -69,7 +76,7 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
           },
         });
         world.step();
-        expect(player.getState().position.y).toBeGreaterThan(-0.1);
+        expect(player.getState().position.y).toBeGreaterThan(lowestFloor);
       }
       throw new Error(
         `Kapsuła utknęła: ${JSON.stringify(player.getState().position)} → ${JSON.stringify(goal)}`,
@@ -93,6 +100,38 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
           point.position.y + height,
           1,
         );
+      }
+      if (id === 'arenaConstructionSite') {
+        const level = (y: number) =>
+          expect(player.getState().position.y).toBeCloseTo(y + height, 1);
+        // Rusztowanie południowe: dwa biegi po lic do B (8 m), bez skoku.
+        teleport(41, 6);
+        walk({ x: 39.5, y: 0, z: 11.5 });
+        walk({ x: 52.8, y: 4, z: 11.5 });
+        level(4);
+        walk({ x: 52.8, y: 4, z: 8.5 });
+        walk({ x: 39.2, y: 4, z: 8.5 });
+        walk({ x: 39.2, y: 4, z: 11.5 });
+        walk({ x: 52.8, y: 8, z: 11.5 });
+        level(8);
+        // Rusztowanie zachodnie (bieg wzdłuż Z) na 4 m.
+        teleport(12, -13);
+        walk({ x: 8.5, y: 0, z: -13 });
+        walk({ x: 8.5, y: 4, z: -26.8 });
+        level(4);
+        // Stalowe schody wykopu (droga gracza, stopień 0,29 × 0,3 m) z krawędzi na dno.
+        teleport(-76, 62);
+        walk({ x: -76, y: 0, z: 58.6 });
+        walk({ x: -82.6, y: -4, z: 58.6 });
+        walk({ x: -83.2, y: -4, z: 56.6 });
+        walk({ x: -77, y: -8, z: 56.6 });
+        level(-8);
+        // Schody biur zaplecza na pomost 2,591 m.
+        teleport(66, 49.72);
+        walk({ x: 73.5, y: 2.591, z: 49.72 });
+        walk({ x: 80, y: 2.591, z: 49.72 });
+        level(2.591);
+        return;
       }
       if (id === 'arenaOverpass') {
         for (const z of [-24, 24]) {

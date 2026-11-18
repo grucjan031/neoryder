@@ -26,6 +26,7 @@ import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { ArenaSurfaceNavigation } from '../../src/world/arenaSurfaceNavigation';
 import { largeArena } from './largeArenaFixture';
 import type { Conquest } from '../../src/world/conquest';
+import { arenaSpawnPoints } from '../../src/world/arenaSpawns';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -123,6 +124,73 @@ it('arena 450 × 300 m: 3 poziomy, 5 stref i 12 wrogów', async () => {
         `${target.id}: ${JSON.stringify(enemy.current.position)}`,
       ).toBe(true);
     }
+  } finally {
+    scene.dispose();
+  }
+}, 60_000);
+
+it('arenaConstructionSite: nawigacja ≤ 500 ms, 12 wrogów na poziomach ≤ 2 ms/krok', async () => {
+  const room = roomDefinitions.get('arenaConstructionSite')!;
+  const definition = modeForArena(conquestMode, room);
+  for (const Navigation of [ArenaSurfaceNavigation, ArenaNavigation]) {
+    const start = performance.now();
+    const nav = new Navigation(room);
+    for (const point of definition.points)
+      expect(nav.path(room.playerSpawn, point.position).at(-1)).toEqual(
+        point.position,
+      );
+    const buildMs = performance.now() - start;
+    console.info(
+      `[perf] budowa ${Navigation.name}: ${buildMs.toFixed(2)} ms (siatka i 5 pól)`,
+    );
+    expect(buildMs).toBeLessThanOrEqual(500);
+  }
+  const bus = new EventBus();
+  const commands = new CommandRegistry();
+  const run = new RunManager(bus, {
+    generateMap: () => ({ sectorId: 'unused', layers: [] }),
+  });
+  run.newRun('construction-perf', 'classic', {
+    modeId: 'conquest',
+    arenaId: room.id,
+  });
+  run.selectNode('conquest');
+  const scene = new RoomScene(
+    room,
+    run.state,
+    loadWaves({ ...wavesData, spawnPoints: room.spawnPoints }),
+    { loadModels: false },
+  );
+  try {
+    await scene.init(
+      {
+        bus,
+        rng: new Rng('construction-perf'),
+        loop: new GameLoop({ step() {}, render() {} }),
+        tuning: structuredClone(tuning),
+        debug: false,
+        commands,
+        camera: new PerspectiveCamera(),
+      },
+      new ThreeScene(),
+    );
+    commands.execute('god');
+    const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+    // Wykop, piętra szkieletu i grunt: wrogowie idą do punktów po schodach i rampach.
+    arenaSpawnPoints(room)
+      .slice(0, definition.maxAlive)
+      .forEach((position, index) =>
+        enemies.spawn(index % 3 === 0 ? 'gunner' : 'assaulter', position),
+      );
+    for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+    expect(scene.query('enemies')).toBe(12);
+    const start = performance.now();
+    for (let i = 0; i < 600; i++) scene.step(SIM_DT, idle);
+    const perStepMs = (performance.now() - start) / 600;
+    console.info(
+      `[perf] budowa 240 × 240 m: ${perStepMs.toFixed(3)} ms/krok, 12 wrogów`,
+    );
+    expect(perStepMs).toBeLessThanOrEqual(2);
   } finally {
     scene.dispose();
   }

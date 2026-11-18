@@ -42,9 +42,21 @@ const constructionPowerKinds = [
   'turbine_hall_floor',
 ] as const;
 
+/** Nawierzchnie bloków budowy (arenaConstructionSite), tekstury z tools/textures. */
+export const constructionSiteKinds = [
+  'excavation_dirt',
+  'scaffold_planks',
+  'hazard_stripes_worn',
+] as const;
+
 const portLooks = z
   .record(
-    z.enum([...portKinds, ...arenaKinds, ...constructionPowerKinds]),
+    z.enum([
+      ...portKinds,
+      ...arenaKinds,
+      ...constructionPowerKinds,
+      ...constructionSiteKinds,
+    ]),
     z.object({
       texture: z.enum([
         'container_corrugated_navy',
@@ -58,6 +70,7 @@ const portLooks = z
         'steel_grating',
         ...arenaKinds,
         ...constructionPowerKinds,
+        ...constructionSiteKinds,
       ]),
       tint: z
         .string()
@@ -78,6 +91,7 @@ export const urbanKinds = [
   ...portKinds,
   ...arenaKinds,
   ...constructionPowerKinds,
+  ...constructionSiteKinds,
   'concrete',
   'asphalt',
   'metal',

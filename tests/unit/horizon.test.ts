@@ -100,6 +100,7 @@ it('wylicza parametry dla scen referencyjnych', () => {
       'arenaContainerPort',
       'arenaOverpass',
       'arenaRooftops',
+      'arenaConstructionSite',
     ].map((id) => roomDefinitions.get(id)!),
     levelDefinitions.get('m01-maszty')!,
     hideout,

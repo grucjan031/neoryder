@@ -36,10 +36,12 @@ w scenie z Rapierem.
 
 | Pomiar z `arenaPerf.test.ts`                               |         Wynik | Budżet ADR 0011 |
 | ---------------------------------------------------------- | ------------: | --------------: |
-| `ArenaSurfaceNavigation`, siatka i pięć pól                |     237,60 ms |        ≤ 500 ms |
-| `ArenaNavigation`, siatka i pięć pól                       |     245,73 ms |        ≤ 500 ms |
+| `ArenaSurfaceNavigation`, siatka i pięć pól                |      59,76 ms |        ≤ 500 ms |
+| `ArenaNavigation`, siatka i pięć pól                       |      66,65 ms |        ≤ 500 ms |
 | `RoomScene`, 12 wrogów, średnia z 600 kroków po rozgrzewce | 0,759 ms/krok |     ≤ 2 ms/krok |
 
+Budowa siatki korzysta z indeksu brył w kubełkach 2 m (wynik identyczny
+z pełnym przeglądem; budowa 240 × 240 m spadła z 5,4 s do ok. 0,15 s).
 Pole odległości zajmuje cztery bajty na węzeł i punkt docelowy. Dane
 areny określają `batchCellM` i `navigationCellM`. Budżet 800 wywołań
 rysowania przy jakości medium i 5 s wczytywania wymaga pomiaru w
@@ -150,6 +152,134 @@ głębokości. Płyta kładki ma 1,6×0,2×8 m, osobne poręcze do wysokości
 modelu 1,39 m. Parapety mają przerwy przy rampach i kładkach. Granice areny
 mają dodatkową niewidoczną kolizję do 8 m; kapsuła nie wypada poza arenę.
 
+## Budowa wieżowca
+
+`arenaConstructionSite` (ADR 0011): 240 × 240 m, do 30 m w górę (stropy do
+24 m, maszynownie klatek 27,4 m, żuraw 65 m), pogoda `clearNight`, motyw
+`neonStreet`. Generator `tools/arenas/arenaConstructionSite.mjs` — każda
+strefa to osobna funkcja (`ground`, `perimeter`, `excavation`, `tower`,
+`towerFloors`, `towerCrane`, `storageYard`, `compound`, `plaza`,
+`surroundings`, `modeLayout`), wspólny kontekst `createSite` daje rekwizyty
+z kolizją (`prop`/`placeModel`), rejestr zajętych rzutów i ostrzeżenia
+o kolizjach. Rzut: [docs/arenas/arenaConstructionSite.svg](../arenas/arenaConstructionSite.svg).
+X na wschód, Z na południe (północ = −Z).
+
+Obrys: kwadrat bez narożnika NE (x > 60, z < −60 to ulica) i z zatoką bramy
+wjazdowej (x 84…120, z 114…120). Granicą jest ogrodzenie `build_hoarding_fence`
+(skala 1,5: moduł 6 m, 3,6 m wysokości) z przodem na ulicę; stopy i zastrzały
+modelu mają niewidoczny pas kolizji 1 m po stronie budowy. Za nim, 0,8 m na
+zewnątrz, niewidoczne zabezpieczenie 14 m. Dalej ulice 20 m z chodnikami
+i pierzeje kamienic 12–30 m (fasady z oknami, rolety, markizy, klimatyzatory,
+szyldy, dachy z antenami i zbiornikami, 4 hologramy) — bez dostępu gracza;
+grunt zewnętrzny i panorama z silnika horyzontu.
+
+| Strefa (rodzaj)               | Obszar X / Z (m)          | Charakter, rekwizyty, materiały                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wykop (low)                   | −100…−20 / −20…60, dno −8 | ściany szalunkowe N i E (`formwork_plywood`, dźwigary `rust`, oczep i kleszcze `metal`), ziemne S i W (`excavation_dirt`); dwie rampy dla ciężarówek wzdłuż X na nasypach (północna z pasa zachodniego przez spocznik −4 m z porzuconą `build_mixer_truck`, nachylenie 0,2; południowa ze wschodniej drogi, 32 m, 0,25); dwie stalowe klatki schodowe (`steel_grating`, stopień 0,29 × 0,3 m); dwie palownice z masztem 12 m, głowice pali, skrzynie ze sklejki, kontenery narzędziowe, kałuże błota, maszt naświetlaczy na dnie                                                                                                                                                                            |
+| Szkielet wieżowca (high)      | 10…70 / −60…10            | stropy `concrete_raw_cast` 0/4/8/12/16/20/24 m; szyb 25…33 / −22…−16 przez 4–16 m; niedokończone: 12 m NE (52…70 / −60…−40), 16 m pas W (10…16 / −20…10), 20 m narożnik SW (10…36 / −6…10), 24 m ćwiartka SW (10…44 / −20…10) z deskowaniem na stemplach; słupy 0,6 m w siatce X 12/23/34/46/57/68 × Z −58…8 co 11 m tylko pod stropem (kondygnacja 20→24: `build_unfinished_column` ×0,75); dwa trzony (14…30 / −45…−38 i 50…66 / −12…−5) ze ścianami do 27 m i drzwiami 3 × 2,8 m na każdej kondygnacji; rusztowania `build_scaffold_bay` na licu S (38,5…53,5 / 10…12,6, do 24 m) i W (7,4…10 / −27,5…−12,5, do 12 m); szalunki słupów i tarcze ścian na 24 m; girlandy lamp pod stropami elewacji S i W |
+| Plac składowy (dense)         | −100…0 / −110…−40         | utwardzony beton; 21 partii: `build_precast_stack` (1–2 warstwy), `build_pipe_stack`, `build_rebar_bundle` na podkładach, kontenery 1–2 warstwy, palety (`scaffold_planks` + ładunek) i `city_crates`; przejścia 3–8 m łamią linie widoku co 20–40 m; dwie hałdy ziemi (rampa 12 m na 3 m, szczyt 6 × 8 m, zejście); zamknięta brama północna                                                                                                                                                                                                                                                                                                                                                               |
+| Zaplecze budowy (interior)    | 70…115 / 40…110           | kostka; rząd 6 biur `build_site_office` w dwóch kondygnacjach z pomostem `steel_grating` na 2,591 m i `build_site_office_stairs` na obu końcach (pod pomostem zadaszone przejście); 4 biura wschodnie, stróżówka przy bramie; magazyn narzędzi 18 × 14 × 4,5 m z wnętrzem (regały, skrzynie, warsztat) i dwoma wejściami; toalety, agregaty, parking 7 aut, śmietniki, automat; zieleń i ciepła biel                                                                                                                                                                                                                                                                                                        |
+| Plac manewrowy i wjazd (open) | −20…70 / 64…120           | asfalt; brama SE w zatoce (x 96…108, z 114) z ryglem, rozsuniętym skrzydłem i barierami od ulicy; betonomieszarka w użyciu, kontenery, prefabrykaty, linie barier betonowych co 15–25 m, pachołki, maszty naświetlaczy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+
+Pozostały teren budowy (`excavation_dirt`): narożnik startu (kontenery
+socjalne, materiały, latarnia), pas zachodni (kontener 40 ft, wjazd na
+rampę), pas północny wzdłuż wykopu, dostawy na północ od szkieletu i teren
+wschodni z żurawiem. Krawędzie wykopu mają bariery betonowe z przerwami
+(zeskok na dno bez skoku w górę z powrotem). Landmarki: żuraw
+`build_tower_crane` przy (80, 0, 30) z wysięgnikiem nad szkieletem
+(fundament 6,4 m, niewidoczny collider trzonu 2,4 × 50 m), sam szkielet
+z girlandami lamp i maszty naświetlaczy.
+
+| Punkt | X / Y / Z (m) | Promień | Miejsce                                                     |
+| ----- | ------------- | ------- | ----------------------------------------------------------- |
+| A     | −60 / −8 / 20 | 5       | dno wykopu, bursztyn nad punktem                            |
+| B     | 40 / 8 / −25  | 5       | strop 8 m, wolne pole między słupami 34/46 a szybem         |
+| C     | −50 / 0 / −75 | 5       | prześwit w środku placu składowego                          |
+| D     | 92 / 0 / 72   | 5       | dziedziniec zaplecza między biurami, magazynem i parkingiem |
+| E     | 20 / 0 / 90   | 5       | plac manewrowy między wykopem a zapleczem                   |
+
+Poziomy chodzenia: −8 (dno), −4 (spocznik rampy, spoczniki schodów), 0,
+2,591 (pomost biur), 3 (szczyty hałd), 4…24 co 4 m (stropy). Trasy między
+sąsiednimi punktami, zawsze co najmniej jedna przez inny poziom:
+
+- A–C: rampa północna → pas zachodni → plac; albo schody stalowe N →
+  pas północny → przejście x −54…−50.
+- A–E: rampa południowa → droga wewnętrzna; albo schody stalowe S →
+  narożnik startu → plac.
+- E–B: parter → trzon CE/CW; albo rusztowanie S prosto z placu na 4/8 m.
+- C–B: pas północny → parter → trzon CW; albo rusztowanie W z drogi
+  wewnętrznej na 4/8/12 m.
+- B–D: trzon CE → teren wschodni koło żurawia → zaplecze; albo przez plac.
+- D–E: plac i droga od bramy; albo pomost biur na 2,591 m.
+
+Biegi trzonów i rusztowań mają 48 stopni 0,25 × 0,083 m na 4 m wzniosu
+(12 m biegu): kapsuła wroga bez autostepu wjeżdża po nich jak po pochylni
+(kąt styku < 45°), nawigacja ma 0,33 m wzniosu na komórkę, gracz ma autostep.
+Schody wykopu i biur są trasą gracza. Niewidoczne zabezpieczenie krawędzi
+(2 m) jest tylko na obrysie stropów 20 i 24 m, z przerwami na spoczniki
+rusztowania; niższe krawędzie są otwarte (zeskok bez obrażeń).
+
+Tryb: `arena.maxAlive` 12, `arena.enemyTickets` 180, `arena.spawnRing`
+25–85 m, pula 24 spawnów z wysokością (`arena.spawnPoints`): wykop 4,
+szkielet 6 (parter, 12, 16, 20 i 24 m), plac składowy 4, teren wokół
+szkieletu i żurawia 3, zaplecze 2, plac i pas zachodni 5; 16 spawnów na
+gruncie także w `spawnPoints` pokoju. Najbliższy spawn jest 67 m od startu
+(−100, 0, 100).
+
+Materiały: `excavation_dirt`, `formwork_plywood`, `concrete_raw_cast`,
+`scaffold_planks`, `hazard_stripes_worn` (nowe materiały bloków, tekstury
+z `public/assets/textures/surfaces`, wpisy w `arenaMaterials.json`;
+`formwork_plywood` i `concrete_raw_cast` utraciły `flat` — dotyczą też
+modeli budowy/elektrowni, które nie stoją na innych mapach) oraz
+`asphalt`, `paving`, `concrete`, `steel_grating`, `metal`, `rust`,
+`crane_paint`, `corrugated`, `container_*`, `facade`, `roof_tar`.
+
+Oświetlenie: 40 świateł + 13 latarni. Bursztyn ostrzegawczy (15: wykop,
+palownice, klatki, brama, punkty A/C/E), ciepła biel naświetlaczy (16:
+maszty 18,5 m, stropy, wnętrza), zieleń zaplecza (5), fiolet i błękit
+miasta (4). Światła poniżej poziomu startu (wykop) kładą plamę na dnie
+(`lightSpotFloors`), nie w powietrzu nad wykopem.
+
+Pomiary (2026-11-18):
+
+| Pomiar                                                                    |                                                      Wynik |                 Budżet |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------: | ---------------------: |
+| `checkArena`: wymiar, powierzchnia chodzenia                              |                                    240 × 240 m, ≈74 000 m² | 240–450 m, ≥ 40 000 m² |
+| Wypełnienie obrysu                                                        |                                                      88,3% |                  ≤ 90% |
+| Najczęstszy rekwizyt (`build_hoarding_fence`)                             |                                         156 / 1252 (12,5%) |                  ≤ 15% |
+| Bloki / dekoracje / światła / napisy / naklejki                           |          2246 (383 niewidoczne) / 1235 / 40 + 13 / 26 / 20 |                      — |
+| Statyczne siatki przed / po scaleniu (`batchCellM` 240), partie instancji |                                           21 530 / 224, 29 |                      — |
+| `ArenaSurfaceNavigation` (≈65 000 komórek 1 m, 5 pól)                     | 120–160 ms (pojedynczo), do ~250 ms przy pełnym `npm test` |               ≤ 500 ms |
+| `RoomScene`, 12 wrogów na trzech poziomach                                |                                               0,43 ms/krok |            ≤ 2 ms/krok |
+| Wywołania rysowania, medium, 1280 × 720, bez wrogów (SwiftShader)         |                            700–770 w najszerszych widokach |                  ≤ 800 |
+
+Duża komórka scalania (240 m, czyli cztery ćwiartki wokół środka) jest
+celowa: na otwartej budowie prawie wszystko jest w kadrze, więc liczba
+wywołań zależy od liczby materiałów, nie od cullingu. Modele budowy
+i miasta są dekoracjami z niewidocznym colliderem (scalane z resztą statyki);
+instancjami zostają wyłącznie kontenery. Każdy żywy wróg dodaje kilka
+wywołań (z 12 wrogami ok. 830–990). Wartości wywołań pochodzą z renderera
+programowego (SwiftShader); pomiar GPU na komputerze deweloperskim
+(`tools/perf/profile.mjs --quality medium`) pozostaje do wykonania.
+
+Sprawdzenie w 30 sekund: `?scene=conquest&arena=arenaConstructionSite&debug=1`,
+`god`, potem `tp <x> <z> <yaw> <pitch> <floorY>` (piąty argument stawia
+gracza na danej wysokości):
+
+- `tp -100 100 -45 0` — start; żuraw i szkielet nad placem.
+- `tp -64 4 160 -5 -8` — dno wykopu przy A; `tp -60 -24 180 -25 0` — krawędź.
+- `tp 40 -18 0 0 8` — B na stropie 8 m; `tp 41 6 0 0 0` — wejście na rusztowanie S.
+- `tp -50 -66 0 0 0` — C w placu składowym; `tp -83 -54 90 0 3` — szczyt hałdy.
+- `tp 92 64 180 0 0` — D; `tp 76 50 90 0 2.591` — pomost biur.
+- `tp 20 98 0 0 0` — E i plac manewrowy; `tp 102 108 180 0 0` — brama.
+- `tp 12 -40 90 -22 24` — widok z 24 m na wykop i plac składowy;
+  `tp 60 8 200 -22 24` — widok na zaplecze.
+
+Do oceny „feel”: tempo posiłków na 240 m (pierścień 25–85 m), czytelność
+czerwonych wrogów w ciemnym wykopie i na wysokich stropach, odczucie
+drobnych stopni klatek (0,083 m), ilość osłon na otwartym placu E,
+widoczność krawędzi bez barierek na 4–16 m.
+
 ## Nawigacja nowych aren
 
 Wysokich punktów nie przeniesiono na grunt. `blocks[].walkable` oznacza
@@ -231,7 +361,7 @@ bez skoków, potem drugą rampę estakady i schody/kładki targu. Sprawdź `room
 `smog` i `drizzleWind`. Oceń czytelność wrogów w pyle i mżawce, drogi posiłków
 na B/C, osłony, śliską wizualnie papę i zabezpieczenie zewnętrznych krawędzi.
 Galeria: `?scene=city-props-test&view=4` (estakada), `&view=5` (targ).
-Testy traversal/enemies/staticBatch obejmują wszystkie trzy duże areny;
+Testy traversal/enemies/staticBatch obejmują wszystkie cztery duże areny;
 e2e startu nowych aren jest napisany, bez uruchamiania w sandboxie.
 
 Dłuższy przegląd feel: przejdź naziemne drogi A–B–C, wejdź obiema rampami,
