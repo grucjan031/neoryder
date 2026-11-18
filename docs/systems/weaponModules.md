@@ -105,7 +105,7 @@ Skrypt wymaga deweloperskiego serwera Vite i Chromium Playwright. Tworzy 84 PNG
 `FppViewModel` na neutralnym tle; kombinacje niedostępne w grze są oznaczone jako
 kontrola geometrii. To kontrola brył i póz, bez symulowania FOV optyki ani bloomu
 rozgrywki; bloom i czytelność w scenie należy sprawdzić ręcznie. Skrypt nie był
-uruchamiany w rundzie Codexa zgodnie ze zleceniem. Podgląd kryjówki 3D jest rundą B.
+uruchamiany w rundzie Codexa zgodnie ze zleceniem. Podgląd kryjówki 3D opisuje następna sekcja.
 
 Vitest: `modules.test.ts` (dane, schematy, kopie, zgodność, przebicie i transport
 parametrów), `patches.test.ts` (`append` i błędne dane),
@@ -114,3 +114,21 @@ parametrów), `patches.test.ts` (`append` i błędne dane),
 wróg, czas życia i ponowne użycie puli), `roomPatches.test.ts`
 (pistolet rzeczywiście nakłada `burning`), `workshopPanel.test.ts`
 (montaż, zapis, usuwanie i filtrowanie).
+
+## Podgląd 3D w warsztacie (runda B)
+
+Sekcja Ekwipunek warsztatu ma podgląd wybranej broni z założonymi modułami
+(`src/render/weaponPreview.ts`, klasa `WeaponPreview`). Model ładuje wspólna funkcja
+`loadWeaponScene` (`weaponModelLoader.ts`, ta sama co FPP: styl gry i `applyFppSurfaces`),
+moduły dodaje `attachModuleVisuals` na KLONIE modelu, więc cache FPP się nie zmienia.
+Własny `WebGLRenderer` (przezroczyste tło, `preserveDrawingBuffer`) rysuje klatki tylko,
+gdy canvas jest widoczny (`IntersectionObserver`, także `start()/stop()`) i coś się zmienia:
+przeciąganie (pointer events, mysz i dotyk; obrót Y i nachylenie ±25°), autoobrót 15°/s
+(od razu po otwarciu i 3 s po puszczeniu), nowa broń lub rozmiar. Przy
+`prefers-reduced-motion: reduce` nie ma autoobrotu (osobnego ustawienia w `Settings` brak).
+Bez WebGL2 (jsdom, stare przeglądarki) podgląd się nie tworzy, a panel pokazuje notkę.
+Kontener ma `data-testid="weapon-preview"`, `data-weapon` i `data-modules` (id po przecinku,
+po `sanitizeModules`). Wybór broni: przyciski `data-action="preview"` nad podglądem
+(widoczne od dwóch broni w ekwipunku); stan pomocniczy w `previewTarget` (`workshopState.ts`).
+Testy: `weaponPreview.test.ts`, `workshopPreview.test.ts`, `workshopPanel.test.ts`
+(fallback), e2e `workshopPreview.spec.ts` (kryjówka `?scene=hub&debug=1&fx=lite`).
