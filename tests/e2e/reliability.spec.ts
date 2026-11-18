@@ -20,7 +20,8 @@ const test = base.extend({
   },
 });
 
-test.describe.configure({ timeout: 60_000 });
+// CI (GitHub runner) ładuje pokój wolniej niż lokalnie: limity jak w innych spec.
+test.describe.configure({ timeout: 180_000 });
 const query = (page: Page, name: string) =>
   page.evaluate((key) => window.__neoryder?.query(key), name);
 const command = (page: Page, line: string) =>
@@ -38,10 +39,10 @@ async function enterRoom(page: Page, mode = '') {
     await page.locator('.run-screen [data-node-id]').first().click();
   }
   await expect
-    .poll(() => query(page, 'loading'), { timeout: 20_000 })
+    .poll(() => query(page, 'loading'), { timeout: LOAD_TIMEOUT })
     .toBe(false);
   await expect
-    .poll(() => query(page, 'screen'), { timeout: 10_000 })
+    .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
     .toBe('room');
 }
 
