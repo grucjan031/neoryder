@@ -1,8 +1,9 @@
 import { tuning } from '../core/tuning';
 
 /**
- * Próbki kierunku „komiksowy Neon Noir” (inspiracja: Borderlands), wybierane parametrem
- * `?look=a|b|c`. Bez parametru wygląd bez zmian. Do porównania wariantów przed decyzją (ADR 0009).
+ * Kierunek „komiksowy Neon Noir” (inspiracja: Borderlands) — decyzja właściciela 18.11.2026:
+ * domyślnie wariant `b` (gruby tusz + płaskie pasy cienia, neony i poświata bez zmian).
+ * `?look=a|b|c` wybiera wariant do porównań, `?look=off` przywraca dawny wygląd.
  */
 export const LOOK_PRESETS = {
   a: {
@@ -46,10 +47,15 @@ export type LookId = keyof typeof LOOK_PRESETS;
 
 let active: LookId | null = null;
 
+export const DEFAULT_LOOK: LookId = 'b';
+
 export function applyLookPreset(search: string): LookId | null {
   const id = new URLSearchParams(search).get('look');
-  if (!id || !(id in LOOK_PRESETS)) return null;
-  active = id as LookId;
+  if (id === 'off') {
+    active = null;
+    return null;
+  }
+  active = id && id in LOOK_PRESETS ? (id as LookId) : DEFAULT_LOOK;
   reapplyLook();
   return active;
 }

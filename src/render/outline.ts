@@ -195,14 +195,21 @@ const fragmentShader = /* glsl */ `
       float radius = inkWidth * mix(1.0, inkNearScale, inkNear);
       // Broń i ręce (viewmodel) z cieńszym tuszem: inaczej giną pod czernią.
       if (texture2D(depthMap, vUv).x < viewmodelDepth) radius = min(radius, 1.2);
-      float ink = texture2D(edgeMap, vUv).r;
+      float core = texture2D(edgeMap, vUv).r;
+      float ink = core;
+      float hits = 0.0;
       for (int i = 0; i < 12; i++) {
         float a = float(i) * 0.5235988;
         vec2 dir = vec2(cos(a), sin(a)) * texelSize;
-        ink = max(ink, texture2D(edgeMap, vUv + dir * radius).r);
-        ink = max(ink, texture2D(edgeMap, vUv + dir * radius * 0.5).r);
+        float outer = texture2D(edgeMap, vUv + dir * radius).r;
+        float inner = texture2D(edgeMap, vUv + dir * radius * 0.5).r;
+        ink = max(ink, max(outer, inner));
+        hits += outer + inner;
       }
-      edge = ink;
+      // Gęsty detal (kratki, siatki, drobne panele): pogrubione linie zlewają się w czarną
+      // plamę — tam zostaje sama cienka maska 1 px.
+      float density = hits / 24.0;
+      edge = max(core, ink * (1.0 - smoothstep(0.5, 0.8, density)));
     }
     vec4 color = texture2D(colorMap, vUv);
     vec3 rgb = color.rgb;
@@ -238,8 +245,15 @@ const fragmentShader = /* glsl */ `
       float plain = (1.0 - smoothstep(0.45, 0.7, saturation)) * (1.0 - smoothstep(0.75, 0.95, luma));
       if (celStrength > 0.0 && celBands > 0.0 && luma > 1e-3) {
         // Pasma tylko przyciemniają (dół pasma): cienie robią się płaskie i ciemne, nie mgliste.
-        float banded = max(floor(luma * celBands) / celBands, luma * 0.35);
-        rgb *= mix(1.0, min(banded / luma, 1.0), celStrength * plain);
+        // Tylko cienie i półcienie — jasne gradienty świateł (lampy, plamy światła) zostają
+        // miękkie, inaczej robią się z nich koncentryczne pierścienie.
+        float shadowOnly = 1.0 - smoothstep(0.38, 0.55, luma);
+        // Krótkie, miękkie przejście między pasmami (a nie skok o 1 px) i łagodniejszy dół:
+        // płaskie plamy na bryłach, bez twardych pierścieni na gradientach światła.
+        float bandT = luma * celBands;
+        float bandStep = floor(bandT) + smoothstep(0.78, 1.0, fract(bandT));
+        float banded = max(bandStep / celBands, luma * 0.6);
+        rgb *= mix(1.0, min(banded / luma, 1.0), celStrength * plain * shadowOnly);
       }
       if (paintStrength > 0.0) {
         float blot = valueNoise(worldPoint * 1.7) * 0.6 + valueNoise(worldPoint * 6.0) * 0.4;
