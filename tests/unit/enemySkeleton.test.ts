@@ -5,6 +5,7 @@ import {
   AnimationAction,
   AnimationMixer,
   Box3,
+  Material,
   Mesh,
   Matrix4,
   SkinnedMesh,
@@ -138,6 +139,45 @@ it.each([
         .getWorldPosition(new Vector3());
       expect(muzzle.sub(grip).normalize().z).toBeGreaterThan(0.95);
     }
+  },
+);
+
+it.each([
+  ['enemy_trooper', ['visor', 'baton_tip', 'crest', 'crest_light']],
+  ['enemy_gunner', ['visor', 'helmet', 'cap_brim', 'antenna', 'antenna_light']],
+  [
+    'enemy_sniper',
+    ['visor', 'hood_shell', 'eye', 'coat_edge_L', 'coat_edge_R'],
+  ],
+  ['enemy_shielder', ['visor', 'baton_tip', 'shield', 'shoulder_skirt_L']],
+  ['enemy_executor', ['visor', 'chest_core', 'horn_1_2', 'pauldron_spike_L']],
+] as const)(
+  '%s: węzły sylwetki roli i akcentów zapowiedzi to siatki z klonowalnym materiałem',
+  async (model, nodes) => {
+    const gltf = await load(model);
+    gltf.scene.updateMatrixWorld(true);
+    for (const name of nodes) {
+      const node = gltf.scene.getObjectByName(name);
+      expect(node, name).toBeInstanceOf(Mesh);
+      const material = (node as Mesh).material;
+      expect(Array.isArray(material), name).toBe(false);
+      expect((material as Material).clone()).toBeInstanceOf(Material);
+    }
+    for (const name of ['visor', 'baton_tip', 'chest_core']) {
+      const node = gltf.scene.getObjectByName(name) as Mesh | undefined;
+      if (node)
+        expect((node.material as Material).name, name).toBe('mat_enemy_glow');
+    }
+    const box = (name: string) =>
+      new Box3().setFromObject(gltf.scene.getObjectByName(name)!, true);
+    // Znaki ról w pozycji wiązania (wysokość ciała 1,84 m): wachlarz szerszy od kasku,
+    // szpic kaptura i antena wyraźnie ponad głową.
+    if (model === 'enemy_trooper')
+      expect(box('crest').getSize(new Vector3()).x).toBeGreaterThan(0.35);
+    if (model === 'enemy_sniper')
+      expect(box('hood_shell').max.y).toBeGreaterThan(1.9);
+    if (model === 'enemy_gunner')
+      expect(box('antenna_light').max.y).toBeGreaterThan(1.9);
   },
 );
 

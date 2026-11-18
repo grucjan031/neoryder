@@ -181,6 +181,12 @@ interface Subscription {
 export class EventBus {
   private readonly handlers = new Map<EventType, Subscription[]>();
 
+  get listenerCount(): number {
+    let count = 0;
+    for (const list of this.handlers.values()) count += list.length;
+    return count;
+  }
+
   on<K extends EventType>(type: K, h: Handler<K>): () => void {
     const entry: Subscription = {
       original: h,

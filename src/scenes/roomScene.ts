@@ -2518,7 +2518,7 @@ export class RoomScene implements Scene {
     }
   }
 
-  /** Może rzucić przy niedokończonym `init()`; dispose() i tak sprząta motyw i korzeń sceny. */
+  /** Sprząta również zasoby utworzone przed przerwaniem asynchronicznego init(). */
   private disposeParts(): void {
     this.hazardView?.dispose();
     this.conquestView?.dispose();
@@ -2530,35 +2530,35 @@ export class RoomScene implements Scene {
     this.hazards?.dispose();
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
-    this.synergies.dispose();
-    this.powers.reset();
-    this.beamView.dispose();
-    this.lightningView.dispose();
-    this.explosionView.dispose();
+    this.synergies?.dispose();
+    this.powers?.reset();
+    this.beamView?.dispose();
+    this.lightningView?.dispose();
+    this.explosionView?.dispose();
     this.bossFx?.dispose();
-    this.shatter.dispose();
-    this.debrisView.dispose();
-    this.statusVfx.dispose();
-    this.statusView.dispose();
-    this.hitSparks.dispose();
-    this.hitSparksView.dispose();
+    this.shatter?.dispose();
+    this.debrisView?.dispose();
+    this.statusVfx?.dispose();
+    this.statusView?.dispose();
+    this.hitSparks?.dispose();
+    this.hitSparksView?.dispose();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
-    this.director.dispose();
-    this.manager.dispose();
-    this.statuses.dispose();
-    this.blade.dispose();
+    this.director?.dispose();
+    this.manager?.dispose();
+    this.statuses?.dispose();
+    this.blade?.dispose();
     this.execute?.dispose();
-    this.heldItem.dispose();
-    this.energy.dispose();
-    this.fppView.dispose();
-    this.flyingBlade.dispose();
-    this.barrierView.dispose();
-    this.projectileView.dispose();
-    this.projectiles.dispose();
-    this.fpsCamera.dispose();
-    this.player.dispose();
-    this.world.free();
+    this.heldItem?.dispose();
+    this.energy?.dispose();
+    this.fppView?.dispose();
+    this.flyingBlade?.dispose();
+    this.barrierView?.dispose();
+    this.projectileView?.dispose();
+    this.projectiles?.dispose();
+    this.fpsCamera?.dispose();
+    this.player?.dispose();
+    this.world?.free();
     this.doors.clear();
     for (const g of this.geometries) g.dispose();
     this.geometries.clear();
