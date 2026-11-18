@@ -37,6 +37,16 @@ const idle: InputSnapshot = {
 
 const active: Arena[] = [];
 
+/** Mediana z 3 przebiegów budowy: pojedynczy pomiar skacze pod obciążeniem maszyny. */
+function medianBuildMs(build: () => void): number {
+  const times = [0, 1, 2].map(() => {
+    const start = performance.now();
+    build();
+    return performance.now() - start;
+  });
+  return times.sort((a, b) => a - b)[1]!;
+}
+
 it.each(['450 × 300 m', 'arenaFloodedDocks'])(
   '%s: budżet nawigacji i 12 wrogów',
   async (id) => {
@@ -45,15 +55,15 @@ it.each(['450 × 300 m', 'arenaFloodedDocks'])(
     const definition = modeForArena(conquestMode, room);
     validateMode(definition, room, definition.enemies);
     for (const Navigation of [ArenaSurfaceNavigation, ArenaNavigation]) {
-      const start = performance.now();
-      const nav = new Navigation(room);
-      for (const point of definition.points) {
-        const path = nav.path(room.playerSpawn, point.position);
-        expect(path.at(-1)).toEqual(point.position);
-      }
-      const buildMs = performance.now() - start;
+      const buildMs = medianBuildMs(() => {
+        const nav = new Navigation(room);
+        for (const point of definition.points) {
+          const path = nav.path(room.playerSpawn, point.position);
+          expect(path.at(-1)).toEqual(point.position);
+        }
+      });
       console.info(
-        `[perf] ${id} ${Navigation.name}: ${buildMs.toFixed(2)} ms (siatka i 5 pól)`,
+        `[perf] ${id} ${Navigation.name}: ${buildMs.toFixed(2)} ms (mediana z 3, siatka i 5 pól)`,
       );
       expect(buildMs).toBeLessThanOrEqual(500);
     }
@@ -146,15 +156,15 @@ it.each(['arenaConstructionSite', 'arenaRailYard'])(
     const room = roomDefinitions.get(id)!;
     const definition = modeForArena(conquestMode, room);
     for (const Navigation of [ArenaSurfaceNavigation, ArenaNavigation]) {
-      const start = performance.now();
-      const nav = new Navigation(room);
-      for (const point of definition.points)
-        expect(nav.path(room.playerSpawn, point.position).at(-1)).toEqual(
-          point.position,
-        );
-      const buildMs = performance.now() - start;
+      const buildMs = medianBuildMs(() => {
+        const nav = new Navigation(room);
+        for (const point of definition.points)
+          expect(nav.path(room.playerSpawn, point.position).at(-1)).toEqual(
+            point.position,
+          );
+      });
       console.info(
-        `[perf] budowa ${Navigation.name}: ${buildMs.toFixed(2)} ms (siatka i 5 pól)`,
+        `[perf] budowa ${Navigation.name}: ${buildMs.toFixed(2)} ms (mediana z 3, siatka i 5 pól)`,
       );
       expect(buildMs).toBeLessThanOrEqual(500);
     }
@@ -220,14 +230,16 @@ it.each([
     const room = roomDefinitions.get(id)!;
     const port = id === 'arenaContainerPort';
     if (id === 'arenaPowerPlant' || port) {
-      const start = performance.now();
-      const nav = new ArenaNavigation(room);
-      for (const point of room.arena!.points)
-        expect(nav.path(room.playerSpawn, point.position).at(-1)).toEqual(
-          point.position,
-        );
-      const buildMs = performance.now() - start;
-      console.info(`[perf] ${id}: ${buildMs.toFixed(2)} ms (siatka i 5 pól)`);
+      const buildMs = medianBuildMs(() => {
+        const nav = new ArenaNavigation(room);
+        for (const point of room.arena!.points)
+          expect(nav.path(room.playerSpawn, point.position).at(-1)).toEqual(
+            point.position,
+          );
+      });
+      console.info(
+        `[perf] ${id}: ${buildMs.toFixed(2)} ms (mediana z 3, siatka i 5 pól)`,
+      );
       expect(buildMs).toBeLessThanOrEqual(500);
     }
     const bus = new EventBus();
