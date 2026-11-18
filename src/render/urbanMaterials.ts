@@ -53,9 +53,24 @@ export const portRailKinds = [
   'snow',
 ] as const;
 
+/** Zestaw „estakada, dachy, doki”: tekstury z public/assets/textures/surfaces. */
+export const overpassRoofsDocksKinds = [
+  'gas_station_tiles',
+  'highway_asphalt_worn',
+  'flood_brick_algae',
+  'boardwalk_planks',
+  'canal_stone_wall',
+] as const;
+
 const portLooks = z
   .record(
-    z.enum([...portKinds, ...arenaKinds, ...constructionPowerKinds, ...portRailKinds]),
+    z.enum([
+      ...portKinds,
+      ...arenaKinds,
+      ...constructionPowerKinds,
+      ...portRailKinds,
+      ...overpassRoofsDocksKinds,
+    ]),
     z.object({
       texture: z.enum([
         'container_corrugated_navy',
@@ -70,6 +85,7 @@ const portLooks = z
         ...arenaKinds,
         ...constructionPowerKinds,
         ...portRailKinds,
+        ...overpassRoofsDocksKinds,
       ]),
       tint: z
         .string()
@@ -81,6 +97,7 @@ const portLooks = z
       metalness: z.number().min(0).max(1),
       bump: z.number().nonnegative(),
       wetness: z.number().min(0).max(1),
+      /** Płaska barwa `tint` bez tekstury i shadera miasta (dla materiałów bez pliku tekstury). */
       flat: z.literal(true).optional(),
     }),
   )
@@ -91,6 +108,7 @@ export const urbanKinds = [
   ...arenaKinds,
   ...constructionPowerKinds,
   ...portRailKinds,
+  ...overpassRoofsDocksKinds,
   'concrete',
   'asphalt',
   'metal',

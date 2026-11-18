@@ -17,6 +17,7 @@ import { urbanKinds } from '../../src/render/urbanMaterials';
 import {
   CITY_PROP_MODELS,
   CONSTRUCTION_POWER_PROP_MODELS,
+  OVERPASS_ROOFS_DOCKS_PROP_MODELS,
   PORT_PROP_MODELS,
   PORT_RAIL_PROP_MODELS,
 } from '../../src/scenes/cityPropsTest';
@@ -925,4 +926,400 @@ describe('zestaw „port i zajezdnia”', () => {
         expect(ray.intersectObject(scene, true)[0]).toBeUndefined();
       }
   });
+});
+
+describe('zestaw „estakada, dachy, doki”', () => {
+  // ---------------------------------------------------------------------------
+  // Zestaw „estakada, dachy, doki” (tools/blender/sets/overpass_roofs_docks.py, docs/assets.md).
+
+  type Range = readonly [number, number];
+  interface SetSpec {
+    /** AABB X × Y × Z [m], ±5 mm. */
+    size: readonly [number, number, number];
+    /** Minimum AABB (punkt odniesienia) modeli niewyśrodkowanych w XZ. */
+    min?: readonly [number, number, number];
+    budget: number;
+    landmarks: readonly string[];
+    /** Zamknięta płyta `walk_slab`: jeden płaski wierzch na wysokości y nad prostokątem XZ. */
+    slab?: { y: number; x: Range; z: Range };
+    /** Powierzchnie chodzenia: promienie w dół z wysokości y + `from` (domyślnie 5 m) trafiają w y. */
+    walk?: readonly { y: number; x: Range; z: Range; from?: number }[];
+    /** Spód zadaszenia: promienie w górę z y = 1 m trafiają najniżej na wysokości y. */
+    ceiling?: { y: number; x: Range; z: Range };
+    /** Przejścia wolne od geometrii: promienie wzdłuż `axis` przez cały prostopadłościan. */
+    clear?: readonly { x: Range; y: Range; z: Range; axis: 'x' | 'y' | 'z' }[];
+  }
+
+  const overpassRoofsDocks: Record<string, SetSpec> = {
+    hw_gas_canopy: {
+      size: [24, 6.7, 12],
+      budget: 2000,
+      landmarks: ['canopy_body', 'fascia', 'soffit_light', 'column_tiles'],
+      ceiling: { y: 5.5, x: [-7.5, -1.5], z: [-2, 2] },
+      clear: [
+        { x: [-11.9, 11.9], y: [0.3, 5.499], z: [-2.4, 2.4], axis: 'x' },
+        { x: [-5.5, -3.5], y: [0.3, 5.499], z: [-5.9, 5.9], axis: 'z' },
+      ],
+    },
+    hw_gas_pump: {
+      size: [1.2, 2, 0.604],
+      budget: 1500,
+      landmarks: ['body', 'display', 'hose', 'nozzle'],
+    },
+    hw_toll_booth: {
+      size: [6.53, 3, 9],
+      min: [-1.42, 0, -4.5],
+      budget: 1500,
+      landmarks: ['booth_glass', 'island', 'arm', 'signal_go'],
+    },
+    hw_broken_deck_end: {
+      size: [14, 2.6, 12],
+      min: [-7, 0, -6],
+      budget: 2000,
+      landmarks: ['walk_slab', 'torn_end', 'rebar', 'hanging_cable'],
+      slab: { y: 1.6, x: [-7, 7], z: [-6, 4] },
+      walk: [{ y: 1.6, x: [-6, 6], z: [-5.8, 3.9] }],
+      clear: [{ x: [-6.1, 6.1], y: [1.65, 3.5], z: [-5.9, 3.9], axis: 'x' }],
+    },
+    hw_vent_tower: {
+      size: [8, 25, 8],
+      budget: 3000,
+      landmarks: ['shaft', 'louvres', 'green_lamp', 'door'],
+    },
+    hw_camp_tent_dome: {
+      size: [3.28, 1.281, 2.87],
+      budget: 800,
+      landmarks: ['fly', 'pole', 'door'],
+    },
+    hw_camp_tent_ridge: {
+      size: [2.202, 1.739, 3.95],
+      budget: 800,
+      landmarks: ['tarp', 'frame', 'back_panel'],
+    },
+    hw_camp_shack: {
+      size: [3.1, 2.4, 2.617],
+      budget: 1500,
+      landmarks: ['sheet', 'timber', 'tarp', 'lamp'],
+      clear: [{ x: [-0.4, 0.38], y: [0.5, 1.95], z: [0.5, 1.4], axis: 'z' }],
+    },
+    hw_fire_barrel: {
+      size: [0.622, 1.42, 0.614],
+      budget: 800,
+      landmarks: ['drum', 'fire', 'fire_core'],
+    },
+    hw_storm_culvert: {
+      size: [9.7, 5.8, 8],
+      min: [-4.85, 0, -6],
+      budget: 2000,
+      landmarks: ['walk_slab', 'culvert', 'grate', 'lamp'],
+      slab: { y: 0.2, x: [-3, 3], z: [-6, 1.5] },
+      walk: [{ y: 0.2, x: [-2.9, 2.9], z: [-5.9, 1.4], from: 1 }],
+      clear: [
+        { x: [-2.9, 2.9], y: [0.3, 4.1], z: [-5.9, -0.2], axis: 'z' },
+        { x: [-0.2, 2.6], y: [0.3, 2.5], z: [-6, 1.5], axis: 'z' },
+      ],
+    },
+    roof_clock_tower: {
+      size: [8, 35, 8],
+      min: [-4, 0, -4],
+      budget: 3000,
+      landmarks: ['tower', 'dial', 'dial_marks', 'helmet', 'bell'],
+    },
+    roof_giant_sign: {
+      size: [20, 12.667, 5.511],
+      budget: 2000,
+      landmarks: ['panel_violet', 'panel_amber', 'scaffold', 'catwalk'],
+    },
+    roof_stairwell_hut: {
+      size: [3.2, 3, 4.5],
+      budget: 1500,
+      landmarks: ['wall', 'door_frame', 'door_leaf', 'roof'],
+      walk: [{ y: 3, x: [-1.45, 1.45], z: [-2.2, 1.5] }],
+      clear: [
+        { x: [-0.59, 0.59], y: [0.05, 2.18], z: [-1.95, 2.24], axis: 'z' },
+        { x: [-1.33, 1.33], y: [0.05, 2.7], z: [-1.98, 0.1], axis: 'x' },
+      ],
+    },
+    roof_skylight: {
+      size: [3, 0.8, 2],
+      budget: 800,
+      landmarks: ['walk_slab'],
+      slab: { y: 0.8, x: [-1.5, 1.5], z: [-1, 1] },
+      walk: [{ y: 0.8, x: [-1.45, 1.45], z: [-0.95, 0.95] }],
+    },
+    roof_chimney_stack: {
+      size: [2, 3, 1],
+      budget: 800,
+      landmarks: ['stack', 'pot', 'cowl'],
+    },
+    dock_pontoon: {
+      size: [6, 0.8, 2.4],
+      budget: 1500,
+      landmarks: ['walk_slab', 'float', 'fender', 'marker_lamp'],
+      slab: { y: 0.5, x: [-3, 3], z: [-1.2, 1.2] },
+      walk: [{ y: 0.5, x: [-2.45, 2.45], z: [-0.85, 0.85] }],
+    },
+    dock_skiff: {
+      size: [6.2, 1.72, 2.04],
+      budget: 800,
+      landmarks: ['hull', 'motor', 'rub_rail'],
+    },
+    dock_pump_house: {
+      size: [16, 12.4, 16.683],
+      min: [-8, 0, -5],
+      budget: 3000,
+      landmarks: ['walk_slab', 'brick', 'pipe', 'window', 'amber_light'],
+      slab: { y: 0.1, x: [-7.9, 7.9], z: [-4.3, 4.3] },
+      walk: [
+        { y: 0.1, x: [-7.3, 7.3], z: [-4.2, 1.3], from: 1 },
+        { y: 0.1, x: [-7.85, 7.85], z: [-2.95, -0.05], from: 1 },
+      ],
+      clear: [{ x: [-8, 8], y: [0.15, 3.05], z: [-2.95, -0.05], axis: 'x' }],
+    },
+    dock_lock_gate: {
+      size: [12, 7.45, 2.4],
+      budget: 2000,
+      landmarks: ['walk_slab', 'leaf', 'abutment', 'steelwork', 'signal_go'],
+      slab: { y: 6, x: [-5, 5], z: [-0.7, 0.7] },
+      walk: [{ y: 6, x: [-5.95, 5.95], z: [-0.65, 0.65] }],
+      clear: [{ x: [-5.95, 5.95], y: [6.05, 7], z: [-0.6, 0.6], axis: 'x' }],
+    },
+    dock_barge: {
+      size: [30, 6.72, 8],
+      budget: 2000,
+      landmarks: ['walk_slab', 'hull', 'fender', 'tyre', 'wheelhouse_glass'],
+      slab: { y: 2.6, x: [-15, 15], z: [-4, 4] },
+      walk: [{ y: 2.6, x: [-13.6, 10.8], z: [-3.6, 3.6] }],
+      clear: [{ x: [-13.6, 10.8], y: [2.65, 4.5], z: [-3.6, 3.6], axis: 'x' }],
+    },
+    dock_mooring_post: {
+      size: [1.039, 4.2, 1.035],
+      min: [-0.505, 0, -0.505],
+      budget: 800,
+      landmarks: ['pile', 'band', 'rope', 'marker_lamp'],
+    },
+    dock_half_sunken_car: {
+      size: [2.123, 2.489, 4.215],
+      budget: 800,
+      landmarks: ['body', 'cabin_glass', 'wheel', 'tail_lamp'],
+    },
+  };
+  const setNames = Object.keys(overpassRoofsDocks);
+  const setMaterials = new Set([
+    ...materials,
+    'mat_steel_grating',
+    'mat_quay_concrete',
+    'mat_rubber_fender',
+    'mat_crane_paint',
+    'mat_overpass_concrete',
+    'mat_smog_soot_wall',
+    'mat_roof_tar',
+    'mat_roof_hvac_metal',
+    'mat_market_tarp',
+    'mat_gas_station_tiles',
+    'mat_highway_asphalt_worn',
+    'mat_flood_brick_algae',
+    'mat_boardwalk_planks',
+    'mat_canal_stone_wall',
+  ]);
+
+  /** Barwy zarezerwowane (ADR 0006): czerwień wrogów, cyan gracza, magenta Rezonansu. */
+  function reserved(color: Color): boolean {
+    const hsl = { h: 0, s: 0, l: 0 };
+    color.getHSL(hsl, SRGBColorSpace);
+    const hue = hsl.h * 360;
+    if (hsl.s < 0.35 || hsl.l < 0.08) return false;
+    return (
+      hue < 15 ||
+      hue >= 345 ||
+      (hue >= 170 && hue <= 200) ||
+      (hue >= 285 && hue <= 335)
+    );
+  }
+
+  function grid(range: Range, steps: number): number[] {
+    return Array.from(
+      { length: steps + 1 },
+      (_, i) => range[0] + ((range[1] - range[0]) * i) / steps,
+    );
+  }
+
+  async function loadSetModel(name: string): Promise<Object3D> {
+    const file = readFileSync(join(folder, `${name}.glb`));
+    const gltf = await new GLTFLoader().parseAsync(
+      file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength),
+      '',
+    );
+    gltf.scene.updateMatrixWorld(true);
+    return gltf.scene;
+  }
+
+  it('zestaw estakada, dachy, doki: komplet plików, podglądów i galerii', () => {
+    const files = readdirSync(folder).filter((file) =>
+      /^(hw|roof|dock)_.*\.glb$/.test(file),
+    );
+    expect(files.sort()).toEqual(setNames.map((n) => `${n}.glb`).sort());
+    expect([...OVERPASS_ROOFS_DOCKS_PROP_MODELS].sort()).toEqual(
+      [...setNames].sort(),
+    );
+    for (const name of setNames)
+      expect(
+        existsSync(
+          join(__dirname, `../../tools/blender/previews/city/${name}.png`),
+        ),
+        name,
+      ).toBe(true);
+  });
+
+  it.each(setNames)(
+    '%s: AABB, budżet, materiały gry, paleta i powierzchnie chodzenia',
+    async (name) => {
+      const spec = overpassRoofsDocks[name]!;
+      const scene = await loadSetModel(name);
+      expect(scene.getObjectByName(name)).toBeDefined();
+      let triangles = 0;
+      const originalNames = new Map<Mesh, string[]>();
+      scene.traverse((node) => {
+        if (!(node instanceof Mesh)) return;
+        const position = node.geometry.getAttribute('position');
+        triangles += (node.geometry.index?.count ?? position.count) / 3;
+        const used = Array.isArray(node.material)
+          ? node.material
+          : [node.material];
+        originalNames.set(
+          node,
+          used.map((mat) => mat.name),
+        );
+        for (const mat of used) {
+          expect(setMaterials.has(mat.name), mat.name).toBe(true);
+          expect(mat).toBeInstanceOf(MeshStandardMaterial);
+          if (!(mat instanceof MeshStandardMaterial)) continue;
+          expect(mat.map).toBeNull();
+          expect(reserved(mat.color), `${mat.name} kolor`).toBe(false);
+          const glow = glowColors[mat.name];
+          if (glow === undefined)
+            expect(mat.emissive.getHex(), mat.name).toBe(0);
+          else {
+            expect(mat.emissive.getHex(), mat.name).toBe(glow);
+            expect(mat.emissiveIntensity).toBeGreaterThan(0);
+          }
+        }
+      });
+      expect(triangles).toBeGreaterThan(0);
+      expect(triangles).toBeLessThanOrEqual(spec.budget);
+      for (const landmark of spec.landmarks)
+        expect(scene.getObjectByName(landmark), landmark).toBeDefined();
+
+      const box = new Box3().setFromObject(scene, true);
+      box
+        .getSize(new Vector3())
+        .toArray()
+        .forEach((actual, axis) =>
+          expect(actual, `oś ${axis}`).toBeCloseTo(spec.size[axis]!, 2),
+        );
+      expect(box.min.y).toBeCloseTo(0, 4);
+      const min = spec.min;
+      if (min)
+        box.min
+          .toArray()
+          .forEach((actual, axis) =>
+            expect(actual, `min ${axis}`).toBeCloseTo(min[axis]!, 2),
+          );
+      else {
+        expect((box.min.x + box.max.x) / 2).toBeCloseTo(0, 3);
+        expect((box.min.z + box.max.z) / 2).toBeCloseTo(0, 3);
+      }
+
+      const meshes = [...originalNames.keys()];
+      const ray = new Raycaster();
+      if (spec.slab) {
+        const { y, x, z } = spec.slab;
+        const slab = scene.getObjectByName('walk_slab')!;
+        const slabBox = new Box3().setFromObject(slab, true);
+        expect(slabBox.min.x).toBeCloseTo(x[0], 5);
+        expect(slabBox.max.x).toBeCloseTo(x[1], 5);
+        expect(slabBox.min.z).toBeCloseTo(z[0], 5);
+        expect(slabBox.max.z).toBeCloseTo(z[1], 5);
+        expect(slabBox.max.y).toBeCloseTo(y, 5);
+        let topArea = 0;
+        const a = new Vector3(),
+          b = new Vector3(),
+          c = new Vector3();
+        slab.traverse((node) => {
+          if (!(node instanceof Mesh)) return;
+          const geometry = node.geometry.toNonIndexed();
+          const positions = geometry.getAttribute('position');
+          for (let i = 0; i < positions.count; i += 3) {
+            a.fromBufferAttribute(positions, i).applyMatrix4(node.matrixWorld);
+            b.fromBufferAttribute(positions, i + 1).applyMatrix4(
+              node.matrixWorld,
+            );
+            c.fromBufferAttribute(positions, i + 2).applyMatrix4(
+              node.matrixWorld,
+            );
+            const normal = b.clone().sub(a).cross(c.clone().sub(a));
+            if (normal.y <= 0) continue;
+            for (const vertex of [a, b, c]) expect(vertex.y).toBeCloseTo(y, 5);
+            topArea += normal.length() / 2;
+          }
+          geometry.dispose();
+        });
+        // Jeden płaski wierzch bez dziur, nachyleń i podwójnych warstw.
+        expect(topArea).toBeCloseTo((x[1] - x[0]) * (z[1] - z[0]), 3);
+      }
+      for (const { y, x, z, from = 5 } of spec.walk ?? [])
+        for (const px of grid(x, 8))
+          for (const pz of grid(z, 4)) {
+            ray.set(new Vector3(px, y + from, pz), new Vector3(0, -1, 0));
+            const hit = ray.intersectObjects(meshes, false)[0];
+            expect(
+              hit,
+              `chodzenie ${px.toFixed(2)}, ${pz.toFixed(2)}`,
+            ).toBeDefined();
+            expect(hit!.point.y).toBeCloseTo(y, 4);
+          }
+      if (spec.ceiling) {
+        const { y, x, z } = spec.ceiling;
+        for (const px of grid(x, 4))
+          for (const pz of grid(z, 4)) {
+            ray.set(new Vector3(px, 1, pz), new Vector3(0, 1, 0));
+            const hit = ray.intersectObjects(meshes, false)[0];
+            expect(hit, `spód ${px}, ${pz}`).toBeDefined();
+            expect(hit!.point.y).toBeGreaterThanOrEqual(y - 1e-4);
+            expect(hit!.point.y).toBeLessThan(y + 0.1);
+          }
+      }
+      const axes = ['x', 'y', 'z'] as const;
+      for (const passage of spec.clear ?? []) {
+        const along = axes.indexOf(passage.axis);
+        const [u, v] = axes.filter((axis) => axis !== passage.axis);
+        if (!u || !v) throw new Error('oś przejścia');
+        const range = passage[passage.axis];
+        for (const pu of grid(passage[u], 2))
+          for (const pv of grid(passage[v], 2)) {
+            const origin = new Vector3();
+            origin.setComponent(along, range[0]);
+            origin.setComponent(axes.indexOf(u), pu);
+            origin.setComponent(axes.indexOf(v), pv);
+            ray.set(origin, new Vector3().setComponent(along, 1));
+            ray.far = range[1] - range[0];
+            const hits = ray.intersectObjects(meshes, false);
+            expect(
+              hits.map((hit) => hit.object.name),
+              `przejście ${passage.axis} ${pu.toFixed(2)}, ${pv.toFixed(2)}`,
+            ).toEqual([]);
+          }
+        ray.far = Infinity;
+      }
+
+      // Gra rozpoznaje każdy materiał po nazwie (bez zastępczego mat_world).
+      applyStyle(scene);
+      for (const [node, names] of originalNames) {
+        const used = Array.isArray(node.material)
+          ? node.material
+          : [node.material];
+        expect(used.map((mat) => mat.name)).toEqual(names);
+      }
+    },
+  );
 });

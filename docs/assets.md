@@ -363,6 +363,96 @@ Do przeglądu sylwetki użyj widoku całego zestawu, a do przeglądu wyrwy,
 łączeń podestów i świateł użyj zbliżeń `prop=`. Sprawdzenie przejścia
 kapsułą przy odbiorze aren zależy od ich colliderów.
 
+## Estakada, dachy, doki (duże areny, ADR 0011)
+
+22 modele do aren `arenaOverpass` (prefiks `hw_`), `arenaRooftops` (`roof_`) i `arenaFloodedDocks`
+(`dock_`). Osobny skrypt zestawu `tools/blender/sets/overpass_roofs_docks.py` importuje pomocnicze
+funkcje z `build_assets.py` (`import build_assets as ba`), ma własny rejestr i `--only`; `build_assets.py`
+nie został zmieniony. Pliki: `public/assets/models/city/<nazwa>.glb` (ten sam folder i loader
+`cloneCityModel` co `city_*`), podglądy `tools/blender/previews/city/<nazwa>.png` — arkusz 2×2: przód 3/4,
+tył 3/4, widok z wysokości oczu (1,7 m) i sylwetka nocą z daleka (płaskie barwy na ciemnym niebie).
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/sets/overpass_roofs_docks.py
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/sets/overpass_roofs_docks.py -- --only dock_barge,hw_gas_canopy --no-preview
+```
+
+Konwencje jak w porcie: metry, glTF Y-up, spód na `y = 0`, przód +Z, płaskie normalne, jedna siatka na
+materiał. **P** = początek w środku podstawy AABB (x = z = 0); inne punkty odniesienia opisano w tabeli.
+AABB to rzeczywisty bounding box GLB **X × Y × Z**. W kolumnie materiałów pominięto prefiks `mat_`;
+**pogrubione** są nowe materiały zestawu. Każdy model ma pusty korzeń o swojej nazwie, a płaskie
+powierzchnie chodzenia to zamknięte płyty `walk_slab` (wierzch to jedna płaszczyzna, pola materiałów
+nie zachodzą na siebie). Modele nie zawierają colliderów ani świateł punktowych.
+
+| Nazwa | AABB X × Y × Z [m] | Punkt odniesienia | Powierzchnie chodzenia (wysokość; prostokąt XZ) i przejścia | Materiały (`mat_…`) | Trójkąty / budżet |
+| --- | --- | --- | --- | --- | ---: |
+| `hw_gas_canopy` | 24,000 × 6,700 × 12,000 | P; słupy x = −9 / 0 / 9, z = ±3 (stopa 0,9 × 0,9) | spód wiaty (najniższy punkt) **y = 5,5** nad całym rzutem; dach płaski y = 6,5 z attyką 6,7 (bez wejścia) | concrete, **gas_station_tiles**, hivis, lacquer, light_white, metal, neon_amber, neon_blue, roof_tar, trim | 1680 / 2000 |
+| `hw_gas_pump` | 1,200 × 2,000 × 0,604 | P; wyświetlacze ±Z | blok 1,2 × 2 × 0,6 | concrete, lacquer, light_white, machine, metal, neon_amber, neon_green, plastic, rubber, trim | 608 / 1500 |
+| `hw_toll_booth` | 6,530 × 3,000 × 9,000 | oś wysepki (x = z = 0); szlaban w +X | wysepka y = 0,2 (x ±1,4; z ±3,6, nosy do ±4,5); budka x ±1,1, z ±1,7 do y = 2,6, daszek x ±1,4, z ±2 do y = 3; ramię szlabanu x 1,47…5,11, y 0,95…1,05, z 2,6…2,7 | concrete, glass, hazard, hivis, light_white, machine, metal, neon_amber, neon_green, trim | 772 / 1500 |
+| `hw_broken_deck_end` | 14,000 × 2,600 × 12,000 | jak `city_overpass_deck`: środek segmentu, spód y = 0, z = −6…6 | `walk_slab` **14 × 1,6 × 10 m: wierzch y = 1,6, x ±7, z −6…4**, środek collidera (0; 0,8; −1); pas wolny między barierami x ±6,2; z = 4…6 poszarpana krawędź (wierzch < 1,6, nie do chodzenia) | asphalt, cable, concrete, glass, **highway_asphalt_worn**, hivis, metal, rubber, rust, trim | 1588 / 2000 |
+| `hw_vent_tower` | 8,000 × 25,000 × 8,000 | P | — (cokół 8 × 0,3 × 8, trzon z pilastrami 7,5 × 7,5, głowica 8 × 8 na 19…23,3 m) | cable, concrete, machine, metal, neon_green, **overpass_concrete** (istniejący), trim | 2972 / 3000 |
+| `hw_camp_tent_dome` | 3,280 × 1,281 × 2,870 | P; wejście w +Z | — (namiot ok. 2,4 × 1,25 × 2,1, linki i drobiazgi wokół) | cable, fabric, hivis, market_tarp, metal, paint, trim, wood | 678 / 800 |
+| `hw_camp_tent_ridge` | 2,202 × 1,739 × 3,950 | P; kalenica w Z, otwarte wejście w +Z | — (plandeka 2,2 × 1,6 × 2,8, linki do z = ±1,95) | cable, fabric, hivis, lacquer, market_tarp, metal, neon_amber, rubber, wood | 420 / 800 |
+| `hw_camp_shack` | 3,100 × 2,400 × 2,617 | P; wejście w +Z | otwarte wejście x −0,5…0,55, y 0…2,0 w ścianie z = +1,15; wnętrze na gruncie (y = 0) | cable, concrete, corrugated, fabric, market_tarp, metal, neon_amber, rubber, rust, trim, wood | 1456 / 1500 |
+| `hw_fire_barrel` | 0,622 × 1,420 × 0,614 | P (oś beczki) | — (beczka r = 0,29, h = 0,95; płomienie do 1,42) | cable, concrete, metal, neon_amber, neon_white, rust, wood | 752 / 800 |
+| `hw_storm_culvert` | 9,700 × 5,800 × 8,000 | x = 0 w osi tunelu, **z = 0 w licu portalu**; tunel w −Z, skrzydła w +Z | `walk_slab` **wierzch y = 0,2, x ±3, z −6…1,5** (+ trójkąty fartucha do skrzydeł); wnętrze wolne 6 × 4 m (y 0,2…4,2) na z −6…0, tył otwarty (przechodnie); w kracie przejście x −0,2…2,6 do y = 2,5 | cable, concrete, light_white, metal, **overpass_concrete** (istniejący), rust, trim | 840 / 2000 |
+| `roof_clock_tower` | 8,000 × 35,000 × 8,000 | P (oś wieży); drzwi w +Z | — (cokół 8 × 1,2 × 8, tarcze r = 2,3 na y = 23,35, szczyt 35 m) | concrete, glass, hivis, lacquer, metal, neon_amber, neon_white, paint, plaster, trim, wood | 2952 / 3000 |
+| `roof_giant_sign` | 20,000 × 12,667 × 5,511 | P; panele w +Z (lico z = 1,744) | pomost serwisowy y = 4,1, x ±10, z 1,79…2,59 (dekoracyjny, bez testu); rama 20 × 8 m na y 4,2…12,2 | cable, concrete, light_white, machine, metal, neon_amber, neon_violet, steel_grating, trim | 1364 / 2000 |
+| `roof_stairwell_hut` | 3,200 × 3,000 × 4,500 | P; drzwi w +Z | przejście **1,2 × 2,2 m** (x ±0,6, z 1,4…1,65); wnętrze wolne x ±1,35, z −2,0…1,4 na podłożu (y = 0); dach płaski y = 3,0 (x ±1,5, z −2,25…1,55) | concrete, lacquer, light_white, machine, metal, neon_amber, plaster, roof_tar, trim | 324 / 1500 |
+| `roof_skylight` | 3,000 × 0,800 × 2,000 | P | `walk_slab` **wierzch y = 0,8 na całym 3 × 2** (rama i szyby w jednej płaszczyźnie) | glass, metal, roof_hvac_metal | 188 / 800 |
+| `roof_chimney_stack` | 2,000 × 3,000 × 1,000 | P | — (komin 1,8 × 2,3 × 0,8 z gzymsem 2 × 1 do y = 2,53, nasady do 3,0) | cable, concrete, **flood_brick_algae**, metal, roof_tar, rust, trim | 516 / 800 |
+| `dock_pontoon` | 6,000 × 0,800 × 2,400 | P | `walk_slab` **wierzch y = 0,5, x ±3, z ±1,2**; pachołki x ±2,65, z ±1,0 (r ≤ 0,17, do y = 0,8); pływaki y 0…0,26 (linia wody ok. y = 0,25) | **boardwalk_planks**, hivis, metal, neon_amber, rubber, rubber_fender, trim | 844 / 1500 |
+| `dock_skiff` | 6,200 × 1,720 × 2,040 | P; długość w X, dziób w +X | — (bez kolizji chodzenia; linia wody ok. y = 0,3) | hivis, light_white, machine, market_tarp, metal, neon_amber, paint, rubber, trim, wood | 564 / 800 |
+| `dock_pump_house` | 16,000 × 12,400 × 16,683 | środek rzutu budynku (x ±8, z ±5); rury w +Z | `walk_slab` posadzka **y = 0,1, x ±7,9, z ±4,3**; wejścia przechodnie **3 × 3 m** w obu szczytach (x = ±7,4…7,9; z −3…0; y 0,1…3,1); wolna posadzka x ±7,3, z −4,3…1,4 (pompy z 1,4…3,8); rury Ø 1,8 m z y = 5 do wylotów x = ±3, środek y = 1,2, z = 11 (klapy do z = 11,68), siodła z = 9,9 i 10,6 | cable, **canal_stone_wall**, concrete, crane_paint, **flood_brick_algae**, glass, hivis, machine, metal, neon_amber, paint, rust, trim | 2944 / 3000 |
+| `dock_lock_gate` | 12,000 × 7,450 × 2,400 | P; skrzydła x ±5, przyczółki x ±5…6, z ±1,2 | kładka **wierzch y = 6,0, x −6…6, z ±0,7** (`walk_slab` x ±5 + korony przyczółków); poręcze z = ±0,76 do y = 7,05 nad x ±0,12…4,9; mechanizmy zasuw z 0,88…1,15, sygnalizatory (±5,6; z −1,0) | **boardwalk_planks**, **canal_stone_wall**, concrete, hivis, lacquer, metal, neon_amber, neon_green, paint, rust, trim | 1572 / 2000 |
+| `dock_barge` | 30,000 × 6,720 × 8,000 | P (stępka y = 0); długość w X, sterówka w +X | `walk_slab` pokład **y = 2,6 = 1,6 m nad wodą (linia wody y = 1,0), x ±15, z ±4**; wolny pokład pod stragany x −13,6…10,8, z ±3,6; nadburcia \|z\| ≥ 3,84 z przejściami x ±1,6; sterówka x 11,2…14,4, z ±1,8 | **boardwalk_planks**, glass, hivis, lacquer, light_white, machine, metal, neon_amber, rubber, rubber_fender, rust, trim | 1840 / 2000 |
+| `dock_mooring_post` | 1,039 × 4,200 × 1,035 | oś zespołu pali na dnie (x = z = 0) | — (pale do y = 4,0, lampa do 4,2; pas glonów y 0,9…1,45) | hivis, metal, neon_amber, paint, rust, wood | 684 / 800 |
+| `dock_half_sunken_car` | 2,123 × 2,489 × 4,215 | P; przód +Z, pochylony 21° nosem w dół, przechył 11° | — (najniższy punkt y = 0 w nosie; woda ok. y = 0,9…1,2) | cable, glass, hivis, lacquer, metal, paint, plastic, rubber, rust, trim | 510 / 800 |
+
+Budżety pilnuje test: punkty orientacyjne (wieża wentylacyjna, wieża zegarowa, przepompownia)
+≤ 3000 jak `port_gantry_crane`, duże bryły ≤ 2000, rekwizyty z kolizją ≤ 1500, dekoracje ≤ 800.
+
+**Montaż i wysokości.** Kolizje areny to prostopadłościany z kolumny „powierzchnie chodzenia”, nie AABB
+z poręczami. `hw_broken_deck_end` łączy się z `city_overpass_deck` w z = −6 (te same x, wysokość jezdni
+i bariery x = ±6,6). Kanał burzowy stawiamy na `y = dno kanału − 0,2`; przepompownię licem wylotów
+(z = 11) przy krawędzi nabrzeża; barkę na `y = poziom wody − 1,0`; ponton na `y = poziom wody − 0,25`;
+śluzę tak, by korony murów kanału były na `y = 6,0` modelu. Wnętrze budki na dachu (`roof_stairwell_hut`)
+jest puste — zejście w dół (otwór, schody) dodaje układ areny.
+
+**Nowe materiały** (nazwy = planowane tekstury powierzchni z `tools/textures/catalog.json`): zarejestrowane
+w `src/data/render/arenaMaterials.json`. Pliki tekstur `public/assets/textures/surfaces/<id>.webp`
+są już podpięte (wpisy bez `flat`; kolumna „Barwa” to mnożnik `tint`).
+
+| Materiał | Tekstura (surfaces) | Barwa zastępcza / podgląd | Użycie |
+| --- | --- | --- | --- |
+| `mat_gas_station_tiles` | `gas_station_tiles` | `#5a606b` | okładzina słupów wiaty |
+| `mat_highway_asphalt_worn` | `highway_asphalt_worn` | `#33363d` | wierzch urwanej krawędzi wiaduktu |
+| `mat_flood_brick_algae` | `flood_brick_algae` | `#4a3f3a` | mury przepompowni; komin dachowy (jedyna cegła na liście tekstur) |
+| `mat_boardwalk_planks` | `boardwalk_planks` | `#4a3d31` | pokład pontonu, kładka śluzy, pokład barki |
+| `mat_canal_stone_wall` | `canal_stone_wall` | `#3d434c` | cokół i obramienia przepompowni, przyczółki śluzy |
+
+Pozostałe nazwy to istniejące materiały miasta, portu (`steel_grating`, `rubber_fender`, `crane_paint`)
+i aren (`overpass_concrete`, `roof_tar`, `roof_hvac_metal`, `market_tarp`). Paleta Neon Noir: emisja tylko
+bursztyn, zieleń, fiolet, błękit i ciepła biel (płomienie beczki: bursztyn + ciepła biel, sygnalizatory
+zielony/bursztynowy, lampy tylne wraku bursztynowe i bez emisji). Brak marek, logotypów i napisów:
+panele szyldów i wiaty są puste, tarcze zegara mają tylko kreski.
+
+**Uwaga integracyjna:** `RoomScene`/`Arena` rozpoznają modele bloków przez `isCityModelFile`
+(`src/render/cityModels.ts`), więc `hw_`/`roof_`/`dock_` działają jako `model` bloku.
+
+Kontrola: `tests/unit/cityModels.test.ts` (sekcja zestawu) sprawdza komplet 22 plików, podglądów i galerii,
+AABB i punkt odniesienia, budżety, węzły charakterystyczne, rozpoznanie materiałów przez `applyStyle`,
+barwy zarezerwowane i emisję, płyty `walk_slab` (jeden wierzch, pole równe prostokątowi), powierzchnie
+chodzenia promieniami w dół, spód wiaty (5,5 m) i drożność przejść (drzwi, wnętrza, krata, pokład).
+Ręcznie: `?scene=city-props-test&view=9` albo `&prop=<nazwa>` (patrz `docs/systems/city.md`).
+
+Obejrzano wszystkie 22 arkusze. Poprawki po podglądach: wiata dostała pusty błękitny panel i podział
+gzymsu (z daleka była jednolitą płytą); urwany wiadukt — gęstsza, piłowata krawędź, poprzeczne pręty
+i gruz (pierwsza wersja była falista); komin — usunięte plamy sadzy, które czytały się jak okna; barka —
+pokład wysunięty nad burty, wiszące opony, zwoje lin (była pustą skrzynią); wrak — mocniejsze
+pochylenie; wieża wentylacyjna, wieża zegarowa i przepompownia — przycięte trójkąty do budżetu 3000;
+przepompownia, namioty — wyeliminowane drobne wystawanie pod y = 0, które podnosiło cały model.
+
 ## Wrogowie — manekin CC0 ze szkieletem
 
 Pięć humanoidów powstaje przez `build_enemy_cc0(archetype)` z manekina

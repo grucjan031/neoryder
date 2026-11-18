@@ -389,6 +389,84 @@ const SET_LIGHTS = [
   portLight(SET_ORIGIN.x + 63, 6, SET_ORIGIN.z + 30, '#ffae1a', 40, 14),
 ];
 
+/**
+ * Zestaw „estakada, dachy, doki” (areny arenaOverpass, arenaRooftops, arenaFloodedDocks): osobny plac
+ * bez uliczki (`view=9` albo `prop=<model zestawu>`). Kolumny od zachodu: estakada, dachy, doki.
+ */
+const overpassRoofsDocksSlots: PortSlot[] = [
+  { model: 'hw_vent_tower', x: -64, y: 0, z: -30, yaw: 0 },
+  { model: 'hw_broken_deck_end', x: -48, y: 0, z: -28, yaw: 0 },
+  { model: 'hw_toll_booth', x: -35, y: 0, z: -28, yaw: 0 },
+  { model: 'hw_gas_canopy', x: -50, y: 0, z: 6, yaw: 0 },
+  { model: 'hw_gas_pump', x: -54.5, y: 0, z: 6, yaw: 0 },
+  { model: 'hw_gas_pump', x: -45.5, y: 0, z: 6, yaw: 0 },
+  { model: 'hw_storm_culvert', x: -70, y: 0, z: 26, yaw: 0 },
+  { model: 'hw_camp_tent_dome', x: -58, y: 0, z: 27, yaw: 0.4 },
+  { model: 'hw_camp_tent_ridge', x: -52, y: 0, z: 28, yaw: -0.3 },
+  { model: 'hw_camp_shack', x: -45, y: 0, z: 27, yaw: 0 },
+  { model: 'hw_fire_barrel', x: -50.5, y: 0, z: 32, yaw: 0 },
+  { model: 'roof_clock_tower', x: -12, y: 0, z: -28, yaw: 0 },
+  { model: 'roof_giant_sign', x: 8, y: 0, z: -28, yaw: 0 },
+  { model: 'roof_stairwell_hut', x: -12, y: 0, z: 6, yaw: 0 },
+  { model: 'roof_skylight', x: -3, y: 0, z: 6, yaw: 0 },
+  { model: 'roof_chimney_stack', x: 5, y: 0, z: 6, yaw: 0 },
+  { model: 'dock_pump_house', x: 50, y: 0, z: -34, yaw: 0 },
+  { model: 'dock_lock_gate', x: 32, y: 0, z: -6, yaw: 0 },
+  { model: 'dock_half_sunken_car', x: 69, y: 0, z: -6, yaw: 0.5 },
+  { model: 'dock_barge', x: 52, y: 0, z: 12, yaw: 0 },
+  { model: 'dock_pontoon', x: 52, y: 0, z: 27, yaw: 0 },
+  { model: 'dock_mooring_post', x: 44, y: 0, z: 27, yaw: 0 },
+  { model: 'dock_skiff', x: 64, y: 0, z: 27, yaw: 0 },
+];
+export const OVERPASS_ROOFS_DOCKS_PROP_MODELS = [
+  ...new Set(overpassRoofsDocksSlots.map(({ model }) => model)),
+];
+const OVERPASS_ROOFS_DOCKS_VIEW = 9;
+/** Plac zestawu i korytarz kamery przeglądu: panorama nie stawia tu wieżowców. */
+const OVERPASS_ROOFS_DOCKS_BOUNDS = new Box3(
+  new Vector3(-80, 0, -46),
+  new Vector3(80, 60, 112),
+);
+const OVERPASS_ROOFS_DOCKS_GROUND: readonly [V3, V3, MaterialKind][] = [
+  [[56, 0.3, 86], [-52, -0.15, -3], 'asphalt'],
+  [[48, 0.3, 86], [0, -0.15, -3], 'roof_tar'],
+  [[56, 0.3, 86], [52, -0.15, -3], 'quay_concrete'],
+];
+const OVERPASS_ROOFS_DOCKS_LIGHTS = [
+  portLight(-50, 4.8, 6, '#fff1d6', 120, 26),
+  portLight(-60, 12, -24, '#6dff4a', 90, 24),
+  portLight(-50, 2, 30, '#ffae1a', 60, 14),
+  portLight(-2, 14, -20, '#8a5cff', 140, 32),
+  portLight(-8, 6, 10, '#3d7bff', 60, 18),
+  portLight(50, 8, -20, '#ffae1a', 120, 30),
+  portLight(52, 6, 18, '#fff1d6', 90, 24),
+];
+
+interface SoloSet {
+  view: number;
+  slots: readonly PortSlot[];
+  lights: readonly ReturnType<typeof portLight>[];
+  bounds: Box3;
+  ground: readonly [V3, V3, MaterialKind][];
+}
+/** Zestawy z osobnym placem zamiast uliczki i portu (`view=<numer>` albo `prop=<model zestawu>`). */
+const SOLO_SETS: readonly SoloSet[] = [
+  {
+    view: CONSTRUCTION_POWER_VIEW,
+    slots: constructionPowerSlots,
+    lights: CONSTRUCTION_POWER_LIGHTS,
+    bounds: new Box3(new Vector3(-103, 0, -70), new Vector3(93, 120, 80)),
+    ground: [[[196, 0.3, 150], [-5, -0.17, 5], 'asphalt']],
+  },
+  {
+    view: OVERPASS_ROOFS_DOCKS_VIEW,
+    slots: overpassRoofsDocksSlots,
+    lights: OVERPASS_ROOFS_DOCKS_LIGHTS,
+    bounds: OVERPASS_ROOFS_DOCKS_BOUNDS,
+    ground: OVERPASS_ROOFS_DOCKS_GROUND,
+  },
+];
+
 const LIGHT_COLORS = ['#ffae1a', '#8a5cff', '#6dff4a', '#3d7bff', '#fff1d6'];
 type V3 = [number, number, number];
 const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
@@ -407,6 +485,7 @@ const REVIEW_VIEWS: readonly { from: V3; to: V3 }[] = [
     from: [SET_ORIGIN.x - 75, 30, SET_ORIGIN.z + 85],
     to: [SET_ORIGIN.x + 5, 2, SET_ORIGIN.z + 32],
   },
+  { from: [0, 46, 76], to: [0, 0, -8] },
 ];
 const DEFAULT_YAW_DEG = 35;
 const FILL_RATIO = 0.65;
@@ -433,7 +512,7 @@ export class CityPropsTest implements Scene {
   private focus?: Slot;
   private portFocus?: PortSlot;
   private view = 0;
-  private constructionPower = false;
+  private solo?: SoloSet;
   private readonly cameraPos = new Vector3();
   private readonly cameraTarget = new Vector3();
   private hasPropCamera = false;
@@ -441,34 +520,33 @@ export class CityPropsTest implements Scene {
   init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
     const requested = this.params.get('prop');
-    const constructionFocus = constructionPowerSlots.find(
-      ({ model }) => model === requested,
+    const soloFocus = SOLO_SETS.find((set) =>
+      set.slots.some((slot) => slot.model === requested),
     );
     const view = Number(this.params.get('view') ?? 0);
     this.view =
       Number.isInteger(view) && view >= 0 && view < REVIEW_VIEWS.length
         ? view
         : 0;
-    this.constructionPower =
-      constructionFocus !== undefined ||
-      (!requested && this.view === CONSTRUCTION_POWER_VIEW);
+    this.solo =
+      soloFocus ??
+      (requested ? undefined : SOLO_SETS.find((set) => set.view === this.view));
     this.atmosphere = new SceneAtmosphere(
       three,
       'neonStreet',
       'city-props-test',
       0,
-      this.constructionPower
-        ? new Box3(new Vector3(-103, 0, -70), new Vector3(93, 120, 80))
-        : undefined,
+      this.solo?.bounds,
     );
     this.root.name = this.id;
     three.add(this.root);
     this.root.add(this.lights);
-    if (this.constructionPower) {
-      this.portFocus = constructionFocus;
-      this.box([196, 0.3, 150], [-5, -0.17, 5], 'asphalt');
+    if (this.solo) {
+      this.portFocus = soloFocus?.slots.find((s) => s.model === requested);
+      for (const [size, position, kind] of this.solo.ground)
+        this.box(size, position, kind);
     } else {
-      if (this.view === CONSTRUCTION_POWER_VIEW) this.view = 0;
+      if (SOLO_SETS.some((set) => set.view === this.view)) this.view = 0;
       this.buildStreet();
       if (requested) {
         this.focus = slots.find((s) => s.model === requested);
@@ -516,10 +594,10 @@ export class CityPropsTest implements Scene {
   }
 
   private layout(): DressingLayout {
-    const lights = this.constructionPower
-      ? [...CONSTRUCTION_POWER_LIGHTS]
+    const lights = this.solo
+      ? [...this.solo.lights]
       : [...PORT_LIGHTS, ...SET_LIGHTS];
-    for (let i = 0; !this.constructionPower && i < 8; i++) {
+    for (let i = 0; !this.solo && i < 8; i++) {
       lights.push({
         position: { x: (i % 2 ? 1 : -1) * 3.4, y: 4, z: -19 + i * 5.4 },
         color: LIGHT_COLORS[i % LIGHT_COLORS.length] ?? '#fff1d6',
@@ -567,13 +645,14 @@ export class CityPropsTest implements Scene {
   private async loadModels(): Promise<void> {
     const placed = new Map<Slot, Object3D>();
     const placedPort = new Map<PortSlot, Object3D>();
-    const freestanding = this.constructionPower
+    // Zbliżenie modelu zestawu ładuje tylko ten model (sąsiednie bryły nie zasłaniają kadru).
+    const freestanding = this.solo
       ? this.portFocus
         ? [this.portFocus]
-        : constructionPowerSlots
+        : this.solo.slots
       : [...portSlots, ...setSlots];
     await Promise.all([
-      ...(this.constructionPower ? [] : slots).map(async (s) => {
+      ...(this.solo ? [] : slots).map(async (s) => {
         const model = await cloneCityModel(s.model);
         if (!model || this.disposed) return;
         model.name = s.model;

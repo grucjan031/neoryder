@@ -93,5 +93,50 @@
     "bump": 0,
     "wetness": 0,
     "flat": true
+  },
+  "gas_station_tiles": {
+    "texture": "gas_station_tiles",
+    "tint": "#5a606b",
+    "scale": 0.25,
+    "roughness": 0.6,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.4
+  },
+  "highway_asphalt_worn": {
+    "texture": "highway_asphalt_worn",
+    "tint": "#33363d",
+    "scale": 0.25,
+    "roughness": 0.55,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.7
+  },
+  "flood_brick_algae": {
+    "texture": "flood_brick_algae",
+    "tint": "#4a3f3a",
+    "scale": 0.25,
+    "roughness": 0.85,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.5
+  },
+  "boardwalk_planks": {
+    "texture": "boardwalk_planks",
+    "tint": "#4a3d31",
+    "scale": 0.5,
+    "roughness": 0.8,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.6
+  },
+  "canal_stone_wall": {
+    "texture": "canal_stone_wall",
+    "tint": "#3d434c",
+    "scale": 0.25,
+    "roughness": 0.85,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.5
   }
 }
