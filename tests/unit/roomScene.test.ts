@@ -4,6 +4,7 @@ import type { DamageSystem } from '../../src/combat/damage';
 import { powerDefinitions } from '../../src/combat/powers/registry';
 import type { RoomDefinition } from '../../src/world/roomSchema';
 import { RoomScene } from '../../src/scenes/roomScene';
+import { Arena } from '../../src/scenes/arena';
 import type { RoomSceneOptions } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
 import { GameLoop, SIM_DT } from '../../src/core/loop';
@@ -100,11 +101,49 @@ function untilFighting(scene: RoomScene): void {
   expect(scene.query('phase')).toBe('fighting');
 }
 
-// EventBus celowo nie udostępnia licznika w publicznym kontrakcie.
 function handlerCount(bus: EventBus): number {
-  const handlers = Reflect.get(bus, 'handlers') as Map<unknown, unknown[]>;
-  return [...handlers.values()].reduce((total, list) => total + list.length, 0);
+  return bus.listenerCount;
 }
+
+it.each(['room', 'arena'])(
+  '%s: przerwane init zwalnia świat i subskrypcje utworzone przed ładowaniem modeli',
+  async (kind) => {
+    const rapier = await initPhysics();
+    const free = vi.spyOn(rapier.World.prototype, 'free');
+    const bus = new EventBus();
+    const scene =
+      kind === 'arena'
+        ? new Arena(false)
+        : new RoomScene(
+            roomDefinitions.get('combatYard')!,
+            runState(),
+            loadWaves(wavesData),
+            { loadModels: false },
+          );
+    const three = new ThreeScene();
+    vi.spyOn(
+      scene as unknown as { buildLayout(): Promise<void> },
+      'buildLayout',
+    ).mockRejectedValue(new Error('model load failed'));
+    await expect(
+      scene.init(
+        {
+          bus,
+          rng: new Rng('memory'),
+          tuning: structuredClone(tuning),
+          loop: new GameLoop({ step() {}, render() {} }),
+          debug: false,
+        },
+        three,
+      ),
+    ).rejects.toThrow('model load failed');
+    scene.dispose();
+    scene.dispose();
+    expect(bus.listenerCount).toBe(0);
+    expect(free).toHaveBeenCalledTimes(1);
+    expect(three.children).toHaveLength(0);
+  },
+);
 
 it('zagłuszenie gracza blokuje Pchnięcie bez kosztu energii, po wygaśnięciu moc działa', async () => {
   const { scene, bus } = await setup(runState({ energy: 100 }));
@@ -260,14 +299,16 @@ it('liczy czas symulacji, a clear usuwa kolejkę fal, wrogów i pociski bez lecz
   expect(scene.query('enemies')).toBe(0);
 });
 
-it('trzy pokoje na wspólnym busie usuwają wszystkie handlery i zwalniają osobne światy dokładnie raz', async () => {
+it('sześć pokoi na wspólnym busie usuwa wszystkie handlery i zwalnia osobne światy dokładnie raz', async () => {
   const rapier = await initPhysics();
   const free = vi.spyOn(rapier.World.prototype, 'free');
   const bus = new EventBus();
   const external = vi.fn();
   bus.on('health_changed', external);
   const baseline = handlerCount(bus);
-  for (const room of ['combatYard', 'combatPillars', 'combatYard']) {
+  for (const room of Array.from({ length: 6 }, (_, i) =>
+    i % 2 === 0 ? 'combatYard' : 'combatPillars',
+  )) {
     const { scene, commands, three } = await setup(
       runState({ loadoutId: 'resonance' }),
       bus,
@@ -284,8 +325,8 @@ it('trzy pokoje na wspólnym busie usuwają wszystkie handlery i zwalniają osob
     expect(commands.execute('hold gun')).toContain('Nieznana komenda');
     expect(commands.execute('hurt 1')).toContain('Nieznana komenda');
   }
-  expect(free).toHaveBeenCalledTimes(3);
-  expect(new Set(free.mock.contexts).size).toBe(3);
+  expect(free).toHaveBeenCalledTimes(6);
+  expect(new Set(free.mock.contexts).size).toBe(6);
   expect(external).toHaveBeenCalled();
 });
 
