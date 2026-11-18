@@ -4,6 +4,23 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { DecorDef } from '../world/dressingSchema';
 import { applyStyle } from './materials';
 
+/** Prefiksy zestawów modeli miasta (public/assets/models/city/<model>.glb); nowy zestaw dopisz tutaj. */
+export const CITY_MODEL_PREFIXES = [
+  'city_',
+  'port_',
+  'rail_',
+  'build_',
+  'power_',
+  'hw_',
+  'roof_',
+  'dock_',
+] as const;
+export function isCityModelFile(model: string | undefined): boolean {
+  return (
+    model !== undefined && CITY_MODEL_PREFIXES.some((p) => model.startsWith(p))
+  );
+}
+
 /** Cache posiada geometrię i materiały; sceny usuwają tylko instancje dekoracji. */
 const templates = new Map<string, Promise<Object3D | null>>();
 export async function cloneCityModel(model: string): Promise<Object3D | null> {

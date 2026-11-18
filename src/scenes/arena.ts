@@ -3,7 +3,11 @@ import { worldEnvelope } from '../render/horizon';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { batchStaticGeometry } from '../render/staticBatch';
 import { CityDressing } from '../render/city/dressing';
-import { cloneCityModel, loadDecor } from '../render/cityModels';
+import {
+  cloneCityModel,
+  isCityModelFile,
+  loadDecor,
+} from '../render/cityModels';
 import { cloneRoomModel } from './roomModels';
 import { placeBlockModel } from './roomScene';
 import { FppViewModel } from '../render/fppViewModel';
@@ -500,24 +504,19 @@ export class Arena implements Scene {
           const fallback = new Mesh(geometry, getMaterial(material));
           fallback.position.set(position.x, position.y, position.z);
           blocks.add(fallback);
-          const file =
-            model?.startsWith('city_') || model?.startsWith('port_')
-              ? model
-              : model
-                ? MODEL_FILES[model]
-                : undefined;
+          const file = isCityModelFile(model)
+            ? model
+            : model
+              ? MODEL_FILES[model]
+              : undefined;
           if (!file || !this.loadModels) return;
           try {
             // Ten sam montaż co w pokojach (cache szablonów + placeBlockModel).
-            const scene =
-              file.startsWith('city_') || file.startsWith('port_')
-                ? await cloneCityModel(file)
-                : await cloneRoomModel(file);
+            const scene = isCityModelFile(file)
+              ? await cloneCityModel(file)
+              : await cloneRoomModel(file);
             if (!scene || this.disposed) return;
-            if (
-              blockMaterial &&
-              !(file.startsWith('city_') || file.startsWith('port_'))
-            )
+            if (blockMaterial && !isCityModelFile(file))
               scene.traverse((node) => {
                 if (node instanceof Mesh)
                   node.material = getMaterial(blockMaterial);

@@ -27,7 +27,11 @@ import { HazardSystem } from '../world/hazards';
 import type { HazardTarget } from '../world/hazards';
 import { HazardView } from '../render/hazardView';
 import { CityDressing } from '../render/city/dressing';
-import { cloneCityModel, loadDecor } from '../render/cityModels';
+import {
+  cloneCityModel,
+  isCityModelFile,
+  loadDecor,
+} from '../render/cityModels';
 import { batchStaticGeometry } from '../render/staticBatch';
 import { FppViewModel } from '../render/fppViewModel';
 import {
@@ -912,23 +916,18 @@ export class RoomScene implements Scene {
           fallback.position.set(position.x, position.y, position.z);
           fallback.quaternion.copy(quaternion);
           blocks.add(fallback);
-          const file =
-            model?.startsWith('city_') || model?.startsWith('port_')
-              ? model
-              : model
-                ? MODEL_FILES[model]
-                : undefined;
+          const file = isCityModelFile(model)
+            ? model
+            : model
+              ? MODEL_FILES[model]
+              : undefined;
           if (!file || !this.loadModels) return;
           try {
-            const scene =
-              file.startsWith('city_') || file.startsWith('port_')
-                ? await cloneCityModel(file)
-                : await cloneRoomModel(file);
+            const scene = isCityModelFile(file)
+              ? await cloneCityModel(file)
+              : await cloneRoomModel(file);
             if (!scene || this.disposed) return;
-            if (
-              blockMaterial &&
-              !(file.startsWith('city_') || file.startsWith('port_'))
-            )
+            if (blockMaterial && !isCityModelFile(file))
               scene.traverse((node) => {
                 if (node instanceof Mesh)
                   node.material = getMaterial(blockMaterial);

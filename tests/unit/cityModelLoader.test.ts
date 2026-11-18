@@ -2,7 +2,11 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { BoxGeometry, Group, Mesh, MeshBasicMaterial } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
-import { cloneCityModel, loadDecor } from '../../src/render/cityModels';
+import {
+  cloneCityModel,
+  isCityModelFile,
+  loadDecor,
+} from '../../src/render/cityModels';
 import { getMaterial } from '../../src/render/materials';
 
 afterEach(() => vi.restoreAllMocks());
@@ -71,4 +75,21 @@ it('loadModels=false nie wykonuje żadnego requestu dla dekoracji', async () => 
   );
   expect(loader).not.toHaveBeenCalled();
   expect(root.children).toHaveLength(0);
+});
+
+it('rozpoznaje pliki modeli miasta po prefiksach wszystkich zestawów', () => {
+  for (const name of [
+    'city_car',
+    'port_sts_crane',
+    'rail_track_straight',
+    'build_tower_crane',
+    'power_transformer',
+    'hw_pillar',
+    'roof_vent',
+    'dock_crane',
+  ])
+    expect(isCityModelFile(name), name).toBe(true);
+  for (const name of ['crate_small', 'wall_panel', 'portal', ''])
+    expect(isCityModelFile(name), name).toBe(false);
+  expect(isCityModelFile(undefined)).toBe(false);
 });
