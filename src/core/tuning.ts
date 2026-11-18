@@ -659,6 +659,24 @@ export const tuning = {
     grabOrbM: 0.2,
     beamRadiusM: 0.018,
     /**
+     * Klinga ostrza FPP (render/fppBladeFx.ts), komiksowa plazma: płaskie strefy w poprzek poświaty
+     * (granice jako ułamek półszerokości quada poświaty: biały rdzeń, jasny cyjan, ciemniejsza otoczka
+     * i jej krycie)
+     * oraz płaskie pasma energii płynące od emitera do czubka (liczba na klingę, ułamek okresu,
+     * poszerzenie rdzenia w paśmie, prędkość w pasmach/s; spokojna prędkość przy wyłączonych
+     * „Błyskach ekranu”, mnożnik prędkości w trakcie cięcia).
+     */
+    bladeCoreFrac: 0.07,
+    bladeInnerFrac: 0.3,
+    bladeOuterFrac: 0.44,
+    bladeOuterOpacity: 0.85,
+    bladeBands: 4,
+    bladeBandWidth: 0.35,
+    bladeBandSwell: 0.02,
+    bladeBandSpeed: 1.4,
+    bladeBandSpeedCalm: 0.15,
+    bladeBandSlashBoost: 2.5,
+    /**
      * Błyskawica (render): szerokość wstęgi rdzenia i poświaty (m), krycie poświaty, kolor rdzenia,
      * ułamek życia łuku na uderzenie, migotanie (Hz, głębokość 0..1), odnogi (szansa na wierzchołek,
      * długość w m), rozmiar błysku trafienia (m), limit łuków, punkt dłoni względem kamery (m)

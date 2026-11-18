@@ -422,7 +422,7 @@ Testy: `tests/unit/hubNpcView.test.ts`, `hubSeating.test.ts`, `hubCatView.test.t
 | `enemy_executor.glb`                   | Egzekutor (5395 tri): manekin 1,2×, zakręcone rogi, ogromne naramienniki z kolcami, fartuch kata, świecący kręgosłup, rdzeń w ramie                                              | `hand_R`, `blade_hilt`, `chest_core`, `visor`; kod dodaje `executor_blade` wg `bladeSizeM`                                       |
 | `enemy_drone.glb`                      | Dron (936 tri): kadłub z kopułą czujnika, ciemne ramiona ze światłami pod silnikami, boczne i tylne światła, duże oko, lufa; początek układu w środku kadłuba, oko z przodu (+Z) | `eye` (pulsuje przy celowaniu), `rotor_LF/RF/LB/RB` (pivot w środku, obrót wokół Y), `muzzle`                                    |
 | `enemy_projectile.glb`                 | wolny, dobrze widoczny pocisk wroga, wydłużony wzdłuż Z                                                                                                                          | — (do `InstancedMesh`)                                                                                                           |
-| `plasma_blade.glb`                     | ostrze plazmowe (488 tri): rękojeść z gumowym chwytem, fazowanym gardłem, głowicą i pazurami emitera                                                                             | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
+| `plasma_blade.glb`                     | ostrze plazmowe (872 tri): rękojeść z owijką 4 pasów, widełkami emitera, szczeliną mocy i pierścieniem głowicy                                                                   | `hilt`, `grip`, `trim`, `emitter_ring`, `blade` (pivot u emitera — skaluj po Z do wysuwania), `blade_core`, `blade_tip`          |
 | `blaster.glb`                          | blaster z przegrzaniem                                                                                                                                                           | `frame`, `heat_vents` i `heat_cell` (kolor/emisja = poziom ciepła), `muzzle`                                                     |
 | `player_arm_R.glb`, `player_arm_L.glb` | rękawica taktyczna z rękawem i cybernetycznym karwaszem FPP (10 264 tri na rękę)                                                                                                 | `forearm`, `wrist`, `palm`, 15 przegubów palców, `palm_center`, `resonance_core`, `socket_blade`, `socket_gun`, `socket_support` |
 | `crate.glb`, `crate_small.glb`         | skrzynie 1 m i 0,5 m (interaktywne: chwyt i rzut), obręcze, narożniki i ukośne zastrzały na bokach (356 tri)                                                                     | —                                                                                                                                |
@@ -533,7 +533,8 @@ stal) i `grip` (chwyt, kolba, pompa — guma). W GLB to nadal `mat_interactive`;
 materiały widoku FPP po nazwie węzła (`src/render/fppMaterials.ts`: `frame`/`hilt` grafitowy
 pancerz z chłodną krawędzią, `trim` stal, `grip` guma), niezależnie od motywu — w motywie neon
 `mat_interactive` jest jasny i broń wyglądała jak biała zabawka. `blade_core` dostaje w grze
-jasny cyjanowy rdzeń, poświatę zwróconą do kamery i smugę cięcia (`src/render/fppBladeFx.ts`).
+biało-gorący rdzeń, komiksową klingę zwróconą do kamery (płaskie strefy i pasma energii) i smugę
+cięcia (`src/render/fppBladeFx.ts`).
 Ciepło broni przechodzi z cyanu w biel rozgrzanego metalu (nie w czerwień — zarezerwowana dla wrogów).
 
 Szlif komiksowy (Borderlands + Neon Noir, 18.11.2026): bryły budują pomocnicze `slab` (profil boczny
@@ -554,13 +555,23 @@ moduły warsztatu) zostały w dawnych położeniach.
 | `sniper_rifle.glb` | luneta z dzwonami i wieżyczkami, hamulec z portami, zamek z gałką            | `frame`, `trim`, `grip`, `heat_vents`, `heat_cell`, `scope_lens`, `muzzle`                                              | 828      |
 | `beam.glb`         | emiter z czaszą, cewki, żebra radiatora, moduł zasilania z oknem ogniwa      | `frame`, `trim`, `grip`, `heat_vents` (cewki), `heat_cell`, `lens`, `muzzle`                                            | 708      |
 | `emp_launcher.glb` | gruba tuba, fazowany bęben ze stalową piastą i pokrywami, dzwon wylotu       | `frame`, `trim`, `grip`, `heat_vents` (pierścienie), `heat_cell`, `muzzle`                                              | 852      |
-| `blade_twin.glb`   | krótsza rękojeść, fazowana poprzeczna osłona zwężona ku końcom               | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 552      |
-| `blade_staff.glb`  | długa rękojeść (0,8 m), fazowane gardła i pancerne tuleje, pazury emiterów   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 724      |
+| `blade_twin.glb`   | krótsza rękojeść, osłona-rogi wygięte ku klindze, cyjanowa listwa, kolec     | jak `plasma_blade`: `hilt`, `grip`, `trim`, `emitter_ring`, `blade`, `blade_core`, `blade_tip`                          | 756      |
+| `blade_staff.glb`  | długa rękojeść (0,8 m), dwie szczeliny mocy przy chwycie, widełki emiterów   | `hilt`, `grip`, `trim`; przód `blade`, `blade_core`, `blade_tip`; tył `blade_back`, `blade_back_core`, `blade_back_tip` | 980      |
 
 Budżet broni i rękojeści po szlifie: ≤ 3000 trójkątów (test `tests/unit/weaponModels.test.ts`);
 modele mieszczą się w 500–850.
 
 Pivoty `blade` i `blade_back` leżą u emiterów, długość ostrza 1 m przy skali 1 (skaluj po Z).
+
+Szlif FPP rękojeści (18.11.2026): z oka gracza widać grzbiet (+X Blendera, strona przycisku) i wierzch
+(gardło emitera), więc tam są elementy rozpoznawcze. Owijka chwytu (`_fpp_wrap`) to 3–4 grube pasy
+o promieniu dawnego walca chwytu ze skośnymi rowkami (grubość i położenie części chwytanej bez zmian).
+Szczelina mocy (`_fpp_power_slot`) to ciemna obudowa w `trim` i cyjanowe ogniwa dołączone do
+`emitter_ring` (`mat_player_cyan`, bez nowych węzłów). Widełki emitera (`_fpp_forks`) stoją po bokach
+(±Z, lewo/prawo z oka). Warianty: `plasma_blade` — widełki, 3 ogniwa, pierścień głowicy (`_fpp_ring`);
+`blade_twin` — rogi osłony i listwa mocy na jej grzbiecie, kolec głowicy, owijka 3 pasów; `blade_staff` —
+dwie szczeliny po obu stronach chwytu i widełki na obu emiterach. Budżet rękojeści (bez rdzeni klingi)
+≤ 1000 trójkątów; gniazda klingi i chwyt pilnuje `tests/unit/bladeHilts.test.ts`.
 Model broni wskazuje pole `model` w `src/data/weapons/<id>.json`.
 
 ### Punkt podparcia broni
