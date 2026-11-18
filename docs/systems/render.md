@@ -688,6 +688,12 @@ lewą dłoń, podparcie na `support` broni i gest mocy z własnym magentowym mat
 `tuning.hands` w lil-gui oraz stałe pozycji/kątów na górze plików FPP.
 Szczegóły i kontrola ręczna: [hands.md](hands.md#render-przegubowych-dłoni).
 
+Klinga ostrza (`FppBladeFx`) to komiksowa plazma na quadzie zwróconym do kamery: dwa stałe programy
+(`fppPlasmaBlade:solid` — biały rdzeń i jasny cyjan, nieprzezroczyste z zapisem głębi; `:halo` —
+półprzezroczysta otoczka), strefy z twardą granicą zamiast gradientu i płaskie pasma energii płynące
+od emitera (uniformy z `tuning.vfx.blade*`, w cięciu szybciej). Przy wyłączonych „Błyskach ekranu”
+pasma dryfują powoli, a szerokość nie pulsuje. Oba quady mają `noOutline` (bez tuszu), bloom: tak.
+
 ## Render pogody i portu
 
 Opcjonalny profil `weather` w pokoju steruje istniejącą mgłą wysokościową,

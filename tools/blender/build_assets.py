@@ -810,11 +810,12 @@ def build_enemy_drone():
 
 # --------------------------------------------------------------------------- player weapons
 
-def _fpp_hilt_parts(length, radius, y_front, grip_len, prongs=True):
-    """Rękojeść ostrza: korpus, rozszerzone gardło emitera, gumowy chwyt, pierścienie i pazury.
+def _fpp_hilt_parts(length, radius, y_front, grip_len, bands=4):
+    """Rękojeść ostrza: korpus, rozszerzone gardło emitera, owijka chwytu i wykończenia.
 
     Zwraca listy (korpus, chwyt, wykończenia). Oś rękojeści = +Y Blendera, środek chwytu w 0.
-    Szlif komiksowy: fazowane gardło i głowica dają czytelną sylwetkę; chwyt bez zmian (dłoń).
+    Szlif FPP: z oka gracza widać grzbiet (+X, strona przycisku) i wierzch (gardło emitera),
+    więc tam trafiają szczelina mocy i widełki; owijka ma grube pasy o promieniu dawnego chwytu.
     """
     y0 = -length / 2
     r = radius
@@ -826,40 +827,92 @@ def _fpp_hilt_parts(length, radius, y_front, grip_len, prongs=True):
         # głowica: fazowany ośmiokąt z wąską szyjką
         lathe([(y0, r * .95), (y0 + .006, r * 1.24), (y0 + .018, r * 1.24), (y0 + .026, r * .98)], flat=False),
     ]
-    grip = [tube(-grip_len / 2, grip_len / 2, r * 1.07, r * 1.07, sides=8)]
+    grip = [_fpp_wrap(-grip_len / 2, grip_len / 2, r * 1.07, bands)]
     trim = [
         band(grip_len / 2, grip_len / 2 + .009, r * 1.27, .002, flat=False),
         band(-grip_len / 2 - .009, -grip_len / 2, r * 1.27, .002, flat=False),
         block(r * .9, r * 1.45, .0, .045, -.007, .007, bevel=.002),  # przycisk aktywacji
         band(y0 - .004, y0 + .002, r * .8, .0015, flat=False),  # stalowa nakładka głowicy
     ]
-    if prongs:
-        trim += _fpp_prongs(r * 1.15, y_front - .02, y_front + .028)
     return body, grip, trim
 
 
-def _fpp_prongs(x, y0, y1, sign=1):
-    """Dwa pazury osłony emitera po bokach, zwężone ku ostrzu (sign=-1: emiter z tyłu)."""
+def _fpp_wrap(y0, y1, r, bands, groove=.0032, ch=.0022, depth=.1, slant=.0035):
+    """Owijka chwytu: `bands` grubych pasów o promieniu r rozdzielonych skośnymi rowkami.
+
+    Najgrubsze miejsce = r (jak dawny walec chwytu), więc dłoń trzyma tę samą grubość;
+    rowki są tylko wgłębieniami, a skos (slant) daje czytelny rytm owijki w tuszu.
+    """
+    rings = [(y0, r)]
+    for i in range(1, bands):
+        yc = y0 + (y1 - y0) * i / bands
+        rings += [(yc - groove - ch, r), (yc - groove, r * (1 - depth)),
+                  (yc + groove, r * (1 - depth)), (yc + groove + ch, r)]
+    rings.append((y1, r))
+    bm = lathe(rings, flat=False)
+    for v in bm.verts:
+        if y0 + 1e-6 < v.co.y < y1 - 1e-6:
+            v.co.y += slant * v.co.z / r
+    return bm
+
+
+def _fpp_power_slot(x, y0, y1, cells=3, half_z=.0085, bevel=.0015):
+    """Szczelina mocy na grzbiecie (+X, w stronę oka): ciemna obudowa i cyjanowe ogniwa.
+
+    Zwraca (obudowa, ogniwa); ogniwa idą do węzła `emitter_ring` (mat_player_cyan).
+    """
+    housing = block(x - .004, x + .0045, y0 - .004, y1 + .004, -half_z, half_z, bevel=bevel)
+    gap = .0022
+    step = (y1 - y0 + gap) / cells
+    glow = [block(x + .002, x + .0058, y0 + i * step, y0 + i * step + step - gap,
+                  -half_z * .52, half_z * .52) for i in range(cells)]
+    return housing, glow
+
+
+def _fpp_forks(y_base, y_tip, r_in, r_out, sign=1, half_x=.0055):
+    """Widełki emitera po bokach (±Z, lewo/prawo z oka gracza): wygięte pazury zachodzące nad ostrze.
+
+    sign=-1: emiter z tyłu (oś -Y). Profil boczny (y, z) wyciągnięty po X.
+    """
+    h = abs(y_tip - y_base)
+    profile = [(0.0, r_in), (0.0, r_out), (.45 * h, r_out * 1.1), (h, r_in * 1.12),
+               (.8 * h, r_in * .98), (.35 * h, r_in * 1.12)]
     parts = []
     for side in (-1, 1):
-        part = block(side * x - .005, side * x + .005, y0, y1, -.006, .006)
-        for v in part.verts:
-            if (v.co.y - (y0 + y1) / 2) * sign > 0:
-                v.co.x = side * x + (v.co.x - side * x) * .5
-                v.co.z *= .6
-        parts.append(part)
+        pts = [(y_base + sign * dy, side * z) for dy, z in profile]
+        parts.append(slab(pts, -half_x, half_x))
+    return parts
+
+
+def _fpp_ring(yc, r_out, r_in, half_x, segments=8):
+    """Pierścień w płaszczyźnie Y-Z (widoczny z boku i z oka gracza), z odcinków-płyt."""
+    parts = []
+    for i in range(segments):
+        a0 = 2 * math.pi * i / segments
+        a1 = 2 * math.pi * (i + 1) / segments
+        pts = [(yc + r_in * math.cos(a0), r_in * math.sin(a0)), (yc + r_out * math.cos(a0), r_out * math.sin(a0)),
+               (yc + r_out * math.cos(a1), r_out * math.sin(a1)), (yc + r_in * math.cos(a1), r_in * math.sin(a1))]
+        parts.append(slab(pts, -half_x, half_x))
     return parts
 
 
 def build_plasma_blade():
-    """Ostrze plazmowe. Początek w środku chwytu, ostrze wzdłuż +Y Blendera (-Z glTF)."""
+    """Ostrze plazmowe. Początek w środku chwytu, ostrze wzdłuż +Y Blendera (-Z glTF).
+
+    Rozpoznawalność z FPP: widełki emitera, trzy ogniwa szczeliny mocy, pierścień na głowicy.
+    """
     root = empty("plasma_blade", size=0.1)
-    body, grip, trim = _fpp_hilt_parts(.27, .022, .135, .1)
+    r = .022
+    body, grip, trim = _fpp_hilt_parts(.27, r, .135, .1)
+    housing, cells = _fpp_power_slot(r * .92, .066, .094)
+    trim += [housing, *_fpp_forks(.103, .185, r * 1.02, r * 1.62)]
+    # pierścień głowicy (zawieszka) w płaszczyźnie widocznej z oka gracza
+    trim += _fpp_ring(-.135 - .012, .015, .009, .0045)
     mesh_object("hilt", bm_merge(*body), "mat_interactive", parent=root)
     mesh_object("grip", bm_merge(*grip), "mat_interactive", parent=root)
     mesh_object("trim", bm_merge(*trim), "mat_interactive", parent=root)
     ring = bm_prism(0.012, 0.031, 0.031, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.105, 0))
-    mesh_object("emitter_ring", ring, "mat_player_cyan", parent=root)
+    mesh_object("emitter_ring", bm_merge(ring, *cells), "mat_player_cyan", parent=root)
     # ostrze jako osobny węzeł: skalowanie po Z lokalnym = wysuwanie (pivot u emitera)
     blade_pivot = empty("blade", parent=root, location=(0, 0.135, 0), size=0.05)
     core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
@@ -1368,20 +1421,27 @@ def build_emp_launcher():
 
 
 def build_blade_twin():
-    """Rękojeść wariantu bliźniaczego: krótsza, z poprzeczną osłoną. Węzły jak plasma_blade."""
+    """Rękojeść wariantu bliźniaczego: krótsza, z rogami osłony i kolcem głowicy. Węzły jak plasma_blade.
+
+    Rozpoznawalność z FPP: osłona-rogi wygięte ku ostrzu (lewo/prawo z oka), cyjanowa listwa
+    na jej grzbiecie, owijka z trzech pasów i kolec zamiast pierścienia.
+    """
     root = empty("blade_twin", size=0.1)
-    body, grip, trim = _fpp_hilt_parts(.19, .024, .09, .07, prongs=False)
-    # poprzeczna osłona: fazowana belka zwężona ku końcom (sylwetka strzały z boku)
-    guard = bm_box(0.1, 0.012, 0.018, center=(0, 0.056, 0), bevel=0.003)
-    for v in guard.verts:
-        v.co.z *= 1 - 0.45 * abs(v.co.x) / 0.05
-    body.append(guard)
-    trim.append(bm_box(0.11, 0.006, 0.02, center=(0, 0.063, 0), taper_top=(0.85, 1.0), bevel=0.002))
+    r = .024
+    body, grip, trim = _fpp_hilt_parts(.19, r, .09, .07, bands=3)
+    # osłona: dwa rogi w płaszczyźnie Y-Z, zwężone i wygięte do przodu (sylwetka półksiężyca)
+    for side in (-1, 1):
+        horn = [(.049, 0.0), (.050, .028), (.072, .062), (.080, .060), (.066, .026), (.066, 0.0)]
+        body.append(slab([(y, side * z) for y, z in horn], -.008, .008, ch=.0015))
+    # kolec głowicy
+    body.append(tube(-.095 - .03, -.095 + .002, .002, r * .78, sides=6))
+    trim.append(block(.006, .0095, .050, .066, -.034, .034, bevel=.0012))  # rama listwy mocy
+    glow = block(.008, .011, .054, .062, -.028, .028)
     mesh_object("hilt", bm_merge(*body), "mat_interactive", parent=root)
     mesh_object("grip", bm_merge(*grip), "mat_interactive", parent=root)
     mesh_object("trim", bm_merge(*trim), "mat_interactive", parent=root)
     ring = bm_prism(0.012, 0.034, 0.034, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.1, 0))
-    mesh_object("emitter_ring", ring, "mat_player_cyan", parent=root)
+    mesh_object("emitter_ring", bm_merge(ring, glow), "mat_player_cyan", parent=root)
     pivot = empty("blade", parent=root, location=(0, 0.106, 0), size=0.05)
     core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
     mesh_object("blade_core", core, "mat_player_cyan", parent=pivot, location=(0, 0.106, 0))
@@ -1390,7 +1450,11 @@ def build_blade_twin():
 
 
 def build_blade_staff():
-    """Kij: długa rękojeść (0,8 m) z emiterami na obu końcach; chwyt w środku."""
+    """Kij: długa rękojeść (0,8 m) z emiterami na obu końcach; chwyt w środku.
+
+    Rozpoznawalność z FPP: długie drzewce z dwiema szczelinami mocy po obu stronach chwytu
+    i widełkami na obu emiterach.
+    """
     root = empty("blade_staff", size=0.1)
     hilt = bm_merge(
         tube(-0.37, 0.37, 0.019, 0.019, sides=8),
@@ -1402,17 +1466,20 @@ def build_blade_staff():
         lathe([(-0.245, 0.019), (-0.235, 0.024), (-0.18, 0.024), (-0.17, 0.019)], flat=False),
     )
     mesh_object("hilt", hilt, "mat_interactive", parent=root)
-    mesh_object("grip", tube(-0.06, 0.06, 0.024, 0.024, sides=8), "mat_interactive", parent=root)
+    mesh_object("grip", _fpp_wrap(-0.06, 0.06, 0.024, 3, slant=-.0035), "mat_interactive", parent=root)
+    slot_f, cells_f = _fpp_power_slot(0.019, 0.085, 0.155, bevel=0)
+    slot_b, cells_b = _fpp_power_slot(0.019, -0.155, -0.085, bevel=0)
     trim = bm_merge(
         *[band(y - 0.005, y + 0.005, 0.027, 0.002, flat=False) for y in (-0.065, 0.065, -0.25, 0.25)],
         block(0.018, 0.03, -0.04, 0.04, -0.01, 0.01),  # przycisk
-        *_fpp_prongs(0.034, 0.38, 0.425),
-        *_fpp_prongs(0.034, -0.425, -0.38, sign=-1),
+        slot_f, slot_b,
+        *_fpp_forks(0.37, 0.455, 0.021, 0.04),
+        *_fpp_forks(-0.37, -0.455, 0.021, 0.04, sign=-1),
     )
     mesh_object("trim", trim, "mat_interactive", parent=root)
     ring_f = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, 0.406, 0))
     ring_b = bm_prism(0.012, 0.032, 0.032, sides=8, axis="Y", top_at_origin=False, offset=(0, -0.406, 0))
-    mesh_object("emitter_ring", bm_merge(ring_f, ring_b), "mat_player_cyan", parent=root)
+    mesh_object("emitter_ring", bm_merge(ring_f, ring_b, *cells_f, *cells_b), "mat_player_cyan", parent=root)
     front = empty("blade", parent=root, location=(0, 0.412, 0), size=0.05)
     core = bm_prism(1.0, 0.012, 0.018, sides=6, axis="Y", top_at_origin=False, offset=(0, 0.5, 0))
     mesh_object("blade_core", core, "mat_player_cyan", parent=front, location=(0, 0.412, 0))
