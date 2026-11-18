@@ -108,9 +108,9 @@ test('hub: pasek meta pokazuje poziom i odświeża się po komendzie meta', asyn
   const bar = page.locator('.meta-bar');
   await expect(bar).toBeVisible();
   await expect(bar).toContainText('Poziom 1');
-  await expect(bar).toContainText('Wolne punkty: 0');
+  await expect(bar).toContainText('Punkty talentów: 0');
   await command(page, 'meta xp 500');
-  await expect(bar).not.toContainText('Wolne punkty: 0');
+  await expect(bar).not.toContainText('Punkty talentów: 0');
   const level = (await query(page, 'level')) as { level: number };
   expect(level.level).toBeGreaterThan(1);
   await expect(bar).toContainText(`Poziom ${level.level}`);

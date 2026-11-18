@@ -28,7 +28,7 @@ for (const build of builds)
       .poll(() => q('state'), { timeout: LOAD_TIMEOUT })
       .toBe('select');
     await expect(
-      page.getByRole('heading', { name: 'Wybierz build' }),
+      page.getByRole('heading', { name: 'Wybierz zestaw' }),
     ).toBeVisible();
     const card = page.getByRole('button', { name: build.name, exact: true });
     await expect(card).toBeVisible();
