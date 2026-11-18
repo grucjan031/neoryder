@@ -29,7 +29,7 @@
       "cooldownS": 0.15
     },
     "explosion": {
-      "volume": 0.9,
+      "volume": 0.6,
       "pitch": [0.96, 1.04],
       "variants": [
         [
@@ -101,7 +101,10 @@
             "wave": "noise",
             "durationS": 0.06,
             "gain": 0.7,
-            "filter": { "type": "highpass", "freq": 1400 }
+            "filter": {
+              "type": "highpass",
+              "freq": 1400
+            }
           },
           {
             "wave": "sine",
@@ -116,7 +119,10 @@
             "wave": "noise",
             "durationS": 0.05,
             "gain": 0.7,
-            "filter": { "type": "highpass", "freq": 1800 }
+            "filter": {
+              "type": "highpass",
+              "freq": 1800
+            }
           },
           {
             "wave": "triangle",
@@ -138,7 +144,11 @@
             "wave": "noise",
             "durationS": 0.16,
             "gain": 0.8,
-            "filter": { "type": "lowpass", "freq": 1600, "freqEnd": 400 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 1600,
+              "freqEnd": 400
+            }
           },
           {
             "wave": "sine",
@@ -167,7 +177,11 @@
             "wave": "noise",
             "durationS": 0.04,
             "gain": 0.6,
-            "filter": { "type": "bandpass", "freq": 2500, "q": 2 }
+            "filter": {
+              "type": "bandpass",
+              "freq": 2500,
+              "q": 2
+            }
           },
           {
             "wave": "sine",
@@ -186,10 +200,22 @@
       "variants": [
         [
           {
+            "wave": "sine",
+            "freq": 7200,
+            "durationS": 0.025,
+            "gain": 0.7,
+            "delayS": 0,
+            "attackS": 0.001
+          },
+          {
             "wave": "noise",
             "durationS": 0.4,
             "gain": 0.7,
-            "filter": { "type": "highpass", "freq": 2800, "freqEnd": 6000 }
+            "filter": {
+              "type": "highpass",
+              "freq": 2800,
+              "freqEnd": 6000
+            }
           },
           {
             "wave": "sine",
@@ -222,10 +248,22 @@
         ],
         [
           {
+            "wave": "sine",
+            "freq": 7200,
+            "durationS": 0.025,
+            "gain": 0.7,
+            "delayS": 0,
+            "attackS": 0.001
+          },
+          {
             "wave": "noise",
             "durationS": 0.45,
             "gain": 0.7,
-            "filter": { "type": "highpass", "freq": 2400, "freqEnd": 5200 }
+            "filter": {
+              "type": "highpass",
+              "freq": 2400,
+              "freqEnd": 5200
+            }
           },
           {
             "wave": "sine",
@@ -268,63 +306,83 @@
             "wave": "noise",
             "durationS": 0.22,
             "gain": 0.6,
-            "filter": { "type": "lowpass", "freq": 500 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 500
+            }
           }
         ]
       ]
     },
     "block": {
       "volume": 0.6,
-      "pitch": [0.95, 1.08],
+      "pitch": [1, 1],
+      "cooldownS": 0.04,
       "variants": [
         [
           {
-            "wave": "square",
-            "freq": 620,
-            "durationS": 0.12,
-            "gain": 0.25,
-            "filter": { "type": "bandpass", "freq": 1400, "q": 3 }
+            "wave": "sine",
+            "freq": 380,
+            "durationS": 0.2,
+            "gain": 0.65,
+            "delayS": 0,
+            "attackS": 0.003
           },
           {
-            "wave": "square",
-            "freq": 931,
-            "durationS": 0.1,
-            "gain": 0.2,
-            "filter": { "type": "bandpass", "freq": 1800, "q": 3 }
-          },
-          {
-            "wave": "noise",
-            "durationS": 0.05,
-            "gain": 0.4,
-            "filter": { "type": "highpass", "freq": 2000 }
+            "wave": "sine",
+            "freq": 570,
+            "durationS": 0.15,
+            "gain": 0.3,
+            "delayS": 0,
+            "attackS": 0.003
           }
         ]
       ]
     },
     "parry": {
-      "volume": 0.8,
-      "pitch": [0.97, 1.06],
+      "volume": 0.7,
+      "pitch": [0.97, 1.03],
+      "cooldownS": 0.04,
       "variants": [
         [
-          {
-            "wave": "sine",
-            "freq": 1250,
-            "freqEnd": 1900,
-            "durationS": 0.28,
-            "gain": 0.55
-          },
-          {
-            "wave": "triangle",
-            "freq": 2500,
-            "durationS": 0.35,
-            "gain": 0.3,
-            "delayS": 0.02
-          },
           {
             "wave": "noise",
             "durationS": 0.03,
             "gain": 0.6,
-            "filter": { "type": "highpass", "freq": 3500 }
+            "attackS": 0.001,
+            "filter": {
+              "type": "highpass",
+              "freq": 5000
+            }
+          },
+          {
+            "wave": "triangle",
+            "freq": 1870,
+            "durationS": 0.16,
+            "gain": 0.6,
+            "attackS": 0.001
+          },
+          {
+            "wave": "sine",
+            "freq": 2990,
+            "durationS": 0.12,
+            "gain": 0.35,
+            "attackS": 0.001
+          },
+          {
+            "wave": "sine",
+            "freq": 4860,
+            "durationS": 0.08,
+            "gain": 0.2,
+            "attackS": 0.001
+          },
+          {
+            "wave": "sine",
+            "freq": 180,
+            "freqEnd": 90,
+            "durationS": 0.07,
+            "gain": 0.45,
+            "attackS": 0.001
           }
         ]
       ]
@@ -340,13 +398,19 @@
             "freqEnd": 180,
             "durationS": 0.12,
             "gain": 0.35,
-            "filter": { "type": "lowpass", "freq": 3000 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 3000
+            }
           },
           {
             "wave": "noise",
             "durationS": 0.035,
             "gain": 0.35,
-            "filter": { "type": "highpass", "freq": 2500 }
+            "filter": {
+              "type": "highpass",
+              "freq": 2500
+            }
           }
         ]
       ]
@@ -362,7 +426,10 @@
             "freqEnd": 140,
             "durationS": 0.16,
             "gain": 0.25,
-            "filter": { "type": "lowpass", "freq": 1800 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 1800
+            }
           }
         ]
       ]
@@ -404,7 +471,11 @@
             "durationS": 0.38,
             "attackS": 0.03,
             "gain": 0.8,
-            "filter": { "type": "lowpass", "freq": 250, "freqEnd": 1400 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 250,
+              "freqEnd": 1400
+            }
           },
           {
             "wave": "sine",
@@ -434,7 +505,10 @@
             "freq": 180,
             "durationS": 0.08,
             "gain": 0.3,
-            "filter": { "type": "lowpass", "freq": 1200 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 1200
+            }
           },
           {
             "wave": "square",
@@ -442,7 +516,10 @@
             "durationS": 0.08,
             "gain": 0.3,
             "delayS": 0.1,
-            "filter": { "type": "lowpass", "freq": 1200 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 1200
+            }
           }
         ]
       ]
@@ -463,7 +540,10 @@
             "wave": "noise",
             "durationS": 0.08,
             "gain": 0.4,
-            "filter": { "type": "lowpass", "freq": 350 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 350
+            }
           }
         ]
       ]
@@ -499,13 +579,19 @@
             "freqEnd": 85,
             "durationS": 0.22,
             "gain": 0.35,
-            "filter": { "type": "lowpass", "freq": 1100 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 1100
+            }
           },
           {
             "wave": "noise",
             "durationS": 0.1,
             "gain": 0.4,
-            "filter": { "type": "lowpass", "freq": 900 }
+            "filter": {
+              "type": "lowpass",
+              "freq": 900
+            }
           }
         ]
       ]
@@ -521,7 +607,8 @@
             "freq": 700,
             "freqEnd": 1150,
             "durationS": 0.12,
-            "gain": 0.5
+            "gain": 0.5,
+            "attackS": 0.04
           }
         ]
       ]
@@ -531,7 +618,12 @@
       "pitch": [1, 1],
       "variants": [
         [
-          { "wave": "triangle", "freq": 440, "durationS": 0.14, "gain": 0.4 },
+          {
+            "wave": "triangle",
+            "freq": 440,
+            "durationS": 0.14,
+            "gain": 0.4
+          },
           {
             "wave": "triangle",
             "freq": 660,
@@ -547,7 +639,12 @@
       "pitch": [1, 1],
       "variants": [
         [
-          { "wave": "triangle", "freq": 660, "durationS": 0.12, "gain": 0.35 },
+          {
+            "wave": "triangle",
+            "freq": 660,
+            "durationS": 0.12,
+            "gain": 0.35
+          },
           {
             "wave": "triangle",
             "freq": 880,
@@ -635,79 +732,391 @@
       "pitch": [0.95, 1.08],
       "spatial": true,
       "cooldownS": 0.5
+    },
+    "heatWarning": {
+      "volume": 0.6,
+      "pitch": [1, 1],
+      "cooldownS": 1,
+      "variants": [
+        [
+          {
+            "wave": "sine",
+            "freq": 1800,
+            "durationS": 0.14,
+            "gain": 0.55,
+            "delayS": 0,
+            "attackS": 0.04
+          },
+          {
+            "wave": "sine",
+            "freq": 1500,
+            "durationS": 0.14,
+            "gain": 0.55,
+            "delayS": 0.18,
+            "attackS": 0.04
+          }
+        ]
+      ]
+    },
+    "lowHealth": {
+      "volume": 0.65,
+      "pitch": [1, 1],
+      "cooldownS": 1,
+      "variants": [
+        [
+          {
+            "wave": "triangle",
+            "freq": 92,
+            "freqEnd": 70,
+            "durationS": 0.16,
+            "gain": 0.8,
+            "attackS": 0.01,
+            "filter": {
+              "type": "lowpass",
+              "freq": 700
+            }
+          },
+          {
+            "wave": "sine",
+            "freq": 184,
+            "freqEnd": 140,
+            "durationS": 0.12,
+            "gain": 0.35,
+            "attackS": 0.01
+          },
+          {
+            "wave": "triangle",
+            "freq": 84,
+            "freqEnd": 62,
+            "durationS": 0.2,
+            "gain": 0.7,
+            "delayS": 0.26,
+            "attackS": 0.01,
+            "filter": {
+              "type": "lowpass",
+              "freq": 600
+            }
+          },
+          {
+            "wave": "sine",
+            "freq": 168,
+            "freqEnd": 124,
+            "durationS": 0.15,
+            "gain": 0.3,
+            "delayS": 0.26,
+            "attackS": 0.01
+          }
+        ]
+      ]
+    },
+    "telegraphAim": {
+      "volume": 0.6,
+      "pitch": [1, 1],
+      "cooldownS": 0.1,
+      "variants": [
+        [
+          {
+            "wave": "sine",
+            "freq": 2100,
+            "durationS": 0.45,
+            "gain": 0.5,
+            "delayS": 0,
+            "attackS": 0.15,
+            "freqEnd": 3400
+          }
+        ]
+      ]
+    },
+    "pickup": {
+      "volume": 0.6,
+      "pitch": [1, 1],
+      "cooldownS": 0.12,
+      "variants": [
+        [
+          {
+            "wave": "sine",
+            "freq": 880,
+            "durationS": 0.16,
+            "gain": 0.5,
+            "delayS": 0,
+            "attackS": 0.025
+          },
+          {
+            "wave": "sine",
+            "freq": 1100,
+            "durationS": 0.18,
+            "gain": 0.5,
+            "delayS": 0.08,
+            "attackS": 0.025
+          },
+          {
+            "wave": "sine",
+            "freq": 1320,
+            "durationS": 0.2,
+            "gain": 0.5,
+            "delayS": 0.16,
+            "attackS": 0.025
+          }
+        ]
+      ]
+    },
+    "runReward": {
+      "volume": 0.6,
+      "pitch": [1, 1],
+      "cooldownS": 1,
+      "variants": [
+        [
+          {
+            "wave": "sine",
+            "freq": 440,
+            "durationS": 0.5,
+            "gain": 0.3,
+            "delayS": 0,
+            "attackS": 0.06
+          },
+          {
+            "wave": "sine",
+            "freq": 550,
+            "durationS": 0.5,
+            "gain": 0.3,
+            "delayS": 0.16,
+            "attackS": 0.06
+          },
+          {
+            "wave": "sine",
+            "freq": 660,
+            "durationS": 0.5,
+            "gain": 0.3,
+            "delayS": 0.32,
+            "attackS": 0.06
+          },
+          {
+            "wave": "sine",
+            "freq": 880,
+            "durationS": 0.55,
+            "gain": 0.4,
+            "delayS": 0.48,
+            "attackS": 0.06
+          }
+        ]
+      ]
+    },
+    "telegraphHeavy": {
+      "volume": 0.55,
+      "pitch": [0.97, 1.03],
+      "cooldownS": 0.1,
+      "spatial": true,
+      "variants": [
+        [
+          {
+            "wave": "sawtooth",
+            "freq": 110,
+            "freqEnd": 220,
+            "durationS": 0.38,
+            "gain": 0.55,
+            "attackS": 0.08,
+            "filter": {
+              "type": "lowpass",
+              "freq": 500,
+              "freqEnd": 1400,
+              "q": 2
+            }
+          },
+          {
+            "wave": "square",
+            "freq": 55,
+            "freqEnd": 70,
+            "durationS": 0.38,
+            "gain": 0.25,
+            "attackS": 0.08,
+            "filter": {
+              "type": "lowpass",
+              "freq": 300
+            }
+          },
+          {
+            "wave": "triangle",
+            "freq": 1320,
+            "durationS": 0.06,
+            "gain": 0.4,
+            "delayS": 0.36,
+            "attackS": 0.002
+          }
+        ]
+      ]
     }
   },
   "rules": [
-    { "event": "explosion", "sound": "explosion" },
-    { "event": "execute_performed", "sound": "hitHeavy" },
     {
-      "event": "damage_dealt",
-      "when": { "targetIsPlayer": true },
-      "sound": "playerHurt"
-    },
-    { "event": "damage_dealt", "when": { "killed": true }, "sound": "kill" },
-    {
-      "event": "damage_dealt",
-      "when": { "tagsAny": ["#wall"] },
-      "sound": "wallSlam"
+      "event": "enemy_telegraph",
+      "when": {
+        "telegraphKind": "heavy"
+      },
+      "sound": "telegraphHeavy"
     },
     {
-      "event": "damage_dealt",
-      "when": { "tagsAny": ["#heavy"] },
+      "event": "enemy_telegraph",
+      "when": {
+        "telegraphKind": "aim"
+      },
+      "sound": "telegraphAim"
+    },
+    {
+      "event": "health_changed",
+      "when": {
+        "actorIsPlayer": true,
+        "lowHealthRising": true
+      },
+      "sound": "lowHealth"
+    },
+    {
+      "event": "currency_changed",
+      "when": {
+        "positiveDelta": true
+      },
+      "sound": "pickup"
+    },
+    {
+      "event": "implant_acquired",
+      "sound": "pickup"
+    },
+    {
+      "event": "meta_rewards",
+      "sound": "runReward"
+    },
+    {
+      "event": "explosion",
+      "sound": "explosion"
+    },
+    {
+      "event": "execute_performed",
       "sound": "hitHeavy"
     },
     {
       "event": "damage_dealt",
-      "when": { "tagsAny": ["#melee", "#power"] },
+      "when": {
+        "targetIsPlayer": true
+      },
+      "sound": "playerHurt"
+    },
+    {
+      "event": "damage_dealt",
+      "when": {
+        "killed": true
+      },
+      "sound": "kill"
+    },
+    {
+      "event": "damage_dealt",
+      "when": {
+        "tagsAny": ["#wall"]
+      },
+      "sound": "wallSlam"
+    },
+    {
+      "event": "damage_dealt",
+      "when": {
+        "tagsAny": ["#heavy"]
+      },
+      "sound": "hitHeavy"
+    },
+    {
+      "event": "damage_dealt",
+      "when": {
+        "tagsAny": ["#melee", "#power"]
+      },
       "sound": "hitLight"
     },
     {
       "event": "damage_dealt",
-      "when": { "tagsAny": ["#gun"] },
+      "when": {
+        "tagsAny": ["#gun"]
+      },
       "sound": "hitGun"
     },
     {
       "event": "melee_swing",
-      "when": { "actorIsPlayer": true },
+      "when": {
+        "actorIsPlayer": true
+      },
       "sound": "swing"
     },
-    { "event": "melee_blocked", "sound": "block" },
-    { "event": "parry_success", "sound": "parry" },
+    {
+      "event": "melee_blocked",
+      "sound": "block"
+    },
+    {
+      "event": "parry_success",
+      "sound": "parry"
+    },
     {
       "event": "weapon_fired",
-      "when": { "actorIsPlayer": true },
+      "when": {
+        "actorIsPlayer": true
+      },
       "sound": "blasterShot"
     },
     {
       "event": "projectile_spawned",
-      "when": { "team": "enemy" },
+      "when": {
+        "team": "enemy"
+      },
       "sound": "enemyShot"
     },
     {
       "event": "heat_changed",
-      "when": { "overheatRising": true },
+      "when": {
+        "overheatRising": true
+      },
       "sound": "overheat"
     },
     {
       "event": "power_used",
-      "when": { "actorIsPlayer": true },
+      "when": {
+        "actorIsPlayer": true
+      },
       "sound": "push"
     },
     {
       "event": "power_denied",
-      "when": { "actorIsPlayer": true },
+      "when": {
+        "actorIsPlayer": true
+      },
       "sound": "denied"
     },
-    { "event": "player_landed", "when": { "minSpeed": 7 }, "sound": "land" },
+    {
+      "event": "player_landed",
+      "when": {
+        "minSpeed": 7
+      },
+      "sound": "land"
+    },
     {
       "event": "dash_used",
-      "when": { "actorIsPlayer": true },
+      "when": {
+        "actorIsPlayer": true
+      },
       "sound": "dash"
     },
-    { "event": "enemy_telegraph", "sound": "telegraph" },
-    { "event": "wave_started", "sound": "waveStart" },
-    { "event": "wave_cleared", "sound": "waveCleared" },
-    { "event": "hub_prop_used", "when": { "kind": "bag" }, "sound": "bagHit" },
+    {
+      "event": "enemy_telegraph",
+      "sound": "telegraph"
+    },
+    {
+      "event": "wave_started",
+      "sound": "waveStart"
+    },
+    {
+      "event": "wave_cleared",
+      "sound": "waveCleared"
+    },
+    {
+      "event": "hub_prop_used",
+      "when": {
+        "kind": "bag"
+      },
+      "sound": "bagHit"
+    },
     {
       "event": "hub_fauna_sound",
       "when": {
@@ -721,6 +1130,20 @@
         "faunaKind": "rat"
       },
       "sound": "hub_rat"
+    },
+    {
+      "event": "heat_changed",
+      "when": {
+        "actorIsPlayer": true,
+        "heatWarningRising": true
+      },
+      "sound": "heatWarning"
     }
-  ]
+  ],
+  "alerts": {
+    "heatThreshold": 0.75,
+    "heatReset": 0.6,
+    "healthThreshold": 0.25,
+    "healthReset": 0.35
+  }
 }
