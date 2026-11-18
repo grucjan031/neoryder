@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import {
   Color,
+  HalfFloatType,
   Mesh,
   MeshNormalMaterial,
   PerspectiveCamera,
@@ -13,15 +14,18 @@ import type { WebGLRenderer } from 'three';
 import { tuning } from '../../src/core/tuning';
 import {
   createRenderPipeline,
+  inkAt,
   outlineFadeAt,
   SKY_BACKGROUND_ORDER,
   skyBackgroundFragment,
 } from '../../src/render/outline';
 import { getMaterial, syncMaterials } from '../../src/render/materials';
+import { applyLookPreset, LOOK_PRESETS } from '../../src/render/lookPresets';
 
 const defaults = { ...tuning.render };
 afterEach(() => {
   Object.assign(tuning.render, defaults);
+  applyLookPreset('?look=off');
   syncMaterials();
 });
 
@@ -181,6 +185,103 @@ it('wzór wygaszania: bliskie bez zmian, dalekie bez linii wewnątrz bryły', ()
   expect(
     outlineFadeAt(20, { ...fade, outlineFarNormal: 1, outlineFarOuter: 0 }),
   ).toEqual({ far: 1, normal: 1, depthInside: 1 });
+});
+
+it.each(['a', 'b', 'c'] as const)(
+  'tusz %s skaluje promień perspektywicznie i zatrzymuje dylatację poniżej pół piksela',
+  (look) => {
+    const ink = { ...defaults, ...LOOK_PRESETS[look] };
+    expect(inkAt(0, ink).radius).toBeCloseTo(ink.inkWidth * ink.inkNearScale);
+    expect(inkAt(1, ink).radius).toBeCloseTo(ink.inkWidth * ink.inkNearScale);
+    expect(inkAt(ink.inkRefDistanceM, ink).radius).toBe(ink.inkWidth);
+    expect(inkAt(8, ink).radius).toBeCloseTo(ink.inkWidth / 2);
+    expect(inkAt(12, ink).radius).toBeLessThan(inkAt(8, ink).radius);
+    expect(inkAt(100, ink).radius).toBeCloseTo(ink.inkWidth * ink.inkMinScale);
+    expect(inkAt(1000, ink).radius).toBe(inkAt(100, ink).radius);
+    const subpixel = { ...ink, inkWidth: 1.9 };
+    expect(inkAt(8, subpixel).dilation).toBeGreaterThan(0);
+    expect(inkAt(16, subpixel).dilation).toBe(0);
+    expect(inkAt(16, subpixel).opacity).toBe(1);
+  },
+);
+
+it('maska sylwetki 1 px słabnie dopiero po progu, a detale są cieńsze i gasną wcześniej', () => {
+  const ink = { ...defaults, ...LOOK_PRESETS.b };
+  expect(inkAt(ink.inkFadeNearM, ink).opacity).toBe(1);
+  expect(
+    inkAt((ink.inkFadeNearM + ink.inkFadeFarM) / 2, ink).opacity,
+  ).toBeCloseTo(0.5);
+  expect(inkAt(ink.inkFadeFarM, ink).opacity).toBe(0);
+  expect(inkAt(200, ink).opacity).toBe(0);
+  const near = inkAt(4, ink);
+  expect(near.normalRadius).toBeCloseTo(near.radius * 0.55);
+  expect(near.normalRadius).toBeLessThan(near.radius);
+  expect(near.normalOpacity).toBe(1);
+  const middle = inkAt(16, ink);
+  expect(middle.normalOpacity).toBeCloseTo(0.5);
+  expect(middle.normalOpacity).toBeLessThan(middle.opacity);
+  expect(middle.normalDilation).toBe(0);
+  expect(inkAt(24, ink).normalOpacity).toBe(0);
+  expect(inkAt(24, ink).opacity).toBe(1);
+});
+
+it('przekazuje strojenie tuszu do obu przebiegów i zachowuje osobny dawny tusz FPP', () => {
+  const { renderer, pipeline } = fixture();
+  const passes: ShaderMaterial[] = [];
+  const targets: (WebGLRenderTarget | null)[] = [];
+  renderer.render.mockImplementation((rendered: Scene) => {
+    const quad = rendered.children[0];
+    if (quad instanceof Mesh && quad.material instanceof ShaderMaterial) {
+      passes.push(quad.material);
+      targets.push(renderer.getRenderTarget());
+    }
+  });
+  applyLookPreset('?look=b');
+  tuning.render.bloom = 0;
+  tuning.render.postFx = 0;
+  tuning.render.inkRefDistanceM = 5;
+  tuning.render.skyGradient = 0;
+  tuning.render.inkMinScale = 0.2;
+  pipeline.render(new Scene(), new PerspectiveCamera());
+  expect(passes).toHaveLength(2);
+  expect(targets[0]?.texture.type).toBe(HalfFloatType);
+  const keys = [
+    'inkWidth',
+    'inkNearScale',
+    'inkRefDistanceM',
+    'inkMinScale',
+    'inkDilationMinPx',
+    'inkFadeNearM',
+    'inkFadeFarM',
+    'inkNormalScale',
+    'inkNormalFadeNearM',
+    'inkNormalFadeFarM',
+    'inkViewmodelWidth',
+    'inkViewmodelMaxRadiusPx',
+  ] as const;
+  for (const pass of passes)
+    for (const key of keys)
+      expect(pass.uniforms[key]?.value).toBe(tuning.render[key]);
+  const composite = passes[1]!;
+  expect(composite.fragmentShader).toContain('if (viewmodelInk)');
+  expect(composite.fragmentShader).toContain(
+    'inkViewmodelWidth * mix(1.0, inkNearScale, inkNear)',
+  );
+  expect(composite.uniforms.inkViewmodelWidth?.value).toBe(2.2);
+  expect(composite.uniforms.inkViewmodelMaxRadiusPx?.value).toBe(1.2);
+  pipeline.dispose();
+});
+
+it('look=off zachowuje dawny kontur i nie uruchamia przebiegu tuszu', () => {
+  const { renderer, pipeline } = fixture();
+  const before = { ...tuning.render };
+  applyLookPreset('?look=off');
+  expect(tuning.render).toEqual(before);
+  tuning.render.bloom = 0;
+  tuning.render.postFx = 0;
+  pipeline.render(new Scene(), new PerspectiveCamera());
+  expect(renderer.render).toHaveBeenCalledTimes(3);
+  pipeline.dispose();
 });
 
 it('gradient nieba jest tłem przebiegu koloru przed przezroczystymi, kompozycja go nie nadpisuje', () => {

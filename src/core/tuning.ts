@@ -367,15 +367,28 @@ export const tuning = {
     outlineFarOuter: 1,
     /**
      * Styl komiksowy (próbki kierunku „Borderlands”, 0 = wyłączone, wygląd bez zmian):
-     * inkNearScale pogrubia kontur blisko kamery (mnożnik grubości przy far = 0),
+     * inkNearScale ogranicza perspektywiczne pogrubienie konturu blisko kamery,
      * celBands > 0 dzieli jasność na pasma (celStrength = siła), hatchStrength przyciemnia
      * kreskowaniem w cieniach (poniżej hatchThreshold, odstęp linii hatchSpacing px),
      * paintStrength dokłada plamistą fakturę farby. Mocno nasycone piksele (wrogowie, neony,
      * efekty) są pomijane przez cel/kreski: czytelność walki ponad styl.
      */
     inkNearScale: 1,
-    /** Grubość tuszu w px po pogrubieniu maski krawędzi (0 = zwykły kontur). */
+    /** Promień dylatacji w px przy inkRefDistanceM (0 = zwykły kontur). */
     inkWidth: 0,
+    inkRefDistanceM: 4,
+    inkMinScale: 0.25,
+    /** Poniżej tego promienia zostaje tylko maska 1 px. */
+    inkDilationMinPx: 0.5,
+    inkFadeNearM: 45,
+    inkFadeFarM: 80,
+    /** Detale normalnych: cieńsze i wygaszane wcześniej niż sylwetka. */
+    inkNormalScale: 0.55,
+    inkNormalFadeNearM: 8,
+    inkNormalFadeFarM: 24,
+    /** Dotychczasowy tusz FPP, niezależny od perspektywicznego tuszu świata. */
+    inkViewmodelWidth: 2.2,
+    inkViewmodelMaxRadiusPx: 1.2,
     celBands: 0,
     celStrength: 0,
     hatchStrength: 0,

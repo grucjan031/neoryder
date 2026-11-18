@@ -756,17 +756,72 @@ Decyzja właściciela: gra przechodzi na styl inspirowany Borderlands z elementa
 Domyślnie działa wariant `b` z `src/render/lookPresets.ts` (nakładany po motywie przez
 `reapplyLook()`, bo motywy nadpisują kontur):
 
-- **Tusz:** ostra maska krawędzi 1 px (osobny przebieg) pogrubiona dylatacją w kompozycji
-  (`inkWidth`, grubiej blisko kamery `inkNearScale`); broń i ręce z cieńszym tuszem; na neonach
-  i jasnych efektach tusz zanika; przy gęstym detalu (kratki, siatki) zostaje sama linia 1 px.
+- **Tusz:** ostra maska krawędzi 1 px (osobny przebieg) pogrubiona perspektywicznie w kompozycji.
+  Kontur sylwetki (głębia) i detale (normalne) mają osobne kanały maski, promienie oraz krycie.
+  Broń i ręce zachowują dotychczasowy cieńszy tusz; na neonach i jasnych efektach tusz zanika;
+  przy gęstym detalu (kratki, siatki) zostaje sama linia 1 px.
 - **Płaskie cienie:** `celBands`/`celStrength` przyciemniają tylko cienie i półcienie
   (jasność < ~0,5), z krótkim miękkim przejściem między pasmami — światła lamp zostają miękkie.
   Nasycone i jasne piksele (neony, wrogowie, efekty) są nietknięte.
 - **Bez konturu:** obiekty z `userData.noOutline` oraz automatycznie przezroczyste materiały
   addytywne albo bez zapisu głębi (poświaty, stożki światła) — `src/render/noOutline.ts`.
 - Porównania: `?look=a` (sam tusz), `?look=c` (z kreskowaniem i plamami farby), `?look=off`
-  (dawny wygląd). Koszt: bez zmiany FPS w scenach testowych (kryjówka, uliczka, 3 areny Przejęcia, M01).
+  (dawny wygląd, bez nowych formuł tuszu).
 - Pakiet tekstur „komiks” (`public/assets/textures/komiks/`) czeka na podpięcie w arenach.
+
+### Grubość i zanik tuszu z odległością
+
+Promień dylatacji w pikselach bufora renderera:
+
+```text
+radius = inkWidth × clamp(inkRefDistanceM / depth, inkMinScale, inkNearScale)
+normalRadius = radius × inkNormalScale
+opacity = 1 − smoothstep(inkFadeNearM, inkFadeFarM, depth)
+normalOpacity = opacity × (1 − smoothstep(inkNormalFadeNearM, inkNormalFadeFarM, depth))
+```
+
+`depth` to metryczna głębia widokowa odtworzona z bufora, nie odległość euklidesowa.
+Przy sylwetce po stronie tła używana jest głębia najbliższej bryły, żeby odległa ściana
+lub niebo nie wygaszały konturu bliskiej postaci. Próbki dylatacji są dodatkowo ograniczane
+promieniem wynikającym z głębi źródła maski. Normalne mają osobny mniejszy promień i gasną
+wcześniej; zachowują też dotychczasowe wygaszanie `outlineFadeNear/Far` i `outlineFarNormal`.
+Przesuwanie dalekiego konturu na stronę tła (`outlineFarOuter`) nadal działa.
+
+Parametry w `tuning.render`, widoczne na żywo w lil-gui i ustawiane przez presety a/b/c:
+
+| Parametr                                   | a / b     | c         | Znaczenie                                            |
+| ------------------------------------------ | --------- | --------- | ---------------------------------------------------- |
+| `inkWidth`                                 | 1,9 px    | 2,05 px   | Promień przy 4 m, zmniejszony z 2,2 / 2,4 px         |
+| `inkRefDistanceM`                          | 4 m       | 4 m       | Głębia, przy której promień równa się `inkWidth`     |
+| `inkNearScale`                             | 1,35      | 1,4       | Górny limit skali blisko kamery (bez zmiany)         |
+| `inkMinScale`                              | 0,25      | 0,25      | Dolny limit skali daleko od kamery                   |
+| `inkDilationMinPx`                         | 0,5 px    | 0,5 px    | Poniżej progu dylatacja znika, zostaje maska 1 px    |
+| `inkFadeNearM` / `inkFadeFarM`             | 45 / 80 m | 45 / 80 m | Zanik krycia także samej maski sylwetki 1 px do zera |
+| `inkNormalScale`                           | 0,55      | 0,55      | Promień detali względem sylwetki                     |
+| `inkNormalFadeNearM` / `inkNormalFadeFarM` | 8 / 24 m  | 8 / 24 m  | Wcześniejszy zanik krycia detali do zera             |
+| `inkViewmodelWidth`                        | 2,2 px    | 2,4 px    | Dotychczasowy promień tuszu FPP przed ograniczeniem  |
+| `inkViewmodelMaxRadiusPx`                  | 1,2 px    | 1,2 px    | Dotychczasowe ograniczenie tuszu na broni i rękach   |
+
+Dla b: przy 4 m promień wynosi 1,9 px, przy 10 m 0,76 px, od 16 m 0,475 px
+(sama maska 1 px), przy 62,5 m maska ma połowę krycia, od 80 m znika. Viewmodel
+korzysta z osobnej dawnej maski i dawnego wzoru promienia, również po stronie tła:
+nowe skalowanie świata i wygaszanie detali nie usuwają konturów dłoni ani broni.
+
+Maska RGBA przechowuje kontur głębi, detal normalnych, dawną linię FPP i głębię źródła;
+ma format HalfFloat dla metrycznej głębi. Nie dochodzi nowy przebieg renderowania.
+Kompozycja osobno próbkuje obie szerokości i głębię otoczenia konturu; koszt GPU oraz
+ostateczny wygląd wymagają porównania w przeglądarce przez integratora.
+`inkAt()` w `outline.ts` jest odpowiednikiem formuł w TS; `renderOutline.test.ts` sprawdza
+limity, zanik dylatacji i krycia, cieńsze detale, uniformy obu przebiegów oraz `look=off`.
+
+Sprawdzenie w 30 s (domyślny b):
+
+1. `?scene=hub&debug=1`: podejdź do NPC, po czym odejdź około 10–15 m. Z bliska kreska
+   ma być delikatnie cieńsza; z daleka twarz, ręce i nogi mają zachować kolor oraz kształt.
+   Patrz także na dłonie i broń FPP: kontur powinien wyglądać jak przed zmianą.
+2. `?scene=conquest&arena=arenaRooftops&debug=1`: porównaj bliskich i dalekich wrogów,
+   szczególnie cienkie kończyny na tle nieba; odległe detale nie powinny tworzyć czarnych plam.
+   Dla kontroli dawnego renderu dopisz `&look=off`.
 
 ### Czytelność wrogów z daleka — poświata krawędzi (`src/render/enemyRim.ts`)
 

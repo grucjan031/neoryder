@@ -70,8 +70,80 @@ function smoothstep(edge0: number, edge1: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
+type InkParameters = Pick<
+  typeof tuning.render,
+  | 'inkWidth'
+  | 'inkRefDistanceM'
+  | 'inkMinScale'
+  | 'inkNearScale'
+  | 'inkDilationMinPx'
+  | 'inkFadeNearM'
+  | 'inkFadeFarM'
+  | 'inkNormalScale'
+  | 'inkNormalFadeNearM'
+  | 'inkNormalFadeFarM'
+>;
+
+/** Odpowiednik formuł tuszu świata w shaderze; promienie w px, głębia w metrach. */
+export function inkAt(depth: number, ink: InkParameters) {
+  const radius =
+    ink.inkWidth *
+    Math.min(
+      ink.inkNearScale,
+      Math.max(ink.inkMinScale, ink.inkRefDistanceM / Math.max(depth, 1e-3)),
+    );
+  const normalRadius = radius * ink.inkNormalScale;
+  const opacity =
+    1 -
+    smoothstep(
+      ink.inkFadeNearM,
+      Math.max(ink.inkFadeFarM, ink.inkFadeNearM + 1e-3),
+      depth,
+    );
+  return {
+    radius,
+    normalRadius,
+    dilation: radius < ink.inkDilationMinPx ? 0 : radius,
+    normalDilation: normalRadius < ink.inkDilationMinPx ? 0 : normalRadius,
+    opacity,
+    normalOpacity:
+      opacity *
+      (1 -
+        smoothstep(
+          ink.inkNormalFadeNearM,
+          Math.max(ink.inkNormalFadeFarM, ink.inkNormalFadeNearM + 1e-3),
+          depth,
+        )),
+  };
+}
+
+const inkShader = /* glsl */ `
+  uniform float inkWidth;
+  uniform float inkNearScale;
+  uniform float inkRefDistanceM;
+  uniform float inkMinScale;
+  uniform float inkDilationMinPx;
+  uniform float inkFadeNearM;
+  uniform float inkFadeFarM;
+  uniform float inkNormalScale;
+  uniform float inkNormalFadeNearM;
+  uniform float inkNormalFadeFarM;
+  uniform float inkViewmodelWidth;
+  uniform float inkViewmodelMaxRadiusPx;
+
+  float inkRadiusAt(float depth) {
+    return inkWidth * clamp(inkRefDistanceM / max(depth, 1e-3), inkMinScale, inkNearScale);
+  }
+  vec2 inkOpacityAt(float depth) {
+    float outer = 1.0 - smoothstep(inkFadeNearM, max(inkFadeFarM, inkFadeNearM + 1e-3), depth);
+    float inner = 1.0 - smoothstep(inkNormalFadeNearM, max(inkNormalFadeFarM, inkNormalFadeNearM + 1e-3), depth);
+    return vec2(outer, outer * inner);
+  }
+`;
+
 const fragmentShader = /* glsl */ `
   #include <packing>
+  ${inkShader}
   uniform sampler2D colorMap;
   uniform sampler2D colorDepthMap;
   uniform sampler2D normalMap;
@@ -117,8 +189,6 @@ const fragmentShader = /* glsl */ `
   uniform float vignetteStrength;
   uniform float vignetteRadius;
   uniform float vignetteSoftness;
-  uniform float inkNearScale;
-  uniform float inkWidth;
   uniform sampler2D edgeMap;
   uniform float celBands;
   uniform float celStrength;
@@ -128,8 +198,7 @@ const fragmentShader = /* glsl */ `
   uniform float paintStrength;
   varying vec2 vUv;
 
-  float viewDepth(vec2 uv) {
-    float depth = texture2D(depthMap, uv).x;
+  float metricDepth(float depth) {
     // Głębia viewmodelu jest ściśnięta do [0, viewmodelDepth]: przywracamy pełny zakres.
     if (depth < viewmodelDepth) depth /= viewmodelDepth;
     return -(perspective
@@ -137,8 +206,17 @@ const fragmentShader = /* glsl */ `
       : orthographicDepthToViewZ(depth, cameraNear, cameraFar));
   }
 
+  float viewDepth(vec2 uv) { return metricDepth(texture2D(depthMap, uv).x); }
+
   vec3 normalAt(vec2 uv) {
     return texture2D(normalMap, uv).xyz * 2.0 - 1.0;
+  }
+
+  // Głębia źródła maski, nie tła, ogranicza grubość dylatacji dalekiej sylwetki.
+  vec2 inkSample(vec2 uv, float distancePx) {
+    vec4 sampleEdge = texture2D(edgeMap, uv);
+    vec2 radius = inkRadiusAt(sampleEdge.a) * vec2(1.0, inkNormalScale);
+    return sampleEdge.rg * step(vec2(inkDilationMinPx), radius) * step(vec2(distancePx), radius + 1e-3);
   }
 
   float hash3(vec3 p) {
@@ -164,19 +242,29 @@ const fragmentShader = /* glsl */ `
     vec3 nx = vec3(0.0);
     vec3 ny = vec3(0.0);
     float nearest = centerDepth;
+    bool viewmodelInk = texture2D(depthMap, vUv).x < viewmodelDepth;
+    float inkReach = max(inkWidth, inkViewmodelWidth) * inkNearScale;
     for (int y = -1; y <= 1; y++) {
       for (int x = -1; x <= 1; x++) {
         vec2 uv = vUv + vec2(float(x), float(y)) * offset;
         float wx = float(x) * (y == 0 ? 2.0 : 1.0);
         float wy = float(y) * (x == 0 ? 2.0 : 1.0);
         // Różnica względem środka ogranicza utratę precyzji daleko od kamery.
-        float sampleDepth = viewDepth(uv);
+        float sampleRawDepth = texture2D(depthMap, uv).x;
+        float sampleDepth = metricDepth(sampleRawDepth);
         nearest = min(nearest, sampleDepth);
         float depth = (sampleDepth - centerDepth) / centerDepth;
         dx += depth * wx;
         dy += depth * wy;
         nx += normalAt(uv) * wx;
         ny += normalAt(uv) * wy;
+        if (inkWidth > 0.0) {
+          // Szukamy głębi obiektu również po zewnętrznej stronie grubego obrysu.
+          vec2 probe = vUv + vec2(float(x), float(y)) * texelSize * inkReach;
+          float probeDepth = texture2D(depthMap, probe).x;
+          nearest = min(nearest, metricDepth(probeDepth));
+          viewmodelInk = viewmodelInk || probeDepth < viewmodelDepth || sampleRawDepth < viewmodelDepth;
+        }
       }
     }
     float depthEdge = length(vec2(dx, dy)) / 8.0;
@@ -190,27 +278,48 @@ const fragmentShader = /* glsl */ `
     float edge = max(depthLine, normalLine);
     if (thickness <= 0.0) edge = 0.0;
     if (inkWidth > 0.0 && thickness > 0.0) {
-      // Tusz komiksowy: ostra maska krawędzi (1 px, osobny przebieg) pogrubiona dylatacją.
-      // Blisko kamery grubiej (inkNearScale), daleko cieniej.
-      float inkNear = 1.0 - smoothstep(outlineFadeNear * 0.5, outlineFadeFar, centerDepth);
-      float radius = inkWidth * mix(1.0, inkNearScale, inkNear);
-      // Broń i ręce (viewmodel) z cieńszym tuszem: inaczej giną pod czernią.
-      if (texture2D(depthMap, vUv).x < viewmodelDepth) radius = min(radius, 1.2);
-      float core = texture2D(edgeMap, vUv).r;
-      float ink = core;
-      float hits = 0.0;
-      for (int i = 0; i < 12; i++) {
-        float a = float(i) * 0.5235988;
-        vec2 dir = vec2(cos(a), sin(a)) * texelSize;
-        float outer = texture2D(edgeMap, vUv + dir * radius).r;
-        float inner = texture2D(edgeMap, vUv + dir * radius * 0.5).r;
-        ink = max(ink, max(outer, inner));
-        hits += outer + inner;
+      if (viewmodelInk) {
+        // Dotychczasowy tusz FPP, także po stronie tła: bez skalowania i nowego wygaszania.
+        float inkNear = 1.0 - smoothstep(outlineFadeNear * 0.5, outlineFadeFar, centerDepth);
+        float radius = inkViewmodelWidth * mix(1.0, inkNearScale, inkNear);
+        if (texture2D(depthMap, vUv).x < viewmodelDepth) radius = min(radius, inkViewmodelMaxRadiusPx);
+        float core = texture2D(edgeMap, vUv).b;
+        float ink = core;
+        float hits = 0.0;
+        for (int i = 0; i < 12; i++) {
+          float a = float(i) * 0.5235988;
+          vec2 dir = vec2(cos(a), sin(a)) * texelSize;
+          float outer = texture2D(edgeMap, vUv + dir * radius).b;
+          float inner = texture2D(edgeMap, vUv + dir * radius * 0.5).b;
+          ink = max(ink, max(outer, inner));
+          hits += outer + inner;
+        }
+        edge = max(core, ink * (1.0 - smoothstep(0.5, 0.8, hits / 24.0)));
+      } else {
+        vec2 radius = inkRadiusAt(nearest) * vec2(1.0, inkNormalScale);
+        vec2 core = texture2D(edgeMap, vUv).rg;
+        vec2 ink = core;
+        vec2 hits = vec2(0.0);
+        for (int i = 0; i < 12; i++) {
+          float a = float(i) * 0.5235988;
+          vec2 dir = vec2(cos(a), sin(a)) * texelSize;
+          vec2 outer = vec2(0.0);
+          vec2 inner = vec2(0.0);
+          if (radius.x >= inkDilationMinPx) {
+            outer.x = inkSample(vUv + dir * radius.x, radius.x).r;
+            inner.x = inkSample(vUv + dir * radius.x * 0.5, radius.x * 0.5).r;
+          }
+          if (radius.y >= inkDilationMinPx) {
+            outer.y = inkSample(vUv + dir * radius.y, radius.y).g;
+            inner.y = inkSample(vUv + dir * radius.y * 0.5, radius.y * 0.5).g;
+          }
+          ink = max(ink, max(outer, inner));
+          hits += outer + inner;
+        }
+        // Gęste detale zachowują samą maskę 1 px; każdy kanał ma własny promień i krycie.
+        ink = max(core, ink * (1.0 - smoothstep(vec2(0.5), vec2(0.8), hits / 24.0)));
+        edge = max(ink.r, ink.g);
       }
-      // Gęsty detal (kratki, siatki, drobne panele): pogrubione linie zlewają się w czarną
-      // plamę — tam zostaje sama cienka maska 1 px.
-      float density = hits / 24.0;
-      edge = max(core, ink * (1.0 - smoothstep(0.5, 0.8, density)));
     }
     vec4 color = texture2D(colorMap, vUv);
     vec3 rgb = color.rgb;
@@ -339,6 +448,7 @@ const skyBackgroundVertex = /* glsl */ `
 /** Ostra maska krawędzi (1 px) dla tuszu komiksowego; pogrubiana w kompozycji. */
 const edgeFragmentShader = /* glsl */ `
   #include <packing>
+  ${inkShader}
   uniform sampler2D normalMap;
   uniform sampler2D depthMap;
   uniform vec2 texelSize;
@@ -384,7 +494,11 @@ const edgeFragmentShader = /* glsl */ `
     float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
     float depthLine = step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
     float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
-    gl_FragColor = vec4(max(depthLine, normalLine), 0.0, 0.0, 1.0);
+    // R/G: sylwetka i detal osobno; B: dawny tusz FPP; A: metryczna głębia źródła.
+    // Obrys na tle dziedziczy odległość najbliższej bryły zamiast odległości tła.
+    vec2 opacity = inkOpacityAt(nearest);
+    gl_FragColor = vec4(depthLine * opacity.r, normalLine * opacity.g,
+      max(depthLine, normalLine), nearest);
   }
 `;
 
@@ -474,6 +588,16 @@ export class StylePipeline {
     vignetteSoftness: { value: 0.6 },
     inkNearScale: { value: 1 },
     inkWidth: { value: 0 },
+    inkRefDistanceM: { value: tuning.render.inkRefDistanceM },
+    inkMinScale: { value: tuning.render.inkMinScale },
+    inkDilationMinPx: { value: tuning.render.inkDilationMinPx },
+    inkFadeNearM: { value: tuning.render.inkFadeNearM },
+    inkFadeFarM: { value: tuning.render.inkFadeFarM },
+    inkNormalScale: { value: tuning.render.inkNormalScale },
+    inkNormalFadeNearM: { value: tuning.render.inkNormalFadeNearM },
+    inkNormalFadeFarM: { value: tuning.render.inkNormalFadeFarM },
+    inkViewmodelWidth: { value: tuning.render.inkViewmodelWidth },
+    inkViewmodelMaxRadiusPx: { value: tuning.render.inkViewmodelMaxRadiusPx },
     edgeMap: { value: null as Texture | null },
     celBands: { value: 0 },
     celStrength: { value: 0 },
@@ -493,6 +617,7 @@ export class StylePipeline {
     }),
   );
   private readonly edgeTarget = new WebGLRenderTarget(1, 1, {
+    type: HalfFloatType,
     minFilter: NearestFilter,
     magFilter: NearestFilter,
   });
@@ -659,6 +784,16 @@ export class StylePipeline {
     uniforms.vignetteSoftness.value = t.vignetteSoftness;
     uniforms.inkNearScale.value = t.inkNearScale;
     uniforms.inkWidth.value = t.inkWidth;
+    uniforms.inkRefDistanceM.value = t.inkRefDistanceM;
+    uniforms.inkMinScale.value = t.inkMinScale;
+    uniforms.inkDilationMinPx.value = t.inkDilationMinPx;
+    uniforms.inkFadeNearM.value = t.inkFadeNearM;
+    uniforms.inkFadeFarM.value = t.inkFadeFarM;
+    uniforms.inkNormalScale.value = t.inkNormalScale;
+    uniforms.inkNormalFadeNearM.value = t.inkNormalFadeNearM;
+    uniforms.inkNormalFadeFarM.value = t.inkNormalFadeFarM;
+    uniforms.inkViewmodelWidth.value = t.inkViewmodelWidth;
+    uniforms.inkViewmodelMaxRadiusPx.value = t.inkViewmodelMaxRadiusPx;
     uniforms.celBands.value = t.celBands;
     uniforms.celStrength.value = t.celStrength;
     uniforms.hatchStrength.value = t.hatchStrength;

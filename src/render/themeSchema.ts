@@ -1,7 +1,9 @@
 import { z } from 'zod';
+import { tuning } from '../core/tuning';
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const nonnegative = z.number().finite().nonnegative();
 const unit = nonnegative.max(1);
+const inkDefaults = { ...tuning.render };
 export const themeSchema = z.object({
   id: z.string().regex(/^[a-zA-Z0-9_]+$/),
   render: z
@@ -70,6 +72,22 @@ export const themeSchema = z.object({
       /** Opcjonalne: styl komiksowy (tusz, pasma, kreski, farba); bez nich wyłączony. */
       inkNearScale: nonnegative.optional(),
       inkWidth: nonnegative.optional(),
+      inkRefDistanceM: z
+        .number()
+        .finite()
+        .positive()
+        .default(inkDefaults.inkRefDistanceM),
+      inkMinScale: nonnegative.default(inkDefaults.inkMinScale),
+      inkDilationMinPx: nonnegative.default(inkDefaults.inkDilationMinPx),
+      inkFadeNearM: nonnegative.default(inkDefaults.inkFadeNearM),
+      inkFadeFarM: nonnegative.default(inkDefaults.inkFadeFarM),
+      inkNormalScale: unit.default(inkDefaults.inkNormalScale),
+      inkNormalFadeNearM: nonnegative.default(inkDefaults.inkNormalFadeNearM),
+      inkNormalFadeFarM: nonnegative.default(inkDefaults.inkNormalFadeFarM),
+      inkViewmodelWidth: nonnegative.default(inkDefaults.inkViewmodelWidth),
+      inkViewmodelMaxRadiusPx: nonnegative.default(
+        inkDefaults.inkViewmodelMaxRadiusPx,
+      ),
       celBands: nonnegative.optional(),
       celStrength: unit.optional(),
       hatchStrength: unit.optional(),
