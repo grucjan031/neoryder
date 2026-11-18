@@ -1,8 +1,15 @@
 [
+  { "id": "module:collimator", "cost": { "data": 140 }, "minLevel": 2 },
+  { "id": "module:scope", "cost": { "data": 220 }, "minLevel": 5 },
   { "id": "module:ricochet", "cost": { "data": 160 }, "minLevel": 3 },
   { "id": "module:pierce", "cost": { "data": 180 }, "minLevel": 4 },
   { "id": "module:incendiary", "cost": { "data": 200 }, "minLevel": 4 },
-  { "id": "module:superconductor", "cost": { "cores": 6 }, "minLevel": 5 },
+  {
+    "id": "module:superconductor",
+    "cost": { "cores": 6 },
+    "minLevel": 5,
+    "requiresAchievement": "reka-strzelca"
+  },
   {
     "id": "weapon:rifle",
     "cost": {
@@ -71,7 +78,8 @@
     "cost": {
       "cores": 12
     },
-    "minLevel": 5
+    "minLevel": 5,
+    "requiresAchievement": "glos-rezonansu"
   },
   {
     "id": "blade:twinBlades",
@@ -85,7 +93,8 @@
     "cost": {
       "cores": 14
     },
-    "minLevel": 6
+    "minLevel": 6,
+    "requiresAchievement": "taniec-ostrza"
   },
   {
     "id": "slot:weapon2",
@@ -106,6 +115,7 @@
     "cost": {
       "cores": 10
     },
-    "minLevel": 4
+    "minLevel": 4,
+    "requiresAchievement": "weteran-hut"
   }
 ]

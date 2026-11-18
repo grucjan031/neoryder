@@ -15,6 +15,7 @@ import type { BladeDefinition } from '../combat/melee/bladeSchema';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import { applyStyle, getMaterial } from './materials';
 import { HandRig } from './handRig';
+import { bladeGrip } from './handPoses';
 import { FppBladeFx } from './fppBladeFx';
 import type { BladeFxItem } from './fppBladeFx';
 import { applyFppSurfaces } from './fppMaterials';
@@ -28,8 +29,8 @@ interface BladePose {
 type Hand = 'main' | 'off';
 
 const POSE_IDLE: BladePose = {
-  pos: [0.24, -0.26, -0.4],
-  rot: [0.9, -0.7, 0.8],
+  pos: bladeGrip.idlePosition,
+  rot: bladeGrip.idleRotation,
 };
 /** Garda: ostrze ukośnie przez kadr (rękojeść z prawego dołu, czubek w lewym górnym), środek wolny. */
 const POSE_BLOCK: BladePose = {
@@ -38,8 +39,12 @@ const POSE_BLOCK: BladePose = {
 };
 /** Lewa dłoń bliźniaczych ostrzy: niżej, między bronią palną a środkiem ekranu. */
 const OFF_IDLE: BladePose = {
-  pos: [-0.24, -0.28, -0.4],
-  rot: [0.9, 0.7, -0.8],
+  pos: [
+    -POSE_IDLE.pos[0],
+    POSE_IDLE.pos[1] - bladeGrip.offhandDropM,
+    POSE_IDLE.pos[2],
+  ],
+  rot: [POSE_IDLE.rot[0], -POSE_IDLE.rot[1], -POSE_IDLE.rot[2]],
 };
 const OFF_BLOCK_DROP_M = 0.08;
 /**

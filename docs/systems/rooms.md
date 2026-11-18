@@ -115,3 +115,14 @@ zostawiać czytelne trasy boczne, a wszystkie spawny znajdować się poza geomet
 | `alleyMarket`     | combat | 14 × 40 m                     | nocny targ: stragany po obu stronach jako osłony, lampiony nad głową, neony ramen/sake, para z kratek |
 | `alleyBackstreet` | combat | wąski zaułek 6–9 m, kształt Z | zaplecza: kontenery, generator, skrzynie, schody ppoż., iskry i kapanie, migające neony               |
 | `alleyCrossing`   | combat | ok. 36 × 36 m, plus           | skrzyżowanie: zaparkowane auta i barierki, latarnie, hologram Kurogane na narożniku                   |
+
+## Opcjonalna pogoda i metadane areny
+
+Pokój może wskazać `weather: <id>`; brak zachowuje pogodę motywu. `arena` zawiera
+punkty przejęcia, opcjonalne odrębne spawny trybu, wielkość komórek scalania
+i nawigacji oraz margines przejścia. `arena.exclusive` rezerwuje port dla trybów
+areny, wykluczając go ze zwykłych pul. CombatRing nie jest wyłączany ze zwykłego
+runu, a jego zwykłe spawny, geometria i oprawa nie zostały zmienione.
+Opcjonalne `blocks[].rotation` (radiany XYZ) obraca render i statyczny collider;
+`blocks[].instance` pozwala grupować powtarzalne bryły portu.
+Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).

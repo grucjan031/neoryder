@@ -160,7 +160,8 @@ export class PlayerController {
       s.jumpBufferMs = t.jumpBufferMs;
       this.jumpDenialNotified = false;
     }
-    if (input.pressed.has('dash')) this.dashQueued = true;
+    if (input.pressed.has('dash') && this.carrySpeed === null)
+      this.dashQueued = true;
     if (input.pressed.has('crouch')) this.crouchQueued = true;
     if (dt <= 0) return;
 
@@ -186,6 +187,7 @@ export class PlayerController {
 
     if (
       this.crouchQueued &&
+      this.carrySpeed === null &&
       s.grounded &&
       !s.sliding &&
       s.dashS <= 0 &&
@@ -195,6 +197,7 @@ export class PlayerController {
     this.crouchQueued = false;
 
     s.sprinting =
+      this.carrySpeed === null &&
       this.aim <= 0 &&
       input.held.has('sprint') &&
       move.forward > 0 &&
@@ -283,12 +286,36 @@ export class PlayerController {
   private crouchQueued = false;
   /** Postęp celowania 0–1 (ustawiany przez scenę z `HeldItem.aim`). */
   private aim = 0;
+  private aimSensitivityScale = 1;
+  private carrySpeed: number | null = null;
+
+  setCarry(speed: number | null): void {
+    if (speed === this.carrySpeed) return;
+    this.carrySpeed = speed;
+    this.stats.removeBySource('heistCarry');
+    if (speed !== null) {
+      this.stats.add({
+        stat: 'moveSpeed',
+        type: 'mult',
+        value: speed,
+        source: 'heistCarry',
+      });
+      this.dashQueued = false;
+      this.dashEnded = false;
+      this.state.dashS = 0;
+      this.state.sprinting = false;
+      this.state.sliding = false;
+      this.state.velocity.x = 0;
+      this.state.velocity.z = 0;
+    }
+  }
 
   /**
    * Celowanie: czułość myszy i prędkość ruchu skalowane `tuning.player.aim` (prędkość przez
    * `StatModifier`), sprint niedostępny, dopóki celowanie trwa.
    */
-  setAim(aim: number): void {
+  setAim(aim: number, sensitivityScale = 1): void {
+    this.aimSensitivityScale = sensitivityScale;
     const k = Math.min(1, Math.max(0, Number.isFinite(aim) ? aim : 0));
     if (k === this.aim) return;
     this.aim = k;
@@ -308,7 +335,7 @@ export class PlayerController {
     const sensitivity =
       t.lookSensitivity *
       this.settings.mouseSensitivity *
-      (1 + (t.aim.sensitivity - 1) * this.aim);
+      (1 + (t.aim.sensitivity * this.aimSensitivityScale - 1) * this.aim);
     s.yaw -= input.lookDelta.x * sensitivity;
     const pitchLimit = (t.maxPitchDeg * Math.PI) / 180;
     s.pitch = Math.max(

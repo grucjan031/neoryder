@@ -1,0 +1,80 @@
+{
+  "container_navy": {
+    "texture": "container_corrugated_navy",
+    "tint": "#283a62",
+    "scale": 0.5,
+    "roughness": 0.55,
+    "metalness": 0.35,
+    "bump": 0.7,
+    "wetness": 0.45
+  },
+  "container_olive": {
+    "texture": "container_corrugated_olive",
+    "tint": "#4e5638",
+    "scale": 0.5,
+    "roughness": 0.55,
+    "metalness": 0.35,
+    "bump": 0.7,
+    "wetness": 0.45
+  },
+  "container_ochre": {
+    "texture": "container_corrugated_ochre",
+    "tint": "#a97c26",
+    "scale": 0.5,
+    "roughness": 0.55,
+    "metalness": 0.35,
+    "bump": 0.7,
+    "wetness": 0.45
+  },
+  "container_graphite": {
+    "texture": "container_corrugated_graphite",
+    "tint": "#343a44",
+    "scale": 0.5,
+    "roughness": 0.55,
+    "metalness": 0.35,
+    "bump": 0.7,
+    "wetness": 0.45
+  },
+  "crane_paint": {
+    "texture": "crane_paint",
+    "scale": 0.5,
+    "roughness": 0.55,
+    "metalness": 0.35,
+    "bump": 0.6,
+    "wetness": 0.4
+  },
+  "quay_concrete": {
+    "texture": "quay_concrete",
+    "themeTint": "concrete",
+    "scale": 0.25,
+    "roughness": 0.8,
+    "metalness": 0,
+    "bump": 0.5,
+    "wetness": 0.6
+  },
+  "quay_lines": {
+    "texture": "quay_lines",
+    "themeTint": "asphalt",
+    "scale": 0.125,
+    "roughness": 0.45,
+    "metalness": 0,
+    "bump": 0.3,
+    "wetness": 1
+  },
+  "rubber_fender": {
+    "texture": "rubber_fender",
+    "scale": 1.2,
+    "roughness": 0.9,
+    "metalness": 0,
+    "bump": 0.7,
+    "wetness": 0.15
+  },
+  "steel_grating": {
+    "texture": "steel_grating",
+    "scale": 1,
+    "roughness": 0.55,
+    "metalness": 0.65,
+    "bump": 0.8,
+    "wetness": 0.6
+  }
+}

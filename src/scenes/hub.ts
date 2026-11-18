@@ -235,6 +235,10 @@ export class HubScene implements Scene {
     this.metaStore = this.options.metaStore ?? createIndexedDbSaveStore();
     const store = this.metaStore;
     this.meta = await loadMetaManager(store, ctx.bus);
+    const missionSave = await store.loadMission?.().catch((error: unknown) => {
+      console.warn('Nie można odczytać misji.', error);
+      return null;
+    });
     if (this.disposed) return;
     this.screens =
       this.screensOption ??
@@ -242,6 +246,7 @@ export class HubScene implements Scene {
         panels: this.options.panels ?? DEFAULT_PANELS,
         host: {
           manager: this.meta,
+          missionSave,
           save: () => saveMetaManager(store, this.meta),
           navigate: (url) =>
             this.go(new URLSearchParams(url.replace(/^\?/, ''))),
@@ -391,6 +396,8 @@ export class HubScene implements Scene {
     this.fauna = new HubFauna(ctx, this.root, this.layout, () =>
       this.player.getState(),
     );
+    if (this.loadModels) await this.fauna.load();
+    if (this.disposed) return;
     if (this.fauna.runtime.cat)
       this.kidsCat = new KidsCatEncounter(
         this.npcStates,
@@ -1083,6 +1090,8 @@ export class HubScene implements Scene {
         return this.soundscape?.query() ?? [];
       case 'meta':
         return this.meta.state;
+      case 'achievements':
+        return this.meta.state.achievements;
       case 'level':
         return {
           ...this.meta.xpProgress,

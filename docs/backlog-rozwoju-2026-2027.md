@@ -199,6 +199,16 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
   - Żadne osiągnięcie bramkujące nie wymaga przedmiotu, który samo odblokowuje.
 - **Weryfikacja:** testy liczników i idempotencji, symulacja balansu F4 bez zmian, zrzuty panelu i komunikatu, granie właściciela.
 
+## S4c — warsztat broni z widocznymi modułami (decyzja właściciela 17 XI 2026)
+
+### S4c-01 Warsztat broni: sloty, wygląd, podgląd 3D
+
+- **Cel:** dopasowanie broni z widoczną zmianą wyglądu (pomysł właściciela: jak warsztat broni w strzelankach), zgodnie z filarem 2 — moduł zmienia sposób gry, nie tylko liczby. **P2** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaplanowane
+- **Zależności:** S0-07 (celowanie), S4b-01 (warsztat i bramki), istniejące moduły (`src/data/modules`) i części modeli broni (`muzzle`, `heat_cell`, `heat_vents`, `support`, `grip`…).
+- **Kryteria:** sloty per broń: **Wylot** (`muzzle`), **Ogniwo** (`heat_cell`/`heat_vents`) i nowy **Optyka** (`support`, wpływa na celowanie: kolimator 1× szybsze wejście, luneta mocniejsze przybliżenie i wolniejsze wejście); każdy moduł ma element wizualny dokładany/podmieniany na właściwej części modelu (widoczny w widoku FPP i w podglądzie); warsztat w kryjówce z obracanym podglądem 3D, wyborem slotu i listą modułów z opisem „co zmienia”; zakładanie darmowe, odblokowanie za walutę jak dziś; kolory elementów bursztyn/biel/zieleń; brak modułów czysto liczbowych.
+- **Poza zakresem:** rozbudowany crafting (GDD, sekcja „Poza zakresem”), skórki i kosmetyka bez wpływu na grę.
+- **Weryfikacja:** testy schematu slotów i zgodności modułów z rodzajem broni, zrzuty każdej broni z modułami (FPP i podgląd), granie właściciela; symulacja balansu F4 bez zmiany wyniku.
+
 ## S5–S6 — testy nowych graczy
 
 ### S5-01 Tura testów 1 (4–6 osób)

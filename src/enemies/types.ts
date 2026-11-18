@@ -42,8 +42,13 @@ export interface EnemySnapshot {
    */
   knockdown?: { x: number; z: number };
 }
+export interface EnemyCarry {
+  speedMultiplier: number;
+  defendRangeM: number;
+}
 export interface Enemy {
   moveGoal?: Vec3;
+  setCarry?(carry: EnemyCarry | null): void;
   readonly id: EntityId;
   readonly definition: EnemyDefinition;
   readonly previous: EnemySnapshot;

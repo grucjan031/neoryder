@@ -153,3 +153,42 @@
     grid-template-columns: 1fr;
   }
 }
+.talents-panel__view {
+  display: grid;
+  gap: 14px;
+}
+.talents-panel__view[hidden] {
+  display: none;
+}
+.talents-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.talents-panel button.talents-tab {
+  width: auto;
+  margin: 0;
+  padding: 8px 16px;
+  font: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f4f7fa;
+  background: #0c1626;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  cursor: pointer;
+}
+.talents-panel button.talents-tab[aria-selected='true'] {
+  background: #06303a;
+  border-color: #00e5ff;
+}
+.talents-panel
+  button.talents-tab[data-tab='achievements'][aria-selected='true'] {
+  background: #261b08;
+  border-color: #ffae1a;
+  color: #fff1d6;
+}
+.talents-panel button.talents-tab:hover,
+.talents-panel button.talents-tab:focus-visible {
+  outline: 2px solid #ffae1a;
+  outline-offset: 2px;
+}

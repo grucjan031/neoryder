@@ -1,15 +1,27 @@
 import { z } from 'zod';
+import {
+  missionCheckpointSchema,
+  type MissionCheckpoint,
+} from '../world/missionCheckpoint';
 import { modeIdSchema } from '../world/modeSchema';
 import { actionSchema, isBindingCode } from './input';
 import { loadoutDefinitions } from '../progression/loadout';
+import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { metaStateSchema } from '../progression/metaStateSchema';
+import { seedAchievementsFromMeta } from '../progression/achievements';
 import { createStarterMetaState } from '../progression/progressionSchema';
 import { runStateSchema } from '../world/run';
 import type { MetaState } from './metaTypes';
 import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 6;
+export interface MissionSave extends MissionCheckpoint {
+  saveVersion: number;
+}
+const missionSaveSchema = missionCheckpointSchema.extend({
+  saveVersion: z.literal(SAVE_VERSION),
+});
 export interface MetaSave {
   saveVersion: number;
   createdAt: number;
@@ -66,6 +78,9 @@ export interface SaveStore {
   loadRun(): Promise<RunSave | null>;
   saveRun(data: RunSave): Promise<void>;
   clearRun(): Promise<void>;
+  loadMission?(): Promise<MissionSave | null>;
+  saveMission?(data: MissionSave): Promise<void>;
+  clearMission?(): Promise<void>;
 }
 
 const metaSchema: z.ZodType<MetaSave> = z.object({
@@ -97,6 +112,7 @@ const runEndedSchema: z.ZodType<RunEnded> = z.object({
       gun: z.number().finite(),
       other: z.number().finite(),
     }),
+    achievements: runAchievementProgressSchema.optional(),
   }),
 });
 const runSchema: z.ZodType<RunSave> = z.object({
@@ -114,7 +130,11 @@ const legacyRunV1Schema = z.object({
 const recordSchema = z.record(z.string(), z.unknown());
 const identity: Migration = (data) => ({ ...data });
 
-/** Meta 2→3: gracz z F3 nie miał meta-progresu, więc zaczyna od stanu startowego z danych. */
+/**
+ * Meta 2→3: gracz z F3 nie miał meta-progresu, więc zaczyna od stanu startowego z danych.
+ * Meta 4→5: dodaje puste `achievements` (naszywki Iskry); reszta zapisu nietknięta.
+ * Meta 5→6: bez zmian meta; v6 dodaje osobny rekord misji liniowej (punkt kontrolny).
+ */
 const metaMigrations: readonly Migration[] = [
   identity,
   identity,
@@ -129,6 +149,24 @@ const metaMigrations: readonly Migration[] = [
       campaign: { completed: [], pendingDebrief: null },
     },
   }),
+  (data) => {
+    const meta = recordSchema.parse(data.meta);
+    if (meta.achievements !== undefined) return { ...data, meta };
+    const stats = z
+      .object({ runs: count, victories: count })
+      .catch({ runs: 0, victories: 0 })
+      .parse(meta.stats);
+    const unlocks = z.array(z.string()).catch([]).parse(meta.unlocks);
+    const xp = count.catch(0).parse(meta.xp);
+    return {
+      ...data,
+      meta: {
+        ...meta,
+        achievements: seedAchievementsFromMeta({ xp, unlocks, stats }),
+      },
+    };
+  },
+  identity,
 ];
 
 /** Run 2→3: dopisuje ekwipunek z presetu `loadoutId`, talenty i Poziom zagrożenia; nieznany preset = zapis nieczytelny. */
@@ -156,6 +194,8 @@ const runMigrations: readonly Migration[] = [
       },
     };
   },
+  identity,
+  identity,
   identity,
 ];
 
@@ -214,7 +254,20 @@ function assertWritable(raw: unknown): void {
 export function createMemorySaveStore(): SaveStore {
   let meta: unknown = null;
   let run: unknown = null;
+  let mission: unknown = null;
   return {
+    loadMission: async () =>
+      mission == null
+        ? null
+        : missionSaveSchema.parse(structuredClone(mission)),
+    saveMission: async (data) => {
+      assertWritable(mission);
+      mission = structuredClone(missionSaveSchema.parse(data));
+    },
+    clearMission: async () => {
+      assertWritable(mission);
+      mission = null;
+    },
     loadMeta: async () => decode(meta, metaSchema, metaMigrations),
     loadMetaStrict: async () => decodeMetaStrict(meta),
     saveMeta: async (data) => {
@@ -266,7 +319,10 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
     });
   }
 
-  async function write(key: string, value?: MetaSave | RunSave): Promise<void> {
+  async function write(
+    key: string,
+    value?: MetaSave | RunSave | MissionSave,
+  ): Promise<void> {
     const db = await open();
     return new Promise((resolve, reject) => {
       const tx = db.transaction('saves', 'readwrite');
@@ -298,6 +354,13 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   }
 
   return {
+    loadMission: async () => {
+      const raw = await read('mission');
+      return raw == null ? null : missionSaveSchema.parse(raw);
+    },
+    saveMission: async (data) =>
+      write('mission', missionSaveSchema.parse(data)),
+    clearMission: () => write('mission'),
     loadMeta: async () =>
       decode(await read('meta'), metaSchema, metaMigrations),
     loadMetaStrict: async () => decodeMetaStrict(await read('meta')),

@@ -100,3 +100,13 @@ i trzy światy na jednym busie bez wycieków z kontrolą `world.free()`.
 `tests/unit/roomModels.test.ts` sprawdza współdzielenie geometrii, osobne węzły
 i cache błędów. `tests/e2e/roomScene.spec.ts` sprawdza oba układy, loadout,
 pierwszą falę, `hold` oraz otwarcie drzwi przez `run clear`.
+
+## Host poziomu liniowego
+
+Scena `mission` przekazuje `RoomCombatState` (zasoby i wyposażenie bez RunState)
+i jawny `options.node`. `linearMission` podaje definicję z pozycjami poziomu,
+kolejność celów i zapisane stany; blokuje automatyczne `completeRoom`.
+Host zarządza własnymi WaveDirector, checkpointami i bramami przez API opisane
+w `docs/api.md`. `staticCellSize` włącza komórki istniejącego batchera statyki.
+HUD nie pokazuje Kredytów runu ani nakładki śmierci. Standardowy konstruktor
+z RunState i wszystkie domyślne opcje zachowują dotychczasowe działanie.

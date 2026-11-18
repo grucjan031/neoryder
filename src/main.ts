@@ -16,9 +16,15 @@ import { MainMenu } from './ui/mainMenu';
 import { PauseMenu } from './ui/pauseMenu';
 import { SettingsScreen } from './ui/settingsScreen';
 import type { RunState } from './core/runTypes';
+import { missionDefinitions } from './world/missions';
 import { AudioSystem } from './audio/audioSystem';
 import { loadSfx } from './audio/sfxSchema';
+import { MusicSystem } from './audio/music';
+import { MusicDirector } from './audio/musicDirector';
+import { loadMusic } from './audio/musicSchema';
+import type { MusicState } from './audio/musicSchema';
 import sfxData from './data/audio/sfx.json';
+import musicData from './data/audio/music.json';
 import { loadSettings } from './core/save';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
@@ -45,6 +51,15 @@ async function main(): Promise<void> {
   applyLookPreset(location.search);
   configureFx(params);
   const requested = params.get('scene');
+  if (
+    requested === 'run' &&
+    params.get('continue') !== '1' &&
+    missionDefinitions.get(params.get('mission') ?? '')?.level
+  ) {
+    params.set('scene', 'mission');
+    location.replace(`?${params}`);
+    return;
+  }
   // Odczyt meta-zapisu nie wstrzymuje startu; w fx=lite nakładka nie ma obrazu, więc go pomijamy.
   bootSplash = showBootSplash(
     params,
@@ -161,6 +176,24 @@ async function main(): Promise<void> {
     listener: () => ({ position: camera.position, yaw: camera.rotation.y }),
   });
   audio.attachUnlock(window);
+  // Muzyka (S7-02): ten sam AudioContext; wyłączona w fx=lite i pod automatem (webdriver).
+  const musicEnabled = !getLiteFx() && !navigator.webdriver;
+  const musicClock = (): number => performance.now() / 1000;
+  let director: MusicDirector | undefined;
+  const music = musicEnabled
+    ? new MusicSystem(loadMusic(musicData), {
+        getContext: () => audio.getContext(),
+        tuning,
+        masterVolume: () => settings.masterVolume,
+        musicVolume: () => settings.musicVolume,
+        onTick: () => director?.poll(),
+      })
+    : undefined;
+  if (music)
+    director = new MusicDirector(bus, {
+      now: musicClock,
+      onState: (state) => music.setState(state),
+    });
   const ctx: GameContext = {
     // Wywoływane w geście użytkownika (np. „Jeszcze raz”): zdejmuje pauzę i przechwytuje mysz.
     resume: () => resume(),
@@ -190,11 +223,13 @@ async function main(): Promise<void> {
   app.append(hint);
   const ownsInterface = (): boolean =>
     document.querySelector(
-      '.run-screen:not([hidden]), .hub-screen:not([hidden]), .build-select:not([hidden]), .hud__death:not([hidden])',
+      '.run-screen:not([hidden]), .hub-screen:not([hidden]), .build-select:not([hidden]), .hud__death:not([hidden]), [data-mission-summary][open]',
     ) !== null;
   const canReturnToHub = (): boolean =>
-    scene.id === 'run' &&
-    (scene.query?.('runState') as RunState | undefined)?.loadoutId === 'custom';
+    scene.id === 'mission' ||
+    (scene.id === 'run' &&
+      (scene.query?.('runState') as RunState | undefined)?.loadoutId ===
+        'custom');
   const settingsScreen = new SettingsScreen(
     settings,
     () => {
@@ -282,6 +317,22 @@ async function main(): Promise<void> {
         return `fx: ${mode}`;
       },
     ),
+    commands.register(
+      'music',
+      'music <calm|combat|boss|off|auto> — wymuś muzykę',
+      (args) => {
+        const mode = args[0];
+        if (!music || !director)
+          return 'Muzyka wyłączona (fx=lite / webdriver).';
+        if (
+          args.length !== 1 ||
+          !['calm', 'combat', 'boss', 'off', 'auto'].includes(mode ?? '')
+        )
+          return 'Użycie: music <calm|combat|boss|off|auto>';
+        director.setOverride(mode === 'auto' ? null : (mode as MusicState));
+        return `Muzyka: ${mode} (gra: ${music.playing ?? 'cisza'})`;
+      },
+    ),
     ...(['timescale', 'hitstop'] as const).map((name) =>
       commands.register(
         name,
@@ -300,6 +351,21 @@ async function main(): Promise<void> {
       ),
     ),
   ];
+  if (scene.id !== 'run' && scene.id !== 'mission')
+    builtinOff.push(
+      commands.register('mission start', 'mission start m01-maszty', (args) => {
+        if (args.length !== 1 || !missionDefinitions.get(args[0] ?? '')?.level)
+          return 'Nieznana misja liniowa.';
+        const target = new URLSearchParams({
+          scene: 'mission',
+          mission: args[0]!,
+          debug: '1',
+        });
+        preserveLiteFx(params, target);
+        location.assign(`/?${target}`);
+        return 'Start misji.';
+      }),
+    );
   const command = (line: string): string => commands.execute(line);
   if (profiler) {
     builtinOff.push(
@@ -329,9 +395,11 @@ async function main(): Promise<void> {
               ? audio.state
               : name === 'lastSound'
                 ? audio.lastSound
-                : name === 'recentSounds'
-                  ? [...audio.recentSounds]
-                  : scene.query?.(name),
+                : name === 'music'
+                  ? { state: director?.state, playing: music?.playing ?? null }
+                  : name === 'recentSounds'
+                    ? [...audio.recentSounds]
+                    : scene.query?.(name),
       command,
     });
   }
@@ -350,6 +418,8 @@ async function main(): Promise<void> {
     settingsScreen.dispose();
     pauseMenu.dispose();
     feel.dispose();
+    director?.dispose();
+    music?.dispose();
     audio.dispose();
     input.dispose();
     disposeConsole?.();

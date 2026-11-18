@@ -1,0 +1,121 @@
+[
+  {
+    "id": "komiks_concrete",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_asphalt",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_brick",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_metal_panel",
+    "initialForbiddenPixels": 553,
+    "correctedPixels": 57839,
+    "encodingPasses": 9,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_rust_metal",
+    "initialForbiddenPixels": 61,
+    "correctedPixels": 16820,
+    "encodingPasses": 6,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_corrugated",
+    "initialForbiddenPixels": 346,
+    "correctedPixels": 57471,
+    "encodingPasses": 8,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_plaster",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_tiles_wall",
+    "initialForbiddenPixels": 260,
+    "correctedPixels": 49792,
+    "encodingPasses": 11,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_wood_planks",
+    "initialForbiddenPixels": 121,
+    "correctedPixels": 42083,
+    "encodingPasses": 9,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_tread_plate",
+    "initialForbiddenPixels": 29,
+    "correctedPixels": 11927,
+    "encodingPasses": 5,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_roof_tar",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_paving",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_crack",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_ink_splatter",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_grime_corner",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_chipped_paint",
+    "initialForbiddenPixels": 18,
+    "correctedPixels": 601,
+    "encodingPasses": 5,
+    "finalForbiddenPixels": 0
+  },
+  {
+    "id": "komiks_hatch_patch",
+    "initialForbiddenPixels": 0,
+    "correctedPixels": 0,
+    "encodingPasses": 1,
+    "finalForbiddenPixels": 0
+  }
+]

@@ -19,6 +19,11 @@
     "level": "Poziom"
   },
   "currency": { "data": "Dane", "cores": "Rdzenie" },
+  "preview": {
+    "title": "Podgląd broni",
+    "unavailable": "Podgląd 3D niedostępny w tej przeglądarce.",
+    "switchLabel": "Broń w podglądzie"
+  },
   "equipment": {
     "title": "Ekwipunek",
     "blade": "Ostrze",
@@ -29,7 +34,8 @@
     "fullHint": "Limit slotów wyczerpany",
     "lastHint": "Wymagana co najmniej jedna pozycja",
     "moduleSlot": "Moduł {n}",
-    "emptyModule": "Pusty"
+    "moduleSlots": { "muzzle": "Wylot", "cell": "Ogniwo", "optic": "Optyka" },
+    "emptyModule": "— brak —"
   },
   "bladeNames": {
     "plasmaBlade": "Ostrze plazmowe",

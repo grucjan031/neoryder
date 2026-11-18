@@ -10,6 +10,8 @@ import { synergyDefinitions } from '../progression/synergies';
 type HudLoadout = Pick<Loadout, 'weapons' | 'powers'>;
 
 interface HudOptions {
+  deathScreen?: boolean;
+  showWaves?: boolean;
   playerId: EntityId;
   root?: HTMLElement;
   onRetry?: () => void;
@@ -45,6 +47,9 @@ export function damageIndicatorAngle(
   const right = sx * Math.cos(yaw) + sz * -Math.sin(yaw);
   return Math.atan2(right, forward) * RAD_TO_DEG;
 }
+
+/** Liczba znaków słowa, od której nazwa broni dostaje mniejszy krój. */
+const WEAPON_NAME_LONG_WORD = 8;
 
 export function heatLevel(ratio: number): 'cool' | 'warm' | 'hot' {
   return ratio >= HEAT_HOT ? 'hot' : ratio >= HEAT_WARM ? 'warm' : 'cool';
@@ -412,10 +417,7 @@ export class Hud {
       }),
       bus.on('weapon_switched', ({ owner, weapon, slot }) => {
         if (owner !== opts.playerId) return;
-        setText(
-          this.weaponName,
-          weaponDefinitions.get(weapon)?.name ?? text.empty,
-        );
+        this.setWeaponName(weaponDefinitions.get(weapon)?.name ?? text.empty);
         this.setActiveSlot(slot);
       }),
       bus.on('weapon_fired', ({ owner }) => {
@@ -489,6 +491,7 @@ export class Hud {
         if (this.remaining > 0) this.setRemaining(this.remaining - 1);
       }),
       bus.on('wave_started', ({ wave: number, count }) => {
+        if (opts.showWaves === false) return;
         this.wave.hidden = false;
         const total = opts.totalWaves;
         setText(
@@ -499,6 +502,7 @@ export class Hud {
         this.showBanner(`${text.wave} ${number}`, false);
       }),
       bus.on('wave_cleared', () => {
+        if (opts.showWaves === false) return;
         this.setRemaining(0);
         this.showBanner(text.waveCleared, true);
       }),
@@ -518,7 +522,12 @@ export class Hud {
       }),
       bus.on('player_died', ({ id }) => {
         if (id === opts.playerId) this.setJammed(false);
-        if (id !== opts.playerId || !this.death.hidden) return;
+        if (
+          id !== opts.playerId ||
+          opts.deathScreen === false ||
+          !this.death.hidden
+        )
+          return;
         this.previousFocus =
           document.activeElement instanceof HTMLElement
             ? document.activeElement
@@ -535,8 +544,7 @@ export class Hud {
     for (const slot of this.powerSlots) slot.denial.dispose();
     this.powerSlots = [];
     this.powers.replaceChildren();
-    setText(
-      this.weaponName,
+    this.setWeaponName(
       weaponDefinitions.get(loadout.weapons[0] ?? '')?.name ?? text.empty,
     );
     this.slotCount = Math.min(loadout.weapons.length, MAX_WEAPON_SLOTS);
@@ -632,6 +640,19 @@ export class Hud {
     if (!force && angle === this.shownAngle) return;
     this.shownAngle = angle;
     this.damageDir.node.style.setProperty('--angle', `${angle}deg`);
+  }
+
+  /** Długie jedno słowo (np. „Rozpraszacz”) dostaje mniejszy krój zamiast łamania w środku słowa. */
+  private setWeaponName(name: string): void {
+    setText(this.weaponName, name);
+    const longest = Math.max(
+      0,
+      ...name.split(/\s+/).map((word) => word.length),
+    );
+    this.weaponName.classList.toggle(
+      'hud__weapon-name--long',
+      longest > WEAPON_NAME_LONG_WORD,
+    );
   }
 
   private setActiveSlot(slot: number): void {

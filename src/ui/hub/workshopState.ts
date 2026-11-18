@@ -4,11 +4,15 @@ import { powerDefinitions } from '../../combat/powers/registry';
 import { weaponDefinitions } from '../../combat/weapons/weaponSchema';
 import type { LoadoutChoice } from '../../core/metaTypes';
 import type { MetaManager } from '../../progression/meta';
+import { achievementDefinitions } from '../../progression/achievementsSchema';
 import { unlockDefinitions } from '../../progression/unlocksSchema';
 import type { UnlockDefinition } from '../../progression/unlocksSchema';
 import {
+  MODULE_SLOTS,
+  type ModuleSlot,
   moduleDefinitions,
   moduleFitsWeapon,
+  sanitizeModules,
 } from '../../progression/moduleSchema';
 import textData from '../../data/ui/workshop.pl.json';
 
@@ -34,6 +38,11 @@ export const workshopText = z
       level: z.string(),
     }),
     currency: z.object({ data: z.string(), cores: z.string() }),
+    preview: z.object({
+      title: z.string(),
+      unavailable: z.string(),
+      switchLabel: z.string(),
+    }),
     equipment: z.object({
       title: z.string(),
       blade: z.string(),
@@ -44,6 +53,11 @@ export const workshopText = z
       fullHint: z.string(),
       lastHint: z.string(),
       moduleSlot: z.string(),
+      moduleSlots: z.object({
+        muzzle: z.string(),
+        cell: z.string(),
+        optic: z.string(),
+      }),
       emptyModule: z.string(),
     }),
     bladeNames: z.record(z.string(), z.string()),
@@ -72,7 +86,8 @@ export type MetaView = Pick<
   | 'state'
 >;
 
-export type RowStatus = 'owned' | 'buyable' | 'level' | 'data' | 'cores';
+export type RowStatus =
+  'owned' | 'buyable' | 'achievement' | 'level' | 'data' | 'cores';
 
 export interface UnlockRow {
   id: string;
@@ -80,6 +95,8 @@ export interface UnlockRow {
   name: string;
   cost: { data: number; cores: number };
   minLevel: number | undefined;
+  /** Id i tytuł naszywki, której brakuje do zakupu (status `achievement`). */
+  requires?: { id: string; title: string };
   status: RowStatus;
 }
 
@@ -108,13 +125,20 @@ export function itemName(kind: ItemKind, key: string): string {
   }
 }
 
-/** Kolejność sprawdzeń jak w `MetaManager.buyUnlock`: poziom, Dane, Rdzenie. */
+/** Kolejność sprawdzeń jak w `MetaManager.buyUnlock`: naszywka, poziom, Dane, Rdzenie. */
 export function rowStatus(
-  state: { level: number; data: number; cores: number; owned: boolean },
+  state: {
+    level: number;
+    data: number;
+    cores: number;
+    owned: boolean;
+    achievementMissing?: boolean;
+  },
   def: UnlockDefinition | undefined,
 ): RowStatus {
   if (state.owned) return 'owned';
   if (!def) return 'level';
+  if (state.achievementMissing) return 'achievement';
   if (def.minLevel !== undefined && state.level < def.minLevel) return 'level';
   if (state.data < (def.cost.data ?? 0)) return 'data';
   if (state.cores < (def.cost.cores ?? 0)) return 'cores';
@@ -132,14 +156,32 @@ export function unlockRows(
   return ids.map((id) => {
     const def = defs.get(id);
     const { kind, key } = splitId(id);
+    const required = def?.requiresAchievement;
+    const missing =
+      required !== undefined &&
+      !view.state.achievements.unlocked.includes(required);
     return {
       id,
       kind,
       name: itemName(kind, key),
       cost: { data: def?.cost.data ?? 0, cores: def?.cost.cores ?? 0 },
       minLevel: def?.minLevel,
+      ...(required !== undefined && missing
+        ? {
+            requires: {
+              id: required,
+              title: achievementDefinitions.get(required)?.title ?? required,
+            },
+          }
+        : {}),
       status: rowStatus(
-        { level: view.level, data, cores, owned: view.isUnlocked(id) },
+        {
+          level: view.level,
+          data,
+          cores,
+          owned: view.isUnlocked(id),
+          achievementMissing: missing,
+        },
         def,
       ),
     };
@@ -196,6 +238,7 @@ export interface EquipmentState {
     weaponId: string;
     weaponName: string;
     slots: {
+      slot: ModuleSlot;
       selected: string;
       options: { id: string; name: string; description: string }[];
     }[];
@@ -255,20 +298,46 @@ export function equipmentState(view: MetaView): EquipmentState {
       return {
         weaponId,
         weaponName: itemName('weapon', weaponId),
-        slots: Array.from({ length: view.moduleSlotsPerWeapon }, (_, slot) => ({
-          selected: installed[slot] ?? '',
+        slots: MODULE_SLOTS.map((slot) => ({
+          slot,
+          selected:
+            installed.find((id) => moduleDefinitions.get(id)?.slot === slot) ??
+            '',
           options: [...moduleDefinitions.values()]
             .filter(
               (module) =>
                 view.isUnlocked(`module:${module.id}`) &&
                 moduleFitsWeapon(module, weaponId) &&
-                (!installed.includes(module.id) ||
-                  installed[slot] === module.id),
+                module.slot === slot,
             )
             .map(({ id, name, description }) => ({ id, name, description })),
         })),
       };
     }),
+  };
+}
+
+export interface PreviewTarget {
+  weaponId: string;
+  /** Moduły widoczne na podglądzie: tylko poprawne, zgodne i w limicie slotów. */
+  moduleIds: string[];
+}
+
+/**
+ * Broń pokazywana w podglądzie 3D: wybrana (`wanted`), o ile jest w ekwipunku,
+ * inaczej pierwsza z ekwipunku; `null`, gdy ekwipunek jest pusty.
+ */
+export function previewTarget(
+  view: MetaView,
+  wanted?: string,
+): PreviewTarget | null {
+  const { weapons, modules } = view.state.loadout;
+  const weaponId =
+    wanted !== undefined && weapons.includes(wanted) ? wanted : weapons[0];
+  if (weaponId === undefined) return null;
+  return {
+    weaponId,
+    moduleIds: sanitizeModules([weaponId], modules)[weaponId] ?? [],
   };
 }
 
@@ -293,7 +362,7 @@ export function nextLoadout(
   return { ...current, [part]: list, modules };
 }
 
-/** Puste sloty są usuwane; kolejność pozostałych modułów zostaje zachowana. */
+/** Indeks pola wskazuje stały slot, niezależnie od pustych miejsc w zapisie. */
 export function nextModuleLoadout(
   view: MetaView,
   weaponId: string,
@@ -301,8 +370,22 @@ export function nextModuleLoadout(
   moduleId: string,
 ): LoadoutChoice {
   const current = view.state.loadout;
-  const ids = [...(current.modules[weaponId] ?? [])];
-  ids[slot] = moduleId;
+  const target = MODULE_SLOTS[slot];
+  if (!target) throw new Error('Nieznany slot modułu.');
+  if (moduleId && moduleDefinitions.get(moduleId)?.slot !== target)
+    throw new Error('Moduł nie pasuje do slotu.');
+  const ids = (current.modules[weaponId] ?? []).filter(
+    (id) =>
+      moduleDefinitions.has(id) && moduleDefinitions.get(id)?.slot !== target,
+  );
+  if (moduleId) ids.push(moduleId);
+  ids.sort(
+    (a, b) =>
+      MODULE_SLOTS.findIndex(
+        (slot) => moduleDefinitions.get(a)?.slot === slot,
+      ) -
+      MODULE_SLOTS.findIndex((slot) => moduleDefinitions.get(b)?.slot === slot),
+  );
   const modules = { ...current.modules };
   const selected = ids.filter(Boolean);
   if (selected.length) modules[weaponId] = selected;

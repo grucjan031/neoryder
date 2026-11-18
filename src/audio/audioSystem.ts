@@ -98,6 +98,11 @@ export class AudioSystem {
       );
   }
 
+  /** Wspólny kontekst dla MusicSystem (tworzony leniwie; null = brak Web Audio). */
+  getContext(): AudioBackend | null {
+    return this.disposed ? null : this.ensureContext();
+  }
+
   /** Stan kontekstu: 'none' (brak), 'suspended', 'running', 'closed'. */
   get state(): string {
     return this.ctx?.state ?? 'none';

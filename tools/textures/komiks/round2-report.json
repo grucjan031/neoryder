@@ -1,0 +1,201 @@
+{
+  "before": {
+    "komiks_asphalt": {
+      "baseHueDegrees": 229.19,
+      "baseMeanSaturation": 0.4339,
+      "allMeanSaturation": 0.4674,
+      "baseSaturationP95": 0.5179,
+      "maxValue": 0.6745,
+      "sha256": "ec478001ec23144ca4831475e8c4e79e94f96dd60cbbdd8bcbc93f800dda64ed"
+    },
+    "komiks_brick": {
+      "baseHueDegrees": 229.73,
+      "baseMeanSaturation": 0.4493,
+      "allMeanSaturation": 0.4674,
+      "baseSaturationP95": 0.5,
+      "maxValue": 0.6784,
+      "sha256": "dad9efd5dd1c3d836e58f81d5955433a3878f3cba5462345e8e4be213122a04c"
+    },
+    "komiks_concrete": {
+      "baseHueDegrees": 230.1,
+      "baseMeanSaturation": 0.4471,
+      "allMeanSaturation": 0.4555,
+      "baseSaturationP95": 0.5075,
+      "maxValue": 0.5608,
+      "sha256": "2fefd472b5beb1a1a02efce2a8792ee758e0bb90e0118f15b273725f766e8314"
+    },
+    "komiks_corrugated": {
+      "baseHueDegrees": 229.6,
+      "baseMeanSaturation": 0.4524,
+      "allMeanSaturation": 0.4693,
+      "baseSaturationP95": 0.5616,
+      "maxValue": 0.651,
+      "sha256": "8eef1b53c027c06077d609e7e40506dc9355bf0613aa503069620973ad035cd4"
+    },
+    "komiks_metal_panel": {
+      "baseHueDegrees": 229.88,
+      "baseMeanSaturation": 0.4317,
+      "allMeanSaturation": 0.4587,
+      "baseSaturationP95": 0.4722,
+      "maxValue": 0.9137,
+      "sha256": "2210a0f4b0883f2e88916fe44ec77f7a19c66615c7fd433f4a11cce69b4ec9c4"
+    },
+    "komiks_paving": {
+      "baseHueDegrees": 230.09,
+      "baseMeanSaturation": 0.4423,
+      "allMeanSaturation": 0.4545,
+      "baseSaturationP95": 0.4861,
+      "maxValue": 0.5451,
+      "sha256": "9ff0c859a1f057f7e2a0765373b6075b817e655701de886f18170349312fe3c0"
+    },
+    "komiks_plaster": {
+      "baseHueDegrees": 229.65,
+      "baseMeanSaturation": 0.4451,
+      "allMeanSaturation": 0.4662,
+      "baseSaturationP95": 0.4762,
+      "maxValue": 0.5647,
+      "sha256": "54400bb14ebf582350f07cf69cecaf36de32de6671783214780da59ab5559271"
+    },
+    "komiks_roof_tar": {
+      "baseHueDegrees": 228.61,
+      "baseMeanSaturation": 0.4559,
+      "allMeanSaturation": 0.4757,
+      "baseSaturationP95": 0.5,
+      "maxValue": 0.5176,
+      "sha256": "4900f48daf53a4b313fa5b3d4f7713eefe192f5792a18d4173bdc160c319199e"
+    },
+    "komiks_rust_metal": {
+      "baseHueDegrees": 229.44,
+      "baseMeanSaturation": 0.3997,
+      "allMeanSaturation": 0.416,
+      "baseSaturationP95": 0.4848,
+      "maxValue": 0.7804,
+      "sha256": "43a5fc49157039f5d0d56ad51d317de98e356ce5bf197fa4177505b960b550d3"
+    },
+    "komiks_tiles_wall": {
+      "baseHueDegrees": 229.51,
+      "baseMeanSaturation": 0.4431,
+      "allMeanSaturation": 0.458,
+      "baseSaturationP95": 0.4948,
+      "maxValue": 0.6392,
+      "sha256": "739d0e07862e70f038d083353fca00668f65a06416e8550fa78898880127a068"
+    },
+    "komiks_tread_plate": {
+      "baseHueDegrees": 229.66,
+      "baseMeanSaturation": 0.4482,
+      "allMeanSaturation": 0.4678,
+      "baseSaturationP95": 0.5429,
+      "maxValue": 0.6275,
+      "sha256": "48e909d9936abf088388a3cfaadedf9328978a5d4ad73e28ba9f26e5a017ef7c"
+    },
+    "komiks_wood_planks": {
+      "baseHueDegrees": 229.43,
+      "baseMeanSaturation": 0.4488,
+      "allMeanSaturation": 0.4675,
+      "baseSaturationP95": 0.4918,
+      "maxValue": 0.5451,
+      "sha256": "08f4e697889991d906cd7bbc7a0a42be25af2cd76fca8e74e56005c304ff25b1"
+    }
+  },
+  "after": {
+    "komiks_asphalt": {
+      "baseHueDegrees": 204.41,
+      "baseMeanSaturation": 0.0734,
+      "allMeanSaturation": 0.0905,
+      "baseSaturationP95": 0.098,
+      "maxValue": 0.3804,
+      "sha256": "fd40d24e2321f790dbc75aefdcfc8985bb8a483fb3f572c66117aeec3b8617d1"
+    },
+    "komiks_brick": {
+      "baseHueDegrees": 70.13,
+      "baseMeanSaturation": 0.1777,
+      "allMeanSaturation": 0.2294,
+      "baseSaturationP95": 0.2034,
+      "maxValue": 0.4039,
+      "sha256": "a263c68323633dd067259be30c5bc73b7294ea2fb8c5f95dc87be069e551ff5b"
+    },
+    "komiks_concrete": {
+      "baseHueDegrees": 215.2,
+      "baseMeanSaturation": 0.1062,
+      "allMeanSaturation": 0.1164,
+      "baseSaturationP95": 0.1235,
+      "maxValue": 0.4275,
+      "sha256": "e8959bb966505e92960a4af87d4ce4e47ff0e8f329fb567651f7da4288c248bd"
+    },
+    "komiks_corrugated": {
+      "baseHueDegrees": 219.11,
+      "baseMeanSaturation": 0.19,
+      "allMeanSaturation": 0.2281,
+      "baseSaturationP95": 0.2533,
+      "maxValue": 0.5216,
+      "sha256": "b0e95f1825e7b9a415570a43a0627f93fb094ed6cc080352aa701770fd51433c"
+    },
+    "komiks_metal_panel": {
+      "baseHueDegrees": 206.78,
+      "baseMeanSaturation": 0.2024,
+      "allMeanSaturation": 0.2448,
+      "baseSaturationP95": 0.2292,
+      "maxValue": 0.9882,
+      "sha256": "a192a3efa16005830ce8854c8573034cf26ffd0e0f6805fca691b079198d3c51"
+    },
+    "komiks_paving": {
+      "baseHueDegrees": 224.47,
+      "baseMeanSaturation": 0.0727,
+      "allMeanSaturation": 0.0883,
+      "baseSaturationP95": 0.0833,
+      "maxValue": 0.4706,
+      "sha256": "0f841f52f1bd76ca2c1c4e406b048c4ce4918c90b79987b90a7eb52d835a47db"
+    },
+    "komiks_plaster": {
+      "baseHueDegrees": 214.87,
+      "baseMeanSaturation": 0.0475,
+      "allMeanSaturation": 0.064,
+      "baseSaturationP95": 0.0645,
+      "maxValue": 0.4588,
+      "sha256": "80016222915ab31acd3da14d99a1054a28e90c0e27bf2d13487f04bab36cb4ff"
+    },
+    "komiks_roof_tar": {
+      "baseHueDegrees": 231.44,
+      "baseMeanSaturation": 0.0592,
+      "allMeanSaturation": 0.0535,
+      "baseSaturationP95": 0.1143,
+      "maxValue": 0.2941,
+      "sha256": "e12635cc614c66b243792e383a4b5a0c9c097fc26c13e9ed82dcc283342ea284"
+    },
+    "komiks_rust_metal": {
+      "baseHueDegrees": 219.04,
+      "baseMeanSaturation": 0.0932,
+      "allMeanSaturation": 0.1529,
+      "baseSaturationP95": 0.1132,
+      "maxValue": 0.8235,
+      "sha256": "f299f1a77991094ecec48d0779cbf7c595c927f50af558759dad277df41f1ae8"
+    },
+    "komiks_tiles_wall": {
+      "baseHueDegrees": 211.82,
+      "baseMeanSaturation": 0.1307,
+      "allMeanSaturation": 0.1603,
+      "baseSaturationP95": 0.1548,
+      "maxValue": 0.5373,
+      "sha256": "6c52bf0c87451a7df283487dc7a76b3000da0ed788617d1977158447cb815d0f"
+    },
+    "komiks_tread_plate": {
+      "baseHueDegrees": 221.77,
+      "baseMeanSaturation": 0.2131,
+      "allMeanSaturation": 0.2491,
+      "baseSaturationP95": 0.2632,
+      "maxValue": 0.4745,
+      "sha256": "abd19a0ee9d65cf0f302f6b44ccfee89ef9514ec50e9130a7f8cfda0ea38634d"
+    },
+    "komiks_wood_planks": {
+      "baseHueDegrees": 41.37,
+      "baseMeanSaturation": 0.324,
+      "allMeanSaturation": 0.3613,
+      "baseSaturationP95": 0.3692,
+      "maxValue": 0.4078,
+      "sha256": "695bae069722cbb3544284caac0fa2bfb7f31fa4e73128cb349cf12554e1dcbc"
+    }
+  },
+  "protectedFilesChecked": 1371,
+  "changedProtectedFiles": [],
+  "errors": []
+}

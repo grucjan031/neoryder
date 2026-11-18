@@ -174,28 +174,78 @@ describe('MetaManager zakupy i ekwipunek', () => {
       { blaster: ['ricochet', 'pierce', 'incendiary'] },
       { blaster: ['ricochet', 'ricochet'] },
       { pistol: ['ricochet'] },
-      { blaster: ['unknown'] },
     ];
     for (const modules of invalidModules) {
       expect(() => meta.setLoadout({ ...base, modules })).toThrow();
       expect(meta.serialize()).toEqual(before);
     }
-    expect(() =>
-      meta.setLoadout({
-        ...base,
-        weapons: ['beam'],
-        modules: { beam: ['ricochet'] },
-      }),
-    ).toThrow('nie pasuje');
     meta.setLoadout({
       ...base,
       weapons: ['blaster', 'pistol'],
-      modules: { blaster: ['ricochet', 'pierce'], pistol: ['ricochet'] },
+      modules: {
+        blaster: ['ricochet', 'incendiary', 'collimator'],
+        pistol: ['ricochet'],
+      },
     });
     const resolved = meta.loadout();
     expect(resolved.modules).toEqual(meta.state.loadout.modules);
     resolved.modules!.blaster!.pop();
-    expect(meta.state.loadout.modules.blaster).toEqual(['ricochet', 'pierce']);
+    expect(meta.state.loadout.modules.blaster).toEqual([
+      'ricochet',
+      'incendiary',
+      'collimator',
+    ]);
+  });
+
+  it('nieznane i niepasujące moduły zostają w meta i nie blokują innych zmian ekwipunku', () => {
+    const state = createStarterMetaState();
+    state.loadout.weapons = ['beam'];
+    state.loadout.modules = {
+      beam: [
+        'unknown',
+        'ricochet',
+        'superconductor',
+        'collimator',
+        'incendiary',
+      ],
+    };
+    const meta = MetaManager.restore(state);
+    expect(meta.loadout().modules).toEqual({
+      beam: ['collimator', 'incendiary'],
+    });
+    expect(meta.serialize()).toEqual(state);
+    meta.debugUnlockAll();
+    const modules = meta.state.loadout.modules;
+    meta.setLoadout({ ...meta.state.loadout, blade: 'twinBlades' });
+    expect(meta.state.loadout.blade).toBe('twinBlades');
+    expect(meta.serialize().loadout.modules.beam).toEqual(modules.beam);
+    expect(meta.loadout().modules).toEqual({
+      beam: ['collimator', 'incendiary'],
+    });
+    expect(MetaManager.restore(meta.serialize()).state).toEqual(meta.state);
+  });
+
+  it('pomijane id nie zajmują limitu, ale znane nieodblokowane i nadmiarowe są odrzucane', () => {
+    const meta = make();
+    expect(() =>
+      meta.setLoadout({
+        ...meta.state.loadout,
+        modules: { blaster: ['unknown', 'collimator'] },
+      }),
+    ).toThrow('nieodblokowany');
+    meta.debugUnlockAll();
+    meta.setLoadout({
+      ...meta.state.loadout,
+      modules: { blaster: ['unknown', 'pierce', 'incendiary', 'scope'] },
+    });
+    const before = meta.serialize();
+    expect(() =>
+      meta.setLoadout({
+        ...meta.state.loadout,
+        modules: { blaster: ['pierce', 'incendiary', 'scope', 'collimator'] },
+      }),
+    ).toThrow('Limit');
+    expect(meta.serialize()).toEqual(before);
   });
 
   it('ceny i progi modułów są egzekwowane przy zakupie', () => {
@@ -207,6 +257,9 @@ describe('MetaManager zakupy i ekwipunek', () => {
     ] as const;
     for (const { id, currency, cost, minLevel } of cases) {
       const meta = make();
+      // Nagroda za pierwszy zakup i bramka Nadprzewodnika to osobne testy naszywek.
+      meta.debugGrantAchievement('pierwszy-zakup');
+      meta.debugGrantAchievement('reka-strzelca');
       const unlockId = `module:${id}`;
       expect(defaultMetaRules.unlocks.get(unlockId)).toMatchObject({
         cost: { [currency]: cost },
@@ -251,6 +304,7 @@ describe('MetaManager zakupy i ekwipunek', () => {
     const bought: string[] = [];
     bus.on('unlock_purchased', (e) => bought.push(e.id));
     const meta = make(bus);
+    meta.debugGrantAchievement('pierwszy-zakup');
     const def = [...defaultMetaRules.unlocks.values()].find(
       (u) => (u.minLevel ?? 1) <= 1 && !meta.isUnlocked(u.id),
     )!;

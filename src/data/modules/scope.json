@@ -1,0 +1,14 @@
+{
+  "id": "scope",
+  "name": "Luneta",
+  "description": "Mocne przybliżenie w celowaniu, wolniejsze wejście i spokojniejsza mysz.",
+  "slot": "optic",
+  "visual": { "shape": "scope", "color": "white" },
+  "tags": ["#optic"],
+  "weaponKinds": ["projectile", "beam"],
+  "patches": [
+    { "op": "set", "path": "aimFovScale", "value": 0.5 },
+    { "op": "set", "path": "aimInScale", "value": 1.6 },
+    { "op": "set", "path": "aimSensitivityScale", "value": 0.6 }
+  ]
+}

@@ -8,6 +8,9 @@ const weaponFields = {
   model: z.string().min(1).optional(),
   /** FOV w celowaniu jako ułamek bazowego (domyślnie `tuning.player.aim.fovScale`). */
   aimFovScale: z.number().finite().min(0.2).max(1).optional(),
+  aimInScale: z.number().finite().positive().optional(),
+  aimSpreadScale: z.number().finite().positive().optional(),
+  aimSensitivityScale: z.number().finite().positive().optional(),
   statuses: z
     .array(
       z.object({

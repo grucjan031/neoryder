@@ -28,6 +28,7 @@ export const metaRunRecordSchema = z.object({
   layerReached: count,
   threatLevel: count,
   rewards: runRewardsSchema,
+  achievements: ids.optional(),
 });
 
 /** Strukturalna walidacja stanu meta do zapisu; zawartość (id odblokowań) sprawdza MetaManager i dane. */
@@ -53,6 +54,13 @@ export const metaStateSchema: z.ZodType<MetaState> = z
     }),
     lastRuns: z.array(metaRunRecordSchema).max(MAX_LAST_RUNS),
     appliedRunIds: ids.max(MAX_APPLIED_RUN_IDS),
+    // Uszkodzone osiągnięcia nie unieważniają reszty zapisu meta.
+    achievements: z
+      .object({
+        unlocked: ids,
+        counters: z.record(z.string().min(1), count),
+      })
+      .catch({ unlocked: [], counters: {} }),
   })
   .refine((state) => state.threat.selected <= state.threat.max, {
     message: 'Wybrany Poziom zagrożenia przekracza maksymalny.',

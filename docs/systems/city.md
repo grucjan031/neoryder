@@ -318,8 +318,50 @@ Ocena wizualna wymaga Chromium/WebGL; testy jednostkowe nie kompilują GLSL.
 
 ## Galeria modeli: `?scene=city-props-test`
 
-W pokojach modele `city_*` zachowują własne materiały również przy ustawionym `material` bloku; materiał bloku nadal dotyczy bryły zastępczej i modeli spoza `city_*`.
+W pokojach i Arenie modele `city_*` oraz `port_*` zachowują własne materiały również przy ustawionym `material` bloku; materiał bloku nadal dotyczy bryły zastępczej i pozostałych modeli. Oba prefiksy korzystają z cache `cloneCityModel` i katalogu `/assets/models/city/`.
 
-Skala modeli bloków w pokojach (`placeBlockModel` w `src/scenes/roomScene.ts`): proste bryły `pillar`, `cover_low` i `wall_segment` są rozciągane niejednorodnie do `size` bloku (bounding box modelu = kolizja, spód i środek bboxu w spodzie i środku bloku); gdy dłuższy bok podstawy bloku leży w osi Z, osłona obraca się o 90° wokół Y, żeby nie ściskać profilu. Rekwizyty `city_*` i skrzynie zostają w skali 1 — ich wymiary muszą zgadzać się z blokiem w tolerancji 5% (`docs/assets.md`). Pilnuje tego `tests/unit/roomBlockModelFit.test.ts` dla wszystkich pokoi (rozciągliwe: tolerancja 2%).
+Skala modeli bloków w pokojach (`placeBlockModel` w `src/scenes/roomScene.ts`): proste bryły `pillar`, `cover_low` i `wall_segment` są rozciągane niejednorodnie do `size` bloku (bounding box modelu = kolizja, spód i środek bboxu w spodzie i środku bloku); gdy dłuższy bok podstawy bloku leży w osi Z, osłona obraca się o 90° wokół Y, żeby nie ściskać profilu. Rekwizyty `city_*`, `port_*` i skrzynie zostają w skali 1. `RoomScene` obraca model wraz z colliderem wokół środka bloku. Wymiary modeli miejskich sprawdza `tests/unit/roomBlockModelFit.test.ts` (tolerancja 5%, rozciągliwe: 2%); obwiednie kontenerów w arenie, także po obrocie, sprawdza `arenaStaticBatch.test.ts`. Złożone dekoracje portu mają oddzielne proste collidery w blokach `visible: false`.
 
-Uliczka ok. 10 × 44 m z wszystkimi 24 modelami `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy); lista modeli w `src/scenes/cityPropsTest.ts`. Parametry: `prop=<nazwa>` (np. `city_car`, kamera 3/4 z bliska), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2` (przegląd: wzdłuż ulicy, odwrotnie, z góry). Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.
+Uliczka ok. 10 × 44 m zawiera pierwotne 24 modele `city_*.glb` (bloki i podłoże na chodnikach, modele ścienne na fasadach, rozpięcia w poprzek ulicy). Obok, na osobnym placu 52 × 166 m, stoją modele estakady i targu dachowego: 12 nowych brył oraz fioletowy wariant straganu, razem **37 modeli** w galerii. Rozstaw 24 m i dwie kolumny pozwalają oglądać duże segmenty bez przecinania fasad. Lista modeli w `src/scenes/cityPropsTest.ts`.
+
+Parametry: `prop=<nazwa>` (np. `city_overpass_deck`, kamera 3/4 kadrowana według AABB), `yaw=<stopnie>` (obrót kamery wokół modelu, domyślnie 35), `view=0|1|2|3|4|5` (ulica, odwrotnie, z góry, plac portu, zestaw estakady, zestaw targu). `prop` ma pierwszeństwo przed `view`; `yaw=145` pozwala ocenić tył modelu. Nowe stanowiska mają własne ustawienie świateł do zbliżeń. Po załadowaniu modeli `document.body.dataset.cityPropsReady = '1'`.
+
+Wymiary, materiały, budżety i punkty montażu: tabela zestawu aren Przejęcia w `docs/assets.md`. Modele nie dodają aren, pogody ani kolizji; galeria służy do oceny sylwetki, skali i materiałów. Płaskie płyty estakady i kładki oraz komplet 37 plików sprawdza `tests/unit/cityModels.test.ts`.
+
+Plac estakady/targu przeniesiono na zachód: x −73,5…−21,5 m,
+z −47…119 m, środek (−47,5; 0; 36). Kolumny modeli stoją przy x = −60
+i −35. Poprzedni plac x 16,5…68,5 nachodził na port x 9…44,4, z ±23.
+Po przesunięciu obwiednie nie przecinają się. `view=3` nadal pokazuje port,
+`view=4` estakadę, `view=5` targ; kadry 4/5 podążają za nowym położeniem.
+Parametr `prop` nadal kadruje rzeczywiste AABB modelu.
+
+Za prawą pierzeją (x 9–44,4 m, z ±23 m, wewnątrz pierwszego pierścienia panoramy) stoi plac portu ze wszystkimi 15 modelami `port_*.glb` (`PORT_PROP_MODELS`): suwnica nad trzema rzędami kontenerów (stosy do 3 warstw), kładka na dwóch stosach 20 ft, wózek podnoszący kontener, maszt oświetleniowy, 11 modułów krawędzi nabrzeża (wierzch na poziomie placu, ciemna woda za nimi) i pachołki. Dodatkowe światła placu (ciepła biel masztu i suwnicy, bursztyn, błękit, fiolet) dołączają do puli `CityLights`. `prop=port_<nazwa>` kadruje pierwsze wystąpienie modelu (np. `prop=port_reach_stacker`, `prop=port_lashing_platform`). Galeria używa wspólnego loadera i `applyStyle`, tak samo jak gra; zastępstwo `PORT_PREVIEW` zostało usunięte. Plac używa `quay_lines`.
+
+Materiały `mat_container_navy/olive/ochre/graphite`, `mat_crane_paint`,
+`mat_quay_concrete`, `mat_rubber_fender`, `mat_steel_grating` są zarejestrowane
+w `urbanKinds`. Korzystają z odpowiadających im tekstur `container_corrugated_*`,
+`crane_paint`, `quay_concrete`, `rubber_fender`, `steel_grating`. Materiał podłoża
+`quay_lines` jest dostępny w danych bloków. Parametry skali na metr, reliefu,
+metaliczności, szorstkości i udziału w mokrych odbiciach są w walidowanym zod
+`src/data/render/portMaterials.json`. Kontenery mają w danych osobne ciemne
+barwy lakieru; plac i beton kei używają odpowiednio barw `asphalt` i `concrete`
+aktywnego motywu miasta. Pozostałe materiały portu zachowują biały mnożnik.
+W motywie `white`, przy wyłączonym detalu, również kontenery są białe.
+Wspólny shader miejski zachowuje rzut trójplanarny, brud, relief, sterowanie
+detalem oraz `weatherGloss` profilu pogody; `syncMaterials` zachowuje ten wygląd.
+
+Ręczny przegląd: `?scene=city-props-test&view=3` oraz
+`?scene=conquest&arena=arenaContainerPort&debug=1`. Porównaj barwy i detale
+kontenerów, mokre linie placu, beton kei, kratę pomostów i odbojnice. Integracja
+areny zachowuje komórki 20 m, instancjonowane kontenery i jedną fazę scalania
+statyki; aktualny pomiar 776 → 326 siatek (53 partie instancji) opisuje
+[arenas.md](arenas.md). Test materiałów sprawdza mapowanie nazw GLB, wybór
+tekstury, wspólny uniform pogody i trwałość materiału po synchronizacji.
+
+## Pogoda pokoju i oprawa portu
+
+Opcjonalne pole `weather` zastępuje parametry deszczu motywu profilem z danych;
+bez niego CityDressing zachowuje dotychczasowe zachowanie. Ten sam moduł
+obsługuje zmianę profilu, mgłę, mokrość i tło audio, przywracając ustawienia przy
+wyjściu. `city-fx-test` pozostaje bez zmian; `weatherTest` pokazuje profile na
+pełnej arenie portu. Szczegóły: [weather.md](weather.md), [arenas.md](arenas.md).

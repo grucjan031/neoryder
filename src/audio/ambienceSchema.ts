@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 export const ambienceKindSchema = z.enum([
+  'rain',
+  'wind',
   'fire',
   'generator',
   'drip',

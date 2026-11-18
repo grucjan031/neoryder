@@ -94,6 +94,7 @@ const fragmentShader = /* glsl */ `
   uniform mat3 cameraRotation;
   uniform float fogStrength;
   uniform float skyFlash;
+  uniform vec3 skyFlashColor;
   uniform float fogNear;
   uniform float fogFar;
   uniform vec3 fogColor;
@@ -261,7 +262,7 @@ const fragmentShader = /* glsl */ `
     // i brak mgły. Głębia koloru, nie normalnych: obiekty bez konturu (rdzeń ostrza, błysk)
     // nie trafiają do bufora normalnych i bez tego znikały na tle nieba.
     if (texture2D(colorDepthMap, vUv).x >= 1.0) {
-      rgb += vec3(0.62, 0.68, 0.95) * skyFlash;
+      rgb += skyFlashColor * skyFlash;
     } else if ((fogStrength > 0.0 || heightFogDensity > 0.0) && rawDepth < 1.0) {
       // Mgła ku bieli ściąga też kontury, więc dalekie obiekty odcinają się od bliskich.
       float fog = smoothstep(fogNear, fogFar, centerDepth) * fogStrength;
@@ -275,7 +276,7 @@ const fragmentShader = /* glsl */ `
         float heightFog = 1.0-exp(-heightFogDensity*length(worldPoint-eyePosition)*integratedDensity);
         fog = 1.0-(1.0-fog)*(1.0-heightFog);
       }
-      vec3 flashedFog = fogColor + vec3(0.62, 0.68, 0.95) * skyFlash;
+      vec3 flashedFog = fogColor + skyFlashColor * skyFlash;
       rgb = mix(rgb, flashedFog, fog);
       line = mix(line, flashedFog, fog);
     }
@@ -430,6 +431,7 @@ export class StylePipeline {
     cameraRotation: { value: new Matrix3() },
     fogStrength: { value: 0 },
     skyFlash: { value: 0 },
+    skyFlashColor: { value: new Color() },
     fogNear: { value: 0 },
     fogFar: { value: 1 },
     fogColor: { value: new Color() },
@@ -619,6 +621,10 @@ export class StylePipeline {
     uniforms.floorTolerance.value = Math.max(t.reflectionFloorTolerance, 0.001);
     uniforms.fogStrength.value = t.fogStrength;
     uniforms.skyFlash.value = loadSettings().flashes ? t.skyFlash : 0;
+    // Stary błysk zachowuje dokładne składowe liniowe, profile wybierają ciepłą biel.
+    if (tuning.weather.skyFlashColor === '#9eadef')
+      uniforms.skyFlashColor.value.setRGB(0.62, 0.68, 0.95);
+    else uniforms.skyFlashColor.value.set(tuning.weather.skyFlashColor);
     uniforms.fogNear.value = t.fogNear;
     uniforms.fogFar.value = Math.max(t.fogFar, t.fogNear + 1e-3);
     uniforms.fogColor.value.set(t.fogColor);

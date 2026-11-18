@@ -1,3 +1,4 @@
+import type { Vec3 } from '../core/math';
 import type { DialogueLine, MissionDefinition } from '../world/missionSchema';
 import type { MissionObjectives } from '../world/missionObjectives';
 import { tuning } from '../core/tuning';
@@ -11,6 +12,7 @@ export function dialogueLines(lines: readonly DialogueLine[]): HTMLElement {
     const paragraph = document.createElement('p');
     const speaker = document.createElement('strong');
     speaker.dataset.speaker = line.speaker;
+    if (line.speaker === 'brandt') speaker.style.color = '#ff5050';
     speaker.textContent = `${text.speakers[line.speaker]}: `;
     paragraph.append(speaker, document.createTextNode(line.text));
     root.append(paragraph);
@@ -25,7 +27,10 @@ export class MissionHud {
     string,
     { label: HTMLElement; bar: HTMLProgressElement }
   >();
-  constructor(private readonly model: MissionObjectives) {
+  constructor(
+    private readonly model: MissionObjectives,
+    private readonly currentOnly = false,
+  ) {
     this.root.className = 'mission-hud';
     this.goals.className = 'mission-goals';
     const title = document.createElement('strong');
@@ -58,6 +63,8 @@ export class MissionHud {
     for (const objective of this.model.mission.objectives) {
       const row = this.rows.get(objective.id);
       if (!row) continue;
+      row.label.parentElement!.hidden =
+        this.currentOnly && objective.id !== current;
       const done = this.model.objectives[objective.id] === 'done';
       const fuse = this.model.fuses[objective.id];
       row.label.textContent = `${objective.label}${fuse === undefined ? (this.model.unlocked(objective) ? '' : ` · ${text.locked}`) : ` · ${text.fuse}: ${fuse.toFixed(1)} s`}`;
@@ -102,6 +109,8 @@ export function showDebrief(
   dialog.dataset.missionDebrief = mission.id;
   const heading = document.createElement('h2');
   heading.textContent = text.debrief;
+  heading.tabIndex = -1;
+  heading.setAttribute('autofocus', '');
   const button = document.createElement('button');
   button.textContent = text.close;
   const finish = async () => {
@@ -165,6 +174,11 @@ export class MissionRadio {
     document.body.append(this.root);
   }
   signal(trigger: string): void {
+    // Faza i ostatnie słowa muszą odpowiadać bieżącej walce, nie zaległej kolejce.
+    if (trigger === 'boss:defeated' || /^boss:phase:[23]$/.test(trigger)) {
+      this.queue.length = 0;
+      this.remaining = 0;
+    }
     for (const event of this.mission.radio)
       if (event.trigger === trigger) this.queue.push(...event.lines);
   }
@@ -206,4 +220,81 @@ export class MissionRadio {
     window.removeEventListener('resize', this.resize);
     this.root.remove();
   }
+}
+
+/** Znacznik względem kierunku patrzenia, także gdy cel znajduje się za plecami. */
+export class MissionDirection {
+  private readonly root = document.createElement('div');
+  private readonly arrow = document.createElement('span');
+  private readonly label = document.createElement('span');
+  private readonly status = document.createElement('p');
+  private readonly retry = document.createElement('button');
+  constructor(onRetry?: () => void) {
+    this.root.className = 'mission-direction';
+    this.root.dataset.missionDirection = '';
+    this.arrow.textContent = '↑';
+    this.retry.textContent = text.retrySave;
+    this.retry.hidden = true;
+    this.retry.addEventListener('click', () => onRetry?.());
+    this.root.append(this.arrow, this.label, this.status, this.retry);
+    document.body.append(this.root);
+  }
+  update(
+    model: MissionObjectives,
+    player: { position: Vec3; yaw: number },
+  ): void {
+    const objective = model.mission.objectives.find(
+      (item) =>
+        model.ids.includes(item.id) &&
+        model.objectives[item.id] !== 'done' &&
+        model.unlocked(item),
+    );
+    const target = objective ? model.position(objective) : null;
+    this.arrow.hidden = !target;
+    this.label.hidden = !target;
+    if (!target || !objective) return;
+    const dx = target.x - player.position.x;
+    const dz = target.z - player.position.z;
+    const angle = Math.atan2(-dx, -dz) - player.yaw;
+    this.arrow.style.transform = `rotate(${-angle}rad)`;
+    this.label.textContent = text.direction
+      .replace('{label}', objective.label)
+      .replace('{distance}', String(Math.round(Math.hypot(dx, dz))));
+  }
+  setStatus(state: string, error: string | null): void {
+    this.status.textContent = error
+      ? text.saveError
+      : state === 'respawning'
+        ? text.respawning
+        : '';
+    this.retry.hidden = !error;
+  }
+  dispose(): void {
+    this.root.remove();
+  }
+}
+
+export function showLinearSummary(
+  mission: MissionDefinition,
+  back: () => void,
+): () => void {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'mission-debrief';
+  dialog.dataset.missionSummary = mission.id;
+  const heading = document.createElement('h2');
+  heading.textContent = text.victory;
+  const title = document.createElement('p');
+  title.textContent = mission.title;
+  const button = document.createElement('button');
+  button.textContent = text.returnHub;
+  button.addEventListener('click', back);
+  dialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    back();
+  });
+  dialog.append(heading, title, button);
+  document.body.append(dialog);
+  document.exitPointerLock?.();
+  dialog.showModal();
+  return () => dialog.remove();
 }

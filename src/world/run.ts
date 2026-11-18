@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { modeIdSchema, type ModeId } from './modeSchema';
-import { conquestDefinition } from './modes';
+import { modeIdSchema, selectArena, type ModeId } from './modeSchema';
+import { conquestMode, modeDefinitions } from './modes';
 import type { MissionDefinition } from './missionSchema';
 import type { EntityId, EventBus } from '../core/events';
 import {
@@ -8,11 +8,13 @@ import {
   type MapNode,
   type RunDamageStats,
   type RunOutcome,
+  type RunAchievementProgress,
   type RunState,
   type RunSummary,
   type SectorMap,
 } from '../core/runTypes';
 import { Stats } from '../core/stats';
+import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { loadoutDefinitions, loadoutSchema } from '../progression/loadout';
 import { resolveTalents } from '../progression/talents';
 import type { Loadout } from '../progression/loadout';
@@ -51,6 +53,7 @@ export interface RunManagerOptions {
 
 /** Opcje startu runu zamrożone w `RunState` (ADR 0007): ekwipunek z kryjówki, talenty, Poziom zagrożenia. */
 export interface NewRunOptions {
+  arenaId?: string;
   modeId?: ModeId;
   mission?: MissionDefinition;
   /** Pełny ekwipunek; domyślnie preset `loadoutId`. */
@@ -137,6 +140,7 @@ export const runStateSchema: z.ZodType<RunState> = z
       kills: z.number().int().nonnegative(),
       damage: runDamageStatsSchema,
     }),
+    achievementProgress: runAchievementProgressSchema.optional(),
   })
   .superRefine((state, ctx) => {
     const validIds = new Set<string>();
@@ -264,6 +268,11 @@ export class RunManager {
       bus.on('player_died', ({ id }) => {
         if (!this.isRunActive() || !this.currentState) return;
         if (this.playerId !== null && id !== this.playerId) return;
+        if (
+          this.currentState.modeId === 'assault' ||
+          this.currentState.modeId === 'heist'
+        )
+          return;
         this.currentState.hp = 0;
         this.finish('death');
       }),
@@ -318,12 +327,23 @@ export class RunManager {
           layers: [
             [
               {
-                id: 'conquest',
+                id: options.modeId,
                 layer: 1,
                 index: 0,
                 type: 'combat' as const,
                 next: [],
-                fixed: { roomId: conquestDefinition.roomId, objectives: [] },
+                fixed: {
+                  roomId:
+                    options.modeId === 'conquest'
+                      ? selectArena(
+                          conquestMode,
+                          seed,
+                          options.arenaId,
+                          !!options.arenaId,
+                        )
+                      : modeDefinitions[options.modeId].roomId,
+                  objectives: [],
+                },
               },
             ],
           ],
@@ -673,6 +693,12 @@ export class RunManager {
     return true;
   }
 
+  /** Zapisuje w stanie runu postęp osiągnięć z trackera (trafia do zapisu runu). */
+  setAchievementProgress(progress: RunAchievementProgress): void {
+    if (this.currentState)
+      this.currentState.achievementProgress = structuredClone(progress);
+  }
+
   /** Krokuje czas trwania runu w czasie symulacji (bez pasywnej regeneracji zdrowia). */
   step(dt: number): void {
     if (!this.isRunActive() || !this.currentState) return;
@@ -721,7 +747,7 @@ export class RunManager {
       kills: this.currentState.stats.kills,
       roomsCleared: this.currentState.modeId
         ? outcome === 'victory'
-          ? conquestDefinition.rewardRooms
+          ? modeDefinitions[this.currentState.modeId].rewardRooms
           : 0
         : this.clearedNodes.size,
       elitesCleared: this.countClearedElites(),

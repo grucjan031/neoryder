@@ -16,8 +16,11 @@ for (const outcome of ['victory', 'death'] as const) {
       .toBe('hub');
     await page.evaluate(() => window.__neoryder?.command('hub open missions'));
     await expect(
-      page.getByRole('button', { name: 'Szturm — Wkrótce', exact: true }),
-    ).toBeDisabled();
+      page.getByRole('button', {
+        name: 'Kradzież rdzenia',
+        exact: true,
+      }),
+    ).toBeEnabled();
     await page.locator('[data-mode="conquest"]').click();
     await page
       .getByRole('button', { name: 'Rozpocznij Przejęcie', exact: true })
@@ -31,6 +34,7 @@ for (const outcome of ['victory', 'death'] as const) {
               !game ||
               game.query('loading') !== false ||
               game.query('screen') !== 'room' ||
+              game.query('room') !== 'arenaContainerPort' ||
               !game.query('conquest')
             )
               return false;

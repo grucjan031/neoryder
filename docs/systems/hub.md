@@ -262,8 +262,8 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
 | witek  | przed workiem treningowym      | 17,35; −2,4     | 90          | Punch_Jab            | 0 / bandana / vest / none             |
 | kuba   | trasa i                        | −30; 13         | 90          | Walk_Loop            | 3 / beanie / vest / backpack          |
 | pawel  | trasa ii                       | −7; −2,5        | 90          | Walk_Loop            | 7 / cap_stripe / jacket / pouches     |
-| ola    | trasa iii, scale 0,68          | 0,5; 11         | 90          | Jog_Fwd_Loop         | 8 / beanie / jacket / backpack        |
-| stas   | trasa iii, scale 0,6           | 6; 13,5         | 270         | Jog_Fwd_Loop         | 2 / cap / jacket / none               |
+| ola    | trasa iii, scale 0,68          | 0,5; 11         | 90          | Jog_Fwd_Loop         | 8 / beanie / hoodie / backpack        |
+| stas   | trasa iii, scale 0,6           | 6; 13,5         | 270         | Jog_Fwd_Loop         | 2 / cap / hoodie / none               |
 
 - **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, seat?, route?, look? }[]`
   (`hubNpcSchema`, `src/world/hubSchema.ts`). `rotationDeg` to kierunek patrzenia na podłodze: 0 = +Z (w stronę
@@ -274,30 +274,49 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   zachowuje unikalne akcenty, wśród mieszkańców rozkład wynosi 4/3/3/3/3).
 - **Wygląd z danych:** opcjonalne `look` zawiera wyłącznie opcjonalne pola:
   `shade` — liczba całkowita 0–9; `headwear` — `none|cap|cap_stripe|beanie|goggles|glasses|headphones|bandana|hood`;
-  `torso` — `vest|apron|coat|jacket|none`; `prop` — `none|pouches|backpack|wrench|satchel|toolbelt`.
+  `torso` — `vest|apron|coat|jacket|hoodie|none`; `prop` — `none|pouches|backpack|wrench|satchel|toolbelt`.
+  `torso` wybiera wariant stroju z `npc_civilian.glb` (`npcOutfit`, `src/scenes/hubNpcs.ts`):
+  `none` — sama koszula (`top_shirt`), `vest` — koszula + kamizelka (`over_vest`), `apron` — koszula + fartuch
+  (`over_apron`: panel od piersi do kolan, pasek na karku, troki), `jacket` — kurtka ze stójką (`top_jacket`),
+  `hoodie` — bluza z kieszenią i zsuniętym kapturem (`top_hoodie`), `coat` — płaszcz z połami do kolan i rozcięciem
+  (`top_coat`). Zawsze widoczne są `civ_skin` (głowa i dłonie), `civ_pants` i `civ_boots`. `headwear: hood` pokazuje
+  kaptur na głowie (`head_hood`, odsłania twarz); pozostałe nakrycia głowy to proste bryły w kodzie na kości `DEF-head`
+  (czapki, gogle z okrągłymi szkłami, okulary, słuchawki, bandana). `prop` pokazuje `prop_<nazwa>`: saszetki przy pasie,
+  plecak z paskami i ekranikiem, torba na ukos przy lewym biodrze, pas z kieszeniami i narzędziami, klucz.
   Brak odcienia zachowuje dotychczasowy wybór z pierwszych pięciu kolorów według kolejności NPC;
-  brak nakrycia głowy lub rekwizytu zachowuje wariant per id, brak `torso` daje kamizelkę.
-  Jawne `none` pomija daną część. Pięć kluczowych postaci nie ma `look`, zachowując dotychczasowe bryły i kolory.
-  Paleta ma 10 ciemnych odcieni grafitu, granatu, szarości, oliwki, brązu i śliwki; sąsiedzi mają różne odcienie.
-  Fartuch ma płaski przód od pasa w dół, czapka `beanie` nie ma daszka, kaptur odsłania twarz,
-  torba `satchel` ma ukośny pasek, `toolbelt` ma kieszenie i narzędzia. Geometrie prymitywów są
-  współdzielone pomiędzy NPC w jednym `HubNpcs` i zwalniane raz przy `dispose`.
+  brak rekwizytu bierze strój roli per id (niżej), brak `torso` daje kamizelkę. Jawne `none` pomija daną część.
+  Pięć kluczowych postaci nie ma `look`; ich strój roli jest w `KEY_OUTFITS`: Mira — kamizelka, saszetki i klucz,
+  Wolan — płaszcz i gogle, Szron — kurtka z pagonami i naszywką (`role_szron`) oraz czapka z paskiem,
+  Bajt — kamizelka, plecak z ekranikiem i słuchawki, Tomasz — kamizelka, saszetki i czapka z naszywką.
+  Paleta ma 10 ciemnych odcieni grafitu, granatu, szarości, oliwki, brązu i śliwki (`look.shade` barwi wierzchnią
+  warstwę: kamizelkę, fartuch, kurtkę, bluzę, płaszcz, kaptur); sąsiedzi mają różne odcienie. Koszule i spodnie
+  dobiera deterministycznie id NPC z `tuning.hub.npcShirtColors` / `npcPantsColors` (ciepłe szarości, grafit, granat);
+  buty, skóra (ciepła szarość), rekwizyty i metal: `npcBootsColor`, `npcSkinColor`, `npcGearColor`, `npcMetalColor`.
+  Akcent NPC (bursztyn, zieleń, fiolet, błękit, ciepła biel) to tylko mały świecący detal (zamek kurtki i kamizelki,
+  troki bluzy, ekranik plecaka, klamra pasa, naszywka) i słaba poświata krawędzi wierzchniej warstwy; bez czerwieni,
+  cyjanu i magenty. Geometrie brył nakryć głowy są współdzielone pomiędzy NPC w jednym `HubNpcs` i zwalniane raz
+  przy `dispose`; materiały skóry, butów, koszul, spodni i rekwizytów są wspólne (klucz: kolor).
 - **Siedziska:** dla siedzących `position` oznacza punkt na podłodze pod miednicą i środkiem siedziska.
   `seat.heightM` to wysokość jego górnej powierzchni nad tym punktem, a `seat.offset` to wektor od środka tej
   powierzchni do korzenia modelu, w lokalnych osiach NPC. `npcRootPosition` obraca offset wraz z tułowiem,
   zachowując miednicę nad nieruchomym stołkiem. Focus i kolider pozostają przy `position`.
-  Pomiar `node tools/hub/measureSeatedPose.mjs` odtwarza klipy `npc_anims.glb` na `enemy_trooper.glb`:
+  Pomiar `node tools/hub/measureSeatedPose.mjs` odtwarza klipy `npc_anims.glb` na `npc_civilian.glb` (ten sam
+  szkielet i skala co manekin wrogów; podeszwa liczona z `civ_boots`):
   miednica `DEF-hips` ma lokalne położenie `(0,002812; 0,543908; −0,333626) m`, podeszwa `−0,000613 m`.
   Dla obu pętli siedzenia stołek ma wysokość `0,48 m`, offset korzenia `(−0,002812; −0,48; 0,333626) m`;
   miednica leży `0,063908 m` nad siedziskiem, stopy na podłodze. Biurko Bajta ma otwartą przestrzeń na nogi.
   `hubSeating.test.ts` sprawdza prawdziwy klip w 121 próbkach i trzech kątach tułowia: ±0,08 m nad siedziskiem,
   podparcie w X/Z oraz obie stopy i skórkowaną podeszwę przy podłodze.
-- **Wygląd (`src/scenes/hubNpcs.ts`, `HubNpcs`):** ten sam manekin UAL co wrogowie (`enemy_trooper.glb`, tylko ciało
-  `armored_body`, bez płyt, broni i wizjera) w materiale toon z przygaszonej palety `BODY_COLORS` ze słabą poświatą
-  krawędzi w kolorze akcentu (bez czerwieni wrogów). Niebojowe akcesoria na głowie (czapka, gogle, okulary,
-  słuchawki) i ubiór na kościach `DEF-spine003` / `DEF-hips`: kamizelka w jaśniejszym odcieniu, kołnierz, pas
-  ze świecącą klamrą i pasek akcentu oraz rekwizyt roli (Mira — ładownice i klucz, Wolan — poły płaszcza,
-  Szron — pagony i naszywka, Bajt — plecak z ekranem, Tomasz — ładownice i płyta na plecach). Klipy bezczynne z `npc_anims.glb` (wycięte z Quaternius UAL CC0 skryptem
+- **Wygląd (`src/scenes/hubNpcs.ts`, `HubNpcs`):** cywil `public/assets/models/npc_civilian.glb` (Blender,
+  `build_npc_civilian` w `tools/blender/build_assets.py`; opis w `docs/assets.md`) na szkielecie manekina UAL — ta sama
+  skala, kości i położenie stóp co `enemy_trooper.glb`, więc klipy `npc_anims.glb` i siedziska działają bez zmian.
+  Strój to skórowane, dopasowane do sylwetki siatki (koszula/kurtka/bluza/płaszcz, kamizelka/fartuch, spodnie,
+  buty, kaptur) zamiast brył przypiętych do pojedynczych kości; dawne prostopadłościany ubioru (`dressBody`:
+  kamizelka-pudło, kołnierz, pas, bloki barków, klapy, ładownice) — przyczyna zgłoszonych „kwadratów” — zniknęły.
+  `load()` klonuje model, usuwa części spoza `npcOutfit(def)`, podmienia materiały po nazwie (`mat_npc_outer`,
+  `mat_npc_shirt`, `mat_npc_pants`, `mat_npc_boots`, `mat_npc_skin`, `mat_npc_gear`, `mat_npc_metal`,
+  `mat_npc_accent`) i wiąże wszystkie skórowane części z jednym szkieletem (jedna aktualizacja kości na NPC).
+  Tkaniny są dwustronne (otwarte rękawy, brzegi). Klipy bezczynne z `npc_anims.glb` (wycięte z Quaternius UAL CC0 skryptem
   `tools/hub/extractNpcAnimations.mjs`, 2 851 548 bajtów; źródło `tools/blender/sources/ual/`), przesunięte w czasie i lekko
   różne tempem, żeby NPC nie byli zsynchronizowani. Bez modelu (testy, `loadModels: false`) zostają collider i dialog.
 - **Obrót do gracza:** w zasięgu `tuning.hub.npcTurnRangeM` NPC obraca głowę i szyję (kości `DEF-head`, `DEF-neck`;
@@ -359,8 +378,9 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   NPC poza kadrem krokuje mixer co `npcAnimFarFrames` (bliski) lub `npcAnimHiddenFrames` (20, dalszy niż
   `npcAnimFarM`), sumując dt; wracający do kadru dostaje zaległy dt od razu, bez skoku. NPC nie rzucają
   cieni. Debug: `query('hubNpcVisible')` — liczba NPC w kadrze.
-- Akcesoria to ok. 11 siatek na NPC (267 siatek, 159 grup kość+materiał na 23 NPC); scalanie per kość i materiał
-  odłożone: oszczędziłoby ok. 40% wywołań akcesoriów, ale wymaga unikalnych geometrii na NPC i przepisania testów.
+- Siatki na NPC: 3 stałe (skóra, spodnie, buty), 1–4 części stroju (góra, nakładka, akcent), 0–6 rekwizytów
+  i 0–5 brył nakrycia głowy — zwykle 6–12 wywołań rysowania. Model ma ok. 7700 trójkątów ze wszystkimi
+  wariantami; po usunięciu nieużywanych części NPC rysuje ok. 3,7–4,3 tys. (skóra 1867, spodnie 622, buty 392, góra 744–920).
 - Teksty mogą zawierać `conversations: [{ id, npcs: [id], radiusM?, lines: [{ npc, text }] }]`.
   Uczestników jest 1–3, każda kwestia należy do uczestnika, wszystkie id muszą istnieć w układzie;
   scena sprawdza to przez `loadNpcTexts(data, layout.npcs)`.
@@ -381,9 +401,10 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   `query('npcs')` zawiera aktualne X/Y/Z i yaw chodzących NPC.
 - Testy: `hubNpcLife.test.ts` (trasy loop/pingpong, postoje, ustępowanie, dialog, determinizm i JSON,
   skala/focus/siedzisko, walidacja tras i rozmów, 17 klipów i brak poziomego ruchu korzenia),
-  `hubNpcView.test.ts` (bez WebGL, prawdziwe GLB: wygląd mieszkańców na kościach, zachowanie wyglądu pięciu
-  kluczowych postaci, paleta, współdzielenie i zwalnianie geometrii, interpolacja/skala, crossfade, pętle,
-  sumowanie dt odległych mixerów),
+  `hubNpcView.test.ts` (bez WebGL, prawdziwe GLB `npc_civilian.glb`: tylko części stroju z `look`, dokładnie jedna
+  góra, brak `BoxGeometry` w stroju, wspólny szkielet części, strój i kolory pięciu kluczowych postaci, kaptur,
+  paleta, współdzielenie i zwalnianie geometrii, sfera cullowania na wszystkich wariantach i klipach,
+  interpolacja/skala, crossfade, pętle, sumowanie dt odległych mixerów),
   `hubChatter.test.ts` (promień, środek ruchomych uczestników, czas, przerwy, odnowienie, przerwania,
   jedna rozmowa, debug, determinizm), `hubChatterUi.test.ts` (jsdom i brak zbędnych zmian DOM),
   `hubScene.test.ts` z `tests/fixtures/hubLife.ts` (bez DOM: ruch, E/stacja/debug, zdarzenie i kolizja
@@ -511,8 +532,17 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
 - Szczury: 2-3 pasy po dnie niecki torów i pod ścianą targu; co `intervalS` przebiega losowy pas (2,5-3,5 m/s,
   drobne zrywy) i znika; gdy gracz jest bliżej niż 3 m od startu pasa, wybierany jest inny pas albo czekanie;
   maksymalnie 2 naraz (pooling).
-- Wygląd (`src/scenes/hubFauna.ts`): proceduralne siatki z prymitywów, ciemnografitowy toon, małe bursztynowe oczy;
-  współdzielone geometrie; render interpoluje stan symulacji.
+- Wygląd kota (`src/scenes/hubFauna.ts`): model `public/assets/models/hub_cat.glb` (Blender, `build_hub_cat`; opis
+  w `docs/assets.md`) — czarny, fasetowany low-poly kot ze szkieletem (biodra, kręgosłup, pierś, szyja, głowa, cztery
+  łapy po 3–4 kości, ogon w 4 członach), bursztynowe oczy z delikatnym blaskiem (`catEyeColor`, `catEyeGain`),
+  futro w toon `catColor` ze słabą poświatą krawędzi (`faunaRimColor`, `catRimGain`). `HubFauna.load()` wczytuje model
+  (bez modelu — testy, `loadModels: false` — kot nie ma widoku, symulacja i mruczenie działają). `AnimationMixer`
+  odtwarza klipy wybrane przez `catClip(stan)`: `sit` / `lie` / `groom` przy odpoczynku i myciu, `walk` w ruchu
+  (`walk`, `flee`, `return`), `idle` gdy kot stoi na trasie (np. czeka, aż gracz zejdzie z drogi). Tempo `walk` =
+  prędkość ruchu / `catWalkClipSpeedMS` (prędkość łap w klipie, bez poślizgu), najwyżej `catWalkMaxTimeScale`;
+  zmiana klipu przenika się przez `catAnimFadeS`. Mixer idzie czasem symulacji kota (interpolowany `ageS`), więc
+  pauza zatrzymuje animację. Zachowanie (trasa, odpoczynek, ucieczka, dzieci) bez zmian.
+- Wygląd szczurów: proceduralne siatki z prymitywów (współdzielone geometrie), `ratColor`; render interpoluje stan.
 - Dźwięk: mruczenie `purr` (ruchome źródło ambience, ok. 3 m, gdy kot odpoczywa), rzadkie miau i pisk szczura przez
   zdarzenie `hub_fauna_sound` (zob. `audio.md`, `api.md`).
 - Debug: `hub cat` (kot 2 m przed graczem, odpoczynek), `hub rat` (przebieg najbliższym pasem),
@@ -525,6 +555,8 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
 `hubScene.test.ts` (scena bez DOM: spojrzenie i zbocze E, komendy, zatrzymanie ruchu, niecka torów,
 nawigacja, `dispose` bez subskrypcji, meta, NPC: cel `hubNpc`, kwestie w pętli, wygasanie dymka, kolidery, obrót),
 `hubNpcs.test.ts` (teksty NPC, kolejność kwestii, `focus` z kolidera, `selectHubTarget`, `updateNpcLook`),
+`hubCatView.test.ts` (prawdziwy `hub_cat.glb`: szkielet, pięć zapętlonych klipów, łapy i tułów przy podłodze w każdym
+klipie, prędkość łapy w podporze klipu `walk` = `catWalkClipSpeedMS`, mapowanie stanów kota na klipy),
 `hubDialog.test.ts` (jsdom, dymek), `hubScreens.test.ts` (jsdom, hostowanie paneli),
 `missionsPanel.test.ts`, `metaBar.test.ts`, `mainMenu.test.ts`; e2e: `tests/e2e/hub.spec.ts`.
 Ręcznie: `?scene=hub&debug=1`, `hub tp 14.05 13.6 0` — brak podpowiedzi mimo zasięgu; `hub look talents` —

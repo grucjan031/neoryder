@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ModeId } from '../../world/modeSchema';
 import modeText from '../../data/ui/modes.pl.json';
 import { missionDefinitions } from '../../world/missions';
 import type { MissionDefinition } from '../../world/missionSchema';
@@ -119,7 +120,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   status.setAttribute('role', 'status');
 
   let selectedMission: MissionDefinition | undefined;
-  let selectedMode = false;
+  let selectedMode: ModeId | undefined;
   const choices = el('section');
   choices.dataset.missionList = '';
   const briefing = el('section');
@@ -133,7 +134,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       button.dataset.mission = mission.id;
       button.addEventListener('click', () => {
         selectedMission = mission;
-        selectedMode = false;
+        selectedMode = undefined;
         describe(mission);
         const back = el('button', 'mission-choice', missionText.back);
         back.type = 'button';
@@ -153,6 +154,15 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
           dialogueLines(mission.briefing),
           back,
         );
+        if (mission.interlude) {
+          const interlude = el('section', 'missions-panel__interlude');
+          interlude.dataset.missionInterlude = '';
+          interlude.append(
+            el('h3', undefined, mission.interlude.title),
+            dialogueLines(mission.interlude.lines),
+          );
+          briefing.prepend(interlude);
+        }
         briefing.hidden = false;
         choices.hidden = true;
         sector.hidden = false;
@@ -170,7 +180,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   regular.type = 'button';
   regular.dataset.mission = 'regular';
   regular.addEventListener('click', () => {
-    selectedMode = false;
+    selectedMode = undefined;
     selectedMission = undefined;
     describe();
     briefing.hidden = true;
@@ -178,12 +188,28 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     start.focus();
   });
   choices.append(regular);
+  if (ctx.missionSave) {
+    const saved = ctx.missionSave;
+    const resume = el(
+      'button',
+      'mission-choice',
+      `${missionText.continueMission} · ${missionDefinitions.get(saved.missionId)?.title ?? saved.missionId}`,
+    );
+    resume.type = 'button';
+    resume.dataset.action = 'continue-mission';
+    resume.addEventListener('click', () =>
+      ctx.navigate(
+        `?scene=mission&mission=${encodeURIComponent(saved.missionId)}&continue=1`,
+      ),
+    );
+    choices.prepend(resume);
+  }
   choices.append(el('h3', 'missions-panel__heading', modeText.heading));
   const conquest = el('button', 'mission-choice', modeText.conquest);
   conquest.type = 'button';
   conquest.dataset.mode = 'conquest';
   conquest.addEventListener('click', () => {
-    selectedMode = true;
+    selectedMode = 'conquest';
     selectedMission = undefined;
     sectorName.textContent = modeText.conquest;
     sectorDescription.textContent = modeText.description;
@@ -191,6 +217,30 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     start.focus();
   });
   choices.append(conquest);
+  const assault = el('button', 'mission-choice', modeText.assault.title);
+  assault.type = 'button';
+  assault.dataset.mode = 'assault';
+  assault.addEventListener('click', () => {
+    selectedMode = 'assault';
+    selectedMission = undefined;
+    sectorName.textContent = modeText.assault.title;
+    sectorDescription.textContent = modeText.assault.description;
+    start.textContent = modeText.assault.start;
+    start.focus();
+  });
+  choices.append(assault);
+  const heist = el('button', 'mission-choice', modeText.heist.title);
+  heist.type = 'button';
+  heist.dataset.mode = 'heist';
+  heist.addEventListener('click', () => {
+    selectedMode = 'heist';
+    selectedMission = undefined;
+    sectorName.textContent = modeText.heist.title;
+    sectorDescription.textContent = modeText.heist.description;
+    start.textContent = modeText.heist.start;
+    start.focus();
+  });
+  choices.append(heist);
   for (const title of modeText.soon) {
     const button = el('button', 'mission-choice', title);
     button.type = 'button';
@@ -247,12 +297,13 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   start.dataset.action = 'start-run';
   start.addEventListener('click', () => {
     const params = new URLSearchParams({
-      scene: 'run',
+      scene: selectedMission?.level ? 'mission' : 'run',
       loadout: 'meta',
-      seed: seedInput.value.trim() || randomSeed(),
     });
+    const seed = seedInput.value.trim();
+    if (seed || !selectedMode) params.set('seed', seed || randomSeed());
     if (selectedMission) params.set('mission', selectedMission.id);
-    if (selectedMode) params.set('mode', 'conquest');
+    if (selectedMode) params.set('mode', selectedMode);
     ctx.navigate(`?${params}`);
   });
 
@@ -272,12 +323,14 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     const completed = manager.state.campaign.completed;
     for (const { mission, button } of missionButtons) {
       const missing = mission.requires.filter((id) => !completed.includes(id));
-      button.disabled = missing.length > 0;
-      const state = missing.length
-        ? `${missionText.locked} · ${missionText.requires}${missing.join(', ')}`
-        : completed.includes(mission.id)
-          ? missionText.completed
-          : missionText.available;
+      button.disabled = !mission.level || missing.length > 0;
+      const state = !mission.level
+        ? missionText.soon
+        : missing.length
+          ? `${missionText.locked} · ${missionText.requires}${missing.join(', ')}`
+          : completed.includes(mission.id)
+            ? missionText.completed
+            : missionText.available;
       button.textContent = `${String(mission.number).padStart(2, '0')} · ${mission.title} — ${state}`;
     }
     const { max, selected } = manager.state.threat;

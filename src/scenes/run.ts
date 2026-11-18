@@ -1,5 +1,6 @@
-import { modeIdSchema } from '../world/modeSchema';
-import { conquestDefinition } from '../world/modes';
+import { ZodError } from 'zod';
+import { modeIdSchema, selectArena } from '../world/modeSchema';
+import { conquestMode, modeDefinitions } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -41,6 +42,9 @@ import { RunManager } from '../world/run';
 import { generateSectorMap, generateMissionMap } from '../world/sectorMap';
 import { missionDefinitions } from '../world/missions';
 import { MissionRadio } from '../ui/missionUi';
+import { achievementDefinitions } from '../progression/achievementsSchema';
+import { AchievementToast } from '../ui/achievementToast';
+import { AchievementTracker } from '../progression/achievementTracker';
 import type { SectorDefinition } from '../world/sectorSchema';
 import { kuroganeSector } from '../world/sectors';
 import { roomPlanner } from '../world/threat';
@@ -112,6 +116,8 @@ export class RunScene implements Scene {
   private screens!: RunScreens;
   private meta!: MetaManager;
   private metaCommands: MetaCommandsHandle | null = null;
+  private tracker: AchievementTracker | null = null;
+  private achievementToast: AchievementToast | null = null;
   private metaResult: ApplyRunResult | null = null;
   /** Zakończony run czekający na trwały zapis nagrody (null = rozliczony albo w toku). */
   private ended: RunEnded | null = null;
@@ -132,6 +138,8 @@ export class RunScene implements Scene {
   private missionRadio?: MissionRadio;
   private room: RunRoom | null = null;
   private roomId: string | null = null;
+  /** Debug: nieśmiertelność nakładana na każdy nowy pokój runu. */
+  private godRun = false;
   private roomReady = false;
   private roomCommands: CommandRegistry | null = null;
   private playerId: EntityId | null = null;
@@ -240,7 +248,12 @@ export class RunScene implements Scene {
           this.room?.enterVictoryHold?.();
         } else this.schedule('end');
         // Rozliczenie po ustawieniu ciszy/przejścia: jego odświeżenie nie pokaże podsumowania za wcześnie.
-        this.finishMeta(summary);
+        // Przyrosty osiągnięć dochodzą do podsumowania przed zapisem `ended`, więc przeżywają odświeżenie.
+        this.finishMeta(
+          this.tracker
+            ? { ...summary, achievements: this.tracker.tracked }
+            : summary,
+        );
       }),
     );
     const params =
@@ -250,6 +263,13 @@ export class RunScene implements Scene {
       );
     this.meta = await loadMetaManager(this.getMetaStore(), ctx.bus);
     if (this.disposed) return;
+    this.tracker = new AchievementTracker(ctx.bus, {
+      base: this.meta.state.achievements,
+      clock: () => this.manager.state.elapsedS,
+      active: () => this.manager.active,
+    });
+    if (typeof document !== 'undefined')
+      this.achievementToast = new AchievementToast(ctx.bus);
     if (params.get('continue') === '1') {
       const state = await this.save.loadRun();
       const ended = state ? ((await this.save.loadEnded?.()) ?? null) : null;
@@ -272,6 +292,7 @@ export class RunScene implements Scene {
       if (state.loadoutId !== CUSTOM_LOADOUT_ID)
         this.validateLoadout(state.loadoutId);
       this.manager.restore(state);
+      this.tracker?.restore(state.achievementProgress);
     } else {
       // Nowy run nadpisze zapis runu: zostawiony, nierozliczony run najpierw rozliczamy.
       // Gdy się nie uda, zostajemy na jego podsumowaniu (ponowienie albo porzucenie nagrody).
@@ -291,9 +312,13 @@ export class RunScene implements Scene {
         this.metaResult = null;
         this.rewardAlreadySaved = false;
       }
-      const modeId = params.has('mode')
-        ? modeIdSchema.parse(params.get('mode'))
-        : undefined;
+      const modeId =
+        params.get('scene') === 'conquest' ||
+        params.get('scene') === 'weatherTest'
+          ? 'conquest'
+          : params.has('mode')
+            ? modeIdSchema.parse(params.get('mode'))
+            : undefined;
       if (modeId && params.has('mission'))
         throw new Error('Tryb i misja wykluczają się.');
       const missionId = params.get('mission');
@@ -307,11 +332,20 @@ export class RunScene implements Scene {
         throw new Error('Misja jest zablokowana.');
       const loadout = params.get('loadout') ?? 'classic';
       const seed = params.get('seed') ?? String(ctx.rng.getState());
+      const arenaId = modeId
+        ? selectArena(
+            conquestMode,
+            params.get('seed') ?? undefined,
+            params.get('arena'),
+            ctx.debug,
+          )
+        : undefined;
       if (loadout === 'meta') {
         const meta = this.meta.state;
         this.manager.newRun(seed, CUSTOM_LOADOUT_ID, {
           mission,
           modeId,
+          arenaId,
           loadout: this.meta.loadout(),
           talents: meta.talents,
           threatLevel: meta.threat.selected,
@@ -319,7 +353,7 @@ export class RunScene implements Scene {
         });
       } else {
         this.validateLoadout(loadout);
-        this.manager.newRun(seed, loadout, { mission, modeId });
+        this.manager.newRun(seed, loadout, { mission, modeId, arenaId });
       }
     }
     const mission = missionDefinitions.get(this.manager.state.missionId ?? '');
@@ -404,7 +438,12 @@ export class RunScene implements Scene {
     try {
       await this.save.saveRun(this.manager.serialize(), ended);
     } catch (error) {
-      fail('save', 'Nie można zapisać zakończenia runu.', error);
+      // Dane odrzucone przez walidację nie zmienią się po ponowieniu: zostaje „Porzuć nagrodę”.
+      fail(
+        error instanceof ZodError ? 'apply' : 'save',
+        'Nie można zapisać zakończenia runu.',
+        error,
+      );
       return;
     }
     const store = this.getMetaStore();
@@ -430,7 +469,11 @@ export class RunScene implements Scene {
       try {
         await saveMetaManager(store, meta);
       } catch (error) {
-        fail('save', 'Nie można zapisać meta-progresu.', error);
+        fail(
+          error instanceof ZodError ? 'apply' : 'save',
+          'Nie można zapisać meta-progresu.',
+          error,
+        );
         return;
       }
     }
@@ -458,6 +501,16 @@ export class RunScene implements Scene {
     return {
       applied: false,
       rewards: record.rewards,
+      achievements: (record.achievements ?? []).map((id) => {
+        const def = achievementDefinitions.get(id);
+        return {
+          id,
+          reward: {
+            data: def?.reward.data ?? 0,
+            cores: def?.reward.cores ?? 0,
+          },
+        };
+      }),
       levelBefore: level,
       levelAfter: level,
       threatUnlocked: false,
@@ -467,6 +520,7 @@ export class RunScene implements Scene {
   /** Świeżo wczytany i rozliczony stan meta staje się stanem sceny (także dla komend meta). */
   private adoptMeta(meta: MetaManager): void {
     this.meta = meta;
+    this.tracker?.setBase(meta.state.achievements);
     if (!this.metaCommands) return;
     this.metaCommands.dispose();
     this.metaCommands = registerMetaCommands(
@@ -689,6 +743,7 @@ export class RunScene implements Scene {
   }
 
   private showMap(): void {
+    if (this.tracker) this.manager.setAchievementProgress(this.tracker.tracked);
     const state = this.manager.serialize();
     this.persist(async () => {
       await this.save.saveRun(state);
@@ -759,12 +814,16 @@ export class RunScene implements Scene {
       : [...this.rooms.values()].filter((room) => room.type === node.type);
     // Zapas dla sektorów bez puli danego typu: układ zwykłej walki.
     const eligible = candidates.filter(
-      (room) => mission || !room.id.endsWith('Mission'),
+      (room) =>
+        !room.arena?.exclusive && (mission || !room.id.endsWith('Mission')),
     );
     const available = eligible.length
       ? eligible
       : [...this.rooms.values()].filter(
-          (room) => room.type === 'combat' && !room.id.endsWith('Mission'),
+          (room) =>
+            room.type === 'combat' &&
+            !room.arena?.exclusive &&
+            !room.id.endsWith('Mission'),
         );
     return rng
       .fork(`room-layout:${node.id}`)
@@ -772,28 +831,18 @@ export class RunScene implements Scene {
   }
 
   /**
-   * Splashart ekranu ładowania pokoju: z pokoju/motywu docelowego węzła, inaczej z ziarna runu
-   * i numeru węzła. W `fx=lite` (testy) bez obrazu. Bez `Math.random`.
+   * Losowy splashart ekranu ładowania pokoju spośród odblokowanych aktów.
+   * W `fx=lite` (testy) bez obrazu.
    */
   private loadingSplash(): { file: string; title: string } | undefined {
-    const node = this.manager.currentNode;
     if (
       getLiteFx() ||
       this.manager.screen !== 'room' ||
       this.roomReady ||
-      !node
+      !this.manager.currentNode
     )
       return undefined;
-    const seed = this.manager.state.seed;
-    let layout: RoomDefinition | undefined;
-    try {
-      layout = this.chooseRoom(node, new Rng(seed));
-    } catch {
-      // Błąd puli pokoi zgłosi openRoom(); tu wystarczy wybór z samego ziarna.
-    }
     const entry = pickSplash(
-      `${seed}:${node.id}`,
-      { room: layout?.id, theme: layout?.theme },
       unlockedSplashAct(
         this.meta.state.campaign.completed.length
           ? this.meta.state.campaign.completed
@@ -834,7 +883,7 @@ export class RunScene implements Scene {
             firstBreakS: 0,
             breakS: 0,
             maxAlive: state.modeId
-              ? conquestDefinition.maxAlive
+              ? modeDefinitions[state.modeId].maxAlive
               : bossRoom
                 ? (layout.maxAlive ?? 1)
                 : 1,
@@ -885,6 +934,10 @@ export class RunScene implements Scene {
       this.room = null;
       return;
     }
+    // Debug/testy: `god` wydane poza pokojem włącza nieśmiertelność na cały run — każdy pokój
+    // dostaje ją przed pierwszym krokiem symulacji (fx=lite na wolnym CI liczy wiele kroków na
+    // klatkę, więc strażnicy zdążali zabić gracza, zanim test włączył ją w pokoju).
+    if (this.godRun) this.roomCommands.execute('god');
     this.roomReady = true;
     if (!this.manager.active) {
       this.schedule('end');
@@ -981,6 +1034,19 @@ export class RunScene implements Scene {
         this.schedule('clear');
       }
     }
+    if (
+      this.manager.active &&
+      (this.manager.state.modeId === 'assault' ||
+        this.manager.state.modeId === 'heist') &&
+      (
+        this.room?.query?.(this.manager.state.modeId) as {
+          outcome?: string;
+        } | null
+      )?.outcome === 'death'
+    ) {
+      this.manager.setHp(0);
+      this.manager.finish('death');
+    }
     this.syncMission();
     this.flushTransitions();
   }
@@ -1026,6 +1092,10 @@ export class RunScene implements Scene {
         return this.roomId;
       case 'meta':
         return this.meta.state;
+      case 'achievements':
+        return this.meta.state.achievements;
+      case 'runAchievements':
+        return this.tracker?.tracked ?? null;
       case 'level':
         return {
           ...this.meta.xpProgress,
@@ -1082,7 +1152,7 @@ export class RunScene implements Scene {
         )
           return 'Misja niedostępna.';
         const params = new URLSearchParams({
-          scene: 'run',
+          scene: mission.level ? 'mission' : 'run',
           loadout: 'meta',
           mission: mission.id,
           debug: '1',
@@ -1159,6 +1229,13 @@ export class RunScene implements Scene {
     for (const name of [
       'conquest capture',
       'conquest tickets',
+      'assault destroy',
+      'assault lives',
+      'heist grab',
+      'heist drop',
+      'heist extract',
+      'heist lives',
+      'weather',
       'tp',
       'hold',
       'status',
@@ -1168,7 +1245,6 @@ export class RunScene implements Scene {
       'boss phase',
       'boss pattern',
       'wave',
-      'god',
     ]) {
       register(name, `${name} — komenda aktywnego pokoju`, (args) =>
         this.roomReady && this.manager.screen === 'room'
@@ -1176,6 +1252,12 @@ export class RunScene implements Scene {
           : 'Brak aktywnego pokoju.',
       );
     }
+    register('god', 'god — nieśmiertelność (poza pokojem: na cały run)', () => {
+      if (this.roomReady && this.manager.screen === 'room')
+        return this.roomCommands!.execute('god');
+      this.godRun = !this.godRun;
+      return `Nieśmiertelność w runie: ${this.godRun ? 'włączona' : 'wyłączona'}`;
+    });
     register('credits', 'credits <n> — dodaj Kredyty', (args) => {
       if (args.length !== 1 || !this.manager.addCredits(Number(args[0])))
         return 'Podaj dodatnią liczbę Kredytów.';
@@ -1207,6 +1289,8 @@ export class RunScene implements Scene {
     for (const off of this.off.splice(0)) off();
     this.disposeRoom();
     this.manager?.dispose();
+    this.tracker?.dispose();
+    this.achievementToast?.dispose();
     this.missionRadio?.dispose();
     this.screens?.dispose();
   }

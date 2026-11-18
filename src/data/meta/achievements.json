@@ -1,0 +1,328 @@
+[
+  {
+    "id": "pierwsza-krew",
+    "title": "Pierwsza krew",
+    "description": "Pokonaj pierwszego wroga.",
+    "hint": "Wejdź do dowolnego pokoju z wrogami i pokonaj jednego z nich.",
+    "category": "walka",
+    "kind": "flag",
+    "reward": {},
+    "icon": "spark"
+  },
+  {
+    "id": "zwierciadlo",
+    "title": "Zwierciadło",
+    "description": "Odbij 25 pocisków parowaniem ostrza.",
+    "hint": "Zablokuj ostrzem pocisk w oknie parowania, a poleci z powrotem do strzelca.",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "parry_success",
+    "target": 25,
+    "reward": {
+      "data": 20
+    },
+    "icon": "mirror"
+  },
+  {
+    "id": "odbicie-mistrza",
+    "title": "Odbicie mistrza",
+    "description": "Odbij 150 pocisków parowaniem ostrza.",
+    "hint": "Paruj pociski w kolejnych runach, aż odbijanie wejdzie w nawyk.",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "parry_success",
+    "target": 150,
+    "reward": {
+      "cores": 1
+    },
+    "icon": "mirror"
+  },
+  {
+    "id": "egzekutor",
+    "title": "Egzekutor",
+    "description": "Wykonaj 25 egzekucji ogłuszonych wrogów.",
+    "hint": "Ogłusz wroga i dobij go egzekucją, gdy zaświeci się znacznik.",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "execute_performed",
+    "target": 25,
+    "reward": {
+      "data": 25
+    },
+    "icon": "execute"
+  },
+  {
+    "id": "seria",
+    "title": "Seria",
+    "description": "Pokonaj 5 wrogów w ciągu 2 sekund.",
+    "hint": "Zwiń walkę w jedno cięcie: grupa wrogów blisko siebie i szybkie zabójstwa.",
+    "category": "walka",
+    "kind": "flag",
+    "reward": {
+      "data": 25
+    },
+    "icon": "chain"
+  },
+  {
+    "id": "rezonator",
+    "title": "Rezonator",
+    "description": "Wywołaj 20 synergii implantów.",
+    "hint": "Zbieraj implanty o wspólnych znacznikach, aż zadziała synergia.",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "synergy_triggered",
+    "target": 20,
+    "reward": {
+      "data": 20
+    },
+    "icon": "rings"
+  },
+  {
+    "id": "akrobata",
+    "title": "Akrobata",
+    "description": "Wykonaj 200 zrywów.",
+    "hint": "Uciekaj zrywem przed ciosami i pociskami.",
+    "category": "walka",
+    "kind": "counter",
+    "counter": "dash_used",
+    "target": 200,
+    "reward": {
+      "data": 15
+    },
+    "icon": "dash"
+  },
+  {
+    "id": "bez-zadrasniecia",
+    "title": "Bez zadrapania",
+    "description": "Ukończ pokój elity, nie tracąc ani punktu zdrowia.",
+    "hint": "Wejdź do pokoju elity i wyczyść go, nie dając się trafić.",
+    "category": "walka",
+    "kind": "flag",
+    "reward": {
+      "cores": 2
+    },
+    "icon": "aegis"
+  },
+  {
+    "id": "taniec-ostrza",
+    "title": "Taniec ostrza",
+    "description": "Pokonaj 150 wrogów ostrzem.",
+    "hint": "Walcz wręcz: zabójstwa ostrzem liczą się do celu.",
+    "category": "sciezki",
+    "kind": "counter",
+    "counter": "kills_melee",
+    "target": 150,
+    "reward": {
+      "data": 30
+    },
+    "icon": "blade"
+  },
+  {
+    "id": "glos-rezonansu",
+    "title": "Głos Rezonansu",
+    "description": "Pokonaj 120 wrogów mocami Rezonansu.",
+    "hint": "Dobijaj wrogów mocami: zabójstwa mocą liczą się do celu.",
+    "category": "sciezki",
+    "kind": "counter",
+    "counter": "kills_power",
+    "target": 120,
+    "reward": {
+      "data": 30
+    },
+    "icon": "wave"
+  },
+  {
+    "id": "reka-strzelca",
+    "title": "Ręka strzelca",
+    "description": "Pokonaj 200 wrogów bronią palną.",
+    "hint": "Strzelaj: zabójstwa bronią liczą się do celu.",
+    "category": "sciezki",
+    "kind": "counter",
+    "counter": "kills_gun",
+    "target": 200,
+    "reward": {
+      "data": 30
+    },
+    "icon": "gun"
+  },
+  {
+    "id": "droga-ostrza",
+    "title": "Droga ostrza",
+    "description": "Wygraj run, w którym co najmniej 80% obrażeń zadało ostrze.",
+    "hint": "Wygraj, walcząc prawie wyłącznie ostrzem.",
+    "category": "sciezki",
+    "kind": "flag",
+    "reward": {
+      "cores": 2
+    },
+    "icon": "crown"
+  },
+  {
+    "id": "droga-rezonansu",
+    "title": "Droga Rezonansu",
+    "description": "Wygraj run, w którym co najmniej 80% obrażeń zadały moce.",
+    "hint": "Wygraj, walcząc prawie wyłącznie mocami Rezonansu.",
+    "category": "sciezki",
+    "kind": "flag",
+    "reward": {
+      "cores": 2
+    },
+    "icon": "crown"
+  },
+  {
+    "id": "droga-strzelca",
+    "title": "Droga strzelca",
+    "description": "Wygraj run, w którym co najmniej 80% obrażeń zadała broń palna.",
+    "hint": "Wygraj, walcząc prawie wyłącznie bronią palną.",
+    "category": "sciezki",
+    "kind": "flag",
+    "reward": {
+      "cores": 2
+    },
+    "icon": "crown"
+  },
+  {
+    "id": "cisza-w-niecce",
+    "title": "Cisza w Niecce",
+    "description": "Ukończ misję 01, „Maszty”.",
+    "hint": "Wykonaj misję 01 z tablicy misji.",
+    "category": "misje",
+    "kind": "flag",
+    "reward": {
+      "data": 20
+    },
+    "icon": "antenna"
+  },
+  {
+    "id": "list-w-reku",
+    "title": "List w ręku",
+    "description": "Ukończ misję 03, „List przewozowy”.",
+    "hint": "Wykonaj misję 03 z tablicy misji.",
+    "category": "misje",
+    "kind": "flag",
+    "reward": {
+      "data": 25
+    },
+    "icon": "letter"
+  },
+  {
+    "id": "ja-tylko-dowoze",
+    "title": "Ja tylko dowożę",
+    "description": "Ukończ misję 06, „Odlewnia”.",
+    "hint": "Wykonaj misję 06 z tablicy misji.",
+    "category": "misje",
+    "kind": "flag",
+    "reward": {
+      "cores": 2
+    },
+    "icon": "foundry"
+  },
+  {
+    "id": "pelna-kontrola",
+    "title": "Pełna kontrola",
+    "description": "Wygraj tryb Podbój.",
+    "hint": "Wybierz Podbój na tablicy misji i doprowadź go do zwycięstwa.",
+    "category": "misje",
+    "kind": "flag",
+    "reward": {
+      "data": 25
+    },
+    "icon": "flag"
+  },
+  {
+    "id": "trzy-punkty",
+    "title": "Trzy punkty",
+    "description": "W trybie Podbój przejmij punkty A, B i C jednocześnie.",
+    "hint": "Zdobądź wszystkie trzy punkty i utrzymaj je, zanim wróg któryś odbije.",
+    "category": "misje",
+    "kind": "flag",
+    "reward": {
+      "cores": 1
+    },
+    "icon": "triad"
+  },
+  {
+    "id": "pierwsze-zwyciestwo",
+    "title": "Pierwsze zwycięstwo",
+    "description": "Wygraj swój pierwszy run.",
+    "hint": "Przejdź sektor i pokonaj bossa.",
+    "category": "progres",
+    "kind": "flag",
+    "reward": {},
+    "icon": "trophy"
+  },
+  {
+    "id": "dziesiec-prob",
+    "title": "Dziesięć prób",
+    "description": "Zakończ 10 runów, wygranych lub nie.",
+    "hint": "Każdy zakończony run się liczy, także przegrany.",
+    "category": "progres",
+    "kind": "counter",
+    "counter": "runs_ended",
+    "target": 10,
+    "reward": {
+      "data": 30
+    },
+    "icon": "repeat"
+  },
+  {
+    "id": "upadek-brandta",
+    "title": "Upadek Brandta",
+    "description": "Pokonaj Dyrektora Ochrony Kurogane Arms.",
+    "hint": "Dotrzyj do pokoju bossa i zniszcz go.",
+    "category": "progres",
+    "kind": "flag",
+    "reward": {
+      "cores": 1
+    },
+    "icon": "target"
+  },
+  {
+    "id": "zagrozenie-3",
+    "title": "Zagrożenie 3",
+    "description": "Wygraj run na Poziomie zagrożenia 3 lub wyższym.",
+    "hint": "Odblokuj wyższe Poziomy zagrożenia zwycięstwami i wygraj na trzecim.",
+    "category": "progres",
+    "kind": "flag",
+    "reward": {
+      "cores": 2
+    },
+    "icon": "alert"
+  },
+  {
+    "id": "weteran-hut",
+    "title": "Weteran hut",
+    "description": "Wygraj łącznie 5 runów.",
+    "hint": "Powtarzaj zwycięstwa; wygrane misje także się liczą.",
+    "category": "progres",
+    "kind": "counter",
+    "counter": "victories",
+    "target": 5,
+    "reward": {
+      "cores": 1
+    },
+    "icon": "chevrons"
+  },
+  {
+    "id": "pierwszy-zakup",
+    "title": "Pierwszy zakup",
+    "description": "Kup pierwsze odblokowanie w warsztacie.",
+    "hint": "Wydaj Dane w warsztacie w kryjówce.",
+    "category": "progres",
+    "kind": "flag",
+    "reward": {},
+    "icon": "cart"
+  },
+  {
+    "id": "poziom-10",
+    "title": "Poziom 10",
+    "description": "Osiągnij 10. poziom postaci.",
+    "hint": "Zbieraj doświadczenie za runy.",
+    "category": "progres",
+    "kind": "flag",
+    "reward": {
+      "cores": 2
+    },
+    "icon": "level"
+  }
+]

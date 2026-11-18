@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import data from '../data/hands/handPoses.json';
+import bladeGripData from '../data/hands/bladeGrip.json';
 
 export const handNodes = [
   'forearm',
@@ -27,6 +28,15 @@ export const handNodes = [
   'socket_support',
 ] as const;
 const angle = z.number().finite();
+const vector = z.tuple([angle, angle, angle]);
+export const bladeGrip = z
+  .strictObject({
+    socketPosition: vector,
+    idlePosition: vector,
+    idleRotation: vector,
+    offhandDropM: z.number().finite().nonnegative(),
+  })
+  .parse(bladeGripData);
 const poseSchema = z.partialRecord(
   z.enum(handNodes),
   z.tuple([angle, angle, angle]),

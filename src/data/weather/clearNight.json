@@ -1,0 +1,57 @@
+{
+  "id": "clearNight",
+  "title": "Sucha noc",
+  "precipitation": {
+    "kind": "none",
+    "density": 0,
+    "speed": 18,
+    "color": "#8294b0",
+    "opacity": 0.26,
+    "exposureS": 0.025,
+    "widthM": 0.013
+  },
+  "wind": {
+    "direction": {
+      "x": 1,
+      "z": 0
+    },
+    "strength": 0.5,
+    "gustStrength": 0,
+    "gustPeriodS": 8
+  },
+  "fog": {
+    "color": "#2b1f3d",
+    "density": 0.005,
+    "heightM": 2,
+    "strength": 0.25,
+    "nearM": 45,
+    "farM": 200
+  },
+  "surface": {
+    "gloss": 0.05,
+    "reflections": 0.25,
+    "puddles": 0.25
+  },
+  "lightning": {
+    "enabled": false,
+    "minIntervalS": 25,
+    "maxIntervalS": 55,
+    "brightness": 1,
+    "color": "#fff1d6",
+    "decayS": 0.18
+  },
+  "dust": {
+    "density": 0,
+    "sizeM": 0.12,
+    "opacity": 0.12,
+    "color": "#8991a0",
+    "lifeS": 8
+  },
+  "ambience": [
+    {
+      "kind": "wind",
+      "gain": 0.08,
+      "radiusM": 100
+    }
+  ]
+}

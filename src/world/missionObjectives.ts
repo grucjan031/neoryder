@@ -17,12 +17,13 @@ export class MissionObjectives {
   private readonly pauseAnnounced = new Set<string>();
   private readonly started = new Set<string>();
   constructor(
-    readonly mission: MissionDefinition,
+    readonly mission: Pick<MissionDefinition, 'objectives'>,
     readonly ids: readonly string[],
     state: Pick<RunState, 'objectives' | 'objectiveProgress'>,
     private readonly hooks: ObjectiveHooks,
     private readonly radiusM: number,
     private readonly pickupRadiusM: number,
+    private readonly sequence?: readonly string[],
   ) {
     this.objectives = { ...state.objectives };
     this.progress = { ...state.objectiveProgress };
@@ -51,9 +52,19 @@ export class MissionObjectives {
     };
   }
   unlocked(objective: MissionObjective): boolean {
+    if (this.sequence) {
+      const index = this.sequence.indexOf(objective.id);
+      if (
+        index < 0 ||
+        this.sequence
+          .slice(0, index)
+          .some((id) => this.objectives[id] !== 'done')
+      )
+        return false;
+    }
     return objective.kind === 'pickup'
       ? this.objectives[objective.spawnAfter] === 'done'
-      : objective.kind === 'exit'
+      : objective.kind === 'exit' || objective.kind === 'interact'
         ? objective.unlockAfter.every((id) => this.objectives[id] === 'done')
         : true;
   }

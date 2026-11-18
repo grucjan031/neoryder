@@ -19,6 +19,7 @@ import { CityParticleBatch } from '../render/city/particles';
 import { disposeCityGroup } from '../render/city/resources';
 import type { Vec3 } from '../core/math';
 import type { RainShelterDef } from '../world/dressingSchema';
+import type { WeatherProfile } from '../render/weatherSchema';
 
 /** Granice strefy włącznie; odczyt bez alokacji i bez zmiany RNG pogody. */
 export function isRainSheltered(
@@ -85,6 +86,12 @@ export class Weather {
   private initialized = false;
   private disposed = false;
   private splashBudget = 0;
+  private profile?: WeatherProfile;
+  private elapsed = 0;
+  private nextFlash = 0;
+  private windZ = 0;
+  private dust?: CityParticleBatch;
+  private dustBudget = 0;
 
   constructor(
     params: Partial<RainParams> = {},
@@ -146,6 +153,38 @@ export class Weather {
   get capacity(): number {
     return this.drops.length;
   }
+
+  setProfile(profile: WeatherProfile): void {
+    this.profile = profile;
+    const p = profile.precipitation;
+    Object.assign(this.params, {
+      enabled: p.kind !== 'none',
+      density: p.density,
+      speed: p.speed,
+      color: p.color,
+      opacity: p.opacity,
+    });
+    this.stormEnabled = profile.lightning.enabled;
+    this.flash = 0;
+    this.elapsed = 0;
+    this.nextFlash = this.rng.float(
+      profile.lightning.minIntervalS,
+      profile.lightning.maxIntervalS,
+    );
+    this.splashes.pool.clear();
+    this.splashDrops.pool.clear();
+    this.dust?.pool.clear();
+    this.dustBudget = 0;
+    if (profile.dust.density > 0 && !this.dust) {
+      this.dust = new CityParticleBatch(
+        tuning.weather.dustMax,
+        'steam',
+        profile.dust.opacity,
+      );
+      this.dust.mesh.userData.noOutline = true;
+      this.root.add(this.dust.mesh);
+    }
+  }
   get splashCount(): number {
     return this.splashes.pool.count + this.splashDrops.pool.count;
   }
@@ -158,6 +197,20 @@ export class Weather {
     }
     const t = tuning.city;
     const dt = Math.max(0, dtWorldS);
+    this.root.visible = true;
+    this.elapsed += dt;
+    const profile = this.profile;
+    if (profile) {
+      const w = profile.wind;
+      const strength =
+        w.strength *
+        (1 +
+          w.gustStrength *
+            Math.sin((this.elapsed * Math.PI * 2) / w.gustPeriodS));
+      const length = Math.hypot(w.direction.x, w.direction.z);
+      this.params.windX = (w.direction.x / length) * strength;
+      this.windZ = (w.direction.z / length) * strength;
+    }
     camera.getWorldPosition(this.cameraPosition);
     const center = this.cameraPosition;
     const count = this.params.enabled
@@ -177,17 +230,20 @@ export class Weather {
       Math.min(1, this.splashBudget) +
       dt * t.rainSplashRate * Math.max(0, Math.min(1, this.params.density));
     this.direction
-      .set(-this.params.windX, Math.max(0, this.params.speed), 0)
+      .set(-this.params.windX, Math.max(0, this.params.speed), -this.windZ)
       .normalize();
     const length =
-      Math.hypot(this.params.windX, this.params.speed) * t.rainExposureS;
+      Math.hypot(this.params.windX, this.params.speed, this.windZ) *
+      (profile?.precipitation.exposureS ?? t.rainExposureS);
+    const width = profile?.precipitation.widthM ?? t.rainStreakWidthM;
     // Konserwatywna obwiednia całej smugi zapobiega wystawaniu końca spod dachu.
     this.rainHalfSize.set(
-      (Math.abs(this.direction.x) * length + t.rainStreakWidthM) / 2,
-      (Math.abs(this.direction.y) * length + t.rainStreakWidthM) / 2,
-      t.rainStreakWidthM / 2,
+      (Math.abs(this.direction.x) * length + width) / 2,
+      (Math.abs(this.direction.y) * length + width) / 2,
+      (Math.abs(this.direction.z) * length + width) / 2,
     );
     const unchanged =
+      !profile &&
       dt === 0 &&
       this.initialized &&
       this.rainState.count === count &&
@@ -213,7 +269,6 @@ export class Weather {
     const q2x = q[8]!,
       q2y = q[9]!,
       q2z = q[10]!;
-    const width = t.rainStreakWidthM;
     const out = this.rain.instanceMatrix.array;
     // Krople poza rysowaną pulą są tylko losowane w pierwszej klatce (stała kolejność RNG);
     // zawijanie jest okresowe, więc wystarczy je wykonać, gdy kropla wróci do puli.
@@ -229,6 +284,7 @@ export class Weather {
       const oldY = p.y;
       if (i < count) {
         p.x += this.params.windX * dt;
+        p.z += this.windZ * dt;
         p.y -= Math.max(0, this.params.speed) * dt;
       }
       if (
@@ -306,6 +362,20 @@ export class Weather {
     }
     this.splashes.render(camera, t.splashGrowth);
     this.splashDrops.render(camera);
+    if (profile) {
+      this.flash = Math.max(0, this.flash - dt / profile.lightning.decayS);
+      if (this.stormEnabled && this.elapsed >= this.nextFlash && dt > 0) {
+        this.flash = profile.lightning.brightness;
+        this.nextFlash =
+          this.elapsed +
+          this.rng.float(
+            profile.lightning.minIntervalS,
+            profile.lightning.maxIntervalS,
+          );
+      }
+      this.updateDust(dt, camera, profile);
+      return;
+    }
     this.flash = Math.max(0, this.flash - dt / t.stormFlashS);
     if (
       this.stormEnabled &&
@@ -316,12 +386,47 @@ export class Weather {
       this.flash = 1;
   }
 
+  private updateDust(
+    dt: number,
+    camera: Camera,
+    profile: WeatherProfile,
+  ): void {
+    if (!this.dust) return;
+    const p = profile.dust;
+    this.dust.mesh.visible = p.density > 0;
+    this.dust.setOpacity(p.opacity);
+    this.dust.pool.step(dt);
+    this.dustBudget += (dt * tuning.weather.dustMax * p.density) / p.lifeS;
+    while (this.dustBudget >= 1) {
+      this.dustBudget--;
+      const d = this.dust.pool.spawn(p.lifeS);
+      d.x =
+        this.cameraPosition.x +
+        this.rng.float(-tuning.city.rainWidthM / 2, tuning.city.rainWidthM / 2);
+      d.y =
+        this.cameraPosition.y +
+        this.rng.float(
+          -tuning.city.rainHeightM / 2,
+          tuning.city.rainHeightM / 2,
+        );
+      d.z =
+        this.cameraPosition.z +
+        this.rng.float(-tuning.city.rainDepthM / 2, tuning.city.rainDepthM / 2);
+      d.vx = this.params.windX;
+      d.vz = this.windZ;
+      d.size = p.sizeM;
+      d.color = this.splashColor.set(p.color).getHex();
+    }
+    this.dust.render(camera);
+  }
+
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
     this.flash = 0;
     this.splashes.pool.clear();
     this.splashDrops.pool.clear();
+    this.dust?.pool.clear();
     disposeCityGroup(this.root);
   }
 }

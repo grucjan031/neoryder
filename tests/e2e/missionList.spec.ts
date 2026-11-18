@@ -56,13 +56,23 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
       { timeout: LOAD_TIMEOUT },
     )
     .toBe(true);
-  await page.locator('[data-mission="m03-list-przewozowy"]').click();
-  await expect(page.locator('[data-mission-briefing]')).toContainText(
-    'Zmiana na nabrzeżu przechodzi o północy',
+  await expect(
+    page.locator('[data-mission="m03-list-przewozowy"]'),
+  ).toBeDisabled();
+  await expect(
+    page.locator('[data-mission="m03-list-przewozowy"]'),
+  ).toContainText('Wkrótce');
+  // D6: stary wariant pozostaje do sprawdzenia przez bezpośredni URL.
+  await page.goto(
+    '/?scene=run&mission=m03-list-przewozowy&loadout=meta&debug=1&fx=lite',
   );
-  await page
-    .getByRole('button', { name: 'Rozpocznij misję', exact: true })
-    .click();
+  // Nieśmiertelność na cały run, zanim wejdziemy do pierwszego pokoju (fx=lite na wolnym CI).
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.query('screen')), {
+      timeout: LOAD_TIMEOUT,
+    })
+    .toBe('map');
+  await page.evaluate(() => window.__neoryder?.command('god'));
   for (let layer = 1; layer <= 7; layer++) {
     await expect
       .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
@@ -77,7 +87,6 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
             const screen = game.query('screen');
             if (screen === 'shop' || screen === 'rest') return true;
             if (screen !== 'room') return false;
-            game.command('god');
             game.command('run clear');
             if (final) {
               const blocked = game.command('objective done exit');
@@ -117,10 +126,14 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
     page.locator('[data-mission-debrief="m03-list-przewozowy"]'),
   ).toContainText('ładunek biologiczny klasy K', { timeout: LOAD_TIMEOUT });
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
+  // Okno znika dopiero po zapisie meta; przeładowanie wcześniej gubi wyczyszczony debrief.
+  await expect(page.locator('[data-mission-debrief]')).toBeHidden({
+    timeout: LOAD_TIMEOUT,
+  });
   await page.evaluate(() => window.__neoryder?.command('hub open missions'));
   await expect(
     page.locator('[data-mission="m03-list-przewozowy"]'),
-  ).toContainText('Ukończona');
+  ).toContainText('Wkrótce');
   await page.reload();
   await expect
     .poll(() => query(page, 'meta'), { timeout: LOAD_TIMEOUT })

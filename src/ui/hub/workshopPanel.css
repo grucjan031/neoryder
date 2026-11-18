@@ -103,6 +103,44 @@
   font-size: 0.8em;
   white-space: nowrap;
 }
+.workshop__preview-block {
+  margin: 8px 0 12px;
+}
+.workshop__preview-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.hub-screen .workshop .workshop__preview-switch .workshop__choice {
+  flex: 0 1 auto;
+  width: auto;
+}
+.workshop__preview {
+  width: 100%;
+  max-width: 360px;
+  background: radial-gradient(ellipse at 50% 55%, #12203a 0%, #070d1a 75%);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  border-left: 4px solid #ffae1a;
+}
+.workshop__preview-canvas {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 360 / 220;
+  height: auto;
+  cursor: grab;
+  touch-action: none;
+}
+.workshop__preview-canvas:active {
+  cursor: grabbing;
+}
+.workshop__preview-note {
+  margin: 0;
+  padding: 12px;
+  color: #8894a8;
+  font-size: 0.85em;
+}
 .workshop__status {
   min-height: 1.4em;
   margin: 16px 0 0;
@@ -116,7 +154,8 @@
   border: 1px solid rgba(0, 229, 255, 0.16);
 }
 .workshop__module-slot {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(60px, auto) minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   margin: 6px 0;
@@ -124,6 +163,7 @@
   font-size: 0.9em;
 }
 .workshop__module-select {
+  min-height: 44px;
   flex: 1;
   min-width: 0;
   padding: 6px 10px;
@@ -132,7 +172,35 @@
   border: 1px solid rgba(0, 229, 255, 0.3);
   font: inherit;
 }
+.workshop__module-description {
+  grid-column: 1 / -1;
+  line-height: 1.5;
+}
 .workshop__module-select:focus-visible {
   outline: 2px solid #00e5ff;
   outline-offset: 2px;
+}
+.workshop__state.is-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffae1a;
+}
+.workshop__state .achv-lock {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+@media (max-width: 760px) {
+  .workshop__row {
+    flex-wrap: wrap;
+  }
+  .workshop__state.is-locked {
+    order: 5;
+    flex: 1 0 100%;
+  }
+  /* Kłódka z nazwą naszywki zastępuje nieaktywny przycisk. */
+  .workshop__row[data-status='achievement'] .workshop__buy {
+    display: none;
+  }
 }

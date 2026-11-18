@@ -200,6 +200,95 @@ Zbiorczy podgląd roboczy: `%TEMP%/neoryder-city-contact-sheet.png` (nie jest
 częścią zasobów gry). Galeria w grze: `?scene=city-props-test` (opis w
 `docs/systems/city.md`).
 
+## Port kontenerowy (arena Przejęcie)
+
+Osiem modeli do dużej areny „Port kontenerowy”, w stylu zestawu miasta (proceduralne,
+fasetowane, bez tekstur w GLB). Kontenery mają cztery warianty koloru jako osobne pliki,
+pachołek wariant z liną, razem 15 plików `port_*.glb` w `public/assets/models/city/`
+(ten sam folder i loader co `city_*`), podglądy Workbench w `tools/blender/previews/city/`.
+
+```bash
+"D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only port_container_20_navy,port_container_20_olive,port_container_20_ochre,port_container_20_graphite,port_container_40_navy,port_container_40_olive,port_container_40_ochre,port_container_40_graphite,port_gantry_crane,port_light_tower,port_bollard,port_bollard_rope,port_reach_stacker,port_quay_edge,port_lashing_platform
+node node_modules/vitest/vitest.mjs run tests/unit/portModels.test.ts --configLoader runner
+```
+
+Konwencje jak w mieście: metry, glTF Y-up, spód na `y = 0`, przód w +Z, płaskie normalne,
+jedna siatka na materiał (`_port_merge`). AABB to rzeczywisty bounding box GLB **X × Y × Z**.
+Punkt odniesienia = początek układu modelu (tam gra stawia `position`).
+
+| Plik                                 | AABB X × Y × Z [m]      | Punkt odniesienia                                                                            | Materiały                                                                                                                                                                                                                                               | Trójkąty |
+| ------------------------------------ | ----------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------: |
+| `port_container_20_<kolor>.glb` (×4) | 6,058 × 2,591 × 2,438   | środek spodu AABB; długość w X, drzwi w +X, boki z blachą falistą w ±Z                       | `mat_container_<kolor>`, `mat_metal` (narożniki, rygle, zawiasy), `mat_cable` (wnętrze, szczelina drzwi), `mat_label_stencil`, `mat_label_barcode`, `mat_label_warning`                                                                                 |     1188 |
+| `port_container_40_<kolor>.glb` (×4) | 12,192 × 2,591 × 2,438  | jak 20 ft                                                                                    | jak 20 ft                                                                                                                                                                                                                                               |     1476 |
+| `port_gantry_crane.glb`              | 26,220 × 18,180 × 8,940 | środek między czterema wózkami kół: koła na liniach x = ±12 m (rozstaw 24 m), jazda wzdłuż Z | `mat_crane_paint` (rama), `mat_machine` (wózek), `mat_hivis` (rama chwytaka), `mat_lacquer`, `mat_glass` (kabina), `mat_hazard`, `mat_rubber`, `mat_trim`, `mat_metal`, `mat_cable`, `mat_paint`, `mat_light_white`, `mat_neon_amber`, `mat_neon_green` |     2140 |
+| `port_light_tower.glb`               | 3,391 × 20,120 × 3,391  | oś masztu; drabina z koszem po −Z                                                            | `mat_metal`, `mat_concrete`, `mat_trim`, `mat_machine`, `mat_hivis`, `mat_light_white` (8 reflektorów), `mat_neon_amber` (lampa szczytowa), `mat_label_warning`                                                                                         |     1462 |
+| `port_bollard.glb`                   | 0,620 × 0,600 × 0,620   | oś pachołka                                                                                  | `mat_metal`, `mat_trim`, `mat_hivis` (głowica)                                                                                                                                                                                                          |      328 |
+| `port_bollard_rope.glb`              | 1,085 × 0,600 × 2,087   | oś pachołka (x = z = 0); lina i zwój leżą w +Z i +X                                          | jak pachołek; lina `mat_hivis`                                                                                                                                                                                                                          |      704 |
+| `port_reach_stacker.glb`             | 6,060 × 5,756 × 11,105  | środek spodu AABB; przód (wysięgnik, rama chwytaka w poprzek X) w +Z                         | `mat_machine`, `mat_lacquer`, `mat_glass`, `mat_hivis`, `mat_hazard`, `mat_rubber`, `mat_trim`, `mat_metal`, `mat_light_white`, `mat_neon_amber`                                                                                                        |     1152 |
+| `port_quay_edge.glb`                 | 4,000 × 2,000 × 1,600   | środek spodu AABB; woda (odbojnica) w +Z, moduły łączą się w X                               | `mat_quay_concrete`, `mat_hazard` (pas krawędzi), `mat_rubber_fender`, `mat_metal`, `mat_trim`, `mat_cable` (linia wody)                                                                                                                                |      232 |
+| `port_lashing_platform.glb`          | 6,000 × 1,240 × 1,370   | środek spodu AABB; kładka w X, wejścia na obu końcach                                        | `mat_steel_grating` (pomost), `mat_metal` (rama), `mat_hivis` (barierki-kratownice), `mat_hazard` (krawężniki), `mat_neon_amber` (znaczniki)                                                                                                            |      396 |
+
+Budżety (pilnuje `tests/unit/portModels.test.ts`): kontenery i kładka ≤ 1500, krawędź
+nabrzeża ≤ 800, pachołek ≤ 400 (z liną ≤ 800), maszt ≤ 1500, wózek ≤ 2000, suwnica ≤ 3000
+trójkątów — ten sam rząd co `city_*` (136–1500), suwnica jest największym obiektem areny.
+
+**Powierzchnie do chodzenia** (kolizja areny = prostopadłościan o wymiarach AABB):
+
+- **Kontenery:** wierzch na `y = 2,591` (narożniki odlewane; szyny 4 mm, dach 8 mm niżej —
+  płasko dla gracza). Kontenery stoją na narożnikach, więc stos to kolejne `y = n · 2,591`.
+  Blacha falista (trapez, podziałka ok. 0,33 m, głębokość 4,5 cm) jest tylko na ścianach.
+- **Krawędź nabrzeża:** wierzch na `y = 2,0` na całym module (beton + pas `mat_hazard`
+  przy wodzie). Odbojnica i płyta siedzą pod okapem, wewnątrz AABB. Żeby wierzch licował
+  z placem na `y = 0`, postaw moduł na `y = −2,0`.
+- **Kładka:** pomost to jedna płaska płyta z wierzchem na `y = 0,10` na całej szerokości
+  przejścia (|z| ≤ 0,6 m); spód `y = 0` kładzie się na dachach dwóch stosów, np. nad
+  szczeliną ok. 4 m (po ~1 m oparcia z każdej strony). Barierki (1,15 m) to kratownice po
+  bokach; końce są otwarte.
+
+Suwnica, maszt, wózek i pachołki to przeszkody/dekoracje: kolizję warto złożyć z prostych
+brył (nogi suwnicy 0,9 × 13,1 × 0,9 m na x = ±12, z = ±3; belki progowe 0,9 × 1 × 8,6 m;
+maszt ok. 0,7 m średnicy; wózek — prostopadłościan nadwozia bez wysięgnika). Pod belkami
+suwnicy jest 15,8 m prześwitu i 23 m szerokości między progami — mieszczą się 2–3 rzędy
+kontenerów z pasem przejazdu.
+
+**Materiały do podpięcia później.** Nowe nazwy portu nie są jeszcze w rejestrze gry
+(`src/render/materials.ts`, `urbanMaterials.ts`) — poza galerią spadną na `mat_world`
+z ostrzeżeniem. Każda nazwa odpowiada teksturze powierzchni generowanej osobno
+(`public/assets/textures/surfaces/`). Kolor podglądu (sRGB) jest w `PORT_PAINTS` /
+`PORT_MATERIALS` w `build_assets.py`; tak samo barwi je galeria.
+
+| Materiał                 | Tekstura (surfaces)             | Podgląd   | Wygląd zastępczy w galerii |
+| ------------------------ | ------------------------------- | --------- | -------------------------- |
+| `mat_container_navy`     | `container_corrugated_navy`     | `#283a62` | `paint` + barwa podglądu   |
+| `mat_container_olive`    | `container_corrugated_olive`    | `#4e5638` | `paint` + barwa podglądu   |
+| `mat_container_ochre`    | `container_corrugated_ochre`    | `#a97c26` | `paint` + barwa podglądu   |
+| `mat_container_graphite` | `container_corrugated_graphite` | `#343a44` | `paint` + barwa podglądu   |
+| `mat_crane_paint`        | `crane_paint`                   | `#9c7430` | `paint` + barwa podglądu   |
+| `mat_quay_concrete`      | `quay_concrete`                 | `#4a5568` | `concrete`                 |
+| `mat_rubber_fender`      | `rubber_fender`                 | `#23262d` | `rubber`                   |
+| `mat_steel_grating`      | `steel_grating`                 | `#4b566b` | `metal`                    |
+
+Pozostałe materiały to istniejące nazwy miasta (tabela wyżej). Paleta Neon Noir: bryły
+ciemne i chłodne, światła tylko bursztyn (`mat_neon_amber`), ciepła biel
+(`mat_light_white`) i jedna zielona lampka stanu w kabinie suwnicy; test odrzuca barwy
+z zakresów czerwieni, cyanu i magenty. Brak marek i logotypów: kontenery mają tylko
+istniejące nadruki (szablon „07”, tabliczka z kodem kreskowym, znak ostrzegawczy).
+Numer kontenera w stylu „NRD-204” wymagałby nowej tekstury `labels/label_<id>.webp`.
+
+Węzły (siatki po materiałach): kontener `shell`, `hardware`, `interior`, `stencil`,
+`csc_plate`, `warning`; suwnica `frame`, `trolley`, `spreader`, `cabin`, `cabin_glass`,
+`wheel`, `running_gear`, `hazard`, `steelwork`, `hoist_rope`, `power_house`,
+`girder_light`, `position_light`, `status_lamp`; maszt `mast`, `plinth`, `fittings`,
+`headframe`, `railing`, `flood_lens`, `beacon`, `warning`; pachołek `bollard`,
+`anchor_bolt`, `head_cap` / `rope`; wózek `body`, `cab`, `cab_glass`, `spreader`,
+`wheel`, `running_gear`, `hazard`, `hydraulics`, `headlight`, `amber_light`; krawędź
+`coping`, `hazard_edge`, `fender`, `fender_plate`, `fender_bolt`, `waterline`; kładka
+`deck`, `frame`, `railing`, `toe_board`, `marker_light`.
+
+Uwagi integracyjne: `RoomScene`/`Arena` rozpoznają własne materiały modeli po prefiksie
+`city_` (`model?.startsWith('city_')`) — modele `port_*` trzeba tam dopisać. Część krawędzi
+nabrzeża poniżej placu (`y < 0`) wpada w mgłę wysokościową motywu `neonStreet`.
+
 ## Wrogowie — manekin CC0 ze szkieletem
 
 Pięć humanoidów powstaje przez `build_enemy_cc0(archetype)` z manekina
@@ -256,6 +345,65 @@ klipy i materiały, a stan AI mapuje na klipy `AnimationMixer` z przenikaniem.
 Śmierć nadal uruchamia niezależny od części modelu rozpad `enemyShatter`;
 `Death01` nie jest eksportowany. Dron zachowuje dotychczasową budowę i animację.
 
+## Kryjówka — cywil NPC i kot
+
+### `npc_civilian.glb` (mieszkańcy kryjówki)
+
+`build_npc_civilian()` importuje ten sam manekin UAL co wrogowie i robi tę samą decymację, więc skala
+(`1.84 / wysokość`), kości `Rig` (53) i stopy na y=0 są identyczne jak w `enemy_trooper.glb` — klipy z
+`npc_anims.glb` i pomiary siedzisk działają bez zmian. Z manekina zostają tylko głowa, szyja i dłonie
+(`civ_skin`, 1867 tri). Strój to własne, proceduralne siatki skórowane do szkieletu: przekroje tułowia, rękawów
+i nogawek są dopasowane do sylwetki manekina (otoczka przekroju + zapas), wagi kości liczone analitycznie
+(płynne przejścia w stawach). Bez płyt, ładownic i brył przypiętych do pojedynczej kości. Cieniowanie gładkie
+z ostrymi krawędziami powyżej 38–50°, jak ciało wrogów (kontur rysuje sylwetkę, nie fasetki).
+Klipów w pliku nie ma (eksport `animations=False`); węzły kości są w pozie T.
+
+| Węzeł (prefiks)                                            | Materiał                          | Co to                                                                       |
+| ---------------------------------------------------------- | --------------------------------- | --------------------------------------------------------------------------- |
+| `civ_skin`                                                 | `mat_npc_skin`                    | głowa, szyja, dłonie manekina                                               |
+| `civ_pants`, `civ_boots`                                   | `mat_npc_pants` / `mat_npc_boots` | spodnie (miednica + nogawki), buty z podeszwą na y=0 i cholewką             |
+| `top_shirt`                                                | `mat_npc_shirt`                   | koszula z długim rękawem (pod kamizelką i fartuchem)                        |
+| `top_jacket` (+ `top_jacket__accent`)                      | `mat_npc_outer`                   | kurtka do bioder ze stójką, zamek w akcencie                                |
+| `top_hoodie` (+ `_pocket`, `__accent_L/R`)                 | `mat_npc_outer`                   | bluza z kieszenią, zsuniętym kapturem i trokami w akcencie                  |
+| `top_coat`                                                 | `mat_npc_outer`                   | płaszcz z wykładanym kołnierzem, poły do kolan z rozcięciem (przód z udami) |
+| `over_vest` (+ `__accent`)                                 | `mat_npc_outer`                   | kamizelka bez rękawów na koszuli, zamek w akcencie                          |
+| `over_apron` (+ `_strap`, `_tie`)                          | `mat_npc_outer`                   | fartuch od piersi do kolan, pasek na karku, troki                           |
+| `head_hood`                                                | `mat_npc_outer`                   | kaptur na głowie z otworem twarzy, opada na kark                            |
+| `prop_pouches_L/R`                                         | `mat_npc_gear`                    | saszetki przy pasie (kość `DEF-hips`)                                       |
+| `prop_backpack` (+ `_strap_L/R`, `__accent`)               | `mat_npc_gear`                    | plecak (kość `DEF-spine.003`), skórowane szelki, ekranik w akcencie         |
+| `prop_satchel` (+ `_strap`, `__accent`)                    | `mat_npc_gear`                    | torba przy lewym biodrze, skórowany pas na ukos przez prawy bark            |
+| `prop_toolbelt` (+ `_pocket_L/R`, `_tool_L/R`, `__accent`) | `mat_npc_gear` / `mat_npc_metal`  | pas z kieszeniami, narzędzia, klamra                                        |
+| `prop_wrench`                                              | `mat_npc_metal`                   | klucz przy lewym biodrze                                                    |
+| `role_szron_L/R` (+ `__accent`)                            | `mat_npc_outer`                   | pagony (kości `DEF-shoulder.L/R`) i naszywka Kapitana Szrona                |
+
+Gra pokazuje części według `look` (`npcOutfit`, `docs/systems/hub.md`) i podmienia materiały po nazwie; kolory
+są w `tuning.hub` (`npcShirtColors`, `npcPantsColors`, `npcBootsColor`, `npcSkinColor`, `npcGearColor`,
+`npcMetalColor`) i w odcieniach `look.shade`. Wszystkie warianty razem: ok. 7700 tri; jeden NPC: ok. 3,7–4,3 tys.
+Podgląd `tools/blender/previews/npc_civilian.png`: dziewięć ujęć (koszula z torbą, kurtka z plecakiem, bluza,
+płaszcz w chodzie, kamizelka z pasem, fartuch z saszetkami, kaptur z pagonami, siedzenie, klęczenie).
+
+### `hub_cat.glb` (kot Węgielek)
+
+`build_hub_cat()` buduje własny szkielet (23 kości: `hips`, `spine`, `chest`, `neck`, `head`, `tail1`–`tail4`,
+przednie `upperarm`/`forearm`/`hand`, tylne `thigh`/`shin`/`foot`/`toe`, strony `.L`/`.R`) i siatkę z pierścieni
+(950 tri): smukły tułów, głowa z policzkami i małym pyszczkiem, trójkątne uszy, łapy, długi zwężający się ogon.
+Materiały: `mat_cat_fur` (`cat_body`), `mat_cat_eye` (migdałowe oczy, `cat_eyes`), `mat_cat_nose` (`cat_nose`).
+Przód +Z glTF, łapy na y=0, długość ok. 0,5 m bez ogona, wysokość z uszami ok. 0,46 m.
+Klipy (30 kl./s, zapętlone; pozy łap liczone dwuczłonowym IK w płaszczyźnie YZ):
+
+| Klip    | Długość | Co robi                                                                 |
+| ------- | ------- | ----------------------------------------------------------------------- |
+| `idle`  | 2,4 s   | stoi: oddech, lekki ruch głowy, kołysanie ogona                         |
+| `walk`  | 0,67 s  | chód (kolejność LT, LP, PT, PP), ogon w górze; łapa w podporze 0,55 m/s |
+| `sit`   | 3 s     | siedzi, ogon owinięty z boku, drganie końca ogona                       |
+| `lie`   | 4 s     | leży „bochenkiem”, przednie łapy przed sobą, wolny oddech               |
+| `groom` | 1,2 s   | siedzi i myje się: prawa łapa przy pyszczku, ruch głowy                 |
+
+Budowa: `--only npc_civilian,hub_cat` (wrogowie, ręce i bronie zostają nietknięte). Podglądy:
+`tools/blender/previews/hub_cat.png` (idle, dwie fazy chodu, sit, lie, groom). Porównanie w grze przed i po:
+`tools/blender/previews/npc_*_before.png` / `npc_*_after.png`, `cat_*_before.png` / `cat_*_after.png`.
+Testy: `tests/unit/hubNpcView.test.ts`, `hubSeating.test.ts`, `hubCatView.test.ts`.
+
 ## Katalog
 
 | Plik                                   | Co to                                                                                                                                                                            | Węzły dla kodu                                                                                                                   |
@@ -287,6 +435,79 @@ Collider bloku to zawsze prostopadłościan `size` z JSON pokoju; widoczny model
 - **Rekwizyty o stałych proporcjach** — `city_*`, `crate`, `crate_small`: skala 1, bez rozciągania. Blok w danych pokoju ma mieć wymiary modelu w tolerancji 5% (tabela „Miasto”, docelowe bloki kolizji); większy rozjazd to błąd danych pokoju, nie modelu.
 
 Test: `tests/unit/roomBlockModelFit.test.ts` (wszystkie pokoje, prawdziwe GLB).
+
+### Zestaw aren Przejęcia: estakada i targ na dachach
+
+12 nowych modeli i dodatkowy fioletowy wariant straganu (13 GLB). Własne,
+proceduralne geometrie bez tekstur, nadruków, marek i napisów. Prefiks `city_`
+zachowuje ścieżki oraz obsługę materiałów miejskich. Pliki:
+`public/assets/models/city/<nazwa>.glb`, podglądy:
+`tools/blender/previews/city/<nazwa>.png`. Areny, pogoda i collidery będą
+integrowane osobno; modele nie zawierają colliderów ani świateł punktowych.
+
+Tabela zawiera **zmierzone AABB GLB (X × Y × Z, metry)** oraz rzeczywiste liczby
+trójkątów wszystkich instancji siatek. **P** = początek w środku podstawy AABB,
+spód na y = 0, środek x = z = 0; przód +Z. Każdy model ma korzeń o swojej nazwie.
+W kolumnie materiałów pominięto wspólny prefiks **`mat_`**.
+
+| Nazwa | AABB X × Y × Z [m] | Punkt odniesienia | Materiały (`mat_…`) | Trójkąty / budżet |
+| --- | --- | --- | --- | ---: |
+| `city_overpass_pillar` | 2,500 × 10,000 × 2,513 | P | concrete, hazard, metal, trim | 412 / 1500 |
+| `city_overpass_deck` | 14,000 × 2,600 × 12,000 | P; jezdnia y = 1,6 | asphalt, concrete, hivis, rubber, trim | 436 / 1500 |
+| `city_highway_barrier` | 4,000 × 1,093 × 0,808 | P; długość w X | concrete, hivis, metal, trim | 228 / 1500 |
+| `city_highway_sign_gantry` | 14,000 × 7,000 × 1,400 | P; rozpiętość w X | concrete, metal, neon_amber, neon_green, trim | 632 / 1500 |
+| `city_wrecked_car` | 2,150 × 1,580 × 3,950 | P; przód +Z | cable, glass, hivis, lacquer, metal, plastic, rubber, rust, trim | 676 / 1500 |
+| `city_smog_scrubber` | 3,000 × 4,000 × 3,000 | P | cable, concrete, machine, metal, neon_green, paint, trim | 672 / 1500 |
+| `city_roof_water_tank` | 3,000 × 5,000 × 3,000 | P | concrete, metal, rust, trim, wood | 708 / 1500 |
+| `city_roof_hvac_unit` | 4,000 × 1,998 × 2,052 | P | cable, machine, metal, neon_green, trim | 1000 / 1500 |
+| `city_market_stall_canopy` | 3,024 × 2,612 × 2,000 | P; lada w +Z | cable, lacquer, metal, neon_amber, paint, trim, wood | 596 / 1500 |
+| `city_market_stall_canopy_violet` | 3,024 × 2,612 × 2,000 | P; lada w +Z | cable, fabric, metal, neon_amber, paint, trim, wood | 596 / 1500 |
+| `city_roof_bridge` | 1,600 × 1,390 × 8,000 | P; pomost y = 0,2 | hivis, metal, neon_amber, trim | 276 / 1500 |
+| `city_neon_sign_frame` | 6,000 × 3,000 × 1,800 | P; panel w +Z | concrete, machine, metal, neon_amber, neon_violet, trim | 208 / 800 |
+| `city_satellite_cluster` | 3,000 × 3,400 × 2,000 | P; czasze w +Z | cable, concrete, machine, metal, trim | 492 / 800 |
+
+**Montaż elementów chodzonych:** węzeł `walk_slab` wyznacza zamkniętą płytę.
+W GLTFLoader jest grupą prymitywów podzielonych według materiałów.
+
+- Estakada: płyta **14 × 1,6 × 12 m**, środek collidera `(0; 0,8; 0)`,
+  górna płaszczyzna y = 1,6, końce segmentu z = ±6. Bariery są wewnątrz
+  szerokości 14 m, sięgają y = 2,6; wolny pas między ich podstawami ma 12,4 m.
+  Dylatacje i pasy jezdni to rozłączne pola tej samej płaszczyzny, bez uskoku
+  i bez nakładających się ścian. Segmenty można łączyć co 12 m w osi Z.
+- Kładka: płyta **1,6 × 0,2 × 8 m**, środek collidera `(0; 0,1; 0)`,
+  górna płaszczyzna y = 0,2, końce z = ±4. Poręcze do y = 1,39;
+  przejście między listwami ma 1,4 m (1,378 m między wystającymi lampami).
+  Oznaczenia końców są płaskie.
+- Collider płyty musi używać powyższych wymiarów, **nie AABB całego modelu
+  z poręczami**. Bariery i poręcze wymagają osobnych prostopadłościanów przy
+  przyszłej integracji. Nie dodano kolizji w tym zadaniu.
+
+Granatowy brezent używa istniejącego `mat_lacquer` (powlekana powierzchnia),
+fioletowy `mat_fabric`; oba warianty mają tę samą ugiętą geometrię i wymiary.
+Nie dodano nazw materiałów ani tekstur. Panele bramownicy są puste, bursztynowy
+i zielony; szyld dachowy ma pusty fioletowy panel z bursztynowymi krawędziami.
+Wrak to krótki hatchback w osi Z z pogniecioną maską, zapadniętym dachem,
+odsłoniętą kabiną, odłamkiem szyby i wyrwanym błotnikiem.
+
+Eksport wyłącznie tego zestawu:
+
+```powershell
+& "D:/Blender/blender.exe" -b --factory-startup --python tools/blender/build_assets.py -- --only city_overpass_pillar,city_overpass_deck,city_highway_barrier,city_highway_sign_gantry,city_wrecked_car,city_smog_scrubber,city_roof_water_tank,city_roof_hvac_unit,city_market_stall_canopy,city_market_stall_canopy_violet,city_roof_bridge,city_neon_sign_frame,city_satellite_cluster
+```
+
+Obejrzano wszystkie 13 PNG. Po pierwszej ocenie usunięto nakładanie powierzchni
+jezdni i oznaczeń kładki, zakotwiono osłony wentylatorów, dodano kołnierze HVAC,
+ugięto brezent i odsłonięto lampy straganów oraz mocniej zdeformowano wrak.
+W trzeciej, ostatniej iteracji wraku obniżono fotel i słupek, aby nie przebijały
+dachu; w kładce ujednolicono metalowy materiał boków płyty. Pozostałe modele
+wymagały jednej lub dwóch iteracji. Wszystkie końcowe PNG zostały obejrzane.
+
+Kontrola: `tests/unit/cityModels.test.ts` sprawdza komplet galerii (37 modeli),
+wymiary, punkt odniesienia, paletę/emisję, budżety, obecność charakterystycznych
+części i podglądów oraz wysokość, pole i drożność płaskich powierzchni pomostów.
+Ręcznie: `?scene=city-props-test&prop=city_overpass_deck` lub dowolna nazwa z tabeli;
+`yaw=145` pokazuje tył, `view=3` przegląd estakady, `view=4` targu dachowego.
+Galeria nie symuluje chodzenia ani kolizji; ocenę ruchu zostawiono integracji aren.
 
 ## Uwagi do F1
 

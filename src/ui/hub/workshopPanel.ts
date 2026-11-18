@@ -4,11 +4,21 @@ import {
   equipmentState,
   groupRows,
   nextLoadout,
+  itemName,
   nextModuleLoadout,
+  previewTarget,
   unlockRows,
   workshopText as text,
 } from './workshopState';
 import type { ChoiceOption, LoadoutPart, UnlockRow } from './workshopState';
+import { achievementText } from '../achievementText';
+import { createLockIcon } from '../achievementIcons';
+import {
+  PREVIEW_HEIGHT,
+  PREVIEW_WIDTH,
+  WeaponPreview,
+  canCreateWeaponPreview,
+} from '../../render/weaponPreview';
 import './workshopPanel.css';
 
 const fill = (template: string, values: Record<string, string | number>) =>
@@ -41,13 +51,45 @@ export const createWorkshopPanel: HubPanelFactory = (
   let status = '';
   let disposed = false;
   let busy = false;
+  let wantedPreview: string | undefined;
+  let shownPreview = '';
+
+  // Kontener podglądu żyje między odświeżeniami (canvas i kontekst WebGL powstają raz).
+  const previewBox = el('div', 'workshop__preview');
+  previewBox.dataset.testid = 'weapon-preview';
+  const previewCanvas = el('canvas', 'workshop__preview-canvas');
+  previewCanvas.width = PREVIEW_WIDTH;
+  previewCanvas.height = PREVIEW_HEIGHT;
+  previewCanvas.setAttribute('role', 'img');
+  previewCanvas.setAttribute('aria-label', text.preview.title);
+  const previewNote = el(
+    'p',
+    'workshop__preview-note',
+    text.preview.unavailable,
+  );
+  previewNote.hidden = true;
+  previewBox.append(previewCanvas, previewNote);
+  let preview: WeaponPreview | null = null;
+  if (canCreateWeaponPreview()) {
+    try {
+      preview = new WeaponPreview(previewCanvas);
+    } catch {
+      preview = null;
+    }
+  }
+  previewCanvas.hidden = preview === null;
+  previewNote.hidden = preview !== null;
 
   const message = (error: unknown): string =>
     error instanceof Error ? error.message : text.errors.generic;
 
   /** Wykonuje zmianę meta, zapisuje i odświeża; błąd trafia do linii statusu. */
   const run = async (change: () => void): Promise<void> => {
-    if (busy || disposed) return;
+    if (disposed) return;
+    if (busy) {
+      refresh();
+      return;
+    }
     busy = true;
     try {
       change();
@@ -89,6 +131,10 @@ export const createWorkshopPanel: HubPanelFactory = (
     switch (row.status) {
       case 'owned':
         return text.unlocks.owned;
+      case 'achievement':
+        return fill(achievementText.workshop.requires, {
+          title: row.requires?.title ?? '',
+        });
       case 'level':
         return fill(text.unlocks.requiredLevel, { level: row.minLevel ?? 1 });
       case 'data':
@@ -115,16 +161,21 @@ export const createWorkshopPanel: HubPanelFactory = (
         if (row.status !== 'owned')
           item.append(el('span', 'workshop__cost', costLabel(row)));
         const label = statusLabel(row);
-        if (label !== null)
-          item.append(
-            el(
-              'span',
-              row.status === 'owned'
-                ? 'workshop__state'
-                : 'workshop__state is-blocked',
-              label,
-            ),
+        if (label !== null) {
+          const state = el(
+            'span',
+            row.status === 'owned'
+              ? 'workshop__state'
+              : 'workshop__state is-blocked',
+            label,
           );
+          if (row.status === 'achievement') {
+            state.classList.add('is-locked');
+            state.dataset.lock = row.requires?.id ?? '';
+            state.prepend(createLockIcon());
+          }
+          item.append(state);
+        }
         if (row.status !== 'owned') {
           const button = el('button', 'workshop__buy', text.unlocks.buy);
           button.type = 'button';
@@ -193,11 +244,52 @@ export const createWorkshopPanel: HubPanelFactory = (
     return group;
   };
 
+  /** Podgląd 3D wybranej broni: przełącznik broni i trwały kontener z canvasem. */
+  const renderPreview = (): HTMLElement => {
+    const block = el('div', 'workshop__preview-block');
+    block.dataset.group = 'preview';
+    block.append(el('h3', undefined, text.preview.title));
+    const target = previewTarget(ctx.manager, wantedPreview);
+    const weapons = ctx.manager.state.loadout.weapons;
+    if (weapons.length > 1) {
+      const switcher = el('div', 'workshop__preview-switch');
+      switcher.setAttribute('role', 'group');
+      switcher.setAttribute('aria-label', text.preview.switchLabel);
+      for (const id of weapons) {
+        const button = el('button', 'workshop__choice', itemName('weapon', id));
+        button.type = 'button';
+        button.dataset.action = 'preview';
+        button.dataset.item = id;
+        button.dataset.key = `preview:${id}`;
+        button.setAttribute('aria-pressed', String(id === target?.weaponId));
+        button.addEventListener('click', () => {
+          wantedPreview = id;
+          refresh();
+        });
+        switcher.append(button);
+      }
+      block.append(switcher);
+    }
+    previewBox.hidden = target === null;
+    if (target) {
+      previewBox.dataset.weapon = target.weaponId;
+      previewBox.dataset.modules = target.moduleIds.join(',');
+      const key = `${target.weaponId}|${target.moduleIds.join(',')}`;
+      if (preview && key !== shownPreview) {
+        shownPreview = key;
+        preview.show(target.weaponId, target.moduleIds).catch(() => {});
+      }
+    }
+    block.append(previewBox);
+    return block;
+  };
+
   const renderEquipment = (): HTMLElement => {
     const equipment = equipmentState(ctx.manager);
     const section = el('section', 'workshop__section');
     section.dataset.section = 'equipment';
     section.append(el('h2', undefined, text.equipment.title));
+    section.append(renderPreview());
 
     const blades = el('div', 'workshop__group');
     blades.dataset.group = 'blade';
@@ -244,11 +336,7 @@ export const createWorkshopPanel: HubPanelFactory = (
       weapon.slots.forEach((slot, index) => {
         const label = el('label', 'workshop__module-slot');
         label.append(
-          el(
-            'span',
-            undefined,
-            fill(text.equipment.moduleSlot, { n: index + 1 }),
-          ),
+          el('span', undefined, text.equipment.moduleSlots[slot.slot]),
         );
         const select = el('select', 'workshop__module-select');
         select.dataset.weapon = weapon.weaponId;
@@ -268,16 +356,26 @@ export const createWorkshopPanel: HubPanelFactory = (
           slot.options.find((option) => option.id === slot.selected)
             ?.description ?? '';
         select.addEventListener('change', () => {
-          void setChoice(
-            nextModuleLoadout(
-              ctx.manager,
-              weapon.weaponId,
-              index,
-              select.value,
+          void run(() =>
+            ctx.manager.setLoadout(
+              nextModuleLoadout(
+                ctx.manager,
+                weapon.weaponId,
+                index,
+                select.value,
+              ),
             ),
           );
         });
         label.append(select);
+        const description = el(
+          'span',
+          'workshop__module-description',
+          select.title,
+        );
+        description.id = `module-description-${weapon.weaponId}-${slot.slot}`;
+        select.setAttribute('aria-describedby', description.id);
+        label.append(description);
         group.append(label);
       });
       section.querySelector('[data-group="weapons"]')!.append(group);
@@ -311,6 +409,8 @@ export const createWorkshopPanel: HubPanelFactory = (
     refresh,
     dispose() {
       disposed = true;
+      preview?.dispose();
+      preview = null;
       root.replaceChildren();
     },
   };

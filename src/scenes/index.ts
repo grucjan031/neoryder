@@ -20,8 +20,10 @@ import { MapTest } from './mapTest';
 import { createRoomTest } from './roomTest';
 import { BossTest } from './bossTest';
 import { RunScene } from './run';
+import { MissionScene } from './mission';
 import { HubScene } from './hub';
 import { Tutorial } from './tutorial';
+import { WeatherTest } from './weatherTest';
 
 export interface Scene {
   readonly id: string;
@@ -41,6 +43,9 @@ export const scenes: Record<string, SceneFactory> = {
   'boss-test': () => new BossTest(),
   hub: () => new HubScene(),
   run: () => new RunScene(),
+  conquest: () => new RunScene(),
+  weatherTest: () => new WeatherTest(),
+  mission: () => new MissionScene(),
   'map-test': () => new MapTest(),
   sandbox: () => new Sandbox(),
   'player-test': () => new PlayerTest(),

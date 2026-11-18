@@ -36,6 +36,8 @@ export const unlockSchema = z
         'Koszt wymaga Danych lub Rdzeni.',
       ),
     minLevel: z.number().int().min(1).optional(),
+    /** Id osiągnięcia, bez którego odblokowania nie da się kupić (S4b-01). */
+    requiresAchievement: z.string().min(1).optional(),
   })
   .strict();
 export type UnlockDefinition = z.infer<typeof unlockSchema>;
