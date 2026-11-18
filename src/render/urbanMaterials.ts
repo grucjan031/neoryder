@@ -72,6 +72,7 @@ const portLooks = z
       ...portRailKinds,
       ...overpassRoofsDocksKinds,
       'canal_water',
+      'power_quay_floor',
     ]),
     z.object({
       texture: z.enum([
@@ -113,6 +114,7 @@ export const urbanKinds = [
   ...portRailKinds,
   ...overpassRoofsDocksKinds,
   'canal_water',
+  'power_quay_floor',
   'concrete',
   'asphalt',
   'metal',
@@ -316,7 +318,13 @@ export function urbanColor(kind: UrbanKind): string {
   if (kind in portLooks) {
     const config = portLooks[kind as keyof typeof portLooks];
     if (config.themeTint) return tuning.render[config.themeTint];
-    if (config.tint && (config.flat || tuning.render.citySurfaceDetail > 0))
+    if (
+      config.tint &&
+      (config.flat ||
+        kind === 'turbine_hall_floor' ||
+        kind === 'power_quay_floor' ||
+        tuning.render.citySurfaceDetail > 0)
+    )
       return config.tint;
     return '#ffffff';
   }

@@ -77,8 +77,13 @@ export default function generate() {
   };
   const wall = (x1, z1, x2, z2, h, mat, opts, y = 0) =>
     p.wall(vec(x1, y, z1), vec(x2, y, z2), h, 0.5, mat, opts);
-  const lit = (color, y, locations, range = 29) => {
-    for (const [x, z] of locations) arena.light(vec(x, y, z), color, 78, range);
+  const lit = (color, y, locations, range = 29, intensity = 78) => {
+    for (const [x, z] of locations)
+      arena.light(vec(x, y, z), color, intensity, range, { groundGlow: false });
+  };
+  const fixture = (x, y, z, material = 'light_white') => {
+    box(x, y + 0.13, z, 2.2, 0.26, 0.72, 'metal');
+    box(x, y - 0.04, z, 1.9, 0.08, 0.54, material);
   };
 
   // Płyty parteru omijają nieckę chłodni, halę i obniżone nabrzeże.
@@ -94,7 +99,7 @@ export default function generate() {
     [rect(60, 190, -5, 15), 'asphalt'],
     [rect(60, 169, 15, 115), 'slag_heap'],
     [rect(169, 190, 15, 106), 'slag_heap'],
-    [rect(-190, 32, 80, 115), 'quay_concrete'],
+    [rect(-190, 32, 80, 115), 'power_quay_floor'],
     [rect(60, 92, 115, 131), 'slag_heap'],
     [rect(92, 136, 115, 140), 'slag_heap'],
     [rect(136, 169, 115, 131), 'slag_heap'],
@@ -104,14 +109,14 @@ export default function generate() {
   ])
     p.floor(r, r.minZ === 80 && r.minX === -190 ? -3 : 0, mat);
   // Wcięcie nabrzeża mieści szeroką rampę i osobne schody.
-  ramp(32, -3, 52, 0, 96, 12, 'quay_concrete');
+  ramp(32, -3, 52, 0, 96, 12, 'power_quay_floor');
   flight(32, -3, 52, 0, 106, 4);
   wall(32, 80, 52, 80, 3, 'canal_stone_wall', undefined, -3);
   wall(32, 115, 52, 115, 3, 'canal_stone_wall', undefined, -3);
   wall(-190, 80, 32, 80, 3, 'canal_stone_wall', undefined, -3);
   wall(-190, 115, 60, 115, 3.7, 'canal_stone_wall', undefined, -6);
   // Rampa zachodnia wzdłuż nabrzeża ma własny nasyp i nie przecina płyty placu.
-  ramp(-186, -3, -166, 0, 89, 5, 'quay_concrete');
+  ramp(-186, -3, -166, 0, 89, 5, 'power_quay_floor');
   p.floor(rect(-166, -160, 79, 92), 0, steel);
   wall(-166, 92, -160, 92, 1.1, 'metal');
   wall(-160, 92, -160, 80, 1.1, 'metal');
@@ -354,28 +359,39 @@ export default function generate() {
   ]) {
     cover('build_precast_stack', x, z, 6, 1.6, 2.4);
   }
-  lit(white, 7, [
-    [-10, -25],
-    [10, -25],
-    [30, -25],
-    [51, -25],
-    [64, -24],
-    [22, -38],
-  ]);
+  // Oprawy pod dachem i niezależne, bliższe źródła nad maszynami.
+  for (const z of [-31, -12]) {
+    for (const x of [-10, 7.5, 25, 42.5, 60]) fixture(x, 17.3, z);
+    lit(
+      white,
+      14.5,
+      [-10, 7.5, 25, 42.5, 60].map((x) => [x, z]),
+      24,
+      240,
+    );
+  }
+  for (const x of [-1, 25, 51]) {
+    lit(white, 5.5, [[x, -18]], 13, 180);
+    box(x, 2.8, -16.04, 0.5, 0.16, 0.08, 'neon_green');
+    lit(green, 2.8, [[x, -16.5]], 8, 34);
+  }
+  for (const x of [1, 14, 29, 45]) fixture(x, 11.1, -39, 'neon_amber');
   lit(
-    green,
-    8.8,
+    amber,
+    10.3,
     [
-      [7, -38],
-      [45, -38],
+      [1, -39],
+      [14, -39],
+      [29, -39],
+      [45, -39],
     ],
-    18,
+    11,
+    88,
   );
 
   p.building({
     rect: rect(20, 60, -125, -95),
     height: 14,
-    interior: true,
     roofAccessible: true,
     wallMaterial: concrete,
     roofMaterial: 'roof_tar',
@@ -640,7 +656,6 @@ export default function generate() {
     rect: rect(-136, -106, 92, 112),
     y: -3,
     height: 7,
-    interior: true,
     wallMaterial: 'canal_stone_wall',
     roofMaterial: 'corrugated',
     doors: [
@@ -782,7 +797,17 @@ export default function generate() {
       { scale: 0.68 },
     );
     cover('city_crates', bounds.minX + 2.8, z + 2, 2.4, 1.25, 1.6);
-    lit(white, 3.2, [[x + 3, z]]);
+    for (const dx of [-5, 5]) fixture(x + dx, height - 0.65, z);
+    lit(
+      white,
+      3.35,
+      [
+        [x - 5, z],
+        [x + 5, z],
+      ],
+      13,
+      105,
+    );
     lit(amber, 3.6, [[x, bounds.maxZ + 1.5]]);
   }
 
@@ -830,7 +855,7 @@ export default function generate() {
           eastWest ? 10 : 0.35,
           0.08,
           eastWest ? 0.35 : 10,
-          'paving',
+          concrete,
         );
       }
   }
@@ -954,6 +979,53 @@ export default function generate() {
     box(x, y + 0.8, z, width, 1.6, depth, concrete);
     box(x, y + 1.72, z, width - 0.4, 0.24, depth - 0.4, 'corrugated');
   }
+
+  for (const x of [-130, -121, -112]) fixture(x, 3.3, 102);
+  lit(
+    white,
+    1.8,
+    [
+      [-131, 101],
+      [-121, 104],
+      [-111, 101],
+    ],
+    12,
+    114,
+  );
+  lit(green, -0.6, [[-121, 98]], 6, 27);
+  for (const x of [27, 39, 51]) fixture(x, 13.35, -110);
+  lit(
+    white,
+    6,
+    [
+      [27, -114],
+      [39, -108],
+      [51, -114],
+    ],
+    17,
+    145,
+  );
+  lit(
+    amber,
+    5,
+    [
+      [-132, -70],
+      [-108, -70],
+    ],
+    18,
+    120,
+  );
+  lit(
+    white,
+    4.5,
+    [
+      [-130, 10],
+      [-120, 23],
+      [-108, 12],
+    ],
+    18,
+    132,
+  );
 
   const start = vec(-180, 0, -140);
   arena.roomMeta({

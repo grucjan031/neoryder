@@ -368,7 +368,7 @@
       "walkable": true
     },
     {
-      "material": "quay_concrete",
+      "material": "power_quay_floor",
       "position": {
         "x": -79,
         "y": -3.2,
@@ -466,7 +466,7 @@
       "walkable": true
     },
     {
-      "material": "quay_concrete",
+      "material": "power_quay_floor",
       "position": {
         "x": 42.02966809058605,
         "y": -1.6977872705736594,
@@ -695,7 +695,7 @@
       "walkable": false
     },
     {
-      "material": "quay_concrete",
+      "material": "power_quay_floor",
       "position": {
         "x": -175.97033190941394,
         "y": -1.6977872705736594,
@@ -4722,6 +4722,409 @@
       "visible": false
     },
     {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 17.43,
+        "z": -31
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -10,
+        "y": 17.26,
+        "z": -31
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 7.5,
+        "y": 17.43,
+        "z": -31
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 7.5,
+        "y": 17.26,
+        "z": -31
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 25,
+        "y": 17.43,
+        "z": -31
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 25,
+        "y": 17.26,
+        "z": -31
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 42.5,
+        "y": 17.43,
+        "z": -31
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 42.5,
+        "y": 17.26,
+        "z": -31
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 60,
+        "y": 17.43,
+        "z": -31
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 60,
+        "y": 17.26,
+        "z": -31
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -10,
+        "y": 17.43,
+        "z": -12
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -10,
+        "y": 17.26,
+        "z": -12
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 7.5,
+        "y": 17.43,
+        "z": -12
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 7.5,
+        "y": 17.26,
+        "z": -12
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 25,
+        "y": 17.43,
+        "z": -12
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 25,
+        "y": 17.26,
+        "z": -12
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 42.5,
+        "y": 17.43,
+        "z": -12
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 42.5,
+        "y": 17.26,
+        "z": -12
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 60,
+        "y": 17.43,
+        "z": -12
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 60,
+        "y": 17.26,
+        "z": -12
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "neon_green",
+      "position": {
+        "x": -1,
+        "y": 2.8,
+        "z": -16.04
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.16,
+        "z": 0.08
+      }
+    },
+    {
+      "material": "neon_green",
+      "position": {
+        "x": 25,
+        "y": 2.8,
+        "z": -16.04
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.16,
+        "z": 0.08
+      }
+    },
+    {
+      "material": "neon_green",
+      "position": {
+        "x": 51,
+        "y": 2.8,
+        "z": -16.04
+      },
+      "size": {
+        "x": 0.5,
+        "y": 0.16,
+        "z": 0.08
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 1,
+        "y": 11.23,
+        "z": -39
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "neon_amber",
+      "position": {
+        "x": 1,
+        "y": 11.06,
+        "z": -39
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 14,
+        "y": 11.23,
+        "z": -39
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "neon_amber",
+      "position": {
+        "x": 14,
+        "y": 11.06,
+        "z": -39
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 29,
+        "y": 11.23,
+        "z": -39
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "neon_amber",
+      "position": {
+        "x": 29,
+        "y": 11.06,
+        "z": -39
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 45,
+        "y": 11.23,
+        "z": -39
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "neon_amber",
+      "position": {
+        "x": 45,
+        "y": 11.06,
+        "z": -39
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
       "material": "concrete_raw_cast",
       "position": {
         "x": 40,
@@ -4874,20 +5277,6 @@
         "z": 14
       },
       "walkable": false
-    },
-    {
-      "material": "concrete",
-      "position": {
-        "x": 40,
-        "y": -0.2,
-        "z": -110
-      },
-      "size": {
-        "x": 40,
-        "y": 0.4,
-        "z": 30
-      },
-      "walkable": true
     },
     {
       "material": "roof_tar",
@@ -14833,20 +15222,6 @@
       "walkable": false
     },
     {
-      "material": "concrete",
-      "position": {
-        "x": -121,
-        "y": -3.2,
-        "z": 102
-      },
-      "size": {
-        "x": 30,
-        "y": 0.4,
-        "z": 20
-      },
-      "walkable": true
-    },
-    {
       "material": "corrugated",
       "position": {
         "x": -121,
@@ -15404,6 +15779,58 @@
       "visible": false
     },
     {
+      "material": "metal",
+      "position": {
+        "x": -170,
+        "y": 3.98,
+        "z": -111
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -170,
+        "y": 3.81,
+        "z": -111
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -160,
+        "y": 3.98,
+        "z": -111
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -160,
+        "y": 3.81,
+        "z": -111
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
       "material": "concrete_raw_cast",
       "position": {
         "x": -52,
@@ -15600,6 +16027,58 @@
       "visible": false
     },
     {
+      "material": "metal",
+      "position": {
+        "x": -57,
+        "y": 7.4799999999999995,
+        "z": -130
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -57,
+        "y": 7.31,
+        "z": -130
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -47,
+        "y": 7.4799999999999995,
+        "z": -130
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -47,
+        "y": 7.31,
+        "z": -130
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
       "material": "corrugated",
       "position": {
         "x": -54.25,
@@ -15752,6 +16231,58 @@
         "z": 1.6
       },
       "visible": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -51.5,
+        "y": 4.88,
+        "z": 16
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -51.5,
+        "y": 4.71,
+        "z": 16
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -41.5,
+        "y": 4.88,
+        "z": 16
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -41.5,
+        "y": 4.71,
+        "z": 16
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
     },
     {
       "material": "concrete_raw_cast",
@@ -15950,6 +16481,58 @@
       "visible": false
     },
     {
+      "material": "metal",
+      "position": {
+        "x": 0,
+        "y": 4.68,
+        "z": 39
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 0,
+        "y": 4.51,
+        "z": 39
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 10,
+        "y": 4.68,
+        "z": 39
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 10,
+        "y": 4.51,
+        "z": 39
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
       "material": "corrugated",
       "position": {
         "x": 93.5,
@@ -16116,6 +16699,58 @@
         "z": 1.6
       },
       "visible": false
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 88.5,
+        "y": 3.68,
+        "z": 18.5
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 88.5,
+        "y": 3.5100000000000002,
+        "z": 18.5
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 98.5,
+        "y": 3.68,
+        "z": 18.5
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 98.5,
+        "y": 3.5100000000000002,
+        "z": 18.5
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
     },
     {
       "material": "metal",
@@ -16562,7 +17197,7 @@
       "walkable": false
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -170,
         "y": 0.04,
@@ -16575,7 +17210,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -150,
         "y": 0.04,
@@ -16588,7 +17223,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -170,
         "y": 0.04,
@@ -16601,7 +17236,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -150,
         "y": 0.04,
@@ -16614,7 +17249,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -56,
         "y": 0.04,
@@ -16627,7 +17262,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -36,
         "y": 0.04,
@@ -16640,7 +17275,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -16,
         "y": 0.04,
@@ -16653,7 +17288,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 4,
         "y": 0.04,
@@ -16666,7 +17301,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -56,
         "y": 0.04,
@@ -16679,7 +17314,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -36,
         "y": 0.04,
@@ -16692,7 +17327,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -16,
         "y": 0.04,
@@ -16705,7 +17340,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 4,
         "y": 0.04,
@@ -16718,7 +17353,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -47,
         "y": 0.04,
@@ -16731,7 +17366,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -27,
         "y": 0.04,
@@ -16744,7 +17379,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -7,
         "y": 0.04,
@@ -16757,7 +17392,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 13,
         "y": 0.04,
@@ -16770,7 +17405,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 33,
         "y": 0.04,
@@ -16783,7 +17418,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -47,
         "y": 0.04,
@@ -16796,7 +17431,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -27,
         "y": 0.04,
@@ -16809,7 +17444,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": -7,
         "y": 0.04,
@@ -16822,7 +17457,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 13,
         "y": 0.04,
@@ -16835,7 +17470,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 33,
         "y": 0.04,
@@ -16848,7 +17483,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 66.5,
         "y": 0.04,
@@ -16861,7 +17496,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 66.5,
         "y": 0.04,
@@ -16874,7 +17509,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 66.5,
         "y": 0.04,
@@ -16887,7 +17522,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 75.5,
         "y": 0.04,
@@ -16900,7 +17535,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 75.5,
         "y": 0.04,
@@ -16913,7 +17548,7 @@
       }
     },
     {
-      "material": "paving",
+      "material": "concrete_raw_cast",
       "position": {
         "x": 75.5,
         "y": 0.04,
@@ -18730,6 +19365,162 @@
         "x": 6.6,
         "y": 0.24,
         "z": 2.6
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -130,
+        "y": 3.4299999999999997,
+        "z": 102
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -130,
+        "y": 3.26,
+        "z": 102
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -121,
+        "y": 3.4299999999999997,
+        "z": 102
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -121,
+        "y": 3.26,
+        "z": 102
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": -112,
+        "y": 3.4299999999999997,
+        "z": 102
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": -112,
+        "y": 3.26,
+        "z": 102
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 27,
+        "y": 13.48,
+        "z": -110
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 27,
+        "y": 13.31,
+        "z": -110
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 39,
+        "y": 13.48,
+        "z": -110
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 39,
+        "y": 13.31,
+        "z": -110
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
+      }
+    },
+    {
+      "material": "metal",
+      "position": {
+        "x": 51,
+        "y": 13.48,
+        "z": -110
+      },
+      "size": {
+        "x": 2.2,
+        "y": 0.26,
+        "z": 0.72
+      }
+    },
+    {
+      "material": "light_white",
+      "position": {
+        "x": 51,
+        "y": 13.31,
+        "z": -110
+      },
+      "size": {
+        "x": 1.9,
+        "y": 0.08,
+        "z": 0.54
       }
     }
   ],
@@ -20649,6 +21440,7 @@
   "lights": [
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -120,
@@ -20659,6 +21451,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -139,
@@ -20669,6 +21462,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -103,
@@ -20679,6 +21473,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -160,
@@ -20689,6 +21484,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -96,
@@ -20699,6 +21495,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -119,
@@ -20709,6 +21506,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -100,
@@ -20719,86 +21517,227 @@
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 240,
       "position": {
         "x": -10,
-        "y": 7,
-        "z": -25
+        "y": 14.5,
+        "z": -31
       },
-      "range": 29
+      "range": 24
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 240,
       "position": {
-        "x": 10,
-        "y": 7,
-        "z": -25
+        "x": 7.5,
+        "y": 14.5,
+        "z": -31
       },
-      "range": 29
+      "range": 24
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 240,
       "position": {
-        "x": 30,
-        "y": 7,
-        "z": -25
+        "x": 25,
+        "y": 14.5,
+        "z": -31
       },
-      "range": 29
+      "range": 24
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 240,
+      "position": {
+        "x": 42.5,
+        "y": 14.5,
+        "z": -31
+      },
+      "range": 24
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 240,
+      "position": {
+        "x": 60,
+        "y": 14.5,
+        "z": -31
+      },
+      "range": 24
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 240,
+      "position": {
+        "x": -10,
+        "y": 14.5,
+        "z": -12
+      },
+      "range": 24
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 240,
+      "position": {
+        "x": 7.5,
+        "y": 14.5,
+        "z": -12
+      },
+      "range": 24
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 240,
+      "position": {
+        "x": 25,
+        "y": 14.5,
+        "z": -12
+      },
+      "range": 24
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 240,
+      "position": {
+        "x": 42.5,
+        "y": 14.5,
+        "z": -12
+      },
+      "range": 24
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 240,
+      "position": {
+        "x": 60,
+        "y": 14.5,
+        "z": -12
+      },
+      "range": 24
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 180,
+      "position": {
+        "x": -1,
+        "y": 5.5,
+        "z": -18
+      },
+      "range": 13
+    },
+    {
+      "color": "#6dff4a",
+      "groundGlow": false,
+      "intensity": 34,
+      "position": {
+        "x": -1,
+        "y": 2.8,
+        "z": -16.5
+      },
+      "range": 8
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 180,
+      "position": {
+        "x": 25,
+        "y": 5.5,
+        "z": -18
+      },
+      "range": 13
+    },
+    {
+      "color": "#6dff4a",
+      "groundGlow": false,
+      "intensity": 34,
+      "position": {
+        "x": 25,
+        "y": 2.8,
+        "z": -16.5
+      },
+      "range": 8
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 180,
       "position": {
         "x": 51,
-        "y": 7,
-        "z": -25
+        "y": 5.5,
+        "z": -18
       },
-      "range": 29
-    },
-    {
-      "color": "#fff1d6",
-      "intensity": 78,
-      "position": {
-        "x": 64,
-        "y": 7,
-        "z": -24
-      },
-      "range": 29
-    },
-    {
-      "color": "#fff1d6",
-      "intensity": 78,
-      "position": {
-        "x": 22,
-        "y": 7,
-        "z": -38
-      },
-      "range": 29
+      "range": 13
     },
     {
       "color": "#6dff4a",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 34,
       "position": {
-        "x": 7,
-        "y": 8.8,
-        "z": -38
+        "x": 51,
+        "y": 2.8,
+        "z": -16.5
       },
-      "range": 18
-    },
-    {
-      "color": "#6dff4a",
-      "intensity": 78,
-      "position": {
-        "x": 45,
-        "y": 8.8,
-        "z": -38
-      },
-      "range": 18
+      "range": 8
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
+      "intensity": 88,
+      "position": {
+        "x": 1,
+        "y": 10.3,
+        "z": -39
+      },
+      "range": 11
+    },
+    {
+      "color": "#ffae1a",
+      "groundGlow": false,
+      "intensity": 88,
+      "position": {
+        "x": 14,
+        "y": 10.3,
+        "z": -39
+      },
+      "range": 11
+    },
+    {
+      "color": "#ffae1a",
+      "groundGlow": false,
+      "intensity": 88,
+      "position": {
+        "x": 29,
+        "y": 10.3,
+        "z": -39
+      },
+      "range": 11
+    },
+    {
+      "color": "#ffae1a",
+      "groundGlow": false,
+      "intensity": 88,
+      "position": {
+        "x": 45,
+        "y": 10.3,
+        "z": -39
+      },
+      "range": 11
+    },
+    {
+      "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 38,
@@ -20809,6 +21748,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 43,
@@ -20819,6 +21759,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 75,
@@ -20829,6 +21770,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 35,
@@ -20839,6 +21781,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 33,
@@ -20849,6 +21792,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 54,
@@ -20859,6 +21803,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -82,
@@ -20869,6 +21814,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -57,
@@ -20879,6 +21825,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -31,
@@ -20889,6 +21836,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 86,
@@ -20899,6 +21847,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 104,
@@ -20909,6 +21858,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 122,
@@ -20919,6 +21869,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 141,
@@ -20929,6 +21880,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 163,
@@ -20939,6 +21891,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 109,
@@ -20949,6 +21902,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 152,
@@ -20959,6 +21913,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 130,
@@ -20969,6 +21924,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 156,
@@ -20979,6 +21935,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 83,
@@ -20989,6 +21946,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 112,
@@ -20999,6 +21957,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 143,
@@ -21009,6 +21968,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 106,
@@ -21019,6 +21979,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 151,
@@ -21029,6 +21990,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 119,
@@ -21039,6 +22001,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 171,
@@ -21049,6 +22012,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 172,
@@ -21059,6 +22023,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 75,
@@ -21069,6 +22034,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -161,
@@ -21079,6 +22045,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -118,
@@ -21089,6 +22056,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -86,
@@ -21099,6 +22067,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -60,
@@ -21109,6 +22078,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -28,
@@ -21119,6 +22089,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 10,
@@ -21129,6 +22100,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 42,
@@ -21139,6 +22111,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -131,
@@ -21149,6 +22122,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -102,
@@ -21159,6 +22133,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -98,
@@ -21169,16 +22144,29 @@
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 105,
       "position": {
-        "x": -162,
-        "y": 3.2,
+        "x": -170,
+        "y": 3.35,
         "z": -111
       },
-      "range": 29
+      "range": 13
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 105,
+      "position": {
+        "x": -160,
+        "y": 3.35,
+        "z": -111
+      },
+      "range": 13
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -165,
@@ -21189,16 +22177,29 @@
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 105,
       "position": {
-        "x": -49,
-        "y": 3.2,
+        "x": -57,
+        "y": 3.35,
         "z": -130
       },
-      "range": 29
+      "range": 13
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 105,
+      "position": {
+        "x": -47,
+        "y": 3.35,
+        "z": -130
+      },
+      "range": 13
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -52,
@@ -21209,16 +22210,29 @@
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 105,
       "position": {
-        "x": -43.5,
-        "y": 3.2,
+        "x": -51.5,
+        "y": 3.35,
         "z": 16
       },
-      "range": 29
+      "range": 13
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 105,
+      "position": {
+        "x": -41.5,
+        "y": 3.35,
+        "z": 16
+      },
+      "range": 13
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -46.5,
@@ -21229,16 +22243,29 @@
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 105,
       "position": {
-        "x": 8,
-        "y": 3.2,
+        "x": 0,
+        "y": 3.35,
         "z": 39
       },
-      "range": 29
+      "range": 13
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 105,
+      "position": {
+        "x": 10,
+        "y": 3.35,
+        "z": 39
+      },
+      "range": 13
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 5,
@@ -21249,16 +22276,29 @@
     },
     {
       "color": "#fff1d6",
-      "intensity": 78,
+      "groundGlow": false,
+      "intensity": 105,
       "position": {
-        "x": 96.5,
-        "y": 3.2,
+        "x": 88.5,
+        "y": 3.35,
         "z": 18.5
       },
-      "range": 29
+      "range": 13
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 105,
+      "position": {
+        "x": 98.5,
+        "y": 3.35,
+        "z": 18.5
+      },
+      "range": 13
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 93.5,
@@ -21269,6 +22309,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -108,
@@ -21279,6 +22320,7 @@
     },
     {
       "color": "#ffae1a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -82,
@@ -21289,6 +22331,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -151,
@@ -21299,6 +22342,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -47,
@@ -21309,6 +22353,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 7,
@@ -21319,6 +22364,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -53,
@@ -21329,6 +22375,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 45,
@@ -21339,6 +22386,7 @@
     },
     {
       "color": "#fff1d6",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 106,
@@ -21349,6 +22397,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -75.2,
@@ -21359,6 +22408,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -21.2,
@@ -21369,6 +22419,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 7.8,
@@ -21379,6 +22430,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -74.2,
@@ -21389,6 +22441,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 19.8,
@@ -21399,6 +22452,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 51.8,
@@ -21409,6 +22463,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 81.8,
@@ -21419,6 +22474,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": 106.8,
@@ -21429,6 +22485,7 @@
     },
     {
       "color": "#6dff4a",
+      "groundGlow": false,
       "intensity": 78,
       "position": {
         "x": -100.2,
@@ -21436,6 +22493,138 @@
         "z": 53
       },
       "range": 9
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 114,
+      "position": {
+        "x": -131,
+        "y": 1.8,
+        "z": 101
+      },
+      "range": 12
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 114,
+      "position": {
+        "x": -121,
+        "y": 1.8,
+        "z": 104
+      },
+      "range": 12
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 114,
+      "position": {
+        "x": -111,
+        "y": 1.8,
+        "z": 101
+      },
+      "range": 12
+    },
+    {
+      "color": "#6dff4a",
+      "groundGlow": false,
+      "intensity": 27,
+      "position": {
+        "x": -121,
+        "y": -0.6,
+        "z": 98
+      },
+      "range": 6
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 145,
+      "position": {
+        "x": 27,
+        "y": 6,
+        "z": -114
+      },
+      "range": 17
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 145,
+      "position": {
+        "x": 39,
+        "y": 6,
+        "z": -108
+      },
+      "range": 17
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 145,
+      "position": {
+        "x": 51,
+        "y": 6,
+        "z": -114
+      },
+      "range": 17
+    },
+    {
+      "color": "#ffae1a",
+      "groundGlow": false,
+      "intensity": 120,
+      "position": {
+        "x": -132,
+        "y": 5,
+        "z": -70
+      },
+      "range": 18
+    },
+    {
+      "color": "#ffae1a",
+      "groundGlow": false,
+      "intensity": 120,
+      "position": {
+        "x": -108,
+        "y": 5,
+        "z": -70
+      },
+      "range": 18
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 132,
+      "position": {
+        "x": -130,
+        "y": 4.5,
+        "z": 10
+      },
+      "range": 18
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 132,
+      "position": {
+        "x": -120,
+        "y": 4.5,
+        "z": 23
+      },
+      "range": 18
+    },
+    {
+      "color": "#fff1d6",
+      "groundGlow": false,
+      "intensity": 132,
+      "position": {
+        "x": -108,
+        "y": 4.5,
+        "z": 12
+      },
+      "range": 18
     }
   ],
   "maxAlive": 12,

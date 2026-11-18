@@ -258,7 +258,7 @@ słupy WN, przewody, zwałowiska i wieża ujęcia. Silnik domyka tło gruntem
 zewnętrznym i panoramą. Pogoda `ashfall` daje bursztynową łunę. Reflektory
 ciepłej bieli oświetlają przejścia, zielone lampy wskazują sprawne urządzenia,
 a bursztynowe światło podkreśla chłodnie, komin i węzły rurociągów.
-79 źródeł współdzieli istniejącą pulę aktywnych świateł.
+108 źródeł współdzieli istniejącą pulę aktywnych świateł.
 
 | Punkt | X / Y / Z (m) | Strefa i drogi |
 | --- | --- | --- |
@@ -285,6 +285,17 @@ schodami na obu końcach. Z D do E można zejść z przenośnika przy
 wschodniej rampie nabrzeża lub przejść niżej między zasiekami. Z A do E
 prowadzi zachodnia rampa przy ścianie kanału albo pomost serwisowy ze
 schodami na poziomy 0 i −3 m. AI korzysta z parteru i szerokich ramp.
+
+W hali turbin dwa rzędy opraw pod dachem dają ciepłe białe światło.
+Trzy turbiny mają osobne białe źródła i zielone lampki stanu. Bursztynowe
+oprawy wskazują antresolę. Posadzka `turbine_hall_floor` ma przygaszony
+szarozielony odcień. Na nabrzeżu użyto ciemnej odmiany betonu nabrzeżowego,
+a przy starcie krawężniki mają fakturę surowego betonu. Przepompownia
+i kotłownia korzystają z jednej płyty posadzki zamiast dwóch powierzchni
+na tej samej wysokości. Oba wnętrza, pięć budynków serwisowych i dostępna
+chłodnia mają lokalne oświetlenie. Elektrownia wyłącza addytywne plamy
+przy podłodze, które przy dużej liczbie źródeł nakładały się na posadzkę.
+Światła punktowe nadal używają istniejącej puli.
 
 Pomiędzy strefami drogi serwisowe mają kierunkowe oznakowanie i przerywane
 krawężniki. Od startu do kotłowni stoją wartownia, magazyn i farma trzech
@@ -314,7 +325,7 @@ posadowienie kontenerów.
 
 Pomiar generatora z próbkowaniem co 1 m: około 95 665 m² powierzchni
 chodzenia. Po zagęszczeniu 984 → 1246 bloków, 131 → 197 rekwizytów i
-52 → 79 świateł. Najczęstszy model to rura `city_pipe_run`
+52 → 79 świateł. Po korekcie oświetlenia arena ma 1307 bloków i 108 świateł. Najczęstszy model to rura `city_pipe_run`
 (19 z 197, 9,6%). Największy kwadrat bez osłon poza rozdzielnią ma około
 43 × 43 m (X 89–132, Z 62–105). Szacunek używa rastra 1 m na poziomach
 0 i −3 m, rzutów colliderów osłon o wysokości co najmniej 1 m oraz
@@ -324,9 +335,9 @@ Pomiar w Node na docelowej geometrii:
 
 | Pomiar | Wynik | Budżet lub zakres |
 | --- | ---: | --- |
-| Budowa siatki i pięciu pól | 69,27 ms | ≤ 500 ms |
-| Krok `RoomScene`, 12 wrogów, 600 kroków po rozgrzewce | 0,399 ms | ≤ 2 ms |
-| Rzeczywiste GLB, statyczne siatki przed → po scaleniu | 3719 → 1237 | 90 partii instancji po scaleniu |
+| Budowa siatki i pięciu pól | 133,60 ms | ≤ 500 ms |
+| Krok `RoomScene`, 12 wrogów, 600 kroków po rozgrzewce | 0,796 ms | ≤ 2 ms |
+| Rzeczywiste GLB, statyczne siatki przed → po scaleniu | 3780 → 1270 | 90 partii instancji po scaleniu |
 
 Nawigacja zawęża test prześwitu i podparcia do pobliskich brył według
 indeksu przestrzennego. Używa tej samej obwiedni i tych samych reguł
