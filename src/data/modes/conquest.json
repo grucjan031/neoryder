@@ -11,5 +11,10 @@
     "holdThreePerS": 3
   },
   "rewardRooms": 6,
-  "arenas": ["arenaContainerPort", "arenaOverpass", "arenaRooftops"]
+  "arenas": [
+    "arenaContainerPort",
+    "arenaOverpass",
+    "arenaRooftops",
+    "arenaPowerPlant"
+  ]
 }

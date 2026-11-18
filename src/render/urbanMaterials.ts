@@ -41,6 +41,7 @@ const constructionPowerKinds = [
   'slag_heap',
   'cooling_tower_concrete',
   'turbine_hall_floor',
+  'hazard_stripes_worn',
 ] as const;
 
 /** Zestaw „port i zajezdnia” (ADR 0011): tekstury podepnie integracja, do tego czasu barwa zastępcza. */
@@ -70,6 +71,7 @@ const portLooks = z
       ...constructionPowerKinds,
       ...portRailKinds,
       ...overpassRoofsDocksKinds,
+      'canal_water',
     ]),
     z.object({
       texture: z.enum([
@@ -83,6 +85,7 @@ const portLooks = z
         'rubber_fender',
         'steel_grating',
         ...arenaKinds,
+        'asphalt',
         ...constructionPowerKinds,
         ...portRailKinds,
         ...overpassRoofsDocksKinds,
@@ -109,6 +112,7 @@ export const urbanKinds = [
   ...constructionPowerKinds,
   ...portRailKinds,
   ...overpassRoofsDocksKinds,
+  'canal_water',
   'concrete',
   'asphalt',
   'metal',

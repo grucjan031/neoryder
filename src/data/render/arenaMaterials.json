@@ -133,5 +133,24 @@
     "metalness": 0,
     "bump": 0.5,
     "wetness": 0.5
+  },
+  "canal_water": {
+    "texture": "asphalt",
+    "tint": "#24324a",
+    "scale": 0.08,
+    "roughness": 0.24,
+    "metalness": 0,
+    "bump": 0,
+    "wetness": 0,
+    "flat": true
+  },
+  "hazard_stripes_worn": {
+    "texture": "hazard_stripes_worn",
+    "tint": "#a79370",
+    "scale": 0.55,
+    "roughness": 0.77,
+    "metalness": 0,
+    "bump": 0.45,
+    "wetness": 0
   }
 }

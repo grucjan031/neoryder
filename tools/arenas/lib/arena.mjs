@@ -146,10 +146,8 @@ export function createArena({
       return builder;
     },
     point(pointId, position, radiusM = 4) {
-      if (!['A', 'B', 'C'].includes(pointId))
-        throw new Error(
-          'Aktualny roomSchema obsługuje tylko punkty A/B/C; D/E wymagają zmiany silnika.',
-        );
+      if (!['A', 'B', 'C', 'D', 'E'].includes(pointId))
+        throw new Error('Punkt roomSchema musi mieć identyfikator A–E.');
       if (room.arena.points.some((point) => point.id === pointId))
         throw new Error(`Powtórzony punkt ${pointId}.`);
       room.arena.points.push({

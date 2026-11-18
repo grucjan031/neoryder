@@ -33,6 +33,14 @@ export const BLOCK_MATERIALS = [
   'roof_tar',
   'roof_hvac_metal',
   'market_tarp',
+  'canal_stone_wall',
+  'canal_water',
+  'rail_ballast',
+  'hazard_stripes_worn',
+  'cooling_tower_concrete',
+  'concrete_raw_cast',
+  'turbine_hall_floor',
+  'slag_heap',
   'world',
   'concrete',
   'asphalt',
@@ -44,6 +52,7 @@ export const BLOCK_MATERIALS = [
   'plaster',
   'corrugated',
   'rust',
+  'rubber',
   'hazard',
 ] as const;
 export const blockMaterialSchema = z.enum(BLOCK_MATERIALS);

@@ -15,6 +15,7 @@ export type SurfaceTexture =
   | 'roof_tar'
   | 'roof_hvac_metal'
   | 'market_tarp'
+  | 'hazard_stripes_worn'
   | 'formwork_plywood'
   | 'concrete_raw_cast'
   | 'slag_heap'

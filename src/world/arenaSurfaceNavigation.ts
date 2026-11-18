@@ -5,6 +5,32 @@ type Block = RoomDefinition['blocks'][number];
 type Cell = { position: Vec3; neighbors: number[]; surface: Block };
 const EPSILON = 1e-5;
 
+// Indeks używa tej samej konserwatywnej obwiedni XZ co top(). Margines
+// obejmuje także próbki stawiane poza środkiem komórki przez test prześwitu.
+function nearbyBlocks(blocks: readonly Block[], margin: number) {
+  const bucketM = 16;
+  const buckets = new Map<string, Block[]>();
+  const bucket = (coordinate: number) => Math.floor(coordinate / bucketM);
+  for (const block of blocks) {
+    const yaw = block.rotation?.y ?? 0;
+    const cos = Math.abs(Math.cos(yaw));
+    const sin = Math.abs(Math.sin(yaw));
+    const { x, z } = block.position;
+    const halfX = (cos * block.size.x + sin * block.size.z) / 2 + margin;
+    const halfZ = (sin * block.size.x + cos * block.size.z) / 2 + margin;
+    for (let bx = bucket(x - halfX); bx <= bucket(x + halfX); bx++)
+      for (let bz = bucket(z - halfZ); bz <= bucket(z + halfZ); bz++) {
+        const key = `${bx},${bz}`;
+        const list = buckets.get(key);
+        if (list) list.push(block);
+        else buckets.set(key, [block]);
+      }
+  }
+  const empty: readonly Block[] = [];
+  return (x: number, z: number): readonly Block[] =>
+    buckets.get(`${bucket(x)},${bucket(z)}`) ?? empty;
+}
+
 /** Warstwy płyt i ramp X; obwiednie przeszkód uwzględniają wysokość kapsuły. */
 export class ArenaSurfaceNavigation {
   private readonly cells: Cell[] = [];
@@ -24,6 +50,8 @@ export class ArenaSurfaceNavigation {
       );
     this.rise = config.navigationMaxRiseM;
     const surfaces = room.blocks.filter((b) => b.walkable);
+    const margin = config.navigationClearanceM;
+    const nearby = nearbyBlocks(room.blocks, margin);
     this.firstZ = Math.floor(
       Math.min(...surfaces.map((b) => b.position.z - b.size.z / 2)) / this.cell,
     );
@@ -57,7 +85,7 @@ export class ArenaSurfaceNavigation {
           const y = this.top(b, p.x, p.z);
           if (y === undefined) continue;
           p.y = y;
-          const margin = config.navigationClearanceM;
+          const candidates = nearby(p.x, p.z);
           if (
             [
               [-margin, 0],
@@ -66,7 +94,8 @@ export class ArenaSurfaceNavigation {
               [0, margin],
             ].some(
               ([dx, dz]) =>
-                !surfaces.some((s) => {
+                !candidates.some((s) => {
+                  if (!s.walkable) return false;
                   const top = this.top(s, p.x + dx!, p.z + dz!);
                   return top !== undefined && Math.abs(top - y) <= this.rise;
                 }),
@@ -74,7 +103,7 @@ export class ArenaSurfaceNavigation {
           )
             continue;
           if (
-            room.blocks.some((obstacle) => {
+            candidates.some((obstacle) => {
               if (obstacle === b) return false;
               const top = this.top(obstacle, p.x, p.z, margin);
               if (top === undefined) return false;

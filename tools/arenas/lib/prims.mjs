@@ -183,7 +183,15 @@ export function ramp(
 
 export function stairs(
   arena,
-  { from, to, width, stepRise = 0.2, stepDepth = 0.4, material = 'concrete' },
+  {
+    from,
+    to,
+    width,
+    stepRise = 0.2,
+    stepDepth = 0.4,
+    material = 'concrete',
+    walkable = true,
+  },
 ) {
   positive(width, 'Szerokość schodów');
   positive(stepRise, 'Wznios stopnia');
@@ -217,7 +225,7 @@ export function stairs(
         ),
         ...(yaw ? { rotation: vec(0, yaw, 0) } : {}),
         material,
-        walkable: true,
+        walkable,
       }),
     );
   }
@@ -225,7 +233,7 @@ export function stairs(
     actualRise >
       Math.min(
         CONTROLLER_LIMITS.stepHeight,
-        arena.toRoom().arena.navigationMaxRiseM,
+        walkable ? arena.toRoom().arena.navigationMaxRiseM : Infinity,
       ) +
         EPS ||
     actualDepth < CONTROLLER_LIMITS.stepMinWidth
@@ -235,14 +243,15 @@ export function stairs(
       'Stopnie przekraczają limit autostep kontrolera lub wzniosu nawigacji.',
     );
   if (
+    walkable &&
     Math.ceil(arena.toRoom().arena.navigationCellM / actualDepth) * actualRise >
-    arena.toRoom().arena.navigationMaxRiseM + EPS
+      arena.toRoom().arena.navigationMaxRiseM + EPS
   )
     arena.warn(
       'stairs-navigation-slope',
       'Schody mogą przekraczać wznios na komórkę nawigacji; zwiększ stepDepth lub sprawdź trasę w ArenaNavigation.',
     );
-  if (blocks.some((b) => b.rotation?.y))
+  if (walkable && blocks.some((b) => b.rotation?.y))
     arena.warn(
       'navigation-rotation',
       'Obrócone wokół Y schody nie są obsługiwane przez ArenaSurfaceNavigation.',

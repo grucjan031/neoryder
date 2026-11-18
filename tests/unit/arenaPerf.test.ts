@@ -128,10 +128,25 @@ it('arena 450 × 300 m: 3 poziomy, 5 stref i 12 wrogów', async () => {
   }
 }, 60_000);
 
-it.each(['arenaOverpass', 'arenaRooftops'])(
-  '%s: 30 wrogów, nawigacja i Rapier poniżej 6 ms/krok',
-  async (id) => {
+it.each([
+  ['arenaOverpass', 30, 6],
+  ['arenaRooftops', 30, 6],
+  ['arenaPowerPlant', 12, 2],
+] as const)(
+  '%s: %i wrogów, nawigacja i Rapier poniżej %i ms/krok',
+  async (id, limit, budget) => {
     const room = roomDefinitions.get(id)!;
+    if (id === 'arenaPowerPlant') {
+      const start = performance.now();
+      const nav = new ArenaNavigation(room);
+      for (const point of room.arena!.points)
+        expect(nav.path(room.playerSpawn, point.position).at(-1)).toEqual(
+          point.position,
+        );
+      const buildMs = performance.now() - start;
+      console.info(`[perf] ${id}: ${buildMs.toFixed(2)} ms (siatka i 5 pól)`);
+      expect(buildMs).toBeLessThanOrEqual(500);
+    }
     const bus = new EventBus();
     const commands = new CommandRegistry();
     const run = new RunManager(bus, {
@@ -162,8 +177,8 @@ it.each(['arenaOverpass', 'arenaRooftops'])(
       // Test przeciążeniowy omija limit posiłków 8, zachowuje rzeczywisty host trybu.
       const enemies = Reflect.get(scene, 'manager') as EnemyManager;
       let count = 0;
-      for (let x = -40; x <= 40 && count < 30; x += 8)
-        for (let z = -40; z <= 40 && count < 30; z += 8) {
+      for (let x = -40; x <= 40 && count < limit; x += 8)
+        for (let z = -40; z <= 40 && count < limit; z += 8) {
           const position = { x, y: room.playerSpawn.y, z };
           if (
             !freeModePosition(room, position, 1.5) ||
@@ -172,14 +187,17 @@ it.each(['arenaOverpass', 'arenaRooftops'])(
             continue;
           enemies.spawn(count++ < 20 ? 'assaulter' : 'gunner', position);
         }
-      expect(scene.query('enemies')).toBe(30);
+      expect(scene.query('enemies')).toBe(limit);
       for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
       const start = performance.now();
       for (let i = 0; i < 600; i++) scene.step(SIM_DT, idle);
       const perStepMs = (performance.now() - start) / 600;
-      console.info(`[perf] ${id}: ${perStepMs.toFixed(3)} ms/krok, 30 wrogów`);
-      expect(scene.query('enemies')).toBeGreaterThanOrEqual(30);
-      expect(perStepMs).toBeLessThan(6);
+      console.info(
+        `[perf] ${id}: ${perStepMs.toFixed(3)} ms/krok, ${limit} wrogów`,
+      );
+      expect(scene.query('enemies')).toBeGreaterThanOrEqual(limit);
+      if (id === 'arenaPowerPlant') expect(scene.query('enemies')).toBe(limit);
+      expect(perStepMs).toBeLessThan(budget);
     } finally {
       scene.dispose();
     }
