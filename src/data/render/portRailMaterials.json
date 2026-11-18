@@ -45,12 +45,30 @@
     "wetness": 0.5
   },
   "snow": {
-    "texture": "snow",
+    "texture": "snow_concrete",
     "tint": "#c8d2e0",
     "scale": 0.5,
     "roughness": 0.95,
     "metalness": 0,
     "bump": 0.3,
+    "wetness": 0
+  },
+  "snow_asphalt": {
+    "texture": "snow_asphalt",
+    "tint": "#303a4b",
+    "scale": 0.25,
+    "roughness": 0.95,
+    "metalness": 0,
+    "bump": 0.4,
+    "wetness": 0
+  },
+  "snow_concrete": {
+    "texture": "snow_concrete",
+    "tint": "#56627a",
+    "scale": 0.25,
+    "roughness": 0.95,
+    "metalness": 0,
+    "bump": 0.4,
     "wetness": 0
   }
 }

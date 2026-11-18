@@ -13,8 +13,13 @@ import { PlayerController } from '../../src/player/playerController';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
-it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
-  '%s: kapsuła FPP chodzi do A/B/C, po obu rampach i schodach bez skoku',
+it.each([
+  'arenaContainerPort',
+  'arenaOverpass',
+  'arenaRooftops',
+  'arenaRailYard',
+])(
+  '%s: kapsuła FPP chodzi do punktów, po rampach i schodach bez skoku',
   async (id) => {
     const room = roomDefinitions.get(id)!;
     const rapier = await initPhysics();
@@ -82,17 +87,50 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
     try {
       world.step();
       const navigation = new ArenaNavigation(room);
-      for (const point of room.arena!.points) {
-        const path = navigation.path(
-          player.getState().position,
-          point.position,
-        );
-        expect(path.length).toBeGreaterThan(0);
-        for (const waypoint of path) walk(waypoint);
-        expect(player.getState().position.y).toBeCloseTo(
-          point.position.y + height,
-          1,
-        );
+      for (const start of id === 'arenaRailYard'
+        ? [
+            room.playerSpawn,
+            room.spawnPoints[0]!,
+            room.spawnPoints[10]!,
+            room.spawnPoints[22]!,
+          ]
+        : [room.playerSpawn]) {
+        teleport(start.x, start.z);
+        for (const point of room.arena!.points) {
+          const path = navigation.path(
+            player.getState().position,
+            point.position,
+          );
+          expect(path.length).toBeGreaterThan(0);
+          for (const waypoint of path) walk(waypoint);
+          if (id === 'arenaRailYard') for (let i = 0; i < 15; i++) tick();
+          expect(player.getState().position.y).toBeCloseTo(
+            point.position.y + height,
+            1,
+          );
+        }
+      }
+      if (id === 'arenaRailYard') {
+        teleport(-30.25, -50.5);
+        walk({ x: -30.25, y: 1.1, z: -45 });
+        expect(player.getState().position.y).toBeCloseTo(1.1 + height, 1);
+        walk({ x: -30.25, y: 0, z: -39.5 });
+        teleport(16, 0);
+        walk({ x: 44, y: 4.1, z: 0 });
+        expect(player.getState().position.y).toBeCloseTo(4.1 + height, 1);
+        walk({ x: 66, y: 4.1, z: 0 });
+        walk({ x: 92, y: 0, z: 0 });
+        for (const [from, to, z, y] of [
+          [-34, 20, -80, 8],
+          [-34, 20, 60, 8],
+          [48, 114, -76, 10],
+          [-192, -160, -56, 5],
+        ] as const) {
+          teleport(from, z);
+          walk({ x: to, y, z });
+          expect(player.getState().position.y).toBeCloseTo(y + height, 1);
+        }
+        return;
       }
       if (id === 'arenaOverpass') {
         for (const z of [-24, 24]) {

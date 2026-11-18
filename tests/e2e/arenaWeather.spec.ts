@@ -4,6 +4,7 @@ import { LOAD_TIMEOUT } from './helpers';
 for (const [arena, weather] of [
   ['arenaOverpass', 'smog'],
   ['arenaRooftops', 'drizzleWind'],
+  ['arenaRailYard', 'snow'],
 ] as const) {
   test(`Przejęcie: ${arena}, profil ${weather}`, async ({ page }) => {
     const errors: string[] = [];
@@ -30,7 +31,10 @@ for (const [arena, weather] of [
       window.__neoryder?.query('conquest'),
     );
     expect(conquest).toMatchObject({
-      points: [{ id: 'A' }, { id: 'B' }, { id: 'C' }],
+      points: (arena === 'arenaRailYard'
+        ? ['A', 'B', 'C', 'D', 'E']
+        : ['A', 'B', 'C']
+      ).map((id) => ({ id })),
     });
     await expect
       .poll(() => page.evaluate(() => window.__neoryder?.query('enemies')), {

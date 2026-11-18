@@ -1,6 +1,6 @@
 {
   "id": "conquest",
-  "title": "Przejęcie",
+  "title": "PrzejÄ™cie",
   "enemies": ["assaulter", "gunner"],
   "enemyTickets": 120,
   "maxAlive": 8,
@@ -11,5 +11,10 @@
     "holdThreePerS": 3
   },
   "rewardRooms": 6,
-  "arenas": ["arenaContainerPort", "arenaOverpass", "arenaRooftops"]
+  "arenas": [
+    "arenaContainerPort",
+    "arenaOverpass",
+    "arenaRooftops",
+    "arenaRailYard"
+  ]
 }

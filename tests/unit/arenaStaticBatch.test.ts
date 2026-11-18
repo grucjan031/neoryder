@@ -24,6 +24,8 @@ import wavesData from '../../src/data/waves/roomTest.json';
 import * as staticBatch from '../../src/render/staticBatch';
 
 afterEach(() => vi.restoreAllMocks());
+// Cache modeli żyje między scenami; odczyt GLB następuje tylko przy pierwszym użyciu.
+const loaded = new Set<string>();
 
 function meshCount(root: Object3D): number {
   let count = 0;
@@ -33,10 +35,14 @@ function meshCount(root: Object3D): number {
   return count;
 }
 
-it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
+it.each([
+  'arenaContainerPort',
+  'arenaOverpass',
+  'arenaRooftops',
+  'arenaRailYard',
+])(
   '%s: jedno scalanie w komórkach 20 m, kontenery jako instancje, rzeczywiste GLB',
   async (id) => {
-    const loaded = new Set<string>();
     const warnings = vi.spyOn(console, 'warn');
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
       async (url) => {
@@ -70,7 +76,8 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
           if (
             o instanceof Mesh &&
             !Array.isArray(o.material) &&
-            o.material.name.startsWith('mat_container_')
+            o.material.name.startsWith('mat_container_') &&
+            o.name.startsWith('instances:port_container_')
           ) {
             expect(o.material.color.getHexString()).not.toBe('ffffff');
             containerColors.add(o.material.name);

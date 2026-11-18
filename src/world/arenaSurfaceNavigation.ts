@@ -34,6 +34,40 @@ export class ArenaSurfaceNavigation {
       ) -
       this.firstZ +
       1;
+    // Duże mapy: test prześwitu bada tylko bloki przecinające tę samą komórkę
+    // batchingu. Dokładny test poniżej zachowuje margines i obrócone obwiednie.
+    const bucketM = config.batchCellM;
+    const obstaclesByCell = new Map<string, Block[]>();
+    for (const obstacle of room.blocks) {
+      const yaw = obstacle.rotation?.y ?? 0;
+      const margin = config.navigationClearanceM;
+      const halfX =
+        ((Math.abs(Math.cos(yaw)) * obstacle.size.x +
+          Math.abs(Math.sin(yaw)) * obstacle.size.z) /
+          2) *
+          Math.cos(obstacle.rotation?.z ?? 0) +
+        margin;
+      const halfZ =
+        (Math.abs(Math.sin(yaw)) * obstacle.size.x +
+          Math.abs(Math.cos(yaw)) * obstacle.size.z) /
+          2 +
+        margin;
+      for (
+        let x = Math.floor((obstacle.position.x - halfX) / bucketM);
+        x <= Math.floor((obstacle.position.x + halfX) / bucketM);
+        x++
+      )
+        for (
+          let z = Math.floor((obstacle.position.z - halfZ) / bucketM);
+          z <= Math.floor((obstacle.position.z + halfZ) / bucketM);
+          z++
+        ) {
+          const key = `${x},${z}`;
+          const bucket = obstaclesByCell.get(key) ?? [];
+          bucket.push(obstacle);
+          obstaclesByCell.set(key, bucket);
+        }
+    }
     for (const b of surfaces) {
       if (b.rotation?.x || b.rotation?.y)
         throw new Error('Powierzchnia nawigacji obsługuje wyłącznie obrót Z.');
@@ -74,22 +108,24 @@ export class ArenaSurfaceNavigation {
           )
             continue;
           if (
-            room.blocks.some((obstacle) => {
-              if (obstacle === b) return false;
-              const top = this.top(obstacle, p.x, p.z, margin);
-              if (top === undefined) return false;
-              if (
-                obstacle.walkable &&
-                top <= y + this.rise &&
-                this.top(obstacle, p.x, p.z) === undefined
-              )
-                return false;
-              const bottom =
-                top - obstacle.size.y / Math.cos(obstacle.rotation?.z ?? 0);
-              return (
-                top > y + EPSILON && bottom < y + config.navigationHeadroomM!
-              );
-            })
+            obstaclesByCell
+              .get(`${Math.floor(p.x / bucketM)},${Math.floor(p.z / bucketM)}`)
+              ?.some((obstacle) => {
+                if (obstacle === b) return false;
+                const top = this.top(obstacle, p.x, p.z, margin);
+                if (top === undefined) return false;
+                if (
+                  obstacle.walkable &&
+                  top <= y + this.rise &&
+                  this.top(obstacle, p.x, p.z) === undefined
+                )
+                  return false;
+                const bottom =
+                  top - obstacle.size.y / Math.cos(obstacle.rotation?.z ?? 0);
+                return (
+                  top > y + EPSILON && bottom < y + config.navigationHeadroomM!
+                );
+              })
           )
             continue;
           const key = this.key(p);

@@ -24,6 +24,8 @@ export type SurfaceTexture =
   | 'ship_deck_steel'
   | 'rail_ballast'
   | 'rail_sleeper_concrete'
+  | 'snow_asphalt'
+  | 'snow_concrete'
   | 'maglev_body_panel'
   | 'snow'
   | 'gas_station_tiles'

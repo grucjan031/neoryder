@@ -91,7 +91,12 @@ export function ramp(
 ): Ramp;
 export function stairs(
   arena: ArenaBuilder,
-  options: StairOptions & { from: Vec3; to: Vec3; width: number },
+  options: StairOptions & {
+    from: Vec3;
+    to: Vec3;
+    width: number;
+    walkable?: boolean;
+  },
 ): Stairs;
 export function building(
   arena: ArenaBuilder,

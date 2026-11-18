@@ -128,6 +128,77 @@ it('arena 450 × 300 m: 3 poziomy, 5 stref i 12 wrogów', async () => {
   }
 }, 60_000);
 
+it('arenaRailYard: 420 x 180 m, 5 points, 12 enemies', async () => {
+  const room = roomDefinitions.get('arenaRailYard')!;
+  const definition = modeForArena(conquestMode, room);
+  validateMode(definition, room, definition.enemies);
+  for (const Navigation of [ArenaSurfaceNavigation, ArenaNavigation]) {
+    const start = performance.now();
+    const nav = new Navigation(room);
+    for (const point of definition.points) {
+      const path = nav.path(room.playerSpawn, point.position);
+      expect(path.at(-1)).toEqual(point.position);
+    }
+    const buildMs = performance.now() - start;
+    console.info(
+      `[perf] ${Navigation.name}: ${buildMs.toFixed(2)} ms (siatka i 5 pól)`,
+    );
+    expect(buildMs).toBeLessThanOrEqual(500);
+  }
+
+  const bus = new EventBus();
+  const commands = new CommandRegistry();
+  const run = new RunManager(bus, {
+    generateMap: () => ({ sectorId: 'unused', layers: [] }),
+  });
+  run.newRun('large-arena-perf', 'classic', {
+    modeId: 'conquest',
+    arenaId: 'arenaRailYard',
+  });
+  run.selectNode('conquest');
+  const scene = new RoomScene(
+    room,
+    run.state,
+    loadWaves({ ...wavesData, spawnPoints: room.spawnPoints }),
+    { loadModels: false },
+  );
+  try {
+    await scene.init(
+      {
+        bus,
+        rng: new Rng('large-arena-perf'),
+        loop: new GameLoop({ step() {}, render() {} }),
+        tuning: structuredClone(tuning),
+        debug: false,
+        commands,
+        camera: new PerspectiveCamera(),
+      },
+      new ThreeScene(),
+    );
+    commands.execute('god');
+    const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+    room.spawnPoints
+      .slice(0, definition.maxAlive)
+      .forEach((position, index) => {
+        enemies.spawn(index % 3 === 0 ? 'gunner' : 'assaulter', {
+          ...position,
+          y: 0,
+        });
+      });
+    for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+    expect(scene.query('enemies')).toBe(12);
+    const steps = 600;
+    const start = performance.now();
+    for (let i = 0; i < steps; i++) scene.step(SIM_DT, idle);
+    const perStepMs = (performance.now() - start) / steps;
+    console.info(`[perf] arenaRailYard: ${perStepMs.toFixed(3)} ms/krok`);
+    expect(scene.query('enemies')).toBe(12);
+    expect(perStepMs).toBeLessThanOrEqual(2);
+  } finally {
+    scene.dispose();
+  }
+}, 60_000);
+
 it.each(['arenaOverpass', 'arenaRooftops'])(
   '%s: 30 wrogów, nawigacja i Rapier poniżej 6 ms/krok',
   async (id) => {

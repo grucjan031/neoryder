@@ -390,9 +390,26 @@ describe('biblioteka generatorów aren', () => {
     expect(arenaSvg(extended as RoomDefinition)).toContain('>E<title>');
   });
 
-  it('ograniczenia schematu są jawne', () => {
+  it('punkty D/E są dostępne, a duplikaty i wysokość zwykłych spawnów są odrzucane', () => {
     const arena = blank();
-    expect(() => arena.point('D', vec(10, 0, 10))).toThrow('roomSchema');
+    arena.point('D', vec(10, 0, 10));
+    arena.point('E', vec(20, 0, 10));
+    expect(arena.toRoom().arena!.points.map((p) => p.id)).toEqual(['D', 'E']);
+    expect(() => arena.point('E', vec(20, 0, 10))).toThrow('Powtórzony');
     expect(() => arena.spawn(vec(10, 4, 10))).toThrow('wysokości');
+  });
+
+  it('schody gracza pomijają tylko ostrzeżenia nawigacji AI', () => {
+    const arena = blank();
+    const result = createPrimitives(arena).stairs({
+      from: vec(0, 0, 0),
+      to: vec(0, 2, 4),
+      width: 2,
+      stepRise: 0.2,
+      stepDepth: 0.4,
+      walkable: false,
+    });
+    expect(result.blocks.every((b) => b.walkable === false)).toBe(true);
+    expect(arena.metadata.warnings).toEqual([]);
   });
 });
