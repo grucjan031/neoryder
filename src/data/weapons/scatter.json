@@ -11,5 +11,15 @@
   "spreadDeg": 6,
   "tags": ["#gun"],
   "pellets": 8,
-  "model": "scatter"
+  "model": "scatter",
+  "grip": {
+    "offset": [0.0046, -0.014, -0.016],
+    "pose": "gripScatter",
+    "firePose": "gripScatterFire",
+    "support": {
+      "offset": [-0.0015, -0.0003, -0.0161],
+      "pose": "supportScatter",
+      "rotation": [0.0479, -0.3029, -0.1286]
+    }
+  }
 }

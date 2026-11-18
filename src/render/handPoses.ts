@@ -50,8 +50,29 @@ export const handPosesSchema = z.strictObject({
     gripGun: poseSchema,
     gripGunFire: poseSchema,
     support: poseSchema,
+    // Chwyty dopasowane do modeli broni (pole `grip` w src/data/weapons/*.json).
+    gripPistol: poseSchema,
+    gripPistolFire: poseSchema,
+    gripRifle: poseSchema,
+    gripRifleFire: poseSchema,
+    gripScatter: poseSchema,
+    gripScatterFire: poseSchema,
+    gripSniper: poseSchema,
+    gripSniperFire: poseSchema,
+    gripBeam: poseSchema,
+    gripBeamFire: poseSchema,
+    gripEmp: poseSchema,
+    gripEmpFire: poseSchema,
+    supportRifle: poseSchema,
+    supportScatter: poseSchema,
+    supportSniper: poseSchema,
+    supportBeam: poseSchema,
+    supportEmp: poseSchema,
   }),
 });
 export const handPoses = handPosesSchema.parse(data).poses;
 export type HandPose = keyof typeof handPoses;
+export function isHandPose(name: string): name is HandPose {
+  return Object.hasOwn(handPoses, name);
+}
 export type HandSocket = 'socket_blade' | 'socket_gun' | 'socket_support';

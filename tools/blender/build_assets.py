@@ -1173,65 +1173,203 @@ def _hand_tube(name, centers, radii, mat, root, closed=False, sides=8):
     return _hand_surface(name, vertices, faces, mat, root)
 
 
-def _hand_dorsal_points(glove, basis):
-    from mathutils.bvhtree import BVHTree
+# Palce: (nazwa, x nasady, z nasady, długości paliczków, promień, rozchylenie). Dłoń ok. 19 cm od
+# nadgarstka do czubka środkowego; paliczki w proporcji ok. 1 : 0,65 : 0,5; mały wyraźnie krótszy.
+_HAND_FINGERS = (
+    ("pinky", -0.031, -0.082, (0.034, 0.022, 0.018), 0.0086, 0.105),
+    ("ring", -0.012, -0.091, (0.042, 0.027, 0.022), 0.0098, 0.035),
+    ("middle", 0.009, -0.095, (0.045, 0.029, 0.023), 0.0104, -0.012),
+    ("index", 0.030, -0.090, (0.041, 0.026, 0.021), 0.0100, -0.065),
+)
+_HAND_THUMB = ((0.030, 0.027, 0.023), 0.0118)
+# Przekrój rękawicy (z, półszerokość, półgłębokość): od wnętrza rękawa (z = 0,13) do kłykci.
+# Mankiet rękawicy jest prawie walcowy — bez „klepsydry” w nadgarstku.
+_GLOVE_SECTIONS = (
+    (.130, .035, .027), (.104, .034, .026), (.080, .0335, .0255), (.060, .032, .0245),
+    (.040, .031, .0235), (.022, .030, .0225), (.006, .0297, .0215), (-.010, .0312, .0215),
+    (-.026, .0352, .022), (-.042, .0392, .0225), (-.058, .0412, .022), (-.072, .0412, .019),
+    (-.083, .0412, .017),
+)
+# Gniazda broni palnej i podparcia (glTF, metry, względem roota dłoni); ostrze: bladeGrip.json.
+_SOCKET_GUN = (.040, .0425, -.094)
+_SOCKET_SUPPORT = (.0042, .0215, -.10321)
+# Wiersze przekroju, między którymi wyrasta kciuk (otwór po stronie promieniowej).
+_THUMB_ROWS = (7, 8, 9, 10)
+# Rękaw kurtki (z, półszerokość, półgłębokość); kończy się kołnierzem mankietu przy z = 0,066.
+_SLEEVE_SECTIONS = ((.340, .050, .040), (.250, .047, .0375), (.170, .0435, .035), (.100, .0405, .0325),
+                    (.066, .0395, .0315))
 
-    surface = BVHTree.FromPolygons([v.co for v in glove.data.vertices],
-                                   [p.vertices for p in glove.data.polygons])
-    inverse = basis.inverted()
-    points = []
-    for z in (-.020, -.029, -.044, -.060, -.071):
-        origin = basis @ Vector((.020, -.080, z))
-        direction = basis.to_3x3() @ Vector((0, 1, 0))
-        position, normal, _, _ = surface.ray_cast(origin, direction)
-        if position is None:
-            raise RuntimeError("Dorsal piping must stay on the glove surface")
-        points.append(inverse @ (position + normal * .0003))
-    return points
 
-
-# Przekrój przedramienia rękawicy (z, półszerokość, półgłębokość) — jak `sections` w build_player_arm.
-_FPP_FOREARM = ((.34, .048, .036), (.31, .048, .036), (.275, .046, .034), (.235, .043, .032),
-                (.19, .041, .030), (.145, .037, .027), (.10, .033, .025), (.066, .031, .024))
-
-
-def _fpp_forearm_size(z):
-    for (z0, w0, d0), (z1, w1, d1) in zip(_FPP_FOREARM, _FPP_FOREARM[1:]):
+def _interp_sections(table, z):
+    if z >= table[0][0]:
+        return table[0][1:]
+    for (z0, w0, d0), (z1, w1, d1) in zip(table, table[1:]):
         if z1 <= z <= z0:
             t = (z - z1) / (z0 - z1)
             return w1 + (w0 - w1) * t, d1 + (d0 - d1) * t
-    return _FPP_FOREARM[-1][1:]
+    return table[-1][1:]
 
 
-def _fpp_shell(z0, z1, u0, u1, gap, thick, segments=5, bevel=.0):
-    """Wygięta płyta pancerza nad grzbietem przedramienia (osie glTF, grzbiet = -Y)."""
+def _glove_profile(u):
+    return math.sqrt(max(.10, 1 - .82 * u * u))
+
+
+def _palm_point(u, z, side, off=0.0):
+    """Punkt powierzchni rękawicy (bez przejścia w palce): side=-1 grzbiet, +1 wnętrze dłoni."""
+    width, depth = _interp_sections(_GLOVE_SECTIONS, z)
+    x = u * (width + off) + .006 * max(0, z) / .34
+    y = depth * _glove_profile(u)
+    if side < 0:
+        # Ścięgna prostowników: niskie grzbiety nad kośćmi śródręcza.
+        ridge = sum(math.exp(-((x - fx) / .0065) ** 2) for _, fx, *_ in _HAND_FINGERS)
+        y += .0012 * ridge * math.exp(-((z + .052) / .022) ** 2)
+    else:
+        # Kłąb kciuka (thenar), kłąb małego palca, wklęsłe wnętrze i poduszki pod kłykciami.
+        y += .0065 * math.exp(-((x - .025) / .012) ** 2) * math.exp(-((z + .030) / .018) ** 2)
+        y += .0040 * math.exp(-((x + .027) / .011) ** 2) * math.exp(-((z + .046) / .022) ** 2)
+        y -= .0028 * math.exp(-((x - .002) / .014) ** 2) * math.exp(-((z + .050) / .014) ** 2)
+        y += .0022 * math.exp(-((z + .075) / .008) ** 2)
+    return Vector((x, side * (y + off), z))
+
+
+def _finger_section(lengths, radius, distance):
+    """(półszerokość, grzbiet, wnętrze) palca: spłaszczony owal, kłykcie, poduszki, opuszka."""
+    total = sum(lengths)
+    j1, j2 = lengths[0], lengths[0] + lengths[1]
+    taper = 1 - .20 * distance / total
+    tip = min(1, max(.22, (total - distance) / .008)) ** .5
+    knuckle = sum(math.exp(-((distance - j) / .0055) ** 2) for j in (j1, j2))
+    knuckle += .7 * math.exp(-(distance / .006) ** 2)
+    pads = sum(math.exp(-((distance - m) / (.28 * size)) ** 2)
+               for m, size in ((j1 * .5, lengths[0]), (j1 + lengths[1] * .5, lengths[1]),
+                               (j2 + lengths[2] * .55, lengths[2])))
+    scale = radius * taper * tip
+    return (scale * 1.05 * (1 + .07 * knuckle), scale * .80 * (1 + .20 * knuckle),
+            scale * .84 * (1 + .10 * pads - .10 * knuckle))
+
+
+def _finger_point(section, angle, z):
+    width, dorsal, palmar = section
+    s = math.sin(angle)
+    return Vector((width * math.cos(angle), (palmar if s > 0 else dorsal) * s, z))
+
+
+def _superellipse(u, power):
+    return (1 - min(1, abs(u)) ** (2 / power)) ** (power / 2)
+
+
+def _fpp_loft(rings, cap_start=False, cap_end=False, wrap=False, sharp=()):
+    """Siatka z pierścieni o równej liczbie punktów; `sharp` — indeksy pierścieni z ostrą krawędzią."""
     bm = bmesh.new()
-
-    def ring(z, offset, shrink):
-        w, d = _fpp_forearm_size(z)
-        pts = []
-        for i in range(segments + 1):
-            u = (u0 + (u1 - u0) * i / segments) * shrink
-            y = -(d * math.sqrt(max(.1, 1 - .82 * u * u)) + offset)
-            x = u * (w + offset) + .006 * z / .34
-            pts.append(bm.verts.new((x, y, z)))
-        return pts
-
-    # Fazowane czoła: zewnętrzna powierzchnia krótsza o `bevel` na obu końcach.
-    outer0, outer1 = ring(z0 + bevel, gap + thick, .96), ring(z1 - bevel, gap + thick, .96)
-    inner0, inner1 = ring(z0, gap, 1), ring(z1, gap, 1)
-    for a, b in ((outer0, outer1), (inner1, inner0), (inner0, outer0), (outer1, inner1)):
-        for i in range(segments):
-            bm.faces.new((a[i], a[i + 1], b[i + 1], b[i]))
-    for a, b, c, d in ((inner0[0], outer0[0], outer1[0], inner1[0]),
-                       (inner1[-1], outer1[-1], outer0[-1], inner0[-1])):
-        bm.faces.new((a, b, c, d))
+    loops = [[bm.verts.new(p) for p in ring] for ring in rings]
+    count = len(rings[0])
+    pairs = list(zip(loops, loops[1:])) + ([(loops[-1], loops[0])] if wrap else [])
+    for a, b in pairs:
+        for i in range(count):
+            bm.faces.new((a[i], a[(i + 1) % count], b[(i + 1) % count], b[i]))
+    if cap_start:
+        bm.faces.new(loops[0])
+    if cap_end:
+        bm.faces.new(loops[-1])
     bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    bm.edges.ensure_lookup_table()
+    for index in sharp:
+        ring = set(loops[index])
+        for edge in bm.edges:
+            if edge.verts[0] in ring and edge.verts[1] in ring:
+                edge.smooth = False
     return bm
 
 
-def _fpp_hand_part(name, bm, mat, rig, bone, basis, side):
-    """Sztywna część na kości ręki: geometria w osiach glTF, odbicie L z poprawnymi normalnymi."""
+def _fpp_surface_plate(point, z0, z1, u0, u1, gap, thick, segments=5, bevel=0.0, steps=1, far=None):
+    """Fazowana płytka na powierzchni opisanej `point(u, z, offset)`.
+
+    Przekrój: zewnętrzny łuk (gap + thick) i wewnętrzny (gap); końce i boki fazowane o `bevel`.
+    `far` = (u0, u1) na końcu z1 — płytka trapezowa.
+    """
+    direction = 1 if z1 > z0 else -1
+    zs = [z0 + (z1 - z0) * i / steps for i in range(steps + 1)]
+    if bevel:
+        zs = [z0] + [z0 + direction * bevel] + zs[1:-1] + [z1 - direction * bevel, z1]
+    rings = []
+    for k, z in enumerate(zs):
+        end = bevel and k in (0, len(zs) - 1)
+        t = (z - z0) / (z1 - z0)
+        a, b = (u0, u1) if far is None else (u0 + (far[0] - u0) * t, u1 + (far[1] - u1) * t)
+        middle, half = (a + b) / 2, (b - a) / 2
+        top_half = half - (bevel / .03 if bevel else 0) * (1.6 if end else 1)
+        outer = [point(middle - top_half + 2 * top_half * i / segments, z, gap + thick * (.35 if end else 1))
+                 for i in range(segments + 1)]
+        inner = [point(middle - half + 2 * half * i / segments, z, gap) for i in range(segments + 1)]
+        rings.append(outer + inner[::-1])
+    return _fpp_loft(rings, cap_start=True, cap_end=True)
+
+
+def _fpp_band(size, z0, z1, gap, thick, sides=24, bevel=0.0, power=.8, sharp=False):
+    """Opaska dookoła przekroju `size(z) -> (w, d, cx)` (superelipsa), z fazowanymi krawędziami."""
+    def ring(z, offset):
+        width, depth, center = size(z)
+        pts = []
+        for i in range(sides):
+            a = 2 * math.pi * (i + .5) / sides
+            c, s = math.cos(a), math.sin(a)
+            pts.append(Vector((center + (width + offset) * math.copysign(abs(c) ** power, c),
+                               (depth + offset) * math.copysign(abs(s) ** power, s), z)))
+        return pts
+
+    direction = 1 if z1 > z0 else -1
+    rings = [ring(z0, gap), ring(z0, gap + thick * .45), ring(z0 + direction * bevel, gap + thick),
+             ring(z1 - direction * bevel, gap + thick), ring(z1, gap + thick * .45), ring(z1, gap)]
+    return _fpp_loft(rings, wrap=True, sharp=(1, 2, 3, 4) if sharp else ())
+
+
+def _glove_size(z):
+    width, depth = _interp_sections(_GLOVE_SECTIONS, z)
+    return width * .985, depth, .006 * max(0, z) / .34
+
+
+def _sleeve_size(z):
+    width, depth = _interp_sections(_SLEEVE_SECTIONS, z)
+    return width, depth, .006 * z / .34
+
+
+def _fpp_sleeve():
+    """Rękaw kurtki: kołnierz mankietu z grubością brzegu, kilka miękkich fałd, owalny przekrój."""
+    sides, power = 24, .85
+
+    def ring(z, offset, fold=0.0):
+        width, depth, center = _sleeve_size(z)
+        pts = []
+        for i in range(sides):
+            a = 2 * math.pi * (i + .5) / sides
+            c, s = math.cos(a), math.sin(a)
+            # Fałdy: zmarszczenie zebranego rękawu, ukośne i mocniejsze od strony łokcia.
+            bump = (.5 + .5 * math.sin(2 * math.pi * (z - .094 + .005 * math.cos(a - .6)) / .021)) ** 2
+            extra = fold * bump * (.55 + .45 * math.cos(a + 1.9))
+            pts.append(Vector((center + (width + offset + extra) * math.copysign(abs(c) ** power, c),
+                               (depth + offset + extra) * math.copysign(abs(s) ** power, s), z)))
+        return pts
+
+    rings = [ring(.082, -.0052), ring(.067, -.0052), ring(.0645, -.0026), ring(.066, .0010),
+             ring(.072, .0024), ring(.085, .0024), ring(.0895, .0010), ring(.093, 0)]
+    for i in range(15):
+        z = .0975 + i * .0042
+        rings.append(ring(z, 0, fold=.0024 * min(1, (.165 - z) / .03, (z - .093) / .008)))
+    for z in (.168, .19, .22, .26, .30, .34):
+        rings.append(ring(z, 0))
+    # Ostre krawędzie: brzeg rękawa i kołnierz mankietu.
+    return _fpp_loft(rings, cap_end=True, sharp=(2, 3, 4, 5, 6))
+
+
+def _fpp_hand_part(name, bm, mat, rig, bone, basis, side, smooth="auto"):
+    """Sztywna część na kości ręki: geometria w osiach glTF, odbicie L z poprawnymi normalnymi.
+
+    smooth="auto": gładkie łuki, ostre krawędzie powyżej 40° (czytelny kontur bez prążków fasetek).
+    """
+    if smooth == "auto":
+        for edge in bm.edges:
+            if len(edge.link_faces) == 2 and edge.calc_face_angle(0) > math.radians(40):
+                edge.smooth = False
     obj = mesh_object(name, bm, mat)
     obj.data.transform(basis)
     if side == "L":
@@ -1240,43 +1378,70 @@ def _fpp_hand_part(name, bm, mat, rig, bone, basis, side):
         bmesh.ops.reverse_faces(mirrored, faces=list(mirrored.faces))
         mirrored.to_mesh(obj.data)
         mirrored.free()
+    if smooth:
+        for polygon in obj.data.polygons:
+            polygon.use_smooth = True
     _hand_bone_child(obj, rig, bone, Matrix.Identity(4))
     return obj
 
 
-def _fpp_bracer(rig, basis, side):
-    """Cybernetyczny karwasz: dwie płyty, listwa światła gracza, śruby i port przy nadgarstku.
+def _sleeve_point(u, z, off):
+    """Punkt na grzbiecie rękawa (superelipsa jak w `_fpp_sleeve`)."""
+    width, depth, center = _sleeve_size(z)
+    return Vector((center + u * (width + off), -((depth + off) * _superellipse(u, .85)), z))
 
-    Materiały po nazwie węzła w grze: `plate_*` pancerz, `trim_*` jasna stal (fppMaterials.ts).
+
+def _fpp_forearm_gear(rig, basis, side):
+    """Rękaw, karwasz z panelem i mankiet rękawicy z paskiem — sztywne części na kości `forearm`.
+
+    Części o tej samej kości i materiale są scalone (budżet liczby siatek sceny):
+    `plate_bracer` = rękaw + obudowa karwasza + mankiet rękawicy (pancerz),
+    `trim_bracer` = panel, śruby i klamra (stal), `grip_strap` = paski (guma).
     """
-    plates = bm_merge(
-        _fpp_shell(.215, .150, -.85, .85, .003, .005, bevel=.004),
-        _fpp_shell(.142, .078, -.8, .8, .003, .005, bevel=.004),
-    )
-    _fpp_hand_part("plate_bracer", plates, "mat_interactive", rig, "forearm", basis, side)
-    # Listwa światła w rowku między płytami i wzdłuż grzbietu.
-    w, d = _fpp_forearm_size(.146)
+    # Karwasz: niska obudowa na grzbiecie rękawa, przypięta dwoma paskami.
+    housing = _fpp_surface_plate(_sleeve_point, .252, .176, -.50, .50, .0028, .0065,
+                                 segments=6, bevel=.0045, steps=2)
+    cuff = _fpp_band(_glove_size, .012, .050, .0012, .0034, bevel=.0024, sharp=True)
+    _fpp_hand_part("plate_bracer", bm_merge(_fpp_sleeve(), housing, cuff), "mat_interactive",
+                   rig, "forearm", basis, side)
+    top = .0028 + .0065
+    trims = [_fpp_surface_plate(_sleeve_point, .240, .192, -.30, .30, top - .0004, .0014,
+                                segments=4, bevel=.0015)]
+    for z in (.184, .244):
+        for u in (-.40, .40):
+            p = _sleeve_point(u, z, top)
+            trims.append(bm_prism(.0016, .0016, .0019, sides=6, axis="Y", top_at_origin=True,
+                                  offset=(p.x, p.y, p.z)))
+    # Klamra paska po stronie grzbietowo-promieniowej (widoczna z kamery FPP).
+    width, depth, center = _glove_size(.030)
+    angle = -math.pi / 2 + .75
+    c, s = math.cos(angle), math.sin(angle)
+    offset = .0046 + .0013
+    anchor = Vector((center + (width + offset) * c ** .8, -(depth + offset) * abs(s) ** .8, .030))
+    buckle = bm_merge(bm_box(.011, .0026, .013, bevel=.0008),
+                      bm_box(.006, .0012, .007, center=(0, -.0016, 0)))
+    tilt = math.atan2(anchor.y, anchor.x - center) + math.pi / 2
+    bmesh.ops.transform(buckle, matrix=Matrix.Translation(anchor) @ Matrix.Rotation(tilt, 4, "Z"),
+                        verts=list(buckle.verts))
+    trims.append(buckle)
+    _fpp_hand_part("trim_bracer", bm_merge(*trims), "mat_interactive", rig, "forearm", basis, side)
     light = bm_merge(
-        _fpp_shell(.148, .144, -.7, .7, .006, .0025, segments=4),
-        block(-.0035, .0035, -(d + .0105), -(d + .0075), .085, .205),
+        _fpp_surface_plate(_sleeve_point, .234, .198, -.06, .06, top + .0008, .0009, segments=2),
+        _fpp_surface_plate(_sleeve_point, .190, .186, -.22, .22, top - .0006, .0012, segments=3),
     )
     _fpp_hand_part("bracer_light", light, "mat_player_cyan", rig, "forearm", basis, side)
-    trims = []
-    for z in (.205, .16, .132, .088):
-        w, d = _fpp_forearm_size(z)
-        for u in (-.62, .62):
-            x = u * (w + .008) + .006 * z / .34
-            y = -(d * math.sqrt(max(.1, 1 - .82 * u * u)) + .009)
-            trims.append(bm_box(.006, .006, .006, center=(x, y, z)))
-    # Port złącza nad nadgarstkiem: sześciokątna obejma.
-    w, d = _fpp_forearm_size(.066)
-    trims.append(bm_prism(.006, .009, .011, sides=6, axis="Y", top_at_origin=True,
-                          offset=(.012, -(d + .004), .058)))
-    _fpp_hand_part("trim_bracer", bm_merge(*trims), "mat_interactive", rig, "forearm", basis, side)
+    straps = bm_merge(
+        _fpp_band(_sleeve_size, .181, .189, .0006, .0018, sides=16, bevel=.0012, power=.85, sharp=True),
+        _fpp_band(_sleeve_size, .238, .246, .0006, .0018, sides=16, bevel=.0012, power=.85, sharp=True),
+        _fpp_band(_glove_size, .026, .036, .0046, .0013, bevel=.0010, sharp=True),
+    )
+    _fpp_hand_part("grip_strap", straps, "mat_interactive", rig, "forearm", basis, side)
+    light = _fpp_band(_glove_size, .0095, .0125, .0010, .0024, sides=24)
+    _fpp_hand_part("wrist_light", light, "mat_player_cyan", rig, "forearm", basis, side)
 
 
 def build_player_arm(side: str):
-    """Continuous tailored glove: quad palm/webs, joint loops and baked subdivision.
+    """Taktyczna rękawica na anatomicznej dłoni: ciągła skinowana siatka + sztywne części na kościach.
 
     Construction coordinates are glTF metres. Bone Y follows each finger; bone X
     is the flexion hinge and bone Z faces the palm. Positive X curls both hands.
@@ -1286,24 +1451,19 @@ def build_player_arm(side: str):
     reflection = Matrix.Diagonal((-1, 1, 1, 1)) if side == "L" else Matrix.Identity(4)
     basis = HAND_BASIS @ reflection
     forward_frame = Matrix.Rotation(-math.pi / 2, 4, "X")
-    fingers = (
-        ("pinky", -0.032, -0.083, (0.032, 0.020, 0.018), 0.0087, 0.105),
-        ("ring", -0.013, -0.093, (0.040, 0.025, 0.020), 0.0103, 0.035),
-        ("middle", 0.009, -0.096, (0.043, 0.027, 0.021), 0.0110, -0.012),
-        ("index", 0.031, -0.090, (0.039, 0.024, 0.020), 0.0105, -0.065),
-    )
+    fingers = _HAND_FINGERS
     # Distal edge: four dorsal vertices and four palmar vertices per finger.
     angles = [math.pi + (j + 0.5) * math.pi / 4 for j in range(8)]
     frames, lengths_by_name = {}, {}
     for name, x, z, lengths, radius, spread in fingers:
         frames[name] = Matrix.Translation((x, 0, z)) @ Matrix.Rotation(spread, 4, "Y")
         lengths_by_name[name] = lengths
-    # The metacarpal emerges from the thenar mound, diagonally forward, not sideways.
-    frames["thumb"] = (Matrix.Translation((0.034, 0.006, -0.034))
+    # Kciuk osadzony nisko i z boku, na kłębie; oś zgięcia skręcona ku palcom (opozycja).
+    frames["thumb"] = (Matrix.Translation((0.033, 0.008, -0.036))
                        @ Matrix.Rotation(-0.10, 4, "X")
-                       @ Matrix.Rotation(-0.60, 4, "Y")
-                       @ Matrix.Rotation(0.62, 4, "Z"))
-    lengths_by_name["thumb"] = (0.028, 0.025, 0.021)
+                       @ Matrix.Rotation(-0.62, 4, "Y")
+                       @ Matrix.Rotation(0.80, 4, "Z"))
+    lengths_by_name["thumb"] = _HAND_THUMB[0]
     vertices, faces, weights = [], [], []
 
     def vertex(point, influence):
@@ -1317,40 +1477,21 @@ def build_player_arm(side: str):
 
     distal = []
     for name, x, z, lengths, radius, spread in fingers:
-        distal.append([frames[name] @ Vector((radius * math.cos(a), radius * 0.89 * math.sin(a), 0)) for a in angles])
-    # Cross sections run from jacket opening to knuckle line. A distal scallop
-    # blends the four knuckle cushions into the back instead of adding armour boxes.
-    sections = (
-        (0.340, .048, .036), (.335, .049, .037), (.310, .048, .036),
-        (.275, .046, .034), (.235, .043, .032), (.190, .041, .030),
-        (.145, .037, .027), (.100, .033, .025), (.066, .031, .024),
-        (.047, .031, .024), (.043, .029, .023), (.038, .029, .023),
-        (.033, .028, .022), (.018, .027, .021), (.002, .027, .020),
-        (-.017, .031, .020), (-.036, .037, .022), (-.055, .041, .022),
-        (-.072, .041, .019), (-.083, .041, .017), (None, None, None),
-    )
+        section = _finger_section(lengths, radius, 0)
+        distal.append([frames[name] @ _finger_point(section, a, 0) for a in angles])
+    sections = list(_GLOVE_SECTIONS) + [None]
     rings = []
-    for row, (z, width, depth) in enumerate(sections):
+    for row, entry in enumerate(sections):
         dorsal, palmar = [], []
         for f, (name, *_) in enumerate(fingers):
             for j in range(8):
                 endpoint = distal[f][j]
-                if z is None:
+                if entry is None:
                     point = endpoint
                     influence = {"palm": .55, f"{name}_1": .45}
                 else:
-                    u = endpoint.x / .041
-                    y = (-1 if j < 4 else 1) * depth * math.sqrt(max(.10, 1 - .82 * u * u))
-                    # Palm pads and restrained dorsal tendon ridges.
-                    if z < -.015:
-                        if j >= 4:
-                            y += .0025 * math.exp(-((endpoint.x - .023) / .018) ** 2)
-                        else:
-                            y -= .004 * math.exp(-((j - 1.5) / .9) ** 2)
-                    if z > .047:
-                        y += .0013 * math.cos(u * 4.5 + row * 1.7) * math.exp(-((z - .105) / .095) ** 2)
-                    center_x = .006 * max(0, z) / .34
-                    point = Vector((u * width + center_x, y, z))
+                    z = entry[0]
+                    point = _palm_point(endpoint.x / .041, z, -1 if j < 4 else 1)
                     blend = max(0, min(1, (-z - .058) / .032))
                     point = point.lerp(endpoint, blend * .65)
                     if z > .040:
@@ -1370,7 +1511,7 @@ def build_player_arm(side: str):
             # Thumb opening on the radial side over three palm rows (8-edge boundary).
             previous = rings[row - 1]
             for j in range(32):
-                if j == 15 and row in (16, 17, 18):
+                if j == 15 and row in _THUMB_ROWS[1:]:
                     continue
                 faces.append((previous[j], previous[(j + 1) % 32], ring[(j + 1) % 32], ring[j]))
     faces.append(tuple(reversed(rings[0])))
@@ -1379,12 +1520,14 @@ def build_player_arm(side: str):
         # Real webbing between adjoining fingers, continuous with both palm surfaces.
         faces.append((last[f * 4 + 3], last[(f + 1) * 4], last[31 - (f + 1) * 4], last[28 - f * 4]))
 
-    finger_specs = list(fingers) + [("thumb", 0, 0, lengths_by_name["thumb"], .0113, 0)]
+    finger_specs = list(fingers) + [("thumb", 0, 0, lengths_by_name["thumb"], _HAND_THUMB[1], 0)]
     for f, (name, x, z, lengths, radius, spread) in enumerate(finger_specs):
         frame = frames[name]
         if name == "thumb":
-            previous = [rings[r][15] for r in (15, 16, 17, 18)] + [rings[r][16] for r in (18, 17, 16, 15)]
-            base_points = [frame @ Vector((radius * 1.25 * math.cos(a), radius * math.sin(a), -.016)) for a in angles]
+            previous = ([rings[r][15] for r in _THUMB_ROWS]
+                        + [rings[r][16] for r in reversed(_THUMB_ROWS)])
+            base_points = [frame @ Vector((radius * 1.30 * math.cos(a), radius * 1.05 * math.sin(a), -.016))
+                           for a in angles]
             # Match perimeter order geometrically: no crossed quads in the thumb web.
             candidates = []
             for order in (previous, list(reversed(previous))):
@@ -1398,7 +1541,9 @@ def build_player_arm(side: str):
             for index, point in zip(previous, base_points):
                 boundary = basis.inverted() @ vertices[index]
                 weights[index] = {"palm": .88, "thumb_1": .12}
-                transition.append(vertex(boundary.lerp(point, .48), {"palm": .78, "thumb_1": .22}))
+                # Pełny kłąb kciuka: przejście wypchnięte ku wnętrzu dłoni.
+                middle = boundary.lerp(point, .48) + Vector((.0012, .0016, 0))
+                transition.append(vertex(middle, {"palm": .78, "thumb_1": .22}))
                 base.append(vertex(point, {"palm": .25, "thumb_1": .75}))
             bridge(previous, transition)
             bridge(transition, base)
@@ -1407,16 +1552,12 @@ def build_player_arm(side: str):
             previous = [last[f * 4 + j] for j in range(4)] + [last[28 - f * 4 + j] for j in range(4)]
         total = sum(lengths)
         joints = (0, lengths[0], lengths[0] + lengths[1])
-        distances = sorted(set((.004, lengths[0] * .52, lengths[0] - .004, lengths[0],
-                                lengths[0] + .004, joints[2] - .004, joints[2], joints[2] + .004,
-                                total - .009, total - .004, total - .001)))
+        distances = sorted(set((.004, lengths[0] * .5, lengths[0] - .0045, lengths[0],
+                                lengths[0] + .0045, joints[2] - .0045, joints[1] + lengths[1] * .5,
+                                joints[2], joints[2] + .004, total - .010, total - .005, total - .0015)))
         for distance in distances:
             if name == "thumb" and distance <= .016:
                 continue
-            t = distance / total
-            taper = 1 - .22 * t
-            tip = min(1, max(.22, (total - distance) / .007)) ** .5
-            bulge = 1 + .18 * sum(math.exp(-((distance - joint) / .006) ** 2) for joint in joints[1:])
             influence = {f"{name}_{min(3, 1 + sum(distance > joint for joint in joints[1:]))}": 1}
             for joint_index, joint in enumerate(joints[1:], 1):
                 if abs(distance - joint) <= .006:
@@ -1426,14 +1567,8 @@ def build_player_arm(side: str):
             if distance < root_blend:
                 t_root = distance / root_blend
                 influence = {"palm": .45 * (1 - t_root), f"{name}_1": .55 + .45 * t_root}
-            ring = []
-            for a in angles:
-                # Oval pad, slightly full on the palm side; integrated knuckle cushion.
-                xx = radius * taper * tip * math.cos(a)
-                yy = radius * .88 * taper * tip * math.sin(a) * bulge
-                if math.sin(a) > 0:
-                    yy *= 1.06
-                ring.append(vertex(frame @ Vector((xx, yy, -distance)), influence))
+            section = _finger_section(lengths, radius, distance)
+            ring = [vertex(frame @ _finger_point(section, a, -distance), influence) for a in angles]
             bridge(previous, ring)
             previous = ring
         faces.append(tuple(previous))
@@ -1491,13 +1626,24 @@ def build_player_arm(side: str):
     # Subdivision is baked before linear skinning, including interpolated vertex weights.
     arm_modifier.use_deform_preserve_volume = False
 
-    # Low-profile bevelled knuckle guards follow the proximal bones, leaving flexion free.
+    def finger_plate(name, lengths, radius, d0, d1, thick, u=.66, bevel=.0014):
+        def point(uu, z, off):
+            width, dorsal, _ = _finger_section(lengths, radius, -z)
+            return Vector((uu * (width + off), -(dorsal * math.sqrt(max(.05, 1 - uu * uu)) + off), z))
+        plate = _fpp_surface_plate(point, -d0, -d1, -u, u, -.0003, thick, segments=5, bevel=bevel, steps=2)
+        bmesh.ops.transform(plate, matrix=frames[name], verts=list(plate.verts))
+        return plate
+
+    # Niskie fazowane płytki na paliczkach bliższych; staw międzypaliczkowy zostaje wolny.
     for name, _, _, lengths, radius, _ in fingers:
-        guard = bm_box(radius * 1.65, .006, lengths[0] * .48,
-                       center=(0, -radius * .92, -lengths[0] * .28), bevel=.0025)
-        bmesh.ops.transform(guard, matrix=frames[name], verts=list(guard.verts))
-        _fpp_hand_part(f"plate_knuckle_{name}", guard, "mat_interactive",
-                       rig, f"{name}_1", basis, side)
+        plate = finger_plate(name, lengths, radius, .0045, lengths[0] - .0055, .0016)
+        _fpp_hand_part(f"plate_knuckle_{name}", plate, "mat_interactive", rig, f"{name}_1", basis, side)
+    # Wzmocnione czubki palca wskazującego i kciuka (detal taktyczny).
+    for name, _, _, lengths, radius, _ in finger_specs:
+        if name in ("index", "thumb"):
+            joint = lengths[0] + lengths[1]
+            plate = finger_plate(name, lengths, radius, joint + .0035, sum(lengths) - .0022, .0013, u=.72)
+            _fpp_hand_part(f"plate_tip_{name}", plate, "mat_interactive", rig, f"{name}_3", basis, side)
 
     def palm_detail(obj, position=(0, 0, 0)):
         obj.data.transform(basis)
@@ -1510,29 +1656,27 @@ def build_player_arm(side: str):
         _hand_bone_child(obj, rig, "palm", Matrix.Translation(basis @ Vector(position)))
         return obj
 
-    # Thin light piping, seated in the glove surface rather than raised armour.
-    trace = _hand_tube("dorsal_trace", _hand_dorsal_points(glove, basis),
-                       [.0009] * 5, "mat_player_cyan", root)
+    # Pancerz grzbietu dłoni: główna płyta pod rdzeniem Rezonansu i wąski segment przy nadgarstku.
+    dorsal = lambda u, z, off: _palm_point(u, z, -1, off)  # noqa: E731
+    # Poduszka na kłębie małego palca (środek dłoni zostaje wklęsły) — ta sama siatka co pancerz grzbietu.
+    palmar = lambda u, z, off: _palm_point(u, z, 1, off)  # noqa: E731
+    plates = bm_merge(
+        _fpp_surface_plate(dorsal, -.031, -.069, -.62, .66, .0002, .0024, segments=8, bevel=.0026, steps=2,
+                           far=(-.84, .86)),
+        _fpp_surface_plate(dorsal, -.016, -.027, -.66, .70, .0002, .0018, segments=6, bevel=.0016),
+        _fpp_surface_plate(palmar, -.030, -.068, -.90, -.30, -.0004, .0020, segments=5, bevel=.0020,
+                           steps=3, far=(-.86, -.10)),
+    )
+    _fpp_hand_part("plate_hand", plates, "mat_interactive", rig, "palm", basis, side)
+    # Cienka linia światła wzdłuż promieniowej krawędzi płyty grzbietu.
+    trace_points = [_palm_point(.62, z, -1, .0002 + .0024 + .0003) for z in (-.034, -.042, -.050, -.058, -.066)]
+    trace = _hand_tube("dorsal_trace", trace_points, [.0008] * 5, "mat_player_cyan", root, sides=6)
     palm_detail(trace)
-    cuff_centers = []
-    for index in rings[11]:
-        point = basis.inverted() @ vertices[index]
-        outward = Vector((point.x, point.y, 0)).normalized()
-        cuff_centers.append(point + outward * .0008)
-    cuff = _hand_tube("wrist_light", cuff_centers, [.0011] * 32, "mat_player_cyan", root, closed=True)
-    cuff.data.transform(basis)
-    if side == "L":
-        bm = bmesh.new()
-        bm.from_mesh(cuff.data)
-        bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
-        bm.to_mesh(cuff.data)
-        bm.free()
-    _hand_bone_child(cuff, rig, "forearm", Matrix.Identity(4))
     for name, size, position, mat in (
         ("resonance_mount", (.014, .004, .019), (0, -.025, -.047), "mat_interactive"),
         ("resonance_core", (.0105, .0032, .0145), (0, -.028, -.047), "mat_power_magenta"),
     ):
-        obj = mesh_object(name, bm_ico(1, subdiv=3, scale=size), mat)
+        obj = mesh_object(name, bm_ico(1, subdiv=3 if name == "resonance_core" else 2, scale=size), mat)
         for polygon in obj.data.polygons:
             polygon.use_smooth = True
         palm_detail(obj, position)
@@ -1541,14 +1685,14 @@ def build_player_arm(side: str):
     blade_rotation = Matrix(((0, 0, -1), (0, 1, 0), (1, 0, 0))).to_4x4() @ Matrix.Rotation(math.pi / 2, 4, "Z")
     for name, loc, rotation in (
         ("palm_center", (0, .018, -.049), Matrix.Rotation(math.pi / 2, 4, "X")),
-        ("socket_gun", (.06158, .04108, -.11575), gun_rotation),
+        ("socket_gun", _SOCKET_GUN, gun_rotation),
         ("socket_blade", BLADE_GRIP["socketPosition"], blade_rotation),
-        ("socket_support", (.00420, .03100, -.10321), Matrix.Rotation(math.radians(55), 4, "Y")),
+        ("socket_support", _SOCKET_SUPPORT, Matrix.Rotation(math.radians(55), 4, "Y")),
     ):
         obj = empty(name, size=.012)
         world = HAND_BASIS @ reflection @ Matrix.Translation(loc) @ rotation @ reflection @ HAND_BASIS.inverted()
         _hand_bone_child(obj, rig, "palm", world)
-    _fpp_bracer(rig, basis, side)
+    _fpp_forearm_gear(rig, basis, side)
     bpy.context.view_layer.update()
     return root
 
@@ -4615,6 +4759,52 @@ def attach_hand_item(hand, item, socket_name):
     bpy.context.view_layer.update()
 
 
+def _weapon_grips():
+    """Pole `grip` z danych broni, według nazwy modelu (jak weaponGripOfModel w grze)."""
+    folder = os.path.join(ROOT, "src", "data", "weapons")
+    grips = {}
+    for name in sorted(os.listdir(folder)):
+        with open(os.path.join(folder, name), encoding="utf-8") as source:
+            data = json.load(source)
+        if data.get("model") and data.get("grip"):
+            grips.setdefault(data["model"], data["grip"])
+    return grips
+
+
+def _grip_matrix(offset, rotation=None):
+    """Macierz Three.js: przesunięcie i Euler XYZ (R = Rx Ry Rz), osie glTF -> Blender."""
+    x, y, z = rotation or (0, 0, 0)
+    local = (Matrix.Translation(offset) @ Matrix.Rotation(x, 4, "X") @ Matrix.Rotation(y, 4, "Y")
+             @ Matrix.Rotation(z, 4, "Z"))
+    return HAND_BASIS @ local @ HAND_BASIS.inverted()
+
+
+def _hold_weapon(item, model):
+    """Prawa dłoń na `socket_gun` i dłoń podpierająca na `support`, jak FppBlaster (broń w początku)."""
+    grip = _weapon_grips().get(model, {})
+    bpy.context.view_layer.update()
+    right = build_player_arm("R")
+    hand_pose(right, grip.get("pose", "gripGun"))
+    socket = hand_object(right, "socket_gun").matrix_world.copy()
+    right.matrix_world = item.matrix_world @ _grip_matrix(grip.get("offset", (0, 0, 0)),
+                                                          grip.get("rotation")) @ socket.inverted()
+    support = hand_object(item, "support")
+    two = (HAND_BASIS.inverted() @ support.matrix_world.translation).z < -.15
+    left = build_player_arm("L")
+    hand_pose(left, grip.get("support", {}).get("pose", "support"))
+    socket = hand_object(left, "socket_support").matrix_world.copy()
+    place = support.matrix_world.copy()
+    if two:
+        # TWO_HAND_SUPPORT_FORWARD, _YAW, _PITCH z fppBlaster.ts (osie glTF węzła).
+        place = place @ (HAND_BASIS @ (Matrix.Translation((0, 0, -.08)) @ Matrix.Rotation(-1.4, 4, "Y")
+                                       @ Matrix.Rotation(.8, 4, "X")) @ HAND_BASIS.inverted())
+    if "support" in grip:
+        place = place @ _grip_matrix(grip["support"]["offset"], grip["support"].get("rotation"))
+    left.matrix_world = place @ socket.inverted()
+    bpy.context.view_layer.update()
+    return right, left, two
+
+
 def render_hand_previews():
     for side in ("R", "L"):
         reset_scene()
@@ -4624,6 +4814,10 @@ def render_hand_previews():
         if side == "R":
             hand_preview("hand_relaxed_detail.png", target=(.008, 0, -.060),
                          direction=(.25, -1, -.4), span=.29)
+            # Zbliżenia: grzbiet z płytami, wnętrze dłoni z kciukiem, nadgarstek z mankietem.
+            hand_preview("hand_dorsal_detail.png", target=(0, 0, -.04), direction=(.05, -1, -.1), span=.30)
+            hand_preview("hand_palm_detail.png", target=(0, .01, -.07), direction=(.1, 1, -.25), span=.26)
+            hand_preview("hand_wrist_detail.png", target=(0, 0, .04), direction=(.6, -.8, -.2), span=.24)
     for pose in ("open", "fist"):
         reset_scene()
         right = build_player_arm("R")
@@ -4637,42 +4831,55 @@ def render_hand_previews():
         if pose == "fist":
             hand_preview("hand_fist_inner.png", target=(0, .02, -.06),
                          direction=(.10, 1, -.4), span=.42)
-    for name, builder, pose, socket in (
-        ("blade", build_plasma_blade, "gripBlade", "socket_blade"),
-        ("pistol", build_pistol, "gripGun", "socket_gun"),
-        ("pistol_fire", build_pistol, "gripGunFire", "socket_gun"),
-        ("blaster", build_blaster, "gripGun", "socket_gun"),
-        ("rifle", build_rifle, "gripGun", "socket_gun"),
-    ):
+            right.location.x = left.location.x = 0
+            left.hide_render = True
+            for child in left.children_recursive:
+                child.hide_render = True
+            bpy.context.view_layer.update()
+            hand_preview("hand_fist_side.png", target=(0, .01, -.06), direction=(1, .1, -.2), span=.22)
+            hand_preview("hand_fist_front.png", target=(0, 0, -.08), direction=(.15, -.3, -1), span=.2)
+    reset_scene()
+    right = build_player_arm("R")
+    hand_pose(right, "gripBlade")
+    attach_hand_item(right, build_plasma_blade(), "socket_blade")
+    hand_preview("hand_grip_blade.png", target=(0.01, 0.01, 0.035), direction=(0.9, -0.75, -0.5), span=0.65)
+    hand_preview("hand_grip_blade_inner.png", target=(0, 0.03, -0.1), direction=(-0.4, 1, -0.35), span=0.32)
+
+    # Broń palna: chwyt dopasowany do modelu (pole `grip` w src/data/weapons/*.json), jak FppBlaster.
+    for model, builder in (("pistol", build_pistol), ("blaster", build_blaster), ("rifle", build_rifle),
+                           ("scatter", build_scatter), ("sniper_rifle", build_sniper_rifle),
+                           ("beam", build_beam), ("emp_launcher", build_emp_launcher)):
         reset_scene()
-        right = build_player_arm("R")
-        hand_pose(right, pose)
         item = builder()
-        attach_hand_item(right, item, socket)
-        if name == "rifle":
-            left = build_player_arm("L")
-            hand_pose(left, "support")
-            support = hand_object(item, "support")
-            socket_left = hand_object(left, "socket_support")
-            left.matrix_world = support.matrix_world @ socket_left.matrix_world.inverted()
-            bpy.context.view_layer.update()
-        hand_preview(f"hand_grip_{name}.png", target=(0.01, 0.01, -0.18 if name == "rifle" else 0.035),
-                     direction=(0.9, -0.75, -0.5), span=0.65 if name != "rifle" else 1.22)
-        if name == "blade":
-            hand_preview("hand_grip_blade_inner.png", target=(0, 0.03, -0.1),
-                         direction=(-0.4, 1, -0.35), span=0.32)
-        if name == "rifle":
-            target = HAND_BASIS.inverted() @ support.matrix_world.translation
-            hand_preview("hand_support_rifle.png", target=target,
-                         direction=(-0.6, 0.9, -0.3), span=0.34)
-        if name == "pistol":
-            hand_preview("hand_grip_pistol_inner.png", target=(0.01, 0.025, -0.08),
-                         direction=(-0.6, 1, -0.5), span=0.30)
-            socket = hand_object(right, "socket_gun")
-            right.matrix_world = (Matrix.Translation(HAND_BASIS @ Vector((0.22, -0.24, -0.45)))
-                                  @ socket.matrix_world.to_quaternion().inverted().to_matrix().to_4x4())
-            bpy.context.view_layer.update()
+        right, left, two = _hold_weapon(item, model)
+        aim = HAND_BASIS.inverted() @ hand_object(right, "palm_center").matrix_world.translation
+        if two:
+            hand_preview(f"hand_grip_{model}.png", target=(0.01, 0.01, -0.18), direction=(0.9, -0.75, -0.5),
+                         span=1.22)
+            target = HAND_BASIS.inverted() @ hand_object(left, "palm_center").matrix_world.translation
+            hand_preview(f"hand_support_{model}.png", target=target, direction=(.9, -.45, .25), span=.30)
+            hand_preview(f"hand_support_{model}_below.png", target=target, direction=(-.4, -1, .35), span=.30)
+        else:
+            hand_preview(f"hand_grip_{model}.png", target=(0.01, 0.01, 0.035), direction=(0.9, -0.75, -0.5),
+                         span=0.65)
+        hand_preview(f"hand_grip_{model}_detail.png", target=aim, direction=(-1, .25, .2), span=.24)
+        if model == "pistol":
+            hand_preview("hand_grip_pistol_inner.png", target=aim, direction=(-0.6, 1, -0.5), span=0.30)
+            hand_pose(right, _weapon_grips()[model]["firePose"])
+            hand_preview("hand_grip_pistol_fire.png", target=aim, direction=(-1, .25, .2), span=.24)
+            hand_pose(right, _weapon_grips()[model]["pose"])
+        # Kadr gry: POSE / TWO_HAND_POSE z fppBlaster.ts (Euler YXZ), kamera 70° 16:9.
+        pos, rot = ((.15, -.27, -.45), (.1, .11, -.15)) if two else ((.23, -.17, -.41), (.08, .15, -.04))
+        frame = HAND_BASIS @ (Matrix.Translation(pos) @ Matrix.Rotation(rot[1], 4, "Y")
+                              @ Matrix.Rotation(rot[0], 4, "X") @ Matrix.Rotation(rot[2], 4, "Z")) @ HAND_BASIS.inverted()
+        for obj in (item, right, left):
+            if obj is not None:
+                obj.matrix_world = frame @ obj.matrix_world
+        bpy.context.view_layer.update()
+        hand_preview(f"hand_fpp_{model}.png", fpp=True)
+        if model == "pistol":
             hand_preview("hand_fpp_view.png", fpp=True)
+            hand_preview("hand_fpp_view_detail.png", target=(.20, -.22, -.40), direction=(-.2, .25, .45), span=.26)
 
     # The same item-space socket and YXZ camera pose as FppBlade, including the mirrored twin.
     for name, builder in (("plasmaBlade", build_plasma_blade),

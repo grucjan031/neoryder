@@ -20,5 +20,15 @@
       "stacks": 2
     }
   ],
-  "model": "emp_launcher"
+  "model": "emp_launcher",
+  "grip": {
+    "offset": [0.0012, -0.03, -0.066],
+    "pose": "gripEmp",
+    "firePose": "gripEmpFire",
+    "support": {
+      "offset": [0.0093, -0.0, -0.0374],
+      "pose": "supportEmp",
+      "rotation": [-0.0, -0.3, 0.0]
+    }
+  }
 }
