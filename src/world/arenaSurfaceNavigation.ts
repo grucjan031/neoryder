@@ -5,7 +5,7 @@ type Block = RoomDefinition['blocks'][number];
 type Cell = { position: Vec3; neighbors: number[]; surface: Block };
 const EPSILON = 1e-5;
 
-/** Warstwy płyt i ramp X; obwiednie przeszkód uwzględniają wysokość kapsuły. */
+/** Warstwy płyt i ramp osiowych; obwiednie przeszkód uwzględniają wysokość kapsuły. */
 export class ArenaSurfaceNavigation {
   private readonly cells: Cell[] = [];
   private readonly columns = new Map<number, number[]>();
@@ -24,6 +24,41 @@ export class ArenaSurfaceNavigation {
       );
     this.rise = config.navigationMaxRiseM;
     const surfaces = room.blocks.filter((b) => b.walkable);
+    const bucketSize = config.batchCellM;
+    const margin = config.navigationClearanceM;
+    const buckets = new Map<string, { blocks: Block[]; surfaces: Block[] }>();
+    for (const block of room.blocks) {
+      const yaw = block.rotation?.y ?? 0;
+      const halfX =
+        (Math.abs(Math.cos(yaw)) * block.size.x +
+          Math.abs(Math.sin(yaw)) * block.size.z) /
+          2 +
+        margin;
+      const halfZ =
+        (Math.abs(Math.sin(yaw)) * block.size.x +
+          Math.abs(Math.cos(yaw)) * block.size.z) /
+          2 +
+        margin;
+      for (
+        let x = Math.floor((block.position.x - halfX) / bucketSize);
+        x <= Math.floor((block.position.x + halfX) / bucketSize);
+        x++
+      )
+        for (
+          let z = Math.floor((block.position.z - halfZ) / bucketSize);
+          z <= Math.floor((block.position.z + halfZ) / bucketSize);
+          z++
+        ) {
+          const key = `${x},${z}`;
+          let bucket = buckets.get(key);
+          if (!bucket) {
+            bucket = { blocks: [], surfaces: [] };
+            buckets.set(key, bucket);
+          }
+          bucket.blocks.push(block);
+          if (block.walkable) bucket.surfaces.push(block);
+        }
+    }
     this.firstZ = Math.floor(
       Math.min(...surfaces.map((b) => b.position.z - b.size.z / 2)) / this.cell,
     );
@@ -35,18 +70,18 @@ export class ArenaSurfaceNavigation {
       this.firstZ +
       1;
     for (const b of surfaces) {
-      if (b.rotation?.x || b.rotation?.y)
-        throw new Error('Powierzchnia nawigacji obsługuje wyłącznie obrót Z.');
-      const angle = b.rotation?.z ?? 0;
-      const halfX = (b.size.x * Math.cos(angle)) / 2;
+      if (b.rotation?.y || (b.rotation?.x && b.rotation?.z))
+        throw new Error('Powierzchnia nawigacji wymaga rampy w osi X lub Z.');
+      const halfX = (b.size.x * Math.cos(b.rotation?.z ?? 0)) / 2;
+      const halfZ = (b.size.z * Math.cos(b.rotation?.x ?? 0)) / 2;
       for (
         let x = Math.floor((b.position.x - halfX) / this.cell);
         (x + 0.5) * this.cell <= b.position.x + halfX;
         x++
       ) {
         for (
-          let z = Math.floor((b.position.z - b.size.z / 2) / this.cell);
-          (z + 0.5) * this.cell <= b.position.z + b.size.z / 2;
+          let z = Math.floor((b.position.z - halfZ) / this.cell);
+          (z + 0.5) * this.cell <= b.position.z + halfZ;
           z++
         ) {
           const p = {
@@ -57,7 +92,9 @@ export class ArenaSurfaceNavigation {
           const y = this.top(b, p.x, p.z);
           if (y === undefined) continue;
           p.y = y;
-          const margin = config.navigationClearanceM;
+          const nearby = buckets.get(
+            `${Math.floor(p.x / bucketSize)},${Math.floor(p.z / bucketSize)}`,
+          )!;
           if (
             [
               [-margin, 0],
@@ -66,7 +103,7 @@ export class ArenaSurfaceNavigation {
               [0, margin],
             ].some(
               ([dx, dz]) =>
-                !surfaces.some((s) => {
+                !nearby.surfaces.some((s) => {
                   const top = this.top(s, p.x + dx!, p.z + dz!);
                   return top !== undefined && Math.abs(top - y) <= this.rise;
                 }),
@@ -74,7 +111,7 @@ export class ArenaSurfaceNavigation {
           )
             continue;
           if (
-            room.blocks.some((obstacle) => {
+            nearby.blocks.some((obstacle) => {
               if (obstacle === b) return false;
               const top = this.top(obstacle, p.x, p.z, margin);
               if (top === undefined) return false;
@@ -85,7 +122,9 @@ export class ArenaSurfaceNavigation {
               )
                 return false;
               const bottom =
-                top - obstacle.size.y / Math.cos(obstacle.rotation?.z ?? 0);
+                top -
+                obstacle.size.y /
+                  Math.cos(obstacle.rotation?.z || obstacle.rotation?.x || 0);
               return (
                 top > y + EPSILON && bottom < y + config.navigationHeadroomM!
               );
@@ -136,18 +175,21 @@ export class ArenaSurfaceNavigation {
       [a, b],
       [b, a],
     ]) {
-      const angle = ramp!.surface.rotation?.z ?? 0;
+      const surface = ramp!.surface;
+      const axis = surface.rotation?.x ? 'z' : 'x';
+      const angle = surface.rotation?.x || surface.rotation?.z;
       if (!angle) continue;
-      const half = (ramp!.surface.size.x * Math.cos(angle)) / 2;
-      // Zmiana powierzchni wyłącznie na końcach rampy, nigdy przez boczny próg.
-      if (Math.abs(other!.position.x - ramp!.surface.position.x) < half)
+      const half = (surface.size[axis] * Math.cos(angle)) / 2;
+      // Wejście na rampę tylko przez jej końce.
+      if (Math.abs(other!.position[axis] - surface.position[axis]) < half)
         return false;
     }
     return true;
   }
 
   private top(b: Block, x: number, z: number, margin = 0): number | undefined {
-    const angle = b.rotation?.z ?? 0;
+    const angleX = b.rotation?.x ?? 0;
+    const angleZ = b.rotation?.z ?? 0;
     // Obrócone wokół Y rekwizyty: konserwatywna obwiednia, nigdy powierzchnia.
     const yaw = b.rotation?.y ?? 0;
     const halfX =
@@ -159,14 +201,15 @@ export class ArenaSurfaceNavigation {
         Math.abs(Math.cos(yaw)) * b.size.z) /
       2;
     if (
-      Math.abs(x - b.position.x) > halfX * Math.cos(angle) + margin ||
-      Math.abs(z - b.position.z) > halfZ + margin
+      Math.abs(x - b.position.x) > halfX * Math.cos(angleZ) + margin ||
+      Math.abs(z - b.position.z) > halfZ * Math.cos(angleX) + margin
     )
       return undefined;
     return (
       b.position.y +
-      Math.tan(angle) * (x - b.position.x) +
-      b.size.y / (2 * Math.cos(angle))
+      Math.tan(angleZ) * (x - b.position.x) -
+      Math.tan(angleX) * (z - b.position.z) +
+      b.size.y / (2 * Math.cos(angleX || angleZ))
     );
   }
   private key(p: Vec3): number {

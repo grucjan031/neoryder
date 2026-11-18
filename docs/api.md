@@ -2078,3 +2078,9 @@ promień XZ i wysokość. `SceneAtmosphere` przyjmuje obwiednię oraz kamerę
 perspektywiczną i przywraca projekcję kamery przy zwalnianiu sceny.
 `query('horizon')` zwraca bieżące parametry projekcji, panoramy i mgły.
 `RoomScene.render` może otrzymać pozycję i obrót wolnej kamery debug.
+
+### Tafla wody dużej areny
+
+Opcjonalne `arena.water: { shoreZ, y, color }` przekazuje do `SceneAtmosphere`
+poziom i kolor płaszczyzny od `shoreZ` w stronę dodatniego Z aż do panoramy.
+Tafla jest kosmetyczna. Dno, nabrzeża i zejścia opisują bloki pokoju.

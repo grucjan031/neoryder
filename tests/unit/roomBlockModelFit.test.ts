@@ -1,6 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
-import { Box3, Vector3, type BufferGeometry, type Group } from 'three';
+import {
+  Box3,
+  Euler,
+  Matrix4,
+  Vector3,
+  type BufferGeometry,
+  type Group,
+} from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createRoomTest } from '../../src/scenes/roomTest';
 import { initPhysics } from '../../src/physics';
@@ -83,14 +90,27 @@ it.each(rooms.map((room) => room.id))(
           continue;
         }
         const extent = box.getSize(new Vector3());
+        const rotation = block.rotation;
+        const expected = new Box3()
+          .setFromCenterAndSize(
+            new Vector3(),
+            new Vector3(size.x, size.y, size.z),
+          )
+          .applyMatrix4(
+            new Matrix4().makeRotationFromEuler(
+              new Euler(rotation?.x ?? 0, rotation?.y ?? 0, rotation?.z ?? 0),
+            ),
+          )
+          .getSize(new Vector3());
         const tolerance = STRETCH.has(model)
           ? STRETCH_TOLERANCE
           : PROP_TOLERANCE;
         for (const axis of ['x', 'y', 'z'] as const) {
-          const delta = Math.abs(extent[axis] - size[axis]) / size[axis];
+          const delta =
+            Math.abs(extent[axis] - expected[axis]) / expected[axis];
           if (delta > tolerance)
             failures.push(
-              `${label}: oś ${axis} model ${extent[axis].toFixed(3)} m, blok ${size[axis]} m (${(delta * 100).toFixed(0)}%)`,
+              `${label}: oś ${axis} model ${extent[axis].toFixed(3)} m, blok ${expected[axis].toFixed(3)} m (${(delta * 100).toFixed(0)}%)`,
             );
         }
       }

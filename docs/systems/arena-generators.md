@@ -44,7 +44,7 @@ Jednostki: metry i radiany. `vec(x, y = 0, z = 0)` tworzy pozycję XYZ.
 | `decor(model, position, rotationY = 0, {scale?})`                                       | Model bez kolizji, zapisywany z polem `yaw`; pozycja przy podstawie modelu.                                                            |
 | `light(position, color?, intensity?, range?, {flicker?})`                               | Światło; domyślnie ciepła biel, intensywność 30, zasięg 15 m.                                                                          |
 | `spawn(position)`                                                                       | Dodaje zwykły spawn XZ. Inna wysokość niż start gracza powoduje błąd.                                                                  |
-| `point(id, position, radiusM = 4)`                                                      | Dodaje unikalny punkt A/B/C. D/E są zablokowane do rozszerzenia schematu.                                                              |
+| `point(id, position, radiusM = 4)`                                                      | Dodaje unikalny punkt A–E.                                                                                                               |
 | `zone(name, rect, kind)`                                                                | Metadane raportu i SVG; `open`, `dense`, `interior`, `high`, `low`.                                                                    |
 | `arenaMeta(obj)`                                                                        | Scala pola `arena`, np. parametry nawigacji i osobną pulę `spawnPoints`.                                                               |
 | `roomMeta(obj)`                                                                         | Ustawia np. `playerSpawn`, `doors`, `hazards`, `rainShelters`, `maxAlive`, oprawę. Nie nadpisuje id, geometrii, arena ani spawnPoints. |
@@ -139,17 +139,16 @@ nie ma automatycznego ignorowania takich zgłoszeń.
 
 Ograniczenia zastanego schematu/silnika, pozostawione do pracy integratora:
 
-- `arena.points` ma dokładnie A/B/C; dodanie D/E przez `point` zgłasza błąd.
-  Rzut SVG już potrafi wyświetlić A–E z dostarczonych danych.
+- `arena.points` ma od trzech do pięciu kolejnych punktów od A.
 - Spawny są XZ; brak wysokości i wskazania warstwy. Domyślna pula trafia do
   `room.spawnPoints`; osobną pulę trybu można podać przez `arenaMeta`.
 - `validateLayout` w roomSchema używa płaskich, nieobróconych obwiedni na
   wysokości gracza. Nie potwierdza pięter; bryły obrócone mogą powodować
   konserwatywne odrzucenie poprawnej geometrii. Osiowe ściany generatora
   zapisują właściwe size XZ bez obrotu, co zachowuje tę walidację.
-- `ArenaSurfaceNavigation` przyjmuje wyłącznie obrót Z powierzchni. Rampa X
-  działa w obu kierunkach; rampa Z/ukośna i obrócone schody są poprawnymi
-  colliderami/renderem, ale generują ostrzeżenie i wymagają rozszerzenia AI.
+- `ArenaSurfaceNavigation` obsługuje rampy osiowe X i Z w obu kierunkach.
+  Rampy ukośne w rzucie XZ oraz ukośne schody mają poprawny collider i
+  render, ale generują ostrzeżenie o braku obsługi nawigacji.
 - Nachylenie kontrolera to 45°, autostep 0,35 m / minimalna szerokość 0,2 m
   (kopię tych limitów w narzędziu chroni test zgodności z tuning.ts).
   Rampa ostrzega również o wzniosie >navigationMaxRiseM na komórkę.

@@ -99,7 +99,13 @@ describe('biblioteka generatorów aren', () => {
     });
   });
 
-  it.each([vec(20, 4, 0), vec(-20, 4, 0), vec(0, 4, 20), vec(12, -3, 16)])(
+  it.each([
+    vec(20, 4, 0),
+    vec(-20, 4, 0),
+    vec(0, 4, 20),
+    vec(0, 4, -20),
+    vec(12, -3, 16),
+  ])(
     'rampa od (0,0,0) do %o ma oba końce górnej płaszczyzny dokładnie na podłodze',
     (to) => {
       const arena = blank(),
@@ -108,7 +114,9 @@ describe('biblioteka generatorów aren', () => {
       const result = p.ramp({ from, to, width: 4 });
       const block = result.blocks[0]!;
       const ends = [-1, 1].map((sign) =>
-        worldPoint(block, (sign * block.size.x) / 2, block.size.y / 2, 0),
+        to.x === 0
+          ? worldPoint(block, 0, block.size.y / 2, (sign * block.size.z) / 2)
+          : worldPoint(block, (sign * block.size.x) / 2, block.size.y / 2, 0),
       );
       for (const endpoint of [from, to])
         expect(
@@ -122,7 +130,7 @@ describe('biblioteka generatorów aren', () => {
       expect(Math.abs(result.angle)).toBeCloseTo(
         Math.atan2(Math.abs(to.y), Math.hypot(to.x, to.z)),
       );
-      if (to.z)
+      if (to.x && to.z)
         expect(arena.metadata.warnings.map((w) => w.code)).toContain(
           'navigation-rotation',
         );
@@ -386,13 +394,17 @@ describe('biblioteka generatorów aren', () => {
         ],
       },
     };
-    // Sam rzut potrafi wyświetlić przyszłe punkty D/E, bez rozszerzania kontraktu gry.
+    // Rzut pokazuje też punkty D i E.
     expect(arenaSvg(extended as RoomDefinition)).toContain('>E<title>');
   });
 
   it('ograniczenia schematu są jawne', () => {
     const arena = blank();
-    expect(() => arena.point('D', vec(10, 0, 10))).toThrow('roomSchema');
+    arena.point('D', vec(10, 0, 10)).point('E', vec(20, 0, 10));
+    expect(arena.toRoom().arena?.points.map((point) => point.id)).toEqual([
+      'D',
+      'E',
+    ]);
     expect(() => arena.spawn(vec(10, 4, 10))).toThrow('wysokości');
   });
 });

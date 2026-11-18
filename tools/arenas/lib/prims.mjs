@@ -134,14 +134,17 @@ export function ramp(
   const angle = Math.atan2(rise, direction.run);
   // Rampa wzdłuż ujemnego X również może mieć sam obrót Z.
   const reverseX = Math.abs(direction.dz) < EPS && direction.dx < 0;
+  const alongZ = Math.abs(direction.dx) < EPS;
   const rotation = vec(
-    0,
-    reverseX ? 0 : direction.yaw,
-    reverseX ? -angle : angle,
+    alongZ ? -Math.sign(direction.dz) * angle : 0,
+    reverseX || alongZ ? 0 : direction.yaw,
+    alongZ ? 0 : reverseX ? -angle : angle,
   );
   const normal = rotate(vec(0, 1, 0), rotation);
   const block = arena.block({
-    size: vec(Math.hypot(direction.run, rise), thickness, width),
+    size: alongZ
+      ? vec(width, thickness, Math.hypot(direction.run, rise))
+      : vec(Math.hypot(direction.run, rise), thickness, width),
     position: vec(
       (from.x + to.x) / 2 - (normal.x * thickness) / 2,
       (from.y + to.y) / 2 - (normal.y * thickness) / 2,
@@ -168,7 +171,7 @@ export function ramp(
   if (Math.abs(rotation.y) > EPS)
     arena.warn(
       'navigation-rotation',
-      'ArenaSurfaceNavigation obsługuje tylko obrót Z powierzchni; rampa poza osią X wymaga rozszerzenia silnika.',
+      'ArenaSurfaceNavigation obsługuje rampy w osi X lub Z; rampa ukośna jest trasą dla gracza.',
     );
   return {
     from: { ...from },
@@ -206,10 +209,13 @@ export function stairs(
   for (let i = 0; i < count; i++) {
     const h = (i + 1) * actualRise;
     // Osobne bryły stopni bez szczelin; ostatni wierzch dokładnie na to.y.
-    const yaw = Math.abs(dir.dz) < EPS ? 0 : dir.yaw;
+    const alongZ = Math.abs(dir.dx) < EPS;
+    const yaw = alongZ || Math.abs(dir.dz) < EPS ? 0 : dir.yaw;
     blocks.push(
       arena.block({
-        size: vec(actualDepth, actualRise, width),
+        size: alongZ
+          ? vec(width, actualRise, actualDepth)
+          : vec(actualDepth, actualRise, width),
         position: vec(
           start.x + dir.dx * (i + 0.5) * actualDepth,
           start.y + h - actualRise / 2,

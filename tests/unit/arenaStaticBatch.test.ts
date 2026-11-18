@@ -25,6 +25,8 @@ import * as staticBatch from '../../src/render/staticBatch';
 
 afterEach(() => vi.restoreAllMocks());
 
+const loaded = new Set<string>();
+
 function meshCount(root: Object3D): number {
   let count = 0;
   root.traverse((o) => {
@@ -33,10 +35,14 @@ function meshCount(root: Object3D): number {
   return count;
 }
 
-it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
+it.each([
+  'arenaContainerPort',
+  'arenaOverpass',
+  'arenaRooftops',
+  'arenaFloodedDocks',
+])(
   '%s: jedno scalanie w komórkach 20 m, kontenery jako instancje, rzeczywiste GLB',
   async (id) => {
-    const loaded = new Set<string>();
     const warnings = vi.spyOn(console, 'warn');
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
       async (url) => {
@@ -175,7 +181,9 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
               ...(room.decor ?? []).map((d) => d.model),
             ]),
           ])
-        expect(loaded.has(`/assets/models/city/${model}.glb`)).toBe(true);
+        expect(loaded.has(`/assets/models/city/${model}.glb`), model).toBe(
+          true,
+        );
       expect(
         warnings.mock.calls.filter(([message]) =>
           String(message).includes('Nieznany'),

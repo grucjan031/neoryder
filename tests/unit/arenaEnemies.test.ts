@@ -17,88 +17,99 @@ import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
 it.each(
-  ['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'].flatMap((id) =>
-    ['assaulter', 'gunner'].map((kind) => [id, kind] as const),
-  ),
-)('%s: %s dociera ze wszystkich spawnów do A/B/C', async (id, kind) => {
-  const room = roomDefinitions.get(id)!;
-  const rapier = await initPhysics();
-  const bus = new EventBus();
-  const entities = new EntityRegistry(bus);
-  const damage = new DamageSystem(bus, entities);
-  const hurtboxes = new Hurtboxes();
-  const world = new rapier.World({ x: 0, y: tuning.physics.gravity, z: 0 });
-  for (const b of room.blocks) {
-    const r = b.rotation;
-    world.createCollider(
-      rapier.ColliderDesc.cuboid(b.size.x / 2, b.size.y / 2, b.size.z / 2)
-        .setTranslation(b.position.x, b.position.y, b.position.z)
-        .setRotation(
-          new Quaternion().setFromEuler(
-            new Euler(r?.x ?? 0, r?.y ?? 0, r?.z ?? 0),
-          ),
-        )
-        .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
-    );
-  }
-  const projectiles = new ProjectileSystem(
-    world,
-    entities,
-    hurtboxes,
-    damage,
-    bus,
-    tuning,
-  );
-  const target = {
-    id: entities.create('player', 'player'),
-    position: { x: 200, y: 1, z: 200 },
-  };
-  const manager = new EnemyManager(
-    { bus, rng: new Rng('port-ai'), tuning },
-    {
+  [
+    'arenaContainerPort',
+    'arenaOverpass',
+    'arenaRooftops',
+    'arenaFloodedDocks',
+  ].flatMap((id) => ['assaulter', 'gunner'].map((kind) => [id, kind] as const)),
+)(
+  '%s: %s dociera do wszystkich punktów',
+  async (id, kind) => {
+    const room = roomDefinitions.get(id)!;
+    const docks = id === 'arenaFloodedDocks';
+    const rapier = await initPhysics();
+    const bus = new EventBus();
+    const entities = new EntityRegistry(bus);
+    const damage = new DamageSystem(bus, entities);
+    const hurtboxes = new Hurtboxes();
+    const world = new rapier.World({ x: 0, y: tuning.physics.gravity, z: 0 });
+    for (const b of room.blocks) {
+      const r = b.rotation;
+      world.createCollider(
+        rapier.ColliderDesc.cuboid(b.size.x / 2, b.size.y / 2, b.size.z / 2)
+          .setTranslation(b.position.x, b.position.y, b.position.z)
+          .setRotation(
+            new Quaternion().setFromEuler(
+              new Euler(r?.x ?? 0, r?.y ?? 0, r?.z ?? 0),
+            ),
+          )
+          .setCollisionGroups(interactionGroups(CollisionGroup.World, 0xffff)),
+      );
+    }
+    const projectiles = new ProjectileSystem(
       world,
       entities,
-      damage,
       hurtboxes,
-      projectiles,
-      getTarget: () => target,
-    },
-  );
-  const navigation = new ArenaNavigation(room);
-  world.step();
-  try {
-    for (const spawn of room.spawnPoints) {
-      for (const point of room.arena!.points) {
-        const enemy = manager.spawn(kind, { ...spawn, y: 0 });
-        let arrived = false;
-        for (let i = 0; i < 7200; i++) {
-          if (
-            Math.hypot(
-              enemy.current.position.x - point.position.x,
-              enemy.current.position.z - point.position.z,
-            ) < point.radiusM &&
-            Math.abs(enemy.current.position.y - point.position.y) < 0.5
-          ) {
-            arrived = true;
-            break;
+      damage,
+      bus,
+      tuning,
+    );
+    const target = {
+      id: entities.create('player', 'player'),
+      position: { x: docks ? 400 : 200, y: 1, z: docks ? 400 : 200 },
+    };
+    const manager = new EnemyManager(
+      { bus, rng: new Rng('port-ai'), tuning },
+      {
+        world,
+        entities,
+        damage,
+        hurtboxes,
+        projectiles,
+        getTarget: () => target,
+      },
+    );
+    const navigation = new ArenaNavigation(room);
+    world.step();
+    try {
+      const spawns = docks
+        ? room.spawnPoints.filter((_, index) => index % 4 === 0)
+        : room.spawnPoints;
+      for (const spawn of spawns) {
+        for (const point of room.arena!.points) {
+          const enemy = manager.spawn(kind, { ...spawn, y: 0 });
+          let arrived = false;
+          for (let i = 0; i < (docks ? 18_000 : 7200); i++) {
+            if (
+              Math.hypot(
+                enemy.current.position.x - point.position.x,
+                enemy.current.position.z - point.position.z,
+              ) < point.radiusM &&
+              Math.abs(enemy.current.position.y - point.position.y) < 0.5
+            ) {
+              arrived = true;
+              break;
+            }
+            enemy.moveGoal = navigation.next(
+              enemy.current.position,
+              point.position,
+            );
+            manager.step(SIM_DT);
+            world.step();
           }
-          enemy.moveGoal = navigation.next(
-            enemy.current.position,
-            point.position,
-          );
-          manager.step(SIM_DT);
-          world.step();
+          expect(
+            arrived,
+            `${kind}: ${JSON.stringify(spawn)} → ${point.id}, pozycja ${JSON.stringify(enemy.current.position)} cel ${JSON.stringify(enemy.moveGoal)}`,
+          ).toBe(true);
+          enemy.dispose();
         }
-        expect(
-          arrived,
-          `${kind}: ${JSON.stringify(spawn)} → ${point.id}, pozycja ${JSON.stringify(enemy.current.position)}`,
-        ).toBe(true);
-        enemy.dispose();
       }
+    } finally {
+      manager.dispose();
+      projectiles.dispose();
+      world.free();
     }
-  } finally {
-    manager.dispose();
-    projectiles.dispose();
-    world.free();
-  }
-});
+  },
+  60_000,
+);
