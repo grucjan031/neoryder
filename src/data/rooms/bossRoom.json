@@ -95,59 +95,172 @@
     },
     {
       "size": {
-        "x": 2,
+        "x": 1.2,
         "y": 4,
-        "z": 2
+        "z": 1.2
       },
       "position": {
-        "x": -8,
+        "x": -9.5,
         "y": 2,
-        "z": -6
+        "z": -7.2
       },
-      "model": "pillar",
       "material": "trim"
     },
     {
       "size": {
-        "x": 2,
+        "x": 1.2,
         "y": 4,
-        "z": 2
+        "z": 1.2
       },
       "position": {
-        "x": 8,
+        "x": -9.5,
         "y": 2,
-        "z": -6
+        "z": 5.2
       },
-      "model": "pillar",
       "material": "trim"
     },
     {
       "size": {
-        "x": 2,
-        "y": 4,
-        "z": 2
+        "x": 3.5,
+        "y": 0.6,
+        "z": 14
       },
       "position": {
-        "x": -8,
-        "y": 2,
-        "z": 4
+        "x": -9.5,
+        "y": 4.3,
+        "z": -1
       },
-      "model": "pillar",
       "material": "trim"
     },
     {
       "size": {
-        "x": 2,
+        "x": 1.2,
         "y": 4,
-        "z": 2
+        "z": 1.2
       },
       "position": {
-        "x": 8,
+        "x": 9.5,
         "y": 2,
-        "z": 4
+        "z": -7.2
       },
-      "model": "pillar",
       "material": "trim"
+    },
+    {
+      "size": {
+        "x": 1.2,
+        "y": 4,
+        "z": 1.2
+      },
+      "position": {
+        "x": 9.5,
+        "y": 2,
+        "z": 5.2
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 3.5,
+        "y": 0.6,
+        "z": 14
+      },
+      "position": {
+        "x": 9.5,
+        "y": 4.3,
+        "z": -1
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 9,
+        "y": 3.6,
+        "z": 0.25
+      },
+      "position": {
+        "x": 0,
+        "y": 1.8,
+        "z": -13.2
+      },
+      "material": "glass"
+    },
+    {
+      "size": {
+        "x": 9.4,
+        "y": 0.4,
+        "z": 0.5
+      },
+      "position": {
+        "x": 0,
+        "y": 3.8,
+        "z": -13.2
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.8,
+        "y": 2.8,
+        "z": 0.6
+      },
+      "position": {
+        "x": -2.5,
+        "y": 1.4,
+        "z": -13.65
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 1.8,
+        "y": 2.8,
+        "z": 0.6
+      },
+      "position": {
+        "x": 2.5,
+        "y": 1.4,
+        "z": -13.65
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 4,
+        "y": 1.2,
+        "z": 1.4
+      },
+      "position": {
+        "x": 0,
+        "y": 0.6,
+        "z": 1.5
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 2.4,
+        "y": 1.2,
+        "z": 1.2
+      },
+      "position": {
+        "x": -5.5,
+        "y": 0.6,
+        "z": -1.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2.4,
+        "y": 1.2,
+        "z": 1.2
+      },
+      "position": {
+        "x": 5.5,
+        "y": 0.6,
+        "z": -1.5
+      },
+      "material": "metal"
     },
     {
       "size": {

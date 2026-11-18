@@ -34,7 +34,7 @@
         "z": 0
       },
       "model": "wall",
-      "material": "facade"
+      "material": "metal"
     },
     {
       "size": {
@@ -48,7 +48,7 @@
         "z": 0
       },
       "model": "wall",
-      "material": "facade"
+      "material": "corrugated"
     },
     {
       "size": {
@@ -62,89 +62,118 @@
         "z": -5.5
       },
       "model": "wall",
-      "material": "facade"
-    },
-    {
-      "size": {
-        "x": 5,
-        "y": 4,
-        "z": 1
-      },
-      "position": {
-        "x": 3.5,
-        "y": 2,
-        "z": -5.5
-      },
-      "model": "wall",
-      "material": "facade"
-    },
-    {
-      "size": {
-        "x": 5,
-        "y": 4,
-        "z": 1
-      },
-      "position": {
-        "x": -3.5,
-        "y": 2,
-        "z": 5.5
-      },
-      "model": "wall",
-      "material": "facade"
-    },
-    {
-      "size": {
-        "x": 5,
-        "y": 4,
-        "z": 1
-      },
-      "position": {
-        "x": 3.5,
-        "y": 2,
-        "z": 5.5
-      },
-      "model": "wall",
-      "material": "facade"
-    },
-    {
-      "size": {
-        "x": 2,
-        "y": 1.2,
-        "z": 1
-      },
-      "position": {
-        "x": -3,
-        "y": 0.6,
-        "z": -1.5
-      },
-      "model": "cover_low",
       "material": "metal"
     },
     {
       "size": {
-        "x": 1,
-        "y": 1,
+        "x": 5,
+        "y": 4,
         "z": 1
       },
       "position": {
         "x": 3.5,
-        "y": 0.5,
-        "z": -2.5
+        "y": 2,
+        "z": -5.5
       },
-      "model": "crate"
+      "model": "wall",
+      "material": "metal"
     },
     {
       "size": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0.5
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -3.5,
+        "y": 2,
+        "z": 5.5
+      },
+      "model": "wall",
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
       },
       "position": {
         "x": 3.5,
-        "y": 0.25,
-        "z": -1.25
+        "y": 2,
+        "z": 5.5
       },
-      "model": "crate_small"
+      "model": "wall",
+      "material": "corrugated"
+    },
+    {
+      "size": {
+        "x": 2.8,
+        "y": 1.1,
+        "z": 1
+      },
+      "position": {
+        "x": -3.2,
+        "y": 0.55,
+        "z": -1.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 2.235,
+        "z": 0.624
+      },
+      "position": {
+        "x": -4.2,
+        "y": 1.1175,
+        "z": 1.8
+      },
+      "model": "city_kiosk",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 2.622,
+        "z": 2.043
+      },
+      "position": {
+        "x": 3.3,
+        "y": 1.311,
+        "z": -3.2
+      },
+      "model": "city_stall",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
+      },
+      "position": {
+        "x": 4,
+        "y": 0.795,
+        "z": 0.4
+      },
+      "model": "city_crates",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.4,
+        "z": 1.005
+      },
+      "position": {
+        "x": 3.8,
+        "y": 0.7,
+        "z": 3.6
+      },
+      "model": "city_generator",
+      "material": "metal"
     },
     {
       "size": {
@@ -241,7 +270,7 @@
   "signs": [
     {
       "kind": "neon",
-      "texture": "implants",
+      "texture": "warsztat",
       "position": {
         "x": -4.9,
         "y": 3.1,
@@ -252,12 +281,12 @@
         "h": 1.2
       },
       "yaw": 1.5708,
-      "tint": "#3d7bff",
+      "tint": "#ffae1a",
       "flicker": 0.15
     },
     {
       "kind": "neon",
-      "texture": "open",
+      "texture": "repair",
       "position": {
         "x": 3.2,
         "y": 3.1,
@@ -518,11 +547,31 @@
     {
       "model": "city_shutter",
       "position": {
+        "x": -3.2,
+        "y": 0,
+        "z": -5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_shutter",
+      "position": {
         "x": 5,
         "y": 0,
         "z": 1.5
       },
       "yaw": -1.5708,
+      "scale": 1
+    },
+    {
+      "model": "city_lantern_string",
+      "position": {
+        "x": 0,
+        "y": 4.1,
+        "z": -2
+      },
+      "yaw": 0,
       "scale": 1
     },
     {

@@ -125,6 +125,179 @@
         "z": -3
       },
       "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
+      },
+      "position": {
+        "x": -6,
+        "y": 0.795,
+        "z": -3
+      },
+      "model": "city_crates",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
+      },
+      "position": {
+        "x": 6,
+        "y": 0.795,
+        "z": 3
+      },
+      "model": "city_crates",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 0.929,
+        "z": 0.51
+      },
+      "position": {
+        "x": 4,
+        "y": 0.4645,
+        "z": 8.5
+      },
+      "model": "city_barrier",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 0.929,
+        "z": 0.51
+      },
+      "position": {
+        "x": -4,
+        "y": 0.4645,
+        "z": -8.5
+      },
+      "model": "city_barrier",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 13
+      },
+      "position": {
+        "x": -16,
+        "y": 8,
+        "z": -7
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 21,
+        "z": 13
+      },
+      "position": {
+        "x": -16,
+        "y": 10.5,
+        "z": 7
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 19,
+        "z": 13
+      },
+      "position": {
+        "x": 16,
+        "y": 9.5,
+        "z": -7
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 15,
+        "z": 13
+      },
+      "position": {
+        "x": 16,
+        "y": 7.5,
+        "z": 7
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 18,
+        "z": 6
+      },
+      "position": {
+        "x": -7.5,
+        "y": 9,
+        "z": -18
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 15,
+        "z": 6
+      },
+      "position": {
+        "x": 7.5,
+        "y": 7.5,
+        "z": -18
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 23,
+        "z": 6
+      },
+      "position": {
+        "x": 0,
+        "y": 11.5,
+        "z": -23
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 15,
+        "z": 6
+      },
+      "position": {
+        "x": -7.5,
+        "y": 7.5,
+        "z": 18
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 18,
+        "z": 6
+      },
+      "position": {
+        "x": 7.5,
+        "y": 9,
+        "z": 18
+      },
+      "material": "facade"
     }
   ],
   "hazards": [

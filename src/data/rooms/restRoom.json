@@ -3,6 +3,20 @@
   "name": "Stacja diagnostyczna",
   "type": "rest",
   "theme": "neonStreet",
+  "rainShelters": [
+    {
+      "position": {
+        "x": 0,
+        "y": 1.7,
+        "z": -0.5
+      },
+      "size": {
+        "x": 10,
+        "y": 3.4,
+        "z": 8
+      }
+    }
+  ],
   "playerSpawn": {
     "x": 0,
     "y": 0,
@@ -34,7 +48,7 @@
         "z": 0
       },
       "model": "wall",
-      "material": "facade"
+      "material": "concrete"
     },
     {
       "size": {
@@ -48,7 +62,7 @@
         "z": 0
       },
       "model": "wall",
-      "material": "facade"
+      "material": "concrete"
     },
     {
       "size": {
@@ -62,7 +76,7 @@
         "z": -5.5
       },
       "model": "wall",
-      "material": "facade"
+      "material": "concrete"
     },
     {
       "size": {
@@ -76,7 +90,7 @@
         "z": -5.5
       },
       "model": "wall",
-      "material": "facade"
+      "material": "concrete"
     },
     {
       "size": {
@@ -90,7 +104,7 @@
         "z": 5.5
       },
       "model": "wall",
-      "material": "facade"
+      "material": "trim"
     },
     {
       "size": {
@@ -104,35 +118,124 @@
         "z": 5.5
       },
       "model": "wall",
-      "material": "facade"
+      "material": "trim"
     },
     {
       "size": {
-        "x": 1,
-        "y": 4,
-        "z": 1
+        "x": 0.8,
+        "y": 3.4,
+        "z": 0.8
       },
       "position": {
-        "x": -3.5,
-        "y": 2,
-        "z": -2.5
+        "x": -4.6,
+        "y": 1.7,
+        "z": -3.5
       },
-      "model": "pillar",
       "material": "concrete"
     },
     {
       "size": {
-        "x": 1,
-        "y": 4,
-        "z": 1
+        "x": 0.8,
+        "y": 3.4,
+        "z": 0.8
       },
       "position": {
-        "x": 3.5,
-        "y": 2,
-        "z": -2.5
+        "x": 4.6,
+        "y": 1.7,
+        "z": -3.5
       },
-      "model": "pillar",
       "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 3.4,
+        "z": 0.8
+      },
+      "position": {
+        "x": -4.6,
+        "y": 1.7,
+        "z": 3.2
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 0.8,
+        "y": 3.4,
+        "z": 0.8
+      },
+      "position": {
+        "x": 4.6,
+        "y": 1.7,
+        "z": 3.2
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 0.5,
+        "z": 0.6
+      },
+      "position": {
+        "x": 0,
+        "y": 3.15,
+        "z": -3.5
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 0.5,
+        "z": 0.6
+      },
+      "position": {
+        "x": 0,
+        "y": 3.15,
+        "z": 3.2
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 0.6,
+        "z": 8
+      },
+      "position": {
+        "x": 0,
+        "y": 3.7,
+        "z": -0.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 0.6,
+        "y": 0.9,
+        "z": 3.2
+      },
+      "position": {
+        "x": -4.7,
+        "y": 0.45,
+        "z": -1.5
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 0.25,
+        "y": 1.6,
+        "z": 3
+      },
+      "position": {
+        "x": -4.85,
+        "y": 1.7,
+        "z": -1.5
+      },
+      "material": "glass"
     },
     {
       "size": {
@@ -404,15 +507,15 @@
     {
       "texture": "poster_torn2",
       "position": {
-        "x": -5,
+        "x": -3.5,
         "y": 1.5,
-        "z": -3
+        "z": -5
       },
       "size": {
         "w": 1.1,
         "h": 1.1
       },
-      "yaw": 1.5708,
+      "yaw": 0,
       "surface": "wall",
       "opacity": 0.85
     },
@@ -527,7 +630,7 @@
       "position": {
         "x": -5,
         "y": 0,
-        "z": 2.5
+        "z": 4.2
       },
       "yaw": 1.5708,
       "scale": 1
