@@ -27,8 +27,10 @@ posiłki mogą uruchomić się ponownie po powrocie do ich strefy.
 `loadLevel(data, mission, waves)` sprawdza strukturę zod, unikalność id, referencje,
 cykle spotkań, wszystkie cele misji i ich pozycje. Cele, checkpointy oraz lokalne
 spawny przechodzą wspólną walidację podłóg, przeszkód i osiągalności pokoju.
-Walidacja płaska nie dowodzi przechodniości bram; pełny test M01 przechodzi
-fizycznie przez całą trasę środkiem ulicy, kończąc cele przez obecność w strefach.
+Test M01 sprawdza ciągły prześwit 3 m wzdłuż trasy po asfalcie przy otwartych
+bramach. Osobno przechodzi tę trasę kapsułą gracza, otwierając bramy i kończąc
+cele przez obecność w strefach. Test przechodzi również obie kładki od rampy
+wejściowej do rampy zejściowej.
 
 `LevelRuntime` nie importuje renderu ani DOM. Wyzwala spotkanie raz, sprawdza
 zależności i wyznacza otwarte bramy. Host tworzy WaveDirector ze strumieniem
@@ -47,6 +49,16 @@ M01 generuje `node tools/levels/buildM01.mjs`; wynik JSON i sześć definicji fa
 trafiają do repo. Siedem odcinków ma łącznie 320 m; szerokości zmieniają się od
 10 m w tunelu do 28 m na placu. Neon Noir: ciemne fasady, mokry asfalt, dach
 przejścia, stragany, rusztowania, istniejące neony z dozwolonej palety i deszcz.
+
+Każdy odcinek ma ręcznie rozmieszczone osłony i rekwizyty. Śluza ma bariery
+i skrzynie, targ wyspy straganów, tunel rury i kratki, dziedziniec wrak oraz
+przegrody z blachy, zaplecze sprzęt budowlany i kładki, plac kontener i kiosk,
+a kanał kontener odpadów i barierę drogową. Osłony przecinają oś na targu,
+dziedzińcu, zapleczu i placu. Droga po asfalcie omija je zakosami, a na zapleczu
+można też przejść nad patrolem dwiema kładkami na wysokości 4,25 m. Ich rampy
+zaczynają się przy x=189 i kończą przy x=223,4. W szerszych odcinkach spotkania
+korzystają z bocznych punktów spawnu. Naklejki na asfalcie, różne wysokości
+fasad i neonów oraz strzałki przy przejściach odróżniają kolejne odcinki.
 
 Zadaszenia M01 mają lokalne, niemigające światła w ciepłej bieli `#fff1d6`:
 pod stropami x=0–44 i x=92–136 co 8 m, na y=5,8, z=0 (intensywność 40,
@@ -74,9 +86,17 @@ Test `missionLinear.test.ts` sprawdza całą asfaltową podłogę względem bry�
 5. `objective done mast-2`, `objective done helix`, `objective done mast-3`,
    `checkpoint ewakuacja`, `objective done exit`: podsumowanie i powrót do kryjówki.
 
+Szybka kontrola osłon i kładek w tej samej scenie:
+
+- `god`, `tp 54 0 -90`: pierwsza wyspa targu zasłania oś ulicy. Omiń ją od
+  strony dodatniego z, a następną od strony ujemnego z.
+- `objective done mast-1`, `objective done mast-2`, `objective done helix`,
+  `tp 188.8 5.5 -90`: idź naprzód po rampie, obejrzyj ulicę z góry i zejdź
+  po drugiej stronie. Powtórz przy z=−5,5. `encounter clear` usuwa aktywny patrol.
+
 Pełny playtest: zacznij od wejścia, bez teleportacji. Sprawdź czytelność kierunku
 i bram, różnicę ciasnego tunelu i szerokiego placu, linie ostrzału wieżyczek,
-osłony po bokach, czas ucieczki po podłożeniu ładunku i tempo siedmiu starć.
+zakosy między osłonami, czas ucieczki po podłożeniu ładunku i tempo siedmiu starć.
 Sprawdź checkpoint po Helixie oraz kontynuację z tablicy po przeładowaniu gry.
 Równocześnie zwróć uwagę na FPS podczas deszczu i spojrzenia wzdłuż całej ulicy.
 

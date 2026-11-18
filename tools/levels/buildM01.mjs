@@ -22,6 +22,170 @@ const definitions = [
   ['plac', 'Plac Helixa', 52, 28, 'pharmacy', '#fff1d6'],
   ['kanal', 'Kanał zrzutowy', 40, 12, 'metro', '#6dff4a'],
 ];
+const dressing = [
+  {
+    facade: 10,
+    signY: [3.5, 5],
+    covers: [
+      block(12, 0.55, -4, 3, 1.1, 1, 'concrete', 'city_barrier'),
+      block(26, 0.65, 4.5, 2, 1.3, 2, 'metal', 'city_crates'),
+    ],
+    props: [
+      ['city_cable_span', 8, 5.5, 0],
+      ['city_overpass_pillar', 21, 0, -5.6, 0.5],
+      ['city_traffic_cone', 34, 0, 4.6],
+    ],
+    decals: [['floor_stop', 35, 0, 3, 1]],
+  },
+  {
+    facade: 14,
+    signY: [5.5, 4],
+    covers: [
+      block(58, 1.25, -5, 3, 2.5, 12, 'market_tarp'),
+      block(74, 1.25, 5, 3, 2.5, 12, 'market_tarp'),
+      block(55.5, 1.25, -3.5, 2, 2.5, 3, 'metal', 'city_stall'),
+      block(71.5, 0.65, 4, 2, 1.3, 2, 'metal', 'city_crates'),
+      block(76.5, 1.25, 7, 2, 2.5, 3, 'metal', 'city_stall'),
+    ],
+    props: [
+      ['city_lantern_string', 56, 5, 0],
+      ['city_lantern_string', 76, 5.7, 0],
+      ['city_trash_bags', 65, 0, -10],
+      ['city_awning', 85, 3.5, 10.7],
+      ['city_vending', 80, 0, -10],
+    ],
+    decals: [
+      ['puddle1', 63, 6, 4, 2],
+      ['floor_hazard', 69, -5, 3, 1],
+    ],
+  },
+  {
+    facade: 12,
+    signY: [3.8, 5.2],
+    covers: [
+      block(111, 0.65, -4.3, 5, 1.3, 1.4, 'metal', 'city_pipe_run'),
+      block(134, 0.8, 4.4, 3, 1.6, 1.2, 'metal'),
+    ],
+    props: [
+      ['city_vent_grate', 102, 0, -3.6],
+      ['city_shutter', 112, 0, 4.9],
+      ['city_pipe_run', 121, 2.2, -4.8],
+      ['city_ac_unit', 132, 2.5, 4.7],
+    ],
+    decals: [
+      ['puddle2', 113, 0, 4, 2.5],
+      ['manhole', 124, 1.8, 1.5, 1.5],
+    ],
+  },
+  {
+    facade: 16,
+    signY: [6.5, 4.7],
+    covers: [
+      block(152, 1.45, -6, 2, 2.9, 14, 'corrugated'),
+      block(166, 1.45, 6, 2, 2.9, 14, 'corrugated'),
+      block(149, 0.85, -5, 4, 1.7, 2.5, 'metal', 'city_wrecked_car'),
+      block(163, 0.55, 5, 3, 1.1, 1, 'concrete', 'city_barrier'),
+      block(158, 0.8, 10.5, 2.5, 1.6, 2, 'metal', 'city_dumpster'),
+    ],
+    props: [
+      ['city_antenna', 146, 0, -11.5],
+      ['city_satellite_cluster', 155, 5, 12.2],
+      ['city_sign_box', 170, 3.3, -12.7],
+      ['city_ac_unit', 179, 4.5, 12.5],
+    ],
+    decals: [
+      ['tire_marks', 144, -3, 5, 2],
+      ['puddle2', 171, -5, 3, 2],
+    ],
+  },
+  {
+    facade: 11,
+    signY: [4.5, 7],
+    covers: [
+      block(207, 1.25, -3, 2, 2.5, 8, 'corrugated'),
+      block(203, 0.7, 5.4, 2.5, 1.4, 2, 'metal', 'city_generator'),
+      block(211, 0.65, -5.5, 2, 1.3, 2, 'metal', 'city_crates'),
+    ],
+    props: [
+      ['build_rebar_bundle', 201, 0, -6.4, 0.65],
+      ['build_scaffold_bay', 209, 4.25, -6.3, 0.45],
+      ['build_pipe_stack', 213, 0, 6, 0.6],
+      ['city_neon_sign_frame', 220, 6, 6.6],
+    ],
+    decals: [
+      ['floor_hazard', 192, 0, 3, 1],
+      ['oil_stain', 213, 4.2, 2, 2],
+    ],
+  },
+  {
+    facade: 15,
+    signY: [7, 5.8],
+    covers: [
+      block(242, 1.3, -6.5, 2.45, 2.6, 15, 'container_navy'),
+      block(260, 1.3, 6.5, 2.45, 2.6, 15, 'container_graphite'),
+      block(
+        239,
+        1.3,
+        -6,
+        2.45,
+        2.6,
+        6.06,
+        'container_navy',
+        'port_container_20_navy',
+      ),
+      block(257, 1.4, 6, 2.8, 2.8, 3, 'metal', 'city_kiosk'),
+      block(265, 0.6, 7, 3, 1.2, 1.4, 'concrete', 'city_barrier'),
+    ],
+    props: [
+      ['city_holo_projector', 254, 0, 10],
+      ['city_street_lamp', 237, 0, -12.5],
+      ['city_ad_screen', 249, 4, 13.5],
+      ['port_bollard', 273, 0, 11],
+    ],
+    decals: [
+      ['floor_arrow', 235, 1.5, 3, 3],
+      ['puddle1', 252, -4, 5, 2],
+      ['floor_stop', 275, 0, 3, 1],
+    ],
+  },
+  {
+    facade: 12,
+    signY: [4, 5.5],
+    covers: [
+      block(297, 0.8, 4.6, 2.5, 1.6, 2, 'metal', 'city_dumpster'),
+      block(305, 0.65, -4.5, 4, 1.3, 1.3, 'concrete', 'city_highway_barrier'),
+    ],
+    props: [
+      ['city_door', 291, 0, -5.9],
+      ['city_vent_grate', 295, 0, 3.5],
+      ['city_trash_bags', 310, 0, 5.3],
+      ['city_street_lamp', 314, 0, -5.3],
+    ],
+    decals: [
+      ['puddle2', 300, -3, 4, 2],
+      ['manhole', 309, 2, 1.5, 1.5],
+    ],
+  },
+];
+
+function ramp(start, end, startY, endY, z) {
+  const angle = Math.atan2(endY - startY, end - start);
+  const thickness = 0.4;
+  // Końce górnej powierzchni stykają się z asfaltem i krawędzią kładki.
+  return {
+    ...block(
+      (start + end) / 2 + (Math.sin(angle) * thickness) / 2,
+      (startY + endY) / 2 - (Math.cos(angle) * thickness) / 2,
+      z,
+      Math.hypot(end - start, endY - startY),
+      thickness,
+      2.5,
+      'steel_grating',
+    ),
+    rotation: v(0, 0, angle),
+    walkable: true,
+  };
+}
 const level = {
   id: 'm01-maszty',
   name: 'Niecka — Maszty',
@@ -33,6 +197,7 @@ const level = {
   signs: [],
   lights: [],
   decor: [],
+  decals: [],
   ambientFx: [],
   rainShelters: [],
   hazards: [],
@@ -56,6 +221,22 @@ for (const [
   [id, name, length, width, texture, color],
 ] of definitions.entries()) {
   const center = from + length / 2;
+  const { facade, signY, covers, props, decals } = dressing[index];
+  level.blocks.push(...covers);
+  for (const [model, x, y, z, scale] of props)
+    level.decor.push({
+      model,
+      position: v(x, y, z),
+      ...(scale ? { scale } : {}),
+    });
+  for (const [texture, x, z, w, h] of decals)
+    level.decals.push({
+      texture,
+      position: v(x, 0.01, z),
+      size: { w, h },
+      yaw: texture === 'floor_arrow' ? -Math.PI / 2 : 0,
+      surface: 'floor',
+    });
   level.sections.push({
     id,
     name,
@@ -73,34 +254,24 @@ for (const [
     level.blocks.push(block(x + 2, -0.5, 0, 4, 1, width, 'asphalt'));
   for (const side of [-1, 1]) {
     level.blocks.push(
-      block(center, 6, side * (width / 2 + 1), length, 12, 2, 'facade'),
+      block(
+        center,
+        facade / 2,
+        side * (width / 2 + 1),
+        length,
+        facade,
+        2,
+        'facade',
+      ),
     );
-    for (let x = from + 8; x < from + length; x += 12) {
-      level.blocks.push(
-        block(
-          x,
-          0.6,
-          side * (width / 2 - 2),
-          2,
-          1.2,
-          2,
-          'metal',
-          index === 1 ? 'city_stall' : 'city_generator',
-        ),
-      );
-      level.decor.push({
-        model: 'city_ac_unit',
-        position: v(x, 4, side * (width / 2 - 0.3)),
-      });
-      level.decor.push({
-        model: 'city_pipe_run',
-        position: v(x + 3, 0, side * (width / 2 - 0.3)),
-      });
-    }
     level.signs.push({
       kind: 'neon',
       texture,
-      position: v(center, 4, side * (width / 2 - 0.15)),
+      position: v(
+        center,
+        signY[side === -1 ? 0 : 1],
+        side * (width / 2 - 0.15),
+      ),
       size: { w: 5, h: 2 },
       yaw: side === 1 ? Math.PI : 0,
       tint: color,
@@ -111,13 +282,21 @@ for (const [
       intensity: 14,
       range: 18,
     });
-    level.decor.push({
-      model: 'city_street_lamp',
-      position: v(from + 6, 0, side * (width / 2 - 1)),
-    });
   }
   if (index > 0) {
     const previousWidth = definitions[index - 1][3];
+    level.signs.push({
+      kind: 'neon',
+      texture: 'arrow',
+      position: v(
+        from - 2.25,
+        index === 2 ? 3.6 : 4.8,
+        -previousWidth / 2 + 0.15,
+      ),
+      size: { w: 2, h: 1 },
+      yaw: 0,
+      tint: '#fff1d6',
+    });
     if (previousWidth !== width)
       for (const side of [-1, 1])
         level.blocks.push(
@@ -149,12 +328,19 @@ for (const [
     });
     level.ambientFx.push({ kind: 'drip', position: v(center, 6, 2), rate: 5 });
   }
-  if (index === 1)
-    for (const x of [from + 12, from + 32])
-      level.decor.push({ model: 'city_lantern_string', position: v(x, 5) });
   if (index === 4)
     for (const side of [-1, 1]) {
-      level.blocks.push(block(center, 4, side * 5.5, 24, 0.5, 2, 'metal'));
+      const z = side * 5.5;
+      level.blocks.push(
+        {
+          ...block(center, 4, z, 24, 0.5, 2.5, 'steel_grating'),
+          walkable: true,
+        },
+        ramp(189, 194, 0, 4.25, z),
+        ramp(218, 223.4, 4.25, 0, z),
+      );
+      for (const railZ of [z - 1.2, z + 1.2])
+        level.blocks.push(block(center, 4.7, railZ, 24, 0.9, 0.1, 'metal'));
       for (const x of [center - 8, center, center + 8])
         level.lights.push({
           position: v(x, 3.3, side * 5.5),
@@ -164,16 +350,7 @@ for (const [
         });
       for (const x of [center - 10, center + 10])
         level.blocks.push(block(x, 2, side * 5.5, 0.5, 4, 0.5, 'metal'));
-      level.decor.push({
-        model: 'city_fire_escape',
-        position: v(center, 0, side * 6),
-      });
     }
-  if (index === 5)
-    level.decor.push({
-      model: 'city_holo_projector',
-      position: v(center, 0, 10),
-    });
   level.ambientFx.push({
     kind: 'steam',
     position: v(center + 7, 0, width / 2 - 3),
@@ -191,13 +368,47 @@ const encounters = [
   ['patrol-plac', 234, 247, 'm01Assault', encounter('patrol-rusztowania'), 255],
   ['oslona-trzeciego', 258, 272, 'm01MastThree', encounter('patrol-plac'), 282],
 ];
+const encounterSpawns = {
+  'oslona-pierwszego': [
+    [78, -7],
+    [81, 8],
+    [85, -4],
+    [88, 5],
+  ],
+  'oslona-drugiego': [
+    [161, -8],
+    [169, 8],
+    [173, -9],
+    [177, 5],
+  ],
+  'patrol-rusztowania': [
+    [209, 2.5],
+    [214, -3.5],
+    [216, 3],
+    [220, -2.5],
+  ],
+  'patrol-plac': [
+    [239, 8],
+    [247, -9],
+    [251, 7],
+    [253, -5],
+  ],
+  'oslona-trzeciego': [
+    [256, -8],
+    [263, 9],
+    [269, -7],
+    [274, 5],
+  ],
+};
 for (const [id, trigger, spawn, wave, after, gate] of encounters) {
-  const spawnPoints = [
-    { x: spawn, z: -3 },
-    { x: spawn, z: 3 },
-    { x: spawn + 4, z: -3 },
-    { x: spawn + 4, z: 3 },
-  ];
+  const spawnPoints = (
+    encounterSpawns[id] ?? [
+      [spawn, -3],
+      [spawn, 3],
+      [spawn + 4, -3],
+      [spawn + 4, 3],
+    ]
+  ).map(([x, z]) => ({ x, z }));
   level.encounters.push({
     id,
     zone: zone(trigger, 20),
@@ -228,19 +439,37 @@ for (const [id, x, width] of [
     block: block(x, 6, 0, 1, 12, width, 'metal'),
     after: objective(id),
   });
-for (const [id, x] of [
-  ['mast-1', 82],
-  ['mast-2', 174],
-  ['mast-3', 270],
+for (const [id, x, positions] of [
+  [
+    'mast-1',
+    82,
+    [
+      [76, -6],
+      [88, 7],
+    ],
+  ],
+  [
+    'mast-2',
+    174,
+    [
+      [167.5, -7],
+      [179, 8],
+    ],
+  ],
+  [
+    'mast-3',
+    270,
+    [
+      [263, -8],
+      [276, 9],
+    ],
+  ],
 ])
   level.encounters.push({
     id: `reinforce-${id}`,
     zone: zone(x, 24),
     wave: 'missionPatrol',
-    spawnPoints: [
-      { x: x - 7, z: -3 },
-      { x: x + 6, z: 3 },
-    ],
+    spawnPoints: positions.map(([x, z]) => ({ x, z })),
     after: objective(id),
     reinforcementFor: id,
   });

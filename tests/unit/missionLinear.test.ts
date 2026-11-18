@@ -1,8 +1,11 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import {
   Box3,
+  Euler,
   InstancedMesh,
   Matrix4,
+  Quaternion,
+  Ray,
   Scene as ThreeScene,
   Vector3,
 } from 'three';
@@ -249,25 +252,134 @@ it.each(['retry', 'resume'])(
   },
 );
 
+const approaches: Record<string, [number, number][]> = {
+  'mast-1': [
+    [54, 0],
+    [54, 3],
+    [61, 3],
+    [66, -3],
+    [78, -3],
+  ],
+  'mast-2': [
+    [148, 0],
+    [148, 3],
+    [155, 3],
+    [160, -3],
+    [169, -3],
+  ],
+  'mast-3': [
+    [201, 0],
+    [201, 2.65],
+    [211, 2.65],
+    [217, 0],
+    [237, 0],
+    [237, 3],
+    [245, 3],
+    [250, -3],
+    [265, -3],
+  ],
+};
+
+it('cała trasa po asfalcie ma ciągły prześwit 3 m po otwarciu bram', () => {
+  const level = levelDefinitions.get('m01-maszty')!;
+  const walls = level.blocks
+    .map(({ position, size, rotation }) => {
+      const bounds = new Box3().setFromCenterAndSize(
+        new Vector3(),
+        new Vector3(size.x, size.y, size.z),
+      );
+      const transform = new Matrix4().compose(
+        new Vector3(position.x, position.y, position.z),
+        new Quaternion().setFromEuler(
+          new Euler(rotation?.x ?? 0, rotation?.y ?? 0, rotation?.z ?? 0),
+        ),
+        new Vector3(1, 1, 1),
+      );
+      return bounds.applyMatrix4(transform);
+    })
+    .filter(
+      (bounds) =>
+        bounds.max.y > 0 && bounds.min.y < tuning.player.capsuleHeight,
+    )
+    .map((bounds) => {
+      bounds.min.y = 0;
+      bounds.max.y = 1;
+      return bounds.expandByVector(new Vector3(1.5, 0, 1.5));
+    });
+  let start = new Vector3(level.playerSpawn.x, 0.5, level.playerSpawn.z);
+  for (const id of level.objectiveOrder) {
+    const target = level.objectivePositions[id]!;
+    for (const [x, z] of [
+      ...(approaches[id] ?? []),
+      [target.x, target.z] as const,
+    ]) {
+      const end = new Vector3(x, 0.5, z);
+      const direction = end.clone().sub(start);
+      const length = direction.length();
+      const ray = new Ray(start, direction.normalize());
+      for (const wall of walls) {
+        expect(wall.containsPoint(start), `Odcinek do ${x}, ${z}`).toBe(false);
+        const hit = ray.intersectBox(wall, new Vector3());
+        expect(
+          hit === null || hit.distanceTo(start) > length,
+          `Odcinek do ${x}, ${z}`,
+        ).toBe(true);
+      }
+      start = end;
+    }
+  }
+});
+
+function walkTo(
+  scene: MissionScene,
+  commands: CommandRegistry,
+  x: number,
+  z: number,
+) {
+  const walk: InputSnapshot = { ...idle, held: new Set(['moveForward']) };
+  for (let index = 0; index < 4000; index++) {
+    const position = scene.query('playerPos') as {
+      x: number;
+      y: number;
+      z: number;
+    };
+    const dx = x - position.x;
+    const dz = z - position.z;
+    if (Math.hypot(dx, dz) <= 0.12) return position;
+    commands.execute(`look ${(Math.atan2(-dx, -dz) * 180) / Math.PI}`);
+    scene.step(SIM_DT, walk);
+    if (state(scene).activeEncounters.length)
+      commands.execute('encounter clear');
+  }
+  throw new Error(
+    `Nie można dojść do (${x}, ${z}): ${JSON.stringify(scene.query('playerPos'))}`,
+  );
+}
+
+it.each([-5.5, 5.5])(
+  'pozwala wejść na kładkę z=%s, przejść nad patrolem i zejść drugą rampą',
+  async (z) => {
+    const { scene, commands } = await setup();
+    commands.execute('god');
+    for (const id of ['mast-1', 'mast-2', 'helix'])
+      commands.execute(`objective done ${id}`);
+    commands.execute(`tp 188.7 ${z} -90`);
+    steps(scene, 10);
+    const ground = (scene.query('playerPos') as { y: number }).y;
+    expect(walkTo(scene, commands, 199, z).y - ground).toBeCloseTo(4.25, 1);
+    expect(walkTo(scene, commands, 216, z).y - ground).toBeCloseTo(4.25, 1);
+    expect(walkTo(scene, commands, 225, z).y).toBeCloseTo(ground, 1);
+  },
+);
+
 it('pozwala fizycznie przejść całą trasę: bez teleportacji i komend kończących cele', async () => {
   const { scene, commands } = await setup();
   commands.execute('god');
-  const walk: InputSnapshot = { ...idle, held: new Set(['moveForward']) };
   const level = levelDefinitions.get('m01-maszty')!;
   for (const id of level.objectiveOrder) {
     const target = level.objectivePositions[id]!;
-    let arrived = false;
-    for (let index = 0; index < 4000; index++) {
-      const position = scene.query('playerPos') as { x: number };
-      if (position.x >= target.x - 0.3) {
-        arrived = true;
-        break;
-      }
-      scene.step(SIM_DT, walk);
-      if (state(scene).activeEncounters.length)
-        commands.execute('encounter clear');
-    }
-    expect(arrived, `Trasa do ${id}`).toBe(true);
+    for (const [x, z] of approaches[id] ?? []) walkTo(scene, commands, x, z);
+    walkTo(scene, commands, target.x, target.z);
     // Rzeczywisty czas podłożenia 2,5 s + lont 6 s, podniesienie modułu i 2 s włazu.
     for (
       let index = 0;
