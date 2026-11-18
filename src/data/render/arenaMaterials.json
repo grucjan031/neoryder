@@ -50,9 +50,8 @@
     "scale": 0.25,
     "roughness": 0.85,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.5,
+    "wetness": 0
   },
   "concrete_raw_cast": {
     "texture": "concrete_raw_cast",
@@ -60,9 +59,8 @@
     "scale": 0.25,
     "roughness": 0.85,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.5,
+    "wetness": 0
   },
   "slag_heap": {
     "texture": "slag_heap",
@@ -70,9 +68,8 @@
     "scale": 0.25,
     "roughness": 0.95,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.5,
+    "wetness": 0
   },
   "cooling_tower_concrete": {
     "texture": "cooling_tower_concrete",
@@ -80,9 +77,8 @@
     "scale": 0.25,
     "roughness": 0.9,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.5,
+    "wetness": 0
   },
   "turbine_hall_floor": {
     "texture": "turbine_hall_floor",
@@ -90,9 +86,8 @@
     "scale": 0.25,
     "roughness": 0.8,
     "metalness": 0,
-    "bump": 0,
-    "wetness": 0,
-    "flat": true
+    "bump": 0.5,
+    "wetness": 0
   },
   "gas_station_tiles": {
     "texture": "gas_station_tiles",
