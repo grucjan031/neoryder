@@ -62,17 +62,42 @@ natychmiast i kasuje bufor/zamianę.
 
 ## Render przegubowych dłoni
 
-### Model i chwyt ostrza — szlif FPP
+### Model rąk — taktyczna rękawica (szlif 2026-11-18)
 
 Generator `build_player_arm` w `tools/blender/build_assets.py` zachowuje ciągłą
-skinowaną siatkę, 18 kości i wszystkie dotychczasowe nazwy gniazd. Pełniejsza
-dłoń i nadgarstek mają wspólne, zaokrąglone przekroje z rękawem; kłąb kciuka
-łączy się z dłonią bez osobnego klocka. Owalne paliczki zwężają się łagodniej,
-mają pełniejsze stawy i zaokrąglone opuszki. Jeden zastosowany poziom subdivision
-wygładza przekrój i przejścia między paliczkami. Cztery niskie, fazowane osłony
-`plate_knuckle_*` podążają za pierwszymi kośćmi palców. Model ma 10 440 trójkątów
-na rękę (w dotychczasowym budżecie 6–12 tys.). Materiał rękawicy jest grafitowy,
-akcenty są cyan, a `resonance_core` zostaje magentowy (kolor Rezonansu), jak przed szlifem.
+skinowaną siatkę `tactical_glove`, 18 kości (te same nazwy i osie) i wszystkie
+nazwy węzłów oraz gniazd; lustro L jest wypiekane w wierzchołkach. Test
+`player_arm GLB contract` w `tests/unit/handRig.test.ts` sprawdza w obu GLB kości,
+gniazda, jedyną skinowaną siatkę, budżet trójkątów i nazwy części pod materiały FPP.
+
+- **Anatomia:** dłoń ok. 19 cm od nadgarstka do czubka środkowego. Palce mają różne
+  długości (środkowy najdłuższy, serdeczny i wskazujący krótsze, mały wyraźnie
+  krótszy), paliczki w proporcji ok. 1 : 0,65 : 0,5, spłaszczony przekrój (szerszy
+  niż głębszy), wyraźne kłykcie, bruzdy zgięć od strony dłoni, poduszki paliczków
+  i opuszki. Kciuk wyrasta nisko i z boku z mocnego kłębu (thenar), z osią
+  zgięcia skręconą ku palcom (opozycja). Kłąb małego palca, wklęsłe wnętrze dłoni
+  i poduszki pod kłykciami są częścią powierzchni. Przekroje rękawicy i
+  nadgarstka są niemal walcowe — bez przewężenia w nadgarstku.
+- **Rękawica** (sztywne części na kościach): `plate_knuckle_*` — gięte, fazowane
+  płytki na paliczkach bliższych (staw międzypaliczkowy wolny); `plate_tip_index`,
+  `plate_tip_thumb` — wzmocnione czubki; `plate_hand` — trapezowa płyta grzbietu
+  pod `resonance_core`, wąski segment przy nadgarstku i poduszka na kłębie małego
+  palca; cyan: `dorsal_trace` (linia wzdłuż płyty) i `wrist_light` (lamówka
+  mankietu). `resonance_core` (magenta) i `resonance_mount` są w tym samym miejscu
+  co wcześniej.
+- **Przedramię** (kość `forearm`): `plate_bracer` to rękaw kurtki (owalny,
+  zwężający się przekrój, kołnierz mankietu z grubością brzegu, kilka miękkich,
+  ukośnych fałd), niski karwasz na grzbiecie rękawa i mankiet rękawicy;
+  `trim_bracer` — panel karwasza, śruby i klamra paska; `grip_strap` — paski
+  karwasza i mankietu; `bracer_light` — linia światła na panelu. Części o tej samej
+  kości i materiale są scalone, żeby nie przekroczyć budżetu liczby siatek sceny
+  (`roomStaticBatch.test.ts`, cztery dłonie w `FppViewModel`).
+- **Cieniowanie:** sztywne części mają gładkie łuki i ostre krawędzie powyżej 40°
+  (kontur toon bez prążków fasetek). Materiały nadaje gra po nazwie węzła:
+  `plate_*` pancerz, `trim_*` stal, `grip_*` guma, `tactical_glove` rękawica.
+- **Budżet:** 11 898 trójkątów na rękę (wcześniej 10 440; budżet 6–12 tys.):
+  rękawica 7 312, `plate_bracer` 1 790, reszta to płytki, paski i akcenty;
+  16 siatek na rękę (wcześniej 12); GLB 342 kB (wcześniej 306 kB).
 
 `src/data/hands/bladeGrip.json` zawiera liczby wspólne dla gry i podglądów:
 
@@ -89,14 +114,32 @@ akcenty są cyan, a `resonance_core` zostaje magentowy (kolor Rezonansu), jak pr
 
 Dane waliduje zod w `src/render/handPoses.ts`; `FppBlade` używa ich dla
 `plasmaBlade`, `staffBlade` i `twinBlades`. `HandRig` używa tej samej pozycji
-gniazda w modelu zastępczym. Kąty palców pozostają w `handPoses.json`; w `gripBlade`
-zgięcie kciuka rozłożono bardziej na drugi staw. Pozy walki, czasy animacji,
-gniazda broni palnej i podparcia pozostają bez zmian.
+gniazda w modelu zastępczym. Kąty palców pozostają w `handPoses.json`.
+
+Pozy chwytów (`gripBlade`, `gripGun`, `gripGunFire`, `support`, `fist`) dobrano
+pomiarem w Blenderze: palce zamykano staw po stawie do kontaktu z bryłą broni.
+Jedna poza `gripGun` obsługuje pistolet i blaster (chwyt blastera jest o 2 cm
+głębszy): palce obejmują chwyt z luzem do ok. 8 mm na pistolecie i wnikają
+najwyżej ok. 2,5 mm w blaster; wskazujący leży pod kabłąkiem na spuście,
+`gripGunFire` dociąga go. `gripBlade` obejmuje rękojeść `plasmaBlade` (luz
+do 5 mm), w `twinBlades` wnika najwyżej ok. 2 mm. Gniazda broni w GLB:
+`socket_gun` przesunięte tak, by wnętrze dłoni leżało na boku chwytu, a palce
+na przedniej krawędzi (dawniej chwyt był na nasadach palców) —
+`(0.040, 0.0425, -0.094)`; `socket_support` 9,5 mm bliżej dłoni —
+`(0.0042, 0.0215, -0.1032)`. Obroty gniazd, pozy kadru (`POSE`, `TWO_HAND_POSE`,
+`AIM_POSE`, `idlePosition`, `idleRotation`) i czasy animacji są bez zmian.
+Chwyty karabinów (`rifle`, `sniper_rifle`) i `emp_launcher` leżą w modelach
+broni 2,5–5,5 cm od chwytu pistoletu, więc wspólne gniazdo pasuje do nich
+gorzej (prawa dłoń jest tam w większości zasłonięta przez broń).
 
 Budowanie: `--only player_arm_L,player_arm_R`; komplet podglądów:
 `--only hand_previews`. W `tools/blender/previews/` pliki
-`player_arm_R_before.png` i `player_arm_L_before.png` są kopiami stanu przed
-zmianą. Porównuj je z `player_arm_R.png` i `player_arm_L.png`. Dodatkowo
+`*_before.png` (np. `player_arm_R_before.png`, `hand_grip_pistol_before.png`)
+są kopiami stanu przed szlifem rękawicy. Porównuj je z plikami bez przyrostka.
+Zbliżenia: `hand_dorsal_detail.png`, `hand_palm_detail.png`, `hand_wrist_detail.png`,
+`hand_fist_side.png`, `hand_fist_front.png`, `hand_fpp_view_detail.png` (chwyt
+pistoletu od strony kamery gry). Podgląd lewej dłoni na karabinie stosuje te same
+przesunięcie i obroty co `FppBlaster.supportMatrix()`. Dodatkowo
 `hand_fpp_plasmaBlade.png`, `hand_fpp_staffBlade.png`, `hand_fpp_twinBlades.png`
 pokazują tę samą pozę co gra (kamera 70°, 16:9, bez efektów gry), a
 `hand_grip_<wariant>_detail.png` pokazują zamknięcie chwytu. Podglądy broni palnej
