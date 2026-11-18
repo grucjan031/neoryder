@@ -108,115 +108,141 @@
     },
     {
       "size": {
-        "x": 2,
+        "x": 1.5,
         "y": 4,
-        "z": 2
+        "z": 1.5
       },
       "position": {
-        "x": -3,
+        "x": -5.5,
         "y": 2,
-        "z": -6
+        "z": -5
       },
       "model": "pillar",
       "material": "trim"
     },
     {
       "size": {
-        "x": 2,
+        "x": 1.5,
         "y": 4,
-        "z": 2
+        "z": 1.5
       },
       "position": {
+        "x": -5.5,
+        "y": 2,
+        "z": 5
+      },
+      "model": "pillar",
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 2.2,
+        "y": 0.6,
+        "z": 12
+      },
+      "position": {
+        "x": -5.5,
+        "y": 4.3,
+        "z": 0
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
         "x": 3,
-        "y": 2,
-        "z": -6
+        "y": 2.622,
+        "z": 2.043
       },
-      "model": "pillar",
-      "material": "trim"
+      "position": {
+        "x": -5.5,
+        "y": 1.311,
+        "z": 0
+      },
+      "model": "city_stall",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
+      },
+      "position": {
+        "x": -8.5,
+        "y": 0.795,
+        "z": -4
+      },
+      "model": "city_crates",
+      "material": "metal"
     },
     {
       "size": {
         "x": 2,
-        "y": 4,
-        "z": 2
+        "y": 0.929,
+        "z": 0.51
+      },
+      "position": {
+        "x": -8.5,
+        "y": 0.4645,
+        "z": 5.5
+      },
+      "model": "city_barrier",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.5,
+        "y": 2.8,
+        "z": 4
       },
       "position": {
         "x": 6,
-        "y": 2,
-        "z": -3
+        "y": 1.4,
+        "z": -3.5
       },
-      "model": "pillar",
-      "material": "trim"
+      "material": "metal"
     },
     {
       "size": {
-        "x": 2,
-        "y": 4,
-        "z": 2
+        "x": 1.6,
+        "y": 1.4,
+        "z": 1.005
       },
       "position": {
         "x": 6,
-        "y": 2,
-        "z": 3
+        "y": 0.7,
+        "z": 4.5
       },
-      "model": "pillar",
-      "material": "trim"
+      "model": "city_generator",
+      "material": "metal"
     },
     {
       "size": {
-        "x": 2,
-        "y": 4,
-        "z": 2
+        "x": 1.97,
+        "y": 1.33,
+        "z": 1.08
       },
       "position": {
-        "x": 3,
-        "y": 2,
-        "z": 6
+        "x": 9.5,
+        "y": 0.665,
+        "z": 5.5
       },
-      "model": "pillar",
-      "material": "trim"
+      "model": "city_dumpster",
+      "material": "metal"
     },
     {
       "size": {
-        "x": 2,
-        "y": 4,
-        "z": 2
+        "x": 0.8,
+        "y": 2.235,
+        "z": 0.624
       },
       "position": {
-        "x": -3,
-        "y": 2,
-        "z": 6
+        "x": 9.5,
+        "y": 1.1175,
+        "z": -4
       },
-      "model": "pillar",
-      "material": "trim"
-    },
-    {
-      "size": {
-        "x": 2,
-        "y": 4,
-        "z": 2
-      },
-      "position": {
-        "x": -6,
-        "y": 2,
-        "z": 3
-      },
-      "model": "pillar",
-      "material": "trim"
-    },
-    {
-      "size": {
-        "x": 2,
-        "y": 4,
-        "z": 2
-      },
-      "position": {
-        "x": -6,
-        "y": 2,
-        "z": -3
-      },
-      "model": "pillar",
-      "material": "trim"
+      "model": "city_kiosk",
+      "material": "metal"
     },
     {
       "size": {

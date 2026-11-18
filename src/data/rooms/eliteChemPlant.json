@@ -102,16 +102,55 @@
     },
     {
       "size": {
-        "x": 2,
-        "y": 4,
-        "z": 2
+        "x": 3,
+        "y": 3.5,
+        "z": 3
       },
       "position": {
-        "x": 0,
-        "y": 2,
-        "z": 0
+        "x": -1,
+        "y": 1.75,
+        "z": -1.5
       },
       "material": "metal"
+    },
+    {
+      "size": {
+        "x": 3,
+        "y": 3.5,
+        "z": 3
+      },
+      "position": {
+        "x": 2.5,
+        "y": 1.75,
+        "z": -6.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.4,
+        "y": 0.8,
+        "z": 6
+      },
+      "position": {
+        "x": 0.8,
+        "y": 3.9,
+        "z": -4
+      },
+      "material": "trim"
+    },
+    {
+      "size": {
+        "x": 11,
+        "y": 0.7,
+        "z": 1
+      },
+      "position": {
+        "x": -7.5,
+        "y": 3.85,
+        "z": -1.5
+      },
+      "material": "trim"
     },
     {
       "size": {
@@ -138,6 +177,191 @@
         "z": 6
       },
       "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
+      },
+      "position": {
+        "x": -7.5,
+        "y": 0.795,
+        "z": 3.5
+      },
+      "model": "city_crates",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1.6,
+        "y": 1.4,
+        "z": 1.005
+      },
+      "position": {
+        "x": 8.5,
+        "y": 0.7,
+        "z": -5.5
+      },
+      "model": "city_generator",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 0.929,
+        "z": 0.51
+      },
+      "position": {
+        "x": -1,
+        "y": 0.4645,
+        "z": 5.5
+      },
+      "model": "city_barrier",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 17,
+        "z": 10
+      },
+      "position": {
+        "x": -18,
+        "y": 8.5,
+        "z": -9
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 22,
+        "z": 10
+      },
+      "position": {
+        "x": -18,
+        "y": 11,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 15,
+        "z": 10
+      },
+      "position": {
+        "x": -18,
+        "y": 7.5,
+        "z": 9
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 20,
+        "z": 10
+      },
+      "position": {
+        "x": 18,
+        "y": 10,
+        "z": -9
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 10
+      },
+      "position": {
+        "x": 18,
+        "y": 8,
+        "z": 0
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 23,
+        "z": 10
+      },
+      "position": {
+        "x": 18,
+        "y": 11.5,
+        "z": 9
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 19,
+        "z": 6
+      },
+      "position": {
+        "x": -8.5,
+        "y": 9.5,
+        "z": -19
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 16,
+        "z": 6
+      },
+      "position": {
+        "x": 8.5,
+        "y": 8,
+        "z": -19
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 24,
+        "z": 6
+      },
+      "position": {
+        "x": 0,
+        "y": 12,
+        "z": -24
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 15,
+        "z": 6
+      },
+      "position": {
+        "x": -8.5,
+        "y": 7.5,
+        "z": 19
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 12,
+        "y": 19,
+        "z": 6
+      },
+      "position": {
+        "x": 8.5,
+        "y": 9.5,
+        "z": 19
+      },
+      "material": "facade"
     }
   ],
   "hazards": [
@@ -571,9 +795,9 @@
     {
       "texture": "leak_streak",
       "position": {
-        "x": 0,
-        "y": 2.6,
-        "z": -1.02
+        "x": -1,
+        "y": 2.1,
+        "z": -3.02
       },
       "size": {
         "w": 0.8,

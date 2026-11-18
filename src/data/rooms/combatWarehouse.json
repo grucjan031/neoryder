@@ -117,8 +117,7 @@
         "y": 1.25,
         "z": -4
       },
-      "model": "wall",
-      "material": "metal"
+      "material": "container_navy"
     },
     {
       "size": {
@@ -131,8 +130,7 @@
         "y": 1.25,
         "z": -4
       },
-      "model": "wall",
-      "material": "metal"
+      "material": "container_olive"
     },
     {
       "size": {
@@ -145,8 +143,7 @@
         "y": 1.25,
         "z": 4
       },
-      "model": "wall",
-      "material": "metal"
+      "material": "container_ochre"
     },
     {
       "size": {
@@ -159,8 +156,7 @@
         "y": 1.25,
         "z": 4
       },
-      "model": "wall",
-      "material": "metal"
+      "material": "container_graphite"
     },
     {
       "size": {
@@ -230,29 +226,31 @@
     },
     {
       "size": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0.5
+        "x": 1.6,
+        "y": 1.4,
+        "z": 1.005
       },
       "position": {
-        "x": -8.5,
-        "y": 0.25,
+        "x": -9.5,
+        "y": 0.7,
         "z": 0.5
       },
-      "model": "crate_small"
+      "model": "city_generator",
+      "material": "metal"
     },
     {
       "size": {
-        "x": 0.5,
-        "y": 0.5,
-        "z": 0.5
+        "x": 1.212,
+        "y": 1.59,
+        "z": 1.256
       },
       "position": {
-        "x": 8.5,
-        "y": 0.25,
+        "x": 9.5,
+        "y": 0.795,
         "z": 0.5
       },
-      "model": "crate_small"
+      "model": "city_crates",
+      "material": "metal"
     },
     {
       "size": {
@@ -1126,6 +1124,36 @@
       },
       "yaw": 0,
       "scale": 0.8
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": -5.5,
+        "y": 2.5,
+        "z": -4
+      },
+      "yaw": 0.2,
+      "scale": 0.9
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 5.5,
+        "y": 2.5,
+        "z": -4
+      },
+      "yaw": 1.5708,
+      "scale": 0.9
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": 5.5,
+        "y": 2.5,
+        "z": 4
+      },
+      "yaw": -0.3,
+      "scale": 0.9
     }
   ],
   "hazards": [

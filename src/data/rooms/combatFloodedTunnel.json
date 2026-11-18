@@ -126,6 +126,203 @@
         "z": 0
       },
       "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1.2,
+        "z": 2.8
+      },
+      "position": {
+        "x": -4.5,
+        "y": 0.6,
+        "z": 7.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1.2,
+        "z": 2.8
+      },
+      "position": {
+        "x": -4.5,
+        "y": 0.6,
+        "z": -4.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1.2,
+        "z": 2.8
+      },
+      "position": {
+        "x": 4.5,
+        "y": 0.6,
+        "z": 4.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 1.2,
+        "z": 2.8
+      },
+      "position": {
+        "x": 4.5,
+        "y": 0.6,
+        "z": -7.5
+      },
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 0.929,
+        "z": 0.51
+      },
+      "position": {
+        "x": 0.5,
+        "y": 0.4645,
+        "z": 0
+      },
+      "model": "city_barrier",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 2,
+        "y": 0.929,
+        "z": 0.51
+      },
+      "position": {
+        "x": -1.5,
+        "y": 0.4645,
+        "z": -10.6
+      },
+      "model": "city_barrier",
+      "material": "metal"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 14
+      },
+      "position": {
+        "x": -10,
+        "y": 8,
+        "z": -8
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 20,
+        "z": 14
+      },
+      "position": {
+        "x": -10,
+        "y": 10,
+        "z": 8
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 18,
+        "z": 14
+      },
+      "position": {
+        "x": 10,
+        "y": 9,
+        "z": -8
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 14,
+        "z": 14
+      },
+      "position": {
+        "x": 10,
+        "y": 7,
+        "z": 8
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 16,
+        "z": 6
+      },
+      "position": {
+        "x": -4,
+        "y": 8,
+        "z": -20
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 20,
+        "z": 6
+      },
+      "position": {
+        "x": 4,
+        "y": 10,
+        "z": -20
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 10,
+        "y": 22,
+        "z": 6
+      },
+      "position": {
+        "x": 0,
+        "y": 11,
+        "z": -25
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 15,
+        "z": 6
+      },
+      "position": {
+        "x": -4,
+        "y": 7.5,
+        "z": 20
+      },
+      "material": "facade"
+    },
+    {
+      "size": {
+        "x": 6,
+        "y": 18,
+        "z": 6
+      },
+      "position": {
+        "x": 4,
+        "y": 9,
+        "z": 20
+      },
+      "material": "facade"
     }
   ],
   "hazards": [
