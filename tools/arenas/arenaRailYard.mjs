@@ -21,6 +21,16 @@ export default function generate() {
     });
   const prop = (model, x, z, sx, sy, sz, y = 0) =>
     box(x, y + sy / 2, z, sx, sy, sz, 'metal', { model, instance: true });
+  const warm = (x, y, z, intensity, range) =>
+    arena.light(vec(x, y, z), '#fff1d6', intensity, range, {
+      groundGlow: false,
+    });
+  const workshopLighting = (x, z, halfDepth) => {
+    warm(x, 3.35, z, 135, 16);
+    box(x, 3.65, z, 2.8, 0.14, 0.34, 'light_white');
+    for (const dx of [-3, 3])
+      box(x + dx, 2.85, z - halfDepth - 0.22, 1.9, 0.75, 0.07, 'light_white');
+  };
   const flight = (from, to, width = 4) => {
     const result = p.stairs({
       from,
@@ -321,6 +331,7 @@ export default function generate() {
   });
   for (const x of [-34, -10, 38, 62, 74]) {
     arena.decor('rail_platform_canopy', vec(x, 1.1, 50));
+    warm(x, 4.25, 50, 175, 19);
     for (const dx of [-3, 3])
       box(x + dx, 2.85, 50, 0.2, 3.5, 0.2, 'metal', { visible: false });
     box(x, 4.85, 50, 12, 0.3, 6.16, 'metal', { visible: false });
@@ -331,9 +342,35 @@ export default function generate() {
     for (const dx of [-1.2, 1.2])
       box(x + 4 + dx, 1.35, 46, 0.2, 0.5, 0.7, 'metal');
   }
+  // Wyposażenie peronu przy północnej krawędzi, z wolnym torem dojścia do C.
+  for (const x of [-20, 12, 56]) {
+    arena.decor('city_street_lamp', vec(x, 1.1, 45.5));
+    warm(x, 5.45, 46.15, 210, 23);
+    prop('city_barrier', x - 4, 45.7, 2, 0.929, 0.51, 1.1);
+  }
+  for (const x of [-18, 44, 68]) {
+    prop('city_kiosk', x, 46.35, 0.8, 2.235, 0.624, 1.1);
+    prop('city_crates', x + 2, 46.3, 1.212, 1.59, 1.256, 1.1);
+    box(x - 2, 1.42, 46.3, 1.2, 0.64, 0.7, 'metal');
+  }
+  prop('city_vending', 1, 46, 1.014, 2, 0.816, 1.1);
+  for (const [x, z] of [
+    [-20, 66],
+    [33, 66],
+    [64, 58],
+  ]) {
+    prop('city_stall', x, z, 3, 2.622, 2.043);
+    prop('city_crates', x + 2.7, z, 1.212, 1.59, 1.256);
+    warm(x, 2.35, z + 0.8, 105, 15);
+  }
 
   // Nastawnia: oryginalne wąskie schody mają osobne collidery i galerię.
   arena.decor('rail_control_tower', vec(120, 0, -60));
+  warm(120, 11.9, -56.7, 200, 24);
+  for (const dx of [-1.45, 1.45]) {
+    box(120 + dx, 11.9, -56.93, 1.5, 0.82, 0.06, 'light_white');
+    box(123.07, 11.9, -60 + dx, 0.06, 0.82, 1.5, 'light_white');
+  }
   box(120, 5, -60, 6, 10, 6, 'concrete', { visible: false });
   for (const z of [-63.6, -56.4])
     p.floor(rect(115.8, 124.2, z - 0.6, z + 0.6), 10, 'steel_grating', {
@@ -385,6 +422,7 @@ export default function generate() {
     ],
   });
   prop('city_kiosk', 133, -49, 0.8, 2.235, 0.624);
+  workshopLighting(139, -72, 8);
 
   // Zagłębiona obrotnica z szerokim, tymczasowym mostem nad prowadnicą.
   p.floor(rect(156, 184, 26, 54), -1.5, 'rail_sleeper_concrete');
@@ -419,6 +457,32 @@ export default function generate() {
   }
   prop('build_pipe_stack', 193, 77, 3.02, 2.793, 3);
   box(176, 1, 80, 8, 2, 3, 'snow_concrete');
+  for (const [x, z] of [
+    [155, 69],
+    [178, 83],
+    [198, 67],
+  ]) {
+    warm(x, 5.4, z, 260, 29);
+    box(x, 5.7, z, 2.6, 0.18, 0.48, 'light_white');
+  }
+  // Zatoki napraw na obrzeżu placu obrotnicy. Rampy i most E mają wolne wloty.
+  for (const [x, z] of [
+    [150, 21],
+    [178, 18],
+    [200, 41],
+  ]) {
+    box(x, 0.62, z, 3.4, 0.22, 1.65, 'metal');
+    box(x - 0.35, 1.08, z, 2.05, 0.7, 1.25, 'corrugated');
+    box(x + 1.55, 1.02, z, 0.15, 0.62, 1.45, 'metal');
+    for (const dx of [-1.15, 1.15])
+      for (const dz of [-0.66, 0.66])
+        box(x + dx, 0.28, z + dz, 0.54, 0.56, 0.37, 'rubber');
+    prop('build_pipe_stack', x - 3.8, z - 2.5, 3.02, 2.793, 3);
+    box(x + 3.5, 0.64, z + 2.6, 4.2, 1.28, 1.5, 'rail_sleeper_concrete');
+    arena.decor('rail_snow_drift_patch', vec(x, 0, z + 4));
+    warm(x, 4, z, 165, 22);
+  }
+  prop('port_container_20_ochre', 142, 45, 6.058, 2.591, 2.438);
 
   // Tkanka łącząca: droga techniczna, warsztaty, bramy i duże osłony co 24–32 m.
   p.floor(rect(-209, 209, 62, 76), 0, 'snow_asphalt', { walkable: false });
@@ -453,6 +517,7 @@ export default function generate() {
       ],
     });
     arena.decor('city_ac_unit', vec(x, 2, z + 5.3));
+    workshopLighting(x, z, 5);
     prop('city_crates', x + 9, z + 6, 1.212, 1.59, 1.256);
   }
   for (const z of [-19, 16, 57])
@@ -517,6 +582,7 @@ export default function generate() {
         { side: 'east', at: 4, width: 3 },
       ],
     });
+    workshopLighting(x, z, 4);
   }
   for (const [x, z] of [
     [-174, 53],
@@ -529,6 +595,20 @@ export default function generate() {
     });
     prop('city_barrier', x - 6, z + 4, 2, 0.929, 0.51);
   }
+  // Szafy na obrzeżach kładki zostawiają poprzeczne przejazdy pod pomostem.
+  for (const [x, z] of [
+    [17, -68],
+    [24, -42],
+    [16, -16],
+    [23, 13],
+    [16, 41],
+  ]) {
+    box(x, 0.85, z, 1.55, 1.7, 2.2, 'corrugated');
+    box(x + 0.8, 1.45, z, 0.08, 0.18, 0.26, 'neon_amber');
+    prop('city_crates', x + 2.6, z - 1.6, 1.212, 1.59, 1.256);
+    warm(20, 7.3, z, 220, 24);
+    box(20, 7.63, z, 1.8, 0.16, 0.4, 'light_white');
+  }
   for (const x of [-190, -184, -178, -172, -166]) {
     box(x, 0.055, 73, 0.12, 0.07, 5, 'rail_sleeper_concrete');
     if (x % 12 === -10) prop('city_car', x + 2, 74, 4.42, 1.46, 1.94);
@@ -536,9 +616,12 @@ export default function generate() {
   for (const x of [-187, -169, -139, -121]) {
     box(x, 1, -48, 6, 2, 1.25, 'corrugated');
     box(x, 0.8, -34, 5, 1.6, 1.1, 'metal');
-    arena.light(vec(x, 8, -48), '#fff1d6', 75, 26);
-    arena.light(vec(x, 7, -29), '#ffae1a', 35, 20);
+    warm(x, 8, -48, 360, 36);
+    warm(x, 6.7, -29, 205, 27);
+    box(x, 8.35, -48, 2.4, 0.16, 0.4, 'light_white');
+    box(x, 7.05, -29, 2.4, 0.16, 0.4, 'light_white');
   }
+  for (const x of [-183, -154, -126]) warm(x, 4.4, -64, 125, 18);
   for (const x of [-122, -2, 90, 146]) {
     arena.decor('rail_track_straight', vec(x, -0.8, -7), 0.16);
     arena.decor('rail_track_straight', vec(x, -0.8, 22), -0.16);
@@ -561,7 +644,7 @@ export default function generate() {
     for (let x = -90; x <= 190; x += 36) {
       arena.decor('rail_catenary_mast', vec(x, 0, z));
       box(x, 4, z, 0.4, 8, 0.4, 'metal', { visible: false });
-      arena.light(vec(x, 6.8, z + 3), '#fff1d6', 65, 28);
+      warm(x, 7.1, z + 3, 420, 52);
     }
   for (const x of [-102, -54, 92, 198])
     for (const z of [-40, 30]) {
@@ -569,8 +652,25 @@ export default function generate() {
       for (const side of [-1, 1])
         box(x, 3.1, z + side * 11, 1, 6.2, 0.5, 'metal', { visible: false });
       box(x, 6.6, z, 1.4, 0.8, 23.2, 'metal', { visible: false });
-      arena.light(vec(x, 5.1, z), '#6dff4a', 45, 24);
+      arena.light(vec(x, 5.05, z - 5), '#6dff4a', 68, 16);
+      arena.light(vec(x, 5.05, z + 5), '#ffae1a', 72, 16);
     }
+  for (const [x, z] of [
+    [-89, -29],
+    [-34, -17],
+    [30, -32],
+    [82, -17],
+    [124, 15],
+    [183, -28],
+  ]) {
+    box(x, 0.55, z, 0.3, 1.1, 0.3, 'metal');
+    const green = x < 0 || x === 82;
+    box(x, 1.24, z, 0.42, 0.28, 0.42, green ? 'neon_green' : 'neon_amber');
+    arena.light(vec(x, 1.27, z), green ? '#6dff4a' : '#ffae1a', 42, 11);
+  }
+  for (const { z, cars } of consists.slice(0, 6))
+    for (const [i, x] of cars.entries())
+      if (i % 2 === 0) arena.light(vec(x, 2.5, z + 2.45), '#3d7bff', 66, 13);
   // Mur oporowy, nasyp, clôture południowa i zamknięcia końców torów.
   p.wall(vec(-210, 0, -87), vec(210, 0, -87), 5, 2, 'snow_concrete');
   p.fence({ from: vec(-210, 0, 87), to: vec(210, 0, 87), height: 3.5 });

@@ -56,13 +56,13 @@ między X 126–146 i Z 57–70. Generator szacuje 53 099 m² powierzchni
 chodzenia, wliczając poziomy. Pogoda `storm`, granatowe
 poszycie i mokry plac, bursztynowe akcenty oraz reflektory w ciepłej bieli.
 
-| Punkt | X / Y / Z (m) | Strefa |
-| --- | --- | --- |
-| A | −148 / 0 / −25 | Wnętrze hali |
-| B | 0 / 0 / −5 | Skrzyżowanie alei placu |
-| C | −65 / 12,8 / 88 | Wyrównane pokrywy luków sekcji środkowej statku |
-| D | 60 / 0 / −90 | Wolny odcinek bocznicy |
-| E | 140 / 0 / 0 | Wjazd przed biurem |
+| Punkt | X / Y / Z (m)   | Strefa                                          |
+| ----- | --------------- | ----------------------------------------------- |
+| A     | −148 / 0 / −25  | Wnętrze hali                                    |
+| B     | 0 / 0 / −5      | Skrzyżowanie alei placu                         |
+| C     | −65 / 12,8 / 88 | Wyrównane pokrywy luków sekcji środkowej statku |
+| D     | 60 / 0 / −90    | Wolny odcinek bocznicy                          |
+| E     | 140 / 0 / 0     | Wjazd przed biurem                              |
 
 Promienie punktów wynoszą 5 m. Gracz zaczyna na zachodniej kei (−150, 0, 55).
 Przejęcie ma 200 biletów i limit 12 żywych przeciwników. 32 pozycje posiłków,
@@ -124,14 +124,14 @@ spawnów, a walidator trybu sprawdza drogi ze wszystkich 32 pozycji.
 Otwórz `?scene=conquest&arena=arenaContainerPort&debug=1` i wpisz `god`.
 Konsola `tp <x> <z>` zachowuje wysokość. Na poziomie kei:
 
-| Miejsce | Komenda |
-| --- | --- |
-| Nabrzeże | `tp -150 55` |
-| Hala / A | `tp -148 -25` |
-| Plac / B | `tp 0 -5` |
-| Bocznica / D | `tp 60 -90` |
-| Brama / E | `tp 140 0` |
-| Statek / C | `tp -124 69`; podejdź do początku trapu, wejdź na pokład i skręć na pokrywy luków |
+| Miejsce      | Komenda                                                                           |
+| ------------ | --------------------------------------------------------------------------------- |
+| Nabrzeże     | `tp -150 55`                                                                      |
+| Hala / A     | `tp -148 -25`                                                                     |
+| Plac / B     | `tp 0 -5`                                                                         |
+| Bocznica / D | `tp 60 -90`                                                                       |
+| Brama / E    | `tp 140 0`                                                                        |
+| Statek / C   | `tp -124 69`; podejdź do początku trapu, wejdź na pokład i skręć na pokrywy luków |
 
 W grze sprawdź czytelność sylwetek w ulewie przy zmianie stref, tempo dojścia
 posiłków, możliwość zerwania kontaktu ogniowego w alejach oraz przejścia
@@ -152,13 +152,13 @@ ulica zewnętrzna, dalsze wieżowce i niebo pochodzą z silnika horyzontu.
 Pogoda `smog`. Tożsamość: zieleń oczyszczaczy i tuneli, bursztyn bramek,
 ciepła biel latarni; chłodny asfalt, beton i ściany pokryte sadzą.
 
-| Punkt | X/Y/Z (m)         | Strefa i charakter |
-| ----- | ----------------- | ------------------ |
-| A | 0 / 0 / 40 | Gęste obozowisko: namioty kopułowe i dwuspadowe, szopy, beczki, wraki; przejścia między osłonami |
-| B | −70 / 11,6 / −3 | Jezdnia poziomu 1 w osi X, wraki i zielone oczyszczacze; łącznik obsługi po zachodniej stronie |
-| C | 95 / 0 / −100 | Stacja paliw NE: wiata, cztery dystrybutory, sklep z dwoma wejściami i wyposażeniem |
-| D | −120 / −4 / 60 | Betonowy kanał burzowy w osi Z, niskie osłony i boczne wnętrza przepustów |
-| E | 27 / 23,2 / −110 | Jezdnia poziomu 2 przy urwanym północnym końcu; landmark `hw_broken_deck_end` przy Z −152 |
+| Punkt | X/Y/Z (m)        | Strefa i charakter                                                                               |
+| ----- | ---------------- | ------------------------------------------------------------------------------------------------ |
+| A     | 0 / 0 / 40       | Gęste obozowisko: namioty kopułowe i dwuspadowe, szopy, beczki, wraki; przejścia między osłonami |
+| B     | −70 / 11,6 / −3  | Jezdnia poziomu 1 w osi X, wraki i zielone oczyszczacze; łącznik obsługi po zachodniej stronie   |
+| C     | 95 / 0 / −100    | Stacja paliw NE: wiata, cztery dystrybutory, sklep z dwoma wejściami i wyposażeniem              |
+| D     | −120 / −4 / 60   | Betonowy kanał burzowy w osi Z, niskie osłony i boczne wnętrza przepustów                        |
+| E     | 27 / 23,2 / −110 | Jezdnia poziomu 2 przy urwanym północnym końcu; landmark `hw_broken_deck_end` przy Z −152        |
 
 Promienie wszystkich punktów: **5 m**. Szósta strefa to wentylatornia:
 `hw_vent_tower` przy (−60, 0, 90), krótki portal tunelu i dojście na −4 m.
@@ -457,10 +457,21 @@ do rejestru materiałów; `mat_snow` zasp używa istniejącej tekstury
 tych zasp i zachowują swój wygląd.
 Światła są rozmieszczone w każdej strefie i korzystają z istniejącej puli.
 
-Wynik generatora: 1705 bloków (198 z modelem), 260 dekoracji, łącznie
-458 rekwizytów, 59 źródeł świateł i 29 spawnów trybu. Najczęstszy rekwizyt:
-52 × `rail_snow_drift_long` (11,4%). Check: 0 błędów, jedno przypomnienie
-o ręcznym sprawdzeniu naturalnych granic. Powierzchnia: 72 434 m².
+Peron ma ciepłe lampy pod wiatami i przy krawędzi. Kioski, automaty,
+bagaże i barierki uzupełniają ławki przy wolnym przejściu do C. Stanowiska
+przed obrotnicą mają wózki, podkłady, zaspy i kontener narzędziowy.
+Szafy i skrzynie pod kładką dzielą przestrzeń co 25–29 m.
+Hala, parowozownia, warsztaty i nastawnia mają lokalne oprawy. Świecące
+okna, zielone i bursztynowe sygnały oraz niebieskie światło przy pasach
+wagonów dają punkty orientacyjne również przy ograniczonej puli świateł.
+Reflektory przy torach mają zasięg 52 m.
+
+Wynik generatora po przejściu światła: 1850 bloków (223 z modelem),
+266 dekoracji, łącznie 489 rekwizytów modelowych, 134 źródła świateł
+i 29 spawnów trybu. Wcześniej było 458 rekwizytów i 59 świateł.
+Wózki z brył są liczone w blokach. Najczęstszy rekwizyt to
+52 × `rail_snow_drift_long` (10,6%). Check ma 0 błędów i przypomina
+o ręcznym sprawdzeniu naturalnych granic. Powierzchnia to 72 290 m².
 
 Największy kwadrat bez widocznych osłon naziemnych zmalał z 58×58 m do
 39×39 m. Największy prostokąt ma 310×9 m i biegnie wzdłuż drogi serwisowej.
@@ -515,13 +526,13 @@ zabezpiecza krawędzie, a za nimi oprawa bez kolizji przechodzi w panoramę.
 Profil `rain`, bursztynowe nabrzeża, chłodna woda z błękitnymi i zielonymi
 akcentami oraz fioletowe szyldy barki.
 
-| Punkt | X / Y / Z (m) | Strefa i dojścia |
-| --- | --- | --- |
-| A | −110 / 0 / −80 | Plac przepompowni. Podejście przez most przy X −102 albo rampy północnego kanału. |
-| B | 60 / 1,2 / 50 | Targ na barce. Dwa trapy z niezależnymi rampami na północnym i południowym nabrzeżu. |
-| C | 0 / −1,2 / 0 | Skrzyżowanie kanału z poprzeczną odnogą cumowniczą. Rampy przy Z 0 oraz przy Z −12 i 12. |
-| D | 90 / 0 / −70 | Targ na wyspie północno-wschodniej. Mosty przy X 46 i 110 oraz dojścia po dnie kanału. |
-| E | −80 / 0 / 80 | Dziedziniec między kamienicami z zalaną niecką przy zachodnim boku. Mosty przy X −105 i −51, z alternatywą po dnie. |
+| Punkt | X / Y / Z (m)  | Strefa i dojścia                                                                                                    |
+| ----- | -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| A     | −110 / 0 / −80 | Plac przepompowni. Podejście przez most przy X −102 albo rampy północnego kanału.                                   |
+| B     | 60 / 1,2 / 50  | Targ na barce. Dwa trapy z niezależnymi rampami na północnym i południowym nabrzeżu.                                |
+| C     | 0 / −1,2 / 0   | Skrzyżowanie kanału z poprzeczną odnogą cumowniczą. Rampy przy Z 0 oraz przy Z −12 i 12.                            |
+| D     | 90 / 0 / −70   | Targ na wyspie północno-wschodniej. Mosty przy X 46 i 110 oraz dojścia po dnie kanału.                              |
+| E     | −80 / 0 / 80   | Dziedziniec między kamienicami z zalaną niecką przy zachodnim boku. Mosty przy X −105 i −51, z alternatywą po dnie. |
 
 Centralne kamienice mają przechodnie partery, osłony wewnątrz i alejki między
 kwartałami. Południowy wschód łączy warsztaty i targ z górnym przejściem śluzy
@@ -540,12 +551,12 @@ wraki oraz pale cumownicze. Pula świateł wybiera oprawę z 46 źródeł.
 wrogów, 190 biletów. Start (−140, 0, 130), wszystkie promienie 5 m.
 Generator mierzy ok. 74 098 m² chodzenia przy próbkowaniu co metr.
 
-| Pomiar | Wynik |
-| --- | ---: |
+| Pomiar                                                                        |              Wynik |
+| ----------------------------------------------------------------------------- | -----------------: |
 | Nawigacja, siatka 1,5 m i pięć pól (ArenaSurfaceNavigation / ArenaNavigation) | 194,57 / 193,54 ms |
-| 12 wrogów w RoomScene, średnia z 600 kroków po rozgrzewce | 0,747 ms/krok |
-| Statyczne siatki z rzeczywistych GLB przed / po scaleniu w komórkach 20 m | 5643 / 1929 |
-| Partie instancji | 201 |
+| 12 wrogów w RoomScene, średnia z 600 kroków po rozgrzewce                     |      0,747 ms/krok |
+| Statyczne siatki z rzeczywistych GLB przed / po scaleniu w komórkach 20 m     |        5643 / 1929 |
+| Partie instancji                                                              |                201 |
 
 Pokrycie fizyki obejmuje wejście na barkę z obu brzegów, przejście śluzy
 i dojście kapsuły oraz obu archetypów do A–E. Liczba siatek opisuje całą
@@ -591,12 +602,12 @@ obiektów na każdą kroplę. Bufory instancji i scalone geometrie są zwalniane
 
 Pomiar Terminalu kontenerowego w Vitest:
 
-| Pomiar | Wynik |
-| --- | ---: |
+| Pomiar                                                |         Wynik |
+| ----------------------------------------------------- | ------------: |
 | Statyczne siatki przed i po scalaniu, rzeczywiste GLB | 6 681 → 2 929 |
-| Partie instancji | 1090 |
-| Nawigacja z pięcioma polami | 47,77 ms |
-| 12 wrogów w hoście Przejęcia, średnia z 600 kroków | 0,418 ms/krok |
+| Partie instancji                                      |          1090 |
+| Nawigacja z pięcioma polami                           |      47,77 ms |
+| 12 wrogów w hoście Przejęcia, średnia z 600 kroków    | 0,418 ms/krok |
 
 Sortowanie przeszkód nawigacji według komórek ogranicza przygotowanie
 siatki do sprawdzania brył w sąsiedztwie próbki.
@@ -660,13 +671,13 @@ ciepłej bieli oświetlają przejścia, zielone lampy wskazują sprawne urządze
 a bursztynowe światło podkreśla chłodnie, komin i węzły rurociągów.
 108 źródeł współdzieli istniejącą pulę aktywnych świateł.
 
-| Punkt | X / Y / Z (m) | Strefa i drogi |
-| --- | --- | --- |
-| A | −120 / 0 / 15 | Wnętrze chłodni. Wyrwa prowadzi na wschód, między gruzem i wiązkami rur. Rampa przez kołnierz 0,8 m prowadzi do płytkiej niecki na poziomie posadzki. |
-| B | 25 / 0 / −25 | Hala 90 × 40 × 18 m, z bramami N/S i drzwiami E/W. Trzy turbiny mają połączone pomosty na 6 m. Schody na obu końcach prowadzą na antresolę sterowni na 8 m. |
-| C | 130 / 0 / −65 | Rozdzielnia. Siatka transformatorów, bramownice i niskie ogrodzenia z przerwami. Dwa pola elektryczne można obejść od północy lub południa. |
-| D | 120 / 0 / 80 | Skład między pięcioma hałdami na 7 m i zasiekami. Pod przenośnikiem biegnie droga na wschód, do wagonów przy dwóch torach. |
-| E | −60 / −3 / 100 | Nabrzeże ujęcia. Wejście szeroką rampą lub schodami od wschodu i rampą od zachodu. Przepompownia ma dwa wejścia. Kładka do wieży w kanale jest częścią oprawy. |
+| Punkt | X / Y / Z (m)  | Strefa i drogi                                                                                                                                                 |
+| ----- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A     | −120 / 0 / 15  | Wnętrze chłodni. Wyrwa prowadzi na wschód, między gruzem i wiązkami rur. Rampa przez kołnierz 0,8 m prowadzi do płytkiej niecki na poziomie posadzki.          |
+| B     | 25 / 0 / −25   | Hala 90 × 40 × 18 m, z bramami N/S i drzwiami E/W. Trzy turbiny mają połączone pomosty na 6 m. Schody na obu końcach prowadzą na antresolę sterowni na 8 m.    |
+| C     | 130 / 0 / −65  | Rozdzielnia. Siatka transformatorów, bramownice i niskie ogrodzenia z przerwami. Dwa pola elektryczne można obejść od północy lub południa.                    |
+| D     | 120 / 0 / 80   | Skład między pięcioma hałdami na 7 m i zasiekami. Pod przenośnikiem biegnie droga na wschód, do wagonów przy dwóch torach.                                     |
+| E     | −60 / −3 / 100 | Nabrzeże ujęcia. Wejście szeroką rampą lub schodami od wschodu i rampą od zachodu. Przepompownia ma dwa wejścia. Kładka do wieży w kanale jest częścią oprawy. |
 
 Kotłownia na północy ma dostępny parter, zewnętrzną wieżę schodową i dach
 na 14 m. Komin na (45, 0, −135) ma 120 m, obie chłodnie mają po 70 m.
@@ -733,10 +744,10 @@ największego kwadratu wspartego na płaskim gruncie. Właściwy odstęp osłon
 wzdłuż trasy zależy od kierunku ruchu i skarp.
 Pomiar w Node na docelowej geometrii:
 
-| Pomiar | Wynik | Budżet lub zakres |
-| --- | ---: | --- |
-| Budowa siatki i pięciu pól | 133,60 ms | ≤ 500 ms |
-| Krok `RoomScene`, 12 wrogów, 600 kroków po rozgrzewce | 0,796 ms | ≤ 2 ms |
+| Pomiar                                                |       Wynik | Budżet lub zakres               |
+| ----------------------------------------------------- | ----------: | ------------------------------- |
+| Budowa siatki i pięciu pól                            |   133,60 ms | ≤ 500 ms                        |
+| Krok `RoomScene`, 12 wrogów, 600 kroków po rozgrzewce |    0,796 ms | ≤ 2 ms                          |
 | Rzeczywiste GLB, statyczne siatki przed → po scaleniu | 3780 → 1270 | 90 partii instancji po scaleniu |
 
 Nawigacja zawęża test prześwitu i podparcia do pobliskich brył według
@@ -749,14 +760,14 @@ z sześciu spawnów do wszystkich pięciu punktów.
 Sprawdzenie w 30 sekund: `?scene=conquest&arena=arenaPowerPlant&debug=1`.
 Wpisz `god`, a potem w konsoli debug użyj po kolei:
 
-| Polecenie | Widok |
-| --- | --- |
-| `tp -120 15 -90` | Wnętrze A i wyrwa na wschód |
-| `tp 25 -25 180` | Turbiny B i pomosty |
-| `tp 33 -108 0` | Parter kotłowni; schody po wschodniej stronie |
-| `tp 130 -65 0` | Rozdzielnia C |
-| `tp 120 80 -90` | Hałdy D, przenośnik i bocznica |
-| `tp -60 100 180` | Spadek na nabrzeże E i widok kanału |
+| Polecenie        | Widok                                         |
+| ---------------- | --------------------------------------------- |
+| `tp -120 15 -90` | Wnętrze A i wyrwa na wschód                   |
+| `tp 25 -25 180`  | Turbiny B i pomosty                           |
+| `tp 33 -108 0`   | Parter kotłowni; schody po wschodniej stronie |
+| `tp 130 -65 0`   | Rozdzielnia C                                 |
+| `tp 120 80 -90`  | Hałdy D, przenośnik i bocznica                |
+| `tp -60 100 180` | Spadek na nabrzeże E i widok kanału           |
 
 Przy `tp` wysokość pozostaje bieżąca do następnego kroku fizyki. Na E
 gracz opadnie z poziomu placu. Na wyższe podesty wejdź schodami. Z E

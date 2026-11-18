@@ -461,6 +461,18 @@
 <polygon points="313.5,137.1 315,137.1 315,137.8 313.5,137.8" fill="hsl(199.21 35% 26.71%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.44 m</title></polygon>
 <polygon points="289.2,54.89 290.8,54.89 290.8,55.28 289.2,55.28" fill="hsl(199.08 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.46 m</title></polygon>
 <polygon points="339.2,124.89 340.8,124.89 340.8,125.28 339.2,125.28" fill="hsl(199.08 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.46 m</title></polygon>
+<polygon points="376.58,128.16 377.12,128.16 377.12,128.53 376.58,128.53" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="376.58,129.47 377.12,129.47 377.12,129.84 376.58,129.84" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="378.88,128.16 379.42,128.16 379.42,128.53 378.88,128.53" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="378.88,129.47 379.42,129.47 379.42,129.84 378.88,129.84" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="404.58,125.16 405.12,125.16 405.12,125.53 404.58,125.53" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="404.58,126.47 405.12,126.47 405.12,126.84 404.58,126.84" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="406.88,125.16 407.42,125.16 407.42,125.53 406.88,125.53" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="406.88,126.47 407.42,126.47 407.42,126.84 406.88,126.84" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="426.58,148.16 427.12,148.16 427.12,148.53 426.58,148.53" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="426.58,149.47 427.12,149.47 427.12,149.84 426.58,149.84" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="428.88,148.16 429.42,148.16 429.42,148.53 428.88,148.53" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
+<polygon points="428.88,149.47 429.42,149.47 429.42,149.84 428.88,149.84" fill="hsl(198.23 35% 26.87%)" stroke="#50606e" stroke-width="0.15"><title>rubber; wierzch 0.56 m</title></polygon>
 <polygon points="246.48,106.5 247.71,106.5 247.71,109.5 246.48,109.5" fill="hsl(198.02 35% 26.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.59 m</title></polygon>
 <polygon points="316.29,106.5 317.52,106.5 317.52,109.5 316.29,109.5" fill="hsl(198.02 35% 26.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.59 m</title></polygon>
 <polygon points="168.48,131.5 169.71,131.5 169.71,134.5 168.48,134.5" fill="hsl(198.02 35% 26.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.59 m</title></polygon>
@@ -517,6 +529,9 @@
 <polygon points="313.5,136.4 315,136.4 315,137.1 313.5,137.1" fill="hsl(197.42 35% 27.01%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.66 m</title></polygon>
 <polygon points="289.2,55.28 290.8,55.28 290.8,55.67 289.2,55.67" fill="hsl(197.23 35% 27.05%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.68 m</title></polygon>
 <polygon points="339.2,125.28 340.8,125.28 340.8,125.67 339.2,125.67" fill="hsl(197.23 35% 27.05%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.68 m</title></polygon>
+<polygon points="376.3,128.18 379.7,128.18 379.7,129.82 376.3,129.82" fill="hsl(196.85 35% 27.11%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 0.73 m</title></polygon>
+<polygon points="404.3,125.17 407.7,125.17 407.7,126.83 404.3,126.83" fill="hsl(196.85 35% 27.11%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 0.73 m</title></polygon>
+<polygon points="426.3,148.18 429.7,148.18 429.7,149.82 426.3,149.82" fill="hsl(196.85 35% 27.11%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 0.73 m</title></polygon>
 <polygon points="247.71,106.5 248.95,106.5 248.95,109.5 247.71,109.5" fill="hsl(196.43 35% 27.18%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.78 m</title></polygon>
 <polygon points="315.05,106.5 316.29,106.5 316.29,109.5 315.05,109.5" fill="hsl(196.43 35% 27.18%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.78 m</title></polygon>
 <polygon points="169.71,131.5 170.95,131.5 170.95,134.5 169.71,134.5" fill="hsl(196.43 35% 27.18%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 0.78 m</title></polygon>
@@ -703,6 +718,12 @@
 <polygon points="223.6,151.18 228.4,151.18 228.4,152.03 223.6,152.03" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.1 m</title></polygon>
 <polygon points="307.6,149.97 312.4,149.97 312.4,150.82 307.6,150.82" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.1 m</title></polygon>
 <polygon points="307.6,151.18 312.4,151.18 312.4,152.03 307.6,152.03" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.1 m</title></polygon>
+<polygon points="138.85,78.85 139.15,78.85 139.15,79.15 138.85,79.15" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="193.85,90.85 194.15,90.85 194.15,91.15 193.85,91.15" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="257.85,75.85 258.15,75.85 258.15,76.15 257.85,76.15" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="309.85,90.85 310.15,90.85 310.15,91.15 309.85,91.15" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="351.85,122.85 352.15,122.85 352.15,123.15 351.85,123.15" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="410.85,79.85 411.15,79.85 411.15,80.15 410.85,80.15" fill="hsl(193.84 35% 27.63%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
 <polygon points="289.2,56.06 290.8,56.06 290.8,56.44 289.2,56.44" fill="hsl(193.52 35% 27.68%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.14 m</title></polygon>
 <polygon points="339.2,126.06 340.8,126.06 340.8,126.44 339.2,126.44" fill="hsl(193.52 35% 27.68%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.14 m</title></polygon>
 <polygon points="250.19,106.5 251.43,106.5 251.43,109.5 250.19,109.5" fill="hsl(193.26 35% 27.73%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.17 m</title></polygon>
@@ -715,6 +736,9 @@
 <polygon points="200.5,165.5 201.8,165.5 201.8,170.5 200.5,170.5" fill="hsl(193.02 35% 27.77%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.2 m</title></polygon>
 <polygon points="341.6,48 342.7,48 342.7,48.27 341.6,48.27" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 1.2 m</title></polygon>
 <polygon points="282.4,30 283.68,30 283.68,34 282.4,34" fill="hsl(193.02 35% 27.77%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.2 m</title></polygon>
+<polygon points="379.4,130.85 383.6,130.85 383.6,132.35 379.4,132.35" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
+<polygon points="407.4,127.85 411.6,127.85 411.6,129.35 407.4,129.35" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
+<polygon points="429.4,150.85 433.6,150.85 433.6,152.35 429.4,152.35" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
 <polygon points="53.7,146.25 58.3,146.25 58.3,147.75 53.7,147.75" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
 <polygon points="87.7,146.25 92.3,146.25 92.3,147.75 87.7,147.75" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
 <polygon points="121.7,146.25 126.3,146.25 126.3,147.75 121.7,147.75" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
@@ -726,6 +750,9 @@
 <polygon points="325.7,146.25 330.3,146.25 330.3,147.75 325.7,147.75" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
 <polygon points="359.7,146.25 364.3,146.25 364.3,147.75 359.7,147.75" fill="hsl(192.37 35% 27.88%)" stroke="#50606e" stroke-width="0.15"><title>rail_sleeper_concrete; wierzch 1.28 m</title></polygon>
 <polygon points="198,163 199.37,163 199.37,167 198,167" fill="hsl(192.23 35% 27.9%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.3 m</title></polygon>
+<polygon points="379.48,128.28 379.63,128.28 379.63,129.72 379.48,129.72" fill="hsl(191.97 35% 27.95%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.33 m</title></polygon>
+<polygon points="407.48,125.28 407.63,125.28 407.63,126.72 407.48,126.72" fill="hsl(191.97 35% 27.95%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.33 m</title></polygon>
+<polygon points="429.48,148.28 429.63,148.28 429.63,149.72 429.48,149.72" fill="hsl(191.97 35% 27.95%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.33 m</title></polygon>
 <polygon points="144.01,88.46 145.99,88.46 145.99,89.54 144.01,89.54" fill="hsl(191.97 35% 27.95%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
 <polygon points="176.01,88.46 177.99,88.46 177.99,89.54 176.01,89.54" fill="hsl(191.97 35% 27.95%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
 <polygon points="208.01,88.46 209.99,88.46 209.99,89.54 208.01,89.54" fill="hsl(191.97 35% 27.95%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
@@ -776,6 +803,12 @@
 <polygon points="311.33,106.5 312.57,106.5 312.57,109.5 311.33,109.5" fill="hsl(191.67 35% 28%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.37 m</title></polygon>
 <polygon points="173.43,131.5 174.67,131.5 174.67,134.5 173.43,134.5" fill="hsl(191.67 35% 28%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.37 m</title></polygon>
 <polygon points="233.33,131.5 234.57,131.5 234.57,134.5 233.33,134.5" fill="hsl(191.67 35% 28%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.37 m</title></polygon>
+<polygon points="138.79,78.79 139.21,78.79 139.21,79.21 138.79,79.21" fill="hsl(191.56 35% 28.02%)" stroke="#50606e" stroke-width="0.15"><title>neon_green; wierzch 1.38 m</title></polygon>
+<polygon points="193.79,90.79 194.21,90.79 194.21,91.21 193.79,91.21" fill="hsl(191.56 35% 28.02%)" stroke="#50606e" stroke-width="0.15"><title>neon_green; wierzch 1.38 m</title></polygon>
+<polygon points="257.79,75.79 258.21,75.79 258.21,76.21 257.79,76.21" fill="hsl(191.56 35% 28.02%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.38 m</title></polygon>
+<polygon points="309.79,90.79 310.21,90.79 310.21,91.21 309.79,91.21" fill="hsl(191.56 35% 28.02%)" stroke="#50606e" stroke-width="0.15"><title>neon_green; wierzch 1.38 m</title></polygon>
+<polygon points="351.79,122.79 352.21,122.79 352.21,123.21 351.79,123.21" fill="hsl(191.56 35% 28.02%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.38 m</title></polygon>
+<polygon points="410.79,79.79 411.21,79.79 411.21,80.21 410.79,80.21" fill="hsl(191.56 35% 28.02%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.38 m</title></polygon>
 <polygon points="39.2,90.5 40.8,90.5 40.8,91.5 39.2,91.5" fill="hsl(191.4 35% 28.05%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
 <polygon points="52.2,187.5 53.8,187.5 53.8,188.5 52.2,188.5" fill="hsl(191.4 35% 28.05%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
 <polygon points="80.2,187.5 81.8,187.5 81.8,188.5 80.2,188.5" fill="hsl(191.4 35% 28.05%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
@@ -797,6 +830,9 @@
 <polygon points="201.8,165.5 203.1,165.5 203.1,170.5 201.8,170.5" fill="hsl(191.4 35% 28.05%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.4 m</title></polygon>
 <polygon points="341.6,48.27 342.7,48.27 342.7,48.54 341.6,48.54" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 1.4 m</title></polygon>
 <polygon points="283.68,30 284.96,30 284.96,34 283.68,34" fill="hsl(191.4 35% 28.05%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.4 m</title></polygon>
+<polygon points="376.63,128.38 378.68,128.38 378.68,129.63 376.63,129.63" fill="hsl(191.15 35% 28.09%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.43 m</title></polygon>
+<polygon points="404.63,125.38 406.68,125.38 406.68,126.63 404.63,126.63" fill="hsl(191.15 35% 28.09%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.43 m</title></polygon>
+<polygon points="426.63,148.38 428.68,148.38 428.68,149.63 426.63,149.63" fill="hsl(191.15 35% 28.09%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.43 m</title></polygon>
 <polygon points="45.79,176.03 50.21,176.03 50.21,177.97 45.79,177.97" fill="hsl(190.91 35% 28.13%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
 <polygon points="73.79,176.03 78.21,176.03 78.21,177.97 73.79,177.97" fill="hsl(190.91 35% 28.13%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
 <polygon points="101.79,176.03 106.21,176.03 106.21,177.97 101.79,177.97" fill="hsl(190.91 35% 28.13%)" stroke="#50606e" stroke-width="0.15"><title>city_car; wierzch 1.46 m</title></polygon>
@@ -838,10 +874,18 @@
 <polygon points="195.75,150.1 200.25,150.1 200.25,151.9 195.75,151.9" fill="hsl(190.58 35% 28.19%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.5 m</title></polygon>
 <polygon points="279.75,150.1 284.25,150.1 284.25,151.9 279.75,151.9" fill="hsl(190.58 35% 28.19%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.5 m</title></polygon>
 <polygon points="363.75,150.1 368.25,150.1 368.25,151.9 363.75,151.9" fill="hsl(190.58 35% 28.19%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.5 m</title></polygon>
+<polygon points="245.76,39.87 245.84,39.87 245.84,40.13 245.76,40.13" fill="hsl(190.26 35% 28.24%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.54 m</title></polygon>
+<polygon points="252.76,65.87 252.84,65.87 252.84,66.13 252.76,66.13" fill="hsl(190.26 35% 28.24%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.54 m</title></polygon>
+<polygon points="244.76,91.87 244.84,91.87 244.84,92.13 244.76,92.13" fill="hsl(190.26 35% 28.24%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.54 m</title></polygon>
+<polygon points="251.76,120.87 251.84,120.87 251.84,121.13 251.76,121.13" fill="hsl(190.26 35% 28.24%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.54 m</title></polygon>
+<polygon points="244.76,148.87 244.84,148.87 244.84,149.13 244.76,149.13" fill="hsl(190.26 35% 28.24%)" stroke="#50606e" stroke-width="0.15"><title>neon_amber; wierzch 1.54 m</title></polygon>
 <polygon points="252.67,106.5 253.9,106.5 253.9,109.5 252.67,109.5" fill="hsl(190.08 35% 28.27%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.56 m</title></polygon>
 <polygon points="310.1,106.5 311.33,106.5 311.33,109.5 310.1,109.5" fill="hsl(190.08 35% 28.27%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.56 m</title></polygon>
 <polygon points="174.67,131.5 175.9,131.5 175.9,134.5 174.67,134.5" fill="hsl(190.08 35% 28.27%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.56 m</title></polygon>
 <polygon points="232.1,131.5 233.33,131.5 233.33,134.5 232.1,134.5" fill="hsl(190.08 35% 28.27%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.56 m</title></polygon>
+<polygon points="210.09,173.37 211.31,173.37 211.31,174.63 210.09,174.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="263.09,173.37 264.31,173.37 264.31,174.63 263.09,174.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="294.09,165.37 295.31,165.37 295.31,166.63 294.09,166.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
 <polygon points="60.39,121.37 61.61,121.37 61.61,122.63 60.39,122.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
 <polygon points="120.39,120.37 121.61,120.37 121.61,121.63 120.39,121.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
 <polygon points="188.39,125.37 189.61,125.37 189.61,126.63 188.39,126.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
@@ -851,6 +895,11 @@
 <polygon points="160.39,41.37 161.61,41.37 161.61,42.63 160.39,42.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
 <polygon points="220.39,41.37 221.61,41.37 221.61,42.63 220.39,42.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
 <polygon points="312.39,53.37 313.61,53.37 313.61,54.63 312.39,54.63" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="246.99,37.77 248.21,37.77 248.21,39.03 246.99,39.03" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="253.99,63.77 255.21,63.77 255.21,65.03 253.99,65.03" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="245.99,89.77 247.21,89.77 247.21,91.03 245.99,91.03" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="252.99,118.77 254.21,118.77 254.21,120.03 252.99,120.03" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="245.99,146.77 247.21,146.77 247.21,148.03 245.99,148.03" fill="hsl(189.85 35% 28.31%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
 <polygon points="289.2,56.83 290.8,56.83 290.8,57.22 289.2,57.22" fill="hsl(189.81 35% 28.32%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.59 m</title></polygon>
 <polygon points="339.2,126.83 340.8,126.83 340.8,127.22 339.2,127.22" fill="hsl(189.81 35% 28.32%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.59 m</title></polygon>
 <polygon points="44.96,50 46.24,50 46.24,54 44.96,54" fill="hsl(189.77 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.6 m</title></polygon>
@@ -880,6 +929,14 @@
 <polygon points="330.3,146.55 331.1,146.55 331.1,147.45 330.3,147.45" fill="hsl(189.77 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.6 m</title></polygon>
 <polygon points="364.3,146.55 365.1,146.55 365.1,147.45 364.3,147.45" fill="hsl(189.77 35% 28.33%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.6 m</title></polygon>
 <polygon points="200.74,163 202.11,163 202.11,167 200.74,167" fill="hsl(189.02 35% 28.45%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.69 m</title></polygon>
+<polygon points="244.22,38.9 245.78,38.9 245.78,41.1 244.22,41.1" fill="hsl(188.95 35% 28.47%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.7 m</title></polygon>
+<polygon points="251.22,64.9 252.78,64.9 252.78,67.1 251.22,67.1" fill="hsl(188.95 35% 28.47%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.7 m</title></polygon>
+<polygon points="243.22,90.9 244.78,90.9 244.78,93.1 243.22,93.1" fill="hsl(188.95 35% 28.47%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.7 m</title></polygon>
+<polygon points="250.22,119.9 251.78,119.9 251.78,122.1 250.22,122.1" fill="hsl(188.95 35% 28.47%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.7 m</title></polygon>
+<polygon points="243.22,147.9 244.78,147.9 244.78,150.1 243.22,150.1" fill="hsl(188.95 35% 28.47%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 1.7 m</title></polygon>
+<polygon points="207.4,153.95 208.6,153.95 208.6,154.65 207.4,154.65" fill="hsl(188.63 35% 28.52%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.74 m</title></polygon>
+<polygon points="269.4,153.95 270.6,153.95 270.6,154.65 269.4,154.65" fill="hsl(188.63 35% 28.52%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.74 m</title></polygon>
+<polygon points="293.4,153.95 294.6,153.95 294.6,154.65 293.4,154.65" fill="hsl(188.63 35% 28.52%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.74 m</title></polygon>
 <polygon points="253.9,106.5 255.14,106.5 255.14,109.5 253.9,109.5" fill="hsl(188.49 35% 28.54%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.76 m</title></polygon>
 <polygon points="308.86,106.5 310.1,106.5 310.1,109.5 308.86,109.5" fill="hsl(188.49 35% 28.54%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.76 m</title></polygon>
 <polygon points="175.9,131.5 177.14,131.5 177.14,134.5 175.9,134.5" fill="hsl(188.49 35% 28.54%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 1.76 m</title></polygon>
@@ -925,6 +982,9 @@
 <polygon points="56,59.38 62,59.38 62,60.63 56,60.63" fill="hsl(186.51 35% 28.88%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 2 m</title></polygon>
 <polygon points="86,59.38 92,59.38 92,60.63 86,60.63" fill="hsl(186.51 35% 28.88%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 2 m</title></polygon>
 <polygon points="104,59.38 110,59.38 110,60.63 104,60.63" fill="hsl(186.51 35% 28.88%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 2 m</title></polygon>
+<polygon points="203,153.44 205,153.44 205,153.96 203,153.96" fill="hsl(186.28 35% 28.92%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 2.03 m</title></polygon>
+<polygon points="235,153.44 237,153.44 237,153.96 235,153.96" fill="hsl(186.28 35% 28.92%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 2.03 m</title></polygon>
+<polygon points="279,153.44 281,153.44 281,153.96 279,153.96" fill="hsl(186.28 35% 28.92%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 2.03 m</title></polygon>
 <polygon points="289.2,57.61 290.8,57.61 290.8,58 289.2,58" fill="hsl(186.1 35% 28.95%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.05 m</title></polygon>
 <polygon points="339.2,127.61 340.8,127.61 340.8,128 339.2,128" fill="hsl(186.1 35% 28.95%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.05 m</title></polygon>
 <polygon points="203.49,163 204.86,163 204.86,167 203.49,167" fill="hsl(185.81 35% 29%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.09 m</title></polygon>
@@ -969,6 +1029,7 @@
 <polygon points="303.9,106.5 305.14,106.5 305.14,109.5 303.9,109.5" fill="hsl(182.13 35% 29.63%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.54 m</title></polygon>
 <polygon points="180.86,131.5 182.1,131.5 182.1,134.5 180.86,134.5" fill="hsl(182.13 35% 29.63%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.54 m</title></polygon>
 <polygon points="225.9,131.5 227.14,131.5 227.14,134.5 225.9,134.5" fill="hsl(182.13 35% 29.63%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.54 m</title></polygon>
+<polygon points="366.97,151.78 373.03,151.78 373.03,154.22 366.97,154.22" fill="hsl(181.7 35% 29.71%)" stroke="#50606e" stroke-width="0.15"><title>port_container_20_ochre; wierzch 2.59 m</title></polygon>
 <polygon points="132.97,87.78 139.03,87.78 139.03,90.22 132.97,90.22" fill="hsl(181.7 35% 29.71%)" stroke="#50606e" stroke-width="0.15"><title>port_container_20_graphite; wierzch 2.59 m</title></polygon>
 <polygon points="164.97,87.78 171.03,87.78 171.03,90.22 164.97,90.22" fill="hsl(181.7 35% 29.71%)" stroke="#50606e" stroke-width="0.15"><title>port_container_20_olive; wierzch 2.59 m</title></polygon>
 <polygon points="196.97,87.78 203.03,87.78 203.03,90.22 196.97,90.22" fill="hsl(181.7 35% 29.71%)" stroke="#50606e" stroke-width="0.15"><title>port_container_20_navy; wierzch 2.59 m</title></polygon>
@@ -1009,7 +1070,13 @@
 <polygon points="209.6,165.5 210.9,165.5 210.9,170.5 209.6,170.5" fill="hsl(181.63 35% 29.72%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.6 m</title></polygon>
 <polygon points="342.7,48.54 343.8,48.54 343.8,48.81 342.7,48.81" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 2.6 m</title></polygon>
 <polygon points="291.36,30 292.64,30 292.64,34 291.36,34" fill="hsl(181.63 35% 29.72%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.6 m</title></polygon>
+<polygon points="206.5,172.98 209.5,172.98 209.5,175.02 206.5,175.02" fill="hsl(181.45 35% 29.75%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
+<polygon points="259.5,172.98 262.5,172.98 262.5,175.02 259.5,175.02" fill="hsl(181.45 35% 29.75%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
+<polygon points="290.5,164.98 293.5,164.98 293.5,167.02 290.5,167.02" fill="hsl(181.45 35% 29.75%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
 <polygon points="207.6,163 208.97,163 208.97,167 207.6,167" fill="hsl(181 35% 29.83%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.68 m</title></polygon>
+<polygon points="211.39,153.67 212.61,153.67 212.61,154.93 211.39,154.93" fill="hsl(180.9 35% 29.85%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 2.69 m</title></polygon>
+<polygon points="273.39,153.67 274.61,153.67 274.61,154.93 273.39,154.93" fill="hsl(180.9 35% 29.85%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 2.69 m</title></polygon>
+<polygon points="297.39,153.67 298.61,153.67 298.61,154.93 297.39,154.93" fill="hsl(180.9 35% 29.85%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 2.69 m</title></polygon>
 <polygon points="260.1,106.5 261.33,106.5 261.33,109.5 260.1,109.5" fill="hsl(180.54 35% 29.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.73 m</title></polygon>
 <polygon points="302.67,106.5 303.9,106.5 303.9,109.5 302.67,109.5" fill="hsl(180.54 35% 29.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.73 m</title></polygon>
 <polygon points="182.1,131.5 183.33,131.5 183.33,134.5 182.1,134.5" fill="hsl(180.54 35% 29.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.73 m</title></polygon>
@@ -1018,6 +1085,9 @@
 <polygon points="339.2,128.78 340.8,128.78 340.8,129.17 339.2,129.17" fill="hsl(180.54 35% 29.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.73 m</title></polygon>
 <polygon points="44.49,66.5 47.51,66.5 47.51,69.5 44.49,69.5" fill="hsl(180.06 35% 29.99%)" stroke="#50606e" stroke-width="0.15"><title>build_pipe_stack; wierzch 2.79 m</title></polygon>
 <polygon points="419.49,183.5 422.51,183.5 422.51,186.5 419.49,186.5" fill="hsl(180.06 35% 29.99%)" stroke="#50606e" stroke-width="0.15"><title>build_pipe_stack; wierzch 2.79 m</title></polygon>
+<polygon points="372.69,125 375.71,125 375.71,128 372.69,128" fill="hsl(180.06 35% 29.99%)" stroke="#50606e" stroke-width="0.15"><title>build_pipe_stack; wierzch 2.79 m</title></polygon>
+<polygon points="400.69,122 403.71,122 403.71,125 400.69,125" fill="hsl(180.06 35% 29.99%)" stroke="#50606e" stroke-width="0.15"><title>build_pipe_stack; wierzch 2.79 m</title></polygon>
+<polygon points="422.69,145 425.71,145 425.71,148 422.69,148" fill="hsl(180.06 35% 29.99%)" stroke="#50606e" stroke-width="0.15"><title>build_pipe_stack; wierzch 2.79 m</title></polygon>
 <polygon points="342.7,48.27 343.8,48.27 343.8,48.54 342.7,48.54" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 2.8 m</title></polygon>
 <polygon points="52.64,50 53.92,50 53.92,54 52.64,54" fill="hsl(180 35% 30%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.8 m</title></polygon>
 <polygon points="92.08,50 93.36,50 93.36,54 92.08,54" fill="hsl(180 35% 30%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 2.8 m</title></polygon>
@@ -1041,6 +1111,7 @@
 <polygon points="197.49,153.59 198.51,153.59 198.51,154.41 197.49,154.41" fill="hsl(177.56 35% 30.42%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 3.1 m</title></polygon>
 <polygon points="275.49,153.59 276.51,153.59 276.51,154.41 275.49,154.41" fill="hsl(177.56 35% 30.42%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 3.1 m</title></polygon>
 <polygon points="299.49,153.59 300.51,153.59 300.51,154.41 299.49,154.41" fill="hsl(177.56 35% 30.42%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 3.1 m</title></polygon>
+<polygon points="228.49,153.59 229.51,153.59 229.51,154.41 228.49,154.41" fill="hsl(177.56 35% 30.42%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 3.1 m</title></polygon>
 <polygon points="262.57,106.5 263.81,106.5 263.81,109.5 262.57,109.5" fill="hsl(177.36 35% 30.45%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.12 m</title></polygon>
 <polygon points="300.19,106.5 301.43,106.5 301.43,109.5 300.19,109.5" fill="hsl(177.36 35% 30.45%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.12 m</title></polygon>
 <polygon points="184.57,131.5 185.81,131.5 185.81,134.5 184.57,134.5" fill="hsl(177.36 35% 30.45%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.12 m</title></polygon>
@@ -1053,11 +1124,48 @@
 <polygon points="213.5,165.5 214.8,165.5 214.8,170.5 213.5,170.5" fill="hsl(176.74 35% 30.56%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.2 m</title></polygon>
 <polygon points="342.7,47.73 343.8,47.73 343.8,48 342.7,48" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 3.2 m</title></polygon>
 <polygon points="295.2,30 296.48,30 296.48,34 295.2,34" fill="hsl(176.74 35% 30.56%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.2 m</title></polygon>
+<polygon points="363.05,27.75 364.95,27.75 364.95,27.81 363.05,27.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="369.05,27.75 370.95,27.75 370.95,27.81 369.05,27.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="48.05,110.75 49.95,110.75 49.95,110.81 48.05,110.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="54.05,110.75 55.95,110.75 55.95,110.81 54.05,110.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="108.05,109.75 109.95,109.75 109.95,109.81 108.05,109.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="114.05,109.75 115.95,109.75 115.95,109.81 114.05,109.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="176.05,114.75 177.95,114.75 177.95,114.81 176.05,114.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="182.05,114.75 183.95,114.75 183.95,114.81 182.05,114.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="262.05,114.75 263.95,114.75 263.95,114.81 262.05,114.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="268.05,114.75 269.95,114.75 269.95,114.81 268.05,114.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="328.05,114.75 329.95,114.75 329.95,114.81 328.05,114.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="334.05,114.75 335.95,114.75 335.95,114.81 334.05,114.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="408.05,110.75 409.95,110.75 409.95,110.81 408.05,110.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="414.05,110.75 415.95,110.75 415.95,110.81 414.05,110.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="148.05,30.75 149.95,30.75 149.95,30.81 148.05,30.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="154.05,30.75 155.95,30.75 155.95,30.81 154.05,30.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="208.05,30.75 209.95,30.75 209.95,30.81 208.05,30.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="214.05,30.75 215.95,30.75 215.95,30.81 214.05,30.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="300.05,42.75 301.95,42.75 301.95,42.81 300.05,42.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="306.05,42.75 307.95,42.75 307.95,42.81 306.05,42.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="36.05,145.75 37.95,145.75 37.95,145.81 36.05,145.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="42.05,145.75 43.95,145.75 43.95,145.81 42.05,145.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="74.05,156.75 75.95,156.75 75.95,156.81 74.05,156.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="80.05,156.75 81.95,156.75 81.95,156.81 80.05,156.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="106.05,146.75 107.95,146.75 107.95,146.81 106.05,146.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="112.05,146.75 113.95,146.75 113.95,146.81 112.05,146.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="150.05,151.75 151.95,151.75 151.95,151.81 150.05,151.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="156.05,151.75 157.95,151.75 157.95,151.81 156.05,151.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="330.05,152.75 331.95,152.75 331.95,152.81 330.05,152.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="336.05,152.75 337.95,152.75 337.95,152.81 336.05,152.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="361.05,157.75 362.95,157.75 362.95,157.81 361.05,157.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="367.05,157.75 368.95,157.75 368.95,157.81 367.05,157.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="47.05,84.75 48.95,84.75 48.95,84.81 47.05,84.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
+<polygon points="53.05,84.75 54.95,84.75 54.95,84.81 53.05,84.81" fill="hsl(176.54 35% 30.59%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.23 m</title></polygon>
 <polygon points="211.71,163 213.09,163 213.09,167 211.71,167" fill="hsl(176.19 35% 30.65%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.27 m</title></polygon>
 <polygon points="263.81,106.5 265.05,106.5 265.05,109.5 263.81,109.5" fill="hsl(175.78 35% 30.72%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.32 m</title></polygon>
 <polygon points="298.95,106.5 300.19,106.5 300.19,109.5 298.95,109.5" fill="hsl(175.78 35% 30.72%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.32 m</title></polygon>
 <polygon points="185.81,131.5 187.05,131.5 187.05,134.5 185.81,134.5" fill="hsl(175.78 35% 30.72%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.32 m</title></polygon>
 <polygon points="220.95,131.5 222.19,131.5 222.19,134.5 220.95,134.5" fill="hsl(175.78 35% 30.72%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.32 m</title></polygon>
+<polygon points="209.6,154.04 210.4,154.04 210.4,154.66 209.6,154.66" fill="hsl(175.65 35% 30.75%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 3.33 m</title></polygon>
+<polygon points="271.6,154.04 272.4,154.04 272.4,154.66 271.6,154.66" fill="hsl(175.65 35% 30.75%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 3.33 m</title></polygon>
+<polygon points="295.6,154.04 296.4,154.04 296.4,154.66 295.6,154.66" fill="hsl(175.65 35% 30.75%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 3.33 m</title></polygon>
 <polygon points="191.5,61 197,61 197,61.2 191.5,61.2" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>maglev_body_panel; wierzch 3.4 m</title></polygon>
 <polygon points="197,61 198.5,61 198.5,61.2 197,61.2" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>maglev_body_panel; wierzch 3.4 m</title></polygon>
 <polygon points="198.5,61 209.5,61 209.5,61.2 198.5,61.2" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>maglev_body_panel; wierzch 3.4 m</title></polygon>
@@ -1217,6 +1325,23 @@
 <polygon points="296.48,106.5 297.71,106.5 297.71,109.5 296.48,109.5" fill="hsl(172.6 35% 31.27%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.71 m</title></polygon>
 <polygon points="188.29,131.5 189.52,131.5 189.52,134.5 188.29,134.5" fill="hsl(172.6 35% 31.27%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.71 m</title></polygon>
 <polygon points="218.48,131.5 219.71,131.5 219.71,134.5 218.48,134.5" fill="hsl(172.6 35% 31.27%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.71 m</title></polygon>
+<polygon points="365.6,35.83 368.4,35.83 368.4,36.17 365.6,36.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="50.6,115.83 53.4,115.83 53.4,116.17 50.6,116.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="110.6,114.83 113.4,114.83 113.4,115.17 110.6,115.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="178.6,119.83 181.4,119.83 181.4,120.17 178.6,120.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="264.6,119.83 267.4,119.83 267.4,120.17 264.6,120.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="330.6,119.83 333.4,119.83 333.4,120.17 330.6,120.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="410.6,115.83 413.4,115.83 413.4,116.17 410.6,116.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="150.6,35.83 153.4,35.83 153.4,36.17 150.6,36.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="210.6,35.83 213.4,35.83 213.4,36.17 210.6,36.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="302.6,47.83 305.4,47.83 305.4,48.17 302.6,48.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="38.6,149.83 41.4,149.83 41.4,150.17 38.6,150.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="76.6,160.83 79.4,160.83 79.4,161.17 76.6,161.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="108.6,150.83 111.4,150.83 111.4,151.17 108.6,151.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="152.6,155.83 155.4,155.83 155.4,156.17 152.6,156.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="332.6,156.83 335.4,156.83 335.4,157.17 332.6,157.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="363.6,161.83 366.4,161.83 366.4,162.17 363.6,162.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
+<polygon points="49.6,88.83 52.4,88.83 52.4,89.17 49.6,89.17" fill="hsl(172.51 35% 31.28%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 3.72 m</title></polygon>
 <polygon points="342.7,46.92 343.8,46.92 343.8,47.19 342.7,47.19" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 3.8 m</title></polygon>
 <polygon points="59.04,50 60.32,50 60.32,54 59.04,54" fill="hsl(171.86 35% 31.4%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.8 m</title></polygon>
 <polygon points="85.68,50 86.96,50 86.96,54 85.68,54" fill="hsl(171.86 35% 31.4%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 3.8 m</title></polygon>
@@ -1528,6 +1653,9 @@
 <polygon points="229.1,165.5 230.4,165.5 230.4,170.5 229.1,170.5" fill="hsl(157.21 35% 33.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 5.6 m</title></polygon>
 <polygon points="310.56,30 311.84,30 311.84,34 310.56,34" fill="hsl(157.21 35% 33.91%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 5.6 m</title></polygon>
 <polygon points="228.17,163 229.54,163 229.54,167 228.17,167" fill="hsl(156.93 35% 33.95%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 5.63 m</title></polygon>
+<polygon points="381.7,176.76 384.3,176.76 384.3,177.24 381.7,177.24" fill="hsl(155.66 35% 34.17%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 5.79 m</title></polygon>
+<polygon points="404.7,190.76 407.3,190.76 407.3,191.24 404.7,191.24" fill="hsl(155.66 35% 34.17%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 5.79 m</title></polygon>
+<polygon points="424.7,174.76 427.3,174.76 427.3,175.24 424.7,175.24" fill="hsl(155.66 35% 34.17%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 5.79 m</title></polygon>
 <polygon points="341.6,48.81 342.7,48.81 342.7,49.08 341.6,49.08" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 5.8 m</title></polygon>
 <polygon points="230.4,25.5 231.7,25.5 231.7,30.5 230.4,30.5" fill="hsl(155.58 35% 34.19%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 5.8 m</title></polygon>
 <polygon points="230.4,165.5 231.7,165.5 231.7,170.5 230.4,170.5" fill="hsl(155.58 35% 34.19%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 5.8 m</title></polygon>
@@ -1588,6 +1716,10 @@
 <polygon points="425.3,56.4 426.7,56.4 426.7,79.6 425.3,79.6" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 7 m</title></polygon>
 <polygon points="425.3,126.4 426.7,126.4 426.7,149.6 425.3,149.6" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 7 m</title></polygon>
 <polygon points="237.77,163 239.14,163 239.14,167 237.77,167" fill="hsl(145.7 35% 35.88%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 7.01 m</title></polygon>
+<polygon points="39.8,78.8 42.2,78.8 42.2,79.2 39.8,79.2" fill="hsl(144.76 35% 36.04%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.13 m</title></polygon>
+<polygon points="57.8,78.8 60.2,78.8 60.2,79.2 57.8,79.2" fill="hsl(144.76 35% 36.04%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.13 m</title></polygon>
+<polygon points="87.8,78.8 90.2,78.8 90.2,79.2 87.8,79.2" fill="hsl(144.76 35% 36.04%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.13 m</title></polygon>
+<polygon points="105.8,78.8 108.2,78.8 108.2,79.2 105.8,79.2" fill="hsl(144.76 35% 36.04%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.13 m</title></polygon>
 <polygon points="239.5,25.5 240.8,25.5 240.8,30.5 239.5,30.5" fill="hsl(144.19 35% 36.14%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 7.2 m</title></polygon>
 <polygon points="239.5,165.5 240.8,165.5 240.8,170.5 239.5,170.5" fill="hsl(144.19 35% 36.14%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 7.2 m</title></polygon>
 <polygon points="342.7,47.73 343.8,47.73 343.8,48 342.7,48" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 7.2 m</title></polygon>
@@ -1607,6 +1739,11 @@
 <polygon points="251.5,27.5 252.5,27.5 252.5,28.5 251.5,28.5" fill="hsl(140.12 35% 36.84%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 7.7 m</title></polygon>
 <polygon points="244.5,167.5 245.5,167.5 245.5,168.5 244.5,168.5" fill="hsl(140.12 35% 36.84%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 7.7 m</title></polygon>
 <polygon points="251.5,167.5 252.5,167.5 252.5,168.5 251.5,168.5" fill="hsl(140.12 35% 36.84%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 7.7 m</title></polygon>
+<polygon points="247.1,39.8 248.9,39.8 248.9,40.2 247.1,40.2" fill="hsl(140.03 35% 36.85%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.71 m</title></polygon>
+<polygon points="247.1,65.8 248.9,65.8 248.9,66.2 247.1,66.2" fill="hsl(140.03 35% 36.85%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.71 m</title></polygon>
+<polygon points="247.1,91.8 248.9,91.8 248.9,92.2 247.1,92.2" fill="hsl(140.03 35% 36.85%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.71 m</title></polygon>
+<polygon points="247.1,120.8 248.9,120.8 248.9,121.2 247.1,121.2" fill="hsl(140.03 35% 36.85%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.71 m</title></polygon>
+<polygon points="247.1,148.8 248.9,148.8 248.9,149.2 247.1,149.2" fill="hsl(140.03 35% 36.85%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 7.71 m</title></polygon>
 <polygon points="342.7,46.92 343.8,46.92 343.8,47.19 342.7,47.19" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 7.8 m</title></polygon>
 <polygon points="243.4,25.5 244.7,25.5 244.7,30.5 243.4,30.5" fill="hsl(139.3 35% 36.98%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 7.8 m</title></polygon>
 <polygon points="243.4,165.5 244.7,165.5 244.7,170.5 243.4,170.5" fill="hsl(139.3 35% 36.98%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 7.8 m</title></polygon>
@@ -1659,6 +1796,10 @@
 <polygon points="327.2,30 328.48,30 328.48,34 327.2,34" fill="hsl(136.05 35% 37.53%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 8.2 m</title></polygon>
 <polygon points="341.6,46.92 342.7,46.92 342.7,47.19 341.6,47.19" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 8.4 m</title></polygon>
 <polygon points="328.48,30 329.76,30 329.76,34 328.48,34" fill="hsl(134.42 35% 37.81%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 8.4 m</title></polygon>
+<polygon points="39.8,59.8 42.2,59.8 42.2,60.2 39.8,60.2" fill="hsl(134.17 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 8.43 m</title></polygon>
+<polygon points="57.8,59.8 60.2,59.8 60.2,60.2 57.8,60.2" fill="hsl(134.17 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 8.43 m</title></polygon>
+<polygon points="87.8,59.8 90.2,59.8 90.2,60.2 87.8,60.2" fill="hsl(134.17 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 8.43 m</title></polygon>
+<polygon points="105.8,59.8 108.2,59.8 108.2,60.2 105.8,60.2" fill="hsl(134.17 35% 37.86%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 8.43 m</title></polygon>
 <polygon points="341.6,47.19 342.7,47.19 342.7,47.46 341.6,47.46" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 8.6 m</title></polygon>
 <polygon points="329.76,30 331.04,30 331.04,34 329.76,34" fill="hsl(132.79 35% 38.09%)" stroke="#50606e" stroke-width="0.15"><title>steel_grating; wierzch 8.6 m</title></polygon>
 <polygon points="341.6,47.46 342.7,47.46 342.7,47.73 341.6,47.73" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>steel_grating; wierzch 8.8 m</title></polygon>
@@ -1689,6 +1830,10 @@
 <polygon points="29,40.7 117,40.7 117,41.3 29,41.3" fill="hsl(112.44 35% 41.58%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 11.1 m</title></polygon>
 <polygon points="29,94.7 117,94.7 117,95.3 29,95.3" fill="hsl(112.44 35% 41.58%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 11.1 m</title></polygon>
 <polygon points="74.5,40.5 77.5,40.5 77.5,95.5 74.5,95.5" fill="hsl(104.3 35% 42.98%)" stroke="#50606e" stroke-width="0.15"><title>crane_paint; wierzch 12.1 m</title></polygon>
+<polygon points="345.8,51.04 347.3,51.04 347.3,51.1 345.8,51.1" fill="hsl(102.59 35% 43.27%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 12.31 m</title></polygon>
+<polygon points="351.04,45.8 351.1,45.8 351.1,47.3 351.04,47.3" fill="hsl(102.59 35% 43.27%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 12.31 m</title></polygon>
+<polygon points="348.7,51.04 350.2,51.04 350.2,51.1 348.7,51.1" fill="hsl(102.59 35% 43.27%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 12.31 m</title></polygon>
+<polygon points="351.04,48.7 351.1,48.7 351.1,50.2 351.04,50.2" fill="hsl(102.59 35% 43.27%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 12.31 m</title></polygon>
 <polygon points="28,37.75 118,37.75 118,38.25 28,38.25" fill="hsl(88.84 35% 45.63%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 14 m</title></polygon>
 <polygon points="27.75,38 28.25,38 28.25,82 27.75,82" fill="hsl(88.84 35% 45.63%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 14 m</title></polygon>
 <polygon points="27.75,82 28.25,82 28.25,90 27.75,90" fill="hsl(88.84 35% 45.63%)" stroke="#50606e" stroke-width="0.15"><title>corrugated; wierzch 14 m</title></polygon>
@@ -1812,11 +1957,17 @@
 <circle cx="266" cy="158" r="0.5"><title>rail_platform_canopy</title></circle>
 <circle cx="290" cy="158" r="0.5"><title>rail_platform_canopy</title></circle>
 <circle cx="302" cy="158" r="0.5"><title>rail_platform_canopy</title></circle>
+<circle cx="208" cy="153.5" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="240" cy="153.5" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="284" cy="153.5" r="0.5"><title>city_street_lamp</title></circle>
 <circle cx="348" cy="48" r="0.5"><title>rail_control_tower</title></circle>
 <circle cx="398" cy="148" r="0.5"><title>rail_turntable</title></circle>
 <circle cx="412" cy="171" r="0.5"><title>rail_track_straight</title></circle>
 <circle cx="412" cy="171" r="0.5"><title>rail_track_straight</title></circle>
 <circle cx="412" cy="171" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="378" cy="133" r="0.5"><title>rail_snow_drift_patch</title></circle>
+<circle cx="406" cy="130" r="0.5"><title>rail_snow_drift_patch</title></circle>
+<circle cx="428" cy="153" r="0.5"><title>rail_snow_drift_patch</title></circle>
 <circle cx="40" cy="187" r="0.5"><title>rail_snow_drift_patch</title></circle>
 <circle cx="68" cy="187" r="0.5"><title>rail_snow_drift_patch</title></circle>
 <circle cx="96" cy="187" r="0.5"><title>rail_snow_drift_patch</title></circle>
