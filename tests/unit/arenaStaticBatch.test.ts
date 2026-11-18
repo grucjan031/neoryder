@@ -24,6 +24,8 @@ import wavesData from '../../src/data/waves/roomTest.json';
 import * as staticBatch from '../../src/render/staticBatch';
 
 afterEach(() => vi.restoreAllMocks());
+// Szablony GLB są buforowane między testami: model wczytany przy poprzedniej arenie też się liczy.
+const loaded = new Set<string>();
 
 function meshCount(root: Object3D): number {
   let count = 0;
@@ -34,9 +36,8 @@ function meshCount(root: Object3D): number {
 }
 
 it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
-  '%s: jedno scalanie w komórkach 20 m, kontenery jako instancje, rzeczywiste GLB',
+  '%s: jedno scalanie w komórkach areny, kontenery jako instancje, rzeczywiste GLB',
   async (id) => {
-    const loaded = new Set<string>();
     const warnings = vi.spyOn(console, 'warn');
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
       async (url) => {
@@ -59,7 +60,9 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
       (root, owned, options) => {
         calls++;
         expect(root.name).toBe('static-world');
-        expect(options?.cellSize).toBe(20);
+        expect(options?.cellSize).toBe(
+          roomDefinitions.get(id)!.arena!.batchCellM,
+        );
         before = meshCount(root);
         root.updateWorldMatrix(true, true);
         const containers = roomDefinitions
@@ -151,7 +154,8 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
       );
       expect(scene.query('weather')).toBe(room.weather);
       expect(calls).toBe(1);
-      expect(instanced).toBeGreaterThan(1);
+      if (room.blocks.some((b) => b.instance))
+        expect(instanced).toBeGreaterThan(1);
       if (id === 'arenaContainerPort')
         expect([...containerColors].sort()).toEqual([
           'mat_container_graphite',

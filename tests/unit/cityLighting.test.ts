@@ -77,6 +77,18 @@ describe('ważność świateł miasta', () => {
       expect(light.decay).toBe(tuning.city.lightDecay);
     lights.dispose();
   });
+
+  it('plama światła leży na podłodze światła (areny wielopoziomowe), inaczej na podłodze sceny', () => {
+    const lights = new CityLights([{ ...def(-3), floorY: -14 }, def(-6)], 0);
+    const spots = lights.root.children.filter(
+      (child) => !('isPointLight' in child),
+    );
+    expect(spots.map((spot) => spot.position.y)).toEqual([
+      -14 + tuning.city.surfaceOffsetM,
+      tuning.city.surfaceOffsetM,
+    ]);
+    lights.dispose();
+  });
 });
 
 describe('poświata napisów', () => {
@@ -131,6 +143,8 @@ describe('latarnie', () => {
     expect(defs[0]!.color).toBe(tuning.city.lampColor);
     expect(defs[0]!.position.y).toBeLessThan(fixtures[0]!.head.y);
     expect(defs[0]!.range).toBe(tuning.city.lampLightRange);
+    // Plama światła latarni leży pod jej podstawą (np. chodnik pod dachami areny).
+    expect(defs.map((light) => light.floorY)).toEqual([0, 0.5]);
   });
 
   it('stożki: jeden InstancedMesh, macierze zależą od kąta, dispose idempotentne', () => {

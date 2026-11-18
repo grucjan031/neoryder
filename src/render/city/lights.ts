@@ -166,7 +166,7 @@ export class CityLights {
       spot.rotation.x = -Math.PI / 2;
       spot.position.set(
         def.position.x,
-        floorY + tuning.city.surfaceOffsetM,
+        (def.floorY ?? floorY) + tuning.city.surfaceOffsetM,
         def.position.z,
       );
       spot.userData.noOutline = true;

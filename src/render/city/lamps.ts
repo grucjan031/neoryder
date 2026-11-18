@@ -55,6 +55,7 @@ export function lampLightDefs(
     color: tuning.city.lampColor,
     intensity: tuning.city.lampLightIntensity,
     range: tuning.city.lampLightRange,
+    floorY: fixture.baseY,
   }));
 }
 

@@ -33,6 +33,10 @@ export const BLOCK_MATERIALS = [
   'roof_tar',
   'roof_hvac_metal',
   'market_tarp',
+  // Dachy Starego Miasta: cegła kamienic, pomosty z desek, kamienne cokoły.
+  'flood_brick_algae',
+  'boardwalk_planks',
+  'canal_stone_wall',
   'world',
   'concrete',
   'asphalt',
@@ -81,6 +85,8 @@ export const cityLightSchema = z.object({
   intensity: positive,
   range: positive,
   flicker: flickerSchema.optional(),
+  /** Wysokość podłogi pod światłem (plama światła); brak = podłoga sceny. Areny wielopoziomowe. */
+  floorY: finite.optional(),
 });
 export type CityLightDef = z.infer<typeof cityLightSchema>;
 
@@ -169,5 +175,7 @@ export const dressingFields = {
   decals: z.array(decalSchema).optional(),
   ambientFx: z.array(ambientFxSchema).optional(),
   rainShelters: z.array(rainShelterSchema).optional(),
+  /** Najniższa podłoga dla opadu i efektów otoczenia (np. ulica pod dachami); brak = podłoga sceny. */
+  weatherFloorY: finite.optional(),
   decor: z.array(decorSchema).optional(),
 };

@@ -63,6 +63,25 @@ describe('pogoda z danych', () => {
       dressing.dispose();
     }
   });
+  it('opad i efekty otoczenia sięgają weatherFloorY (ulica pod dachami)', () => {
+    const dressing = new CityDressing(
+      new Group(),
+      {
+        weather: 'drizzleWind',
+        weatherFloorY: -14,
+        ambientFx: [{ kind: 'drip', position: { x: 0, y: -2, z: 0 } }],
+      },
+      themeDefinitions.get('neonStreet')!,
+      0,
+      'weather-floor',
+    );
+    try {
+      expect(Reflect.get(dressing.weather!, 'floorY')).toBe(-14);
+      expect(Reflect.get(Reflect.get(dressing, 'ambient'), 'floorY')).toBe(-14);
+    } finally {
+      dressing.dispose();
+    }
+  });
   it('waliduje siedem profili, limity i kolory wyładowań', () => {
     expect([...weatherDefinitions.keys()].sort()).toEqual([
       'ashfall',
@@ -357,7 +376,7 @@ describe('areny Przejęcia', () => {
     ).toThrow('Spawn');
   });
   it.each(['arenaOverpass', 'arenaRooftops'])(
-    '%s: wysokie punkty wymagają ramp, fałszywa wysokość jest odrzucana',
+    '%s: wysokie punkty wymagają ramp i schodów, fałszywa wysokość jest odrzucana',
     (id) => {
       const room = structuredClone(roomDefinitions.get(id)!);
       const mode = modeForArena(conquestMode, room);
@@ -376,7 +395,11 @@ describe('areny Przejęcia', () => {
       expect(() => validateMode(wrongHeight, room, mode.enemies)).toThrow(
         'podłogą',
       );
-      room.blocks = room.blocks.filter((b) => !(b.walkable && b.rotation));
+      // Bez ramp i stopni (bloki chodzone o głębokości ≤ 1 m) wyższe poziomy są odcięte.
+      room.blocks = room.blocks.filter(
+        (b) =>
+          !(b.walkable && (b.rotation || Math.min(b.size.x, b.size.z) <= 1)),
+      );
       expect(() => validateMode(mode, room, mode.enemies)).toThrow(
         'Nieosiągalna',
       );

@@ -390,9 +390,10 @@ describe('biblioteka generatorów aren', () => {
     expect(arenaSvg(extended as RoomDefinition)).toContain('>E<title>');
   });
 
-  it('ograniczenia schematu są jawne', () => {
+  it('odrzuca powtórzony punkt i spawn pokoju na innej wysokości', () => {
     const arena = blank();
-    expect(() => arena.point('D', vec(10, 0, 10))).toThrow('roomSchema');
+    arena.point('D', vec(10, 0, 10));
+    expect(() => arena.point('D', vec(11, 0, 10))).toThrow('Powtórzony');
     expect(() => arena.spawn(vec(10, 4, 10))).toThrow('wysokości');
   });
 });

@@ -633,6 +633,11 @@ export const tuning = {
     corpseS: 0.5,
     separationRadius: 1,
     wallProbe: 1.5,
+    /** Autostep kapsuły wroga (m): schody aren, które nawigacja uznaje za chodzone (≤ 0,35 m). */
+    stepHeight: 0.35,
+    stepMinWidth: 0.2,
+    /** Przyciąganie do podłoża przy schodzeniu po stopniach (m). */
+    snapToGroundDistance: 0.3,
   },
   vfx: {
     barrierRadiusM: 1.25,

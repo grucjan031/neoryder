@@ -2133,23 +2133,29 @@ export class RoomScene implements Scene {
         if (this.mission.complete) this.completeRoom();
         return 'Cel ukończony.';
       });
-    register('tp', 'tp <x> <z> [yawDeg] [pitchDeg]', (args) => {
-      const [x, z, yaw = 0, pitch = 0] = args.map(Number);
+    register('tp', 'tp <x> <z> [yawDeg] [pitchDeg] [floorY]', (args) => {
+      const [x, z, yaw = 0, pitch = 0, floorY] = args.map(Number);
       if (
         args.length < 2 ||
-        args.length > 4 ||
-        ![x, z, yaw, pitch].every(Number.isFinite) ||
+        args.length > 5 ||
+        ![x, z, yaw, pitch, floorY ?? 0].every(Number.isFinite) ||
         Math.abs(x!) > 1e4 ||
         Math.abs(z!) > 1e4 ||
+        Math.abs(floorY ?? 0) > 1e4 ||
         Math.abs(yaw) > 1e6 ||
         Math.abs(pitch) > 1e6 ||
         !this.lookAtDegrees(yaw, pitch)
       )
-        return 'Uzycie: tp <x> <z> [yawDeg] [pitchDeg]';
+        return 'Uzycie: tp <x> <z> [yawDeg] [pitchDeg] [floorY]';
+      // Opcjonalna podłoga docelowa: piętra i wykopy dużych aren.
+      const body = this.ctx.tuning.player;
       this.player.teleport({
         ...this.player.getState().position,
         x: x!,
         z: z!,
+        ...(floorY === undefined
+          ? {}
+          : { y: floorY + body.capsuleHeight / 2 + body.controllerOffset }),
       });
       this.previous = this.player.getState();
       return `Gracz: ${x}, ${z}`;

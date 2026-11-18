@@ -14,9 +14,15 @@ import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { roomDefinitions } from '../../src/world/rooms';
 
 it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
-  '%s: kapsuła FPP chodzi do A/B/C, po obu rampach i schodach bez skoku',
+  '%s: kapsuła FPP chodzi do wszystkich punktów, po rampach i schodach bez skoku',
   async (id) => {
     const room = roomDefinitions.get(id)!;
+    // Najniższa podłoga trasy (ulica pod dachami): kapsuła nie może spaść niżej.
+    const lowest =
+      Math.min(
+        room.playerSpawn.y,
+        ...room.arena!.points.map((point) => point.position.y),
+      ) - 0.1;
     const rapier = await initPhysics();
     const world = new rapier.World({ x: 0, y: tuning.physics.gravity, z: 0 });
     const bus = new EventBus();
@@ -69,7 +75,7 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
           },
         });
         world.step();
-        expect(player.getState().position.y).toBeGreaterThan(-0.1);
+        expect(player.getState().position.y).toBeGreaterThan(lowest);
       }
       throw new Error(
         `Kapsuła utknęła: ${JSON.stringify(player.getState().position)} → ${JSON.stringify(goal)}`,
@@ -103,24 +109,38 @@ it.each(['arenaContainerPort', 'arenaOverpass', 'arenaRooftops'])(
         return;
       }
       if (id === 'arenaRooftops') {
-        teleport(38, -14, 2);
-        walk({ x: 38, y: 6, z: -4.1 });
-        walk({ x: 38, y: 6, z: 6 });
-        expect(player.getState().position.y).toBeCloseTo(6 + height, 1);
-        teleport(42, 24, 6);
-        for (let i = 0; i < 120; i++) {
-          player.step(SIM_DT, {
-            ...idle,
-            held: new Set(['moveRight']),
-            lookDelta: {
-              x: player.getState().yaw / tuning.player.lookSensitivity,
-              y: 0,
-            },
-          });
-          world.step();
-        }
-        expect(Math.abs(player.getState().position.x)).toBeLessThan(45);
-        expect(player.getState().position.y).toBeGreaterThan(6);
+        const curb = -13.85;
+        // Schody Targowe: z chodnika na dach nocnego targu.
+        teleport(25, 13, curb);
+        walk({ x: 28.5, y: curb, z: 13 });
+        walk({ x: 80, y: 0, z: 13 });
+        walk({ x: 84, y: 0, z: 20 });
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
+        // Most z desek nad ulicą główną i kładka nad zaułkiem.
+        teleport(-32, -16, 0);
+        walk({ x: -32, y: 0, z: 16 });
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
+        teleport(-68, 44.5, 0);
+        walk({ x: -52, y: 0, z: 44.5 });
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
+        // Schody pożarowe na fasadzie przy ulicy (dwa pasy, cztery biegi).
+        teleport(-51.6, -9.4, curb);
+        for (const [x, z] of [
+          [-46, -9.4],
+          [-46, -8.2],
+          [-51.4, -8.2],
+          [-51.4, -9.4],
+          [-46, -9.4],
+          [-46, -8.2],
+          [-51.4, -8.2],
+          [-51.4, -12],
+        ] as const)
+          walk({ x, y: 0, z });
+        expect(player.getState().position.y).toBeCloseTo(height, 1);
+        // Schody dachowe 0 → 4 m (z dachu startowego na wschodnie kamienice).
+        teleport(-56, 116, 0);
+        walk({ x: -30, y: 4, z: 116 });
+        expect(player.getState().position.y).toBeCloseTo(4 + height, 1);
         return;
       }
       teleport(-46, -14);

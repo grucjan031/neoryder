@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { LOAD_TIMEOUT } from './helpers';
 
-for (const [arena, weather] of [
-  ['arenaOverpass', 'smog'],
-  ['arenaRooftops', 'drizzleWind'],
+for (const [arena, weather, points] of [
+  ['arenaOverpass', 'smog', ['A', 'B', 'C']],
+  ['arenaRooftops', 'drizzleWind', ['A', 'B', 'C', 'D', 'E']],
 ] as const) {
   test(`Przejęcie: ${arena}, profil ${weather}`, async ({ page }) => {
     const errors: string[] = [];
@@ -30,7 +30,7 @@ for (const [arena, weather] of [
       window.__neoryder?.query('conquest'),
     );
     expect(conquest).toMatchObject({
-      points: [{ id: 'A' }, { id: 'B' }, { id: 'C' }],
+      points: points.map((id) => ({ id })),
     });
     await expect
       .poll(() => page.evaluate(() => window.__neoryder?.query('enemies')), {
