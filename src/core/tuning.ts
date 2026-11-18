@@ -617,6 +617,13 @@ export const tuning = {
     wallProbe: 1.5,
   },
   vfx: {
+    heavyTelegraphColor: '#ffd27a',
+    heavyTelegraphEndColor: '#fff4dc',
+    heavyTelegraphEndFraction: 0.3,
+    heavyTelegraphPulseMultiplier: 2,
+    threatRadiusM: 22,
+    threatHalfAngleDeg: 40,
+    threatMaxIndicators: 4,
     barrierRadiusM: 1.25,
     barrierHeightM: 1.1,
     barrierDistanceM: 0.9,
