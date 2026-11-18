@@ -83,11 +83,7 @@ export default function generate() {
       const x = (xs[i - 1] + xs[i]) / 2,
         z = (zs[j - 1] + zs[j]) / 2;
       if (!exclusions.some((r) => inside(r, x, z)))
-        p.floor(
-          rect(xs[i - 1], xs[i], zs[j - 1], zs[j]),
-          0,
-          'highway_asphalt_worn',
-        );
+        p.floor(rect(xs[i - 1], xs[i], zs[j - 1], zs[j]), 0, 'overpass_street');
     }
   const box = (
     x,
@@ -113,6 +109,10 @@ export default function generate() {
     });
   const road = (r, y, material = 'highway_asphalt_worn', thickness = 0.4) =>
     p.floor(r, y, material, { thickness });
+  const streetLamp = (x, z) => {
+    arena.decor('city_street_lamp', vec(x, 0, z));
+    arena.light(vec(x, 4.16, z + 0.34), '#fff1d6', 72, 17);
+  };
   const ramp = (
     x1,
     y1,
@@ -178,7 +178,9 @@ export default function generate() {
     p.wall(vec(-136, -4, z + 3), vec(-130, -4, z + 3), 4.2, 0.4);
     p.wall(vec(-136, -4, z - 3), vec(-136, -4, z + 3), 4.2, 0.4);
     road(rect(-136, -130, z - 3, z + 3), 0.2, 'overpass_concrete');
-    arena.light(vec(-133, -1, z + 1), '#6dff4a', 24, 13);
+    arena.light(vec(-133, -0.4, z + 1), '#6dff4a', 9, 6, {
+      groundGlow: false,
+    });
   }
 
   // Poziom 1: segmenty obrócone wzdłuż X; collidery zachowują rzeczywistą płytę.
@@ -309,7 +311,7 @@ export default function generate() {
     rect(126, 130, -128, -116),
     rect(60, 130, -116, -70),
   ])
-    road(r, 0, 'gas_station_tiles');
+    road(r, 0, 'overpass_forecourt');
   arena.decor('hw_gas_canopy', vec(110, 0, -100));
   box(110, 6, -100, 24, 1, 12, 'gas_station_tiles');
   for (const x of [101, 110, 119])
@@ -331,13 +333,13 @@ export default function generate() {
   prop('city_crates', 99, 0, -123, 1.212, 1.59, 1.256);
 
   // Wschodni plac poboru opłat, wysepki i osłony z otwartymi pasami ruchu.
-  road(rect(120, 175, -28, 35), 0, 'highway_asphalt_worn');
+  road(rect(120, 175, -28, 35), 0, 'overpass_street');
   for (const x of [126, 137, 148, 159, 170]) {
     arena.decor('hw_toll_booth', vec(x, 0, 14));
     box(x, 1.3, 14, 2.2, 2.6, 3.4, 'smog_soot_wall');
     box(x, 0.1, 14, 2.8, 0.2, 9, 'hazard_stripes_worn');
     box(x + 3.3, 1, 16.65, 3.64, 0.1, 0.15, 'hazard_stripes_worn');
-    arena.light(vec(x, 3.5, 14), '#ffae1a', 35, 20);
+    arena.light(vec(x, 2.9, 15.8), '#ffae1a', 48, 13, { groundGlow: false });
   }
 
   // Landmark wentylatorni oraz krótki tunel na poziomie −4 m.
@@ -350,7 +352,7 @@ export default function generate() {
   p.wall(vec(-66, -4, 100), vec(-66, -4, 108), 4, 0.5);
   p.wall(vec(-63, -4, 94), vec(-57, -4, 94), 4, 0.5);
   road(rect(-63, -57, 94, 100), 0.2, 'overpass_concrete');
-  arena.light(vec(-60, -1, 97), '#6dff4a', 35, 18);
+  arena.light(vec(-60, -0.5, 97), '#6dff4a', 12, 8, { groundGlow: false });
 
   // Gęste obozowisko: alejki zostawiają wolne koło A i przejście północ–południe.
   for (const x of [-60, -36, -12, 12, 36, 60]) {
@@ -600,14 +602,34 @@ export default function generate() {
         size: { w: 3.2, h: 0.9 },
         yaw: 0,
       });
-      if (index % 2 === 0) {
-        arena.decor('city_street_lamp', vec(x - 5, 0, z + 6));
-        arena.light(vec(x - 5, 5, z + 6), '#fff1d6', 43, 24);
+      signs.at(-1).tint = ['#ffae1a', '#b999ff', '#77a6ff'][(row + index) % 3];
+      for (const offset of [-4, 4]) {
+        box(x + offset, 2.55, z + 4.2, 1.65, 0.85, 0.045, 'light_white');
       }
+      arena.light(vec(x - 3.5, 2.75, z + 4.8), '#fff1d6', 39, 10, {
+        groundGlow: false,
+      });
+      arena.light(vec(x, 3.55, z + 0.5), '#fff1d6', 32, 9, {
+        groundGlow: false,
+      });
+      if (index % 2 === 0) streetLamp(x - 5, z + 6);
       addStreetProp(parked, x + 5, z + 8);
       addStreetProp(fillers[4], x - 5, z - 7);
     }
   }
+  for (const [texture, x, y, z, tint] of [
+    ['open', 110, 6, -93.98, '#fff1d6'],
+    ['arrow', 148, 2.55, 15.72, '#ffae1a'],
+    ['metro', -58, 3.8, 94.1, '#6dff4a'],
+  ])
+    signs.push({
+      kind: 'neon',
+      texture,
+      position: vec(x, y, z),
+      size: { w: 3.2, h: 0.95 },
+      yaw: 0,
+      tint,
+    });
   arena.roomMeta({ signs });
   for (const z of [-6, -1, 16, 42, 66, 88, 112, 136, 160]) {
     const xs =
@@ -759,27 +781,76 @@ export default function generate() {
     [-96, -74],
     [48, 70],
   ]) {
-    arena.decor('city_street_lamp', vec(x, 0, z));
-    arena.light(vec(x, 6, z), '#fff1d6', 55, 32);
+    streetLamp(x, z);
   }
+  for (const [x, z] of [
+    [-164, 66],
+    [-148, 133],
+    [-105, 152],
+    [-65, 143],
+    [-32, 115],
+    [18, 125],
+    [53, 155],
+    [81, 114],
+    [111, 72],
+    [152, 48],
+    [168, 86],
+    [145, -73],
+    [151, -120],
+    [168, -151],
+    [90, -156],
+    [44, -94],
+    [-93, -119],
+    [-68, 104],
+    [-32, 82],
+    [51, 55],
+  ])
+    streetLamp(x, z);
+  for (const x of [
+    -159, -135, -104, -80, -56, -32, -8, 16, 40, 64, 88, 112, 136, 160,
+  ]) {
+    box(x, 9.97, -5, 2.5, 0.1, 0.3, 'light_white');
+    arena.light(vec(x, 8.8, -5), '#fff1d6', 95, 17, { groundGlow: false });
+  }
+  for (const [x, z] of [
+    [101, -103],
+    [110, -97],
+    [119, -103],
+    [94, -91],
+    [123, -116],
+  ])
+    arena.light(vec(x, 4.8, z), '#fff1d6', 72, 16, { groundGlow: false });
+  for (const [index, block] of arena
+    .toRoom()
+    .blocks.filter((b) => b.model === 'hw_fire_barrel')
+    .entries()) {
+    if (index % 2 !== 0) continue;
+    const { x, z } = block.position;
+    arena.light(vec(x, 1.28, z), '#ffae1a', 18, 6, {
+      groundGlow: false,
+      flicker: { pattern: 'pulse', strength: 0.22, periodS: 0.84 },
+    });
+  }
+  for (const z of [-122, -74, -26, 26, 58, 82, 122]) {
+    box(-129.7, -0.55, z, 0.18, 0.32, 1.3, 'light_white');
+    arena.light(vec(-128.7, -0.75, z), '#fff1d6', 26, 13, {
+      groundGlow: false,
+    });
+  }
+  for (const z of [-114, 112])
+    arena.light(vec(-109, 1.6, z), '#6dff4a', 8, 6, { groundGlow: false });
   for (const [x, y, z] of [
     [0, 3, 40],
     [100, 4, -100],
     [-70, 15, -3],
     [27, 27, -110],
-    [-120, -1, 60],
     [-60, 12, 90],
     [-164, 15, 62],
     [164, 15, -60],
     [-80, 9, 134],
     [72, 9, -156],
   ])
-    arena.light(
-      vec(x, y, z),
-      x === -60 || x === -120 ? '#6dff4a' : '#fff1d6',
-      55,
-      34,
-    );
+    arena.light(vec(x, y, z), x === -60 ? '#6dff4a' : '#fff1d6', 55, 34);
 
   // Naturalny obrys: ekrany, ściany kwartałów i nasypy we wcięciach.
   const polygon = [

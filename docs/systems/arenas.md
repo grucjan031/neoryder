@@ -212,9 +212,17 @@ Nawierzchnie: `highway_asphalt_worn`, `gas_station_tiles`, `scaffold_planks`,
 Nowe id bloków są połączone z istniejącymi teksturami, bez nadpisania materiałów
 używanych na innych mapach. Nie zmieniono GLB, tekstur ani profilu smogu.
 
-1489 bloków (483 z modelem), 144 dekoracje: łącznie **627 rekwizytów**,
-37 źródeł świateł wybieranych przez istniejącą pulę. Najczęstszy model:
-66 wraków, 10,5% instancji. Komórki statyki 180 m (cztery ćwiartki);
+1532 bloki (483 z modelem), 164 dekoracje, łącznie **647 rekwizytów**.
+Pula wybiera aktywne światła ze 121 źródeł (wcześniej 37). Wzdłuż ulic stoi
+39 latarni. Pod płytą świecą oprawy w ciepłej bieli, a 14 szyldów z halo
+oznacza pierzeje, stację, bramki i portal. Witryny i wnętrza mają lokalne
+światła, a ogień w obozowisku daje krótki bursztynowy akcent. W kanale przy
+D świecą ciepłobiałe oprawy na ścianie. Zieleń pozostaje przy wlotach, gdzie
+ma mały zasięg i wyłączoną poświatę na podłodze.
+Materiały `overpass_street` i `overpass_forecourt` zachowują chłodny grafit
+również przy wyłączonym detalu powierzchni.
+Najczęstszy model to 66 wraków (10,2% instancji).
+Komórki statyki mają 180 m (cztery ćwiartki).
 nawigacja 2 m, margines 0,8 m, prześwit 2 m, dopuszczalny wznios 0,52 m.
 Większe partie statyki ograniczają liczbę siatek kosztem dokładności cullingu;
 do oceny na GPU pozostają widoki przez całą mapę.
@@ -226,7 +234,7 @@ Kontrola GLB porównuje teraz obrócone obwiednie, zachowując tolerancję 5%.
 
 Pomiar lokalny: nawigacja i pięć pól 68 ms (budżet 500 ms); symulacja
 12 wrogów 0,371 ms/krok (budżet 2 ms); statyka rzeczywistych GLB
-3497 → **787 siatek**, w tym 504 partie instancji. To pomiar strukturalny,
+3740 → **796 siatek**, w tym 504 partie instancji. To pomiar strukturalny,
 nie liczba wywołań całej klatki. GPU ≤800 wywołań i pełne wczytanie ≤5 s
 w przeglądarce wymagają sprawdzenia przez managera poza sandboxem.
 
@@ -445,7 +453,7 @@ targ 20 m; jedno końcowe scalanie świata):
 
 | Arena    | Siatki przed | Siatki po | Partie InstancedMesh |
 | -------- | -----------: | --------: | -------------------: |
-| Estakada |         3497 |       787 |                  504 |
+| Estakada |         3740 |       796 |                  504 |
 | Targ     |          877 |       198 |                   40 |
 
 `arenaPerf.test.ts` obejmuje prawdziwy host Przejęcia, nawigację i Rapiera.

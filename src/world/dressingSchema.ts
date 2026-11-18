@@ -50,6 +50,8 @@ export const BLOCK_MATERIALS = [
   'scaffold_planks',
   'gas_station_tiles',
   'highway_asphalt_worn',
+  'overpass_street',
+  'overpass_forecourt',
   'world',
   'concrete',
   'asphalt',

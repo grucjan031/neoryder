@@ -46,140 +46,147 @@
 <polygon points="83,276 84,276 84,280 83,280" fill="hsl(203.07 35% 26.05%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch -1 m</title></polygon>
 <polygon points="84,276 85,276 85,280 84,280" fill="hsl(202.07 35% 26.22%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch -0.75 m</title></polygon>
 <polygon points="85,276 86,276 86,280 85,280" fill="hsl(201.08 35% 26.39%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch -0.5 m</title></polygon>
+<polygon points="68.21,75.35 68.39,75.35 68.39,76.65 68.21,76.65" fill="hsl(200.64 35% 26.46%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch -0.39 m</title></polygon>
+<polygon points="68.21,123.35 68.39,123.35 68.39,124.65 68.21,124.65" fill="hsl(200.64 35% 26.46%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch -0.39 m</title></polygon>
+<polygon points="68.21,171.35 68.39,171.35 68.39,172.65 68.21,172.65" fill="hsl(200.64 35% 26.46%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch -0.39 m</title></polygon>
+<polygon points="68.21,223.35 68.39,223.35 68.39,224.65 68.21,224.65" fill="hsl(200.64 35% 26.46%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch -0.39 m</title></polygon>
+<polygon points="68.21,255.35 68.39,255.35 68.39,256.65 68.21,256.65" fill="hsl(200.64 35% 26.46%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch -0.39 m</title></polygon>
+<polygon points="68.21,279.35 68.39,279.35 68.39,280.65 68.21,280.65" fill="hsl(200.64 35% 26.46%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch -0.39 m</title></polygon>
+<polygon points="68.21,319.35 68.39,319.35 68.39,320.65 68.21,320.65" fill="hsl(200.64 35% 26.46%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch -0.39 m</title></polygon>
 <polygon points="86,276 87,276 87,280 86,280" fill="hsl(200.09 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch -0.25 m</title></polygon>
-<polygon points="18,178 58,178 58,233 18,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="18,233 58,233 58,284 18,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="18,284 58,284 58,292 18,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="18,292 58,292 58,298 18,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="18,298 58,298 58,306 18,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="18,306 58,306 58,348 18,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="18,348 58,348 58,378 18,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,18 62,18 62,48 58,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,48 62,48 62,68 58,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,68 62,68 62,104 58,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,104 62,104 62,112 58,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,112 62,112 62,128 58,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,128 62,128 62,170 58,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,170 62,170 62,178 58,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,178 62,178 62,233 58,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,233 62,233 62,284 58,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,284 62,284 62,292 58,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,292 62,292 62,298 58,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,298 62,298 62,306 58,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,306 62,306 62,348 58,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="58,348 62,348 62,378 58,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,18 68,18 68,48 62,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,48 68,48 68,68 62,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,68 68,68 68,104 62,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,112 68,112 68,128 62,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,128 68,128 68,170 62,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,170 68,170 68,178 62,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,178 68,178 68,233 62,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,233 68,233 68,284 62,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,292 68,292 68,298 62,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,298 68,298 68,306 62,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,306 68,306 68,348 62,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="62,348 68,348 68,378 62,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="68,18 88,18 88,48 68,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="68,348 88,348 88,378 68,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,18 132,18 132,48 88,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,48 132,48 132,68 88,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,68 132,68 132,104 88,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,104 132,104 132,112 88,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,112 132,112 132,128 88,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,128 132,128 132,170 88,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,170 132,170 132,178 88,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,178 132,178 132,233 88,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,233 132,233 132,284 88,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,284 132,284 132,292 88,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,292 132,292 132,298 88,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,298 132,298 132,306 88,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,306 132,306 132,348 88,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="88,348 132,348 132,378 88,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,18 144,18 144,48 132,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,48 144,48 144,68 132,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,68 144,68 144,104 132,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,104 144,104 144,112 132,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,112 144,112 144,128 132,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,128 144,128 144,170 132,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,170 144,170 144,178 132,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,178 144,178 144,233 132,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,233 144,233 144,284 132,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,284 144,284 144,292 132,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,306 144,306 144,348 132,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="132,348 144,348 144,378 132,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,18 168,18 168,48 144,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,48 168,48 168,68 144,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,68 168,68 168,104 144,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,104 168,104 168,112 144,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,112 168,112 168,128 144,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,128 168,128 168,170 144,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,170 168,170 168,178 144,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,178 168,178 168,233 144,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,233 168,233 168,284 144,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,284 168,284 168,292 144,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,292 168,292 168,298 144,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,306 168,306 168,348 144,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="144,348 168,348 168,378 144,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,18 258,18 258,48 168,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,48 258,48 258,68 168,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,68 258,68 258,104 168,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,104 258,104 258,112 168,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,112 258,112 258,128 168,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,128 258,128 258,170 168,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,170 258,170 258,178 168,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,178 258,178 258,233 168,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,233 258,233 258,284 168,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,284 258,284 258,292 168,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,292 258,292 258,298 168,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,298 258,298 258,306 168,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,306 258,306 258,348 168,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="168,348 258,348 258,378 168,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,18 298,18 298,48 258,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,48 298,48 298,68 258,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,128 298,128 298,170 258,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,170 298,170 298,178 258,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,178 298,178 298,233 258,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,233 298,233 298,284 258,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,284 298,284 298,292 258,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,292 298,292 298,298 258,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,298 298,298 298,306 258,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,306 298,306 298,348 258,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,348 298,348 298,378 258,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,18 318,18 318,48 298,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,48 318,48 318,68 298,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,128 318,128 318,170 298,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,170 318,170 318,178 298,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,178 318,178 318,233 298,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,233 318,233 318,284 298,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,284 318,284 318,292 298,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="298,292 318,292 318,298 298,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="318,18 328,18 328,48 318,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="318,48 328,48 328,68 318,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="318,128 328,128 328,170 318,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="318,233 328,233 328,284 318,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="318,284 328,284 328,292 318,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="318,292 328,292 328,298 318,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,18 373,18 373,48 328,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,48 373,48 373,68 328,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,68 373,68 373,104 328,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,104 373,104 373,112 328,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,112 373,112 373,128 328,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,128 373,128 373,170 328,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,233 373,233 373,284 328,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,284 373,284 373,292 328,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="328,292 373,292 373,298 328,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,18 378,18 378,48 373,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,48 378,48 378,68 373,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,68 378,68 378,104 373,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,104 378,104 378,112 373,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,112 378,112 378,128 373,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,128 378,128 378,170 373,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,170 378,170 378,178 373,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,178 378,178 378,233 373,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,233 378,233 378,284 373,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,284 378,284 378,292 373,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="373,292 378,292 378,298 373,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,178 58,178 58,233 18,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,233 58,233 58,284 18,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,284 58,284 58,292 18,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,292 58,292 58,298 18,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,298 58,298 58,306 18,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,306 58,306 58,348 18,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,348 58,348 58,378 18,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,18 62,18 62,48 58,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,48 62,48 62,68 58,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,68 62,68 62,104 58,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,104 62,104 62,112 58,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,112 62,112 62,128 58,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,128 62,128 62,170 58,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,170 62,170 62,178 58,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,178 62,178 62,233 58,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,233 62,233 62,284 58,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,284 62,284 62,292 58,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,292 62,292 62,298 58,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,298 62,298 62,306 58,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,306 62,306 62,348 58,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,348 62,348 62,378 58,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,18 68,18 68,48 62,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,48 68,48 68,68 62,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,68 68,68 68,104 62,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,112 68,112 68,128 62,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,128 68,128 68,170 62,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,170 68,170 68,178 62,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,178 68,178 68,233 62,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,233 68,233 68,284 62,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,292 68,292 68,298 62,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,298 68,298 68,306 62,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,306 68,306 68,348 62,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="62,348 68,348 68,378 62,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="68,18 88,18 88,48 68,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="68,348 88,348 88,378 68,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,18 132,18 132,48 88,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,48 132,48 132,68 88,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,68 132,68 132,104 88,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,104 132,104 132,112 88,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,112 132,112 132,128 88,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,128 132,128 132,170 88,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,170 132,170 132,178 88,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,178 132,178 132,233 88,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,233 132,233 132,284 88,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,284 132,284 132,292 88,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,292 132,292 132,298 88,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,298 132,298 132,306 88,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,306 132,306 132,348 88,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="88,348 132,348 132,378 88,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,18 144,18 144,48 132,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,48 144,48 144,68 132,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,68 144,68 144,104 132,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,104 144,104 144,112 132,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,112 144,112 144,128 132,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,128 144,128 144,170 132,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,170 144,170 144,178 132,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,178 144,178 144,233 132,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,233 144,233 144,284 132,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,284 144,284 144,292 132,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,306 144,306 144,348 132,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="132,348 144,348 144,378 132,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,18 168,18 168,48 144,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,48 168,48 168,68 144,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,68 168,68 168,104 144,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,104 168,104 168,112 144,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,112 168,112 168,128 144,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,128 168,128 168,170 144,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,170 168,170 168,178 144,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,178 168,178 168,233 144,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,233 168,233 168,284 144,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,284 168,284 168,292 144,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,292 168,292 168,298 144,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,306 168,306 168,348 144,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="144,348 168,348 168,378 144,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,18 258,18 258,48 168,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,48 258,48 258,68 168,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,68 258,68 258,104 168,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,104 258,104 258,112 168,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,112 258,112 258,128 168,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,128 258,128 258,170 168,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,170 258,170 258,178 168,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,178 258,178 258,233 168,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,233 258,233 258,284 168,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,284 258,284 258,292 168,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,292 258,292 258,298 168,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,298 258,298 258,306 168,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,306 258,306 258,348 168,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="168,348 258,348 258,378 168,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,18 298,18 298,48 258,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,48 298,48 298,68 258,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,128 298,128 298,170 258,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,170 298,170 298,178 258,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,178 298,178 298,233 258,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,233 298,233 298,284 258,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,284 298,284 298,292 258,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,292 298,292 298,298 258,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,298 298,298 298,306 258,306" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,306 298,306 298,348 258,348" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,348 298,348 298,378 258,378" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,18 318,18 318,48 298,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,48 318,48 318,68 298,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,128 318,128 318,170 298,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,170 318,170 318,178 298,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,178 318,178 318,233 298,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,233 318,233 318,284 298,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,284 318,284 318,292 298,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="298,292 318,292 318,298 298,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="318,18 328,18 328,48 318,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="318,48 328,48 328,68 318,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="318,128 328,128 328,170 318,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="318,233 328,233 328,284 318,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="318,284 328,284 328,292 318,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="318,292 328,292 328,298 318,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,18 373,18 373,48 328,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,48 373,48 373,68 328,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,68 373,68 373,104 328,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,104 373,104 373,112 328,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,112 373,112 373,128 328,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,128 373,128 373,170 328,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,233 373,233 373,284 328,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,284 373,284 373,292 328,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="328,292 373,292 373,298 328,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,18 378,18 378,48 373,48" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,48 378,48 378,68 373,68" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,68 378,68 378,104 373,104" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,104 378,104 378,112 373,112" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,112 378,112 378,128 373,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,128 378,128 378,170 373,170" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,170 378,170 378,178 373,178" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,178 378,178 378,233 373,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,233 378,233 378,284 373,284" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,284 378,284 378,292 373,292" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="373,292 378,292 378,298 373,298" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
 <polygon points="67.75,48 68.25,48 68.25,103 67.75,103" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch 0 m</title></polygon>
 <polygon points="67.75,113 68.25,113 68.25,133 67.75,133" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch 0 m</title></polygon>
 <polygon points="67.75,143 68.25,143 68.25,283 67.75,283" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch 0 m</title></polygon>
@@ -200,12 +207,12 @@
 <polygon points="62,163 94,163 94,173 62,173" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>steel_grating; wierzch 0 m; chodzenie</title></polygon>
 <polygon points="62,223 94,223 94,233 62,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>steel_grating; wierzch 0 m; chodzenie</title></polygon>
 <polygon points="87,276 88,276 88,280 87,280" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch 0 m</title></polygon>
-<polygon points="258,68 328,68 328,70 258,70" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>gas_station_tiles; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,70 293,70 293,82 258,82" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>gas_station_tiles; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="324,70 328,70 328,82 324,82" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>gas_station_tiles; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="258,82 328,82 328,128 258,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>gas_station_tiles; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,68 328,68 328,70 258,70" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_forecourt; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,70 293,70 293,82 258,82" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_forecourt; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="324,70 328,70 328,82 324,82" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_forecourt; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="258,82 328,82 328,128 258,128" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_forecourt; wierzch 0 m; chodzenie</title></polygon>
 <polygon points="293,70 324,70 324,82 293,82" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
-<polygon points="318,170 373,170 373,233 318,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>highway_asphalt_worn; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="318,170 373,170 373,233 318,233" fill="hsl(199.09 35% 26.73%)" stroke="#90be85" stroke-width="0.3"><title>overpass_street; wierzch 0 m; chodzenie</title></polygon>
 <polygon points="132,305.75 148,305.75 148,306.25 132,306.25" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 0 m</title></polygon>
 <polygon points="131.75,298 132.25,298 132.25,306 131.75,306" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 0 m</title></polygon>
 <polygon points="135,291.75 141,291.75 141,292.25 135,292.25" fill="hsl(199.09 35% 26.73%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 0 m</title></polygon>
@@ -741,6 +748,28 @@
 <polygon points="328.5,132.98 331.5,132.98 331.5,135.02 328.5,135.02" fill="hsl(188.66 35% 28.52%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
 <polygon points="194.5,98.98 197.5,98.98 197.5,101.02 194.5,101.02" fill="hsl(188.66 35% 28.52%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
 <polygon points="39.5,319.98 42.5,319.98 42.5,322.02 39.5,322.02" fill="hsl(188.66 35% 28.52%)" stroke="#50606e" stroke-width="0.15"><title>city_stall; wierzch 2.62 m</title></polygon>
+<polygon points="49.18,350.18 50.82,350.18 50.82,350.22 49.18,350.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="57.18,350.18 58.82,350.18 58.82,350.22 57.18,350.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="307.18,250.18 308.82,250.18 308.82,250.22 307.18,250.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="315.18,250.18 316.82,250.18 316.82,250.22 315.18,250.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="339.18,250.18 340.82,250.18 340.82,250.22 339.18,250.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="347.18,250.18 348.82,250.18 348.82,250.22 347.18,250.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="362.18,120.18 363.82,120.18 363.82,120.22 362.18,120.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="370.18,120.18 371.82,120.18 371.82,120.22 370.18,120.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="239.18,70.18 240.82,70.18 240.82,70.22 239.18,70.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="247.18,70.18 248.82,70.18 248.82,70.22 247.18,70.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="270.18,70.18 271.82,70.18 271.82,70.22 270.18,70.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="278.18,70.18 279.82,70.18 279.82,70.22 278.18,70.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="351.18,70.18 352.82,70.18 352.82,70.22 351.18,70.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="359.18,70.18 360.82,70.18 360.82,70.22 359.18,70.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="116.17,38.18 117.83,38.18 117.83,38.22 116.17,38.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="124.17,38.18 125.83,38.18 125.83,38.22 124.17,38.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="207.18,38.18 208.82,38.18 208.82,38.22 207.18,38.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="215.18,38.18 216.82,38.18 216.82,38.22 215.18,38.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="25.18,293.18 26.82,293.18 26.82,293.22 25.18,293.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="33.18,293.18 34.82,293.18 34.82,293.22 33.18,293.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="99.17,293.18 100.83,293.18 100.83,293.22 99.17,293.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
+<polygon points="107.17,293.18 108.83,293.18 108.83,293.22 107.17,293.22" fill="hsl(187.26 35% 28.76%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 2.97 m</title></polygon>
 <polygon points="88.5,21.5 91.5,21.5 91.5,24.5 88.5,24.5" fill="hsl(183.18 35% 29.45%)" stroke="#50606e" stroke-width="0.15"><title>city_smog_scrubber; wierzch 4 m</title></polygon>
 <polygon points="104.5,64.5 107.5,64.5 107.5,67.5 104.5,67.5" fill="hsl(183.18 35% 29.45%)" stroke="#50606e" stroke-width="0.15"><title>city_smog_scrubber; wierzch 4 m</title></polygon>
 <polygon points="118.5,112.5 121.5,112.5 121.5,115.5 118.5,115.5" fill="hsl(183.18 35% 29.45%)" stroke="#50606e" stroke-width="0.15"><title>city_smog_scrubber; wierzch 4 m</title></polygon>
@@ -1070,6 +1099,20 @@
 <polygon points="346.75,193.74 349.25,193.74 349.25,196.26 346.75,196.26" fill="hsl(159.32 35% 33.55%)" stroke="#50606e" stroke-width="0.15"><title>city_overpass_pillar; wierzch 10 m</title></polygon>
 <polygon points="358.75,193.74 361.25,193.74 361.25,196.26 358.75,196.26" fill="hsl(159.32 35% 33.55%)" stroke="#50606e" stroke-width="0.15"><title>city_overpass_pillar; wierzch 10 m</title></polygon>
 <polygon points="370.75,193.74 373.25,193.74 373.25,196.26 370.75,196.26" fill="hsl(159.32 35% 33.55%)" stroke="#50606e" stroke-width="0.15"><title>city_overpass_pillar; wierzch 10 m</title></polygon>
+<polygon points="37.75,192.85 40.25,192.85 40.25,193.15 37.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="61.75,192.85 64.25,192.85 64.25,193.15 61.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="92.75,192.85 95.25,192.85 95.25,193.15 92.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="116.75,192.85 119.25,192.85 119.25,193.15 116.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="140.75,192.85 143.25,192.85 143.25,193.15 140.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="164.75,192.85 167.25,192.85 167.25,193.15 164.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="188.75,192.85 191.25,192.85 191.25,193.15 188.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="212.75,192.85 215.25,192.85 215.25,193.15 212.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="236.75,192.85 239.25,192.85 239.25,193.15 236.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="260.75,192.85 263.25,192.85 263.25,193.15 260.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="284.75,192.85 287.25,192.85 287.25,193.15 284.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="308.75,192.85 311.25,192.85 311.25,193.15 308.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="332.75,192.85 335.25,192.85 335.25,193.15 332.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
+<polygon points="356.75,192.85 359.25,192.85 359.25,193.15 356.75,193.15" fill="hsl(159.24 35% 33.56%)" stroke="#50606e" stroke-width="0.15"><title>light_white; wierzch 10.02 m</title></polygon>
 <polygon points="25,257.5 29,257.5 29,262.5 25,262.5" fill="hsl(154.55 35% 34.36%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch 11.2 m</title></polygon>
 <polygon points="367,135.5 371,135.5 371,140.5 367,140.5" fill="hsl(154.55 35% 34.36%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch 11.2 m</title></polygon>
 <polygon points="126,132 130,132 130,136 126,136" fill="hsl(154.55 35% 34.36%)" stroke="#50606e" stroke-width="0.15"><title>overpass_concrete; wierzch 11.2 m</title></polygon>
@@ -1694,6 +1737,26 @@
 <circle cx="96" cy="34" r="0.5"><title>city_street_lamp</title></circle>
 <circle cx="102" cy="124" r="0.5"><title>city_street_lamp</title></circle>
 <circle cx="246" cy="268" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="34" cy="264" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="50" cy="331" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="93" cy="350" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="133" cy="341" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="166" cy="313" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="216" cy="323" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="251" cy="353" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="279" cy="312" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="309" cy="270" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="350" cy="246" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="366" cy="284" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="343" cy="125" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="349" cy="78" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="366" cy="47" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="288" cy="42" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="242" cy="104" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="105" cy="79" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="130" cy="302" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="166" cy="280" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="249" cy="253" r="0.5"><title>city_street_lamp</title></circle>
 <circle cx="35" cy="78" r="0.5"><title>power_slag_heap</title></circle>
 <circle cx="38" cy="153" r="0.5"><title>power_slag_heap</title></circle>
 <circle cx="340" cy="340" r="0.5"><title>power_slag_heap</title></circle>
