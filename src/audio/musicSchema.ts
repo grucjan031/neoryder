@@ -2,7 +2,14 @@ import { z } from 'zod';
 
 /** Stany muzyki (poza „off”, który oznacza ciszę). */
 export const MUSIC_LOOPS = ['calm', 'combat', 'boss'] as const;
-export type MusicLoopId = (typeof MUSIC_LOOPS)[number];
+/**
+ * Warianty spokoju wybierane szafą grającą w kryjówce (kolejno: calm, calmRain, calmDawn;
+ * indeks = numer utworu szafy).
+ */
+export const CALM_VARIANTS = ['calmRain', 'calmDawn'] as const;
+export const JUKEBOX_LOOPS = ['calm', ...CALM_VARIANTS] as const;
+export const ALL_MUSIC_LOOPS = [...MUSIC_LOOPS, ...CALM_VARIANTS] as const;
+export type MusicLoopId = (typeof ALL_MUSIC_LOOPS)[number];
 export type MusicState = MusicLoopId | 'off';
 
 const NOTE_RE = /^([A-G])([#b]?)(-?\d)$/;
@@ -151,12 +158,14 @@ export const musicSchema = z
         calm: musicLoopSchema,
         combat: musicLoopSchema,
         boss: musicLoopSchema,
+        calmRain: musicLoopSchema,
+        calmDawn: musicLoopSchema,
       })
       .strict(),
   })
   .strict()
   .superRefine((def, ctx) => {
-    for (const id of MUSIC_LOOPS) {
+    for (const id of ALL_MUSIC_LOOPS) {
       const loop = def.loops[id];
       const ids = new Set<string>();
       for (const track of loop.tracks) {

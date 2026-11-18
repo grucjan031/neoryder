@@ -52,6 +52,7 @@ import type { WavesDefinition } from '../world/waves';
 import type { Scene } from './index';
 import { getLiteFx } from '../render/fxMode';
 import { RoomScene } from './roomScene';
+import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 
 const CUSTOM_LOADOUT_ID = 'custom';
 const REWARD_SAVE_INTERVAL_MS = 2000;
@@ -138,6 +139,7 @@ export class RunScene implements Scene {
   private readonly sector: SectorDefinition;
   private readonly rooms: ReadonlyMap<string, RoomDefinition>;
   private missionRadio?: MissionRadio;
+  private inventory?: RunInventoryMenu;
   private room: RunRoom | null = null;
   private roomId: string | null = null;
   /** Debug: nieśmiertelność nakładana na każdy nowy pokój runu. */
@@ -176,6 +178,10 @@ export class RunScene implements Scene {
     this.ctx = ctx;
     this.three = three;
     this.screens = this.options.screens ?? new HtmlRunScreens();
+    if (typeof document !== 'undefined')
+      this.inventory = new RunInventoryMenu(ctx, () =>
+        buildRunInventoryView(this.manager.state),
+      );
     this.manager = new RunManager(ctx.bus, {
       generateMap: (seed) => {
         const id = (
@@ -1050,6 +1056,8 @@ export class RunScene implements Scene {
     if (this.disposed) return;
     this.manager.step(dt);
     this.missionRadio?.step(dt);
+    if (this.roomReady && this.manager.screen === 'room' && !this.pending)
+      this.inventory?.step(input);
     const waitingForReward = this.rewardDelayRemainingS !== null;
     const holding = this.victoryHoldRemainingS !== null;
     // W ciszy pokój krokuje dalej (rozpad, odłamki, spowolnienie), ale bez wejścia gracza.
@@ -1340,6 +1348,7 @@ export class RunScene implements Scene {
     this.tracker?.dispose();
     this.achievementToast?.dispose();
     this.missionRadio?.dispose();
+    this.inventory?.dispose();
     this.screens?.dispose();
   }
 }

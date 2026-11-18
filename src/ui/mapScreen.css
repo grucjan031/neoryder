@@ -47,7 +47,7 @@
 }
 .sector-map__graph {
   position: relative;
-  height: clamp(320px, calc(92vh - 240px), 520px);
+  height: clamp(240px, calc(100dvh - 300px), 520px);
   margin: 10px 0 12px;
   border: 1px solid rgba(0, 229, 255, 0.16);
   background:
