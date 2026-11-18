@@ -177,7 +177,8 @@ export class RunInventoryMenu {
     const panel = element('section', 'run-screen__panel run-inventory__panel');
     panel.append(element('h1', undefined, text.title), this.body, this.footer);
     this.root.append(panel);
-    document.body.append(this.root);
+    // Panel trafia do dokumentu tylko na czas otwarcia: ukryty `.run-screen` w DOM mylił
+    // selektory ekranów runu (testy e2e trybów) i logikę „czy jakiś ekran jest otwarty”.
     window.addEventListener('keydown', this.onKey, true);
   }
 
@@ -196,6 +197,7 @@ export class RunInventoryMenu {
     this.openedBy = this.lastCode || 'Tab';
     this.render();
     // Panel jest już widoczny, więc utrata pointer locka nie otworzy menu pauzy.
+    document.body.append(this.root);
     this.root.hidden = false;
     this.ctx.loop.paused = true;
     if (document.pointerLockElement) document.exitPointerLock();
@@ -205,6 +207,7 @@ export class RunInventoryMenu {
   close(): void {
     if (!this.visible) return;
     this.root.hidden = true;
+    this.root.remove();
     this.ctx.loop.paused = false;
     this.ctx.resume?.();
   }
