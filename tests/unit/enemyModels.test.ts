@@ -25,7 +25,7 @@ describe('Modele wrogów w danych', () => {
         `${file}: brak ${definition.model}.glb`,
       ).toBe(true);
     }
-    expect(procedural).toEqual(['turret']);
+    expect(procedural).toEqual([]);
     expect(withModel).toBe(files.length - procedural.length);
   });
   it('wieżyczka: węzły głowicy i wylot zgodny z danymi', () => {

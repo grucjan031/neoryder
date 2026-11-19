@@ -8,6 +8,7 @@ import {
 import type { BufferGeometry, Object3D } from 'three';
 import { getMaterial } from '../render/materials';
 import { AimLaser } from './aimLaser';
+import { loadEnemyModel } from './enemyView';
 import type { Enemy } from './types';
 
 /** Czysto wizualne: pulsowanie oka przy celowaniu i odrzut luf po strzale. */
@@ -19,21 +20,30 @@ const RECOIL_S = 0.12;
 type Kind = 'enemy' | 'enemyDark' | 'enemyGlow';
 
 /**
- * Wieżyczka: ośmiokątny cokół na trzech wspornikach, kolumna z pierścieniem światła i obrotowa
- * głowica z dwiema lufami, osłonami i okiem czujnika. Wymiary z `body` i `muzzle` w danych.
+ * Wieżyczka: model GLB z `definition.model` (węzły `turret_head`, `barrels`, `eye`), a do czasu
+ * wczytania i bez modelu — bryła zastępcza z prymitywów: ośmiokątny cokół na trzech wspornikach,
+ * kolumna z pierścieniem światła i obrotowa głowica z dwiema lufami, osłonami i okiem czujnika.
+ * Wymiary z `body` i `muzzle` w danych.
  */
 export class TurretView {
   readonly root = new Group();
   /** Obrót głowicy wokół pionu na wysokości podstawy: laser liczy początek z `muzzle` w układzie wroga. */
   private readonly head = new Group();
+  /** Stała część bryły zastępczej (cokół, kolumna, wsporniki); znika po wczytaniu modelu. */
+  private readonly placeholder = new Group();
   /** Bryła głowicy na wysokości wylotu (`muzzle.y`). */
   private readonly housing = new Group();
-  private readonly barrels = new Group();
-  private readonly eye: Mesh;
+  private barrels: Object3D = new Group();
+  private eye: Object3D;
+  /** Tylko geometrie bryły zastępczej; model GLB dzieli geometrie z szablonem. */
   private readonly geometries: BufferGeometry[] = [];
   private readonly laser: AimLaser;
+  private disposed = false;
 
-  constructor(private readonly enemy: Enemy) {
+  constructor(
+    private readonly enemy: Enemy,
+    loadModels = true,
+  ) {
     const body = enemy.definition.body!;
     const muzzle = enemy.definition.muzzle!;
     const r = body.radius;
@@ -61,7 +71,7 @@ export class TurretView {
     mesh(
       new CylinderGeometry(r * 1.08, r * 1.25, plinthH, 8),
       'enemyDark',
-      this.root,
+      this.placeholder,
       [0, plinthH / 2, 0],
       [0, Math.PI / 8, 0],
       'base',
@@ -69,7 +79,7 @@ export class TurretView {
     mesh(
       new CylinderGeometry(r * 0.95, r * 1.15, plinthH * 0.5, 8),
       'enemy',
-      this.root,
+      this.placeholder,
       [0, plinthH * 1.25, 0],
       [0, Math.PI / 8, 0],
     );
@@ -77,14 +87,14 @@ export class TurretView {
     mesh(
       new CylinderGeometry(r * 0.5, r * 0.68, columnH, 8),
       'enemy',
-      this.root,
+      this.placeholder,
       [0, plinthH * 1.5 + columnH / 2, 0],
       [0, Math.PI / 8, 0],
     );
     mesh(
       new TorusGeometry(r * 0.56, 0.022, 4, 16),
       'enemyGlow',
-      this.root,
+      this.placeholder,
       [0, plinthH * 1.5 + columnH * 0.72, 0],
       [Math.PI / 2, 0, 0],
     );
@@ -92,7 +102,7 @@ export class TurretView {
       const angle = (i / 3) * Math.PI * 2 + Math.PI / 3;
       const strut = new Group();
       strut.rotation.y = angle;
-      this.root.add(strut);
+      this.placeholder.add(strut);
       mesh(
         new BoxGeometry(0.1, columnH * 0.62, 0.12),
         'enemyDark',
@@ -104,7 +114,7 @@ export class TurretView {
     mesh(
       new CylinderGeometry(r * 0.78, r * 0.62, hr * 0.28, 8),
       'enemyDark',
-      this.root,
+      this.placeholder,
       [0, columnTop - hr * 0.1, 0],
       [0, Math.PI / 8, 0],
     );
@@ -194,7 +204,30 @@ export class TurretView {
     );
     this.laser = new AimLaser(enemy, hr * 0.04);
     this.head.add(this.laser.mesh);
-    this.root.add(this.head);
+    this.root.add(this.placeholder, this.head);
+    if (loadModels && enemy.definition.model)
+      void loadEnemyModel(enemy.definition.model).then((source) => {
+        if (!source || this.disposed) return;
+        this.useModel(source.clone(true));
+      });
+  }
+
+  /** Podmienia bryłę zastępczą na model; bez kompletu węzłów zostaje bryła zastępcza. */
+  private useModel(model: Object3D): void {
+    const head = model.getObjectByName('turret_head');
+    const barrels = head?.getObjectByName('barrels');
+    const eye = head?.getObjectByName('eye');
+    if (!head || !barrels || !eye) return;
+    model.remove(head);
+    // Tylko bryła zastępcza: `createEnemyView` dopina do `root` znacznik egzekucji.
+    this.placeholder.removeFromParent();
+    this.housing.removeFromParent();
+    for (const geometry of this.geometries) geometry.dispose();
+    this.geometries.length = 0;
+    this.root.add(model);
+    this.head.add(head);
+    this.barrels = barrels;
+    this.eye = eye;
   }
 
   render(alpha: number): void {
@@ -222,6 +255,7 @@ export class TurretView {
   }
 
   dispose(): void {
+    this.disposed = true;
     this.laser.dispose();
     this.root.removeFromParent();
     this.root.clear();
