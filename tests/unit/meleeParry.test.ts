@@ -54,10 +54,37 @@ function setup(enemyZ = -2) {
     for (let i = 0; i < Math.round(s / SIM_DT); i++)
       blade.step(SIM_DT, input(held));
   };
-  return { hit, stepFor, health, parried: () => parried };
+  return { hit, stepFor, health, blade, parried: () => parried };
 }
 
 describe('parowanie ciosów wręcz', () => {
+  it('addGuard zwraca funkcję, która zdejmuje obronę', () => {
+    const bus = new EventBus();
+    const registry = new EntityRegistry(bus);
+    const damage = new DamageSystem(bus, registry);
+    const target = registry.create('player', 'player');
+    damage.register(target, new Health(() => 100));
+    let calls = 0;
+    const off = damage.addGuard(target, () => {
+      calls++;
+      return 0;
+    });
+    expect(damage.deal(target, { amount: 10, source: null, tags: [] })).toBe(0);
+    off();
+    expect(damage.deal(target, { amount: 10, source: null, tags: [] })).toBe(
+      10,
+    );
+    expect(calls).toBe(1);
+  });
+
+  it('dispose ostrza zdejmuje obronę z DamageSystem', () => {
+    const t = setup();
+    t.stepFor(0.05, ['block']);
+    t.blade.dispose();
+    expect(t.hit(['#melee'])).toBe(20);
+    expect(t.parried()).toBe(0);
+  });
+
   it('blok w oknie neguje cios i emituje melee_parried', () => {
     const t = setup();
     t.stepFor(0.05, ['block']);

@@ -95,11 +95,21 @@ export class DamageSystem {
     return a === undefined || b === undefined || a === 'neutral' || a !== b;
   }
 
-  /** Dodatkowa obrona celu (np. parowanie ostrza); działa niezależnie od kolejności rejestracji. */
-  addGuard(target: EntityId, guard: (info: DamageInfo) => number): void {
+  /**
+   * Dodatkowa obrona celu (np. parowanie ostrza); działa niezależnie od kolejności rejestracji.
+   * Zwraca funkcję zdejmującą obronę (wywołać przy dispose właściciela).
+   */
+  addGuard(target: EntityId, guard: (info: DamageInfo) => number): () => void {
     const list = this.extraGuards.get(target) ?? [];
     list.push(guard);
     this.extraGuards.set(target, list);
+    return () => {
+      const current = this.extraGuards.get(target);
+      if (!current) return;
+      const index = current.indexOf(guard);
+      if (index >= 0) current.splice(index, 1);
+      if (current.length === 0) this.extraGuards.delete(target);
+    };
   }
 
   /** Zwraca faktycznie zadane obrażenia (0, gdy trafienie zostało zignorowane). */

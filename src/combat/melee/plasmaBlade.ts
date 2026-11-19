@@ -98,6 +98,7 @@ export class PlasmaBlade {
   private dashWasActive = false;
   private dashUsed = false;
   private readonly offDash: () => void;
+  private readonly offGuard: () => void;
   private state: BladeState = 'idle';
   private stage = 0;
   private phase: SwingPhase | null = null;
@@ -119,7 +120,8 @@ export class PlasmaBlade {
     private readonly bus: EventBus,
     private readonly tuning: Tuning,
   ) {
-    deps.damage.addGuard?.(deps.owner, this.meleeParryGuard);
+    this.offGuard =
+      deps.damage.addGuard?.(deps.owner, this.meleeParryGuard) ?? (() => {});
     this.offDash = bus.on('dash_used', ({ user, dir }) => {
       if (user !== deps.owner || !deps.dashActive) return;
       this.dashDir = normalizeVec(dir);
@@ -454,6 +456,7 @@ export class PlasmaBlade {
   dispose(): void {
     this.off();
     this.offDash();
+    this.offGuard();
     this.exitBlock();
   }
 
