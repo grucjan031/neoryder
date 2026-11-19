@@ -532,6 +532,11 @@ export const tuning = {
     parryArcDeg: 160,
     parryHitstopMs: 60,
     parryShake: 0.3,
+    /** Parowanie ciosów wręcz: blok rozpoczęty najwyżej tyle ms przed trafieniem neguje cios (nie dotyczy #heavy). */
+    meleeParryWindowMs: 200,
+    /** Ogłuszenie i odrzut wroga, którego cios został sparowany. */
+    meleeParryStunS: 0.9,
+    meleeParryKnockback: 4,
     parrySpeedMult: 1.8,
     parryDamageMult: 2,
   },

@@ -5,7 +5,7 @@ import type { ResourcePool } from '../../core/resource';
 import type { Stats } from '../../core/stats';
 import type { Tuning } from '../../core/tuning';
 import { BLOCK_SOURCE, Hitbox, PIERCE_BLOCK_TAG } from '../damage';
-import type { DamageSystem, Hurtbox } from '../damage';
+import type { DamageInfo, DamageSystem, Hurtbox } from '../damage';
 import type { ProjectileHit, ProjectileSystem } from '../weapons/projectiles';
 import type {
   BladeDefinition,
@@ -119,6 +119,7 @@ export class PlasmaBlade {
     private readonly bus: EventBus,
     private readonly tuning: Tuning,
   ) {
+    deps.damage.addGuard?.(deps.owner, this.meleeParryGuard);
     this.offDash = bus.on('dash_used', ({ user, dir }) => {
       if (user !== deps.owner || !deps.dashActive) return;
       this.dashDir = normalizeVec(dir);
@@ -214,6 +215,48 @@ export class PlasmaBlade {
       dir: null,
     });
     return true;
+  };
+
+  /**
+   * Parowanie ciosów wręcz: blok wciśnięty ≤ `meleeParryWindowMs` przed trafieniem neguje
+   * cios `#melee` z przodu (nie `#heavy`) i ogłusza atakującego (obsługa w AI wroga).
+   */
+  private readonly meleeParryGuard = (info: DamageInfo): number => {
+    const m = this.tuning.melee;
+    if (this.state !== 'blocking' || info.source === null) return 1;
+    if (
+      !info.tags.includes('#melee') ||
+      info.tags.includes(PIERCE_BLOCK_TAG) ||
+      this.blockAgeS * 1000 > m.meleeParryWindowMs
+    )
+      return 1;
+    const from = this.deps.positionOf?.(info.source);
+    if (from) {
+      const { origin, dir } = this.deps.aim();
+      const dx = from.x - origin.x;
+      const dz = from.z - origin.z;
+      const len = Math.hypot(dx, dz);
+      const arcDeg = this.def.parryArcDeg ?? m.parryArcDeg;
+      const flat = Math.hypot(dir.x, dir.z);
+      if (
+        len > 1e-6 &&
+        flat > 1e-6 &&
+        (dx * dir.x + dz * dir.z) / (len * flat) <
+          Math.cos(((arcDeg / 2) * Math.PI) / 180)
+      )
+        return 1;
+    }
+    this.bus.emit('melee_parried', {
+      defender: this.deps.owner,
+      attacker: info.source,
+    });
+    this.bus.emit('hitstop', { ms: m.parryHitstopMs });
+    this.bus.emit('camera_shake', {
+      intensity: m.parryShake,
+      durationS: 0.2,
+      dir: null,
+    });
+    return 0;
   };
 
   get blocking(): boolean {

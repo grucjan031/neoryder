@@ -37,6 +37,10 @@ interface Target {
 export class DamageSystem {
   private readonly targets = new Map<EntityId, Target>();
   private timeS = 0;
+  private readonly extraGuards = new Map<
+    EntityId,
+    ((info: DamageInfo) => number)[]
+  >();
 
   constructor(
     private readonly bus: EventBus,
@@ -91,6 +95,13 @@ export class DamageSystem {
     return a === undefined || b === undefined || a === 'neutral' || a !== b;
   }
 
+  /** Dodatkowa obrona celu (np. parowanie ostrza); działa niezależnie od kolejności rejestracji. */
+  addGuard(target: EntityId, guard: (info: DamageInfo) => number): void {
+    const list = this.extraGuards.get(target) ?? [];
+    list.push(guard);
+    this.extraGuards.set(target, list);
+  }
+
   /** Zwraca faktycznie zadane obrażenia (0, gdy trafienie zostało zignorowane). */
   deal(target: EntityId, info: DamageInfo): number {
     const entry = this.targets.get(target);
@@ -105,7 +116,9 @@ export class DamageSystem {
       !info.tags.includes(DERIVED_DAMAGE_TAG)
         ? (this.targets.get(info.source)?.opts.outgoing?.() ?? 1)
         : 1;
-    const guard = Math.max(0, Math.min(1, entry.opts.guard?.(info) ?? 1));
+    let guard = Math.max(0, Math.min(1, entry.opts.guard?.(info) ?? 1));
+    for (const extra of this.extraGuards.get(target) ?? [])
+      guard *= Math.max(0, Math.min(1, extra(info)));
     if (guard <= 0) return 0;
 
     // 'damageTaken' ma zawsze bazę 1 — liczą się tylko modyfikatory.

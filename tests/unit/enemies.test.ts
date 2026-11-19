@@ -383,6 +383,21 @@ describe('Szturmowiec — prawdziwy Rapier', () => {
     expect(f.enemy.current.state).toBe('chase');
   });
 
+  it('stuns and pushes back an assaulter whose melee hit was parried', () => {
+    const f = setup();
+    const stunned = vi.fn();
+    f.bus.on('enemy_stunned', stunned);
+    f.steps();
+    f.bus.emit('melee_parried', { defender: f.player, attacker: f.enemy.id });
+    expect(stunned).toHaveBeenCalledExactlyOnceWith({
+      id: f.enemy.id,
+      durationS: f.settings.melee.meleeParryStunS,
+    });
+    expect(f.enemy.current.state).toBe('stunned');
+    f.steps(Math.round(f.settings.melee.meleeParryStunS / SIM_DT) + 1);
+    expect(f.enemy.current.state).not.toBe('stunned');
+  });
+
   it('uses knockback threshold without heavy, resolves null dir from known attacker and ignores unknown direction', () => {
     const f = setup();
     f.damage.deal(f.enemy.id, {

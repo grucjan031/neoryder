@@ -166,6 +166,28 @@ export class Assaulter implements Enemy {
           ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
         }
       }),
+      ctx.bus.on('melee_parried', ({ defender, attacker }) => {
+        if (
+          attacker !== this.id ||
+          this.current.state === 'dead' ||
+          this.current.controlled
+        )
+          return;
+        const target = deps.getTarget();
+        if (target?.id === defender)
+          this.body.knockback(
+            {
+              x: this.current.position.x - target.position.x,
+              y: 0,
+              z: this.current.position.z - target.position.z,
+            },
+            ctx.tuning.melee.meleeParryKnockback *
+              (1 - definition.knockbackResist),
+          );
+        this.stunS = ctx.tuning.melee.meleeParryStunS;
+        this.transition('stunned');
+        ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
+      }),
       ctx.bus.on('enemy_killed', ({ id }) => {
         if (id === this.id && this.current.state !== 'dead')
           this.transition('dead');
