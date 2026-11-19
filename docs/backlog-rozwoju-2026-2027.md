@@ -13,7 +13,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S0-01 Bezpieczne rozliczenie runu po błędzie zapisu
 
-- **Cel:** nieudany zapis meta nie gubi ani nie podwaja nagrody. **P0** · Wykonawca + Architekt · Cz 2 · Ag M · status: zaplanowane
+- **Cel:** nieudany zapis meta nie gubi ani nie podwaja nagrody. **P0** · Wykonawca + Architekt · Cz 2 · Ag M · status: zaimplementowane, czeka na playtest (PR #18)
 - **Zależności:** —
 - **Kryteria:** `clearRun` tylko po udanym `saveMeta`; ekran podsumowania pokazuje błąd i „Ponów zapis”; ponowienie, odświeżenie i Kontynuuj z menu naliczają nagrodę dokładnie raz; stare zapisy wczytują się bez zmian; ADR 0007 pkt 2 zaktualizowany.
 - **Weryfikacja:** testy w `tests/unit/runMeta.test.ts` (błąd store → ponowienie → odświeżenie), zrzut komunikatu, recenzja niezależna (miejsce krytyczne: trwały postęp).
@@ -40,33 +40,33 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S0-05 Splasharty wg aktu fabuły
 
-- **Cel:** ekrany ładowania nie zdradzają aktów II–III i epilogu. **P1** · Wykonawca · Cz 0,5 · Ag S · status: w realizacji (gałąź `szlif-fabula`)
+- **Cel:** ekrany ładowania nie zdradzają aktów II–III i epilogu. **P1** · Wykonawca · Cz 0,5 · Ag S · status: zaimplementowane, czeka na playtest (PR #15, #17)
 - **Kryteria:** pole `act` w `splash.json`; przy 0 zwycięstw nigdy nie wypada akt 2+; progi w `tuning`; testy w `tests/unit/splash.test.ts`.
 - **Weryfikacja:** testy, zrzuty ekranu ładowania; po S1-03 przejście na postęp kampanii.
 
 ### S0-06 Róż podłogi areny bossa
 
-- **Cel:** efekty bossa czytają się jako czerwień wroga, nie magenta Rezonansu. **P2** · Wykonawca · Cz 0,5 · Ag S · status: w realizacji (gałąź `szlif-fabula`)
+- **Cel:** efekty bossa czytają się jako czerwień wroga, nie magenta Rezonansu. **P2** · Wykonawca · Cz 0,5 · Ag S · status: zaimplementowane, czeka na playtest (PR #17)
 - **Kryteria:** < 2% kolorowych pikseli o odcieniu 290–340° w obszarze efektu (pomiar skryptem z `tools/`).
 - **Weryfikacja:** zrzuty GPU przed/po, liczby z pomiaru.
 
 ### S0-07 Celowanie pod PPM z bronią palną
 
-- **Cel:** przybliżenie i precyzja przy broni palnej, bez utraty bloku przy ostrzu. **P1** · Wykonawca · Cz 1,5 · Ag M · status: zaplanowane
+- **Cel:** przybliżenie i precyzja przy broni palnej, bez utraty bloku przy ostrzu. **P1** · Wykonawca · Cz 1,5 · Ag M · status: zaimplementowane, czeka na playtest (PR #19)
 - **Zależności:** S0-01 (jeden wykonawca naraz).
 - **Kryteria:** z ostrzem PPM = blok jak dziś; z bronią palną PPM = celowanie (FOV ~65, ruch ×0,6, rozrzut ×0,4, brak sprintu), wejście/wyjście 0,15–0,2 s; wyjście przy przełączeniu, dashu, pauzie, utracie fokusu; samouczek uzupełniony.
 - **Weryfikacja:** testy jednostkowe mapowania i mnożników, zrzuty w celowaniu dla każdej broni, granie właściciela.
 
 ### S0-08 Przewracanie i wstawanie wrogów („kip-up”)
 
-- **Cel:** mocny odrzut przewraca humanoidalnych wrogów, którzy zwinnie wyskakują na nogi. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaplanowane
+- **Cel:** mocny odrzut przewraca humanoidalnych wrogów, którzy zwinnie wyskakują na nogi. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaimplementowane, czeka na playtest (PR #19)
 - **Zależności:** S0-07 (to samo zlecenie).
 - **Kryteria:** tylko przy odrzucie ≥ `stunKnockback`; cała sekwencja ≤ `stunOnHeavyS` (balans bez zmian); bez dronów, wieżyczek i bossa; śmierć w leżeniu = zwykły rozpad.
 - **Weryfikacja:** testy czasu i warunków, arkusz klatek sekwencji, granie właściciela.
 
 ### S0-09 Statusy w roadmapie i backlogu
 
-- **Cel:** agenci nie zlecają ponownie gotowych funkcji. **P1** · Wykonawca · Cz 0,5 · Ag S · status: zaplanowane
+- **Cel:** agenci nie zlecają ponownie gotowych funkcji. **P1** · Wykonawca · Cz 0,5 · Ag S · status: w realizacji (gałąź `statusy-planu`)
 - **Kryteria:** każda pozycja `docs/roadmap.md` (fazy) i `docs/backlog.md` ma jeden status ze skali wyżej.
 - **Weryfikacja:** przegląd Architekta (zgodność z kodem).
 
@@ -82,21 +82,21 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S1-01 ADR 0008: misje i kampania
 
-- **Cel:** kontrakt przed kodem. **P1** · Architekt + Właściciel · Cz 4 · Ag S · status: zaplanowane
+- **Cel:** kontrakt przed kodem. **P1** · Architekt + Właściciel · Cz 4 · Ag S · status: zaimplementowane, czeka na playtest (ADR 0008 przyjęty, PR #21)
 - **Zależności:** D1, D3, D6.
 - **Kryteria:** stany misji (zablokowana, dostępna, w toku, ukończona), cele, warunki porażki, nagrody za pierwsze i kolejne ukończenie, odblokowania, rozdział postępu próby od postępu kampanii, reguły powtórki po śmierci.
 - **Weryfikacja:** recenzja niezależna, akceptacja właściciela.
 
 ### S1-02 Schemat danych misji
 
-- **Cel:** misja jako dane (zod), jak inne pliki `src/data`. **P1** · Wykonawca · Cz 1 · Ag M · status: zaplanowane
+- **Cel:** misja jako dane (zod), jak inne pliki `src/data`. **P1** · Wykonawca · Cz 1 · Ag M · status: zaimplementowane, czeka na playtest (PR #21)
 - **Zależności:** S1-01.
 - **Kryteria:** schemat + wpis „Maszty”; obowiązkowe pokoje fabularne o stałej pozycji w sektorze; walidacja przy starcie.
 - **Weryfikacja:** testy schematu i generatora sektora z pokojem obowiązkowym.
 
 ### S1-03 Stan kampanii w zapisie
 
-- **Cel:** trwały postęp kampanii. **P0** · Wykonawca · Cz 1,5 · Ag M · status: zaplanowane
+- **Cel:** trwały postęp kampanii. **P0** · Wykonawca · Cz 1,5 · Ag M · status: zaimplementowane, czeka na playtest (PR #21)
 - **Zależności:** S1-01, S0-01.
 - **Kryteria:** wersja zapisu + migracja; stare zapisy dostają pusty postęp; `unlockedSplashAct` czyta postęp kampanii zamiast zwycięstw.
 - **Weryfikacja:** testy migracji na stałych plikach starych zapisów.
@@ -112,13 +112,13 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S2-01 Tablica misji, odprawa, cel w HUD
 
-- **P1** · Wykonawca · Cz 2 · Ag M · zależności: S1-02, S1-03
+- **P1** · Wykonawca · Cz 2 · Ag M · zależności: S1-02, S1-03 · status: zaimplementowane, czeka na playtest (PR #21)
 - **Kryteria:** wybór misji na tablicy, krótka odprawa, aktualny cel w HUD, komunikaty radiowe nie zasłaniają informacji walki.
 - **Weryfikacja:** e2e: tablica → odprawa → run z celem; zrzuty desktop/telefon.
 
 ### S2-02 „Maszty” — sabotaż trzech masztów
 
-- **P1** · Wykonawca + Architekt · Cz 4 · Ag L · zależności: S2-01
+- **P1** · Wykonawca + Architekt · Cz 4 · Ag L · zależności: S2-01 · status: zaimplementowane, czeka na playtest (PR #21, #22; liniowo: ADR 0009, misja M01)
 - **Kryteria:** trzy cele sabotażu, reakcja przeciwników, rezultat fabularny i powrót; ukończenie bez debug; porażka i ponowienie bez zepsutego stanu; wczytanie zachowuje postęp.
 - **Weryfikacja:** bot e2e misji, granie właściciela, 2–3 osoby spoza projektu wskazują cel bez podpowiedzi.
 
@@ -133,20 +133,20 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S2b-01 Przejęcie
 
-- **Cel:** walka o punkty zamiast czyszczenia pokoju. **P1** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaplanowane
+- **Cel:** walka o punkty zamiast czyszczenia pokoju. **P1** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaimplementowane, czeka na playtest (PR #23)
 - **Zależności:** S2-02 (strefy z paskiem postępu, fale z białą listą wrogów).
 - **Kryteria:** arena z 3 punktami A/B/C; gracz przejmuje punkt, stojąc w strefie; wrogowie przejmują i odbijają punkty (AI idzie do najbliższego punktu nie-wroga); pula posiłków wroga spada szybciej, gdy gracz trzyma większość punktów; zwycięstwo przy wyczerpaniu puli, porażka przy śmierci; HUD: stan punktów i pula. Liczby w `tuning`.
 - **Weryfikacja:** testy logiki punktów i puli, bot e2e (przejęcie cheatem → zwycięstwo), zrzuty HUD i stref, granie właściciela.
 
 ### S2b-02 Szturm
 
-- **Cel:** front przesuwany przez wysadzanie par stacji. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaplanowane
+- **Cel:** front przesuwany przez wysadzanie par stacji. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaimplementowane, czeka na playtest (PR #30)
 - **Zależności:** S2b-01, cel `sabotage`.
 - **Kryteria:** sektory po 2 stacje; zniszczenie obu przesuwa front; limit posiłków gracza (dodatkowe życia) zamiast pojedynczej śmierci.
 
 ### S2b-03 Kradzież rdzenia
 
-- **Cel:** zabrać rdzeń z bazy wroga i donieść do ewakuacji. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaplanowane
+- **Cel:** zabrać rdzeń z bazy wroga i donieść do ewakuacji. **P2** · Wykonawca · Cz 1,5 · Ag M · status: zaimplementowane, czeka na playtest (PR #32)
 - **Zależności:** S2b-01, cele `pickup` i `exit`.
 - **Kryteria:** z rdzeniem wolniejszy ruch i brak dasha, wszyscy wrogowie gonią nosiciela; śmierć upuszcza rdzeń, wróg może go odnieść do bazy.
 
@@ -154,26 +154,26 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S3-01 Cel obrony strefy
 
-- **P1** · Wykonawca · Cz 3 · Ag L · zależności: S2-02
+- **P1** · Wykonawca · Cz 3 · Ag L · zależności: S2-02 · status: zaimplementowane, czeka na playtest (PR #25)
 - **Kryteria:** postęp pobierania danych w strefie, czytelne zatrzymanie po wyjściu, fale wymuszające zmianę pozycji i użycie mocy.
 - **Weryfikacja:** testy logiki strefy, bot e2e, granie właściciela.
 
 ### S3-02 Treść misji „List przewozowy”
 
-- **P1** · Wykonawca · Cz 2 · Ag M · zależności: S3-01
+- **P1** · Wykonawca · Cz 2 · Ag M · zależności: S3-01 · status: zaimplementowane, czeka na playtest (PR #25)
 - **Kryteria:** odprawa, pokoje, rezultat, odblokowanie następnej misji.
 
 ## S4 — „Odlewnia” i prototypy
 
 ### S4-01 Zwycięstwo misji poza pokojem bossa
 
-- **P1** · Architekt + Wykonawca · Cz 2 · Ag M · zależności: S1-01
+- **P1** · Architekt + Wykonawca · Cz 2 · Ag M · zależności: S1-01 · status: zaimplementowane, czeka na playtest (PR #27)
 - **Kryteria:** sukces = boss + pobranie danych + ewakuacja (dziś pokój bossa od razu kończy run zwycięstwem — rozszerzyć regułę w `src/world/run.ts`).
 - **Weryfikacja:** testy przejść stanu runu, bot e2e.
 
 ### S4-02 „Odlewnia” — Brandt
 
-- **P1** · Wykonawca · Cz 3 · Ag L · zależności: S4-01, D3
+- **P1** · Wykonawca · Cz 3 · Ag L · zależności: S4-01, D3 · status: zaimplementowane, czeka na playtest (PR #27)
 - **Kryteria:** odprawa z kartą, wejście na arenę, zakończenie starcia, dane, ewakuacja, reakcje kryjówki.
 
 ### S4-03 Prototypy ratowania NPC i wagonu
@@ -184,13 +184,13 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S4-04 Krótka narracja łącząca 3 misje
 
-- **P1** · Właściciel + Architekt · Cz 3 · zależności: D2, D3
+- **P1** · Właściciel + Architekt · Cz 3 · zależności: D2, D3 · status: zaimplementowane, czeka na playtest (przerywniki, PR #27)
 
 ## S4b — osiągnięcia i naszywki Iskry (decyzja właściciela 17 XI 2026)
 
 ### S4b-01 Osiągnięcia z naszywkami
 
-- **Cel:** powód do kolejnego runu (filar 3) i zachęta do grania każdą ścieżką (filar 2). **P2** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaplanowane
+- **Cel:** powód do kolejnego runu (filar 3) i zachęta do grania każdą ścieżką (filar 2). **P2** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaimplementowane, czeka na playtest (PR #31)
 - **Zależności:** S4-02 (wszystkie trzy misje dema), S0-01 (bezpieczne rozliczenie).
 - **Kryteria:** ok. 25–30 osiągnięć w danych (walka, czyste ścieżki Ostrze/Moc/Strzelec, misje i tryby, progres); liczenie z istniejących zdarzeń `EventBus`; stan w metazapisie z migracją; jednorazowa nagroda w Danych/Rdzeniach (idempotentnie, jak nagrody runu); komunikat w HUD przy zdobyciu; panel „Naszywki Iskry” w kryjówce (zdobyte świecą, brakujące szare z podpowiedzią) i komentarz NPC; ikony w palecie bursztyn/biel/zieleń (bez cyanu i magenty).
 - **Zasady projektu:**
@@ -244,7 +244,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S7-02 Audio walki i muzyka (spokój, walka, boss)
 
-- **P2** · Wykonawca · Cz 3 · Ag M
+- **P2** · Wykonawca · Cz 3 · Ag M · status: zaimplementowane, czeka na playtest (PR #34, #40)
 - **Kryteria:** wyraźne parowanie, zagrożenie, przegrzanie, trafienie, nagroda; trzy pętle muzyczne syntezowane.
 
 ### S8-01 (warunkowo) „Ładunek klasy K”
@@ -264,12 +264,12 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S9-02 Niezawodność
 
-- **P1** · QA · Cz 3 · Ag M
+- **P1** · QA · Cz 3 · Ag M · status: zaimplementowane, czeka na playtest (PR #18, #48, #49)
 - **Kryteria:** godzinna sesja, pauzy, utrata fokusu, odświeżenie, aktualizacja wersji bez utraty zapisu; wspierane przeglądarki (D7).
 
 ### S10-01 Czytelność i pierwsze minuty
 
-- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M
+- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M · status: w realizacji (częściowo: PR #41, #46; tryb niskiej jakości i bez błysków w ustawieniach)
 - **Kryteria:** sygnały ataków, stan celów, opisy talentów, waluty, komunikaty porażki; tryb niskiej jakości i bez błysków.
 
 ### S10-02 Kandydat do wydania

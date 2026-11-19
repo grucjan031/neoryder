@@ -6,12 +6,12 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 | Pomysł                                 | Dlaczego odłożone                                              |
 | -------------------------------------- | -------------------------------------------------------------- |
-| Rzut ostrzem (bumerang) i dash-cięcie  | Zaplanowane na F2; F1 weryfikuje podstawy ostrza               |
-| Warianty ostrzy (podwójne, dwustronne) | F2, wymaga stabilnego combo i danych broni                     |
+| Rzut ostrzem (bumerang) i dash-cięcie | Zaplanowane na F2; F1 weryfikuje podstawy ostrza — **zaimplementowane, czeka na playtest (`plasmaBlade`: stany `throwing`, `dashCut`)** |
+| Warianty ostrzy (podwójne, dwustronne) | F2, wymaga stabilnego combo i danych broni — **zaimplementowane, czeka na playtest (`src/data/blades`: `twinBlades`, `staffBlade`)** |
 | Parowanie ataków wręcz                 | Najpierw parowanie pocisków; osobne issue po bramce F1         |
 | Wspinaczka, bieg po ścianach           | Ryzyko dla czytelności aren, brak pewności, że wzmacnia filary |
 | Wykończenia (execution) z animacją     | Po ustaleniu feel hitstopu; wymaga animacji                    |
-| Rzucanie obiektami fizycznymi (Chwyt)  | F2 (moc Chwyt i rzut)                                          |
+| Rzucanie obiektami fizycznymi (Chwyt) | F2 (moc Chwyt i rzut) — **zaimplementowane, czeka na playtest (moc `grab`)** |
 
 ## Moce i bronie
 
@@ -19,10 +19,10 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 | Pomysł                                                                 | Dlaczego odłożone                 |
 | ---------------------------------------------------------------------- | --------------------------------- |
-| Pozostałe moce Rezonansu (Chwyt, Błyskawica, Fala, Bariera, Skupienie) | F2, po sprawdzeniu pierwszej mocy |
-| Pozostałe typy broni, moduły (rykoszet, przebicie, podpalenie)         | F2                                |
-| Efekty statusów (podpalenie, przeciążenie, ogłuszenie)                 | F2                                |
-| Granaty EMP, ciągły laser                                              | F2, wymagają statusów             |
+| Pozostałe moce Rezonansu (Chwyt, Błyskawica, Fala, Bariera, Skupienie) | F2, po sprawdzeniu pierwszej mocy — **zaimplementowane, czeka na playtest (`src/data/powers`)** |
+| Pozostałe typy broni, moduły (rykoszet, przebicie, podpalenie) | F2 — **zaimplementowane, czeka na playtest (`src/data/weapons`, `src/data/modules`)** |
+| Efekty statusów (podpalenie, przeciążenie, ogłuszenie) | F2 — **zaimplementowane, czeka na playtest (`src/data/statuses`)** |
+| Granaty EMP, ciągły laser | F2, wymagają statusów — **zaimplementowane, czeka na playtest (`emp.json`, `beam.json`)** |
 | Ulepszenia mocy zmieniające działanie                                  | F4 (drzewka)                      |
 
 ## Wrogowie i bossowie
@@ -33,19 +33,19 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 | Pomysł                                            | Dlaczego odłożone                |
 | ------------------------------------------------- | -------------------------------- |
-| Snajper, Dron, Tarczownik, Egzekutor              | F2                               |
-| Koordynacja grupy (flankowanie, ostrzał zaporowy) | F2                               |
+| Snajper, Dron, Tarczownik, Egzekutor | F2 — **zaimplementowane, czeka na playtest (`src/data/enemies`)** |
+| Koordynacja grupy (flankowanie, ostrzał zaporowy) | F2 — **zaimplementowane, czeka na playtest (flankowanie i taktyki w `tuning.enemies`)** |
 | Bossowie Helixa, Kurogane, Orbis                  | Pierwszy boss w F3, kolejni w F5 |
-| Ataki środowiskowe i pułapki                      | Po stabilnym generatorze pokoi   |
+| Ataki środowiskowe i pułapki | Po stabilnym generatorze pokoi — **zaimplementowane, czeka na playtest (`src/world/hazards.ts`)** |
 
 ## Roguelite i progresja
 
 | Pomysł                              | Dlaczego odłożone                     |
 | ----------------------------------- | ------------------------------------- |
-| Implanty per run i rzadkości        | F3                                    |
-| Drzewka talentów i hybrydy          | F4                                    |
-| Waluty Dane i Rdzenie, odblokowania | F4                                    |
-| Poziom zagrożenia                   | F4                                    |
+| Implanty per run i rzadkości | F3 — **zaimplementowane, czeka na playtest (`src/progression/implants.ts`)** |
+| Drzewka talentów i hybrydy | F4 — **zaimplementowane, czeka na playtest (`src/data/talents`)** |
+| Waluty Dane i Rdzenie, odblokowania | F4 — **zaimplementowane, czeka na playtest (`src/progression/meta.ts`, `unlocks`)** |
+| Poziom zagrożenia | F4 — **zaimplementowane, czeka na playtest (`threatSchema.ts`)** |
 | Wydobywanie modułów z runu          | Po meta-progresie, ryzyko dla balansu |
 | Codzienne wyzwania z tabelą online  | Wymaga backendu, poza demo            |
 
@@ -53,8 +53,8 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 | Pomysł                                        | Dlaczego odłożone                     |
 | --------------------------------------------- | ------------------------------------- |
-| Generator sektorów, moduły pokoi              | F3                                    |
-| Kryjówka jako grywalny hub                    | F4                                    |
+| Generator sektorów, moduły pokoi | F3 — **zaimplementowane, czeka na playtest (`src/world`, `src/data/sectors`)** |
+| Kryjówka jako grywalny hub | F4 — **zaimplementowane, czeka na playtest (`src/scenes/hub.ts`)** |
 | Misje fabularne i dialogi z portretami        | F5                                    |
 | Pełny łuk fabularny, zakończenia alternatywne | Po premierze, zależne od odbioru demo |
 | Kolejne dzielnice Neo-Rydu                    | Po premierze                          |
@@ -82,11 +82,11 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 | Pomysł                                                        | Dlaczego odłożone                            |
 | ------------------------------------------------------------- | -------------------------------------------- |
-| Muzyka reaktywna                                              | F7                                           |
-| Pełne ustawienia (klawisze, czułość, FOV, dostępność)         | F7                                           |
-| Tryb dla osób z fotoczułością (wyłączenie wstrząsów, błysków) | F7, ale rozważyć wcześniej mały przełącznik  |
+| Muzyka reaktywna | F7 — **zaimplementowane, czeka na playtest (PR #34, `src/audio/musicDirector.ts`)** |
+| Pełne ustawienia (klawisze, czułość, FOV, dostępność) | F7 — **zaimplementowane, czeka na playtest (`src/ui/settingsScreen.ts`, `inputBindings.json`)** |
+| Tryb dla osób z fotoczułością (wyłączenie wstrząsów, błysków) | F7, ale rozważyć wcześniej mały przełącznik — **zaimplementowane, czeka na playtest (ustawienia: wstrząsy ekranu, błyski)** |
 | Lokalizacja na inne języki                                    | Po premierze                                 |
-| Samouczek interaktywny                                        | F7                                           |
+| Samouczek interaktywny | F7 — **zaimplementowane, czeka na playtest (`src/scenes/tutorial.ts`, `src/data/tutorial`)** |
 | Kosmetyki (skórki ostrza, neonów)                             | Po premierze, monetyzacja poza zakresem demo |
 
 ## Jakość i narzędzia
