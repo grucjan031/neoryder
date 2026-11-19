@@ -102,7 +102,7 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | Pomysł                                                                                   | Dlaczego odłożone                                                           |
 | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | Ogłuszenie ciężkim ciosem jako status `stunned` (dziś stan wroga z `stunOnHeavyS`)       | F2-02 dodało status, ale migracja zmieniłaby feel F1; decyzja po playteście |
-| Bufor wciśnięcia spustu broni półautomatycznej (klik w trakcie odnowienia przepada)      | Feel pistoletu i snajperki — ocenić w playteście F2                         |
+| ~~Bufor wciśnięcia spustu broni półautomatycznej~~ — zrobione (`tuning.weapons.triggerBufferS`, `docs/systems/weapons.md`) | Feel pistoletu i snajperki — ocenić w playteście |
 
 ## Wynikłe z zadań F3
 
