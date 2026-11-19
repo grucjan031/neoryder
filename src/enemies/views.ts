@@ -26,7 +26,7 @@ export function createEnemyView(
 ): EnemyViewLike {
   const view =
     enemy.definition.kind === 'turret'
-      ? new TurretView(enemy)
+      ? new TurretView(enemy, loadModels)
       : enemy.definition.kind === 'drone' || enemy.definition.kind === 'hacker'
         ? new DroneView(enemy, loadModels)
         : new EnemyView(enemy, loadModels);

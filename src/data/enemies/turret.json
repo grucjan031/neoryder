@@ -1,6 +1,7 @@
 {
   "id": "turret",
   "kind": "turret",
+  "model": "enemy_turret",
   "threatCost": 3,
   "stationary": true,
   "grabbable": false,
