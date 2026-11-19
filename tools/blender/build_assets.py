@@ -808,6 +808,124 @@ def build_enemy_drone():
     return root
 
 
+# Wymiary z src/data/enemies/turret.json: body.radius, body.headRadius, muzzle (x, y, z w glTF).
+TURRET_R, TURRET_HR = 0.4, 0.3
+TURRET_MUZZLE_Y, TURRET_MUZZLE_Z = 1.15, 0.8
+
+
+def _turret_piston(angle_deg, r0, z0, r1, z1, radius, sides=6):
+    """Graniastosłup od punktu (r0, z0) do (r1, z1) w płaszczyźnie promieniowej pod kątem angle_deg."""
+    a = math.radians(angle_deg)
+    p0 = Vector((math.cos(a) * r0, math.sin(a) * r0, z0))
+    p1 = Vector((math.cos(a) * r1, math.sin(a) * r1, z1))
+    axis = p1 - p0
+    bm = bm_prism(axis.length, radius, radius, sides=sides, top_at_origin=False)
+    rot = Vector((0, 0, 1)).rotation_difference(axis.normalized()).to_matrix()
+    bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, 0, 0), matrix=rot)
+    for v in bm.verts:
+        v.co += (p0 + p1) / 2
+    return bm
+
+
+def build_enemy_turret():
+    """Wieżyczka: stała podstawa (cokół, łapy, kolumna, wsporniki) i głowica `turret_head`
+    z pivotem w osi pionowej (0, 0, 0) obracana w kodzie. W głowicy: węzeł `barrels`
+    (odrzut wzdłuż +Z glTF), oko `eye` (pivot w środku, pulsuje przy celowaniu) i `muzzle`
+    w punkcie wylotu z danych. Przód głowicy = +Z glTF."""
+    r, hr, my = TURRET_R, TURRET_HR, TURRET_MUZZLE_Y
+    root = empty("enemy_turret", size=0.4)
+    # --- podstawa
+    part("base", bm_merge(
+        bm_prism(0.12, r * 1.1, r * 1.25, sides=8, top_at_origin=False, offset=(0, 0, 0.06), rot_deg=22.5),
+        bm_prism(0.06, r * 0.92, r * 1.06, sides=8, top_at_origin=False, offset=(0, 0, 0.15), rot_deg=22.5),
+    ), DARK, root)
+    for i in range(3):
+        a = math.radians(90 + 120 * i)
+        cx, cy = math.cos(a) * r * 1.2, math.sin(a) * r * 1.2
+        part(f"foot_{i}", bm_merge(
+            bm_box(0.16, 0.3, 0.07, center=(0, 0, 0.035), taper_top=(0.75, 0.8)),
+            bm_box(0.08, 0.08, 0.03, center=(0, 0.06, 0.08)),  # kotwa
+        ), DARK, root, loc=(cx, cy, 0), rot=(0, 0, math.degrees(a) - 90))
+        part(f"foot_light_{i}", bm_box(0.03, 0.03, 0.012), GLOW, root,
+             loc=(cx + math.cos(a) * 0.1, cy + math.sin(a) * 0.1, 0.075))
+    column_bottom, column_top = 0.18, my - hr * 0.62
+    part("column", bm_merge(
+        bm_prism(column_top - column_bottom, r * 0.5, r * 0.68, sides=8, top_at_origin=False,
+                 offset=(0, 0, (column_bottom + column_top) / 2), rot_deg=22.5),
+        bm_prism(0.05, r * 0.72, r * 0.72, sides=8, top_at_origin=False, offset=(0, 0, column_bottom + 0.1),
+                 rot_deg=22.5),  # obejma wsporników
+    ), RED, root)
+    band_z = column_bottom + (column_top - column_bottom) * 0.72
+    band_r = r * (0.68 - (0.68 - 0.5) * 0.72) + 0.012
+    part("column_light", bm_prism(0.035, band_r, band_r, sides=8, top_at_origin=False,
+                                  offset=(0, 0, band_z), rot_deg=22.5), GLOW, root)
+    # Trzy siłowniki od łap do kolumny: ciemny cylinder i czerwona tuleja w dolnej części.
+    for i in range(3):
+        ang = 90 + 120 * i
+        part(f"piston_{i}", bm_merge(
+            _turret_piston(ang, r * 1.12, 0.1, r * 0.48, 0.66, 0.026),
+            _turret_piston(ang, r * 0.5, 0.64, r * 0.45, 0.7, 0.05, sides=8),  # mocowanie przy kolumnie
+        ), DARK, root)
+        part(f"piston_sleeve_{i}", _turret_piston(ang, r * 1.1, 0.12, r * 0.86, 0.33, 0.045), RED, root)
+    part("collar", bm_prism(hr * 0.3, r * 0.62, r * 0.8, sides=8, top_at_origin=False,
+                            offset=(0, 0, column_top - hr * 0.02), rot_deg=22.5), DARK, root)
+
+    # --- głowica (obrót wokół pionu w kodzie)
+    head = node("turret_head", root, (0, 0, 0), size=0.2)
+    body_y = -FWD * hr * 0.1  # obudowa lekko cofnięta, lufy wystają z przodu
+    part("head", bm_box(hr * 1.75, hr * 1.85, hr * 1.05, center=(0, body_y, my), taper_top=(0.86, 0.88),
+                        bevel=0.018), RED, head)
+    part("head_plate", bm_box(hr * 1.45, hr * 1.5, hr * 0.14, center=(0, body_y + -FWD * hr * 0.06, my + hr * 0.6),
+                              taper_top=(0.85, 0.8)), DARK, head)
+    part("mantlet", bm_box(hr * 1.3, hr * 0.24, hr * 0.6, center=(0, FWD * hr * 0.86, my - hr * 0.14),
+                           taper_top=(0.82, 1.0)), DARK, head)
+    for side in (-1, 1):
+        tag = "L" if side > 0 else "R"
+        part(f"cheek_{tag}", bm_box(hr * 0.24, hr * 1.55, hr * 0.85, center=(side * hr * 0.98, body_y, my - hr * 0.05),
+                                    taper_top=(0.7, 0.9)), DARK, head)
+        part(f"cheek_light_{tag}", bm_box(hr * 0.05, hr * 1.2, hr * 0.08,
+                                          center=(side * hr * 1.11, body_y, my + hr * 0.12)), GLOW, head)
+        part(f"pod_{tag}", bm_box(hr * 0.34, hr * 0.7, hr * 0.5, center=(side * hr * 1.24, -FWD * hr * 0.55, my - hr * 0.2),
+                                  taper_top=(0.8, 0.85), bevel=0.01), RED, head)
+    for i in range(3):  # żebra radiatora z tyłu
+        part(f"fin_{i}", bm_box(hr * 1.2, hr * 0.06, hr * 0.62,
+                                center=(0, -FWD * (hr * 1.03 + i * hr * 0.14), my + hr * 0.02),
+                                taper_top=(0.9, 1.0)), DARK, head)
+    part("antenna", bm_merge(
+        bm_prism(hr * 0.7, 0.008, 0.014, sides=6, top_at_origin=False,
+                 offset=(-hr * 0.55, -FWD * hr * 0.6, my + hr * 0.65 + hr * 0.35)),
+        bm_box(0.03, 0.03, 0.03, center=(-hr * 0.55, -FWD * hr * 0.6, my + hr * 1.02)),
+    ), DARK, head)
+
+    # --- lufy: od przodu obudowy do wylotu z danych
+    barrels = node("barrels", head, (0, 0, 0), size=0.1)
+    front, muzzle = hr * 0.8, TURRET_MUZZLE_Z
+    length = muzzle - front
+    by = my - hr * 0.18
+    for side in (-1, 1):
+        tag = "L" if side > 0 else "R"
+        bx = side * hr * 0.24
+        part(f"barrel_{tag}", bm_merge(
+            bm_prism(length, hr * 0.13, hr * 0.11, sides=8, axis="Y", top_at_origin=False,
+                     offset=(bx, FWD * (front + length / 2), by)),
+            bm_prism(0.02, hr * 0.15, hr * 0.15, sides=8, axis="Y", top_at_origin=False,
+                     offset=(bx, FWD * (front + length * 0.62), by)),
+            bm_prism(0.06, hr * 0.16, hr * 0.15, sides=8, axis="Y", top_at_origin=False,
+                     offset=(bx, FWD * (muzzle - 0.035), by)),  # hamulec wylotowy
+        ), DARK, barrels)
+        part(f"shroud_{tag}", bm_prism(length * 0.32, hr * 0.17, hr * 0.17, sides=8, axis="Y", top_at_origin=False,
+                                        offset=(bx, FWD * (front + length * 0.18), by)), RED, barrels)
+        part(f"muzzle_glow_{tag}", bm_prism(0.012, hr * 0.11, hr * 0.11, sides=8, axis="Y", top_at_origin=False,
+                                             offset=(bx, FWD * (muzzle + 0.002), by)), GLOW, barrels)
+    # --- oko czujnika nad lufami
+    eye_at = (0, FWD * hr * 0.9, my + hr * 0.28)
+    part("eye_ring", bm_prism(0.03, hr * 0.33, hr * 0.35, sides=10, axis="Y", top_at_origin=False), DARK, head,
+         loc=(eye_at[0], eye_at[1] - FWD * 0.012, eye_at[2]))
+    part("eye", bm_prism(0.03, hr * 0.25, hr * 0.27, sides=10, axis="Y", top_at_origin=False), GLOW, head, loc=eye_at)
+    node("muzzle", head, (0, FWD * muzzle, my))
+    return root
+
+
 # --------------------------------------------------------------------------- player weapons
 
 def _fpp_hilt_parts(length, radius, y_front, grip_len, bands=4):
@@ -5377,6 +5495,7 @@ def main() -> None:
         "enemy_shielder": build_enemy_shielder,
         "enemy_executor": build_enemy_executor,
         "enemy_drone": build_enemy_drone,
+        "enemy_turret": build_enemy_turret,
         "plasma_blade": build_plasma_blade,
         "blaster": build_blaster,
         "pistol": build_pistol,

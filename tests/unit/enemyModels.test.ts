@@ -28,6 +28,29 @@ describe('Modele wrogów w danych', () => {
     expect(procedural).toEqual(['turret']);
     expect(withModel).toBe(files.length - procedural.length);
   });
+  it('wieżyczka: węzły głowicy i wylot zgodny z danymi', () => {
+    const glb = readFileSync(join(modelDir, 'enemy_turret.glb'));
+    // Kawałek JSON zaraz po 12-bajtowym nagłówku GLB: długość i typ, potem treść.
+    const json = JSON.parse(
+      glb.subarray(20, 20 + glb.readUInt32LE(12)).toString('utf8'),
+    ) as {
+      nodes: { name?: string; translation?: number[]; children?: number[] }[];
+    };
+    const byName = new Map(json.nodes.map((n, i) => [n.name, { ...n, i }]));
+    const head = byName.get('turret_head');
+    expect(head, 'turret_head').toBeDefined();
+    expect(head!.translation ?? [0, 0, 0]).toEqual([0, 0, 0]);
+    for (const name of ['barrels', 'eye', 'muzzle'])
+      expect(head!.children, name).toContain(byName.get(name)?.i);
+    const turret = enemySchema.parse(
+      JSON.parse(readFileSync(join(dataDir, 'turret.json'), 'utf8')),
+    );
+    const muzzle = byName.get('muzzle')!.translation!;
+    const expected = turret.muzzle!;
+    expect(muzzle[0]).toBeCloseTo(expected.x, 3);
+    expect(muzzle[1]).toBeCloseTo(expected.y, 3);
+    expect(muzzle[2]).toBeCloseTo(expected.z, 3);
+  });
   it('odrzuca pusty model', () => {
     const raw = JSON.parse(
       readFileSync(join(dataDir, 'assaulter.json'), 'utf8'),
