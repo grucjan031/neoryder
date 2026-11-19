@@ -73,7 +73,11 @@ Pola wspólne są oddzielone od pól pocisku, aby rozszerzyć unię w F2-04.
 
 Kod trybów jest w `src/combat/weapons/fireModes/`. Dla `automatic: false`
 strzał zachodzi tylko przy `triggerHeld: false → true`. Wciśnięcie podczas
-odnowienia lub przegrzania przepada; trzymanie nie wywoła strzału po odblokowaniu.
+przegrzania przepada; trzymanie nie wywoła strzału po odblokowaniu.
+Bufor spustu: wciśnięcie w ostatnich `tuning.weapons.triggerBufferS` (0,15 s)
+odnowienia zostaje zapamiętane (najwyżej jeden strzał) i pada w pierwszym kroku
+symulacji, gdy broń jest gotowa. Wciśnięcie wcześniej przepada. Bufor kasuje się
+przy przegrzaniu, zmianie broni (`cool`) i `reset()`. Broń automatyczna go nie używa.
 Dla `automatic: true` trzymanie strzela z częstotliwością `fireRateHz`.
 Ciepło i `weapon_fired` naliczane są raz na strzał, również dla rozpraszacza.
 Tryby `beam` i `lob` nie są jeszcze obsługiwane (F2-04).
