@@ -319,3 +319,34 @@ test('hub: hub sit <id> siada, hub stand wstaje', async ({ page }) => {
   expect(await query(page, 'hubSeat')).toBeNull();
   expect(errors).toEqual([]);
 });
+
+test('hub: ?campaign= zmienia pozycję Szrona i komenda arrive mission działa', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  type Npc = { id: string; x: number; z: number };
+  const szron = async () =>
+    ((await query(page, 'npcs')) as Npc[]).find((n) => n.id === 'szron')!;
+  await openHub(page);
+  const before = await szron();
+  await page.goto(
+    '/?scene=hub&debug=1&fx=lite&seed=hub-e2e&campaign=m01-maszty,m06-odlewnia',
+  );
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
+      timeout: LOAD_TIMEOUT,
+    })
+    .toBe('hub');
+  await waitSimSteps(page, 5);
+  const after = await szron();
+  expect(Math.hypot(after.x - before.x, after.z - before.z)).toBeGreaterThan(
+    0.5,
+  );
+  expect(await command(page, 'hub arrive mission m06-odlewnia')).toContain(
+    'm06-odlewnia',
+  );
+  expect(await command(page, 'hub arrive mission nieznana')).toContain(
+    'Użycie',
+  );
+  expect(errors).toEqual([]);
+});

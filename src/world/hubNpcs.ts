@@ -5,11 +5,16 @@ import type { Tuning } from '../core/tuning';
 import type { HubNpcDef, NpcRoute, NpcAnimation } from './hubSchema';
 import type { HubFocusBox } from './hubStations';
 
+const missionIdSchema = z.string().regex(/^[a-z0-9_-]+$/);
+
 export const npcConversationSchema = z
   .object({
     id: z.string().min(1),
     npcs: z.array(z.string().min(1)).min(1).max(3),
     radiusM: z.number().finite().positive().optional(),
+    /** Rozmowa pojawia się po ukończeniu `after` i znika po ukończeniu `until` (id misji). */
+    after: missionIdSchema.optional(),
+    until: missionIdSchema.optional(),
     lines: z
       .array(z.object({ npc: z.string().min(1), text: z.string().min(1) }))
       .min(1),
@@ -56,7 +61,15 @@ export const npcTextsSchema = z.object({
           firstVisit: reactionLinesSchema.optional(),
           victory: reactionLinesSchema.optional(),
           death: reactionLinesSchema.optional(),
+          /** Zamiast `victory` przy powrocie z tej misji (klucz: id misji). */
+          afterMission: z
+            .record(missionIdSchema, reactionLinesSchema)
+            .optional(),
         })
+        .optional(),
+      /** Stałe kwestie dołączane do puli rozmowy po ukończeniu misji `after`. */
+      campaignLines: z
+        .array(z.object({ after: missionIdSchema, lines: reactionLinesSchema }))
         .optional(),
     }),
   ),

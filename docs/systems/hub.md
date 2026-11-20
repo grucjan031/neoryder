@@ -506,6 +506,7 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
   (stan meta), `query('level')` (poziom, XP, punkty);
 - komendy meta (`registerMetaCommands`): `meta state|xp|data|cores|threat|unlock all|reset`; `meta threat <n>` ustawia
   `threat.max` (odblokowanie kolejnych Poziomów zagrożenia bez grania); po każdej komendzie pasek i panel się odświeżają;
+- `hub campaign <missionId...|clear>`, `hub arrive mission <missionId>` — patrz „Kryjówka po misjach”;
 - `hub map` — przełącza plan stacji, `query('hubMap')` → `{ open }`;
 - `hub sit <seatId>` / `hub stand` — siadanie i wstawanie (patrz „Siadanie”), `query('hubSeat')` → id siedziska albo `null`,
   `query('playerLook')` → `{ yaw, pitch }`;
@@ -726,6 +727,36 @@ stan reakcji i ponownie planuje powitanie (klucz `debug:<kind>`).
 Testy: `hubArrival.test.ts`, `hubGreetings.test.ts`, rozszerzone `hubScene.test.ts`,
 `hubNpcs.test.ts` i `hubChatter.test.ts` (kontekst, opóźnienie, odległość, losowanie,
 rozmowy E, pamięć między wizytami i brak localStorage).
+
+## Kryjówka po misjach (S2-03, S7-01)
+
+Kryjówka zmienia się po ukończeniu misji dema (`meta.state.campaign.completed`). Wszystkie pola są
+opcjonalne, a `missionId` musi istnieć w `src/data/missions/` (sprawdza `assertCampaignMissions` przy
+starcie sceny oraz test `hubCampaign.test.ts`). Logika w `src/world/hubCampaign.ts`.
+
+**Teksty (`npcs.pl.json`):**
+
+- `reactions.afterMission: { <missionId>: [kwestie] }` — przy powrocie z tej misji (kontekst `victory` z
+  `missionId`, ustalany z `campaign.pendingDebrief`, gdy misja jest ukończona) NPC używa tych kwestii zamiast
+  ogólnego `victory`. Pozostali NPC zostają przy `victory`. NPC z samym `afterMission` (bez `victory`) też dostaje
+  reakcję, ale tylko po tej misji.
+- `campaignLines: [{ after, lines }]` — po ukończeniu `after` kwestie na stałe dołączają do `lines` NPC.
+- `conversations[].after` / `until` — rozmowa pojawia się po ukończeniu `after` i znika po ukończeniu `until`.
+
+**Otoczenie i NPC (`hideout.json`):** `panels[]`, `neonTexts[]` i `decor[]` przyjmują `after` / `until`
+(widoczne po `after`, do `until`); NPC przyjmuje `campaignPositions: [{ after, position, rotationDeg? }]`
+(ostatni pasujący wariant wygrywa, brak `rotationDeg` zostawia bazowy kierunek). Filtr stosuje
+`applyHubCampaign` jednorazowo przy starcie sceny; układ po filtrze przechodzi tę samą walidację.
+
+Zmiany dema: po M01 zielony napis „NIECKA: MASZTY CISZA” przy stanowisku Bajta; po M03 skrzynie z
+odzyskanego ładunku przy północnej ścianie hali; po M06 duży świecący X (`cross: true` w `neonTexts`, ciepła biel) na mapie tablicy misji i Szron
+przy tablicy. Treść: 6 reakcji M01, 4 M03, 6 M06 oraz trwałe kwestie i trzy nowe rozmowy.
+
+**Debug:** `hub campaign <missionId...|clear>` ustawia ukończone misje przez parametr `?campaign=` i
+przeładowuje scenę (bez zapisu do IndexedDB, zapis meta nietknięty; parametr działa tylko z konsolą debug).
+`hub arrive mission <missionId>` odtwarza powrót z tej misji (reakcje `afterMission`).
+Próba w 30 s: `?scene=hub&debug=1`, `hub campaign m01-maszty m03-list-przewozowy m06-odlewnia`, potem
+`hub arrive mission m06-odlewnia` i `hub talk szron`.
 
 ## Siadanie
 
