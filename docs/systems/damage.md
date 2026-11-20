@@ -25,13 +25,13 @@ atak (melee / pocisk / moc)
             └─ DamageSystem.deal(target, DamageInfo)
                  ├─ cel zarejestrowany i żywy (inaczej 0)
                  ├─ canDamage: drużyny, samotrafienie (#friendly_fire omija)
-                 ├─ okno nietykalności (czas symulacji) i callback invulnerable()
+                 ├─ okno nietykalności (czas symulacji; nie dotyczy #status) i callback invulnerable()
                  ├─ × outgoing źródła (pomijane dla #hazard, #status, #derived)
                  ├─ × guard(info) celu × każdy guard z addGuard (każdy 0–1; wynik 0 = koniec)
-                 ├─ × damageTaken (modyfikatory Stats, baza zawsze 1; #heavy pomija źródło 'block')
+                 ├─ × damageTaken (modyfikatory Stats, baza zawsze 1; #heavy, #status i #hazard pomijają źródło 'block')
                  ├─ Health.apply → faktyczne obrażenia (≤ pozostałe HP; ≤ 0 = koniec bez zdarzeń)
-                 ├─ okno nietykalności celu (invulnMs), jeśli podano
-                 └─ emit: damage_dealt → health_changed → enemy_killed | player_died
+                 ├─ okno nietykalności celu (invulnMs), jeśli podano — tik #status go nie uruchamia
+                 └─ emit: damage_dealt (z `blocked` = część zatrzymana przez blok, gdy > 0) → health_changed → enemy_killed | player_died
 ```
 
 ## Elementy
@@ -50,7 +50,7 @@ atak (melee / pocisk / moc)
 - **Statusy (F2-01):** `DamageInfo.statuses?: readonly StatusApplication[]` opisuje statusy trafienia: `id`, `durationS`, opcjonalne `stacks` (domyślnie 1). `damage_dealt.statuses` otrzymuje podaną tablicę bez zmian, także pustą; gdy jej nie podano, pole nie występuje w zdarzeniu. Samo przekazanie nie nakłada statusów i nie zmienia dotychczasowych warunków emisji obrażeń.
 - **Statystyki celu:** `DamageSystem.stats(id): Stats | undefined` zwraca instancję przekazaną przez `register(id, health, { stats })`; bez statystyk, dla niezarejestrowanego celu i po `unregister` zwraca `undefined`.
 - **Drużyny:** `player`, `enemy`, `neutral`. Ta sama drużyna = brak obrażeń. `neutral` jako źródło rani wszystkich (np. wybuchowa beczka). `source = null` (środowisko) rani wszystkich. Tag `#friendly_fire` omija filtr (także samotrafienie `source === target`). Brak drużyny źródła lub celu w rejestrze = wolno ranić. Cel niezarejestrowany w `DamageSystem` nie jest raniony.
-- **Tagi o znaczeniu systemowym:** `#friendly_fire`, `#heavy` (`PIERCE_BLOCK_TAG`, pomija modyfikatory `damageTaken` ze źródłem `block`), `#derived` (pomija `outgoing`), `#hazard` i `#status` (pomijają `outgoing`). `#hazard` + `#explosion`/`#laser`/`#elektrycznosc` oraz `#status` + `#fire`/`#elektrycznosc` wybierają `cause` śmierci gracza.
+- **Tagi o znaczeniu systemowym:** `#friendly_fire`, `#heavy` (`PIERCE_BLOCK_TAG`, pomija modyfikatory `damageTaken` ze źródłem `block`; tak samo `#status` i `#hazard` — blok chroni tylko przed atakami), `#derived` (pomija `outgoing`), `#hazard` i `#status` (pomijają `outgoing`). `#hazard` + `#explosion`/`#laser`/`#elektrycznosc` oraz `#status` + `#fire`/`#elektrycznosc` wybierają `cause` śmierci gracza.
 - **`damage_dealt.amount`** to faktycznie odjęte HP (po mnożnikach i ścięciu do pozostałego zdrowia), nie nominalna wartość `DamageInfo.amount`. Pola: `source`, `target`, `amount`, `tags`, `point` (lub `null`), `dir` (lub `null`), `knockback` (domyślnie 0), `killed`, opcjonalne `statuses`.
 - **Zdarzenia śmierci:** gracz (`Team 'player'`) → `player_died { id, cause? }`, `cause` ∈ `explosion | laserHazard | electricHazard | hazard | burning | overload`, w pozostałych przypadkach `kind` źródła z rejestru (lub `unknown` bez źródła); cel `enemy` → `enemy_killed { id, killer, tags }`.
 - **Redukcje** wyłącznie przez `StatModifier` na statystyce `damageTaken` celu. Blok ostrzem = `{ stat: 'damageTaken', type: 'mult', value: 0.3, source: 'block' }`, zdejmowany `removeBySource('block')`. `damageTaken` ma zawsze bazę 1 — wartość bazowa w `Stats` jest ignorowana.
