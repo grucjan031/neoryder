@@ -52,9 +52,17 @@ describe('maszyna kroków', () => {
   it('liczy dwa parowania, przechodzi raz i zeruje poprzedni licznik', () => {
     const machine = new TutorialMachine(steps);
     machine.goTo(6);
-    machine.event('parry_success', { projectile: 10, attacker: 2 });
+    machine.event('parry_success', {
+      defender: 1,
+      projectile: 10,
+      attacker: 2,
+    });
     expect(machine.flush()).toBeNull();
-    machine.event('parry_success', { projectile: 11, attacker: 2 });
+    machine.event('parry_success', {
+      defender: 1,
+      projectile: 11,
+      attacker: 2,
+    });
     expect(machine.number).toBe(6);
     expect(machine.flush()).toBe('advance');
     expect(machine.number).toBe(7);

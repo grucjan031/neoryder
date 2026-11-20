@@ -72,7 +72,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S0-10 Porządek wdrożenia
 
-- **Cel:** jedno źródło prawdy o hostingu. **P2** · Wykonawca · Cz 0,25 · Ag S · status: zaplanowane
+- **Cel:** jedno źródło prawdy o hostingu. **P2** · Wykonawca · Cz 0,25 · Ag S · status: zaimplementowane, czeka na playtest (netlify.toml usunięty, README: sekcja Wdrożenie)
 - **Kryteria:** `netlify.toml` usunięty albo opisany jako nieużywany; README opisuje wdrożenie przez Vercel.
 - **Weryfikacja:** podgląd PR na Vercel nadal działa.
 

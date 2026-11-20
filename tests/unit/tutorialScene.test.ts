@@ -206,10 +206,10 @@ it('ładuje poligon, talent podwójnego skoku i nieśmiertelność; parry ×2 pr
   expect(commands.execute('tutorial step 0')).toContain('Użycie');
   expect(commands.execute('tutorial step 6')).toContain('krok 6');
   const attacker = scene.query('tutorialTarget') as number;
-  bus.emit('parry_success', { projectile: 20, attacker });
+  bus.emit('parry_success', { defender: 1, projectile: 20, attacker });
   scene.step(SIM_DT, idle);
   expect(scene.query('tutorialStep')).toBe(6);
-  bus.emit('parry_success', { projectile: 21, attacker });
+  bus.emit('parry_success', { defender: 1, projectile: 21, attacker });
   scene.step(SIM_DT, idle);
   expect(scene.query('tutorialStep')).toBe(7);
   expect(scene.query('enemies')).toBe(0);
