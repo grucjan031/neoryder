@@ -260,6 +260,8 @@ Kamery kontrolne nowych stref (`?scene=hub&debug=1`; yaw kamery 0 = −Z, pitch 
 | Trening      | `hub tp 15.5 -1 -120 -10` | worek na linie i wolne miejsce obok                             |
 | Bar / taniec | `hub tp -6.5 11 180 -10`  | szafa grająca, parkiet i otwarta przestrzeń barmana             |
 
+Znacznik warsztatu używa zieleni `#6dff4a`, a znacznik nieznanej stacji ciepłej bieli `#fff1d6`, zgodnie z ADR 0006.
+
 Wszystkie perony i przejścia są na poziomie 0, więc strefy są osiągalne bez skoków (podwójny skok jest talentem);
 antresola jest opcjonalna. Na obu końcach niecki torów (x ±20, z 3…8) są wyloty tunelu (`panels` kind `tunnel`) z parą
 z niecki i kapaniem. Każda stacja ma własny kolor widoczny z daleka: misje bursztyn (napis `MISJE` `#ffae1a` nad tablicą),

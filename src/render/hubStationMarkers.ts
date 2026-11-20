@@ -13,14 +13,14 @@ import {
 } from 'three';
 import type { Vec3 } from '../core/math';
 
-/** Kolory znaczników, gdy stacja nie ma własnego `sign.color` (neony: cyjan, bursztyn, fiolet, błękit). */
+/** Kolory znaczników bez własnego `sign.color`: zieleń, bursztyn, fiolet i błękit (ADR 0006). */
 export const STATION_MARKER_COLORS: Readonly<Record<string, string>> = {
-  workshop: '#00e5ff',
+  workshop: '#6dff4a',
   missions: '#ffae1a',
   talents: '#8a5cff',
   arena: '#3d7bff',
 };
-const FALLBACK_COLOR = '#00e5ff';
+const FALLBACK_COLOR = '#fff1d6';
 
 /** Minimalny opis stacji potrzebny do znacznika (pasuje do `HubStationDef`). */
 export interface StationMarkerDef {

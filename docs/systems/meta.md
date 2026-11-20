@@ -40,6 +40,8 @@ Stan startowy (`createStarterMetaState`, dane `progression.json.starter`): 0 XP,
 
 ## Ekwipunek
 
+`setLoadout` zapisuje tylko moduły, które przeszły walidację: nieznane i niezgodne z bronią są pomijane, a zgodny moduł bez odblokowania odrzuca całą zmianę.
+
 `setLoadout({ blade, weapons, powers, modules })`: ostrze, bronie i moce muszą być odblokowane; 1..`weaponSlots` unikalnych broni i 1..`powerSlots` unikalnych mocy. `modules: Record<string, string[]>` przypisuje moduły wybranym broniom. Wymagane są odblokowania `module:<id>`, brak duplikatów w broni oraz limit `progression.json.moduleSlotsPerWeapon` (3), po jednym module na Wylot, Ogniwo i Optykę; klucze `modules` muszą być bronią z ekwipunku. Moduł nieznany lub niezgodny z `weaponKinds` (rodzaj `fireMode` broni) jest przy walidacji pomijany (nie powoduje błędu), a przy budowie `loadout()` odrzucany (`sanitizeModules`: zachowuje pierwszy moduł każdego slotu, najwyżej 3). Jeden moduł może być użyty w kilku broniach. Walidacja jest atomowa (przy błędzie ekwipunek się nie zmienia).
 
 `loadout()` zwraca pełny `Loadout` (`id: 'custom'`, `name: 'Własny'`, `startHeld: 'blade'`, `tags: []`) z głęboką kopią modułów. Brak `modules` w starych zapisach meta v3 uzupełnia się przez `{}` bez migracji. Moduły zostają zamrożone na start runu wraz z ekwipunkiem. Dane, ceny, UI i wykonanie łatek opisuje `docs/systems/weaponModules.md`.
@@ -50,7 +52,7 @@ Stan startowy (`createStarterMetaState`, dane `progression.json.starter`): 0 XP,
 
 ## Komendy debug (metody)
 
-`debugAddXp` (emituje `level_up`, przyznaje `poziom-10`), `debugAddData`, `debugAddCores` (wartość ujemna daje 0, część ułamkowa odcinana), `debugSetThreatMax`, `debugUnlockAll` (dodaje wszystkie id z `unlocks.json`), `debugGrantTalent`, `debugGrantAchievement`, `debugReset` (stan startowy). Podpięcie do konsoli: `registerMetaCommands` (sekcja „Zapis i integracja z runem”).
+`debugAddXp` (emituje `level_up`, przyznaje `poziom-10`), `debugAddData`, `debugAddCores` (wartość nieskończona, `NaN` lub ujemna: `Error` bez zmiany stanu; część ułamkowa odcinana), `debugSetThreatMax`, `debugUnlockAll` (dodaje wszystkie id z `unlocks.json`), `debugGrantTalent`, `debugGrantAchievement`, `debugReset` (stan startowy). Podpięcie do konsoli: `registerMetaCommands` (sekcja „Zapis i integracja z runem”).
 
 ## Łatki definicji
 
