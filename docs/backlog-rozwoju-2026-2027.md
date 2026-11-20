@@ -103,7 +103,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S1-04 Pomiar referencyjny wydajności
 
-- **Cel:** punkt odniesienia dla 60 FPS. **P1** · QA + Właściciel · Cz 2 · Ag S · status: zaplanowane
+- **Cel:** punkt odniesienia dla 60 FPS. **P1** · QA + Właściciel · Cz 2 · Ag S · status: zaimplementowane, czeka na playtest (`npm run perf:bench`, wyniki w `docs/systems/render.md`; pomiar na laptopie D5 robi właściciel)
 - **Zależności:** D5.
 - **Kryteria:** powtarzalny skrypt (build produkcyjny, GPU) mierzy kryjówkę, zwykłą walkę, najcięższy pokój, bossa, rozpad grupy i przejście scen; średnia, 1% low, przycięcia; raport w `docs/systems/render.md`.
 - **Weryfikacja:** dwa przebiegi na sprzęcie referencyjnym różnią się < 5%.
