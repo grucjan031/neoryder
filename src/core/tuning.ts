@@ -567,6 +567,8 @@ export const tuning = {
   /** Dźwięki (#14). Przepisy i reguły w src/data/audio/sfx.json. */
   audio: {
     maxVoices: 24,
+    /** Zaległość harmonogramu muzyki (s) powyżej której kroki są pomijane zamiast nadrabiane (np. po powrocie z ukrytej karty). */
+    musicMaxCatchUpS: 0.5,
     masterGain: 0.7,
     refDistance: 4,
     maxPan: 0.8,
