@@ -281,7 +281,7 @@ export class HtmlRunScreens implements RunScreens {
           row.className = 'run-screen__damage';
           row.dataset.path = path;
           const label = document.createElement('span');
-          label.textContent = `${text.paths[path]}: ${summary.damage[path]}`;
+          label.textContent = `${text.paths[path]}: ${Math.round(summary.damage[path])}`;
           const track = document.createElement('div');
           track.className = 'run-screen__track';
           const bar = document.createElement('div');
@@ -449,7 +449,7 @@ export class HtmlRunScreens implements RunScreens {
       colon.textContent = ': ';
       name.append(colon);
       const strong = document.createElement('b');
-      strong.textContent = String(value);
+      strong.textContent = String(Math.ceil(value));
       node.append(name, strong);
       return node;
     };

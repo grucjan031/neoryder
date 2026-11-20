@@ -392,3 +392,24 @@ it('podsumowanie: „Zapisywanie nagrody…” zamiast nagród, „Porzuć nagro
   expect(nav).toHaveLength(3);
   for (const button of nav) expect(button.disabled).toBe(true);
 });
+
+it('podsumowanie zaokrągla ułamkowe obrażenia na ścieżkę', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  screens.show(
+    {
+      ...summaryView,
+      summary: {
+        ...summaryView.summary!,
+        damage: { melee: 73.60000000000001, power: 20, gun: 30.4, other: 5 },
+      },
+    },
+    { selectNode() {}, next() {}, menu() {} },
+  );
+  const labels = [...document.querySelectorAll('.run-screen__damage span')]
+    .map((node) => node.textContent)
+    .join(' ');
+  expect(labels).toContain('74');
+  expect(labels).not.toContain('73.6');
+  expect(labels).not.toContain('30.4');
+});
