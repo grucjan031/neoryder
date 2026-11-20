@@ -154,7 +154,13 @@ export class ArenaSurfaceNavigation {
         for (const i of column ?? [])
           if (
             Math.abs(this.cells[i]!.position.y - c.position.y) <= this.rise &&
-            this.connects(c, this.cells[i]!)
+            this.connects(c, this.cells[i]!) &&
+            !obstructed(
+              c.surface,
+              (c.position.x + this.cells[i]!.position.x) / 2,
+              (c.position.z + this.cells[i]!.position.z) / 2,
+              Math.max(c.position.y, this.cells[i]!.position.y),
+            )
           )
             c.neighbors.push(i);
       }

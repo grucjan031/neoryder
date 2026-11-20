@@ -159,3 +159,83 @@ test('Szturm: mobilny HUD nie nakłada się na kredyty, implanty ani moce', asyn
   expect(layout.left).toBeGreaterThanOrEqual(0);
   expect(layout.right).toBeLessThanOrEqual(390);
 });
+
+test('Szturm na dużej arenie: Zajezdnia Maglev, trzy sektory od startu do zwycięstwa', async ({
+  page,
+}) => {
+  test.setTimeout(4 * LOAD_TIMEOUT);
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.goto(
+    '/?scene=run&mode=assault&arena=arenaRailYard&debug=1&fx=lite',
+  );
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const game = window.__neoryder;
+          return (
+            !!game &&
+            game.query('loading') === false &&
+            game.query('screen') === 'room' &&
+            !!game.query('assault')
+          );
+        }),
+      { timeout: LOAD_TIMEOUT },
+    )
+    .toBe(true);
+  // Start w pierwszym sektorze areny (układ `arena.assault`), nie w małym pokoju.
+  const start = (await query(page, 'playerPos')) as { x: number; z: number };
+  expect(start.x).toBeCloseTo(-162, 0);
+  expect(start.z).toBeCloseTo(46, 0);
+  await page.evaluate(() => window.__neoryder?.command('god'));
+  for (let sector = 1; sector <= 3; sector++) {
+    await expect
+      .poll(
+        () =>
+          page.evaluate((index) => {
+            const game = window.__neoryder!;
+            const state = game.query('assault') as { sector: number };
+            if (state.sector !== index) return false;
+            game.command('assault destroy A');
+            game.command('assault destroy B');
+            return true;
+          }, sector),
+        { timeout: LOAD_TIMEOUT },
+      )
+      .toBe(true);
+  }
+  await expect
+    .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('summary');
+  await expect(page.getByText('Zwycięstwo', { exact: true })).toBeVisible();
+  expect(await query(page, 'runState')).toMatchObject({ modeId: 'assault' });
+  expect(errors).toEqual([]);
+});
+
+test('Szturm: dawny mały pokój nadal dostępny przez arena=combatCorridor', async ({
+  page,
+}) => {
+  test.setTimeout(3 * LOAD_TIMEOUT);
+  await page.goto(
+    '/?scene=run&mode=assault&arena=combatCorridor&debug=1&fx=lite',
+  );
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const game = window.__neoryder;
+          return (
+            !!game && game.query('loading') === false && !!game.query('assault')
+          );
+        }),
+      { timeout: LOAD_TIMEOUT },
+    )
+    .toBe(true);
+  const start = (await query(page, 'playerPos')) as { x: number; z: number };
+  expect(start.x).toBeCloseTo(0, 0);
+  expect(start.z).toBeCloseTo(12, 0);
+});

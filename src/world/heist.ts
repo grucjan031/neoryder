@@ -1,6 +1,8 @@
 import type { EntityId } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Rng } from '../core/rng';
+import { tuning } from '../core/tuning';
+import { arenaSpawnPoints, selectArenaSpawn } from './arenaSpawns';
 import { freeModePosition, type HeistDefinition } from './modeSchema';
 import type { RoomDefinition } from './roomSchema';
 
@@ -9,6 +11,10 @@ export interface HeistEnemy {
   position: Vec3;
 }
 const distance = (a: Vec3, b: Vec3) => Math.hypot(a.x - b.x, a.z - b.z);
+/** Strefa to koło na płaszczyźnie z tolerancją wysokości (areny mają kilka poziomów). */
+const within = (a: Vec3, b: Vec3, radius: number) =>
+  distance(a, b) <= radius &&
+  Math.abs(a.y - b.y) <= tuning.modes.heist.zoneHeightM;
 
 export class Heist {
   state: 'base' | 'player' | 'dropped' | 'enemy' = 'base';
@@ -46,7 +52,13 @@ export class Heist {
 
   private leaveCore(position: Vec3): void {
     this.state = 'dropped';
-    this.position = { ...position, y: this.definition.base.y };
+    // Mały pokój ma jedną płaską podłogę; arena zachowuje poziom podłogi pod nosicielem.
+    this.position = {
+      ...position,
+      y: this.definition.playerSpawn
+        ? position.y - tuning.modes.heist.carryFootOffsetM
+        : this.definition.base.y,
+    };
     this.carrierId = null;
     this.extractElapsedS = 0;
   }
@@ -113,24 +125,24 @@ export class Heist {
       if (!carrier) this.leaveCore(this.position);
       else {
         this.position = { ...carrier.position };
-        if (distance(this.position, cfg.base) <= cfg.pickupRadiusM) {
+        if (within(this.position, cfg.base, cfg.pickupRadiusM)) {
           this.state = 'base';
           this.carrierId = null;
           this.position = { ...cfg.base };
         }
       }
     }
-    if (distance(player, this.position) > cfg.pickupRadiusM)
+    if (!within(player, this.position, cfg.pickupRadiusM))
       this.pickupBlocked = false;
     if (
       (this.state === 'base' || this.state === 'dropped') &&
       !this.pickupBlocked &&
-      distance(player, this.position) <= cfg.pickupRadiusM
+      within(player, this.position, cfg.pickupRadiusM)
     )
       this.grab();
     if (this.state === 'dropped') {
-      const carrier = enemies.find(
-        (e) => distance(e.position, this.position) <= cfg.pickupRadiusM,
+      const carrier = enemies.find((e) =>
+        within(e.position, this.position, cfg.pickupRadiusM),
       );
       if (carrier) {
         this.state = 'enemy';
@@ -140,10 +152,9 @@ export class Heist {
     }
     if (this.state === 'player') {
       this.position = { ...player };
-      this.extractElapsedS =
-        distance(player, cfg.extraction) <= cfg.extractRadiusM
-          ? this.extractElapsedS + dt
-          : 0;
+      this.extractElapsedS = within(player, cfg.extraction, cfg.extractRadiusM)
+        ? this.extractElapsedS + dt
+        : 0;
       if (this.extractElapsedS + 1e-9 >= cfg.extractS) this.extract();
     }
   }
@@ -163,6 +174,7 @@ export class Heist {
     player: Vec3,
     enemies: readonly Vec3[],
     rng: Rng,
+    occluded?: (position: Vec3) => boolean,
   ): Vec3 | null {
     const cfg = this.definition;
     if (
@@ -172,12 +184,25 @@ export class Heist {
       enemies.length >= cfg.maxAlive
     )
       return null;
-    const candidates = cfg.spawnPoints.filter(
-      (p) =>
-        freeModePosition(room, p, cfg.spawnClearanceM) &&
-        distance(p, player) >= cfg.minSpawnDistanceM &&
-        enemies.every((e) => distance(e, p) >= cfg.spawnClearanceM * 2),
-    );
+    const safe = (p: Vec3) =>
+      freeModePosition(room, p, cfg.spawnClearanceM) &&
+      distance(p, player) >= cfg.minSpawnDistanceM &&
+      enemies.every((e) => distance(e, p) >= cfg.spawnClearanceM * 2);
+    const ring = room.arena?.heist ? room.arena.spawnRing : undefined;
+    if (ring) {
+      // Duża arena: pierścień wokół gracza, najbliżej rdzenia (nosiciela, bazy albo upuszczonego).
+      const pool = [...cfg.spawnPoints, ...arenaSpawnPoints(room)];
+      const unique = new Map(pool.map((p) => [JSON.stringify(p), p]));
+      return selectArenaSpawn(
+        ring,
+        [...unique.values()].filter(safe),
+        player,
+        [this.position],
+        rng,
+        occluded,
+      );
+    }
+    const candidates = cfg.spawnPoints.filter(safe);
     return candidates.length ? { ...rng.pick(candidates) } : null;
   }
 

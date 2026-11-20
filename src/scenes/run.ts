@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
 import { modeIdSchema, selectArena } from '../world/modeSchema';
-import { conquestMode, modeDefinitions } from '../world/modes';
+import { modeDefinitions, modeSources } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -349,7 +349,7 @@ export class RunScene implements Scene {
       const seed = params.get('seed') ?? String(ctx.rng.getState());
       const arenaId = modeId
         ? selectArena(
-            conquestMode,
+            modeSources[modeId],
             params.get('seed') ?? undefined,
             params.get('arena'),
             ctx.debug,
@@ -932,7 +932,10 @@ export class RunScene implements Scene {
             firstBreakS: 0,
             breakS: 0,
             maxAlive: state.modeId
-              ? modeDefinitions[state.modeId].maxAlive
+              ? state.modeId === 'conquest'
+                ? modeDefinitions.conquest.maxAlive
+                : (layout.arena?.maxAlive ??
+                  modeDefinitions[state.modeId].maxAlive)
               : bossRoom
                 ? (layout.maxAlive ?? 1)
                 : 1,

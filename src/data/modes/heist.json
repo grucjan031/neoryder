@@ -2,6 +2,7 @@
   "id": "heist",
   "title": "Kradzież rdzenia",
   "roomId": "combatRing",
+  "arenas": ["arenaContainerPort", "arenaPowerPlant", "arenaRooftops"],
   "enemies": ["assaulter", "gunner"],
   "maxAlive": 6,
   "spawnIntervalS": 3,

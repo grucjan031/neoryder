@@ -20,8 +20,13 @@ import { loadWaves } from '../../src/world/waves';
 import wavesData from '../../src/data/waves/roomTest.json';
 import type { EnemyManager } from '../../src/enemies/manager';
 import { freeModePosition } from '../../src/world/modeSchema';
-import { modeForArena, validateMode } from '../../src/world/modeSchema';
-import { conquestMode } from '../../src/world/modes';
+import {
+  assaultForArena,
+  heistForArena,
+  modeForArena,
+  validateMode,
+} from '../../src/world/modeSchema';
+import { assaultMode, conquestMode, heistMode } from '../../src/world/modes';
 import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { ArenaSurfaceNavigation } from '../../src/world/arenaSurfaceNavigation';
 import { largeArena } from './largeArenaFixture';
@@ -216,6 +221,83 @@ it.each(['450 × 300 m', 'arenaFloodedDocks'])(
           `${target.id}: ${JSON.stringify(enemy.current.position)}`,
         ).toBe(true);
       }
+    } finally {
+      scene.dispose();
+    }
+  },
+  60_000,
+);
+
+// Szturm i Kradzież rdzenia na dużych arenach (ADR 0011 D4/D8): nawigacja ≤ 500 ms, 12 wrogów ≤ 2 ms/krok.
+it.each([
+  ['assault', 'arenaRailYard'],
+  ['assault', 'arenaConstructionSite'],
+  ['assault', 'arenaFloodedDocks'],
+  ['heist', 'arenaContainerPort'],
+  ['heist', 'arenaPowerPlant'],
+  ['heist', 'arenaRooftops'],
+] as const)(
+  '%s %s: nawigacja ≤ 500 ms, 12 wrogów ≤ 2 ms/krok',
+  async (modeId, id) => {
+    const room = roomDefinitions.get(id)!;
+    const goals =
+      modeId === 'assault'
+        ? assaultForArena(assaultMode, room).sectors.flatMap((s) => s.stations)
+        : [
+            heistForArena(heistMode, room).base,
+            heistForArena(heistMode, room).extraction,
+          ];
+    const buildMs = medianBuildMs(() => {
+      const nav = new ArenaNavigation(room);
+      for (const goal of goals)
+        expect(nav.path(room.playerSpawn, goal).length).toBeGreaterThan(0);
+    });
+    console.info(`[perf] ${modeId} ${id}: nawigacja ${buildMs.toFixed(2)} ms`);
+    expect(buildMs).toBeLessThanOrEqual(500);
+    const bus = new EventBus();
+    const commands = new CommandRegistry();
+    const run = new RunManager(bus, {
+      generateMap: () => ({ sectorId: 'unused', layers: [] }),
+    });
+    run.newRun('mode-arena-perf', 'classic', { modeId, arenaId: id });
+    run.selectNode(modeId);
+    const scene = new RoomScene(
+      room,
+      run.state,
+      loadWaves({ ...wavesData, spawnPoints: room.spawnPoints }),
+      { loadModels: false },
+    );
+    try {
+      await scene.init(
+        {
+          bus,
+          rng: new Rng('mode-arena-perf'),
+          loop: new GameLoop({ step() {}, render() {} }),
+          tuning: structuredClone(tuning),
+          debug: false,
+          commands,
+          camera: new PerspectiveCamera(),
+        },
+        new ThreeScene(),
+      );
+      commands.execute('god');
+      const enemies = Reflect.get(scene, 'manager') as EnemyManager;
+      arenaSpawnPoints(room)
+        .slice(0, 12)
+        .forEach((p, index) =>
+          enemies.spawn(index % 3 === 0 ? 'gunner' : 'assaulter', p),
+        );
+      for (let i = 0; i < 120; i++) scene.step(SIM_DT, idle);
+      expect(scene.query('enemies')).toBe(12);
+      const steps = 600;
+      const start = performance.now();
+      for (let i = 0; i < steps; i++) scene.step(SIM_DT, idle);
+      const perStepMs = (performance.now() - start) / steps;
+      console.info(
+        `[perf] ${modeId} ${id}: ${perStepMs.toFixed(3)} ms/krok, 12 wrogów`,
+      );
+      expect(scene.query('enemies')).toBe(12);
+      expect(perStepMs).toBeLessThanOrEqual(2);
     } finally {
       scene.dispose();
     }
