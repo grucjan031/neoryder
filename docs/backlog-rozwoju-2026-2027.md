@@ -103,7 +103,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S1-04 Pomiar referencyjny wydajności
 
-- **Cel:** punkt odniesienia dla 60 FPS. **P1** · QA + Właściciel · Cz 2 · Ag S · status: zaplanowane
+- **Cel:** punkt odniesienia dla 60 FPS. **P1** · QA + Właściciel · Cz 2 · Ag S · status: zaimplementowane, czeka na playtest (`npm run perf:bench`, wyniki w `docs/systems/render.md`; pomiar na laptopie D5 robi właściciel)
 - **Zależności:** D5.
 - **Kryteria:** powtarzalny skrypt (build produkcyjny, GPU) mierzy kryjówkę, zwykłą walkę, najcięższy pokój, bossa, rozpad grupy i przejście scen; średnia, 1% low, przycięcia; raport w `docs/systems/render.md`.
 - **Weryfikacja:** dwa przebiegi na sprzęcie referencyjnym różnią się < 5%.
@@ -124,7 +124,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S2-03 Reakcja Kamiennej po Masztach
 
-- **P2** · Wykonawca · Cz 1 · Ag S · zależności: S2-02
+- **P2** · Wykonawca · Cz 1 · Ag S · zależności: S2-02 · status: zaimplementowane, czeka na playtest
 - **Kryteria:** nowe kwestie NPC i zmiana otoczenia wg `zarys-fabuly.md` sekcja 10.
 
 ## S2b — tryby areny (decyzja właściciela 17 XI 2026)
@@ -178,7 +178,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S4-03 Prototypy ratowania NPC i wagonu
 
-- **P1** · Wykonawca · Cz 2 · Ag M · zależności: —
+- **P1** · Wykonawca · Cz 2 · Ag M · zależności: — · status: zaimplementowane, czeka na playtest (sceny `?scene=escort-test` i `?scene=payload-test`, raport `docs/systems/prototypes-s4-03.md`) · decyzja D2 właściciela
 - **Kryteria:** proste poziomy testowe: więzień idzie do punktu ewakuacji i omija przeszkody; wagon jedzie po trasie z postojami. Raport kosztu i ryzyk.
 - **Weryfikacja:** decyzja właściciela o wariancie rozszerzonym (wstęp do D2).
 
@@ -240,7 +240,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S7-01 Konsekwencje w kryjówce po misjach dema
 
-- **P1** · Wykonawca · Cz 2 · Ag M
+- **P1** · Wykonawca · Cz 2 · Ag M · status: zaimplementowane, czeka na playtest
 
 ### S7-02 Audio walki i muzyka (spokój, walka, boss)
 

@@ -1184,3 +1184,32 @@ it('podsumowanie po odświeżeniu pokazuje naszywki zdobyte w rozliczonym runie'
     second.screens.view.meta!.achievements!.map((unlock) => unlock.id),
   ).toContain('pierwsze-zwyciestwo');
 });
+
+it('zamknięta scena: timer wiszącego zapisu nic nie robi, a nagroda i tak się zapisuje', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  const hung = deferred();
+  const inner = createMemorySaveStore();
+  const store: SaveStore = {
+    ...inner,
+    saveMeta: async (data) => {
+      await hung.promise;
+      await inner.saveMeta(data);
+    },
+  };
+  const { commands, scene, screens } = await setup('seed=r13&loadout=meta', {
+    store,
+    tuning: { rewardSaveTimeoutS: 0.02 },
+  });
+  commands.execute('run end win');
+  const refreshes = screens.view;
+  scene.dispose();
+  await new Promise((resolve) => setTimeout(resolve, 60));
+  expect(
+    warn.mock.calls.some(([text]) => String(text).includes('Rozliczenie')),
+  ).toBe(false);
+  expect(screens.view).toBe(refreshes);
+  hung.resolve();
+  await vi.waitFor(async () =>
+    expect((await inner.loadMeta())?.meta.stats.runs).toBe(1),
+  );
+});

@@ -31,6 +31,7 @@ interface Voice {
   sound: string;
   endTime: number;
   gain: GainNode;
+  panner?: StereoPannerNode;
   sources: AudioScheduledSourceNode[];
 }
 
@@ -171,7 +172,10 @@ export class AudioSystem {
   }
 
   updateAmbience(paused = false): void {
-    if (this.disposed || (!this.ambienceSources && this.trainProgress === null))
+    if (
+      this.disposed ||
+      (!this.ambienceSources && this.trainProgress === null && !this.ambience)
+    )
       return;
     const ctx = this.ensureContext();
     if (!ctx || !this.master || !this.noise) return;
@@ -228,6 +232,7 @@ export class AudioSystem {
 
   play(name: string, opts: { point?: Vec3 | null } = {}): boolean {
     const sound = this.def.sounds[name];
+    if (this.disposed) return false;
     const ctx = this.ensureContext();
     if (!sound || !ctx || !this.master || !this.noise) return false;
     const now = ctx.currentTime;
@@ -248,6 +253,7 @@ export class AudioSystem {
     const voiceGain = ctx.createGain();
     let level = sound.volume;
     let out: AudioNode = voiceGain;
+    let panner: StereoPannerNode | undefined;
     const listener = this.opts.listener?.() ?? null;
     if (sound.spatial && opts.point && listener) {
       const { pan, attenuation } = spatialize(
@@ -257,7 +263,7 @@ export class AudioSystem {
         a.maxPan,
       );
       level *= attenuation;
-      const panner = ctx.createStereoPanner();
+      panner = ctx.createStereoPanner();
       panner.pan.setValueAtTime(pan, now);
       voiceGain.connect(panner);
       out = panner;
@@ -274,6 +280,7 @@ export class AudioSystem {
       sound: name,
       endTime: played.endTime,
       gain: voiceGain,
+      panner,
       sources: played.sources,
     });
     this.lastPlayed.set(name, now);
@@ -456,14 +463,26 @@ export class AudioSystem {
   private prune(): void {
     const now = this.ctx?.currentTime ?? 0;
     for (let i = this.voices.length - 1; i >= 0; i--)
-      if ((this.voices[i] as Voice).endTime + 0.05 <= now)
+      if ((this.voices[i] as Voice).endTime + 0.05 <= now) {
+        disconnectVoice(this.voices[i] as Voice);
         this.voices.splice(i, 1);
+      }
   }
 
   /** Zwalnia najstarszy głos (limit maxVoices). */
   private steal(): void {
     const oldest = this.voices.shift();
     if (oldest) stopVoice(oldest, this.ctx?.currentTime ?? 0);
+  }
+}
+
+/** Odpina głos od szyny master, żeby zakończone węzły nie zostawały w grafie. */
+function disconnectVoice(voice: Voice): void {
+  try {
+    voice.panner?.disconnect();
+    voice.gain.disconnect();
+  } catch {
+    // Kontekst mógł zostać już zamknięty.
   }
 }
 
@@ -475,6 +494,7 @@ function stopVoice(voice: Voice, now = 0): void {
   } catch {
     // Źródło mogło się już zakończyć.
   }
+  disconnectVoice(voice);
 }
 
 /** Panorama z kąta względem prawej osi słuchacza i tłumienie 1/odległość (≤ 1 w promieniu ref). */

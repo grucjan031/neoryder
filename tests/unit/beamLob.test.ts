@@ -431,3 +431,24 @@ it('renderers reuse meshes, react to beam state and explosion events, expire and
   bus.emit('explosion', { point: aim.origin, radiusM: 1, owner: 1, tags: [] });
   expect(meshes.every((m) => !m.visible)).toBe(true);
 });
+
+it('beam turns off in the same step that overheats it, also across hitstop', () => {
+  const { owner, bus, damage, projectiles, target } = setup();
+  const t = target(0, 0, -2);
+  const castBeam = vi.fn(() => ({
+    target: t.id,
+    distance: 2,
+    point: { x: 0, y: 0, z: -2 },
+  }));
+  const weapon = new Weapon(
+    owner,
+    { bus, rng: new Rng('overheat'), tuning },
+    new Stats({ heatCapacity: 1, coolingRate: 0 }),
+    { projectiles, damage, castBeam },
+    weaponDefinitions.get('beam')!,
+  );
+  for (let i = 0; i < 20 && !weapon.overheated; i++) weapon.step(SIM_DT, aim);
+  expect(weapon.overheated).toBe(true);
+  weapon.step(0, aim);
+  expect(weapon.beam?.active).toBe(false);
+});

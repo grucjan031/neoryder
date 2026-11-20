@@ -7554,7 +7554,17 @@
       },
       "rotationDeg": 240,
       "animation": "Idle_Loop",
-      "accent": "amber"
+      "accent": "amber",
+      "campaignPositions": [
+        {
+          "after": "m06-odlewnia",
+          "position": {
+            "x": -4.5,
+            "z": -6.0
+          },
+          "rotationDeg": 240
+        }
+      ]
     },
     {
       "id": "bajt",
@@ -8162,6 +8172,37 @@
         "strength": 0.07,
         "periodS": 0.35
       }
+    },
+    {
+      "text": "NIECKA: MASZTY CISZA",
+      "position": {
+        "x": 19.9,
+        "y": 3.55,
+        "z": 12
+      },
+      "size": {
+        "w": 2.4,
+        "h": 0.3
+      },
+      "yaw": -1.5708,
+      "color": "#6dff4a",
+      "after": "m01-maszty"
+    },
+    {
+      "text": "HUTY PRZEKREŚLONE",
+      "position": {
+        "x": -6,
+        "y": 1.45,
+        "z": -6.66
+      },
+      "size": {
+        "w": 2.9,
+        "h": 1.45
+      },
+      "yaw": 0,
+      "color": "#fff1d6",
+      "after": "m06-odlewnia",
+      "cross": true
     }
   ],
   "signs": [
@@ -9636,6 +9677,28 @@
       },
       "scale": 1.1,
       "yaw": 0
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": 2.6,
+        "y": 0,
+        "z": -6.2
+      },
+      "yaw": 0.3,
+      "scale": 0.6,
+      "after": "m03-list-przewozowy"
+    },
+    {
+      "model": "city_crates",
+      "position": {
+        "x": 3.5,
+        "y": 0,
+        "z": -6.3
+      },
+      "yaw": -0.2,
+      "scale": 0.4,
+      "after": "m03-list-przewozowy"
     }
   ],
   "props": [

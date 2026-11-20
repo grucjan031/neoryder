@@ -114,7 +114,8 @@ pipeline stylu, także gradient nieba, mgłę odległości, winietę i impulsy p
 Materiały, oświetlenie, geometria i viewmodel nadal są rysowane. W `medium`
 zostają kontury, atmosfera i impulsy, a koszt maleje dzięki DPR, bloomowi,
 światłom i wyłączeniu odbić. Bez viewmodelu i impulsu neonStreet ma odpowiednio
-1 / 8 / 11 przebiegów. Są to koszty strukturalne, nie wyniki pomiaru FPS.
+1 / 8 / 11 przebiegów (przy domyślnym stylu komiksowym `inkWidth > 0` dochodzi jeden przebieg maski
+krawędzi: 9 / 12). Są to koszty strukturalne, nie wyniki pomiaru FPS.
 
 Wszystkie zmiany działają na żywo, także podczas pauzy; deszcz zachowuje bazową
 gęstość motywu, a ograniczenie stosuje tylko na czas aktualizacji oprawy.
@@ -124,7 +125,8 @@ przy niezmienionym DPR. Bufory nieaktywnych efektów pozostają do ponownego uż
 i są zwalniane w `dispose()` pipeline. Zmiana liczby widocznych świateł może
 spowodować jednorazową kompilację wariantu shadera.
 
-Brak zapisu ustawień oznacza `medium`. Istniejące `high` oraz starszy zapis bez
+Brak zapisu ustawień oznacza `medium` (`defaults()` w `save.ts`); aktywny profil w module `quality.ts`
+przed pierwszym `applyQuality` to `high`. Istniejące `high` oraz starszy zapis bez
 pola jakości zachowują `high`. `tests/unit/quality.test.ts` sprawdza profile na
 atrapie WebGLRenderer, przebiegi i rozdzielczości, powrót low → high, motywy,
 oprawę miasta i zachowanie zapisu.
@@ -264,19 +266,25 @@ na ścieżce profilera. Włączony profiler ma własny narzut pomiaru i raportow
 bazową starszych scen i tła. Panel lil-gui pokazuje liczby oraz pola hex przez
 `addColor`.
 
-| Nazwa w glTF        | MaterialKind  | Domyślny kolor | Materiał          |
-| ------------------- | ------------- | -------------- | ----------------- |
-| `mat_world`         | `world`       | `#ffffff`      | MeshToonMaterial  |
-| `mat_enemy`         | `enemy`       | `#e0262b`      | MeshToonMaterial  |
-| `mat_interactive`   | `interactive` | `#080808`      | MeshToonMaterial  |
-| `mat_enemy_glow`    | `enemyGlow`   | `#ff5050`      | MeshBasicMaterial |
-| `mat_player_cyan`   | `player`      | `#00e5ff`      | MeshBasicMaterial |
-| `mat_power_magenta` | `power`       | `#ff2bd6`      | MeshBasicMaterial |
+| Nazwa w glTF        | MaterialKind  | Domyślny kolor                            | Materiał          |
+| ------------------- | ------------- | ----------------------------------------- | ----------------- |
+| `mat_world`         | `world`       | `#ffffff`                                 | MeshToonMaterial  |
+| `mat_enemy`         | `enemy`       | `#e0262b`                                 | MeshToonMaterial  |
+| `mat_enemy_dark`    | `enemyDark`   | `enemy × tuning.vfx.enemyDarkShade` (0,3) | MeshToonMaterial  |
+| `mat_interactive`   | `interactive` | `#080808`                                 | MeshToonMaterial  |
+| `mat_enemy_glow`    | `enemyGlow`   | `#ff5050`                                 | MeshBasicMaterial |
+| `mat_player_cyan`   | `player`      | `#00e5ff`                                 | MeshBasicMaterial |
+| `mat_power_magenta` | `power`       | `#ff2bd6`                                 | MeshBasicMaterial |
 
 `getMaterial(kind)` zwraca współdzieloną instancję z cache; nieznany rodzaj rzuca
 `Error`. Trzy materiały toon współdzielą `DataTexture` 3×1 z progami 150, 200, 255,
 filtrem `NearestFilter` i bez mipmap. Płaskie normalne pochodzą z modeli low-poly.
-Neony są unlit i mają `toneMapped = false`. Materiały `enemyGlow`, `player` i `power`
+Domyślne kolory w tabeli to `tuning.render` (motyw `white`); motyw `neonStreet` nadpisuje je
+(`world` `#394457`, `interactive` `#d9dde3` — jasne obiekty interaktywne; `enemy`, `enemyGlow`, `player`,
+`power` bez zmian). Neony (`mat_neon_amber|green|violet|blue|white` `#ffae1a`/`#6dff4a`/`#8a5cff`/`#3d7bff`/`#fff1d6`,
+`mat_light_white` `#fff1d6`) są unlit (`MeshBasicMaterial`) i mają `toneMapped = false`; ich kolor jest mnożony przez
+globalny `powerLevel` 0..1 (`powerLevel.ts`; kryjówka obniża go przy spadku napięcia — także światła i napisy z sieci;
+gracz, Rezonans i wrogowie oraz płomienie go ignorują). Materiały `enemyGlow`, `player`, `power` i wszystkie neony
 mają `userData.bloom = true` (klony też), dzięki czemu świecą w bloomie selektywnym.
 Materiał `world` ma w `onBeforeCompile` siatkę płytek podłogi (patrz niżej).
 
@@ -299,7 +307,12 @@ od panelu debug.
 `createStyleLights()` z `src/render/lights.ts` zwraca grupę z `HemisphereLight`
 i ukośnym `DirectionalLight` z góry. Dodaj ją do sceny i wywołuj `lights.sync()`
 w jej `render()`. Intensywności czytane są z `hemiIntensity` i `keyIntensity`.
-Górne powierzchnie są prawie białe, boczne jaśniejszym odcieniem szarości.
+Klucz: `DirectionalLight` w pozycji (6, 10, 4) względem celu w początku układu, bez cieni;
+kolory `hemiSky`/`hemiGround`/`keyColor` z `tuning.render`. Domyślnie (white) półkula 0,6, klucz 2,4,
+wszystko `#ffffff`; neonStreet: `hemiSky` `#7184b0`, `hemiGround` `#2b1f3d`, `keyColor` `#adc3ed`,
+`hemiIntensity` 1,35, `keyIntensity` 1,9; hideout: `#6a7898`/`#41385c`/`#d8c6a8`, 1,4/1,1.
+Górne powierzchnie są prawie białe, boczne jaśniejszym odcieniem szarości. Materiały toon
+(`world`, `enemy`, `interactive`) cieniują 3 progami (150/200/255 z 255) — wynik to płaskie pasma bez gradientu.
 
 Motyw `neonStreet` (poprawka oświetlenia): `hemiIntensity` 1,35 (ciemne partie czytelne, bryły i przejścia widoczne), `bloomStrength` 0,65 i `bloomRadius` 1,2 (neony świecą bez mlecznej mgiełki na całym kadrze). Światło dynamiczne i poświata neonów, hologramów i latarni: `docs/systems/city.md`, sekcja „Ocena świateł”; parametry w `tuning.city` (widoczne w lil-gui).
 Domyślny renderer używa `NoToneMapping`; zachowaj to ustawienie, aby oba tryby
@@ -308,28 +321,51 @@ obrysu dawały tę samą paletę. Dynamiczne cienie pozostają wyłączone.
 ## Pipeline stylu
 
 `StylePipeline` / `createRenderPipeline(renderer)` z `src/render/outline.ts`
-nie wymagają EffectComposer. Pełny przebieg (każdy pass pomijany, gdy wyłączony):
+nie wymagają EffectComposer. Renderer: `WebGLRenderer({ antialias: true })`
+(wyłączone tylko w trybie lite), `NoToneMapping`, domyślna przestrzeń wyjściowa sRGB;
+cele pośrednie są liniowe (HalfFloat), konwersja do sRGB następuje w ostatnim shaderze
+(kompozycja albo pass impulsów). Pełny przebieg w tej kolejności (każdy pass pomijany, gdy wyłączony):
 
-1. Render koloru do celu liniowego HalfFloat z teksturą głębi (pełna rozdzielczość bufora).
-2. Render geometrii z `scene.overrideMaterial = MeshNormalMaterial` i teksturą
-   głębi. Tło jest pomijane w tym przebiegu.
-   Obiekty z `userData.noOutline = true` (efekty, przezroczyste quady oprawy) są w tym
-   przebiegu ukryte, więc nie dostają obrysu; bloom i odbicia nadal je rysują.
-3. **Bloom selektywny** (`bloom = 1` i `bloomStrength > 0`; `bloom.ts`): maska w 1/2
-   rozdzielczości, w której kolor mają tylko materiały emisyjne (flaga
-   `userData.bloom`, albo nasycony materiał unlit bez flagi; `userData.bloom = false`
-   wyłącza), oraz `userData.bloomMaterial`. Nieemisyjne materiały świata są pomijane
-   bez wywołań rysowania; zasłanianie zapewnia tekstura głębi koloru (Z20 poniżej).
-   Dotyczy to także nieemisyjnego deszczu, pary, poświat, linii, punktów i sprite'ów.
-   Viewmodel oraz odbicia zachowują poprzednią maskę z własnymi zasłonami.
-   Potem 4 przebiegi rozmycia Gaussa w 1/4 rozdzielczości
-   (dwa o promieniu `bloomRadius`, dwa 2,5 raza szersze).
-4. **Kompozycja** (pełny ekran, jeden shader): Sobel 3×3 na normalnych i głębi, niebo,
-   mgła, kontur, bloom, winieta, konwersja do przestrzeni wyjściowej.
-5. **Pass impulsów** (`postFx = 1` i aktywny impuls; `postFx.ts`): aberracja
+1. **Kolor** do celu liniowego HalfFloat z teksturą głębi 24 bit (rozmiar bufora rysowania,
+   czyli CSS × DPR). Do sceny dodawany jest na ten przebieg quad **tła nieba**
+   (`sky_background`: pełny ekran na dalekiej płaszczyźnie, bez zapisu głębi, `renderOrder`
+   −1e9, więc rysuje się przed obiektami przezroczystymi; alfa = `skyGradient`). Kolor nieba:
+   `mix(skyHorizon, skyTop, smoothstep(0, skyGradientHeight, up))`, gdzie `up` to składowa Y
+   (świat) znormalizowanego promienia widzenia. `skyGradient = 0` zostawia kolor tła sceny.
+   Tło sceny to `tuning.render.world`; gdy aktywny jest rozszerzony horyzont (patrz niżej) — `fogColor`.
+2. **Normalne/głębia**: `scene.overrideMaterial = MeshNormalMaterial`, tło wyłączone, wyczyszczone na
+   (0,0,0,0), cel `NearestFilter` z własną teksturą głębi. Obiekty ukryte w tym przebiegu:
+   `userData.noOutline === true` oraz automatycznie przezroczyste materiały addytywne albo bez zapisu
+   głębi (`noOutline.ts`) — bloom i odbicia nadal je rysują. Gdy odbicia są aktywne
+   (`reflectionStrength × quality.reflections > 0`), zamiast `MeshNormalMaterial` działa wariant
+   `WetNormals`: te same normalne, a kanał **A koduje `userData.wetness` materiału**.
+3. **Odbicia** (`reflections.ts`, jeśli aktywne; patrz „Motywy Neon Noir”).
+4. **Bloom selektywny** (`quality.bloom > 0`, `tuning.render.bloom > 0` i `bloomStrength > 0`; `bloom.ts`):
+   maska w 1/2 rozdzielczości bufora (× `quality.bloomResolution`), w której kolor mają tylko
+   materiały emisyjne: `userData.bloom === true`, albo (bez flagi) nasycony materiał unlit
+   (Basic/Line/Sprite/Points, `max(r,g,b) − min(r,g,b) > 0.5`); `userData.bloom = false` wyłącza;
+   `userData.bloomMaterial` to materiał zastępczy rysowany do maski (np. słaba emisja okien).
+   Nieemisyjne materiały są pomijane bez wywołań rysowania; zasłanianie zapewnia tekstura głębi
+   koloru (Z20 poniżej). Przezroczyste lub niezapisujące głębi, a nieemisyjne obiekty są w masce
+   ukryte. Viewmodel i odbicia zachowują poprzednią maskę z czarnymi zasłonami.
+   Potem **4 przebiegi rozmycia** w 1/4 rozdzielczości (× `bloomResolution`): Gauss 9-próbkowy
+   (5 odczytów liniowych: waga 0,2270 w środku, 0,3162 przy ±1,3846 i 0,0703 przy ±3,2308 odstępu),
+   kolejno X, Y z odstępem `bloomRadius`/rozmiar celu, potem X, Y z odstępem `2,5 × bloomRadius`
+   (kaskada na wyniku pierwszej pary, nie równolegle). Wynik: RGB premultiplikowane, A = pokrycie.
+5. **Maska krawędzi tuszu** (tylko gdy `inkWidth > 0`; osobny przebieg pełnoekranowy, cel HalfFloat
+   `NearestFilter`): R = obrys sylwetki (głębia) × krycie z odległością, G = detal (normalne) ×
+   krycie, B = dawny tusz FPP (`max` obu linii bez wygaszania), A = metryczna głębia źródła
+   (najbliższa próbka w oknie 3×3). Sobel jak w kompozycji, ale bez grubości (zawsze 1 px).
+6. **Kompozycja** (pełny ekran, jeden shader): kolejność operacji opisuje sekcja „Kolejność w shaderze
+   kompozycji”. Rysuje wprost na ekran (lub do celu pośredniego passu impulsów).
+7. **Pass impulsów** (`postFx = 1` i aktywny impuls; `postFx.ts`): aberracja
    chromatyczna, czerwone krawędzie, odcień i desaturacja Skupienia. Pomijany, gdy
    `damage` i `focus` wynoszą 0, więc w stanie spoczynku kosztu nie ma (kompozycja
    rysuje wtedy prosto na ekran).
+
+Na początku każdej klatki `render()` woła `syncMaterials()` i `postFxState.update(min(frameDt, 0,25))`.
+Tryb **lite** (`?debug=1&fx=lite`): jakość `low` z `pixelRatio` 0,25, bez deszczu i cząsteczek, bez antialiasingu,
+limit 60 kroków symulacji na klatkę (`LITE_MAX_STEPS_PER_FRAME`); tylko do testów na programowym renderze.
 
 Biały świat się nie rozmywa: bloom nie jest progiem jasności, lecz maską emisyjną
 nakładaną metodą "over" (`kolor * (1 - pokrycie) + halo`), co daje widoczne halo także na bieli.
@@ -392,37 +428,77 @@ Pomiar i zrzuty wykonuje architekt. Próg kosztu bloomu: `bloomMask <= 2,35 ms`
 w warunkach pomiaru bazowego 4,7 ms. Odbicia pozostają do pomiaru razem ze zmianą
 scalania geometrii: ta zmiana nie gwarantuje spadku `reflectionMask` o połowę.
 
-Głębia jest linearyzowana według typu kamery (perspektywiczna lub ortograficzna).
-Próg głębi dotyczy różnicy względem odległości środka próbki, co ogranicza zależność
-od odległości kamery. Gradienty Sobela są dzielone przez 8. Grubość jest odstępem
-próbek w pikselach bufora GPU (nie CSS), a kolor pochodzi z `outlineColor`.
-`outlineDepthThreshold` i `outlineNormalThreshold` regulują wykrywanie krawędzi;
-wyższy próg usuwa drobniejsze krawędzie. `outlineThickness = 0` ukrywa linię.
+Głębia jest linearyzowana według typu kamery (perspektywiczna lub ortograficzna) do metrycznej
+głębi widokowej (wzdłuż osi patrzenia, nie odległość euklidesowa); piksele viewmodelu (surowa głębia
+< `viewmodelDepth`) są przeliczane z powrotem na pełny zakres (`depth / viewmodelDepth`).
+Sobel 3×3 na normalnych (RGB zakodowane `n*0,5+0,5`) i głębi, wagi `x·(y==0 ? 2 : 1)` oraz
+`y·(x==0 ? 2 : 1)`; różnica głębi liczona względnie: `(głębia_próbki − głębia_środka) / głębia_środka`.
+`depthEdge = |(dx,dy)| / 8`, `normalEdge = |(nx,ny)| / 8`. Gradienty Sobela są dzielone przez 8.
+Grubość (`outlineThickness`) mnoży odstęp próbek w pikselach bufora GPU (nie CSS); kolor linii
+to `outlineColor`. `outlineDepthThreshold` i `outlineNormalThreshold` to progi `step` (wyższy próg
+usuwa drobniejsze krawędzie); `outlineThickness = 0` ukrywa linię.
 Kontur zależy od odległości piksela od kamery (czytelność dalekich wrogów, ADR 0006 pkt 3):
-między `outlineFadeNear` a `outlineFadeFar` (m) linie wewnątrz bryły (krawędzie normalnych)
-słabną do `outlineFarNormal` (0 = znikają), a obrys sylwetki (krawędź głębi) w ułamku
-`outlineFarOuter` rysuje się tylko na pikselach tła (dalszych od sąsiada o próg głębi).
+`far = smoothstep(outlineFadeNear, outlineFadeFar, głębia)`. Linie wewnątrz bryły
+(krawędzie normalnych) mnoży `1 − far·(1 − outlineFarNormal)`; obrys sylwetki (krawędź głębi)
+jest mieszany `mix(1, behind, far·outlineFarOuter)`, gdzie `behind` = piksel jest dalszy od najbliższej
+próbki sąsiedztwa o więcej niż `outlineDepthThreshold` (obrys ląduje na tle, nie na obiekcie).
 Bliżej niż `outlineFadeNear` kontur jest taki jak wcześniej; dalecy wrogowie zostają
 czerwonymi bryłami z cienkim obrysem zamiast ciemnych plam z linii na kończynach.
 `outlineFarNormal = 1` i `outlineFarOuter = 0` przywracają kontur niezależny od odległości.
-**`outline = 0` omija cały pipeline stylu** (zwykły `renderer.render`, bez mgły, gradientu,
-bloomu i postFx; materiały nadal się synchronizują, a siatka podłogi działa).
+Z `inkWidth > 0` (domyślny styl komiksowy) kontur liczy tusz z maski krawędzi (sekcja niżej);
+`outlineFade*` nadal działają w masce. Świecące piksele (kolor źródłowy: `smoothstep(0,7; 0,95; max(rgb))`
+× `smoothstep(0,25; 0,5; nasycenie)`) wygaszają krawędź — neony i efekty nie dostają tuszu.
+**`outline = 0` (lub `quality.outline = 0`) omija cały pipeline stylu** (zwykły `renderWithViewmodel`,
+bez nieba z gradientu, mgły, bloomu, odbić i postFx; materiały nadal się synchronizują, a siatka
+podłogi działa).
 
 ### Atmosfera i głębia
 
-Liczone w shaderze kompozycji na podstawie bufora głębi (nie `scene.fog`):
+Gradient nieba jest rysowany w przebiegu koloru (patrz pkt 1 pipeline'u), a mgła w kompozycji
+na podstawie bufora głębi (nie `scene.fog`):
 
-- **Niebo**: piksele bez geometrii (głębia 1) dostają pionowy gradient od `skyHorizon`
-  (przy horyzoncie) do `skyTop` (według kierunku patrzenia kamery; wysokość przejścia
-  `skyGradientHeight`, w jednostkach składowej Y kierunku). `skyGradient = 0` zostawia
-  tło sceny.
-- **Mgła odległości**: `smoothstep(fogNear, fogFar, głębia) * fogStrength` ku `fogColor`;
-  ta sama wartość rozjaśnia też kolor konturu, więc dalekie linie bledną.
-  `fogStrength = 0` wyłącza.
+- **Niebo**: piksele bez geometrii w głębi koloru (głębia ≥ 1) w kompozycji dostają tylko błysk
+  burzy `+ skyFlashColor × skyFlash` (bez mgły). Błysk: kolor z `tuning.weather.skyFlashColor`
+  (domyślnie `#9eadef` → stare składowe liniowe 0,62/0,68/0,95); `skyFlash` jest zerowany, gdy
+  ustawienie `flashes` jest wyłączone.
+- **Mgła odległości** (tylko piksele z geometrią): `smoothstep(fogNear, fogFar, głębia_metryczna) * fogStrength`
+  ku `fogColor + skyFlashColor × skyFlash`; ta sama wartość rozjaśnia też kolor konturu, więc dalekie
+  linie bledną. `fogStrength = 0` wyłącza (ale mgła wysokościowa działa niezależnie). Przy rozszerzonym
+  horyzoncie (`scene.userData.horizon`) `fogStrength = 1`, a `fogNear/fogFar` pochodzą z `horizonParameters`.
+- **Mgła wysokościowa** (`heightFogDensity × quality.heightFog`, spadek `heightFogFalloff`; piksele spoza
+  viewmodelu): `1 − exp(−gęstość · długość_promienia · całka)`, gdzie całka to średnia `exp(−falloff·h)`
+  wzdłuż promienia od oka do punktu (h = wysokość nad `floorY`, wariant graniczny przy poziomym promieniu).
+  Łączenie z mgłą odległości: `fog = 1 − (1 − fogDist)(1 − fogWys)`.
 - **Siatka podłogi** (`materials.ts`, `onBeforeCompile` materiału `world`): linie co
   `gridSize` m w przestrzeni świata, tylko na powierzchniach poziomych (normalna z
-  pochodnych pozycji, działa z `InstancedMesh`), kontrast `gridContrast` (0 = brak),
-  grubość `gridLineWidth` px, zanik przy zbyt gęstych płytkach (moiré).
+  pochodnych pozycji, `smoothstep(0,85; 0,95; |n.y|)`, działa z `InstancedMesh`), `kolor *= 1 − gridContrast · linia`,
+  grubość `gridLineWidth` px, zanik `1 − smoothstep(0,15; 0,4; szerokość_komórki_w_px)` (moiré).
+
+### Kolejność w shaderze kompozycji
+
+Dla każdego piksela (kolejność ma znaczenie dla odtworzenia 1:1):
+
+1. Obrys (Sobel + ewentualny tusz z maski), wygaszanie z odległością.
+2. Odbicie neonów (jeśli `reflectionStrength > 0`, piksel z geometrią spoza viewmodelu): do `rgb`
+   dodawane `reflectionMap × reflectionStrength × wet(A normalnych) × floorMask × puddle × fresnel × inside`.
+   `floorMask` = normalna zwrócona w górę (`n.y > 0,9`) i `|y − floorY|` w tolerancji `reflectionFloorTolerance`
+   (miękko od połowy tolerancji); UV odbicia z projekcji odbitej kamery plus falowanie
+   `sin(z·19 + t·2,3)`, `sin(x·23 − t·1,7)` × `reflectionDistortion · 0,35`; kałuże: tekstura `asphalt_puddles`
+   w XZ (skala 0,25), a bez niej szum proceduralny; `puddle = mix(1, 0,18 + 0,82·kałuża, reflectionPuddles)`;
+   `fresnel = 0,25 + 0,75·(1 − |kierunek.y|)³`.
+3. Styl komiksowy (jeśli `celStrength`, `hatchStrength` lub `paintStrength` > 0; tylko geometria spoza viewmodelu):
+   `plain = (1 − smoothstep(0,45; 0,7; nasycenie)) × (1 − smoothstep(0,75; 0,95; jasność))` — neony, wrogowie
+   i efekty zostają czyste. Cel: tylko cienie (`1 − smoothstep(0,38; 0,55; jasność)`), pasma
+   `floor(L·celBands) + smoothstep(0,78; 1; fract)`, dół pasma nie niżej niż 0,6·L,
+   mnożnik `mix(1, min(pasmo/L, 1), celStrength·plain·cienie)`. Farba: `rgb *= 1 + (szum − 0,5)·paintStrength·plain`
+   (szum wartości 3D w przestrzeni świata: 0,6 × skala 1,7 + 0,4 × skala 6). Kreski: ukośne linie co `hatchSpacing` px
+   (`fract(px.x·0,7 + px.y)`), tylko w półcieniach wokół `hatchThreshold`, przerywane szumem, kolor `outlineColor`.
+4. Niebo/mgła (wyżej).
+5. `rgb = mix(rgb, kolor_linii, krawędź)`.
+6. Bloom „over”: `rgb·(1 − clamp(a·bloomStrength, 0, 1)) + bloom.rgb·bloomStrength`.
+7. Winieta: `rgb *= 1 − vignetteStrength · smoothstep(vignetteRadius, vignetteRadius + vignetteSoftness, r)`,
+   `r = |(uv − 0,5)·(aspect, 1)| / |(aspect, 1)| · 2`. `postFx = 0` zeruje siłę winiety.
+8. Konwersja do przestrzeni wyjściowej (sRGB).
 
 ### Kompozycja końcowa i impulsy
 
@@ -437,10 +513,18 @@ rozciągają):
   `durationS = 0` wyłącza (zanik `focusFadeOutS`); koniec naturalny i reset emitują
   `focus { durationS: 0 }` (patrz `api.md`), więc timer po stronie renderu nie jest potrzebny.
 
-Efekt: aberracja `damageAberration` (rośnie od środka ku krawędziom), czerwony odcień
-krawędzi `damageTint` w kolorze `damageTintColor`, dla Skupienia mieszanie z
-`focusTintColor` siłą `focusTint` i desaturacja `focusDesaturate`. Winieta
-(`vignetteStrength`, `vignetteRadius`, `vignetteSoftness`) działa w kompozycji, więc
+Gdy ustawienie `flashes` jest wyłączone, impuls obrażeń jest zerowany (`hit()` nic nie robi); Skupienie
+działa nadal. Kompozycja zapisuje wtedy do celu pośredniego (HalfFloat, bez głębi), a pass impulsów rysuje
+na ekran. Kolejność w shaderze impulsów (`r` = odległość od środka znormalizowana do 0..1 po przekątnej
+z uwzględnieniem proporcji):
+
+1. Aberracja: kanał R z `uv + (uv−0,5)·damage·damageAberration·(0,4 + r)`, B z `uv − …`, G bez przesunięcia.
+2. Desaturacja Skupienia: `mix(rgb, luma, focus·focusDesaturate)`, luma `0,2126/0,7152/0,0722`.
+3. Odcień Skupienia: **mnożenie** koloru przez `mix(1, focusTintColor, focus·focusTint)`.
+4. Czerwone krawędzie: `mix(rgb, damageTintColor, damage·damageTint·smoothstep(0,35; 1; r))`.
+5. Konwersja do sRGB.
+
+Winieta (`vignetteStrength`, `vignetteRadius`, `vignetteSoftness`) działa w kompozycji, więc
 nie dodaje passu. `postFx = 0` wyłącza winietę i impulsy.
 
 `bindEvents(bus)` podpina zdarzenia (wywołane w `main.ts` zaraz po utworzeniu busa;
@@ -449,20 +533,23 @@ debug `fx <damage|focus|off>` uruchamia impulsy do oceny wizualnej.
 
 ### Parametry `tuning.render`
 
-| Pole                                                       | Domyślnie                    | Znaczenie                                                  |
-| ---------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------- |
-| `bloom`, `postFx`                                          | 1, 1                         | przełączniki jakości (0 pomija pass)                       |
-| `bloomStrength`, `bloomRadius`                             | 0,6, 1,2                     | siła halo, mnożnik odstępu próbek rozmycia                 |
-| `skyGradient`, `skyTop`, `skyHorizon`, `skyGradientHeight` | 1, `#ffffff`, `#e3e7ea`, 0,5 | gradient nieba                                             |
-| `fogStrength`, `fogColor`, `fogNear`, `fogFar`             | 0,85, `#eef1f3`, 14, 80      | mgła odległości (m)                                        |
-| `skyFlash`                                                 | 0                            | błysk burzy: dodatek do nieba i mgły (0..1), ustawia scena |
-| `viewmodelDepth`                                           | 0,01                         | ułamek zakresu głębi dla rąk i przedmiotu                  |
-| `gridSize`, `gridContrast`, `gridLineWidth`                | 2, 0,1, 1                    | siatka podłogi (m, 0..1, px)                               |
-| `vignetteStrength`, `vignetteRadius`, `vignetteSoftness`   | 0,2, 0,55, 0,6               | winieta                                                    |
-| `damagePulseS`, `damagePulseMin`, `damagePulseHpGain`      | 0,4, 0,35, 2                 | czas i siła impulsu obrażeń                                |
-| `damageAberration`, `damageTint`, `damageTintColor`        | 0,018, 0,5, `#ff1a2a`        | aberracja i czerwień krawędzi                              |
-| `focusTint`, `focusTintColor`, `focusDesaturate`           | 0,14, `#ff2bd6`, 0,3         | Skupienie                                                  |
-| `focusFadeInS`, `focusFadeOutS`                            | 0,15, 0,35                   | narastanie i zanik Skupienia                               |
+| Pole                                                                       | Domyślnie                    | Znaczenie                                                                                               |
+| -------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `outline`, `outlineThickness`, `outlineColor`                              | 1, 1, `#30343b`              | kontur (0 = cały pipeline stylu pominięty), mnożnik odstępu próbek, kolor linii (preset `b`: `#050507`) |
+| `outlineDepthThreshold`, `outlineNormalThreshold`                          | 0,025, 0,2                   | progi krawędzi (preset `b`: 0,02, 0,24)                                                                 |
+| `outlineFadeNear`, `outlineFadeFar`, `outlineFarNormal`, `outlineFarOuter` | 6, 16, 0, 1                  | kontur z odległością (preset `b`: `outlineFarNormal` 0,5)                                               |
+| `bloom`, `postFx`                                                          | 1, 1                         | przełączniki jakości (0 pomija pass)                                                                    |
+| `bloomStrength`, `bloomRadius`                                             | 0,6, 1,2                     | siła halo, mnożnik odstępu próbek rozmycia                                                              |
+| `skyGradient`, `skyTop`, `skyHorizon`, `skyGradientHeight`                 | 1, `#ffffff`, `#e3e7ea`, 0,5 | gradient nieba                                                                                          |
+| `fogStrength`, `fogColor`, `fogNear`, `fogFar`                             | 0,85, `#eef1f3`, 14, 80      | mgła odległości (m)                                                                                     |
+| `skyFlash`                                                                 | 0                            | błysk burzy: dodatek do nieba i mgły (0..1), ustawia scena                                              |
+| `viewmodelDepth`                                                           | 0,01                         | ułamek zakresu głębi dla rąk i przedmiotu                                                               |
+| `gridSize`, `gridContrast`, `gridLineWidth`                                | 2, 0,1, 1                    | siatka podłogi (m, 0..1, px)                                                                            |
+| `vignetteStrength`, `vignetteRadius`, `vignetteSoftness`                   | 0,2, 0,55, 0,6               | winieta                                                                                                 |
+| `damagePulseS`, `damagePulseMin`, `damagePulseHpGain`                      | 0,4, 0,35, 2                 | czas i siła impulsu obrażeń                                                                             |
+| `damageAberration`, `damageTint`, `damageTintColor`                        | 0,018, 0,5, `#ff1a2a`        | aberracja i czerwień krawędzi                                                                           |
+| `focusTint`, `focusTintColor`, `focusDesaturate`                           | 0,14, `#ff2bd6`, 0,3         | Skupienie                                                                                               |
+| `focusFadeInS`, `focusFadeOutS`                                            | 0,15, 0,35                   | narastanie i zanik Skupienia                                                                            |
 
 ### Viewmodel zawsze na wierzchu
 
@@ -496,24 +583,12 @@ przy błędzie. `dispose()` zwalnia cele (także bloomu i impulsów), teksturę 
 materiały shaderów, geometrię pełnoekranową i subskrypcje zdarzeń.
 Wydajność na słabym GPU i czytelność w 0,2 s wymagają oceny człowieka.
 
-## Integracja w main.ts (po stronie Architekta)
+## Integracja w main.ts
 
-1. Importuj `createRenderPipeline` z `./render/outline`.
-2. Po skonfigurowaniu renderera utwórz jedną instancję:
-   `const pipeline = createRenderPipeline(renderer);`.
-3. W callbacku renderowania zachowaj `scene.render(alpha)`, a następnie zamiast
-   `renderer.render(three, camera)` wywołaj `pipeline.render(three, camera, frameDt)`
-   (`frameDt` to czas rzeczywisty klatki w s). Po utworzeniu `EventBus` wywołaj
-   `pipeline.bindEvents(bus)`.
-4. W `resize`, po `renderer.setSize(window.innerWidth, window.innerHeight)`, wywołaj
-   `pipeline.setSize(window.innerWidth, window.innerHeight)`.
-5. W zamykaniu aplikacji wywołaj `pipeline.dispose()` przed `renderer.dispose()`.
-6. W `src/scenes/index.ts` importuj `StyleTest` z `./styleTest` i dopisz
-   `'style-test': () => new StyleTest()`.
-
-Pliki `main.ts` i rejestr scen pozostają do integracji przez Architekta.
-Pipeline nie dodaje świateł do scen automatycznie: nowe sceny powinny używać
-`createStyleLights()`; `StyleTest` już to robi.
+`main.ts` tworzy jedną instancję `createRenderPipeline(renderer)`, wywołuje `pipeline.bindEvents(bus)`, w `render` każdej
+klatki `pipeline.render(three, camera, frameDt)` (po `scene.render(alpha, frameDt)`), w `resize` `pipeline.setSize(w, h)`
+(rozmiar CSS), a przy zamykaniu `pipeline.dispose()`. Pipeline nie dodaje świateł do scen automatycznie: sceny używają
+`createStyleLights()`. Scena `style-test` jest zarejestrowana.
 
 ## Dodawanie obiektu
 
@@ -537,10 +612,8 @@ obrys 0/1, jasne boki i górę filarów, sylwetki czerwonych wrogów na tle ści
 czarne skrzynie oraz cyan/magentę. Zmień kolor w panelu i sprawdź wszystkie
 współdzielone obiekty. Oceń, czy role widać w 0,2 s i czy obrys nie zasłania broni.
 
-`tests/e2e/style.spec.ts` jest oznaczony `test.fixme` do rejestracji sceny.
-Po integracji usuń fixme, utwórz i przejrzyj wzorzec przez
-`npm run e2e -- tests/e2e/style.spec.ts --update-snapshots`; następne uruchomienia
-porównują canvas z `maxDiffPixelRatio: 0.02`. Jednostkowe testy renderu obejmują
+`tests/e2e/style.spec.ts` porównuje canvas z wzorcem (`maxDiffPixelRatio: 0.02`; wzorzec odświeża
+`npm run e2e -- tests/e2e/style.spec.ts --update-snapshots`). Jednostkowe testy renderu obejmują
 mapowanie, cache, gradient, synchronizację, przebiegi i przywracanie stanu,
 przełączniki bloom/postFx, maskę emisyjną, impulsy obrażeń i Skupienia, siatkę
 podłogi i zwalnianie zasobów (`renderPostFx.test.ts`);
@@ -548,14 +621,30 @@ test sceny obejmuje fallback, GLB, instancje i zwalnianie zasobów.
 
 ## Motywy Neon Noir
 
-`src/data/themes/{white,neonStreet}.json` zawierają pełne zestawy parametrów
+`src/data/themes/{white,neonStreet,hideout}.json` zawierają pełne zestawy parametrów
 `render` oraz dane `rain` dla modułu deszczu. Schemat zod znajduje się w
 `themeSchema.ts`, eager loader i wybór URL w `themes.ts`. Motyw `white` zachowuje
 wszystkie wcześniejsze wartości `tuning.render`; nowe efekty są wyłączone.
 `applyTheme()` zapisuje poprzedni stan i zwraca idempotentne przywrócenie.
+Motyw `hideout` (kryjówka) to neonStreet z cieplejszą, ciaśniejszą atmosferą, bez deszczu i panoramy:
+`hemiSky` `#6a7898`, `hemiGround` `#41385c`, `keyColor` `#d8c6a8`, `hemiIntensity` 1,4, `keyIntensity` 1,1,
+`reflectionStrength` 0,6, `reflectionPuddles` 0,45, `heightFogDensity` 0,012, `bloomStrength` 0,8, `bloomRadius` 1,4,
+`skyTop` `#05070d`, `skyHorizon` `#1c1612`, `fogStrength` 0,85, `fogColor` `#241a16`, `fogNear` 6, `fogFar` 60,
+`vignetteStrength` 0,28; `rain.enabled = false`. Motyw `neonStreet` (rdzeń wyglądu): `outlineThickness` 0,7,
+`outlineColor` `#0c1220`, `skyTop` `#070b16`, `skyHorizon` `#3a2a2a`, `skyGradientHeight` 0,65, `fogStrength` 0,72,
+`fogColor` `#2b1f3d`, `fogNear` 18, `fogFar` 135, `heightFogDensity` 0,025, `heightFogFalloff` 0,48, `reflectionStrength` 0,95,
+`enemyRimStrength` 0,85, `gridContrast` 0, deszcz: gęstość 0,65, prędkość 18, `windX` 1, kolor `#8294b0`, krycie 0,26, burza włączona;
+materiały: concrete `#56627a`, asphalt `#2a3344`, metal `#435169`, facade `#46516a`, trim `#8894a8`, glass `#18243a`,
+cable `#171d2a`, paint `#3e5a48`, lacquer `#2c3766`, rust `#a39a90`, corrugated `#7a8599`, plastic `#4a5d7a`, hivis `#d08a1c`,
+rubber `#3a3d44`, wood `#9c8a76`, fabric `#5a4c86`, machine `#66718a`, paving `#6d7890`, plaster `#6a7080`, hazard `#e09a1a`.
+Motyw `white` ma wszystkie materiały `#ffffff` (cable i rubber `#080808`), `outlineThickness` 1, `outlineColor` `#30343b`,
+efekty miejskie wyłączone. Pola `inkWidth`, `celBands` itd. są w motywie opcjonalne (brak = styl wyłączony); stały motyw nadpisuje
+tylko to, co zdefiniuje, a `reapplyLook()` nakłada próbkę stylu po motywie.
 Pokoje i arena posiadają `SceneAtmosphere`, która stosuje motyw i sprząta go
 przy opuszczaniu sceny. `?theme=<id>` nadpisuje dane układu. Nieznany identyfikator
-ostrzega raz i wybiera white. Deszcz nie jest tu renderowany.
+ostrzega raz i wybiera white. Deszcz nie jest tu renderowany. `SceneAtmosphere` ustawia też tło sceny (`world`, przy rozszerzonym horyzoncie
+`fogColor`), `scene.userData.reflectionFloorY`, kamerę (`near`/`far` z horyzontu) i ciemny grunt zewnętrzny
+(`tuning.horizon.groundColor` `#151923`, `groundOffsetM` 0,12 pod bryłami).
 
 Materiały miejskie (`src/render/urbanMaterials.ts`, lista `urbanKinds`) są
 materiałami Standard i przyjmują kolorowe PointLight (limit 8 obsługuje integrator
@@ -565,12 +654,21 @@ materiałami Standard i przyjmują kolorowe PointLight (limit 8 obsługuje integ
 `bump` (mnożnik reliefu) i `wetness`. Rzut tekstur jest trójplanarny w przestrzeni
 świata.
 
-Rodzaje z danych (`src/data/render/portMaterials.json`, `arenaMaterials.json`, walidowane zod) mogą
-mieć `"flat": true`: materiał jest wtedy zwykłym `MeshStandardMaterial` w barwie `tint` (także
-w motywie `white`), bez tekstury, reliefu i shadera miasta. Służy jako ciemna barwa zastępcza dla
-materiałów, których tekstura jeszcze nie istnieje (zestaw „estakada, dachy, doki”:
-`gas_station_tiles`, `highway_asphalt_worn`, `flood_brick_algae`, `boardwalk_planks`,
-`canal_stone_wall`); po dodaniu pliku `surfaces/<id>.webp` wystarczy usunąć `flat`.
+Rodzaje z danych (`src/data/render/{portMaterials,arenaMaterials,portRailMaterials,overpassMaterials}.json`,
+walidowane zod; 39 wpisów, nazwy unikalne) uzupełniają tabelę poniżej o materiały aren, portu, estakady i torów
+(`container_navy|olive|ochre|graphite`, `crane_paint`, `quay_concrete`, `quay_lines`, `rubber_fender`, `steel_grating`,
+`overpass_concrete`, `smog_soot_wall`, `roof_tar`, `roof_hvac_metal`, `market_tarp`, `formwork_plywood`, `concrete_raw_cast`,
+`slag_heap`, `cooling_tower_concrete`, `power_quay_floor`, `turbine_hall_floor`, `gas_station_tiles`, `highway_asphalt_worn`,
+`flood_brick_algae`, `boardwalk_planks`, `canal_stone_wall`, `canal_water`, `hazard_stripes_worn`, `excavation_dirt`,
+`scaffold_planks`, `ship_hull_paint`, `ship_deck_steel`, `rail_ballast`, `rail_sleeper_concrete`, `maglev_body_panel`,
+`snow`, `snow_asphalt`, `snow_concrete`, `overpass_street`, `overpass_forecourt`). Wpis ma pola: `texture`
+(plik w `surfaces/`), `themeTint` (nazwa koloru motywu, np. `concrete`) albo `tint` (hex), `scale`, `roughness`,
+`metalness`, `bump`, `wetness`, opcjonalnie `flat`. Powtórzona nazwa w dwóch plikach rzuca błąd przy ładowaniu (z nazwą klucza i obu plików);
+`scaffold_planks` i `hazard_stripes_worn` pochodzą tylko z `overpassMaterials.json`.
+`"flat": true` daje zwykły `MeshStandardMaterial` w barwie `tint` (także w motywie `white`), bez tekstury, reliefu
+i shadera miasta — dziś używa go tylko `canal_water` (`#24324a`, rough. 0,24). Poza tym `tint` jest stosowany tylko gdy
+`citySurfaceDetail > 0` (wyjątki: `turbine_hall_floor`, `power_quay_floor`, `overpass_street`, `overpass_forecourt`
+zachowują `tint` zawsze). Wszystkie tekstury z tej listy istnieją w `public/assets/textures/surfaces/` (`.webp`).
 
 | Rodzaj       | Tekstura (`surfaces/`) | Skala | Rough. | Metal. | Bump | Przeznaczenie                           |
 | ------------ | ---------------------- | ----: | -----: | -----: | ---: | --------------------------------------- |
@@ -642,7 +740,7 @@ Szkło odbija kolor łuny proceduralnie. `mat_neon_amber|green|violet|blue|white
 i `mat_light_white` są unlit z jawnym bloomem. Czerwień, cyan i magenta pozostają
 rolami walki. W neonStreet skrzynie są jasne, a wróg ma czerwony rim Fresnela.
 
-Odbicia (`reflections.ts`) używają odbitej względem `playerSpawn.y` kamery,
+Odbicia (`reflections.ts`) używają kamery odbitej względem płaszczyzny podłogi (`scene.userData.reflectionFloorY`, ustawiane przez `SceneAtmosphere`, zwykle `playerSpawn.y`),
 globalnej płaszczyzny odcinającej geometrię poniżej podłogi i selekcji emisji
 z bloomu. Kamera odbić pomija viewmodel. Maska i dwa rozmycia Gaussa mają 1/2
 szerokości i wysokości bufora. Kanał A istniejącego przebiegu normalnych koduje
@@ -713,7 +811,28 @@ Kontrakty i ograniczenia: [weather.md](weather.md), [arenas.md](arenas.md).
 Pomiar strukturalny portu: 286 → 123 siatek. Pomiar wywołań GPU pozostaje
 zablokowany przez sandbox i nie jest zastępowany liczbą siatek.
 
+## Kamera i renderer
+
+`PerspectiveCamera(fov, aspect, near 0,1, far 220)`; `fov` startuje z `tuning.camera.fov` (90), po wczytaniu ustawień
+jest nadpisany przez `settings.fov` (zakres 60–110, domyślnie 90) i odświeżany na żywo. `near/far` ustawia `SceneAtmosphere`
+z `horizonParameters` (patrz niżej). Jakość `high` ma `pixelRatio = devicePixelRatio`, `medium` 1, `low` 0,75.
+Kołysanie, wstrząs i kick FOV liczy `src/player/fpsCamera.ts` (czas rzeczywisty klatki, `dt ≤ 0,1 s`), strojenie `tuning.camera`:
+FOV docelowy = `fov + sprintFovKick` (6) przy sprincie `+ dashFovKick` (12) w dashu, wygładzany `1 − exp(−fovLerpRate·dt)` (9);
+wysokość oczu wygładzana `eyeLerpRate` 16; kołysanie (`bobEnabled`) tylko na ziemi poza ślizgiem przy prędkości > 0,5 m/s:
+`bobY = |sin(faza)|·bobAmount (0,03)·waga`, `bobX = cos(faza)·bobAmount·0,5·waga`, faza rośnie o `2π·droga/bobStride (2,4 m)`,
+waga dąży do `min(1, prędkość/walkSpeed)` z tempem 10/s; lądowanie (`speed ≥ 3`) ugina kamerę o `min(landingDipMax 0,16, speed·landingDipPerSpeed 0,012)` m,
+powrót `exp(−landingRecoverRate 9·dt)`. Wstrząs: trauma 0..1 (`camera_shake`, trafienia: gracz dostaje `min(1, obrażenia/shakeDamageRef 40)` na 0,35 s,
+trafienie wroga przez gracza ×`shakeOnHitScale` 0,3 na 0,2 s), wygasa liniowo; amplituda = `trauma² · shakeMax (0,4) · settings.screenShake`;
+pochylenie/odchylenie/przechył = amplituda · `shakeMaxAngleDeg` (5°) · szum gładki (suma sinusów 1, 2,17, 4,33 rad/s · `shakeFrequency` 22),
+przesunięcie `shakeMaxOffset` 0,06 m. Celowanie mnoży FOV przez `lerp(1, aimFovScale, aim)`. Rotacja kamery w kolejności YXZ.
+
 ## Horyzont i zasięg widzenia
+
+Wartości z `horizonParameters`: rozszerzenie włącza się, gdy promień XZ lub wysokość obwiedni > `legacyRadiusM` (50 m);
+pierścienie `66, 92, 124, 162 m + offset` (offset = `max(0, promień + ringClearanceM 20 − 66)`), kopuła
+`hypot(pierścień4 + domeClearanceM 40, wysokość) + promień` (małe układy: `legacyDomeM` 100), `far = max(220, kopuła + clipClearanceM 32)`,
+`near = max(0,1, far / nearRatio 2200)`, mgła: `fogNear/fogFar × min(far/220, (far − 32)/fogFar)`. Poza wspólną obwiednią
+nic nie dodaje collidera.
 
 Pokój, arena, poziom misji i kryjówka liczą jedną obwiednię z brył
 statycznych, z uwzględnieniem obrotu. Promień XZ to połowa przekątnej
@@ -765,6 +884,11 @@ Domyślnie działa wariant `b` z `src/render/lookPresets.ts` (nakładany po moty
   Nasycone i jasne piksele (neony, wrogowie, efekty) są nietknięte.
 - **Bez konturu:** obiekty z `userData.noOutline` oraz automatycznie przezroczyste materiały
   addytywne albo bez zapisu głębi (poświaty, stożki światła) — `src/render/noOutline.ts`.
+- Preset `b` nadpisuje w `tuning.render`: `outlineThickness` 1, `outlineColor` `#050507`, `outlineNormalThreshold` 0,24,
+  `outlineDepthThreshold` 0,02, `outlineFarNormal` 0,5, `celBands` 3, `celStrength` 1 (oraz parametry tuszu z tabeli niżej);
+  `a` = to samo bez cel. Preset `c`: `outlineColor` `#050507`, progi 0,22 / 0,018, `outlineFarNormal` 0,6, `celBands` 3, `celStrength` 1,
+  `hatchStrength` 0,95, `hatchThreshold` 0,45, `hatchSpacing` 7, `paintStrength` 0,3. Bez parametru `?look=` aktywny jest `b`;
+  `?look=off` nie nakłada niczego (obowiązują wartości motywu: `inkWidth` 0).
 - Porównania: `?look=a` (sam tusz), `?look=c` (z kreskowaniem i plamami farby), `?look=off`
   (dawny wygląd, bez nowych formuł tuszu).
 - Pakiet tekstur „komiks” (`public/assets/textures/komiks/`) czeka na podpięcie w arenach.
@@ -845,3 +969,118 @@ stałe: `enemyRim1.00` i `enemyRim0.60`. Poświata jest częścią materiału, w
 `?look=off`. Zapowiedź ciosu nie do zablokowania (bursztyn) klonuje tylko materiały
 `mat_enemy_glow` (wizjer, końcówka pałki, rdzeń, ostrze), które poświaty nie mają.
 `enemyRimAt()` to odpowiednik shadera w TS do testów (`tests/unit/enemyRim.test.ts`).
+
+## Pomiar referencyjny (S1-04)
+
+Powtarzalny pomiar wydajności na prawdziwym GPU: build produkcyjny, `vite preview` na porcie 4174
+(skrypt sam go startuje i zamyka), Chromium z Playwrighta (`--use-angle=d3d11`), viewport 1920×1080,
+DPR 1, profil jakości `medium` (decyzja D5). Skrypt: `tools/perf/benchmark.mjs`.
+
+```
+npm run perf:bench -- --runs 2                       # build + wszystkie scenariusze, vsync
+npm run perf:bench -- --uncapped --seconds 6          # zapas ponad 60 FPS (bez vsync i limitu klatek)
+npm run perf:bench -- --gpu low --uncapped            # wymusza słabe, zintegrowane GPU
+npm run perf:bench -- --cpu-throttle 4 --uncapped     # CPU spowolnione 4x (CDP)
+npm run perf:bench -- --scenario hub,boss --quality high
+```
+
+Opcje: `--quality low|medium|high`, `--seconds N` (pomiar, domyślnie 10), `--scenario <lista>`
+(`hub,combat,heaviest,boss,shatter,transition,arenas`), `--runs N` (domyślnie 2), `--gpu high|low`
+(`low` = `--force_low_power_gpu`), `--cpu-throttle N`, `--uncapped`, `--port`, `--load-timeout <s>`
+(limit wczytania sceny, domyślnie 45), `--idle-threshold <%>` i `--idle-timeout-min` (czekanie na
+spokojny CPU przed każdym przypadkiem), `--no-wait-idle`. Wynik: `perf-report/bench-<konfiguracja>-<data>.json`
+(katalog w `.gitignore`) i tabele w konsoli. JSON zawiera użyty GPU (`gpuInfo`, flaga
+`softwareRenderer` przy SwiftShaderze), obciążenie CPU przed każdym przypadkiem (`idleChecks`)
+i wszystkie `pageerror`/`console.error`/`console.warn` z nazwą sceny.
+
+### Scenariusze
+
+Każdy przypadek: wczytanie, rozgrzewka 3 s, pomiar `--seconds` (god włączony). Profiler klatki
+jest włączony w oknie pomiaru, więc wartości mają jego niewielki narzut.
+
+| Scenariusz   | Co mierzy                                                                                                                                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hub`        | kryjówka `?scene=hub` w miejscu startu                                                                                                                                                                                                          |
+| `combat`     | `room-test`, pokój `combatYard`, 6 wrogów (`spawn`) plus fale                                                                                                                                                                                   |
+| `heaviest`   | przegląd pokoi z `src/data/rooms` (`room-test`, 1 s rozgrzewki + 2 s), wybór pokoju o największej sumie kosztów etapów (GPU, a bez zapytań CPU), potem pełny pomiar; ranking w `surveyRanking` (tylko 1. przebieg, 2. używa tego samego pokoju) |
+| `boss`       | `bossRoom`, czeka na pojawienie się bossa                                                                                                                                                                                                       |
+| `shatter`    | `combatYard`, 20 wrogów i `kill all` po 2 s pomiaru; osobne statystyki `afterKill`                                                                                                                                                              |
+| `transition` | kryjówka → `mission start m01-maszty` (przeładowanie strony): czas do pierwszej klatki i do stanu `playing` zegarem ściennym, najdłuższe klatki podczas wczytywania, statystyki 5 s po starcie                                                  |
+| `arenas`     | 7 aren Przejęcia (`?scene=conquest&arena=`), Szturm, Kradzież rdzenia i poziom misji M01                                                                                                                                                        |
+
+Pokoje bez punktów spawnu (`noodleShop`, `restRoom`, `rooftopRest`, `shopRoom`) nie wczytują się w
+`room-test` (walidacja fal), więc przegląd je pomija (`skippedRooms` w JSON). Pomiary z 20 XI
+powstały przed dodaniem tego pominięcia i zawierają 4 wpisy `survey` z błędem wczytania.
+
+### Metryki
+
+Średni FPS, 1% low (średnia z najgorszego 1% czasów klatek rAF, przeliczona na FPS), p99 czasu
+klatki, liczba klatek > 33,3 ms i > 50 ms, najdłuższa klatka, średnie CPU/GPU ms na etap
+(`frameProfile`, próbkowane co 500 ms), średnie `renderInfo` (calls, triangles), sterta JS przed
+i po (`--enable-precise-memory-info`), liczniki wrogów, ciał fizycznych i odłamków (szczyt).
+Etap `pipeline` obejmuje etapy zagnieżdżone (`color`, `normals`, `bloom`...), więc ich nie sumuj;
+`step` to cała symulacja (fizyka i AI razem, bez podziału). Zapytania GPU przy `--cpu-throttle`
+mierzą też czekanie na spowolniony CPU, więc tam wiarygodne są kolumny CPU.
+
+### Wyniki z tego komputera (20 XI 2026)
+
+Sprzęt: Ryzen 7 7700, RTX 4070 i zintegrowane AMD Radeon (Windows 10), HeadlessChrome 159
+(Playwright). **To nie jest docelowy laptop z D5**: pomiar na nim robi właściciel. W trakcie
+pomiaru inny agent uruchamiał testy na tej maszynie; skrypt czekał na CPU < 15% przed każdym
+przypadkiem (obciążenie przed przebiegami 1–15%, limit czekania nigdzie nie przekroczony).
+Konfiguracje: (a) vsync, RTX 4070; (b) bez vsync, RTX 4070 (pomiar 6 s); (c) bez vsync, wymuszone
+AMD Radeon (potwierdzone w `gpuInfo`); (d) bez vsync, RTX 4070 z CPU spowolnionym 4x. Wszędzie
+`softwareRenderer = false`. Wartości to przebiegi 1/2.
+
+| Scenariusz           | a: FPS                         | a: 1% low | b: FPS    | c: FPS                        | c: 1% low | d: FPS                      | d: 1% low |
+| -------------------- | ------------------------------ | --------- | --------- | ----------------------------- | --------- | --------------------------- | --------- |
+| hub                  | 60,0/59,6                      | 59,5/35,9 | 160/162   | 29/29                         | 6,2/6,6   | 19,6/16,0                   | 5,4/4,9   |
+| combat (combatYard)  | 60,0/60,0                      | 59,5/59,5 | 209/212   | 30/30                         | 6,0/5,4   | 28,6/28,6                   | 19,9/19,6 |
+| heaviest             | 60,0/58,9 (arenaContainerPort) | 59,5/30,0 | 64,5/63,6 | brak, przegląd zniekształcony | -         | 9,7/9,2 (arenaFloodedDocks) | 7,0/7,6   |
+| boss                 | 60,0/60,0                      | 59,5/59,5 | 352/264   | 30/30                         | 3,7/2,6   | 48,7/43,1                   | 34,1/23,8 |
+| shatter              | 59,9/59,8                      | 51,2/44,7 | 285/285   | 31/30                         | 3,7/2,5   | 38,7/37,5                   | 13,9/14,1 |
+| arena Container Port | 59,9/59,5                      | 51,2/32,7 | 73/66     | 25/25                         | 7,7/8,4   | 10,5/11,0                   | 7,6/7,8   |
+| arena Flooded Docks  | 53,4/59,9                      | 29,9/51,2 | 66/65     | brak (utrata kontekstu)       | -         | 10,9/10,8                   | 7,8/8,5   |
+| M01 Maszty           | 60,0/60,0                      | 59,5/59,5 | 178/171   | 30/31                         | 6,0/6,4   | 25,8/22,9                   | 16,9/15,1 |
+
+p99 czasu klatki w (a): 16,8 ms (jedyne wyjątki: heaviest przebieg 2 i Flooded Docks przebieg 1: 33,3 ms).
+Pozostałe areny Przejęcia w (a) trzymają 60 FPS. W (b) najniższe: Container Port 66–73, Flooded Docks
+65–66, Rail Yard 83–85, Overpass 87–89 FPS. Pełne dane (p99, klatki > 33/50 ms, etapy) są w JSON.
+
+Przejście kryjówka → M01 (przeładowanie strony): pierwsza klatka nowej strony po ok. 50 ms (a/b),
+stan `playing` po ok. 1,03–1,07 s; jedna klatka ok. 710–717 ms podczas wczytywania. Po starcie w oknie
+5 s jest jeszcze klatka 450–550 ms. Na (c) `playing` po 1,5–1,7 s; na (d) po 4,8–5,1 s, najdłuższa
+klatka wczytywania 3,7–3,95 s.
+
+Rozpad grupy (`shatter`): po `kill all` jedna klatka 33–58 ms w (a/b), 90–94 ms w (d).
+
+Różnica między przebiegami (średni FPS): w (a) do 1,8% w 14 z 16 scenariuszy; wyjątek Flooded Docks
+10,8% (przycięcia w przebiegu 1, 44 klatki > 33 ms) i hub 0,7%. W (b) bez vsync rozrzut bywa większy (do 25%
+przy 260–350 FPS: boss, Power Plant), więc kryterium < 5% dotyczy pomiaru z vsync (a).
+
+Błędy i ostrzeżenia konsoli: w (a), (b), (d) brak `pageerror`, `console.error` i `console.warn` poza
+4 pokojami bez fal (błąd walidacji `Nieprawidłowe dane fal ... spawnPoints`, artefakt przeglądu).
+W (c) (słabe iGPU): `WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost` (arenaPowerPlant, arenaRailYard) i
+`THREE.WebGLRenderer: Error creating WebGL context` / `A WebGL context could not be created. Reason:
+Web page caused context loss and was blocked` (arenaConstructionSite, arenaRailYard, arenaFloodedDocks):
+przeciążenie GPU kończy się utratą kontekstu i blokadą kolejnych kontekstów przez Chromium.
+
+### Wnioski z liczb (cele do decyzji, bez wdrożeń)
+
+Przy CPU 4x (d) klatka dużej areny trwa 82–95 ms; CPU ms na etap (Container Port): `pipeline` 68
+(`color` 33, `normals` 22, `bloom` 13 w tym maska 12), `step` 9,3, `sceneRender` 3,7, `city` 1,2, `composite` 0,3.
+Dominuje więc JS renderu (przygotowanie wywołań rysowania, ok. 70–75% klatki), nie symulacja
+(`step` 7–10%, w hubie i walce 3–4 ms).
+
+1. Etap `color` (przebieg koloru kreskowanego): CPU 33–35 ms na arenach przy 2–3,3 tys. wywołań
+   (Container Port, Flooded Docks), 24 ms w hubie (640 wywołań); na RTX GPU 5–7 ms. Największy cel
+   (scalanie/instancjonowanie geometrii areny, mniej materiałów).
+2. Etap `normals` (kontur): CPU 22 ms na dużych arenach, 9 ms w hubie; to drugi przebieg po całej
+   geometrii. Kandydat: wspólny przebieg z `color` lub pomijanie obiektów dalekich.
+3. Maska bloom `bloomMask`: CPU 11–14 ms na arenach i w hubie (11,9), przy GPU 5–7 ms. Kandydat:
+   osobna lista obiektów emisyjnych zamiast ponownego przejścia całej sceny.
+4. Słabe GPU (c): `composite` ok. 17–23 ms GPU w każdej scenie (na RTX 0–2 ms) i `color` 10–13 ms;
+   wszystkie sceny ok. 25–30 FPS, a duże areny kończą się utratą kontekstu WebGL. Kandydat: tańsza
+   kompozycja końcowa i niższa rozdzielczość renderu w profilu `low`.
+5. Przejście do M01: jednorazowa klatka ok. 710 ms (a/b) i 3,7–3,95 s przy CPU 4x (wczytywanie
+   poziomu w jednym kawałku), plus klatka 450–550 ms tuż po starcie.

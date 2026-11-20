@@ -31,12 +31,15 @@ ostrza zachowują dotychczasowe sterowanie.
 
 `idle → light (windup → active → recovery) → idle`, `charging → heavy (windup → active → recovery)`, `blocking`.
 
-- **Lekki cios startuje od razu** po wciśnięciu (zero opóźnienia). Przytrzymanie przechodzi w ładowanie po zakończeniu fazy aktywnej bieżącego ciosu — więc ciężki atak zawsze poprzedza szybkie cięcie (płynność, do oceny w playteście).
-- **Combo:** następny cios można zacząć w fazie `recovery` poprzedniego albo do `comboWindowS` po jego końcu; później combo wraca do etapu 1. Etapy, obrażenia, odrzut, zasięg i szerokość łuku są w danych (`combo[]`, `heavy`).
-- **Bufor ataku** `attackBufferMs` (120 ms): kliknięcie w trakcie fazy aktywnej wykona się, gdy tylko będzie możliwe.
-- **Trafienia:** w fazie aktywnej każdy krok symulacji pyta o hurtboxy w łuku (`queryArc(reach, width)` — prostopadłościan przed oczami, obrócony zgodnie z patrzeniem). `Hitbox` gwarantuje jedno trafienie na cel na cios; mnożnik hurtboxa (głowa ×1,5) jest stosowany.
-- **Hitstop** raz na cios przy pierwszym trafieniu: `tuning.time.hitstopLightMs` (40 ms) dla lekkiego, `hitstopHeavyMs` (80 ms) dla ciężkiego i dla zabójstwa. Wstrząs kamery wynika z `damage_dealt` (FpsCamera).
+- **Lekki cios startuje od razu** po wciśnięciu (zero opóźnienia). `holdS` liczy się od wciśnięcia LPM. Gdy `holdS ≥ heavyHoldS` i stan to `idle` albo lekki cios **nie** w fazie `active` (czyli `windup` lub `recovery`), cios jest przerywany i następuje przejście w `charging` (bufor ataku zerowany). W fazie `active` przejście czeka na jej koniec. Z `heavy` i `charging` nie da się wejść w blok.
+- **Puszczenie LPM w `charging`:** `holdS ≥ heavyChargeS` → ciężki cios (`melee_swing` z `stage: 'heavy'`, etap 0), inaczej anulowanie do `idle`. Puszczenie poza `charging` tylko kasuje `holding`.
+- **Combo:** następny cios można zacząć w fazie `recovery` poprzedniego (o ile `stage < combo.length`) albo do `comboWindowS` po jego końcu (licznik `sinceSwingS` od `endSwing`); później (lub po ostatnim etapie, lub po ciężkim) combo wraca do etapu 1. W `idle` po `comboWindowS` etap resetuje się do 0. Etapy, obrażenia, odrzut, zasięg i szerokość łuku są w danych (`combo[]` 1–5 etapów, `heavy`).
+- **Bufor ataku** `attackBufferMs` (120 ms, maleje w czasie symulacji, nie w hitstopie): kliknięcie wykona się, gdy stan to `idle` albo `recovery` lekkiego ciosu. Kliknięcie w `windup`/`active`, po którym cios nie zdąży się skończyć w 120 ms, przepada. Niezerowy bufor ataku wyłącza też blok.
+- **Trafienia:** faza `active` zaczyna sprawdzać trafienia od kroku **po** przejściu z `windup`. W każdym kroku fazy aktywnej scena pyta o hurtboxy (`queryArc(reach, width, shape)`): `arc` = prostopadłościan o środku `oczy + patrzenie × reach/2`, połowy wymiarów `width/2` × **0,6** (stała `ARC_HALF_HEIGHT_M` w `bladeQueries.ts`, nie w tuningu) × `reach/2`, obrócony kwaternionem patrzenia (pitch+yaw); `spin` = kula o promieniu `reach` wokół oczu. Filtr: grupa Gracz → Wróg; jeden hurtbox na encję (o największym mnożniku). `Hitbox` (czas życia = długość fazy `active`) gwarantuje jedno trafienie na cel na cios; mnożnik hurtboxa (głowa ×1,5) mnoży obrażenia ze strike. Punkt trafienia łuku = `oczy + patrzenie × reach × 0,6`, kierunek = patrzenie; dla `spin` punkt = pozycja hurtboxa, kierunek = poziomo od gracza do celu (odrzut na zewnątrz).
+- **Hitstop** raz na cios, w kroku pierwszego trafienia: `tuning.time.hitstopLightMs` (40 ms) dla lekkiego, `hitstopHeavyMs` (80 ms) dla ciężkiego albo gdy w **tym samym kroku** padł cel (zabójstwo w późniejszym kroku nie podbija już hitstopu zwykłego cięcia). Wstrząs kamery wynika z `damage_dealt` (FpsCamera).
 - **Ciężki cios** dostaje tag `#heavy` (`PIERCE_BLOCK_TAG`) — przebija blok celu.
+- **Czasy faz:** `bazowy czas z tuning.melee × timeScale ostrza / attackSpeed`, gdzie `attackSpeed` (z `BladeDeps.attackSpeed()`, domyślnie 1) jest ograniczony do `[attackSpeedMin, attackSpeedMax]` i próbkowany na początku każdej fazy.
+- **Przerwanie przez blok:** PPM w `idle` albo w `windup`/`recovery` lekkiego ciosu (przy `guardBrokenS ≤ 0` i pustym buforze ataku) kończy cios i wchodzi w blok; w fazie `active` blok nie wchodzi.
 
 ## Wykończenia (Z3)
 
@@ -44,7 +47,8 @@ ostrza zachowują dotychczasowe sterowanie.
 ma najwyżej 25% HP albo status `stunned`; Egzekutor (`kind: 'executor'`)
 ma próg 15%. Boss (`kind: 'boss'`) i wróg nietykalny nigdy nie są gotowi.
 Nietykalność odczytuje `DamageSystem.isInvulnerable`: zarówno okno po
-trafieniu, jak i callback encji. Gotowość sprawdzana jest ponownie przy ataku.
+trafieniu, jak i callback encji. Gotowość sprawdzana jest ponownie przy ataku (na żywo, bez cache).
+`step(dt)` ignoruje `dt ≤ 0` (hitstop nie odświeża gotowości).
 
 Lekki atak z ostrzem wybiera cel o najmniejszym kącie względem osi kamery
 w stożku o pełnym kącie 50° i odległości do 2,8 m od oczu do środka korpusu.
@@ -53,8 +57,17 @@ Rzut i dash-cięcie mają pierwszeństwo i nie używają haka; ciężki cios ró
 go nie woła. Jak dotąd przytrzymanie LPM zaczyna się lekkim ciosem, więc
 gotowy cel może zostać wykończony już w chwili wciśnięcia.
 
-Obrażenia przez `DamageSystem.deal`: aktualne HP, źródło gracza,
-`['#melee', '#execute']`, kierunek od gracza i odrzut 10.
+Obrażenia przez `DamageSystem.deal`: `amount = maxHP celu × 10` (zapas na
+redukcje `damageTaken` i mnożnik gracza < 1; `Health` obcina do pozostałego HP),
+źródło gracza, `['#melee', '#execute']`, kierunek od oczu do pozycji celu
+i odrzut `executeKnockback`. Jeśli cel po `deal` żyje (np. zablokowany `guard`),
+ochrona gracza wraca do poprzedniej wartości, wykończenie się nie liczy
+(zwraca `false`) i uruchamia się zwykły lekki cios. Udane wykończenie nie
+emituje `melee_swing`, nie otwiera hitboxa, nie zaczyna combo (`stage = 0`,
+`sinceSwingS = ∞`) i kasuje przytrzymanie LPM (nie przejdzie w ładowanie);
+animacja `view().execution` trwa `(lightActiveS + lightRecoveryS) × timeScale`
+i nie blokuje kolejnych akcji. Hak wołany tylko ze startu lekkiego ciosu, więc
+rzut i dash-cięcie mają pierwszeństwo.
 Tarcza Tarczownika i parowanie Egzekutora przepuszczają `#execute`;
 zwykły lekki cios nadal jest blokowany. Po śmierci celu combo resetuje się,
 energia rośnie o 20, zdrowie o 6 (dotychczasowe API i limity zasobów).
@@ -63,7 +76,7 @@ Ochrona gracza trwa 0,4 s czasu świata i obejmuje synchroniczne skutki
 zabójstwa. Callback rejestracji gracza łączy ją z nietykalnością dashu.
 
 Feedback: hitstop 110 ms, slowmo 0,35 przez 0,3 s, camera shake 0,6 przez
-0,3 s. `execute_performed` gra istniejący `hitHeavy`, a standardowe
+`executeSlowmoS` (0,3 s; osobnego czasu wstrząsu nie ma) z kierunkiem do celu. `execute_performed` gra istniejący `hitHeavy`, a standardowe
 zabójstwo dodaje dźwięk rozbicia. Czerwony obrys nad głową pulsuje do
 ciepłej bieli z częstotliwością 3 Hz; nie zmienia materiału całego wroga.
 HUD pokazuje `[LPM] Wykończ` pod celownikiem tylko z ostrzem w ręku,
@@ -106,19 +119,23 @@ Testy: `execute.test.ts`, dopisane przypadki w `damage.test.ts`,
 
 ## Blok
 
-- Wejście w blok dodaje graczowi `StatModifier { stat: 'damageTaken', type: 'mult', value: blockDamageMult (0,3), source: 'block' }`; wyjście go zdejmuje. Redukcję liczy `DamageSystem` — ostrze nie modyfikuje obrażeń samo.
-- Każdy zablokowany cios zużywa energię: `blockEnergyPerHit + obrażenia_przed_redukcją × blockEnergyPerDamage` i emituje `melee_blocked { defender, attacker, amount = obrażenia powstrzymane }`.
-- **Rozbicie gardy:** gdy energii brakuje — energia spada do 0, blok wyłącza się na `guardBreakLockS` (0,8 s), wstrząs kamery.
+- Wejście w blok (`blockAgeS = 0`, dalej rośnie co krok symulacji) dodaje graczowi `StatModifier { stat: 'damageTaken', type: 'mult', value: blockDamageMult (0,3), source: 'block' }`; wyjście go zdejmuje. Redukcję liczy `DamageSystem` — ostrze nie modyfikuje obrażeń samo. Blok kończy się, gdy PPM puszczone, bufor ataku > 0, rozbita garda, rzut, dash-cięcie lub `reset`.
+- Każde `damage_dealt` na właścicielu w stanie bloku, w którym blok faktycznie coś zatrzymał (`blocked > 0`: ciosy i pociski; nie `#heavy`, tiki `#status` ani zagrożenia `#hazard`), zużywa energię: `blockEnergyPerHit (6) + (amount + blocked) × blockEnergyPerDamage (0,4)` (dane ostrza) i emituje `melee_blocked { defender, attacker, amount = blocked }`. `blocked` liczy `DamageSystem` (różnica `damageTaken` z blokiem i bez), więc inne modyfikatory nie przekłamują kosztu.
+- **Rozbicie gardy:** gdy energii brakuje (`spend` zawodzi) — energia spada do 0 (`set(0)`), blok wyłącza się, `guardBrokenS = guardBreakLockS` (0,8 s, maleje w czasie symulacji także w locie i dash-cięciu), `camera_shake { intensity: guardBreakShake (0,5), durationS: guardBreakShakeS (0,3), dir null }`. Obrażenie, które rozbiło gardę, jest już zredukowane.
 - Ciosy z tagiem `#heavy` przechodzą przez blok w całości i nie zużywają energii (`DamageSystem` pomija modyfikatory o źródle `block`).
 - `view().blockAgeS` — czas trwania bloku, pod okno parowania (#10).
 
 ## Zdarzenia
 
-`melee_swing { attacker, stage }` (na początku zamachu), `hitstop { ms }`, `melee_blocked`, oraz `damage_dealt` z `point`, `dir` (kierunek patrzenia) i `knockback` (ostatni cios combo 7, ciężki 10).
+`melee_swing { attacker, stage }` (na początku zamachu; dash-cięcie emituje `stage: 1`, wykończenie nie emituje wcale), `hitstop { ms }`, `melee_blocked`, oraz `damage_dealt` z `point`, `dir` (kierunek patrzenia) i `knockback` z danych etapu (plazmowe: etapy 1–2 = 0, etap 3 = 7, ciężki 10; bliźniacze: etap 4 = 5, ciężki 8; dwustronne: etap 3 = 7, ciężki 10).
 
 ## Strojenie (`tuning.melee`)
 
-`lightWindupS 0.05`, `lightActiveS 0.1`, `lightRecoveryS 0.16`, `comboWindowS 0.3`, `attackBufferMs 120`, `heavyHoldS 0.22`, `heavyChargeS 0.6`, `heavyWindupS 0.04`, `heavyActiveS 0.12`, `heavyRecoveryS 0.38`, `guardBreakLockS 0.8`.
+`lightWindupS 0.05`, `lightActiveS 0.1`, `lightRecoveryS 0.16`, `comboWindowS 0.3`, `attackBufferMs 120`, `heavyHoldS 0.22`, `heavyChargeS 0.6`, `heavyWindupS 0.04`, `heavyActiveS 0.12`, `heavyRecoveryS 0.38`, `guardBreakLockS 0.8`, `guardBreakShake 0.5`, `guardBreakShakeS 0.3`, `attackSpeedMin 0.5`, `attackSpeedMax 2`.
+
+Rzut i dash-cięcie: `dashCutGraceS 0.1`, `dashCutHeightM 1.2`, `throwSpinRadS 28`, `throwLengthM 1.1`, `throwThicknessM 0.04` (trzy ostatnie tylko render).
+
+Parowanie: `parryWindowMs 150`, `parryArcDeg 160`, `parryHitstopMs 60`, `parryShake 0.3`, `parryShakeS 0.2`, `meleeParryWindowMs 200`, `meleeParryStunS 0.9`, `meleeParryKnockback 4`, `meleeParrySparkM 0.8`, `meleeParrySparkOffsetYM -0.35`, `parrySpeedMult 1.8`, `parryDamageMult 2`. Wykończenia: patrz wyżej.
 
 ## Scena `melee-test`
 
@@ -140,7 +157,13 @@ Energia pochodzi z `PlayerEnergy` (#11, patrz `docs/systems/powers.md`) — jedn
   raycast uwzględnia promień także przed końcem bieżącego kroku. Powrót śledzi bieżący
   punkt oczu gracza i przechodzi przez geometrię. Każdy wróg otrzymuje obrażenia
   raz na cały lot, również gdy ma wiele hurtboxów. Obrażenia są stałe z danych,
-  bez mnożnika głowy. Zdarzenia: `blade_thrown`, `blade_returned` z `owner`.
+  bez mnożnika głowy, odrzut 0. Zasięg lotu liczy się z sumy faktycznego
+  przesunięcia (`rangeM`); powrót kończy się, gdy ostrze dotrze do oczu
+  (`blade_returned`). Rzut startuje tylko ze stanu `idle`, `blocking` albo
+  `recovery` lekkiego ciosu (kończy blok/cios, zeruje combo i bufory) i od razu
+  wykonuje pierwszy krok lotu. W locie `step` ignoruje całe wejście (bufory nie
+  są ustawiane). Dane rzutu / dash-cięcia wariantów: bliźniacze 23 / 33
+  (odrzut dash-cięcia 5), dwustronne 38 / 55 (odrzut 7). Zdarzenia: `blade_thrown`, `blade_returned` z `owner`.
 - W stanie `throwing` ostrze znika z dłoni. Cięcia, ładowanie ciężkiego, blok,
   parowanie i następny rzut są ignorowane. Brak kosztu energii i osobnego cooldownu.
   Render `FlyingBlade` interpoluje pozycję oraz obrót cyjanowego ostrza wyłącznie
@@ -201,14 +224,14 @@ oraz tolerancję późnego kliknięcia.
 ## Parowanie pocisków (F1 #10)
 
 - `PlasmaBlade.interceptProjectile` jest rejestrowane w `ProjectileSystem.addInterceptor`. Gdy pocisk wroga trafia właściciela ostrza, przechwytywacz decyduje przed zadaniem obrażeń.
-- **Warunki:** blok trwa nie dłużej niż `parryWindowMs` (150 ms) — czyli blok trzeba **wcisnąć** tuż przed trafieniem, trzymanie bloku daje tylko redukcję −70%; pocisk nadlatuje z przodu (kąt ≤ `parryArcDeg`/2 od kierunku patrzenia).
-- **Efekt:** `ProjectileSystem.reflect` — pocisk zmienia właściciela i drużynę na gracza, leci w strzelca (`positionOf`, w razie braku — z powrotem po torze), szybciej ×`parrySpeedMult` (1,8) i mocniej ×`parryDamageMult` (2). Emisja `parry_success { projectile, attacker }` (energia +10 przez `PlayerEnergy`), hitstop `parryHitstopMs` (60 ms), wstrząs `parryShake`.
+- **Warunki:** stan `blocking`, pocisk innej drużyny niż gracz, blok trwa nie dłużej niż `parryWindowMs` (150 ms; `blockAgeS × 1000 > okno` odrzuca) — czyli blok trzeba **wcisnąć** tuż przed trafieniem, trzymanie bloku daje tylko redukcję −70%; pocisk nadlatuje z przodu: kąt (w 3D) między −kierunkiem lotu a patrzeniem ≤ `parryArcDeg`/2, gdzie `parryArcDeg` bierze się z ostrza (`def.parryArcDeg`, np. 240 dla dwustronnego), a gdy brak — z `tuning.melee`.
+- **Efekt:** `ProjectileSystem.reflect` — pocisk zmienia właściciela i drużynę na gracza, leci w strzelca (`positionOf`, w razie braku — z powrotem po torze), szybciej ×`parrySpeedMult` (1,8) i mocniej ×`parryDamageMult` (2). Cel odbicia to pozycja strzelca + 1,2 m w górę. Emisja `parry_success { defender, projectile, attacker }` (energia +`powers.parryEnergy` = 10 przez `PlayerEnergy`), hitstop `parryHitstopMs` (60 ms), wstrząs `parryShake` (0,3) przez `parryShakeS` (0,2 s), bez kierunku.
 - Scena `?scene=parry-test`: wariant piaskownicy, w którym środkowy manekin co 1,6 s strzela wolnym pociskiem (9 m/s, 12 obrażeń) w gracza. Ćwiczenie: wciśnij PPM w ostatniej chwili.
 - Testy: `tests/unit/parry.test.ts` (prawdziwy Rapier: odbicie w oknie trafia strzelca ×2, blok poza oknem −70% bez odbicia, brak bloku = obrażenia, pocisk z tyłu nieparowany), `tests/e2e/parryTest.spec.ts`.
 
 ## Parowanie ciosów wręcz
 
-- **Warunki:** blok trwa nie dłużej niż `meleeParryWindowMs` (200 ms), cios ma tag `#melee` i nie ma `#heavy` (cios nie do zablokowania, bursztynowa zapowiedź, przebija także zwykły blok), atakujący jest w łuku `parryArcDeg`/2 przed graczem.
+- **Warunki:** blok trwa nie dłużej niż `meleeParryWindowMs` (200 ms), cios ma tag `#melee` i nie ma `#heavy` (cios nie do zablokowania, bursztynowa zapowiedź, przebija także zwykły blok), atakujący jest w łuku `parryArcDeg`/2 przed graczem (kąt liczony **poziomo**, w płaszczyźnie XZ, względem patrzenia; `parryArcDeg` z ostrza jak przy pociskach), stan to `blocking`, a źródło ciosu nie jest `null`. Obrona działa jako dodatkowy guard (`DamageSystem.addGuard`), wykonywany także gdy główny `guard` celu już zwrócił 0.
 - **Efekt:** obrażenia zanegowane (guard `0` dopisany przez `DamageSystem.addGuard`), zdarzenia `melee_parried { defender, attacker, point }` i `parry_success { projectile: null, attacker }`, hitstop `parryHitstopMs`, wstrząs `parryShake` przez `parryShakeS`, iskra cyan (`vfx.parrySparkCount` cząstek, `meleeParrySparkM` przed oczami w stronę atakującego, `meleeParrySparkOffsetYM` w pionie). Przez `parry_success` parowanie wręcz daje energię +`powers.parryEnergy`, dźwięk `parry` i liczy się w implantach, synergiach, naszywkach i samouczku tak samo jak odbicie pocisku. Atakujący (Szturmowiec) dostaje stan `stunned` na `meleeParryStunS` (0,9 s) i odrzut `meleeParryKnockback` (4); jego cios jest przerwany.
 - Brak pozycji atakującego (`positionOf` zwraca `null`) wyklucza parowanie — łuku nie da się sprawdzić.
 - Blok poza oknem działa jak dotąd (−70%, koszt energii).

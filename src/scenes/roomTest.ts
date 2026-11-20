@@ -10,22 +10,17 @@ import playerData from '../data/scenes/roomPlayer.json';
 import wavesData from '../data/waves/roomTest.json';
 import { RoomScene } from './roomScene';
 
-export function createRoomTest(
-  loadModels = true,
-  layout?: RoomDefinition,
-): RoomScene {
-  const params = new URLSearchParams(
-    typeof location === 'undefined' ? '' : location.search,
-  );
-  const roomId = params.get('room') ?? 'combatYard';
-  const room = layout ?? roomDefinitions.get(roomId);
-  if (!room) throw new Error(`Nieznany pokój: ${roomId}`);
+/** Stan runu pokoju testowego z parametrów URL (`loadout`, `threat`, `seed`). */
+export function roomTestRun(
+  room: RoomDefinition,
+  params: URLSearchParams,
+): RunState {
   const loadoutId = params.get('loadout') ?? 'classic';
   const loadout = loadoutDefinitions.get(loadoutId);
   if (!loadout) throw new Error(`Nieznany ekwipunek: ${loadoutId}`);
   const threatLevel = Number(params.get('threat') ?? 0);
   threatLevelDef(threatLevel);
-  const run: RunState = {
+  return {
     seed: params.get('seed') ?? 'room-test',
     sectorId: 'room-test',
     loadoutId,
@@ -46,6 +41,19 @@ export function createRoomTest(
     implants: [],
     stats: { kills: 0, damage: { melee: 0, power: 0, gun: 0, other: 0 } },
   };
+}
+
+export function createRoomTest(
+  loadModels = true,
+  layout?: RoomDefinition,
+): RoomScene {
+  const params = new URLSearchParams(
+    typeof location === 'undefined' ? '' : location.search,
+  );
+  const roomId = params.get('room') ?? 'combatYard';
+  const room = layout ?? roomDefinitions.get(roomId);
+  if (!room) throw new Error(`Nieznany pokój: ${roomId}`);
+  const run = roomTestRun(room, params);
   const waves = loadWaves({
     ...wavesData,
     spawnPoints: room.spawnPoints,

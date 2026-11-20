@@ -17,6 +17,7 @@ import { tuning } from '../../src/core/tuning';
 import { isEmissive } from '../../src/render/bloom';
 import { getMaterial, syncMaterials } from '../../src/render/materials';
 import { createRenderPipeline } from '../../src/render/outline';
+import { createUrbanMaterial } from '../../src/render/urbanMaterials';
 import { PostFxState } from '../../src/render/postFx';
 
 const defaults = { ...tuning.render };
@@ -224,4 +225,34 @@ it('materiał świata dodaje siatkę płytek w przestrzeni świata sterowaną z 
   syncMaterials();
   expect(shader.uniforms.gridSize?.value).toBe(4);
   expect(shader.uniforms.gridContrast?.value).toBe(0.3);
+});
+
+it('bindEvents na nowej szynie zeruje Skupienie i id gracza ze starej', () => {
+  const { pipeline } = fixture();
+  const first = new EventBus();
+  pipeline.bindEvents(first);
+  first.emit('entity_spawned', { id: 1, kind: 'player' });
+  first.emit('focus', { worldScale: 0.3, durationS: 2 });
+  expect(pipeline.fxState.focusActive).toBe(true);
+  const second = new EventBus();
+  pipeline.bindEvents(second);
+  expect(pipeline.fxState.focusActive).toBe(false);
+  second.emit('health_changed', { id: 1, current: 100, max: 100 });
+  second.emit('health_changed', { id: 1, current: 10, max: 100 });
+  expect(pipeline.fxState.damage).toBe(0);
+});
+
+it('materiał bloomu fasady nie świeci w zgaszonych oknach ani bez detalu miasta', () => {
+  const facade = createUrbanMaterial('facade');
+  const glow = facade.userData.bloomMaterial as MeshBasicMaterial;
+  const shader = {
+    uniforms: {} as Record<string, { value: unknown }>,
+    vertexShader: '#include <common>\n#include <begin_vertex>',
+    fragmentShader:
+      '#include <common>\n#include <color_fragment>\n#include <opaque_fragment>',
+  };
+  glow.onBeforeCompile(shader as never, null as never);
+  expect(shader.fragmentShader).toMatch(
+    /diffuseColor\.rgb = windowTex \* windowParams\.w \* windowLit \* cityDetail;/,
+  );
 });

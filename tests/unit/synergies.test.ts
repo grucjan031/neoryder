@@ -713,6 +713,16 @@ describe('Z4 — nowe efekty wyzwalaczy', () => {
     expect(h.triggered).toHaveBeenCalledTimes(1);
   });
 
+  it('radiusM = 0 z at = user nakłada status na użytkownika, nie na cel', () => {
+    const h = setupArea([{ ...burn, at: 'user' }]);
+    h.hit();
+    expect(h.applyStatus).toHaveBeenCalledExactlyOnceWith(h.user, {
+      id: 'burning',
+      durationS: 2,
+      stacks: 1,
+    });
+  });
+
   it('obszar statusu uwzględnia promień, stosy i pozycję użytkownika', () => {
     const h = setupArea(
       [{ ...burn, at: 'user', radiusM: 5, status: 'overload', stacks: 2 }],

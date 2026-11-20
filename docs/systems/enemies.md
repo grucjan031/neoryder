@@ -2,17 +2,21 @@
 
 ## Z16 — Wieżyczka i Dron-haker
 
-| Pole                  | Wieżyczka (`turret`)                               | Dron-haker (`hacker`)               |
-| --------------------- | -------------------------------------------------- | ----------------------------------- |
-| HP / koszt zagrożenia | 70 / 3                                             | 24 / 2,5                            |
-| Ruch / obrót          | stacjonarna / 45°/s                                | 4,5 m/s / 360°/s                    |
-| Zasięg                | 20 m                                               | 15 m, dystans preferowany 9 ± 2,5 m |
-| Telegraf / odnowienie | 0,9 s / 2 s po serii                               | 1,2 s / 5 s                         |
-| Atak                  | 3 pociski po 10 obrażeń co 0,3 s, 9 m/s, życie 4 s | wiązka 2 obrażeń i `jammed` na 3 s  |
-| Chwyt / odrzut        | nie / odporność 1                                  | tak (5 kg) / odporność 0            |
+| Pole                  | Wieżyczka (`turret`)                                | Dron-haker (`hacker`)               |
+| --------------------- | --------------------------------------------------- | ----------------------------------- |
+| HP / koszt zagrożenia | 70 / 3                                              | 24 / 2,5                            |
+| Ruch / obrót          | stacjonarna / 45°/s                                 | 4,5 m/s / 360°/s                    |
+| Zasięg                | 20 m                                                | 15 m, dystans preferowany 9 ± 2,5 m |
+| Telegraf / odnowienie | 0,9 s / 2 s po serii                                | 1,2 s / 5 s                         |
+| Atak                  | 3 pociski po 10 obrażeń co 0,3 s, 60 m/s, życie 4 s | wiązka 2 obrażeń i `jammed` na 3 s  |
+| Chwyt / odrzut        | nie / odporność 1                                   | tak (5 kg) / odporność 0            |
 
-Wieżyczka korzysta z maszyny stanów Strzelca; `stationary` pomija ruch,
-grawitację kontrolera i separację oraz odrzut, zachowując punkt spawnu.
+Wieżyczka (`Turret extends Gunner`) korzysta z maszyny stanów Strzelca; `stationary` pomija ruch,
+grawitację kontrolera i separację oraz odrzut, zachowując punkt spawnu. Zamiast pasma
+`preferredRange ± rangeTolerance` zaczyna celowanie, gdy cel jest widoczny, w zasięgu
+`attackRange` (20 m) i głowica jest obrócona w jego stronę (`turnRateDegS` 45°/s); nie unika doskoku
+(`dash_used`) i nie szuka osłony. Dane muszą mieć `stationary: true`, `grabbable: false`, `knockbackResist: 1`
+(walidacja schematu). Rozrzut `spreadDeg` = 0.
 Pole `moveSpeed: 1` spełnia dotychczasowy dodatni schemat, ale nie powoduje
 ruchu. Pociski lecą zgodnie z yaw głowicy, ograniczonym także podczas serii;
 laser pokazuje ten sam kierunek. Podstawa jest nieruchoma, głowica z lufą
@@ -22,10 +26,13 @@ Pchnięcie zadaje obrażenia i może ogłuszyć, ale nie przesuwa.
 
 Haker dziedziczy lot, kolizje i tokeny strzału Drona. Lata na 2,6 m,
 krąży z prędkością 25°/s. W telegrafie zawisa i śledzi gracza czerwoną
-linią. Raycast po telegrafie musi trafić hurtbox gracza; ściana blokuje
-wiązkę. Obrażenia i status idą przez `DamageSystem`, zatem nietykalność,
-śmierć i osłony nie przepuszczają zagłuszenia. Każde otrzymane obrażenie
-przerywa telegraf i rozpoczyna pełne 5 s odnowienia (także przy ogłuszeniu).
+linią. Po telegrafie (`hack.hackTelegraphS` 1,2 s, stan `aim`; potem jedno „strzelenie” w `burst`)
+raycast długości `attackRange` (15 m) po grupach World i Player musi trafić hurtbox gracza (sensory
+bez hurtboxu są pomijane); ściana blokuje wiązkę. Obrażenia (tag `#hack`, kwota ze `Stats.damage` = 2)
+i status `jammed` (`hack.durationS` 3 s) idą przez `DamageSystem`, zatem nietykalność,
+śmierć i osłony nie przepuszczają zagłuszenia. Kolejny telegraf możliwy po `hack.hackCooldownS` = 5 s
+od strzału. Każde obrażenie otrzymane w stanie `aim` przerywa telegraf (przejście w `cooldown`)
+i rozpoczyna pełne 5 s odnowienia (także przy ogłuszeniu); w pozostałych stanach nie ma wpływu.
 Kontry: strzał przerywający zapowiedź, broń dystansowa, Błyskawica.
 Widok używa istniejącego `enemy_drone` i proceduralnej anteny (`drone.antenna`:
 ciemny maszt z poprzeczką, czerwony talerz, świecący pierścień nadajnika i czubek),
@@ -61,11 +68,11 @@ Ocena wyglądu i feel należy do Architekta; nie wykonano Playwrighta ani buildu
 ## Chwyt i przejęcie ciała (F2-09)
 
 `enemySchema.grabbable?: boolean` określa podatność na Chwyt. Brak pola oznacza
-odmowę. Szturmowiec, Strzelec, Snajper, Dron i Tarczownik mają `true`,
-Egzekutor ma `false`. Nie jest to status: system mocy nie nakłada bezpośrednio
+odmowę. Szturmowiec, Strzelec, Snajper, Dron, Dron-haker i Tarczownik mają `true`;
+Egzekutor, Wieżyczka i boss mają `false`. Nie jest to status: system mocy nie nakłada bezpośrednio
 ogłuszenia ani innych statusów.
 
-`Enemy.grabTarget?()` (wszystkie wbudowane archetypy) udostępnia ciało Rapiera,
+`Enemy.grabTarget?()` (wszystkie wbudowane archetypy poza bossem) udostępnia ciało Rapiera,
 masę i `setControlled(boolean)`; `EnemyManager.grabTargets()` filtruje martwych
 i usuniętych. Przejęcie natychmiast przerywa telegraph/swing/aim/burst, usuwa
 aktywny hitbox, punkt celowania i token lub oczekiwanie w kolejce dyrektora.
@@ -140,7 +147,14 @@ stateDiagram-v2
   stunned --> chase: stunOnHeavyS
 ```
 
-Wejście w `telegraph` emituje `enemy_telegraph { id, kind: 'swing', durationS }`.
+Przejście `chase → telegraph` wymaga ponadto tokenu `melee` dyrektora (gdy scena go ma, patrz niżej),
+obrotu do celu w obrębie jednego kroku obrotu i `cooldown` = 0. Dodatkowe przejścia do `stunned`:
+zdarzenie `melee_parried` z wrogiem jako atakującym (parowanie gracza; stun `tuning.melee.meleeParryStunS`
+i odrzut `meleeParryKnockback × (1 − knockbackResist)`) oraz status `stunned`. Unik przed ciężkim ciosem
+gracza (`melee_swing`, stage `heavy`) wraca ze stanów `idle`/`chase`/`telegraph` do `chase` (opis w `difficulty.md`).
+Z flagą `controlled` (Chwyt) wróg nie wykonuje własnego kroku.
+Wejście w `telegraph` emituje `enemy_telegraph { id, kind: 'swing', durationS }`
+(`kind: 'heavy'`, gdy `attackTags` zawiera `#heavy`, np. Egzekutor).
 Kierunek ciosu zostaje ustalony przy zapowiedzi: wróg nie śledzi celu podczas
 telegrafu ani wymachu. Zapytanie Rapiera przed wrogiem wybiera hurtbox gracza;
 przed trafieniem sprawdzany jest też dystans do aktualnej pozycji celu.
@@ -149,7 +163,7 @@ z regeneracją po ciosie. Wróg może ponownie zapowiedzieć atak dopiero po obu
 
 Pościg obraca wroga z ograniczeniem `turnRateDegS`. Promień na wysokości ciała
 sprawdza ściany w `tuning.enemies.wallProbe`; przeszkoda wywołuje ruch boczny.
-Stronę i odstęp kolejnego sprawdzenia wybiera strumień `Rng.fork('enemy:<id>')`.
+Stronę i odstęp kolejnego sprawdzenia wybiera strumień wroga (`fork('ai')` strumienia spawnu, patrz „Determinizm”).
 `repathJitter` rozprasza momenty kolejnych prób. To lokalne omijanie przeszkód,
 bez pathfindingu grafowego. Sąsiedzi z managera odpychają się wewnątrz
 `tuning.enemies.separationRadius`; kolizje kapsuł dodatkowo ograniczają nakładanie.
@@ -180,8 +194,31 @@ usuwa kontroler, ciało, hurtboxy, rejestrację obrażeń i encję. Zdarzenie ś
 emituje wyłącznie `DamageSystem`, raz. Odłamki należą do zadania #12.
 
 `EnemyManager`: `spawn(id, position)`, `step(dt)`, `forEach(cb)`, `despawnAll()`,
-`dispose()`. Utrzymuje wspólną listę sąsiadów, wywołuje AI i usuwa zwolnione
-instancje. Sam nie krokuje świata ani `DamageSystem` — robi to właściciel.
+`dispose()`, `grabTargets()`, `captureControlled()`, `setSpawnModifiers(mods)`, pola `difficulty` i `director`.
+Utrzymuje wspólną listę sąsiadów, wywołuje AI w kolejności spawnu, usuwa zwolnione
+instancje, a dopiero potem krokuje dyrektora (`director.step(dt)`). `despawnAll()` zeruje licznik spawnów
+i resetuje dyrektora. Sam nie krokuje świata ani `DamageSystem` — robi to właściciel.
+`EnemyDependencies.spawnEnemy` (dla wezwań bossa) deleguje do `spawn`.
+
+Wrogowie z `moveGoal` (tryb Podboju, `docs/systems/modes.md`) maszerują do celu, dopóki gracz jest dalej niż
+`tuning.modes.conquest.detectRangeM` (lub `carry.defendRangeM` przy nośniku Skoku), bez taktyk i bez tokenów;
+`setCarry` dodaje modyfikator `moveSpeed` typu `mult` ze źródłem `heistCarry`.
+
+### Determinizm (Rng)
+
+`Rng` to generator 32-bitowy (mulberry32: `state += 0x6D2B79F5`, mieszanie jak w `core/rng.ts`);
+`fork(label)` = nowy `Rng` z ziarna `hashSeed("<ziarno liczbowe rodzica>:<label>")`, niezależny od liczby
+losowań rodzica. Wrogowie: `manager.spawn` tworzy `ctx.rng.fork('spawn:<n>')` (`n` od 0, rośnie z każdym spawnem,
+zerowane przez `despawnAll`), a wróg bierze z niego `fork('ai')`. Dyrektor ma osobne `fork('coordination')`.
+Kolejność losowań wroga (zmiana kolejności zmienia przebieg tego samego seeda):
+
+- Dron/haker: w konstruktorze `chance(0.5)` (kierunek krążenia: sukces = +1); w `fire`: `float(−s, s)` yaw, potem pitch;
+- Strzelec/Snajper/Wieżyczka: wejście w `reposition` — `chance(0.5)` (strafe); `fire` — yaw, potem pitch (`float(−s, s)`);
+  próba ściany `steer`: `float(0, repathJitter)` po każdej próbie; osłona: `chance(coverUse)`, potem `float(0, 2π)`;
+  unik doskoku: `chance(dashDodgeChance)`, `chance(0.5)`; początek okna presji: `chance(groupAttack)`;
+- Szturmowiec/Tarczownik/Egzekutor: próba ściany — `chance(0.5)` (strona omijania) tylko gdy ściana, i zawsze `float(0, repathJitter)`;
+  flankowanie: `chance(flankChance)`, `chance(0.5)`, `float(flankMinDeg, flankMaxDeg)`; unik: `chance(heavyDodgeChance)`;
+- boss: `pick(wzorce dostępne w danej chwili)` przy rozpoczęciu wzorca; przy wezwaniu `shuffle(punkty spawnu)` lub `float(0, 2π)` (pierścień).
 
 ## Render i animacja
 
@@ -305,14 +342,16 @@ walidator wymaga ich i `body` dla `kind: 'gunner'`. Dane Szturmowca pozostają p
 Cykl: `idle → reposition → aim → burst → cooldown → reposition`.
 Z bliska Strzelec odchodzi, z daleka podchodzi, dodając lekki ruch boczny
 (`strafeScale`). Stronę i rozrzut wybiera wyłącznie własny strumień
-`Rng.fork('enemy:<id>')`. Korzysta z `EnemyBody`, separacji sąsiadów oraz
+strumień wroga (`fork('ai')`). Korzysta z `EnemyBody`, separacji sąsiadów oraz
 istniejącej próby ściany `tuning.enemies.wallProbe`.
 
-W paśmie z widocznym celem zatrzymuje się i emituje
+W paśmie z widocznym celem, obrócony do gracza (w obrębie jednego kroku obrotu) i — gdy scena ma
+dyrektora — z tokenem `shot`, zatrzymuje się i emituje
 `enemy_telegraph { id, kind: 'aim', durationS: 0.5 }`. Przez całe 0,5 s
 celuje i obraca się do gracza, dopiero potem oddaje trzy strzały co 0,22 s
 (z dokładnością do stałego kroku). Każdy strzał mierzy w aktualną pozycję celu
-z rozrzutem ±2° na osiach yaw i pitch. Po serii odpoczywa 1,6 s.
+z rozrzutem ±2° (`spreadDeg` po skalowaniu trudnością) na osiach yaw i pitch (dwa losowania `float(−s, s)`: yaw, potem pitch).
+Po serii odpoczywa `cooldownS` = 1,6 s (stan `cooldown`; Strzelec zamiast tego może pójść w osłonę, patrz `difficulty.md`).
 Ogłuszenie przerywa zapowiedź lub serię; obsługa odrzutu, śmierci i usuwania
 ciała jest taka jak u Szturmowca.
 
@@ -375,7 +414,11 @@ Bezpiecznik `maxHoldS` odbiera token trzymany zbyt długo.
 
 **Sloty flankowania.** Dwie pule kątów wokół gracza (`slots.melee`, `slots.shot`:
 `count`, `offsetDeg` od osi +Z). Kąt przydziela dyrektor, promień podaje wróg:
-`slot(id, kind, radiusM)` zwraca punkt na okręgu wokół aktualnej pozycji celu.
+`slot(id, kind, radiusM)` zwraca punkt na okręgu wokół aktualnej pozycji celu. Kąt slotu `i` to
+`offsetDeg + 360 × i / count` stopni od osi +Z, punkt = `cel + (sin kąta, cos kąta) × radiusM` (y celu).
+Zasłonięcie sprawdza promień od `cel + (0, probeHeightM, 0)` do punktu slotu (grupy Enemy i World).
+Zmiana promienia zapytania zwalnia dotychczasowy slot; koszt dopasowania to kwadrat odległości XZ wroga
+od punktu slotu (zaokrąglony do 1e-6), remisy rozstrzyga niższe id wroga, potem niższy indeks slotu.
 Pierwszy przydział to najbliższy wolny slot; remis rozstrzyga niższy indeks.
 Co `reassignS` przydział liczony jest od nowa zachłannie (pary wróg–slot od
 najbliższej), żeby wrogowie nie przebiegali przez gracza, gdy ten zmieni stronę.
@@ -388,7 +431,9 @@ zwraca `null`. Slot, o który wróg nie zapytał w kroku, zostaje zwolniony.
 w F1. Bez tokenu idzie do slotu na promieniu `flankDistanceM` (dane, 4 m), twarzą
 do gracza; bez slotu zatrzymuje się na tym promieniu na linii do gracza. Token
 trzymają tylko zapowiedź i wymach. Wejście w regenerację, ogłuszenie, śmierć
-albo utrata celu go oddaje. `flankDistanceM` musi być większy niż `attackRange`.
+albo utrata celu go oddaje. `flankDistanceM` musi być większy niż `attackRange`. Punkt flanki podąża za
+graczem (przybycie liczone względem bieżącego punktu); marsz do celu trybu
+przerywa manewr osłony Strzelca.
 
 **Strzelec.** Prosi o token strzału dopiero, gdy jest w paśmie dystansu, widzi
 cel i jest do niego obrócony. Bez tokenu, przy widocznym celu, czeka w slocie
@@ -396,7 +441,7 @@ na promieniu `preferredRange`. Bez widoczności działa jak w F1 (podchodzi).
 Token trzymają celowanie i seria. Przejście w `cooldown`, utrata widoczności,
 ogłuszenie albo śmierć go oddaje.
 
-Dane: blok `director` w `src/data/scenes/aiTest.json` (2 tokeny wręcz, 1 strzału)
+Dane: blok `director` w pliku pokoju (`RoomDefinition.director`, opcjonalny) lub sceny, m.in. w `src/data/scenes/aiTest.json` (2 tokeny wręcz, 1 strzału)
 i `arena.json` (3 i 2 — arena zostaje wymagająca; fale F2 dostroi zadanie 17).
 Zapytania debug: `director` w ai-test i `enemyDirector` w arenie zwracają
 `snapshot()` (tokeny, kolejki, sloty).
@@ -428,7 +473,8 @@ Nowe opcjonalne pola Strzelca: `aimLockS` (krótszy niż `aimTelegraphS`),
 `laserSight`, `projectileTags` (domyślnie `['#gun']`), w `animation`:
 `laserRadiusM`, `laserLockScale`. Snapshot ma `aim` (punkt celowania)
 w stanach `aim` i `burst`; bez `aimLockS` cel jest śledzony do końca serii
-jak w F1. Laser rysuje `EnemyView` w przestrzeni lokalnej widoku: od `muzzle`
+jak w F1. Po zamrożeniu Snajper patrzy w zamrożony punkt i nie przerywa strzału, nawet gdy straci
+widoczność celu. Laser rysuje `EnemyView` w przestrzeni lokalnej widoku: od `muzzle`
 z danych do `aim`, tylko w stanie `aim`.
 
 **Dron** (`drone.json`, `kind: 'drone'`, klasa `Drone`) lata bez character
@@ -485,7 +531,8 @@ od razu rozpoczyna zapowiedź kontry skierowanej do gracza. Kontra prosi
 o ten sam token `melee` co zwykły atak; brak tokenu pozwala tylko sparować.
 Podczas zapowiedzi, wymachu, regeneracji i ogłuszenia Egzekutor nie paruje.
 
-Obie obrony korzystają z `DamageTargetOptions.guard` (kontrakt F2-14):
+Obie obrony korzystają z `DamageTargetOptions.guard` (kontrakt F2-14); kolejność: tag `#execute` zawsze
+przechodzi (Wykończenie), potem tarcza (Tarczownik), potem parowanie (Egzekutor):
 blok zwraca 0, nie emituje `damage_dealt`, emituje za to
 `melee_blocked { defender, attacker, amount }` z pierwotną kwotą trafienia.
 Statusy są nakładane tylko przez zwykłą ścieżkę obrażeń; przeciążenie z mocy
@@ -533,13 +580,17 @@ Dyrektor Ochrony Kurogane Arms ma 900 HP i fazy przy 100%, 65%, 30%.
 Obrażenia po modyfikatorach są ucinane na kolejnym progu przez lokalną odmianę
 `Health.apply`; niewykorzystana część ciosu przepada. Przejście przerywa zapowiedź
 i daje `tuning.enemies.phaseShiftS` nietykalności (domyślnie 1 s, panel debug).
-Czas stoi przy `dt = 0`. `boss_spawned` niesie id, polską nazwę i maksimum HP;
-`boss_phase` ma fazy numerowane od 1 i pojawia się tylko przy zmianie (dwa razy
-w zwykłej walce). `health_changed` i śmierć korzystają ze standardowego systemu.
+Czas stoi przy `dt = 0`. `boss_spawned { id, name, maxHealth, phaseThresholds }` niesie id, polską nazwę, maksimum HP i progi faz
+od drugiej (`hpThreshold` faz 2..n);
+`boss_phase { id, phase, phases }` ma fazy numerowane od 1 i pojawia się tylko przy zmianie (dwa razy
+w zwykłej walce); `boss_shield { id, current, max }` przy każdej zmianie tarczy. Zmiana fazy
+następuje po `damage_dealt`, gdy HP ≤ próg następnej fazy; w nietykalności boss ma stan `recovery`. `health_changed` i śmierć korzystają ze standardowego systemu.
 
 Maszyna: `idle/chase → telegraph → swing → recovery → cooldown → idle`.
-Boss podchodzi do `attackRange`, losuje jeden wzorzec równomiernie przez
-`ctx.rng.fork('ai')` (manager dostarcza strumień konkretnego spawnu).
+Boss podchodzi do `attackRange` (5 m), po czym losuje jeden wzorzec równomiernie (`Rng.pick`) przez
+`ctx.rng.fork('ai')` (manager dostarcza strumień konkretnego spawnu). Przed zapowiedzią ustawia
+bazowe `damage` w Stats na `damage` wzorca; skutek wzorca następuje przy wejściu w `swing`, po
+`swingActiveS` (0,12 s) przychodzi `recovery` (`recoveryS` wzorca), `cooldown` (`cooldownS` wzorca) i `idle`.
 W czasie zapowiedzi stoi, a trafienie następuje dopiero po `telegraphS` wzorca.
 Status ogłuszenia przerywa zapowiedź; po zakończeniu boss rozpoczyna nowy atak.
 

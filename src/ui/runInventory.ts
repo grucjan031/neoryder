@@ -151,10 +151,15 @@ export class RunInventoryMenu {
   private openedBy = 'Tab';
   private readonly onKey = (event: KeyboardEvent): void => {
     if (!this.visible) {
-      this.lastCode = event.code;
+      if (!event.repeat) this.lastCode = event.code;
       return;
     }
     if (event.repeat) return;
+    if (
+      event.target instanceof Element &&
+      event.target.closest('dialog.debug-console')
+    )
+      return;
     if (
       event.code === 'Escape' ||
       event.code === 'Tab' ||

@@ -1,0 +1,50 @@
+.proto-hud {
+  position: fixed;
+  top: 90px;
+  left: 28px;
+  width: min(340px, calc(100vw - 56px));
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-top: 2px solid #ffae1a;
+  background: #101827ed;
+  color: #fff1d6;
+  font: 12px/1.5 monospace;
+  font-variant-numeric: tabular-nums;
+  z-index: 12;
+  pointer-events: none;
+}
+.proto-hud [hidden] {
+  display: none;
+}
+.proto-hud header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.proto-hud header strong {
+  color: #ffae1a;
+}
+.proto-hud p {
+  margin: 4px 0 0;
+}
+.proto-hud label {
+  display: block;
+  margin-top: 6px;
+}
+.proto-hud progress {
+  display: block;
+  width: 100%;
+  height: 6px;
+  accent-color: #ffae1a;
+}
+.proto-hud[data-outcome='success'] {
+  border-top-color: #6dff4a;
+}
+.proto-hud[data-outcome='failure'] {
+  border-top-color: #ffae1a;
+}
+.proto-hud .proto-outcome {
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+}

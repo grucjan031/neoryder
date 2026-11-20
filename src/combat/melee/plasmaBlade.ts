@@ -825,15 +825,16 @@ export class PlasmaBlade {
 
   private onDamage(event: GameEvents['damage_dealt']): void {
     if (event.target !== this.deps.owner || this.state !== 'blocking') return;
-    if (event.tags.includes(PIERCE_BLOCK_TAG)) return; // blok nie zadziałał
-    const mult = Math.max(1e-6, this.def.blockDamageMult);
-    const original = event.amount / mult;
+    // Blok nie działał (ciężki cios, status, zagrożenie) — bez kosztu energii i bez melee_blocked.
+    const blocked = event.blocked ?? 0;
+    if (blocked <= 0) return;
+    const original = event.amount + blocked;
     const cost =
       this.def.blockEnergyPerHit + original * this.def.blockEnergyPerDamage;
     this.bus.emit('melee_blocked', {
       defender: this.deps.owner,
       attacker: event.source,
-      amount: original - event.amount,
+      amount: blocked,
     });
     if (!this.deps.energy.spend(cost)) {
       // Rozbicie gardy: energia na zero, blok wyłączony na chwilę.
@@ -841,8 +842,8 @@ export class PlasmaBlade {
       this.exitBlock();
       this.guardBrokenS = this.tuning.melee.guardBreakLockS;
       this.bus.emit('camera_shake', {
-        intensity: 0.5,
-        durationS: 0.3,
+        intensity: this.tuning.melee.guardBreakShake,
+        durationS: this.tuning.melee.guardBreakShakeS,
         dir: null,
       });
     }

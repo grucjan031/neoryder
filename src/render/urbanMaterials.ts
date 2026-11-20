@@ -75,6 +75,23 @@ export const constructionSiteKinds = [
   'hazard_stripes_worn',
 ] as const;
 
+export function mergeUrbanMaterialData(
+  sources: Readonly<Record<string, Readonly<Record<string, unknown>>>>,
+): Record<string, unknown> {
+  const owners = new Map<string, string>();
+  const entries: [string, unknown][] = [];
+  for (const [file, data] of Object.entries(sources)) {
+    for (const [key, value] of Object.entries(data)) {
+      const previous = owners.get(key);
+      if (previous !== undefined)
+        throw new Error(`Powtórzony materiał ${key}: ${previous} i ${file}.`);
+      owners.set(key, file);
+      entries.push([key, value]);
+    }
+  }
+  return Object.fromEntries(entries);
+}
+
 const portLooks = z
   .record(
     z.enum([
@@ -121,7 +138,14 @@ const portLooks = z
       flat: z.literal(true).optional(),
     }),
   )
-  .parse({ ...portData, ...arenaData, ...portRailData, ...overpassData });
+  .parse(
+    mergeUrbanMaterialData({
+      'portMaterials.json': portData,
+      'arenaMaterials.json': arenaData,
+      'portRailMaterials.json': portRailData,
+      'overpassMaterials.json': overpassData,
+    }),
+  );
 
 export const urbanKinds = [
   ...portKinds,
@@ -475,7 +499,7 @@ export function createUrbanMaterial(
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <color_fragment>',
-          `#include <color_fragment>\n${windowCode}\nfloat windowGlow = windowMask * windowLit * cityDetail; diffuseColor.rgb = windowTex * windowParams.w; diffuseColor.a = windowGlow * 0.18;`,
+          `#include <color_fragment>\n${windowCode}\nfloat windowGlow = windowMask * windowLit * cityDetail; diffuseColor.rgb = windowTex * windowParams.w * windowLit * cityDetail; diffuseColor.a = windowGlow * 0.18;`,
         )
         .replace(
           '#include <opaque_fragment>',

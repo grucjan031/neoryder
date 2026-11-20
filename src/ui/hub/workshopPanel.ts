@@ -387,6 +387,7 @@ export const createWorkshopPanel: HubPanelFactory = (
     if (disposed) return;
     const focusKey = (document.activeElement as HTMLElement | null)?.dataset
       ?.key;
+    const hadFocus = root.contains(document.activeElement);
     const statusLine = el('p', 'workshop__status', status);
     statusLine.setAttribute('role', 'status');
     root.replaceChildren(
@@ -399,7 +400,12 @@ export const createWorkshopPanel: HubPanelFactory = (
       const target = [...root.querySelectorAll<HTMLElement>('[data-key]')].find(
         (node) => node.dataset.key === focusKey,
       );
-      target?.focus();
+      (
+        target ??
+        (hadFocus
+          ? root.querySelector<HTMLElement>('button:not(:disabled)')
+          : null)
+      )?.focus();
     }
   }
 

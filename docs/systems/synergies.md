@@ -39,26 +39,36 @@ z `#melee`, następnie `query('synergies')`. Listę implantów podaje pomoc kome
   "name": "Tancerz ostrzy",
   "requires": ["#build_blade", "#build_resonance"],
   "when": { "event": "parry_success" },
-  "effects": [{ "kind": "add_energy", "amount": 10 }],
-  "cooldownS": 1.5
+  "effects": [
+    { "kind": "add_energy", "amount": 10 },
+    {
+      "kind": "stat_modifier_timed",
+      "stat": "dashCooldown",
+      "type": "mult",
+      "value": 0.5,
+      "durationS": 3
+    }
+  ]
 }
 ```
 
 - `id` — unikalny (powtórzone id = błąd przy ładowaniu), `name` — nazwa w UI (pl).
-- `requires` — tagi ekwipunku; synergia jest aktywna, gdy **wszystkie** są w tagach ustawionych przez `setTags(tags)`. Brak któregokolwiek = synergia nie działa. Implanty F3 będą dodawać tagi do tej listy.
-- `cooldownS` (opcjonalne) — odnowienie liczone w czasie symulacji (`step(dt)`), startuje przy wyzwoleniu.
+- `requires` — tagi ekwipunku; synergia jest aktywna, gdy **wszystkie** są w tagach ustawionych przez `setTags(tags)`. Brak któregokolwiek = synergia nie działa. Tagi pochodzą z ekwipunku, implantów i talentów (z powtórzeniami, patrz F3-10).
+- `cooldownS` (opcjonalne, > 0) — odnowienie liczone w czasie symulacji (`step(dt)`), startuje przy wyzwoleniu; bez niego synergia może odpalać przy każdym zdarzeniu (np. `bladeDancer`, `resonancePistolero`, `stormGunner` nie mają odnowienia).
+- `requiresCount` (opcjonalne) — mapa tag → liczba ≥ 1 wymaganych wystąpień (patrz F3-10).
 - Walidacja: zod (`synergySchema`), loader `loadSynergyDefinitions`, domyślny zestaw `synergyDefinitions` (`import.meta.glob`).
 
 ## Warunki (`when`)
 
-| `event`                | Dotyczy gracza, gdy         | `tagsAny` / `targetStatus` |
-| ---------------------- | --------------------------- | -------------------------- |
-| `enemy_killed`         | `killer === user`           | tak (cel = zabity wróg)    |
-| `damage_dealt`         | `source === user`           | tak (cel = trafiony)       |
-| `parry_success`        | zawsze (paruje tylko gracz) | nie                        |
-| `power_used`           | `user === user`             | nie                        |
-| `dash_used`            | `user === user`             | nie                        |
-| `projectile_reflected` | `newOwner === user`         | nie                        |
+| `event`                | Dotyczy gracza, gdy                                                           | `tagsAny` / `targetStatus` |
+| ---------------------- | ----------------------------------------------------------------------------- | -------------------------- |
+| `enemy_killed`         | `killer === user`                                                             | tak (cel = zabity wróg)    |
+| `damage_dealt`         | `source === user` (domyślnie) lub `target === user` przy `targetIsUser: true` | tak (cel = trafiony)       |
+| `parry_success`        | `defender === user`                                                           | nie                        |
+| `execute_performed`    | `attacker === user`                                                           | nie                        |
+| `power_used`           | `user === user`                                                               | nie                        |
+| `dash_used`            | `user === user`                                                               | nie                        |
+| `projectile_reflected` | `newOwner === user`                                                           | nie                        |
 
 - `tagsAny` — wystarczy jeden z tagów zdarzenia.
 - `targetStatus` — cel zdarzenia musi mieć status (`StatusQuery.has`); bez `statuses` w kontekście warunek nie jest spełniony.
@@ -81,7 +91,7 @@ statusu i zakaz wyzwalania przez `#synergy` obowiązują w obu wariantach.
   sama emisja wybuchu liczy się jako efekt, także bez trafionych celów.
 - `apply_status_area { at, radiusM >= 0, status, durationS > 0, stacks? >= 1 }`
   — przez opcjonalne `ctx.applyStatus(target, { id: status, durationS, stacks })`.
-  Stosy muszą być całkowite. Promień 0 oznacza wyłącznie cel zdarzenia, bez
+  Stosy muszą być całkowite. Promień 0 oznacza wyłącznie cel zdarzenia (przy `at: 'user'` — użytkownika), bez
   odczytu pozycji; przy braku celu nic się nie dzieje. Dodatni promień wybiera
   cele tak jak wybuch. Status musi istnieć w rejestrze `src/data/statuses/`;
   walidacja w `effectSchema` importuje sam schemat statusów bez cyklu zależności.
@@ -109,6 +119,15 @@ Wyzwalacze implantów z `heal`,
 
 Każde wyzwolenie emituje `synergy_triggered { synergy, user }`.
 
+## Kolejność wykonania w `fire(event, facts)`
+
+1. Zdarzenie z tagiem `#synergy` jest odrzucane od razu.
+2. Iteracja po definicjach synergii (kolejność wczytania), potem po wyzwalaczach implantów i talentów. Dla każdej: zgodne `event`, aktywna (`requires` + `requiresCount`; wyzwalacze implantów mają `requires = []`, więc są zawsze aktywne), brak trwającego odnowienia, filtry `when` (dla `damage_dealt`: `source === user` albo `target === user` przy `targetIsUser`; `tagsAny`; `targetStatus` — brak celu lub brak `ctx.statuses` oznacza niespełnienie).
+3. Efekty wykonywane po kolei; wyzwolenie liczy się, jeśli co najmniej jeden zwrócił „zadziałał”. Dopiero wtedy startuje `cooldownS` (jeśli jest) i emitowane jest `synergy_triggered`. Kilka synergii może odpalić na to samo zdarzenie.
+4. Odnowienia i czasy efektów maleją w `step(dt)` (`dt <= 0` nic nie robi); odnowienie jest kasowane, gdy pozostały czas ≤ 0.
+
+Szczegóły efektów: `heal` bez `ctx.heal` i `explode`/`apply_status_area` bez pozycji źródła (`ctx.userPosition` lub pozycja celu) nie zadziałają. Odległość do celów jest trójwymiarowa, granica włącznie (`distance <= radiusM`). `explode` zadaje obrażenia z `point` = środek (kopia) i emituje `explosion` zawsze, gdy środek istnieje. `chain_on_hit` wybiera najbliższy cel `ctx.targets()` (pomija trafiony i gracza) w `jumpRangeM` włącznie, obrażenia = `damage` zdarzenia × `damageMult` (brak `damage` = 0). `stat_modifier_timed`: wpisy trzymane per wyzwalacz, klucz odświeżenia to konkretny efekt definicji (ponowne wyzwolenie resetuje `remainingS`, różne efekty tej samej definicji współistnieją); modyfikatory mają źródło `synergy:<id wyzwalacza>` (dla implantów `synergy:implant:<implantId>:<n>`, dla talentów `synergy:implant:talent:<talentId>:<n>`) i są przebudowywane przy każdej zmianie wpisów.
+
 ## Brak pętli
 
 Zdarzenia z tagiem `#synergy` nigdy nie wyzwalają synergii. Obrażenia z `chain_on_hit` mają ten tag, więc nie powodują kolejnych skoków ani zabójstw wyzwalających inne synergie.
@@ -120,6 +139,11 @@ Zdarzenia z tagiem `#synergy` nigdy nie wyzwalają synergii. Obrażenia z `chain
 | `resonancePistolero.json` | Pistolero Rezonansu | `#build_resonance`, `#build_gunner` | zabójstwo z tagiem `#power`         | pełne schłodzenie broni                             |
 | `bladeDancer.json`        | Tancerz ostrzy      | `#build_blade`, `#build_resonance`  | udane parowanie                     | +10 energii, `dashCooldown` ×0,5 przez 3 s          |
 | `stormGunner.json`        | Burzowy strzelec    | `#build_gunner`, `#build_resonance` | trafienie `#gun` w cel z `overload` | skok na cel w 6 m za 50% obrażeń (`#elektrycznosc`) |
+| `bladeMastery.json`       | Mistrzostwo ostrza  | 3 × `#melee` (`requiresCount`)      | dowolne zabójstwo gracza            | +8 energii, odnowienie 2 s                          |
+| `resonanceMastery.json`   | Splot Rezonansu     | 3 × `#power`                        | `power_used`                        | `damage` +15% (percent) przez 3 s, odnowienie 2 s   |
+| `gunMastery.json`         | Zimny arsenał       | 3 × `#gun`                          | dowolne zabójstwo gracza            | schłodzenie broni o 15, odnowienie 2 s              |
+
+`bladeDancer` nie ma odnowienia; jego efekty to +10 energii i `dashCooldown` ×0,5 przez 3 s. `resonancePistolero` i `stormGunner` również bez odnowienia.
 
 ## Z11: osiem nowych synergii zawartości
 
@@ -129,7 +153,7 @@ par ścieżek to tagi `#build_blade`, `#build_resonance`, `#build_gunner`.
 
 | id                | Nazwa             | Wymagania                  | Wyzwalacz                                | Efekty                                                                                                        | Odnowienie |
 | ----------------- | ----------------- | -------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------- |
-| `parryLock`       | Rygiel            | Ostrze + Rezonans          | `parry_success`                          | ogłuszenie wrogów w 2,5 m od gracza na 0,6 s; parowanie otwiera okno podejścia                                | 4 s        |
+| `parryLock`       | Rygiel            | Ostrze + Rezonans          | `parry_success`                          | ogłuszenie (`stunned`) wrogów w 2,5 m od gracza na 0,6 s; parowanie otwiera okno podejścia                    | 4 s        |
 | `shockFracture`   | Iskrowy rozłam    | Ostrze + Rezonans          | `damage_dealt`, `#melee`, cel `stunned`  | wybuch przy celu: 8 obrażeń, promień 2 m, `#elektrycznosc`; wykorzystuje okno ogłuszenia                      | 3 s        |
 | `executionVent`   | Zimny finisz      | Ostrze + Strzelec          | `execute_performed`                      | schłodzenie aktywnej broni o 30, `moveSpeed` ×1,12 przez 2 s; egzekucja przygotowuje powrót do strzelania     | 3 s        |
 | `killSwitch`      | Przełącznik       | Ostrze + Strzelec          | `enemy_killed`, `#gun`                   | +6 energii, `dashCooldown` ×0,6 przez 2 s; zabójstwo strzałem przygotowuje doskok z ostrzem                   | 3 s        |

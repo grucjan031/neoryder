@@ -35,9 +35,40 @@ wejściowej do rampy zejściowej.
 `LevelRuntime` nie importuje renderu ani DOM. Wyzwala spotkanie raz, sprawdza
 zależności i wyznacza otwarte bramy. Host tworzy WaveDirector ze strumieniem
 `Rng(seed).fork('encounter:<id>')`; każde spotkanie ma własne punkty spawnu.
-Wrogowie powstają tylko dla aktywnych spotkań; wspólny limit to minimum limitu
-poziomu i `tuning.level.maxAlive`. Po checkpointowym odrodzeniu host usuwa
+Wrogowie powstają tylko dla aktywnych spotkań; limit żywych każdego spotkania
+to `min(maxAlive fali, tuning.level.maxAlive)` (12), liczony per `WaveDirector`
+(niezależnie dla każdego aktywnego spotkania), a `RoomScene` dodatkowo odrzuca
+spawn ponad `min(maxAlive fali pokoju (u hosta = tuning.level.maxAlive), layout.maxAlive)`
+i ponad limit ciał Rapiera (`tuning.physics.maxDynamicBodies`). `spawnPoints` fali są zastępowane punktami spotkania. Po checkpointowym odrodzeniu host usuwa
 pozostałych wrogów, statusy i pociski, a następnie odtwarza stan bram.
+
+Reguły hosta (`src/scenes/mission.ts`), potrzebne do odtworzenia przebiegu:
+
+- Wyzwolenie: co krok symulacji `LevelRuntime.step` startuje każde spotkanie, które
+  nie jest ukończone ani aktywne, ma spełnione `after` (cel `done` lub spotkanie
+  ukończone) i którego strefa zawiera pozycję gracza (`insideLevelZone`: sfera
+  `|d| ≤ radiusM`, skrzynia `|dx|,|dy|,|dz| ≤ size/2`, uwzględnia Y).
+- Spotkanie jest ukończone, gdy jego `WaveDirector` osiągnie fazę `done`
+  (po `wave_cleared` ostatniej fali); wtedy trafia do `completed`.
+- Posiłki: zakończenie celu `sabotage` z `reinforcements` zgłasza klucz (id celu);
+  w następnym kroku startuje spotkanie z `reinforcementFor == klucz`.
+- Odrodzenie: po `player_died` licznik `tuning.level.respawnDelayS` (1,2 s); potem
+  usunięcie wszystkich dyrektorów, `LevelRuntime` odtworzony z zapisanych
+  `completedEncounters`, teleport do bieżącego checkpointu (`yawDeg`), reset
+  postępu niedokończonych celów i zapalników, pełne zdrowie i energia.
+  `completedEncounters` jest zapisywane **tylko przy zmianie checkpointu**, więc
+  spotkania ukończone po ostatnim checkpoincie po śmierci startują od nowa.
+- Checkpointy: aktywowane tylko „do przodu” (kolejne na liście po bieżącym), gdy
+  `after` spełnione i gracz w `zone`. Pierwszy checkpoint to start.
+- Sekcje: pierwsze wejście w `zone` sekcji wysyła jej `radio` (raz).
+- Bramy (`gates`): blok z colliderem; otwarty (niewidoczny, collider wyłączony),
+  gdy `after` spełnione; stan przeliczany co krok.
+- Seed runu misji: parametr URL `seed`, inaczej `String(ctx.rng.getState())`;
+  spotkanie `X` używa `new Rng(seed zapisu).fork('encounter:X')`, posiłki
+  w `RoomScene` (gdy host nie przejmuje) `ctx.rng.fork('reinforcement:<klucz>')`.
+  Zapis (`snapshot`) trzyma `checkpointId`, `completedEncounters`, stan celów,
+  `elapsedS` i flagę `completed`; zapis z niewykonanym celem przed wykonanym
+  (kolejność `objectiveOrder`) jest odrzucany.
 
 Statyka korzysta z `batchStaticGeometry` i `tuning.level.staticCellSizeM` (24 m),
 co zachowuje odrzucanie dalekich komórek z kadru. Collider każdego bloku Rapiera
@@ -46,7 +77,9 @@ Liczby spotkań i geometrii są w danych. Limit wrogów, komórka statyki i opó
 odrodzenia są widoczne w folderze `level` panelu lil-gui.
 
 M01 generuje `node tools/levels/buildM01.mjs`; wynik JSON i sześć definicji fal
-trafiają do repo. Siedem odcinków ma łącznie 320 m; szerokości zmieniają się od
+trafiają do repo. Siedem odcinków (`sluza`, `targ`, `tunel`, `dziedziniec`, `zaplecze`, `plac`, `kanal`)
+ma łącznie 320 m; w danych jest 7 spotkań patrolowych/osłonowych (`patrol-*`,
+`oslona-*`) i 3 spotkania posiłków (`reinforce-mast-1..3`, fala `missionPatrol`, po 2 punkty); szerokości zmieniają się od
 10 m w tunelu do 28 m na placu. Neon Noir: ciemne fasady, mokry asfalt, dach
 przejścia, stragany, rusztowania, istniejące neony z dozwolonej palety i deszcz.
 

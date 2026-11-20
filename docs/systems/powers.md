@@ -6,8 +6,8 @@ Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, s
 
 - `powerSchema.ts`: `powerSchema` to unia zod po `kind` (`cone`, `chain`, `focus`, `barrier`, `grab`). `registry.ts` eksportuje schemat i typ `PowerDefinition`; ładuje wszystkie `src/data/powers/*.json` przez `import.meta.glob` i waliduje je przy starcie. Nieznany `kind`, błędne parametry i powtórzone `id` kończą się błędem.
 - `registerPowerKind(kind, factory)` rejestruje mechanizm raz; ponowna rejestracja tego samego rodzaju kończy się błędem. `createPower(id, deps)` tworzy osobny stan mocy przez fabrykę, a nieznane `id` zgłasza błędem. Nowy wariant istniejącego rodzaju wymaga wyłącznie nowego JSON-a. Nowy rodzaj wymaga gałęzi unii i jednej fabryki.
-- `Power` udostępnia `def`, `cooldownRemaining`, `active`, `step(dt, input)` i `reset()`. `PowerInput` niesie `pressed`, `held`, `released` konkretnej akcji. `PowerDeps` zawiera wspólną energię, obrażenia, celowanie, cele, promień ściany, bus i tuning; opcjonalne `projectiles` jest wymagane przez Barierę. Skupienie komunikuje skalę czasu zdarzeniem `focus`; scena przekazuje mocą `ctx.feel.playerDt(dt)`.
-- `PowerBase` jako jedyna obsługuje koszt przez `PlayerEnergy.spend`, odnowienie `cooldownS`, odmowę `power_denied` (`cooldown` ma pierwszeństwo przed `no_energy`), hak warunkowy `protected canActivate(): boolean` (domyślnie `true`, sprawdzany przed kosztem) i zdarzenie `power_used` przy udanym użyciu. Nieudana próba nie zużywa energii. Samo trzymanie nie ponawia użycia.
+- `Power` udostępnia `def`, `cooldownRemaining`, `active`, `step(dt, input)` i `reset()`. `PowerInput` niesie `pressed`, `held`, `released` konkretnej akcji. `PowerDeps` zawiera `owner`, `bus`, `tuning`, `damage`, wspólną energię, `aim()` (`{ origin, dir }`), `targets()`, `castWall(origin, dir, maxDistance): number | null` (odległość do ściany albo `null`) oraz opcjonalne: `projectiles` (wymagane przez Barierę), `grab` (`GrabPhysics`, wymagane przez Chwyt) i `statuses` (zapytanie o `jammed`). Skupienie komunikuje skalę czasu zdarzeniem `focus`; scena przekazuje mocą `ctx.feel.playerDt(dt)`.
+- `PowerBase` jako jedyna obsługuje koszt przez `PlayerEnergy.spend`, odnowienie `cooldownS`, odmowę `power_denied` i zdarzenie `power_used` przy udanym użyciu. Kolejność `use()`: (1) status `jammed` na właścicielu (`deps.statuses.has(owner, 'jammed')`) → `power_denied { reason: 'jammed' }`; (2) trwające odnowienie → `reason: 'cooldown'`; (3) hak `protected canActivate(): boolean` (domyślnie `true`; moce mogą w nim same emitować odmowę, np. Chwyt, albo odmówić po cichu, np. Błyskawica); (4) koszt, brak energii → `reason: 'no_energy'`; (5) jeśli `cooldownOnActivation` (domyślnie tak), start odnowienia i `power_cooldown { power, user, cooldownS }`; (6) `power_used { power, user }` i `activate()`. Nieudana próba nie zużywa energii. Samo trzymanie nie ponawia użycia. Kolejność `step(dt, input)` (przy `dt > 0`): odjęcie `dt` od odnowienia → `stepEffect(dt)` → wykonanie zakolejkowanego wciśnięcia. `Power.step` przyjmuje opcjonalny trzeci argument `worldDt` (czas świata, `PowerSlots` przekazuje go dalej); używa go tylko Chwyt (loty).
 - Wciśnięcie przy `dt = 0` trafia do kolejki, wykonywanej raz w pierwszym kroku z `dt > 0`. Hitstop zatrzymuje odnowienie i efekt (także lot do ściany). `reset()` usuwa kolejkę, odnowienie i stan efektu; nie uzupełnia energii.
 - `ConePower` zawiera wyłącznie efekt stożka i uderzeń w ścianę. Pchnięcie i Fala korzystają z tej samej klasy, `active = false` (efekt natychmiastowy). `ResonancePush` zachowuje konstruktor, `step(dt, InputSnapshot)`, `use(): number | null` i `reset()` z F1. Jego `loadPush` nadal ogranicza kąt do 180° dla zgodności; ogólny rejestr przyjmuje do 360°.
 
@@ -20,7 +20,7 @@ Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, s
 - `ResourcePool` zasilany `Stats`: max = `maxEnergy` (100), regeneracja = `energyRegen` (25/s), startuje po `tuning.powers.energyRegenDelayS` (2 s) od ostatniego **zużycia**.
 - Ładowanie z akcji (nie wstrzymuje regeneracji): zabójstwo wręcz (`enemy_killed` z `killer` = gracz i tagiem `#melee`) +`meleeKillEnergy` (15), udane parowanie (`parry_success`) +`parryEnergy` (10).
 - Ostrze (blok) zużywa energię przez `PlayerEnergy.pool` — jedna pula dla mocy i bloku.
-- `energy_changed { id, current, max }` przy każdej zmianie z akcji, a w trakcie regeneracji co najwyżej co `energyEventIntervalS` (0,1 s) — dla HUD (#15).
+- `energy_changed { id, current, max }` przy każdej zmianie z akcji, a w trakcie regeneracji co najwyżej co `energyEventIntervalS` (0,1 s) — dla HUD (#15). Zdarzenie jest też emitowane przy tworzeniu puli oraz przy dojściu do maksimum (pomija wtedy limit 0,1 s). `parry_success` ładuje energię tylko, gdy `defender` to gracz. `spend(n)` zwraca `false` bez zmian, gdy `n` > bieżąca energia; `add` i `set` nie wstrzymują regeneracji. Krok regeneracji dostaje czas gracza (`dt` ze sceny).
 
 ## Pchnięcie Rezonansu (`ResonancePush`, klawisz F)
 
@@ -33,9 +33,9 @@ Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, s
 | `wallSlamDamage`, `wallSlamRange` | 30, 3,5 m    | uderzenie w ścianę                                              |
 | `knockbackLift`, `shakeDurationS` | 0,15; 0,25 s | minimalna składowa Y kierunku przed normalizacją; czas wstrząsu |
 
-- Odmowa: brak energii → `power_denied { reason: 'no_energy' }`, trwające odnowienie → `reason: 'cooldown'`. Udane użycie → `power_used`, wstrząs kamery (`pushShake`), a przy trafieniu hitstop `pushHitstopMs` (40 ms).
-- Cele w stożku dostają obrażenia z tagiem `#power` i odrzut (`damage_dealt.knockback`, kierunek od gracza z lekkim uniesieniem). Ruch po odrzucie realizuje odbiorca (wróg, manekin) — ten sam kanał co ostatni cios combo.
-- **Uderzenie w ścianę** jest przewidywane promieniem w chwili pchnięcia: jeśli geometria świata jest bliżej niż `wallSlamRange` w kierunku odrzutu, po czasie lotu (`dystans / knockback`) cel dostaje `wallSlamDamage` z tagami `#power`, `#wall`. Deterministyczne i niezależne od fizyki konkretnego wroga. Ograniczenie: przeszkoda, która pojawi się po pchnięciu, nie liczy się (do oceny w playteście).
+- Odmowa: brak energii → `power_denied { reason: 'no_energy' }`, trwające odnowienie → `reason: 'cooldown'`. Udane użycie → `power_used`, wstrząs kamery (`camera_shake { intensity: pushShake (0,35), durationS: shakeDurationS, dir: null }`, **zawsze**, także bez trafień), a przy co najmniej jednym trafieniu hitstop `pushHitstopMs` (40 ms).
+- Cele w stożku (odległość 3D od oka ≤ `range`; filtr kąta: `dot(kierunek do celu, kierunek celowania) ≥ cos(coneAngleDeg/2)`, pomijany przy 360°) dostają obrażenia z tagami definicji (`#power`) i odrzut (`damage_dealt.knockback`; kierunek = od gracza do celu z `y = max(knockbackLift, y)` przed normalizacją). Cel, którego drużyna lub nietykalność odrzuca obrażenia (`canDamage = false` przy `dealt <= 0`), nie liczy się jako trafienie i nie dostaje uderzenia w ścianę. Ruch po odrzucie realizuje odbiorca (wróg, manekin) — ten sam kanał co ostatni cios combo.
+- **Uderzenie w ścianę** jest przewidywane promieniem w chwili pchnięcia: jeśli geometria świata jest bliżej niż `wallSlamRange` w kierunku odrzutu (poziomym, rzut kierunku odrzutu na XZ, promień z pozycji celu; wymaga `knockback > 0`; cel dokładnie nad lub pod graczem, czyli z zerowym odrzutem poziomym, nie dostaje uderzenia w ścianę), po czasie lotu (`dystans / knockback`) cel dostaje `wallSlamDamage` z tagami `#power`, `#wall`. Deterministyczne i niezależne od fizyki konkretnego wroga. Ograniczenie: przeszkoda, która pojawi się po pchnięciu, nie liczy się (do oceny w playteście).
 - Drużyny filtruje `DamageSystem` (pchnięcie nie rani sojuszników).
 
 Wartości po F2-18 (opcja B): `damage` 35, `cost` 10; `cooldownS` bez zmian (0,6 s). Ograniczenia: `cost` ≥ 10, `cooldownS` ≥ 0,35, żeby Pchnięcie pozostało kontrolą, a nie karabinem.
@@ -69,6 +69,7 @@ Krótszy zasięg i słabszy odrzut w zamian za kontrolę otoczenia; wyższy kosz
 - **Pierwszy cel:** spośród żywych celów w `rangeM` i w stożku `coneDeg` wokół osi celowania (`deps.aim().dir`), niezasłoniętych ścianą (`castWall`), wybierany jest cel o najmniejszym kącie do osi celowania (w razie remisu — bliższy).
 - **Brak celu w stożku:** `ChainPower.canActivate()` zwraca `false`, więc moc nie strzela — nie pobiera energii, nie ustawia odnowienia i nie emituje `power_used` ani `power_denied`.
 - **Łańcuch przeskoków:** z ostatniego trafionego celu łuk skacze do najbliższego jeszcze nietrafionego celu w `jumpRangeM` (maksymalnie `jumps` razy). Każdy cel może zostać trafiony najwyżej raz w jednym użyciu. Ściana między punktami (`deps.castWall(from, dir, dystans)` przed celem) blokuje trafienie i przeskok.
+- Brak `hitstop` i `camera_shake` przy użyciu Błyskawicy. `activate()` zwraca liczbę trafionych celów. Cel musi być żywy i możliwy do zranienia przez właściciela (`canDamage` z tagami mocy). Przeskok liczy odległość od pozycji (środka) ostatniego trafionego celu do kandydata (3D, bez filtra kąta), wybiera najbliższego; ściana na odcinku blokuje kandydata. Łuk (`points`) zaczyna się w `aim().origin`, potem środki trafionych celów.
 - **Obrażenia i statusy:** każde trafienie idzie przez `DamageSystem.deal` ze źródłem `owner`, tagami `#power`, `#elektrycznosc` i `statuses` (`overload`), dzięki czemu `StatusSystem` nakłada przeciążenie (przy 3 stosach cel zostaje ogłuszony i wyzwala wyładowanie obszarowe).
 - **Wizualizacja (`LightningRenderer`):** `ChainPower` przechowuje aktywne łuki w `arcs` (`{ points, ageS }`), postarzane w `step(dt)` i usuwane po `vfx.arcLifeS` (oraz przy `reset()`). `src/render/lightningRenderer.ts` (konstruktor `new LightningRenderer(tuning)`, `render(input, kamera?)`) rysuje każdy łuk jako wstęgę zwróconą do kamery z dwóch siatek: szerokiej poświaty w kolorze materiału `power` (`userData.bloom`, więc świeci w selektywnym bloomie) i jasnego rdzenia (`lightningCoreColor`). Zygzak ma `segments` odcinków na ogniwo z odchyleniem `±jitterM`. Uderzenie rośnie od dłoni wzdłuż łańcucha przez ułamek `lightningStrikeFrac` czasu życia, potem łuk zanika (przezroczystość i szerokość). Z wierzchołków losowane są odnogi (szansa `lightningBranchChance`), a przy każdym trafionym celu i przy starcie pojawia się błysk. Kształt jest losowany tylko przy zmianie kubełka `floor(ageS × lightningFlickerHz)`, więc w hitstopie (dt = 0) łuk zamarza, a poza nim migocze. Z kamerą punkt startu to punkt dłoni (`lightningHandSideM`, `lightningHandDownM`, `lightningHandForwardM` względem kamery), a wstęga i błyski cienieją bliżej niż `lightningNearTaperM` od kamery (do `lightningNearMinScale`). Wszystkie parametry `tuning.vfx.lightning*` są w panelu lil-gui. Renderer jest podpięty w `arena` (obie moce, z kamerą) i w `push-test` (przez `melee-test`, z kamerą), pula ma limit `lightningMaxArcs`.
 
@@ -86,8 +87,12 @@ Wartości po F2-18 (opcja B, `docs/systems/balance.md`): `damage` 60, `cost` 10,
 | `minImpactSpeed`, `impactDamage`    | co najmniej 5 m/s, 35 obrażeń                        |
 | `landingNormalY`, `landingSpeedMps` | normalna podparcia ≥ 0,5; całkowita prędkość ≤ 1 m/s |
 
-Wciśnięcie F/E wybiera najbliższy środek ciała w stożku celowania z linią
-widzenia do `rangeM`. Wrogowie pochodzą z `EnemyManager.grabTargets()`,
+Wciśnięcie F/E wybiera najbliższy środek ciała (pozycja ciała Rapier) w stożku
+celowania (`aimConeDeg` = pełny kąt) z linią widzenia (`castWall`) do `rangeM`;
+pomijane są cele już przejęte, w locie po rzucie i martwi wrogowie. Martwy gracz
+nie może chwycić (brak odmowy). Kolejność odmów: `jammed`, `cooldown`, wybór celu
+(`out_of_range` / `too_heavy`), dopiero potem energia (`no_energy`). Wciśnięcie podczas
+trzymania nic nie robi. Wrogowie pochodzą z `EnemyManager.grabTargets()`,
 a dynamiczne czarne obiekty scena rejestruje przez `GrabPhysics.registerObject`
 z masą. Bliższy ciężki cel nie jest pomijany na rzecz dalszego lekkiego.
 `grabbable !== true` albo masa ponad limit emituje `too_heavy` („Za ciężki”);
@@ -107,8 +112,19 @@ z hitstopu są buforowane tylko dla aktywnego lub zakolejkowanego chwytu.
 Sam hitstop wyrównuje snapshoty wrogów, skrzyń i wiązki, więc render nie
 interpoluje ich ruchu. Samo przytrzymanie nie ponawia nieudanego chwytu.
 
+Odpływ energii (`drainPerS × dt`, po opłaconym kroku) w kroku aktywacji nie jest
+pobierany. Brak energii na cały krok pobiera resztę puli i upuszcza cel; trzymanie
+kończy też energia równa 0 albo `maxHoldS`. Odnowienie startuje przy każdym
+zwolnieniu (rzut, upuszczenie, odłączenie, wyjątek `holdPosition = null`) i emituje
+`power_cooldown`, a `power_released { power, user }` kończy trzymanie.
+Punkt trzymania: `oko + kierunek celowania × holdDistanceM`, przycinany przez
+`GrabPhysics.holdPosition` (rzut kształtu ciała od oka do punktu po grupie `World`,
+korekta od podłogi, odrzucenie przy kolizji z kapsułą gracza w odległości
+`grabClearanceM`; `null` = zwolnienie bez rzutu). Pozycje ustawia
+`setNextKinematicTranslation`, przed zwolnieniem `placeForRelease`.
+
 Puszczenie klawisza nadaje dynamicznemu ciału prędkość `throwSpeed` zgodną
-z aktualnym celowaniem i włącza CCD. Brak energii lub limit trzymania upuszcza
+z aktualnym celowaniem (`normalize(aim.dir) × throwSpeed`, bez prędkości gracza) i włącza CCD. Brak energii lub limit trzymania upuszcza
 je z zerową prędkością bez obrażeń. W obu przypadkach zaczyna się odnowienie.
 `power_used` pozostaje zdarzeniem kosztu aktywacji; HUD pokazuje „Trzymanie”,
 a odliczanie uruchamia dopiero `power_released`. Nowy chwyt zeruje stary licznik
@@ -234,7 +250,8 @@ Parametry startowe: `cost = 20`, `durationS = 2`, `arcDeg = 160`,
 `costPerReflect = 5`, `cooldownS = 4` (od aktywacji). Ponowne wciśnięcie
 aktywnej Bariery nic nie robi i nie pobiera kosztu.
 
-Aktywacja dołącza interceptor. Trafienie musi pochodzić od drużyny `enemy`,
+Aktywacja (po koszcie `cost` i starcie odnowienia) ustawia `durationS` i dołącza interceptor; licznik czasu maleje o czas gracza, a blask odbicia (`reflectionFlashS`, ustawiany na `barrierFlashS` przy każdym odbiciu) o ten sam `dt`. Przy końcu mocy (czas, brak energii na odbicie, reset) blask jest zerowany.
+Trafienie musi pochodzić od drużyny `enemy`,
 mieć cel równy graczowi oraz mieścić się w przednim łuku 3D: kąt między
 kierunkiem patrzenia i `-hit.dir` ≤ `arcDeg / 2`. Po pobraniu kosztu odbicia
 `reflect` kieruje pocisk do bieżącej pozycji strzelca z `targets()`; scena

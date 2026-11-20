@@ -112,12 +112,12 @@ const LOW_POSES: readonly NpcAnimation[] = [
 const loader = new GLTFLoader();
 let bodyTemplate: Promise<Object3D | null> | undefined;
 let clipLibrary: Promise<AnimationClip[]> | undefined;
-const loadBody = (): Promise<Object3D | null> =>
+export const loadBody = (): Promise<Object3D | null> =>
   (bodyTemplate ??= loader
     .loadAsync('/assets/models/npc_civilian.glb')
     .then(({ scene }) => scene)
     .catch(() => null));
-const loadClips = (): Promise<AnimationClip[]> =>
+export const loadClips = (): Promise<AnimationClip[]> =>
   (clipLibrary ??= loader
     .loadAsync('/assets/models/npc_anims.glb')
     .then(({ animations }) => animations)
