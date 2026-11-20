@@ -876,7 +876,7 @@ export class RunScene implements Scene {
         );
     return rng
       .fork(`room-layout:${node.id}`)
-      .pick(available.sort((a, b) => a.id.localeCompare(b.id)));
+      .pick(available.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
   }
 
   /**

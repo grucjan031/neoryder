@@ -27,6 +27,8 @@ bierze miejsce najbliższe spornej strefie lub potencjalnemu celowi wroga.
 Jeśli pierścień jest pusty, wybiera najbliższy dozwolony spawn za jego
 zewnętrzną krawędzią. Remisy rozstrzyga `Rng`.
 
+Start lub cel poza siatką (margines przy przeszkodzie/krawędzi) są zastępowane
+najbliższą przejezdną komórką w promieniu `tuning.arena.navFallbackCells`.
 Nawigacja warstwowa używa pól `Int32Array` budowanych na żądanie,
 a w kroku symulacji przegląda tylko prosty odcinek do zakrętu. Dla
 syntetycznej areny 450×300 m test używa komórek 2 m, dwóch ramp,
@@ -669,11 +671,11 @@ siatki do sprawdzania brył w sąsiedztwie próbki.
 Ten sam pomiar aren (rzeczywiste GLB, komórki z danych: Estakada 180 m,
 targ 20 m; jedno końcowe scalanie świata):
 
-| Arena    | Siatki przed | Siatki po | Partie InstancedMesh |
-| -------- | -----------: | --------: | -------------------: |
-| Estakada |         3740 |       796 |                  504 |
-| Targ     |          877 |       198 |                   40 |
-| Dachy (300×260, komórki 200 m, bez instancji) | 23319 | 194 | 0 |
+| Arena                                         | Siatki przed | Siatki po | Partie InstancedMesh |
+| --------------------------------------------- | -----------: | --------: | -------------------: |
+| Estakada                                      |         3740 |       796 |                  504 |
+| Targ                                          |          877 |       198 |                   40 |
+| Dachy (300×260, komórki 200 m, bez instancji) |        23319 |       194 |                    0 |
 
 `arenaPerf.test.ts` obejmuje prawdziwy host Przejęcia, nawigację i Rapiera.
 Estakada sprawdza 12 wrogów (8 szturmowców, 4 strzelców), limit 2 ms/krok.

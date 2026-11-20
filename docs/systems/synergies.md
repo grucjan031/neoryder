@@ -81,7 +81,7 @@ statusu i zakaz wyzwalania przez `#synergy` obowiązują w obu wariantach.
   sama emisja wybuchu liczy się jako efekt, także bez trafionych celów.
 - `apply_status_area { at, radiusM >= 0, status, durationS > 0, stacks? >= 1 }`
   — przez opcjonalne `ctx.applyStatus(target, { id: status, durationS, stacks })`.
-  Stosy muszą być całkowite. Promień 0 oznacza wyłącznie cel zdarzenia, bez
+  Stosy muszą być całkowite. Promień 0 oznacza wyłącznie cel zdarzenia (przy `at: 'user'` — użytkownika), bez
   odczytu pozycji; przy braku celu nic się nie dzieje. Dodatni promień wybiera
   cele tak jak wybuch. Status musi istnieć w rejestrze `src/data/statuses/`;
   walidacja w `effectSchema` importuje sam schemat statusów bez cyklu zależności.

@@ -44,11 +44,12 @@ export class MissionObjectives {
     const parent = this.mission.objectives.find(
       (o) => o.id === objective.spawnAfter,
     );
-    if (!parent || !('position' in parent)) return null;
+    const origin = parent ? this.position(parent) : null;
+    if (!origin) return null;
     return {
-      x: parent.position.x + objective.offset.x,
-      y: parent.position.y + objective.offset.y,
-      z: parent.position.z + objective.offset.z,
+      x: origin.x + objective.offset.x,
+      y: origin.y + objective.offset.y,
+      z: origin.z + objective.offset.z,
     };
   }
   unlocked(objective: MissionObjective): boolean {

@@ -773,3 +773,32 @@ describe('Strzelec — prawdziwy Rapier i ProjectileSystem', () => {
     expect(scale.x).toBeCloseTo(1);
   });
 });
+
+it('Strzelec w manewrze osłony maszeruje do celu trybu, gdy włącza się marsz', () => {
+  const { enemy, steps } = setup('cover-march', 25, 'gunner');
+  const internals = enemy as unknown as {
+    coverPhase: 'travel' | 'hold' | 'exit' | null;
+    tacticalGoal?: { x: number; y: number; z: number };
+  };
+  internals.coverPhase = 'travel';
+  internals.tacticalGoal = { x: -6, y: 0, z: 0 };
+  enemy.moveGoal = { x: 6, y: 0, z: 0 };
+  steps(360);
+  expect(enemy.current.position.x).toBeGreaterThan(5);
+});
+
+it('Szturmowiec kończy flankowanie po dojściu do bieżącego punktu flanki, gdy gracz się przesunie', () => {
+  const { enemy, steps, moveTarget, settings } = setup('flank-moved', 8);
+  const internals = enemy as unknown as {
+    tacticalGoal?: { x: number; y: number; z: number };
+    flanking: boolean;
+    tacticS: number;
+  };
+  steps(5);
+  internals.tacticalGoal = { x: 0, y: 0, z: 4 };
+  internals.flanking = true;
+  internals.tacticS = settings.enemies.flankTimeoutS;
+  moveTarget(8, 6);
+  steps(Math.floor(2.5 / SIM_DT));
+  expect(internals.tacticalGoal).toBeUndefined();
+});

@@ -1,5 +1,6 @@
 import type { Vec3 } from '../core/math';
 import type { RoomDefinition } from './roomSchema';
+import { tuning } from '../core/tuning';
 
 type Block = RoomDefinition['blocks'][number];
 type Cell = { position: Vec3; neighbors: number[]; surface: Block };
@@ -249,9 +250,8 @@ export class ArenaSurfaceNavigation {
     return Math.floor(p.x / this.cell) * this.widthZ + z;
   }
   private locate(p: Vec3): number | undefined {
-    return this.columns
-      .get(this.key(p))
-      ?.reduce<number | undefined>(
+    const pick = (column: number[] | undefined) =>
+      column?.reduce<number | undefined>(
         (best, i) =>
           best === undefined ||
           Math.abs(this.cells[i]!.position.y - p.y) <
@@ -260,6 +260,32 @@ export class ArenaSurfaceNavigation {
             : best,
         undefined,
       );
+    const exact = pick(this.columns.get(this.key(p)));
+    if (exact !== undefined) return exact;
+    // Margines przy przeszkodzie/krawędzi: najbliższa komórka w małym promieniu.
+    const r = tuning.arena.navFallbackCells;
+    let best: number | undefined;
+    let bestD = Infinity;
+    for (let dx = -r; dx <= r; dx++)
+      for (let dz = -r; dz <= r; dz++) {
+        const i = pick(
+          this.columns.get(
+            this.key({
+              ...p,
+              x: p.x + dx * this.cell,
+              z: p.z + dz * this.cell,
+            }),
+          ),
+        );
+        if (i === undefined) continue;
+        const c = this.cells[i]!.position;
+        const d = Math.hypot(c.x - p.x, c.z - p.z) + Math.abs(c.y - p.y);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+    return best;
   }
   private field(goal: number): Int32Array {
     const cached = this.fields.get(goal);
