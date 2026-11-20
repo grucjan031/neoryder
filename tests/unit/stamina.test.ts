@@ -187,7 +187,7 @@ describe('wytrzymałość ruchu — Rapier bez przeglądarki', () => {
     tick(input(), 10);
     tick(input(['moveForward', 'sprint']), 20);
     const before = player.stamina.current;
-    tick(input(['moveForward', 'sprint'], ['crouch']));
+    tick(input(['moveForward', 'sprint', 'crouch'], ['crouch']));
     expect(player.getState().sliding).toBe(true);
     expect(player.getState().sprinting).toBe(false);
     expect(player.stamina.current).toBe(before);

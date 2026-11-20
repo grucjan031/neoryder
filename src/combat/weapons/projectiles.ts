@@ -258,7 +258,9 @@ export class ProjectileSystem {
               dir: { ...p.dir },
               speed: p.speed,
             };
-            if (this.interceptors.some((intercept) => intercept(hitInfo))) {
+            if (
+              [...this.interceptors].some((intercept) => intercept(hitInfo))
+            ) {
               if (p.id !== id) break;
               // Przejęty (np. odbity): pocisk zostaje tuż przed punktem trafienia i leci dalej.
               p.pos.x = point.x - hitInfo.dir.x * 0.05;

@@ -294,6 +294,22 @@ describe('warianty cone', () => {
     },
   );
 
+  it('cel dokładnie nad graczem nie wywołuje sondy ściany wektorem zerowym', () => {
+    const c = setup();
+    const castWall = vi.fn(() => 1);
+    c.deps.castWall = castWall;
+    c.deps.aim = () => ({
+      origin: { x: 0, y: 1, z: 0 },
+      dir: { x: 0, y: 1, z: 0 },
+    });
+    c.targets[0]!.position = { x: 0, y: 3, z: 0 };
+    const power = createPower('push', c.deps);
+    power.step(SIM_DT, press);
+    power.step(1, idle);
+    expect(c.hp()[0]).toBe(65);
+    expect(castWall).not.toHaveBeenCalled();
+  });
+
   it('reset usuwa oczekujące uderzenia w ścianę', () => {
     const c = setup();
     c.deps.castWall = () => 1;

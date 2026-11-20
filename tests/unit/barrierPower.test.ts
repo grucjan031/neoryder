@@ -272,6 +272,17 @@ describe('Bariera — rzeczywiste pociski Rapier', () => {
     expect(c.reflected).toHaveBeenCalledTimes(1);
   });
 
+  it('wyczerpana Bariera zdejmująca się w trakcie trafienia nie pomija kolejnych interceptorów', () => {
+    const c = setup();
+    c.energy.set(data.cost);
+    c.power.step(SIM_DT, press);
+    const later = vi.fn(() => true);
+    c.projectiles.addInterceptor(later);
+    c.fire();
+    c.run(0.7);
+    expect(later).toHaveBeenCalled();
+  });
+
   it('ponowne wciśnięcie jest ignorowane, a hitstop nie odlicza czasu', () => {
     const c = setup();
     const denied = vi.fn();

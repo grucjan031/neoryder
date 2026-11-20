@@ -58,28 +58,28 @@ wynosi już 1 i jest mnożnikiem. Pitch jest ograniczony do ±`maxPitchDeg`.
 
 Wszystkie są dostępne w lil-gui i odczytywane na bieżąco, także geometria kapsuły.
 
-| Parametr             | Domyślnie | Znaczenie                                             |
-| -------------------- | --------- | ----------------------------------------------------- |
-| walkSpeed            | 7         | Docelowa prędkość chodu, m/s                          |
-| sprintSpeed          | 11        | Docelowa prędkość sprintu, m/s                        |
-| groundAccel          | 90        | Przyspieszenie i zmiana kierunku na ziemi, m/s²       |
-| airAccel             | 30        | Przyspieszenie i zmiana kierunku w locie, m/s²        |
-| groundFriction       | 12        | Współczynnik hamowania wykładniczego, 1/s             |
-| jumpVelocity         | 8         | Prędkość zwykłego skoku, m/s                          |
-| doubleJumpVelocity   | 7.5       | Prędkość podwójnego skoku, m/s                        |
-| coyoteTimeMs         | 100       | Okno zwykłego skoku po krawędzi, ms                   |
-| jumpBufferMs         | 120       | Czas ważności naciśnięcia skoku, ms                   |
-| capsuleHeight        | 1.8       | Całkowita wysokość kapsuły, m                         |
-| capsuleRadius        | 0.35      | Promień kapsuły, m                                    |
-| eyeHeight            | 1.65      | Wysokość kamery nad spodem kapsuły, m                 |
-| stepHeight           | 0.35      | Maksymalna wysokość automatycznego stopnia, m         |
-| maxSlopeDeg          | 45        | Granica wspinania i początek zsuwania, stopnie        |
-| lookSensitivity      | 0.0022    | Bazowy obrót, rad/piksel                              |
-| maxPitchDeg          | 89        | Symetryczny limit pitch, stopnie                      |
-| controllerOffset     | 0.02      | Odstęp kapsuły od przeszkód, m                        |
-| stepMinWidth         | 0.2       | Minimalna szerokość miejsca za stopniem, m            |
-| snapToGroundDistance | 0.3       | Zasięg przyciągania do podłoża, m                     |
-| groundStickSpeed     | 2         | Minimalna prędkość próby kontaktu w dół na ziemi, m/s |
+| Parametr              | Domyślnie | Znaczenie                                              |
+| --------------------- | --------- | ------------------------------------------------------ |
+| walkSpeed             | 7         | Docelowa prędkość chodu, m/s                           |
+| sprintSpeed           | 11        | Docelowa prędkość sprintu, m/s                         |
+| groundAccel           | 90        | Przyspieszenie i zmiana kierunku na ziemi, m/s²        |
+| airAccel              | 30        | Przyspieszenie i zmiana kierunku w locie, m/s²         |
+| groundFriction        | 12        | Współczynnik hamowania wykładniczego, 1/s              |
+| jumpVelocity          | 8         | Prędkość zwykłego skoku, m/s                           |
+| doubleJumpVelocity    | 7.5       | Prędkość podwójnego skoku, m/s                         |
+| coyoteTimeMs          | 100       | Okno zwykłego skoku po krawędzi, ms                    |
+| jumpBufferMs          | 120       | Czas ważności naciśnięcia skoku, ms                    |
+| capsuleHeight         | 1.8       | Całkowita wysokość kapsuły, m                          |
+| capsuleRadius         | 0.35      | Promień kapsuły, m                                     |
+| eyeHeight             | 1.65      | Wysokość kamery nad spodem kapsuły, m                  |
+| stepHeight            | 0.35      | Maksymalna wysokość automatycznego stopnia, m          |
+| maxSlopeDeg           | 45        | Granica wspinania i początek zsuwania, stopnie         |
+| lookSensitivity       | 0.0022    | Bazowy obrót, rad/piksel                               |
+| maxPitchDeg           | 89        | Symetryczny limit pitch, stopnie                       |
+| controllerOffset      | 0.02      | Odstęp kapsuły od przeszkód, m                         |
+| stepMinWidth          | 0.2       | Minimalna szerokość miejsca za stopniem, m             |
+| snapToGroundDistance  | 0.3       | Zasięg przyciągania do podłoża, m                      |
+| groundStickSpeed      | 2         | Minimalna prędkość próby kontaktu w dół na ziemi, m/s  |
 | staminaRegenDelayS    | 0.8       | Opóźnienie regeneracji od ostatniego zużycia, s        |
 | sprintStaminaPerS     | 20        | Koszt faktycznego sprintu na sekundę                   |
 | dashStaminaCost       | 30        | Pełny koszt dashu                                      |
@@ -158,7 +158,7 @@ Wciśnięcie `dash` (Q) uruchamia poziomy doskok w kierunku wejścia WASD, a bez
 - Odnowienie pochodzi ze statu **`dashCooldown`** (baza `dashCooldownS` = 1,2 s). Synergie skracają je modyfikatorem (np. `mult 0.5`) bez zmiany kodu.
 - Ściany zatrzymuje character controller — dash nie przechodzi przez geometrię.
 - `dashInvulnerable` (0/1): `PlayerController.isInvulnerable()` zwraca `true` w trakcie dashu; arena podpina to jako `DamageTargetOptions.invulnerable` (sprawdzane **przed** zadaniem obrażeń).
-- Zdarzenie `dash_used { user, dir }`. Dash przerywa slide.
+- Zdarzenie `dash_used { user, dir }`. Dash przerywa slide. Zbuforowany skok nie wykonuje się w trakcie dashu (także przy lądowaniu na platformie), tylko po jego końcu, jeśli bufor nie wygasł.
 
 ## Slide i przysiad (F1 #04)
 

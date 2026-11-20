@@ -35,7 +35,7 @@ Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, s
 
 - Odmowa: brak energii → `power_denied { reason: 'no_energy' }`, trwające odnowienie → `reason: 'cooldown'`. Udane użycie → `power_used`, wstrząs kamery (`pushShake`), a przy trafieniu hitstop `pushHitstopMs` (40 ms).
 - Cele w stożku dostają obrażenia z tagiem `#power` i odrzut (`damage_dealt.knockback`, kierunek od gracza z lekkim uniesieniem). Ruch po odrzucie realizuje odbiorca (wróg, manekin) — ten sam kanał co ostatni cios combo.
-- **Uderzenie w ścianę** jest przewidywane promieniem w chwili pchnięcia: jeśli geometria świata jest bliżej niż `wallSlamRange` w kierunku odrzutu, po czasie lotu (`dystans / knockback`) cel dostaje `wallSlamDamage` z tagami `#power`, `#wall`. Deterministyczne i niezależne od fizyki konkretnego wroga. Ograniczenie: przeszkoda, która pojawi się po pchnięciu, nie liczy się (do oceny w playteście).
+- **Uderzenie w ścianę** jest przewidywane promieniem w chwili pchnięcia: jeśli geometria świata jest bliżej niż `wallSlamRange` w kierunku odrzutu, po czasie lotu (`dystans / knockback`) cel dostaje `wallSlamDamage` z tagami `#power`, `#wall`. Deterministyczne i niezależne od fizyki konkretnego wroga. Cel dokładnie nad lub pod graczem (poziomy odrzut równy zero) nie dostaje uderzenia w ścianę. Ograniczenie: przeszkoda, która pojawi się po pchnięciu, nie liczy się (do oceny w playteście).
 - Drużyny filtruje `DamageSystem` (pchnięcie nie rani sojuszników).
 
 Wartości po F2-18 (opcja B): `damage` 35, `cost` 10; `cooldownS` bez zmian (0,6 s). Ograniczenia: `cost` ≥ 10, `cooldownS` ≥ 0,35, żeby Pchnięcie pozostało kontrolą, a nie karabinem.

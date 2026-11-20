@@ -235,7 +235,7 @@ wywołuje `WeaponDeps.castBeam`; pierwszy hurtbox lub collider świata kończy p
 W chwili tiku aktualny cel otrzymuje `dps / tickHz` przez `DamageSystem.deal`
 z tagami i statusami. Pierwszy tik następuje po `1 / tickHz` s; puszczenie spustu
 lub blokada zeruje zegar tików. Hitstop nie wykonuje zapytań, tików ani ogrzewania.
-Ciepło rośnie o `heatPerS × dt`, opóźnia chłodzenie i uruchamia zwykłą blokadę.
+Ciepło rośnie o `heatPerS × dt`, opóźnia chłodzenie i uruchamia zwykłą blokadę; promień (`beam.active`) gaśnie w tym samym kroku, w którym broń się przegrzewa.
 `weapon_fired` i licznik `shots` oznaczają początek ciągłego strzału (także po
 zakończeniu blokady przy trzymanym spuście). Stan `weapon.beam` udostępnia
 `active`, `from`, `to`; pozostałe tryby zwracają `null`. Laser wymaga zależności
