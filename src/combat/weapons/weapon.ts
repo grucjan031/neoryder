@@ -37,6 +37,8 @@ export class Weapon {
   private lastHeat = 0;
   private shotCount = 0;
   private triggerHeld = false;
+  /** Zapamiętany klik broni półautomatycznej wciśnięty tuż przed końcem odnowienia. */
+  private bufferedShot = false;
   private beamTickS = 0;
   readonly beam: { active: boolean; from: Vec3; to: Vec3 } | null;
 
@@ -83,6 +85,7 @@ export class Weapon {
     this.coolingEventS = 0;
     this.lastHeat = 0;
     this.triggerHeld = false;
+    this.bufferedShot = false;
     this.beamTickS = 0;
     if (this.beam) this.beam.active = false;
   }
@@ -97,6 +100,7 @@ export class Weapon {
   /** Nieaktywna broń zachowuje ciepło i blokadę, bez emisji do HUD. */
   cool(dt: number): void {
     this.triggerHeld = false;
+    this.bufferedShot = false;
     this.beamTickS = 0;
     if (this.beam) this.beam.active = false;
     if (dt > 0) this.advanceCooling(dt, false);
@@ -151,13 +155,19 @@ export class Weapon {
     }
     const pressed = input.triggerHeld && !this.triggerHeld;
     this.triggerHeld = input.triggerHeld;
-    if (
-      !input.triggerHeld ||
-      (!this.definition.automatic && !pressed) ||
-      this.overheated ||
-      this.cooldownS > 0
+    if (this.overheated) this.bufferedShot = false;
+    else if (
+      pressed &&
+      !this.definition.automatic &&
+      this.cooldownS > 0 &&
+      this.cooldownS <= this.ctx.tuning.weapons.triggerBufferS
     )
-      return;
+      this.bufferedShot = true;
+    const wantsShot =
+      (input.triggerHeld && (this.definition.automatic || pressed)) ||
+      this.bufferedShot;
+    if (!wantsShot || this.overheated || this.cooldownS > 0) return;
+    this.bufferedShot = false;
     const aim = Math.min(1, Math.max(0, input.aim ?? 0));
     const spreadScale =
       1 +

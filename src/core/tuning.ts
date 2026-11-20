@@ -652,6 +652,8 @@ export const tuning = {
   weapons: {
     overheatLockS: 1.5,
     coolDelayS: 0.25,
+    /** Bufor spustu broni półautomatycznej: klik w ostatnich s odnowienia strzela po jego końcu. */
+    triggerBufferS: 0.15,
     maxProjectiles: 256,
     /** Błysk wylotu w widoku FPP (render, czas rzeczywisty): czas trwania w s i promień w m. */
     muzzleFlashS: 0.06,
