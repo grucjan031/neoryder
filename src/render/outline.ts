@@ -16,6 +16,8 @@ import {
   WebGLRenderTarget,
 } from 'three';
 import type {
+  Camera,
+  Object3D,
   OrthographicCamera,
   PerspectiveCamera,
   Scene,
@@ -520,6 +522,55 @@ export const skyBackgroundFragment = /* glsl */ `
 `;
 
 /**
+ * Kompiluje materiały tak, jak użyłby ich `renderer.render(scene, camera)` w bieżącym stanie
+ * (cel, maska warstw kamery, `scene.overrideMaterial`). `compileAsync` sam widzi tylko własne
+ * materiały obiektów, więc przy nadpisaniu (przebieg normalnych) podmienia je na czas wywołania.
+ */
+function compileForPass(
+  renderer: WebGLRenderer,
+  scene: Object3D,
+  camera: Camera,
+): Promise<unknown> {
+  const override =
+    'isScene' in scene ? (scene as Scene).overrideMaterial : null;
+  if (!override) return renderer.compileAsync(scene, camera);
+  const swapped: [Mesh, Mesh['material']][] = [];
+  scene.traverseVisible((object) => {
+    if (
+      !('isMesh' in object || 'isPoints' in object || 'isLine' in object) &&
+      !('isSprite' in object)
+    )
+      return;
+    const drawable = object as Mesh;
+    swapped.push([drawable, drawable.material]);
+    drawable.material = override;
+  });
+  try {
+    return renderer.compileAsync(scene, camera);
+  } finally {
+    for (const [drawable, material] of swapped) drawable.material = material;
+  }
+}
+
+/**
+ * Na czas jednego synchronicznego przebiegu rozgrzewki wyłącza odrzucanie poza kadrem, żeby
+ * programy i tekstury obiektów poza polem widzenia kamery też trafiły na GPU. Zwraca funkcję
+ * przywracającą poprzednie flagi (obiekty z własnym `frustumCulled = false` zostają bez zmian).
+ */
+function disableCulling(scene: Scene): () => void {
+  const culled: Object3D[] = [];
+  scene.traverse((object) => {
+    if (object.frustumCulled) {
+      object.frustumCulled = false;
+      culled.push(object);
+    }
+  });
+  return () => {
+    for (const object of culled) object.frustumCulled = true;
+  };
+}
+
+/**
  * Pipeline stylu: kolor + normalne/głębia (obrys Sobela, niebo, mgła), opcjonalnie bloom
  * selektywny, opcjonalnie końcowy pass kompozycji (winieta, impulsy obrażeń i Skupienia).
  */
@@ -889,6 +940,45 @@ export class StylePipeline {
       renderer.setClearColor(this.clearColor, clearAlpha);
       renderer.autoClear = autoClear;
       renderer.setRenderTarget(target);
+    }
+  }
+
+  /**
+   * Rozgrzewka przed pierwszą klatką gry. Faza 1: pełny przebieg pipeline'u w trybie kompilacji —
+   * `renderer.render` jest na ten czas podmieniony na `compileAsync` z tymi samymi celami, warstwami
+   * i materiałami nadpisanymi co w prawdziwym przebiegu (kolor, normalne, maski bloomu i odbić,
+   * kompozycja), więc wszystkie programy kompilują się równolegle (`KHR_parallel_shader_compile`)
+   * i trafiają do cache pod tymi samymi kluczami co później. Faza 2: jeden prawdziwy przebieg bez
+   * odrzucania poza kadrem (tekstury, bufory, uniformy) — programy są już gotowe, więc trwa krótko.
+   * Obraz zostaje pod nakładką ładowania; stan sceny nie jest zmieniany.
+   */
+  async warmUp(
+    scene: Scene,
+    camera: PerspectiveCamera | OrthographicCamera,
+    cancelled: () => boolean = () => false,
+  ): Promise<void> {
+    const renderer = this.renderer;
+    if (typeof renderer.compileAsync === 'function') {
+      const pending: Promise<unknown>[] = [];
+      const draw = renderer.render;
+      renderer.render = (target, viewCamera) => {
+        pending.push(compileForPass(renderer, target, viewCamera));
+      };
+      const restoreScene = disableCulling(scene);
+      try {
+        this.render(scene, camera, 0);
+      } finally {
+        renderer.render = draw;
+        restoreScene();
+      }
+      await Promise.all(pending);
+    }
+    if (cancelled()) return;
+    const restoreScene = disableCulling(scene);
+    try {
+      this.render(scene, camera, 0);
+    } finally {
+      restoreScene();
     }
   }
 

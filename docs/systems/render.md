@@ -748,6 +748,125 @@ klatki `pipeline.render(three, camera, frameDt)` (po `scene.render(alpha, frameD
 (rozmiar CSS), a przy zamykaniu `pipeline.dispose()`. Pipeline nie dodaje świateł do scen automatycznie: sceny używają
 `createStyleLights()`. Scena `style-test` jest zarejestrowana.
 
+## Rozgrzewka renderu (wczytywanie sceny)
+
+Pomiar S1-04 (RTX 4070, build produkcyjny, 20 XI 2026) wykazał jedną długą klatkę (0,2–2,9 s) tuż po zdjęciu ekranu ładowania:
+m01 z kryjówki 1,6–1,9 s, arena Przejęcia „Container Port” 2,2–2,9 s, napad na magazyn 2,3–2,7 s. Przyczyna: Three.js kompiluje i
+linkuje shadery synchronicznie przy pierwszym rysowaniu (`WebGLProgram.getUniforms` → `onFirstUse` czeka na `LINK_STATUS`), a
+programów jest ok. 155 (ok. 66 koloru i ok. 90 wariantów przebiegów stylu: normalne, wilgotne normalne, maska bloomu z głębią
+koloru, maska odbić, kompozycja), każdy kompilowany po kolei.
+
+### Diagnoza
+
+Profil CPU V8 przez CDP (build bez minifikacji, próbkowanie 250 µs; czasy zawyżone ok. 1,5–2× przez profiler):
+
+| Krok                                                                                                           | m01 (misja)                     | Container Port (Przejęcie)      | Kiedy                           |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------- | ------------------------------- |
+| Walidacja zod pokoi i trybów (`loadRoomDefinitions`: `validateLayout`, `walkable`, nawigacja w `validateMode`) | ok. 450 ms                      | ok. 550 ms                      | import modułów, ekran ładowania |
+| `ArenaNavigation` w init sceny (poza walidacją)                                                                | w sumie init ok. 120 ms         | ok. 220 ms                      | init, ekran ładowania           |
+| `batchStaticGeometry` + `buildLayout` + `loadDecor`                                                            | ok. 50 ms                       | ok. 130 ms                      | init, ekran ładowania           |
+| Rapier (`initPhysics`, collidery)                                                                              | ok. 50 ms                       | ok. 50 ms                       | init, ekran ładowania           |
+| Kompilacja i link shaderów przy pierwszym `render`                                                             | **2,7 s** (1,6 s bez profilera) | **4,4 s** (2,9 s bez profilera) | **pierwsza klatka gry**         |
+| Wysłanie tekstur (`texSubImage2D`) w pierwszych klatkach                                                       | ok. 100 ms                      | -                               | pierwsze klatki gry             |
+
+Ciężkie kroki init (nawigacja, scalanie statyki, collidery, równoległe wczytywanie GLB przez `Promise.all` w `buildLayout`) już
+były w `init()` za ekranem ładowania; nie było czego przenosić ani zrównoleglać. Jedyny długi krok w trakcie gry to kompilacja
+shaderów, więc naprawą jest rozgrzewka renderu.
+
+### Mechanizm
+
+`StylePipeline.warmUp(scene, camera, cancelled?)` (`src/render/outline.ts`, nowa publiczna metoda; logika `render`, `bloom.ts`,
+`reflections.ts`, `viewmodelLayer.ts` bez zmian):
+
+1. **Faza 1, kompilacja równoległa.** Pełny przebieg pipeline'u (`this.render(scene, camera, 0)`) przy podmienionym
+   `renderer.render`: zamiast rysować, każde wywołanie woła `renderer.compileAsync(scene, camera)` z dokładnie tym samym
+   stanem co prawdziwy przebieg (cel renderu, maska warstw kamery z `renderWithViewmodel`, materiały zastępcze maski bloomu i
+   odbić). Przebieg normalnych używa `scene.overrideMaterial`, którego `compile` nie widzi, więc `compileForPass` podmienia na ten
+   czas materiały widocznych obiektów. Wszystkie programy kompilują się naraz (`KHR_parallel_shader_compile`) i trafiają do cache
+   pod kluczami identycznymi z późniejszymi. Samo `compileAsync(scene)` na starcie nie wystarcza: kompiluje programy dla celu
+   `null` (ekran), a gra rysuje do buforów HalfFloat (inny `outputColorSpace`, więc inny klucz) i zostawiłoby ok. 90 programów
+   na pierwszą klatkę.
+2. **Faza 2, prawdziwy przebieg.** Jeden `render` bez odrzucania poza kadrem (`frustumCulled = false` na czas wywołania, flagi
+   przywracane w `finally`): wysyła tekstury i bufory obiektów spoza kadru i alokuje cele pipeline'u w docelowym rozmiarze.
+   Programy są już gotowe, więc trwa ok. 0,3 s.
+
+`src/render/renderWarmUp.ts`: `setRenderWarmUp` (tylko `main.ts`) i `warmUpRender(timeoutMs?)`. Limit
+`tuning.ui.renderWarmUpTimeoutMs` = 10 s; po nim `cancelled()` zwraca true i faza 2 nie rusza. Błąd rozgrzewki tylko loguje
+(patrz [reliability.md](reliability.md#rozgrzewka-renderu-przy-wczytywaniu-sceny)).
+
+Gdzie jest wołana:
+
+- `main.ts`: `resize()` przed `scene.init()` (cele w docelowym rozmiarze; wcześniej `resize` był po init), po init
+  `await warmUpRender()`, dopiero potem `window.__neoryder` (debug), `scene_loaded` (zdjęcie ekranu startowego) i `loop.start()`.
+  Dotyczy `hub`, `mission`, `room-test` i pozostałych scen. Pomijana w `fx=lite`.
+- `RunScene.openRoom`: po `room.init()`, przed `roomReady` (ekran ładowania pokoju zasłania obraz; dotyczy Przejęcia, napadu,
+  kradzieży i rund runu). Po `await` sprawdzana jest flaga `disposed`.
+
+Zachowane: kolejność i determinizm symulacji (rozgrzewka nie woła `step`, `Rng` ani `scene.render`; `pipeline.render` z `dt = 0`)
+oraz wygląd (żadnych zmian materiałów ani shaderów).
+
+### Wyniki
+
+RTX 4070, build produkcyjny, jakość medium, 1920×1080, `npm run perf:bench -- --scenario transition,arenas --runs 2`. Maszyna była
+współdzielona z innymi pomiarami, więc czasy bezwzględne szumią o ok. ±20%; efekt (kilkanaście do kilkudziesięciu razy) jest dużo
+większy. „Max klatka 3 s” to najdłuższa klatka w pierwszych 3 s po zdjęciu ekranu ładowania (próg zadania: < 100 ms); „gotowa” to czas
+od początku nawigacji do chwili, gdy scena jest gotowa i ekran znika; „płynna” to koniec ostatniej klatki > 50 ms w tym oknie (od tej
+chwili brak zacięć). Wartości: przebieg 1 / przebieg 2.
+
+| Przypadek               | max klatka 3 s (ms) przed |      po | gotowa (ms) przed |          po | płynna (ms) przed |          po |
+| ----------------------- | ------------------------: | ------: | ----------------: | ----------: | ----------------: | ----------: |
+| transition/hub->mission |               2444 / 1923 | 80 / 86 |       2332 / 1369 | 1513 / 1615 |       4983 / 3447 | 1658 / 1768 |
+| arenaContainerPort      |                      2243 | 74 / 68 |              1576 | 2200 / 2251 |              4018 | 2334 / 2481 |
+| arenaOverpass           |                      2878 | 52 / 64 |              1556 | 2030 / 2220 |              4433 | 2082 / 2338 |
+| arenaRooftops           |                1310 / 913 | 48 / 53 |       2118 / 1617 | 2062 / 2176 |       3861 / 2770 | 2062 / 2281 |
+| arenaPowerPlant         |                 244 / 200 | 49 / 46 |       1735 / 1270 | 1730 / 1729 |       1979 / 1470 | 1730 / 1729 |
+| arenaConstructionSite   |                 707 / 677 | 64 / 89 |       1881 / 1688 | 1988 / 1958 |       2862 / 2593 | 2176 / 2096 |
+| arenaRailYard           |               1141 / 1005 | 68 / 67 |       1389 / 1372 | 1953 / 1850 |       2865 / 2623 | 2151 / 2053 |
+| arenaFloodedDocks       |                 652 / 608 | 94 / 98 |       1503 / 1376 | 1900 / 1721 |       2392 / 2236 | 2053 / 1870 |
+| assault                 |                 312 / 317 | 70 / 53 |       1219 / 1218 | 1471 / 1386 |       1531 / 1534 | 1596 / 1481 |
+| heist                   |               2724 / 2331 | 84 / 76 |       1437 / 1325 | 1830 / 1671 |       4322 / 3848 | 2037 / 1866 |
+| mission:m01-maszty      |                 454 / 454 | 77 / 71 |       1271 / 1287 | 1565 / 1433 |       1885 / 1740 | 1696 / 1551 |
+
+Wniosek: najdłuższa klatka w pierwszych 3 s spadła z 0,2–2,9 s do 46–98 ms we wszystkich przypadkach (kryterium < 100 ms spełnione; najbliżej progu FloodedDocks 94 / 98 ms). Czas „gotowa” rośnie o 0,2–0,6 s (kompilacja przeniesiona za ekran ładowania, równolegle), ale czas do płynnej gry maleje o ok. 50–60% w przejściu do misji i napadzie na magazyn (kradzież), o ok. 40–50% w Container Port i Overpass, a w pozostałych przypadkach jest porównywalny lub krótszy. Jeden pomiar sprzed rozgrzewki (przebiegi sprzed poprawki: `base3`) i jeden po (`fix5`); kryterium „ładowanie nie dłuższe niż o 10%” spełnia czas do płynnej gry, nie czas „gotowa” (patrz uwaga w raporcie zadania).
+
+Z `--cpu-throttle 4` (jeden przebieg, wartości w ms; po rozgrzewce najdłuższa klatka spada z 0,7–2,9 s do 0,25–0,43 s; kompilacja i faza 2 trwają przy 4× wolniejszym CPU dłużej, więc „gotowa” rośnie o 1–3 s, a w ciężkich arenach także „płynna”, bo koszt samej klatki areny przy tym throttlingu przekracza 50 ms):
+
+| Przypadek               | max klatka 3 s (ms) przed |  po | gotowa (ms) przed |   po | płynna (ms) przed |    po |
+| ----------------------- | ------------------------: | --: | ----------------: | ---: | ----------------: | ----: |
+| transition/hub->mission |                      2470 | 247 |              5347 | 6357 |              8244 |  7109 |
+| arenaContainerPort      |                      2856 | 397 |              6231 | 9342 |              9086 | 12307 |
+| arenaOverpass           |                         - | 369 |                 - | 8406 |                 - | 11377 |
+| arenaRooftops           |                      1932 | 337 |              7779 | 9571 |             10741 | 12258 |
+| arenaPowerPlant         |                       685 | 325 |              6147 | 8168 |              7386 |  9022 |
+| arenaConstructionSite   |                      1680 | 347 |              7684 | 9542 |             10641 | 12542 |
+| arenaRailYard           |                      1782 | 368 |              6199 | 8918 |              9193 | 11884 |
+| arenaFloodedDocks       |                      1536 | 429 |              6155 | 8425 |              9155 | 11392 |
+| assault                 |                       991 | 317 |              5484 | 6424 |              7091 |  7253 |
+| heist                   |                      2780 | 312 |              5546 | 6569 |              8502 |  7444 |
+| mission:m01-maszty      |                      1376 | 349 |              5590 | 6781 |              7614 |  7724 |
+
+### Ograniczenia
+
+- Rozgrzewka obejmuje obiekty obecne w scenie po `init()` (także poza kadrem). Materiały tworzone później (nowy typ wroga z fali,
+  nowe efekty VFX, dodatkowe światła) nadal kompilują się przy pierwszym użyciu.
+- Wariant shadera zależy od liczby świateł w scenie (`quality.maxLights`): zmiana liczby aktywnych świateł w trakcie gry kompiluje
+  wariant jednorazowo, tak jak wcześniej.
+- Ukryte obiekty (pule efektów, ręce przy wyłączonym viewmodelu) są pomijane w przebiegach maski, bo kompilacja bierze tylko
+  obiekty widoczne; pokazywanie ich na czas rozgrzewki nie dało mierzalnego zysku, a niosło ryzyko (`onBeforeRender` nieaktywnych
+  widoków), więc go nie zastosowano.
+- Faza 2 renderuje scenę z `frustumCulled = false` (jedna klatka za ekranem), więc przy bardzo dużych arenach trwa nieco dłużej.
+
+### Pomiar i debug
+
+`tools/perf/benchmark.mjs` zapisuje dla każdego przypadku `first3s` (`maxMs`, `top5Ms`, `over50`, `over100`, `timeToReadyMs`,
+`timeToSmoothMs`): klatki liczone od momentu „scena gotowa” wykrywanego w samej stronie (pętla rAF, czas z `performance.now()`, bo
+po długim zadaniu znacznik rAF podaje starszy czas vsync), bez klatek wczytywania. Opcja `--dist <katalog>` porównuje gotowe buildy
+(przed/po) bez przebudowy. Ponieważ `window.__neoryder` powstaje dopiero po rozgrzewce, osobny hak `query('sceneReady')` nie był
+potrzebny. Weryfikacja: `tests/unit/renderWarmUp.test.ts` (kolejność kompilacji i rysowania, materiał zastępczy, flagi, limit czasu,
+ciężkie kroki areny w `init()`), `tests/unit/runScene.test.ts` (wywołanie po init pokoju, błąd i dispose podczas rozgrzewki). Ręcznie:
+`?scene=mission&mission=m01-maszty&debug=1`, w profilerze Chrome pierwsze klatki po zniknięciu ekranu nie mają `getUniforms` /
+`onFirstUse` rzędu setek ms.
+
 ## Dodawanie obiektu
 
 W Blenderze przypisz materiał `mat_*` z tabeli (katalog: `docs/assets.md`), załaduj

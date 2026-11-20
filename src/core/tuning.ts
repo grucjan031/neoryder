@@ -72,6 +72,8 @@ export const tuning = {
     splashActVictories: [0, 1, 3, 5],
     /** Nakładka startowa czeka na odczyt meta-zapisu najwyżej tyle (ms), potem zostaje przy akcie 1. */
     splashMetaTimeoutMs: 400,
+    /** Rozgrzewka renderu (kompilacja shaderów za ekranem ładowania) trwa najwyżej tyle (ms); potem gra startuje bez niej. */
+    renderWarmUpTimeoutMs: 10000,
   },
   /** Ograniczenia oprawy nakładane na motyw; pixelRatio=0 zachowuje DPR urządzenia. */
   quality: {

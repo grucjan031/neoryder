@@ -152,6 +152,10 @@ konkretnych klas scen. Debug handle `window.__neoryder` jest zamrożony i wystaw
 pozostałe nazwy trafiają do `scene.query`); e2e używają `?debug=1`. W sandboxie `cubeY` pochodzi z bieżącego
 stanu pierwszej kostki, a `bodies` obejmuje podłogę i dynamiczne kostki. Poza `run` każda scena emituje `run_started`
 (seed z `?seed=` lub losowy z `crypto`), a po inicjalizacji `scene_loaded`.
+Kolejność startu: `resize()` (cele pipeline'u w docelowym rozmiarze) → `scene.init()` → rozgrzewka renderu
+(`warmUpRender()`, poza `fx=lite`; patrz [render.md](render.md#rozgrzewka-renderu-wczytywanie-sceny)) → `window.__neoryder`
+(debug) → `scene_loaded` (zdjęcie ekranu startowego) → `loop.start()`. Debug handle i `scene_loaded` pojawiają się
+więc dopiero po rozgrzewce.
 
 ## Weryfikacja
 

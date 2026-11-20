@@ -644,6 +644,14 @@ export function getMaterial(kind: MaterialKind): import('three').Material;
 /** Podmienia materiały w modelu glTF według nazw mat_* (patrz docs/assets.md). */
 export function applyStyle(root: import('three').Object3D): void;
 
+// src/render/renderWarmUp.ts — rozgrzewka renderu za ekranem ładowania (kompilacja shaderów, tekstury)
+export type RenderWarmUp = (cancelled: () => boolean) => Promise<void>;
+export function setRenderWarmUp(value: RenderWarmUp | undefined): void; // tylko main.ts (undefined przy dispose)
+/** Pusta bez zarejestrowanego renderera; limit `tuning.ui.renderWarmUpTimeoutMs`. Woła main.ts po `scene.init()`
+ *  oraz scena z własnym ekranem ładowania (RunScene po `room.init()`), przed zdjęciem ekranu. */
+export function warmUpRender(timeoutMs?: number): Promise<void>;
+// src/render/outline.ts: StylePipeline.warmUp(scene, camera, cancelled?) — implementacja rozgrzewki.
+
 // src/ui/debugConsole.ts
 export function registerCommand(name: string, help: string, run: (args: string[]) => string): () => void;
 ```

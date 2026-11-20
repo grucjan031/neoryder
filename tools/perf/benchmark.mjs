@@ -24,6 +24,8 @@ const { values } = parseArgs({
     'no-wait-idle': { type: 'boolean', default: false },
     tag: { type: 'string', default: '' },
     'load-timeout': { type: 'string', default: '45' },
+    // Katalog gotowego buildu do porównań przed/po (domyślnie dist/); bez --dist build robi `npm run perf:bench`.
+    dist: { type: 'string', default: '' },
   },
 });
 const SCENARIOS = [
@@ -142,6 +144,7 @@ async function startPreview() {
       '--port',
       String(port),
       '--strictPort',
+      ...(values.dist ? ['--outDir', values.dist] : []),
     ],
     { cwd: ROOT, stdio: 'ignore' },
   );
@@ -177,6 +180,29 @@ function frameStats(deltas) {
     over33: deltas.filter((d) => d > 33.3).length,
     over50: deltas.filter((d) => d > 50).length,
     maxMs: sorted[0],
+  };
+}
+
+// Klatki w pierwszych 3 s po „scena gotowa” (ekran ładowania zdjęty, pętla gry biegnie).
+const FIRST_MS = 3000;
+function firstSecondsStats(probe) {
+  if (probe.readyAt === null) return null;
+  const entries = probe.frames.filter(
+    ([t]) => t > probe.readyAt && t <= probe.readyAt + FIRST_MS,
+  );
+  const inWindow = entries.map(([, d]) => d);
+  if (!inWindow.length) return null;
+  const sorted = [...inWindow].sort((a, b) => b - a);
+  // Koniec ostatniej klatki > 50 ms w oknie: od tej chwili gra jest płynna (czas od startu strony).
+  const lastSlow = entries.filter(([, d]) => d > 50).at(-1);
+  return {
+    timeToSmoothMs: lastSlow ? lastSlow[0] : probe.readyAt,
+    frames: inWindow.length,
+    maxMs: sorted[0],
+    top5Ms: sorted.slice(0, 5),
+    over50: inWindow.filter((d) => d > 50).length,
+    over100: inWindow.filter((d) => d > 100).length,
+    timeToReadyMs: probe.readyAt,
   };
 }
 
@@ -230,22 +256,34 @@ async function openPage(browser, base, def, quality, withProbe) {
       // zapis ustawień nie blokuje pomiaru
     }
   }, quality);
-  if (withProbe)
-    await context.addInitScript(() => {
-      const probe = { frames: [], readyAt: null, last: undefined };
-      window.__bp = probe;
-      const loop = (now) => {
-        if (probe.last !== undefined)
-          probe.frames.push([now, now - probe.last]);
-        probe.last = now;
-        if (probe.readyAt === null) {
-          const g = window.__neoryder;
-          if (g && g.query('screen') === 'playing') probe.readyAt = now;
-        }
+  if (withProbe) {
+    // Gotowość sceny wykrywa sama strona (w pętli rAF), żeby długa klatka tuż po gotowości nie wypadła z okna.
+    const readySrc = String((def.ready && READY[def.ready]) ?? READY.playing);
+    await context.addInitScript(
+      ({ readySrc, expectScene }) => {
+        const ready = (0, eval)(`(${readySrc})`);
+        const probe = { frames: [], readyAt: null, last: undefined };
+        window.__bp = probe;
+        // Czas wykonania wywołania, nie znacznik rAF: po długim zadaniu rAF podaje starszy czas vsync.
+        const loop = () => {
+          const now = performance.now();
+          if (probe.last !== undefined)
+            probe.frames.push([now, now - probe.last]);
+          probe.last = now;
+          if (probe.readyAt === null) {
+            try {
+              if (ready(expectScene)) probe.readyAt = now;
+            } catch {
+              // scena jeszcze się nie wczytała
+            }
+          }
+          requestAnimationFrame(loop);
+        };
         requestAnimationFrame(loop);
-      };
-      requestAnimationFrame(loop);
-    });
+      },
+      { readySrc, expectScene: def.expectScene },
+    );
+  }
   const page = await context.newPage();
   const issues = { pageErrors: [], consoleErrors: [], consoleWarnings: [] };
   page.on('pageerror', (e) => issues.pageErrors.push(e.message));
@@ -392,17 +430,24 @@ async function runStandard(browser, base, def, ms, warmupMs) {
     base,
     def,
     values.quality,
-    false,
+    true,
   );
   try {
     await page.goto(`${base}?${def.query}&debug=1`);
     await waitReady(page, def);
     for (const c of def.commands ?? [])
       await page.evaluate((line) => window.__neoryder.command(line), c);
-    await page.waitForTimeout(warmupMs);
+    await page.waitForTimeout(Math.max(warmupMs, FIRST_MS + 500));
+    const first = firstSecondsStats(
+      await page.evaluate(() => ({
+        frames: window.__bp.frames,
+        readyAt: window.__bp.readyAt,
+      })),
+    );
     const raw = await measureInPage(page, ms, def.killAtMs ?? null);
     const result = {
       stats: frameStats(raw.deltas),
+      first3s: first,
       stages: raw.stages,
       renderInfo: raw.renderInfo,
       heapBeforeMB: raw.heapBefore && raw.heapBefore / 1048576,
@@ -442,7 +487,7 @@ async function runTransition(browser, base, def) {
     await page.evaluate(() =>
       window.__neoryder.command('mission start m01-maszty'),
     );
-    const readyAt = await (async () => {
+    await (async () => {
       const deadline = Date.now() + 150_000;
       while (Date.now() < deadline) {
         const v = await page
@@ -460,9 +505,11 @@ async function runTransition(browser, base, def) {
       readyAt: window.__bp.readyAt,
     }));
     const loading = probe.frames
-      .filter(([t]) => t <= readyAt)
+      .filter(([t]) => t <= probe.readyAt)
       .map(([, d]) => d);
-    const after = probe.frames.filter(([t]) => t > readyAt).map(([, d]) => d);
+    const after = probe.frames
+      .filter(([t]) => t > probe.readyAt)
+      .map(([, d]) => d);
     const firstFrameMs = probe.origin + (probe.frames[0]?.[0] ?? 0) - t0;
     return {
       transition: {
@@ -474,6 +521,7 @@ async function runTransition(browser, base, def) {
           .slice(0, 5),
         loadingFrames: loading.length,
       },
+      first3s: firstSecondsStats(probe),
       stats: frameStats(after),
       issues,
     };
@@ -742,6 +790,10 @@ function printTables(report) {
       '>33ms': r.stats?.over33 ?? '-',
       '>50ms': r.stats?.over50 ?? '-',
       'max ms': f1(r.stats?.maxMs),
+      'gotowa po ms': f1(r.first3s?.timeToReadyMs),
+      'płynna po ms': f1(r.first3s?.timeToSmoothMs),
+      'max 3 s ms': f1(r.first3s?.maxMs),
+      '>100ms 3 s': r.first3s?.over100 ?? '-',
       calls: r.renderInfo ? Math.round(r.renderInfo.calls) : '-',
       tris: r.renderInfo ? Math.round(r.renderInfo.triangles) : '-',
       'top CPU/GPU ms': top,
