@@ -2,6 +2,7 @@
   "id": "assault",
   "title": "Szturm",
   "roomId": "combatCorridor",
+  "arenas": ["arenaRailYard", "arenaConstructionSite", "arenaFloodedDocks"],
   "enemies": ["assaulter", "gunner"],
   "maxAlive": 6,
   "spawnIntervalS": 3,

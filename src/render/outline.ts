@@ -282,7 +282,7 @@ const fragmentShader = /* glsl */ `
     if (inkWidth > 0.0 && thickness > 0.0) {
       if (viewmodelInk) {
         // Dotychczasowy tusz FPP, także po stronie tła: bez skalowania i nowego wygaszania.
-        float inkNear = 1.0 - smoothstep(outlineFadeNear * 0.5, outlineFadeFar, centerDepth);
+        float inkNear = 1.0 - smoothstep(outlineFadeNear * 0.5, max(outlineFadeFar, outlineFadeNear * 0.5 + 1e-3), centerDepth);
         float radius = inkViewmodelWidth * mix(1.0, inkNearScale, inkNear);
         if (texture2D(depthMap, vUv).x < viewmodelDepth) radius = min(radius, inkViewmodelMaxRadiusPx);
         float core = texture2D(edgeMap, vUv).b;
@@ -424,7 +424,7 @@ const fragmentShader = /* glsl */ `
     if (vignetteStrength > 0.0) {
       vec2 c = (vUv - 0.5) * vec2(aspect, 1.0);
       float radius = length(c) / length(vec2(aspect, 1.0)) * 2.0;
-      rgb *= 1.0 - vignetteStrength * smoothstep(vignetteRadius, vignetteRadius + vignetteSoftness, radius);
+      rgb *= 1.0 - vignetteStrength * smoothstep(vignetteRadius, vignetteRadius + max(vignetteSoftness, 1e-3), radius);
     }
     gl_FragColor = vec4(rgb, color.a);
     #include <colorspace_fragment>
@@ -724,6 +724,7 @@ export class StylePipeline {
   /** Podpina zdarzenia: spadek HP gracza i `focus`. Odpina `dispose()`. */
   bindEvents(bus: EventBus): void {
     this.offEvents?.();
+    this.postFxState.reset();
     this.offEvents = this.postFxState.bind(bus);
   }
 

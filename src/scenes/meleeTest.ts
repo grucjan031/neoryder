@@ -164,6 +164,8 @@ export class MeleeTest implements Scene {
     s: new Vector3(1, 1, 1),
   };
 
+  private disposed = false;
+
   constructor(private readonly loadModels = true) {}
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
@@ -171,6 +173,7 @@ export class MeleeTest implements Scene {
     this.three = three;
     this.lightningView = new LightningRenderer(ctx.tuning, ctx.bus);
     this.rapier = await initPhysics();
+    if (this.disposed) return;
     this.world = new this.rapier.World({
       x: 0,
       y: ctx.tuning.physics.gravity,
@@ -213,6 +216,7 @@ export class MeleeTest implements Scene {
       );
     }
     await this.loadAssets();
+    if (this.disposed) return;
     for (const position of this.dummyPositions()) this.spawnDummy(position);
 
     const playerId = this.entities.create('player', 'player');
@@ -316,6 +320,7 @@ export class MeleeTest implements Scene {
       tuning: ctx.tuning,
     });
     await this.fppView.load(this.loadModels);
+    if (this.disposed) return;
     this.root.add(this.fppView.root, this.arcDebug, this.lightningView.root);
     this.world.step();
     this.registerCommands();
@@ -711,24 +716,26 @@ export class MeleeTest implements Scene {
   }
 
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     for (const off of this.off.splice(0)) off();
-    this.blade.dispose();
-    this.fppView.dispose();
-    this.flyingBlade.dispose();
-    this.statuses.dispose();
-    this.lightningView.dispose();
-    this.projectiles.dispose();
-    this.projectileView.dispose();
-    this.energy.dispose();
-    this.fpsCamera.dispose();
-    this.player.dispose();
-    this.world.free();
+    this.blade?.dispose();
+    this.fppView?.dispose();
+    this.flyingBlade?.dispose();
+    this.statuses?.dispose();
+    this.lightningView?.dispose();
+    this.projectiles?.dispose();
+    this.projectileView?.dispose();
+    this.energy?.dispose();
+    this.fpsCamera?.dispose();
+    this.player?.dispose();
+    this.world?.free();
     this.label?.remove();
-    this.arcDebug.geometry.dispose();
-    this.arcDebug.material.dispose();
-    this.three.remove(this.root);
+    this.arcDebug?.geometry?.dispose();
+    this.arcDebug?.material?.dispose();
+    this.three?.remove(this.root);
     this.root.clear();
-    this.three.background = null;
+    if (this.three) this.three.background = null;
   }
 }
 

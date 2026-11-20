@@ -113,7 +113,12 @@ export class HubDecor {
         );
     for (const neonText of neonTexts)
       this.root.add(
-        this.label(neonText.text, neonText, `neonText:${neonText.text}`),
+        this.label(
+          neonText.text,
+          neonText,
+          `neonText:${neonText.text}`,
+          neonText.cross,
+        ),
       );
     fires.forEach((fire, index) => this.fire(fire, index));
   }
@@ -490,6 +495,7 @@ export class HubDecor {
     text: string,
     sign: NonNullable<HubStationDef['sign']>,
     name: string,
+    cross = false,
   ): Mesh {
     const { geometry, place } = this.plane({
       position: sign.position,
@@ -516,6 +522,7 @@ export class HubDecor {
         text,
         sign.size,
         sign.color ?? DEFAULT_LABEL_COLOR,
+        cross,
       );
       if (texture) {
         material.map = texture;
@@ -533,6 +540,7 @@ export class HubDecor {
     text: string,
     size: { w: number; h: number },
     color: string,
+    cross = false,
   ): CanvasTexture | null {
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(size.w * LABEL_PX_PER_M);
@@ -542,6 +550,22 @@ export class HubDecor {
     const { width, height } = canvas;
     context.clearRect(0, 0, width, height);
     context.strokeStyle = color;
+    if (cross) {
+      context.lineWidth = height * 0.07;
+      context.lineCap = 'round';
+      context.shadowColor = color;
+      context.shadowBlur = height * 0.1;
+      const pad = context.lineWidth;
+      context.beginPath();
+      context.moveTo(pad, pad);
+      context.lineTo(width - pad, height - pad);
+      context.moveTo(width - pad, pad);
+      context.lineTo(pad, height - pad);
+      context.stroke();
+      const crossTexture = new CanvasTexture(canvas);
+      crossTexture.colorSpace = SRGBColorSpace;
+      return crossTexture;
+    }
     context.lineWidth = Math.max(3, height * 0.06);
     context.strokeRect(
       context.lineWidth,

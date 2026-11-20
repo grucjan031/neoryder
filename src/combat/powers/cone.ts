@@ -61,11 +61,10 @@ export class ConePower extends PowerBase<ConePowerDefinition> {
         continue;
       hits++;
       const flat = normalize({ x: push.x, y: 0, z: push.z });
-      const wall = this.deps.castWall(
-        target.position,
-        flat,
-        this.def.wallSlamRange,
-      );
+      const wall =
+        flat.x === 0 && flat.z === 0
+          ? null
+          : this.deps.castWall(target.position, flat, this.def.wallSlamRange);
       if (wall !== null && this.def.knockback > 0)
         this.pending.push({
           target: target.id,

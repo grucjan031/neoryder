@@ -42,6 +42,19 @@ export const tuning = {
       edgeInsetM: 2,
       goalStopM: 0.5,
     },
+    /** Szturm na dużej arenie (pierścień posiłków jak w Przejęciu). */
+    assault: {
+      minRingSpawns: 16,
+      spawnSightHeightM: 1.5,
+    },
+    /** Kradzież rdzenia na dużej arenie; zoneHeightM dotyczy też małych pokoi (płaska podłoga, bez zmian). */
+    heist: {
+      minRingSpawns: 16,
+      spawnSightHeightM: 1.5,
+      zoneHeightM: 2,
+      /** Środek kapsuły gracza nad podłogą; upuszczony rdzeń leży na poziomie podłogi areny. */
+      carryFootOffsetM: 0.9,
+    },
   },
   mission: {
     zoneRadiusM: 1.6,
@@ -561,10 +574,16 @@ export const tuning = {
     barrierFlashS: 0.12,
   },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
-  arena: { maxEnemies: 30 },
+  arena: {
+    maxEnemies: 30,
+    /** Promień (komórki siatki), w którym nawigacja szuka najbliższej przejezdnej komórki dla startu/celu poza siatką. */
+    navFallbackCells: 2,
+  },
   /** Dźwięki (#14). Przepisy i reguły w src/data/audio/sfx.json. */
   audio: {
     maxVoices: 24,
+    /** Zaległość harmonogramu muzyki (s) powyżej której kroki są pomijane zamiast nadrabiane (np. po powrocie z ukrytej karty). */
+    musicMaxCatchUpS: 0.5,
     masterGain: 0.7,
     refDistance: 4,
     maxPan: 0.8,
@@ -1205,6 +1224,46 @@ export const tuning = {
     firePlanePhase: 1.7,
   },
   sandbox: { cubeSpawnHeight: 6 },
+  /** S4-03: prototypy eskorty więźnia i wagonu (sceny `escort-test`, `payload-test`). */
+  prototypes: {
+    escort: {
+      maxHealth: 120,
+      /** Marsz za graczem; powyżej `catchUpDistanceM` więzień biegnie z `catchUpSpeedMps`. */
+      speedMps: 4.5,
+      catchUpSpeedMps: 8,
+      followDistanceM: 3,
+      catchUpDistanceM: 10,
+      /** Dalej niż leashM od gracza więzień staje i czeka; rusza ponownie w leashResumeM. */
+      leashM: 25,
+      leashResumeM: 20,
+      /** Uwolnienie: gracz stoi w freeRadiusM przez freeHoldS (jak cele „interact” misji). */
+      freeRadiusM: 2.5,
+      freeHoldS: 1.5,
+      evacRadiusM: 4,
+      /** Utknięcie: w `following` przesunięcie < stuckEpsM przez stuckS. */
+      stuckS: 2.5,
+      stuckEpsM: 0.5,
+      unstickMinStepM: 0.5,
+      colliderHeightM: 1.7,
+      colliderRadiusM: 0.4,
+      markerHeightM: 8,
+      animFadeS: 0.2,
+    },
+    payload: {
+      maxHealth: 400,
+      speedMps: 3.5,
+      /** Gracz w tym promieniu od wagonu go „pcha” (wagon jedzie). */
+      pushRadiusM: 9,
+      /** Żywy wróg w tym promieniu zatrzymuje wagon. */
+      contestRadiusM: 22,
+      /** Połowy wymiarów hurtboxa (model `port_flatcar`: 14 × 3,8 × 3 m). */
+      bodyHalfLengthM: 7,
+      bodyHalfHeightM: 1.9,
+      bodyHalfWidthM: 1.5,
+      markerHeightM: 10,
+      stopPostHeightM: 4,
+    },
+  },
 };
 export type Tuning = typeof tuning;
 

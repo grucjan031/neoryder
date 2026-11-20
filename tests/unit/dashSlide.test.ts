@@ -128,7 +128,55 @@ describe('dash', () => {
   });
 });
 
+describe('dash i grawitacja', () => {
+  it('ostatni krok dashu w powietrzu nie stosuje grawitacji', async () => {
+    const { ctx, player, step } = await setup();
+    step(input([], ['jump']));
+    step(input(), 5);
+    step(input([], ['dash']));
+    const t = ctx.tuning.player;
+    const y: number[] = [];
+    for (let i = 0; i < steps(t.dashDurationS) - 1; i++) {
+      step();
+      y.push(player.getState().position.y);
+    }
+    expect(player.getState().dashS).toBe(0);
+    expect(Math.abs(y[y.length - 1]! - y[0]!)).toBeLessThan(1e-6);
+  });
+});
+
 describe('slide', () => {
+  it('crouch wciśnięty i puszczony w hitstopie nie uruchamia ślizgu', async () => {
+    const { player, step, events } = await setup();
+    step(input(['moveForward', 'sprint']), 60);
+    player.step(0, input(['moveForward', 'sprint', 'crouch'], ['crouch']));
+    player.step(0, input(['moveForward', 'sprint'], [], ['crouch']));
+    step(input(['moveForward', 'sprint']), 2);
+    expect(player.getState().sliding).toBe(false);
+    expect(events.filter((e) => e === 'slide_started')).toHaveLength(
+      events.filter((e) => e === 'slide_ended').length,
+    );
+  });
+
+  it('crouch puszczony w hitstopie kończy trwający ślizg', async () => {
+    const { player, step } = await setup();
+    step(input(['moveForward', 'sprint']), 60);
+    step(input(['moveForward', 'sprint', 'crouch'], ['crouch']));
+    expect(player.getState().sliding).toBe(true);
+    player.step(0, input(['moveForward', 'sprint'], [], ['crouch']));
+    step(input(['moveForward', 'sprint']));
+    expect(player.getState().sliding).toBe(false);
+  });
+
+  it('setCarry w trakcie ślizgu emituje slide_ended', async () => {
+    const { player, step, events } = await setup();
+    step(input(['moveForward', 'sprint']), 60);
+    step(input(['moveForward', 'sprint', 'crouch'], ['crouch']));
+    player.setCarry(0.5);
+    expect(player.getState().sliding).toBe(false);
+    expect(events).toEqual(['slide_started', 'slide_ended']);
+  });
+
   it('wymaga sprintu na ziemi: crouch przy chodzie nie zaczyna slide', async () => {
     const { player, step, events } = await setup();
     step(input(['moveForward']), 60);

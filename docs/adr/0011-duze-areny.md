@@ -17,6 +17,7 @@ w teren gry, a horyzont się urywa.
 ## Decyzje
 
 ### D1. Skala i obrys
+
 - Duża arena ma 240–450 m w najdłuższym wymiarze i co najmniej 40 000 m²
   powierzchni, po której da się chodzić (łącznie z poziomami).
 - Obrys nie jest kwadratem: kształt L, wydłużony, nieregularny, z wcięciami.
@@ -26,6 +27,7 @@ w teren gry, a horyzont się urywa.
   która przechodzi w panoramę bez widocznej krawędzi świata.
 
 ### D2. Zróżnicowanie (każda duża arena)
+
 - 4–6 stref o wyraźnie różnym charakterze: otwarta, gęsta (zaułki, labirynt),
   wnętrze (hala, parter budynku), wysoka (dachy, pomosty), niska (wykop, kanał,
   przejście pod ziemią). Każda strefa ma własny zestaw rekwizytów i materiałów.
@@ -42,6 +44,7 @@ w teren gry, a horyzont się urywa.
   i magenta są nadal zakazane w otoczeniu.
 
 ### D3. Horyzont i zasięg widzenia
+
 - Płaszczyzna odcięcia kamery, mgła, panorama i kopuła nieba są liczone
   z obwiedni bieżącej areny (środek i promień), nie ze stałych liczb.
   Parametry w `tuning.ts` (sekcja widoczna w lil-gui).
@@ -56,6 +59,7 @@ w teren gry, a horyzont się urywa.
   i przełączaniem pogody.
 
 ### D4. Tryby na dużych arenach
+
 - Przejęcie: 3–5 punktów (A–E) z danych areny. `maxAlive` z danych areny
   (do 12). Zwycięstwo i ubytek biletów skalują się z liczbą punktów.
 - Posiłki: pula co najmniej 16 punktów pojawiania się rozsianych po mapie.
@@ -63,10 +67,15 @@ w teren gry, a horyzont się urywa.
   z pierwszeństwem dla punktów bliskich spornej strefie i poza linią wzroku
   gracza, jeśli taki istnieje. Wróg nie pojawia się na drugim końcu mapy.
 - `combatRing` wypada z listy aren Przejęcia; zostaje w zwykłym runie.
-- Kradzież rdzenia i Szturm przechodzą na duże areny w kolejnej fazie
-  (układy trybu w danych areny); do tego czasu korzystają z obecnych pokojów.
+- Kradzież rdzenia i Szturm przechodzą na duże areny (układy trybu w danych
+  areny: `arena.assault`, `arena.heist`). Szturm: Zajezdnia Maglev, Budowa
+  wieżowca, Zalane Doki (3 sektory). Kradzież: Terminal kontenerowy,
+  Elektrownia, Dachy (baza i ewakuacja 120–200 m drogi). Dotychczasowe małe
+  pokoje (`combatCorridor`, `combatRing`) zostają jako wariant debug
+  (`?arena=<id>`). Szczegóły: `docs/systems/modes.md`.
 
 ### D5. Autorstwo
+
 - Każda duża arena ma generator `tools/arenas/<id>.mjs` na wspólnej
   bibliotece `tools/arenas/lib/` (prymitywy: ulica, budynek z wnętrzem, hala,
   rampa, schody, kładka, stos kontenerów, ogrodzenie, nabrzeże, wykop).
@@ -76,11 +85,13 @@ w teren gry, a horyzont się urywa.
   istniejące loadery, kolizje, scalanie statyki i nawigacja.
 
 ### D6. Pogoda
+
 - Do pięciu profili dochodzą `snow` (śnieg nocą, wolne płatki, przyprószone
   powierzchnie) i `ashfall` (opad popiołu, ciepła łuna przemysłowa).
   Rodzaje opadu `snow` i `ash` w `weatherSchema`.
 
 ### D7. Modele i tekstury
+
 - Modele: Blender, proceduralnie, tylko podagent Opus albo gpt-6-astra high.
   Nowe zestawy w osobnych skryptach `tools/blender/sets/<zestaw>.py`
   (importują pomocnicze funkcje z `build_assets.py`), żeby równoległe zestawy
@@ -90,6 +101,7 @@ w teren gry, a horyzont się urywa.
   „komiks” z gałęzi `tekstury-komiks` dało się później podmienić mapą nazw.
 
 ### D8. Wydajność
+
 - Statyka scalana w komórkach (`batchCellM`), powtarzalne rekwizyty jako
   `InstancedMesh`, statyczne collidery Rapier.
 - Budżety: symulacja ≤ 2 ms/krok z 12 wrogami; budowa nawigacji ≤ 500 ms;
@@ -97,6 +109,7 @@ w teren gry, a horyzont się urywa.
   wczytanie areny ≤ 5 s na komputerze deweloperskim.
 
 ### D9. Współistnienie z otwartymi gałęziami
+
 - `styl-borderlands`: nie zmieniamy `outline.ts`, `themes.ts`,
   `themeSchema.ts`, `lookPresets.ts` poza niezbędnym ustawianiem uniformów.
 - `warsztat-broni`: zmiany w `src/scenes/roomScene.ts` minimalne,
@@ -105,15 +118,15 @@ w teren gry, a horyzont się urywa.
 
 ## Lista aren
 
-| Id | Nazwa | Wymiar (m) | Pogoda | Strefy i landmarki |
-|---|---|---|---|---|
-| `arenaContainerPort` | Terminal kontenerowy (przebudowa) | 340×220 | storm | labirynt stosów 1–4 warstwy; nabrzeże z zacumowanym kontenerowcem (pokład ~12 m, nadbudówka, ładownie jako wnętrza, trapy); hala przeładunkowa z antresolą; bocznica z wagonami; brama terminalu. Landmarki: kontenerowiec, suwnice nabrzeżowe ~50 m |
-| `arenaOverpass` | Węzeł Estakada (przebudowa) | 360×360 | smog | trzy poziomy jezdni (0 / 11,6 / 23,2 m) i łukowe zjazdy; stacja paliw; bramki poboru opłat; obozowisko pod estakadą; urwany, niedokończony wiadukt; kanał burzowy −4 m. Landmarki: urwany wiadukt, wieża wentylacyjna tunelu |
-| `arenaRooftops` | Dachy Starego Miasta (przebudowa) | 300×260 | drizzleWind | ulica na dnie (−14 m) z zaułkami i targiem; kamienice o dachach na kilku wysokościach; klatki schodowe i schody pożarowe; kładki; nocny targ na największym dachu. Landmarki: wieża zegarowa, gigantyczny szyld |
-| `arenaFloodedDocks` | Zalane Doki (nowa) | 300×280 | rain | kanały i płycizny do brodzenia; pomosty i mosty; pół-zatopione kamienice z dostępnym parterem; barka-targ; śluza. Landmark: przepompownia z rurami |
-| `arenaRailYard` | Zajezdnia Maglev (nowa) | 420×180 | snow | wiele torów ze składami (przejście przez otwarte wagony, dachy wagonów); hala serwisowa z kanałami rewizyjnymi; kładka nad torami; peron z wiatą; obrotnica. Landmarki: nastawnia, suwnica torowa |
-| `arenaConstructionSite` | Budowa wieżowca (nowa) | 240×240, do 30 m w górę | clearNight | wykop −8 m z rampą; szkielet wieżowca (stropy co 4 m, trzony schodowe, rusztowania); plac składowy; zaplecze z kontenerów biurowych. Landmark: żuraw wieżowy ~60 m |
-| `arenaPowerPlant` | Elektrownia (nowa) | 380×300 | ashfall | dwie chłodnie kominowe (wnętrze jednej dostępne przez wyrwę); hala turbin z suwnicą; rozdzielnia z transformatorami; estakady rurociągów na 6 m; hałdy żużlu. Landmark: komin ~120 m |
+| Id                      | Nazwa                             | Wymiar (m)              | Pogoda      | Strefy i landmarki                                                                                                                                                                                                                                   |
+| ----------------------- | --------------------------------- | ----------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `arenaContainerPort`    | Terminal kontenerowy (przebudowa) | 340×220                 | storm       | labirynt stosów 1–4 warstwy; nabrzeże z zacumowanym kontenerowcem (pokład ~12 m, nadbudówka, ładownie jako wnętrza, trapy); hala przeładunkowa z antresolą; bocznica z wagonami; brama terminalu. Landmarki: kontenerowiec, suwnice nabrzeżowe ~50 m |
+| `arenaOverpass`         | Węzeł Estakada (przebudowa)       | 360×360                 | smog        | trzy poziomy jezdni (0 / 11,6 / 23,2 m) i łukowe zjazdy; stacja paliw; bramki poboru opłat; obozowisko pod estakadą; urwany, niedokończony wiadukt; kanał burzowy −4 m. Landmarki: urwany wiadukt, wieża wentylacyjna tunelu                         |
+| `arenaRooftops`         | Dachy Starego Miasta (przebudowa) | 300×260                 | drizzleWind | ulica na dnie (−14 m) z zaułkami i targiem; kamienice o dachach na kilku wysokościach; klatki schodowe i schody pożarowe; kładki; nocny targ na największym dachu. Landmarki: wieża zegarowa, gigantyczny szyld                                      |
+| `arenaFloodedDocks`     | Zalane Doki (nowa)                | 300×280                 | rain        | kanały i płycizny do brodzenia; pomosty i mosty; pół-zatopione kamienice z dostępnym parterem; barka-targ; śluza. Landmark: przepompownia z rurami                                                                                                   |
+| `arenaRailYard`         | Zajezdnia Maglev (nowa)           | 420×180                 | snow        | wiele torów ze składami (przejście przez otwarte wagony, dachy wagonów); hala serwisowa z kanałami rewizyjnymi; kładka nad torami; peron z wiatą; obrotnica. Landmarki: nastawnia, suwnica torowa                                                    |
+| `arenaConstructionSite` | Budowa wieżowca (nowa)            | 240×240, do 30 m w górę | clearNight  | wykop −8 m z rampą; szkielet wieżowca (stropy co 4 m, trzony schodowe, rusztowania); plac składowy; zaplecze z kontenerów biurowych. Landmark: żuraw wieżowy ~60 m                                                                                   |
+| `arenaPowerPlant`       | Elektrownia (nowa)                | 380×300                 | ashfall     | dwie chłodnie kominowe (wnętrze jednej dostępne przez wyrwę); hala turbin z suwnicą; rozdzielnia z transformatorami; estakady rurociągów na 6 m; hałdy żużlu. Landmark: komin ~120 m                                                                 |
 
 Kolejność: silnik dużych map, potem port, budowa i zajezdnia, potem
 estakada, dachy, doki i elektrownia.

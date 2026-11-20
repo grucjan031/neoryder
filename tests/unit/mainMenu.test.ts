@@ -276,3 +276,34 @@ it('menu: run już rozliczony na dysku (zostawiony ślad) nie mówi „Kontynuuj
   expect(status).toContain('już rozliczony');
   expect(status).not.toContain('zapisze nagrodę');
 });
+
+it('Kontynuuj pokazuje HP bez ułamków zmiennoprzecinkowych', async () => {
+  const save = createMemorySaveStore();
+  const manager = new RunManager(new EventBus(), {
+    generateMap: (seed) => generateSectorMap(kuroganeSector, seed),
+  });
+  const run = manager.newRun('menu-test', 'blade');
+  run.currentNodeId = run.map.layers[0]![0]!.id;
+  run.visited = [run.currentNodeId];
+  run.hp = 36.60000000000001;
+  await save.saveRun({
+    saveVersion: SAVE_VERSION,
+    seed: run.seed,
+    startedAt: run.startedAtMs,
+    run,
+  });
+  manager.dispose();
+  const navigate = vi.fn();
+  const menu = new MainMenu({
+    root: document.body,
+    save,
+    navigate,
+    params: new URLSearchParams('seed=ignored'),
+  });
+  active.push(menu);
+  await menu.ready;
+  expect(button('Kontynuuj run').disabled).toBe(false);
+  expect(document.querySelector('[role=status]')?.textContent).toBe(
+    'Warstwa: 1 · Zdrowie: 37',
+  );
+});

@@ -382,7 +382,8 @@ i wywołuje opcjonalne `onRetry`. Przytrzymanie klawisza nie ponawia akcji. Gdy
 scena poda `onChangeBuild`, obok jest „Zmień zestaw” (ramka i tekst magenta; przyciski ze
 ściętymi narożnikami 10 px, 13 px, rozstrzelenie 0,2 em, tło `#0a0d14`, po najechaniu
 wypełnienie magentą); Enter i R nadal
-oznaczają „Jeszcze raz”. Przyciski i karty ekranu wyboru buildu
+oznaczają „Jeszcze raz”. Enter na zogniskowanym „Zmień zestaw” oraz klawisze wpisywane
+w polu lub oknie modalnym (np. konsoli debug) nie są przechwytywane. Przyciski i karty ekranu wyboru buildu
 (`.build-select*`) używają tego samego języka: ciemne tło, cienkie linie, ścięte
 narożniki, cyan i magenta. Struktura DOM ekranu buildu jest w `src/ui/buildSelect.ts`.
 

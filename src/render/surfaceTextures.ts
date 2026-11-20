@@ -103,6 +103,7 @@ export function assetTexture(
     const path = `/assets/textures/${resolveTextureKey(folder, id)}.webp`;
     if (!available.has(path)) {
       console.warn(`Brak tekstury ${path}; użyto wzoru zastępczego.`);
+      readyListeners.delete(key);
       return entry;
     }
     void fetch(path)
@@ -126,9 +127,10 @@ export function assetTexture(
         for (const listener of readyListeners.get(key) ?? []) listener(texture);
         readyListeners.delete(key);
       })
-      .catch(() =>
-        console.warn(`Brak tekstury ${path}; użyto wzoru zastępczego.`),
-      );
+      .catch(() => {
+        readyListeners.delete(key);
+        console.warn(`Brak tekstury ${path}; użyto wzoru zastępczego.`);
+      });
   }
   return entry;
 }

@@ -499,7 +499,7 @@ export function createUrbanMaterial(
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <color_fragment>',
-          `#include <color_fragment>\n${windowCode}\nfloat windowGlow = windowMask * windowLit * cityDetail; diffuseColor.rgb = windowTex * windowParams.w; diffuseColor.a = windowGlow * 0.18;`,
+          `#include <color_fragment>\n${windowCode}\nfloat windowGlow = windowMask * windowLit * cityDetail; diffuseColor.rgb = windowTex * windowParams.w * windowLit * cityDetail; diffuseColor.a = windowGlow * 0.18;`,
         )
         .replace(
           '#include <opaque_fragment>',

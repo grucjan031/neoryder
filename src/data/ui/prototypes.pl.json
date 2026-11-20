@@ -1,0 +1,26 @@
+{
+  "escort": {
+    "title": "Eskorta więźnia",
+    "waiting": "Zostań przy więźniu, aby go uwolnić",
+    "following": "Prowadź więźnia do strefy ewakuacji",
+    "holding": "Więzień czeka — wróć do niego",
+    "evacuated": "Więzień ewakuowany — sukces",
+    "dead": "Więzień poległ — porażka",
+    "hp": "Zdrowie więźnia",
+    "free": "Uwalnianie",
+    "stuck": "Utknięcia"
+  },
+  "payload": {
+    "title": "Eskorta wagonu",
+    "waitingPlayer": "Zbliż się do wagonu, aby go pchnąć",
+    "moving": "Wagon jedzie — osłaniaj skład",
+    "contested": "Wrogowie przy wagonie — skład stoi",
+    "holding": "Postój",
+    "arrived": "Wagon dotarł do celu — sukces",
+    "destroyed": "Wagon zniszczony — porażka",
+    "hp": "Wytrzymałość wagonu",
+    "progress": "Trasa",
+    "next": "Następny postój",
+    "departure": "Odjazd za"
+  }
+}

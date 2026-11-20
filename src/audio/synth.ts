@@ -93,6 +93,10 @@ export function playLayers(
     env.connect(out);
     source.start(start);
     source.stop(end + 0.02);
+    const chain = layer.filter ? [source, head, env] : [source, env];
+    source.onended = () => {
+      for (const node of chain) node.disconnect();
+    };
     sources.push(source);
   }
   return { sources, endTime };

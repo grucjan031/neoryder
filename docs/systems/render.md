@@ -1088,3 +1088,118 @@ stałe: `enemyRim1.00` i `enemyRim0.60`. Poświata jest częścią materiału, w
 `?look=off`. Zapowiedź ciosu nie do zablokowania (bursztyn) klonuje tylko materiały
 `mat_enemy_glow` (wizjer, końcówka pałki, rdzeń, ostrze), które poświaty nie mają.
 `enemyRimAt()` to odpowiednik shadera w TS do testów (`tests/unit/enemyRim.test.ts`).
+
+## Pomiar referencyjny (S1-04)
+
+Powtarzalny pomiar wydajności na prawdziwym GPU: build produkcyjny, `vite preview` na porcie 4174
+(skrypt sam go startuje i zamyka), Chromium z Playwrighta (`--use-angle=d3d11`), viewport 1920×1080,
+DPR 1, profil jakości `medium` (decyzja D5). Skrypt: `tools/perf/benchmark.mjs`.
+
+```
+npm run perf:bench -- --runs 2                       # build + wszystkie scenariusze, vsync
+npm run perf:bench -- --uncapped --seconds 6          # zapas ponad 60 FPS (bez vsync i limitu klatek)
+npm run perf:bench -- --gpu low --uncapped            # wymusza słabe, zintegrowane GPU
+npm run perf:bench -- --cpu-throttle 4 --uncapped     # CPU spowolnione 4x (CDP)
+npm run perf:bench -- --scenario hub,boss --quality high
+```
+
+Opcje: `--quality low|medium|high`, `--seconds N` (pomiar, domyślnie 10), `--scenario <lista>`
+(`hub,combat,heaviest,boss,shatter,transition,arenas`), `--runs N` (domyślnie 2), `--gpu high|low`
+(`low` = `--force_low_power_gpu`), `--cpu-throttle N`, `--uncapped`, `--port`, `--load-timeout <s>`
+(limit wczytania sceny, domyślnie 45), `--idle-threshold <%>` i `--idle-timeout-min` (czekanie na
+spokojny CPU przed każdym przypadkiem), `--no-wait-idle`. Wynik: `perf-report/bench-<konfiguracja>-<data>.json`
+(katalog w `.gitignore`) i tabele w konsoli. JSON zawiera użyty GPU (`gpuInfo`, flaga
+`softwareRenderer` przy SwiftShaderze), obciążenie CPU przed każdym przypadkiem (`idleChecks`)
+i wszystkie `pageerror`/`console.error`/`console.warn` z nazwą sceny.
+
+### Scenariusze
+
+Każdy przypadek: wczytanie, rozgrzewka 3 s, pomiar `--seconds` (god włączony). Profiler klatki
+jest włączony w oknie pomiaru, więc wartości mają jego niewielki narzut.
+
+| Scenariusz   | Co mierzy                                                                                                                                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hub`        | kryjówka `?scene=hub` w miejscu startu                                                                                                                                                                                                          |
+| `combat`     | `room-test`, pokój `combatYard`, 6 wrogów (`spawn`) plus fale                                                                                                                                                                                   |
+| `heaviest`   | przegląd pokoi z `src/data/rooms` (`room-test`, 1 s rozgrzewki + 2 s), wybór pokoju o największej sumie kosztów etapów (GPU, a bez zapytań CPU), potem pełny pomiar; ranking w `surveyRanking` (tylko 1. przebieg, 2. używa tego samego pokoju) |
+| `boss`       | `bossRoom`, czeka na pojawienie się bossa                                                                                                                                                                                                       |
+| `shatter`    | `combatYard`, 20 wrogów i `kill all` po 2 s pomiaru; osobne statystyki `afterKill`                                                                                                                                                              |
+| `transition` | kryjówka → `mission start m01-maszty` (przeładowanie strony): czas do pierwszej klatki i do stanu `playing` zegarem ściennym, najdłuższe klatki podczas wczytywania, statystyki 5 s po starcie                                                  |
+| `arenas`     | 7 aren Przejęcia (`?scene=conquest&arena=`), Szturm, Kradzież rdzenia i poziom misji M01                                                                                                                                                        |
+
+Pokoje bez punktów spawnu (`noodleShop`, `restRoom`, `rooftopRest`, `shopRoom`) nie wczytują się w
+`room-test` (walidacja fal), więc przegląd je pomija (`skippedRooms` w JSON). Pomiary z 20 XI
+powstały przed dodaniem tego pominięcia i zawierają 4 wpisy `survey` z błędem wczytania.
+
+### Metryki
+
+Średni FPS, 1% low (średnia z najgorszego 1% czasów klatek rAF, przeliczona na FPS), p99 czasu
+klatki, liczba klatek > 33,3 ms i > 50 ms, najdłuższa klatka, średnie CPU/GPU ms na etap
+(`frameProfile`, próbkowane co 500 ms), średnie `renderInfo` (calls, triangles), sterta JS przed
+i po (`--enable-precise-memory-info`), liczniki wrogów, ciał fizycznych i odłamków (szczyt).
+Etap `pipeline` obejmuje etapy zagnieżdżone (`color`, `normals`, `bloom`...), więc ich nie sumuj;
+`step` to cała symulacja (fizyka i AI razem, bez podziału). Zapytania GPU przy `--cpu-throttle`
+mierzą też czekanie na spowolniony CPU, więc tam wiarygodne są kolumny CPU.
+
+### Wyniki z tego komputera (20 XI 2026)
+
+Sprzęt: Ryzen 7 7700, RTX 4070 i zintegrowane AMD Radeon (Windows 10), HeadlessChrome 159
+(Playwright). **To nie jest docelowy laptop z D5**: pomiar na nim robi właściciel. W trakcie
+pomiaru inny agent uruchamiał testy na tej maszynie; skrypt czekał na CPU < 15% przed każdym
+przypadkiem (obciążenie przed przebiegami 1–15%, limit czekania nigdzie nie przekroczony).
+Konfiguracje: (a) vsync, RTX 4070; (b) bez vsync, RTX 4070 (pomiar 6 s); (c) bez vsync, wymuszone
+AMD Radeon (potwierdzone w `gpuInfo`); (d) bez vsync, RTX 4070 z CPU spowolnionym 4x. Wszędzie
+`softwareRenderer = false`. Wartości to przebiegi 1/2.
+
+| Scenariusz           | a: FPS                         | a: 1% low | b: FPS    | c: FPS                        | c: 1% low | d: FPS                      | d: 1% low |
+| -------------------- | ------------------------------ | --------- | --------- | ----------------------------- | --------- | --------------------------- | --------- |
+| hub                  | 60,0/59,6                      | 59,5/35,9 | 160/162   | 29/29                         | 6,2/6,6   | 19,6/16,0                   | 5,4/4,9   |
+| combat (combatYard)  | 60,0/60,0                      | 59,5/59,5 | 209/212   | 30/30                         | 6,0/5,4   | 28,6/28,6                   | 19,9/19,6 |
+| heaviest             | 60,0/58,9 (arenaContainerPort) | 59,5/30,0 | 64,5/63,6 | brak, przegląd zniekształcony | -         | 9,7/9,2 (arenaFloodedDocks) | 7,0/7,6   |
+| boss                 | 60,0/60,0                      | 59,5/59,5 | 352/264   | 30/30                         | 3,7/2,6   | 48,7/43,1                   | 34,1/23,8 |
+| shatter              | 59,9/59,8                      | 51,2/44,7 | 285/285   | 31/30                         | 3,7/2,5   | 38,7/37,5                   | 13,9/14,1 |
+| arena Container Port | 59,9/59,5                      | 51,2/32,7 | 73/66     | 25/25                         | 7,7/8,4   | 10,5/11,0                   | 7,6/7,8   |
+| arena Flooded Docks  | 53,4/59,9                      | 29,9/51,2 | 66/65     | brak (utrata kontekstu)       | -         | 10,9/10,8                   | 7,8/8,5   |
+| M01 Maszty           | 60,0/60,0                      | 59,5/59,5 | 178/171   | 30/31                         | 6,0/6,4   | 25,8/22,9                   | 16,9/15,1 |
+
+p99 czasu klatki w (a): 16,8 ms (jedyne wyjątki: heaviest przebieg 2 i Flooded Docks przebieg 1: 33,3 ms).
+Pozostałe areny Przejęcia w (a) trzymają 60 FPS. W (b) najniższe: Container Port 66–73, Flooded Docks
+65–66, Rail Yard 83–85, Overpass 87–89 FPS. Pełne dane (p99, klatki > 33/50 ms, etapy) są w JSON.
+
+Przejście kryjówka → M01 (przeładowanie strony): pierwsza klatka nowej strony po ok. 50 ms (a/b),
+stan `playing` po ok. 1,03–1,07 s; jedna klatka ok. 710–717 ms podczas wczytywania. Po starcie w oknie
+5 s jest jeszcze klatka 450–550 ms. Na (c) `playing` po 1,5–1,7 s; na (d) po 4,8–5,1 s, najdłuższa
+klatka wczytywania 3,7–3,95 s.
+
+Rozpad grupy (`shatter`): po `kill all` jedna klatka 33–58 ms w (a/b), 90–94 ms w (d).
+
+Różnica między przebiegami (średni FPS): w (a) do 1,8% w 14 z 16 scenariuszy; wyjątek Flooded Docks
+10,8% (przycięcia w przebiegu 1, 44 klatki > 33 ms) i hub 0,7%. W (b) bez vsync rozrzut bywa większy (do 25%
+przy 260–350 FPS: boss, Power Plant), więc kryterium < 5% dotyczy pomiaru z vsync (a).
+
+Błędy i ostrzeżenia konsoli: w (a), (b), (d) brak `pageerror`, `console.error` i `console.warn` poza
+4 pokojami bez fal (błąd walidacji `Nieprawidłowe dane fal ... spawnPoints`, artefakt przeglądu).
+W (c) (słabe iGPU): `WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost` (arenaPowerPlant, arenaRailYard) i
+`THREE.WebGLRenderer: Error creating WebGL context` / `A WebGL context could not be created. Reason:
+Web page caused context loss and was blocked` (arenaConstructionSite, arenaRailYard, arenaFloodedDocks):
+przeciążenie GPU kończy się utratą kontekstu i blokadą kolejnych kontekstów przez Chromium.
+
+### Wnioski z liczb (cele do decyzji, bez wdrożeń)
+
+Przy CPU 4x (d) klatka dużej areny trwa 82–95 ms; CPU ms na etap (Container Port): `pipeline` 68
+(`color` 33, `normals` 22, `bloom` 13 w tym maska 12), `step` 9,3, `sceneRender` 3,7, `city` 1,2, `composite` 0,3.
+Dominuje więc JS renderu (przygotowanie wywołań rysowania, ok. 70–75% klatki), nie symulacja
+(`step` 7–10%, w hubie i walce 3–4 ms).
+
+1. Etap `color` (przebieg koloru kreskowanego): CPU 33–35 ms na arenach przy 2–3,3 tys. wywołań
+   (Container Port, Flooded Docks), 24 ms w hubie (640 wywołań); na RTX GPU 5–7 ms. Największy cel
+   (scalanie/instancjonowanie geometrii areny, mniej materiałów).
+2. Etap `normals` (kontur): CPU 22 ms na dużych arenach, 9 ms w hubie; to drugi przebieg po całej
+   geometrii. Kandydat: wspólny przebieg z `color` lub pomijanie obiektów dalekich.
+3. Maska bloom `bloomMask`: CPU 11–14 ms na arenach i w hubie (11,9), przy GPU 5–7 ms. Kandydat:
+   osobna lista obiektów emisyjnych zamiast ponownego przejścia całej sceny.
+4. Słabe GPU (c): `composite` ok. 17–23 ms GPU w każdej scenie (na RTX 0–2 ms) i `color` 10–13 ms;
+   wszystkie sceny ok. 25–30 FPS, a duże areny kończą się utratą kontekstu WebGL. Kandydat: tańsza
+   kompozycja końcowa i niższa rozdzielczość renderu w profilu `low`.
+5. Przejście do M01: jednorazowa klatka ok. 710 ms (a/b) i 3,7–3,95 s przy CPU 4x (wczytywanie
+   poziomu w jednym kawałku), plus klatka 450–550 ms tuż po starcie.

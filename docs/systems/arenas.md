@@ -1,4 +1,4 @@
-# Areny Przejęcia
+# Areny Przejęcia, Szturmu i Kradzieży rdzenia
 
 Wspólna biblioteka generatorów dużych aren (ADR 0011 / D5), API prymitywów,
 walidacja i rzuty SVG: [arena-generators.md](arena-generators.md).
@@ -54,7 +54,9 @@ wyczerpane, żywych ≥ `maxAlive` lub trwa odstęp `spawnIntervalS`.
 Nawigacja warstwowa (`ArenaSurfaceNavigation`, używana gdy jakikolwiek blok ma
 `walkable`; w przeciwnym razie `ArenaNavigation` buduje płaską siatkę po podłodze
 na wysokości `playerSpawn.y`, z pominięciem komórek przy obróconych blokach)
-używa pól `Int32Array` budowanych na żądanie,
+używa pól `Int32Array` budowanych na żądanie (start lub cel poza siatką — margines przy
+przeszkodzie/krawędzi — są zastępowane najbliższą przejezdną komórką w promieniu
+`tuning.arena.navFallbackCells`),
 a w kroku symulacji przegląda tylko prosty odcinek do zakrętu. Dla
 syntetycznej areny 450×300 m test używa komórek 2 m, dwóch ramp,
 trzech poziomów i pięciu stref. Sprawdza dojście ze wszystkich
@@ -681,6 +683,63 @@ pełnego marginesu nawigacji 0,8 m i służą graczowi. Wszystkie punkty są
 osiągalne bez nich. Walidacja trybu wymaga wolnego koła na wysokości punktu
 oraz drogi od gracza i każdego spawnu do wszystkich punktów. Posiłki zachowują wspólny
 minimalny odstęp 15 m, który pierścień areny może zwiększyć, i odstęp od innych wrogów.
+
+## Szturm i Kradzież rdzenia na dużych arenach
+
+ADR 0011 D4: oba tryby mają układ w danych areny (`arena.assault`, `arena.heist`),
+obok punktów Przejęcia. Lista aren trybu to `arenas` w `assault.json` / `heist.json`;
+`roomId` (`combatCorridor`, `combatRing`) zostaje trybem na małym pokoju.
+Wybór areny, kształt danych i API: [modes.md](modes.md#szturm-i-kradzież-rdzenia-na-dużych-arenach).
+
+| Tryb             | Areny                                                         |
+| ---------------- | ------------------------------------------------------------- |
+| Szturm           | `arenaRailYard`, `arenaConstructionSite`, `arenaFloodedDocks` |
+| Kradzież rdzenia | `arenaContainerPort`, `arenaPowerPlant`, `arenaRooftops`      |
+| Przejęcie        | wszystkie siedem aren z `conquest.json`                       |
+
+Układy są w generatorach `tools/arenas/<id>.mjs` (`arena.arenaMeta({ assault })` lub
+`{ heist }`) i w wygenerowanych JSON-ach; `node tools/arenas/build.mjs <id>`
+odtwarza je deterministycznie. Pozycje są wzięte z puli spawnów i punktów areny
+(wolne koła, osiągalne nawigacją). Wszystkie trzy areny Szturmu mają po 3 sektory,
+żeby HUD „Sektor n/3” i istniejące scenariusze e2e pozostały spójne.
+
+### Szturm
+
+| Arena                   | Sektor | Start gracza (X; Z) | Stacja A        | Stacja B        |
+| ----------------------- | ------ | ------------------- | --------------- | --------------- |
+| `arenaRailYard`         | 1      | (-162; 46)          | (-100; 80)      | (-44; 80)       |
+| `arenaRailYard`         | 2      | (12; 80)            | (20; 50; y 1.1) | (38; -24)       |
+| `arenaRailYard`         | 3      | (68; 80)            | (120; -40)      | (170; 40)       |
+| `arenaConstructionSite` | 1      | (-100; 100)         | (-34; 112)      | (62; 96)        |
+| `arenaConstructionSite` | 2      | (-90; 44; y -8)     | (-60; 20; y -8) | (-28; 48; y -8) |
+| `arenaConstructionSite` | 3      | (-4; -66)           | (40; -25; y 8)  | (-50; -75)      |
+| `arenaFloodedDocks`     | 1      | (-140; 130)         | (-80; 80)       | (-40; 65)       |
+| `arenaFloodedDocks`     | 2      | (-40; 65)           | (0; 0; y -1.2)  | (-63; -14)      |
+| `arenaFloodedDocks`     | 3      | (-63; -14)          | (-78; -77)      | (-24; -116)     |
+
+Respawn gracza po śmierci jest na starcie aktywnego sektora. Posiłki trafiają
+do pierścienia `arena.spawnRing` wokół gracza, z puli sektora i puli areny,
+najbliżej niezniszczonych stacji.
+
+### Kradzież rdzenia
+
+| Arena                | Start i odrodzenie (X; Z) | Baza       | Ewakuacja  | Droga baza → ewakuacja |
+| -------------------- | ------------------------- | ---------- | ---------- | ---------------------- |
+| `arenaContainerPort` | (41; -31)                 | (113; 59)  | (46; -31)  | ok. 157 m              |
+| `arenaPowerPlant`    | (30; -26.5)               | (-120; 15) | (25; -25)  | ok. 184 m              |
+| `arenaRooftops`      | (115; -21.5)              | (0; 32)    | (110; -20) | ok. 163 m              |
+
+Gracz startuje i odradza się przy ewakuacji (`playerSpawn`, ok. 5–6 m od strefy).
+Baza i ewakuacja leżą 120–200 m drogi od siebie, a po zablokowaniu środka trasy
+istnieje droga objazdowa (test `arenaModes.test.ts`). Posiłki idą w pierścieniu
+wokół gracza, najbliżej rdzenia (bazy, nosiciela albo miejsca upuszczenia).
+Strefy bazy i ewakuacji mają tolerancję wysokości `tuning.modes.heist.zoneHeightM`,
+więc rdzenia nie da się podnieść ani ewakuować z piętra pod lub nad strefą.
+
+Sprawdzenie w 30 s: `?scene=run&mode=assault&arena=arenaRailYard&debug=1` (`god`,
+`assault destroy A`, `assault destroy B` w każdym sektorze) oraz
+`?scene=run&mode=heist&arena=arenaPowerPlant&debug=1` (`god`, `tp -120 15`
+podnosi rdzeń, `tp 25 -25` i 3 s w strefie kończą próbę).
 
 ## Wydajność i pomiar
 

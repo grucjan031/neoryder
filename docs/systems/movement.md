@@ -220,7 +220,7 @@ Wciśnięcie `dash` (Q) uruchamia poziomy doskok w kierunku wejścia WASD, a bez
 - Odnowienie pochodzi ze statu **`dashCooldown`** (baza `dashCooldownS` = 1,2 s). Synergie skracają je modyfikatorem (np. `mult 0.5`) bez zmiany kodu.
 - Ściany zatrzymuje character controller — dash nie przechodzi przez geometrię.
 - `dashInvulnerable` (0/1): `PlayerController.isInvulnerable()` zwraca `true` w trakcie dashu; arena podpina to jako `DamageTargetOptions.invulnerable` (sprawdzane **przed** zadaniem obrażeń).
-- Zdarzenie `dash_used { user, dir }`. Dash przerywa slide.
+- Zdarzenie `dash_used { user, dir }`. Dash przerywa slide. Zbuforowany skok nie wykonuje się w trakcie dashu (także przy lądowaniu na platformie), tylko po jego końcu, jeśli bufor nie wygasł.
 - Koszt `dashStaminaCost` (30) pobierany przy starcie; przy braku zasobu `stamina_denied { user, action: 'dash' }`, bez dashu i bez odnowienia. Odnowienie liczy się od startu dashu (maleje już w jego trakcie). Wciśnięcie w czasie odnowienia lub trwającego dashu przepada (brak bufora).
 - Start: `velocity.y = 0`, w trakcie dashu brak grawitacji i skoku (bufor skoku czeka); po dashu grawitacja wraca od `vy = 0` (dash w powietrzu „zawiesza” spadek na 0,18 s).
 - Wartość domyślna `dashInvulnerable` wynosi **0** — domyślnie dash NIE daje nietykalności.

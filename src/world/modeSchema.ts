@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { Vec3 } from '../core/math';
 import type { RoomDefinition } from './roomSchema';
-import { loadRoom, vec3Schema } from './roomSchema';
+import { assaultLayoutSchema, loadRoom, vec3Schema } from './roomSchema';
 import { tuning } from '../core/tuning';
 import { capturePointsSchema, pointIdSchema } from './roomSchema';
 import { arenaSpawnPoints } from './arenaSpawns';
@@ -13,6 +13,11 @@ export type ModeId = z.infer<typeof modeIdSchema>;
 export { pointIdSchema };
 export type PointId = z.infer<typeof pointIdSchema>;
 const positive = z.number().finite().positive();
+const arenaListSchema = z
+  .array(z.string().min(1))
+  .min(1)
+  .refine((ids) => new Set(ids).size === ids.length)
+  .optional();
 export const conquestSchema = z.object({
   id: z.literal('conquest'),
   title: z.string().min(1),
@@ -49,6 +54,8 @@ export const assaultSchema = z.object({
   id: z.literal('assault'),
   title: z.string().min(1),
   roomId: z.string().min(1),
+  /** Duże areny z układem `arena.assault`; `roomId` zostaje trybem na małym pokoju. */
+  arenas: arenaListSchema,
   enemies: z.array(z.string().min(1)).min(1),
   maxAlive: positive.int(),
   spawnIntervalS: positive,
@@ -64,21 +71,15 @@ export const assaultSchema = z.object({
   detectRangeM: positive,
   minSpawnDistanceM: positive,
   spawnClearanceM: positive,
-  sectors: z
-    .array(
-      z.object({
-        playerSpawn: vec3Schema,
-        stations: z.tuple([vec3Schema, vec3Schema]),
-        spawnPoints: z.array(vec3Schema).min(1),
-      }),
-    )
-    .length(3),
+  sectors: assaultLayoutSchema.shape.sectors,
 });
 export type AssaultDefinition = z.infer<typeof assaultSchema>;
 export const heistSchema = z.object({
   id: z.literal('heist'),
   title: z.string().min(1),
   roomId: z.string().min(1),
+  /** Duże areny z układem `arena.heist`; `roomId` zostaje trybem na małym pokoju. */
+  arenas: arenaListSchema,
   enemies: z.array(z.string().min(1)).min(1),
   maxAlive: positive.int(),
   spawnIntervalS: positive,
@@ -96,6 +97,8 @@ export const heistSchema = z.object({
   spawnClearanceM: positive,
   base: vec3Schema,
   extraction: vec3Schema,
+  /** Start i odrodzenie gracza; bez pola (mały pokój) jest to `extraction`. */
+  playerSpawn: vec3Schema.optional(),
   spawnPoints: z.array(vec3Schema).min(1),
 });
 export type HeistDefinition = z.infer<typeof heistSchema>;
@@ -105,22 +108,69 @@ export const modeSchema = z.discriminatedUnion('id', [
   heistSchema,
 ]);
 
+/** Wybór areny trybu: debugowy override, potem seed (`Rng.fork('<tryb>-arena')`), bez seeda pierwsza z listy. */
 export function selectArena(
-  mode: ModeDefinition,
+  mode: {
+    id: ModeId;
+    arenas?: string[] | undefined;
+    roomId?: string | undefined;
+  },
   seed?: string,
   override?: string | null,
   debug = false,
 ): string {
   const ids = mode.arenas ?? (mode.roomId ? [mode.roomId] : []);
   if (debug && override) {
-    if (!ids.includes(override))
+    // Dawny mały pokój trybu (`roomId`) pozostaje dostępny jako override.
+    if (!ids.includes(override) && override !== mode.roomId)
       throw new Error(`Arena poza listą trybu: ${override}`);
     return override;
   }
   if (!ids.length) throw new Error('Brak aren trybu.');
   return seed === undefined
     ? ids[0]!
-    : new Rng(seed).fork('conquest-arena').pick(ids);
+    : new Rng(seed).fork(`${mode.id}-arena`).pick(ids);
+}
+
+/** Szturm na arenie z `arena.assault`; bez niego tylko dawny pokój `roomId`. */
+export function assaultForArena(
+  mode: AssaultDefinition,
+  room: RoomDefinition,
+): AssaultDefinition {
+  const layout = room.arena?.assault;
+  if (!layout) {
+    if (mode.roomId !== room.id)
+      throw new Error(`Brak układu Szturmu: ${room.id}`);
+    return mode;
+  }
+  return {
+    ...mode,
+    roomId: room.id,
+    maxAlive: room.arena?.maxAlive ?? mode.maxAlive,
+    sectors: layout.sectors,
+  };
+}
+
+/** Kradzież rdzenia na arenie z `arena.heist`; bez niego tylko dawny pokój `roomId`. */
+export function heistForArena(
+  mode: HeistDefinition,
+  room: RoomDefinition,
+): HeistDefinition {
+  const layout = room.arena?.heist;
+  if (!layout) {
+    if (mode.roomId !== room.id)
+      throw new Error(`Brak układu Kradzieży rdzenia: ${room.id}`);
+    return mode;
+  }
+  return {
+    ...mode,
+    roomId: room.id,
+    maxAlive: room.arena?.maxAlive ?? mode.maxAlive,
+    base: layout.base,
+    extraction: layout.extraction,
+    playerSpawn: layout.playerSpawn,
+    spawnPoints: layout.spawnPoints,
+  };
 }
 
 export function modeForArena(
@@ -180,6 +230,14 @@ export function validateMode(
     throw new Error('Nieobsługiwany wróg trybu.');
   if (room.maxAlive !== undefined && mode.maxAlive > room.maxAlive)
     throw new Error('Limit trybu przekracza limit pokoju.');
+  if (mode.id === 'assault' && room.arena?.assault) {
+    validateArenaAssault(mode, room);
+    return;
+  }
+  if (mode.id === 'heist' && room.arena?.heist) {
+    validateArenaHeist(mode, room);
+    return;
+  }
   if (mode.id === 'heist') {
     if (
       !freeModePosition(room, mode.base, mode.pickupRadiusM) ||
@@ -300,4 +358,140 @@ export function validateMode(
       ...mode.points.map((p) => p.position),
     ],
   });
+}
+
+function requireArenaPath(
+  navigation: ArenaNavigation,
+  from: Vec3,
+  to: Vec3,
+  label: string,
+): void {
+  const path = navigation.path(from, to);
+  const last = path.at(-1);
+  if (!last || last.x !== to.x || last.z !== to.z)
+    throw new Error(`Nieosiągalne: ${label} ${JSON.stringify(from)}.`);
+}
+
+function arenaPositionsFree(
+  room: RoomDefinition,
+  positions: readonly Vec3[],
+  radius: number,
+  label: string,
+): void {
+  const clearance = Math.max(radius, room.arena!.navigationClearanceM);
+  for (const p of positions)
+    if (!freeModePosition(room, p, clearance))
+      throw new Error(`${label} poza wolną podłogą: ${JSON.stringify(p)}.`);
+}
+
+function validateArenaPool(
+  mode: { maxAlive: number },
+  room: RoomDefinition,
+  min: number,
+): void {
+  const arena = room.arena!;
+  if (mode.maxAlive > tuning.modes.conquest.maxAlive)
+    throw new Error('Limit żywych wrogów trybu przekracza limit areny.');
+  if (!arena.spawnRing) throw new Error('Tryb na arenie wymaga spawnRing.');
+  const unique = new Set(arenaSpawnPoints(room).map((p) => JSON.stringify(p)));
+  if (unique.size < min)
+    throw new Error(`Pierścień posiłków wymaga co najmniej ${min} spawnów.`);
+}
+
+/** Układ Szturmu na dużej arenie: wolne pozycje i ścieżki nawigacji sektor po sektorze. */
+function validateArenaAssault(mode: AssaultDefinition, room: RoomDefinition) {
+  validateArenaPool(mode, room, tuning.modes.assault.minRingSpawns);
+  const sectors = room.arena!.assault!.sectors;
+  const navigation = new ArenaNavigation(room);
+  const all: Vec3[] = [];
+  for (const [index, sector] of sectors.entries()) {
+    arenaPositionsFree(room, sector.stations, mode.radiusM, 'Stacja');
+    arenaPositionsFree(
+      room,
+      [sector.playerSpawn, ...sector.spawnPoints],
+      mode.spawnClearanceM,
+      'Spawn Szturmu',
+    );
+    const [a, b] = sector.stations;
+    if (Math.hypot(a.x - b.x, a.z - b.z) < mode.radiusM * 2)
+      throw new Error('Strefy stacji nakładają się.');
+    for (const station of sector.stations) {
+      requireArenaPath(
+        navigation,
+        sector.playerSpawn,
+        station,
+        `stacja sektora ${index + 1}`,
+      );
+      for (const spawn of sector.spawnPoints)
+        requireArenaPath(
+          navigation,
+          spawn,
+          station,
+          `posiłki sektora ${index + 1}`,
+        );
+    }
+    const next = sectors[index + 1];
+    if (next)
+      requireArenaPath(
+        navigation,
+        sector.playerSpawn,
+        next.playerSpawn,
+        'kolejny sektor',
+      );
+    all.push(...sector.stations);
+  }
+  for (const [i, p] of all.entries())
+    for (const q of all.slice(i + 1))
+      if (Math.hypot(p.x - q.x, p.z - q.z) < mode.radiusM * 2)
+        throw new Error('Stacje różnych sektorów nakładają się.');
+}
+
+/** Układ Kradzieży na dużej arenie: baza i ewakuacja wolne, w obie strony przejezdne. */
+function validateArenaHeist(mode: HeistDefinition, room: RoomDefinition) {
+  validateArenaPool(mode, room, tuning.modes.heist.minRingSpawns);
+  const layout = room.arena!.heist!;
+  arenaPositionsFree(room, [layout.base], mode.pickupRadiusM, 'Baza');
+  arenaPositionsFree(
+    room,
+    [layout.extraction],
+    mode.extractRadiusM,
+    'Ewakuacja',
+  );
+  arenaPositionsFree(
+    room,
+    [layout.playerSpawn, ...layout.spawnPoints],
+    mode.spawnClearanceM,
+    'Spawn Kradzieży',
+  );
+  if (
+    Math.hypot(
+      layout.base.x - layout.extraction.x,
+      layout.base.z - layout.extraction.z,
+    ) <=
+    mode.pickupRadiusM + mode.extractRadiusM
+  )
+    throw new Error('Strefy Kradzieży rdzenia nakładają się.');
+  if (
+    Math.hypot(
+      layout.playerSpawn.x - layout.extraction.x,
+      layout.playerSpawn.z - layout.extraction.z,
+    ) <= mode.extractRadiusM
+  )
+    throw new Error('Start gracza leży w strefie ewakuacji.');
+  const navigation = new ArenaNavigation(room);
+  requireArenaPath(navigation, layout.playerSpawn, layout.base, 'baza');
+  requireArenaPath(
+    navigation,
+    layout.base,
+    layout.extraction,
+    'ewakuacja z bazy',
+  );
+  requireArenaPath(
+    navigation,
+    layout.extraction,
+    layout.base,
+    'baza z ewakuacji',
+  );
+  for (const spawn of layout.spawnPoints)
+    requireArenaPath(navigation, spawn, layout.base, 'posiłki Kradzieży');
 }
