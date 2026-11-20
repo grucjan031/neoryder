@@ -28,7 +28,7 @@ Ikony to proste kontury SVG rysowane `currentColor`; paleta tylko bursztyn `#ffa
 ## Liczenie
 
 1. **W trakcie runu** `AchievementTracker` (tworzony przez `RunScene`, subskrybuje `EventBus`) zbiera przyrosty liczników i flagi. Liczy tylko akcje gracza i tylko w aktywnym runie (`manager.active`); areny testowe i poligon go nie mają, więc nic nie liczą.
-   - `parry_success`, `execute_performed` (atakujący = gracz), `synergy_triggered`, `dash_used`.
+   - `parry_success` (parujący = gracz; odbity pocisk i sparowany cios wręcz), `execute_performed` (atakujący = gracz), `synergy_triggered`, `dash_used`.
    - **Zabójstwa wg źródła:** `enemy_killed` nie niesie typu obrażeń, więc tracker zapamiętuje kategorię (`#melee` / `#power` / `#gun`) ostatniego `damage_dealt` gracza na danym wrogu i przypisuje jej zabójstwo (`kills_melee` | `kills_power` | `kills_gun`). Obrażenia bez tych tagów (statusy, wybuchy) nie nadpisują kategorii.
    - Flagi: `pierwsza-krew`, `seria` (5 zabójstw w oknie 2 s czasu symulacji, `manager.state.elapsedS`), `bez-zadrasniecia` (`room_cleared` elity bez `damage_dealt` na graczu od `room_entered`), `trzy-punkty` (`conquest_captured`: A, B i C gracza naraz), `upadek-brandta` (zabity `securityChief`).
    - Przekroczenie progu względem stanu meta z początku runu emituje `achievement_earned { id }` (raz na osiągnięcie): komunikat w HUD „Naszywka: <tytuł>” przez 3 s w lewym górnym rogu. Nagroda wpływa dopiero przy rozliczeniu.

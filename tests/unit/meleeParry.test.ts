@@ -48,8 +48,11 @@ function setup(enemyZ = -2, knowsPosition = true) {
     structuredClone(tuning),
   );
   let parried = 0;
-  const successes: { projectile: number | null; attacker: number | null }[] =
-    [];
+  const successes: {
+    defender: number;
+    projectile: number | null;
+    attacker: number | null;
+  }[] = [];
   const points: { x: number; y: number; z: number }[] = [];
   bus.on('melee_parried', ({ point }) => {
     parried++;
@@ -71,6 +74,7 @@ function setup(enemyZ = -2, knowsPosition = true) {
     successes,
     points,
     enemy,
+    player,
   };
 }
 
@@ -153,11 +157,22 @@ describe('parowanie ciosów wręcz', () => {
     const t = setup();
     t.stepFor(0.05, ['block']);
     t.hit(['#melee']);
-    expect(t.successes).toEqual([{ projectile: null, attacker: t.enemy }]);
+    expect(t.successes).toEqual([
+      { defender: t.player, projectile: null, attacker: t.enemy },
+    ]);
     const p = t.points[0]!;
     expect(p.z).toBeCloseTo(-tuning.melee.meleeParrySparkM);
     expect(p.x).toBeCloseTo(0);
-    expect(p.y).toBeCloseTo(1.6 + tuning.melee.meleeParrySparkDropM);
+    expect(p.y).toBeCloseTo(1.6 + tuning.melee.meleeParrySparkOffsetYM);
+  });
+
+  it('atakujący w osi oczu: iskra w kierunku patrzenia, bez NaN', () => {
+    const t = setup(0);
+    t.stepFor(0.05, ['block']);
+    expect(t.hit(['#melee'])).toBe(0);
+    const p = t.points[0]!;
+    expect(Number.isFinite(p.x) && Number.isFinite(p.z)).toBe(true);
+    expect(p.z).toBeCloseTo(-tuning.melee.meleeParrySparkM);
   });
 
   it('bez parowania nie ma parry_success', () => {

@@ -31,7 +31,9 @@ export class PlayerEnergy {
         if (killer === owner && tags.includes('#melee'))
           this.add(tuning.powers.meleeKillEnergy);
       }),
-      bus.on('parry_success', () => this.add(tuning.powers.parryEnergy)),
+      bus.on('parry_success', ({ defender }) => {
+        if (defender === owner) this.add(tuning.powers.parryEnergy);
+      }),
     );
     this.emit();
   }

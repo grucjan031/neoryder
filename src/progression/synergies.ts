@@ -201,7 +201,9 @@ export class SynergySystem {
             damage: e.amount,
           });
       }),
-      bus.on('parry_success', () => this.fire('parry_success', {})),
+      bus.on('parry_success', (e) => {
+        if (e.defender === user) this.fire('parry_success', {});
+      }),
       bus.on('execute_performed', (e) => {
         if (e.attacker === user) this.fire('execute_performed', {});
       }),

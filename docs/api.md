@@ -319,7 +319,7 @@ export interface GameEvents {
   entity_despawned: { id: EntityId };
   damage_dealt: { source: EntityId | null; target: EntityId; amount: number; tags: readonly string[] };   // F1: rozszerzone o point/dir/killed — patrz „Kontrakty F1”
   enemy_killed: { id: EntityId; killer: EntityId | null; tags: readonly string[] };
-  parry_success: { projectile: EntityId | null; attacker: EntityId | null }; // projectile: null = sparowany cios wręcz
+  parry_success: { defender: EntityId; projectile: EntityId | null; attacker: EntityId | null }; // defender = kto parował (odbiorcy filtrują po nim); projectile: null = sparowany cios wręcz
   power_used: { power: string; user: EntityId };
   hitstop: { ms: number };
 }

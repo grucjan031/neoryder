@@ -46,7 +46,11 @@ export interface GameEvents {
     tags: readonly string[];
   };
   /** Udane parowanie: odbity pocisk (`projectile`) albo sparowany cios wręcz (`projectile: null`). */
-  parry_success: { projectile: EntityId | null; attacker: EntityId | null };
+  parry_success: {
+    defender: EntityId;
+    projectile: EntityId | null;
+    attacker: EntityId | null;
+  };
   power_used: { power: string; user: EntityId };
   power_cooldown: { power: string; user: EntityId; cooldownS: number };
   power_released: { power: string; user: EntityId };

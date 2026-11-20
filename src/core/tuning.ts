@@ -538,9 +538,9 @@ export const tuning = {
     /** Ogłuszenie i odrzut wroga, którego cios został sparowany. */
     meleeParryStunS: 0.9,
     meleeParryKnockback: 4,
-    /** Iskra parowania wręcz: odległość od oczu w stronę atakującego i obniżenie [m]. */
+    /** Iskra parowania wręcz: odległość od oczu w stronę atakującego i przesunięcie w pionie względem oczu [m] (ujemne = niżej). */
     meleeParrySparkM: 0.8,
-    meleeParrySparkDropM: -0.35,
+    meleeParrySparkOffsetYM: -0.35,
     parrySpeedMult: 1.8,
     parryDamageMult: 2,
   },

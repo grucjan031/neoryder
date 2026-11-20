@@ -207,6 +207,7 @@ export class PlasmaBlade {
       damageMult: m.parryDamageMult,
     });
     this.bus.emit('parry_success', {
+      defender: this.deps.owner,
       projectile: hit.projectile,
       attacker: hit.owner,
     });
@@ -248,18 +249,25 @@ export class PlasmaBlade {
         Math.cos(((arcDeg / 2) * Math.PI) / 180)
     )
       return 1;
-    const spark = m.meleeParrySparkM / len;
+    // Iskra w stronę atakującego; gdy stoi w osi oczu, w kierunku patrzenia.
+    const toX = len > 1e-6 ? dx / len : flat > 1e-6 ? dir.x / flat : 0;
+    const toZ = len > 1e-6 ? dz / len : flat > 1e-6 ? dir.z / flat : 0;
+    const reach = Math.min(len > 1e-6 ? len : Infinity, m.meleeParrySparkM);
     this.bus.emit('melee_parried', {
       defender: this.deps.owner,
       attacker: info.source,
       point: {
-        x: origin.x + dx * Math.min(1, spark),
-        y: origin.y + m.meleeParrySparkDropM,
-        z: origin.z + dz * Math.min(1, spark),
+        x: origin.x + toX * reach,
+        y: origin.y + m.meleeParrySparkOffsetYM,
+        z: origin.z + toZ * reach,
       },
     });
     // Parowanie wręcz liczy się jak każde parowanie (implanty, synergie, naszywki, energia).
-    this.bus.emit('parry_success', { projectile: null, attacker: info.source });
+    this.bus.emit('parry_success', {
+      defender: this.deps.owner,
+      projectile: null,
+      attacker: info.source,
+    });
     this.bus.emit('hitstop', { ms: m.parryHitstopMs });
     this.bus.emit('camera_shake', {
       intensity: m.parryShake,
