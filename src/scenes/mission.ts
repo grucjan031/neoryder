@@ -118,6 +118,7 @@ export class MissionScene implements Scene {
       this.snapshot = saved;
     } else {
       const existing = await this.store.loadMission();
+      if (this.disposed) return;
       // Najpierw rozliczamy ukończoną próbę, której zapis meta mógł zostać przerwany.
       if (existing?.completed) {
         this.navigate(
@@ -584,7 +585,7 @@ export class MissionScene implements Scene {
     for (const off of this.off.splice(0)) off();
     for (const entry of this.active.values()) entry.director.dispose();
     this.active.clear();
-    if (this.ready) this.room?.dispose();
+    this.room?.dispose();
     this.radio?.dispose();
     this.direction?.dispose();
     this.disposeSummary?.();

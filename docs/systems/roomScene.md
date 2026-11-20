@@ -87,7 +87,7 @@ na identyczny czas zamiany przedmiotu jak w Arenie.
 ## Zasoby i testy
 
 `dispose()` odpina subskrypcje i komendy, resetuje aktywne moce, usuwa widoki,
-zwalnia kontroler oraz `world.free()`. Ponowne `dispose()` jest bezpieczne.
+zwalnia kontroler oraz `world.free()`. Ponowne `dispose()` jest bezpieczne. Po `dispose()` żaden `await` w `init()`/`buildLayout()` nie tworzy już zasobów. W ciszy zwycięstwa dyrektorzy posiłków misji są zatrzymani, a martwy gracz nie strzela (spust traktowany jako puszczony).
 `roomModels.ts` buforuje obietnice ostylowanych modeli bloków GLB (także brak
 pliku); każdy pokój dostaje własne węzły i współdzieloną geometrię. Geometria
 cache żyje przez sesję i nie jest zwalniana przez pokój. Bryły zastępcze i drzwi

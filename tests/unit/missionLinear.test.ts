@@ -10,6 +10,7 @@ import {
   Vector3,
 } from 'three';
 import { MissionScene } from '../../src/scenes/mission';
+import { RoomScene } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
 import { GameLoop, SIM_DT } from '../../src/core/loop';
 import { Rng } from '../../src/core/rng';
@@ -393,4 +394,30 @@ it('pozwala fizycznie przejść całą trasę: bez teleportacji i komend kończ�
     expect(state(scene).objectives[id]).toBe('done');
   }
   await vi.waitFor(() => expect(scene.query('screen')).toBe('summary'));
+});
+
+it('dispose po nieudanym init zwalnia pokój', async () => {
+  vi.spyOn(RoomScene.prototype, 'init').mockRejectedValue(new Error('init'));
+  const dispose = vi.spyOn(RoomScene.prototype, 'dispose');
+  const scene = new MissionScene({
+    store: createMemorySaveStore(),
+    loadModels: false,
+    navigate: vi.fn(),
+    params: new URLSearchParams('mission=m01-maszty&seed=linear-fail'),
+  });
+  await expect(
+    scene.init(
+      {
+        bus: new EventBus(),
+        commands: new CommandRegistry(),
+        rng: new Rng('linear-fail'),
+        tuning: structuredClone(tuning),
+        debug: true,
+        loop: new GameLoop({ step() {}, render() {} }),
+      },
+      new ThreeScene(),
+    ),
+  ).rejects.toThrow('init');
+  scene.dispose();
+  expect(dispose).toHaveBeenCalledTimes(1);
 });

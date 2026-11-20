@@ -557,3 +557,47 @@ it('rysuje oprawę z układu pokoju i zwalnia jej zasoby bez wycieku', async () 
   expect(disposed.size).toBe(new Set(resources).size);
   expect(tuning.render.skyFlash).toBe(0);
 });
+
+it('cisza zwycięstwa zatrzymuje dyrektorów posiłków misji', async () => {
+  const { scene } = await setup();
+  const director = { step: vi.fn(), stop: vi.fn(), dispose: vi.fn() };
+  (Reflect.get(scene, 'reinforcements') as unknown[]).push(director);
+  scene.step(SIM_DT, idle);
+  expect(director.step).toHaveBeenCalledTimes(1);
+  scene.enterVictoryHold();
+  expect(director.stop).toHaveBeenCalledTimes(1);
+  director.step.mockClear();
+  scene.step(SIM_DT, idle);
+  expect(director.step).not.toHaveBeenCalled();
+});
+
+it('gracz zabity w tym samym kroku nie strzela z wciśniętym spustem', async () => {
+  const { scene } = await setup();
+  const damage = Reflect.get(scene, 'damage') as DamageSystem;
+  const held = Reflect.get(scene, 'heldItem') as {
+    held: string;
+    step(): unknown;
+  };
+  vi.spyOn(held, 'held', 'get').mockReturnValue('gun');
+  vi.spyOn(held, 'step').mockReturnValue({
+    bladeInput: idle,
+    triggerHeld: true,
+  });
+  const weapon = Reflect.get(scene, 'weapon') as {
+    step(dt: number, aim: { triggerHeld: boolean }): void;
+  };
+  const fired: boolean[] = [];
+  const realWeaponStep = weapon.step.bind(weapon);
+  vi.spyOn(weapon, 'step').mockImplementation((dt, aim) => {
+    fired.push(aim.triggerHeld);
+    realWeaponStep(dt, aim);
+  });
+  scene.step(SIM_DT, idle);
+  expect(fired).toEqual([true]);
+  vi.spyOn(damage, 'step').mockImplementationOnce(() => {
+    damage.deal(scene.playerId, { source: null, amount: 1e6, tags: [] });
+  });
+  fired.length = 0;
+  scene.step(SIM_DT, idle);
+  expect(fired).toEqual([false]);
+});

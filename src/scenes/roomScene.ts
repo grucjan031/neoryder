@@ -1061,6 +1061,7 @@ export class RoomScene implements Scene {
         cellSize: this.options.staticCellSize,
       });
     }
+    if (this.disposed) return;
     for (const door of this.layout.doors) {
       const { size, position } = door;
       const geometry = new BoxGeometry(size.x, size.y, size.z);
@@ -1539,7 +1540,7 @@ export class RoomScene implements Scene {
       if (this.node.fixed?.objectives.length && this.mission?.complete)
         this.completeRoom();
     }
-    if (!this.health.dead)
+    if (!this.health.dead && !this.victoryHold)
       for (const director of this.reinforcements) director.step(dt);
     this.missionHud?.step();
     this.statuses.step(dt);
@@ -1550,7 +1551,7 @@ export class RoomScene implements Scene {
       if (weapon === this.weapon && this.heldItem.held === 'gun')
         weapon.step(pdt, {
           ...this.aim(),
-          triggerHeld,
+          triggerHeld: triggerHeld && !this.health.dead,
           aim: this.heldItem.aim,
         });
       else weapon.cool(pdt);
@@ -1684,6 +1685,7 @@ export class RoomScene implements Scene {
     if (this.victoryHold || this.disposed) return;
     this.victoryHold = true;
     this.director.stop();
+    for (const director of this.reinforcements) director.stop();
     this.projectiles.dispose();
     this.statuses.reset();
     // Gracz jest nietykalny, zanim cokolwiek zacznie się rozpadać.
