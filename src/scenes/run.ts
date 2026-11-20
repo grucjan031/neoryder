@@ -51,6 +51,7 @@ import { roomPlanner } from '../world/threat';
 import type { WavesDefinition } from '../world/waves';
 import type { Scene } from './index';
 import { getLiteFx } from '../render/fxMode';
+import { warmUpRender } from '../render/renderWarmUp';
 import { RoomScene } from './roomScene';
 import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 
@@ -981,6 +982,10 @@ export class RunScene implements Scene {
       this.roomCommands = null;
       throw error;
     }
+    // Ekran ładowania pokoju jeszcze zasłania obraz: shadery i tekstury nowego pokoju kompilujemy teraz.
+    await warmUpRender().catch((error: unknown) =>
+      console.warn('Rozgrzewka renderu pokoju nie powiodła się.', error),
+    );
     if (this.disposed) {
       room.dispose();
       this.room = null;

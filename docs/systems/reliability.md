@@ -11,6 +11,16 @@ Specyfikacja zachowań odpornościowych: pauza, zapis, migracje, uszkodzone i no
 - Pauza zawiesza wspólny `AudioContext` (`suspend`), wznowienie robi `resume`. Zdarzenia `pointerdown` / `keydown` / `touchstart` odblokowują audio tylko poza pauzą. Zegar dyrektora muzyki to `audioContext.currentTime`, więc muzyka też stoi. Muzyka jest wyłączona pod automatem (`navigator.webdriver`) i w `fx=lite`.
 - Logika wrogów, pocisków, statusów, cooldownów i trybów korzysta z `step(dt)`, więc w pauzie stoi razem z pętlą.
 
+## Rozgrzewka renderu przy wczytywaniu sceny
+
+Za ekranem ładowania `main.ts` (po `scene.init()`) i `RunScene.openRoom` (po `room.init()`, przed `roomReady`) wołają `warmUpRender()` (`src/render/renderWarmUp.ts`, opis: [render.md](render.md#rozgrzewka-renderu-wczytywanie-sceny)). Jest to optymalizacja, nigdy warunek startu:
+
+- Błąd rozgrzewki (wyjątek renderera, utrata kontekstu) tylko loguje `console.warn`; scena startuje bez niej, a shadery kompilują się w pierwszej klatce jak dawniej.
+- Limit `tuning.ui.renderWarmUpTimeoutMs` = 10 s: wiszące `compileAsync` nie blokuje wejścia do gry. Po przekroczeniu `warmUp` dostaje `cancelled() === true` i nie rysuje już fazy 2 w trakcie gry.
+- Sprzątanie po przerwanym init zachowane: `RunScene.openRoom` sprawdza `disposed` dopiero po `await warmUpRender()` i wtedy zwalnia pokój; zdarzenia podpięte przez pokój znikają razem z nim (test w `tests/unit/runScene.test.ts`).
+- `fx=lite` (testy na rendererze programowym) nie rejestruje rozgrzewki, więc e2e w trybie lite nie płacą za kompilację.
+- Rozgrzewka nie zmienia stanu symulacji ani `Rng`: tylko rysuje pipeline z `dt = 0`; `window.__neoryder` (debug) i `scene_loaded` pojawiają się po niej.
+
 ## Przechowywanie
 
 - IndexedDB `neoryder` (wersja bazy 1), jeden object store `saves`; klucze rekordów: `meta`, `run`, `mission`. Każde połączenie jest krótkie (otwarte na jedną transakcję). `onblocked` odrzuca operację błędem „Baza zapisu jest zablokowana.”.
