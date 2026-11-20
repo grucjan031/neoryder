@@ -77,7 +77,9 @@ export class AchievementTracker {
         if (this.kinds.get(id) === ACHIEVEMENT_RULES.bossKind)
           this.setFlag(ACHIEVEMENT_IDS.boss);
       }),
-      bus.on('parry_success', () => this.counted('parry_success')),
+      bus.on('parry_success', ({ defender }) => {
+        if (defender === this.playerId) this.counted('parry_success');
+      }),
       bus.on('execute_performed', ({ attacker }) => {
         if (attacker === this.playerId) this.counted('execute_performed');
       }),

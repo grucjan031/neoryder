@@ -12,7 +12,13 @@ Uwaga o danych: pierwotne progi `[0, 2, 5, 8]` zakleszczały każde drzewko (jed
 
 ## Zakup i reset
 
-`MetaManager.buyTalent(id)` (błędy to `Error` z polskim komunikatem) sprawdza po kolei: węzeł istnieje, nie jest kupiony, `freePoints >= cost`, wszystkie `requires` kupione, punkty wydane w drzewku węzła ≥ `tierThresholds[tier - 1]`, każde `requiresTreePoints[drzewko]` spełnione. Po sukcesie emituje `talents_changed { talents }`. `resetTalents()` jest darmowy i zawsze pełny: czyści listę, punkty wracają do puli, emituje `talents_changed`. `spentInTree(drzewko)` zwraca punkty wydane w drzewku. `debugGrantTalent(id)` dodaje talent bez kosztu i bez sprawdzania progów (konsola debug; nieznany id to błąd).
+Pula punktów: `talentPoints(level) = level - 1`, `freePoints = talentPoints - spentPoints` (`spentPoints` = suma `cost` kupionych węzłów).
+
+`MetaManager.buyTalent(id)` (błędy to `Error` z polskim komunikatem) sprawdza po kolei: węzeł istnieje, nie jest kupiony, `freePoints >= cost`, wszystkie `requires` kupione, punkty wydane w drzewku węzła ≥ `tierThresholds[tier - 1]`, każde `requiresTreePoints[drzewko]` spełnione. Po sukcesie emituje `talents_changed { talents }`. `resetTalents()` jest darmowy i zawsze pełny: czyści listę, punkty wracają do puli, emituje `talents_changed`. `spentInTree(drzewko)` zwraca punkty wydane w drzewku. `debugGrantTalent(id)` dodaje talent bez kosztu i bez sprawdzania progów (konsola debug; nieznany id to błąd, już posiadany jest pominięty bez zdarzenia).
+
+## Walidacja danych (`talentSchema.ts`)
+
+Węzeł (`.strict()`): `id`, `name`, `description` niepuste, `tier` ∈ {1,2,3,4}, `cost` całkowity 1–3, `requires` (węzeł nie może wymagać samego siebie), opcjonalne `requiresTreePoints` (drzewko → całkowita liczba ≥ 1), `effects` (`.strict()`: `modifiers` o schemacie `implantModifierSchema`, `triggers` o schemacie `implantTriggerSchema` – z jego regułami, w tym obowiązkowym `cooldownS` dla `heal`/`explode`/`apply_status_area`, `tags` zaczynające się od `#`, `patches`, `runStart.credits` całkowite ≥ 0). Drzewko: dokładnie 4 progi, niemalejące; id węzłów unikalne w drzewku i w całym komplecie; jedno drzewko na id; każde `requires` musi wskazywać istniejący węzeł (w dowolnym drzewku).
 
 ## Efekty węzła (`effects`)
 
@@ -30,13 +36,17 @@ Limity z ADR (testowane na danych): na drzewko suma `damage` (percent) ≤ 0.15,
 
 `resolveTalents(ids, trees?)` → `{ modifiers, triggers, tags, patches, runStartCredits }`. Węzły są przetwarzane w kolejności posortowanych id (determinizm, duplikaty liczą się raz), łatki trafiają więc do `resolveLoadout` posortowane po id węzła, w węźle wg tablicy. Nieznany id to błąd `Nieznany talent: <id>`. `triggers` ma postać `{ talentId, trigger }`.
 
-`TalentSystem` (analogiczny do `ImplantSystem`) nakłada i zdejmuje modyfikatory po źródle `talent:<id>` na podanych instancjach `Stats` (`add`, `set`, `clear`), udostępnia `ids()`, `tags()`, `triggers()`, `patches()` i przy zmianie `maxHealth` koryguje bieżące zdrowie (wzrost dodaje różnicę, spadek przycina).
+`TalentSystem` (analogiczny do `ImplantSystem`) nakłada i zdejmuje modyfikatory po źródle `talent:<id>` na podanych instancjach `Stats` (`add`, `set`, `clear`; brak pojedynczego `remove`), udostępnia `has()`, `ids()` (kolejność nabycia), `tags()`, `triggers()`, `patches()` (te trzy liczone przez `resolveTalents`, więc w kolejności posortowanych id, a `tags()` zachowuje powtórzenia, które liczą się do `requiresCount` synergii). `add` zwraca `false` dla duplikatu, nieznany id to błąd. Przy zmianie `maxHealth` (odczyt z pierwszej instancji `Stats` o wartości > 0) koryguje bieżące zdrowie tak jak `ImplantSystem`: wzrost dodaje różnicę (tylko żywemu graczowi), spadek przycina do nowego maksimum; opcja `adjustHealth: false` wyłącza korektę (pokój używa jej przy wstępnym `set` z `run.talents`, bo `run.hp` już zawiera premię).
 
 ## Działanie w pokoju i w runie
 
-- `RunManager.newRun(seed, loadoutId, { talents, baseMaxHealth? })` zamraża talenty w `RunState.talents` (bez duplikatów, nieznany id to błąd), dolicza `runStartCredits` do Kredytów startowych i podnosi startowe `hp` o przyrost `maxHealth` z talentów względem bazy (`baseMaxHealth`, domyślnie `initialHp` menedżera = 100). Dzięki temu run z talentem `maxHealth +15` startuje z pełnym zdrowiem 115, a `RoomScene` jak dotąd startuje z `run.hp`.
+- `RunManager.newRun(seed, loadoutId, { talents, baseMaxHealth? })` zamraża talenty w `RunState.talents` (bez duplikatów, nieznany id to błąd), ustawia startowe Kredyty na `runStartCredits` (suma `runStart.credits` talentów) i startowe `hp` na `initialHp` menedżera (100) plus przyrost `maxHealth` z talentów liczony na `Stats` z bazą `baseMaxHealth` (domyślnie `initialHp`; uwzględnia tylko modyfikatory `maxHealth`, flat i percent). Dzięki temu run z talentem `maxHealth +15` startuje z pełnym zdrowiem 115, a `RoomScene` jak dotąd startuje z `run.hp`.
 - `RoomScene` czyta talenty z `run.talents`: modyfikatory na `playerStats` i `player.stats`, tagi talentów obok tagów ekwipunku i implantów w `SynergySystem.setTags`, wyzwalacze talentów razem z wyzwalaczami implantów w `setImplantTriggers` (id synergii `implant:talent:<id>:<n>`, zachowanie implantów bez zmian). Dzięki temu `#build_blade` + `#build_resonance` z korzeni włącza synergię `bladeDancer` (`query('synergies')`).
 - Łatki: `resolveLoadout(run.loadout, [...łatki talentów (po id węzła), ...options.patches])`.
+
+### Odnowienia wyzwalaczy talentów (`cooldownS`, s)
+
+`bladeRiposte` 1; `bladeHeavyBreaker` 2 (wyzwalacz: `damage_dealt` z tagiem `#heavy`); `bladePhantomStep` 1,5; `resonanceArcConduct` 1,5 (wyzwalacz: `damage_dealt` z tagiem `#elektrycznosc`; łańcuch ma tag `#synergy`, więc nie wyzwala sam siebie); `resonanceFluxReturn` 1; `gunnerIncendiaryRounds` 1; `gunnerHeadhunter` 2; `hybridStormDancer` 2; `hybridResonanceGunner` 1,5; `hybridBladeGunner` 2 (dash) i 1,5 (zabójstwo `#melee`); `hybridArcBlade` 1,5 (trafienie `#melee`, łańcuch 5 m × 0,35, tag `#elektrycznosc`); `hybridApexProtocol` 2 (dowolne zabójstwo gracza: +10 energii, −20 ciepła). Wyzwalacze wszystkich talentów działają jak wyzwalacze implantów (osobne odnowienie na wyzwalacz, efekt czasowy odświeżany bez kumulacji).
 
 ## Debug
 

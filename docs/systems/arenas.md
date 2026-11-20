@@ -6,7 +6,9 @@ walidacja i rzuty SVG: [arena-generators.md](arena-generators.md).
 `src/data/modes/conquest.json` wskazuje listę `arenas`. Arena jest istniejącą
 definicją pokoju combat z metadanymi `arena`; nie ma osobnego loadera geometrii.
 `arena.exclusive` wyłącza port z puli zwykłego runu. Dotychczasowe dane
-combatRing mają dodatkowe punkty/spawny trybu, bez zmiany zwykłego układu.
+combatRing mają dodatkowe punkty/spawny trybu, bez zmiany zwykłego układu
+(punkty A, B o promieniu 2,75 m i C o 3,5 m, 4 spawny trybu, bez `exclusive`
+i `spawnRing`, więc tryb używa starej ścieżki spawnu poniżej).
 Wybór, zgodność `roomId` i zapis: [modes.md](modes.md).
 
 ## Silnik dużych map
@@ -27,9 +29,34 @@ bierze miejsce najbliższe spornej strefie lub potencjalnemu celowi wroga.
 Jeśli pierścień jest pusty, wybiera najbliższy dozwolony spawn za jego
 zewnętrzną krawędzią. Remisy rozstrzyga `Rng`.
 
-Start lub cel poza siatką (margines przy przeszkodzie/krawędzi) są zastępowane
-najbliższą przejezdną komórką w promieniu `tuning.arena.navFallbackCells`.
-Nawigacja warstwowa używa pól `Int32Array` budowanych na żądanie,
+Dokładny algorytm (`selectArenaSpawn`, `Conquest.spawnPosition`), ważny dla
+determinizmu: pula = `arena.spawnPoints` (jeśli są, ze swoim `y`; inaczej
+`room.spawnPoints` na wysokości `playerSpawn.y`; `y` z puli areny obowiązuje
+tylko przy `spawnRing`), przefiltrowana przez „bezpieczne”: wolne koło
+`tuning.modes.conquest.spawnClearanceM` (0,8), odległość XZ od gracza ≥
+`minSpawnDistanceM` (15) i ≥ 2 × `spawnClearanceM` od każdego żywego wroga.
+Potem: `allowed` = odległość od gracza ≥ `minM` (puste → brak spawnu); `inside` =
+`allowed` z odległością ≤ `maxM`; `hidden` = elementy `inside` zasłonięte dla oczu
+gracza (raycast do punktu `y + spawnSightHeightM` = 1,5 m po geometrii świata);
+kandydaci = `hidden`, a gdy puste `inside`, a gdy puste `allowed`. Wynik punktacji:
+gdy `inside` niepuste i są cele — minimalna odległość do celu (sporne punkty
+przejęcia, a gdy żaden nie jest sporny — punkty niebędące własnością wroga),
+inaczej odległość do gracza; wygrywa najmniejsza, remis rozstrzyga jedno
+`rng.pick` na kandydatach o równym wyniku, w kolejności puli. Potem host losuje
+`ctx.rng.pick(definition.enemies)` (tylko gdy spawn istnieje; losowanie
+zużywane nawet gdy `spawnEnemy` odrzuci wroga z powodu limitu). Strumień to
+wspólny `ctx.rng` pokoju (`rng.fork('room:<nodeId>')`), nie osobny fork. Bez
+`spawnRing`: pula to punkty wroga (`owner==='enemy'`), a gdy żaden nie jest
+bezpieczny, pula spawnów areny/krawędzi podłóg (rogi bloków podłogi cofnięte o
+`edgeInsetM` 2 m); `rng.pick`. Spawn wstrzymany, gdy wynik rozstrzygnięty, bilety
+wyczerpane, żywych ≥ `maxAlive` lub trwa odstęp `spawnIntervalS`.
+
+Nawigacja warstwowa (`ArenaSurfaceNavigation`, używana gdy jakikolwiek blok ma
+`walkable`; w przeciwnym razie `ArenaNavigation` buduje płaską siatkę po podłodze
+na wysokości `playerSpawn.y`, z pominięciem komórek przy obróconych blokach)
+używa pól `Int32Array` budowanych na żądanie (start lub cel poza siatką — margines przy
+przeszkodzie/krawędzi — są zastępowane najbliższą przejezdną komórką w promieniu
+`tuning.arena.navFallbackCells`),
 a w kroku symulacji przegląda tylko prosty odcinek do zakrętu. Dla
 syntetycznej areny 450×300 m test używa komórek 2 m, dwóch ramp,
 trzech poziomów i pięciu stref. Sprawdza dojście ze wszystkich
@@ -633,8 +660,20 @@ przy wejściu do wody. [Rzut areny](../arenas/arenaFloodedDocks.svg).
 
 Wysokich punktów nie przeniesiono na grunt. `blocks[].walkable` oznacza
 płyty i rampy; `ArenaSurfaceNavigation` pod istniejącym `ArenaNavigation`
-buduje warstwy 1 m, margines 0,8 m, prześwit 2 m i maksymalny wznios
-między sąsiadami 0,35 m. Połączenie różnych powierzchni rampy istnieje
+buduje warstwy o boku `navigationCellM`, marginesie `navigationClearanceM`
+(0,8; zajezdnia 1,1), prześwicie `navigationHeadroomM` (2) i maksymalnym wzniosie
+między sąsiadami `navigationMaxRiseM` (0,35; estakada 0,52); ostatnie dwa pola są
+wymagane (brak = wyjątek). Algorytm: środki komórek `(i+0,5)·cell` na każdym bloku
+`walkable`; komórka jest wolna, gdy w środku i w czterech punktach oddalonych o
+margines w osiach istnieje powierzchnia o wysokości różnej ≤ wznios, i żaden blok
+nie zajmuje pasa `(y, y+prześwit)` w promieniu marginesu. Sąsiedzi: 4 kierunki
+(−x, +x, −z, +z), różnica wysokości ≤ wznios. Pole odległości to BFS z kosztem 1
+od celu; krok to pierwszy sąsiad o polu o 1 mniejszym (kolejność kierunków jak
+wyżej), a `next` skraca trasę do najdalszego punktu prostego odcinka, którego
+próbki co pół komórki leżą na spójnych komórkach (bez skoków między dachami).
+Dozwolone obroty powierzchni: wokół X albo wokół Z (rampa), nigdy oba naraz i
+nigdy wokół Y (wyjątek przy budowie siatki); obrót Y wolno mieć tylko na
+niechodzonych rekwizytach (obwiednia). Połączenie różnych powierzchni rampy istnieje
 wyłącznie na końcach, więc wróg nie próbuje wejść przez boczny próg.
 Przeszkody nad ulicą nie blokują przejścia pod estakadą. Skracanie trasy
 sprawdza wysokość oraz kolejne połączenia, bez skrótów między dachami.
@@ -669,17 +708,16 @@ Sortowanie przeszkód nawigacji według komórek ogranicza przygotowanie
 siatki do sprawdzania brył w sąsiedztwie próbki.
 
 Ten sam pomiar aren (rzeczywiste GLB, komórki z danych: Estakada 180 m,
-targ 20 m; jedno końcowe scalanie świata):
+Dachy 200 m; jedno końcowe scalanie świata):
 
 | Arena                                         | Siatki przed | Siatki po | Partie InstancedMesh |
 | --------------------------------------------- | -----------: | --------: | -------------------: |
 | Estakada                                      |         3740 |       796 |                  504 |
-| Targ                                          |          877 |       198 |                   40 |
 | Dachy (300×260, komórki 200 m, bez instancji) |        23319 |       194 |                    0 |
 
 `arenaPerf.test.ts` obejmuje prawdziwy host Przejęcia, nawigację i Rapiera.
 Estakada sprawdza 12 wrogów (8 szturmowców, 4 strzelców), limit 2 ms/krok.
-Targ zachowuje test przeciążeniowy 30 wrogów, limit 6 ms/krok.
+Dachy mają test przeciążeniowy 30 wrogów, limit 6 ms/krok.
 Dachy mają też test budżetów ADR D8: nawigacja 170–190 ms (siatka 1 m i pięć
 pól, ≤ 500 ms), 12 wrogów z puli areny na ulicach i dachach 0,52 ms/krok (≤ 2 ms).
 
@@ -715,7 +753,7 @@ wrogów i jakością. Nie uruchamiać go z `fx=lite` przy ocenie oprawy.
 Komendy dla Terminalu kontenerowego są w sekcji tej areny.
 
 Estakadę i komendy do jej poziomów opisano w sekcji „Estakada w smogu”.
-Targ: `?scene=conquest&arena=arenaRooftops&debug=1`. Wpisz `god`, przejdź A–B–C
+Dachy (dawny „Targ”): `?scene=conquest&arena=arenaRooftops&debug=1`. Wpisz `god`, przejdź A–B–C
 bez skoków, potem schody/kładki targu. Sprawdź `room`,
 `weather` i `conquest` przez query; profil powinien wynosić odpowiednio
 `smog` i `drizzleWind`. Oceń czytelność wrogów w pyle i mżawce, drogi posiłków

@@ -28,12 +28,12 @@ Implanty to per-runowe ulepszenia zdobywane z nagród po pokojach, w sklepie ora
 
 Reguły walidacji (`implantSchema` i `loadImplantDefinitions`):
 
-- `id` — niepusty identyfikator zgodny z nazwą pliku `<id>.json`, unikalny w kolekcji.
-- `name`, `description` — polskie teksty UI w stylistyce cyberpunkowej, bez nazw chronionych z `AGENTS.md`.
+- `id` — niepusty identyfikator, unikalny w kolekcji (powtórzenie = błąd ładowania). Konwencja: zgodny z nazwą pliku `<id>.json` — loader tego nie sprawdza.
+- `name` (wymagane), `description` (opcjonalne w schemacie, w danych zawsze obecne) — polskie teksty UI w stylistyce cyberpunkowej, bez nazw chronionych z `AGENTS.md`.
 - `rarity` — `'common' | 'rare' | 'epic' | 'legendary'`.
 - `tags` — tablica tagów zaczynających się od `#` (`#melee`, `#power`, `#gun`, `#elektrycznosc`).
-- `modifiers` — modyfikatory statystyk (`stat ∈ STAT_IDS`, `type ∈ 'flat' | 'percent' | 'mult'`, `value` skończone); pole `source` (`implant:<id>`) nadaje `ImplantSystem` przy nakładaniu.
-- `triggers` (opcjonalne) — wyzwalacze oparte o te same schematy `whenSchema` i `effectSchema` co `SynergySystem` (`add_energy`, `cool_weapon`, `stat_modifier_timed`, `chain_on_hit`).
+- `modifiers` — modyfikatory statystyk (`stat ∈ STAT_IDS`, `type ∈ 'flat' | 'percent' | 'mult'`, `value` skończone; wartość statu = `max(0, (baza + Σflat) × (1 + Σpercent) × Πmult)`); pole `source` (`implant:<id>`) nadaje `ImplantSystem` przy nakładaniu.
+- `triggers` (opcjonalne) — wyzwalacze `{ when, effects (≥ 1), cooldownS? > 0 }` oparte o te same schematy `whenSchema` i `effectSchema` co `SynergySystem` (`heal`, `explode`, `apply_status_area`, `add_energy`, `cool_weapon`, `stat_modifier_timed`, `chain_on_hit`). Reguły: `heal`, `explode` i `apply_status_area` wymagają `cooldownS`; `at: 'target'` tylko przy `enemy_killed`/`damage_dealt`; `tagsAny`/`targetStatus` tylko przy tych dwóch zdarzeniach; `chain_on_hit` tylko przy `damage_dealt`; `targetIsUser` tylko przy `damage_dealt`. Odnowienie jest per wyzwalacz, startuje tylko gdy choć jeden efekt zadziałał (patrz `synergies.md`).
 - `upgradesTo` (opcjonalne) — id implantu o **dokładnie jedną rzadkość wyżej** (`common → rare → epic → legendary`). Implant o rzadkości `legendary` nie może mieć `upgradesTo`, implant nie może wskazywać sam na siebie, a cel musi istnieć w zestawie danych i mieć rzadkość `nextRarity(rarity)`.
 
 ## `ImplantSystem` i nakładanie na `Stats`
@@ -47,9 +47,10 @@ const system = new ImplantSystem([playerStats, controllerStats], {
 ```
 
 - **Dwie instancje `Stats`:** w pokoju (`RoomScene`) statystyki walki (`maxHealth`, `damage`, `attackSpeed`, `maxEnergy`, `energyRegen`, `heatCapacity`, `coolingRate`, `damageTaken`) żyją w `playerStats`, a statystyki ruchu (`moveSpeed`, `dashCooldown`) w `PlayerController.stats`. `ImplantSystem` nakłada i zdejmuje modyfikatory ze źródłem `implant:<id>` na wszystkie przekazane instancje `Stats`.
-- **Unikalność:** ten sam implant nie może wystąpić dwa razy w runie — `add(id)` zwraca `false` dla duplikatu, nie podwaja modyfikatorów i nie emituje zdarzenia.
-- **Korekta `maxHealth`:** gdy nałożenie (`add`, `set`) lub ulepszenie (`upgrade`) implantu zwiększa `maxHealth` (zarówno `flat`, jak i `percent`), `ImplantSystem` dodaje dodatnią różnicę `nextMax - prevMax` do bieżącego zdrowia `Health` (o ile gracz żyje). Zdjęcie implantu zmniejszającego `maxHealth` przycina bieżące zdrowie do nowego maksimum.
-- **Ulepszenie (`upgrade(id)`):** zastępuje posiadany implant jego docelowym `upgradesTo` na tej samej pozycji listy, wymienia modyfikatory na `Stats`, dodaje tylko różnicę `maxHealth`, pilnuje unikalności (blokuje ulepszenie, jeśli docelowy implant jest już posiadany) i emituje `implant_acquired` ze źródłem `'upgrade'`. Gdy w runie działa `RunManager`, przed `implantSystem.upgrade(id)` należy wywołać `runManager.upgradeImplant(id, targetId)`.
+- **Unikalność:** ten sam implant nie może wystąpić dwa razy w runie — `add(id)` zwraca `false` dla duplikatu, nie podwaja modyfikatorów i nie emituje zdarzenia. Nieznany id w `add`/`set` to błąd. `add(id, source = 'reward')` emituje `implant_acquired { id, rarity, source }`.
+- **Pozostałe operacje:** `remove(id)` (false, gdy nie założony), `clear()`/`reset()` (zdejmują wszystko), `set(ids, { adjustHealth = true, emit = false, source = 'reward' })` (usuwa duplikaty z wejścia, zdejmuje stare i nakłada nowe modyfikatory; `implant_acquired` tylko dla id nieposiadanych wcześniej i tylko przy `emit`; zwraca `tags()`), `has`, `get`, `ids()`, `list()` (kolejność nabycia), `canUpgrade`, `upgradeTarget`. Callback `onChange` jest wołany po każdej zmianie zestawu.
+- **Korekta `maxHealth`:** gdy nałożenie (`add`, `set`) lub ulepszenie (`upgrade`) implantu zwiększa `maxHealth` (zarówno `flat`, jak i `percent`), `ImplantSystem` dodaje dodatnią różnicę `nextMax - prevMax` do bieżącego zdrowia `Health` (o ile gracz żyje). Zdjęcie implantu zmniejszającego `maxHealth` przycina bieżące zdrowie do nowego maksimum (`min(bieżące, nowe max)`; to samo dotyczy każdego spadku maksimum). Maksimum jest czytane z pierwszej instancji `Stats`, której `maxHealth > 0`. Dodatnia korekta nie działa na martwego gracza (`dead` lub zdrowie ≤ 0) i nie przekracza nowego maksimum.
+- **Ulepszenie (`upgrade(id)`):** zastępuje posiadany implant jego docelowym `upgradesTo` na tej samej pozycji listy, wymienia modyfikatory na `Stats`, dodaje tylko różnicę `maxHealth`, pilnuje unikalności (`upgrade` zwraca `false`, jeśli implant nie jest założony, nie ma `upgradesTo` albo cel jest już posiadany; niespójne dane — brak celu lub zła rzadkość — rzucają błąd) i emituje `implant_acquired` ze źródłem `'upgrade'`. Gdy w runie działa `RunManager`, przed `implantSystem.upgrade(id)` należy wywołać `runManager.upgradeImplant(id, targetId)`.
 - **Tagi i wyzwalacze:** `tags()` zwraca płaską tablicę tagów wszystkich założonych implantów (z zachowaniem krotności wystąpień dla progów `requiresCount` w `SynergySystem`), a `triggers()` zwraca listę wyzwalaczy aktywnych implantów.
 
 ## Pula implantów (24 definicje, 6 łańcuchów ulepszeń)

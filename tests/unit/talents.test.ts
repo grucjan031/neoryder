@@ -295,7 +295,7 @@ describe('RunManager.newRun z talentami', () => {
         talents: ['bladeServoFrame', 'hybridApexProtocol'],
         baseMaxHealth: 80,
       }).hp,
-    ).toBe(100 + 15 + 20);
+    ).toBe(80 + 15 + 20);
   });
 
   it('odrzuca nieznany talent', () => {

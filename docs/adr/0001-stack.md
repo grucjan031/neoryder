@@ -16,5 +16,5 @@ przeglądarkową granicą wejścia w core, a GUI jest tworzone wyłącznie w deb
 
 ESLint flat config i typescript-eslint wymuszają styl i granice importów,
 Prettier formatuje pliki. CI na Node 22 sprawdza typy, lint, testy, build i e2e.
-Podgląd hostowany wymaga osobnej konfiguracji po F0; `netlify.toml` przygotowuje
-jedynie komendę i katalog publikacji.
+Podgląd hostowany: Vercel (produkcja i podglądy PR przez integrację z GitHubem);
+dawny `netlify.toml` usunięty w S0-10.

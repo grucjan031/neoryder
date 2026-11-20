@@ -22,6 +22,7 @@ const scratch = makeInstance();
 export class HitSparks {
   private readonly pool: ParticlePool;
   private readonly off: () => void;
+  private readonly offParry: () => void;
 
   constructor(
     bus: EventBus,
@@ -34,6 +35,15 @@ export class HitSparks {
         this.burst(event.point, event.dir, HIT_SPARK_CYAN);
       else if (event.target === opts.playerId && event.source !== opts.playerId)
         this.burstAtPlayer(event.point, event.dir);
+    });
+    this.offParry = bus.on('melee_parried', ({ defender, point }) => {
+      if (defender === opts.playerId)
+        this.burst(
+          point,
+          null,
+          HIT_SPARK_CYAN,
+          opts.tuning.vfx.parrySparkCount,
+        );
     });
   }
 
@@ -110,6 +120,7 @@ export class HitSparks {
 
   dispose(): void {
     this.off();
+    this.offParry();
     this.pool.clear();
   }
 }

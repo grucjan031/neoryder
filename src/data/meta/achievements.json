@@ -12,8 +12,8 @@
   {
     "id": "zwierciadlo",
     "title": "Zwierciadło",
-    "description": "Odbij 25 pocisków parowaniem ostrza.",
-    "hint": "Zablokuj ostrzem pocisk w oknie parowania, a poleci z powrotem do strzelca.",
+    "description": "Sparuj ostrzem 25 ataków: odbij pocisk albo zbij cios wręcz.",
+    "hint": "Zablokuj ostrzem tuż przed trafieniem: pocisk wraca do strzelca, a cios wręcz ogłusza napastnika.",
     "category": "walka",
     "kind": "counter",
     "counter": "parry_success",
@@ -26,8 +26,8 @@
   {
     "id": "odbicie-mistrza",
     "title": "Odbicie mistrza",
-    "description": "Odbij 150 pocisków parowaniem ostrza.",
-    "hint": "Paruj pociski w kolejnych runach, aż odbijanie wejdzie w nawyk.",
+    "description": "Sparuj ostrzem 150 ataków.",
+    "hint": "Paruj pociski i ciosy w kolejnych runach, aż wejdzie to w nawyk.",
     "category": "walka",
     "kind": "counter",
     "counter": "parry_success",

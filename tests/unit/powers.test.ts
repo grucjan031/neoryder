@@ -142,9 +142,32 @@ describe('energia', () => {
     expect(c.energy.current).toBe(10 + c.t.powers.meleeKillEnergy);
     c.bus.emit('enemy_killed', { id: 98, killer: c.player, tags: ['#gun'] });
     expect(c.energy.current).toBe(10 + c.t.powers.meleeKillEnergy);
-    c.bus.emit('parry_success', { projectile: 5, attacker: 6 });
+    c.bus.emit('parry_success', {
+      defender: c.player,
+      projectile: 5,
+      attacker: 6,
+    });
     expect(c.energy.current).toBe(
       10 + c.t.powers.meleeKillEnergy + c.t.powers.parryEnergy,
+    );
+    // Parowanie wręcz (melee_parried + parry_success) ładuje energię dokładnie raz; cudze parowanie nic.
+    c.bus.emit('melee_parried', {
+      defender: c.player,
+      attacker: 6,
+      point: { x: 0, y: 1, z: 0 },
+    });
+    c.bus.emit('parry_success', {
+      defender: c.player,
+      projectile: null,
+      attacker: 6,
+    });
+    c.bus.emit('parry_success', {
+      defender: 6,
+      projectile: null,
+      attacker: c.player,
+    });
+    expect(c.energy.current).toBe(
+      10 + c.t.powers.meleeKillEnergy + 2 * c.t.powers.parryEnergy,
     );
   });
 
