@@ -2025,6 +2025,17 @@ ogłuszenie ani kontrolę Rezonansem. Bez carry zachowanie pozostaje dotychczaso
   i `points` pozostaje obsługiwany. `selectArena(mode, seed?, override?, debug?)`
   wybiera pierwszy pokój bez seeda, a z seedem deterministycznie przez `Rng`.
   Debug dopuszcza override wyłącznie z listy. `modeForArena` wiąże punkty z pokojem.
+- Szturm i Kradzież rdzenia na dużych arenach: `RoomDefinition.arena.assault?`
+  (`{ sectors: { playerSpawn, stations: [Vec3, Vec3], spawnPoints }[] }`, 3–4 sektory)
+  i `arena.heist?` (`{ playerSpawn, base, extraction, spawnPoints }`). `assault.json` i
+  `heist.json` mają `arenas?: string[]`; `roomId` pozostaje małym pokojem.
+  `selectArena(mode, seed?, override?, debug?)` przyjmuje dowolny tryb (`mode.id`, fork
+  `Rng` `<id>-arena`); override akceptuje listę `arenas` albo `roomId`.
+  `assaultForArena(mode, room)` i `heistForArena(mode, room)` zwracają definicję trybu
+  z układem areny (`HeistDefinition.playerSpawn?`: start i odrodzenie, domyślnie
+  `extraction`). `Assault.spawnPosition` i `Heist.spawnPosition` przyjmują opcjonalny
+  predykat zasłonięcia jak `Conquest`. `modes.ts` eksportuje `assaultMode`, `heistMode`
+  i `modeSources` (listy aren). Liczby: `tuning.modes.assault`, `tuning.modes.heist`.
 - `NewRunOptions.arenaId?`: wybrana arena, utrwalana jako istniejące
   `MapNode.fixed.roomId`; brak nowej wersji zapisu. Stare zapisy combatRing działają.
 - `ArenaNavigation`: czysta siatka przechodniości i pola odległości A/B/C;
@@ -2143,3 +2154,29 @@ semantyczne tekstury surfaces, bez zmiany materiałów pozostałych map.
 `stairs` biblioteki narzędzi przyjmuje opcjonalne `walkable` (domyślnie true).
 False wyłącza powierzchnię i ostrzeżenia AI, zachowując kolizję oraz kontrolę
 limitów schodów gracza.
+
+## Prototypy eskorty więźnia i wagonu (S4-03)
+
+Izolowane moduły i sceny debug; system misji, AI wrogów, zapis i fizyka bez zmian.
+Szczegóły i koszt: `docs/systems/prototypes-s4-03.md`.
+
+- `src/world/escortNpc.ts`: `new EscortNpc(start, evacuation, nav: EscortNavigation, params)`;
+  `step(dt, playerFeet, goal?)`, `free()`, `setHp(n)`, `teleport(x, z, y?)`, `snapshot()`.
+  `EscortNavigation` to wycinek `ArenaNavigation` (`next`, `path`). Stany: `waiting`, `following`,
+  `holding`, `evacuated`, `dead`.
+- `src/world/railPayload.ts`: `new RailPayload(route, stops, params, { reinforce(wave, stopId) })`;
+  `step(dt, { player, hostiles, pending? })`, `skip()`, `setHp(n)`, `poseAt(distanceM)`,
+  `snapshot()`. Statusy: `waitingPlayer`, `moving`, `contested`, `holding`, `arrived`, `destroyed`.
+- `src/world/prototypes.ts`: schematy zod i loadery `loadEscortTest`, `loadPayloadTest` oraz dane
+  `escortTest`, `payloadTest` z `src/data/prototypes/`.
+- Liczby: `tuning.prototypes.escort` i `tuning.prototypes.payload`; teksty HUD:
+  `src/data/ui/prototypes.pl.json`.
+- Sceny: `?scene=escort-test` i `?scene=payload-test` (`room=<id>` podmienia pokój z `arena`).
+  Komendy: `escort free|tp <x> <z>|status|hp <n>`, `payload status|skip|hp <n>`. Zapytania
+  `query('escort')`, `query('escortPath')`, `query('payload')`.
+- `RoomScene`: pola `ctx`, `rapier`, `world`, `entities`, `damage`, `hurtboxes`, `manager`, `player`,
+  `root`, `navigation`, `disposed` oraz metody `spawnEnemy` i `aliveEnemies` są `protected`
+  (podklasy prototypów); zachowanie bez zmian. `roomTestRun(room, params)` w `roomTest.ts` buduje
+  `RunState` pokoju testowego z parametrów URL.
+- Cele (więzień, wagon) to encje drużyny `neutral` z `Health` i colliderem w grupie
+  `CollisionGroup.Player` o filtrze tylko `EnemyProjectile`: trafiają je wyłącznie pociski wrogów.

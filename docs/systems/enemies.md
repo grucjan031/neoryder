@@ -431,7 +431,9 @@ zwraca `null`. Slot, o który wróg nie zapytał w kroku, zostaje zwolniony.
 w F1. Bez tokenu idzie do slotu na promieniu `flankDistanceM` (dane, 4 m), twarzą
 do gracza; bez slotu zatrzymuje się na tym promieniu na linii do gracza. Token
 trzymają tylko zapowiedź i wymach. Wejście w regenerację, ogłuszenie, śmierć
-albo utrata celu go oddaje. `flankDistanceM` musi być większy niż `attackRange`.
+albo utrata celu go oddaje. `flankDistanceM` musi być większy niż `attackRange`. Punkt flanki podąża za
+graczem (przybycie liczone względem bieżącego punktu); marsz do celu trybu
+przerywa manewr osłony Strzelca.
 
 **Strzelec.** Prosi o token strzału dopiero, gdy jest w paśmie dystansu, widzi
 cel i jest do niego obrócony. Bez tokenu, przy widocznym celu, czeka w slocie

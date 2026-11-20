@@ -471,3 +471,4 @@ ma 16 taktów po 4 uderzenia, 4 kroki na uderzenie.
   uproszczoną syntezą offline (32 kHz) i wypisuje szczyt/RMS (przybliżenie brzmienia, nie kopia Web Audio).
 - **Testy:** `tests/unit/music.test.ts` (schemat, dyrektor, harmonogram na atrapie kontekstu, crossfade,
   `dispose`, głośność, `musicVolume`).
+- **Sprzątanie i zaległości:** zakończone głosy SFX i nuty muzyki odpinają swoje węzły (`disconnect`), `play()` po `dispose()` zwraca `false`, muzyka przy zawieszonym kontekście nie planuje nut, a zaległość harmonogramu większa niż `tuning.audio.musicMaxCatchUpS` jest pomijana zamiast nadrabiana; koniec przejazdu pociągu ucisza dudnienie także bez źródeł ambientu.

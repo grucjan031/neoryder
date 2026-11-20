@@ -36,7 +36,9 @@ export function computeStat(
     if (mod.type === 'percent') percent += mod.value;
     if (mod.type === 'mult') mult *= mod.value;
   }
-  return Math.max(0, (base + flat) * (1 + percent) * mult);
+  const result =
+    Math.max(0, base + flat) * Math.max(0, 1 + percent) * Math.max(0, mult);
+  return Number.isFinite(result) ? result : 0;
 }
 
 export class Stats {

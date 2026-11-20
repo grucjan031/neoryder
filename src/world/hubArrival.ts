@@ -8,6 +8,21 @@ export type HubArrivalKind = 'firstVisit' | 'victory' | 'death';
 export interface HubArrivalContext {
   kind: HubArrivalKind;
   key: string;
+  /** Ukończona misja, z której wracamy (tylko `victory`); wybiera `reactions.afterMission`. */
+  missionId?: string;
+}
+
+/** Pula reakcji NPC: przy powrocie z misji wpis `afterMission` zastępuje ogólne `victory`. */
+export function reactionPool(
+  npc: NpcText | undefined,
+  context: HubArrivalContext,
+): readonly string[] | undefined {
+  const reactions = npc?.reactions;
+  if (context.kind === 'victory' && context.missionId) {
+    const specific = reactions?.afterMission?.[context.missionId];
+    if (specific) return specific;
+  }
+  return reactions?.[context.kind];
 }
 export interface HubGreetings {
   last(): string | null;
@@ -15,7 +30,7 @@ export interface HubGreetings {
 }
 
 export function hubArrivalContext(
-  meta: Pick<MetaState, 'stats' | 'lastRuns'>,
+  meta: Pick<MetaState, 'stats' | 'lastRuns' | 'campaign'>,
   greeted: string | null,
 ): HubArrivalContext | null {
   const last = meta.lastRuns[0];
@@ -25,6 +40,13 @@ export function hubArrivalContext(
       : last
         ? { kind: last.outcome, key: last.runId }
         : null;
+  const missionId = meta.campaign.pendingDebrief;
+  if (
+    context?.kind === 'victory' &&
+    missionId &&
+    meta.campaign.completed.includes(missionId)
+  )
+    context.missionId = missionId;
   return context?.key === greeted ? null : context;
 }
 
@@ -45,7 +67,7 @@ export class HubArrival {
     this.greeter = null;
     for (const npc of npcs) {
       const text = texts.find(({ id }) => id === npc.id);
-      if (!text?.reactions?.[context.kind]) continue;
+      if (!text || !reactionPool(text, context)) continue;
       this.eligible.add(npc.id);
       const distance = Math.hypot(
         npc.position.x - spawn.x,
@@ -75,7 +97,7 @@ export class HubArrival {
 
   private greetingText(npc: NpcText): string {
     return new Rng(`${this.context.key}:${npc.id}`).pick(
-      npc.reactions![this.context.kind]!,
+      reactionPool(npc, this.context)!,
     );
   }
 
@@ -88,7 +110,7 @@ export class HubArrival {
   react(id: string): NpcLine | null {
     if (this.reacted.has(id)) return null;
     const npc = this.texts.find((entry) => entry.id === id);
-    const reactions = npc?.reactions?.[this.context.kind];
+    const reactions = reactionPool(npc, this.context);
     if (!npc || !reactions) return null;
     this.reacted.add(id);
     const greeting = this.greetingText(npc);

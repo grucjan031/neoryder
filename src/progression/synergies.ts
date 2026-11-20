@@ -382,8 +382,9 @@ export class SynergySystem {
           }
         : null;
     if (effect.kind === 'apply_status_area' && effect.radiusM === 0) {
-      if (facts.target === undefined || !application) return false;
-      return this.ctx.applyStatus?.(facts.target, application) ?? false;
+      const recipient = effect.at === 'user' ? this.ctx.user : facts.target;
+      if (recipient === undefined || !application) return false;
+      return this.ctx.applyStatus?.(recipient, application) ?? false;
     }
     const origin =
       effect.at === 'user'

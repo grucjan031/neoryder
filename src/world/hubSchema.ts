@@ -5,6 +5,7 @@ import { npcHeight, npcRadius } from './hubNpcs';
 import { HUB_STATION_IDS } from '../core/metaTypes';
 import {
   BLOCK_MATERIALS,
+  decorSchema,
   dressingFields,
   flickerSchema,
 } from './dressingSchema';
@@ -20,6 +21,13 @@ const positive = z.number().finite().positive();
 const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 const textureId = z.string().regex(/^[a-z0-9_]+$/);
 const size2 = z.object({ w: positive, h: positive });
+const missionId = z.string().regex(/^[a-z0-9_-]+$/);
+
+/** Warunek kampanii: element widoczny po ukończeniu `after` i do ukończenia `until` (id misji). */
+export const campaignGateFields = {
+  after: missionId.optional(),
+  until: missionId.optional(),
+};
 
 /** Materiały bloków kryjówki: materiały pokoju plus dodatkowe powierzchnie miejskie i świecące paski neonowe. */
 export const HUB_BLOCK_MATERIALS = [
@@ -60,6 +68,9 @@ export const hubStationSignSchema = z.object({
 
 /** Kosmetyczny napis układu, niezależny od stacji; wyłącznie paleta Neon Noir. */
 export const hubNeonTextSchema = hubStationSignSchema.extend({
+  ...campaignGateFields,
+  /** Zamiast napisu rysuje dwa ukośne pasy (X) na całej powierzchni; `text` zostaje nazwą elementu. */
+  cross: z.boolean().optional(),
   text: z.string().trim().min(1),
   color: z.enum(['#ffae1a', '#6dff4a', '#8a5cff', '#3d7bff', '#fff1d6']),
 });
@@ -114,6 +125,7 @@ export const hubPanelSchema = z.object({
   yaw: finite,
   tileM: positive.optional(),
   tint: hexColor.optional(),
+  ...campaignGateFields,
 });
 export type HubPanelDef = z.infer<typeof hubPanelSchema>;
 
@@ -212,6 +224,16 @@ export const hubNpcSchema = z
     route: npcRouteSchema.optional(),
     animation: z.enum(NPC_ANIMATIONS).optional(),
     accent: z.enum(NPC_ACCENTS),
+    /** Wariant pozycji po misji: ostatni pasujący (ukończona `after`) wygrywa; brak `rotationDeg` zostawia bazowy. */
+    campaignPositions: z
+      .array(
+        z.object({
+          after: missionId,
+          position: z.object({ x: finite, y: finite.optional(), z: finite }),
+          rotationDeg: finite.optional(),
+        }),
+      )
+      .optional(),
     /** Wysokość blatu siedziska nad position.y i lokalny offset korzenia od jego środka (metry). */
     seat: z.object({ heightM: positive, offset: vec3Schema }).optional(),
   })
@@ -307,6 +329,10 @@ export const hubZoneSchema = z.object({
 });
 export type HubZoneDef = z.infer<typeof hubZoneSchema>;
 
+/** Dekoracja kryjówki z opcjonalnym warunkiem kampanii. */
+export const hubDecorSchema = decorSchema.extend(campaignGateFields);
+export type HubDecorDef = z.infer<typeof hubDecorSchema>;
+
 /** Układ kryjówki: format pokoju (bez drzwi, spawnów wrogów i walki) plus stacje. */
 export const hubLayoutSchema = z
   .object({
@@ -321,6 +347,7 @@ export const hubLayoutSchema = z
     npcs: z.array(hubNpcSchema).optional(),
     fires: z.array(hubFireSchema).optional(),
     props: z.array(hubPropSchema).optional(),
+    decor: z.array(hubDecorSchema).optional(),
     fauna: hubFaunaSchema.optional(),
     zones: z.array(hubZoneSchema).optional(),
   })

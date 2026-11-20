@@ -84,7 +84,7 @@ test('Kradzież rdzenia: mobilny HUD i podniesienie w świecie', async ({
 }) => {
   test.setTimeout(3 * LOAD_TIMEOUT);
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/?scene=run&mode=heist&debug=1&fx=lite');
+  await page.goto('/?scene=run&mode=heist&arena=combatRing&debug=1&fx=lite');
   await expect
     .poll(
       () =>
@@ -121,4 +121,56 @@ test('Kradzież rdzenia: mobilny HUD i podniesienie w świecie', async ({
   expect(layout.overlaps).toBe(false);
   expect(layout.left).toBeGreaterThanOrEqual(0);
   expect(layout.right).toBeLessThanOrEqual(390);
+});
+
+test('Kradzież rdzenia na dużej arenie: Elektrownia, rdzeń z bazy do ewakuacji', async ({
+  page,
+}) => {
+  test.setTimeout(4 * LOAD_TIMEOUT);
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.goto(
+    '/?scene=run&mode=heist&arena=arenaPowerPlant&debug=1&fx=lite',
+  );
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const game = window.__neoryder;
+          if (!game || game.query('loading') !== false || !game.query('heist'))
+            return false;
+          game.command('god');
+          return true;
+        }),
+      { timeout: LOAD_TIMEOUT },
+    )
+    .toBe(true);
+  // Start przy punkcie ewakuacji (25, -25); baza (-120, 15) jest daleko.
+  const start = (await page.evaluate(() =>
+    window.__neoryder?.query('playerPos'),
+  )) as { x: number; z: number };
+  expect(start.x).toBeCloseTo(30, 0);
+  expect(start.z).toBeCloseTo(-26.5, 0);
+  await page.evaluate(() => window.__neoryder?.command('tp -120 15'));
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window.__neoryder?.query('heist') as { state: string }).state,
+      ),
+    )
+    .toBe('player');
+  await page.evaluate(() => window.__neoryder?.command('tp 25 -25'));
+  await expect
+    .poll(() => page.evaluate(() => window.__neoryder?.query('screen')), {
+      timeout: LOAD_TIMEOUT,
+    })
+    .toBe('summary');
+  await expect(page.getByText('Zwycięstwo', { exact: true })).toBeVisible();
+  expect(
+    await page.evaluate(() => window.__neoryder?.query('runState')),
+  ).toMatchObject({ modeId: 'heist' });
+  expect(errors).toEqual([]);
 });

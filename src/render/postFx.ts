@@ -54,6 +54,8 @@ export class PostFxState {
 
   /** Podpina zdarzenia: spadek HP gracza i `focus`. Zwraca funkcję odpinającą. */
   bind(bus: EventBus): () => void {
+    this.playerId = null;
+    this.lastHealth = null;
     const offs = [
       bus.on('entity_spawned', ({ id, kind }) => {
         if (kind !== 'player') return;

@@ -1,14 +1,14 @@
 import { Conquest } from '../world/conquest';
-import {
-  conquestMode,
-  assaultDefinition,
-  heistDefinition,
-} from '../world/modes';
+import { conquestMode, assaultMode, heistMode } from '../world/modes';
 import { Heist, type HeistEnemy } from '../world/heist';
 import { Assault } from '../world/assault';
 import { AssaultView } from '../ui/assaultUi';
 import { HeistView } from '../ui/heistUi';
-import { modeForArena } from '../world/modeSchema';
+import {
+  assaultForArena,
+  heistForArena,
+  modeForArena,
+} from '../world/modeSchema';
 import { ArenaNavigation } from '../world/arenaNavigation';
 import { ConquestView } from '../ui/conquestUi';
 import { MissionObjectives } from '../world/missionObjectives';
@@ -238,22 +238,22 @@ export function placeBlockModel(
 /** Jeden pokój runu: osobny świat i skład walki zgodny z Areną. */
 export class RoomScene implements Scene {
   readonly id: string = 'room';
-  private ctx!: GameContext;
-  private rapier!: Awaited<ReturnType<typeof initPhysics>>;
-  private world!: World;
-  private entities!: EntityRegistry;
-  private damage!: DamageSystem;
+  protected ctx!: GameContext;
+  protected rapier!: Awaited<ReturnType<typeof initPhysics>>;
+  protected world!: World;
+  protected entities!: EntityRegistry;
+  protected damage!: DamageSystem;
   private statuses!: StatusSystem;
-  private readonly hurtboxes = new Hurtboxes();
+  protected readonly hurtboxes = new Hurtboxes();
   private projectiles!: ProjectileSystem;
   private projectileView!: ProjectileRenderer;
-  private manager!: EnemyManager;
+  protected manager!: EnemyManager;
   private director!: WaveDirector;
   /** Tryb bossa (layout.bossEnemy): bez fal, pokój kończy śmierć bossa. */
   private boss: Boss | null = null;
   /** Oprawa walki z bossem (kosmetyka); tylko w pokoju bossa. */
   private bossFx?: BossArenaFx;
-  private player!: PlayerController;
+  protected player!: PlayerController;
   private previous!: PlayerState;
   private fpsCamera!: FpsCamera;
   private energy!: PlayerEnergy;
@@ -279,7 +279,7 @@ export class RoomScene implements Scene {
   private readonly views = new Map<EntityId, EnemyViewLike>();
   private readonly seenEnemyIds = new Set<EntityId>();
   private readonly powerPair: ReturnType<PowerSlots['get']>[] = [];
-  private readonly root = new Group();
+  protected readonly root = new Group();
   private readonly lights = createStyleLights();
   private atmosphere?: SceneAtmosphere;
   private dressing?: CityDressing;
@@ -290,7 +290,7 @@ export class RoomScene implements Scene {
   private state: 'playing' | 'dead' = 'playing';
   private elapsedS = 0;
   private cleared = false;
-  private disposed = false;
+  protected disposed = false;
   private initDone = false;
   private readonly node: MapNode;
   private readonly implantDefs: ReadonlyMap<string, ImplantDefinition>;
@@ -329,7 +329,7 @@ export class RoomScene implements Scene {
   private heist?: Heist;
   private heistView?: HeistView;
   private assaultView?: AssaultView;
-  private navigation?: ArenaNavigation;
+  protected navigation?: ArenaNavigation;
   private staticWorld?: Group;
   private readonly staticInstances: InstancedMesh[] = [];
   private conquestView?: ConquestView;
@@ -771,17 +771,21 @@ export class RoomScene implements Scene {
       }
     }
     if (this.run.modeId === 'assault') {
-      this.assault = new Assault(assaultDefinition, {
+      this.assault = new Assault(assaultForArena(assaultMode, this.layout), {
         signal: () => {},
         explode: (objective) => this.explodeMission(objective, playerId),
       });
+      if (this.layout.arena?.assault)
+        this.navigation = new ArenaNavigation(this.layout);
       if (typeof document !== 'undefined') {
         this.assaultView = new AssaultView(this.assault);
         this.root.add(this.assaultView.root);
       }
     }
     if (this.run.modeId === 'heist') {
-      this.heist = new Heist(heistDefinition);
+      this.heist = new Heist(heistForArena(heistMode, this.layout));
+      if (this.layout.arena?.heist)
+        this.navigation = new ArenaNavigation(this.layout);
       if (typeof document !== 'undefined') {
         this.heistView = new HeistView(this.heist);
         this.root.add(this.heistView.root);
@@ -1104,6 +1108,7 @@ export class RoomScene implements Scene {
         cellSize: this.options.staticCellSize,
       });
     }
+    if (this.disposed) return;
     for (const door of this.layout.doors) {
       const { size, position } = door;
       const geometry = new BoxGeometry(size.x, size.y, size.z);
@@ -1178,10 +1183,17 @@ export class RoomScene implements Scene {
 
   private spawnPosition(): Vec3 {
     const t = this.ctx.tuning.player;
+    // Tryby na dużej arenie mają własny start (układ w `arena.assault` / `arena.heist`).
+    const start =
+      (this.run.modeId === 'assault'
+        ? this.layout.arena?.assault?.sectors[0]?.playerSpawn
+        : this.run.modeId === 'heist'
+          ? this.layout.arena?.heist?.playerSpawn
+          : undefined) ?? this.layout.playerSpawn;
     return {
-      x: this.layout.playerSpawn.x,
-      y: this.layout.playerSpawn.y + t.capsuleHeight / 2 + t.controllerOffset,
-      z: this.layout.playerSpawn.z,
+      x: start.x,
+      y: start.y + t.capsuleHeight / 2 + t.controllerOffset,
+      z: start.z,
     };
   }
 
@@ -1237,7 +1249,7 @@ export class RoomScene implements Scene {
     });
   }
 
-  private spawnEnemy(kind: string, position: Vec3): EntityId | null {
+  protected spawnEnemy(kind: string, position: Vec3): EntityId | null {
     if (
       this.aliveEnemies() >=
       Math.min(this.waves.maxAlive, this.layout.maxAlive ?? this.waves.maxAlive)
@@ -1284,7 +1296,7 @@ export class RoomScene implements Scene {
     return position;
   }
 
-  private aliveEnemies(): number {
+  protected aliveEnemies(): number {
     let n = 0;
     this.manager.forEach((e) => {
       if (e.current.state !== 'dead') n++;
@@ -1541,6 +1553,11 @@ export class RoomScene implements Scene {
         if (this.heist) {
           this.manager.forEach((enemy) => {
             enemy.moveGoal = this.heist!.moveGoal(enemy.id, player);
+            if (this.navigation)
+              enemy.moveGoal = this.navigation.next(
+                enemy.current.position,
+                enemy.moveGoal,
+              );
             enemy.setCarry?.(
               this.heist!.carrierId === enemy.id
                 ? {
@@ -1557,10 +1574,16 @@ export class RoomScene implements Scene {
           player,
           positions,
           this.ctx.rng,
-          this.conquest && this.layout.arena?.spawnRing
+          this.layout.arena?.spawnRing
             ? spawnOcclusion(
                 this.aim().origin,
-                this.ctx.tuning.modes.conquest.spawnSightHeightM,
+                this.ctx.tuning.modes[
+                  this.conquest
+                    ? 'conquest'
+                    : this.assault
+                      ? 'assault'
+                      : 'heist'
+                ].spawnSightHeightM,
                 (origin, direction, length) =>
                   this.castWall(origin, direction, length),
               )
@@ -1582,7 +1605,7 @@ export class RoomScene implements Scene {
       if (this.node.fixed?.objectives.length && this.mission?.complete)
         this.completeRoom();
     }
-    if (!this.health.dead)
+    if (!this.health.dead && !this.victoryHold)
       for (const director of this.reinforcements) director.step(dt);
     this.missionHud?.step();
     this.statuses.step(dt);
@@ -1593,7 +1616,7 @@ export class RoomScene implements Scene {
       if (weapon === this.weapon && this.heldItem.held === 'gun')
         weapon.step(pdt, {
           ...this.aim(),
-          triggerHeld,
+          triggerHeld: triggerHeld && !this.health.dead,
           aim: this.heldItem.aim,
         });
       else weapon.cool(pdt);
@@ -1727,6 +1750,7 @@ export class RoomScene implements Scene {
     if (this.victoryHold || this.disposed) return;
     this.victoryHold = true;
     this.director.stop();
+    for (const director of this.reinforcements) director.stop();
     this.projectiles.dispose();
     this.statuses.reset();
     // Gracz jest nietykalny, zanim cokolwiek zacznie się rozpadać.
@@ -1791,8 +1815,9 @@ export class RoomScene implements Scene {
     this.hud?.setLoadout(this.loadout);
     this.energy.set(this.energy.max);
     this.player.stamina.set(this.player.stamina.max);
-    const spawn =
-      this.heist?.definition.extraction ?? this.assault!.sector.playerSpawn;
+    const spawn = this.heist
+      ? (this.heist.definition.playerSpawn ?? this.heist.definition.extraction)
+      : this.assault!.sector.playerSpawn;
     this.player.teleport({
       ...spawn,
       y:

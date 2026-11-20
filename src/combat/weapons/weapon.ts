@@ -237,8 +237,11 @@ export class Weapon {
         });
     }
     this.heat.add(def.heatPerS * dt, { resetDelay: true });
-    if (this.heat.current >= this.heat.max)
+    if (this.heat.current >= this.heat.max) {
       this.lockS = this.ctx.tuning.weapons.overheatLockS;
+      beam.active = false;
+      this.beamTickS = 0;
+    }
     this.emitHeat();
   }
 

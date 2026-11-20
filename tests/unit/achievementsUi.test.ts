@@ -84,7 +84,7 @@ describe('panel Naszywki Iskry', () => {
         .textContent,
     ).toContain('Ostrze dwustronne');
     expect(card(panel.root, 'egzekutor').getAttribute('aria-label')).toContain(
-      'Nie zdobyta',
+      'Niezdobyta',
     );
   });
 

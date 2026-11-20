@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
 import { modeIdSchema, selectArena } from '../world/modeSchema';
-import { conquestMode, modeDefinitions } from '../world/modes';
+import { modeDefinitions, modeSources } from '../world/modes';
 import { synergyDefinitions } from '../progression/synergies';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -349,7 +349,7 @@ export class RunScene implements Scene {
       const seed = params.get('seed') ?? String(ctx.rng.getState());
       const arenaId = modeId
         ? selectArena(
-            conquestMode,
+            modeSources[modeId],
             params.get('seed') ?? undefined,
             params.get('arena'),
             ctx.debug,
@@ -416,7 +416,7 @@ export class RunScene implements Scene {
     this.settling = true;
     this.rewardError = null;
     const timer = setTimeout(() => {
-      if (token !== this.settleToken || !this.settling) return;
+      if (this.disposed || token !== this.settleToken || !this.settling) return;
       console.warn('Rozliczenie nagrody trwa zbyt długo; można ponowić.');
       this.settling = false;
       this.rewardError = 'save';
@@ -536,7 +536,7 @@ export class RunScene implements Scene {
   private adoptMeta(meta: MetaManager): void {
     this.meta = meta;
     this.tracker?.setBase(meta.state.achievements);
-    if (!this.metaCommands) return;
+    if (!this.metaCommands || this.disposed) return;
     this.metaCommands.dispose();
     this.metaCommands = registerMetaCommands(
       this.ctx.commands,
@@ -876,7 +876,7 @@ export class RunScene implements Scene {
         );
     return rng
       .fork(`room-layout:${node.id}`)
-      .pick(available.sort((a, b) => a.id.localeCompare(b.id)));
+      .pick(available.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
   }
 
   /**
@@ -932,7 +932,10 @@ export class RunScene implements Scene {
             firstBreakS: 0,
             breakS: 0,
             maxAlive: state.modeId
-              ? modeDefinitions[state.modeId].maxAlive
+              ? state.modeId === 'conquest'
+                ? modeDefinitions.conquest.maxAlive
+                : (layout.arena?.maxAlive ??
+                  modeDefinitions[state.modeId].maxAlive)
               : bossRoom
                 ? (layout.maxAlive ?? 1)
                 : 1,

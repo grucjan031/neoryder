@@ -516,6 +516,12 @@ export class Assaulter implements Enemy {
             Math.sin(end - angle),
             Math.cos(end - angle),
           );
+          // Cel flanki podąża za graczem: przybycie liczymy względem bieżącego punktu.
+          this.tacticalGoal = {
+            x: target.position.x + Math.sin(end) * flank,
+            y: goal.y,
+            z: target.position.z + Math.cos(end) * flank,
+          };
           const limit =
             (this.ctx.tuning.enemies.flankArcStepDeg * Math.PI) / 180;
           const next = angle + Math.max(-limit, Math.min(limit, delta));

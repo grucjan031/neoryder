@@ -280,6 +280,14 @@ function assertWritable(raw: unknown): void {
   }
 }
 
+let corruptCounter = 0;
+
+function corruptSuffix(): string {
+  return typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : String(++corruptCounter);
+}
+
 function backupCorrupt(store: IDBObjectStore, key: string, raw: unknown): void {
   if (raw == null || isFuture(raw)) return;
   try {
@@ -292,7 +300,7 @@ function backupCorrupt(store: IDBObjectStore, key: string, raw: unknown): void {
       runSchema.parse(migrated);
     }
   } catch {
-    store.put(raw, ['corrupt', key, Date.now(), crypto.randomUUID()]);
+    store.put(raw, ['corrupt', key, Date.now(), corruptSuffix()]);
   }
 }
 
@@ -510,10 +518,9 @@ export function loadSettings(storage?: Storage): Settings {
 
 export function saveSettings(s: Settings, storage?: Storage): void {
   try {
-    (storage ?? localStorage).setItem(
-      settingsKey,
-      JSON.stringify(settingsSchema.parse(s)),
-    );
+    const parsed = settingsSchema.parse(s);
+    (storage ?? localStorage).setItem(settingsKey, JSON.stringify(parsed));
+    if (!storage && typeof window !== 'undefined') sharedSettings = parsed;
   } catch (error) {
     console.warn('Nie można zapisać ustawień.', error);
   }

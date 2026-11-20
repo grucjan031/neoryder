@@ -6,7 +6,7 @@ import {
   type DifficultyRunState,
 } from './difficulty';
 import { modeIdSchema, selectArena, type ModeId } from './modeSchema';
-import { conquestMode, modeDefinitions } from './modes';
+import { modeDefinitions, modeSources } from './modes';
 import type { MissionDefinition } from './missionSchema';
 import type { EntityId, EventBus } from '../core/events';
 import {
@@ -352,15 +352,12 @@ export class RunManager {
                 type: 'combat' as const,
                 next: [],
                 fixed: {
-                  roomId:
-                    options.modeId === 'conquest'
-                      ? selectArena(
-                          conquestMode,
-                          seed,
-                          options.arenaId,
-                          !!options.arenaId,
-                        )
-                      : modeDefinitions[options.modeId].roomId,
+                  roomId: selectArena(
+                    modeSources[options.modeId],
+                    seed,
+                    options.arenaId,
+                    !!options.arenaId,
+                  ),
                   objectives: [],
                 },
               },

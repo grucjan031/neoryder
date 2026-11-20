@@ -888,5 +888,21 @@ export default function generate() {
     ],
   });
 
+  // Układ Kradzieży rdzenia (ADR 0011 D4): baza i ewakuacja ok. 157 m drogi od siebie.
+  arena.arenaMeta({
+    heist: {
+      playerSpawn: { x: 41, y: 0, z: -31 },
+      base: { x: 113, y: 0, z: 59 },
+      extraction: { x: 46, y: 0, z: -31 },
+      spawnPoints: [
+        { x: 122, y: 0, z: 27 },
+        { x: 162, y: 0, z: 60 },
+        { x: 110, y: 0, z: 10 },
+        { x: 63, y: 0, z: 47 },
+        { x: 155, y: 0, z: 4 },
+        { x: 117, y: 0, z: -16 },
+      ],
+    },
+  });
   return arena;
 }
