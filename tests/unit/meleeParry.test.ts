@@ -18,7 +18,7 @@ const input = (held: Action[] = []): InputSnapshot => ({
 });
 
 /** Gracz patrzy w -Z; wróg stoi z przodu (z = -2) albo za plecami (z = +2). */
-function setup(enemyZ = -2) {
+function setup(enemyZ = -2, knowsPosition = true) {
   const bus = new EventBus();
   const registry = new EntityRegistry(bus);
   const damage = new DamageSystem(bus, registry);
@@ -41,7 +41,8 @@ function setup(enemyZ = -2) {
         origin: { x: 0, y: 1.6, z: 0 },
         dir: { x: 0, y: 0, z: -1 },
       }),
-      positionOf: (id) => (id === enemy ? { x: 0, y: 0, z: enemyZ } : null),
+      positionOf: (id) =>
+        knowsPosition && id === enemy ? { x: 0, y: 0, z: enemyZ } : null,
     },
     bus,
     structuredClone(tuning),
@@ -78,10 +79,49 @@ describe('parowanie ciosów wręcz', () => {
   });
 
   it('dispose ostrza zdejmuje obronę z DamageSystem', () => {
-    const t = setup();
+    const bus = new EventBus();
+    const registry = new EntityRegistry(bus);
+    const damage = new DamageSystem(bus, registry);
+    const owner = registry.create('player', 'player');
+    damage.register(owner, new Health(() => 100));
+    let added = 0;
+    let removed = 0;
+    const original = damage.addGuard.bind(damage);
+    damage.addGuard = (target, guard) => {
+      added++;
+      const off = original(target, guard);
+      return () => {
+        removed++;
+        off();
+      };
+    };
+    const stats = new Stats({ maxHealth: 100, maxEnergy: 100 });
+    const blade = new PlasmaBlade(
+      plasmaBladeDefinition,
+      {
+        owner,
+        team: 'player',
+        damage,
+        stats,
+        energy: new ResourcePool({ max: () => 100, regenPerS: () => 0 }),
+        queryArc: () => [],
+        aim: () => ({
+          origin: { x: 0, y: 1.6, z: 0 },
+          dir: { x: 0, y: 0, z: -1 },
+        }),
+      },
+      bus,
+      structuredClone(tuning),
+    );
+    expect(added).toBe(1);
+    blade.dispose();
+    expect(removed).toBe(1);
+  });
+
+  it('bez znanej pozycji atakującego nie ma parowania', () => {
+    const t = setup(-2, false);
     t.stepFor(0.05, ['block']);
-    t.blade.dispose();
-    expect(t.hit(['#melee'])).toBe(20);
+    expect(t.hit(['#melee'])).toBeGreaterThan(0);
     expect(t.parried()).toBe(0);
   });
 

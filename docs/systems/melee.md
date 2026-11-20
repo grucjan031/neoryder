@@ -210,8 +210,9 @@ oraz tolerancję późnego kliknięcia.
 
 - **Warunki:** blok trwa nie dłużej niż `meleeParryWindowMs` (200 ms), cios ma tag `#melee` i nie ma `#heavy` (cios nie do zablokowania, bursztynowa zapowiedź, przebija także zwykły blok), atakujący jest w łuku `parryArcDeg`/2 przed graczem.
 - **Efekt:** obrażenia zanegowane (guard `0` dopisany przez `DamageSystem.addGuard`), zdarzenie `melee_parried { defender, attacker }`, hitstop `parryHitstopMs`, wstrząs `parryShake`, energia +`powers.parryEnergy`, dźwięk `parry`. Atakujący (Szturmowiec) dostaje stan `stunned` na `meleeParryStunS` (0,9 s) i odrzut `meleeParryKnockback` (4); jego cios jest przerwany.
+- Brak pozycji atakującego (`positionOf` zwraca `null`) wyklucza parowanie — łuku nie da się sprawdzić.
 - Blok poza oknem działa jak dotąd (−70%, koszt energii). Synergie i osiągnięcia liczące `parry_success` nie liczą jeszcze parowania wręcz (osobne zdarzenie).
-- Testy: `tests/unit/meleeParry.test.ts`, `tests/unit/enemies.test.ts` (ogłuszenie).
+- Testy: `tests/unit/meleeParry.test.ts`, `tests/unit/enemies.test.ts` (ogłuszenie, prawdziwy cios sparowany w trakcie `strike`).
 
 ## Warianty ostrzy (F2-11)
 

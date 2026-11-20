@@ -213,7 +213,7 @@ export class PlasmaBlade {
     this.bus.emit('hitstop', { ms: m.parryHitstopMs });
     this.bus.emit('camera_shake', {
       intensity: m.parryShake,
-      durationS: 0.2,
+      durationS: m.parryShakeS,
       dir: null,
     });
     return true;
@@ -232,22 +232,22 @@ export class PlasmaBlade {
       this.blockAgeS * 1000 > m.meleeParryWindowMs
     )
       return 1;
+    // Bez znanej pozycji atakującego nie da się sprawdzić łuku — brak parowania.
     const from = this.deps.positionOf?.(info.source);
-    if (from) {
-      const { origin, dir } = this.deps.aim();
-      const dx = from.x - origin.x;
-      const dz = from.z - origin.z;
-      const len = Math.hypot(dx, dz);
-      const arcDeg = this.def.parryArcDeg ?? m.parryArcDeg;
-      const flat = Math.hypot(dir.x, dir.z);
-      if (
-        len > 1e-6 &&
-        flat > 1e-6 &&
-        (dx * dir.x + dz * dir.z) / (len * flat) <
-          Math.cos(((arcDeg / 2) * Math.PI) / 180)
-      )
-        return 1;
-    }
+    if (!from) return 1;
+    const { origin, dir } = this.deps.aim();
+    const dx = from.x - origin.x;
+    const dz = from.z - origin.z;
+    const len = Math.hypot(dx, dz);
+    const arcDeg = this.def.parryArcDeg ?? m.parryArcDeg;
+    const flat = Math.hypot(dir.x, dir.z);
+    if (
+      len > 1e-6 &&
+      flat > 1e-6 &&
+      (dx * dir.x + dz * dir.z) / (len * flat) <
+        Math.cos(((arcDeg / 2) * Math.PI) / 180)
+    )
+      return 1;
     this.bus.emit('melee_parried', {
       defender: this.deps.owner,
       attacker: info.source,
@@ -255,7 +255,7 @@ export class PlasmaBlade {
     this.bus.emit('hitstop', { ms: m.parryHitstopMs });
     this.bus.emit('camera_shake', {
       intensity: m.parryShake,
-      durationS: 0.2,
+      durationS: m.parryShakeS,
       dir: null,
     });
     return 0;

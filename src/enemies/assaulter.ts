@@ -593,7 +593,8 @@ export class Assaulter implements Enemy {
     s.distance += movement.distance;
     if (this.hitbox) {
       this.strike();
-      this.hitbox.step(dt);
+      // strike() może przerwać cios (sparowanie → stunned zeruje hitbox).
+      this.hitbox?.step(dt);
     }
   }
 
