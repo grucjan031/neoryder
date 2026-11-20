@@ -166,6 +166,18 @@ describe('HitSparks', () => {
     expect(new Set(colors(sparks))).toEqual(new Set([HIT_SPARK_RED]));
   });
 
+  it('sparowany cios wręcz gracza daje większy rozprysk cyan, cudzy nic', () => {
+    const bus = new EventBus();
+    const sparks = new HitSparks(bus, { playerId: player, tuning });
+    const point = { x: 0, y: 1.2, z: -0.8 };
+    bus.emit('melee_parried', { defender: 7, attacker: player, point });
+    expect(sparks.count).toBe(0);
+    bus.emit('melee_parried', { defender: player, attacker: 7, point });
+    expect(sparks.count).toBe(tuning.vfx.parrySparkCount);
+    expect(new Set(colors(sparks))).toEqual(new Set([HIT_SPARK_CYAN]));
+    sparks.dispose();
+  });
+
   it('pomija trafienia bez punktu, bez gracza i punkt w kamerze', () => {
     const bus = new EventBus();
     const sparks = new HitSparks(bus, {

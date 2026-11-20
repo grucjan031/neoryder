@@ -26,6 +26,7 @@ function setup(enemyZ = -2, knowsPosition = true) {
   const enemy = registry.create('trooper', 'enemy');
   const stats = new Stats({ maxHealth: 100, maxEnergy: 100 });
   const health = new Health(() => 100);
+  const energy = new ResourcePool({ max: () => 100, regenPerS: () => 0 });
   damage.register(player, health, { stats });
   damage.register(enemy, new Health(() => 100));
   const blade = new PlasmaBlade(
@@ -35,7 +36,7 @@ function setup(enemyZ = -2, knowsPosition = true) {
       team: 'player',
       damage,
       stats,
-      energy: new ResourcePool({ max: () => 100, regenPerS: () => 0 }),
+      energy,
       queryArc: () => [],
       aim: () => ({
         origin: { x: 0, y: 1.6, z: 0 },
@@ -48,14 +49,35 @@ function setup(enemyZ = -2, knowsPosition = true) {
     structuredClone(tuning),
   );
   let parried = 0;
-  bus.on('melee_parried', () => parried++);
+  const successes: {
+    defender: number;
+    projectile: number | null;
+    attacker: number | null;
+  }[] = [];
+  const points: { x: number; y: number; z: number }[] = [];
+  bus.on('melee_parried', ({ point }) => {
+    parried++;
+    points.push(point);
+  });
+  bus.on('parry_success', (e) => successes.push(e));
   const hit = (tags: string[]) =>
     damage.deal(player, { amount: 20, source: enemy, tags });
   const stepFor = (s: number, held: Action[]) => {
     for (let i = 0; i < Math.round(s / SIM_DT); i++)
       blade.step(SIM_DT, input(held));
   };
-  return { hit, stepFor, health, blade, parried: () => parried };
+  return {
+    hit,
+    stepFor,
+    health,
+    blade,
+    parried: () => parried,
+    successes,
+    points,
+    enemy,
+    player,
+    energy,
+  };
 }
 
 describe('parowanie ciosów wręcz', () => {
@@ -131,6 +153,46 @@ describe('parowanie ciosów wręcz', () => {
     expect(t.hit(['#melee'])).toBe(0);
     expect(t.health.current).toBe(100);
     expect(t.parried()).toBe(1);
+  });
+
+  it('parowanie wręcz liczy się jako parry_success (bez pocisku), iskra przed graczem', () => {
+    const t = setup();
+    t.stepFor(0.05, ['block']);
+    t.hit(['#melee']);
+    expect(t.successes).toEqual([
+      { defender: t.player, projectile: null, attacker: t.enemy },
+    ]);
+    const p = t.points[0]!;
+    expect(p.z).toBeCloseTo(-tuning.melee.meleeParrySparkM);
+    expect(p.x).toBeCloseTo(0);
+    expect(p.y).toBeCloseTo(1.6 + tuning.melee.meleeParrySparkOffsetYM);
+  });
+
+  it('atakujący w osi oczu: iskra w kierunku patrzenia, bez NaN', () => {
+    const t = setup(0);
+    t.stepFor(0.05, ['block']);
+    expect(t.hit(['#melee'])).toBe(0);
+    const p = t.points[0]!;
+    expect(Number.isFinite(p.x) && Number.isFinite(p.z)).toBe(true);
+    expect(p.z).toBeCloseTo(-tuning.melee.meleeParrySparkM);
+  });
+
+  it('blok kosztuje energię za cios, ale nie za tik statusu ani zagrożenie', () => {
+    const t = setup();
+    t.stepFor((tuning.melee.meleeParryWindowMs + 100) / 1000, ['block']);
+    const full = t.energy.current;
+    t.hit(['#status']);
+    t.hit(['#hazard']);
+    expect(t.energy.current).toBe(full);
+    t.hit(['#melee']);
+    expect(t.energy.current).toBeLessThan(full);
+  });
+
+  it('bez parowania nie ma parry_success', () => {
+    const t = setup();
+    t.stepFor((tuning.melee.meleeParryWindowMs + 100) / 1000, ['block']);
+    t.hit(['#melee']);
+    expect(t.successes).toEqual([]);
   });
 
   it('blok poza oknem działa jak dotąd (redukcja, bez parowania)', () => {

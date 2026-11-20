@@ -168,8 +168,21 @@ describe('AchievementTracker', () => {
 
   it('liczniki zdarzeń liczą tylko akcje gracza', () => {
     const t = setup();
-    t.bus.emit('parry_success', { projectile: 5, attacker: 9 });
-    t.bus.emit('parry_success', { projectile: 6, attacker: 9 });
+    t.bus.emit('parry_success', {
+      defender: PLAYER,
+      projectile: 5,
+      attacker: 9,
+    });
+    t.bus.emit('parry_success', {
+      defender: PLAYER,
+      projectile: 6,
+      attacker: 9,
+    });
+    t.bus.emit('parry_success', {
+      defender: 77,
+      projectile: null,
+      attacker: 9,
+    });
     t.bus.emit('execute_performed', { attacker: PLAYER, target: 9, point: V });
     t.bus.emit('execute_performed', { attacker: 77, target: 9, point: V });
     t.bus.emit('synergy_triggered', { synergy: 's', user: PLAYER });
@@ -190,8 +203,16 @@ describe('AchievementTracker', () => {
     });
     t.kill(10);
     expect(t.earned).toEqual([]);
-    t.bus.emit('parry_success', { projectile: 5, attacker: 9 });
-    t.bus.emit('parry_success', { projectile: 6, attacker: 9 });
+    t.bus.emit('parry_success', {
+      defender: PLAYER,
+      projectile: 5,
+      attacker: 9,
+    });
+    t.bus.emit('parry_success', {
+      defender: PLAYER,
+      projectile: 6,
+      attacker: 9,
+    });
     expect(t.earned).toEqual(['zwierciadlo']);
   });
 

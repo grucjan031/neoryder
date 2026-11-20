@@ -52,6 +52,7 @@ export function renderWithViewmodel(
   const mask = camera.layers.mask;
   const autoClear = renderer.autoClear;
   const background = scene.background;
+  const matrixAuto = scene.matrixWorldAutoUpdate;
   const e = camera.projectionMatrix.elements;
   savedProjection[0] = e[2]!;
   savedProjection[1] = e[6]!;
@@ -65,7 +66,7 @@ export function renderWithViewmodel(
     e[2] = s * e[2]! + (s - 1) * e[3]!;
     e[6] = s * e[6]! + (s - 1) * e[7]!;
     e[10] = s * e[10]! + (s - 1) * e[11]!;
-    // Zachowaj bliskie odci?cie FPP przy skalowaniu obu p?aszczyzn ?wiata.
+    // Zachowaj bliskie odcięcie FPP przy skalowaniu obu płaszczyzn świata.
     const clipScale =
       'isPerspectiveCamera' in camera
         ? Math.min(1, tuning.horizon.legacyNearM / camera.near)
@@ -79,6 +80,8 @@ export function renderWithViewmodel(
     renderer.autoClear = false;
     // Tło z koloru wymusza czyszczenie bufora, a viewmodel ma dojść do istniejącego obrazu.
     scene.background = null;
+    // Macierze świata policzył pierwszy render tego przebiegu; drugi nie przechodzi drzewa ponownie.
+    scene.matrixWorldAutoUpdate = false;
     renderer.render(scene, camera);
   } finally {
     e[2] = savedProjection[0]!;
@@ -88,5 +91,6 @@ export function renderWithViewmodel(
     camera.layers.mask = mask;
     renderer.autoClear = autoClear;
     scene.background = background;
+    scene.matrixWorldAutoUpdate = matrixAuto;
   }
 }

@@ -271,7 +271,7 @@ function setup(raws: readonly unknown[], tags: readonly string[] = BUILD) {
   };
 }
 
-const parry = { projectile: 1, attacker: null } as const;
+const parry = { defender: 1, projectile: 1, attacker: null } as const;
 
 describe('SynergySystem — definicje', () => {
   it('loads and validates the three shipped definitions', () => {

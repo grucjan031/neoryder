@@ -1,6 +1,6 @@
 {
   "id": "conquest",
-  "title": "PrzejÄ™cie",
+  "title": "Przejęcie",
   "enemies": ["assaulter", "gunner"],
   "enemyTickets": 120,
   "maxAlive": 8,

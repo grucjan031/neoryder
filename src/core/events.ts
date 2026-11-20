@@ -38,6 +38,8 @@ export interface GameEvents {
     /** Impuls odrzutu (N·s) z DamageInfo.knockback; 0, gdy brak. */
     knockback: number;
     killed: boolean;
+    /** Obrażenia zatrzymane przez blok (modyfikatory BLOCK_SOURCE); brak, gdy blok nie działał. */
+    blocked?: number;
     statuses?: readonly StatusApplication[];
   };
   enemy_killed: {
@@ -45,7 +47,12 @@ export interface GameEvents {
     killer: EntityId | null;
     tags: readonly string[];
   };
-  parry_success: { projectile: EntityId; attacker: EntityId | null };
+  /** Udane parowanie: odbity pocisk (`projectile`) albo sparowany cios wręcz (`projectile: null`). */
+  parry_success: {
+    defender: EntityId;
+    projectile: EntityId | null;
+    attacker: EntityId | null;
+  };
   power_used: { power: string; user: EntityId };
   power_cooldown: { power: string; user: EntityId; cooldownS: number };
   power_released: { power: string; user: EntityId };
@@ -78,7 +85,7 @@ export interface GameEvents {
   // F1 — wręcz (#07)
   melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };
   /** Sparowany cios wręcz (blok w oknie `meleeParryWindowMs`): obrażenia zanegowane, atakujący ogłuszony. */
-  melee_parried: { defender: EntityId; attacker: EntityId };
+  melee_parried: { defender: EntityId; attacker: EntityId; point: Vec3 };
   melee_blocked: {
     defender: EntityId;
     attacker: EntityId | null;

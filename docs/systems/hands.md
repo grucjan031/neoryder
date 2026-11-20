@@ -11,7 +11,10 @@ slotu (`gun`). Moce F/E pozostają niezależne od tego wyboru.
 - R (`swap`): zamiana ostrze/broń. Trwa `tuning.hands.swapS` (0,24 s czasu
   gracza). W zamianie oba ataki są zablokowane. Stan `held` zmienia się dopiero
   po zakończeniu; wejście ataku wraca od następnego kroku.
-- Zamiana ostrze → broń czeka na `idle`. Inne stany ostrza są zajęte, poza
+- Zamiana broń → ostrze rusza od razu (nie czeka na nic), a ostrze → broń
+  startuje w pierwszym kroku z `dt > 0`, w którym ostrze nie jest zajęte. Zajęte
+  = stan ostrza inny niż `idle` i `throwing` (`bladeBusy` podaje scena; Arena
+  i RoomScene używają tego samego `HeldItem`). Zamiana ostrze → broń czeka na `idle`. Inne stany ostrza są zajęte, poza
   `throwing`: lot ostrza nie blokuje zamiany. Żądanie czeka najwyżej
   `tuning.hands.swapBufferS` (0,4 s), potem przepada. Hitstop zatrzymuje zegary,
   ale pozwala zapamiętać naciśnięcie R. Kolejne żądania w trwającej zamianie
@@ -27,12 +30,28 @@ slotu (`gun`). Moce F/E pozostają niezależne od tego wyboru.
   Celowanie kończą: przełączenie broni (ponowne wciśnięcie PPM), przegrzanie, dash, zamiana
   na ostrze, ŚPM i śmierć; puszczenie wejścia przy pauzie/utracie fokusu kończy je w następnym
   kroku. Żeby blokować z bronią, przełącz na ostrze (R).
+  Mechanika: wejściem celowania jest `aim` albo `block` (PPM). `aimT` rośnie liniowo
+  w czasie `aim.inS × aimInScale` (skala z definicji broni; Arena jej nie przekazuje,
+  RoomScene tak) i maleje w `aim.outS`; wartość widoczna dla reszty gry
+  `aim = smoothstep(aimT)`. Celowanie trwa, gdy broń jest w ręku, nie trwa zamiana,
+  wejście jest trzymane, brak zatrzasku i scena zezwala (`canAim`: stan `playing`,
+  broń nieprzegrzana, `dashS <= 0`). Zatrzask (`aimLatch`) po przerwaniu celowania
+  przez zmianę broni, `cancelAim()` (śmierć/reset) albo puszczenie wejścia wymaga
+  puszczenia przycisku przed ponownym celowaniem. `aim` zasila: rozrzut broni,
+  FOV (`aimFovScale` broni, wartość domyślna `aim.fovScale`), czułość
+  (`1 + (aim.sensitivity × aimSensitivityScale − 1) × aim`), mnożnik `moveSpeed`
+  (`1 + (aim.moveSpeed − 1) × aim`, `StatModifier` źródła `aim`) i render
+  (poza broni między `POSE` a `AIM_POSE`, odrzut × `aim.recoil`).
 - Środkowy przycisk (`bladeThrow`) analogicznie natychmiast przywraca ostrze
   i przekazuje rzut. Zasady dostępności rzutu i bloku w samym ostrzu pozostają
   takie jak w module walki wręcz.
-- 1/2/3 (`weapon1..3`): wybór istniejącego slotu i żądanie dobycia broni,
-  także po naciśnięciu bieżącego slotu. Nieistniejący slot jest ignorowany.
+- 1/2/3 (`weapon1..3`): wybór istniejącego slotu (scena wywołuje `selectWeapon`
+  i `HeldItem.requestGun()`). Nieistniejący slot jest ignorowany.
   Broń → inna broń zmienia model natychmiast, bez zamiany z ostrzem.
+  Wyjątek: gdy w ręku jest broń i naciśnięto klawisz **bieżącego** slotu (a w tym
+  kroku nie było `weapon_switched` z inną bronią/slotem), `HeldItem` traktuje to
+  jak przełącznik i rozpoczyna zamianę na ostrze. Zmiana broni w tym samym kroku
+  tłumi ten przełącznik (flaga `weaponChanged`).
 
 `HeldItem.step` zwraca `bladeInput` i `triggerHeld`. Przy broni usuwa
 `attack/block/bladeThrow` z held, pressed i released kopii wejścia ostrza.

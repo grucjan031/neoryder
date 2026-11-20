@@ -4,32 +4,80 @@ Scena `?scene=arena` (pierwsza pozycja w menu) — pierwsza pełna pętla walki 
 
 ## Co łączy
 
-| Element                                           | Moduł                                                                    |
-| ------------------------------------------------- | ------------------------------------------------------------------------ |
-| Ruch, dash, ślizg, kamera FPP                     | `PlayerController`, `FpsCamera`                                          |
-| Ostrze: combo, ciężki, blok, parowanie pocisków   | `PlasmaBlade` + `FppBlade` (widok), przechwytywanie w `ProjectileSystem` |
-| Moce F/E, energia                                 | `PowerSlots`, `createPower`, `PlayerEnergy` (wspólna pula z blokiem)     |
-| Bronie (R, przytrzymanie), sloty 1–3, przegrzanie | `Weapon`, `Loadout`, `FppBlaster`, renderery promienia i wybuchu         |
-| Wrogowie: Szturmowiec, Strzelec                   | `EnemyManager`, `EnemyView`                                              |
-| Fale                                              | `WaveDirector`                                                           |
-| Rozpad wrogów                                     | `DebrisSystem`, `DebrisRenderer`, `EnemyShatter`                         |
-| HUD i ekran śmierci                               | `Hud`                                                                    |
-| Hitstop, spowolnienie po ostatnim zabójstwie fali | `FeelSystem` (main.ts)                                                   |
+| Element                                            | Moduł                                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------ |
+| Ruch, dash, ślizg, kamera FPP                      | `PlayerController`, `FpsCamera`                                          |
+| Ostrze: combo, ciężki, blok, parowanie pocisków    | `PlasmaBlade` + `FppBlade` (widok), przechwytywanie w `ProjectileSystem` |
+| Moce F/E, energia                                  | `PowerSlots`, `createPower`, `PlayerEnergy` (wspólna pula z blokiem)     |
+| Bronie (R, przytrzymanie), sloty 1–3, przegrzanie  | `Weapon`, `Loadout`, `FppBlaster`, renderery promienia i wybuchu         |
+| Wrogowie: wszystkie archetypy z `waves/arena.json` | `EnemyManager`, `EnemyView`                                              |
+| Fale                                               | `WaveDirector`                                                           |
+| Rozpad wrogów                                      | `DebrisSystem`, `DebrisRenderer`, `EnemyShatter`                         |
+| HUD i ekran śmierci                                | `Hud`                                                                    |
+| Hitstop, spowolnienie po ostatnim zabójstwie fali  | `FeelSystem` (main.ts)                                                   |
 
 ## Fale (`WaveDirector`)
 
-- 12 fal o rosnącej liczebności (2 → 16 wrogów), skład i interwał spawnu w danych (zod).
-- Kolejność wrogów i punkty spawnu losuje `Rng` (`ctx.rng.fork('waves')`) — **ten sam `?seed=` daje ten sam przebieg**.
-- Spawn co `spawnIntervalS`, najwyżej `maxAlive` (10) żywych naraz, punkt spawnu dalej niż `minSpawnDistance` od gracza, gdy to możliwe. Odmowa spawnu (limit `tuning.arena.maxEnemies`, limit ciał Rapier) — ponowienie w kolejnym kroku.
-- Koniec fali: kolejka pusta i zginął ostatni wróg fali → `wave_last_kill` (spowolnienie 0,3 s) i `wave_cleared`, przerwa `breakS`, następna fala (`wave_started`). Wrogowie z konsoli nie liczą się do fali. Po ostatniej fali faza `done`.
+Dane `src/data/waves/arena.json`: `firstBreakS` 2, `breakS` 4, `maxAlive` 10,
+`minSpawnDistance` 9 m, 8 punktów spawnu XZ, 12 fal. Rosnąca liczebność (3 → 21):
+
+| Fala | Interwał (s) | Skład                                                                      | Razem |
+| ---- | ------------ | -------------------------------------------------------------------------- | ----- |
+| 1    | 0,9          | assaulter 3                                                                | 3     |
+| 2    | 0,8          | assaulter 3, gunner 2                                                      | 5     |
+| 3    | 0,8          | assaulter 2, gunner 1, drone 3                                             | 6     |
+| 4    | 0,7          | assaulter 4, gunner 1, sniper 1                                            | 6     |
+| 5    | 0,7          | assaulter 3, drone 3, sniper 1, hacker 1                                   | 8     |
+| 6    | 0,65         | shielder 2, assaulter 3, gunner 2, turret 1                                | 8     |
+| 7    | 0,6          | shielder 2, assaulter 4, drone 2, sniper 1                                 | 9     |
+| 8    | 0,6          | executor 1, assaulter 5, gunner 3, hacker 1                                | 10    |
+| 9    | 0,5          | assaulter 5, gunner 3, drone 3, sniper 2, turret 1                         | 14    |
+| 10   | 0,45         | shielder 3, assaulter 4, gunner 3, drone 3, sniper 2, hacker 1             | 16    |
+| 11   | 0,4          | executor 1, shielder 2, assaulter 6, gunner 3, drone 3, turret 1           | 16    |
+| 12   | 0,35         | executor 2, shielder 3, assaulter 6, sniper 2, drone 4, hacker 2, turret 2 | 21    |
+
+Algorytm i determinizm (`src/world/waves.ts`):
+
+- Fazy: `stopped` → `break` → `spawning` → `fighting` → `break`… → `done`.
+  `start(wave=1, rng?)` czyści stan, ustawia fazę `break` z timerem `firstBreakS`;
+  dla `wave>1` indeks bieżącej fali ustawia się tak, że następna w kolejce to `wave`.
+- Początek fali (timer ≤ 0): kolejka = grupy w kolejności z danych, każda rozwinięta
+  do `max(1, round(count × mnożnik trudności.count))` wpisów; potem **jedno**
+  `rng.shuffle(kolejka)` (Fisher–Yates od końca, `int(0,i)`). Emituje
+  `wave_started {wave, count}` (count po mnożniku), `timerS = 0` (pierwszy
+  spawn w tym samym kroku).
+- Spawn: w pętli, dopóki `timerS ≤ 0`, kolejka niepusta i żywych <
+  `max(1, round(maxAlive × mnożnik trudności.maxAlive))`: weź pierwszy wpis, wybierz
+  punkt (poniżej), `spawn(enemy, punkt)`; wynik `null` (limit
+  `tuning.arena.maxEnemies` = 30 żywych, limit ciał Rapiera
+  `tuning.physics.maxDynamicBodies`) przerywa pętlę i próbuje w kolejnym kroku bez
+  zużycia wpisu; sukces zdejmuje wpis, dodaje id do `alive` i `timerS += spawnIntervalS`
+  fali (może więc spawnować kilku wrogów w jednym kroku przy dużym dt). Po
+  ostatnim wpisie faza `fighting`.
+- Punkt spawnu: spośród punktów z odległością XZ od gracza ≥ `minSpawnDistance`
+  (gdy żaden — wszystkie), `rng.pick`; pozycja ma `y = 0`. Kolejność losowań z
+  `Rng`: shuffle przy starcie fali, potem po jednym `pick` na każdy próbowany spawn
+  (także nieudany, bo punkt wybierany jest przed `spawn`).
+- Koniec fali: zdarzenie `enemy_killed` wroga z `alive` (inni, np. z konsoli,
+  nie liczą się); gdy `alive` puste i kolejka pusta → `wave_last_kill {wave, id}`
+  (spowolnienie 0,3 s), `wave_cleared {wave}`; po ostatniej fali faza `done`,
+  inaczej `break` z `breakS`.
+- `goto(n)` (komenda `wave`): natychmiast zaczyna falę `n`, bez przerwy, `alive`
+  wyczyszczone (żywi wrogowie zostają poza licznikiem). `stop()` czyści kolejkę.
+- Strumień: scena tworzy dyrektora z `ctx.rng.fork('waves')`, a `reset()` przekazuje
+  świeże `ctx.rng.fork('waves')` do `start(1, rng)` — ten sam `?seed=` daje ten sam
+  przebieg także po „Jeszcze raz”. `spawnLog` zapisuje `{wave, enemy, x, z}`.
+- `step` dyrektora dostaje czas świata `dt` (nie czas gracza ze Skupienia).
+- Mnożniki trudności (`count`, `maxAlive`) pochodzą z `difficulties[poziom]`
+  ([difficulty.md](difficulty.md)); poziom odczytany raz przy `start()`.
 
 ## Śmierć i powtórka
 
-`player_died` → fale stop, mysz zwolniona, HUD pokazuje „Zginąłeś” i „Jeszcze raz” (klik / Enter / R) → `reset()`: wrogowie i pociski usunięci, zdrowie i energia pełne, gracz na starcie, fale od 1.
+`player_died` → stan `dead`, `WaveDirector.stop()`, aktywne moce zresetowane, mysz zwolniona, HUD pokazuje „Zginąłeś” i „Jeszcze raz” (klik / Enter / R) → `reset()`: wrogowie, pociski, odłamki i statusy usunięte, ekwipunek i ostrze od nowa, zdrowie, energia i wytrzymałość pełne, gracz na starcie, licznik zabójstw 0, fale od 1 z nowym strumieniem `ctx.rng.fork('waves')`. W stanie `dead` wrogowie nadal krokują (`manager.step`), reszta symulacji stoi; w stanie `select` nic nie krokuje.
 
 ## Konsola debug
 
-`spawn <id> [n]`, `kill all`, `hit <dmg>`, `wave <n>`, `god`, `loadout <id>`, `reset` (wbudowane), plus `timescale`, `hitstop`, `seed`. Query: `wave`, `phase`, `enemies`, `playerHp`, `energy`, `heat`, `dead`, `kills`, `debris`, `bodies`, `loadout`, `weapon`, `weaponHeat`, `powerSlots`, `powerCooldowns`, `beam`.
+`spawn <id> [n]`, `kill all`, `hit <dmg>`, `wave <n>`, `god`, `loadout <id>`, `build`, `status <id> [s]`, `hold blade|gun`, `tp <x> <z> [yawDeg] [pitchDeg]`, `look <yawDeg> [pitchDeg]`, `execute ready`, `weaken <procent>`; globalne (`main.ts`): `reset`, `seed`, `timescale <n>`, `hitstop <ms>`. Query: `wave`, `phase`, `enemies`, `state` (`select|playing|dead`), `spawnLog`, `playerHp`, `energy`, `heat`, `dead`, `kills`, `debris`, `bodies`, `loadout`, `weapon`, `weaponHeat`, `powerSlots`, `powerCooldowns`, `beam`.
 
 ## Ekwipunek (F2-15)
 
@@ -95,9 +143,9 @@ Na ekranie śmierci obok „Jeszcze raz” (ten sam build) jest „Zmień build�
 gracza. `stats` synergii to `PlayerController.stats` (dash i ruch), `cool_weapon` woła
 `vent()` aktywnej broni.
 
-Fale 1–12 (`src/data/waves/arena.json`) wprowadzają archetypy po jednym: Dron (3),
-Snajper (4), Tarczownik (6), Egzekutor (8), potem mieszanki; fala 12 to 17 wrogów z
-dwoma Egzekutorami. Liczebność nie maleje (test), `maxAlive` zostaje 10. Wydajność:
+Fale 1–12 (`src/data/waves/arena.json`) wprowadzają archetypy stopniowo: Dron (fala 3),
+Snajper (4), Haker (5), Tarczownik i Wieżyczka (6), Egzekutor (8), potem mieszanki; fala 12
+to 21 wrogów z dwoma Egzekutorami. Liczebność nie maleje (test), `maxAlive` zostaje 10. Wydajność:
 `arenaPerf.test.ts` mierzy 30 wrogów z mieszanki wszystkich archetypów F2.
 
 Kontrola w 30 sekund: `?scene=arena&debug=1` → ekran wyboru, wybierz hybrydę, w konsoli
