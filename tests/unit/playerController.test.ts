@@ -184,6 +184,21 @@ describe('kontroler FPP — prawdziwy Rapier', () => {
     expect(s.player.getState().velocity.y).toBeGreaterThan(0);
   });
 
+  it('lądowanie w trakcie dashu nie zużywa bufora skoku, który dash i tak wyzeruje', async () => {
+    const s = await setup();
+    s.box(0, 0.5, -6, 5, 0.5, 5);
+    s.tick(input([], ['jump']));
+    const feetY = () => s.player.getState().position.y - 0.9;
+    s.until(() => feetY() > 1.03);
+    const during: boolean[] = [];
+    s.ctx.bus.on('player_jumped', () =>
+      during.push(s.player.getState().dashS > 0),
+    );
+    s.tick(input(['moveForward'], ['dash', 'jump']));
+    for (let i = 0; i < 40; i++) s.tick(input(['moveForward']));
+    expect(during.some(Boolean)).toBe(false);
+  });
+
   it('wygasły bufor nie powoduje skoku po lądowaniu', async () => {
     const s = await setup();
     s.tick(input([], ['jump']));

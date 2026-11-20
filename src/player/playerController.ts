@@ -207,11 +207,12 @@ export class PlayerController {
       !this.sprintExhausted &&
       this.stamina.current > 0;
     const sprintStep = s.sprinting;
-    if (s.dashS > 0) this.stepDash(dt);
+    const dashing = s.dashS > 0;
+    if (dashing) this.stepDash(dt);
     else if (s.sliding) this.stepSlide(dt, move, input);
     else this.stepRun(dt, move);
 
-    if (s.dashS <= 0) s.velocity.y += this.ctx.tuning.physics.gravity * dt;
+    if (!dashing) s.velocity.y += this.ctx.tuning.physics.gravity * dt;
     const impactSpeed = Math.abs(s.velocity.y);
     if (s.grounded && s.velocity.y <= 0)
       this.controller.enableSnapToGround(t.snapToGroundDistance);
@@ -263,7 +264,7 @@ export class PlayerController {
       s.airJumpsUsed = 0;
       if (!wasGrounded) {
         this.ctx.bus.emit('player_landed', { id: this.id, speed: impactSpeed });
-        if (s.jumpBufferMs > 0) this.jump(false);
+        if (s.jumpBufferMs > 0 && s.dashS <= 0) this.jump(false);
       }
     } else {
       if (s.sliding) this.endSlide();
@@ -304,7 +305,7 @@ export class PlayerController {
       this.dashEnded = false;
       this.state.dashS = 0;
       this.state.sprinting = false;
-      this.state.sliding = false;
+      this.endSlide();
       this.state.velocity.x = 0;
       this.state.velocity.z = 0;
     }
@@ -468,7 +469,7 @@ export class PlayerController {
     if (
       horizontalSpeed(s.velocity) < t.slideEndSpeed ||
       s.slideS >= t.slideMaxS ||
-      input.released.has('crouch')
+      !input.held.has('crouch')
     )
       this.endSlide();
   }
