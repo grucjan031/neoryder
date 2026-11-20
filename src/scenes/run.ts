@@ -416,7 +416,7 @@ export class RunScene implements Scene {
     this.settling = true;
     this.rewardError = null;
     const timer = setTimeout(() => {
-      if (token !== this.settleToken || !this.settling) return;
+      if (this.disposed || token !== this.settleToken || !this.settling) return;
       console.warn('Rozliczenie nagrody trwa zbyt długo; można ponowić.');
       this.settling = false;
       this.rewardError = 'save';
@@ -536,7 +536,7 @@ export class RunScene implements Scene {
   private adoptMeta(meta: MetaManager): void {
     this.meta = meta;
     this.tracker?.setBase(meta.state.achievements);
-    if (!this.metaCommands) return;
+    if (!this.metaCommands || this.disposed) return;
     this.metaCommands.dispose();
     this.metaCommands = registerMetaCommands(
       this.ctx.commands,

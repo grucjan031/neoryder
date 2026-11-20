@@ -97,6 +97,7 @@ export class AiTest implements Scene {
   private god = false;
   private readonly stats: Stats;
   private energy?: PlayerEnergy;
+  private disposed = false;
   private powers?: PowerSlots;
   private barrierRenderer?: BarrierRenderer;
   private statusVfx!: StatusVfx;
@@ -120,6 +121,7 @@ export class AiTest implements Scene {
     this.ctx = ctx;
     this.three = three;
     const rapier = await initPhysics();
+    if (this.disposed) return;
     this.world = new rapier.World({
       x: 0,
       y: ctx.tuning.physics.gravity,
@@ -298,6 +300,7 @@ export class AiTest implements Scene {
         }
       }),
     );
+    if (this.disposed) return;
     if (typeof document !== 'undefined') {
       this.label = document.createElement('p');
       this.label.setAttribute('aria-label', 'Zdrowie gracza');
@@ -645,32 +648,36 @@ export class AiTest implements Scene {
   }
 
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
     this.powers?.reset();
     this.energy?.dispose();
     this.barrierRenderer?.dispose();
     for (const off of this.off.splice(0)) off();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
-    this.manager.dispose();
-    this.statuses.dispose();
-    this.statusVfx.dispose();
-    this.statusView.dispose();
-    this.hitSparks.dispose();
-    this.hitSparksView.dispose();
-    this.projectileRenderer.dispose();
-    this.projectiles.dispose();
-    this.camera.dispose();
-    this.damage.unregister(this.player.id);
-    this.entities.destroy(this.player.id);
-    this.hurtboxes.clear();
-    this.player.dispose();
-    this.world.free();
+    this.manager?.dispose();
+    this.statuses?.dispose();
+    this.statusVfx?.dispose();
+    this.statusView?.dispose();
+    this.hitSparks?.dispose();
+    this.hitSparksView?.dispose();
+    this.projectileRenderer?.dispose();
+    this.projectiles?.dispose();
+    this.camera?.dispose();
+    if (this.player) {
+      this.damage.unregister(this.player.id);
+      this.entities.destroy(this.player.id);
+    }
+    this.hurtboxes?.clear();
+    this.player?.dispose();
+    this.world?.free();
     this.label?.remove();
     for (const geometry of this.geometries) geometry.dispose();
     this.geometries.clear();
     this.root.removeFromParent();
     this.root.clear();
-    this.three.background = null;
+    if (this.three) this.three.background = null;
   }
 }
 

@@ -862,7 +862,7 @@ export class Arena implements Scene {
       if (weapon === this.weapon && this.heldItem.held === 'gun')
         weapon.step(pdt, {
           ...this.aim(),
-          triggerHeld,
+          triggerHeld: triggerHeld && !this.health.dead,
           aim: this.heldItem.aim,
         });
       else weapon.cool(pdt);
