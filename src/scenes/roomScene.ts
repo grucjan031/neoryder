@@ -237,22 +237,22 @@ export function placeBlockModel(
 /** Jeden pokój runu: osobny świat i skład walki zgodny z Areną. */
 export class RoomScene implements Scene {
   readonly id: string = 'room';
-  private ctx!: GameContext;
-  private rapier!: Awaited<ReturnType<typeof initPhysics>>;
-  private world!: World;
-  private entities!: EntityRegistry;
-  private damage!: DamageSystem;
+  protected ctx!: GameContext;
+  protected rapier!: Awaited<ReturnType<typeof initPhysics>>;
+  protected world!: World;
+  protected entities!: EntityRegistry;
+  protected damage!: DamageSystem;
   private statuses!: StatusSystem;
-  private readonly hurtboxes = new Hurtboxes();
+  protected readonly hurtboxes = new Hurtboxes();
   private projectiles!: ProjectileSystem;
   private projectileView!: ProjectileRenderer;
-  private manager!: EnemyManager;
+  protected manager!: EnemyManager;
   private director!: WaveDirector;
   /** Tryb bossa (layout.bossEnemy): bez fal, pokój kończy śmierć bossa. */
   private boss: Boss | null = null;
   /** Oprawa walki z bossem (kosmetyka); tylko w pokoju bossa. */
   private bossFx?: BossArenaFx;
-  private player!: PlayerController;
+  protected player!: PlayerController;
   private previous!: PlayerState;
   private fpsCamera!: FpsCamera;
   private energy!: PlayerEnergy;
@@ -278,7 +278,7 @@ export class RoomScene implements Scene {
   private readonly views = new Map<EntityId, EnemyViewLike>();
   private readonly seenEnemyIds = new Set<EntityId>();
   private readonly powerPair: ReturnType<PowerSlots['get']>[] = [];
-  private readonly root = new Group();
+  protected readonly root = new Group();
   private readonly lights = createStyleLights();
   private atmosphere?: SceneAtmosphere;
   private dressing?: CityDressing;
@@ -289,7 +289,7 @@ export class RoomScene implements Scene {
   private state: 'playing' | 'dead' = 'playing';
   private elapsedS = 0;
   private cleared = false;
-  private disposed = false;
+  protected disposed = false;
   private initDone = false;
   private readonly node: MapNode;
   private readonly implantDefs: ReadonlyMap<string, ImplantDefinition>;
@@ -326,7 +326,7 @@ export class RoomScene implements Scene {
   private heist?: Heist;
   private heistView?: HeistView;
   private assaultView?: AssaultView;
-  private navigation?: ArenaNavigation;
+  protected navigation?: ArenaNavigation;
   private staticWorld?: Group;
   private readonly staticInstances: InstancedMesh[] = [];
   private conquestView?: ConquestView;
@@ -1194,7 +1194,7 @@ export class RoomScene implements Scene {
     });
   }
 
-  private spawnEnemy(kind: string, position: Vec3): EntityId | null {
+  protected spawnEnemy(kind: string, position: Vec3): EntityId | null {
     if (
       this.aliveEnemies() >=
       Math.min(this.waves.maxAlive, this.layout.maxAlive ?? this.waves.maxAlive)
@@ -1241,7 +1241,7 @@ export class RoomScene implements Scene {
     return position;
   }
 
-  private aliveEnemies(): number {
+  protected aliveEnemies(): number {
     let n = 0;
     this.manager.forEach((e) => {
       if (e.current.state !== 'dead') n++;

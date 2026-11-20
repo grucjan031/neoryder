@@ -2136,3 +2136,29 @@ semantyczne tekstury surfaces, bez zmiany materiałów pozostałych map.
 `stairs` biblioteki narzędzi przyjmuje opcjonalne `walkable` (domyślnie true).
 False wyłącza powierzchnię i ostrzeżenia AI, zachowując kolizję oraz kontrolę
 limitów schodów gracza.
+
+## Prototypy eskorty więźnia i wagonu (S4-03)
+
+Izolowane moduły i sceny debug; system misji, AI wrogów, zapis i fizyka bez zmian.
+Szczegóły i koszt: `docs/systems/prototypes-s4-03.md`.
+
+- `src/world/escortNpc.ts`: `new EscortNpc(start, evacuation, nav: EscortNavigation, params)`;
+  `step(dt, playerFeet, goal?)`, `free()`, `setHp(n)`, `teleport(x, z, y?)`, `snapshot()`.
+  `EscortNavigation` to wycinek `ArenaNavigation` (`next`, `path`). Stany: `waiting`, `following`,
+  `holding`, `evacuated`, `dead`.
+- `src/world/railPayload.ts`: `new RailPayload(route, stops, params, { reinforce(wave, stopId) })`;
+  `step(dt, { player, hostiles, pending? })`, `skip()`, `setHp(n)`, `poseAt(distanceM)`,
+  `snapshot()`. Statusy: `waitingPlayer`, `moving`, `contested`, `holding`, `arrived`, `destroyed`.
+- `src/world/prototypes.ts`: schematy zod i loadery `loadEscortTest`, `loadPayloadTest` oraz dane
+  `escortTest`, `payloadTest` z `src/data/prototypes/`.
+- Liczby: `tuning.prototypes.escort` i `tuning.prototypes.payload`; teksty HUD:
+  `src/data/ui/prototypes.pl.json`.
+- Sceny: `?scene=escort-test` i `?scene=payload-test` (`room=<id>` podmienia pokój z `arena`).
+  Komendy: `escort free|tp <x> <z>|status|hp <n>`, `payload status|skip|hp <n>`. Zapytania
+  `query('escort')`, `query('escortPath')`, `query('payload')`.
+- `RoomScene`: pola `ctx`, `rapier`, `world`, `entities`, `damage`, `hurtboxes`, `manager`, `player`,
+  `root`, `navigation`, `disposed` oraz metody `spawnEnemy` i `aliveEnemies` są `protected`
+  (podklasy prototypów); zachowanie bez zmian. `roomTestRun(room, params)` w `roomTest.ts` buduje
+  `RunState` pokoju testowego z parametrów URL.
+- Cele (więzień, wagon) to encje drużyny `neutral` z `Health` i colliderem w grupie
+  `CollisionGroup.Player` o filtrze tylko `EnemyProjectile`: trafiają je wyłącznie pociski wrogów.
