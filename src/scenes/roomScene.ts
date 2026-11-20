@@ -35,6 +35,7 @@ import {
 import {
   batchInstancedTemplate,
   batchStaticGeometry,
+  partitionByTriangles,
 } from '../render/staticBatch';
 import { FppViewModel } from '../render/fppViewModel';
 import {
@@ -414,6 +415,7 @@ export class RoomScene implements Scene {
     if (this.staticWorld)
       batchStaticGeometry(this.staticWorld, this.geometries, {
         cellSize: this.layout.arena!.batchCellM,
+        triangleBudget: ctx.tuning.arena.batchTriangleBudget,
       });
     else
       batchStaticGeometry(decor, this.geometries, {
@@ -879,7 +881,6 @@ export class RoomScene implements Scene {
         size: Vec3;
         material: Parameters<typeof getMaterial>[0];
         model?: string;
-        cell: string;
         matrices: Matrix4[];
       }
     >();
@@ -909,12 +910,15 @@ export class RoomScene implements Scene {
           if (instance && this.staticWorld) {
             const cell = this.layout.arena!.batchCellM;
             const material = blockMaterial ?? 'world';
-            const key = `${Math.floor(position.x / cell)},${Math.floor(position.z / cell)}:${model ?? ''}:${material}:${size.x},${size.y},${size.z}`;
+            const budget = this.ctx.tuning.arena.batchTriangleBudget;
+            const cellKey = budget
+              ? ''
+              : `${Math.floor(position.x / cell)},${Math.floor(position.z / cell)}:`;
+            const key = `${cellKey}${model ?? ''}:${material}:${size.x},${size.y},${size.z}`;
             const group = instances.get(key) ?? {
               size,
               material,
               model,
-              cell: `${Math.floor(position.x / cell)},${Math.floor(position.z / cell)}`,
               matrices: [],
             };
             group.matrices.push(
@@ -971,17 +975,34 @@ export class RoomScene implements Scene {
       string,
       { source: Mesh; matrices: Matrix4[]; name: string }
     >();
+    const budget = this.staticWorld
+      ? this.ctx.tuning.arena.batchTriangleBudget
+      : 0;
+    const cellM = this.layout.arena?.batchCellM ?? 0;
+    // Dla budżetu trójkątów klucze nie zawierają komórki: dzieli dopiero partitionInstances.
+    const partitionInstances = (
+      matrices: Matrix4[],
+      triangles: number,
+    ): Matrix4[][] =>
+      budget && cellM
+        ? partitionByTriangles(
+            matrices.map((matrix) => ({
+              matrix,
+              x: matrix.elements[12]!,
+              z: matrix.elements[14]!,
+              triangles,
+            })),
+            budget,
+            cellM,
+          ).map((leaf) => leaf.map((item) => item.matrix))
+        : [matrices];
+    const triangleCount = (geometry: BufferGeometry): number =>
+      (geometry.index?.count ?? geometry.attributes.position!.count) / 3;
     const instancingTemplates = new Map<
       string,
       Awaited<ReturnType<typeof cloneCityModel>>
     >();
-    for (const {
-      size,
-      material,
-      model,
-      matrices,
-      cell,
-    } of instances.values()) {
+    for (const { size, material, model, matrices } of instances.values()) {
       const templateKey = JSON.stringify([model, size]);
       if (!instancingTemplates.has(templateKey)) {
         const prepared =
@@ -1006,7 +1027,10 @@ export class RoomScene implements Scene {
           const materials = Array.isArray(node.material)
             ? node.material
             : [node.material];
-          const key = `${cell}:${shape}:${node.name}:${materials.map((m) => m.uuid).join(',')}`;
+          const cellKey = budget
+            ? ''
+            : `${Math.floor(matrices[0]!.elements[12]! / cellM)},${Math.floor(matrices[0]!.elements[14]! / cellM)}:`;
+          const key = `${cellKey}${shape}:${node.name}:${materials.map((m) => m.uuid).join(',')}`;
           const group: { source: Mesh; matrices: Matrix4[]; name: string } =
             modelInstances.get(key) ?? {
               source: node,
@@ -1023,40 +1047,54 @@ export class RoomScene implements Scene {
       }
       const geometry = new BoxGeometry(size.x, size.y, size.z);
       this.geometries.add(geometry);
-      const mesh = new InstancedMesh(
-        geometry,
-        getMaterial(material),
-        matrices.length,
-      );
-      this.staticInstances.push(mesh);
-      matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
-      mesh.instanceMatrix.needsUpdate = true;
-      mesh.computeBoundingSphere();
-      blocks.add(mesh);
+      for (const part of partitionInstances(matrices, 12)) {
+        const mesh = new InstancedMesh(
+          geometry,
+          getMaterial(material),
+          part.length,
+        );
+        this.staticInstances.push(mesh);
+        part.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.computeBoundingSphere();
+        blocks.add(mesh);
+      }
     }
-    for (const { source, matrices, name } of modelInstances.values()) {
-      // Pojedyncza sztuka nie zyskuje na instancingu; może scalić się z inną statyką.
-      if (matrices.length === 1) {
-        const mesh = new Mesh(source.geometry, source.material);
+    // Rzadkie, tanie modele: osobne siatki scalają się ze statyką (jedno wywołanie na materiał zamiast
+    // na model × materiał); instancje zostają tam, gdzie kopii jest dużo (kontenery).
+    const mergeLimit = budget
+      ? this.ctx.tuning.arena.instanceMergeTriangles
+      : 0;
+    for (const { source, matrices: all, name } of modelInstances.values()) {
+      const triangles = triangleCount(source.geometry);
+      const parts =
+        all.length * triangles <= mergeLimit
+          ? all.map((matrix) => [matrix])
+          : partitionInstances(all, triangles);
+      for (const matrices of parts) {
+        // Pojedyncza sztuka nie zyskuje na instancingu; może scalić się z inną statyką.
+        if (matrices.length === 1) {
+          const mesh = new Mesh(source.geometry, source.material);
+          mesh.name = name;
+          mesh.userData = { ...source.userData };
+          mesh.matrixAutoUpdate = false;
+          mesh.matrix.copy(matrices[0]!);
+          models.add(mesh);
+          continue;
+        }
+        const mesh = new InstancedMesh(
+          source.geometry,
+          source.material,
+          matrices.length,
+        );
         mesh.name = name;
         mesh.userData = { ...source.userData };
-        mesh.matrixAutoUpdate = false;
-        mesh.matrix.copy(matrices[0]!);
+        this.staticInstances.push(mesh);
+        matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.computeBoundingSphere();
         models.add(mesh);
-        continue;
       }
-      const mesh = new InstancedMesh(
-        source.geometry,
-        source.material,
-        matrices.length,
-      );
-      mesh.name = name;
-      mesh.userData = { ...source.userData };
-      this.staticInstances.push(mesh);
-      matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
-      mesh.instanceMatrix.needsUpdate = true;
-      mesh.computeBoundingSphere();
-      models.add(mesh);
     }
     if (!this.staticWorld) {
       batchStaticGeometry(blocks, this.geometries, {

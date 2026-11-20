@@ -70,9 +70,11 @@ w scenie z Rapierem.
 Budowa siatki korzysta z indeksu brył w kubełkach 2 m (wynik identyczny
 z pełnym przeglądem; budowa 240 × 240 m spadła z 5,4 s do ok. 0,15 s).
 Pole odległości zajmuje cztery bajty na węzeł i punkt docelowy. Dane
-areny określają `batchCellM` i `navigationCellM`. Budżet 800 wywołań
-rysowania przy jakości medium i 5 s wczytywania wymaga pomiaru w
-przeglądarce na docelowej arenie. Test widoku i zmiany pogody opisano
+areny określają `batchCellM` (dolny próg podziału statyki) i `navigationCellM`.
+Budżet 800 wywołań rysowania przy jakości medium spełnia podział statyki i instancji
+budżetem trójkątów (`tuning.arena.batchTriangleBudget`), pomiar w
+[render.md](render.md#wywołania-rysowania-dużych-aren-budżet-adr-0011-d8); 5 s wczytywania
+wymaga pomiaru w przeglądarce na docelowej arenie. Test widoku i zmiany pogody opisano
 w [render.md](render.md#horyzont-i-zasięg-widzenia).
 
 ## Terminal kontenerowy

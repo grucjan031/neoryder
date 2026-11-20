@@ -16,6 +16,7 @@ import {
 import {
   batchInstancedTemplate,
   batchStaticGeometry,
+  partitionByTriangles,
 } from '../../src/render/staticBatch';
 import { hideNoOutline } from '../../src/render/noOutline';
 import { Scene } from 'three';
@@ -216,4 +217,79 @@ it('cellSize scala tylko w obrębie komórki XZ, żeby frustum culling dalej dzi
     expect(box.max.x - box.min.x).toBeLessThan(10);
     expect(box.max.z - box.min.z).toBeLessThan(10);
   }
+});
+
+it('partitionByTriangles: zachowuje wszystkie elementy, respektuje budżet i jest deterministyczne', () => {
+  const items = Array.from({ length: 200 }, (_, i) => ({
+    id: i,
+    x: (i % 20) * 10,
+    z: Math.floor(i / 20) * 10,
+    triangles: 100 + (i % 7),
+  }));
+  const budget = 4000;
+  const leaves = partitionByTriangles(items, budget, 5);
+  expect(
+    leaves
+      .flat()
+      .map((item) => item.id)
+      .sort((a, b) => a - b),
+  ).toEqual(items.map((item) => item.id));
+  for (const leaf of leaves)
+    expect(
+      leaf.reduce((sum, item) => sum + item.triangles, 0),
+    ).toBeLessThanOrEqual(budget);
+  expect(leaves.length).toBeGreaterThan(1);
+  expect(
+    partitionByTriangles(items, budget, 5).map((leaf) =>
+      leaf.map((item) => item.id),
+    ),
+  ).toEqual(leaves.map((leaf) => leaf.map((item) => item.id)));
+  // Budżet większy od sumy: jedna grupa; rozrzut mniejszy od minExtent: bez dzielenia.
+  expect(partitionByTriangles(items, 1e9, 5)).toHaveLength(1);
+  expect(partitionByTriangles(items, 10, 1e6)).toHaveLength(1);
+  expect(partitionByTriangles([], 10, 1)).toEqual([]);
+  // Elementy w jednym punkcie nie powodują nieskończonej pętli.
+  const stacked = Array.from({ length: 10 }, () => ({
+    x: 1,
+    z: 1,
+    triangles: 50,
+  }));
+  expect(partitionByTriangles(stacked, 100, 0)).toHaveLength(1);
+});
+
+it('triangleBudget: mało trójkątów to jedno wywołanie na cały korzeń, dużo dzieli przestrzennie', () => {
+  const build = (budget: number | undefined) => {
+    const root = new Group();
+    root.userData.bloom = true;
+    const material = new MeshBasicMaterial();
+    const geometry = new BoxGeometry(); // 12 trójkątów
+    for (let i = 0; i < 40; i++) {
+      const mesh = new Mesh(geometry, material);
+      mesh.position.set((i % 8) * 25, 0, Math.floor(i / 8) * 25);
+      mesh.layers.set(3);
+      mesh.userData.noOutline = true;
+      root.add(mesh);
+    }
+    const owned = new Set<BufferGeometry>();
+    batchStaticGeometry(root, owned, { cellSize: 20, triangleBudget: budget });
+    const meshes = root.children.filter((c): c is Mesh => c instanceof Mesh);
+    return { meshes, material };
+  };
+  // Stała siatka: każdy element we własnej komórce, nic się nie scala.
+  expect(build(undefined).meshes).toHaveLength(40);
+  const whole = build(10_000);
+  expect(whole.meshes).toHaveLength(1);
+  const split = build(120);
+  expect(split.meshes.length).toBeGreaterThan(3);
+  expect(split.meshes.length).toBeLessThan(40);
+  let triangles = 0;
+  for (const mesh of split.meshes) {
+    triangles += (mesh.geometry.getAttribute('position').count / 24) * 12;
+    expect(mesh.material).toBe(split.material);
+    expect(mesh.layers.mask).toBe(1 << 3);
+    expect(mesh.userData.noOutline).toBe(true);
+    expect(mesh.userData.bloom).toBe(true);
+    expect(mesh.geometry.boundingSphere).not.toBeNull();
+  }
+  expect(triangles).toBe(40 * 12);
 });

@@ -281,7 +281,7 @@ it('światła, cząsteczki i deszcz reagują na żywo', () => {
     particles.render(camera);
     expect(particles.mesh.count).toBe(count);
     dressing.render(0, camera);
-    expect(dressing.weather!.rain.count).toBe(
+    expect(dressing.weather!.rainCount).toBe(
       Math.floor(tuning.city.rainMax * theme.rain.density * density),
     );
     expect(dressing.weather!.params.density).toBe(theme.rain.density);

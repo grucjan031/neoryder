@@ -86,6 +86,164 @@ Kryjówka pozostaje bez zmian. Korzysta z tych samych loaderów GLB, więc podob
 scalanie jej statycznych brył/dekoracji powinno pomóc, po oddzieleniu terminali
 i innych interakcji; nie zmierzono jej w tym zleceniu.
 
+## Wywołania rysowania dużych aren (budżet ADR 0011 D8)
+
+Cel: ≤ 800 wywołań rysowania (`renderer.info.render.calls` z całej klatki, wszystkie przebiegi
+potoku) w najgorszym widoku przy jakości `medium`, bez zmiany wyglądu. Pomiar sprzed zmiany
+pokazał 2,5–5,9 tys. w najgorszym widoku (Terminal kontenerowy, Zalane Doki, Rail Yard).
+
+### Diagnoza (Terminal kontenerowy, widok ze startu, jakość medium)
+
+Rozbiór zrobiono jednorazowym opakowaniem `renderer.renderBufferDirect` i `renderer.render`
+(liczenie po przebiegu i po nazwie węzła; narzędzia nie zostawiono w repozytorium). Klatka =
+**ten sam zestaw obiektów rysowany w kilku przebiegach**: kolor (1387 + 24 viewmodel), normalne
+dla konturu (1317 + 20), maska bloomu (99 + 24), reszta to pełnoekranowe przebiegi po 1 wywołaniu
+(razem 2877). Dlatego każde wywołanie statyki kosztuje ok. 2,5 razy, a budżet 800 to ok. 320 na przebieg.
+
+| Kategoria (przebieg koloru, bez viewmodelu)                                                         |    Przed | Po (budżet 60 tys. + scalanie rzadkich modeli) |
+| --------------------------------------------------------------------------------------------------- | -------: | ---------------------------------------------: |
+| Scalone komórki statyki (`static:*`)                                                                |      294 |                                             58 |
+| `InstancedMesh` kontenerów 20 i 40 stóp (komórka × materiał)                                        |      426 |                                             35 |
+| Pozostałe `InstancedMesh` (modele, efekty)                                                          |       35 |                                              7 |
+| Pojedynczy `Mesh` z modelu instancjonowanego (jedna sztuka w komórce: kosze, generatory, platformy) |      329 |                         0 (scalone do statyki) |
+| Statyka niescalona: węzły GLB samotne w parze komórka × materiał (podkłady, balast, okna, lampy)    |      233 |                                              0 |
+| Przezroczyste: światła, stożki, plamy, napisy (`CityDressing`), tylko kolor (bez konturu)           |       57 |                                             61 |
+| Panorama, niebo, woda, grunt, wróg, broń                                                            |      ~13 |                                            ~14 |
+| **Razem**                                                                                           | **1387** |                                        **175** |
+
+Przyczyna: stała siatka `batchCellM` (20 m) dzieli każdą grupę materiału na dziesiątki komórek,
+a modele instancjonowane (`blocks[].instance`) dostawały osobny `InstancedMesh` na komórkę ×
+kształt × węzeł × materiał. Rzadkie modele (kosze, generatory, kioski) lądowały po jednej sztuce
+w komórce, czyli jako pojedyncze wywołanie, a samotne węzły GLB nie miały z czym się scalić.
+Samych materiałów w arenie jest ok. 60 rodzajów (rejestr `getMaterial` współdzieli instancje;
+klony tylko dla wariantów farby kontenerów i nadruków), więc materiały nie były przyczyną.
+Cała arena to ok. 2,0 mln trójkątów (z tego 1,77 mln w instancjach kontenerów), ale pojedynczy
+przebieg w widoku rysuje ok. 0,5–0,7 mln. Przezroczyste światła i stożki (osobny materiał na
+źródło, 50–110 wywołań, tylko w przebiegu koloru) zostają: scalenie wymaga jednego materiału z
+atrybutem na źródło i zmiany shaderów (poza zakresem; dalej ok. 20–30% wywołań na arenach z wieloma światłami).
+
+### Zmiana
+
+Statyka i instancje areny (wyłącznie ścieżka `RoomScene` z `staticWorld`, czyli areny `exclusive`
+i `spawnRing`) są dzielone **budżetem trójkątów zamiast stałą siatką**:
+
+- `partitionByTriangles` (`src/render/staticBatch.ts`) dzieli grupę o tym samym materiale/modelu
+  rekurencyjnie wzdłuż dłuższej osi XZ (mediana ważona trójkątami) tak długo, aż suma trójkątów
+  grupy mieści się w `tuning.arena.batchTriangleBudget` (60 000) albo rozrzut środków nie
+  przekracza `batchCellM` (nie dzieli drobniej niż dotychczasowa komórka; areny z `batchCellM`
+  180–240 m zachowują ten dolny próg). Wynik deterministyczny.
+- `batchStaticGeometry(root, owned, { cellSize, triangleBudget })`: z budżetem klucz grupy nie
+  zawiera komórki; liście podziału scala jak dotąd (te same materiały, warstwy, `noOutline`,
+  `bloom`, cienie, metadane). Bez budżetu zachowanie bez zmian (hub, pokoje, `arena.ts`).
+- `RoomScene.buildLayout`: instancje modeli grupowane po (kształt, węzeł, materiały) w całej
+  arenie i dzielone tym samym podziałem; liść z jedną sztuką jest zwykłym `Mesh`, który dalej
+  scala się ze statyką.
+- Grupa instancji (węzeł × materiał) o łącznej liczbie trójkątów ≤ `tuning.arena.instanceMergeTriangles`
+  (30 000) nie jest `InstancedMesh`: każda kopia to osobny `Mesh`, który scala się ze statyką
+  (jedno wywołanie na materiał zamiast na model × materiał). Kosztem są skopiowane wierzchołki
+  (do ok. 3 MB na grupę). `InstancedMesh` zostają przy dużej liczbie kopii: kontenery, tory, wagony.
+- Dane aren, kolizje Rapier i hurtboxy nie są zmieniane. `tuning.arena.batchTriangleBudget` = 0
+  przywraca dawną stałą siatkę `batchCellM`; większy budżet = mniej wywołań, gorszy culling (więcej
+  trójkątów na GPU), mniejszy odwrotnie. Klucze leżą w `tuning.arena`, nie w `tuning.render`
+  (`tuning.render` jest w całości sterowane motywami).
+
+Zachowane bez zmian: instancje i scalone siatki trafiają do tych samych korzeni (`static-world`),
+a więc do tych samych przebiegów (kolor, kontur przez `noOutline`, maska bloomu przez `userData.bloom`
+i `bloomMaterial`, maska odbić); materiały są tymi samymi obiektami (animacja neonów, tekstury,
+uniformy mokrości), niszczalne obiekty i migoczące światła nie należą do `static-world`. Test
+`arenaDrawBudget.test.ts` buduje arenę ze starą siatką i z budżetem i porównuje sumy trójkątów,
+obwiednie, warstwy i flagi (`noOutline`, `bloom`, cienie) per materiał oraz liczbę instancji kontenerów.
+
+### Wyniki: liczba wywołań (scena Przejęcia z wrogami, 24 widoki)
+
+Widoki: 4 kierunki (0°, 90°, 180°, 270°) z każdego punktu przejęcia i ze startu (`tools/perf/viewSweep.mjs`,
+komendy `tp`/`look`, jakość medium, 1920×1080). `calls` = `renderer.info.render.calls` całej klatki
+(suma przebiegów, z wrogami, światłami i panoramą); trójkąty = suma po przebiegach.
+
+| Arena                 | calls max przed → po | calls średnio przed → po | trójkąty średnio przed → po |
+| --------------------- | -------------------: | -----------------------: | --------------------------: |
+| arenaContainerPort    |           5539 → 667 |               2248 → 382 |         1,47 mln → 2,71 mln |
+| arenaFloodedDocks     |           3217 → 643 |               1622 → 356 |         209 tys. → 438 tys. |
+| arenaRailYard         |           5930 → 665 |               2182 → 345 |         280 tys. → 690 tys. |
+| arenaPowerPlant       |           2531 → 474 |               1150 → 288 |         217 tys. → 455 tys. |
+| arenaOverpass         |           2039 → 713 |               1155 → 387 |         651 tys. → 976 tys. |
+| arenaRooftops         |            943 → 661 |                521 → 369 |         955 tys. → 1,19 mln |
+| arenaConstructionSite |            897 → 597 |                520 → 358 |         1,02 mln → 1,28 mln |
+
+Najgorszy widok po zmianie: 713 (Overpass), wszystkie areny ≤ 800. Widoki są próbą (kamera na
+poziomie gruntu), nie dowodem dla każdej pozycji; wysoko położone punkty widokowe mogą dać więcej.
+
+Koszt: więcej trójkątów na GPU, bo grubsze liście słabiej się odrzucają (Terminal kontenerowy ×1,8,
+reszta ×1,2–2,5). Zależność od budżetu (Terminal kontenerowy, scena Przejęcia, calls max / trójkąty
+średnio): 20 tys. = 829 / 2,15 mln, 30 tys. = 757 / 2,32 mln, 60 tys. = 667 / 2,71 mln. 60 tys. mieści
+wszystkie areny w 800 z zapasem ≥ 87 wywołań; mniejsza wartość przekracza budżet na Terminalu.
+Budowa areny (scalanie przy wczytaniu) trwa w tej samej skali co wcześniej (patrz pomiar niżej).
+
+### Wyniki: pomiar benchmarkiem i parą naprzemienną
+
+Sprzęt: RTX 4070 (Chromium ANGLE D3D11; **nie** docelowy laptop z D5), jakość medium, 1920×1080,
+bez vsync. Konfiguracje: `npm run perf:bench -- --scenario arenas,heaviest,hub,combat --runs 2 --uncapped
+--no-wait-idle` (średnia z 2 przebiegów; scena Przejęcia z wrogami, `god`) oraz `--cpu-throttle 4`
+(1 przebieg). Wersja „przed” = główna gałąź bez zmian. Inne procesy na maszynie obciążały CPU
+(pierwsza połowa pomiaru „przed” przy 30–100%, „po” przy 2–29%), więc FPS i ms mają szum rzędu
+±15–30%; `calls` i trójkąty są deterministyczne. Scenariusze, których zmiana nie dotyczy (assault,
+heist, mission, hub, combat), służą jako kontrola: `calls` bez zmian, różnice ms to szum.
+Scenariusz `heaviest` wybiera inny pokój przed i po (przed: arenaFloodedDocks, po: arenaRooftops),
+więc pominięto go w tabelach. Etapy to średnie CPU ms (`pipeline` zawiera `color`, `normals`, `bloomMask`).
+
+Bez vsync, CPU bez ograniczenia:
+
+| Przypadek               | max klatka 3 s (ms) przed |      po | gotowa (ms) przed |          po | płynna (ms) przed |          po |
+| ----------------------- | ------------------------: | ------: | ----------------: | ----------: | ----------------: | ----------: |
+| transition/hub->mission |               2444 / 1923 | 80 / 86 |       2332 / 1369 | 1513 / 1615 |       4983 / 3447 | 1658 / 1768 |
+| arenaContainerPort      |                      2243 | 74 / 68 |              1576 | 2200 / 2251 |              4018 | 2334 / 2481 |
+| arenaOverpass           |                      2878 | 52 / 64 |              1556 | 2030 / 2220 |              4433 | 2082 / 2338 |
+| arenaRooftops           |                1310 / 913 | 48 / 53 |       2118 / 1617 | 2062 / 2176 |       3861 / 2770 | 2062 / 2281 |
+| arenaPowerPlant         |                 244 / 200 | 49 / 46 |       1735 / 1270 | 1730 / 1729 |       1979 / 1470 | 1730 / 1729 |
+| arenaConstructionSite   |                 707 / 677 | 64 / 89 |       1881 / 1688 | 1988 / 1958 |       2862 / 2593 | 2176 / 2096 |
+| arenaRailYard           |               1141 / 1005 | 68 / 67 |       1389 / 1372 | 1953 / 1850 |       2865 / 2623 | 2151 / 2053 |
+| arenaFloodedDocks       |                 652 / 608 | 94 / 98 |       1503 / 1376 | 1900 / 1721 |       2392 / 2236 | 2053 / 1870 |
+| assault                 |                 312 / 317 | 70 / 53 |       1219 / 1218 | 1471 / 1386 |       1531 / 1534 | 1596 / 1481 |
+| heist                   |               2724 / 2331 | 84 / 76 |       1437 / 1325 | 1830 / 1671 |       4322 / 3848 | 2037 / 1866 |
+| mission:m01-maszty      |                 454 / 454 | 77 / 71 |       1271 / 1287 | 1565 / 1433 |       1885 / 1740 | 1696 / 1551 |
+
+CPU spowolnione 4× (GPU czeka na CPU, wiarygodne są kolumny CPU; jeden przebieg, wiersze kontrolne
+hub/combat/mission odbiegają o szum, nie o zmianę):
+
+| Scenariusz                            | calls przed → po | trójkąty (tys.) przed → po | pipeline CPU ms przed → po | color / normals / bloomMask CPU ms przed → po | avg FPS przed → po | 1% low przed → po |
+| ------------------------------------- | ---------------- | -------------------------- | -------------------------- | --------------------------------------------- | ------------------ | ----------------- |
+| arenas/conquest:arenaContainerPort    | 2861 → 388       | 1993 → 3793                | 94.3 → 26.4                | 42.7 / 32.2 / 17.7 → 14.4 / 6.1 / 4.8         | 8.0 → 21.5         | 6.1 → 8.9         |
+| arenas/conquest:arenaOverpass         | 1933 → 639       | 1015 → 1057                | 71.9 → 29.1                | 35.6 / 21.7 / 13.2 → 15.6 / 6.5 / 5.9         | 10.1 → 20.8        | 7.4 → 14.0        |
+| arenas/conquest:arenaRooftops         | 727 → 446        | 1311 → 1315                | 48.7 → 37.5                | 24.9 / 11.4 / 10.9 → 19.7 / 7.9 / 8.8         | 12.7 → 17.0        | 8.2 → 10.9        |
+| arenas/conquest:arenaPowerPlant       | 117 → 135        | 72 → 349                   | 26.1 → 11.9                | 10.3 / 6.9 / 7.7 → 5.0 / 2.9 / 3.1            | 20.4 → 42.1        | 14.2 → 19.3       |
+| arenas/conquest:arenaConstructionSite | 885 → 602        | 1415 → 1435                | 60.6 → 44.2                | 30.3 / 15.6 / 13.2 → 22.0 / 10.3 / 10.6       | 11.5 → 14.8        | 8.8 → 9.9         |
+| arenas/conquest:arenaRailYard         | 1808 → 304       | 235 → 697                  | 81.4 → 23.1                | 34.8 / 25.7 / 19.4 → 11.6 / 5.4 / 4.9         | 9.0 → 23.2         | 6.3 → 13.0        |
+| arenas/conquest:arenaFloodedDocks     | 3091 → 541       | 351 → 468                  | 100.6 → 28.1               | 47.5 / 34.4 / 17.1 → 15.2 / 6.2 / 5.5         | 7.7 → 19.7         | 6.1 → 9.1         |
+| arenas/assault                        | 576 → 573        | 111 → 110                  | 27.1 → 24.9                | 14.5 / 5.8 / 5.6 → 13.4 / 5.3 / 5.2           | 22.0 → 23.1        | 10.5 → 11.3       |
+| arenas/heist                          | 485 → 478        | 115 → 114                  | 24.5 → 19.7                | 13.3 / 4.9 / 5.3 → 10.3 / 4.1 / 4.5           | 23.4 → 29.8        | 13.5 → 15.4       |
+| arenas/mission:m01-maszty             | 1151 → 1151      | 115 → 115                  | 28.6 → 45.3                | 15.4 / 7.2 / 5.1 → 22.0 / 12.4 / 9.5          | 23.1 → 13.5        | 8.8 → 6.2         |
+| hub/hub                               | 641 → 641        | 183 → 183                  | 53.3 → 60.2                | 25.6 / 11.7 / 14.4 → 26.3 / 14.5 / 17.8       | 15.3 → 15.6        | 10.0 → 7.3        |
+| combat/combatYard                     | 699 → 715        | 166 → 166                  | 33.8 → 50.0                | 17.8 / 7.5 / 7.2 → 22.0 / 13.0 / 13.5         | 22.0 → 15.0        | 14.2 → 6.6        |
+
+Pomiar parami naprzemiennie (wersja przed i po w tym samym oknie czasu, kolejność zmieniana co przebieg,
+2 przebiegi × 5 s po 3 s rozgrzewki; wczytanie = czas do stanu `room`) jest najuczciwszym porównaniem
+w obecności obciążenia z zewnątrz:
+
+| Arena              | calls      | trójkąty (tys.) | pipeline CPU ms | color CPU | normals CPU | bloomMask CPU | pipeline GPU ms | avg FPS      | wczytanie ms | sterta JS MB |
+| ------------------ | ---------- | --------------- | --------------- | --------- | ----------- | ------------- | --------------- | ------------ | ------------ | ------------ |
+| arenaContainerPort | 2861 → 358 | 1993 → 3789     | 10.3 → 2.9      | 4.8 → 1.6 | 3.4 → 0.7   | 1.9 → 0.6     | 11.6 → 4.1      | 73.0 → 204.1 | 1422 → 1468  | 89 → 96      |
+| arenaFloodedDocks  | 3113 → 510 | 354 → 463       | 12.5 → 3.4      | 6.1 → 1.9 | 4.2 → 0.7   | 2.1 → 0.7     | 13.8 → 4.8      | 60.4 → 177.6 | 1352 → 1495  | 99 → 85      |
+| arenaOverpass      | 1918 → 590 | 1013 → 1050     | 9.2 → 3.5       | 4.6 → 1.9 | 2.7 → 0.8   | 1.8 → 0.8     | 10.4 → 4.6      | 83.8 → 183.4 | 1391 → 1496  | 101 → 118    |
+| arenaRailYard      | 1818 → 313 | 237 → 698       | 9.3 → 2.6       | 4.1 → 1.3 | 2.8 → 0.6   | 2.2 → 0.6     | 10.1 → 3.6      | 83.7 → 239.5 | 1326 → 1398  | 81 → 102     |
+
+Wnioski: wywołania spadają 3,2–8× (Terminal kontenerowy 2861 → 358, Zalane Doki 3113 → 510, Rail Yard
+1818 → 313, Overpass 1918 → 590); CPU `pipeline` jest ok. 3× niższy (przy CPU 4× 94–101 ms → 26–28 ms na
+Terminalu i Dokach); czas GPU etapu też spada mimo większej liczby trójkątów. Czas wczytania i sterta JS bez
+istotnej zmiany. Areny Dachów i Budowy zyskują mniej (dużo przezroczystych świateł, duże `batchCellM`).
+Zostaje 60–110 wywołań przezroczystych świateł i stożków w przebiegu koloru oraz wrogowie (ok. 10–17
+wywołań na wroga w każdym przebiegu). Zrzuty przed/po z tych samych pozycji kamery (start areny; Terminal,
+Zalane Doki, Rail Yard, Dachy) nie różnią się wyglądem.
+
 ## Profile jakości (Z9)
 
 `tuning.quality` zawiera komplet identycznych kluczy dla `low`, `medium`, `high`.

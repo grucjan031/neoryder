@@ -431,15 +431,15 @@ Granice należą do strefy. CityDressing przekazuje definicje jako czwarty
 argument `Weather(params, floorY, seed, shelters?)`. Brak pola zachowuje
 dotychczasowy deszcz. Strefy są kosmetyczne i nie tworzą colliderów.
 
-Deszcz już wcześniej przesuwał i zawijał instancje na CPU w Weather.
-W tej samej pętli przecięcie strefy przez obwiednię smugi zeruje skalę instancji;
-pozycja i ruch pozostają zachowane. Nie dodano przebiegu ani shadera.
+Ruch i zawijanie kropli liczy shader wierzchołków (`Weather`, [weather.md](weather.md#ruch-w-shaderze)).
+Przecięcie strefy przez obwiednię smugi zdegeneruje quad (strefy są teksturą RGBA32F
+`rainShelters`); `Weather.dropMatrix` to referencja CPU tego testu.
 `isRainSheltered(point, shelters, halfSize?)` to czyste sprawdzenie bez alokacji:
 opcjonalne półwymiary rozszerzają test o obwiednię całej smugi. Dzięki temu
 koniec smugi nie wystaje pod strop, gdy środek kropli jest jeszcze nad nim.
 Przecięcie podłogi w strefie nie emituje rozbryzgów; jawne emitery kapania
 (`ambientFx: drip`) nadal działają. Deszcz nad stropem i poza obrysem dachu
-pozostaje widoczny. Pauza nadal pomija aktualizacje niezmienionych macierzy.
+pozostaje widoczny. Pauza (dt = 0) zatrzymuje ruch: nie zmienia się żaden uniform ruchu.
 
 Strefy od podłogi do spodu stropu. Pierwotne dwa pokoje:
 
@@ -454,8 +454,8 @@ Dane stref mają obecnie także `alleyUnderpassMission` (jak `alleyUnderpass`), 
 `arenaRailYard` 17, `arenaRooftops` 61 (bryły kamienic; razem z `weatherFloorY` −14).
 Pełne listy: pole `rainShelters` w `src/data/rooms/<id>.json`.
 
-Testy `rainShelters.test.ts`: schemat, granice, dane stropów, macierze
-rzeczywistych instancji Three.js, rozbryzgi, pauza i przekazanie przez
+Testy `rainShelters.test.ts`: schemat, granice, dane stropów, referencyjne
+macierze kropli (`dropMatrix`), rozbryzgi, pauza i przekazanie przez
 CityDressing. Ocena architekta w `?scene=room-test&room=<id>` powinna
 uwzględnić krawędzie stropu przy wietrze: ukrywana jest cała smuga,
 której obwiednia przecina strefę. Może to dawać wąski pas bez smug tuż
@@ -678,8 +678,9 @@ detalem oraz `weatherGloss` profilu pogody; `syncMaterials` zachowuje ten wyglą
 Ręczny przegląd: `?scene=city-props-test&view=3` oraz
 `?scene=conquest&arena=arenaContainerPort&debug=1`. Porównaj barwy i detale
 kontenerów, mokre linie placu, beton kei, kratę pomostów i odbojnice. Integracja
-areny zachowuje komórki 20 m, instancjonowane kontenery i jedną fazę scalania
-statyki; aktualny pomiar 776 → 326 siatek (53 partie instancji) opisuje
+areny zachowuje komórki 20 m jako dolny próg podziału (dalej: podział budżetem trójkątów,
+[render.md](render.md#wywołania-rysowania-dużych-aren-budżet-adr-0011-d8)),
+instancjonowane kontenery i jedną fazę scalania statyki; aktualny pomiar 776 → 326 siatek (53 partie instancji) opisuje
 [arenas.md](arenas.md). Test materiałów sprawdza mapowanie nazw GLB, wybór
 tekstury, wspólny uniform pogody i trwałość materiału po synchronizacji.
 

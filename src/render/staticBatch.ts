@@ -15,6 +15,70 @@ export interface StaticBatchOptions {
    * odrzucał to, co poza kadrem. Bez wartości: jedna siatka na materiał.
    */
   cellSize?: number;
+  /**
+   * Zamiast stałej siatki: grupa o tym samym materiale dzieli się przestrzennie (mediana po
+   * dłuższej osi XZ) tylko tak długo, aż jej suma trójkątów mieści się w budżecie, a rozrzut
+   * środków przekracza `cellSize`. Mało trójkątów = jedno wywołanie rysowania na całą arenę.
+   */
+  triangleBudget?: number;
+}
+
+export interface PartitionItem {
+  x: number;
+  z: number;
+  triangles: number;
+}
+
+/**
+ * Dzieli elementy na grupy, z których każda ma co najwyżej `budget` trójkątów albo rozrzut
+ * środków nie większy niż `minExtentM` (po obu osiach XZ). Wynik jest deterministyczny.
+ */
+export function partitionByTriangles<T extends PartitionItem>(
+  items: readonly T[],
+  budget: number,
+  minExtentM: number,
+): T[][] {
+  const leaves: T[][] = [];
+  const stack: T[][] = [[...items]];
+  while (stack.length) {
+    const group = stack.pop()!;
+    if (!group.length) continue;
+    let total = 0;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (const item of group) {
+      total += item.triangles;
+      minX = Math.min(minX, item.x);
+      maxX = Math.max(maxX, item.x);
+      minZ = Math.min(minZ, item.z);
+      maxZ = Math.max(maxZ, item.z);
+    }
+    if (
+      group.length < 2 ||
+      total <= budget ||
+      (maxX - minX <= minExtentM && maxZ - minZ <= minExtentM)
+    ) {
+      leaves.push(group);
+      continue;
+    }
+    const alongX = maxX - minX >= maxZ - minZ;
+    group.sort((a, b) =>
+      alongX ? a.x - b.x || a.z - b.z : a.z - b.z || a.x - b.x,
+    );
+    let sum = 0;
+    let cut = group.length - 1;
+    for (let i = 0; i < group.length; i++) {
+      sum += group[i]!.triangles;
+      if (sum >= total / 2) {
+        cut = Math.min(Math.max(i + 1, 1), group.length - 1);
+        break;
+      }
+    }
+    stack.push(group.slice(cut), group.slice(0, cut));
+  }
+  return leaves;
 }
 
 /** Klon GLB przed instancingiem: jedna geometria na zgodny materiał zamiast na detal. */
@@ -34,6 +98,8 @@ export function batchStaticGeometry(
   root.updateWorldMatrix(true, true);
   const inverse = new Matrix4().copy(root.matrixWorld).invert();
   const cellSize = options.cellSize;
+  const triangleBudget = options.triangleBudget;
+  const placement = new Map<Mesh, PartitionItem>();
   const bounds = new Box3();
   const center = new Vector3();
   const groups = new Map<
@@ -70,7 +136,18 @@ export function batchStaticGeometry(
     if (cellSize) {
       if (!geometry.boundingBox) geometry.computeBoundingBox();
       bounds.copy(geometry.boundingBox!).applyMatrix4(matrix).getCenter(center);
-      cell = [Math.floor(center.x / cellSize), Math.floor(center.z / cellSize)];
+      if (triangleBudget)
+        placement.set(object, {
+          x: center.x,
+          z: center.z,
+          triangles:
+            (geometry.index?.count ?? geometry.attributes.position!.count) / 3,
+        });
+      else
+        cell = [
+          Math.floor(center.x / cellSize),
+          Math.floor(center.z / cellSize),
+        ];
     }
     let noOutline = false;
     let bloom: unknown = object.userData.bloom;
@@ -121,7 +198,24 @@ export function batchStaticGeometry(
     }
     group.meshes.push(object);
   });
-  for (const { meshes, noOutline, bloom } of groups.values()) {
+  const batches: { meshes: Mesh[]; noOutline: boolean; bloom: unknown }[] = [];
+  for (const group of groups.values()) {
+    if (!triangleBudget || !cellSize) {
+      batches.push(group);
+      continue;
+    }
+    const items = group.meshes.map((mesh) => ({
+      mesh,
+      ...placement.get(mesh)!,
+    }));
+    for (const leaf of partitionByTriangles(items, triangleBudget, cellSize))
+      batches.push({
+        meshes: leaf.map((item) => item.mesh),
+        noOutline: group.noOutline,
+        bloom: group.bloom,
+      });
+  }
+  for (const { meshes, noOutline, bloom } of batches) {
     if (meshes.length < 2) continue;
     const geometries = meshes.map((mesh) => {
       const geometry = mesh.geometry.clone();

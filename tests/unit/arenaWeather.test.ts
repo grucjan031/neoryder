@@ -34,6 +34,14 @@ const ring = roomDefinitions.get('combatRing')!;
 const rain = weatherDefinitions.get('rain')!;
 afterEach(() => vi.restoreAllMocks());
 
+const rainMatrices = (weather: Weather): number[] => {
+  const matrix = new Matrix4();
+  const out: number[] = [];
+  for (let i = 0; i < weather.rainCount; i++)
+    out.push(...weather.dropMatrix(i, matrix).elements);
+  return out;
+};
+
 describe('pogoda z danych', () => {
   it('profil w pokoju bez deszczu motywu zachowuje jego strefy osłonięte', () => {
     const dressing = new CityDressing(
@@ -54,9 +62,9 @@ describe('pogoda z danych', () => {
     try {
       dressing.render(0, new PerspectiveCamera());
       const matrix = new Matrix4();
-      expect(dressing.weather!.rain.count).toBeGreaterThan(0);
-      for (let i = 0; i < dressing.weather!.rain.count; i++) {
-        dressing.weather!.rain.getMatrixAt(i, matrix);
+      expect(dressing.weather!.rainCount).toBeGreaterThan(0);
+      for (let i = 0; i < dressing.weather!.rainCount; i++) {
+        dressing.weather!.dropMatrix(i, matrix);
         expect(matrix.determinant()).toBe(0);
       }
     } finally {
@@ -180,14 +188,14 @@ describe('pogoda z danych', () => {
       try {
         weather.update(0, 0, camera);
         let visible = 0;
-        for (; visible < weather.rain.count; visible++) {
-          weather.rain.getMatrixAt(visible, matrix);
+        for (; visible < weather.rainCount; visible++) {
+          weather.dropMatrix(visible, matrix);
           if (matrix.determinant() !== 0) break;
         }
-        expect(visible).toBeLessThan(weather.rain.count);
+        expect(visible).toBeLessThan(weather.rainCount);
         camera.position.setFromMatrixPosition(matrix);
         weather.update(0, 0, camera);
-        weather.rain.getMatrixAt(visible, matrix);
+        weather.dropMatrix(visible, matrix);
         expect(matrix.determinant()).toBe(0);
       } finally {
         weather.dispose();
@@ -207,22 +215,18 @@ describe('pogoda z danych', () => {
           a.update(1 / 60, 1 / 60, camera);
           b.update(1 / 60, 1 / 60, camera);
         }
-        expect(a.rain.instanceMatrix.array).toEqual(
-          b.rain.instanceMatrix.array,
-        );
+        expect(rainMatrices(a)).toEqual(rainMatrices(b));
         expect(a.splashCount).toBe(0);
         expect(a.flash).toBe(0);
-        const paused = a.rain.instanceMatrix.array.slice();
+        const paused = rainMatrices(a);
         a.update(0, 1, camera);
-        expect(a.rain.instanceMatrix.array).toEqual(paused);
+        expect(rainMatrices(a)).toEqual(paused);
         a.setProfile(rain);
         a.update(0, 0, camera);
         expect(a.rain.material.color.getHexString()).toBe(
           rain.precipitation.color.slice(1),
         );
-        expect(a.rain.instanceColor!.array.every((value) => value === 1)).toBe(
-          true,
-        );
+        expect(a.rainUniforms.rainTintMode.value).toBe(0);
       } finally {
         a.dispose();
         b.dispose();
@@ -258,7 +262,7 @@ describe('pogoda z danych', () => {
       dressing.step(1 / 60);
       dressing.render(1 / 60, camera);
       expect(dressing.weatherId).toBe(p.id);
-      expect(dressing.weather!.rain.count).toBe(
+      expect(dressing.weather!.rainCount).toBe(
         p.precipitation.kind === 'none'
           ? 0
           : Math.floor(dressing.weather!.capacity * p.precipitation.density),

@@ -130,6 +130,14 @@ describe('światła miasta', () => {
   });
 });
 
+const rainMatrices = (weather: Weather): number[] => {
+  const matrix = new Matrix4();
+  const out: number[] = [];
+  for (let i = 0; i < weather.rainCount; i++)
+    out.push(...weather.dropMatrix(i, matrix).elements);
+  return out;
+};
+
 describe('deszcz', () => {
   it('zawija wielokrotne przekroczenia granic w obu kierunkach', () => {
     expect(wrapRainAxis(101, 0, 10)).toBe(1);
@@ -145,8 +153,8 @@ describe('deszcz', () => {
     weather.update(50, 50, cam);
     const matrix = new Matrix4();
     const position = new Vector3();
-    for (let i = 0; i < weather.rain.count; i++) {
-      weather.rain.getMatrixAt(i, matrix);
+    for (let i = 0; i < weather.rainCount; i++) {
+      weather.dropMatrix(i, matrix);
       position.setFromMatrixPosition(matrix);
       expect(Math.abs(position.x - cam.position.x)).toBeLessThanOrEqual(
         tuning.city.rainWidthM / 2,
@@ -170,18 +178,18 @@ describe('deszcz', () => {
       expect(weather.splashCount).toBeLessThanOrEqual(10);
     }
     expect(weather.splashCount).toBeGreaterThan(0);
-    const matrices = Array.from(weather.rain.instanceMatrix.array);
+    const matrices = rainMatrices(weather);
     weather.update(0, 10, cam);
-    expect(Array.from(weather.rain.instanceMatrix.array)).toEqual(matrices);
+    expect(rainMatrices(weather)).toEqual(matrices);
     weather.params.density = 0.5;
     weather.update(0, 0, cam);
-    expect(weather.rain.count).toBe(30);
+    expect(weather.rainCount).toBe(30);
     weather.params.density = 5;
     weather.update(0, 0, cam);
-    expect(weather.rain.count).toBe(60);
+    expect(weather.rainCount).toBe(60);
     weather.params.enabled = false;
     weather.update(0, 0, cam);
-    expect(weather.rain.count).toBe(0);
+    expect(weather.rainCount).toBe(0);
   });
 
   it('jest powtarzalny z seedem, także z rozbryzgami', () => {
@@ -193,11 +201,11 @@ describe('deszcz', () => {
       a.update(0.1, 0.1, cam);
       b.update(0.1, 0.1, cam);
     }
-    expect(a.rain.instanceMatrix.array).toEqual(b.rain.instanceMatrix.array);
+    expect(rainMatrices(a)).toEqual(rainMatrices(b));
     expect(a.splashes.pool.particles).toEqual(b.splashes.pool.particles);
   });
 
-  it('przelicza i wysyła tylko rysowane krople, z macierzą jak z Object3D', () => {
+  it('rysuje tylko część puli, a macierz referencyjna kropli zgadza się z Object3D', () => {
     tuning.city.rainMax = 40;
     const params = { density: 0.5, speed: 18, windX: 1 };
     const weather = own(new Weather(params, -100, 'range'));
@@ -205,19 +213,16 @@ describe('deszcz', () => {
     cam.position.set(3, 2, -4);
     cam.updateMatrixWorld(true);
     weather.update(0, 0, cam);
-    const attribute = weather.rain.instanceMatrix;
-    const idle = Array.from(attribute.array.subarray(20 * 16));
     for (let i = 0; i < 3; i++) weather.update(1 / 60, 1 / 60, cam);
-    expect(weather.rain.count).toBe(20);
-    expect(attribute.updateRanges).toEqual([{ start: 0, count: 20 * 16 }]);
-    expect(Array.from(attribute.array.subarray(20 * 16))).toEqual(idle);
+    expect(weather.rainCount).toBe(20);
+    expect(weather.rain.geometry.instanceCount).toBe(20);
     const dummy = new Object3D();
     const direction = new Vector3(-params.windX, params.speed, 0).normalize();
     const length =
       Math.hypot(params.windX, params.speed) * tuning.city.rainExposureS;
     const matrix = new Matrix4();
-    for (let i = 0; i < weather.rain.count; i++) {
-      weather.rain.getMatrixAt(i, matrix);
+    for (let i = 0; i < weather.rainCount; i++) {
+      weather.dropMatrix(i, matrix);
       dummy.position.setFromMatrixPosition(matrix);
       dummy.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), direction);
       dummy.rotateY(

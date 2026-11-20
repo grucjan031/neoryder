@@ -111,6 +111,8 @@ export const tuning = {
     snowMaskLow: 0.32,
     snowMaskHigh: 0.62,
     dustMax: 240,
+    /** Próby losowania kropli przecinającej podłogę na jeden rozbryzg (ruch kropli liczy shader). */
+    splashProbes: 256,
     wetRoughnessScale: 0.45,
     skyFlashColor: '#9eadef',
   },
@@ -559,7 +561,20 @@ export const tuning = {
     barrierFlashS: 0.12,
   },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
-  arena: { maxEnemies: 30 },
+  arena: {
+    maxEnemies: 30,
+    /**
+     * Statyka i instancje areny dzielone są przestrzennie dopiero, gdy suma trójkątów jednego materiału/modelu
+     * przekracza ten budżet na wywołanie rysowania (0 = stała siatka batchCellM). Mniejsza wartość to lepszy
+     * culling, większa to mniej wywołań rysowania.
+     */
+    batchTriangleBudget: 60000,
+    /**
+     * Grupa instancji modelu (jeden węzeł × materiał) o łącznej liczbie trójkątów nie większej niż ta wartość
+     * jest scalana ze statyką zamiast rysowana jako InstancedMesh (mniej wywołań kosztem kopii wierzchołków).
+     */
+    instanceMergeTriangles: 30000,
+  },
   /** Dźwięki (#14). Przepisy i reguły w src/data/audio/sfx.json. */
   audio: {
     maxVoices: 24,
