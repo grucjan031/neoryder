@@ -15,27 +15,35 @@ Opcjonalne `RoomDefinition.hazards` zawiera unię walidowaną przez zod:
 | `laser_gate`       | `from`, `to` (końce odcinka 3D), obowiązkowy `cycle`               |
 
 `cycle = { onS, offS, offsetS? }`: czasy on/off dodatnie, offset nieujemny.
-Walidator odrzuca powtórzone id, zagrożenia poza podłogą oraz spawn gracza
-lub wroga w rzucie pola/lasera na XZ z marginesem 1 m (również gdy hazard jest wyłączony).
+Walidator odrzuca powtórzone id, zagrożenia poza podłogą (beczka: kwadrat ±0,4 m wokół pozycji,
+pole: cztery rogi, laser: oba końce) oraz spawn gracza lub wroga w rzucie pola/lasera na XZ z marginesem 1 m
+(również gdy hazard jest wyłączony). Dla beczek margines spawnu nie jest sprawdzany walidatorem
+(kontroluje to `contentZ11.test.ts`).
 
 ## Cykl i trafienia
 
 Czas lokalny to `(czasSymulacji + offsetS) % (offS + onS)`.
 Cykl zaczyna się od `off`; ostatnie `min(warnS, offS)` to `warn`, potem `on`.
-Pole bez cyklu jest stale włączone. `phaseT` to postęp 0–1 w bieżącej fazie;
-dla zagrożeń bez cyklu wynosi 0. Pauza (`dt <= 0`) nie zmienia stanu.
+Pole bez cyklu jest stale włączone (`on`, dopóki żyje). `phaseT` to postęp 0–1 w bieżącej fazie:
+`on` — `(t − offS) / onS`; `warn` — `(t − offS + warn) / warn`; `off` — `t / (offS − warn)`; dla zagrożeń
+bez cyklu wynosi 0. Beczka (bez cyklu) ma fazę `on`, dopóki żyje, potem `off`. Pauza (`dt <= 0`) nie
+zmienia stanu ani zegara. Czas symulacji rośnie o `dt` na początku `step`, przed obliczeniem faz.
+Faza `warn` nie rani; tylko `on` zadaje obrażenia.
 
 Pole sprawdza **środek kapsuły**, nie stopy ani przecięcie jej powierzchni.
 Dla gracza jest to `PlayerState.position`, dla wroga pozycja plus `body.centerY`;
-dron jest kulą. Granice prostopadłościanu są włączone. Każde pole ma własny
-licznik: trafia co `electricTickS` czasu aktywnego, licznik zeruje się poza `on`.
+dron jest kulą. Granice prostopadłościanu (po osiach X, Y, Z względem `position` ± `size/2`) są włączone.
+Cele pola i lasera to także **żywe beczki** (cel: środek `y + 0,55`, promień 0,4, `halfHeight` 0,15) —
+pole lub laser może więc je zniszczyć i zdetonować. Każde pole ma własny
+licznik: pierwsze trafienie dopiero po `electricTickS` czasu w fazie `on` (nie natychmiast po włączeniu),
+potem co `electricTickS`; licznik zeruje się poza `on`. Trafienie: `electricDamage`, bez odrzutu.
 Trafienie ma `source: null`, tagi `#hazard`, `#elektrycznosc` oraz
 `statuses: [{ id: 'overload', durationS: electricOverloadS }]`.
 
 Laser mierzy odległość 3D od odcinka do pionowej osi kapsuły. Trafia, gdy
 odległość jest mniejsza od `laserRadiusM + radius` (równość nie trafia).
-Okno `laserInvulnS` jest osobne dla każdej encji i każdej bramki.
-Tagi: `#hazard`, `#laser`; `source: null`.
+Okno `laserInvulnS` jest osobne dla każdej encji i każdej bramki (wpisy znikają, gdy encji nie ma
+już wśród celów). Obrażenia `laserDamage`, bez odrzutu i statusu. Tagi: `#hazard`, `#laser`; `source: null`.
 
 Wszystkie obrażenia przechodzą przez `DamageSystem`: obowiązują modyfikatory,
 blok i nietykalność celu. Statusy przekazuje zdarzenie `damage_dealt`.
@@ -54,13 +62,17 @@ pozostaje `neutral`. Beczki nie należą do listy wrogów, fal ani HUD bossa.
 Śmierć neutralnej encji nadal emituje `damage_dealt` i `health_changed`,
 ale nie `enemy_killed` (dotyczy również neutralnej skrzyni w scenie Chwytu).
 
-Wybuch obejmuje odległość do środka celu ≤ `barrelRadiusM`, bez testu zasłonięcia.
+Wybuch obejmuje odległość 3D (z osią Y) do środka celu ≤ `barrelRadiusM`, bez testu zasłonięcia;
+środek wybuchu to podstawa beczki + 0,55 m w górę. Zdarzenie `explosion { point, radiusM, owner, tags }`
+jest emitowane przed obrażeniami.
 Obrażenia maleją liniowo od `barrelDamage` do
 `barrelDamage * barrelMinDamageFrac` na krawędzi. Odrzut jest skierowany
 od środka; przy zerowej odległości w górę. Tag `#friendly_fire`, obok
 `#hazard` i `#explosion`, pozwala zranić także gracza, który odpalił beczkę.
 Inna beczka w promieniu zostaje zaplanowana do detonacji po
-`barrelChainDelayS`; pierwsze zaplanowane źródło zostaje zachowane.
+`barrelChainDelayS`; pierwsze zaplanowane źródło zostaje zachowane. Zaplanowane detonacje wykonuje
+`step` (na jego początku, po zwiększeniu zegara), więc łańcuch przesuwa się o co najmniej jeden krok;
+detonacja zadaje beczce obrażenia równe jej bieżącemu zdrowiu.
 
 - Zniszczenie obrażeniami: wybuch dziedziczy ich `source`.
 - Łańcuch: kolejne beczki dziedziczą źródło pierwszego wybuchu.
@@ -71,7 +83,11 @@ Inna beczka w promieniu zostaje zaplanowana do detonacji po
 ## Strojenie i prezentacja
 
 Wszystkie parametry obrażeń, cykli, odrzutu i opóźnień są w `tuning.hazards`;
-rekurencyjny panel lil-gui pokazuje tę grupę automatycznie.
+rekurencyjny panel lil-gui pokazuje tę grupę automatycznie. Wartości: `electricTickS` 0,5,
+`electricDamage` 8, `electricOverloadS` 2, `warnS` 0,6, `barrelHealth` 20, `barrelRadiusM` 4,5,
+`barrelDamage` 60, `barrelMinDamageFrac` 0,3, `barrelKnockback` 12, `barrelChainDelayS` 0,15,
+`laserDamage` 25, `laserInvulnS` 0,6, `laserRadiusM` 0,15. Wymiary beczki (walec 0,4 × 1,1 m,
+cel `halfHeight` 0,15) są stałymi w kodzie `hazards.ts`.
 Widok używa bursztynu `#ffb84d`, ciepłej bieli `#fff1d6` i współdzielonego
 materiału `hazard` (jasne i ciemne pasy). Nie używa kolorów zarezerwowanych.
 Emisja zmienia intensywność sinusoidalnie względem `phaseT`, bez nowego shadera.
@@ -109,8 +125,10 @@ Ocena czytelności, bloomu i „feel” pozostaje po stronie architekta.
 Dopisz obiekt do `hazards` w JSON pokoju, nadaj unikalne id, zachowaj wolne
 spawny i obejście. Istniejące warianty nie wymagają zmian kodu. Nowy rodzaj
 wymaga rozszerzenia unii zod, kontraktu API, symulacji, widoku i testów.
-Obecne pokoje: `combatWarehouse` — 4 beczki; `alleyUnderpass` — pole cykliczne;
-`eliteFoundry` — 2 przesunięte bramki i 2 beczki; `combatYard` — stałe pole i beczka.
+Obecne pokoje: `combatWarehouse` — 4 beczki; `alleyUnderpass` i `alleyUnderpassMission` — pole 2 × 2 m
+`onS: 2`, `offS: 3`; `eliteFoundry` — 2 przesunięte bramki (`onS: 2`, `offS: 3`, offsety 0 i 2,5 s) i 2 beczki;
+`combatYard` — stałe pole i beczka; `arenaPowerPlant` — 2 pola cykliczne (`westBus` 6 × 1 × 9 m `onS: 3`, `offS: 2`;
+`eastBus` 7 × 1 × 9 m `onS: 4`, `offS: 2`, offset 1 s).
 
 ### Z11: nowe pokoje z zagrożeniami
 

@@ -1,125 +1,62 @@
-# Niezawodność sesji — S9-02
+# Niezawodność sesji i zapisu
 
-`SAVE_VERSION = 6` pozostaje bez zmian.
+Specyfikacja zachowań odpornościowych: pauza, zapis, migracje, uszkodzone i nowsze zapisy, rozliczanie nagród. `SAVE_VERSION = 6` (`src/core/save.ts`). Wartości liczbowe pochodzą z kodu (stan na 20.11.2026).
 
-## Dogrywka: zatrzymanie testu uszkodzonego zapisu
+## Pauza i utrata fokusu
 
-`.pw-local.config.ts` buduje aplikację i uruchamia `vite preview`, nie dev server.
-Zatrzymanie odtworzono przy kolejnych testach korzystających ze wspólnego procesu
-Chromium. Trace pokazał niedokończone ładowanie produkcyjnego bundla JS oraz
-zablokowane `page.evaluate`, a nie wielokrotne ukończone odczyty `undefined`.
-Dodatkowa asercja gotowości pierwszego menu zatrzymała się jeszcze **przed**
-wpisaniem `'{broken'` do IndexedDB. Samo oczekiwanie na menu, przygotowanie danych
-na statycznej stronie, wyłączenie cache i pominięcie dodatkowego screenshotu
-nie dały stabilnego pełnego przebiegu; tych prób nie pozostawiono w kodzie.
+- `GameLoop` (`src/core/loop.ts`): stały krok `SIM_DT = 1/60` s, najwyżej `MAX_STEPS_PER_FRAME = 5` kroków na klatkę (opcja konstruktora `maxStepsPerFrame` tylko dla testów; po przekroczeniu limitu nadmiar akumulatora jest odrzucany modulo `SIM_DT`). W pauzie `advance` nie wykonuje kroków, tylko woła `render`.
+- Każda zmiana `paused` resetuje zegar ściany pętli (`lastMs`), więc czas pauzy, także ukrytej karty bez klatek RAF, nigdy nie jest nadrabiany po wznowieniu.
+- Wejście (`src/core/input/index.ts`) czyści wszystkie klawisze i przyciski myszy oraz wywołuje nasłuchiwaczy utraty fokusu przy: `blur` okna, `visibilitychange` z `document.hidden`, wyjściu z pointer lock. `main.ts` podpina do tego pauzę. Start w ukrytej karcie od razu wchodzi w pauzę.
+- Wznowienie (kliknięcie w canvas) jest zablokowane, gdy `document.hidden`; po wznowieniu ponownie żądany jest pointer lock.
+- Pauza zawiesza wspólny `AudioContext` (`suspend`), wznowienie robi `resume`. Zdarzenia `pointerdown` / `keydown` / `touchstart` odblokowują audio tylko poza pauzą. Zegar dyrektora muzyki to `audioContext.currentTime`, więc muzyka też stoi. Muzyka jest wyłączona pod automatem (`navigator.webdriver`) i w `fx=lite`.
+- Logika wrogów, pocisków, statusów, cooldownów i trybów korzysta z `step(dt)`, więc w pauzie stoi razem z pętlą.
 
-W osobnej przeglądarce ten sam build produkcyjny odczytał uszkodzony zapis i
-uruchomił mapę. Tymczasowy pomiar pokazał zakończone transakcje IndexedDB w około
-2–3 ms oraz `console.warn(ZodError)` w około 2 ms. Nie potwierdzono zakleszczenia
-magazynu ani wyjątku gry przed instalacją debug API. Nie ustalono wewnętrznej
-przyczyny zatrzymania Chromium; ustalono zależność od współdzielenia jego procesu.
+## Przechowywanie
 
-`reliability.spec.ts` tworzy teraz przeglądarkę na każdy test zamiast korzystać
-z jednego procesu przez cały worker. Publiczny fixture `playwright` zachowuje
-opcje uruchomienia i kontekstu projektu oraz obsługę trace/screenshotów.
-Przeglądarka jest zamykana także po błędzie zamknięcia kontekstu. Wszystkie
-asercje, screenshoty i limit 60 s pozostały; dodano asercję braku `pageerror` dla
-obu wariantów zapisu. Test F5 nadal korzysta z tego samego kontekstu i IndexedDB
-przed odświeżeniem i po nim. W dogrywce nie zmieniano kodu gry ani konfiguracji.
+- IndexedDB `neoryder` (wersja bazy 1), jeden object store `saves`; klucze rekordów: `meta`, `run`, `mission`. Każde połączenie jest krótkie (otwarte na jedną transakcję). `onblocked` odrzuca operację błędem „Baza zapisu jest zablokowana.”.
+- Każdy rekord ma `saveVersion` (literał `SAVE_VERSION` po migracji). `MetaSave` = `{ saveVersion, createdAt, updatedAt, meta }`; `RunSave` = `{ saveVersion, seed, startedAt, run, ended? }`; `MissionSave` = punkt kontrolny misji liniowej + `saveVersion`. Schematy zod odrzucają nieznany kształt.
+- Ustawienia (`neoryder.settings`) są w `localStorage`, poza migracją postępu. Odczyt jest odporny: brak dostępu lub zły JSON daje wartości domyślne, a każde pole z osobna ma `catch` (liczby spoza zakresu są przycinane, błędne wartości zastępowane domyślnymi, nieznane akcje i kody klawiszy w `bindings` odrzucane). Błąd zapisu ustawień tylko loguje ostrzeżenie.
+- `write` (zapis i usunięcie) i kontrola „zapis z nowszej wersji” odbywają się w jednej transakcji `readwrite`: odczyt bieżącego rekordu, odmowa przy nowszej wersji, kopia bezpieczeństwa uszkodzonego rekordu, dopiero potem `put`/`delete`. Wyjątek w tej kolejności przerywa transakcję (`abort`), a poprzedni rekord zostaje.
+- `saveMetaManager` (`src/progression/metaSave.ts`) kolejkuje zapisy do jednego `SaveStore` (starszy stan nie nadpisze nowszego), migawkę stanu robi w chwili wywołania i zachowuje `createdAt` istniejącego rekordu (błąd odczytu istniejącego = nowy `createdAt`).
 
-Weryfikacja dogrywki: Vitest `32 passed (32)` (save + reliability), TypeScript
-i Prettier zielone. Dwa kolejne pełne przebiegi po izolacji: `5 passed (2.6m)`
-i `5 passed (2.7m)`, oba z kodem 0, na `.pw-local.config.ts`, `PW_PORT=4366`.
-Test uszkodzonego zapisu trwał odpowiednio 13,2 s i 15,3 s. Po zakończeniu
-wszystkich testów w obu przebiegach ręcznie zatrzymano wyłącznie uruchomiony przez
-runner proces preview, żeby odblokować teardown w tym środowisku Windows.
-Wyniki poniżej opisują wcześniejszy etap, przed tą poprawką izolacji testów.
+## Migracje
 
-| Kryterium                         | Stan przed                                                                                                                                 | Zmiana                                                                                                                      | Stan po                                                                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Blur, ukrycie karty, pointer lock | Input wywoływał pauzę i czyścił klawisze. Pętla ograniczała liczbę kroków, ale wznowienie przed następnym RAF mogło nadrobić czas ukrycia. | Reset zegara przy zmianie pauzy, blokada wznowienia ukrytej karty, pauza także po inicjalizacji w tle.                      | Symulacja stoi; powrót wymaga świadomego wznowienia.                                                                              |
-| Pauza walki i trybów              | Logika wrogów, pocisków, statusów, cooldownów, Kradzieży rdzenia i Szturmu korzystała z `step(dt)`. Muzyka i dźwięki grały dalej.          | Zawieszenie wspólnego AudioContext; zegar dyrektora muzyki korzysta z czasu kontekstu. Odblokowanie audio respektuje pauzę. | Symulacja i kontekst audio stoją; kliknięcia w menu nie odblokowują audio.                                                        |
-| F5                                | Run zapisywany na mapie, URL zmieniany na `continue=1`.                                                                                    | Bez zmiany formatu i punktów zapisu. Test odświeżenia z niezerowymi kredytami i implantem.                                  | Zachowany ostatni zapis na mapie; postęp bieżącego pokoju nadal nie jest utrwalany — patrz ograniczenia.                          |
-| Atomowość                         | `put` i kontrola przyszłej wersji w jednej transakcji IndexedDB. Nagrody: zapis `ended`, idempotentne rozliczenie meta, usunięcie runu.    | Test wymuszonego abortu po `put`. Kopia uszkodzonych danych należy do transakcji odczytu lub podmiany.                      | Abort pozostawia poprzedni rekord. Nie ma potrzeby dodatkowego klucza staging dla prawidłowego zapisu.                            |
-| Migracje                          | Migracje meta i runu v1–v5 istniały.                                                                                                       | Minimalne realistyczne fixtures generowane dla każdej wersji przez `fixtures(version)` w nowym teście.                      | Zachowane dostępne pola postępu. V1 miał tylko szkielet runu; nie zawierał stanu do kontynuowania. Meta-progres pojawił się w v3. |
-| Przyszła wersja                   | Meta/run zwracały null i ostrzeżenie w konsoli; zapis i usuwanie były blokowane. Odczyt misji rzucał.                                      | Komunikat dla gracza, bezpieczny odczyt misji; testy ochrony wszystkich trzech kluczy.                                      | Rekord pozostaje nietknięty. Nie jest wczytywany do gry ani migrowany wstecz.                                                     |
-| Uszkodzenie                       | Meta/run zwracały null bez kopii. Misja rzucała wyjątek.                                                                                   | Kopia surowej wartości przed odczytem, nadpisaniem lub usunięciem; odczyt misji zwraca null; komunikat.                     | Gra może rozpocząć nową sesję. Nieczytelne dane pozostają dostępne do odzyskania.                                                 |
+`migrate(dane, migracje, cel)` stosuje kolejno `migracje[wersja]` (każda daje wersję + 1). Błędy: wersja nie jest nieujemną liczbą całkowitą, wersja nowsza niż cel, brak migracji dla wersji.
 
-## Kopie bezpieczeństwa
+Meta (indeks = wersja źródłowa): 0→1 i 1→2 tożsamość; 2→3 dopisuje `meta` ze stanu startowego z danych, gdy brak; 3→4 dopisuje `campaign { completed: [], pendingDebrief: null }`; 4→5 dopisuje `achievements` zasilone z `stats`, `xp` i `unlocks` (patrz `docs/systems/achievements.md`; jeśli pole już istnieje, zostaje); 5→6 tożsamość.
 
-Object store `saves` przechowuje kopie pod kluczami tablicowymi
-`['corrupt', nazwaRekordu, czasMs, uuid]`. Wartością jest niezmieniony surowy rekord,
-również tekst niepoprawnego JSON. Oryginał nie jest usuwany przez odczyt.
-Każdy odczyt uszkodzonego rekordu tworzy osobną kopię; kopie nie są automatycznie
-kasowane. Przyszłe wersje nie są kwalifikowane jako uszkodzenie.
-Brak miejsca na kopię przerywa transakcję, zamiast dopuścić destrukcyjną podmianę.
+Run: 0→1 tożsamość; 1→2 zapis v1 miał tylko szkielet (`seed`, `startedAt`) bez stanu do kontynuowania, więc staje się `run: null` i `loadRun` zwraca `null`; 2→3 dopisuje pełny ekwipunek z presetu `loadoutId`, `talents: []`, `threatLevel: 0` (nieznany preset = zapis nieczytelny); 3→4, 4→5, 5→6 tożsamość.
 
-## Ograniczenia i kod poza zakresem
+Misja liniowa (`mission`): brak migracji, akceptowana wyłącznie wersja bieżąca; starsza daje „Brak migracji” i traktowana jest jak uszkodzona.
 
-- `src/scenes/run.ts:745` (`showMap`) utrwala stan wyłącznie przy wejściu na mapę;
-  `src/scenes/run.ts:211` nalicza kredyty za zabójstwo tylko w pamięci. F5 przed
-  kolejnym zapisem cofa te kredyty i niezapisany wybór nagrody. Plik nie jest na
-  liście dozwolonych zmian. Pełne wznowienie pokoju wymaga również decyzji o stanie
-  przeciwników i zapobieganiu ponownemu pobieraniu nagród; samo zapisywanie salda
-  nie wystarczy.
-- `src/scenes/run.ts:403`: timeout rozliczenia nagrody korzysta z czasu ściennego.
-  Jest to watchdog operacji I/O, nie timer rozgrywki — powinien działać w pauzie.
-- `src/scenes/mission.ts:111`: kontynuacja z brakującym/nieczytelnym checkpointem
-  nadal nie może wznowić misji. Zabezpieczenie magazynu nie odtwarza brakujących
-  danych i nie zmienia obsługi tego stanu w chronionej scenie.
-- Muzyka jest celowo wyłączana przez istniejący warunek `webdriver` / `fx=lite`.
-  E2E sprawdza stan wspólnego AudioContext, a nie odsłuch muzyki.
+## Zapis z nowszej wersji
+
+Rekord z `saveVersion` większym niż `SAVE_VERSION` nie jest uszkodzony: odczyt zwraca `null`, pokazuje komunikat (`#save-warning`, `role="alert"`, popover, przycisk „Zamknij komunikat”: „Zapis pochodzi z nowszej wersji gry…”) i loguje ostrzeżenie; zapis i usunięcie tego klucza są odrzucane wyjątkiem „Zapis pochodzi z nowszej wersji gry.”. Rekord pozostaje nietknięty, nie jest wczytywany ani migrowany wstecz. Dotyczy wszystkich trzech kluczy. Wariant `loadMetaStrict` rzuca ten sam wyjątek zamiast zwracać `null`.
+
+## Uszkodzenie i kopie bezpieczeństwa
+
+- Odczyt zwykły (`loadMeta`, `loadRun`, `loadMission`) łapie każdy błąd migracji i walidacji, pokazuje komunikat („Nie można odczytać zapisu. Zachowano oryginał i kopię bezpieczeństwa; ten postęp nie może zostać wznowiony.”), loguje `console.warn` i zwraca `null`. Gra może zacząć nową sesję; dane zostają w bazie.
+- Odczyt ścisły meta (`loadMetaStrict`, używany przy rozliczaniu nagród) odróżnia brak zapisu (`null`) od zapisu nieczytelnego (wyjątek), żeby nie nadpisać meta stanem startowym. `loadMetaManager` (start gry) przy każdym błędzie daje stan startowy z ostrzeżeniem w konsoli, ale niczego nie zapisuje do pierwszego `saveMetaManager`.
+- Kopia: przy odczycie, zapisie i usunięciu uszkodzonego (ale nie nowszego) rekordu, w tej samej transakcji, do object store `saves` trafia niezmieniony surowy rekord pod kluczem tablicowym `['corrupt', nazwaRekordu, czasMs, uuid]` (również tekst niepoprawnego JSON). Każdy odczyt tworzy osobną kopię; kopie nie są kasowane automatycznie. Błąd zapisu kopii przerywa transakcję, więc nie dojdzie do destrukcyjnej podmiany bez kopii. Rekord runu, który po migracji jest `run: null` (v1), nie jest uszkodzeniem.
+- Meta: uszkodzone `achievements` nie unieważniają reszty (schemat zamienia je na puste); reszta pól jest ścisła.
+
+## Rozliczanie nagród i wznowienie runu (`RunScene`)
+
+- Punkty zapisu runu: wejście na mapę (`showMap`, pełny stan i `achievementProgress`, adres zmieniany na `continue=1`), a w trakcie pokoju migawka `RunManager.checkpoint()`: stan sprzed wejścia do pokoju z zachowanymi kredytami, implantami (w sklepie także `hp`) i `roomCredits`. Zapis następuje natychmiast po `implant_acquired` i `shop_purchase` (mikrozadanie), a po `currency_changed` z opóźnieniem `REWARD_SAVE_INTERVAL_MS = 2000`; `run_ended` i wejście na mapę anulują oczekujący zapis.
+- `roomCredits` (węzeł → kredyty już wypłacone) zapobiega ponownemu pobieraniu kredytów w tym samym pokoju po F5: nagroda za pokój jest liczona jako maksimum zarobku, a wypłacana jest tylko różnica. Postęp walki w pokoju nie jest utrwalany; F5 w pokoju przywraca ekran mapy ze stanem sprzed wejścia do pokoju (poza kredytami, implantami i `roomCredits`).
+- Zakończenie runu (`run_ended`): `RunScene.settle` w kolejce zapisów: (1) zapis runu ze śladem `ended { runId, summary }`; (2) świeży `loadMetaManagerStrict`; (3) `MetaManager.applyRun` (idempotentne po `runId`); (4) `saveMetaManager`, jeśli `applied`; (5) `clearRun` (błąd tylko loguje). Błąd (1) lub (2) lub (4) = błąd `save` (ponów), `ZodError` lub błąd `applyRun` = błąd `apply` (jedyne wyjście: jawne „Porzuć nagrodę”, które usuwa zapis runu bez nagrody). Nagroda już obecna w `lastRuns` na dysku: bez zapisu meta, tylko `clearRun` i podsumowanie z rekordu.
+- Watchdog: po `tuning.run.rewardSaveTimeoutS` = 10 s wisząca próba rozliczenia pokazuje błąd `save` i pozwala ponowić (liczony czasem ściennym, działa także w pauzie; ponowienie czeka w kolejce za wiszącą próbą).
+- Wejście z `continue=1`: brak zapisu runu = powrót do menu; zapis z `ended` = rozliczenie i podsumowanie zamiast gry; inaczej `RunManager.restore` (walidacja `runStateSchema`) i `AchievementTracker.restore`. Nowy run przy zostawionym, nierozliczonym runie najpierw go rozlicza; błąd odczytu wstrzymuje nowy run („nowy run wstrzymany, żeby nie nadpisać nierozliczonej nagrody”).
+- Misja liniowa (`src/scenes/mission.ts`): kontynuacja (`continue=1`) bez pasującego punktu kontrolnego (brak, inna misja lub inny poziom) rzuca „Brak punktu kontrolnego tej misji.”; zabezpieczenie magazynu nie odtwarza brakujących danych. Nowa próba przy istniejącym ukończonym punkcie kontrolnym przechodzi najpierw na `continue=1`, żeby rozliczyć przerwane zapisanie meta. Walidacja zapisu (`validateSnapshot`): znany punkt kontrolny, zgodny zestaw celów, ukończony zapis ma wszystkie cele `done`.
+
+## Ograniczenia znane
+
+- Postęp walki w bieżącym pokoju (zabici wrogowie, zebrane nagrody pokoju poza kredytami i implantami) nie jest utrwalany; F5 w pokoju wraca na mapę sprzed wejścia do pokoju.
+- Zdarzenia osiągnięć w trakcie pokoju giną przy odświeżeniu pokoju (patrz `achievements.md`).
 - Ustawienia localStorage nie są częścią migracji postępu IndexedDB.
 
 ## Weryfikacja
 
-- `tests/unit/reliability.test.ts`: migracje v1–v5, przyszłe meta/run/mission,
-  brakujące pola i niepoprawny JSON, kopie, abort transakcji, timery dwóch trybów,
-  wznowienie bez klatek RAF w tle.
-- `tests/e2e/reliability.spec.ts`: ukrycie karty przez 5 s i wznowienie, pauza
-  przez 5 s, F5 z zapisanymi kredytami i implantem, start z uszkodzonym/przyszłym
-  zapisem oraz zrzuty komunikatów. Limit każdego testu: 60 s; wszystkie poll mają
-  jawne timeouty. Ukrycie karty jest symulowane zmianą `document.hidden` i emisją
-  `visibilitychange`, nie przez sterowanie kartą systemu operacyjnego.
-- Ręcznie: w walce Alt-Tab i Esc, odczekać 5 s, wznowić, sprawdzić ruch myszy oraz
-  zatrzymanie i kontynuację muzyki. F5 po nagrodzie odtwarza mapę; F5 przed zapisem
-  nadal cofa do poprzedniego punktu.
-
-## Wyniki poleceń (18.11.2026)
-
-- `npx.cmd tsc --noEmit -p .`: kod 0.
-- `npx.cmd eslint` dla trzech zmienionych plików źródłowych i dwóch nowych plików
-  testowych: kod 0.
-- Vitest dla save, loop, input, runScene, runMeta, music, audio i reliability:
-  `Test Files 8 passed (8)`, `Tests 143 passed (143)`.
-- `npx.cmd vitest run`: `Test Files 2 failed | 223 passed (225)`,
-  `Tests 2 failed | 2338 passed (2340)`. Niepowodzenia: próg 6 ms w arenaPerf
-  (19.376 ms przy równoległym obciążeniu) i timeout 20 s w arenaEnemies.
-  Powtórki osobno: arenaPerf `5 passed`, arenaEnemies `6 passed`.
-  Dodatkową powtórkę całego zestawu z `--maxWorkers=2` przerwano po ponad ośmiu
-  minutach bez końcowego wyniku i przy silnym spowolnieniu środowiska.
-- Playwright: scenariusze ukrycia karty, pauzy i przyszłego zapisu przeszły
-  w końcowym przebiegu z `--global-timeout=180000`; runner zgłosił
-  `3 passed (3.0m)`, `2 did not run` oraz timeout zestawu i jego teardown.
-  Start z uszkodzonym zapisem i F5 przechodziły we wcześniejszych przebiegach.
-  Cały plik e2e nie ma potwierdzonego zielonego zakończenia.
-  Końcowe osobne próby `--grep uszkodzonym` i `--grep F5`: oba testy zaliczone;
-  po asercjach ręcznie zatrzymano wyłącznie proces preview utworzony przez
-  dany test, aby odblokować teardown runnera. Próba uszkodzonego zapisu:
-  `1 passed (58.2s)`, kod 0; F5: `1 passed (1.3m)`, kod 0
-  (sam test 36.0 s; pozostały czas to build i sprzątanie serwera).
-  Nie zmieniano konfiguracji Playwright.
-- Build Vite używany przez Playwright uruchomił preview; pozostaje ostrzeżenie
-  o chunkach powyżej 500 kB.
-- `npx.cmd prettier --check .`: kod 1, istniejące różnice formatowania w 45
-  plikach poza zmianą (m.in. docs/fabula, tools i graphify-out).
-  Sprawdzenie wszystkich sześciu plików tego zadania: kod 0,
-  `All matched files use Prettier code style!`.
-- `git diff --check`: kod 0. Bez commitów, zmiany zależności i SAVE_VERSION.
-- Przegląd własny wykonany; niezależne review Architekta oraz testy mutacyjne
-  nie zostały wykonane. Projekt nie ma skonfigurowanego runnera mutacji;
-  nie instalowano nowych zależności. Nie deklarujemy zamknięcia całego etapu.
-
-PowerShell blokuje uruchamianie `npx.ps1`; użyto istniejącego `npx.cmd`, bez
-zmiany polityki wykonywania skryptów. Timeout runnera Playwright nie jest
-potwierdzonym błędem gry ani potwierdzoną odmową piaskownicy.
+- `tests/unit/reliability.test.ts`: migracje v1–v5 (minimalne fixtury per wersja), przyszłe meta/run/misja, brakujące pola i niepoprawny JSON, kopie bezpieczeństwa, abort transakcji, wznowienie pętli bez klatek RAF w tle. Pozostałe: `tests/unit/save.test.ts`, `achievementsSave.test.ts`.
+- `tests/e2e/reliability.spec.ts`: ukrycie karty przez 5 s i wznowienie, pauza przez 5 s, F5 z zapisanymi kredytami i implantem, start z uszkodzonym i z przyszłym zapisem. Każdy test ma własną przeglądarkę (współdzielony proces Chromium zawieszał test uszkodzonego zapisu na buildzie produkcyjnym); limit 60 s; ukrycie karty jest symulowane przez `document.hidden` i `visibilitychange`.
+- Ręcznie: w walce Alt-Tab i Esc, odczekać 5 s, wznowić, sprawdzić ruch myszy oraz zatrzymanie i kontynuację muzyki; F5 po nagrodzie odtwarza mapę.

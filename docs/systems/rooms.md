@@ -42,7 +42,25 @@ Każdy pokój ma dokładnie jedne drzwi entry i exit; boss ma tylko entry.
 Id drzwi muszą być unikalne w pokoju. Drzwi zajmują przerwy w ścianach;
 ich zamykanie i otwieranie realizuje F3-04.
 
-Podłogą jest blok, którego górna powierzchnia leży na `playerSpawn.y`.
+Pole `hazards` (opcjonalne): `electric_field` (`position`, `size`, opcjonalny
+`cycle {onS, offS, offsetS?}`), `explosive_barrel` (`position`), `laser_gate`
+(`from`, `to`, wymagany `cycle`). Id zagrożeń unikalne. Wszystkie punkty obrysu
+zagrożenia (rogi pola, końce lasera, ±0,4 m dla beczki) muszą leżeć na podłodze.
+Punkty gracza i spawnów nie mogą leżeć w polu elektrycznym ani w odległości
+≤ 1 m od odcinka lasera (dla pola: połowa rozmiaru + 1 m); beczek to nie dotyczy.
+Zachowanie zagrożeń: [hazards.md](hazards.md).
+
+Schemat `arena` (opcjonalny): `points` 3–5 punktów z kolejnymi
+id od `A`, `radiusM > 0`; `batchCellM`, `navigationCellM`, `navigationClearanceM`
+wymagane; `navigationMaxRiseM`, `navigationHeadroomM` opcjonalne (wymagane przez
+nawigację warstwową, gdy są bloki `walkable`); `maxAlive` całkowite
+≤ `tuning.modes.conquest.maxAlive` (12); `enemyTickets` całkowite > 0;
+`spawnRing {minM, maxM}` z `maxM > minM`; `spawnPoints` ≥ 4 pozycji `{x, y?, z}`;
+`water {shoreZ, y, color #rrggbb}`; `exclusive`. Bloki mają też `walkable`
+(powierzchnia nawigacji) i `visible` (false = tylko collider).
+
+Podłogą jest blok, którego górna powierzchnia leży na `playerSpawn.y`
+(porównanie dokładne, bez tolerancji — wartości liczbowe w JSON muszą się zgadzać bitowo).
 Obrysy takich bloków wyznaczają dozwolony obszar XZ bez nowego pola kontraktu.
 Bloki wystające ponad tę płaszczyznę i przecinające ją są przeszkodami;
 sama podłoga nie blokuje spawnów. Punkty gracza i wrogów muszą leżeć
@@ -65,16 +83,33 @@ Walidacja nie używa Three.js, DOM ani losowości.
 
 Pule `roomPools` w `src/data/sectors/kurogane.json`:
 
-| Typ    | Pokoje                                                                                                                                                 |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| combat | `combatCorridor`, `combatPillars`, `combatPlatforms`, `combatRing`, `combatWarehouse`, `combatYard`, `alleyMarket`, `alleyBackstreet`, `alleyCrossing` |
-| elite  | `alleyUnderpass`, `eliteCourtyard`, `eliteFoundry`, `eliteHall`, `plazaHolo`                                                                           |
-| shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                                                                                        |
-| rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                                                                                       |
-| boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)                                                                 |
+| Typ    | Pokoje                                                                                                                                                                                                               |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| combat | `combatCorridor`, `combatPillars`, `combatPlatforms`, `combatRing`, `combatWarehouse`, `combatYard`, `alleyMarket`, `alleyBackstreet`, `alleyCrossing`, `combatSubstation`, `combatLaserYard`, `combatFloodedTunnel` |
+| elite  | `alleyUnderpass`, `eliteCourtyard`, `eliteFoundry`, `eliteHall`, `plazaHolo`                                                                                                                                         |
+| shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                                                                                                                                                      |
+| rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                                                                                                                                                     |
+| boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)                                                                                                                               |
 
-Puzzle nie ma pokoi (`typeWeights.puzzle` = 0). Pokój losowany jest z puli
-osobnym strumieniem `room-layout:<nodeId>`.
+Puzzle nie ma pokoi (`typeWeights.puzzle` = 0). Pokoje `combatSubstation`,
+`combatLaserYard`, `combatFloodedTunnel` i `eliteChemPlant` mają `hazards`
+([hazards.md](hazards.md)). `alleyUnderpassMission` (combat, 8 spawnów,
+`electric_field`) nie jest w żadnej puli sektora: id kończące się na `Mission`
+wchodzi do losowania tylko w misji (jej `roomPools`) albo jako pokój stały.
+
+### Losowanie pokoju dla węzła (`RunScene.chooseRoom`)
+
+Kolejność reguł (determinizm: wynik zależy tylko od seeda runu i id węzła):
+
+1. Węzeł z `fixed` (mapa misji) bierze pokój `fixed.roomId`; nieznany id to błąd.
+2. Pula: `roomPools` misji z `type` zgodnym z węzłem i `fromLayer ≤ warstwa ≤
+toLayer` (pierwszy pasujący wpis), inaczej `roomPools[typ]` sektora, inaczej
+   wszystkie pokoje tego typu z `roomDefinitions`. Id spoza `roomDefinitions` w puli to błąd.
+3. Filtr: odpada `arena.exclusive` oraz (poza misją) id kończące się na `Mission`.
+   Jeśli nic nie zostaje, kandydaci to wszystkie pokoje `combat` po tym samym filtrze.
+4. Kandydaci sortowani po `id` (`localeCompare`), potem
+   `new Rng(seed runu).fork('room-layout:<nodeId>').pick(kandydaci)` — jedno
+   losowanie z osobnego strumienia, więc nie przesuwa innych strumieni.
 
 ## Mapy Neon Noir
 

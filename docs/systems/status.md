@@ -12,23 +12,34 @@ Wyłącznie z obrażeń: `DamageInfo.statuses` → `damage_dealt.statuses` →
 i cel przeżył (`killed: false`). Odrzucone trafienie (ta sama drużyna,
 nietykalność) nie emituje `damage_dealt`, więc nie nakłada statusu. Metodę
 `apply(target, app, source)` woła tylko sam system, testy i komendy debug.
+`apply` zwraca `false` (bez zdarzenia), gdy cel nie jest zarejestrowany w
+`DamageSystem`, jest martwy albo `durationS ≤ 0`; nieznane id statusu rzuca
+wyjątek. Każde udane nałożenie (także odświeżenie) emituje `status_applied`,
+a pole `source` instancji jest nadpisywane ostatnim nakładającym (to jego
+dotyczą kolejne tiki).
 
 ## Reguły
 
-| Pole                  | Znaczenie                                                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `maxStacks`           | Kolejne nałożenia dodają `stacks` (domyślnie 1) do limitu.                                                                            |
-| czas                  | Nowe nałożenie ustawia dłuższy z czasów: obecnego i nowego.                                                                           |
-| `tick`                | `damage × stosy` co `intervalS`; pierwszy tik po `intervalS`, łącznie `floor(czas / intervalS)` tików.                                |
-| `damageTakenPerStack` | `StatModifier` `percent` na `damageTaken` celu (`source: status:<id>`), przeliczany przy zmianie stosów.                              |
-| `onMaxStacks`         | Po osiągnięciu `maxStacks`: status znika (stosy zużyte), `apply` nakłada statusy na ten sam cel, `discharge` rani innych w promieniu. |
+| Pole                  | Znaczenie                                                                                                                                                                                                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `maxStacks`           | Kolejne nałożenia dodają `stacks` (domyślnie 1) do limitu.                                                                                                                                                                                                                                                                                             |
+| czas                  | Nowe nałożenie ustawia dłuższy z czasów: obecnego i nowego.                                                                                                                                                                                                                                                                                            |
+| `tick`                | `damage × stosy` co `intervalS`; pierwszy tik po `intervalS`, łącznie `floor(czas / intervalS)` tików (z tolerancją 1e-6). Licznik tików nie jest zerowany przy odświeżeniu. W jednym kroku wykonuje się tyle tików, ile mieści się w `dt`; tik liczony przed sprawdzeniem wygaśnięcia, więc ostatni tik wypada w kroku wygaśnięcia.                   |
+| `damageTakenPerStack` | `StatModifier` `percent` na `damageTaken` celu (`source: status:<id>`), wartość `damageTakenPerStack × stosy`, przeliczany przy każdym nałożeniu; tylko gdy cel ma `Stats` zarejestrowane w `DamageSystem`. Zdejmowany przy wygaśnięciu, zużyciu stosów, `clear` i `reset`.                                                                            |
+| `onMaxStacks`         | Po osiągnięciu `maxStacks` (sprawdzane po emisji `status_applied`): status znika (`status_expired`, modyfikator zdjęty), `apply` nakłada statusy na ten sam cel (z tym samym źródłem), `discharge` rani innych w promieniu. Kolejność: `status_applied` (max stosów) → `status_expired` → `status_applied` statusów z `apply` → obrażenia wyładowania. |
 
 Czas płynie w `step(dt)` w czasie symulacji: hitstop (`dt = 0`) zatrzymuje
 statusy, spowolnienie je wydłuża. Obrażenia statusów (tiki, wyładowanie) idą
 przez `DamageSystem.deal` ze źródłem równym nakładającemu, z tagami statusu
 i `#status` (`STATUS_TAG`), **bez** `statuses` — wyładowanie nie nakłada
 przeciążenia na sąsiadów, więc nie powstaje pętla łańcuchowa. Wyładowanie
-liczy odległość od pozycji celu (`deps.position`) do pozostałych `deps.targets()`.
+liczy odległość 3D od pozycji celu (`deps.position`) do pozostałych `deps.targets()`
+(pomija sam cel i encje bez pozycji; granica `radiusM + 1e-6`, bez zależności od
+wysokości i bez zasłon). Obrażenia wyładowania niosą `point` = pozycję trafionego
+i `dir` od środka celu (gdy odległość > 0); filtr drużyn i nietykalność stosuje
+`DamageSystem`. Gdy pozycja źródłowego celu jest nieznana, wyładowania nie ma,
+ale stosy i `apply` działają. Tiki nie mają `point` ani `dir`. `outgoing` gracza
+nie mnoży obrażeń statusów (tag `#status`).
 
 `status_applied { target, status, stacks, durationS, source }` przy każdym
 nałożeniu; `status_expired { target, status }` przy wygaśnięciu, zużyciu stosów
@@ -54,11 +65,11 @@ wskaźnik. Istniejąca reguła audio `power_denied` obsługuje nową odmowę.
 
 ## Dane F2
 
-| Status                    | Efekt                                                                                                                    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `burning` (Podpalenie)    | 4 obrażenia `#fire` co 0,5 s, 1 stos.                                                                                    |
-| `overload` (Przeciążenie) | +25% otrzymywanych obrażeń na stos, 3 stosy; przy 3: ogłuszenie 1,5 s i wyładowanie 12 `#elektrycznosc` w promieniu 4 m. |
-| `stunned` (Ogłuszenie)    | Wróg nie atakuje (`STUNNED`).                                                                                            |
+| Status                    | Efekt                                                                                                                                                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `burning` (Podpalenie)    | 4 obrażenia (tagi `#fire`, `#status`) co 0,5 s, 1 stos. Czas nakłada źródło (dane broni/mocy). Przy śmierci gracza od tiku `cause = 'burning'`.                                                                                   |
+| `overload` (Przeciążenie) | tag `#elektrycznosc`; +25% otrzymywanych obrażeń na stos (1 stos +25%, 2 stosy +50%), 3 stosy; przy 3: ogłuszenie 1,5 s (`stunned`) i wyładowanie 12 `#elektrycznosc` w promieniu 4 m (przy śmierci gracza `cause = 'overload'`). |
+| `stunned` (Ogłuszenie)    | 1 stos, bez tików. Wróg nie atakuje (`STUNNED`). Nałożenie na już ogłuszonego odświeża dłuższy z czasów. Ostrze odczytuje go jako gotowość do wykończenia (`melee.md`).                                                           |
 
 ## Wrogowie
 
