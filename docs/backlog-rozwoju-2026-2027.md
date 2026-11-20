@@ -124,7 +124,7 @@ Zadania do planu [`plan-rozwoju-2026-2027.md`](plan-rozwoju-2026-2027.md). Pomys
 
 ### S2-03 Reakcja Kamiennej po Masztach
 
-- **P2** · Wykonawca · Cz 1 · Ag S · zależności: S2-02
+- **P2** · Wykonawca · Cz 1 · Ag S · zależności: S2-02 · status: zaimplementowane, czeka na playtest
 - **Kryteria:** nowe kwestie NPC i zmiana otoczenia wg `zarys-fabuly.md` sekcja 10.
 
 ## S2b — tryby areny (decyzja właściciela 17 XI 2026)
@@ -240,7 +240,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S7-01 Konsekwencje w kryjówce po misjach dema
 
-- **P1** · Wykonawca · Cz 2 · Ag M
+- **P1** · Wykonawca · Cz 2 · Ag M · status: zaimplementowane, czeka na playtest
 
 ### S7-02 Audio walki i muzyka (spokój, walka, boss)
 

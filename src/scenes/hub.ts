@@ -53,6 +53,11 @@ import {
 import type { HubEvents } from '../world/hubPowerDip';
 import { setPowerLevel } from '../render/powerLevel';
 import { HubArrival, hubArrivalContext } from '../world/hubArrival';
+import {
+  applyCampaignTexts,
+  applyHubCampaign,
+  assertCampaignMissions,
+} from '../world/hubCampaign';
 import type { HubArrivalContext, HubGreetings } from '../world/hubArrival';
 import { HubDialog } from '../ui/hubDialog';
 import { HubMap } from '../ui/hubMap';
@@ -144,7 +149,7 @@ const EMPTY_ACTIONS: ReadonlySet<never> = new Set();
 /** Kryjówka ruchu oporu (F4-07): peron nieczynnej stacji metra, FPP bez wrogów, stacje jako strefy z nakładkami UI. */
 export class HubScene implements Scene {
   readonly id = 'hub';
-  private readonly layout: HubLayout;
+  private layout: HubLayout;
   private readonly params: URLSearchParams;
   private readonly navigate: (url: string) => void;
   private readonly loadModels: boolean;
@@ -264,10 +269,18 @@ export class HubScene implements Scene {
     this.hubMap =
       this.options.hubMap ??
       (this.screensOption === undefined ? new HubMap(this.layout) : null);
-    this.npcTexts = loadNpcTexts(
+    const loadedTexts = loadNpcTexts(
       this.options.npcTexts ?? npcTextData,
       this.layout.npcs ?? [],
     );
+    assertCampaignMissions(
+      this.layout,
+      loadedTexts,
+      new Set(missionDefinitions.keys()),
+    );
+    const completed = this.campaignCompleted();
+    this.layout = applyHubCampaign(this.layout, completed);
+    this.npcTexts = applyCampaignTexts(loadedTexts, completed);
     if (this.screensOption === undefined)
       this.chatterUi = new HubChatterUi(this.layout.npcs ?? [], this.npcTexts);
     // Walidacja względem danych gry; sceny testowe z własnymi NPC po prostu pomijają wpisy bez NPC.
@@ -769,6 +782,19 @@ export class HubScene implements Scene {
     this.dialogUi?.hide();
   }
 
+  /** Ukończone misje: w debugu `?campaign=` (lista po przecinku, `none` = brak) zastępuje zapis meta. */
+  private campaignCompleted(): ReadonlySet<string> {
+    const override = this.ctx.commands ? this.params.get('campaign') : null;
+    if (override === null) return new Set(this.meta.state.campaign.completed);
+    return new Set(
+      override
+        .split(',')
+        .filter(
+          (id) => id !== '' && id !== 'none' && missionDefinitions.has(id),
+        ),
+    );
+  }
+
   private setArrival(context: HubArrivalContext | null): void {
     this.arrival = context
       ? new HubArrival(
@@ -1190,9 +1216,39 @@ export class HubScene implements Scene {
       this.stand() ? 'Wstałeś.' : 'Nie siedzisz.',
     );
     register(
-      'hub arrive',
-      'hub arrive <firstVisit|victory|death> — odtwórz przybycie do kryjówki',
+      'hub campaign',
+      'hub campaign <missionId...|clear> — ustaw ukończone misje (tylko ta wizyta, bez zapisu) i przeładuj kryjówkę',
       (args) => {
+        if (args.length === 0)
+          return `Użycie: hub campaign <${[...missionDefinitions.keys()].join('|')}...|clear>`;
+        const clear = args.length === 1 && args[0] === 'clear';
+        const unknown = clear
+          ? undefined
+          : args.find((id) => !missionDefinitions.has(id));
+        if (unknown) return `Nieznana misja: ${unknown}`;
+        this.go({ scene: 'hub', campaign: clear ? 'none' : args.join(',') });
+        return clear
+          ? 'Kampania wyczyszczona (przeładowanie).'
+          : `Ukończone misje: ${args.join(', ')} (przeładowanie).`;
+      },
+    );
+    register(
+      'hub arrive',
+      'hub arrive <firstVisit|victory|death|mission <missionId>> — odtwórz przybycie do kryjówki',
+      (args) => {
+        if (args[0] === 'mission') {
+          const id = args[1];
+          if (args.length !== 2 || !id || !missionDefinitions.has(id))
+            return 'Użycie: hub arrive mission <missionId>';
+          this.endTalk();
+          this.chatter.interrupt();
+          this.setArrival({
+            kind: 'victory',
+            key: `debug:mission:${id}`,
+            missionId: id,
+          });
+          return `Przybycie: victory po ${id}`;
+        }
         const kind = args[0];
         if (
           args.length !== 1 ||

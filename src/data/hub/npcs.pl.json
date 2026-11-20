@@ -26,8 +26,28 @@
           "Ledwo cię wnieśli z tunelu, a ja już musiałam prostować ci obudowę emitera. Następnym razem nie testuj twardości ich pancerza własną głową.",
           "Dobrze, że znów stoisz na nogach, bo sprzęt po tym wypadzie wyglądał jak złom z Niecki. Podkręciłam styki, ale resztę musisz wyćwiczyć sam.",
           "Chłopaki z patrolu zdążyli cię wyciągnąć w ostatniej chwili, choć rękojeść była cała osmalona. Weź oddech i sprawdź mody, zanim ruszysz znów."
-        ]
-      }
+        ],
+        "afterMission": {
+          "m01-maszty": [
+            "Trzy ładunki, trzy huki, zero zapalników na stanie. Powiedz Bajtowi, że zegarki z bazaru działają.",
+            "Z masztów zostały słupy i dym. Siadaj, sprawdzę ostrze, zanim się za bardzo przyzwyczai do deszczu."
+          ],
+          "m03-list-przewozowy": [
+            "Tarczownicy i drony w jednym porcie. Nowe zabawki Kurogane. Jak coś z tego zostanie w kawałkach, przynieś, chcę zobaczyć, z czego mają te tarcze.",
+            "Jedna konsola, dziewięćdziesiąt sekund i cały port na głowie. Dobra robota. Siadaj, sprawdzę ostrze."
+          ],
+          "m06-odlewnia": [
+            "Pancerz wspomagany, tarcza, uderzenie z góry. Dwa miesiące roboty dla normalnej brygady, a tu jedna noc. Siadaj, sprawdzę ostrze.",
+            "Szron stoi przy tablicy od powrotu. Nie zagaduj. Przynieś mu herbatę, więcej zdziałasz niż słowami."
+          ]
+        }
+      },
+      "campaignLines": [
+        {
+          "after": "m06-odlewnia",
+          "lines": ["Po Odlewni Szron mówi mniej. Pilnuj, żeby jadł."]
+        }
+      ]
     },
     {
       "id": "wolan",
@@ -54,8 +74,29 @@
           "Spokojnie, już jesteś w kryjówce — zespół wyciągnął cię z sektora, gdy straciłeś przytomność. Układ nerwowy potrzebuje chwili, ale wszystko wraca do normy.",
           "Przeciążenie po takim starciu potrafi zwalić z nóg, nawet przy silnym Rezonansie. Jeśli czujesz, że obecny układ węzłów cię hamuje, zmień go w terminalu.",
           "Dobrze, że otworzyłeś oczy. Zofia zajęła się ranami, a ja wyciszyłam skoki napięcia w implancie — nie spiesz się z kolejnym wyjściem."
-        ]
-      }
+        ],
+        "afterMission": {
+          "m01-maszty": [
+            "Proszę pokazać tę kasetę, jeśli Bajt pozwoli. Oznaczenie Helixa na czujniku... Nie, nic. Później.",
+            "Rezonans nie zdradził się do rana, maszty nie zdążyły. To dobry wynik, choć nie wiem, czy ostatni taki."
+          ],
+          "m03-list-przewozowy": [
+            "Klasa K... Proszę, Bajt, całą kolumnę adresatów. Chcę zobaczyć każdą pozycję, nie tylko podsumowanie."
+          ],
+          "m06-odlewnia": [
+            "Akord, kamerton. Te słowa w kontraktach... Nie. Muszę zobaczyć listę przekazanych, zanim cokolwiek powiem.",
+            "Setki osób w sześć lat. Proszę, żeby Bajt pokazał mi tę listę jako pierwszej. Zanim zrobi to ktoś inny."
+          ]
+        }
+      },
+      "campaignLines": [
+        {
+          "after": "m06-odlewnia",
+          "lines": [
+            "Lista przekazanych ma kilkaset nazwisk. Sprawdzam każdy numer partii. Proszę nie przeszkadzać."
+          ]
+        }
+      ]
     },
     {
       "id": "szron",
@@ -82,8 +123,43 @@
           "Zwiad wyciągnął cię spod ognia, zanim zamknęli kwartał. Żadnych wymówek — przeanalizuj, co poszło nie tak, i wróć tam mądrzejszy.",
           "Zdarza się nawet najlepszym, kiedy sektor zagęści ogień. Najważniejsze, że znów stoisz na peronie i mamy czas na poprawkę.",
           "Tym razem góra okazała się twardsza, ale nasi ludzie nie zostawiają swoich na betonie. Opatrz rany, przeładuj sprzęt i próbujemy jeszcze raz."
-        ]
-      }
+        ],
+        "afterMission": {
+          "m01-maszty": [
+            "Trzy maszty leżą, do rana mamy spokój. Nie cieszę się: Kurogane postawi cztery.",
+            "Cisza w eterze nad Niecką. Zapisane. Odpocznij, następna robota przyjdzie szybciej, niż trzeba."
+          ],
+          "m03-list-przewozowy": [
+            "Kontener jedzie na Taras za dwa dni. Odpocznij, potem nie będzie czasu.",
+            "Dobra robota w porcie. Wiemy już dokąd i kiedy. Reszta to plan."
+          ],
+          "m06-odlewnia": [
+            "Skreśliłem Huty na tablicy. Własną ręką, bo chciałem to zrobić sam. Idź odpocząć, Kurier.",
+            "„Ja tylko dowożę.” Dziewięć lat czekałem, co powie. Nie było nic do powiedzenia."
+          ]
+        }
+      },
+      "campaignLines": [
+        {
+          "after": "m01-maszty",
+          "lines": [
+            "Maszty leżą, ale dziura po nich zostanie. Kurogane wróci tam z lepszym sprzętem. Do tego czasu mamy oddech."
+          ]
+        },
+        {
+          "after": "m03-list-przewozowy",
+          "lines": [
+            "Magazyn 9 mamy za sobą, a skład jedzie dalej. Plan złożymy, gdy Bajt skończy czytać."
+          ]
+        },
+        {
+          "after": "m06-odlewnia",
+          "lines": [
+            "Brandt był moim dowódcą. Zamknął moje akta z adnotacją o utonięciu, a ja się nie sprzeciwiłem. Teraz już nie będę udawał, że to ktoś inny.",
+            "Huty skreślone, droga na Bulwar i Taras otwarta. Idziemy w górę, ale najpierw wszyscy śpią."
+          ]
+        }
+      ]
     },
     {
       "id": "bajt",
@@ -110,8 +186,43 @@
           "Gdy twój sygnał nagle zjechał do zera, prawie wysłałem tu pół peronu z noszami. Dobrze, że patrol zdążył zgarnąć cię z ulicy przed skanerami.",
           "Auć, ten wykres tętna na moim ekranie wyglądał paskudnie. Przynajmniej odzyskaliśmy cię z sektora, a sieć szybko zapomni o całym zamieszaniu.",
           "Zostawiłeś w sektorze wszystkie Kredyty z akcji, ale ważniejsze, że sam wróciłeś pod ziemię. Zresetuję ci kanał i lecimy dalej, jak dojdziesz do siebie."
-        ]
-      }
+        ],
+        "afterMission": {
+          "m01-maszty": [
+            "Maszty zgasły i nikt już niczego nie triangulował. Siedzę nad tą białą kasetą i nie rozumiem, po co Kurogane czujnik medyczny.",
+            "Czujnik Helixa w maszcie Kurogane. Nie wiem jeszcze, co to znaczy, ale mi się to nie podoba."
+          ],
+          "m03-list-przewozowy": [
+            "Księgi wywozowe są u mnie. Co tydzień kontener chłodniczy, adresat: Zakład Kalibracji Helixa. „Ładunek biologiczny klasy K”. Nie chcę zgadywać, co jest w środku.",
+            "Zrzut doszedł do stu procent. Teraz czytam go w kółko i żałuję, że umiem czytać."
+          ],
+          "m06-odlewnia": [
+            "Serwer Brandta jest u mnie. Sześć lat kontraktów z Helixą, setki nazwisk na liście „przekazanych”. Czytam pierwszą setkę i muszę wyjść z pokoju.",
+            "Jest jeszcze folder „Palacz”. Zaszyfrowany tak, że szkoda gadać. Łamię go dalej, ale nic nie obiecuję."
+          ]
+        }
+      },
+      "campaignLines": [
+        {
+          "after": "m01-maszty",
+          "lines": [
+            "Rozebrałem moduł z masztu: przerobiony czujnik do badania implantów, na obudowie biała naklejka Helixa. Kurogane i Helixa pod jednym dachem, tylko po co?",
+            "Wyłączone maszty trzymam na monitorze na zielono. Jak któryś zamruga, powiem pierwszy."
+          ]
+        },
+        {
+          "after": "m03-list-przewozowy",
+          "lines": [
+            "Skład jedzie co tydzień o tej samej porze. Kurogane nie lubi zmian w harmonogramie, to ich słabość."
+          ]
+        },
+        {
+          "after": "m06-odlewnia",
+          "lines": [
+            "Zrzut z Odlewni jest trzy razy większy niż mój dysk. Kontrakty Helixa, kamertony, Akord. Mam lekturę do końca zimy."
+          ]
+        }
+      ]
     },
     {
       "id": "tomasz",
@@ -138,8 +249,26 @@
           "Spokojnie, młody, jesteś już przy beczce. Chłopaki wyciągnęli cię z zaułka całego w sadzy, ale najważniejsze, że znów oddychasz tutejszym powietrzem.",
           "Każdy, kto walczył z korporacją, zaliczył kiedyś twarde lądowanie na mokrym asfalcie. Dobrze, że nasi byli blisko i nie dali ci tam zostać.",
           "Nie patrz tak na swoje ręce, każdemu czasem zabraknie sekundy. Odpocznij przy ogniu, a jutro znów przypomnisz im, dlaczego boją się ciemności."
-        ]
-      }
+        ],
+        "afterMission": {
+          "m01-maszty": [
+            "Patrole poszły tam, gdzie wygodnie, jak mówiłem. Siadaj przy ogniu, zmarzniesz.",
+            "Spalona latarnia, suchy zaułek, właz przy murze. Ścieżka się zgadzała. Osusz się, młody."
+          ],
+          "m06-odlewnia": [
+            "Nie cieszę się, młody. Człowiek, który trzymał dzielnicę w garści, nie ginie bez echa. Siadaj przy ogniu.",
+            "Brandt... Znałem to nazwisko, wszyscy znali. Dobrze, że Szron stoi przy tablicy, a nie przy ogniu. Wolałbym, żeby jeszcze na mnie nie patrzył."
+          ]
+        }
+      },
+      "campaignLines": [
+        {
+          "after": "m01-maszty",
+          "lines": [
+            "Helixa, mówisz? Nie znam. Kurogane znałem, Helixa to dla mnie nowa nazwa na starym szyldzie."
+          ]
+        }
+      ]
     },
     {
       "id": "hela",
@@ -162,7 +291,12 @@
         "death": [
           "Jak tylko wnieśli cię z sektora, od razu nastawiłam mocny wywar na kościach. Zjedz choć pół miski na spokojnie, to szybciej staniesz na nogi.",
           "Koniec zgrywania twardziela bez obiadu, Kurierze. Masz tu ciepły chleb i gorącą zupę — zanim ruszysz znów, musisz odzyskać trochę sił."
-        ]
+        ],
+        "afterMission": {
+          "m06-odlewnia": [
+            "Szron nie zjadł dziś nic, a ja nie nalewam na siłę. Zostawiłam miskę przy tablicy, niech stygnie. Ty siadaj i jedz."
+          ]
+        }
       }
     },
     {
@@ -242,7 +376,15 @@
         "Mira zabrała mi z rozdzielni ostatnie sprawne przekaźniki do swojego warsztatu. Ładnie to tak okradać koleżankę, która pilnuje, żeby pompy nie stanęły?",
         "Jak pompy w dolnym szybie staną na dwie godziny, to woda z Niecki wejdzie nam aż na peron. Ale nie, według Miry ważniejsze jest strojenie kolejnego ostrza.",
         "Stara instalacja metra pamięta lepsze czasy niż połowa sprzętu na powierzchni. Trzeba tylko wiedzieć, w którą puszkę kopnąć, a którą obejść z daleka."
-      ]
+      ],
+      "reactions": {
+        "afterMission": {
+          "m01-maszty": [
+            "Przy trzecim wybuchu stanęła pompa w dolnym szybie, na minutę. Ruszyła. Nie dziękuj, kopnęłam ją.",
+            "Światło mrugnęło trzy razy, jak maszty szły w powietrze. Wiedziałam, że to Niecka, nie ja."
+          ]
+        }
+      }
     },
     {
       "id": "marek",
@@ -808,6 +950,75 @@
         {
           "npc": "bogna",
           "text": "Święta racja. W Kamiennej nic się nie marnuje — co nie wróci na nogi zwiadowcy, skończy u mnie jako ścierka."
+        }
+      ]
+    },
+    {
+      "id": "wolan_bajt_kaseta",
+      "npcs": ["wolan", "bajt"],
+      "after": "m01-maszty",
+      "lines": [
+        {
+          "npc": "bajt",
+          "text": "Doktor, ta kaseta z masztu ma numer partii Helixa. Pasuje do czegokolwiek, co pani widziała?"
+        },
+        {
+          "npc": "wolan",
+          "text": "Proszę pokazać numer. ... Nie. Nie widziałam. Proszę go zapisać i nigdzie nie wysyłać."
+        },
+        {
+          "npc": "bajt",
+          "text": "Wysyłać? Ja przy tej kasecie nawet głośno nie oddycham."
+        },
+        {
+          "npc": "wolan",
+          "text": "To dobrze. Jutro rano porównam go z archiwum."
+        }
+      ]
+    },
+    {
+      "id": "mira_tomasz_tarcze",
+      "npcs": ["mira", "tomasz"],
+      "after": "m03-list-przewozowy",
+      "lines": [
+        {
+          "npc": "mira",
+          "text": "Tomasz, widziałeś kiedyś takich Tarczowników? Pełna balistyczna, sztywna jak wrota."
+        },
+        {
+          "npc": "tomasz",
+          "text": "Nie w Niecce. Kurogane trzymało ich na większą robotę. Skoro wyciągnęli je do portu, to coś tam jest cenne."
+        },
+        {
+          "npc": "mira",
+          "text": "Klasa K."
+        },
+        {
+          "npc": "tomasz",
+          "text": "Mhm. Zapytaj Szrona, co to znaczy. Ja się na tych literach nie znam."
+        }
+      ]
+    },
+    {
+      "id": "iga_szron_miska",
+      "npcs": ["iga", "szron"],
+      "after": "m06-odlewnia",
+      "lines": [
+        {
+          "npc": "iga",
+          "text": "Kapitanie, Hela zostawiła miskę. Stygnie."
+        },
+        {
+          "npc": "szron",
+          "text": "Zaraz."
+        },
+        {
+          "npc": "iga",
+          "text": "Mapa sama się już nie odskreśli, kapitanie."
+        },
+        {
+          "npc": "szron",
+          "text": "Wiem, Iga. Idź do swoich pomp."
         }
       ]
     }

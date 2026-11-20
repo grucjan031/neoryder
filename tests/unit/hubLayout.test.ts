@@ -145,13 +145,9 @@ it('oprawa: definicje świateł (renderer włącza 8 najbliższych) i paleta Neo
 });
 
 it('neonTexts są opcjonalne i dopuszczają wyłącznie kolory palety Neon Noir', () => {
-  expect(layout.neonTexts?.map(({ text }) => text)).toEqual([
-    'NA ANTENIE',
-    'JADŁODAJNIA',
-    'KWATERY',
-    'RADIO ISKRA',
-    'TARG',
-  ]);
+  expect(
+    layout.neonTexts?.filter((t) => !t.after).map(({ text }) => text),
+  ).toEqual(['NA ANTENIE', 'JADŁODAJNIA', 'KWATERY', 'RADIO ISKRA', 'TARG']);
   expect(
     loadHubLayout({ ...hideoutData, neonTexts: undefined }).neonTexts,
   ).toBeUndefined();
