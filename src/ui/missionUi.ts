@@ -130,6 +130,7 @@ export function showDebrief(
   });
   dialog.append(heading, dialogueLines(mission.debrief), button);
   document.body.append(dialog);
+  document.exitPointerLock?.();
   dialog.showModal();
   return () => dialog.remove();
 }

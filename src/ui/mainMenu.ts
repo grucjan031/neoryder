@@ -182,7 +182,7 @@ export class MainMenu {
         status.textContent =
           ended ??
           (save
-            ? `${text.layer}: ${node?.layer ?? 1} · ${text.hp}: ${save.run.hp}`
+            ? `${text.layer}: ${node?.layer ?? 1} · ${text.hp}: ${Math.ceil(save.run.hp)}`
             : t.noSave);
       })
       .catch(() => {

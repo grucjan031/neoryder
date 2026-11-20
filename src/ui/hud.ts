@@ -242,6 +242,7 @@ export class Hud {
   setExecuteHint(ready: boolean): void {
     this.executeHint.hidden = !ready;
   }
+  private overheated = false;
   private readonly overheat = element('div', 'hud__overheat', text.overheated);
   private readonly weaponName = element('span', 'hud__weapon-name');
   private readonly weapon = element('div', 'hud__weapon');
@@ -398,7 +399,6 @@ export class Hud {
     this.changeBuildButton.addEventListener('click', this.changeBuild);
     window.addEventListener('keydown', this.onKeyDown, true);
     this.crosshairTicks.addEventListener('animationend', this.endFire);
-    let overheated = false;
     this.unsubscribe = [
       bus.on('enemy_telegraph', ({ id, kind, durationS }) => {
         if (opts.threats) this.telegraphs.set(id, { kind, durationS });
@@ -436,8 +436,8 @@ export class Hud {
           if (this.heat.node.dataset.level !== level)
             this.heat.node.dataset.level = level;
         }
-        if (overheated !== next) {
-          overheated = next;
+        if (this.overheated !== next) {
+          this.overheated = next;
           this.heat.node.classList.toggle('hud__meter--overheated', next);
           this.overheat.hidden = !next;
         }
@@ -627,6 +627,10 @@ export class Hud {
     this.toast.node.hidden = true;
     this.blade.hidden = true;
     this.lowHealth.hidden = true;
+    this.executeHint.hidden = true;
+    this.overheated = false;
+    this.overheat.hidden = true;
+    this.heat.node.classList.remove('hud__meter--overheated');
     this.restoreFocus();
   }
 
@@ -829,6 +833,14 @@ export class Hud {
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
     if (this.death.hidden || event.repeat) return;
+    const target = event.target;
+    if (
+      target instanceof Element &&
+      (target === this.changeBuildButton ||
+        (!this.death.contains(target) &&
+          target.closest('dialog, input, textarea, select')))
+    )
+      return;
     if (
       event.key !== 'Enter' &&
       event.code !== 'KeyR' &&
