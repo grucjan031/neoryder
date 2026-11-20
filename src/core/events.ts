@@ -38,6 +38,8 @@ export interface GameEvents {
     /** Impuls odrzutu (N·s) z DamageInfo.knockback; 0, gdy brak. */
     knockback: number;
     killed: boolean;
+    /** Obrażenia zatrzymane przez blok (modyfikatory BLOCK_SOURCE); brak, gdy blok nie działał. */
+    blocked?: number;
     statuses?: readonly StatusApplication[];
   };
   enemy_killed: {

@@ -26,6 +26,7 @@ function setup(enemyZ = -2, knowsPosition = true) {
   const enemy = registry.create('trooper', 'enemy');
   const stats = new Stats({ maxHealth: 100, maxEnergy: 100 });
   const health = new Health(() => 100);
+  const energy = new ResourcePool({ max: () => 100, regenPerS: () => 0 });
   damage.register(player, health, { stats });
   damage.register(enemy, new Health(() => 100));
   const blade = new PlasmaBlade(
@@ -35,7 +36,7 @@ function setup(enemyZ = -2, knowsPosition = true) {
       team: 'player',
       damage,
       stats,
-      energy: new ResourcePool({ max: () => 100, regenPerS: () => 0 }),
+      energy,
       queryArc: () => [],
       aim: () => ({
         origin: { x: 0, y: 1.6, z: 0 },
@@ -75,6 +76,7 @@ function setup(enemyZ = -2, knowsPosition = true) {
     points,
     enemy,
     player,
+    energy,
   };
 }
 
@@ -173,6 +175,17 @@ describe('parowanie ciosów wręcz', () => {
     const p = t.points[0]!;
     expect(Number.isFinite(p.x) && Number.isFinite(p.z)).toBe(true);
     expect(p.z).toBeCloseTo(-tuning.melee.meleeParrySparkM);
+  });
+
+  it('blok kosztuje energię za cios, ale nie za tik statusu ani zagrożenie', () => {
+    const t = setup();
+    t.stepFor((tuning.melee.meleeParryWindowMs + 100) / 1000, ['block']);
+    const full = t.energy.current;
+    t.hit(['#status']);
+    t.hit(['#hazard']);
+    expect(t.energy.current).toBe(full);
+    t.hit(['#melee']);
+    expect(t.energy.current).toBeLessThan(full);
   });
 
   it('bez parowania nie ma parry_success', () => {

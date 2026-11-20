@@ -522,6 +522,9 @@ export const tuning = {
     heavyActiveS: 0.12,
     heavyRecoveryS: 0.38,
     guardBreakLockS: 0.8,
+    /** Wstrząs kamery przy rozbiciu gardy: siła i czas [s]. */
+    guardBreakShake: 0.5,
+    guardBreakShakeS: 0.3,
     dashCutGraceS: 0.1,
     dashCutHeightM: 1.2,
     throwSpinRadS: 28,

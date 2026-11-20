@@ -120,8 +120,8 @@ Testy: `execute.test.ts`, dopisane przypadki w `damage.test.ts`,
 ## Blok
 
 - Wejście w blok (`blockAgeS = 0`, dalej rośnie co krok symulacji) dodaje graczowi `StatModifier { stat: 'damageTaken', type: 'mult', value: blockDamageMult (0,3), source: 'block' }`; wyjście go zdejmuje. Redukcję liczy `DamageSystem` — ostrze nie modyfikuje obrażeń samo. Blok kończy się, gdy PPM puszczone, bufor ataku > 0, rozbita garda, rzut, dash-cięcie lub `reset`.
-- Każde `damage_dealt` na właścicielu w stanie bloku (bez tagu `#heavy`; także pociski, hazardy i tiki statusów, nie tylko ciosy `#melee`) zużywa energię: `blockEnergyPerHit (6) + obrażenia_przed_redukcją × blockEnergyPerDamage (0,4)` (dane ostrza) i emituje `melee_blocked { defender, attacker, amount = obrażenia powstrzymane }`. „Przed redukcją” = `damage_dealt.amount / blockDamageMult` (ignoruje inne modyfikatory `damageTaken` i ścięcie do pozostałego HP).
-- **Rozbicie gardy:** gdy energii brakuje (`spend` zawodzi) — energia spada do 0 (`set(0)`), blok wyłącza się, `guardBrokenS = guardBreakLockS` (0,8 s, maleje w czasie symulacji także w locie i dash-cięciu), `camera_shake { intensity 0.5, durationS 0.3, dir null }` (wartości na sztywno w kodzie). Obrażenie, które rozbiło gardę, jest już zredukowane.
+- Każde `damage_dealt` na właścicielu w stanie bloku, w którym blok faktycznie coś zatrzymał (`blocked > 0`: ciosy i pociski; nie `#heavy`, tiki `#status` ani zagrożenia `#hazard`), zużywa energię: `blockEnergyPerHit (6) + (amount + blocked) × blockEnergyPerDamage (0,4)` (dane ostrza) i emituje `melee_blocked { defender, attacker, amount = blocked }`. `blocked` liczy `DamageSystem` (różnica `damageTaken` z blokiem i bez), więc inne modyfikatory nie przekłamują kosztu.
+- **Rozbicie gardy:** gdy energii brakuje (`spend` zawodzi) — energia spada do 0 (`set(0)`), blok wyłącza się, `guardBrokenS = guardBreakLockS` (0,8 s, maleje w czasie symulacji także w locie i dash-cięciu), `camera_shake { intensity: guardBreakShake (0,5), durationS: guardBreakShakeS (0,3), dir null }`. Obrażenie, które rozbiło gardę, jest już zredukowane.
 - Ciosy z tagiem `#heavy` przechodzą przez blok w całości i nie zużywają energii (`DamageSystem` pomija modyfikatory o źródle `block`).
 - `view().blockAgeS` — czas trwania bloku, pod okno parowania (#10).
 
@@ -131,7 +131,7 @@ Testy: `execute.test.ts`, dopisane przypadki w `damage.test.ts`,
 
 ## Strojenie (`tuning.melee`)
 
-`lightWindupS 0.05`, `lightActiveS 0.1`, `lightRecoveryS 0.16`, `comboWindowS 0.3`, `attackBufferMs 120`, `heavyHoldS 0.22`, `heavyChargeS 0.6`, `heavyWindupS 0.04`, `heavyActiveS 0.12`, `heavyRecoveryS 0.38`, `guardBreakLockS 0.8`, `attackSpeedMin 0.5`, `attackSpeedMax 2`.
+`lightWindupS 0.05`, `lightActiveS 0.1`, `lightRecoveryS 0.16`, `comboWindowS 0.3`, `attackBufferMs 120`, `heavyHoldS 0.22`, `heavyChargeS 0.6`, `heavyWindupS 0.04`, `heavyActiveS 0.12`, `heavyRecoveryS 0.38`, `guardBreakLockS 0.8`, `guardBreakShake 0.5`, `guardBreakShakeS 0.3`, `attackSpeedMin 0.5`, `attackSpeedMax 2`.
 
 Rzut i dash-cięcie: `dashCutGraceS 0.1`, `dashCutHeightM 1.2`, `throwSpinRadS 28`, `throwLengthM 1.1`, `throwThicknessM 0.04` (trzy ostatnie tylko render).
 
