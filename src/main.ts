@@ -29,6 +29,7 @@ import { loadSettings, saveSettings } from './core/save';
 import { setDifficultyOverride } from './world/difficulty';
 import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
+import { setRenderWarmUp, warmUpRender } from './render/renderWarmUp';
 import {
   LITE_MAX_STEPS_PER_FRAME,
   LITE_PIXEL_RATIO,
@@ -240,15 +241,26 @@ async function main(): Promise<void> {
     camera,
     commands,
   };
-  await scene.init(ctx, three);
   const resize = (): void => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     pipeline.setSize(window.innerWidth, window.innerHeight);
   };
+  // Rozmiar przed init(): rozgrzewka renderu (niżej i w scenach z własnym ekranem ładowania)
+  // alokuje cele pipeline'u od razu w docelowym rozmiarze.
   resize();
+  // Tryb lite (testy na rendererze programowym) nie rozgrzewa: nakładka i tak nie ma obrazu.
+  if (!getLiteFx())
+    setRenderWarmUp((cancelled) => pipeline.warmUp(three, camera, cancelled));
+  await scene.init(ctx, three);
   window.addEventListener('resize', resize);
+  // Ekran startowy zasłania obraz do `scene_loaded`: shadery i tekstury kompilujemy teraz, nie w pierwszej klatce gry.
+  try {
+    await warmUpRender();
+  } catch (error) {
+    console.warn('Rozgrzewka renderu nie powiodła się.', error);
+  }
   const hint = document.createElement('p');
   hint.className = 'hint';
   hint.textContent = debug
@@ -472,6 +484,7 @@ async function main(): Promise<void> {
     scene.dispose();
     for (const off of builtinOff) off();
     bus.clear();
+    setRenderWarmUp(undefined);
     pipeline.dispose();
     renderer.dispose();
     app.replaceChildren();

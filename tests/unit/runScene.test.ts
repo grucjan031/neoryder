@@ -31,6 +31,7 @@ import type {
 } from '../../src/ui/runScreens';
 import { kuroganeSector } from '../../src/world/sectors';
 import { configureFx } from '../../src/render/fxMode';
+import { setRenderWarmUp } from '../../src/render/renderWarmUp';
 import type { DamageSystem } from '../../src/combat/damage';
 import type { EnemyManager } from '../../src/enemies/manager';
 
@@ -215,9 +216,67 @@ async function setup(options: RunSceneOptions = {}, bus = new EventBus()) {
 }
 
 afterEach(() => {
+  setRenderWarmUp(undefined);
   for (const scene of active) scene.dispose();
   active.clear();
   vi.restoreAllMocks();
+});
+
+it('rozgrzewka renderu biegnie po init() pokoju, jeszcze na ekranie ładowania', async () => {
+  const seen: { loading: unknown; initialized: boolean }[] = [];
+  let probe: () => { loading: unknown; initialized: boolean } = () => ({
+    loading: null,
+    initialized: false,
+  });
+  const warm = vi.fn(async () => {
+    await Promise.resolve();
+    seen.push(probe());
+  });
+  setRenderWarmUp(warm);
+  const { scene, screens, rooms } = await setup();
+  probe = () => ({
+    loading: scene.query('loading'),
+    initialized: rooms[0]?.ctx !== undefined,
+  });
+  screens.actions.selectNode(screens.view.nodes[0]!.id);
+  await scene.whenReady();
+  expect(warm).toHaveBeenCalledOnce();
+  expect(seen).toEqual([{ loading: true, initialized: true }]);
+  expect(scene.query('loading')).toBe(false);
+});
+
+it('dispose podczas rozgrzewki renderu zwalnia pokój i podpięte zdarzenia', async () => {
+  let release!: () => void;
+  let started!: () => void;
+  const warming = new Promise<void>((done) => {
+    started = done;
+  });
+  setRenderWarmUp(
+    () =>
+      new Promise<void>((done) => {
+        release = done;
+        started();
+      }),
+  );
+  const { scene, screens, rooms, bus } = await setup();
+  screens.actions.selectNode(screens.view.nodes[0]!.id);
+  await warming;
+  scene.dispose();
+  release();
+  await scene.whenReady();
+  expect(rooms[0]!.disposed).toBe(true);
+  expect(handlerCount(bus)).toBe(0);
+});
+
+it('błąd rozgrzewki renderu nie blokuje wejścia do pokoju', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  setRenderWarmUp(() => Promise.reject(new Error('GPU')));
+  const { scene, screens, rooms } = await setup();
+  screens.actions.selectNode(screens.view.nodes[0]!.id);
+  await scene.whenReady();
+  expect(rooms).toHaveLength(1);
+  expect(scene.query('loading')).toBe(false);
+  expect(warn).toHaveBeenCalled();
 });
 
 it('dwa przebiegi z tym samym seedem dają identyczny runLog', async () => {
