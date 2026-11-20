@@ -1,15 +1,22 @@
 import {
   AdditiveBlending,
   Color,
+  DataTexture,
   DoubleSide,
-  DynamicDrawUsage,
+  FloatType,
   Group,
-  InstancedMesh,
+  InstancedBufferAttribute,
+  InstancedBufferGeometry,
+  Matrix3,
   Matrix4,
+  Mesh,
   MeshBasicMaterial,
+  NearestFilter,
   NormalBlending,
   PlaneGeometry,
   Quaternion,
+  RGBAFormat,
+  Vector2,
   Vector3,
 } from 'three';
 import type { Camera } from 'three';
@@ -58,23 +65,116 @@ export function wrapRainAxis(
   );
 }
 
+/**
+ * Ruch kropli liczy shader wierzchołków. Atrybuty (stałe po inicjalizacji): `rainStart` — położenie
+ * początkowe względem kotwicy, `rainSeed` — (faza, sin(i), parzystość). CPU co klatkę zmienia tylko
+ * uniformy: sumy przebytej drogi (`rainShift`, `rainScatter`, `rainSway`), środek zawijania
+ * (kamera), pochylenie smugi i rozmiary. Równania muszą odpowiadać `Weather.dropCenter`.
+ */
+export const RAIN_VERTEX_DECLARATIONS = /* glsl */ `
+attribute vec3 rainStart;
+attribute vec3 rainSeed;
+uniform vec3 rainCenter;
+uniform vec3 rainShift;
+uniform vec3 rainSpan;
+uniform vec3 rainHalf;
+uniform vec2 rainScatter;
+uniform vec2 rainSway;
+uniform vec2 rainSize;
+uniform mat3 rainTilt;
+uniform float rainFloorY;
+uniform float rainNearSq;
+uniform float rainShelterCount;
+uniform float rainTintMode;
+uniform vec3 rainTintA;
+uniform vec3 rainTintB;
+uniform sampler2D rainShelters;
+varying vec3 vRainTint;
+`;
+
+export const RAIN_VERTEX_POSITION = /* glsl */ `
+vec3 rainRel = rainStart + rainShift;
+rainRel.xz += rainSeed.y * rainScatter;
+float rainPhase = rainSway.y + rainSeed.x;
+rainRel.x += rainSway.x * sin(rainPhase);
+rainRel.z -= rainSway.x * cos(rainPhase);
+rainRel = mod(rainRel + 0.5 * rainSpan, rainSpan) - 0.5 * rainSpan;
+vec3 rainPos = rainCenter + rainRel;
+bool rainHidden = rainPos.y < rainFloorY || dot(rainRel, rainRel) < rainNearSq;
+for (int s = 0; s < int(rainShelterCount) && !rainHidden; s++) {
+  vec3 shelterCenter = texelFetch(rainShelters, ivec2(0, s), 0).xyz;
+  vec3 shelterHalf = texelFetch(rainShelters, ivec2(1, s), 0).xyz;
+  rainHidden = all(lessThanEqual(abs(rainPos - shelterCenter), shelterHalf + rainHalf));
+}
+vec2 rainToCamera = rainCenter.xz - rainPos.xz;
+float rainDistance = length(rainToCamera);
+float rainCos = rainDistance > 0.0 ? rainToCamera.y / rainDistance : 1.0;
+float rainSin = rainDistance > 0.0 ? rainToCamera.x / rainDistance : 0.0;
+vec3 rainAxisX = (rainCos * rainTilt[0] - rainSin * rainTilt[2]) * rainSize.x;
+vec3 rainAxisY = rainTilt[1] * rainSize.y;
+vec3 transformed = rainHidden ? rainPos : rainPos + rainAxisX * position.x + rainAxisY * position.y;
+vRainTint = rainTintMode > 0.5 ? (rainSeed.z > 0.5 ? rainTintB : rainTintA) : vec3(1.0);
+`;
+
+/** Strefy bez deszczu dla shadera: dwa teksele na strefę (środek, połowa wymiarów). */
+function shelterTexture(shelters: readonly RainShelterDef[]): DataTexture {
+  const data = new Float32Array(Math.max(1, shelters.length) * 8);
+  shelters.forEach(({ position, size }, i) => {
+    data.set([position.x, position.y, position.z, 0], i * 8);
+    data.set([size.x / 2, size.y / 2, size.z / 2, 0], i * 8 + 4);
+  });
+  const texture = new DataTexture(
+    data,
+    2,
+    Math.max(1, shelters.length),
+    RGBAFormat,
+    FloatType,
+  );
+  texture.minFilter = NearestFilter;
+  texture.magFilter = NearestFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 export class Weather {
   readonly root = new Group();
-  readonly rain: InstancedMesh<PlaneGeometry, MeshBasicMaterial>;
+  readonly rain: Mesh<InstancedBufferGeometry, MeshBasicMaterial>;
   readonly splashes: CityParticleBatch;
   readonly splashDrops: CityParticleBatch;
   readonly params: RainParams;
   flash = 0;
   stormEnabled = false;
-  private readonly drops: Vector3[];
   private readonly rng: Rng;
+  private readonly dropCount: number;
+  private readonly dropStart: Float32Array;
+  private readonly dropSeed: Float32Array;
   private readonly tilt = new Quaternion();
   private readonly tiltMatrix = new Matrix4();
+  private readonly tilt3 = new Matrix3();
+  private readonly shelterTexture: DataTexture;
+  readonly rainUniforms = {
+    rainCenter: { value: new Vector3() },
+    rainShift: { value: new Vector3() },
+    rainSpan: { value: new Vector3() },
+    rainHalf: { value: new Vector3() },
+    rainScatter: { value: new Vector2() },
+    rainSway: { value: new Vector2() },
+    rainSize: { value: new Vector2() },
+    rainTilt: { value: new Matrix3() },
+    rainFloorY: { value: 0 },
+    rainNearSq: { value: 0 },
+    rainShelterCount: { value: 0 },
+    rainTintMode: { value: 0 },
+    rainTintA: { value: new Color() },
+    rainTintB: { value: new Color() },
+    rainShelters: { value: null as DataTexture | null },
+  };
   private readonly cameraPosition = new Vector3();
   private readonly direction = new Vector3();
   private readonly up = new Vector3(0, 1, 0);
   private readonly splashColor = new Color();
-  private readonly flakeColor = new Color();
+  private readonly dropPoint = new Vector3();
   private readonly flakeMask = { value: 0 };
   private readonly flakeSoftEdge = { value: tuning.weather.flakeSoftEdge };
   private readonly ashEdgeRoughness = {
@@ -86,13 +186,16 @@ export class Weather {
   private readonly floorPoint = new Vector3();
   private readonly rainHalfSize = new Vector3();
   private readonly splashLimit: number;
-  private readonly rainState = {
-    count: -1,
-    windX: 0,
-    speed: 0,
-    floorY: 0,
-    center: new Vector3(),
-  };
+  /** Droga przebyta przez wszystkie krople (suma wiatru i opadania), niezależnie od kamery. */
+  private readonly travel = new Vector3();
+  private readonly anchor = new Vector3();
+  private readonly shift = new Vector3();
+  private scatterTravel = new Vector2();
+  private swayM = 0;
+  private swayPhase = 0;
+  private fallTimeS = 0;
+  private flakeNearSq = 0;
+  private dropsDrawn = 0;
   private initialized = false;
   private disposed = false;
   private splashBudget = 0;
@@ -120,10 +223,17 @@ export class Weather {
       ...params,
     };
     this.rng = new Rng(seed);
-    this.drops = Array.from(
-      { length: Math.max(1, Math.floor(t.rainMax)) },
-      () => new Vector3(),
-    );
+    this.dropCount = Math.max(1, Math.floor(t.rainMax));
+    this.dropStart = new Float32Array(this.dropCount * 3);
+    this.dropSeed = new Float32Array(this.dropCount * 3);
+    for (let i = 0; i < this.dropCount; i++) {
+      this.dropSeed[i * 3] = i % (Math.PI * 2);
+      this.dropSeed[i * 3 + 1] = Math.sin(i);
+      this.dropSeed[i * 3 + 2] = i % 2;
+    }
+    this.shelterTexture = shelterTexture(shelters);
+    this.rainUniforms.rainShelters.value = this.shelterTexture;
+    this.rainUniforms.rainShelterCount.value = shelters.length;
     const material = new MeshBasicMaterial({
       color: this.params.color,
       opacity: this.params.opacity,
@@ -135,7 +245,7 @@ export class Weather {
     });
     material.userData.bloom = false;
     material.onBeforeCompile = (shader) => {
-      Object.assign(shader.uniforms, {
+      Object.assign(shader.uniforms, this.rainUniforms, {
         flakeMask: this.flakeMask,
         flakeSoftEdge: this.flakeSoftEdge,
         ashEdgeRoughness: this.ashEdgeRoughness,
@@ -144,21 +254,24 @@ export class Weather {
       shader.vertexShader = shader.vertexShader
         .replace(
           '#include <common>',
-          '#include <common>\nvarying vec2 vFlakeUv;',
+          `#include <common>\nvarying vec2 vFlakeUv;\n${RAIN_VERTEX_DECLARATIONS}`,
         )
-        .replace(
-          '#include <uv_vertex>',
-          '#include <uv_vertex>\nvFlakeUv = uv;',
-        );
+        .replace('#include <uv_vertex>', '#include <uv_vertex>\nvFlakeUv = uv;')
+        .replace('#include <begin_vertex>', RAIN_VERTEX_POSITION);
       shader.fragmentShader = shader.fragmentShader
         .replace(
           '#include <common>',
           `#include <common>
           varying vec2 vFlakeUv;
+          varying vec3 vRainTint;
           uniform float flakeMask, flakeSoftEdge, ashEdgeRoughness, ashEdgeFrequency;
           float ashHash(vec2 cell) {
             return fract(sin(dot(cell, vec2(127.1, 311.7))) * 43758.5453);
           }`,
+        )
+        .replace(
+          '#include <color_fragment>',
+          '#include <color_fragment>\ndiffuseColor.rgb *= vRainTint;',
         )
         .replace(
           '#include <alphamap_fragment>',
@@ -177,15 +290,25 @@ export class Weather {
           }`,
         );
     };
-    this.rain = new InstancedMesh(
-      new PlaneGeometry(1, 1),
-      material,
-      this.drops.length,
+    const geometry = new InstancedBufferGeometry();
+    const quad = new PlaneGeometry(1, 1);
+    geometry.index = quad.index;
+    geometry.setAttribute('position', quad.getAttribute('position'));
+    geometry.setAttribute('uv', quad.getAttribute('uv'));
+    geometry.setAttribute('normal', quad.getAttribute('normal'));
+    geometry.setAttribute(
+      'rainStart',
+      new InstancedBufferAttribute(this.dropStart, 3),
     );
-    this.rain.instanceMatrix.setUsage(DynamicDrawUsage);
+    geometry.setAttribute(
+      'rainSeed',
+      new InstancedBufferAttribute(this.dropSeed, 3),
+    );
+    geometry.instanceCount = 0;
+    this.rain = new Mesh(geometry, material);
     this.rain.frustumCulled = false;
     this.rain.userData.noOutline = true;
-    this.rain.count = 0;
+    this.rain.visible = false;
     this.splashLimit = Math.max(0, Math.floor(t.rainSplashMax));
     // Pierścienie i krople dzielą łączny limit rozbryzgów.
     this.splashes = new CityParticleBatch(
@@ -204,7 +327,12 @@ export class Weather {
   }
 
   get capacity(): number {
-    return this.drops.length;
+    return this.dropCount;
+  }
+
+  /** Liczba rysowanych kropli w ostatniej klatce. */
+  get rainCount(): number {
+    return this.dropsDrawn;
   }
 
   setProfile(profile: WeatherProfile): void {
@@ -221,18 +349,12 @@ export class Weather {
     this.flakeMask.value = flakes ? (p.kind === 'ash' ? 2 : 1) : 0;
     this.rain.material.blending = flakes ? NormalBlending : AdditiveBlending;
     this.rain.material.needsUpdate = true;
+    this.rainUniforms.rainTintMode.value = flakes ? 1 : 0;
     if (flakes) {
       this.rain.material.color.set('#ffffff');
-      for (let i = 0; i < this.capacity; i++) {
-        this.flakeColor.set(i % 2 === 0 ? p.color : flakes.secondaryColor);
-        this.rain.setColorAt(i, this.flakeColor);
-      }
-    } else if (this.rain.instanceColor) {
-      this.flakeColor.set('#ffffff');
-      for (let i = 0; i < this.capacity; i++)
-        this.rain.setColorAt(i, this.flakeColor);
+      this.rainUniforms.rainTintA.value.set(p.color);
+      this.rainUniforms.rainTintB.value.set(flakes.secondaryColor);
     }
-    if (this.rain.instanceColor) this.rain.instanceColor.needsUpdate = true;
     this.stormEnabled = profile.lightning.enabled;
     this.flash = 0;
     this.elapsed = 0;
@@ -284,10 +406,12 @@ export class Weather {
     const center = this.cameraPosition;
     const count = this.params.enabled
       ? Math.floor(
-          this.drops.length * Math.max(0, Math.min(1, this.params.density)),
+          this.dropCount * Math.max(0, Math.min(1, this.params.density)),
         )
       : 0;
-    this.rain.count = count;
+    this.dropsDrawn = count;
+    this.rain.geometry.instanceCount = count;
+    this.rain.visible = count > 0;
     const flakes =
       profile &&
       (profile.precipitation.kind === 'snow' ||
@@ -298,7 +422,6 @@ export class Weather {
     this.flakeSoftEdge.value = tuning.weather.flakeSoftEdge;
     this.ashEdgeRoughness.value = tuning.weather.ashEdgeRoughness;
     this.ashEdgeFrequency.value = tuning.weather.ashEdgeFrequency;
-    const flakeNearSq = tuning.weather.flakeNearM ** 2;
     this.rain.material.opacity = this.params.opacity;
     this.splashes.setOpacity(this.params.opacity);
     this.splashDrops.setOpacity(this.params.opacity);
@@ -323,134 +446,43 @@ export class Weather {
       (Math.abs(this.direction.y) * length + width) / 2,
       (Math.abs(this.direction.z) * length + width) / 2,
     );
-    const unchanged =
-      !profile &&
-      dt === 0 &&
-      this.initialized &&
-      this.rainState.count === count &&
-      this.rainState.windX === this.params.windX &&
-      this.rainState.speed === this.params.speed &&
-      this.rainState.floorY === this.floorY &&
-      this.rainState.center.equals(center);
-    this.rainState.count = count;
-    this.rainState.windX = this.params.windX;
-    this.rainState.speed = this.params.speed;
-    this.rainState.floorY = this.floorY;
-    this.rainState.center.copy(center);
+    if (!this.initialized) this.seedDrops(center);
     // Pochylenie smugi jest wspólne dla klatki; kropla dokłada tylko obrót wokół Y do kamery.
-    const q = this.tiltMatrix.makeRotationFromQuaternion(
+    this.tiltMatrix.makeRotationFromQuaternion(
       this.tilt.setFromUnitVectors(this.up, flakes ? this.up : this.direction),
-    ).elements;
-    const q0x = q[0]!,
-      q0y = q[1]!,
-      q0z = q[2]!;
-    const q1x = q[4]! * length,
-      q1y = q[5]! * length,
-      q1z = q[6]! * length;
-    const q2x = q[8]!,
-      q2y = q[9]!,
-      q2z = q[10]!;
-    const out = this.rain.instanceMatrix.array;
-    // Krople poza rysowaną pulą są tylko losowane w pierwszej klatce (stała kolejność RNG);
-    // zawijanie jest okresowe, więc wystarczy je wykonać, gdy kropla wróci do puli.
-    const active = unchanged ? 0 : this.initialized ? count : this.drops.length;
-    for (let i = 0; i < active; i++) {
-      const p = this.drops[i]!;
-      if (!this.initialized)
-        p.set(
-          center.x + this.rng.float(-t.rainWidthM / 2, t.rainWidthM / 2),
-          center.y + this.rng.float(-t.rainHeightM / 2, t.rainHeightM / 2),
-          center.z + this.rng.float(-t.rainDepthM / 2, t.rainDepthM / 2),
-        );
-      const oldY = p.y;
-      if (i < count) {
-        if (flakes) {
-          const phase = (this.elapsed * Math.PI * 2) / flakes.swayPeriodS + i;
-          const flutter = flakes.swayM * ((Math.PI * 2) / flakes.swayPeriodS);
-          const scatter = 1 + flakes.windScatter * Math.sin(i);
-          p.x += (this.params.windX * scatter + Math.cos(phase) * flutter) * dt;
-          p.z += (this.windZ * scatter + Math.sin(phase) * flutter) * dt;
-        } else {
-          p.x += this.params.windX * dt;
-          p.z += this.windZ * dt;
-        }
-        p.y -= Math.max(0, this.params.speed) * dt;
-      }
-      if (
-        !flakes &&
-        i < count &&
-        oldY > this.floorY &&
-        p.y <= this.floorY &&
-        this.splashBudget >= 1 &&
-        this.splashLimit >= 2 &&
-        dt > 0 &&
-        !isRainSheltered(
-          this.floorPoint.set(p.x, this.floorY, p.z),
-          this.shelters,
-        )
-      ) {
-        this.splashBudget--;
-        const ring = this.splashes.pool.spawn(t.rainSplashLifeS);
-        ring.x = p.x;
-        ring.y = this.floorY + t.surfaceOffsetM;
-        ring.z = p.z;
-        ring.size = t.rainSplashRadiusM;
-        ring.color = this.splashColor.getHex();
-        const drop = this.splashDrops.pool.spawn(t.rainSplashLifeS);
-        drop.x = p.x;
-        drop.y = this.floorY + t.surfaceOffsetM;
-        drop.z = p.z;
-        drop.vy = this.rng.next() * t.rainSplashRiseMS;
-        drop.vx = this.rng.float(-t.rainSplashDriftMS, t.rainSplashDriftMS);
-        drop.vz = this.rng.float(-t.rainSplashDriftMS, t.rainSplashDriftMS);
-        drop.size = t.dripSizeM;
-        drop.color = ring.color;
-      }
-      p.x = wrapRainAxis(p.x, center.x, t.rainWidthM);
-      p.y = wrapRainAxis(p.y, center.y, t.rainHeightM);
-      p.z = wrapRainAxis(p.z, center.z, t.rainDepthM);
-      if (i >= count) continue;
-      const o = i * 16;
-      out[o + 3] = 0;
-      out[o + 7] = 0;
-      out[o + 11] = 0;
-      out[o + 12] = p.x;
-      out[o + 13] = p.y;
-      out[o + 14] = p.z;
-      out[o + 15] = 1;
-      if (
-        p.y < this.floorY ||
-        (flakes && p.distanceToSquared(center) < flakeNearSq) ||
-        isRainSheltered(p, this.shelters, this.rainHalfSize)
-      ) {
-        out.fill(0, o, o + 11);
-        continue;
-      }
-      // cos/sin kąta atan2(dx, dz) bez funkcji trygonometrycznych.
-      const dx = center.x - p.x;
-      const dz = center.z - p.z;
-      const h = Math.hypot(dx, dz);
-      const c = h > 0 ? dz / h : 1;
-      const s = h > 0 ? dx / h : 0;
-      out[o] = (c * q0x - s * q2x) * width;
-      out[o + 1] = (c * q0y - s * q2y) * width;
-      out[o + 2] = (c * q0z - s * q2z) * width;
-      out[o + 4] = q1x;
-      out[o + 5] = q1y;
-      out[o + 6] = q1z;
-      out[o + 8] = s * q0x + c * q2x;
-      out[o + 9] = s * q0y + c * q2y;
-      out[o + 10] = s * q0z + c * q2z;
-    }
-    this.initialized = true;
-    if (!unchanged) {
-      // Do GPU trafia tylko rysowany zakres; zakresy z nierenderowanych klatek nie narastają.
-      this.rain.instanceMatrix.clearUpdateRanges();
-      if (count > 0) {
-        this.rain.instanceMatrix.addUpdateRange(0, count * 16);
-        this.rain.instanceMatrix.needsUpdate = true;
-      }
-    }
+    );
+    this.tilt3.setFromMatrix4(this.tiltMatrix);
+    // Wszystkie krople przebywają tę samą drogę; różnice (rozrzut, kołysanie płatków) liczy shader.
+    this.travel.x += this.params.windX * dt;
+    this.travel.z += this.windZ * dt;
+    this.travel.y -= Math.max(0, this.params.speed) * dt;
+    this.fallTimeS += dt;
+    this.flakeNearSq = flakes ? tuning.weather.flakeNearM ** 2 : 0;
+    this.swayM = flakes?.swayM ?? 0;
+    this.swayPhase = flakes
+      ? ((this.fallTimeS * Math.PI * 2) / flakes.swayPeriodS) % (Math.PI * 2)
+      : 0;
+    this.scatterTravel.set(
+      flakes ? flakes.windScatter * this.travel.x : 0,
+      flakes ? flakes.windScatter * this.travel.z : 0,
+    );
+    this.shift.set(
+      wrapRainAxis(this.anchor.x + this.travel.x - center.x, 0, t.rainWidthM),
+      wrapRainAxis(this.anchor.y + this.travel.y - center.y, 0, t.rainHeightM),
+      wrapRainAxis(this.anchor.z + this.travel.z - center.z, 0, t.rainDepthM),
+    );
+    const u = this.rainUniforms;
+    u.rainCenter.value.copy(center);
+    u.rainShift.value.copy(this.shift);
+    u.rainSpan.value.set(t.rainWidthM, t.rainHeightM, t.rainDepthM);
+    u.rainHalf.value.copy(this.rainHalfSize);
+    u.rainScatter.value.copy(this.scatterTravel);
+    u.rainSway.value.set(this.swayM, this.swayPhase);
+    u.rainSize.value.set(width, length);
+    u.rainTilt.value.copy(this.tilt3);
+    u.rainFloorY.value = this.floorY;
+    u.rainNearSq.value = this.flakeNearSq;
+    if (!flakes && count > 0 && dt > 0) this.spawnSplashes(count, dt);
     this.splashes.render(camera, t.splashGrowth);
     this.splashDrops.render(camera);
     if (profile) {
@@ -475,6 +507,147 @@ export class Weather {
       this.rng.chance(1 - Math.exp(-dt * t.stormRate))
     )
       this.flash = 1;
+  }
+
+  /** Środek kropli w świecie (te same równania co `RAIN_VERTEX_POSITION`, bez ukrywania). */
+  dropCenter(index: number, out: Vector3): Vector3 {
+    const t = tuning.city;
+    const k = index * 3;
+    const sinI = this.dropSeed[k + 1]!;
+    const phase = this.swayPhase + this.dropSeed[k]!;
+    const center = this.rainUniforms.rainCenter.value;
+    return out.set(
+      center.x +
+        wrapRainAxis(
+          this.dropStart[k]! +
+            this.shift.x +
+            sinI * this.scatterTravel.x +
+            this.swayM * Math.sin(phase),
+          0,
+          t.rainWidthM,
+        ),
+      center.y +
+        wrapRainAxis(this.dropStart[k + 1]! + this.shift.y, 0, t.rainHeightM),
+      center.z +
+        wrapRainAxis(
+          this.dropStart[k + 2]! +
+            this.shift.z +
+            sinI * this.scatterTravel.y -
+            this.swayM * Math.cos(phase),
+          0,
+          t.rainDepthM,
+        ),
+    );
+  }
+
+  /**
+   * Macierz kropli taka, jaką rysuje shader (referencja CPU: testy, rozbryzgi). Zerowa skala
+   * oznacza kroplę ukrytą: pod podłogą, zbyt blisko kamery (płatki) albo w strefie osłoniętej.
+   */
+  dropMatrix(index: number, out: Matrix4): Matrix4 {
+    const p = this.dropCenter(index, this.dropPoint);
+    const u = this.rainUniforms;
+    const center = u.rainCenter.value;
+    const rel = this.floorPoint.copy(p).sub(center);
+    const e = out.elements;
+    e.fill(0);
+    e[12] = p.x;
+    e[13] = p.y;
+    e[14] = p.z;
+    e[15] = 1;
+    if (
+      p.y < this.floorY ||
+      rel.lengthSq() < u.rainNearSq.value ||
+      isRainSheltered(p, this.shelters, u.rainHalf.value)
+    )
+      return out;
+    const q = this.tiltMatrix.elements;
+    const width = u.rainSize.value.x;
+    const length = u.rainSize.value.y;
+    const dx = center.x - p.x;
+    const dz = center.z - p.z;
+    const h = Math.hypot(dx, dz);
+    const c = h > 0 ? dz / h : 1;
+    const s = h > 0 ? dx / h : 0;
+    e[0] = (c * q[0]! - s * q[8]!) * width;
+    e[1] = (c * q[1]! - s * q[9]!) * width;
+    e[2] = (c * q[2]! - s * q[10]!) * width;
+    e[4] = q[4]! * length;
+    e[5] = q[5]! * length;
+    e[6] = q[6]! * length;
+    e[8] = s * q[0]! + c * q[8]!;
+    e[9] = s * q[1]! + c * q[9]!;
+    e[10] = s * q[2]! + c * q[10]!;
+    return out;
+  }
+
+  /** Położenia początkowe losowane raz, przy pierwszej klatce (stała kolejność RNG). */
+  private seedDrops(center: Vector3): void {
+    const t = tuning.city;
+    this.anchor.copy(center);
+    for (let i = 0; i < this.dropCount; i++) {
+      this.dropStart[i * 3] = this.rng.float(
+        -t.rainWidthM / 2,
+        t.rainWidthM / 2,
+      );
+      this.dropStart[i * 3 + 1] = this.rng.float(
+        -t.rainHeightM / 2,
+        t.rainHeightM / 2,
+      );
+      this.dropStart[i * 3 + 2] = this.rng.float(
+        -t.rainDepthM / 2,
+        t.rainDepthM / 2,
+      );
+    }
+    const start = this.rain.geometry.getAttribute('rainStart');
+    start.needsUpdate = true;
+    this.initialized = true;
+  }
+
+  /**
+   * Rozbryzg powstaje tam, gdzie losowo wybrana kropla przecina w tej klatce podłogę.
+   * Pozycje liczy `dropCenter`, więc nie trzeba przeglądać wszystkich kropli.
+   */
+  private spawnSplashes(count: number, dt: number): void {
+    const t = tuning.city;
+    if (this.splashLimit < 2) return;
+    const fall = Math.max(0, this.params.speed) * dt;
+    const p = this.dropPoint;
+    let spawned = 0;
+    while (this.splashBudget >= 1 && spawned < this.splashLimit) {
+      let hit = false;
+      for (let probe = 0; probe < tuning.weather.splashProbes; probe++) {
+        this.dropCenter(this.rng.int(0, count - 1), p);
+        if (p.y > this.floorY || p.y + fall <= this.floorY) continue;
+        if (
+          isRainSheltered(
+            this.floorPoint.set(p.x, this.floorY, p.z),
+            this.shelters,
+          )
+        )
+          continue;
+        const ring = this.splashes.pool.spawn(t.rainSplashLifeS);
+        ring.x = p.x;
+        ring.y = this.floorY + t.surfaceOffsetM;
+        ring.z = p.z;
+        ring.size = t.rainSplashRadiusM;
+        ring.color = this.splashColor.getHex();
+        const drop = this.splashDrops.pool.spawn(t.rainSplashLifeS);
+        drop.x = p.x;
+        drop.y = this.floorY + t.surfaceOffsetM;
+        drop.z = p.z;
+        drop.vy = this.rng.next() * t.rainSplashRiseMS;
+        drop.vx = this.rng.float(-t.rainSplashDriftMS, t.rainSplashDriftMS);
+        drop.vz = this.rng.float(-t.rainSplashDriftMS, t.rainSplashDriftMS);
+        drop.size = t.dripSizeM;
+        drop.color = ring.color;
+        hit = true;
+        break;
+      }
+      if (!hit) break;
+      this.splashBudget--;
+      spawned++;
+    }
   }
 
   private updateDust(
@@ -518,6 +691,7 @@ export class Weather {
     this.splashes.pool.clear();
     this.splashDrops.pool.clear();
     this.dust?.pool.clear();
+    this.shelterTexture.dispose();
     disposeCityGroup(this.root);
   }
 }

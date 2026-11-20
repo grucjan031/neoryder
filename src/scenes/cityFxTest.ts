@@ -342,7 +342,7 @@ export class CityFxTest implements Scene {
   query(name: string): unknown {
     if (name === 'city')
       return {
-        rain: this.weather.rain.count,
+        rain: this.weather.rainCount,
         splashes: this.weather.splashCount,
         lights: this.cityLights.pool.length,
         steam: this.ambient.steam.pool.count,

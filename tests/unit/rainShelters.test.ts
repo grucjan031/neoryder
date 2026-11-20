@@ -23,6 +23,14 @@ const shelter = {
   size: { x: 12, y: 4, z: 24 },
 };
 
+const rainMatrices = (weather: Weather): number[] => {
+  const matrix = new Matrix4();
+  const out: number[] = [];
+  for (let i = 0; i < weather.rainCount; i++)
+    out.push(...weather.dropMatrix(i, matrix).elements);
+  return out;
+};
+
 describe('strefy bez deszczu', () => {
   it('waliduje skończony środek i dodatnie wymiary, pole jest opcjonalne', () => {
     expect(rainShelterSchema.parse(shelter)).toEqual(shelter);
@@ -137,9 +145,9 @@ describe('strefy bez deszczu', () => {
     let hidden = 0;
     let outside = 0;
     let above = 0;
-    for (let i = 0; i < weather.rain.count; i++) {
-      baseline.rain.getMatrixAt(i, matrix);
-      weather.rain.getMatrixAt(i, actual);
+    for (let i = 0; i < weather.rainCount; i++) {
+      baseline.dropMatrix(i, matrix);
+      weather.dropMatrix(i, actual);
       point.setFromMatrixPosition(matrix);
       if (isRainSheltered(point, [shelter], halfStreak)) {
         expect(scale.setFromMatrixScale(actual).length()).toBe(0);
@@ -154,9 +162,9 @@ describe('strefy bez deszczu', () => {
     expect(hidden).toBeGreaterThan(0);
     expect(outside).toBeGreaterThan(0);
     expect(above).toBeGreaterThan(0);
-    const frozen = Array.from(weather.rain.instanceMatrix.array);
+    const frozen = rainMatrices(weather);
     weather.update(0, 10, cam);
-    expect(Array.from(weather.rain.instanceMatrix.array)).toEqual(frozen);
+    expect(rainMatrices(weather)).toEqual(frozen);
   });
 
   it('nie emituje rozbryzgów na osłoniętej podłodze, na otwartej nadal pada', () => {
@@ -200,9 +208,9 @@ describe('strefy bez deszczu', () => {
     dressing.render(0, new PerspectiveCamera());
     const matrix = new Matrix4();
     const scale = new Vector3();
-    expect(dressing.weather!.rain.count).toBeGreaterThan(0);
-    for (let i = 0; i < dressing.weather!.rain.count; i++) {
-      dressing.weather!.rain.getMatrixAt(i, matrix);
+    expect(dressing.weather!.rainCount).toBeGreaterThan(0);
+    for (let i = 0; i < dressing.weather!.rainCount; i++) {
+      dressing.weather!.dropMatrix(i, matrix);
       expect(scale.setFromMatrixScale(matrix).length()).toBe(0);
     }
   });

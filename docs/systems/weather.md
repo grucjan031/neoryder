@@ -90,7 +90,8 @@ dodawany do nieba i mgły) opisuje [render.md](render.md).
 
 Jedna pula 4000 instancji (`tuning.city.rainMax`) w objętości 28 × 14 × 28 m
 (`rainWidthM/HeightM/DepthM`) wokół kamery; pozycje początkowe losuje kosmetyczny
-`Rng` (stała kolejność), potem zawijanie modulo względem kamery. Rysowanych jest
+`Rng` (stała kolejność, przy pierwszej klatce), potem zawijanie modulo względem kamery.
+Ruch liczy shader wierzchołków (patrz „Ruch w shaderze”), nie CPU. Rysowanych jest
 `floor(4000 * density * quality.rainDensity)` instancji; ruch każdej kropli to
 (`windX`, −`speed`, `windZ`) na sekundę. Smuga to płaski quad addytywny
 (`opacity`, `color` profilu, `toneMapped=false`, bez zapisu głębi, bez bloomu, bez
@@ -101,7 +102,8 @@ wektora (−`windX`, `speed`, −`windZ`), obrót wokół tej osi ku kamerze. Wi
 znormalizowanego kierunku XZ. Smugi poniżej `floorY` i wewnątrz stref bez deszczu
 (obwiednia całej smugi) mają skalę zero.
 
-Przecięcie `floorY` przez kroplę (poza strefą) wydaje parę: pierścień
+Przecięcie `floorY` przez kroplę (poza strefą; losowana jest kropla, która w tej klatce przecina
+podłogę, patrz „Rozbryzgi bez pętli po kroplach”) wydaje parę: pierścień
 (`RingGeometry(0,72; 1)` płasko na `floorY + surfaceOffsetM`, promień
 `rainSplashRadiusM` 0,22 m, rozmiar × `(1 + splashGrowth * wiek/życie)` przy
 `splashGrowth` 2, życie `rainSplashLifeS` 0,28 s, jasność gaśnie liniowo) i kroplę (prędkość pionowa losowa 0..`rainSplashRiseMS`
@@ -109,6 +111,43 @@ Przecięcie `floorY` przez kroplę (poza strefą) wydaje parę: pierścień
 rozmiar `dripSizeM` 0,025). Kolor pary = kolor opadu. Budżet emisji rośnie o
 `dt * rainSplashRate (100) * density` na sekundę i jest obcięty do 1; dwie pule po
 150 instancji (połowa `rainSplashMax` 300). Płatki nie wydają rozbryzgów.
+
+### Ruch w shaderze
+
+`Weather.rain` to `Mesh` z `InstancedBufferGeometry` (quad 1 × 1) i `MeshBasicMaterial` z
+`onBeforeCompile`; nie ma `instanceMatrix`. Stałe atrybuty instancji (zapis raz, przy pierwszej
+klatce): `rainStart` (położenie początkowe względem kotwicy = pozycja kamery w pierwszej klatce)
+i `rainSeed` (faza `i mod 2π`, `sin(i)`, parzystość `i`). CPU co klatkę ustawia wyłącznie uniformy:
+
+| Uniform                                | Znaczenie                                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `rainCenter`                           | pozycja kamery (środek zawijania)                                                                                        |
+| `rainShift`                            | (kotwica + przebyta droga − kamera) zawinięte w objętość; droga = suma `windX·dt`, `−speed·dt`, `windZ·dt` (czas świata) |
+| `rainSpan`                             | wymiary objętości (`rainWidthM/HeightM/DepthM`)                                                                          |
+| `rainScatter`, `rainSway`              | płatki: `windScatter · droga_XZ` oraz (`swayM`, faza kołysania); dla deszczu zera                                        |
+| `rainTilt`, `rainSize`                 | pochylenie smugi (wspólne dla klatki) i (szerokość, długość)                                                             |
+| `rainFloorY`, `rainNearSq`, `rainHalf` | podłoga, kwadrat promienia ukrywania płatków przy kamerze, połowa obwiedni smugi                                         |
+| `rainShelters`, `rainShelterCount`     | tekstura RGBA32F 2 × N (środek, połowa wymiarów strefy), liczba stref                                                    |
+| `rainTintMode`, `rainTintA/B`          | płatki: naprzemienny kolor wg parzystości indeksu                                                                        |
+
+Shader (`RAIN_VERTEX_POSITION` w `src/vfx/weather.ts`): `rel = rainStart + rainShift`
+(+ rozrzut i kołysanie płatków: `x += swayM·sin(faza)`, `z −= swayM·cos(faza)`, czyli całka z
+równań ruchu płatka), zawinięcie `mod` do objętości wokół kamery, ukrycie (zdegenerowany quad)
+poniżej `floorY`, bliżej niż `flakeNearM` (płatki) i w strefie bez deszczu rozszerzonej o `rainHalf`,
+potem obrót quada wokół Y ku kamerze i pochylenie (`rainTilt`). Droga jest sumowana na CPU w
+podwójnej precyzji i zawijana przed wysłaniem, więc dokładność nie spada z czasem. `Weather.dropCenter`
+i `Weather.dropMatrix` to referencja CPU tych samych równań (testy, rozbryzgi). Gęstość zmienia
+`geometry.instanceCount`; przy zerowej gęstości `rain.visible = false`. Zmiana wobec poprzedniej wersji:
+krople poza rysowaną pulą też „przebywają drogę” (poprzednio były zamrożone), a zmiana profilu nie przesuwa
+faz kołysania (faza liczona z osobnego licznika, nie z `elapsed`).
+
+#### Rozbryzgi bez pętli po kroplach
+
+Budżet emisji bez zmian. Zamiast przeglądać wszystkie krople, `spawnSplashes` losuje (kosmetyczny
+`Rng`) do `tuning.weather.splashProbes` (256) indeksów rysowanych kropli na jeden rozbryzg i
+wybiera pierwszą, która w tej klatce przecina `floorY` (`y ≤ floorY < y + speed·dt`) poza strefą
+bez deszczu; rozbryzg powstaje w jej XZ. Brak trafienia kończy emisję w tej klatce (budżet
+zostaje). Rozkład jest równomierny (poprzednio: krople o najniższych indeksach).
 
 ### Płatki (snow, ash)
 
@@ -175,9 +214,9 @@ pyłem.
 
 Koszt: ta sama pula 4000 instancji i jedno wywołanie rysowania opadu;
 snow rysuje do 1520 płatków, ashfall do 1120 (przed mnożnikiem jakości).
-Brak dodatkowej puli i alokacji na płatek; tablica kolorów instancji powstaje
-przy pierwszym przełączeniu na płatki. Na aktywny płatek przypadają sin/cos
-kołysania i sin rozrzutu. Shader miejski dodaje jeden interpolowany float,
+Brak dodatkowej puli i alokacji na płatek; kolor naprzemienny wybiera shader z parzystości
+indeksu. Kołysanie (sin/cos) i rozrzut płatka liczy shader wierzchołków; CPU nie
+aktualizuje bufora kropli co klatkę (tylko uniformy). Shader miejski dodaje jeden interpolowany float,
 transformację normalnej na wierzchołek oraz maskę max/mnożenie, dwa mix
 (kolor, szorstkość) i mnożenie metaliczności na fragment, bez nowych próbek tekstur
 i przebiegów. Maska śniegu dodaje dwie próbki szumu proceduralnego na fragment

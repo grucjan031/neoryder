@@ -173,7 +173,9 @@ it.each([
       );
       expect(scene.query('weather')).toBe(room.weather);
       expect(calls).toBe(1);
-      if (room.blocks.some((b) => b.instance))
+      // Małe grupy modeli (do tuning.arena.instanceMergeTriangles) scalają się ze statyką, więc
+      // InstancedMesh zostają tylko tam, gdzie kopii jest dużo (kontenery, tory, wagony).
+      if (id === 'arenaContainerPort' || id === 'arenaRailYard')
         expect(instanced).toBeGreaterThan(1);
       if (id === 'arenaContainerPort')
         expect([...containerColors].sort()).toEqual([

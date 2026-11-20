@@ -13,7 +13,7 @@ import {
   Texture,
   Vector3,
 } from 'three';
-import type { Material, WebGLRenderer } from 'three';
+import type { BufferAttribute, Material, WebGLRenderer } from 'three';
 import { BloomPass, isSeeThrough } from '../../src/render/bloom';
 import { selectCityLights, CityLights } from '../../src/render/city/lights';
 import { CityTextures } from '../../src/render/city/resources';
@@ -116,17 +116,24 @@ it('CityLights.update używa tych samych obiektów roboczych między klatkami', 
   lights.dispose();
 });
 
-it('Weather nie wysyła instanceMatrix przy dt=0 bez zmian, ale robi to po ruchu kamery', () => {
+it('Weather nie przesyła buforów kropli co klatkę: ruch kamery zmienia tylko uniformy', () => {
   tuning.city.rainMax = 40;
   const weather = new Weather({ density: 1 });
   const camera = new PerspectiveCamera();
   weather.update(0.016, 0.016, camera);
-  const version = weather.rain.instanceMatrix.version;
-  weather.update(0, 0, camera);
-  expect(weather.rain.instanceMatrix.version).toBe(version);
+  const start = weather.rain.geometry.getAttribute(
+    'rainStart',
+  ) as BufferAttribute;
+  const seed = weather.rain.geometry.getAttribute(
+    'rainSeed',
+  ) as BufferAttribute;
+  const versions = [start.version, seed.version];
+  const shift = weather.rainUniforms.rainShift.value.clone();
   camera.position.x += 3;
-  weather.update(0, 0, camera);
-  expect(weather.rain.instanceMatrix.version).toBeGreaterThan(version);
+  for (let i = 0; i < 5; i++) weather.update(0.016, 0.016, camera);
+  expect([start.version, seed.version]).toEqual(versions);
+  expect(weather.rainUniforms.rainCenter.value.x).toBe(3);
+  expect(weather.rainUniforms.rainShift.value.equals(shift)).toBe(false);
   weather.dispose();
 });
 

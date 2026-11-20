@@ -1934,8 +1934,15 @@ a `readSplashAct(store?)` z `bootSplash.ts` czyta go z meta-zapisu (błąd = 1).
 (`render/staticBatch.ts`) scala zgodne siatki klonu GLB według materiału,
 z zachowaniem lokalnych transformacji. Geometrie wynikowe należą do sceny.
 Host dużej areny z `spawnRing` przygotowuje jeden szablon na model i rozmiar,
-potem tworzy instancje w komórkach `batchCellM`; cache źródłowych GLB pozostaje
+potem tworzy instancje i scala statykę, dzieląc je przestrzennie budżetem trójkątów
+(`tuning.arena.batchTriangleBudget`, dolny próg `batchCellM`); cache źródłowych GLB pozostaje
 niemutowany. Końcowe scalanie świata nadal odbywa się raz.
+`batchStaticGeometry(root, owned, { cellSize?, triangleBudget? })` bez `triangleBudget` dzieli stałą
+siatką `cellSize` (hub, pokoje); `partitionByTriangles(items, budget, minExtentM)` to czysty podział
+używany przez scalanie i instancje areny.
+`Weather.rain` jest `Mesh` z `InstancedBufferGeometry` (ruch kropli w shaderze wierzchołków,
+bez `instanceMatrix`); liczbę rysowanych kropli zwraca `Weather.rainCount`, a referencję CPU
+równań shadera `Weather.dropCenter(i, out)` i `Weather.dropMatrix(i, out)`.
 
 Materiały bloków Estakady: `gas_station_tiles`, `highway_asphalt_worn`,
 `scaffold_planks`, `hazard_stripes_worn`; odpowiadają identyfikatorom tekstur.
