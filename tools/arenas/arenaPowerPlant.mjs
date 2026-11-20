@@ -1100,5 +1100,19 @@ export default function generate() {
     ['E', -60, -3, 100],
   ])
     arena.point(id, vec(x, y, z), 5);
+  // Układ Kradzieży rdzenia (ADR 0011 D4): baza i ewakuacja ok. 184 m drogi od siebie.
+  arena.arenaMeta({
+    heist: {
+      playerSpawn: { x: 30, y: 0, z: -26.5 },
+      base: { x: -120, y: 0, z: 15 },
+      extraction: { x: 25, y: 0, z: -25 },
+      spawnPoints: [
+        { x: -91, y: 0, z: 36 },
+        { x: -132, y: 0, z: 63 },
+        { x: -166, y: 0, z: -26 },
+        { x: -49, y: 0, z: 31 },
+      ],
+    },
+  });
   return arena;
 }

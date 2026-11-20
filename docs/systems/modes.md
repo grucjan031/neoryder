@@ -4,6 +4,7 @@ Przejęcie (S2b-01) uruchamia się z tablicy misji, sekcja „Tryby areny”, al
 `?scene=run&mode=conquest&loadout=classic&debug=1`. Szturm jest drugim aktywnym
 trybem; Kradzież rdzenia jest dostępna z tablicy oraz przez URL. Tryb wyklucza parametr misji
 i nie zmienia kampanii.
+Szturm i Kradzież mają też duże areny (sekcja niżej); `?arena=<id>` w debug wybiera arenę.
 Skrót uruchomienia Przejęcia: `?scene=conquest&arena=arenaContainerPort&debug=1`.
 Skrót korzysta z tego samego hosta RunScene (debug `sceneId()` zwraca `run`).
 
@@ -116,6 +117,53 @@ nagród liczy dotychczasowa ekonomia. Opcjonalne `modeId` w stanie i podsumowani
 zachowuje zapis v4, bez migracji i zmian kolejności rozliczania. Wznowienie
 niezakończonej areny zaczyna jej pokój od początku; zapis zakończonej areny
 zachowuje wynik i idempotentne rozliczenie.
+
+## Szturm i Kradzież rdzenia na dużych arenach
+
+Oba tryby działają na dużych arenach ADR 0011, tak jak Przejęcie. Układy są w danych
+pokoju areny (`room.arena`), obok `points`:
+
+- `arena.assault: { sectors: [...] }` — 3–4 sektory w kształcie dawnego `assault.json`:
+  `playerSpawn`, `stations` (dokładnie dwie pozycje) i `spawnPoints`. Pozycje mają `y`.
+- `arena.heist: { playerSpawn, base, extraction, spawnPoints }`.
+- `arena.maxAlive` (do 12) nadpisuje limit żywych wrogów trybu, `arena.spawnRing` włącza
+  pierścień posiłków, `arena.navigationClearanceM` wyznacza margines wolnej podłogi.
+
+Pliki trybów dostają `arenas: string[]`. Dotychczasowe `roomId` + `sectors` / `base` /
+`extraction` zostają trybem na małym pokoju (`combatCorridor`, `combatRing`).
+`assaultForArena` i `heistForArena` (`modeSchema.ts`) łączą definicję trybu z danymi areny.
+
+**Wybór areny** jak w Przejęciu (`selectArena`, wspólne API): bez seeda pierwsza z listy
+(Szturm: Zajezdnia Maglev, Kradzież: Terminal kontenerowy), z wpisanym `?seed=` losowanie
+przez `Rng(seed).fork('<tryb>-arena')`, debugowy `?arena=<id>` ma pierwszeństwo i
+akceptuje id z listy albo dawny `roomId`. Tablica misji nie ma osobnego wyboru areny,
+więc z kryjówki Szturm i Kradzież startują na pierwszej arenie z listy, a przy wpisanym
+seedzie na wylosowanej. Mały pokój: `?scene=run&mode=assault&arena=combatCorridor&debug=1`
+albo `mode=heist&arena=combatRing`.
+
+**Walidacja** (`validateMode`, ładowanie `modes.ts`): pozycje stacji, bazy, ewakuacji, startów
+i spawnów mają wolne koło z marginesem nawigacji, strefy się nie nakładają, pula posiłków
+(`arena.spawnPoints` lub pokoju) ma co najmniej `tuning.modes.<tryb>.minRingSpawns` różnych
+punktów, a `ArenaNavigation.path` istnieje: start → stacje, spawny → stacje, sektor → następny
+sektor; w Kradzieży start → baza, baza ↔ ewakuacja, spawny → baza.
+
+**Wrogowie i posiłki.** `RoomScene` buduje `ArenaNavigation` i przekazuje `moveGoal`
+przez `navigation.next`: Szturm — obrona najbliższej niezniszczonej stacji, Kradzież — cele z
+reguł wyżej (nosiciel niesie rdzeń do bazy, pozostali gonią nosiciela albo rdzeń).
+Posiłki wybiera `selectArenaSpawn` jak w Przejęciu: pierścień `arena.spawnRing` wokół gracza,
+najpierw punkty zasłonięte geometrią, spośród nich najbliższe stacjom aktywnego sektora
+(Szturm) albo rdzeniowi (Kradzież). Pula to spawny sektora lub `heist.spawnPoints` oraz pula
+areny. Gracz startuje i odradza się w `playerSpawn` sektora lub Kradzieży (na małym pokoju
+`extraction`). Wspólne liczby feel: `tuning.modes.assault` i `tuning.modes.heist`
+(`spawnSightHeightM`, `minRingSpawns`, `zoneHeightM`, `carryFootOffsetM`).
+Strefy rdzenia (podniesienie, ewakuacja, dotarcie nosiciela do bazy) sprawdzają także
+wysokość (`zoneHeightM`), a upuszczony rdzeń na arenie leży na podłodze pod nosicielem.
+
+Nawigacja warstwowa łączy sąsiednie komórki tylko wtedy, gdy nie przecina ich przeszkoda
+w połowie odcinka (cienkie bariery na granicy komórek nie przepuszczają już wrogów).
+
+Pozycje i pokrycie: [arenas.md](arenas.md#szturm-i-kradzież-rdzenia-na-dużych-arenach).
+Testy: `tests/unit/arenaModes.test.ts`, budżety w `arenaPerf.test.ts`.
 
 ## Prezentacja i sprawdzenie
 

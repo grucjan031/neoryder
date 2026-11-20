@@ -2161,5 +2161,54 @@ export default function generate() {
     decals: site.decals,
     ambientFx: site.ambientFx,
   });
+  // Układ Szturmu (ADR 0011 D4): front przesuwa się przez trzy sektory.
+  arena.arenaMeta({
+    assault: {
+      sectors: [
+        {
+          playerSpawn: { x: -100, y: 0, z: 100 },
+          stations: [
+            { x: -34, y: 0, z: 112 },
+            { x: 62, y: 0, z: 96 },
+          ],
+          spawnPoints: [
+            { x: 78, y: 0, z: 64 },
+            { x: 116, y: 0, z: 99 },
+            { x: -28, y: -8, z: 48 },
+          ],
+        },
+        {
+          playerSpawn: { x: -90, y: -8, z: 44 },
+          stations: [
+            { x: -60, y: -8, z: 20 },
+            { x: -28, y: -8, z: 48 },
+          ],
+          spawnPoints: [
+            { x: -86, y: -8, z: -4 },
+            { x: -30, y: -8, z: 0 },
+            { x: -110, y: 0, z: -2 },
+            { x: -34, y: 0, z: 112 },
+            { x: 17.5, y: 0, z: 2.5 },
+            { x: -88, y: 0, z: -44 },
+          ],
+        },
+        {
+          playerSpawn: { x: -4, y: 0, z: -66 },
+          stations: [
+            { x: 40, y: 8, z: -25 },
+            { x: -50, y: 0, z: -75 },
+          ],
+          spawnPoints: [
+            { x: 36.5, y: 16, z: -52.5 },
+            { x: 51.5, y: 0, z: -52.5 },
+            { x: 17.5, y: 0, z: 2.5 },
+            { x: -18, y: 0, z: -95 },
+            { x: -88, y: 0, z: -44 },
+            { x: -92, y: 0, z: -113 },
+          ],
+        },
+      ],
+    },
+  });
   return arena;
 }

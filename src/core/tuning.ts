@@ -42,6 +42,19 @@ export const tuning = {
       edgeInsetM: 2,
       goalStopM: 0.5,
     },
+    /** Szturm na dużej arenie (pierścień posiłków jak w Przejęciu). */
+    assault: {
+      minRingSpawns: 16,
+      spawnSightHeightM: 1.5,
+    },
+    /** Kradzież rdzenia na dużej arenie; zoneHeightM dotyczy też małych pokoi (płaska podłoga, bez zmian). */
+    heist: {
+      minRingSpawns: 16,
+      spawnSightHeightM: 1.5,
+      zoneHeightM: 2,
+      /** Środek kapsuły gracza nad podłogą; upuszczony rdzeń leży na poziomie podłogi areny. */
+      carryFootOffsetM: 0.9,
+    },
   },
   mission: {
     zoneRadiusM: 1.6,

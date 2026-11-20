@@ -2,6 +2,7 @@ import type { Vec3 } from '../core/math';
 import type { Rng } from '../core/rng';
 import type { AssaultDefinition } from './modeSchema';
 import { freeModePosition } from './modeSchema';
+import { arenaSpawnPoints, selectArenaSpawn } from './arenaSpawns';
 import { MissionObjectives, type ObjectiveHooks } from './missionObjectives';
 import type { RoomDefinition } from './roomSchema';
 
@@ -124,6 +125,7 @@ export class Assault {
     player: Vec3,
     enemies: readonly Vec3[],
     rng: Rng,
+    occluded?: (position: Vec3) => boolean,
   ): Vec3 | null {
     const cfg = this.definition;
     if (
@@ -133,12 +135,28 @@ export class Assault {
       enemies.length >= cfg.maxAlive
     )
       return null;
-    const candidates = this.sector.spawnPoints.filter(
-      (p) =>
-        freeModePosition(room, p, cfg.spawnClearanceM) &&
-        distance(p, player) >= cfg.minSpawnDistanceM &&
-        enemies.every((e) => distance(e, p) >= cfg.spawnClearanceM * 2),
-    );
+    const safe = (p: Vec3) =>
+      freeModePosition(room, p, cfg.spawnClearanceM) &&
+      distance(p, player) >= cfg.minSpawnDistanceM &&
+      enemies.every((e) => distance(e, p) >= cfg.spawnClearanceM * 2);
+    const ring = room.arena?.assault ? room.arena.spawnRing : undefined;
+    if (ring) {
+      // Duża arena: pierścień wokół gracza, najbliżej aktywnych stacji frontu.
+      const pool = [...this.sector.spawnPoints, ...arenaSpawnPoints(room)];
+      const unique = new Map(pool.map((p) => [JSON.stringify(p), p]));
+      const targets = this.stations.mission.objectives
+        .filter((s) => this.stations.objectives[s.id] !== 'done')
+        .map((s) => this.stations.position(s)!);
+      return selectArenaSpawn(
+        ring,
+        [...unique.values()].filter(safe),
+        player,
+        targets,
+        rng,
+        occluded,
+      );
+    }
+    const candidates = this.sector.spawnPoints.filter(safe);
     return candidates.length ? { ...rng.pick(candidates) } : null;
   }
 

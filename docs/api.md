@@ -2018,6 +2018,17 @@ ogłuszenie ani kontrolę Rezonansem. Bez carry zachowanie pozostaje dotychczaso
   i `points` pozostaje obsługiwany. `selectArena(mode, seed?, override?, debug?)`
   wybiera pierwszy pokój bez seeda, a z seedem deterministycznie przez `Rng`.
   Debug dopuszcza override wyłącznie z listy. `modeForArena` wiąże punkty z pokojem.
+- Szturm i Kradzież rdzenia na dużych arenach: `RoomDefinition.arena.assault?`
+  (`{ sectors: { playerSpawn, stations: [Vec3, Vec3], spawnPoints }[] }`, 3–4 sektory)
+  i `arena.heist?` (`{ playerSpawn, base, extraction, spawnPoints }`). `assault.json` i
+  `heist.json` mają `arenas?: string[]`; `roomId` pozostaje małym pokojem.
+  `selectArena(mode, seed?, override?, debug?)` przyjmuje dowolny tryb (`mode.id`, fork
+  `Rng` `<id>-arena`); override akceptuje listę `arenas` albo `roomId`.
+  `assaultForArena(mode, room)` i `heistForArena(mode, room)` zwracają definicję trybu
+  z układem areny (`HeistDefinition.playerSpawn?`: start i odrodzenie, domyślnie
+  `extraction`). `Assault.spawnPosition` i `Heist.spawnPosition` przyjmują opcjonalny
+  predykat zasłonięcia jak `Conquest`. `modes.ts` eksportuje `assaultMode`, `heistMode`
+  i `modeSources` (listy aren). Liczby: `tuning.modes.assault`, `tuning.modes.heist`.
 - `NewRunOptions.arenaId?`: wybrana arena, utrwalana jako istniejące
   `MapNode.fixed.roomId`; brak nowej wersji zapisu. Stare zapisy combatRing działają.
 - `ArenaNavigation`: czysta siatka przechodniości i pola odległości A/B/C;

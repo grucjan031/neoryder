@@ -79,6 +79,30 @@ export const capturePointsSchema = z
       .every((id) => ids.has(id));
   }, 'Punkty muszą mieć kolejne identyfikatory od A.');
 
+/** Układ Szturmu na dużej arenie: kolejne sektory frontu (ADR 0011 D4). */
+export const assaultLayoutSchema = z.object({
+  sectors: z
+    .array(
+      z.object({
+        playerSpawn: vec3Schema,
+        stations: z.tuple([vec3Schema, vec3Schema]),
+        spawnPoints: z.array(vec3Schema).min(1),
+      }),
+    )
+    .min(3)
+    .max(4),
+});
+export type AssaultLayout = z.infer<typeof assaultLayoutSchema>;
+
+/** Układ Kradzieży rdzenia na dużej arenie: baza, ewakuacja i start gracza. */
+export const heistLayoutSchema = z.object({
+  playerSpawn: vec3Schema,
+  base: vec3Schema,
+  extraction: vec3Schema,
+  spawnPoints: z.array(vec3Schema).min(1),
+});
+export type HeistLayout = z.infer<typeof heistLayoutSchema>;
+
 export const arenaSchema = z.object({
   exclusive: z.boolean().optional(),
   maxAlive: positive.int().max(tuning.modes.conquest.maxAlive).optional(),
@@ -99,6 +123,8 @@ export const arenaSchema = z.object({
     .min(4)
     .optional(),
   points: capturePointsSchema,
+  assault: assaultLayoutSchema.optional(),
+  heist: heistLayoutSchema.optional(),
   batchCellM: positive,
   navigationCellM: positive,
   navigationMaxRiseM: positive.optional(),
