@@ -117,7 +117,9 @@ export class DamageSystem {
     const entry = this.targets.get(target);
     if (!entry || entry.health.dead) return 0;
     if (!this.canDamage(info.source, target, info.tags)) return 0;
-    if (this.timeS < entry.invulnUntilS) return 0;
+    // Tik statusu (np. podpalenie) nie przepada w oknie nietykalności po trafieniu i go nie odnawia.
+    const statusTick = info.tags.includes('#status');
+    if (!statusTick && this.timeS < entry.invulnUntilS) return 0;
     if (entry.opts.invulnerable?.()) return 0;
     const outgoing =
       info.source !== null &&
@@ -132,23 +134,24 @@ export class DamageSystem {
     if (guard <= 0) return 0;
 
     // 'damageTaken' ma zawsze bazę 1 — liczą się tylko modyfikatory.
-    // Ciężki cios (#heavy) przebija blok: pomija modyfikatory o źródle BLOCK_SOURCE.
-    const pierce = info.tags.includes(PIERCE_BLOCK_TAG);
-    const taken = entry.opts.stats
-      ? computeStat(
-          1,
-          entry.opts.stats
-            .modifiers('damageTaken')
-            .filter((mod) => !pierce || mod.source !== BLOCK_SOURCE),
-        )
-      : 1;
-    const dealt = entry.health.apply({
-      amount: info.amount * outgoing * guard * taken,
-    });
+    // Blok (modyfikatory BLOCK_SOURCE) chroni tylko przed atakami: pomija go ciężki cios (#heavy),
+    // a nie dotyczy tików statusów (#status) ani zagrożeń otoczenia (#hazard).
+    const bypassBlock =
+      info.tags.includes(PIERCE_BLOCK_TAG) ||
+      statusTick ||
+      info.tags.includes('#hazard');
+    const modifiers = entry.opts.stats?.modifiers('damageTaken') ?? [];
+    const unblocked = modifiers.filter((mod) => mod.source !== BLOCK_SOURCE);
+    const takenNoBlock = computeStat(1, unblocked);
+    const taken = bypassBlock ? takenNoBlock : computeStat(1, modifiers);
+    const base = info.amount * outgoing * guard;
+    const dealt = entry.health.apply({ amount: base * taken });
     if (dealt <= 0) return 0;
+    const blocked = Math.max(0, base * (takenNoBlock - taken));
 
     const invulnMs = entry.opts.invulnMs?.() ?? 0;
-    if (invulnMs > 0) entry.invulnUntilS = this.timeS + invulnMs / 1000;
+    if (invulnMs > 0 && !statusTick)
+      entry.invulnUntilS = this.timeS + invulnMs / 1000;
 
     const killed = entry.health.dead;
     const cause = killed ? this.deathCause(info) : undefined;
@@ -161,6 +164,7 @@ export class DamageSystem {
       dir: info.dir ?? null,
       knockback: info.knockback ?? 0,
       killed,
+      ...(blocked > 0 ? { blocked } : {}),
       ...(info.statuses !== undefined ? { statuses: info.statuses } : {}),
     });
     this.bus.emit('health_changed', {

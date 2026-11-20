@@ -522,6 +522,9 @@ export const tuning = {
     heavyActiveS: 0.12,
     heavyRecoveryS: 0.38,
     guardBreakLockS: 0.8,
+    /** Wstrząs kamery przy rozbiciu gardy: siła i czas [s]. */
+    guardBreakShake: 0.5,
+    guardBreakShakeS: 0.3,
     dashCutGraceS: 0.1,
     dashCutHeightM: 1.2,
     throwSpinRadS: 28,
@@ -538,6 +541,9 @@ export const tuning = {
     /** Ogłuszenie i odrzut wroga, którego cios został sparowany. */
     meleeParryStunS: 0.9,
     meleeParryKnockback: 4,
+    /** Iskra parowania wręcz: odległość od oczu w stronę atakującego i przesunięcie w pionie względem oczu [m] (ujemne = niżej). */
+    meleeParrySparkM: 0.8,
+    meleeParrySparkOffsetYM: -0.35,
     parrySpeedMult: 1.8,
     parryDamageMult: 2,
   },
@@ -831,6 +837,8 @@ export const tuning = {
     /** Iskry trafień: cyan od gracza, czerwone od wrogów. */
     maxHitSparks: 128,
     hitSparkCount: 6,
+    /** Iskry sparowanego ciosu wręcz (vfx/hitSparks.ts, zdarzenie melee_parried). */
+    parrySparkCount: 18,
     hitSparkSpeedMS: 7,
     hitSparkSpreadMS: 3.5,
     hitSparkLifeS: 0.28,

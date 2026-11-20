@@ -71,7 +71,7 @@ export interface NewRunOptions {
   threatLevel?: number;
   /**
    * Bazowe `maxHealth` gracza bez talentów (domyślnie `initialHp` menedżera). Talenty podnoszące
-   * `maxHealth` zwiększają startowe zdrowie o różnicę względem tej bazy.
+   * `maxHealth` są uwzględniane w pełnym zdrowiu na starcie runu.
    */
   baseMaxHealth?: number;
 }
@@ -378,7 +378,6 @@ export class RunManager {
     const healthStats = new Stats({ maxHealth: baseMaxHealth });
     for (const modifier of resolvedTalents.modifiers)
       if (modifier.stat === 'maxHealth') healthStats.add(modifier);
-    const talentHealth = healthStats.get('maxHealth') - baseMaxHealth;
     const threatLevel = options.threatLevel ?? 0;
     if (!Number.isInteger(threatLevel) || threatLevel < 0)
       throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
@@ -409,7 +408,7 @@ export class RunManager {
       map,
       currentNodeId: null,
       visited: [],
-      hp: this.initialHp + talentHealth,
+      hp: healthStats.get('maxHealth'),
       energy: this.initialEnergy,
       credits: resolvedTalents.runStartCredits,
       implants: [],

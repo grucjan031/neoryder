@@ -22,12 +22,12 @@ jej przypisania modułów.
 
 ## Moduły startowe
 
-| Id               | Nazwa         | Działanie                                                        | Odblokowanie         | Tryby broni                     |
-| ---------------- | ------------- | ---------------------------------------------------------------- | -------------------- | ------------------------------- |
-| `ricochet`       | Rykoszet      | Jedno odbicie od geometrii świata                                | 160 Danych, poziom 3 | projectile, spread, pierce, lob |
-| `pierce`         | Przebicie     | `pierceCount +1`: jeden dodatkowy cel, zachowany `pierceFalloff` | 180 Danych, poziom 4 | projectile, spread, pierce      |
-| `incendiary`     | Podpalenie    | Dopisuje `burning` na 3 s do statusów trafienia                  | 200 Danych, poziom 4 | wszystkie                       |
-| `superconductor` | Nadprzewodnik | Prędkość pocisku +20%, ciepło na strzał −15%                     | 6 Rdzeni, poziom 5   | projectile, spread, pierce, lob |
+| Id               | Nazwa         | Działanie                                                        | Odblokowanie                                    | Tryby broni                     |
+| ---------------- | ------------- | ---------------------------------------------------------------- | ----------------------------------------------- | ------------------------------- |
+| `ricochet`       | Rykoszet      | Jedno odbicie od geometrii świata                                | 160 Danych, poziom 3                            | projectile, spread, pierce, lob |
+| `pierce`         | Przebicie     | `pierceCount +1`: jeden dodatkowy cel, zachowany `pierceFalloff` | 180 Danych, poziom 4                            | projectile, spread, pierce      |
+| `incendiary`     | Podpalenie    | Dopisuje `burning` na 3 s do statusów trafienia                  | 200 Danych, poziom 4                            | wszystkie                       |
+| `superconductor` | Nadprzewodnik | Prędkość pocisku +20%, ciepło na strzał −15%                     | 6 Rdzeni, poziom 5, osiągnięcie `reka-strzelca` | projectile, spread, pierce, lob |
 
 Nadprzewodnik używa wariantu awaryjnego ustalonego w briefie. Istniejący
 `DamageSystem` nie ma warunku obrażeń zależnego od statusu celu. Efekty
@@ -59,6 +59,10 @@ Odbicie nie odnawia czasu życia, nie zmienia właściciela ani obrażeń.
 Małe odsunięcie od powierzchni zapobiega ponownemu trafieniu wskutek precyzji Rapier.
 Po wyczerpaniu odbić następna ściana kończy lot (EMP wybucha).
 Wrogowie zużywają trafienia przebicia, nigdy licznik rykoszetów.
+Rykoszet nie czyści listy trafionych celów: cel trafiony przed odbiciem nie dostanie
+drugiego trafienia tego samego pocisku. Pocisk `lob` z rykoszetem odbija się od świata
+przed wybuchem, a wybuch następuje dopiero po wyczerpaniu odbić (lub z końcem życia).
+Pole `ricochets` istnieje tylko w trybach pociskowych (nie w `beam`).
 
 ## Kontrola i testy
 
@@ -88,7 +92,14 @@ Kolimator: 140 Danych, poziom 2, wszystkie tryby poza `pierce`; czas wejścia AD
 ×0,5, FOV ×0,85 względem bazowego, rozrzut ADS ×0,6 względem tuningu.
 Luneta: 220 Danych, poziom 5, `projectile` i `beam`; czas wejścia ×1,6,
 FOV ×0,5, czułość ADS ×0,6. Bez optyki nowe mnożniki wynoszą 1.
-Wyjście z celowania i ruch pozostają bez zmian. Panel pokazuje tylko odblokowane,
+Wzory (patrz też [weapons.md](weapons.md), [hands.md](hands.md)): czas wejścia
+`tuning.player.aim.inS × aimInScale`; FOV = bazowy × `aimFovScale` (zastępuje domyślne
+0,72, więc Kolimator 0,85 przybliża słabiej niż brak optyki); rozrzut
+`1 + (aim.spread × aimSpreadScale − 1) × aim`; czułość
+`1 + (aim.sensitivity × aimSensitivityScale − 1) × aim` (Luneta: 0,7 × 0,6 = 0,42).
+`aimInScale` i `aimSensitivityScale` są podawane do `HeldItem`/`PlayerController`
+tylko w `RoomScene`; Arena przekazuje wyłącznie `aimFovScale` (nie obsługuje modułów).
+`beam` ignoruje `aimSpreadScale`. Wyjście z celowania i ruch pozostają bez zmian. Panel pokazuje tylko odblokowane,
 zgodne moduły danego slotu, nazwę slotu, „— brak —” i opis efektu pod wyborem.
 
 Fabryka `weaponModuleVisuals.ts` tworzy proceduralne bryły z własnymi materiałami

@@ -38,24 +38,25 @@ Jednostki: metry i radiany. `vec(x, y = 0, z = 0)` tworzy pozycję XYZ.
 `Rect` zawsze ma `{ minX, maxX, minZ, maxZ }`, nie środek i wymiary.
 `bounds` opisuje teren gry, nie całą oprawę za granicą.
 
-| Metoda / pole                                                                           | Znaczenie                                                                                                                                              |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `block({size, position, material?, rotation?, model?, instance?, walkable?, visible?})` | Dodaje collider i bryłę w formacie pokoju; pełne wymiary, środek bryły. Zwraca dodany blok.                                                            |
-| `decor(model, position, rotationY = 0, {scale?})`                                       | Model bez kolizji, zapisywany z polem `yaw`; pozycja przy podstawie modelu.                                                                            |
-| `light(position, color?, intensity?, range?, {flicker?})`                               | Światło; domyślnie ciepła biel, intensywność 30, zasięg 15 m.                                                                                          |
-| `spawn(position)`                                                                       | Dodaje zwykły spawn XZ (`room.spawnPoints`). Inna wysokość niż start gracza powoduje błąd.                                                             |
-| `arenaSpawn(position)`                                                                  | Dodaje spawn osobnej puli trybu `arena.spawnPoints` z wysokością (domyślnie y startu); wymagany przy spawnach na piętrach lub w wykopie (`spawnRing`). |
-| `point(id, position, radiusM = 4)`                                                      | Dodaje unikalny punkt A–E (`pointIdSchema`); inne identyfikatory to błąd.                                                                              |
-| `zone(name, rect, kind)`                                                                | Metadane raportu i SVG; `open`, `dense`, `interior`, `high`, `low`.                                                                                    |
-| `arenaMeta(obj)`                                                                        | Scala pola `arena`, np. parametry nawigacji, taflę `water` i osobną pulę `spawnPoints`.                                                                               |
-| `roomMeta(obj)`                                                                         | Ustawia np. `playerSpawn`, `doors`, `hazards`, `rainShelters`, `maxAlive`, oprawę. Nie nadpisuje id, geometrii, arena ani spawnPoints.                 |
-| `rng()`                                                                                 | Deterministyczny PRNG [0,1), FNV-1a + mulberry32, zależny od seeda i kolejności wywołań.                                                               |
-| `metadata`                                                                              | `{seed, bounds, zones, warnings}`; nie trafia do JSON-u gry.                                                                                           |
-| `warn(code, message)`                                                                   | Dodaje ostrzeżenie narzędzia.                                                                                                                          |
-| `toRoom()`                                                                              | Zwraca niezależną kopię danych, z posortowanymi kluczami; nie wykonuje walidacji zod.                                                                  |
-| `write(path)`                                                                           | Tworzy katalogi i zapisuje UTF-8, 2 spacje, LF, końcowy LF, stabilną kolejność kluczy.                                                                 |
+| Metoda / pole                                                                           | Znaczenie                                                                                                                                                                                     |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `block({size, position, material?, rotation?, model?, instance?, walkable?, visible?})` | Dodaje collider i bryłę w formacie pokoju; pełne wymiary, środek bryły. Zwraca dodany blok.                                                                                                   |
+| `decor(model, position, rotationY = 0, {scale?})`                                       | Model bez kolizji, zapisywany z polem `yaw`; pozycja przy podstawie modelu.                                                                                                                   |
+| `light(position, color?, intensity?, range?, {flicker?})`                               | Światło; domyślnie ciepła biel, intensywność 30, zasięg 15 m.                                                                                                                                 |
+| `spawn(position)`                                                                       | Dodaje zwykły spawn XZ (`room.spawnPoints`). Inna wysokość niż start gracza powoduje błąd.                                                                                                    |
+| `arenaSpawn(position)`                                                                  | Dodaje spawn osobnej puli trybu `arena.spawnPoints` z wysokością (domyślnie y startu); wymagany przy spawnach na piętrach lub w wykopie (`spawnRing`).                                        |
+| `point(id, position, radiusM = 4)`                                                      | Dodaje unikalny punkt A–E (`pointIdSchema`); inne identyfikatory to błąd.                                                                                                                     |
+| `zone(name, rect, kind)`                                                                | Metadane raportu i SVG; `open`, `dense`, `interior`, `high`, `low`.                                                                                                                           |
+| `arenaMeta(obj)`                                                                        | Scala pola `arena`, np. parametry nawigacji, taflę `water` i osobną pulę `spawnPoints`.                                                                                                       |
+| `roomMeta(obj)`                                                                         | Ustawia np. `playerSpawn`, `doors`, `hazards`, `rainShelters`, `maxAlive`, oprawę. Nie nadpisuje id, geometrii, arena ani spawnPoints.                                                        |
+| `rng()`                                                                                 | Deterministyczny PRNG [0,1) (`createRng(seed)`), zależny od seeda i kolejności wywołań; algorytm w sekcji „Determinizm”. Pole budowniczego `arena.rng` (funkcja), nie metoda wołana z `this`. |
+| `metadata`                                                                              | `{seed, bounds, zones, warnings}`; nie trafia do JSON-u gry.                                                                                                                                  |
+| `warn(code, message)`                                                                   | Dodaje ostrzeżenie narzędzia.                                                                                                                                                                 |
+| `toRoom()`                                                                              | Zwraca niezależną kopię danych, z posortowanymi kluczami; nie wykonuje walidacji zod.                                                                                                         |
+| `write(path)`                                                                           | Tworzy katalogi i zapisuje UTF-8, 2 spacje, LF, końcowy LF, stabilną kolejność kluczy.                                                                                                        |
 
-Domyślne metadane areny: `exclusive: true`, `batchCellM: 20`,
+Domyślne wartości `createArena`: `theme` `neonStreet`, `weather` `rain`, `seed` = `id`,
+`type` `combat`. Domyślne metadane areny: `exclusive: true`, `batchCellM: 20`,
 `navigationCellM: 1`, `navigationMaxRiseM: 0.35`, `navigationHeadroomM: 2`,
 `navigationClearanceM: 0.8`. Start domyślnie 4 m od minimum X/Z, y=0.
 Domyślne drzwi entry/exit są wpisami kontraktu pokoju przy rogach granic;
@@ -117,6 +118,34 @@ p.building({
 p.ramp({ from: vec(0, 0, 70), to: vec(30, 6, 70), width: 5 });
 ```
 
+## Determinizm
+
+Wynik generatora (JSON i SVG) jest funkcją kodu generatora i seeda; w grze nie ma
+losowania geometrii (JSON jest danymi statycznymi), a `Rng` z `src/core/rng.ts`
+nie jest tu używany. `createRng(seed)` w `tools/arenas/lib/arena.mjs`:
+
+- stan początkowy 2166136261, dla każdego znaku `seed` (iteracja po punktach
+  kodowych, `charCodeAt(0)`): `stan = imul(stan XOR kod, 16777619) >>> 0` (FNV-1a);
+- generator: `stan = (stan + 0x6d2b79f5) >>> 0`, `v = imul(stan XOR (stan>>>15), 1|stan)`,
+  `v ^= v + imul(v XOR (v>>>7), 61|v)`, wynik `((v XOR (v>>>14)) >>> 0) / 2^32`
+  (mulberry32). Każde wywołanie `rng()` przesuwa wspólny strumień budowniczego,
+  więc zmiana kolejności lub liczby wywołań zmienia wszystkie dalsze wyniki.
+- Seedy: `arenaConstructionSite` `construction-site-v1`, `arenaContainerPort`
+  `terminal-0011`, `arenaFloodedDocks` `doki-0011`, `arenaOverpass`
+  `overpass-adr0011-v1`, `arenaRailYard` `maglev-winter-1`, `arenaRooftops`
+  `arena-rooftops-v2`, `arenaLibDemo` `arena-library-demo-v1`, `arenaPowerPlant`
+  domyślny (`arenaPowerPlant`).
+- `scatter`: do `max(100, count × 100)` prób; w każdej próbie kolejno `rng()` na X,
+  `rng()` na Z (pozycja z `rect`, `y` stałe); próba odrzucana (bez dalszych
+  losowań), gdy punkt leży w `avoid` poszerzonym o `minSpacing/2` albo bliżej niż
+  `minSpacing` (XZ) od już umieszczonej instancji; przy akceptacji `rng()` wybiera
+  model (`floor(r × liczba modeli)`), potem `rng()` daje `yaw = r × 2π`. Po
+  wyczerpaniu prób ostrzeżenie `scatter-capacity`. Domyślny `minSpacing` 2 m.
+- Generatory wołają `arena.rng` bezpośrednio (np. `arenaRooftops`, `arenaConstructionSite`,
+  `arenaPowerPlant`), dlatego kolejność budowy stref jest częścią kontraktu seeda.
+- `toRoom()`/`write()` sortują klucze obiektów alfabetycznie, pomijają `undefined`
+  i zapisują `-0` jako `0`; liczby nieskończone/NaN są błędem.
+
 ## Walidacja i ograniczenia kontraktu
 
 `checkArena(builder)` albo `checkArena(room, metadata)` zwraca
@@ -125,12 +154,15 @@ i opcjonalne details z pozycjami słupów. Błędy zatrzymują zapis JSON-u prze
 Raport obejmuje:
 
 - wymiary obwiedni (240–450 m w najdłuższej osi), powierzchnię ≥40 000 m²;
-- obrys: wypełnienie rzutu ≤90% lub wydłużenie ≥1,3; 4–6 stref, ≥4 rodzaje;
+- obrys: błąd tylko gdy wypełnienie rzutu >90% **i** wydłużenie <1,3; strefy:
+  błąd przy <4 strefach lub <4 rodzajach, ostrzeżenie `zone-count` przy >6;
 - ≥3 płaskie poziomy odległe o ≥1 m; stopnie i rampy nie udają pięter;
 - wysokie, wąskie bryły (≥3 m wysokości, szerokość i głębokość ≤3 m,
   smukłość ≥2), bez bryły opartej na ich wierzchu; lista pozycji;
 - udział najczęstszego modelu ≤15% wśród instancji blocks.model + decor;
-- 3–5 różnych punktów A–E, granice kół punktów/startu/spawnów/stref i ≥16 spawnów.
+- 3–5 różnych punktów A–E, granice kół punktów/startu/spawnów/stref i ≥16 spawnów
+  (liczone z `arena.spawnPoints`, a gdy ich brak z `room.spawnPoints` — nie sumowane).
+  Rozmiar i powierzchnia (240–450 m; ≥ 40 000 m²) to ostrzeżenia tylko w trybie `demo`.
 
 Powierzchnia jest **szacunkiem próbkowanym co 1 m**, z prześwitem nawigacji;
 nakładające się płyty na tej samej wysokości liczy raz, przeszkody odejmuje,
@@ -159,9 +191,10 @@ Ograniczenia schematu/silnika:
   wysokości gracza. Nie potwierdza pięter; bryły obrócone mogą powodować
   konserwatywne odrzucenie poprawnej geometrii. Osiowe ściany generatora
   zapisują właściwe size XZ bez obrotu, co zachowuje tę walidację.
-- `ArenaSurfaceNavigation` przyjmuje wyłącznie obrót Z powierzchni. Rampa X
-  działa w obu kierunkach; rampa Z/ukośna i ukośne schody są poprawnymi
-  colliderami/renderem, ale generują ostrzeżenie i wymagają rozszerzenia AI.
+- `ArenaSurfaceNavigation` przyjmuje powierzchnie obrócone wokół X albo wokół Z
+  (rampy wzdłuż osi Z i X, w obu kierunkach); rampa ukośna (obrót Y) jest
+  poprawnym colliderem/renderem, ale generator ostrzega (`navigation-rotation`),
+  a konstruktor nawigacji rzuca wyjątek dla `walkable` z obrotem Y lub X+Z naraz.
 - Walidacja pokoju i `freeModePosition` używają nieobróconych wymiarów.
   Rekwizyt obrócony o 90° zapisuj jako dekorację z osiowym, niewidocznym
   colliderem o zamienionych wymiarach (wzorzec `placeModel` w

@@ -27,7 +27,11 @@ i wyposażenie tak jak w Szturmie. Przy zerze żyć następuje porażka.
 Limit czasu `timeLimitS=0` jest wyłączony; dodatnia wartość kończy próbę
 porażką. Zegar i symulacja czekają podczas odrodzenia.
 
-Rdzeń ma stany `base`, `player`, `dropped`, `enemy`. Wróg dotykający
+Rdzeń ma stany `base`, `player`, `dropped`, `enemy`. Podniesienie jest automatyczne: gracz
+wchodzący w `pickupRadiusM` (1,2 m, XZ) od rdzenia w stanie `base` albo `dropped` zostaje
+nosicielem (chyba że blokuje to debugowy `heist drop`). Upuszczony rdzeń leży na wysokości bazy.
+Zabicie nosiciela-wroga upuszcza rdzeń; zniknięcie nosiciela z listy też. Gracz niosący rdzeń
+zlicza `extractElapsedS` tylko w `extractRadiusM` (2 m) od ewakuacji, przy `extractS` (3 s) wygrywa. Wróg dotykający
 upuszczonego rdzenia staje się nosicielem; `moveGoal` wskazuje mu bazę.
 Dotarcie do bazy odkłada rdzeń, śmierć nosiciela upuszcza go w aktualnej pozycji.
 Pozostali wrogowie otrzymują cel na gracza z rdzeniem albo na sam rdzeń.
@@ -62,60 +66,105 @@ Osobno: zginąć z rdzeniem, odzyskać go po odrodzeniu i sprawdzić finał życ
 `src/data/modes/conquest.json` przechodzi `modeSchema` i walidację geometrii:
 3–5 różnych punktów, kolejno od A do E, wolne koła na podłodze, odstęp minimum 12 m,
 osiągalność jak w `validateLayout`, znany pokój combat i obsługiwana biała lista
-wrogów. Pole `arenas` zawiera kolejno `arenaContainerPort`, `arenaOverpass`,
-`arenaRooftops`. `combatRing` pozostaje pokojem zwykłego runu.
+wrogów. Pole `arenas` zawiera siedem aren (kolejność ma znaczenie dla wyboru bez
+seeda i dla losowania z seeda): `arenaContainerPort`, `arenaOverpass`,
+`arenaRooftops`, `arenaPowerPlant`, `arenaConstructionSite`, `arenaRailYard`,
+`arenaFloodedDocks`. Wszystkie mają pięć punktów A–E o promieniu 5 m (poza
+`arenaRailYard`: spawny z marginesem 1,1 m, reszta 0,8 m), `arena.maxAlive` 12,
+`arena.enemyTickets` 180–200 (port 200, estakada 200, dachy 190, elektrownia 200,
+budowa 180, bocznica 200, doki 190), `arena.exclusive` (nie trafiają do zwykłego
+runu) i `spawnRing` (`minM` 25, `maxM` 85–100; 24–41 spawnów, w dokach z listy `spawnPoints` pokoju, w pozostałych z `arena.spawnPoints`).
+Pogody: port `storm`, estakada `smog`, dachy `drizzleWind`, elektrownia `ashfall`,
+budowa `clearNight`, bocznica `snow`, doki `rain`. Punkty i geometria każdej areny:
+[arenas.md](arenas.md). Dawny `combatRing` nie jest już na liście trybu (stary format
+`roomId` + `points` w definicji trybu nadal jest odczytywany).
 Punkty są w `room.arena.points`, spawny w pokoju lub opcjonalnym
-`room.arena.spawnPoints`. Stary format `roomId` + `points` nadal jest odczytywany.
-Port ma 100×100 m, pogodę storm i punkty A (−32, 0, −28), B (32, 0, −23),
-C (0, 0, 33), każdy o promieniu 4 m. Zachowany combatRing ma punkty
-A (−10, 0, −9), B (10, 0, −9), C (0, 0, 0), promienie 2,75 / 2,75 / 3,5 m.
-Spawny trybu są walidowane poza strefami z marginesem; zwykłe spawny combatRing
-nie są zmieniane. Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
-
-Estakada (100×100 m, `smog`): A (−12, 0, −12), B (−12, 11,6, 12),
-C (32, 0, 10). Targ (90×90 m, `drizzleWind`): A (−28, 0, 0),
-B (28, 2, −24), C (28, 6, 24). Promienie 4 m. Wyższe punkty mają
-rzeczywiste dojścia rampami dla gracza i obu archetypów przeciwników.
+`room.arena.spawnPoints`. Spawny trybu są walidowane poza strefami z marginesem
+`navigationClearanceM`; zwykłe spawny pokoi nie są zmieniane. Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
 
 Bez wpisanego seeda start z tablicy i bezpośredniego URL wybiera pierwszą arenę
 (port), a run nadal dostaje losowy seed. Wpisany `?seed=` wybiera arenę przez
-osobny strumień `Rng(seed).fork('conquest-arena')`. Debugowy `?arena=<id>` ma
-pierwszeństwo i akceptuje tylko id z listy; poza debug jest ignorowany.
+osobny strumień `new Rng(seed).fork('conquest-arena').pick(arenas)` (jedno losowanie
+z listy w kolejności z pliku). Debugowy `?arena=<id>` ma
+pierwszeństwo i akceptuje tylko id z listy (inne id w debug = błąd); poza debug jest ignorowany.
 Wybrany id jest zapisany w istniejącym `MapNode.fixed.roomId`, więc wznowienie
 nie losuje areny ponownie i zachowuje stare zapisy combatRing.
 
-Domyślna pula to 120, a domyślny limit to 8 żywych. Arena może ustawić
-`arena.enemyTickets` oraz `arena.maxAlive` (maksymalnie 12 i nie więcej
-niż limit pokoju, jeśli pokój go podaje). Jeden spawn co 3 s, przejęcie neutralnego
-punktu 6 s. Gracz przesuwa postęp ku +1, wróg ku −1, wspólna obecność
-zatrzymuje postęp. Właściciel utrzymuje punkt do wyzerowania postępu;
-przeciwna strona przejmuje go po dalszych 6 s. Pełne przejęcie emituje
-`conquest_captured` i komunikat HUD. Ubytek zaczyna się od ścisłej większości
-i rośnie liniowo do pełnego posiadania. Stawki z danych trybu to 1/s przy
-większości i 3/s przy wszystkich punktach. Przy pięciu punktach cztery pod
-kontrolą gracza odejmują 2/s. Każde zabójstwo odejmuje 1. Pula nie spada poniżej zera.
+Wartości z `conquest.json`: pula 120 i limit 8 żywych (domyślne; każda obecna arena
+nadpisuje je przez `arena.enemyTickets` i `arena.maxAlive`, które nie mogą przekroczyć
+`tuning.modes.conquest.maxAlive` = 12 ani limitu pokoju, jeśli go podaje). `spawnIntervalS` 3,
+`captureS` 6, `bleed` 1/s (`holdTwoPerS`) i 3/s (`holdThreePerS`), `rewardRooms` 6,
+wrogowie `assaulter` i `gunner`. Siła punktu: gracz w kole (promień punktu, wysokość
+w granicach `zoneHeightM` = 2 m) przesuwa postęp ku +1 o `dt / captureS`, wróg ku −1,
+wspólna obecność (`contested`) albo brak obecności nie zmienia postępu. Przejście przez 0
+oddaje punkt jako `neutral`, pełne +1 / −1 daje właściciela `player` / `enemy`; przeciwna
+strona przejmuje więc punkt po łącznie 2·`captureS` (6 s do zera i dalsze 6 s).
+Zmiana właściciela emituje `conquest_captured { id, owner, owners }` (`owners` = właściciele
+wszystkich punktów) i komunikat HUD. Ubytek puli na sekundę: niech `held` = punkty gracza,
+`total` = wszystkie, `majority = floor(total/2)+1`; `held == total` → `holdThreePerS`,
+`held >= majority` → `holdTwoPerS + (holdThreePerS − holdTwoPerS)·(held − majority)/(total − majority)`,
+inaczej 0 (przy pięciu punktach 3 → 1/s, 4 → 2/s, 5 → 3/s). Każde zabójstwo wroga odejmuje 1.
+Pula nie spada poniżej zera, spawn nie zużywa puli.
 
 Kontroler `Conquest` nie korzysta z DOM ani renderu. Host `RoomScene` podaje
 pozycje żywych wrogów, tworzy posiłki i ustawia `Enemy.moveGoal`. Szturmowiec
-i strzelec poza promieniem wykrycia 10 m idą do najbliższego obcego punktu;
-po wykryciu gracza wracają do zwykłej walki. Wszystkie punkty wroga oznaczają
-pozostanie na stanowisku. Bez `moveGoal` AI działa jak przed dodaniem trybu.
+i strzelec dalej niż `detectRangeM` (10 m) od gracza idą do najbliższego (w linii prostej, XZ)
+punktu, który nie należy do wroga (neutralnego lub gracza); w promieniu 10 m od gracza `moveGoal`
+jest czyszczony i wracają do zwykłej walki. Gdy wszystkie punkty należą do wroga, cel to
+własna pozycja (stanowisko). Dla aren z siatką nawigacji (`arena.exclusive` lub `spawnRing`) cel
+przechodzi przez `ArenaNavigation.next` (kolejny waypoint). Bez `moveGoal` AI działa jak przed dodaniem trybu.
 
-Bez `spawnRing` spawn preferuje punkty wroga, następnie spawny konkretnej areny. Stary układ
-bez danych areny zachowuje narożniki podłogi odsunięte od krawędzi o 2 m.
-Zawsze zachowuje 15 m od gracza, wolny margines 0,8 m i odstęp od
-żywych wrogów. Brak bezpiecznego miejsca odracza spawn. Losowanie korzysta
-z `Rng`. Wspólne odległości i wysokość strefy są w `tuning.modes.conquest`
-(automatycznie widoczne w lil-gui). Dla aren z `spawnRing` kolejność wyboru
+Spawn (co `spawnIntervalS` = 3 s, pierwszy od razu; wstrzymany przy puli <= 0, wyniku trybu,
+limicie żywych `maxAlive`): kandydat jest bezpieczny, gdy ma wolną podłogę z marginesem
+`spawnClearanceM` (0,8 m), >= `minSpawnDistanceM` (15 m) od gracza i >= 2·`spawnClearanceM`
+od żywych wrogów. Bez `spawnRing`: kandydaci to bezpieczne punkty areny należące do wroga;
+gdy ich brak, bezpieczne spawny areny (`arena.spawnPoints` albo `spawnPoints` pokoju), a w
+starym układzie bez danych areny cztery narożniki podłogi odsunięte od krawędzi o
+`edgeInsetM` (2 m); wybór: jedno `rng.pick`. Z `spawnRing`: spawny bezpieczne i co najmniej
+`ring.minM` od gracza; preferowane te w `ring.maxM`, a wśród nich niewidoczne dla gracza (zasłonięte
+bryłą, promień z wysokością `spawnSightHeightM` = 1,5 m); jeśli takich brak, widoczne w pierścieniu,
+w ostateczności dowolny dozwolony. Ocena: odległość do najbliższego celu (punkty sporne, a gdy
+ich nie ma, punkty niebędące własnością wroga), mniejsza lepsza; poza pierścieniem odległość od gracza.
+Spośród remisów na najlepszym wyniku jedno `rng.pick`. Brak kandydata odracza spawn bez losowania.
+Walidacja wymaga w arenach z `spawnRing` co najmniej `minRingSpawns` (16) różnych spawnów.
+Wspólne odległości i wysokość strefy są w `tuning.modes.conquest`
+(`maxAlive` 12, `minRingSpawns` 16, `spawnSightHeightM` 1,5, `minPointDistanceM` 12,
+`minSpawnDistanceM` 15, `detectRangeM` 10, `zoneHeightM` 2, `spawnClearanceM` 0,8,
+`edgeInsetM` 2, `goalStopM` 0,5; automatycznie widoczne w lil-gui). Dla aren z `spawnRing` kolejność wyboru
 opisuje [Silnik dużych map](arenas.md#silnik-dużych-map). Wieżyczki nie uczestniczą.
 
-Pula 0 i brak żywych kończą pokój; istniejący `finish()` i ścieżka rozliczania
-kończą run. Śmierć gracza oznacza porażkę. `roomsCleared` wynosi 6 przy
+Zwycięstwo (`outcome = 'victory'`) następuje, gdy pula jest równa 0 i żywych wrogów jest 0
+(sprawdzane co krok); wtedy pokój wysyła `room_cleared`, a `RunManager.completeRoom` woła
+`finish('victory')`. Śmierć gracza oznacza porażkę. `roomsCleared` wynosi 6 przy
 zwycięstwie i 0 przy porażce; `summary.modeId = 'conquest'`. Pozostałe składniki
-nagród liczy dotychczasowa ekonomia. Opcjonalne `modeId` w stanie i podsumowaniu
-zachowuje zapis v4, bez migracji i zmian kolejności rozliczania. Wznowienie
+nagród liczy dotychczasowa ekonomia. Pole `modeId` w stanie i podsumowaniu
+jest opcjonalne, bez migracji i zmian kolejności rozliczania. Wznowienie
 niezakończonej areny zaczyna jej pokój od początku; zapis zakończonej areny
 zachowuje wynik i idempotentne rozliczenie.
+
+## Determinizm i kolejność kroku (wszystkie tryby)
+
+Tryb nie ma własnego `Rng`: używa `ctx.rng` pokoju, czyli `new Rng(seed).fork('room:<nodeId>')`
+(`nodeId` = `conquest`, `assault` albo `heist`; losowanie areny Przejęcia jest wcześniejsze i osobne,
+patrz wyżej). Ten strumień dzieli z resztą pokoju, więc powtarzalność wymaga stałego kroku `SIM_DT`
+i tej samej kolejności zdarzeń. Kolejność w jednym kroku symulacji pokoju (gdy gracz żyje i pokój
+nie jest ukończony): 1) dla każdego żywego wroga `moveGoal` (Przejęcie/Szturm: z kontrolera, a przy
+nawigacji przez waypoint; Kradzież rdzenia: po `step` kontrolera); 2) `step` kontrolera trybu
+(Przejęcie: punkty i pula; Szturm: stacje i front; Kradzież: rdzeń, zegar, odliczanie); 3) próba
+spawnu: `spawnPosition` (jedno `rng.pick` albo `selectArenaSpawn`, tylko gdy są kandydaci i spełnione
+cooldown, pula, limit żywych); 4) tylko gdy znaleziono punkt: `rng.pick(definition.enemies)` wybiera
+archetyp (`assaulter` albo `gunner`), `spawnEnemy`, a przy powodzeniu `spawned()` uruchamia
+cooldown `spawnIntervalS` (Przejęcie zwiększa też licznik żywych); 5) przy `outcome === 'victory'`
+`room_cleared`. Gdy `spawnEnemy` zawiedzie, losowania i tak zostały zużyte.
+
+Wspólne dla Szturmu i Kradzieży rdzenia: kandydaci spawnu to punkty z danych (sektor frontu /
+`spawnPoints`) z wolną podłogą (`spawnClearanceM` 0,8 m), >= `minSpawnDistanceM` (5 m) od gracza i
+
+> = 2·`spawnClearanceM` od żywych wrogów; wybór jedno `rng.pick`. Śmierć gracza w obu trybach
+> wywołuje `died()` kontrolera (jedno życie mniej, odrodzenie po `respawnS` = 2 s; w trakcie
+> odrodzenia kontroler, zegar i spawn stoją). Odrodzenie resetuje statusy, pociski, moce, ostrze,
+> broń (slot 0) i zdrowie/energię/wytrzymałość oraz teleportuje gracza (Szturm: `playerSpawn`
+> aktywnego sektora, Kradzież: punkt ewakuacji) z kierunkiem patrzenia yaw 0, pitch 0.
 
 ## Prezentacja i sprawdzenie
 
@@ -130,14 +179,13 @@ Debug: `conquest capture A`, `conquest tickets 0`, `kill all`,
 wejdź na arenę, przejmij A/B/C komendami, wyzeruj pulę i zabij wrogów;
 sprawdź nagrodę i powrót do kryjówki. Osobno `hurt 99999` sprawdza porażkę.
 W zwykłej grze sprawdź czytelność stref, tempo przejęcia i omijanie filarów
-przez posiłki. Port korzysta z naziemnej siatki `ArenaNavigation`: pola odległości
-do A/B/C i widoczne waypointy trafiają do istniejącego `Enemy.moveGoal`.
-W porcie punkty są na gruncie, a wyższe trasy są skrótami dla gracza.
-Estakada i targ oznaczają powierzchnie `walkable`; warstwy wysokości i rampy
-rozszerzają tę samą nawigację, bez zmian zachowań walki. Walidacja sprawdza
-dojście do punktu na jego wysokości, również ze wszystkich spawnów.
-CombatRing zachowuje
-lokalne unikanie przeszkód; zwykłe runy nie korzystają z nowej nawigacji.
+przez posiłki. Areny z `arena.exclusive` albo `spawnRing` korzystają z `ArenaNavigation`
+(siatka o boku `navigationCellM`, pola odległości do punktów; bez fizyki, renderu i losowości):
+pole odległości do najbliższego celu i widoczne waypointy trafiają do istniejącego
+`Enemy.moveGoal`. Gdy któryś blok areny ma `walkable`, siatkę zastępuje nawigacja po powierzchniach
+(`ArenaSurfaceNavigation`) z warstwami wysokości i rampami; nie zmienia ona zachowań walki.
+Walidacja sprawdza dojście do punktu na jego wysokości, również ze wszystkich spawnów.
+Pokoje bez danych areny zachowują lokalne unikanie przeszkód; zwykłe runy nie używają nowej nawigacji.
 
 ## Dodanie trybu
 
@@ -154,6 +202,13 @@ Start: tablica → „Tryby areny” → „Szturm” → „Rozpocznij Szturm�
 sektory w `combatCorridor`. Płaska podłoga 16×32 m i wejście od dodatniego Z
 dają czytelny kierunek natarcia ku ujemnemu Z. Stacje omijają osłony i ściany;
 istniejące przewężenie między sektorami pozostawia przejście środkiem.
+
+Stacje A i B każdego sektora to cele `sabotage` wspólnego `MissionObjectives` (id `A`, `B`;
+strefa i promień podniesienia = `radiusM`). Lont i wybuch (`blastRadiusM` 3 m, `blastDamage` 80,
+tagi `#hazard`, `#explosion`, `#friendly_fire`, źródło `null`) trafiają gracza i wszystkich
+wrogów w zasięgu. Po zniszczeniu pary sektor rośnie, powstają nowe stacje, `noticeS` (3 s)
+odlicza komunikat, a licznik spawnu jest zerowany (kolejny wróg pojawia się od razu). Wrogowie
+bez gracza w `detectRangeM` (8 m) idą do najbliższej niezniszczonej stacji (XZ).
 
 Wszystkie pozycje poniżej mają Y=0 (podłoga):
 

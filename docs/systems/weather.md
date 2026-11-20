@@ -1,9 +1,10 @@
 # Pogoda sterowana danymi
 
-Profile `src/data/weather/<id>.json` waliduje `weatherSchema` w warstwie renderu.
-Pokój wybiera profil opcjonalnym `weather`; brak pola zachowuje dokładnie
-dotychczasową ścieżkę motywu: deszcz, mgłę, połysk i częstotliwość burzy.
-Nie ma zdarzeń rozgrywki, sił fizycznych ani wpływu pogody na AI lub obrażenia.
+Profile `src/data/weather/<id>.json` waliduje `weatherSchema` (`src/render/weatherSchema.ts`,
+zod) w warstwie renderu; wszystkie pliki z katalogu ładuje `weatherDefinitions`
+(powtórzone `id` = błąd). Pokój wybiera profil opcjonalnym polem `weather`; brak pola
+zachowuje dokładnie dotychczasową ścieżkę motywu: deszcz, mgłę, połysk i częstotliwość
+burzy. Nie ma zdarzeń rozgrywki, sił fizycznych ani wpływu pogody na AI lub obrażenia.
 
 | Profil      | Opad / pył                                   | Wiatr            | Widoczność i nawierzchnia           |
 | ----------- | -------------------------------------------- | ---------------- | ----------------------------------- |
@@ -15,6 +16,53 @@ Nie ma zdarzeń rozgrywki, sił fizycznych ani wpływu pogody na AI lub obrażen
 | snow        | Wolne, niebieskawobiałe płatki, gęstość 0,38 | 1,1 m/s + porywy | Chłodna mgła 24–170 m, matowy śnieg |
 | ashfall     | Szare i ciepłoszare płatki, gęstość 0,28     | 1,6 m/s + porywy | Ciepła mgła 24–145 m, sucho         |
 
+Przypisanie do aren (pole `weather` w `src/data/rooms/*.json`): `arenaContainerPort`
+= storm, `arenaFloodedDocks` = rain, `arenaOverpass` = smog, `arenaRooftops` =
+drizzleWind, `arenaConstructionSite` = clearNight, `arenaPowerPlant` = ashfall,
+`arenaRailYard` = snow. Pozostałe pokoje nie mają pola i używają `rain` motywu.
+
+## Pełne dane profili
+
+Wspólne dla wszystkich: `lightning.color` = `#fff1d6` (schemat dopuszcza tylko tę
+wartość), `ambience[].radiusM` = 100, `dust` poza smogiem: gęstość 0, rozmiar 0,12 m,
+alfa 0,12, kolor `#8991a0`, życie 8 s. Pola `precipitation.exposureS` i `widthM`
+dla profili bez opadu i dla płatków są wymagane przez schemat, ale nieużywane.
+
+| Profil      | Opad: rodzaj, gęstość, prędkość m/s, kolor, alfa | `exposureS` / `widthM` | Wiatr: kierunek XZ, siła m/s, porywy (0..1), okres porywów s |
+| ----------- | ------------------------------------------------ | ---------------------- | ------------------------------------------------------------ |
+| rain        | rain, 0,65, 18, `#8294b0`, 0,26                  | 0,025 / 0,013          | (1; 0), 1, 0, 8                                              |
+| storm       | rain, 1, 27, `#8294b0`, 0,32                     | 0,032 / 0,015          | (0,8; 0,6), 7, 0,55, 6                                       |
+| smog        | none, 0, 18, `#8294b0`, 0,26                     | 0,025 / 0,013          | (1; 0), 0,65, 0,2, 11                                        |
+| drizzleWind | drizzle, 0,4, 8, `#8294b0`, 0,19                 | 0,014 / 0,009          | (−0,6; 0,8), 10, 0,7, 4                                      |
+| clearNight  | none, 0, 18, `#8294b0`, 0,26                     | 0,025 / 0,013          | (1; 0), 0,5, 0, 8                                            |
+| snow        | snow, 0,38, 1,2, `#c8d3eb`, 0,55                 | (nieużywane)           | (1; 0,4), 1,1, 0,3, 9                                        |
+| ashfall     | ash, 0,28, 0,55, `#a29e94`, 0,42                 | (nieużywane)           | (1; 0,4), 1,6, 0,3, 9                                        |
+
+| Profil      | Mgła: kolor, `density`, `heightM`, `strength`, `nearM`, `farM` | Nawierzchnia: `gloss`, `reflections`, `puddles`    |
+| ----------- | -------------------------------------------------------------- | -------------------------------------------------- |
+| rain        | `#2b1f3d`, 0,025, 2,0833 (= 1/0,48), 0,72, 18, 135             | 0, 0,95, 1                                         |
+| storm       | `#2b1f3d`, 0,035, 5, 0,65, 25, 145                             | 0,9, 1, 1                                          |
+| smog        | `#2e3040`, 0,035, 9, 0,75, 8, 100                              | 0,1, 0,2, 0,3                                      |
+| drizzleWind | `#2b1f3d`, 0,035, 3, 0,6, 15, 130                              | 0,5, 0,65, 0,65                                    |
+| clearNight  | `#2b1f3d`, 0,005, 2, 0,25, 45, 200                             | 0,05, 0,25, 0,25                                   |
+| snow        | `#303d59`, 0,014, 12, 0,65, 24, 170                            | 0, 0, 0; `snowCoverage` 0,6, `snowColor` `#9aa6bf` |
+| ashfall     | `#504535`, 0,022, 12, 0,65, 24, 145                            | 0, 0, 0 (`snowCoverage` 0)                         |
+
+| Profil      | Wyładowania: włączone, odstęp min–max s, jasność, zanik s | Pył: gęstość, rozmiar m, życie s | `sky.horizonColor` | Audio (`kind` gain)      |
+| ----------- | --------------------------------------------------------- | -------------------------------- | ------------------ | ------------------------ |
+| rain        | tak, 25–55, 1, 0,18                                       | 0                                | —                  | rain 0,5; wind 0,1       |
+| storm       | tak, 5–13, 1,4, 0,28                                      | 0                                | —                  | rain 0,85; wind 0,5      |
+| smog        | nie                                                       | 0,8, 0,23, 8                     | —                  | wind 0,16                |
+| drizzleWind | nie                                                       | 0                                | —                  | rain 0,2; wind 0,7       |
+| clearNight  | nie                                                       | 0                                | —                  | wind 0,08                |
+| snow        | nie (45–90, 0,15)                                         | 0                                | `#344363`          | wind 0,12                |
+| ashfall     | nie (45–90, 0,15)                                         | 0                                | `#715632`          | wind 0,09; generator 0,3 |
+
+Zakresy schematu: gęstość, alfa, `gloss`, `reflections`, `puddles`, `strength` mgły,
+`gustStrength` i `gain` to 0..1; prędkość, `exposureS`, `widthM`, `heightM`, okresy
+i `farM` są dodatnie; `farM` > `nearM`; `maxIntervalS` ≥ `minIntervalS`; kierunek
+wiatru nie może być zerowy; `snowCoverage` domyślnie 0, `snowColor` domyślnie `#ffffff`.
+
 ## Parametry i integracja
 
 `precipitation` określa rodzaj, gęstość, prędkość, kolor, przezroczystość,
@@ -24,7 +72,45 @@ parametry mgły odległościowej. `surface` steruje połyskiem materiałów miej
 siłą istniejących odbić neonów i maską kałuż. Nie dodaje SSR ani odbić całej sceny.
 `lightning` określa przedział losowania czasu, jasność, czas zaniku i wyłącznie
 ciepłą biel `#fff1d6`. `dust` określa gęstość, rozmiar, czas życia, kolor i alfę.
-`ambience` definiuje warstwy rain/wind z głośnością i zasięgiem.
+`ambience` definiuje warstwy rain/wind/generator z głośnością i zasięgiem.
+
+Przełączenie profilu (`CityDressing.setWeather`, patrz niżej) kopiuje wartości do
+`tuning.render` i uniformów materiałów: `fog.color` → `fogColor`, `fog.density` →
+`heightFogDensity`, `1 / fog.heightM` → `heightFogFalloff`, `fog.strength` →
+`fogStrength`, `fog.nearM`/`farM` → `fogNear`/`fogFar` (przed skalowaniem horyzontu
+areny), `surface.reflections` → `reflectionStrength`, `surface.puddles` →
+`reflectionPuddles`, `sky.horizonColor` (albo wartość motywu sprzed profilu) →
+`skyHorizon`, `lightning.color` → `tuning.weather.skyFlashColor`. Połysk:
+uniform `weatherGloss` = `surface.gloss * tuning.weather.wetRoughnessScale` (0,45);
+szorstkość materiałów miejskich mnożona jest przez `1 − weatherGloss` i obcinana do
+0,04..1. Pozostałe parametry i kolejność przebiegów kompozycji (mgła, kolor błysku
+dodawany do nieba i mgły) opisuje [render.md](render.md).
+
+### Opad smugowy (rain, drizzle)
+
+Jedna pula 4000 instancji (`tuning.city.rainMax`) w objętości 28 × 14 × 28 m
+(`rainWidthM/HeightM/DepthM`) wokół kamery; pozycje początkowe losuje kosmetyczny
+`Rng` (stała kolejność), potem zawijanie modulo względem kamery. Rysowanych jest
+`floor(4000 * density * quality.rainDensity)` instancji; ruch każdej kropli to
+(`windX`, −`speed`, `windZ`) na sekundę. Smuga to płaski quad addytywny
+(`opacity`, `color` profilu, `toneMapped=false`, bez zapisu głębi, bez bloomu, bez
+konturu): szerokość `widthM` (domyślnie `rainStreakWidthM` 0,013 m), długość
+`|(windX, speed, windZ)| * exposureS` (domyślnie `rainExposureS` 0,025 s), oś wzdłuż
+wektora (−`windX`, `speed`, −`windZ`), obrót wokół tej osi ku kamerze. Wiatr:
+`siła(t) = strength * (1 + gustStrength * sin(2π t / gustPeriodS))`, rozłożona wzdłuż
+znormalizowanego kierunku XZ. Smugi poniżej `floorY` i wewnątrz stref bez deszczu
+(obwiednia całej smugi) mają skalę zero.
+
+Przecięcie `floorY` przez kroplę (poza strefą) wydaje parę: pierścień
+(`RingGeometry(0,72; 1)` płasko na `floorY + surfaceOffsetM`, promień
+`rainSplashRadiusM` 0,22 m, rozmiar × `(1 + splashGrowth * wiek/życie)` przy
+`splashGrowth` 2, życie `rainSplashLifeS` 0,28 s, jasność gaśnie liniowo) i kroplę (prędkość pionowa losowa 0..`rainSplashRiseMS`
+1,5 m/s, pozioma ±`rainSplashDriftMS` 1 m/s, grawitacja `sparkGravity` −9,
+rozmiar `dripSizeM` 0,025). Kolor pary = kolor opadu. Budżet emisji rośnie o
+`dt * rainSplashRate (100) * density` na sekundę i jest obcięty do 1; dwie pule po
+150 instancji (połowa `rainSplashMax` 300). Płatki nie wydają rozbryzgów.
+
+### Płatki (snow, ash)
 
 Rodzaje `snow` i `ash` wymagają `precipitation.flakes`: `sizeM` (średnica),
 `swayM` (amplituda kołysania), `swayPeriodS` (okres), `windScatter` (rozrzut
@@ -32,10 +118,19 @@ prędkości dryfu) i `secondaryColor` (drugi kolor naprzemiennych instancji).
 `precipitation.speed` pozostaje prędkością pionową. Śnieg: 1,2 m/s, płatek
 0,075 m, kołysanie 0,22 m / 4,5 s, rozrzut 0,18. Popiół: 0,55 m/s,
 0,065 m, kołysanie 0,6 m / 2,4 s, rozrzut 0,65. Dryf korzysta z wiatru
-profilu; fazy zależą od indeksu instancji, pozycje początkowe od seeda.
+profilu; fazy zależą od indeksu instancji `i`, pozycje początkowe od seeda:
+`faza = 2π t / swayPeriodS + i`, `flutter = swayM * 2π / swayPeriodS`,
+`rozrzut = 1 + windScatter * sin(i)`; `x += (windX * rozrzut + cos(faza) * flutter) * dt`,
+`z += (windZ * rozrzut + sin(faza) * flutter) * dt`.
 Oba profile wyłączają rozbryzgi, kałuże, odbicia i wyładowania.
-Płatki mają miękką okrągłą maskę alfa. Popiół ma dodatkowo krawędź
-postrzępioną szumem. Płatki w odległości mniejszej niż 1,5 m od kamery
+Płatek to kwadrat `sizeM` stale pionowy (bez pochylenia), obracany wokół Y ku
+kamerze, mieszanie zwykłe (nie addytywne), kolor materiału biały, kolor instancji
+naprzemiennie `precipitation.color` (parzyste `i`) i `secondaryColor` (nieparzyste).
+Płatki mają miękką okrągłą maskę alfa: `alfa *= 1 − smoothstep(krawędź − flakeSoftEdge, krawędź, |p|)`,
+gdzie `p` = UV·2−1, krawędź = 1. Popiół ma dodatkowo krawędź postrzępioną
+szumem: krawędź = `1 − ashEdgeRoughness * szum(p * ashEdgeFrequency)` (szum wartościowy
+z haszem `fract(sin(dot(cell, (127,1; 311,7))) * 43758,5453)` i wygładzeniem
+smoothstep). Płatki w odległości mniejszej niż 1,5 m od kamery
 są ukrywane. Próg i parametry maski są w `tuning.weather`.
 
 `surface.snowCoverage` (0..1, domyślnie 0) miesza kolor wierzchu z
@@ -44,12 +139,39 @@ Maska korzysta z dodatniej składowej Y normalnej świata: spody i ściany
 pozostają bez śniegu. To minimalne przyprószenie bez geometrii i tekstur,
 bez testu osłonięcia powierzchni przez dach. Profil snow ma pokrycie 0,6
 i kolor `#9aa6bf`. Dwie próbki szumu w światowym XZ tworzą łaty
-i wydłużone przetarcia, które odsłaniają ciemną nawierzchnię.
-Ta sama maska steruje barwą, szorstkością i metalicznością.
+i wydłużone przetarcia, które odsłaniają ciemną nawierzchnię:
+`pokrycie = snowCoverage * max(0, normalnaŚwiata.y) * smoothstep(snowMaskLow, snowMaskHigh, min(łata, przetarcie))`,
+`łata = szum(xz * snowPatchFrequency)`,
+`przetarcie = szum(xz * (snowWearFrequency * snowWearStretch, snowWearFrequency))`
+(szum wartościowy, haszowany jak wyżej). Kolor wyjściowy = `mix(kolor, snowColor, pokrycie)`,
+szorstkość = `mix(szorstkość, 1, pokrycie)`, metaliczność × `(1 − pokrycie)`.
+Ta sama maska steruje barwą, szorstkością i metalicznością. Dotyczy tylko
+standardowych materiałów miejskich (`urbanMaterials`).
 Opcjonalny `sky.horizonColor` ustawia istniejącą łunę: snow `#344363`,
 ashfall `#715632`. Powrót do starego profilu przywraca łunę motywu.
 Śnieg ma cichy wiatr (gain 0,12); popiół wiatr 0,09 i istniejący niski
 pomruk `generator` z gain 0,3. Nie dodano nowego syntezatora ani zasobów.
+
+### Wyładowania i pył
+
+Burza (`lightning.enabled`): czas pierwszego i kolejnych błysków losowany z
+`[minIntervalS, maxIntervalS]` kosmetycznym `Rng`; w chwili błysku `flash =
+brightness` (storm 1,4, czyli powyżej 1), potem liniowy zanik do 0 w `decayS`.
+`tuning.render.skyFlash` = `flash` (bez skalowania), kolor
+`lightning.color`; błysk działa tylko dla `dt > 0`. Stara ścieżka (bez profilu,
+`theme.rain.storm`): błysk co krok z szansą `1 − exp(−dt * stormRate)`
+(`stormRate` 0,025, średnio co ok. 40 s), wartość 1, zanik `stormFlashS` 0,35 s,
+`skyFlash` = `flash * stormFlash` (0,35), kolor `tuning.weather.skyFlashColor`
+(domyślnie `#9eadef`; kompozycja używa dla niego liczbowo (0,62; 0,68; 0,95)).
+
+Pył (`dust`, gdy gęstość > 0, np. smog): osobna pula `tuning.weather.dustMax`
+(240) billboardów „chmurki” (miękki radialny profil `pow(1 − r², 3)` z lekką falą
+`0,8 + 0,2 sin(24 u + sin(18 v))`, mieszanie addytywne, alfa = `dust.opacity`,
+jasność przez życie `sin(π * wiek/życie)`), emisja `dt * dustMax * density / lifeS`
+cząstek na sekundę w tej samej objętości 28 × 14 × 28 m wokół kamery, rozmiar
+`dust.sizeM`, prędkość pozioma = wiatr profilu (porywy też), bez pionowej; pył nie
+zależy od `floorY` ani stref bez deszczu. Pula powstaje przy pierwszym profilu z
+pyłem.
 
 Koszt: ta sama pula 4000 instancji i jedno wywołanie rysowania opadu;
 snow rysuje do 1520 płatków, ashfall do 1120 (przed mnożnikiem jakości).
@@ -58,32 +180,57 @@ przy pierwszym przełączeniu na płatki. Na aktywny płatek przypadają sin/cos
 kołysania i sin rozrzutu. Shader miejski dodaje jeden interpolowany float,
 transformację normalnej na wierzchołek oraz maskę max/mnożenie, dwa mix
 (kolor, szorstkość) i mnożenie metaliczności na fragment, bez nowych próbek tekstur
-i przebiegów.
-Maska śniegu dodaje dwie próbki szumu proceduralnego na fragment z pokryciem.
-Maska płatka dodaje interpolowane UV i radialne wygładzanie alfa.
+i przebiegów. Maska śniegu dodaje dwie próbki szumu proceduralnego na fragment
+z pokryciem. Maska płatka dodaje interpolowane UV i radialne wygładzanie alfa.
 Tylko popiół liczy cztery hasze i interpoluje szum krawędzi.
-Nowe pola starych pięciu profili są neutralne; ich pliki pozostają bez zmian.
 
 Opad i efekty otoczenia kończą się na `weatherFloorY` pokoju (domyślnie
 `playerSpawn.y`). Areny z ulicą pod dachami (`arenaRooftops`: −14 m) podają dno
-ulicy, a bryły kamienic są strefami bez deszczu, więc mżawka pada do ulicy,
+ulicy, a bryły kamienic są strefami bez deszczu (`rainShelters`, patrz
+[city.md](city.md#strefy-bez-deszczu-z21)), więc mżawka pada do ulicy,
 a nie przez dachy.
+
+## Mapowanie jakości i tryb lite
+
+`tuning.quality.<low|medium|high>` (ustawienie jakości gracza) wpływa na pogodę
+przez: `rainDensity` (0,25 / 0,5 / 1; mnoży `precipitation.density`, czyli liczbę
+smug i płatków oraz budżet rozbryzgów), `particleDensity` (0,25 / 0,5 / 1; rzadsze
+rysowanie wszystkich cząstek, w tym rozbryzgów i pyłu) i `maxLights` (2 / 4 / 8).
+Pozostałe pola jakości (`pixelRatio`, `outline`, `bloom`, `bloomResolution`,
+`reflections`, `heightFog`, `shadows`) opisuje [render.md](render.md). Tryb
+`?debug=1&fx=lite` używa jakości `low` z `pixelRatio` 0,25, `rainDensity` 0 i
+`particleDensity` 0: korzeń pogody jest niewidoczny, nowy `Weather` ani `AmbientFx`
+nie powstają, `setWeather` nadal stosuje mgłę, połysk i audio.
+
+## Integracja ze sceną
 
 `CityDressing.setWeather(id)` nakłada profil na istniejący `Weather`, ustawienia
 mgły/odbicia i wspólny uniform mokrości w `urbanMaterials`. Zwraca false dla
-nieznanego id. Pule opadu pozostają stałe; przełączenie czyści rozbryzgi i pył,
-bez przebudowy pokoju, colliderów ani obiektów walki. Pył dostaje jedną pulę
-240 instancji przy pierwszym użyciu. Wspólne limity smug i rozbryzgów pozostają
-w `tuning.city`; nowe wspólne ustawienia są w `tuning.weather`, widocznym w GUI.
+nieznanego id; nieznane `layout.weather` w konstruktorze rzuca wyjątek.
+Pule opadu pozostają stałe; przełączenie czyści rozbryzgi i pył,
+bez przebudowy pokoju, colliderów ani obiektów walki. Przy pierwszym wywołaniu
+zapamiętywany jest stan do przywrócenia (`skyHorizon`, `fogColor`,
+`heightFogDensity`, `heightFogFalloff`, `fogStrength`, `fogNear`, `fogFar`,
+`reflectionStrength`, `reflectionPuddles`, `weatherGloss`, `snowCoverage`,
+`snowColor`, `skyFlashColor`, audio). Wspólne limity smug i rozbryzgów pozostają
+w `tuning.city`; nowe wspólne ustawienia są w `tuning.weather`, widocznym w GUI:
+`flakeNearM` 1,5, `flakeSoftEdge` 0,24, `ashEdgeRoughness` 0,16,
+`ashEdgeFrequency` 11, `snowPatchFrequency` 0,55, `snowWearFrequency` 1,8,
+`snowWearStretch` 0,28, `snowMaskLow` 0,32, `snowMaskHigh` 0,62, `dustMax` 240,
+`wetRoughnessScale` 0,45, `skyFlashColor` `#9eadef`.
 
 Czas efektów pochodzi ze skumulowanych kroków świata. Pauza zatrzymuje opad,
 porywy i wyładowania. Burza losuje następny odstęp przez kosmetyczny `Rng`,
-niezależny od RNG symulacji; port używa seeda runu i id pokoju. Ustawienie
-dostępności „błyski” nadal odcina błysk w kompozycji. Stare sceny nie otrzymują
-nowego profilu automatycznie ani nowego koloru błysku.
+niezależny od RNG symulacji (seed oprawy pokoju + `:rain`). Ustawienie
+dostępności „błyski” nadal odcina błysk w kompozycji (`skyFlash` = 0). Stare sceny
+nie otrzymują nowego profilu automatycznie ani nowego koloru błysku.
 
 Warstwy audio wykorzystują `AmbienceSynth`: filtrowany szum i istniejącą
-modulację. Źródła podążają za kamerą (stała głośność, bez przesuwania panoramy).
+modulację głośności (LFO `ambienceLfoHz` 0,18 Hz razy losowo 0,7–1,3, głębokość
+0,25; dobroć filtru 0,7). `rain` = szum, filtr górnoprzepustowy 2400 Hz; `wind` =
+szum, dolnoprzepustowy 380 Hz; `generator` = piła 52 Hz, dolnoprzepustowy 190 Hz.
+Głośność warstwy bierze się z `ambience[].gain` profilu (aktualizowana co klatkę),
+a źródła podążają za kamerą (stała głośność, bez przesuwania panoramy).
 Odblokowanie dźwięku po geście, głośność i pauza pozostają w AudioSystem.
 Wyjście ze sceny zwalnia pule, czyści audio i przywraca poprzednią mgłę,
 odbicia, kolor błysku oraz uniform połysku. Nie zmienia dźwięków kryjówki.
@@ -109,5 +256,4 @@ Przełącz na rain: powinny wrócić smugi, kolor łuny i mokre powierzchnie.
 Testy: `arenaWeather.test.ts` (schemat, profile, seed wyładowań, przywracanie
 stanu), istniejące `cityFx`/`rainShelters` (regresja starego deszczu).
 `tests/e2e/arenaWeather.spec.ts` sprawdza start portu i przełączanie siedmiu profili
-bez błędów konsoli. Test e2e przygotowano, lecz zgodnie z briefem nie uruchamiano.
-GLSL, wygląd i odsłuch wymagają oceny w przeglądarce przez managera.
+bez błędów konsoli. GLSL, wygląd i odsłuch wymagają oceny w przeglądarce.

@@ -55,8 +55,13 @@ ogłuszenie. Wyładowanie omija nosiciela, więc w starciu z jednym celem nie do
 obrażeń.
 
 Bramka: tylko wariant „otwarta przestrzeń”. Dla każdego wroga każda ścieżka ma
-mieć TTK paczki w `[mediana / 2, mediana × 2]` (oba końce bez zaokrąglania; ∞ to
-niezaliczenie). Wariant „cel przy ścianie” (0 m, wall-slam rozliczany w następnym
+mieć TTK paczki w `[mediana / 2, mediana × 2]`, gdzie mediana to środkowa z trzech
+wartości (Ostrze, Moc, Strzelec; oba końce bez zaokrąglania; ∞ i mediana ≤ 0 to
+niezaliczenie). Wrogowie w teście: wszystkie typy z `src/data/enemies/` poza bossami
+(obecnie assaulter, drone, executor, gunner, hacker, shielder, sniper, turret;
+`securityChief` pominięty, bo jego TTK wymaga symulacji faz). Ostrze używa
+`plasmaBlade` (lepszy z `combo` i `heavy`), ścieżki biorą ekwipunek z presetów
+`blade`, `gunner`, `resonance`. Wariant „cel przy ścianie” (0 m, wall-slam rozliczany w następnym
 kroku) zostaje w raporcie jako informacyjny: wall-slam to nagroda za grę
 pozycyjną, nie część bramki.
 
@@ -125,6 +130,7 @@ Rozstrzygnięte (stare propozycje z pierwszej wersji symulatora — usunięcie
 
 ### Wynik po zmianie ekwipunku (dane mocy bez zmian)
 
+(Stan historyczny z chwili decyzji, wtedy 6 typów wrogów; dziś 8, z `hacker` i `turret`.)
 Bramka NIEZALICZONA, 6/6 wrogów poza przedziałem. Ścieżka Mocy (chain 18 / 30 energii /
 1,2 s, Pchnięcie 10 / 25 / 0,6 s) potrzebowała na paczkę 5 wrogów: assaulter 77,8 s,
 drone 17,9 s, executor ∞, gunner 62,8 s, shielder ∞, sniper 47,8 s przy medianach
@@ -178,3 +184,27 @@ co 0,4 s, Pchnięcie 35 obrażeń przy koszcie 10, wolniejsza snajperka).
 
 Symulator nie modeluje Chwytu (`grab`), dlatego `npm run balance` zostawia
 ostrzeżenie „Pominięto nieobsługiwany rodzaj mocy: grab”.
+
+Wartości z tabeli „Zastosowane wartości” zgadzają się z danymi w `src/data` (sprawdzone
+20.11.2026): `chain` damage 60 / cost 10 / cooldownS 0,4; `push` damage 35 / cost 10 /
+cooldownS 0,6; `sniper` damage 80, fireRateHz 0,8; `scatter` 8 śrutów × 10; ekwipunek
+`resonance` = moce `chain`, `push`; HP wrogów: assaulter 60, drone 18, executor 220,
+gunner 45, shielder 90, sniper 35. Energia gracza w symulacji: 100, regeneracja 25/s po
+opóźnieniu `tuning.powers.energyRegenDelayS` = 2 s; ciepło: pojemność 100, chłodzenie 45/s;
+limit czasu pary 120 s (`MAX_TIME_S`), `PACK_SIZE` = 5.
+
+## Balans meta-progresu (bramka F4)
+
+`src/balance/metaSim.ts` (test `tests/unit/metaBalance.test.ts`, sekcja w `docs/balance.md`)
+symuluje 5 typowych runów nowego gracza na Poziomie zagrożenia 0 przez prawdziwy
+`MetaManager.applyRun`: stała ścieżka sektora (walka, walka, walka, elita, sklep, elita,
+odpoczynek, boss), 6 zabójstw w pokoju walki, 10 w elicie, 5 z bossem; `roomsCleared` to
+wszystkie ukończone węzły. Runy: śmierć w warstwie 3, śmierć w warstwie 5, zwycięstwo,
+śmierć w warstwie 6, zwycięstwo. Po każdym runie gracz zachłannie kupuje talenty (wg kosztu,
+potem id) i odblokowania (wg sumy kosztu, potem id). Bramka: poziom po 5 runach 5–8, 2–4
+zakupy odblokowań, pierwszy run daje co najmniej 1 poziom, żaden run więcej niż 3. Wynik:
+poziom 7, 4 zakupy. Formuły nagród, krzywa poziomów i poziomy zagrożenia: `docs/systems/meta.md`.
+Raport zawiera też tabelę nagród za typowe zwycięstwo i śmierć w warstwie 5 na poziomach
+zagrożenia 0–3 (`rewardMult`: 1; 1,15; 1,3; 1,45; Rdzenie za zwycięstwo +`victoryCores`).
+Trudność (`src/data/difficulty.json`: easy, normal, hard, nightmare) nie jest częścią żadnej
+z tych symulacji; opisuje ją `docs/systems/difficulty.md`.

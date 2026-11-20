@@ -426,6 +426,7 @@ export class MetaManager {
       throw new Error(`Ostrze nieodblokowane: ${choice.blade}.`);
     this.checkList(choice.weapons, 'weapon', 'broń', this.weaponSlots);
     this.checkList(choice.powers, 'power', 'moc', this.powerSlots);
+    const modules: LoadoutChoice['modules'] = {};
     for (const [weaponId, installed] of Object.entries(choice.modules)) {
       const ids = installed.filter((id) => {
         const module = moduleDefinitions.get(id);
@@ -448,12 +449,13 @@ export class MetaManager {
           throw new Error(`Slot ${module.slot} jest już zajęty: ${weaponId}.`);
         slots.add(module.slot);
       }
+      modules[weaponId] = ids;
     }
     this.current.loadout = {
       blade: choice.blade,
       weapons: [...choice.weapons],
       powers: [...choice.powers],
-      modules: structuredClone(choice.modules),
+      modules,
     };
     this.events?.emit('loadout_changed', {
       loadout: structuredClone(this.current.loadout),
@@ -528,6 +530,7 @@ export class MetaManager {
   }
 
   debugAddXp(amount: number): void {
+    this.validateDebugAmount(amount);
     const before = this.level;
     this.current.xp += Math.max(0, Math.floor(amount));
     for (let level = before + 1; level <= this.level; level += 1)
@@ -556,11 +559,18 @@ export class MetaManager {
   }
 
   debugAddData(amount: number): void {
+    this.validateDebugAmount(amount);
     this.current.data += Math.max(0, Math.floor(amount));
   }
 
   debugAddCores(amount: number): void {
+    this.validateDebugAmount(amount);
     this.current.cores += Math.max(0, Math.floor(amount));
+  }
+
+  private validateDebugAmount(amount: number): void {
+    if (!Number.isFinite(amount) || amount < 0)
+      throw new Error('Wartość musi być skończoną liczbą ≥ 0.');
   }
 
   /** Ustawia najwyższy dostępny Poziom zagrożenia (konsola debug); wybrany poziom nie przekracza nowego limitu. */
