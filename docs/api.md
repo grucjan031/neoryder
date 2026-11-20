@@ -319,7 +319,7 @@ export interface GameEvents {
   entity_despawned: { id: EntityId };
   damage_dealt: { source: EntityId | null; target: EntityId; amount: number; tags: readonly string[] };   // F1: rozszerzone o point/dir/killed — patrz „Kontrakty F1”
   enemy_killed: { id: EntityId; killer: EntityId | null; tags: readonly string[] };
-  parry_success: { projectile: EntityId; attacker: EntityId | null };
+  parry_success: { defender: EntityId; projectile: EntityId | null; attacker: EntityId | null }; // defender = kto parował (odbiorcy filtrują po nim); projectile: null = sparowany cios wręcz
   power_used: { power: string; user: EntityId };
   hitstop: { ms: number };
 }
@@ -653,7 +653,7 @@ export function registerCommand(name: string, help: string, run: (args: string[]
 ```ts
 // zmienione
 damage_dealt: { source: EntityId | null; target: EntityId; amount: number; tags: readonly string[];
-                point: Vec3 | null; dir: Vec3 | null; knockback: number; killed: boolean };
+                point: Vec3 | null; dir: Vec3 | null; knockback: number; killed: boolean; blocked?: number }; // blocked: część zatrzymana przez blok ostrza (brak, gdy blok nie działał)
 
 // walka i zdrowie (#01)
 health_changed: { id: EntityId; current: number; max: number };
@@ -679,7 +679,7 @@ projectile_reflected: { id: EntityId; newOwner: EntityId };
 // wręcz (#07)
 melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };  // F2-11: etap 4 = bliźniacze ostrza
 melee_blocked: { defender: EntityId; attacker: EntityId | null; amount: number };
-melee_parried: { defender: EntityId; attacker: EntityId }; // sparowany cios wręcz: obrażenia 0, atakujący ogłuszony (meleeParryStunS)
+melee_parried: { defender: EntityId; attacker: EntityId; point: Vec3 }; // sparowany cios wręcz: obrażenia 0, atakujący ogłuszony (meleeParryStunS), point = iskra; zawsze razem z parry_success { projectile: null }
 
 // moce (#11)
 power_cooldown: { power: string; user: EntityId; cooldownS: number };

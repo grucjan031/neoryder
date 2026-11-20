@@ -40,6 +40,27 @@ function createTestMap(seed: string): SectorMap {
 }
 
 describe('RunManager (F3-05)', () => {
+  it.each([
+    { talents: [], maxHealth: 140 },
+    { talents: ['bladeRoot', 'bladeServoFrame'], maxHealth: 155 },
+  ])(
+    'nowy run ma pełne maxHealth $maxHealth mimo initialHp 100',
+    ({ talents, maxHealth }) => {
+      const manager = new RunManager(new EventBus(), createTestMap, {
+        initialHp: 100,
+      });
+      try {
+        const state = manager.newRun('full-health', 'blade', {
+          baseMaxHealth: 140,
+          talents,
+        });
+        expect(state.hp).toBe(maxHealth);
+      } finally {
+        manager.dispose();
+      }
+    },
+  );
+
   it('inicjalizuje nowy run, ustawia ekran map i emituje run_started', () => {
     const bus = new EventBus();
     const started: string[] = [];

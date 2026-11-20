@@ -1,12 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import { Sprite } from 'three';
 import hideout from '../../src/data/hub/hideout.json';
-import { HubStationMarkers } from '../../src/render/hubStationMarkers';
+import {
+  HubStationMarkers,
+  STATION_MARKER_COLORS,
+} from '../../src/render/hubStationMarkers';
 import { loadHubLayout } from '../../src/world/hubSchema';
 
 describe('znaczniki stacji kryjówki', () => {
   const layout = loadHubLayout(hideout);
   const floorY = layout.playerSpawn.y;
+
+  // ADR 0006: cyan gracza, czerwień wrogów i magenta Rezonansu.
+  const reservedColors = ['#00e5ff', '#e0262b', '#ff2bd6'];
+
+  it('paleta znaczników omija kolory zarezerwowane, a warsztat jest zielony', () => {
+    for (const color of Object.values(STATION_MARKER_COLORS))
+      expect(reservedColors).not.toContain(color.toLowerCase());
+    expect(STATION_MARKER_COLORS.workshop).toBe('#6dff4a');
+  });
+
+  it('nieznana stacja używa ciepłej bieli poza kolorami zarezerwowanymi', () => {
+    const station = { ...layout.stations[0]!, id: 'unknown' };
+    delete station.sign;
+    const markers = new HubStationMarkers([station], floorY);
+    try {
+      const sprite = markers.root.getObjectByName(
+        'hub-station-marker:unknown',
+      ) as Sprite;
+      const color = `#${sprite.material.color.getHexString()}`;
+      expect(reservedColors).not.toContain(color);
+      expect(color).toBe('#fff1d6');
+    } finally {
+      markers.dispose();
+    }
+  });
 
   it('tworzy znacznik dla każdej stacji, także warsztatu', () => {
     const markers = new HubStationMarkers(layout.stations, floorY);

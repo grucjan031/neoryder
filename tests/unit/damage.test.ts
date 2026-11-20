@@ -6,6 +6,7 @@ import type { StatusApplication } from '../../src/combat/damage/types';
 import { EntityRegistry } from '../../src/core/entities';
 import { Stats } from '../../src/core/stats';
 import {
+  BLOCK_SOURCE,
   DamageSystem,
   Health,
   Hitbox,
@@ -541,5 +542,78 @@ describe('queryHurtboxes (Rapier)', () => {
       ),
     ).toEqual([]);
     world.free();
+  });
+});
+
+describe('DamageSystem — blok, statusy i nietykalność (poprawki po audycie)', () => {
+  const blockingPlayer = () => {
+    const f = setup();
+    const stats = new Stats({ maxHealth: 100 });
+    stats.add({
+      stat: 'damageTaken',
+      type: 'mult',
+      value: 0.3,
+      source: BLOCK_SOURCE,
+    });
+    f.damage.register(f.player, f.playerHealth, {
+      stats,
+      invulnMs: () => 300,
+    });
+    const dealt: GameEvents['damage_dealt'][] = [];
+    f.bus.on('damage_dealt', (e) => dealt.push(e));
+    return { ...f, dealt };
+  };
+
+  it('blok zmniejsza cios i raportuje zatrzymaną część w damage_dealt.blocked', () => {
+    const f = blockingPlayer();
+    expect(
+      f.damage.deal(f.player, {
+        amount: 20,
+        source: f.enemy,
+        tags: ['#melee'],
+      }),
+    ).toBeCloseTo(6);
+    expect(f.dealt[0]!.blocked).toBeCloseTo(14);
+  });
+
+  it.each(['#status', '#hazard', '#heavy'])(
+    'blok nie dotyczy %s (pełne obrażenia, bez blocked)',
+    (tag) => {
+      const f = blockingPlayer();
+      expect(
+        f.damage.deal(f.player, { amount: 20, source: f.enemy, tags: [tag] }),
+      ).toBeCloseTo(20);
+      expect(f.dealt[0]!.blocked).toBeUndefined();
+    },
+  );
+
+  it('tik statusu nie przepada w oknie nietykalności i go nie odnawia', () => {
+    const f = setup();
+    f.damage.register(f.player, f.playerHealth, { invulnMs: () => 300 });
+    f.damage.deal(f.player, { amount: 10, source: f.enemy, tags: ['#melee'] });
+    expect(
+      f.damage.deal(f.player, {
+        amount: 5,
+        source: f.enemy,
+        tags: ['#status'],
+      }),
+    ).toBe(5);
+    // Zwykły cios nadal odbija się od okna z pierwszego trafienia.
+    expect(
+      f.damage.deal(f.player, {
+        amount: 10,
+        source: f.enemy,
+        tags: ['#melee'],
+      }),
+    ).toBe(0);
+    f.damage.step(0.3);
+    // Okno nie zostało przedłużone przez tik statusu.
+    expect(
+      f.damage.deal(f.player, {
+        amount: 10,
+        source: f.enemy,
+        tags: ['#melee'],
+      }),
+    ).toBe(10);
   });
 });

@@ -227,7 +227,12 @@ describe('AudioSystem — reguły', () => {
         'block',
       ],
       [
-        () => c.bus.emit('parry_success', { projectile: 9, attacker: 2 }),
+        () =>
+          c.bus.emit('parry_success', {
+            defender: 1,
+            projectile: 9,
+            attacker: 2,
+          }),
         'parry',
       ],
       [
