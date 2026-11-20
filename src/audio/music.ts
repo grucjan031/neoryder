@@ -143,6 +143,8 @@ export class MusicSystem {
     const ctx = this.ctx;
     if (!ctx) return;
     this.updateVolume();
+    // Zawieszony kontekst ma zamrożony czas; nuty zaplanowane teraz zagrałyby się naraz po wznowieniu.
+    if (ctx.state === 'suspended') return;
     const now = ctx.currentTime;
     this.fading = this.fading.filter((f) => {
       if (f.endTime > now) return true;
@@ -152,6 +154,14 @@ export class MusicSystem {
     const run = this.run;
     if (!run) return;
     const horizon = now + (this.opts.lookaheadS ?? 1.5);
+    const lag = now - run.time;
+    if (lag > this.opts.tuning.audio.musicMaxCatchUpS) {
+      const skipped = Math.floor(
+        (lag - this.opts.tuning.audio.musicMaxCatchUpS) / run.compiled.stepS,
+      );
+      run.step += skipped;
+      run.time += skipped * run.compiled.stepS;
+    }
     while (run.time < horizon) {
       this.scheduleStep(run);
       run.step++;
@@ -182,8 +192,16 @@ export class MusicSystem {
       this.timer.clear(this.timerHandle);
       this.timerHandle = null;
     }
+    const buses = [this.run?.bus, ...this.fading.map((f) => f.bus)];
     this.run = null;
     this.fading = [];
+    for (const bus of buses) {
+      try {
+        bus?.disconnect();
+      } catch {
+        // Kontekst mógł zostać już zamknięty.
+      }
+    }
     try {
       const now = this.ctx?.currentTime ?? 0;
       this.out?.gain.cancelScheduledValues(now);
@@ -313,6 +331,7 @@ export class MusicSystem {
       filter.connect(env);
       input = filter;
     }
+    let lastOsc: OscillatorNode | undefined;
     const cents = track.detuneCents ? [0, track.detuneCents] : [0];
     for (const freq of event.freqs) {
       for (const c of cents) {
@@ -323,7 +342,14 @@ export class MusicSystem {
         osc.connect(input);
         osc.start(t);
         osc.stop(stop);
+        lastOsc = osc;
       }
+    }
+    if (lastOsc) {
+      const chain = [lastOsc, env, head, input];
+      lastOsc.onended = () => {
+        for (const node of new Set(chain)) node.disconnect();
+      };
     }
   }
 
@@ -340,6 +366,7 @@ export class MusicSystem {
     env.connect(bus);
     osc.start(t);
     osc.stop(t + 0.35);
+    this.disconnectOnEnd(osc, env);
   }
 
   private snare(ctx: AudioBackend, bus: AudioNode, t: number, g: number): void {
@@ -356,6 +383,7 @@ export class MusicSystem {
     env.connect(bus);
     osc.start(t);
     osc.stop(t + 0.14);
+    this.disconnectOnEnd(osc, env);
   }
 
   private hat(ctx: AudioBackend, bus: AudioNode, t: number, g: number): void {
@@ -389,5 +417,17 @@ export class MusicSystem {
     env.connect(bus);
     src.start(t, this.rng.float(0, 0.8));
     src.stop(t + decay + 0.02);
+    this.disconnectOnEnd(src, filter, env);
+  }
+
+  /** Po zakończeniu źródła odpina jego węzły od szyny (nuty nie zostają w grafie). */
+  private disconnectOnEnd(
+    source: AudioScheduledSourceNode,
+    ...rest: AudioNode[]
+  ): void {
+    source.onended = () => {
+      source.disconnect();
+      for (const node of rest) node.disconnect();
+    };
   }
 }

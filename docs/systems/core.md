@@ -116,3 +116,5 @@ jest w rejestrze mocy; `focusPower.test.ts` sprawdza synchronizację mocy i świ
 z sekundą hitstopu oraz naturalne zakończenie przez `focus { durationS: 0 }`.
 `FeelSystem` śledzi hitstop z tych samych zdarzeń co `GameLoop` (pętla nie
 udostępnia pozostałego czasu); samodzielne slowmo F1 odlicza czas jak dotąd.
+
+`computeStat` obcina każdy czynnik do zera i zwraca 0 dla NaN/Infinity; `saveSettings` odświeża współdzieloną kopię z `loadSettings`.
