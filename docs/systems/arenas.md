@@ -54,7 +54,9 @@ wyczerpane, żywych ≥ `maxAlive` lub trwa odstęp `spawnIntervalS`.
 Nawigacja warstwowa (`ArenaSurfaceNavigation`, używana gdy jakikolwiek blok ma
 `walkable`; w przeciwnym razie `ArenaNavigation` buduje płaską siatkę po podłodze
 na wysokości `playerSpawn.y`, z pominięciem komórek przy obróconych blokach)
-używa pól `Int32Array` budowanych na żądanie,
+używa pól `Int32Array` budowanych na żądanie (start lub cel poza siatką — margines przy
+przeszkodzie/krawędzi — są zastępowane najbliższą przejezdną komórką w promieniu
+`tuning.arena.navFallbackCells`),
 a w kroku symulacji przegląda tylko prosty odcinek do zakrętu. Dla
 syntetycznej areny 450×300 m test używa komórek 2 m, dwóch ramp,
 trzech poziomów i pięciu stref. Sprawdza dojście ze wszystkich

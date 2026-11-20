@@ -496,6 +496,12 @@ export class Gunner implements Enemy {
             this.ctx.tuning.modes.conquest.detectRangeM))
         ? this.moveGoal
         : undefined;
+    // Marsz do celu trybu przerywa manewr osłony (stary punkt przesłaniałby marsz).
+    if (march && this.coverPhase) {
+      this.coverPhase = null;
+      this.coverExit = null;
+      this.tacticalGoal = undefined;
+    }
     const dx = target ? target.position.x - s.position.x : 0;
     const dz = target ? target.position.z - s.position.z : 0;
     const distance = Math.hypot(dx, dz);

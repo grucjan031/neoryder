@@ -13,7 +13,7 @@ export function drawImplants(
 ): string[] {
   const pool = [...definitions.values()]
     .filter((def) => !owned.includes(def.id))
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const result: string[] = [];
   const weights = sector.rewardWeights?.[type];
   while (pool.length && result.length < 3) {

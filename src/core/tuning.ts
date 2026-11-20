@@ -559,7 +559,11 @@ export const tuning = {
     barrierFlashS: 0.12,
   },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
-  arena: { maxEnemies: 30 },
+  arena: {
+    maxEnemies: 30,
+    /** Promień (komórki siatki), w którym nawigacja szuka najbliższej przejezdnej komórki dla startu/celu poza siatką. */
+    navFallbackCells: 2,
+  },
   /** Dźwięki (#14). Przepisy i reguły w src/data/audio/sfx.json. */
   audio: {
     maxVoices: 24,

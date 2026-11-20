@@ -2,6 +2,7 @@ import type { Vec3 } from '../core/math';
 import type { RoomDefinition } from './roomSchema';
 import { ArenaSurfaceNavigation } from './arenaSurfaceNavigation';
 import { freeModePosition } from './modeSchema';
+import { tuning } from '../core/tuning';
 
 /** Pola odległości po gruncie; bez fizyki, renderu i losowości. */
 export class ArenaNavigation {
@@ -62,8 +63,28 @@ export class ArenaNavigation {
     const [x, z] = key.split(',').map(Number) as [number, number];
     return [`${x - 1},${z}`, `${x + 1},${z}`, `${x},${z - 1}`, `${x},${z + 1}`];
   }
+  /** Komórka celu; poza siatką (przy ścianie/przeszkodzie) najbliższa przejezdna w małym promieniu. */
+  private resolve(p: Vec3): string {
+    const key = this.key(p);
+    if (this.cells.has(key)) return key;
+    const [kx, kz] = key.split(',').map(Number) as [number, number];
+    const r = tuning.arena.navFallbackCells;
+    let best = key;
+    let bestD = Infinity;
+    for (let x = kx - r; x <= kx + r; x++)
+      for (let z = kz - r; z <= kz + r; z++) {
+        const c = this.cells.get(`${x},${z}`);
+        if (!c) continue;
+        const d = Math.hypot(c.x - p.x, c.z - p.z);
+        if (d < bestD) {
+          bestD = d;
+          best = `${x},${z}`;
+        }
+      }
+    return best;
+  }
   private field(goal: Vec3): Map<string, number> {
-    const key = this.key(goal);
+    const key = this.resolve(goal);
     const cached = this.fields.get(key);
     if (cached) return cached;
     const result = new Map<string, number>();
