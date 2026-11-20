@@ -18,8 +18,9 @@ W arenie [HeldItem](hands.md) wybiera przedmiot w ręku: LPM — atak/strzał,
 R — zamiana ostrze/broń. 1/2/3 wybierają slot i żądają dobycia broni;
 zmiana między broniami jest natychmiastowa. Ostrze → broń trwa `hands.swapS`,
 czeka na koniec ciosu do `hands.swapBufferS`, a w trakcie zamiany strzał jest
-zablokowany. Nietrzymane bronie wyłącznie stygną (`Weapon.cool`). PPM i środkowy
-przycisk natychmiast przywracają ostrze. Gunner oraz oba buildy strzeleckich
+zablokowany. Nietrzymane bronie wyłącznie stygną (`Weapon.cool`). Z bronią w ręku
+PPM to celowanie (nie blok); środkowy przycisk (rzut) oraz PPM w trakcie zamiany
+natychmiast przywracają ostrze (szczegóły: [hands.md](hands.md)). Gunner oraz oba buildy strzeleckich
 hybryd zaczynają z bronią (`startHeld`); reset przywraca wybór z loadoutu.
 
 `src/data/weapons/*.json` są ładowane przez `import.meta.glob` i walidowane przy
@@ -80,7 +81,31 @@ symulacji, gdy broń jest gotowa. Wciśnięcie wcześniej przepada. Bufor kasuje
 przy przegrzaniu, zmianie broni (`cool`) i `reset()`. Broń automatyczna go nie używa.
 Dla `automatic: true` trzymanie strzela z częstotliwością `fireRateHz`.
 Ciepło i `weapon_fired` naliczane są raz na strzał, również dla rozpraszacza.
-Tryby `beam` i `lob` nie są jeszcze obsługiwane (F2-04).
+Tryby `beam` i `lob` opisuje sekcja F2-04.
+
+Kolejność kroku `Weapon.step(dt, input)` (`dt <= 0` nie robi nic): (1) chłodzenie
+i odliczanie blokady oraz odnowienia (`advanceCooling`; ciepło zewnętrznie
+doprowadzone do maksimum też uruchamia blokadę); (2) dla `beam` osobna ścieżka;
+(3) zbocze spustu (`pressed`) i bufor; (4) strzał, jeśli spust/bufor, brak blokady
+i odnowienie = 0. Strzał: pociski → `cooldown = 1 / fireRateHz / attackSpeed`
+(bez przenoszenia reszty czasu, więc tempo jest zaokrąglone do kroków symulacji)
+→ `shots++` → `heat.add(heatPerShot, { resetDelay: true })` → blokada, jeśli ciepło
+≥ maksimum → `weapon_fired { weapon, owner }` → `heat_changed`. `reset()` zeruje
+stan, ale nie emituje `heat_changed`.
+
+Celowanie (ADS): `WeaponInput.aim` (0–1, wygładzone przez `HeldItem`) skaluje stożek
+rozrzutu: `spreadScale = 1 + (tuning.player.aim.spread × aimSpreadScale − 1) × aim`
+(`aimSpreadScale` z definicji, domyślnie 1; `tuning.player.aim.spread` = 0,4).
+Laser nie używa `aim` ani `attackSpeed`. Pozostałe opcjonalne pola definicji,
+wszystkie dodatnie: `aimFovScale` (0,2–1; domyślnie `tuning.player.aim.fovScale`),
+`aimInScale` (mnożnik `aim.inS`), `aimSensitivityScale` (mnożnik `aim.sensitivity`);
+ustawiają je moduły optyki ([weaponModules.md](weaponModules.md)). Pole `model`
+(nazwa GLB) i `grip` (chwyt dłoni, [hands.md](hands.md)) są tylko widokiem FPP.
+Pola pocisków mają też `ricochets` (opcjonalne, liczba odbić od świata) oraz
+`pierceCount` (domyślnie 1) i `pierceFalloff` (domyślnie 0) — dla każdego trybu
+pociskowego `pierceCount > 1` włącza przebicie (tak działa moduł Przebicie).
+Kolejność losowań `Rng` na pocisk: kąt `float(0, 2π)`, potem promień
+`sqrt(next()) × tan(spreadDeg)`; wynik to znormalizowany `forward + right·x + up·y`.
 
 Wszystkie dane mają tag `#gun`. Wstępny balans względem blastera (F2-18 dopracuje TTK):
 
@@ -145,6 +170,27 @@ obrażenia przez `DamageSystem.deal`, z mnożnikiem hurtboxa oraz punktem i kier
 trafienia. Bez `pierce` pocisk wraca do puli przed emisją obrażeń, więc trafia
 tylko raz. Trafienie świata lub koniec życia również niszczy encję i zwalnia slot.
 Dodatkowe reguły drużyn i nietykalności nadal należą do `DamageSystem`.
+Pocisk trafia tylko hurtboxy (poza właścicielem i już trafionymi) oraz collidery
+grupy `World`; kapsuły ruchu postaci są pomijane. Kwota obrażeń: `damage ×
+multiplier hurtboxa`; `damage_dealt` powstaje w `DamageSystem`.
+
+Kolejność w kroku jednego pocisku: ruch (dla `gravity ≠ 0` najpierw całkowanie
+balistyczne, kierunek = wektor przemieszczenia) → pętla sweepów po pozostałym
+dystansie → odjęcie `dt` od `remainingS` → wygaśnięcie (wybuch dla `lob`, inaczej
+zwolnienie). Przy trafieniu hurtboxa: najpierw interceptory, potem rykoszet (tylko
+świat), wybuch, a dopiero na końcu zwykłe trafienie.
+
+Interceptory: `addInterceptor(fn)` (zwraca funkcję wyrejestrowania) dostaje
+`ProjectileHit { projectile, owner, team, target, point, dir, speed }` przed
+zadaniem obrażeń; `true` oznacza przejęcie (Bariera, parowanie ostrzem).
+Przejęty pocisk zostaje 0,05 m przed punktem trafienia, kończy krok bez
+odejmowania czasu życia i nie zapisuje celu jako trafionego. Gdy interceptor wywołał
+`reflect`, następny krok leci już w nowym kierunku i z nową drużyną.
+
+Rykoszet (`ricochets`): trafienie w świat (bez hurtboxa) przy dodatnim liczniku
+odbija kierunek i wektor prędkości `d − 2(d·n)n`, zmniejsza licznik, przesuwa
+pocisk o 1e-4 m od ściany i leci dalej przez pozostały dystans kroku. Nie czyści
+`hitTargets` (cel trafiony przed odbiciem nie dostanie drugiego trafienia).
 
 `ProjectileSpec.pierce: { count, falloff }` pozwala trafić łącznie do `count`
 różnych encji. Po trafieniu system omiata pozostały odcinek tego samego kroku,
@@ -156,7 +202,7 @@ Nowy pocisk w slocie zeruje historię i nadpisuje statusy oraz parametry przebic
 ID slotu jest sprawdzane po synchronicznych zdarzeniach, aby stary sweep nie
 przesuwał nowego pocisku utworzonego przez handler obrażeń.
 
-`reflect(id, newOwner, newTeam, dir)` zmienia właściciela, kierunek oraz drużynę
+`reflect(id, newOwner, newTeam, dir, { speedMult?, damageMult? })` zmienia właściciela, kierunek oraz drużynę
 w slocie i `EntityRegistry.setTeam`, emitując `projectile_reflected`.
 Następny sweep używa nowego filtra; prędkość i obrażenia są zachowane (poza
 jawnymi mnożnikami w opcjach). Czas życia odnawia się do pierwotnego `lifetimeS`
@@ -236,6 +282,10 @@ W chwili tiku aktualny cel otrzymuje `dps / tickHz` przez `DamageSystem.deal`
 z tagami i statusami. Pierwszy tik następuje po `1 / tickHz` s; puszczenie spustu
 lub blokada zeruje zegar tików. Hitstop nie wykonuje zapytań, tików ani ogrzewania.
 Ciepło rośnie o `heatPerS × dt`, opóźnia chłodzenie i uruchamia zwykłą blokadę.
+Jeśli w jednym kroku minie kilka okresów tiku, wszystkie są rozliczone w pętli;
+tik bez celu (lub z celem poza `rangeM`) zużywa okres bez obrażeń. Wiązka jest
+aktywna tylko gdy `triggerHeld` i brak blokady; ciepło dolicza się co krok
+z `resetDelay: true`, a `heat_changed` jest emitowane w każdym kroku wiązki.
 `weapon_fired` i licznik `shots` oznaczają początek ciągłego strzału (także po
 zakończeniu blokady przy trzymanym spuście). Stan `weapon.beam` udostępnia
 `active`, `from`, `to`; pozostałe tryby zwracają `null`. Laser wymaga zależności
@@ -252,6 +302,11 @@ cel otrzymuje przeciążenie raz. `ProjectileSpec.explode` zawiera `radiusM`,
 hurtboxy, po jednym trafieniu obszarowym na encję, bez mnożnika hurtboxa.
 Właściciel jest pomijany; filtr drużyn pozostaje w `DamageSystem`.
 Wybuch obejmuje również hurtboxy za przeszkodą w promieniu (bez testu widoczności).
+Trafiony bezpośrednio wróg dostaje `damage × multiplier hurtboxa` (statusy granatu
+idą tylko w wybuchu), po czym ten sam cel ponownie obrażenia obszarowe
+`explosionDamage` (bez `dir`). Kolejność: zwolnienie slotu → trafienie bezpośrednie
+→ obrażenia obszarowe po kolei → zdarzenie `explosion`. Rykoszet (jeśli zostały
+odbicia) ma pierwszeństwo przed wybuchem przy trafieniu w świat.
 Zwolnienie slotu poprzedza emisję obrażeń i zdarzeń, więc handler może bezpiecznie
 utworzyć nowy pocisk. Przepełnienie puli i `dispose` usuwają pociski bez wybuchu.
 Pociski bez `gravity` i `explode` zachowują dotychczasowy ruch i trafienia.
@@ -310,7 +365,8 @@ jedną klatkę) i `tuning.weapons.muzzleFlashSize` (m), oba w lil-gui. Test
 ### Ekwipunek areny (F2-15)
 
 Arena tworzy osobną instancję `Weapon` dla każdej pozycji `Loadout.weapons`.
-Aktywna dostaje `step(dt, input)` ze spustem R. Pozostałe dostają `cool(dt)`:
+Aktywna dostaje `step(dt, input)` ze spustem LPM (`attack`, tylko gdy w ręku
+jest broń). Pozostałe dostają `cool(dt)`:
 chłodzenie z tym samym opóźnieniem, odliczanie blokady przegrzania i czasu
 do kolejnego strzału, bez `heat_changed` ani strzałów. Metoda zwalnia też spust,
 zeruje zegar tików i wyłącza promień; `cool(0)` robi tylko tę dezaktywację.
