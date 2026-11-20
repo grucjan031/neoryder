@@ -178,7 +178,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S4-03 Prototypy ratowania NPC i wagonu
 
-- **P1** · Wykonawca · Cz 2 · Ag M · zależności: —
+- **P1** · Wykonawca · Cz 2 · Ag M · zależności: — · status: zaimplementowane, czeka na playtest (sceny `?scene=escort-test` i `?scene=payload-test`, raport `docs/systems/prototypes-s4-03.md`) · decyzja D2 właściciela
 - **Kryteria:** proste poziomy testowe: więzień idzie do punktu ewakuacji i omija przeszkody; wagon jedzie po trasie z postojami. Raport kosztu i ryzyk.
 - **Weryfikacja:** decyzja właściciela o wariancie rozszerzonym (wstęp do D2).
 

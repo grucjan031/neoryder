@@ -18,6 +18,8 @@ import { DebrisTest } from './debrisTest';
 import { GrabTest } from './grabTest';
 import { MapTest } from './mapTest';
 import { createRoomTest } from './roomTest';
+import { createEscortTest } from './escortTest';
+import { createPayloadTest } from './payloadTest';
 import { BossTest } from './bossTest';
 import { RunScene } from './run';
 import { MissionScene } from './mission';
@@ -67,4 +69,6 @@ export const scenes: Record<string, SceneFactory> = {
   'debris-test': () => new DebrisTest(),
   'grab-test': () => new GrabTest(),
   'room-test': () => createRoomTest(),
+  'escort-test': () => createEscortTest(),
+  'payload-test': () => createPayloadTest(),
 };

@@ -1203,6 +1203,46 @@ export const tuning = {
     firePlanePhase: 1.7,
   },
   sandbox: { cubeSpawnHeight: 6 },
+  /** S4-03: prototypy eskorty więźnia i wagonu (sceny `escort-test`, `payload-test`). */
+  prototypes: {
+    escort: {
+      maxHealth: 120,
+      /** Marsz za graczem; powyżej `catchUpDistanceM` więzień biegnie z `catchUpSpeedMps`. */
+      speedMps: 4.5,
+      catchUpSpeedMps: 8,
+      followDistanceM: 3,
+      catchUpDistanceM: 10,
+      /** Dalej niż leashM od gracza więzień staje i czeka; rusza ponownie w leashResumeM. */
+      leashM: 25,
+      leashResumeM: 20,
+      /** Uwolnienie: gracz stoi w freeRadiusM przez freeHoldS (jak cele „interact” misji). */
+      freeRadiusM: 2.5,
+      freeHoldS: 1.5,
+      evacRadiusM: 4,
+      /** Utknięcie: w `following` przesunięcie < stuckEpsM przez stuckS. */
+      stuckS: 2.5,
+      stuckEpsM: 0.5,
+      unstickMinStepM: 0.5,
+      colliderHeightM: 1.7,
+      colliderRadiusM: 0.4,
+      markerHeightM: 8,
+      animFadeS: 0.2,
+    },
+    payload: {
+      maxHealth: 400,
+      speedMps: 3.5,
+      /** Gracz w tym promieniu od wagonu go „pcha” (wagon jedzie). */
+      pushRadiusM: 9,
+      /** Żywy wróg w tym promieniu zatrzymuje wagon. */
+      contestRadiusM: 22,
+      /** Połowy wymiarów hurtboxa (model `port_flatcar`: 14 × 3,8 × 3 m). */
+      bodyHalfLengthM: 7,
+      bodyHalfHeightM: 1.9,
+      bodyHalfWidthM: 1.5,
+      markerHeightM: 10,
+      stopPostHeightM: 4,
+    },
+  },
 };
 export type Tuning = typeof tuning;
 

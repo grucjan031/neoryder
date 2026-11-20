@@ -1,0 +1,38 @@
+{
+  "id": "escortTest",
+  "roomId": "arenaContainerPort",
+  "prisoner": { "x": -140, "y": 0, "z": 40 },
+  "evacuation": { "x": -62, "y": 0, "z": -8 },
+  "pursuitWave": "pursuit",
+  "waves": {
+    "pursuit": {
+      "id": "escortPursuit",
+      "firstBreakS": 4,
+      "breakS": 8,
+      "maxAlive": 5,
+      "minSpawnDistance": 20,
+      "spawnPoints": [
+        { "x": -100, "z": -34 },
+        { "x": -100, "z": 36 },
+        { "x": -62, "z": 12 },
+        { "x": 0, "z": -8 }
+      ],
+      "waves": [
+        {
+          "spawnIntervalS": 1.2,
+          "groups": [
+            { "enemy": "assaulter", "count": 2 },
+            { "enemy": "gunner", "count": 1 }
+          ]
+        },
+        {
+          "spawnIntervalS": 1,
+          "groups": [
+            { "enemy": "assaulter", "count": 3 },
+            { "enemy": "gunner", "count": 1 }
+          ]
+        }
+      ]
+    }
+  }
+}
