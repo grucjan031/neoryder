@@ -389,7 +389,11 @@ describe('Szturmowiec — prawdziwy Rapier', () => {
     f.damage.addGuard(f.player, (info) => {
       if (info.source !== f.enemy.id) return 1;
       parried++;
-      f.bus.emit('melee_parried', { defender: f.player, attacker: f.enemy.id });
+      f.bus.emit('melee_parried', {
+        defender: f.player,
+        attacker: f.enemy.id,
+        point: { x: 0, y: 1, z: 1 },
+      });
       return 0;
     });
     for (let i = 0; i < 600 && parried === 0; i++) f.steps();
@@ -404,7 +408,11 @@ describe('Szturmowiec — prawdziwy Rapier', () => {
     const stunned = vi.fn();
     f.bus.on('enemy_stunned', stunned);
     f.steps();
-    f.bus.emit('melee_parried', { defender: f.player, attacker: f.enemy.id });
+    f.bus.emit('melee_parried', {
+      defender: f.player,
+      attacker: f.enemy.id,
+      point: { x: 0, y: 1, z: 1 },
+    });
     expect(stunned).toHaveBeenCalledExactlyOnceWith({
       id: f.enemy.id,
       durationS: f.settings.melee.meleeParryStunS,

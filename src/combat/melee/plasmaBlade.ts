@@ -248,10 +248,18 @@ export class PlasmaBlade {
         Math.cos(((arcDeg / 2) * Math.PI) / 180)
     )
       return 1;
+    const spark = m.meleeParrySparkM / len;
     this.bus.emit('melee_parried', {
       defender: this.deps.owner,
       attacker: info.source,
+      point: {
+        x: origin.x + dx * Math.min(1, spark),
+        y: origin.y + m.meleeParrySparkDropM,
+        z: origin.z + dz * Math.min(1, spark),
+      },
     });
+    // Parowanie wręcz liczy się jak każde parowanie (implanty, synergie, naszywki, energia).
+    this.bus.emit('parry_success', { projectile: null, attacker: info.source });
     this.bus.emit('hitstop', { ms: m.parryHitstopMs });
     this.bus.emit('camera_shake', {
       intensity: m.parryShake,

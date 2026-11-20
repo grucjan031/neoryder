@@ -50,6 +50,10 @@ Z menu wybierz „Kryjówka”, podejdź do tablicy misji i rozpocznij run.
 | `npm run build`   | build produkcyjny do `dist/`                    |
 | `npm run balance` | symulacja balansu, raport w `docs/balance.md`   |
 
+## Wdrożenie
+
+Produkcja i podgląd każdego PR idą przez Vercel (integracja z GitHubem): Vercel sam wykrywa Vite, buduje `npm run build` i publikuje `dist/`. Repo nie ma innej konfiguracji hostingu.
+
 ## Dokumentacja
 
 - `docs/gdd.md` — projekt gry

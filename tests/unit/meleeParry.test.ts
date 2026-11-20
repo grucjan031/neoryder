@@ -48,14 +48,30 @@ function setup(enemyZ = -2, knowsPosition = true) {
     structuredClone(tuning),
   );
   let parried = 0;
-  bus.on('melee_parried', () => parried++);
+  const successes: { projectile: number | null; attacker: number | null }[] =
+    [];
+  const points: { x: number; y: number; z: number }[] = [];
+  bus.on('melee_parried', ({ point }) => {
+    parried++;
+    points.push(point);
+  });
+  bus.on('parry_success', (e) => successes.push(e));
   const hit = (tags: string[]) =>
     damage.deal(player, { amount: 20, source: enemy, tags });
   const stepFor = (s: number, held: Action[]) => {
     for (let i = 0; i < Math.round(s / SIM_DT); i++)
       blade.step(SIM_DT, input(held));
   };
-  return { hit, stepFor, health, blade, parried: () => parried };
+  return {
+    hit,
+    stepFor,
+    health,
+    blade,
+    parried: () => parried,
+    successes,
+    points,
+    enemy,
+  };
 }
 
 describe('parowanie ciosów wręcz', () => {
@@ -131,6 +147,24 @@ describe('parowanie ciosów wręcz', () => {
     expect(t.hit(['#melee'])).toBe(0);
     expect(t.health.current).toBe(100);
     expect(t.parried()).toBe(1);
+  });
+
+  it('parowanie wręcz liczy się jako parry_success (bez pocisku), iskra przed graczem', () => {
+    const t = setup();
+    t.stepFor(0.05, ['block']);
+    t.hit(['#melee']);
+    expect(t.successes).toEqual([{ projectile: null, attacker: t.enemy }]);
+    const p = t.points[0]!;
+    expect(p.z).toBeCloseTo(-tuning.melee.meleeParrySparkM);
+    expect(p.x).toBeCloseTo(0);
+    expect(p.y).toBeCloseTo(1.6 + tuning.melee.meleeParrySparkDropM);
+  });
+
+  it('bez parowania nie ma parry_success', () => {
+    const t = setup();
+    t.stepFor((tuning.melee.meleeParryWindowMs + 100) / 1000, ['block']);
+    t.hit(['#melee']);
+    expect(t.successes).toEqual([]);
   });
 
   it('blok poza oknem działa jak dotąd (redukcja, bez parowania)', () => {

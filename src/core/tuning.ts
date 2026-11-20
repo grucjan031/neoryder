@@ -538,6 +538,9 @@ export const tuning = {
     /** Ogłuszenie i odrzut wroga, którego cios został sparowany. */
     meleeParryStunS: 0.9,
     meleeParryKnockback: 4,
+    /** Iskra parowania wręcz: odległość od oczu w stronę atakującego i obniżenie [m]. */
+    meleeParrySparkM: 0.8,
+    meleeParrySparkDropM: -0.35,
     parrySpeedMult: 1.8,
     parryDamageMult: 2,
   },
@@ -831,6 +834,8 @@ export const tuning = {
     /** Iskry trafień: cyan od gracza, czerwone od wrogów. */
     maxHitSparks: 128,
     hitSparkCount: 6,
+    /** Iskry sparowanego ciosu wręcz (vfx/hitSparks.ts, zdarzenie melee_parried). */
+    parrySparkCount: 18,
     hitSparkSpeedMS: 7,
     hitSparkSpreadMS: 3.5,
     hitSparkLifeS: 0.28,
