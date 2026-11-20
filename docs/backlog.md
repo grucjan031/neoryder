@@ -8,7 +8,7 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | -------------------------------------- | -------------------------------------------------------------- |
 | Rzut ostrzem (bumerang) i dash-cięcie | Zaplanowane na F2; F1 weryfikuje podstawy ostrza — **zaimplementowane, czeka na playtest (`plasmaBlade`: stany `throwing`, `dashCut`)** |
 | Warianty ostrzy (podwójne, dwustronne) | F2, wymaga stabilnego combo i danych broni — **zaimplementowane, czeka na playtest (`src/data/blades`: `twinBlades`, `staffBlade`)** |
-| Parowanie ataków wręcz                 | Najpierw parowanie pocisków; osobne issue po bramce F1         |
+| Parowanie ataków wręcz | Najpierw parowanie pocisków; osobne issue po bramce F1 — **zaimplementowane, czeka na playtest (`meleeParryWindowMs`, `docs/systems/melee.md`)** |
 | Wspinaczka, bieg po ścianach           | Ryzyko dla czytelności aren, brak pewności, że wzmacnia filary |
 | Wykończenia (execution) z animacją     | Po ustaleniu feel hitstopu; wymaga animacji                    |
 | Rzucanie obiektami fizycznymi (Chwyt) | F2 (moc Chwyt i rzut) — **zaimplementowane, czeka na playtest (moc `grab`)** |

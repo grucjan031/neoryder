@@ -206,6 +206,14 @@ oraz tolerancję późnego kliknięcia.
 - Scena `?scene=parry-test`: wariant piaskownicy, w którym środkowy manekin co 1,6 s strzela wolnym pociskiem (9 m/s, 12 obrażeń) w gracza. Ćwiczenie: wciśnij PPM w ostatniej chwili.
 - Testy: `tests/unit/parry.test.ts` (prawdziwy Rapier: odbicie w oknie trafia strzelca ×2, blok poza oknem −70% bez odbicia, brak bloku = obrażenia, pocisk z tyłu nieparowany), `tests/e2e/parryTest.spec.ts`.
 
+## Parowanie ciosów wręcz
+
+- **Warunki:** blok trwa nie dłużej niż `meleeParryWindowMs` (200 ms), cios ma tag `#melee` i nie ma `#heavy` (cios nie do zablokowania, bursztynowa zapowiedź, przebija także zwykły blok), atakujący jest w łuku `parryArcDeg`/2 przed graczem.
+- **Efekt:** obrażenia zanegowane (guard `0` dopisany przez `DamageSystem.addGuard`), zdarzenie `melee_parried { defender, attacker }`, hitstop `parryHitstopMs`, wstrząs `parryShake`, energia +`powers.parryEnergy`, dźwięk `parry`. Atakujący (Szturmowiec) dostaje stan `stunned` na `meleeParryStunS` (0,9 s) i odrzut `meleeParryKnockback` (4); jego cios jest przerwany.
+- Brak pozycji atakującego (`positionOf` zwraca `null`) wyklucza parowanie — łuku nie da się sprawdzić.
+- Blok poza oknem działa jak dotąd (−70%, koszt energii). Synergie i osiągnięcia liczące `parry_success` nie liczą jeszcze parowania wręcz (osobne zdarzenie).
+- Testy: `tests/unit/meleeParry.test.ts`, `tests/unit/enemies.test.ts` (ogłuszenie, prawdziwy cios sparowany w trakcie `strike`).
+
 ## Warianty ostrzy (F2-11)
 
 Jedna klasa `PlasmaBlade`, różnice w danych `src/data/blades/<id>.json` (zod, `bladeDefinitions`) i w kształcie trafienia ciężkiego ataku (`heavyShape`: `arc` | `spin`). Wariant wybiera `resolveBlade(loadout.blade, nadpisanie)`: ekran buildu (rząd „Ostrze:”) i `?blade=<id>` nadpisują ostrze ekwipunku na cały run. Zmiana wariantu w trakcie sceny: `PlasmaBlade.setDefinition` (reset stanu ostrza).

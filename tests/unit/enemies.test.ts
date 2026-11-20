@@ -383,6 +383,37 @@ describe('Szturmowiec — prawdziwy Rapier', () => {
     expect(f.enemy.current.state).toBe('chase');
   });
 
+  it('survives a real swing that gets parried mid-strike (hitbox cleared by stun)', () => {
+    const f = setup();
+    let parried = 0;
+    f.damage.addGuard(f.player, (info) => {
+      if (info.source !== f.enemy.id) return 1;
+      parried++;
+      f.bus.emit('melee_parried', { defender: f.player, attacker: f.enemy.id });
+      return 0;
+    });
+    for (let i = 0; i < 600 && parried === 0; i++) f.steps();
+    expect(parried).toBe(1);
+    expect(f.enemy.current.state).toBe('stunned');
+    expect(f.health.current).toBe(10000);
+    expect(() => f.steps(10)).not.toThrow();
+  });
+
+  it('stuns and pushes back an assaulter whose melee hit was parried', () => {
+    const f = setup();
+    const stunned = vi.fn();
+    f.bus.on('enemy_stunned', stunned);
+    f.steps();
+    f.bus.emit('melee_parried', { defender: f.player, attacker: f.enemy.id });
+    expect(stunned).toHaveBeenCalledExactlyOnceWith({
+      id: f.enemy.id,
+      durationS: f.settings.melee.meleeParryStunS,
+    });
+    expect(f.enemy.current.state).toBe('stunned');
+    f.steps(Math.round(f.settings.melee.meleeParryStunS / SIM_DT) + 1);
+    expect(f.enemy.current.state).not.toBe('stunned');
+  });
+
   it('uses knockback threshold without heavy, resolves null dir from known attacker and ignores unknown direction', () => {
     const f = setup();
     f.damage.deal(f.enemy.id, {

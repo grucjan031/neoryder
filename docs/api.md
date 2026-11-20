@@ -679,6 +679,7 @@ projectile_reflected: { id: EntityId; newOwner: EntityId };
 // wręcz (#07)
 melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };  // F2-11: etap 4 = bliźniacze ostrza
 melee_blocked: { defender: EntityId; attacker: EntityId | null; amount: number };
+melee_parried: { defender: EntityId; attacker: EntityId }; // sparowany cios wręcz: obrażenia 0, atakujący ogłuszony (meleeParryStunS)
 
 // moce (#11)
 power_cooldown: { power: string; user: EntityId; cooldownS: number };
@@ -941,6 +942,12 @@ F2-14: `DamageTargetOptions.guard?: (info: DamageInfo) => number` zwraca
 mnożnik 0–1. `DamageSystem.deal` woła go po filtrze drużyn i nietykalności,
 przed `damageTaken`. Wynik ≤ 0 blokuje trafienie: zwrot 0, bez `damage_dealt`
 i pozostałych zdarzeń obrażeń. Bez `guard` mnożnik wynosi 1.
+
+`DamageSystem.addGuard(target, guard) => () => void` dokłada obronę niezależną
+od `register` (można wołać przed i po rejestracji celu); mnożniki są
+mnożone z `opts.guard`. Właściciel musi wywołać zwróconą funkcję w `dispose`.
+Guard może synchronicznie emitować zdarzenia (np. `melee_parried`), więc
+atakujący po `deal` nie może zakładać, że jego hitbox nadal istnieje.
 
 `kind: 'shielder' | 'executor'` używa klasy `Assaulter`. Opcjonalne dane:
 `shield: { arcDeg, downS, blocksTags }`, `parry: { cooldownS }`,

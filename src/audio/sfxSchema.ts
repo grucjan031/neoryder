@@ -10,6 +10,7 @@ export const SFX_EVENTS = [
   'melee_swing',
   'melee_blocked',
   'parry_success',
+  'melee_parried',
   'weapon_fired',
   'projectile_spawned',
   'heat_changed',

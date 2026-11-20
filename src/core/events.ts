@@ -77,6 +77,8 @@ export interface GameEvents {
   projectile_reflected: { id: EntityId; newOwner: EntityId };
   // F1 — wręcz (#07)
   melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };
+  /** Sparowany cios wręcz (blok w oknie `meleeParryWindowMs`): obrażenia zanegowane, atakujący ogłuszony. */
+  melee_parried: { defender: EntityId; attacker: EntityId };
   melee_blocked: {
     defender: EntityId;
     attacker: EntityId | null;

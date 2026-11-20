@@ -1050,6 +1050,10 @@
       "sound": "parry"
     },
     {
+      "event": "melee_parried",
+      "sound": "parry"
+    },
+    {
       "event": "weapon_fired",
       "when": {
         "actorIsPlayer": true
