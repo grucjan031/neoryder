@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
 import type { RunState } from '../../src/core/runTypes';
+import { LOAD_TIMEOUT } from './helpers';
 
 test('F5 w pokoju zachowuje kredyty, ale wymaga powtórzenia pokoju', async ({
   playwright,
   baseURL,
 }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(240_000);
   const browser = await playwright.chromium.launch({
     args: [
       '--use-angle=swiftshader',
@@ -20,12 +21,17 @@ test('F5 w pokoju zachowuje kredyty, ale wymaga powtórzenia pokoju', async ({
     const command = (text: string) =>
       page.evaluate((value) => window.__neoryder?.command(value), text);
     await page.goto('/?scene=run&seed=test1&debug=1&fx=lite');
-    await expect.poll(() => query('screen')).toBe('map');
+    await expect
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+      .toBe('map');
     await command('god');
     const before = (await query('runState')) as RunState;
     const node = before.map.layers[0]![0]!.id;
     await command(`run node ${node}`);
-    await expect.poll(() => query('loading')).toBe(false);
+    // Pokój w SwiftShader na runnerze CI ładuje się dłużej niż domyślne 30 s.
+    await expect
+      .poll(() => query('loading'), { timeout: LOAD_TIMEOUT })
+      .toBe(false);
     expect(await command('spawn drone 2')).toBe('Utworzono: 2');
     await command('kill all');
     await expect
@@ -36,7 +42,9 @@ test('F5 w pokoju zachowuje kredyty, ale wymaga powtórzenia pokoju', async ({
     await page.waitForTimeout(3000);
     await expect.poll(() => query('savePending')).toBe(false);
     await page.reload();
-    await expect.poll(() => query('screen')).toBe('map');
+    await expect
+      .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+      .toBe('map');
     const restored = (await query('runState')) as RunState;
     expect(restored.credits).toBeGreaterThanOrEqual(earned);
     expect(restored.currentNodeId).toBe(before.currentNodeId);

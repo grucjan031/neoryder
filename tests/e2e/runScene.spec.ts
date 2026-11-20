@@ -113,6 +113,12 @@ test('run: dojście do bossa, kill all po progach faz i ekran zwycięstwa', asyn
     page.evaluate((key) => window.__neoryder?.query(key), name);
   const command = (text: string) =>
     page.evaluate((cmd) => window.__neoryder?.command(cmd), text);
+  // Na wolnym runnerze CI gracz potrafił zginąć w pokoju, zanim `run clear` zadziałał
+  // (ekran `summary` zamiast `reward`); test sprawdza przejście mapy i bossa, nie walkę.
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('map');
+  await command('god');
   // Przejście mapy: pierwszy dostępny węzeł każdej warstwy aż do bossa.
   for (let layer = 0; layer < 8; layer++) {
     await expect
@@ -137,7 +143,6 @@ test('run: dojście do bossa, kill all po progach faz i ekran zwycięstwa', asyn
   expect(await query('room')).toBe('bossRoom');
   expect(await query('phase')).toBe('stopped');
   expect(await query('boss')).toMatchObject({ phase: 1, hp: 900 });
-  await command('god');
   // Każde „kill all” przechodzi najwyżej jeden próg fazy (nietykalność przejścia).
   for (let i = 0; i < 3; i++) {
     await waitSimSteps(page, 75);
