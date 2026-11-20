@@ -9,7 +9,7 @@
         "Nie dotykaj spawarki, chyba że chcesz zostać bez brwi. Masz Dane? W warsztacie odblokujesz nowe zabawki i moce.",
         "Twoje sloty ekwipunku to nie worek bez dna. Wybierz przed wyjściem to, co faktycznie ocali ci skórę w sektorze Kurogane.",
         "Pancerze Kurogane Arms są grube, ale ich chłodzenie broni to żart. Pilnuj własnego przegrzania, bo zostaniesz z gorącym złomem.",
-        "Ostrze plazmowe trzyma kalibrację idealnie, sam je stroiłam. Jak je zarysujesz na tarczy, to sam będziesz je polerował.",
+        "Ostrze plazmowe trzyma kalibrację idealnie, sama je stroiłam. Jak je zarysujesz na tarczy, to sam będziesz je polerował.",
         "Ta stara stacja metra sypie się szybciej niż tanie implanty Helixy, ale mój warsztat przeżyje nas wszystkich."
       ],
       "reactions": {
@@ -393,7 +393,7 @@
       "lines": [
         "W zachodnim tunelu nic nie leży za darmo — części za baterie, baterie za czyste filtry, wszystko ma swoją cenę. Nawet cisza, którą trzyma przy wejściu Grzesiek.",
         "Jeśli zbierasz Dane i Rdzenie z akcji, zajrzyj do warsztatu Miry. Odblokujesz tam nie tylko nowe bronie i moce, ale też dodatkowe sloty na ekwipunek.",
-        "Do każdej broni palnej wkręcisz dwa moduły — od Rykoszetu i Przebicia po Podpalenie czy Nadprzewodnik. Dobry mod zmienia zwykły pistolet w poważny argument.",
+        "Do każdej broni palnej wkręcisz trzy moduły — od Rykoszetu i Przebicia po Podpalenie czy Nadprzewodnik. Dobry mod zmienia zwykły pistolet w poważny argument.",
         "Na targu pod estakadami coraz trudniej o nieskażone leki spoza obiegu Helixy. Jak ktoś pyta o pochodzenie towaru, to znaczy, że nie stać go na resztę."
       ]
     },
@@ -449,7 +449,7 @@
       "role": "Instruktor walki",
       "lines": [
         "W nielegalnych klatkach w Hutach szybko uczyłeś się, że siła bez rytmu to tylko krótsza droga na deski. Worek przynajmniej nie oddaje, ale też nie wybacza złej pracy nóg.",
-        "Z ostrzem nie machaj na oślep — trzy szybkie kliknięcia dają combo, a przytrzymany ciężki cios rozbija tarcze. Dash połączony z cięciem też potrafi otworzyć drogę.",
+        "Z ostrzem nie machaj na oślep — trzy szybkie kliknięcia dają combo, a przytrzymany ciężki cios rozbija tarcze. Doskok połączony z cięciem też potrafi otworzyć drogę.",
         "Kiedy leci w ciebie seria, wciśnij blok tuż przed trafieniem, żeby odbić pociski. Między strzałami puszczaj gardę, bo ciągłe trzymanie tylko zżera energię.",
         "Szron przysłał tu kiedyś dwóch rekrutów z górnych poziomów, którzy myśleli, że bójka to jak w reklamach Orbisu. Po dziesięciu minutach przy worku przestali się uśmiechać."
       ],
@@ -458,7 +458,7 @@
           "Ruch na poligonie masz niezły, ale w sektorze nie oszczędzaj nóg. Pamiętaj o ciężkim ciosie na tarcze i puszczaj gardę między seriami, żeby nie spalić energii."
         ],
         "victory": [
-          "Dobre tempo, ale widziałem po śladach na ostrzu, że za długo trzymałeś blok pod ogniem. Następnym razem paruj w ostatniej chwili i tnij z dasha.",
+          "Dobre tempo, ale widziałem po śladach na ostrzu, że za długo trzymałeś blok pod ogniem. Następnym razem paruj w ostatniej chwili i tnij z doskoku.",
           "Wyszarpany wynik, choć przy dużym tłoku pamiętaj o rytmie trzech cięć zamiast machać na ślepo. Wykorzystuj osłony i nie dawaj się zamknąć w kącie."
         ],
         "death": [

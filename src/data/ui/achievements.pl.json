@@ -13,7 +13,7 @@
       "progres": "Progres"
     },
     "earned": "Zdobyta",
-    "missing": "Nie zdobyta",
+    "missing": "Niezdobyta",
     "progress": "{current} / {target}",
     "reward": "Nagroda: {reward}",
     "noReward": "Nagroda: sama naszywka",
