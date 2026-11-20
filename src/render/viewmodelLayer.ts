@@ -65,7 +65,7 @@ export function renderWithViewmodel(
     e[2] = s * e[2]! + (s - 1) * e[3]!;
     e[6] = s * e[6]! + (s - 1) * e[7]!;
     e[10] = s * e[10]! + (s - 1) * e[11]!;
-    // Zachowaj bliskie odci?cie FPP przy skalowaniu obu p?aszczyzn ?wiata.
+    // Zachowaj bliskie odcięcie FPP przy skalowaniu obu płaszczyzn świata.
     const clipScale =
       'isPerspectiveCamera' in camera
         ? Math.min(1, tuning.horizon.legacyNearM / camera.near)

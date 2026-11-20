@@ -655,7 +655,7 @@ materiałami Standard i przyjmują kolorowe PointLight (limit 8 obsługuje integ
 świata.
 
 Rodzaje z danych (`src/data/render/{portMaterials,arenaMaterials,portRailMaterials,overpassMaterials}.json`,
-walidowane zod; razem 41 wpisów, 39 unikalnych nazw) uzupełniają tabelę poniżej o materiały aren, portu, estakady i torów
+walidowane zod; 39 wpisów, nazwy unikalne) uzupełniają tabelę poniżej o materiały aren, portu, estakady i torów
 (`container_navy|olive|ochre|graphite`, `crane_paint`, `quay_concrete`, `quay_lines`, `rubber_fender`, `steel_grating`,
 `overpass_concrete`, `smog_soot_wall`, `roof_tar`, `roof_hvac_metal`, `market_tarp`, `formwork_plywood`, `concrete_raw_cast`,
 `slag_heap`, `cooling_tower_concrete`, `power_quay_floor`, `turbine_hall_floor`, `gas_station_tiles`, `highway_asphalt_worn`,
@@ -663,8 +663,8 @@ walidowane zod; razem 41 wpisów, 39 unikalnych nazw) uzupełniają tabelę poni
 `scaffold_planks`, `ship_hull_paint`, `ship_deck_steel`, `rail_ballast`, `rail_sleeper_concrete`, `maglev_body_panel`,
 `snow`, `snow_asphalt`, `snow_concrete`, `overpass_street`, `overpass_forecourt`). Wpis ma pola: `texture`
 (plik w `surfaces/`), `themeTint` (nazwa koloru motywu, np. `concrete`) albo `tint` (hex), `scale`, `roughness`,
-`metalness`, `bump`, `wetness`, opcjonalnie `flat`. Przy kolizji nazw (`scaffold_planks`, `hazard_stripes_worn`) wygrywa
-późniejszy plik: kolejność scalania portMaterials → arenaMaterials → portRailMaterials → overpassMaterials.
+`metalness`, `bump`, `wetness`, opcjonalnie `flat`. Powtórzona nazwa w dwóch plikach rzuca błąd przy ładowaniu (z nazwą klucza i obu plików);
+`scaffold_planks` i `hazard_stripes_worn` pochodzą tylko z `overpassMaterials.json`.
 `"flat": true` daje zwykły `MeshStandardMaterial` w barwie `tint` (także w motywie `white`), bez tekstury, reliefu
 i shadera miasta — dziś używa go tylko `canal_water` (`#24324a`, rough. 0,24). Poza tym `tint` jest stosowany tylko gdy
 `citySurfaceDetail > 0` (wyjątki: `turbine_hall_floor`, `power_quay_floor`, `overpass_street`, `overpass_forecourt`

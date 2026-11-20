@@ -39,6 +39,23 @@ function make(bus?: EventBus) {
   return new MetaManager(createStarterMetaState(), bus);
 }
 
+describe.each(['debugAddXp', 'debugAddData', 'debugAddCores'] as const)(
+  '%s',
+  (method) => {
+    it.each([NaN, Infinity, -Infinity, -1])(
+      'odrzuca %s bez zmiany stanu',
+      (amount) => {
+        const meta = make();
+        const before = meta.serialize();
+        expect(() => meta[method](amount)).toThrow(
+          'Wartość musi być skończoną liczbą ≥ 0.',
+        );
+        expect(meta.serialize()).toEqual(before);
+      },
+    );
+  },
+);
+
 describe('levelFromXp', () => {
   it('poziom 1 przy 0 XP i progi', () => {
     expect(levelFromXp(0, xpToNext)).toEqual({
@@ -162,6 +179,32 @@ describe('MetaManager.applyRun', () => {
 });
 
 describe('MetaManager zakupy i ekwipunek', () => {
+  it.each([false, true])(
+    'zapisuje tylko zwalidowane moduły (niezgodny odblokowany: %s)',
+    (unlocked) => {
+      const state = createStarterMetaState();
+      state.unlocks.push('weapon:sniper', 'module:ricochet');
+      if (unlocked) state.unlocks.push('module:collimator');
+      const meta = new MetaManager(state);
+      const choice = {
+        ...state.loadout,
+        weapons: ['sniper'],
+        modules: { sniper: ['ricochet', 'collimator', 'unknown-module'] },
+      };
+      meta.setLoadout(choice);
+      expect(meta.state.loadout.modules).toEqual({ sniper: ['ricochet'] });
+      choice.modules.sniper.push('pierce');
+      expect(meta.serialize().loadout.modules).toEqual({
+        sniper: ['ricochet'],
+      });
+      const before = meta.serialize();
+      expect(() =>
+        meta.setLoadout({ ...choice, modules: { sniper: ['pierce'] } }),
+      ).toThrow('nieodblokowany');
+      expect(meta.serialize()).toEqual(before);
+    },
+  );
+
   it('moduły wymagają odblokowania, właściwej broni i wolnych slotów; walidacja jest atomowa', () => {
     const meta = make();
     const base = meta.state.loadout;
@@ -197,7 +240,7 @@ describe('MetaManager zakupy i ekwipunek', () => {
     ]);
   });
 
-  it('nieznane i niepasujące moduły zostają w meta i nie blokują innych zmian ekwipunku', () => {
+  it('nieznane i niepasujące moduły są usuwane z meta przy zmianie ekwipunku', () => {
     const state = createStarterMetaState();
     state.loadout.weapons = ['beam'];
     state.loadout.modules = {
@@ -215,10 +258,12 @@ describe('MetaManager zakupy i ekwipunek', () => {
     });
     expect(meta.serialize()).toEqual(state);
     meta.debugUnlockAll();
-    const modules = meta.state.loadout.modules;
     meta.setLoadout({ ...meta.state.loadout, blade: 'twinBlades' });
     expect(meta.state.loadout.blade).toBe('twinBlades');
-    expect(meta.serialize().loadout.modules.beam).toEqual(modules.beam);
+    expect(meta.serialize().loadout.modules.beam).toEqual([
+      'collimator',
+      'incendiary',
+    ]);
     expect(meta.loadout().modules).toEqual({
       beam: ['collimator', 'incendiary'],
     });
