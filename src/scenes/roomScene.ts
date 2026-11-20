@@ -310,6 +310,8 @@ export class RoomScene implements Scene {
   private passiveEncounter = false;
   private readonly manualEncounter: boolean;
   private kills = 0;
+  /** Sparowane ciosy wręcz gracza (zapytanie debug `meleeParries`, e2e). */
+  private meleeParries = 0;
   private hud?: Hud;
   private debris!: DebrisSystem;
   private debrisView!: DebrisRenderer;
@@ -729,6 +731,9 @@ export class RoomScene implements Scene {
       }),
       ctx.bus.on('player_died', ({ id }) => {
         if (id === playerId) this.onPlayerDied();
+      }),
+      ctx.bus.on('melee_parried', ({ defender }) => {
+        if (defender === playerId) this.meleeParries++;
       }),
       ctx.bus.on('enemy_killed', ({ id, killer }) => {
         if (killer === playerId) this.kills++;
@@ -2524,6 +2529,8 @@ export class RoomScene implements Scene {
         );
       case 'kills':
         return this.kills;
+      case 'meleeParries':
+        return this.meleeParries;
       case 'spawnLog':
         return this.director.spawnLog.map((e) => ({ ...e }));
       case 'paused':
