@@ -212,7 +212,8 @@ oraz tolerancję późnego kliknięcia.
 - **Efekt:** obrażenia zanegowane (guard `0` dopisany przez `DamageSystem.addGuard`), zdarzenia `melee_parried { defender, attacker, point }` i `parry_success { projectile: null, attacker }`, hitstop `parryHitstopMs`, wstrząs `parryShake` przez `parryShakeS`, iskra cyan (`vfx.parrySparkCount` cząstek, `meleeParrySparkM` przed oczami w stronę atakującego, `meleeParrySparkOffsetYM` w pionie). Przez `parry_success` parowanie wręcz daje energię +`powers.parryEnergy`, dźwięk `parry` i liczy się w implantach, synergiach, naszywkach i samouczku tak samo jak odbicie pocisku. Atakujący (Szturmowiec) dostaje stan `stunned` na `meleeParryStunS` (0,9 s) i odrzut `meleeParryKnockback` (4); jego cios jest przerwany.
 - Brak pozycji atakującego (`positionOf` zwraca `null`) wyklucza parowanie — łuku nie da się sprawdzić.
 - Blok poza oknem działa jak dotąd (−70%, koszt energii).
-- Testy: `tests/unit/meleeParry.test.ts`, `tests/unit/enemies.test.ts` (ogłuszenie, prawdziwy cios sparowany w trakcie `strike`).
+- Testy: `tests/unit/meleeParry.test.ts`, `tests/unit/enemies.test.ts` (ogłuszenie, prawdziwy cios sparowany w trakcie `strike`), `tests/e2e/meleeParry.spec.ts` (prawdziwy pokój: Szturmowiec, blok co chwilę, licznik `meleeParries`).
+- Sprawdzenie w 30 s: `?scene=room-test&loadout=blade&debug=1`, w konsoli `god`, `kill all`, `spawn assaulter 1`; wciśnij PPM tuż przed ciosem. Zapytanie `meleeParries` w `roomScene` liczy sparowane ciosy gracza.
 
 ## Warianty ostrzy (F2-11)
 
