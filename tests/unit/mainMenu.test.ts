@@ -51,6 +51,7 @@ it('bez debug menu nie pokazuje Nowy run (presety), seeda ani wyboru buildu', as
     'Kryjówka',
     'Kontynuuj run',
     'Poligon',
+    'Arena wyzwań',
     'Wyzwanie dnia',
     'Ustawienia',
   ]);
