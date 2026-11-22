@@ -23,6 +23,11 @@ const text = z
 const fill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
 
+const CURRENCY_HINT_KEY = 'neoryder.ui.currencyHint';
+const CURRENCY_HINT_MS = 6000;
+let nextTooltipId = 0;
+let currencyHintShownInSession = false;
+
 /** Zdarzenia meta, po których pasek się odświeża. */
 export const META_BAR_EVENTS = [
   'meta_rewards',
@@ -82,19 +87,53 @@ export function createMetaBar(
   const coresValue = span('meta-bar__stat-value');
   cores.append(coresLabel, coresValue);
   const free = span('meta-bar__free');
+  const stats = [];
   for (const [node, help] of [
     [data, text.dataHelp],
     [cores, text.coresHelp],
     [free, text.freePointsHelp],
   ] as const) {
-    node.title = help;
+    const wrapper = span('meta-bar__help');
+    const tooltip = span('meta-bar__tooltip', help);
+    tooltip.id = `meta-bar-tooltip-${++nextTooltipId}`;
+    tooltip.setAttribute('role', 'tooltip');
+    node.tabIndex = 0;
+    node.setAttribute('aria-describedby', tooltip.id);
     node.setAttribute('role', 'group');
+    wrapper.append(node, tooltip);
+    stats.push(wrapper);
   }
   const operator = span('meta-bar__operator', hudText.microOperator);
   const identity = span('meta-bar__identity');
   identity.append(operator, level, xp);
-  root.append(identity, data, cores, free);
+  root.append(identity, ...stats);
   parent.append(root);
+
+  let hintTimer: ReturnType<typeof setTimeout> | undefined;
+  const arrivalState = manager.state;
+  const earnedCurrency = arrivalState.lastRuns.some(
+    ({ rewards }) => rewards.data > 0 || rewards.cores > 0,
+  );
+  let hintShown = currencyHintShownInSession;
+  try {
+    hintShown = localStorage.getItem(CURRENCY_HINT_KEY) !== null;
+  } catch {
+    // Przy niedostępnym storage zachowujemy flagę w bieżącej sesji.
+  }
+  if (arrivalState.stats.runs > 0 && earnedCurrency && !hintShown) {
+    const hint = span(
+      'meta-bar__currency-hint',
+      `${text.dataHelp} ${text.coresHelp}`,
+    );
+    root.append(hint);
+    currencyHintShownInSession = true;
+    try {
+      localStorage.setItem(CURRENCY_HINT_KEY, '1');
+    } catch {
+      // Brak zapisu nie blokuje objaśnienia walut.
+    }
+    hintTimer = setTimeout(() => hint.remove(), CURRENCY_HINT_MS);
+  }
 
   const refresh = (): void => {
     const progress = manager.xpProgress;
@@ -125,6 +164,7 @@ export function createMetaBar(
     root,
     refresh,
     dispose(): void {
+      clearTimeout(hintTimer);
       for (const off of offs) off();
       root.remove();
     },

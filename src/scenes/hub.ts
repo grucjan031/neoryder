@@ -37,7 +37,7 @@ import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { batchStaticGeometry } from '../render/staticBatch';
 import { createMetaBar } from '../ui/hub/metaBar';
 import { HubGuide } from '../ui/hubGuide';
-import { hubGuideTarget } from '../world/hubGuide';
+import { hubGuideTarget, type HubGuideTarget } from '../world/hubGuide';
 import { createHubGreetings } from '../ui/hub/greetings';
 import type { MetaBar } from '../ui/hub/metaBar';
 import { createMissionsPanel } from '../ui/hub/missionsPanel';
@@ -166,6 +166,8 @@ export class HubScene implements Scene {
   private meta!: MetaManager;
   private metaBar: MetaBar | null = null;
   private guide: HubGuide | null = null;
+  private guideTarget: HubGuideTarget | null | undefined;
+  private guideBusy = false;
   private screens!: HubScreens;
   private prompt: HubPrompt | null = null;
   private dialogUi: HubDialog | null = null;
@@ -1051,16 +1053,24 @@ export class HubScene implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
-    const guideTarget = hubGuideTarget(this.meta.state, this.meta.freePoints);
+    const guideBusy =
+      this.stations.opened !== null ||
+      this.hubMap?.isOpen === true ||
+      this.talk !== null ||
+      this.seat !== null;
+    // Cel przewodnika zmienia się tylko po runie (nowa scena) albo po wydaniu
+    // punktów w stacji, więc liczymy go przy zmianie zajętości, nie co klatkę.
+    if (this.guideTarget === undefined || guideBusy !== this.guideBusy) {
+      this.guideBusy = guideBusy;
+      this.guideTarget = hubGuideTarget(this.meta.state, this.meta.freePoints);
+    }
+    const guideTarget = this.guideTarget;
     this.guide?.update(
       guideTarget,
       this.layout.stations.find(({ id }) => id === guideTarget)?.position ??
         null,
       this.player.getState(),
-      this.stations.opened !== null ||
-        this.hubMap?.isOpen === true ||
-        this.talk !== null ||
-        this.seat !== null,
+      guideBusy,
     );
     this.fauna?.render(alpha);
     const mapOpen = this.hubMap?.isOpen === true;

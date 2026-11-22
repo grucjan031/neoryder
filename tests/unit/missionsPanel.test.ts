@@ -83,6 +83,23 @@ it.each([
   expect(reward.hidden).toBe(true);
 });
 
+it('ukrywa nagłówek poziomów po wyborze misji i przywraca po powrocie', () => {
+  HTMLElement.prototype.scrollIntoView ??= () => {};
+  const { panel } = setup();
+  const heading = [...panel.root.querySelectorAll('h3')].find(
+    (node) => node.textContent === text.missions.threat.heading,
+  )!;
+  expect(heading.hidden).toBe(false);
+  panel.root
+    .querySelector<HTMLButtonElement>('[data-mission="m01-maszty"]')!
+    .click();
+  expect(heading.hidden).toBe(true);
+  panel.root
+    .querySelector<HTMLButtonElement>('[data-mission-briefing] > button')!
+    .click();
+  expect(heading.hidden).toBe(false);
+});
+
 it('ukończona misja pokazuje odebraną nagrodę', () => {
   HTMLElement.prototype.scrollIntoView ??= () => {};
   const { panel } = setup(0, 0, ['m01-maszty']);
