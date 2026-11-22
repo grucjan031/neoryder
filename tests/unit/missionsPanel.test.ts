@@ -78,7 +78,7 @@ it.each([
     `Nagroda za pierwsze ukończenie: +123 Danych${suffix}`,
   );
   panel.root
-    .querySelector<HTMLButtonElement>('[data-mission-briefing] button')!
+    .querySelector<HTMLButtonElement>('[data-mission-briefing] > button')!
     .click();
   expect(reward.hidden).toBe(true);
 });
