@@ -5,7 +5,11 @@ import { generateMissionMap } from '../../src/world/sectorMap';
 import { kuroganeSector } from '../../src/world/sectors';
 import { MissionObjectives } from '../../src/world/missionObjectives';
 import { RunManager } from '../../src/world/run';
-import { MetaManager } from '../../src/progression/meta';
+import {
+  MetaManager,
+  computeRunRewards,
+  defaultMetaRules,
+} from '../../src/progression/meta';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { createMemorySaveStore } from '../../src/core/save';
 import {
@@ -129,7 +133,15 @@ describe('Run i kampania', () => {
     const first = meta.applyRun(run.summary!, 'first');
     expect(meta.applyRun(run.summary!, 'first').applied).toBe(false);
     const second = meta.applyRun(run.summary!, 'second');
-    expect(first.rewards.data - second.rewards.data).toBe(60);
+    // M01 ma `level`: pierwsze ukończenie to tylko firstClear, kolejne to zwykłe nagrody runu.
+    expect(first.rewards).toEqual({ xp: 0, data: 60, cores: 0 });
+    expect(second.rewards).toEqual(
+      computeRunRewards(
+        run.summary!,
+        defaultMetaRules.threat[run.summary!.threatLevel]!,
+        defaultMetaRules.progression.rewards,
+      ),
+    );
     expect(meta.state.campaign).toEqual({
       completed: [mission.id],
       pendingDebrief: mission.id,

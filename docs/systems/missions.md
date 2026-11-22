@@ -47,8 +47,13 @@ Migracja 5→6 zachowuje meta i aktywny run bez zmian; rekord misji jest począt
 nieobecny. Zapis ukończenia poprzedza `applyRun`, zapis meta i usunięcie rekordu.
 Nieudane rozliczenie pozostawia ukończoną próbę do ponowienia. `appliedRunIds`
 chroni tę samą próbę, `campaign.completed` chroni firstClear między próbami.
-Misja liniowa daje wyłącznie firstClear (60 Danych dla M01), bez zwykłych nagród
-runu ani odblokowania kolejnego Poziomu zagrożenia. Podsumowanie prowadzi do kryjówki
+Nagrody misji liniowej (decyzja D6): pierwsze ukończenie daje wyłącznie firstClear
+(60 Danych dla M01) i debrief fabularny, bez zwykłych nagród runu. Każde kolejne
+ukończenie daje tylko zwykłe nagrody runu, liczone tym samym wzorem co zwykły run
+(`computeRunRewards`: reguły `progression.rewards` i mnożnik Poziomu zagrożenia;
+scena przekazuje `roomsCleared` = 0 i `elitesCleared` = 0, więc liczą się zabójstwa
+i premia za zwycięstwo), bez firstClear. Próba nieukończona nie daje nagród. Misja
+liniowa nigdy nie odblokowuje kolejnego Poziomu zagrożenia. Podsumowanie prowadzi do kryjówki
 z jednorazowym debriefem. Błąd zapisu jest widoczny w HUD; „Ponów zapis” i komenda
 `mission retry` ponawiają zapis lub rozliczenie.
 
@@ -89,7 +94,7 @@ przez scenę `mission`. Zwykły run nadal wyklucza pokoje z sufiksem `Mission`.
 
 `MissionObjectives` jest czystą symulacją. Obecność w strefie zwiększa postęp, wyjście go zatrzymuje. Sabotaż uruchamia lont, następnie obrażenia dla wszystkich ze źródłem `null` i falę wskazaną w danych. Moduł czeka na zniszczenie masztu; właz na spełnienie zależności. Host pokoju kończy węzeł z celami dopiero po ich wykonaniu, niezależnie od żywej osłony. Finał uruchamia zwycięstwo. Nowy run resetuje cele.
 
-Metazapis v4 dodaje kampanię; migracja v3 zachowuje dotychczasowy postęp i dopisuje pustą listę ukończeń oraz pusty debrief. Rozliczenie stosuje `appliedRunIds` i `campaign.completed`: bonus firstClear tylko raz. Debrief znika po zakończeniu rozmowy i zapisie meta. Splash korzysta z kampanii; przy pustej kampanii zachowano wcześniejszy próg zwycięstw.
+Metazapis v4 dodaje kampanię; migracja v3 zachowuje dotychczasowy postęp i dopisuje pustą listę ukończeń oraz pusty debrief. Rozliczenie stosuje `appliedRunIds` i `campaign.completed`: bonus firstClear tylko raz; kolejne ukończenia dają zwykłe nagrody runu (misja liniowa: tylko je, patrz wyżej). Debrief znika po zakończeniu rozmowy i zapisie meta. Splash korzysta z kampanii; przy pustej kampanii zachowano wcześniejszy próg zwycięstw.
 
 Nową misję dodaje się jako JSON: unikalne id, sektor, warstwy, pokoje stałe i dokładnie jeden finał, cele z zależnościami, pule oraz dialogi i nagrody. Fale posiłków są plikami `src/data/waves`, wskazywanymi przez `reinforcements`. Liczby interakcji są w danych misji, wspólne promienie stref i tempo napisów w `tuning.mission` (panel debug).
 

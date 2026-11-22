@@ -518,3 +518,56 @@ describe('MetaManager talenty', () => {
     expect(() => meta.debugGrantTalent('nope')).toThrow('Nieznany talent');
   });
 });
+
+describe('applyRun: misja liniowa (D6)', () => {
+  const linear = summary({
+    outcome: 'victory',
+    missionId: 'm01-maszty',
+    missionCompleted: true,
+    roomsCleared: 0,
+    elitesCleared: 0,
+    kills: 12,
+    layerReached: 0,
+  });
+
+  it('pierwsze ukończenie daje wyłącznie firstClear', () => {
+    const meta = make();
+    const before = meta.state;
+    const first = meta.applyRun(linear, 'first');
+    expect(first.rewards).toEqual({ xp: 0, data: 60, cores: 0 });
+    // Osiągnięcia mogą przy pierwszym ukończeniu dodać własną nagrodę.
+    expect(meta.state.data - before.data).toBeGreaterThanOrEqual(60);
+    expect(meta.state.xp).toBe(before.xp);
+    expect(meta.state.campaign.completed).toEqual(['m01-maszty']);
+  });
+
+  it('kolejne ukończenie daje zwykłe nagrody runu bez firstClear', () => {
+    const meta = make();
+    meta.applyRun(linear, 'first');
+    const before = meta.state;
+    const second = meta.applyRun(linear, 'second');
+    const ordinary = computeRunRewards(linear, threat[0]!, rules);
+    expect(second.rewards).toEqual(ordinary);
+    expect(ordinary.xp).toBeGreaterThan(0);
+    expect(ordinary.data).toBeGreaterThan(0);
+    expect(meta.state.xp - before.xp).toBe(ordinary.xp);
+    expect(meta.state.data - before.data).toBeGreaterThanOrEqual(ordinary.data);
+    expect(meta.state.cores - before.cores).toBeGreaterThanOrEqual(
+      ordinary.cores,
+    );
+    expect(meta.state.lastRuns[0]?.rewards).toEqual(ordinary);
+    expect(meta.state.campaign.completed).toEqual(['m01-maszty']);
+    expect(second.threatUnlocked).toBe(false);
+    expect(meta.state.threat.max).toBe(before.threat.max);
+  });
+
+  it('nieukończona misja liniowa nie daje nagród także po pierwszym ukończeniu', () => {
+    const meta = make();
+    meta.applyRun(linear, 'first');
+    const failed = meta.applyRun(
+      { ...linear, outcome: 'death', missionCompleted: false },
+      'failed',
+    );
+    expect(failed.rewards).toEqual({ xp: 0, data: 0, cores: 0 });
+  });
+});

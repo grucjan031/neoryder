@@ -257,10 +257,17 @@ export class MetaManager {
     const linearMission = summary.missionId
       ? missionDefinitions.get(summary.missionId)?.level !== undefined
       : false;
-    const rewards = linearMission
-      ? { xp: 0, data: 0, cores: 0 }
-      : computeRunRewards(summary, entry, this.rules.progression.rewards);
     const victory = summary.outcome === 'victory';
+    // Misja liniowa: pierwsze ukończenie daje tylko firstClear, kolejne zwykłe nagrody runu.
+    const linearRepeat =
+      linearMission &&
+      victory &&
+      summary.missionCompleted === true &&
+      s.campaign.completed.includes(summary.missionId ?? '');
+    const rewards =
+      linearMission && !linearRepeat
+        ? { xp: 0, data: 0, cores: 0 }
+        : computeRunRewards(summary, entry, this.rules.progression.rewards);
     if (victory && summary.missionCompleted && summary.missionId) {
       const mission = missionDefinitions.get(summary.missionId);
       if (!mission) throw new Error(`Nieznana misja: ${summary.missionId}`);
