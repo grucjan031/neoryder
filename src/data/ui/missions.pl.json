@@ -1,5 +1,14 @@
 {
   "missions": {
+    "firstClear": {
+      "reward": "Nagroda za pierwsze ukończenie: +{data} Danych",
+      "claimed": "Nagroda za pierwsze ukończenie odebrana",
+      "cores": {
+        "one": ", +{count} Rdzeń",
+        "few": ", +{count} Rdzenie",
+        "many": ", +{count} Rdzeni"
+      }
+    },
     "sector": {
       "name": "Kurogane Arms",
       "description": "Dzielnica fabryk broni korporacji Kurogane: nocne uliczki, zakłady i strzeżone magazyny. Przebij się przez kolejne warstwy sektora aż do szefa."
@@ -27,6 +36,9 @@
     "start": "Rozpocznij run"
   },
   "bar": {
+    "dataHelp": "Dane zdobywasz za ukończone pokoje, zabitych wrogów i zwycięstwo (więcej na wyższym Poziomie zagrożenia). Wydajesz je w Warsztacie na trwałe odblokowania.",
+    "coresHelp": "Rdzenie zdobywasz za elity i zwycięstwo. Wydajesz je w Warsztacie na rzadsze odblokowania.",
+    "freePointsHelp": "Punkty talentów zdobywasz za awans poziomu. Wydajesz je w Terminalu drzewek.",
     "label": "Postęp meta",
     "level": "Poziom {level}",
     "xp": "{current} / {next} XP",

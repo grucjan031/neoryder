@@ -1,5 +1,10 @@
 {
   "hub": {
+    "guide": {
+      "missions": "Cel: {label} · {distance} m",
+      "talents": "Masz punkty talentów: {label} · {distance} m",
+      "firstRun": "Wybierz misję i rozpocznij pierwszy run"
+    },
     "stations": {
       "talents": {
         "title": "Terminal drzewek",

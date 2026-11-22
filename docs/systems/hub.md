@@ -1,5 +1,21 @@
 # Kryjówka (hub) — F4-07
 
+## Pierwsze minuty — S10-01
+
+`hubGuideTarget(meta, freePoints)` w `src/world/hubGuide.ts` jest czystą logiką:
+brak zakończonych runów kieruje do `missions` (także przy wolnych punktach),
+po runie wolne punkty kierują do `talents`, inaczej cel jest pusty.
+Scena odczytuje `MetaManager.state` i `freePoints` w każdym `render()` oraz
+pozycję celu z `layout.stations`. Widok `HubGuide` obraca strzałkę względem yaw,
+pokazuje odległość w płaszczyźnie X/Z i tytuł stacji z `meta.pl.json`.
+Chowa się poniżej `tuning.hub.guideHideRadiusM` (4 m), przy otwartej stacji,
+mapie, rozmowie NPC, podczas siedzenia i bez celu. Powraca po ustaniu blokady;
+`dispose()` usuwa DOM. Parametr trafia automatycznie do lil-gui.
+
+Kontrola w `?scene=hub`: świeży zapis wskazuje Tablicę misji; po zakończonym
+runie i z wolnymi punktami wskazuje Terminal drzewek. Wydanie punktów usuwa
+wskazówkę bez przeładowania. Testy: `hubGuide.test.ts`, `hub.spec.ts`.
+
 ## Rekwizyty
 
 `hideout.json.props` definiuje `id`, `kind` (`jukebox`, `noodles`, `radio`, `bag`, `seat`),
@@ -874,14 +890,27 @@ powrotna (`showDebrief`, `src/ui/missionUi.ts`; teksty `missionDialogue.pl.json`
 ### Pasek meta
 
 `src/ui/hub/metaBar.ts` (+ `metaBar.css`), `createMetaBar(manager, bus)`: stała belka w lewym górnym rogu ekranu kryjówki (`.meta-bar`,
-`position: fixed; top: 26px; left: 32px` — `108px` przy `data-debug="true"`, żeby ominąć panel debug; `pointer-events: none`, `z-index 90`, pod nakładkami):
+`position: fixed; top: 26px; left: 32px` — `108px` przy `data-debug="true"`, żeby ominąć panel debug; `pointer-events: none`, `z-index 101`, nad nakładką stacji):
 blok tożsamości (nadpis „ISKRA // OPERATOR”, „Poziom L” `600 32px` w cyanie `#00e5ff`, pasek doświadczenia 4 px z podpisem „xp / następny XP” albo „MAX”
-i pełnym paskiem na limicie poziomu), „Dane” (ikona `#ffae1a`, wartość `#ffe1a3`), „Rdzenie” (ikona `#ff2bd6`, wartość `#ffb6f3`) i
+i pełnym paskiem na limicie poziomu), „Dane” (ikona `#ffae1a`, wartość `#ffe1a3`), „Rdzenie” (ikona i wartość `#fff1d6`) i
 „Punkty talentów: N” (szare, wyróżnione bursztynem `#ffcf77` z pulsowaniem krycia, gdy `> 0`; pulsowanie wyłączone przy `prefers-reduced-motion`).
 Bloki są lekko obrócone w perspektywie (`rotateY(10deg)`). Odświeża się po zdarzeniach `meta_rewards`, `level_up`, `talents_changed`,
 `unlock_purchased`, `loadout_changed`, `threat_selected` oraz po każdej komendzie meta (te nie zawsze emitują zdarzenia). Scena tworzy pasek, gdy sama
 tworzy nakładki (opcja `metaBar` pozwala to zmienić). Teksty: `missions.pl.json`, sekcja `bar` (`label`, `level`, `xp`, `xpMax`, `data`, `cores`,
 `freePoints`), nadpis z `hud.pl.json` (`microOperator`). Testy: `tests/unit/metaBar.test.ts`.
+
+Waluty i punkty mają `tabindex="0"` oraz `aria-describedby` wskazujące własny
+dymek (`role="tooltip"`). Hover lub focus pokazuje objaśnienie z pól
+`dataHelp`, `coresHelp`, `freePointsHelp`; obszary tych elementów przyjmują
+kursor także nad otwartą stacją. Dymki mają ciemne tło, bursztynową obwódkę
+i tekst w ciepłej bieli. Przy pierwszym wejściu po runie z Danymi lub Rdzeniami
+w `lastRuns[].rewards` pasek pokazuje oba objaśnienia przez 6000 ms (stała UI).
+Flaga `neoryder.ui.currencyHint` w localStorage zapobiega powtórzeniu;
+przy niedostępnym storage działa flaga sesji. `dispose()` usuwa timer.
+
+Tablica misji ukrywa nagłówek „Poziom zagrożenia” po wyborze misji i przywraca
+go po „Wróć”. Nagłówek odprawy (`briefingHeading`) jest osobnym elementem.
+Regresję sprawdza `tests/unit/missionsPanel.test.ts`.
 
 ## Reakcje na powrót
 
