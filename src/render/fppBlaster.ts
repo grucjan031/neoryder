@@ -25,6 +25,7 @@ import { isHandPose } from './handPoses';
 import type { HandPose } from './handPoses';
 import { weaponGripOfModel } from '../combat/weapons/weaponSchema';
 import type { WeaponGrip } from '../combat/weapons/weaponSchema';
+import { moddedWeapon } from '../progression/moddedWeapon';
 import { attachModuleVisuals } from './weaponModuleVisuals';
 import { loadWeaponScene } from './weaponModelLoader';
 import { fppGlowMaterial, fppGlowTexture, markGlow } from './fppMaterials';
@@ -112,6 +113,15 @@ export interface FppBlasterOptions {
 const FLASH_CONE_OPACITY = 0.9;
 const FLASH_CONE_DIM_OPACITY = 0.3;
 
+/** Odrzut po łatkach modułów; błędne dane modułu nie mogą zatrzymać widoku broni. */
+function recoilScaleOf(weaponId: string, moduleIds: readonly string[]): number {
+  try {
+    return moddedWeapon(weaponId, moduleIds)?.recoilScale ?? 1;
+  } catch {
+    return 1;
+  }
+}
+
 function starGeometry(): ShapeGeometry {
   const shape = new Shape();
   for (let i = 0; i < FLASH_POINTS * 2; i++) {
@@ -178,6 +188,8 @@ export class FppBlaster {
   private heat = 0;
   private overheated = false;
   private recoil = 0;
+  /** Mnożnik odrzutu bieżącej broni z jej modułów (`recoilScale` definicji). */
+  private recoilScale = 1;
   private flashLeft = 0;
   private time = 0;
   private disposed = false;
@@ -213,6 +225,7 @@ export class FppBlaster {
       bus.on('weapon_switched', ({ owner: who, weapon }) => {
         if (who !== owner) return;
         this.weaponId = weapon;
+        this.recoilScale = recoilScaleOf(weapon, this.modulesOf(weapon));
         this.wanted = this.modelOf(weapon) ?? FALLBACK_MODEL;
         void this.show(this.wanted);
       }),
@@ -366,7 +379,10 @@ export class FppBlaster {
     const pose = this.twoHanded ? TWO_HAND_POSE : POSE;
     const sight = this.twoHanded ? AIM_TWO_HAND_POSE : AIM_POSE;
     const k = Math.min(1, Math.max(0, aim));
-    const recoil = this.recoil * (1 + (this.tuning.player.aim.recoil - 1) * k);
+    const recoil =
+      this.recoil *
+      this.recoilScale *
+      (1 + (this.tuning.player.aim.recoil - 1) * k);
     const mix = (a: number, b: number): number => a + (b - a) * k;
     e.set(
       mix(pose.rot.x, sight.rot.x) + recoil * RECOIL_PITCH,

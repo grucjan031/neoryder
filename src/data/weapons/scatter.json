@@ -9,6 +9,7 @@
   "projectileSpeed": 45,
   "projectileLifetimeS": 0.3,
   "spreadDeg": 6,
+  "recoilScale": 1,
   "tags": ["#gun"],
   "pellets": 8,
   "model": "scatter",

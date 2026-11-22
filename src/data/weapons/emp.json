@@ -9,6 +9,7 @@
   "projectileSpeed": 12,
   "projectileLifetimeS": 2,
   "spreadDeg": 0,
+  "recoilScale": 1,
   "gravity": 12,
   "radiusM": 3.5,
   "explosionDamage": 8,

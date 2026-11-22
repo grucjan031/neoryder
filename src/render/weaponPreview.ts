@@ -1,10 +1,12 @@
 import {
   AmbientLight,
   Box3,
+  Color,
   DirectionalLight,
   Group,
   MathUtils,
   Mesh,
+  MeshToonMaterial,
   PerspectiveCamera,
   Scene,
   Vector3,
@@ -16,8 +18,8 @@ import { attachModuleVisuals } from './weaponModuleVisuals';
 import { FALLBACK_WEAPON_MODEL, loadWeaponScene } from './weaponModelLoader';
 
 /** Domyślny rozmiar podglądu w CSS px (warsztat kryjówki). */
-export const PREVIEW_WIDTH = 360;
-export const PREVIEW_HEIGHT = 220;
+export const PREVIEW_WIDTH = 560;
+export const PREVIEW_HEIGHT = 250;
 
 const FOV = 28;
 /** Ile szerokości kadru zajmuje broń (przekątna rzutu na poziom). */
@@ -32,6 +34,29 @@ const IDLE_BEFORE_SPIN_S = 3;
 const SPIN_RAD_PER_S = MathUtils.degToRad(15);
 /** Powrót nachylenia po puszczeniu (1/s). */
 const PITCH_RETURN = 2.5;
+/** Podświetlenie slotu: bursztynowa poświata dodatku pulsuje z tą częstością (rad/s). */
+const HIGHLIGHT_COLOR = new Color('#ffae1a');
+const HIGHLIGHT_PULSE = 4.2;
+const HIGHLIGHT_BODY = 0.5;
+const HIGHLIGHT_ACCENT = 1.3;
+
+interface Lit {
+  material: MeshToonMaterial;
+  color: Color;
+  intensity: number;
+  /** Części bez własnej poświaty dostają bursztyn; akcenty tylko jaśnieją. */
+  dark: boolean;
+}
+
+/** Bbox do kadrowania: bez efektów (`noOutline`), np. wiązki celownika laserowego. */
+function framingBox(root: Object3D): Box3 {
+  const box = new Box3();
+  root.traverse((node) => {
+    if (node instanceof Mesh && !node.userData.noOutline)
+      box.expandByObject(node);
+  });
+  return box;
+}
 
 /** Czy środowisko ma WebGL2 (jsdom i testy go nie mają: wtedy podgląd się nie tworzy). */
 export function canCreateWeaponPreview(): boolean {
@@ -54,6 +79,9 @@ export class WeaponPreview {
   private readonly observer: IntersectionObserver | null;
   private current: Object3D | null = null;
   private detachModules: (() => void) | null = null;
+  private highlighted: string | null = null;
+  private lit: Lit[] = [];
+  private pulse = 0;
   private radius = 0.3;
   private width = PREVIEW_WIDTH;
   private height = PREVIEW_HEIGHT;
@@ -127,7 +155,7 @@ export class WeaponPreview {
     const model = source.clone(true);
     this.detachModules = attachModuleVisuals(model, moduleIds);
     model.updateWorldMatrix(true, true);
-    const box = new Box3().setFromObject(model);
+    const box = framingBox(model);
     if (!box.isEmpty()) {
       const size = box.getSize(new Vector3());
       model.position.sub(box.getCenter(new Vector3()));
@@ -140,7 +168,20 @@ export class WeaponPreview {
     this.pitch = BASE_PITCH;
     this.idle = 0;
     this.pivot.add(model);
+    this.applyHighlight();
     this.placeCamera();
+    this.dirty = true;
+    this.start();
+  }
+
+  /**
+   * Podświetla dodatek w slocie (`muzzle`, `cell`, `optic`, `grip`) pulsującą bursztynową
+   * poświatą; `null` wyłącza. Pusty slot nie ma czego podświetlić na modelu.
+   */
+  highlight(slot: string | null): void {
+    if (this.disposed || slot === this.highlighted) return;
+    this.highlighted = slot;
+    this.applyHighlight();
     this.dirty = true;
     this.start();
   }
@@ -194,7 +235,48 @@ export class WeaponPreview {
     this.renderer.forceContextLoss();
   }
 
+  private applyHighlight(): void {
+    for (const { material, color, intensity } of this.lit) {
+      material.emissive.copy(color);
+      material.emissiveIntensity = intensity;
+    }
+    this.lit = [];
+    this.pulse = 0;
+    if (this.highlighted === null) return;
+    const seen = new Set<MeshToonMaterial>();
+    this.current?.traverse((visual) => {
+      if (visual.userData.moduleSlot !== this.highlighted) return;
+      visual.traverse((node) => {
+        if (!(node instanceof Mesh) || node.userData.noOutline) return;
+        const material: unknown = node.material;
+        if (!(material instanceof MeshToonMaterial) || seen.has(material))
+          return;
+        seen.add(material);
+        const color = material.emissive.clone();
+        const dark = color.r + color.g + color.b < 0.2;
+        this.lit.push({
+          material,
+          color,
+          intensity: material.emissiveIntensity,
+          dark,
+        });
+        if (dark) material.emissive.copy(HIGHLIGHT_COLOR);
+      });
+    });
+    this.setGlow(1);
+  }
+
+  /** `level` 0–1: siła poświaty podświetlonego dodatku. */
+  private setGlow(level: number): void {
+    for (const { material, intensity, dark } of this.lit)
+      material.emissiveIntensity = dark
+        ? HIGHLIGHT_BODY * level
+        : intensity + HIGHLIGHT_ACCENT * level;
+  }
+
   private clearCurrent(): void {
+    // Materiały dodatków znikają razem z nimi: nie ma czego przywracać.
+    this.lit = [];
     this.detachModules?.();
     this.detachModules = null;
     if (this.current) this.pivot.remove(this.current);
@@ -279,6 +361,11 @@ export class WeaponPreview {
           this.dirty = true;
         }
       }
+    }
+    if (this.lit.length > 0 && !this.motion?.matches) {
+      this.pulse += dt * HIGHLIGHT_PULSE;
+      this.setGlow(0.55 + 0.45 * Math.sin(this.pulse));
+      this.dirty = true;
     }
     if (this.dirty) {
       this.dirty = false;

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import { Box3, Group, Mesh, Vector3 } from 'three';
+import type { MeshToonMaterial } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { attachModuleVisuals } from '../../src/render/weaponModuleVisuals';
 import { moduleDefinitions } from '../../src/progression/moduleSchema';
@@ -78,7 +79,7 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
     'emp_launcher',
     'beam',
   ])(
-    '%s: sześć kształtów, położenie, usunięcie i zwolnienie zasobów',
+    '%s: kształty wszystkich modułów, położenie, usunięcie i zwolnienie zasobów',
     async (name) => {
       const bytes = readFileSync(`public/assets/models/${name}.glb`);
       const gltf = await new GLTFLoader().parseAsync(
@@ -136,7 +137,12 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
         const detach = attachModuleVisuals(root, [module.id]);
         expect(root.children.length).toBe(childCount + 1);
         const visual = root.getObjectByName(`module_${module.visual.shape}`)!;
+        expect(visual.userData.moduleSlot).toBe(module.slot);
+        // Wiązka lasera jest efektem: nie liczy się do wymiarów modułu.
+        const beam = visual.getObjectByName('laser_beam');
+        beam?.removeFromParent();
         const box = new Box3().setFromObject(visual);
+        if (beam) visual.add(beam);
         const dimensions = box.getSize(new Vector3());
         expect(box.isEmpty()).toBe(false);
         expect(
@@ -153,6 +159,12 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
           rail: 0.25,
           coil: 0.25,
           canister: 0.25,
+          compensator: 0.2,
+          extended: 0.32,
+          pulse: 0.25,
+          holo: 0.13,
+          laser: 0.16,
+          foregrip: 0.07,
         }[module.visual.shape];
         expect(dimensions.z / modelLength).toBeCloseTo(expectedLength);
         if (module.visual.shape === 'scope') {
@@ -172,6 +184,34 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
             opacity: 0.18,
             depthWrite: false,
           });
+        }
+        if (module.visual.shape === 'holo') {
+          expect(dimensions.y / frameHeight).toBeCloseTo(0.42);
+          expect(
+            (visual.getObjectByName('optic_glass') as Mesh).material,
+          ).toMatchObject({ transparent: true, opacity: 0.22 });
+          const reticle = visual.getObjectByName('holo_reticle') as Mesh;
+          // Znak celownika: bursztyn, nie kolory zarezerwowane (ADR 0006).
+          expect(
+            (reticle.material as MeshToonMaterial).emissive.getHexString(),
+          ).toBe('ffae1a');
+        }
+        if (module.slot === 'grip') {
+          // Podwieszenie wisi pod korpusem, w przedniej połowie broni.
+          expect(box.max.y).toBeCloseTo(visual.position.y);
+          expect(box.max.y).toBeLessThan(frameBox.max.y);
+          expect(visual.position.z).toBeLessThan(
+            (frameBox.min.z + frameBox.max.z) / 2,
+          );
+        }
+        if (module.visual.shape === 'foregrip')
+          expect(dimensions.y / frameHeight).toBeCloseTo(0.8);
+        if (module.visual.shape === 'laser') {
+          expect(beam).toBeDefined();
+          expect(beam!.userData.noOutline).toBe(true);
+          const beamBox = new Box3().setFromObject(beam!);
+          expect(beamBox.min.z).toBeLessThan(box.min.z - modelLength);
+          expect(beamBox.max.z).toBeLessThanOrEqual(box.max.z);
         }
         if (module.slot === 'cell') {
           expect(dimensions.x / frameHeight).toBeCloseTo(0.42);

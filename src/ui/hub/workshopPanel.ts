@@ -1,16 +1,30 @@
 import type { LoadoutChoice } from '../../core/metaTypes';
 import type { HubPanel, HubPanelContext, HubPanelFactory } from './hubPanel';
 import {
+  SHOP_TABS,
   equipmentState,
   groupRows,
   nextLoadout,
   itemName,
   nextModuleLoadout,
-  previewTarget,
+  shopCard,
+  shopPreview,
+  shopRows,
+  splitId,
+  toggleModuleLoadout,
   unlockRows,
   workshopText as text,
 } from './workshopState';
-import type { ChoiceOption, LoadoutPart, UnlockRow } from './workshopState';
+import type {
+  ChoiceOption,
+  LoadoutPart,
+  ShopBlock,
+  ShopCard,
+  ShopPreview,
+  ShopRow,
+  ShopTab,
+  UnlockRow,
+} from './workshopState';
 import { achievementText } from '../achievementText';
 import { createLockIcon } from '../achievementIcons';
 import {
@@ -54,6 +68,9 @@ export const createWorkshopPanel: HubPanelFactory = (
   let extractionNeedsSave = false;
   let wantedPreview: string | undefined;
   let shownPreview = '';
+  let tab: ShopTab = 'weapon';
+  /** Wybrany przedmiot każdej zakładki (id odblokowania); brak = pozycja domyślna. */
+  const selected: Partial<Record<ShopTab, string>> = {};
 
   // Kontener podglądu żyje między odświeżeniami (canvas i kontekst WebGL powstają raz).
   const previewBox = el('div', 'workshop__preview');
@@ -169,10 +186,9 @@ export const createWorkshopPanel: HubPanelFactory = (
     return header;
   };
 
-  const statusLabel = (row: UnlockRow): string | null => {
+  /** Powód, dla którego przedmiotu nie da się kupić; `null` dla posiadanych i dostępnych. */
+  const purchaseLabel = (row: UnlockRow): string | null => {
     switch (row.status) {
-      case 'owned':
-        return text.unlocks.owned;
       case 'achievement':
         return fill(achievementText.workshop.requires, {
           title: row.requires?.title ?? '',
@@ -183,52 +199,469 @@ export const createWorkshopPanel: HubPanelFactory = (
         return text.unlocks.notEnough.data;
       case 'cores':
         return text.unlocks.notEnough.cores;
+      case 'owned':
       case 'buyable':
         return null;
     }
   };
 
-  const renderUnlocks = (): HTMLElement => {
+  /** Wiersz listy: nazwa, cena, stan i przycisk zakupu (wspólny dla sklepu i odblokowań). */
+  const renderRow = (row: UnlockRow, ownedLabel: string): HTMLLIElement => {
+    const item = el('li', 'workshop__row');
+    item.dataset.unlock = row.id;
+    item.dataset.status = row.status;
+    item.append(el('span', 'workshop__name', row.name));
+    if (row.status !== 'owned')
+      item.append(el('span', 'workshop__cost', costLabel(row)));
+    const label = row.status === 'owned' ? ownedLabel : purchaseLabel(row);
+    if (label !== null) {
+      const state = el(
+        'span',
+        row.status === 'owned'
+          ? 'workshop__state'
+          : 'workshop__state is-blocked',
+        label,
+      );
+      if (row.status === 'achievement') {
+        state.classList.add('is-locked');
+        state.dataset.lock = row.requires?.id ?? '';
+        state.prepend(createLockIcon());
+      }
+      item.append(state);
+    }
+    if (row.status !== 'owned') {
+      const button = el('button', 'workshop__buy', text.unlocks.buy);
+      button.type = 'button';
+      button.dataset.action = 'buy';
+      button.dataset.key = `buy:${row.id}`;
+      button.disabled = row.status !== 'buyable';
+      button.addEventListener('click', () => void buy(row.id));
+      item.append(button);
+    }
+    return item;
+  };
+
+  const select = (id: string): void => {
+    const { kind, key } = splitId(id);
+    if (kind !== 'weapon' && kind !== 'module') return;
+    tab = kind;
+    selected[kind] = id;
+    if (kind === 'weapon' && ctx.manager.state.loadout.weapons.includes(key))
+      wantedPreview = key;
+    refresh();
+  };
+
+  /** Wiersz sklepu: cały wiersz wybiera przedmiot do karty i podglądu. */
+  const renderShopRow = (row: ShopRow, current: boolean): HTMLLIElement => {
+    const item = renderRow(
+      row,
+      row.equipped
+        ? row.kind === 'weapon'
+          ? text.shop.state.inLoadout
+          : text.shop.state.equipped
+        : text.unlocks.owned,
+    );
+    item.classList.add('workshop__item');
+    item.dataset.equipped = String(row.equipped);
+    item.dataset.key = `row:${row.id}`;
+    item.tabIndex = 0;
+    if (current) item.setAttribute('aria-current', 'true');
+    item.addEventListener('click', () => select(row.id));
+    item.addEventListener('keydown', (event) => {
+      if (event.target !== item) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      select(row.id);
+    });
+    return item;
+  };
+
+  const renderCatalog = (
+    rows: Record<ShopTab, ShopRow[]>,
+    current: string | undefined,
+  ): HTMLElement => {
+    const catalog = el('div', 'workshop__catalog');
+    for (const kind of SHOP_TABS) {
+      const pane = el('div', 'workshop__pane');
+      pane.dataset.pane = kind;
+      pane.id = `workshop-pane-${kind}`;
+      pane.setAttribute('role', 'tabpanel');
+      pane.setAttribute('aria-label', text.shop.listLabel[kind]);
+      pane.hidden = kind !== tab;
+      let list: HTMLUListElement | null = null;
+      let slot: string | undefined;
+      for (const row of rows[kind]) {
+        if (!list || row.slot !== slot) {
+          slot = row.slot;
+          if (row.slot)
+            pane.append(
+              el('h3', undefined, text.equipment.moduleSlots[row.slot]),
+            );
+          list = el('ul', 'workshop__list');
+          pane.append(list);
+        }
+        list.append(renderShopRow(row, kind === tab && row.id === current));
+      }
+      catalog.append(pane);
+    }
+    return catalog;
+  };
+
+  const renderTabs = (): HTMLElement => {
+    const tabs = el('div', 'workshop__tabs');
+    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('aria-label', text.shop.tabsLabel);
+    for (const kind of SHOP_TABS) {
+      const button = el('button', 'workshop__tab', text.shop.tabs[kind]);
+      button.type = 'button';
+      button.dataset.action = 'tab';
+      button.dataset.tab = kind;
+      button.dataset.key = `tab:${kind}`;
+      button.setAttribute('role', 'tab');
+      button.setAttribute('aria-selected', String(kind === tab));
+      button.setAttribute('aria-controls', `workshop-pane-${kind}`);
+      button.addEventListener('click', () => {
+        tab = kind;
+        refresh();
+      });
+      tabs.append(button);
+    }
+    return tabs;
+  };
+
+  /** Podgląd 3D: przełącznik broni z ekwipunku, trwały canvas i gniazda dodatków. */
+  const renderPreview = (shown: ShopPreview | null): HTMLElement => {
+    const block = el('div', 'workshop__preview-block');
+    block.dataset.group = 'preview';
+    block.append(el('h3', undefined, text.preview.title));
+    const weapons = ctx.manager.state.loadout.weapons;
+    if (weapons.length > 1) {
+      const switcher = el('div', 'workshop__preview-switch');
+      switcher.setAttribute('role', 'group');
+      switcher.setAttribute('aria-label', text.preview.switchLabel);
+      for (const id of weapons) {
+        const button = el('button', 'workshop__choice', itemName('weapon', id));
+        button.type = 'button';
+        button.dataset.action = 'preview';
+        button.dataset.item = id;
+        button.dataset.key = `preview:${id}`;
+        button.setAttribute('aria-pressed', String(id === shown?.weaponId));
+        button.addEventListener('click', () => {
+          wantedPreview = id;
+          if (tab === 'weapon') selected.weapon = `weapon:${id}`;
+          refresh();
+        });
+        switcher.append(button);
+      }
+      block.append(switcher);
+    }
+    previewBox.hidden = shown === null;
+    if (shown) {
+      previewBox.dataset.weapon = shown.weaponId;
+      previewBox.dataset.modules = shown.moduleIds.join(',');
+      previewBox.dataset.tryOn = shown.tryOn ?? '';
+      previewBox.dataset.highlight = shown.highlight ?? '';
+      const key = `${shown.weaponId}|${shown.moduleIds.join(',')}`;
+      if (preview && key !== shownPreview) {
+        shownPreview = key;
+        preview.show(shown.weaponId, shown.moduleIds).catch(() => {});
+      }
+      preview?.highlight(shown.highlight);
+    }
+    block.append(previewBox);
+    if (shown?.tryOn)
+      block.append(
+        el(
+          'p',
+          'workshop__try-on',
+          fill(text.shop.tryOn, { name: itemName('module', shown.tryOn) }),
+        ),
+      );
+    if (shown && shown.slots.length > 0) {
+      const slots = el('div', 'workshop__slots');
+      slots.setAttribute('role', 'group');
+      slots.setAttribute(
+        'aria-label',
+        fill(text.shop.slotsLabel, {
+          weapon: itemName('weapon', shown.weaponId),
+        }),
+      );
+      for (const slot of shown.slots) {
+        const button = el('button', 'workshop__slot');
+        button.type = 'button';
+        button.dataset.action = 'slot';
+        button.dataset.slot = slot.slot;
+        button.dataset.module = slot.moduleId ?? '';
+        button.dataset.key = `slot:${slot.slot}`;
+        button.setAttribute(
+          'aria-pressed',
+          String(shown.highlight === slot.slot),
+        );
+        button.append(
+          el(
+            'span',
+            'workshop__slot-label',
+            text.equipment.moduleSlots[slot.slot],
+          ),
+          el(
+            'span',
+            slot.name ? 'workshop__slot-name' : 'workshop__slot-name is-empty',
+            slot.name ?? text.shop.emptySlot,
+          ),
+        );
+        button.addEventListener('click', () => {
+          const rows = shopRows(ctx.manager, 'module', shown.weaponId);
+          const pick =
+            rows.find((row) => row.key === slot.moduleId) ??
+            rows.find((row) => row.slot === slot.slot);
+          if (pick) select(pick.id);
+        });
+        slots.append(button);
+      }
+      block.append(slots);
+    }
+    return block;
+  };
+
+  const blockedLabel = (card: ShopCard, block: ShopBlock): string => {
+    switch (block) {
+      case 'achievement':
+      case 'level':
+      case 'data':
+      case 'cores':
+        return purchaseLabel(card.row) ?? '';
+      case 'slots':
+        return fill(text.shop.blocked.slots, {
+          n: ctx.manager.moduleSlotsPerWeapon,
+        });
+      case 'unfit':
+      case 'full':
+      case 'last':
+      case 'noWeapon':
+        return fill(text.shop.blocked[block], {
+          weapon: card.weaponId ? itemName('weapon', card.weaponId) : '',
+        });
+    }
+  };
+
+  const cardAction = (card: ShopCard): void => {
+    const { row } = card;
+    if (card.action === 'buy') {
+      void buy(row.id);
+      return;
+    }
+    if (row.kind === 'weapon') {
+      const choice = nextLoadout(ctx.manager, 'weapons', row.key);
+      if (choice) void setChoice(choice);
+      return;
+    }
+    const weaponId = card.weaponId;
+    if (!weaponId) return;
+    void run(() =>
+      ctx.manager.setLoadout(
+        toggleModuleLoadout(
+          ctx.manager,
+          weaponId,
+          row.key,
+          card.action === 'equip',
+        ),
+      ),
+    );
+  };
+
+  /** Karta wybranego przedmiotu: stan, opis, statystyki przed/po i główna akcja. */
+  const renderCard = (card: ShopCard): HTMLElement => {
+    const { row } = card;
+    const node = el('article', 'workshop__card');
+    node.dataset.card = row.id;
+    node.dataset.status = row.status;
+    node.dataset.equipped = String(row.equipped);
+    const head = el('div', 'workshop__card-head');
+    head.append(el('h3', 'workshop__card-name', row.name));
+    head.append(
+      el(
+        'span',
+        'workshop__card-kind',
+        row.slot
+          ? `${text.shop.slot}: ${text.equipment.moduleSlots[row.slot]}`
+          : text.shop.tabs.weapon,
+      ),
+    );
+    node.append(head);
+    if (card.description)
+      node.append(el('p', 'workshop__card-text', card.description));
+    if (card.fits.length > 0)
+      node.append(
+        el(
+          'p',
+          'workshop__card-note',
+          fill(text.shop.fits, { weapons: card.fits.join(', ') }),
+        ),
+      );
+
+    const weaponName = card.weaponId ? itemName('weapon', card.weaponId) : '';
+    if (card.lines.length > 0) {
+      const compared = card.lines.some((line) => line.before !== null);
+      const table = el('table', 'workshop__stats');
+      table.append(
+        el(
+          'caption',
+          undefined,
+          row.kind === 'module'
+            ? fill(text.shop.compareModule, { weapon: weaponName })
+            : card.baseline
+              ? fill(text.shop.compareWeapon, { baseline: card.baseline })
+              : text.shop.statsOnly,
+        ),
+      );
+      if (compared) {
+        const header = el('tr');
+        // Bronie porównujemy nazwami, dodatek — stanem przed i po założeniu.
+        for (const column of [
+          text.shop.columns.stat,
+          card.baseline ?? text.shop.columns.before,
+          card.baseline ? row.name : text.shop.columns.after,
+        ]) {
+          const cell = el('th', undefined, column);
+          cell.scope = 'col';
+          header.append(cell);
+        }
+        const thead = el('thead');
+        thead.append(header);
+        table.append(thead);
+      }
+      const body = el('tbody');
+      for (const line of card.lines) {
+        const tr = el('tr');
+        tr.dataset.stat = line.key;
+        tr.dataset.trend = line.trend;
+        const label = el('th', undefined, line.label);
+        label.scope = 'row';
+        tr.append(label);
+        if (compared)
+          tr.append(el('td', 'workshop__stats-before', line.before ?? ''));
+        const after = el('td', 'workshop__stats-after', line.after);
+        if (line.trend !== 'same')
+          after.append(
+            el('span', 'workshop__trend', text.shop.trend[line.trend]),
+          );
+        tr.append(after);
+        body.append(tr);
+      }
+      table.append(body);
+      node.append(table);
+      if (
+        row.kind === 'module' &&
+        card.lines.every((line) => line.trend === 'same')
+      )
+        node.append(el('p', 'workshop__card-note', text.shop.noChange));
+    }
+
+    const foot = el('div', 'workshop__card-foot');
+    const state = el('span', 'workshop__card-state');
+    state.dataset.state =
+      row.status !== 'owned'
+        ? card.blocked
+          ? 'locked'
+          : 'available'
+        : row.equipped
+          ? 'equipped'
+          : 'owned';
+    state.textContent =
+      row.status !== 'owned'
+        ? `${text.shop.price}: ${costLabel(row)}`
+        : row.equipped
+          ? row.kind === 'weapon'
+            ? text.shop.state.inLoadout
+            : text.shop.state.equipped
+          : text.shop.state.owned;
+    foot.append(state);
+    const labels = {
+      buy: text.unlocks.buy,
+      equip: row.kind === 'weapon' ? text.shop.equipWeapon : text.shop.equip,
+      unequip:
+        row.kind === 'weapon' ? text.shop.unequipWeapon : text.shop.unequip,
+    };
+    const button = el('button', 'workshop__action', labels[card.action]);
+    button.type = 'button';
+    button.dataset.action = 'card';
+    button.dataset.cardAction = card.action;
+    button.dataset.key = `card:${row.id}`;
+    button.disabled = busy || card.blocked !== null;
+    button.addEventListener('click', () => cardAction(card));
+    foot.append(button);
+    node.append(foot);
+    if (card.blocked) {
+      const reason = el(
+        'p',
+        'workshop__card-blocked',
+        blockedLabel(card, card.blocked),
+      );
+      reason.dataset.blocked = card.blocked;
+      if (card.blocked === 'achievement') reason.prepend(createLockIcon());
+      node.append(reason);
+    } else if (row.kind === 'module' && row.status === 'owned' && weaponName)
+      node.append(
+        el(
+          'p',
+          'workshop__card-note',
+          fill(text.shop.target, { weapon: weaponName }),
+        ),
+      );
+    return node;
+  };
+
+  const renderShop = (): HTMLElement => {
+    const section = el('section', 'workshop__section');
+    section.dataset.section = 'shop';
+    section.append(el('h2', undefined, text.shop.title), renderTabs());
+    const manager = ctx.manager;
+    const fallback: Record<ShopTab, string | undefined> = {
+      weapon:
+        manager.state.loadout.weapons[0] === undefined
+          ? undefined
+          : `weapon:${manager.state.loadout.weapons[0]}`,
+      module: undefined,
+    };
+    const weaponRows = shopRows(manager, 'weapon');
+    const pickWeapon = weaponRows.some((row) => row.id === selected.weapon)
+      ? selected.weapon
+      : (fallback.weapon ?? weaponRows[0]?.id);
+    // Na zakładce dodatków podgląd pokazuje broń z ekwipunku, a wybrany dodatek jest przymierzany.
+    const target = shopPreview(manager, undefined, wantedPreview);
+    const moduleRows = shopRows(manager, 'module', target?.weaponId);
+    const pickModule = moduleRows.some((row) => row.id === selected.module)
+      ? selected.module
+      : moduleRows[0]?.id;
+    const current = tab === 'weapon' ? pickWeapon : pickModule;
+    const shown = shopPreview(manager, current, wantedPreview);
+    const card = current ? shopCard(manager, current, shown?.weaponId) : null;
+
+    const layout = el('div', 'workshop__shop');
+    const stage = el('div', 'workshop__stage');
+    stage.append(renderPreview(shown));
+    if (card) stage.append(renderCard(card));
+    layout.append(
+      renderCatalog({ weapon: weaponRows, module: moduleRows }, current),
+      stage,
+    );
+    section.append(layout);
+    return section;
+  };
+
+  const renderUnlocks = (): HTMLElement | null => {
+    const groups = groupRows(unlockRows(ctx.manager)).filter(
+      (group) => group.kind !== 'weapon' && group.kind !== 'module',
+    );
+    if (groups.length === 0) return null;
     const section = el('section', 'workshop__section');
     section.dataset.section = 'unlocks';
     section.append(el('h2', undefined, text.unlocks.title));
-    for (const group of groupRows(unlockRows(ctx.manager))) {
+    for (const group of groups) {
       section.append(el('h3', undefined, text.unlocks.groups[group.kind]));
       const list = el('ul', 'workshop__list');
-      for (const row of group.rows) {
-        const item = el('li', 'workshop__row');
-        item.dataset.unlock = row.id;
-        item.dataset.status = row.status;
-        item.append(el('span', 'workshop__name', row.name));
-        if (row.status !== 'owned')
-          item.append(el('span', 'workshop__cost', costLabel(row)));
-        const label = statusLabel(row);
-        if (label !== null) {
-          const state = el(
-            'span',
-            row.status === 'owned'
-              ? 'workshop__state'
-              : 'workshop__state is-blocked',
-            label,
-          );
-          if (row.status === 'achievement') {
-            state.classList.add('is-locked');
-            state.dataset.lock = row.requires?.id ?? '';
-            state.prepend(createLockIcon());
-          }
-          item.append(state);
-        }
-        if (row.status !== 'owned') {
-          const button = el('button', 'workshop__buy', text.unlocks.buy);
-          button.type = 'button';
-          button.dataset.action = 'buy';
-          button.dataset.key = `buy:${row.id}`;
-          button.disabled = row.status !== 'buyable';
-          button.addEventListener('click', () => void buy(row.id));
-          item.append(button);
-        }
-        list.append(item);
-      }
+      for (const row of group.rows)
+        list.append(renderRow(row, text.unlocks.owned));
       section.append(list);
     }
     return section;
@@ -286,52 +719,11 @@ export const createWorkshopPanel: HubPanelFactory = (
     return group;
   };
 
-  /** Podgląd 3D wybranej broni: przełącznik broni i trwały kontener z canvasem. */
-  const renderPreview = (): HTMLElement => {
-    const block = el('div', 'workshop__preview-block');
-    block.dataset.group = 'preview';
-    block.append(el('h3', undefined, text.preview.title));
-    const target = previewTarget(ctx.manager, wantedPreview);
-    const weapons = ctx.manager.state.loadout.weapons;
-    if (weapons.length > 1) {
-      const switcher = el('div', 'workshop__preview-switch');
-      switcher.setAttribute('role', 'group');
-      switcher.setAttribute('aria-label', text.preview.switchLabel);
-      for (const id of weapons) {
-        const button = el('button', 'workshop__choice', itemName('weapon', id));
-        button.type = 'button';
-        button.dataset.action = 'preview';
-        button.dataset.item = id;
-        button.dataset.key = `preview:${id}`;
-        button.setAttribute('aria-pressed', String(id === target?.weaponId));
-        button.addEventListener('click', () => {
-          wantedPreview = id;
-          refresh();
-        });
-        switcher.append(button);
-      }
-      block.append(switcher);
-    }
-    previewBox.hidden = target === null;
-    if (target) {
-      previewBox.dataset.weapon = target.weaponId;
-      previewBox.dataset.modules = target.moduleIds.join(',');
-      const key = `${target.weaponId}|${target.moduleIds.join(',')}`;
-      if (preview && key !== shownPreview) {
-        shownPreview = key;
-        preview.show(target.weaponId, target.moduleIds).catch(() => {});
-      }
-    }
-    block.append(previewBox);
-    return block;
-  };
-
   const renderEquipment = (): HTMLElement => {
     const equipment = equipmentState(ctx.manager);
     const section = el('section', 'workshop__section');
     section.dataset.section = 'equipment';
     section.append(el('h2', undefined, text.equipment.title));
-    section.append(renderPreview());
 
     const blades = el('div', 'workshop__group');
     blades.dataset.group = 'blade';
@@ -354,15 +746,16 @@ export const createWorkshopPanel: HubPanelFactory = (
     }
     blades.append(bladeList);
 
+    const weapons = renderChoices(
+      'weapons',
+      text.equipment.weapons,
+      equipment.weapons.options,
+      equipment.weapons.used,
+      equipment.weapons.slots,
+    );
     section.append(
       blades,
-      renderChoices(
-        'weapons',
-        text.equipment.weapons,
-        equipment.weapons.options,
-        equipment.weapons.used,
-        equipment.weapons.slots,
-      ),
+      weapons,
       renderChoices(
         'powers',
         text.equipment.powers,
@@ -380,47 +773,48 @@ export const createWorkshopPanel: HubPanelFactory = (
         label.append(
           el('span', undefined, text.equipment.moduleSlots[slot.slot]),
         );
-        const select = el('select', 'workshop__module-select');
-        select.dataset.weapon = weapon.weaponId;
-        select.dataset.slot = String(index);
-        select.dataset.key = `module:${weapon.weaponId}:${index}`;
+        const field = el('select', 'workshop__module-select');
+        field.dataset.weapon = weapon.weaponId;
+        field.dataset.slot = String(index);
+        field.dataset.key = `module:${weapon.weaponId}:${index}`;
         const empty = el('option', undefined, text.equipment.emptyModule);
         empty.value = '';
-        select.append(empty);
+        field.append(empty);
         for (const option of slot.options) {
           const node = el('option', undefined, option.name);
           node.value = option.id;
           node.title = option.description;
-          select.append(node);
+          field.append(node);
         }
-        select.value = slot.selected;
-        select.title =
-          slot.options.find((option) => option.id === slot.selected)
-            ?.description ?? '';
-        select.addEventListener('change', () => {
+        field.value = slot.selected;
+        field.disabled = slot.blocked;
+        const hint = slot.blocked
+          ? fill(text.equipment.slotLimitHint, {
+              n: ctx.manager.moduleSlotsPerWeapon,
+            })
+          : (slot.options.find((option) => option.id === slot.selected)
+              ?.description ?? '');
+        field.title = hint;
+        field.addEventListener('change', () => {
           void run(() =>
             ctx.manager.setLoadout(
               nextModuleLoadout(
                 ctx.manager,
                 weapon.weaponId,
                 index,
-                select.value,
+                field.value,
               ),
             ),
           );
         });
-        label.append(select);
-        const description = el(
-          'span',
-          'workshop__module-description',
-          select.title,
-        );
+        label.append(field);
+        const description = el('span', 'workshop__module-description', hint);
         description.id = `module-description-${weapon.weaponId}-${slot.slot}`;
-        select.setAttribute('aria-describedby', description.id);
+        field.setAttribute('aria-describedby', description.id);
         label.append(description);
         group.append(label);
       });
-      section.querySelector('[data-group="weapons"]')!.append(group);
+      weapons.append(group);
     }
     return section;
   };
@@ -432,12 +826,14 @@ export const createWorkshopPanel: HubPanelFactory = (
     const hadFocus = root.contains(document.activeElement);
     const statusLine = el('p', 'workshop__status', status);
     statusLine.setAttribute('role', 'status');
+    const unlocks = renderUnlocks();
     root.replaceChildren(
       renderHeader(),
       ...renderExtractions(),
-      renderUnlocks(),
-      renderEquipment(),
+      renderShop(),
       statusLine,
+      renderEquipment(),
+      ...(unlocks ? [unlocks] : []),
     );
     if (focusKey && root.isConnected) {
       const target = [...root.querySelectorAll<HTMLElement>('[data-key]')].find(

@@ -14,7 +14,10 @@ export interface WeaponInput {
   coolingPressed?: boolean;
   origin: Vec3;
   dir: Vec3;
-  /** Postęp celowania 0–1 (ADS): rozrzut × `tuning.player.aim.spread` przy pełnym celowaniu. */
+  /**
+   * Postęp celowania 0–1 (ADS): rozrzut przechodzi od `hipSpreadScale` (bez celowania)
+   * do `tuning.player.aim.spread` × `aimSpreadScale` przy pełnym celowaniu.
+   */
   aim?: number;
 }
 
@@ -70,7 +73,8 @@ export class Weapon {
     this.rng = ctx.rng.fork(this.definition.id);
     this.heat = new ResourcePool({
       start: 0,
-      max: () => stats.get('heatCapacity'),
+      max: () =>
+        stats.get('heatCapacity') * (definition.heatCapacityScale ?? 1),
       regenPerS: () => -stats.get('coolingRate'),
       regenDelayS: () => ctx.tuning.weapons.coolDelayS,
     });
@@ -227,11 +231,12 @@ export class Weapon {
     if (ammo && !ammo.available()) return;
     ammo?.consume();
     const aim = Math.min(1, Math.max(0, input.aim ?? 0));
+    const hipSpread = this.definition.hipSpreadScale ?? 1;
     const spreadScale =
-      1 +
+      hipSpread +
       (this.ctx.tuning.player.aim.spread *
         (this.definition.aimSpreadScale ?? 1) -
-        1) *
+        hipSpread) *
         aim;
     fireProjectile(
       this.definition,

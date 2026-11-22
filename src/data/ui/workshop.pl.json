@@ -7,11 +7,14 @@
     "retry": "Ponów zapis wydobycia"
   },
   "unlocks": {
-    "title": "Odblokowania",
+    "title": "Pozostałe odblokowania",
     "owned": "Posiadane",
     "buy": "Kup",
     "requiredLevel": "Wymagany poziom {level}",
-    "notEnough": { "data": "Za mało Danych", "cores": "Za mało Rdzeni" },
+    "notEnough": {
+      "data": "Za mało Danych",
+      "cores": "Za mało Rdzeni"
+    },
     "groups": {
       "weapon": "Bronie",
       "power": "Moce",
@@ -25,7 +28,10 @@
     "cores": "Rdzenie",
     "level": "Poziom"
   },
-  "currency": { "data": "Dane", "cores": "Rdzenie" },
+  "currency": {
+    "data": "Dane",
+    "cores": "Rdzenie"
+  },
   "preview": {
     "title": "Podgląd broni",
     "unavailable": "Podgląd 3D niedostępny w tej przeglądarce.",
@@ -41,8 +47,14 @@
     "fullHint": "Limit slotów wyczerpany",
     "lastHint": "Wymagana co najmniej jedna pozycja",
     "moduleSlot": "Moduł {n}",
-    "moduleSlots": { "muzzle": "Wylot", "cell": "Ogniwo", "optic": "Optyka" },
-    "emptyModule": "— brak —"
+    "moduleSlots": {
+      "muzzle": "Wylot",
+      "cell": "Ogniwo",
+      "optic": "Optyka",
+      "grip": "Podwieszenie"
+    },
+    "emptyModule": "— brak —",
+    "slotLimitHint": "Limit {n} dodatków na broń. Zdejmij inny, żeby zająć to gniazdo."
   },
   "bladeNames": {
     "plasmaBlade": "Ostrze plazmowe",
@@ -54,5 +66,92 @@
     "weapon3": "Trzeci slot broni",
     "power2": "Drugi slot mocy"
   },
-  "errors": { "generic": "Operacja nie powiodła się." }
+  "errors": {
+    "generic": "Operacja nie powiodła się."
+  },
+  "shop": {
+    "title": "Sklep warsztatu",
+    "tabsLabel": "Kategoria sklepu",
+    "tabs": {
+      "weapon": "Bronie",
+      "module": "Dodatki"
+    },
+    "listLabel": {
+      "weapon": "Bronie w sklepie",
+      "module": "Dodatki w sklepie"
+    },
+    "equip": "Załóż",
+    "unequip": "Zdejmij",
+    "equipWeapon": "Weź do ekwipunku",
+    "unequipWeapon": "Odłóż z ekwipunku",
+    "state": {
+      "equipped": "Założone",
+      "inLoadout": "W ekwipunku",
+      "owned": "Kupione"
+    },
+    "price": "Cena",
+    "slot": "Gniazdo",
+    "target": "Montaż w broni: {weapon}",
+    "fits": "Pasuje do: {weapons}",
+    "tryOn": "Przymiarka: {name} (jeszcze nie założone)",
+    "slotsLabel": "Gniazda broni {weapon}",
+    "emptySlot": "puste",
+    "compareModule": "{weapon}: bez dodatku → z dodatkiem",
+    "compareWeapon": "Zmiana względem broni {baseline}",
+    "statsOnly": "Statystyki broni",
+    "noChange": "Ten dodatek zmienia zachowanie pocisku, nie liczby w tabeli.",
+    "columns": {
+      "stat": "Statystyka",
+      "before": "Przed",
+      "after": "Po"
+    },
+    "trend": {
+      "better": "lepiej",
+      "worse": "gorzej",
+      "changed": "zmiana",
+      "same": "bez zmian"
+    },
+    "blocked": {
+      "unfit": "Nie pasuje do broni {weapon}.",
+      "slots": "Limit {n} dodatków na broń. Zdejmij inny.",
+      "full": "Brak wolnego slotu broni. Odłóż inną albo kup slot.",
+      "last": "W ekwipunku musi zostać co najmniej jedna broń.",
+      "noWeapon": "Wybierz broń z ekwipunku, żeby założyć dodatek."
+    }
+  },
+  "stats": {
+    "damage": "Obrażenia strzału",
+    "fireRate": "Szybkostrzelność",
+    "dps": "Obrażenia na sekundę",
+    "hipSpread": "Rozrzut bez celowania",
+    "aimSpread": "Rozrzut w celowaniu",
+    "aimIn": "Czas wejścia w celowanie",
+    "zoom": "Przybliżenie w celowaniu",
+    "recoil": "Odrzut",
+    "heatPerShot": "Ciepło na strzał",
+    "heatPerS": "Ciepło na sekundę",
+    "heatCapacity": "Pojemność cieplna",
+    "shots": "Strzały do przegrzania",
+    "projectileSpeed": "Prędkość pocisku",
+    "pierce": "Przebijane cele",
+    "ricochets": "Rykoszety"
+  },
+  "units": {
+    "perS": "/s",
+    "deg": "°",
+    "s": " s",
+    "pct": "%",
+    "times": "×",
+    "mPerS": " m/s",
+    "none": ""
+  },
+  "weaponDescriptions": {
+    "blaster": "Automat ogólnego użytku. Pewne obrażenia na średni dystans.",
+    "pistol": "Półautomat: celny, mocny pojedynczy strzał i mało ciepła.",
+    "rifle": "Szybki automat o dużym rozrzucie. Zalewa cel ogniem z bliska.",
+    "scatter": "Wiązka pocisków naraz. Niszczy z bliska, słabnie z dystansem.",
+    "emp": "Granat po łuku: wybuch obszarowy i przeciążenie elektroniki.",
+    "sniper": "Jeden bardzo mocny strzał, który przebija kilka celów.",
+    "beam": "Ciągła wiązka o krótkim zasięgu. Zadaje obrażenia bez przerwy."
+  }
 }

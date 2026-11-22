@@ -117,17 +117,16 @@
   width: auto;
 }
 .workshop__preview {
+  box-sizing: border-box;
   width: 100%;
-  max-width: 360px;
-  background: radial-gradient(ellipse at 50% 55%, #12203a 0%, #070d1a 75%);
+  background: radial-gradient(ellipse at 50% 55%, #16284a 0%, #070d1a 78%);
   border: 1px solid rgba(0, 229, 255, 0.16);
   border-left: 4px solid #ffae1a;
 }
 .workshop__preview-canvas {
   display: block;
   width: 100%;
-  max-width: 360px;
-  aspect-ratio: 360 / 220;
+  aspect-ratio: 560 / 250;
   height: auto;
   cursor: grab;
   touch-action: none;
@@ -190,6 +189,303 @@
   width: 14px;
   height: 14px;
   flex: none;
+}
+/* ------------------------------------------------------------------ sklep */
+.workshop__tabs {
+  display: flex;
+  gap: 4px;
+  margin: 4px 0 14px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.22);
+}
+.hub-screen .workshop .workshop__tab {
+  padding: 10px 26px;
+  font-size: 1.05em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8894a8;
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+}
+.hub-screen .workshop .workshop__tab[aria-selected='true'] {
+  color: #fff1d6;
+  background: linear-gradient(180deg, transparent, rgba(255, 174, 26, 0.12));
+  border-bottom-color: #ffae1a;
+}
+.workshop__shop {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.8fr) minmax(0, 1.2fr);
+  gap: 22px;
+  align-items: start;
+}
+.workshop__pane > h3:first-child {
+  margin-top: 0;
+}
+.workshop__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'name cost buy'
+    'state state buy';
+  gap: 2px 12px;
+  padding: 9px 10px;
+  border-left: 4px solid transparent;
+  cursor: pointer;
+}
+.workshop__item .workshop__name {
+  grid-area: name;
+  font-size: 1.05em;
+}
+.workshop__item .workshop__cost {
+  grid-area: cost;
+  white-space: nowrap;
+}
+.workshop__item .workshop__buy {
+  grid-area: buy;
+  align-self: center;
+}
+.workshop__item .workshop__state {
+  grid-area: state;
+}
+.workshop__item[data-status='owned'] .workshop__state {
+  grid-area: cost;
+  white-space: nowrap;
+}
+.workshop__item:hover {
+  background: rgba(0, 229, 255, 0.06);
+}
+.workshop__item[aria-current='true'] {
+  background: #102233;
+  border-left-color: #ffae1a;
+}
+.workshop__item:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: -2px;
+}
+.workshop__item[data-equipped='true'] .workshop__state {
+  color: #ffae1a;
+}
+.workshop__stage {
+  display: grid;
+  gap: 12px;
+}
+.workshop__stage .workshop__preview-block {
+  margin: 0;
+}
+.workshop__stage .workshop__preview-block > h3 {
+  margin-top: 0;
+}
+.workshop__try-on {
+  margin: 6px 0 0;
+  color: #ffae1a;
+  font-size: 0.9em;
+}
+.workshop__slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+.hub-screen .workshop .workshop__slot {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 7px 10px;
+  border-left-width: 1px;
+  border-left-color: rgba(0, 229, 255, 0.3);
+  border-top: 3px solid #3a5263;
+}
+.hub-screen .workshop .workshop__slot[aria-pressed='true'] {
+  border-top-color: #ffae1a;
+  box-shadow: 0 0 14px rgba(255, 174, 26, 0.28);
+}
+.workshop__slot-label {
+  color: #8894a8;
+  font-size: 0.75em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.workshop__slot-name {
+  overflow: hidden;
+  color: #fff1d6;
+  font-size: 0.92em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workshop__slot-name.is-empty {
+  color: #5d6a7d;
+}
+.workshop__card {
+  padding: 16px 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 174, 26, 0.06), transparent 90px), #070d1a;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-top: 3px solid #ffae1a;
+}
+.workshop__card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 14px;
+}
+.workshop .workshop__card-name {
+  margin: 0;
+  font-size: 1.45em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: #fff1d6;
+}
+.workshop__card-kind {
+  color: #8894a8;
+  font-size: 0.8em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.workshop__card-text {
+  margin: 8px 0 0;
+  font-size: 1.05em;
+  line-height: 1.45;
+}
+.workshop__card-note {
+  margin: 6px 0 0;
+  color: #8894a8;
+  font-size: 0.9em;
+}
+.workshop__stats {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.workshop__stats caption {
+  padding-bottom: 6px;
+  color: #b9c6d1;
+  font-size: 0.8em;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.workshop__stats th,
+.workshop__stats td {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.08);
+  font-weight: 500;
+  text-align: left;
+}
+.workshop__stats thead th {
+  color: #5d6a7d;
+  font-size: 0.75em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.workshop__stats tbody th {
+  color: #b9c6d1;
+}
+.workshop__stats td,
+.workshop__stats thead th:not(:first-child) {
+  padding-left: 14px;
+  text-align: right;
+  white-space: nowrap;
+}
+.workshop__stats-before {
+  color: #8894a8;
+}
+.workshop__stats-after {
+  color: #f4f7fa;
+  font-weight: 600;
+}
+.workshop__trend {
+  display: inline-block;
+  min-width: 4.2em;
+  margin-left: 8px;
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.workshop__stats tr[data-trend='better'] .workshop__stats-after,
+.workshop__stats tr[data-trend='better'] .workshop__trend {
+  color: #8cd17d;
+}
+.workshop__stats tr[data-trend='worse'] .workshop__stats-after,
+.workshop__stats tr[data-trend='worse'] .workshop__trend {
+  color: #ff9d4d;
+}
+.workshop__stats tr[data-trend='changed'] .workshop__trend {
+  color: #b9a3ff;
+}
+.workshop__card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+.workshop__card-state {
+  font-size: 1.05em;
+  font-variant-numeric: tabular-nums;
+}
+.workshop__card-state[data-state='owned'] {
+  color: #8cd17d;
+}
+.workshop__card-state[data-state='equipped'] {
+  color: #ffae1a;
+}
+.workshop__card-state[data-state='locked'] {
+  color: #8894a8;
+}
+.hub-screen .workshop .workshop__action {
+  min-width: 180px;
+  padding: 11px 22px;
+  font-size: 1.05em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  color: #06101c;
+  background: #ffae1a;
+  border: 1px solid #ffae1a;
+}
+.hub-screen .workshop .workshop__action[data-card-action='unequip'] {
+  color: #fff1d6;
+  background: #0c1626;
+  border-color: rgba(255, 174, 26, 0.6);
+}
+.hub-screen .workshop .workshop__action:disabled {
+  color: #8894a8;
+  background: #0c1626;
+  border-color: #3a5263;
+  opacity: 0.7;
+}
+.workshop__card-blocked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  color: #ffae1a;
+  font-size: 0.95em;
+}
+.workshop__card-blocked .achv-lock {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.workshop__module-select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (max-width: 900px) {
+  .workshop__shop {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workshop__slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 760px) {
   .workshop__row {

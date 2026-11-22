@@ -1,14 +1,89 @@
 [
-  { "id": "module:collimator", "cost": { "data": 140 }, "minLevel": 2 },
-  { "id": "module:scope", "cost": { "data": 220 }, "minLevel": 5 },
-  { "id": "module:ricochet", "cost": { "data": 160 }, "minLevel": 3 },
-  { "id": "module:pierce", "cost": { "data": 180 }, "minLevel": 4 },
-  { "id": "module:incendiary", "cost": { "data": 200 }, "minLevel": 4 },
+  {
+    "id": "module:collimator",
+    "cost": {
+      "data": 140
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "module:scope",
+    "cost": {
+      "data": 220
+    },
+    "minLevel": 5
+  },
+  {
+    "id": "module:ricochet",
+    "cost": {
+      "data": 160
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "module:pierce",
+    "cost": {
+      "data": 180
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "module:incendiary",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 4
+  },
   {
     "id": "module:superconductor",
-    "cost": { "cores": 6 },
+    "cost": {
+      "cores": 6
+    },
     "minLevel": 5,
     "requiresAchievement": "reka-strzelca"
+  },
+  {
+    "id": "module:foregrip",
+    "cost": {
+      "data": 150
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "module:laser",
+    "cost": {
+      "data": 170
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "module:compensator",
+    "cost": {
+      "data": 170
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "module:holo",
+    "cost": {
+      "data": 190
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "module:extendedCell",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "module:pulseCell",
+    "cost": {
+      "data": 230,
+      "cores": 2
+    },
+    "minLevel": 5
   },
   {
     "id": "weapon:rifle",
@@ -34,14 +109,16 @@
   {
     "id": "weapon:sniper",
     "cost": {
-      "data": 140
+      "data": 140,
+      "cores": 2
     },
     "minLevel": 3
   },
   {
     "id": "weapon:beam",
     "cost": {
-      "data": 180
+      "data": 180,
+      "cores": 4
     },
     "minLevel": 4
   },

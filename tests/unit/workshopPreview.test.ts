@@ -10,6 +10,7 @@ const fake = vi.hoisted(() => ({
   instances: [] as {
     show: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
+    highlight: ReturnType<typeof vi.fn>;
   }[],
 }));
 vi.mock('../../src/render/weaponPreview', () => ({
@@ -19,6 +20,7 @@ vi.mock('../../src/render/weaponPreview', () => ({
   WeaponPreview: class {
     show = vi.fn(() => Promise.resolve());
     dispose = vi.fn();
+    highlight = vi.fn();
     constructor() {
       fake.instances.push(this);
     }

@@ -38,6 +38,12 @@ const weaponFields = {
   aimInScale: z.number().finite().positive().optional(),
   aimSpreadScale: z.number().finite().positive().optional(),
   aimSensitivityScale: z.number().finite().positive().optional(),
+  /** Odrzut broni w widoku FPP jako ułamek bazowego (kompensator, chwyt przedni). */
+  recoilScale: z.number().finite().positive().optional(),
+  /** Rozrzut bez celowania jako ułamek `spreadDeg` (celownik laserowy); w pełnym celowaniu nie działa. */
+  hipSpreadScale: z.number().finite().positive().optional(),
+  /** Pojemność cieplna tej broni jako mnożnik statystyki `heatCapacity`. */
+  heatCapacityScale: z.number().finite().positive().optional(),
   activeCooling: z
     .strictObject({
       windowStartS: z.number().finite().nonnegative().optional(),

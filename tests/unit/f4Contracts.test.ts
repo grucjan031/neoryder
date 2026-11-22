@@ -118,6 +118,12 @@ describe('dane meta F4 przechodzą schematy', () => {
       'module:superconductor',
       'module:collimator',
       'module:scope',
+      'module:holo',
+      'module:laser',
+      'module:compensator',
+      'module:foregrip',
+      'module:extendedCell',
+      'module:pulseCell',
     ].filter((id) => !starter.has(id));
     expect([...loaded.keys()].sort()).toEqual(expected.sort());
     for (const id of starter) expect(loaded.has(id)).toBe(false);

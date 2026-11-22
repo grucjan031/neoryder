@@ -9,6 +9,7 @@
   "projectileSpeed": 180,
   "projectileLifetimeS": 2,
   "spreadDeg": 0,
+  "recoilScale": 1,
   "tags": ["#gun"],
   "pierceCount": 3,
   "pierceFalloff": 0.25,
