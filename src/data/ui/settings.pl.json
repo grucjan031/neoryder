@@ -66,7 +66,8 @@
     "weapon3": "Broń 3",
     "bladeThrow": "Rzut ostrzem",
     "map": "Plan stacji",
-    "inventory": "Menu ulepszeń (run)"
+    "inventory": "Menu ulepszeń (run)",
+    "squadCommand": "Drużyna: za mną / trzymaj pozycję"
   },
   "difficulty": "Poziom trudności",
   "difficulties": {

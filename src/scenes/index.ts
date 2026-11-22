@@ -74,4 +74,5 @@ export const scenes: Record<string, SceneLoader> = {
     import('./escortTest').then((m) => () => m.createEscortTest()),
   'payload-test': () =>
     import('./payloadTest').then((m) => () => m.createPayloadTest()),
+  'ally-test': () => import('./allyTest').then((m) => () => m.createAllyTest()),
 };

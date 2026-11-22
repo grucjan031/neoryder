@@ -18,7 +18,8 @@
     "Digit2": "weapon2",
     "Digit3": "weapon3",
     "KeyM": "map",
-    "Tab": "inventory"
+    "Tab": "inventory",
+    "KeyT": "squadCommand"
   },
   "mouse": { "0": "attack", "1": "bladeThrow", "2": "block" }
 }

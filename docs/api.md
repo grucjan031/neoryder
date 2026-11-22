@@ -2432,3 +2432,71 @@ Szczegóły i koszt: `docs/systems/prototypes-s4-03.md`.
   `RunState` pokoju testowego z parametrów URL.
 - Cele (więzień, wagon) to encje drużyny `neutral` z `Health` i colliderem w grupie
   `CollisionGroup.Player` o filtrze tylko `EnemyProjectile`: trafiają je wyłącznie pociski wrogów.
+
+## Sojusznicy
+
+System: `docs/systems/allies.md`. Kod: `src/allies/`, dane `src/data/allies/*.json`.
+
+### Zdarzenia (`GameEvents`)
+
+`ally` to id definicji, `id` to encja (drużyna `neutral`, rodzaj `ally:<id>`).
+
+| Zdarzenie        | Ładunek                                                              | Kiedy                                             |
+| ---------------- | -------------------------------------------------------------------- | ------------------------------------------------- |
+| `ally_spawned`   | `{ id, ally }`                                                       | sojusznik dołączył do drużyny                     |
+| `ally_state`     | `{ id, ally, from, to }`                                             | zmiana stanu maszyny (`AllyState`)                |
+| `ally_downed`    | `{ id, ally, source }`                                               | zdrowie 0; `source` to sprawca albo null          |
+| `ally_revived`   | `{ id, ally, by: 'player' \| 'checkpoint' \| 'debug' }`              | sojusznik wstał                                   |
+| `ally_evacuated` | `{ id, ally }`                                                       | nikt nie podniósł przez `downedTimeoutS`          |
+| `ally_bark`      | `{ id, ally, kind, text }`                                           | kwestia: `contact`, `reload`, `downed`, `revived`, `objective` |
+| `ally_order`     | `{ order: 'follow' \| 'hold' }`                                      | zmiana rozkazu drużyny                            |
+
+Zabójstwo sojusznika to zwykłe `enemy_killed` z `killer` = encja sojusznika; obrażenia przechodzą
+przez `DamageSystem` (`damage_dealt`, `health_changed`).
+
+### Wejście
+
+Akcja `squadCommand` (domyślnie `KeyT`) przełącza rozkaz drużyny. Podnoszenie powalonego używa
+akcji `power2` (klawisz interakcji); gdy powalony jest w zasięgu, moc 2 nie dostaje tego klawisza.
+
+### Wybór celów — `src/allies/targeting.ts`
+
+```ts
+selectHostileTarget(from, candidates: HostileCandidate[], { allyBias, stickyBias, currentId? })
+  : HostileCandidate | null; // cel wroga: gracz ×1, sojusznik ×allyBias, bieżący cel ×stickyBias
+selectAllyTarget(from, candidates: AllyTargetCandidate[], { rangeM, attackerBias, stickyBias, currentId? }, visible)
+  : AllyTargetCandidate | null; // cel sojusznika: najbliższy widoczny w zasięgu
+```
+
+`EnemyDependencies.getTargetFor?(enemy: { id: EntityId | null; position: Vec3 })` — gdy scena je
+poda, `EnemyManager` daje każdemu wrogowi własne `getTarget` (cel z drużyny gracza). `getTarget`
+bez argumentu zostaje dla dyrektora i `targetForward`.
+
+### Drużyna — `src/allies/squad.ts`
+
+`new AllySquad(host: SquadHost)` — `host` podaje `ctx`, Rapiera, `entities`, `damage`, `hurtboxes`,
+`projectiles`, `navigation()`, `leader()` (gracz: id, stopy, yaw, czy żyje) i `hostiles()`.
+
+```ts
+add(id: string, feet: Vec3): Ally | null;   remove(id: string): boolean;
+step(dt: number, reviveHeld: boolean): void;
+setOrder(order: 'follow' | 'hold'): void;   toggleOrder(): AllyOrder;
+reviveCandidate(): Ally | null;             knockDown(id): boolean;   revive(id, by?): boolean;
+restore(at?: Vec3): void;                   bark(kind: AllyBark): void;
+targetFor(enemy, player | null): { id; position; yaw? } | null;
+snapshots(): AllySnapshot[];                forEachPose(cb): void;    registerCommands(register): void;
+```
+
+### RoomScene
+
+- `RoomSceneOptions.allies?: LevelAlly[]`; bez niego scena czyta `allies` z układu.
+- `addAlly(id, spawn)`, `allyDependencyDone(kind, id)`, `restoreAllies(position?)`, `allySnapshots()`.
+- `resetLevelCombat` stawia drużynę przy checkpoincie; `wave_cleared` przywraca ewakuowanych.
+- Zapytania: `allies`, `allyKills`, `squadOrder`. Komendy: `ally spawn|down|revive|hold|follow|status`.
+
+### Poziomy liniowe — `src/world/levelSchema.ts`
+
+`allies?: { id: string; spawn: Vec3; joinAfter?: { kind: 'objective' | 'encounter'; id: string } }[]`
+— `id` z `src/data/allies` (unikalne), `spawn` to stopy (sprawdzana osiągalność), `joinAfter`
+musi wskazywać istniejący cel albo spotkanie. Zależność `encounter` zgłasza host misji przez
+`RoomScene.allyDependencyDone('encounter', id)`.

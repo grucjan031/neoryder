@@ -256,3 +256,8 @@ Sprawdzenie w 30 sekund (`?scene=mission&mission=m06-odlewnia&debug=1`, po
 3. Trzy razy `kill all` (po każdym odczekaj zmianę fazy): radio faz, „Ja tylko
    dowożę”, wrota i gabinet otwarte, checkpoint `po-brandcie`.
 4. Serwer w gabinecie (3 s w strefie), potem winda po lewej (2 s): podsumowanie.
+
+## Sojusznicy na poziomie
+
+Opcjonalne pole `allies: [{ id, spawn, joinAfter? }]` dodaje sojuszników z `src/data/allies`
+(opis: `docs/systems/allies.md`, sekcja „Misje liniowe”). Poziomy bez tego pola działają jak dotąd.

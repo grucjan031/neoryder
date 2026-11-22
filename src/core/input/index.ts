@@ -26,6 +26,8 @@ export const actionSchema = z.enum([
   'map',
   /** Menu ulepszeń w runie (Tab): lista implantów, synergii, mocy i modułów w pauzie. */
   'inventory',
+  /** Komenda drużyny: sojusznicy idą za graczem albo trzymają pozycję (przełącznik). */
+  'squadCommand',
 ]);
 /** Pojedyncze zdarzenie ruchu myszy większe niż to (px) to artefakt przeglądarki, nie gest. */
 const MAX_MOUSE_DELTA = 400;

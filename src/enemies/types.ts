@@ -87,6 +87,16 @@ export interface EnemyDependencies {
     yaw?: number;
     height?: number;
   } | null;
+  /**
+   * Cel konkretnego wroga (drużyna gracza: gracz albo sojusznik). Gdy podane, `EnemyManager`
+   * daje każdemu wrogowi własne `getTarget`; `id` jest null w trakcie konstrukcji wroga.
+   */
+  getTargetFor?(enemy: { id: EntityId | null; position: Vec3 }): {
+    id: EntityId;
+    position: Vec3;
+    yaw?: number;
+    height?: number;
+  } | null;
   getNeighbors?(): readonly Enemy[];
   /** F2-12: tokeny ataku i sloty flankowania; bez dyrektora wróg atakuje jak w F1. */
   director?: EnemyDirectorApi;

@@ -222,6 +222,8 @@ export class MissionScene implements Scene {
     }
     const checkpoint = this.currentCheckpoint();
     this.room.resetLevelCombat(checkpoint.position, checkpoint.yawDeg);
+    for (const id of this.snapshot.completedEncounters)
+      this.room.allyDependencyDone('encounter', id);
     if (typeof document !== 'undefined')
       this.direction = new MissionDirection(() => {
         if (this.state === 'error') void this.finish();
@@ -348,6 +350,7 @@ export class MissionScene implements Scene {
     this.snapshot.checkpointId = id;
     this.snapshot.completedEncounters = [...this.runtime.completed];
     this.persist();
+    this.room?.restoreAllies();
     this.radio?.signal(`checkpoint:${id}`);
   }
 
@@ -440,6 +443,7 @@ export class MissionScene implements Scene {
           this.radio?.signal('boss:defeated');
           this.room!.objectiveModel()?.done(bossFor);
         }
+        this.room!.allyDependencyDone('encounter', id);
         this.radio?.signal(`encounter:${id}:done`);
       }
     }
@@ -598,6 +602,7 @@ export class MissionScene implements Scene {
           entry.director.dispose();
           this.room!.removeEncounterEnemies([...entry.enemies]);
           this.runtime.clear(id);
+          this.room!.allyDependencyDone('encounter', id);
           this.radio?.signal(`encounter:${id}:done`);
         }
         this.active.clear();

@@ -1,0 +1,39 @@
+{
+  "id": "szron",
+  "name": "Szron",
+  "role": "support",
+  "hp": 190,
+  "moveSpeed": 4.8,
+  "weapon": {
+    "model": "scatter",
+    "damage": 7,
+    "projectileSpeed": 55,
+    "projectileLifetimeS": 0.5,
+    "burstCount": 1,
+    "burstIntervalS": 0.2,
+    "cooldownS": 1.1,
+    "pellets": 6,
+    "pelletSpreadDeg": 5,
+    "burstsPerReload": 5,
+    "reloadS": 2.4,
+    "tags": ["#gun"]
+  },
+  "accuracy": 0.7,
+  "followDistanceM": 2.6,
+  "engageRangeM": 14,
+  "reviveS": 3,
+  "look": {
+    "torso": "jacket",
+    "parts": ["role_szron", "prop_pouches"],
+    "outerColor": "#c9b48c",
+    "pantsColor": "#33373d",
+    "accentColor": "#fff1d6"
+  },
+  "barks": {
+    "contact": ["Kontakt. Biorę bliższych.", "Idą na nas."],
+    "reload": ["Rozpraszacz gorący, chwila!", "Chłodzę lufę."],
+    "downed": ["Leżę. Podnieś mnie."],
+    "revived": ["Stoję. Dalej."],
+    "objective": ["Cel wykonany. Nie zwalniaj."]
+  }
+}

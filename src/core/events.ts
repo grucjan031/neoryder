@@ -180,6 +180,24 @@ export interface GameEvents {
   };
   hub_station_opened: { station: HubStationId };
   hub_chatter_line: { conversation: string; npc: string; text: string };
+  // Sojusznicy (docs/systems/allies.md); `ally` to id definicji z `src/data/allies`.
+  ally_spawned: { id: EntityId; ally: string };
+  ally_state: { id: EntityId; ally: string; from: string; to: string };
+  ally_downed: { id: EntityId; ally: string; source: EntityId | null };
+  ally_revived: {
+    id: EntityId;
+    ally: string;
+    by: 'player' | 'checkpoint' | 'debug';
+  };
+  /** Powalony nie doczekał pomocy: wraca przy następnym checkpoincie albo po fali. */
+  ally_evacuated: { id: EntityId; ally: string };
+  ally_bark: {
+    id: EntityId;
+    ally: string;
+    kind: 'contact' | 'reload' | 'downed' | 'revived' | 'objective';
+    text: string;
+  };
+  ally_order: { order: 'follow' | 'hold' };
 }
 
 export type EventType = keyof GameEvents;

@@ -7,6 +7,7 @@ import {
 } from './roomSchema';
 import type { MissionDefinition } from './missionSchema';
 import { wavesSchema, type WavesDefinition } from './waves';
+import { allyDefinitions } from '../allies/allySchema';
 
 const id = z.string().min(1);
 export const levelZoneSchema = z.discriminatedUnion('kind', [
@@ -22,6 +23,16 @@ export const levelZoneSchema = z.discriminatedUnion('kind', [
   }),
 ]);
 const dependency = z.object({ kind: z.enum(['objective', 'encounter']), id });
+/**
+ * Sojusznik na poziomie: `id` z `src/data/allies`, `spawn` to stopy. Bez `joinAfter` dołącza
+ * na starcie; z nim dopiero po ukończeniu celu albo spotkania.
+ */
+export const levelAllySchema = z.object({
+  id,
+  spawn: vec3Schema,
+  joinAfter: dependency.optional(),
+});
+export type LevelAlly = z.infer<typeof levelAllySchema>;
 
 // Pola i geometria pochodzą z pokoju; poziom nie ma semantyki drzwi entry/exit.
 export const levelSchema = z
@@ -67,6 +78,7 @@ export const levelSchema = z
         closedDuring: id.optional(),
       }),
     ),
+    allies: z.array(levelAllySchema).optional(),
   })
   .superRefine((level, ctx) => {
     const checkUnique = (ids: string[], path: string) => {
@@ -101,6 +113,17 @@ export const levelSchema = z
         ctx.addIssue({
           code: 'custom',
           message: `Nieznana zależność: ${entry.after.id}`,
+        });
+    checkUnique(
+      (level.allies ?? []).map((ally) => ally.id),
+      'allies',
+    );
+    for (const ally of level.allies ?? [])
+      if (ally.joinAfter && !known(ally.joinAfter))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['allies'],
+          message: `Nieznana zależność sojusznika: ${ally.joinAfter.id}`,
         });
     for (const gate of level.gates)
       if (
@@ -170,6 +193,9 @@ export function loadLevel(
     )
   )
     throw new Error('Poziom musi zawierać wszystkie cele misji.');
+  for (const ally of level.allies ?? [])
+    if (!allyDefinitions.has(ally.id))
+      throw new Error(`Nieznany sojusznik: ${ally.id}`);
   for (const encounter of level.encounters) {
     if (!waves.has(encounter.wave))
       throw new Error(`Nieznana fala: ${encounter.wave}`);
@@ -216,6 +242,7 @@ export function loadLevel(
       ...Object.values(level.objectivePositions),
       ...level.checkpoints.map((point) => point.position),
       ...level.encounters.flatMap((encounter) => encounter.spawnPoints),
+      ...(level.allies ?? []).map((ally) => ally.spawn),
     ],
   });
   return level;
