@@ -25,9 +25,9 @@
   "look": {
     "torso": "jacket",
     "parts": ["role_szron", "prop_pouches"],
-    "outerColor": "#c9b48c",
+    "outerColor": "#565b63",
     "pantsColor": "#33373d",
-    "accentColor": "#fff1d6"
+    "accentColor": "#ffae1a"
   },
   "barks": {
     "contact": ["Kontakt. Biorę bliższych.", "Idą na nas."],

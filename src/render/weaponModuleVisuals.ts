@@ -6,6 +6,7 @@ import {
   Group,
   Matrix4,
   Mesh,
+  MeshStandardMaterial,
   SphereGeometry,
   TorusGeometry,
   Vector3,
@@ -17,7 +18,9 @@ import {
   moduleDefinitions,
 } from '../progression/moduleSchema';
 import type { ModuleDefinition, ModuleSlot } from '../progression/moduleSchema';
-import { fppGlowMaterial, fppMaterial } from './fppMaterials';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { fppGlowMaterial } from './fppMaterials';
 
 type Shape = ModuleDefinition['visual']['shape'];
 type Color = ModuleDefinition['visual']['color'];
@@ -25,21 +28,81 @@ const ACCENTS = { amber: '#ffae1a', white: '#fff1d6', green: '#6dff4a' };
 /** Wiązka celownika laserowego: długość i grubość względem długości broni. */
 const LASER_BEAM_LENGTH = 2.6;
 const LASER_BEAM_WIDTH = 0.007;
+const templates = new Map<string, { root: Object3D; users: number }>();
 
-/** Własne materiały; tekstura gradientu pozostaje współdzielona z FPP. */
+/** Scalanie detali tego samego materiału; nazwane zaczepy pozostają osobno. */
+function batchDetails(root: Group): void {
+  const batches = new Map<Material, Mesh[]>();
+  for (const node of root.children) {
+    if (!(node instanceof Mesh) || Array.isArray(node.material)) continue;
+    if (node.name && node.name !== 'holo_reticle') continue;
+    const batch = batches.get(node.material) ?? [];
+    batch.push(node);
+    batches.set(node.material, batch);
+  }
+  for (const [material, meshes] of batches) {
+    const parts = meshes.map((mesh) => {
+      mesh.updateMatrix();
+      const geometry = mesh.geometry.index
+        ? mesh.geometry.toNonIndexed()
+        : mesh.geometry.clone();
+      return geometry.applyMatrix4(mesh.matrix);
+    });
+    const geometry = mergeGeometries(parts);
+    for (const part of parts) part.dispose();
+    if (!geometry) throw new Error('Incompatible module geometry');
+    const merged = new Mesh(geometry, material);
+    merged.name = meshes[0]!.name;
+    for (const mesh of meshes) {
+      mesh.geometry.dispose();
+      root.remove(mesh);
+    }
+    root.add(merged);
+  }
+}
+
+/** Własne materiały PBR; geometrie współdzielone do odpięcia ostatniej instancji. */
 export function createModuleVisual(shape: Shape, color: Color): Object3D {
+  const key = `${shape}:${color}`;
+  const cached = templates.get(key);
+  if (cached) {
+    cached.users++;
+    const copy = cached.root.clone(true);
+    const materials = new Map<Material, Material>();
+    copy.traverse((node) => {
+      if (!(node instanceof Mesh)) return;
+      const source = node.material as Material;
+      let material = materials.get(source);
+      if (!material) {
+        material = source.clone();
+        materials.set(source, material);
+      }
+      node.material = material;
+    });
+    return copy;
+  }
   const root = new Group();
   root.name = `module_${shape}`;
-  const source = fppMaterial('armor');
-  const armor = source.clone();
-  armor.onBeforeCompile = source.onBeforeCompile;
-  armor.customProgramCacheKey = source.customProgramCacheKey;
+  const armor = new MeshStandardMaterial({
+    color: '#303744',
+    metalness: 0.65,
+    roughness: 0.38,
+    emissive: '#151b25',
+    emissiveIntensity: 0.25,
+  });
   const accent = armor.clone();
-  accent.onBeforeCompile = source.onBeforeCompile;
-  accent.customProgramCacheKey = source.customProgramCacheKey;
-  accent.color.set(ACCENTS[color]);
-  accent.emissive.set(ACCENTS[color]);
-  accent.emissiveIntensity = 0.25;
+  const tint =
+    shape === 'pulse'
+      ? '#8a5cff'
+      : shape === 'extended'
+        ? ACCENTS.amber
+        : shape === 'laser'
+          ? ACCENTS.green
+          : ACCENTS[color];
+  accent.color.set(tint);
+  accent.emissive.set(tint);
+  accent.emissiveIntensity = 0.65;
+  accent.metalness = 0.25;
   const add = (
     geometry: BufferGeometry,
     x: number,
@@ -60,7 +123,14 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
     y = 0,
     z = 0,
     bright = false,
-  ) => add(new BoxGeometry(w, h, d), x, y, z, bright);
+  ) =>
+    add(
+      new RoundedBoxGeometry(w, h, d, 1, Math.min(w, h, d) * 0.18),
+      x,
+      y,
+      z,
+      bright,
+    );
   const tube = (
     radius: number,
     length: number,
@@ -100,13 +170,20 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
     case 'rail':
       box(0.95, 0.12, 1, 0, -0.28, -0.5);
       for (const x of [-0.38, 0.38]) box(0.14, 0.35, 1, x, -0.05, -0.5, true);
+      for (const z of [-0.15, -0.4, -0.65, -0.9])
+        box(0.96, 0.08, 0.08, 0, -0.2, z);
       break;
     case 'compensator':
       // Pełna tuleja z portami u góry i po bokach (hamulec jest ażurowy).
-      tube(0.36, 1, 0, -0.5);
+      add(
+        new CylinderGeometry(0.36, 0.36, 1, 16, 1, true),
+        0,
+        0,
+        -0.5,
+      ).rotation.x = Math.PI / 2;
       for (const z of [-0.04, -0.96]) ring(0.37, 0, z);
       for (const z of [-0.24, -0.5, -0.76]) {
-        box(0.46, 0.1, 0.13, 0, 0.34, z, true);
+        ring(0.39, 0, z);
         for (const x of [-0.35, 0.35]) box(0.08, 0.2, 0.13, x, 0, z, true);
       }
       break;
@@ -121,6 +198,10 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
       tube(0.4, 1);
       tube(0.42, 0.09, 0, 0, true);
       for (const z of [-0.5, 0.5]) ring(0.35, 0, z);
+      for (const x of [-0.39, 0.39]) {
+        box(0.06, 0.25, 0.68, x, 0, 0);
+        box(0.07, 0.12, 0.5, x, 0, 0, true);
+      }
       break;
     case 'extended':
       // Dłuższy zasobnik z kołnierzami i świecącymi listwami po bokach.
@@ -147,6 +228,8 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
         glass.transparent = true;
         glass.opacity = 0.18;
         glass.depthWrite = false;
+        glass.metalness = 0;
+        glass.roughness = 0.08;
         const pane = add(new BoxGeometry(0.62, 0.58, 0.025), 0, 0.45, 0);
         pane.material = glass;
         pane.name = 'optic_glass';
@@ -154,7 +237,18 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
       add(new SphereGeometry(0.045, 8, 6), 0, 0.43, 0.02, true);
       break;
     case 'scope':
-      tube(0.43, 2, 0.7).name = 'scope_tube';
+      {
+        const body = add(
+          new CylinderGeometry(0.43, 0.43, 2, 16, 1, true),
+          0,
+          0.7,
+          0,
+        );
+        body.rotation.x = Math.PI / 2;
+        body.name = 'scope_tube';
+      }
+      post(0.17, 0.19, 0.18, 1.18);
+      for (const z of [-0.8, -0.7, 0.7, 0.8]) ring(0.44, 0.7, z);
       for (const z of [-0.55, 0.55]) {
         box(0.65, 0.3, 0.18, 0, 0.15, z);
         ring(0.44, 0.7, z).name = 'scope_mount';
@@ -162,6 +256,14 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
       for (const z of [-1, 1]) {
         ring(0.44, 0.7, z);
         const lens = tube(0.37, 0.015, 0.7, z, true);
+        const glass = accent.clone();
+        glass.metalness = 0;
+        glass.roughness = 0.08;
+        glass.transparent = true;
+        glass.opacity = 0.32;
+        glass.depthWrite = false;
+        glass.emissiveIntensity = 0.15;
+        lens.material = glass;
         lens.name = z < 0 ? 'scope_front_lens' : 'scope_rear_lens';
       }
       break;
@@ -170,21 +272,21 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
       box(0.84, 0.14, 1, 0, 0.07);
       box(0.72, 0.3, 0.36, 0, 0.29, 0.32);
       box(0.34, 0.05, 0.2, 0, 0.46, 0.32, true);
-      for (const x of [-0.38, 0.38]) box(0.08, 0.76, 0.46, x, 0.52, -0.24);
-      box(0.84, 0.08, 0.46, 0, 0.94, -0.24);
+      for (const x of [-0.38, 0.38]) box(0.08, 0.76, 0.18, x, 0.52, -0.24);
+      box(0.84, 0.08, 0.24, 0, 0.94, -0.24);
       {
         const glass = armor.clone();
         glass.color.set(ACCENTS[color]);
         glass.transparent = true;
         glass.opacity = 0.22;
         glass.depthWrite = false;
+        glass.metalness = 0;
+        glass.roughness = 0.08;
         const pane = add(new BoxGeometry(0.68, 0.7, 0.025), 0, 0.53, -0.24);
         pane.material = glass;
         pane.name = 'optic_glass';
         // Znak: okrąg z kropką i czterema kreskami, jaśniejszy od akcentu obudowy.
         const sign = accent.clone();
-        sign.onBeforeCompile = source.onBeforeCompile;
-        sign.customProgramCacheKey = source.customProgramCacheKey;
         sign.emissiveIntensity = 1.6;
         const mark = (geometry: BufferGeometry, x: number, y: number) => {
           const mesh = add(geometry, x, 0.53 + y, -0.225);
@@ -240,6 +342,20 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
     child.position.sub(
       new Vector3(center.x, y, slot === 'muzzle' ? boxBounds.max.z : center.z),
     );
+  batchDetails(root);
+  if (
+    !root.children.some(
+      (node) => node instanceof Mesh && node.material === accent,
+    )
+  )
+    accent.dispose();
+  root.userData.moduleTemplate = key;
+  const template = root.clone(true);
+  template.traverse((node) => {
+    if (node instanceof Mesh)
+      node.material = (node.material as Material).clone();
+  });
+  templates.set(key, { root: template, users: 1 });
   return root;
 }
 
@@ -423,7 +539,7 @@ export function attachModuleVisuals(
       gunRoot.add(visual);
       const lens = visual.getObjectByName('laser_lens');
       if (lens) {
-        const beam = laserBeam(module.visual.color);
+        const beam = laserBeam('green');
         beam.position.copy(lens.position);
         beam.scale.set(
           (length * LASER_BEAM_WIDTH) / visual.scale.x,
@@ -431,6 +547,15 @@ export function attachModuleVisuals(
           (length * LASER_BEAM_LENGTH) / visual.scale.z,
         );
         visual.add(beam);
+        const dot = new Mesh(
+          new SphereGeometry(1.8, 8, 6),
+          fppGlowMaterial(ACCENTS.green),
+        );
+        dot.name = 'laser_dot';
+        dot.userData.noOutline = true;
+        dot.position.z = -1;
+        dot.scale.z = LASER_BEAM_WIDTH / LASER_BEAM_LENGTH;
+        beam.add(dot);
       }
     } else {
       if (shape === 'scope') {
@@ -457,9 +582,18 @@ export function attachModuleVisuals(
     const materials = new Set<Material>();
     for (const visual of added) {
       visual.removeFromParent();
+      const key = visual.userData.moduleTemplate as string;
+      const template = templates.get(key);
+      const last = !template || --template.users === 0;
+      if (template && last) {
+        templates.delete(key);
+        template.root.traverse((node) => {
+          if (node instanceof Mesh) (node.material as Material).dispose();
+        });
+      }
       visual.traverse((node) => {
         if (!(node instanceof Mesh)) return;
-        geometries.add(node.geometry);
+        if (last || node.userData.noOutline) geometries.add(node.geometry);
         for (const material of Array.isArray(node.material)
           ? node.material
           : [node.material])
