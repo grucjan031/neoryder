@@ -50,6 +50,10 @@ export type WavePhase = 'break' | 'spawning' | 'fighting' | 'done' | 'stopped';
 
 export interface WaveDirectorDeps {
   difficulty?: DifficultyId | (() => DifficultyId);
+  endlessWave?(
+    wave: number,
+    countScale: number,
+  ): WavesDefinition['waves'][number];
   /** Tworzy wroga danego archetypu w punkcie; zwraca id encji albo null (np. limit ciał). */
   spawn(enemy: string, position: Vec3): EntityId | null;
   playerPosition(): Vec3;
@@ -67,6 +71,7 @@ export class WaveDirector {
   private phase: WavePhase = 'stopped';
   private waveIndex = -1;
   private timerS = 0;
+  private spawnIntervalS = 0;
   private queue: string[] = [];
   private readonly alive = new Set<EntityId>();
   /** Spawny bieżącego runu w kolejności (debug, testy powtarzalności). */
@@ -101,7 +106,7 @@ export class WaveDirector {
   }
 
   get totalWaves(): number {
-    return this.def.waves.length;
+    return this.deps.endlessWave ? Infinity : this.def.waves.length;
   }
 
   /**
@@ -118,7 +123,7 @@ export class WaveDirector {
     this.spawnLog.length = 0;
     this.alive.clear();
     this.queue = [];
-    this.waveIndex = Math.max(0, Math.min(this.def.waves.length, wave) - 1) - 1;
+    this.waveIndex = Math.max(0, Math.min(this.totalWaves, wave) - 1) - 1;
     this.phase = 'break';
     this.timerS = this.def.firstBreakS;
   }
@@ -126,7 +131,7 @@ export class WaveDirector {
   /** Natychmiastowy skok do fali (komenda debug). Żywi wrogowie zostają poza licznikiem. */
   goto(wave: number): void {
     this.alive.clear();
-    this.waveIndex = Math.max(1, Math.min(this.def.waves.length, wave)) - 2;
+    this.waveIndex = Math.max(1, Math.min(this.totalWaves, wave)) - 2;
     this.beginNextWave();
   }
 
@@ -163,7 +168,7 @@ export class WaveDirector {
       this.spawnLog.push({ wave: this.wave, enemy, x: point.x, z: point.z });
       this.queue.shift();
       this.alive.add(id);
-      this.timerS += this.currentWave().spawnIntervalS;
+      this.timerS += this.spawnIntervalS;
     }
     if (this.timerS < 0) this.timerS = 0;
     if (this.queue.length === 0) this.phase = 'fighting';
@@ -180,21 +185,27 @@ export class WaveDirector {
   }
 
   private beginNextWave(): void {
-    if (this.waveIndex + 1 >= this.def.waves.length) {
+    if (this.waveIndex + 1 >= this.totalWaves) {
       this.phase = 'done';
       return;
     }
     this.waveIndex++;
-    const wave = this.currentWave();
+    if (this.deps.endlessWave) this.spawnLog.length = 0;
+    const wave =
+      this.deps.endlessWave?.(this.wave, difficulties[this.difficulty].count) ??
+      this.currentWave();
+    this.spawnIntervalS = wave.spawnIntervalS;
     const queue: string[] = [];
     for (const group of wave.groups)
       for (
         let i = 0;
         i <
-        Math.max(
-          1,
-          Math.round(group.count * difficulties[this.difficulty].count),
-        );
+        (this.deps.endlessWave
+          ? group.count
+          : Math.max(
+              1,
+              Math.round(group.count * difficulties[this.difficulty].count),
+            ));
         i++
       )
         queue.push(group.enemy);
@@ -213,7 +224,7 @@ export class WaveDirector {
     ) {
       this.bus.emit('wave_last_kill', { wave: this.wave, id });
       this.bus.emit('wave_cleared', { wave: this.wave });
-      if (this.waveIndex + 1 >= this.def.waves.length) this.phase = 'done';
+      if (this.waveIndex + 1 >= this.totalWaves) this.phase = 'done';
       else {
         this.phase = 'break';
         this.timerS = this.def.breakS;

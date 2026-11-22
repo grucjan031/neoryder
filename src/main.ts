@@ -278,6 +278,7 @@ async function main(): Promise<void> {
     ) !== null;
   const canReturnToHub = (): boolean =>
     scene.id === 'mission' ||
+    scene.id === 'endless' ||
     (scene.id === 'run' &&
       (scene.query?.('runState') as RunState | undefined)?.loadoutId ===
         'custom');

@@ -27,6 +27,11 @@ import {
   type ChallengeRecord,
   type ChallengeSavePort,
 } from './challengeSave';
+import {
+  decodeEndless,
+  updateEndlessBest,
+  type EndlessScore,
+} from './endlessSave';
 
 export type {
   ChallengeHistory,
@@ -46,6 +51,23 @@ export interface MetaSave {
   createdAt: number;
   updatedAt: number;
   meta: MetaState;
+}
+function bestOrWarn(decoded: ReturnType<typeof decodeEndless>) {
+  if (decoded.status !== 'ok')
+    console.warn(
+      decoded.status === 'future'
+        ? 'Rekord endless pochodzi z nowszej wersji gry; pomijam.'
+        : 'Rekord endless jest uszkodzony; pomijam.',
+    );
+  return decoded.best;
+}
+
+export interface EndlessSavePort {
+  loadBest(): Promise<EndlessScore | null>;
+  finish(
+    score: EndlessScore,
+    updateMeta?: (saved: MetaSave | null) => MetaSave | null,
+  ): Promise<EndlessScore>;
 }
 /**
  * Zakończony, jeszcze nierozliczony run (ADR 0007 pkt 2): wynik i podsumowanie dla `applyRun`.
@@ -102,6 +124,7 @@ export interface SaveStore {
   clearMission?(): Promise<void>;
   /** Historia wyzwania dnia: osobny rekord `challenge` z własną wersją. */
   challenge?: ChallengeSavePort;
+  endless?: EndlessSavePort;
 }
 
 const metaSchema: z.ZodType<MetaSave> = z.object({
@@ -336,7 +359,21 @@ export function createMemorySaveStore(): SaveStore {
   let run: unknown = null;
   let mission: unknown = null;
   let challenge: unknown = null;
+  let endless: unknown = null;
   return {
+    endless: {
+      loadBest: async () => bestOrWarn(decodeEndless(endless)),
+      finish: async (score, updateMeta) => {
+        const current = decodeEndless(endless);
+        if (current.status === 'future')
+          throw new Error('Zapis pochodzi z nowszej wersji gry.');
+        const next = updateEndlessBest(current.best, score);
+        const nextMeta = updateMeta?.(decodeMetaStrict(meta));
+        if (nextMeta) meta = metaSchema.parse(nextMeta);
+        if (next) endless = next;
+        return structuredClone(next?.best ?? current.best!);
+      },
+    },
     challenge: challengePort(
       async () => challenge,
       async (change) => {
@@ -517,6 +554,51 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   }
 
   return {
+    endless: {
+      loadBest: async () => bestOrWarn(decodeEndless(await readRaw('endless'))),
+      async finish(score, updateMeta) {
+        const db = await open();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('saves', 'readwrite');
+          const store = tx.objectStore('saves');
+          const meta = updateMeta && store.get('meta');
+          const request = store.get('endless');
+          let best: EndlessScore;
+          let failure: unknown;
+          request.onsuccess = () => {
+            try {
+              const current = decodeEndless(request.result);
+              if (current.status === 'future')
+                throw new Error('Zapis pochodzi z nowszej wersji gry.');
+              const next = updateEndlessBest(current.best, score);
+              const nextMeta =
+                meta && updateMeta(decodeMetaStrict(meta.result));
+              if (nextMeta) store.put(metaSchema.parse(nextMeta), 'meta');
+              if (current.status === 'corrupt')
+                store.put(request.result, [
+                  'corrupt',
+                  'endless',
+                  Date.now(),
+                  corruptSuffix(),
+                ]);
+              if (next) store.put(next, 'endless');
+              best = next?.best ?? current.best!;
+            } catch (error) {
+              failure = error;
+              tx.abort();
+            }
+          };
+          tx.oncomplete = () => {
+            db.close();
+            resolve(best);
+          };
+          tx.onabort = () => {
+            db.close();
+            reject(failure ?? tx.error);
+          };
+        });
+      },
+    },
     challenge: challengePort(() => readRaw('challenge'), updateChallenge),
     loadMission: async () => {
       const raw = await read('mission');

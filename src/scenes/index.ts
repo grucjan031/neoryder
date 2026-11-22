@@ -58,6 +58,7 @@ export const scenes: Record<string, SceneFactory> = {
   'style-test': () => new StyleTest(),
   'neon-test': () => new NeonTest(),
   arena: () => new Arena(true, true),
+  endless: () => new Arena(true, true, 'endless'),
   [ARENA_MUTATORS_SCENE]: () => new Arena(true, true, ARENA_MUTATORS_SCENE),
   'sfx-test': () => new SfxTest(),
   'melee-test': () => new MeleeTest(),

@@ -579,6 +579,12 @@ export const tuning = {
     pushShake: 0.35,
     barrierFlashS: 0.12,
   },
+  /** Nieskończona strefa. Skład fal w src/data/modes/endless.json. */
+  endless: {
+    firstBreakS: 2,
+    breakS: 3,
+    spawnIntervalS: 0.7,
+  },
   /** Arena z falami (#16). Skład fal w src/data/waves/arena.json. */
   arena: {
     maxEnemies: 30,

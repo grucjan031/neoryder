@@ -11,6 +11,7 @@ import tutorialText from '../data/ui/tutorial.pl.json';
 import { tutorialDone } from '../data/tutorial/schema';
 import { preserveLiteFx } from '../render/fxMode';
 import { challengeText } from './challengeText';
+import endlessText from '../data/ui/endless.pl.json';
 import './mainMenu.css';
 import { appBuild, buildInfoText } from './buildInfo';
 
@@ -130,6 +131,12 @@ export class MainMenu {
         const params = query('challenge');
         params.delete('scene');
         params.set('daily', '1');
+        navigate(`?${params}`);
+      }),
+      button(endlessText.title, () => {
+        const params = query('endless');
+        const seed = options.params?.get('seed');
+        if (seed) params.set('seed', seed);
         navigate(`?${params}`);
       }),
     );
