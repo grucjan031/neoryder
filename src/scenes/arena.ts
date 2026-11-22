@@ -93,6 +93,20 @@ import { HitSparks } from '../vfx/hitSparks';
 import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
 import { StatusVfx } from '../vfx/statusVfx';
 import { loadWaves, WaveDirector } from '../world/waves';
+import type { WavesDefinition } from '../world/waves';
+import { AllySquad } from '../allies/squad';
+import {
+  buildFloorNavigation,
+  SquadPresenter,
+  withoutAction,
+} from '../allies/squadPresenter';
+import {
+  parseSquadParam,
+  sanitizeSquad,
+  scaleWavesForSquad,
+  squadCountScale,
+} from '../allies/roster';
+import type { AllyNavigation } from '../allies/ally';
 import {
   endlessImplantOffers,
   endlessMutator,
@@ -243,6 +257,16 @@ export class Arena implements Scene {
   private hitSparksView!: HitSparksRenderer;
   private synergies!: SynergySystem;
   private buildSelect?: BuildSelect;
+  private squad!: AllySquad;
+  private presenter?: SquadPresenter;
+  /** Drużyna wybrana w kryjówce, na ekranie buildu albo `?squad=`; wraca przy każdym resecie. */
+  private squadPicks: string[] = [];
+  private completedMissions: string[] = [];
+  private allyNav: AllyNavigation | null | undefined;
+  private scaledWaves: { scale: number; def: WavesDefinition } = {
+    scale: 1,
+    def: waves,
+  };
   private endlessScreens?: EndlessScreens;
   private implants?: ImplantSystem;
   private endlessSave?: EndlessSavePort;
@@ -282,6 +306,14 @@ export class Arena implements Scene {
         ? null
         : new URLSearchParams(location.search).get('blade');
     const choosing = this.selectBuild && requested === null;
+    const requestedSquad =
+      typeof location === 'undefined'
+        ? []
+        : parseSquadParam(new URLSearchParams(location.search).get('squad'));
+    if (this.selectBuild || requestedSquad.length > 0)
+      this.completedMissions = await this.loadCompletedMissions();
+    if (this.disposed) return;
+    this.squadPicks = this.sanitizePicks(requestedSquad);
     this.rapier = await initPhysics();
     if (this.disposed) return;
     this.world = new this.rapier.World({
@@ -370,10 +402,61 @@ export class Arena implements Scene {
         statuses: this.statuses,
         getTarget: () =>
           this.health.dead ? null : { id: playerId, ...this.player.getState() },
+        // Każdy wróg wybiera cel z drużyny gracza; bez sojuszników to nadal gracz.
+        getTargetFor: (enemy) => {
+          const player = this.health.dead
+            ? null
+            : { id: playerId, ...this.player.getState() };
+          return this.squad.size > 0
+            ? this.squad.targetFor(enemy, player)
+            : player;
+        },
       },
       layout.director ? { director: layout.director } : {},
     );
 
+    this.squad = new AllySquad({
+      ctx,
+      rapier: this.rapier,
+      world: this.world,
+      entities: this.entities,
+      damage: this.damage,
+      hurtboxes: this.hurtboxes,
+      projectiles: this.projectiles,
+      navigation: () => this.allyNavigation(),
+      leader: () => {
+        const state = this.player.getState();
+        return {
+          id: playerId,
+          position: {
+            x: state.position.x,
+            y: state.position.y - state.height / 2,
+            z: state.position.z,
+          },
+          yaw: state.yaw,
+          alive: !this.health.dead,
+        };
+      },
+      hostiles: () => {
+        const list: { id: EntityId; position: Vec3; centerM: number }[] = [];
+        this.manager.forEach((enemy) => {
+          if (!enemy.removed && enemy.current.state !== 'dead')
+            list.push({
+              id: enemy.id,
+              position: enemy.current.position,
+              centerM: enemy.definition.body?.centerY ?? 0,
+            });
+        });
+        return list;
+      },
+    });
+    this.presenter = new SquadPresenter(
+      this.squad,
+      this.root,
+      ctx.tuning,
+      ctx.bus,
+      this.loadModels,
+    );
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {
         playerId,
@@ -523,8 +606,11 @@ export class Arena implements Scene {
     this.synergies.setTags(this.loadout.tags);
     if (this.selectBuild && typeof document !== 'undefined')
       this.buildSelect = new BuildSelect({
-        onSelect: (id, bladeId) => this.chooseLoadout(id, bladeId),
+        onSelect: (id, bladeId, squad) =>
+          this.chooseLoadout(id, bladeId, squad ?? []),
       });
+    this.buildSelect?.setCompleted(this.completedMissions);
+    if (this.squadPicks.length > 0) this.buildSelect?.setSquad(this.squadPicks);
     if (this.id === 'endless') this.initEndless();
     this.applyMutator();
 
@@ -539,7 +625,7 @@ export class Arena implements Scene {
               return ctx.tuning.endless.breakS;
             },
           }
-        : waves,
+        : this.squadWaves(),
       {
         spawn: (enemy, position) => this.spawnEnemy(enemy, position),
         playerPosition: () => this.player.getState().position,
@@ -551,7 +637,7 @@ export class Arena implements Scene {
                   wave,
                   ctx.rng.fork(`endless:wave:${wave}`),
                   ctx.tuning.endless.spawnIntervalS,
-                  countScale,
+                  countScale * this.squadScale(),
                 );
               },
             }
@@ -567,7 +653,10 @@ export class Arena implements Scene {
       ctx.bus.on('enemy_killed', ({ killer }) => {
         if (killer === playerId) this.kills++;
       }),
+      // Po fali wracają sojusznicy, którzy nie doczekali podniesienia.
+      ctx.bus.on('wave_cleared', () => this.squad.restore()),
     );
+    this.joinSquad();
     this.registerCommands(playerId);
     this.emitHealth();
     this.heldItem.reset(this.loadout.startHeld);
@@ -1006,7 +1095,11 @@ export class Arena implements Scene {
     this.player.setAim(this.heldItem.aim);
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
-    this.powers.step(pdt, input);
+    // Powalony sojusznik w zasięgu: klawisz interakcji (Moc 2) podnosi go zamiast rzucać moc.
+    const reviving = this.squad.reviveCandidate() !== null;
+    this.powers.step(pdt, reviving ? withoutAction(input, 'power2') : input);
+    if (input.pressed.has('squadCommand') && this.squad.size > 0)
+      this.squad.toggleOrder();
     if (!(dt > 0)) {
       this.manager.step(dt);
       return;
@@ -1032,6 +1125,7 @@ export class Arena implements Scene {
       else weapon.cool(pdt);
     }
     if (this.offers.length === 0) this.director.step(dt);
+    this.squad.step(dt, reviving && input.held.has('power2'));
     this.manager.step(dt);
     this.world.gravity.y = this.player.gravity;
     this.world.timestep = dt;
@@ -1078,6 +1172,12 @@ export class Arena implements Scene {
         view.dispose();
         this.views.delete(id);
       }
+    this.presenter?.render(
+      alpha,
+      frameDt,
+      this.ctx.camera?.position,
+      this.state === 'playing',
+    );
     this.projectileView.render(alpha);
     this.debrisView.render(alpha);
     this.explosionView.render(frameDt);
@@ -1273,6 +1373,7 @@ export class Arena implements Scene {
    */
   reset(): void {
     this.manager.despawnAll();
+    this.squad.dismiss();
     if (this.attempt) {
       this.newEndlessAttempt();
       this.offers = [];
@@ -1309,6 +1410,60 @@ export class Arena implements Scene {
     this.director.start(1, this.ctx.rng.fork('waves'));
     this.emitHealth();
     this.heldItem.reset(this.loadout.startHeld);
+    this.joinSquad();
+  }
+
+  /** Drużyna wchodzi na arenę z graczem (start, „Jeszcze raz”, nowy build). */
+  private joinSquad(): void {
+    for (const id of this.squadPicks) this.squad.join(id);
+  }
+
+  private squadScale(): number {
+    return squadCountScale(
+      this.squadPicks.length,
+      this.ctx.tuning.allies.enemyCountPerAlly,
+    );
+  }
+
+  /** Plan fal z liczbą wrogów rosnącą z drużyną; odczyt przy starcie każdej fali. */
+  private squadWaves(): WavesDefinition {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- getter planu fal czyta bieżący skład drużyny
+    const self = this;
+    return {
+      ...waves,
+      get waves() {
+        const scale = self.squadScale();
+        if (self.scaledWaves.scale !== scale)
+          self.scaledWaves = {
+            scale,
+            def: scaleWavesForSquad(waves, scale),
+          };
+        return self.scaledWaves.def.waves;
+      },
+    };
+  }
+
+  private sanitizePicks(ids: readonly string[]): string[] {
+    return sanitizeSquad(
+      ids,
+      this.completedMissions,
+      this.ctx.tuning.allies.maxPicked,
+      this.ctx.debug,
+    );
+  }
+
+  private async loadCompletedMissions(): Promise<string[]> {
+    try {
+      const save = await createIndexedDbSaveStore().loadMeta();
+      return save?.meta.campaign.completed ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  private allyNavigation(): AllyNavigation | null {
+    this.allyNav ??= buildFloorNavigation(layout, this.ctx.tuning);
+    return this.allyNav;
   }
 
   private applyMutator(spawnModifiers: StatModifier[] = []): void {
@@ -1354,10 +1509,15 @@ export class Arena implements Scene {
    * Wybór z ekranu buildu (gest użytkownika, F2-17): nowy run od fali 1 z tym ekwipunkiem
    * i przechwycenie myszy. Zwraca false dla nieznanego id (stan bez zmian).
    */
-  chooseLoadout(id: string, bladeId?: string): boolean {
+  chooseLoadout(
+    id: string,
+    bladeId?: string,
+    squad?: readonly string[],
+  ): boolean {
     const selected = loadoutDefinitions.get(id);
     if (!selected) return false;
     if (bladeId !== undefined) this.bladeOverride = bladeId;
+    if (squad !== undefined) this.squadPicks = this.sanitizePicks(squad);
     this.setLoadout(selected);
     this.reset();
     this.ctx.resume?.();
@@ -1453,6 +1613,7 @@ export class Arena implements Scene {
           return next.name;
         },
       );
+    this.squad.registerCommands(register);
     register('tp', 'tp <x> <z> [yawDeg] [pitchDeg]', (args) => {
       const [x, z, yaw = 0, pitch = 0] = args.map(Number);
       if (
@@ -1737,6 +1898,14 @@ export class Arena implements Scene {
         return this.buildSelect?.visible ?? false;
       case 'kills':
         return this.kills;
+      case 'allies':
+        return this.squad.snapshots();
+      case 'allyKills':
+        return this.squad.kills;
+      case 'squadOrder':
+        return this.squad.order;
+      case 'squadPicks':
+        return this.squadPicks.slice();
       case 'spawnLog':
         return this.director.spawnLog.map((e) => ({ ...e }));
       case 'paused':
@@ -1772,6 +1941,8 @@ export class Arena implements Scene {
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
     this.director?.dispose();
+    this.presenter?.dispose();
+    this.squad?.dispose();
     this.manager?.dispose();
     this.statuses?.dispose();
     this.blade?.dispose();

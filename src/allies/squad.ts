@@ -21,6 +21,7 @@ import type {
   AllySnapshot,
 } from './ally';
 import { allyDefinitions } from './allySchema';
+import type { SquadMemberState } from './roster';
 import type { AllyBark } from './allySchema';
 import { selectHostileTarget } from './targeting';
 import type { HostileCandidate } from './targeting';
@@ -142,7 +143,7 @@ export class AllySquad {
   }
 
   /** Dodaje sojusznika z `src/data/allies`; null, gdy już jest w drużynie albo brak miejsca. */
-  add(id: string, feet: Vec3): Ally | null {
+  add(id: string, feet: Vec3, hp?: number): Ally | null {
     const definition = allyDefinitions.get(id);
     if (!definition) throw new Error(`Nieznany sojusznik: ${id}`);
     const t = this.host.ctx.tuning.allies;
@@ -195,9 +196,30 @@ export class AllySquad {
     const member: Member = { ally, collider, previous: pose(ally) };
     this.members.push(member);
     ally.setOrder(this._order);
+    if (hp !== undefined) {
+      if (hp <= 0) ally.knockDown(null);
+      else health.set(Math.min(hp, health.max));
+    }
     this.sync(member);
     this.host.ctx.bus.emit('ally_spawned', { id: entity, ally: id });
     return ally;
+  }
+
+  /** Dołącza sojusznika przy graczu (wejście do pokoju); `hp` z zapisu runu, 0 = powalony. */
+  join(id: string, hp?: number): Ally | null {
+    return this.add(
+      id,
+      this.spot(this.host.leader().position, this.members.length),
+      hp,
+    );
+  }
+
+  /** Stan drużyny do zapisu runu; powalony ma zdrowie 0. */
+  exportState(): SquadMemberState[] {
+    return this.members.map(({ ally }) => ({
+      id: ally.definition.id,
+      hp: ally.down ? 0 : ally.snapshot().hp,
+    }));
   }
 
   remove(id: string): boolean {
@@ -206,6 +228,14 @@ export class AllySquad {
     this.release(this.members[index]!);
     this.members.splice(index, 1);
     return true;
+  }
+
+  /** Usuwa całą drużynę (reset sceny); rozkaz wraca do „za mną”. */
+  dismiss(): void {
+    for (const member of this.members.splice(0)) this.release(member);
+    this.attackers.clear();
+    this.enemyTargets.clear();
+    this._order = 'follow';
   }
 
   setOrder(order: AllyOrder): void {
@@ -350,11 +380,7 @@ export class AllySquad {
         const id = a[0] ?? '';
         if (a.length !== 1 || !allyDefinitions.has(id))
           return `Użycie: ally spawn <${ids}>`;
-        const leader = this.host.leader();
-        const ally = this.add(
-          id,
-          this.spot(leader.position, this.members.length),
-        );
+        const ally = this.join(id);
         return ally
           ? `Sojusznik ${ally.definition.name} w drużynie.`
           : 'Sojusznik już jest w drużynie albo brak miejsca.';

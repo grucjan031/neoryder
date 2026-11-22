@@ -13,8 +13,17 @@ import { ArenaNavigation } from '../world/arenaNavigation';
 import { AllySquad } from '../allies/squad';
 import type { Ally, AllyNavigation, AllySnapshot } from '../allies/ally';
 import { levelAllySchema, type LevelAlly } from '../world/levelSchema';
-import { AllyView } from '../render/allyView';
-import { SquadHud } from '../ui/squadHud';
+import {
+  buildFloorNavigation,
+  SquadPresenter,
+  withoutAction,
+} from '../allies/squadPresenter';
+import {
+  squadHealthModifiers,
+  squadOf,
+  type SquadMemberState,
+} from '../allies/roster';
+import { allyDefinitions } from '../allies/allySchema';
 import { ConquestView } from '../ui/conquestUi';
 import { MissionObjectives } from '../world/missionObjectives';
 import { missionDefinitions } from '../world/missions';
@@ -73,10 +82,10 @@ import { z } from 'zod';
 import type { GameContext } from '../core/context';
 import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
-import type { Action, InputSnapshot } from '../core/input';
+import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
-import { Stats } from '../core/stats';
+import { Stats, type StatModifier } from '../core/stats';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import type { HitShape } from '../combat/melee/bladeSchema';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
@@ -206,22 +215,6 @@ const MODEL_FILES: Record<string, string> = {
  * Rekwizyty `city_*` i skrzynie zachowują proporcje i skalę 1.
  */
 const STRETCH_MODELS = new Set(['pillar', 'cover_low', 'wall_segment']);
-/** Kopia wejścia bez jednej akcji (klawisz przejęty przez interakcję z sojusznikiem). */
-function withoutAction(input: InputSnapshot, action: Action): InputSnapshot {
-  const strip = (set: ReadonlySet<Action>): ReadonlySet<Action> => {
-    if (!set.has(action)) return set;
-    const copy = new Set(set);
-    copy.delete(action);
-    return copy;
-  };
-  return {
-    ...input,
-    held: strip(input.held),
-    pressed: strip(input.pressed),
-    released: strip(input.released),
-  };
-}
-
 /** Tag obrażeń, którymi cisza po zwycięstwie rozpada pozostałych wrogów pokoju. */
 const VICTORY_HOLD_TAG = '#victory_hold';
 
@@ -379,8 +372,7 @@ export class RoomScene implements Scene {
   private puzzleBeam?: GrabRenderer;
   private puzzleHud?: PuzzleHud;
   protected squad!: AllySquad;
-  private readonly allyViews = new Map<string, AllyView>();
-  private squadHud?: SquadHud;
+  private presenter?: SquadPresenter;
   /** Siatka dla sojuszników w pokojach bez nawigacji trybu; null, gdy nie da się jej zbudować. */
   private allyNav: AllyNavigation | null | undefined;
   /** Sojusznicy czekający na `joinAfter`. */
@@ -562,7 +554,7 @@ export class RoomScene implements Scene {
         })),
       },
     );
-    this.manager.setSpawnModifiers(threatModifiers(this.run.threatLevel));
+    this.manager.setSpawnModifiers(this.baseSpawnModifiers());
     this.squad = new AllySquad({
       ctx,
       rapier: this.rapier,
@@ -599,8 +591,13 @@ export class RoomScene implements Scene {
         return list;
       },
     });
-    if (typeof document !== 'undefined')
-      this.squadHud = new SquadHud(ctx.bus, () => ctx.tuning.allies.barkShowS);
+    this.presenter = new SquadPresenter(
+      this.squad,
+      this.root,
+      ctx.tuning,
+      ctx.bus,
+      this.loadModels,
+    );
 
     const hazardTargets: HazardTarget[] = [];
     const hazardTargetPool: HazardTarget[] = [];
@@ -974,6 +971,9 @@ export class RoomScene implements Scene {
     this.emitHealth();
     this.heldItem.reset(this.loadout.startHeld);
     this.world.step();
+    // Drużyna z kryjówki wchodzi z graczem do każdego pokoju, ze zdrowiem z zapisu runu.
+    for (const member of squadOf(this.run))
+      if (allyDefinitions.has(member.id)) this.squad.join(member.id, member.hp);
     ctx.bus.emit('room_entered', {
       nodeId: this.node.id,
       roomId: this.layout.id,
@@ -2251,24 +2251,10 @@ export class RoomScene implements Scene {
   private allyNavigation(): AllyNavigation | null {
     if (this.navigation) return this.navigation;
     if (this.allyNav !== undefined) return this.allyNav;
-    const t = this.ctx.tuning.allies;
     try {
-      this.allyNav = new ArenaNavigation(
-        this.layout.arena
-          ? this.layout
-          : {
-              ...this.layout,
-              blocks: this.layout.blocks.map((block) => ({
-                ...block,
-                walkable: undefined,
-              })),
-              // Siatka podłogi potrzebuje tylko rozmiaru komórki i prześwitu.
-              arena: {
-                navigationCellM: t.navCellM,
-                navigationClearanceM: t.navClearanceM,
-              } as NonNullable<RoomDefinition['arena']>,
-            },
-      );
+      this.allyNav = this.layout.arena
+        ? new ArenaNavigation(this.layout)
+        : buildFloorNavigation(this.layout, this.ctx.tuning);
     } catch {
       this.allyNav = null;
     }
@@ -2276,61 +2262,35 @@ export class RoomScene implements Scene {
   }
 
   private renderAllies(alpha: number, frameDt: number): void {
-    if (this.squad.size === 0 && this.allyViews.size === 0) {
-      this.squadHud?.update([], this.squad.order, null);
-      return;
-    }
-    const snapshots = this.squad.snapshots();
-    const camera = this.ctx.camera?.position;
-    const seen = new Set<string>();
-    let index = 0;
-    this.squad.forEachPose((ally, a, b) => {
-      const id = ally.definition.id;
-      seen.add(id);
-      let view = this.allyViews.get(id);
-      if (!view) {
-        view = new AllyView(this.ctx.tuning, ally.definition);
-        this.allyViews.set(id, view);
-        this.root.add(view.root);
-        if (this.loadModels) void view.load();
-      }
-      let dyaw = b.yaw - a.yaw;
-      dyaw -= Math.PI * 2 * Math.round(dyaw / (Math.PI * 2));
-      view.update(
-        {
-          position: {
-            x: a.position.x + (b.position.x - a.position.x) * alpha,
-            y: a.position.y + (b.position.y - a.position.y) * alpha,
-            z: a.position.z + (b.position.z - a.position.z) * alpha,
-          },
-          yaw: a.yaw + dyaw * alpha,
-        },
-        snapshots[index++]!,
-        frameDt,
-        camera,
-      );
-    });
-    for (const [id, view] of this.allyViews)
-      if (!seen.has(id)) {
-        view.dispose();
-        this.allyViews.delete(id);
-      }
-    const candidate =
-      this.state === 'playing' ? this.squad.reviveCandidate() : null;
-    this.squadHud?.update(
-      snapshots,
-      this.squad.order,
-      candidate
-        ? {
-            name: candidate.definition.name,
-            progress: candidate.snapshot().reviveProgress,
-          }
-        : null,
+    this.presenter?.render(
+      alpha,
+      frameDt,
+      this.ctx.camera?.position,
+      this.state === 'playing',
     );
   }
 
-  exportState(): Pick<RunState, 'hp' | 'energy'> {
-    return { hp: this.health.current, energy: this.energy.current };
+  exportState(): Pick<RunState, 'hp' | 'energy'> & {
+    squad?: SquadMemberState[];
+  } {
+    return {
+      hp: this.health.current,
+      energy: this.energy.current,
+      ...(this.squad.size > 0 ? { squad: this.squad.exportState() } : {}),
+    };
+  }
+
+  /** Wrogowie trybów bez fal dostają więcej zdrowia za każdego sojusznika; fale rosną w planie. */
+  private baseSpawnModifiers(): StatModifier[] {
+    return [
+      ...threatModifiers(this.run.threatLevel),
+      ...(this.run.modeId
+        ? squadHealthModifiers(
+            squadOf(this.run).length,
+            this.ctx.tuning.allies.enemyHealthPerAlly,
+          )
+        : []),
+    ];
   }
 
   get playerId(): EntityId {
@@ -2393,7 +2353,7 @@ export class RoomScene implements Scene {
     healthFraction = 1,
   ): EntityId | null {
     this.manager.setSpawnModifiers([
-      ...threatModifiers(this.run.threatLevel),
+      ...this.baseSpawnModifiers(),
       ...modifiers,
     ]);
     try {
@@ -2409,7 +2369,7 @@ export class RoomScene implements Scene {
       }
       return id;
     } finally {
-      this.manager.setSpawnModifiers(threatModifiers(this.run.threatLevel));
+      this.manager.setSpawnModifiers(this.baseSpawnModifiers());
     }
   }
 
@@ -3005,9 +2965,7 @@ export class RoomScene implements Scene {
     this.hitSparksView?.dispose();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
-    for (const view of this.allyViews.values()) view.dispose();
-    this.allyViews.clear();
-    this.squadHud?.dispose();
+    this.presenter?.dispose();
     this.squad?.dispose();
     this.director?.dispose();
     this.manager?.dispose();

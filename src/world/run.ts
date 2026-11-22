@@ -1,4 +1,7 @@
 import { moduleDefinitions } from '../progression/moduleSchema';
+import { allyDefinitions } from '../allies/allySchema';
+import { healSquad } from '../allies/roster';
+import type { SquadMemberState } from '../allies/roster';
 import {
   difficultyIdSchema,
   selectedDifficulty,
@@ -72,6 +75,8 @@ export interface NewRunOptions {
   talents?: readonly string[];
   /** Poziom zagrożenia; domyślnie 0. */
   threatLevel?: number;
+  /** Id członków drużyny gracza (już sprawdzone przez wołającego); domyślnie brak. */
+  squad?: readonly string[];
   /**
    * Bazowe `maxHealth` gracza bez talentów (domyślnie `initialHp` menedżera). Talenty podnoszące
    * `maxHealth` są uwzględniane w pełnym zdrowiu na starcie runu.
@@ -82,6 +87,8 @@ export interface NewRunOptions {
 export interface RoomExportState {
   hp?: number;
   energy?: number;
+  /** Stan drużyny na wyjściu z pokoju. */
+  squad?: readonly SquadMemberState[];
 }
 
 export { mapNodeSchema, runDamageStatsSchema, runStateSchema, sectorMapSchema };
@@ -106,7 +113,9 @@ export class RunManager {
   private readonly now: () => number;
   private readonly sectorIdOverride?: string;
 
-  private currentState: (RunState & DifficultyRunState) | null = null;
+  private currentState:
+    (RunState & DifficultyRunState & { squad?: SquadMemberState[] }) | null =
+    null;
   private roomCredits: Record<string, number> = {};
   private roomEarned = 0;
   private beforeRoom: RunState | null = null;
@@ -279,6 +288,12 @@ export class RunManager {
     const healthStats = new Stats({ maxHealth: baseMaxHealth });
     for (const modifier of resolvedTalents.modifiers)
       if (modifier.stat === 'maxHealth') healthStats.add(modifier);
+    const squad: SquadMemberState[] = [...new Set(options.squad ?? [])].flatMap(
+      (id) => {
+        const definition = allyDefinitions.get(id);
+        return definition ? [{ id, hp: definition.hp }] : [];
+      },
+    );
     const threatLevel = options.threatLevel ?? 0;
     if (!Number.isInteger(threatLevel) || threatLevel < 0)
       throw new Error(`Nieprawidłowy Poziom zagrożenia: ${threatLevel}`);
@@ -312,6 +327,7 @@ export class RunManager {
       hp: healthStats.get('maxHealth'),
       energy: this.initialEnergy,
       credits: resolvedTalents.runStartCredits,
+      ...(squad.length ? { squad } : {}),
       implants: [],
       stats: {
         kills: 0,
@@ -423,6 +439,11 @@ export class RunManager {
       this.currentState.hp = Math.max(0, roomState.hp);
     if (roomState?.energy !== undefined && Number.isFinite(roomState.energy))
       this.currentState.energy = Math.max(0, roomState.energy);
+    if (roomState?.squad && this.currentState.squad)
+      this.currentState.squad = roomState.squad.map((member) => ({
+        id: member.id,
+        hp: Math.max(0, member.hp),
+      }));
 
     if (puzzleOutcome !== 'skipped') this.clearedNodes.add(node.id);
     this.maxLayerReached = Math.max(this.maxLayerReached, node.layer);
@@ -603,6 +624,12 @@ export class RunManager {
         ? Math.max(0, maxHp)
         : Number.POSITIVE_INFINITY;
     this.currentState.hp = Math.min(cap, Math.max(before, before + amount));
+    // Drużyna leczy się tym samym ułamkiem zdrowia co gracz (sklep, odpoczynek).
+    if (this.currentState.squad && Number.isFinite(cap) && cap > 0)
+      this.currentState.squad = healSquad(
+        this.currentState.squad,
+        amount / cap,
+      );
     return this.currentState.hp - before;
   }
 
@@ -746,7 +773,9 @@ export class RunManager {
       ...structuredClone(this.beforeRoom),
       credits: state.credits,
       implants: state.implants,
-      ...(this.currentScreen === 'shop' ? { hp: state.hp } : {}),
+      ...(this.currentScreen === 'shop'
+        ? { hp: state.hp, ...(state.squad ? { squad: state.squad } : {}) }
+        : {}),
       roomCredits: state.roomCredits,
     };
   }

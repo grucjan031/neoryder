@@ -11,6 +11,8 @@ import {
 } from '../core/runTypes';
 import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { loadoutSchema } from '../progression/loadout';
+import { squadStateSchema } from '../allies/roster';
+import type { SquadMemberState } from '../allies/roster';
 
 // Schematy stanu runu bez RunManagera: zapis (`core/save`) i menu nie wciągają przez nie trybów, pokoi ani wrogów.
 export const mapNodeSchema: z.ZodType<MapNode> = z.object({
@@ -43,6 +45,8 @@ export const runDamageStatsSchema: z.ZodType<RunDamageStats> = z.object({
 export type CheckpointRunState = RunState & {
   difficulty?: DifficultyId;
   roomCredits?: Record<string, number>;
+  /** Drużyna gracza (docs/systems/allies.md): zdrowie członków między pokojami; brak = bez drużyny. */
+  squad?: SquadMemberState[];
 };
 
 export const runStateSchema: z.ZodType<CheckpointRunState> = z
@@ -79,6 +83,7 @@ export const runStateSchema: z.ZodType<CheckpointRunState> = z
     roomCredits: z
       .record(z.string(), z.number().int().nonnegative())
       .optional(),
+    squad: squadStateSchema.optional(),
     implants: z
       .array(z.string().min(1))
       .refine(

@@ -2481,7 +2481,10 @@ bez argumentu zostaje dla dyrektora i `targetForward`.
 `projectiles`, `navigation()`, `leader()` (gracz: id, stopy, yaw, czy żyje) i `hostiles()`.
 
 ```ts
-add(id: string, feet: Vec3): Ally | null;   remove(id: string): boolean;
+add(id: string, feet: Vec3, hp?: number): Ally | null;   remove(id: string): boolean;
+join(id: string, hp?: number): Ally | null;  // przy graczu; hp 0 = powalony (stan z zapisu runu)
+exportState(): { id: string; hp: number }[]; // do zapisu runu; powalony ma hp 0
+dismiss(): void;                             // usuwa całą drużynę (reset areny)
 step(dt: number, reviveHeld: boolean): void;
 setOrder(order: 'follow' | 'hold'): void;   toggleOrder(): AllyOrder;
 reviveCandidate(): Ally | null;             knockDown(id): boolean;   revive(id, by?): boolean;
@@ -2496,6 +2499,25 @@ snapshots(): AllySnapshot[];                forEachPose(cb): void;    registerCo
 - `addAlly(id, spawn)`, `allyDependencyDone(kind, id)`, `restoreAllies(position?)`, `allySnapshots()`.
 - `resetLevelCombat` stawia drużynę przy checkpoincie; `wave_cleared` przywraca ewakuowanych.
 - Zapytania: `allies`, `allyKills`, `squadOrder`. Komendy: `ally spawn|down|revive|hold|follow|status`.
+
+### Drużyna w runie, trybach i na arenie — `src/allies/roster.ts`
+
+- `allySchema.unlock?: { mission: string }` — sojusznik dostępny po ukończeniu misji kampanii
+  (`campaign.completed`); bez pola dostępny od początku.
+- `SquadMemberState { id, hp }` — stan członka w zapisie runu (`hp` 0 = powalony).
+  `RunState` (`CheckpointRunState`) ma opcjonalne `squad?: SquadMemberState[]`; stare zapisy bez pola
+  są poprawne (bez podbijania `saveVersion`).
+- `NewRunOptions.squad?: string[]`, `RoomExportState.squad?`; `RunManager.completeRoom` zapisuje
+  stan drużyny z pokoju, `RunManager.heal` leczy ją tym samym ułamkiem co gracza (sklep, odpoczynek).
+- Parametr URL `squad=nadia,szron` dla `?scene=run` (także `mode=`) i `?scene=arena`: sprawdzany
+  przez `sanitizeSquad` (odblokowani, bez powtórzeń, najwyżej `tuning.allies.maxPicked`; w trybie
+  debug odblokowanie jest pomijane). Misje liniowe ignorują go (mają drużynę w danych poziomu).
+- Pomocniki: `unlockedAllyIds`, `isAllyUnlocked`, `squadCountScale`, `scaleWavesForSquad`,
+  `squadHealthModifiers`, `healSquad`, `squadOf(run)`.
+- `src/allies/squadPresenter.ts`: `SquadPresenter` (widoki + HUD dla scen walki),
+  `buildFloorNavigation`, `withoutAction`. `BuildSelect.onSelect(loadoutId, bladeId?, squad?)`
+  dostaje trzeci argument tylko gdy gracz wybrał drużynę; `setCompleted`, `setSquad`.
+- Zapytania areny: `allies`, `allyKills`, `squadOrder`, `squadPicks`; komendy `ally ...` także na arenie.
 
 ### Poziomy liniowe — `src/world/levelSchema.ts`
 

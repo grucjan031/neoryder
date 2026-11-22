@@ -1,0 +1,81 @@
+.squad-picker {
+  display: grid;
+  gap: 8px;
+  font-family: var(--ui-font);
+  color: #f4f7fa;
+}
+.squad-picker[hidden] {
+  display: none;
+}
+.squad-picker__title {
+  margin: 4px 0 0;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8894a8;
+}
+.squad-picker__hint,
+.squad-picker__summary {
+  margin: 0;
+  font-size: 0.85em;
+  color: #b9c6d1;
+}
+.squad-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.squad-picker__card {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  color: #f4f7fa;
+  background: #0c1626;
+  border: 1px solid rgba(255, 174, 26, 0.3);
+  border-left: 4px solid #3a5263;
+  cursor: pointer;
+}
+.squad-picker__card[data-state='selected'] {
+  border-left-color: #ffae1a;
+  background: rgba(255, 174, 26, 0.1);
+  box-shadow: inset 0 0 0 1px #ffae1a;
+}
+.squad-picker__card[data-state='locked'] {
+  color: #6b7686;
+  background: #060b15;
+  border-color: rgba(255, 174, 26, 0.1);
+  cursor: not-allowed;
+}
+.squad-picker__card:hover:not([data-state='locked']),
+.squad-picker__card:focus-visible {
+  outline: 2px solid #ffae1a;
+  outline-offset: 2px;
+}
+.squad-picker__portrait {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  font-size: 1.4em;
+  font-weight: 700;
+  color: #ffae1a;
+  background: #070d1a;
+  border: 1px solid rgba(255, 174, 26, 0.45);
+}
+.squad-picker__card[data-state='locked'] .squad-picker__portrait {
+  color: #4a5666;
+  border-color: rgba(255, 174, 26, 0.12);
+}
+.squad-picker__body {
+  display: grid;
+  gap: 1px;
+}
+.squad-picker__role,
+.squad-picker__status {
+  font-size: 0.8em;
+  color: #8894a8;
+}
