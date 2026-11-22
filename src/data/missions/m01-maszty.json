@@ -340,7 +340,8 @@
       "lines": [
         {
           "speaker": "bajt",
-          "text": "Pierwszy ucichł. Reszta sieci podbiła moc o trzydzieści procent — wiedzą już, że to nie awaria bezpieczników."
+          "text": "Pierwszy ucichł. Reszta sieci podbiła moc o trzydzieści procent — wiedzą już, że to nie awaria bezpieczników.",
+          "shortText": "Pierwszy padł. Reszta sieci podbiła moc o 30%. Wiedzą, że to sabotaż."
         }
       ]
     },

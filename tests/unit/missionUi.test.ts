@@ -3,15 +3,12 @@ import { expect, it, vi } from 'vitest';
 import { MetaManager } from '../../src/progression/meta';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { createMissionsPanel } from '../../src/ui/hub/missionsPanel';
-import {
-  MissionHud,
-  MissionRadio,
-  splitRadioText,
-} from '../../src/ui/missionUi';
+import { MissionHud, MissionRadio } from '../../src/ui/missionUi';
+import { splitDialogueText } from '../../src/ui/missionDialogue';
 import { MissionObjectives } from '../../src/world/missionObjectives';
 import { missionDefinitions } from '../../src/world/missions';
 
-it('radio M06 natychmiast reaguje na fazę i śmierć bossa, Brandt ma czerwień wroga', () => {
+it('radio M06 natychmiast reaguje na fazę i śmierć bossa, pokazując imię i ikonę Brandta', () => {
   const radio = new MissionRadio(missionDefinitions.get('m06-odlewnia')!);
   try {
     radio.signal('enterNode:7');
@@ -21,8 +18,11 @@ it('radio M06 natychmiast reaguje na fazę i śmierć bossa, Brandt ma czerwień
     const root = document.querySelector('.mission-radio--run')!;
     expect(root.textContent).toContain('Otworzyć boczne śluzy.');
     expect(
-      root.querySelector<HTMLElement>('[data-speaker="brandt"]')!.style.color,
-    ).toBe('rgb(255, 80, 80)');
+      root.querySelector('[data-speaker="brandt"] strong')!.textContent,
+    ).toBe('Brandt');
+    expect(root.querySelector('.mission-dialogue__icon')!.textContent).toBe(
+      'Br',
+    );
     radio.signal('boss:defeated');
     radio.step(0);
     expect(root.textContent).toContain('...Bez różnicy.');
@@ -101,7 +101,9 @@ it('wybór misji pokazuje odprawę, powrót przywraca listę, start przekazuje i
       panel.root.querySelector<HTMLElement>('.missions-panel__sector')!.hidden,
     ).toBe(false);
     expect(briefing.textContent).toContain('Trzy maszty w Niecce.');
-    expect(document.activeElement).toBe(briefing);
+    expect(document.activeElement).toBe(
+      briefing.querySelector('.mission-dialogue-player'),
+    );
     expect(
       panel.root.querySelector<HTMLElement>('.missions-panel__levels')!.hidden,
     ).toBe(true);
@@ -111,7 +113,7 @@ it('wybór misji pokazuje odprawę, powrót przywraca listę, start przekazuje i
     expect(new URLSearchParams(navigate.mock.calls[0]![0]).get('mission')).toBe(
       'm01-maszty',
     );
-    briefing.querySelector<HTMLButtonElement>('button')!.click();
+    briefing.querySelector<HTMLButtonElement>('.mission-choice')!.click();
     expect(briefing.hidden).toBe(true);
     panel.root
       .querySelector<HTMLButtonElement>('[data-mission="regular"]')!
@@ -152,23 +154,40 @@ it('radio odtwarza długą kwestię w kolejnych fragmentach bez utraty słów', 
   }
 });
 
-it('kwestie M01 pozostają całe, gdy mieszczą się w dwóch liniach, a podział nie zaczyna się małą literą', () => {
+it('radio używa opcjonalnego skrótu, zachowuje kolejność i znika po ostatniej kwestii', () => {
   const mission = missionDefinitions.get('m01-maszty')!;
-  for (const { lines } of mission.radio)
-    for (const line of lines) {
-      expect(splitRadioText(line.text, () => true)).toEqual([line.text]);
-      for (const limit of [40, 80, 160]) {
-        const chunks = splitRadioText(
-          line.text,
-          (text) => text.length <= limit,
-        );
-        expect(chunks.join(' ')).toBe(line.text);
-        for (const chunk of chunks) expect(chunk).toMatch(/^\p{Lu}/u);
-        for (const chunk of chunks.slice(0, -1))
-          expect(chunk).toMatch(/[.!?]$/);
-      }
-    }
-  const sentence =
-    'Pierwszy ucichł, reszta sieci podbiła moc — wiedzą już, że to nie awaria bezpieczników.';
-  expect(splitRadioText(sentence, () => false)).toEqual([sentence]);
+  const trigger = 'objective:mast-1:done';
+  const radio = new MissionRadio(mission);
+  try {
+    radio.signal(trigger);
+    radio.step(0);
+    const root = document.querySelector<HTMLElement>('.mission-radio--run')!;
+    const lines = mission.radio
+      .filter((event) => event.trigger === trigger)
+      .flatMap((event) => event.lines);
+    expect(root.querySelector('p')!.textContent).toBe(lines[0]!.shortText);
+    expect(root.querySelector('dialog, button')).toBeNull();
+    radio.step(100);
+    expect(root.querySelector('p')!.textContent).toBe(lines[1]!.text);
+    for (let i = 0; i < 5; i++) radio.step(100);
+    expect(root.hidden).toBe(true);
+  } finally {
+    radio.dispose();
+  }
+});
+
+it('podział preferuje całe zdania, mieści długie zdania i obsługuje długie wyrazy', () => {
+  const value =
+    'Pierwszy ucichł. Reszta sieci podbiła moc, wiedzą już o sabotażu.';
+  expect(splitDialogueText(value, (text) => text.length <= 36)).toEqual([
+    'Pierwszy ucichł.',
+    'Reszta sieci podbiła moc, wiedzą już',
+    'o sabotażu.',
+  ]);
+  expect(splitDialogueText(value, () => true)).toEqual([value]);
+  expect(splitDialogueText('123456789', (text) => text.length <= 4)).toEqual([
+    '1234',
+    '5678',
+    '9',
+  ]);
 });

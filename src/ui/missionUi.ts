@@ -3,22 +3,12 @@ import type { DialogueLine, MissionDefinition } from '../world/missionSchema';
 import type { MissionObjectives } from '../world/missionObjectives';
 import { tuning } from '../core/tuning';
 import text from '../data/ui/missionDialogue.pl.json';
+import {
+  MissionDialogue,
+  MissionDialogueCard,
+  splitDialogueText,
+} from './missionDialogue';
 import './missionUi.css';
-
-export function dialogueLines(lines: readonly DialogueLine[]): HTMLElement {
-  const root = document.createElement('div');
-  root.className = 'mission-dialogue';
-  for (const line of lines) {
-    const paragraph = document.createElement('p');
-    const speaker = document.createElement('strong');
-    speaker.dataset.speaker = line.speaker;
-    if (line.speaker === 'brandt') speaker.style.color = '#ff5050';
-    speaker.textContent = `${text.speakers[line.speaker]}: `;
-    paragraph.append(speaker, document.createTextNode(line.text));
-    root.append(paragraph);
-  }
-  return root;
-}
 
 export class MissionHud {
   private readonly root = document.createElement('aside');
@@ -111,14 +101,21 @@ export function showDebrief(
   heading.textContent = text.debrief;
   heading.tabIndex = -1;
   heading.setAttribute('autofocus', '');
+  const conversation = new MissionDialogue([{ lines: mission.debrief }]);
   const button = document.createElement('button');
+  button.type = 'button';
   button.textContent = text.close;
+  const dispose = () => {
+    conversation.dispose();
+    dialog.remove();
+  };
   const finish = async () => {
+    if (button.disabled) return;
     button.disabled = true;
     try {
       await close();
       dialog.close();
-      dialog.remove();
+      dispose();
     } catch {
       button.disabled = false;
     }
@@ -128,36 +125,19 @@ export function showDebrief(
     event.preventDefault();
     void finish();
   });
-  dialog.append(heading, dialogueLines(mission.debrief), button);
+  dialog.append(heading, conversation.root, button);
   document.body.append(dialog);
   document.exitPointerLock?.();
   dialog.showModal();
-  return () => dialog.remove();
-}
-
-/** Dzielimy wyłącznie między zdaniami i tylko wtedy, gdy cała kwestia nie mieści się w dwóch liniach. */
-export function splitRadioText(
-  text: string,
-  fits: (text: string) => boolean,
-): string[] {
-  if (fits(text)) return [text];
-  const sentences = text.split(/(?<=[.!?])\s+(?=\p{Lu})/u);
-  const chunks: string[] = [];
-  let chunk = '';
-  for (const sentence of sentences) {
-    const candidate = chunk ? `${chunk} ${sentence}` : sentence;
-    if (chunk && !fits(candidate)) {
-      chunks.push(chunk);
-      chunk = sentence;
-    } else chunk = candidate;
-  }
-  if (chunk) chunks.push(chunk);
-  return chunks;
+  if (!conversation.root.hidden)
+    conversation.root.focus({ preventScroll: true });
+  return dispose;
 }
 
 /** Radio należy do runu, dzięki czemu zmiana pokoju nie urywa kolejki. */
 export class MissionRadio {
   private readonly root = document.createElement('div');
+  private readonly card = new MissionDialogueCard();
   private readonly queue: DialogueLine[] = [];
   private remaining = 0;
   private active?: DialogueLine;
@@ -170,8 +150,8 @@ export class MissionRadio {
   constructor(private readonly mission: MissionDefinition) {
     window.addEventListener('resize', this.resize);
     this.root.className = 'mission-radio mission-radio--run';
-    this.root.setAttribute('aria-live', 'polite');
     this.root.hidden = true;
+    this.root.append(this.card.root);
     document.body.append(this.root);
   }
   signal(trigger: string): void {
@@ -179,43 +159,45 @@ export class MissionRadio {
     if (trigger === 'boss:defeated' || /^boss:phase:[23]$/.test(trigger)) {
       this.queue.length = 0;
       this.remaining = 0;
+      this.active = undefined;
     }
     for (const event of this.mission.radio)
-      if (event.trigger === trigger) this.queue.push(...event.lines);
+      if (event.trigger === trigger)
+        for (const { speaker, text, shortText } of event.lines)
+          this.queue.push({ speaker, text: shortText ?? text });
   }
   step(dt: number): void {
     this.remaining -= dt;
     if (this.remaining > 0) return;
-    const queued = this.queue.shift();
-    const line = queued ? { ...queued } : undefined;
-    this.active = line;
-    this.root.hidden = !line;
-    this.root.replaceChildren();
-    if (line) {
-      this.root.style.fontSize = '';
-      const fits = (value: string) => {
-        this.root.replaceChildren(dialogueLines([{ ...line, text: value }]));
-        const paragraph = this.root.querySelector('p')!;
-        return (
-          paragraph.getBoundingClientRect().height <=
-          parseFloat(getComputedStyle(paragraph).lineHeight) * 2 + 1
-        );
-      };
-      const chunks = splitRadioText(line.text, fits);
-      const first = chunks.shift()!;
-      this.queue.unshift(...chunks.map((text) => ({ ...line, text })));
-      line.text = first;
-      // Pojedynczego długiego zdania nie urywamy: dopasowujemy jego rozmiar do dwóch linii.
-      let size = parseFloat(getComputedStyle(this.root).fontSize);
-      while (!fits(first) && size > 10) {
-        size -= 0.5;
-        this.root.style.fontSize = `${size}px`;
+    const line = this.queue.shift();
+    if (!line) {
+      if (!this.root.hidden) {
+        this.active = undefined;
+        this.root.hidden = true;
+        this.card.clear();
       }
-      this.remaining = Math.max(
-        tuning.mission.radioMinS,
-        line.text.length / tuning.mission.radioCharsPerS,
-      );
+      return;
     }
+    this.root.hidden = false;
+    const paragraph = this.card.line;
+    const lineHeight = parseFloat(getComputedStyle(paragraph).lineHeight);
+    const [first, ...rest] = splitDialogueText(line.text, (value) => {
+      if (Array.from(value).length > tuning.mission.radioPageChars)
+        return false;
+      paragraph.textContent = value;
+      const height = paragraph.getBoundingClientRect().height;
+      return height === 0 || height <= 2 * lineHeight + 1;
+    });
+    this.queue.unshift(
+      ...rest.map((text) => ({ speaker: line.speaker, text })),
+    );
+    this.active = { speaker: line.speaker, text: first! };
+    paragraph.textContent = this.active.text;
+    this.card.show(line.speaker, this.active.text);
+    this.remaining = Math.max(
+      tuning.mission.radioMinS,
+      Array.from(this.active.text).length / tuning.mission.radioCharsPerS,
+    );
   }
   dispose(): void {
     window.removeEventListener('resize', this.resize);

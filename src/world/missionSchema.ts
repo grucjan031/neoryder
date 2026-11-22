@@ -20,6 +20,7 @@ export const dialogueLineSchema = z.object({
     'brandt',
   ]),
   text: id,
+  shortText: id.optional(),
 });
 export const missionObjectiveSchema = z.discriminatedUnion('kind', [
   z.object({

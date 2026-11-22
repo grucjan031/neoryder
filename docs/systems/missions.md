@@ -1,6 +1,12 @@
 # Misje fabularne
 
-Pole `summary` zawiera krótki opis wyświetlany na tablicy po wyborze misji. Radio mierzy tekst w bieżącej szerokości: cała kwestia pozostaje razem, jeśli mieści się w dwóch liniach, a dłuższe dzieli tylko między zdaniami. Pojedyncze zbyt długie zdanie dopasowuje rozmiarem tekstu, bez urywania treści.
+Pole `summary` zawiera krótki opis wyświetlany na tablicy po wyborze misji.
+
+Odprawa, przerywnik i debrief pokazują po jednej kwestii z imieniem i ikoną mówiącego. Kliknięcie karty, „Dalej” lub spacja w widoku odsłania resztę tekstu, a po odsłonięciu przechodzi do kolejnej strony. Dłuższe kwestie są dzielone na strony. Opcja „Automatyczne przewijanie” jest domyślnie wyłączona i czeka po odsłonięciu strony przez czas zależny od długości tekstu. Ostatnia strona pozostaje widoczna. Ustawienie ograniczonego ruchu w systemie odsłania tekst od razu. „Zakończ rozmowę” zapisuje zamknięcie debriefu, także przed ostatnią kwestią.
+
+Radio pojawia się w prawym górnym obszarze HUD-u, poniżej wskaźników przy górnej krawędzi. Kolejka odtwarza jedną wstawkę naraz i znika po zakończeniu. Opcjonalne `shortText` pozwala podać krótszą wersję na potrzeby radia. Bez tego pola radio korzysta z `text`. Radio mieści tekst na maksymalnie dwóch liniach przy stałym rozmiarze pisma. Dłuższy tekst przechodzi na kolejne strony, w miarę możliwości z podziałem na zdania lub wyrazy.
+
+Aby sprawdzić dialogi w 30 sekund, otwórz `?scene=hub&debug=1&fx=lite`, wywołaj `hub open missions` i wybierz „Maszty”. Naciśnij spację i kliknij „Dalej”, następnie włącz automatyczne przewijanie. Kliknij „Rozpocznij misję” lub otwórz `?scene=mission&mission=m01-maszty&debug=1&fx=lite`. Po wczytaniu w prawym górnym obszarze pojawi się radio `runStart`. Można je powtórzyć komendą `mission radio runStart`. Zwiń panel strojenia, jeśli zasłania radio.
 
 Misja bez pola `level` jest runem sektora z mapą i celami opisanymi w `src/data/missions`. M01 ma `level: "m01-maszty"` i używa osobnej sceny liniowej opisanej niżej. Kontrakt: ADR 0008 wraz z uzupełnieniem 2a. Rejestr `missions.ts` waliduje schemat, przypisania celów, zależności oraz typy pokojów. `generateMissionMap` zachowuje jedno przejście przez każdą warstwę stałą; nie dokłada bossa ani gwarancji elit zwykłego sektora.
 
@@ -72,7 +78,7 @@ Format mapy i sprawdzenie w 30 sekund: [levels.md](levels.md).
 
 Wybuch (`sabotage`): zdarzenie `explosion` w punkcie celu (+0,5 m w górę) i obrażenia `blastDamage` ze źródłem `null` (tagi `#hazard`, `#explosion`, `#friendly_fire`) dla gracza i wszystkich żywych wrogów w `blastRadiusM`. Fale `defend.waves` i `sabotage.reinforcements` to pliki `src/data/waves/<nazwa>.json`; w runie tworzą `WaveDirector` z punktami spawnu pokoju i strumieniem `ctx.rng.fork('reinforcement:<klucz>')` (klucz: id celu albo `<id>:<indeks wpisu>`); w scenie liniowej uruchamia je host jako spotkania.
 
-**Tuning:** `tuning.mission`: `zoneRadiusM` 1,6, `pickupRadiusM` 1, `radioMinS` 3, `radioCharsPerS` 16, `mastPulseHz` 0,5, `mastFusePulseHz` 2, `mastEmissionMin` 1,5, `mastEmissionMax` 4. `tuning.level`: `maxAlive` 12, `staticCellSizeM` 24, `respawnDelayS` 1,2.
+**Tuning:** `tuning.mission`: `zoneRadiusM` 1,6, `pickupRadiusM` 1, `radioMinS` 3, `radioCharsPerS` 16 (tempo czytania dla radia i auto), `radioPageChars` 90, `dialoguePageChars` 150, `dialogueCharsPerS` 60, `dialogueAutoMinS` 2, `mastPulseHz` 0,5, `mastFusePulseHz` 2, `mastEmissionMin` 1,5, `mastEmissionMax` 4. `tuning.level`: `maxAlive` 12, `staticCellSizeM` 24, `respawnDelayS` 1,2.
 
 **Dane misji:** `m01-maszty` (nr 1, akt 1, `level: m01-maszty`, bez `requires`, firstClear 60 Danych; wrogowie `assaulter`, `gunner`, `turret`), `m03-list-przewozowy` (nr 3, wymaga M01, firstClear 95 Danych + 1 Rdzeń, `splashAct` 1; dodatkowo `shielder`, `drone`), `m06-odlewnia` (nr 6, wymaga M03, 150 Danych + 3 Rdzenie, `splashAct` 2; dodatkowo `sniper`, `executor`). Wszystkie mają 7 warstw.
 

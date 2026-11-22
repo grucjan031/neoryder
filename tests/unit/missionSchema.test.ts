@@ -4,7 +4,11 @@ import data from '../../src/data/missions/m01-maszty.json';
 import listData from '../../src/data/missions/m03-list-przewozowy.json';
 import { loadWaves } from '../../src/world/waves';
 import { enemyDefinitions } from '../../src/enemies/registry';
-import { loadMission, missionSchema } from '../../src/world/missionSchema';
+import {
+  dialogueLineSchema,
+  loadMission,
+  missionSchema,
+} from '../../src/world/missionSchema';
 import { missionDefinitions } from '../../src/world/missions';
 import { roomDefinitions } from '../../src/world/rooms';
 
@@ -124,11 +128,22 @@ describe('Dane misji', () => {
           : [];
       });
       expect(sourceLines.length).toBeGreaterThan(0);
-      expect(lines).toHaveLength(sourceLines.length);
-      for (const line of lines) expect(section).toContain(line.text);
-      expect(lines).toEqual(sourceLines);
+      expect(lines.map(({ speaker, text }) => ({ speaker, text }))).toEqual(
+        sourceLines,
+      );
     },
   );
+  it('akceptuje dawne kwestie i zachowuje opcjonalny skrót radia', () => {
+    const line = { speaker: 'szron', text: 'Pełna kwestia.' };
+    expect(dialogueLineSchema.parse(line)).toEqual(line);
+    expect(dialogueLineSchema.parse({ ...line, shortText: 'Skrót.' })).toEqual({
+      ...line,
+      shortText: 'Skrót.',
+    });
+    expect(
+      dialogueLineSchema.safeParse({ ...line, shortText: '' }).success,
+    ).toBe(false);
+  });
   it('wczytuje M01 z poprawnymi pokojami i osłoną', () => {
     const mission = missionDefinitions.get('m01-maszty')!;
     expect(
