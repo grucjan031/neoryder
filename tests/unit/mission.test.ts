@@ -133,15 +133,17 @@ describe('Run i kampania', () => {
     const first = meta.applyRun(run.summary!, 'first');
     expect(meta.applyRun(run.summary!, 'first').applied).toBe(false);
     const second = meta.applyRun(run.summary!, 'second');
-    // M01 ma `level`: pierwsze ukończenie to tylko firstClear, kolejne to zwykłe nagrody runu.
-    expect(first.rewards).toEqual({ xp: 0, data: 60, cores: 0 });
-    expect(second.rewards).toEqual(
-      computeRunRewards(
-        run.summary!,
-        defaultMetaRules.threat[run.summary!.threatLevel]!,
-        defaultMetaRules.progression.rewards,
-      ),
+    const ordinary = computeRunRewards(
+      run.summary!,
+      defaultMetaRules.threat[run.summary!.threatLevel]!,
+      defaultMetaRules.progression.rewards,
     );
+    expect(first.rewards).toEqual({
+      ...ordinary,
+      data: ordinary.data + mission.rewards.firstClear.data,
+      cores: ordinary.cores + (mission.rewards.firstClear.cores ?? 0),
+    });
+    expect(second.rewards).toEqual(ordinary);
     expect(meta.state.campaign).toEqual({
       completed: [mission.id],
       pendingDebrief: mission.id,

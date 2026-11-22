@@ -47,12 +47,10 @@ Migracja 5→6 zachowuje meta i aktywny run bez zmian; rekord misji jest począt
 nieobecny. Zapis ukończenia poprzedza `applyRun`, zapis meta i usunięcie rekordu.
 Nieudane rozliczenie pozostawia ukończoną próbę do ponowienia. `appliedRunIds`
 chroni tę samą próbę, `campaign.completed` chroni firstClear między próbami.
-Nagrody misji liniowej (decyzja D6): pierwsze ukończenie daje wyłącznie firstClear
-(60 Danych dla M01) i debrief fabularny, bez zwykłych nagród runu. Każde kolejne
-ukończenie daje tylko zwykłe nagrody runu, liczone tym samym wzorem co zwykły run
-(`computeRunRewards`: reguły `progression.rewards` i mnożnik Poziomu zagrożenia;
+Pierwsze ukończenie misji liniowej daje zwykłe nagrody runu z `computeRunRewards` oraz jednorazowy bonus `firstClear`, każde kolejne ukończenie daje same zwykłe nagrody runu, a próba nieukończona daje 0 nagród.
+Wzór używa reguł `progression.rewards` i mnożnika Poziomu zagrożenia;
 scena przekazuje `roomsCleared` = 0 i `elitesCleared` = 0, więc liczą się zabójstwa
-i premia za zwycięstwo), bez firstClear. Próba nieukończona nie daje nagród. Misja
+i premia za zwycięstwo. Bonus `firstClear` dla M01 to 60 Danych. Misja
 liniowa nigdy nie odblokowuje kolejnego Poziomu zagrożenia. Podsumowanie prowadzi do kryjówki
 z jednorazowym debriefem. Błąd zapisu jest widoczny w HUD; „Ponów zapis” i komenda
 `mission retry` ponawiają zapis lub rozliczenie.

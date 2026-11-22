@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import type { MetaState } from '../../src/core/metaTypes';
+import progression from '../../src/data/meta/progression.json' with { type: 'json' };
+import mission from '../../src/data/missions/m01-maszty.json' with { type: 'json' };
 import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
 // `mission start` przeładowuje stronę; odpytanie w trakcie nawigacji zwraca undefined zamiast wyjątku.
@@ -13,7 +16,7 @@ const waitPlaying = (page: Page) =>
     .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
     .toBe('playing');
 
-test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotna nagroda', async ({
+test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', async ({
   page,
 }) => {
   test.setTimeout(600_000);
@@ -100,12 +103,25 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotna nagroda',
     timeout: LOAD_TIMEOUT,
   });
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
-  // firstClear daje 60 Danych; naszywki Iskry mogą przy pierwszym ukończeniu dodać własną nagrodę.
+  // Scena rozlicza 0 pokojów, elit i zabójstw na Poziomie zagrożenia 0.
+  const ordinary = {
+    xp: progression.rewards.xpVictory,
+    data: progression.rewards.dataVictory,
+    cores: progression.rewards.coresVictory,
+  };
+  // Naszywki Iskry mogą dodać własną nagrodę poza zwykłymi nagrodami i firstClear.
   await expect
     .poll(() => query(page, 'meta'))
     .toMatchObject({ campaign: { completed: ['m01-maszty'] } });
-  const afterFirst = ((await query(page, 'meta')) as { data: number }).data;
-  expect(afterFirst - before.data).toBeGreaterThanOrEqual(60);
+  const firstMeta = (await query(page, 'meta')) as MetaState;
+  const afterFirst = firstMeta.data;
+  expect(firstMeta.lastRuns[0]?.rewards).toEqual({
+    ...ordinary,
+    data: ordinary.data + mission.rewards.firstClear.data,
+  });
+  expect(afterFirst - before.data).toBeGreaterThanOrEqual(
+    ordinary.data + mission.rewards.firstClear.data,
+  );
 
   // Druga próba nie przyznaje firstClear ponownie.
   await command(page, 'mission start m01-maszty');
@@ -121,7 +137,13 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotna nagroda',
     .click();
   await expect
     .poll(() => query(page, 'meta'), { timeout: LOAD_TIMEOUT })
-    .toMatchObject({ data: afterFirst });
+    .toMatchObject({ data: afterFirst + ordinary.data });
+  const secondMeta = (await query(page, 'meta')) as MetaState;
+  expect(secondMeta.data).toBeGreaterThan(afterFirst);
+  expect(secondMeta.lastRuns[0]?.rewards).toEqual(ordinary);
+  expect(
+    firstMeta.lastRuns[0]!.rewards.data - secondMeta.lastRuns[0]!.rewards.data,
+  ).toBe(mission.rewards.firstClear.data);
   expect(errors).toEqual([]);
 });
 
