@@ -103,6 +103,43 @@ it('interpoluje model i yaw, zapętla klipy, robi crossfade oraz sumuje dt odleg
   }
 });
 
+it('Hela wykonuje gest podania z klipu GLB raz i wraca do spoczynku', async () => {
+  const [body, clips] = await Promise.all([
+    parse('npc_civilian.glb'),
+    parse('npc_anims.glb'),
+  ]);
+  const load = vi
+    .spyOn(GLTFLoader.prototype, 'loadAsync')
+    .mockImplementation(async (url) =>
+      url.includes('npc_anims') ? clips : body,
+    );
+  const hela = loadHubLayout(hideoutData).npcs!.find(
+    ({ id }) => id === 'hela',
+  )!;
+  const npc = new NpcRuntime(hela, tuning.hub);
+  const view = new HubNpcs([npc], tuning);
+  try {
+    await view.load();
+    view.render(1, 0, npc.position, null);
+    const hand = view.root.getObjectByName('DEF-handL')!;
+    const before = hand.getWorldPosition(new Vector3());
+    view.serveSoup();
+    view.render(1, 1, npc.position, 'hela');
+    expect(view.soupProgress).toBeCloseTo(0.5);
+    expect(hand.getWorldPosition(new Vector3()).z).toBeGreaterThan(
+      before.z + 0.3,
+    );
+    view.render(1, 1.1, npc.position, 'hela');
+    expect(view.soupProgress).toBe(1);
+    view.render(1, 0.2, npc.position, null);
+    expect(view.soupProgress).toBe(0);
+    expect(hand.getWorldPosition(new Vector3()).z).toBeCloseTo(before.z, 1);
+  } finally {
+    view.dispose();
+    load.mockRestore();
+  }
+});
+
 it('ubiera NPC wariantami npc_civilian.glb według look: skórowany strój bez brył na tułowiu, wspólny szkielet', async () => {
   const [body, clips] = await Promise.all([
     parse('npc_civilian.glb'),

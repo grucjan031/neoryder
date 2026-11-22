@@ -142,6 +142,31 @@ it('odnowienie jest per id, miska ma dłuższe; jukebox obiega 0→1→2→0', (
   expect(used).toEqual(['jukebox', 'noodles', 'jukebox', 'jukebox', 'noodles']);
 });
 
+it('miska z zupą stoi na ladzie i przesuwa się podczas podawania', () => {
+  const { props } = setup();
+  const view = new HubPropView(props, tuning.hub);
+  try {
+    const bowl = view.root.getObjectByName('hub:soup:noodles')!;
+    expect(bowl.children).toHaveLength(2);
+    const counter = layout.blocks.find(
+      ({ position, size }) => position.z === -17.6 && size.x === 3.6,
+    )!;
+    expect(bowl.position.y).toBeCloseTo(
+      counter.position.y + counter.size.y / 2,
+    );
+    const restZ = bowl.position.z;
+    view.render(1, 0.55);
+    expect(bowl.position.z).toBeGreaterThan(counter.position.z);
+    expect(bowl.position.z).toBeLessThan(
+      counter.position.z + counter.size.z / 2,
+    );
+    view.render(1, 1);
+    expect(bowl.position.z).toBeCloseTo(restZ);
+  } finally {
+    view.dispose();
+  }
+});
+
 it('worek dostaje impuls w kierunku spojrzenia, interpoluje i wygasa deterministycznie', () => {
   const a = setup().props,
     b = setup().props;
@@ -152,7 +177,7 @@ it('worek dostaje impuls w kierunku spojrzenia, interpoluje i wygasa determinist
   a.step(SIM_DT);
   b.step(SIM_DT);
   view.render(0.5);
-  expect(view.root.children[0]!.rotation.z).toBeCloseTo(
+  expect(view.root.getObjectByName('hub:bag:bag')!.rotation.z).toBeCloseTo(
     -a.bags[0]!.angle.x / 2,
   );
   let peak = 0;
