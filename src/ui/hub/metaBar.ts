@@ -14,6 +14,9 @@ const text = z
     data: z.string(),
     cores: z.string(),
     freePoints: z.string(),
+    dataHelp: z.string(),
+    coresHelp: z.string(),
+    freePointsHelp: z.string(),
   })
   .parse(textData.bar);
 
@@ -79,6 +82,14 @@ export function createMetaBar(
   const coresValue = span('meta-bar__stat-value');
   cores.append(coresLabel, coresValue);
   const free = span('meta-bar__free');
+  for (const [node, help] of [
+    [data, text.dataHelp],
+    [cores, text.coresHelp],
+    [free, text.freePointsHelp],
+  ] as const) {
+    node.title = help;
+    node.setAttribute('role', 'group');
+  }
   const operator = span('meta-bar__operator', hudText.microOperator);
   const identity = span('meta-bar__identity');
   identity.append(operator, level, xp);
@@ -101,6 +112,12 @@ export function createMetaBar(
     const points = manager.freePoints;
     free.textContent = fill(text.freePoints, { count: points });
     free.dataset.active = String(points > 0);
+    data.setAttribute('aria-label', `${data.textContent}. ${text.dataHelp}`);
+    cores.setAttribute('aria-label', `${cores.textContent}. ${text.coresHelp}`);
+    free.setAttribute(
+      'aria-label',
+      `${free.textContent}. ${text.freePointsHelp}`,
+    );
   };
   refresh();
   const offs = META_BAR_EVENTS.map((name) => bus.on(name, refresh));

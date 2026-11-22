@@ -13,6 +13,11 @@ import './missionsPanel.css';
 
 const text = z
   .object({
+    firstClear: z.object({
+      reward: z.string(),
+      claimed: z.string(),
+      cores: z.object({ one: z.string(), few: z.string(), many: z.string() }),
+    }),
     sector: z.object({ name: z.string(), description: z.string() }),
     threat: z.object({
       heading: z.string(),
@@ -40,8 +45,7 @@ const fill = (template: string, values: Record<string, string | number>) =>
 
 const percent = (fraction: number): number => Math.round(fraction * 100);
 
-function coresText(count: number): string {
-  const forms = text.threat.victoryCores;
+function coresText(count: number, forms = text.threat.victoryCores): string {
   const last = count % 10;
   const form =
     count === 1
@@ -98,16 +102,30 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   root.dataset.panel = 'missions';
 
   const sector = el('section', 'missions-panel__sector');
+  const firstClear = el('p', 'missions-panel__reward');
+  firstClear.dataset.firstClear = '';
+  firstClear.hidden = true;
   const sectorName = el('h2', 'missions-panel__sector-name', text.sector.name);
   const sectorDescription = el(
     'p',
     'missions-panel__sector-text',
     text.sector.description,
   );
-  sector.append(sectorName, sectorDescription);
+  sector.append(sectorName, sectorDescription, firstClear);
   const describe = (mission?: MissionDefinition) => {
     sectorName.textContent = mission?.title ?? text.sector.name;
     sectorDescription.textContent = mission?.summary ?? text.sector.description;
+    firstClear.hidden = !mission?.level;
+    firstClear.textContent = !mission?.level
+      ? ''
+      : manager.state.campaign.completed.includes(mission.id)
+        ? text.firstClear.claimed
+        : fill(text.firstClear.reward, {
+            data: mission.rewards.firstClear.data,
+          }) +
+          (mission.rewards.firstClear.cores
+            ? coresText(mission.rewards.firstClear.cores, text.firstClear.cores)
+            : '');
   };
 
   const heading = el('h3', 'missions-panel__heading', text.threat.heading);
@@ -320,6 +338,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   );
 
   function refresh(): void {
+    if (selectedMission) describe(selectedMission);
     const completed = manager.state.campaign.completed;
     for (const { mission, button } of missionButtons) {
       const missing = mission.requires.filter((id) => !completed.includes(id));
@@ -327,7 +346,14 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       const state = !mission.level
         ? missionText.soon
         : missing.length
-          ? `${missionText.locked} · ${missionText.requires}${missing.join(', ')}`
+          ? `${missionText.locked} · ${missionText.requires}${missing
+              .map((id) => {
+                const required = missionDefinitions.get(id);
+                return required
+                  ? `${String(required.number).padStart(2, '0')} · ${required.title}`
+                  : id;
+              })
+              .join(', ')}`
           : completed.includes(mission.id)
             ? missionText.completed
             : missionText.available;

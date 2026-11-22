@@ -1,0 +1,36 @@
+.hub-guide {
+  position: fixed;
+  top: 112px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 102;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  color: #fff1d6;
+  background: #070b16de;
+  padding: 8px 16px;
+  text-align: center;
+  pointer-events: none;
+  font:
+    15px/1.4 Rajdhani,
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+.hub-guide > span:first-child {
+  display: inline-block;
+  color: #ffae1a;
+  margin-right: 12px;
+  font-size: 24px;
+}
+.hub-guide p {
+  margin: 4px 0 0;
+}
+.hub-guide p:empty {
+  display: none;
+}
+@media (max-width: 900px) {
+  .hub-guide {
+    top: 164px;
+  }
+}

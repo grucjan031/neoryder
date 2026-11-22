@@ -66,6 +66,7 @@
   letter-spacing: 0.12em;
 }
 .meta-bar__stat {
+  pointer-events: auto;
   position: relative;
   display: grid;
   grid-template-columns: 27px auto;
@@ -118,6 +119,7 @@
   color: #ffb6f3;
 }
 .meta-bar__free {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 9px;

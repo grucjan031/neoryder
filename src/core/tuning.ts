@@ -1051,6 +1051,8 @@ export const tuning = {
   },
   /** Kryjówka: zasięg od oka i margines bryły interakcji (m). */
   hub: {
+    /** Ukrycie przewodnika przy stacji celu (m). */
+    guideHideRadiusM: 4,
     /** Margines planu stacji wokół stref (m). */
     mapPaddingM: 2,
     /** Podpis strefy na planie: minimalna szerokość i głębokość strefy, margines od rogu, szacunkowa szerokość znaku i wysokość podpisu (m). */

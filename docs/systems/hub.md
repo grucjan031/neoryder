@@ -1,5 +1,21 @@
 # Kryjówka (hub) — F4-07
 
+## Pierwsze minuty — S10-01
+
+`hubGuideTarget(meta, freePoints)` w `src/world/hubGuide.ts` jest czystą logiką:
+brak zakończonych runów kieruje do `missions` (także przy wolnych punktach),
+po runie wolne punkty kierują do `talents`, inaczej cel jest pusty.
+Scena odczytuje `MetaManager.state` i `freePoints` w każdym `render()` oraz
+pozycję celu z `layout.stations`. Widok `HubGuide` obraca strzałkę względem yaw,
+pokazuje odległość w płaszczyźnie X/Z i tytuł stacji z `meta.pl.json`.
+Chowa się poniżej `tuning.hub.guideHideRadiusM` (4 m), przy otwartej stacji,
+mapie, rozmowie NPC, podczas siedzenia i bez celu. Powraca po ustaniu blokady;
+`dispose()` usuwa DOM. Parametr trafia automatycznie do lil-gui.
+
+Kontrola w `?scene=hub`: świeży zapis wskazuje Tablicę misji; po zakończonym
+runie i z wolnymi punktami wskazuje Terminal drzewek. Wydanie punktów usuwa
+wskazówkę bez przeładowania. Testy: `hubGuide.test.ts`, `hub.spec.ts`.
+
 ## Rekwizyty
 
 `hideout.json.props` definiuje `id`, `kind` (`jukebox`, `noodles`, `radio`, `bag`, `seat`),

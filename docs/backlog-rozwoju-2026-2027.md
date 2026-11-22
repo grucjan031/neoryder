@@ -203,7 +203,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S4c-01 Warsztat broni: sloty, wygląd, podgląd 3D
 
-- **Cel:** dopasowanie broni z widoczną zmianą wyglądu (pomysł właściciela: jak warsztat broni w strzelankach), zgodnie z filarem 2 — moduł zmienia sposób gry, nie tylko liczby. **P2** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaplanowane
+- **Cel:** dopasowanie broni z widoczną zmianą wyglądu (pomysł właściciela: jak warsztat broni w strzelankach), zgodnie z filarem 2 — moduł zmienia sposób gry, nie tylko liczby. **P2** · Wykonawca (Codex astra) + Architekt · Cz 2 · Ag L · status: zaimplementowane, czeka na playtest (PR #35, #36)
 - **Zależności:** S0-07 (celowanie), S4b-01 (warsztat i bramki), istniejące moduły (`src/data/modules`) i części modeli broni (`muzzle`, `heat_cell`, `heat_vents`, `support`, `grip`…).
 - **Kryteria:** sloty per broń: **Wylot** (`muzzle`), **Ogniwo** (`heat_cell`/`heat_vents`) i nowy **Optyka** (`support`, wpływa na celowanie: kolimator 1× szybsze wejście, luneta mocniejsze przybliżenie i wolniejsze wejście); każdy moduł ma element wizualny dokładany/podmieniany na właściwej części modelu (widoczny w widoku FPP i w podglądzie); warsztat w kryjówce z obracanym podglądem 3D, wyborem slotu i listą modułów z opisem „co zmienia”; zakładanie darmowe, odblokowanie za walutę jak dziś; kolory elementów bursztyn/biel/zieleń; brak modułów czysto liczbowych.
 - **Poza zakresem:** rozbudowany crafting (GDD, sekcja „Poza zakresem”), skórki i kosmetyka bez wpływu na grę.
@@ -269,7 +269,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S10-01 Czytelność i pierwsze minuty
 
-- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M · status: w realizacji (częściowo: PR #41, #46; tryb niskiej jakości i bez błysków w ustawieniach)
+- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M · status: zaimplementowane, czeka na playtest (PR #41, #46; tryb niskiej jakości i bez błysków; przewodnik „dokąd teraz” w kryjówce, nagroda i wymagania misji na tablicy, objaśnienia walut; plan obserwacji `docs/playtest-demo.md`)
 - **Kryteria:** sygnały ataków, stan celów, opisy talentów, waluty, komunikaty porażki; tryb niskiej jakości i bez błysków.
 
 ### S10-02 Kandydat do wydania

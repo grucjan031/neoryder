@@ -6,15 +6,20 @@ import { createStarterMetaState } from '../../src/progression/progressionSchema'
 import { threatLevels } from '../../src/progression/threatSchema';
 import { createMissionsPanel } from '../../src/ui/hub/missionsPanel';
 import type { HubPanel } from '../../src/ui/hub/hubPanel';
+import { missionDefinitions } from '../../src/world/missions';
+import text from '../../src/data/ui/missions.pl.json';
 
 const active: HubPanel[] = [];
 afterEach(() => {
+  vi.restoreAllMocks();
   active.splice(0).forEach((panel) => panel.dispose());
   document.body.replaceChildren();
 });
 
-function setup(max = 0, selected = 0) {
-  const manager = new MetaManager(createStarterMetaState(), new EventBus());
+function setup(max = 0, selected = 0, completed: string[] = []) {
+  const state = createStarterMetaState();
+  state.campaign.completed = completed;
+  const manager = new MetaManager(state, new EventBus());
   manager.debugSetThreatMax(max);
   if (selected > 0) manager.selectThreat(selected);
   const save = vi.fn(async () => {});
@@ -27,6 +32,67 @@ function setup(max = 0, selected = 0) {
     panel.root.querySelector<HTMLButtonElement>(`[data-level="${n}"]`)!;
   return { manager, save, navigate, panel, level };
 }
+
+it('blokada pokazuje numer i tytuł wymaganej misji, a nieznany wymóg zachowuje id', () => {
+  const original = missionDefinitions.get('m01-maszty')!;
+  const required = [...missionDefinitions.values()].find(
+    (m) => m.id !== original.id,
+  )!;
+  const get = missionDefinitions.get.bind(missionDefinitions);
+  vi.spyOn(missionDefinitions, 'values').mockImplementation(() =>
+    [{ ...original, requires: [required.id, 'missing-definition'] }].values(),
+  );
+  vi.spyOn(missionDefinitions, 'get').mockImplementation(get);
+  const { panel } = setup();
+  const button = panel.root.querySelector<HTMLButtonElement>(
+    '[data-mission="m01-maszty"]',
+  )!;
+  expect(button.disabled).toBe(true);
+  expect(button.textContent).toContain(
+    `Wymagane misje: ${String(required.number).padStart(2, '0')} · ${required.title}, missing-definition`,
+  );
+  expect(button.textContent).not.toContain(required.id);
+});
+
+it.each([
+  [undefined, ''],
+  [0, ''],
+  [1, ', +1 Rdzeń'],
+  [2, ', +2 Rdzenie'],
+  [5, ', +5 Rdzeni'],
+  [12, ', +12 Rdzeni'],
+  [22, ', +22 Rdzenie'],
+] as const)('nagroda pierwszego ukończenia: rdzenie %s', (cores, suffix) => {
+  const original = missionDefinitions.get('m01-maszty')!;
+  vi.spyOn(missionDefinitions, 'values').mockImplementation(() =>
+    [{ ...original, rewards: { firstClear: { data: 123, cores } } }].values(),
+  );
+  HTMLElement.prototype.scrollIntoView ??= () => {};
+  const { panel } = setup();
+  panel.root
+    .querySelector<HTMLButtonElement>('[data-mission="m01-maszty"]')!
+    .click();
+  const reward = panel.root.querySelector<HTMLElement>('[data-first-clear]')!;
+  expect(reward.hidden).toBe(false);
+  expect(reward.textContent).toBe(
+    `Nagroda za pierwsze ukończenie: +123 Danych${suffix}`,
+  );
+  panel.root
+    .querySelector<HTMLButtonElement>('[data-mission-briefing] button')!
+    .click();
+  expect(reward.hidden).toBe(true);
+});
+
+it('ukończona misja pokazuje odebraną nagrodę', () => {
+  HTMLElement.prototype.scrollIntoView ??= () => {};
+  const { panel } = setup(0, 0, ['m01-maszty']);
+  panel.root
+    .querySelector<HTMLButtonElement>('[data-mission="m01-maszty"]')!
+    .click();
+  expect(panel.root.querySelector('[data-first-clear]')!.textContent).toBe(
+    text.missions.firstClear.claimed,
+  );
+});
 
 it('pokazuje kartę sektora Kurogane Arms i poziomy 0..ostatni z nazwami', () => {
   const { panel, level } = setup();

@@ -1,5 +1,16 @@
 # HUD — F1 #15, F2-15, nowy HUD
 
+## Kryjówka: przewodnik i objaśnienia — S10-01
+
+Osobny `.hub-guide` (`data-hub-guide`, `data-target`) pokazuje bursztynową
+strzałkę i odległość u góry na środku, pod paskiem meta. Teksty i tytuły stacji
+pochodzą z `meta.pl.json`; reguły celu i ukrywania opisuje `hub.md`.
+Nie przechwytuje wskaźnika, strzałka dekoracyjna ma `aria-hidden`.
+
+Dane, Rdzenie i punkty talentów na pasku meta mają `title` oraz `aria-label`
+łączący aktualną wartość z tym samym objaśnieniem. Te trzy pozycje przyjmują
+wskaźnik, aby podpowiedź działała po najechaniu. Teksty są w `missions.pl.json.bar`.
+
 `src/ui/hud.ts` tworzy warstwę HTML nad canvasem, bez Three.js i bez odczytu
 modułów symulacji. Style są w `src/ui/hud.css`, importowanym przez `src/ui/styles.css`.
 Korzeń `.hud` jest `position: fixed; inset: 0; z-index: 100`, bez zdarzeń wskaźnika

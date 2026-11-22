@@ -7,9 +7,26 @@ import {
   progression,
 } from '../../src/progression/progressionSchema';
 import { createMetaBar } from '../../src/ui/hub/metaBar';
+import textData from '../../src/data/ui/missions.pl.json';
 import type { MetaBar } from '../../src/ui/hub/metaBar';
 
 const active: MetaBar[] = [];
+it('objaśnia waluty i punkty w title oraz dostępnej nazwie z aktualną wartością', () => {
+  const { bar, manager } = setup();
+  manager.debugAddData(42);
+  manager.debugAddXp(1000);
+  bar.refresh();
+  for (const [selector, help] of [
+    ['[data-stat=data]', textData.bar.dataHelp],
+    ['[data-stat=cores]', textData.bar.coresHelp],
+    ['.meta-bar__free', textData.bar.freePointsHelp],
+  ]) {
+    const node = bar.root.querySelector<HTMLElement>(selector!)!;
+    expect(node.title).toBe(help);
+    expect(node.getAttribute('aria-label')).toContain(help);
+    expect(node.getAttribute('aria-label')).toContain(node.textContent);
+  }
+});
 afterEach(() => {
   active.splice(0).forEach((bar) => bar.dispose());
   document.body.replaceChildren();
