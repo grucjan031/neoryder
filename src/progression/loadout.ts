@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { bladeDefinitions } from '../combat/melee/bladeSchema';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
-import { powerDefinitions } from '../combat/powers/registry';
+import { powerDefinitions } from '../combat/powers/definitions';
 import { sanitizeModules } from './moduleSchema';
 
 const uniqueIds = (ids: string[]): boolean => new Set(ids).size === ids.length;

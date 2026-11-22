@@ -1,5 +1,5 @@
 import type { EventBus } from '../core/events';
-import { missionDefinitions } from '../world/missions';
+import { missionCatalog } from '../world/missionCatalog';
 import {
   MAX_APPLIED_RUN_IDS,
   MAX_LAST_RUNS,
@@ -255,14 +255,14 @@ export class MetaManager {
     if (!entry)
       throw new Error(`Nieznany Poziom zagrożenia: ${summary.threatLevel}.`);
     const linearMission = summary.missionId
-      ? missionDefinitions.get(summary.missionId)?.level !== undefined
+      ? missionCatalog.get(summary.missionId)?.level !== undefined
       : false;
     const rewards = linearMission
       ? { xp: 0, data: 0, cores: 0 }
       : computeRunRewards(summary, entry, this.rules.progression.rewards);
     const victory = summary.outcome === 'victory';
     if (victory && summary.missionCompleted && summary.missionId) {
-      const mission = missionDefinitions.get(summary.missionId);
+      const mission = missionCatalog.get(summary.missionId);
       if (!mission) throw new Error(`Nieznana misja: ${summary.missionId}`);
       if (!s.campaign.completed.includes(mission.id)) {
         rewards.data += mission.rewards.firstClear.data;

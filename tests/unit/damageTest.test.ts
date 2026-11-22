@@ -42,7 +42,7 @@ async function setup() {
 }
 
 it('registers the scene and applies hit, block and heal through damage events', async () => {
-  expect((await scenes['damage-test']?.())?.id).toBe('damage-test');
+  expect((await scenes['damage-test']?.())?.().id).toBe('damage-test');
   const { scene, commands, bus } = await setup();
   const health = vi.fn();
   bus.on('health_changed', health);

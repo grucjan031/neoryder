@@ -40,7 +40,7 @@ async function setup(scene: AiTest = new AiTest(false)) {
 }
 
 it('registers ai-test, handles commands/queries and disposes all owned resources', async () => {
-  expect((await scenes['ai-test']?.())?.id).toBe('ai-test');
+  expect((await scenes['ai-test']?.())?.().id).toBe('ai-test');
   const { scene, commands, three } = await setup();
   expect(scene.query('enemies')).toBe(3);
   expect(scene.query('playerHp')).toBe(100);
@@ -138,7 +138,7 @@ it('coordinates enemies through the EnemyDirector from scene data (F2-12)', asyn
 });
 
 it('status-test applies statuses with the debug command; stunned enemies stop attacking (F2-02)', async () => {
-  expect((await scenes['status-test']?.())?.id).toBe('status-test');
+  expect((await scenes['status-test']?.())?.().id).toBe('status-test');
   const { scene, commands, bus } = await setup(createStatusTest(false));
   expect(scene.id).toBe('status-test');
   for (const bad of [

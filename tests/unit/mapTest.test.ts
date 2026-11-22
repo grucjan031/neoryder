@@ -12,7 +12,7 @@ import { kuroganeSector } from '../../src/world/sectors';
 
 it('map-test pokazuje seed z URL, rejestruje map i usuwa UI oraz komendę', async () => {
   window.history.replaceState(null, '', '?scene=map-test&seed=test-mapy');
-  const scene = await scenes['map-test']!();
+  const scene = (await scenes['map-test']!())();
   const commands = new CommandRegistry();
   scene.init(
     {

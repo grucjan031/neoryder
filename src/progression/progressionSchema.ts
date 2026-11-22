@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { bladeDefinitions } from '../combat/melee/bladeSchema';
-import { powerDefinitions } from '../combat/powers/registry';
+import { powerDefinitions } from '../combat/powers/definitions';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import progressionData from '../data/meta/progression.json';
 import type { MetaState } from '../core/metaTypes';

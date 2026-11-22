@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 it('registers boss-test, starts with only the boss, changes phases, resets and cleans up commands/world', async () => {
-  expect((await scenes['boss-test']?.())?.id).toBe('boss-test');
+  expect((await scenes['boss-test']?.())?.().id).toBe('boss-test');
   const scene = new BossTest(false);
   const commands = new CommandRegistry(),
     bus = new EventBus(),

@@ -869,9 +869,12 @@ ciężkie kroki areny w `init()`), `tests/unit/runScene.test.ts` (wywołanie po 
 
 ## Podział paczki (leniwe sceny)
 
-Rejestr `src/scenes/index.ts` trzyma fabryki `() => import('./x')` (`scenes[id]()` zwraca `Promise<Scene>`), a `main.ts` pobiera
-scenę, `three` i `render/outline` jednym `Promise.all` dopiero dla `?scene=<id>` — pod nakładką startową z `index.html`, przed
-budową renderera i rozgrzewką (`warmUpRender` bez zmian). Pomiar `npm run build` (Vite 8, 22 XI 2026), kB surowe / gzip:
+Rejestr `src/scenes/index.ts` trzyma wpisy leniwe `() => import('./x').then((m) => () => new m.X())` (`scenes[id]()` zwraca
+`Promise<SceneFactory>`), a `main.ts` pobiera chunk sceny, `three` i `render/outline` jednym `Promise.all` dopiero dla
+`?scene=<id>` — pod nakładką startową z `index.html`. Samą scenę buduje jak przed podziałem: po rendererze, potoku, jakości
+i kamerze, przed `resize()` → `setRenderWarmUp` → `scene.init()` → `warmUpRender()` (rozgrzewka bez zmian).
+
+Etap 1 (leniwe sceny), pomiar `npm run build` (Vite 8, 22 XI 2026), kB surowe / gzip:
 
 | Co                                                           |             Przed |                                       Po |
 | ------------------------------------------------------------ | ----------------: | ---------------------------------------: |
@@ -881,11 +884,31 @@ budową renderera i rozgrzewką (`warmUpRender` bez zmian). Pomiar `npm run buil
 | `three` (chunk `three.module-*.js`, tylko sceny 3D)          |         w starcie |                            743,7 / 187,9 |
 | Sceny                                                        |         w starcie | 31 wpisów, 0,9–236,7 kB (hub największy) |
 
-Menu nadal pobiera Rapiera (`physics-*.js`, 4 335,5 / 1 670,4) i dane pokoi (`save-*.js`, 2 090,0 / 222,7): wciągają je importy
-statyczne spoza rejestru scen — `core/save` → `progression/loadout` → `combat/powers/registry` → `powers/grab` → Rapier oraz
-`core/save` → `world/run` → `world/modes` → `world/rooms` (to samo przez `ui/splash` → `world/missions` i `ui/mainMenu` →
-`progression/meta`). Dopiero przecięcie tych łańcuchów odchudzi menu do ok. 0,3 MB; ostrzeżenie Vite o chunkach > 500 kB zostaje
-(Rapier z WASM w base64, dane pokoi, `three`). Pilnuje `tests/unit/sceneRegistry.test.ts`.
+Po etapie 1 menu nadal pobierało Rapiera (`physics-*.js`, 4 335,5 / 1 670,4) i dane pokoi (`save-*.js`, 2 090,0 / 222,7) przez
+importy statyczne spoza rejestru scen. Etap 2 przeciął te łańcuchy lekkimi modułami danych (kontrakt: `docs/api.md`, sekcja
+z rejestrem scen):
+
+| Łańcuch (przed)                                                                                            | Cięcie                                                                |
+| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `progression/loadout`, `progressionSchema`, `unlocksSchema`, `ui/buildSelect` → `powers/registry` → Rapier | `combat/powers/definitions` (same dane mocy; rejestr je reeksportuje) |
+| `core/save` → `world/run` → `world/modes` → `world/rooms` i `enemies/registry` → Rapier                    | `world/runSchema` (schematy stanu runu bez `RunManagera`)             |
+| `main.ts`, `ui/splash`, `progression/meta` → `world/missions` → `world/rooms`                              | `world/missionCatalog` (misje sprawdzone samym schematem, bez pokoi)  |
+
+Pomiar po scaleniu z `main` (wersja 0.9.0); JS pobierany przez menu to chunk startowy i jego importy statyczne, kB surowe / gzip:
+
+| Co                             | Po etapie 1 (leniwe sceny) | Po etapie 2 (przecięte łańcuchy) |
+| ------------------------------ | -------------------------: | -------------------------------: |
+| Chunk startowy `index-*.js`    |               169,4 / 57,3 |                     199,8 / 65,0 |
+| JS pobierany przez menu, razem |          6 746,6 / 1 967,2 |                    426,7 / 133,5 |
+| Liczba plików JS menu          |                          8 |                                6 |
+| Rapier (`physics-*.js`) w menu |          4 335,5 / 1 670,4 |                                — |
+| Dane pokoi w menu              |            2 090,0 / 222,7 |                                — |
+
+Rapier, dane pokoi (ok. 1,9 MB, teraz w chunku współdzielonym przez sceny) i `three` pobierają się dopiero z `?scene=<id>`;
+ostrzeżenie Vite o chunkach > 500 kB dotyczy już tylko ich. Walidacja misji względem pokoi i trybów względem wrogów nadal działa
+przy imporcie `world/missions` i `world/modes`, czyli w scenach i w testach, nie w menu. Pilnuje
+`tests/unit/sceneRegistry.test.ts`: rejestr bez importów statycznych scen oraz domknięcie importów `main.ts` bez Rapiera,
+`three`, `world/rooms`, `world/missions`, `world/modes`, `world/run` i rejestrów wrogów i mocy.
 
 ## Dodawanie obiektu
 

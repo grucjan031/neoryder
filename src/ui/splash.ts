@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { missionDefinitions } from '../world/missions';
+import { missionCatalog } from '../world/missionCatalog';
 import { tuning } from '../core/tuning';
 import splashData from '../data/ui/splash.json';
 
@@ -29,7 +29,7 @@ export function unlockedSplashAct(
   let act: SplashAct = 1;
   if (typeof victories !== 'number') {
     for (const id of victories) {
-      const unlocked = missionDefinitions.get(id)?.splashAct ?? 1;
+      const unlocked = missionCatalog.get(id)?.splashAct ?? 1;
       if (unlocked > act) act = unlocked;
     }
     return act;
