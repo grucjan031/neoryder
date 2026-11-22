@@ -1,5 +1,23 @@
 # HUD — F1 #15, F2-15, nowy HUD
 
+## Wersja, sterowanie, zgłoszenia
+
+Menu pokazuje wersję z `package.json` i krótki hash Git (bez Git: `dev`).
+Pauza dodaje seed i scenę: run oraz tryby runu czytają `SaveStore.loadRun()`,
+misja liniowa `loadMission()` zgodne z identyfikatorem misji; pozostałe sceny
+korzystają z `?seed`. Błąd odczytu jest jawny, raport bez seeda zawiera „brak”.
+„Sterowanie i zapis” czyta `inputBindings.json` oraz aktualne przypisania
+z `loadSettings()` / `resolveBindings()`. Opis przypomina, że wyczyszczenie
+danych przeglądarki usuwa zapis. Osobny dialog pozostawia pauzę otwartą;
+Esc wraca do pauzy i oddaje fokus bez wznowienia gry ani pointer lock.
+„Zgłoś problem” kopiuje wersję, build, seed, scenę, userAgent, rozmiar okna
+i datę ISO; gdy schowek odmawia, pokazuje zaznaczone pole do skopiowania.
+Adres zgłoszeń i nowe teksty pochodzą z `aboutDemo.json`, walidowanego zod.
+Menu i nowa nakładka używają bursztynu i ciepłej bieli. Stopka ma 60% krycia
+na stałym tle `#060c18`, aby zachować kontrast co najmniej 4,5:1.
+Kontrola: `?scene=room-test&seed=demo` → Esc → obie nowe akcje → Esc.
+Testy: `buildInfo.test.ts` i `aboutDemo.spec.ts` (także odmowa schowka).
+
 `src/ui/hud.ts` tworzy warstwę HTML nad canvasem, bez Three.js i bez odczytu
 modułów symulacji. Style są w `src/ui/hud.css`, importowanym przez `src/ui/styles.css`.
 Korzeń `.hud` jest `position: fixed; inset: 0; z-index: 100`, bez zdarzeń wskaźnika

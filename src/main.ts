@@ -295,6 +295,10 @@ async function main(): Promise<void> {
     () => pauseMenu.show(canReturnToHub()),
   );
   const pauseMenu = new PauseMenu({
+    infoProvider: () => ({
+      seed: (scene.query?.('runState') as RunState | undefined)?.seed ?? seed,
+      scene: scene.id,
+    }),
     resume: () => resume(),
     settings: () => {
       pauseMenu.hide();
