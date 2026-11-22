@@ -125,7 +125,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotna nagroda',
   expect(errors).toEqual([]);
 });
 
-test('tablica: odprawa M01 otwiera scenę mission, M03 i M06 pozostają wkrótce', async ({
+test('tablica: odprawa M01 otwiera scenę mission, M03 pozostaje wkrótce, M06 czeka na M03', async ({
   page,
 }) => {
   test.setTimeout(3 * LOAD_TIMEOUT);
@@ -136,11 +136,14 @@ test('tablica: odprawa M01 otwiera scenę mission, M03 i M06 pozostają wkrótce
     })
     .toBe('hub');
   await command(page, 'hub open missions');
-  for (const id of ['m03-list-przewozowy', 'm06-odlewnia']) {
+  for (const id of ['m03-list-przewozowy']) {
     const choice = page.locator(`[data-mission="${id}"]`);
     await expect(choice).toBeDisabled();
     await expect(choice).toContainText('Wkrótce');
   }
+  const foundry = page.locator('[data-mission="m06-odlewnia"]');
+  await expect(foundry).toBeDisabled();
+  await expect(foundry).not.toContainText('Wkrótce');
   await page.locator('[data-mission="m01-maszty"]').click();
   await expect(page.locator('[data-mission-briefing]')).toContainText(
     'Trzy maszty w Niecce.',

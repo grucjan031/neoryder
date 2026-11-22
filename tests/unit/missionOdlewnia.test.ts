@@ -12,8 +12,6 @@ import { MissionObjectives } from '../../src/world/missionObjectives';
 import { loadMission, missionSchema } from '../../src/world/missionSchema';
 import { roomDefinitions } from '../../src/world/rooms';
 import { RunManager } from '../../src/world/run';
-import { generateMissionMap } from '../../src/world/sectorMap';
-import { kuroganeSector } from '../../src/world/sectors';
 import data from '../../src/data/missions/m06-odlewnia.json';
 
 const mission = missionDefinitions.get(data.id)!;
@@ -25,33 +23,25 @@ const idle = {
   lookDelta: { x: 0, y: 0 },
 };
 
-it('M06: kontrakt danych, osłony, pokoje i wymuszone warstwy dla różnych seedów', () => {
+it('M06: kontrakt danych misji liniowej — poziom, wymagania, nagrody i bez pól runu', () => {
   expect(loadMission(data, roomDefinitions)).toEqual(mission);
+  expect(mission.level).toBe('m06-odlewnia');
   expect(mission.requires).toEqual(['m03-list-przewozowy']);
   expect(mission.splashAct).toBe(2);
   expect(mission.rewards.firstClear).toEqual({ data: 150, cores: 3 });
-  expect(mission.fixedNodes.map((n) => [n.layer, n.type, n.roomId])).toEqual([
-    [1, 'combat', 'combatCorridor'],
-    [3, 'elite', 'eliteFoundry'],
-    [6, 'elite', 'eliteHall'],
-    [7, 'boss', 'bossRoom'],
+  // Schemat misji wymaga węzła finałowego z celami; reszta sekwencji pokoi zniknęła.
+  expect(mission.fixedNodes).toEqual([
+    {
+      layer: 7,
+      type: 'boss',
+      roomId: 'bossRoom',
+      objectives: ids,
+      final: true,
+    },
   ]);
-  expect(mission.fixedNodes[2]!.guards?.map((g) => g.enemy)).toEqual([
-    'executor',
-    'shielder',
-    'sniper',
-  ]);
-  for (let seed = 0; seed < 20; seed++) {
-    const map = generateMissionMap(mission, kuroganeSector, String(seed));
-    expect(map.layers).toHaveLength(7);
-    for (const fixed of mission.fixedNodes) {
-      expect(map.layers[fixed.layer - 1]).toHaveLength(1);
-      const node = map.layers[fixed.layer - 1]![0]!;
-      expect(node.fixed?.roomId).toBe(fixed.roomId);
-      for (const before of map.layers[fixed.layer - 2] ?? [])
-        expect(before.next).toEqual([node.id]);
-    }
-  }
+  expect(mission.typeWeights).toBeUndefined();
+  expect(mission.roomPools).toBeUndefined();
+  expect(mission.enemies).toBeUndefined();
 });
 
 it.each([

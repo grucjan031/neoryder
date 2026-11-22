@@ -40,8 +40,10 @@ runu. Rzeczywista utrata fokusu nadal pauzuje symulację. `tuning.level` jest w 
 Kryjówka czyta rekord i na tablicy oferuje „Kontynuuj misję”. Start zamraża
 wyposażenie warsztatu i talenty meta; obecny metazapis nie ma slotów implantów,
 więc początkowa lista implantów jest pusta, tak jak na starcie zwykłego runu.
-M03/M06 mają nieaktywne karty „Wkrótce”; ich dane i warianty runowe pozostają,
-dostępne przez bezpośrednie URL debug. Zwykły run i Przejęcie zachowują przepływ.
+M03 ma nieaktywną kartę „Wkrótce”; jej dane i wariant runowy pozostają,
+dostępne przez bezpośredni URL debug. M06 jest poziomem liniowym (`level:
+"m06-odlewnia"`, opis w `levels.md`) i odblokowuje się po M03.
+Zwykły run i Przejęcie zachowują przepływ.
 
 Migracja 5→6 zachowuje meta i aktywny run bez zmian; rekord misji jest początkowo
 nieobecny. Zapis ukończenia poprzedza `applyRun`, zapis meta i usunięcie rekordu.
@@ -80,7 +82,7 @@ Wybuch (`sabotage`): zdarzenie `explosion` w punkcie celu (+0,5 m w górę) i ob
 
 **Tuning:** `tuning.mission`: `zoneRadiusM` 1,6, `pickupRadiusM` 1, `radioMinS` 3, `radioCharsPerS` 16 (tempo czytania dla radia i auto), `radioPageChars` 90, `dialoguePageChars` 150, `dialogueCharsPerS` 60, `dialogueAutoMinS` 2, `mastPulseHz` 0,5, `mastFusePulseHz` 2, `mastEmissionMin` 1,5, `mastEmissionMax` 4. `tuning.level`: `maxAlive` 12, `staticCellSizeM` 24, `respawnDelayS` 1,2.
 
-**Dane misji:** `m01-maszty` (nr 1, akt 1, `level: m01-maszty`, bez `requires`, firstClear 60 Danych; wrogowie `assaulter`, `gunner`, `turret`), `m03-list-przewozowy` (nr 3, wymaga M01, firstClear 95 Danych + 1 Rdzeń, `splashAct` 1; dodatkowo `shielder`, `drone`), `m06-odlewnia` (nr 6, wymaga M03, 150 Danych + 3 Rdzenie, `splashAct` 2; dodatkowo `sniper`, `executor`). Wszystkie mają 7 warstw.
+**Dane misji:** `m01-maszty` (nr 1, akt 1, `level: m01-maszty`, bez `requires`, firstClear 60 Danych; wrogowie `assaulter`, `gunner`, `turret`), `m03-list-przewozowy` (nr 3, wymaga M01, firstClear 95 Danych + 1 Rdzeń, `splashAct` 1; dodatkowo `shielder`, `drone`), `m06-odlewnia` (nr 6, `level: m06-odlewnia`, wymaga M03, 150 Danych + 3 Rdzenie, `splashAct` 2; wrogów określają fale poziomu, w tym `sniper`, `executor` i boss `securityChief`). Wszystkie mają 7 warstw.
 
 ## Warianty misji-runów (zgodność)
 
@@ -103,7 +105,7 @@ Opcjonalne `defend.waves: { atProgress: number; wave: string }[]` uruchamia posi
 
 M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Sprawdzenie: `?scene=run&mission=m03-list-przewozowy&debug=1` po odblokowaniu M01, `objective done terminal`, następnie `objective done exit`. `run clear` nie omija terminala ani bramy.
 
-M06 „Odlewnia” wymaga M03. Siedem warstw, stałe pokoje: 1 — combatCorridor, 3 — eliteFoundry, 6 — eliteHall (executor, shielder, sniper), 7 — bossRoom. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Dialogi odprawy zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów.
+M06 „Odlewnia” wymaga M03 i jest poziomem liniowym (`levels.md`, sekcja „M06 — Odlewnia”); wariant runowy został usunięty. Z pól runu zostały tylko te, których wymaga schemat: `layers: 7` i jeden węzeł finałowy (warstwa 7, `bossRoom`) z celami `brandt`, `server`, `exit`; `typeWeights`, `roomPools`, `enemies` i osłony węzłów zniknęły. Pozycje celów w danych misji są zastępowane przez `objectivePositions` poziomu. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Dialogi odprawy zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów. Radio `enterNode:3|6|7` wyzwalają odcinki poziomu (hala formowania, przedpokój, arena).
 
 Opcjonalne `interlude: { title, lines: DialogueLine[] }` wyświetla się przed odprawą M03 i M06: przerywnik zastępuje wydarzenia misji, których nie ma w grze; usuwamy go, gdy brakująca misja powstanie.
 
@@ -111,4 +113,6 @@ Opcjonalne `interlude: { title, lines: DialogueLine[] }` wyświetla się przed o
 
 Host przekazuje istniejące zdarzenia `boss_phase` do `boss:phase:2` i `boss:phase:3`, a śmierć swojego bossa do `boss:defeated`. Te wyzwalacze przerywają zaległe radio, żeby komunikaty faz i ostatnie słowa odpowiadały aktualnej walce. W misji host oznacza wtedy `killBoss` jako done i wywołuje wspólny rozpad pozostałych wrogów (DamageSystem, source null), bez naliczania zabójstw gracza i bez uruchamiania ciszy po zwycięstwie. `completeRoom` pozostaje zablokowane do wykonania wszystkich celów; dopiero winda kończy finał i uruchamia zwykłe rozliczenie oraz ciszę. Zwykły run i Przejęcie zachowują dotychczasową ścieżkę.
 
-Sprawdzenie M06: `?scene=run&mission=m06-odlewnia&debug=1` po ukończeniu M03; `god`, `boss phase 2`, `boss phase 3`, po zakończeniu zmiany fazy `kill all`, następnie `objective done server`, `objective done exit`. `run clear` nie usuwa żywego bossa misji bez zdarzenia śmierci. Serwer znajduje się przy tylnej ścianie (0, 0, -12), winda po lewej (-11, 0, -11). Cele opcjonalne i zegar dostrojenia pozostają poza zakresem. Geometria bazowych pokojów i balans bossa są niezmienione; podest serwera oraz winda są oprawą celu, bez nowych kolizji.
+Powyższy akapit opisuje pokój bossa w runie (`bossRoom`, `layout.bossEnemy`). W poziomie liniowym M06 boss jest wrogiem spotkania `bossFor`: fazy do radia przekazuje `MissionScene`, a `boss:defeated` i ukończenie `killBoss` następują z ukończeniem spotkania (szczegóły w `levels.md`).
+
+Sprawdzenie M06: `?scene=mission&mission=m06-odlewnia&debug=1` po ukończeniu M03 (adres `?scene=run&mission=m06-odlewnia` przekierowuje do sceny `mission`); kroki w `levels.md`, sekcja „M06 — Odlewnia”. Cele opcjonalne i zegar dostrojenia pozostają poza zakresem; balans bossa jest niezmieniony.

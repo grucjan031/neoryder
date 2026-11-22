@@ -86,7 +86,7 @@ it.each([
   ).toBe(false);
 });
 
-it('M03 i M06 pozostają w danych, ale są niedostępne na tablicy; M01 ma odprawę', () => {
+it('M03 pozostaje w danych, ale jest niedostępna na tablicy; M06 po M03 jest dostępna, M01 ma odprawę', () => {
   const state = createStarterMetaState();
   state.campaign.completed = ['m01-maszty', 'm03-list-przewozowy'];
   const original = HTMLElement.prototype.scrollIntoView;
@@ -99,7 +99,13 @@ it('M03 i M06 pozostają w danych, ale są niedostępne na tablicy; M01 ma odpra
   });
   document.body.append(panel.root);
   try {
-    for (const id of ['m03-list-przewozowy', 'm06-odlewnia']) {
+    const foundry = panel.root.querySelector<HTMLButtonElement>(
+      '[data-mission="m06-odlewnia"]',
+    )!;
+    expect(foundry.disabled).toBe(false);
+    expect(foundry.textContent).not.toContain('Wkrótce');
+    expect(missionDefinitions.get('m06-odlewnia')!.interlude).toBeDefined();
+    for (const id of ['m03-list-przewozowy']) {
       const button = panel.root.querySelector<HTMLButtonElement>(
         `[data-mission="${id}"]`,
       )!;
