@@ -300,6 +300,10 @@ export const tuning = {
   /** Kamera FPP (#03). Wstrząs: trauma 0..1, amplituda = trauma² × shakeMax. Czasy w s. */
   camera: {
     fov: 90,
+    /** Bliska płaszczyzna rąk i broni (m), również przy rozszerzonym horyzoncie. */
+    viewmodelNearM: 0.03,
+    /** Pionowy FOV rąk i broni (stopnie); 0 = bieżący FOV świata (sprint, doskok i celowanie zachowują kadr). */
+    viewmodelFov: 0,
     shakeMax: 0.4,
     shakeMaxAngleDeg: 5,
     shakeMaxOffset: 0.06,
@@ -433,8 +437,6 @@ export const tuning = {
     fogColor: '#eef1f3',
     fogNear: 14,
     fogFar: 80,
-    /** Ułamek zakresu głębi zarezerwowany dla rąk i przedmiotu (zawsze przed światem). */
-    viewmodelDepth: 0.01,
     /** Siatka płytek podłogi w shaderze materiału świata (m, kontrast 0..1, grubość w px). */
     gridSize: 2,
     gridContrast: 0.1,

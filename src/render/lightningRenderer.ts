@@ -14,6 +14,7 @@ import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { getMaterial } from './materials';
+import { viewmodelAnchor } from './viewmodelLayer';
 import { ResonanceWaveFx } from './resonanceWaveFx';
 
 export interface LightningArc {
@@ -178,6 +179,7 @@ export class LightningRenderer {
         )
         .applyQuaternion(camera.quaternion)
         .add(camera.position);
+      viewmodelAnchor(camera, this.hand);
     }
     this.usedImpacts = 0;
     let used = 0;

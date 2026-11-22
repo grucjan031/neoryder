@@ -426,7 +426,10 @@ export class WeaponsTest implements Scene {
       });
     }
     this.beamRenderer.advance(frameDt);
-    this.beamRenderer.render(this.weapon.beam, this.fppView.beamOrigin);
+    this.beamRenderer.render(
+      this.weapon.beam,
+      camera ? this.fppView.beamOriginFor(camera) : this.fppView.beamOrigin,
+    );
     this.explosionRenderer.render(frameDt);
     if (this.bar) {
       this.bar.style.width = `${this.weapon.heat.fraction * 100}%`;

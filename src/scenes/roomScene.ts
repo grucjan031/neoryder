@@ -1751,7 +1751,7 @@ export class RoomScene implements Scene {
       aim: this.heldItem.aim,
     });
     this.beamView.advance(frameDt);
-    this.beamView.render(this.weapon.beam, this.fppView.beamOrigin);
+    this.beamView.render(this.weapon.beam, this.fppView.beamOriginFor(camera));
     this.lightningView.render(powers, camera);
   }
 

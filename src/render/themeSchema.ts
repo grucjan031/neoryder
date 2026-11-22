@@ -109,7 +109,6 @@ export const themeSchema = z.object({
       fogColor: color,
       fogNear: nonnegative,
       fogFar: nonnegative,
-      viewmodelDepth: nonnegative,
       gridSize: nonnegative,
       gridContrast: unit,
       gridLineWidth: nonnegative,

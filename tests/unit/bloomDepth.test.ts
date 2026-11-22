@@ -87,6 +87,21 @@ it('zachowuje tolerancję i przelicza głębię nachylonej powierzchni do środk
   expect(visible(tolerance * 0.9)).toBe(true);
   expect(visible(tolerance * 1.1)).toBe(false);
 });
+
+it('pokrycie viewmodelu odcina bloom świata bez porównywania obu głębokości', () => {
+  const visible = (coverage: (u: number, v: number) => number) =>
+    bloomDepthVisible(
+      [1.5, 1.5],
+      0.01,
+      [0, 0],
+      [4, 4],
+      [8, 8],
+      () => 0.02,
+      coverage,
+    );
+  expect(visible(() => 0.99)).toBe(false);
+  expect(visible((u, v) => (u < 0.4 && v < 0.4 ? 1 : 0.99))).toBe(true);
+});
 afterEach(() => {
   Object.assign(tuning.render, defaults);
   vi.restoreAllMocks();
@@ -96,6 +111,8 @@ function fixture() {
   let target: WebGLRenderTarget | null = null;
   const renderer = {
     autoClear: true,
+    clearDepth: vi.fn(),
+    shadowMap: { autoUpdate: true, needsUpdate: false },
     getSize: (out: Vector2) => out.set(321, 181),
     getPixelRatio: () => 1,
     getDrawingBufferSize: (out: Vector2) => out.set(321, 181),
@@ -197,7 +214,10 @@ it('rysuje tylko emisję, także w grupach materiałów i pod nieemisyjnym rodzi
       'gl_FragCoord.z + dot(bloomGradient, bloomDelta)',
     );
     expect(shader.fragmentShader).toContain(
-      `bloomVisible || bloomDepth <= bloomSceneDepth + ${2 / 16777215}`,
+      `bloomDepth <= bloomSceneDepth + ${2 / 16777215}`,
+    );
+    expect(shader.fragmentShader).toContain(
+      '!bloomViewmodelActive || texture2D(bloomViewmodelDepth, bloomSampleUv).r >= 1.0',
     );
     expect(shader.fragmentShader).toContain('if (!bloomVisible) discard;');
     expect(shader.fragmentShader).toContain('discard;');
@@ -301,7 +321,7 @@ it('zachowuje proceduralny bloomMaterial oraz pomija nieemisyjny deszcz', () => 
   f.pass.dispose();
 });
 
-it('pipeline przekazuje głębię koloru, zmienia jej rozmiar i ją zwalnia', () => {
+it('pipeline przekazuje obie głębokości koloru, zmienia ich rozmiar i je zwalnia', () => {
   const f = fixture();
   const pipeline = createRenderPipeline(f.gpu);
   const neon = new Mesh(
@@ -309,29 +329,57 @@ it('pipeline przekazuje głębię koloru, zmienia jej rozmiar i ją zwalnia', ()
     new MeshBasicMaterial({ color: 0xff0000 }),
   );
   f.scene.add(neon);
+  const root = new Group();
+  applyViewmodelLayer(root);
+  f.scene.add(root);
+  const unregister = registerViewmodel(root);
   let colorTarget: WebGLRenderTarget | null = null;
+  let viewmodelColorDepth: DepthTexture | null = null;
   let verified = false;
-  f.renderer.render.mockImplementation((scene: Scene) => {
-    if (scene !== f.scene) return;
-    if (!colorTarget) colorTarget = f.renderer.getRenderTarget();
-    if (!neon.material.depthWrite) {
-      const shader = compile(neon.material, f.gpu);
-      expect(shader.uniforms.bloomColorDepth!.value).toBe(
-        colorTarget!.depthTexture,
-      );
-      expect(colorTarget!.width).toBe(321);
-      verified = true;
-    }
-  });
-  pipeline.render(f.scene, f.camera, 0);
-  expect(verified).toBe(true);
-  pipeline.setSize(640, 360);
-  expect(colorTarget!.width).toBe(640);
-  expect(colorTarget!.height).toBe(360);
+  f.renderer.render.mockImplementation(
+    (scene: Scene, camera: PerspectiveCamera) => {
+      if (scene !== f.scene) return;
+      if (!colorTarget) colorTarget = f.renderer.getRenderTarget();
+      if (
+        f.renderer.getRenderTarget() === colorTarget &&
+        camera.layers.mask === 2
+      )
+        viewmodelColorDepth = colorTarget!.depthTexture;
+      if (!neon.material.depthWrite) {
+        const shader = compile(neon.material, f.gpu);
+        expect(shader.uniforms.bloomColorDepth!.value).toBe(
+          colorTarget!.depthTexture,
+        );
+        expect(colorTarget!.width).toBe(321);
+        expect(viewmodelColorDepth).toBeInstanceOf(DepthTexture);
+        expect(viewmodelColorDepth).not.toBe(colorTarget!.depthTexture);
+        expect(shader.uniforms.bloomViewmodelDepth!.value).toBe(
+          viewmodelColorDepth,
+        );
+        expect(shader.uniforms.bloomViewmodelActive!.value).toBe(true);
+        verified = true;
+      }
+    },
+  );
   const dispose = vi.spyOn(DepthTexture.prototype, 'dispose');
-  pipeline.dispose();
-  expect(dispose).toHaveBeenCalledTimes(2);
-  f.pass.dispose();
+  try {
+    pipeline.render(f.scene, f.camera, 0);
+    expect(verified).toBe(true);
+    expect(f.renderer.clearDepth).toHaveBeenCalledTimes(3);
+    pipeline.setSize(640, 360);
+    expect(colorTarget!.width).toBe(640);
+    expect(colorTarget!.height).toBe(360);
+    expect(viewmodelColorDepth!.image).toMatchObject({
+      width: 640,
+      height: 360,
+    });
+  } finally {
+    unregister();
+    dispose.mockClear();
+    pipeline.dispose();
+    expect(dispose).toHaveBeenCalledTimes(4);
+    f.pass.dispose();
+  }
 });
 
 it('zwalnia wariant po dispose źródła i nie zwalnia źródła wraz z passem', () => {
@@ -353,7 +401,7 @@ it('zwalnia wariant po dispose źródła i nie zwalnia źródła wraz z passem',
   expect(release).toHaveBeenCalledTimes(1);
 });
 
-it('viewmodel zachowuje oryginalną emisję i własne zasłony ze ściśniętą głębią', () => {
+it('viewmodel zachowuje oryginalną emisję i własne zasłony z czystą głębią', () => {
   const f = fixture();
   const root = new Group();
   const source = new MeshBasicMaterial({ color: 0xff0000 });
@@ -370,6 +418,7 @@ it('viewmodel zachowuje oryginalną emisję i własne zasłony ze ściśniętą 
       if (scene !== f.scene || camera.layers.mask !== 2) return;
       expect(neon.material).toBe(source);
       expect(wall.material).toMatchObject({ opacity: 0, depthWrite: true });
+      expect(f.renderer.clearDepth).toHaveBeenCalledOnce();
       expect(camera.projectionMatrix.equals(original)).toBe(false);
       checked = true;
     },

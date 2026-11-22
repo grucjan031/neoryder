@@ -5,6 +5,7 @@ import type { DamageSystem } from '../../src/combat/damage';
 import { powerDefinitions } from '../../src/combat/powers/registry';
 import type { RoomDefinition } from '../../src/world/roomSchema';
 import { RoomScene } from '../../src/scenes/roomScene';
+import { createRoomTest } from '../../src/scenes/roomTest';
 import { Arena } from '../../src/scenes/arena';
 import type { RoomSceneOptions } from '../../src/scenes/roomScene';
 import { EventBus } from '../../src/core/events';
@@ -25,6 +26,7 @@ import { roomDefinitions } from '../../src/world/rooms';
 import { loadWaves } from '../../src/world/waves';
 import { CommandRegistry } from '../../src/ui/debugCommands';
 import wavesData from '../../src/data/waves/roomTest.json';
+import viewmodelWall from '../../src/data/scenes/viewmodelWall.json';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -38,6 +40,42 @@ const press = (action: Action): InputSnapshot => ({
   pressed: new Set([action]),
 });
 const active = new Set<RoomScene>();
+
+it('tryb viewmodelu startuje przy ścianie bez fal i ma komendę powrotu', async () => {
+  vi.stubGlobal('location', { search: '?scene=room-test&viewmodel=wall' });
+  const scene = createRoomTest(false);
+  const commands = new CommandRegistry();
+  try {
+    await scene.init(
+      {
+        bus: new EventBus(),
+        commands,
+        rng: new Rng('viewmodel-wall'),
+        loop: new GameLoop({ step() {}, render() {} }),
+        tuning: structuredClone(tuning),
+        debug: true,
+      },
+      new ThreeScene(),
+    );
+    const spawn = scene.playerSnapshot().position;
+    expect(spawn).toMatchObject({
+      x: viewmodelWall.playerSpawn.x,
+      z: viewmodelWall.playerSpawn.z,
+    });
+    expect(scene.query('phase')).toBe('stopped');
+    scene.step(SIM_DT, { ...idle, lookDelta: { x: 300, y: 100 } });
+    expect(scene.playerSnapshot().yaw).not.toBe(0);
+    commands.execute('viewmodel wall');
+    const player = scene.playerSnapshot();
+    expect(player.position).toEqual(spawn);
+    expect(player.yaw).toBe(0);
+    expect(player.pitch).toBe(0);
+  } finally {
+    scene.dispose();
+    vi.unstubAllGlobals();
+  }
+  expect(commands.help()).not.toContain('viewmodel wall');
+});
 
 function runState(overrides: Partial<RunState> = {}): RunState {
   const loadoutId = overrides.loadoutId ?? 'classic';

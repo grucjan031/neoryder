@@ -1,4 +1,5 @@
 import { Group, Matrix4, Vector3 } from 'three';
+import type { Camera } from 'three';
 import type { HeldItemView, HeldKind } from '../combat/heldItem';
 import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
 import type { BladeDefinition } from '../combat/melee/bladeSchema';
@@ -11,7 +12,11 @@ import { FppBlaster } from './fppBlaster';
 import type { FppBlasterOptions } from './fppBlaster';
 import { FppMotion, shownHeld } from './fppMotion';
 import { FppOffhand } from './fppOffhand';
-import { applyViewmodelLayer, registerViewmodel } from './viewmodelLayer';
+import {
+  applyViewmodelLayer,
+  registerViewmodel,
+  viewmodelAnchor,
+} from './viewmodelLayer';
 
 export interface FppViewModelOptions {
   bladeDefinition?: BladeDefinition;
@@ -112,6 +117,11 @@ export class FppViewModel {
 
   get beamOrigin(): Vector3 {
     return this.blaster.root.getWorldPosition(this.origin);
+  }
+
+  /** Początek wiązki w świecie, zgodny z rzutem przebiegu rąk także przy `viewmodelFov`. */
+  beamOriginFor(camera: Camera): Vector3 {
+    return viewmodelAnchor(camera, this.beamOrigin);
   }
 
   dispose(): void {

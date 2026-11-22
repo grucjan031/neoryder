@@ -72,7 +72,6 @@
     "fogColor": "#241a16",
     "fogNear": 6,
     "fogFar": 60,
-    "viewmodelDepth": 0.01,
     "gridSize": 2,
     "gridContrast": 0,
     "gridLineWidth": 1,
