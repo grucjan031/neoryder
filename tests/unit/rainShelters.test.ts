@@ -108,9 +108,12 @@ describe('strefy bez deszczu', () => {
       expect(zone.position.y + zone.size.y / 2).toBe(
         roof.position.y - roof.size.y / 2,
       );
-      expect(isRainSheltered({ x: 0, y: 1, z: 0 }, room.rainShelters!)).toBe(
-        true,
-      );
+      expect(
+        isRainSheltered(
+          { x: zone.position.x, y: 1, z: zone.position.z },
+          room.rainShelters!,
+        ),
+      ).toBe(true);
       expect(
         isRainSheltered(
           { x: 0, y: 1, z: room.playerSpawn.z },

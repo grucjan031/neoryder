@@ -61,6 +61,7 @@ export function createArena({
   weather = 'rain',
   seed = id,
   bounds,
+  exclusive = true,
 }) {
   assertRect(bounds);
   const playerSpawn = vec(bounds.minX + 4, 0, bounds.minZ + 4);
@@ -90,7 +91,7 @@ export function createArena({
       },
     ],
     arena: {
-      exclusive: true,
+      ...(exclusive ? { exclusive: true } : {}),
       points: [],
       batchCellM: 20,
       navigationCellM: 1,

@@ -50,7 +50,9 @@ const MIN_STATIC_REDUCTION = 5;
 const MAX_STATIC_MESHES_PER_MATERIAL = 2;
 const staticSources = ['static-blocks', 'static-models', 'static-decor'];
 
-it.each(['alleyMarket', 'combatWarehouse', 'eliteFoundry'] as const)(
+// alleyMarket jest od partii A areną runu (blok `arena` z batchowaniem w komórkach, instancje) i nie
+// spełnia założeń tego testu (trzy źródła statyki); partie B i C przenoszą kolejne pokoje tak samo.
+it.each(['combatWarehouse', 'eliteFoundry'] as const)(
   '%s: scalona geometria statyczna i budżet siatek po init z prawdziwymi GLB',
   async (id) => {
     vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(

@@ -1,0 +1,219 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 104 180" width="1200" role="img" aria-labelledby="title desc">
+<title id="title">Pod estakadą — rzut z góry</title>
+<desc id="desc">Wysokość brył: granat (nisko) do bursztynu (wysoko). Zielony obrys: powierzchnie chodzenia. Przerywane: niewidoczna kolizja. Okręgi: punkty. Krzyżyki: spawny. Trójkąt: gracz. Północ: −Z.</desc>
+<rect width="100%" height="100%" fill="#101820"/>
+<g font-family="sans-serif" font-size="2.8" fill="#fff1d6">
+<text x="18" y="7" font-size="4">Pod estakadą · 68 × 120 m · N ↑ (−Z)</text>
+<g id="blocks">
+<polygon points="40,48 64,48 64,104 40,104" fill="hsl(215 35% 24%)" stroke="#90be85" stroke-width="0.3"><title>canal_water; wierzch -1.4 m; chodzenie</title></polygon>
+<polygon points="18,114 86,114 86,138 18,138" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>paving; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,104 86,104 86,114 18,114" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,48 40,48 40,104 18,104" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="64,48 86,48 86,104 64,104" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>quay_concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="18,18 86,18 86,48 18,48" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="40,80 64,80 64,88 40,88" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>steel_grating; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="63.8,48 64.2,48 64.2,48.3 63.8,48.3" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="63.8,52.7 64.2,52.7 64.2,95.8 63.8,95.8" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="63.8,100.2 64.2,100.2 64.2,104 63.8,104" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="39.8,48 40.2,48 40.2,61.8 39.8,61.8" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="39.8,66.2 40.2,66.2 40.2,87.8 39.8,87.8" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="39.8,92.2 40.2,92.2 40.2,104 39.8,104" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="40,47.8 45.8,47.8 45.8,48.2 40,48.2" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="50.2,47.8 64,47.8 64,48.2 50.2,48.2" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="40,103.8 57.8,103.8 57.8,104.2 40,104.2" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="62.2,103.8 64,103.8 64,104.2 62.2,104.2" fill="hsl(208 35% 25.2%)" stroke="#50606e" stroke-width="0.15"><title>canal_stone_wall; wierzch 0 m</title></polygon>
+<polygon points="56,96 64,96 64,100 56,100" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="56,48.5 64,48.5 64,52.5 56,52.5" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="40,88 48,88 48,92 40,92" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="40,62 48,62 48,66 40,66" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="46,48 50,48 50,56 46,56" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="58,96 62,96 62,104 58,104" fill="hsl(208 35% 25.2%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 0 m; chodzenie</title></polygon>
+<polygon points="25,81.75 27,81.75 27,82.25 25,82.25" fill="hsl(203.35 35% 26%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="27.75,97 28.25,97 28.25,99 27.75,99" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 0.93 m</title></polygon>
+<polygon points="75,73.75 77,73.75 77,74.25 75,74.25" fill="hsl(203.35 35% 26%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="71,51.75 73,51.75 73,52.25 71,52.25" fill="hsl(203.35 35% 26%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="43,132.75 45,132.75 45,133.25 43,133.25" fill="hsl(203.35 35% 26%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="55,119.75 57,119.75 57,120.25 55,120.25" fill="hsl(203.35 35% 26%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="55.74,39 56.26,39 56.26,41 55.74,41" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 0.93 m</title></polygon>
+<polygon points="29,41.74 31,41.74 31,42.26 29,42.26" fill="hsl(203.35 35% 26%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 0.93 m</title></polygon>
+<polygon points="48,107.6 52,107.6 52,108.4 48,108.4" fill="hsl(202.53 35% 26.14%)" stroke="#50606e" stroke-width="0.15"><title>city_highway_barrier; wierzch 1.09 m</title></polygon>
+<polygon points="62,131.6 66,131.6 66,132.4 62,132.4" fill="hsl(202.53 35% 26.14%)" stroke="#50606e" stroke-width="0.15"><title>city_highway_barrier; wierzch 1.09 m</title></polygon>
+<polygon points="66,35.6 70,35.6 70,36.4 66,36.4" fill="hsl(202.53 35% 26.14%)" stroke="#50606e" stroke-width="0.15"><title>city_highway_barrier; wierzch 1.09 m</title></polygon>
+<polygon points="40,79.94 64,79.94 64,80.06 40,80.06" fill="hsl(202.5 35% 26.14%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="40,87.94 64,87.94 64,88.06 40,88.06" fill="hsl(202.5 35% 26.14%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 1.1 m</title></polygon>
+<polygon points="21.46,61.02 22.54,61.02 22.54,62.98 21.46,62.98" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 1.33 m</title></polygon>
+<polygon points="73.46,55.02 74.54,55.02 74.54,56.98 73.46,56.98" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 1.33 m</title></polygon>
+<polygon points="79.46,129.01 80.54,129.01 80.54,130.99 79.46,130.99" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 1.33 m</title></polygon>
+<polygon points="23.02,23.46 24.98,23.46 24.98,24.54 23.02,24.54" fill="hsl(201.35 35% 26.34%)" stroke="#50606e" stroke-width="0.15"><title>city_dumpster; wierzch 1.33 m</title></polygon>
+<polygon points="33.2,53.5 34.8,53.5 34.8,54.5 33.2,54.5" fill="hsl(201 35% 26.4%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="81.2,63.5 82.8,63.5 82.8,64.5 81.2,64.5" fill="hsl(201 35% 26.4%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="47.2,33.5 48.8,33.5 48.8,34.5 47.2,34.5" fill="hsl(201 35% 26.4%)" stroke="#50606e" stroke-width="0.15"><title>city_generator; wierzch 1.4 m</title></polygon>
+<polygon points="19.5,33.2 20.5,33.2 20.5,34.8 19.5,34.8" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 1.4 m</title></polygon>
+<polygon points="55.03,127.79 56.97,127.79 56.97,132.21 55.03,132.21" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 1.46 m</title></polygon>
+<polygon points="28.93,130.03 31.07,130.03 31.07,133.97 28.93,133.97" fill="hsl(200.1 35% 26.55%)" stroke="#50606e" stroke-width="0.15"><title>city_wrecked_car; wierzch 1.58 m</title></polygon>
+<polygon points="29.39,69.37 30.61,69.37 30.61,70.63 29.39,70.63" fill="hsl(200.05 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="23.39,101.37 24.61,101.37 24.61,102.63 23.39,102.63" fill="hsl(200.05 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="69.37,87.39 70.63,87.39 70.63,88.61 69.37,88.61" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 1.59 m</title></polygon>
+<polygon points="65.39,108.37 66.61,108.37 66.61,109.63 65.39,109.63" fill="hsl(200.05 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="49.39,115.37 50.61,115.37 50.61,116.63 49.39,116.63" fill="hsl(200.05 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="35.39,37.37 36.61,37.37 36.61,38.63 35.39,38.63" fill="hsl(200.05 35% 26.56%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 1.59 m</title></polygon>
+<polygon points="39.37,23.39 40.63,23.39 40.63,24.61 39.37,24.61" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 1.59 m</title></polygon>
+<polygon points="19.59,89.49 20.41,89.49 20.41,90.51 19.59,90.51" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 2 m</title></polygon>
+<polygon points="83.59,83.49 84.41,83.49 84.41,84.51 83.59,84.51" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 2 m</title></polygon>
+<polygon points="28.51,110.41 27.49,110.41 27.49,109.59 28.51,109.59" fill="hsl(198 35% 26.91%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="76.51,134.41 75.49,134.41 75.49,133.59 76.51,133.59" fill="hsl(198 35% 26.91%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="66.51,26.41 65.49,26.41 65.49,25.59 66.51,25.59" fill="hsl(198 35% 26.91%)" stroke="#50606e" stroke-width="0.15"><title>city_vending; wierzch 2 m</title></polygon>
+<polygon points="31.6,77.69 32.4,77.69 32.4,78.31 31.6,78.31" fill="hsl(196.82 35% 27.12%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="77.6,95.69 78.4,95.69 78.4,96.31 77.6,96.31" fill="hsl(196.82 35% 27.12%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="59.6,37.69 60.4,37.69 60.4,38.31 59.6,38.31" fill="hsl(196.82 35% 27.12%)" stroke="#50606e" stroke-width="0.15"><title>city_kiosk; wierzch 2.23 m</title></polygon>
+<polygon points="55,53.5 59,53.5 59,78.5 55,78.5" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>concrete; wierzch 2.7 m</title></polygon>
+<polygon points="76,22 86,22 86,42 76,42" fill="hsl(185.5 35% 29.06%)" stroke="#90be85" stroke-width="0.3"><title>concrete; wierzch 4.5 m; chodzenie</title></polygon>
+<polygon points="63,30.5 76,30.5 76,33.5 63,33.5" fill="hsl(185.5 35% 29.06%)" stroke="#90be85" stroke-width="0.3"><title>metal; wierzch 4.5 m; chodzenie</title></polygon>
+<polygon points="79,23.74 81,23.74 81,24.26 79,24.26" fill="hsl(180.85 35% 29.85%)" stroke="#50606e" stroke-width="0.15"><title>city_barrier; wierzch 5.43 m</title></polygon>
+<polygon points="75.94,22 76.06,22 76.06,30.3 75.94,30.3" fill="hsl(180 35% 30%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 5.6 m</title></polygon>
+<polygon points="75.94,33.7 76.06,33.7 76.06,42 75.94,42" fill="hsl(180 35% 30%)" stroke="#50606e" stroke-width="0.15"><title>metal; wierzch 5.6 m</title></polygon>
+<polygon points="83.5,27.2 84.5,27.2 84.5,28.8 83.5,28.8" fill="none" stroke="#d8bd87" stroke-width="0.15" stroke-dasharray="1 1"><title>metal; wierzch 5.9 m</title></polygon>
+<polygon points="26,116 42,116 42,124 26,124" fill="hsl(178 35% 30.34%)" stroke="#50606e" stroke-width="0.15"><title>plaster; wierzch 6 m</title></polygon>
+<polygon points="79.39,37.37 80.61,37.37 80.61,38.63 79.39,38.63" fill="hsl(177.55 35% 30.42%)" stroke="#50606e" stroke-width="0.15"><title>city_crates; wierzch 6.09 m</title></polygon>
+<polygon points="37.5,51.5 38.5,51.5 38.5,52.5 37.5,52.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="37.5,63.5 38.5,63.5 38.5,64.5 37.5,64.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="37.5,75.5 38.5,75.5 38.5,76.5 37.5,76.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="37.5,87.5 38.5,87.5 38.5,88.5 37.5,88.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="37.5,99.5 38.5,99.5 38.5,100.5 37.5,100.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="65.5,51.5 66.5,51.5 66.5,52.5 65.5,52.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="65.5,63.5 66.5,63.5 66.5,64.5 65.5,64.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="65.5,75.5 66.5,75.5 66.5,76.5 65.5,76.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="65.5,87.5 66.5,87.5 66.5,88.5 65.5,88.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="65.5,99.5 66.5,99.5 66.5,100.5 65.5,100.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="31.5,30.5 32.5,30.5 32.5,31.5 31.5,31.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="51.5,30.5 52.5,30.5 52.5,31.5 51.5,31.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="71.5,30.5 72.5,30.5 72.5,31.5 71.5,31.5" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8 m</title></polygon>
+<polygon points="64,116 86,116 86,126 64,126" fill="hsl(168 35% 32.06%)" stroke="#50606e" stroke-width="0.15"><title>plaster; wierzch 8 m</title></polygon>
+<polygon points="18,48 40,48 40,104 18,104" fill="hsl(165 35% 32.57%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8.6 m</title></polygon>
+<polygon points="64,48 86,48 86,104 64,104" fill="hsl(165 35% 32.57%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8.6 m</title></polygon>
+<polygon points="18,18 86,18 86,44 18,44" fill="hsl(165 35% 32.57%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 8.6 m</title></polygon>
+<polygon points="15,15 33.87,15 33.87,18 15,18" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="71.6,15 76.4,15 76.4,18 71.6,18" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="76.4,15 89,15 89,18 76.4,18" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="35.6,138 40.4,138 40.4,141 35.6,141" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="40.4,138 56.6,138 56.6,141 40.4,141" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="15,52.29 18,52.29 18,69.43 15,69.43" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="15,103.71 18,103.71 18,120.86 15,120.86" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="86,18 89,18 89,35.14 86,35.14" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="86,69.43 89,69.43 89,86.57 86,86.57" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="86,120.86 89,120.86 89,138 86,138" fill="hsl(143 35% 36.34%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 13 m</title></polygon>
+<polygon points="52.73,15 71.6,15 71.6,18 52.73,18" fill="hsl(133 35% 38.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 15 m</title></polygon>
+<polygon points="15,138 35.6,138 35.6,141 15,141" fill="hsl(133 35% 38.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 15 m</title></polygon>
+<polygon points="72.8,138 89,138 89,141 72.8,141" fill="hsl(133 35% 38.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 15 m</title></polygon>
+<polygon points="15,35.14 18,35.14 18,52.29 15,52.29" fill="hsl(133 35% 38.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 15 m</title></polygon>
+<polygon points="15,86.57 18,86.57 18,103.71 15,103.71" fill="hsl(133 35% 38.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 15 m</title></polygon>
+<polygon points="86,52.29 89,52.29 89,69.43 86,69.43" fill="hsl(133 35% 38.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 15 m</title></polygon>
+<polygon points="86,103.71 89,103.71 89,120.86 86,120.86" fill="hsl(133 35% 38.06%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 15 m</title></polygon>
+<polygon points="33.87,15 52.73,15 52.73,18 33.87,18" fill="hsl(123 35% 39.77%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 17 m</title></polygon>
+<polygon points="56.6,138 72.8,138 72.8,141 56.6,141" fill="hsl(123 35% 39.77%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 17 m</title></polygon>
+<polygon points="15,18 18,18 18,35.14 15,35.14" fill="hsl(123 35% 39.77%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 17 m</title></polygon>
+<polygon points="15,69.43 18,69.43 18,86.57 15,86.57" fill="hsl(123 35% 39.77%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 17 m</title></polygon>
+<polygon points="15,120.86 18,120.86 18,138 15,138" fill="hsl(123 35% 39.77%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 17 m</title></polygon>
+<polygon points="86,35.14 89,35.14 89,52.29 86,52.29" fill="hsl(123 35% 39.77%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 17 m</title></polygon>
+<polygon points="86,86.57 89,86.57 89,103.71 86,103.71" fill="hsl(123 35% 39.77%)" stroke="#50606e" stroke-width="0.15"><title>concrete; wierzch 17 m</title></polygon>
+<polygon points="48,90 56,90 56,98 48,98" fill="hsl(40 35% 54%)" stroke="#50606e" stroke-width="0.15"><title>roof_clock_tower; wierzch 33.6 m</title></polygon>
+</g><g id="grid" stroke="#c2d1da" stroke-opacity="0.15" stroke-width="0.15">
+<path d="M22 18v120"/>
+<path d="M32 18v120"/>
+<path d="M42 18v120"/>
+<path d="M52 18v120"/>
+<path d="M62 18v120"/>
+<path d="M72 18v120"/>
+<path d="M82 18v120"/>
+<path d="M18 18h68"/>
+<path d="M18 28h68"/>
+<path d="M18 38h68"/>
+<path d="M18 48h68"/>
+<path d="M18 58h68"/>
+<path d="M18 68h68"/>
+<path d="M18 78h68"/>
+<path d="M18 88h68"/>
+<path d="M18 98h68"/>
+<path d="M18 108h68"/>
+<path d="M18 118h68"/>
+<path d="M18 128h68"/>
+<path d="M18 138h68"/>
+</g><g id="zones">
+<rect x="18" y="104" width="68" height="34" fill="none" stroke="#ffbd57" stroke-width="0.5" stroke-dasharray="2 1"/><text x="19" y="108" fill="#ffbd57" stroke="#101820" stroke-width="0.5" paint-order="stroke">Plac przed stacją (open)</text>
+<rect x="18" y="48" width="22" height="56" fill="none" stroke="#a8c984" stroke-width="0.5" stroke-dasharray="2 1"/><text x="19" y="52" fill="#a8c984" stroke="#101820" stroke-width="0.5" paint-order="stroke">Perony zachodnie (interior)</text>
+<rect x="40" y="48" width="24" height="56" fill="none" stroke="#baa1d8" stroke-width="0.5" stroke-dasharray="2 1"/><text x="41" y="52" fill="#baa1d8" stroke="#101820" stroke-width="0.5" paint-order="stroke">Tory w wodzie (low)</text>
+<rect x="64" y="48" width="22" height="56" fill="none" stroke="#8caee8" stroke-width="0.5" stroke-dasharray="2 1"/><text x="65" y="52" fill="#8caee8" stroke="#101820" stroke-width="0.5" paint-order="stroke">Perony wschodnie (dense)</text>
+<rect x="18" y="18" width="68" height="30" fill="none" stroke="#c7ba98" stroke-width="0.5" stroke-dasharray="2 1"/><text x="19" y="22" fill="#c7ba98" stroke="#101820" stroke-width="0.5" paint-order="stroke">Hala północna i antresola (high)</text>
+</g><g id="props" fill="#d6c8ad" fill-opacity="0.7">
+<circle cx="47" cy="54" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="57" cy="54" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="47" cy="66" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="57" cy="66" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="47" cy="78" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="57" cy="78" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="47" cy="90" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="57" cy="90" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="47" cy="102" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="57" cy="102" r="0.5"><title>rail_track_straight</title></circle>
+<circle cx="57" cy="66" r="0.5"><title>rail_maglev_car_open</title></circle>
+<circle cx="69" cy="126.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="80" cy="126.6" r="0.5"><title>city_awning</title></circle>
+<circle cx="63.7" cy="124" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="29" cy="124.15" r="0.5"><title>city_door</title></circle>
+<circle cx="18.3" cy="62" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="85.65" cy="62" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="85.65" cy="66" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="18.3" cy="78" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="85.65" cy="78" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="85.65" cy="82" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="18.3" cy="94" r="0.5"><title>city_pipe_run</title></circle>
+<circle cx="85.65" cy="94" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="85.65" cy="98" r="0.5"><title>city_ac_unit</title></circle>
+<circle cx="28" cy="18.2" r="0.5"><title>city_shutter</title></circle>
+<circle cx="50" cy="18.2" r="0.5"><title>city_shutter</title></circle>
+<circle cx="66" cy="18.2" r="0.5"><title>city_shutter</title></circle>
+<circle cx="20" cy="90" r="0.5"><title>city_vending</title></circle>
+<circle cx="22" cy="62" r="0.5"><title>city_dumpster</title></circle>
+<circle cx="28" cy="98" r="0.5"><title>city_barrier</title></circle>
+<circle cx="84" cy="84" r="0.5"><title>city_vending</title></circle>
+<circle cx="70" cy="88" r="0.5"><title>city_crates</title></circle>
+<circle cx="74" cy="56" r="0.5"><title>city_dumpster</title></circle>
+<circle cx="56" cy="130" r="0.5"><title>city_car</title></circle>
+<circle cx="80" cy="130" r="0.5"><title>city_dumpster</title></circle>
+<circle cx="56" cy="40" r="0.5"><title>city_barrier</title></circle>
+<circle cx="40" cy="24" r="0.5"><title>city_crates</title></circle>
+<circle cx="20" cy="34" r="0.5"><title>city_generator</title></circle>
+<circle cx="84" cy="28" r="0.5"><title>city_generator</title></circle>
+<circle cx="46" cy="61" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="50" cy="114" r="0.5"><title>city_vent_grate</title></circle>
+<circle cx="28" cy="130" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="62" cy="124" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="78" cy="118" r="0.5"><title>city_street_lamp</title></circle>
+<circle cx="44" cy="118" r="0.5"><title>city_street_lamp</title></circle>
+</g><g id="spawns" stroke="#e6d6b0" stroke-width="0.45">
+<path d="M23 132l2 2m-2 0l2 -2"><title>Spawn 1</title></path>
+<path d="M47 127l2 2m-2 0l2 -2"><title>Spawn 2</title></path>
+<path d="M61 121l2 2m-2 0l2 -2"><title>Spawn 3</title></path>
+<path d="M81 129l2 2m-2 0l2 -2"><title>Spawn 4</title></path>
+<path d="M37 109l2 2m-2 0l2 -2"><title>Spawn 5</title></path>
+<path d="M73 107l2 2m-2 0l2 -2"><title>Spawn 6</title></path>
+<path d="M23 85l2 2m-2 0l2 -2"><title>Spawn 7</title></path>
+<path d="M29 65l2 2m-2 0l2 -2"><title>Spawn 8</title></path>
+<path d="M25 55l2 2m-2 0l2 -2"><title>Spawn 9</title></path>
+<path d="M77 85l2 2m-2 0l2 -2"><title>Spawn 10</title></path>
+<path d="M73 63l2 2m-2 0l2 -2"><title>Spawn 11</title></path>
+<path d="M79 57l2 2m-2 0l2 -2"><title>Spawn 12</title></path>
+<path d="M51 83l2 2m-2 0l2 -2"><title>Spawn 13</title></path>
+<path d="M31 35l2 2m-2 0l2 -2"><title>Spawn 14</title></path>
+<path d="M43 27l2 2m-2 0l2 -2"><title>Spawn 15</title></path>
+<path d="M61 31l2 2m-2 0l2 -2"><title>Spawn 16</title></path>
+<path d="M69 21l2 2m-2 0l2 -2"><title>Spawn 17</title></path>
+</g><g id="points">
+<circle cx="52" cy="83" r="4" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="52" y="84.5" text-anchor="middle" font-size="5">A<title>y = 0 m</title></text>
+<circle cx="28" cy="90" r="4" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="28" y="91.5" text-anchor="middle" font-size="5">B<title>y = 0 m</title></text>
+<circle cx="52" cy="30" r="4" fill="#fff1d6" fill-opacity="0.18" stroke="#fff1d6" stroke-width="0.6"/><text x="52" y="31.5" text-anchor="middle" font-size="5">C<title>y = 0 m</title></text>
+</g><g id="player" fill="#a4e5bc"><path d="M38 133l-1.8 4h3.6Z"/><text x="41" y="136">START</text></g>
+<path d="M18 145v4m0 -2h50m0 -2v4" fill="none" stroke="#fff1d6" stroke-width="0.5"/><text x="43" y="153" text-anchor="middle">50 m · siatka 10 m</text>
+<text x="78" y="147">Wierzch: -1.4…33.6 m · zielony obrys: chodzenie</text>
+<text x="78" y="152">Linia przerywana: zabezpieczenie · × spawn · △ gracz</text>
+</g></svg>

@@ -146,7 +146,7 @@ oprawa (napisy, hologramy, światła, naklejki, efekty, dekoracje) w polach z `d
 
 | id               | Typ   | Wymiary (użyteczne) | Idea                                                                                                                                                                                          |
 | ---------------- | ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `alleyUnderpass` | elite | 16 × 34 m           | przejście pod estakadą: 8 filarów betonowych 1,5 × 1,5 m jako osłony, estakada ~7 m nad środkiem, neony na filarach, kapanie z estakady, automaty, barierki i samochód jako osłony            |
+| `alleyUnderpass` | elite | 68 × 120 m          | zalana stacja metra: plac z wieżą zegarową, perony i tory w wodzie (−1,4 m), wagon, kładka, hala północna z antresolą (4,5 m); kałuże pod napięciem; rain |
 | `plazaHolo`      | elite | 26 × 26 m           | plac z centralnym hologramem koi nad cokołem z projektorem; barierki, automaty, samochody i skrzynie wokół, hologramy android/drink na fasadach, wejście i wyjście po przeciwległych stronach |
 | `noodleShop`     | shop  | 10 × 14 m           | spokojna uliczka z budką `city_stall` (terminal sklepu), ciepłe światła i lampiony, napisy ramen/noodles/bar_mleczny, hologram makaronu; bez spawnów i fal                                    |
 | `rooftopRest`    | rest  | 14 × 14 m           | dach z murkami 0,8 m i szklanymi osłonami, antena, generator, widok na panoramę miasta i hologramy na sąsiednich budynkach; bez spawnów i fal                                                 |
@@ -174,9 +174,16 @@ zostawiać czytelne trasy boczne, a wszystkie spawny znajdować się poza geomet
 
 | id                | typ    | wymiary                       | idea                                                                                                  |
 | ----------------- | ------ | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `alleyMarket`     | combat | 14 × 40 m                     | nocny targ: stragany po obu stronach jako osłony, lampiony nad głową, neony ramen/sake, para z kratek |
-| `alleyBackstreet` | combat | wąski zaułek 6–9 m, kształt Z | zaplecza: kontenery, generator, skrzynie, schody ppoż., iskry i kapanie, migające neony               |
-| `alleyCrossing`   | combat | ok. 36 × 36 m, plus           | skrzyżowanie: zaparkowane auta i barierki, latarnie, hologram Kurogane na narożniku                   |
+| `alleyMarket`     | combat | 84 × 76 m                     | nocny targ pod estakadą (pokład na 10 m, filary), stragany jako niskie osłony, pasarela na 4 m z rampami, lampiony; rain |
+| `alleyBackstreet` | combat | 68 × 88 m                     | zaplecza knajp: zaułki, garaże z dachami (3,2 m) i taras (6,4 m) połączone rampami, wieża z szyldem makaronu; rain |
+| `alleyCrossing`   | combat | 88 × 80 m                     | skrzyżowanie: plac z kioskami i wrakami, hologram na maszcie, zejście do przejścia podziemnego (−3,2 m), taras kawiarni (3,4 m); drizzleWind |
+
+Pokoje `alleyBackstreet`, `alleyCrossing`, `alleyMarket` i `alleyUnderpass` (tabela wyżej)
+zostały przebudowane na większe areny runu (70–130 m, ≥ 3 500 m², 3–5 stref, ≥ 2 poziomy
+połączone rampami, ≥ 10 spawnów, odrębna pogoda i landmark); id, typ, drzwi i dyrektor
+są bez zmian, `maxAlive` combat 9–10 / elite 11–12. Powstają z generatorów
+`tools/arenas/run/<id>.mjs` i profilu `run` ([arena-generators.md](arena-generators.md)).
+Pozostałe pokoje runu będą przebudowywane partiami według `briefs/areny.md`.
 
 ## Opcjonalna pogoda i metadane areny
 

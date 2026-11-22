@@ -66,4 +66,6 @@ export function createArena(options: {
   weather?: string;
   seed?: string | number;
   bounds: Rect;
+  /** false: pokój runu (nie wyłączna arena trybów); domyślnie true. */
+  exclusive?: boolean;
 }): ArenaBuilder;
