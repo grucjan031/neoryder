@@ -1955,6 +1955,25 @@ Materiały bloków Estakady: `gas_station_tiles`, `highway_asphalt_worn`,
 - `AudioSystem.updateAmbienceSource(index, position, gain)`: aktualizuje istniejące źródło skopiowane przez `setAmbience`, bez restartu grafów. `HubSoundscape` przyjmuje opcjonalne dodatkowe źródła na końcu listy.
 - Debug: `hub cat`, `hub rat`; `query('hubFauna')` zwraca `{ cat: {x,z,state} | null, rats: number }`. Teleport kota wymaga bezpiecznej drogi do trasy; przy przeszkodzie komenda zgłasza brak miejsca.
 
+## Arena wyzwań F6
+
+- `arenaMutatorSchema` waliduje definicje z `src/data/mutators/*.json`.
+  `rollArenaMutator(rng)` wybiera jedną definicję z katalogu posortowanego po
+  ID w osobnym strumieniu `rng.fork('arena-mutator')`.
+- `Arena` w wariancie `arena-mutators` przekłada efekt na `StatModifier`.
+  `gravityScale` (baza 1) skaluje grawitację gracza i świata Rapiera.
+  `moveSpeed` trafia do `EnemyManager.setSpawnModifiers`;
+  `arenaLightScale` (baza 1) skaluje światła globalne tej sceny.
+  Mod modyfikujący `ammoCapacity` (baza 0) włącza wspólny limit dla broni gracza.
+- Opcjonalne `WeaponDeps.ammo` udostępnia `available()` i `consume()`.
+  Broń zużywa jednostkę na wystrzał lub takt lasera, również przy pudle.
+  Pula odnawia się przy restarcie areny i jest wspólna dla wszystkich slotów.
+- `BuildSelect.setBriefing(text)` wyświetla opis mutatora przed wyborem zestawu,
+  a `Hud.setArenaMutator(text, ammo)` pokazuje aktywny warunek i opcjonalną
+  pozostałą amunicję. `query('mutator')` zwraca aktywną definicję i bieżące
+  wartości. Konsola debug `mutator [id|seed]` wyświetla albo zmienia mutator
+  i resetuje arenę.
+
 ## Tryby areny S2b-01
 
 `ModeId` pochodzi ze schematu danych trybów (`conquest` | `assault` | `heist`). Opcjonalne `RunState.modeId`

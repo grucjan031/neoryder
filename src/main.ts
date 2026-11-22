@@ -102,9 +102,11 @@ async function main(): Promise<void> {
   }
   const seed =
     params.get('seed') ??
-    Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
-      value.toString(16),
-    ).join('-');
+    (sceneId === 'arena-mutators'
+      ? new Date().toISOString().slice(0, 10)
+      : Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
+          value.toString(16),
+        ).join('-'));
   const renderer = new WebGLRenderer({ antialias: !getLiteFx() });
   renderer.setPixelRatio(
     getLiteFx() ? LITE_PIXEL_RATIO : window.devicePixelRatio,

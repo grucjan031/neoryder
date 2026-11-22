@@ -75,6 +75,19 @@ Algorytm i determinizm (`src/world/waves.ts`):
 
 `player_died` → stan `dead`, `WaveDirector.stop()`, aktywne moce zresetowane, mysz zwolniona, HUD pokazuje „Zginąłeś” i „Jeszcze raz” (klik / Enter / R) → `reset()`: wrogowie, pociski, odłamki i statusy usunięte, ekwipunek i ostrze od nowa, zdrowie, energia i wytrzymałość pełne, gracz na starcie, licznik zabójstw 0, fale od 1 z nowym strumieniem `ctx.rng.fork('waves')`. W stanie `dead` wrogowie nadal krokują (`manager.step`), reszta symulacji stoi; w stanie `select` nic nie krokuje.
 
+## Arena wyzwań z mutatorem (F6)
+
+Scena `?scene=arena-mutators` (przycisk „Arena wyzwań” w menu) to zwykła arena
+z jednym mutatorem losowanym z seeda (`?seed=`; bez parametru seed to bieżąca
+data, więc mutator zmienia się codziennie). Definicje: `src/data/mutators/*.json`
+(schemat `arenaMutatorSchema`): `low-gravity` (`gravityScale` 0.5),
+`fast-enemies` (`moveSpeed` ×1.5), `limited-ammo` (`ammoCapacity` 60, wspólna
+pula na wszystkie bronie, odnawiana przy restarcie) i `darkness`
+(`arenaLightScale` 0.2, skaluje tylko światła globalne; kolory otoczenia
+bez zmian, neony pozostają). Efekt to `StatModifier` ze źródłem `arena:mutator`.
+Opis mutatora widać na ekranie wyboru zestawu i w HUD. Debug: `mutator [id|seed]`,
+`query('mutator')`. Zwykła arena (`?scene=arena`) działa bez mutatorów.
+
 ## Konsola debug
 
 `spawn <id> [n]`, `kill all`, `hit <dmg>`, `wave <n>`, `god`, `loadout <id>`, `build`, `status <id> [s]`, `hold blade|gun`, `tp <x> <z> [yawDeg] [pitchDeg]`, `look <yawDeg> [pitchDeg]`, `execute ready`, `weaken <procent>`; globalne (`main.ts`): `reset`, `seed`, `timescale <n>`, `hitstop <ms>`. Query: `wave`, `phase`, `enemies`, `state` (`select|playing|dead`), `spawnLog`, `playerHp`, `energy`, `heat`, `dead`, `kills`, `debris`, `bodies`, `loadout`, `weapon`, `weaponHeat`, `powerSlots`, `powerCooldowns`, `beam`.

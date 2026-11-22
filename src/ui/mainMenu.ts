@@ -21,6 +21,7 @@ const text = z
       newRun: z.string(),
       continue: z.string(),
       arena: z.string(),
+      arenaMutators: z.string(),
       seed: z.string(),
       seedPlaceholder: z.string(),
       loading: z.string(),
@@ -106,7 +107,22 @@ export class MainMenu {
     status.setAttribute('role', 'status');
     status.textContent = t.loading;
     const arena = button(t.arena, () => navigate(`?${query('arena')}`));
-    this.root.append(heading, subtitle, tutorial, hub, resume, status, arena);
+    const arenaMutators = button(t.arenaMutators, () => {
+      const params = query('arena-mutators');
+      const seed = options.params?.get('seed');
+      if (seed !== undefined && seed !== null) params.set('seed', seed);
+      navigate(`?${params}`);
+    });
+    this.root.append(
+      heading,
+      subtitle,
+      tutorial,
+      hub,
+      resume,
+      status,
+      arena,
+      arenaMutators,
+    );
     this.root.append(
       button(settingsText.title, () => {
         this.settings ??= new SettingsScreen();

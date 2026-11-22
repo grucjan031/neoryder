@@ -19,6 +19,7 @@ export interface WeaponInput {
 
 export interface WeaponDeps {
   attackSpeed?(): number;
+  ammo?: { available(): boolean; consume(): void };
   projectiles: Pick<ProjectileSystem, 'spawn'>;
   castBeam?(
     origin: Vec3,
@@ -168,6 +169,9 @@ export class Weapon {
       this.bufferedShot;
     if (!wantsShot || this.overheated || this.cooldownS > 0) return;
     this.bufferedShot = false;
+    const ammo = this.deps.ammo;
+    if (ammo && !ammo.available()) return;
+    ammo?.consume();
     const aim = Math.min(1, Math.max(0, input.aim ?? 0));
     const spreadScale =
       1 +
@@ -211,7 +215,9 @@ export class Weapon {
   ): void {
     const beam = this.beam!;
     const wasActive = beam.active;
-    beam.active = input.triggerHeld && !this.overheated;
+    const ammo = this.deps.ammo;
+    beam.active =
+      input.triggerHeld && !this.overheated && (ammo?.available() ?? true);
     if (!beam.active) {
       this.beamTickS = 0;
       return;
@@ -225,7 +231,9 @@ export class Weapon {
     Object.assign(beam.to, hit.point);
     this.beamTickS += dt;
     while (this.beamTickS + Number.EPSILON * 16 >= 1 / def.tickHz) {
+      if (ammo && !ammo.available()) break;
       this.beamTickS -= 1 / def.tickHz;
+      ammo?.consume();
       if (hit.target !== null && hit.distance <= def.rangeM)
         this.deps.damage!.deal(hit.target, {
           source: this.owner,

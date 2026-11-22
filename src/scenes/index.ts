@@ -4,7 +4,7 @@ import { DamageTest } from './damageTest';
 import { CityFxTest } from './cityFxTest';
 import { StyleTest } from './styleTest';
 import { MeleeTest, ParryTest, PushTest } from './meleeTest';
-import { Arena } from './arena';
+import { ARENA_MUTATORS_SCENE, Arena } from './arena';
 import { SfxTest } from './sfxTest';
 import type { Scene as ThreeScene } from 'three';
 import type { GameContext } from '../core/context';
@@ -57,6 +57,7 @@ export const scenes: Record<string, SceneFactory> = {
   'style-test': () => new StyleTest(),
   'neon-test': () => new NeonTest(),
   arena: () => new Arena(true, true),
+  [ARENA_MUTATORS_SCENE]: () => new Arena(true, true, ARENA_MUTATORS_SCENE),
   'sfx-test': () => new SfxTest(),
   'melee-test': () => new MeleeTest(),
   'push-test': () => new PushTest(),

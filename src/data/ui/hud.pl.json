@@ -1,4 +1,6 @@
 {
+  "arenaAmmo": "Amunicja",
+  "arenaMutator": "Mutator",
   "execute": "[LPM] Wykończ",
   "health": "Zdrowie",
   "energy": "Energia",
