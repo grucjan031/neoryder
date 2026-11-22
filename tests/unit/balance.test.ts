@@ -16,7 +16,9 @@ import {
 import { powerDefinitions } from '../../src/combat/powers/registry';
 import type { PowerDefinition } from '../../src/combat/powers/registry';
 import { SIM_DT } from '../../src/core/loop';
+import { tuning } from '../../src/core/tuning';
 import { generateBalance, renderReport } from '../../src/balance/report';
+import { enemySchema } from '../../src/enemies/enemySchema';
 
 const target = (maxHealth: number) => ({
   ...enemyDefinitions.get('assaulter')!,
@@ -199,6 +201,118 @@ describe('symulator TTK', () => {
         expect(path.ttkS[0]).toBe(Math.min(...bladeTimes));
       });
       expect(result.paths.every((path) => path.passed)).toBe(result.passed);
+    });
+  });
+
+  describe('TTK bossa', () => {
+    const boss = enemyDefinitions.get('securityChief')!;
+    const [slam, fan] = boss.boss!.phases[0]!.patterns;
+    const fixture = (phases: NonNullable<typeof boss.boss>['phases']) =>
+      enemySchema.parse({
+        ...boss,
+        maxHealth: 100,
+        boss: { ...boss.boss, phases },
+      });
+
+    it('ogranicza obrażenia po modyfikatorach i przerywa wzorzec na każdym progu HP', () => {
+      const enemy = fixture([
+        { hpThreshold: 1, patterns: [slam!] },
+        { hpThreshold: 0.6, patterns: [fan!] },
+        { hpThreshold: 0.25, patterns: [slam!] },
+      ]);
+      const settings = structuredClone(tuning);
+      settings.enemies.phaseShiftS = 0.5;
+      const attack = weapon({ damage: 1000, fireRateHz: 3 });
+      const options = {
+        settings,
+        targetModifiers: [
+          { stat: 'maxHealth', type: 'mult', value: 2, source: 'test' },
+          { stat: 'damageTaken', type: 'mult', value: 0.1, source: 'test' },
+        ] as const,
+      };
+      const cut = simulate(attack, enemy, { ...options, maxTimeS: 0.5 });
+      expect(cut.ttkS).toBe(Infinity);
+      expect(cut.damage).toBe(80);
+      expect(cut.shots).toBe(2);
+
+      const result = simulate(attack, enemy, options);
+      expect(result.damage).toBe(200);
+      expect(result.shots).toBe(5);
+      expect(result.ttkS).toBeCloseTo(81 * SIM_DT);
+      expect(result.bossTimeline).toEqual([
+        { kind: 'phase', phase: 1, timeS: 0 },
+        { kind: 'pattern', pattern: 'slam', phase: 1, timeS: SIM_DT },
+        { kind: 'phase', phase: 2, timeS: SIM_DT },
+        { kind: 'pattern', pattern: 'fan', phase: 2, timeS: 32 * SIM_DT },
+        { kind: 'phase', phase: 3, timeS: 41 * SIM_DT },
+        { kind: 'pattern', pattern: 'slam', phase: 3, timeS: 72 * SIM_DT },
+      ]);
+    });
+
+    it('tarcza blokuje strzały, a moc łamie ją i otwiera okno podatności', () => {
+      const enemy = fixture([
+        {
+          hpThreshold: 1,
+          patterns: [
+            slam!,
+            {
+              kind: 'shield',
+              telegraphS: 2 * SIM_DT,
+              recoveryS: 0.5,
+              cooldownS: 0.5,
+              damage: 0,
+              durability: 20,
+              durationS: 0.5,
+              stunS: 0.1,
+              vulnerableS: 0.5,
+              vulnerableMult: 1.5,
+            },
+          ],
+        },
+      ]);
+      const options = { maxTimeS: 0.55, wallDistanceM: null };
+      const gun = simulate(
+        weapon({ damage: 20, fireRateHz: 4 }),
+        enemy,
+        options,
+      );
+      expect(gun.bossTimeline).toContainEqual({
+        kind: 'pattern',
+        pattern: 'shield',
+        phase: 1,
+        timeS: SIM_DT,
+      });
+      expect(gun.shots).toBe(3);
+      expect(gun.damage).toBe(20);
+      withPowers({ push: { damage: 20, cost: 0, cooldownS: 0.25 } }, () => {
+        const power = simulate(
+          { kind: 'powers', ids: ['push'] },
+          enemy,
+          options,
+        );
+        expect(power.powerUses).toBe(3);
+        expect(power.damage).toBe(20 + 30);
+      });
+    });
+
+    it('raport uwzględnia bossa dla każdego narzędzia poza bramką paczek', () => {
+      const result = runBalance();
+      const index = result.bosses.findIndex(({ id }) => id === boss.id);
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(result.bossPaths.map(({ enemy }) => enemy)).toContain(boss.id);
+      expect(result.paths.map(({ enemy }) => enemy)).not.toContain(boss.id);
+      expect(result.singlePaths.map(({ enemy }) => enemy)).not.toContain(
+        boss.id,
+      );
+      for (const row of result.attacks) {
+        expect(row.packResults).toHaveLength(result.enemies.length);
+        expect(row.bossResults[index]?.bossTimeline?.[0]).toEqual({
+          kind: 'phase',
+          phase: 1,
+          timeS: 0,
+        });
+        expect(row.bossResults[index]?.kills).toBeLessThanOrEqual(1);
+      }
     });
   });
 

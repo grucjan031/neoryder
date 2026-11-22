@@ -50,6 +50,10 @@ it('registers boss-test, starts with only the boss, changes phases, resets and c
   ]);
   expect(spawned).toHaveBeenCalledOnce();
   expect(phase).not.toHaveBeenCalled();
+  const ttk = commands.execute('boss ttk');
+  expect(ttk).toMatch(/TTK securityChief \(blaster\): \d+\.\d{3} s/);
+  expect(ttk).toMatch(/faza 1 .*faza 2 .*faza 3 /);
+  expect(phase).not.toHaveBeenCalled();
   for (const bad of [
     'boss phase',
     'boss phase 0',

@@ -1,6 +1,6 @@
 # Balans F2 — symulacja TTK
 
-Data wygenerowania (UTC): 2026-11-17. Generator: `npm run balance`.
+Data wygenerowania (UTC): 2026-11-22. Generator: `npm run balance`.
 
 **Bramka: ZALICZONA** (TTK paczki 5 wrogów, otwarta przestrzeń). Poza przedziałem: brak. Wariant przy ścianie jest informacyjny i nie wpływa na bramkę (w przedziale: NIE).
 Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2, mediana × 2]. Nieskończony TTK nie zalicza bramki. Ocena używa pełnej precyzji, tabele zaokrąglają do 0,001 s.
@@ -244,6 +244,60 @@ Miara: dla każdego wroga każda ścieżka musi mieć TTK paczki w [mediana / 2,
 | Fala uderzeniowa (shockwave) | shielder | 4.367 | 20.611 | 47.567 | 9.460 |
 | Fala uderzeniowa (shockwave) | sniper | 1.533 | 22.826 | 29.550 | 5.922 |
 | Fala uderzeniowa (shockwave) | turret | 4.350 | 16.092 | 47.550 | 7.361 |
+
+## Bossowie — pojedyncze starcia (informacyjnie)
+
+Symulacja korzysta z progów HP i wzorców faz z danych bossa oraz długości nietykalności z `tuning.enemies.phaseShiftS`. Gracz ponawia ataki także podczas przejść i działania tarczy. Pojedynki z bossami są liczone poza bramką F2.
+
+### Otwarta przestrzeń
+
+| Wróg | Ostrze TTK (s) | Moc TTK (s) | Strzelec TTK (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| securityChief | 8.417 | 23.717 | 6.267 | 8.417 | 1.000 | 2.818 | 0.745 | NIE |
+
+| Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
+| --- | --- | --- | --- |
+| securityChief | plasmaBlade:combo | chain → push | sniper |
+
+| Narzędzie | Boss | TTK (s) | DPS (HP/s) | Wejścia w fazy (s) |
+| --- | --- | ---: | ---: | --- |
+| Laser ciągły (beam) | securityChief | 113.583 | 7.924 | 1 (0.000) → 2 (20.283) → 3 (43.683) |
+| Blaster (blaster) | securityChief | 20.517 | 43.867 | 1 (0.000) → 2 (5.183) → 3 (13.517) |
+| Granat EMP (emp) | securityChief | ∞ | 6.000 | 1 (0.000) → 2 (36.767) → 3 (75.767) |
+| Pistolet (pistol) | securityChief | 13.267 | 67.839 | 1 (0.000) → 2 (2.267) → 3 (7.767) |
+| Karabin (rifle) | securityChief | 24.817 | 36.266 | 1 (0.000) → 2 (6.817) → 3 (16.617) |
+| Rozpraszacz (scatter) | securityChief | 8.850 | 101.695 | 1 (0.000) → 2 (2.017) → 3 (5.350) |
+| Snajperka (sniper) | securityChief | 6.267 | 143.617 | 1 (0.000) → 2 (1.267) → 3 (3.767) |
+| Błyskawica (chain) | securityChief | 15.783 | 57.022 | 1 (0.000) → 2 (1.683) → 3 (6.183) |
+| Pchnięcie Rezonansu (push) | securityChief | 67.833 | 13.268 | 1 (0.000) → 2 (4.817) → 3 (27.033) |
+| Fala uderzeniowa (shockwave) | securityChief | ∞ | 2.875 | 1 (0.000) → 2 (108.750) |
+| Ostrze: combo lekkie (plasmaBlade:combo) | securityChief | 8.417 | 106.931 | 1 (0.000) → 2 (2.250) → 3 (5.583) |
+| Ostrze: ciężki atak (plasmaBlade:heavy) | securityChief | 11.167 | 80.597 | 1 (0.000) → 2 (3.000) → 3 (7.083) |
+
+### Przy ścianie
+
+| Wróg | Ostrze TTK (s) | Moc TTK (s) | Strzelec TTK (s) | Mediana (s) | Ostrze / mediana | Moc / mediana | Strzelec / mediana | W przedziale |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| securityChief | 8.417 | 22.233 | 6.267 | 8.417 | 1.000 | 2.642 | 0.745 | NIE |
+
+| Wróg | Wybrane ostrze | Priorytet mocy (oba sloty) | Wybrana broń |
+| --- | --- | --- | --- |
+| securityChief | plasmaBlade:combo | chain → push | sniper |
+
+| Narzędzie | Boss | TTK (s) | DPS (HP/s) | Wejścia w fazy (s) |
+| --- | --- | ---: | ---: | --- |
+| Laser ciągły (beam) | securityChief | 113.583 | 7.924 | 1 (0.000) → 2 (20.283) → 3 (43.683) |
+| Blaster (blaster) | securityChief | 20.517 | 43.867 | 1 (0.000) → 2 (5.183) → 3 (13.517) |
+| Granat EMP (emp) | securityChief | ∞ | 6.000 | 1 (0.000) → 2 (36.767) → 3 (75.767) |
+| Pistolet (pistol) | securityChief | 13.267 | 67.839 | 1 (0.000) → 2 (2.267) → 3 (7.767) |
+| Karabin (rifle) | securityChief | 24.817 | 36.266 | 1 (0.000) → 2 (6.817) → 3 (16.617) |
+| Rozpraszacz (scatter) | securityChief | 8.850 | 101.695 | 1 (0.000) → 2 (2.017) → 3 (5.350) |
+| Snajperka (sniper) | securityChief | 6.267 | 143.617 | 1 (0.000) → 2 (1.267) → 3 (3.767) |
+| Błyskawica (chain) | securityChief | ∞ | 0.000 | 1 (0.000) |
+| Pchnięcie Rezonansu (push) | securityChief | 22.233 | 40.480 | 1 (0.000) → 2 (2.433) → 3 (7.850) |
+| Fala uderzeniowa (shockwave) | securityChief | ∞ | 6.750 | 1 (0.000) → 2 (33.167) → 3 (72.767) |
+| Ostrze: combo lekkie (plasmaBlade:combo) | securityChief | 8.417 | 106.931 | 1 (0.000) → 2 (2.250) → 3 (5.583) |
+| Ostrze: ciężki atak (plasmaBlade:heavy) | securityChief | 11.167 | 80.597 | 1 (0.000) → 2 (3.000) → 3 (7.083) |
 
 ## Wnioski
 
