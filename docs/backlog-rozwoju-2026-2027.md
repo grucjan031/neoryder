@@ -269,7 +269,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S10-01 Czytelność i pierwsze minuty
 
-- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M · status: zaimplementowane, czeka na playtest (PR #41, #46; tryb niskiej jakości i bez błysków; przewodnik „dokąd teraz” w kryjówce, nagroda i wymagania misji na tablicy, objaśnienia walut; plan obserwacji `docs/playtest-demo.md`)
+- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M · status: zaimplementowane, czeka na playtest (PR #41, #46, #83; tryb niskiej jakości i bez błysków; przewodnik „dokąd teraz” w kryjówce, nagroda i wymagania misji na tablicy, objaśnienia walut; plan obserwacji `docs/playtest-demo.md`)
 - **Kryteria:** sygnały ataków, stan celów, opisy talentów, waluty, komunikaty porażki; tryb niskiej jakości i bez błysków.
 
 ### S10-02 Kandydat do wydania
@@ -281,7 +281,7 @@ Tryby jednoosobowe inspirowane trybami drużynowymi strzelanek, zbudowane na str
 
 ### S11-01 Publikacja dema
 
-- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M
+- **P1** · Wykonawca + Właściciel · Cz 4 · Ag M · status: w realizacji (wersja 0.9.0 i seed w menu i pauzie, `CHANGELOG.md`, „Zgłoś problem”, „Sterowanie i zapis” — zrobione; zostają: opis gry, krótki materiał z rozgrywki)
 - **Kryteria:** numer wersji i ziarno widoczne w grze, lista zmian, sposób zgłaszania problemów, opis gry, krótki materiał z rozgrywki, opis sterowania i zapisu.
 
 ### S12-01 Pierwsza aktualizacja
