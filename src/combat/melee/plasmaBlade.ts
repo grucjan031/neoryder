@@ -54,7 +54,7 @@ export interface BladeView {
   /** Zegar gracza: efekty FPP starzeją się razem z ostrzem, także w slowmo/hitstopie. */
   animationTimeS?: number;
   /** Czysto wizualne cięcie wykończenia; nie otwiera hitboxa ani combo. */
-  execution?: { phase: SwingPhase; phaseT: number } | null;
+  execution?: { phase: 'active' | 'recovery'; phaseT: number } | null;
   flight: {
     previous: Vec3;
     position: Vec3;
@@ -145,8 +145,9 @@ export class PlasmaBlade {
   }
 
   view(): BladeView {
-    const activeS = this.tuning.melee.lightActiveS * this.def.timeScale;
-    const recoveryS = this.tuning.melee.lightRecoveryS * this.def.timeScale;
+    const { executeActiveS, executeRecoveryS } = this.tuning.melee;
+    const activeS = Math.max(0, executeActiveS) * this.def.timeScale;
+    const recoveryS = Math.max(0, executeRecoveryS) * this.def.timeScale;
     return {
       animationTimeS: this.animationTimeS,
       execution:
@@ -156,7 +157,10 @@ export class PlasmaBlade {
             ? { phase: 'active', phaseT: this.executionS / activeS }
             : {
                 phase: 'recovery',
-                phaseT: (this.executionS - activeS) / recoveryS,
+                phaseT:
+                  recoveryS > 0
+                    ? Math.min(1, (this.executionS - activeS) / recoveryS)
+                    : 1,
               },
       flight: this.flight
         ? {
@@ -282,19 +286,19 @@ export class PlasmaBlade {
   }
 
   step(dt: number, input: InputSnapshot): void {
+    const m = this.tuning.melee;
     if (dt > 0) {
       this.animationTimeS += dt;
       if (this.executionS !== null) {
         this.executionS += dt;
         if (
           this.executionS >=
-          (this.tuning.melee.lightActiveS + this.tuning.melee.lightRecoveryS) *
+          (Math.max(0, m.executeActiveS) + Math.max(0, m.executeRecoveryS)) *
             this.def.timeScale
         )
           this.executionS = null;
       }
     }
-    const m = this.tuning.melee;
     const dashReadyAtStepStart = this.canDashCut();
     if (dt > 0) {
       this.updateDash(dt);

@@ -65,12 +65,15 @@ ochrona gracza wraca do poprzedniej wartości, wykończenie się nie liczy
 (zwraca `false`) i uruchamia się zwykły lekki cios. Udane wykończenie nie
 emituje `melee_swing`, nie otwiera hitboxa, nie zaczyna combo (`stage = 0`,
 `sinceSwingS = ∞`) i kasuje przytrzymanie LPM (nie przejdzie w ładowanie);
-animacja `view().execution` trwa `(lightActiveS + lightRecoveryS) × timeScale`
-i nie blokuje kolejnych akcji. Hak wołany tylko ze startu lekkiego ciosu, więc
-rzut i dash-cięcie mają pierwszeństwo.
+`view().execution` opisuje ukośne cięcie prawą ręką i powrót do pozycji
+spoczynkowej. Viewmodel FPP steruje istniejącym modelem ostrza i dłoni oraz
+smugą w fazie aktywnej. Fazy `executeActiveS` i `executeRecoveryS` są skalowane
+przez `timeScale` wariantu, biegną w czasie gracza i zatrzymują się w hitstopie.
+Kolejne akcje mogą przerwać widok wykończenia.
 Tarcza Tarczownika i parowanie Egzekutora przepuszczają `#execute`;
-zwykły lekki cios nadal jest blokowany. Po śmierci celu combo resetuje się,
-energia rośnie o 20, zdrowie o 6 (dotychczasowe API i limity zasobów).
+zwykły lekki cios nadal jest blokowany. Po śmierci celu system przyznaje 20
+energii Rezonansu i 6 zdrowia z zachowaniem limitów zasobów. Zod waliduje obie
+wartości z `src/data/melee/executeRewards.json` przy ładowaniu.
 Zwykła nagroda energii za zabójstwo wręcz nadal działa niezależnie.
 Ochrona gracza trwa 0,4 s czasu świata i obejmuje synchroniczne skutki
 zabójstwa. Callback rejestracji gracza łączy ją z nietykalnością dashu.
@@ -101,21 +104,26 @@ Zdarzenia:
   dla synergii zdarzenie bez celu, analogicznie do `parry_success`.
 - `hitstop`, `slowmo`, `camera_shake` przez istniejący EventBus.
 
-Wszystkie liczby w grupie `tuning.melee`, automatycznie widoczne w lil-gui:
+Parametry feel w grupie `tuning.melee` są widoczne w lil-gui.
 `executeHpFrac 0.25`, `executeHpFracElite 0.15`, `executeRangeM 2.8`,
-`executeArcDeg 50`, `executeKnockback 10`, `executeEnergy 20`,
-`executeHeal 6`, `executeHitstopMs 110`, `executeSlowmoScale 0.35`,
+`executeArcDeg 50`, `executeKnockback 10`, `executeActiveS 0.1`,
+`executeRecoveryS 0.16`, `executeHitstopMs 110`, `executeSlowmoScale 0.35`,
 `executeSlowmoS 0.3`, `executeShake 0.6`, `executeInvulnS 0.4`,
 `executeMarkerPulseHz 3`.
 
-Debug: `weaken <procent>` ustawia HP wszystkich żywych wrogów (0 < procent
-≤ 100); `execute ready` wypisuje gotowe ID; query `executable` zwraca ID.
-Test w 30 sekund: `?scene=room-test&room=combatYard&loadout=blade&seed=exec-e2e&debug=1`,
-poczekaj na falę, `weaken 10`, podejdź do znacznika i kliknij LPM.
-Oceń czytelność obrysu i podpowiedzi oraz siłę zatrzymania/spowolnienia.
-Alternatywnie `status stunned 3` testuje przejście moc → ostrze.
-Testy: `execute.test.ts`, dopisane przypadki w `damage.test.ts`,
-`plasmaBlade.test.ts`, `synergies.test.ts` oraz `execute.spec.ts`.
+W `?scene=melee-test&debug=1` otwórz konsolę klawiszem tyldy i wpisz
+`execute prepare`. Komenda osłabia żywe manekiny do progu wykończenia.
+Zamknij konsolę i kliknij w grę, aby odzyskać sterowanie. Gdy podpowiedź
+`[LPM] Wykończ` pojawi się przy celowaniu w środkowego manekina, kliknij LPM.
+Sprawdź zatrzymanie na początku cięcia, ukośny ruch ostrza podczas spowolnienia
+i powrót do pozycji spoczynkowej. `enemyhit 20` i `energy 0` przed próbą
+pozwalają zobaczyć wypłatę nagród na licznikach sceny.
+
+`execute ready` i query `executable` pokazują gotowe ID. W pokoju i arenie
+`weaken <procent>` ustawia HP żywych wrogów (0 < procent ≤ 100), a w pokoju
+`status stunned 3` pozwala sprawdzić wykończenie po ogłuszeniu.
+Testy obejmują `execute.test.ts`, `bladeSpecialScenes.test.ts`,
+`plasmaBlade.test.ts`, `handRig.test.ts` i `execute.spec.ts`.
 
 ## Blok
 

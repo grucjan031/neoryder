@@ -1894,10 +1894,13 @@ Szczegóły: `docs/systems/hazards.md`.
 - `execute_performed: { attacker: EntityId; target: EntityId; point: Vec3 }` — udane wykończenie; dla synergii zdarzenie bez celu.
 - `DamageSystem.isInvulnerable(id): boolean` — odczyt okna po trafieniu i callbacku nietykalności, bez zmiany stanu.
 - `BladeDeps.tryExecute?: () => boolean` — przed startem lekkiego combo; true konsumuje atak i resetuje combo. Rzut, ciężki i dash-cięcie nie wołają haka.
+- `BladeView.execution?: { phase: 'active' | 'recovery'; phaseT: number } | null` — postęp osobnego cięcia FPP (0–1), liczony w czasie gracza z `tuning.melee.executeActiveS` i `executeRecoveryS`, skalowany przez `BladeDefinition.timeScale`. Viewmodel odczytuje go przy `state === 'idle'`.
 - `ExecuteSystem` (`combat/melee/execute.ts`): konstruktor przyjmuje bus, damage, tuning, owner, statuses (`StatusQuery`), `enemies()` (id, kind, position), `aim()` (origin, dir), `addEnergy`, `heal`; opcjonalny `castWall` odrzuca zasłonięte cele.
+- `src/data/melee/executeRewards.json`: `energy` i `heal` to skończone, nieujemne liczby walidowane przy ładowaniu. System przekazuje je do `addEnergy` i `heal` po potwierdzonej śmierci celu.
 - `step(dt)`, `tryExecute(): boolean`, `readyIds(): readonly EntityId[]`, `targetId(): EntityId | null` (odczyt celu dla HUD), `invulnerable(): boolean` (odczyt dla rejestracji gracza), `dispose()`.
 - HP/maxHP pochodzą z DamageSystem. `kind === 'boss'` wyklucza cel, `kind === 'executor'` wybiera próg elity. Pozycja celu to środek korpusu, nie stopy.
-- Sceny krokują system zaraz po statusach w czasie świata; callback nietykalności gracza łączy dash i wykończenie. Render przekazuje gotowość do widoku i korzysta z celu HUD zapisanego na końcu kroku.
+- Sceny krokują system po statusach w czasie świata. W pokoju i arenie callback nietykalności gracza łączy dash i wykończenie. Render korzysta z gotowości i celu HUD zapisanych w kroku symulacji.
+- `melee-test`: `query('executable')` zwraca gotowe ID. Komenda `execute prepare` ustawia HP żywych manekinów powyżej progu na wartość progu gotowości, a `execute ready` wypisuje gotowe ID z ostatniego kroku.
 
 
 ### Z8: widoki i kamera debug

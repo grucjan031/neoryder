@@ -82,6 +82,10 @@ const SWINGS: Record<string, [BladePose, BladePose]> = {
   ],
 };
 const HEAVY_SWING = SWINGS.heavy as [BladePose, BladePose];
+const EXECUTION_SWING: [BladePose, BladePose] = [
+  { pos: [0.48, 0.08, -0.42], rot: [1.25, 0.65, -0.9] },
+  { pos: [-0.28, -0.38, -0.7], rot: [-0.5, -0.55, -0.75] },
+];
 
 /** Bliźniacze: etapy combo prowadzą naprzemiennie prawym i lewym ostrzem. */
 const TWIN_STAGES: Record<number, { hand: Hand; swing: string }> = {
@@ -274,6 +278,10 @@ export class FppBlade {
   private poseFor(view: BladeView, hand: Hand): BladePose {
     const main = hand === 'main';
     const idle = main ? POSE_IDLE : OFF_IDLE;
+    if (view.state === 'idle' && view.execution) {
+      const [start, end] = EXECUTION_SWING;
+      return main ? this.swingPose(view.execution, idle, start, end) : idle;
+    }
     const adapt = (p: BladePose): BladePose => (main ? p : mirrorPose(p));
     const spin = this.def.heavyShape === 'spin';
     const heavyStart = spin ? SPIN_POSE : HEAVY_SWING[0];
@@ -306,7 +314,7 @@ export class FppBlade {
   }
 
   private swingPose(
-    view: BladeView,
+    view: Pick<BladeView, 'phase' | 'phaseT'>,
     idle: BladePose,
     start: BladePose,
     end: BladePose,
@@ -331,7 +339,10 @@ export class FppBlade {
 
   /** Czy dłoń prowadzi teraz cięcie (aktywna faza) — dla smugi. */
   private slashing(view: BladeView, hand: Hand): boolean {
-    if (view.flight !== null || view.phase !== 'active') return false;
+    if (view.flight !== null) return false;
+    if (view.state === 'idle' && view.execution)
+      return hand === 'main' && view.execution.phase === 'active';
+    if (view.phase !== 'active') return false;
     if (view.state === 'heavy') return hand === 'main' || this.def.offhand;
     if (view.state !== 'light') return false;
     if (!this.def.offhand) return hand === 'main';
@@ -352,8 +363,6 @@ export class FppBlade {
           ? 0
           : Math.max(0, view.animationTimeS - this.animationTimeS);
     this.animationTimeS = view.animationTimeS;
-    if (view.state === 'idle' && view.execution)
-      view = { ...view, state: 'light', stage: 1, ...view.execution };
     this.root.visible = true;
     const spinning =
       view.state === 'heavy' &&

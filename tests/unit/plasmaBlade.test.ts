@@ -124,11 +124,24 @@ it('hak wykończenia konsumuje lekki atak i resetuje combo', () => {
   expect(blade.view().phase).toBe('recovery');
   const damageBefore = f.enemyHealth.current;
   const swingsBefore = f.log.filter((e) => e.type === 'melee_swing').length;
+  f.t.melee.executeActiveS = 0.04;
+  f.t.melee.executeRecoveryS = 0.08;
   execute = true;
   blade.step(SIM_DT, input(['attack'], ['attack']));
   expect(calls).toBe(2);
-  expect(blade.view()).toMatchObject({ state: 'idle', stage: 0 });
+  expect(blade.view()).toMatchObject({
+    state: 'idle',
+    stage: 0,
+    execution: { phase: 'active', phaseT: 0 },
+  });
+  blade.step(0, input(['attack']));
+  expect(blade.view().execution).toEqual({ phase: 'active', phaseT: 0 });
+  blade.step(f.t.melee.executeActiveS / 2, input(['attack']));
+  expect(blade.view().execution).toEqual({ phase: 'active', phaseT: 0.5 });
+  blade.step(f.t.melee.executeActiveS / 2, input(['attack']));
+  expect(blade.view().execution).toEqual({ phase: 'recovery', phaseT: 0 });
   for (let i = 0; i < 40; i++) blade.step(SIM_DT, input(['attack']));
+  expect(blade.view().execution).toBeNull();
   expect(f.enemyHealth.current).toBe(damageBefore);
   expect(f.log.filter((e) => e.type === 'melee_swing')).toHaveLength(
     swingsBefore,
