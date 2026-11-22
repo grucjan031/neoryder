@@ -863,6 +863,10 @@ export class Arena implements Scene {
         weapon.step(pdt, {
           ...this.aim(),
           triggerHeld: triggerHeld && !this.health.dead,
+          coolingPressed:
+            input.pressed.has('coolWeapon') &&
+            !this.health.dead &&
+            !this.heldItem.view().swapping,
           aim: this.heldItem.aim,
         });
       else weapon.cool(pdt);
@@ -878,6 +882,13 @@ export class Arena implements Scene {
 
   render(alpha: number, frameDt = 1 / 60): void {
     const executable = this.execute.readyIds();
+    this.hud?.setCoolingHint(
+      this.state === 'playing' &&
+        this.heldItem.held === 'gun' &&
+        !this.heldItem.view().swapping
+        ? this.weapon.coolingPhase
+        : undefined,
+    );
     this.hud?.setExecuteHint(
       this.state === 'playing' &&
         this.heldItem.held === 'blade' &&

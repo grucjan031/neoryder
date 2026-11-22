@@ -10,6 +10,9 @@ import {
 import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
+import type { CoolingPhase } from '../combat/weapons/weapon';
+import { resolveBindings } from '../core/input';
+import { keyLabel } from './settingsScreen';
 import { RunHud, defeatMessage, type RunHudSeed } from './runHud';
 import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
@@ -241,6 +244,21 @@ export class Hud {
 
   setExecuteHint(ready: boolean): void {
     this.executeHint.hidden = !ready;
+  }
+
+  setCoolingHint(phase: CoolingPhase | undefined): void {
+    if (this.overheat.dataset.cooling === phase) return;
+    if (phase) this.overheat.dataset.cooling = phase;
+    else delete this.overheat.dataset.cooling;
+    let label = phase ? text.activeCooling[phase] : text.overheated;
+    if (phase === 'window') {
+      const binding = Object.entries(
+        resolveBindings(loadSettings().bindings),
+      ).find(([, action]) => action === 'coolWeapon');
+      if (binding) label = `[${keyLabel(binding[0])}] ${label}`;
+    }
+    setText(this.overheat, label);
+    this.overheat.dataset.text = label;
   }
   private overheated = false;
   private readonly overheat = element('div', 'hud__overheat', text.overheated);

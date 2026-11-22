@@ -105,6 +105,9 @@ Ikony to maski kolorowane `background-color` (`public/assets/ui/hud/icon_gun.web
   (przy poziomie `hot` kolor `#ff6266`); w stanie przegrzania pasek jest cały `#e0262b`.
   „PRZEGRZANIE” (17 px, `#ff6266`, nad paskiem) ma jednorazowy
   glitch: cyan i magenta kopie tekstu przesunięte o 1–2 px, trwający 0,18 s (3 kroki).
+  Dla dobytego blastera napis pokazuje fazę aktywnego chłodzenia. W idealnym oknie
+  zmienia się w cyanowy komunikat „[G] Chłodź teraz” z aktualnie przypisanym klawiszem.
+  Wynik próby pokazuje „Blokada skrócona” albo „Blokada wydłużona”.
 - **Moce:** dwa sloty (klawisze „F” i „E”, `powerKeys`) w rzędzie z odstępem 16 px (10 px
   poniżej 1000 px) pod mikrotekstem „REZONANS // MOCE”. Slot 68 px: sześciokąt 56×58 px
   (wierzchołki 25%/75% góra i dół, tło `#ff2bd61c`, wewnętrzna płytka `#07152280`),
