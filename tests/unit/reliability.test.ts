@@ -57,6 +57,7 @@ function fixtures(version: number) {
   meta.data = 45;
   meta.cores = 2;
   const historicalMeta: Record<string, unknown> = { ...meta };
+  if (version < 7) delete historicalMeta.pendingExtractions;
   if (version < 5) delete historicalMeta.achievements;
   if (version < 4) delete historicalMeta.campaign;
   const historicalRun: Record<string, unknown> = { ...state };
@@ -100,6 +101,7 @@ describe('Niezawodność zapisu', () => {
         saveVersion: SAVE_VERSION,
         createdAt: 100,
         updatedAt: 200,
+        meta: { pendingExtractions: [] },
       });
       expect(meta?.meta).toMatchObject(
         version >= 3

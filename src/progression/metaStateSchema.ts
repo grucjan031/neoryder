@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { moduleLootSchema } from './moduleSchema';
 import {
   MAX_APPLIED_RUN_IDS,
   MAX_LAST_RUNS,
@@ -43,6 +44,14 @@ export const metaStateSchema: z.ZodType<MetaState> = z
     cores: count,
     talents: ids,
     unlocks: ids,
+    pendingExtractions: z
+      .array(
+        z.object({
+          runId: z.string().min(1),
+          moduleIds: moduleLootSchema,
+        }),
+      )
+      .default([]),
     loadout: loadoutChoiceSchema,
     threat: z.object({ max: count, selected: count }),
     stats: z.object({

@@ -40,6 +40,36 @@ function setup(type: NodeType = 'combat', defs = definitions) {
   return { run, economy, bus };
 }
 describe('run economy', () => {
+  it('elita oferuje osobny moduł razem z implantem, a zapis zachowuje tylko wybrany łup', () => {
+    expect(setup('combat').economy.offerModules()).toEqual([]);
+    const { run, bus } = setup('elite');
+    const economy = new RunEconomy(
+      run,
+      bus,
+      kuroganeSector,
+      definitions,
+      (id) => id === 'scope',
+    );
+    run.addFoundModule('ricochet');
+    const modules = economy.offerModules();
+    expect(modules.length).toBeGreaterThan(1);
+    expect(new Set(modules).size).toBe(modules.length);
+    expect(modules).not.toContain('scope');
+    expect(modules).not.toContain('ricochet');
+    expect(economy.offerModules()).toEqual(modules);
+    const implant = economy.offerReward()[0]!;
+    const chosen = modules[1]!;
+    expect(economy.chooseReward(implant, 'scope')).toBe(false);
+    expect(economy.chooseReward('invalid', chosen)).toBe(false);
+    expect(run.state.implants).toEqual([]);
+    expect(run.state.foundModules).toEqual(['ricochet']);
+    expect(economy.chooseReward(implant, chosen)).toBe(true);
+    expect(economy.chooseReward(implant, modules[0])).toBe(false);
+    run.restore(run.checkpoint());
+    expect(run.state.implants).toEqual([implant]);
+    expect(run.finish('death').foundModules).toEqual(['ricochet', chosen]);
+  });
+
   it('offers deterministic unique unowned implants without consuming the parent RNG', () => {
     const { run, economy, bus } = setup();
     const event = vi.fn();

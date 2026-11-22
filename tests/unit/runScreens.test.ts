@@ -121,6 +121,27 @@ it('renders real rewards and keyboard selection forwards their ids', () => {
   expect(chooseReward).toHaveBeenCalledExactlyOnceWith('two');
 });
 
+it('przekazuje wybrany moduł za elitę razem z wybranym implantem', () => {
+  const screens = new HtmlRunScreens();
+  active.add(screens);
+  const chooseReward = vi.fn();
+  screens.show(
+    {
+      ...view,
+      screen: 'reward',
+      offers: [{ id: 'implant', label: 'Implant' }],
+      moduleOffers: ['pierce', 'incendiary'],
+    },
+    { selectNode() {}, next() {}, menu() {}, chooseReward },
+  );
+  const select = document.querySelector<HTMLSelectElement>(
+    '.run-screen label select',
+  )!;
+  select.value = 'incendiary';
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1' }));
+  expect(chooseReward).toHaveBeenCalledExactlyOnceWith('implant', 'incendiary');
+});
+
 it('shop disables unaffordable items and rest forwards the upgrade id', () => {
   const screens = new HtmlRunScreens();
   active.add(screens);

@@ -8,6 +8,7 @@ import { actionSchema, isBindingCode } from './input';
 import { loadoutDefinitions } from '../progression/loadout';
 import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { metaStateSchema } from '../progression/metaStateSchema';
+import { moduleLootSchema } from '../progression/moduleSchema';
 import { seedAchievementsFromMeta } from '../progression/achievements';
 import { createStarterMetaState } from '../progression/progressionSchema';
 import { runStateSchema } from '../world/run';
@@ -20,7 +21,7 @@ import {
   type DifficultyId,
 } from '../world/difficulty';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 export interface MissionSave extends MissionCheckpoint {
   saveVersion: number;
 }
@@ -111,6 +112,7 @@ const runEndedSchema: z.ZodType<RunEnded> = z.object({
     threatLevel: count,
     layerReached: count,
     implants: z.array(z.string()),
+    foundModules: moduleLootSchema.optional(),
     damage: z.object({
       melee: z.number().finite(),
       power: z.number().finite(),
@@ -172,6 +174,10 @@ const metaMigrations: readonly Migration[] = [
     };
   },
   identity,
+  (data) => ({
+    ...data,
+    meta: { ...recordSchema.parse(data.meta), pendingExtractions: [] },
+  }),
 ];
 
 /** Run 2→3: dopisuje ekwipunek z presetu `loadoutId`, talenty i Poziom zagrożenia; nieznany preset = zapis nieczytelny. */
@@ -202,7 +208,12 @@ const runMigrations: readonly Migration[] = [
   identity,
   identity,
   identity,
+  identity,
 ];
+
+// Rekord punktu kontrolnego istnieje od v6, jego zawartość w v7 jest taka sama.
+const missionMigrations: Migration[] = [];
+missionMigrations[6] = identity;
 
 function isFuture(data: unknown): boolean {
   const record = recordSchema.safeParse(data);
@@ -293,7 +304,8 @@ function backupCorrupt(store: IDBObjectStore, key: string, raw: unknown): void {
   try {
     const record = recordSchema.parse(raw);
     if (key === 'meta') decodeMetaStrict(raw);
-    else if (key === 'mission') missionSaveSchema.parse(raw);
+    else if (key === 'mission')
+      missionSaveSchema.parse(migrate(record, missionMigrations, SAVE_VERSION));
     else {
       const migrated = migrate(record, runMigrations, SAVE_VERSION);
       if (record.run === undefined && migrated.run === null) return;
@@ -414,7 +426,7 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
   return {
     loadMission: async () => {
       const raw = await read('mission');
-      return decode(raw, missionSaveSchema, []);
+      return decode(raw, missionSaveSchema, missionMigrations);
     },
     saveMission: async (data) =>
       write('mission', missionSaveSchema.parse(data)),
