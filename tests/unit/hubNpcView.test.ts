@@ -124,16 +124,74 @@ it('Hela wykonuje gest podania z klipu GLB raz i wraca do spoczynku', async () =
     const hand = view.root.getObjectByName('DEF-handL')!;
     const before = hand.getWorldPosition(new Vector3());
     view.serveSoup();
+    const duration = clips.animations.find(
+      ({ name }) => name === 'Interact',
+    )!.duration;
+    view.step(duration / 2);
+    // Crossfade z bezczynności idzie czasem renderu, więc dt kończy go w jednej klatce.
     view.render(1, 1, npc.position, 'hela');
     expect(view.soupProgress).toBeCloseTo(0.5);
     expect(hand.getWorldPosition(new Vector3()).z).toBeGreaterThan(
       before.z + 0.3,
     );
-    view.render(1, 1.1, npc.position, 'hela');
-    expect(view.soupProgress).toBe(1);
-    view.render(1, 0.2, npc.position, null);
+    view.step(duration);
+    view.render(1, 0.01, npc.position, 'hela');
+    expect(view.soupProgress).toBe(0);
+    view.render(1, 1, npc.position, null);
     expect(view.soupProgress).toBe(0);
     expect(hand.getWorldPosition(new Vector3()).z).toBeCloseTo(before.z, 1);
+  } finally {
+    view.dispose();
+    load.mockRestore();
+  }
+});
+
+it('podawanie zupy idzie czasem symulacji: bez step pauza zatrzymuje postęp, a Hela wraca do bazowego yaw i płynnie do poprzedniej animacji', async () => {
+  const [body, clips] = await Promise.all([
+    parse('npc_civilian.glb'),
+    parse('npc_anims.glb'),
+  ]);
+  const load = vi
+    .spyOn(GLTFLoader.prototype, 'loadAsync')
+    .mockImplementation(async (url) =>
+      url.includes('npc_anims') ? clips : body,
+    );
+  const hela = loadHubLayout(hideoutData).npcs!.find(
+    ({ id }) => id === 'hela',
+  )!;
+  const npc = new NpcRuntime(hela, tuning.hub);
+  const view = new HubNpcs([npc], tuning);
+  try {
+    await view.load();
+    const duration = clips.animations.find(
+      ({ name }) => name === 'Interact',
+    )!.duration;
+    const near = { x: npc.position.x + 1, y: 0, z: npc.position.z + 1 };
+    for (let i = 0; i < 90; i++) npc.step(1 / 60, near, false);
+    expect(Math.abs(npc.look.bodyYaw - npc.baseYaw)).toBeGreaterThan(0.1);
+    view.render(1, 0, npc.position, null);
+    view.serveSoup();
+    view.step(duration / 4);
+    view.render(1, 1, npc.position, 'hela');
+    const progress = view.soupProgress;
+    const hand = view.root.getObjectByName('DEF-handL')!;
+    const pose = hand.getWorldPosition(new Vector3());
+    for (let i = 0; i < 120; i++) view.render(1, 0.1, npc.position, 'hela');
+    expect(view.soupProgress).toBe(progress);
+    expect(hand.getWorldPosition(new Vector3()).distanceTo(pose)).toBeLessThan(
+      1e-6,
+    );
+    // Obrót ciała idzie w symulacji: po kilku krokach tułów jest w kierunku bazowym.
+    for (let i = 0; i < 240; i++) {
+      view.step(1 / 60);
+      npc.step(1 / 60, near, false);
+    }
+    expect(npc.look.bodyYaw).toBeCloseTo(npc.baseYaw, 5);
+    view.render(1, 0.016, npc.position, null);
+    expect(view.soupProgress).toBe(0);
+    expect(npc.faceBase).toBe(true);
+    view.step(1 / 60);
+    expect(npc.faceBase).toBe(false);
   } finally {
     view.dispose();
     load.mockRestore();

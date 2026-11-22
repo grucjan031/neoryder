@@ -25,7 +25,6 @@ import type { AmbienceSource } from '../audio/ambienceSchema';
 import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
-import { catPet } from '../data/hub/interactions.json';
 import type { PlayerState } from '../player/playerController';
 import { HandRig } from '../render/handRig';
 import { gradientMap } from '../render/materials';
@@ -34,6 +33,7 @@ import {
   registerViewmodel,
 } from '../render/viewmodelLayer';
 import { HubFaunaRuntime } from '../world/hubFauna';
+import { hubInteractions } from '../world/hubInteractions';
 import type { CatRuntime, FaunaPose } from '../world/hubFauna';
 import { wrapAngle } from '../world/hubNpcs';
 import type { HubLayout } from '../world/hubSchema';
@@ -103,8 +103,6 @@ export class HubFauna {
   private readonly eyes: MeshToonMaterial;
   private readonly cat: CatView | null;
   private readonly petHand: HandRig | null;
-  private petLeftS = 0;
-  private previousPetLeftS = 0;
   private readonly handPosition = new Vector3();
   private readonly handRotation = new Euler();
   private readonly handMatrix = new Matrix4();
@@ -318,53 +316,26 @@ export class HubFauna {
   }
 
   step(dt: number, p: PlayerState): void {
-    this.previousPetLeftS = this.petLeftS;
-    this.petLeftS = Math.max(0, this.petLeftS - dt);
     this.runtime.step(dt, p.position, p.velocity);
   }
 
   petFocus(eye: Vec3): HubFocusBox | null {
-    const cat = this.runtime.cat;
-    if (
-      !cat ||
-      cat.state === 'flee' ||
-      cat.state === 'return' ||
-      this.petLeftS > 0
-    )
-      return null;
-    const { catHeightM, catRadiusM } = this.ctx.tuning.hub;
-    const position = { ...cat.position, y: cat.position.y + catHeightM / 2 };
-    if (
-      Math.hypot(position.x - eye.x, position.y - eye.y, position.z - eye.z) >
-      catPet.rangeM
-    )
-      return null;
-    return {
-      position,
-      size: { x: catRadiusM * 2, y: catHeightM, z: catRadiusM * 2 },
-    };
+    return this.runtime.petFocus(eye);
   }
 
   pet(): void {
-    const cat = this.runtime.cat;
-    if (!cat) return;
-    this.previousPetLeftS = this.petLeftS = catPet.durationS;
-    cat.state = 'lie';
-    cat.moving = false;
-    cat.restLeftS = Math.max(cat.restLeftS, catPet.durationS);
-    cat.fleeCooldownS = Math.max(cat.fleeCooldownS, catPet.durationS);
-    cat.meowCooldownS = this.ctx.tuning.hub.catMeowCooldownS;
-    this.ctx.bus.emit('hub_fauna_sound', {
-      kind: 'meow',
-      point: { ...cat.position },
-    });
+    this.runtime.pet();
   }
 
   private petTime(alpha: number): number {
     return (
       1 -
-      MathUtils.lerp(this.previousPetLeftS, this.petLeftS, alpha) /
-        catPet.durationS
+      MathUtils.lerp(
+        this.runtime.previousPetLeftS,
+        this.runtime.petLeftS,
+        alpha,
+      ) /
+        this.ctx.tuning.hub.catPetDurationS
     );
   }
 
@@ -374,17 +345,19 @@ export class HubFauna {
     const time = this.petTime(alpha);
     hand.visible = time < 1;
     if (!hand.visible) return false;
-    const reach = catPet.reachFraction;
+    const t = this.ctx.tuning.hub;
+    const { catPet } = hubInteractions;
+    const reach = t.catPetReachFraction;
     const blend =
       MathUtils.smoothstep(time, 0, reach) *
       (1 - MathUtils.smoothstep(time, 1 - reach, 1));
     const strokeTime = MathUtils.clamp((time - reach) / (1 - 2 * reach), 0, 1);
     const stroke =
-      (1 - Math.cos(strokeTime * Math.PI * 2 * catPet.strokes)) / 2;
+      (1 - Math.cos(strokeTime * Math.PI * 2 * t.catPetStrokes)) / 2;
     this.handPosition
       .copy(catPet.restPosition)
       .lerp(catPet.reachPosition, blend);
-    this.handPosition.z -= stroke * catPet.strokeM;
+    this.handPosition.z -= stroke * t.catPetStrokeM;
     this.handRotation.set(catPet.handPitchRad, catPet.handYawRad, 0);
     this.handMatrix
       .makeRotationFromEuler(this.handRotation)
@@ -444,7 +417,7 @@ export class HubFauna {
           head.animated.copy(head.bone.quaternion);
           if (petTime < 1) {
             this.handRotation.set(
-              Math.sin(petTime * Math.PI) * catPet.headTiltRad,
+              Math.sin(petTime * Math.PI) * hubInteractions.catPet.headTiltRad,
               0,
               0,
             );

@@ -3,6 +3,7 @@ import type { Vec3 } from '../core/math';
 import type { Rng } from '../core/rng';
 import type { Tuning } from '../core/tuning';
 import type { HubLayout } from './hubSchema';
+import type { HubFocusBox } from './hubStations';
 import { FaunaGround } from './hubFaunaGround';
 
 export type CatState = 'walk' | 'sit' | 'lie' | 'groom' | 'flee' | 'return';
@@ -56,6 +57,9 @@ export class HubFaunaRuntime {
   readonly rats: RatRuntime[];
   readonly ground: FaunaGround;
   ratWaitS: number;
+  /** Pozostały czas głaskania (s) i jego wartość z poprzedniego kroku (interpolacja widoku). */
+  petLeftS = 0;
+  previousPetLeftS = 0;
 
   constructor(
     private readonly layout: HubLayout,
@@ -127,10 +131,12 @@ export class HubFaunaRuntime {
   }
 
   private sound(kind: 'meow' | 'rat', point: Vec3): void {
-    this.bus?.emit('hub_fauna_sound', { kind, point });
+    this.bus?.emit('hub_fauna_sound', { kind, point: { ...point } });
   }
 
   step(dt: number, player: Vec3, velocity: Vec3): void {
+    this.previousPetLeftS = this.petLeftS;
+    this.petLeftS = Math.max(0, this.petLeftS - dt);
     if (!(dt > 0)) return;
     if (this.cat) this.stepCat(dt, player, velocity);
     for (const r of this.rats) {
@@ -268,6 +274,41 @@ export class HubFaunaRuntime {
       c.point = next;
       this.rest();
     }
+  }
+
+  /** Bryła celowania w kota, gdy można go pogłaskać: zasięg liczony poziomo (XZ) od oka gracza. */
+  petFocus(eye: Vec3): HubFocusBox | null {
+    const cat = this.cat;
+    if (
+      !cat ||
+      cat.state === 'flee' ||
+      cat.state === 'return' ||
+      this.petLeftS > 0
+    )
+      return null;
+    const { catHeightM, catRadiusM, catPetRangeM } = this.t;
+    if (
+      Math.hypot(cat.position.x - eye.x, cat.position.z - eye.z) > catPetRangeM
+    )
+      return null;
+    return {
+      position: { ...cat.position, y: cat.position.y + catHeightM / 2 },
+      size: { x: catRadiusM * 2, y: catHeightM, z: catRadiusM * 2 },
+    };
+  }
+
+  /** Głaskanie: kot kładzie się na czas gestu, nie ucieka i miauczy. */
+  pet(): void {
+    const cat = this.cat;
+    if (!cat) return;
+    const duration = this.t.catPetDurationS;
+    this.previousPetLeftS = this.petLeftS = duration;
+    cat.state = 'lie';
+    cat.moving = false;
+    cat.restLeftS = Math.max(cat.restLeftS, duration);
+    cat.fleeCooldownS = Math.max(cat.fleeCooldownS, duration);
+    cat.meowCooldownS = this.t.catMeowCooldownS;
+    this.sound('meow', cat.position);
   }
 
   /** Debug zachowuje bezpieczny odcinek powrotny do bieżącej trasy. */

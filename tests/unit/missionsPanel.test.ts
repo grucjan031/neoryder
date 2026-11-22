@@ -228,3 +228,35 @@ it('dispose usuwa panel z DOM', () => {
   panel.dispose();
   expect(document.querySelector('.missions-panel')).toBeNull();
 });
+
+it('odprawa misji ukrywa nagłówek Poziomu zagrożenia i listę, a Wstecz je przywraca', () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const { panel } = setup();
+  const heading = panel.root.querySelector<HTMLElement>(
+    ':scope > .missions-panel__heading',
+  )!;
+  const list = panel.root.querySelector<HTMLElement>(
+    '.missions-panel__levels',
+  )!;
+  const mission = [
+    ...panel.root.querySelectorAll<HTMLButtonElement>('[data-mission]'),
+  ].find((button) => button.dataset.mission !== 'regular' && !button.disabled)!;
+  mission.click();
+  const briefing = panel.root.querySelector<HTMLElement>(
+    '[data-mission-briefing]',
+  )!;
+  expect(briefing.hidden).toBe(false);
+  expect(heading.textContent).toContain('Poziom zagrożenia');
+  expect(heading.hidden).toBe(true);
+  expect(list.hidden).toBe(true);
+  const dialogue = briefing.querySelector<HTMLElement>(
+    '.mission-dialogue-player',
+  )!;
+  const briefingHeading = briefing.querySelector<HTMLElement>('h3')!;
+  expect(briefingHeading.hidden).toBe(!dialogue.hidden);
+  [...briefing.querySelectorAll('button')]
+    .find((button) => button.textContent === 'Wróć do tablicy')
+    ?.click();
+  expect(heading.hidden).toBe(false);
+  expect(list.hidden).toBe(false);
+});

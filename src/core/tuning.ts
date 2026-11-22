@@ -1086,7 +1086,8 @@ export const tuning = {
     catYieldM: 0.8,
     catYieldConeCos: 0.3,
     catFleeM: 2,
-    catRunThresholdMS: 3,
+    /** Kot ucieka tylko przed sprintem (chód 7 m/s, sprint 11 m/s). */
+    catRunThresholdMS: 8,
     catApproachConeCos: 0.6,
     catFleeSideM: 1.1,
     catFleeSpeedMS: 2.4,
@@ -1100,6 +1101,20 @@ export const tuning = {
     catMeowChance: 0.16,
     catMeowCooldownS: 25,
     catDebugDistanceM: 2,
+    /** Głaskanie kota: zasięg poziomy (XZ) od gracza (m), czas (s), ułamek czasu na wyciągnięcie i cofnięcie ręki, liczba pociągnięć, długość pociągnięcia (m). */
+    catPetRangeM: 2.2,
+    catPetDurationS: 1.5,
+    catPetReachFraction: 0.2,
+    catPetStrokes: 2,
+    catPetStrokeM: 0.12,
+    /** Podawanie zupy: przesuw miski (m) i ułamki klipu: start i koniec wysunięcia oraz powrotu. */
+    soupSlideM: 0.55,
+    soupSlideStart: 0.2,
+    soupSlideEnd: 0.55,
+    soupReturnStart: 0.68,
+    soupReturnEnd: 0.98,
+    /** Linia wzroku interakcji: przesłania tylko bryła, której górna krawędź jest wyżej niż tyle nad podłogą (m). */
+    losOccluderMinTopM: 1.4,
     /** Dzieci przy kocie: zasięg (m) od dziecka do odpoczywającego kota, odnowienie (s), czas głaskania (s), odległość od kota (m), zasięg dołączenia drugiego dziecka (m), odległość kota od trasy w debugu (m). */
     kidsCatRangeM: 2.5,
     kidsCatCooldownS: 60,

@@ -11,6 +11,7 @@ export const hubPropTextsSchema = z.object({
     noodles: text,
     radio: text,
     bag: text,
+    petCat: text,
     seat: text,
     stand: text,
   }),

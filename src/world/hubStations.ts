@@ -39,7 +39,7 @@ export function rayAabbDistance(
   return near;
 }
 
-function lookDirection(yaw: number, pitch: number): Vec3 {
+export function lookDirection(yaw: number, pitch: number): Vec3 {
   return {
     x: -Math.sin(yaw) * Math.cos(pitch),
     y: Math.sin(pitch),
@@ -53,7 +53,44 @@ export type HubTarget =
   | { kind: 'npc'; id: string }
   | { kind: 'prop'; id: string };
 
-/** Wybiera najbliższy cel (stację lub NPC) trafiony promieniem z oka w zasięgu (yaw/pitch w radianach). */
+/** Cel trafiony promieniem z oka: bryła i odległość wejścia promienia (z marginesem). */
+export interface HubTargetCandidate {
+  target: HubTarget;
+  focus: HubFocusBox;
+  distanceM: number;
+}
+
+/** Wszystkie cele (stacje, NPC, rekwizyty) trafione promieniem z oka w zasięgu, od najbliższego (yaw/pitch w radianach). */
+export function hubTargetCandidates(
+  stations: readonly (HubZone & { focus: HubFocusBox })[],
+  npcs: readonly { id: string; focus: HubFocusBox }[],
+  eye: Vec3,
+  yaw: number,
+  pitch: number,
+  interactRangeM: number,
+  focusPaddingM: number,
+  props: readonly { id: string; focus: HubFocusBox }[] = [],
+): HubTargetCandidate[] {
+  const forward = lookDirection(yaw, pitch);
+  const found: HubTargetCandidate[] = [];
+  const consider = (focus: HubFocusBox, hit: () => HubTarget): void => {
+    const distanceM = rayAabbDistance(eye, forward, focus, focusPaddingM);
+    if (distanceM !== null && distanceM <= interactRangeM)
+      found.push({ target: hit(), focus, distanceM });
+  };
+  for (const zone of stations)
+    consider(zone.focus, () => ({ kind: 'station', id: zone.id }));
+  for (const npc of npcs)
+    consider(npc.focus, () => ({ kind: 'npc', id: npc.id }));
+  for (const prop of props)
+    consider(prop.focus, () => ({ kind: 'prop', id: prop.id }));
+  return found.sort((a, b) => a.distanceM - b.distanceM);
+}
+
+/**
+ * Wybiera najbliższy cel (stację, NPC lub rekwizyt) trafiony promieniem z oka w zasięgu. Gdy podano `blocked`
+ * (np. przesłona ścianą), pomija zasłonięte cele i bierze kolejny niezasłonięty.
+ */
 export function selectHubTarget(
   stations: readonly (HubZone & { focus: HubFocusBox })[],
   npcs: readonly { id: string; focus: HubFocusBox }[],
@@ -63,24 +100,21 @@ export function selectHubTarget(
   interactRangeM: number,
   focusPaddingM: number,
   props: readonly { id: string; focus: HubFocusBox }[] = [],
+  blocked?: (candidate: HubTargetCandidate) => boolean,
 ): HubTarget | null {
-  const forward = lookDirection(yaw, pitch);
-  let nearest = Infinity;
-  let target: HubTarget | null = null;
-  const consider = (focus: HubFocusBox, hit: () => HubTarget): void => {
-    const distance = rayAabbDistance(eye, forward, focus, focusPaddingM);
-    if (distance !== null && distance <= interactRangeM && distance < nearest) {
-      nearest = distance;
-      target = hit();
-    }
-  };
-  for (const zone of stations)
-    consider(zone.focus, () => ({ kind: 'station', id: zone.id }));
-  for (const npc of npcs)
-    consider(npc.focus, () => ({ kind: 'npc', id: npc.id }));
-  for (const prop of props)
-    consider(prop.focus, () => ({ kind: 'prop', id: prop.id }));
-  return target;
+  const candidates = hubTargetCandidates(
+    stations,
+    npcs,
+    eye,
+    yaw,
+    pitch,
+    interactRangeM,
+    focusPaddingM,
+    props,
+  );
+  for (const candidate of candidates)
+    if (!blocked?.(candidate)) return candidate.target;
+  return null;
 }
 
 /** Wybiera najbliższe trafienie bryły stacji w zasięgu oka (yaw/pitch w radianach). */
