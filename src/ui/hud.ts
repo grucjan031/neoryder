@@ -11,8 +11,7 @@ import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import type { CoolingPhase } from '../combat/weapons/weapon';
-import { resolveBindings } from '../core/input';
-import { keyLabel } from './settingsScreen';
+import { setInputGlyph, setInputHint } from './inputGlyphs';
 import { RunHud, defeatMessage, type RunHudSeed } from './runHud';
 import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
@@ -262,15 +261,11 @@ export class Hud {
     if (this.overheat.dataset.cooling === phase) return;
     if (phase) this.overheat.dataset.cooling = phase;
     else delete this.overheat.dataset.cooling;
-    let label = phase ? text.activeCooling[phase] : text.overheated;
-    if (phase === 'window') {
-      const binding = Object.entries(
-        resolveBindings(loadSettings().bindings),
-      ).find(([, action]) => action === 'coolWeapon');
-      if (binding) label = `[${keyLabel(binding[0])}] ${label}`;
-    }
-    setText(this.overheat, label);
-    this.overheat.dataset.text = label;
+    const label = phase ? text.activeCooling[phase] : text.overheated;
+    setInputHint(
+      this.overheat,
+      phase === 'window' ? `[{coolWeapon}] ${label}` : label,
+    );
   }
   private overheated = false;
   private readonly overheat = element('div', 'hud__overheat', text.overheated);
@@ -351,6 +346,7 @@ export class Hud {
     const crosshair = element('div', 'hud__crosshair');
     this.crosshair = crosshair;
     this.executeHint.hidden = true;
+    setInputHint(this.executeHint, text.execute);
     this.executeHint.style.cssText =
       'position:absolute;top:calc(50% + 32px);left:50%;transform:translateX(-50%);color:var(--hud-health);font-size:14px;font-weight:600;letter-spacing:0.08em;text-shadow:0 1px 3px #000;white-space:nowrap';
     crosshair.setAttribute('aria-hidden', 'true');
@@ -622,11 +618,13 @@ export class Hud {
     this.slotCount = Math.min(loadout.weapons.length, MAX_WEAPON_SLOTS);
     this.slots.replaceChildren();
     for (let i = 0; i < this.slotCount; i++)
-      this.slots.append(element('span', 'hud__slot', String(i + 1)));
+      this.slots.append(
+        setInputGlyph(element('kbd', 'hud__slot'), `weapon${i + 1}`),
+      );
     this.slots.hidden = this.slotCount <= 1;
     this.activeSlot = -1;
     this.setActiveSlot(0);
-    for (const [index, key] of text.powerKeys.entries()) {
+    for (const [index, key] of ['power', 'power2'].entries()) {
       const def = powerDefinitions.get(loadout.powers[index] ?? '');
       const node = element('div', 'hud__power');
       if (!def) node.classList.add('hud__power--empty');
@@ -634,7 +632,7 @@ export class Hud {
       const denial = createFlash('hud__power-denial');
       node.append(
         element('span', 'hud__power-face'),
-        element('kbd', 'hud__power-key', key),
+        setInputGlyph(element('kbd', 'hud__power-key'), key),
         element('span', 'hud__power-name', def?.name ?? text.empty),
         element('span', 'hud__power-jammed', text.jammed),
         value,

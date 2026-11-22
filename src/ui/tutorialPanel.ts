@@ -1,6 +1,6 @@
 import { loadSettings } from '../core/save';
 import { preserveLiteFx } from '../render/fxMode';
-import { tutorialTextParts } from '../data/tutorial/text';
+import { setInputHint } from './inputGlyphs';
 import type { TutorialStep } from '../data/tutorial/schema';
 import text from '../data/ui/tutorial.pl.json';
 import './tutorialPanel.css';
@@ -12,7 +12,6 @@ export class TutorialPanel {
   private readonly feedback = document.createElement('span');
   private readonly completion = document.createElement('dialog');
   private current?: TutorialStep;
-  private bindings = '';
   private timer?: ReturnType<typeof setTimeout>;
 
   constructor(
@@ -67,7 +66,6 @@ export class TutorialPanel {
   ): void {
     this.current = step;
     this.number.textContent = `${text.progress} · ${number} / ${total}`;
-    this.bindings = '';
     this.syncBindings();
     this.feedback.hidden = !completedPrevious;
     this.feedback.textContent = text.done;
@@ -91,18 +89,10 @@ export class TutorialPanel {
     if (!this.current) return;
     const settings = loadSettings();
     if (!settings.flashes) this.root.classList.remove('tutorial-panel--flash');
-    const signature = JSON.stringify(settings.bindings);
-    if (signature === this.bindings) return;
-    this.bindings = signature;
-    const template = text.steps[this.current.text as keyof typeof text.steps];
-    this.instruction.replaceChildren(
-      ...tutorialTextParts(template, settings.bindings).map((part) => {
-        if (!part.key) return document.createTextNode(part.text);
-        const key = document.createElement('kbd');
-        key.textContent = part.text;
-        return key;
-      }),
-    );
+    const id = this.current.text as keyof typeof text.steps;
+    const template = text.steps[id];
+    const padTemplate = id === 'move' ? text.padMove : template;
+    setInputHint(this.instruction, template, padTemplate);
   }
   dispose(): void {
     clearTimeout(this.timer);

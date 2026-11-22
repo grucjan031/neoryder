@@ -9,6 +9,7 @@ import endlessText from '../data/ui/endless.pl.json';
 import { challengeText } from './challengeText';
 import type { HubPanel, HubPanelFactory } from './hub/hubPanel';
 import './hubScreens.css';
+import { setInputHint } from './inputGlyphs';
 
 const stationText = z.object({ title: z.string(), description: z.string() });
 const text = z
@@ -141,7 +142,7 @@ export class HtmlHubScreens implements HubScreens {
     buttons.push(this.button(text.close, actions.close, 'close'));
     this.panel.append(
       ...buttons,
-      this.line(text.closeHint, 'hub-screen__hint'),
+      setInputHint(this.line('', 'hub-screen__hint'), text.closeHint),
     );
     (
       this.hosted?.root.querySelector<HTMLElement>('button') ?? buttons[0]

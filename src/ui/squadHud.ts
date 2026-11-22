@@ -1,10 +1,7 @@
 import type { AllyOrder, AllySnapshot } from '../allies/ally';
-import { resolveBindings } from '../core/input';
-import type { Action } from '../core/input';
 import type { EventBus } from '../core/events';
-import { loadSettings } from '../core/save';
 import text from '../data/ui/allies.pl.json';
-import { keyLabel } from './settingsScreen';
+import { setInputHint } from './inputGlyphs';
 import './squadHud.css';
 
 interface Row {
@@ -20,13 +17,6 @@ export interface SquadRevivePrompt {
   progress: number;
 }
 
-function keyOf(action: Action): string {
-  const binding = Object.entries(resolveBindings(loadSettings().bindings)).find(
-    ([, bound]) => bound === action,
-  );
-  return binding ? `[${keyLabel(binding[0])}]` : '';
-}
-
 /**
  * Portrety drużyny przy lewej krawędzi (DOM nad canvasem): zdrowie, stan, rozkaz, dymki kwestii
  * (`ally_bark`) i podpowiedź podnoszenia powalonego.
@@ -36,7 +26,7 @@ export class SquadHud {
   private readonly order = document.createElement('p');
   private readonly list = document.createElement('ul');
   private readonly revive = document.createElement('p');
-  private readonly reviveLabel = document.createTextNode('');
+  private readonly reviveLabel = document.createElement('span');
   private readonly reviveFill = document.createElement('i');
   private readonly rows = new Map<string, Row>();
   private readonly off: () => void;
@@ -54,6 +44,7 @@ export class SquadHud {
     this.revive.setAttribute('role', 'status');
     this.revive.hidden = true;
     const track = document.createElement('span');
+    track.className = 'squad-hud__revive-track';
     track.append(this.reviveFill);
     this.revive.append(this.reviveLabel, track);
     this.root.append(this.order, this.list, this.revive);
@@ -74,9 +65,10 @@ export class SquadHud {
   ): void {
     this.root.hidden = allies.length === 0;
     if (this.root.hidden) return;
-    const orderText = `${text.title}: ${text.orders[order]} ${keyOf('squadCommand')}`;
-    if (this.order.textContent !== orderText)
-      this.order.textContent = orderText;
+    setInputHint(
+      this.order,
+      `${text.title}: ${text.orders[order]} [{squadCommand}]`,
+    );
     const now = performance.now();
     const seen = new Set<string>();
     for (const ally of allies) {
@@ -98,10 +90,12 @@ export class SquadHud {
       }
     this.revive.hidden = revive === null;
     if (revive) {
-      const label = text.revive
-        .replace('{key}', keyOf('power2'))
-        .replace('{name}', revive.name);
-      if (this.reviveLabel.data !== label) this.reviveLabel.data = label;
+      setInputHint(
+        this.reviveLabel,
+        text.revive
+          .replace('{key}', '[{power2}]')
+          .replace('{name}', revive.name),
+      );
       this.reviveFill.style.width = `${Math.round(revive.progress * 100)}%`;
     }
   }

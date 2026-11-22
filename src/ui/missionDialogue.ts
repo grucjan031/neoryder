@@ -1,3 +1,4 @@
+import { setInputGlyph } from './inputGlyphs';
 import { tuning } from '../core/tuning';
 import text from '../data/ui/missionDialogue.pl.json';
 import type { DialogueLine, RadioPriority } from '../world/missionSchema';
@@ -211,7 +212,7 @@ export class MissionDialogue {
     this.next.textContent = text.next;
     this.next.setAttribute('aria-keyshortcuts', 'Space');
     const shortcut = document.createElement('kbd');
-    shortcut.textContent = text.space;
+    setInputGlyph(shortcut, 'advance');
     shortcut.setAttribute('aria-hidden', 'true');
     this.next.append(shortcut);
     this.auto.type = 'checkbox';

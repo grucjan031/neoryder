@@ -21,5 +21,23 @@
     "Tab": "inventory",
     "KeyT": "squadCommand"
   },
-  "mouse": { "0": "attack", "1": "bladeThrow", "2": "block" }
+  "mouse": { "0": "attack", "1": "bladeThrow", "2": "block" },
+  "gamepad": {
+    "0": { "press": "jump" },
+    "1": { "press": "crouch" },
+    "2": { "press": "dash" },
+    "3": { "press": "swap" },
+    "4": { "press": "power2" },
+    "5": { "press": "power" },
+    "6": { "press": "block" },
+    "7": { "press": "attack" },
+    "8": { "press": "inventory", "hold": "map" },
+    "9": { "press": "pause" },
+    "10": { "press": "sprint" },
+    "11": { "press": "bladeThrow" },
+    "12": { "press": "weapon2" },
+    "13": { "press": "coolWeapon", "hold": "squadCommand" },
+    "14": { "press": "weapon1" },
+    "15": { "press": "weapon3" }
+  }
 }

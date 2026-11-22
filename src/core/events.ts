@@ -8,10 +8,16 @@ export type EntityId = number;
 
 export type Team = 'player' | 'enemy' | 'neutral';
 
+export interface InputDevice {
+  device: 'keyboardMouse' | 'gamepad';
+  layout: 'xbox' | 'playstation' | 'generic';
+}
+
 /** Mapa wszystkich zdarzeń gry. Nowe zdarzenia dopisuje Architekt po zatwierdzeniu w docs/api.md. */
 type ConquestPointId = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface GameEvents {
+  'input:deviceChanged': InputDevice;
   /** Zmiana właściciela punktu (także na neutralnego); `owners` to migawka wszystkich punktów po zmianie. */
   conquest_captured: {
     id: ConquestPointId;

@@ -5,6 +5,7 @@ import type { GameContext } from '../core/context';
 import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
+import { SIM_DT } from '../core/loop';
 import type { Vec3 } from '../core/math';
 import type { Rng } from '../core/rng';
 import { HUB_STATION_IDS } from '../core/metaTypes';
@@ -752,7 +753,10 @@ export class HubScene implements Scene {
     const sit = this.seat!.sit!;
     const t = this.ctx.tuning.hub;
     const state = this.player.getState();
-    let yaw = state.yaw - input.lookDelta.x * this.lookScale;
+    const pad = input.gamepad;
+    let yaw =
+      state.yaw -
+      (pad ? pad.look.x * SIM_DT : input.lookDelta.x * this.lookScale);
     const center = (sit.yawDeg * Math.PI) / 180;
     const nearest =
       center + Math.round((state.yaw - center) / (2 * Math.PI)) * 2 * Math.PI;
@@ -767,9 +771,18 @@ export class HubScene implements Scene {
       pressed: EMPTY_ACTIONS,
       released: EMPTY_ACTIONS,
       lookDelta: {
-        x: this.lookScale > 0 ? (state.yaw - yaw) / this.lookScale : 0,
+        x: !pad && this.lookScale > 0 ? (state.yaw - yaw) / this.lookScale : 0,
         y: input.lookDelta.y,
       },
+      ...(pad
+        ? {
+            gamepad: {
+              ...pad,
+              move: { x: 0, y: 0 },
+              look: { x: (state.yaw - yaw) / SIM_DT, y: pad.look.y },
+            },
+          }
+        : {}),
     };
   }
 
@@ -942,7 +955,13 @@ export class HubScene implements Scene {
     const mapOpen = this.hubMap?.isOpen === true;
     this.props.step(dt);
     const seated = this.seat !== null;
-    if (seated && SEAT_MOVE_ACTIONS.some((a) => input.pressed.has(a)))
+    const stick = input.gamepad?.move;
+    if (
+      seated &&
+      (stick?.x ||
+        stick?.y ||
+        SEAT_MOVE_ACTIONS.some((a) => input.pressed.has(a)))
+    )
       this.stand();
     this.previousSeatBlend = this.seatBlend;
     const blendStep = dt / Math.max(1e-3, this.ctx.tuning.hub.sitBlendS);

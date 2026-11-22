@@ -1,3 +1,4 @@
+import { setInputHint } from './inputGlyphs';
 import { z } from 'zod';
 import { NODE_TYPES } from '../core/runTypes';
 import type { RunState } from '../core/runTypes';
@@ -17,6 +18,7 @@ const text = z
       symbols: z.record(z.enum(NODE_TYPES), z.string()),
     }),
     keys: z.string(),
+    padKeys: z.string(),
     layer: z.string(),
   })
   .parse(data);
@@ -189,7 +191,7 @@ export class MapScreen {
     );
     const keys = document.createElement('p');
     keys.className = 'sector-map__keys';
-    keys.textContent = text.keys;
+    setInputHint(keys, text.keys, text.padKeys);
     this.root.append(info, graph, legend, keys);
   }
 

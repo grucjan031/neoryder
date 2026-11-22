@@ -1,6 +1,39 @@
 import GUI from 'lil-gui';
 
 export const tuning = {
+  gamepad: {
+    innerDeadzone: 0.16,
+    outerDeadzone: 0.04,
+    moveExponent: 1,
+    lookExponent: 1.7,
+    lookSpeedX: 3.2,
+    lookSpeedY: 2.5,
+    lookAcceleration: 1.5,
+    lookAccelerationS: 0.3,
+    lookFullThreshold: 0.98,
+    axisActivityDelta: 0.06,
+    mouseActivityPx: 3,
+    holdS: 0.35,
+    navigationThreshold: 0.45,
+    navigationDelayS: 0.32,
+    navigationRepeatS: 0.12,
+    aim: {
+      rangeM: 32,
+      frictionRadiusDeg: 5,
+      friction: 0.55,
+      magnetismRadiusDeg: 3,
+      magnetism: 2.2,
+    },
+    rumble: {
+      heavyDamage: 30,
+      damage: { duration: 130, strongMagnitude: 0.6, weakMagnitude: 0.28 },
+      heavy: { duration: 95, strongMagnitude: 0.28, weakMagnitude: 0.55 },
+      parry: { duration: 115, strongMagnitude: 0.2, weakMagnitude: 0.75 },
+      explosion: { duration: 220, strongMagnitude: 0.68, weakMagnitude: 0.35 },
+      death: { duration: 400, strongMagnitude: 0.85, weakMagnitude: 0.55 },
+      explosionRangeM: 16,
+    },
+  },
   horizon: {
     legacyNearM: 0.1,
     legacyFarM: 220,

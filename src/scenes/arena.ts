@@ -1,3 +1,4 @@
+import { padAimTargets } from './padAimTargets';
 import { blockMaterialSchema, dressingFields } from '../world/dressingSchema';
 import { worldEnvelope } from '../render/horizon';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
@@ -373,6 +374,7 @@ export class Arena implements Scene {
       },
       layout.director ? { director: layout.director } : {},
     );
+    this.player.setAimTargets(() => padAimTargets(this.manager));
 
     if (typeof document !== 'undefined')
       this.hud = new Hud(ctx.bus, {

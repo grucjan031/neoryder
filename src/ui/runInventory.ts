@@ -1,3 +1,4 @@
+import { setInputHint } from './inputGlyphs';
 import { z } from 'zod';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
@@ -29,6 +30,7 @@ const text = z
     blade: z.string(),
     close: z.string(),
     hint: z.string(),
+    padHint: z.string(),
     rarities: z.object({
       common: z.string(),
       rare: z.string(),
@@ -282,7 +284,11 @@ export class RunInventoryMenu {
     close.type = 'button';
     close.addEventListener('click', () => this.close());
     this.footer.replaceChildren(
-      element('p', 'run-inventory__hint', text.hint),
+      setInputHint(
+        element('p', 'run-inventory__hint'),
+        text.hint,
+        text.padHint,
+      ),
       close,
     );
     this.body.replaceChildren();

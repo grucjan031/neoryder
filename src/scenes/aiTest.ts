@@ -1,3 +1,4 @@
+import { padAimTargets } from './padAimTargets';
 import { BoxGeometry, Color, Euler, Group, Mesh, Quaternion } from 'three';
 import type { Material, Scene as ThreeScene } from 'three';
 import type { World } from '@dimforge/rapier3d-compat';
@@ -313,6 +314,7 @@ export class AiTest implements Scene {
       },
       { director: this.data.director, spawnPoints: this.data.spawnPoints },
     );
+    this.player.setAimTargets(() => padAimTargets(this.manager));
     three.background = new Color(ctx.tuning.render.world);
     three.add(this.root);
     this.root.add(this.lights);

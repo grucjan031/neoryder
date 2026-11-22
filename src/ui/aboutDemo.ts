@@ -6,12 +6,12 @@ import settingsData from '../data/ui/settings.pl.json';
 import { aboutDemoText as text } from '../data/ui/aboutDemoSchema';
 import { bugReportText } from './buildInfo';
 import type { BuildInfo } from './buildInfo';
+import { keyLabel, setInputHint } from './inputGlyphs';
 import './aboutDemo.css';
 
 const controls = z
   .object({
     actions: z.record(actionSchema, z.string()),
-    keys: z.record(z.string(), z.string()),
     unbound: z.string(),
   })
   .parse(settingsData);
@@ -42,8 +42,6 @@ export class AboutDemo {
     this.open(text.title);
     const list = document.createElement('dl');
     const resolved = resolveBindings(loadSettings().bindings);
-    const keyLabel = (code: string): string =>
-      controls.keys[code] ?? code.replace(/^(Key|Digit)/, '');
     for (const action of actionSchema.options) {
       const keys = Object.entries(resolved)
         .filter(([, owner]) => owner === action)
@@ -54,13 +52,23 @@ export class AboutDemo {
       const label = document.createElement('dt');
       label.textContent = controls.actions[action];
       const value = document.createElement('dd');
-      value.textContent = [...keys, ...mouse].join(' / ') || controls.unbound;
+      setInputHint(
+        value,
+        action === 'pause'
+          ? '{pause}'
+          : [...keys, ...mouse].join(' / ') || controls.unbound,
+        `{${action}}`,
+      );
       list.append(label, value);
     }
     const look = document.createElement('p');
-    look.textContent = text.look;
+    setInputHint(look, text.look, '{look} — rozglądanie');
     const pause = document.createElement('p');
-    pause.textContent = text.pauseKey;
+    setInputHint(
+      pause,
+      text.pauseKey,
+      '{pause} — pauza. {back} — zamknij okno',
+    );
     const heading = document.createElement('h2');
     heading.textContent = text.saveTitle;
     const save = document.createElement('p');

@@ -505,6 +505,15 @@ describe('settings', () => {
       flashes: true,
       quality: 'medium',
       bindings: {},
+      gamepad: {
+        sensitivityX: 1,
+        sensitivityY: 1,
+        invertY: false,
+        aimAssist: true,
+        vibration: true,
+        vibrationStrength: 1,
+        bindings: {},
+      },
     });
     const settings = {
       ...defaults,

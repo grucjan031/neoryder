@@ -10,7 +10,7 @@
   "reportUrl": "https://github.com/grucjan031/neoryder/issues",
   "reportLink": "Otwórz stronę zgłoszeń",
   "reportData": "Dane techniczne zgłoszenia",
-  "pauseKey": "Esc — pauza / zamknięcie nakładki",
+  "pauseKey": "{pause} — pauza / zamknięcie nakładki",
   "look": "Mysz — rozglądanie",
   "missing": "brak",
   "seedUnavailable": "Nie można odczytać seeda z zapisu.",

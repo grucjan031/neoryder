@@ -1,3 +1,5 @@
+import { setInputHint } from './inputGlyphs';
+
 /** Opisy scen w menu startowym. Sceny bez wpisu trafiają na koniec listy jako „inne”. */
 const DESCRIPTIONS: Record<
   string,
@@ -30,17 +32,17 @@ const DESCRIPTIONS: Record<
   },
   'parry-test': {
     title: 'Parowanie',
-    text: 'Manekin strzela — wciśnij PPM tuż przed trafieniem.',
+    text: 'Manekin strzela — wciśnij {block} tuż przed trafieniem.',
     order: 3,
   },
   'push-test': {
     title: 'Pchnięcie Rezonansu',
-    text: 'F wbija manekiny w ścianę (dodatkowe obrażenia).',
+    text: '{power} wbija manekiny w ścianę (dodatkowe obrażenia).',
     order: 4,
   },
   'blaster-test': {
     title: 'Blaster',
-    text: 'Strzelanie z przegrzewaniem zamiast amunicji (R).',
+    text: 'Strzelanie z przegrzewaniem zamiast amunicji ({swap}).',
     order: 5,
   },
   'player-test': {
@@ -63,6 +65,11 @@ const DESCRIPTIONS: Record<
     text: 'Odsłuch syntezowanych efektów (kliknij przycisk w panelu).',
     order: 8.5,
   },
+  'pad-test': {
+    title: 'Pad',
+    text: 'Surowe przyciski i osie, martwe strefy, układ i glify.',
+    order: 8.75,
+  },
   sandbox: {
     title: 'Sandbox fizyki',
     text: 'Spadające kostki Rapier (scena techniczna F0).',
@@ -71,7 +78,7 @@ const DESCRIPTIONS: Record<
 };
 
 const CONTROLS =
-  'Kliknij scenę, by przechwycić mysz · WASD ruch · Shift sprint · Spacja skok (×2) · Q dash · Ctrl ślizg · LPM — atak/strzał (ostrze: przytrzymaj = ciężki) · PPM blok · F Pchnięcie · R — zamiana ostrze/broń · ` konsola';
+  '{move} ruch · {sprint} sprint · {jump} skok (×2) · {dash} doskok · {crouch} ślizg · {attack} atak/strzał (ostrze: przytrzymaj = ciężki) · {block} blok · {power} Pchnięcie · {swap} zamiana ostrze/broń';
 
 /** Menu startowe: lista scen jako linki (zachowuje parametry debug i seed). */
 export function createSceneMenu(
@@ -104,7 +111,7 @@ export function createSceneMenu(
     const title = document.createElement('strong');
     title.textContent = info?.title ?? id;
     const text = document.createElement('span');
-    text.textContent = info?.text ?? `Scena ${id}`;
+    setInputHint(text, info?.text ?? `Scena ${id}`);
     const code = document.createElement('code');
     code.textContent = id;
     link.append(title, text, code);
@@ -113,7 +120,11 @@ export function createSceneMenu(
   }
   const controls = document.createElement('p');
   controls.className = 'scene-menu__controls';
-  controls.textContent = CONTROLS;
+  setInputHint(
+    controls,
+    `Kliknij scenę, by przechwycić mysz · ${CONTROLS} · {console} konsola`,
+    `${CONTROLS} · {pause} pauza`,
+  );
   menu.append(logo, heading, sub, list, controls);
   root.append(menu);
 }

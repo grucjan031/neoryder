@@ -44,6 +44,7 @@ export class ChallengeHistoryScreen {
     history.textContent = text.history;
     const list = document.createElement('ul');
     const back = button(text.back, () => go(new URLSearchParams()));
+    back.dataset.padBack = '';
     this.root.append(heading, rules, status, start, history, list, back);
     parent.append(this.root);
     this.ready = save

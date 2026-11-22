@@ -4,6 +4,7 @@ import { aboutDemoText } from '../data/ui/aboutDemoSchema';
 import { appBuild, buildInfoText } from './buildInfo';
 import type { BuildInfo } from './buildInfo';
 import { AboutDemo } from './aboutDemo';
+import { setInputHint } from './inputGlyphs';
 
 export class PauseMenu {
   private readonly root = document.createElement('dialog');
@@ -33,7 +34,9 @@ export class PauseMenu {
       this.root.append(node);
       return node;
     };
-    button(text.resume, actions.resume);
+    const resume = button(text.resume, actions.resume);
+    resume.setAttribute('aria-label', text.resume);
+    setInputHint(resume, text.resume, `${text.resume} {pause}`);
     button(text.title, actions.settings);
     button(aboutDemoText.title, () => this.about.showControls());
     button(aboutDemoText.report, () => {

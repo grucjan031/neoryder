@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadSettings, saveSettings } from '../../src/core/save';
-import { assignBinding, Input, resolveBindings } from '../../src/core/input';
+import {
+  assignBinding,
+  defaultGamepadSettings,
+  Input,
+  resolveBindings,
+} from '../../src/core/input';
 import { EventBus } from '../../src/core/events';
 import { tuning } from '../../src/core/tuning';
 import { FpsCamera } from '../../src/player/fpsCamera';
@@ -61,6 +66,7 @@ describe('Settings Z6', () => {
         flashes: true,
         quality: 'high',
         bindings: {},
+        gamepad: defaultGamepadSettings(),
       });
     },
   );
@@ -144,6 +150,7 @@ describe('Settings Z6', () => {
       flashes: true,
       quality: 'high',
       bindings: {},
+      gamepad: defaultGamepadSettings(),
     });
   });
 
@@ -180,6 +187,7 @@ describe('Settings Z6', () => {
       flashes: false,
       quality: 'high',
       bindings: { swap: 'KeyV' },
+      gamepad: defaultGamepadSettings(),
     });
   });
 

@@ -180,6 +180,7 @@ export class MainMenu {
         this.builds?.hide();
         newRun.focus();
       });
+      back.dataset.padBack = '';
       this.root.querySelector('.build-select__panel')?.prepend(back);
       const scenes = new URLSearchParams({ scenes: '1' });
       if (options.params?.get('debug') === '1') scenes.set('debug', '1');

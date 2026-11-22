@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import bindingsData from '../../data/inputBindings.json';
 import inputText from '../../data/ui/input.pl.json';
+import type { EventBus, InputDevice } from '../events';
+import { tuning } from '../tuning';
+import { GamepadInput } from './gamepad';
+import type { GamepadBinding, GamepadMotion, GamepadSettings } from './gamepad';
 
 export const actionSchema = z.enum([
   'moveForward',
@@ -28,12 +32,23 @@ export const actionSchema = z.enum([
   'inventory',
   /** Komenda drużyny: sojusznicy idą za graczem albo trzymają pozycję (przełącznik). */
   'squadCommand',
+  'pause',
 ]);
 /** Pojedyncze zdarzenie ruchu myszy większe niż to (px) to artefakt przeglądarki, nie gest. */
 const MAX_MOUSE_DELTA = 400;
 
 export type Action = z.infer<typeof actionSchema>;
 export type BindingOverrides = Partial<Record<Action, string>>;
+export type GamepadBindingOverrides = Partial<Record<Action, number | null>>;
+export const isGamepadButton = (index: unknown): index is number =>
+  typeof index === 'number' &&
+  Number.isInteger(index) &&
+  index >= 0 &&
+  index <= 16;
+const gamepadBindingSchema = z.object({
+  press: actionSchema.optional(),
+  hold: actionSchema.optional(),
+});
 export const isBindingCode = (code: string): boolean =>
   code === '' ||
   /^(Key[A-Z]|Digit[0-9]|Numpad\w+|F([1-9]|1[0-9]|2[0-4])|Arrow(Up|Down|Left|Right)|Space|Tab|Enter|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Shift(Left|Right)|Control(Left|Right)|Alt(Left|Right)|CapsLock|Minus|Equal|BracketLeft|BracketRight|Backslash|Semicolon|Quote|Comma|Period|Slash|IntlBackslash)$/.test(
@@ -43,8 +58,78 @@ const bindings = z
   .object({
     keyboard: z.record(z.string(), actionSchema),
     mouse: z.record(z.string(), actionSchema),
+    gamepad: z.record(
+      z
+        .string()
+        .refine((key) => /^\d+$/.test(key) && isGamepadButton(Number(key))),
+      gamepadBindingSchema,
+    ),
   })
   .parse(bindingsData);
+
+export const mouseBindings = bindings.mouse;
+
+const holdActions = new Set(
+  Object.values(bindings.gamepad).flatMap(({ hold }) => (hold ? [hold] : [])),
+);
+const tapActions = new Set(
+  Object.values(bindings.gamepad).flatMap(({ press, hold }) =>
+    press && hold ? [press] : [],
+  ),
+);
+
+export function resolveGamepadBindings(
+  overrides: GamepadBindingOverrides = {},
+): Record<number, GamepadBinding> {
+  const result: Record<number, GamepadBinding> = {};
+  for (const [index, binding] of Object.entries(bindings.gamepad))
+    result[Number(index)] = { ...binding };
+  for (const [name, index] of Object.entries(overrides)) {
+    const parsed = actionSchema.safeParse(name);
+    if (!parsed.success || (index !== null && !isGamepadButton(index)))
+      continue;
+    const action = parsed.data;
+    const slot = holdActions.has(action) ? 'hold' : 'press';
+    for (const binding of Object.values(result))
+      if (binding[slot] === action) delete binding[slot];
+    if (index === null) continue;
+    const binding = (result[index] ??= {});
+    if (slot === 'hold' && binding.press && !tapActions.has(binding.press))
+      delete binding.press;
+    if (slot === 'press' && !tapActions.has(action)) delete binding.hold;
+    binding[slot] = action;
+  }
+  return result;
+}
+
+export function assignGamepadBinding(
+  overrides: GamepadBindingOverrides,
+  action: Action,
+  button: number,
+): GamepadBindingOverrides {
+  if (!isGamepadButton(button)) return { ...overrides };
+  const next = { ...overrides };
+  delete next[action];
+  next[action] = button;
+  const resolved = resolveGamepadBindings(next);
+  for (const name of Object.keys(next) as Action[]) {
+    const entry = Object.entries(resolved).find(
+      ([, { press, hold }]) => press === name || hold === name,
+    );
+    next[name] = entry ? Number(entry[0]) : null;
+  }
+  return next;
+}
+
+export const defaultGamepadSettings = (): GamepadSettings => ({
+  sensitivityX: 1,
+  sensitivityY: 1,
+  invertY: false,
+  aimAssist: true,
+  vibration: true,
+  vibrationStrength: 1,
+  bindings: {},
+});
 
 /** Puste nadpisanie oznacza akcję bez klawisza; przyciski myszy pozostają niezależne. */
 export function resolveBindings(
@@ -93,6 +178,13 @@ export interface InputSnapshot {
   pressed: ReadonlySet<Action>;
   released: ReadonlySet<Action>;
   lookDelta: { x: number; y: number };
+  gamepad?: GamepadMotion;
+}
+
+interface PadOptions {
+  bus: EventBus;
+  settings: () => GamepadSettings;
+  keyboardActions?: boolean;
 }
 
 export class Input {
@@ -107,14 +199,21 @@ export class Input {
   private wasLocked = false;
   private readonly document: Document;
   private lockHint: HTMLButtonElement | undefined;
+  private readonly gamepad: GamepadInput;
+  private device: InputDevice = { device: 'keyboardMouse', layout: 'generic' };
+  private windowFocused = true;
+  private padOverrides?: GamepadBindingOverrides;
+  private padBindings: Record<number, GamepadBinding> = {};
 
   constructor(
     private readonly target: HTMLElement,
     private readonly getBindings: () => BindingOverrides = () => ({}),
+    private readonly padOptions?: PadOptions,
   ) {
     this.document = target.ownerDocument;
     const win = this.document.defaultView;
     if (!win) throw new Error('Brak okna dla wejścia.');
+    this.gamepad = new GamepadInput(win.navigator);
     const options = { signal: this.listeners.signal };
     const isEditing = (element: EventTarget | null): boolean =>
       this.document.querySelector('dialog:modal') !== null ||
@@ -129,6 +228,15 @@ export class Input {
     win.addEventListener(
       'keydown',
       (event) => {
+        if (!event.repeat && (event.isTrusted || event.code !== 'Escape'))
+          this.setDevice('keyboardMouse');
+      },
+      { ...options, capture: true },
+    );
+    win.addEventListener(
+      'keydown',
+      (event) => {
+        if (this.padOptions?.keyboardActions === false) return;
         if (isEditing(event.target)) return;
         if (event.defaultPrevented) return;
         const action = resolveBindings(this.getBindings())[event.code];
@@ -143,6 +251,8 @@ export class Input {
     target.addEventListener(
       'mousedown',
       (event) => {
+        this.setDevice('keyboardMouse');
+        if (this.padOptions?.keyboardActions === false) return;
         if (event.button === 1) event.preventDefault();
         const action = bindings.mouse[String(event.button)];
         if (action) this.press(`mouse:${event.button}`, action);
@@ -152,7 +262,8 @@ export class Input {
     target.addEventListener(
       'auxclick',
       (event) => {
-        if (event.button === 1) event.preventDefault();
+        if (this.padOptions?.keyboardActions !== false && event.button === 1)
+          event.preventDefault();
       },
       options,
     );
@@ -163,13 +274,14 @@ export class Input {
     );
     target.addEventListener(
       'contextmenu',
-      (event) => event.preventDefault(),
+      (event) => {
+        if (this.padOptions?.keyboardActions !== false) event.preventDefault();
+      },
       options,
     );
     win.addEventListener(
       'mousemove',
       (event) => {
-        if (!this.pointerLocked) return;
         // Chromium (zwłaszcza Linux) po przechwyceniu kursora przenosi go na środek i wysyła
         // zdarzenie z ogromnym przesunięciem — kamera „skakałaby” przy każdym wejściu w grę.
         if (this.skipNextMove) {
@@ -181,12 +293,32 @@ export class Input {
           Math.abs(event.movementY) > MAX_MOUSE_DELTA
         )
           return;
+        if (
+          Math.hypot(event.movementX, event.movementY) >=
+          tuning.gamepad.mouseActivityPx
+        )
+          this.setDevice('keyboardMouse');
+        if (!this.pointerLocked || this.device.device === 'gamepad') return;
         this.lookDelta.x += event.movementX;
         this.lookDelta.y += event.movementY;
       },
       options,
     );
-    win.addEventListener('blur', () => this.loseFocus(), options);
+    win.addEventListener(
+      'blur',
+      () => {
+        this.windowFocused = false;
+        this.loseFocus();
+      },
+      options,
+    );
+    win.addEventListener(
+      'focus',
+      () => {
+        this.windowFocused = true;
+      },
+      options,
+    );
     this.document.addEventListener(
       'visibilitychange',
       () => {
@@ -202,7 +334,12 @@ export class Input {
           if (this.document.activeElement === this.lockHint)
             this.target.focus();
         }
-        if (this.wasLocked && !this.pointerLocked) this.loseFocus();
+        if (
+          this.wasLocked &&
+          !this.pointerLocked &&
+          this.device.device === 'keyboardMouse'
+        )
+          this.loseFocus();
         if (!this.wasLocked && this.pointerLocked) this.skipNextMove = true;
         this.wasLocked = this.pointerLocked;
       },
@@ -216,7 +353,12 @@ export class Input {
   }
 
   private showLockHint(): void {
-    if (this.listeners.signal.aborted || this.pointerLocked) return;
+    if (
+      this.listeners.signal.aborted ||
+      this.pointerLocked ||
+      this.device.device === 'gamepad'
+    )
+      return;
     if (!this.lockHint) {
       this.lockHint = this.document.createElement('button');
       this.lockHint.type = 'button';
@@ -256,13 +398,86 @@ export class Input {
     this.pressed.clear();
     this.down.clear();
     this.lookDelta = { x: 0, y: 0 };
+    this.gamepad.clear();
   }
+
+  get activeDevice(): InputDevice {
+    return this.device;
+  }
+
+  get padFrame() {
+    return this.windowFocused && !this.document.hidden
+      ? this.gamepad.frame
+      : null;
+  }
+
+  get padPauseButton(): number | undefined {
+    const pressed = this.padFrame?.pressed;
+    if (this.device.device !== 'gamepad' || !pressed) return undefined;
+    for (const index of pressed)
+      if (this.padBindings[index]?.press === 'pause') return index;
+    return undefined;
+  }
+
+  update(dt: number, gameplayEnabled: boolean | (() => boolean)): void {
+    const options = this.padOptions;
+    if (!options || !this.windowFocused || this.document.hidden) return;
+    const settings = options.settings();
+    if (settings.bindings !== this.padOverrides) {
+      this.padOverrides = settings.bindings;
+      this.padBindings = resolveGamepadBindings(settings.bindings);
+    }
+    const old = this.gamepad.frame;
+    const frame = this.gamepad.poll(tuning.gamepad, settings);
+    const changedPad =
+      old?.pad.index !== frame?.pad.index || old?.pad.id !== frame?.pad.id;
+    if (frame?.active) {
+      if (changedPad && this.device.device === 'gamepad') this.clear();
+      this.setDevice('gamepad', frame.layout);
+    } else if (this.device.device === 'gamepad' && changedPad) {
+      this.setDevice('keyboardMouse');
+    }
+    if (
+      this.device.device === 'gamepad' &&
+      frame &&
+      (typeof gameplayEnabled === 'function'
+        ? gameplayEnabled()
+        : gameplayEnabled)
+    )
+      this.gamepad.apply(
+        dt,
+        tuning.gamepad,
+        settings,
+        this.padBindings,
+        (code, action) => this.press(code, action),
+        (code) => this.release(code),
+        this.held,
+      );
+    else if (this.gamepad.motion) this.clear();
+  }
+
+  private setDevice(
+    device: InputDevice['device'],
+    layout: InputDevice['layout'] = 'generic',
+  ): void {
+    if (device === this.device.device && layout === this.device.layout) return;
+    this.clear();
+    this.device = { device, layout };
+    if (device === 'gamepad') {
+      if (this.lockHint) this.lockHint.hidden = true;
+      this.skipNextMove = this.pointerLocked;
+      if (this.pointerLocked) this.document.exitPointerLock?.();
+    }
+    this.padOptions?.bus.emit('input:deviceChanged', this.device);
+  }
+
   snapshot(): InputSnapshot {
-    const result = {
+    const result: InputSnapshot = {
       held: new Set(this.held),
       pressed: new Set(this.pressed),
       released: new Set(this.released),
       lookDelta: { ...this.lookDelta },
+      ...(this.gamepad.motion ? { gamepad: this.gamepad.motion } : {}),
     };
     this.pressed.clear();
     this.released.clear();
@@ -270,6 +485,7 @@ export class Input {
     return result;
   }
   requestPointerLock(): void {
+    if (this.device.device === 'gamepad') return;
     try {
       const pending = this.target.requestPointerLock();
       if (pending) void pending.catch(() => this.showLockHint());

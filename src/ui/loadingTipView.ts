@@ -1,3 +1,4 @@
+import { setInputHint } from './inputGlyphs';
 import { tuning } from '../core/tuning';
 import { getTips, pickTip } from './loadingTips';
 import './loadingTips.css';
@@ -20,7 +21,7 @@ export function createLoadingTip(key: string): {
     const tip = list[index];
     root.hidden = !tip;
     label.textContent = tip?.label ?? '';
-    text.textContent = tip?.text ?? '';
+    setInputHint(text, tip?.text ?? '');
   };
   update();
   const timer =

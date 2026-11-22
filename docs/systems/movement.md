@@ -151,6 +151,29 @@ Geometria wymaga dodatniego promienia i wysokości co najmniej dwukrotności
 promienia, a offset dodatniej wartości. Zmiana rozmiaru nie usuwa istniejących
 penetracji; przy dużej zmianie użyj resetu sceny.
 
+## Pad
+
+Lewa gałka kieruje ruchem i skaluje prędkość do pełnej wartości. Prawa
+gałka obraca kamerę. Obie mają radialną wewnętrzną i zewnętrzną martwą
+strefę. Rozglądanie używa krzywej odpowiedzi i przyspiesza przy pełnym
+wychyleniu. L3/LS przełącza sprint, a L2/LT blokuje ostrzem lub celuje
+bronią palną. Krótkie naciśnięcie View/Create otwiera ekwipunek, a
+przytrzymanie wywołuje akcję mapy. D-pad w dół aktywuje chłodzenie po
+krótkim naciśnięciu albo rozkaz drużyny po przytrzymaniu.
+
+Ostatnie użyte urządzenie wybiera glify w interfejsie. Pad pozwala grać bez
+blokady kursora. Gra nadal pauzuje przy utracie fokusu. Menu/Options
+przełącza pauzę w rozgrywce. W interfejsie D-pad i lewa gałka
+przenoszą fokus, A/✕ zatwierdza, a B/○ odpowiada za powrót.
+
+Pomoc pada spowalnia obrót kamery blisko widocznego wroga i lekko
+koryguje kierunek celowania podczas ruchu. Ustawienia pada obejmują
+czułość obu osi, odwrócenie osi Y, martwą strefę, pomoc w celowaniu,
+wibracje z regulacją siły i zmianę przypisań przycisków.
+
+`?scene=pad-test` pokazuje osie i przyciski przed przetworzeniem, wynik
+martwych stref i krzywych, układ kontrolera oraz glify wszystkich akcji.
+
 ## Scena i ręczna weryfikacja
 
 `?scene=player-test&debug=1`: WASD, Shift+W, Spacja (ponownie w locie), mysz po

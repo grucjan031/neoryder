@@ -2,7 +2,7 @@
   "labels": { "gameplay": "Porada", "lore": "Neo-Ryd" },
   "tips": [
     {
-      "text": "Sprint i wciśnięcie przysiadu pozwalają wykonać ślizg pod przeszkodą.",
+      "text": "Sprint {sprint} i wciśnięcie przysiadu {crouch} pozwalają wykonać ślizg pod przeszkodą.",
       "kind": "gameplay"
     },
     {
@@ -14,11 +14,11 @@
       "kind": "gameplay"
     },
     {
-      "text": "Przytrzymaj przycisk ataku, by naładować ciężki cios ostrzem i przebić tarczę przeciwnika.",
+      "text": "Przytrzymaj przycisk ataku {attack}, by naładować ciężki cios ostrzem i przebić tarczę przeciwnika.",
       "kind": "gameplay"
     },
     {
-      "text": "Wciśnij blok tuż przed trafieniem pocisku, by go odbić. Między odbiciami puszczaj przycisk.",
+      "text": "Wciśnij blok {block} tuż przed trafieniem pocisku, by go odbić. Między odbiciami puszczaj przycisk.",
       "kind": "gameplay"
     },
     {
@@ -26,7 +26,7 @@
       "kind": "gameplay"
     },
     {
-      "text": "Ostrzem można też rzucić z dystansu — leci do 16 metrów i wraca z powrotem w dłoń.",
+      "text": "Ostrzem można też rzucić z dystansu {bladeThrow} — leci do 16 metrów i wraca z powrotem w dłoń.",
       "kind": "gameplay"
     },
     {

@@ -11,7 +11,8 @@
   "noModules": "bez modułów",
   "blade": "Ostrze",
   "close": "Wróć do gry",
-  "hint": "Tab lub Esc: wróć do gry",
+  "hint": "{tab} lub {back}: wróć do gry",
+  "padHint": "{back}: wróć do gry",
   "rarities": {
     "common": "Pospolity",
     "rare": "Rzadki",
