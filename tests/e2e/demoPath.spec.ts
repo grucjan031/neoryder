@@ -1,15 +1,32 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { MetaState } from '../../src/core/metaTypes';
-import type { RunState } from '../../src/core/runTypes';
-import level from '../../src/data/levels/m01-maszty.json' with { type: 'json' };
+import m01Level from '../../src/data/levels/m01-maszty.json' with { type: 'json' };
 import achievements from '../../src/data/meta/achievements.json' with { type: 'json' };
 import progression from '../../src/data/meta/progression.json' with { type: 'json' };
+import m01 from '../../src/data/missions/m01-maszty.json' with { type: 'json' };
 import m03 from '../../src/data/missions/m03-list-przewozowy.json' with { type: 'json' };
 import m06 from '../../src/data/missions/m06-odlewnia.json' with { type: 'json' };
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
+// Dozwolone console.error / pageerror. Każdy wpis wymaga nazwy i uzasadnienia;
+// lista jest pusta, bo ścieżka dema nie zgłasza żadnego błędu.
+const ALLOWED_ERRORS: { name: string; pattern: RegExp }[] = [];
+
+type MissionState = {
+  checkpointId: string;
+  objectives: Record<string, string>;
+  activeEncounters: string[];
+  completedEncounters: string[];
+  openGates: string[];
+};
+type FirstClear = { data: number; cores?: number };
+
+// Start misji i powrót do kryjówki przeładowują stronę; odpytanie w trakcie
+// nawigacji zwraca undefined zamiast wyjątku.
 const query = (page: Page, key: string) =>
-  page.evaluate((name) => window.__neoryder?.query(name), key);
+  page
+    .evaluate((name) => window.__neoryder?.query(name), key)
+    .catch(() => undefined);
 const command = async (page: Page, line: string) => {
   const result = await page.evaluate(
     (text) => window.__neoryder?.command(text),
@@ -26,42 +43,208 @@ const poll = (page: Page, key: string, stage: string, timeout = SIM_TIMEOUT) =>
     timeout,
     message: `utknięto na: ${stage}`,
   });
+const mission = async (page: Page) =>
+  ((await query(page, 'mission')) ?? {
+    objectives: {},
+    activeEncounters: [],
+    completedEncounters: [],
+    openGates: [],
+  }) as MissionState;
+const pollMission = (page: Page, stage: string, timeout = SIM_TIMEOUT) =>
+  expect.poll(() => mission(page), {
+    timeout,
+    message: `utknięto na: ${stage}`,
+  });
 
 async function hub(page: Page) {
   await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.sceneId()), {
-      timeout: LOAD_TIMEOUT,
-      message: 'utknięto na: kryjówka / ładowanie',
-    })
+    .poll(
+      () => page.evaluate(() => window.__neoryder?.sceneId()).catch(() => null),
+      { timeout: LOAD_TIMEOUT, message: 'utknięto na: kryjówka / ładowanie' },
+    )
     .toBe('hub');
   await poll(page, 'meta', 'kryjówka / zapis', LOAD_TIMEOUT).toBeTruthy();
 }
 
-async function board(page: Page) {
+/** Tablica misji: status każdej misji dema musi wynikać z postępu kampanii. */
+async function board(page: Page, statuses: Record<string, string>) {
   await command(page, 'hub open missions');
   await expect(page.locator('[data-mission-list]')).toBeVisible();
+  for (const [id, status] of Object.entries(statuses)) {
+    const choice = page.locator(`[data-mission="${id}"]`);
+    if (status === 'Zablokowana') {
+      await expect(choice).toBeDisabled();
+      await expect(choice).toContainText(status);
+    } else {
+      await expect(choice).toBeEnabled();
+      await expect(choice).not.toContainText(/Zablokowana|Wkrótce/);
+      if (status) await expect(choice).toContainText(status);
+    }
+  }
 }
 
-async function launchFromBoard(page: Page, id: string) {
-  await board(page);
+/** Droga gracza: tablica → odprawa → „Rozpocznij misję” → scena `mission`. */
+async function startMission(
+  page: Page,
+  id: string,
+  statuses: Record<string, string>,
+) {
+  await board(page, statuses);
   await page.locator(`[data-mission="${id}"]`).click();
+  await expect(page.locator('[data-mission-briefing]')).toBeVisible();
   await page.locator('.missions-panel__seed input').fill('demo-rc');
   await page
     .getByRole('button', { name: 'Rozpocznij misję', exact: true })
     .click();
-}
-
-async function startMission(page: Page, id: string) {
-  await launchFromBoard(page, id);
   await poll(page, 'screen', `${id} / start`, LOAD_TIMEOUT).toBe('playing');
+  await expect(page).toHaveURL(new RegExp(`scene=mission.*mission=${id}`));
   await command(page, 'god');
 }
 
-async function returnAndReload(
+/** Wejście w strefę spotkania, usunięcie wrogów komendą debug, otwarcie bramy. */
+async function clearEncounter(
   page: Page,
-  completed: string[],
-  missionId: string,
+  id: string,
+  x: number,
+  gate: string | null,
 ) {
+  if (gate) expect((await mission(page)).openGates).not.toContain(gate);
+  await command(page, `tp ${x} 0 -90`);
+  await expect
+    .poll(async () => (await mission(page)).activeEncounters, {
+      timeout: SIM_TIMEOUT,
+      message: `utknięto na: spotkanie ${id} / start`,
+    })
+    .toContain(id);
+  await command(page, 'encounter clear');
+  await expect
+    .poll(async () => (await mission(page)).completedEncounters, {
+      timeout: SIM_TIMEOUT,
+      message: `utknięto na: spotkanie ${id} / koniec`,
+    })
+    .toContain(id);
+  if (gate) expect((await mission(page)).openGates).toContain(gate);
+}
+
+async function playM01(page: Page) {
+  for (const id of m01Level.objectiveOrder) {
+    const position =
+      m01Level.objectivePositions[
+        id as keyof typeof m01Level.objectivePositions
+      ];
+    await command(page, `tp ${position.x} ${position.z} 0 0 ${position.y}`);
+    await pollMission(page, `M01 / cel ${id}`).toMatchObject({
+      objectives: { [id]: 'done' },
+    });
+  }
+}
+
+async function playM03(page: Page) {
+  for (const [id, x, gate] of [
+    ['patrol-nabrzeze', 40, 'gate-patrol-nabrzeze'],
+    ['oslona-celna', 92, 'gate-oslona-celna'],
+    ['posterunek-magazynu', 141, 'gate-magazyn'],
+    ['pierwsza-zmiana', 201, null],
+  ] as const)
+    await clearEncounter(page, id, x, gate);
+
+  // Obrona terminala: gracz stoi w strefie przez pełny transfer (2 s + 90 s
+  // symulacji, przyspieszone skalą czasu), a progi 25/55/85% wzywają posiłki.
+  expect(await command(page, 'objective done exit')).toBe('Cel niedostępny.');
+  await command(page, 'timescale 4');
+  await expect
+    .poll(
+      async () => {
+        const state = await mission(page);
+        if (state.activeEncounters.length > 0)
+          await command(page, 'encounter clear');
+        return state.objectives.terminal;
+      },
+      { timeout: 4 * SIM_TIMEOUT, message: 'utknięto na: M03 / transfer' },
+    )
+    .toBe('done');
+  await command(page, 'timescale 1');
+  // Ostatnie posiłki i pościg mogą jeszcze trwać w chwili ukończenia transferu.
+  await command(page, 'encounter clear');
+  const afterTransfer = await mission(page);
+  expect(afterTransfer.completedEncounters).toEqual(
+    expect.arrayContaining(['transfer-1', 'transfer-2', 'transfer-3']),
+  );
+  expect(afterTransfer.openGates).toContain('gate-dok');
+
+  await command(page, 'tp 230 0 -90');
+  await pollMission(page, 'M03 / punkt kontrolny dok').toMatchObject({
+    checkpointId: 'dok',
+  });
+  await command(page, 'tp 244 -12.6 0');
+}
+
+async function playM06(page: Page) {
+  for (const [id, x, gate] of [
+    ['patrol-sluza', 14, 'gate-sluza'],
+    ['piece', 44, 'gate-piece'],
+    ['formowanie-front', 92, null],
+    ['formowanie-tyl', 113, 'gate-formowanie'],
+    ['straz', 143, 'gate-sztab'],
+  ] as const)
+    await clearEncounter(page, id, x, gate);
+  await command(page, 'tp 167 0 -90');
+  await pollMission(page, 'M06 / punkt kontrolny przed areną').toMatchObject({
+    checkpointId: 'przed-arena',
+  });
+
+  // Arena: wrota zamykają się za graczem, Brandt ginie przez system obrażeń
+  // (trzy fazy), dopiero potem otwiera się gabinet z serwerem.
+  await command(page, 'tp 185 0 -90');
+  await pollMission(page, 'M06 / start areny').toMatchObject({
+    activeEncounters: ['brandt'],
+  });
+  expect((await mission(page)).openGates).not.toContain('gate-sztab');
+  await poll(page, 'enemies', 'M06 / wejście Brandta').toBe(1);
+  await expect(page.locator('.run-hud__boss')).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const state = await mission(page);
+        if (state.objectives.brandt !== 'done') {
+          await command(page, 'kill all');
+          await waitSimSteps(page, 75);
+        }
+        return state.objectives.brandt;
+      },
+      { timeout: SIM_TIMEOUT, message: 'utknięto na: M06 / walka z Brandtem' },
+    )
+    .toBe('done');
+  await pollMission(page, 'M06 / po Brandcie').toMatchObject({
+    objectives: { server: 'pending' },
+    activeEncounters: [],
+    checkpointId: 'po-brandcie',
+  });
+  await expect(page.locator('.run-hud__boss')).toBeHidden();
+  expect((await mission(page)).openGates).not.toContain('gate-winda');
+
+  // Serwer w gabinecie odblokowuje windę towarową.
+  await command(page, 'tp 224 -6 0');
+  await pollMission(page, 'M06 / serwer').toMatchObject({
+    objectives: { server: 'done' },
+  });
+  expect((await mission(page)).openGates).toContain('gate-winda');
+  await command(page, 'tp 216 -11.5 0');
+}
+
+/**
+ * Podsumowanie → kryjówka → debrief → reload. Zwraca stan meta, który musi
+ * przetrwać odświeżenie w całości (kampania, waluty, rozliczenia, naszywki).
+ */
+async function settleAndReload(
+  page: Page,
+  missionId: string,
+  completed: string[],
+) {
+  await expect(page.locator('[data-mission-summary]')).toBeVisible({
+    timeout: LOAD_TIMEOUT,
+  });
+  expect(await query(page, 'saveError')).toBeNull();
   await page
     .getByRole('button', { name: 'Wróć do kryjówki', exact: true })
     .click();
@@ -72,214 +255,82 @@ async function returnAndReload(
   await page
     .getByRole('button', { name: 'Zakończ rozmowę', exact: true })
     .click();
+  // Okno znika dopiero po zapisie meta; przeładowanie wcześniej gubi wyczyszczony debrief.
   await expect(page.locator('[data-mission-debrief]')).toBeHidden({
     timeout: LOAD_TIMEOUT,
   });
   await poll(page, 'meta', `${missionId} / rozliczenie`).toMatchObject({
     campaign: { completed, pendingDebrief: null },
   });
-  const before = (await query(page, 'meta')) as MetaState;
+  const settled = (await query(page, 'meta')) as MetaState;
   await page.reload();
   await hub(page);
-  // Cały stan, w tym waluty, historia rozliczeń i naszywki, musi być identyczny.
   await poll(page, 'meta', `${missionId} / reload`, LOAD_TIMEOUT).toEqual(
-    before,
+    settled,
   );
   await expect(page.locator('[data-mission-debrief]')).toHaveCount(0);
-  return before;
+  return settled;
 }
 
-function rewardDelta(before: MetaState, after: MetaState) {
-  const record = after.lastRuns[0]!;
-  const badges = achievements.filter(
-    (a) =>
-      after.achievements.unlocked.includes(a.id) &&
-      !before.achievements.unlocked.includes(a.id),
-  );
-  expect(after.data - before.data).toBe(
-    record.rewards.data +
-      badges.reduce((sum, a) => sum + (a.reward.data ?? 0), 0),
-  );
-  expect(after.cores - before.cores).toBe(
-    record.rewards.cores +
-      badges.reduce((sum, a) => sum + (a.reward.cores ?? 0), 0),
-  );
-  expect(after.xp - before.xp).toBe(record.rewards.xp);
-  expect(after.appliedRunIds).toHaveLength(before.appliedRunIds.length + 1);
-  expect(new Set(after.appliedRunIds).size).toBe(after.appliedRunIds.length);
-  console.log(
-    `demo-rc / nagrody: ${JSON.stringify({
-      przed: { xp: before.xp, data: before.data, cores: before.cores },
-      po: { xp: after.xp, data: after.data, cores: after.cores },
-      run: record.rewards,
-      naszywki: badges.map((badge) => badge.id),
-    })}`,
-  );
-}
-
-async function linearObjectives(page: Page) {
-  for (const id of level.objectiveOrder) {
-    await test.step(`M01 / cel ${id}`, async () => {
-      const position =
-        level.objectivePositions[id as keyof typeof level.objectivePositions];
-      await command(page, `tp ${position.x} ${position.z} 0 0 ${position.y}`);
-      await poll(page, 'mission', `M01 / cel ${id}`).toMatchObject({
-        objectives: { [id]: 'done' },
-      });
-    });
-  }
-  await poll(page, 'screen', 'M01 / podsumowanie', LOAD_TIMEOUT).toBe(
-    'summary',
-  );
-}
-
-// Kontynuacja diagnostyczna po zablokowanym przycisku: ten sam kontekst i zapis.
-// Nie odblokowuje kampanii i nie oznacza żadnego celu jako ukończonego.
-async function legacyMission(page: Page, id: string, fromBoard: boolean) {
-  if (fromBoard) await launchFromBoard(page, id);
-  else
-    await page.goto(
-      `/?scene=run&mission=${id}&seed=demo-rc&loadout=meta&debug=1&fx=lite`,
-    );
-  // Pierwsze wejście do hosta run po wielu nawigacjach na SwiftShaderze
-  // przekroczyło 90 s; mapa ostatecznie się załadowała, bez błędu konsoli.
-  await poll(
-    page,
-    'screen',
-    `${id} / start wariantu run`,
-    2 * LOAD_TIMEOUT,
-  ).toBe('map');
-  await command(page, 'god');
-  await command(page, 'timescale 4');
-  for (let layer = 1; layer <= 7; layer++) {
-    await test.step(`${id} / warstwa ${layer}`, async () => {
-      await poll(page, 'screen', `${id} / mapa ${layer}`, LOAD_TIMEOUT).toBe(
-        'map',
-      );
-      await page.locator('.run-screen [data-node-id]:enabled').first().click();
-      await poll(
-        page,
-        'loading',
-        `${id} / ładowanie ${layer}`,
-        LOAD_TIMEOUT,
-      ).toBe(false);
-      await expect
-        .poll(() => query(page, 'screen'), {
-          timeout: LOAD_TIMEOUT,
-          message: `utknięto na: ${id} / pokój ${layer}`,
-        })
-        .toMatch(/^(room|shop|rest)$/);
-      const screen = await query(page, 'screen');
-      if (screen === 'room') {
-        if (layer === 7) return;
-        // Zabijanie przez system obrażeń zachowuje fale, łupy i statystyki.
-        await expect
-          .poll(
-            async () => {
-              if ((await query(page, 'screen')) === 'room')
-                await command(page, 'kill all');
-              return query(page, 'screen');
-            },
-            {
-              timeout: SIM_TIMEOUT,
-              message: `utknięto na: ${id} / walka ${layer}`,
-            },
-          )
-          .toBe('reward');
-        await page.locator('.run-screen__card').first().click();
-      } else if (screen === 'rest') {
-        await page.locator('.run-screen__heal').click();
-      } else {
-        await page.getByRole('button', { name: 'Wyjdź', exact: true }).click();
-      }
-      console.log(`demo-rc / ${id}: warstwa ${layer}`);
-    });
-  }
-  const objectives = id === m03.id ? m03.objectives : m06.objectives;
-  for (const objective of objectives) {
-    await test.step(`${id} / cel ${objective.id}`, async () => {
-      if (objective.kind === 'defend') await command(page, 'timescale 4');
-      if ('position' in objective && objective.position) {
-        const { x, y, z } = objective.position;
-        await command(page, `tp ${x} ${z} 0 0 ${y}`);
-      }
-      await expect
-        .poll(
-          async () => {
-            if ((await query(page, 'screen')) === 'room')
-              await command(page, 'kill all');
-            return query(page, 'mission');
-          },
-          {
-            // Transfer M03 trwa 92 s symulacji; dajemy zapas także na wolnym GPU.
-            timeout:
-              objective.kind === 'defend' ? 4 * SIM_TIMEOUT : SIM_TIMEOUT,
-            message: `utknięto na: ${id} / cel ${objective.id}`,
-          },
-        )
-        .toMatchObject({ objectives: { [objective.id]: 'done' } });
-      if (objective.kind === 'defend') await command(page, 'timescale 1');
-    });
-  }
-  await poll(page, 'screen', `${id} / podsumowanie`, LOAD_TIMEOUT).toBe(
-    'summary',
-  );
-  await poll(page, 'savePending', `${id} / zapis nagród`, LOAD_TIMEOUT).toBe(
-    false,
-  );
-  expect(await query(page, 'saveError')).toBeNull();
-  expect(await query(page, 'rewardError')).toBeNull();
-  expect(await query(page, 'runError')).toBeNull();
-  const state = (await query(page, 'runState')) as RunState;
-  expect(state.seed).toBe('demo-rc');
-  expect(state.visited).toHaveLength(7);
-  return state;
-}
-
-function legacyReward(
+/**
+ * Reguła z docs/systems/missions.md: pierwsze ukończenie = zwykłe nagrody runu
+ * + firstClear, powtórka = same zwykłe nagrody. Naszywki rozliczane są osobno.
+ */
+function expectRewards(
   before: MetaState,
   after: MetaState,
-  state: RunState,
-  firstClear: { data: number; cores?: number },
+  firstClear: FirstClear | null,
 ) {
-  // Wszystkie próby używają bazowego zagrożenia; nagrody zwykłego runu są
-  // niezależne od firstClear i mogą się różnić przez liczbę zabitych wrogów.
-  expect(state.threatLevel).toBe(0);
   const rules = progression.rewards;
-  const elites = state.map.layers
-    .flat()
-    .filter(
-      (node) => node.type === 'elite' && state.visited.includes(node.id),
-    ).length;
-  expect(after.lastRuns[0]!.rewards).toEqual({
-    xp: 7 * rules.xpPerRoom + elites * rules.xpPerElite + rules.xpVictory,
-    data:
-      7 * rules.dataPerRoom +
-      state.stats.kills * rules.dataPerKill +
-      rules.dataVictory +
-      firstClear.data,
-    cores:
-      elites * rules.coresPerElite +
-      rules.coresVictory +
-      (firstClear.cores ?? 0),
+  const run = after.lastRuns[0]!.rewards;
+  expect(run).toEqual({
+    xp: rules.xpVictory,
+    data: rules.dataVictory + (firstClear?.data ?? 0),
+    cores: rules.coresVictory + (firstClear?.cores ?? 0),
   });
-  rewardDelta(before, after);
+  const badges = achievements.filter(
+    (badge) =>
+      after.achievements.unlocked.includes(badge.id) &&
+      !before.achievements.unlocked.includes(badge.id),
+  );
+  const badgeSum = (key: 'data' | 'cores') =>
+    badges.reduce((sum, badge) => sum + (badge.reward[key] ?? 0), 0);
+  expect(after.xp - before.xp).toBe(run.xp);
+  expect(after.data - before.data).toBe(run.data + badgeSum('data'));
+  expect(after.cores - before.cores).toBe(run.cores + badgeSum('cores'));
+  expect(after.appliedRunIds).toHaveLength(before.appliedRunIds.length + 1);
+  expect(new Set(after.appliedRunIds).size).toBe(after.appliedRunIds.length);
+  return { run, badges: badges.map((badge) => badge.id) };
 }
 
 async function tutorial(page: Page) {
-  const step = async (number: number) => {
-    await poll(page, 'tutorialStep', `samouczek / krok ${number}`).toBe(number);
-    console.log(`demo-rc / samouczek: krok ${number}`);
-  };
+  const step = (number: number) =>
+    poll(page, 'tutorialStep', `samouczek / krok ${number}`).toBe(number);
   await step(1);
   await command(page, 'tp 0 8 0 0 0');
   await step(2);
-  await command(page, 'tp 0 6 0 0 0');
-  await waitSimSteps(page, 10);
-  await page.keyboard.press('Space');
-  await waitSimSteps(page, 3);
-  await page.keyboard.press('Space');
-  await command(page, 'tp 0 3 0 0 2.4');
+  // Krótkie naciśnięcie może wypaść między klatkami wolnego GPU; ćwiczenie
+  // jest wtedy powtarzane od pozycji startowej.
+  await expect
+    .poll(
+      async () => {
+        if ((await query(page, 'tutorialStep')) !== 2) return true;
+        await command(page, 'tp 0 6 0 0 0');
+        await waitSimSteps(page, 10);
+        await page.keyboard.press('Space');
+        await waitSimSteps(page, 3);
+        await page.keyboard.press('Space');
+        await command(page, 'tp 0 3 0 0 2.4');
+        await waitSimSteps(page, 30);
+        return false;
+      },
+      {
+        timeout: SIM_TIMEOUT,
+        intervals: [1],
+        message: 'utknięto na: samouczek / podwójny skok',
+      },
+    )
+    .toBe(true);
   await step(3);
   await command(page, 'timescale 0.1');
   await command(page, 'tp 0 1 0 0 0');
@@ -416,10 +467,10 @@ test('S10-02: całe demo na jednym zapisie', async ({
   page,
   context,
 }, testInfo) => {
-  test.setTimeout(1_800_000);
+  test.setTimeout(1_200_000);
   const errors: string[] = [];
-  const blocked: string[] = [];
   const timings: Record<string, number> = {};
+  const settlements: Record<string, unknown> = {};
   // Menu gubi seed w nawigacji. Normalizacja wyłącznie parametru URL
   // zachowuje deterministyczny RNG również w samouczku i kryjówce.
   await context.addInitScript(() => {
@@ -430,150 +481,94 @@ test('S10-02: całe demo na jednym zapisie', async ({
       history.replaceState(null, '', url);
     }
   });
-  // Brak ignorowanych błędów: ostrzeżenia WebGL nie są console.error.
+  const report = (text: string) => {
+    if (!ALLOWED_ERRORS.some((allowed) => allowed.pattern.test(text)))
+      errors.push(text);
+  };
   page.on('console', (message) => {
-    if (message.type() === 'error')
-      errors.push(`console.error: ${message.text()}`);
+    if (message.type() === 'error') report(`console.error: ${message.text()}`);
   });
-  page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
-  const stage = async (name: string, action: () => Promise<void>) =>
+  page.on('pageerror', (error) => report(`pageerror: ${error.message}`));
+  const stage = (name: string, action: () => Promise<void>) =>
     test.step(name, async () => {
       const started = Date.now();
       try {
         await action();
       } finally {
         timings[name] = (Date.now() - started) / 1000;
-        console.log(`demo-rc / ${name}: ${timings[name]} s`);
       }
     });
+
+  const missions = [
+    { definition: m01, play: playM01 },
+    { definition: m03, play: playM03 },
+    { definition: m06, play: playM06 },
+  ];
+  const completed: string[] = [];
+  const boardStatuses = () =>
+    Object.fromEntries(
+      missions.map(({ definition }) => [
+        definition.id,
+        completed.includes(definition.id)
+          ? 'Ukończona'
+          : definition.requires.every((id) => completed.includes(id))
+            ? ''
+            : 'Zablokowana',
+      ]),
+    );
+
   try {
     await stage('czysty zapis / menu', async () => {
       expect((await context.storageState({ indexedDB: true })).origins).toEqual(
         [],
       );
       await page.goto('/?seed=demo-rc&debug=1&fx=lite');
-      await expect(
-        page.getByRole('button', { name: 'Samouczek', exact: true }),
-      ).toBeVisible();
       await page
         .getByRole('button', { name: 'Samouczek', exact: true })
         .click();
     });
     await stage('samouczek', () => tutorial(page));
-    let before = (await query(page, 'meta')) as MetaState;
-    await stage('M01 / pierwsze ukończenie i reload', async () => {
-      await startMission(page, 'm01-maszty');
-      await linearObjectives(page);
-      const after = await returnAndReload(page, ['m01-maszty'], 'm01-maszty');
-      rewardDelta(before, after);
-      expect(after.lastRuns[0]!.rewards).toEqual({ xp: 0, data: 60, cores: 0 });
-      before = after;
-    });
-    const completed = ['m01-maszty'];
-    const availableRoutes = new Map<string, boolean>();
-    for (const mission of [m03, m06]) {
-      let available = false;
-      await stage(`${mission.id} / dostępność na tablicy`, async () => {
-        await board(page);
-        const choice = page.locator(`[data-mission="${mission.id}"]`);
-        await expect
-          .poll(() => choice.isVisible(), {
-            timeout: LOAD_TIMEOUT,
-            message: `utknięto na: ${mission.id} / tablica`,
-          })
-          .toBe(true);
-        if (!(await choice.isEnabled())) {
-          // Znana przyczyna: missionsPanel.ts:332, brak level w M03/M06.
-          // Drugie potwierdzenie po reloadzie tego samego zapisu jest wymagane
-          // w KAŻDYM przebiegu, zanim dopuścimy odroczone fixme.
-          await expect(choice).toContainText('Wkrótce');
-          const saved = await query(page, 'meta');
-          await page.reload();
-          await hub(page);
-          await poll(
-            page,
-            'meta',
-            `${mission.id} / potwierdzenie zapisu`,
-          ).toEqual(saved);
-          await board(page);
-          await expect
-            .poll(() => choice.isEnabled(), {
-              timeout: LOAD_TIMEOUT,
-              message: `utknięto na: ${mission.id} / drugie potwierdzenie blokady`,
-            })
-            .toBe(false);
-          await expect(choice).toContainText('Wkrótce');
-          const reason = `${mission.id}: tablica blokuje misję po spełnieniu wymagań (brak level)`;
-          blocked.push(reason);
-          testInfo.annotations.push({ type: 'fixme', description: reason });
-          await page.screenshot({
-            path: testInfo.outputPath(`${mission.id}-tablica.png`),
-          });
-          return;
-        }
-        await expect
-          .poll(
-            () => page.locator(`[data-mission="${mission.id}"]`).isEnabled(),
-            {
-              timeout: SIM_TIMEOUT,
-              message: `utknięto na: ${mission.id} / tablica po ${completed.at(-1)}`,
-            },
-          )
-          .toBe(true);
-        available = true;
-      });
-      availableRoutes.set(mission.id, available);
-      // Dalsza diagnostyka na tym samym zapisie; fixme dopiero na końcu,
-      // żeby znana blokada nie wyciszała błędów nagród, zapisu ani konsoli.
-      before = (await query(page, 'meta')) as MetaState;
-      await stage(
-        `${mission.id} / kontynuacja diagnostyczna i reload`,
-        async () => {
-          const state = await legacyMission(page, mission.id, available);
-          completed.push(mission.id);
-          const after = await returnAndReload(page, completed, mission.id);
-          legacyReward(before, after, state, mission.rewards.firstClear);
-          before = after;
-        },
-      );
-    }
-    await poll(page, 'meta', 'koniec kampanii dema').toMatchObject({
-      campaign: {
-        completed: ['m01-maszty', m03.id, m06.id],
+    let meta = (await query(page, 'meta')) as MetaState;
+    expect(meta.campaign.completed).toEqual([]);
+
+    for (const pass of ['pierwsze ukończenie', 'powtórka'] as const)
+      for (const { definition, play } of missions)
+        await stage(`${definition.id} / ${pass} i reload`, async () => {
+          const first = pass === 'pierwsze ukończenie';
+          await startMission(page, definition.id, boardStatuses());
+          await play(page);
+          if (first) completed.push(definition.id);
+          const after = await settleAndReload(page, definition.id, completed);
+          settlements[`${definition.id} / ${pass}`] = {
+            ...expectRewards(
+              meta,
+              after,
+              first ? definition.rewards.firstClear : null,
+            ),
+            stan: { xp: after.xp, data: after.data, cores: after.cores },
+          };
+          meta = after;
+        });
+
+    await stage('koniec kampanii / tablica', async () => {
+      expect(meta.campaign).toMatchObject({
+        completed: [m01.id, m03.id, m06.id],
         pendingDebrief: null,
-      },
-    });
-    await stage('M01 / powtórka D6 i reload', async () => {
-      await startMission(page, 'm01-maszty');
-      await linearObjectives(page);
-      const after = await returnAndReload(page, completed, 'm01-maszty');
-      rewardDelta(before, after);
-      expect(after.lastRuns[0]!.rewards).toEqual({ xp: 0, data: 0, cores: 0 });
-      before = after;
-    });
-    for (const mission of [m03, m06]) {
-      await stage(`${mission.id} / powtórka D6 i reload`, async () => {
-        const state = await legacyMission(
-          page,
-          mission.id,
-          availableRoutes.get(mission.id) === true,
-        );
-        const after = await returnAndReload(page, completed, mission.id);
-        legacyReward(before, after, state, { data: 0 });
-        before = after;
       });
-    }
+      await board(page, boardStatuses());
+    });
   } finally {
-    await testInfo.attach('demo-rc-etapy', {
-      body: JSON.stringify(timings, null, 2),
-      contentType: 'application/json',
-    });
-    await testInfo.attach('demo-rc-bledy', {
-      body: JSON.stringify(errors, null, 2),
-      contentType: 'application/json',
-    });
+    for (const [name, body] of Object.entries({
+      'demo-rc-etapy': timings,
+      'demo-rc-nagrody': settlements,
+      'demo-rc-bledy': errors,
+    }))
+      await testInfo.attach(name, {
+        body: JSON.stringify(body, null, 2),
+        contentType: 'application/json',
+      });
+    console.log(`demo-rc / etapy [s]: ${JSON.stringify(timings)}`);
+    console.log(`demo-rc / nagrody: ${JSON.stringify(settlements)}`);
     expect(errors, 'console.error / pageerror z całej ścieżki').toEqual([]);
   }
-  if (testInfo.errors.length === 0)
-    test.fixme(blocked.length > 0, blocked.join('; '));
 });
