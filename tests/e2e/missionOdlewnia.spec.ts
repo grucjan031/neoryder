@@ -1,17 +1,29 @@
 import { expect, test, type Page } from '@playwright/test';
-import { LOAD_TIMEOUT, waitSimSteps } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
+// Start misji przeładowuje stronę; odpytanie w trakcie nawigacji zwraca undefined zamiast wyjątku.
 const query = (page: Page, key: string) =>
-  page.evaluate((name) => window.__neoryder?.query(name), key);
-
-test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i kampania', async ({
-  page,
-}) => {
-  test.setTimeout(600_000);
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/?scene=hub&debug=1&fx=lite');
-  await expect
+  page
+    .evaluate((name) => window.__neoryder?.query(name), key)
+    .catch(() => undefined);
+const command = (page: Page, line: string) =>
+  page.evaluate((text) => window.__neoryder?.command(text), line);
+type MissionState = {
+  checkpointId: string;
+  objectives: Record<string, string>;
+  activeEncounters: string[];
+  completedEncounters: string[];
+  openGates: string[];
+};
+const mission = async (page: Page) =>
+  ((await query(page, 'mission')) ?? {
+    activeEncounters: [],
+    completedEncounters: [],
+    openGates: [],
+    objectives: {},
+  }) as MissionState;
+const openMissions = (page: Page) =>
+  expect
     .poll(
       () =>
         page.evaluate(() => {
@@ -23,7 +35,22 @@ test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i 
       { timeout: LOAD_TIMEOUT },
     )
     .toBe(true);
-  await expect(page.locator('[data-mission="m06-odlewnia"]')).toBeDisabled();
+
+test('Odlewnia: tablica po M03, starcia, arena Brandta, serwer, winda, debrief i kampania', async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  const foundry = page.locator('[data-mission="m06-odlewnia"]');
+
+  // Bez M03 misja czeka na wymagania, ale nie jest już „Wkrótce”.
+  await page.goto('/?scene=hub&debug=1&fx=lite');
+  await openMissions(page);
+  await expect(foundry).toBeDisabled();
+  await expect(foundry).toContainText('Zablokowana');
+  await expect(foundry).not.toContainText('Wkrótce');
+
   await page.goto('/?scene=run&debug=1&fx=lite');
   await expect
     .poll(
@@ -40,108 +67,119 @@ test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i 
     .toBe(true);
   await expect.poll(() => query(page, 'savePending')).toBe(false);
   expect(await query(page, 'saveError')).toBeNull();
+
+  // Start z tablicy: przerywnik i odprawa, potem scena misji liniowej.
   await page.goto('/?scene=hub&debug=1&fx=lite');
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const game = window.__neoryder;
-          if (game?.sceneId() !== 'hub' || !game.query('meta')) return false;
-          game.command('hub open missions');
-          return true;
-        }),
-      { timeout: LOAD_TIMEOUT },
-    )
-    .toBe(true);
-  await expect(page.locator('[data-mission="m06-odlewnia"]')).toBeDisabled();
-  await expect(page.locator('[data-mission="m06-odlewnia"]')).toContainText(
-    'Wkrótce',
+  await openMissions(page);
+  await expect(foundry).toBeEnabled();
+  await foundry.click();
+  await expect(page.locator('[data-mission-briefing]')).toContainText(
+    'Odprawa · Odlewnia',
   );
-  // D6: stary wariant pozostaje do sprawdzenia przez bezpośredni URL.
-  await page.goto(
-    '/?scene=run&mission=m06-odlewnia&loadout=meta&debug=1&fx=lite',
-  );
-  // Nieśmiertelność na cały run, zanim wejdziemy do pierwszego pokoju (fx=lite na wolnym CI).
-  await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.query('screen')), {
-      timeout: LOAD_TIMEOUT,
-    })
-    .toBe('map');
-  await page.evaluate(() => window.__neoryder?.command('god'));
-  for (let layer = 1; layer <= 7; layer++) {
-    await expect
-      .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
-      .toBe('map');
-    await page.keyboard.press('Digit1');
-    await expect
-      .poll(
-        () =>
-          page.evaluate((final) => {
-            const game = window.__neoryder;
-            if (!game || game.query('loading') !== false) return false;
-            const screen = game.query('screen');
-            if (screen === 'shop' || screen === 'rest') return true;
-            if (screen !== 'room') return false;
-            if (final) return game.query('room') === 'bossRoom';
-            game.command('run clear');
-            return true;
-          }, layer === 7),
-        { timeout: LOAD_TIMEOUT },
-      )
-      .toBe(true);
-    if (layer < 7) {
-      await expect
-        .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
-        .toMatch(/^(reward|shop|rest)$/);
-      const screen = await query(page, 'screen');
-      if (screen === 'reward')
-        await page.locator('.run-screen__card').first().click();
-      else if (screen === 'rest')
-        await page.locator('.run-screen__heal').click();
-      else
-        await page.getByRole('button', { name: 'Wyjdź', exact: true }).click();
-    }
-  }
-  const command = (cmd: string) =>
-    page.evaluate((text) => window.__neoryder?.command(text), cmd);
-  expect(await command('objective done server')).toBe('Cel niedostępny.');
-  expect(await command('objective done exit')).toBe('Cel niedostępny.');
-  for (let phase = 1; phase <= 3; phase++) {
-    await waitSimSteps(page, 75);
-    await command('kill all');
-  }
-  await expect
-    .poll(() => query(page, 'missionObjectives'))
-    .toMatchObject({ objectives: { brandt: 'done' } });
-  expect(await query(page, 'screen')).toBe('room');
-  expect(await query(page, 'enemies')).toBe(0);
-  expect(await command('objective done exit')).toBe('Cel niedostępny.');
-  await command('objective done server');
-  expect(await query(page, 'screen')).toBe('room');
-  await command('objective done exit');
+  await page
+    .getByRole('button', { name: 'Rozpocznij misję', exact: true })
+    .click();
   await expect
     .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
-    .toBe('summary');
-  await expect(page.getByText('Zwycięstwo', { exact: true })).toBeVisible();
+    .toBe('playing');
+  await expect(page).toHaveURL(/scene=mission.*mission=m06-odlewnia/);
+  expect(await query(page, 'runState')).toBeUndefined();
+  await expect(page.locator('[data-mission-direction]')).toContainText(
+    'Pokonaj Oskara Brandta',
+  );
+  expect(await command(page, 'objective done server')).toBe('Cel niedostępny.');
+  await command(page, 'god');
+
+  // Pięć starć przed areną: każde otwiera bramę następnego odcinka.
+  for (const [id, x, gate] of [
+    ['patrol-sluza', 14, 'gate-sluza'],
+    ['piece', 44, 'gate-piece'],
+    ['formowanie-front', 92, null],
+    ['formowanie-tyl', 113, 'gate-formowanie'],
+    ['straz', 143, 'gate-sztab'],
+  ] as const) {
+    if (gate) expect((await mission(page)).openGates).not.toContain(gate);
+    await command(page, `tp ${x} 0 -90`);
+    await expect
+      .poll(async () => (await mission(page)).activeEncounters, {
+        timeout: SIM_TIMEOUT,
+      })
+      .toContain(id);
+    await command(page, 'encounter clear');
+    await expect
+      .poll(async () => (await mission(page)).completedEncounters, {
+        timeout: SIM_TIMEOUT,
+      })
+      .toContain(id);
+    if (gate) expect((await mission(page)).openGates).toContain(gate);
+  }
+  await command(page, 'tp 167 0 -90');
+  await expect
+    .poll(async () => (await mission(page)).checkpointId, {
+      timeout: SIM_TIMEOUT,
+    })
+    .toBe('przed-arena');
+
+  // Arena: wrota zamykają się za graczem, Brandt schodzi po zapowiedzi, pasek bossa ma trzy fazy.
+  await command(page, 'tp 185 0 -90');
+  await expect
+    .poll(async () => (await mission(page)).activeEncounters, {
+      timeout: SIM_TIMEOUT,
+    })
+    .toEqual(['brandt']);
+  expect((await mission(page)).openGates).not.toContain('gate-sztab');
+  await expect
+    .poll(() => query(page, 'enemies'), { timeout: SIM_TIMEOUT })
+    .toBe(1);
+  const bossBar = page.locator('.run-hud__boss');
+  await expect(bossBar).toBeVisible();
+  await expect(bossBar).toContainText('Dyrektor Ochrony Kurogane Arms');
+  expect(await command(page, 'objective done exit')).toBe('Cel niedostępny.');
+  for (let phase = 1; phase <= 3; phase++) {
+    await command(page, 'kill all');
+    await waitSimSteps(page, 75);
+  }
+  await expect
+    .poll(() => mission(page), { timeout: SIM_TIMEOUT })
+    .toMatchObject({
+      objectives: { brandt: 'done', server: 'pending' },
+      activeEncounters: [],
+      checkpointId: 'po-brandcie',
+    });
+  expect(await query(page, 'enemies')).toBe(0);
+  await expect(bossBar).toBeHidden();
+  const afterBoss = await mission(page);
+  expect(afterBoss.openGates).toEqual(
+    expect.arrayContaining(['gate-sztab', 'gate-gabinet']),
+  );
+  expect(afterBoss.openGates).not.toContain('gate-winda');
+  await expect(page.locator('[data-mission-direction]')).toContainText(
+    'Zgraj serwer ochrony',
+  );
+
+  // Serwer w gabinecie (3 s w strefie) odblokowuje windę towarową (2 s).
+  await command(page, 'tp 224 -6 0');
+  await expect
+    .poll(async () => (await mission(page)).objectives.server, {
+      timeout: SIM_TIMEOUT,
+    })
+    .toBe('done');
+  expect((await mission(page)).openGates).toContain('gate-winda');
+  await command(page, 'tp 216 -11.5 0');
+  await expect(page.locator('[data-mission-summary]')).toBeVisible({
+    timeout: LOAD_TIMEOUT,
+  });
   await page
     .getByRole('button', { name: 'Wróć do kryjówki', exact: true })
     .click();
   await expect(
     page.locator('[data-mission-debrief="m06-odlewnia"]'),
   ).toContainText('Mam cały serwer Brandta.', { timeout: LOAD_TIMEOUT });
-  await expect(page.locator('[data-mission-debrief] h2')).toBeInViewport();
-  await expect(
-    page.locator('[data-mission-debrief] p').first(),
-  ).toBeInViewport();
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
   // Okno znika dopiero po zapisie meta; przeładowanie wcześniej gubi wyczyszczony debrief.
   await expect(page.locator('[data-mission-debrief]')).toBeHidden({
     timeout: LOAD_TIMEOUT,
   });
-  await page.evaluate(() => window.__neoryder?.command('hub open missions'));
-  await expect(page.locator('[data-mission="m06-odlewnia"]')).toContainText(
-    'Wkrótce',
-  );
   await page.reload();
   await expect
     .poll(() => query(page, 'meta'), { timeout: LOAD_TIMEOUT })
@@ -152,5 +190,7 @@ test('Odlewnia: M03 odblokowuje misję, boss → serwer → winda → debrief i 
       },
     });
   await expect(page.locator('[data-mission-debrief]')).toHaveCount(0);
+  await openMissions(page);
+  await expect(foundry).toContainText('Ukończona');
   expect(errors).toEqual([]);
 });

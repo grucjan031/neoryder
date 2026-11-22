@@ -1,0 +1,6 @@
+{
+  "id": "darkness",
+  "name": "Ciemność",
+  "description": "Arenę słabiej oświetla światło ogólne. Neony i sygnały walki pozostają widoczne.",
+  "effect": { "stat": "arenaLightScale", "value": 0.2 }
+}

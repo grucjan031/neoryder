@@ -25,6 +25,26 @@ const openHub = async (page: Page, extra = '') => {
   await waitSimSteps(page, 5);
 };
 
+test('hub: świeży zapis prowadzi do Tablicy misji i chowa przewodnik przy nakładkach', async ({
+  page,
+}) => {
+  await openHub(page);
+  const guide = page.locator('[data-hub-guide][data-target="missions"]');
+  await expect(guide).toBeVisible();
+  await expect(guide).toContainText('Tablica misji');
+  await command(page, 'hub open missions');
+  await expect(guide).toBeHidden();
+  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await expect(guide).toBeVisible();
+  await command(page, 'hub map');
+  await expect(guide).toBeHidden();
+  await command(page, 'hub map');
+  await expect(guide).toBeVisible();
+  const station = hideout.stations.find(({ id }) => id === 'missions')!;
+  await command(page, `hub tp ${station.position.x} ${station.position.z}`);
+  await expect(guide).toBeHidden();
+});
+
 test('hub: odblokowane otoczenie i wymuszony przejazd nie zgłaszają błędów Web Audio', async ({
   page,
 }) => {

@@ -144,6 +144,23 @@ HUD reaguje na `status_applied`/`status_expired` gracza.
 
 ## Warsztat modułów broni
 
+### Łup z elity i wydobycie (zapis v7)
+
+`RunEconomy.offerModules()` zwraca id dodatkowych modułów na ekranie nagrody
+po elicie. `chooseReward(implantId?, moduleId?)` waliduje wybór z obu ofert
+i kończy nagrodę jednym przejściem na mapę. `RunState.foundModules` i
+`RunSummary.foundModules` zawierają wyłącznie id zdobyte w tym runie.
+Brak pola oznacza pusty łup. `RunManager.addFoundModule(id)` dodaje znany
+moduł raz do aktywnego runu.
+
+`MetaManager.applyRun(summary, runId)` zapisuje w `MetaState.pendingExtractions`
+ofertę `{ runId, moduleIds }` razem z pozostałymi nagrodami. Zwycięstwo
+udostępnia wszystkie znalezione i jeszcze zablokowane moduły. Po śmierci
+rozmiar puli ogranicza `tuning.run.deathModulePoolSize`. W warsztacie
+`MetaManager.extractModule(runId, moduleId)` zużywa ofertę danego runu
+i dodaje trwałe odblokowanie `module:<id>`. Hub zapisuje obie zmiany
+w jednej migawce meta. Wznowienie rozliczenia używa istniejącej oferty.
+
 Rozszerzenie S4c-A: `MODULE_SLOTS = ['muzzle', 'cell', 'optic']`, typ `ModuleSlot`.
 Moduł wymaga `slot` i `visual: { shape, color }` (kształt zgodny ze slotem).
 `modulePatches` sortuje moduły według `MODULE_SLOTS`. Limit wynosi 3, po jednym
@@ -483,7 +500,7 @@ Wczytany zapis z `saveVersion < SAVE_VERSION` jest migrowany; z `saveVersion > S
 ```ts
 export type Action = 'moveForward' | 'moveBack' | 'moveLeft' | 'moveRight'
   | 'jump' | 'sprint' | 'dash' | 'crouch' | 'attack' | 'block' | 'swap' | 'power'
-  | 'power2' | 'weapon1' | 'weapon2' | 'weapon3' | 'bladeThrow';
+  | 'power2' | 'weapon1' | 'weapon2' | 'weapon3' | 'bladeThrow' | 'coolWeapon';
 export type BindingOverrides = Partial<Record<Action, string>>;
 export function resolveBindings(overrides?: BindingOverrides): Record<string, Action>;
 export function assignBinding(overrides: BindingOverrides, action: Action, code: string): BindingOverrides;
@@ -537,8 +554,25 @@ export interface Scene {
 }
 
 export type SceneFactory = () => Scene;
-export const scenes: Record<string, SceneFactory>;   // src/scenes/index.ts
+/** Pobiera chunk sceny (`import()`) i zwraca jej fabrykę; samo wywołanie nie buduje sceny. */
+export type SceneLoader = () => Promise<SceneFactory>;
+export const scenes: Record<string, SceneLoader>;   // src/scenes/index.ts
 ```
+
+Rejestr jest asynchroniczny: `const scene = (await scenes[id]())()`. `src/scenes/index.ts` nie importuje statycznie żadnej
+sceny, a `main.ts` pobiera scenę, `three` i `render/outline` dopiero dla `?scene=<id>`; scenę buduje po rendererze,
+jakości i kamerze, przed `scene.init()`.
+
+**Co wolno importować statycznie z kodu menu** (`main.ts`, `ui/mainMenu`, `ui/bootSplash`, `core/save`, `progression/meta`):
+tylko moduły danych i schematów bez Rapiera, `three` i danych pokoi. Służą do tego lekkie odpowiedniki rejestrów:
+
+| Lekki moduł (menu, zapis, meta)                                  | Pełny moduł (tylko sceny)                                       |
+| ---------------------------------------------------------------- | --------------------------------------------------------------- |
+| `combat/powers/definitions` — `powerDefinitions`, `loadPower*`   | `combat/powers/registry` — to samo (reeksport) + fabryki mocy   |
+| `world/missionCatalog` — `missionCatalog` (sam schemat)          | `world/missions` — `missionDefinitions` (+ pokoje, wymagania)   |
+| `world/runSchema` — `runStateSchema`, `sectorMapSchema` i inne   | `world/run` — to samo (reeksport) + `RunManager`                |
+
+Pilnuje `tests/unit/sceneRegistry.test.ts` (domknięcie importów statycznych `main.ts`).
 
 ## Debug — `window.__neoryder`
 
@@ -757,6 +791,8 @@ export const STATUS_TAG = '#status'; export const STUNNED = 'stunned';
 interface WeaponBase {
   id: string; name: string;                       // name: tekst UI (pl)
   tags: string[]; statuses?: StatusApplication[];
+  activeCooling?: { windowStartS?: number; windowDurationS?: number; bonusS?: number; penaltyS?: number };
+  // Obecność pola włącza chłodzenie. Pominięte czasy pochodzą z tuning.weapons.activeCooling.
 }
 interface ShotWeaponBase extends WeaponBase {
   fireMode: 'projectile' | 'spread' | 'pierce' | 'lob';
@@ -776,7 +812,9 @@ interface BeamWeaponDefinition extends WeaponBase {
 // damage = obrażenia bezpośrednie; explosionDamage = obrażenia obszarowe; statuses przekazywane do wybuchu
 
 // src/combat/weapons/weapon.ts
-export interface WeaponInput { triggerHeld: boolean; origin: Vec3; dir: Vec3 } // zbocze wciśnięcia liczy Weapon
+export interface WeaponInput { triggerHeld: boolean; origin: Vec3; dir: Vec3; coolingPressed?: boolean }
+// coolingPressed pobieramy z input.pressed.has('coolWeapon') dla dobytej broni. Domyślny klawisz G.
+export type CoolingPhase = 'waiting' | 'window' | 'late' | 'penalty' | 'success';
 export interface WeaponDeps {
   projectiles: Pick<ProjectileSystem, 'spawn'>;
   /** F2-04: promień lasera — pierwszy trafiony collider (wróg albo ściana). */
@@ -788,6 +826,7 @@ export class Weapon {
               deps: WeaponDeps, definition: WeaponDefinition, team?: Team);
   readonly definition: WeaponDefinition;
   readonly heat: ResourcePool; readonly overheated: boolean; readonly shots: number;
+  readonly coolingPhase: CoolingPhase | undefined; // odczyt dla HUD i poligonu podczas aktywnej blokady
   readonly beam: { active: boolean; from: Vec3; to: Vec3 } | null;
   step(dt: number, input: WeaponInput): void;
   cool(dt: number): void;                       // nieaktywna broń: chłodzenie i zegary bez zdarzeń; zwalnia spust/promień
@@ -832,6 +871,7 @@ export interface PowerDeps {
 export type PowerFactory = (def: PowerDefinition, deps: PowerDeps) => Power;
 
 // src/combat/powers/registry.ts — definicje z src/data/powers/*.json, unia po `kind`
+// (`powerDefinitions` i `loadPower*` mieszkają w `definitions.ts`; rejestr je reeksportuje)
 // kind: 'cone' (Pchnięcie, Fala uderzeniowa) | 'chain' | 'barrier' | 'grab' | 'focus'
 export const powerDefinitions: ReadonlyMap<string, PowerDefinition>;
 export function registerPowerKind(kind: string, factory: PowerFactory): void;
@@ -1027,6 +1067,7 @@ export const loadoutDefinitions: ReadonlyMap<string, Loadout>;
 // ?blade=<id> (arena, melee-test i jego warianty) nadpisuje ostrze ekwipunku (F2-11).
 // weapon_switched.slot: indeks 0–2; po zdarzeniu scena emituje heat_changed wybranej broni.
 // Hud: opcja loadout (weapons, powers), setLoadout(loadout) przy resecie;
+// Hud.setCoolingHint(phase: CoolingPhase | undefined) wyświetla fazę dobytej broni w jej wskaźniku przegrzania.
 // step(dt) odlicza odnowienia wyłącznie ze zdarzeń power_cooldown { power, user, cooldownS }, w czasie gracza.
 
 // src/progression/synergies.ts — src/data/synergies/*.json
@@ -1155,6 +1196,25 @@ emituje `enemy_stunned`, `hitstop` i `camera_shake`. `RoomScene` w trybie bossa 
 emituje `room_cleared` po `enemy_killed` bossa; `query('boss')`. Opis: `docs/systems/enemies.md`.
 
 Architektura i decyzje: `docs/adr/0005-petla-runu-f3.md`. Zadania: `docs/issues/F3/README.md`.
+
+### TTK bossa — `src/balance/simulator.ts`
+
+`Boss` przyjmuje zależności walki bez `world` w symulacji stacjonarnej.
+W tym trybie adapter pocisków udostępnia `spawn` i `addInterceptor`, a adapter
+wezwań opcjonalnie zwraca id sługi, flagę `removed` i jego bieżący stan AI.
+Progi, przejścia, czasy wzorców i tarcza nadal należą do `Boss`.
+
+`simulate(attack, enemy, options?)` dla `enemy.kind === 'boss'` używa definicji
+`enemy.boss` i `options.settings.enemies.phaseShiftS` (domyślnie z `tuning`).
+`SimulationResult.bossTimeline` zapisuje chronologicznie wejścia w fazy
+(`kind: 'phase'`) i początki zapowiedzi (`kind: 'pattern'` z `pattern`).
+Każdy wpis ma `phase` od 1 oraz `timeS` od startu symulacji. Faza 1 zaczyna się
+w chwili utworzenia każdego celu.
+
+`runBalance` udostępnia `bosses`, pojedyncze wyniki `AttackRow.bossResults` w tej
+samej kolejności oraz `bossPaths`. Bramkę F2 liczą dotychczasowe `paths` dla paczek
+zwykłych wrogów. Scena `boss-test` udostępnia komendę `boss ttk` z TTK i osią
+czasu dla blastera, liczone z bieżącym strojeniem.
 
 ### Wspólne typy runu — `src/core/runTypes.ts`
 
@@ -1372,7 +1432,7 @@ export interface RunManagerOptions {
   now?: () => number;
 }
 
-export const runStateSchema: z.ZodType<RunState>;
+export const runStateSchema: z.ZodType<RunState>;   // z src/world/runSchema.ts (reeksport w run.ts)
 
 export class RunManager {
   constructor(
@@ -1894,10 +1954,13 @@ Szczegóły: `docs/systems/hazards.md`.
 - `execute_performed: { attacker: EntityId; target: EntityId; point: Vec3 }` — udane wykończenie; dla synergii zdarzenie bez celu.
 - `DamageSystem.isInvulnerable(id): boolean` — odczyt okna po trafieniu i callbacku nietykalności, bez zmiany stanu.
 - `BladeDeps.tryExecute?: () => boolean` — przed startem lekkiego combo; true konsumuje atak i resetuje combo. Rzut, ciężki i dash-cięcie nie wołają haka.
+- `BladeView.execution?: { phase: 'active' | 'recovery'; phaseT: number } | null` — postęp osobnego cięcia FPP (0–1), liczony w czasie gracza z `tuning.melee.executeActiveS` i `executeRecoveryS`, skalowany przez `BladeDefinition.timeScale`. Viewmodel odczytuje go przy `state === 'idle'`.
 - `ExecuteSystem` (`combat/melee/execute.ts`): konstruktor przyjmuje bus, damage, tuning, owner, statuses (`StatusQuery`), `enemies()` (id, kind, position), `aim()` (origin, dir), `addEnergy`, `heal`; opcjonalny `castWall` odrzuca zasłonięte cele.
+- `src/data/melee/executeRewards.json`: `energy` i `heal` to skończone, nieujemne liczby walidowane przy ładowaniu. System przekazuje je do `addEnergy` i `heal` po potwierdzonej śmierci celu.
 - `step(dt)`, `tryExecute(): boolean`, `readyIds(): readonly EntityId[]`, `targetId(): EntityId | null` (odczyt celu dla HUD), `invulnerable(): boolean` (odczyt dla rejestracji gracza), `dispose()`.
 - HP/maxHP pochodzą z DamageSystem. `kind === 'boss'` wyklucza cel, `kind === 'executor'` wybiera próg elity. Pozycja celu to środek korpusu, nie stopy.
-- Sceny krokują system zaraz po statusach w czasie świata; callback nietykalności gracza łączy dash i wykończenie. Render przekazuje gotowość do widoku i korzysta z celu HUD zapisanego na końcu kroku.
+- Sceny krokują system po statusach w czasie świata. W pokoju i arenie callback nietykalności gracza łączy dash i wykończenie. Render korzysta z gotowości i celu HUD zapisanych w kroku symulacji.
+- `melee-test`: `query('executable')` zwraca gotowe ID. Komenda `execute prepare` ustawia HP żywych manekinów powyżej progu na wartość progu gotowości, a `execute ready` wypisuje gotowe ID z ostatniego kroku.
 
 
 ### Z8: widoki i kamera debug
@@ -1950,10 +2013,31 @@ Materiały bloków Estakady: `gas_station_tiles`, `highway_asphalt_worn`,
 ## Fauna kryjówki
 
 - `HubLayout.fauna?`: `cat?: { route: {x,z}[]; restS: [min,max]; speedMS? }` (pętla, minimum 3 punkty) i `rats?: { lanes: {from: Vec3; to: Vec3}[]; intervalS: [min,max] }`.
-- `HubFaunaRuntime(layout, rng, tuning.hub, bus?)`: czysta symulacja; `step(dt, playerPosition, playerVelocity)`, `placeCat(playerPosition, yaw)`, `forceRat(playerPosition)`. Stan pozycji poprzednich/bieżących oraz dystans chodu służą interpolacji widoku. Bez koliderów i interakcji.
+- `HubFaunaRuntime(layout, rng, tuning.hub, bus?)`: czysta symulacja; `step(dt, playerPosition, playerVelocity)`, `placeCat(playerPosition, yaw)`, `forceRat(playerPosition)`. Stan pozycji poprzednich/bieżących oraz dystans chodu służą interpolacji widoku. Bez koliderów. Głaskanie kota jest w symulacji: `petFocus(eye): HubFocusBox | null` (zasięg poziomy XZ `tuning.hub.catPetRangeM`; `null`, gdy kot ucieka, wraca albo trwa głaskanie), `pet()` (kładzie kota, ustawia `restLeftS`/`fleeCooldownS`/`meowCooldownS`, emituje `hub_fauna_sound { kind: 'meow' }`) oraz `petLeftS`/`previousPetLeftS` (czas gestu dla widoku). Widok `HubFauna` tylko rysuje.
+- `src/data/hub/interactions.json` jest walidowany schematem `hubInteractionsSchema` (`src/world/hubSchema.ts`, `loadHubInteractions`; zwalidowany obiekt: `hubInteractions` z `src/world/hubInteractions.ts`). Zawiera tylko geometrię, pozycje dłoni i kolory (zupa Heli, głaskanie kota); liczby „feel” są w `tuning.hub` (`catPet*`, `soup*`), etykieta „Pogłaszcz Węgielka” w `props.pl.json` (`labels.petCat`).
+- `hubTargetCandidates(...)` i `selectHubTarget(..., blocked?)` (`src/world/hubStations.ts`): lista celów interakcji (stacje, NPC, rekwizyty, kot) trafionych promieniem z oka od najbliższego; `blocked(candidate)` pozwala pominąć zasłonięte cele i wziąć kolejny. `HubScene` zasłania cel kolliderem bloku, którego górna krawędź jest wyżej niż `tuning.hub.losOccluderMinTopM` nad podłogą. `query('hubTarget')` zwraca bieżący cel interakcji (debug/testy).
 - `hub_fauna_sound: { kind: 'meow' | 'rat'; point: Vec3 }`: kosmetyczne zdarzenie przestrzennego SFX. Mruczenie jest ruchomym źródłem ambience `purr`, aktywnym podczas odpoczynku kota.
 - `AudioSystem.updateAmbienceSource(index, position, gain)`: aktualizuje istniejące źródło skopiowane przez `setAmbience`, bez restartu grafów. `HubSoundscape` przyjmuje opcjonalne dodatkowe źródła na końcu listy.
 - Debug: `hub cat`, `hub rat`; `query('hubFauna')` zwraca `{ cat: {x,z,state} | null, rats: number }`. Teleport kota wymaga bezpiecznej drogi do trasy; przy przeszkodzie komenda zgłasza brak miejsca.
+
+## Arena wyzwań F6
+
+- `arenaMutatorSchema` waliduje definicje z `src/data/mutators/*.json`.
+  `rollArenaMutator(rng)` wybiera jedną definicję z katalogu posortowanego po
+  ID w osobnym strumieniu `rng.fork('arena-mutator')`.
+- `Arena` w wariancie `arena-mutators` przekłada efekt na `StatModifier`.
+  `gravityScale` (baza 1) skaluje grawitację gracza i świata Rapiera.
+  `moveSpeed` trafia do `EnemyManager.setSpawnModifiers`;
+  `arenaLightScale` (baza 1) skaluje światła globalne tej sceny.
+  Mod modyfikujący `ammoCapacity` (baza 0) włącza wspólny limit dla broni gracza.
+- Opcjonalne `WeaponDeps.ammo` udostępnia `available()` i `consume()`.
+  Broń zużywa jednostkę na wystrzał lub takt lasera, również przy pudle.
+  Pula odnawia się przy restarcie areny i jest wspólna dla wszystkich slotów.
+- `BuildSelect.setBriefing(text)` wyświetla opis mutatora przed wyborem zestawu,
+  a `Hud.setArenaMutator(text, ammo)` pokazuje aktywny warunek i opcjonalną
+  pozostałą amunicję. `query('mutator')` zwraca aktywną definicję i bieżące
+  wartości. Konsola debug `mutator [id|seed]` wyświetla albo zmienia mutator
+  i resetuje arenę.
 
 ## Tryby areny S2b-01
 
@@ -2123,8 +2207,8 @@ Migracja meta/run 5→6 jest tożsamościowa: nowy rekord nie istniał w v5 (v5 
 spotkania zakończone przed checkpointem, czas, zamrożony ekwipunek i flagę ukończenia.
 Zapisy są szeregowane. Cel done jest zapisywany od razu; śmierć zachowuje cele done,
 zeruje częściowe interakcje i spotkania po checkpoincie. Ukończony rekord pozostaje
-do udanego rozliczenia meta, potem jest usuwany. `MetaManager.applyRun` dla misji z
-`level` nalicza wyłącznie firstClear, chroniony przez appliedRunIds i campaign.completed.
+do udanego rozliczenia meta, potem jest usuwany. Pierwsze ukończenie misji liniowej daje zwykłe nagrody runu z `computeRunRewards` oraz jednorazowy bonus `firstClear`, każde kolejne ukończenie daje same zwykłe nagrody runu, a próba nieukończona daje 0 nagród.
+`MetaManager.applyRun` chroni tę samą próbę przez `appliedRunIds`, a bonus `firstClear` przez `campaign.completed`.
 
 Scena: `?scene=mission&mission=m01-maszty[&continue=1]`. Debug: `mission start <id>`,
 `checkpoint <id>`, `objective done <id>`, `encounter clear`; `query('mission')`
@@ -2164,6 +2248,28 @@ semantyczne tekstury surfaces, bez zmiany materiałów pozostałych map.
 `stairs` biblioteki narzędzi przyjmuje opcjonalne `walkable` (domyślnie true).
 False wyłącza powierzchnię i ostrzeżenia AI, zachowując kolizję oraz kontrolę
 limitów schodów gracza.
+
+## Wyzwanie dnia
+
+- `localChallengeDate(now?: Date)` zwraca `RRRR-MM-DD` według lokalnego kalendarza.
+  Ten identyfikator dnia jest też seedem runu. `dailyChallenge` ładuje z JSON
+  i waliduje preset startowy oraz trudność.
+- `SaveStore.challenge?: ChallengeSavePort` obsługują oba wbudowane magazyny.
+  `loadHistory()` zwraca kopię rekordu `data → wynik | null`. `begin(date)`
+  atomowo rezerwuje dzień, zwracając `false`, jeśli próba już istnieje.
+  `finish(date, result)` zapisuje pierwszy wynik zarezerwowanej próby i jest
+  idempotentne. Wynik zawiera rezultat runu, czas symulacji, liczbę zabitych
+  wrogów i ukończonych pokoi. `null` oznacza rozpoczętą próbę bez wyniku.
+- Rekord `challenge` w IndexedDB ma własne pole `challengeVersion` (1) i własną listę
+  migracji (`src/core/challengeSave.ts`); `SAVE_VERSION` i migracje meta, runu i misji
+  pozostają bez zmian. Brak rekordu oznacza pustą historię. Rekord zepsuty trafia do
+  kopii `['corrupt','challenge',…]`, a historia jest pusta; rekord nowszej wersji jest
+  chroniony przed zapisem.
+- `?daily=1` otwiera ekran historii. `?scene=challenge` uruchamia istniejący
+  `RunScene` w wariancie `dailyChallenge`, który rezerwuje dzień przed startem
+  i zapisuje wynik z `run_ended` wyłącznie w historii. `RunScreenActions.history`
+  udostępnia powrót z podsumowania wyzwania. Próba zachowuje datę startu także
+  po północy.
 
 ## Prototypy eskorty więźnia i wagonu (S4-03)
 

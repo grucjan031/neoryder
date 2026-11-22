@@ -2,6 +2,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { Scene as ThreeScene } from 'three';
 import { EventBus } from '../../src/core/events';
+import { FeelSystem } from '../../src/core/feel';
 import type { Action, InputSnapshot } from '../../src/core/input';
 import { GameLoop, SIM_DT } from '../../src/core/loop';
 import { Rng } from '../../src/core/rng';
@@ -10,6 +11,7 @@ import { MeleeTest } from '../../src/scenes/meleeTest';
 import { Arena } from '../../src/scenes/arena';
 import { FlyingBlade } from '../../src/render/flyingBlade';
 import { CommandRegistry } from '../../src/ui/debugCommands';
+import executeRewards from '../../src/data/melee/executeRewards.json';
 import meleeTestData from '../../src/data/scenes/meleeTest.json';
 
 const scenes: { dispose(): void }[] = [];
@@ -41,7 +43,7 @@ async function setup(scene: Arena | MeleeTest, focus = false) {
     three,
   );
   scenes.push(scene);
-  return { scene, bus, commands, three };
+  return { scene, bus, commands, three, t };
 }
 
 it.each([Arena, MeleeTest])(
@@ -65,6 +67,50 @@ it('energia melee-test regeneruje w czasie gracza', async () => {
   expect(scene.query('energy')).toBeCloseTo(25 * SIM_DT * 2);
   scene.step(0, input());
   expect(scene.query('energy')).toBeCloseTo(25 * SIM_DT * 2);
+});
+
+it('melee-test przygotowuje manekiny i wykańcza tylko ten w osi celowania', async () => {
+  const { scene, bus, commands, t } = await setup(new MeleeTest(false));
+  const step = vi.fn((dt: number) => scene.step(dt, input()));
+  const loop = new GameLoop({ step, render() {} });
+  const feel = new FeelSystem(bus, loop, t);
+  try {
+    expect(commands.execute('execute ready')).toBe('[]');
+    commands.execute('enemyhit 20');
+    commands.execute('execute prepare');
+    const readyHp = 100 * t.melee.executeHpFrac;
+    expect(scene.query('dummyHp')).toEqual([readyHp, readyHp, readyHp]);
+    scene.step(SIM_DT, input());
+    scene.render(1);
+    expect(document.querySelector('.hint')?.textContent).toContain(
+      meleeTestData.executeHint,
+    );
+    const readyIds = [...(scene.query('executable') as number[])];
+    expect(readyIds).toHaveLength(3);
+    expect(commands.execute('execute ready')).toBe(JSON.stringify(readyIds));
+    commands.execute('energy 0');
+    const granted = vi.fn();
+    bus.on('energy_changed', granted);
+    scene.step(SIM_DT, input(['attack']));
+    expect(scene.query('dummyHp')).toEqual([readyHp, 0, readyHp]);
+    expect(scene.query('executable')).toEqual([readyIds[0], readyIds[2]]);
+    expect(scene.query('playerHp')).toBe(80 + executeRewards.heal);
+    expect(granted).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        current: t.powers.meleeKillEnergy + executeRewards.energy,
+      }),
+    );
+    expect(feel.timeScale).toBe(t.melee.executeSlowmoScale);
+    loop.advance(SIM_DT * 1000);
+    expect(step).toHaveBeenCalledExactlyOnceWith(0, 1);
+    commands.execute('execute prepare');
+    expect(scene.query('dummyHp')).toEqual([readyHp, 0, readyHp]);
+    scene.reset();
+    expect(scene.query('executable')).toEqual([]);
+    expect(scene.query('dummyHp')).toEqual([100, 100, 100]);
+  } finally {
+    feel.dispose();
+  }
 });
 
 it('reset kończy dash gracza, zeruje odnowienie i odświeża pozycje colliderów', async () => {

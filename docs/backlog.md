@@ -15,7 +15,7 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 
 ## Moce i bronie
 
-- Aktywne chłodzenie blastera w idealnym oknie podczas przegrzania — F2, po ocenie podstawowego zarządzania ciepłem w F1 #06.
+- Aktywne chłodzenie blastera w idealnym oknie podczas przegrzania — zaimplementowane, czeka na playtest w `?scene=blaster-test&debug=1`. [Opis mechaniki](systems/weapons.md#aktywne-chłodzenie-blastera).
 
 | Pomysł                                                                 | Dlaczego odłożone                 |
 | ---------------------------------------------------------------------- | --------------------------------- |

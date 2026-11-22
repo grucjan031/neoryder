@@ -1,5 +1,6 @@
 {
   "id": "m06-odlewnia",
+  "level": "m06-odlewnia",
   "number": 6,
   "title": "Odlewnia",
   "act": 1,
@@ -8,66 +9,7 @@
   "requires": ["m03-list-przewozowy"],
   "layers": 7,
   "splashAct": 2,
-  "enemies": [
-    "assaulter",
-    "gunner",
-    "shielder",
-    "drone",
-    "turret",
-    "sniper",
-    "executor"
-  ],
   "fixedNodes": [
-    {
-      "layer": 1,
-      "type": "combat",
-      "roomId": "combatCorridor",
-      "objectives": []
-    },
-    {
-      "layer": 3,
-      "type": "elite",
-      "roomId": "eliteFoundry",
-      "objectives": []
-    },
-    {
-      "layer": 6,
-      "type": "elite",
-      "roomId": "eliteHall",
-      "objectives": [],
-      "guards": [
-        {
-          "enemy": "executor",
-          "count": 1,
-          "position": {
-            "x": 0,
-            "y": 0,
-            "z": -8
-          },
-          "radiusM": 1
-        },
-        {
-          "enemy": "shielder",
-          "count": 1,
-          "position": {
-            "x": -4,
-            "y": 0,
-            "z": -7
-          },
-          "radiusM": 1
-        },
-        {
-          "enemy": "sniper",
-          "count": 1,
-          "position": {
-            "x": 7,
-            "y": 0,
-            "z": -12
-          },
-          "radiusM": 1
-        }
-      ]
-    },
     {
       "layer": 7,
       "type": "boss",
@@ -105,77 +47,6 @@
       },
       "holdS": 2,
       "unlockAfter": ["server"]
-    }
-  ],
-  "typeWeights": [
-    {
-      "fromLayer": 2,
-      "toLayer": 2,
-      "weights": {
-        "combat": 1,
-        "shop": 1
-      }
-    },
-    {
-      "fromLayer": 4,
-      "toLayer": 4,
-      "weights": {
-        "combat": 1,
-        "rest": 1
-      }
-    },
-    {
-      "fromLayer": 5,
-      "toLayer": 5,
-      "weights": {
-        "combat": 2,
-        "shop": 1,
-        "rest": 1
-      }
-    }
-  ],
-  "roomPools": [
-    {
-      "fromLayer": 2,
-      "toLayer": 2,
-      "type": "combat",
-      "rooms": ["combatYard"]
-    },
-    {
-      "fromLayer": 2,
-      "toLayer": 2,
-      "type": "shop",
-      "rooms": ["shopRoom"]
-    },
-    {
-      "fromLayer": 4,
-      "toLayer": 4,
-      "type": "rest",
-      "rooms": ["restRoom"]
-    },
-    {
-      "fromLayer": 4,
-      "toLayer": 4,
-      "type": "combat",
-      "rooms": ["combatPillars"]
-    },
-    {
-      "fromLayer": 5,
-      "toLayer": 5,
-      "type": "combat",
-      "rooms": ["combatPlatforms"]
-    },
-    {
-      "fromLayer": 5,
-      "toLayer": 5,
-      "type": "shop",
-      "rooms": ["shopRoom"]
-    },
-    {
-      "fromLayer": 5,
-      "toLayer": 5,
-      "type": "rest",
-      "rooms": ["restRoom"]
     }
   ],
   "interlude": {

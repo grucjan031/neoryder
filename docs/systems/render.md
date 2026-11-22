@@ -867,6 +867,49 @@ ciężkie kroki areny w `init()`), `tests/unit/runScene.test.ts` (wywołanie po 
 `?scene=mission&mission=m01-maszty&debug=1`, w profilerze Chrome pierwsze klatki po zniknięciu ekranu nie mają `getUniforms` /
 `onFirstUse` rzędu setek ms.
 
+## Podział paczki (leniwe sceny)
+
+Rejestr `src/scenes/index.ts` trzyma wpisy leniwe `() => import('./x').then((m) => () => new m.X())` (`scenes[id]()` zwraca
+`Promise<SceneFactory>`), a `main.ts` pobiera chunk sceny, `three` i `render/outline` jednym `Promise.all` dopiero dla
+`?scene=<id>` — pod nakładką startową z `index.html`. Samą scenę buduje jak przed podziałem: po rendererze, potoku, jakości
+i kamerze, przed `resize()` → `setRenderWarmUp` → `scene.init()` → `warmUpRender()` (rozgrzewka bez zmian).
+
+Etap 1 (leniwe sceny), pomiar `npm run build` (Vite 8, 22 XI 2026), kB surowe / gzip:
+
+| Co                                                           |             Przed |                                       Po |
+| ------------------------------------------------------------ | ----------------: | ---------------------------------------: |
+| Chunk startowy `index-*.js`                                  | 8 440,9 / 2 472,3 |                             164,1 / 55,7 |
+| JS pobierany przez menu (chunk startowy + importy statyczne) | 8 440,9 / 2 472,3 |                        6 741,1 / 1 993,9 |
+| CSS startowy                                                 |      115,1 / 22,6 |                              50,5 / 10,8 |
+| `three` (chunk `three.module-*.js`, tylko sceny 3D)          |         w starcie |                            743,7 / 187,9 |
+| Sceny                                                        |         w starcie | 31 wpisów, 0,9–236,7 kB (hub największy) |
+
+Po etapie 1 menu nadal pobierało Rapiera (`physics-*.js`, 4 335,5 / 1 670,4) i dane pokoi (`save-*.js`, 2 090,0 / 222,7) przez
+importy statyczne spoza rejestru scen. Etap 2 przeciął te łańcuchy lekkimi modułami danych (kontrakt: `docs/api.md`, sekcja
+z rejestrem scen):
+
+| Łańcuch (przed)                                                                                            | Cięcie                                                                |
+| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `progression/loadout`, `progressionSchema`, `unlocksSchema`, `ui/buildSelect` → `powers/registry` → Rapier | `combat/powers/definitions` (same dane mocy; rejestr je reeksportuje) |
+| `core/save` → `world/run` → `world/modes` → `world/rooms` i `enemies/registry` → Rapier                    | `world/runSchema` (schematy stanu runu bez `RunManagera`)             |
+| `main.ts`, `ui/splash`, `progression/meta` → `world/missions` → `world/rooms`                              | `world/missionCatalog` (misje sprawdzone samym schematem, bez pokoi)  |
+
+Pomiar po scaleniu z `main` (wersja 0.9.0); JS pobierany przez menu to chunk startowy i jego importy statyczne, kB surowe / gzip:
+
+| Co                             | Po etapie 1 (leniwe sceny) | Po etapie 2 (przecięte łańcuchy) |
+| ------------------------------ | -------------------------: | -------------------------------: |
+| Chunk startowy `index-*.js`    |               169,4 / 57,3 |                     199,8 / 65,0 |
+| JS pobierany przez menu, razem |          6 746,6 / 1 967,2 |                    426,7 / 133,5 |
+| Liczba plików JS menu          |                          8 |                                6 |
+| Rapier (`physics-*.js`) w menu |          4 335,5 / 1 670,4 |                                — |
+| Dane pokoi w menu              |            2 090,0 / 222,7 |                                — |
+
+Rapier, dane pokoi (ok. 1,9 MB, teraz w chunku współdzielonym przez sceny) i `three` pobierają się dopiero z `?scene=<id>`;
+ostrzeżenie Vite o chunkach > 500 kB dotyczy już tylko ich. Walidacja misji względem pokoi i trybów względem wrogów nadal działa
+przy imporcie `world/missions` i `world/modes`, czyli w scenach i w testach, nie w menu. Pilnuje
+`tests/unit/sceneRegistry.test.ts`: rejestr bez importów statycznych scen oraz domknięcie importów `main.ts` bez Rapiera,
+`three`, `world/rooms`, `world/missions`, `world/modes`, `world/run` i rejestrów wrogów i mocy.
+
 ## Dodawanie obiektu
 
 W Blenderze przypisz materiał `mat_*` z tabeli (katalog: `docs/assets.md`), załaduj

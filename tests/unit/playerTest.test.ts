@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 it('player-test rejestruje scenę, ląduje po tp i interpoluje kamerę bez zmiany symulacji', async () => {
-  expect(scenes['player-test']?.().id).toBe('player-test');
+  expect((await scenes['player-test']?.())?.().id).toBe('player-test');
   const scene = new PlayerTest(false);
   const three = new ThreeScene();
   const camera = new PerspectiveCamera();

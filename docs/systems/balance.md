@@ -57,13 +57,40 @@ obrażeń.
 Bramka: tylko wariant „otwarta przestrzeń”. Dla każdego wroga każda ścieżka ma
 mieć TTK paczki w `[mediana / 2, mediana × 2]`, gdzie mediana to środkowa z trzech
 wartości (Ostrze, Moc, Strzelec; oba końce bez zaokrąglania; ∞ i mediana ≤ 0 to
-niezaliczenie). Wrogowie w teście: wszystkie typy z `src/data/enemies/` poza bossami
-(obecnie assaulter, drone, executor, gunner, hacker, shielder, sniper, turret;
-`securityChief` pominięty, bo jego TTK wymaga symulacji faz). Ostrze używa
+niezaliczenie). Wrogowie w bramce: wszystkie typy z `src/data/enemies/` poza bossami
+(obecnie assaulter, drone, executor, gunner, hacker, shielder, sniper, turret). Ostrze używa
 `plasmaBlade` (lepszy z `combo` i `heavy`), ścieżki biorą ekwipunek z presetów
 `blade`, `gunner`, `resonance`. Wariant „cel przy ścianie” (0 m, wall-slam rozliczany w następnym
 kroku) zostaje w raporcie jako informacyjny: wall-slam to nagroda za grę
 pozycyjną, nie część bramki.
+
+## TTK bossa
+
+Raport pokazuje pojedyncze starcia dla każdego `kind: 'boss'` w otwartej przestrzeni
+i przy ścianie. Dla każdego narzędzia podaje TTK, DPS i czasy wejścia w fazy.
+Porównanie Ostrza, Mocy i Strzelca używa tych samych ekwipunków i kryterium mediany
+co dla zwykłych wrogów. Pojedynki z bossami są informacyjne i nie wpływają na bramkę F2.
+
+Symulator uruchamia `Boss` bez świata Rapier. Progi pochodzą z `boss.phases`
+w JSON-ie i liczą się od maksymalnego HP po modyfikatorach `Stats`. Obrażenia są
+ucinane na progu po modyfikatorach. Przejście przerywa wzorzec, zdejmuje tarczę
+i blokuje kolejne obrażenia, również statusowe, na `tuning.enemies.phaseShiftS`.
+Zegary bossa aktualizują się przed statusami i atakami gracza w danym kroku.
+Sterowanie gracza ponawia ataki jak zwykle także podczas nietykalności, zużywając
+ciepło lub energię i uruchamiając odnowienia.
+
+Wzorce są wybierane z bieżącej fazy przez `Rng` ze stałym seedem `balance`;
+obowiązują ich czasy zapowiedzi, aktywnego ataku, regeneracji i odnowienia.
+Tarcza blokuje trafienia, moce mogą ją złamać i otworzyć okno zwiększonych
+obrażeń. Wezwani słudzy zajmują miejsca w limicie bossa do końca pojedynku.
+Obie strony stoją w zasięgu, a gracz stale celuje w bossa. Symulacja nie rozlicza
+obrażeń gracza otrzymywanych od bossa lub sług, unikania ataków, odbijania
+pocisków ani walki ze sługami. Wynik dotyczy jednej deterministycznej sekwencji
+wzorców.
+
+Aby sprawdzić wynik w 30 sekund, otwórz `?scene=boss-test&debug=1`, włącz
+konsolę klawiszem `Backquote` i wpisz `boss ttk`. Komenda pokazuje TTK blastera i czasy
+wejścia w fazy oraz zapowiedzi z bieżącym strojeniem.
 
 ## Dane i rozszerzanie
 
@@ -95,13 +122,15 @@ deterministyczność oraz aktualność raportu (z pominięciem różnicy daty). 
 paczki: ręcznie wyliczone zabójstwa w krokach 1/31/61, przenoszenie ciepła
 (paczka 2×20 HP = jeden cel 40 HP), przenoszenie energii i odnowień mocy,
 znikanie statusów z martwym celem, osobne cięcie ostrza dla następcy oraz
-spójność ścieżek z wynikami paczki. Testy mocy pinują wartości przez
+spójność ścieżek z wynikami paczki. Testy bossa obejmują limit obrażeń na
+progach, nietykalność, kolejność wzorców w fazach, tarczę i uwzględnienie bossa
+w raporcie. Testy mocy pinują wartości przez
 `withPowers`, więc strojenie danych nie łamie ręcznych wyliczeń. Asercja bramki
 (otwarta przestrzeń, paczka) jest aktywna, gdy bramka przechodzi; w przeciwnym razie
 jest `todo` z listą wrogów poza przedziałem.
 
-Nie dodano nowej mechaniki gry ani sceny. Przegląd w 30 sekund: `npm run balance`,
-tabela ścieżek w `docs/balance.md`; do ręcznego porównania feel istnieją
+Po uruchomieniu `npm run balance` sprawdź tabelę ścieżek w `docs/balance.md`.
+Do ręcznego porównania feel istnieją
 `?scene=weapons-test`, `?scene=melee-test`, `?scene=push-test`, `?scene=status-test`.
 Zwrócić uwagę na jednorazowy burst Strzelca, koszt kolejnych użyć Mocy i różnicę
 walki przy ścianie. Akceptacja bramki fazy i review Architekta pozostają osobnymi

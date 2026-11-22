@@ -38,6 +38,7 @@ import {
   resolveBlade,
 } from '../combat/melee/bladeSchema';
 import type { HitShape } from '../combat/melee/bladeSchema';
+import { ExecuteSystem, type ExecuteEnemy } from '../combat/melee/execute';
 import { PlayerEnergy } from '../combat/powers/energy';
 import { pushDefinition, ResonancePush } from '../combat/powers/push';
 import type { PowerDeps } from '../combat/powers/power';
@@ -56,19 +57,19 @@ import { applyStyle, getMaterial } from '../render/materials';
 import { palette } from '../render/palette';
 import type { Scene } from './index';
 
-interface Dummy {
-  id: EntityId;
+interface Dummy extends ExecuteEnemy {
   health: Health;
   colliders: Collider[];
   model: Object3D;
   /** Pozycja startowa (respawn). */
-  position: Vec3;
+  spawnPosition: Vec3;
   /** Bieżąca pozycja stóp i prędkość odrzutu (m/s). */
   pos: Vec3;
   vel: Vec3;
   respawnS: number | null;
 }
 
+const DUMMY_TORSO_Y = 1.05;
 const DUMMY_POSITIONS: Vec3[] = [
   { x: -2.5, y: 0, z: -4 },
   { x: 0, y: 0, z: -5 },
@@ -87,6 +88,7 @@ const meleeTestDefinition = z
       )
       .min(1),
     controls: z.string().min(1),
+    executeHint: z.string().min(1),
   })
   .parse(meleeTestData);
 
@@ -135,6 +137,8 @@ export class MeleeTest implements Scene {
   private playerSpawn!: Vec3;
   private fpsCamera!: FpsCamera;
   private blade!: PlasmaBlade;
+  private execute: ExecuteSystem | null = null;
+  private executeTarget: EntityId | null = null;
   private readonly flyingBlade = new FlyingBlade();
   private energy!: PlayerEnergy;
   private push!: ResonancePush;
@@ -222,6 +226,7 @@ export class MeleeTest implements Scene {
     const playerId = this.entities.create('player', 'player');
     this.damage.register(playerId, this.playerHealth, {
       stats: this.playerStats,
+      invulnerable: () => this.execute?.invulnerable() ?? false,
     });
     this.player = new PlayerController(
       playerId,
@@ -260,6 +265,7 @@ export class MeleeTest implements Scene {
       ctx.bus,
       ctx.tuning,
     );
+    this.createExecute();
     this.root.add(this.flyingBlade.root);
     const bladeDefinition = this.initialBlade();
     this.blade = new PlasmaBlade(
@@ -270,6 +276,7 @@ export class MeleeTest implements Scene {
         damage: this.damage,
         stats: this.playerStats,
         energy: this.energy.pool,
+        tryExecute: () => this.execute?.tryExecute() ?? false,
         queryArc: (reach, width, shape) => this.queryArc(reach, width, shape),
         querySegment: (from, to, radius, dash, dir) =>
           queryBladeSegment(
@@ -368,6 +375,24 @@ export class MeleeTest implements Scene {
     this.push.step(dt, input);
   }
 
+  private createExecute(): void {
+    if (this.id !== 'melee-test') return;
+    this.execute?.dispose();
+    this.executeTarget = null;
+    this.execute = new ExecuteSystem({
+      bus: this.ctx.bus,
+      damage: this.damage,
+      tuning: this.ctx.tuning,
+      owner: this.player.id,
+      statuses: this.statuses,
+      enemies: () => this.dummies,
+      aim: () => this.aim(),
+      castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+      addEnergy: (amount) => this.energy.add(amount),
+      heal: (amount) => this.playerHealth.heal(amount),
+    });
+  }
+
   /** Wariant ostrza sceny: `?blade=<id>` albo ostrze plazmowe. */
   private initialBlade() {
     const requested =
@@ -398,7 +423,11 @@ export class MeleeTest implements Scene {
     const colliders: Collider[] = [];
     for (const [desc, multiplier] of [
       [
-        this.rapier.ColliderDesc.capsule(0.35, 0.3).setTranslation(0, 1.05, 0),
+        this.rapier.ColliderDesc.capsule(0.35, 0.3).setTranslation(
+          0,
+          DUMMY_TORSO_Y,
+          0,
+        ),
         1,
       ],
       [this.rapier.ColliderDesc.ball(0.22).setTranslation(0, 1.65, 0), 1.5],
@@ -424,10 +453,12 @@ export class MeleeTest implements Scene {
     this.root.add(holder);
     this.dummies.push({
       id,
+      kind: 'dummy',
       health,
       colliders,
       model: holder,
-      position,
+      spawnPosition: position,
+      position: { x: position.x, y: DUMMY_TORSO_Y, z: position.z },
       pos: { ...position },
       vel: { x: 0, y: 0, z: 0 },
       respawnS: null,
@@ -567,8 +598,10 @@ export class MeleeTest implements Scene {
 
   private moveDummy(d: Dummy, pos: Vec3): void {
     d.pos = pos;
+    d.position.x = pos.x;
+    d.position.z = pos.z;
     const [torso, head] = d.colliders;
-    torso?.setTranslation({ x: pos.x, y: 1.05, z: pos.z });
+    torso?.setTranslation(d.position);
     head?.setTranslation({ x: pos.x, y: 1.65, z: pos.z });
     d.model.position.set(pos.x, 0, pos.z);
   }
@@ -577,6 +610,29 @@ export class MeleeTest implements Scene {
   private registerCommands(): void {
     const commands = this.ctx.commands;
     if (!commands) return;
+    if (this.execute) {
+      this.off.push(
+        commands.register(
+          'execute',
+          'execute prepare — osłabia manekiny · execute ready — wypisuje gotowe ID',
+          ([action, extra]) => {
+            if (!extra && action === 'ready')
+              return JSON.stringify(this.execute?.readyIds() ?? []);
+            if (extra || action !== 'prepare')
+              return 'Użycie: execute prepare lub execute ready';
+            const fraction = this.ctx.tuning.melee.executeHpFrac;
+            if (!(fraction > 0)) return 'Próg HP wykończenia musi być dodatni.';
+            for (const d of this.dummies) {
+              if (!d.health.dead)
+                d.health.set(
+                  Math.min(d.health.current, d.health.max * fraction),
+                );
+            }
+            return 'Żywe manekiny osłabione. Wyceluj i kliknij LPM.';
+          },
+        ),
+      );
+    }
     this.off.push(
       commands.register(
         'blade',
@@ -622,7 +678,7 @@ export class MeleeTest implements Scene {
       d.health.reset();
       d.model.visible = true;
       d.respawnS = null;
-      this.moveDummy(d, { ...d.position });
+      this.moveDummy(d, { ...d.spawnPosition });
       d.vel = { x: 0, y: 0, z: 0 };
     }
     this.blade.reset();
@@ -632,6 +688,7 @@ export class MeleeTest implements Scene {
     this.playerHealth.reset();
     this.energy.set(this.energy.max);
     this.statuses.reset();
+    this.createExecute();
     this.lightningView.render(null);
   }
 
@@ -656,31 +713,33 @@ export class MeleeTest implements Scene {
         d.health.reset();
         d.model.visible = true;
         d.respawnS = null;
-        this.moveDummy(d, { ...d.position });
+        this.moveDummy(d, { ...d.spawnPosition });
         d.vel = { x: 0, y: 0, z: 0 };
       }
     }
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
+    this.execute?.step(dt);
+    this.executeTarget = this.execute?.targetId() ?? null;
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
     const camera = this.ctx.camera;
+    const view = this.blade.view();
     this.projectileView.render(alpha);
     if (this.label) {
       const hp = this.dummies
         .map((d) => d.health.current.toFixed(0))
         .join(' / ');
-      const v = this.blade.view();
-      this.label.textContent = `Manekiny: ${hp} · energia ${this.energy.current.toFixed(0)} · HP ${this.playerHealth.current.toFixed(0)} · ${v.state}${v.stage ? ` ${v.stage}` : ''}`;
+      this.label.textContent = `Manekiny: ${hp} · energia ${this.energy.current.toFixed(0)} · HP ${this.playerHealth.current.toFixed(0)} · ${view.state}${view.stage ? ` ${view.stage}` : ''}`;
       if (this.id === 'melee-test')
-        this.label.textContent += ` · ${meleeTestDefinition.controls}`;
+        this.label.textContent += ` · ${this.executeTarget !== null && !view.flight ? meleeTestDefinition.executeHint : meleeTestDefinition.controls}`;
     }
     this.lights?.sync();
     this.arcHideS -= frameDt;
     if (this.arcHideS <= 0) this.arcDebug.visible = false;
-    this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
+    this.flyingBlade.render(view, alpha, this.ctx.tuning);
     if (!camera) return;
     const pose = this.fpsCamera.update(
       frameDt,
@@ -697,7 +756,7 @@ export class MeleeTest implements Scene {
     camera.updateMatrixWorld();
     const velocity = this.player.getState().velocity;
     this.fppView.place(camera.matrixWorld, frameDt, {
-      blade: this.blade.view(),
+      blade: view,
       held: 'blade',
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
     });
@@ -712,6 +771,7 @@ export class MeleeTest implements Scene {
     if (name === 'projectiles') return this.projectiles.activeCount;
     if (name === 'dummyPos') return this.dummies.map((d) => ({ ...d.pos }));
     if (name === 'playerHp') return this.playerHealth.current;
+    if (name === 'executable') return this.execute?.readyIds();
     return undefined;
   }
 
@@ -722,6 +782,7 @@ export class MeleeTest implements Scene {
     this.blade?.dispose();
     this.fppView?.dispose();
     this.flyingBlade?.dispose();
+    this.execute?.dispose();
     this.statuses?.dispose();
     this.lightningView?.dispose();
     this.projectiles?.dispose();

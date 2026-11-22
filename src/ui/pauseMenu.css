@@ -129,3 +129,15 @@
     transition: none;
   }
 }
+.pause-menu button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.pause-menu__version {
+  margin: 16px 0 0;
+  color: var(--ui-text);
+  opacity: 0.65;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+}

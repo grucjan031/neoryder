@@ -1,5 +1,35 @@
 # HUD — F1 #15, F2-15, nowy HUD
 
+## Kryjówka: przewodnik i objaśnienia — S10-01
+
+Osobny `.hub-guide` (`data-hub-guide`, `data-target`) pokazuje bursztynową
+strzałkę i odległość u góry na środku, pod paskiem meta. Teksty i tytuły stacji
+pochodzą z `meta.pl.json`; reguły celu i ukrywania opisuje `hub.md`.
+Nie przechwytuje wskaźnika, strzałka dekoracyjna ma `aria-hidden`.
+
+Dane, Rdzenie i punkty talentów na pasku meta mają własne dymki z objaśnieniem
+(hover i fokus klawiatury, `tabindex="0"`, `aria-describedby`). Gdy stacja jest
+otwarta, pasek leży nad jej warstwą. Szczegóły i jednorazowe objaśnienie po
+pierwszym runie: `hub.md`. Teksty są w `missions.pl.json.bar`.
+
+## Wersja, sterowanie, zgłoszenia
+
+Menu pokazuje wersję z `package.json` i krótki hash Git (bez Git: `dev`).
+Pauza dodaje seed i scenę bieżącej gry: `main.ts` przekazuje dostawcę danych
+(seed użyty przez `Rng`, dla runu seed ze stanu runu, `scene.id`), więc
+seed jest widoczny także bez `?seed` w adresie.
+„Sterowanie i zapis” czyta `inputBindings.json` oraz aktualne przypisania
+z `loadSettings()` / `resolveBindings()`. Opis przypomina, że wyczyszczenie
+danych przeglądarki usuwa zapis. Osobny dialog pozostawia pauzę otwartą;
+Esc wraca do pauzy i oddaje fokus bez wznowienia gry ani pointer lock.
+„Zgłoś problem” jest aktywny od razu i kopiuje wersję, build, seed, scenę,
+userAgent, rozmiar okna i datę ISO; gdy schowek odmawia, pokazuje zaznaczone
+pole do skopiowania. Adres zgłoszeń i teksty pochodzą z `aboutDemo.json`
+(zod). Stopka i nakładka używają tokenów UI z `styles.css`.
+Kontrola: `?scene=arena` → wybór zestawu → Esc → obie nowe akcje → Esc.
+Testy: `buildInfo.test.ts` i `aboutDemo.spec.ts` (arena z seedem i bez,
+odmowa schowka).
+
 `src/ui/hud.ts` tworzy warstwę HTML nad canvasem, bez Three.js i bez odczytu
 modułów symulacji. Style są w `src/ui/hud.css`, importowanym przez `src/ui/styles.css`.
 Korzeń `.hud` jest `position: fixed; inset: 0; z-index: 100`, bez zdarzeń wskaźnika
@@ -105,6 +135,9 @@ Ikony to maski kolorowane `background-color` (`public/assets/ui/hud/icon_gun.web
   (przy poziomie `hot` kolor `#ff6266`); w stanie przegrzania pasek jest cały `#e0262b`.
   „PRZEGRZANIE” (17 px, `#ff6266`, nad paskiem) ma jednorazowy
   glitch: cyan i magenta kopie tekstu przesunięte o 1–2 px, trwający 0,18 s (3 kroki).
+  Dla dobytego blastera napis pokazuje fazę aktywnego chłodzenia. W idealnym oknie
+  zmienia się w cyanowy komunikat „[G] Chłodź teraz” z aktualnie przypisanym klawiszem.
+  Wynik próby pokazuje „Blokada skrócona” albo „Blokada wydłużona”.
 - **Moce:** dwa sloty (klawisze „F” i „E”, `powerKeys`) w rzędzie z odstępem 16 px (10 px
   poniżej 1000 px) pod mikrotekstem „REZONANS // MOCE”. Slot 68 px: sześciokąt 56×58 px
   (wierzchołki 25%/75% góra i dół, tło `#ff2bd61c`, wewnętrzna płytka `#07152280`),

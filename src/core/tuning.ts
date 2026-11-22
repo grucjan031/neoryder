@@ -522,8 +522,8 @@ export const tuning = {
     executeRangeM: 2.8,
     executeArcDeg: 50,
     executeKnockback: 10,
-    executeEnergy: 20,
-    executeHeal: 6,
+    executeActiveS: 0.1,
+    executeRecoveryS: 0.16,
     executeHitstopMs: 110,
     executeSlowmoScale: 0.35,
     executeSlowmoS: 0.3,
@@ -695,6 +695,12 @@ export const tuning = {
   },
   weapons: {
     overheatLockS: 1.5,
+    activeCooling: {
+      windowStartS: 0.5,
+      windowDurationS: 0.3,
+      bonusS: 0.55,
+      penaltyS: 0.35,
+    },
     coolDelayS: 0.25,
     /** Bufor spustu broni półautomatycznej: klik w ostatnich s odnowienia strzela po jego końcu. */
     triggerBufferS: 0.15,
@@ -1047,6 +1053,8 @@ export const tuning = {
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
   run: {
+    eliteModuleOfferSize: 3,
+    deathModulePoolSize: 1,
     transitionS: 0.6,
     fadeS: 0.35,
     rewardDelayS: 1,
@@ -1055,6 +1063,8 @@ export const tuning = {
   },
   /** Kryjówka: zasięg od oka i margines bryły interakcji (m). */
   hub: {
+    /** Ukrycie przewodnika przy stacji celu (m). */
+    guideHideRadiusM: 4,
     /** Margines planu stacji wokół stref (m). */
     mapPaddingM: 2,
     /** Podpis strefy na planie: minimalna szerokość i głębokość strefy, margines od rogu, szacunkowa szerokość znaku i wysokość podpisu (m). */
@@ -1084,7 +1094,8 @@ export const tuning = {
     catYieldM: 0.8,
     catYieldConeCos: 0.3,
     catFleeM: 2,
-    catRunThresholdMS: 3,
+    /** Kot ucieka tylko przed sprintem (chód 7 m/s, sprint 11 m/s). */
+    catRunThresholdMS: 8,
     catApproachConeCos: 0.6,
     catFleeSideM: 1.1,
     catFleeSpeedMS: 2.4,
@@ -1098,6 +1109,20 @@ export const tuning = {
     catMeowChance: 0.16,
     catMeowCooldownS: 25,
     catDebugDistanceM: 2,
+    /** Głaskanie kota: zasięg poziomy (XZ) od gracza (m), czas (s), ułamek czasu na wyciągnięcie i cofnięcie ręki, liczba pociągnięć, długość pociągnięcia (m). */
+    catPetRangeM: 2.2,
+    catPetDurationS: 1.5,
+    catPetReachFraction: 0.2,
+    catPetStrokes: 2,
+    catPetStrokeM: 0.12,
+    /** Podawanie zupy: przesuw miski (m) i ułamki klipu: start i koniec wysunięcia oraz powrotu. */
+    soupSlideM: 0.55,
+    soupSlideStart: 0.2,
+    soupSlideEnd: 0.55,
+    soupReturnStart: 0.68,
+    soupReturnEnd: 0.98,
+    /** Linia wzroku interakcji: przesłania tylko bryła, której górna krawędź jest wyżej niż tyle nad podłogą (m). */
+    losOccluderMinTopM: 1.4,
     /** Dzieci przy kocie: zasięg (m) od dziecka do odpoczywającego kota, odnowienie (s), czas głaskania (s), odległość od kota (m), zasięg dołączenia drugiego dziecka (m), odległość kota od trasy w debugu (m). */
     kidsCatRangeM: 2.5,
     kidsCatCooldownS: 60,

@@ -10,6 +10,9 @@ import {
 import text from '../data/ui/hud.pl.json';
 import { powerDefinitions } from '../combat/powers/registry';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
+import type { CoolingPhase } from '../combat/weapons/weapon';
+import { resolveBindings } from '../core/input';
+import { keyLabel } from './settingsScreen';
 import { RunHud, defeatMessage, type RunHudSeed } from './runHud';
 import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
@@ -211,6 +214,18 @@ function createFlash(className: string) {
 
 /** Widok stanu gracza; wszystkie dane rozgrywki pochodzą z EventBus. */
 export class Hud {
+  private readonly arenaMutator = element(
+    'div',
+    'hud__micro hud__arena-mutator',
+  );
+
+  setArenaMutator(name: string, ammo: number | null): void {
+    setText(
+      this.arenaMutator,
+      `${text.arenaMutator} · ${name}${ammo === null ? '' : ` · ${text.arenaAmmo} ${ammo}`}`,
+    );
+    this.arenaMutator.hidden = !name;
+  }
   private readonly unsubscribe: (() => void)[];
   private readonly root = element('div', 'hud');
   private readonly retryButton = element('button', 'hud__retry', text.retry);
@@ -241,6 +256,21 @@ export class Hud {
 
   setExecuteHint(ready: boolean): void {
     this.executeHint.hidden = !ready;
+  }
+
+  setCoolingHint(phase: CoolingPhase | undefined): void {
+    if (this.overheat.dataset.cooling === phase) return;
+    if (phase) this.overheat.dataset.cooling = phase;
+    else delete this.overheat.dataset.cooling;
+    let label = phase ? text.activeCooling[phase] : text.overheated;
+    if (phase === 'window') {
+      const binding = Object.entries(
+        resolveBindings(loadSettings().bindings),
+      ).find(([, action]) => action === 'coolWeapon');
+      if (binding) label = `[${keyLabel(binding[0])}] ${label}`;
+    }
+    setText(this.overheat, label);
+    this.overheat.dataset.text = label;
   }
   private overheated = false;
   private readonly overheat = element('div', 'hud__overheat', text.overheated);
@@ -300,6 +330,7 @@ export class Hud {
     );
 
     const weapon = this.weapon;
+    this.arenaMutator.hidden = true;
     const weaponHead = element('div', 'hud__weapon-head');
     weaponHead.append(this.weaponName, this.slots);
     this.heat.node.dataset.level = 'cool';
@@ -310,6 +341,7 @@ export class Hud {
       this.overheat,
       weaponHead,
       this.heat.node,
+      this.arenaMutator,
     );
     const arsenal = element('div', 'hud__arsenal');
     this.powers.setAttribute('aria-label', text.powers);

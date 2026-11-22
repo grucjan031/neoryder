@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { LOAD_TIMEOUT } from './helpers';
+import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
-test('mobilna Odlewnia: cel, boss i implanty nie nachodzą na siebie, nazwa jest pełna', async ({
+test('mobilna Odlewnia: cel, kierunek i pasek bossa nie nachodzą na siebie, nazwa jest pełna', async ({
   page,
 }) => {
   test.setTimeout(8 * LOAD_TIMEOUT);
@@ -13,6 +13,16 @@ test('mobilna Odlewnia: cel, boss i implanty nie nachodzą na siebie, nazwa jest
     });
   });
   await page.setViewportSize({ width: 390, height: 844 });
+  const query = (key: string) =>
+    page
+      .evaluate((name) => window.__neoryder?.query(name), key)
+      .catch(() => undefined);
+  const command = (line: string) =>
+    page.evaluate((text) => window.__neoryder?.command(text), line);
+  const mission = async () =>
+    ((await query('mission')) as
+      | { activeEncounters: string[]; completedEncounters: string[] }
+      | undefined) ?? { activeEncounters: [], completedEncounters: [] };
   await page.goto('/?scene=run&debug=1&fx=lite');
   await expect
     .poll(
@@ -27,103 +37,79 @@ test('mobilna Odlewnia: cel, boss i implanty nie nachodzą na siebie, nazwa jest
       { timeout: LOAD_TIMEOUT },
     )
     .toBe(true);
-  await expect
-    .poll(() => page.evaluate(() => window.__neoryder?.query('savePending')))
-    .toBe(false);
+  await expect.poll(() => query('savePending')).toBe(false);
   await page.goto(
-    '/?scene=run&mission=m06-odlewnia&seed=hud-odlewnia&debug=1&fx=lite',
+    '/?scene=mission&mission=m06-odlewnia&seed=hud-odlewnia&debug=1&fx=lite',
   );
-  const screen = () => page.evaluate(() => window.__neoryder?.query('screen'));
-  for (let layer = 1; layer <= 7; layer++) {
+  await expect
+    .poll(() => query('screen'), { timeout: LOAD_TIMEOUT })
+    .toBe('playing');
+  await command('god');
+  for (const [id, x] of [
+    ['patrol-sluza', 14],
+    ['piece', 44],
+    ['formowanie-front', 92],
+    ['formowanie-tyl', 113],
+    ['straz', 143],
+  ] as const) {
+    await command(`tp ${x} 0 -90`);
     await expect
-      .poll(
-        () =>
-          page.evaluate((layer) => {
-            const game = window.__neoryder;
-            if (game?.query('screen') !== 'map') return false;
-            if (layer === 1)
-              for (const id of ['overclock', 'thermalFuse', 'nanoBloodstream'])
-                game.command(`implant ${id}`);
-            const state = game.query('runState') as {
-              map: { layers: { id: string }[][] };
-            };
-            game.command(`run node ${state.map.layers[layer - 1]![0]!.id}`);
-            return true;
-          }, layer),
-        { timeout: LOAD_TIMEOUT },
-      )
-      .toBe(true);
+      .poll(async () => (await mission()).activeEncounters, {
+        timeout: SIM_TIMEOUT,
+      })
+      .toContain(id);
+    await command('encounter clear');
     await expect
-      .poll(
-        () =>
-          page.evaluate((final) => {
-            const game = window.__neoryder;
-            if (!game || game.query('loading') !== false) return false;
-            const screen = game.query('screen');
-            if (screen === 'shop' || screen === 'rest') return true;
-            if (screen !== 'room') return false;
-            game.command('god');
-            if (!final) game.command('run clear');
-            else game.command('boss phase 2');
-            return true;
-          }, layer === 7),
-        { timeout: LOAD_TIMEOUT },
-      )
-      .toBe(true);
-    if (layer === 7) break;
-    await expect
-      .poll(screen, { timeout: LOAD_TIMEOUT })
-      .toMatch(/^(reward|shop|rest)$/);
-    const current = await screen();
-    if (current === 'reward')
-      await page.locator('.run-screen__card').first().click();
-    else if (current === 'rest')
-      await page.locator('.run-screen__heal').click();
-    else await page.getByRole('button', { name: 'Wyjdź', exact: true }).click();
+      .poll(async () => (await mission()).completedEncounters, {
+        timeout: SIM_TIMEOUT,
+      })
+      .toContain(id);
   }
-  await expect(page.locator('.run-hud__boss:visible')).toBeVisible();
-  expect(
-    await page.locator('.run-hud__implant:visible').count(),
-  ).toBeGreaterThanOrEqual(3);
+  await command('tp 167 0 -90');
+  await waitSimSteps(page, 30);
+  await command('tp 185 0 -90');
+  await expect(page.locator('.run-hud__boss:visible')).toBeVisible({
+    timeout: SIM_TIMEOUT,
+  });
   await page.evaluate(() => document.fonts.ready);
   const layout = await page.evaluate(() => {
-    const rect = (selector: string) =>
-      [...document.querySelectorAll<HTMLElement>(selector)]
-        .find((node) => node.getBoundingClientRect().height > 0)!
-        .getBoundingClientRect();
-    const goal = rect('.mission-goals');
-    const boss = rect('.run-hud__boss');
-    const implants = rect('.run-hud__implants');
-    const caption = getComputedStyle(
-      document.querySelector('.run-hud__implants')!,
-      '::before',
-    );
+    const visible = (selector: string) =>
+      [...document.querySelectorAll<HTMLElement>(selector)].find(
+        (node) => node.getBoundingClientRect().height > 0,
+      );
+    const goal = visible('.mission-goals')!.getBoundingClientRect();
+    const boss = visible('.run-hud__boss')!.getBoundingClientRect();
+    const direction = visible('.mission-direction')?.getBoundingClientRect();
     const name = document.querySelector('.run-hud__boss-name')!;
     const range = document.createRange();
     range.selectNodeContents(name);
-    const text = range.getBoundingClientRect();
     return {
       goal: goal.toJSON(),
       boss: boss.toJSON(),
-      implants: {
-        ...implants.toJSON(),
-        top: implants.top + parseFloat(caption.top),
-      },
-      text: text.toJSON(),
+      direction: direction?.toJSON() ?? null,
+      text: range.getBoundingClientRect().toJSON(),
       name: name.getBoundingClientRect().toJSON(),
       lines: range.getClientRects().length,
     };
   });
-  expect(layout.goal.bottom).toBeLessThan(layout.boss.top);
-  expect(layout.boss.bottom).toBeLessThan(layout.implants.top);
-  for (const rect of [layout.goal, layout.boss, layout.implants]) {
+  const overlaps = (
+    a: { left: number; right: number; top: number; bottom: number },
+    b: { left: number; right: number; top: number; bottom: number },
+  ) =>
+    a.left < b.right &&
+    b.left < a.right &&
+    a.top < b.bottom &&
+    b.top < a.bottom;
+  expect(overlaps(layout.goal, layout.boss)).toBe(false);
+  if (layout.direction)
+    expect(overlaps(layout.direction, layout.boss)).toBe(false);
+  for (const rect of [layout.goal, layout.boss]) {
     expect(rect.left).toBeGreaterThanOrEqual(0);
     expect(rect.right).toBeLessThanOrEqual(390);
   }
   expect(layout.lines).toBe(1);
   expect(layout.text.left).toBeGreaterThanOrEqual(layout.name.left);
   expect(layout.text.right).toBeLessThanOrEqual(layout.name.right);
-  expect(layout.text.right).toBeLessThanOrEqual(390);
 });
 
 test('mobilny HUD misji liniowej rozdziela cel, kierunek i radio od mocy', async ({

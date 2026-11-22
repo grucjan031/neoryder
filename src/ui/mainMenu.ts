@@ -10,7 +10,9 @@ import settingsText from '../data/ui/settings.pl.json';
 import tutorialText from '../data/ui/tutorial.pl.json';
 import { tutorialDone } from '../data/tutorial/schema';
 import { preserveLiteFx } from '../render/fxMode';
+import { challengeText } from './challengeText';
 import './mainMenu.css';
+import { appBuild, buildInfoText } from './buildInfo';
 
 const text = z
   .object({
@@ -21,6 +23,7 @@ const text = z
       newRun: z.string(),
       continue: z.string(),
       arena: z.string(),
+      arenaMutators: z.string(),
       seed: z.string(),
       seedPlaceholder: z.string(),
       loading: z.string(),
@@ -106,13 +109,39 @@ export class MainMenu {
     status.setAttribute('role', 'status');
     status.textContent = t.loading;
     const arena = button(t.arena, () => navigate(`?${query('arena')}`));
-    this.root.append(heading, subtitle, tutorial, hub, resume, status, arena);
+    const arenaMutators = button(t.arenaMutators, () => {
+      const params = query('arena-mutators');
+      const seed = options.params?.get('seed');
+      if (seed !== undefined && seed !== null) params.set('seed', seed);
+      navigate(`?${params}`);
+    });
+    this.root.append(
+      heading,
+      subtitle,
+      tutorial,
+      hub,
+      resume,
+      status,
+      arena,
+      arenaMutators,
+    );
+    this.root.append(
+      button(challengeText.title, () => {
+        const params = query('challenge');
+        params.delete('scene');
+        params.set('daily', '1');
+        navigate(`?${params}`);
+      }),
+    );
     this.root.append(
       button(settingsText.title, () => {
         this.settings ??= new SettingsScreen();
         this.settings.show();
       }),
     );
+    const footer = document.createElement('footer');
+    footer.className = 'main-menu__version';
+    footer.textContent = buildInfoText(appBuild);
     options.root.append(this.root);
     // Wybór presetów (BuildSelect) z własnym seedem zostaje tylko w trybie debug.
     if (debug) {
@@ -150,6 +179,7 @@ export class MainMenu {
       if (options.params) preserveLiteFx(options.params, scenes);
       this.root.append(button(t.debug, () => navigate(`?${scenes}`)));
     }
+    this.root.append(footer);
     /** Status zakończonego runu: już rozliczony, do rozliczenia albo nienaliczalny. */
     const endedStatus = async (ended: RunEnded): Promise<string> => {
       let manager: MetaManager;

@@ -43,6 +43,8 @@ export const levelSchema = z
         spawnPoints: wavesSchema.shape.spawnPoints,
         after: dependency.optional(),
         reinforcementFor: id.optional(),
+        /** Spotkanie z bossem: jego ukończenie kończy wskazany cel `killBoss`. */
+        bossFor: id.optional(),
       }),
     ),
     checkpoints: z
@@ -56,7 +58,15 @@ export const levelSchema = z
         }),
       )
       .min(1),
-    gates: z.array(z.object({ id, block: roomBlockSchema, after: dependency })),
+    gates: z.array(
+      z.object({
+        id,
+        block: roomBlockSchema,
+        after: dependency,
+        /** Brama zamyka się ponownie na czas aktywnego spotkania (arena bossa). */
+        closedDuring: id.optional(),
+      }),
+    ),
   })
   .superRefine((level, ctx) => {
     const checkUnique = (ids: string[], path: string) => {
@@ -92,6 +102,15 @@ export const levelSchema = z
           code: 'custom',
           message: `Nieznana zależność: ${entry.after.id}`,
         });
+    for (const gate of level.gates)
+      if (
+        gate.closedDuring &&
+        !level.encounters.some((item) => item.id === gate.closedDuring)
+      )
+        ctx.addIssue({
+          code: 'custom',
+          message: `Nieznane spotkanie bramy: ${gate.closedDuring}`,
+        });
     for (const objective of level.objectiveOrder)
       if (!level.objectivePositions[objective])
         ctx.addIssue({
@@ -102,11 +121,22 @@ export const levelSchema = z
     for (const encounter of level.encounters) {
       if (
         encounter.reinforcementFor &&
-        !level.objectiveOrder.includes(encounter.reinforcementFor)
+        // Klucz posiłków: id celu sabotage albo `<id celu defend>:<indeks fali>`.
+        !level.objectiveOrder.includes(
+          encounter.reinforcementFor.split(':')[0]!,
+        )
       )
         ctx.addIssue({
           code: 'custom',
           message: `Nieznany cel posiłków: ${encounter.reinforcementFor}`,
+        });
+      if (
+        encounter.bossFor &&
+        !level.objectiveOrder.includes(encounter.bossFor)
+      )
+        ctx.addIssue({
+          code: 'custom',
+          message: `Nieznany cel bossa: ${encounter.bossFor}`,
         });
       const seen = new Set([encounter.id]);
       let after = encounter.after;
@@ -144,15 +174,25 @@ export function loadLevel(
     if (!waves.has(encounter.wave))
       throw new Error(`Nieznana fala: ${encounter.wave}`);
     if (encounter.reinforcementFor) {
+      const [objectiveId, index] = encounter.reinforcementFor.split(':');
       const objective = mission.objectives.find(
-        (item) => item.id === encounter.reinforcementFor,
+        (item) => item.id === objectiveId,
       );
-      if (
-        objective?.kind !== 'sabotage' ||
-        objective.reinforcements !== encounter.wave
-      )
+      const wave =
+        objective?.kind === 'sabotage' && index === undefined
+          ? objective.reinforcements
+          : objective?.kind === 'defend' && index !== undefined
+            ? objective.waves?.[Number(index)]?.wave
+            : undefined;
+      if (wave !== encounter.wave)
         throw new Error('Posiłki nie odpowiadają celowi misji.');
     }
+    if (
+      encounter.bossFor &&
+      mission.objectives.find((item) => item.id === encounter.bossFor)?.kind !==
+        'killBoss'
+    )
+      throw new Error('Spotkanie bossa wymaga celu killBoss.');
   }
   // Reużycie walidacji osiągalności pokoju także dla celów, checkpointów i spawnów.
   roomSchema.parse({

@@ -79,6 +79,11 @@ import { HitSparks } from '../vfx/hitSparks';
 import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
 import { StatusVfx } from '../vfx/statusVfx';
 import { loadWaves, WaveDirector } from '../world/waves';
+import {
+  arenaMutators,
+  rollArenaMutator,
+  type ArenaMutator,
+} from '../world/arenaMutators';
 import type { Scene } from './index';
 
 const vec3 = z.object({
@@ -103,6 +108,9 @@ export const arenaLayoutSchema = z.object({
 });
 const layout = arenaLayoutSchema.parse(sceneData);
 const waves = loadWaves(wavesData);
+const MUTATOR_SOURCE = 'arena:mutator';
+
+export const ARENA_MUTATORS_SCENE = 'arena-mutators';
 
 /** Modele dla bloków układu; 'wall' to rozciągnięta bryła świata (bez modelu). */
 const MODEL_FILES: Record<string, string> = {
@@ -121,7 +129,6 @@ type ArenaState = 'select' | 'playing' | 'dead';
  * z danych (src/data/waves/arena.json). Ten sam ?seed= daje ten sam przebieg fal.
  */
 export class Arena implements Scene {
-  readonly id = 'arena';
   private ctx!: GameContext;
   private inventory?: RunInventoryMenu;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
@@ -166,7 +173,18 @@ export class Arena implements Scene {
     energyRegen: 25,
     heatCapacity: 100,
     coolingRate: 45,
+    arenaLightScale: 1,
   });
+  private mutator: ArenaMutator | null = null;
+  private ammoRemaining: number | null = null;
+  private readonly ammo = {
+    available: () => this.ammoRemaining === null || this.ammoRemaining > 0,
+    consume: () => {
+      if (this.ammoRemaining === null) return;
+      this.ammoRemaining--;
+      this.updateMutatorHud();
+    },
+  };
   private readonly health = new Health(() => this.playerStats.get('maxHealth'));
   private fppView!: FppViewModel;
   private readonly views = new Map<EntityId, EnemyViewLike>();
@@ -203,10 +221,13 @@ export class Arena implements Scene {
   constructor(
     private readonly loadModels = true,
     private readonly selectBuild = false,
+    readonly id: 'arena' | typeof ARENA_MUTATORS_SCENE = 'arena',
   ) {}
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
+    if (this.id === ARENA_MUTATORS_SCENE)
+      this.mutator = rollArenaMutator(ctx.rng);
     const requested =
       typeof location === 'undefined'
         ? null
@@ -461,6 +482,7 @@ export class Arena implements Scene {
       this.buildSelect = new BuildSelect({
         onSelect: (id, bladeId) => this.chooseLoadout(id, bladeId),
       });
+    this.applyMutator();
 
     this.director = new WaveDirector(
       waves,
@@ -693,6 +715,7 @@ export class Arena implements Scene {
           this.playerStats,
           {
             projectiles: this.projectiles,
+            ...(this.id === ARENA_MUTATORS_SCENE ? { ammo: this.ammo } : {}),
             attackSpeed: () => this.playerStats.get('attackSpeed'),
             damage: this.damage,
             castBeam: (origin, dir, rangeM) =>
@@ -863,13 +886,17 @@ export class Arena implements Scene {
         weapon.step(pdt, {
           ...this.aim(),
           triggerHeld: triggerHeld && !this.health.dead,
+          coolingPressed:
+            input.pressed.has('coolWeapon') &&
+            !this.health.dead &&
+            !this.heldItem.view().swapping,
           aim: this.heldItem.aim,
         });
       else weapon.cool(pdt);
     }
     this.director.step(dt);
     this.manager.step(dt);
-    this.world.gravity.y = this.ctx.tuning.physics.gravity;
+    this.world.gravity.y = this.player.gravity;
     this.world.timestep = dt;
     this.world.step();
     this.projectiles.step(dt);
@@ -878,6 +905,13 @@ export class Arena implements Scene {
 
   render(alpha: number, frameDt = 1 / 60): void {
     const executable = this.execute.readyIds();
+    this.hud?.setCoolingHint(
+      this.state === 'playing' &&
+        this.heldItem.held === 'gun' &&
+        !this.heldItem.view().swapping
+        ? this.weapon.coolingPhase
+        : undefined,
+    );
     this.hud?.setExecuteHint(
       this.state === 'playing' &&
         this.heldItem.held === 'blade' &&
@@ -911,7 +945,7 @@ export class Arena implements Scene {
     this.explosionView.render(frameDt);
     this.statusView.render(alpha, frameDt);
     this.hitSparksView.render(frameDt);
-    this.lights.sync();
+    this.lights.sync(this.playerStats.get('arenaLightScale'));
     this.atmosphere?.sync(frameDt);
     this.flyingBlade.render(this.blade.view(), alpha, this.ctx.tuning);
     this.flyingBlade.root.visible &&= this.state === 'playing';
@@ -992,6 +1026,7 @@ export class Arena implements Scene {
    */
   reset(): void {
     this.manager.despawnAll();
+    this.applyMutator();
     this.createExecute();
     this.statuses.reset();
     this.projectiles.dispose();
@@ -1017,6 +1052,34 @@ export class Arena implements Scene {
     this.director.start(1, this.ctx.rng.fork('waves'));
     this.emitHealth();
     this.heldItem.reset(this.loadout.startHeld);
+  }
+
+  private applyMutator(): void {
+    const mutator = this.mutator;
+    if (!mutator) return;
+    const { stat, value } = mutator.effect;
+    const modifier = {
+      stat,
+      value,
+      type: stat === 'ammoCapacity' ? 'flat' : 'mult',
+      source: MUTATOR_SOURCE,
+    } as const;
+    this.player.stats.removeBySource(MUTATOR_SOURCE);
+    this.playerStats.removeBySource(MUTATOR_SOURCE);
+    this.manager.setSpawnModifiers(stat === 'moveSpeed' ? [modifier] : []);
+    if (stat === 'gravityScale') this.player.stats.add(modifier);
+    if (stat === 'ammoCapacity' || stat === 'arenaLightScale')
+      this.playerStats.add(modifier);
+    this.world.gravity.y = this.player.gravity;
+    this.ammoRemaining =
+      stat === 'ammoCapacity' ? this.playerStats.get('ammoCapacity') : null;
+    this.buildSelect?.setBriefing(`${mutator.name}. ${mutator.description}`);
+    this.updateMutatorHud();
+  }
+
+  private updateMutatorHud(): void {
+    if (this.mutator)
+      this.hud?.setArenaMutator(this.mutator.name, this.ammoRemaining);
   }
 
   /** „Jeszcze raz” z HUD (gest użytkownika): reset i wznowienie pętli z przechwyceniem myszy. */
@@ -1105,6 +1168,25 @@ export class Arena implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    if (this.id === ARENA_MUTATORS_SCENE)
+      register(
+        'mutator',
+        'mutator [id|seed] — sprawdź lub zmień mutator',
+        (args) => {
+          const [id] = args;
+          if (id === undefined) return this.mutator!.name;
+          const next =
+            id === 'seed'
+              ? rollArenaMutator(this.ctx.rng)
+              : arenaMutators.get(id);
+          if (!next || args.length !== 1)
+            return `Użycie: mutator [${[...arenaMutators.keys(), 'seed'].join('|')}]`;
+          this.mutator = next;
+          if (this.state === 'select') this.openBuildSelect();
+          else this.reset();
+          return next.name;
+        },
+      );
     register('tp', 'tp <x> <z> [yawDeg] [pitchDeg]', (args) => {
       const [x, z, yaw = 0, pitch = 0] = args.map(Number);
       if (
@@ -1286,6 +1368,15 @@ export class Arena implements Scene {
     if (name === 'horizon') return this.atmosphere?.horizon();
     if (name === 'executable') return this.execute.readyIds();
     switch (name) {
+      case 'mutator':
+        return (
+          this.mutator && {
+            ...this.mutator,
+            gravity: this.world.gravity.y,
+            lightScale: this.playerStats.get('arenaLightScale'),
+            ammo: this.ammoRemaining,
+          }
+        );
       case 'wave':
         return this.director.wave;
       case 'phase':

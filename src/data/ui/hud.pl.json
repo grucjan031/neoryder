@@ -1,4 +1,6 @@
 {
+  "arenaAmmo": "Amunicja",
+  "arenaMutator": "Mutator",
   "execute": "[LPM] Wykończ",
   "health": "Zdrowie",
   "energy": "Energia",
@@ -6,6 +8,13 @@
   "noStamina": "Brak wytrzymałości",
   "heat": "Ciepło",
   "overheated": "Przegrzanie",
+  "activeCooling": {
+    "waiting": "Przegrzanie",
+    "window": "Chłodź teraz",
+    "late": "Okno minęło",
+    "penalty": "Blokada wydłużona",
+    "success": "Blokada skrócona"
+  },
   "noEnergy": "Brak energii",
   "cooldown": "Odnowienie",
   "jammed": "ZAGŁUSZONE",

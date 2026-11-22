@@ -21,7 +21,6 @@ import type { HubSceneOptions } from '../../src/scenes/hub';
 import { lifeLayout, lifeTexts } from '../fixtures/hubLife';
 import type { HubScreenActions, HubScreens } from '../../src/ui/hubScreens';
 import { CommandRegistry } from '../../src/ui/debugCommands';
-import { catPet } from '../../src/data/hub/interactions.json';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -142,6 +141,47 @@ it('Iga odpowiada tylko od strony korytarza, gdy ściana z plakatem nie przesła
   expect(scene.query('hubTalk')).toMatchObject({ id: 'iga' });
 });
 
+it('NPC za ladą (niska geometria) odpowiada, także gdy promień przechodzi nad ladą w dolną część ciała', async () => {
+  const { scene, commands } = await setup();
+  // Pitch -22,5° z oka 1,8 m: promień mija blat (1,1 m) tuż nad nim i trafia w ciało Marka.
+  commands.execute('hub tp -25 12.5 180 -22.5');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubNpc')).toBe('marek');
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubTalk')).toMatchObject({ id: 'marek' });
+});
+
+it('rekwizyt za wysoką ścianą nie reaguje na E, a przez przejście w ścianie tak', async () => {
+  const { scene, commands } = await setup();
+  commands.execute('hub tp -16.5 -10.65');
+  commands.execute('hub look seat_canteen_bench');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubTarget')).toBeNull();
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubSeat')).toBeNull();
+
+  commands.execute('hub tp -14.2 -10.65');
+  commands.execute('hub look seat_canteen_bench');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubTarget')).toMatchObject({
+    kind: 'prop',
+    id: 'seat_canteen_bench',
+  });
+});
+
+it('Węgielka można pogłaskać po podejściu na 2,1 m w poziomie (zasięg XZ, nie 3D od oka)', async () => {
+  const { scene, commands } = await setup();
+  // Kot leży w (-14.5, 12.5); gracz stoi z boku skrzyni, 2,1 m od niego w poziomie.
+  commands.execute('hub tp -16 14.0');
+  commands.execute('hub look cat');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubTarget')).toMatchObject({ kind: 'cat' });
+  commands.execute('hub tp -18.1 14.0');
+  commands.execute('hub look cat');
+  scene.step(SIM_DT, idle);
+  expect(scene.query('hubTarget')).toBeNull();
+});
+
 it('E przy Węgielku uruchamia głaskanie FPP, kładzie kota i raz emituje miauknięcie', async () => {
   const { scene, commands, bus, three } = await setup(
     '',
@@ -167,7 +207,7 @@ it('E przy Węgielku uruchamia głaskanie FPP, kładzie kota i raz emituje miauk
   expect(hand.matrix.equals(start)).toBe(false);
   scene.step(SIM_DT, interact);
   expect(meow).toHaveBeenCalledTimes(1);
-  for (let i = 0; i < Math.ceil(catPet.durationS / SIM_DT); i++)
+  for (let i = 0; i < Math.ceil(tuning.hub.catPetDurationS / SIM_DT); i++)
     scene.step(SIM_DT, holdInteract);
   scene.render(1);
   expect(hand.visible).toBe(false);
@@ -681,6 +721,26 @@ it('powitanie po opóźnieniu wybiera NPC najbliższego spawn i zapisuje klucz p
     greetedNpc: 'friend',
     reacted: [],
   });
+});
+
+it('otwarta odprawa misji wstrzymuje powitanie i ruch, jak otwarta stacja', async () => {
+  let open = true;
+  const { scene, bus } = await setup('', {
+    ...arrivalOptions(),
+    debriefOpen: () => open,
+  });
+  const lines: ChatterLine[] = [];
+  bus.on('hub_chatter_line', (line) => lines.push(line));
+  const before = position(scene);
+  advanceArrival(scene, tuning.hub.arrivalDelayS * 2);
+  for (let i = 0; i < 30; i++) scene.step(SIM_DT, walkForward);
+  expect(lines).toEqual([]);
+  expect(position(scene)).toEqual(before);
+  open = false;
+  advanceArrival(scene);
+  expect(lines.filter((line) => line.conversation === 'arrival')).toHaveLength(
+    1,
+  );
 });
 
 it('E daje reakcję każdemu NPC raz, potem zwykłe kwestie; powitanie nie zużywa reakcji', async () => {

@@ -1,6 +1,6 @@
 import { BoxGeometry, CylinderGeometry, Group, Mesh } from 'three';
 import type { BufferGeometry, Scene as ThreeScene } from 'three';
-import type { RigidBody, World } from '@dimforge/rapier3d-compat';
+import type { Ray, RigidBody, World } from '@dimforge/rapier3d-compat';
 import type { GameContext } from '../core/context';
 import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
@@ -13,7 +13,6 @@ import { createIndexedDbSaveStore, loadSettings } from '../core/save';
 import type { SaveStore } from '../core/save';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import hideoutData from '../data/hub/hideout.json';
-import { catPet } from '../data/hub/interactions.json';
 import npcTextData from '../data/hub/npcs.pl.json';
 import eventData from '../data/hub/events.pl.json';
 import propTextData from '../data/hub/props.pl.json';
@@ -36,6 +35,8 @@ import { worldEnvelope } from '../render/horizon';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { batchStaticGeometry } from '../render/staticBatch';
 import { createMetaBar } from '../ui/hub/metaBar';
+import { HubGuide } from '../ui/hubGuide';
+import { hubGuideTarget, type HubGuideTarget } from '../world/hubGuide';
 import { createHubGreetings } from '../ui/hub/greetings';
 import type { MetaBar } from '../ui/hub/metaBar';
 import { createMissionsPanel } from '../ui/hub/missionsPanel';
@@ -80,7 +81,7 @@ import {
 import type { NpcLine, NpcTexts } from '../world/hubNpcs';
 import {
   HubStations,
-  rayAabbDistance,
+  lookDirection,
   selectHubTarget,
 } from '../world/hubStations';
 import type { HubTarget } from '../world/hubStations';
@@ -110,6 +111,8 @@ export interface HubSceneOptions {
   panels?: HubPanelRegistry;
   /** Pasek meta u góry ekranu; domyślnie włączony, gdy scena sama tworzy nakładki (DOM). */
   metaBar?: boolean;
+  /** Czy nakładka odprawy misji jest otwarta (domyślnie sprawdza DOM); otwarta działa jak otwarta stacja. */
+  debriefOpen?: () => boolean;
 }
 
 const DEFAULT_PANELS: HubPanelRegistry = {
@@ -163,6 +166,9 @@ export class HubScene implements Scene {
   private metaStore: SaveStore | null = null;
   private meta!: MetaManager;
   private metaBar: MetaBar | null = null;
+  private guide: HubGuide | null = null;
+  private guideTarget: HubGuideTarget | null | undefined;
+  private guideBusy = false;
   private screens!: HubScreens;
   private prompt: HubPrompt | null = null;
   private dialogUi: HubDialog | null = null;
@@ -200,7 +206,8 @@ export class HubScene implements Scene {
   private ctx!: GameContext;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
   private world!: World;
-  private readonly blockColliders = new Set<number>();
+  /** Wysokość górnej krawędzi bloku nad podłogą (m) wg uchwytu kolidera; przesłaniają tylko wysokie bloki. */
+  private readonly blockTops = new Map<number, number>();
   private entities!: EntityRegistry;
   private playerId!: EntityId;
   private player!: PlayerController;
@@ -270,6 +277,7 @@ export class HubScene implements Scene {
       this.metaBar = createMetaBar(this.meta, ctx.bus);
     if (this.screensOption === undefined) {
       this.prompt = new HubPrompt();
+      this.guide = new HubGuide();
       this.dialogUi = new HubDialog();
     }
     this.hubMap =
@@ -491,7 +499,10 @@ export class HubScene implements Scene {
                 interactionGroups(CollisionGroup.World, 0xffff),
               ),
           );
-          this.blockColliders.add(collider.handle);
+          this.blockTops.set(
+            collider.handle,
+            position.y + size.y / 2 - this.layout.playerSpawn.y,
+          );
           if (shape === 'barrel') {
             const barrel = new Group();
             barrel.name = 'hub:barrel';
@@ -658,6 +669,11 @@ export class HubScene implements Scene {
     const eye = this.eyePosition();
     const cat = this.fauna?.petFocus(eye);
     const props = this.layout.props ?? [];
+    const direction = lookDirection(state.yaw, state.pitch);
+    let ray: Ray | undefined;
+    // Przesłania wyłącznie wysoka geometria (ściany, filary), nie lady, stoły i ławki.
+    const occluder = (collider: { handle: number }): boolean =>
+      (this.blockTops.get(collider.handle) ?? -Infinity) > t.losOccluderMinTopM;
     const target = selectHubTarget(
       this.layout.stations,
       this.npcTargets,
@@ -667,35 +683,21 @@ export class HubScene implements Scene {
       t.interactRangeM,
       t.focusPaddingM,
       cat ? [...props, { id: 'cat', focus: cat }] : props,
+      ({ distanceM }) =>
+        this.world.castRay(
+          (ray ??= new this.rapier.Ray(eye, direction)),
+          distanceM,
+          true,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          occluder,
+        ) !== null,
     );
-    const isCat = target?.kind === 'prop' && target.id === 'cat' && cat;
-    const focus = isCat
-      ? cat
-      : target?.kind === 'npc'
-        ? this.npcById.get(target.id)?.focus
-        : null;
-    if (!focus) return target;
-    const direction = {
-      x: -Math.sin(state.yaw) * Math.cos(state.pitch),
-      y: Math.sin(state.pitch),
-      z: -Math.cos(state.yaw) * Math.cos(state.pitch),
-    };
-    const distance = rayAabbDistance(eye, direction, focus, t.focusPaddingM);
-    if (
-      distance !== null &&
-      this.world.castRay(
-        new this.rapier.Ray(eye, direction),
-        distance,
-        true,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        (collider) => this.blockColliders.has(collider.handle),
-      )
-    )
-      return null;
-    return isCat ? { kind: 'cat', id: 'cat' } : target;
+    return target?.kind === 'prop' && target.id === 'cat' && cat
+      ? { kind: 'cat', id: 'cat' }
+      : target;
   }
 
   private useProp(id: string): boolean {
@@ -847,8 +849,17 @@ export class HubScene implements Scene {
     this.arrivalPending = context !== null;
   }
 
+  private isDebriefOpen(): boolean {
+    if (this.options.debriefOpen) return this.options.debriefOpen();
+    return (
+      typeof document !== 'undefined' &&
+      document.querySelector('[data-mission-debrief][open]') !== null
+    );
+  }
+
   private tickArrival(dt: number): void {
     if (!this.arrivalPending || !this.arrival) return;
+    if (this.isDebriefOpen()) return;
     this.arrivalElapsedS += dt;
     if (
       this.arrivalElapsedS < this.ctx.tuning.hub.arrivalDelayS ||
@@ -921,7 +932,7 @@ export class HubScene implements Scene {
     this.dressing?.step(dt);
     this.previous = this.player.getState();
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
-    if (this.stations.opened || !(dt > 0)) return;
+    if (this.stations.opened || this.isDebriefOpen() || !(dt > 0)) return;
     if (input.pressed.has('map') && this.talk === null) this.hubMap?.toggle();
     const mapOpen = this.hubMap?.isOpen === true;
     this.props.step(dt);
@@ -937,6 +948,7 @@ export class HubScene implements Scene {
     if (!this.seat && this.seatBlend === 0) this.seatPose = null;
     this.fauna?.step(dt, this.previous);
     const player = this.player.getState().position;
+    this.npcs?.step(dt);
     for (const state of this.npcStates)
       state.step(
         dt,
@@ -1047,6 +1059,25 @@ export class HubScene implements Scene {
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
+    const guideBusy =
+      this.stations.opened !== null ||
+      this.hubMap?.isOpen === true ||
+      this.talk !== null ||
+      this.seat !== null;
+    // Cel przewodnika zmienia się tylko po runie (nowa scena) albo po wydaniu
+    // punktów w stacji, więc liczymy go przy zmianie zajętości, nie co klatkę.
+    if (this.guideTarget === undefined || guideBusy !== this.guideBusy) {
+      this.guideBusy = guideBusy;
+      this.guideTarget = hubGuideTarget(this.meta.state, this.meta.freePoints);
+    }
+    const guideTarget = this.guideTarget;
+    this.guide?.update(
+      guideTarget,
+      this.layout.stations.find(({ id }) => id === guideTarget)?.position ??
+        null,
+      this.player.getState(),
+      guideBusy,
+    );
     this.fauna?.render(alpha);
     const mapOpen = this.hubMap?.isOpen === true;
     if (mapOpen) {
@@ -1072,7 +1103,7 @@ export class HubScene implements Scene {
     } else if (target?.kind === 'prop' || target?.kind === 'cat') {
       this.prompt?.update(
         target.kind === 'cat'
-          ? catPet.label
+          ? this.props.texts.labels.petCat
           : (this.layout.props?.find((p) => p.id === target.id)?.label ?? null),
         this.stations.opened !== null || mapOpen,
       );
@@ -1187,6 +1218,8 @@ export class HubScene implements Scene {
         return { open: this.hubMap?.isOpen === true };
       case 'hubFocus':
         return this.focusedStation();
+      case 'hubTarget':
+        return this.focusedTarget();
       case 'hubNpc':
         return this.focusedNpc();
       case 'hubTalk':
@@ -1460,6 +1493,7 @@ export class HubScene implements Scene {
       this.chatterUi?.dispose();
       this.npcs?.dispose();
       this.metaBar?.dispose();
+      this.guide?.dispose();
       this.fppView?.dispose();
       this.fpsCamera?.dispose();
       this.player?.dispose();

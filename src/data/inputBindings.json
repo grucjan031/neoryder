@@ -11,6 +11,7 @@
     "ControlLeft": "crouch",
     "ControlRight": "crouch",
     "KeyR": "swap",
+    "KeyG": "coolWeapon",
     "KeyF": "power",
     "KeyE": "power2",
     "Digit1": "weapon1",

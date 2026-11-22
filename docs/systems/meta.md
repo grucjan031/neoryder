@@ -22,7 +22,7 @@ Stan startowy (`createStarterMetaState`, dane `progression.json.starter`): 0 XP,
 
 Śmierć daje 100% nagród (bez składników zwycięstwa). Rdzenie za elity i zwycięstwo nie są mnożone przez `rewardMult` (dodaje się tylko `victoryCores`). Liczby w `progression.json.rewards`: `xpPerRoom` 25, `xpPerElite` 40, `xpVictory` 50, `dataPerRoom` 5, `dataPerKill` 1, `dataVictory` 30, `coresPerElite` 1, `coresVictory` 3. `rewardMult` i `victoryCores` poziomów zagrożenia: patrz „Poziom zagrożenia w meta”.
 
-**Misje liniowe** (misja z polem `level`): `rewards` runu to zero (XP, Dane, Rdzenie), a nie wzór powyżej. Gdy `outcome = victory`, `missionCompleted` i `missionId` są ustawione, a misja nie jest jeszcze w `campaign.completed`, dolicza się jednorazowo `mission.rewards.firstClear` (`data`, opcjonalnie `cores`) do `rewards` i dopisuje misję do `campaign.completed`; każde takie zwycięstwo ustawia `campaign.pendingDebrief` na id misji (`clearDebrief()` zeruje). Nieznana misja przy takim zwycięstwie to błąd.
+**Misje liniowe** (misja z polem `level`): pierwsze ukończenie misji liniowej daje zwykłe nagrody runu z `computeRunRewards` oraz jednorazowy bonus `firstClear`, każde kolejne ukończenie daje same zwykłe nagrody runu, a próba nieukończona daje 0 nagród. Gdy `outcome = victory`, `missionCompleted` i `missionId` są ustawione, a misja nie jest jeszcze w `campaign.completed`, dolicza się jednorazowo `mission.rewards.firstClear` (`data`, opcjonalnie `cores`) do `rewards` i dopisuje misję do `campaign.completed`; każde takie zwycięstwo ustawia `campaign.pendingDebrief` na id misji (`clearDebrief()` zeruje). Nieznana misja przy takim zwycięstwie to błąd.
 
 ## applyRun i idempotencja
 
@@ -45,6 +45,10 @@ Stan startowy (`createStarterMetaState`, dane `progression.json.starter`): 0 XP,
 `setLoadout({ blade, weapons, powers, modules })`: ostrze, bronie i moce muszą być odblokowane; 1..`weaponSlots` unikalnych broni i 1..`powerSlots` unikalnych mocy. `modules: Record<string, string[]>` przypisuje moduły wybranym broniom. Wymagane są odblokowania `module:<id>`, brak duplikatów w broni oraz limit `progression.json.moduleSlotsPerWeapon` (3), po jednym module na Wylot, Ogniwo i Optykę; klucze `modules` muszą być bronią z ekwipunku. Moduł nieznany lub niezgodny z `weaponKinds` (rodzaj `fireMode` broni) jest przy walidacji pomijany (nie powoduje błędu), a przy budowie `loadout()` odrzucany (`sanitizeModules`: zachowuje pierwszy moduł każdego slotu, najwyżej 3). Jeden moduł może być użyty w kilku broniach. Walidacja jest atomowa (przy błędzie ekwipunek się nie zmienia).
 
 `loadout()` zwraca pełny `Loadout` (`id: 'custom'`, `name: 'Własny'`, `startHeld: 'blade'`, `tags: []`) z głęboką kopią modułów. Brak `modules` w starych zapisach meta v3 uzupełnia się przez `{}` bez migracji. Moduły zostają zamrożone na start runu wraz z ekwipunkiem. Dane, ceny, UI i wykonanie łatek opisuje `docs/systems/weaponModules.md`.
+
+## Wydobycie modułów (zapis v7)
+
+`MetaState.pendingExtractions: { runId, moduleIds }[]` (migracja meta v6→v7 dopisuje `[]`). `applyRun` zapisuje ofertę z `RunSummary.foundModules` (znane, jeszcze nieodblokowane, bez duplikatów): po zwycięstwie wszystkie, po śmierci losowo (`Rng` z seeda runu) najwyżej `tuning.run.deathModulePoolSize`. `extractModule(runId, moduleId)` zużywa ofertę runu i dodaje odblokowanie `module:<id>`; moduł montuje się w warsztacie jak każdy odblokowany. Łup powstaje jako dodatkowa opcja na ekranie nagrody po elicie (`tuning.run.eliteModuleOfferSize`). Kontrakt: `docs/api.md`.
 
 ## Zdarzenia
 
@@ -73,7 +77,7 @@ Pełny opis (drzewka, progi, lista węzłów, działanie w pokoju): `docs/system
 Kod: `src/progression/metaSave.ts`, `src/ui/metaCommands.ts`, `src/scenes/run.ts`, `src/ui/runScreens.ts`. Kontrakt: `docs/api.md` („Integracja runu z meta”).
 
 - `loadMetaManager(store, bus?)`: brak zapisu daje stan startowy z danych; zapis nieczytelny (też nowszej wersji albo błąd bazy) daje stan startowy z ostrzeżeniem w konsoli i **nie nadpisuje** zapisu. Dopiero pierwszy `saveMetaManager` go zastępuje (poza zapisem z nowszej wersji, który `SaveStore` odrzuca).
-- `saveMetaManager(store, manager)`: `MetaSave` w bieżącej `SAVE_VERSION` (6), `createdAt` zachowany, `updatedAt` ustawiony. Zapisy do jednego `SaveStore` są kolejkowane, a migawka stanu powstaje przy wywołaniu. Z tej pary korzystają `RunScene`, komendy debug i kryjówka (zadania 08–10).
+- `saveMetaManager(store, manager)`: `MetaSave` w bieżącej `SAVE_VERSION` (7), `createdAt` zachowany, `updatedAt` ustawiony. Zapisy do jednego `SaveStore` są kolejkowane, a migawka stanu powstaje przy wywołaniu. Z tej pary korzystają `RunScene`, komendy debug i kryjówka (zadania 08–10).
 - `RunScene` wczytuje meta przy starcie (każdy run). `?loadout=meta` zamraża w `RunState` ekwipunek (`loadout()`, `loadoutId: 'custom'`), talenty, `threat.selected` i bazowe `maxHealth` gracza (`src/data/scenes/roomPlayer.json`, 100). Presety nie czytają talentów ani poziomu zagrożenia.
 - Przy `run_ended` (śmierć i zwycięstwo, także presety): zapis runu ze śladem `ended`, świeży odczyt meta (`loadMetaManagerStrict`), `applyRun(summary, runIdOf(state))`, `saveMetaManager`, `clearRun` (szczegóły, błędy i ponawianie: `docs/systems/reliability.md`). Błąd odczytu, naliczenia lub zapisu meta przerywa rozliczenie przed `clearRun`: ślad `ended` zostaje, a podsumowanie oferuje ponowienie albo „Porzuć nagrodę”. Powtórne zakończenie tego samego runu (`runId` w `appliedRunIds`) nie zmienia meta i nie pokazuje nowych nagród.
 - Podsumowanie runu pokazuje Doświadczenie, Dane, Rdzenie, awans („Awans: Poziom 3 → 4”, tylko gdy nastąpił) i „Odblokowano Poziom zagrożenia N”; przycisk „Wróć do kryjówki” (`?scene=hub`, zachowuje `debug=1`) jest pierwszy.

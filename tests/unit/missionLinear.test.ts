@@ -24,6 +24,10 @@ import {
   loadMetaManagerStrict,
   saveMetaManager,
 } from '../../src/progression/metaSave';
+import {
+  computeRunRewards,
+  defaultMetaRules,
+} from '../../src/progression/meta';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -193,12 +197,17 @@ it('ukończenie po checkpoincie zachowuje cel po śmierci i po ponownym wczytani
   );
 });
 
-it('cały zestaw celów ma oryginalne czasy i pozycje z poziomu, a nagroda firstClear rozlicza się tylko raz', async () => {
+it('cały zestaw celów ma oryginalne czasy i pozycje z poziomu, firstClear rozlicza się tylko raz, a powtórka daje zwykłe nagrody runu', async () => {
   const store = createMemorySaveStore();
   const meta = await loadMetaManagerStrict(store);
   const before = meta.state.data;
   await saveMetaManager(store, meta);
   let afterFirst: number | undefined;
+  const ordinary = computeRunRewards(
+    { outcome: 'victory', roomsCleared: 0, elitesCleared: 0, kills: 0 },
+    defaultMetaRules.threat[meta.state.threat.selected]!,
+    defaultMetaRules.progression.rewards,
+  );
   for (let attempt = 0; attempt < 2; attempt++) {
     const { scene, commands } = await setup(store);
     commands.execute('god');
@@ -209,11 +218,24 @@ it('cały zestaw celów ma oryginalne czasy i pozycje z poziomu, a nagroda first
     const saved = await store.loadMeta();
     expect(saved?.meta.campaign.completed).toEqual(['m01-maszty']);
     // firstClear (60) tylko raz; naszywki Iskry mogą dodać własną nagrodę przy pierwszym ukończeniu.
+    // Kolejne ukończenie daje zwykłe nagrody runu (bez firstClear).
     if (afterFirst === undefined) {
-      expect(saved!.meta.data - before).toBeGreaterThanOrEqual(60);
+      expect(saved!.meta.data - before).toBeGreaterThanOrEqual(
+        ordinary.data + 60,
+      );
+      expect(saved!.meta.xp - meta.state.xp).toBe(ordinary.xp);
+      expect(saved?.meta.lastRuns[0]?.rewards).toEqual({
+        ...ordinary,
+        data: ordinary.data + 60,
+      });
       afterFirst = saved!.meta.data;
-    } else expect(saved?.meta.data).toBe(afterFirst);
-    expect(saved?.meta.xp).toBe(meta.state.xp);
+    } else {
+      const repeat = saved!.meta.lastRuns[0]!.rewards;
+      expect(repeat).toEqual(ordinary);
+      expect(repeat.data).toBeGreaterThan(0);
+      expect(saved!.meta.data - afterFirst).toBe(repeat.data);
+      expect(saved!.meta.xp - meta.state.xp).toBe(2 * ordinary.xp);
+    }
     expect(saved?.meta.threat.max).toBe(meta.state.threat.max);
     scene.dispose();
   }

@@ -45,6 +45,11 @@ export class LevelRuntime {
     for (const encounter of this.level.encounters) {
       if (this.completed.has(encounter.id) || this.active.has(encounter.id))
         continue;
+      // Fale celu defend (`<cel>:<indeks>`) startuje wyłącznie próg postępu.
+      if (encounter.reinforcementFor?.includes(':')) continue;
+      // Pokonany boss nie wraca, także gdy zapis nie zdążył objąć spotkania.
+      if (encounter.bossFor && objectives[encounter.bossFor] === 'done')
+        continue;
       if (
         this.satisfied(encounter.after, objectives) &&
         insideLevelZone(position, encounter.zone)
@@ -61,7 +66,11 @@ export class LevelRuntime {
   }
   openGates(objectives: Readonly<Record<string, string>>): string[] {
     return this.level.gates
-      .filter((gate) => this.satisfied(gate.after, objectives))
+      .filter(
+        (gate) =>
+          this.satisfied(gate.after, objectives) &&
+          !(gate.closedDuring && this.active.has(gate.closedDuring)),
+      )
       .map((gate) => gate.id);
   }
 }

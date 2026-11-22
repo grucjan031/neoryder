@@ -16,6 +16,8 @@
     "boss": "Boss"
   },
   "noRewards": "brak nagród",
+  "eliteModule": "Dodatkowy moduł za elitę",
+  "extractionAvailable": "W warsztacie kryjówki możesz wydobyć jeden moduł z tego runu.",
   "placeholder": "Ekran tymczasowy — przejdź dalej.",
   "next": "Dalej",
   "menu": "Menu",
@@ -53,6 +55,7 @@
     "newRun": "Nowy run (presety)",
     "continue": "Kontynuuj run",
     "arena": "Poligon",
+    "arenaMutators": "Arena wyzwań",
     "seed": "Seed (opcjonalny)",
     "seedPlaceholder": "Puste pole — nowy seed",
     "loading": "Odczytywanie zapisu…",

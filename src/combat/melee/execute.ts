@@ -1,8 +1,17 @@
+import { z } from 'zod';
 import type { EntityId, EventBus } from '../../core/events';
 import type { Vec3 } from '../../core/math';
 import type { Tuning } from '../../core/tuning';
+import executeRewardsData from '../../data/melee/executeRewards.json';
 import type { DamageSystem } from '../damage';
 import type { StatusQuery } from '../status';
+
+const executeRewards = z
+  .object({
+    energy: z.number().finite().nonnegative(),
+    heal: z.number().finite().nonnegative(),
+  })
+  .parse(executeRewardsData);
 
 export interface ExecuteEnemy {
   id: EntityId;
@@ -90,8 +99,8 @@ export class ExecuteSystem {
       return false;
     }
     this.setReady(target.id, false);
-    this.deps.addEnergy(m.executeEnergy);
-    this.deps.heal(m.executeHeal);
+    this.deps.addEnergy(executeRewards.energy);
+    this.deps.heal(executeRewards.heal);
     bus.emit('execute_performed', {
       attacker: owner,
       target: target.id,

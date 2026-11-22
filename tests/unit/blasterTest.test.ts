@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 it('registers the scene, shoots queued rounds at dummies, respawns and disposes', async () => {
-  expect(scenes['blaster-test']?.().id).toBe('blaster-test');
+  expect((await scenes['blaster-test']?.())?.().id).toBe('blaster-test');
   const scene = new BlasterTest(false);
   const three = new ThreeScene();
   const camera = new PerspectiveCamera();
@@ -118,6 +118,18 @@ it('uses the mapped left mouse attack action for held fire', async () => {
   for (let i = 0; i < 60; i++)
     scene.step(SIM_DT, { ...input, held: new Set(['attack']) });
   expect(scene.query('shots')).toBe(6);
+  for (let i = 0; i < 60 && !scene.query('overheated'); i++)
+    scene.step(SIM_DT, { ...input, held: new Set(['attack', 'coolWeapon']) });
+  expect(scene.query('coolingPhase')).toBe('waiting');
+  for (
+    let i = 0;
+    i < Math.round(tuning.weapons.activeCooling.windowStartS / SIM_DT);
+    i++
+  )
+    scene.step(SIM_DT, { ...input, held: new Set(['coolWeapon']) });
+  expect(scene.query('coolingPhase')).toBe('window');
+  scene.step(SIM_DT, { ...input, pressed: new Set(['coolWeapon']) });
+  expect(scene.query('coolingPhase')).toBe('success');
 });
 
 it('styles loaded models, changes local heat neons and disposes source and local materials', async () => {

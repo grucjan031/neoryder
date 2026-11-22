@@ -235,7 +235,7 @@ describe('Przejęcie', () => {
       const saved = await store.loadRun();
       expect(saved?.ended?.summary).toEqual(summary);
       expect(saved?.run.modeId).toBe('conquest');
-      expect(SAVE_VERSION).toBe(6);
+      expect(saved?.saveVersion).toBe(SAVE_VERSION);
     },
   );
   it('stary zapis pozostaje bez modeId, a wznowiona arena ma dostępny pokój', () => {

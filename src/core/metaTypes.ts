@@ -54,6 +54,7 @@ export interface MetaState {
   talents: string[];
   /** `weapon:<id>` | `power:<id>` | `blade:<id>` | `slot:<id>` | `module:<id>`. */
   unlocks: string[];
+  pendingExtractions: { runId: string; moduleIds: string[] }[];
   /** Ekwipunek wybrany w warsztacie. */
   loadout: LoadoutChoice;
   threat: { max: number; selected: number };

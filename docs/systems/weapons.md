@@ -130,7 +130,30 @@ Hitstop wstrzymuje oba zegary. `overheat()` ustawia maksimum i rozpoczyna blokad
 natychmiast (komenda debug). `overheated` i `shots` są dostępnymi odczytami.
 `heat_changed` zawiera `{ id, current, max, overheated }`: emisja przy strzale,
 wejściu/wyjściu z przegrzania oraz najwyżej co 0,1 s podczas chłodzenia.
-Aktywne chłodzenie jest odłożone do F2 i zapisane w backlogu.
+
+### Aktywne chłodzenie blastera
+
+Po przegrzaniu dobytego blastera gracz może nacisnąć G (akcja „Chłodzenie blastera”
+w ustawieniach sterowania). HUD pokazuje przypisany klawisz i napis „Chłodź teraz”
+od 0,50 s do chwili poprzedzającej 0,80 s czasu gracza. Liczy się nowe naciśnięcie.
+Trafienie w okno skraca pozostałą blokadę o 0,55 s, najwyżej do zera. Bonus
+można uzyskać raz na przegrzanie. Ciepło nadal opada według statystyki `coolingRate`.
+
+Próba przed oknem lub po nim dodaje 0,35 s kary. W czasie kary kolejne naciśnięcia
+są ignorowane. Po jej upływie od razu otwiera się nowe okno na 0,30 s. Jeśli
+do końca blokady zostało mniej niż 0,30 s, gra rezerwuje pełne okno na poprawkę.
+Bez interwencji gracza przegrzanie trwa bazowe 1,5 s.
+
+Obiekt `activeCooling: {}` w `src/data/weapons/blaster.json` włącza mechanikę.
+Domyślne czasy w sekundach pochodzą z `tuning.weapons.activeCooling`.
+Definicja broni może nadpisać `windowStartS` (≥ 0), `windowDurationS`,
+`bonusS` i `penaltyS` (> 0). Broń bez tego obiektu stygnie pasywnie.
+
+**Próba w 30 sekund.** Otwórz `?scene=blaster-test&debug=1`, przytrzymaj LPM
+do przegrzania, puść spust i naciśnij G przy „Chłodź teraz”. Sprawdź napis
+„Blokada skrócona” i moment kolejnego strzału. W następnej serii wciśnij G
+zaraz po przegrzaniu. Po komunikacie „Blokada wydłużona” puść klawisz i naciśnij
+go ponownie w oknie. Komenda `overheat` pozwala powtórzyć próbę bez serii strzałów.
 
 ## Wspólny ProjectileSystem
 

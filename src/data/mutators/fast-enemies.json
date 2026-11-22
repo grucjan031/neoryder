@@ -1,0 +1,6 @@
+{
+  "id": "fast-enemies",
+  "name": "Szybsi wrogowie",
+  "description": "Wrogowie poruszają się szybciej.",
+  "effect": { "stat": "moveSpeed", "value": 1.5 }
+}

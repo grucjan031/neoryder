@@ -216,6 +216,33 @@ describe('FPP items and offhand', () => {
     expect(blade.offHand.root.visible).toBe(true);
   });
 
+  it('wykończenie prowadzi prawą rękę osobnym ruchem i wraca do spoczynku', () => {
+    const blade = keep(new FppBlade(twinBladesDefinition));
+    blade.place(identity, idle);
+    const rightIdle = blade.mainHand.root.matrix.clone();
+    const leftIdle = blade.offHand.root.matrix.clone();
+    blade.place(identity, {
+      ...idle,
+      state: 'light',
+      stage: 1,
+      phase: 'active',
+      phaseT: 0.5,
+    });
+    const light = blade.mainHand.root.matrix.clone();
+    blade.place(identity, {
+      ...idle,
+      execution: { phase: 'active', phaseT: 0.5 },
+    });
+    expect(blade.mainHand.root.matrix.equals(light)).toBe(false);
+    expect(blade.mainHand.root.matrix.equals(rightIdle)).toBe(false);
+    closeMatrix(blade.offHand.root.matrix, leftIdle);
+    blade.place(identity, {
+      ...idle,
+      execution: { phase: 'recovery', phaseT: 1 },
+    });
+    closeMatrix(blade.mainHand.root.matrix, rightIdle);
+  });
+
   it('keeps an open right hand on throw and hides hands throughout an active staff spin', () => {
     const blade = keep(new FppBlade());
     blade.place(identity, idle);

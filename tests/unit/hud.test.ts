@@ -277,6 +277,12 @@ describe('Hud', () => {
     expect(meter.classList.contains('hud__meter--overheated')).toBe(true);
     expect(overheat.hidden).toBe(false);
     expect(overheat.textContent).toBe('Przegrzanie');
+    hud.setCoolingHint('window');
+    expect(overheat.textContent).toBe('[G] Chłodź teraz');
+    hud.setCoolingHint('penalty');
+    expect(overheat.textContent).toBe('Blokada wydłużona');
+    hud.setCoolingHint(undefined);
+    expect(overheat.textContent).toBe('Przegrzanie');
     heat(30, false);
     expect(meter.classList.contains('hud__meter--overheated')).toBe(false);
     expect(overheat.hidden).toBe(true);

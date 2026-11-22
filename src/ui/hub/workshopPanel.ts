@@ -51,6 +51,7 @@ export const createWorkshopPanel: HubPanelFactory = (
   let status = '';
   let disposed = false;
   let busy = false;
+  let extractionNeedsSave = false;
   let wantedPreview: string | undefined;
   let shownPreview = '';
 
@@ -94,7 +95,8 @@ export const createWorkshopPanel: HubPanelFactory = (
     try {
       change();
       await ctx.save();
-      status = '';
+      status = extractionNeedsSave ? text.extraction.saved : '';
+      extractionNeedsSave = false;
     } catch (error) {
       status = message(error);
     } finally {
@@ -108,6 +110,46 @@ export const createWorkshopPanel: HubPanelFactory = (
 
   const setChoice = (choice: LoadoutChoice): Promise<void> =>
     run(() => ctx.manager.setLoadout(choice));
+
+  const renderExtractions = (): HTMLElement[] => {
+    const offers = ctx.manager.state.pendingExtractions;
+    if (!offers.length && !extractionNeedsSave) return [];
+    const section = el('section', 'workshop__section');
+    section.dataset.section = 'extraction';
+    section.append(el('h2', undefined, text.extraction.title));
+    for (const { runId, moduleIds } of offers) {
+      const seed = runId.slice(0, runId.lastIndexOf(':'));
+      section.append(
+        el('p', undefined, fill(text.extraction.choose, { seed })),
+      );
+      for (const id of moduleIds) {
+        const button = el(
+          'button',
+          'workshop__buy',
+          fill(text.extraction.claim, { name: itemName('module', id) }),
+        );
+        button.type = 'button';
+        button.disabled = busy;
+        button.dataset.key = `extract:${runId}:${id}`;
+        button.addEventListener(
+          'click',
+          () =>
+            void run(() => {
+              ctx.manager.extractModule(runId, id);
+              extractionNeedsSave = true;
+            }),
+        );
+        section.append(button);
+      }
+    }
+    if (extractionNeedsSave && !busy) {
+      const retry = el('button', 'workshop__buy', text.extraction.retry);
+      retry.type = 'button';
+      retry.addEventListener('click', () => void run(() => {}));
+      section.append(retry);
+    }
+    return [section];
+  };
 
   const renderHeader = (): HTMLElement => {
     const { data, cores } = ctx.manager.state;
@@ -392,6 +434,7 @@ export const createWorkshopPanel: HubPanelFactory = (
     statusLine.setAttribute('role', 'status');
     root.replaceChildren(
       renderHeader(),
+      ...renderExtractions(),
       renderUnlocks(),
       renderEquipment(),
       statusLine,

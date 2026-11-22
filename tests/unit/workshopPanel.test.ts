@@ -35,6 +35,45 @@ function setup(prepare?: (manager: MetaManager) => void) {
 }
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+it('wydobywa jeden moduł, pozwala ponowić zapis i od razu udostępnia montaż', async () => {
+  const manager = new MetaManager({
+    ...createStarterMetaState(),
+    pendingExtractions: [
+      { runId: 'elite:1', moduleIds: ['pierce', 'ricochet'] },
+    ],
+  });
+  const save = vi
+    .fn(async () => {})
+    .mockRejectedValueOnce(new Error('Błąd dysku'));
+  const panel = createWorkshopPanel({
+    manager,
+    save,
+    close: vi.fn(),
+    navigate: vi.fn(),
+  });
+  panels.push(panel);
+  const button = panel.root.querySelector<HTMLButtonElement>(
+    '[data-key="extract:elite:1:pierce"]',
+  )!;
+  button.click();
+  await flush();
+  expect(status(panel.root)).toContain('Błąd dysku');
+  panel.root
+    .querySelector<HTMLButtonElement>('[data-section="extraction"] button')!
+    .click();
+  await flush();
+  expect(save).toHaveBeenCalledTimes(2);
+  expect(panel.root.querySelector('[data-section="extraction"]')).toBeNull();
+  expect(manager.isUnlocked('module:ricochet')).toBe(false);
+  const slot = panel.root.querySelector<HTMLSelectElement>(
+    'select[data-weapon="blaster"][data-slot="0"]',
+  )!;
+  slot.value = 'pierce';
+  slot.dispatchEvent(new Event('change'));
+  await flush();
+  expect(manager.loadout().modules?.blaster).toEqual(['pierce']);
+});
 const row = (root: HTMLElement, id: string) =>
   root.querySelector<HTMLElement>(`[data-unlock="${id}"]`)!;
 const buyButton = (root: HTMLElement, id: string) =>

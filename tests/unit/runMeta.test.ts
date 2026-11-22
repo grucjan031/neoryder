@@ -147,6 +147,51 @@ function configuredMeta(): MetaManager {
   return new MetaManager(state);
 }
 
+it.each(['victory', 'death'] as const)(
+  'wydobywa jeden z zapisanych modułów po wyniku %s',
+  async (outcome) => {
+    const { commands, scene, store, screens } = await setup('seed=extraction');
+    const found = ['pierce', 'ricochet', 'incendiary'];
+    for (const id of found) commands.execute(`run module ${id}`);
+    const state = scene.query('runState') as RunState;
+    const runId = runIdOf(state);
+    const port = createRunSavePort(store);
+    await port.saveRun(state);
+    expect((await port.loadRun())?.foundModules).toEqual(found);
+    commands.execute(outcome === 'victory' ? 'run end win' : 'run end lose');
+    await scene.whenReady();
+    expect(screens.view.extractionAvailable).toBe(true);
+    const summary = screens.view.summary!;
+    await port.saveRun(state, { runId, summary });
+    expect((await port.loadEnded!())?.summary.foundModules).toEqual(found);
+
+    const meta = await loadMetaManagerStrict(store);
+    const [offer] = meta.state.pendingExtractions;
+    expect(offer!.runId).toBe(runId);
+    expect(offer!.moduleIds).toHaveLength(
+      outcome === 'death' ? tuning.run.deathModulePoolSize : found.length,
+    );
+    expect(found).toEqual(expect.arrayContaining(offer!.moduleIds));
+    expect(() => meta.extractModule(runId, 'scope')).toThrow();
+    const chosen = offer!.moduleIds[0]!;
+    expect(meta.isUnlocked(`module:${chosen}`)).toBe(false);
+    meta.extractModule(runId, chosen);
+    await saveMetaManager(store, meta);
+    const restored = await loadMetaManagerStrict(store);
+    expect(restored.state.pendingExtractions).toEqual([]);
+    expect(
+      restored.state.unlocks.filter((id) => id.startsWith('module:')),
+    ).toEqual([`module:${chosen}`]);
+    expect(restored.applyRun(summary, runId).applied).toBe(false);
+    expect(() => restored.extractModule(runId, chosen)).toThrow();
+    restored.setLoadout({
+      ...restored.state.loadout,
+      modules: { blaster: [chosen] },
+    });
+    expect(restored.loadout().modules?.blaster).toEqual([chosen]);
+  },
+);
+
 async function setup(
   query: string,
   options: {

@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 it('registers boss-test, starts with only the boss, changes phases, resets and cleans up commands/world', async () => {
-  expect(scenes['boss-test']?.().id).toBe('boss-test');
+  expect((await scenes['boss-test']?.())?.().id).toBe('boss-test');
   const scene = new BossTest(false);
   const commands = new CommandRegistry(),
     bus = new EventBus(),
@@ -49,6 +49,10 @@ it('registers boss-test, starts with only the boss, changes phases, resets and c
     { id: expect.any(Number), phase: 1, hp: 900 },
   ]);
   expect(spawned).toHaveBeenCalledOnce();
+  expect(phase).not.toHaveBeenCalled();
+  const ttk = commands.execute('boss ttk');
+  expect(ttk).toMatch(/TTK securityChief \(blaster\): \d+\.\d{3} s/);
+  expect(ttk).toMatch(/faza 1 .*faza 2 .*faza 3 /);
   expect(phase).not.toHaveBeenCalled();
   for (const bad of [
     'boss phase',

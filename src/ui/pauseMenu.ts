@@ -1,15 +1,25 @@
 import text from '../data/ui/settings.pl.json';
 import './pauseMenu.css';
+import { aboutDemoText } from '../data/ui/aboutDemoSchema';
+import { appBuild, buildInfoText } from './buildInfo';
+import type { BuildInfo } from './buildInfo';
+import { AboutDemo } from './aboutDemo';
 
 export class PauseMenu {
   private readonly root = document.createElement('dialog');
   private readonly hub: HTMLButtonElement;
-  constructor(actions: {
-    resume(): void;
-    settings(): void;
-    hub(): void;
-    menu(): void;
-  }) {
+  private readonly infoLine = document.createElement('p');
+  private readonly about = new AboutDemo();
+  private info: BuildInfo = appBuild;
+  constructor(
+    private readonly actions: {
+      infoProvider?(): { seed: string; scene: string };
+      resume(): void;
+      settings(): void;
+      hub(): void;
+      menu(): void;
+    },
+  ) {
     this.root.className = 'pause-menu';
     this.root.setAttribute('aria-label', text.pause);
     const title = document.createElement('h1');
@@ -25,8 +35,15 @@ export class PauseMenu {
     };
     button(text.resume, actions.resume);
     button(text.title, actions.settings);
+    button(aboutDemoText.title, () => this.about.showControls());
+    button(aboutDemoText.report, () => {
+      this.refreshInfo();
+      void this.about.showReport(this.info);
+    });
     this.hub = button(text.hub, actions.hub);
     button(text.menu, actions.menu);
+    this.infoLine.className = 'pause-menu__version';
+    this.root.append(this.infoLine);
     this.root.addEventListener('cancel', (event) => {
       event.preventDefault();
       if (document.querySelector('.debug-console[open]')) return;
@@ -57,11 +74,19 @@ export class PauseMenu {
     this.hub.hidden = !canReturnToHub;
     if (!this.root.open) this.root.showModal();
     this.root.querySelector('button')?.focus();
+    this.refreshInfo();
   }
   hide(): void {
+    this.about.hide();
     this.root.close();
   }
   dispose(): void {
+    this.about.dispose();
     this.root.remove();
+  }
+
+  private refreshInfo(): void {
+    this.info = { ...appBuild, ...this.actions.infoProvider?.() };
+    this.infoLine.textContent = buildInfoText(this.info);
   }
 }

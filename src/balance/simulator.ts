@@ -20,8 +20,9 @@ import { Stats } from '../core/stats';
 import type { StatId, StatModifier } from '../core/stats';
 import { tuning } from '../core/tuning';
 import type { Tuning } from '../core/tuning';
+import { Boss } from '../enemies/boss';
 import { enemySchema } from '../enemies/enemySchema';
-import type { EnemyDefinition } from '../enemies/enemySchema';
+import type { BossPattern, EnemyDefinition } from '../enemies/enemySchema';
 import { loadoutDefinitions } from '../progression/loadout';
 
 export const MAX_TIME_S = 120;
@@ -57,6 +58,10 @@ export interface SimulationOptions {
   count?: number;
 }
 
+export type BossTimelineEvent = { phase: number; timeS: number } & (
+  { kind: 'phase' } | { kind: 'pattern'; pattern: BossPattern['kind'] }
+);
+
 export interface SimulationResult {
   /** Czas zabicia ostatniego z `count` celów; ∞, gdy nie wszystkie padły. */
   ttkS: number;
@@ -71,6 +76,7 @@ export interface SimulationResult {
   statusDamage: number;
   appliedStatuses: string[];
   warnings: string[];
+  bossTimeline?: BossTimelineEvent[];
 }
 
 export const enemyDefinitions = new Map(
@@ -124,20 +130,6 @@ export function simulate(
   const damage = new DamageSystem(bus, entities);
   const stats = new Stats({ ...PLAYER_STATS, ...options.playerStats });
   const count = Math.max(1, Math.floor(options.count ?? 1));
-  const createTarget = () => {
-    const id = entities.create(enemy.kind, 'enemy');
-    const targetStats = new Stats({
-      maxHealth: enemy.maxHealth,
-      moveSpeed: enemy.moveSpeed,
-      damage: enemy.damage,
-    });
-    for (const modifier of options.targetModifiers ?? [])
-      targetStats.add(modifier);
-    const created = new Health(() => targetStats.get('maxHealth'));
-    damage.register(id, created, { stats: targetStats });
-    return { id, health: created };
-  };
-  let { id: target, health } = createTarget();
   const energy = new PlayerEnergy(owner, stats, bus, settings);
   const origin = { x: 0, y: 0, z: 0 };
   const dir = { x: 0, y: 0, z: -1 };
@@ -159,13 +151,17 @@ export function simulate(
             if (def?.kind === 'chain') return [def.rangeM];
             return [];
           });
-  const position = { x: 0, y: 0, z: -Math.min(...ranges, 1) / 2 };
+  const maxDistance = enemy.kind === 'boss' ? enemy.attackRange : Infinity;
+  const position = { x: 0, y: 0, z: -Math.min(...ranges, 1, maxDistance) / 2 };
   const hurtboxMultiplier = enemy.drone?.hurtboxMultiplier ?? 1;
   const aim = () => ({ origin, dir });
   const statuses = new StatusSystem(bus, damage, {
     position: (id) => (id === target ? position : null),
     targets: () => [target],
   });
+  const hurtboxes = new Hurtboxes();
+  const bossTimeline: BossTimelineEvent[] | undefined =
+    enemy.kind === 'boss' ? [] : undefined;
   const result: SimulationResult = {
     ttkS: Infinity,
     kills: 0,
@@ -179,7 +175,86 @@ export function simulate(
     statusDamage: 0,
     appliedStatuses: [],
     warnings: [],
+    ...(bossTimeline ? { bossTimeline } : {}),
   };
+  const minions: EntityId[] = [];
+  const createTarget = (): {
+    id: EntityId;
+    health: Health;
+    boss: Boss | null;
+  } => {
+    if (enemy.kind === 'boss') {
+      const boss = new Boss(
+        { bus, rng: new Rng('balance'), tuning: settings },
+        {
+          entities,
+          damage,
+          hurtboxes,
+          statuses,
+          spawnModifiers: options.targetModifiers ?? [],
+          getTarget: () => ({ id: owner, position: origin }),
+          // Ataki bossa nie zadają symulowanemu graczowi obrażeń.
+          projectiles: { spawn: () => 0, addInterceptor: () => () => {} },
+          spawnEnemy: (id) => {
+            const minion = entities.create(id, 'enemy');
+            minions.push(minion);
+            return { id: minion, removed: false, current: { state: 'idle' } };
+          },
+        },
+        enemy,
+        position,
+      );
+      bossTimeline?.push({
+        kind: 'phase',
+        phase: boss.phase,
+        timeS: result.elapsedS,
+      });
+      return { id: boss.id, health: damage.health(boss.id)!, boss };
+    }
+    const id = entities.create(enemy.kind, 'enemy');
+    const targetStats = new Stats({
+      maxHealth: enemy.maxHealth,
+      moveSpeed: enemy.moveSpeed,
+      damage: enemy.damage,
+    });
+    for (const modifier of options.targetModifiers ?? [])
+      targetStats.add(modifier);
+    const health = new Health(() => targetStats.get('maxHealth'));
+    damage.register(id, health, { stats: targetStats });
+    return { id, health, boss: null };
+  };
+  let { id: target, health, boss } = createTarget();
+  const removeTarget = () => {
+    if (boss) {
+      boss.dispose();
+      for (const id of minions.splice(0)) entities.destroy(id);
+    } else {
+      damage.unregister(target);
+      entities.destroy(target);
+      hurtboxes.removeEntity(target);
+    }
+  };
+  if (bossTimeline) {
+    bus.on('boss_phase', ({ id, phase }) => {
+      if (id === target)
+        bossTimeline.push({ kind: 'phase', phase, timeS: result.elapsedS });
+    });
+    bus.on('enemy_telegraph', ({ id, kind }) => {
+      if (id !== target || !boss) return;
+      if (
+        kind === 'aim' ||
+        kind === 'slam' ||
+        kind === 'summon' ||
+        kind === 'shield'
+      )
+        bossTimeline.push({
+          kind: 'pattern',
+          pattern: kind === 'aim' ? 'fan' : kind,
+          phase: boss.phase,
+          timeS: result.elapsedS,
+        });
+    });
+  }
   bus.on('damage_dealt', (event) => {
     if (event.target !== target) return;
     result.damage += event.amount;
@@ -259,7 +334,6 @@ export function simulate(
           createPower(id, deps),
         )
       : [];
-  const hurtboxes = new Hurtboxes();
   let box = hurtboxes.add(target, 0, hurtboxMultiplier);
   // Następca nie dostaje cięcia, które zabiło poprzednika: jedno cięcie = jeden cel.
   let bladeLocked = false;
@@ -284,8 +358,10 @@ export function simulate(
   let semiRelease = false;
   const maxSteps = Math.floor((options.maxTimeS ?? MAX_TIME_S) / SIM_DT);
   for (let tick = 1; tick <= maxSteps; tick++) {
+    result.elapsedS = tick * SIM_DT;
     damage.step(SIM_DT);
     energy.step(SIM_DT);
+    boss?.step(SIM_DT);
     statuses.step(SIM_DT);
     if (!health.dead) {
       if (weapon) {
@@ -319,7 +395,6 @@ export function simulate(
         }
       }
     }
-    result.elapsedS = tick * SIM_DT;
     if (health.dead) {
       result.kills++;
       result.killTimesS.push(result.elapsedS);
@@ -327,10 +402,8 @@ export function simulate(
         result.ttkS = result.elapsedS;
         break;
       }
-      damage.unregister(target);
-      entities.destroy(target);
-      hurtboxes.removeEntity(target);
-      ({ id: target, health } = createTarget());
+      removeTarget();
+      ({ id: target, health, boss } = createTarget());
       box = hurtboxes.add(target, 0, hurtboxMultiplier);
       bladeLocked = blade !== null;
     }
@@ -338,6 +411,7 @@ export function simulate(
   result.shots = weapon?.shots ?? 0;
   result.dps = result.elapsedS > 0 ? result.damage / result.elapsedS : 0;
   blade?.dispose();
+  if (boss) removeTarget();
   statuses.dispose();
   energy.dispose();
   return result;
@@ -365,6 +439,8 @@ export interface AttackRow {
   results: SimulationResult[];
   /** Paczka PACK_SIZE celów po kolei (miara bramki). */
   packResults: SimulationResult[];
+  /** Pojedyncze starcia, w kolejności `BalanceResult.bosses`. */
+  bossResults: SimulationResult[];
 }
 export interface PathRow {
   enemy: string;
@@ -376,11 +452,13 @@ export interface PathRow {
 }
 export interface BalanceResult {
   enemies: EnemyDefinition[];
+  bosses: EnemyDefinition[];
   attacks: AttackRow[];
   /** Ścieżki wg TTK paczki: to one rozstrzygają bramkę. */
   paths: PathRow[];
   /** Ścieżki wg pojedynczego TTK: informacyjnie, nie wpływają na `passed`. */
   singlePaths: PathRow[];
+  bossPaths: PathRow[];
   warnings: string[];
   passed: boolean;
 }
@@ -402,10 +480,11 @@ export function evaluateGate(ttkS: [number, number, number]) {
 }
 
 export function runBalance(options: SimulationOptions = {}): BalanceResult {
-  // Raport F2 mierzy zwykłych wrogów; TTK bossa wymaga symulacji jego faz.
-  const enemies = [...enemyDefinitions.values()].filter(
+  const definitions = [...enemyDefinitions.values()];
+  const enemies = definitions.filter(
     (definition) => definition.kind !== 'boss',
   );
+  const bosses = definitions.filter((definition) => definition.kind === 'boss');
   const warnings: string[] = [];
   const candidates: { id: string; name: string; attack: Attack }[] = [
     ...[...weaponDefinitions.values()].map((definition) => ({
@@ -428,14 +507,14 @@ export function runBalance(options: SimulationOptions = {}): BalanceResult {
       },
     })),
   ];
+  const singleOptions = { ...options, count: 1 };
   const packOptions = { ...options, count: PACK_SIZE };
   const attacks = candidates.map(({ id, name, attack }) => ({
     id,
     name,
-    results: enemies.map((enemy) =>
-      simulate(attack, enemy, { ...options, count: 1 }),
-    ),
+    results: enemies.map((enemy) => simulate(attack, enemy, singleOptions)),
     packResults: enemies.map((enemy) => simulate(attack, enemy, packOptions)),
+    bossResults: bosses.map((boss) => simulate(attack, boss, singleOptions)),
   }));
   const loadout = (id: string) => {
     const def = loadoutDefinitions.get(id);
@@ -448,9 +527,12 @@ export function runBalance(options: SimulationOptions = {}): BalanceResult {
   const gunner = loadout('gunner');
   const resonance = loadout('resonance');
   const rotations = permutations(damagingPowerIds(resonance.powers, warnings));
-  const buildPaths = (pack: boolean) =>
-    enemies.map((enemy, index): PathRow => {
-      const sim = pack ? packOptions : { ...options, count: 1 };
+  const buildPaths = (
+    targets: EnemyDefinition[],
+    key: 'packResults' | 'results' | 'bossResults',
+    sim: SimulationOptions,
+  ) =>
+    targets.map((enemy, index): PathRow => {
       const best = (rows: { id: string; result: SimulationResult }[]) => {
         const winner = rows.sort((a, b) => a.result.ttkS - b.result.ttkS)[0];
         if (!winner) throw new Error('Brak ofensywnego wyposażenia ścieżki');
@@ -460,7 +542,7 @@ export function runBalance(options: SimulationOptions = {}): BalanceResult {
         best(
           ids.map((id) => {
             const row = attacks.find((attack) => attack.id === id);
-            const result = (pack ? row?.packResults : row?.results)?.[index];
+            const result = row?.[key][index];
             if (!result) throw new Error(`Brak wyniku: ${id}`);
             return { id, result };
           }),
@@ -485,12 +567,14 @@ export function runBalance(options: SimulationOptions = {}): BalanceResult {
         ...evaluateGate(ttkS),
       };
     });
-  const paths = buildPaths(true);
+  const paths = buildPaths(enemies, 'packResults', packOptions);
   return {
     enemies,
+    bosses,
     attacks,
     paths,
-    singlePaths: buildPaths(false),
+    singlePaths: buildPaths(enemies, 'results', singleOptions),
+    bossPaths: buildPaths(bosses, 'bossResults', singleOptions),
     warnings,
     passed: paths.every((path) => path.passed),
   };

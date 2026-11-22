@@ -9,20 +9,30 @@ są istniejącymi zasobami; nie wprowadzono nowych modeli.
 
 Nowe pola:
 
-| Pole                 | Format i znaczenie                                                                     |
-| -------------------- | -------------------------------------------------------------------------------------- |
-| `objectiveOrder`     | Id celów misji w kolejności wykonania, każdy dokładnie raz.                            |
-| `objectivePositions` | Słownik id → `{x,y,z}`; także jawna pozycja modułu Helixa.                             |
-| `sections`           | `{id,name,zone,radio?}`; radio jest istniejącym wyzwalaczem z danych misji.            |
-| `encounters`         | `{id,zone,wave,spawnPoints,after?,reinforcementFor?}`; fala wskazuje `src/data/waves`. |
-| `checkpoints`        | `{id,position,yawDeg,zone,after?}`; pierwszy jest punktem startowym.                   |
-| `gates`              | `{id,block,after}`; collider i siatka bloku znikają razem.                             |
+| Pole                 | Format i znaczenie                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
+| `objectiveOrder`     | Id celów misji w kolejności wykonania, każdy dokładnie raz.                                     |
+| `objectivePositions` | Słownik id → `{x,y,z}`; także jawna pozycja modułu Helixa.                                      |
+| `sections`           | `{id,name,zone,radio?}`; radio jest istniejącym wyzwalaczem z danych misji.                     |
+| `encounters`         | `{id,zone,wave,spawnPoints,after?,reinforcementFor?,bossFor?}`; fala wskazuje `src/data/waves`. |
+| `checkpoints`        | `{id,position,yawDeg,zone,after?}`; pierwszy jest punktem startowym.                            |
+| `gates`              | `{id,block,after,closedDuring?}`; collider i siatka bloku znikają razem.                        |
 
 `zone` to `{kind:"box",position,size}` (pełne wymiary) lub
 `{kind:"sphere",position,radiusM}`. Strefy uwzględniają wysokość. `after` ma
 `{kind:"objective"|"encounter",id}`. `reinforcementFor` wiąże spotkanie z wybuchem
-masztu; fala musi odpowiadać `reinforcements` celu. Po odrodzeniu niewykonane
+masztu (id celu `sabotage`; fala musi odpowiadać `reinforcements` celu) albo z progiem
+celu `defend`: klucz `<id celu>:<indeks>` wskazuje `waves[indeks]` celu i wymaga tej
+samej fali. Spotkanie z kluczem `defend` nie startuje od strefy ani `after` — uruchamia
+je wyłącznie próg postępu (`atProgress`) zgłoszony przez `MissionObjectives`. Po odrodzeniu niewykonane
 posiłki mogą uruchomić się ponownie po powrocie do ich strefy.
+
+`bossFor` (id celu `killBoss`) oznacza spotkanie z bossem: jego fala zawiera
+wroga `kind: "boss"`, a ukończenie spotkania kończy wskazany cel. `closedDuring`
+(id spotkania) zamyka bramę ponownie na czas, gdy to spotkanie jest aktywne —
+brama areny otwiera się po `after`, zatrzaskuje za graczem i otwiera po walce.
+`loadLevel` odrzuca `bossFor` wskazujące cel inny niż `killBoss` oraz nieznane
+`closedDuring`.
 
 `loadLevel(data, mission, waves)` sprawdza strukturę zod, unikalność id, referencje,
 cykle spotkań, wszystkie cele misji i ich pozycje. Cele, checkpointy oraz lokalne
@@ -62,7 +72,20 @@ Reguły hosta (`src/scenes/mission.ts`), potrzebne do odtworzenia przebiegu:
   `after` spełnione i gracz w `zone`. Pierwszy checkpoint to start.
 - Sekcje: pierwsze wejście w `zone` sekcji wysyła jej `radio` (raz).
 - Bramy (`gates`): blok z colliderem; otwarty (niewidoczny, collider wyłączony),
-  gdy `after` spełnione; stan przeliczany co krok.
+  gdy `after` spełnione i nie trwa spotkanie `closedDuring`; stan przeliczany co krok.
+- Boss (`bossFor`): boss powstaje jak każdy wróg spotkania, więc pasek zdrowia
+  (`boss_spawned`), fazy i wezwania działają bez zmian w `src/enemies`. Wezwania
+  z `placement: "spawnPoints"` używają `spawnPoints` poziomu (w M06: boczne śluzy
+  areny). `WaveDirector` tego spotkania ma stały mnożnik liczebności `normal`,
+  żeby boss był jeden na każdym poziomie trudności. Host przekazuje `boss_phase`
+  do radia (`boss:phase:2|3`), a po ukończeniu spotkania wysyła `boss:defeated`
+  i kończy cel `killBoss`. Spotkanie z `bossFor` nie startuje, gdy cel jest już
+  `done` (wznowienie zapisu, `objective done`). Po śmierci gracza boss znika
+  razem z resztą wrogów i walka zaczyna się od pełnego zdrowia. `encounter clear`
+  nie zabija bossa (limit obrażeń na fazę) — w debug użyj trzykrotnie `kill all`.
+  Oprawa `BossArenaFx` pokoju bossa nie jest podłączona do poziomu liniowego.
+- Kierunek celu: `killBoss` nie ma pozycji w danych misji, więc znacznik
+  kierunku prowadzi do `objectivePositions[<id>]` poziomu (środek areny).
 - Seed runu misji: parametr URL `seed`, inaczej `String(ctx.rng.getState())`;
   spotkanie `X` używa `new Rng(seed zapisu).fork('encounter:X')`, posiłki
   w `RoomScene` (gdy host nie przejmuje) `ctx.rng.fork('reinforcement:<klucz>')`.
@@ -108,6 +131,43 @@ poziomu: w M01 mogły one wcześniej nachodzić na trasę m.in. przy x=87–95,
 x=120–127 i x=146–170. Pozostała panorama i niebo zostają dostępne w tle.
 Test `missionLinear.test.ts` sprawdza całą asfaltową podłogę względem brył panoramy.
 
+## M03 „List przewozowy”
+
+`src/data/levels/m03-list-przewozowy.json` (ok. 250 m trasy na wschód, motyw `neonStreet`),
+pięć sekcji:
+
+| Sekcja       | x (m)   | Szer. | Treść                                                                                                                                           |
+| ------------ | ------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nabrzeze`   | 0–84    | 8/28  | Kanał kablowy pod pirsem (zadaszony, x 0–28), potem nabrzeże: suwnica bramowa, kontenery w zakosach, wózek kontenerowy, kontenerowiec przy kei. |
+| `plac-celny` | 84–132  | 24    | Wyspa kontenerów z przesmykiem (x 106–110) i dwie zapory laserowe: południowa x=100, północna x=116. Biura dyspozytorskie (błękit, fiolet).     |
+| `przedpole`  | 132–176 | 30    | Posterunek przed wrotami Magazynu 9: kontenery w poprzek, wagon, bariery przy wrotach, zielona dziewiątka nad wejściem.                         |
+| `magazyn`    | 176–226 | 30    | Hala z terminalem na środku (201, 0, 0), krąg 6 m, galerie boczne na 4,25 m z rampami, kontenery poza kręgiem, dwie skrzynki w kręgu.           |
+| `dok`        | 226–262 | 20    | Dok załadunkowy i barka przy południowej krawędzi; cel `exit` w przejściu przez nadburcie (244, 0, −12,6).                                      |
+
+Spotkania (8): `patrol-nabrzeze` (`m03Quay`: 2 szturmowców, strzelec), `oslona-celna`
+(`m03Customs`: tarczownik, 2 drony, wieżyczka), `posterunek-magazynu` (`m03Forecourt`:
+2 tarczowników, 2 strzelców, 2 wieżyczki), `pierwsza-zmiana` (`missionPatrol`, strefa
+9 m wokół terminala), `transfer-1..3` (`reinforcementFor: terminal:0..2`; fale celu przy
+25/55/85%: `missionPatrol`, `missionDockShields`, `missionPatrol`) i `poscig`
+(`m03Pursuit`, po ukończeniu terminala, od strony wejścia). Bramy: `gate-patrol-nabrzeze`
+(x=84), `gate-oslona-celna` (x=132), `gate-magazyn` (x=176,5) po spotkaniach oraz
+`gate-dok` (x=225,5) po celu `terminal`. Checkpointy: `start`, `plac-celny`, `przedpole`,
+`magazyn`, `dok`. Radio sekcji: `enterNode:3`, `enterNode:6`, `enterNode:7`.
+
+Po odrodzeniu w trakcie transferu postęp wraca do 0 (wpięcie zostaje), a progi ponownie
+uruchamiają fale. Przeszkody obrócone o 90° (kontenery w poprzek, bariery) to dekor GLB
+z niewidocznym blokiem kolizji, bo walidacja układu liczy nieobrócony obrys. Krawędzie
+wody i burty barki mają niewidoczne bloki; pokład barki to niewidoczna podłoga na y=0.
+Cyfry doków 7, 8 i 9 są złożone z bloków `neon_green`. Nie dodano nowych modeli.
+
+Sprawdzenie M03 w 30 s: ukończ M01 (`?scene=run&debug=1`, `campaign complete m01-maszty`),
+otwórz `?scene=mission&mission=m03-list-przewozowy&debug=1`, `god`. `tp 40 0 -90` startuje
+patrol, `encounter clear` otwiera bramę celną. `checkpoint magazyn`, podejdź do terminala
+i zostań w kręgu: przy 25/55/85% wchodzą fale; wyjście z kręgu zatrzymuje pasek.
+`objective done terminal` otwiera bramę dokową, `checkpoint dok`, wejdź w ramę na trapie
+barki (2 s) albo `objective done exit`. Testy: `missionM03Level.test.ts`,
+`tests/e2e/missionList.spec.ts`.
+
 ## Sprawdzenie w 30 sekund
 
 1. Otwórz `?scene=mission&mission=m01-maszty&debug=1`, w konsoli wpisz `god`.
@@ -147,3 +207,52 @@ podłogi pod wszystkimi czterema zadaszeniami; ocenę kontrastu i jasności wyko
 Testy: `level.test.ts`, `missionCheckpoint.test.ts`, `missionLinear.test.ts`,
 `missionsPanel.test.ts`; `tests/e2e/missionLinear.spec.ts` przygotowany do uruchomienia
 przez prowadzącego. Stary E2E `missionMaszty.spec.ts` został zastąpiony.
+
+## M06 — Odlewnia
+
+`src/data/levels/m06-odlewnia.json` zastępuje dawny wariant runowy misji. Poziom
+biegnie wzdłuż +X, 212 m do ściany gabinetu plus 16 m gabinetu; między odcinkami
+stoją przegrody z przejściem 5 × 4 m, które wypełnia brama w pasy ostrzegawcze.
+
+| Odcinek (`sections`) | X       | Szer. | Charakter                                                                                     |
+| -------------------- | ------- | ----- | --------------------------------------------------------------------------------------------- |
+| `sluza`              | 0–36    | 10 m  | Chłodna śluza serwisowa pod stropem 5 m: błękit, ciepła biel, para z kratek.                  |
+| `piece`              | 36–84   | 24 m  | Plac pod gołym niebem: sześć pieców z żarem za rusztami, suwnica z kadzią, formy jako osłony. |
+| `formowanie`         | 84–136  | 28 m  | Hala 11 m: trzy kadzie na osi, dwie kładki 4,25 m z rampami przy x=89 i x=131 (flanki).       |
+| `przedpokoj`         | 136–172 | 14 m  | Korytarz sztabu 6 m: dyżurka, słupy, błękit i fiolet.                                         |
+| `centrum`            | 172–212 | 32 m  | Arena 13 m: stalowa płyta, kanały odlewnicze po bokach, cztery osłony, boczne śluzy.          |
+
+Za areną leży gabinet Brandta (x=212–228, serwer przy ścianie −Z w `(224, 0, −7,05)`)
+i szyb windy towarowej (`(216, 0, −11,5)`), na lewo od wejścia do gabinetu.
+
+Spotkania (fale `m06*` w `src/data/waves`) tworzą łańcuch `after`:
+`patrol-sluza` (2 assaulter, 1 gunner) → `piece` (3 assaulter, 2 gunner, 1 drone)
+→ `formowanie-front` (2 shielder, 2 gunner, 1 turret) → `formowanie-tyl`
+(2 drone, 3 assaulter, 1 gunner) → `straz` (executor, shielder, sniper, gunner)
+→ `brandt` (`bossFor: brandt`, `securityChief`, `firstBreakS` 5 s na zapowiedź
+radiową). Bramy: `gate-sluza` x=36, `gate-piece` x=84, `gate-formowanie` x=136
+(po `formowanie-tyl`), `gate-sztab` x=172 (po `straz`, `closedDuring: brandt`),
+`gate-gabinet` x=212 (po celu `brandt`), `gate-winda` (po celu `server`).
+Punkty kontrolne: `start`, `piece`, `formowanie`, `przedpokoj`, `przed-arena`
+(x=167, tu wraca gracz po śmierci w walce z bossem) i `po-brandcie` (x=204).
+`spawnPoints` poziomu to cztery boczne śluzy areny `(177|207, ±12)`: stamtąd
+wchodzą wezwania Brandta. Radio odcinków: `enterNode:3` (hala formowania),
+`enterNode:6` (przedpokój), `enterNode:7` (arena).
+
+Oświetlenie trzyma paletę ADR 0006: bursztyn pieców, kadzi i kanałów, ciepła biel
+lamp roboczych, zieleń paneli zaworów, błękit i fiolet sztabu. Dekor to istniejące
+modele (`rail_signal_gantry`, `port_warehouse_roof_truss`, `city_*`, `power_slag_heap`).
+Dane generuje skrypt wzorowany na `tools/levels/buildM01.mjs`; test
+`missionM06Linear.test.ts` sprawdza walidację, prześwit 3 m trasy, obie kładki,
+pełne przejście kapsułą z walką z bossem, odrodzenie przed areną i wznowienie.
+
+Sprawdzenie w 30 sekund (`?scene=mission&mission=m06-odlewnia&debug=1`, po
+`campaign complete m01-maszty` i `campaign complete m03-list-przewozowy` w scenie `run`):
+
+1. `god`; kolejno `tp 14 0`, `tp 44 0`, `tp 92 0`, `tp 113 0`, `tp 143 0`, po każdym
+   `encounter clear` — otwierają się bramy kolejnych odcinków.
+2. `tp 167 0 -90` (checkpoint `przed-arena`), idź przez wrota x=172: po wejściu
+   na płytę (x≥180) wrota zamykają się, po 5 s schodzi Brandt z paskiem zdrowia.
+3. Trzy razy `kill all` (po każdym odczekaj zmianę fazy): radio faz, „Ja tylko
+   dowożę”, wrota i gabinet otwarte, checkpoint `po-brandcie`.
+4. Serwer w gabinecie (3 s w strefie), potem winda po lewej (2 s): podsumowanie.

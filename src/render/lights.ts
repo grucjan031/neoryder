@@ -12,12 +12,12 @@ export class StyleLights extends Group {
     this.sync();
   }
 
-  sync(): void {
+  sync(scale = 1): void {
     this.hemisphere.color.set(tuning.render.hemiSky);
     this.hemisphere.groundColor.set(tuning.render.hemiGround);
     this.key.color.set(tuning.render.keyColor);
-    this.hemisphere.intensity = tuning.render.hemiIntensity;
-    this.key.intensity = tuning.render.keyIntensity;
+    this.hemisphere.intensity = tuning.render.hemiIntensity * scale;
+    this.key.intensity = tuning.render.keyIntensity * scale;
   }
 }
 

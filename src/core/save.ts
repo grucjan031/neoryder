@@ -8,9 +8,10 @@ import { actionSchema, isBindingCode } from './input';
 import { loadoutDefinitions } from '../progression/loadout';
 import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { metaStateSchema } from '../progression/metaStateSchema';
+import { moduleLootSchema } from '../progression/moduleSchema';
 import { seedAchievementsFromMeta } from '../progression/achievements';
 import { createStarterMetaState } from '../progression/progressionSchema';
-import { runStateSchema } from '../world/run';
+import { runStateSchema } from '../world/runSchema';
 import type { MetaState } from './metaTypes';
 import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';
@@ -20,7 +21,20 @@ import {
   type DifficultyId,
 } from '../world/difficulty';
 
-export const SAVE_VERSION = 6;
+import {
+  challengePort,
+  decodeChallenge,
+  type ChallengeRecord,
+  type ChallengeSavePort,
+} from './challengeSave';
+
+export type {
+  ChallengeHistory,
+  ChallengeResult,
+  ChallengeSavePort,
+} from './challengeSave';
+
+export const SAVE_VERSION = 7;
 export interface MissionSave extends MissionCheckpoint {
   saveVersion: number;
 }
@@ -86,6 +100,8 @@ export interface SaveStore {
   loadMission?(): Promise<MissionSave | null>;
   saveMission?(data: MissionSave): Promise<void>;
   clearMission?(): Promise<void>;
+  /** Historia wyzwania dnia: osobny rekord `challenge` z własną wersją. */
+  challenge?: ChallengeSavePort;
 }
 
 const metaSchema: z.ZodType<MetaSave> = z.object({
@@ -111,6 +127,7 @@ const runEndedSchema: z.ZodType<RunEnded> = z.object({
     threatLevel: count,
     layerReached: count,
     implants: z.array(z.string()),
+    foundModules: moduleLootSchema.optional(),
     damage: z.object({
       melee: z.number().finite(),
       power: z.number().finite(),
@@ -172,6 +189,10 @@ const metaMigrations: readonly Migration[] = [
     };
   },
   identity,
+  (data) => ({
+    ...data,
+    meta: { ...recordSchema.parse(data.meta), pendingExtractions: [] },
+  }),
 ];
 
 /** Run 2→3: dopisuje ekwipunek z presetu `loadoutId`, talenty i Poziom zagrożenia; nieznany preset = zapis nieczytelny. */
@@ -202,7 +223,12 @@ const runMigrations: readonly Migration[] = [
   identity,
   identity,
   identity,
+  identity,
 ];
+
+// Rekord punktu kontrolnego istnieje od v6, jego zawartość w v7 jest taka sama.
+const missionMigrations: Migration[] = [];
+missionMigrations[6] = identity;
 
 function isFuture(data: unknown): boolean {
   const record = recordSchema.safeParse(data);
@@ -293,7 +319,8 @@ function backupCorrupt(store: IDBObjectStore, key: string, raw: unknown): void {
   try {
     const record = recordSchema.parse(raw);
     if (key === 'meta') decodeMetaStrict(raw);
-    else if (key === 'mission') missionSaveSchema.parse(raw);
+    else if (key === 'mission')
+      missionSaveSchema.parse(migrate(record, missionMigrations, SAVE_VERSION));
     else {
       const migrated = migrate(record, runMigrations, SAVE_VERSION);
       if (record.run === undefined && migrated.run === null) return;
@@ -308,7 +335,20 @@ export function createMemorySaveStore(): SaveStore {
   let meta: unknown = null;
   let run: unknown = null;
   let mission: unknown = null;
+  let challenge: unknown = null;
   return {
+    challenge: challengePort(
+      async () => challenge,
+      async (change) => {
+        const decoded = decodeChallenge(challenge);
+        if (decoded.status === 'future')
+          throw new Error('Zapis pochodzi z nowszej wersji gry.');
+        const next = change(decoded);
+        if (next === null) return false;
+        challenge = structuredClone(next);
+        return true;
+      },
+    ),
     loadMission: async () =>
       mission == null
         ? null
@@ -352,6 +392,23 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
       request.onblocked = () =>
         reject(new Error('Baza zapisu jest zablokowana.'));
     });
+
+  /** Odczyt bez kopii zapasowej; kopię rekordu challenge robi updateChallenge. */
+  async function readRaw(key: string): Promise<unknown> {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('saves', 'readonly');
+      const request = tx.objectStore('saves').get(key);
+      tx.oncomplete = () => {
+        db.close();
+        resolve(request.result as unknown);
+      };
+      tx.onabort = () => {
+        db.close();
+        reject(tx.error);
+      };
+    });
+  }
 
   async function read(key: string): Promise<unknown> {
     const db = await open();
@@ -411,10 +468,59 @@ export function createIndexedDbSaveStore(dbName = 'neoryder'): SaveStore {
     });
   }
 
+  async function updateChallenge(
+    change: (
+      decoded: ReturnType<typeof decodeChallenge>,
+    ) => ChallengeRecord | null,
+  ): Promise<boolean> {
+    const db = await open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('saves', 'readwrite');
+      const store = tx.objectStore('saves');
+      const request = store.get('challenge');
+      let failure: unknown;
+      let changed = false;
+      request.onsuccess = () => {
+        try {
+          const decoded = decodeChallenge(request.result);
+          if (decoded.status === 'future')
+            throw new Error('Zapis pochodzi z nowszej wersji gry.');
+          if (decoded.status === 'corrupt')
+            store.put(request.result, [
+              'corrupt',
+              'challenge',
+              Date.now(),
+              corruptSuffix(),
+            ]);
+          const next = change(decoded);
+          if (next !== null) {
+            store.put(next, 'challenge');
+            changed = true;
+          }
+        } catch (error) {
+          failure = error;
+          tx.abort();
+        }
+      };
+      tx.oncomplete = () => {
+        db.close();
+        resolve(changed);
+      };
+      tx.onabort = () => {
+        db.close();
+        reject(failure ?? tx.error);
+      };
+      tx.onerror = () => {
+        /* onabort obsługuje błąd transakcji. */
+      };
+    });
+  }
+
   return {
+    challenge: challengePort(() => readRaw('challenge'), updateChallenge),
     loadMission: async () => {
       const raw = await read('mission');
-      return decode(raw, missionSaveSchema, []);
+      return decode(raw, missionSaveSchema, missionMigrations);
     },
     saveMission: async (data) =>
       write('mission', missionSaveSchema.parse(data)),

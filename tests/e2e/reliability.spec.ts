@@ -142,7 +142,7 @@ for (const damaged of [false, true]) {
           const db = request.result;
           const tx = db.transaction('saves', 'readwrite');
           tx.objectStore('saves').put(
-            damaged ? '{broken' : { saveVersion: 7 },
+            damaged ? '{broken' : { saveVersion: Number.MAX_SAFE_INTEGER },
             'meta',
           );
           tx.oncomplete = () => {

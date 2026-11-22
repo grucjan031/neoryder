@@ -370,6 +370,8 @@ export class WeaponsTest implements Scene {
       weapon.step(dt, {
         ...aim,
         triggerHeld: weapon === this.weapon && input.held.has('attack'),
+        coolingPressed:
+          weapon === this.weapon && input.pressed.has('coolWeapon'),
       });
     }
     this.projectiles.step(dt);

@@ -4,7 +4,7 @@ import {
   bladeDefinitions,
   DEFAULT_BLADE_ID,
 } from '../combat/melee/bladeSchema';
-import { powerDefinitions } from '../combat/powers/registry';
+import { powerDefinitions } from '../combat/powers/definitions';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { loadoutDefinitions } from '../progression/loadout';
 import type { Loadout } from '../progression/loadout';
@@ -133,6 +133,7 @@ interface BuildSelectOptions {
 /** Ekran wyboru buildu przed falą 1 (F2-17). HTML nad canvasem; wybór to gest użytkownika. */
 export class BuildSelect {
   private readonly root = element('section', 'build-select');
+  private readonly briefing = element('p', 'build-select__subtitle');
   private readonly buttons: HTMLButtonElement[] = [];
   private readonly bladeButtons = new Map<string, HTMLButtonElement>();
   /** Wybrany wariant ostrza; null = ostrze ekwipunku (domyślnie plazmowe). */
@@ -148,6 +149,8 @@ export class BuildSelect {
     const title = element('h2', 'build-select__title', t.title);
     title.id = 'build-select-title';
     panel.append(title, element('p', 'build-select__subtitle', t.subtitle));
+    this.briefing.hidden = true;
+    panel.append(this.briefing);
     const builds = element('div', 'build-select__grid');
     const hybrids = element('div', 'build-select__grid');
     for (const option of options) {
@@ -166,6 +169,11 @@ export class BuildSelect {
 
   get visible(): boolean {
     return !this.disposed && !this.root.hidden;
+  }
+
+  setBriefing(text: string): void {
+    this.briefing.textContent = text;
+    this.briefing.hidden = !text;
   }
 
   show(): void {

@@ -1,11 +1,28 @@
 # Kryjówka (hub) — F4-07
 
+## Pierwsze minuty — S10-01
+
+`hubGuideTarget(meta, freePoints)` w `src/world/hubGuide.ts` jest czystą logiką:
+brak zakończonych runów kieruje do `missions` (także przy wolnych punktach),
+po runie wolne punkty kierują do `talents`, inaczej cel jest pusty.
+Scena odczytuje `MetaManager.state` i `freePoints` w każdym `render()` oraz
+pozycję celu z `layout.stations`. Widok `HubGuide` obraca strzałkę względem yaw,
+pokazuje odległość w płaszczyźnie X/Z i tytuł stacji z `meta.pl.json`.
+Chowa się poniżej `tuning.hub.guideHideRadiusM` (4 m), przy otwartej stacji,
+mapie, rozmowie NPC, podczas siedzenia i bez celu. Powraca po ustaniu blokady;
+`dispose()` usuwa DOM. Parametr trafia automatycznie do lil-gui.
+
+Kontrola w `?scene=hub`: świeży zapis wskazuje Tablicę misji; po zakończonym
+runie i z wolnymi punktami wskazuje Terminal drzewek. Wydanie punktów usuwa
+wskazówkę bez przeładowania. Testy: `hubGuide.test.ts`, `hub.spec.ts`.
+
 ## Rekwizyty
 
 `hideout.json.props` definiuje `id`, `kind` (`jukebox`, `noodles`, `radio`, `bag`, `seat`),
 `label` i `focus` o dodatnich wymiarach, takim jak dla stacji. Id są unikalne (`^[a-z0-9_]+$`).
-E używa najbliższego trafienia promieniem z oka spośród stacji, NPC i rekwizytów
-w `interactRangeM`; podpowiedź pokazuje E i `label` z układu (nie z tekstów). Przytrzymanie nie powtarza
+E używa najbliższego trafienia promieniem z oka spośród stacji, NPC, rekwizytów i kota
+w `interactRangeM`, pomijając cele zasłonięte wysoką geometrią (kolider bloku z górną krawędzią wyżej niż `losOccluderMinTopM` = 1,4 m nad podłogą;
+lady, stoły i ławki nie zasłaniają, ściany i filary tak), i bierze wtedy kolejny niezasłonięty cel; podpowiedź pokazuje E i `label` z układu (nie z tekstów). Przytrzymanie nie powtarza
 użycia (liczy się zbocze `power2`). Teksty i nazwy utworów są w walidowanym `src/data/hub/props.pl.json`
 (`labels.{jukebox,noodles,radio,bag,seat,stand}`, `jukebox.{speaker,tracks[3]}`, `noodles.lines[≥2]`); do podpowiedzi
 służy z nich tylko `labels.stand` („Wstań”), pozostałe etykiety bierze się z układu.
@@ -300,6 +317,7 @@ neonowe na filarach.
   bez wychodzenia ze strefy; nie ma histerezy ani automatycznego ponownego otwierania. Pierwszy snapshot wejścia
   po zamknięciu ignoruje interakcję, aby odrzucić zaległe E z czasu pauzy, gdy pętla nie wykonywała kroków;
 - zamknięcie (`Zamknij`, Esc, `hub close`) wywołuje `ctx.resume`, więc gra wraca do przechwyconej myszy.
+- Otwarta odprawa misji (`[data-mission-debrief][open]`) działa jak otwarta stacja: `main.ts` (`ownsInterface`) nie otwiera nad nią menu pauzy, a `HubScene` wstrzymuje ruch i powitanie po powrocie do zamknięcia odprawy (opcja `debriefOpen` w testach).
 
 Stacje (`HUB_STATION_IDS`: `talents`, `workshop`, `missions`, `arena`; wartości z `hideout.json`):
 
@@ -462,7 +480,7 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   Render interpoluje poprzednią i bieżącą pozycję oraz yaw (najkrótszy łuk). Zmiana klipu używa
   `npcAnimFadeS`; klipy stanów, także `PickUp_Table` i `Punch_*`, są zapętlone. Użycie miski uruchamia
   osobny, jednorazowy `Interact` z `npc_anims.glb` dla Heli. `HubPropView` rysuje miskę z zupą na ladzie
-  i przesuwa ją podczas gestu według fazy klipu. Ustawienia miski są w `src/data/hub/interactions.json`. Ekstraktor zeruje
+  i przesuwa ją podczas gestu według fazy klipu. Postęp podawania (czas klipu i przesuw miski) idzie czasem symulacji (`HubNpcs.step`, wołane z `HubScene.step`), więc pauza go zatrzymuje, a render tylko interpoluje; podczas podawania tułów Heli wraca do `baseYaw` w stanie symulacji (`NpcRuntime.faceBase`), po klipie crossfade wraca do poprzedniej animacji, a sklonowany klip jest zwalniany (`uncacheAction` + `uncacheClip`). Geometria i kolory miski są w `src/data/hub/interactions.json` (schemat `hubInteractionsSchema`), przesuw i ułamki klipu w `tuning.hub.soup*`. Ekstraktor zeruje
   poziome translacje kości `root` w `Walk_Loop` i `Jog_Fwd_Loop`: przesunięcie pochodzi tylko z trasy.
 - Wstawki animacji (`NPC_IDLE_VARIETY`, `src/world/hubNpcs.ts`): NPC bez trasy, którzy nie mówią (dymek
   ani podsłuchana rozmowa), co `tuning.hub.npcIdleVarietyS` ([18, 45] s; pierwsza wstawka z losowym
@@ -650,14 +668,15 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
   = [12; 28] s z tą samą szansą 0,3 przystaje się umyć na [`catGroomMinS`, `catGroomMaxS`] = [1,5; 3] s. Po rozpoczęciu odpoczynku, gdy minęło
   `catMeowCooldownS` (25 s, pierwszy raz od startu), z szansą `catMeowChance` 0,16 miauczy (`hub_fauna_sound { kind: 'meow' }`).
   Zatrzymuje się, gdy gracz jest bliżej niż `catYieldM` 0,8 m w kierunku jego ruchu (cos kąta ≥ `catYieldConeCos` 0,3); gdy gracz biegnie
-  w jego stronę (prędkość ≥ `catRunThresholdMS` 3 m/s, stożek `catApproachConeCos` 0,6) bliżej niż `catFleeM` 2 m, odbiega o `catFleeSideM`
+  w jego stronę (sprint: prędkość ≥ `catRunThresholdMS` 8 m/s, chód 7, sprint 11; stożek `catApproachConeCos` 0,6) bliżej niż `catFleeM` 2 m, odbiega o `catFleeSideM`
   1,1 m w bok (losowa strona, tylko po bezpiecznej podłodze) z prędkością `catFleeSpeedMS` 2,4 m/s i wraca na punkt opuszczenia trasy;
   kolejna ucieczka dopiero po `catFleeCooldownS` 4 s. Ciało: promień `catRadiusM` 0,22 m, wysokość `catHeightM` 0,6 m, odstęp od NPC
   `catStaticClearanceM` 0,6 m.
 - Gracz może podejść do Węgielka i nacisnąć E po wyświetleniu „Pogłaszcz Węgielka”. Prawa dłoń FPP
   wysuwa się, wykonuje dwa ruchy głaskania i wraca, a kot kładzie się, pochyla głowę i miauczy
-  (`hub_fauna_sound` → `hub_meow`). Zasięg, czas i ruch dłoni są w `src/data/hub/interactions.json`.
-  W debugu `hub look cat` ustawia cel, gdy kot jest w zasięgu.
+  (`hub_fauna_sound` → `hub_meow`). Logika głaskania (licznik czasu, położenie kota, miauknięcie) jest w `HubFaunaRuntime`; zasięg liczony poziomo (XZ) od oka,
+  `catPetRangeM` 2,2 m, czas `catPetDurationS` 1,5 s, `catPetStrokes`, `catPetStrokeM`, `catPetReachFraction` w `tuning.hub`; pozycje dłoni w `src/data/hub/interactions.json`,
+  etykieta w `props.pl.json`. W debugu `hub look cat` ustawia cel, gdy kot jest w zasięgu (`hub cat` stawia go 2 m przed graczem).
 - Dzieci przy kocie (`src/world/hubKidsCat.ts`, `KidsCatEncounter`; `tuning.hub.kidsCat*`): gdy Węgielek odpoczywa
   (siedzi, leży, myje się) w zasięgu `kidsCatRangeM` od `ola` lub `stas` i minęło odnowienie `kidsCatCooldownS`,
   dziecko schodzi z trasy, podchodzi truchtem na `kidsCatStandM` od kota (tylko gdy odcinek leży na podłodze fauny,
@@ -871,14 +890,27 @@ powrotna (`showDebrief`, `src/ui/missionUi.ts`; teksty `missionDialogue.pl.json`
 ### Pasek meta
 
 `src/ui/hub/metaBar.ts` (+ `metaBar.css`), `createMetaBar(manager, bus)`: stała belka w lewym górnym rogu ekranu kryjówki (`.meta-bar`,
-`position: fixed; top: 26px; left: 32px` — `108px` przy `data-debug="true"`, żeby ominąć panel debug; `pointer-events: none`, `z-index 90`, pod nakładkami):
+`position: fixed; top: 26px; left: 32px` — `108px` przy `data-debug="true"`, żeby ominąć panel debug; `pointer-events: none`, `z-index 101`, nad nakładką stacji):
 blok tożsamości (nadpis „ISKRA // OPERATOR”, „Poziom L” `600 32px` w cyanie `#00e5ff`, pasek doświadczenia 4 px z podpisem „xp / następny XP” albo „MAX”
-i pełnym paskiem na limicie poziomu), „Dane” (ikona `#ffae1a`, wartość `#ffe1a3`), „Rdzenie” (ikona `#ff2bd6`, wartość `#ffb6f3`) i
+i pełnym paskiem na limicie poziomu), „Dane” (ikona `#ffae1a`, wartość `#ffe1a3`), „Rdzenie” (ikona i wartość `#fff1d6`) i
 „Punkty talentów: N” (szare, wyróżnione bursztynem `#ffcf77` z pulsowaniem krycia, gdy `> 0`; pulsowanie wyłączone przy `prefers-reduced-motion`).
 Bloki są lekko obrócone w perspektywie (`rotateY(10deg)`). Odświeża się po zdarzeniach `meta_rewards`, `level_up`, `talents_changed`,
 `unlock_purchased`, `loadout_changed`, `threat_selected` oraz po każdej komendzie meta (te nie zawsze emitują zdarzenia). Scena tworzy pasek, gdy sama
 tworzy nakładki (opcja `metaBar` pozwala to zmienić). Teksty: `missions.pl.json`, sekcja `bar` (`label`, `level`, `xp`, `xpMax`, `data`, `cores`,
 `freePoints`), nadpis z `hud.pl.json` (`microOperator`). Testy: `tests/unit/metaBar.test.ts`.
+
+Waluty i punkty mają `tabindex="0"` oraz `aria-describedby` wskazujące własny
+dymek (`role="tooltip"`). Hover lub focus pokazuje objaśnienie z pól
+`dataHelp`, `coresHelp`, `freePointsHelp`; obszary tych elementów przyjmują
+kursor także nad otwartą stacją. Dymki mają ciemne tło, bursztynową obwódkę
+i tekst w ciepłej bieli. Przy pierwszym wejściu po runie z Danymi lub Rdzeniami
+w `lastRuns[].rewards` pasek pokazuje oba objaśnienia przez 6000 ms (stała UI).
+Flaga `neoryder.ui.currencyHint` w localStorage zapobiega powtórzeniu;
+przy niedostępnym storage działa flaga sesji. `dispose()` usuwa timer.
+
+Tablica misji ukrywa nagłówek „Poziom zagrożenia” po wyborze misji i przywraca
+go po „Wróć”. Nagłówek odprawy (`briefingHeading`) jest osobnym elementem.
+Regresję sprawdza `tests/unit/missionsPanel.test.ts`.
 
 ## Reakcje na powrót
 

@@ -86,7 +86,7 @@ it.each([
   ).toBe(false);
 });
 
-it('M03 i M06 pozostają w danych, ale są niedostępne na tablicy; M01 ma odprawę', () => {
+it('po M01 i M03 obie misje liniowe M03 i M06 są dostępne z przerywnikiem, M01 ma odprawę', () => {
   const state = createStarterMetaState();
   state.campaign.completed = ['m01-maszty', 'm03-list-przewozowy'];
   const original = HTMLElement.prototype.scrollIntoView;
@@ -99,19 +99,20 @@ it('M03 i M06 pozostają w danych, ale są niedostępne na tablicy; M01 ma odpra
   });
   document.body.append(panel.root);
   try {
-    for (const id of ['m03-list-przewozowy', 'm06-odlewnia']) {
-      const button = panel.root.querySelector<HTMLButtonElement>(
-        `[data-mission="${id}"]`,
-      )!;
-      expect(button.disabled).toBe(true);
-      expect(button.textContent).toContain('Wkrótce');
-      button.click();
-      expect(
-        panel.root.querySelector<HTMLElement>('[data-mission-briefing]')!
-          .hidden,
-      ).toBe(true);
-      expect(missionDefinitions.get(id)!.interlude).toBeDefined();
-    }
+    const foundry = panel.root.querySelector<HTMLButtonElement>(
+      '[data-mission="m06-odlewnia"]',
+    )!;
+    expect(foundry.disabled).toBe(false);
+    expect(foundry.textContent).not.toContain('Wkrótce');
+    expect(missionDefinitions.get('m06-odlewnia')!.interlude).toBeDefined();
+    const freight = panel.root.querySelector<HTMLButtonElement>(
+      '[data-mission="m03-list-przewozowy"]',
+    )!;
+    expect(freight.disabled).toBe(false);
+    expect(freight.textContent).not.toContain('Wkrótce');
+    expect(
+      missionDefinitions.get('m03-list-przewozowy')!.interlude,
+    ).toBeDefined();
     const m01 = panel.root.querySelector<HTMLButtonElement>(
       '[data-mission="m01-maszty"]',
     )!;

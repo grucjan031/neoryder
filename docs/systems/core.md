@@ -121,7 +121,9 @@ który wraca na swój domyślny klawisz, jeśli ten jest wolny; przyciski myszy 
 
 ## Dodanie sceny debug
 
-Zaimplementuj `Scene` z `src/scenes/index.ts`, dodaj fabrykę do `scenes` i otwórz
+Zaimplementuj `Scene` z `src/scenes/index.ts` w osobnym pliku i dodaj do `scenes` wpis leniwy:
+`'moja-scena': () => import('./mojaScena').then((m) => () => new m.MojaScena())` (bez importu statycznego — każda scena to
+osobny chunk, a menu nie pobiera jej kodu; w testach `(await scenes['moja-scena']!())()`). Otwórz
 `?scene=<id>&debug=1&seed=test`. Buduj obiekty w `init`, aktualizuj stan wyłącznie
 w `step`, interpoluj pozycję i rotację w `render(alpha)`, a w `dispose` zwolnij
 WASM, geometrie i materiały. Nowy wspólny kontrakt najpierw uzgodnij w `docs/api.md`.

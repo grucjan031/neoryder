@@ -93,6 +93,12 @@ const modules = import.meta.glob('../data/modules/*.json', {
 });
 export const moduleDefinitions = loadModuleDefinitions(Object.values(modules));
 
+export const moduleLootSchema = z
+  .array(
+    z.string().refine((id) => moduleDefinitions.has(id), 'Nieznany moduł.'),
+  )
+  .refine((ids) => new Set(ids).size === ids.length, 'Powtórzony moduł.');
+
 export function moduleFitsWeapon(
   module: ModuleDefinition,
   weaponId: string,
