@@ -6,6 +6,7 @@ import {
   DoubleSide,
   Frustum,
   Group,
+  LoopOnce,
   LoopRepeat,
   Matrix4,
   Mesh,
@@ -36,6 +37,7 @@ import { gradientMap } from '../render/materials';
 import { isSeated, npcRootPosition, wrapAngle } from '../world/hubNpcs';
 import type { NpcRuntime } from '../world/hubNpcs';
 import type { HubNpcDef, NpcAccent, NpcAnimation } from '../world/hubSchema';
+import { soup } from '../data/hub/interactions.json';
 
 /** Akcenty z palety ADR 0006 (bez czerwieni, cyanu i magenty). */
 const ACCENT_COLORS: Record<NpcAccent, string> = {
@@ -213,6 +215,7 @@ export class HubNpcs {
   readonly root = new Group();
   private readonly views: NpcView[] = [];
   private readonly geometries = new Map<string, BufferGeometry>();
+  private serving?: AnimationAction;
   /** Materiały wspólne dla wszystkich NPC (skóra, buty, koszule, spodnie, rekwizyty), klucz: kolor. */
   private readonly shared = new Map<string, MeshToonMaterial>();
   private disposed = false;
@@ -573,6 +576,24 @@ export class HubNpcs {
     }
   }
 
+  serveSoup(): void {
+    if (this.serving) return;
+    const view = this.views.find(({ def }) => def.id === soup.npc);
+    const clip = view?.actions.get(soup.clip)?.getClip();
+    if (!view?.mixer || !clip) return;
+    // Osobna akcja, bo ten sam klip jest też wykorzystywany w pętli bezczynności.
+    const action = view.mixer.clipAction(clip.clone());
+    this.serving = action.setLoop(LoopOnce, 1).play();
+    view.action?.crossFadeTo(action, this.tuning.hub.npcAnimFadeS, false);
+    view.action = action;
+  }
+
+  get soupProgress(): number {
+    return this.serving
+      ? this.serving.time / this.serving.getClip().duration
+      : 0;
+  }
+
   /** Interpolacja stanu symulacji i kosmetyczne mixery. Bez alokacji w pętli widoków. */
   render(
     alpha: number,
@@ -601,9 +622,11 @@ export class HubNpcs {
           s * t.markerWidthRatio,
         );
       }
-      const yaw =
-        state.previousBodyYaw +
-        wrapAngle(state.look.bodyYaw - state.previousBodyYaw) * alpha;
+      const serving = view.def.id === soup.npc && this.serving;
+      const yaw = serving
+        ? view.state.baseYaw
+        : state.previousBodyYaw +
+          wrapAngle(state.look.bodyYaw - state.previousBodyYaw) * alpha;
       this.position.x =
         state.previousPosition.x +
         (state.position.x - state.previousPosition.x) * alpha;
@@ -617,9 +640,15 @@ export class HubNpcs {
       npcRootPosition(view.def, yaw, this.position, this.rootPosition);
       view.root.position.copy(this.rootPosition);
       const animation = state.animation(speaker === view.def.id);
-      if (animation !== view.animation) {
+      if (serving && !serving.isRunning()) {
+        view.mixer?.uncacheAction(serving.getClip());
+        this.serving = undefined;
+        view.action = undefined;
+        view.animation = undefined;
+      }
+      if (!this.serving || view.def.id !== soup.npc) {
         const action = view.actions.get(animation);
-        if (action) {
+        if (action && animation !== view.animation) {
           action.reset().setEffectiveWeight(1).play();
           view.action?.crossFadeTo(action, t.npcAnimFadeS, false);
           view.action = action;

@@ -1,6 +1,6 @@
 import hideout from '../../src/data/hub/hideout.json';
 import { afterEach, expect, it, vi } from 'vitest';
-import { Scene as ThreeScene } from 'three';
+import { PerspectiveCamera, Scene as ThreeScene } from 'three';
 import { EventBus } from '../../src/core/events';
 import type { InputSnapshot } from '../../src/core/input';
 import { GameLoop, SIM_DT } from '../../src/core/loop';
@@ -21,6 +21,7 @@ import type { HubSceneOptions } from '../../src/scenes/hub';
 import { lifeLayout, lifeTexts } from '../fixtures/hubLife';
 import type { HubScreenActions, HubScreens } from '../../src/ui/hubScreens';
 import { CommandRegistry } from '../../src/ui/debugCommands';
+import { catPet } from '../../src/data/hub/interactions.json';
 
 const idle: InputSnapshot = {
   held: new Set(),
@@ -72,7 +73,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function setup(params = '', options: HubSceneOptions = {}) {
+async function setup(
+  params = '',
+  options: HubSceneOptions = {},
+  camera?: PerspectiveCamera,
+) {
   const bus = new EventBus();
   const baseline = handlerCount(bus);
   const commands = new CommandRegistry();
@@ -89,10 +94,12 @@ async function setup(params = '', options: HubSceneOptions = {}) {
     ...options,
   });
   const opened: HubStationId[] = [];
+  const three = new ThreeScene();
   bus.on('hub_station_opened', ({ station }) => opened.push(station));
   await scene.init(
     {
       bus,
+      camera,
       commands,
       rng: new Rng('hub-unit'),
       loop: new GameLoop({ step() {}, render() {} }),
@@ -100,7 +107,7 @@ async function setup(params = '', options: HubSceneOptions = {}) {
       debug: true,
       resume,
     },
-    new ThreeScene(),
+    three,
   );
   active.add(scene);
   return {
@@ -113,11 +120,59 @@ async function setup(params = '', options: HubSceneOptions = {}) {
     opened,
     baseline,
     metaStore,
+    three,
   };
 }
 
 const position = (scene: HubScene) =>
   scene.query('playerPos') as { x: number; y: number; z: number };
+
+it('Iga odpowiada tylko od strony korytarza, gdy ściana z plakatem nie przesłania celu', async () => {
+  const { scene, commands } = await setup();
+  commands.execute('hub tp -10 -5.5');
+  commands.execute('hub look iga');
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubNpc')).toBeNull();
+  expect(scene.query('hubTalk')).toBeNull();
+
+  commands.execute('hub tp -10 -9.9');
+  commands.execute('hub look iga');
+  scene.step(SIM_DT, interact);
+  expect(scene.query('hubNpc')).toBe('iga');
+  expect(scene.query('hubTalk')).toMatchObject({ id: 'iga' });
+});
+
+it('E przy Węgielku uruchamia głaskanie FPP, kładzie kota i raz emituje miauknięcie', async () => {
+  const { scene, commands, bus, three } = await setup(
+    '',
+    {},
+    new PerspectiveCamera(),
+  );
+  const meow = vi.fn();
+  bus.on('hub_fauna_sound', meow);
+  const hand = three.getObjectByName('hub-cat-pet-hand')!;
+  commands.execute('hub tp -14.5 13.5');
+  expect(commands.execute('hub look cat')).toBe('Patrzysz na: cat');
+  scene.step(SIM_DT, interact);
+  scene.render(1);
+  expect(hand.visible).toBe(true);
+  expect(scene.query('hubFauna')).toMatchObject({ cat: { state: 'lie' } });
+  expect(meow).toHaveBeenCalledExactlyOnceWith({
+    kind: 'meow',
+    point: { x: -14.5, y: 0, z: 12.5 },
+  });
+  const start = hand.matrix.clone();
+  for (let i = 0; i < 20; i++) scene.step(SIM_DT, holdInteract);
+  scene.render(1);
+  expect(hand.matrix.equals(start)).toBe(false);
+  scene.step(SIM_DT, interact);
+  expect(meow).toHaveBeenCalledTimes(1);
+  for (let i = 0; i < Math.ceil(catPet.durationS / SIM_DT); i++)
+    scene.step(SIM_DT, holdInteract);
+  scene.render(1);
+  expect(hand.visible).toBe(false);
+  expect(meow).toHaveBeenCalledTimes(1);
+});
 
 it('rekwizyty działają przez E, debug i atak; przytrzymane E i cooldown nie powtarzają użycia', async () => {
   const { scene, commands, bus } = await setup();

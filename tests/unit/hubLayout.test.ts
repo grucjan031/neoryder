@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
+import { Box3 } from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import hideoutData from '../../src/data/hub/hideout.json';
 import { HUB_STATION_IDS } from '../../src/core/metaTypes';
 import { themeDefinitions } from '../../src/render/themes';
@@ -32,6 +34,42 @@ const mutate = (change: (copy: Data) => void): unknown => {
 };
 const paths = (data: unknown): string[] =>
   issues(data).map((issue) => issue.path);
+
+it('plakat ma prześwit nad schodami, a ekran na zachodniej ścianie omija drzwi', async () => {
+  const poster = layout.panels!.find(
+    ({ texture, position }) =>
+      texture === 'poster_iskra_recruit' && position.z === -6.985,
+  )!;
+  const stairs = layout.blocks.filter(
+    ({ position, size }) => position.x === -11.9 && size.z === 0.3,
+  );
+  expect(stairs).toHaveLength(12);
+  expect(poster.position.y - poster.size.h / 2).toBeGreaterThan(
+    Math.max(...stairs.map(({ position, size }) => position.y + size.y / 2)),
+  );
+  expect(poster.position.x - poster.size.w / 2).toBeGreaterThan(
+    Math.max(...stairs.map(({ position, size }) => position.x + size.x / 2)),
+  );
+
+  const bounds = async (model: string, x: number) => {
+    const def = layout.decor!.find(
+      (entry) => entry.model === model && entry.position.x === x,
+    )!;
+    const bytes = readFileSync(publicFile(`models/city/${model}.glb`));
+    const { scene } = await new GLTFLoader().parseAsync(
+      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+      '',
+    );
+    scene.position.copy(def.position);
+    scene.rotation.y = def.yaw ?? 0;
+    return new Box3().setFromObject(scene);
+  };
+  const [door, screen] = await Promise.all([
+    bounds('city_door', -20),
+    bounds('city_ad_screen', -19.9),
+  ]);
+  expect(door.min.z).toBeGreaterThan(screen.max.z);
+});
 
 it('kryjówka ma po jednej stacji każdego rodzaju, a spawn leży na poziomie 0', () => {
   expect(layout.stations.map((station) => station.id).sort()).toEqual(

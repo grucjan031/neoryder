@@ -2,12 +2,17 @@ import {
   AnimationMixer,
   Color,
   CylinderGeometry,
+  Euler,
   Group,
   LoopRepeat,
+  MathUtils,
+  Matrix4,
   Mesh,
   MeshToonMaterial,
+  Quaternion,
   SkinnedMesh,
   SphereGeometry,
+  Vector3,
 } from 'three';
 import type {
   AnimationAction,
@@ -18,13 +23,21 @@ import type {
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { AmbienceSource } from '../audio/ambienceSchema';
 import type { GameContext } from '../core/context';
+import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
+import { catPet } from '../data/hub/interactions.json';
 import type { PlayerState } from '../player/playerController';
+import { HandRig } from '../render/handRig';
 import { gradientMap } from '../render/materials';
+import {
+  applyViewmodelLayer,
+  registerViewmodel,
+} from '../render/viewmodelLayer';
 import { HubFaunaRuntime } from '../world/hubFauna';
 import type { CatRuntime, FaunaPose } from '../world/hubFauna';
 import { wrapAngle } from '../world/hubNpcs';
 import type { HubLayout } from '../world/hubSchema';
+import type { HubFocusBox } from '../world/hubStations';
 
 interface AnimalView {
   root: Group;
@@ -69,6 +82,7 @@ interface CatView {
   actions: Map<string, AnimationAction>;
   action?: AnimationAction;
   clip?: CatClip;
+  head?: { bone: Object3D; animated: Quaternion };
   /** Czas symulacji (s) ostatniej aktualizacji mixera. */
   time: number;
 }
@@ -88,6 +102,13 @@ export class HubFauna {
   private readonly ratFur: MeshToonMaterial;
   private readonly eyes: MeshToonMaterial;
   private readonly cat: CatView | null;
+  private readonly petHand: HandRig | null;
+  private petLeftS = 0;
+  private previousPetLeftS = 0;
+  private readonly handPosition = new Vector3();
+  private readonly handRotation = new Euler();
+  private readonly handMatrix = new Matrix4();
+  private readonly headTilt = new Quaternion();
   private readonly rats: AnimalView[];
   private readonly off: (() => void)[] = [];
   private disposed = false;
@@ -142,6 +163,15 @@ export class HubFauna {
     this.cat = this.runtime.cat
       ? { root: new Group(), actions: new Map(), time: 0 }
       : null;
+    this.petHand = this.cat ? new HandRig('R') : null;
+    if (this.petHand) {
+      const hand = this.petHand.root;
+      hand.name = 'hub-cat-pet-hand';
+      hand.visible = false;
+      this.root.add(hand);
+      this.off.push(registerViewmodel(hand));
+      this.petHand.setPose('open', 'open', 0);
+    }
     if (this.cat) {
       this.cat.root.name = 'hub-cat-wegielek';
       this.root.add(this.cat.root);
@@ -194,11 +224,14 @@ export class HubFauna {
   async load(): Promise<void> {
     const view = this.cat;
     if (!view) return;
-    const gltf = await loader
-      .loadAsync('/assets/models/hub_cat.glb')
-      .catch(() => null);
+    const [gltf] = await Promise.all([
+      loader.loadAsync('/assets/models/hub_cat.glb').catch(() => null),
+      this.petHand?.load(),
+    ]);
     if (!gltf || this.disposed) return;
     const model = gltf.scene;
+    const head = model.getObjectByName('head');
+    if (head) view.head = { bone: head, animated: head.quaternion.clone() };
     model.traverse((node) => {
       if (!(node instanceof Mesh)) return;
       const name = (node.material as Material).name;
@@ -285,7 +318,81 @@ export class HubFauna {
   }
 
   step(dt: number, p: PlayerState): void {
+    this.previousPetLeftS = this.petLeftS;
+    this.petLeftS = Math.max(0, this.petLeftS - dt);
     this.runtime.step(dt, p.position, p.velocity);
+  }
+
+  petFocus(eye: Vec3): HubFocusBox | null {
+    const cat = this.runtime.cat;
+    if (
+      !cat ||
+      cat.state === 'flee' ||
+      cat.state === 'return' ||
+      this.petLeftS > 0
+    )
+      return null;
+    const { catHeightM, catRadiusM } = this.ctx.tuning.hub;
+    const position = { ...cat.position, y: cat.position.y + catHeightM / 2 };
+    if (
+      Math.hypot(position.x - eye.x, position.y - eye.y, position.z - eye.z) >
+      catPet.rangeM
+    )
+      return null;
+    return {
+      position,
+      size: { x: catRadiusM * 2, y: catHeightM, z: catRadiusM * 2 },
+    };
+  }
+
+  pet(): void {
+    const cat = this.runtime.cat;
+    if (!cat) return;
+    this.previousPetLeftS = this.petLeftS = catPet.durationS;
+    cat.state = 'lie';
+    cat.moving = false;
+    cat.restLeftS = Math.max(cat.restLeftS, catPet.durationS);
+    cat.fleeCooldownS = Math.max(cat.fleeCooldownS, catPet.durationS);
+    cat.meowCooldownS = this.ctx.tuning.hub.catMeowCooldownS;
+    this.ctx.bus.emit('hub_fauna_sound', {
+      kind: 'meow',
+      point: { ...cat.position },
+    });
+  }
+
+  private petTime(alpha: number): number {
+    return (
+      1 -
+      MathUtils.lerp(this.previousPetLeftS, this.petLeftS, alpha) /
+        catPet.durationS
+    );
+  }
+
+  renderPetHand(cameraMatrix: Matrix4, alpha: number): boolean {
+    const hand = this.petHand?.root;
+    if (!hand) return false;
+    const time = this.petTime(alpha);
+    hand.visible = time < 1;
+    if (!hand.visible) return false;
+    const reach = catPet.reachFraction;
+    const blend =
+      MathUtils.smoothstep(time, 0, reach) *
+      (1 - MathUtils.smoothstep(time, 1 - reach, 1));
+    const strokeTime = MathUtils.clamp((time - reach) / (1 - 2 * reach), 0, 1);
+    const stroke =
+      (1 - Math.cos(strokeTime * Math.PI * 2 * catPet.strokes)) / 2;
+    this.handPosition
+      .copy(catPet.restPosition)
+      .lerp(catPet.reachPosition, blend);
+    this.handPosition.z -= stroke * catPet.strokeM;
+    this.handRotation.set(catPet.handPitchRad, catPet.handYawRad, 0);
+    this.handMatrix
+      .makeRotationFromEuler(this.handRotation)
+      .setPosition(this.handPosition);
+    hand.matrix.multiplyMatrices(cameraMatrix, this.handMatrix);
+    hand.matrixWorldNeedsUpdate = true;
+    applyViewmodelLayer(hand);
+    return true;
   }
 
   private place(view: { root: Group }, pose: FaunaPose, alpha: number): number {
@@ -328,8 +435,24 @@ export class HubFauna {
           }
         }
         view.action?.setEffectiveTimeScale(timeScale);
+        const head = view.head;
+        if (head) head.bone.quaternion.copy(head.animated);
         // Mixer idzie czasem symulacji: pauza gry zatrzymuje kota.
         view.mixer.update(Math.max(0, time - view.time));
+        const petTime = this.petTime(alpha);
+        if (head) {
+          head.animated.copy(head.bone.quaternion);
+          if (petTime < 1) {
+            this.handRotation.set(
+              Math.sin(petTime * Math.PI) * catPet.headTiltRad,
+              0,
+              0,
+            );
+            head.bone.quaternion.multiply(
+              this.headTilt.setFromEuler(this.handRotation),
+            );
+          }
+        }
       }
       view.time = time;
       const source = this.sources[0]!;
@@ -355,6 +478,7 @@ export class HubFauna {
 
   dispose(): void {
     this.disposed = true;
+    this.petHand?.dispose();
     if (this.cat?.mixer) {
       this.cat.mixer.stopAllAction();
       this.cat.mixer.uncacheRoot(this.cat.mixer.getRoot());

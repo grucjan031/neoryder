@@ -296,6 +296,9 @@ neonowe na filarach.
   do trafienia musi być ≤ `tuning.hub.interactRangeM` (3,5 m). Wygrywa najbliższe trafienie,
   także z bliska i przy spojrzeniu w dół. Wysokość oka uwzględnia przysiad;
   `radius` nie ogranicza interakcji (służy walidacji rozłączności stref i średnicy pierścienia znacznika);
+- przy celu NPC lub Węgielku `HubScene` sprawdza promień Rapierem do trafienia w AABB. Bryła otoczenia
+  przed celem ukrywa podpowiedź i blokuje E. Plakat Iskry w hali wisi powyżej schodów na antresolę,
+  a ekran na zachodniej ścianie jest odsunięty od drzwi;
 - samo wejście w promień niczego nie otwiera. Dopiero zbocze naciśnięcia E (istniejąca akcja `power2`,
   nazwana w scenie `HUB_INTERACT_ACTION`) otwiera wybraną stację i emituje `hub_station_opened { station }`;
   `HubScene` nasłuchuje tego zdarzenia i pokazuje nakładkę przez `HubScreens.show`;
@@ -351,7 +354,7 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
 
 | id     | Miejsce / zajęcie              | position (x; z) | rotationDeg | animation            | look: shade / headwear / torso / prop |
 | ------ | ------------------------------ | --------------- | ----------- | -------------------- | ------------------------------------- |
-| hela   | kuchnia, za ladą               | −17; −18,4      | 0           | PickUp_Table         | 5 / bandana / apron / none            |
+| hela   | kuchnia, za ladą               | −17; −18,4      | 0           | Idle_Loop            | 5 / bandana / apron / none            |
 | jarek  | ława przy pierwszym stole      | −17,6; −13,55   | 180         | Sitting_Talking_Loop | 1 / headphones / jacket / satchel     |
 | ewa    | przeciwległa ława              | −17,6; −16,05   | 0           | Sitting_Idle_Loop    | 6 / hood / jacket / pouches           |
 | bogna  | drugi stół, ława               | −10,5; −13,55   | 180         | Sitting_Talking_Loop | 7 / bandana / apron / none            |
@@ -473,7 +476,9 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
 - Trasy mają walce na `kinematicPositionBased`, przesuwane przed krokiem świata fizyki; zatrzymują
   character controller gracza tak samo jak statyczne walce. Focus i debug używają bieżącej pozycji.
   Render interpoluje poprzednią i bieżącą pozycję oraz yaw (najkrótszy łuk). Zmiana klipu używa
-  `npcAnimFadeS`; wszystkie klipy, także `PickUp_Table` i `Punch_*`, są zapętlone. Ekstraktor zeruje
+  `npcAnimFadeS`; klipy stanów, także `PickUp_Table` i `Punch_*`, są zapętlone. Użycie miski uruchamia
+  osobny, jednorazowy `Interact` z `npc_anims.glb` dla Heli. `HubPropView` rysuje miskę z zupą na ladzie
+  i przesuwa ją podczas gestu według fazy klipu. Ustawienia miski są w `src/data/hub/interactions.json`. Ekstraktor zeruje
   poziome translacje kości `root` w `Walk_Loop` i `Jog_Fwd_Loop`: przesunięcie pochodzi tylko z trasy.
 - Wstawki animacji (`NPC_IDLE_VARIETY`, `src/world/hubNpcs.ts`): NPC bez trasy, którzy nie mówią (dymek
   ani podsłuchana rozmowa), co `tuning.hub.npcIdleVarietyS` ([18, 45] s; pierwsza wstawka z losowym
@@ -650,7 +655,7 @@ trybie debug (`?debug=1` albo `npm run dev`). Bez `?scene=` gra zawsze pokazuje 
 
 ## Zwierzęta
 
-Czysto kosmetyczne, bez interakcji E (`selectHubTarget` i `HubPrompt` bez zmian). Układ: `fauna` w `hideout.json`
+Układ zwierząt: `fauna` w `hideout.json`
 (`HubLayout.fauna`, walidacja w `hubSchema.ts`; trasa kota jak trasy NPC: podłoga, poza blokami, min. 0,6 m od
 statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
 
@@ -665,6 +670,10 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
   1,1 m w bok (losowa strona, tylko po bezpiecznej podłodze) z prędkością `catFleeSpeedMS` 2,4 m/s i wraca na punkt opuszczenia trasy;
   kolejna ucieczka dopiero po `catFleeCooldownS` 4 s. Ciało: promień `catRadiusM` 0,22 m, wysokość `catHeightM` 0,6 m, odstęp od NPC
   `catStaticClearanceM` 0,6 m.
+- Gracz może podejść do Węgielka i nacisnąć E po wyświetleniu „Pogłaszcz Węgielka”. Prawa dłoń FPP
+  wysuwa się, wykonuje dwa ruchy głaskania i wraca, a kot kładzie się, pochyla głowę i miauczy
+  (`hub_fauna_sound` → `hub_meow`). Zasięg, czas i ruch dłoni są w `src/data/hub/interactions.json`.
+  W debugu `hub look cat` ustawia cel, gdy kot jest w zasięgu.
 - Dzieci przy kocie (`src/world/hubKidsCat.ts`, `KidsCatEncounter`; `tuning.hub.kidsCat*`): gdy Węgielek odpoczywa
   (siedzi, leży, myje się) w zasięgu `kidsCatRangeM` od `ola` lub `stas` i minęło odnowienie `kidsCatCooldownS`,
   dziecko schodzi z trasy, podchodzi truchtem na `kidsCatStandM` od kota (tylko gdy odcinek leży na podłodze fauny,
@@ -763,6 +772,8 @@ Kamery kontrolne w `?scene=hub&debug=1` (yaw 0 = −Z, pitch ujemny = w dół):
 Testy regresji: `hubSeating.test.ts`, `hubDecor.test.ts`, rozszerzone `hubLayout.test.ts` oraz dotychczasowe
 testy sceny i interakcji. E2E i zrzuty kontrolne wykonuje manager.
 NPC: `hub tp -8.2 3.9 255`, `hub look mira` — „MIRA / POROZMAWIAJ”, E pokazuje dymek, kolejne E następną kwestię.
+Hela: `hub tp -16.9 -16.75`, `hub look noodles`, E. Iga: `hub look iga` po `hub tp -10 -5.5` i po
+`hub tp -10 -9.9`. Węgielek na początku wizyty: `hub tp -14.5 13.5`, `hub look cat`, E.
 Antresola: `hub tp -12 1.4 0` i trzymać W (schody). Kładka: `hub tp 5.5 3.6 180`; łączność: `hub tp 9.2 10.6 262`.
 
 ### Terminal drzewek

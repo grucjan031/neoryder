@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { afterEach, expect, it, vi } from 'vitest';
 import { Mesh, Scene as ThreeScene } from 'three';
 import type { DamageSystem } from '../../src/combat/damage';
@@ -13,6 +14,10 @@ import type { Action, InputSnapshot } from '../../src/core/input';
 import { Rng } from '../../src/core/rng';
 import { Stats } from '../../src/core/stats';
 import { tuning } from '../../src/core/tuning';
+import { resolveTextureKey } from '../../src/render/comicSurfaces';
+import { applyLookPreset } from '../../src/render/lookPresets';
+import { getMaterial, syncMaterials } from '../../src/render/materials';
+import { urbanLooks } from '../../src/render/urbanMaterials';
 import { initPhysics } from '../../src/physics';
 import { loadImplant } from '../../src/progression/implantSchema';
 import { loadoutDefinitions } from '../../src/progression/loadout';
@@ -104,6 +109,36 @@ function untilFighting(scene: RoomScene): void {
 function handlerCount(bus: EventBus): number {
   return bus.listenerCount;
 }
+
+it.each(['?look=b', '?look=off'])(
+  '%s: drzwi pokoju używają ciemnego materiału malowanego metalu',
+  async (search) => {
+    const previousRender = { ...tuning.render };
+    applyLookPreset(search);
+    try {
+      const { scene, three } = await setup();
+      try {
+        syncMaterials();
+        const paint = getMaterial('paint');
+        expect(paint.color.getHexString()).toBe('3e5a48');
+        for (const id of ['entry', 'exit']) {
+          const door = three.getObjectByName(`door:${id}`);
+          expect(door).toBeInstanceOf(Mesh);
+          expect((door as Mesh).material).toBe(paint);
+        }
+        const texture = resolveTextureKey('surfaces', urbanLooks.paint.texture);
+        expect(texture).toBe('surfaces/painted_metal');
+        expect(existsSync(`public/assets/textures/${texture}.webp`)).toBe(true);
+      } finally {
+        dispose(scene);
+      }
+    } finally {
+      applyLookPreset('?look=off');
+      Object.assign(tuning.render, previousRender);
+      syncMaterials();
+    }
+  },
+);
 
 it.each(['room', 'arena'])(
   '%s: przerwane init zwalnia świat i subskrypcje utworzone przed ładowaniem modeli',

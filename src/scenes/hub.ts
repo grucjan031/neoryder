@@ -13,6 +13,7 @@ import { createIndexedDbSaveStore, loadSettings } from '../core/save';
 import type { SaveStore } from '../core/save';
 import type { BladeView } from '../combat/melee/plasmaBlade';
 import hideoutData from '../data/hub/hideout.json';
+import { catPet } from '../data/hub/interactions.json';
 import npcTextData from '../data/hub/npcs.pl.json';
 import eventData from '../data/hub/events.pl.json';
 import propTextData from '../data/hub/props.pl.json';
@@ -79,7 +80,11 @@ import {
   npcHeight,
 } from '../world/hubNpcs';
 import type { NpcLine, NpcTexts } from '../world/hubNpcs';
-import { HubStations, selectHubTarget } from '../world/hubStations';
+import {
+  HubStations,
+  rayAabbDistance,
+  selectHubTarget,
+} from '../world/hubStations';
 import type { HubTarget } from '../world/hubStations';
 import { HUB_BATCH_CELL_M, HubDecor } from './hubDecor';
 import { HubNpcs } from './hubNpcs';
@@ -137,7 +142,7 @@ const IDLE_BLADE: BladeView = {
 };
 
 const stationList = HUB_STATION_IDS.join('|');
-const lookList = `${stationList}|<npc>|<propId>`;
+const lookList = `${stationList}|<npc>|<propId>|cat`;
 // E jest przypisane do power2; w kryjówce nie ma walki ani mocy.
 const HUB_INTERACT_ACTION = 'power2';
 const SEAT_MOVE_ACTIONS = [
@@ -198,6 +203,7 @@ export class HubScene implements Scene {
   private ctx!: GameContext;
   private rapier!: Awaited<ReturnType<typeof initPhysics>>;
   private world!: World;
+  private readonly blockColliders = new Set<number>();
   private entities!: EntityRegistry;
   private playerId!: EntityId;
   private player!: PlayerController;
@@ -475,7 +481,7 @@ export class HubScene implements Scene {
           yaw,
           shape,
         }) => {
-          this.world.createCollider(
+          const collider = this.world.createCollider(
             (shape === 'barrel'
               ? this.rapier.ColliderDesc.cylinder(size.y / 2, size.x / 2)
               : this.rapier.ColliderDesc.cuboid(
@@ -489,6 +495,7 @@ export class HubScene implements Scene {
                 interactionGroups(CollisionGroup.World, 0xffff),
               ),
           );
+          this.blockColliders.add(collider.handle);
           if (shape === 'barrel') {
             const barrel = new Group();
             barrel.name = 'hub:barrel';
@@ -649,19 +656,50 @@ export class HubScene implements Scene {
     };
   }
 
-  private focusedTarget(): HubTarget | null {
+  private focusedTarget(): HubTarget | { kind: 'cat'; id: 'cat' } | null {
     const state = this.player.getState();
     const t = this.ctx.tuning.hub;
-    return selectHubTarget(
+    const eye = this.eyePosition();
+    const cat = this.fauna?.petFocus(eye);
+    const props = this.layout.props ?? [];
+    const target = selectHubTarget(
       this.layout.stations,
       this.npcTargets,
-      this.eyePosition(),
+      eye,
       state.yaw,
       state.pitch,
       t.interactRangeM,
       t.focusPaddingM,
-      this.layout.props ?? [],
+      cat ? [...props, { id: 'cat', focus: cat }] : props,
     );
+    const isCat = target?.kind === 'prop' && target.id === 'cat' && cat;
+    const focus = isCat
+      ? cat
+      : target?.kind === 'npc'
+        ? this.npcById.get(target.id)?.focus
+        : null;
+    if (!focus) return target;
+    const direction = {
+      x: -Math.sin(state.yaw) * Math.cos(state.pitch),
+      y: Math.sin(state.pitch),
+      z: -Math.cos(state.yaw) * Math.cos(state.pitch),
+    };
+    const distance = rayAabbDistance(eye, direction, focus, t.focusPaddingM);
+    if (
+      distance !== null &&
+      this.world.castRay(
+        new this.rapier.Ray(eye, direction),
+        distance,
+        true,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        (collider) => this.blockColliders.has(collider.handle),
+      )
+    )
+      return null;
+    return isCat ? { kind: 'cat', id: 'cat' } : target;
   }
 
   private useProp(id: string): boolean {
@@ -749,6 +787,7 @@ export class HubScene implements Scene {
         text: this.props.texts.jukebox.tracks[track]!,
       });
     } else if (kind === 'noodles') {
+      this.npcs?.serveSoup();
       this.chatter.say({
         conversation: id,
         npc: 'hela',
@@ -946,6 +985,7 @@ export class HubScene implements Scene {
     ) {
       if (target.kind === 'station') this.stations.open(target.id);
       else if (target.kind === 'prop') this.useProp(target.id);
+      else if (target.kind === 'cat') this.fauna?.pet();
       else this.talkTo(target.id);
     }
     if (
@@ -1044,9 +1084,11 @@ export class HubScene implements Scene {
         this.stations.opened !== null || this.talk !== null || mapOpen,
         name,
       );
-    } else if (target?.kind === 'prop') {
+    } else if (target?.kind === 'prop' || target?.kind === 'cat') {
       this.prompt?.update(
-        this.layout.props?.find((p) => p.id === target.id)?.label ?? null,
+        target.kind === 'cat'
+          ? catPet.label
+          : (this.layout.props?.find((p) => p.id === target.id)?.label ?? null),
         this.stations.opened !== null || mapOpen,
       );
     } else
@@ -1056,7 +1098,6 @@ export class HubScene implements Scene {
         )?.label ?? null,
         this.stations.opened !== null || mapOpen,
       );
-    this.propView?.render(alpha);
     this.warmth?.update(
       this.props.warmthLeft,
       this.ctx.tuning.hub.noodlesWarmthS,
@@ -1073,6 +1114,7 @@ export class HubScene implements Scene {
       this.talk?.line.id ?? this.chatter.line?.npc ?? null,
       this.arrival ? this.isArrivalPending : null,
     );
+    this.propView?.render(alpha, this.npcs?.soupProgress);
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
     this.markers?.update(
@@ -1116,6 +1158,7 @@ export class HubScene implements Scene {
       held: 'blade',
       blade: IDLE_BLADE,
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
+      visible: !this.fauna?.renderPetHand(camera.matrixWorld, alpha),
     });
   }
 
@@ -1292,17 +1335,18 @@ export class HubScene implements Scene {
     );
     register(
       'hub look',
-      `hub look <${lookList}> — spójrz na stację albo NPC`,
+      `hub look <${lookList}> — spójrz na cel interakcji`,
       (args) => {
         const station = this.layout.stations.find(({ id }) => id === args[0]);
         const npc = this.layout.npcs?.find(({ id }) => id === args[0]);
+        const eye = this.eyePosition();
         const focus =
           station?.focus ??
           (npc ? this.npcById.get(npc.id)?.focus : undefined) ??
-          this.layout.props?.find((p) => p.id === args[0])?.focus;
+          this.layout.props?.find((p) => p.id === args[0])?.focus ??
+          (args[0] === 'cat' ? this.fauna?.petFocus(eye) : null);
         if (args.length !== 1 || !focus)
           return `Użycie: hub look <${lookList}>`;
-        const eye = this.eyePosition();
         const dx = focus.position.x - eye.x;
         const dz = focus.position.z - eye.z;
         const dy = focus.position.y + (npc ? 0.35 : 0) - eye.y;

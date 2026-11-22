@@ -1,10 +1,15 @@
 import { readFileSync } from 'node:fs';
-import { AnimationMixer, SkinnedMesh, Vector3 } from 'three';
+import { AnimationMixer, Group, SkinnedMesh, Vector3 } from 'three';
 import type { Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
+import { EventBus } from '../../src/core/events';
+import { GameLoop, SIM_DT } from '../../src/core/loop';
+import { Rng } from '../../src/core/rng';
 import { tuning } from '../../src/core/tuning';
-import { catClip } from '../../src/scenes/hubFauna';
+import hideout from '../../src/data/hub/hideout.json';
+import { catClip, HubFauna } from '../../src/scenes/hubFauna';
+import { loadHubLayout } from '../../src/world/hubSchema';
 
 const load = () => {
   const bytes = readFileSync('public/assets/models/hub_cat.glb');
@@ -131,4 +136,49 @@ it('stan kota wybiera klip: odpoczynek, chód z tempem z prędkości, bezruch na
     Math.min(t.catWalkMaxTimeScale, t.catFleeSpeedMS / t.catWalkClipSpeedMS),
   );
   expect(catClip({ state: 'return', moving: true }, t).clip).toBe('walk');
+});
+
+it('Węgielek reaguje ruchem głowy i nie pogłębia przechyłu, gdy czas stoi', async () => {
+  const gltf = await load();
+  const models = vi
+    .spyOn(GLTFLoader.prototype, 'loadAsync')
+    .mockImplementation(async (url) => {
+      if (!url.endsWith('hub_cat.glb')) throw new Error(url);
+      return gltf;
+    });
+  const root = new Group();
+  const layout = loadHubLayout(hideout);
+  const idlePlayer = {
+    position: { x: 0, y: 1, z: 0 },
+    velocity: { x: 0, y: 0, z: 0 },
+  } as Parameters<HubFauna['step']>[1];
+  const fauna = new HubFauna(
+    {
+      bus: new EventBus(),
+      rng: new Rng('hub-pet'),
+      loop: new GameLoop({ step() {}, render() {} }),
+      tuning,
+      debug: false,
+    },
+    root,
+    layout,
+    () => idlePlayer,
+  );
+  try {
+    await fauna.load();
+    const head = root.getObjectByName('head')!;
+    fauna.pet();
+    fauna.render(1);
+    const initial = head.quaternion.clone();
+    for (let i = 0; i < 40; i++) fauna.step(SIM_DT, idlePlayer);
+    fauna.render(1);
+    const reaction = head.quaternion.clone();
+    expect(reaction.angleTo(initial)).toBeGreaterThan(0.05);
+    fauna.render(1);
+    fauna.render(1);
+    expect(reaction.angleTo(head.quaternion)).toBeLessThan(1e-5);
+  } finally {
+    fauna.dispose();
+    models.mockRestore();
+  }
 });
