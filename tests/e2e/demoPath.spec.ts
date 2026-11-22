@@ -4,6 +4,7 @@ import m01Level from '../../src/data/levels/m01-maszty.json' with { type: 'json'
 import achievements from '../../src/data/meta/achievements.json' with { type: 'json' };
 import progression from '../../src/data/meta/progression.json' with { type: 'json' };
 import m01 from '../../src/data/missions/m01-maszty.json' with { type: 'json' };
+import m02 from '../../src/data/missions/m02-punkt-kontrolny.json' with { type: 'json' };
 import m03 from '../../src/data/missions/m03-list-przewozowy.json' with { type: 'json' };
 import m04 from '../../src/data/missions/m04-ladunek-klasy-k.json' with { type: 'json' };
 import m06 from '../../src/data/missions/m06-odlewnia.json' with { type: 'json' };
@@ -138,6 +139,87 @@ async function playM01(page: Page) {
       objectives: { [id]: 'done' },
     });
   }
+}
+
+async function playM02(page: Page) {
+  expect(await command(page, 'objective done exit')).toBe('Cel niedostępny.');
+  for (const [id, x, gate] of [
+    ['patrol-kordon', 190, 'gate-kordon'],
+    ['rampa', 150, 'gate-plac'],
+    ['straz-cel', 120, null],
+  ] as const) {
+    await command(page, `tp ${x} 0 90`);
+    await expect
+      .poll(async () => (await mission(page)).activeEncounters, {
+        timeout: SIM_TIMEOUT,
+        message: `utknięto na: M02 / spotkanie ${id}`,
+      })
+      .toContain(id);
+    await command(page, 'encounter clear');
+    if (gate) expect((await mission(page)).openGates).toContain(gate);
+  }
+  for (const [id, x, z, pursuit] of [
+    ['cell-1', 116, -7, 'poscig-1'],
+    ['cell-2', 94, 7, 'poscig-2'],
+  ] as const) {
+    await command(page, `tp ${x} ${z} 90`);
+    await pollMission(page, `M02 / cel ${id}`).toMatchObject({
+      objectives: { [id]: 'done' },
+    });
+    await expect
+      .poll(async () => (await mission(page)).activeEncounters, {
+        timeout: SIM_TIMEOUT,
+        message: `utknięto na: M02 / pościg ${pursuit}`,
+      })
+      .toContain(pursuit);
+    await command(page, 'encounter clear');
+  }
+  await expect
+    .poll(async () => ((await query(page, 'allies')) as unknown[])?.length, {
+      timeout: SIM_TIMEOUT,
+      message: 'utknięto na: M02 / Nadia w drużynie',
+    })
+    .toBe(1);
+  expect((await mission(page)).openGates).toContain('gate-sluza');
+  await command(page, 'tp 76 0 90');
+  await pollMission(page, 'M02 / punkt kontrolny zbiórka').toMatchObject({
+    checkpointId: 'zbiorka',
+  });
+  await command(page, 'tp 66 0 90');
+  await expect
+    .poll(async () => (await mission(page)).activeEncounters, {
+      timeout: SIM_TIMEOUT,
+      message: 'utknięto na: M02 / osłona suwnicy',
+    })
+    .toContain('oslona-suwnicy');
+  await command(page, 'encounter clear');
+  await command(page, 'tp 61 -7 90');
+  await pollMission(page, 'M02 / cel cell-3').toMatchObject({
+    objectives: { 'cell-3': 'done' },
+  });
+  await expect
+    .poll(async () => (await mission(page)).activeEncounters, {
+      timeout: SIM_TIMEOUT,
+      message: 'utknięto na: M02 / start Egzekutora',
+    })
+    .toContain('egzekutor');
+  for (
+    let i = 0;
+    i < 10 && (await mission(page)).objectives.executor !== 'done';
+    i++
+  ) {
+    await waitSimSteps(page, 120);
+    await command(page, 'kill all');
+  }
+  await pollMission(page, 'M02 / Egzekutor').toMatchObject({
+    objectives: { executor: 'done' },
+  });
+  expect((await mission(page)).openGates).toContain('gate-zachod');
+  await command(page, 'tp 26 0 90');
+  await pollMission(page, 'M02 / punkt kontrolny ewakuacja').toMatchObject({
+    checkpointId: 'ewakuacja',
+  });
+  await command(page, 'tp 8 0 90');
 }
 
 async function playM03(page: Page) {
@@ -529,6 +611,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
 
   const missions = [
     { definition: m01, play: playM01 },
+    { definition: m02, play: playM02 },
     { definition: m03, play: playM03 },
     { definition: m04, play: playM04 },
     { definition: m06, play: playM06 },
@@ -581,7 +664,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
 
     await stage('koniec kampanii / tablica', async () => {
       expect(meta.campaign).toMatchObject({
-        completed: [m01.id, m03.id, m04.id, m06.id],
+        completed: [m01.id, m02.id, m03.id, m04.id, m06.id],
         pendingDebrief: null,
       });
       await board(page, boardStatuses());
