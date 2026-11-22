@@ -20,6 +20,20 @@ afterEach(() => {
 });
 
 describe('Settings Z6', () => {
+  it('przypisuje osobny klawisz chłodzenia w istniejącym profilu', () => {
+    const settings = loadSettings(localStorage);
+    expect(resolveBindings(settings.bindings)).toMatchObject({
+      KeyG: 'coolWeapon',
+      KeyR: 'swap',
+    });
+    settings.bindings = assignBinding(settings.bindings, 'coolWeapon', 'KeyV');
+    saveSettings(settings, localStorage);
+    const bindings = resolveBindings(loadSettings(localStorage).bindings);
+    expect(bindings.KeyV).toBe('coolWeapon');
+    expect(bindings.KeyG).toBeUndefined();
+    expect(bindings.KeyR).toBe('swap');
+  });
+
   it.each([
     [0.05, 120, 0.1, 110],
     [0.1, 60, 0.1, 60],

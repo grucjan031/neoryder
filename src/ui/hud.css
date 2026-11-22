@@ -380,6 +380,9 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
+.hud__overheat[data-cooling='window'] {
+  color: var(--hud-health);
+}
 .hud__overheat::before,
 .hud__overheat::after {
   content: attr(data-text);

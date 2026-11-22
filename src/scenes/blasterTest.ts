@@ -19,6 +19,7 @@ import { applyStyle, getMaterial } from '../render/materials';
 import { createStyleLights } from '../render/lights';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import type { Scene } from './index';
+import hudText from '../data/ui/hud.pl.json';
 
 interface Dummy {
   id: EntityId;
@@ -213,7 +214,7 @@ export class BlasterTest implements Scene {
       this.hud = document.createElement('div');
       this.hud.setAttribute('aria-label', 'Ciepło blastera');
       this.hud.style.cssText =
-        'position:absolute;left:20px;bottom:24px;width:260px;color:#080808;pointer-events:none';
+        'position:absolute;left:20px;bottom:24px;width:260px;color:white;pointer-events:none';
       const track = document.createElement('div');
       track.style.cssText = 'height:12px;background:#080808';
       this.bar = document.createElement('div');
@@ -303,6 +304,7 @@ export class BlasterTest implements Scene {
     this.blaster.step(dt, {
       ...this.aim(),
       triggerHeld: input.held.has('attack') || this.queuedShots > 0,
+      coolingPressed: input.pressed.has('coolWeapon'),
     });
     if (this.blaster.shots > shots && this.queuedShots > 0) this.queuedShots--;
     this.projectiles.step(dt);
@@ -340,13 +342,16 @@ export class BlasterTest implements Scene {
       this.bar.style.background = `#${color.getHexString()}`;
     }
     const label = this.hud?.firstElementChild;
-    if (label)
-      label.textContent = `Ciepło: ${Math.round(this.blaster.heat.current)} / ${this.blaster.heat.max}${this.blaster.overheated ? ' — PRZEGRZANIE' : ''} | HP: ${this.dummies.map((d) => d.health.current).join(' / ')}`;
+    if (label) {
+      const phase = this.blaster.coolingPhase;
+      label.textContent = `Ciepło: ${Math.round(this.blaster.heat.current)} / ${this.blaster.heat.max}${phase ? ' — ' + hudText.activeCooling[phase] : ''} | HP: ${this.dummies.map((d) => d.health.current).join(' / ')}`;
+    }
   }
 
   query(name: string): unknown {
     if (name === 'heat') return this.blaster.heat.current;
     if (name === 'overheated') return this.blaster.overheated;
+    if (name === 'coolingPhase') return this.blaster.coolingPhase;
     if (name === 'activeProjectiles') return this.projectiles.activeCount;
     if (name === 'dummyHp')
       return this.dummies.map((dummy) => dummy.health.current);

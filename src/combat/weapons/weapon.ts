@@ -11,11 +11,15 @@ import type { WeaponDefinition } from './weaponSchema';
 
 export interface WeaponInput {
   triggerHeld: boolean;
+  coolingPressed?: boolean;
   origin: Vec3;
   dir: Vec3;
   /** Postęp celowania 0–1 (ADS): rozrzut × `tuning.player.aim.spread` przy pełnym celowaniu. */
   aim?: number;
 }
+
+export type CoolingPhase =
+  'waiting' | 'window' | 'late' | 'penalty' | 'success';
 
 export interface WeaponDeps {
   attackSpeed?(): number;
@@ -33,6 +37,8 @@ export class Weapon {
   private rng: Rng;
   private cooldownS = 0;
   private lockS = 0;
+  private windowInS = 0;
+  private coolingAttempt?: 'penalty' | 'success';
   private coolingEventS = 0;
   private lastHeat = 0;
   private shotCount = 0;
@@ -72,6 +78,48 @@ export class Weapon {
   get overheated(): boolean {
     return this.lockS > 0;
   }
+
+  private get windowDurationS(): number {
+    return (
+      this.definition.activeCooling?.windowDurationS ??
+      this.ctx.tuning.weapons.activeCooling.windowDurationS
+    );
+  }
+
+  get coolingPhase(): CoolingPhase | undefined {
+    if (!this.overheated || !this.definition.activeCooling) return undefined;
+    if (this.coolingAttempt === 'success') return 'success';
+    if (this.windowInS > Number.EPSILON * 16)
+      return this.coolingAttempt ?? 'waiting';
+    return this.windowInS > -this.windowDurationS + Number.EPSILON * 16
+      ? 'window'
+      : 'late';
+  }
+
+  private startOverheat(): void {
+    const config = this.ctx.tuning.weapons;
+    this.lockS = config.overheatLockS;
+    this.windowInS =
+      this.definition.activeCooling?.windowStartS ??
+      config.activeCooling.windowStartS;
+    this.coolingAttempt = undefined;
+  }
+
+  private tryCooling(): void {
+    const phase = this.coolingPhase;
+    const config = this.definition.activeCooling;
+    if (!config || !phase || phase === 'penalty' || phase === 'success') return;
+    const defaults = this.ctx.tuning.weapons.activeCooling;
+    if (phase === 'window') {
+      this.lockS = Math.max(0, this.lockS - (config.bonusS ?? defaults.bonusS));
+      this.coolingAttempt = 'success';
+    } else {
+      this.coolingAttempt = 'penalty';
+      this.windowInS = config.penaltyS ?? defaults.penaltyS;
+      // Nawet po bardzo późnej próbie kara kończy się pełnym oknem na poprawkę.
+      this.lockS = Math.max(this.lockS, this.windowDurationS) + this.windowInS;
+    }
+  }
   get shots(): number {
     return this.shotCount;
   }
@@ -93,7 +141,7 @@ export class Weapon {
   overheat(): void {
     if (this.beam) this.beam.active = false;
     this.heat.set(this.heat.max);
-    this.lockS = this.ctx.tuning.weapons.overheatLockS;
+    this.startOverheat();
     this.emitHeat();
   }
 
@@ -120,18 +168,24 @@ export class Weapon {
     this.emitHeat();
   }
 
-  private advanceCooling(dt: number, publish: boolean): void {
+  private advanceCooling(
+    dt: number,
+    publish: boolean,
+    coolingPressed = false,
+  ): void {
     // Zewnętrzne podgrzanie zasobu również uruchamia blokadę.
     if (
       !this.overheated &&
       this.heat.max > 0 &&
       this.heat.current >= this.heat.max
     ) {
-      this.lockS = this.ctx.tuning.weapons.overheatLockS;
+      this.startOverheat();
       if (this.beam) this.beam.active = false;
       if (publish) this.emitHeat();
     }
     const wasOverheated = this.overheated;
+    if (coolingPressed) this.tryCooling();
+    if (wasOverheated) this.windowInS -= dt;
     this.heat.step(dt);
     this.lockS = Math.max(0, this.lockS - dt);
     if (this.lockS < Number.EPSILON * 16) this.lockS = 0;
@@ -148,7 +202,7 @@ export class Weapon {
 
   step(dt: number, input: WeaponInput): void {
     if (!(dt > 0)) return;
-    this.advanceCooling(dt, true);
+    this.advanceCooling(dt, true, input.coolingPressed);
     if (this.definition.fireMode === 'beam') {
       this.stepBeam(dt, input, this.definition);
       return;
@@ -195,8 +249,7 @@ export class Weapon {
     this.cooldownS = 1 / this.definition.fireRateHz / speed;
     this.shotCount++;
     this.heat.add(this.definition.heatPerShot, { resetDelay: true });
-    if (this.heat.current >= this.heat.max)
-      this.lockS = this.ctx.tuning.weapons.overheatLockS;
+    if (this.heat.current >= this.heat.max) this.startOverheat();
     this.ctx.bus.emit('weapon_fired', {
       weapon: this.definition.id,
       owner: this.owner,
@@ -238,7 +291,7 @@ export class Weapon {
     }
     this.heat.add(def.heatPerS * dt, { resetDelay: true });
     if (this.heat.current >= this.heat.max) {
-      this.lockS = this.ctx.tuning.weapons.overheatLockS;
+      this.startOverheat();
       beam.active = false;
       this.beamTickS = 0;
     }

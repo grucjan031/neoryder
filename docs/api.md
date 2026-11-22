@@ -500,7 +500,7 @@ Wczytany zapis z `saveVersion < SAVE_VERSION` jest migrowany; z `saveVersion > S
 ```ts
 export type Action = 'moveForward' | 'moveBack' | 'moveLeft' | 'moveRight'
   | 'jump' | 'sprint' | 'dash' | 'crouch' | 'attack' | 'block' | 'swap' | 'power'
-  | 'power2' | 'weapon1' | 'weapon2' | 'weapon3' | 'bladeThrow';
+  | 'power2' | 'weapon1' | 'weapon2' | 'weapon3' | 'bladeThrow' | 'coolWeapon';
 export type BindingOverrides = Partial<Record<Action, string>>;
 export function resolveBindings(overrides?: BindingOverrides): Record<string, Action>;
 export function assignBinding(overrides: BindingOverrides, action: Action, code: string): BindingOverrides;
@@ -774,6 +774,8 @@ export const STATUS_TAG = '#status'; export const STUNNED = 'stunned';
 interface WeaponBase {
   id: string; name: string;                       // name: tekst UI (pl)
   tags: string[]; statuses?: StatusApplication[];
+  activeCooling?: { windowStartS?: number; windowDurationS?: number; bonusS?: number; penaltyS?: number };
+  // Obecność pola włącza chłodzenie. Pominięte czasy pochodzą z tuning.weapons.activeCooling.
 }
 interface ShotWeaponBase extends WeaponBase {
   fireMode: 'projectile' | 'spread' | 'pierce' | 'lob';
@@ -793,7 +795,9 @@ interface BeamWeaponDefinition extends WeaponBase {
 // damage = obrażenia bezpośrednie; explosionDamage = obrażenia obszarowe; statuses przekazywane do wybuchu
 
 // src/combat/weapons/weapon.ts
-export interface WeaponInput { triggerHeld: boolean; origin: Vec3; dir: Vec3 } // zbocze wciśnięcia liczy Weapon
+export interface WeaponInput { triggerHeld: boolean; origin: Vec3; dir: Vec3; coolingPressed?: boolean }
+// coolingPressed pobieramy z input.pressed.has('coolWeapon') dla dobytej broni. Domyślny klawisz G.
+export type CoolingPhase = 'waiting' | 'window' | 'late' | 'penalty' | 'success';
 export interface WeaponDeps {
   projectiles: Pick<ProjectileSystem, 'spawn'>;
   /** F2-04: promień lasera — pierwszy trafiony collider (wróg albo ściana). */
@@ -805,6 +809,7 @@ export class Weapon {
               deps: WeaponDeps, definition: WeaponDefinition, team?: Team);
   readonly definition: WeaponDefinition;
   readonly heat: ResourcePool; readonly overheated: boolean; readonly shots: number;
+  readonly coolingPhase: CoolingPhase | undefined; // odczyt dla HUD i poligonu podczas aktywnej blokady
   readonly beam: { active: boolean; from: Vec3; to: Vec3 } | null;
   step(dt: number, input: WeaponInput): void;
   cool(dt: number): void;                       // nieaktywna broń: chłodzenie i zegary bez zdarzeń; zwalnia spust/promień
@@ -1044,6 +1049,7 @@ export const loadoutDefinitions: ReadonlyMap<string, Loadout>;
 // ?blade=<id> (arena, melee-test i jego warianty) nadpisuje ostrze ekwipunku (F2-11).
 // weapon_switched.slot: indeks 0–2; po zdarzeniu scena emituje heat_changed wybranej broni.
 // Hud: opcja loadout (weapons, powers), setLoadout(loadout) przy resecie;
+// Hud.setCoolingHint(phase: CoolingPhase | undefined) wyświetla fazę dobytej broni w jej wskaźniku przegrzania.
 // step(dt) odlicza odnowienia wyłącznie ze zdarzeń power_cooldown { power, user, cooldownS }, w czasie gracza.
 
 // src/progression/synergies.ts — src/data/synergies/*.json

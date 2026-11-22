@@ -695,6 +695,12 @@ export const tuning = {
   },
   weapons: {
     overheatLockS: 1.5,
+    activeCooling: {
+      windowStartS: 0.5,
+      windowDurationS: 0.3,
+      bonusS: 0.55,
+      penaltyS: 0.35,
+    },
     coolDelayS: 0.25,
     /** Bufor spustu broni półautomatycznej: klik w ostatnich s odnowienia strzela po jego końcu. */
     triggerBufferS: 0.15,

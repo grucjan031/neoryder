@@ -38,6 +38,14 @@ const weaponFields = {
   aimInScale: z.number().finite().positive().optional(),
   aimSpreadScale: z.number().finite().positive().optional(),
   aimSensitivityScale: z.number().finite().positive().optional(),
+  activeCooling: z
+    .strictObject({
+      windowStartS: z.number().finite().nonnegative().optional(),
+      windowDurationS: z.number().finite().positive().optional(),
+      bonusS: z.number().finite().positive().optional(),
+      penaltyS: z.number().finite().positive().optional(),
+    })
+    .optional(),
   statuses: z
     .array(
       z.object({

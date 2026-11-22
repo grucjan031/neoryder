@@ -3,6 +3,7 @@
   "damage": 20,
   "fireRateHz": 6,
   "heatPerShot": 14,
+  "activeCooling": {},
   "projectileSpeed": 60,
   "projectileLifetimeS": 2,
   "spreadDeg": 0.6,
