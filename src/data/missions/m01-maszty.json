@@ -103,7 +103,7 @@
       "fuseS": 6,
       "blastRadiusM": 4,
       "blastDamage": 60,
-      "reinforcements": "missionPatrol"
+      "reinforcements": "m01Assault"
     },
     {
       "id": "helix",
@@ -211,50 +211,6 @@
     },
     {
       "speaker": "szron",
-      "text": "Masz na to czas do świtu. Ładunki są od Miry."
-    },
-    {
-      "speaker": "mira",
-      "text": "Trzy sztuki, z krótkim zapalnikiem. Przykładaj do skrzynki zasilania u podstawy, nie do samej kratownicy."
-    },
-    {
-      "speaker": "mira",
-      "text": "I nie stój w promieniu czterech metrów, kiedy tyka. Zapasowych kurierów tu nie trzymamy."
-    },
-    {
-      "speaker": "bajt",
-      "text": "Mówi to osoba, która spawała te zapalniki z zegarków z bazaru."
-    },
-    {
-      "speaker": "mira",
-      "text": "Zegarki działają. W przeciwieństwie do twojego skanera częstotliwości w zeszłym tygodniu."
-    },
-    {
-      "speaker": "szron",
-      "text": "Dosyć. Przy każdym maszcie stoi co najmniej jedna wieżyczka, a wybuch ściągnie patrole z sąsiednich ulic. Nie wdawaj się w długą wymianę ognia, jeśli nie musisz."
-    },
-    {
-      "speaker": "tomasz",
-      "text": "Ja poprowadzę przez radio. Znam pod estakadą każdy suchy zaułek i każdą ślepą bramę."
-    },
-    {
-      "speaker": "szron",
-      "text": "Na pewno? Ostatnio chodziłeś tamtędy, kiedy jeszcze działały pompy."
-    },
-    {
-      "speaker": "tomasz",
-      "text": "Beton się nie rusza, Szron. A patrole chodzą zawsze tam, gdzie wygodnie im nie zamoczyć butów."
-    },
-    {
-      "speaker": "bajt",
-      "text": "Łączność ustawiona na krótki kanał. Wchodzisz śluzą pod trzecim filarem, kryptonim w eterze: Kurier."
-    },
-    {
-      "speaker": "tomasz",
-      "text": "Weź ze sobą łyk czegoś ciepłego, zanim zejdziesz w ten deszcz. Tam na dole wiatr ciągnie od rzeki."
-    },
-    {
-      "speaker": "szron",
       "text": "Ruszaj. Po trzecim maszcie schodzisz starym kanałem zrzutowym prosto na Kamienną."
     }
   ],
@@ -281,26 +237,6 @@
     },
     {
       "speaker": "szron",
-      "text": "Czyli to nie był przypadek z tą rampą w Hutach. A w Niecce połowa kurierów ma ten sam tani implant co ty."
-    },
-    {
-      "speaker": "mira",
-      "text": "Zostało tam jeszcze coś w jednym kawałku, czy wszystko poszło z dymem?"
-    },
-    {
-      "speaker": "bajt",
-      "text": "Ten jeden wystarczy. Zaraz przepuszczę numer partii przez stare rejestry dostaw, może wyjdzie, skąd je ciągną."
-    },
-    {
-      "speaker": "tomasz",
-      "text": "Zostaw to do jutra, Bajt. Masz podkrążone oczy jak po nocnej zmianie."
-    },
-    {
-      "speaker": "tomasz",
-      "text": "Usiądź przy beczce, Kurier. Herbata jeszcze ciepła."
-    },
-    {
-      "speaker": "szron",
       "text": "Rano sprawdzimy, kogo jeszcze zwinęli tej nocy, zanim maszty zgasły. Idź odpocząć."
     }
   ],
@@ -314,8 +250,29 @@
         },
         {
           "speaker": "tomasz",
-          "text": "Idź wzdłuż muru na wschód. Tam jeszcze wczoraj wisiała spalona latarnia z bursztynowym kloszem, za nią zaczynają się pierwsze alejki."
+          "text": "Idź wzdłuż muru na wschód. Tam jeszcze wczoraj wisiała spalona latarnia z bursztynowym kloszem, za nią zaczynają się pierwsze alejki.",
+          "shortText": "Idź wzdłuż muru na wschód. Za spaloną latarnią zaczynają się pierwsze alejki."
+        }
+      ]
+    },
+    {
+      "trigger": "runStart",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Łączność ustawiona na krótki kanał. Wchodzisz śluzą pod trzecim filarem, kryptonim w eterze: Kurier.",
+          "shortText": "Łączność na krótkim kanale. Kryptonim w eterze: Kurier."
         },
+        {
+          "speaker": "tomasz",
+          "text": "Ja poprowadzę przez radio. Znam pod estakadą każdy suchy zaułek i każdą ślepą bramę."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:patrol-wejscie:done",
+      "lines": [
         {
           "speaker": "bajt",
           "text": "Sygnał z masztów wchodzi czysto. Pierwszy stoi tuż za skrzyżowaniem, sto metrów dalej."
@@ -323,12 +280,55 @@
       ]
     },
     {
-      "trigger": "enterNode:3",
+      "trigger": "encounter:patrol-wejscie:done",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Masz na to czas do świtu. Ładunki są od Miry."
+        },
+        {
+          "speaker": "mira",
+          "text": "Trzy sztuki, z krótkim zapalnikiem. Przykładaj do skrzynki zasilania u podstawy, nie do samej kratownicy.",
+          "shortText": "Trzy sztuki, krótki zapalnik. Przykładaj do skrzynki zasilania, nie do kratownicy."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:targ",
       "lines": [
         {
           "speaker": "szron",
           "text": "Wieżyczka na wprost wejścia. Najpierw ją zdejmij albo odetnij jej linię strzału."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:oslona-pierwszego:done",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "I nie stój w promieniu czterech metrów, kiedy tyka. Zapasowych kurierów tu nie trzymamy."
         },
+        {
+          "speaker": "bajt",
+          "text": "Mówi to osoba, która spawała te zapalniki z zegarków z bazaru."
+        },
+        {
+          "speaker": "mira",
+          "text": "Zegarki działają. W przeciwieństwie do twojego skanera częstotliwości w zeszłym tygodniu."
+        },
+        {
+          "speaker": "szron",
+          "text": "Dosyć. Przy każdym maszcie stoi co najmniej jedna wieżyczka, a wybuch ściągnie patrole z sąsiednich ulic. Nie wdawaj się w długą wymianę ognia, jeśli nie musisz.",
+          "shortText": "Dosyć. Przy każdym maszcie stoi wieżyczka, a wybuch ściągnie patrole. Nie wdawaj się w długą wymianę ognia."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:mast-1:started",
+      "lines": [
         {
           "speaker": "mira",
           "text": "Pamiętaj, cztery metry. Jak zgaśnie czerwona dioda na górze, nie wracaj, kurwa, po nic."
@@ -359,7 +359,22 @@
       ]
     },
     {
-      "trigger": "enterNode:5",
+      "trigger": "checkpoint:po-maszcie-1",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Na pewno? Ostatnio chodziłeś tamtędy, kiedy jeszcze działały pompy."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "Beton się nie rusza, Szron. A patrole chodzą zawsze tam, gdzie wygodnie im nie zamoczyć butów.",
+          "shortText": "Beton się nie rusza, Szron. A patrole chodzą tam, gdzie nie zamoczą butów."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:dziedziniec",
       "lines": [
         {
           "speaker": "bajt",
@@ -389,12 +404,28 @@
       ]
     },
     {
-      "trigger": "enterNode:7",
+      "trigger": "checkpoint:po-helixie",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "tomasz",
+          "text": "Weź ze sobą łyk czegoś ciepłego, zanim zejdziesz w ten deszcz. Tam na dole wiatr ciągnie od rzeki.",
+          "shortText": "Tam na dole wiatr ciągnie od rzeki."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:zaplecze",
       "lines": [
         {
           "speaker": "tomasz",
           "text": "Przy kanale zrzutowym uważaj na kładki po bokach. Od lat tak zamykają wylot, kiedy kogoś szukają na dole."
-        },
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:plac",
+      "lines": [
         {
           "speaker": "szron",
           "text": "Dwie wieżyczki kryją plac na krzyż. Jeśli wejdziesz w środek przed czasem, posiłki przygniotą cię przy ścianie."
@@ -411,7 +442,7 @@
       ]
     },
     {
-      "trigger": "objective:exit:started",
+      "trigger": "checkpoint:ewakuacja",
       "lines": [
         {
           "speaker": "szron",
@@ -420,7 +451,12 @@
         {
           "speaker": "mira",
           "text": "Otwieraj i schodź. Jak przekręcisz zawór od środka, nie przejdą bez palników."
-        },
+        }
+      ]
+    },
+    {
+      "trigger": "objective:exit:started",
+      "lines": [
         {
           "speaker": "bajt",
           "text": "Jeszcze kilka metrów, Kurier. Zamykam za tobą kanał nasłuchowy."

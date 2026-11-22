@@ -84,24 +84,8 @@
       "text": "Karta otwiera chłodnicze wejście serwisowe od wschodu. Po meldunku Wirskiej na górze nie będzie już elementu zaskoczenia — wejdą wszystkie zmiany."
     },
     {
-      "speaker": "mira",
-      "text": "Brandt nie wychodzi z hali bez ciężkiego pancerza wspomaganego. Ma zamontowany miotacz wachlarzowy i siłowniki skokowe — jak uderzy z góry o stalową płytę, nie stój blisko krawędzi."
-    },
-    {
-      "speaker": "mira",
-      "text": "I jeszcze jedno: jeśli uruchomi tarczę energetyczną, zwykłe ostrze ześlizgnie się jak po szkle. Trzeba ją najpierw przełamać ciężką serią albo Rezonansem."
-    },
-    {
-      "speaker": "bajt",
-      "text": "Jak już padnie, serwer stoi pod tylną ścianą jego gabinetu, za hartowaną szybą. Wystarczy włożyć mój dysk w wolny port i poczekać trzy sekundy, resztę zrobi skrypt zrzutu."
-    },
-    {
       "speaker": "tomasz",
       "text": "Odlewnia jest duża i głośna, w nocy łatwo stracić orientację między piecami. Pamiętaj, którędy prowadzą wyjścia na windę towarową."
-    },
-    {
-      "speaker": "wolan",
-      "text": "Jeśli na tym serwerze są listy transportowe z ostatnich lat... sprawdźcie szczególnie oznaczenia partii z Tarasu. Może być napisane, co zrobili z ludźmi sprzed K-112."
     },
     {
       "speaker": "szron",
@@ -114,32 +98,12 @@
       "text": "Mam cały serwer Brandta. Sześć lat dokumentów bez jednej dziury. Wszystko zaczyna się od tego samego kontraktu z Helixą Dynamics."
     },
     {
-      "speaker": "mira",
-      "text": "Pokaż liczby. Ilu naszych wywieźli na górę?"
-    },
-    {
       "speaker": "bajt",
       "text": "Kilkuset. Dokładnie trzysta osiemnaście osób z rejestrów „przekazań”, wszystkie oznaczone datą i wynikiem skanu kory ruchowej. Ale w samej korespondencji powtarzają się bez przerwy dwa słowa, których nie widziałem w żadnej specyfikacji."
     },
     {
-      "speaker": "mira",
-      "text": "Trzysta osiemnaście osób. Kurwa."
-    },
-    {
-      "speaker": "szron",
-      "text": "Jakie to słowa?"
-    },
-    {
       "speaker": "bajt",
       "text": "„Akord” i „kamerton”. Całe rozliczenie z Helixą opiera się na liczbie sprawnych kamertonów i partiach Akordu schodzących z Zakładu Kalibracji."
-    },
-    {
-      "speaker": "wolan",
-      "text": "...Zatem zmienili nazewnictwo handlowe. Ale nie ma tu jeszcze opisu samej procedury z Tarasu?"
-    },
-    {
-      "speaker": "bajt",
-      "text": "Nie, to tylko logistyka z Hut: kto, kiedy i ile ton. Żeby zrozumieć, co robią w środku, musimy wejść wyżej — na Bulwar i Taras, prosto do laboratoriów Helixa."
     },
     {
       "speaker": "tomasz",
@@ -148,18 +112,6 @@
     {
       "speaker": "bajt",
       "text": "Jest jeszcze jedna rzecz. Na samym dole partycji Brandta leży ukryty folder z lokalnym szyfrem, niepodpiętym do sieci Kurogane. Nazwa pliku: „Palacz”."
-    },
-    {
-      "speaker": "mira",
-      "text": "Nazwisko? Kryptonim?"
-    },
-    {
-      "speaker": "bajt",
-      "text": "Nie wiem. Klucz jest podwójny, ręcznie mieszany. Puszczam skrypt łamiący w tle — zajmie mi to trochę czasu, może do końca następnych akcji na górze."
-    },
-    {
-      "speaker": "szron",
-      "text": "Zostaw go, niech chodzi w tle. Od dzisiejszej nocy mamy otwarte przejście wyżej."
     },
     {
       "speaker": "szron",
@@ -177,6 +129,26 @@
         {
           "speaker": "szron",
           "text": "Idź prosto na hale formowania. Pamiętaj, że znają już twój profil walki z raportów."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:patrol-sluza:done",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jak już padnie, serwer stoi pod tylną ścianą jego gabinetu, za hartowaną szybą. Wystarczy włożyć mój dysk w wolny port i poczekać trzy sekundy, resztę zrobi skrypt zrzutu."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:piece:done",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "wolan",
+          "text": "Jeśli na tym serwerze są listy transportowe z ostatnich lat... sprawdźcie szczególnie oznaczenia partii z Tarasu. Może być napisane, co zrobili z ludźmi sprzed K-112."
         }
       ]
     },
@@ -203,6 +175,19 @@
         {
           "speaker": "bajt",
           "text": "W dyżurce z boku widać aktywny terminal nadzorcy. Jak masz trzy sekundy spokoju po walce, zgraj rejestr kadr — przyda się przy porównaniu z serwerem."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:straz:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Brandt nie wychodzi z hali bez ciężkiego pancerza wspomaganego. Ma zamontowany miotacz wachlarzowy i siłowniki skokowe — jak uderzy z góry o stalową płytę, nie stój blisko krawędzi."
+        },
+        {
+          "speaker": "mira",
+          "text": "I jeszcze jedno: jeśli uruchomi tarczę energetyczną, zwykłe ostrze ześlizgnie się jak po szkle. Trzeba ją najpierw przełamać ciężką serią albo Rezonansem."
         }
       ]
     },

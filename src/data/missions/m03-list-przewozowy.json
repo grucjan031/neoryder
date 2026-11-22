@@ -157,26 +157,6 @@
       "text": "Dobrze cię słyszeć z góry, Nadia. To urządzenie wygląda jak kostka do lutowania, ale ma antenę kierunkową krótkiego zasięgu. Wpinasz w terminal spedycji i stoisz w promieniu sześciu metrów."
     },
     {
-      "speaker": "mira",
-      "text": "Dlaczego, kurwa, nie możesz tego zgrać z zewnątrz, tylko trzeba warować przy biurku jak stróż nocny?"
-    },
-    {
-      "speaker": "bajt",
-      "text": "Bo port ma własną sieć w miedzianym oplocie, odciętą od linii miejskich. Jak wyjdziesz poza krąg, bufor staje. Jak wyrwą wtyczkę, zaczynamy od zera."
-    },
-    {
-      "speaker": "szron",
-      "text": "Nowy problem w porcie: wyciągnęli z magazynów drużyny z tarczami balistycznymi i lekkie drony bojowe."
-    },
-    {
-      "speaker": "mira",
-      "text": "Na tarcze nie pchaj się od frontu. Obejdź z boku albo przestaw ich z miejsca Rezonansem. Drony zdejmuj od razu, zanim wejdą ci nad głowę."
-    },
-    {
-      "speaker": "tomasz",
-      "text": "Przejście pod nabrzeżem jest wąskie i śliskie po przypływie. Jeśli zaczną zamykać śluzy, uciekaj w stronę kanału wodnego, nie wracaj przez plac celny."
-    },
-    {
       "speaker": "szron",
       "text": "Bierz kostkę i ruszaj. Potrzebujemy wiedzieć, dokąd wyjeżdżają ludzie z tych skanów."
     }
@@ -187,16 +167,8 @@
       "text": "Dobra, przegrzało mi się pieprzone gniazdo w dekoderze, ale rejestr z trzech miesięcy jest czysty. Tylko... to się nie klei z żadnym transportem więziennym."
     },
     {
-      "speaker": "szron",
-      "text": "Mów krótko. Gdzie są ludzie z Niecki?"
-    },
-    {
       "speaker": "bajt",
       "text": "W papierach spedycji nie ma ludzi. Jest jedna powtarzająca się pozycja co siedem dni: „ładunek biologiczny klasy K”, waga brutto czterysta dwadzieścia kilogramów, kontener chłodniczy z własnym zasilaniem."
-    },
-    {
-      "speaker": "mira",
-      "text": "Czterysta kilo z agregatem? To akurat jeden człowiek w ciężkiej skrzyni z aparaturą. Dokąd to jedzie?"
     },
     {
       "speaker": "bajt",
@@ -208,23 +180,7 @@
     },
     {
       "speaker": "mira",
-      "text": "Sprawdź rozkład, Bajt. Kiedy następny skład?"
-    },
-    {
-      "speaker": "bajt",
-      "text": "Za dwie noce, w środę o drugiej dwadzieścia. Wyjeżdża z trzeciego toru rozrządni, zanim przeładują go na pionowy szyb towarowy."
-    },
-    {
-      "speaker": "szron",
-      "text": "Dwa dni to wystarczająco mało, żeby nic nie poszło zgodnie z planem, jeśli nie ruszymy ich na torach. W Zakładzie na Tarasie nikt ich już nie wyciągnie."
-    },
-    {
-      "speaker": "mira",
       "text": "Jeśli jedzie torami z Hut, to mój teren. Potrzebuję tylko planu zwrotnic przy rozrządni. Przejmiemy im ten wagon po drodze."
-    },
-    {
-      "speaker": "tomasz",
-      "text": "Zaczekajcie tylko, aż sprawdzimy, co właściwie siedzi w tym kontenerze. Żeby nie wciągnąć do tunelu czegoś, czego nie utrzymamy przy życiu."
     },
     {
       "speaker": "szron",
@@ -246,6 +202,29 @@
       ]
     },
     {
+      "trigger": "runStart",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "tomasz",
+          "text": "Przejście pod nabrzeżem jest wąskie i śliskie po przypływie. Jeśli zaczną zamykać śluzy, uciekaj w stronę kanału wodnego, nie wracaj przez plac celny."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:patrol-nabrzeze:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Nowy problem w porcie: wyciągnęli z magazynów drużyny z tarczami balistycznymi i lekkie drony bojowe."
+        },
+        {
+          "speaker": "mira",
+          "text": "Na tarcze nie pchaj się od frontu. Obejdź z boku albo przestaw ich z miejsca Rezonansem. Drony zdejmuj od razu, zanim wejdą ci nad głowę."
+        }
+      ]
+    },
+    {
       "trigger": "enterNode:3",
       "lines": [
         {
@@ -255,7 +234,12 @@
         {
           "speaker": "mira",
           "text": "Widzisz, jak ta płyta zasłania im cały tułów? Zmuś ich do obrotu albo strąć drona z boku. Z tym nie wygrasz na cierpliwość."
-        },
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:oslona-celna:done",
+      "lines": [
         {
           "speaker": "bajt",
           "text": "Dobry refleks. Dron miał rejestrator wideo, ale nie zdążył wysłać pakietu do centrali."
@@ -281,6 +265,20 @@
         {
           "speaker": "bajt",
           "text": "Terminal spedycji stoi na podeście pośrodku hali, widać stąd błękitne diody serwera. Jeśli chcesz sprawdzić manifesty na bocznych rampach, zrób to teraz, zanim włączymy transmisję."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:magazyn",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Dlaczego, kurwa, nie możesz tego zgrać z zewnątrz, tylko trzeba warować przy biurku jak stróż nocny?"
+        },
+        {
+          "speaker": "bajt",
+          "text": "Bo port ma własną sieć w miedzianym oplocie, odciętą od linii miejskich. Jak wyjdziesz poza krąg, bufor staje. Jak wyrwą wtyczkę, zaczynamy od zera."
         }
       ]
     },

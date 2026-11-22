@@ -301,6 +301,12 @@ const approaches: Record<string, [number, number][]> = {
     [250, -3],
     [265, -3],
   ],
+  // Właz leży przy wschodnim murze, za transformatorem stojącym na osi kanału.
+  exit: [
+    [306, 0],
+    [306, 3.5],
+    [316, 3.5],
+  ],
 };
 
 it('cała trasa po asfalcie ma ciągły prześwit 3 m po otwarciu bram', () => {

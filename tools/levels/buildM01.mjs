@@ -154,6 +154,8 @@ const dressing = [
     covers: [
       block(297, 0.8, 4.6, 2.5, 1.6, 2, 'metal', 'city_dumpster'),
       block(305, 0.65, -4.5, 4, 1.3, 1.3, 'concrete', 'city_highway_barrier'),
+      // „Transformator” z radia: zasłania właz przy wschodnim murze.
+      block(311.5, 0.7, 0, 2.5, 1.4, 2, 'metal', 'city_generator'),
     ],
     props: [
       ['city_door', 291, 0, -5.9],
@@ -163,7 +165,7 @@ const dressing = [
     ],
     decals: [
       ['puddle2', 300, -3, 4, 2],
-      ['manhole', 309, 2, 1.5, 1.5],
+      ['manhole', 307, 2.6, 1.5, 1.5],
     ],
   },
 ];
@@ -212,7 +214,7 @@ const level = {
     'mast-2': v(174),
     helix: v(175.5),
     'mast-3': v(270),
-    exit: v(312),
+    exit: v(316),
   },
 };
 let from = 0;
@@ -237,18 +239,8 @@ for (const [
       yaw: texture === 'floor_arrow' ? -Math.PI / 2 : 0,
       surface: 'floor',
     });
-  level.sections.push({
-    id,
-    name,
-    zone: zone(center, length, width),
-    ...(index === 1
-      ? { radio: 'enterNode:3' }
-      : index === 3
-        ? { radio: 'enterNode:5' }
-        : index === 5
-          ? { radio: 'enterNode:7' }
-          : {}),
-  });
+  // Radio misji reaguje na `enterSection:<id>`; pole `radio` sekcji nie jest potrzebne.
+  level.sections.push({ id, name, zone: zone(center, length, width) });
   // Komórki podłogi pozwalają odrzucać daleką statykę, bez jednej siatki na 320 m.
   for (let x = from; x < from + length; x += 4)
     level.blocks.push(block(x + 2, -0.5, 0, 4, 1, width, 'asphalt'));
@@ -351,6 +343,26 @@ for (const [
       for (const x of [center - 10, center + 10])
         level.blocks.push(block(x, 2, side * 5.5, 0.5, 4, 0.5, 'metal'));
     }
+  if (index === 1 || index === 3 || index === 5) {
+    // Otwarte place nie mają stropu: bez tych plam asfalt i osłony zlewają się z nocą.
+    for (const [offset, side] of [
+      [0.2, -1],
+      [0.5, 1],
+    ])
+      level.lights.push({
+        position: v(from + length * offset, 5, (side * width) / 5),
+        color: '#fff1d6',
+        intensity: 26,
+        range: 18,
+      });
+    const mast = level.objectivePositions[`mast-${(index + 1) / 2}`];
+    level.lights.push({
+      position: v(mast.x - 2, 4.5, 0),
+      color: '#ffae1a',
+      intensity: 30,
+      range: 14,
+    });
+  }
   level.ambientFx.push({
     kind: 'steam',
     position: v(center + 7, 0, width / 2 - 3),
@@ -360,13 +372,15 @@ for (const [
 }
 level.blocks.push(block(0, 6, 0, 2, 12, 12), block(320, 6, 0, 2, 12, 12));
 const encounters = [
-  ['patrol-wejscie', 18, 30, 'm01Approach', undefined, 38],
+  // Strefy zaczynają się za bramą poprzedniego spotkania: kolejna walka nie rusza
+  // w miejscu, w którym gracz dobił poprzednią, i jest chwila ciszy na radio.
+  ['patrol-wejscie', 26, 32, 'm01Approach', undefined, 38],
   ['oslona-pierwszego', 56, 82, 'm01MastOne', encounter('patrol-wejscie'), 96],
   ['patrol-tunel', 116, 127, 'm01Patrol', objective('mast-1'), 140],
-  ['oslona-drugiego', 148, 169, 'm01MastTwo', encounter('patrol-tunel'), 181],
+  ['oslona-drugiego', 152, 169, 'm01MastTwo', encounter('patrol-tunel'), 181],
   ['patrol-rusztowania', 200, 216, 'm01Patrol', objective('helix'), 224],
-  ['patrol-plac', 234, 247, 'm01Assault', encounter('patrol-rusztowania'), 255],
-  ['oslona-trzeciego', 258, 272, 'm01MastThree', encounter('patrol-plac'), 282],
+  ['patrol-plac', 236, 247, 'm01Assault', encounter('patrol-rusztowania'), 255],
+  ['oslona-trzeciego', 266, 272, 'm01MastThree', encounter('patrol-plac'), 282],
 ];
 const encounterSpawns = {
   'oslona-pierwszego': [
@@ -439,7 +453,8 @@ for (const [id, x, width] of [
     block: block(x, 6, 0, 1, 12, width, 'metal'),
     after: objective(id),
   });
-for (const [id, x, positions] of [
+// Fala posiłków musi być tą samą, którą wskazuje `reinforcements` celu w danych misji.
+for (const [id, x, positions, wave = 'missionPatrol'] of [
   [
     'mast-1',
     82,
@@ -462,13 +477,16 @@ for (const [id, x, positions] of [
     [
       [263, -8],
       [276, 9],
+      [258, -5],
+      [277, -3],
     ],
+    'm01Assault',
   ],
 ])
   level.encounters.push({
     id: `reinforce-${id}`,
     zone: zone(x, 24),
-    wave: 'missionPatrol',
+    wave,
     spawnPoints: positions.map(([x, z]) => ({ x, z })),
     after: objective(id),
     reinforcementFor: id,

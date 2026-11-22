@@ -134,6 +134,10 @@
     16px/1.5 Rajdhani,
     sans-serif;
 }
+/* Kwestie fabularne są spokojniejsze od ostrzeżeń: ciepła biel zamiast bursztynu. */
+.mission-radio--run[data-priority='story'] {
+  border-right-color: #fff1d6;
+}
 .mission-debrief {
   box-sizing: border-box;
   max-width: min(640px, 92vw);

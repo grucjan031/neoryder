@@ -1,12 +1,14 @@
 import type { Vec3 } from '../core/math';
-import type { DialogueLine, MissionDefinition } from '../world/missionSchema';
+import type { MissionDefinition, RadioPriority } from '../world/missionSchema';
 import type { MissionObjectives } from '../world/missionObjectives';
 import { tuning } from '../core/tuning';
 import text from '../data/ui/missionDialogue.pl.json';
 import {
   MissionDialogue,
   MissionDialogueCard,
+  RadioQueue,
   splitDialogueText,
+  type RadioCard,
 } from './missionDialogue';
 import './missionUi.css';
 
@@ -138,13 +140,10 @@ export function showDebrief(
 export class MissionRadio {
   private readonly root = document.createElement('div');
   private readonly card = new MissionDialogueCard();
-  private readonly queue: DialogueLine[] = [];
-  private remaining = 0;
-  private active?: DialogueLine;
+  private readonly queue = new RadioQueue();
   private readonly resize = () => {
-    if (!this.active) return;
-    this.queue.unshift(this.active);
-    this.remaining = 0;
+    if (!this.queue.active) return;
+    this.queue.requeueActive();
     this.step(0);
   };
   constructor(private readonly mission: MissionDefinition) {
@@ -156,32 +155,42 @@ export class MissionRadio {
   }
   signal(trigger: string): void {
     // Faza i ostatnie słowa muszą odpowiadać bieżącej walce, nie zaległej kolejce.
-    if (trigger === 'boss:defeated' || /^boss:phase:[23]$/.test(trigger)) {
-      this.queue.length = 0;
-      this.remaining = 0;
-      this.active = undefined;
-    }
+    if (trigger === 'boss:defeated' || /^boss:phase:[23]$/.test(trigger))
+      this.queue.clear();
     for (const event of this.mission.radio)
       if (event.trigger === trigger)
-        for (const { speaker, text, shortText } of event.lines)
-          this.queue.push({ speaker, text: shortText ?? text });
+        this.queue.push(
+          event.lines.map(({ speaker, text, shortText }) => ({
+            speaker,
+            text: shortText ?? text,
+          })),
+          event.priority ?? 'tactical',
+        );
+  }
+  /** Host zgłasza walkę; kwestie `story` czekają wtedy na spokój. */
+  setCombat(combat: boolean): void {
+    this.queue.setCombat(combat);
+  }
+  snapshot(): {
+    active: RadioCard | null;
+    pending: Readonly<Record<RadioPriority, number>>;
+  } {
+    return { active: this.queue.active ?? null, pending: this.queue.pending };
   }
   step(dt: number): void {
-    this.remaining -= dt;
-    if (this.remaining > 0) return;
-    const line = this.queue.shift();
-    if (!line) {
-      if (!this.root.hidden) {
-        this.active = undefined;
-        this.root.hidden = true;
-        this.card.clear();
-      }
+    const next = this.queue.step(dt);
+    if (next === undefined) return;
+    if (next === null) {
+      this.root.hidden = true;
+      delete this.root.dataset.priority;
+      this.card.clear();
       return;
     }
     this.root.hidden = false;
+    this.root.dataset.priority = next.priority;
     const paragraph = this.card.line;
     const lineHeight = parseFloat(getComputedStyle(paragraph).lineHeight);
-    const [first, ...rest] = splitDialogueText(line.text, (value) => {
+    const [first, ...rest] = splitDialogueText(next.text, (value) => {
       if (Array.from(value).length > tuning.mission.radioPageChars)
         return false;
       paragraph.textContent = value;
@@ -189,14 +198,17 @@ export class MissionRadio {
       return height === 0 || height <= 2 * lineHeight + 1;
     });
     this.queue.unshift(
-      ...rest.map((text) => ({ speaker: line.speaker, text })),
+      rest.map((text) => ({ speaker: next.speaker, text })),
+      next.priority,
     );
-    this.active = { speaker: line.speaker, text: first! };
-    paragraph.textContent = this.active.text;
-    this.card.show(line.speaker, this.active.text);
-    this.remaining = Math.max(
-      tuning.mission.radioMinS,
-      Array.from(this.active.text).length / tuning.mission.radioCharsPerS,
+    next.text = first!;
+    paragraph.textContent = first!;
+    this.card.show(next.speaker, first!);
+    this.queue.hold(
+      Math.max(
+        tuning.mission.radioMinS,
+        Array.from(first!).length / tuning.mission.radioCharsPerS,
+      ),
     );
   }
   dispose(): void {

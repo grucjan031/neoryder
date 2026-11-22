@@ -1769,6 +1769,20 @@
     },
     {
       "position": {
+        "x": 311.5,
+        "y": 0.7,
+        "z": 0
+      },
+      "size": {
+        "x": 2.5,
+        "y": 1.4,
+        "z": 2
+      },
+      "material": "metal",
+      "model": "city_generator"
+    },
+    {
+      "position": {
         "x": 282,
         "y": -0.5,
         "z": 0
@@ -1978,19 +1992,19 @@
   ],
   "spawnPoints": [
     {
-      "x": 30,
+      "x": 32,
       "z": -3
     },
     {
-      "x": 30,
+      "x": 32,
       "z": 3
     },
     {
-      "x": 34,
+      "x": 36,
       "z": -3
     },
     {
-      "x": 34,
+      "x": 36,
       "z": 3
     },
     {
@@ -2495,6 +2509,36 @@
     },
     {
       "position": {
+        "x": 53.6,
+        "y": 5,
+        "z": -4.4
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 68,
+        "y": 5,
+        "z": 4.4
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 80,
+        "y": 4.5,
+        "z": 0
+      },
+      "color": "#ffae1a",
+      "intensity": 30,
+      "range": 14
+    },
+    {
+      "position": {
         "x": 114,
         "y": 4,
         "z": -3
@@ -2595,6 +2639,36 @@
     },
     {
       "position": {
+        "x": 145.6,
+        "y": 5,
+        "z": -5.2
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 160,
+        "y": 5,
+        "z": 5.2
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 172,
+        "y": 4.5,
+        "z": 0
+      },
+      "color": "#ffae1a",
+      "intensity": 30,
+      "range": 14
+    },
+    {
+      "position": {
         "x": 206,
         "y": 4,
         "z": -5
@@ -2692,6 +2766,36 @@
       "color": "#fff1d6",
       "intensity": 14,
       "range": 18
+    },
+    {
+      "position": {
+        "x": 238.4,
+        "y": 5,
+        "z": -5.6
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 254,
+        "y": 5,
+        "z": 5.6
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 268,
+        "y": 4.5,
+        "z": 0
+      },
+      "color": "#ffae1a",
+      "intensity": 30,
+      "range": 14
     },
     {
       "position": {
@@ -3130,9 +3234,9 @@
     {
       "texture": "manhole",
       "position": {
-        "x": 309,
+        "x": 307,
         "y": 0.01,
-        "z": 2
+        "z": 2.6
       },
       "size": {
         "w": 1.5,
@@ -3285,8 +3389,7 @@
           "y": 8,
           "z": 22
         }
-      },
-      "radio": "enterNode:3"
+      }
     },
     {
       "id": "tunel",
@@ -3320,8 +3423,7 @@
           "y": 8,
           "z": 26
         }
-      },
-      "radio": "enterNode:5"
+      }
     },
     {
       "id": "zaplecze",
@@ -3355,8 +3457,7 @@
           "y": 8,
           "z": 28
         }
-      },
-      "radio": "enterNode:7"
+      }
     },
     {
       "id": "kanal",
@@ -3484,7 +3585,7 @@
       "zone": {
         "kind": "box",
         "position": {
-          "x": 18,
+          "x": 26,
           "y": 2,
           "z": 0
         },
@@ -3497,19 +3598,19 @@
       "wave": "m01Approach",
       "spawnPoints": [
         {
-          "x": 30,
+          "x": 32,
           "z": -3
         },
         {
-          "x": 30,
+          "x": 32,
           "z": 3
         },
         {
-          "x": 34,
+          "x": 36,
           "z": -3
         },
         {
-          "x": 34,
+          "x": 36,
           "z": 3
         }
       ]
@@ -3597,7 +3698,7 @@
       "zone": {
         "kind": "box",
         "position": {
-          "x": 148,
+          "x": 152,
           "y": 2,
           "z": 0
         },
@@ -3675,7 +3776,7 @@
       "zone": {
         "kind": "box",
         "position": {
-          "x": 234,
+          "x": 236,
           "y": 2,
           "z": 0
         },
@@ -3714,7 +3815,7 @@
       "zone": {
         "kind": "box",
         "position": {
-          "x": 258,
+          "x": 266,
           "y": 2,
           "z": 0
         },
@@ -3827,7 +3928,7 @@
           "z": 36
         }
       },
-      "wave": "missionPatrol",
+      "wave": "m01Assault",
       "spawnPoints": [
         {
           "x": 263,
@@ -3836,6 +3937,14 @@
         {
           "x": 276,
           "z": 9
+        },
+        {
+          "x": 258,
+          "z": -5
+        },
+        {
+          "x": 277,
+          "z": -3
         }
       ],
       "after": {
@@ -4097,7 +4206,7 @@
       "z": 0
     },
     "exit": {
-      "x": 312,
+      "x": 316,
       "y": 0,
       "z": 0
     }

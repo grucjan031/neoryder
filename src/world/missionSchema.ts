@@ -22,6 +22,14 @@ export const dialogueLineSchema = z.object({
   text: id,
   shortText: id.optional(),
 });
+export const RADIO_PRIORITIES = ['tactical', 'story'] as const;
+export type RadioPriority = (typeof RADIO_PRIORITIES)[number];
+/**
+ * Wyzwalacze radia. `enterSection`, `encounter` i `checkpoint` zgłasza wyłącznie scena
+ * misji liniowej (id sekcji, spotkania i punktu kontrolnego poziomu).
+ */
+export const RADIO_TRIGGER =
+  /^(runStart|objectivesDone|boss:phase:[23]|boss:defeated|enterNode:[1-9]\d*|enterSection:[^:\s]+|encounter:[^:\s]+:(started|done)|checkpoint:[^:\s]+|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/;
 export const missionObjectiveSchema = z.discriminatedUnion('kind', [
   z.object({
     ...base,
@@ -124,11 +132,9 @@ export const missionSchema = z
     debrief: z.array(dialogueLineSchema),
     radio: z.array(
       z.object({
-        trigger: z
-          .string()
-          .regex(
-            /^(runStart|objectivesDone|boss:phase:[23]|boss:defeated|enterNode:[1-9]\d*|objective:[^:]+:(started|done|paused|progress:(100|[1-9]?\d)))$/,
-          ),
+        trigger: z.string().regex(RADIO_TRIGGER),
+        /** `story` czeka na spokój (brak aktywnych spotkań); brak pola = `tactical`, od razu. */
+        priority: z.enum(RADIO_PRIORITIES).optional(),
         lines: z.array(dialogueLineSchema).min(1),
       }),
     ),

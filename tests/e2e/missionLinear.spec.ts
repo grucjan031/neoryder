@@ -40,6 +40,13 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
   );
   expect(await command(page, 'objective done mast-2')).toBe('Cel niedostępny.');
   await command(page, 'god');
+  // Wejście na targ zgłasza `enterSection:targ`; ostrzeżenie taktyczne gra po kwestiach startu.
+  await command(page, 'tp 50 0 -90');
+  const radio = page.locator('.mission-radio--run');
+  await expect(radio).toContainText('Wieżyczka na wprost wejścia.', {
+    timeout: SIM_TIMEOUT,
+  });
+  await expect(radio).toHaveAttribute('data-priority', 'tactical');
   await command(page, 'objective done mast-1');
   await command(page, 'checkpoint po-maszcie-1');
   await command(page, 'tp 116 0 -90');

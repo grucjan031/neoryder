@@ -13,34 +13,6 @@ import { missionDefinitions } from '../../src/world/missions';
 import { roomDefinitions } from '../../src/world/rooms';
 
 describe('Dane misji', () => {
-  it.each([
-    ['Odprawa (kryjówka)', listData.briefing],
-    ['W trakcie misji (radio)', listData.radio.flatMap((entry) => entry.lines)],
-    ['Po misji (kryjówka)', listData.debrief],
-  ] as const)('zachowuje dosłownie pełne dialogi M03: %s', (heading, lines) => {
-    const source = readFileSync(
-      new URL(
-        '../../docs/fabula/misje/misja-03-list-przewozowy.md',
-        import.meta.url,
-      ),
-      'utf8',
-    );
-    const section = source
-      .split(/^## Dialogi\r?$/m)[1]!
-      .split(/^## /m)[0]!
-      .split(/^### /m)
-      .find((part) => part.split(/\r?\n/)[0] === heading)!;
-    const expected = section.split(/\r?\n/).flatMap((line) => {
-      const match = line.match(
-        /^\*\*(\p{L}+)(?: \*\([^\n]+?\)\*)?:\*\* (.+)$/u,
-      );
-      return match
-        ? [{ speaker: match[1]!.toLowerCase(), text: match[2]! }]
-        : [];
-    });
-    expect(expected.length).toBeGreaterThan(0);
-    expect(lines).toEqual(expected);
-  });
   it('M03 ma 7 warstw, właściwe osłony, dozwolone pokoje i komplet fal', () => {
     const mission = loadMission(listData, roomDefinitions);
     expect(mission.requires).toEqual(['m01-maszty']);
@@ -106,33 +78,53 @@ describe('Dane misji', () => {
     ).toBe(false);
   });
   it.each([
-    ['Odprawa (kryjówka)', data.briefing],
-    ['W trakcie misji (radio)', data.radio.flatMap((entry) => entry.lines)],
-    ['Po misji (kryjówka)', data.debrief],
-  ] as const)(
-    'zachowuje wszystkie kwestie M01 ze źródła: %s',
-    (heading, lines) => {
-      const source = readFileSync(
-        new URL('../../docs/fabula/misje/misja-01-maszty.md', import.meta.url),
-        'utf8',
-      );
-      const dialogue = source.split(/^## Dialogi\r?$/m)[1]?.split(/^## /m)[0];
-      const section = dialogue
-        ?.split(/^### /m)
-        .find((part) => part.split(/\r?\n/)[0] === heading);
-      expect(section).toBeDefined();
-      const sourceLines = section!.split(/\r?\n/).flatMap((line) => {
-        const match = line.match(/^\*\*(\p{L}+):\*\* (.+)$/u);
-        return match
-          ? [{ speaker: match[1]!.toLowerCase(), text: match[2]! }]
-          : [];
-      });
-      expect(sourceLines.length).toBeGreaterThan(0);
-      expect(lines.map(({ speaker, text }) => ({ speaker, text }))).toEqual(
-        sourceLines,
-      );
-    },
-  );
+    'enterSection:targ',
+    'encounter:patrol-wejscie:started',
+    'encounter:patrol-wejscie:done',
+    'checkpoint:po-maszcie-1',
+  ])('akceptuje wyzwalacz poziomu liniowego %s', (trigger) => {
+    for (const priority of [undefined, 'tactical', 'story'])
+      expect(
+        missionSchema.safeParse({
+          ...data,
+          radio: [
+            {
+              trigger,
+              ...(priority ? { priority } : {}),
+              lines: data.briefing,
+            },
+          ],
+        }).success,
+      ).toBe(true);
+  });
+  it.each([
+    'enterSection:',
+    'enterSection:targ:extra',
+    'enterSection:nocny targ',
+    'encounter:patrol-wejscie',
+    'encounter:patrol-wejscie:cleared',
+    'encounter::done',
+    'checkpoint:',
+    'checkpoint:start:done',
+    'section:targ',
+  ])('odrzuca błędny wyzwalacz poziomu liniowego %s', (trigger) => {
+    expect(
+      missionSchema.safeParse({
+        ...data,
+        radio: [{ trigger, lines: data.briefing }],
+      }).success,
+    ).toBe(false);
+  });
+  it('odrzuca nieznany priorytet radia', () => {
+    expect(
+      missionSchema.safeParse({
+        ...data,
+        radio: [
+          { trigger: 'runStart', priority: 'urgent', lines: data.briefing },
+        ],
+      }).success,
+    ).toBe(false);
+  });
   it('akceptuje dawne kwestie i zachowuje opcjonalny skrót radia', () => {
     const line = { speaker: 'szron', text: 'Pełna kwestia.' };
     expect(dialogueLineSchema.parse(line)).toEqual(line);

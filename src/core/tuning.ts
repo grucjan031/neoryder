@@ -66,6 +66,12 @@ export const tuning = {
     mastEmissionMax: 4,
     radioCharsPerS: 16,
     radioPageChars: 90,
+    /** Kwestie `story` ruszają dopiero po tylu sekundach bez aktywnego spotkania. */
+    radioCalmDelayS: 1.5,
+    /** Najdłuższe czekanie kwestii `story` na spokój; potem jedna gra mimo walki. */
+    radioStoryMaxWaitS: 20,
+    /** Karta `story` przerwana ostrzeżeniem po tej części swojego czasu nie wraca do kolejki. */
+    radioStoryReadFraction: 0.6,
     dialoguePageChars: 150,
     dialogueCharsPerS: 60,
     dialogueAutoMinS: 2,

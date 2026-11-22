@@ -1,6 +1,6 @@
 import { tuning } from '../core/tuning';
 import text from '../data/ui/missionDialogue.pl.json';
-import type { DialogueLine } from '../world/missionSchema';
+import type { DialogueLine, RadioPriority } from '../world/missionSchema';
 
 /** W razie potrzeby dzieli przy końcu zdania, wyrazu lub znaku w długim wyrazie. */
 export function splitDialogueText(
@@ -28,6 +28,112 @@ export function splitDialogueText(
   }
   if (remaining || !pages.length) pages.push(remaining);
   return pages;
+}
+
+export interface RadioLine {
+  speaker: DialogueLine['speaker'];
+  text: string;
+}
+export interface RadioCard extends RadioLine {
+  priority: RadioPriority;
+}
+
+/**
+ * Kolejka radia bez DOM: jedna karta naraz, dwa priorytety.
+ * `tactical` gra od razu (w kolejności zgłoszeń) i przerywa kartę `story`;
+ * `story` czeka na spokój — brak walki przez `radioCalmDelayS` — a przerwana
+ * wraca na początek swojej kolejki, chyba że była już widoczna przez
+ * `radioStoryReadFraction` swojego czasu (wtedy liczy się jako przeczytana).
+ * Po `radioStoryMaxWaitS` czekania jedna kwestia `story` gra mimo walki,
+ * żeby treść nie przepadła w długim starciu.
+ */
+export class RadioQueue {
+  private readonly tactical: RadioLine[] = [];
+  private readonly story: RadioLine[] = [];
+  private current?: RadioCard;
+  private remainingS = 0;
+  private heldS = 0;
+  private combat = false;
+  // Bez hosta zgłaszającego walkę (misja-run) kwestie fabularne nie czekają.
+  private calmS = Infinity;
+  private storyWaitS = 0;
+
+  get active(): RadioCard | undefined {
+    return this.current;
+  }
+  get pending(): Readonly<Record<RadioPriority, number>> {
+    return { tactical: this.tactical.length, story: this.story.length };
+  }
+
+  push(lines: readonly RadioLine[], priority: RadioPriority): void {
+    this[priority].push(...lines);
+  }
+
+  /** Dalsze strony podzielonej kwestii albo karta do ponownego złożenia. */
+  unshift(lines: readonly RadioLine[], priority: RadioPriority): void {
+    this[priority].unshift(...lines);
+  }
+
+  setCombat(combat: boolean): void {
+    if (this.combat && !combat) this.calmS = 0;
+    this.combat = combat;
+  }
+
+  /** Bieżąca karta znika przy najbliższym kroku, o ile nic jej nie zastąpi. */
+  clear(): void {
+    this.tactical.length = 0;
+    this.story.length = 0;
+    this.remainingS = 0;
+    this.storyWaitS = 0;
+  }
+
+  /** Oddaje bieżącą kartę do kolejki (zmiana szerokości okna wymaga nowego podziału). */
+  requeueActive(): void {
+    if (!this.current) return;
+    const { priority, ...line } = this.current;
+    this[priority].unshift(line);
+    this.current = undefined;
+    this.remainingS = 0;
+  }
+
+  /** Czas wyświetlania bieżącej karty zależy od długości pokazanego tekstu. */
+  hold(seconds: number): void {
+    this.remainingS = seconds;
+    this.heldS = seconds;
+  }
+
+  /**
+   * Zwraca nową kartę do pokazania, `null` gdy radio ma zniknąć,
+   * `undefined` gdy nic się nie zmienia.
+   */
+  step(dt: number): RadioCard | null | undefined {
+    this.remainingS -= dt;
+    if (this.combat) this.calmS = 0;
+    else this.calmS += dt;
+    if (this.story.length) this.storyWaitS += dt;
+    const interrupt =
+      this.remainingS > 0 &&
+      this.current?.priority === 'story' &&
+      this.tactical.length > 0;
+    if (this.remainingS > 0 && !interrupt) return undefined;
+    if (interrupt) {
+      const read = 1 - this.remainingS / this.heldS;
+      if (read < tuning.mission.radioStoryReadFraction) this.requeueActive();
+    }
+    const tactical = this.tactical.shift();
+    if (tactical) return (this.current = { ...tactical, priority: 'tactical' });
+    const calm = this.calmS >= tuning.mission.radioCalmDelayS;
+    if (
+      this.story.length &&
+      (calm || this.storyWaitS >= tuning.mission.radioStoryMaxWaitS)
+    ) {
+      this.storyWaitS = 0;
+      return (this.current = { ...this.story.shift()!, priority: 'story' });
+    }
+    if (!this.current) return undefined;
+    this.current = undefined;
+    return null;
+  }
 }
 
 export class MissionDialogueCard {
