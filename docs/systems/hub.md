@@ -4,8 +4,9 @@
 
 `hideout.json.props` definiuje `id`, `kind` (`jukebox`, `noodles`, `radio`, `bag`, `seat`),
 `label` i `focus` o dodatnich wymiarach, takim jak dla stacji. Id są unikalne (`^[a-z0-9_]+$`).
-E używa najbliższego trafienia promieniem z oka spośród stacji, NPC i rekwizytów
-w `interactRangeM`; podpowiedź pokazuje E i `label` z układu (nie z tekstów). Przytrzymanie nie powtarza
+E używa najbliższego trafienia promieniem z oka spośród stacji, NPC, rekwizytów i kota
+w `interactRangeM`, pomijając cele zasłonięte wysoką geometrią (kolider bloku z górną krawędzią wyżej niż `losOccluderMinTopM` = 1,4 m nad podłogą;
+lady, stoły i ławki nie zasłaniają, ściany i filary tak), i bierze wtedy kolejny niezasłonięty cel; podpowiedź pokazuje E i `label` z układu (nie z tekstów). Przytrzymanie nie powtarza
 użycia (liczy się zbocze `power2`). Teksty i nazwy utworów są w walidowanym `src/data/hub/props.pl.json`
 (`labels.{jukebox,noodles,radio,bag,seat,stand}`, `jukebox.{speaker,tracks[3]}`, `noodles.lines[≥2]`); do podpowiedzi
 służy z nich tylko `labels.stand` („Wstań”), pozostałe etykiety bierze się z układu.
@@ -300,6 +301,7 @@ neonowe na filarach.
   bez wychodzenia ze strefy; nie ma histerezy ani automatycznego ponownego otwierania. Pierwszy snapshot wejścia
   po zamknięciu ignoruje interakcję, aby odrzucić zaległe E z czasu pauzy, gdy pętla nie wykonywała kroków;
 - zamknięcie (`Zamknij`, Esc, `hub close`) wywołuje `ctx.resume`, więc gra wraca do przechwyconej myszy.
+- Otwarta odprawa misji (`[data-mission-debrief][open]`) działa jak otwarta stacja: `main.ts` (`ownsInterface`) nie otwiera nad nią menu pauzy, a `HubScene` wstrzymuje ruch i powitanie po powrocie do zamknięcia odprawy (opcja `debriefOpen` w testach).
 
 Stacje (`HUB_STATION_IDS`: `talents`, `workshop`, `missions`, `arena`; wartości z `hideout.json`):
 
@@ -462,7 +464,7 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   Render interpoluje poprzednią i bieżącą pozycję oraz yaw (najkrótszy łuk). Zmiana klipu używa
   `npcAnimFadeS`; klipy stanów, także `PickUp_Table` i `Punch_*`, są zapętlone. Użycie miski uruchamia
   osobny, jednorazowy `Interact` z `npc_anims.glb` dla Heli. `HubPropView` rysuje miskę z zupą na ladzie
-  i przesuwa ją podczas gestu według fazy klipu. Ustawienia miski są w `src/data/hub/interactions.json`. Ekstraktor zeruje
+  i przesuwa ją podczas gestu według fazy klipu. Postęp podawania (czas klipu i przesuw miski) idzie czasem symulacji (`HubNpcs.step`, wołane z `HubScene.step`), więc pauza go zatrzymuje, a render tylko interpoluje; podczas podawania tułów Heli wraca do `baseYaw` w stanie symulacji (`NpcRuntime.faceBase`), po klipie crossfade wraca do poprzedniej animacji, a sklonowany klip jest zwalniany (`uncacheAction` + `uncacheClip`). Geometria i kolory miski są w `src/data/hub/interactions.json` (schemat `hubInteractionsSchema`), przesuw i ułamki klipu w `tuning.hub.soup*`. Ekstraktor zeruje
   poziome translacje kości `root` w `Walk_Loop` i `Jog_Fwd_Loop`: przesunięcie pochodzi tylko z trasy.
 - Wstawki animacji (`NPC_IDLE_VARIETY`, `src/world/hubNpcs.ts`): NPC bez trasy, którzy nie mówią (dymek
   ani podsłuchana rozmowa), co `tuning.hub.npcIdleVarietyS` ([18, 45] s; pierwsza wstawka z losowym
@@ -650,14 +652,15 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
   = [12; 28] s z tą samą szansą 0,3 przystaje się umyć na [`catGroomMinS`, `catGroomMaxS`] = [1,5; 3] s. Po rozpoczęciu odpoczynku, gdy minęło
   `catMeowCooldownS` (25 s, pierwszy raz od startu), z szansą `catMeowChance` 0,16 miauczy (`hub_fauna_sound { kind: 'meow' }`).
   Zatrzymuje się, gdy gracz jest bliżej niż `catYieldM` 0,8 m w kierunku jego ruchu (cos kąta ≥ `catYieldConeCos` 0,3); gdy gracz biegnie
-  w jego stronę (prędkość ≥ `catRunThresholdMS` 3 m/s, stożek `catApproachConeCos` 0,6) bliżej niż `catFleeM` 2 m, odbiega o `catFleeSideM`
+  w jego stronę (sprint: prędkość ≥ `catRunThresholdMS` 8 m/s, chód 7, sprint 11; stożek `catApproachConeCos` 0,6) bliżej niż `catFleeM` 2 m, odbiega o `catFleeSideM`
   1,1 m w bok (losowa strona, tylko po bezpiecznej podłodze) z prędkością `catFleeSpeedMS` 2,4 m/s i wraca na punkt opuszczenia trasy;
   kolejna ucieczka dopiero po `catFleeCooldownS` 4 s. Ciało: promień `catRadiusM` 0,22 m, wysokość `catHeightM` 0,6 m, odstęp od NPC
   `catStaticClearanceM` 0,6 m.
 - Gracz może podejść do Węgielka i nacisnąć E po wyświetleniu „Pogłaszcz Węgielka”. Prawa dłoń FPP
   wysuwa się, wykonuje dwa ruchy głaskania i wraca, a kot kładzie się, pochyla głowę i miauczy
-  (`hub_fauna_sound` → `hub_meow`). Zasięg, czas i ruch dłoni są w `src/data/hub/interactions.json`.
-  W debugu `hub look cat` ustawia cel, gdy kot jest w zasięgu.
+  (`hub_fauna_sound` → `hub_meow`). Logika głaskania (licznik czasu, położenie kota, miauknięcie) jest w `HubFaunaRuntime`; zasięg liczony poziomo (XZ) od oka,
+  `catPetRangeM` 2,2 m, czas `catPetDurationS` 1,5 s, `catPetStrokes`, `catPetStrokeM`, `catPetReachFraction` w `tuning.hub`; pozycje dłoni w `src/data/hub/interactions.json`,
+  etykieta w `props.pl.json`. W debugu `hub look cat` ustawia cel, gdy kot jest w zasięgu (`hub cat` stawia go 2 m przed graczem).
 - Dzieci przy kocie (`src/world/hubKidsCat.ts`, `KidsCatEncounter`; `tuning.hub.kidsCat*`): gdy Węgielek odpoczywa
   (siedzi, leży, myje się) w zasięgu `kidsCatRangeM` od `ola` lub `stas` i minęło odnowienie `kidsCatCooldownS`,
   dziecko schodzi z trasy, podchodzi truchtem na `kidsCatStandM` od kota (tylko gdy odcinek leży na podłodze fauny,

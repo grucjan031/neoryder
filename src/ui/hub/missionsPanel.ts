@@ -164,9 +164,9 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
             : []),
           { title, lines: mission.briefing },
         ]);
-        const heading = el('h3', undefined, title);
-        heading.hidden = !dialogue.root.hidden;
-        briefing.replaceChildren(heading, dialogue.root, back);
+        const briefingHeading = el('h3', undefined, title);
+        briefingHeading.hidden = !dialogue.root.hidden;
+        briefing.replaceChildren(briefingHeading, dialogue.root, back);
         briefing.hidden = false;
         choices.hidden = true;
         sector.hidden = false;

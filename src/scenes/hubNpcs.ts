@@ -37,7 +37,9 @@ import { gradientMap } from '../render/materials';
 import { isSeated, npcRootPosition, wrapAngle } from '../world/hubNpcs';
 import type { NpcRuntime } from '../world/hubNpcs';
 import type { HubNpcDef, NpcAccent, NpcAnimation } from '../world/hubSchema';
-import { soup } from '../data/hub/interactions.json';
+import { hubInteractions } from '../world/hubInteractions';
+
+const { soup } = hubInteractions;
 
 /** Akcenty z palety ADR 0006 (bez czerwieni, cyanu i magenty). */
 const ACCENT_COLORS: Record<NpcAccent, string> = {
@@ -216,6 +218,16 @@ export class HubNpcs {
   private readonly views: NpcView[] = [];
   private readonly geometries = new Map<string, BufferGeometry>();
   private serving?: AnimationAction;
+  /** Czas symulacji podawania (s): bieżący, poprzedni krok i długość klipu. */
+  private soupS = 0;
+  private previousSoupS = 0;
+  private soupDurationS = 0;
+  /** Zakończone klipy podawania do zwolnienia po crossfadzie z powrotem do animacji bazowej. */
+  private readonly retiring: {
+    mixer: AnimationMixer;
+    action: AnimationAction;
+    leftS: number;
+  }[] = [];
   /** Materiały wspólne dla wszystkich NPC (skóra, buty, koszule, spodnie, rekwizyty), klucz: kolor. */
   private readonly shared = new Map<string, MeshToonMaterial>();
   private disposed = false;
@@ -583,14 +595,32 @@ export class HubNpcs {
     if (!view?.mixer || !clip) return;
     // Osobna akcja, bo ten sam klip jest też wykorzystywany w pętli bezczynności.
     const action = view.mixer.clipAction(clip.clone());
+    // Czas klipu ustawia symulacja (`step`), mixer go nie przesuwa.
+    action.paused = true;
+    action.clampWhenFinished = true;
     this.serving = action.setLoop(LoopOnce, 1).play();
+    this.soupS = this.previousSoupS = 0;
+    this.soupDurationS = action.getClip().duration;
     view.action?.crossFadeTo(action, this.tuning.hub.npcAnimFadeS, false);
     view.action = action;
   }
 
+  /** Krok symulacji: postęp podawania idzie czasem symulacji, więc pauza go zatrzymuje. */
+  step(dt: number): void {
+    const hela = this.views.find(({ def }) => def.id === soup.npc);
+    if (hela) hela.state.faceBase = this.serving !== undefined;
+    if (!this.serving || !(dt > 0)) return;
+    this.previousSoupS = this.soupS;
+    this.soupS = Math.min(this.soupDurationS, this.soupS + dt);
+  }
+
+  private soupTime(): number {
+    return this.previousSoupS + (this.soupS - this.previousSoupS) * this.alpha;
+  }
+
   get soupProgress(): number {
-    return this.serving
-      ? this.serving.time / this.serving.getClip().duration
+    return this.serving && this.soupDurationS > 0
+      ? this.soupTime() / this.soupDurationS
       : 0;
   }
 
@@ -605,6 +635,7 @@ export class HubNpcs {
     const t = this.tuning.hub;
     this.time += dt;
     this.alpha = alpha;
+    this.releaseRetired(dt);
     const pulse =
       1 +
       Math.sin(this.time * t.markerPulseHz * Math.PI * 2) * t.markerPulseAmp;
@@ -623,10 +654,9 @@ export class HubNpcs {
         );
       }
       const serving = view.def.id === soup.npc && this.serving;
-      const yaw = serving
-        ? view.state.baseYaw
-        : state.previousBodyYaw +
-          wrapAngle(state.look.bodyYaw - state.previousBodyYaw) * alpha;
+      const yaw =
+        state.previousBodyYaw +
+        wrapAngle(state.look.bodyYaw - state.previousBodyYaw) * alpha;
       this.position.x =
         state.previousPosition.x +
         (state.position.x - state.previousPosition.x) * alpha;
@@ -640,11 +670,18 @@ export class HubNpcs {
       npcRootPosition(view.def, yaw, this.position, this.rootPosition);
       view.root.position.copy(this.rootPosition);
       const animation = state.animation(speaker === view.def.id);
-      if (serving && !serving.isRunning()) {
-        view.mixer?.uncacheAction(serving.getClip());
-        this.serving = undefined;
-        view.action = undefined;
-        view.animation = undefined;
+      if (serving) {
+        const time = this.soupTime();
+        if (time >= this.soupDurationS && view.mixer) {
+          // Klip skończony: akcja zostaje w `view.action`, by crossfade wrócił do animacji bazowej.
+          this.retiring.push({
+            mixer: view.mixer,
+            action: serving,
+            leftS: t.npcAnimFadeS,
+          });
+          this.serving = undefined;
+          view.animation = undefined;
+        } else serving.time = time;
       }
       if (!this.serving || view.def.id !== soup.npc) {
         const action = view.actions.get(animation);
@@ -675,6 +712,18 @@ export class HubNpcs {
       )
         continue;
       this.pose(view);
+    }
+  }
+
+  private releaseRetired(dt: number): void {
+    for (let i = this.retiring.length - 1; i >= 0; i--) {
+      const entry = this.retiring[i]!;
+      entry.leftS -= dt;
+      if (entry.leftS > 0) continue;
+      const clip = entry.action.getClip();
+      entry.mixer.uncacheAction(clip);
+      entry.mixer.uncacheClip(clip);
+      this.retiring.splice(i, 1);
     }
   }
 

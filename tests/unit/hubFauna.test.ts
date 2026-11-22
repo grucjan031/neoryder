@@ -219,7 +219,11 @@ describe('kot', () => {
     c.position.z = 9.7;
     c.restLeftS = 0;
     c.state = 'walk';
-    r.step(dt, { x: -1, y: 0, z: 9.7 }, { x: 5, y: 0, z: 0 });
+    r.step(
+      dt,
+      { x: -1, y: 0, z: 9.7 },
+      { x: tuning.player.sprintSpeed, y: 0, z: 0 },
+    );
     expect(c.state).toBe('flee');
     expect(c.detour.z).toBeLessThan(9.7);
     const anchor = { ...c.anchor };
@@ -243,11 +247,57 @@ describe('kot', () => {
       c = r.cat!;
     c.restLeftS = 0;
     c.state = 'walk';
-    r.step(dt, { x: -1, y: 0, z: 0 }, { x: 5, y: 0, z: 0 });
+    r.step(
+      dt,
+      { x: -1, y: 0, z: 0 },
+      { x: tuning.player.sprintSpeed, y: 0, z: 0 },
+    );
     expect(c.state).toBe('walk');
     expect(c.position.z).toBe(0);
     r.step(dt, { x: -1, y: 0, z: 0 }, { x: -5, y: 0, z: 0 });
     expect(c.state).toBe('walk');
+  });
+  it('nie ucieka przed graczem idącym, ucieka tylko przed sprintem', () => {
+    for (const [speed, state] of [
+      [tuning.player.walkSpeed, 'lie'],
+      [tuning.player.sprintSpeed, 'flee'],
+    ] as const) {
+      const { runtime: r } = setup();
+      const c = r.cat!;
+      c.state = 'lie';
+      c.restLeftS = 5;
+      r.step(dt, { x: -1.5, y: 0, z: 0 }, { x: speed, y: 0, z: 0 });
+      expect(c.state).toBe(state);
+    }
+  });
+  it('zasięg głaskania liczy poziomo od oka, a nie w 3D', () => {
+    const { runtime: r, t } = setup();
+    const c = r.cat!;
+    c.state = 'lie';
+    const eye = (distance: number) => ({ x: -distance, y: 1.8, z: 0 });
+    // Poziomo 2,1 m: w 3D z wysokości oka byłoby 2,76 m.
+    expect(r.petFocus(eye(t.catPetRangeM - 0.1))).not.toBeNull();
+    expect(r.petFocus(eye(t.catPetRangeM + 0.1))).toBeNull();
+    expect(t.catPetRangeM).toBeGreaterThan(t.catDebugDistanceM);
+  });
+  it('głaskanie: kładzie kota, raz miauczy, blokuje kolejne i odlicza czas', () => {
+    const { runtime: r, t, bus } = setup();
+    const sounds: string[] = [];
+    bus.on('hub_fauna_sound', (e) => sounds.push(e.kind));
+    const c = r.cat!;
+    c.state = 'sit';
+    r.pet();
+    expect(c.state).toBe('lie');
+    expect(sounds).toEqual(['meow']);
+    expect(r.petLeftS).toBe(t.catPetDurationS);
+    expect(r.petFocus({ x: -1, y: 1.8, z: 0 })).toBeNull();
+    r.step(dt, far, still);
+    expect(r.previousPetLeftS).toBe(t.catPetDurationS);
+    expect(r.petLeftS).toBeCloseTo(t.catPetDurationS - dt);
+    expect(c.restLeftS).toBeGreaterThan(0);
+    for (let i = 0; i < Math.ceil(t.catPetDurationS / dt); i++)
+      r.step(dt, far, still);
+    expect(r.petLeftS).toBe(0);
   });
   it('losuje mycie, rzadkie miau oraz bezpieczny teleport debug z odpoczynkiem', () => {
     const { runtime: r, t, bus } = setup();
