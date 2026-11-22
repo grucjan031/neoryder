@@ -8,6 +8,11 @@ const DESCRIPTIONS: Record<
     text: '12 fal Szturmowców i Strzelców: ostrze, blok, parowanie, Pchnięcie, blaster.',
     order: 0,
   },
+  'arena-mutators': {
+    title: 'Arena wyzwań',
+    text: 'Fale wrogów z mutatorem losowanym z seeda.',
+    order: 0.25,
+  },
   hub: {
     title: 'Kryjówka Iskry',
     text: 'Peron nieczynnej stacji metra: spacer bez wrogów, wejście w strefę stacji otwiera nakładkę (hub open <stacja>).',

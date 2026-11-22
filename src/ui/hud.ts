@@ -214,6 +214,18 @@ function createFlash(className: string) {
 
 /** Widok stanu gracza; wszystkie dane rozgrywki pochodzą z EventBus. */
 export class Hud {
+  private readonly arenaMutator = element(
+    'div',
+    'hud__micro hud__arena-mutator',
+  );
+
+  setArenaMutator(name: string, ammo: number | null): void {
+    setText(
+      this.arenaMutator,
+      `${text.arenaMutator} · ${name}${ammo === null ? '' : ` · ${text.arenaAmmo} ${ammo}`}`,
+    );
+    this.arenaMutator.hidden = !name;
+  }
   private readonly unsubscribe: (() => void)[];
   private readonly root = element('div', 'hud');
   private readonly retryButton = element('button', 'hud__retry', text.retry);
@@ -318,6 +330,7 @@ export class Hud {
     );
 
     const weapon = this.weapon;
+    this.arenaMutator.hidden = true;
     const weaponHead = element('div', 'hud__weapon-head');
     weaponHead.append(this.weaponName, this.slots);
     this.heat.node.dataset.level = 'cool';
@@ -328,6 +341,7 @@ export class Hud {
       this.overheat,
       weaponHead,
       this.heat.node,
+      this.arenaMutator,
     );
     const arsenal = element('div', 'hud__arsenal');
     this.powers.setAttribute('aria-label', text.powers);

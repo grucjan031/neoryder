@@ -1,0 +1,6 @@
+{
+  "id": "low-gravity",
+  "name": "Niska grawitacja",
+  "description": "Gracz i ciała fizyczne wolniej opadają.",
+  "effect": { "stat": "gravityScale", "value": 0.5 }
+}

@@ -55,6 +55,7 @@
     "newRun": "Nowy run (presety)",
     "continue": "Kontynuuj run",
     "arena": "Poligon",
+    "arenaMutators": "Arena wyzwań",
     "seed": "Seed (opcjonalny)",
     "seedPlaceholder": "Puste pole — nowy seed",
     "loading": "Odczytywanie zapisu…",

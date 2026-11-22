@@ -14,6 +14,9 @@ export const STAT_IDS = [
   'damageTaken',
   /** Odnowienie dashu w sekundach; baza z tuning.player.dashCooldownS (synergia „Tancerz ostrzy” = mult < 1). */
   'dashCooldown',
+  'gravityScale',
+  'arenaLightScale',
+  'ammoCapacity',
 ] as const;
 export type StatId = (typeof STAT_IDS)[number];
 export type ModifierType = 'flat' | 'percent' | 'mult';

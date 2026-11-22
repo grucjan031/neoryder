@@ -47,6 +47,10 @@ export interface PlayerState {
 export class PlayerController {
   readonly stats: Stats;
   readonly stamina: PlayerStamina;
+
+  get gravity(): number {
+    return this.ctx.tuning.physics.gravity * this.stats.get('gravityScale');
+  }
   private sprintExhausted = false;
   private jumpDenialNotified = false;
   private readonly body: RigidBody;
@@ -70,6 +74,7 @@ export class PlayerController {
   ) {
     const t = ctx.tuning.player;
     this.stats = new Stats({
+      gravityScale: 1,
       ...statBases,
       ...staminaStatsSchema.parse(statBases),
     });
@@ -212,7 +217,7 @@ export class PlayerController {
     else if (s.sliding) this.stepSlide(dt, move, input);
     else this.stepRun(dt, move);
 
-    if (!dashing) s.velocity.y += this.ctx.tuning.physics.gravity * dt;
+    if (!dashing) s.velocity.y += this.gravity * dt;
     const impactSpeed = Math.abs(s.velocity.y);
     if (s.grounded && s.velocity.y <= 0)
       this.controller.enableSnapToGround(t.snapToGroundDistance);

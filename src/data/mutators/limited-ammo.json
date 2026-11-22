@@ -1,0 +1,6 @@
+{
+  "id": "limited-ammo",
+  "name": "Ograniczona amunicja",
+  "description": "Wszystkie bronie korzystają ze wspólnego zapasu na całą próbę. Takt lasera zużywa jedną jednostkę.",
+  "effect": { "stat": "ammoCapacity", "value": 60 }
+}
