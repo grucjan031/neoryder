@@ -2181,6 +2181,58 @@ ogłuszenie ani kontrolę Rezonansem. Bez carry zachowanie pozostaje dotychczaso
 
 `RoomScene.missionState()` eksportuje migawkę celów do hosta; `RunManager.updateObjectives()` aktualizuje ją wyłącznie w aktywnej misji. `RoomSceneOptions.missionSignal(trigger)` przekazuje wyzwalacze radia do kolejki `MissionRadio` hostowanej przez run (kolejka przeżywa zmianę pokoju). Obrażenia i efekty eksplozji korzystają z istniejącego DamageSystem i EventBus.
 
+### Wyzwalacze i kolejka radia
+
+Wpis radia misji: `{ trigger: string; priority?: RadioPriority; lines: DialogueLine[] }`,
+`RadioPriority = 'tactical' | 'story'` (`RADIO_PRIORITIES`; brak pola = `tactical`).
+`trigger` musi pasować do `RADIO_TRIGGER` (`world/missionSchema.ts`):
+
+| Wyzwalacz | Zgłasza | Kiedy |
+| --- | --- | --- |
+| `runStart` | host runu / `MissionScene` | start (także po wznowieniu) |
+| `enterNode:<n>` | `RoomScene`; w scenie liniowej pole `radio` sekcji poziomu | wejście do węzła warstwy `n` / sekcji |
+| `objective:<id>:started`, `:done`, `:paused`, `:progress:<0-100>` | `MissionObjectives` przez `missionSignal` | stan celu |
+| `objectivesDone` | `MissionObjectives` | wszystkie cele `done` |
+| `boss:phase:2`, `boss:phase:3`, `boss:defeated` | host | faza i śmierć bossa; czyszczą kolejkę |
+| `enterSection:<id>` | tylko `MissionScene` | pierwsze wejście w strefę sekcji poziomu |
+| `encounter:<id>:started`, `encounter:<id>:done` | tylko `MissionScene` | start i ukończenie spotkania poziomu |
+| `checkpoint:<id>` | tylko `MissionScene` | zapis punktu kontrolnego (nie startowego) |
+
+Id w `enterSection`, `encounter` i `checkpoint` nie zawierają `:` ani białych znaków;
+`MissionScene.init` odrzuca misję, której wyzwalacz wskazuje nieznaną sekcję, spotkanie
+lub punkt poziomu.
+
+```ts
+// ui/missionDialogue.ts — kolejka bez DOM
+interface RadioLine { speaker: DialogueLine['speaker']; text: string }
+interface RadioCard extends RadioLine { priority: RadioPriority }
+class RadioQueue {
+  readonly active: RadioCard | undefined;
+  readonly pending: Readonly<Record<RadioPriority, number>>;
+  push(lines: readonly RadioLine[], priority: RadioPriority): void;
+  unshift(lines: readonly RadioLine[], priority: RadioPriority): void; // dalsze strony kwestii
+  setCombat(combat: boolean): void;
+  hold(seconds: number): void; // czas bieżącej karty
+  requeueActive(): void;
+  clear(): void;
+  step(dt: number): RadioCard | null | undefined; // nowa karta | schowaj | bez zmian
+}
+// ui/missionUi.ts
+class MissionRadio {
+  signal(trigger: string): void;
+  setCombat(combat: boolean): void; // host: czy trwa walka
+  snapshot(): { active: RadioCard | null; pending: Readonly<Record<RadioPriority, number>> };
+  step(dt: number): void;
+  dispose(): void;
+}
+```
+
+Reguły: jedna karta naraz; `tactical` gra od razu i przerywa kartę `story` (przerwana
+wraca do kolejki, jeśli nie minęło `radioStoryReadFraction` jej czasu); `story`
+rusza po `tuning.mission.radioCalmDelayS` bez walki albo, pojedynczo, po
+`radioStoryMaxWaitS` czekania. Host, który nie woła `setCombat`, nie wstrzymuje `story`.
+`MissionScene.query('missionRadio')` zwraca `snapshot()`.
+
 `DialogueLine` zawiera `speaker`, `text` i opcjonalne `shortText` dla radia. `MissionDialogue` przyjmuje uporządkowane sekcje `{ title?, lines, interlude? }` odprawy lub debriefu. Właściciel montuje i fokusuje `root` oraz wywołuje `dispose()` przy zamknięciu widoku, co zwalnia też timery.
 
 ## Pogoda i areny Przejęcia

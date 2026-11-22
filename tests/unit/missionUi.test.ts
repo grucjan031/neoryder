@@ -132,12 +132,13 @@ it('wybór misji pokazuje odprawę, powrót przywraca listę, start przekazuje i
 
 it('radio odtwarza długą kwestię w kolejnych fragmentach bez utraty słów', () => {
   const mission = missionDefinitions.get('m01-maszty')!;
+  const trigger = 'objective:mast-2:done';
   const radio = new MissionRadio(mission);
-  const expected = mission.radio
-    .find((entry) => entry.trigger === 'runStart')!
-    .lines.map((line) => line.text)
-    .join(' ');
-  radio.signal('runStart');
+  const lines = mission.radio
+    .filter((entry) => entry.trigger === trigger)
+    .flatMap((entry) => entry.lines);
+  const expected = lines.map((line) => line.shortText ?? line.text).join(' ');
+  radio.signal(trigger);
   const chunks: string[] = [];
   try {
     for (let i = 0; i < 40; i++) {
@@ -147,7 +148,7 @@ it('radio odtwarza długą kwestię w kolejnych fragmentach bez utraty słów', 
       const paragraph = node.querySelector('p')!;
       chunks.push(paragraph.lastChild!.textContent!);
     }
-    expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks.length).toBeGreaterThan(lines.length);
     expect(chunks.join(' ')).toBe(expected);
   } finally {
     radio.dispose();

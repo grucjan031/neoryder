@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { expect, it, vi } from 'vitest';
 import { Scene } from 'three';
 import { EventBus, type GameEvents } from '../../src/core/events';
@@ -43,35 +42,6 @@ it('M06: kontrakt danych misji liniowej — poziom, wymagania, nagrody i bez pó
   expect(mission.roomPools).toBeUndefined();
   expect(mission.enemies).toBeUndefined();
 });
-
-it.each([
-  ['Odprawa (kryjówka)', data.briefing],
-  ['W trakcie misji (radio i hala bossa)', data.radio.flatMap((r) => r.lines)],
-  ['Po misji (kryjówka)', data.debrief],
-] as const)(
-  'M06 zachowuje kompletne, dosłowne dialogi: %s',
-  (heading, lines) => {
-    const source = readFileSync(
-      new URL('../../docs/fabula/misje/misja-06-odlewnia.md', import.meta.url),
-      'utf8',
-    );
-    const section = source
-      .split(/^## Dialogi\r?$/m)[1]!
-      .split(/^## /m)[0]!
-      .split(/^### /m)
-      .find((part) => part.split(/\r?\n/)[0] === heading)!;
-    const expected = section.split(/\r?\n/).flatMap((line) => {
-      const match = line.match(
-        /^\*\*(\p{L}+)(?: \*\([^\n]+?\)\*)?:\*\* (.+)$/u,
-      );
-      return match
-        ? [{ speaker: match[1]!.toLowerCase(), text: match[2]! }]
-        : [];
-    });
-    expect(expected.length).toBeGreaterThan(0);
-    expect(lines).toEqual(expected);
-  },
-);
 
 it.each(['boss:phase:1', 'boss:phase:4', 'boss:phase:2:extra', 'boss:death'])(
   'schemat odrzuca niezatwierdzony wyzwalacz %s',

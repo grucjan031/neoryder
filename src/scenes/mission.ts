@@ -152,6 +152,7 @@ export class MissionScene implements Scene {
       };
     }
     if (this.disposed) return;
+    this.validateRadio();
     this.validateSnapshot();
     this.runtime = new LevelRuntime(
       this.level,
@@ -247,6 +248,20 @@ export class MissionScene implements Scene {
     await this.saving;
   }
 
+  /** Wyzwalacze poziomu muszą wskazywać istniejące sekcje, spotkania i punkty. */
+  private validateRadio(): void {
+    const known: Record<string, readonly { id: string }[]> = {
+      enterSection: this.level.sections,
+      encounter: this.level.encounters,
+      checkpoint: this.level.checkpoints,
+    };
+    for (const { trigger } of this.definition.radio) {
+      const [kind, id] = trigger.split(':');
+      if (known[kind!] && !known[kind!]!.some((entry) => entry.id === id))
+        throw new Error(`Nieznany wyzwalacz radia: ${trigger}`);
+    }
+  }
+
   private validateSnapshot(): void {
     if (
       !this.level.checkpoints.some(
@@ -333,6 +348,7 @@ export class MissionScene implements Scene {
     this.snapshot.checkpointId = id;
     this.snapshot.completedEncounters = [...this.runtime.completed];
     this.persist();
+    this.radio?.signal(`checkpoint:${id}`);
   }
 
   private startEncounter(id: string): void {
@@ -363,6 +379,7 @@ export class MissionScene implements Scene {
     this.runtime.active.add(id);
     this.active.set(id, { director, enemies });
     director.start();
+    this.radio?.signal(`encounter:${id}:started`);
   }
 
   private updateGates(): void {
@@ -388,6 +405,7 @@ export class MissionScene implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     if (!this.ready || this.disposed) return;
+    this.radio?.setCombat(this.active.size > 0);
     this.radio?.step(dt);
     if (this.state === 'respawning') {
       this.deathTimer -= dt;
@@ -422,6 +440,7 @@ export class MissionScene implements Scene {
           this.radio?.signal('boss:defeated');
           this.room!.objectiveModel()?.done(bossFor);
         }
+        this.radio?.signal(`encounter:${id}:done`);
       }
     }
     for (const section of this.level.sections) {
@@ -431,6 +450,7 @@ export class MissionScene implements Scene {
       ) {
         this.sections.add(section.id);
         if (section.radio) this.radio?.signal(section.radio);
+        this.radio?.signal(`enterSection:${section.id}`);
       }
     }
     const currentIndex = this.level.checkpoints.findIndex(
@@ -578,6 +598,7 @@ export class MissionScene implements Scene {
           entry.director.dispose();
           this.room!.removeEncounterEnemies([...entry.enemies]);
           this.runtime.clear(id);
+          this.radio?.signal(`encounter:${id}:done`);
         }
         this.active.clear();
         this.updateGates();
@@ -605,6 +626,7 @@ export class MissionScene implements Scene {
     if (name === 'saveError') return this.saveError;
     if (name === 'savePending')
       return this.pendingWrites > 0 || this.state === 'settling';
+    if (name === 'missionRadio') return this.radio?.snapshot() ?? null;
     if (name === 'mission')
       return this.snapshot
         ? structuredClone({
