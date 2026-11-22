@@ -1,4 +1,3 @@
-import { PerspectiveCamera, Scene as ThreeScene, WebGLRenderer } from 'three';
 import StatsPanel from 'stats.js';
 import { EventBus } from './core/events';
 import { Rng } from './core/rng';
@@ -17,7 +16,7 @@ import { ChallengeHistoryScreen } from './ui/challengeHistory';
 import { PauseMenu } from './ui/pauseMenu';
 import { SettingsScreen } from './ui/settingsScreen';
 import type { RunState } from './core/runTypes';
-import { missionDefinitions } from './world/missions';
+import { missionCatalog } from './world/missionCatalog';
 import { AudioSystem } from './audio/audioSystem';
 import { loadSfx } from './audio/sfxSchema';
 import { MusicSystem } from './audio/music';
@@ -28,7 +27,6 @@ import sfxData from './data/audio/sfx.json';
 import musicData from './data/audio/music.json';
 import { loadSettings, saveSettings } from './core/save';
 import { setDifficultyOverride } from './world/difficulty';
-import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
 import { setRenderWarmUp, warmUpRender } from './render/renderWarmUp';
 import {
@@ -62,7 +60,7 @@ async function main(): Promise<void> {
   if (
     requested === 'run' &&
     params.get('continue') !== '1' &&
-    missionDefinitions.get(params.get('mission') ?? '')?.level
+    missionCatalog.get(params.get('mission') ?? '')?.level
   ) {
     params.set('scene', 'mission');
     location.replace(`?${params}`);
@@ -94,8 +92,10 @@ async function main(): Promise<void> {
     return;
   }
   const sceneId = requested;
-  const factory = Object.hasOwn(scenes, sceneId) ? scenes[sceneId] : undefined;
-  if (!factory) {
+  const loadScene = Object.hasOwn(scenes, sceneId)
+    ? scenes[sceneId]
+    : undefined;
+  if (!loadScene) {
     const message = document.createElement('p');
     message.className = 'scene-error';
     message.textContent = `Nieznana scena: ${sceneId}. Dostępne sceny: ${Object.keys(scenes).join(', ')}.`;
@@ -103,6 +103,17 @@ async function main(): Promise<void> {
     bootSplash.dismiss();
     return;
   }
+  // Scena, three i potok renderu to osobne chunki: pobierają się pod ekranem startowym, menu ich nie ładuje.
+  // Tu tylko pobranie; scena powstaje niżej, po rendererze, jakości i kamerze (kolejność sprzed podziału paczki).
+  const [
+    createScene,
+    { PerspectiveCamera, Scene: ThreeScene, WebGLRenderer },
+    { createRenderPipeline },
+  ] = await Promise.all([
+    loadScene(),
+    import('three'),
+    import('./render/outline'),
+  ]);
   const seed =
     params.get('seed') ??
     (sceneId === 'arena-mutators'
@@ -139,7 +150,7 @@ async function main(): Promise<void> {
   );
   camera.position.set(8, 6, 10);
   camera.lookAt(0, 2, 0);
-  const scene = factory();
+  const scene = createScene();
   const settings = loadSettings();
   tuning.camera.fov = settings.fov;
   const input = new Input(renderer.domElement, () => settings.bindings);
@@ -413,7 +424,7 @@ async function main(): Promise<void> {
   if (scene.id !== 'run' && scene.id !== 'mission')
     builtinOff.push(
       commands.register('mission start', 'mission start m01-maszty', (args) => {
-        if (args.length !== 1 || !missionDefinitions.get(args[0] ?? '')?.level)
+        if (args.length !== 1 || !missionCatalog.get(args[0] ?? '')?.level)
           return 'Nieznana misja liniowa.';
         const target = new URLSearchParams({
           scene: 'mission',

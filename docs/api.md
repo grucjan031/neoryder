@@ -554,8 +554,25 @@ export interface Scene {
 }
 
 export type SceneFactory = () => Scene;
-export const scenes: Record<string, SceneFactory>;   // src/scenes/index.ts
+/** Pobiera chunk sceny (`import()`) i zwraca jej fabrykę; samo wywołanie nie buduje sceny. */
+export type SceneLoader = () => Promise<SceneFactory>;
+export const scenes: Record<string, SceneLoader>;   // src/scenes/index.ts
 ```
+
+Rejestr jest asynchroniczny: `const scene = (await scenes[id]())()`. `src/scenes/index.ts` nie importuje statycznie żadnej
+sceny, a `main.ts` pobiera scenę, `three` i `render/outline` dopiero dla `?scene=<id>`; scenę buduje po rendererze,
+jakości i kamerze, przed `scene.init()`.
+
+**Co wolno importować statycznie z kodu menu** (`main.ts`, `ui/mainMenu`, `ui/bootSplash`, `core/save`, `progression/meta`):
+tylko moduły danych i schematów bez Rapiera, `three` i danych pokoi. Służą do tego lekkie odpowiedniki rejestrów:
+
+| Lekki moduł (menu, zapis, meta)                                  | Pełny moduł (tylko sceny)                                       |
+| ---------------------------------------------------------------- | --------------------------------------------------------------- |
+| `combat/powers/definitions` — `powerDefinitions`, `loadPower*`   | `combat/powers/registry` — to samo (reeksport) + fabryki mocy   |
+| `world/missionCatalog` — `missionCatalog` (sam schemat)          | `world/missions` — `missionDefinitions` (+ pokoje, wymagania)   |
+| `world/runSchema` — `runStateSchema`, `sectorMapSchema` i inne   | `world/run` — to samo (reeksport) + `RunManager`                |
+
+Pilnuje `tests/unit/sceneRegistry.test.ts` (domknięcie importów statycznych `main.ts`).
 
 ## Debug — `window.__neoryder`
 
@@ -854,6 +871,7 @@ export interface PowerDeps {
 export type PowerFactory = (def: PowerDefinition, deps: PowerDeps) => Power;
 
 // src/combat/powers/registry.ts — definicje z src/data/powers/*.json, unia po `kind`
+// (`powerDefinitions` i `loadPower*` mieszkają w `definitions.ts`; rejestr je reeksportuje)
 // kind: 'cone' (Pchnięcie, Fala uderzeniowa) | 'chain' | 'barrier' | 'grab' | 'focus'
 export const powerDefinitions: ReadonlyMap<string, PowerDefinition>;
 export function registerPowerKind(kind: string, factory: PowerFactory): void;
@@ -1414,7 +1432,7 @@ export interface RunManagerOptions {
   now?: () => number;
 }
 
-export const runStateSchema: z.ZodType<RunState>;
+export const runStateSchema: z.ZodType<RunState>;   // z src/world/runSchema.ts (reeksport w run.ts)
 
 export class RunManager {
   constructor(

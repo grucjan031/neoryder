@@ -1,4 +1,5 @@
 import { loadMission, type MissionDefinition } from './missionSchema';
+import { missionData } from './missionCatalog';
 import { roomDefinitions } from './rooms';
 
 export function loadMissionDefinitions(
@@ -18,10 +19,4 @@ export function loadMissionDefinitions(
     }
   return definitions;
 }
-const modules = import.meta.glob('../data/missions/*.json', {
-  eager: true,
-  import: 'default',
-});
-export const missionDefinitions = loadMissionDefinitions(
-  Object.values(modules),
-);
+export const missionDefinitions = loadMissionDefinitions(missionData);

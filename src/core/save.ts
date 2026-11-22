@@ -11,7 +11,7 @@ import { metaStateSchema } from '../progression/metaStateSchema';
 import { moduleLootSchema } from '../progression/moduleSchema';
 import { seedAchievementsFromMeta } from '../progression/achievements';
 import { createStarterMetaState } from '../progression/progressionSchema';
-import { runStateSchema } from '../world/run';
+import { runStateSchema } from '../world/runSchema';
 import type { MetaState } from './metaTypes';
 import type { RunState, RunSummary } from './runTypes';
 import { tuning } from './tuning';

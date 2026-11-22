@@ -4,7 +4,7 @@ import {
   bladeDefinitions,
   DEFAULT_BLADE_ID,
 } from '../combat/melee/bladeSchema';
-import { powerDefinitions } from '../combat/powers/registry';
+import { powerDefinitions } from '../combat/powers/definitions';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
 import { loadoutDefinitions } from '../progression/loadout';
 import type { Loadout } from '../progression/loadout';
