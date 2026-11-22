@@ -1,0 +1,46 @@
+{
+  "id": "allyTest",
+  "roomId": "combatYard",
+  "allies": [
+    { "id": "nadia", "spawn": { "x": -1.8, "y": 0, "z": 6 } },
+    { "id": "szron", "spawn": { "x": 1.8, "y": 0, "z": 6 } }
+  ],
+  "waves": {
+    "id": "allyTest",
+    "firstBreakS": 3,
+    "breakS": 4,
+    "maxAlive": 5,
+    "minSpawnDistance": 8,
+    "spawnPoints": [
+      { "x": -8, "z": -8 },
+      { "x": 8, "z": -8 },
+      { "x": 0, "z": -9 },
+      { "x": -8, "z": 8 },
+      { "x": 8, "z": 8 }
+    ],
+    "waves": [
+      {
+        "spawnIntervalS": 1.2,
+        "groups": [
+          { "enemy": "assaulter", "count": 2 },
+          { "enemy": "gunner", "count": 1 }
+        ]
+      },
+      {
+        "spawnIntervalS": 1,
+        "groups": [
+          { "enemy": "assaulter", "count": 2 },
+          { "enemy": "gunner", "count": 2 }
+        ]
+      },
+      {
+        "spawnIntervalS": 0.8,
+        "groups": [
+          { "enemy": "assaulter", "count": 3 },
+          { "enemy": "gunner", "count": 2 },
+          { "enemy": "shielder", "count": 1 }
+        ]
+      }
+    ]
+  }
+}

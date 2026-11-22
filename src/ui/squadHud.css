@@ -1,0 +1,145 @@
+.squad-hud {
+  position: fixed;
+  left: var(--hud-inset, 28px);
+  top: 34vh;
+  z-index: 102;
+  width: 232px;
+  pointer-events: none;
+  color: var(--ui-text);
+  font: 600 13px/1.25 var(--ui-font);
+  letter-spacing: 0.04em;
+}
+.squad-hud [hidden] {
+  display: none;
+}
+.squad-hud__order {
+  margin: 0 0 6px;
+  color: var(--ui-cyan);
+  font-size: 11px;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px #000;
+}
+.squad-hud__list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.squad-hud__member {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 8px 5px 5px;
+  background: var(--ui-panel);
+  border-left: 2px solid var(--ui-cyan);
+}
+.squad-hud__portrait {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  border: 1px solid var(--ui-line-strong);
+  background: var(--ui-raise);
+  color: var(--ui-warm);
+  font-size: 18px;
+  font-weight: 700;
+}
+.squad-hud__name {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--ui-warm);
+  text-transform: uppercase;
+}
+.squad-hud__status {
+  color: var(--ui-muted);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: none;
+  white-space: nowrap;
+}
+.squad-hud__hp {
+  display: block;
+  height: 4px;
+  margin-top: 4px;
+  background: rgba(255, 241, 214, 0.16);
+}
+.squad-hud__hp i {
+  display: block;
+  height: 100%;
+  background: var(--ui-warm);
+  transition: width var(--ui-in);
+}
+.squad-hud__member[data-state='downed'],
+.squad-hud__member[data-state='reviving'],
+.squad-hud__member[data-state='evacuated'] {
+  border-left-color: var(--ui-amber);
+}
+.squad-hud__member[data-state='downed'] .squad-hud__status,
+.squad-hud__member[data-state='reviving'] .squad-hud__status,
+.squad-hud__member[data-state='evacuated'] .squad-hud__status {
+  color: var(--ui-amber);
+}
+.squad-hud__member[data-state='downed'] .squad-hud__portrait,
+.squad-hud__member[data-state='evacuated'] .squad-hud__portrait {
+  border-color: var(--ui-amber);
+  color: var(--ui-amber);
+  opacity: 0.75;
+}
+.squad-hud__member[data-state='downed'] .squad-hud__hp i,
+.squad-hud__member[data-state='reviving'] .squad-hud__hp i {
+  background: var(--ui-amber);
+}
+.squad-hud__bark {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  width: max-content;
+  max-width: 260px;
+  margin: 0;
+  padding: 3px 8px;
+  transform: translateY(-50%);
+  background: var(--ui-panel);
+  border-left: 2px solid var(--ui-warm);
+  color: var(--ui-warm);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.squad-hud__revive {
+  position: fixed;
+  left: 50%;
+  top: 62%;
+  margin: 0;
+  padding: 6px 12px 8px;
+  transform: translateX(-50%);
+  background: var(--ui-panel);
+  border-top: 2px solid var(--ui-amber);
+  color: var(--ui-warm);
+  font-size: 15px;
+  text-align: center;
+}
+.squad-hud__revive span {
+  display: block;
+  height: 4px;
+  margin-top: 6px;
+  background: rgba(255, 174, 26, 0.2);
+}
+.squad-hud__revive i {
+  display: block;
+  height: 100%;
+  background: var(--ui-amber);
+}
+@media (max-width: 900px) {
+  .squad-hud {
+    top: 24vh;
+    width: 180px;
+  }
+  .squad-hud__bark {
+    max-width: 160px;
+  }
+}

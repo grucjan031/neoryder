@@ -1,0 +1,16 @@
+{
+  "title": "Drużyna",
+  "orders": { "follow": "za mną", "hold": "trzymać pozycję" },
+  "states": {
+    "follow": "Idzie za tobą",
+    "hold": "Trzyma pozycję",
+    "engage": "W walce",
+    "takeCover": "Za osłoną",
+    "reposition": "Zmienia pozycję",
+    "downed": "Powalony",
+    "reviving": "Wstaje",
+    "evacuated": "Wróci przy checkpoincie"
+  },
+  "revive": "Przytrzymaj {key} — podnieś: {name}",
+  "hp": "Zdrowie"
+}

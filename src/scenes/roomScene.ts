@@ -10,6 +10,11 @@ import {
   modeForArena,
 } from '../world/modeSchema';
 import { ArenaNavigation } from '../world/arenaNavigation';
+import { AllySquad } from '../allies/squad';
+import type { Ally, AllyNavigation, AllySnapshot } from '../allies/ally';
+import { levelAllySchema, type LevelAlly } from '../world/levelSchema';
+import { AllyView } from '../render/allyView';
+import { SquadHud } from '../ui/squadHud';
 import { ConquestView } from '../ui/conquestUi';
 import { MissionObjectives } from '../world/missionObjectives';
 import { missionDefinitions } from '../world/missions';
@@ -61,7 +66,7 @@ import { z } from 'zod';
 import type { GameContext } from '../core/context';
 import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
-import type { InputSnapshot } from '../core/input';
+import type { Action, InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
@@ -172,6 +177,11 @@ export interface RoomSceneOptions {
   implantDefinitions?: ReadonlyMap<string, ImplantDefinition>;
   /** Łatki definicji ekwipunku (ADR 0007 pkt 5), np. z talentów; domyślnie brak. */
   patches?: readonly DefinitionPatch[];
+  /**
+   * Sojusznicy sceny (docs/systems/allies.md). Bez tego pola RoomScene bierze `allies`
+   * z układu (poziom liniowy przekazany jako layout).
+   */
+  allies?: readonly LevelAlly[];
 }
 
 /** Modele dla bloków układu; 'wall' to rozciągnięta bryła świata (bez modelu). */
@@ -187,6 +197,22 @@ const MODEL_FILES: Record<string, string> = {
  * Rekwizyty `city_*` i skrzynie zachowują proporcje i skalę 1.
  */
 const STRETCH_MODELS = new Set(['pillar', 'cover_low', 'wall_segment']);
+/** Kopia wejścia bez jednej akcji (klawisz przejęty przez interakcję z sojusznikiem). */
+function withoutAction(input: InputSnapshot, action: Action): InputSnapshot {
+  const strip = (set: ReadonlySet<Action>): ReadonlySet<Action> => {
+    if (!set.has(action)) return set;
+    const copy = new Set(set);
+    copy.delete(action);
+    return copy;
+  };
+  return {
+    ...input,
+    held: strip(input.held),
+    pressed: strip(input.pressed),
+    released: strip(input.released),
+  };
+}
+
 /** Tag obrażeń, którymi cisza po zwycięstwie rozpada pozostałych wrogów pokoju. */
 const VICTORY_HOLD_TAG = '#victory_hold';
 
@@ -338,6 +364,13 @@ export class RoomScene implements Scene {
   private readonly reinforcements: WaveDirector[] = [];
   private hazards!: HazardSystem;
   private hazardView!: HazardView;
+  protected squad!: AllySquad;
+  private readonly allyViews = new Map<string, AllyView>();
+  private squadHud?: SquadHud;
+  /** Siatka dla sojuszników w pokojach bez nawigacji trybu; null, gdy nie da się jej zbudować. */
+  private allyNav: AllyNavigation | null | undefined;
+  /** Sojusznicy czekający na `joinAfter`. */
+  private pendingAllies: LevelAlly[] = [];
 
   constructor(
     private readonly layout: RoomDefinition,
@@ -494,6 +527,16 @@ export class RoomScene implements Scene {
             : this.health.dead
               ? null
               : { id: playerId, ...this.player.getState() },
+        // Każdy wróg wybiera cel z drużyny gracza; bez sojuszników to nadal gracz.
+        getTargetFor: (enemy) => {
+          if (this.passiveEncounter) return null;
+          const player = this.health.dead
+            ? null
+            : { id: playerId, ...this.player.getState() };
+          return this.squad && this.squad.size > 0
+            ? this.squad.targetFor(enemy, player)
+            : player;
+        },
       },
       {
         ...(this.layout.director ? { director: this.layout.director } : {}),
@@ -506,6 +549,44 @@ export class RoomScene implements Scene {
       },
     );
     this.manager.setSpawnModifiers(threatModifiers(this.run.threatLevel));
+    this.squad = new AllySquad({
+      ctx,
+      rapier: this.rapier,
+      world: this.world,
+      entities: this.entities,
+      damage: this.damage,
+      hurtboxes: this.hurtboxes,
+      projectiles: this.projectiles,
+      navigation: () => this.allyNavigation(),
+      leader: () => {
+        const state = this.player.getState();
+        return {
+          id: playerId,
+          position: {
+            x: state.position.x,
+            y: state.position.y - state.height / 2,
+            z: state.position.z,
+          },
+          yaw: state.yaw,
+          alive: !this.health.dead,
+        };
+      },
+      hostiles: () => {
+        const list: { id: EntityId; position: Vec3; centerM: number }[] = [];
+        if (this.passiveEncounter || this.victoryHold) return list;
+        this.manager.forEach((enemy) => {
+          if (!enemy.removed && enemy.current.state !== 'dead')
+            list.push({
+              id: enemy.id,
+              position: enemy.current.position,
+              centerM: enemy.definition.body?.centerY ?? 0,
+            });
+        });
+        return list;
+      },
+    });
+    if (typeof document !== 'undefined')
+      this.squadHud = new SquadHud(ctx.bus, () => ctx.tuning.allies.barkShowS);
 
     const hazardTargets: HazardTarget[] = [];
     const hazardTargetPool: HazardTarget[] = [];
@@ -729,6 +810,8 @@ export class RoomScene implements Scene {
     );
     this.off.push(
       ctx.bus.on('wave_cleared', ({ wave }) => {
+        // Po fali wracają sojusznicy, którzy nie doczekali podniesienia.
+        this.squad.restore();
         if (wave === this.director.totalWaves) this.completeRoom();
       }),
       ctx.bus.on('player_died', ({ id }) => {
@@ -802,7 +885,14 @@ export class RoomScene implements Scene {
           ? { objectives: this.options.linearMission.objectives }
           : this.run,
         {
-          signal: (trigger) => this.missionSignal?.(trigger),
+          signal: (trigger) => {
+            this.missionSignal?.(trigger);
+            const done = /^objective:(.+):done$/.exec(trigger);
+            if (done) {
+              this.squad.bark('objective');
+              this.allyDependencyDone('objective', done[1]!);
+            }
+          },
           explode: (objective) => this.explodeMission(objective, playerId),
           reinforce: (wave, key) => this.reinforceMission(wave, key),
         },
@@ -844,6 +934,23 @@ export class RoomScene implements Scene {
       }
     }
     this.registerCommands(playerId);
+    const allies =
+      this.options.allies ??
+      z
+        .array(levelAllySchema)
+        .optional()
+        .parse((this.layout as { allies?: unknown }).allies) ??
+      [];
+    for (const ally of allies) {
+      const after = ally.joinAfter;
+      if (
+        !after ||
+        (after.kind === 'objective' &&
+          this.options.linearMission?.objectives[after.id] === 'done')
+      )
+        this.addAlly(ally.id, ally.spawn);
+      else this.pendingAllies.push(ally);
+    }
     this.emitHealth();
     this.heldItem.reset(this.loadout.startHeld);
     this.world.step();
@@ -1512,7 +1619,11 @@ export class RoomScene implements Scene {
     this.syncHeistCarry();
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
-    this.powers.step(pdt, input);
+    // Powalony sojusznik w zasięgu: klawisz interakcji (Moc 2) podnosi go zamiast rzucać moc.
+    const reviving = this.squad.reviveCandidate() !== null;
+    this.powers.step(pdt, reviving ? withoutAction(input, 'power2') : input);
+    if (input.pressed.has('squadCommand') && this.squad.size > 0)
+      this.squad.toggleOrder();
     if (!(dt > 0)) {
       this.manager.step(dt);
       return;
@@ -1626,6 +1737,7 @@ export class RoomScene implements Scene {
       else weapon.cool(pdt);
     }
     this.director.step(dt);
+    this.squad.step(dt, reviving && input.held.has('power2'));
     this.manager.step(dt);
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
@@ -1684,6 +1796,7 @@ export class RoomScene implements Scene {
         view.dispose();
         this.views.delete(id);
       }
+    this.renderAllies(alpha, frameDt);
     this.projectileView.render(alpha);
     this.debrisView.render(alpha);
     this.explosionView.render(frameDt);
@@ -1987,6 +2100,7 @@ export class RoomScene implements Scene {
     const god = this.god;
     this.prepareEncounter({ invulnerable: god, passive: false });
     this.teleportPlayer(position, yawDeg);
+    this.squad.restore(position);
     if (this.mission) {
       for (const id of this.mission.ids) {
         if (this.mission.objectives[id] !== 'done')
@@ -2007,6 +2121,117 @@ export class RoomScene implements Scene {
           tags: ['#hazard'],
         });
     }
+  }
+
+  // ----------------------------------------------------------------- sojusznicy
+
+  /** Dodaje sojusznika z `src/data/allies` (stopy w `spawn`); null, gdy już jest albo brak miejsca. */
+  addAlly(id: string, spawn: Vec3): Ally | null {
+    return this.squad.add(id, spawn);
+  }
+
+  /** Host (misja) zgłasza ukończony cel albo spotkanie: dołączają sojusznicy z `joinAfter`. */
+  allyDependencyDone(kind: 'objective' | 'encounter', id: string): void {
+    this.pendingAllies = this.pendingAllies.filter((ally) => {
+      if (ally.joinAfter?.kind !== kind || ally.joinAfter.id !== id)
+        return true;
+      this.addAlly(ally.id, ally.spawn);
+      return false;
+    });
+  }
+
+  /**
+   * Checkpoint: bez `position` wracają (przy graczu) sojusznicy, którzy nie doczekali podniesienia;
+   * z `position` cała drużyna staje przy tym punkcie z pełnym zdrowiem.
+   */
+  restoreAllies(position?: Vec3): void {
+    this.squad.restore(position);
+  }
+
+  allySnapshots(): AllySnapshot[] {
+    return this.squad.snapshots();
+  }
+
+  /** Nawigacja sojuszników: siatka trybu albo zbudowana z bloków pokoju na poziomie startu. */
+  private allyNavigation(): AllyNavigation | null {
+    if (this.navigation) return this.navigation;
+    if (this.allyNav !== undefined) return this.allyNav;
+    const t = this.ctx.tuning.allies;
+    try {
+      this.allyNav = new ArenaNavigation(
+        this.layout.arena
+          ? this.layout
+          : {
+              ...this.layout,
+              blocks: this.layout.blocks.map((block) => ({
+                ...block,
+                walkable: undefined,
+              })),
+              // Siatka podłogi potrzebuje tylko rozmiaru komórki i prześwitu.
+              arena: {
+                navigationCellM: t.navCellM,
+                navigationClearanceM: t.navClearanceM,
+              } as NonNullable<RoomDefinition['arena']>,
+            },
+      );
+    } catch {
+      this.allyNav = null;
+    }
+    return this.allyNav;
+  }
+
+  private renderAllies(alpha: number, frameDt: number): void {
+    if (this.squad.size === 0 && this.allyViews.size === 0) {
+      this.squadHud?.update([], this.squad.order, null);
+      return;
+    }
+    const snapshots = this.squad.snapshots();
+    const camera = this.ctx.camera?.position;
+    const seen = new Set<string>();
+    let index = 0;
+    this.squad.forEachPose((ally, a, b) => {
+      const id = ally.definition.id;
+      seen.add(id);
+      let view = this.allyViews.get(id);
+      if (!view) {
+        view = new AllyView(this.ctx.tuning, ally.definition);
+        this.allyViews.set(id, view);
+        this.root.add(view.root);
+        if (this.loadModels) void view.load();
+      }
+      let dyaw = b.yaw - a.yaw;
+      dyaw -= Math.PI * 2 * Math.round(dyaw / (Math.PI * 2));
+      view.update(
+        {
+          position: {
+            x: a.position.x + (b.position.x - a.position.x) * alpha,
+            y: a.position.y + (b.position.y - a.position.y) * alpha,
+            z: a.position.z + (b.position.z - a.position.z) * alpha,
+          },
+          yaw: a.yaw + dyaw * alpha,
+        },
+        snapshots[index++]!,
+        frameDt,
+        camera,
+      );
+    });
+    for (const [id, view] of this.allyViews)
+      if (!seen.has(id)) {
+        view.dispose();
+        this.allyViews.delete(id);
+      }
+    const candidate =
+      this.state === 'playing' ? this.squad.reviveCandidate() : null;
+    this.squadHud?.update(
+      snapshots,
+      this.squad.order,
+      candidate
+        ? {
+            name: candidate.definition.name,
+            progress: candidate.snapshot().reviveProgress,
+          }
+        : null,
+    );
   }
 
   exportState(): Pick<RunState, 'hp' | 'energy'> {
@@ -2187,6 +2412,7 @@ export class RoomScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    this.squad.registerCommands(register);
     register('heist grab', 'heist grab', (args) => {
       const ok = args.length === 0 && this.heist?.grab();
       this.syncHeistCarry();
@@ -2603,6 +2829,12 @@ export class RoomScene implements Scene {
         );
       case 'kills':
         return this.kills;
+      case 'allies':
+        return this.squad.snapshots();
+      case 'allyKills':
+        return this.squad.kills;
+      case 'squadOrder':
+        return this.squad.order;
       case 'meleeParries':
         return this.meleeParries;
       case 'spawnLog':
@@ -2660,6 +2892,10 @@ export class RoomScene implements Scene {
     this.hitSparksView?.dispose();
     for (const view of this.views.values()) view.dispose();
     this.views.clear();
+    for (const view of this.allyViews.values()) view.dispose();
+    this.allyViews.clear();
+    this.squadHud?.dispose();
+    this.squad?.dispose();
     this.director?.dispose();
     this.manager?.dispose();
     this.statuses?.dispose();

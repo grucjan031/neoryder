@@ -1267,6 +1267,99 @@ export const tuning = {
   },
   sandbox: { cubeSpawnHeight: 6 },
   /** S4-03: prototypy eskorty więźnia i wagonu (sceny `escort-test`, `payload-test`). */
+  /** Sojusznicy (docs/systems/allies.md). Liczby postaci (zdrowie, zasięgi, broń) są w `src/data/allies`. */
+  allies: {
+    maxSquad: 4,
+    colliderHeightM: 1.75,
+    colliderRadiusM: 0.4,
+    /** Wysokość środka sylwetki (cel wrogów) i wylotu broni nad stopami. */
+    chestM: 1.1,
+    muzzleM: 1.35,
+    muzzleForwardM: 0.45,
+    /** Marsz przy graczu; powyżej `catchUpDistanceM` sojusznik biegnie pełnym `moveSpeed`. */
+    walkSpeedScale: 0.6,
+    catchUpDistanceM: 8,
+    /** Rusza za graczem dopiero po oddaleniu o `followDistanceM + followSlackM`. */
+    followSlackM: 1.2,
+    arrivalM: 0.6,
+    /** Miejsca w szyku za plecami gracza: kolejne sloty co `slotSpreadDeg` na boki. */
+    slotSpreadDeg: 40,
+    /** Dalej niż `teleportDistanceM` od gracza sojusznik dołącza skokiem za jego plecy. */
+    teleportDistanceM: 45,
+    teleportBehindM: 3,
+    /** Promień ustawienia drużyny wokół checkpointu albo gracza. */
+    regroupRadiusM: 1.8,
+    /** W rozkazie „za mną”: dalej niż `leashM` przerywa walkę, wraca do niej w `leashResumeM`. */
+    leashM: 24,
+    leashResumeM: 14,
+    /** Gracz bliżej niż `yieldRadiusM` — sojusznik schodzi w bok z przejścia. */
+    yieldRadiusM: 1.5,
+    yieldSpeedScale: 0.8,
+    separationM: 1.3,
+    maxStepM: 0.6,
+    groundProbeM: 2.5,
+    stuckS: 2,
+    stuckEpsM: 0.4,
+    /** Siatka nawigacji budowana dla pokoi i poziomów bez danych areny. */
+    navCellM: 1,
+    navClearanceM: 0.45,
+    retargetS: 0.25,
+    /** Wróg, który ranił gracza w ostatnich `threatMemoryS`, liczy się jako atakujący gracza. */
+    threatMemoryS: 3,
+    /** Mnożniki odległości przy wyborze celu sojusznika (mniej = większa preferencja). */
+    playerAttackerBias: 0.6,
+    stickyBias: 0.85,
+    /** Rozrzut przy `accuracy = 0`; przy 1 strzał leci w punkt. */
+    maxSpreadDeg: 9,
+    aimS: 0.35,
+    turnRateDegS: 540,
+    loseSightS: 1.2,
+    repositionChance: 0.35,
+    repositionM: 3,
+    repositionS: 1.6,
+    coverHpFraction: 0.35,
+    coverRadiusM: 7,
+    coverSamples: 10,
+    coverTravelS: 3,
+    coverHoldS: 4,
+    coverRegenPerS: 6,
+    coverRetryS: 6,
+    /** Powalony czeka tyle sekund na podniesienie; potem wraca przy checkpoincie albo po fali. */
+    downedTimeoutS: 30,
+    reviveRadiusM: 2.6,
+    reviveHpFraction: 0.5,
+    reviveInvulnS: 1.5,
+    reviveDecayPerS: 1.5,
+    /** Wróg wybiera cel: odległość do sojusznika × `enemyAllyBias` (gracz = 1), bieżący cel × `enemyStickyBias`. */
+    enemyAllyBias: 1.25,
+    enemyStickyBias: 0.8,
+    barkCooldownS: 5,
+    barkShowS: 3,
+    markerHeightM: 2.08,
+    markerSizeM: 0.085,
+    hpBarWidthM: 0.6,
+    hpBarHeightM: 0.06,
+    animFadeS: 0.18,
+    shotFlashS: 0.07,
+    shotFlashM: 0.07,
+    hpBarColor: '#fff1d6',
+    hpBarBackColor: '#0a1220',
+    /** Powalony: uniesienie leżącej sylwetki i wysokość znacznika. */
+    downedLiftM: 0.2,
+    downedMarkerM: 0.9,
+    /** Chwyt broni w kości dłoni (m i rad w układzie kości, kalibrowane w `Pistol_Aim_Neutral`). */
+    weaponGrip: {
+      x: 0,
+      y: 0.08,
+      z: 0.03,
+      rotX: 0,
+      rotY: 0,
+      rotZ: 0,
+      scale: 1,
+    },
+    downedRingM: 0.75,
+    downedPulseHz: 1.2,
+  },
   prototypes: {
     escort: {
       maxHealth: 120,

@@ -1,0 +1,39 @@
+{
+  "id": "nadia",
+  "name": "Nadia",
+  "role": "rifleman",
+  "hp": 110,
+  "moveSpeed": 6.4,
+  "weapon": {
+    "model": "rifle",
+    "damage": 9,
+    "projectileSpeed": 70,
+    "projectileLifetimeS": 1.5,
+    "burstCount": 3,
+    "burstIntervalS": 0.11,
+    "cooldownS": 0.75,
+    "pellets": 1,
+    "pelletSpreadDeg": 0,
+    "burstsPerReload": 6,
+    "reloadS": 1.8,
+    "tags": ["#gun"]
+  },
+  "accuracy": 0.82,
+  "followDistanceM": 3.2,
+  "engageRangeM": 26,
+  "reviveS": 2,
+  "look": {
+    "torso": "hoodie",
+    "parts": ["prop_satchel"],
+    "outerColor": "#d9c7a3",
+    "pantsColor": "#3a3f47",
+    "accentColor": "#ffae1a"
+  },
+  "barks": {
+    "contact": ["Kontakt!", "Widzę ich.", "Mam cel."],
+    "reload": ["Przeładowuję!", "Zmieniam magazynek."],
+    "downed": ["Dostałam! Nie dam rady wstać."],
+    "revived": ["Dzięki. Wracam do gry."],
+    "objective": ["Zrobione. Ruszamy dalej."]
+  }
+}

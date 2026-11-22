@@ -696,3 +696,9 @@ Liczby: `tuning.vfx.enemyKnockdown`. Hitbox to pionowa kapsuła symulacji (bez z
 także w leżeniu; wróg dalej przyjmuje trafienia). Śmierć w leżeniu: zwykły rozpad.
 Ogłuszenie bez mocnego odrzutu (`PIERCE_BLOCK_TAG`, status) — jak dotąd `Hit_Chest`.
 Kontrola: `?scene=ai-test&debug=1`, `spawn assaulter 3`, `knock` (`timescale 0.1` zwalnia).
+
+## Cel wroga: gracz albo sojusznik
+
+Gdy scena poda `EnemyDependencies.getTargetFor`, `EnemyManager.spawn` daje każdemu wrogowi własne
+`getTarget` (wybór `selectHostileTarget`, `docs/systems/allies.md`). Kod archetypów pyta o cel tak
+samo jak wcześniej; dyrektor i `targetForward` nadal używają wspólnego `getTarget` (gracz).

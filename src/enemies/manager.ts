@@ -140,7 +140,22 @@ export class EnemyManager {
   }
   spawn(id: string, position: Vec3): Enemy {
     const rng = this.ctx.rng.fork(`spawn:${this.sequence++}`);
-    const enemy = createEnemy({ ...this.ctx, rng }, this.deps, id, position);
+    // Z `getTargetFor` każdy wróg pyta o własny cel; dyrektor nadal ustawia szyk wokół `getTarget`.
+    const pick = this.deps.getTargetFor;
+    let self: Enemy | null = null;
+    const deps: EnemyDependencies = pick
+      ? {
+          ...this.deps,
+          getTarget: () =>
+            pick(
+              self
+                ? { id: self.id, position: self.current.position }
+                : { id: null, position },
+            ),
+        }
+      : this.deps;
+    const enemy = createEnemy({ ...this.ctx, rng }, deps, id, position);
+    self = enemy;
     this.enemies.push(enemy);
     return enemy;
   }
