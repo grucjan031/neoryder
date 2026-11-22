@@ -245,7 +245,12 @@
   margin-right: 12px;
   font-size: 24px;
 }
-.mission-direction p:empty {
+.mission-direction p:empty,
+.mission-direction > [hidden] {
+  display: none;
+}
+/* Bez celu (np. walka z bossem) ramka nie może zasłaniać paska bossa. */
+.mission-direction:not(:has(> :not([hidden]):not(:empty))) {
   display: none;
 }
 .mission-direction button {
