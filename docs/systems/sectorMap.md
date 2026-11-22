@@ -67,9 +67,9 @@ chyba że wynikają z `fixedNodes`. `RunScene` wywołuje to dla runów z `missio
 `src/data/sectors/kurogane.json` jest ładowany i walidowany w
 `src/world/sectors.ts` jako `kuroganeSector`. Zawiera 8 warstw, 2–4 węzły
 (boss: 1), gwarantowany sklep i dwie elity w warstwach 3–6, maksymalnie jedną
-elitę/zagadkę na warstwę i dwie elity na ścieżkę. Zagadka ma wagę zero.
+elitę/zagadkę na warstwę i dwie elity na ścieżkę.
 Wagi typów: warstwy 1–2 `combat` 1; warstwy 3–6 `combat` 7, `elite` 3, `shop` 1,
-`rest` 0, `puzzle` 0; `extraEdgeChance` 0,3. Sekcje `threat` ([threat.md](threat.md)),
+`rest` 0, `puzzle` 0,08. `extraEdgeChance` wynosi 0,3. Sekcje `threat` ([threat.md](threat.md)),
 `rewardWeights`, `economy` (`creditsPerThreat` 5, `eliteBonusCredits` 30, ceny sklepu
 40/75/120/180, leczenie 35 kr za 30% HP, `restHealFraction` 0,4, `puzzleCredits` 60)
 i `roomPools` ([rooms.md](rooms.md)) są wypełnione w tym samym pliku.

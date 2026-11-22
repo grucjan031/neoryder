@@ -1,0 +1,179 @@
+{
+  "id": "puzzleLaser",
+  "name": "Blokada fotonowa",
+  "type": "puzzle",
+  "theme": "neonStreet",
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 4
+  },
+  "blocks": [
+    {
+      "size": {
+        "x": 12,
+        "y": 1,
+        "z": 14
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "material": "concrete"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 14
+      },
+      "position": {
+        "x": -5.5,
+        "y": 2,
+        "z": 0
+      },
+      "material": "trim",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 14
+      },
+      "position": {
+        "x": 5.5,
+        "y": 2,
+        "z": 0
+      },
+      "material": "trim",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -3.5,
+        "y": 2,
+        "z": -6.5
+      },
+      "material": "trim",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 3.5,
+        "y": 2,
+        "z": -6.5
+      },
+      "material": "trim",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -3.5,
+        "y": 2,
+        "z": 6.5
+      },
+      "material": "trim",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 3.5,
+        "y": 2,
+        "z": 6.5
+      },
+      "material": "trim",
+      "model": "wall"
+    }
+  ],
+  "spawnPoints": [],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": 6.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 0.35
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": -6.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 0.35
+      }
+    }
+  ],
+  "hazards": [
+    {
+      "kind": "laser_gate",
+      "id": "inspectionBeam",
+      "from": {
+        "x": -4.8,
+        "y": 0.65,
+        "z": -1.9
+      },
+      "to": {
+        "x": 4.8,
+        "y": 0.65,
+        "z": -1.9
+      },
+      "cycle": {
+        "onS": 12,
+        "offS": 1.5,
+        "offsetS": 1.5
+      }
+    }
+  ],
+  "puzzle": {
+    "kind": "laser",
+    "object": {
+      "position": {
+        "x": -1.5,
+        "y": 0.55,
+        "z": 0.9
+      },
+      "size": {
+        "x": 0.9,
+        "y": 1.1,
+        "z": 0.9
+      },
+      "massKg": 28
+    },
+    "laserId": "inspectionBeam"
+  }
+}

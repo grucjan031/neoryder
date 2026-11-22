@@ -55,6 +55,7 @@ import type { Scene } from './index';
 import { getLiteFx } from '../render/fxMode';
 import { warmUpRender } from '../render/renderWarmUp';
 import { RoomScene } from './roomScene';
+import { puzzleText } from '../ui/puzzleText';
 import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 
 const CUSTOM_LOADOUT_ID = 'custom';
@@ -108,6 +109,7 @@ export interface RunSceneOptions {
 export type RunLogEntry =
   | { event: 'node_selected'; nodeId: string; type: MapNode['type'] }
   | { event: 'room_cleared'; nodeId: string }
+  | { event: 'puzzle_skipped'; nodeId: string }
   | { event: 'reward_offered'; nodeId: string; options: readonly string[] }
   | { event: 'implant_acquired'; id: string }
   | { event: 'run_ended'; outcome: 'victory' | 'death' };
@@ -158,8 +160,9 @@ export class RunScene implements Scene {
   private pendingSaves = 0;
   private rewardSaveTimer: ReturnType<typeof setTimeout> | null = null;
   private immediateRewardSave = false;
-  private pending: 'clear' | 'end' | null = null;
+  private pending: 'clear' | 'skipPuzzle' | 'end' | null = null;
   private rewardDelayRemainingS: number | null = null;
+  private delayedTransition: 'clear' | 'skipPuzzle' = 'clear';
   /** Cisza po zwycięstwie: pokój bossa zostaje na ekranie, zanim pojawi się podsumowanie. */
   private victoryHoldRemainingS: number | null = null;
   private disposed = false;
@@ -240,9 +243,25 @@ export class RunScene implements Scene {
         if (this.rewardDelayRemainingS !== null || this.pending) return;
         this.log.push({ event: 'room_cleared', nodeId });
         const type = this.manager.currentNode?.type;
+        this.delayedTransition = 'clear';
         if (type === 'combat' || type === 'elite')
           this.rewardDelayRemainingS = this.ctx.tuning.run.rewardDelayS;
+        else if (type === 'puzzle')
+          this.rewardDelayRemainingS = this.ctx.tuning.puzzle.resultHoldS;
         else this.schedule('clear');
+      }),
+      ctx.bus.on('puzzle_skipped', ({ nodeId }) => {
+        if (
+          nodeId !== this.manager.state.currentNodeId ||
+          this.manager.currentNode?.type !== 'puzzle' ||
+          this.manager.screen !== 'room' ||
+          this.pending ||
+          this.rewardDelayRemainingS !== null
+        )
+          return;
+        this.log.push({ event: 'puzzle_skipped', nodeId });
+        this.delayedTransition = 'skipPuzzle';
+        this.rewardDelayRemainingS = this.ctx.tuning.puzzle.resultHoldS;
       }),
       ctx.bus.on('reward_offered', ({ nodeId, options }) =>
         this.log.push({
@@ -987,7 +1006,10 @@ export class RunScene implements Scene {
     const layout = this.chooseRoom(node, rng);
     const combat =
       node.type === 'combat' || node.type === 'elite' || node.type === 'boss';
-    // Sklep i odpoczynek nie mają fal (nakładka otwiera się od razu po wejściu);
+    const puzzle = node.type === 'puzzle';
+    if (puzzle && !layout.puzzle)
+      throw new Error(`Brak układu zagadki dla węzła ${node.id}.`);
+    // Sklep, odpoczynek i zagadka nie mają fal.
     // pokój bossa (layout.bossEnemy) też nie: walkę prowadzi boss, nie WaveDirector.
     const bossRoom = node.type === 'boss' && layout.bossEnemy !== undefined;
     const mission = missionDefinitions.get(state.missionId ?? '');
@@ -1005,7 +1027,11 @@ export class RunScene implements Scene {
       }
     }
     const waves: WavesDefinition =
-      state.modeId || node.type === 'shop' || node.type === 'rest' || bossRoom
+      state.modeId ||
+      node.type === 'shop' ||
+      node.type === 'rest' ||
+      bossRoom ||
+      puzzle
         ? {
             id: `room:${node.id}`,
             firstBreakS: 0,
@@ -1078,14 +1104,14 @@ export class RunScene implements Scene {
       this.schedule('end');
       return;
     }
-    if (combat) this.screens.hide();
+    if (combat || puzzle) this.screens.hide();
     else {
       room.clear();
       this.flushTransitions();
     }
   }
 
-  private schedule(transition: 'clear' | 'end'): void {
+  private schedule(transition: NonNullable<RunScene['pending']>): void {
     if (transition === 'end') this.rewardDelayRemainingS = null;
     if (this.pending !== 'end') this.pending = transition;
     queueMicrotask(() => this.flushTransitions());
@@ -1102,7 +1128,13 @@ export class RunScene implements Scene {
       return;
     }
     this.syncMission();
-    if (!this.room || !this.manager.completeRoom(this.room.exportState()))
+    if (
+      !this.room ||
+      !this.manager.completeRoom(
+        this.room.exportState(),
+        transition === 'skipPuzzle' ? 'skipped' : 'solved',
+      )
+    )
       return;
     if (this.manager.screen === 'shop' || this.manager.screen === 'rest') {
       this.show();
@@ -1168,7 +1200,7 @@ export class RunScene implements Scene {
       this.rewardDelayRemainingS = Math.max(0, this.rewardDelayRemainingS - dt);
       if (this.rewardDelayRemainingS === 0) {
         this.rewardDelayRemainingS = null;
-        this.schedule('clear');
+        this.schedule(this.delayedTransition);
       }
     }
     if (
@@ -1346,6 +1378,13 @@ export class RunScene implements Scene {
       this.room!.clear();
       return 'Pokój wyczyszczony.';
     });
+    register('puzzle status', puzzleText.debugStatus, () =>
+      this.roomReady &&
+      this.manager.screen === 'room' &&
+      this.manager.currentNode?.type === 'puzzle'
+        ? this.roomCommands!.execute('puzzle status')
+        : puzzleText.debugUnavailable,
+    );
     register('run state', 'run state — stan runu', () =>
       JSON.stringify(this.manager.serialize()),
     );

@@ -1,0 +1,163 @@
+{
+  "id": "puzzlePlate",
+  "name": "Płyta sekcji załadunku",
+  "type": "puzzle",
+  "theme": "neonStreet",
+  "playerSpawn": {
+    "x": 0,
+    "y": 0,
+    "z": 4
+  },
+  "blocks": [
+    {
+      "size": {
+        "x": 12,
+        "y": 1,
+        "z": 14
+      },
+      "position": {
+        "x": 0,
+        "y": -0.5,
+        "z": 0
+      },
+      "material": "asphalt"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 14
+      },
+      "position": {
+        "x": -5.5,
+        "y": 2,
+        "z": 0
+      },
+      "material": "concrete",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 1,
+        "y": 4,
+        "z": 14
+      },
+      "position": {
+        "x": 5.5,
+        "y": 2,
+        "z": 0
+      },
+      "material": "concrete",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -3.5,
+        "y": 2,
+        "z": -6.5
+      },
+      "material": "concrete",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 3.5,
+        "y": 2,
+        "z": -6.5
+      },
+      "material": "concrete",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": -3.5,
+        "y": 2,
+        "z": 6.5
+      },
+      "material": "concrete",
+      "model": "wall"
+    },
+    {
+      "size": {
+        "x": 5,
+        "y": 4,
+        "z": 1
+      },
+      "position": {
+        "x": 3.5,
+        "y": 2,
+        "z": 6.5
+      },
+      "material": "concrete",
+      "model": "wall"
+    }
+  ],
+  "spawnPoints": [],
+  "doors": [
+    {
+      "id": "entry",
+      "role": "entry",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": 6.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 0.35
+      }
+    },
+    {
+      "id": "exit",
+      "role": "exit",
+      "position": {
+        "x": 0,
+        "y": 1.5,
+        "z": -6.5
+      },
+      "size": {
+        "x": 2,
+        "y": 3,
+        "z": 0.35
+      }
+    }
+  ],
+  "puzzle": {
+    "kind": "plate",
+    "object": {
+      "position": {
+        "x": 0,
+        "y": 0.45,
+        "z": 1.35
+      },
+      "size": {
+        "x": 0.85,
+        "y": 0.9,
+        "z": 0.85
+      },
+      "massKg": 24
+    },
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": -2.1
+    },
+    "radiusM": 1.1
+  }
+}

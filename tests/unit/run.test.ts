@@ -150,6 +150,48 @@ describe('RunManager (F3-05)', () => {
     expect(manager.screen).toBe('room');
   });
 
+  it('pominięta zagadka wraca na mapę bez nagrody, zachowuje HP i nie liczy się do roomsCleared', () => {
+    const bus = new EventBus();
+    const ended = vi.fn();
+    bus.on('run_ended', ended);
+    const manager = new RunManager(bus, createTestMap);
+    manager.newRun('skip-puzzle', 'resonance');
+    expect(manager.selectNode('L1N0')).toBe(true);
+    expect(manager.completeRoom({ hp: 80, energy: 60 }, 'skipped')).toBe(false);
+    expect(manager.screen).toBe('room');
+    expect(manager.completeRoom()).toBe(true);
+    expect(manager.completeReward()).toBe(true);
+    expect(manager.selectNode('L2N0')).toBe(true);
+    expect(manager.completeRoom()).toBe(true);
+    expect(manager.completeReward()).toBe(true);
+    expect(manager.selectNode('L3N0')).toBe(true);
+    expect(manager.completeRoom({ hp: 80, energy: 60 }, 'skipped')).toBe(true);
+    expect(manager.screen).toBe('map');
+    expect(manager.state).toMatchObject({ hp: 80, energy: 60 });
+    expect(manager.state.visited).toContain('L3N0');
+    manager.finish('death');
+    expect(ended.mock.calls[0]?.[0].summary.roomsCleared).toBe(2);
+    manager.dispose();
+  });
+
+  it('pominięcie zagadki jest odrzucone w węźle z celami misji', () => {
+    const map = createTestMap('x');
+    const node = map.layers[2]![0]!;
+    node.fixed = { roomId: 'puzzlePlate', objectives: ['o1'] };
+    const manager = new RunManager(new EventBus(), () => map);
+    manager.newRun('skip-mission', 'resonance');
+    manager.selectNode('L1N0');
+    manager.completeRoom();
+    manager.completeReward();
+    manager.selectNode('L2N0');
+    manager.completeRoom();
+    manager.completeReward();
+    manager.selectNode('L3N0');
+    expect(manager.completeRoom(undefined, 'skipped')).toBe(false);
+    expect(manager.screen).toBe('room');
+    manager.dispose();
+  });
+
   it('prowadzi maszynę ekranów przez wszystkie typy węzłów aż do zwycięstwa z bossem', () => {
     const bus = new EventBus();
     const ended: GameEvents['run_ended'][] = [];
@@ -157,7 +199,6 @@ describe('RunManager (F3-05)', () => {
 
     const manager = new RunManager(bus, createTestMap, {
       eliteBonusCredits: 25,
-      puzzleCredits: 60,
     });
     manager.newRun('full-path', 'resonance');
 
@@ -175,11 +216,12 @@ describe('RunManager (F3-05)', () => {
     expect(manager.state.credits).toBe(25);
     expect(manager.returnToMap()).toBe(true);
 
-    // Warstwa 3: puzzle -> bezpośrednio map (+puzzleCredits)
+    // Warstwa 3: puzzle -> reward -> map
     expect(manager.selectNode('L3N0')).toBe(true);
     expect(manager.completeRoom()).toBe(true);
-    expect(manager.screen).toBe('map');
-    expect(manager.state.credits).toBe(85);
+    expect(manager.screen).toBe('reward');
+    expect(manager.state.credits).toBe(25);
+    expect(manager.completeReward()).toBe(true);
 
     // Warstwa 4: combat -> reward -> map
     expect(manager.selectNode('L4N0')).toBe(true);

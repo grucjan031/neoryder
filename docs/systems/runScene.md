@@ -26,7 +26,7 @@ Host składa `RunManager`, pokoje i ekrany; logika stanu pozostaje w
   Odrzucane są pokoje z `arena.exclusive` oraz (poza misją) o id kończącym się na `Mission`;
   jeśli nic nie zostanie, zapasem są pokoje `combat` po tych samych filtrach. Kandydaci są
   sortowani rosnąco po id, wybór to `new Rng(seed).fork('room-layout:<nodeId>').pick(...)`.
-- **Fale:** `planWaves(layout, sektor, węzeł, new Rng(seed), threatLevel)` (osobny `Rng(seed)`, planner sam robi swój fork pokoju; patrz `threat.md`). Węzły inne niż `combat`/`elite` (np. `boss` bez `bossEnemy`, `puzzle`) są planowane jak `combat`. W misji z polem `enemies` host klonuje sektor, zeruje `threat.unlockLayer` i zawęża pule wrogów `combat`/`elite` do `mission.enemies`.
+- **Fale:** `planWaves(layout, sektor, węzeł, new Rng(seed), threatLevel)` (osobny `Rng(seed)`, planner sam robi swój fork pokoju; patrz `threat.md`). Boss bez `bossEnemy` jest planowany jak `combat`. W misji z polem `enemies` host klonuje sektor, zeruje `threat.unlockLayer` i zawęża pule wrogów `combat`/`elite` do `mission.enemies`.
 - `combat` i `elite`: `room_cleared` → odliczanie `tuning.run.rewardDelayS` → eksport HP/energii
   → zniszczenie pokoju → nagroda → Dalej → mapa. Brak pasywnego leczenia. Na ekranie nagrody „Dalej"
   jest zablokowane, dopóki są oferty; przy pustej puli daje Kredyty (`economy.puzzleCredits`).
@@ -35,8 +35,12 @@ Host składa `RunManager`, pokoje i ekrany; logika stanu pozostaje w
   `WavesDefinition`), po inicjalizacji jest czyszczony bez kroku walki, co
   otwiera exit i od razu otwiera nakładkę sklepu/odpoczynku. Wyjdź zamyka
   nakładkę, niszczy pokój i wraca na mapę.
-- `puzzle`: tymczasowo czyszczenie i powrót na mapę (z `puzzleCredits`); generator ma wagę 0.
-- Puste `WavesDefinition` (`firstBreakS = breakS = 0`, `minSpawnDistance = 0`, bez fal) dostają też pokoje trybów i boss z `bossEnemy`; ich `maxAlive` to limit trybu, `layout.maxAlive ?? 1` dla bossa, 1 dla sklepu/odpoczynku.
+- `puzzle`: po wczytaniu gracz przejmuje sterowanie w pokoju bez fal.
+  `room_cleared` albo `puzzle_skipped` pokazuje przez `tuning.puzzle.resultHoldS`
+  stan w HUD zagadki (otwarte drzwi), potem pokój jest niszczony: po rozwiązaniu
+  następuje ekran wyboru implantu, po pominięciu powrót na mapę bez nagrody.
+  Oba przejścia eksportują HP i energię.
+- Puste `WavesDefinition` (`firstBreakS = breakS = 0`, `minSpawnDistance = 0`, bez fal) dostają też pokoje trybów i boss z `bossEnemy`. Wartość `maxAlive` to limit trybu, `layout.maxAlive ?? 1` dla bossa i 1 dla sklepu, odpoczynku lub zagadki.
 - `boss`: układ z `bossEnemy` (`bossRoom`) dostaje puste `WavesDefinition` jak sklep
   (host nie woła `planWaves`), `RoomScene` w trybie bossa pomija `WaveDirector` i
   tuż po wejściu tworzy bossa w punkcie `props[kind=bossSpawn]` (domyślnie środek).

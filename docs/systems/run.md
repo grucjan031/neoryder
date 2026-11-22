@@ -5,15 +5,18 @@ Moduł `src/world/run.ts` odpowiada za czystą logikę stanu pętli runu (ADR 00
 ## Odpowiedzialności
 
 - **Stan międzypokojowy (`RunState`):** `seed`, `sectorId`, `loadoutId` i pełny `loadout` (kopia ekwipunku zamrożona na starcie), `talents` (id bez duplikatów), `threatLevel` (całkowity, >= 0), `startedAtMs`, `elapsedS` (czas symulacji), `map` (`SectorMap`), `currentNodeId` (`null` przed pierwszym wyborem), `visited`, `hp`, `energy`, `credits`, `implants` (bez duplikatów), `stats.kills`, `stats.damage` (`melee`, `power`, `gun`, `other`). Pola opcjonalne: `difficulty` (pomijane dla `normal`), `modeId`, `missionId`, `objectives` (`pending | active | done` na id celu), `objectiveProgress` (0..1), `roomCredits` (patrz „Waluta runu"), `achievementProgress`. Ciepło broni nie jest przenoszone między pokojami (każdy pokój zaczyna z zimną bronią).
-- **Wstrzykiwanie generatora mapy (`MapGenerator`):** konstruktor `RunManager` przyjmuje funkcję `generateMap: (seed: string) => SectorMap` (jako drugi argument lub w `RunManagerOptions`) oraz opcje: `sector` (id i `economy`), `creditsPerThreat`, `eliteBonusCredits`, `puzzleCredits`, `initialHp`, `initialEnergy`, `now`. Wartości domyślne: `creditsPerThreat` z `sector.economy`, a bez niej 5; `eliteBonusCredits` i `puzzleCredits` z `economy`, a bez niej 0; `initialHp` = `initialEnergy` = 100 (host `RunScene` podaje `maxHealth` i `maxEnergy` z `roomPlayer.json`).
+- **Wstrzykiwanie generatora mapy (`MapGenerator`):** konstruktor `RunManager` przyjmuje funkcję `generateMap: (seed: string) => SectorMap` (jako drugi argument lub w `RunManagerOptions`) oraz opcje `sector` (id i `economy`), `creditsPerThreat`, `eliteBonusCredits`, `initialHp`, `initialEnergy`, `now`. Domyślnie `creditsPerThreat` i `eliteBonusCredits` pochodzą z `sector.economy`, a bez niej wynoszą odpowiednio 5 i 0. Domyślne `initialHp` i `initialEnergy` to 100. Host `RunScene` podaje `maxHealth` i `maxEnergy` z `roomPlayer.json`.
 - **Start runu (`newRun(seed, loadoutId = 'classic', options)`):** opcje `difficulty`, `arenaId`, `modeId`, `mission`, `loadout`, `talents`, `threatLevel`, `baseMaxHealth`. `modeId` i `mission` wykluczają się (błąd). Z `modeId` mapa jest jednowęzłowa (patrz `modes.md`), inaczej `generateMap(seed)`; mapa przechodzi `sectorMapSchema`. Ekwipunek: `options.loadout` albo preset `loadoutId` (nieznany = błąd). Talenty są deduplikowane; `hp` startowe = pełne `maxHealth`: `baseMaxHealth` (domyślnie `initialHp`) z modyfikatorami talentów; `credits` startowe = `runStartCredits` z talentów; `energy` = `initialEnergy`. `threatLevel` musi być całkowity >= 0 (inaczej błąd). `difficulty` bierze z opcji albo z ustawienia gracza. `sectorId` = id z opcji `sector`, a bez niej `map.sectorId` (tryb areny również dostaje id sektora hosta). Przy misji `objectives` startują jako `pending`. Ekran `map`, `run_started { seed }`, zwraca kopię stanu. Sam start nie losuje niczego; losowość mapy siedzi w generatorze (patrz `sectorMap.md`).
 - **Maszyna ekranów (`RunScreen`):** `map | room | reward | shop | rest | summary`:
   - `restore(state)` waliduje stan, ustawia ekran `map`, uznaje wszystkie `visited` za wyczyszczone i emituje `run_started`. `restoreEnded(state, summary)` odtwarza zakończony run od razu na `summary`, bez ponownego `run_ended`.
   - `selectNode(id)` (tylko ekran `map`) dopuszcza węzeł warstwy 1 (gdy `currentNodeId === null`) albo węzeł z `next` bieżącego; w trybie (`modeId`) dopuszczony jest wyłącznie bieżący, jedyny węzeł (można go wybrać ponownie). Zapamiętuje migawkę stanu sprzed wejścia, zeruje licznik zarobku pokoju, dopisuje węzeł do `visited`, przechodzi do `room`, cele misji tego węzła zmieniają `pending` → `active`, emituje `node_selected { nodeId, type }`.
-  - `completeRoom(roomState?)` (tylko ekran `room`) zwraca `false`, gdy w misji któryś cel węzła nie jest `done`. Zapisuje opcjonalne `{ hp, energy }` z `RoomScene.exportState()` (obcięte do >= 0), oznacza węzeł jako wyczyszczony i wybiera przejście w tej kolejności:
+  - `completeRoom(roomState?, puzzleOutcome?)` (tylko ekran `room`) zwraca `false`, gdy w misji któryś cel węzła nie jest `done`. Zapisuje opcjonalne `{ hp, energy }` z `RoomScene.exportState()` (obcięte do >= 0), zalicza przejście przez węzeł (pominięta zagadka nie liczy się do `roomsCleared`; pominięcie jest odrzucane w węźle z celami misji, w finale i w trybach) i wybiera ekran według poniższych reguł.
     - tryb (`modeId`) → `finish('victory')`;
     - misja i węzeł `fixed.final` → `finish('victory')`;
-    - inaczej wg typu: `combat` → `reward`; `elite` → `reward` (+ `eliteBonusCredits`, jeśli > 0); `shop` → `shop`; `rest` → `rest`; `puzzle` → `map` (+ `puzzleCredits`, jeśli > 0); `boss` → `reward` w misji (bez finału), poza misją `finish('victory')` bez nagrody.
+    - `combat` i `elite` przechodzą do `reward`. Elita przyznaje także `eliteBonusCredits`.
+    - `shop` przechodzi do `shop`, a `rest` do `rest`.
+    - `puzzle` przechodzi do `reward` po rozwiązaniu i do `map` po pominięciu. Nagroda zagadki korzysta z `rewardWeights.puzzle` i ogólnych reguł wyboru implantu.
+    - `boss` przechodzi do `reward` w misji bez finału. Poza misją wywołuje `finish('victory')`.
   - `returnToMap()` (aliasy `completeReward()`, `leaveShop()`, `leaveRest()` sprawdzają właściwy ekran) zamyka `reward | shop | rest` i wraca na `map`.
   - `updateObjectives(objectives, progress)` kopiuje stan celów z pokoju do `RunState` (tylko w misji i aktywnym runie).
 - **Waluta runu (Kredyty):**
@@ -93,8 +96,8 @@ leczeniu). Ulepszenie emituje `implant_acquired` z `source: 'upgrade'`. Nie ma l
 pasywnego; zwiększenie maksimum przez implant zachowuje regułę dodania różnicy HP.
 
 RunScene korzysta z istniejącego `creditKill(threatCost)` (stawka `creditsPerThreat` = 5)
-oraz bonusu za wyczyszczenie elity (`eliteBonusCredits` = 30) i Kredytów za zagadkę
-(`puzzleCredits` = 60) w RunManager. Wszystkie wartości startowe są w sekcji `economy`
+oraz bonusu za wyczyszczenie elity (`eliteBonusCredits` = 30).
+Pusta pula implantów daje `puzzleCredits` = 60. Wszystkie wartości są w sekcji `economy`
 sektora. Tymczasowe ekrany pokazują rzeczywiste oferty i ceny, obsługują
 mysz, 1/2/3, Enter oraz Tab dla dalszych opcji. Docelowy styl pozostaje dla F3-14.
 

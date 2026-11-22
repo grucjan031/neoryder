@@ -693,6 +693,13 @@ export const tuning = {
     laserInvulnS: 0.6,
     laserRadiusM: 0.15,
   },
+  puzzle: {
+    confirmS: 0.2,
+    resultHoldS: 1.2,
+    plateClearanceM: 0.14,
+    pushMassKg: 75,
+    objectDamping: 3,
+  },
   weapons: {
     overheatLockS: 1.5,
     activeCooling: {

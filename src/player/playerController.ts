@@ -121,6 +121,11 @@ export class PlayerController {
     return this.collider.handle;
   }
 
+  enableDynamicPush(massKg: number): void {
+    this.controller.setCharacterMass(massKg);
+    this.controller.setApplyImpulsesToDynamicBodies(true);
+  }
+
   getState(): PlayerState {
     return {
       ...this.state,

@@ -1,0 +1,41 @@
+.puzzle-hud {
+  position: fixed;
+  inset: 0;
+  z-index: 101;
+  pointer-events: none;
+  color: #fff1d6;
+  font:
+    15px/1.4 Rajdhani,
+    sans-serif;
+}
+.puzzle-hud__panel {
+  position: absolute;
+  top: 90px;
+  left: 28px;
+  width: min(300px, 70vw);
+  background: #070b16de;
+  padding: 12px 16px;
+  border-left: 2px solid #ffae1a;
+}
+.puzzle-hud__panel > div {
+  margin-top: 8px;
+}
+.puzzle-hud__panel span {
+  display: block;
+}
+.puzzle-hud__panel [hidden] {
+  display: none;
+}
+@media (max-width: 600px) {
+  .puzzle-hud__panel {
+    top: 88px;
+    left: 16px;
+    width: calc(100vw - 32px);
+    box-sizing: border-box;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .puzzle-hud__panel > div {
+    margin-top: 2px;
+  }
+}

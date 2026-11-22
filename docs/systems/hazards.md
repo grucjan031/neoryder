@@ -44,6 +44,9 @@ Laser mierzy odległość 3D od odcinka do pionowej osi kapsuły. Trafia, gdy
 odległość jest mniejsza od `laserRadiusM + radius` (równość nie trafia).
 Okno `laserInvulnS` jest osobne dla każdej encji i każdej bramki (wpisy znikają, gdy encji nie ma
 już wśród celów). Obrażenia `laserDamage`, bez odrzutu i statusu. Tagi: `#hazard`, `#laser`; `source: null`.
+W pokoju `puzzleLaser` callback `laserBlocked(id)` przełącza wskazaną bramkę
+w fazę `off` dla obrażeń i renderu, gdy osłona przecina wiązkę. Po zaliczeniu
+celu przekaźnik utrzymuje stan `off` do wyjścia z pokoju.
 
 Wszystkie obrażenia przechodzą przez `DamageSystem`: obowiązują modyfikatory,
 blok i nietykalność celu. Statusy przekazuje zdarzenie `damage_dealt`.

@@ -84,3 +84,25 @@ class RoomTest extends RoomScene {
     super.dispose();
   }
 }
+
+export function createPuzzleTest(): RoomScene {
+  const params = new URLSearchParams(
+    typeof location === 'undefined' ? '' : location.search,
+  );
+  const roomId = params.get('room') ?? 'puzzlePlate';
+  const room = roomDefinitions.get(roomId);
+  if (!room?.puzzle) throw new Error(`Nieznana zagadka: ${roomId}`);
+  const run = roomTestRun(room, params);
+  if (!params.has('loadout'))
+    run.loadout = { ...run.loadout, powers: ['grab'] };
+  return new PuzzleTest(
+    room,
+    run,
+    { ...wavesData, spawnPoints: [], waves: [] },
+    { retry: true },
+  );
+}
+
+class PuzzleTest extends RoomScene {
+  override readonly id = 'puzzle-test';
+}

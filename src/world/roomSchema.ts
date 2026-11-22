@@ -149,6 +149,27 @@ export const roomPropSchema = z.object({
   position: vec3Schema,
 });
 
+const puzzleObjectSchema = z.object({
+  position: vec3Schema,
+  size: positiveVec3Schema,
+  massKg: positive,
+});
+
+const grabPuzzleSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('plate'),
+    object: puzzleObjectSchema,
+    position: vec3Schema,
+    radiusM: positive,
+  }),
+  z.object({
+    kind: z.literal('laser'),
+    object: puzzleObjectSchema,
+    laserId: z.string().min(1),
+  }),
+]);
+export type GrabPuzzleDefinition = z.infer<typeof grabPuzzleSchema>;
+
 /** Definicja pokoju z src/data/rooms/*.json (ADR 0005 pkt 2). */
 export const roomSchema = z
   .object({
@@ -169,7 +190,7 @@ export const roomSchema = z
     bossEnemy: z.string().min(1).optional(),
     props: z.array(roomPropSchema).optional(),
     hazards: z.array(hazardSchema).optional(),
-    puzzle: z.record(z.string(), z.unknown()).optional(),
+    puzzle: grabPuzzleSchema.optional(),
   })
   .superRefine((room, ctx) => {
     const entries = room.doors.filter((door) => door.role === 'entry');
@@ -211,6 +232,7 @@ export const roomSchema = z
         path: ['bossEnemy'],
         message: 'bossEnemy jest dozwolone tylko w pokoju typu boss.',
       });
+    validatePuzzle(room, ctx);
     validateLayout(room, ctx);
   });
 
@@ -229,6 +251,75 @@ function footprint(block: z.infer<typeof roomBlockSchema>): Rect {
 
 function contains(rect: Rect, x: number, z: number): boolean {
   return x >= rect.minX && x <= rect.maxX && z >= rect.minZ && z <= rect.maxZ;
+}
+
+/** Minimalny odstęp obrysu obiektu zagadki od punktu startu gracza (walidacja danych). */
+const PUZZLE_SPAWN_MARGIN_M = 0.5;
+
+function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
+  const issue = (message: string) =>
+    ctx.addIssue({ code: 'custom', path: ['puzzle'], message });
+  const puzzle = room.puzzle;
+  if ((room.type === 'puzzle') !== (puzzle !== undefined))
+    issue('Pokój puzzle wymaga definicji zagadki i tylko on może ją zawierać.');
+  if (!puzzle) return;
+  const groundY = room.playerSpawn.y;
+  const onFloor = (point: { x: number; z: number }) =>
+    room.blocks.some(
+      (block) =>
+        block.position.y + block.size.y / 2 === groundY &&
+        contains(footprint(block), point.x, point.z),
+    );
+  if (
+    !onFloor(puzzle.object.position) ||
+    puzzle.object.position.y - puzzle.object.size.y / 2 < groundY
+  )
+    issue('Obiekt zagadki musi zaczynać nad podłogą.');
+  const { position: at, size } = puzzle.object;
+  const objectRect = {
+    minX: at.x - size.x / 2,
+    maxX: at.x + size.x / 2,
+    minZ: at.z - size.z / 2,
+    maxZ: at.z + size.z / 2,
+  };
+  const overlapsObstacle = room.blocks.some((block) => {
+    const rect = footprint(block);
+    return (
+      block.position.y + block.size.y / 2 > groundY &&
+      block.position.y - block.size.y / 2 < at.y + size.y / 2 &&
+      rect.minX < objectRect.maxX &&
+      rect.maxX > objectRect.minX &&
+      rect.minZ < objectRect.maxZ &&
+      rect.maxZ > objectRect.minZ
+    );
+  });
+  if (overlapsObstacle) issue('Obiekt zagadki nachodzi na blok układu.');
+  if (
+    contains(
+      {
+        minX: objectRect.minX - PUZZLE_SPAWN_MARGIN_M,
+        maxX: objectRect.maxX + PUZZLE_SPAWN_MARGIN_M,
+        minZ: objectRect.minZ - PUZZLE_SPAWN_MARGIN_M,
+        maxZ: objectRect.maxZ + PUZZLE_SPAWN_MARGIN_M,
+      },
+      room.playerSpawn.x,
+      room.playerSpawn.z,
+    )
+  )
+    issue('Obiekt zagadki jest zbyt blisko punktu startu gracza.');
+  if (puzzle.kind === 'plate') {
+    if (!onFloor(puzzle.position) || puzzle.position.y !== groundY)
+      issue('Płyta naciskowa musi leżeć na podłodze.');
+  } else {
+    const laser = room.hazards?.find((hazard) => hazard.id === puzzle.laserId);
+    if (
+      laser?.kind !== 'laser_gate' ||
+      (laser.from.x === laser.to.x &&
+        laser.from.y === laser.to.y &&
+        laser.from.z === laser.to.z)
+    )
+      issue('Zagadka laserowa wymaga wskazania bramki o różnych końcach.');
+  }
 }
 
 export function validateLayout(

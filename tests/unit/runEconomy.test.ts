@@ -190,7 +190,7 @@ describe('run economy', () => {
     run.step(1000);
     expect(run.state.hp).toBe(77);
   });
-  it('credits use threat costs, elite bonus and puzzle amount from sector data', () => {
+  it('credits use threat costs and elite bonus from sector data', () => {
     const elite = setup('elite');
     expect(elite.run.state.credits).toBe(
       kuroganeSector.economy!.eliteBonusCredits,
@@ -198,9 +198,21 @@ describe('run economy', () => {
     expect(elite.run.creditKill(3)).toBe(
       3 * kuroganeSector.economy!.creditsPerThreat,
     );
-    expect(setup('puzzle').run.state.credits).toBe(
-      kuroganeSector.economy!.puzzleCredits,
-    );
+  });
+
+  it('oferuje implant za zagadkę, a przy pustej puli przyznaje kredyty', () => {
+    const { run, economy } = setup('puzzle');
+    const [implant] = economy.offerReward();
+    expect(implant).toBeDefined();
+    expect(economy.chooseReward(implant)).toBe(true);
+    expect(run.state.implants).toEqual([implant]);
+    expect(run.state.credits).toBe(0);
+
+    const empty = setup('puzzle', new Map());
+    expect(empty.economy.offerReward()).toEqual([]);
+    expect(empty.economy.chooseReward()).toBe(true);
+    expect(empty.economy.chooseReward()).toBe(false);
+    expect(empty.run.state.credits).toBe(kuroganeSector.economy!.puzzleCredits);
   });
 });
 

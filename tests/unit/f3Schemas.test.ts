@@ -172,13 +172,12 @@ describe('SectorDefinition (sectorSchema)', () => {
 });
 
 describe('RoomDefinition (roomSchema)', () => {
-  it('przyjmuje poprawny pokój walki z props/puzzle oraz pokój bossa tylko z entry', () => {
+  it('przyjmuje poprawny pokój walki z props oraz pokój bossa tylko z entry', () => {
     const parsed = loadRoom({
       ...baseRoom,
       maxAlive: 8,
       minSpawnDistance: 6,
       props: [{ kind: 'crate', position: { x: 2, y: 0.5, z: 0 } }],
-      puzzle: { reachZone: { x: 0, y: 3, z: -6, radiusM: 1.5 } },
     });
     expect(parsed.id).toBe('combatYard');
 

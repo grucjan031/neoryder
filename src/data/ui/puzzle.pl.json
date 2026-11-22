@@ -1,0 +1,11 @@
+{
+  "plate": "Ustaw skrzynię w pierścieniu płyty naciskowej.",
+  "laser": "Przesuń osłonę w poprzek wiązki, by wyłączyć bramkę.",
+  "grab": "Przytrzymaj Chwyt i skieruj obiekt na cel.",
+  "push": "Podejdź do obiektu i popchnij go, idąc w jego stronę.",
+  "skip": "[{key}] Pomiń zagadkę bez nagrody",
+  "solved": "Zagadka rozwiązana",
+  "skipped": "Zagadka pominięta",
+  "debugStatus": "puzzle status — stan obiektu i celu zagadki",
+  "debugUnavailable": "Brak aktywnej zagadki."
+}

@@ -135,6 +135,7 @@ export interface GameEvents {
     layer: number;
   };
   room_cleared: { nodeId: string; type: NodeType; timeS: number };
+  puzzle_skipped: { nodeId: string };
   reward_offered: { nodeId: string; options: readonly string[] };
   implant_acquired: {
     id: string;

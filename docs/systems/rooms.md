@@ -50,6 +50,31 @@ Punkty gracza i spawnów nie mogą leżeć w polu elektrycznym ani w odległośc
 ≤ 1 m od odcinka lasera (dla pola: połowa rozmiaru + 1 m); beczek to nie dotyczy.
 Zachowanie zagrożeń: [hazards.md](hazards.md).
 
+## Zagadka z Chwytem (F3-19)
+
+Każdy pokój typu `puzzle` definiuje jeden ruchomy obiekt z pozycją środka,
+rozmiarem i masą. `puzzlePlate` zalicza ustawienie skrzyni przy podłodze
+w obrębie pierścienia płyty. `puzzleLaser` zalicza przecięcie odcinka
+wiązki przez collider osłony. Id bramki wskazuje hazard w tym samym pokoju.
+Obiekt jest celem Chwytu. Można go również popchnąć kapsułą gracza podczas
+chodzenia, także bez mocy w ekwipunku. Oba cele trzeba utrzymać przez
+`tuning.puzzle.confirmS`. Tolerancja wysokości płyty (`plateClearanceM`),
+masa pchania (`pushMassKg`) i tłumienie obiektu (`objectDamping`) są w lil-gui
+w sekcji `puzzle` i działają na żywo (odczyt co krok symulacji). Czas pokazania
+wyniku w runie to `resultHoldS`. Kolory obiektu i płyty pochodzą z materiałów
+motywu (`neon_amber` / `neon_green`), bez czerwieni. Walidacja danych odrzuca
+obiekt nachodzący na blok układu lub zbyt blisko punktu startu.
+
+Sprawdzenie w 30 sekund:
+
+1. Otwórz `?scene=puzzle-test&debug=1`. Przytrzymaj F na skrzyni, patrz lekko
+   w dół i dojdź tak, by skrzynia przez chwilę pozostała nad pierścieniem.
+2. Otwórz `?scene=puzzle-test&room=puzzleLaser&loadout=classic&debug=1`.
+   Podejdź do osłony od strony wejścia i popchnij ją w poprzek wiązki.
+   Sprawdź, czy obiekt reaguje płynnie, a laser gaśnie w chwili przecięcia.
+3. W świeżym pokoju naciśnij M (akcja `map`), by pominąć zagadkę.
+   Komenda `puzzle status` pokazuje pozycję obiektu, aktywację celu i wynik.
+
 Schemat `arena` (opcjonalny): `points` 3–5 punktów z kolejnymi
 id od `A`, `radiusM > 0`; `batchCellM`, `navigationCellM`, `navigationClearanceM`
 wymagane; `navigationMaxRiseM`, `navigationHeadroomM` opcjonalne (wymagane przez
@@ -89,9 +114,10 @@ Pule `roomPools` w `src/data/sectors/kurogane.json`:
 | elite  | `alleyUnderpass`, `eliteCourtyard`, `eliteFoundry`, `eliteHall`, `plazaHolo`                                                                                                                                         |
 | shop   | `noodleShop`, `shopRoom` (bez spawnów, bez fal)                                                                                                                                                                      |
 | rest   | `restRoom`, `rooftopRest` (bez spawnów, bez fal)                                                                                                                                                                     |
+| puzzle | `puzzlePlate`, `puzzleLaser` (bez spawnów i fal)                                                                                                                                                                     |
 | boss   | `bossRoom` (tylko drzwi entry, 6 spawnów, `bossEnemy: securityChief`, bez fal — F3-17)                                                                                                                               |
 
-Puzzle nie ma pokoi (`typeWeights.puzzle` = 0). Pokoje `combatSubstation`,
+Pokoje `combatSubstation`,
 `combatLaserYard`, `combatFloodedTunnel` i `eliteChemPlant` mają `hazards`
 ([hazards.md](hazards.md)). `alleyUnderpassMission` (combat, 8 spawnów,
 `electric_field`) nie jest w żadnej puli sektora: id kończące się na `Mission`
@@ -106,7 +132,8 @@ Kolejność reguł (determinizm: wynik zależy tylko od seeda runu i id węzła)
 toLayer` (pierwszy pasujący wpis), inaczej `roomPools[typ]` sektora, inaczej
    wszystkie pokoje tego typu z `roomDefinitions`. Id spoza `roomDefinitions` w puli to błąd.
 3. Filtr: odpada `arena.exclusive` oraz (poza misją) id kończące się na `Mission`.
-   Jeśli nic nie zostaje, kandydaci to wszystkie pokoje `combat` po tym samym filtrze.
+   Jeśli nic nie zostaje, kandydaci to wszystkie pokoje `combat` po tym samym
+   filtrze. Węzeł `puzzle` wymaga układu z definicją zagadki.
 4. Kandydaci sortowani po `id` (`localeCompare`), potem
    `new Rng(seed runu).fork('room-layout:<nodeId>').pick(kandydaci)` — jedno
    losowanie z osobnego strumienia, więc nie przesuwa innych strumieni.
@@ -137,7 +164,7 @@ Liczby limitów i odległości spawnu oraz geometria są w JSON.
 `tests/unit/rooms.test.ts` sprawdza dane, glob, granice, kolizje, cienkie ściany,
 narożniki, przesunięte układy, drzwi i duplikaty id oraz że glob ładuje
 wszystkie pliki katalogu, a pule sektora wskazują istniejące pokoje właściwego
-typu i pokrywają typy węzłów mapy (poza puzzle). Istniejące testy areny
+typu i pokrywają typy węzłów mapy. Istniejące testy areny
 sprawdzają jej niezmieniony stary schemat. Scena `?scene=room-test&room=<id>`
 jest zakresem F3-04; ten moduł dostarcza jej zwalidowane dane.
 Do późniejszego playtestu: wejście i wyjście mają być widoczne, osłony powinny
