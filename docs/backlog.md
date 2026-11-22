@@ -119,3 +119,10 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | --- | --- |
 | NPC ruchu oporu w kryjówce, dialogi | F5 |
 | Automatyczny wzrost Poziomu zagrożenia z poziomem postaci | Odrzucone w ADR 0007; wrócić, jeśli playtest F4 pokaże, że gra robi się za łatwa |
+
+## Wynikłe z kandydata do wydania (S10-02)
+
+| Pomysł | Dlaczego odłożone |
+| --- | --- |
+| Zabójstwa w misjach liniowych liczone do nagrody (`src/scenes/mission.ts` raportuje `kills: 0`; licznik żyje tylko w `RoomScene`) | Wymaga licznika w zapisie misji, żeby przetrwał checkpointy i odrodzenie; dziś nagroda misji = premia za zwycięstwo (+ `firstClear` za pierwsze ukończenie) |
+| Generatory map M03/M06 (`buildM03.mjs`, `buildM06.mjs`) do `tools/levels/` | Powstały poza repo podczas budowy poziomów; przydatne przy przebudowie map |
