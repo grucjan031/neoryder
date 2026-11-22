@@ -65,6 +65,10 @@ export const tuning = {
     mastEmissionMin: 1.5,
     mastEmissionMax: 4,
     radioCharsPerS: 16,
+    radioPageChars: 90,
+    dialoguePageChars: 150,
+    dialogueCharsPerS: 60,
+    dialogueAutoMinS: 2,
   },
   ui: {
     loadingTipS: 7,

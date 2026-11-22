@@ -29,20 +29,6 @@
   letter-spacing: 0.12em;
   color: #8894a8;
 }
-.missions-panel__interlude {
-  margin-bottom: 28px;
-  padding: 16px;
-  background: #0c1626;
-  border-left: 3px solid #c0a4ff;
-  border-bottom: 1px solid #56627a;
-}
-.missions-panel__interlude h3 {
-  margin: 0 0 16px;
-  color: #c0a4ff;
-}
-.missions-panel__interlude .mission-dialogue p:last-child {
-  margin-bottom: 0;
-}
 .missions-panel__levels {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));

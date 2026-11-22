@@ -123,8 +123,12 @@ test('List przewozowy: blokada po M01, siedem warstw, brama, debrief i kampania'
     .getByRole('button', { name: 'Wróć do kryjówki', exact: true })
     .click();
   await expect(
-    page.locator('[data-mission-debrief="m03-list-przewozowy"]'),
-  ).toContainText('ładunek biologiczny klasy K', { timeout: LOAD_TIMEOUT });
+    page.locator(
+      '[data-mission-debrief="m03-list-przewozowy"] .mission-dialogue__text',
+    ),
+  ).toContainText('rejestr z trzech miesięcy jest czysty', {
+    timeout: LOAD_TIMEOUT,
+  });
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
   // Okno znika dopiero po zapisie meta; przeładowanie wcześniej gubi wyczyszczony debrief.
   await expect(page.locator('[data-mission-debrief]')).toBeHidden({

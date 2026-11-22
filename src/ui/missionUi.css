@@ -1,18 +1,92 @@
 .mission-dialogue {
+  --mission-speaker: #ffae1a;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75em;
   color: #fff1d6;
-  line-height: 1.6;
+  line-height: 1.5;
 }
-.mission-dialogue [data-speaker] {
-  color: #ffae1a;
+.mission-dialogue[data-speaker='bajt'] {
+  --mission-speaker: #9bbaff;
 }
-.mission-dialogue [data-speaker='bajt'] {
-  color: #9bbaff;
+.mission-dialogue[data-speaker='mira'] {
+  --mission-speaker: #c0a4ff;
 }
-.mission-dialogue [data-speaker='mira'] {
+.mission-dialogue[data-speaker='tomasz'] {
+  --mission-speaker: #a0e890;
+}
+.mission-dialogue[data-speaker='brandt'] {
+  --mission-speaker: #ff5050;
+}
+.mission-dialogue__icon {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 2.2em;
+  aspect-ratio: 1;
+  border: 1px solid currentColor;
+  color: var(--mission-speaker);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.mission-dialogue strong {
+  grid-column: 2;
+  color: var(--mission-speaker);
+}
+.mission-dialogue__text {
+  grid-column: 2;
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.mission-dialogue__announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.mission-dialogue-player {
+  margin-block: 12px;
+}
+.mission-dialogue-player h3 {
+  margin: 0 0 10px;
+}
+.mission-dialogue-player[data-mission-interlude] h3 {
   color: #c0a4ff;
 }
-.mission-dialogue [data-speaker='tomasz'] {
-  color: #a0e890;
+.mission-dialogue-player .mission-dialogue {
+  padding: 12px;
+  border-inline-start: 2px solid var(--mission-speaker);
+  background: #070b16de;
+}
+.mission-dialogue-player .mission-dialogue__text {
+  min-height: 4.5em;
+}
+.mission-dialogue-player__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 8px;
+}
+.mission-dialogue-player__controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+.mission-dialogue-player__controls input {
+  accent-color: #ffae1a;
+}
+.mission-dialogue-player__controls kbd {
+  margin-inline-start: 0.6em;
+  color: #c0c8d6;
+  font-size: 0.8em;
 }
 .mission-hud {
   position: fixed;
@@ -45,21 +119,20 @@
   height: 5px;
   accent-color: #ffae1a;
 }
-.mission-radio {
-  position: absolute;
-  bottom: 32%;
-  left: 50%;
-  transform: translateX(-50%);
+.mission-radio--run {
+  position: fixed;
+  top: clamp(11rem, 24vh, 15rem);
+  right: 28px;
+  z-index: 102;
   box-sizing: border-box;
-  width: 60vw;
+  width: min(360px, 45vw);
   background: #070b16e8;
-  padding: 8px 16px;
-  text-align: center;
-  border-bottom: 1px solid #ffae1a;
-}
-.mission-radio p {
-  margin: 0;
-  line-height: 1.5;
+  padding: 8px 12px;
+  border-right: 2px solid #ffae1a;
+  pointer-events: none;
+  font:
+    16px/1.5 Rajdhani,
+    sans-serif;
 }
 .mission-debrief {
   box-sizing: border-box;
@@ -75,7 +148,11 @@
 .mission-debrief::backdrop {
   background: #030712cc;
 }
+.mission-debrief[data-mission-debrief] {
+  width: min(640px, 92vw);
+}
 .mission-debrief button,
+.mission-dialogue-player__controls button,
 .mission-choice {
   font: inherit;
   min-height: 44px;
@@ -91,6 +168,7 @@
   text-align: left;
 }
 .mission-choice:focus-visible,
+.mission-dialogue-player__controls button:focus-visible,
 .mission-debrief button:focus-visible {
   outline: 2px solid #ffae1a;
   outline-offset: 2px;
@@ -121,25 +199,10 @@
   .mission-goals progress {
     height: 3px;
   }
-  .mission-radio {
-    top: 32%;
-    bottom: auto;
-    width: calc(100vw - 32px);
-  }
-}
-
-.mission-radio--run {
-  position: fixed;
-  z-index: 102;
-  pointer-events: none;
-  color: #fff1d6;
-  font:
-    16px/1.5 Rajdhani,
-    sans-serif;
-}
-
-@media (max-width: 600px) {
   .mission-radio--run {
+    top: clamp(9rem, 24vh, 12rem);
+    right: 16px;
+    width: min(296px, calc(100vw - 32px));
     font-size: 14px;
   }
 }

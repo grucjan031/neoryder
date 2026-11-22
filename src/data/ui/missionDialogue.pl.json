@@ -10,6 +10,9 @@
   "start": "Rozpocznij misję",
   "back": "Wróć do tablicy",
   "close": "Zakończ rozmowę",
+  "next": "Dalej",
+  "autoAdvance": "Automatyczne przewijanie",
+  "space": "Spacja",
   "fuse": "Do wybuchu",
   "connecting": "Podłączanie dekodera",
   "transfer": "Transfer",
@@ -24,6 +27,17 @@
     "nadia": "Nadia",
     "tymon": "Tymon",
     "brandt": "Brandt"
+  },
+  "speakerIcons": {
+    "szron": "Sz",
+    "mira": "Mi",
+    "bajt": "Ba",
+    "tomasz": "To",
+    "ida": "Id",
+    "wolan": "Wo",
+    "nadia": "Na",
+    "tymon": "Ty",
+    "brandt": "Br"
   },
   "soon": "Wkrótce",
   "continueMission": "Kontynuuj misję",

@@ -3,7 +3,8 @@ import type { ModeId } from '../../world/modeSchema';
 import modeText from '../../data/ui/modes.pl.json';
 import { missionDefinitions } from '../../world/missions';
 import type { MissionDefinition } from '../../world/missionSchema';
-import { dialogueLines } from '../missionUi';
+import { MissionDialogue } from '../missionDialogue';
+import '../missionUi.css';
 import missionText from '../../data/ui/missionDialogue.pl.json';
 import textData from '../../data/ui/missions.pl.json';
 import { threatLevels } from '../../progression/threatSchema';
@@ -121,6 +122,11 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
 
   let selectedMission: MissionDefinition | undefined;
   let selectedMode: ModeId | undefined;
+  let dialogue: MissionDialogue | undefined;
+  const disposeDialogue = () => {
+    dialogue?.dispose();
+    dialogue = undefined;
+  };
   const choices = el('section');
   choices.dataset.missionList = '';
   const briefing = el('section');
@@ -139,6 +145,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
         const back = el('button', 'mission-choice', missionText.back);
         back.type = 'button';
         back.addEventListener('click', () => {
+          disposeDialogue();
           selectedMission = undefined;
           describe();
           briefing.hidden = true;
@@ -149,28 +156,26 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
           start.textContent = text.start;
           button.focus();
         });
-        briefing.replaceChildren(
-          el('h3', undefined, `${missionText.briefing} · ${mission.title}`),
-          dialogueLines(mission.briefing),
-          back,
-        );
-        if (mission.interlude) {
-          const interlude = el('section', 'missions-panel__interlude');
-          interlude.dataset.missionInterlude = '';
-          interlude.append(
-            el('h3', undefined, mission.interlude.title),
-            dialogueLines(mission.interlude.lines),
-          );
-          briefing.prepend(interlude);
-        }
+        disposeDialogue();
+        const title = `${missionText.briefing} · ${mission.title}`;
+        dialogue = new MissionDialogue([
+          ...(mission.interlude
+            ? [{ ...mission.interlude, interlude: true }]
+            : []),
+          { title, lines: mission.briefing },
+        ]);
+        const heading = el('h3', undefined, title);
+        heading.hidden = !dialogue.root.hidden;
+        briefing.replaceChildren(heading, dialogue.root, back);
         briefing.hidden = false;
         choices.hidden = true;
         sector.hidden = false;
         heading.hidden = true;
         list.hidden = true;
         start.textContent = missionText.start;
-        briefing.tabIndex = -1;
-        briefing.focus({ preventScroll: true });
+        (dialogue.root.hidden ? back : dialogue.root).focus({
+          preventScroll: true,
+        });
         sector.scrollIntoView({ block: 'start' });
       });
       choices.append(button);
@@ -180,6 +185,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   regular.type = 'button';
   regular.dataset.mission = 'regular';
   regular.addEventListener('click', () => {
+    disposeDialogue();
     selectedMode = undefined;
     selectedMission = undefined;
     describe();
@@ -363,6 +369,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     refresh,
     dispose(): void {
       disposed = true;
+      disposeDialogue();
       root.remove();
     },
   };

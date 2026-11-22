@@ -2013,6 +2013,8 @@ ogłuszenie ani kontrolę Rezonansem. Bez carry zachowanie pozostaje dotychczaso
 
 `RoomScene.missionState()` eksportuje migawkę celów do hosta; `RunManager.updateObjectives()` aktualizuje ją wyłącznie w aktywnej misji. `RoomSceneOptions.missionSignal(trigger)` przekazuje wyzwalacze radia do kolejki `MissionRadio` hostowanej przez run (kolejka przeżywa zmianę pokoju). Obrażenia i efekty eksplozji korzystają z istniejącego DamageSystem i EventBus.
 
+`DialogueLine` zawiera `speaker`, `text` i opcjonalne `shortText` dla radia. `MissionDialogue` przyjmuje uporządkowane sekcje `{ title?, lines, interlude? }` odprawy lub debriefu. Właściciel montuje i fokusuje `root` oraz wywołuje `dispose()` przy zamknięciu widoku, co zwalnia też timery.
+
 ## Pogoda i areny Przejęcia
 
 - `RoomDefinition.weather?: string`: id profilu z `src/data/weather`; brak zachowuje
