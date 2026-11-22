@@ -59,6 +59,7 @@ test('Odlewnia: tablica po M03, starcia, arena Brandta, serwer, winda, debrief i
           const game = window.__neoryder;
           if (game?.query('screen') !== 'map') return false;
           game.command('campaign complete m01-maszty');
+          game.command('campaign complete m02-punkt-kontrolny');
           game.command('campaign complete m03-list-przewozowy');
           return true;
         }),
@@ -185,7 +186,12 @@ test('Odlewnia: tablica po M03, starcia, arena Brandta, serwer, winda, debrief i
     .poll(() => query(page, 'meta'), { timeout: LOAD_TIMEOUT })
     .toMatchObject({
       campaign: {
-        completed: ['m01-maszty', 'm03-list-przewozowy', 'm06-odlewnia'],
+        completed: [
+          'm01-maszty',
+          'm02-punkt-kontrolny',
+          'm03-list-przewozowy',
+          'm06-odlewnia',
+        ],
         pendingDebrief: null,
       },
     });

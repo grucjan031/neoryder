@@ -6,7 +6,7 @@
   "act": 1,
   "summary": "Trop od Nadii prowadzi Iskrę do Magazynu 9 w porcie towarowym Hut, gdzie trafiali zatrzymani po pozytywnym skanie implantów. Kurier wchodzi do strzeżonego portu, stawia czoło nowym oddziałom Kurogane z Tarczownikami i dronami, a następnie utrzymuje pozycję przy terminalu spedycji, dopóki dekoder Bajta nie pobierze ksiąg wywozowych.",
   "sectorId": "kurogane",
-  "requires": ["m01-maszty"],
+  "requires": ["m02-punkt-kontrolny"],
   "layers": 7,
   "splashAct": 1,
   "enemies": ["assaulter", "gunner", "turret", "shielder", "drone"],

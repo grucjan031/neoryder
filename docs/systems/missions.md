@@ -77,7 +77,7 @@ Kryjówka czyta rekord i na tablicy oferuje „Kontynuuj misję”. Start zamra�
 wyposażenie warsztatu i talenty meta; obecny metazapis nie ma slotów implantów,
 więc początkowa lista implantów jest pusta, tak jak na starcie zwykłego runu.
 M03 i M06 są poziomami liniowymi (`level`, opis w `levels.md`) i startują z tablicy
-w scenie `mission`: M03 po ukończeniu M01, M06 po ukończeniu M03.
+w scenie `mission`: M03 po ukończeniu M02, M06 po ukończeniu M03.
 Zwykły run i Przejęcie zachowują przepływ.
 
 Migracja 5→6 zachowuje meta i aktywny run bez zmian; rekord misji jest początkowo
@@ -120,7 +120,30 @@ Wybuch (`sabotage`): zdarzenie `explosion` w punkcie celu (+0,5 m w górę) i ob
 
 **Tuning:** `tuning.mission`: `zoneRadiusM` 1,6, `pickupRadiusM` 1, `radioMinS` 3, `radioCharsPerS` 16 (tempo czytania dla radia i auto), `radioPageChars` 90, `radioCalmDelayS` 1,5, `radioStoryMaxWaitS` 20, `radioStoryReadFraction` 0,6, `dialoguePageChars` 150, `dialogueCharsPerS` 60, `dialogueAutoMinS` 2, `mastPulseHz` 0,5, `mastFusePulseHz` 2, `mastEmissionMin` 1,5, `mastEmissionMax` 4. `tuning.level`: `maxAlive` 12, `staticCellSizeM` 24, `respawnDelayS` 1,2.
 
-**Dane misji:** `m01-maszty` (nr 1, akt 1, `level: m01-maszty`, bez `requires`, firstClear 60 Danych; wrogowie `assaulter`, `gunner`, `turret`), `m03-list-przewozowy` (nr 3, wymaga M01, firstClear 95 Danych + 1 Rdzeń, `splashAct` 1; dodatkowo `shielder`, `drone`), `m06-odlewnia` (nr 6, `level: m06-odlewnia`, wymaga M03, 150 Danych + 3 Rdzenie, `splashAct` 2; wrogów określają fale poziomu, w tym `sniper`, `executor` i boss `securityChief`). Wszystkie mają 7 warstw.
+**Dane misji:** `m01-maszty` (nr 1, akt 1, `level: m01-maszty`, bez `requires`, firstClear 60 Danych; wrogowie `assaulter`, `gunner`, `turret`), `m02-punkt-kontrolny` (nr 2, wymaga M01, firstClear 80 Danych + 1 Rdzeń; debiut `executor`), `m03-list-przewozowy` (nr 3, wymaga M02, firstClear 95 Danych + 1 Rdzeń, `splashAct` 1; dodatkowo `shielder`, `drone`), `m06-odlewnia` (nr 6, `level: m06-odlewnia`, wymaga M03, 150 Danych + 3 Rdzenie, `splashAct` 2; wrogów określają fale poziomu, w tym `sniper`, `executor` i boss `securityChief`). Wszystkie mają 7 warstw.
+
+## M02 — uwolnienie kurierów
+
+`m02-punkt-kontrolny` startuje z tablicy po M01 jako scena `mission`.
+Cele w kolejności: `cell-1` → `cell-2` → `cell-3` (każdy `interact`, 2 s w strefie
+rygla) → `executor` (`killBoss`, koniec całego spotkania `bossFor`, elita z obstawą)
+→ `exit` (2 s za zachodnią bramą). Nie wymaga zmian silnika. Nadia dołącza po
+drugiej celi i korzysta z istniejącego systemu sojuszników; nie ma AI pozostałych
+więźniów ani trwałej śmierci Nadii. Opcjonalne cele scenariusza (rejestr skanów,
+premia za pełną ewakuację) nie należą do tego wariantu misji.
+
+Odprawa ma trzy kwestie, debrief sześć, bez przerywnika (scenariusz go nie ma).
+`shortText` dostosowuje kierunek rampy, otwieranie rygli i kolejność finału do
+mapy liniowej oraz pomija zachęty do nieaktywnego opcjonalnego skanera; pełne
+`text` pozostaje dosłownym tekstem scenariusza.
+Pozostałe kwestie odprawy i wszystkie kwestie radiowe scenariusza rozmieszczono
+na starcie, sekcjach, ukończeniu spotkań, celach oraz checkpointach. Radio Nadii
+po drugiej celi przekazuje trop Magazynu 9; checkpoint `ewakuacja` potwierdza
+otwarcie bramy, zanim gracz dotrze do wyjścia. Test `missionBriefing.test.ts`
+sprawdza dosłowność i kompletność treści. M03 wymaga odtąd M02; w tym worktree
+integracja M04 i zmiana wymagania M06 pozostają osobnym zadaniem. Istniejący
+przerywnik M03 opisujący uwolnienie przez „drugą ekipę” wymaga korekty redakcyjnej
+przy integracji kampanii (poza dozwoloną tu zmianą samego `requires` M03).
 
 ## Warianty misji-runów (zgodność)
 
@@ -141,7 +164,7 @@ M03 „List przewozowy” odblokowuje ukończenie M01 (M02 poza demem). W grze j
 
 Opcjonalne `defend.waves: { atProgress: number; wave: string }[]` uruchamia posiłki dokładnie raz przy przekroczeniu progu (0 < próg ≤ 1). Radio obsługuje `objective:<id>:progress:<0-100>` (całkowity procent), `started` po podłączeniu, `paused` przy pierwszym wyjściu po podłączeniu i `done` przy końcu transferu. Progi już osiągnięte nie powtarzają się po odtworzeniu postępu. HUD rozróżnia podłączanie, procent transferu i „TRANSFER WSTRZYMANY — wróć do strefy”. Dopiero osobny cel `exit` odblokowany przez terminal kończy misję.
 
-M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Od wersji liniowej M03 ma `level: m03-list-przewozowy` (mapa i przebieg: `docs/systems/levels.md`, sekcja „M03”); pola `typeWeights` i `roomPools` usunięto, `layers` i `fixedNodes` zostają, bo wymaga ich schemat misji (jak w M01). Fale transferu startują jako spotkania poziomu z `reinforcementFor: terminal:<indeks>`. Sprawdzenie: `?scene=mission&mission=m03-list-przewozowy&debug=1` po odblokowaniu M01 (`campaign complete m01-maszty` w `?scene=run&debug=1`), `objective done terminal`, następnie `objective done exit`.
+M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Od wersji liniowej M03 ma `level: m03-list-przewozowy` (mapa i przebieg: `docs/systems/levels.md`, sekcja „M03”); pola `typeWeights` i `roomPools` usunięto, `layers` i `fixedNodes` zostają, bo wymaga ich schemat misji (jak w M01). Fale transferu startują jako spotkania poziomu z `reinforcementFor: terminal:<indeks>`. Sprawdzenie: `?scene=mission&mission=m03-list-przewozowy&debug=1` po ukończeniu M01 i M02 (`campaign complete m01-maszty`, `campaign complete m02-punkt-kontrolny` w `?scene=run&debug=1`), `objective done terminal`, następnie `objective done exit`.
 
 M06 „Odlewnia” wymaga M03 i jest poziomem liniowym (`levels.md`, sekcja „M06 — Odlewnia”); wariant runowy został usunięty. Z pól runu zostały tylko te, których wymaga schemat: `layers: 7` i jeden węzeł finałowy (warstwa 7, `bossRoom`) z celami `brandt`, `server`, `exit`; `typeWeights`, `roomPools`, `enemies` i osłony węzłów zniknęły. Pozycje celów w danych misji są zastępowane przez `objectivePositions` poziomu. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Kwestie zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów; odprawa ma trzy z nich, reszta pada w radiu. Radio `enterNode:3|6|7` wyzwalają odcinki poziomu (hala formowania, przedpokój, arena).
 

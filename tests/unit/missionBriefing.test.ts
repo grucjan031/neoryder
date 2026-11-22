@@ -10,6 +10,11 @@ const MAX_DEBRIEF = 6;
 const missions = [
   ['m01-maszty', 'misja-01-maszty.md', 'W trakcie misji (radio)'],
   [
+    'm02-punkt-kontrolny',
+    'misja-02-punkt-kontrolny.md',
+    'W trakcie misji (radio)',
+  ],
+  [
     'm03-list-przewozowy',
     'misja-03-list-przewozowy.md',
     'W trakcie misji (radio)',

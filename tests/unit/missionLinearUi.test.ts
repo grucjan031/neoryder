@@ -45,6 +45,7 @@ it('tablica udostępnia M01, blokuje M03 i M06 (wymaga M03) i przekazuje kontynu
       )!.disabled,
     ).toBe(false);
     for (const [id, status] of [
+      ['m02-punkt-kontrolny', 'Zablokowana'],
       ['m03-list-przewozowy', 'Zablokowana'],
     ] as const) {
       const button = panel.root.querySelector<HTMLButtonElement>(

@@ -1,0 +1,298 @@
+{
+  "id": "m02-punkt-kontrolny",
+  "level": "m02-punkt-kontrolny",
+  "number": 2,
+  "title": "Punkt kontrolny",
+  "act": 1,
+  "sectorId": "kurogane",
+  "summary": "Kurogane zamyka kurierów w kontenerach przy starej bocznicy w Niecce. Otwórz trzy cele, uwolnij Nadię Korsak i pokonaj Egzekutora, aby wyprowadzić zatrzymanych przez zachodnią bramę.",
+  "requires": [
+    "m01-maszty"
+  ],
+  "layers": 7,
+  "enemies": [
+    "assaulter",
+    "gunner",
+    "turret",
+    "executor"
+  ],
+  "fixedNodes": [
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatYard",
+      "objectives": [
+        "cell-1",
+        "cell-2",
+        "cell-3",
+        "executor",
+        "exit"
+      ],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "cell-1",
+      "kind": "interact",
+      "label": "Otwórz rygiel pierwszej celi",
+      "position": {
+        "x": 116,
+        "y": 0,
+        "z": -7
+      },
+      "holdS": 2,
+      "unlockAfter": []
+    },
+    {
+      "id": "cell-2",
+      "kind": "interact",
+      "label": "Uwolnij Nadię z drugiej celi",
+      "position": {
+        "x": 94,
+        "y": 0,
+        "z": 7
+      },
+      "holdS": 2,
+      "unlockAfter": [
+        "cell-1"
+      ]
+    },
+    {
+      "id": "cell-3",
+      "kind": "interact",
+      "label": "Otwórz rygiel trzeciej celi",
+      "position": {
+        "x": 61,
+        "y": 0,
+        "z": -7
+      },
+      "holdS": 2,
+      "unlockAfter": [
+        "cell-2"
+      ]
+    },
+    {
+      "id": "executor",
+      "kind": "killBoss",
+      "label": "Pokonaj Egzekutora i jego obstawę"
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Wycofaj się przez bramę zachodnią",
+      "position": {
+        "x": 8,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": [
+        "cell-1",
+        "cell-2",
+        "cell-3",
+        "executor"
+      ]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "bajt",
+      "text": "Od rana zniknęło jedenaście osób z nocnej zmiany kurierskiej. Wszystkie sygnały urywają się przy starej bocznicy pod nasypem."
+    },
+    {
+      "speaker": "mira",
+      "text": "Sprawdziłam stare plany tej bocznicy. Trzymają ich w zwykłych kontenerach morskich z dorobionym zamkiem na siłowniku."
+    },
+    {
+      "speaker": "szron",
+      "text": "Jeśli jest w środku, ma wyjść żywa. Nie interesują nas w tym miejscu długie wymiany ognia — otwierasz trzy kontenery, wyprowadzasz ludzi przez zachodnią bramę."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "mira",
+      "text": "Opatrunek na ramieniu zmieniony, z resztą wrócili w jednym kawałku. Nadia poszła już wyżej, na Bulwar."
+    },
+    {
+      "speaker": "mira",
+      "text": "Tak powiedziała. Ma tam starych znajomych z dyspozytorni i legalną przepustkę do korytarzy towarowych. Będzie nam dawać znać przez twój szyfrowany przekaźnik, Bajt."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Zdecydowanie nie. Skaner Helixa badał reakcję kory ruchowej na impuls, dokładnie tak jak głowica z masztu. Tych, którzy nic nie wykazali, wypisywali z karą albo puszczali na drugą zmianę. Resztę kierowali dalej."
+    },
+    {
+      "speaker": "szron",
+      "text": "Do Magazynu 9 w porcie Hut."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Tak jak powiedziała Nadia. W spisie wywozu nie ma nazwisk, są tylko daty i numery wozów. Żeby zobaczyć, dokąd jadą z portu, trzeba wejść na terminal spedycji na miejscu."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Najpierw niech wszyscy złapią oddech. Jutro wieczorem sprawdzimy dojścia do nabrzeża."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jesteś pod ceglanym nasypem. Na górze stoi przynajmniej pięć patroli, trzymają światła nisko przy torach."
+        },
+        {
+          "speaker": "szron",
+          "text": "Trzymaj się krawędzi cienia przy ścianie oporowej. Rampa wstępna jest dwieście metrów na wschód.",
+          "shortText": "Trzymaj się krawędzi cienia przy ścianie oporowej. Kieruj się na rampę wstępną."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:patrol-kordon:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Nie stawiają nowych masztów. Zbierają ludzi z ulicy ręcznie, zanim znikną z pola widzenia."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "Z tamtej zmiany wywieźli też Nadię Korsak z dyspozytorni. Znasz ją z tras na dole, prawda?"
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "enterSection:bocznica",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Widzisz te skutery pod plandeką? Z każdej ramy wycięli nadajnik, skurwiele. Ktoś bardzo nie chce, żeby firmy kurierskie szukały zaginionych."
+        },
+        {
+          "speaker": "szron",
+          "text": "Zdejmij wieżyczkę przy szlabanie i ruszaj dalej w głąb bocznicy."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:rampa:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Skrzynka sterująca wisi zawsze po prawej stronie wrót. Dwa uderzenia ostrzem albo zwarcie na kablach i rygiel puszcza.",
+          "shortText": "Skrzynka sterująca wisi po prawej stronie wrót. Podejdź do rygla i zewrzyj kable."
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "enterSection:cele",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Na placu stoi jakiś biały sprzęt, którego nie widziałem nigdy w zbrojowniach Kurogane. Jeśli uda się podejść do konsoli, zgarnij logi, zanim je skasują.",
+          "shortText": "Na placu stoi jakiś biały sprzęt, którego nie widziałem nigdy w zbrojowniach Kurogane."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "Cywile nie mają pancerzy, Kurier. Gdy otworzysz drzwi, nie zostawiaj ich na otwartym torze."
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "objective:cell-1:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Pierwsze wrota puszczają! Wyprowadź ludzi za budkę z wagą, z lewej strony placu nie sięgają reflektory."
+        },
+        {
+          "speaker": "mira",
+          "text": "Dobrze. Jeszcze dwa kontenery. Drugi stoi za białą wiatą ze skanerem."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:cell-2:done",
+      "lines": [
+        {
+          "speaker": "nadia",
+          "text": "Czekaj... to naprawdę ty? Myślałam, że cię wywieźli dwa tygodnie temu, jak wszystkich z nocnej trasy."
+        },
+        {
+          "speaker": "szron",
+          "text": "Nadia, tu Szron. Słyszysz mnie przez komunikator? Trzymaj ludzi z tyłu, nie wychylajcie się zza osłon."
+        },
+        {
+          "speaker": "nadia",
+          "text": "Rozumiem. Słuchajcie — sprawdzają tu każdego białym skanerem medycznym. Kto miał czysty wynik, szedł na bok. A tych, którym coś piszczało przy głowie, ładowali jak bydło w zeszłym miesiącu do ciężarówek na Magazyn 9 w porcie."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:poscig-2:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "To samo białe tworzywo co w drugim maszcie, tylko w obudowie lekarskiej. Jak podepniesz na sekundę złącze, zgarnę listę numerów seryjnych.",
+          "shortText": "To samo białe tworzywo co w drugim maszcie, tylko w obudowie lekarskiej."
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "checkpoint:zbiorka",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Na bramie może siedzieć cięższa obstawa. Zrób przejście i wyprowadź wszystkich."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:dowodztwo",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Uwaga na dach przy suwnicy. Wychodzi ciężki pancerz z dowództwa punktu — Egzekutor. Nie daj mu się zamknąć przy ścianie."
+        },
+        {
+          "speaker": "nadia",
+          "text": "Trzeci kontener stoi tuż obok nich, słychać, jak pukają od środka, kurwa! Osłoń nas chwilę, przyciśniemy się do wagonów!"
+        },
+        {
+          "speaker": "mira",
+          "text": "Nie spiesz się z bramą, dopóki ten skurwiel stoi na nogach. Rozwal go albo zrzuć z toru, potem rwij rygiel trzeciej celi.",
+          "shortText": "Nie spiesz się z bramą, dopóki ten skurwiel stoi na nogach."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:ewakuacja",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Brama zachodnia odblokowana. Droga w kanały za nasypem jest czysta przez najbliższe trzy minuty."
+        },
+        {
+          "speaker": "nadia",
+          "text": "Wszyscy wyszli! Wracaj z nami, zanim ściągną posiłki z głównej bramy Hut!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Zamykaj przejście za ostatnim człowiekiem i wracaj na Kamienną. Dobra robota."
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 80,
+      "cores": 1
+    }
+  }
+}

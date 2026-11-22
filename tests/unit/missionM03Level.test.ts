@@ -32,7 +32,7 @@ afterEach(() => active.splice(0).forEach((scene) => scene.dispose()));
 async function unlockedStore(): Promise<SaveStore> {
   const store = createMemorySaveStore();
   const meta = createStarterMetaState();
-  meta.campaign.completed = ['m01-maszty'];
+  meta.campaign.completed = ['m01-maszty', 'm02-punkt-kontrolny'];
   await saveMetaManager(store, new MetaManager(meta));
   return store;
 }
@@ -193,7 +193,7 @@ it('LevelRuntime nie uruchamia fal obrony strefą; startuje je dopiero próg tra
   expect(state(scene).openGates).not.toContain('gate-dok');
 }, 120_000);
 
-it('misja wymaga ukończonej M01, a bramy mają kolizję do czasu spotkania i celu', async () => {
+it('misja wymaga ukończonej M02, a bramy mają kolizję do czasu spotkania i celu', async () => {
   await expect(setup(createMemorySaveStore())).rejects.toThrow(
     'Misja jest zablokowana.',
   );

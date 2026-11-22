@@ -27,8 +27,9 @@ samej fali. Spotkanie z kluczem `defend` nie startuje od strefy ani `after` — 
 je wyłącznie próg postępu (`atProgress`) zgłoszony przez `MissionObjectives`. Po odrodzeniu niewykonane
 posiłki mogą uruchomić się ponownie po powrocie do ich strefy.
 
-`bossFor` (id celu `killBoss`) oznacza spotkanie z bossem: jego fala zawiera
-wroga `kind: "boss"`, a ukończenie spotkania kończy wskazany cel. `closedDuring`
+`bossFor` (id celu `killBoss`) oznacza spotkanie dowódcy: ukończenie całej fali
+kończy wskazany cel. M06 używa wroga `kind: "boss"`, M02 elity `executor`
+z obstawą (bez paska i faz bossa). `closedDuring`
 (id spotkania) zamyka bramę ponownie na czas, gdy to spotkanie jest aktywne —
 brama areny otwiera się po `after`, zatrzaskuje za graczem i otwiera po walce.
 `loadLevel` odrzuca `bossFor` wskazujące cel inny niż `killBoss` oraz nieznane
@@ -160,7 +161,8 @@ z niewidocznym blokiem kolizji, bo walidacja układu liczy nieobrócony obrys. K
 wody i burty barki mają niewidoczne bloki; pokład barki to niewidoczna podłoga na y=0.
 Cyfry doków 7, 8 i 9 są złożone z bloków `neon_green`. Nie dodano nowych modeli.
 
-Sprawdzenie M03 w 30 s: ukończ M01 (`?scene=run&debug=1`, `campaign complete m01-maszty`),
+Sprawdzenie M03 w 30 s: ukończ M01 i M02 (`?scene=run&debug=1`, kolejno
+`campaign complete m01-maszty`, `campaign complete m02-punkt-kontrolny`),
 otwórz `?scene=mission&mission=m03-list-przewozowy&debug=1`, `god`. `tp 40 0 -90` startuje
 patrol, `encounter clear` otwiera bramę celną. `checkpoint magazyn`, podejdź do terminala
 i zostań w kręgu: przy 25/55/85% wchodzą fale; wyjście z kręgu zatrzymuje pasek.
@@ -261,3 +263,36 @@ Sprawdzenie w 30 sekund (`?scene=mission&mission=m06-odlewnia&debug=1`, po
 
 Opcjonalne pole `allies: [{ id, spawn, joinAfter? }]` dodaje sojuszników z `src/data/allies`
 (opis: `docs/systems/allies.md`, sekcja „Misje liniowe”). Poziomy bez tego pola działają jak dotąd.
+
+## M02 — Punkt kontrolny
+
+Generator `node tools/levels/buildM02.mjs` zapisuje poziom i pięć fal `m02*`.
+Jedna mapa ma 220 m długości i biegnie na zachód (malejące X), od x=215 do x=8:
+kordon pod nasypem (220–170), bocznica z rampą selekcji (170–130), plac dwóch
+kontenerów i skaner Helixa (130–80), punkt dowodzenia pod suwnicą z trzecią celą
+(80–30), zachodnia brama i kanał ewakuacyjny (30–0). Szerokości 16–28 m;
+przepusty mają stropy, wagony i kontenery osłaniają boki, środkiem wiedzie trasa.
+Modele pochodzą z istniejących zasobów `city_*` i `port_*`; światła używają palety
+ADR 0006. Rygiel wskazuje jasne światło, dodatkowa przesłona znika po interakcji;
+sam korpus kontenera pozostaje statyczny, bez animacji wychodzących cywilów.
+
+Osiem spotkań: `patrol-kordon`, `rampa`, `straz-cel`, pościgi `poscig-1..3`
+po otwarciu odpowiadających im cel, `oslona-suwnicy` i `egzekutor` po trzeciej
+celi. Egzekutor ma dwóch strzelców; wieżyczki stoją na rampie i przy suwnicy.
+Nie ma dronów ani tarczowników. Bramy x=170 i x=130 wymagają pokonania patrolu
+i rampy; x=80 otwarcia drugiej celi; x=30 ukończenia spotkania Egzekutora.
+Checkpointy: `start`, `bocznica`, `plac`, `zbiorka`, `ewakuacja`.
+
+Nadia (`allies`, `joinAfter: objective/cell-2`) dołącza przy drugiej celi,
+walczy i podąża za graczem do wyjścia; pozostali zatrzymani są tłem fabularnym.
+Wznowienie zapisu po uwolnieniu odtwarza Nadię. Obowiązuje wspólny model
+powalenia/podnoszenia sojuszników, bez trwałej śmierci i osobnego warunku porażki.
+
+Sprawdzenie w 30 s: po `campaign complete m01-maszty` w scenie `run` otwórz
+`?scene=mission&mission=m02-punkt-kontrolny&debug=1&fx=lite`, `god`.
+`tp 116 -7 90` (2 s), `tp 94 7 90` (2 s) uwalniają dwie cele i Nadię.
+`tp 61 -7 90` otwiera trzecią celę; po 3 s pojawia się Egzekutor z obstawą.
+`kill all` po zakończeniu spawnu otwiera zachodnią bramę; `tp 8 0 90` kończy misję.
+Pełne przejście kapsułą, kolizje bram, dołączenie i wznowienie Nadii sprawdza
+`missionM02Level.test.ts`; start z tablicy, walkę, powrót i zapis kampanii —
+`tests/e2e/missionM02.spec.ts`.
