@@ -41,6 +41,20 @@ export const levelSchema = z
   .extend({
     objectiveOrder: z.array(id).min(1),
     objectivePositions: z.record(id, vec3Schema),
+    payload: z
+      .object({
+        objective: id,
+        route: z.array(vec3Schema).min(2),
+        stops: z.array(
+          z.object({
+            id,
+            name: id,
+            atM: z.number().finite().positive(),
+            unlockAfter: id,
+          }),
+        ),
+      })
+      .optional(),
     sections: z
       .array(
         z.object({ id, name: id, zone: levelZoneSchema, radio: id.optional() }),
@@ -64,6 +78,7 @@ export const levelSchema = z
           id,
           position: vec3Schema,
           yawDeg: z.number().finite(),
+          payloadDistanceM: z.number().finite().nonnegative().optional(),
           zone: levelZoneSchema,
           after: dependency.optional(),
         }),
@@ -184,6 +199,45 @@ export function loadLevel(
   waves: ReadonlyMap<string, WavesDefinition>,
 ): LevelDefinition {
   const level = levelSchema.parse(data);
+  if (level.payload) {
+    const payload = level.payload;
+    if (
+      mission.objectives.find((o) => o.id === payload.objective)?.kind !==
+      'escortPayload'
+    )
+      throw new Error('Wagon wymaga celu escortPayload.');
+    let length = 0;
+    for (let i = 1; i < payload.route.length; i++) {
+      const a = payload.route[i - 1]!,
+        b = payload.route[i]!;
+      const span = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+      if (span <= 0) throw new Error('Powtórzony punkt trasy wagonu.');
+      length += span;
+    }
+    let previous = 0;
+    const seen = new Set<string>();
+    for (const stop of payload.stops) {
+      if (
+        seen.has(stop.id) ||
+        stop.atM <= previous ||
+        stop.atM >= length ||
+        !level.objectiveOrder.includes(stop.unlockAfter) ||
+        level.objectiveOrder.indexOf(stop.unlockAfter) >=
+          level.objectiveOrder.indexOf(payload.objective)
+      )
+        throw new Error('Nieprawidłowy postój wagonu.');
+      seen.add(stop.id);
+      previous = stop.atM;
+    }
+    for (const point of level.checkpoints)
+      if (
+        point.payloadDistanceM === undefined ||
+        point.payloadDistanceM > length
+      )
+        throw new Error('Checkpoint wymaga dystansu na trasie wagonu.');
+  } else if (mission.objectives.some((o) => o.kind === 'escortPayload')) {
+    throw new Error('Cel escortPayload wymaga wagonu poziomu.');
+  }
   if (mission.level !== level.id)
     throw new Error('Poziom nie odpowiada misji.');
   if (
@@ -243,6 +297,7 @@ export function loadLevel(
       ...level.checkpoints.map((point) => point.position),
       ...level.encounters.flatMap((encounter) => encounter.spawnPoints),
       ...(level.allies ?? []).map((ally) => ally.spawn),
+      ...(level.payload?.route ?? []),
     ],
   });
   return level;

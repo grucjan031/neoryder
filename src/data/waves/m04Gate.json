@@ -1,0 +1,40 @@
+{
+  "id": "m04Gate",
+  "firstBreakS": 1,
+  "breakS": 1,
+  "maxAlive": 6,
+  "minSpawnDistance": 0,
+  "spawnPoints": [
+    {
+      "x": 73,
+      "z": -5
+    },
+    {
+      "x": 77,
+      "z": 5
+    },
+    {
+      "x": 81,
+      "z": -4
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.8,
+      "groups": [
+        {
+          "enemy": "shielder",
+          "count": 1
+        },
+        {
+          "enemy": "gunner",
+          "count": 2
+        },
+        {
+          "enemy": "turret",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

@@ -13,7 +13,7 @@ import { missionDefinitions } from '../../src/world/missions';
 
 afterEach(() => document.body.replaceChildren());
 
-it('tablica udostępnia M01, blokuje M03 i M06 (wymaga M03) i przekazuje kontynuację zapisanej misji', () => {
+it('tablica udostępnia M01, blokuje M03, M04 i M06 (wymaga M04) i przekazuje kontynuację zapisanej misji', () => {
   const navigate = vi.fn();
   const missionSave: MissionSave = {
     saveVersion: SAVE_VERSION,
@@ -47,6 +47,7 @@ it('tablica udostępnia M01, blokuje M03 i M06 (wymaga M03) i przekazuje kontynu
     for (const [id, status] of [
       ['m02-punkt-kontrolny', 'Zablokowana'],
       ['m03-list-przewozowy', 'Zablokowana'],
+      ['m04-ladunek-klasy-k', 'Zablokowana'],
     ] as const) {
       const button = panel.root.querySelector<HTMLButtonElement>(
         `[data-mission="${id}"]`,

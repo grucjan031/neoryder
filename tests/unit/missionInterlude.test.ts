@@ -92,6 +92,7 @@ it('po M01–M03 misje liniowe M03 i M06 są dostępne z przerywnikiem, M01 ma o
     'm01-maszty',
     'm02-punkt-kontrolny',
     'm03-list-przewozowy',
+    'm04-ladunek-klasy-k',
   ];
   const original = HTMLElement.prototype.scrollIntoView;
   HTMLElement.prototype.scrollIntoView = vi.fn();

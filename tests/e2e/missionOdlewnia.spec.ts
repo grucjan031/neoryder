@@ -36,7 +36,7 @@ const openMissions = (page: Page) =>
     )
     .toBe(true);
 
-test('Odlewnia: tablica po M03, starcia, arena Brandta, serwer, winda, debrief i kampania', async ({
+test('Odlewnia: tablica po M04, starcia, arena Brandta, serwer, winda, debrief i kampania', async ({
   page,
 }) => {
   test.setTimeout(600_000);
@@ -44,7 +44,7 @@ test('Odlewnia: tablica po M03, starcia, arena Brandta, serwer, winda, debrief i
   page.on('pageerror', (error) => errors.push(error.message));
   const foundry = page.locator('[data-mission="m06-odlewnia"]');
 
-  // Bez M03 misja czeka na wymagania, ale nie jest już „Wkrótce”.
+  // Bez M04 misja czeka na wymagania, ale nie jest już „Wkrótce”.
   await page.goto('/?scene=hub&debug=1&fx=lite');
   await openMissions(page);
   await expect(foundry).toBeDisabled();
@@ -61,6 +61,7 @@ test('Odlewnia: tablica po M03, starcia, arena Brandta, serwer, winda, debrief i
           game.command('campaign complete m01-maszty');
           game.command('campaign complete m02-punkt-kontrolny');
           game.command('campaign complete m03-list-przewozowy');
+          game.command('campaign complete m04-ladunek-klasy-k');
           return true;
         }),
       { timeout: LOAD_TIMEOUT },
@@ -190,6 +191,7 @@ test('Odlewnia: tablica po M03, starcia, arena Brandta, serwer, winda, debrief i
           'm01-maszty',
           'm02-punkt-kontrolny',
           'm03-list-przewozowy',
+          'm04-ladunek-klasy-k',
           'm06-odlewnia',
         ],
         pendingDebrief: null,

@@ -1,0 +1,40 @@
+{
+  "id": "m04Junction",
+  "firstBreakS": 1,
+  "breakS": 1,
+  "maxAlive": 6,
+  "minSpawnDistance": 0,
+  "spawnPoints": [
+    {
+      "x": 124,
+      "z": -5
+    },
+    {
+      "x": 128,
+      "z": 5
+    },
+    {
+      "x": 132,
+      "z": -4
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.8,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 2
+        },
+        {
+          "enemy": "shielder",
+          "count": 1
+        },
+        {
+          "enemy": "drone",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

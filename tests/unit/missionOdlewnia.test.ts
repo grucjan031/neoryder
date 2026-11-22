@@ -25,7 +25,7 @@ const idle = {
 it('M06: kontrakt danych misji liniowej — poziom, wymagania, nagrody i bez pól runu', () => {
   expect(loadMission(data, roomDefinitions)).toEqual(mission);
   expect(mission.level).toBe('m06-odlewnia');
-  expect(mission.requires).toEqual(['m03-list-przewozowy']);
+  expect(mission.requires).toEqual(['m04-ladunek-klasy-k']);
   expect(mission.splashAct).toBe(2);
   expect(mission.rewards.firstClear).toEqual({ data: 150, cores: 3 });
   // Schemat misji wymaga węzła finałowego z celami; reszta sekwencji pokoi zniknęła.

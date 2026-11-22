@@ -1,4 +1,13 @@
 import type { Scene as ThreeScene } from 'three';
+import type { Collider } from '@dimforge/rapier3d-compat';
+import type { Vec3 } from '../core/math';
+import { Health } from '../combat/damage';
+import { CollisionGroup, interactionGroups } from '../physics';
+import { RailPayload } from '../world/railPayload';
+import { PayloadView } from './prototypeViews';
+import { lerpPose } from './prototypeScene';
+import { PrototypeHud } from '../ui/prototypeHud';
+import prototypeText from '../data/ui/prototypes.pl.json';
 import type { GameContext } from '../core/context';
 import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
@@ -51,6 +60,7 @@ export class MissionScene implements Scene {
   private runtime!: LevelRuntime;
   private snapshot!: MissionSave;
   private room?: RoomScene;
+  private payloadRoom?: PayloadMissionRoom;
   private radio?: MissionRadio;
   private direction?: MissionDirection;
   private readonly active = new Map<string, ActiveEncounter>();
@@ -62,8 +72,13 @@ export class MissionScene implements Scene {
   private pendingWrites = 0;
   private saveError: string | null = null;
   private state:
-    'loading' | 'playing' | 'respawning' | 'settling' | 'summary' | 'error' =
-    'loading';
+    | 'loading'
+    | 'playing'
+    | 'respawning'
+    | 'settling'
+    | 'summary'
+    | 'error'
+    | 'failed' = 'loading';
   private deathTimer = 0;
   private disposed = false;
   private ready = false;
@@ -175,7 +190,8 @@ export class MissionScene implements Scene {
       implants: this.snapshot.implants,
       threatLevel: this.snapshot.threatLevel,
     };
-    this.room = new RoomScene(
+    const Room = this.level.payload ? PayloadMissionRoom : RoomScene;
+    this.room = new Room(
       { ...this.level, doors: [] },
       combat,
       {
@@ -222,11 +238,20 @@ export class MissionScene implements Scene {
     }
     const checkpoint = this.currentCheckpoint();
     this.room.resetLevelCombat(checkpoint.position, checkpoint.yawDeg);
+    if (this.room instanceof PayloadMissionRoom) {
+      this.payloadRoom = this.room;
+      this.payloadRoom.initPayload(
+        this.level,
+        checkpoint.payloadDistanceM!,
+        this.options.loadModels ?? true,
+      );
+    }
     for (const id of this.snapshot.completedEncounters)
       this.room.allyDependencyDone('encounter', id);
     if (typeof document !== 'undefined')
       this.direction = new MissionDirection(() => {
-        if (this.state === 'error') void this.finish();
+        if (this.state === 'failed') this.failPayload();
+        else if (this.state === 'error') void this.finish();
         else this.persist();
       });
     this.off.push(
@@ -401,6 +426,7 @@ export class MissionScene implements Scene {
     );
     const point = this.currentCheckpoint();
     this.room!.resetLevelCombat(point.position, point.yawDeg);
+    this.payloadRoom?.restorePayload(point.payloadDistanceM!);
     this.state = 'playing';
     this.updateGates();
     this.persist();
@@ -418,6 +444,10 @@ export class MissionScene implements Scene {
     if (this.state !== 'playing') return;
     this.snapshot.elapsedS += dt;
     this.room!.step(dt, input);
+    if (this.payloadRoom?.payload.status === 'destroyed') {
+      this.failPayload();
+      return;
+    }
     if (this.state !== 'playing') return;
     const position = this.room!.playerSnapshot().position;
     for (const id of this.runtime.step(position, this.objectives()))
@@ -463,6 +493,8 @@ export class MissionScene implements Scene {
     for (const point of this.level.checkpoints.slice(currentIndex + 1)) {
       if (
         this.runtime.satisfied(point.after, this.objectives()) &&
+        (!this.payloadRoom ||
+          this.payloadRoom.payload.distanceM >= point.payloadDistanceM!) &&
         insideLevelZone(position, point.zone)
       )
         this.checkpoint(point.id);
@@ -494,7 +526,9 @@ export class MissionScene implements Scene {
     this.directed ??= Object.create(model, {
       position: {
         value: (objective: MissionObjective) =>
-          model.position(objective) ??
+          (objective.kind === 'escortPayload' && this.payloadRoom
+            ? this.payloadRoom.payload.position
+            : model.position(objective)) ??
           (this.level.encounters.some(
             (item) =>
               item.bossFor === objective.id && this.runtime.active.has(item.id),
@@ -506,7 +540,18 @@ export class MissionScene implements Scene {
     return this.directed;
   }
 
+  private failPayload(): void {
+    this.state = 'failed';
+    this.finishPending = false;
+    // Usunięcie próby jest za wcześniejszymi zapisami i może być ponowione po błędzie.
+    this.enqueue(() => this.store.clearMission!());
+    void this.saving.then(() => {
+      if (!this.disposed && !this.saveError) this.navigate('?scene=hub');
+    });
+  }
+
   private async finish(): Promise<void> {
+    if (this.state === 'failed') return;
     if (this.state === 'settling' || this.state === 'summary' || this.disposed)
       return;
     this.state = 'settling';
@@ -610,6 +655,22 @@ export class MissionScene implements Scene {
         return 'Spotkania ukończone.';
       },
     );
+    if (this.payloadRoom) {
+      register('payload status', 'payload status — stan wagonu', () =>
+        JSON.stringify(this.payloadRoom!.payload.snapshot()),
+      );
+      register('payload skip', 'payload skip — następny postój (debug)', () => {
+        this.payloadRoom!.payload.skip();
+        return 'Wagon przesunięty.';
+      });
+      register('payload hp', 'payload hp <n> — wytrzymałość wagonu', (args) => {
+        const hp = Number(args[0]);
+        if (args.length !== 1 || !Number.isFinite(hp) || hp < 0)
+          return 'Użycie: payload hp <n>';
+        this.payloadRoom!.setPayloadHp(hp);
+        return 'Wytrzymałość wagonu ustawiona.';
+      });
+    }
     register('mission radio', 'mission radio <trigger>', (args) => {
       this.radio?.signal(args.join(' '));
       return 'Radio.';
@@ -618,7 +679,8 @@ export class MissionScene implements Scene {
       'mission retry',
       'mission retry — ponów zapis lub rozliczenie',
       () => {
-        if (this.state === 'error') void this.finish();
+        if (this.state === 'failed') this.failPayload();
+        else if (this.state === 'error') void this.finish();
         else this.persist();
         return 'Ponowiono zapis.';
       },
@@ -626,6 +688,7 @@ export class MissionScene implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'payload') return this.payloadRoom?.payload.snapshot();
     if (name === 'loading') return !this.ready && this.state !== 'summary';
     if (name === 'screen') return this.state;
     if (name === 'saveError') return this.saveError;
@@ -660,5 +723,152 @@ export class MissionScene implements Scene {
     this.radio?.dispose();
     this.direction?.dispose();
     this.disposeSummary?.();
+  }
+}
+
+/** Adapter prototypu do hosta misji; wspólny RoomScene pozostaje bez zmian. */
+class PayloadMissionRoom extends RoomScene {
+  payload!: RailPayload;
+  private payloadDefinition!: NonNullable<LevelDefinition['payload']>;
+  private payloadHealth!: Health;
+  private payloadCollider!: Collider;
+  private payloadId!: EntityId;
+  private payloadView?: PayloadView;
+  private payloadHud?: PrototypeHud;
+  private previousPayload!: ReturnType<RailPayload['snapshot']>;
+
+  initPayload(
+    level: LevelDefinition,
+    distance: number,
+    loadModels: boolean,
+  ): void {
+    this.payloadDefinition = level.payload!;
+    const t = this.ctx.tuning.prototypes.payload;
+    this.payload = new RailPayload(
+      this.payloadDefinition.route,
+      this.payloadDefinition.stops.map((stop) => ({
+        ...stop,
+        holdS: 0,
+        wave: '',
+        clearRequired: false,
+      })),
+      t,
+      {
+        reinforce: () => {},
+        canDepart: (id) =>
+          this.objectiveModel()!.objectives[
+            this.payloadDefinition.stops.find((stop) => stop.id === id)!
+              .unlockAfter
+          ] === 'done',
+      },
+    );
+    this.payloadHealth = new Health(() => t.maxHealth);
+    this.payloadId = this.entities.create('payloadWagon', 'neutral');
+    this.damage.register(this.payloadId, this.payloadHealth, {
+      guard: (info) =>
+        info.source === null || this.entities.team(info.source) === 'enemy'
+          ? 1
+          : 0,
+    });
+    this.payloadCollider = this.world.createCollider(
+      this.rapier.ColliderDesc.cuboid(
+        t.bodyHalfLengthM,
+        t.bodyHalfHeightM,
+        t.bodyHalfWidthM,
+      ).setCollisionGroups(
+        interactionGroups(
+          CollisionGroup.Player,
+          CollisionGroup.EnemyProjectile | CollisionGroup.Enemy,
+        ),
+      ),
+    );
+    this.hurtboxes.add(this.payloadId, this.payloadCollider);
+    this.entities.bindCollider(this.payloadId, this.payloadCollider.handle);
+    this.payloadView = new PayloadView(t);
+    this.root.add(this.payloadView.root);
+    if (loadModels) void this.payloadView.load();
+    if (typeof document !== 'undefined') this.payloadHud = new PrototypeHud();
+    this.restorePayload(distance);
+  }
+
+  restorePayload(distance: number): void {
+    if (
+      this.objectiveModel()!.objectives[this.payloadDefinition.objective] ===
+      'done'
+    )
+      distance = this.payload.lengthM;
+    this.payload.restore(distance);
+    this.payloadHealth.reset();
+    this.previousPayload = this.payload.snapshot();
+    this.syncPayload();
+  }
+
+  setPayloadHp(hp: number): void {
+    this.payloadHealth.set(hp);
+    this.payload.setHp(this.payloadHealth.current);
+  }
+
+  override step(dt: number, input: InputSnapshot): void {
+    super.step(dt, input);
+    if (!this.payload || !(dt > 0)) return;
+    this.previousPayload = this.payload.snapshot();
+    this.payload.setHp(this.payloadHealth.current);
+    const hostiles: Vec3[] = [];
+    this.manager.forEach((enemy) => {
+      if (!enemy.removed && enemy.current.state !== 'dead')
+        hostiles.push(enemy.current.position);
+    });
+    this.payload.step(dt, {
+      player: this.player.getState().position,
+      hostiles,
+    });
+    this.syncPayload();
+    if (this.payload.status === 'arrived')
+      this.objectiveModel()!.done(this.payloadDefinition.objective);
+  }
+
+  private syncPayload(): void {
+    const pose = this.payload.snapshot();
+    const yaw = pose.yaw - Math.PI / 2;
+    this.payloadCollider.setTranslation({
+      ...pose.position,
+      y: pose.position.y + this.ctx.tuning.prototypes.payload.bodyHalfHeightM,
+    });
+    this.payloadCollider.setRotation({
+      x: 0,
+      y: Math.sin(yaw / 2),
+      z: 0,
+      w: Math.cos(yaw / 2),
+    });
+    this.payloadCollider.setEnabled(!this.payload.finished);
+    const text = prototypeText.payload;
+    this.payloadHud?.update({
+      title: text.title,
+      status: text[pose.status],
+      hp: { label: text.hp, current: pose.hp, max: pose.maxHp },
+      bar: { label: text.progress, value: pose.progress },
+      detail: pose.stopName ?? '',
+      outcome: pose.status === 'destroyed' ? 'failure' : null,
+    });
+  }
+
+  override render(alpha: number, frameDt?: number): void {
+    super.render(alpha, frameDt);
+    if (this.payload)
+      this.payloadView?.update(
+        lerpPose(this.previousPayload, this.payload.snapshot(), alpha),
+        this.payload.status === 'waitingPlayer',
+      );
+  }
+
+  override dispose(): void {
+    this.payloadView?.dispose();
+    this.payloadHud?.dispose();
+    if (this.payloadId !== undefined) {
+      this.hurtboxes.removeEntity(this.payloadId);
+      this.damage.unregister(this.payloadId);
+      this.entities.destroy(this.payloadId);
+    }
+    super.dispose();
   }
 }

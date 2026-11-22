@@ -1,0 +1,36 @@
+{
+  "id": "m04Patrol",
+  "firstBreakS": 1,
+  "breakS": 1,
+  "maxAlive": 6,
+  "minSpawnDistance": 0,
+  "spawnPoints": [
+    {
+      "x": 39,
+      "z": -5
+    },
+    {
+      "x": 43,
+      "z": 5
+    },
+    {
+      "x": 47,
+      "z": -4
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.8,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 2
+        },
+        {
+          "enemy": "gunner",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

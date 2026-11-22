@@ -130,7 +130,8 @@ export class MissionObjectives {
         this.done(id);
         continue;
       }
-      if (objective.kind === 'killBoss') continue;
+      if (objective.kind === 'killBoss' || objective.kind === 'escortPayload')
+        continue;
       const duration = objective.holdS;
       this.progress[id] = Math.min(1, (this.progress[id] ?? 0) + dt / duration);
       if (this.progress[id]! < 1 - 1e-9) continue;
