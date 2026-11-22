@@ -46,6 +46,7 @@ it.each([
     manager.dispose();
     const mission = {
       ...checkpoint,
+      saveVersion: 6,
       loadout: { ...checkpoint.loadout, modules: { blaster: ids } },
     };
     await new Promise<void>((resolve, reject) => {
@@ -72,8 +73,10 @@ it.each([
     const loaded = await store.loadRun();
     expect(loaded).not.toBeNull();
     expect(loaded!.run.loadout.modules).toEqual({ blaster: expected });
-    expect((await store.loadMission!())?.loadout.modules).toEqual({
-      blaster: expected,
+    expect(await store.loadMission!()).toEqual({
+      ...mission,
+      saveVersion: SAVE_VERSION,
+      loadout: { ...mission.loadout, modules: { blaster: expected } },
     });
     const restored = new RunManager(new EventBus());
     try {

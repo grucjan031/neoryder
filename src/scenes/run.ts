@@ -206,6 +206,7 @@ export class RunScene implements Scene {
       ctx.bus,
       this.sector,
       this.options.implantDefinitions ?? implantDefinitions,
+      (id) => this.meta.isUnlocked(`module:${id}`),
     );
     this.off.push(
       ctx.bus.on('entity_spawned', ({ id, kind }) => {
@@ -634,6 +635,13 @@ export class RunScene implements Scene {
         rewardError: this.rewardError,
         rewardPending: this.settling,
         rewardAlreadySaved: this.rewardAlreadySaved,
+        extractionAvailable:
+          this.manager.screen === 'summary' &&
+          !!this.metaResult &&
+          this.meta.state.pendingExtractions.some(
+            (offer) => offer.runId === runIdOf(this.manager.state),
+          ),
+        moduleOffers: this.economy.offerModules(),
         leaving: this.leaving,
         busy: this.manager.screen === 'room' && !this.roomReady,
         splash: this.loadingSplash(),
@@ -695,8 +703,8 @@ export class RunScene implements Scene {
         selectNode: (id) => {
           this.selectNode(id);
         },
-        chooseReward: (id) => {
-          if (this.economy.chooseReward(id)) this.showMap();
+        chooseReward: (id, moduleId) => {
+          if (this.economy.chooseReward(id, moduleId)) this.showMap();
         },
         buy: (id) => {
           this.economy.buy(id);
@@ -1344,6 +1352,20 @@ export class RunScene implements Scene {
       this.show();
       return `Implant: ${implant.id}`;
     });
+    register(
+      'run module',
+      'run module <id> — dodaj znaleziony moduł na mapie',
+      (args) => {
+        if (
+          this.manager.screen !== 'map' ||
+          args.length !== 1 ||
+          !this.manager.addFoundModule(args[0]!)
+        )
+          return 'Podaj nowy moduł na ekranie mapy.';
+        this.showMap();
+        return `Znaleziony moduł: ${args[0]}`;
+      },
+    );
   }
 
   dispose(): void {

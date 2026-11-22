@@ -1,6 +1,7 @@
 import type { EventBus } from '../core/events';
 import { Rng } from '../core/rng';
 import { Stats } from '../core/stats';
+import { tuning } from '../core/tuning';
 import playerData from '../data/scenes/roomPlayer.json';
 import type { RunManager } from '../world/run';
 import type { SectorDefinition } from '../world/sectorSchema';
@@ -10,6 +11,7 @@ import {
   type ImplantDefinition,
 } from './implants';
 import { offerReward } from './rewards';
+import { moduleDefinitions } from './moduleSchema';
 import { stockShop, type ShopItem } from './shop';
 import { upgradeOptions } from './rest';
 
@@ -27,6 +29,7 @@ export class RunEconomy {
       string,
       ImplantDefinition
     > = implantDefinitions,
+    private readonly isModuleUnlocked: (id: string) => boolean = () => false,
   ) {}
 
   private implants(): ImplantSystem {
@@ -98,13 +101,30 @@ export class RunEconomy {
       this.run.active && this.definitions.has(id) && this.acquire(id, 'reward')
     );
   }
-  chooseReward(id?: string): boolean {
+  offerModules(): string[] {
+    if (this.run.screen !== 'reward' || this.run.currentNode?.type !== 'elite')
+      return [];
+    const state = this.run.state;
+    const pool = [...moduleDefinitions.keys()]
+      .sort()
+      .filter(
+        (id) => !state.foundModules?.includes(id) && !this.isModuleUnlocked(id),
+      );
+    return new Rng(state.seed)
+      .fork(`module:${state.currentNodeId}`)
+      .shuffle(pool)
+      .slice(0, Math.max(0, tuning.run.eliteModuleOfferSize));
+  }
+  chooseReward(id?: string, moduleId?: string): boolean {
     if (this.run.screen !== 'reward') return false;
+    if (moduleId !== undefined && !this.offerModules().includes(moduleId))
+      return false;
     const options = this.offerReward();
     if (!options.length)
       this.run.addCredits(this.sector.economy?.puzzleCredits ?? 0);
     else if (!id || !options.includes(id) || !this.acquire(id, 'reward'))
       return false;
+    if (moduleId !== undefined) this.run.addFoundModule(moduleId);
     return this.run.completeReward();
   }
   buy(id: string): boolean {

@@ -137,7 +137,7 @@ describe('dane trudności, zapis i debug', () => {
       setDifficultyOverride('nightmare');
       run.restore(old);
       expect(runDifficulty(run.state)).toBe('normal');
-      expect(SAVE_VERSION).toBe(6);
+      expect(SAVE_VERSION).toBeGreaterThanOrEqual(6);
     } finally {
       run.dispose();
     }

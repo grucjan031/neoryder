@@ -18,6 +18,13 @@ import textData from '../../data/ui/workshop.pl.json';
 
 export const workshopText = z
   .object({
+    extraction: z.object({
+      title: z.string(),
+      choose: z.string(),
+      claim: z.string(),
+      saved: z.string(),
+      retry: z.string(),
+    }),
     unlocks: z.object({
       title: z.string(),
       owned: z.string(),

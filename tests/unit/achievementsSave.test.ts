@@ -55,8 +55,8 @@ function legacyMeta() {
 }
 
 describe('zapis v5: osiągnięcia', () => {
-  it('SAVE_VERSION to 6 (v5 naszywki, v6 rekord misji liniowej)', () => {
-    expect(SAVE_VERSION).toBe(6);
+  it('SAVE_VERSION to 7 (v5 naszywki, v6 checkpoint misji, v7 wydobycie modułu)', () => {
+    expect(SAVE_VERSION).toBe(7);
   });
 
   it('migruje meta v4 -> v5: puste osiągnięcia, reszta nietknięta', async () => {

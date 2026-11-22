@@ -1,4 +1,5 @@
 import { implantDefinitions } from '../progression/implants';
+import { moduleDefinitions } from '../progression/moduleSchema';
 import type { ApplyRunResult } from '../progression/meta';
 import type { MapNode, Rarity, RunState, RunSummary } from '../core/runTypes';
 import type { RunScreen } from '../world/run';
@@ -34,6 +35,8 @@ const text = z
       boss: z.string(),
     }),
     noRewards: z.string(),
+    eliteModule: z.string(),
+    extractionAvailable: z.string(),
     placeholder: z.string(),
     next: z.string(),
     menu: z.string(),
@@ -116,6 +119,8 @@ export interface RunScreenView {
   rewardError?: 'save' | 'apply' | null;
   /** Rozliczenie nagrody trwa (nagrody pokazujemy dopiero po potwierdzonym zapisie). */
   rewardPending?: boolean;
+  moduleOffers?: readonly string[];
+  extractionAvailable?: boolean;
   /** Nagroda była już zapisana wcześniej, a jej kwot nie da się odtworzyć. */
   rewardAlreadySaved?: boolean;
   /** Wyjście z podsumowania czeka na zapis: przyciski nawigacji wyłączone. */
@@ -141,7 +146,7 @@ export interface RunScreenView {
 export interface RunScreenActions {
   selectNode(id: string): void;
   next(): void;
-  chooseReward?(id?: string): void;
+  chooseReward?(id?: string, moduleId?: string): void;
   buy?(id: string): void;
   rest?(choice: 'heal' | 'upgrade', id?: string): void;
   menu(): void;
@@ -293,6 +298,7 @@ export class HtmlRunScreens implements RunScreens {
         }
       }
       if (view.meta) this.metaRewards(view.meta, summary?.threatLevel ?? 0);
+      if (view.extractionAvailable) this.line(text.extractionAvailable);
       if (view.rewardError) {
         const box = this.group('run-screen__reward-error');
         box.setAttribute('role', 'alert');
@@ -345,16 +351,32 @@ export class HtmlRunScreens implements RunScreens {
         leaving.setAttribute('role', 'status');
       }
     } else if (view.screen === 'reward') {
+      let selection: HTMLSelectElement | undefined;
+      if (view.moduleOffers?.length) {
+        const label = document.createElement('label');
+        label.textContent = text.eliteModule;
+        selection = document.createElement('select');
+        for (const id of view.moduleOffers) {
+          const module = moduleDefinitions.get(id)!;
+          selection.add(new Option(module.name, id));
+        }
+        label.append(selection);
+        this.panel.append(label);
+      }
+      const choose = (id?: string) => {
+        if (selection) actions.chooseReward?.(id, selection.value);
+        else if (id !== undefined) actions.chooseReward?.(id);
+        else actions.chooseReward?.();
+      };
       const cards = this.group('run-screen__offers');
       for (const offer of view.offers ?? [])
-        this.offer(offer, () => actions.chooseReward?.(offer.id), cards);
+        this.offer(offer, () => choose(offer.id), cards);
       if (!view.offers?.length) {
         cards.remove();
         this.line(text.noRewards);
         this.button(
           `${text.next} — ${text.credits}: +${view.fallbackCredits ?? 0}`,
-          () =>
-            actions.chooseReward ? actions.chooseReward() : actions.next(),
+          () => (actions.chooseReward ? choose() : actions.next()),
         );
       }
     } else if (view.screen === 'shop') {

@@ -46,6 +46,10 @@ Stan startowy (`createStarterMetaState`, dane `progression.json.starter`): 0 XP,
 
 `loadout()` zwraca pełny `Loadout` (`id: 'custom'`, `name: 'Własny'`, `startHeld: 'blade'`, `tags: []`) z głęboką kopią modułów. Brak `modules` w starych zapisach meta v3 uzupełnia się przez `{}` bez migracji. Moduły zostają zamrożone na start runu wraz z ekwipunkiem. Dane, ceny, UI i wykonanie łatek opisuje `docs/systems/weaponModules.md`.
 
+## Wydobycie modułów (zapis v7)
+
+`MetaState.pendingExtractions: { runId, moduleIds }[]` (migracja meta v6→v7 dopisuje `[]`). `applyRun` zapisuje ofertę z `RunSummary.foundModules` (znane, jeszcze nieodblokowane, bez duplikatów): po zwycięstwie wszystkie, po śmierci losowo (`Rng` z seeda runu) najwyżej `tuning.run.deathModulePoolSize`. `extractModule(runId, moduleId)` zużywa ofertę runu i dodaje odblokowanie `module:<id>`; moduł montuje się w warsztacie jak każdy odblokowany. Łup powstaje jako dodatkowa opcja na ekranie nagrody po elicie (`tuning.run.eliteModuleOfferSize`). Kontrakt: `docs/api.md`.
+
 ## Zdarzenia
 
 `meta_rewards` (po `applyRun`, potem `level_up` dla każdego zdobytego poziomu, potem `achievement_unlocked` dla każdej nowej naszywki), `unlock_purchased`, `loadout_changed`, `threat_selected`, `talents_changed`, `achievement_unlocked` (także przy zakupie, poziomie 10 i komendzie debug). Brak magistrali = brak emisji.
@@ -73,7 +77,7 @@ Pełny opis (drzewka, progi, lista węzłów, działanie w pokoju): `docs/system
 Kod: `src/progression/metaSave.ts`, `src/ui/metaCommands.ts`, `src/scenes/run.ts`, `src/ui/runScreens.ts`. Kontrakt: `docs/api.md` („Integracja runu z meta”).
 
 - `loadMetaManager(store, bus?)`: brak zapisu daje stan startowy z danych; zapis nieczytelny (też nowszej wersji albo błąd bazy) daje stan startowy z ostrzeżeniem w konsoli i **nie nadpisuje** zapisu. Dopiero pierwszy `saveMetaManager` go zastępuje (poza zapisem z nowszej wersji, który `SaveStore` odrzuca).
-- `saveMetaManager(store, manager)`: `MetaSave` w bieżącej `SAVE_VERSION` (6), `createdAt` zachowany, `updatedAt` ustawiony. Zapisy do jednego `SaveStore` są kolejkowane, a migawka stanu powstaje przy wywołaniu. Z tej pary korzystają `RunScene`, komendy debug i kryjówka (zadania 08–10).
+- `saveMetaManager(store, manager)`: `MetaSave` w bieżącej `SAVE_VERSION` (7), `createdAt` zachowany, `updatedAt` ustawiony. Zapisy do jednego `SaveStore` są kolejkowane, a migawka stanu powstaje przy wywołaniu. Z tej pary korzystają `RunScene`, komendy debug i kryjówka (zadania 08–10).
 - `RunScene` wczytuje meta przy starcie (każdy run). `?loadout=meta` zamraża w `RunState` ekwipunek (`loadout()`, `loadoutId: 'custom'`), talenty, `threat.selected` i bazowe `maxHealth` gracza (`src/data/scenes/roomPlayer.json`, 100). Presety nie czytają talentów ani poziomu zagrożenia.
 - Przy `run_ended` (śmierć i zwycięstwo, także presety): zapis runu ze śladem `ended`, świeży odczyt meta (`loadMetaManagerStrict`), `applyRun(summary, runIdOf(state))`, `saveMetaManager`, `clearRun` (szczegóły, błędy i ponawianie: `docs/systems/reliability.md`). Błąd odczytu, naliczenia lub zapisu meta przerywa rozliczenie przed `clearRun`: ślad `ended` zostaje, a podsumowanie oferuje ponowienie albo „Porzuć nagrodę”. Powtórne zakończenie tego samego runu (`runId` w `appliedRunIds`) nie zmienia meta i nie pokazuje nowych nagród.
 - Podsumowanie runu pokazuje Doświadczenie, Dane, Rdzenie, awans („Awans: Poziom 3 → 4”, tylko gdy nastąpił) i „Odblokowano Poziom zagrożenia N”; przycisk „Wróć do kryjówki” (`?scene=hub`, zachowuje `debug=1`) jest pierwszy.

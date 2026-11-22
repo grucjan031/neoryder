@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import {
+  moduleDefinitions,
+  moduleLootSchema,
+} from '../progression/moduleSchema';
+import {
   difficultyIdSchema,
   selectedDifficulty,
   type DifficultyId,
@@ -143,6 +147,7 @@ export const runStateSchema: z.ZodType<CheckpointRunState> = z
     hp: z.number().finite().nonnegative(),
     energy: z.number().finite().nonnegative(),
     credits: z.number().finite().nonnegative(),
+    foundModules: moduleLootSchema.optional(),
     roomCredits: z
       .record(z.string(), z.number().int().nonnegative())
       .optional(),
@@ -717,6 +722,15 @@ export class RunManager {
     return true;
   }
 
+  addFoundModule(id: string): boolean {
+    if (!this.currentState || !this.active || !moduleDefinitions.has(id))
+      return false;
+    const found = (this.currentState.foundModules ??= []);
+    if (found.includes(id)) return false;
+    found.push(id);
+    return true;
+  }
+
   /** Zastępuje posiadany implant jego ulepszeniem (`upgradesTo`), pilnując unikalności. */
   upgradeImplant(fromId: string, toId: string): boolean {
     if (!this.isRunActive() || !this.currentState || !toId) return false;
@@ -787,6 +801,9 @@ export class RunManager {
       threatLevel: this.currentState.threatLevel,
       layerReached: this.computeLayerReached(),
       implants: [...this.currentState.implants],
+      ...(this.currentState.foundModules && {
+        foundModules: [...this.currentState.foundModules],
+      }),
       damage: { ...this.currentState.stats.damage },
     };
 

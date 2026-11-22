@@ -1,4 +1,6 @@
 import type { EventBus } from '../core/events';
+import { Rng } from '../core/rng';
+import { tuning } from '../core/tuning';
 import { missionDefinitions } from '../world/missions';
 import {
   MAX_APPLIED_RUN_IDS,
@@ -225,6 +227,33 @@ export class MetaManager {
     return this.current.unlocks.includes(id);
   }
 
+  extractModule(runId: string, moduleId: string): void {
+    const offer = this.current.pendingExtractions.find(
+      (entry) => entry.runId === runId,
+    );
+    if (
+      !offer?.moduleIds.includes(moduleId) ||
+      this.isUnlocked(`module:${moduleId}`)
+    )
+      throw new Error('Ten moduł nie jest dostępny do wydobycia.');
+    this.current.pendingExtractions = this.current.pendingExtractions.filter(
+      (entry) => entry !== offer,
+    );
+    this.current.unlocks.push(`module:${moduleId}`);
+    this.removeUnlockedModulesFromOffers();
+  }
+
+  private removeUnlockedModulesFromOffers(): void {
+    this.current.pendingExtractions = this.current.pendingExtractions.filter(
+      (offer) => {
+        offer.moduleIds = offer.moduleIds.filter(
+          (id) => !this.isUnlocked(`module:${id}`),
+        );
+        return offer.moduleIds.length > 0;
+      },
+    );
+  }
+
   loadout(): Loadout {
     const { blade, weapons, powers, modules } = this.current.loadout;
     return {
@@ -292,6 +321,16 @@ export class MetaManager {
       rewards,
     };
     s.lastRuns = [record, ...s.lastRuns].slice(0, MAX_LAST_RUNS);
+    const found = [...new Set(summary.foundModules)].filter(
+      (id) => moduleDefinitions.has(id) && !this.isUnlocked(`module:${id}`),
+    );
+    const moduleIds = victory
+      ? found
+      : new Rng(summary.seed)
+          .fork('extraction')
+          .shuffle(found)
+          .slice(0, Math.max(0, tuning.run.deathModulePoolSize));
+    if (moduleIds.length) s.pendingExtractions.push({ runId, moduleIds });
     s.appliedRunIds = [...s.appliedRunIds, runId].slice(-MAX_APPLIED_RUN_IDS);
     let threatUnlocked = false;
     if (
@@ -417,6 +456,7 @@ export class MetaManager {
     this.current.data -= data;
     this.current.cores -= cores;
     this.current.unlocks.push(id);
+    if (id.startsWith('module:')) this.removeUnlockedModulesFromOffers();
     this.events?.emit('unlock_purchased', { id });
     this.grantFlag(ACHIEVEMENT_IDS.firstPurchase);
   }
@@ -586,6 +626,7 @@ export class MetaManager {
   debugUnlockAll(): void {
     for (const id of this.rules.unlocks.keys())
       if (!this.isUnlocked(id)) this.current.unlocks.push(id);
+    this.removeUnlockedModulesFromOffers();
   }
 
   debugReset(): void {

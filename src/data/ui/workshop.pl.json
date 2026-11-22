@@ -1,4 +1,11 @@
 {
+  "extraction": {
+    "title": "Wydobycie modułu",
+    "choose": "Wybierz jeden moduł z runu {seed}.",
+    "claim": "Wydobądź {name}",
+    "saved": "Moduł odblokowany. Możesz go zamontować w ekwipunku.",
+    "retry": "Ponów zapis wydobycia"
+  },
   "unlocks": {
     "title": "Odblokowania",
     "owned": "Posiadane",

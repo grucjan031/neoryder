@@ -1047,6 +1047,8 @@ export const tuning = {
   },
   /** Pętla runu (F3): czasy przejść między ekranami i pokojami (s). */
   run: {
+    eliteModuleOfferSize: 3,
+    deathModulePoolSize: 1,
     transitionS: 0.6,
     fadeS: 0.35,
     rewardDelayS: 1,

@@ -107,6 +107,7 @@ export function createStarterMetaState(
     cores: starter.cores,
     talents: [...starter.talents],
     unlocks: [...starter.unlocks],
+    pendingExtractions: [],
     loadout: {
       blade: starter.loadout.blade,
       weapons: [...starter.loadout.weapons],

@@ -67,6 +67,7 @@ export interface RunState {
   credits: number;
   /** Id posiadanych implantów, bez duplikatów. */
   implants: string[];
+  foundModules?: string[];
   stats: {
     kills: number;
     damage: RunDamageStats;
@@ -97,6 +98,7 @@ export interface RunSummary {
   threatLevel: number;
   layerReached: number;
   implants: string[];
+  foundModules?: string[];
   damage: RunDamageStats;
   /** Dane osiągnięć zebrane w runie; brak pola = nic nie naliczamy (stare zapisy). */
   achievements?: RunAchievementProgress;

@@ -144,6 +144,23 @@ HUD reaguje na `status_applied`/`status_expired` gracza.
 
 ## Warsztat modułów broni
 
+### Łup z elity i wydobycie (zapis v7)
+
+`RunEconomy.offerModules()` zwraca id dodatkowych modułów na ekranie nagrody
+po elicie. `chooseReward(implantId?, moduleId?)` waliduje wybór z obu ofert
+i kończy nagrodę jednym przejściem na mapę. `RunState.foundModules` i
+`RunSummary.foundModules` zawierają wyłącznie id zdobyte w tym runie.
+Brak pola oznacza pusty łup. `RunManager.addFoundModule(id)` dodaje znany
+moduł raz do aktywnego runu.
+
+`MetaManager.applyRun(summary, runId)` zapisuje w `MetaState.pendingExtractions`
+ofertę `{ runId, moduleIds }` razem z pozostałymi nagrodami. Zwycięstwo
+udostępnia wszystkie znalezione i jeszcze zablokowane moduły. Po śmierci
+rozmiar puli ogranicza `tuning.run.deathModulePoolSize`. W warsztacie
+`MetaManager.extractModule(runId, moduleId)` zużywa ofertę danego runu
+i dodaje trwałe odblokowanie `module:<id>`. Hub zapisuje obie zmiany
+w jednej migawce meta. Wznowienie rozliczenia używa istniejącej oferty.
+
 Rozszerzenie S4c-A: `MODULE_SLOTS = ['muzzle', 'cell', 'optic']`, typ `ModuleSlot`.
 Moduł wymaga `slot` i `visual: { shape, color }` (kształt zgodny ze slotem).
 `modulePatches` sortuje moduły według `MODULE_SLOTS`. Limit wynosi 3, po jednym
