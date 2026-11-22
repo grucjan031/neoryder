@@ -13,7 +13,7 @@ import { missionDefinitions } from '../../src/world/missions';
 
 afterEach(() => document.body.replaceChildren());
 
-it('tablica udostępnia M01, blokuje M03/M06 i przekazuje kontynuację zapisanej misji', () => {
+it('tablica udostępnia M01, blokuje M03 i M06 (wymaga M03) i przekazuje kontynuację zapisanej misji', () => {
   const navigate = vi.fn();
   const missionSave: MissionSave = {
     saveVersion: SAVE_VERSION,
@@ -46,7 +46,6 @@ it('tablica udostępnia M01, blokuje M03/M06 i przekazuje kontynuację zapisanej
     ).toBe(false);
     for (const [id, status] of [
       ['m03-list-przewozowy', 'Zablokowana'],
-      ['m06-odlewnia', 'Wkrótce'],
     ] as const) {
       const button = panel.root.querySelector<HTMLButtonElement>(
         `[data-mission="${id}"]`,
@@ -54,6 +53,11 @@ it('tablica udostępnia M01, blokuje M03/M06 i przekazuje kontynuację zapisanej
       expect(button.disabled).toBe(true);
       expect(button.textContent).toContain(status);
     }
+    const foundry = panel.root.querySelector<HTMLButtonElement>(
+      '[data-mission="m06-odlewnia"]',
+    )!;
+    expect(foundry.disabled).toBe(true);
+    expect(foundry.textContent).not.toContain('Wkrótce');
     const resume = panel.root.querySelector<HTMLButtonElement>(
       '[data-action="continue-mission"]',
     )!;

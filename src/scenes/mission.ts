@@ -14,7 +14,11 @@ import { levelDefinitions, levelWaves } from '../world/levels';
 import { insideLevelZone, LevelRuntime } from '../world/levelRuntime';
 import type { LevelDefinition } from '../world/levelSchema';
 import { missionDefinitions } from '../world/missions';
-import type { MissionDefinition } from '../world/missionSchema';
+import type {
+  MissionDefinition,
+  MissionObjective,
+} from '../world/missionSchema';
+import type { MissionObjectives } from '../world/missionObjectives';
 import { WaveDirector } from '../world/waves';
 import { preserveLiteFx } from '../render/fxMode';
 import {
@@ -66,6 +70,7 @@ export class MissionScene implements Scene {
   private finishPending = false;
   private readonly pendingReinforcements = new Set<string>();
   private disposeSummary?: () => void;
+  private directed?: MissionObjectives;
 
   constructor(private readonly options: MissionSceneOptions = {}) {
     this.store = options.store ?? createIndexedDbSaveStore();
@@ -227,6 +232,11 @@ export class MissionScene implements Scene {
         this.state = 'respawning';
         this.deathTimer = ctx.tuning.level.respawnDelayS;
       }),
+      // Boss spotkania nie jest bossem pokoju, więc RoomScene nie zgłasza jego faz.
+      ctx.bus.on('boss_phase', ({ phase }) => {
+        if (phase === 2 || phase === 3)
+          this.radio?.signal(`boss:phase:${phase}`);
+      }),
     );
     this.registerCommands();
     this.state = 'playing';
@@ -344,6 +354,8 @@ export class MissionScene implements Scene {
           return id;
         },
         playerPosition: () => this.room!.playerSnapshot().position,
+        // Boss jest jeden niezależnie od mnożnika liczebności poziomu trudności.
+        ...(encounter.bossFor ? { difficulty: 'normal' as const } : {}),
       },
       this.ctx.bus,
       new Rng(this.snapshot.seed).fork(`encounter:${id}`),
@@ -402,6 +414,14 @@ export class MissionScene implements Scene {
         entry.director.dispose();
         this.active.delete(id);
         this.runtime.clear(id);
+        const bossFor = this.level.encounters.find(
+          (item) => item.id === id,
+        )?.bossFor;
+        if (bossFor) {
+          // Kolejność jak w pokoju bossa: ostatnie słowa, potem ukończenie celu.
+          this.radio?.signal('boss:defeated');
+          this.room!.objectiveModel()?.done(bossFor);
+        }
       }
     }
     for (const section of this.level.sections) {
@@ -435,7 +455,31 @@ export class MissionScene implements Scene {
     this.room?.render(alpha, frameDt);
     this.direction?.setStatus(this.state, this.saveError);
     const model = this.room?.objectiveModel();
-    if (model) this.direction?.update(model, this.room!.playerSnapshot());
+    if (model)
+      this.direction?.update(
+        this.directionModel(model),
+        this.room!.playerSnapshot(),
+      );
+  }
+
+  /**
+   * Cel `killBoss` nie ma pozycji w danych misji: kierunek prowadzi na arenę z poziomu,
+   * a w trakcie walki znika, żeby nie zasłaniać paska bossa.
+   */
+  private directionModel(model: MissionObjectives): MissionObjectives {
+    this.directed ??= Object.create(model, {
+      position: {
+        value: (objective: MissionObjective) =>
+          model.position(objective) ??
+          (this.level.encounters.some(
+            (item) =>
+              item.bossFor === objective.id && this.runtime.active.has(item.id),
+          )
+            ? null
+            : (this.level.objectivePositions[objective.id] ?? null)),
+      },
+    }) as MissionObjectives;
+    return this.directed;
   }
 
   private async finish(): Promise<void> {

@@ -1,0 +1,24 @@
+{
+  "id": "m06Brandt",
+  "firstBreakS": 5,
+  "breakS": 0,
+  "maxAlive": 1,
+  "minSpawnDistance": 0,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "securityChief",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
