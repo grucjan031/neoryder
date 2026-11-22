@@ -1,0 +1,11 @@
+{
+  "names": { "orbisDirector": "Dyrektor Systemów Orbis Grid" },
+  "patternHelp": "boss pattern fan|summon|shield|laser|gridHack — wymuś zapowiedź ataku",
+  "patternInvalid": "Podaj dostępny wzorzec i poczekaj na koniec przejścia fazy lub ogłuszenia.",
+  "counter": "Łącze przerwane — kontratakuj",
+  "fan": "Salwa — odbij pocisk ostrzem",
+  "summon": "Nadlatują drony",
+  "laserLow": "Niska linia — skocz",
+  "laserHigh": "Wysoka linia — wykonaj ślizg",
+  "gridHack": "Zakłócenie sieci — opuść krąg"
+}

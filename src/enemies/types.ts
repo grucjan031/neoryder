@@ -37,6 +37,15 @@ export interface EnemySnapshot {
   aim?: Vec3;
   /** Boss: bieżący wzorzec ataku (czasy dla animacji); brak poza atakiem. */
   attack?: { kind: string; telegraphS: number; recoveryS: number };
+  field?:
+    | {
+        kind: 'laser';
+        center: Vec3;
+        yaw: number;
+        halfLengthM: number;
+        radiusM: number;
+      }
+    | { kind: 'gridHack'; center: Vec3; radiusM: number; destination: Vec3 };
   /**
    * Ogłuszenie z mocnego odrzutu (`knockback >= stunKnockback`): kierunek przewrócenia w świecie
    * (poziomy, jednostkowy). Tylko dla widoku (upadek i kip-up w czasie `stunOnHeavyS`).
@@ -72,7 +81,12 @@ export interface EnemyDependencies {
   entities: EntityRegistry;
   damage: DamageSystem;
   hurtboxes: Hurtboxes;
-  getTarget(): { id: EntityId; position: Vec3; yaw?: number } | null;
+  getTarget(): {
+    id: EntityId;
+    position: Vec3;
+    yaw?: number;
+    height?: number;
+  } | null;
   getNeighbors?(): readonly Enemy[];
   /** F2-12: tokeny ataku i sloty flankowania; bez dyrektora wróg atakuje jak w F1. */
   director?: EnemyDirectorApi;

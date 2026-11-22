@@ -31,12 +31,22 @@ export interface EnemyAnimation {
   continues?: boolean;
 }
 
+export function rifleman(
+  definition: Pick<EnemyDefinition, 'kind' | 'model'>,
+): boolean {
+  return (
+    definition.kind === 'gunner' ||
+    definition.kind === 'sniper' ||
+    definition.model === 'enemy_sniper'
+  );
+}
+
 /** Wybór pozy jest wyłącznie prezentacją istniejącego snapshotu AI. */
 export function selectEnemyAnimation(
   definition: EnemyDefinition,
   snapshot: EnemySnapshot,
 ): EnemyAnimation {
-  const ranged = definition.kind === 'gunner' || definition.kind === 'sniper';
+  const ranged = rifleman(definition);
   const shield = definition.kind === 'shielder';
   const result = (
     clip: EnemyClip,

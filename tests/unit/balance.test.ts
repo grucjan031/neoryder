@@ -297,6 +297,24 @@ describe('symulator TTK', () => {
 
     it('raport uwzględnia bossa dla każdego narzędzia poza bramką paczek', () => {
       const result = runBalance();
+      expect(result.bosses.map(({ id }) => id)).toContain('orbisDirector');
+      const orbis = result.bosses.findIndex(({ id }) => id === 'orbisDirector');
+      const beam = result.attacks.find(({ id }) => id === 'beam')!.bossResults[
+        orbis
+      ]!;
+      expect(beam.ttkS).toBeLessThan(Infinity);
+      expect(
+        beam.bossTimeline
+          ?.filter((event) => event.kind === 'phase')
+          .map((event) => event.phase),
+      ).toEqual([1, 2, 3]);
+      expect(beam.bossTimeline).toContainEqual(
+        expect.objectContaining({ pattern: 'gridHack' }),
+      );
+      expect(beam.bossTimeline).toContainEqual(
+        expect.objectContaining({ pattern: 'laser' }),
+      );
+      expect(result.enemies.map(({ id }) => id)).not.toContain('orbisDirector');
       const index = result.bosses.findIndex(({ id }) => id === boss.id);
       expect(index).toBeGreaterThanOrEqual(0);
       expect(result.bossPaths.map(({ enemy }) => enemy)).toContain(boss.id);
@@ -460,4 +478,20 @@ describe('symulator TTK', () => {
         ' — decyzja koordynatora o strojeniu, docs/systems/balance.md',
     );
   }
+});
+
+describe('Orbis Grid w symulatorze', () => {
+  it('statusy nałożone przez bossa na gracza nie trafiają do wyników narzędzia', () => {
+    const result = simulate(
+      { kind: 'weapon', definition: blasterDefinition },
+      enemyDefinitions.get('orbisDirector')!,
+      { settings: tuning },
+    );
+    expect(
+      result.bossTimeline?.some(
+        (e) => e.kind === 'pattern' && e.pattern === 'gridHack',
+      ),
+    ).toBe(true);
+    expect(result.appliedStatuses).not.toContain('jammed');
+  });
 });

@@ -669,7 +669,47 @@ losowanie, scena i komendy, reset oraz sprzątanie. Kryteria F3-16 nie wymagają
 
 Fale areny F2 i raport jej balansu nadal obejmują zwykłych wrogów. Test kompletności
 fal wymaga archetypów z `kind !== 'boss'`; `runBalance` stosuje ten sam filtr.
-Symulacja TTK bossa z fazami jest osobnym punktem w `docs/backlog.md`.
+TTK z fazami obu bossów podaje osobna tabela w `docs/balance.md`.
+
+## Dyrektor Systemów Orbis Grid
+
+W `?scene=boss-test&boss=orbisDirector&debug=1` Dyrektor ma 720 HP, rig Snajpera
+w skali 1,2 i czerwone akcenty na monoklu i pancerzu. Dane ataków i progi HP
+pochodzą z `orbisDirector.json`. Na obu progach cios zatrzymuje się dokładnie na
+progu, zapowiedź znika i przez `tuning.enemies.phaseShiftS` działa osłona fazowa.
+
+| Faza | Początkowe HP | Co zapowiada Dyrektor                                       | Odpowiedź gracza                                                    |
+| ---- | ------------- | ----------------------------------------------------------- | ------------------------------------------------------------------- |
+| I    | 100%          | Trzy pociski albo wezwanie dwóch dronów, do trzech żywych   | Blok ostrzem tuż przed trafieniem środkowego pocisku                |
+| II   | 65%           | Dochodzą niska linia na wysokości 0,35 m i zakłócenie sieci | Przeskocz linię lub zejdź w bok. Opuść czerwony krąg przed impulsem |
+| III  | 30%           | Pięć pocisków, wysoka linia na 1,48 m, drony i zakłócenie   | Prześlizgnij się pod linią i wykorzystaj pauzę po salwie            |
+
+Laser zamraża odcinek przechodzący przez pozycję gracza na początku zapowiedzi.
+Trafia raz na jej końcu, według aktualnej pozycji i wysokości kapsuły. Przy
+zakłóceniu czerwony krąg wyznacza obszar impulsu, a romb wskazuje przyszłe
+położenie bossa. Trafiony gracz otrzymuje `jammed` na 2,2 s. Opuszczenie kręgu
+pozwala zachować moce, a Dyrektor przeskakuje na wskazany znacznik.
+
+Trafienie Dyrektora jego własnym odbitym pociskiem przerywa zapowiedź. Przez
+2 s można podejść i zadać ×1,5 obrażeń. Czas i mnożnik są w panelu strojenia
+pod `enemies.reflectCounterS` i `enemies.reflectCounterMult`.
+Okno otwiera się dopiero po faktycznym przyjęciu obrażeń z odbitego pocisku (po
+tarczy i obcięciu do progu fazy). Sam odbity pocisk nie dostaje mnożnika, a
+trafienie na progu fazy lub zabicie nie otwiera kontry. Ogłuszenie kończy się
+razem z oknem.
+
+Zakłócenie wybiera znacznik teleportu najdalszy od gracza i nie bliżej niż suma
+promieni kapsuł. Bez znaczników (`spawnPoints`) wzorzec `gridHack` jest pomijany.
+Podpowiedzi i znaczniki pól (`BossFieldView`) rysuje na razie tylko `BossTest`,
+bo boss nie jest jeszcze w generatorze sektorów. Przed podpięciem do pokoi
+trzeba je przenieść do wspólnej oprawy bossa.
+
+Do próby w 30 s służą `boss phase 2` lub `boss phase 3`, a po zgaśnięciu
+osłony `boss pattern laser`, `boss pattern gridHack` i `boss pattern fan`.
+Porównaj skok z fazy II ze ślizgiem z fazy III. Przy impulsie spróbuj użyć
+Bariery (E) przed wygaśnięciem zagłuszenia i po nim. Przy salwie rozpocznij
+blok PPM tuż przed kontaktem, a po odbiciu sprawdź, ile czasu zostaje na
+podejście i cięcie LPM. `boss ttk` pokazuje pomiar dla wybranego bossa.
 
 ## Kontrola modeli CC0 w 30 sekund
 

@@ -1,0 +1,12 @@
+{
+  "powers": {
+    "slots": ["chain", "barrier"],
+    "maxEnergy": 100,
+    "energyRegen": 20
+  },
+  "spawnPoints": [
+    { "x": -8, "y": 0, "z": -7 },
+    { "x": 8, "y": 0, "z": -7 },
+    { "x": 0, "y": 0, "z": 8 }
+  ]
+}

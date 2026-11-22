@@ -86,7 +86,10 @@ obrażeń. Wezwani słudzy zajmują miejsca w limicie bossa do końca pojedynku.
 Obie strony stoją w zasięgu, a gracz stale celuje w bossa. Symulacja nie rozlicza
 obrażeń gracza otrzymywanych od bossa lub sług, unikania ataków, odbijania
 pocisków ani walki ze sługami. Wynik dotyczy jednej deterministycznej sekwencji
-wzorców.
+wzorców. W pojedynku z Dyrektorem Systemów nieruchomy gracz pozostaje w polu
+impulsu. Otrzymuje `jammed` i wznawia używanie mocy po wygaśnięciu statusu.
+Odległość ataku pozostaje stała również po teleportacji. Wyniki dla tej samej
+konfiguracji można wyświetlić przez `?scene=boss-test&boss=orbisDirector&debug=1`.
 
 Aby sprawdzić wynik w 30 sekund, otwórz `?scene=boss-test&debug=1`, włącz
 konsolę klawiszem `Backquote` i wpisz `boss ttk`. Komenda pokazuje TTK blastera i czasy
