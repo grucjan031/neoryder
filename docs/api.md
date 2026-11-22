@@ -2231,6 +2231,28 @@ semantyczne tekstury surfaces, bez zmiany materiałów pozostałych map.
 False wyłącza powierzchnię i ostrzeżenia AI, zachowując kolizję oraz kontrolę
 limitów schodów gracza.
 
+## Wyzwanie dnia
+
+- `localChallengeDate(now?: Date)` zwraca `RRRR-MM-DD` według lokalnego kalendarza.
+  Ten identyfikator dnia jest też seedem runu. `dailyChallenge` ładuje z JSON
+  i waliduje preset startowy oraz trudność.
+- `SaveStore.challenge?: ChallengeSavePort` obsługują oba wbudowane magazyny.
+  `loadHistory()` zwraca kopię rekordu `data → wynik | null`. `begin(date)`
+  atomowo rezerwuje dzień, zwracając `false`, jeśli próba już istnieje.
+  `finish(date, result)` zapisuje pierwszy wynik zarezerwowanej próby i jest
+  idempotentne. Wynik zawiera rezultat runu, czas symulacji, liczbę zabitych
+  wrogów i ukończonych pokoi. `null` oznacza rozpoczętą próbę bez wyniku.
+- Rekord `challenge` w IndexedDB ma własne pole `challengeVersion` (1) i własną listę
+  migracji (`src/core/challengeSave.ts`); `SAVE_VERSION` i migracje meta, runu i misji
+  pozostają bez zmian. Brak rekordu oznacza pustą historię. Rekord zepsuty trafia do
+  kopii `['corrupt','challenge',…]`, a historia jest pusta; rekord nowszej wersji jest
+  chroniony przed zapisem.
+- `?daily=1` otwiera ekran historii. `?scene=challenge` uruchamia istniejący
+  `RunScene` w wariancie `dailyChallenge`, który rezerwuje dzień przed startem
+  i zapisuje wynik z `run_ended` wyłącznie w historii. `RunScreenActions.history`
+  udostępnia powrót z podsumowania wyzwania. Próba zachowuje datę startu także
+  po północy.
+
 ## Prototypy eskorty więźnia i wagonu (S4-03)
 
 Izolowane moduły i sceny debug; system misji, AI wrogów, zapis i fizyka bez zmian.

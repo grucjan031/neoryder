@@ -305,3 +305,20 @@ sprawdź nowe pary, finał, nagrodę i powrót. Osobno bez `god`: `hurt 99999`
 trzy razy, czekając na odrodzenia; sprawdź pełne zdrowie, pozycję i porażkę.
 Ręczny feel: podejdź do kręgu, podłóż ładunek, odejdź przed końcem lontu;
 oceń tempo natarcia i czy obrońcy nie blokują przejścia.
+
+## Wyzwanie dnia
+
+Jedna próba na lokalny dzień kalendarzowy, bez backendu. Seed runu to data
+`RRRR-MM-DD` z `localChallengeDate()` (data jest wstrzykiwana, więc funkcja jest
+testowalna); ta sama data daje tę samą mapę. Preset startowy i trudność są w
+`src/data/modes/dailyChallenge.json`, teksty w `src/data/ui/challenge.pl.json`.
+
+Próba jest rezerwowana przed startem (`begin`), więc wyjście lub odświeżenie kończy ją
+bez wyniku (`null` w historii). Wynik (rezultat, czas, zabici, pokoje) trafia wyłącznie
+do rekordu `challenge`; meta-progres, nagrody i zapis zwykłego runu nie są dotykane.
+Rekord ma własną wersję `challengeVersion` (patrz `docs/api.md`).
+
+W 30 s: menu główne, "Wyzwanie dnia" (lub `?daily=1`) pokazuje historię i przycisk
+startu; `?scene=challenge` startuje próbę bezpośrednio. Drugie wejście tego samego dnia
+wraca do historii z zablokowanym startem. Usunięcie klucza `challenge` w IndexedDB
+(narzędzia przeglądarki) zeruje historię.

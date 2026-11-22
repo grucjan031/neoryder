@@ -10,6 +10,7 @@ import settingsText from '../data/ui/settings.pl.json';
 import tutorialText from '../data/ui/tutorial.pl.json';
 import { tutorialDone } from '../data/tutorial/schema';
 import { preserveLiteFx } from '../render/fxMode';
+import { challengeText } from './challengeText';
 import './mainMenu.css';
 import { appBuild, buildInfoText } from './buildInfo';
 
@@ -123,6 +124,14 @@ export class MainMenu {
       status,
       arena,
       arenaMutators,
+    );
+    this.root.append(
+      button(challengeText.title, () => {
+        const params = query('challenge');
+        params.delete('scene');
+        params.set('daily', '1');
+        navigate(`?${params}`);
+      }),
     );
     this.root.append(
       button(settingsText.title, () => {
