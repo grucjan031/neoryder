@@ -1,0 +1,24 @@
+{
+  "id": "foregrip",
+  "name": "Chwyt przedni",
+  "description": "Szybkostrzelność +8%, odrzut broni −30%. Broń grzeje się szybciej.",
+  "slot": "grip",
+  "visual": {
+    "shape": "foregrip",
+    "color": "amber"
+  },
+  "tags": ["#foregrip"],
+  "weaponKinds": ["projectile", "spread"],
+  "patches": [
+    {
+      "op": "mul",
+      "path": "fireRateHz",
+      "value": 1.08
+    },
+    {
+      "op": "mul",
+      "path": "recoilScale",
+      "value": 0.7
+    }
+  ]
+}

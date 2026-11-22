@@ -1,0 +1,29 @@
+{
+  "id": "pulseCell",
+  "name": "Ogniwo impulsowe",
+  "description": "Obrażenia +40%, szybkostrzelność −30%, ciepło na strzał +25%. Rzadsze, mocniejsze strzały.",
+  "slot": "cell",
+  "visual": {
+    "shape": "pulse",
+    "color": "amber"
+  },
+  "tags": ["#pulse-cell"],
+  "weaponKinds": ["projectile", "spread", "pierce"],
+  "patches": [
+    {
+      "op": "mul",
+      "path": "damage",
+      "value": 1.4
+    },
+    {
+      "op": "mul",
+      "path": "fireRateHz",
+      "value": 0.7
+    },
+    {
+      "op": "mul",
+      "path": "heatPerShot",
+      "value": 1.25
+    }
+  ]
+}

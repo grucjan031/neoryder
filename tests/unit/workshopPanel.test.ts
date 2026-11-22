@@ -244,7 +244,7 @@ describe('createWorkshopPanel', () => {
     );
     expect(
       panel.root.querySelectorAll('select[data-weapon="blaster"]'),
-    ).toHaveLength(3);
+    ).toHaveLength(4);
     select('blaster', 0).value = 'ricochet';
     select('blaster', 0).dispatchEvent(new Event('change'));
     await flush();
@@ -291,6 +291,7 @@ describe('createWorkshopPanel', () => {
     await flush();
     expect([...select('beam', 1).options].map((o) => o.value)).toEqual([
       '',
+      'extendedCell',
       'incendiary',
     ]);
     choice(panel.root, 'weapons', 'blaster')!.click();

@@ -143,3 +143,31 @@ po `sanitizeModules`). Wybór broni: przyciski `data-action="preview"` nad podgl
 (widoczne od dwóch broni w ekwipunku); stan pomocniczy w `previewTarget` (`workshopState.ts`).
 Testy: `weaponPreview.test.ts`, `workshopPreview.test.ts`, `workshopPanel.test.ts`
 (fallback), e2e `workshopPreview.spec.ts` (kryjówka `?scene=hub&debug=1&fx=lite`).
+
+## Sklep warsztatu: bronie i dodatki
+
+Warsztat (`workshopPanel.ts`, `workshopState.ts`) ma zakładki „Bronie” i „Dodatki”. Wiersz
+wybiera przedmiot, karta pokazuje cenę, opis, zgodność i porównanie statystyk przed/po
+(obrażenia, szybkostrzelność, DPS, rozrzut, odrzut, ciepło) liczone z `moddedWeapon()`
+(`src/progression/moddedWeapon.ts`, definicja po łatkach modułów). Akcje: Kup / Załóż / Zdejmij;
+niedostępne pozycje pokazują powód (poziom, Dane, Rdzenie, naszywka, brak zgodnej broni,
+limit slotów, pełny ekwipunek). Kupno idzie przez `MetaManager.buyUnlock`; bronie mają wpisy
+`weapon:<id>` w `unlocks.json` (bez zmiany zapisu, stare odblokowania zostają). Dodanie broni
+do zestawu wymaga wolnego slotu (`slot:weapon2`, `slot:weapon3`).
+
+Nowy slot `grip` (podwieszenie pod lufą) obok `muzzle`, `cell`, `optic`; limit
+`moduleSlotsPerWeapon` bez zmian. Nowe pola broni (łatane przez moduły): `recoilScale`
+(odrzut FPP), `hipSpreadScale` (rozrzut bez celowania), `heatCapacityScale`.
+
+| Dodatek                | Slot   | Efekt                                               | Cena                         |
+| ---------------------- | ------ | --------------------------------------------------- | ---------------------------- |
+| Chwyt przedni          | grip   | odrzut ×0,7, szybkostrzelność ×1,08                 | 150 Dane, poz. 2             |
+| Celownik laserowy      | grip   | rozrzut bez celowania ×0,4, zielona kropka          | 170 Dane, poz. 3             |
+| Kompensator            | muzzle | odrzut ×0,5, rozrzut ×0,8                           | 170 Dane, poz. 3             |
+| Celownik holograficzny | optic  | czas wejścia ×0,7, rozrzut w celowaniu ×0,35        | 190 Dane, poz. 4             |
+| Rozszerzone ogniwo     | cell   | pojemność cieplna ×1,3                              | 200 Dane, poz. 4             |
+| Ogniwo impulsowe       | cell   | obrażenia ×1,4, szybkostrzelność ×0,7, ciepło ×1,25 | 230 Dane + 2 Rdzenie, poz. 5 |
+
+Wygląd: nowe kształty w `weaponModuleVisuals.ts` (ramka holo ze znakiem w bursztynie,
+laser z kropką, kompensator, chwyt, ogniwa). Testy: `workshopShop.test.ts`, e2e
+`workshopShop.spec.ts`.

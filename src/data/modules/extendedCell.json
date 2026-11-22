@@ -1,0 +1,18 @@
+{
+  "id": "extendedCell",
+  "name": "Rozszerzone ogniwo",
+  "description": "Pojemność cieplna tej broni ×1,3: dłuższa seria przed przegrzaniem.",
+  "slot": "cell",
+  "visual": {
+    "shape": "extended",
+    "color": "green"
+  },
+  "tags": ["#extended-cell"],
+  "patches": [
+    {
+      "op": "set",
+      "path": "heatCapacityScale",
+      "value": 1.3
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "compensator",
+  "name": "Kompensator",
+  "description": "Odrzut broni −50%, rozrzut −20%.",
+  "slot": "muzzle",
+  "visual": {
+    "shape": "compensator",
+    "color": "white"
+  },
+  "tags": ["#compensator"],
+  "weaponKinds": ["projectile", "spread", "pierce", "lob"],
+  "patches": [
+    {
+      "op": "mul",
+      "path": "recoilScale",
+      "value": 0.5
+    },
+    {
+      "op": "mul",
+      "path": "spreadDeg",
+      "value": 0.8
+    }
+  ]
+}

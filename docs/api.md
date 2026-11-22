@@ -144,6 +144,9 @@ HUD reaguje na `status_applied`/`status_expired` gracza.
 
 ## Warsztat modułów broni
 
+Sklep warsztatu: `moddedWeapon(weaponId, moduleIds)` (`src/progression/moddedWeapon.ts`) zwraca definicję
+broni po łatkach modułów (podgląd statystyk, odrzut FPP); `MODULE_SLOTS` ma też slot `grip`.
+
 ### Łup z elity i wydobycie (zapis v7)
 
 `RunEconomy.offerModules()` zwraca id dodatkowych modułów na ekranie nagrody

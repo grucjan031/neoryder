@@ -1,0 +1,24 @@
+{
+  "id": "holo",
+  "name": "Celownik holograficzny",
+  "description": "Celowanie: czas wejścia ×0,7, rozrzut ×0,35 względem bazowego celowania. Bez przybliżenia.",
+  "slot": "optic",
+  "visual": {
+    "shape": "holo",
+    "color": "amber"
+  },
+  "tags": ["#optic"],
+  "weaponKinds": ["projectile", "spread"],
+  "patches": [
+    {
+      "op": "set",
+      "path": "aimInScale",
+      "value": 0.7
+    },
+    {
+      "op": "set",
+      "path": "aimSpreadScale",
+      "value": 0.35
+    }
+  ]
+}

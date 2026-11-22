@@ -1,0 +1,19 @@
+{
+  "id": "laser",
+  "name": "Celownik laserowy",
+  "description": "Rozrzut bez celowania ×0,4. Zielona wiązka pokazuje linię strzału z biodra.",
+  "slot": "grip",
+  "visual": {
+    "shape": "laser",
+    "color": "green"
+  },
+  "tags": ["#laser-sight"],
+  "weaponKinds": ["projectile", "spread"],
+  "patches": [
+    {
+      "op": "set",
+      "path": "hipSpreadScale",
+      "value": 0.4
+    }
+  ]
+}

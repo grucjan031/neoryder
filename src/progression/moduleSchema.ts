@@ -5,21 +5,31 @@ import type { Loadout } from './loadout';
 import { PATCH_OPS } from './patchSchema';
 import progression from '../data/meta/progression.json';
 
-export const MODULE_SLOTS = ['muzzle', 'cell', 'optic'] as const;
+/** Kolejność slotów = kolejność łatek; `grip` to podwieszenie pod lufą. */
+export const MODULE_SLOTS = ['muzzle', 'cell', 'optic', 'grip'] as const;
 export type ModuleSlot = (typeof MODULE_SLOTS)[number];
 export const MODULE_SHAPES = [
   'brake',
   'rail',
+  'compensator',
   'coil',
   'canister',
+  'extended',
+  'pulse',
   'reddot',
   'scope',
+  'holo',
+  'laser',
+  'foregrip',
 ] as const;
-const shapesBySlot: Record<ModuleSlot, readonly string[]> = {
-  muzzle: ['brake', 'rail'],
-  cell: ['coil', 'canister'],
-  optic: ['reddot', 'scope'],
-};
+export type ModuleShape = (typeof MODULE_SHAPES)[number];
+export const MODULE_SHAPES_BY_SLOT: Record<ModuleSlot, readonly ModuleShape[]> =
+  {
+    muzzle: ['brake', 'rail', 'compensator'],
+    cell: ['coil', 'canister', 'extended', 'pulse'],
+    optic: ['reddot', 'scope', 'holo'],
+    grip: ['laser', 'foregrip'],
+  };
 
 export const modulePatchSchema = z
   .object({
@@ -64,7 +74,7 @@ export const moduleSchema = z
   })
   .strict()
   .superRefine((module, ctx) => {
-    if (!shapesBySlot[module.slot].includes(module.visual.shape))
+    if (!MODULE_SHAPES_BY_SLOT[module.slot].includes(module.visual.shape))
       ctx.addIssue({
         code: 'custom',
         path: ['visual', 'shape'],

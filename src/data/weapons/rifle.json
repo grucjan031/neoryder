@@ -9,6 +9,7 @@
   "projectileSpeed": 75,
   "projectileLifetimeS": 2,
   "spreadDeg": 1.1,
+  "recoilScale": 1,
   "tags": ["#gun"],
   "model": "rifle",
   "grip": {

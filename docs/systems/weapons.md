@@ -427,3 +427,9 @@ Ręcznie w 30 sekund: otwórz scenę, wyceluj w środkowy manekin, przytrzymaj L
 oceń tempo, czytelność cyan i paska ciepła, blokadę po przegrzaniu oraz powrót
 do strzelania. Porównaj `fire 3` i `overheat` w konsoli; oceń pozycję broni
 i zmianę koloru otworów chłodzenia podczas ruchu kamery.
+
+## Pola modyfikowane przez dodatki
+
+`recoilScale` (odrzut widoku FPP), `hipSpreadScale` (rozrzut bez celowania, mnożnik
+`spreadDeg`; w pełnym celowaniu działa `aimSpreadScale`) i `heatCapacityScale` (mnożnik
+pojemności cieplnej). Wszystkie opcjonalne, domyślnie 1.

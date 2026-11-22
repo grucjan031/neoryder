@@ -83,3 +83,9 @@ Kod: `src/progression/metaSave.ts`, `src/ui/metaCommands.ts`, `src/scenes/run.ts
 - Podsumowanie runu pokazuje Doświadczenie, Dane, Rdzenie, awans („Awans: Poziom 3 → 4”, tylko gdy nastąpił) i „Odblokowano Poziom zagrożenia N”; przycisk „Wróć do kryjówki” (`?scene=hub`, zachowuje `debug=1`) jest pierwszy.
 - Komendy debug (`registerMetaCommands`, w scenach `run` i `hub`): `meta state`, `meta xp <n>`, `meta data <n>`, `meta cores <n>`, `meta threat <n>` (ustawia `threat.max`, `MetaManager.debugSetThreatMax`), `meta unlock all`, `meta reset`, `achievement grant <id>`; każda zmiana zapisuje meta. Argumenty liczbowe to liczby całkowite >= 0. `query('meta')` i `query('level')` w `RunScene` i `HubScene`.
 - Ręcznie: `?scene=run&loadout=meta&seed=x&debug=1`, `meta xp 40`, `run end win` → podsumowanie z nagrodami; po ponownym wejściu `query('meta')` pokazuje zapisany stan.
+
+## Zakup broni i dodatków
+
+Bronie i dodatki kupuje się jak inne odblokowania (`buyUnlock`, wpisy `weapon:*` i `module:*`
+w `unlocks.json`; koszt w Danych, droższe także w Rdzeniach, opcjonalnie `minLevel`).
+Format zapisu bez zmian (v7), brak migracji.

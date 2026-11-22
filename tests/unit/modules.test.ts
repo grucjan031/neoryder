@@ -30,11 +30,17 @@ const loadout = (weaponId: string, ids: string[]) =>
   });
 
 describe('moduły broni', () => {
-  it('ładuje sześć modułów, waliduje prefiks odblokowań, operacje i brak target', () => {
+  it('ładuje dwanaście modułów, waliduje prefiks odblokowań, operacje i brak target', () => {
     expect([...moduleDefinitions.keys()].sort()).toEqual([
       'collimator',
+      'compensator',
+      'extendedCell',
+      'foregrip',
+      'holo',
       'incendiary',
+      'laser',
       'pierce',
+      'pulseCell',
       'ricochet',
       'scope',
       'superconductor',
