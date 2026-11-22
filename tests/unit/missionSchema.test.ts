@@ -15,7 +15,7 @@ import { roomDefinitions } from '../../src/world/rooms';
 describe('Dane misji', () => {
   it('M03 ma 7 warstw, właściwe osłony, dozwolone pokoje i komplet fal', () => {
     const mission = loadMission(listData, roomDefinitions);
-    expect(mission.requires).toEqual(['m01-maszty']);
+    expect(mission.requires).toEqual(['m02-punkt-kontrolny']);
     expect(mission.layers).toBe(7);
     expect(
       mission.fixedNodes.map((n) => [n.layer, n.roomId, n.final ?? false]),

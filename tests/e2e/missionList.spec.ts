@@ -30,7 +30,7 @@ const openMissions = (page: Page) =>
     )
     .toBe(true);
 
-test('List przewozowy: blokada po M01, poziom liniowy z tablicy, bramy, debrief i kampania', async ({
+test('List przewozowy: wymaga M02, poziom liniowy z tablicy, bramy, debrief i kampania', async ({
   page,
 }) => {
   test.setTimeout(600_000);
@@ -51,6 +51,7 @@ test('List przewozowy: blokada po M01, poziom liniowy z tablicy, bramy, debrief 
           const game = window.__neoryder;
           if (game?.query('screen') !== 'map') return false;
           game.command('campaign complete m01-maszty');
+          game.command('campaign complete m02-punkt-kontrolny');
           return true;
         }),
       { timeout: LOAD_TIMEOUT },
@@ -124,7 +125,7 @@ test('List przewozowy: blokada po M01, poziom liniowy z tablicy, bramy, debrief 
     .poll(() => query(page, 'meta'), { timeout: LOAD_TIMEOUT })
     .toMatchObject({
       campaign: {
-        completed: ['m01-maszty', M03],
+        completed: ['m01-maszty', 'm02-punkt-kontrolny', M03],
         pendingDebrief: null,
       },
     });
