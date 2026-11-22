@@ -45,6 +45,8 @@ export class LevelRuntime {
     for (const encounter of this.level.encounters) {
       if (this.completed.has(encounter.id) || this.active.has(encounter.id))
         continue;
+      // Fale celu defend (`<cel>:<indeks>`) startuje wyłącznie próg postępu.
+      if (encounter.reinforcementFor?.includes(':')) continue;
       if (
         this.satisfied(encounter.after, objectives) &&
         insideLevelZone(position, encounter.zone)

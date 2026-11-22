@@ -99,7 +99,7 @@ it('M03 i M06 pozostają w danych, ale są niedostępne na tablicy; M01 ma odpra
   });
   document.body.append(panel.root);
   try {
-    for (const id of ['m03-list-przewozowy', 'm06-odlewnia']) {
+    for (const id of ['m06-odlewnia']) {
       const button = panel.root.querySelector<HTMLButtonElement>(
         `[data-mission="${id}"]`,
       )!;

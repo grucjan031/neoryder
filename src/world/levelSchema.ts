@@ -102,7 +102,10 @@ export const levelSchema = z
     for (const encounter of level.encounters) {
       if (
         encounter.reinforcementFor &&
-        !level.objectiveOrder.includes(encounter.reinforcementFor)
+        // Klucz posiłków: id celu sabotage albo `<id celu defend>:<indeks fali>`.
+        !level.objectiveOrder.includes(
+          encounter.reinforcementFor.split(':')[0]!,
+        )
       )
         ctx.addIssue({
           code: 'custom',
@@ -144,13 +147,17 @@ export function loadLevel(
     if (!waves.has(encounter.wave))
       throw new Error(`Nieznana fala: ${encounter.wave}`);
     if (encounter.reinforcementFor) {
+      const [objectiveId, index] = encounter.reinforcementFor.split(':');
       const objective = mission.objectives.find(
-        (item) => item.id === encounter.reinforcementFor,
+        (item) => item.id === objectiveId,
       );
-      if (
-        objective?.kind !== 'sabotage' ||
-        objective.reinforcements !== encounter.wave
-      )
+      const wave =
+        objective?.kind === 'sabotage' && index === undefined
+          ? objective.reinforcements
+          : objective?.kind === 'defend' && index !== undefined
+            ? objective.waves?.[Number(index)]?.wave
+            : undefined;
+      if (wave !== encounter.wave)
         throw new Error('Posiłki nie odpowiadają celowi misji.');
     }
   }

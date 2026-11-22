@@ -44,12 +44,15 @@ it('tablica udostępnia M01, blokuje M03/M06 i przekazuje kontynuację zapisanej
         '[data-mission="m01-maszty"]',
       )!.disabled,
     ).toBe(false);
-    for (const id of ['m03-list-przewozowy', 'm06-odlewnia']) {
+    for (const [id, status] of [
+      ['m03-list-przewozowy', 'Zablokowana'],
+      ['m06-odlewnia', 'Wkrótce'],
+    ] as const) {
       const button = panel.root.querySelector<HTMLButtonElement>(
         `[data-mission="${id}"]`,
       )!;
       expect(button.disabled).toBe(true);
-      expect(button.textContent).toContain('Wkrótce');
+      expect(button.textContent).toContain(status);
     }
     const resume = panel.root.querySelector<HTMLButtonElement>(
       '[data-action="continue-mission"]',

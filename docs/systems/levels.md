@@ -21,7 +21,10 @@ Nowe pola:
 `zone` to `{kind:"box",position,size}` (pełne wymiary) lub
 `{kind:"sphere",position,radiusM}`. Strefy uwzględniają wysokość. `after` ma
 `{kind:"objective"|"encounter",id}`. `reinforcementFor` wiąże spotkanie z wybuchem
-masztu; fala musi odpowiadać `reinforcements` celu. Po odrodzeniu niewykonane
+masztu (id celu `sabotage`; fala musi odpowiadać `reinforcements` celu) albo z progiem
+celu `defend`: klucz `<id celu>:<indeks>` wskazuje `waves[indeks]` celu i wymaga tej
+samej fali. Spotkanie z kluczem `defend` nie startuje od strefy ani `after` — uruchamia
+je wyłącznie próg postępu (`atProgress`) zgłoszony przez `MissionObjectives`. Po odrodzeniu niewykonane
 posiłki mogą uruchomić się ponownie po powrocie do ich strefy.
 
 `loadLevel(data, mission, waves)` sprawdza strukturę zod, unikalność id, referencje,
@@ -107,6 +110,43 @@ W poziomie liniowym render pomija bryły panoramy przecinające obwiednię blok�
 poziomu: w M01 mogły one wcześniej nachodzić na trasę m.in. przy x=87–95,
 x=120–127 i x=146–170. Pozostała panorama i niebo zostają dostępne w tle.
 Test `missionLinear.test.ts` sprawdza całą asfaltową podłogę względem brył panoramy.
+
+## M03 „List przewozowy”
+
+`src/data/levels/m03-list-przewozowy.json` (ok. 250 m trasy na wschód, motyw `neonStreet`),
+pięć sekcji:
+
+| Sekcja       | x (m)   | Szer. | Treść                                                                                                                                           |
+| ------------ | ------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nabrzeze`   | 0–84    | 8/28  | Kanał kablowy pod pirsem (zadaszony, x 0–28), potem nabrzeże: suwnica bramowa, kontenery w zakosach, wózek kontenerowy, kontenerowiec przy kei. |
+| `plac-celny` | 84–132  | 24    | Wyspa kontenerów z przesmykiem (x 106–110) i dwie zapory laserowe: południowa x=100, północna x=116. Biura dyspozytorskie (błękit, fiolet).     |
+| `przedpole`  | 132–176 | 30    | Posterunek przed wrotami Magazynu 9: kontenery w poprzek, wagon, bariery przy wrotach, zielona dziewiątka nad wejściem.                         |
+| `magazyn`    | 176–226 | 30    | Hala z terminalem na środku (201, 0, 0), krąg 6 m, galerie boczne na 4,25 m z rampami, kontenery poza kręgiem, dwie skrzynki w kręgu.           |
+| `dok`        | 226–262 | 20    | Dok załadunkowy i barka przy południowej krawędzi; cel `exit` w przejściu przez nadburcie (244, 0, −12,6).                                      |
+
+Spotkania (8): `patrol-nabrzeze` (`m03Quay`: 2 szturmowców, strzelec), `oslona-celna`
+(`m03Customs`: tarczownik, 2 drony, wieżyczka), `posterunek-magazynu` (`m03Forecourt`:
+2 tarczowników, 2 strzelców, 2 wieżyczki), `pierwsza-zmiana` (`missionPatrol`, strefa
+9 m wokół terminala), `transfer-1..3` (`reinforcementFor: terminal:0..2`; fale celu przy
+25/55/85%: `missionPatrol`, `missionDockShields`, `missionPatrol`) i `poscig`
+(`m03Pursuit`, po ukończeniu terminala, od strony wejścia). Bramy: `gate-patrol-nabrzeze`
+(x=84), `gate-oslona-celna` (x=132), `gate-magazyn` (x=176,5) po spotkaniach oraz
+`gate-dok` (x=225,5) po celu `terminal`. Checkpointy: `start`, `plac-celny`, `przedpole`,
+`magazyn`, `dok`. Radio sekcji: `enterNode:3`, `enterNode:6`, `enterNode:7`.
+
+Po odrodzeniu w trakcie transferu postęp wraca do 0 (wpięcie zostaje), a progi ponownie
+uruchamiają fale. Przeszkody obrócone o 90° (kontenery w poprzek, bariery) to dekor GLB
+z niewidocznym blokiem kolizji, bo walidacja układu liczy nieobrócony obrys. Krawędzie
+wody i burty barki mają niewidoczne bloki; pokład barki to niewidoczna podłoga na y=0.
+Cyfry doków 7, 8 i 9 są złożone z bloków `neon_green`. Nie dodano nowych modeli.
+
+Sprawdzenie M03 w 30 s: ukończ M01 (`?scene=run&debug=1`, `campaign complete m01-maszty`),
+otwórz `?scene=mission&mission=m03-list-przewozowy&debug=1`, `god`. `tp 40 0 -90` startuje
+patrol, `encounter clear` otwiera bramę celną. `checkpoint magazyn`, podejdź do terminala
+i zostań w kręgu: przy 25/55/85% wchodzą fale; wyjście z kręgu zatrzymuje pasek.
+`objective done terminal` otwiera bramę dokową, `checkpoint dok`, wejdź w ramę na trapie
+barki (2 s) albo `objective done exit`. Testy: `missionM03Level.test.ts`,
+`tests/e2e/missionList.spec.ts`.
 
 ## Sprawdzenie w 30 sekund
 
