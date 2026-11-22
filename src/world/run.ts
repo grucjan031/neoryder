@@ -29,6 +29,7 @@ import { loadoutDefinitions } from '../progression/loadout';
 import { resolveTalents } from '../progression/talents';
 import type { Loadout } from '../progression/loadout';
 import type { SectorDefinition } from './sectorSchema';
+import type { PuzzleOutcome } from './grabPuzzle';
 
 export const RUN_SCREENS = [
   'map',
@@ -51,8 +52,6 @@ export interface RunManagerOptions {
   creditsPerThreat?: number;
   /** Dodatkowe Kredyty za wyczyszczenie pokoju elity (domyślnie z sector.economy albo 0). */
   eliteBonusCredits?: number;
-  /** Kredyty za rozwiązanie pokoju zagadki (domyślnie z sector.economy albo 0). */
-  puzzleCredits?: number;
   /** Początkowe zdrowie gracza przy starcie runu (domyślnie 100). */
   initialHp?: number;
   /** Początkowa energia gracza przy starcie runu (domyślnie 100). */
@@ -102,7 +101,6 @@ export class RunManager {
   private readonly generateMap?: MapGenerator;
   private readonly creditsPerThreat: number;
   private readonly eliteBonusCredits: number;
-  private readonly puzzleCredits: number;
   private readonly initialHp: number;
   private readonly initialEnergy: number;
   private readonly now: () => number;
@@ -139,8 +137,6 @@ export class RunManager {
       DEFAULT_CREDITS_PER_THREAT;
     this.eliteBonusCredits =
       opts.eliteBonusCredits ?? opts.sector?.economy?.eliteBonusCredits ?? 0;
-    this.puzzleCredits =
-      opts.puzzleCredits ?? opts.sector?.economy?.puzzleCredits ?? 0;
     this.initialHp = opts.initialHp ?? DEFAULT_INITIAL_HP;
     this.initialEnergy = opts.initialEnergy ?? DEFAULT_INITIAL_ENERGY;
     this.now = opts.now ?? (() => Date.now());
@@ -390,11 +386,14 @@ export class RunManager {
    * - `combat` / `elite` → `reward` (dla elity nalicza też bonus Kredytów, jeśli skonfigurowano),
    * - `shop` → `shop`,
    * - `rest` → `rest`,
-   * - `puzzle` → `map` (nalicza `puzzleCredits`, jeśli skonfigurowano),
+   * - `puzzle` → `reward` po rozwiązaniu lub `map` po pominięciu,
    * - `boss` → `summary` (`finish('victory')`).
    * Opcjonalny `roomState` zapisuje zdrowie i energię na wyjściu z pokoju (bez leczenia pasywnego).
    */
-  completeRoom(roomState?: RoomExportState): boolean {
+  completeRoom(
+    roomState?: RoomExportState,
+    puzzleOutcome: PuzzleOutcome = 'solved',
+  ): boolean {
     if (
       !this.currentState ||
       this.currentScreen !== 'room' ||
@@ -403,7 +402,15 @@ export class RunManager {
       return false;
 
     const node = this.nodeIndex.get(this.currentState.currentNodeId);
-    if (!node) return false;
+    if (
+      !node ||
+      (puzzleOutcome === 'skipped' &&
+        (node.type !== 'puzzle' ||
+          this.currentState.modeId ||
+          node.fixed?.final ||
+          node.fixed?.objectives.length))
+    )
+      return false;
     if (
       this.currentState.missionId &&
       node.fixed?.objectives.some(
@@ -417,7 +424,7 @@ export class RunManager {
     if (roomState?.energy !== undefined && Number.isFinite(roomState.energy))
       this.currentState.energy = Math.max(0, roomState.energy);
 
-    this.clearedNodes.add(node.id);
+    if (puzzleOutcome !== 'skipped') this.clearedNodes.add(node.id);
     this.maxLayerReached = Math.max(this.maxLayerReached, node.layer);
 
     if (this.currentState.modeId) {
@@ -443,8 +450,7 @@ export class RunManager {
         this.currentScreen = 'rest';
         break;
       case 'puzzle':
-        if (this.puzzleCredits > 0) this.addCredits(this.puzzleCredits);
-        this.currentScreen = 'map';
+        this.currentScreen = puzzleOutcome === 'skipped' ? 'map' : 'reward';
         break;
       case 'boss':
         if (this.currentState.missionId) this.currentScreen = 'reward';

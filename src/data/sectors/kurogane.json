@@ -23,7 +23,7 @@
         "elite": 3,
         "shop": 1,
         "rest": 0,
-        "puzzle": 0
+        "puzzle": 0.08
       }
     }
   ],
@@ -140,6 +140,7 @@
     ],
     "shop": ["noodleShop", "shopRoom"],
     "rest": ["restRoom", "rooftopRest"],
+    "puzzle": ["puzzlePlate", "puzzleLaser"],
     "boss": ["bossRoom"]
   },
   "rewardWeights": {
@@ -154,6 +155,12 @@
       "rare": 50,
       "epic": 25,
       "legendary": 5
+    },
+    "puzzle": {
+      "common": 70,
+      "rare": 25,
+      "epic": 5,
+      "legendary": 0
     },
     "shop": {
       "common": 45,

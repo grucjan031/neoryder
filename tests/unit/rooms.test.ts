@@ -41,15 +41,83 @@ describe('pokoje F3: format, loader i układ', () => {
       for (const layer of generateSectorMap(kuroganeSector, seed).layers)
         for (const node of layer) used.add(node.type);
     for (const type of used)
-      if (type !== 'puzzle')
-        expect(pools[type as keyof typeof pools]?.length, type).toBeGreaterThan(
-          0,
-        );
+      expect(pools[type as keyof typeof pools]?.length, type).toBeGreaterThan(
+        0,
+      );
     expect(used.has('boss')).toBe(true);
     for (const id of pools.boss ?? [])
       expect(roomDefinitions.get(id)!.doors.map((door) => door.role)).toEqual([
         'entry',
       ]);
+  });
+
+  it('wymaga poprawnego celu zagadki i spójnego wskazania bramki', () => {
+    const plate = roomDefinitions.get('puzzlePlate')!;
+    const laser = roomDefinitions.get('puzzleLaser')!;
+    expect(plate.puzzle?.kind).toBe('plate');
+    expect(laser.puzzle?.kind).toBe('laser');
+    expect(() => loadRoom({ ...plate, puzzle: undefined })).toThrow(
+      /definicji zagadki/,
+    );
+    expect(() => loadRoom({ ...plate, type: 'rest' })).toThrow(
+      /definicji zagadki/,
+    );
+    expect(() => loadRoom({ ...laser, hazards: [] })).toThrow(
+      /wskazania bramki/,
+    );
+    const { object, position, radiusM } = plate.puzzle as Extract<
+      NonNullable<typeof plate.puzzle>,
+      { kind: 'plate' }
+    >;
+    const off = { x: 500, y: object.position.y, z: 500 };
+    expect(() =>
+      loadRoom({
+        ...plate,
+        puzzle: {
+          kind: 'plate',
+          object: { ...object, position: off },
+          position,
+          radiusM,
+        },
+      }),
+    ).toThrow(/nad podłogą/);
+    expect(() =>
+      loadRoom({
+        ...plate,
+        puzzle: {
+          kind: 'plate',
+          object,
+          position: { ...position, y: position.y + 1 },
+          radiusM,
+        },
+      }),
+    ).toThrow(/Płyta naciskowa/);
+    expect(() =>
+      loadRoom({
+        ...plate,
+        puzzle: {
+          kind: 'plate',
+          object: {
+            ...object,
+            position: {
+              ...object.position,
+              x: plate.playerSpawn.x,
+              z: plate.playerSpawn.z,
+            },
+          },
+          position,
+          radiusM,
+        },
+      }),
+    ).toThrow(/punktu startu/);
+    const hazard = laser.hazards![0]!;
+    if (hazard.kind !== 'laser_gate') throw new Error('oczekiwano lasera');
+    expect(() =>
+      loadRoom({
+        ...laser,
+        hazards: [{ ...hazard, to: { ...hazard.from } }],
+      }),
+    ).toThrow(/różnych końcach/);
   });
 
   it('odrzuca punkt w filarze, osłonie i na krawędzi bloku', () => {

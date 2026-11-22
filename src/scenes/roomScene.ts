@@ -26,6 +26,13 @@ import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { HazardSystem } from '../world/hazards';
 import type { HazardTarget } from '../world/hazards';
 import { HazardView } from '../render/hazardView';
+import { GrabPuzzle } from '../world/grabPuzzle';
+import { GrabPhysics } from '../physics/grabPhysics';
+import { GrabPower } from '../combat/powers/grab';
+import { GrabRenderer } from '../render/grabRenderer';
+import { GrabPuzzleView } from '../render/grabPuzzleView';
+import { PuzzleHud } from '../ui/puzzleHud';
+import { puzzleText } from '../ui/puzzleText';
 import { CityDressing } from '../render/city/dressing';
 import {
   cloneCityModel,
@@ -79,7 +86,7 @@ import { weaponModelOf } from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import playerData from '../data/scenes/roomPlayer.json';
 import type { RunState, MapNode } from '../core/runTypes';
-import type { RoomDefinition } from '../world/roomSchema';
+import type { GrabPuzzleDefinition, RoomDefinition } from '../world/roomSchema';
 import type { WavesDefinition } from '../world/waves';
 import {
   implantDefinitions,
@@ -169,6 +176,8 @@ export interface RoomSceneOptions {
   /** Host sam rozpoczyna kolejne ćwiczenia; standardowy pokój nadal startuje fale. */
   manualEncounter?: boolean;
   loadModels?: boolean;
+  /** Ekran śmierci ma przycisk „Jeszcze raz” (sceny testowe zagadki; w runie śmierć kończy bieg). */
+  retry?: boolean;
   implantDefinitions?: ReadonlyMap<string, ImplantDefinition>;
   /** Łatki definicji ekwipunku (ADR 0007 pkt 5), np. z talentów; domyślnie brak. */
   patches?: readonly DefinitionPatch[];
@@ -338,6 +347,11 @@ export class RoomScene implements Scene {
   private readonly reinforcements: WaveDirector[] = [];
   private hazards!: HazardSystem;
   private hazardView!: HazardView;
+  private puzzle?: GrabPuzzle;
+  private puzzleGrab?: GrabPhysics;
+  private puzzleView?: GrabPuzzleView;
+  private puzzleBeam?: GrabRenderer;
+  private puzzleHud?: PuzzleHud;
 
   constructor(
     private readonly layout: RoomDefinition,
@@ -544,6 +558,7 @@ export class RoomScene implements Scene {
         body?.centerY ?? 0,
       );
     };
+    if (this.layout.puzzle) this.initPuzzle(this.layout.puzzle);
     this.hazards = new HazardSystem({
       bus: ctx.bus,
       damage: this.damage,
@@ -553,6 +568,7 @@ export class RoomScene implements Scene {
       playerId,
       hazards: this.layout.hazards ?? [],
       tuning: ctx.tuning.hazards,
+      laserBlocked: (id) => this.puzzle?.blocksLaser(id) ?? false,
       targets: () => {
         const state = this.player.getState();
         const radius = ctx.tuning.player.capsuleRadius;
@@ -587,6 +603,10 @@ export class RoomScene implements Scene {
         ...(this.options.linearMission
           ? { deathScreen: false, showWaves: false }
           : {
+              ...(this.puzzle ? { showWaves: false } : {}),
+              ...(this.puzzle && this.options.retry
+                ? { onRetry: () => this.retryPuzzle() }
+                : {}),
               run: { credits: this.run.credits, implants: this.run.implants },
             }),
       });
@@ -863,7 +883,7 @@ export class RoomScene implements Scene {
       });
       this.root.add(this.bossFx.root);
       this.spawnBoss(this.layout.bossEnemy);
-    } else if (!this.conquest && !this.assault && !this.heist)
+    } else if (!this.conquest && !this.assault && !this.heist && !this.puzzle)
       this.director.start();
     if (this.manualEncounter) this.director.stop();
     if (this.health.dead) this.onPlayerDied();
@@ -872,6 +892,52 @@ export class RoomScene implements Scene {
   }
 
   // ----------------------------------------------------------------- budowa
+
+  private initPuzzle(definition: GrabPuzzleDefinition): void {
+    this.puzzleGrab = new GrabPhysics(this.world, this.entities, () => []);
+    this.puzzle = new GrabPuzzle(definition, {
+      world: this.world,
+      entities: this.entities,
+      grab: this.puzzleGrab,
+      hazards: this.layout.hazards ?? [],
+      tuning: this.ctx.tuning.puzzle,
+    });
+    this.player.enableDynamicPush(this.ctx.tuning.puzzle.pushMassKg);
+    this.puzzleView = new GrabPuzzleView(definition);
+    this.root.add(this.puzzleView.root);
+    const withGrab = this.resolved.powers.some(
+      (power) => power.kind === 'grab',
+    );
+    if (withGrab) {
+      this.puzzleBeam = new GrabRenderer(this.ctx.tuning);
+      this.root.add(this.puzzleBeam.root);
+    }
+    if (typeof document !== 'undefined')
+      this.puzzleHud = new PuzzleHud(
+        definition.kind,
+        withGrab,
+        this.puzzleSkippable(),
+      );
+  }
+
+  /** Pominięcie zagadki jest wyłączone w węzłach z celami misji (nie zablokuje pokoju). */
+  private puzzleSkippable(): boolean {
+    return !this.node.fixed?.objectives.length && !this.run.modeId;
+  }
+
+  /** Ponowna próba zagadki (śmierć, komenda reset). */
+  private retryPuzzle(): void {
+    if (!this.puzzle) return;
+    this.prepareEncounter({
+      invulnerable: this.god,
+      passive: false,
+      position: this.spawnPosition(),
+    });
+  }
+
+  reset(): void {
+    this.retryPuzzle();
+  }
 
   private async buildLayout(): Promise<void> {
     const blocks = new Group();
@@ -1339,6 +1405,7 @@ export class RoomScene implements Scene {
             return list;
           },
           castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+          grab: this.puzzleGrab,
         }),
       ),
     );
@@ -1484,6 +1551,18 @@ export class RoomScene implements Scene {
       this.manager.step(dt);
       return;
     }
+    if (this.puzzle)
+      this.player.enableDynamicPush(this.ctx.tuning.puzzle.pushMassKg);
+    if (
+      input.pressed.has('map') &&
+      this.puzzleSkippable() &&
+      this.puzzle?.finish('skipped')
+    ) {
+      this.cleared = true;
+      this.openExit();
+      this.ctx.bus.emit('puzzle_skipped', { nodeId: this.node.id });
+      return;
+    }
     if (dt > 0 && !this.cleared) this.elapsedS += dt;
     // F2-06: gracz, ostrze, moce, broń i energia w czasie gracza (Skupienie), reszta w czasie świata.
     const pdt = this.ctx.feel?.playerDt(dt) ?? dt;
@@ -1512,7 +1591,7 @@ export class RoomScene implements Scene {
     this.syncHeistCarry();
     this.player.step(pdt, input);
     this.blade.step(pdt, bladeInput);
-    this.powers.step(pdt, input);
+    this.powers.step(pdt, input, this.puzzle ? dt : undefined);
     if (!(dt > 0)) {
       this.manager.step(dt);
       return;
@@ -1630,6 +1709,7 @@ export class RoomScene implements Scene {
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
+    if (this.puzzle?.step(dt)) this.completeRoom();
     this.projectiles.step(dt);
     this.executeTarget = this.execute.targetId();
   }
@@ -1655,6 +1735,11 @@ export class RoomScene implements Scene {
     );
     this.hazardView.advance(frameDt);
     this.hazardView.update(this.hazards.state(), alpha);
+    if (this.puzzle) {
+      const state = this.puzzle.view();
+      this.puzzleView?.render(state, alpha);
+      this.puzzleHud?.update(state.outcome);
+    }
     this.missionView?.update();
     this.conquestView?.update();
     this.assaultView?.update();
@@ -1701,11 +1786,16 @@ export class RoomScene implements Scene {
     const powers = this.powerPair;
     powers[0] = this.powers.get(0);
     powers[1] = this.powers.get(1);
+    const grab = this.puzzleBeam
+      ? powers.find((power) => power instanceof GrabPower)
+      : undefined;
+    this.puzzleBeam?.advance(frameDt);
     if (!camera) {
       this.dressing?.render(frameDt, undefined);
       this.beamView.advance(frameDt);
       this.beamView.render(this.weapon.beam);
       this.lightningView.render(powers);
+      this.puzzleBeam?.render(grab?.beam ?? null, alpha);
       return;
     }
     const pose = this.fpsCamera.update(
@@ -1753,6 +1843,7 @@ export class RoomScene implements Scene {
     this.beamView.advance(frameDt);
     this.beamView.render(this.weapon.beam, this.fppView.beamOriginFor(camera));
     this.lightningView.render(powers, camera);
+    this.puzzleBeam?.render(grab?.beam ?? null, alpha, camera);
   }
 
   // ----------------------------------------------------------------- śmierć i reset
@@ -2036,6 +2127,8 @@ export class RoomScene implements Scene {
     this.blade.reset();
     for (const weapon of this.weapons) weapon.reset();
     this.cleared = false;
+    this.puzzle?.reset();
+    this.puzzleHud?.update(null);
     for (const door of this.doors.values()) {
       door.collider.setEnabled(true);
       door.mesh.visible = true;
@@ -2118,6 +2211,7 @@ export class RoomScene implements Scene {
     this.manager.despawnAll();
     this.statuses.reset();
     this.projectiles.dispose();
+    this.puzzle?.finish('solved');
     this.completeRoom();
   }
 
@@ -2127,18 +2221,23 @@ export class RoomScene implements Scene {
     if (this.assault && this.assault.outcome !== 'victory') return;
     if (this.heist && this.heist.outcome !== 'victory') return;
     if (this.node.fixed?.objectives.length && !this.mission?.complete) return;
+    if (this.puzzle && this.puzzle.view().outcome !== 'solved') return;
     if (this.cleared || this.state === 'dead' || this.disposed) return;
     this.cleared = true;
-    for (const door of this.doors.values())
-      if (door.role === 'exit') {
-        door.collider.setEnabled(false);
-        door.mesh.visible = false;
-      }
+    this.openExit();
     this.ctx.bus.emit('room_cleared', {
       nodeId: this.node.id,
       type: this.node.type,
       timeS: this.elapsedS,
     });
+  }
+
+  private openExit(): void {
+    for (const door of this.doors.values())
+      if (door.role === 'exit') {
+        door.collider.setEnabled(false);
+        door.mesh.visible = false;
+      }
   }
 
   private lookAtDegrees(yaw: number, pitch: number): boolean {
@@ -2187,6 +2286,10 @@ export class RoomScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
+    if (this.puzzle)
+      register('puzzle status', puzzleText.debugStatus, () =>
+        JSON.stringify(this.query('puzzle')),
+      );
     register('heist grab', 'heist grab', (args) => {
       const ok = args.length === 0 && this.heist?.grab();
       this.syncHeistCarry();
@@ -2511,6 +2614,8 @@ export class RoomScene implements Scene {
           : null;
       case 'hazards':
         return this.hazards.state();
+      case 'puzzle':
+        return this.puzzle?.view();
       case 'wave':
         return this.director.wave;
       case 'phase':
@@ -2648,6 +2753,10 @@ export class RoomScene implements Scene {
     this.hud?.dispose();
     this.synergies?.dispose();
     this.powers?.reset();
+    this.puzzle?.dispose();
+    this.puzzleView?.dispose();
+    this.puzzleBeam?.dispose();
+    this.puzzleHud?.dispose();
     this.beamView?.dispose();
     this.lightningView?.dispose();
     this.explosionView?.dispose();

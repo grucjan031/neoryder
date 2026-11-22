@@ -215,6 +215,69 @@ async function setup(options: RunSceneOptions = {}, bus = new EventBus()) {
   return { scene, screens, save, commands, rooms, bus, resume };
 }
 
+it.each(['solved', 'skipped'] as const)(
+  'węzeł zagadki pozostaje aktywny do decyzji gracza (%s)',
+  async (outcome) => {
+    const { scene, screens, rooms, bus, save } = await setup({
+      sector: {
+        ...kuroganeSector,
+        nodesPerLayer: { min: 1, max: 1 },
+        typeWeights: [{ fromLayer: 2, toLayer: 6, weights: { puzzle: 1 } }],
+        guarantees: [],
+      },
+      implantDefinitions,
+    });
+    screens.actions.selectNode('L1N1');
+    await scene.whenReady();
+    rooms[0]!.clear();
+    advanceRewardDelay(scene);
+    await scene.whenReady();
+    screens.actions.chooseReward!(screens.view.offers![0]!.id);
+    await scene.whenReady();
+
+    screens.actions.selectNode('L2N1');
+    await scene.whenReady();
+    expect(scene.query('screen')).toBe('room');
+    expect(scene.query('room')).toMatch(/^puzzle(Plate|Laser)$/);
+    expect(screens.hidden).toBe(true);
+    const room = rooms[1]!;
+    room.hp = 71;
+    room.energy = 38;
+    const priorImplants = [...room.run.implants];
+    if (outcome === 'skipped') {
+      bus.emit('puzzle_skipped', { nodeId: 'L1N1' });
+      await scene.whenReady();
+      expect(scene.query('screen')).toBe('room');
+      bus.emit('puzzle_skipped', { nodeId: 'L2N1' });
+    } else {
+      room.clear();
+    }
+    await scene.whenReady();
+    expect(room.disposed).toBe(false);
+    expect(scene.query('screen')).toBe('room');
+    for (let i = 0; i < Math.ceil(tuning.puzzle.resultHoldS / SIM_DT) + 1; i++)
+      scene.step(SIM_DT, idle);
+    await scene.whenReady();
+    expect(room.disposed).toBe(true);
+    if (outcome === 'solved') {
+      expect(scene.query('screen')).toBe('reward');
+      const reward = screens.view.offers![0]!.id;
+      screens.actions.chooseReward!(reward);
+      priorImplants.push(reward);
+      await scene.whenReady();
+    }
+    expect(scene.query('screen')).toBe('map');
+    expect(screens.view.nodes.map((node) => node.id)).toEqual(['L3N1']);
+    expect(save.state).toMatchObject({
+      currentNodeId: 'L2N1',
+      hp: 71,
+      energy: 38,
+      credits: 0,
+      implants: priorImplants,
+    });
+  },
+);
+
 afterEach(() => {
   setRenderWarmUp(undefined);
   for (const scene of active) scene.dispose();

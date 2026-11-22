@@ -23,6 +23,7 @@ describe('generator mapy sektora', () => {
     const unique = new Set<string>();
     let totalPaths = 0;
     let durationInRange = 0;
+    let mapsWithPuzzle = 0;
     for (let seed = 0; seed < 200; seed++) {
       const map = generateSectorMap(def, `sector-${seed}`);
       expect(generateSectorMap(def, `sector-${seed}`)).toEqual(map);
@@ -30,6 +31,7 @@ describe('generator mapy sektora', () => {
       expect(map.sectorId).toBe(def.id);
       expect(map.layers).toHaveLength(8);
       const nodes = map.layers.flat();
+      if (nodes.some((node) => node.type === 'puzzle')) mapsWithPuzzle++;
       expect(new Set(nodes.map((node) => node.id)).size).toBe(nodes.length);
       const reachable = new Set(map.layers[0]!.map((node) => node.id));
       for (const [i, layer] of map.layers.entries()) {
@@ -42,6 +44,10 @@ describe('generator mapy sektora', () => {
           expect(reachable.has(node.id)).toBe(true);
           if (i === 0) expect(node.type).toBe('combat');
           if (i === 6) expect(node.type).toBe('rest');
+          if (node.type === 'puzzle') {
+            expect(node.layer).toBeGreaterThanOrEqual(3);
+            expect(node.layer).toBeLessThanOrEqual(6);
+          }
           expect(node.type === 'boss').toBe(i === 7);
           expect(new Set(node.next).size).toBe(node.next.length);
           if (i === 7) expect(node.next).toEqual([]);
@@ -104,6 +110,8 @@ describe('generator mapy sektora', () => {
       durationInRange += validDurations;
     }
     expect(unique.size).toBeGreaterThanOrEqual(50);
+    expect(mapsWithPuzzle).toBeGreaterThan(0);
+    expect(mapsWithPuzzle).toBeLessThan(200 * 0.2);
     expect(durationInRange / totalPaths).toBeGreaterThanOrEqual(0.95);
   });
 

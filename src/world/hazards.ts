@@ -33,6 +33,7 @@ interface HazardOptions {
   playerId: EntityId;
   hazards: readonly Hazard[];
   tuning: Tuning['hazards'];
+  laserBlocked?(id: string): boolean;
   targets(): readonly HazardTarget[];
 }
 
@@ -154,6 +155,11 @@ export class HazardSystem {
     const d = entry.definition;
     const state = entry.state;
     state.alive = entry.alive;
+    if (d.kind === 'laser_gate' && this.options.laserBlocked?.(d.id)) {
+      state.phase = 'off';
+      state.phaseT = 0;
+      return state;
+    }
     const cycle = d.kind === 'explosive_barrel' ? undefined : d.cycle;
     if (!cycle) {
       state.phase = entry.alive ? 'on' : 'off';

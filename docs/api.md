@@ -1334,6 +1334,7 @@ Scena `map-test` udostępnia tekst mapy przez komendę `map` i graf przez `query
 | `node_selected`    | `{ nodeId: string; type: NodeType }`                                      | `RunManager`    |
 | `room_entered`     | `{ nodeId: string; roomId: string; type: NodeType; layer: number }`       | `RoomScene`     |
 | `room_cleared`     | `{ nodeId: string; type: NodeType; timeS: number }`                       | `RoomScene`     |
+| `puzzle_skipped`   | `{ nodeId: string }`                                                     | `RoomScene`     |
 | `reward_offered`   | `{ nodeId: string; options: readonly string[] }`                          | rewards         |
 | `implant_acquired` | `{ id: string; rarity: Rarity; source: 'reward' \| 'shop' \| 'upgrade' }` | `ImplantSystem` |
 | `currency_changed` | `{ currency: 'credits'; amount: number; delta: number }`                  | `RunManager`    |
@@ -1349,6 +1350,7 @@ Scena `map-test` udostępnia tekst mapy przez komendę `map` i graf przez `query
 node_selected: { nodeId: string; type: NodeType };
 room_entered: { nodeId: string; roomId: string; type: NodeType; layer: number };
 room_cleared: { nodeId: string; type: NodeType; timeS: number };
+puzzle_skipped: { nodeId: string };
 reward_offered: { nodeId: string; options: readonly string[] };
 implant_acquired: { id: string; rarity: Rarity; source: 'reward' | 'shop' | 'upgrade' };
 currency_changed: { currency: 'credits'; amount: number; delta: number };
@@ -1399,7 +1401,7 @@ export type RoomDefinition = z.infer<typeof roomSchema>;
 export function loadRoom(data: unknown): RoomDefinition;
 // Pola: id, name, type (NodeType), playerSpawn, blocks (jak arena.json), spawnPoints ({ x, z }[]),
 // doors ({ id, role: 'entry' | 'exit', position, size }[]), director?, maxAlive?, minSpawnDistance?,
-// threatMultiplier?, bossEnemy? (F3-17, tylko type 'boss'), props? ({ kind, position }[]), puzzle? (Record<string, unknown>).
+// threatMultiplier?, bossEnemy? (F3-17, tylko type 'boss'), props? ({ kind, position }[]), puzzle? (GrabPuzzleDefinition).
 // Wymaga drzwi 'entry'; pokoje o type !== 'boss' wymagają też drzwi 'exit'.
 
 // src/progression/implantSchema.ts
@@ -1449,6 +1451,26 @@ Pokój nie rejestruje komend `run`; scena `room-test` rejestruje własne `run cl
 `room_cleared` po ostatniej fali, najwyżej raz, z czasem symulacji pokoju.
 Kontekst pokoju dostarcza host (`rng.fork('room:<nodeId>')`, wspólny EventBus).
 
+F3-19: definicja `GrabPuzzleDefinition` z `src/world/roomSchema.ts` jest wymagana
+dla `type: 'puzzle'` i zawiera `object: { position, size, massKg }` (pozycja środka).
+Cel `kind: 'plate'` ma `position` na podłodze i `radiusM`. Cel `kind: 'laser'`
+wskazuje hazard `laser_gate` przez `laserId`. Laser musi mieć dwa różne końce.
+`GrabPuzzle` w `src/world/grabPuzzle.ts` rejestruje obiekt w `GrabPhysics`,
+w `step(dt)` po kroku Rapiera sprawdza cel i udostępnia migawkę przez `view()`.
+`HazardSystem` przyjmuje opcjonalny callback `laserBlocked(id): boolean`,
+wspólny dla obrażeń i migawki renderu. `PlayerController.enableDynamicPush(massKg)`
+włącza impulsy Rapiera podczas chodzenia. Strojenie jest w `tuning.puzzle`.
+
+Pokój zagadki działa bez fal. Rozwiązanie emituje `room_cleared`. Akcja
+`map` (domyślnie M) kończy pokój przez `puzzle_skipped`, a host zachowuje
+zdrowie i energię gracza. `query('puzzle')` i komenda `puzzle status` zwracają
+stan obiektu i celu. Scena `puzzle-test` domyślnie wyposaża gracza w Chwyt,
+obsługuje „Jeszcze raz” po śmierci oraz komendę `reset` (`RoomScene.reset()`,
+które przez `prepareEncounter` przywraca zagadkę). Pominięcie jest wyłączone
+w węźle z celami misji, w finale misji i w trybach (`modeId`);
+`RunManager.completeRoom(_, 'skipped')` zwraca tam `false`. Pominięty węzeł
+nie trafia do `roomsCleared`. Teksty HUD są walidowane zodem (`src/ui/puzzleText.ts`).
+
 ### Zarządca stanu runu (F3-05) — `src/world/run.ts`
 
 ```ts
@@ -1461,7 +1483,6 @@ export interface RunManagerOptions {
   sector?: Pick<SectorDefinition, 'id' | 'economy'>;
   creditsPerThreat?: number;
   eliteBonusCredits?: number;
-  puzzleCredits?: number;
   initialHp?: number;
   initialEnergy?: number;
   now?: () => number;
@@ -1484,7 +1505,10 @@ export class RunManager {
   availableNodes(): readonly MapNode[];
   canSelectNode(id: string): boolean;
   selectNode(id: string): boolean;
-  completeRoom(roomState?: { hp?: number; energy?: number }): boolean;
+  completeRoom(
+    roomState?: { hp?: number; energy?: number },
+    puzzleOutcome?: 'solved' | 'skipped',
+  ): boolean;
   returnToMap(): boolean;
   completeReward(): boolean;
   leaveShop(): boolean;
