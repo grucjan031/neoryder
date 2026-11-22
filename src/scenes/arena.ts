@@ -26,8 +26,16 @@ import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
-import { loadSettings } from '../core/save';
-import { Stats } from '../core/stats';
+import {
+  createIndexedDbSaveStore,
+  loadSettings,
+  SAVE_VERSION,
+  type EndlessSavePort,
+} from '../core/save';
+import type { EndlessScore } from '../core/endlessSave';
+import { SIM_DT } from '../core/loop';
+import type { RunRewards } from '../core/metaTypes';
+import { Stats, type StatModifier } from '../core/stats';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { withBladeOverride } from '../combat/melee/bladeSchema';
 import type { HitShape } from '../combat/melee/bladeSchema';
@@ -65,11 +73,17 @@ import type { Loadout } from '../progression/loadout';
 import { resolveLoadout } from '../progression/patches';
 import type { ResolvedLoadout } from '../progression/patches';
 import { SynergySystem } from '../progression/synergies';
+import { ImplantSystem, type ImplantDefinition } from '../progression/implants';
+import { MetaManager } from '../progression/meta';
+import { createStarterMetaState } from '../progression/progressionSchema';
 import { createStyleLights } from '../render/lights';
 import { getMaterial } from '../render/materials';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { BuildSelect } from '../ui/buildSelect';
 import { Hud } from '../ui/hud';
+import { EndlessScreens, endlessRecordLabel } from '../ui/endlessScreens';
+import endlessText from '../data/ui/endless.pl.json';
+import { preserveLiteFx } from '../render/fxMode';
 import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
@@ -79,6 +93,13 @@ import { HitSparks } from '../vfx/hitSparks';
 import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
 import { StatusVfx } from '../vfx/statusVfx';
 import { loadWaves, WaveDirector } from '../world/waves';
+import {
+  endlessImplantOffers,
+  endlessMutator,
+  endlessRewardRooms,
+  endlessSpawnModifiers,
+  planEndlessWave,
+} from '../world/endless';
 import {
   arenaMutators,
   rollArenaMutator,
@@ -121,7 +142,16 @@ const MODEL_FILES: Record<string, string> = {
 };
 
 /** 'select' — ekran wyboru buildu przed falą 1 (F2-17): fale stoją, gracz czeka. */
-type ArenaState = 'select' | 'playing' | 'dead';
+type ArenaState = 'select' | 'playing' | 'intermission' | 'dead';
+
+interface EndlessAttempt {
+  id: string;
+  wave: number;
+  ticks: number;
+  practice: boolean;
+  settlement?: 'saving' | 'saved' | 'error' | 'practice';
+  rewards?: RunRewards;
+}
 
 /**
  * Arena z falami (F1 #16) — pierwsza pełna pętla walki: gracz z ostrzem (combo, ciężki, blok,
@@ -213,6 +243,14 @@ export class Arena implements Scene {
   private hitSparksView!: HitSparksRenderer;
   private synergies!: SynergySystem;
   private buildSelect?: BuildSelect;
+  private endlessScreens?: EndlessScreens;
+  private implants?: ImplantSystem;
+  private endlessSave?: EndlessSavePort;
+  private attempt?: EndlessAttempt;
+  private best: EndlessScore | null = null;
+  private attemptNumber = 0;
+  private offers: ImplantDefinition[] = [];
+  private preparedWave = 0;
 
   /**
    * @param selectBuild F2-17: bez `?loadout=` arena zaczyna od ekranu wyboru buildu
@@ -221,7 +259,8 @@ export class Arena implements Scene {
   constructor(
     private readonly loadModels = true,
     private readonly selectBuild = false,
-    readonly id: 'arena' | typeof ARENA_MUTATORS_SCENE = 'arena',
+    readonly id: 'arena' | typeof ARENA_MUTATORS_SCENE | 'endless' = 'arena',
+    private readonly endlessSaveOverride?: EndlessSavePort,
   ) {}
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
@@ -345,7 +384,8 @@ export class Arena implements Scene {
         },
         threatOrigin: () => this.player.getState().position,
         loadout: this.loadout,
-        totalWaves: waves.waves.length,
+        totalWaves: this.id === 'endless' ? undefined : waves.waves.length,
+        deathScreen: this.id !== 'endless',
         onRetry: () => this.retry(),
         ...(this.selectBuild
           ? { onChangeBuild: () => this.openBuildSelect() }
@@ -353,7 +393,10 @@ export class Arena implements Scene {
       });
     if (typeof document !== 'undefined')
       this.inventory = new RunInventoryMenu(ctx, () =>
-        buildRunInventoryView({ loadout: this.loadout }),
+        buildRunInventoryView({
+          loadout: this.loadout,
+          implants: this.implants?.ids(),
+        }),
       );
     this.player.stamina.set(this.player.stamina.max);
     this.energy = new PlayerEnergy(
@@ -482,13 +525,37 @@ export class Arena implements Scene {
       this.buildSelect = new BuildSelect({
         onSelect: (id, bladeId) => this.chooseLoadout(id, bladeId),
       });
+    if (this.id === 'endless') this.initEndless();
     this.applyMutator();
 
     this.director = new WaveDirector(
-      waves,
+      this.id === 'endless'
+        ? {
+            ...waves,
+            get firstBreakS() {
+              return ctx.tuning.endless.firstBreakS;
+            },
+            get breakS() {
+              return ctx.tuning.endless.breakS;
+            },
+          }
+        : waves,
       {
         spawn: (enemy, position) => this.spawnEnemy(enemy, position),
         playerPosition: () => this.player.getState().position,
+        ...(this.id === 'endless'
+          ? {
+              endlessWave: (wave: number, countScale: number) => {
+                this.prepareEndlessWave(wave);
+                return planEndlessWave(
+                  wave,
+                  ctx.rng.fork(`endless:wave:${wave}`),
+                  ctx.tuning.endless.spawnIntervalS,
+                  countScale,
+                );
+              },
+            }
+          : {}),
       },
       ctx.bus,
       ctx.rng.fork('waves'),
@@ -508,6 +575,68 @@ export class Arena implements Scene {
     if (choosing) this.enterBuildSelect();
     else this.director.start();
     this.render(1);
+  }
+
+  private initEndless(): void {
+    this.endlessSave =
+      this.endlessSaveOverride ?? createIndexedDbSaveStore().endless!;
+    this.implants = new ImplantSystem({
+      stats: [this.playerStats, this.player.stats],
+      health: this.health,
+      bus: this.ctx.bus,
+      onChange: () => {
+        this.synergies.setTags([
+          ...this.loadout.tags,
+          ...this.implants!.tags(),
+        ]);
+        this.synergies.setImplantTriggers(this.implants!.triggers());
+        this.emitHealth();
+      },
+    });
+    if (typeof document !== 'undefined')
+      this.endlessScreens = new EndlessScreens();
+    this.newEndlessAttempt();
+    const briefing = (record: string): void =>
+      this.buildSelect?.setBriefing(`${endlessText.briefing} ${record}`);
+    briefing('');
+    void this.endlessSave.loadBest().then(
+      (best) => {
+        if (this.disposed || this.attempt?.settlement) return;
+        this.best = best;
+        briefing(endlessRecordLabel(best));
+      },
+      () => briefing(endlessText.loadError),
+    );
+    this.off.push(
+      this.ctx.bus.on('wave_cleared', ({ wave }) => {
+        if (this.state !== 'playing' || !this.attempt) return;
+        this.attempt.wave = wave;
+        this.prepareEndlessWave(wave + 1);
+        this.offers = endlessImplantOffers(
+          wave,
+          this.implants!.ids(),
+          this.ctx.rng,
+        );
+      }),
+    );
+  }
+
+  /** Mutator, mnożniki wrogów i amunicja nadchodzącej fali działają już w przerwie przed nią. */
+  private prepareEndlessWave(wave: number): void {
+    if (this.preparedWave === wave) return;
+    this.preparedWave = wave;
+    this.mutator = endlessMutator(wave, this.ctx.rng);
+    this.applyMutator(endlessSpawnModifiers(wave));
+  }
+
+  private newEndlessAttempt(): void {
+    this.preparedWave = 0;
+    this.attempt = {
+      id: `endless:${this.ctx.rng.getState()}:${Date.now()}:${++this.attemptNumber}`,
+      wave: 0,
+      ticks: 0,
+      practice: false,
+    };
   }
 
   // ----------------------------------------------------------------- budowa
@@ -715,7 +844,7 @@ export class Arena implements Scene {
           this.playerStats,
           {
             projectiles: this.projectiles,
-            ...(this.id === ARENA_MUTATORS_SCENE ? { ammo: this.ammo } : {}),
+            ...(this.id === 'arena' ? {} : { ammo: this.ammo }),
             attackSpeed: () => this.playerStats.get('attackSpeed'),
             damage: this.damage,
             castBeam: (origin, dir, rangeM) =>
@@ -839,13 +968,21 @@ export class Arena implements Scene {
 
   step(dt: number, input: InputSnapshot): void {
     this.dressing?.step(dt);
-    if (this.state === 'playing') this.inventory?.step(input);
+    if (this.state === 'playing' && this.offers.length === 0)
+      this.inventory?.step(input);
     this.previous = this.player.getState();
-    if (this.state === 'select') return;
+    if (this.state === 'select' || this.state === 'intermission') return;
     if (this.state === 'dead') {
       if (dt > 0) this.deadS += dt;
       this.manager.step(dt);
       return;
+    }
+    if (this.attempt) {
+      if (this.offers.length > 0) {
+        this.openEndlessIntermission();
+        return;
+      }
+      if (dt > 0) this.attempt.ticks++;
     }
     // F2-06: gracz, ostrze, moce, broń i energia w czasie gracza (Skupienie), reszta w czasie świata.
     const pdt = this.ctx.feel?.playerDt(dt) ?? dt;
@@ -894,13 +1031,14 @@ export class Arena implements Scene {
         });
       else weapon.cool(pdt);
     }
-    this.director.step(dt);
+    if (this.offers.length === 0) this.director.step(dt);
     this.manager.step(dt);
     this.world.gravity.y = this.player.gravity;
     this.world.timestep = dt;
     this.world.step();
     this.projectiles.step(dt);
     this.executeTarget = this.execute.targetId();
+    if (this.attempt && this.offers.length > 0) this.openEndlessIntermission();
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
@@ -1008,6 +1146,7 @@ export class Arena implements Scene {
   // ----------------------------------------------------------------- śmierć i reset
 
   private onPlayerDied(): void {
+    if (this.state === 'dead') return;
     this.state = 'dead';
     this.heldItem.cancelAim();
     this.player.setAim(0);
@@ -1016,7 +1155,115 @@ export class Arena implements Scene {
     this.weapon.cool(0);
     this.deadS = 0;
     this.director.stop();
+    if (this.attempt) void this.finishEndless(this.attempt);
     if (typeof document !== 'undefined') document.exitPointerLock?.();
+  }
+
+  private openEndlessIntermission(): void {
+    this.state = 'intermission';
+    this.heldItem.cancelAim();
+    this.player.setAim(0);
+    this.endlessScreens?.offer(this.offers, (id) =>
+      this.chooseEndlessImplant(id),
+    );
+    if (typeof document !== 'undefined') document.exitPointerLock?.();
+  }
+
+  private chooseEndlessImplant(id?: string): void {
+    if (this.state !== 'intermission') return;
+    if (id !== undefined) {
+      if (!this.offers.some((offer) => offer.id === id)) return;
+      this.implants!.add(id);
+    }
+    this.offers = [];
+    this.state = 'playing';
+    this.endlessScreens?.hide();
+    this.ctx.resume?.();
+  }
+
+  private async finishEndless(attempt: EndlessAttempt): Promise<void> {
+    if (attempt.settlement === 'saving' || attempt.settlement === 'saved')
+      return;
+    const score = { wave: attempt.wave, elapsedS: attempt.ticks * SIM_DT };
+    const show = (): void => {
+      if (this.disposed || this.attempt !== attempt) return;
+      this.endlessScreens?.summary(
+        score,
+        this.best,
+        attempt.settlement === 'saved'
+          ? { status: 'saved', rewards: attempt.rewards }
+          : { status: attempt.settlement! },
+        {
+          retry: () => this.retry(),
+          build: () =>
+            this.selectBuild ? this.openBuildSelect() : this.retry(),
+          save: () => void this.finishEndless(attempt),
+          leave: (hub) => {
+            const params = new URLSearchParams(location.search);
+            const target = new URLSearchParams(hub ? { scene: 'hub' } : {});
+            if (params.get('debug') === '1') target.set('debug', '1');
+            preserveLiteFx(params, target);
+            location.assign(target.size ? `/?${target}` : '/');
+          },
+        },
+      );
+    };
+    if (attempt.practice) {
+      attempt.settlement = 'practice';
+      show();
+      return;
+    }
+    const roomsCleared = endlessRewardRooms(score.wave);
+    const loadoutId = this.loadout.id;
+    const implants = this.implants!.ids();
+    attempt.settlement = 'saving';
+    show();
+    try {
+      const best = await this.endlessSave!.finish(
+        score,
+        roomsCleared === 0
+          ? undefined
+          : (saved) => {
+              const meta = saved
+                ? MetaManager.restore(saved.meta)
+                : new MetaManager(createStarterMetaState());
+              const result = meta.applyRun(
+                {
+                  outcome: 'death',
+                  seed: attempt.id,
+                  loadoutId,
+                  elapsedS: score.elapsedS,
+                  kills: 0,
+                  roomsCleared,
+                  elitesCleared: 0,
+                  threatLevel: 0,
+                  layerReached: score.wave,
+                  implants,
+                  damage: { melee: 0, power: 0, gun: 0, other: 0 },
+                },
+                attempt.id,
+              );
+              if (!result.applied) return null;
+              attempt.rewards = result.rewards;
+              const stamp = Date.now();
+              return {
+                saveVersion: SAVE_VERSION,
+                createdAt: saved?.createdAt ?? stamp,
+                updatedAt: stamp,
+                meta: meta.serialize(),
+              };
+            },
+      );
+      this.best = best;
+      attempt.settlement = 'saved';
+      if (!this.disposed)
+        this.buildSelect?.setBriefing(
+          `${endlessText.briefing} ${endlessRecordLabel(best)}`,
+        );
+    } catch {
+      attempt.settlement = 'error';
+    }
+    show();
   }
 
   /** Pełny reset areny: wrogowie, pociski, gracz, energia, fale od 1. */
@@ -1026,6 +1273,16 @@ export class Arena implements Scene {
    */
   reset(): void {
     this.manager.despawnAll();
+    if (this.attempt) {
+      this.newEndlessAttempt();
+      this.offers = [];
+      this.endlessScreens?.hide();
+      this.implants?.clear();
+      this.hud?.clearImplants();
+      this.mutator = null;
+      this.god = false;
+      this.playerStats.removeBySource('debug:god');
+    }
     this.applyMutator();
     this.createExecute();
     this.statuses.reset();
@@ -1054,32 +1311,37 @@ export class Arena implements Scene {
     this.heldItem.reset(this.loadout.startHeld);
   }
 
-  private applyMutator(): void {
+  private applyMutator(spawnModifiers: StatModifier[] = []): void {
     const mutator = this.mutator;
-    if (!mutator) return;
-    const { stat, value } = mutator.effect;
-    const modifier = {
-      stat,
-      value,
-      type: stat === 'ammoCapacity' ? 'flat' : 'mult',
-      source: MUTATOR_SOURCE,
-    } as const;
+    if (!mutator && this.id !== 'endless') return;
     this.player.stats.removeBySource(MUTATOR_SOURCE);
     this.playerStats.removeBySource(MUTATOR_SOURCE);
-    this.manager.setSpawnModifiers(stat === 'moveSpeed' ? [modifier] : []);
-    if (stat === 'gravityScale') this.player.stats.add(modifier);
-    if (stat === 'ammoCapacity' || stat === 'arenaLightScale')
-      this.playerStats.add(modifier);
+    const effect = mutator?.effect;
+    if (effect) {
+      const { stat, value } = effect;
+      const modifier: StatModifier = {
+        stat,
+        value,
+        type: stat === 'ammoCapacity' ? 'flat' : 'mult',
+        source: MUTATOR_SOURCE,
+      };
+      if (stat === 'moveSpeed') spawnModifiers.push(modifier);
+      else if (stat === 'gravityScale') this.player.stats.add(modifier);
+      else this.playerStats.add(modifier);
+    }
+    this.manager.setSpawnModifiers(spawnModifiers);
     this.world.gravity.y = this.player.gravity;
     this.ammoRemaining =
-      stat === 'ammoCapacity' ? this.playerStats.get('ammoCapacity') : null;
-    this.buildSelect?.setBriefing(`${mutator.name}. ${mutator.description}`);
+      effect?.stat === 'ammoCapacity'
+        ? this.playerStats.get('ammoCapacity')
+        : null;
+    if (this.id === ARENA_MUTATORS_SCENE && mutator)
+      this.buildSelect?.setBriefing(`${mutator.name}. ${mutator.description}`);
     this.updateMutatorHud();
   }
 
   private updateMutatorHud(): void {
-    if (this.mutator)
-      this.hud?.setArenaMutator(this.mutator.name, this.ammoRemaining);
+    this.hud?.setArenaMutator(this.mutator?.name ?? '', this.ammoRemaining);
   }
 
   /** „Jeszcze raz” z HUD (gest użytkownika): reset i wznowienie pętli z przechwyceniem myszy. */
@@ -1165,7 +1427,11 @@ export class Arena implements Scene {
       help: string,
       run: (args: string[]) => string,
     ): void => {
-      const off = this.ctx.commands?.register(name, help, run);
+      const off = this.ctx.commands?.register(name, help, (args) => {
+        if (this.attempt && name !== 'endless' && name !== 'execute')
+          this.attempt.practice = true;
+        return run(args);
+      });
       if (off) this.off.push(off);
     };
     if (this.id === ARENA_MUTATORS_SCENE)
@@ -1329,13 +1595,32 @@ export class Arena implements Scene {
         : 'Podaj obrażenia.';
     });
     register('kill all', 'kill all', () => hitAll(Number.MAX_VALUE));
-    register('wave', 'wave <n> — skok do fali', (args) => {
+    const jumpToWave = (args: string[]): string => {
       const n = Number(args[0]);
       if (!Number.isSafeInteger(n) || n < 1 || n > this.director.totalWaves)
-        return `Podaj falę 1–${this.director.totalWaves}.`;
+        return this.attempt
+          ? 'Podaj dodatni numer fali.'
+          : `Podaj falę 1–${this.director.totalWaves}.`;
+      if (this.attempt) {
+        if (this.state !== 'playing')
+          return 'Uruchom próbę przed skokiem do fali.';
+        this.manager.despawnAll();
+        this.offers = [];
+      }
       this.director.goto(n);
       return `Fala ${n}.`;
-    });
+    };
+    register('wave', 'wave <n> — skok do fali', jumpToWave);
+    if (this.attempt) {
+      register('endless', 'endless — stan Nieskończonej strefy', () =>
+        JSON.stringify(this.query('endless')),
+      );
+      register(
+        'endless wave',
+        'endless wave <n> — skok do fali strefy',
+        jumpToWave,
+      );
+    }
     register('god', 'god — nieśmiertelność gracza', () => {
       this.god = !this.god;
       this.playerStats.removeBySource('debug:god');
@@ -1368,6 +1653,21 @@ export class Arena implements Scene {
     if (name === 'horizon') return this.atmosphere?.horizon();
     if (name === 'executable') return this.execute.readyIds();
     switch (name) {
+      case 'endless':
+        return (
+          this.attempt && {
+            wave: this.director.wave,
+            score: {
+              wave: this.attempt.wave,
+              elapsedS: this.attempt.ticks * SIM_DT,
+            },
+            best: this.best && { ...this.best },
+            implants: this.implants!.ids(),
+            offers: this.offers.map(({ id }) => id),
+            practice: this.attempt.practice,
+            settlement: this.attempt.settlement,
+          }
+        );
       case 'mutator':
         return (
           this.mutator && {
@@ -1457,6 +1757,7 @@ export class Arena implements Scene {
     this.hud?.dispose();
     this.inventory?.dispose();
     this.buildSelect?.dispose();
+    this.endlessScreens?.dispose();
     this.synergies?.dispose();
     this.powers?.reset();
     this.beamView?.dispose();

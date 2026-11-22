@@ -2074,6 +2074,31 @@ Materiały bloków Estakady: `gas_station_tiles`, `highway_asphalt_worn`,
   wartości. Konsola debug `mutator [id|seed]` wyświetla albo zmienia mutator
   i resetuje arenę.
 
+## Nieskończona strefa (F6)
+
+- `?scene=endless` uruchamia wariant `Arena`. `src/world/endless.ts` waliduje
+  dane z `src/data/modes/endless.json` i planuje kolejną falę na żądanie.
+  `WaveDirectorDeps.endlessWave(wave)` przyjmuje numer od 1 i zwraca skład
+  oraz interwał spawnu. Zdarzenia `wave_started` i `wave_cleared` zachowują
+  numerację przez całą próbę. W tym wariancie `totalWaves` to `Infinity`,
+  a `spawnLog` opisuje bieżącą falę.
+- Host używa `rollArenaMutator`, `EnemyManager.setSpawnModifiers` oraz
+  `ImplantSystem` i `SynergySystem`. Oferty oraz mutatory korzystają z osobnych
+  strumieni `Rng` dla numeru fali. Interwały fal są w `tuning.endless`.
+  Stacja Areny w kryjówce udostępnia automatycznie linki przekazane przez
+  `HubScreenActions.openArenaMutators`, `openDailyChallenge` i `openEndless`.
+- `SaveStore.endless` w obu wbudowanych magazynach udostępnia `loadBest()`
+  oraz `finish(score, updateMeta?)`. Rekord `endless` ma niezależną wersję
+  `endlessVersion: 1`. Wynik `{ wave, elapsedS }` to ukończone fale i czas
+  aktywnej gry. Przy remisie wygrywa krótszy czas. `finish` wybiera rekord
+  w transakcji, w której może też zapisać meta zwrócone przez synchroniczne
+  `updateMeta`. Callback może zwrócić `null`, aby zachować bieżące meta.
+  `MetaManager.applyRun` przyjmuje rozliczenie strefy jako ograniczoną
+  liczbę jednostek nagrody za pokoje, z kluczem idempotencji próby.
+- `query('endless')` zwraca wynik bieżącej próby, rekord, implanty i dostępne
+  oferty. Debug: `endless` pokazuje stan, `endless wave <n>` skacze do fali.
+  Próby zmodyfikowane komendami areny nie naliczają nagród ani rekordów.
+
 ## Tryby areny S2b-01
 
 `ModeId` pochodzi ze schematu danych trybów (`conquest` | `assault` | `heist`). Opcjonalne `RunState.modeId`

@@ -454,6 +454,12 @@ it('bez debug w URL nawigacja go nie dodaje', async () => {
   commands.execute('hub open arena');
   screens.shown[0]!.actions.openArena?.();
   expect(navigate).toHaveBeenCalledExactlyOnceWith('?scene=arena');
+  screens.shown[0]!.actions.openArenaMutators?.();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=arena-mutators');
+  screens.shown[0]!.actions.openDailyChallenge?.();
+  expect(navigate).toHaveBeenLastCalledWith('?daily=1');
+  screens.shown[0]!.actions.openEndless?.();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=endless');
 });
 
 it('dispose nie zostawia subskrypcji EventBus ani komend i zwalnia nakładki', async () => {

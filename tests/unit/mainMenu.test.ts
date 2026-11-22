@@ -53,6 +53,7 @@ it('bez debug menu nie pokazuje Nowy run (presety), seeda ani wyboru buildu', as
     'Poligon',
     'Arena wyzwań',
     'Wyzwanie dnia',
+    'Nieskończona strefa',
     'Ustawienia',
   ]);
   expect(document.querySelector('input')).toBeNull();
@@ -75,6 +76,8 @@ it('w debug Kryjówka i Poligon zachowują debug w URL', async () => {
   expect(navigate).toHaveBeenLastCalledWith('?scene=arena&debug=1');
   button('Wyzwanie dnia').click();
   expect(navigate).toHaveBeenLastCalledWith('?debug=1&daily=1');
+  button('Nieskończona strefa').click();
+  expect(navigate).toHaveBeenLastCalledWith('?scene=endless&debug=1');
 });
 
 it('w debug pojawia się przycisk Sceny debug prowadzący do ?scenes=1 (z debug=1 z URL)', async () => {

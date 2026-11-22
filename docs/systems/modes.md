@@ -322,3 +322,41 @@ W 30 s: menu główne, "Wyzwanie dnia" (lub `?daily=1`) pokazuje historię i prz
 startu; `?scene=challenge` startuje próbę bezpośrednio. Drugie wejście tego samego dnia
 wraca do historii z zablokowanym startem. Usunięcie klucza `challenge` w IndexedDB
 (narzędzia przeglądarki) zeruje historię.
+
+## Nieskończona strefa
+
+Wejście z menu głównego i stacji Areny w kryjówce. Gracz wybiera gotowy
+zestaw i broni się przed kolejnymi falami na jednej arenie. Liczba wrogów
+rośnie do limitu kolejki, a pula archetypów odblokowuje się stopniowo.
+Mnożnik liczebności poziomu trudności skaluje wrogów zwykłych, ale łączna
+liczba nie przekracza limitu, a Egzekutor jest zawsze jeden. Zdrowie i
+obrażenia rosną także po osiągnięciu limitu liczebności. Co piąta fala
+zawiera Egzekutora. Od trzeciej fali i co trzy fale losuje się mutator
+z katalogu Areny wyzwań. Działa do kolejnego losowania. Mutator, mnożniki
+wrogów i odnowienie limitowanej amunicji nakładają się w chwili startu
+przerwy przed daną falą, więc gracz widzi zmianę, zanim pojawią się wrogowie.
+Uszkodzony rekord lub rekord z nowszej wersji gry daje pusty rekord i
+ostrzeżenie w konsoli, a zapis wyniku przy rekordzie z nowszej wersji jest
+odrzucany bez zmiany meta.
+
+Po co trzeciej ukończonej fali walka czeka na wybór jednego z maksymalnie
+trzech nieposiadanych implantów. Gracz może też pominąć ofertę. Po wyborze
+rusza zwykła krótka przerwa. Zestaw implantów wpływa na statystyki i synergie
+przez resztę próby. Po wyczerpaniu katalogu pozostają zwykłe przerwy.
+Dane skalowania i częstotliwości są w `src/data/modes/endless.json`, a czasy
+przerw i odstęp spawnu w `tuning.endless` i panelu lil-gui.
+
+Śmierć kończy próbę i pokazuje wynik. Decyduje liczba ukończonych fal, a przy
+remisie krótszy czas aktywnych kroków gry, bez pauzy i ekranu wyboru implantu.
+Lokalny rekord w osobnym kluczu `endless` jest widoczny przed i po próbie.
+Za każde pięć ukończonych fal nalicza się nagroda jak za jeden pokój
+zagrożenia 0, maksymalnie za dwa pokoje. Wyjście w trakcie porzuca próbę.
+
+W 30 s otwórz `?scene=endless&debug=1&loadout=classic`, użyj
+`endless wave 3`, poczekaj na spawny, a następnie użyj `kill all`. Wybierz
+implant i sprawdź falę 4 oraz aktywny mutator. Skok przez `endless wave 5`
+pozwala sprawdzić Egzekutora. Komendy modyfikujące próbę przełączają ją w
+trening. Rekord i nagrodę sprawdź w osobnej próbie kończącej się śmiercią.
+Oceń, czy przerwy pozwalają rozpoznać warunki walki, czy zmiana składu fali
+jest czytelna i czy Egzekutor podnosi presję bez zasłaniania zapowiedzi
+ataków innych wrogów.

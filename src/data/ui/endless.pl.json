@@ -1,0 +1,17 @@
+{
+  "title": "Nieskończona strefa",
+  "briefing": "Przetrwaj jak najwięcej fal. Między falami zmieniają się warunki walki i pojawiają się implanty.",
+  "intermission": "Wybierz implant",
+  "skip": "Pomiń implant",
+  "result": "Ukończone fale {wave} · {time} s",
+  "record": "Rekord · {wave} fal · {time} s",
+  "noRecord": "Brak rekordu",
+  "loadError": "Nie udało się odczytać rekordu.",
+  "savePending": "Zapisywanie wyniku…",
+  "saveError": "Nie udało się zapisać wyniku lub nagrody.",
+  "saveRetry": "Ponów zapis",
+  "reward": "Nagroda · {xp} XP · {data} Danych",
+  "debugResult": "Próba treningowa · wynik poza rekordem",
+  "retry": "Jeszcze raz",
+  "build": "Zmień ekwipunek"
+}

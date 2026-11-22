@@ -4,6 +4,9 @@ import { HUB_STATION_IDS } from '../core/metaTypes';
 import type { HubStationId } from '../core/metaTypes';
 import type { MetaManager } from '../progression/meta';
 import textData from '../data/ui/meta.pl.json';
+import runText from '../data/ui/run.pl.json';
+import endlessText from '../data/ui/endless.pl.json';
+import { challengeText } from './challengeText';
 import type { HubPanel, HubPanelFactory } from './hub/hubPanel';
 import './hubScreens.css';
 
@@ -25,6 +28,9 @@ export interface HubScreenActions {
   close(): void;
   /** Tylko `arena`: przejście na poligon. */
   openArena?(): void;
+  openArenaMutators?(): void;
+  openDailyChallenge?(): void;
+  openEndless?(): void;
 }
 
 /** Nakładki stacji kryjówki wstrzykiwane do `HubScene`; implementacja HTML poniżej, w testach atrapa. */
@@ -105,9 +111,31 @@ export class HtmlHubScreens implements HubScreens {
       this.panel.append(heading, this.hosted.root);
     } else {
       this.panel.append(heading, this.line(info.description));
-      this.panel.append(this.line(text.placeholder, 'hub-screen__note'));
-      if (station === 'arena' && actions.openArena)
+      if (station === 'arena' && actions.openArena) {
         buttons.push(this.button(text.toArena, actions.openArena, 'arena'));
+        if (actions.openArenaMutators)
+          buttons.push(
+            this.button(
+              runText.mainMenu.arenaMutators,
+              actions.openArenaMutators,
+              'arena-mutators',
+            ),
+          );
+        if (actions.openDailyChallenge)
+          buttons.push(
+            this.button(
+              challengeText.title,
+              actions.openDailyChallenge,
+              'challenge',
+            ),
+          );
+        if (actions.openEndless)
+          buttons.push(
+            this.button(endlessText.title, actions.openEndless, 'endless'),
+          );
+      } else {
+        this.panel.append(this.line(text.placeholder, 'hub-screen__note'));
+      }
     }
     this.root.classList.toggle('hub-screen--panel', this.hosted !== null);
     buttons.push(this.button(text.close, actions.close, 'close'));

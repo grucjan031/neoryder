@@ -166,6 +166,12 @@ export class RunHud {
     this.implants.hidden = false;
   }
 
+  clearImplants(): void {
+    for (const { node } of this.entries) node.remove();
+    this.entries.length = 0;
+    this.implants.hidden = true;
+  }
+
   dispose(): void {
     for (const unsubscribe of this.unsubscribe) unsubscribe();
     this.boss.dispose();

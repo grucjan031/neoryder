@@ -1,0 +1,22 @@
+{
+  "baseCount": 3,
+  "addEnemyEveryWaves": 2,
+  "maxCount": 24,
+  "roster": [
+    { "fromWave": 1, "enemy": "assaulter" },
+    { "fromWave": 2, "enemy": "gunner" },
+    { "fromWave": 4, "enemy": "drone" },
+    { "fromWave": 6, "enemy": "shielder" },
+    { "fromWave": 8, "enemy": "sniper" },
+    { "fromWave": 10, "enemy": "hacker" }
+  ],
+  "eliteEveryWaves": 5,
+  "eliteEnemy": "executor",
+  "mutatorEveryWaves": 3,
+  "implantEveryWaves": 3,
+  "implantChoices": 3,
+  "healthGrowth": 0.04,
+  "damageGrowth": 0.025,
+  "wavesPerRewardRoom": 5,
+  "maxRewardRooms": 2
+}

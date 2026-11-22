@@ -641,7 +641,12 @@ export class HubScene implements Scene {
     this.screens.show(station, {
       close: () => this.closeStation(),
       ...(station === 'arena'
-        ? { openArena: () => this.go({ scene: 'arena' }) }
+        ? {
+            openArena: () => this.go({ scene: 'arena' }),
+            openArenaMutators: () => this.go({ scene: 'arena-mutators' }),
+            openDailyChallenge: () => this.go({ daily: '1' }),
+            openEndless: () => this.go({ scene: 'endless' }),
+          }
         : {}),
     });
   }

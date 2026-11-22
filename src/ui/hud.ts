@@ -604,6 +604,10 @@ export class Hud {
     ];
   }
 
+  clearImplants(): void {
+    this.runHud.clearImplants();
+  }
+
   /** Dane startowe ekwipunku; dalsze zmiany zasobów pochodzą wyłącznie ze zdarzeń. */
   setLoadout(loadout: HudLoadout): void {
     this.telegraphs.clear();

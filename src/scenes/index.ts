@@ -43,6 +43,8 @@ export const scenes: Record<string, SceneLoader> = {
     import('./styleTest').then((m) => () => new m.StyleTest()),
   'neon-test': () => import('./neonTest').then((m) => () => new m.NeonTest()),
   arena: () => import('./arena').then((m) => () => new m.Arena(true, true)),
+  endless: () =>
+    import('./arena').then((m) => () => new m.Arena(true, true, 'endless')),
   'arena-mutators': () =>
     import('./arena').then(
       (m) => () => new m.Arena(true, true, m.ARENA_MUTATORS_SCENE),
