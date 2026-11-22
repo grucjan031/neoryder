@@ -78,6 +78,7 @@ export const missionObjectiveSchema = z.discriminatedUnion('kind', [
       .optional(),
   }),
   z.object({ ...base, kind: z.literal('killBoss') }),
+  z.object({ ...base, kind: z.literal('escortPayload') }),
 ]);
 export const missionSchema = z
   .object({

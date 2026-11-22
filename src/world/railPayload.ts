@@ -17,6 +17,8 @@ export interface PayloadStop {
 
 export interface PayloadHooks {
   reinforce(wave: string, stopId: string): void;
+  /** Misja może zatrzymać skład do czasu usunięcia blokady toru. */
+  canDepart?(stopId: string): boolean;
 }
 
 export interface PayloadInput {
@@ -113,6 +115,21 @@ export class RailPayload {
     return this.stops[this.stopIndex];
   }
 
+  /** Odtworzenie punktu kontrolnego; postoje przed nim nie uruchamiają fal. */
+  restore(distanceM: number): void {
+    if (
+      !Number.isFinite(distanceM) ||
+      distanceM < 0 ||
+      distanceM > this.lengthM
+    )
+      throw new Error('Punkt kontrolny poza trasą wagonu.');
+    this.distance = distanceM;
+    this.stopIndex = this.stops.filter((stop) => stop.atM < distanceM).length;
+    this.hold = null;
+    this._hp = this.params.maxHealth;
+    this._status = distanceM === this.lengthM ? 'arrived' : 'waitingPlayer';
+  }
+
   setHp(value: number): void {
     if (this.finished || !Number.isFinite(value)) return;
     this._hp = Math.min(this.params.maxHealth, Math.max(0, value));
@@ -166,6 +183,7 @@ export class RailPayload {
       const cleared = input.hostiles.length === 0 && pending === 0;
       if (
         this.hold.remainingS > 0 ||
+        this.hooks.canDepart?.(this.hold.stop.id) === false ||
         (this.hold.stop.clearRequired && !cleared)
       )
         return;

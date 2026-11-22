@@ -247,7 +247,8 @@ Dane generuje skrypt wzorowany na `tools/levels/buildM01.mjs`; test
 pełne przejście kapsułą z walką z bossem, odrodzenie przed areną i wznowienie.
 
 Sprawdzenie w 30 sekund (`?scene=mission&mission=m06-odlewnia&debug=1`, po
-`campaign complete m01-maszty` i `campaign complete m03-list-przewozowy` w scenie `run`):
+`campaign complete m01-maszty`, `campaign complete m03-list-przewozowy`
+i `campaign complete m04-ladunek-klasy-k` w scenie `run`):
 
 1. `god`; kolejno `tp 14 0`, `tp 44 0`, `tp 92 0`, `tp 113 0`, `tp 143 0`, po każdym
    `encounter clear` — otwierają się bramy kolejnych odcinków.
@@ -256,6 +257,51 @@ Sprawdzenie w 30 sekund (`?scene=mission&mission=m06-odlewnia&debug=1`, po
 3. Trzy razy `kill all` (po każdym odczekaj zmianę fazy): radio faz, „Ja tylko
    dowożę”, wrota i gabinet otwarte, checkpoint `po-brandcie`.
 4. Serwer w gabinecie (3 s w strefie), potem winda po lewej (2 s): podsumowanie.
+
+## M04 — Ładunek klasy K
+
+Generator `node tools/levels/buildM04.mjs` zapisuje poziom i cztery fale `m04*`.
+Tor biegnie w osi +X: wagon od x=12 do x=240, wyjście przy x=249. Sekcje:
+nastawnia (0–56 m), rogatka (56–104), rozjazd wschodni (104–164), rozjazd
+Egzekutora (164–220), tunel (220–260). Szerokość 14–28 m, drogi serwisowe i osłony
+po obu stronach toru, istniejące bramownice, podkłady i para. Oświetlenie:
+bursztynowe semafory, zielone zwrotnice, błękit i ciepła biel. Szron dołącza na starcie.
+
+Spotkania: patrol (2 szturmowców, strzelec), rogatka (tarczownik, 2 strzelców,
+wieżyczka), wschodni rozjazd (2 szturmowców, tarczownik, 2 drony), Egzekutor
+(Egzekutor, 2 strzelców, dron). Ostatnie ma `bossFor: executor`; istniejący
+Egzekutor jest elitą, a cel kończy pokonanie całego oddziału.
+
+Kontrakt poziomu: opcjonalne `payload: { objective, route, stops }`. `objective`
+wskazuje `escortPayload`, `route` to punkty `{x,y,z}`. Postój
+`{id,name,atM,unlockAfter}` zatrzymuje środek wagonu na dystansie `atM`, aż wcześniejszy
+cel `unlockAfter` będzie `done`. Walidacja sprawdza referencje, kolejność postojów,
+trasę i dystanse checkpointów. Każdy checkpoint eskorty ma `payloadDistanceM`;
+normalna aktywacja wymaga dotarcia gracza i wagonu. Wznowienie/odrodzenie odtwarza
+wagon na tym dystansie z pełnym HP, bez zmiany formatu `MissionSave`.
+
+Lokalny `PayloadMissionRoom` w `mission.ts` reużywa `RailPayload`, `PayloadView`,
+interpolacji i `PrototypeHud`. Ruch/HP/bryła to `tuning.prototypes.payload`:
+3,5 m/s, 400 HP, gracz w promieniu 9 m, postój przy wrogach w promieniu 22 m.
+`RailPayload.canDepart(stopId)` to opcjonalny hook blokady, `restore(distanceM)`
+odtwarza checkpoint bez ponownego wyzwalania wcześniejszych fal. Wagon jest neutralnym
+celem `Health`/`DamageSystem`; hurtbox przyjmuje pociski wrogów, odrzuca obrażenia
+gracza i Szrona. Przy 0 HP próba znika z zapisu i następuje powrót bez nagród do
+kryjówki. Błąd usunięcia można ponowić przez `mission retry`, cele pozostają zablokowane.
+
+Sprawdzenie: po `campaign complete m03-list-przewozowy` otwórz
+`?scene=mission&mission=m04-ladunek-klasy-k&debug=1`. `payload status` pokazuje stan,
+`payload skip` skraca trasę w debug, `payload hp 0` sprawdza porażkę. Cele:
+`barricade`, `laser`, `switch-1`, `carts`, `switch-2`, `executor`, `payload`, `exit`.
+Interakcje trwają 2 s. `missionM04Level.test.ts` przechodzi trasę kapsułą bez
+teleportacji, `missionM04.spec.ts` sprawdza tablicę, cele, powrót i odblokowanie M06.
+
+Do oceny Architekta: czytelność toru, tempo eskorty, HUD drużyny i balans ostrzału.
+Celowanie pozostaje takie jak w prototypie: wrogowie wybierają gracza lub sojusznika,
+a wagon obrywa pociskami na linii ostrzału. Świadome wybieranie wagonu wymaga
+osobno uzgodnionego hooka w chronionym `roomScene.ts`.
+Odkrycie K-112 przekazuje radio; widok wagonu pozostaje modelem prototypu bez
+animacji wyrwania drzwi i odsłonięcia Idy.
 
 ## Sojusznicy na poziomie
 

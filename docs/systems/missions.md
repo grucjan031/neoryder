@@ -143,7 +143,7 @@ Opcjonalne `defend.waves: { atProgress: number; wave: string }[]` uruchamia posi
 
 M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Od wersji liniowej M03 ma `level: m03-list-przewozowy` (mapa i przebieg: `docs/systems/levels.md`, sekcja „M03”); pola `typeWeights` i `roomPools` usunięto, `layers` i `fixedNodes` zostają, bo wymaga ich schemat misji (jak w M01). Fale transferu startują jako spotkania poziomu z `reinforcementFor: terminal:<indeks>`. Sprawdzenie: `?scene=mission&mission=m03-list-przewozowy&debug=1` po odblokowaniu M01 (`campaign complete m01-maszty` w `?scene=run&debug=1`), `objective done terminal`, następnie `objective done exit`.
 
-M06 „Odlewnia” wymaga M03 i jest poziomem liniowym (`levels.md`, sekcja „M06 — Odlewnia”); wariant runowy został usunięty. Z pól runu zostały tylko te, których wymaga schemat: `layers: 7` i jeden węzeł finałowy (warstwa 7, `bossRoom`) z celami `brandt`, `server`, `exit`; `typeWeights`, `roomPools`, `enemies` i osłony węzłów zniknęły. Pozycje celów w danych misji są zastępowane przez `objectivePositions` poziomu. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Kwestie zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów; odprawa ma trzy z nich, reszta pada w radiu. Radio `enterNode:3|6|7` wyzwalają odcinki poziomu (hala formowania, przedpokój, arena).
+M06 „Odlewnia” wymaga M04 i jest poziomem liniowym (`levels.md`, sekcja „M06 — Odlewnia”); wariant runowy został usunięty. Z pól runu zostały tylko te, których wymaga schemat: `layers: 7` i jeden węzeł finałowy (warstwa 7, `bossRoom`) z celami `brandt`, `server`, `exit`; `typeWeights`, `roomPools`, `enemies` i osłony węzłów zniknęły. Pozycje celów w danych misji są zastępowane przez `objectivePositions` poziomu. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Kwestie zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów; odprawa ma trzy z nich, reszta pada w radiu. Radio `enterNode:3|6|7` wyzwalają odcinki poziomu (hala formowania, przedpokój, arena).
 
 Opcjonalne `interlude: { title, lines: DialogueLine[] }` wyświetla się przed odprawą M03 i M06: przerywnik zastępuje wydarzenia misji, których nie ma w grze; usuwamy go, gdy brakująca misja powstanie.
 
@@ -153,4 +153,16 @@ Host przekazuje istniejące zdarzenia `boss_phase` do `boss:phase:2` i `boss:pha
 
 Powyższy akapit opisuje pokój bossa w runie (`bossRoom`, `layout.bossEnemy`). W poziomie liniowym M06 boss jest wrogiem spotkania `bossFor`: fazy do radia przekazuje `MissionScene`, a `boss:defeated` i ukończenie `killBoss` następują z ukończeniem spotkania (szczegóły w `levels.md`).
 
-Sprawdzenie M06: `?scene=mission&mission=m06-odlewnia&debug=1` po ukończeniu M03 (adres `?scene=run&mission=m06-odlewnia` przekierowuje do sceny `mission`); kroki w `levels.md`, sekcja „M06 — Odlewnia”. Cele opcjonalne i zegar dostrojenia pozostają poza zakresem; balans bossa jest niezmieniony.
+Sprawdzenie M06: `?scene=mission&mission=m06-odlewnia&debug=1` po ukończeniu M04 (adres `?scene=run&mission=m06-odlewnia` przekierowuje do sceny `mission`); kroki w `levels.md`, sekcja „M06 — Odlewnia”. Cele opcjonalne i zegar dostrojenia pozostają poza zakresem; balans bossa jest niezmieniony.
+
+M04 „Ładunek klasy K” wymaga M03 i odblokowuje M06. Ma liniowy poziom bocznic Hut,
+Szrona od początku, trzy krótkie kwestie odprawy i sześć debriefu. Scenariusz nie ma
+osobnego interludium. Radio to wyzwalacze startu, sekcji, interakcji i spotkań;
+odkrycie K-112 z pytaniem Idy następuje po pokonaniu oddziału Egzekutora.
+Pięć celów `interact` usuwa barykadę, wyłącza laser, przestawia dwie zwrotnice
+i usuwa wózki. Potem `killBoss` (Egzekutor), nowy `escortPayload` i osobny `exit`.
+`escortPayload` nie postępuje od obecności gracza w strefie: kończy go host dopiero
+po statusie `RailPayload.arrived`. Zniszczenie wagonu kończy próbę bez nagród.
+Pierwsze ukończenie daje 110 Danych i 1 Rdzeń. Szczegóły checkpointów i trasy:
+`levels.md`, sekcja M04. Opcjonalne premie scenariusza, zmiany wystroju kryjówki
+i przerywnik M06 (obejmuje też pominiętą M05) pozostają poza zakresem tej zmiany.

@@ -6,7 +6,7 @@
   "act": 1,
   "summary": "Wejdź do siedziby ochrony Kurogane w Hutach. Pokonaj Oskara Brandta, zgraj główny serwer ochrony i opuść Odlewnię windą towarową.",
   "sectorId": "kurogane",
-  "requires": ["m03-list-przewozowy"],
+  "requires": ["m04-ladunek-klasy-k"],
   "layers": 7,
   "splashAct": 2,
   "fixedNodes": [

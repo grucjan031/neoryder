@@ -5,6 +5,7 @@ import achievements from '../../src/data/meta/achievements.json' with { type: 'j
 import progression from '../../src/data/meta/progression.json' with { type: 'json' };
 import m01 from '../../src/data/missions/m01-maszty.json' with { type: 'json' };
 import m03 from '../../src/data/missions/m03-list-przewozowy.json' with { type: 'json' };
+import m04 from '../../src/data/missions/m04-ladunek-klasy-k.json' with { type: 'json' };
 import m06 from '../../src/data/missions/m06-odlewnia.json' with { type: 'json' };
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
@@ -177,6 +178,33 @@ async function playM03(page: Page) {
     checkpointId: 'dok',
   });
   await command(page, 'tp 244 -12.6 0');
+}
+
+async function playM04(page: Page) {
+  for (const id of ['barricade', 'laser', 'switch-1', 'carts', 'switch-2'])
+    expect(await command(page, `objective done ${id}`)).toBe('Cel ukończony.');
+  await command(page, 'tp 180 4 -90');
+  await expect
+    .poll(async () => (await mission(page)).activeEncounters, {
+      timeout: SIM_TIMEOUT,
+    })
+    .toContain('executor');
+  for (
+    let i = 0;
+    i < 8 && (await mission(page)).objectives.executor !== 'done';
+    i++
+  ) {
+    await waitSimSteps(page, 60);
+    await command(page, 'kill all');
+  }
+  await pollMission(page, 'M04 / Egzekutor').toMatchObject({
+    objectives: { executor: 'done' },
+  });
+  for (let i = 0; i < 7; i++) await command(page, 'payload skip');
+  await pollMission(page, 'M04 / wagon').toMatchObject({
+    objectives: { payload: 'done' },
+  });
+  expect(await command(page, 'objective done exit')).toBe('Cel ukończony.');
 }
 
 async function playM06(page: Page) {
@@ -502,6 +530,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
   const missions = [
     { definition: m01, play: playM01 },
     { definition: m03, play: playM03 },
+    { definition: m04, play: playM04 },
     { definition: m06, play: playM06 },
   ];
   const completed: string[] = [];
@@ -552,7 +581,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
 
     await stage('koniec kampanii / tablica', async () => {
       expect(meta.campaign).toMatchObject({
-        completed: [m01.id, m03.id, m06.id],
+        completed: [m01.id, m03.id, m04.id, m06.id],
         pendingDebrief: null,
       });
       await board(page, boardStatuses());

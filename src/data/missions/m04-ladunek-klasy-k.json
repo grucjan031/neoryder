@@ -1,0 +1,268 @@
+{
+  "id": "m04-ladunek-klasy-k",
+  "level": "m04-ladunek-klasy-k",
+  "number": 4,
+  "title": "Ładunek klasy K",
+  "summary": "Osłoń przejęty wagon na bocznicach Hut. Otwórz tor, pokonaj Egzekutora i doprowadź ładunek K-112 do tunelu Niecki.",
+  "act": 1,
+  "sectorId": "kurogane",
+  "requires": ["m03-list-przewozowy"],
+  "layers": 7,
+  "fixedNodes": [
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatWarehouse",
+      "objectives": [
+        "barricade",
+        "laser",
+        "switch-1",
+        "carts",
+        "switch-2",
+        "executor",
+        "payload",
+        "exit"
+      ],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "barricade",
+      "kind": "interact",
+      "label": "Usuń barykadę z toru",
+      "position": { "x": 43, "y": 0, "z": 4 },
+      "holdS": 2,
+      "unlockAfter": []
+    },
+    {
+      "id": "laser",
+      "kind": "interact",
+      "label": "Wyłącz zasilanie rogatki laserowej",
+      "position": { "x": 68, "y": 0, "z": 4 },
+      "holdS": 2,
+      "unlockAfter": ["barricade"]
+    },
+    {
+      "id": "switch-1",
+      "kind": "interact",
+      "label": "Przestaw pierwszą zwrotnicę",
+      "position": { "x": 85, "y": 0, "z": -4 },
+      "holdS": 2,
+      "unlockAfter": ["laser"]
+    },
+    {
+      "id": "carts",
+      "kind": "interact",
+      "label": "Usuń wózki techniczne z toru",
+      "position": { "x": 123, "y": 0, "z": 4 },
+      "holdS": 2,
+      "unlockAfter": ["switch-1"]
+    },
+    {
+      "id": "switch-2",
+      "kind": "interact",
+      "label": "Przestaw drugą zwrotnicę",
+      "position": { "x": 143, "y": 0, "z": -4 },
+      "holdS": 2,
+      "unlockAfter": ["carts"]
+    },
+    {
+      "id": "executor",
+      "kind": "killBoss",
+      "label": "Pokonaj Egzekutora i oddział Brandta"
+    },
+    {
+      "id": "payload",
+      "kind": "escortPayload",
+      "label": "Doprowadź wagon K-112 do tunelu"
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Zamknij kratę i wróć na Kamienną",
+      "position": { "x": 249, "y": 0, "z": 4 },
+      "holdS": 2,
+      "unlockAfter": ["payload", "executor"]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "mira",
+      "text": "Na trasie są dwie ręczne zwrotnice i jedna rogatka z laserem. Z kabiny tego nie przełączę."
+    },
+    {
+      "speaker": "szron",
+      "text": "Wagon ma pancerz, ale agregat chłodniczy na dachu jest odsłonięty."
+    },
+    {
+      "speaker": "szron",
+      "text": "Doprowadź wagon do wlotu starego tunelu technicznego. Tam zamkniemy za wami kratę."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Zwrotnica przerzucona, skład wyszedł na bocznicę. Uruchamiam hamulce manewrowe na minimum — pilnuj obu stron wagonu."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Dyspozytornia już miga na czerwono. Zgłosili nieautoryzowany zjazd z toru numer trzy."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:patrol:done",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Pociąg jest nasz, przynajmniej na papierze. Wpięłam przekaźnik w stary ciągnik spalinowy z drugiego peronu, idzie jak pierdolony wóz z węglem — dwanaście na godzinę, szybciej nie wyciągnie, bo się zagotuje."
+        },
+        {
+          "speaker": "szron",
+          "text": "Jeśli pojedzie wolniej, dogonią go pieszo. Jak szybko po rozjeździe zorientują się, że wagon zniknął z głównego toru?"
+        },
+        {
+          "speaker": "bajt",
+          "text": "Daję nam dwie minuty, zanim dyspozytor zauważy brak sygnału na wadze przy śluzie. Potem Brandt rzuci wszystko, co stoi pod ręką na wschodzie Hut."
+        },
+        {
+          "speaker": "mira",
+          "text": "Musisz biec przy wagonie i otwierać tor."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:za-rogatka",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Jeśli przestanie pracować, nie wiemy, co stanie się z ładunkiem w środku."
+        },
+        {
+          "speaker": "wolan",
+          "text": "Temperatura w tych skrzyniach nie służy do mrożenia tkanek, Szron. Przy czterystu kilogramach z własnym zasilaniem to może być układ podtrzymywania życia. Ostrożnie ze wstrząsami."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "Brzmi, jakby w środku był ktoś żywy. Uważaj na zakręcie za estakadą, tam zawsze zwalniają przed mostem."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:rogatka",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Stoję, kurwa! Rogatka na wprost zablokowała tory. Skrzynka zasilająca jest po prawej stronie wiaty, na słupie."
+        },
+        {
+          "speaker": "szron",
+          "text": "Zdejmij ogień z kładki, potem wyłącz zaporę i rwij dźwignię zwrotnicy. Nie zostawiaj wagonu bez osłony dłużej niż trzeba."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:switch-1:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Przeszliśmy. Chłodnica na dachu oberwała kilka razy, ale trzyma ciśnienie. Ruszamy dalej."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:wschodni:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jasna cholera, z prawej wjeżdżają lekkie wozy pościgowe, z góry idą drony! Chcą zatrzymać agregat!"
+        },
+        {
+          "speaker": "mira",
+          "text": "Szarpią za złączki pod podwoziem, skurwiele! Zdejmij szturmowców spod kół, zanim odczepią mi lokomotywę od platformy!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Użyj wagonu jako osłony przed ogniem z ramp i oczyść wózki na torze przed ciągnikiem."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:executor:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Przechwyciłem kanał kierowniczy Brandta! Na peronie przed tunelem zjazdowym wylądował jego oddział pościgowy — prowadzi ich Egzekutor!"
+        },
+        {
+          "speaker": "szron",
+          "text": "To ostatni odcinek przed kratą. Jeśli zamkną ten wjazd, zostaniemy między halami. Rozbij obstawę i wyłącz Egzekutora."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:executor:done",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Co jest, kurwa?! Wskaźnik zasilania kontenera skoczył na maksa, w moim pulpicie wybiło bezpieczniki!"
+        },
+        {
+          "speaker": "bajt",
+          "text": "Odsuń się od drzwi wagonu! Cały zapis napięcia... to nie jest zwarcie!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Co tam się stało? Kurier, widzisz środek?"
+        },
+        {
+          "speaker": "mira",
+          "text": "Drzwi leżą pięć metrów od toru... Kurwa, tam w środku naprawdę ktoś leży. W białej aparaturze."
+        },
+        { "speaker": "ida", "text": "...Która godzina?" },
+        {
+          "speaker": "wolan",
+          "text": "To... młoda kobieta. Kod na kołnierzu: K-112. Nie ruszajcie głównych przewodów na karku, dopóki nie zjedziecie na dół."
+        },
+        {
+          "speaker": "szron",
+          "text": "Brama tunelu wolna. Wciągamy wagon na ślepy tor za kratą, Mira, ruszaj."
+        }
+      ]
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "mira",
+      "text": "Odłączyliśmy najcięższą ramę jeszcze w tunelu, resztę przytaszczyliśmy tutaj na wózku. Ma tętno równe, ale śpi jak pod mocnym znieczuleniem."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Na blasze kontenera jest tylko numer serii: K-112 i stempel kontroli z Hut. Żadnego nazwiska, żadnej karty pacjenta."
+    },
+    {
+      "speaker": "tomasz",
+      "text": "Słyszałem przez przekaźnik. Wyrwała stalowe drzwi jednym ruchem, bez dotykania zamka. Takiego Rezonansu nie widziałem w Niecce od lat."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Znam podstawowy układ elektrod z dawnych publikacji technicznych. Przekrój wiązki jest nietypowy — to nie miało jej leczyć, tylko utrzymywać w płytkim śnie i odczytywać wzorzec."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Zostawię ją tutaj, w kąciku łączności, żeby nie wozić po całym peronie. Obudzi się sama, kiedy zejdą leki z kroplówki. Nie wcześniej niż za kilka dni."
+    },
+    {
+      "speaker": "szron",
+      "text": "Jeśli zamknął sieć z zewnątrz, to znaczy, że szuka naszego dojścia. Przygotujcie się — zanim otworzy się okno na Taras, musimy zobaczyć, co ma na serwerach w swojej bazie."
+    }
+  ],
+  "rewards": { "firstClear": { "data": 110, "cores": 1 } }
+}

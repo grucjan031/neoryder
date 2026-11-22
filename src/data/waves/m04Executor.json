@@ -1,0 +1,40 @@
+{
+  "id": "m04Executor",
+  "firstBreakS": 1,
+  "breakS": 1,
+  "maxAlive": 6,
+  "minSpawnDistance": 0,
+  "spawnPoints": [
+    {
+      "x": 190,
+      "z": -5
+    },
+    {
+      "x": 194,
+      "z": 5
+    },
+    {
+      "x": 198,
+      "z": -4
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.8,
+      "groups": [
+        {
+          "enemy": "executor",
+          "count": 1
+        },
+        {
+          "enemy": "gunner",
+          "count": 2
+        },
+        {
+          "enemy": "drone",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
