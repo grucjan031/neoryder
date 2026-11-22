@@ -35,7 +35,11 @@ import { FullscreenPass, fullscreenVertex } from './fullscreen';
 import { syncMaterials } from './materials';
 import { hideNoOutline } from './noOutline';
 import { PostFxPass, PostFxState } from './postFx';
-import { renderWithViewmodel } from './viewmodelLayer';
+import {
+  hasViewmodel,
+  renderWithViewmodel,
+  viewmodelNear,
+} from './viewmodelLayer';
 import { frameProfiler } from './frameProfiler';
 
 /** Ustawienia konturu zależnego od odległości (pola z `tuning.render`). */
@@ -143,13 +147,54 @@ const inkShader = /* glsl */ `
   }
 `;
 
+const layerDepthShader = /* glsl */ `
+  uniform sampler2D depthMap;
+  uniform sampler2D viewmodelNormalDepthMap;
+  uniform sampler2D viewmodelColorDepthMap;
+  uniform bool viewmodelActive;
+  uniform float cameraNear;
+  uniform float cameraFar;
+  uniform float viewmodelNear;
+  uniform bool perspective;
+
+  float layerDepth(vec2 uv) {
+    // Ujemna wartość identyfikuje piksel viewmodelu niezależnie od głębi świata.
+    if (viewmodelActive) {
+      float depth = texture2D(viewmodelNormalDepthMap, uv).x;
+      if (depth < 1.0) return depth - 1.0;
+    }
+    return texture2D(depthMap, uv).x;
+  }
+
+  // Piksel viewmodelu w kolorze (głębia koloru < 1), także z obiektów bez konturu.
+  bool viewmodelColorAt(vec2 uv) {
+    return viewmodelActive && texture2D(viewmodelColorDepthMap, uv).x < 1.0;
+  }
+
+  // Obiekt viewmodelu bez konturu (rdzeń ostrza, błysk) zasłania bryłę z konturem lub świat:
+  // jego głębia koloru jest wyraźnie bliżej niż głębia bufora normalnych. Tam nie ma linii.
+  bool inkSuppressedAt(vec2 uv) {
+    if (!viewmodelColorAt(uv)) return false;
+    return texture2D(viewmodelColorDepthMap, uv).x <
+      texture2D(viewmodelNormalDepthMap, uv).x - 5e-4;
+  }
+
+  float metricDepth(float depth) {
+    float near = depth < 0.0 ? viewmodelNear : cameraNear;
+    float raw = depth < 0.0 ? depth + 1.0 : depth;
+    return -(perspective
+      ? perspectiveDepthToViewZ(raw, near, cameraFar)
+      : orthographicDepthToViewZ(raw, near, cameraFar));
+  }
+`;
+
 const fragmentShader = /* glsl */ `
   #include <packing>
   ${inkShader}
+  ${layerDepthShader}
   uniform sampler2D colorMap;
   uniform sampler2D colorDepthMap;
   uniform sampler2D normalMap;
-  uniform sampler2D depthMap;
   uniform vec2 texelSize;
   uniform float thickness;
   uniform float depthThreshold;
@@ -159,10 +204,6 @@ const fragmentShader = /* glsl */ `
   uniform float outlineFarNormal;
   uniform float outlineFarOuter;
   uniform vec3 outlineColor;
-  uniform float cameraNear;
-  uniform float cameraFar;
-  uniform float viewmodelDepth;
-  uniform bool perspective;
   uniform sampler2D bloomMap;
   uniform float bloomStrength;
   uniform mat4 inverseProjection;
@@ -200,16 +241,6 @@ const fragmentShader = /* glsl */ `
   uniform float paintStrength;
   varying vec2 vUv;
 
-  float metricDepth(float depth) {
-    // Głębia viewmodelu jest ściśnięta do [0, viewmodelDepth]: przywracamy pełny zakres.
-    if (depth < viewmodelDepth) depth /= viewmodelDepth;
-    return -(perspective
-      ? perspectiveDepthToViewZ(depth, cameraNear, cameraFar)
-      : orthographicDepthToViewZ(depth, cameraNear, cameraFar));
-  }
-
-  float viewDepth(vec2 uv) { return metricDepth(texture2D(depthMap, uv).x); }
-
   vec3 normalAt(vec2 uv) {
     return texture2D(normalMap, uv).xyz * 2.0 - 1.0;
   }
@@ -237,14 +268,17 @@ const fragmentShader = /* glsl */ `
   }
 
   void main() {
-    float centerDepth = max(viewDepth(vUv), cameraNear);
+    float rawDepth = layerDepth(vUv);
+    float centerDepth = max(metricDepth(rawDepth), 1e-4);
     vec2 offset = texelSize * thickness;
     float dx = 0.0;
     float dy = 0.0;
     vec3 nx = vec3(0.0);
     vec3 ny = vec3(0.0);
     float nearest = centerDepth;
-    bool viewmodelInk = texture2D(depthMap, vUv).x < viewmodelDepth;
+    bool viewmodelInk = rawDepth < 0.0;
+    bool viewmodelColor = viewmodelColorAt(vUv);
+    bool layerEdge = false;
     float inkReach = max(inkWidth, inkViewmodelWidth) * inkNearScale;
     for (int y = -1; y <= 1; y++) {
       for (int x = -1; x <= 1; x++) {
@@ -252,7 +286,8 @@ const fragmentShader = /* glsl */ `
         float wx = float(x) * (y == 0 ? 2.0 : 1.0);
         float wy = float(y) * (x == 0 ? 2.0 : 1.0);
         // Różnica względem środka ogranicza utratę precyzji daleko od kamery.
-        float sampleRawDepth = texture2D(depthMap, uv).x;
+        float sampleRawDepth = layerDepth(uv);
+        layerEdge = layerEdge || ((rawDepth < 0.0) != (sampleRawDepth < 0.0));
         float sampleDepth = metricDepth(sampleRawDepth);
         nearest = min(nearest, sampleDepth);
         float depth = (sampleDepth - centerDepth) / centerDepth;
@@ -263,9 +298,9 @@ const fragmentShader = /* glsl */ `
         if (inkWidth > 0.0) {
           // Szukamy głębi obiektu również po zewnętrznej stronie grubego obrysu.
           vec2 probe = vUv + vec2(float(x), float(y)) * texelSize * inkReach;
-          float probeDepth = texture2D(depthMap, probe).x;
+          float probeDepth = layerDepth(probe);
           nearest = min(nearest, metricDepth(probeDepth));
-          viewmodelInk = viewmodelInk || probeDepth < viewmodelDepth || sampleRawDepth < viewmodelDepth;
+          viewmodelInk = viewmodelInk || probeDepth < 0.0 || sampleRawDepth < 0.0;
         }
       }
     }
@@ -275,18 +310,18 @@ const fragmentShader = /* glsl */ `
     // na stronę tła: cienkie kończyny dalekich wrogów zostają w swoim kolorze zamiast w kolorze linii.
     float far = smoothstep(outlineFadeNear, max(outlineFadeFar, outlineFadeNear + 1e-3), centerDepth);
     float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
-    float depthLine = step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
+    float depthLine = layerEdge ? 1.0 : step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
     float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
     float edge = max(depthLine, normalLine);
     if (thickness <= 0.0) edge = 0.0;
     if (inkWidth > 0.0 && thickness > 0.0) {
       if (viewmodelInk) {
         // Dotychczasowy tusz FPP, także po stronie tła: bez skalowania i nowego wygaszania.
-        float inkNear = 1.0 - smoothstep(outlineFadeNear * 0.5, max(outlineFadeFar, outlineFadeNear * 0.5 + 1e-3), centerDepth);
+        // Odległość strony viewmodelu: po stronie tła głębia środka byłaby głębią świata za ręką.
+        float inkNear = 1.0 - smoothstep(outlineFadeNear * 0.5, max(outlineFadeFar, outlineFadeNear * 0.5 + 1e-3), nearest);
         float radius = inkViewmodelWidth * mix(1.0, inkNearScale, inkNear);
-        if (texture2D(depthMap, vUv).x < viewmodelDepth) radius = min(radius, inkViewmodelMaxRadiusPx);
-        float core = texture2D(edgeMap, vUv).b;
-        float ink = core;
+        if (rawDepth < 0.0) radius = min(radius, inkViewmodelMaxRadiusPx);
+        float ink = edge;
         float hits = 0.0;
         for (int i = 0; i < 12; i++) {
           float a = float(i) * 0.5235988;
@@ -296,7 +331,7 @@ const fragmentShader = /* glsl */ `
           ink = max(ink, max(outer, inner));
           hits += outer + inner;
         }
-        edge = max(core, ink * (1.0 - smoothstep(0.5, 0.8, hits / 24.0)));
+        edge = max(edge, ink * (1.0 - smoothstep(0.5, 0.8, hits / 24.0)));
       } else {
         vec2 radius = inkRadiusAt(nearest) * vec2(1.0, inkNormalScale);
         vec2 core = texture2D(edgeMap, vUv).rg;
@@ -323,16 +358,17 @@ const fragmentShader = /* glsl */ `
         edge = max(ink.r, ink.g);
       }
     }
+    if (viewmodelColor && inkSuppressedAt(vUv)) edge = 0.0;
     vec4 color = texture2D(colorMap, vUv);
     vec3 rgb = color.rgb;
     vec3 line = outlineColor;
-    float rawDepth = texture2D(depthMap, vUv).x;
+    bool worldSurface = rawDepth >= 0.0 && rawDepth < 1.0 && !viewmodelColor;
     vec3 worldPoint = vec3(0.0);
-    if (rawDepth < 1.0) {
+    if (worldSurface) {
       vec4 viewPoint = inverseProjection * vec4(vUv*2.0-1.0, rawDepth*2.0-1.0, 1.0);
       worldPoint = (cameraWorld * vec4(viewPoint.xyz / viewPoint.w,1.0)).xyz;
     }
-    if (reflectionStrength > 0.0 && rawDepth > viewmodelDepth && rawDepth < 1.0) {
+    if (reflectionStrength > 0.0 && worldSurface) {
       float wet = texture2D(normalMap,vUv).a;
       vec3 worldNormal = cameraRotation * normalAt(vUv);
       float floorMask = step(0.9,worldNormal.y) * (1.0-smoothstep(floorTolerance*0.5,floorTolerance,abs(worldPoint.y-floorY)));
@@ -348,7 +384,7 @@ const fragmentShader = /* glsl */ `
       rgb += texture2D(reflectionMap,reflectionUv).rgb * reflectionStrength * wet * floorMask * puddle * fresnel * inside;
     }
     if ((celStrength > 0.0 || hatchStrength > 0.0 || paintStrength > 0.0) &&
-        rawDepth > viewmodelDepth && rawDepth < 1.0) {
+        worldSurface) {
       float luma = dot(rgb, vec3(0.299, 0.587, 0.114));
       float hi = max(max(rgb.r, rgb.g), rgb.b);
       float lo = min(min(rgb.r, rgb.g), rgb.b);
@@ -387,13 +423,13 @@ const fragmentShader = /* glsl */ `
     // więc hologramy, deszcz i viewmodel na niebie mają poprawne krycie; tu tylko błysk burzy
     // i brak mgły. Głębia koloru, nie normalnych: obiekty bez konturu (rdzeń ostrza, błysk)
     // nie trafiają do bufora normalnych i bez tego znikały na tle nieba.
-    if (texture2D(colorDepthMap, vUv).x >= 1.0) {
+    if (!viewmodelColor && texture2D(colorDepthMap, vUv).x >= 1.0) {
       rgb += skyFlashColor * skyFlash;
-    } else if ((fogStrength > 0.0 || heightFogDensity > 0.0) && rawDepth < 1.0) {
+    } else if ((fogStrength > 0.0 || heightFogDensity > 0.0) && worldSurface && !viewmodelColor) {
       // Mgła ku bieli ściąga też kontury, więc dalekie obiekty odcinają się od bliskich.
       float fog = smoothstep(fogNear, fogFar, centerDepth) * fogStrength;
       // Ca?ka g?sto?ci wzd?u? promienia: stabilna tak?e dla poziomego spojrzenia.
-      if (heightFogDensity > 0.0 && rawDepth > viewmodelDepth) {
+      if (heightFogDensity > 0.0) {
         float eyeHeight = max(eyePosition.y-floorY,0.0);
         float pointHeight = max(worldPoint.y-floorY,0.0);
         float heightDelta = (pointHeight-eyeHeight)*heightFogFalloff;
@@ -404,7 +440,8 @@ const fragmentShader = /* glsl */ `
       }
       vec3 flashedFog = fogColor + skyFlashColor * skyFlash;
       rgb = mix(rgb, flashedFog, fog);
-      line = mix(line, flashedFog, fog);
+      // Zewnętrzny obrys rąk leży na tle, ale należy do viewmodelu: nie blednie we mgle tła.
+      if (!viewmodelInk) line = mix(line, flashedFog, fog);
     }
     if (inkWidth > 0.0) {
       // Świecące (neony, ostrze, efekty) zostają czyste: tusz ich nie zalewa. Tylko jasne
@@ -451,8 +488,8 @@ const skyBackgroundVertex = /* glsl */ `
 const edgeFragmentShader = /* glsl */ `
   #include <packing>
   ${inkShader}
+  ${layerDepthShader}
   uniform sampler2D normalMap;
-  uniform sampler2D depthMap;
   uniform vec2 texelSize;
   uniform float depthThreshold;
   uniform float normalThreshold;
@@ -460,30 +497,24 @@ const edgeFragmentShader = /* glsl */ `
   uniform float outlineFadeFar;
   uniform float outlineFarNormal;
   uniform float outlineFarOuter;
-  uniform float cameraNear;
-  uniform float cameraFar;
-  uniform float viewmodelDepth;
-  uniform bool perspective;
   varying vec2 vUv;
-  float viewDepth(vec2 uv) {
-    float depth = texture2D(depthMap, uv).x;
-    if (depth < viewmodelDepth) depth /= viewmodelDepth;
-    return -(perspective
-      ? perspectiveDepthToViewZ(depth, cameraNear, cameraFar)
-      : orthographicDepthToViewZ(depth, cameraNear, cameraFar));
-  }
   vec3 normalAt(vec2 uv) { return texture2D(normalMap, uv).xyz * 2.0 - 1.0; }
   void main() {
-    float centerDepth = max(viewDepth(vUv), cameraNear);
+    float rawDepth = layerDepth(vUv);
+    float centerDepth = max(metricDepth(rawDepth), 1e-4);
     float dx = 0.0; float dy = 0.0;
     vec3 nx = vec3(0.0); vec3 ny = vec3(0.0);
     float nearest = centerDepth;
+    bool layerEdge = false;
+    bool suppressed = inkSuppressedAt(vUv);
     for (int y = -1; y <= 1; y++) {
       for (int x = -1; x <= 1; x++) {
         vec2 uv = vUv + vec2(float(x), float(y)) * texelSize;
         float wx = float(x) * (y == 0 ? 2.0 : 1.0);
         float wy = float(y) * (x == 0 ? 2.0 : 1.0);
-        float sampleDepth = viewDepth(uv);
+        float sampleRawDepth = layerDepth(uv);
+        layerEdge = layerEdge || ((rawDepth < 0.0) != (sampleRawDepth < 0.0));
+        float sampleDepth = metricDepth(sampleRawDepth);
         nearest = min(nearest, sampleDepth);
         float depth = (sampleDepth - centerDepth) / centerDepth;
         dx += depth * wx; dy += depth * wy;
@@ -494,13 +525,17 @@ const edgeFragmentShader = /* glsl */ `
     float normalEdge = sqrt(dot(nx, nx) + dot(ny, ny)) / 8.0;
     float far = smoothstep(outlineFadeNear, max(outlineFadeFar, outlineFadeNear + 1e-3), centerDepth);
     float behind = step(depthThreshold, (centerDepth - nearest) / centerDepth);
-    float depthLine = step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
+    float depthLine = layerEdge ? 1.0 : step(depthThreshold, depthEdge) * mix(1.0, behind, far * outlineFarOuter);
     float normalLine = step(normalThreshold, normalEdge) * (1.0 - far * (1.0 - outlineFarNormal));
     // R/G: sylwetka i detal osobno; B: dawny tusz FPP; A: metryczna głębia źródła.
     // Obrys na tle dziedziczy odległość najbliższej bryły zamiast odległości tła.
+    // B (tusz viewmodelu) zawiera tylko linie po stronie viewmodelu: dalekie krawędzie tła
+    // nie są pogrubiane wokół rąk. Piksele zasłonięte obiektem bez konturu nie mają linii.
     vec2 opacity = inkOpacityAt(nearest);
-    gl_FragColor = vec4(depthLine * opacity.r, normalLine * opacity.g,
-      max(depthLine, normalLine), nearest);
+    float viewmodelLine = (rawDepth < 0.0 || layerEdge) ? max(depthLine, normalLine) : 0.0;
+    if (suppressed) gl_FragColor = vec4(0.0, 0.0, 0.0, nearest);
+    else gl_FragColor = vec4(depthLine * opacity.r, normalLine * opacity.g,
+      viewmodelLine, nearest);
   }
 `;
 
@@ -584,6 +619,16 @@ export class StylePipeline {
     magFilter: NearestFilter,
     depthTexture: new DepthTexture(1, 1, UnsignedIntType),
   });
+  private readonly viewmodelColorDepth = new DepthTexture(
+    1,
+    1,
+    UnsignedIntType,
+  );
+  private readonly viewmodelNormalDepth = new DepthTexture(
+    1,
+    1,
+    UnsignedIntType,
+  );
   private readonly normalMaterial = new MeshNormalMaterial({
     toneMapped: false,
   });
@@ -592,6 +637,9 @@ export class StylePipeline {
     colorDepthMap: { value: this.colorTarget.depthTexture as Texture },
     normalMap: { value: this.normalTarget.texture },
     depthMap: { value: this.normalTarget.depthTexture },
+    viewmodelColorDepthMap: { value: this.colorTarget.depthTexture },
+    viewmodelNormalDepthMap: { value: this.normalTarget.depthTexture },
+    viewmodelActive: { value: false },
     texelSize: { value: new Vector2(1, 1) },
     thickness: { value: 1 },
     depthThreshold: { value: 0 },
@@ -603,7 +651,7 @@ export class StylePipeline {
     outlineColor: { value: new Color() },
     cameraNear: { value: 0.1 },
     cameraFar: { value: 100 },
-    viewmodelDepth: { value: 0.01 },
+    viewmodelNear: { value: tuning.camera.viewmodelNearM },
     perspective: { value: true },
     bloomMap: { value: this.colorTarget.texture as Texture },
     bloomStrength: { value: 0 },
@@ -733,6 +781,16 @@ export class StylePipeline {
     const ratio = this.renderer.getPixelRatio();
     const w = Math.max(1, Math.floor(width * ratio));
     const h = Math.max(1, Math.floor(height * ratio));
+    if (w !== this.colorTarget.width || h !== this.colorTarget.height) {
+      for (const depth of [
+        this.viewmodelColorDepth,
+        this.viewmodelNormalDepth,
+      ]) {
+        depth.dispose();
+        depth.image.width = w;
+        depth.image.height = h;
+      }
+    }
     this.colorTarget.setSize(w, h);
     this.normalTarget.setSize(w, h);
     this.edgeTarget.setSize(w, h);
@@ -790,10 +848,15 @@ export class StylePipeline {
     uniforms.outlineColor.value.set(t.outlineColor);
     uniforms.cameraNear.value = camera.near;
     uniforms.cameraFar.value = camera.far;
-    uniforms.viewmodelDepth.value = Math.min(
-      Math.max(t.viewmodelDepth, 1e-5),
-      1,
-    );
+    const viewmodelActive = hasViewmodel();
+    uniforms.viewmodelActive.value = viewmodelActive;
+    uniforms.viewmodelNear.value = viewmodelNear(camera);
+    uniforms.viewmodelColorDepthMap.value = viewmodelActive
+      ? this.viewmodelColorDepth
+      : this.colorTarget.depthTexture;
+    uniforms.viewmodelNormalDepthMap.value = viewmodelActive
+      ? this.viewmodelNormalDepth
+      : this.normalTarget.depthTexture;
     uniforms.perspective.value = 'isPerspectiveCamera' in camera;
     uniforms.skyGradient.value = t.skyGradient;
     uniforms.skyHeight.value = Math.max(t.skyGradientHeight, 1e-3);
@@ -869,7 +932,7 @@ export class StylePipeline {
         renderer.setRenderTarget(this.colorTarget);
         // Gradient nieba jako tło przebiegu koloru (tylko ten przebieg, tylko warstwa świata).
         if (t.skyGradient > 0) scene.add(this.skyBackground);
-        renderWithViewmodel(renderer, scene, camera);
+        renderWithViewmodel(renderer, scene, camera, this.viewmodelColorDepth);
       } finally {
         this.skyBackground.removeFromParent();
         frameProfiler?.end();
@@ -883,9 +946,19 @@ export class StylePipeline {
         restoreHidden = hideNoOutline(scene);
         if (uniforms.reflectionStrength.value > 0) {
           this.wetNormals ??= new WetNormals();
-          this.wetNormals.render(renderer, scene, camera);
+          this.wetNormals.render(
+            renderer,
+            scene,
+            camera,
+            this.viewmodelNormalDepth,
+          );
         } else {
-          renderWithViewmodel(renderer, scene, camera);
+          renderWithViewmodel(
+            renderer,
+            scene,
+            camera,
+            this.viewmodelNormalDepth,
+          );
         }
         restoreHidden();
         restoreHidden = null;
@@ -910,7 +983,13 @@ export class StylePipeline {
           this.colorTarget.height,
         );
         this.bloom.setSize(this.colorTarget.width, this.colorTarget.height);
-        this.bloom.render(renderer, scene, camera, this.colorTarget);
+        this.bloom.render(
+          renderer,
+          scene,
+          camera,
+          this.colorTarget,
+          viewmodelActive ? this.viewmodelColorDepth : undefined,
+        );
       }
       uniforms.bloomMap.value = bloomOn
         ? this.bloom!.texture
@@ -989,6 +1068,8 @@ export class StylePipeline {
     this.colorTarget.dispose();
     this.normalTarget.depthTexture?.dispose();
     this.normalTarget.dispose();
+    this.viewmodelColorDepth.dispose();
+    this.viewmodelNormalDepth.dispose();
     this.normalMaterial.dispose();
     this.skyBackground.geometry.dispose();
     this.skyBackground.material.dispose();

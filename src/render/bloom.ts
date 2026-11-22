@@ -90,6 +90,7 @@ export function bloomDepthVisible(
   maskSize: readonly [number, number],
   colorSize: readonly [number, number],
   sampleDepth: (u: number, v: number) => number,
+  sampleViewmodelDepth?: (u: number, v: number) => number,
 ): boolean {
   let visible = false;
   for (const offset of depthOffsets) {
@@ -118,13 +119,18 @@ export function bloomDepthVisible(
       gradient[0] * (u * maskSize[0] - fragment[0]) +
       gradient[1] * (v * maskSize[1] - fragment[1]);
     const sceneDepth = sampleDepth(u, v);
-    visible = visible || projected <= sceneDepth + depthTolerance;
+    visible =
+      visible ||
+      (projected <= sceneDepth + depthTolerance &&
+        (sampleViewmodelDepth?.(u, v) ?? 1) >= 1);
   }
   return visible;
 }
 
 const depthDeclarations = /* glsl */ `
   uniform sampler2D bloomColorDepth;
+  uniform sampler2D bloomViewmodelDepth;
+  uniform bool bloomViewmodelActive;
   uniform vec2 bloomColorSize;
   uniform vec2 bloomMaskSize;
 `;
@@ -139,7 +145,8 @@ const depthComparison = /* glsl */ `
     vec2 bloomDelta = bloomSampleUv * bloomMaskSize - gl_FragCoord.xy;
     float bloomDepth = gl_FragCoord.z + dot(bloomGradient, bloomDelta);
     float bloomSceneDepth = texture2D(bloomColorDepth, bloomSampleUv).r;
-    bloomVisible = bloomVisible || bloomDepth <= bloomSceneDepth + ${depthTolerance};
+    bloomVisible = bloomVisible || (bloomDepth <= bloomSceneDepth + ${depthTolerance} &&
+      (!bloomViewmodelActive || texture2D(bloomViewmodelDepth, bloomSampleUv).r >= 1.0));
   }`,
     )
     .join('\n')}
@@ -212,6 +219,8 @@ export class BloomPass {
   private readonly materialArrays = new WeakMap<Object3D, Material[]>();
   private readonly depthUniforms = {
     bloomColorDepth: { value: null as Texture | null },
+    bloomViewmodelDepth: { value: null as Texture | null },
+    bloomViewmodelActive: { value: false },
     bloomColorSize: { value: new Vector2() },
     bloomMaskSize: { value: new Vector2() },
   };
@@ -247,9 +256,14 @@ export class BloomPass {
     scene: Scene,
     camera: PerspectiveCamera | OrthographicCamera,
     colorTarget?: WebGLRenderTarget,
+    viewmodelColorDepth?: Texture,
   ): void {
     this.depthUniforms.bloomColorDepth.value =
       !this.reflection && colorTarget ? colorTarget.depthTexture : null;
+    this.depthUniforms.bloomViewmodelDepth.value =
+      viewmodelColorDepth ?? this.depthUniforms.bloomColorDepth.value;
+    this.depthUniforms.bloomViewmodelActive.value =
+      viewmodelColorDepth !== undefined;
     if (colorTarget)
       this.depthUniforms.bloomColorSize.value.set(
         colorTarget.width,

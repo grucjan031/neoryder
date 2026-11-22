@@ -1,5 +1,6 @@
 import { Matrix4, Mesh, MeshNormalMaterial, Plane, Vector3 } from 'three';
 import type {
+  DepthTexture,
   Material,
   OrthographicCamera,
   PerspectiveCamera,
@@ -36,6 +37,7 @@ export class WetNormals {
     renderer: WebGLRenderer,
     scene: Scene,
     camera: PerspectiveCamera | OrthographicCamera,
+    viewmodelDepth?: DepthTexture,
   ): void {
     const swappedMeshes = this.swappedMeshes;
     const swappedMaterials = this.swappedMaterials;
@@ -50,7 +52,7 @@ export class WetNormals {
           ? object.material.map((m) => this.material(m))
           : this.material(object.material);
       });
-      renderWithViewmodel(renderer, scene, camera);
+      renderWithViewmodel(renderer, scene, camera, viewmodelDepth);
     } finally {
       for (let i = 0; i < swappedMeshes.length; i++)
         swappedMeshes[i]!.material = swappedMaterials[i]!;

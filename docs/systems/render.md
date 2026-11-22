@@ -578,8 +578,8 @@ Do porównania przez architekta w `room-test` / `alleyMarket` (high i medium):
 - hologramy, nakładające się neony i przezroczystości: kolor respektuje rzeczywiste
   `depthWrite` i alphaTest. Dawne czarne zasłony upraszczały te własności. Szczególnie
   przezroczysty, nieemisyjny materiał z `depthWrite=true` może teraz zasłonić bloom;
-- ręce i broń na tle neonów: kolor zawiera ich ściśniętą głębię, a maska nadal
-  rysuje viewmodel osobno;
+- ręce i broń na tle neonów: maska korzysta z osobnej głębi koloru viewmodelu,
+  żeby odrzucić przykrytą część emisji świata;
 - migające zagrożenia i przełączenia jakości oraz rozmiaru okna.
 
 Pomiar i zrzuty wykonuje architekt. Próg kosztu bloomu: `bloomMask <= 2,35 ms`
@@ -587,8 +587,8 @@ w warunkach pomiaru bazowego 4,7 ms. Odbicia pozostają do pomiaru razem ze zmia
 scalania geometrii: ta zmiana nie gwarantuje spadku `reflectionMask` o połowę.
 
 Głębia jest linearyzowana według typu kamery (perspektywiczna lub ortograficzna) do metrycznej
-głębi widokowej (wzdłuż osi patrzenia, nie odległość euklidesowa); piksele viewmodelu (surowa głębia
-< `viewmodelDepth`) są przeliczane z powrotem na pełny zakres (`depth / viewmodelDepth`).
+głębi widokowej wzdłuż osi patrzenia. Piksele viewmodelu używają jego tekstury głębi
+i jego płaszczyzny bliskiej.
 Sobel 3×3 na normalnych (RGB zakodowane `n*0,5+0,5`) i głębi, wagi `x·(y==0 ? 2 : 1)` oraz
 `y·(x==0 ? 2 : 1)`; różnica głębi liczona względnie: `(głębia_próbki − głębia_środka) / głębia_środka`.
 `depthEdge = |(dx,dy)| / 8`, `normalEdge = |(nx,ny)| / 8`. Gradienty Sobela są dzielone przez 8.
@@ -701,7 +701,6 @@ debug `fx <damage|focus|off>` uruchamia impulsy do oceny wizualnej.
 | `skyGradient`, `skyTop`, `skyHorizon`, `skyGradientHeight`                 | 1, `#ffffff`, `#e3e7ea`, 0,5 | gradient nieba                                                                                          |
 | `fogStrength`, `fogColor`, `fogNear`, `fogFar`                             | 0,85, `#eef1f3`, 14, 80      | mgła odległości (m)                                                                                     |
 | `skyFlash`                                                                 | 0                            | błysk burzy: dodatek do nieba i mgły (0..1), ustawia scena                                              |
-| `viewmodelDepth`                                                           | 0,01                         | ułamek zakresu głębi dla rąk i przedmiotu                                                               |
 | `gridSize`, `gridContrast`, `gridLineWidth`                                | 2, 0,1, 1                    | siatka podłogi (m, 0..1, px)                                                                            |
 | `vignetteStrength`, `vignetteRadius`, `vignetteSoftness`                   | 0,2, 0,55, 0,6               | winieta                                                                                                 |
 | `damagePulseS`, `damagePulseMin`, `damagePulseHpGain`                      | 0,4, 0,35, 2                 | czas i siła impulsu obrażeń                                                                             |
@@ -712,14 +711,42 @@ debug `fx <damage|focus|off>` uruchamia impulsy do oceny wizualnej.
 ### Viewmodel zawsze na wierzchu
 
 Ręce i trzymany przedmiot (`FppViewModel`) leżą na warstwie `VIEWMODEL_LAYER` (1)
-Three.js (`src/render/viewmodelLayer.ts`). `renderWithViewmodel` rysuje świat (warstwa 0),
-a potem, tylko gdy istnieje jakiś viewmodel, drugi przebieg warstwy 1 tym samym celem bez
-czyszczenia, z macierzą projekcji kamery ściskającą głębię do pierwszych
-`viewmodelDepth` zakresu bufora. Dzięki temu viewmodel nie przenika ścian, osłon ani wrogów,
-a między swoimi elementami zachowuje poprawną głębię. Przebieg jest używany w trzech
-miejscach: kolor, normalne/głębia (obrys) i maska bloomu, więc obrys i bloom rąk działają.
-Shader obrysu przywraca pełny zakres głębi pikseli viewmodelu (`depth / viewmodelDepth`).
-Światła dostają warstwę 1 w tym przebiegu (Three zbiera światła wg maski warstw kamery).
+Three.js (`src/render/viewmodelLayer.ts`). `renderWithViewmodel` rysuje świat, zachowuje
+jego kolor i czyści głębię przed rysowaniem warstwy 1. Ręce i broń zachowują wzajemne
+zasłanianie nawet tuż przed przeszkodą. Płaszczyzna bliska viewmodelu
+(`tuning.camera.viewmodelNearM`, 0,03 m) i FOV (`tuning.camera.viewmodelFov`, domyślnie 0 =
+bieżący FOV świata, więc sprint, doskok i celowanie zachowują kadrowanie; wartość >0 w stopniach
+ustala stały FOV rąk, 20..120) są w panelu lil-gui i obowiązują tylko w przebiegu viewmodelu. Przebieg korzysta ze świateł
+i gotowych map cieni świata.
+
+Kolor i normalne korzystają z oddzielnych tekstur głębi viewmodelu do odczytu w kompozycji.
+Kontur wybiera głębię według pokrycia pikseli, a bloom testuje emisję świata względem
+głębi świata i pokrycia viewmodelu. Maska odbić rysuje warstwę świata. Wyłączenie konturu
+czyści samą głębię celu wyjściowego. Liczba przebiegów i wywołań rysowania geometrii
+pozostaje taka sama. Koszt to dwa dodatkowe bufory głębi pełnej rozdzielczości, ich czyszczenie
+i próbki w shaderach kompozycji oraz maski bloomu.
+
+Obiekty viewmodelu bez konturu (rdzeń ostrza, błysk) są widoczne w głębi koloru viewmodelu,
+ale nie w głębi normalnych. Kompozycja traktuje takie piksele jak viewmodel (bez odbić,
+cel-shadingu i mgły świata), a linie obrysu za nimi są wygaszane (`inkSuppressedAt`): czarny
+tusz tła i rękojeści nie przecina rdzenia ostrza. Zewnętrzny obrys rąk po stronie tła liczy
+odległość (`inkNear`) i mgłę po stronie viewmodelu, a kanał B bufora krawędzi (dylatacja tuszu)
+zawiera tylko linie po stronie viewmodelu, więc dalekie krawędzie tła nie pogrubiają się wokół rąk.
+Światła dostają warstwę viewmodelu przy pierwszym użyciu, zmianie liczby dzieci sceny i co 180
+wywołań przebiegu (zapas dla światła dodanego głębiej w drzewie; `invalidateViewmodelLights`
+wymusza od razu), nie w każdym przebiegu.
+
+Przy `tuning.camera.viewmodelFov` > 0 i różnym od FOV świata (także podczas sprintu lub celowania,
+gdy FOV świata się zmienia) przebieg rąk używa innej projekcji niż świat. Efekty rysowane na
+warstwie świata przy broni (początek wiązki lasera, punkt dłoni błyskawicy) przechodzą przez
+`viewmodelAnchor`, który przesuwa punkt tak, by kamera świata rzutowała go tam, gdzie widać
+broń. Pozostałe efekty w warstwie świata, zakotwiczone w viewmodelu poza tymi dwoma, nie są
+korygowane; domyślne 0 (FOV świata) nie wymaga korekty.
+
+Sprawdzenie w 30 sekund: uruchom `?scene=room-test&viewmodel=wall&debug=1`. Gracz startuje
+przy ścianie bez fal wrogów. Dociśnij W, wykonaj cięcie i blok, naciśnij R, wyceluj PPM
+i strzel. Ręce i broń powinny zachować sylwetkę, kontur, animacje i błysk przy ścianie
+oraz po odsunięciu od niej. Komenda `viewmodel wall` przywraca pozycję i kierunek.
 
 ### Koszt
 

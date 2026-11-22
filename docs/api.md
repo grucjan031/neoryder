@@ -669,6 +669,29 @@ export function setRenderWarmUp(value: RenderWarmUp | undefined): void; // tylko
 export function warmUpRender(timeoutMs?: number): Promise<void>;
 // src/render/outline.ts: StylePipeline.warmUp(scene, camera, cancelled?) — implementacja rozgrzewki.
 
+// src/render/viewmodelLayer.ts — wspólny przebieg koloru, normalnych i maski bloomu.
+export function renderWithViewmodel(
+  renderer: import('three').WebGLRenderer,
+  scene: import('three').Scene,
+  camera: import('three').PerspectiveCamera | import('three').OrthographicCamera,
+  viewmodelDepth?: import('three').DepthTexture,
+): void;
+// Rysuje świat i viewmodel do tego samego koloru. Czyści głębię przed drugim przebiegiem.
+// Jeżeli podano teksturę, musi mieć rozmiar bieżącego celu renderowania (funkcja tego nie
+// sprawdza; niezgodny rozmiar kończy się błędem Three.js, a `StylePipeline.setSize` go pilnuje).
+// Wtedy głębia świata zostaje zachowana, a głębia viewmodelu trafia do tej tekstury; przy
+// ostatnim wywołaniu cel odzyskuje własną głębię. Przy braku viewmodelu lub celu tekstura
+// pozostaje nieużyta. Funkcja przywraca stan renderera, kamery i sceny.
+// Warstwa viewmodelu na światłach jest włączana przy pierwszym użyciu, zmianie liczby dzieci
+// sceny i okresowo (nie w każdym przebiegu); `invalidateViewmodelLights(scene)` wymusza ją od razu.
+// Viewmodel używa klatki świata, własnej bliskiej płaszczyzny (`tuning.camera.viewmodelNearM`)
+// i FOV (`tuning.camera.viewmodelFov`, 0 = FOV świata); kamera jest przywracana po przebiegu.
+// viewmodelAnchor(camera, point): przesuwa punkt viewmodelu (np. lufę) tak, by kamera świata
+// rzutowała go tam, gdzie przebieg rąk; używane przez `FppViewModel.beamOriginFor(camera)`
+// i punkt dłoni błyskawicy. Przy `viewmodelFov` = 0 lub równym FOV świata jest to no-op.
+// BloomPass.render(renderer, scene, camera, colorTarget?, viewmodelColorDepth?) używa
+// obu głębokości koloru do pomijania emisji świata zasłoniętej przez viewmodel.
+
 // src/ui/debugConsole.ts
 export function registerCommand(name: string, help: string, run: (args: string[]) => string): () => void;
 ```

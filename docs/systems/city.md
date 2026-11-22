@@ -514,7 +514,7 @@ Wspólne dla wszystkich trzech: `enemy` `#e0262b`, `enemyGlow` `#ff5050`, `playe
 `power` `#ff2bd6`, neony `neon_amber` `#ffae1a`, `neon_green` `#6dff4a`, `neon_violet` `#8a5cff`,
 `neon_blue` `#3d7bff`, `neon_white`/`light_white` `#fff1d6`, `enemyRimStrength` 0,85 (w
 `white` 0), `enemyRimPower` 2,5, `reflectionFloorTolerance` 0,08, `cityHazardPeriod` 0,3,
-`skyGradient` 1, `skyFlash` 0, `viewmodelDepth` 0,01, `vignetteRadius` 0,55, `vignetteSoftness` 0,6,
+`skyGradient` 1, `skyFlash` 0, `vignetteRadius` 0,55, `vignetteSoftness` 0,6,
 `damagePulseS` 0,4, `damagePulseMin` 0,35, `damagePulseHpGain` 2, `damageAberration` 0,018,
 `damageTint` 0,5 (`damageTintColor` `#ff1a2a`), `focusTint` 0,14 (`focusTintColor` `#ff2bd6`),
 `focusDesaturate` 0,3, `focusFadeInS` 0,15, `focusFadeOutS` 0,35, `panoramaWindowWarm`

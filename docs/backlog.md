@@ -111,7 +111,7 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | Wspólny skład walki `Arena` i `RoomScene` | F3-04 powiela skład, by zachować Arenę i jej asercje bez zmian; wydzielenie rdzenia wymaga pełnej regresji jednostkowej i e2e Areny |
 | Zagadka z Chwytem (F3-19, typ węzła `puzzle`) | Niski priorytet; `typeWeights.puzzle` = 0 w danych sektora |
 | TTK bossa w symulatorze balansu (`docs/balance.md`), jeśli jeszcze go nie ma | Strojenie po playteście F3 |
-| Oddzielenie viewmodelu od głębi świata (ręce mogą wchodzić w ściany) | Osobne zadanie grafiki/renderu |
+| ~~Oddzielenie viewmodelu od głębi świata~~ | Zaimplementowane. Próba przy ścianie: `?scene=room-test&viewmodel=wall&debug=1` |
 
 ## Wynikłe z planu F4
 
