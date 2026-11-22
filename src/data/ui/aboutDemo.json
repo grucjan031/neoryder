@@ -1,0 +1,26 @@
+{
+  "title": "Sterowanie i zapis",
+  "report": "Zgłoś problem",
+  "close": "Wróć",
+  "saveTitle": "Zapis postępu",
+  "saveDescription": "Postęp kampanii i meta zapisuje się automatycznie po misji lub runie w tej przeglądarce. Misje mają punkty kontrolne, a run zapisuje postęp po każdym pokoju. Wyczyszczenie danych przeglądarki usuwa zapis. Zapis nie przenosi się automatycznie między przeglądarkami i urządzeniami.",
+  "copied": "Skopiowano dane techniczne. Wklej je do zgłoszenia i opisz problem.",
+  "copyFallback": "Nie można skopiować automatycznie. Zaznaczono dane techniczne — skopiuj je i wklej do zgłoszenia.",
+  "copyPending": "Kopiowanie danych technicznych…",
+  "reportUrl": "https://github.com/grucjan031/neoryder/issues",
+  "reportLink": "Otwórz stronę zgłoszeń",
+  "reportData": "Dane techniczne zgłoszenia",
+  "pauseKey": "Esc — pauza / zamknięcie nakładki",
+  "look": "Mysz — rozglądanie",
+  "missing": "brak",
+  "seedUnavailable": "Nie można odczytać seeda z zapisu.",
+  "labels": {
+    "version": "Wersja",
+    "build": "Build",
+    "seed": "Seed",
+    "scene": "Scena",
+    "userAgent": "Przeglądarka",
+    "resolution": "Rozdzielczość okna",
+    "date": "Data ISO"
+  }
+}
