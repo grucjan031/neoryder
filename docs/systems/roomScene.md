@@ -42,16 +42,18 @@ pozostaje w systemie implantów F3-09/10; RoomScene przekazuje ich tagi do syner
 
 ## Przebieg i drzwi
 
-Po utworzeniu świata i wyposażenia wejście oraz wyjście są zamkniętymi czarnymi
-bryłami z colliderami świata. `room_entered` niesie id węzła, id układu, typ
+Po utworzeniu świata i wyposażenia wejście oraz wyjście są zamkniętymi
+bryłami z colliderami świata. Materiał `paint` używa ciemnego koloru motywu
+Neon Noir i podstawowej tekstury `surfaces/painted_metal.webp` zarówno w stylu
+komiksowym, jak i przy `?look=off`. `room_entered` niesie id węzła, id układu, typ
 i warstwę. Fale startują po tym zdarzeniu, ze strumieniem `ctx.rng.fork('waves')`
 (`ctx.rng` = `new Rng(seed runu).fork('room:<nodeId>')`, tworzony przez host).
 Limit żywych wrogów uwzględnia zarówno definicję fal, jak i limit pokoju oraz
 limit ciał fizycznych. Lokalizacje fal pochodzą od planera, bez modyfikacji sceny.
 
 Po `wave_cleared` ostatniej fali (`wave === totalWaves`) scena wyłącza collider i
-widok drzwi exit (drzwi to bryły z materiałem `interactive`, rozmiar i pozycja z
-definicji), a następnie emituje `room_cleared {nodeId, type, timeS}` dokładnie raz. Wejście pozostaje zamknięte.
+widok drzwi exit, a następnie emituje `room_cleared {nodeId, type, timeS}`
+dokładnie raz. Wejście pozostaje zamknięte.
 `timeS` to suma dodatnich kroków symulacji podczas żywej walki, bez hitstopu
 ani czasu po ukończeniu. Host przejmuje dalszy przepływ runu. `clear()` usuwa
 wrogów, statusy i pociski oraz kończy pokój bez czekania na kolejkę fal.

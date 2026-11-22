@@ -1113,7 +1113,7 @@ export class RoomScene implements Scene {
       const { size, position } = door;
       const geometry = new BoxGeometry(size.x, size.y, size.z);
       this.geometries.add(geometry);
-      const mesh = new Mesh(geometry, getMaterial('interactive'));
+      const mesh = new Mesh(geometry, getMaterial('paint'));
       mesh.name = `door:${door.id}`;
       mesh.position.copy(position);
       this.root.add(mesh);
