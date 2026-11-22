@@ -31,7 +31,7 @@ const input = (pressed: Action[] = []): InputSnapshot => ({
 it.each([false, true])(
   'barrier-test: moce w obu slotach, reset czasu i sprzątanie (zamiana: %s)',
   async (swapped) => {
-    expect(scenes['barrier-test']?.().id).toBe('barrier-test');
+    expect((await scenes['barrier-test']?.())?.id).toBe('barrier-test');
     const slots = swapped ? ['barrier', 'focus'] : ['focus', 'barrier'];
     const scene = swapped
       ? new AiTest(false, {

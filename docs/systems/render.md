@@ -867,6 +867,26 @@ ciężkie kroki areny w `init()`), `tests/unit/runScene.test.ts` (wywołanie po 
 `?scene=mission&mission=m01-maszty&debug=1`, w profilerze Chrome pierwsze klatki po zniknięciu ekranu nie mają `getUniforms` /
 `onFirstUse` rzędu setek ms.
 
+## Podział paczki (leniwe sceny)
+
+Rejestr `src/scenes/index.ts` trzyma fabryki `() => import('./x')` (`scenes[id]()` zwraca `Promise<Scene>`), a `main.ts` pobiera
+scenę, `three` i `render/outline` jednym `Promise.all` dopiero dla `?scene=<id>` — pod nakładką startową z `index.html`, przed
+budową renderera i rozgrzewką (`warmUpRender` bez zmian). Pomiar `npm run build` (Vite 8, 22 XI 2026), kB surowe / gzip:
+
+| Co                                                           |             Przed |                                       Po |
+| ------------------------------------------------------------ | ----------------: | ---------------------------------------: |
+| Chunk startowy `index-*.js`                                  | 8 440,9 / 2 472,3 |                             164,1 / 55,7 |
+| JS pobierany przez menu (chunk startowy + importy statyczne) | 8 440,9 / 2 472,3 |                        6 741,1 / 1 993,9 |
+| CSS startowy                                                 |      115,1 / 22,6 |                              50,5 / 10,8 |
+| `three` (chunk `three.module-*.js`, tylko sceny 3D)          |         w starcie |                            743,7 / 187,9 |
+| Sceny                                                        |         w starcie | 31 wpisów, 0,9–236,7 kB (hub największy) |
+
+Menu nadal pobiera Rapiera (`physics-*.js`, 4 335,5 / 1 670,4) i dane pokoi (`save-*.js`, 2 090,0 / 222,7): wciągają je importy
+statyczne spoza rejestru scen — `core/save` → `progression/loadout` → `combat/powers/registry` → `powers/grab` → Rapier oraz
+`core/save` → `world/run` → `world/modes` → `world/rooms` (to samo przez `ui/splash` → `world/missions` i `ui/mainMenu` →
+`progression/meta`). Dopiero przecięcie tych łańcuchów odchudzi menu do ok. 0,3 MB; ostrzeżenie Vite o chunkach > 500 kB zostaje
+(Rapier z WASM w base64, dane pokoi, `three`). Pilnuje `tests/unit/sceneRegistry.test.ts`.
+
 ## Dodawanie obiektu
 
 W Blenderze przypisz materiał `mat_*` z tabeli (katalog: `docs/assets.md`), załaduj

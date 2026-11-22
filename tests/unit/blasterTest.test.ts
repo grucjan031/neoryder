@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 it('registers the scene, shoots queued rounds at dummies, respawns and disposes', async () => {
-  expect(scenes['blaster-test']?.().id).toBe('blaster-test');
+  expect((await scenes['blaster-test']?.())?.id).toBe('blaster-test');
   const scene = new BlasterTest(false);
   const three = new ThreeScene();
   const camera = new PerspectiveCamera();

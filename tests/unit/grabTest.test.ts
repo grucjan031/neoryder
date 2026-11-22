@@ -87,7 +87,7 @@ describe('grab-test — kompletna scena', () => {
     expect(sweep.mock.calls.at(-1)?.[2]).toBeCloseTo(SIM_DT * 0.3, 8);
   });
   it('rejestruje scenę, waliduje dane, F łapie, puszczenie rzuca i wiązka znika', async () => {
-    expect(scenes['grab-test']?.().id).toBe('grab-test');
+    expect((await scenes['grab-test']?.())?.id).toBe('grab-test');
     expect(grabTestSchema.parse(sceneData)).toEqual(sceneData);
     expect(sceneData.enemies.map((enemy) => enemy.id)).toEqual(
       expect.arrayContaining(['drone', 'shielder', 'executor']),

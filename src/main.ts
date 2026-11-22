@@ -1,4 +1,3 @@
-import { PerspectiveCamera, Scene as ThreeScene, WebGLRenderer } from 'three';
 import StatsPanel from 'stats.js';
 import { EventBus } from './core/events';
 import { Rng } from './core/rng';
@@ -27,7 +26,6 @@ import sfxData from './data/audio/sfx.json';
 import musicData from './data/audio/music.json';
 import { loadSettings, saveSettings } from './core/save';
 import { setDifficultyOverride } from './world/difficulty';
-import { createRenderPipeline } from './render/outline';
 import { applyQuality } from './render/quality';
 import { setRenderWarmUp, warmUpRender } from './render/renderWarmUp';
 import {
@@ -91,8 +89,10 @@ async function main(): Promise<void> {
     return;
   }
   const sceneId = requested;
-  const factory = Object.hasOwn(scenes, sceneId) ? scenes[sceneId] : undefined;
-  if (!factory) {
+  const loadScene = Object.hasOwn(scenes, sceneId)
+    ? scenes[sceneId]
+    : undefined;
+  if (!loadScene) {
     const message = document.createElement('p');
     message.className = 'scene-error';
     message.textContent = `Nieznana scena: ${sceneId}. Dostępne sceny: ${Object.keys(scenes).join(', ')}.`;
@@ -100,6 +100,16 @@ async function main(): Promise<void> {
     bootSplash.dismiss();
     return;
   }
+  // Scena, three i potok renderu to osobne chunki: pobierają się pod ekranem startowym, menu ich nie ładuje.
+  const [
+    scene,
+    { PerspectiveCamera, Scene: ThreeScene, WebGLRenderer },
+    { createRenderPipeline },
+  ] = await Promise.all([
+    loadScene(),
+    import('three'),
+    import('./render/outline'),
+  ]);
   const seed =
     params.get('seed') ??
     Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
@@ -134,7 +144,6 @@ async function main(): Promise<void> {
   );
   camera.position.set(8, 6, 10);
   camera.lookAt(0, 2, 0);
-  const scene = factory();
   const settings = loadSettings();
   tuning.camera.fov = settings.fov;
   const input = new Input(renderer.domElement, () => settings.bindings);

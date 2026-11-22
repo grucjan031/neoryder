@@ -63,7 +63,7 @@ async function setup() {
 }
 
 it('registers, loads scene data, switches on weapon1..3 pressed and retains heat per weapon', async () => {
-  expect(scenes['weapons-test']?.().id).toBe('weapons-test');
+  expect((await scenes['weapons-test']?.())?.id).toBe('weapons-test');
   const { scene, commands } = await setup();
   expect(scene.query('slots')).toEqual(data.slots);
   expect(scene.query('weapon')).toBe('pistol');
