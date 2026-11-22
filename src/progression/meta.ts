@@ -286,10 +286,11 @@ export class MetaManager {
     const linearMission = summary.missionId
       ? missionDefinitions.get(summary.missionId)?.level !== undefined
       : false;
-    const rewards = linearMission
-      ? { xp: 0, data: 0, cores: 0 }
-      : computeRunRewards(summary, entry, this.rules.progression.rewards);
     const victory = summary.outcome === 'victory';
+    const rewards =
+      linearMission && (!victory || !summary.missionCompleted)
+        ? { xp: 0, data: 0, cores: 0 }
+        : computeRunRewards(summary, entry, this.rules.progression.rewards);
     if (victory && summary.missionCompleted && summary.missionId) {
       const mission = missionDefinitions.get(summary.missionId);
       if (!mission) throw new Error(`Nieznana misja: ${summary.missionId}`);

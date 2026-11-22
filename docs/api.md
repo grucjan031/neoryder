@@ -2189,8 +2189,8 @@ Migracja meta/run 5→6 jest tożsamościowa: nowy rekord nie istniał w v5 (v5 
 spotkania zakończone przed checkpointem, czas, zamrożony ekwipunek i flagę ukończenia.
 Zapisy są szeregowane. Cel done jest zapisywany od razu; śmierć zachowuje cele done,
 zeruje częściowe interakcje i spotkania po checkpoincie. Ukończony rekord pozostaje
-do udanego rozliczenia meta, potem jest usuwany. `MetaManager.applyRun` dla misji z
-`level` nalicza wyłącznie firstClear, chroniony przez appliedRunIds i campaign.completed.
+do udanego rozliczenia meta, potem jest usuwany. Pierwsze ukończenie misji liniowej daje zwykłe nagrody runu z `computeRunRewards` oraz jednorazowy bonus `firstClear`, każde kolejne ukończenie daje same zwykłe nagrody runu, a próba nieukończona daje 0 nagród.
+`MetaManager.applyRun` chroni tę samą próbę przez `appliedRunIds`, a bonus `firstClear` przez `campaign.completed`.
 
 Scena: `?scene=mission&mission=m01-maszty[&continue=1]`. Debug: `mission start <id>`,
 `checkpoint <id>`, `objective done <id>`, `encounter clear`; `query('mission')`

@@ -5,7 +5,11 @@ import { generateMissionMap } from '../../src/world/sectorMap';
 import { kuroganeSector } from '../../src/world/sectors';
 import { MissionObjectives } from '../../src/world/missionObjectives';
 import { RunManager } from '../../src/world/run';
-import { MetaManager } from '../../src/progression/meta';
+import {
+  MetaManager,
+  computeRunRewards,
+  defaultMetaRules,
+} from '../../src/progression/meta';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
 import { createMemorySaveStore } from '../../src/core/save';
 import {
@@ -129,7 +133,17 @@ describe('Run i kampania', () => {
     const first = meta.applyRun(run.summary!, 'first');
     expect(meta.applyRun(run.summary!, 'first').applied).toBe(false);
     const second = meta.applyRun(run.summary!, 'second');
-    expect(first.rewards.data - second.rewards.data).toBe(60);
+    const ordinary = computeRunRewards(
+      run.summary!,
+      defaultMetaRules.threat[run.summary!.threatLevel]!,
+      defaultMetaRules.progression.rewards,
+    );
+    expect(first.rewards).toEqual({
+      ...ordinary,
+      data: ordinary.data + mission.rewards.firstClear.data,
+      cores: ordinary.cores + (mission.rewards.firstClear.cores ?? 0),
+    });
+    expect(second.rewards).toEqual(ordinary);
     expect(meta.state.campaign).toEqual({
       completed: [mission.id],
       pendingDebrief: mission.id,

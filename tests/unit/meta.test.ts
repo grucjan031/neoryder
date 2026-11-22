@@ -518,3 +518,70 @@ describe('MetaManager talenty', () => {
     expect(() => meta.debugGrantTalent('nope')).toThrow('Nieznany talent');
   });
 });
+
+describe('applyRun: misja liniowa (D6)', () => {
+  const linear = summary({
+    outcome: 'victory',
+    missionId: 'm01-maszty',
+    missionCompleted: true,
+    roomsCleared: 0,
+    elitesCleared: 0,
+    kills: 12,
+    layerReached: 0,
+  });
+
+  it('pierwsze ukończenie daje zwykłe nagrody runu i firstClear', () => {
+    const meta = make();
+    const before = meta.state;
+    const first = meta.applyRun(linear, 'first');
+    const ordinary = computeRunRewards(linear, threat[0]!, rules);
+    expect(first.rewards).toEqual({ ...ordinary, data: ordinary.data + 60 });
+    // Osiągnięcia mogą przy pierwszym ukończeniu dodać własną nagrodę.
+    expect(meta.state.data - before.data).toBe(
+      first.rewards.data +
+        first.achievements.reduce((sum, a) => sum + a.reward.data, 0),
+    );
+    expect(meta.state.xp - before.xp).toBe(ordinary.xp);
+    expect(meta.state.lastRuns[0]?.rewards).toEqual(first.rewards);
+    expect(meta.state.campaign.completed).toEqual(['m01-maszty']);
+  });
+
+  it('kolejne ukończenie daje zwykłe nagrody runu bez firstClear', () => {
+    const meta = make();
+    const first = meta.applyRun(linear, 'first');
+    const before = meta.state;
+    const second = meta.applyRun(linear, 'second');
+    const ordinary = computeRunRewards(linear, threat[0]!, rules);
+    expect(second.rewards).toEqual(ordinary);
+    expect(first.rewards.data - second.rewards.data).toBe(60);
+    expect(ordinary.xp).toBeGreaterThan(0);
+    expect(ordinary.data).toBeGreaterThan(0);
+    expect(meta.state.xp - before.xp).toBe(ordinary.xp);
+    expect(meta.state.data - before.data).toBeGreaterThanOrEqual(ordinary.data);
+    expect(meta.state.cores - before.cores).toBeGreaterThanOrEqual(
+      ordinary.cores,
+    );
+    expect(meta.state.lastRuns[0]?.rewards).toEqual(ordinary);
+    expect(meta.state.campaign.completed).toEqual(['m01-maszty']);
+    expect(second.threatUnlocked).toBe(false);
+    expect(meta.state.threat.max).toBe(before.threat.max);
+  });
+
+  it.each([false, true])(
+    'nieukończona misja liniowa nie daje nagród (wcześniej ukończona: %s)',
+    (completed) => {
+      const meta = make();
+      if (completed) meta.applyRun(linear, 'first');
+      for (const outcome of ['death', 'victory'] as const) {
+        const failed = meta.applyRun(
+          { ...linear, outcome, missionCompleted: false },
+          `failed-${outcome}`,
+        );
+        expect(failed.rewards).toEqual({ xp: 0, data: 0, cores: 0 });
+      }
+      expect(meta.state.campaign.completed).toEqual(
+        completed ? ['m01-maszty'] : [],
+      );
+    },
+  );
+});

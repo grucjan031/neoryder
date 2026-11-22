@@ -22,7 +22,7 @@ Stan startowy (`createStarterMetaState`, dane `progression.json.starter`): 0 XP,
 
 Śmierć daje 100% nagród (bez składników zwycięstwa). Rdzenie za elity i zwycięstwo nie są mnożone przez `rewardMult` (dodaje się tylko `victoryCores`). Liczby w `progression.json.rewards`: `xpPerRoom` 25, `xpPerElite` 40, `xpVictory` 50, `dataPerRoom` 5, `dataPerKill` 1, `dataVictory` 30, `coresPerElite` 1, `coresVictory` 3. `rewardMult` i `victoryCores` poziomów zagrożenia: patrz „Poziom zagrożenia w meta”.
 
-**Misje liniowe** (misja z polem `level`): `rewards` runu to zero (XP, Dane, Rdzenie), a nie wzór powyżej. Gdy `outcome = victory`, `missionCompleted` i `missionId` są ustawione, a misja nie jest jeszcze w `campaign.completed`, dolicza się jednorazowo `mission.rewards.firstClear` (`data`, opcjonalnie `cores`) do `rewards` i dopisuje misję do `campaign.completed`; każde takie zwycięstwo ustawia `campaign.pendingDebrief` na id misji (`clearDebrief()` zeruje). Nieznana misja przy takim zwycięstwie to błąd.
+**Misje liniowe** (misja z polem `level`): pierwsze ukończenie misji liniowej daje zwykłe nagrody runu z `computeRunRewards` oraz jednorazowy bonus `firstClear`, każde kolejne ukończenie daje same zwykłe nagrody runu, a próba nieukończona daje 0 nagród. Gdy `outcome = victory`, `missionCompleted` i `missionId` są ustawione, a misja nie jest jeszcze w `campaign.completed`, dolicza się jednorazowo `mission.rewards.firstClear` (`data`, opcjonalnie `cores`) do `rewards` i dopisuje misję do `campaign.completed`; każde takie zwycięstwo ustawia `campaign.pendingDebrief` na id misji (`clearDebrief()` zeruje). Nieznana misja przy takim zwycięstwie to błąd.
 
 ## applyRun i idempotencja
 
