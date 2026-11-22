@@ -736,6 +736,8 @@ export const tuning = {
     animationFadeS: 0.12,
     animationActionFadeS: 0.04,
     phaseShiftS: 1,
+    reflectCounterS: 2,
+    reflectCounterMult: 1.5,
     /** Złamanie tarczy bossa: hitstop (ms) i wstrząs kamery (siła, czas w s). */
     shieldBreakHitstopMs: 80,
     shieldBreakShake: 0.5,

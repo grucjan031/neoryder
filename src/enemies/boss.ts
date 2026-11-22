@@ -87,6 +87,8 @@ export class Boss implements Enemy {
   /** Pociski wystrzelone przez bossa; po odbiciu zdejmują wytrzymałość tarczy. */
   private readonly ownShots = new Set<number>();
   private reflectedHit = false;
+  /** Odbity pocisk przeszedł guard bez tarczy; kontra otwiera się po przyjęciu obrażeń. */
+  private counterPending = false;
   private shieldHp = 0;
   private shieldTimeS = 0;
   private shieldPattern: ShieldPattern | null = null;
@@ -137,12 +139,19 @@ export class Boss implements Enemy {
       : null;
     this.off.push(
       ctx.bus.on('damage_dealt', ({ target }) => {
-        if (target !== this.id || this.health.dead) return;
+        if (target !== this.id || this.health.dead) {
+          this.counterPending = false;
+          return;
+        }
+        const pending = this.counterPending;
+        this.counterPending = false;
         if (
           this.phaseIndex + 1 < this.data.phases.length &&
           this.health.current <= this.nextThreshold()
         )
           this.enterPhase(this.phaseIndex + 1);
+        else if (pending && this.vulnerableS <= epsilon)
+          this.openReflectCounter();
       }),
       ctx.bus.on('enemy_killed', ({ id }) => {
         if (id === this.id) {
@@ -198,6 +207,7 @@ export class Boss implements Enemy {
   /** Wzorzec trafia też do snapshotu, żeby widok dopasował animację do czasów ataku. */
   private setPattern(pattern: BossPattern | null): void {
     this.pattern = pattern;
+    this.current.field = undefined;
     this.current.attack = pattern
       ? {
           kind: pattern.kind,
@@ -247,6 +257,7 @@ export class Boss implements Enemy {
   }
 
   private eligible(pattern: BossPattern): boolean {
+    if (pattern.kind === 'gridHack') return this.teleportMarkers().length > 0;
     if (pattern.kind === 'summon')
       return !!this.deps.spawnEnemy && this.minionCount < pattern.maxMinions;
     if (pattern.kind === 'shield')
@@ -264,6 +275,7 @@ export class Boss implements Enemy {
 
   private startPattern(pattern: BossPattern): void {
     this.setPattern(pattern);
+    this.current.field = this.prepareField(pattern);
     this.stats.setBase('damage', pattern.damage);
     this.transition('telegraph');
     this.ctx.bus.emit('enemy_telegraph', {
@@ -271,6 +283,54 @@ export class Boss implements Enemy {
       kind: pattern.kind === 'fan' ? 'aim' : pattern.kind,
       durationS: pattern.telegraphS,
     });
+  }
+
+  private prepareField(pattern: BossPattern): EnemySnapshot['field'] {
+    if (pattern.kind !== 'laser' && pattern.kind !== 'gridHack') return;
+    const target = this.deps.getTarget();
+    if (!target) return;
+    const p = this.current.position;
+    const center = {
+      ...target.position,
+      y: p.y - this.definition.body!.controllerOffset,
+    };
+    if (pattern.kind === 'laser') {
+      center.y += pattern.heightM;
+      return {
+        kind: 'laser',
+        center,
+        yaw: Math.atan2(center.x - p.x, center.z - p.z),
+        halfLengthM: pattern.halfLengthM,
+        radiusM: pattern.radiusM,
+      };
+    }
+    // Znacznik najdalej od gracza i nie bliżej niż suma promieni kapsuł.
+    const clearance =
+      this.ctx.tuning.player.capsuleRadius + this.definition.body!.radius;
+    const distance = (m: Vec3) =>
+      Math.hypot(m.x - target.position.x, m.z - target.position.z);
+    const best = this.teleportMarkers()
+      .filter((m) => distance(m) >= clearance)
+      .reduce<Vec3 | undefined>(
+        (a, m) => (!a || distance(m) > distance(a) ? m : a),
+        undefined,
+      );
+    return {
+      kind: 'gridHack',
+      center,
+      radiusM: pattern.radiusM,
+      destination: best
+        ? { ...best }
+        : { ...p, y: p.y - this.definition.body!.controllerOffset },
+    };
+  }
+
+  private teleportMarkers(): Vec3[] {
+    const p = this.current.position;
+    return (this.deps.spawnPoints ?? []).filter(
+      (point) =>
+        Math.hypot(point.x - p.x, point.z - p.z) > this.definition.body!.radius,
+    );
   }
 
   /** Debug: natychmiast zaczyna wzorzec danego rodzaju (z bieżącej fazy, w razie braku z dowolnej). */
@@ -350,7 +410,13 @@ export class Boss implements Enemy {
   private guard(info: DamageInfo): number {
     const reflected = this.reflectedHit;
     this.reflectedHit = false;
-    if (this.shieldHp <= 0 || info.tags.includes(DEBUG_TAG)) return 1;
+    if (this.shieldHp <= 0 || info.tags.includes(DEBUG_TAG)) {
+      this.counterPending =
+        reflected &&
+        !!this.data.counterOnReflect &&
+        this.vulnerableS <= epsilon;
+      return 1;
+    }
     if (info.tags.includes(POWER_TAG) || reflected) {
       this.shieldHp = Math.max(0, this.shieldHp - info.amount);
       this.emitShield();
@@ -364,26 +430,40 @@ export class Boss implements Enemy {
     this.resetShield();
     if (!pattern) return;
     const feel = this.ctx.tuning.enemies;
-    this.stunS = pattern.stunS;
-    this.vulnerableS = pattern.vulnerableS;
-    this.stats.add({
-      stat: 'damageTaken',
-      type: 'mult',
-      value: pattern.vulnerableMult,
-      source: VULNERABLE_SOURCE,
-    });
-    this.setPattern(null);
-    this.transition('stunned');
-    this.ctx.bus.emit('enemy_stunned', {
-      id: this.id,
-      durationS: pattern.stunS,
-    });
+    this.openCounter(
+      pattern.stunS,
+      pattern.vulnerableS,
+      pattern.vulnerableMult,
+    );
     this.ctx.bus.emit('hitstop', { ms: feel.shieldBreakHitstopMs });
     this.ctx.bus.emit('camera_shake', {
       intensity: feel.shieldBreakShake,
       durationS: feel.shieldBreakShakeS,
       dir: null,
     });
+  }
+
+  private openReflectCounter(): void {
+    const { reflectCounterS, reflectCounterMult } = this.ctx.tuning.enemies;
+    this.openCounter(reflectCounterS, reflectCounterS, reflectCounterMult);
+  }
+
+  private openCounter(
+    stunS: number,
+    vulnerableS: number,
+    multiplier: number,
+  ): void {
+    this.stunS = stunS;
+    this.vulnerableS = vulnerableS;
+    this.stats.add({
+      stat: 'damageTaken',
+      type: 'mult',
+      value: multiplier,
+      source: VULNERABLE_SOURCE,
+    });
+    this.setPattern(null);
+    this.transition('stunned');
+    this.ctx.bus.emit('enemy_stunned', { id: this.id, durationS: stunS });
   }
 
   /** Zdejmuje tarczę, ogłuszenie i okno zwiększonych obrażeń. */
@@ -426,6 +506,49 @@ export class Boss implements Enemy {
     }
   }
 
+  private strikeField(
+    pattern: Extract<BossPattern, { kind: 'laser' | 'gridHack' }>,
+    target: NonNullable<ReturnType<EnemyDependencies['getTarget']>>,
+  ): void {
+    const field = this.current.field;
+    if (!field) return;
+    const dx = target.position.x - field.center.x;
+    const dz = target.position.z - field.center.z;
+    if (field.kind === 'laser') {
+      const player = this.ctx.tuning.player;
+      const height = target.height ?? player.capsuleHeight;
+      const dy = Math.abs(target.position.y - field.center.y);
+      const along = dx * Math.sin(field.yaw) + dz * Math.cos(field.yaw);
+      const across = dx * Math.cos(field.yaw) - dz * Math.sin(field.yaw);
+      const distance = Math.hypot(
+        Math.max(0, Math.abs(along) - field.halfLengthM),
+        Math.max(0, dy - (height / 2 - player.capsuleRadius)),
+        across,
+      );
+      if (distance <= player.capsuleRadius + field.radiusM)
+        this.deps.damage.deal(target.id, {
+          source: this.id,
+          amount: this.stats.get('damage'),
+          tags: ['#laser', '#heavy'],
+        });
+    } else if (pattern.kind === 'gridHack') {
+      if (Math.hypot(dx, dz) <= field.radiusM)
+        this.deps.damage.deal(target.id, {
+          source: this.id,
+          amount: this.stats.get('damage'),
+          tags: ['#hack'],
+          statuses: [{ id: 'jammed', durationS: pattern.jamS }],
+        });
+      const feet = {
+        ...field.destination,
+        y: field.destination.y + this.definition.body!.controllerOffset,
+      };
+      this.body?.teleport(feet);
+      this.current.position = feet;
+      this.previous.position = { ...feet };
+    }
+  }
+
   private attack(): void {
     const pattern = this.pattern;
     if (!pattern) return;
@@ -434,6 +557,8 @@ export class Boss implements Enemy {
     const target = this.deps.getTarget();
     if (!target) return;
     const p = this.current.position;
+    if (pattern.kind === 'laser' || pattern.kind === 'gridHack')
+      return this.strikeField(pattern, target);
     if (pattern.kind === 'slam') {
       if (
         Math.hypot(
@@ -501,6 +626,7 @@ export class Boss implements Enemy {
       return;
     }
     this.reflectedHit = false;
+    this.counterPending = false;
     this.tickShield(dt);
     let vx = 0,
       vz = 0;
@@ -510,7 +636,8 @@ export class Boss implements Enemy {
     } else if (this.stunS > epsilon) {
       this.stunS = Math.max(0, this.stunS - dt);
       this.setPattern(null);
-      if (s.state !== 'stunned') this.transition('stunned');
+      if (this.stunS <= epsilon) this.transition('idle');
+      else if (s.state !== 'stunned') this.transition('stunned');
     } else if (this.deps.statuses?.has(this.id, STUNNED)) {
       this.setPattern(null);
       if (s.state !== 'stunned') this.transition('stunned');

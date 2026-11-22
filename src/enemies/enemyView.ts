@@ -31,7 +31,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { tuning } from '../core/tuning';
 import { loadSettings } from '../core/save';
 import { PIERCE_BLOCK_TAG } from '../combat/damage';
-import { selectEnemyAnimation } from './enemyAnimation';
+import { rifleman, selectEnemyAnimation } from './enemyAnimation';
 import { knockdownFrame } from './enemyKnockdown';
 import { HeldShield, ShieldHeadClearance } from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -49,14 +49,11 @@ const knockAxis = new Vector3();
 const knockPivot = new Vector3();
 const knockQuat = new Quaternion();
 
-/** Humanoid z karabinem: Strzelec i Snajper (F2-13) dzielą model i animację. */
-const rifleman = (kind: string): boolean =>
-  kind === 'gunner' || kind === 'sniper';
 const up = new Vector3(0, 1, 0);
 const templates = new Map<string, Promise<Object3D | null>>();
 /** Domyślny model archetypu, gdy dane nie podają pola model. */
 const defaultModel = (kind: string): string =>
-  rifleman(kind) ? 'enemy_gunner' : 'enemy_trooper';
+  rifleman({ kind }) ? 'enemy_gunner' : 'enemy_trooper';
 /** Wczytuje i stylizuje model GLB wroga (cache po nazwie); null przy błędzie. */
 export function loadEnemyModel(name: string): Promise<Object3D | null> {
   const cached = templates.get(name);
@@ -193,7 +190,7 @@ export class EnemyView {
         z: body.headRadius * 2,
       },
     );
-    if (rifleman(enemy.definition.kind))
+    if (rifleman(enemy.definition))
       part(
         head,
         'visor',
@@ -231,13 +228,13 @@ export class EnemyView {
       if (side === 'R') {
         const baton = part(
           hand,
-          rifleman(this.enemy.definition.kind) ? 'rifle' : 'baton',
+          rifleman(this.enemy.definition) ? 'rifle' : 'baton',
           { x: 0, y: 0, z: body.halfHeight },
           { x: body.radius / 2, y: body.radius / 2, z: body.halfHeight * 2 },
         );
         part(
           baton,
-          rifleman(this.enemy.definition.kind) ? 'muzzle' : 'baton_tip',
+          rifleman(this.enemy.definition) ? 'muzzle' : 'baton_tip',
           { x: 0, y: 0, z: body.halfHeight },
           { x: body.radius / 2, y: body.radius / 2, z: body.radius / 2 },
         );
@@ -329,7 +326,16 @@ export class EnemyView {
           });
         }
         this.root.add(this.model);
-        if (enemy.definition.boss) this.decorateBoss(instance);
+        if (enemy.definition.boss) {
+          if (rifleman(enemy.definition)) {
+            for (const name of ['monocle', 'collar', 'shoulder_pad_L']) {
+              const plate = instance.getObjectByName(name);
+              if (plate instanceof Mesh)
+                plate.material = getMaterial('enemyGlow');
+            }
+            markGlowNoOutline(instance);
+          } else this.decorateBoss(instance);
+        }
         this.useModelShield();
         this.equipBlade();
         this.captureRest();
@@ -600,7 +606,7 @@ export class EnemyView {
         ? a.stateTimeS + (b.stateTimeS - a.stateTimeS) * t
         : b.stateTimeS;
     if (
-      rifleman(definition.kind) &&
+      rifleman(definition) &&
       ['aim', 'burst', 'cooldown'].includes(b.state)
     ) {
       const angle = anim.aimAngle ?? 0;
@@ -639,7 +645,7 @@ export class EnemyView {
       );
     } else if (b.state === 'stunned') rotate('pelvis', 'z', anim.stunAngle);
     // Zapowiedź: rozbłysk wizjera i broni (skala), widoczny także z daleka.
-    for (const name of rifleman(definition.kind)
+    for (const name of rifleman(definition)
       ? ['muzzle', 'visor']
       : definition.animation?.bladeSizeM
         ? ['executor_blade', 'visor', 'chest_core']

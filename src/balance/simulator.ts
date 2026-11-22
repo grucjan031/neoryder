@@ -162,6 +162,13 @@ export function simulate(
   const hurtboxes = new Hurtboxes();
   const bossTimeline: BossTimelineEvent[] | undefined =
     enemy.kind === 'boss' ? [] : undefined;
+  // Nieruchomy gracz przeżywa cały pomiar, ale przyjęty impuls blokuje moce jak na arenie.
+  if (
+    enemy.boss?.phases.some((phase) =>
+      phase.patterns.some((p) => p.kind === 'gridHack'),
+    )
+  )
+    damage.register(owner, new Health(() => Infinity));
   const result: SimulationResult = {
     ttkS: Infinity,
     kills: 0,
@@ -193,7 +200,9 @@ export function simulate(
           statuses,
           spawnModifiers: options.targetModifiers ?? [],
           getTarget: () => ({ id: owner, position: origin }),
-          // Ataki bossa nie zadają symulowanemu graczowi obrażeń.
+          // Jeden znacznik daleko od gracza: pomiar uwzględnia gridHack bez ruchu.
+          spawnPoints: [{ x: 0, y: 0, z: 20 }],
+          // Pomiar stacjonarny pomija lot i odbicie pocisków bossa.
           projectiles: { spawn: () => 0, addInterceptor: () => () => {} },
           spawnEnemy: (id) => {
             const minion = entities.create(id, 'enemy');
@@ -245,7 +254,9 @@ export function simulate(
         kind === 'aim' ||
         kind === 'slam' ||
         kind === 'summon' ||
-        kind === 'shield'
+        kind === 'shield' ||
+        kind === 'laser' ||
+        kind === 'gridHack'
       )
         bossTimeline.push({
           kind: 'pattern',
@@ -260,7 +271,9 @@ export function simulate(
     result.damage += event.amount;
     if (event.tags.includes('#status')) result.statusDamage += event.amount;
   });
-  bus.on('status_applied', ({ status }) => {
+  bus.on('status_applied', ({ status, target: affected }) => {
+    // Statusy nałożone przez bossa na gracza nie należą do wyników narzędzia.
+    if (affected === owner) return;
     if (!result.appliedStatuses.includes(status))
       result.appliedStatuses.push(status);
   });
@@ -320,6 +333,7 @@ export function simulate(
     bus,
     tuning: settings,
     damage,
+    statuses,
     energy,
     aim,
     targets: () => [{ id: target, position }],

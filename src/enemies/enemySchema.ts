@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import bossText from '../data/ui/bossTest.pl.json';
+
+const bossNames = new Map(Object.entries(bossText.names));
 
 const positive = z.number().finite().positive();
 const nonnegative = z.number().finite().nonnegative();
@@ -10,6 +13,20 @@ const patternFields = {
   damage: nonnegative,
 };
 export const bossPatternSchema = z.discriminatedUnion('kind', [
+  z.object({
+    ...patternFields,
+    kind: z.literal('laser'),
+    heightM: positive,
+    halfLengthM: positive,
+    radiusM: positive,
+  }),
+  z.object({
+    ...patternFields,
+    kind: z.literal('gridHack'),
+    radiusM: positive,
+    damage: positive,
+    jamS: positive,
+  }),
   z.object({ ...patternFields, kind: z.literal('slam'), radiusM: positive }),
   z.object({
     ...patternFields,
@@ -70,7 +87,11 @@ export const bossAttackAnimationSchema = z
 export type BossAttackAnimation = z.infer<typeof bossAttackAnimationSchema>;
 export const bossSchema = z
   .object({
-    name: z.string().min(1),
+    name: z
+      .string()
+      .min(1)
+      .transform((name) => bossNames.get(name) ?? name),
+    counterOnReflect: z.boolean().optional(),
     modelScale: positive,
     /** Animacja ataku wg rodzaju wzorca; bez wpisu obowiązuje klip domyślny. */
     attackAnimations: z
@@ -79,6 +100,8 @@ export const bossSchema = z
         fan: bossAttackAnimationSchema.optional(),
         summon: bossAttackAnimationSchema.optional(),
         shield: bossAttackAnimationSchema.optional(),
+        laser: bossAttackAnimationSchema.optional(),
+        gridHack: bossAttackAnimationSchema.optional(),
       })
       .optional(),
     muzzle: z.object({ x: z.number().finite(), y: positive, z: positive }),
@@ -93,7 +116,11 @@ export const bossSchema = z
   })
   .superRefine((boss, ctx) => {
     boss.phases.forEach((phase, index) => {
-      if (!phase.patterns.some((p) => p.kind === 'slam' || p.kind === 'fan'))
+      if (
+        !phase.patterns.some(
+          (p) => p.kind === 'slam' || p.kind === 'fan' || p.kind === 'laser',
+        )
+      )
         ctx.addIssue({
           code: 'custom',
           path: ['phases', index, 'patterns'],

@@ -1,9 +1,15 @@
-import { BoxGeometry, Color, Group, Mesh } from 'three';
+import { BoxGeometry, Color, Euler, Group, Mesh, Quaternion } from 'three';
 import type { Material, Scene as ThreeScene } from 'three';
 import type { World } from '@dimforge/rapier3d-compat';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { z } from 'zod';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
+import { PlasmaBlade } from '../combat/melee/plasmaBlade';
+import { plasmaBladeDefinition } from '../combat/melee/bladeSchema';
+import { queryBladeArc, queryBladeSpin } from '../combat/melee/bladeQueries';
+import { FppBlade } from '../render/fppBlade';
+import bossText from '../data/ui/bossTest.pl.json';
+import hudText from '../data/ui/hud.pl.json';
 import { ProjectileRenderer } from '../render/projectileRenderer';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { statusDefinitions, StatusSystem } from '../combat/status';
@@ -52,6 +58,7 @@ export const aiTestSchema = z.object({
   spawnSpacing: z.number().positive(),
   initialEnemies: z.array(z.object({ id: z.string(), position: vec3 })),
   director: directorConfigSchema.optional(),
+  spawnPoints: z.array(vec3).optional(),
   powers: z
     .object({
       slots: z.tuple([z.string(), z.string()]),
@@ -99,6 +106,8 @@ export class AiTest implements Scene {
   private energy?: PlayerEnergy;
   private disposed = false;
   private powers?: PowerSlots;
+  private blade?: PlasmaBlade;
+  private bladeView?: FppBlade;
   private barrierRenderer?: BarrierRenderer;
   private statusVfx!: StatusVfx;
   private statusView!: StatusVfxRenderer;
@@ -160,6 +169,67 @@ export class AiTest implements Scene {
       this.stats.setBase('energyRegen', this.data.powers.energyRegen);
       const energy = new PlayerEnergy(id, this.stats, ctx.bus, ctx.tuning);
       this.energy = energy;
+      const aim = () => {
+        const s = this.player.getState();
+        const t = ctx.tuning.player;
+        return {
+          origin: {
+            ...s.position,
+            y: s.position.y + s.height / 2 - (t.capsuleHeight - t.eyeHeight),
+          },
+          dir: {
+            x: -Math.sin(s.yaw) * Math.cos(s.pitch),
+            y: Math.sin(s.pitch),
+            z: -Math.cos(s.yaw) * Math.cos(s.pitch),
+          },
+        };
+      };
+      if (this.id === 'boss-test') {
+        this.blade = new PlasmaBlade(
+          plasmaBladeDefinition,
+          {
+            owner: id,
+            team: 'player',
+            stats: this.stats,
+            damage: this.damage,
+            projectiles: this.projectiles,
+            energy: energy.pool,
+            aim,
+            positionOf: (target) => this.enemyPosition(target),
+            queryArc: (reach, width, shape) => {
+              const { origin, dir } = aim();
+              if (shape === 'spin')
+                return queryBladeSpin(
+                  this.world,
+                  this.hurtboxes,
+                  origin,
+                  reach,
+                );
+              const { pitch, yaw } = this.player.getState();
+              return queryBladeArc(
+                this.world,
+                this.hurtboxes,
+                {
+                  x: origin.x + (dir.x * reach) / 2,
+                  y: origin.y + (dir.y * reach) / 2,
+                  z: origin.z + (dir.z * reach) / 2,
+                },
+                new Quaternion().setFromEuler(new Euler(pitch, yaw, 0, 'YXZ')),
+                reach,
+                width,
+              );
+            },
+          },
+          ctx.bus,
+          ctx.tuning,
+        );
+        this.off.push(
+          this.projectiles.addInterceptor(this.blade.interceptProjectile),
+        );
+        this.bladeView = new FppBlade();
+        this.root.add(this.bladeView.root);
+        void this.bladeView.load(this.loadModels);
+      }
       this.powers = new PowerSlots(
         this.data.powers.slots.map((power) =>
           createPower(power, {
@@ -170,24 +240,7 @@ export class AiTest implements Scene {
             statuses: this.statuses,
             energy,
             projectiles: this.projectiles,
-            aim: () => {
-              const state = this.player.getState();
-              return {
-                origin: {
-                  x: state.position.x,
-                  y:
-                    state.position.y -
-                    ctx.tuning.player.capsuleHeight / 2 +
-                    ctx.tuning.player.eyeHeight,
-                  z: state.position.z,
-                },
-                dir: {
-                  x: -Math.sin(state.yaw) * Math.cos(state.pitch),
-                  y: Math.sin(state.pitch),
-                  z: -Math.cos(state.yaw) * Math.cos(state.pitch),
-                },
-              };
-            },
+            aim,
             targets: () => {
               const targets: { id: EntityId; position: Vec3 }[] = [];
               this.manager.forEach((enemy) => {
@@ -252,12 +305,13 @@ export class AiTest implements Scene {
         damage: this.damage,
         hurtboxes: this.hurtboxes,
         statuses: this.statuses,
-        getTarget: () =>
-          this.health.dead
-            ? null
-            : { id, position: this.player.getState().position },
+        getTarget: () => {
+          if (this.health.dead) return null;
+          const { position, height } = this.player.getState();
+          return { id, position, height };
+        },
       },
-      this.data.director ? { director: this.data.director } : {},
+      { director: this.data.director, spawnPoints: this.data.spawnPoints },
     );
     three.background = new Color(ctx.tuning.render.world);
     three.add(this.root);
@@ -402,22 +456,22 @@ export class AiTest implements Scene {
         ? `Faza bossa: ${phase}`
         : 'Podaj istniejącą fazę żywego bossa.';
     });
-    register(
-      'boss pattern',
-      'boss pattern summon|shield — wymuś wzorzec bossa',
-      (args) => {
-        const kind = args[0];
-        let started = false;
-        if (args.length === 1 && (kind === 'summon' || kind === 'shield'))
-          this.manager.forEach((enemy) => {
-            if (enemy instanceof Boss && enemy.forcePattern(kind))
-              started = true;
-          });
-        return started
-          ? `Wzorzec bossa: ${kind}`
-          : 'Podaj summon lub shield i żywego bossa gotowego do wzorca.';
-      },
-    );
+    register('boss pattern', bossText.patternHelp, (args) => {
+      const kind = args[0];
+      let started = false;
+      if (
+        args.length === 1 &&
+        (kind === 'summon' ||
+          kind === 'shield' ||
+          kind === 'fan' ||
+          kind === 'laser' ||
+          kind === 'gridHack')
+      )
+        this.manager.forEach((enemy) => {
+          if (enemy instanceof Boss && enemy.forcePattern(kind)) started = true;
+        });
+      return started ? `Wzorzec bossa: ${kind}` : bossText.patternInvalid;
+    });
     register(
       'status',
       `status <id> [s] — na wszystkich wrogów: ${[...statusDefinitions.keys()].join(', ')}`,
@@ -510,6 +564,7 @@ export class AiTest implements Scene {
   private updateLabel(): void {
     if (!this.label) return;
     const lines = [`Gracz: ${this.health.current} / ${this.health.max} HP`];
+    if (this.statuses.has(this.player.id, 'jammed')) lines.push(hudText.jammed);
     if (this.energy && this.powers) {
       lines.push(
         `Energia: ${this.energy.current.toFixed(0)} / ${this.energy.max}`,
@@ -533,6 +588,7 @@ export class AiTest implements Scene {
   }
 
   reset(): void {
+    this.blade?.reset();
     this.powers?.reset();
     this.energy?.set(this.energy.max);
     this.manager.despawnAll();
@@ -554,6 +610,7 @@ export class AiTest implements Scene {
     this.previous = this.player.getState();
     const playerDt = this.ctx.feel?.playerDt(dt) ?? dt;
     this.player.step(playerDt, input);
+    this.blade?.step(playerDt, input);
     this.energy?.step(playerDt);
     this.powers?.step(playerDt, input);
     if (this.powers) this.updateLabel();
@@ -608,6 +665,10 @@ export class AiTest implements Scene {
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
     camera.fov = pose.fov;
     camera.updateProjectionMatrix();
+    if (this.blade && this.bladeView) {
+      camera.updateMatrixWorld();
+      this.bladeView.place(camera.matrixWorld, this.blade.view(), frameDt);
+    }
     const barriers = [this.powers?.get(0), this.powers?.get(1)].filter(
       (power): power is BarrierPower => power instanceof BarrierPower,
     );
@@ -650,6 +711,8 @@ export class AiTest implements Scene {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
+    this.blade?.dispose();
+    this.bladeView?.dispose();
     this.powers?.reset();
     this.energy?.dispose();
     this.barrierRenderer?.dispose();

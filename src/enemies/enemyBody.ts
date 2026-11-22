@@ -79,6 +79,14 @@ export class EnemyBody {
     return { x: p.x, y: p.y - this.geometry.height / 2, z: p.z };
   }
 
+  teleport(feet: Vec3): void {
+    this.clearMotion();
+    const center = { ...feet, y: feet.y + this.geometry.height / 2 };
+    this.body.setTranslation(center, true);
+    this.body.setNextKinematicTranslation(center);
+    this.deps.world.propagateModifiedBodyPositionsToColliders();
+  }
+
   wallAhead(yaw: number, distance: number): boolean {
     return (
       this.deps.world.castRay(

@@ -1,0 +1,180 @@
+{
+  "id": "orbisDirector",
+  "kind": "boss",
+  "grabbable": false,
+  "maxHealth": 720,
+  "attackRange": 20,
+  "model": "enemy_sniper",
+  "moveSpeed": 3.8,
+  "turnRateDegS": 360,
+  "telegraphS": 0.4,
+  "swingActiveS": 0.12,
+  "recoveryS": 0.6,
+  "cooldownS": 2.4,
+  "damage": 15,
+  "knockbackResist": 0.7,
+  "stunOnHeavyS": 0.6,
+  "repathJitter": 0.15,
+  "body": {
+    "height": 2.16,
+    "halfHeight": 0.42,
+    "radius": 0.36,
+    "centerY": 1.26,
+    "headY": 1.98,
+    "headRadius": 0.264,
+    "headMultiplier": 1.5,
+    "controllerOffset": 0.02,
+    "knockbackDamping": 8,
+    "attackHalfWidth": 0.66,
+    "attackHalfHeight": 0.78
+  },
+  "animation": {
+    "strideM": 1.8,
+    "clipStrideM": {
+      "Walk_Loop": 1.692,
+      "Jog_Fwd_Loop": 5.532
+    },
+    "walkAngle": 0.5,
+    "telegraphAngle": -2.4,
+    "swingAngle": 1.2,
+    "elbowAngle": -1,
+    "stunAngle": 0.3,
+    "pulseHz": 6,
+    "pulseScale": 0.4,
+    "aimAngle": -1.5707963267948966
+  },
+  "boss": {
+    "name": "orbisDirector",
+    "modelScale": 1.2,
+    "counterOnReflect": true,
+    "muzzle": {
+      "x": -0.3,
+      "y": 1.73,
+      "z": 1.52
+    },
+    "phases": [
+      {
+        "hpThreshold": 1,
+        "patterns": [
+          {
+            "kind": "fan",
+            "telegraphS": 0.85,
+            "recoveryS": 0.65,
+            "cooldownS": 0.8,
+            "damage": 12,
+            "projectileCount": 3,
+            "spreadDeg": 18,
+            "projectileSpeed": 12,
+            "projectileLifetimeS": 4
+          },
+          {
+            "kind": "summon",
+            "telegraphS": 1.3,
+            "recoveryS": 0.9,
+            "cooldownS": 1.4,
+            "damage": 0,
+            "enemyId": "drone",
+            "count": 2,
+            "maxMinions": 3,
+            "placement": "around",
+            "radiusM": 3.5
+          }
+        ]
+      },
+      {
+        "hpThreshold": 0.65,
+        "patterns": [
+          {
+            "kind": "fan",
+            "telegraphS": 0.85,
+            "recoveryS": 0.65,
+            "cooldownS": 0.8,
+            "damage": 12,
+            "projectileCount": 3,
+            "spreadDeg": 18,
+            "projectileSpeed": 12,
+            "projectileLifetimeS": 4
+          },
+          {
+            "kind": "laser",
+            "telegraphS": 1.05,
+            "recoveryS": 0.7,
+            "cooldownS": 0.85,
+            "damage": 18,
+            "heightM": 0.35,
+            "halfLengthM": 6,
+            "radiusM": 0.08
+          },
+          {
+            "kind": "gridHack",
+            "telegraphS": 1.35,
+            "recoveryS": 0.9,
+            "cooldownS": 1.1,
+            "damage": 4,
+            "radiusM": 2.6,
+            "jamS": 2.2
+          },
+          {
+            "kind": "summon",
+            "telegraphS": 1.3,
+            "recoveryS": 0.9,
+            "cooldownS": 1.4,
+            "damage": 0,
+            "enemyId": "drone",
+            "count": 2,
+            "maxMinions": 3,
+            "placement": "around",
+            "radiusM": 3.5
+          }
+        ]
+      },
+      {
+        "hpThreshold": 0.3,
+        "patterns": [
+          {
+            "kind": "fan",
+            "telegraphS": 0.85,
+            "recoveryS": 0.65,
+            "cooldownS": 0.8,
+            "damage": 12,
+            "projectileCount": 5,
+            "spreadDeg": 36,
+            "projectileSpeed": 12,
+            "projectileLifetimeS": 4
+          },
+          {
+            "kind": "laser",
+            "telegraphS": 1.05,
+            "recoveryS": 0.7,
+            "cooldownS": 0.85,
+            "damage": 18,
+            "heightM": 1.48,
+            "halfLengthM": 6,
+            "radiusM": 0.08
+          },
+          {
+            "kind": "gridHack",
+            "telegraphS": 1.35,
+            "recoveryS": 0.9,
+            "cooldownS": 1.1,
+            "damage": 4,
+            "radiusM": 2.6,
+            "jamS": 2.2
+          },
+          {
+            "kind": "summon",
+            "telegraphS": 1.3,
+            "recoveryS": 0.9,
+            "cooldownS": 1.4,
+            "damage": 0,
+            "enemyId": "drone",
+            "count": 2,
+            "maxMinions": 3,
+            "placement": "around",
+            "radiusM": 3.5
+          }
+        ]
+      }
+    ]
+  }
+}

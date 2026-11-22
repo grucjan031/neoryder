@@ -1186,6 +1186,18 @@ Wzorce `slam` i `fan` mają własne czasy zapowiedzi, regeneracji i odnowienia.
 Obrażenia przechodzą przez `DamageSystem`, limit progu działa po modyfikatorach.
 Scena `boss-test` oraz `ai-test` obsługują komendę `boss phase <n>`.
 
+Wariant `?scene=boss-test&boss=orbisDirector` wybiera Dyrektora Systemów także dla
+`boss ttk` i po resecie areny. Bez parametru obowiązuje `securityChief`.
+`laser` i `gridHack` emitują `enemy_telegraph` z własnym rodzajem. Od początku
+zapowiedzi `EnemySnapshot.field` przechowuje środek poziomej
+linii w metrach świata, jej kierunek, połowę długości i promień albo środek i promień pola
+zagłuszenia oraz punkt teleportu z `EnemyManagerOptions.spawnPoints`.
+Geometrię odczytują zarówno render, jak i rozstrzygnięcie trafienia.
+`getTarget().height?` podaje aktualną pełną wysokość kapsuły gracza.
+Trafienie pola przechodzi przez `DamageSystem` ze statusem `jammed`.
+Boss z `counterOnReflect` po trafieniu własnym odbitym pociskiem emituje
+`enemy_stunned` i otwiera okno zwiększonych obrażeń przez modyfikator `damageTaken`.
+
 **F3-17.** Wzorce `summon` (`enemyId`, `count`, `maxMinions`, `placement`, `radiusM`) i `shield`
 (`durability`, `durationS`, `stunS`, `vulnerableS`, `vulnerableMult`); telegrafy
 `enemy_telegraph.kind` = `'summon'` / `'shield'`. Nowe opcjonalne pola

@@ -44,6 +44,8 @@ const slam = definition.boss!.phases[0]!.patterns.find(
 const fan = definition.boss!.phases[0]!.patterns.find((p) => p.kind === 'fan')!;
 
 interface SetupExtra {
+  definition?: typeof definition;
+  targetHeight?: number;
   spawnEnemy?: EnemyDependencies['spawnEnemy'];
   spawnPoints?: EnemyDependencies['spawnPoints'];
   /** Dowolna zmiana kopii danych bossa przed utworzeniem. */
@@ -83,7 +85,7 @@ function setup(pattern?: BossPattern, seed = 'boss', extra: SetupExtra = {}) {
     bus,
     settings,
   );
-  const data = structuredClone(definition);
+  const data = structuredClone(extra.definition ?? definition);
   if (pattern)
     for (const phase of data.boss!.phases) phase.patterns = [pattern];
   extra.data?.(data);
@@ -99,7 +101,7 @@ function setup(pattern?: BossPattern, seed = 'boss', extra: SetupExtra = {}) {
       projectiles,
       ...(extra.spawnEnemy ? { spawnEnemy: extra.spawnEnemy } : {}),
       ...(extra.spawnPoints ? { spawnPoints: extra.spawnPoints } : {}),
-      getTarget: () => ({ id: player, position }),
+      getTarget: () => ({ id: player, position, height: extra.targetHeight }),
     },
     data,
     { x: 0, y: 0, z: 0 },
@@ -142,6 +144,188 @@ function setup(pattern?: BossPattern, seed = 'boss', extra: SetupExtra = {}) {
     fire,
   };
 }
+
+describe('Dyrektor Systemów Orbis Grid', () => {
+  const director = enemyDefinitions.get('orbisDirector')!;
+  const phases = director.boss!.phases;
+  const low = phases[1]!.patterns.find((p) => p.kind === 'laser')!;
+  const high = phases[2]!.patterns.find((p) => p.kind === 'laser')!;
+  const hack = phases[1]!.patterns.find((p) => p.kind === 'gridHack')!;
+
+  it.each([
+    ['stoi w niskiej linii', low, 1.8, 0.9, 0, true],
+    ['skacze ponad niską linią', low, 1.8, 1.7, 0, false],
+    ['stoi w wysokiej linii', high, 1.8, 0.9, 0, true],
+    ['ślizga się pod wysoką linią', high, 1, 0.5, 0, false],
+    ['schodzi z linii po zapowiedzi', high, 1.8, 0.9, 2, false],
+  ] as const)('%s', (_, pattern, height, y, x, hit) => {
+    const f = setup(pattern, 'laser', {
+      definition: director,
+      targetHeight: height,
+    });
+    expect(f.boss.forcePattern('laser')).toBe(true);
+    expect(f.boss.current.field).toMatchObject({
+      kind: 'laser',
+      center: { x: 0, z: 4 },
+    });
+    f.position.y = y;
+    f.position.x = x;
+    const health = f.damage.health(f.player)!;
+    const ticks = Math.ceil(pattern.telegraphS / SIM_DT);
+    f.step(ticks - 1);
+    expect(health.current).toBe(health.max);
+    f.step();
+    expect(health.current).toBe(health.max - (hit ? pattern.damage : 0));
+  });
+
+  it('zamraża położenie pola i celu teleportu, przenosi hurtbox i przerywa zapowiedź na progu HP', () => {
+    const marker = { x: -5, y: 0, z: 6 };
+    const f = setup(undefined, 'grid', {
+      definition: director,
+      spawnPoints: [marker],
+    });
+    expect(f.boss.forcePattern('gridHack')).toBe(true);
+    expect(f.boss.current.field).toMatchObject({
+      kind: 'gridHack',
+      destination: marker,
+    });
+    const before = f.boss.current.position;
+    f.position.x += hack.radiusM + 1;
+    f.step(Math.ceil(hack.telegraphS / SIM_DT) - 1);
+    expect(f.boss.current.position.x).toBe(before.x);
+    f.step();
+    expect(f.damage.health(f.player)?.current).toBe(1000);
+    expect(f.boss.current.position.x).toBeCloseTo(marker.x);
+    expect(f.boss.previous.position.x).toBeCloseTo(marker.x);
+    const colliders = f.world.colliders
+      .getAll()
+      .filter((c) => f.entities.byCollider(c.handle) === f.boss.id);
+    expect(colliders.length).toBeGreaterThan(0);
+    for (const c of colliders) expect(c.translation().z).toBeCloseTo(marker.z);
+    expect(f.boss.forcePattern('laser')).toBe(true);
+    f.hit();
+    expect(f.boss.phase).toBe(2);
+    expect(f.boss.current.field).toBeUndefined();
+    expect(f.hit()).toBe(0);
+    f.step(Math.ceil(f.settings.enemies.phaseShiftS / SIM_DT));
+    f.hit();
+    expect(f.boss.phase).toBe(3);
+    expect(f.hit()).toBe(0);
+  });
+});
+
+describe('Orbis Grid: poprawki po przeglądzie', () => {
+  const director = enemyDefinitions.get('orbisDirector')!;
+  const fanPattern = director.boss!.phases[0]!.patterns.find(
+    (p) => p.kind === 'fan',
+  )!;
+  const reflectOwnShot = (counter: boolean, hpFraction = 1) => {
+    const f = setup(fanPattern, 'refl', {
+      definition: director,
+      data: (d) => {
+        d.boss!.counterOnReflect = counter;
+      },
+    });
+    const events: string[] = [];
+    f.bus.on('damage_dealt', ({ target }) => {
+      if (target === f.boss.id) events.push('damage');
+    });
+    f.bus.on('enemy_stunned', ({ id }) => {
+      if (id === f.boss.id) events.push('stunned');
+    });
+    const spawn = vi.spyOn(f.projectiles, 'spawn');
+    f.step(1 + Math.ceil(fanPattern.telegraphS / SIM_DT));
+    const hp = f.damage.health(f.boss.id)!;
+    hp.apply({ amount: hp.max * (1 - hpFraction) });
+    const before = hp.current;
+    f.projectiles.reflect(
+      spawn.mock.results[0]!.value as number,
+      f.player,
+      'player',
+      {
+        x: 0,
+        y: 0,
+        z: -1,
+      },
+    );
+    for (let i = 0; i < 40 && events.length === 0; i++) {
+      f.projectiles.step(SIM_DT);
+      f.step();
+    }
+    return { f, events, lost: before - hp.current, hp };
+  };
+
+  it('okno kontry otwiera się po przyjęciu obrażeń i nie wzmacnia odbitego pocisku', () => {
+    const base = reflectOwnShot(false);
+    const withCounter = reflectOwnShot(true);
+    expect(base.lost).toBeGreaterThan(0);
+    expect(withCounter.lost).toBeCloseTo(base.lost);
+    expect(withCounter.events.sort()).toEqual(['damage', 'stunned']);
+  });
+
+  it('trafienie odbitym pociskiem na progu fazy nie otwiera kontry', () => {
+    const f = reflectOwnShot(true, 0.66);
+    expect(f.events).toEqual(['damage']);
+    expect(f.f.boss.phase).toBe(2);
+  });
+
+  it('koniec ogłuszenia kontry odpowiada końcowi okna zwiększonych obrażeń', () => {
+    const { f } = reflectOwnShot(true);
+    const { reflectCounterS } = f.settings.enemies;
+    f.step(Math.ceil(reflectCounterS / SIM_DT) - 3);
+    expect(f.boss.current.state).toBe('stunned');
+    f.step();
+    expect(f.boss.current.state).toBe('stunned');
+    f.step();
+    expect(f.boss.current.state).not.toBe('stunned');
+  });
+
+  it('gridHack bez znaczników jest pomijany w wyborze wzorca', () => {
+    const f = setup(undefined, 'nomarkers', { definition: director });
+    expect(f.boss.setPhase(2)).toBe(true);
+    expect(f.boss.forcePattern('gridHack')).toBe(false);
+    const kinds: string[] = [];
+    f.bus.on('enemy_telegraph', ({ kind }) => kinds.push(kind));
+    f.step(3000);
+    expect(kinds.length).toBeGreaterThan(5);
+    expect(kinds).not.toContain('gridHack');
+  });
+
+  it('teleport wybiera znacznik najdalszy od gracza i nie zajęty przez gracza', () => {
+    const f = setup(undefined, 'far', {
+      definition: director,
+      spawnPoints: [
+        { x: 0, y: 0, z: 4 },
+        { x: 3, y: 0, z: 4 },
+        { x: -9, y: 0, z: 8 },
+        { x: 9, y: 0, z: 9 },
+      ],
+    });
+    expect(f.boss.forcePattern('gridHack')).toBe(true);
+    expect(f.boss.current.field).toMatchObject({
+      kind: 'gridHack',
+      destination: { x: 9, z: 9 },
+    });
+  });
+
+  it('teleport bez ciała fizycznego aktualizuje pozycję bossa', () => {
+    const marker = { x: -5, y: 0, z: 6 };
+    const f = setup(undefined, 'nobody', {
+      definition: director,
+      spawnPoints: [marker],
+    });
+    (f.boss as unknown as { body: null }).body = null;
+    expect(f.boss.forcePattern('gridHack')).toBe(true);
+    const hack = director.boss!.phases[1]!.patterns.find(
+      (p) => p.kind === 'gridHack',
+    )!;
+    f.step(Math.ceil(hack.telegraphS / SIM_DT));
+    expect(f.boss.current.position.x).toBeCloseTo(marker.x);
+    expect(f.boss.current.position.y).toBeCloseTo(
+      f.settings.enemies.corpseS * 0 + director.body!.controllerOffset,
+    );
+  });
+});
 
 describe('F3-16 Boss', () => {
   it('validates data, required body/boss, descending HP thresholds and pattern parameters', () => {
