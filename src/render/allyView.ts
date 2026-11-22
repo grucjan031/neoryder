@@ -164,10 +164,14 @@ export class AllyView {
         unused.push(node);
         return;
       }
-      node.material = this.cloth(
-        (node.material as Material).name,
-        node.name.includes('__accent'),
-      );
+      const dress = (material: Material) =>
+        this.cloth(
+          material.name,
+          node.name.includes('__accent') || material.name === 'mat_npc_accent',
+        );
+      node.material = Array.isArray(node.material)
+        ? node.material.map(dress)
+        : dress(node.material);
       if (node instanceof SkinnedMesh) node.frustumCulled = false;
     });
     for (const node of unused) node.removeFromParent();
@@ -317,14 +321,20 @@ export class AllyView {
             : name === 'mat_npc_shirt' || name === 'mat_npc_outer'
               ? look.outerColor
               : hub.npcGearColor;
-    let material = this.materials.get(color);
+    const outer = name === 'mat_npc_shirt' || name === 'mat_npc_outer';
+    const key = `${color}:${accent}:${outer}`;
+    let material = this.materials.get(key);
     if (!material) {
       material = new MeshToonMaterial({
         color: new Color(color),
         gradientMap,
         side: DoubleSide,
+        emissive: new Color(
+          accent ? look.accentColor : outer ? look.outerColor : '#000000',
+        ),
+        emissiveIntensity: accent ? 0.7 : outer ? 0.22 : 0,
       });
-      this.materials.set(color, material);
+      this.materials.set(key, material);
     }
     return material;
   }

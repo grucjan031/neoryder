@@ -23,9 +23,9 @@
   "engageRangeM": 26,
   "reviveS": 2,
   "look": {
-    "torso": "hoodie",
+    "torso": "jacket",
     "parts": ["prop_satchel"],
-    "outerColor": "#d9c7a3",
+    "outerColor": "#eee7d9",
     "pantsColor": "#3a3f47",
     "accentColor": "#ffae1a"
   },

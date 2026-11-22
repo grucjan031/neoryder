@@ -1,6 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { Box3, Group, Mesh, Vector3 } from 'three';
+import {
+  Box3,
+  BoxGeometry,
+  Group,
+  Mesh,
+  MeshStandardMaterial,
+  Vector3,
+} from 'three';
 import type { MeshToonMaterial } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { attachModuleVisuals } from '../../src/render/weaponModuleVisuals';
@@ -11,6 +18,35 @@ import { EventBus } from '../../src/core/events';
 import { HandRig } from '../../src/render/handRig';
 
 describe('elementy modułów na siedmiu modelach GLB', () => {
+  it('współdzieli geometrie, izoluje materiały i zwalnia cache po ostatnim widoku', () => {
+    const gun = () => {
+      const root = new Group();
+      const frame = new Mesh(new BoxGeometry(1, 1, 3));
+      frame.name = 'frame';
+      root.add(frame);
+      return root;
+    };
+    const first = gun();
+    const second = gun();
+    const detachFirst = attachModuleVisuals(first, ['holo']);
+    const detachSecond = attachModuleVisuals(second, ['holo']);
+    const a = first.getObjectByName('holo_reticle') as Mesh;
+    const b = second.getObjectByName('holo_reticle') as Mesh;
+    expect(a.geometry).toBe(b.geometry);
+    expect(a.material).not.toBe(b.material);
+    expect(a.material).toBeInstanceOf(MeshStandardMaterial);
+    const disposal = vi.spyOn(a.geometry, 'dispose');
+    detachFirst();
+    expect(disposal).not.toHaveBeenCalled();
+    expect(new Box3().setFromObject(second).isEmpty()).toBe(false);
+    detachSecond();
+    expect(disposal).toHaveBeenCalledTimes(1);
+    for (const root of [first, second]) {
+      const frame = root.getObjectByName('frame') as Mesh;
+      frame.geometry.dispose();
+      (frame.material as MeshStandardMaterial).dispose();
+    }
+  });
   it('FppBlaster odświeża moduły przy wspólnym modelu, zmianie broni i dispose', async () => {
     const bytes = readFileSync('public/assets/models/blaster.glb');
     const gltf = await new GLTFLoader().parseAsync(
@@ -138,6 +174,40 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
         expect(root.children.length).toBe(childCount + 1);
         const visual = root.getObjectByName(`module_${module.visual.shape}`)!;
         expect(visual.userData.moduleSlot).toBe(module.slot);
+        const meshes: Mesh[] = [];
+        visual.traverse((node) => {
+          if (node instanceof Mesh) meshes.push(node);
+        });
+        const budget = {
+          brake: 2,
+          rail: 2,
+          compensator: 2,
+          coil: 2,
+          canister: 2,
+          extended: 2,
+          pulse: 2,
+          reddot: 3,
+          scope: 6,
+          holo: 4,
+          laser: 5,
+          foregrip: 2,
+        }[module.visual.shape];
+        expect(meshes).toHaveLength(budget);
+        expect(new Set(meshes.map((mesh) => mesh.geometry)).size).toBe(budget);
+        if (
+          module.visual.shape === 'pulse' ||
+          module.visual.shape === 'extended'
+        ) {
+          const color = module.visual.shape === 'pulse' ? '8a5cff' : 'ffae1a';
+          expect(
+            meshes.some(
+              (mesh) =>
+                (
+                  mesh.material as MeshStandardMaterial
+                ).emissive.getHexString() === color,
+            ),
+          ).toBe(true);
+        }
         // Wiązka lasera jest efektem: nie liczy się do wymiarów modułu.
         const beam = visual.getObjectByName('laser_beam');
         beam?.removeFromParent();

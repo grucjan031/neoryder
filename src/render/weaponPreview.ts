@@ -7,6 +7,7 @@ import {
   MathUtils,
   Mesh,
   MeshToonMaterial,
+  MeshStandardMaterial,
   PerspectiveCamera,
   Scene,
   Vector3,
@@ -41,7 +42,7 @@ const HIGHLIGHT_BODY = 0.5;
 const HIGHLIGHT_ACCENT = 1.3;
 
 interface Lit {
-  material: MeshToonMaterial;
+  material: MeshToonMaterial | MeshStandardMaterial;
   color: Color;
   intensity: number;
   /** Części bez własnej poświaty dostają bursztyn; akcenty tylko jaśnieją. */
@@ -154,6 +155,9 @@ export class WeaponPreview {
     // Klon współdzieli geometrie i materiały z oryginałem; moduły dodajemy tylko na klonie.
     const model = source.clone(true);
     this.detachModules = attachModuleVisuals(model, moduleIds);
+    model.traverse((node) => {
+      if (node.name === 'laser_beam') node.visible = false;
+    });
     model.updateWorldMatrix(true, true);
     const box = framingBox(model);
     if (!box.isEmpty()) {
@@ -243,13 +247,19 @@ export class WeaponPreview {
     this.lit = [];
     this.pulse = 0;
     if (this.highlighted === null) return;
-    const seen = new Set<MeshToonMaterial>();
+    const seen = new Set<MeshToonMaterial | MeshStandardMaterial>();
     this.current?.traverse((visual) => {
       if (visual.userData.moduleSlot !== this.highlighted) return;
       visual.traverse((node) => {
         if (!(node instanceof Mesh) || node.userData.noOutline) return;
         const material: unknown = node.material;
-        if (!(material instanceof MeshToonMaterial) || seen.has(material))
+        if (
+          !(
+            material instanceof MeshToonMaterial ||
+            material instanceof MeshStandardMaterial
+          ) ||
+          seen.has(material)
+        )
           return;
         seen.add(material);
         const color = material.emissive.clone();
