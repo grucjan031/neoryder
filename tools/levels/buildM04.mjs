@@ -137,6 +137,55 @@ for (const x of [30, 114, 170, 208]) {
   });
   light(x, 6, -9, '#3d7bff', 10, 12);
 }
+// Rytm lamp i oznakowania prowadzi eskortę; wyłącznie oprawa bez colliderów.
+for (let x = 8, index = 0; x < 260; x += 14, index++) {
+  const side = index % 2 === 0 ? -1 : 1;
+  decor('city_street_lamp', x, side * 5.8, side > 0 ? Math.PI : 0);
+  light(x, 4.5, side * 3, index % 3 === 0 ? '#ffae1a' : '#fff1d6', 36, 18);
+  for (const z of [-2.2, 2.2])
+    level.decals.push({
+      texture: 'floor_hazard',
+      position: v(x, 0.012, z),
+      size: { w: 6, h: 0.35 },
+      surface: 'floor',
+      yaw: 0,
+    });
+}
+for (const position of Object.values(level.objectivePositions))
+  light(position.x, 3.5, position.z, '#fff1d6', 26, 12);
+for (const stop of level.payload.stops) {
+  const x = 12 + stop.atM;
+  light(x, 3, -3, stop.id.startsWith('switch') ? '#6dff4a' : '#ffae1a', 20, 12);
+  level.decals.push({
+    texture: 'floor_stop',
+    position: v(x - 2, 0.012, 0),
+    size: { w: 3, h: 1 },
+    surface: 'floor',
+    yaw: -Math.PI / 2,
+  });
+}
+for (const [index, [, , from, to, width]] of sections.entries()) {
+  const x = (from + to) / 2;
+  const wall = width / 2;
+  for (const side of [-1, 1]) {
+    level.signs.push({
+      kind: 'neon',
+      texture: side < 0 ? 'arrow' : index % 2 === 0 ? 'warsztat' : 'repair',
+      position: v(x, 4.2, side * (wall - 0.15)),
+      size: { w: side < 0 ? 2 : 4, h: 1.5 },
+      yaw: side < 0 ? 0 : Math.PI,
+      tint: side < 0 ? '#6dff4a' : '#ffae1a',
+    });
+  }
+  decor('city_cable_span', x - 4, -wall + 0.2, 0, 5);
+  decor('city_ad_screen', x + 3, -wall + 0.5);
+  if (width >= 24)
+    decor('port_container_20_ochre', x - 7, wall - 2, Math.PI / 2);
+  level.ambientFx.push(
+    { kind: 'steam', position: v(x + 2, 0.05, -wall + 1), rate: 2 },
+    { kind: 'drip', position: v(x - 3, 5, wall - 0.5), rate: 3 },
+  );
+}
 for (const [id, x, material] of [
   ['barricade', 50, 'hazard_stripes_worn'],
   ['laser', 75, 'neon_amber'],

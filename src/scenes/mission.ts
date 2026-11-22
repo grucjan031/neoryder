@@ -787,7 +787,10 @@ class PayloadMissionRoom extends RoomScene {
     this.payloadView = new PayloadView(t);
     this.root.add(this.payloadView.root);
     if (loadModels) void this.payloadView.load();
-    if (typeof document !== 'undefined') this.payloadHud = new PrototypeHud();
+    if (typeof document !== 'undefined')
+      this.payloadHud = new PrototypeHud(
+        document.querySelector<HTMLElement>('.mission-hud') ?? document.body,
+      );
     this.restorePayload(distance);
   }
 

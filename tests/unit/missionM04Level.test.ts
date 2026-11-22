@@ -19,8 +19,46 @@ import {
   loadMetaManagerStrict,
 } from '../../src/progression/metaSave';
 import { createStarterMetaState } from '../../src/progression/progressionSchema';
+import { existsSync } from 'node:fs';
 
 const ID = 'm04-ladunek-klasy-k';
+it('oprawa M04 oświetla tor i postoje, używa istniejących zasobów i palety Neon Noir', () => {
+  const palette = ['#ffae1a', '#6dff4a', '#8a5cff', '#3d7bff', '#fff1d6'];
+  for (const light of data.lights) expect(palette).toContain(light.color);
+  for (const sign of data.signs) {
+    expect(palette).toContain(sign.tint);
+    expect(
+      existsSync(`public/assets/textures/signs/${sign.texture}.webp`),
+    ).toBe(true);
+  }
+  for (const item of data.decor)
+    expect(existsSync(`public/assets/models/city/${item.model}.glb`)).toBe(
+      true,
+    );
+  for (const decal of data.decals)
+    expect(
+      existsSync(`public/assets/textures/decals/${decal.texture}.webp`),
+    ).toBe(true);
+  const lamps = data.decor.filter((item) => item.model === 'city_street_lamp');
+  expect(lamps.length).toBeGreaterThan(0);
+  for (let index = 1; index < lamps.length; index++) {
+    const gap = lamps[index]!.position.x - lamps[index - 1]!.position.x;
+    expect(gap).toBeGreaterThanOrEqual(12);
+    expect(gap).toBeLessThanOrEqual(16);
+  }
+  for (const stop of data.payload.stops)
+    expect(
+      data.lights.some(
+        ({ position, range }) =>
+          Math.hypot(position.x - (12 + stop.atM), position.z) < range / 2,
+      ),
+    ).toBe(true);
+  expect(data.signs.length).toBeGreaterThan(0);
+  expect(data.decals.some((item) => item.texture === 'floor_hazard')).toBe(
+    true,
+  );
+  expect(data.ambientFx.some((item) => item.kind === 'drip')).toBe(true);
+});
 const level = levelDefinitions.get(ID)!;
 const mission = missionDefinitions.get(ID)!;
 const idle: InputSnapshot = {

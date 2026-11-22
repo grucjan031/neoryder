@@ -2,6 +2,46 @@ import { expect, test, type Page } from '@playwright/test';
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 const ID = 'm04-ladunek-klasy-k';
+async function assertPayloadLayout(page: Page) {
+  const layout = await page.evaluate(() => ({
+    goals: document
+      .querySelector('.mission-goals')!
+      .getBoundingClientRect()
+      .toJSON(),
+    payload: document
+      .querySelector('.proto-hud')!
+      .getBoundingClientRect()
+      .toJSON(),
+    squad:
+      document.querySelector('.squad-hud')?.getBoundingClientRect().toJSON() ??
+      null,
+  }));
+  const overlaps = (
+    a: { left: number; right: number; top: number; bottom: number },
+    b: { left: number; right: number; top: number; bottom: number },
+  ) =>
+    a.left < b.right &&
+    b.left < a.right &&
+    a.top < b.bottom &&
+    b.top < a.bottom;
+  expect(layout.goals.height).toBeGreaterThan(0);
+  expect(layout.payload.height).toBeGreaterThan(0);
+  expect(overlaps(layout.goals, layout.payload)).toBe(false);
+  expect(layout.payload.top).toBeGreaterThan(layout.goals.bottom);
+  expect(layout.payload.left).toBe(layout.goals.left);
+  expect(layout.payload.width).toBe(layout.goals.width);
+  if (layout.squad && layout.squad.height > 0) {
+    expect(overlaps(layout.squad, layout.goals)).toBe(false);
+    expect(overlaps(layout.squad, layout.payload)).toBe(false);
+  }
+}
+async function capture(page: Page, name: string) {
+  await assertPayloadLayout(page);
+  if (process.env.M04_SCREENSHOT_DIR)
+    await page.screenshot({
+      path: `${process.env.M04_SCREENSHOT_DIR}/${name}.png`,
+    });
+}
 const query = (page: Page, key: string) =>
   page
     .evaluate((name) => window.__neoryder?.query(name), key)
@@ -32,6 +72,13 @@ test('Ładunek klasy K: tablica, Szron, blokady, Egzekutor, wagon, debrief i odb
   page,
 }) => {
   test.setTimeout(600_000);
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/?scene=hub&debug=1&fx=lite');
@@ -75,6 +122,13 @@ test('Ładunek klasy K: tablica, Szron, blokady, Egzekutor, wagon, debrief i odb
   );
   await expect(page.locator('.proto-hud')).toContainText('Wytrzymałość wagonu');
   await command(page, 'god');
+  await page.evaluate(() => document.fonts.ready);
+  await capture(page, 'start');
+  for (const width of [390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await assertPayloadLayout(page);
+  }
+  await page.setViewportSize({ width: 1280, height: 720 });
   expect(await command(page, 'objective done exit')).toBe('Cel niedostępny.');
 
   // Pierwsza blokada: sam brak wrogów nie zwalnia postoju wagonu.
@@ -96,6 +150,10 @@ test('Ładunek klasy K: tablica, Szron, blokady, Egzekutor, wagon, debrief i odb
     ['switch-2', 143, -4],
   ] as const) {
     await command(page, `tp ${x} ${z} -90`);
+    if (id === 'laser') {
+      await waitSimSteps(page, 10);
+      await capture(page, 'rogatka');
+    }
     // Walka w E2E skrócona komendą; interakcja nadal trwa rzeczywiste 2 s symulacji.
     await command(page, 'encounter clear');
     await expect
@@ -106,6 +164,8 @@ test('Ładunek klasy K: tablica, Szron, blokady, Egzekutor, wagon, debrief i odb
     expect((await mission(page)).openGates).toContain(`gate-${id}`);
   }
   await command(page, 'tp 180 4 -90');
+  await waitSimSteps(page, 10);
+  await capture(page, 'koncowy-rozjazd');
   await expect
     .poll(async () => (await mission(page)).activeEncounters, {
       timeout: SIM_TIMEOUT,

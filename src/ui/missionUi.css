@@ -119,6 +119,41 @@
   height: 5px;
   accent-color: #ffae1a;
 }
+.mission-hud:has(> .proto-hud) {
+  inset: 90px auto auto 28px;
+  width: min(334px, calc(100vw - 56px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--ui-warm);
+  font-family: var(--ui-font);
+}
+.mission-hud > .proto-hud,
+.mission-hud:has(> .proto-hud) > .mission-goals {
+  position: static;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  border-left: 2px solid var(--ui-amber);
+  background: var(--ui-panel);
+  color: inherit;
+  font: inherit;
+}
+.mission-hud > .proto-hud header {
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .mission-hud:has(> .proto-hud) {
+    inset: 88px auto auto 16px;
+    width: calc(100vw - 32px);
+    font-size: 12px;
+  }
+  .mission-hud > .proto-hud,
+  .mission-hud:has(> .proto-hud) > .mission-goals {
+    padding: 4px 8px;
+  }
+}
 .mission-radio--run {
   position: fixed;
   top: clamp(11rem, 24vh, 15rem);
