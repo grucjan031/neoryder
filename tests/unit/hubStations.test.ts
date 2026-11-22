@@ -5,7 +5,9 @@ import type { HubStationId } from '../../src/core/metaTypes';
 import { tuning } from '../../src/core/tuning';
 import {
   HubStations,
+  hubTargetCandidates,
   selectHubFocus,
+  selectHubTarget,
   rayAabbDistance,
 } from '../../src/world/hubStations';
 import type { HubZone } from '../../src/world/hubStations';
@@ -112,4 +114,35 @@ it('open odrzuca stację spoza układu, close bez otwartej zwraca null, dispose 
   stations.open('talents');
   stations.dispose();
   expect(stations.opened).toBeNull();
+});
+
+it('kandydaci są posortowani od najbliższego, a selectHubTarget pomija zasłoniętych i bierze kolejnego', () => {
+  const npcs = [
+    {
+      id: 'blisko',
+      focus: { position: { x: 0, y: 1, z: -2 }, size: { x: 1, y: 2, z: 1 } },
+    },
+    {
+      id: 'daleko',
+      focus: { position: { x: 0, y: 1, z: -3 }, size: { x: 1, y: 2, z: 1 } },
+    },
+  ];
+  const args = [
+    [],
+    npcs,
+    eye(0, 0),
+    0,
+    0,
+    tuning.hub.interactRangeM,
+    0,
+  ] as const;
+  expect(hubTargetCandidates(...args).map((c) => c.target)).toEqual([
+    { kind: 'npc', id: 'blisko' },
+    { kind: 'npc', id: 'daleko' },
+  ]);
+  expect(selectHubTarget(...args, [])).toEqual({ kind: 'npc', id: 'blisko' });
+  expect(selectHubTarget(...args, [], (c) => c.target.id === 'blisko')).toEqual(
+    { kind: 'npc', id: 'daleko' },
+  );
+  expect(selectHubTarget(...args, [], () => true)).toBeNull();
 });

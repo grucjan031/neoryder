@@ -1,5 +1,20 @@
 # Czytelność tekstów — S10-01
 
+## Pierwsze minuty w kryjówce
+
+Przewodnik z `meta.pl.json.hub.guide` nazywa stację i dla pierwszej wizyty
+objaśnia wybór misji. Tablica misji rozwija wymagania do numerów i tytułów
+z definicji misji; tylko nieznana definicja pozostawia id. Po wyborze misji
+z poziomem pokazuje `rewards.firstClear`: Dane oraz opcjonalne Rdzenie
+z odmianą one/few/many. Ukończona misja pokazuje informację o odebraniu nagrody.
+Teksty nagrody są w `missions.pl.json.missions.firstClear`.
+
+Objaśnienia paska meta nie zawierają stałych kwot: Dane są za ukończone pokoje,
+zabitych wrogów i zwycięstwo, z mnożnikiem Poziomu zagrożenia; Rdzenie za elity
+i zwycięstwo. Obie waluty służą trwałym odblokowaniom w Warsztacie. Punkty
+talentów pochodzą z awansu i są wydawane w Terminalu drzewek. Źródłem reguł
+jest `computeRunRewards` i `talentPoints` w `src/progression/meta.ts`.
+
 Opisy talentów, implantów i modułów pozostają w ich danych. Opisy 6 mocy,
 14 synergii i 4 statusów są w `src/data/ui/descriptions.pl.json`, powiązane
 istniejącym identyfikatorem. Ich schematy mechaniki nie obsługują opisów;

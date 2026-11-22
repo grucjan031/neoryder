@@ -5,8 +5,14 @@ import { Box3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import hideoutData from '../../src/data/hub/hideout.json';
 import { HUB_STATION_IDS } from '../../src/core/metaTypes';
+import { tuning } from '../../src/core/tuning';
 import { themeDefinitions } from '../../src/render/themes';
-import { hubNpcSchema, loadHubLayout } from '../../src/world/hubSchema';
+import {
+  hubNpcSchema,
+  loadHubInteractions,
+  loadHubLayout,
+} from '../../src/world/hubSchema';
+import interactionsData from '../../src/data/hub/interactions.json';
 import { wallDecalFitsBlock } from '../../src/world/dressingSchema';
 
 const layout = loadHubLayout(hideoutData);
@@ -69,6 +75,46 @@ it('plakat ma prześwit nad schodami, a ekran na zachodniej ścianie omija drzwi
     bounds('city_ad_screen', -19.9),
   ]);
   expect(door.min.z).toBeGreaterThan(screen.max.z);
+
+  // Prostokąty na zachodniej ścianie (oś pozioma z, pionowa y): ekran nie nachodzi na neon z ramą ani na plakat.
+  type Rect = { z: [number, number]; y: [number, number] };
+  const overlaps = (a: Rect, b: Rect): boolean =>
+    a.z[0] < b.z[1] && b.z[0] < a.z[1] && a.y[0] < b.y[1] && b.y[0] < a.y[1];
+  const rect = (
+    position: { y: number; z: number },
+    w: number,
+    h: number,
+  ): Rect => ({
+    z: [position.z - w / 2, position.z + w / 2],
+    y: [position.y - h / 2, position.y + h / 2],
+  });
+  const screenRect: Rect = {
+    z: [screen.min.z, screen.max.z],
+    y: [screen.min.y, screen.max.y],
+  };
+  const doorRect: Rect = {
+    z: [door.min.z, door.max.z],
+    y: [door.min.y, door.max.y],
+  };
+  const wall = (x: number): boolean => Math.abs(x + 19.9) < 0.2;
+  const frame = tuning.city.signFrameM;
+  const neons = layout
+    .signs!.filter(({ position }) => wall(position.x))
+    .map(({ position, size }) =>
+      rect(position, size.w + frame, size.h + frame),
+    );
+  // Kafelki i tunel są tłem ściany, więc pomijamy je; plakaty, ekrany i graffiti nie mogą nachodzić.
+  const flat = [
+    ...(layout.panels ?? []).filter(
+      ({ kind }) => kind === 'poster' || kind === 'screen',
+    ),
+    ...(layout.decals ?? []),
+  ]
+    .filter(({ position }) => wall(position.x))
+    .map(({ position, size }) => rect(position, size.w, size.h));
+  expect(neons).toHaveLength(1);
+  for (const other of [...neons, ...flat, doorRect])
+    expect(overlaps(screenRect, other)).toBe(false);
 });
 
 it('kryjówka ma po jednej stacji każdego rodzaju, a spawn leży na poziomie 0', () => {
@@ -645,4 +691,21 @@ it('miejsca aktywności mają pełne wolne kwadraty: taniec i boks 2 m, sanitari
           expect(distanceToBlock(x! + dx, z! + dz, b)).toBeGreaterThan(0);
       }
   }
+});
+
+it('interactions.json przechodzi schemat, a nieznane pole, zły kolor i liczba „feel” w danych są odrzucane', () => {
+  expect(() => loadHubInteractions(interactionsData)).not.toThrow();
+  type Copy = {
+    soup: Record<string, unknown>;
+    catPet: Record<string, unknown>;
+  };
+  const bad = (change: (copy: Copy) => void) => () => {
+    const copy = structuredClone(interactionsData) as Copy;
+    change(copy);
+    loadHubInteractions(copy);
+  };
+  expect(bad((c) => (c.soup.slideM = 0.5))).toThrow();
+  expect(bad((c) => (c.catPet.durationS = 1))).toThrow();
+  expect(bad((c) => (c.soup.bowlColor = 'zielony'))).toThrow();
+  expect(bad((c) => (c.soup.bowlRadiusM = 0))).toThrow();
 });

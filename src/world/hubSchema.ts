@@ -515,6 +515,37 @@ function standingNpcs(layout: {
 
 export type HubLayout = z.infer<typeof hubLayoutSchema>;
 
+/** Geometria, pozycje dłoni i kolory interakcji (zupa Heli, głaskanie kota); liczby „feel” są w `tuning.hub`. */
+export const hubInteractionsSchema = z
+  .object({
+    soup: z
+      .object({
+        npc: z.string().min(1),
+        clip: z.string().min(1),
+        bowlOffset: vec3Schema,
+        bowlRadiusM: positive,
+        bowlHeightM: positive,
+        bowlColor: hexColor,
+        brothColor: hexColor,
+      })
+      .strict(),
+    catPet: z
+      .object({
+        restPosition: vec3Schema,
+        reachPosition: vec3Schema,
+        handYawRad: finite,
+        handPitchRad: finite,
+        headTiltRad: finite,
+      })
+      .strict(),
+  })
+  .strict();
+export type HubInteractions = z.infer<typeof hubInteractionsSchema>;
+
+export function loadHubInteractions(data: unknown): HubInteractions {
+  return hubInteractionsSchema.parse(data);
+}
+
 export function loadHubLayout(data: unknown): HubLayout {
   return hubLayoutSchema.parse(data);
 }

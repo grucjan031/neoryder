@@ -2,7 +2,7 @@
   position: fixed;
   top: 26px;
   left: 32px;
-  z-index: 90;
+  z-index: 101;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -22,6 +22,45 @@
 }
 .meta-bar[data-debug='true'] {
   left: 108px;
+}
+.meta-bar__help {
+  position: relative;
+  pointer-events: auto;
+}
+.meta-bar__help:focus-within,
+.meta-bar__help:hover {
+  z-index: 1;
+}
+.meta-bar__help > [tabindex]:focus-visible {
+  outline: 2px solid #ffae1a;
+  outline-offset: 4px;
+}
+.meta-bar__tooltip,
+.meta-bar__currency-hint {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 260px;
+  max-width: calc(100vw - 140px);
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #ffae1a;
+  background: #070b16;
+  color: #fff1d6;
+  font-size: 16px;
+  line-height: 1.5;
+  text-shadow: none;
+}
+.meta-bar__tooltip {
+  visibility: hidden;
+}
+.meta-bar__help:hover .meta-bar__tooltip,
+.meta-bar__help:focus-within .meta-bar__tooltip {
+  visibility: visible;
+}
+.meta-bar__currency-hint {
+  width: 420px;
+  margin-top: 12px;
 }
 .meta-bar__identity {
   display: grid;
@@ -66,6 +105,7 @@
   letter-spacing: 0.12em;
 }
 .meta-bar__stat {
+  pointer-events: auto;
   position: relative;
   display: grid;
   grid-template-columns: 27px auto;
@@ -95,11 +135,11 @@
   background: linear-gradient(90deg, #ffae1a90, transparent);
 }
 .meta-bar__stat[data-stat='cores']::before {
-  background: #ff2bd6;
+  background: #fff1d6;
   mask-image: url('/assets/ui/hud/icon_cores.webp');
 }
 .meta-bar__stat[data-stat='cores']::after {
-  background: linear-gradient(90deg, #ff2bd690, transparent);
+  background: linear-gradient(90deg, #fff1d690, transparent);
 }
 .meta-bar__stat-label {
   grid-column: 2;
@@ -115,9 +155,10 @@
   color: #ffe1a3;
 }
 .meta-bar__stat[data-stat='cores'] .meta-bar__stat-value {
-  color: #ffb6f3;
+  color: #fff1d6;
 }
 .meta-bar__free {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -152,7 +193,7 @@
   .meta-bar__identity {
     width: 170px;
   }
-  .meta-bar__free {
+  .meta-bar__help:has(.meta-bar__free) {
     flex-basis: 100%;
   }
 }

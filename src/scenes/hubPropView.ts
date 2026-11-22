@@ -10,10 +10,12 @@ import {
 } from 'three';
 import type { BufferGeometry } from 'three';
 import { getMaterial, gradientMap } from '../render/materials';
-import { soup } from '../data/hub/interactions.json';
+import { hubInteractions } from '../world/hubInteractions';
 import type { Vec3 } from '../core/math';
 import type { HubProps } from '../world/hubProps';
 import type { Tuning } from '../core/tuning';
+
+const { soup } = hubInteractions;
 
 /** Widoki rekwizytów bez własnych colliderów. */
 export class HubPropView {
@@ -25,7 +27,7 @@ export class HubPropView {
 
   constructor(
     private readonly props: HubProps,
-    t: Tuning['hub'],
+    private readonly t: Tuning['hub'],
   ) {
     for (const def of props.defs) {
       if (def.kind === 'noodles') this.addBowl(def.id, def.focus.position);
@@ -113,10 +115,18 @@ export class HubPropView {
 
   render(alpha: number, soupProgress = 0): void {
     const slide =
-      MathUtils.smoothstep(soupProgress, soup.slideStart, soup.slideEnd) -
-      MathUtils.smoothstep(soupProgress, soup.returnStart, soup.returnEnd);
+      MathUtils.smoothstep(
+        soupProgress,
+        this.t.soupSlideStart,
+        this.t.soupSlideEnd,
+      ) -
+      MathUtils.smoothstep(
+        soupProgress,
+        this.t.soupReturnStart,
+        this.t.soupReturnEnd,
+      );
     for (const { root, restZ } of this.bowls)
-      root.position.z = restZ + soup.slideM * slide;
+      root.position.z = restZ + this.t.soupSlideM * slide;
     for (const bag of this.props.bags) {
       const pivot = this.pivots.get(bag.id)!;
       pivot.rotation.z = -(

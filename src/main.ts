@@ -278,7 +278,7 @@ async function main(): Promise<void> {
   app.append(hint);
   const ownsInterface = (): boolean =>
     document.querySelector(
-      '.run-screen:not([hidden]), .hub-screen:not([hidden]), .build-select:not([hidden]), .hud__death:not([hidden]), [data-mission-summary][open]',
+      '.run-screen:not([hidden]), .hub-screen:not([hidden]), .build-select:not([hidden]), .hud__death:not([hidden]), [data-mission-summary][open], [data-mission-debrief][open]',
     ) !== null;
   const canReturnToHub = (): boolean =>
     scene.id === 'mission' ||
@@ -304,6 +304,10 @@ async function main(): Promise<void> {
     () => pauseMenu.show(canReturnToHub()),
   );
   const pauseMenu = new PauseMenu({
+    infoProvider: () => ({
+      seed: (scene.query?.('runState') as RunState | undefined)?.seed ?? seed,
+      scene: scene.id,
+    }),
     resume: () => resume(),
     settings: () => {
       pauseMenu.hide();

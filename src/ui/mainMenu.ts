@@ -11,6 +11,7 @@ import tutorialText from '../data/ui/tutorial.pl.json';
 import { tutorialDone } from '../data/tutorial/schema';
 import { preserveLiteFx } from '../render/fxMode';
 import './mainMenu.css';
+import { appBuild, buildInfoText } from './buildInfo';
 
 const text = z
   .object({
@@ -113,6 +114,9 @@ export class MainMenu {
         this.settings.show();
       }),
     );
+    const footer = document.createElement('footer');
+    footer.className = 'main-menu__version';
+    footer.textContent = buildInfoText(appBuild);
     options.root.append(this.root);
     // Wybór presetów (BuildSelect) z własnym seedem zostaje tylko w trybie debug.
     if (debug) {
@@ -150,6 +154,7 @@ export class MainMenu {
       if (options.params) preserveLiteFx(options.params, scenes);
       this.root.append(button(t.debug, () => navigate(`?${scenes}`)));
     }
+    this.root.append(footer);
     /** Status zakończonego runu: już rozliczony, do rozliczenia albo nienaliczalny. */
     const endedStatus = async (ended: RunEnded): Promise<string> => {
       let manager: MetaManager;

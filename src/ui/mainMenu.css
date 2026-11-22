@@ -236,3 +236,13 @@ body:has(.main-menu) {
   letter-spacing: 0.03em;
   text-transform: none;
 }
+.main-menu__version {
+  margin-top: 20px;
+  text-align: right;
+  color: var(--ui-text);
+  opacity: 0.6;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+}

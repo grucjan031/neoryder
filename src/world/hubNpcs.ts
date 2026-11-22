@@ -374,6 +374,8 @@ export class NpcRuntime {
   /** Bieżąca wstawka animacji (null = bazowa) i czas do jej końca lub do następnej. */
   idleClip: NpcAnimation | null = null;
   idleLeftS: number;
+  /** Tułów i głowa wracają do kierunku bazowego, ignorując gracza (np. podczas podawania zupy). */
+  faceBase = false;
   /** Zewnętrzne sterowanie (spotkanie z kotem): trasa i patrzenie wstrzymane, pozycję i yaw ustawia sterujący. */
   controlled = false;
   /** Wymuszona poza animacji w czasie sterowania (null = bazowa). */
@@ -433,8 +435,11 @@ export class NpcRuntime {
         lookAt ?? player,
         dt,
         {
-          rangeM:
-            lookAt || (this.def.route && talking) ? Infinity : t.npcTurnRangeM,
+          rangeM: this.faceBase
+            ? -1
+            : lookAt || (this.def.route && talking)
+              ? Infinity
+              : t.npcTurnRangeM,
           turnSpeedRadS: t.npcTurnSpeedRadS,
           headMaxRad: t.npcHeadMaxRad,
           bodyMaxRad: this.def.route
