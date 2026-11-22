@@ -1156,6 +1156,25 @@ emituje `room_cleared` po `enemy_killed` bossa; `query('boss')`. Opis: `docs/sys
 
 Architektura i decyzje: `docs/adr/0005-petla-runu-f3.md`. Zadania: `docs/issues/F3/README.md`.
 
+### TTK bossa — `src/balance/simulator.ts`
+
+`Boss` przyjmuje zależności walki bez `world` w symulacji stacjonarnej.
+W tym trybie adapter pocisków udostępnia `spawn` i `addInterceptor`, a adapter
+wezwań opcjonalnie zwraca id sługi, flagę `removed` i jego bieżący stan AI.
+Progi, przejścia, czasy wzorców i tarcza nadal należą do `Boss`.
+
+`simulate(attack, enemy, options?)` dla `enemy.kind === 'boss'` używa definicji
+`enemy.boss` i `options.settings.enemies.phaseShiftS` (domyślnie z `tuning`).
+`SimulationResult.bossTimeline` zapisuje chronologicznie wejścia w fazy
+(`kind: 'phase'`) i początki zapowiedzi (`kind: 'pattern'` z `pattern`).
+Każdy wpis ma `phase` od 1 oraz `timeS` od startu symulacji. Faza 1 zaczyna się
+w chwili utworzenia każdego celu.
+
+`runBalance` udostępnia `bosses`, pojedyncze wyniki `AttackRow.bossResults` w tej
+samej kolejności oraz `bossPaths`. Bramkę F2 liczą dotychczasowe `paths` dla paczek
+zwykłych wrogów. Scena `boss-test` udostępnia komendę `boss ttk` z TTK i osią
+czasu dla blastera, liczone z bieżącym strojeniem.
+
 ### Wspólne typy runu — `src/core/runTypes.ts`
 
 ```ts

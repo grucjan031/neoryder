@@ -30,6 +30,29 @@ const copy = (s: EnemySnapshot): EnemySnapshot => ({
   position: { ...s.position },
 });
 
+type BossMinion = Pick<Enemy, 'id' | 'removed'> & {
+  current: Pick<EnemySnapshot, 'state'>;
+};
+type BossDependencies =
+  | EnemyDependencies
+  | (Pick<
+      EnemyDependencies,
+      | 'entities'
+      | 'damage'
+      | 'hurtboxes'
+      | 'getTarget'
+      | 'statuses'
+      | 'spawnModifiers'
+    > & {
+      world?: never;
+      projectiles: Pick<
+        NonNullable<EnemyDependencies['projectiles']>,
+        'spawn' | 'addInterceptor'
+      >;
+      spawnEnemy?(id: string, position: Vec3): BossMinion;
+      spawnPoints?: readonly Vec3[];
+    });
+
 /** Limit po redukcjach DamageSystem: nawet pojedyncze trafienie nie pomija fazy. */
 class BossHealth extends Health {
   constructor(
@@ -52,7 +75,7 @@ export class Boss implements Enemy {
   current: EnemySnapshot;
   removed = false;
   private readonly data;
-  private readonly body: EnemyBody;
+  private readonly body: EnemyBody | null;
   private readonly health: Health;
   private readonly rng;
   private readonly projectiles;
@@ -60,7 +83,7 @@ export class Boss implements Enemy {
   private phaseIndex = 0;
   private shiftS = 0;
   private pattern: BossPattern | null = null;
-  private minions: Enemy[] = [];
+  private minions: BossMinion[] = [];
   /** Pociski wystrzelone przez bossa; po odbiciu zdejmują wytrzymałość tarczy. */
   private readonly ownShots = new Set<number>();
   private reflectedHit = false;
@@ -72,7 +95,7 @@ export class Boss implements Enemy {
 
   constructor(
     private readonly ctx: Pick<GameContext, 'bus' | 'rng' | 'tuning'>,
-    private readonly deps: EnemyDependencies,
+    private readonly deps: BossDependencies,
     readonly definition: EnemyDefinition,
     position: Vec3,
   ) {
@@ -109,7 +132,9 @@ export class Boss implements Enemy {
       invulnerable: () => this.shiftS > epsilon,
       guard: (info) => this.guard(info),
     });
-    this.body = new EnemyBody(deps, this.id, definition.body, spawn);
+    this.body = deps.world
+      ? new EnemyBody(deps, this.id, definition.body, spawn)
+      : null;
     this.off.push(
       ctx.bus.on('damage_dealt', ({ target }) => {
         if (target !== this.id || this.health.dead) return;
@@ -539,10 +564,12 @@ export class Boss implements Enemy {
         }
       }
     }
-    const movement = this.body.move(dt, vx, vz, this.ctx.tuning);
-    s.position = movement.position;
-    s.speed = movement.distance / dt;
-    s.distance += movement.distance;
+    if (this.body) {
+      const movement = this.body.move(dt, vx, vz, this.ctx.tuning);
+      s.position = movement.position;
+      s.speed = movement.distance / dt;
+      s.distance += movement.distance;
+    }
   }
 
   dispose(): void {
@@ -552,6 +579,6 @@ export class Boss implements Enemy {
     this.deps.hurtboxes.removeEntity(this.id);
     this.deps.damage.unregister(this.id);
     this.deps.entities.destroy(this.id);
-    this.body.dispose();
+    this.body?.dispose();
   }
 }

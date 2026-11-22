@@ -48,6 +48,22 @@ function attackTable(result: BalanceResult, only?: Set<string>): string[] {
   ];
 }
 
+function bossAttackTable(result: BalanceResult): string[] {
+  return [
+    '| Narzędzie | Boss | TTK (s) | DPS (HP/s) | Wejścia w fazy (s) |',
+    '| --- | --- | ---: | ---: | --- |',
+    ...result.attacks.flatMap((attack) =>
+      attack.bossResults.map((value, i) => {
+        const phases = value.bossTimeline
+          ?.filter((event) => event.kind === 'phase')
+          .map(({ phase, timeS }) => `${phase} (${number(timeS)})`)
+          .join(' → ');
+        return `| ${attack.name} (${attack.id}) | ${result.bosses[i]!.id} | ${number(value.ttkS)} | ${number(value.dps)} | ${phases} |`;
+      }),
+    ),
+  ];
+}
+
 const failing = (rows: PathRow[]) =>
   rows
     .filter((row) => !row.passed)
@@ -113,6 +129,22 @@ export function renderReport(results: BalanceReport, date: string): string {
       '### Moce przy ścianie (tylko narzędzia, których wynik różni się od otwartej przestrzeni)',
       '',
       ...attackTable(wall, wallOnly),
+      '',
+      '## Bossowie — pojedyncze starcia (informacyjnie)',
+      '',
+      'Symulacja korzysta z progów HP i wzorców faz z danych bossa oraz długości nietykalności z `tuning.enemies.phaseShiftS`. Gracz ponawia ataki także podczas przejść i działania tarczy. Pojedynki z bossami są liczone poza bramką F2.',
+      '',
+      '### Otwarta przestrzeń',
+      '',
+      ...pathTable(open.bossPaths, 'TTK'),
+      '',
+      ...bossAttackTable(open),
+      '',
+      '### Przy ścianie',
+      '',
+      ...pathTable(wall.bossPaths, 'TTK'),
+      '',
+      ...bossAttackTable(wall),
       '',
       '## Wnioski',
       '',
