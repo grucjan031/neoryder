@@ -11,6 +11,8 @@ import type { Loadout } from '../progression/loadout';
 import { synergyDefinitions } from '../progression/synergies';
 import type { SynergyDefinition } from '../progression/synergies';
 import descriptionText from '../data/ui/descriptions.pl.json';
+import { createSquadPicker } from './squadPicker';
+import type { SquadPicker } from './squadPicker';
 
 const descriptions = new Map([
   ...Object.entries(descriptionText.powers).map(
@@ -124,7 +126,12 @@ function element<K extends keyof HTMLElementTagNameMap>(
 
 interface BuildSelectOptions {
   /** `bladeId` tylko gdy gracz wybrał wariant ostrza (nadpisanie ostrza ekwipunku). */
-  onSelect: (loadoutId: string, bladeId?: string) => void;
+  onSelect: (
+    loadoutId: string,
+    bladeId?: string,
+    /** Drużyna z sekcji „Drużyna”; pomijana, gdy gracz nikogo nie wybrał. */
+    squad?: readonly string[],
+  ) => void;
   root?: HTMLElement;
   /** Teksty i lista buildów; domyślnie src/data/ui/buildSelect.pl.json. */
   data?: unknown;
@@ -139,6 +146,8 @@ export class BuildSelect {
   /** Wybrany wariant ostrza; null = ostrze ekwipunku (domyślnie plazmowe). */
   private bladeId: string | null = null;
   private readonly listeners: (() => void)[] = [];
+  private readonly squadPicker: SquadPicker;
+  private completed: readonly string[] = [];
   private disposed = false;
 
   constructor(private readonly opts: BuildSelectOptions) {
@@ -157,18 +166,30 @@ export class BuildSelect {
       const button = this.card(option, t);
       (option.hybrid ? hybrids : builds).append(button);
     }
+    this.squadPicker = createSquadPicker({ completed: () => this.completed });
     panel.append(this.bladeRow(t), builds);
     if (hybrids.childElementCount > 0)
       panel.append(
         element('h3', 'build-select__section', t.hybridsTitle),
         hybrids,
       );
+    panel.append(this.squadPicker.root);
     this.root.append(panel);
     (opts.root ?? document.body).append(this.root);
   }
 
   get visible(): boolean {
     return !this.disposed && !this.root.hidden;
+  }
+
+  /** Ukończone misje kampanii: odblokowują towarzyszy w sekcji „Drużyna”. */
+  setCompleted(completed: readonly string[]): void {
+    this.completed = completed;
+    this.squadPicker.refresh();
+  }
+
+  setSquad(ids: readonly string[]): void {
+    this.squadPicker.setSelected(ids);
   }
 
   setBriefing(text: string): void {
@@ -190,6 +211,7 @@ export class BuildSelect {
     if (this.disposed) return;
     this.disposed = true;
     for (const off of this.listeners.splice(0)) off();
+    this.squadPicker.dispose();
     this.root.remove();
   }
 
@@ -289,7 +311,10 @@ export class BuildSelect {
   private select(id: string): void {
     if (!this.visible) return;
     this.hide();
-    if (this.bladeId === null) this.opts.onSelect(id);
+    const squad = this.squadPicker.selected();
+    if (squad.length > 0)
+      this.opts.onSelect(id, this.bladeId ?? undefined, squad);
+    else if (this.bladeId === null) this.opts.onSelect(id);
     else this.opts.onSelect(id, this.bladeId);
   }
 }

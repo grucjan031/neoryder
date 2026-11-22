@@ -48,6 +48,8 @@ export const allySchema = z
     followDistanceM: positive,
     engageRangeM: positive,
     reviveS: positive,
+    /** Warunek dołączenia do drużyny w kryjówce; brak pola = dostępny od początku. */
+    unlock: z.object({ mission: id }).strict().optional(),
     /** Strój z części `npc_civilian.glb`; kolory bez czerwieni, cyanu i magenty (ADR 0006). */
     look: z
       .object({

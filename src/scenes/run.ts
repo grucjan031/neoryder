@@ -55,6 +55,14 @@ import type { Scene } from './index';
 import { getLiteFx } from '../render/fxMode';
 import { warmUpRender } from '../render/renderWarmUp';
 import { RoomScene } from './roomScene';
+import {
+  parseSquadParam,
+  sanitizeSquad,
+  scaleWavesForSquad,
+  squadCountScale,
+  squadOf,
+} from '../allies/roster';
+import type { SquadMemberState } from '../allies/roster';
 import { puzzleText } from '../ui/puzzleText';
 import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 
@@ -81,7 +89,9 @@ export interface RunRoom extends Scene {
   missionState?(): Pick<RunState, 'objectives' | 'objectiveProgress'>;
   /** Cisza po zwycięstwie: pokój tylko „dogrywa” oprawę, gracz nie może już zginąć. */
   enterVictoryHold?(): void;
-  exportState(): Pick<RunState, 'hp' | 'energy'>;
+  exportState(): Pick<RunState, 'hp' | 'energy'> & {
+    squad?: SquadMemberState[];
+  };
 }
 
 export type RunRoomFactory = (
@@ -406,6 +416,13 @@ export class RunScene implements Scene {
             ctx.debug,
           )
         : undefined;
+      // Drużyna z kryjówki: tylko odblokowani (tryb debug bierze każdego), najwyżej `maxPicked`.
+      const squad = sanitizeSquad(
+        mission ? [] : parseSquadParam(params.get('squad')),
+        this.meta.state.campaign.completed,
+        ctx.tuning.allies.maxPicked,
+        ctx.debug,
+      );
       if (loadout === 'meta') {
         const meta = this.meta.state;
         this.manager.newRun(seed, CUSTOM_LOADOUT_ID, {
@@ -416,10 +433,16 @@ export class RunScene implements Scene {
           talents: meta.talents,
           threatLevel: meta.threat.selected,
           baseMaxHealth: playerData.maxHealth,
+          squad,
         });
       } else {
         this.validateLoadout(loadout);
-        this.manager.newRun(seed, loadout, { mission, modeId, arenaId });
+        this.manager.newRun(seed, loadout, {
+          mission,
+          modeId,
+          arenaId,
+          squad,
+        });
       }
     }
     const mission = missionDefinitions.get(this.manager.state.missionId ?? '');
@@ -1026,7 +1049,7 @@ export class RunScene implements Scene {
           );
       }
     }
-    const waves: WavesDefinition =
+    const plannedWaves: WavesDefinition =
       state.modeId ||
       node.type === 'shop' ||
       node.type === 'rest' ||
@@ -1057,6 +1080,14 @@ export class RunScene implements Scene {
             rng,
             state.threatLevel,
           );
+    // Drużyna gracza: więcej wrogów w falach (tryby bez fal dostają mocniejszych wrogów w pokoju).
+    const waves = scaleWavesForSquad(
+      plannedWaves,
+      squadCountScale(
+        squadOf(state).length,
+        this.ctx.tuning.allies.enemyCountPerAlly,
+      ),
+    );
     const room =
       this.options.createRoom?.(layout, state, waves) ??
       new RoomScene(layout, state, waves, {
@@ -1428,6 +1459,12 @@ export class RunScene implements Scene {
       'boss phase',
       'boss pattern',
       'wave',
+      'ally spawn',
+      'ally down',
+      'ally revive',
+      'ally hold',
+      'ally follow',
+      'ally status',
     ]) {
       register(name, `${name} — komenda aktywnego pokoju`, (args) =>
         this.roomReady && this.manager.screen === 'room'

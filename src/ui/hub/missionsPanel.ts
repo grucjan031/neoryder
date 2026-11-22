@@ -10,6 +10,8 @@ import textData from '../../data/ui/missions.pl.json';
 import { threatLevels } from '../../progression/threatSchema';
 import type { ThreatLevel } from '../../progression/threatSchema';
 import type { HubPanel, HubPanelFactory } from './hubPanel';
+import { createSquadPicker } from '../squadPicker';
+import { squadParam } from '../../allies/roster';
 import './missionsPanel.css';
 
 const text = z
@@ -102,6 +104,9 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   const root = el('div', 'missions-panel');
   root.dataset.panel = 'missions';
 
+  const squadPicker = createSquadPicker({
+    completed: () => manager.state.campaign.completed,
+  });
   const sector = el('section', 'missions-panel__sector');
   const firstClear = el('p', 'missions-panel__reward');
   firstClear.dataset.firstClear = '';
@@ -114,6 +119,8 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   );
   sector.append(sectorName, sectorDescription, firstClear);
   const describe = (mission?: MissionDefinition) => {
+    // Misje liniowe mają własnych towarzyszy z danych poziomu.
+    squadPicker.root.hidden = !!mission?.level;
     sectorName.textContent = mission?.title ?? text.sector.name;
     sectorDescription.textContent = mission?.summary ?? text.sector.description;
     firstClear.hidden = !mission?.level;
@@ -328,6 +335,9 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     if (seed || !selectedMode) params.set('seed', seed || randomSeed());
     if (selectedMission) params.set('mission', selectedMission.id);
     if (selectedMode) params.set('mode', selectedMode);
+    const squad = squadPicker.selected();
+    if (!selectedMission?.level && squad.length > 0)
+      params.set('squad', squadParam(squad));
     ctx.navigate(`?${params}`);
   });
 
@@ -338,6 +348,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     heading,
     list,
     details,
+    squadPicker.root,
     status,
     seedLabel,
     start,
@@ -345,6 +356,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
 
   function refresh(): void {
     if (selectedMission) describe(selectedMission);
+    squadPicker.refresh();
     const completed = manager.state.campaign.completed;
     for (const { mission, button } of missionButtons) {
       const missing = mission.requires.filter((id) => !completed.includes(id));
@@ -396,6 +408,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     dispose(): void {
       disposed = true;
       disposeDialogue();
+      squadPicker.dispose();
       root.remove();
     },
   };

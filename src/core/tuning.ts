@@ -1293,6 +1293,12 @@ export const tuning = {
   /** Sojusznicy (docs/systems/allies.md). Liczby postaci (zdrowie, zasięgi, broń) są w `src/data/allies`. */
   allies: {
     maxSquad: 4,
+    /** Ilu członków drużyny gracz bierze do runu, areny i trybów (kryjówka). */
+    maxPicked: 2,
+    /** Drużyna w runie i na arenie: +25% liczby wrogów w falach na każdego sojusznika. */
+    enemyCountPerAlly: 0.25,
+    /** W trybach bez fal (Przejęcie, Szturm, Kradzież rdzenia): +15% zdrowia wrogów na sojusznika. */
+    enemyHealthPerAlly: 0.15,
     colliderHeightM: 1.75,
     colliderRadiusM: 0.4,
     /** Wysokość środka sylwetki (cel wrogów) i wylotu broni nad stopami. */

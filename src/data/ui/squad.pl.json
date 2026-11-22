@@ -1,0 +1,10 @@
+{
+  "title": "Drużyna",
+  "hint": "Weź do 2 towarzyszy. Wchodzą z tobą do każdego pokoju, a wrogów jest wtedy więcej.",
+  "roles": { "rifleman": "Strzelec", "support": "Wsparcie" },
+  "selected": "W drużynie",
+  "available": "Kliknij, aby wziąć",
+  "locked": "Zablokowana — ukończ misję: {mission}",
+  "summary": "Wybrano: {count} z {max}",
+  "none": "Bez drużyny"
+}

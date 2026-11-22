@@ -2,7 +2,7 @@
 
 Sojuszniczy NPC z własną inteligencją: idą za graczem, walczą z wrogami, ściągają na siebie ogień,
 padają i dają się podnieść. Pierwsze użycie to misje liniowe (autor dodaje sojusznika w danych
-poziomu); drużyna w runie i na arenie to kolejny krok — API jest już wspólne (`RoomScene.addAlly`).
+poziomu); drużyna w runie, trybach i na arenie opisana niżej („Drużyna w innych trybach”).
 
 Kontrakt: `docs/api.md`, sekcja „Sojusznicy”. Kod: `src/allies/` (symulacja), `src/render/allyView.ts`,
 `src/ui/squadHud.ts`, integracja w `src/scenes/roomScene.ts`.
@@ -145,11 +145,47 @@ Do dopięcia w `src/scenes/mission.ts` (poza tym zadaniem):
    oraz to samo dla spotkań już ukończonych przy wznowieniu z checkpointu.
 2. Powrót ewakuowanych przy nowym checkpoincie: w `checkpoint(id)` wywołać `this.room.restoreAllies()`.
 
+## Drużyna w innych trybach
+
+Poza misjami liniowymi gracz sam wybiera drużynę (0–2 członków, `tuning.allies.maxPicked`).
+
+**Wybór.** Sekcja „Drużyna” (`src/ui/squadPicker.ts`, teksty `src/data/ui/squad.pl.json`): karty z portretem,
+rolą i stanem; kliknięcie przełącza członka, trzeci wybór wypiera najstarszego. Karta zablokowana pokazuje
+warunek. Sekcja jest na tablicy misji (`missionsPanel`, dla zwykłego runu i trybów Przejęcie, Szturm,
+Kradzież rdzenia; ukryta przy misji liniowej) oraz na ekranie wyboru zestawu przed areną (`BuildSelect`).
+Ostatni wybór pamięta `localStorage` (`neoryder.squad`). Tablica dopisuje do adresu `squad=nadia,szron`.
+
+**Odblokowanie.** Pole `unlock: { mission }` w danych sojusznika (`allySchema`): Szron jest od początku,
+Nadia po ukończeniu misji `m02-punkt-kontrolny`. `sanitizeSquad` odrzuca zablokowanych i nieznanych.
+`?debug=1` pomija odblokowanie (testy, scena `?squad=`).
+
+**Run i tryby.** `RunScene` czyta `squad=` i zamraża drużynę w stanie runu (`RunState.squad`:
+`{ id, hp }`, `hp` 0 = powalony). Każdy `RoomScene` po starcie dołącza członków przy graczu ze zdrowiem
+z zapisu (`AllySquad.join`) i oddaje stan w `exportState()`, a `RunManager.completeRoom` go zapisuje. Powalony
+przechodzi do następnego pokoju leżący (podnosi go gracz). Odpoczynek i sklep (`RunManager.heal`) leczą drużynę
+tym samym ułamkiem zdrowia co gracza; powalony wstaje. Pole `squad` jest opcjonalne, więc `saveVersion`
+się nie zmienia. „Kontynuuj run” i odświeżenie strony odtwarzają drużynę ze stanu runu.
+
+**Arena.** `Arena` ma własną `AllySquad` i `SquadPresenter` (te same widoki i HUD co `RoomScene`), wrogowie
+wybierają cel przez `squad.targetFor`, drużyna wchodzi przy starcie, „Jeszcze raz” i zmianie buildu, a po fali
+wracają ewakuowani. Skład z ekranu buildu albo `?squad=`.
+
+**Balans** (`tuning.allies`, panel lil-gui):
+
+| Wartość              | Domyślnie | Działanie                                                                                 |
+| -------------------- | --------- | ----------------------------------------------------------------------------------------- |
+| `enemyCountPerAlly`  | 0,25      | +25% liczby wrogów w każdej grupie fal na sojusznika (run, arena, tryb nieskończony)      |
+| `enemyHealthPerAlly` | 0,15      | +15% zdrowia wrogów na sojusznika w trybach bez fal (Przejęcie, Szturm, Kradzież rdzenia) |
+
+Pokoje bossa i zagadki są bez zmian.
+
+Zapytania areny: `allies`, `allyKills`, `squadOrder`, `squadPicks`.
+
 ## Ograniczenia MVP
 
 - Sojusznicy nie reagują na zagrożenia otoczenia (`HazardSystem` ich nie widzi) i nie mają statusów.
 - Bez dźwięku strzałów i głosu (kwestie tylko jako napisy).
-- Arena wyzwań (`src/scenes/arena.ts`) nie ma drużyny; stan drużyny nie trafia do zapisu.
+- Zapis runu pamięta tylko zdrowie członków; rozkaz (`T`) i licznik zabójstw zaczynają się od nowa w każdym pokoju.
 - Sloty dyrektora wrogów liczą się wokół gracza, także gdy wróg celuje w sojusznika.
 
 ## Testy
