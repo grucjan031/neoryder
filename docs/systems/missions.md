@@ -40,8 +40,9 @@ runu. Rzeczywista utrata fokusu nadal pauzuje symulację. `tuning.level` jest w 
 Kryjówka czyta rekord i na tablicy oferuje „Kontynuuj misję”. Start zamraża
 wyposażenie warsztatu i talenty meta; obecny metazapis nie ma slotów implantów,
 więc początkowa lista implantów jest pusta, tak jak na starcie zwykłego runu.
-M03/M06 mają nieaktywne karty „Wkrótce”; ich dane i warianty runowe pozostają,
-dostępne przez bezpośrednie URL debug. Zwykły run i Przejęcie zachowują przepływ.
+M03 jest poziomem liniowym (po ukończeniu M01 startuje z tablicy w scenie `mission`).
+M06 ma nieaktywną kartę „Wkrótce”; jej dane i wariant runowy pozostają,
+dostępne przez bezpośredni URL debug. Zwykły run i Przejęcie zachowują przepływ.
 
 Migracja 5→6 zachowuje meta i aktywny run bez zmian; rekord misji jest początkowo
 nieobecny. Zapis ukończenia poprzedza `applyRun`, zapis meta i usunięcie rekordu.
@@ -98,13 +99,13 @@ Nową misję dodaje się jako JSON: unikalne id, sektor, warstwy, pokoje stałe 
 
 Sprawdzenie M01: `?scene=mission&mission=m01-maszty&debug=1`. Komendy `mission start m01-maszty`, `objective done <id>`, `query('mission')`; cele: `mast-1`, `mast-2`, `helix`, `mast-3`, `exit`. Aktywne spotkania: `encounter clear`. Ręcznie sprawdzić zatrzymywanie paska po odejściu, sześć sekund na ucieczkę przed wybuchem, obrażenia i radio, jasny moduł oraz właz przy murze.
 
-M03 „List przewozowy” odblokowuje ukończenie M01 (M02 poza demem). Warstwy stałe: 3 — plac laserowy, 6 i 7 — magazyn. Osłona bez celu może wskazywać `position` zamiast `nearObjective`; pozycje nie zmieniają warunków ukończenia walki.
+M03 „List przewozowy” odblokowuje ukończenie M01 (M02 poza demem). W grze jest poziomem liniowym; warstwy stałe (3 — plac laserowy, 6 i 7 — magazyn) zostały w danych tylko dla schematu misji. Osłona bez celu może wskazywać `position` zamiast `nearObjective`; pozycje nie zmieniają warunków ukończenia walki.
 
 `defend` ma opcjonalne `holdS` (domyślnie 0) na podłączenie dekodera oraz `durationS` samego transferu. Obie fazy postępują tylko w promieniu `radiusM`; wrogowie nie blokują transferu. Wyjście zatrzymuje, ale nie zeruje czasu. `objectiveProgress[id]` oznacza transfer, a klucz `id:connection` zachowuje ułamek podłączenia (bez zmiany formatu zapisu). `MissionObjectives.paused` opisuje bieżącą obecność poza strefą. Hook `reinforce(wave, key)` zleca hostowi uruchomienie fali z danych.
 
 Opcjonalne `defend.waves: { atProgress: number; wave: string }[]` uruchamia posiłki dokładnie raz przy przekroczeniu progu (0 < próg ≤ 1). Radio obsługuje `objective:<id>:progress:<0-100>` (całkowity procent), `started` po podłączeniu, `paused` przy pierwszym wyjściu po podłączeniu i `done` przy końcu transferu. Progi już osiągnięte nie powtarzają się po odtworzeniu postępu. HUD rozróżnia podłączanie, procent transferu i „TRANSFER WSTRZYMANY — wróć do strefy”. Dopiero osobny cel `exit` odblokowany przez terminal kończy misję.
 
-M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Sprawdzenie: `?scene=run&mission=m03-list-przewozowy&debug=1` po odblokowaniu M01, `objective done terminal`, następnie `objective done exit`. `run clear` nie omija terminala ani bramy.
+M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Od wersji liniowej M03 ma `level: m03-list-przewozowy` (mapa i przebieg: `docs/systems/levels.md`, sekcja „M03”); pola `typeWeights` i `roomPools` usunięto, `layers` i `fixedNodes` zostają, bo wymaga ich schemat misji (jak w M01). Fale transferu startują jako spotkania poziomu z `reinforcementFor: terminal:<indeks>`. Sprawdzenie: `?scene=mission&mission=m03-list-przewozowy&debug=1` po odblokowaniu M01 (`campaign complete m01-maszty` w `?scene=run&debug=1`), `objective done terminal`, następnie `objective done exit`.
 
 M06 „Odlewnia” wymaga M03. Siedem warstw, stałe pokoje: 1 — combatCorridor, 3 — eliteFoundry, 6 — eliteHall (executor, shielder, sniper), 7 — bossRoom. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Dialogi odprawy zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów.
 
