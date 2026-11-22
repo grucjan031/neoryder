@@ -27,6 +27,8 @@ import {
 } from '../progression/metaSave';
 import { createIndexedDbSaveStore } from '../core/save';
 import type { RunEnded, SaveStore } from '../core/save';
+import { localChallengeDate } from '../core/challengeDate';
+import { dailyChallenge } from '../world/dailyChallenge';
 import { loadoutDefinitions } from '../progression/loadout';
 import { createRunSavePort } from '../ui/runSave';
 import { HtmlRunScreens } from '../ui/runScreens';
@@ -88,6 +90,7 @@ export type RunRoomFactory = (
 ) => RunRoom;
 
 export interface RunSceneOptions {
+  dailyChallenge?: boolean;
   params?: URLSearchParams;
   screens?: RunScreens;
   save?: RunSavePort;
@@ -137,6 +140,7 @@ export class RunScene implements Scene {
   private readonly navigate: (url: string) => void;
   private metaStore: SaveStore | null = null;
   private readonly save: RunSavePort;
+  private challengeDay: string | null = null;
   private readonly sector: SectorDefinition;
   private readonly rooms: ReadonlyMap<string, RoomDefinition>;
   private missionRadio?: MissionRadio;
@@ -185,6 +189,8 @@ export class RunScene implements Scene {
       );
     this.manager = new RunManager(ctx.bus, {
       generateMap: (seed) => {
+        if (this.options.dailyChallenge)
+          return generateSectorMap(this.sector, seed);
         const id = (
           this.options.params ??
           new URLSearchParams(
@@ -279,6 +285,30 @@ export class RunScene implements Scene {
       );
     this.meta = await loadMetaManager(this.getMetaStore(), ctx.bus);
     if (this.disposed) return;
+    if (this.options.dailyChallenge) {
+      const day = localChallengeDate();
+      const challenge = this.getMetaStore().challenge!;
+      let started: boolean;
+      try {
+        started = await challenge.begin(day);
+      } catch (error) {
+        console.warn('Nie można rozpocząć wyzwania dnia.', error);
+        if (!this.disposed) this.openChallengeHistory(params, true);
+        return;
+      }
+      if (this.disposed) return;
+      if (!started) {
+        this.openChallengeHistory(params);
+        return;
+      }
+      this.challengeDay = day;
+      this.manager.newRun(day, dailyChallenge.loadoutId, {
+        difficulty: dailyChallenge.difficulty,
+      });
+      this.registerCommands();
+      this.showMap();
+      return;
+    }
     this.tracker = new AchievementTracker(ctx.bus, {
       base: this.meta.state.achievements,
       clock: () => this.manager.state.elapsedS,
@@ -393,6 +423,13 @@ export class RunScene implements Scene {
     return this.metaStore;
   }
 
+  private openChallengeHistory(current: URLSearchParams, error = false): void {
+    const params = new URLSearchParams({ daily: error ? 'error' : '1' });
+    if (current.get('debug') === '1') params.set('debug', '1');
+    preserveLiteFx(current, params);
+    this.navigate(`/?${params}`);
+  }
+
   /**
    * Kolejność (ADR 0007 pkt 2): applyRun, zapis meta, clearRun. Zapis runu znika dopiero po
    * udanym zapisie meta; inaczej zostaje z `ended`, a podsumowanie proponuje ponowienie.
@@ -451,6 +488,22 @@ export class RunScene implements Scene {
       console.warn(message, error);
       if (token === this.settleToken) this.rewardError = kind;
     };
+    if (this.challengeDay) {
+      try {
+        const { outcome, elapsedS, kills, roomsCleared } = ended.summary;
+        await this.getMetaStore().challenge!.finish(this.challengeDay, {
+          outcome,
+          elapsedS,
+          kills,
+          roomsCleared,
+        });
+        this.ended = null;
+        this.rewardError = null;
+      } catch (error) {
+        fail('save', 'Nie można zapisać wyniku wyzwania.', error);
+      }
+      return;
+    }
     try {
       await this.save.saveRun(this.manager.serialize(), ended);
     } catch (error) {
@@ -625,6 +678,7 @@ export class RunScene implements Scene {
         state: this.manager.serialize(),
         nodes: structuredClone(this.manager.availableNodes()),
         summary: this.manager.summary,
+        dailyChallenge: this.options.dailyChallenge,
         cause: this.defeatCause,
         // Nagrody dopiero po potwierdzonym zapisie meta.
         meta:
@@ -720,23 +774,35 @@ export class RunScene implements Scene {
             this.showMap();
           }
         },
-        newRun: () => {
-          const seed = Array.from(
-            crypto.getRandomValues(new Uint32Array(4)),
-            (value) => value.toString(16),
-          ).join('-');
-          const params = new URLSearchParams({
-            scene: 'run',
-            seed,
-            loadout:
-              this.manager.state.loadoutId === CUSTOM_LOADOUT_ID
-                ? 'meta'
-                : this.manager.state.loadoutId,
-          });
-          if (this.manager.state.modeId)
-            params.set('mode', this.manager.state.modeId);
-          this.leave(() => this.navigate(`/?${params}`));
-        },
+        newRun: this.challengeDay
+          ? undefined
+          : () => {
+              const seed = Array.from(
+                crypto.getRandomValues(new Uint32Array(4)),
+                (value) => value.toString(16),
+              ).join('-');
+              const params = new URLSearchParams({
+                scene: 'run',
+                seed,
+                loadout:
+                  this.manager.state.loadoutId === CUSTOM_LOADOUT_ID
+                    ? 'meta'
+                    : this.manager.state.loadoutId,
+              });
+              if (this.manager.state.modeId)
+                params.set('mode', this.manager.state.modeId);
+              this.leave(() => this.navigate(`/?${params}`));
+            },
+        history: this.challengeDay
+          ? () => {
+              const current =
+                this.options.params ??
+                new URLSearchParams(
+                  typeof location === 'undefined' ? '' : location.search,
+                );
+              this.leave(() => this.openChallengeHistory(current));
+            }
+          : undefined,
         hub: () => {
           const current = new URLSearchParams(
             typeof location === 'undefined' ? '' : location.search,
@@ -761,6 +827,10 @@ export class RunScene implements Scene {
 
   private showMap(): void {
     this.cancelRewardSave();
+    if (this.challengeDay) {
+      this.show();
+      return;
+    }
     if (this.tracker) this.manager.setAchievementProgress(this.tracker.tracked);
     const state = this.manager.serialize();
     this.persist(async () => {
@@ -800,7 +870,7 @@ export class RunScene implements Scene {
   }
 
   private scheduleRewardSave(immediate: boolean): void {
-    if (this.disposed || !this.manager.active) return;
+    if (this.challengeDay || this.disposed || !this.manager.active) return;
     if (immediate) {
       if (this.immediateRewardSave) return;
       this.cancelRewardSave();
@@ -1191,12 +1261,14 @@ export class RunScene implements Scene {
       const off = this.ctx.commands?.register(name, help, run);
       if (off) this.off.push(off);
     };
-    this.metaCommands = registerMetaCommands(
-      this.ctx.commands,
-      this.meta,
-      this.getMetaStore(),
-    );
-    this.off.push(() => this.metaCommands?.dispose());
+    if (!this.challengeDay) {
+      this.metaCommands = registerMetaCommands(
+        this.ctx.commands,
+        this.meta,
+        this.getMetaStore(),
+      );
+      this.off.push(() => this.metaCommands?.dispose());
+    }
     register('run node', 'run node <id> — wybierz dostępny węzeł', (args) =>
       args.length === 1 && this.selectNode(args[0]!)
         ? 'Wczytywanie pokoju.'
@@ -1229,6 +1301,7 @@ export class RunScene implements Scene {
       'campaign complete',
       'campaign complete <id> — ukończ misję bez nagród (debug)',
       (args) => {
+        if (this.challengeDay) return 'Komenda niedostępna w wyzwaniu dnia.';
         const mission = missionDefinitions.get(args[0] ?? '');
         if (args.length !== 1 || !mission) return 'Podaj istniejące id misji.';
         const state = this.meta.serialize();

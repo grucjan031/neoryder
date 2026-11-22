@@ -10,6 +10,7 @@ import settingsText from '../data/ui/settings.pl.json';
 import tutorialText from '../data/ui/tutorial.pl.json';
 import { tutorialDone } from '../data/tutorial/schema';
 import { preserveLiteFx } from '../render/fxMode';
+import { challengeText } from './challengeText';
 import './mainMenu.css';
 
 const text = z
@@ -107,6 +108,14 @@ export class MainMenu {
     status.textContent = t.loading;
     const arena = button(t.arena, () => navigate(`?${query('arena')}`));
     this.root.append(heading, subtitle, tutorial, hub, resume, status, arena);
+    this.root.append(
+      button(challengeText.title, () => {
+        const params = query('challenge');
+        params.delete('scene');
+        params.set('daily', '1');
+        navigate(`?${params}`);
+      }),
+    );
     this.root.append(
       button(settingsText.title, () => {
         this.settings ??= new SettingsScreen();

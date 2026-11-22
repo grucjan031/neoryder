@@ -46,6 +46,7 @@ export const scenes: Record<string, SceneFactory> = {
   'boss-test': () => new BossTest(),
   hub: () => new HubScene(),
   run: () => new RunScene(),
+  challenge: () => new RunScene({ dailyChallenge: true }),
   conquest: () => new RunScene(),
   horizonTest: () => new HorizonTest(),
   weatherTest: () => new WeatherTest(),

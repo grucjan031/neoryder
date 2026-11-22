@@ -14,6 +14,7 @@ import { createAchievementIcon } from './achievementIcons';
 import { achievementText, fill, rewardLabel } from './achievementText';
 import { achievementDefinitions } from '../progression/achievementsSchema';
 import { defeatMessage } from './runHud';
+import { challengeText } from './challengeText';
 
 const text = z
   .object({
@@ -108,6 +109,7 @@ export interface RunScreenView {
   state: RunState;
   nodes: readonly MapNode[];
   summary: RunSummary | null;
+  dailyChallenge?: boolean;
   /** Przyczyna z run_ended; brak w starym zapisie daje uczciwy komunikat zastępczy. */
   cause?: string;
   /** Nagrody meta za zakończony run (brak = sekcja nie jest pokazywana). */
@@ -146,6 +148,7 @@ export interface RunScreenActions {
   rest?(choice: 'heal' | 'upgrade', id?: string): void;
   menu(): void;
   newRun?(): void;
+  history?(): void;
   /** Powrót do kryjówki (`?scene=hub`); przycisk pokazywany tylko, gdy akcja jest podana. */
   hub?(): void;
   /** Ponowienie zapisu nagrody po błędzie; przycisk tylko, gdy akcja jest podana. */
@@ -227,7 +230,9 @@ export class HtmlRunScreens implements RunScreens {
       this.clearSplash();
     this.panel.replaceChildren();
     const heading = document.createElement('h1');
-    heading.textContent = text.titles[view.screen];
+    heading.textContent = view.dailyChallenge
+      ? `${challengeText.title} · ${text.titles[view.screen]}`
+      : text.titles[view.screen];
     this.panel.append(heading);
     this.vitals(view.state.hp, view.state.credits);
     if (document.pointerLockElement) document.exitPointerLock?.();
@@ -297,13 +302,19 @@ export class HtmlRunScreens implements RunScreens {
         const box = this.group('run-screen__reward-error');
         box.setAttribute('role', 'alert');
         const message = document.createElement('p');
-        message.textContent =
-          view.rewardError === 'save'
+        message.textContent = view.dailyChallenge
+          ? challengeText.saveError
+          : view.rewardError === 'save'
             ? text.rewardSaveError
             : text.rewardApplyError;
         box.append(message);
         const retry = actions.retrySave;
-        if (retry) this.button(text.retrySave, retry, box);
+        if (retry)
+          this.button(
+            view.dailyChallenge ? challengeText.retry : text.retrySave,
+            retry,
+            box,
+          );
         const abandon = actions.abandonReward;
         if (abandon) {
           // Dwa kroki: pierwsze kliknięcie pyta, drugie porzuca nagrodę.
@@ -320,7 +331,9 @@ export class HtmlRunScreens implements RunScreens {
           );
         }
       } else if (view.rewardPending) {
-        const pending = this.line(text.rewardPending);
+        const pending = this.line(
+          view.dailyChallenge ? challengeText.saving : text.rewardPending,
+        );
         pending.className = 'run-screen__reward-pending';
         pending.setAttribute('role', 'status');
       } else if (view.rewardAlreadySaved && !view.meta) {
@@ -330,14 +343,25 @@ export class HtmlRunScreens implements RunScreens {
       const row = this.group('run-screen__actions');
       const hub = actions.hub;
       const nav: HTMLButtonElement[] = [];
-      if (hub) {
+      if (actions.history) {
+        const history = this.button(
+          challengeText.history,
+          actions.history,
+          row,
+        );
+        history.classList.add('run-screen__primary');
+        nav.push(history);
+      } else if (hub) {
         const back = this.button(metaText.backToHub, hub, row);
         back.classList.add('run-screen__primary');
         nav.push(back);
       }
-      const again = this.button(text.newRun, () => actions.newRun?.(), row);
-      if (!hub) again.classList.add('run-screen__primary');
-      nav.push(again, this.button(text.menu, actions.menu, row));
+      if (!view.dailyChallenge) {
+        const again = this.button(text.newRun, () => actions.newRun?.(), row);
+        if (!hub) again.classList.add('run-screen__primary');
+        nav.push(again);
+      }
+      nav.push(this.button(text.menu, actions.menu, row));
       if (view.leaving) {
         for (const button of nav) button.disabled = true;
         const leaving = this.line(text.leaving);

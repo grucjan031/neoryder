@@ -1,0 +1,22 @@
+{
+  "title": "Wyzwanie dnia",
+  "rules": "Jedna próba na lokalny dzień. Wyjście lub odświeżenie kończy próbę bez wyniku.",
+  "today": "Dzisiejszy seed",
+  "start": "Rozpocznij wyzwanie",
+  "used": "Dzisiejsza próba została wykorzystana.",
+  "history": "Historia wyników",
+  "empty": "Brak rozegranych prób.",
+  "noResult": "Bez zapisanego wyniku",
+  "victory": "Zwycięstwo",
+  "death": "Porażka",
+  "rooms": "Pokoje",
+  "kills": "Zabici wrogowie",
+  "time": "Czas",
+  "loading": "Wczytywanie historii…",
+  "loadError": "Nie udało się odczytać historii wyzwania.",
+  "startError": "Nie udało się zapisać rozpoczęcia wyzwania.",
+  "saving": "Zapisywanie wyniku wyzwania…",
+  "saveError": "Nie udało się zapisać wyniku wyzwania.",
+  "retry": "Ponów zapis wyniku",
+  "back": "Wróć do menu"
+}

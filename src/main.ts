@@ -13,6 +13,7 @@ import { defaultCommands as commands } from './ui/debugCommands';
 import { createDebugConsole } from './ui/debugConsole';
 import { createSceneMenu } from './ui/sceneMenu';
 import { MainMenu } from './ui/mainMenu';
+import { ChallengeHistoryScreen } from './ui/challengeHistory';
 import { PauseMenu } from './ui/pauseMenu';
 import { SettingsScreen } from './ui/settingsScreen';
 import type { RunState } from './core/runTypes';
@@ -81,7 +82,9 @@ async function main(): Promise<void> {
       createSceneMenu(app, Object.keys(scenes), sceneParams);
       bootSplash.dismiss();
     } else {
-      const menu = new MainMenu({ root: app, params, debug });
+      const menu = params.has('daily')
+        ? new ChallengeHistoryScreen(app, params)
+        : new MainMenu({ root: app, params, debug });
       const dispose = (): void => menu.dispose();
       window.addEventListener('pagehide', dispose, { once: true });
       import.meta.hot?.dispose(dispose);
