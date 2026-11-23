@@ -108,6 +108,7 @@ export function createMetaBar(
   identity.append(operator, level, xp);
   root.append(identity, ...stats);
   parent.append(root);
+  document.documentElement.classList.add('has-meta-bar');
 
   let hintTimer: ReturnType<typeof setTimeout> | undefined;
   const arrivalState = manager.state;
@@ -166,6 +167,7 @@ export function createMetaBar(
     dispose(): void {
       clearTimeout(hintTimer);
       for (const off of offs) off();
+      document.documentElement.classList.remove('has-meta-bar');
       root.remove();
     },
   };

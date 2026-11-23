@@ -24,6 +24,7 @@
       }
     },
     "placeholder": "Ekran tymczasowy — pełna wersja trafi do kryjówki w kolejnych zadaniach.",
+    "path": "Kryjówka Iskry",
     "close": "Zamknij",
     "closeHint": "{back} zamyka okno. Spójrz na stację i naciśnij {power2}, by otworzyć ją ponownie.",
     "interact": "Interakcja",

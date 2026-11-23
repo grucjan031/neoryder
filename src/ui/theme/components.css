@@ -245,7 +245,10 @@
 .ui-button--primary::before {
   background: var(--c-accent-ink);
 }
-.ui-button--primary:is(:hover, :focus-visible):not(:disabled) {
+.ui-button--primary.ui-interactive:is(:hover, :focus-visible, :focus-within):not(
+    :disabled,
+    [aria-disabled='true']
+  ) {
   background: var(--c-accent-strong);
   border-color: var(--c-accent-strong);
 }
@@ -316,6 +319,46 @@
   border-color: transparent;
   border-bottom-color: var(--c-accent);
   color: var(--c-accent-strong);
+}
+
+/* Zakładki pionowe (kategorie z lewej kolumny): zaznaczenie = pasek z lewej + tło */
+.ui-tabs--vertical {
+  display: block;
+  border-bottom: 0;
+}
+.ui-tabs--vertical .ui-tabs__list {
+  display: grid;
+  flex-wrap: nowrap;
+  gap: var(--sp-1);
+}
+.ui-tabs--vertical .ui-tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin: 0;
+  border: 1px solid transparent;
+  text-align: left;
+}
+.ui-tabs--vertical .ui-tab::before {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: auto;
+  width: 3px;
+  height: auto;
+}
+.ui-tabs--vertical .ui-tab[aria-selected='true'] {
+  border-color: var(--c-accent-line);
+  border-bottom-color: var(--c-accent-line);
+  background: var(--c-accent-dim);
+}
+.ui-tabs--vertical .ui-tab[aria-selected='true']::before {
+  opacity: 1;
+  transform: none;
+}
+.ui-tabs--vertical .ui-tab.ui-interactive:is(:hover, :focus-visible):not(:disabled) {
+  border-color: var(--c-accent);
 }
 
 /* Lista i wiersze */
@@ -808,7 +851,20 @@ button.ui-actionbar__item:is(:hover, :focus-visible) {
 }
 
 .ui-button[hidden],
+.ui-tab[hidden],
 .ui-actionbar__item[hidden],
 .ui-badge[hidden] {
   display: none;
+}
+
+/* Tekst tylko dla czytników (np. pełna etykieta kafelka z samym numerem) */
+.ui-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

@@ -3,6 +3,17 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy dolny róg; ekrany stacji mają tam przyciski.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -34,7 +45,7 @@ test('hub: świeży zapis prowadzi do Tablicy misji i chowa przewodnik przy nak�
   await expect(guide).toContainText('Tablica misji');
   await command(page, 'hub open missions');
   await expect(guide).toBeHidden();
-  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await page.keyboard.press('Escape'); // przycisk „Zamknij” bywa pod panelem debug lil-gui
   await expect(guide).toBeVisible();
   await command(page, 'hub map');
   await expect(guide).toBeHidden();
@@ -100,7 +111,7 @@ test('hub: hub open missions pokazuje nakładkę, Zamknij ją chowa, a Rozpoczni
   await expect(
     page.getByRole('heading', { name: 'Tablica misji' }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await page.keyboard.press('Escape'); // przycisk „Zamknij” bywa pod panelem debug lil-gui
   await expect(page.locator('.hub-screen')).toBeHidden();
   expect(await query(page, 'hubStation')).toBeNull();
   await command(page, 'hub open missions');
@@ -183,7 +194,7 @@ test('hub: stacje talents i workshop montują panele w nakładce', async ({
   await openHub(page);
   await command(page, 'hub open workshop');
   await expect(page.locator('.hub-screen [data-panel=workshop]')).toBeVisible();
-  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await page.keyboard.press('Escape'); // przycisk „Zamknij” bywa pod panelem debug lil-gui
   await expect(page.locator('.hub-screen')).toBeHidden();
   await command(page, 'hub open talents');
   await expect(page.locator('.hub-screen .talents-panel')).toBeVisible();

@@ -40,23 +40,23 @@ it('tablica udostępnia M01, blokuje M03 i M06 (wymaga M03) i przekazuje kontynu
   });
   try {
     expect(
-      panel.root.querySelector<HTMLButtonElement>(
-        '[data-mission="m01-maszty"]',
-      )!.disabled,
-    ).toBe(false);
+      panel.root
+        .querySelector<HTMLButtonElement>('[data-mission="m01-maszty"]')!
+        .getAttribute('aria-disabled'),
+    ).toBe('false');
     for (const [id, status] of [
       ['m03-list-przewozowy', 'Zablokowana'],
     ] as const) {
       const button = panel.root.querySelector<HTMLButtonElement>(
         `[data-mission="${id}"]`,
       )!;
-      expect(button.disabled).toBe(true);
+      expect(button.getAttribute('aria-disabled')).toBe('true');
       expect(button.textContent).toContain(status);
     }
     const foundry = panel.root.querySelector<HTMLButtonElement>(
       '[data-mission="m06-odlewnia"]',
     )!;
-    expect(foundry.disabled).toBe(true);
+    expect(foundry.getAttribute('aria-disabled')).toBe('true');
     expect(foundry.textContent).not.toContain('Wkrótce');
     const resume = panel.root.querySelector<HTMLButtonElement>(
       '[data-action="continue-mission"]',

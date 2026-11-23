@@ -9,7 +9,15 @@ import missionText from '../../data/ui/missionDialogue.pl.json';
 import textData from '../../data/ui/missions.pl.json';
 import { threatLevels } from '../../progression/threatSchema';
 import type { ThreatLevel } from '../../progression/threatSchema';
+import { playUiSound } from '../../audio/uiSounds';
+import uiText from '../../data/ui/ui.pl.json';
+import { uiButton } from '../components/button';
+import { uiBadge } from '../components/controls';
+import { el } from '../components/dom';
+import { bindUiFeedback } from '../components/feedback';
 import type { HubPanel, HubPanelFactory } from './hubPanel';
+import { missionIcon } from './missionIcons';
+import type { MissionIconKind } from './missionIcons';
 import './missionsPanel.css';
 
 const text = z
@@ -19,6 +27,13 @@ const text = z
       claimed: z.string(),
       cores: z.object({ one: z.string(), few: z.string(), many: z.string() }),
     }),
+    groups: z.object({ story: z.string(), modes: z.string(), run: z.string() }),
+    types: z.object({ story: z.string(), mode: z.string(), run: z.string() }),
+    cardReward: z.string(),
+    threatBadge: z.string(),
+    boardLabel: z.string(),
+    detailsLabel: z.string(),
+    levelCaption: z.string(),
     sector: z.object({ name: z.string(), description: z.string() }),
     threat: z.object({
       heading: z.string(),
@@ -64,17 +79,6 @@ function randomSeed(): string {
   ).join('-');
 }
 
-function el<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  className?: string,
-  content?: string,
-): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (content !== undefined) node.textContent = content;
-  return node;
-}
-
 function detailLines(level: ThreatLevel): string[] {
   const neutral =
     level.enemyHealth === 0 &&
@@ -96,11 +100,22 @@ function detailLines(level: ThreatLevel): string[] {
   return lines;
 }
 
-/** Tablica misji (F4-10): karta sektora, wybór Poziomu zagrożenia, opcjonalny seed i start runu z meta. */
+interface CardParts {
+  button: HTMLButtonElement;
+  state: HTMLElement;
+  threat: HTMLElement;
+}
+
+/** Tablica misji: karty pogrupowane (Fabuła / Tryby / Run), z prawej szczegóły wyboru, Poziom zagrożenia i start. */
 export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   const { manager } = ctx;
   const root = el('div', 'missions-panel');
   root.dataset.panel = 'missions';
+
+  const mainCol = el('div', 'missions-panel__main ui-scroll');
+  mainCol.setAttribute('aria-label', text.boardLabel);
+  const side = el('aside', 'missions-panel__side ui-scroll');
+  side.setAttribute('aria-label', text.detailsLabel);
 
   const sector = el('section', 'missions-panel__sector');
   const firstClear = el('p', 'missions-panel__reward');
@@ -129,10 +144,11 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
             : '');
   };
 
-  const heading = el('h3', 'missions-panel__heading', text.threat.heading);
+  const heading = el('h3', 'missions-panel__heading ui-heading', text.threat.heading);
   const list = el('div', 'missions-panel__levels');
   list.setAttribute('role', 'group');
   list.setAttribute('aria-label', text.threat.heading);
+  const caption = el('p', 'missions-panel__caption');
   const details = el('ul', 'missions-panel__details');
   details.setAttribute('aria-live', 'polite');
   const status = el('p', 'missions-panel__status');
@@ -145,138 +161,236 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     dialogue?.dispose();
     dialogue = undefined;
   };
-  const choices = el('section');
+  const choices = el('section', 'missions-panel__board');
   choices.dataset.missionList = '';
-  const briefing = el('section');
+  const briefing = el('section', 'missions-panel__briefing');
   briefing.dataset.missionBriefing = '';
   briefing.hidden = true;
-  const missionButtons = [...missionDefinitions.values()]
+
+  const cards = new Map<string, CardParts>();
+  const markSelected = (key: string): void => {
+    for (const [id, parts] of cards)
+      parts.button.setAttribute('aria-pressed', String(id === key));
+  };
+
+  /** Karta: ikona typu, tytuł, stan, plakietki (typ, zagrożenie) i nagroda. */
+  const card = (
+    key: string,
+    title: string,
+    icon: MissionIconKind,
+    type: string,
+    onClick: () => void,
+    reward?: string,
+  ): CardParts => {
+    const button = el('button', 'mission-card ui-interactive');
+    button.type = 'button';
+    button.setAttribute('aria-pressed', 'false');
+    const iconBox = el('span', 'mission-card__icon');
+    iconBox.append(missionIcon(icon));
+    const body = el('span', 'mission-card__body');
+    const state = el('span', 'mission-card__state');
+    const meta = el('span', 'mission-card__meta');
+    const threat = el('span', 'mission-card__threat');
+    meta.append(uiBadge(type, 'neutral'), threat);
+    if (reward) meta.append(el('span', 'mission-card__reward', reward));
+    body.append(el('span', 'mission-card__title', title), state, meta);
+    button.append(iconBox, body);
+    button.addEventListener('click', () => {
+      if (button.getAttribute('aria-disabled') === 'true') {
+        playUiSound('error');
+        return;
+      }
+      markSelected(key);
+      onClick();
+    });
+    bindUiFeedback(button, false);
+    const parts = { button, state, threat };
+    cards.set(key, parts);
+    return parts;
+  };
+
+  const group = (title: string): HTMLElement => {
+    const section = el('section', 'missions-panel__group');
+    section.append(el('h3', 'missions-panel__group-title ui-heading', title));
+    const grid = el('div', 'missions-panel__grid');
+    section.append(grid);
+    choices.append(section);
+    return grid;
+  };
+
+  const storyGrid = group(text.groups.story);
+  const missionCards = [...missionDefinitions.values()]
     .sort((a, b) => a.number - b.number)
     .map((mission) => {
-      const button = el('button', 'mission-choice');
-      button.type = 'button';
-      button.dataset.mission = mission.id;
-      button.addEventListener('click', () => {
-        selectedMission = mission;
-        selectedMode = undefined;
-        describe(mission);
-        const back = el('button', 'mission-choice', missionText.back);
-        back.type = 'button';
-        back.addEventListener('click', () => {
+      const reward = mission.level
+        ? fill(text.cardReward, { data: mission.rewards.firstClear.data }) +
+          (mission.rewards.firstClear.cores
+            ? coresText(mission.rewards.firstClear.cores, text.firstClear.cores)
+            : '')
+        : undefined;
+      const parts = card(
+        mission.id,
+        mission.title,
+        'story',
+        text.types.story,
+        () => {
+          selectedMission = mission;
+          selectedMode = undefined;
+          describe(mission);
+          const back = uiButton({
+            label: missionText.back,
+            variant: 'secondary',
+            sound: 'back',
+            onClick: () => {
+              disposeDialogue();
+              selectedMission = undefined;
+              describe();
+              briefing.hidden = true;
+              choices.hidden = false;
+              heading.hidden = false;
+              list.hidden = false;
+              caption.hidden = false;
+              details.hidden = false;
+              setStartLabel(text.start);
+              markSelected('regular');
+              parts.button.focus();
+            },
+          });
           disposeDialogue();
-          selectedMission = undefined;
-          describe();
-          briefing.hidden = true;
-          choices.hidden = false;
-          sector.hidden = false;
-          heading.hidden = false;
-          list.hidden = false;
-          start.textContent = text.start;
-          button.focus();
-        });
-        disposeDialogue();
-        const title = `${missionText.briefing} · ${mission.title}`;
-        dialogue = new MissionDialogue([
-          ...(mission.interlude
-            ? [{ ...mission.interlude, interlude: true }]
-            : []),
-          { title, lines: mission.briefing },
-        ]);
-        const briefingHeading = el('h3', undefined, title);
-        briefingHeading.hidden = !dialogue.root.hidden;
-        briefing.replaceChildren(briefingHeading, dialogue.root, back);
-        briefing.hidden = false;
-        choices.hidden = true;
-        sector.hidden = false;
-        heading.hidden = true;
-        list.hidden = true;
-        start.textContent = missionText.start;
-        (dialogue.root.hidden ? back : dialogue.root).focus({
-          preventScroll: true,
-        });
-        sector.scrollIntoView({ block: 'start' });
-      });
-      choices.append(button);
-      return { mission, button };
+          const title = `${missionText.briefing} · ${mission.title}`;
+          dialogue = new MissionDialogue([
+            ...(mission.interlude
+              ? [{ ...mission.interlude, interlude: true }]
+              : []),
+            { title, lines: mission.briefing },
+          ]);
+          const briefingHeading = el('h3', 'ui-heading', title);
+          briefingHeading.hidden = !dialogue.root.hidden;
+          briefing.replaceChildren(briefingHeading, dialogue.root, back);
+          briefing.hidden = false;
+          choices.hidden = true;
+          heading.hidden = true;
+          list.hidden = true;
+          caption.hidden = true;
+          details.hidden = true;
+          setStartLabel(missionText.start);
+          (dialogue.root.hidden ? back : dialogue.root).focus({
+            preventScroll: true,
+          });
+          sector.scrollIntoView?.({ block: 'start' });
+        },
+        reward,
+      );
+      parts.button.dataset.mission = mission.id;
+      storyGrid.append(parts.button);
+      return { mission, parts };
     });
-  const regular = el('button', 'mission-choice', missionText.regular);
-  regular.type = 'button';
-  regular.dataset.mission = 'regular';
-  regular.addEventListener('click', () => {
+
+  const modeGrid = group(text.groups.modes);
+  const runGrid = group(text.groups.run);
+  const selectDefault = (): void => {
     disposeDialogue();
     selectedMode = undefined;
     selectedMission = undefined;
     describe();
     briefing.hidden = true;
-    start.textContent = text.start;
-    start.focus();
-  });
-  choices.append(regular);
+    setStartLabel(text.start);
+  };
+  const regular = card(
+    'regular',
+    missionText.regular,
+    'run',
+    text.types.run,
+    () => {
+      selectDefault();
+      start.focus();
+    },
+  );
+  regular.button.dataset.mission = 'regular';
+  regular.state.textContent = missionText.available;
+  runGrid.append(regular.button);
+  markSelected('regular');
   if (ctx.missionSave) {
     const saved = ctx.missionSave;
-    const resume = el(
-      'button',
-      'mission-choice',
+    const resume = card(
+      'continue-mission',
       `${missionText.continueMission} · ${missionDefinitions.get(saved.missionId)?.title ?? saved.missionId}`,
+      'continue',
+      text.types.story,
+      () =>
+        ctx.navigate(
+          `?scene=mission&mission=${encodeURIComponent(saved.missionId)}&continue=1`,
+        ),
     );
-    resume.type = 'button';
-    resume.dataset.action = 'continue-mission';
-    resume.addEventListener('click', () =>
-      ctx.navigate(
-        `?scene=mission&mission=${encodeURIComponent(saved.missionId)}&continue=1`,
-      ),
-    );
-    choices.prepend(resume);
+    resume.button.dataset.action = 'continue-mission';
+    resume.state.textContent = missionText.available;
+    resume.threat.hidden = true;
+    runGrid.prepend(resume.button);
   }
-  choices.append(el('h3', 'missions-panel__heading', modeText.heading));
-  const conquest = el('button', 'mission-choice', modeText.conquest);
-  conquest.type = 'button';
-  conquest.dataset.mode = 'conquest';
-  conquest.addEventListener('click', () => {
-    selectedMode = 'conquest';
-    selectedMission = undefined;
-    sectorName.textContent = modeText.conquest;
-    sectorDescription.textContent = modeText.description;
-    start.textContent = modeText.start;
-    start.focus();
-  });
-  choices.append(conquest);
-  const assault = el('button', 'mission-choice', modeText.assault.title);
-  assault.type = 'button';
-  assault.dataset.mode = 'assault';
-  assault.addEventListener('click', () => {
-    selectedMode = 'assault';
-    selectedMission = undefined;
-    sectorName.textContent = modeText.assault.title;
-    sectorDescription.textContent = modeText.assault.description;
-    start.textContent = modeText.assault.start;
-    start.focus();
-  });
-  choices.append(assault);
-  const heist = el('button', 'mission-choice', modeText.heist.title);
-  heist.type = 'button';
-  heist.dataset.mode = 'heist';
-  heist.addEventListener('click', () => {
-    selectedMode = 'heist';
-    selectedMission = undefined;
-    sectorName.textContent = modeText.heist.title;
-    sectorDescription.textContent = modeText.heist.description;
-    start.textContent = modeText.heist.start;
-    start.focus();
-  });
-  choices.append(heist);
+
+  const modeDefs: {
+    id: ModeId;
+    title: string;
+    description: string;
+    start: string;
+    icon: MissionIconKind;
+  }[] = [
+    {
+      id: 'conquest',
+      title: modeText.conquest,
+      description: modeText.description,
+      start: modeText.start,
+      icon: 'conquest',
+    },
+    {
+      id: 'assault',
+      title: modeText.assault.title,
+      description: modeText.assault.description,
+      start: modeText.assault.start,
+      icon: 'assault',
+    },
+    {
+      id: 'heist',
+      title: modeText.heist.title,
+      description: modeText.heist.description,
+      start: modeText.heist.start,
+      icon: 'heist',
+    },
+  ];
+  for (const mode of modeDefs) {
+    const parts = card(mode.id, mode.title, mode.icon, text.types.mode, () => {
+      disposeDialogue();
+      briefing.hidden = true;
+      selectedMode = mode.id;
+      selectedMission = undefined;
+      sectorName.textContent = mode.title;
+      sectorDescription.textContent = mode.description;
+      firstClear.hidden = true;
+      setStartLabel(mode.start);
+      start.focus();
+    });
+    parts.button.dataset.mode = mode.id;
+    parts.state.textContent = missionText.available;
+    modeGrid.append(parts.button);
+  }
   for (const title of modeText.soon) {
-    const button = el('button', 'mission-choice', title);
-    button.type = 'button';
-    button.disabled = true;
-    choices.append(button);
+    const parts = card(`soon:${title}`, title, 'assault', text.types.mode, () => {});
+    parts.button.setAttribute('aria-disabled', 'true');
+    parts.state.textContent = missionText.soon;
+    modeGrid.append(parts.button);
   }
+  mainCol.append(choices, briefing);
+
   let disposed = false;
   let busy = false;
 
   async function select(level: number): Promise<void> {
     const { max, selected } = manager.state.threat;
-    if (busy || disposed || level > max || level === selected) return;
+    if (busy || disposed || level > max) {
+      if (level > max) playUiSound('error');
+      return;
+    }
+    if (level === selected) return;
     busy = true;
     try {
       manager.selectThreat(level);
@@ -285,6 +399,7 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
     } catch (error) {
       status.textContent =
         error instanceof Error ? error.message : text.threat.saveError;
+      playUiSound('error');
     } finally {
       busy = false;
     }
@@ -292,80 +407,99 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
   }
 
   const buttons = threatLevels.map((level) => {
-    const button = el('button', 'missions-panel__level');
+    const button = el('button', 'missions-panel__level ui-interactive');
     button.type = 'button';
     button.dataset.level = String(level.level);
-    button.append(
-      el(
-        'strong',
-        undefined,
-        `${fill(text.threat.level, { level: level.level })} · ${level.name}`,
-      ),
+    button.append(el('strong', 'ui-num', String(level.level)));
+    // Pełny opis dla czytników i podpowiedzi; na kafelku widać tylko numer.
+    const label = el(
+      'span',
+      'ui-sr',
+      `${fill(text.threat.level, { level: level.level })} · ${level.name}`,
     );
-    const note = el('span', 'missions-panel__note');
-    button.append(note);
+    const note = el('span', 'ui-sr missions-panel__note');
+    button.append(label, note);
+    button.title = level.name;
     button.addEventListener('click', () => void select(level.level));
+    bindUiFeedback(button, false);
     list.append(button);
     return { level, button, note };
   });
 
   const seedLabel = el('label', 'missions-panel__seed', text.seed.label);
-  const seedInput = el('input');
+  const seedInput = el('input', 'missions-panel__seed-input');
   seedInput.type = 'text';
   seedInput.placeholder = text.seed.placeholder;
   seedInput.autocomplete = 'off';
   seedLabel.append(seedInput);
 
-  const start = el('button', 'missions-panel__start', text.start);
-  start.type = 'button';
-  start.dataset.action = 'start-run';
-  start.addEventListener('click', () => {
-    const params = new URLSearchParams({
-      scene: selectedMission?.level ? 'mission' : 'run',
-      loadout: 'meta',
-    });
-    const seed = seedInput.value.trim();
-    if (seed || !selectedMode) params.set('seed', seed || randomSeed());
-    if (selectedMission) params.set('mission', selectedMission.id);
-    if (selectedMode) params.set('mode', selectedMode);
-    ctx.navigate(`?${params}`);
+  const start = uiButton({
+    label: text.start,
+    variant: 'primary',
+    onClick: () => {
+      const params = new URLSearchParams({
+        scene: selectedMission?.level ? 'mission' : 'run',
+        loadout: 'meta',
+      });
+      const seed = seedInput.value.trim();
+      if (seed || !selectedMode) params.set('seed', seed || randomSeed());
+      if (selectedMission) params.set('mission', selectedMission.id);
+      if (selectedMode) params.set('mode', selectedMode);
+      ctx.navigate(`?${params}`);
+    },
   });
+  start.classList.add('missions-panel__start');
+  start.dataset.action = 'start-run';
+  const setStartLabel = (label: string): void => {
+    const node = start.querySelector('.ui-button__label');
+    if (node) node.textContent = label;
+    start.setAttribute('aria-label', label);
+  };
 
-  root.append(
+  side.append(
     sector,
-    choices,
-    briefing,
     heading,
     list,
+    caption,
     details,
     status,
     seedLabel,
     start,
   );
+  root.append(mainCol, side);
 
   function refresh(): void {
     if (selectedMission) describe(selectedMission);
     const completed = manager.state.campaign.completed;
-    for (const { mission, button } of missionButtons) {
+    const { max, selected } = manager.state.threat;
+    const threatName = threatLevels[selected];
+    const badge = fill(text.threatBadge, { level: selected });
+    for (const parts of cards.values()) {
+      parts.threat.textContent = badge;
+      if (threatName) parts.threat.title = threatName.name;
+    }
+    for (const { mission, parts } of missionCards) {
       const missing = mission.requires.filter((id) => !completed.includes(id));
-      button.disabled = !mission.level || missing.length > 0;
-      const state = !mission.level
+      const locked = !mission.level || missing.length > 0;
+      parts.button.setAttribute('aria-disabled', String(locked));
+      parts.button.dataset.state = !mission.level
+        ? 'soon'
+        : missing.length
+          ? 'locked'
+          : completed.includes(mission.id)
+            ? 'completed'
+            : 'available';
+      parts.state.textContent = !mission.level
         ? missionText.soon
         : missing.length
           ? `${missionText.locked} · ${missionText.requires}${missing
-              .map((id) => {
-                const required = missionDefinitions.get(id);
-                return required
-                  ? `${String(required.number).padStart(2, '0')} · ${required.title}`
-                  : id;
-              })
+              .map((id) => missionDefinitions.get(id)?.title ?? id)
               .join(', ')}`
           : completed.includes(mission.id)
             ? missionText.completed
             : missionText.available;
-      button.textContent = `${String(mission.number).padStart(2, '0')} · ${mission.title} — ${state}`;
+      parts.threat.hidden = locked;
     }
-    const { max, selected } = manager.state.threat;
     for (const { level, button, note } of buttons) {
       const locked = level.level > max;
       button.setAttribute('aria-disabled', String(locked));
@@ -380,8 +514,13 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
         : level.level === max && max > 0
           ? text.threat.recommended
           : '';
+      if (note.textContent) button.title = `${level.name} · ${note.textContent}`;
+      else button.title = level.name;
     }
     const current = threatLevels[selected];
+    caption.textContent = current
+      ? fill(text.levelCaption, { level: selected, name: current.name })
+      : '';
     details.replaceChildren(
       ...(current ? detailLines(current) : []).map((line) =>
         el('li', undefined, line),
@@ -398,5 +537,9 @@ export const createMissionsPanel: HubPanelFactory = (ctx): HubPanel => {
       disposeDialogue();
       root.remove();
     },
+    actions: [
+      { keys: '{navigate}', label: uiText.navigate, decorative: true },
+      { keys: '{confirm}', label: uiText.select, decorative: true },
+    ],
   };
 };

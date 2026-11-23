@@ -13,7 +13,7 @@ Jedyny zestaw: `src/ui/theme/tokens.css` (importowany z `styles.css`). Grupy: ko
 
 ## Skala interfejsu
 
-`html { font-size: calc(clamp(12px, 1.48vh, 24px) * var(--ui-scale)) }`; wszystkie nowe wymiary w `rem`. Ustawienie „Skala interfejsu” (80–140%, krok 10%) trafia do `Settings.uiScale`, `applyUiSettings` (`theme/applySettings.ts`) ustawia `--ui-scale`, `data-reduce-motion` i `data-fx` na `<html>`. Starsze ekrany w px nie skalują się (U2/U3). Uwaga: przy 768 px wysokości rem = 12 px, więc tekst 14 px ma ok. 10,5 px; pomaga skala 120%+.
+`html { font-size: calc(clamp(13px, 1.48vh, 24px) * var(--ui-scale)) }`; wszystkie nowe wymiary w `rem`. Ustawienie „Skala interfejsu” (80–140%, krok 10%) trafia do `Settings.uiScale`, `applyUiSettings` (`theme/applySettings.ts`) ustawia `--ui-scale`, `data-reduce-motion` i `data-fx` na `<html>`. Ekrany kryjówki (U2) są już w rem; w px zostały tylko ekrany runu i HUD trybów (U3). Uwaga: przy 768 px wysokości rem = 13 px (minimum), więc tekst 14 px ma ok. 11,4 px; pomaga skala 110%+.
 
 ## Komponenty (`src/ui/theme/components.css` + `src/ui/components/*.ts`)
 
@@ -40,3 +40,18 @@ Nowe klucze `Settings`: `uiScale` (0.8–1.4), `uiVolume` (0–1, domyślnie 0.7
 ## Ekrany U1
 
 Menu główne (kolumna z lewej na splashartcie; główna akcja Kontynuuj run / Kryjówka; podmenu Tryby; Samouczek mniejszy), ustawienia, pauza, ekran startowy (pasek postępu z etapów `main.ts`), toast naszywek, „Zgłoś problem”/„Sterowanie i zapis”. Zrzuty kontrolne: `briefs/ui-shots-u1/`.
+
+## Kryjówka (U2)
+
+Zrzuty kontrolne: `briefs/ui-shots-u2/` (1920×1080 i 1366×768, skrypt `shots.mjs`).
+
+- **Nagłówek meta** (`src/ui/hub/metaBar.ts`): pełnej szerokości pasek pod górną krawędzią (poziom i XP po lewej, Dane, Rdzenie i wolne punkty po prawej, objaśnienia w dymkach). Dodaje klasę `has-meta-bar` na `<html>`, która ustawia `--meta-bar-h`; ekrany stacji (`.hub-screen`), plan stacji i przewodnik zaczynają się pod nim, więc nic się nie nakłada. Pasek leży w skali z-index poniżej ekranów, ale nie jest przez nie zasłaniany (ekran stacji ma `top: var(--meta-bar-h)`).
+- **Ekran stacji** (`hubScreens.ts`): `createScreen` (ścieżka „Kryjówka Iskry”, tytuł stacji, treść, pasek akcji). Panel stacji (`HubPanel`) może podać `actions` (podpowiedzi paska, przed przyciskiem „Zamknij”) i `cycleTab(±1)`; ekran woła `cycleTab` na Q/E i LB/RB. Esc i B zamykają przez `uiLayers` (fokus wraca na element otwierający). Stacja bez panelu (Poligon) to lista trybów z opisami.
+- **Warsztat** (`workshopPanel.ts`): trzy kolumny — kategorie (pionowe `createTabs`: Bronie, Dodatki, Wyposażenie, Odblokowania, Wydobycie tylko przy ofertach), lista, podgląd 3D z kartą (statystyki przed/po: ▲ zieleń = lepiej, ▼ bursztyn = gorzej, ◆ = zmiana neutralna; znak i tekst, nie sam kolor). **Zakup zawsze przez modal** (`uiConfirm` z ceną i stanem po zakupie), dźwięk `purchase` po sukcesie, `error` przy braku środków (przyciski zablokowane mają `aria-disabled`, klik tłumaczy powód w linii statusu). Główny przycisk karty jest przyklejony do dołu kolumny. Selektory testów: `data-action="tab"`, `data-key="row:<id>"`, `data-card`, `[data-action="card"]`, `data-pane`.
+- **Tablica misji** (`missionsPanel.ts`): karty w grupach Fabuła / Tryby / Run (ikona typu z `missionIcons.ts`, stan, plakietka typu, zagrożenie wybranego poziomu, nagroda za pierwsze ukończenie), bez numeracji. Zablokowana karta ma `aria-disabled` (klik = dźwięk błędu). Po prawej: opis wyboru, kafelki Poziomu zagrożenia 0–10 (pełna nazwa w `title` i tekście dla czytników), seed i „Rozpocznij…”. Odprawa fabularna zastępuje listę kart w kolumnie lewej (`MissionDialogue` w ramce rozmowy).
+- **Terminal drzewek** (`talentsPanel.ts`, `talentLayout.ts`): zakładki drzewek (Ostrze, Rezonans, Strzelec, Hybrydy) i Naszywki. Drzewko to graf: kolumny = progi, krawędzie SVG (kupiony → pełna linia w kolorze drzewka, otwarty → bursztyn, zablokowany → kreskowana). Węzeł: zablokowany (przygaszony, kreskowany znacznik), dostępny (bursztynowa obwódka), kupiony (kolor drzewka). Kolory drzewek: Ostrze błękit informacyjny, Rezonans magenta (zarezerwowana), Strzelec bursztyn, Hybrydy fiolet. Klik lub fokus wybiera węzeł, zakup tylko przyciskiem „Kup” w panelu szczegółów. Strzałki klawiatury i pad (nawigacja przestrzenna po przyciskach) przechodzą po węzłach; reset talentów przez modal.
+- **Dialogi**: ramka rozmowy NPC (`hubDialog`: imię w bursztynie, rola, kwestia) i odprawa misji (`mission-dialogue*`: pasek w kolorze mówiącego, „Dalej” z glifem) na tokenach; wyborów w dialogach nie ma w danych, więc nie ma listy wyborów.
+- **Pozostałe okna**: plan stacji (`hubMap.css`), przewodnik (`hubGuide.css`), podpowiedź interakcji i okienko rozmowy (`hubScreens.css`), szmer NPC (`hubChatter.css`) — wyłącznie tokeny `--c-*` i kroje z tokenów.
+- **Implanty** są elementem runu (ekwipunek runu, nagrody) i przechodzą w U3; w kryjówce nie ma osobnego ekranu implantów.
+
+Drobne poprawki U1 w tym etapie: minimalny rozmiar rem 13 px (zamiast 12), pauza pyta modalem o „Wróć do kryjówki” i „Menu główne” (Esc/B anuluje), naprawiony hover/fokus głównego przycisku (`ui-button--primary`), `createTabs({ vertical: true })`, `ActionBarItem.id`, klasa `.ui-sr`.

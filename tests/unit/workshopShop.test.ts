@@ -573,6 +573,16 @@ describe('panel sklepu', () => {
     document.body.replaceChildren();
   });
   const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+  /** Zakup wymaga potwierdzenia w oknie modalnym. */
+  const confirmModal = async (): Promise<void> => {
+    document
+      .querySelector<HTMLButtonElement>('dialog.ui-modal .ui-button--primary')!
+      .click();
+    await flush();
+  };
+  const isDisabled = (node: HTMLElement): boolean =>
+    node.getAttribute('aria-disabled') === 'true' ||
+    (node as HTMLButtonElement).disabled;
   function setup(manager: MetaManager) {
     const save = vi.fn(() => Promise.resolve());
     const panel = createWorkshopPanel({
@@ -622,20 +632,20 @@ describe('panel sklepu', () => {
     expect(action().dataset.cardAction).toBe('buy');
     expect(q('.workshop__card-state').textContent).toBe('Cena: 80 Dane');
     action().click();
-    await flush();
+    await confirmModal();
     expect(manager.isUnlocked('weapon:rifle')).toBe(true);
     // Jeden slot broni: karta mówi, dlaczego nie da się wziąć karabinu.
     expect(action().dataset.cardAction).toBe('equip');
-    expect(action().disabled).toBe(true);
+    expect(isDisabled(action())).toBe(true);
     expect(q('[data-blocked]').dataset.blocked).toBe('full');
 
     q<HTMLButtonElement>('[data-tab="module"]').click();
     q('[data-unlock="module:holo"]').click();
     action().click();
-    await flush();
+    await confirmModal();
     expect(manager.isUnlocked('module:holo')).toBe(true);
     expect(action().dataset.cardAction).toBe('equip');
-    expect(action().disabled).toBe(false);
+    expect(isDisabled(action())).toBe(false);
     action().click();
     await flush();
     expect(manager.state.loadout.modules).toEqual({ blaster: ['holo'] });
@@ -662,10 +672,11 @@ describe('panel sklepu', () => {
     const { q } = setup(manager);
     q('[data-unlock="weapon:scatter"]').click();
     expect(q('[data-blocked]').textContent).toBe('Wymagany poziom 2');
-    expect(q<HTMLButtonElement>('[data-action="card"]').disabled).toBe(true);
+    expect(isDisabled(q('[data-action="card"]'))).toBe(true);
     q('[data-unlock="weapon:rifle"]').click();
     expect(q('[data-blocked]').textContent).toBe('Za mało Danych');
     q<HTMLButtonElement>('[data-action="card"]').click();
+    expect(document.querySelector('dialog.ui-modal')).toBeNull();
     expect(spy).not.toHaveBeenCalled();
   });
 

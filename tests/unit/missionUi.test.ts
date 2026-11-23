@@ -113,7 +113,7 @@ it('wybór misji pokazuje odprawę, powrót przywraca listę, start przekazuje i
     expect(new URLSearchParams(navigate.mock.calls[0]![0]).get('mission')).toBe(
       'm01-maszty',
     );
-    briefing.querySelector<HTMLButtonElement>('.mission-choice')!.click();
+    briefing.querySelector<HTMLButtonElement>(':scope > .ui-button')!.click();
     expect(briefing.hidden).toBe(true);
     panel.root
       .querySelector<HTMLButtonElement>('[data-mission="regular"]')!

@@ -1,190 +1,286 @@
+/* Terminal drzewek: zakładki drzewek, graf węzłów z połączeniami i panel szczegółów.
+   Kolory drzewek: Rezonans = magenta (zarezerwowana), reszta z palety neonów; cyan zostaje graczowi. */
 .talents-panel {
   display: grid;
-  gap: 14px;
-  color: #f4f7fa;
-  font-family: var(--ui-font);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--sp-4);
+  height: 100%;
+  min-height: 0;
+  color: var(--c-text);
+  font: 400 var(--fs-14) / 1.5 var(--font-body);
 }
-.talents-panel__head {
-  display: flex;
-  gap: 24px;
-  align-items: baseline;
-  font-size: 1.1em;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.talents-panel [data-tree='blade'],
+.talents-panel__stage [data-tree='blade'] {
+  --tree: var(--c-neutral-info);
 }
-.talents-panel__free {
-  color: #ffae1a;
-  font-weight: 700;
+.talents-panel [data-tree='resonance'] {
+  --tree: var(--c-resonance);
 }
-.talents-panel__level {
-  color: #b9c6d1;
+.talents-panel [data-tree='gunner'] {
+  --tree: var(--c-accent);
+}
+.talents-panel [data-tree='hybrid'] {
+  --tree: #ad92ff;
+}
+.talents-panel .ui-tab[data-tree] {
+  border-bottom-color: color-mix(in srgb, var(--tree, var(--c-line)) 30%, transparent);
+}
+.talents-panel .ui-tab[data-tree][aria-selected='true'] {
+  border-bottom-color: var(--tree, var(--c-accent));
+  color: var(--c-text);
+  background: color-mix(in srgb, var(--tree, var(--c-accent)) 14%, transparent);
+}
+.talents-panel__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+  gap: var(--sp-5);
+  min-height: 0;
+}
+.talents-panel__stage[hidden] {
+  display: none;
 }
 .talents-panel__trees {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--c-line);
+  background:
+    radial-gradient(ellipse at 50% 40%, rgb(255 255 255 / 4%), transparent 70%),
+    rgb(5 7 11 / 55%);
 }
-.talents-tree {
-  --accent: #3a5263;
-  padding: 10px;
-  background: #070d1a;
-  border: 1px solid rgba(0, 229, 255, 0.16);
-  border-top: 3px solid var(--accent);
+.talents-tree[hidden] {
+  display: none;
 }
-.talents-tree[data-tree='blade'] {
-  --accent: var(--tp-blade);
+
+/* Graf */
+.talents-graph {
+  position: relative;
+  flex: none;
 }
-.talents-tree[data-tree='resonance'] {
-  --accent: var(--tp-resonance);
+.talents-edges {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
 }
-.talents-tree[data-tree='gunner'] {
-  --accent: var(--tp-gunner);
+.talents-edge {
+  fill: none;
+  stroke: var(--c-line-strong);
+  stroke-width: 0.12;
+  stroke-dasharray: 0.35 0.3;
 }
-.talents-tree[data-tree='hybrid'] {
-  --accent: var(--tp-hybrid);
+.talents-edge[data-state='open'] {
+  stroke: var(--c-accent-line);
+  stroke-dasharray: none;
 }
-.talents-tree__title {
-  margin: 0 0 6px;
-  font-size: 1em;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--accent);
+.talents-edge[data-state='bought'] {
+  stroke: var(--tree, var(--c-accent));
+  stroke-width: 0.2;
+  stroke-dasharray: none;
 }
 .talents-tier__label {
-  margin: 8px 0 2px;
-  font-size: 0.75em;
-  color: #8894a8;
-}
-.talents-tier__nodes {
+  position: absolute;
+  top: 0;
   display: grid;
-  gap: 4px;
+  gap: 0.1rem;
+  color: var(--c-text-faint);
+  font: 500 var(--fs-12) / 1.25 var(--font-body);
 }
-.talents-tree[data-tree='hybrid'] .talents-tier__nodes {
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+.talents-tier__label strong {
+  color: var(--c-text-muted);
+  font: 600 var(--fs-14) / 1.2 var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
-.talents-panel button.talents-node {
-  display: grid;
-  gap: 2px;
-  width: 100%;
+.talents-tier__label[data-open='true'] strong {
+  color: var(--tree, var(--c-accent-strong));
+}
+.talents-graph__note {
+  position: absolute;
+  left: 0;
+  top: 0;
   margin: 0;
-  padding: 8px 10px;
-  text-align: left;
-  font: inherit;
-  font-size: 0.9em;
-  color: #f4f7fa;
-  background: #0c1626;
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  border-left: 4px solid var(--accent);
-  cursor: pointer;
+  color: var(--c-text-faint);
+  font-size: var(--fs-12);
 }
-.talents-panel button.talents-node:hover,
-.talents-panel button.talents-node:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+
+/* Węzeł: zablokowany (przygaszony, kłódka), dostępny (bursztynowa obwódka), kupiony (kolor drzewka) */
+.talents-node {
+  position: absolute;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-panel-solid);
+  color: var(--c-text-muted);
+  font: inherit;
+  text-align: left;
+  clip-path: var(--cut-shape);
+}
+.talents-node__mark {
+  grid-row: 1 / 3;
+  align-self: center;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.7;
 }
 .talents-node__name {
-  font-weight: 600;
+  align-self: end;
+  color: inherit;
+  font: 600 var(--fs-14) / 1.2 var(--font-body);
 }
 .talents-node__meta {
-  font-size: 0.8em;
-  color: #b9c6d1;
+  align-self: start;
+  color: var(--c-text-faint);
+  font-size: var(--fs-12);
+  line-height: 1.3;
 }
-.talents-panel button.talents-node[data-state='available'] {
-  background: #0e1d2e;
-  border-color: var(--accent);
+.talents-node[data-state='locked'] {
+  opacity: 0.72;
+  background: rgb(11 15 22 / 70%);
 }
-.talents-panel button.talents-node[data-state='bought'] {
-  background: #06303a;
-  border-color: var(--accent);
+.talents-node[data-state='locked'] .talents-node__mark {
+  border-radius: 0.15rem;
+  border-style: dashed;
 }
-.talents-panel button.talents-node[data-state='bought'] .talents-node__meta {
-  color: var(--accent);
+.talents-node[data-state='available'] {
+  border-color: var(--c-accent-line);
+  color: var(--c-text);
+  background: var(--c-panel-raise);
 }
-.talents-panel button.talents-node[data-state='locked'] {
-  opacity: 0.6;
-  cursor: not-allowed;
+.talents-node[data-state='available'] .talents-node__mark {
+  border-color: var(--c-accent);
+  background: var(--c-accent-dim);
+  opacity: 1;
+}
+.talents-node[data-state='available'] .talents-node__meta {
+  color: var(--c-accent-strong);
+}
+.talents-node[data-state='bought'] {
+  border-color: var(--tree, var(--c-accent));
+  color: var(--c-text);
+  background: color-mix(in srgb, var(--tree, var(--c-accent)) 16%, var(--c-panel-solid));
+}
+.talents-node[data-state='bought'] .talents-node__mark {
+  border-color: var(--tree, var(--c-accent));
+  background: var(--tree, var(--c-accent));
+  opacity: 1;
+}
+.talents-node[data-state='bought'] .talents-node__meta {
+  color: var(--c-success);
+}
+.talents-node[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px var(--c-accent);
+}
+.talents-node.ui-interactive[data-state='locked']:is(:hover, :focus-visible) {
+  opacity: 1;
+}
+
+/* Prawa kolumna: punkty, szczegóły, reset */
+.talents-panel__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-height: 0;
+}
+.talents-panel__head {
+  display: grid;
+  gap: 0.15rem;
+}
+.talents-panel__free {
+  color: var(--c-text);
+  font: 700 var(--fs-20) / 1.2 var(--font-display);
+  letter-spacing: 0.06em;
+}
+.talents-panel__free[data-active='true'] {
+  color: var(--c-accent-strong);
+}
+.talents-panel__level {
+  color: var(--c-text-muted);
+}
+.talents-panel__status {
+  min-height: 1.5em;
+  color: var(--c-accent-strong);
 }
 .talents-panel__details {
-  min-height: 3.6em;
-  padding: 10px 12px;
-  background: #070d1a;
-  border: 1px solid rgba(0, 229, 255, 0.16);
-  color: #b9c6d1;
-  font-size: 0.9em;
+  display: grid;
+  align-content: start;
+  gap: var(--sp-3);
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--sp-4);
+  border: 1px solid var(--c-line);
+  border-top: 3px solid var(--tree, var(--c-accent));
+  background: var(--c-panel-raise);
+  overflow-y: auto;
 }
-.talents-panel__details strong {
-  color: #f4f7fa;
+.talents-panel__hint {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+.talents-details__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.talents-details__name {
+  margin: 0;
+  font: 700 var(--fs-20) / 1.15 var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.talents-details__meta {
+  margin: 0;
+  color: var(--c-text-faint);
+  font: 500 var(--fs-12) / 1.3 var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.talents-details__text {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: var(--fs-14);
+}
+.talents-details__reason {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  color: var(--c-accent-strong);
+}
+.talents-details__reason .achv-lock {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+.talents-details__buy {
+  justify-self: stretch;
 }
 .talents-panel__foot {
   display: flex;
-  gap: 16px;
-  align-items: center;
+  justify-content: flex-end;
 }
-.talents-panel button.talents-panel__reset {
-  width: auto;
-  margin: 0;
-  padding: 10px 16px;
-  text-align: center;
-  font: inherit;
-  color: #f4f7fa;
-  background: #0c1626;
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  cursor: pointer;
+
+.talents-panel__achievements {
+  min-height: 0;
+  padding-right: var(--sp-2);
 }
-.talents-panel button.talents-panel__reset[data-confirm='true'] {
-  border-color: #ff3b3b;
-  color: #ff8a8a;
-}
-.talents-panel button.talents-panel__reset:hover,
-.talents-panel button.talents-panel__reset:focus-visible {
-  outline: 2px solid #00e5ff;
-  outline-offset: 2px;
-}
-.talents-panel__status {
-  color: #ffae1a;
-  font-size: 0.9em;
-}
-@media (max-width: 760px) {
-  .talents-panel__trees {
-    grid-template-columns: 1fr;
-  }
-}
-.talents-panel__view {
-  display: grid;
-  gap: 14px;
-}
-.talents-panel__view[hidden] {
+.talents-panel__achievements[hidden] {
   display: none;
 }
-.talents-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.talents-panel button.talents-tab {
-  width: auto;
-  margin: 0;
-  padding: 8px 16px;
-  font: inherit;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #f4f7fa;
-  background: #0c1626;
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  cursor: pointer;
-}
-.talents-panel button.talents-tab[aria-selected='true'] {
-  background: #06303a;
-  border-color: #00e5ff;
-}
-.talents-panel
-  button.talents-tab[data-tab='achievements'][aria-selected='true'] {
-  background: #261b08;
-  border-color: #ffae1a;
-  color: #fff1d6;
-}
-.talents-panel button.talents-tab:hover,
-.talents-panel button.talents-tab:focus-visible {
-  outline: 2px solid #ffae1a;
-  outline-offset: 2px;
+
+@media (max-width: 1100px) {
+  .talents-panel__stage {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 19rem);
+    gap: var(--sp-4);
+  }
 }

@@ -24,12 +24,21 @@ export function createTabs(options: {
   prefix: string;
   tabs: readonly TabDefinition[];
   label: string;
+  /** Pionowa lista (strzałki góra/dół zamiast lewo/prawo). */
+  vertical?: boolean;
   onSelect: (id: string) => void;
 }): UiTabs {
   const root = el('div', 'ui-tabs');
   const list = el('div', 'ui-tabs__list');
   list.setAttribute('role', 'tablist');
   list.setAttribute('aria-label', options.label);
+  const [prevKey, nextKey] = options.vertical
+    ? (['ArrowUp', 'ArrowDown'] as const)
+    : (['ArrowLeft', 'ArrowRight'] as const);
+  if (options.vertical) {
+    list.setAttribute('aria-orientation', 'vertical');
+    root.classList.add('ui-tabs--vertical');
+  }
   const buttons = new Map<string, HTMLButtonElement>();
   let selected = options.tabs[0]?.id ?? '';
   const order = options.tabs.map((tab) => tab.id);
@@ -76,7 +85,7 @@ export function createTabs(options: {
     list.append(button);
   }
   list.addEventListener('keydown', (event) => {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    if (![prevKey, nextKey, 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     const index = order.indexOf(selected);
     const next =
@@ -84,7 +93,7 @@ export function createTabs(options: {
         ? 0
         : event.key === 'End'
           ? order.length - 1
-          : (index + (event.key === 'ArrowRight' ? 1 : -1) + order.length) %
+          : (index + (event.key === nextKey ? 1 : -1) + order.length) %
             order.length;
     const id = order[next];
     if (id) {

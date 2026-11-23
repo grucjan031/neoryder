@@ -9,6 +9,7 @@ import { createActionBar } from './components/actionBar';
 import { uiButton } from './components/button';
 import type { ButtonVariant } from './components/button';
 import { el } from './components/dom';
+import { uiConfirm } from './components/modal';
 
 export class PauseMenu {
   private readonly root = document.createElement('dialog');
@@ -50,8 +51,19 @@ export class PauseMenu {
       this.refreshInfo();
       void this.about.showReport(this.info);
     });
-    this.hub = button(text.hub, actions.hub);
-    button(text.menu, actions.menu);
+    const leave = (kind: 'hub' | 'menu', action: () => void) => async () => {
+      const copy = uiText.leave[kind];
+      const ok = await uiConfirm({
+        title: copy.title,
+        message: copy.message,
+        confirmLabel: copy.confirm,
+        cancelLabel: uiText.cancel,
+        destructive: true,
+      });
+      if (ok) action();
+    };
+    this.hub = button(text.hub, () => void leave('hub', actions.hub)());
+    button(text.menu, () => void leave('menu', actions.menu)());
     inner.append(list, this.infoLine);
     const bar = createActionBar([
       { keys: '{navigate}', label: uiText.navigate, decorative: true },

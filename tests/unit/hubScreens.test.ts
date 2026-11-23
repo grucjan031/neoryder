@@ -5,6 +5,7 @@ import { createStarterMetaState } from '../../src/progression/progressionSchema'
 import type { HubPanel, HubPanelContext } from '../../src/ui/hub/hubPanel';
 import { HtmlHubScreens } from '../../src/ui/hubScreens';
 import type { HubPanelRegistry } from '../../src/ui/hubScreens';
+import { PAD_MENU_INPUT } from '../../src/ui/padNavigation';
 
 const active: HtmlHubScreens[] = [];
 afterEach(() => {
@@ -17,7 +18,13 @@ const create = (): HtmlHubScreens => {
   return screens;
 };
 const labels = (): string[] =>
-  [...document.querySelectorAll('button')].map((b) => b.textContent ?? '');
+  [...document.querySelectorAll('button')].map(
+    (b) => b.getAttribute('aria-label') ?? b.textContent ?? '',
+  );
+const escape = (): boolean =>
+  window.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape' }),
+  );
 
 it('nakładka jest ukryta do pokazania, pokazuje tytuł stacji i zaślepkę', () => {
   const screens = create();
@@ -27,6 +34,7 @@ it('nakładka jest ukryta do pokazania, pokazuje tytuł stacji i zaślepkę', ()
   expect(root.hidden).toBe(false);
   expect(root.dataset.station).toBe('workshop');
   expect(root.querySelector('h1')?.textContent).toBe('Warsztat');
+  expect(root.querySelector('.ui-kicker')?.textContent).toBe('Kryjówka Iskry');
   expect(labels()).toEqual(['Zamknij']);
 });
 
@@ -36,10 +44,10 @@ it('Zamknij i Esc wywołują close, Esc po ukryciu nic nie robi', () => {
   screens.show('talents', { close });
   document.querySelector<HTMLButtonElement>('[data-action=close]')!.click();
   expect(close).toHaveBeenCalledTimes(1);
-  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' }));
+  escape();
   expect(close).toHaveBeenCalledTimes(2);
   screens.hide();
-  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' }));
+  escape();
   expect(close).toHaveBeenCalledTimes(2);
   expect(document.querySelector<HTMLElement>('.hub-screen')!.hidden).toBe(true);
 });
@@ -151,7 +159,76 @@ it('pokazanie nakładki zwalnia kursor, a dispose usuwa DOM i nasłuch klawiatur
   screens.dispose();
   active.pop();
   expect(document.querySelector('.hub-screen')).toBeNull();
-  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' }));
+  escape();
   expect(close).not.toHaveBeenCalled();
   Reflect.deleteProperty(document, 'pointerLockElement');
+});
+
+function createTabbed() {
+  const cycle = vi.fn();
+  const registry: HubPanelRegistry = {
+    workshop: () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<button type="button">Pierwszy</button>';
+      return {
+        root,
+        refresh: vi.fn(),
+        dispose: vi.fn(() => root.remove()),
+        cycleTab: cycle,
+        actions: [{ keys: '{tabs}', label: 'Kategorie', decorative: true }],
+      } satisfies HubPanel;
+    },
+  };
+  const screens = new HtmlHubScreens(document.body, {
+    panels: registry,
+    host: {
+      manager: new MetaManager(createStarterMetaState()),
+      save: vi.fn(async () => {}),
+      navigate: vi.fn(),
+    },
+  });
+  active.push(screens);
+  return { screens, cycle };
+}
+
+it('Q/E i LB/RB przełączają zakładki panelu, a pasek akcji pokazuje podpowiedzi panelu', () => {
+  const { screens, cycle } = createTabbed();
+  screens.show('workshop', { close: vi.fn() });
+  const root = document.querySelector<HTMLElement>('.hub-screen')!;
+  expect(root.querySelector('[data-action="close"]')).not.toBeNull();
+  expect(root.querySelector('.ui-actionbar')!.textContent).toContain(
+    'Kategorie',
+  );
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ' }));
+  expect(cycle.mock.calls).toEqual([[1], [-1]]);
+  const press = (button: number) =>
+    root.dispatchEvent(
+      new CustomEvent(PAD_MENU_INPUT, {
+        detail: { pressed: new Set([button]), buttons: new Set() },
+        cancelable: true,
+      }),
+    );
+  press(5);
+  press(4);
+  expect(cycle.mock.calls.slice(2)).toEqual([[1], [-1]]);
+  // Ukryta nakładka i otwarte okno modalne nie przełączają zakładek.
+  screens.hide();
+  window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
+  expect(cycle).toHaveBeenCalledTimes(4);
+});
+
+it('Esc zamyka nakładkę przez menedżer warstw i oddaje fokus otwierającemu', () => {
+  const { screens } = createTabbed();
+  const opener = document.createElement('button');
+  document.body.append(opener);
+  opener.focus();
+  const close = vi.fn(() => screens.hide());
+  screens.show('workshop', { close });
+  expect(document.activeElement).not.toBe(opener);
+  window.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape' }),
+  );
+  expect(close).toHaveBeenCalledOnce();
+  expect(document.activeElement).toBe(opener);
 });

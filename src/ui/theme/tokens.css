@@ -16,7 +16,7 @@
 :root {
   /* Skala interfejsu: ustawienie gracza (80–140%) mnoży rozmiar bazowy z wysokości okna. */
   --ui-scale: 1;
-  font-size: calc(clamp(12px, 1.48vh, 24px) * var(--ui-scale));
+  font-size: calc(clamp(13px, 1.48vh, 24px) * var(--ui-scale));
 
   /* Kolory: powierzchnie */
   --c-bg: #05070b;

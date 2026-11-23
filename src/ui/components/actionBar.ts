@@ -10,6 +10,8 @@ export interface ActionBarItem {
   label: string;
   /** Z akcją element jest przyciskiem (klik na podpowiedź wykonuje akcję). */
   onClick?: () => void;
+  /** Identyfikator akcji (`data-action`), np. do selektorów testów. */
+  id?: string;
   /** Przyciski wskazują zawsze na prawo (np. „Wróć”). */
   end?: boolean;
   /** Element jest tylko podpowiedzią; pomijany przez czytniki (duplikuje inny przycisk). */
@@ -45,6 +47,7 @@ export function createActionBar(items: readonly ActionBarItem[]): UiActionBar {
             node instanceof HTMLButtonElement
           ) {
             node.type = 'button';
+            if (item.id) node.dataset.action = item.id;
             node.setAttribute('aria-label', item.label);
             node.addEventListener('click', item.onClick);
             bindUiFeedback(node, item.end ? 'back' : 'confirm');

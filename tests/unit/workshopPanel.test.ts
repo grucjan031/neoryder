@@ -35,6 +35,23 @@ function setup(prepare?: (manager: MetaManager) => void) {
 }
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+const isDisabled = (node: Element | null): boolean =>
+  node?.getAttribute('aria-disabled') === 'true' ||
+  (node as HTMLButtonElement | null)?.disabled === true;
+/** Wybiera wiersz sklepu i zwraca główny przycisk jego karty. */
+const openCard = (root: HTMLElement, id: string): HTMLButtonElement => {
+  root.querySelector<HTMLElement>(`[data-key="row:${id}"]`)!.click();
+  return root.querySelector<HTMLButtonElement>(
+    `[data-card="${id}"] [data-action="card"]`,
+  )!;
+};
+/** Potwierdza okno zakupu (modal `uiConfirm`). */
+const confirmModal = async (): Promise<void> => {
+  document
+    .querySelector<HTMLButtonElement>('dialog.ui-modal .ui-button--primary')!
+    .click();
+  await flush();
+};
 
 it('wydobywa jeden moduł, pozwala ponowić zapis i od razu udostępnia montaż', async () => {
   const manager = new MetaManager({
@@ -76,8 +93,6 @@ it('wydobywa jeden moduł, pozwala ponowić zapis i od razu udostępnia montaż'
 });
 const row = (root: HTMLElement, id: string) =>
   root.querySelector<HTMLElement>(`[data-unlock="${id}"]`)!;
-const buyButton = (root: HTMLElement, id: string) =>
-  row(root, id).querySelector<HTMLButtonElement>('button')!;
 const choice = (root: HTMLElement, part: string, item: string) =>
   root.querySelector<HTMLButtonElement>(
     `button[data-part="${part}"][data-item="${item}"]`,
@@ -327,21 +342,23 @@ describe('createWorkshopPanel', () => {
   it('zakup bez waluty i poniżej poziomu jest nieaktywny (brak buyUnlock)', async () => {
     const { manager, panel } = setup();
     const spy = vi.spyOn(manager, 'buyUnlock');
-    const poor = buyButton(panel.root, 'weapon:rifle');
-    expect(poor.disabled).toBe(true);
+    const poor = openCard(panel.root, 'weapon:rifle');
+    expect(isDisabled(poor)).toBe(true);
     expect(row(panel.root, 'weapon:rifle').textContent).toContain(
       'Za mało Danych',
     );
     poor.click();
+    expect(status(panel.root)).toBe('Za mało Danych');
     manager.debugAddData(1000);
     panel.refresh();
-    const lowLevel = buyButton(panel.root, 'weapon:scatter');
-    expect(lowLevel.disabled).toBe(true);
+    const lowLevel = openCard(panel.root, 'weapon:scatter');
+    expect(isDisabled(lowLevel)).toBe(true);
     expect(row(panel.root, 'weapon:scatter').textContent).toContain(
       'Wymagany poziom 2',
     );
     lowLevel.click();
     await flush();
+    expect(document.querySelector('dialog.ui-modal')).toBeNull();
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -351,8 +368,21 @@ describe('createWorkshopPanel', () => {
       m.debugGrantAchievement('pierwszy-zakup');
     });
     expect(choice(panel.root, 'weapons', 'rifle')).toBeNull();
-    buyButton(panel.root, 'weapon:rifle').click();
+    openCard(panel.root, 'weapon:rifle').click();
+    // Zakup wymaga potwierdzenia: Anuluj nic nie zmienia, Kup kupuje.
+    document
+      .querySelector<HTMLButtonElement>(
+        'dialog.ui-modal .ui-button--secondary',
+      )!
+      .click();
     await flush();
+    expect(manager.state.data).toBe(100);
+    expect(save).not.toHaveBeenCalled();
+    openCard(panel.root, 'weapon:rifle').click();
+    expect(document.querySelector('dialog.ui-modal')!.textContent).toContain(
+      'Cena: 80 Dane',
+    );
+    await confirmModal();
     expect(manager.state.data).toBe(20);
     expect(manager.isUnlocked('weapon:rifle')).toBe(true);
     expect(save).toHaveBeenCalledTimes(1);
@@ -362,7 +392,7 @@ describe('createWorkshopPanel', () => {
     expect(
       panel.root.querySelector('[data-stat="data"] strong')!.textContent,
     ).toBe('20');
-    expect(status(panel.root)).toBe('');
+    expect(status(panel.root)).toBe('Kupiono: Karabin.');
   });
 
   it('nie da się wybrać ponad limit slotów ani odznaczyć ostatniej pozycji', async () => {
@@ -374,9 +404,9 @@ describe('createWorkshopPanel', () => {
     });
     panel.refresh();
     const spy = vi.spyOn(manager, 'setLoadout');
-    expect(choice(panel.root, 'weapons', 'rifle')!.disabled).toBe(true);
-    expect(choice(panel.root, 'weapons', 'blaster')!.disabled).toBe(true);
-    expect(choice(panel.root, 'powers', 'push')!.disabled).toBe(true);
+    expect(isDisabled(choice(panel.root, 'weapons', 'rifle')!)).toBe(true);
+    expect(isDisabled(choice(panel.root, 'weapons', 'blaster')!)).toBe(true);
+    expect(isDisabled(choice(panel.root, 'powers', 'push')!)).toBe(true);
     choice(panel.root, 'weapons', 'rifle')!.click();
     await flush();
     expect(spy).not.toHaveBeenCalled();
@@ -406,7 +436,7 @@ describe('createWorkshopPanel', () => {
     expect(
       panel.root.querySelector('[data-counter="weapons"]')!.textContent,
     ).toBe('Bronie: 3/3');
-    expect(choice(panel.root, 'weapons', 'beam')!.disabled).toBe(true);
+    expect(isDisabled(choice(panel.root, 'weapons', 'beam')!)).toBe(true);
     choice(panel.root, 'weapons', 'blaster')!.click();
     await flush();
     expect(manager.state.loadout.weapons).toEqual(['rifle', 'pistol']);
@@ -427,8 +457,8 @@ describe('createWorkshopPanel', () => {
     vi.spyOn(manager, 'buyUnlock').mockImplementation(() => {
       throw new Error('Za mało Danych.');
     });
-    buyButton(panel.root, 'weapon:rifle').click();
-    await flush();
+    openCard(panel.root, 'weapon:rifle').click();
+    await confirmModal();
     expect(status(panel.root)).toBe('Za mało Danych.');
     expect(save).not.toHaveBeenCalled();
 
@@ -465,5 +495,59 @@ describe('createWorkshopPanel', () => {
     expect(box.querySelector('canvas')!.hidden).toBe(true);
     expect(box.querySelector('p')!.hidden).toBe(false);
     expect(() => panel.refresh()).not.toThrow();
+  });
+});
+
+describe('warsztat: nawigacja klawiaturą i padem, porównanie statystyk', () => {
+  const tab = (root: HTMLElement, id: string) =>
+    root.querySelector<HTMLButtonElement>(
+      `[data-action="tab"][data-tab="${id}"]`,
+    )!;
+  const selectedTab = (root: HTMLElement) =>
+    root
+      .querySelector('[role="tab"][aria-selected="true"]')!
+      .getAttribute('data-tab');
+
+  it('kategorie to pionowa lista zakładek: strzałki góra/dół, Home/End i cycleTab (Q/E, LB/RB)', () => {
+    const { panel } = setup((m) => m.debugAddData(100));
+    const list = panel.root.querySelector('[role="tablist"]')!;
+    expect(list.getAttribute('aria-orientation')).toBe('vertical');
+    // Zakładka Wydobycie jest ukryta, gdy nie ma ofert.
+    expect(tab(panel.root, 'extraction').hidden).toBe(true);
+    expect(selectedTab(panel.root)).toBe('weapon');
+    tab(panel.root, 'weapon').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    expect(selectedTab(panel.root)).toBe('module');
+    expect(
+      panel.root.querySelector<HTMLElement>('[data-pane="module"]')!.hidden,
+    ).toBe(false);
+    panel.cycleTab!(1);
+    expect(selectedTab(panel.root)).toBe('equipment');
+    panel.cycleTab!(1);
+    panel.cycleTab!(1);
+    // Zapętlenie pomija ukrytą zakładkę Wydobycie.
+    expect(selectedTab(panel.root)).toBe('weapon');
+    panel.cycleTab!(-1);
+    expect(selectedTab(panel.root)).toBe('unlocks');
+  });
+
+  it('wiersz sklepu wybiera się Enterem, a karta pokazuje ▲ lepiej i ▼ gorzej', () => {
+    const { panel } = setup((m) => m.debugAddData(500));
+    const rifle = panel.root.querySelector<HTMLElement>(
+      '[data-key="row:weapon:rifle"]',
+    )!;
+    rifle.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    );
+    const better = panel.root.querySelector<HTMLElement>(
+      '.workshop__trend[data-trend="better"]',
+    )!;
+    const worse = panel.root.querySelector<HTMLElement>(
+      '.workshop__trend[data-trend="worse"]',
+    )!;
+    expect(better.textContent).toContain('▲');
+    expect(better.textContent).toContain('lepiej');
+    expect(worse.textContent).toContain('▼');
   });
 });

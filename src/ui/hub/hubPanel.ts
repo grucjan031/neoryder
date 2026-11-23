@@ -1,5 +1,6 @@
 import type { MissionSave } from '../../core/save';
 import type { MetaManager } from '../../progression/meta';
+import type { ActionBarItem } from '../components/actionBar';
 
 /**
  * Kontrakt paneli stacji kryjówki (F4-08/09/10). Panel to komponent HTML bez
@@ -23,6 +24,10 @@ export interface HubPanel {
   /** Odświeża widok ze stanu `MetaManager` (np. po zdarzeniu meta). */
   refresh(): void;
   dispose(): void;
+  /** Podpowiedzi dolnego paska akcji ekranu (przed „Zamknij”); domyślnie nawigacja i wybór. */
+  readonly actions?: readonly ActionBarItem[];
+  /** Q/E i LB/RB: przełącza zakładkę panelu (jeśli ma zakładki). */
+  cycleTab?(direction: 1 | -1): void;
 }
 
 export type HubPanelFactory = (ctx: HubPanelContext) => HubPanel;
