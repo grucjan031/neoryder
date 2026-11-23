@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "src/data/missions/m06-odlewnia.json": {
-    "mtime": 1795389289.0219228,
-    "seen": 1795436779.4737403,
-    "ast_hash": "d876d4defbd1a278bb30cded4fe870e5",
+    "mtime": 1795437367.959504,
+    "seen": 1795437778.2985158,
+    "ast_hash": "da824827b39389e1022e3a14e3b16603",
     "semantic_hash": ""
   },
   "src/data/modes/assault.json": {
@@ -2322,9 +2322,9 @@
     "semantic_hash": ""
   },
   "src/scenes/mission.ts": {
-    "mtime": 1795392071.6455035,
-    "seen": 1795436779.4752731,
-    "ast_hash": "118cfa66c4ed55cd9f78bf7f771070f4",
+    "mtime": 1795437969.8129077,
+    "seen": 1795438482.6992106,
+    "ast_hash": "b93a324f0b6e8f4281d1c325324ccbda",
     "semantic_hash": ""
   },
   "src/scenes/neonTest.ts": {
@@ -2826,9 +2826,9 @@
     "semantic_hash": ""
   },
   "src/world/levelSchema.ts": {
-    "mtime": 1795389289.0309155,
-    "seen": 1795436779.4752731,
-    "ast_hash": "3e4f3fc656c42aa6001c5e3a8242dcdb",
+    "mtime": 1795437367.9696493,
+    "seen": 1795437778.3005157,
+    "ast_hash": "0280a125d7ff00f9e10444df1d70f5c2",
     "semantic_hash": ""
   },
   "src/world/levels.ts": {
@@ -2844,15 +2844,15 @@
     "semantic_hash": ""
   },
   "src/world/missionObjectives.ts": {
-    "mtime": 1795389289.033001,
-    "seen": 1795436779.4752731,
-    "ast_hash": "852816d0e174557c87f4a67cfab8c82e",
+    "mtime": 1795437367.9717205,
+    "seen": 1795437778.3005157,
+    "ast_hash": "a68ff2ba1a06c683ee03aa159d9115a8",
     "semantic_hash": ""
   },
   "src/world/missionSchema.ts": {
-    "mtime": 1795389289.0467591,
-    "seen": 1795436779.4752731,
-    "ast_hash": "8bb302e73248d311210ac881ef5686cb",
+    "mtime": 1795437367.9722352,
+    "seen": 1795437778.3005157,
+    "ast_hash": "d1d17929b9f249ce7708a0b777d2dbff",
     "semantic_hash": ""
   },
   "src/world/missions.ts": {
@@ -3012,9 +3012,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/hud.spec.ts": {
-    "mtime": 1795389289.0579264,
-    "seen": 1795436779.4752731,
-    "ast_hash": "2d0f5bdb36bfd33bf74c5767cc7fe83d",
+    "mtime": 1795437367.976781,
+    "seen": 1795437778.3005157,
+    "ast_hash": "d059bf7be7f7e0e03bef9b89978d77f8",
     "semantic_hash": ""
   },
   "tests/e2e/mainMenu.spec.ts": {
@@ -3036,9 +3036,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/missionLinear.spec.ts": {
-    "mtime": 1795435222.3875954,
-    "seen": 1795436779.4752731,
-    "ast_hash": "f7ddc5ca26c6e58f5a70f6672a2207a0",
+    "mtime": 1795437367.9778023,
+    "seen": 1795437778.3005157,
+    "ast_hash": "de02e3268e45d51977feefef9d39d0f8",
     "semantic_hash": ""
   },
   "tests/e2e/missionList.spec.ts": {
@@ -3048,9 +3048,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/missionOdlewnia.spec.ts": {
-    "mtime": 1795435222.3901427,
-    "seen": 1795436779.4752731,
-    "ast_hash": "d859d085505f876056557b01b81ce47b",
+    "mtime": 1795437367.9808288,
+    "seen": 1795437778.3005157,
+    "ast_hash": "b350be1ed14d50dfad3f2b7495e04150",
     "semantic_hash": ""
   },
   "tests/e2e/parryTest.spec.ts": {
@@ -3888,9 +3888,9 @@
     "semantic_hash": ""
   },
   "tests/unit/missionInterlude.test.ts": {
-    "mtime": 1795389304.9639838,
-    "seen": 1795436779.4773264,
-    "ast_hash": "1f19e4d42740c4478928205e9df82a2b",
+    "mtime": 1795437367.983895,
+    "seen": 1795437778.3025181,
+    "ast_hash": "a0c3bfc9b6558ac0be452ad5a88efd2e",
     "semantic_hash": ""
   },
   "tests/unit/missionLinear.test.ts": {
@@ -3900,9 +3900,9 @@
     "semantic_hash": ""
   },
   "tests/unit/missionLinearUi.test.ts": {
-    "mtime": 1795435222.4101944,
-    "seen": 1795436779.4773264,
-    "ast_hash": "6b33c84ccd96373e6b969257eefa7ff2",
+    "mtime": 1795437367.985468,
+    "seen": 1795437778.3025181,
+    "ast_hash": "81ce9ee8153d0d02a62f219edf567668",
     "semantic_hash": ""
   },
   "tests/unit/missionMigration.test.ts": {
@@ -3912,9 +3912,9 @@
     "semantic_hash": ""
   },
   "tests/unit/missionOdlewnia.test.ts": {
-    "mtime": 1795389289.0750244,
-    "seen": 1795436779.4773264,
-    "ast_hash": "758ce4313bbbba679f4267edea3c6d47",
+    "mtime": 1795437367.9895275,
+    "seen": 1795437778.3025181,
+    "ast_hash": "83cd3a6d9f3515809102ec458bc29f62",
     "semantic_hash": ""
   },
   "tests/unit/missionRoom.test.ts": {
@@ -4974,9 +4974,9 @@
     "semantic_hash": ""
   },
   "docs/systems/levels.md": {
-    "mtime": 1795389289.0146687,
-    "seen": 1795436779.4778523,
-    "ast_hash": "1e1c1d6028ea0fdca74926c046b678b8",
+    "mtime": 1795438491.240011,
+    "seen": 1795438618.2146592,
+    "ast_hash": "851e5ff871a344cb2e741f7fafec0398",
     "semantic_hash": ""
   },
   "docs/systems/melee.md": {
@@ -4992,9 +4992,9 @@
     "semantic_hash": ""
   },
   "docs/systems/missions.md": {
-    "mtime": 1795389289.0162396,
-    "seen": 1795436779.4778523,
-    "ast_hash": "0cb92a734832138303646289a8698735",
+    "mtime": 1795438489.1399627,
+    "seen": 1795438618.2146592,
+    "ast_hash": "0dbfabfdb6f2db040245ff3e3a103872",
     "semantic_hash": ""
   },
   "docs/systems/modes.md": {
@@ -7476,9 +7476,9 @@
     "semantic_hash": ""
   },
   "src/render/weaponModuleVisuals.ts": {
-    "mtime": 1795388968.6892426,
-    "seen": 1795436779.4752731,
-    "ast_hash": "168e2bc2cfb1bbf2b3e52a1699f1a8e8",
+    "mtime": 1795437366.958627,
+    "seen": 1795437778.299516,
+    "ast_hash": "17abbf074443a0b1fcf5693d1c18864c",
     "semantic_hash": ""
   },
   "tests/unit/sanitizeModules.test.ts": {
@@ -7488,9 +7488,9 @@
     "semantic_hash": ""
   },
   "tests/unit/weaponModuleVisuals.test.ts": {
-    "mtime": 1795388968.6955204,
-    "seen": 1795436779.4773264,
-    "ast_hash": "d3ee8bb4a959ab71bee2a100cf512e9c",
+    "mtime": 1795437366.9601455,
+    "seen": 1795437778.3025181,
+    "ast_hash": "885d54deda7883170b8f59d8f57345ec",
     "semantic_hash": ""
   },
   "tests/unit/weaponModulesSlots.test.ts": {
@@ -8430,9 +8430,9 @@
     "semantic_hash": ""
   },
   "src/data/levels/m04-ladunek-klasy-k.json": {
-    "mtime": 1795392071.6445098,
-    "seen": 1795436779.4737403,
-    "ast_hash": "63d63b0f9439ac0853a1efe641a9186b",
+    "mtime": 1795437366.9575055,
+    "seen": 1795437778.2985158,
+    "ast_hash": "794bd70ad2a56120eba2e7341c99f83a",
     "semantic_hash": ""
   },
   "src/data/levels/m06-odlewnia.json": {
@@ -9228,9 +9228,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/demoPath.spec.ts": {
-    "mtime": 1795435222.3840914,
-    "seen": 1795436779.4752731,
-    "ast_hash": "ceec0a52d2780b909f7ce7fcfdbf3225",
+    "mtime": 1795437367.9752674,
+    "seen": 1795437778.3005157,
+    "ast_hash": "e5856cbd0224b990fa2c176d20c9e5ca",
     "semantic_hash": ""
   },
   "tests/e2e/horizon.spec.ts": {
@@ -9252,9 +9252,9 @@
     "semantic_hash": ""
   },
   "tests/e2e/missionM04.spec.ts": {
-    "mtime": 1795392300.046949,
-    "seen": 1795436779.4752731,
-    "ast_hash": "950899bfe6c1c96dfdfa4a0712154cfc",
+    "mtime": 1795437367.9793146,
+    "seen": 1795437778.3005157,
+    "ast_hash": "d625d3fa3f334aab4d57940ea075cadf",
     "semantic_hash": ""
   },
   "tests/e2e/prototypes.spec.ts": {
@@ -9486,9 +9486,9 @@
     "semantic_hash": ""
   },
   "tests/unit/missionBriefing.test.ts": {
-    "mtime": 1795389288.6539228,
-    "seen": 1795436779.4773264,
-    "ast_hash": "765fef686f14cf7cdc256cbdf990852a",
+    "mtime": 1795438435.9767046,
+    "seen": 1795438482.7002103,
+    "ast_hash": "06b4f54ac69053831b9a0a4e70aa2cd5",
     "semantic_hash": ""
   },
   "tests/unit/missionDialogue.test.ts": {
@@ -9510,9 +9510,9 @@
     "semantic_hash": ""
   },
   "tests/unit/missionM04Level.test.ts": {
-    "mtime": 1795392071.6495028,
-    "seen": 1795436779.4773264,
-    "ast_hash": "cf2610b297677be096b1f56c0047e352",
+    "mtime": 1795437367.986984,
+    "seen": 1795437778.3025181,
+    "ast_hash": "c296e8b4e07dfce2f22cec2366954ef3",
     "semantic_hash": ""
   },
   "tests/unit/missionM06Linear.test.ts": {
@@ -10074,9 +10074,9 @@
     "semantic_hash": ""
   },
   "tools/levels/buildM04.mjs": {
-    "mtime": 1795392071.6495028,
-    "seen": 1795436779.4778523,
-    "ast_hash": "fe32d97ead725642f9a2708d84047b9b",
+    "mtime": 1795437366.9627142,
+    "seen": 1795437778.3035216,
+    "ast_hash": "b7926076a1aa09e09749f65682d20f55",
     "semantic_hash": ""
   },
   "tools/levels/buildM06.mjs": {
@@ -10857,6 +10857,144 @@
     "mtime": 1795049690.04135,
     "seen": 1795436779.479373,
     "ast_hash": "effc8956c3a196b1532ef19ee8f85486",
+    "semantic_hash": ""
+  },
+  "src/data/levels/m05-adiutant.json": {
+    "mtime": 1795437367.9567904,
+    "seen": 1795437778.2985158,
+    "ast_hash": "db3576b3845dad1bb4231532c78816b6",
+    "semantic_hash": ""
+  },
+  "src/data/missions/m05-adiutant.json": {
+    "mtime": 1795437367.9577994,
+    "seen": 1795437778.2985158,
+    "ast_hash": "b4e09d5457d24d760b6e567ee1d08719",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m05Escort.json": {
+    "mtime": 1795437367.9610248,
+    "seen": 1795437778.299516,
+    "ast_hash": "a01cf1263916fe122d49436567f9e22b",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m05RearGuard.json": {
+    "mtime": 1795437367.9625404,
+    "seen": 1795437778.299516,
+    "ast_hash": "f65d91a5231f8619b6dcccb449bc49b6",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m05Shields.json": {
+    "mtime": 1795437367.9640632,
+    "seen": 1795437778.299516,
+    "ast_hash": "445a1ed7fd4fde5f52b3b2fffc36c304",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m05Snipers.json": {
+    "mtime": 1795437367.965581,
+    "seen": 1795437778.299516,
+    "ast_hash": "8154b24e8c6affc8e14bdb533508ac91",
+    "semantic_hash": ""
+  },
+  "tests/e2e/missionM05.spec.ts": {
+    "mtime": 1795437367.9793146,
+    "seen": 1795437778.3005157,
+    "ast_hash": "b255765382a99580cc687cca5ca50b09",
+    "semantic_hash": ""
+  },
+  "tests/unit/missionChase.test.ts": {
+    "mtime": 1795437367.9823785,
+    "seen": 1795437778.3025181,
+    "ast_hash": "f6675b8ef8be715120afcdeb73e41c2b",
+    "semantic_hash": ""
+  },
+  "tests/unit/missionM05Level.test.ts": {
+    "mtime": 1795437367.9879909,
+    "seen": 1795437778.3025181,
+    "ast_hash": "3592c164efdb0b13ad2c7ce35fc12186",
+    "semantic_hash": ""
+  },
+  "tools/levels/buildM05.mjs": {
+    "mtime": 1795437367.9910407,
+    "seen": 1795437778.3035216,
+    "ast_hash": "8b94aedf6a4b290c095b14fd8806b3fb",
+    "semantic_hash": ""
+  },
+  "src/data/levels/m07-nocny-dyzur.json": {
+    "mtime": 1795438816.4421942,
+    "seen": 1795438848.2731774,
+    "ast_hash": "ccb7a827600036f01a8c2a33d102e7a6",
+    "semantic_hash": ""
+  },
+  "src/data/missions/m07-nocny-dyzur.json": {
+    "mtime": 1795438435.9685898,
+    "seen": 1795438482.6992106,
+    "ast_hash": "9509c86e8e640a4ca6a8011e1aec381d",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m07Alarm.json": {
+    "mtime": 1795438761.8867793,
+    "seen": 1795438848.274182,
+    "ast_hash": "1133a802f34a3a503e444e10adbe101c",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m07Blokada.json": {
+    "mtime": 1795438761.8877833,
+    "seen": 1795438848.274182,
+    "ast_hash": "cd65767d89dc1032b6a51b4779aa943b",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m07Hala.json": {
+    "mtime": 1795438761.8847778,
+    "seen": 1795438848.274182,
+    "ast_hash": "c92082df2eab1a39b83ccfeb834eea7b",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m07Magazyn.json": {
+    "mtime": 1795438761.8847778,
+    "seen": 1795438848.274182,
+    "ast_hash": "848ebb556aa8dc8bb18aefb996d25223",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m07Poscig1.json": {
+    "mtime": 1795438761.8867793,
+    "seen": 1795438848.274182,
+    "ast_hash": "d2991e634f9036bd5ecc76529ff415df",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m07Poscig2.json": {
+    "mtime": 1795438761.8877833,
+    "seen": 1795438848.274182,
+    "ast_hash": "7b42b2b3fb466f11c67f7434fc68b810",
+    "semantic_hash": ""
+  },
+  "src/data/waves/m07Serwer.json": {
+    "mtime": 1795438761.885779,
+    "seen": 1795438848.274182,
+    "ast_hash": "9337fa5c2bff3901fb9cb3307ff7bca4",
+    "semantic_hash": ""
+  },
+  "tests/e2e/missionM07.spec.ts": {
+    "mtime": 1795438435.9767046,
+    "seen": 1795438482.7002103,
+    "ast_hash": "a82cf8ed2f017da6117cc203b3dfc36e",
+    "semantic_hash": ""
+  },
+  "tests/unit/missionM07Level.test.ts": {
+    "mtime": 1795438435.9787693,
+    "seen": 1795438482.7002103,
+    "ast_hash": "2e4a659b94ad90218ab83a5614f3ceea",
+    "semantic_hash": ""
+  },
+  "tools/levels/buildM07.mjs": {
+    "mtime": 1795438761.7841167,
+    "seen": 1795438848.2751865,
+    "ast_hash": "9d89dad4fe8cf6e1520955480390c502",
+    "semantic_hash": ""
+  },
+  "pw.alt.config.ts": {
+    "mtime": 1795438499.952084,
+    "seen": 1795438618.2116096,
+    "ast_hash": "b221bd3505cde748e8df4295241bf705",
     "semantic_hash": ""
   },
   "package-lock.json": {
