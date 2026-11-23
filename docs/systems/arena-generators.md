@@ -343,3 +343,18 @@ okręgi A–E pokazują promień punktu, × to spawny, △ START to gracz,
 małe kropki to dekoracje. Dach może zasłaniać wnętrze w rzucie z góry;
 SVG nie jest przekrojem i nie zastępuje testu kolizji ani wizyty w grze.
 Kolory mapy są legendą analityczną, a nie paletą materiałów świata.
+
+### Partia C (podstacja, magazyn, złomowisko i pięć elit)
+
+Generatory `run/combatSubstation`, `combatWarehouse`, `combatYard` (combat) oraz `eliteChemPlant`,
+`eliteCourtyard`, `eliteFoundry`, `eliteHall`, `plazaHolo` (elite) używają `run/_runKitC.mjs` (dodatek do
+`_runKit.mjs`, który zostaje bez zmian): rozmiary kolejnych modeli (`SIZE`), `track` (zapis bloków i obrysów
+ramp), `blockedAt`/`onFloor`, `scatter` (rekwizyty z kolizją rozsiewane z rng areny, z odstępem od brył,
+dróg wejścia/wyjścia i stref `avoid`), `spawns` (korekta spawnu do wolnego gruntu, margines od hazardów),
+`dressFace`/`dressPerimeter`/`wallSets`/`tower` (okładzina ścian co kilka metrów: żaluzje, rury, drzwi, ekrany,
+klimatyzatory, neony, naklejki ścienne sprawdzane względem bloku-nośnika) i `wallDecal`.
+Testy partii: `tests/unit/arenaRunC.test.ts` (kopia testów pokoi z `arenaRun.test.ts`, osobny plik, by nie
+kolidować z partią B). `roomStaticBatch.test.ts` mierzy batchowanie na pokojach runu (jeden korzeń `static-world`,
+budżet siatek `RUN_SCENE_MESH_BUDGET`). Cele misji: `combatYard` (M01: maszt 3 w (0, 0), właz w (10, 0)) i
+`combatWarehouse` (M03: terminal w (0, 0), brama w (0, −10), wartownicy w (±9, −6) i (0, −4)) mają te punkty na
+wolnym gruncie; beczki `warehouse-*` zostały w ładowni na dawnych współrzędnych.

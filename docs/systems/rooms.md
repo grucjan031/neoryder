@@ -147,7 +147,11 @@ oprawa (napisy, hologramy, światła, naklejki, efekty, dekoracje) w polach z `d
 | id               | Typ   | Wymiary (użyteczne) | Idea                                                                                                                                                                                          |
 | ---------------- | ----- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `alleyUnderpass` | elite | 68 × 120 m          | zalana stacja metra: plac z wieżą zegarową, perony i tory w wodzie (−1,4 m), wagon, kładka, hala północna z antresolą (4,5 m); kałuże pod napięciem; rain |
-| `plazaHolo`      | elite | 26 × 26 m           | plac z centralnym hologramem koi nad cokołem z projektorem; barierki, automaty, samochody i skrzynie wokół, hologramy android/drink na fasadach, wejście i wyjście po przeciwległych stronach |
+| `eliteChemPlant` | elite | 80 × 110 m          | zakład chemiczny: zbiorniki, estakady rurociągów, kładki serwisowe (3,6 i 7,2 m), toksyczne kałuże i beczki (hazardy); landmark: płuczka smogu 24 m; smog |
+| `eliteCourtyard` | elite | 84 × 104 m          | dziedziniec korporacji: kolumnada, holograficzna fontanna, ogrody z żywopłotów, tarasy biurowe (3,6 i 7,2 m); landmark: wieża z ekranem 40 m; clearNight |
+| `eliteFoundry`   | elite | 90 × 100 m          | odlewnia: piece z żarem, hałda żużla, kominy, kładki (4,2 i 8,4 m), bramki laserowe i beczki; landmark: kadź z ciepłą poświatą; ashfall |
+| `eliteHall`      | elite | 84 × 112 m          | hala dworca zimą: hala kas pod dźwigarami, antresola (4,8 m), perony i tory w rowach (−1,2 m) z wagonami maglev; landmark: wieża zegarowa; snow |
+| `plazaHolo`      | elite | 84 × 100 m          | plac reklam: projektory holo, trybuny amfiteatru (2,4 i 4,8 m) z rampami, pawilony, ściana ekranów; landmark: ściana ekranów 24 m; clearNight |
 | `noodleShop`     | shop  | 10 × 14 m           | spokojna uliczka z budką `city_stall` (terminal sklepu), ciepłe światła i lampiony, napisy ramen/noodles/bar_mleczny, hologram makaronu; bez spawnów i fal                                    |
 | `rooftopRest`    | rest  | 14 × 14 m           | dach z murkami 0,8 m i szklanymi osłonami, antena, generator, widok na panoramę miasta i hologramy na sąsiednich budynkach; bez spawnów i fal                                                 |
 
@@ -156,7 +160,7 @@ Scena kontroli: `?scene=room-test&room=<id>` (pokoje shop/rest nie mają spawnó
 
 ## Dane i sprawdzenie
 
-`combatYard` i `combatPillars` (pierwsze pokoje F3) mają podłogi 24 × 24 m, pięć punktów spawnu,
+`combatYard` i `combatPillars` (pierwsze pokoje F3; `combatYard` jest dziś areną runu, a testy loadera używają jego dawnej wersji z `tests/unit/fixtures/legacyYard.json`) miały podłogi 24 × 24 m, pięć punktów spawnu,
 wejście od południa i wyjście na północ. Dziedziniec ma asymetryczne osłony
 i dwa filary, hala cztery filary i osłony przy bocznych trasach.
 Liczby limitów i odległości spawnu oraz geometria są w JSON.
@@ -177,13 +181,16 @@ zostawiać czytelne trasy boczne, a wszystkie spawny znajdować się poza geomet
 | `alleyMarket`     | combat | 84 × 76 m                     | nocny targ pod estakadą (pokład na 10 m, filary), stragany jako niskie osłony, pasarela na 4 m z rampami, lampiony; rain |
 | `alleyBackstreet` | combat | 68 × 88 m                     | zaplecza knajp: zaułki, garaże z dachami (3,2 m) i taras (6,4 m) połączone rampami, wieża z szyldem makaronu; rain |
 | `alleyCrossing`   | combat | 88 × 80 m                     | skrzyżowanie: plac z kioskami i wrakami, hologram na maszcie, zejście do przejścia podziemnego (−3,2 m), taras kawiarni (3,4 m); drizzleWind |
+| `combatSubstation` | combat | 80 × 88 m                    | podstacja: pola transformatorów, łuki elektryczne (hazard), estakada kablowa i dachy rozdzielni (4 m); landmark: pylon HV 30 m; rain |
+| `combatWarehouse` | combat | 80 × 90 m                     | automatyczny magazyn: regały z alejkami, ładownia pod suwnicą (cele M03 w (0, 0) i (0, −10)), stosy kontenerów, antresola (4 m); smog |
+| `combatYard`      | combat | 90 × 80 m                     | złomowisko: hałdy wraków, prasa, dwie hałdy-szczyty (3,2 i 4,8 m), dźwig złomowy; cele M01 w (0, 0) i (10, 0); ashfall |
 
-Pokoje `alleyBackstreet`, `alleyCrossing`, `alleyMarket` i `alleyUnderpass` (tabela wyżej)
+Pokoje `alleyBackstreet`, `alleyCrossing`, `alleyMarket`, `alleyUnderpass` oraz (partia C) `combatSubstation`, `combatWarehouse`, `combatYard`, `eliteChemPlant`, `eliteCourtyard`, `eliteFoundry`, `eliteHall` i `plazaHolo` (tabele wyżej)
 zostały przebudowane na większe areny runu (70–130 m, ≥ 3 500 m², 3–5 stref, ≥ 2 poziomy
 połączone rampami, ≥ 10 spawnów, odrębna pogoda i landmark); id, typ, drzwi i dyrektor
 są bez zmian, `maxAlive` combat 9–10 / elite 11–12. Powstają z generatorów
 `tools/arenas/run/<id>.mjs` i profilu `run` ([arena-generators.md](arena-generators.md)).
-Pozostałe pokoje runu będą przebudowywane partiami według `briefs/areny.md`.
+Pozostałe pokoje runu (partia B) są przebudowywane według `briefs/areny.md`.
 
 ## Opcjonalna pogoda i metadane areny
 
