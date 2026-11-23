@@ -179,6 +179,7 @@ export class FppBlaster {
   private readonly modelOf: (weaponId: string) => string | undefined;
   private loadModels = false;
   private current: Object3D | null = null;
+  private opticSight: Vector3 | null = null;
   private grip: ResolvedGrip = DEFAULT_GRIP;
   private readonly grips = new Map<string, ResolvedGrip>();
   private wanted = FALLBACK_MODEL;
@@ -271,6 +272,10 @@ export class FppBlaster {
       this.weaponId === undefined
         ? undefined
         : attachModuleVisuals(model, this.modulesOf(this.weaponId));
+    const sight = model.getObjectByName('module_ads_sight');
+    this.opticSight = sight
+      ? this.root.worldToLocal(sight.getWorldPosition(new Vector3()))
+      : null;
     this.flashLeft = 0;
   }
 
@@ -378,6 +383,7 @@ export class FppBlaster {
     const { m, q, e, v, s } = this.tmp;
     const pose = this.twoHanded ? TWO_HAND_POSE : POSE;
     const sight = this.twoHanded ? AIM_TWO_HAND_POSE : AIM_POSE;
+    const optic = this.opticSight;
     const k = Math.min(1, Math.max(0, aim));
     const recoil =
       this.recoil *
@@ -385,13 +391,17 @@ export class FppBlaster {
       (1 + (this.tuning.player.aim.recoil - 1) * k);
     const mix = (a: number, b: number): number => a + (b - a) * k;
     e.set(
-      mix(pose.rot.x, sight.rot.x) + recoil * RECOIL_PITCH,
+      mix(pose.rot.x, optic ? 0 : sight.rot.x) + recoil * RECOIL_PITCH,
       mix(pose.rot.y, sight.rot.y),
       mix(pose.rot.z, sight.rot.z),
       'YXZ',
     );
     q.setFromEuler(e);
     v.copy(pose.pos).lerp(sight.pos, k);
+    if (optic) {
+      v.x = mix(pose.pos.x, -optic.x);
+      v.y = mix(pose.pos.y, -optic.y);
+    }
     v.z += recoil * RECOIL_BACK;
     m.compose(v, q, s);
     this.root.matrix.multiplyMatrices(cameraMatrix, m);
@@ -419,6 +429,10 @@ export class FppBlaster {
   private get twoHanded(): boolean {
     const support = this.current?.getObjectByName('support');
     return !!support && support.position.z < TWO_HAND_SUPPORT_Z;
+  }
+
+  get hasOptic(): boolean {
+    return this.opticSight !== null;
   }
 
   supportMatrix(): Matrix4 | null {
