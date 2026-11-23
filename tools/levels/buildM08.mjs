@@ -116,8 +116,12 @@ for (const [id, name, start, end, half, roof] of [
     for (let x = start + 6; x < end - 3; x += 12) {
       prop('city_shutter', x, 0, s * (half - 0.1), s > 0 ? Math.PI : 0);
       B(x, 6, s * (half - 0.1), 3, 1.5, 0.1, 'light_white');
-      prop('city_ac_unit', x + 3, 4, s * (half - 0.5));
-      light(x, 3.5, s * (half - 2), WHITE, 16, 11);
+      const yaw = s > 0 ? Math.PI : 0;
+      prop('city_ac_unit', x + 3, 3.1, s * (half - 0.25), yaw);
+      // Pod stropem pralni widać również niższy rząd okien nad drzwiami.
+      B(x - 2, 4.1, s * (half + 0.04), 1.8, 0.85, 0.1, 'glass');
+      prop('city_sign_box', x - 2, 2.6, s * (half - 0.03), yaw);
+      light(x - 2, 3.1, s * (half - 2), WHITE, 24, 14);
     }
   }
   if (roof) {
@@ -127,11 +131,44 @@ for (const [id, name, start, end, half, roof] of [
       size: v(end - start, 6, half * 2),
     });
   }
+  const laundry = id === 'skrzydlo-a';
+  for (let x = start + 4; x < end; x += 12)
+    light(x, 3.8, laundry ? -3 : 0, WHITE, laundry ? 16 : 24, 15);
   for (let x = start + 4; x < end; x += 8) {
-    light(x, 3.8, 0, WHITE, 26, 14);
-    B(x, 4.8, 0, 2, 0.12, 0.25, 'light_white');
+    // Zachowaj bryły opraw; na podejściu i w pralni usuń emisję z osi widoku.
+    const fixture = block(
+      x,
+      4.8,
+      0,
+      2,
+      0.12,
+      0.25,
+      laundry ? 'trim' : 'light_white',
+    );
+    if (!roof) fixture.visible = false;
+    level.blocks.push(fixture);
   }
   sign('arrow', end - 6, 3, -half + 0.15, GREEN);
+  sign('pharmacy', start + 13, 3.5, half - 0.15, GREEN, Math.PI);
+  sign(roof ? 'repair' : 'arrow', start + 22, 3.4, -half + 0.15, AMBER);
+  for (const [offset, z, texture, w, h] of [
+    [5, 2, 'crack_floor', 2, 2],
+    [13, half - 3, 'manhole', 1.4, 1.4],
+    [21, -4, 'floor_arrow', 2.5, 2.5],
+    [end - start - 3, 0, 'floor_stop', 3, 1],
+  ])
+    level.decals.push({
+      texture,
+      position: v(start + offset, 0.012, z),
+      size: { w, h },
+      yaw: -Math.PI / 2,
+      surface: 'floor',
+    });
+  level.ambientFx.push({
+    kind: 'drip',
+    position: v(start + 9, 3.1, -half + 0.6),
+    rate: 1,
+  });
   level.decals.push({
     texture: 'puddle1',
     position: v(center, 0.01, -2),
@@ -169,6 +206,8 @@ for (const [key, lock, safe, half, count] of groups) {
   // Punkt zborny oznacza wejście grupy do bezpiecznego szybu, poza linią ognia.
   sign('arrow', safe, 3, -half + 0.2, GREEN);
   light(safe, 2.8, -half + 3, GREEN, 18, 10);
+  light(lock + 10, 3, -half + 2.5, WHITE, 22, 11);
+  light(lock - 1, 3, 1.5, AMBER, 18, 10);
   for (let n = 0; n < count; n++)
     level.objectiveNpcs.push({
       objective: `grupa-${key}`,

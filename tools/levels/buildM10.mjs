@@ -50,10 +50,31 @@ const block = (x, y, z, sx, sy, sz, material = 'concrete', extra = {}) => ({
   ...extra,
 });
 const B = (...args) => level.blocks.push(block(...args));
-const prop = (model, x, y, z, yaw = 0) =>
-  level.decor.push({ model, position: v(x, y, z), yaw });
-const light = (x, y, z, color = '#fff1d6', intensity = 32, range = 16) =>
-  level.lights.push({ position: v(x, y, z), color, intensity, range });
+const prop = (model, x, y, z, yaw = 0, scale) =>
+  level.decor.push({ model, position: v(x, y, z), yaw, scale });
+const WHITE = '#dce8ff',
+  GREEN = '#6dff4a';
+const light = (x, y, z, color = WHITE, intensity = 32, range = 16, floorY) =>
+  level.lights.push({ position: v(x, y, z), color, intensity, range, floorY });
+function panel(texture, x, y, z, side, width = 2) {
+  level.signs.push({
+    kind: 'neon',
+    texture,
+    position: v(x, y, z),
+    size: { w: width, h: width * 0.4 },
+    yaw: side > 0 ? Math.PI : 0,
+    tint: GREEN,
+  });
+}
+function marking(texture, x, y, z, w, h) {
+  level.decals.push({
+    texture,
+    position: v(x, y + 0.012, z),
+    size: { w, h },
+    yaw: -Math.PI / 2,
+    surface: 'floor',
+  });
+}
 function ramp(start, end, fromY, toY, width = 8) {
   const angle = Math.atan2(toY - fromY, end - start);
   B(
@@ -115,15 +136,14 @@ for (const [id, name, start, end, width, roof] of [
     });
   }
   for (let x = start + 6; x < end; x += 10) {
-    const y = x >= 112 && x < 204 ? 8.5 : 4.8;
-    light(x, y, 0);
-    level.decals.push({
-      texture: 'floor_arrow',
-      position: v(x, x >= 112 && x < 204 ? 4.01 : 0.01),
-      size: { w: 2, h: 2 },
-      yaw: -Math.PI / 2,
-      surface: 'floor',
-    });
+    const floorY = Math.min(
+      4,
+      Math.max(0, (x - 96) / 4),
+      Math.max(0, (220 - x) / 4),
+    );
+    light(x, floorY + 3.8, 0, WHITE, 32, 16, floorY);
+    if (floorY === 0 || floorY === 4)
+      marking('floor_arrow', x, floorY, 0, 2, 2);
   }
 }
 B(-0.5, 4, 0, 1, 8, 12, 'metal');
@@ -140,21 +160,53 @@ for (const x of [40, 58, 76]) {
     B(x, 2.4, side * 10, 10, 0.2, 3, 'glass');
     B(x - 5, 1.2, side * 10, 0.2, 2.4, 3, 'metal');
     B(x + 5, 1.2, side * 10, 0.2, 2.4, 3, 'metal');
-    light(x, 2, side * 10, '#6dff4a', 10, 9);
+    light(x, 2, side * 10, GREEN, 16, 10);
     prop('city_ac_unit', x, 0, side * 11);
+    const yaw = side > 0 ? Math.PI : 0;
+    prop('city_sign_box', x, 1.1, side * 11.95, yaw);
+    panel('implants', x, 1.6, side * 11.66, side, 1.8);
+    prop('city_vent_grate', x - 2, 0, side * 10);
+    prop('city_ad_screen', x + 3, 0, side * 11.95, yaw);
+    // Koryta ogrodowe na zewnętrznej stronie parapetu, pod przeszklonym dachem.
+    B(x, 1.55, side * 13.2, 7, 1.2, 2, 'concrete_raw_cast');
+    B(x, 2.16, side * 13.2, 6.6, 0.08, 1.65, 'excavation_dirt');
+    level.ambientFx.push({
+      kind: 'steam',
+      position: v(x - 2, 0.07, side * 10),
+      rate: 1,
+    });
   }
   cover(x, 0, -5.5);
   cover(x + 6, 0, 4.5);
 }
-for (const x of [36, 64, 88]) {
-  level.signs.push({
-    kind: 'neon',
-    texture: 'arrow',
-    position: v(x, 3.2, -11.5),
-    size: { w: 2, h: 1 },
-    yaw: 0,
-    tint: '#3d7bff',
-  });
+for (const x of [32, 66, 88]) panel('arrow', x, 1.4, -11.94, -1);
+
+// Dwa plany zabudowy widoczne nad niskimi parapetami pasażu.
+for (const [x, z, width, top] of [
+  [30, -28, 12, 16],
+  [53, -37, 17, 29],
+  [77, -25, 14, 19],
+  [99, -33, 15, 35],
+  [34, 32, 18, 24],
+  [61, 24, 12, 14],
+  [83, 36, 17, 30],
+  [104, 26, 13, 20],
+]) {
+  const side = Math.sign(z);
+  B(x, (top - 10) / 2, z, width, top + 10, 8, 'facade');
+  B(x, top, z, width + 0.4, 0.4, 8.4, 'trim');
+  prop('city_roof_hvac_unit', x, top + 0.2, z);
+  for (let y = 4; y < top - 1; y += 5)
+    for (const dx of [-width / 4, width / 4])
+      B(
+        x + dx,
+        y,
+        z - side * 4,
+        width / 4,
+        0.6,
+        0.15,
+        dx < 0 ? 'glass' : 'light_white',
+      );
 }
 // Widoczna rama ogrodu i rynny, bez nowych modeli i bez kałuż.
 for (const x of [46, 70]) {
@@ -173,7 +225,20 @@ for (const x of [116, 132, 148]) {
   for (const z of [-10, 10]) {
     B(x, 6.5, z, 0.6, 13, 0.6, 'metal');
     prop('city_pipe_run', x, 4, z);
-    light(x, 8, z, '#3d7bff', 14, 12);
+    const side = Math.sign(z);
+    const yaw = side > 0 ? Math.PI : 0;
+    prop('city_ad_screen', x - 2, 5, side * 11.95, yaw);
+    prop('city_cable_span', x, 10, side * 11.6);
+    prop('city_sign_box', x + 2, 6, side * 11.95, yaw);
+    panel(
+      x === 148 ? 'arrow' : 'implants',
+      x + 2,
+      6.5,
+      side * 11.66,
+      side,
+      1.8,
+    );
+    light(x, 7.5, side * 8.5, GREEN, 21, 13, 4);
   }
 }
 cover(124, 4, -4.5);
@@ -190,8 +255,14 @@ light(150, 7, 0, '#ffae1a', 18, 12);
 for (const x of [164, 172, 184, 196]) {
   for (const z of [-9, 9]) {
     B(x, 5.5, z, 2.4, 3, 2, 'metal');
-    prop('city_generator', x, 4, z);
-    light(x, 7.8, z, '#8a5cff', 10, 10);
+    const side = Math.sign(z);
+    const yaw = side > 0 ? Math.PI : 0;
+    // Drzwi serwisowe i panel stanu na licu istniejącej szafy.
+    prop('city_shutter', x, 4, z - side * 1.02, yaw, 0.74);
+    prop('city_sign_box', x, 6.12, z - side * 1.02, yaw, 0.84);
+    panel('repair', x, 6.54, z - side * 1.25, side, 1.5);
+    prop('city_cable_span', x, 9.5, side * 13.6);
+    light(x, 7.8, z - side * 2, WHITE, 18, 12, 4);
   }
 }
 for (const [x, z] of [
@@ -217,6 +288,30 @@ cover(234, 0, 4);
 gate('gate-ewakuacja', 240, encounter('blokada-szybu'), 0, 16);
 light(244, 4, 0, '#6dff4a', 22, 14);
 prop('city_shutter', 251.8, 0, 0, -Math.PI / 2);
+for (const [x, y, z, texture, w, h] of [
+  [9, 0, 2, 'oil_stain', 2, 1.8],
+  [25, 0, 0, 'floor_stop', 3, 1],
+  [34, 0, -7, 'floor_hazard', 3, 1],
+  [49, 0, 3, 'manhole', 1.4, 1.4],
+  [69, 0, -4, 'crack_floor', 3, 2],
+  [93, 0, 0, 'floor_hazard', 3, 1],
+  [115, 4, 2, 'floor_hazard', 3, 1],
+  [130, 4, -3, 'oil_stain', 2, 2],
+  [153, 4, 0, 'floor_stop', 3, 1],
+  [162, 4, 5, 'floor_hazard', 3, 1],
+  [190, 4, -5, 'oil_stain', 2, 1.5],
+  [202, 4, 0, 'floor_hazard', 3, 1],
+  [225, 0, 2, 'tire_marks', 4, 2],
+  [238, 0, -2, 'floor_stop', 3, 1],
+])
+  marking(texture, x, y, z, w, h);
+for (const [kind, x, y, z] of [
+  ['drip', 12, 2, 4.4],
+  ['sparks', 132, 9.2, -11.6],
+  ['sparks', 184, 8.7, 13.6],
+  ['drip', 230, 2, -6.5],
+])
+  level.ambientFx.push({ kind, position: v(x, y, z), rate: 1 });
 
 const points = (list) => list.map(([x, z]) => ({ x, z }));
 const addEncounter = (id, trigger, wave, spawns, extra = {}) =>
