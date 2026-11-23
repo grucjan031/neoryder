@@ -336,6 +336,28 @@ export const tuning = {
     /** Płynny powrót do normalnej prędkości po spowolnieniu (s, czas rzeczywisty). */
     slowmoRecoverS: 0.15,
   },
+  /** Nogi gracza w FPP (render): spodnie i buty z modelu cywila, napędzane prędkością. */
+  fppLegs: {
+    /** Widoczność dolnej części ciała w świecie. */
+    enabled: true,
+    /** Cofnięcie bioder względem osi oczu w staniu i przy obniżonej kapsule [m]. */
+    backOffsetM: 0.64,
+    lowBackOffsetM: 0.43,
+    /** Przedłużenie górnego brzegu spodni poza kadr przy szerokim FOV [m]. */
+    waistLiftM: 0.57,
+    /** Prędkość osiągnięcia pełnej wagi chodu po ruszeniu [m/s]. */
+    idleBlendSpeed: 0.65,
+    /** Stała czasowa przenikania póz i obrotu bioder [s]. */
+    fadeS: 0.08,
+    /** Droga na cykl z ruchu obu przodostopi przy kontakcie podeszwy z ziemią [m]. */
+    walkStrideM: 1.46,
+    jogStrideM: 5.56,
+    /** Udział chodu w ruchomym przysiadzie. */
+    crouchWalkWeight: 0.33,
+    /** Fazy klipu biegu próbkowane na wznoszeniu i przy opadaniu (0–1). */
+    risePhase: 0.33,
+    fallPhase: 0.1,
+  },
   /** Kamera FPP (#03). Wstrząs: trauma 0..1, amplituda = trauma² × shakeMax. Czasy w s. */
   camera: {
     fov: 90,
@@ -595,6 +617,18 @@ export const tuning = {
       moveSpeed: 0.6,
       spread: 0.4,
       recoil: 0.7,
+      swayScale: 0,
+      bobScale: 0,
+      ironEyeReliefM: 0.35,
+      opticMinEyeZ: 0.24,
+      ironGeometry: {
+        widthScale: 0.24,
+        notchScale: 0.38,
+        postScale: 0.2,
+        depthScale: 0.29,
+        postClearanceM: 0.0005,
+        color: '#313d50',
+      },
     },
   },
   /** Ostrze plazmowe (#07). Fazy ciosu w s; obrażenia i zasięg w src/data/blades/plasmaBlade.json. */
@@ -886,6 +920,7 @@ export const tuning = {
       fromFront: 0.52,
       sightClearanceM: 0.004,
       railHeightM: 0.002,
+      reticleIntensity: 1.6,
       scopeReticleRadius: 0.09,
       scopeReticleStroke: 0.018,
       reddot: { width: 0.75, height: 0.38, length: 0.1 },
@@ -1670,7 +1705,8 @@ export function createTuningGui(t: Tuning = tuning): GUI {
   const gui = new GUI({ title: 'NEORYDER — strojenie' });
   function populate(parent: GUI, group: Record<string, unknown>): void {
     for (const [key, value] of Object.entries(group)) {
-      if (typeof value === 'number') parent.add(group, key);
+      if (typeof value === 'number' || typeof value === 'boolean')
+        parent.add(group, key);
       else if (typeof value === 'string' && value.startsWith('#'))
         parent.addColor(group, key);
       else if (typeof value === 'object' && value !== null)

@@ -64,6 +64,7 @@ import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
 import type { Enemy } from '../enemies/types';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import { staminaStatsSchema } from '../player/stamina';
 import type { PlayerState } from '../player/playerController';
@@ -191,6 +192,7 @@ export class Arena implements Scene {
   private manager!: EnemyManager;
   private director!: WaveDirector;
   private player!: PlayerController;
+  private legs?: FppLegs;
   private previous!: PlayerState;
   private fpsCamera!: FpsCamera;
   private energy!: PlayerEnergy;
@@ -384,6 +386,8 @@ export class Arena implements Scene {
     this.entities.bindCollider(playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.fpsCamera = new FpsCamera(ctx.tuning, playerId, ctx.bus);
+    if (ctx.camera && this.loadModels)
+      this.legs = new FppLegs(three, ctx.tuning);
 
     this.projectiles = new ProjectileSystem(
       this.world,
@@ -1292,10 +1296,18 @@ export class Arena implements Scene {
       this.lightningView.render(powers);
       return;
     }
+    const playerState = this.player.getState();
+    this.legs?.update(
+      this.previous,
+      playerState,
+      alpha,
+      frameDt,
+      this.state === 'playing',
+    );
     const pose = this.fpsCamera.update(
       frameDt,
       this.previous,
-      this.player.getState(),
+      playerState,
       alpha,
       this.heldItem.aim,
       this.weapon.definition.aimFovScale,
@@ -1322,7 +1334,7 @@ export class Arena implements Scene {
     }
     camera.updateMatrixWorld();
     this.dressing?.render(frameDt, camera);
-    const velocity = this.player.getState().velocity;
+    const velocity = playerState.velocity;
     this.fppView.place(camera.matrixWorld, frameDt, {
       blade: this.blade.view(),
       held: this.heldView(),
@@ -2055,6 +2067,7 @@ export class Arena implements Scene {
     this.barrierView?.dispose();
     this.projectileView?.dispose();
     this.projectiles?.dispose();
+    this.legs?.dispose();
     this.fpsCamera?.dispose();
     this.player?.dispose();
     this.world?.free();

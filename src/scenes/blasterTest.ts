@@ -13,6 +13,7 @@ import { Blaster } from '../combat/weapons/blaster';
 import type { BlasterInput } from '../combat/weapons/blaster';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { applyStyle, getMaterial } from '../render/materials';
@@ -37,6 +38,7 @@ export class BlasterTest implements Scene {
   private entities!: EntityRegistry;
   private damage!: DamageSystem;
   private player!: PlayerController;
+  private legs?: FppLegs;
   private playerId!: EntityId;
   private previous!: PlayerState;
   private blaster!: Blaster;
@@ -121,6 +123,8 @@ export class BlasterTest implements Scene {
       loadSettings(),
     );
     this.previous = this.player.getState();
+    if (ctx.camera && this.loadModels)
+      this.legs = new FppLegs(three, ctx.tuning);
     for (const x of [-3, 0, 3]) {
       const id = this.entities.create('trooper', 'enemy');
       const stats = new Stats({ maxHealth: 100 });
@@ -310,11 +314,12 @@ export class BlasterTest implements Scene {
     this.projectiles.step(dt);
   }
 
-  render(alpha: number): void {
+  render(alpha: number, frameDt = 0): void {
     const current = this.player.getState();
     const p = this.previous;
     const camera = this.ctx.camera;
     if (camera) {
+      this.legs?.update(p, current, alpha, frameDt);
       camera.position.set(
         p.position.x + (current.position.x - p.position.x) * alpha,
         p.position.y +
@@ -364,6 +369,7 @@ export class BlasterTest implements Scene {
     this.hud?.remove();
     this.projectileRenderer.dispose();
     this.projectiles.dispose();
+    this.legs?.dispose();
     this.player.dispose();
     this.hurtboxes.clear();
     for (const id of this.entities.ids()) {

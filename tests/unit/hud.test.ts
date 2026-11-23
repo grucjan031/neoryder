@@ -91,6 +91,18 @@ describe('Hud', () => {
     vi.restoreAllMocks();
   });
 
+  it('ukrywa celownik podczas ADS i przywraca go po opuszczeniu broni', () => {
+    const crosshair = query('.hud__crosshair');
+    hud.setAim(1);
+    expect(crosshair.hidden).toBe(true);
+    expect(getComputedStyle(crosshair).display).toBe('none');
+    hud.setAim(0.3);
+    expect(crosshair.hidden).toBe(false);
+    expect(crosshair.style.getPropertyValue('--aim')).toBe('0.3');
+    hud.setAim(0);
+    expect(crosshair.style.getPropertyValue('--aim')).toBe('0');
+  });
+
   it('błyska przy utracie zdrowia i odzyskaniu energii, bez ponawiania dla tego samego stanu', () => {
     const health = query('.hud__meter--health');
     const energy = query('.hud__meter--energy');

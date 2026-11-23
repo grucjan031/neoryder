@@ -37,6 +37,7 @@ import type { EnemyViewLike } from '../enemies/views';
 import { availableEnemyIds, enemyRegistry } from '../enemies/registry';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { createStyleLights } from '../render/lights';
@@ -94,6 +95,7 @@ export class AiTest implements Scene {
   private projectiles!: ProjectileSystem;
   private projectileRenderer!: ProjectileRenderer;
   private player!: PlayerController;
+  private legs?: FppLegs;
   private previous!: PlayerState;
   private camera!: FpsCamera;
   private health!: Health;
@@ -163,6 +165,8 @@ export class AiTest implements Scene {
     this.entities.bindCollider(id, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.camera = new FpsCamera(ctx.tuning, id, ctx.bus);
+    if (ctx.camera && this.loadModels)
+      this.legs = new FppLegs(three, ctx.tuning);
     this.projectiles = new ProjectileSystem(
       this.world,
       this.entities,
@@ -733,12 +737,9 @@ export class AiTest implements Scene {
     this.lights.sync();
     const camera = this.ctx.camera;
     if (!camera) return;
-    const pose = this.camera.update(
-      frameDt,
-      this.previous,
-      this.player.getState(),
-      alpha,
-    );
+    const playerState = this.player.getState();
+    this.legs?.update(this.previous, playerState, alpha, frameDt);
+    const pose = this.camera.update(frameDt, this.previous, playerState, alpha);
     camera.position.copy(pose.position);
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
     camera.fov = pose.fov;
@@ -807,6 +808,7 @@ export class AiTest implements Scene {
     this.debrisView?.dispose();
     this.projectileRenderer?.dispose();
     this.projectiles?.dispose();
+    this.legs?.dispose();
     this.camera?.dispose();
     if (this.player) {
       this.damage.unregister(this.player.id);

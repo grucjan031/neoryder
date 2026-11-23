@@ -26,8 +26,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { tuning } from '../core/tuning';
 import { fppGlowMaterial } from './fppMaterials';
 
-type Shape = ModuleDefinition['visual']['shape'];
-type Color = ModuleDefinition['visual']['color'];
+type ModuleVisual = ModuleDefinition['visual'];
 const ACCENTS = { amber: '#ffae1a', white: '#fff1d6', green: '#6dff4a' };
 const layout = tuning.weaponModuleVisuals;
 const templates = new Map<string, { root: Object3D; users: number }>();
@@ -74,8 +73,12 @@ function batchDetails(root: Group): void {
 }
 
 /** Własne materiały PBR; geometrie współdzielone do odpięcia ostatniej instancji. */
-export function createModuleVisual(shape: Shape, color: Color): Object3D {
-  const key = `${shape}:${color}`;
+export function createModuleVisual({
+  shape,
+  color,
+  sight,
+}: ModuleVisual): Object3D {
+  const key = JSON.stringify([shape, color, sight]);
   const cached = templates.get(key);
   if (cached) {
     cached.users++;
@@ -166,12 +169,6 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
     y: number,
     bright = false,
   ) => add(new CylinderGeometry(top, bottom, height, 10), 0, y, 0, bright);
-  const sight = (y: number, z: number) => {
-    const anchor = new Group();
-    anchor.name = 'module_ads_sight';
-    anchor.position.set(0, y, z);
-    root.add(anchor);
-  };
   switch (shape) {
     case 'brake':
       // Otwarty kanał wzdłuż -Z; przerwy między pierścieniami pełnią rolę portów.
@@ -248,9 +245,13 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
         pane.material = glass;
         pane.name = 'optic_glass';
       }
-      add(new SphereGeometry(0.045, 8, 6), 0, 0.43, 0.02, true).name =
-        'optic_reticle';
-      sight(0.43, 0.02);
+      {
+        const dot = add(new SphereGeometry(0.045, 8, 6), ...sight!.target);
+        const sign = accent.clone();
+        sign.emissiveIntensity = layout.optic.reticleIntensity;
+        dot.material = sign;
+        dot.name = 'optic_reticle';
+      }
       break;
     case 'scope':
       {
@@ -277,12 +278,9 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
           6,
           24,
         ),
-        0,
-        0.7,
-        0,
+        ...sight!.target,
         true,
       ).name = 'optic_reticle';
-      sight(0.7, 0);
       break;
     case 'holo':
       // Zamknięta obudowa z okapem: emiter z tyłu, szyba ze znakiem celowniczym z przodu.
@@ -304,9 +302,10 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
         pane.name = 'optic_glass';
         // Znak: okrąg z kropką i czterema kreskami, jaśniejszy od akcentu obudowy.
         const sign = accent.clone();
-        sign.emissiveIntensity = 1.6;
+        sign.emissiveIntensity = layout.optic.reticleIntensity;
+        const [cx, cy, cz] = sight!.target;
         const mark = (geometry: BufferGeometry, x: number, y: number) => {
-          const mesh = add(geometry, x, 0.53 + y, -0.225);
+          const mesh = add(geometry, cx + x, cy + y, cz);
           mesh.material = sign;
           mesh.name = 'holo_reticle';
         };
@@ -324,7 +323,6 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
             y,
           );
       }
-      sight(0.53, -0.225);
       break;
     case 'laser':
       // Moduł pod lufą: obejma, korpus i jasna soczewka; wiązkę dodaje `attachModuleVisuals`.
@@ -342,6 +340,16 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
       for (const y of [-0.85, -1.1, -1.35]) post(0.37, 0.37, 0.05, y);
       post(0.42, 0.42, 0.12, -1.7);
       break;
+  }
+  if (sight) {
+    const target = new Group();
+    target.name = 'module_ads_sight';
+    target.position.set(...sight.target);
+    const rear = new Group();
+    rear.name = 'module_ads_rear';
+    rear.position.copy(target.position).setZ(sight.rearZ);
+    rear.userData.eyeReliefM = sight.eyeReliefM;
+    root.add(target, rear);
   }
   // Jednostkowe osie: X/Y = przekrój, Z = lufa. Optyka stoi podstawą na Y=0,
   // podwieszenie wisi od Y=0 w dół, wylot kończy się na Z=0.
@@ -378,7 +386,7 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
 }
 
 /** Wiązka lasera wzdłuż -Z od soczewki: addytywna, wygasa ku końcowi (kolory wierzchołków). */
-function laserBeam(color: Color): Mesh {
+function laserBeam(color: ModuleVisual['color']): Mesh {
   const geometry = new BoxGeometry(1, 1, 1).translate(0, 0, -0.5);
   const positions = geometry.getAttribute('position');
   const colors = new Float32Array(positions.count * 3);
@@ -743,9 +751,10 @@ export function attachModuleVisuals(
     )
       continue;
     slots.add(module.slot);
-    const visual = createModuleVisual(module.visual.shape, module.visual.color);
+    const visual = createModuleVisual(module.visual);
     added.push(visual);
     visual.userData.moduleSlot = module.slot;
+    visual.userData.moduleId = id;
     const shape = module.visual.shape;
     const raw = new Box3().setFromObject(visual).getSize(new Vector3());
     const fit = (x: number, y: number, z: number) =>

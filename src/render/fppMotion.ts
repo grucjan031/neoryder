@@ -27,7 +27,7 @@ export class FppMotion {
   private readonly local = new Matrix4();
   private readonly result = new Matrix4();
 
-  constructor(private readonly t: Pick<Tuning, 'hands'> = tuning) {}
+  constructor(private readonly t: Pick<Tuning, 'hands' | 'player'> = tuning) {}
 
   place(
     camera: Matrix4,
@@ -74,15 +74,18 @@ export class FppMotion {
       const t = Math.max(0, Math.min(1, held.swapT));
       lower = (t < 0.5 ? t * 2 : (1 - t) * 2) ** 2;
     }
-    const drift = 1 - Math.max(0, Math.min(1, sightAim));
+    const aim = Math.max(0, Math.min(1, sightAim));
+    const { swayScale, bobScale } = this.t.player.aim;
+    const sway = 1 - aim * (1 - swayScale);
+    const stepBob = bob * (1 - aim * (1 - bobScale));
     this.position.set(
-      Math.sin(this.phase) * bob * drift,
-      Math.cos(this.phase * 2) * bob * drift - lower * h.swapDropM,
+      Math.sin(this.phase) * stepBob,
+      Math.cos(this.phase * 2) * stepBob - lower * h.swapDropM,
       0,
     );
     this.e.set(
-      this.pitch * drift + lower * h.swapAngle,
-      this.yaw * drift,
+      this.pitch * sway + lower * h.swapAngle,
+      this.yaw * sway,
       0,
       'YXZ',
     );

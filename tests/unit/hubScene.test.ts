@@ -386,27 +386,25 @@ it('przy otwartej nakładce ruch gracza jest zatrzymany', async () => {
   expect(position(scene).z).toBeLessThan(before.z - 0.5);
 });
 
-it('niecka torów nie jest pułapką: gracz staje na dnie i wychodzi skokiem na peron', async () => {
+it('oprawy mieszczą się w puli świateł kryjówki bez dodatkowych cieni', async () => {
+  const { three } = await setup();
+  const points = three.getObjectsByProperty('type', 'PointLight');
+  expect(points).toHaveLength(tuning.city.maxLights);
+  expect(points.every((light) => !light.castShadow)).toBe(true);
+  expect(three.getObjectsByProperty('type', 'SpotLight')).toHaveLength(0);
+});
+
+it('gracz przechodzi z hali przez pasaż na peron B bez skoku i zmiany poziomu', async () => {
   const { scene, commands } = await setup();
   commands.execute('hub tp 0 2.0 180');
   for (let i = 0; i < 20; i++) scene.step(SIM_DT, idle);
-  for (let i = 0; i < 60; i++) scene.step(SIM_DT, walkForward);
-  const inTrough = position(scene);
-  expect(inTrough.z).toBeGreaterThan(3.6);
-  // Środek kapsuły: dno niecki 0,8 m poniżej peronu, więc oczy nadal ponad dnem.
-  expect(inTrough.y).toBeGreaterThan(-0.5);
-  expect(inTrough.y).toBeLessThan(0.5);
-  commands.execute('hub tp 0 5 0');
-  for (let i = 0; i < 20; i++) scene.step(SIM_DT, idle);
-  const climb: InputSnapshot = {
-    ...idle,
-    held: new Set(['moveForward']),
-    pressed: new Set(['jump']),
-  };
-  scene.step(SIM_DT, climb);
-  for (let i = 0; i < 80; i++) scene.step(SIM_DT, walkForward);
-  expect(position(scene).z).toBeLessThan(3.4);
-  expect(position(scene).y).toBeGreaterThan(0.5);
+  const floor = position(scene).y;
+  for (let i = 0; i < 120; i++) {
+    scene.step(SIM_DT, walkForward);
+    expect(position(scene).y).toBeCloseTo(floor, 1);
+    if (position(scene).z > 8.5) break;
+  }
+  expect(position(scene).z).toBeGreaterThan(8.5);
 });
 
 it('przycisk poligonu nawiguje, zachowując debug; tablica misji nie dostaje już akcji startRun', async () => {

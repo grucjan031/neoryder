@@ -25,6 +25,7 @@ import type { EnemyViewLike } from '../enemies/views';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { GrabPhysics } from '../physics/grabPhysics';
 import { FpsCamera } from '../player/fpsCamera';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { GrabRenderer } from '../render/grabRenderer';
@@ -88,6 +89,7 @@ export class GrabTest implements Scene {
   private slots!: PowerSlots;
   private energy!: PlayerEnergy;
   private player!: PlayerController;
+  private legs?: FppLegs;
   private previous!: PlayerState;
   private camera!: FpsCamera;
   private health!: Health;
@@ -134,6 +136,7 @@ export class GrabTest implements Scene {
     this.hurtboxes.add(id, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.camera = new FpsCamera(ctx.tuning, id, ctx.bus);
+    if (ctx.camera) this.legs = new FppLegs(three, ctx.tuning);
     this.projectiles = new ProjectileSystem(
       this.world,
       this.entities,
@@ -405,10 +408,12 @@ export class GrabTest implements Scene {
     }
     const camera = this.ctx.camera;
     if (camera) {
+      const playerState = this.player.getState();
+      this.legs?.update(this.previous, playerState, alpha, frameDt);
       const pose = this.camera.update(
         frameDt,
         this.previous,
-        this.player.getState(),
+        playerState,
         alpha,
       );
       camera.position.copy(pose.position);
@@ -479,6 +484,7 @@ export class GrabTest implements Scene {
     this.projectileRenderer.dispose();
     this.projectiles.dispose();
     this.grabRenderer.dispose();
+    this.legs?.dispose();
     this.camera.dispose();
     this.hud?.dispose();
     this.hint?.remove();

@@ -13,5 +13,5 @@
     [0, 1, -14]
   ],
   "hudLabel": "Broń i ciepło",
-  "controls": "1/2/3 — wybór broni | LPM — strzał | weapon <id> — zmiana broni"
+  "controls": "1/2/3 — wybór broni | LPM — strzał | PPM — celowanie | weapon <id> — zmiana broni"
 }

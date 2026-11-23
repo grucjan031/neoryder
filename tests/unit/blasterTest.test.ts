@@ -137,6 +137,11 @@ it('styles loaded models, changes local heat neons and disposes source and local
   vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockImplementation(
     async (url) => {
       const model = new Group();
+      if (String(url).includes('/npc_'))
+        return new GLTFLoader().parseAsync(
+          JSON.stringify({ asset: { version: '2.0' }, scenes: [{}] }),
+          '',
+        );
       const names = String(url).includes('blaster')
         ? ['frame', 'heat_vents', 'heat_cell']
         : ['torso'];

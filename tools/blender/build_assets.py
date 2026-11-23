@@ -3066,16 +3066,23 @@ def build_city_cable_span():
 
 def build_city_lantern_string():
     root = _city_root("city_lantern_string")
-    _city_tube(root, "wire", [(-5, -.05, 0)] +
-               [(x, -.72 * (1 - (x / 5) ** 2), 0) for x in [-5 + i * 10 / 16 for i in range(17)]] +
-               [(5, -.05, 0)], .012, sides=4)
-    for i in range(8):
-        x = -4.375 + i * 1.25
-        y = -.72 * (1 - (x / 5) ** 2)
-        _city_rod(root, "hanger", (x, y, 0), (x, y - .14, 0), .012, "mat_cable", 4)
-        _city_rod(root, "lantern", (x, y - .47, 0), (x, y - .14, 0), .14, "mat_neon_amber", 6)
-        for h in (y - .48, y - .14):
-            _city_rod(root, "lantern_cap", (x, h, 0), (x, h + .035, 0), .15, "mat_fabric", 6)
+    with open(os.path.join(ROOT, "src", "data", "render", "lanternString.json"), encoding="utf8") as source:
+        profile = json.load(source)
+    mounts = [(p["x"], p["y"], 0) for p in profile["mounts"]]
+    wire = [(-5, -.12, 0), *mounts, (5, -.12, 0)]
+    _city_tube(root, "wire", wire, .023, sides=6)
+    for x in (-4.94, 4.94):
+        _city_box(root, "ceiling_clip", (.12, .14, .16), (x, -.07, 0), "mat_metal")
+    for x, y, _ in mounts:
+        lens_bottom = y - profile["diffuserDropM"]
+        _city_rod(root, "hanger", (x, y, 0), (x, y - .21, 0), .035, "mat_metal", 6)
+        _city_box(root, "housing", (.84, .18, .34), (x, y - .29, 0),
+                  "mat_metal", .018, taper=(.84, .64))
+        _city_box(root, "bezel", (.82, .045, .32), (x, y - .39, 0), "mat_cable")
+        _city_box(root, "lantern", (.70, .045, .22), (x, lens_bottom + .0225, 0),
+                  "mat_neon_amber", .009)
+        for offset in (-.21, .21):
+            _city_box(root, "guard", (.022, .065, .235), (x + offset, y - .42, 0), "mat_metal")
     return root
 
 
@@ -3442,6 +3449,8 @@ def _city_finish(builder):
     if root.name in ("city_cable_span", "city_lantern_string"):
         # Trim the attachment ends flush with the nominal 10 m span and top plane.
         for obj in meshes:
+            if root.name == "city_lantern_string" and obj.name != "wire":
+                continue  # Individually centred housings and clips already fit the envelope.
             for v in obj.data.vertices:
                 v.co.x = max(-5, min(5, v.co.x))
                 v.co.z = min(0, v.co.z)
@@ -5268,7 +5277,8 @@ def render_preview(root, path: str) -> None:
     cam = bpy.data.objects.new("preview_cam", cam_data)
     scene.collection.objects.link(cam)
     # widok 3/4 od przodu (przód postaci = -Y)
-    direction = Vector((0.75, -1.0, 0.45)).normalized()
+    elevation = -0.55 if root.name == "city_lantern_string" else 0.45
+    direction = Vector((0.75, -1.0, elevation)).normalized()
     cam.location = center + direction * radius * 3.2
     cam.rotation_euler = (center - cam.location).to_track_quat("-Z", "Y").to_euler()
     cam_data.clip_end = 1000

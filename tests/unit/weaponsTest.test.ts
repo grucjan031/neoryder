@@ -26,7 +26,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-async function setup() {
+async function setup(debug = false) {
   const scene = new WeaponsTest();
   const three = new ThreeScene();
   const camera = new PerspectiveCamera();
@@ -43,7 +43,7 @@ async function setup() {
       rng: new Rng('weapons-scene'),
       loop: new GameLoop({ step: () => {}, render: () => {} }),
       tuning: settings,
-      debug: false,
+      debug,
       camera,
       commands,
     },
@@ -61,6 +61,25 @@ async function setup() {
     settings,
   };
 }
+
+it('test ADS optyki używa czasu wejścia, FOV lunety i płynnego wyjścia', async () => {
+  const { scene, camera, commands, settings } = await setup(true);
+  expect(commands.execute('ads optic scope')).toBe('Optyka: scope');
+  expect(commands.execute('ads guide on')).toBe('Krzyż włączony.');
+  const aiming: InputSnapshot = { ...input, held: new Set(['aim']) };
+  scene.step(SIM_DT, aiming);
+  scene.render(1);
+  expect(camera.fov).toBeLessThan(settings.camera.fov);
+  expect(camera.fov).toBeGreaterThan(settings.camera.fov * 0.5);
+  for (let t = SIM_DT; t < settings.player.aim.inS * 1.6; t += SIM_DT)
+    scene.step(SIM_DT, aiming);
+  scene.render(1);
+  expect(camera.fov).toBeCloseTo(settings.camera.fov * 0.5, 6);
+  scene.step(SIM_DT, input);
+  scene.render(1);
+  expect(camera.fov).toBeGreaterThan(settings.camera.fov * 0.5);
+  expect(camera.fov).toBeLessThan(settings.camera.fov);
+});
 
 it('registers, loads scene data, switches on weapon1..3 pressed and retains heat per weapon', async () => {
   expect((await scenes['weapons-test']?.())?.().id).toBe('weapons-test');

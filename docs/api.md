@@ -1636,13 +1636,27 @@ bez zwalniania świata podczas kroku symulacji.
 
 ## Wspólny widok FPP
 
+Sceny z kontrolerem gracza mogą dołączyć do świata `FppLegs` z
+`src/render/fppLegs.ts`. Widok przyjmuje poprzedni i bieżący `PlayerState`,
+`alpha` i czas klatki. Scena ukrywa go na czas odłączenia kamery od gracza
+i wywołuje `dispose()` przy wyjściu. Pozycję stóp wyznacza środek i wysokość
+kapsuły. Model korzysta z istniejącego kontraktu `PlayerController.getState()`.
+
 `FppViewModel` (`src/render/fppViewModel.ts`) posiada ostrze, broń, wolną dłoń
 i ruch rąk. Konstruktor przyjmuje bus, właściciela i opcje definicji ostrza,
 modeli broni oraz tuningu. `load(loadModels)`, `root`,
 `setBladeDefinition(def)` i `dispose()` obsługują cykl życia.
-`place(cameraMatrix, frameDt, { blade?, held, horizontalSpeed, visible? })`
+`place(cameraMatrix, frameDt, { blade?, held, horizontalSpeed, visible?, aim? })`
 jest wywoływane raz na klatkę; `held` przyjmuje `HeldItemView` albo stałe
 `blade`/`gun` dla scen testowych. `blade` to `BladeView` wymagany przy ostrzu.
+`aim` to wygładzona wartość ADS 0–1. Widok broni wyrównuje linię przyrządów
+do osi kamery. `adsEye()` zwraca aktywne położenie kamery w układzie korzenia
+broni. `setAdsEye([x, y, z] | null)` ustawia lub kasuje odchylenie debug dla
+załadowanej broni i jej aktualnego celownika, zwraca informację o powodzeniu.
+Pola `ironSight` w definicji broni (`rear`, `front`, opcjonalne `eyeReliefM`
+i podstawy dodawanych przyrządów) są w metrach w układzie GLB, z przodem w −Z.
+`visual.sight` modułu optycznego określa `target` i `rearZ` w lokalnych osiach
+geometrii modułu oraz `eyeReliefM` w metrach po dopasowaniu do broni.
 Getter `beamOrigin` zwraca pozycję świata root broni, jak dotychczas w Arenie.
 Moduł zachowuje kolejność: ruch, ostrze, widoczność, broń, wolna dłoń.
 
@@ -1881,7 +1895,7 @@ class HubStations {  // czysta logika stref, bez DOM
 }
 ```
 
-`loadHubLayout(data): HubLayout` — układ w formacie pokoju (`playerSpawn`, `blocks` z polem `interactive`, pola oprawy z `dressingSchema`) plus `stations`, `panels` (`tiles` | `screen` | `poster`), `npcs` (`{ id, position, rotationDeg, animation?, accent }`) i `fires`. `HubScene` rejestruje komendy debug `hub open <stacja>`, `hub close`, `hub look <stacja|npc>`, `hub talk <npc>`, `hub tp <x> <z> [yawDeg] [pitchDeg]` i zapytania `query('hubStation' | 'hubFocus' | 'hubNpc' | 'hubTalk' | 'playerPos' | 'stations' | 'npcs')`. Teksty rozmów NPC: `src/data/hub/npcs.pl.json` (`loadNpcTexts`, `src/world/hubNpcs.ts`); `selectHubTarget` (`src/world/hubStations.ts`) wybiera stację albo NPC promieniem z oka; liczby NPC w `tuning.hub` (`npcLineS`, `npcTurnRangeM`, `npcTurnSpeedRadS`, `npcHeadMaxRad`, `npcStandBodyMaxRad`, `npcSeatedBodyMaxRad`).
+`loadHubLayout(data): HubLayout` — układ w formacie pokoju (`playerSpawn`, `blocks` z polem `interactive`, pola oprawy z `dressingSchema`) plus `stations`, `panels` (`tiles` | `screen` | `poster`, okładziny `tiles` przyjmują opcjonalne `roughness` od 0 do 1), `npcs` (`{ id, position, rotationDeg, animation?, accent }`) i `fires`. `HubScene` rejestruje komendy debug `hub open <stacja>`, `hub close`, `hub look <stacja|npc>`, `hub talk <npc>`, `hub tp <x> <z> [yawDeg] [pitchDeg]` i zapytania `query('hubStation' | 'hubFocus' | 'hubNpc' | 'hubTalk' | 'playerPos' | 'stations' | 'npcs')`. Teksty rozmów NPC: `src/data/hub/npcs.pl.json` (`loadNpcTexts`, `src/world/hubNpcs.ts`); `selectHubTarget` (`src/world/hubStations.ts`) wybiera stację albo NPC promieniem z oka; liczby NPC w `tuning.hub` (`npcLineS`, `npcTurnRangeM`, `npcTurnSpeedRadS`, `npcHeadMaxRad`, `npcStandBodyMaxRad`, `npcSeatedBodyMaxRad`).
 
 ### Zapis v3 — `src/core/save.ts`
 
