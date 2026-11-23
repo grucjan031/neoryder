@@ -75,6 +75,14 @@ export const missionObjectiveSchema = z.discriminatedUnion('kind', [
     radiusM: positive,
     durationS: positive,
     holdS: z.number().finite().nonnegative().default(0),
+    checkpoints: z
+      .array(z.number().finite().gt(0).lt(1))
+      .refine((values) =>
+        values.every(
+          (value, index) => index === 0 || value > values[index - 1]!,
+        ),
+      )
+      .optional(),
     waves: z
       .array(
         z.object({

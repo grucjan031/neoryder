@@ -196,7 +196,16 @@ export class MissionObjectives {
       this.pauseAnnounced.add(id);
       this.hooks.signal(`objective:${id}:paused`);
     }
-    if (!inside) return;
+    if (!inside) {
+      if (connected && objective.checkpoints) {
+        const previous = this.progress[id] ?? 0;
+        this.progress[id] = objective.checkpoints.reduce(
+          (checkpoint, value) => (value <= previous ? value : checkpoint),
+          0,
+        );
+      }
+      return;
+    }
     let transferDt = dt;
     if (!connected) {
       const remaining = holdS * (1 - (this.progress[connectionKey] ?? 0));

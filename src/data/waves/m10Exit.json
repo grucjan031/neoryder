@@ -1,0 +1,28 @@
+{
+  "id": "m10Exit",
+  "firstBreakS": 1,
+  "breakS": 0,
+  "maxAlive": 6,
+  "minSpawnDistance": 4,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "sniper",
+          "count": 2
+        },
+        {
+          "enemy": "drone",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

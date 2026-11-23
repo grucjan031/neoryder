@@ -2458,6 +2458,15 @@ Szczegóły i koszt: `docs/systems/prototypes-s4-03.md`.
 - Cele (więzień, wagon) to encje drużyny `neutral` z `Health` i colliderem w grupie
   `CollisionGroup.Player` o filtrze tylko `EnemyProjectile`: trafiają je wyłącznie pociski wrogów.
 
+## Progi kontrolne transferu M10
+
+Opcjonalne `defend.checkpoints: number[]` zawiera rosnące, unikalne ułamki
+postępu w zakresie (0, 1). Wyjście z promienia obrony cofa transfer do ostatniego
+osiągniętego progu (lub 0), zachowując podłączenie nośnika. Bez tego pola transfer
+jedynie pauzuje. Ponowne przekroczenie progu fali zgłasza ten sam klucz posiłków;
+host poziomu nie powiela aktywnych ani ukończonych spotkań. Śmierć i przeładowanie
+zachowują dotychczasowy reset nieukończonego celu, bez zmiany formatu zapisu.
+
 ## Sojusznicy
 
 System: `docs/systems/allies.md`. Kod: `src/allies/`, dane `src/data/allies/*.json`.

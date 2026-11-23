@@ -1,5 +1,37 @@
 # Poziomy liniowe
 
+## M10 — Archiwum
+
+Generator: `node tools/levels/buildM10.mjs` (poziom, misja i sześć fal `m10*`).
+252 m trasy: winda towarowa (0–28), zewnętrzny pasaż Tarasu (28–96), wieża
+badawcza (96–156), archiwum (156–204), szyb techniczny (204–252).
+Rampa 96–112 prowadzi na galerię +4 m, archiwum leży na tej samej wysokości;
+rampa 204–220 sprowadza na dolny pomost szybu. Pod galerią jest kondygnacja
+instalacyjna. Prześwit 20 cm pod grodzią nie przepuszcza kapsuły gracza.
+
+Pasaż ma cichy pas przy z=−8, za osłonami; wejście w środek uruchamia
+`alarm-pasaz` (snajperzy i dron), bez nowego wykrywania. `straz-archiwum`
+(dwaj snajperzy i dwie wieżyczki na +4 m) blokuje panel śluzy. `transfer-1`
+i `transfer-2` startują przy 10/50% pobierania (strzelcy, tarczownik, Egzekutor).
+Sabotaż wywołuje `poscig`, a dolny pomost `blokada-szybu` (snajperzy i drony).
+Bramy: śluza po interakcji, szyb po zniszczeniu rdzenia, ewakuacja po blokadzie.
+Checkpointy: start, pasaż, wieża, archiwum, szyb. `allies: []`: infiltracja solo,
+Bajt wyłącznie w radiu; pole drużyny nie reprezentuje zdalnych rozmówców.
+
+Oprawa używa istniejących modeli miejskich, szkła, stali, szaf z generatorów,
+pionów rur i osłon; bez nowych zasobów. Ciepła biel oświetla trasę co 10 m
+(32, zasięg 16 m), akcenty: błękit kampusu, zielone ogrody i wyjście,
+fiolet szaf, bursztyn paneli. Jasność i kompozycja wymagają oględzin Architekta.
+
+Sprawdzenie w 30 s: po `campaign complete m07-nocny-dyzur` w scenie run
+otwórz `?scene=mission&mission=m10-archiwum&debug=1`, `god`,
+`checkpoint wieza`, `tp 130 0 -90 0 4`, `encounter clear`,
+`objective done sluza`, `objective done transfer`, `objective done rdzen`,
+`checkpoint szyb`, `tp 228 0`, `encounter clear`, `objective done exit`.
+Pełna próba: przejdź bokiem pasażu i po rampie, pozostań przy nośniku 32 s,
+odejdź po podłożeniu ładunku (5 s zapalnika), zejdź szybem.
+Testy: `missionM10Level.test.ts` (fizyczna trasa) i `missionM10.spec.ts`.
+
 Poziom w `src/data/levels/<id>.json` to jedna mapa ładowana w całości, bez przejść
 między pokojami. `levelSchema.ts` reużywa pola `roomSchema` i jego walidację
 osiągalności: `blocks`, `playerSpawn`, `spawnPoints`, `theme`, `signs`, `lights`,
