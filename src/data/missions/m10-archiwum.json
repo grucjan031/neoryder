@@ -1,0 +1,312 @@
+{
+  "id": "m10-archiwum",
+  "number": 10,
+  "title": "Archiwum",
+  "act": 2,
+  "level": "m10-archiwum",
+  "sectorId": "kurogane",
+  "summary": "Samotna infiltracja wieży Helixy na Tarasie: otwórz archiwum, pobierz równania potrzebne Tymonowi, zniszcz rdzeń i ucieknij szybem. Bajt prowadzi przez radio, a nagłówki danych ujawnią sekret Wolan.",
+  "requires": [
+    "m09-brat"
+  ],
+  "layers": 7,
+  "enemies": [
+    "sniper",
+    "turret",
+    "gunner",
+    "shielder",
+    "executor",
+    "drone"
+  ],
+  "fixedNodes": [
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatSubstation",
+      "objectives": [
+        "sluza",
+        "transfer",
+        "rdzen",
+        "exit"
+      ],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "sluza",
+      "kind": "interact",
+      "label": "Otwórz serwerownię archiwum",
+      "position": {
+        "x": 150,
+        "y": 4,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": []
+    },
+    {
+      "id": "transfer",
+      "kind": "defend",
+      "label": "Podepnij nośnik i utrzymaj salę",
+      "position": {
+        "x": 178,
+        "y": 4,
+        "z": 0
+      },
+      "radiusM": 6,
+      "holdS": 2,
+      "durationS": 30,
+      "checkpoints": [
+        0.5
+      ],
+      "waves": [
+        {
+          "atProgress": 0.1,
+          "wave": "m10Transfer"
+        },
+        {
+          "atProgress": 0.5,
+          "wave": "m10Commander"
+        }
+      ]
+    },
+    {
+      "id": "rdzen",
+      "kind": "sabotage",
+      "label": "Zniszcz rdzeń archiwum",
+      "position": {
+        "x": 188,
+        "y": 4,
+        "z": 0
+      },
+      "holdS": 3,
+      "fuseS": 5,
+      "blastRadiusM": 4,
+      "blastDamage": 80,
+      "reinforcements": "m10Pursuit"
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Zjedź szybem technicznym",
+      "position": {
+        "x": 244,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 3,
+      "unlockAfter": [
+        "rdzen"
+      ]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "wolan",
+      "text": "Bez bazowej dokumentacji mogę co najwyżej opóźniać rozstrojenie u Tymona o kolejne dni. Nie wyłączę tego z pamięci."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Jeszcze jedno. Po zgraniu plików serwer trzeba zniszczyć fizycznie. Rdzeń i dyski zapasowe."
+    },
+    {
+      "speaker": "szron",
+      "text": "Niech będzie. Kurier, wchodzisz windą techniczną od strony krawędzi Bulwaru. Zgrywaj dane, pal rdzeń i wracaj tym samym szybem, zanim zamkną kopułę."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "wolan",
+      "text": "Tak. Piętnaście lat temu."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Odeszłam tydzień po pierwszym stałym stanowisku."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Tak. *(pauza)* Nie proszę, żebyś mi wierzył. Proszę, żeby ktoś policzył te równania. Nikt inny tego nie umie."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Zaczynam od Tymona."
+    },
+    {
+      "speaker": "szron",
+      "text": "Zostajesz w kąciku technicznym. Każdy raport najpierw u mnie i u Bajta."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Tak między nami… zanim zgrałem to na dysk roboczy dla Wolan, zrobiłem drugą, zaszyfrowaną kopię u siebie. Na wszelki wypadek."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "priority": "tactical",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jesteś nad chmurami, Kurier. Nawet deszcz mają tu odprowadzany w stalowe rynny, ani jednej kałuży na betonie."
+        },
+        {
+          "speaker": "szron",
+          "text": "Nie daj się zwieść porządkowi. Przeszukaj najpierw krawędzie wyższych galerii, zanim wyjdziesz na otwarty mostek."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:pasaz",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "A w bazie z przychodni nie było żadnych schematów technicznych?"
+        },
+        {
+          "speaker": "wolan",
+          "text": "Tylko instrukcje kalibracji gotowych sztuk. Wzór matematyczny leży w starym archiwum badawczym na skraju Tarasu. Dwadzieścia lat temu tam zaczynał cały dział neuroinżynierii, dziś budynek stoi prawie pusty."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Sprawdziłem ruch sieciowy tej wieży. Zero połączeń wychodzących. Jeśli ten serwer tam jeszcze stoi, naprawdę jest całkowicie odcięty od głównego systemu Helixa."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:pasaz",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Wejście na Taras to nie wypad do magazynu w Hutach. Tam są ich wieże, snajperzy i krótkie czasy reakcji."
+        },
+        {
+          "speaker": "wolan",
+          "text": "Wiem. Ale bez tych danych Ida będzie musiała trzymać Tymona swoim sygnałem aż do całkowitego wyczerpania."
+        },
+        {
+          "speaker": "mira",
+          "text": "Trzeba tam iść. Jeśli istnieje sposób, żeby zdjąć mu ten szajs z głowy bez zabicia go przy okazji, bierzemy go dziś w nocy."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:alarm-pasaz:started",
+      "priority": "tactical",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Czerwona wiązka po przekątnej — snajper na piętrze pod kopułą. Jeśli słyszysz brzęczenie przed strzałem, zejdź z linii albo odbij pocisk ostrzem."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:wieza",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Po co? Przecież sama mówisz, że nikt z niego nie korzysta."
+        },
+        {
+          "speaker": "wolan",
+          "text": "Jeśli zobaczą wyczyszczone dyski bez uszkodzeń, od razu zrozumieją, czego dokładnie szukamy. Zniszczony rdzeń wygląda jak zwykły sabotaż."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:wieza",
+      "priority": "tactical",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jesteś pod drzwiami starego archiwum. Na balkonie rozstawili podwójną obsadę snajperską i dwie wieżyczki przy śluzie."
+        },
+        {
+          "speaker": "szron",
+          "text": "Najpierw zdejmij wysokość, potem otwieraj drzwi. Tam za tobą nie ma dokąd się cofać."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:transfer:started",
+      "priority": "tactical",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Nośnik widzi rdzeń. Zaczynam kopiowanie... stare formaty sprzed piętnastu lat, ale ścieżki są czytelne."
+        },
+        {
+          "speaker": "wolan",
+          "text": "Trzymaj ich z dala od głównej szafy podczas zapisu. Jeśli uszkodzą dyski przed końcem transferu, wrócimy z niczym."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:transfer:progress:50",
+      "priority": "tactical",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Dobra, przechodzi połowa paczki. Zgrywam od razu nagłówki protokołu pierwotnego, żeby sprawdzić kompletność..."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Chwila... kurwa. „Protokół K-0, jednostronny transfer wzorca kory ruchowej. Data zatwierdzenia: piętnaście lat wstecz. Główny autor projektu: doktor Helena Wolan.”"
+        },
+        {
+          "speaker": "szron",
+          "text": "..."
+        },
+        {
+          "speaker": "szron",
+          "text": "Wolan. Potwierdź to."
+        },
+        {
+          "speaker": "wolan",
+          "text": "Kurier, jak tylko nośnik piknie, rozwal rdzeń chłodzenia."
+        },
+        {
+          "speaker": "szron",
+          "text": "Wolan, pytam drugi raz. Czyje nazwisko tam stoi?"
+        },
+        {
+          "speaker": "wolan",
+          "text": "Zrób to, o co prosiłam. Porozmawiamy na stacji."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:transfer:done",
+      "priority": "tactical",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Transfer skończony, wyciągaj nośnik!"
+        },
+        {
+          "speaker": "szron",
+          "text": "Pal rdzeń, Kurier, i wychodź na kładkę za szybem technicznym. Ochrona z niższych pięter już jedzie windą."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:szyb",
+      "priority": "tactical",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Szyb jest wolny od strony Bulwaru. Zjeżdżaj na dół, czekam przy wylocie."
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 120,
+      "cores": 2
+    }
+  }
+}

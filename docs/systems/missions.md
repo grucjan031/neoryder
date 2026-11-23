@@ -30,6 +30,32 @@ po opasce pojmanie pozostaje zapisane. Nie zmieniono wersji zapisu ani kodu
 Dedykowane lustrzane moce Akordu, opcjonalne premie projektorów/techników,
 animacja transportu oraz zmiany wystroju kryjówki pozostają poza tą wersją.
 
+## M10 — Archiwum
+
+Misja liniowa aktu II na Tarasie: `sluza` (`interact`, 2 s), `transfer`
+(`defend`: podłączenie 2 s, pobieranie 30 s, promień 6 m, fale przy 10/50%),
+`rdzen` (`sabotage`, 3 s + zapalnik 5 s), `exit` (3 s po pokonaniu blokady).
+Pierwsze ukończenie: 120 Danych i 2 Rdzenie. Trzy kwestie odprawy, sześć
+debriefu, bez interludium (scenariusz nie przewiduje osobnego). Pozostała
+odprawa i dialogi są w radiu sekcji, checkpointów i celów; ujawnienie autorstwa
+Wolan pada przy 50% transferu. Nie ma fizycznej drużyny, Bajt prowadzi radiowo.
+
+**Integracja kampanii:** docelowo `requires: ["m09-brat"]`. W tym worktree brak
+M09, a `loadMissionDefinitions` odrzuca nieznane wymagania, dlatego tymczasowo
+M10 wymaga `m07-nocny-dyzur`. Po scaleniu M09 zmienić wymaganie w generatorze,
+wygenerować JSON i zmienić asercję w `missionM10Level.test.ts`.
+
+Opcjonalne `defend.checkpoints` to ściśle rosnące ułamki (0, 1). M10 ma `[0.5]`:
+odejście cofa do 0 lub 50%, zachowując podłączenie. Bez pola stare misje tylko
+pauzują. Powtórzone progi wysyłają ten sam klucz fali; host nie powiela aktywnego
+ani ukończonego spotkania. Przerwanie nie kończy misji. Śmierć/wznowienie używa
+standardowego checkpointu i resetu nieukończonego celu. Zapis nie został zmieniony.
+
+Poza zakresem: opcjonalny przekaźnik i kaseta (pominięto radiową obietnicę
+wyłączenia przekaźnika), zmiany kryjówki, fizyczny wybuch pary oraz animacja
+zjazdu windą. Szyb jest grywalnym zejściem po rampie. Radio nie zatrzymuje
+symulacji przy 50%; długa rozmowa korzysta z istniejącej kolejki napisów.
+
 Pole `summary` zawiera krótki opis wyświetlany na tablicy po wyborze misji.
 
 Odprawa, przerywnik i debrief pokazują po jednej kwestii z imieniem i ikoną mówiącego. Kliknięcie karty, „Dalej” lub spacja w widoku odsłania resztę tekstu, a po odsłonięciu przechodzi do kolejnej strony. Dłuższe kwestie są dzielone na strony. Opcja „Automatyczne przewijanie” jest domyślnie wyłączona i czeka po odsłonięciu strony przez czas zależny od długości tekstu. Ostatnia strona pozostaje widoczna. Ustawienie ograniczonego ruchu w systemie odsłania tekst od razu. „Zakończ rozmowę” zapisuje zamknięcie debriefu, także przed ostatnią kwestią.

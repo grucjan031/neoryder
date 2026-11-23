@@ -1,0 +1,28 @@
+{
+  "id": "m10Commander",
+  "firstBreakS": 1,
+  "breakS": 0,
+  "maxAlive": 6,
+  "minSpawnDistance": 4,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "executor",
+          "count": 1
+        },
+        {
+          "enemy": "gunner",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}
