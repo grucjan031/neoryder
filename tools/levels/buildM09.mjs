@@ -140,6 +140,73 @@ for (const x of [8, 24, 40]) {
   box(x - 0.5, x + 0.5, -8, -1, 3.5, 4.5, 'overpass_concrete');
 }
 box(0, 48, -9, -8, -18, 18, 'asphalt');
+// Z kładek widać okna nastawni i dachy warsztatów poniżej poziomu bulwaru.
+for (const [x, z, top] of [
+  [9, -16, 4],
+  [29, -20, 7],
+  [19, 18, 5],
+  [43, 17, 3],
+]) {
+  const side = Math.sign(z);
+  box(x - 6, x + 6, -8, top, z - 3, z + 3, 'facade');
+  const face = z - side * 3;
+  for (const dx of [-3.6, 0, 3.6])
+    box(
+      x + dx - 1,
+      x + dx + 1,
+      top - 2,
+      top - 1.2,
+      face - 0.05,
+      face + 0.05,
+      'light_white',
+    );
+  prop('city_roof_hvac_unit', x, z, top);
+  prop('city_pipe_run', x + 2, face, top - 4, side > 0 ? Math.PI : 0);
+}
+for (const x of [8, 24, 40]) {
+  prop('city_cable_span', x, 0, -1.4, Math.PI / 2);
+  prop('city_vent_grate', x + 2, -3.7);
+  level.ambientFx.push({
+    kind: 'steam',
+    position: v(x + 2, 0.06, -3.7),
+    rate: 1,
+  });
+}
+for (const [x, z, y, kind] of [
+  [88, -7, 3, 'drip'],
+  [119, 11, 6, 'sparks'],
+  [151, 12.3, 6, 'drip'],
+  [182, 12.3, 6, 'drip'],
+  [220, -10, 1.4, 'sparks'],
+  [229, 11.4, 7, 'drip'],
+])
+  level.ambientFx.push({ kind, position: v(x, y, z), rate: 1 });
+for (const [x, z, texture] of [
+  [7, 2, 'floor_hazard'],
+  [24, -2, 'oil_stain'],
+  [43, 1, 'floor_stop'],
+  [54, -4, 'puddle1'],
+  [72, 2, 'crack_floor'],
+  [92, -2, 'floor_stop'],
+  [99, 7, 'manhole'],
+  [116, -3, 'puddle2'],
+  [135, 3, 'floor_hazard'],
+  [148, -3, 'crack_floor'],
+  [168, 6, 'manhole'],
+  [188, 0, 'floor_stop'],
+  [202, 3, 'tire_marks'],
+  [219, -2, 'oil_stain'],
+  [230, -3, 'floor_hazard'],
+])
+  level.decals.push({
+    texture,
+    position: v(x, 0.012, z),
+    size: { w: 2.5, h: 2 },
+    yaw: -Math.PI / 2,
+    surface: 'floor',
+  });
+// Pasy przy x=192 należą do bramy pościgu. Nadproże zapowiada przejście z areny.
+sign('arrow', 191.45, 6, '#6dff4a', 4, -Math.PI / 2);
 // Osłony pozostawiają ciągły pas przejścia po osi oraz boczne flanki.
 for (const [x, z] of [
   [24, 3],
