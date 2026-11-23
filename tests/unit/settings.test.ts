@@ -413,4 +413,35 @@ describe('Settings Z6', () => {
       screen.dispose();
     }
   });
+
+  it('zakładka Dostępność ma przełącznik przechyłów kamery zapisujący cameraTilt', () => {
+    const settings = loadSettings(localStorage);
+    const before = settings.cameraTilt;
+    const screen = new SettingsScreen(settings);
+    const dialog =
+      document.querySelector<HTMLDialogElement>('.settings-screen')!;
+    dialog.showModal = () => {
+      dialog.open = true;
+    };
+    dialog.close = () => {
+      dialog.open = false;
+    };
+    try {
+      screen.show();
+      document
+        .querySelector<HTMLButtonElement>('#settings-tab-access')!
+        .click();
+      const toggle = document.querySelector<HTMLButtonElement>(
+        'button[role="switch"][aria-label="Przechyły i zoom kamery"]',
+      )!;
+      expect(toggle.getAttribute('aria-checked')).toBe(String(before));
+      toggle.click();
+      expect(toggle.getAttribute('aria-checked')).toBe(String(!before));
+      expect(loadSettings(localStorage).cameraTilt).toBe(!before);
+      toggle.click();
+      expect(loadSettings(localStorage).cameraTilt).toBe(before);
+    } finally {
+      screen.dispose();
+    }
+  });
 });

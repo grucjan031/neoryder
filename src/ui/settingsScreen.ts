@@ -287,6 +287,7 @@ export class SettingsScreen {
         settings.uiScale = base.uiScale;
         settings.reduceMotion = base.reduceMotion;
         settings.flashes = base.flashes;
+        settings.cameraTilt = base.cameraTilt;
         settings.screenShake = base.screenShake;
         break;
     }
@@ -452,6 +453,14 @@ export class SettingsScreen {
       this.toggleRow(text.flashes, text.flashesHint, s.flashes, (value) => {
         s.flashes = value;
       });
+      this.toggleRow(
+        text.cameraTilt,
+        text.cameraTiltHint,
+        s.cameraTilt,
+        (value) => {
+          s.cameraTilt = value;
+        },
+      );
       this.sliderRow(
         'screenShake',
         text.screenShake,

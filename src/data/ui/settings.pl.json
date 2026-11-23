@@ -107,6 +107,7 @@
   "reduceMotion": "Ogranicz animacje",
   "reduceMotionHint": "Wyłącza przesunięcia i ruch ozdobny w menu; zostają same zaniki.",
   "flashesHint": "Wyłącz, jeśli błyski przy trafieniach męczą wzrok.",
+  "cameraTiltHint": "Wyłącz, jeśli przechyły i zoom kamery przy ruchu i walce powodują dyskomfort.",
   "screenShakeHint": "Siła wstrząsów kamery przy trafieniach i wybuchach.",
   "fovHint": "Szersze pole widzenia pokazuje więcej, ale oddala cele.",
   "mouseSensitivityHint": "Mnożnik czułości obrotu kamery myszą.",
