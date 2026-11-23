@@ -66,6 +66,16 @@ export const moduleSchema = z
       .object({
         shape: z.enum(MODULE_SHAPES),
         color: z.enum(['amber', 'white', 'green']),
+        sight: z
+          .strictObject({
+            target: z.tuple([z.number(), z.number(), z.number()]),
+            rearZ: z.number(),
+            eyeReliefM: z.number().positive(),
+          })
+          .refine(({ target, rearZ }) => rearZ > target[2], {
+            message: 'Okular musi być za punktem celowania.',
+          })
+          .optional(),
       })
       .strict(),
     tags: z.array(z.string()),
@@ -79,6 +89,12 @@ export const moduleSchema = z
         code: 'custom',
         path: ['visual', 'shape'],
         message: 'Kształt nie pasuje do slotu.',
+      });
+    if ((module.slot === 'optic') !== (module.visual.sight !== undefined))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['visual', 'sight'],
+        message: 'Tylko optyka wymaga punktu celowania i położenia okularu.',
       });
   });
 

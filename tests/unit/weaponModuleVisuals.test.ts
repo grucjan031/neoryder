@@ -47,6 +47,43 @@ function meshesOf(root: Object3D): Mesh[] {
   return meshes;
 }
 
+function mockModelFiles() {
+  return vi
+    .spyOn(GLTFLoader.prototype, 'loadAsync')
+    .mockImplementation((url) =>
+      new GLTFLoader().parseAsync(
+        new Uint8Array(readFileSync(`public${url}`)).buffer,
+        '',
+      ),
+    );
+}
+
+function visibleAdsMeshes(root: Object3D): Mesh[] {
+  root.updateMatrixWorld(true);
+  const meshes: Mesh[] = [];
+  root.traverseVisible((part) => {
+    if (part instanceof Mesh && !part.userData.noOutline) meshes.push(part);
+  });
+  return meshes;
+}
+
+function expectAxialRecoil(
+  view: FppViewModel,
+  bus: EventBus,
+  weapon: string,
+  camera: Matrix4,
+  readTarget: () => Vector3,
+): void {
+  const inverse = camera.clone().invert();
+  const before = readTarget().applyMatrix4(inverse);
+  bus.emit('weapon_fired', { weapon, owner: 1 });
+  view.place(camera, 0, { held: 'gun', horizontalSpeed: 4, aim: 1 });
+  const after = readTarget().applyMatrix4(inverse);
+  expect(after.x).toBeCloseTo(0, 5);
+  expect(after.y).toBeCloseTo(0, 5);
+  expect(after.z).toBeGreaterThan(before.z);
+}
+
 function projectedBounds(meshes: Mesh[], camera: PerspectiveCamera): Box2 {
   const box = new Box2();
   const point = new Vector3();
@@ -375,14 +412,7 @@ describe('widoczność bryły modułu z biodra', () => {
         (slot === 'grip' && (weapon === 'rifle' || weapon === 'scatter')),
     ),
   )('$weapon / $id', async ({ weapon, id, model }) => {
-    const loader = vi
-      .spyOn(GLTFLoader.prototype, 'loadAsync')
-      .mockImplementation(async (url) =>
-        new GLTFLoader().parseAsync(
-          new Uint8Array(readFileSync(`public${url}`)).buffer,
-          '',
-        ),
-      );
+    const loader = mockModelFiles();
     const blade = vi
       .spyOn(FppBlade.prototype, 'load')
       .mockResolvedValue(undefined);
@@ -657,13 +687,7 @@ describe('widok przez optykę w ADS', () => {
         slot === 'optic' && (shape === 'scope' || compatible),
     ),
   )('$weapon / $id', async ({ weapon, model, id, shape }) => {
-    const gltf = await loadModel(model);
-    const loader = vi
-      .spyOn(GLTFLoader.prototype, 'loadAsync')
-      .mockResolvedValue(gltf);
-    const hand = vi
-      .spyOn(HandRig.prototype, 'load')
-      .mockResolvedValue(undefined);
+    const loader = mockModelFiles();
     const blade = vi
       .spyOn(FppBlade.prototype, 'load')
       .mockResolvedValue(undefined);
@@ -684,13 +708,35 @@ describe('widok przez optykę w ADS', () => {
       view.place(camera, 1 / 60, { held: 'gun', horizontalSpeed: 4, aim: 1 });
       const visual = view.root.getObjectByName(`module_${shape}`)!;
       const target = visual.getObjectByName('module_ads_sight')!;
+      const rear = visual.getObjectByName('module_ads_rear')!;
       const inCamera = target
         .getWorldPosition(new Vector3())
         .applyMatrix4(camera.clone().invert());
       expect(inCamera.x).toBeCloseTo(0, 5);
       expect(inCamera.y).toBeCloseTo(0, 5);
       expect(inCamera.z).toBeLessThan(0);
-      const opaque = meshesOf(visual.parent!).filter(
+      const rearInCamera = rear
+        .getWorldPosition(new Vector3())
+        .applyMatrix4(camera.clone().invert());
+      const eye = view.adsEye()!;
+      const relief = moduleDefinitions.get(id)!.visual.sight!.eyeReliefM;
+      expect(rearInCamera.x).toBeCloseTo(0, 5);
+      expect(rearInCamera.y).toBeCloseTo(0, 5);
+      expect(-rearInCamera.z).toBeGreaterThanOrEqual(relief - 1e-6);
+      expect(eye[2]).toBeGreaterThanOrEqual(
+        tuning.player.aim.opticMinEyeZ - 1e-6,
+      );
+      const mark = visual.getObjectByName(
+        shape === 'holo' ? 'holo_reticle' : 'optic_reticle',
+      )!;
+      expect(
+        new Box3()
+          .setFromObject(mark, true)
+          .getCenter(new Vector3())
+          .distanceTo(target.getWorldPosition(new Vector3())),
+      ).toBeLessThan(1e-6);
+      const all = visibleAdsMeshes(view.root);
+      const opaque = all.filter(
         (mesh) =>
           !(mesh.material as MeshStandardMaterial).transparent &&
           mesh.name !== 'holo_reticle' &&
@@ -703,7 +749,6 @@ describe('widok przez optykę w ADS', () => {
       ray.layers.enableAll();
       expect(ray.intersectObjects(opaque, false)).toHaveLength(0);
       if (shape === 'scope') {
-        const all = meshesOf(visual.parent!);
         expect(ray.intersectObjects(all, false)).toHaveLength(0);
         const reticle = visual.getObjectByName('optic_reticle')!;
         const sightBox = new Box3().setFromObject(reticle, true);
@@ -723,11 +768,84 @@ describe('widok przez optykę w ADS', () => {
           expect(ray.intersectObjects(all, false)).toHaveLength(0);
         }
       }
+      expectAxialRecoil(view, bus, weapon, camera, () =>
+        target.getWorldPosition(new Vector3()),
+      );
     } finally {
       view.dispose();
       blade.mockRestore();
-      hand.mockRestore();
       loader.mockRestore();
     }
   });
+});
+
+describe('przyrządy mechaniczne w ADS', () => {
+  it.each([...weaponDefinitions.values()])(
+    '$id',
+    async ({ id, model, ironSight }) => {
+      expect(ironSight).toBeDefined();
+      const loader = mockModelFiles();
+      const blade = vi
+        .spyOn(FppBlade.prototype, 'load')
+        .mockResolvedValue(undefined);
+      const bus = new EventBus();
+      const view = new FppViewModel(bus, 1, { modelOf: () => model });
+      try {
+        bus.emit('weapon_switched', { owner: 1, weapon: id, slot: 0 });
+        await view.load();
+        view.place(new Matrix4(), 1 / 60, {
+          held: 'gun',
+          horizontalSpeed: 4,
+          aim: 0.5,
+        });
+        const camera = new PerspectiveCamera(tuning.camera.fov, 16 / 9);
+        camera.position.set(2, 3, 4);
+        camera.rotation.set(0.17, 0.27, 0.1, 'YXZ');
+        camera.updateMatrixWorld();
+        view.place(camera.matrixWorld, 1 / 60, {
+          held: 'gun',
+          horizontalSpeed: 4,
+          aim: 1,
+        });
+        for (const point of [ironSight!.rear, ironSight!.front]) {
+          const target = view.root
+            .getObjectByName(model!)!
+            .localToWorld(new Vector3(...point));
+          expect(camera.worldToLocal(target.clone()).z).toBeLessThan(0);
+          const projected = target.project(camera);
+          expect(projected.x).toBeCloseTo(0, 5);
+          expect(projected.y).toBeCloseTo(0, 5);
+        }
+        const eye = view.adsEye()!;
+        const relief =
+          ironSight!.eyeReliefM ?? tuning.player.aim.ironEyeReliefM;
+        expect(
+          new Vector3(...eye).distanceTo(new Vector3(...ironSight!.rear)),
+        ).toBeCloseTo(relief, 6);
+        const ray = new Raycaster(
+          camera.position,
+          camera.getWorldDirection(new Vector3()),
+        );
+        ray.layers.enableAll();
+        expect(
+          ray
+            .intersectObjects(visibleAdsMeshes(view.root), false)
+            .map(({ object }) => object.name),
+        ).toEqual([]);
+        expect(view.setAdsEye([eye[0] + 0.01, eye[1], eye[2]])).toBe(true);
+        expect(view.adsEye()?.[0]).toBeCloseTo(eye[0] + 0.01, 6);
+        expect(view.setAdsEye(null)).toBe(true);
+        expect(view.adsEye()).toEqual(eye);
+        expectAxialRecoil(view, bus, id, camera.matrixWorld, () =>
+          view.root
+            .getObjectByName(model!)!
+            .localToWorld(new Vector3(...ironSight!.front)),
+        );
+      } finally {
+        view.dispose();
+        blade.mockRestore();
+        loader.mockRestore();
+      }
+    },
+  );
 });

@@ -9,6 +9,12 @@
   "tickHz": 10,
   "tags": ["#gun", "#laser"],
   "model": "beam",
+  "ironSight": {
+    "rear": [0, 0.116, 0.056],
+    "front": [0, 0.143, -0.337],
+    "frontBaseY": 0.129,
+    "eyeReliefM": 0.32
+  },
   "grip": {
     "offset": [0.0012, -0.022, -0.026],
     "pose": "gripBeam",

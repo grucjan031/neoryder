@@ -109,9 +109,11 @@ FPP. Parametry dopasowania są w `tuning.weaponModuleVisuals`.
 
 - Optyka opiera się na powierzchni siatki GLB w miejscu każdej stopy.
   Podkładki łączą stopę z korpusem także na nierównej powierzchni. W pełnym
-  ADS widok ustawia się na znaku. Luneta ma otwarty okular i cienki pierścień
-  celowniczy, przez którego środek widać cel. Kołysanie i opóźnienie
-  obrotu wygaszają się wraz z wejściem w ADS, a odrzut nadal porusza bronią.
+  ADS `visual.sight.target` i `rearZ` ustawiają znak i okular na osi kamery.
+  `eyeReliefM` określa odległość oka od okularu, a `opticMinEyeZ` ogranicza
+  zbliżenie korpusu do kamery przy dalekim mocowaniu optyki. Holo ma znak
+  bursztynowy, kolimator zielony. Luneta ma otwarty okular i cienki pierścień
+  celowniczy, a przybliżenie bierze z `aimFovScale`.
 - W karabinie i rozpraszaczu chwyt przedni oraz laser wiszą centralnie pod osią
   wylotu (`socket.x`), przed dłonią podporową i bez jej przenikania; między
   dwoma lufami rozpraszacza stopa opiera się na parze symetrycznych podpór, a

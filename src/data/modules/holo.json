@@ -5,7 +5,8 @@
   "slot": "optic",
   "visual": {
     "shape": "holo",
-    "color": "amber"
+    "color": "amber",
+    "sight": { "target": [0, 0.53, -0.225], "rearZ": 0.57, "eyeReliefM": 0.24 }
   },
   "tags": ["#optic"],
   "weaponKinds": ["projectile", "spread"],

@@ -550,13 +550,7 @@
 }
 .hud__crosshair {
   filter: drop-shadow(0 1px 2px #000);
-}
-/* Celowanie (ADS): kreski zbliżają się do środka, kropka zostaje. */
-.hud__crosshair .hud__crosshair-ticks {
-  scale: calc(1 - 0.45 * var(--aim, 0));
-}
-.hud__crosshair--aim .hud__tick {
-  opacity: 0.85;
+  opacity: max(0, calc(1 - 2 * var(--aim, 0)));
 }
 .hud__dot {
   position: absolute;

@@ -25,6 +25,23 @@ export const weaponGripSchema = z.strictObject({
 });
 export type WeaponGrip = z.infer<typeof weaponGripSchema>;
 
+const ironSightSchema = z
+  .strictObject({
+    rear: vec3,
+    front: vec3,
+    eyeReliefM: z.number().positive().optional(),
+    rearBaseY: z.number().optional(),
+    frontBaseY: z.number().optional(),
+  })
+  .refine(
+    ({ rear, front, rearBaseY, frontBaseY }) =>
+      front[2] < rear[2] &&
+      (rearBaseY === undefined || rearBaseY < rear[1]) &&
+      (frontBaseY === undefined || frontBaseY < front[1]),
+    'Muszka musi być przed szczerbinką, a podstawy poniżej linii celowania.',
+  );
+export type IronSight = z.infer<typeof ironSightSchema>;
+
 const weaponFields = {
   id: z.string().min(1),
   name: z.string().min(1),
@@ -35,6 +52,8 @@ const weaponFields = {
   aimFovScale: z.number().finite().min(0.2).max(1).optional(),
   /** Chwyt prawej i podpierającej dłoni dla modelu FPP; brak = chwyt domyślny. */
   grip: weaponGripSchema.optional(),
+  /** Przyrządy mechaniczne w metrach w układzie modelu FPP. */
+  ironSight: ironSightSchema.optional(),
   aimInScale: z.number().finite().positive().optional(),
   aimSpreadScale: z.number().finite().positive().optional(),
   aimSensitivityScale: z.number().finite().positive().optional(),
@@ -151,5 +170,12 @@ export function weaponModelOf(id: string): string | undefined {
 export function weaponGripOfModel(model: string): WeaponGrip | undefined {
   for (const definition of weaponDefinitions.values())
     if (definition.model === model && definition.grip) return definition.grip;
+  return undefined;
+}
+
+export function ironSightOfModel(model: string): IronSight | undefined {
+  for (const definition of weaponDefinitions.values())
+    if (definition.model === model && definition.ironSight)
+      return definition.ironSight;
   return undefined;
 }
