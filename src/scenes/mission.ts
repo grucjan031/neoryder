@@ -251,7 +251,11 @@ export class MissionScene implements Scene {
     ) {
       this.chaseClock = document.createElement('output');
       this.chaseClock.dataset.chaseClock = '';
-      document.querySelector('.mission-hud')?.append(this.chaseClock);
+      // Zegar pościgu w panelu celów, pod bieżącym celem — nie jako luźny element w rogu.
+      (
+        document.querySelector('.mission-goals') ??
+        document.querySelector('.mission-hud')
+      )?.append(this.chaseClock);
     }
     this.room.resetLevelCombat(checkpoint.position, checkpoint.yawDeg);
     for (const npc of this.level.objectiveNpcs ?? []) {

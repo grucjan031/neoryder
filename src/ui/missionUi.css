@@ -126,6 +126,16 @@
 .mission-goals > div {
   margin-top: 8px;
 }
+.mission-goals [data-chase-clock] {
+  display: block;
+  margin-top: 10px;
+  color: var(--c-accent);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.mission-goals [data-chase-clock][hidden] {
+  display: none;
+}
 .mission-goals span {
   display: block;
 }
