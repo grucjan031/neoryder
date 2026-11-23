@@ -213,6 +213,8 @@ export const enemySchema = z
     /** F3: koszt wroga w budżecie zagrożenia pokoju (dodatni). */
     threatCost: positive.optional(),
     grabbable: z.boolean().optional(),
+    /** Wróg tylko do misji fabularnych — nie musi występować w falach areny. */
+    missionOnly: z.boolean().optional(),
     stationary: z.boolean().optional(),
     hack: z
       .object({

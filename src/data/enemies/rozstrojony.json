@@ -4,6 +4,7 @@
   "kind": "assaulter",
   "model": "enemy_trooper",
   "grabbable": true,
+  "missionOnly": true,
   "maxHealth": 45,
   "moveSpeed": 5.4,
   "turnRateDegS": 360,

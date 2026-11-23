@@ -86,7 +86,9 @@ describe('dane fal areny', () => {
     );
     for (const id of used) expect(enemyRegistry.has(id)).toBe(true);
     const regularIds = [...enemyDefinitions.values()]
-      .filter((definition) => definition.kind !== 'boss')
+      .filter(
+        (definition) => definition.kind !== 'boss' && !definition.missionOnly,
+      )
       .map((definition) => definition.id);
     expect([...used].sort()).toEqual(regularIds.sort());
   });
