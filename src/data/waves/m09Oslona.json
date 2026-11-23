@@ -1,0 +1,28 @@
+{
+  "id": "m09Oslona",
+  "firstBreakS": 1,
+  "breakS": 0,
+  "maxAlive": 8,
+  "minSpawnDistance": 6,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "assaulter",
+          "count": 3
+        },
+        {
+          "enemy": "hacker",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

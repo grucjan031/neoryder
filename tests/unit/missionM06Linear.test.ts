@@ -228,7 +228,7 @@ it('schemat pilnuje celu bossa i spotkania zamykającego bramę', () => {
   });
   expect(levelSchema.safeParse(withBoss('missing')).success).toBe(false);
   expect(() => loadLevel(withBoss('server'), mission, levelWaves)).toThrow(
-    'Spotkanie bossa wymaga celu killBoss.',
+    'Spotkanie bossa wymaga celu killBoss lub subdue.',
   );
   expect(
     levelSchema.safeParse({

@@ -1,0 +1,305 @@
+{
+  "id": "m09-brat",
+  "level": "m09-brat",
+  "number": 9,
+  "title": "Brat",
+  "act": 2,
+  "sectorId": "kurogane",
+  "summary": "Kurogane i Helixa urządzają pokaz Akordu na Bulwarze. Przebij się z Nadią przez kordon, obezwładnij Tymona i załóż neutralizator. Utrzymaj północną bramę do przyjazdu Miry — jej brat musi wrócić żywy.",
+  "requires": ["m07-nocny-dyzur"],
+  "layers": 7,
+  "enemies": [
+    "assaulter",
+    "gunner",
+    "shielder",
+    "drone",
+    "hacker",
+    "securityChief"
+  ],
+  "fixedNodes": [
+    {
+      "layer": 6,
+      "type": "elite",
+      "roomId": "plazaHolo",
+      "objectives": ["tymon", "opaska"]
+    },
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatYard",
+      "objectives": ["brama", "exit"],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "tymon",
+      "kind": "subdue",
+      "label": "Obezwładnij Tymona — żywego",
+      "targetName": "Tymon — Akord",
+      "hpFraction": 0.15,
+      "neutralizeWith": "opaska",
+      "timeLimitS": 10
+    },
+    {
+      "id": "opaska",
+      "kind": "interact",
+      "label": "Załóż opaskę neutralizującą",
+      "position": {
+        "x": 166,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 1.5,
+      "unlockAfter": ["tymon"]
+    },
+    {
+      "id": "brama",
+      "kind": "defend",
+      "label": "Utrzymaj północną bramę — transport Miry",
+      "position": {
+        "x": 216,
+        "y": 0,
+        "z": 0
+      },
+      "radiusM": 8,
+      "durationS": 60,
+      "waves": [
+        {
+          "atProgress": 0.25,
+          "wave": "m09Poscig"
+        },
+        {
+          "atProgress": 0.5,
+          "wave": "missionDockShields"
+        },
+        {
+          "atProgress": 0.8,
+          "wave": "m09Poscig"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Wsiądź do furgonetki Miry",
+      "position": {
+        "x": 238,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": ["brama"]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "mira",
+      "text": "Jest na liście ochrony pokazu. Dzisiejsza noc, plac z hologramami w górnym Bulwarze."
+    },
+    {
+      "speaker": "szron",
+      "text": "Słyszysz, Kurier? Żywego. Jeśli Tymon zginie na placu, nie ma po co wracać przez tę samą bramę."
+    },
+    {
+      "speaker": "mira",
+      "text": "Wysadzam cię dwie przecznice dalej. Złap go, zejdź na północną rampę i trzymaj drzwi, aż podjadę pod szlaban."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "tymon",
+      "text": "Wy macie ideały. Ja miałem ratę. Ktoś musiał ją zamknąć, zanim komornik z Kurogane wszedł na dół po ostatnie narzędzia z twojego warsztatu."
+    },
+    {
+      "speaker": "szron",
+      "text": "Wystarczy. Klucz od magazynu zostaje u mnie, Tymon nie wychodzi poza te drzwi."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Szron… opaska tylko spowalnia rozstrojenie. Bez sygnału podtrzymującego jego Akord zacznie puszczać przed południem."
+    },
+    {
+      "speaker": "szron",
+      "text": "Ida, jeśli nie podtrzymasz go choćby do czasu, aż znajdziemy sposób na bezpieczne rozbrojenie tego złomu, stracimy go w tym pomieszczeniu."
+    },
+    {
+      "speaker": "mira",
+      "text": "Proszę. Tylko do czasu, aż znajdziemy wyjście z tego układu."
+    },
+    {
+      "speaker": "ida",
+      "text": "Dobrze. Ale drzwi zostają zamknięte. Nie chcę go widzieć przy ogniu."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Stoję w bocznej alei za magazynem warzyw. Stąd masz prostą drogę kładkami nad trasą kolejki."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Przekaz zewnętrzny czysty. Na placu odpalili już pokazówkę, słychać ją aż z mikrofonów przy drodze."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:kladki",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "To nie jest dyskusja. Wchodzisz między dwie korporacje naraz, przed zamkniętą galerią z zarządami i ochroną obu stron."
+        },
+        {
+          "speaker": "mira",
+          "text": "Widziałeś wczoraj, co zostało z tamtego bloku. Jeśli jego dawca padnie za tydzień albo za godzinę, nie będzie już kogo wyciągać."
+        },
+        {
+          "speaker": "szron",
+          "text": "Nie narażam ludzi na rzeź dla jednego żołnierza, który sam podpisał papier."
+        },
+        {
+          "speaker": "mira",
+          "text": "Jadę po niego dziś w nocy, kurwa. Z kanałem wsparcia albo bez niego. Furgonetka stoi zatankowana na rampie technicznej."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:kontrola",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jeśli już tam wchodzimy… w kordonie zewnętrznym siedzą głównie ludzie Kurogane, a środek placu obsługuje mały zespół Helixa. Zdołam zagłuszyć ich kamerę wyjazdową na minutę, zanim zorientują się, że coś wjechało na podjazd."
+        },
+        {
+          "speaker": "szron",
+          "text": "Minuta to za mało, jeśli plac stanie na nogi."
+        },
+        {
+          "speaker": "mira",
+          "text": "Wystarczy, żeby wejść na bramę załadunkową i nie dać im czasu na ściągnięcie transporterów."
+        },
+        {
+          "speaker": "szron",
+          "text": "Dobra. Zrobimy to po mojemu, nie na ślepo. Bierzesz ten neutralizator od Wolan — ma zbić napięcie implantu bez całkowitego odcięcia."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:kontrola",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Uwaga, w budkach przy wjeździe siedzą cywile od oświetlenia. Nie mają broni, nie wchodź im w okno, to nie ruszą przycisku alarmu."
+        },
+        {
+          "speaker": "szron",
+          "text": "Oczyść kordon przed barierą laserową i otwórz przejście techniczne."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:pokaz",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Przechwytuję nagranie prezentacji: „…stabilność reakcji przy obciążeniu powyżej stu czterdziestu procent normy, pełna wymienność podzespołu w warunkach polowych i przewidywalny koszt jednostkowy…”"
+        },
+        {
+          "speaker": "bajt",
+          "text": "Cholernie świetna reklama. Trzech akordowców na środku placu, czwarty ma wyższą sygnaturę na barkach — to musi być Tymon."
+        },
+        {
+          "speaker": "mira",
+          "text": "To on. Stoi przy lewym kontenerze. Zbij najpierw jego osłonę, potem uważaj na siłę ciosów."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:przed-tymonem",
+      "lines": [
+        {
+          "speaker": "wolan",
+          "text": "Opaska musi trafić na kark dopiero wtedy, kiedy przestanie stawiać opór. Jeśli uderzysz zbyt mocno po progu przeciążenia, uszkodzisz korę ruchową na stałe."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:tymon:started",
+      "lines": [
+        {
+          "speaker": "wolan",
+          "text": "Uważaj na czerwone wyładowania. Jego układ kopiuje te same manewry, które zna z treningu na poligonie ochrony — pchnięcie i rzut na dystans."
+        },
+        {
+          "speaker": "szron",
+          "text": "Jeśli chcesz wyłączyć mu pole widzenia, zdejmij projektory po bokach placu."
+        },
+        {
+          "speaker": "mira",
+          "text": "Nie daj mu się zamknąć przy ścianie, Kurier. Ma krótszy czas reakcji niż zwykli ochroniarze."
+        }
+      ]
+    },
+    {
+      "trigger": "boss:defeated",
+      "lines": [
+        {
+          "speaker": "wolan",
+          "text": "Puls spada, opór w obwodzie pękł! Teraz opaska — masz kilka sekund, zanim implant zacznie szarpać ciałem."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:opaska:done",
+      "lines": [
+        {
+          "speaker": "tymon",
+          "text": "Nie prosiłem o ratunek."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:brama:started",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Wyjechałam z alei, wbijam się pod górkę. Minuta, jeśli nie zamkną kraty przed rampą!"
+        },
+        {
+          "speaker": "bajt",
+          "text": "Z galerii zbiegła ochrona obu firm. Odciągnij ich od nieprzytomnego, dopóki furgonetka nie przejdzie przez bramę."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:brama:progress:50",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Trzydzieści sekund. Oszczędzaj energię na wejście od strony kładek."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:brama:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Już wjeżdżam, kurwa! Ładuj go na pakę i wskakuj przez tylne drzwi, nie wyłączam silnika!"
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 110,
+      "cores": 2
+    }
+  }
+}

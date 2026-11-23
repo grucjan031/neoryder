@@ -1,5 +1,35 @@
 # Misje fabularne
 
+## M09 — Brat
+
+Akt II, liniowy Bulwar, Nadia od początku. Trzy kwestie odprawy, sześć debriefu,
+reszta odprawy i dialogi misji na wyzwalaczach sekcji, checkpointów, spotkań
+i celów. Nagranie pokazu cytuje Bajt. Scenariusz nie ma osobnego interludium.
+Pierwsze ukończenie: 110 Danych i 2 Rdzenie. Tymczasowe `requires` to M07:
+M08 powstaje w osobnym worktree, a walidator odrzuca brakującą definicję.
+Przy integracji M08 zmienić wymaganie na `m08-kwarantanna` oraz asercję M09
+i przygotowanie kampanii w `missionM09.spec.ts`.
+
+Cele: `tymon` (`subdue`) → `opaska` (`interact`, 1,5 s) → `brama`
+(`defend`, 60 s w promieniu 8 m, trzy fale) → `exit` (2 s). Nowy `subdue`
+ma `targetName`, `hpFraction` (0,15), `neutralizeWith` i `timeLimitS` (10).
+Próg ogranicza końcowe obrażenia po redukcjach i zachowuje wcześniejsze fazy bossa;
+także cios Nadii, status lub nadmiar obrażeń nie zabija obezwładnionego.
+Tymon pozostaje w stanie `stunned` z pozą powalenia, bez ruchu i ataków.
+Opaska używa rzeczywistej pozycji celu i standardowej interakcji przez obecność.
+Zegar w HUD liczy czas symulacji; pauza nie zużywa limitu. Przekroczenie limitu
+lub zdarzenie śmierci Tymona usuwa próbę i wraca do kryjówki bez nagród.
+Porażka czasowa ma pierwszeństwo przed ukończeniem opaski w tym samym kroku.
+Przełamanie zgłasza `boss:defeated` (pokonanie bez śmierci), żeby pilna kwestia
+Wolana wyczyściła kolejkę radia; spotkanie pozostaje aktywne do założenia opaski.
+
+Śmierć gracza korzysta ze standardowych checkpointów misji liniowej.
+Odrodzenie/wczytanie przed opaską cofa przełamanie i odtwarza całego bossa;
+po opasce pojmanie pozostaje zapisane. Nie zmieniono wersji zapisu ani kodu
+`RoomScene`, sojuszników i bossa. Lokalny adapter opisuje `docs/api.md`.
+Dedykowane lustrzane moce Akordu, opcjonalne premie projektorów/techników,
+animacja transportu oraz zmiany wystroju kryjówki pozostają poza tą wersją.
+
 Pole `summary` zawiera krótki opis wyświetlany na tablicy po wyborze misji.
 
 Odprawa, przerywnik i debrief pokazują po jednej kwestii z imieniem i ikoną mówiącego. Kliknięcie karty, „Dalej” lub spacja w widoku odsłania resztę tekstu, a po odsłonięciu przechodzi do kolejnej strony. Dłuższe kwestie są dzielone na strony. Opcja „Automatyczne przewijanie” jest domyślnie wyłączona i czeka po odsłonięciu strony przez czas zależny od długości tekstu. Ostatnia strona pozostaje widoczna. Ustawienie ograniczonego ruchu w systemie odsłania tekst od razu. „Zakończ rozmowę” zapisuje zamknięcie debriefu, także przed ostatnią kwestią.

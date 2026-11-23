@@ -33,6 +33,14 @@ export const RADIO_TRIGGER =
 export const missionObjectiveSchema = z.discriminatedUnion('kind', [
   z.object({
     ...base,
+    kind: z.literal('subdue'),
+    targetName: id,
+    hpFraction: z.number().finite().gt(0).lt(1),
+    neutralizeWith: id,
+    timeLimitS: positive,
+  }),
+  z.object({
+    ...base,
     kind: z.literal('reach'),
     position: vec3Schema,
     radiusM: positive,
@@ -164,6 +172,16 @@ export const missionSchema = z
       );
     if (objectives.size !== mission.objectives.length)
       fail('Powtórzone id celu.');
+    for (const objective of mission.objectives) {
+      if (objective.kind !== 'subdue') continue;
+      const capture = objectives.get(objective.neutralizeWith);
+      if (
+        !mission.level ||
+        capture?.kind !== 'interact' ||
+        !capture.unlockAfter.includes(objective.id)
+      )
+        fail('Subdue wymaga poziomu i interakcji zależnej od pojmania.');
+    }
     if (mission.fixedNodes.filter((node) => node.final).length !== 1)
       fail('Misja wymaga dokładnie jednego węzła final.');
     const layers = new Set<number>();
