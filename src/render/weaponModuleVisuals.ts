@@ -107,7 +107,9 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
           : ACCENTS[color];
   accent.color.set(tint);
   accent.emissive.set(tint);
-  accent.emissiveIntensity = 0.65;
+  accent.emissiveIntensity = MODULE_SHAPES_BY_SLOT.muzzle.includes(shape)
+    ? layout.muzzle.accentIntensity
+    : 0.65;
   accent.metalness = 0.25;
   const add = (
     geometry: BufferGeometry,
@@ -174,7 +176,7 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
     case 'brake':
       // Otwarty kanał wzdłuż -Z; przerwy między pierścieniami pełnią rolę portów.
       for (const z of [-0.12, -0.5, -0.88]) {
-        ring(0.42, 0, z);
+        ring(0.42, 0, z, z === -0.12);
         ring(0.43, 0, z - 0.025, true).scale.z = 0.3;
       }
       for (const x of [-0.39, 0.39]) box(0.12, 0.22, 1, x, 0, -0.5);
@@ -183,7 +185,7 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
       box(0.95, 0.12, 1, 0, -0.28, -0.5);
       for (const x of [-0.38, 0.38]) box(0.14, 0.35, 1, x, -0.05, -0.5, true);
       for (const z of [-0.15, -0.4, -0.65, -0.9])
-        box(0.96, 0.08, 0.08, 0, -0.2, z);
+        box(0.96, 0.08, 0.08, 0, -0.2, z, z === -0.15);
       break;
     case 'compensator':
       // Pełna tuleja z portami u góry i po bokach (hamulec jest ażurowy).
@@ -193,7 +195,7 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
         0,
         -0.5,
       ).rotation.x = Math.PI / 2;
-      for (const z of [-0.04, -0.96]) ring(0.37, 0, z);
+      for (const z of [-0.04, -0.96]) ring(0.37, 0, z, true);
       for (const z of [-0.24, -0.5, -0.76]) {
         ring(0.39, 0, z);
         for (const x of [-0.35, 0.35]) box(0.08, 0.2, 0.13, x, 0, z, true);
@@ -267,19 +269,19 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
         box(0.65, 0.3, 0.18, 0, 0.15, z).name = 'module_foot';
         ring(0.44, 0.7, z).name = 'scope_mount';
       }
-      for (const z of [-1, 1]) {
-        ring(0.44, 0.7, z);
-        const lens = tube(0.37, 0.015, 0.7, z, true);
-        const glass = accent.clone();
-        glass.metalness = 0;
-        glass.roughness = 0.08;
-        glass.transparent = true;
-        glass.opacity = layout.optic.scopeLensOpacity;
-        glass.depthWrite = false;
-        glass.emissiveIntensity = 0.15;
-        lens.material = glass;
-        lens.name = z < 0 ? 'scope_front_lens' : 'scope_rear_lens';
-      }
+      for (const z of [-1, 1]) ring(0.44, 0.7, z);
+      add(
+        new TorusGeometry(
+          layout.optic.scopeReticleRadius,
+          layout.optic.scopeReticleStroke,
+          6,
+          24,
+        ),
+        0,
+        0.7,
+        0,
+        true,
+      ).name = 'optic_reticle';
       sight(0.7, 0);
       break;
     case 'holo':
@@ -328,7 +330,7 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
       // Moduł pod lufą: obejma, korpus i jasna soczewka; wiązkę dodaje `attachModuleVisuals`.
       box(0.7, 0.14, 0.9, 0, -0.07).name = 'module_foot';
       tube(0.3, 1, -0.42);
-      ring(0.3, -0.42, 0.28);
+      ring(0.3, -0.42, 0.28, true);
       box(0.16, 0.12, 0.3, 0, -0.76, 0.1, true);
       tube(0.2, 0.06, -0.42, -0.52, true).name = 'laser_lens';
       break;
@@ -451,6 +453,7 @@ type Surface = (
 /** Próbki padają na trójkąty GLB, także między wierzchołkami modelu. */
 function surfaceProbe(gun: Object3D, parts: Mesh[], box: Box3): Surface {
   const ray = new Raycaster();
+  ray.layers.enableAll();
   const origin = new Vector3();
   const direction = new Vector3();
   const inverse = gun.matrixWorld.clone().invert();
@@ -579,6 +582,76 @@ function verticalSeat(
   return true;
 }
 
+/** Stopa w osi wylotu; dwie podpory obejmują przerwę między lufami. */
+function forwardGripSeat(
+  visual: Object3D,
+  frame: Box3,
+  surface: Surface,
+  socket: Vector3,
+  supportZ: number,
+  depth: number,
+): boolean {
+  visual.updateWorldMatrix(true, true);
+  const foot = new Box3().setFromObject(
+    visual.getObjectByName('module_foot')!,
+    true,
+  );
+  const size = foot.getSize(new Vector3());
+  const seat = findSeat(
+    supportZ - layout.grip.supportClearanceM - depth / 2,
+    frame,
+    depth,
+    (z) => {
+      const contact = (x: number) => {
+        const point = new Vector3(x, 0, z);
+        const bottom = surface('y', -1, point);
+        return bottom === undefined ? undefined : point.setY(bottom);
+      };
+      const center = contact(socket.x);
+      if (center) return [center];
+      const offset = size.x * layout.grip.saddleSpacing;
+      const left = contact(socket.x - offset);
+      const right = contact(socket.x + offset);
+      if (left && right) return [left, right];
+    },
+  );
+  const first = seat?.[0];
+  if (!seat || !first) return false;
+  const envelopeWidth = new Box3()
+    .setFromObject(visual, true)
+    .getSize(new Vector3()).x;
+  const outerEdge = surface('x', -1, socket.clone().setZ(first.z));
+  if (outerEdge !== undefined && envelopeWidth > 0) {
+    const width = Math.max(
+      envelopeWidth,
+      2 * (socket.x - outerEdge) * layout.grip.barrelSpanWidth,
+    );
+    const factor = width / envelopeWidth;
+    visual.scale.x *= factor;
+    size.x *= factor;
+  }
+  const bottom = seat.map((point) => {
+    const outer = surface(
+      'x',
+      point.x < socket.x ? -1 : 1,
+      socket.clone().setZ(point.z),
+    );
+    if (outer === undefined) return point.y;
+    const below = point.clone().setX((outer + point.x) / 2);
+    return Math.min(point.y, surface('y', -1, below) ?? point.y);
+  });
+  const base = Math.min(...bottom) - layout.grip.bracketDropM;
+  visual.position.set(
+    socket.x,
+    base,
+    first.z - foot.getCenter(new Vector3()).z,
+  );
+  size.x *= layout.mount.padWidth / seat.length;
+  size.z *= layout.mount.padLength;
+  for (const point of seat) addPad(visual, 'y', point, base, size);
+  return true;
+}
+
 function cellSeat(
   visual: Object3D,
   frame: Box3,
@@ -696,11 +769,37 @@ export function attachModuleVisuals(
       const profile = layout.muzzle[shape];
       const caliber = Math.min(width, height);
       const depth = Math.min(
-        caliber * profile.length,
+        Math.max(caliber * profile.length, length * layout.muzzle.minLength),
         length * layout.muzzle.maxLength,
       );
-      fit(width * profile.width, height * profile.height, depth);
-      visual.position.copy(socket).setZ(front);
+      // Szeroki wylot może sięgać poza obrys broni na boki. Nad nim biegnie linia ADS.
+      const availableHeight = Math.max(height, 2 * (modelBox.max.y - socket.y));
+      const muzzleHeight = Math.min(height * profile.height, availableHeight);
+      let rear = front;
+      const trim = gunRoot.getObjectByName('trim');
+      if (trim) {
+        const lip = zoneBox(
+          trim,
+          gunRoot,
+          modelBox.min.z,
+          front + caliber * layout.muzzle.maxSleeveDepth,
+        );
+        if (
+          !lip.isEmpty() &&
+          lip.min.x < socket.x &&
+          lip.max.x > socket.x &&
+          lip.min.y < socket.y &&
+          lip.max.y > socket.y
+        )
+          rear = lip.min.z;
+      }
+      // Korpus nasuwa się na szyjkę do pierścienia GLB. Błysk pozostaje na wylocie.
+      fit(
+        width * profile.width,
+        muzzleHeight,
+        depth + Math.max(0, rear - front),
+      );
+      visual.position.copy(socket).setZ(rear);
       const collarDepth = caliber * layout.muzzle.collarDepth;
       // Otwarta tuleja: zachodzi na czoło i spina je z korpusem dodatku.
       const opening = layout.muzzle.collarOpening / 2;
@@ -715,6 +814,18 @@ export function attachModuleVisuals(
         16,
       );
       collar.rotateX(Math.PI / 2);
+      // Tył zachowuje przekrój lufy. Przód rozszerza się do obudowy dodatku.
+      const rimVertices = collar.getAttribute('position');
+      for (let i = 0; i < rimVertices.count; i++) {
+        if (rimVertices.getZ(i) >= 0) continue;
+        rimVertices.setXY(
+          i,
+          (rimVertices.getX(i) * profile.width) / layout.muzzle.collarWidth,
+          (rimVertices.getY(i) * muzzleHeight) /
+            (height * layout.muzzle.collarWidth),
+        );
+      }
+      collar.computeVertexNormals();
       addMount(
         visual,
         collar,
@@ -760,23 +871,25 @@ export function attachModuleVisuals(
       gunRoot.add(visual);
     } else if (shape === 'foregrip' || shape === 'laser') {
       const profile = layout.grip[shape];
-      fit(
-        size.x * profile.width,
-        size.y * profile.height,
-        size.z * profile.length,
-      );
-      if (
-        !verticalSeat(
-          visual,
-          frameBox,
-          modelBox,
-          surface,
-          socket.x,
-          frameBox.min.z + size.z * profile.fromFront,
-          -1,
-        )
-      )
-        continue;
+      const depth = size.z * profile.length;
+      fit(size.x * profile.width, size.y * profile.height, depth);
+      const support = gunRoot.getObjectByName('support');
+      const supportZ =
+        support &&
+        gunRoot.worldToLocal(support.getWorldPosition(new Vector3())).z;
+      const seated =
+        supportZ !== undefined && supportZ < 0
+          ? forwardGripSeat(visual, frameBox, surface, socket, supportZ, depth)
+          : verticalSeat(
+              visual,
+              frameBox,
+              modelBox,
+              surface,
+              socket.x,
+              frameBox.min.z + size.z * profile.fromFront,
+              -1,
+            );
+      if (!seated) continue;
       gunRoot.add(visual);
       const lens = visual.getObjectByName('laser_lens');
       if (lens) {
