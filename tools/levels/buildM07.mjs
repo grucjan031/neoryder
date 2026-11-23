@@ -416,19 +416,19 @@ for (const [id, x, off] of [
 }
 for (let x = 130; x <= 162; x += 8) {
   decal('floor_hazard', x, 0, 3, 1, Math.PI / 2);
-  light(x, 3.4, 0, AMBER, 30, 10);
+  light(x, 3.4, 0, AMBER, 10, 10);
 }
 box(AZ0, AZ1, 4.85, 5, -0.15, 0.15, 'neon_amber');
 // Ciepła biel w pasach bocznych.
 for (const s of [-1, 1])
   for (let x = 130; x <= 166; x += 9) {
-    light(x, 3.4, s * 8.6, WHITE, 28, 12);
+    light(x, 3.4, s * 8.6, WHITE, 9, 12);
   }
 for (const s of [-1, 1])
   box(130, 166, 4.85, 5, s * 8.6 - 0.2, s * 8.6 + 0.2, 'light_white');
-light(166, 3.4, 0, WHITE, 36, 12);
-light(166, 3.4, 7, WHITE, 24, 10);
-light(166, 3.4, -7, WHITE, 24, 10);
+light(166, 3.4, 0, WHITE, 12, 12);
+light(166, 3.4, 7, WHITE, 8, 10);
+light(166, 3.4, -7, WHITE, 8, 10);
 decal('puddle1', 126, 3, 3, 2);
 decal('floor_stop', 166, 0, 3, 1, -Math.PI / 2);
 decal('crack_floor', 150, 8, 3, 3);
@@ -460,7 +460,7 @@ for (const x of [180, 184, 188, 192]) {
 box(196.4, 199.6, 0, 2.6, -10, -8.8, 'metal');
 box(196.7, 199.3, 0.35, 2.3, -8.8, -8.7, 'light_white');
 box(197.3, 198.7, 1.0, 1.6, -8.7, -8.6, 'neon_green');
-light(198, 2.4, -6.8, GREEN, 32, 9);
+light(198, 2.4, -6.8, GREEN, 18, 9);
 for (const x of [178, 183, 188, 202]) {
   box(x - 1.2, x + 1.2, 0, 2.5, -10, -9, 'metal');
   box(x - 1, x + 1, 0.3, 2.3, -9, -8.9, 'light_white');
@@ -476,12 +476,12 @@ cover('city_crates', 196.3, 2.5);
 box(188, 190.4, 0, 1, 2, 4, 'metal');
 // Oświetlenie: zimne, techniczne, bez bursztynu poza sygnalizacją.
 for (let x = 178; x <= 202; x += 8) {
-  light(x, 3.8, 0, BLUE, 32, 14);
-  light(x, 3.8, 7.4, WHITE, 30, 11);
-  light(x, 3.8, -7.4, WHITE, 30, 11);
+  light(x, 3.8, 0, BLUE, 18, 14);
+  light(x, 3.8, 7.4, WHITE, 16, 11);
+  light(x, 3.8, -7.4, WHITE, 16, 11);
 }
 box(176, 204, 5.3, 5.5, -0.2, 0.2, 'light_white');
-light(184, 3.8, 0, WHITE, 24, 10, { pattern: 'fail', strength: 0.4 });
+light(184, 3.8, 0, WHITE, 13, 10, { pattern: 'fail', strength: 0.4 });
 decal('floor_hazard', 190, 0, 3, 1);
 decal('puddle1', 193, -2, 3, 2);
 decal('floor_arrow', 202, 0, 3, 3, 0);
