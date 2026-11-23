@@ -2,6 +2,7 @@
 // wagon w wodzie, kładka, hala północna z antresolą (4,5 m). Wszystkie poziomy połączone rampami.
 // Landmark: wieża z zegarem stacyjnym nad środkiem torów. Pogoda: rain (perony pod zadaszeniem).
 import { COLOR, R, createRunRoom, vec } from './_runKit.mjs';
+import { KITS, dressWall } from './_wallKit.mjs';
 
 export default function generate() {
   const bounds = R(-34, 34, -60, 60);
@@ -150,6 +151,75 @@ export default function generate() {
     k.face(wallN, 'S', x + 34, 0, 'city_shutter', 0.2);
   k.faceNeon(wallN, 'S', 56, 6.2, 'arrow', 4, 2, COLOR.green, 0.1);
   k.faceNeon(wallN, 'S', 12, 5.2, 'hotel', 3, 1.5, COLOR.violet, 0.3);
+
+  // Gęsta oprawa ścian peronów i hali (tylko dekoracje bez kolizji, układ bez zmian).
+  const tunnelKit = [
+    ...KITS.industrial,
+    { model: 'city_sign_box', y: 2.6, offset: 0.15, h: 1 },
+    { model: 'city_ad_screen', y: 0.9, offset: 0.2, h: 2.3 },
+  ];
+  dressWall(k, wallW, 'E', 0, 56, {
+    step: 4,
+    kit: tunnelKit,
+    salt: 1,
+    neons: [
+      ['arrow', 6.4, 2.6, 1.3, COLOR.blue, 0.15],
+      ['repair', 3.4, 2.2, 1.1, COLOR.amber, 0.3],
+      ['arcade', 6.6, 2.4, 1.2, COLOR.violet, 0.3],
+    ],
+    neonEvery: 2,
+  });
+  dressWall(k, wallE, 'W', 0, 56, {
+    step: 4,
+    kit: tunnelKit,
+    salt: 3,
+    neons: [
+      ['karaoke', 6.4, 2.6, 1.3, COLOR.violet, 0.3],
+      ['pharmacy', 3.4, 2.2, 1.1, COLOR.green, 0.2],
+      ['arrow', 6.6, 2.6, 1.3, COLOR.amber, 0.15],
+    ],
+    neonEvery: 2,
+  });
+  dressWall(k, wallN, 'S', 0, 68, {
+    step: 5,
+    kit: KITS.industrial,
+    salt: 2,
+    neons: [
+      ['hotel', 4, 2.8, 1.4, COLOR.violet, 0.25],
+      ['noodles', 6, 3, 1.5, COLOR.amber, 0.2],
+    ],
+  });
+  k.deco('city_cable_span', -33.5, 7, -8, Math.PI / 2);
+  k.deco('city_cable_span', 33.5, 7, 6, -Math.PI / 2);
+  k.deco('city_cable_span', -33.5, 7, 14, Math.PI / 2);
+  for (const [x, z] of [
+    [-30, -2],
+    [-30, 14],
+    [30, -8],
+    [30, 10],
+    [-30, -26],
+    [30, -26],
+  ])
+    k.deco('city_traffic_cone', x, 0, z);
+  for (const [x, z, c] of [
+    [-30, 0, COLOR.violet],
+    [30, 0, COLOR.green],
+    [-30, -20, COLOR.green],
+    [30, -20, COLOR.violet],
+    [-30, 16, COLOR.amber],
+    [30, 16, COLOR.blue],
+  ])
+    k.light(x, 3.2, z, c, 16, 10);
+  for (const [tex, x, z, w] of [
+    ['oil_stain', -28, -6, 3],
+    ['crack_floor', 28, 0, 3],
+    ['crack_floor', -26, 16, 3],
+    ['oil_stain', 26, -18, 3],
+    ['floor_arrow', -22, -26, 2.4],
+    ['floor_arrow', 22, 20, 2.4],
+  ])
+    k.decal(tex, x, 0.012, z, w, w * 0.6);
+  for (const x of [-28, 28]) k.decal('floor_hazard', x, 0.012, -4, 40, 0.5, Math.PI / 2);
 
   // Osłony: perony, apron, plac, hala północna, antresola.
   const cover = [

@@ -21,6 +21,11 @@ import alleyBackstreet from '../../tools/arenas/run/alleyBackstreet.mjs';
 import alleyCrossing from '../../tools/arenas/run/alleyCrossing.mjs';
 import alleyMarket from '../../tools/arenas/run/alleyMarket.mjs';
 import alleyUnderpass from '../../tools/arenas/run/alleyUnderpass.mjs';
+import combatCorridor from '../../tools/arenas/run/combatCorridor.mjs';
+import combatFloodedTunnel from '../../tools/arenas/run/combatFloodedTunnel.mjs';
+import combatLaserYard from '../../tools/arenas/run/combatLaserYard.mjs';
+import combatPillars from '../../tools/arenas/run/combatPillars.mjs';
+import combatPlatforms from '../../tools/arenas/run/combatPlatforms.mjs';
 
 const rect = (minX: number, maxX: number, minZ: number, maxZ: number) => ({
   minX,
@@ -292,6 +297,65 @@ const rooms: Generated[] = [
       { x: 29, y: 4.5, z: -46 },
     ],
     lowest: -1.5,
+  },
+  {
+    id: 'combatCorridor',
+    generate: combatCorridor,
+    type: 'combat',
+    maxAlive: 10,
+    goals: [
+      { x: 0, y: 5, z: -5.5 },
+      { x: -26, y: 1.4, z: 4 },
+      { x: 26, y: 1.4, z: -20 },
+    ],
+    lowest: -0.1,
+  },
+  {
+    id: 'combatFloodedTunnel',
+    generate: combatFloodedTunnel,
+    type: 'combat',
+    maxAlive: 10,
+    goals: [
+      { x: 0, y: 3.2, z: -20 },
+      { x: -10, y: -1.2, z: 0 },
+      { x: 9, y: -1.2, z: 10 },
+    ],
+    lowest: -1.3,
+  },
+  {
+    id: 'combatLaserYard',
+    generate: combatLaserYard,
+    type: 'combat',
+    maxAlive: 10,
+    goals: [
+      { x: -28, y: 4.4, z: 8 },
+      { x: 30, y: 3.2, z: 4 },
+    ],
+    lowest: -0.1,
+  },
+  {
+    id: 'combatPillars',
+    generate: combatPillars,
+    type: 'combat',
+    maxAlive: 10,
+    goals: [
+      { x: -21, y: 4.6, z: 0 },
+      { x: 21, y: 4.6, z: 0 },
+    ],
+    lowest: -0.1,
+  },
+  {
+    id: 'combatPlatforms',
+    generate: combatPlatforms,
+    type: 'combat',
+    maxAlive: 10,
+    goals: [
+      { x: -16, y: 3.4, z: 16 },
+      { x: 28, y: 6.8, z: 20 },
+      { x: 22, y: 10.2, z: -8 },
+      { x: -20, y: 3.4, z: -15 },
+    ],
+    lowest: -0.1,
   },
 ];
 
