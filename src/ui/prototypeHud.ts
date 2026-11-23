@@ -22,7 +22,7 @@ export class PrototypeHud {
   private readonly bar = document.createElement('progress');
   private readonly outcome = document.createElement('p');
 
-  constructor() {
+  constructor(parent: HTMLElement = document.body) {
     this.root.className = 'proto-hud';
     const header = document.createElement('header');
     header.append(this.title, this.detail);
@@ -39,7 +39,7 @@ export class PrototypeHud {
       this.barLabel,
       this.outcome,
     );
-    document.body.append(this.root);
+    parent.append(this.root);
   }
 
   update(state: PrototypeHudState): void {

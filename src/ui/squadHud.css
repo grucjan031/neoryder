@@ -1,7 +1,8 @@
 .squad-hud {
   position: fixed;
   left: var(--hud-inset, 28px);
-  top: 34vh;
+  /* Nad blokiem zdrowia/energii, z dala od celów misji i panelu eskorty u góry. */
+  bottom: calc(var(--hud-inset, 28px) + 200px);
   z-index: 102;
   width: 232px;
   pointer-events: none;
