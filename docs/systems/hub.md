@@ -90,7 +90,7 @@ nad wejściem na poligon (14; 3,6; −6,2, błękit `#3d7bff`) ma `buzz` 0,08 / 
 
 Trzy strzałki (`floor_arrow` 0,85 × 0,65 m) leżą na podłodze korytarza na y = 0,012 m, z = −9,75 m
 (x −15,2 i −7 — yaw +90°, x 1,7 — yaw −90°): dwie kierują ku jadłodajni, jedna ku radiu.
-Okładziny `tiles_wall` (odcień `#c9d2e3`) na ścianach poprawiają orientację
+Matowe okładziny `concrete_raw_cast` (odcień `#8490a3`, `tileM` 4 m, `roughness` 0,94) na ścianach porządkują bryłę
 bez dodatkowych świateł (nadal 28) i colliderów. Przejście ma ≥ 2 m szerokości.
 
 Opcjonalne `lights[].flicker`, `signs[].flicker` oraz `stations[].sign.flicker`
@@ -111,7 +111,7 @@ styl: `docs/adr/0006-neon-noir.md`.
 ## Układ i dane
 
 - `src/data/hub/hideout.json` (`id` `hideout`, `name` „Kryjówka Iskry”, `theme` `hideout`, `playerSpawn` (0; 0; 0,8)), walidowany przez
-  `src/world/hubSchema.ts` (`loadHubLayout`). Obecnie: 480 bloków, 4 stacje, 23 NPC, 78 `panels`, 5 `neonTexts`, 8 `signs`, 28 `lights`,
+  `src/world/hubSchema.ts` (`loadHubLayout`). Obecnie: 454 bloki, 4 stacje, 23 NPC, 78 `panels`, 5 `neonTexts`, 8 `signs`, 28 `lights`,
   36 `decals`, 17 `ambientFx`, 42 `decor`, 1 ogień, 8 rekwizytów, 14 stref planu. Format pokoju:
   `playerSpawn`, `blocks` (`material`, `model` `city_*`), pola oprawy z `dressingSchema` (`theme`, `signs`, `lights`,
   `decals`, `ambientFx`, `decor`) plus pola kryjówki:
@@ -125,12 +125,10 @@ styl: `docs/adr/0006-neon-noir.md`.
   - `blocks[].yaw` — obrót modelu `city_*` wokół środka (wielokrotność 90°; `size` jest już w osiach świata);
     `blocks[].material` ma poza materiałami pokoju także `wood`, `fabric`, `machine`, `paint`, `lacquer`, `plastic`,
     `rubber` i świecące paski `neon_amber|green|violet|blue|white` (bloom);
-  - `panels: { kind: 'tiles' | 'screen' | 'poster' | 'tunnel', texture (^[a-z0-9_]+$), position, size, yaw, tileM?, tint? }[]` — okładziny bez collidera:
-    `tiles` to kafle ściany (dowolna tekstura z `surfaces/`, powtarzana co `tileM` m, domyślnie 3), `screen` to świecący ekran
+  - `panels: { kind: 'tiles' | 'screen' | 'poster', texture (^[a-z0-9_]+$), position, size, yaw, tileM?, tint?, roughness? }[]` — okładziny bez collidera:
+    `tiles` to okładzina ściany (dowolna tekstura z `surfaces/`, powtarzana co `tileM` m, domyślnie 3), `screen` to świecący ekran
     (`screens/screen_*` jako nadruk `mat_screen_*`, bloom), `poster` to nieprzezroczysty plakat, baner albo mural
-    (`posters/<texture>.webp`, ładowany przez `HubDecor`, bo `dressingSchema` nie ma tej kategorii), a `tunnel` to
-    malowany proceduralnie wylot tunelu (płótno: żebra obudowy, szyny i podkłady zbiegające się w mroku, kable, zielony
-    i bursztynowy sygnał; materiał nieoświetlony z bloomem, bez pliku tekstury — `texture` jest tylko nazwą);
+    (`posters/<texture>.webp`, ładowany przez `HubDecor`, bo `dressingSchema` nie ma tej kategorii).
   - `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, route?, look?, seat?: { heightM, offset {x,y,z} } }[]` — postacie (sekcja „NPC”);
   - `blocks[].shape: 'barrel'` — otwarta beczka z blachy (walec z obręczami i ciemnym wnętrzem), z koliderem walca;
   - `fires: { position, size? }[]` — płomień w beczce (skrzyżowane płaszczyzny z gradientem, addytywnie, bloom, migotanie w `HubDecor.update`);
@@ -143,29 +141,23 @@ styl: `docs/adr/0006-neon-noir.md`.
   Siedzący NPC (`animation` zaczyna się od `Sitting`) wymaga `seat` i siedziska pod miednicą, więc nie podlega walidacji bloków dla stojących postaci.
 - Motyw `hideout` (`src/data/themes/hideout.json`): bez deszczu i burzy (`rain.enabled: false`), bez panoramy miasta
   (`panoramaEnabled: 0`), niebo `skyTop #05070d` / `skyHorizon #1c1612`, ciepła mgła `#241a16` (`fogStrength` 0,85, blisko 6 m, daleko 60 m,
-  `heightFogDensity` 0,012), światło otoczenia `hemiSky #6a7898` / `hemiGround #41385c` (`hemiIntensity` 1,4), słabsze światło kluczowe
-  `#d8c6a8` (`keyIntensity` 1,1), bloom 0,8 / promień 1,4, winieta 0,28, kolor `interactive` `#d9dde3`, wróg `#e0262b`, gracz
-  `#00e5ff`, Rezonans `#ff2bd6`, kontur `#0c1220`. Układ definiuje 28 świateł (limit testu: 28), a
-  `CityLights` włącza naraz 8 najbliższych kamery (`tuning.city.maxLights`); reszta to emisja i poświata (neony,
-  paski `neon_*`, płomień, lampy w wagonie).
+  `heightFogDensity` 0,012), światło otoczenia `hemiSky #6a7898` / `hemiGround #41385c` (`hemiIntensity` 1,15), spokojniejsze światło kluczowe
+  `#d8c6a8` (`keyIntensity` 0,85), bloom 0,34 / promień 0,85, winieta 0,28, kolor `interactive` `#d9dde3`, wróg `#e0262b`, gracz
+  `#00e5ff`, Rezonans `#ff2bd6`, kontur `#0c1220`. Układ definiuje 28 świateł o wyrównanym natężeniu 1,4–2,2 (limit testu: 28), a
+  `CityLights` włącza naraz do 8 świateł zależnie od kamery i jakości (`tuning.city.maxLights`); reszta to emisja i poświata (neony,
+  paski `neon_*`, płomień, oprawy `city_lantern_string` ze stożkami, lampy w wagonie).
 
 ### Wygląd okładzin, napisów, płomieni i beczek (`HubDecor`, `HubScene.buildBlocks`)
 
-Wszystko kosmetyczne, bez colliderów; płaszczyzny patrzą w +Z przy `yaw` = 0. Nieruchome okładziny (kafle, plakaty, ekrany) są scalane po
-materiale w komórkach 20 m (`HUB_BATCH_CELL_M`); wylot tunelu, napisy i płomienie zostają osobnymi siatkami.
+Wszystko kosmetyczne, bez colliderów; płaszczyzny patrzą w +Z przy `yaw` = 0. Nieruchome okładziny, plakaty i ekrany są scalane po
+materiale w komórkach 20 m (`HUB_BATCH_CELL_M`). Napisy i płomienie mają osobne siatki.
 
-- `tiles`: materiał standardowy (roughness 0,55, metalness 0), kolor `tint` (domyślnie `#8e9ab0`), tekstura `surfaces/<texture>`
-  powtarzana co `tileM` m (domyślnie 3) przez skalowanie UV; kafle o tej samej teksturze i barwie dzielą materiał.
+- `tiles`: materiał standardowy (`roughness` domyślnie 0,55, metalness 0), kolor `tint` (domyślnie `#8e9ab0`), tekstura `surfaces/<texture>`
+  powtarzana co `tileM` m (domyślnie 3) przez skalowanie UV; panele o wspólnej teksturze, barwie i szorstkości dzielą materiał. W hali, korytarzu i skrzydłach dolne partie ścian pokrywa ciemny, matowy beton `concrete_raw_cast` (`tint` `#8490a3`, `tileM` 4 m, `roughness` 0,94), w kąciku łączności i radiu zostają płyty `tech_panel` (`#8a97b0`), a końce pasażu zamykają przegrody `container_corrugated_graphite` (`tileM` 5 m, `roughness` 0,8).
 - `screen`: materiał nadruku `mat_<texture>` (świeci w bloomie), UV odwrócone w V, bez konturu.
 - `poster`: `/assets/textures/posters/<texture>.webp` (obecne: `banner_iskra`, `mural_spark`, `poster_iskra_recruit`,
   `poster_koalicja_defaced`), roughness 0,85, kolor sRGB, anizotropia 4, `polygonOffset` (−1; −2) dla płaszczyzn przy ścianie; brak pliku
   daje jednolity kolor `#3a4458` i ostrzeżenie w konsoli.
-- `tunnel`: płótno 96 px/m, materiał nieoświetlony (`MeshBasic`, bez tone mappingu) z bloomem tylko dla sygnałów. Malowanie: tło `#020308`;
-  mgła głębi — gradient radialny wokół punktu zbiegu (x 50%, y 58% wysokości) `#000000` → `#141c30` (8%) → `#0a0f1c` (45%) →
-  `#020308`; 9 żeber obudowy (łuki w kolorze `#3a4d74`, coraz mniejsze i słabsze w głąb); 14 podkładów `#1b2233`; dwie szyny
-  (gradient `#5d6f94` → `#0a0f1c`); 2 × 2 wiązki kabli `#111827`; dwa sygnały — zielony `#6dff4a` bliżej (po lewej) i bursztynowy
-  `#ffae1a` daleko (po prawej) z jasnym rdzeniem `#fff1d6`; górny brzeg przyciemniony. Wyloty: `tunnel_west` (−19,97; 5,5) i
-  `tunnel_east` (19,97; 5,5).
 - Napisy (`sign` stacji i `neonTexts`): płótno 256 px na metr szerokości; kolor z `color` (domyślnie `#ffae1a`); ramka
   (`max(3 px, 6% wysokości)`) i tekst w `bold monospace` o wysokości 56% płótna (zmniejszany tak, by tekst zajmował najwyżej 86% szerokości),
   wyśrodkowany, poświata `shadowBlur` = 12% wysokości; materiał `MeshBasic` z mieszaniem addytywnym, bloom. Jasność = globalny poziom
@@ -183,16 +175,16 @@ materiale w komórkach 20 m (`HUB_BATCH_CELL_M`); wylot tunelu, napisy i płomie
 
 ## Układ (dwa skrzydła mieszkalne)
 
-Współrzędne: +Z w stronę torów i peronu B, +X na wschód; sufit na 5 m. Obrys podłóg obejmuje
+Współrzędne: +Z w stronę pasażu i peronu B, +X na wschód; sufit na 5 m. Obrys podłóg obejmuje
 x −34…20, z −19…16. Nowe skrzydła dodają 448 m² podłogi na poziomie 0 (336 m² północ, 112 m² zachód).
 
 | Strefa             | Zakres                       | Zawartość                                                                                                                                                                                                            |
 | ------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Hala (peron A)     | x −20…20, z −7…3             | główna hala ze spawnem (0; 0,8); tylna ściana: antresola, tablica misji (stacja `missions`, Kapitan Szron), neon ISKRA, automat, kiosk, generator, wejście na poligon w tunelu (x 12,5…15,5; stacja `arena`)         |
 | Antresola          | x −20…−11, z −7…−3, y 2,4    | podest z barierką i kolizyjnymi stopniami (12 × 0,2 m, bieg 0,3 m; autostep gracza 0,35 m), skrzynie, pod spodem magazyn z zielonym światłem                                                                         |
-| Tory               | z 3…8, dno y −0,8            | niecka z szynami i podkładami; skok (`jumpVelocity` 8 m/s ≈ 1,6 m) wyprowadza z niej na peron, więc nie ma pułapek                                                                                                   |
-| Wagon-warsztat     | x −16…−3, z 3…7, podłoga y 0 | wrak wagonu metra na torach: dwoje drzwi od strony hali (x −13…−11 i −8…−6), okna od strony peronu B, stół warsztatowy (stacja `workshop`), ławki, generator, Mira                                                   |
-| Kładka             | x 4…7, z 3…8, poziom peronu  | metalowy pomost z barierkami nad torami, łączy halę z peronem B                                                                                                                                                      |
+| Pasaż              | z 3…8, podłoga y 0           | betonowa posadzka łączy oba perony. Na obu końcach stoją grafitowe przegrody z blachy                                                                                                   |
+| Wagon-warsztat     | x −16…−3, z 3…7, podłoga y 0 | wagon metra w hali: dwoje drzwi od strony hali (x −13…−11 i −8…−6), okna od strony peronu B, stół warsztatowy (stacja `workshop`), ławki, generator, Mira                                                   |
+| Kładka             | x 4…7, z 3…8, poziom peronu  | metalowy pomost z barierkami na poziomie pasażu, łączy halę z peronem B                                                                                                                                                      |
 | Peron B            | x −20…20, z 8…16             | zachód: strefa wypoczynku (otwarty bar i neon `sign_bar`, beczka z ogniem i Stary Tomasz, dwie kanapy, stolik, skrzynie, mural `mural_spark`, sznury lampek); środek: automat i kiosk; baner `banner_iskra` na targu |
 | Kącik łączności    | x 8…20, z 8…16               | pomieszczenie z wejściem 3 m (z 10…13): szafy serwerowe z ekranami, terminal drzew (stacja `talents`, Doktor Wolan), biurko Bajta z ekranem `screen_comms`, hologram Kurogane, projektor, antena, kable              |
 | Przejście północne | x −20…8, z −11…−8            | poprzeczny korytarz 3 m; wejście z hali x 3…6 przez ścianę z −8…−7, wysokość 3,5 m; rozdzielnia i wnęka robocza elektryczki                                                                                          |
@@ -269,6 +261,9 @@ Kamery kontrolne nowych stref (`?scene=hub&debug=1`; yaw kamery 0 = −Z, pitch 
 
 | Strefa       | Komenda                   | Co sprawdzić                                                    |
 | ------------ | ------------------------- | --------------------------------------------------------------- |
+| Hala         | `hub tp 0 1 0 5`          | spód opraw, mocowania, miękkie stożki i czytelność napisu ISKRA |
+| Pasaż        | `hub tp 13 5.5 -90 -5`    | równa posadzka i blaszana przegroda na wschodnim końcu          |
+| Ściana hali  | `hub tp 16 -1 -90 0`      | matowa okładzina w bocznym świetle                              |
 | Jadłodajnia  | `hub tp -14 -12.5 0 -12`  | dwa stoły, ławy 0,48 m, kuchnia z parą i zapasami               |
 | Kwatery      | `hub tp -4.5 -12 0 -15`   | materace, odsłonięta krawędź pryczy, miejsce przy łóżku polowym |
 | Radio Iskry  | `hub tp 4.5 -12.5 0 -12`  | mikrofon, odbiorniki, stołek i przestrzeń na nogi               |
@@ -280,8 +275,7 @@ Kamery kontrolne nowych stref (`?scene=hub&debug=1`; yaw kamery 0 = −Z, pitch 
 Znacznik warsztatu używa zieleni `#6dff4a`, a znacznik nieznanej stacji ciepłej bieli `#fff1d6`, zgodnie z ADR 0006.
 
 Wszystkie perony i przejścia są na poziomie 0, więc strefy są osiągalne bez skoków (podwójny skok jest talentem);
-antresola jest opcjonalna. Na obu końcach niecki torów (x ±20, z 3…8) są wyloty tunelu (`panels` kind `tunnel`) z parą
-z niecki i kapaniem. Każda stacja ma własny kolor widoczny z daleka: misje bursztyn (napis `MISJE` `#ffae1a` nad tablicą),
+antresola jest opcjonalna. Przy ścianach końcowych pasażu (x ±20, z 3…8) para unosi się tuż nad posadzką. Każda stacja ma własny kolor widoczny z daleka: misje bursztyn (napis `MISJE` `#ffae1a` nad tablicą),
 warsztat zieleń (neon `warsztat`; stacja nie ma `sign`), talenty fiolet (napis `TALENTY` `#8a5cff` nad wejściem do kącika łączności),
 poligon błękit (napis `POLIGON` `#3d7bff` i światło nad wejściem). Na blacie warsztatu stoją pomniejszone modele (`city_generator`, `city_crates`). Neony `iskra`, `warsztat`, `sign_bar` i `metro`, ekrany `screen_talents`, `screen_missions`,
 `screen_comms`, `screen_status`, `screen_menu`, `screen_map`, `screen_news`, plakaty `poster_iskra_recruit` i
@@ -377,7 +371,7 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
 
 - **Dane:** `hideout.json` → `npcs: { id, position {x, z, y?}, rotationDeg, animation?, accent, scale?, seat?, route?, look? }[]`
   (`hubNpcSchema`, `src/world/hubSchema.ts`). `rotationDeg` to kierunek patrzenia na podłodze: 0 = +Z (w stronę
-  torów), 90 = +X, 180 = −Z. `animation` to klip z `public/assets/models/npc_anims.glb` (`Idle_Loop`, `Idle_Talking_Loop`,
+  pasażu), 90 = +X, 180 = −Z. `animation` to klip z `public/assets/models/npc_anims.glb` (`Idle_Loop`, `Idle_Talking_Loop`,
   `Idle_Torch_Loop`, `Sitting_Idle_Loop`, `Sitting_Talking_Loop`, `Fixing_Kneeling`, `Crouch_Idle_Loop`, `Interact`, `Walk_Loop`, `Jog_Fwd_Loop`, `Dance_Loop`, `PickUp_Table`,
   `Punch_Jab`, `Punch_Cross`, `Sword_Idle`, `Spell_Simple_Idle_Loop`, `Push_Loop`;
   domyślnie `Idle_Loop`), `accent` ∈ `amber|green|violet|blue|white` (paleta ADR 0006; pięć kluczowych NPC
@@ -602,7 +596,7 @@ Klawisz M (akcja `map`, `src/data/inputBindings.json`; M było wolne, więc Tab 
 - Dane: opcjonalne `zones: { id, label, rect { x0, z0, x1, z1 }, color? }[]` w `hideout.json` (schemat `hubZoneSchema`
   w `hubSchema.ts`). Prostokąty są w osiach świata (x0 < x1, z0 < z1), muszą mieścić się w obrysie bloków układu,
   `id` są unikalne, `color` to wyłącznie `amber|green|violet|blue|white` (domyślnie `white`; cyan, czerwień i magenta
-  są zarezerwowane). Strefy odpowiadają wierszom tabeli „Układ” (14, `id` → etykieta, kolor): `hall` Hala (peron A) amber, `tracks` Tory white, `platform_b` Peron B amber,
+  są zarezerwowane). Strefy odpowiadają wierszom tabeli „Układ” (14, `id` → etykieta, kolor): `hall` Hala (peron A) amber, `tracks` Pasaż white, `platform_b` Peron B amber,
   `corridor` Korytarz white, `canteen` Jadłodajnia amber, `quarters` Kwatery white, `radio` Radio Iskry blue, `market` Targ wymiany green,
   `comms` Kącik łączności violet, `bar` Bar i parkiet violet, `mezzanine` Antresola white, `wagon` Wagon green, `footbridge` Kładka white,
   `training` Trening blue (prostokąty jak w kolumnie „Zakres” tabeli „Układ”). Strefy zagnieżdżone (np. Antresola w hali) są rysowane później, więc leżą na wierzchu.
@@ -685,7 +679,7 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
   gdy przestanie odpoczywać (np. ucieczka przed graczem), dzieci wracają na trasę. Raz na spotkanie scena wymusza
   rozmowę `ola_stas_cat` (promień 0,001 m, żeby sama się nie włączała), o ile nic innego nie trwa i gracz jest w
   `chatterRadiusM`. Debug: `hub kidscat`, `query('hubKidsCat')` → `{ active, kids, cooldownLeft }`.
-- Szczury: `fauna.rats` = 3 pasy `{ from, to }` na stałym poziomie: dwa po dnie niecki torów (y −0,8; x −19…19 przy z 3,4 oraz
+- Szczury: `fauna.rats` = 3 pasy `{ from, to }` na stałym poziomie: dwa wzdłuż pasażu (y 0; x −19…19 przy z 7,25 oraz
   19…−19 przy z 7,55) i jeden pod ścianą targu (x −33,5; z 10…14; y 0); co `intervalS` [8; 18] s przebiega losowy pas (2,5–3,5 m/s,
   zrywy `ratBurstFraction` 0,12 przy `ratBurstHz` 8) i znika; nieudana próba ponawiana co `ratRetryS` 1 s; gdy gracz jest bliżej niż 3 m od startu pasa, wybierany jest inny pas albo czekanie;
   maksymalnie 2 naraz (pooling).
@@ -718,7 +712,7 @@ przywitany kontekst przybycia); stan chodzących NPC, zwierząt, pociągu i spad
 
 `tests/unit/hubLayout.test.ts` (walidacja układu: stacje w granicach i osiągalne, strefy rozłączne, paleta, zasoby),
 `hubStations.test.ts` (ray–AABB, zasięg, najbliższe trafienie, otwieranie na żądanie), `hubPrompt.test.ts` (jsdom, podpowiedź),
-`hubScene.test.ts` (scena bez DOM: spojrzenie i zbocze E, komendy, zatrzymanie ruchu, niecka torów,
+`hubScene.test.ts` (scena bez DOM: spojrzenie i zbocze E, komendy, zatrzymanie ruchu, przejście przez pasaż,
 nawigacja, `dispose` bez subskrypcji, meta, NPC: cel `hubNpc`, kwestie w pętli, wygasanie dymka, kolidery, obrót),
 `hubNpcs.test.ts` (teksty NPC, kolejność kwestii, `focus` z kolidera, `selectHubTarget`, `updateNpcLook`),
 `hubCatView.test.ts` (prawdziwy `hub_cat.glb`: szkielet, pięć zapętlonych klipów, łapy i tułów przy podłodze w każdym
@@ -753,10 +747,10 @@ obręcze i ciemne wnętrze zamiast sześcianów. Nie ma pasującego modelu beczk
 `sticker_cluster` przeniesiono z wnętrza ścianki (`x 8,3`) na jej zachodnie lico (`x 7,98`).
 `hubLayout.test.ts` używa `wallDecalFitsBlock` z `dressingSchema` dla wszystkich naklejek ściennych i okładzin.
 
-Bursztynowe lampiony ze zrzutów to `city_lantern_string` pod sufitem (`y 4,7`), a pionowe paski filarów to bloki
-`neon_*`. `HubDecor` nie tworzy odrębnych bursztynowych prostokątów w hali. Ich halo/rozmyte kopie powstają we
-wspólnej ścieżce renderowania (`materials`, `bloom`, `reflections`), obsługiwanej przez równoległe zadanie.
-Ta poprawka kryjówki nie zmienia plików `src/render/**` ani globalnych parametrów oprawy miasta.
+Kryjówka i sektory korzystają ze wspólnego modelu `city_lantern_string`. W kryjówce mocowania przewodu sięgają sufitu na 5 m.
+Na przewodzie wiszą cztery metalowe oprawy z osłoniętym bursztynowym kloszem od spodu. Klosze korzystają z selektywnego bloomu.
+Pod każdym z nich krótki addytywny stożek wygasa ku podłodze. Wszystkie stożki sznurów tworzą jeden `InstancedMesh` z testem głębokości i wyłączonym zapisem głębokości.
+Położenie kloszy i parametry stożka określa `src/data/render/lanternString.json`. Girlandy nie zajmują miejsc w puli świateł punktowych.
 
 Kamery kontrolne w `?scene=hub&debug=1` (yaw 0 = −Z, pitch ujemny = w dół):
 

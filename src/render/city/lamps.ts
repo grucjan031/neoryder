@@ -9,6 +9,7 @@ import {
   Vector3,
 } from 'three';
 import type { Camera } from 'three';
+import lantern from '../../data/render/lanternString.json';
 import { tuning } from '../../core/tuning';
 import type { CityLightDef, DecorDef } from '../../world/dressingSchema';
 import { cityColor, disposeCityGroup } from './resources';
@@ -44,6 +45,27 @@ export function lampFixtures(
     });
   }
   return out;
+}
+
+/** Krótkie stożki pod kloszami. Współrzędne mocowań czyta też generator GLB. */
+export function lanternFixtures(
+  decor: readonly DecorDef[] | undefined,
+): LampFixture[] {
+  const fixtures: LampFixture[] = [];
+  for (const def of decor ?? []) {
+    if (def.model !== 'city_lantern_string') continue;
+    const scale = def.scale ?? 1;
+    const yaw = def.yaw ?? 0;
+    for (const mount of lantern.mounts) {
+      const head = new Vector3(
+        def.position.x + Math.cos(yaw) * mount.x * scale,
+        def.position.y + (mount.y - lantern.diffuserDropM) * scale,
+        def.position.z - Math.sin(yaw) * mount.x * scale,
+      );
+      fixtures.push({ head, baseY: head.y - lantern.coneLengthM * scale });
+    }
+  }
+  return fixtures;
 }
 
 /** Latarnie jako światła punktowe: konkurują o pulę z pozostałymi i dostają plamę pod sobą. */
@@ -96,7 +118,11 @@ export class LampCones {
   private builtAngle = Number.NaN;
   private disposed = false;
 
-  constructor(private readonly fixtures: readonly LampFixture[]) {
+  constructor(
+    private readonly fixtures: readonly LampFixture[],
+    color = tuning.city.lampColor,
+    private readonly opacityScale = 1,
+  ) {
     if (!fixtures.length) return;
     const geometry = new CylinderGeometry(0, 1, 1, 28, 1, true);
     geometry.translate(0, -0.5, 0);
@@ -104,8 +130,8 @@ export class LampCones {
       vertexShader: vertex,
       fragmentShader: fragment,
       uniforms: {
-        tint: { value: cityColor(tuning.city.lampColor) },
-        opacity: { value: tuning.city.lampConeOpacity },
+        tint: { value: cityColor(color) },
+        opacity: { value: tuning.city.lampConeOpacity * opacityScale },
         heightPower: { value: tuning.city.lampConePower },
         edgePower: { value: tuning.city.lampConeEdgePower },
         slope: { value: 1 },
@@ -134,7 +160,7 @@ export class LampCones {
     if (this.disposed || !mesh) return;
     const t = tuning.city;
     const u = mesh.material.uniforms;
-    u.opacity!.value = t.lampConeOpacity * getPowerLevel();
+    u.opacity!.value = t.lampConeOpacity * this.opacityScale * getPowerLevel();
     u.heightPower!.value = t.lampConePower;
     u.edgePower!.value = t.lampConeEdgePower;
     const slope = Math.tan((t.lampConeAngleDeg * Math.PI) / 180);

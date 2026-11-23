@@ -1,3 +1,4 @@
+import lantern from '../../src/data/render/lanternString.json';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import {
@@ -314,7 +315,14 @@ const landmarks: Record<string, string[]> = {
   city_holo_projector: ['disc_base', 'emitter_ring'],
   city_antenna: ['mast', 'dish', 'receiver'],
   city_cable_span: ['cable_0', 'cable_1', 'cable_2'],
-  city_lantern_string: ['wire', 'lantern', 'hanger'],
+  city_lantern_string: [
+    'wire',
+    'lantern',
+    'hanger',
+    'housing',
+    'bezel',
+    'ceiling_clip',
+  ],
   city_ad_screen: ['housing', 'screen'],
   city_kiosk: ['body', 'map', 'news', 'ad'],
   city_overpass_pillar: ['shaft', 'capital', 'runoff_facet', 'drainpipe'],
@@ -418,7 +426,23 @@ it.each(names)('%s: geometria, paleta, budżet i montaż GLB', async (name) => {
       if (node instanceof Mesh && /^lantern(?:[._]?\d+)?$/.test(node.name))
         lanterns.push(node);
     });
-    if (name === 'city_lantern_string') expect(lanterns).toHaveLength(8);
+    if (name === 'city_lantern_string') {
+      expect(lanterns).toHaveLength(lantern.mounts.length);
+      lanterns
+        .sort((a, b) => a.position.x - b.position.x)
+        .forEach((lens, i) => {
+          const bounds = new Box3().setFromObject(lens, true);
+          expect(bounds.getCenter(new Vector3()).x).toBeCloseTo(
+            lantern.mounts[i]!.x,
+          );
+          expect(bounds.min.y).toBeCloseTo(
+            lantern.mounts[i]!.y - lantern.diffuserDropM,
+          );
+          expect(
+            (lens.material as MeshStandardMaterial).emissiveIntensity,
+          ).toBeGreaterThan(0);
+        });
+    }
   } else {
     expect(box.min.y).toBeCloseTo(0, 5);
     if (wallModels.includes(name)) {

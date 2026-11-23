@@ -34,13 +34,6 @@ const DEFAULT_LABEL_COLOR = '#ffae1a';
 /** Rozmiar tekstury napisu w px na metr szerokości. */
 const LABEL_PX_PER_M = 256;
 const FLAME_COLOR = '#ffae1a';
-/** Rozdzielczość malowanego wylotu tunelu w px na metr. */
-const TUNNEL_PX_PER_M = 96;
-/** Barwy wylotu tunelu: mrok, chłodna mgła głębi, krawędzie żeber, sygnały (paleta ADR 0006). */
-const TUNNEL_DARK = '#020308';
-const TUNNEL_HAZE = '#141c30';
-const TUNNEL_RIB = '#3a4d74';
-const TUNNEL_SIGNALS = ['#6dff4a', '#ffae1a'] as const;
 // Lista z Vite pozwala pominąć żądanie brakującego pliku (bez błędów HTTP w konsoli).
 const availablePosters = new Set(
   Object.keys(import.meta.glob('/public/assets/textures/posters/*.webp')).map(
@@ -58,14 +51,14 @@ const posterTextures = new Map<string, Texture>();
 export const HUB_BATCH_CELL_M = 20;
 
 /**
- * Kosmetyczna oprawa kryjówki spoza `dressingSchema`: okładziny ścian z kafli, ekrany
+ * Kosmetyczna oprawa kryjówki spoza `dressingSchema`: okładziny ścian, ekrany
  * (nadruki `mat_screen_*`), plakaty/banery/murale (`posters/`), neonowe napisy stacji i płomienie beczek. Bez colliderów; `dispose` zwalnia
  * geometrie, materiały i tekstury napisów (współdzielone tekstury zasobów zostają w cache).
  */
 export class HubDecor {
   readonly root = new Group();
   private readonly geometries: BufferGeometry[] = [];
-  /** Kafle o tej samej teksturze i barwie dzielą materiał, żeby dało się je scalić. */
+  /** Okładziny o tej samej teksturze, barwie i szorstkości dzielą materiał. */
   private readonly tileMaterials = new Map<string, MeshStandardMaterial>();
   private readonly materials: (MeshStandardMaterial | MeshBasicMaterial)[] = [];
   private readonly textures: Texture[] = [];
@@ -89,19 +82,15 @@ export class HubDecor {
     seed: string | number = 'hub-labels',
   ) {
     this.rng = new Rng(seed);
-    // Nieruchome okładziny (kafle, plakaty, ekrany) scalane po materiale; wylot tunelu
-    // (własny `bloomMaterial`), napisy i płomienie zostają osobnymi siatkami.
     const statics = new Group();
     for (const panel of panels)
-      if (panel.kind === 'tunnel') this.root.add(this.tunnel(panel));
-      else
-        statics.add(
-          panel.kind === 'tiles'
-            ? this.tiles(panel)
-            : panel.kind === 'poster'
-              ? this.poster(panel)
-              : this.screen(panel),
-        );
+      statics.add(
+        panel.kind === 'tiles'
+          ? this.tiles(panel)
+          : panel.kind === 'poster'
+            ? this.poster(panel)
+            : this.screen(panel),
+      );
     const merged = new Set<BufferGeometry>();
     batchStaticGeometry(statics, merged, { cellSize: HUB_BATCH_CELL_M });
     this.geometries.push(...merged);
@@ -165,7 +154,7 @@ export class HubDecor {
     };
   }
 
-  /** Kafle: tekstura powtarzana co `tileM` m przez skalowanie UV (współdzielona tekstura nie jest modyfikowana). */
+  /** Tekstura okładziny powtarza się co `tileM` metrów dzięki skali UV geometrii. */
   private tiles(panel: HubPanelDef): Mesh {
     const { geometry, place } = this.plane(panel);
     const tileM = panel.tileM ?? 3;
@@ -177,12 +166,13 @@ export class HubDecor {
         (uv.getY(i) * panel.size.h) / tileM,
       );
     const tint = panel.tint ?? DEFAULT_TILE_TINT;
-    const key = `${panel.texture}|${tint}`;
+    const roughness = panel.roughness ?? 0.55;
+    const key = `${panel.texture}|${tint}|${roughness}`;
     let material = this.tileMaterials.get(key);
     if (!material) {
       const created = new MeshStandardMaterial({
         color: new Color(tint),
-        roughness: 0.55,
+        roughness,
         metalness: 0,
       });
       material = created;
@@ -248,186 +238,6 @@ export class HubDecor {
     mesh.userData.noOutline = true;
     place(mesh);
     return mesh;
-  }
-
-  /**
-   * Wylot tunelu: płaszczyzna z malowaną perspektywą (żebra obudowy, szyny, podkłady, kable, dwa sygnały)
-   * znikającą w mroku. Materiał nieoświetlony, żeby światła stacji nie rozjaśniały głębi; sygnały świecą w bloomie.
-   */
-  private tunnel(panel: HubPanelDef): Mesh {
-    const { geometry, place } = this.plane(panel);
-    const material = new MeshBasicMaterial({
-      color: 0xffffff,
-      toneMapped: false,
-      polygonOffset: true,
-      polygonOffsetFactor: -1,
-      polygonOffsetUnits: -2,
-    });
-    this.materials.push(material);
-    if (typeof document !== 'undefined') {
-      const textures = this.tunnelTextures(panel.size);
-      if (textures) {
-        material.map = textures.map;
-        // Maska bloomu obejmuje tylko sygnały (alfa = ich poświata); ciemne tło tunelu nie trafia do bloomu,
-        // więc rozmycie nie przyciemnia ściany wokół wylotu.
-        const glow = new MeshBasicMaterial({
-          map: textures.glow,
-          color: 0xffffff,
-          transparent: true,
-          depthWrite: false,
-          toneMapped: false,
-        });
-        this.materials.push(glow);
-        material.userData.bloom = true;
-        material.userData.bloomMaterial = glow;
-        this.textures.push(textures.map, textures.glow);
-      }
-    } else material.color.set(TUNNEL_DARK);
-    const mesh = new Mesh(geometry, material);
-    mesh.userData.noOutline = true;
-    mesh.name = `tunnel:${panel.texture}`;
-    place(mesh);
-    return mesh;
-  }
-
-  private tunnelTextures(size: {
-    w: number;
-    h: number;
-  }): { map: CanvasTexture; glow: CanvasTexture } | null {
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(size.w * TUNNEL_PX_PER_M);
-    canvas.height = Math.round(size.h * TUNNEL_PX_PER_M);
-    const glowCanvas = document.createElement('canvas');
-    glowCanvas.width = canvas.width;
-    glowCanvas.height = canvas.height;
-    const g = canvas.getContext('2d');
-    const glowContext = glowCanvas.getContext('2d');
-    if (!g || !glowContext) return null;
-    const { width: w, height: h } = canvas;
-    // Punkt zbiegu nieco poniżej środka (oko gracza stoi na peronie, nad dnem niecki).
-    const vx = w / 2;
-    const vy = h * 0.58;
-    const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-    g.fillStyle = TUNNEL_DARK;
-    g.fillRect(0, 0, w, h);
-    // Mgła głębi: chłodna poświata wokół punktu zbiegu, słabnąca ku krawędziom.
-    const haze = g.createRadialGradient(vx, vy, 0, vx, vy, w * 0.7);
-    haze.addColorStop(0, '#000000');
-    haze.addColorStop(0.08, TUNNEL_HAZE);
-    haze.addColorStop(0.45, '#0a0f1c');
-    haze.addColorStop(1, TUNNEL_DARK);
-    g.fillStyle = haze;
-    g.fillRect(0, 0, w, h);
-    // Żebra obudowy: łuki coraz mniejsze i ciemniejsze w głąb.
-    const ribs = 9;
-    for (let i = 0; i < ribs; i++) {
-      const t = Math.pow((i + 1) / (ribs + 1), 0.55);
-      const x0 = lerp(0, vx, t);
-      const x1 = lerp(w, vx, t);
-      const top = lerp(0, vy, t);
-      const bottom = lerp(h, vy, t);
-      const radius = (x1 - x0) / 2;
-      g.globalAlpha = 0.9 * (1 - t) + 0.05;
-      g.strokeStyle = TUNNEL_RIB;
-      g.lineWidth = Math.max(1, 10 * (1 - t));
-      g.beginPath();
-      g.moveTo(x0, bottom);
-      g.lineTo(x0, top + radius * 0.6);
-      g.quadraticCurveTo(x0, top, vx, top);
-      g.quadraticCurveTo(x1, top, x1, top + radius * 0.6);
-      g.lineTo(x1, bottom);
-      g.stroke();
-    }
-    g.globalAlpha = 1;
-    // Podkłady i szyny zbiegające się w mroku.
-    for (let i = 0; i < 14; i++) {
-      const t = Math.pow(i / 14, 0.6);
-      const y = lerp(h, vy, t);
-      const half = lerp(w * 0.36, 0, t);
-      g.globalAlpha = 0.55 * (1 - t);
-      g.fillStyle = '#1b2233';
-      g.fillRect(
-        vx - half,
-        y - Math.max(1, 6 * (1 - t)),
-        half * 2,
-        Math.max(1, 6 * (1 - t)),
-      );
-    }
-    g.globalAlpha = 1;
-    const rail = g.createLinearGradient(0, h, 0, vy);
-    rail.addColorStop(0, '#5d6f94');
-    rail.addColorStop(1, '#0a0f1c');
-    g.strokeStyle = rail;
-    g.lineWidth = Math.max(2, w * 0.008);
-    for (const side of [-1, 1]) {
-      g.beginPath();
-      g.moveTo(vx + side * w * 0.15, h);
-      g.lineTo(vx + side * w * 0.004, vy);
-      g.stroke();
-    }
-    // Wiązki kabli wzdłuż ścian tunelu.
-    g.strokeStyle = '#111827';
-    g.lineWidth = Math.max(2, w * 0.012);
-    for (const side of [-1, 1])
-      for (const offset of [0.18, 0.26]) {
-        g.beginPath();
-        g.moveTo(vx + side * w * 0.5, h * offset);
-        g.quadraticCurveTo(
-          vx + side * w * 0.2,
-          lerp(h * offset, vy, 0.6) + h * 0.03,
-          vx + side * w * 0.02,
-          vy - h * 0.04,
-        );
-        g.stroke();
-      }
-    // Sygnały: zielony bliżej, bursztynowy daleko (tylko neony otoczenia).
-    const signals = [
-      { t: 0.45, side: -1, color: TUNNEL_SIGNALS[0], r: 0.022 },
-      { t: 0.78, side: 1, color: TUNNEL_SIGNALS[1], r: 0.012 },
-    ];
-    // Sygnały rysowane na teksturze barwy i na przezroczystej masce bloomu.
-    const drawSignals = (context: CanvasRenderingContext2D): void => {
-      for (const signal of signals) {
-        const x =
-          lerp(signal.side < 0 ? 0 : w, vx, signal.t) - signal.side * w * 0.03;
-        const y = lerp(h * 0.42, vy, signal.t);
-        const glow = context.createRadialGradient(
-          x,
-          y,
-          0,
-          x,
-          y,
-          w * signal.r * 6,
-        );
-        glow.addColorStop(0, signal.color);
-        glow.addColorStop(0.18, `${signal.color}88`);
-        glow.addColorStop(1, `${signal.color}00`);
-        context.fillStyle = glow;
-        context.fillRect(
-          x - w * signal.r * 6,
-          y - w * signal.r * 6,
-          w * signal.r * 12,
-          w * signal.r * 12,
-        );
-        context.fillStyle = '#fff1d6';
-        context.beginPath();
-        context.arc(x, y, Math.max(1.5, w * signal.r * 0.45), 0, Math.PI * 2);
-        context.fill();
-      }
-    };
-    drawSignals(g);
-    drawSignals(glowContext);
-    // Brzeg wylotu przyciemniony, żeby płaszczyzna zlała się ze ścianą.
-    const edge = g.createLinearGradient(0, 0, 0, h);
-    edge.addColorStop(0, '#000000aa');
-    edge.addColorStop(0.15, '#00000000');
-    g.fillStyle = edge;
-    g.fillRect(0, 0, w, h);
-    const map = new CanvasTexture(canvas);
-    map.colorSpace = SRGBColorSpace;
-    const glow = new CanvasTexture(glowCanvas);
-    glow.colorSpace = SRGBColorSpace;
-    return { map, glow };
   }
 
   /** Płomień: kilka skrzyżowanych płaszczyzn z gradientem, mieszanie addytywne i bloom. */
