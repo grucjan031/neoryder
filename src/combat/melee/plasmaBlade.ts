@@ -759,6 +759,7 @@ export class PlasmaBlade {
       const hitDir = spin ? this.radialDir(box, origin, dir) : dir;
       const dealt = hitbox.strike(box.entity, this.deps.damage, {
         multiplier: box.multiplier,
+        ...(box.headshot ? { headshot: true } : {}),
         point: spin ? (this.deps.hurtboxPosition?.(box) ?? point) : point,
         dir: hitDir,
         knockback: strike.knockback,

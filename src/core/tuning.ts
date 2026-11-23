@@ -769,6 +769,7 @@ export const tuning = {
     },
     scatterRadiusM: 2.2,
     scatterImpulse: 5.5,
+    scatterPushImpulseScale: 0.4,
     scatterLift: 0.6,
     /** Minimalna prędkość gracza (sprint, ślizg, dash), by zahaczyć o dekorację w promieniu scatterTouchM. */
     scatterMinSpeed: 8,
@@ -809,6 +810,8 @@ export const tuning = {
     objectDamping: 3,
   },
   weapons: {
+    hitKnockbackPerDamage: 0.08,
+    hitKnockbackMax: 2.5,
     overheatLockS: 1.5,
     activeCooling: {
       windowStartS: 0.5,
@@ -858,7 +861,22 @@ export const tuning = {
     shieldBreakShake: 0.5,
     shieldBreakShakeS: 0.3,
     stunKnockback: 6,
+    knockbackLiftRatio: 0.22,
+    knockbackMaxLiftSpeed: 4.5,
+    wallSlamMinSpeed: 4,
+    wallSlamDamage: 25,
+    wallSlamExtraStunS: 0.35,
+    wallSlamBounce: 0.2,
+    wallSlamHitstopMs: 45,
+    wallSlamMaxNormalY: 0.5,
+    wallSlamShake: 0.35,
+    wallSlamShakeS: 0.25,
     corpseS: 0.5,
+    deathCollapseS: 0.14,
+    deathCollapseTiltDeg: 65,
+    deathCollapseSlideM: 0.45,
+    deathCollapseDroneDropM: 0.35,
+    deathCollapseFoldRatio: 0.25,
     separationRadius: 1,
     pathLookaheadCells: 8,
     accelerationMps2: 48,
@@ -873,6 +891,13 @@ export const tuning = {
     snapToGroundDistance: 0,
   },
   vfx: {
+    deathCollapseChipFraction: 0.25,
+    enemyFlinchAngleDeg: 14,
+    enemyFlinchHeadMult: 1.6,
+    enemyFlinchDurationS: 0.16,
+    enemyFlinchReferenceDamage: 25,
+    enemyFlinchDecay: 3,
+    droneFlinchTiltRad: 0.38,
     /**
      * Czytelność wrogów z daleka (render/enemyRim.ts): jasność kombinezonu `mat_enemy_dark`
      * względem czerwieni wroga; poświata krawędzi rośnie od enemyRimNearM do enemyRimFarM [m]

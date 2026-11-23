@@ -13,7 +13,10 @@ export interface HitboxSpec {
   hitsPerTarget?: number;
 }
 
-export type StrikeExtra = Pick<DamageInfo, 'point' | 'dir' | 'knockback'> & {
+export type StrikeExtra = Pick<
+  DamageInfo,
+  'point' | 'dir' | 'knockback' | 'headshot'
+> & {
   /** Mnożnik z hurtboxa (np. głowa). */
   multiplier?: number;
 };

@@ -338,7 +338,7 @@ export interface GameEvents {
   entity_spawned: { id: EntityId; kind: string };
   entity_despawned: { id: EntityId };
   damage_dealt: { source: EntityId | null; target: EntityId; amount: number; tags: readonly string[] };   // F1: rozszerzone o point/dir/killed — patrz „Kontrakty F1”
-  enemy_killed: { id: EntityId; killer: EntityId | null; tags: readonly string[] };
+  enemy_killed: { id: EntityId; killer: EntityId | null; tags: readonly string[]; dir?: Vec3 }; // kierunek ciosu kończącego dla upadku
   parry_success: { defender: EntityId; projectile: EntityId | null; attacker: EntityId | null }; // defender = kto parował (odbiorcy filtrują po nim); projectile: null = sparowany cios wręcz
   power_used: { power: string; user: EntityId };
   hitstop: { ms: number };
@@ -638,6 +638,7 @@ export class ResourcePool {
 
 // src/combat/damage/ (właściciel: Architekt)
 export interface DamageInfo {
+  headshot?: boolean; // hurtbox głowy, dla reakcji widoku
   amount: number;
   source: EntityId | null;
   tags: readonly string[];        // '#melee' | '#gun' | '#power' | '#elektrycznosc' | '#heavy' | ...
@@ -721,7 +722,7 @@ export function registerCommand(name: string, help: string, run: (args: string[]
 ```ts
 // zmienione
 damage_dealt: { source: EntityId | null; target: EntityId; amount: number; tags: readonly string[];
-                point: Vec3 | null; dir: Vec3 | null; knockback: number; killed: boolean; blocked?: number }; // blocked: część zatrzymana przez blok ostrza (brak, gdy blok nie działał)
+                point: Vec3 | null; dir: Vec3 | null; knockback: number; killed: boolean; blocked?: number; headshot?: boolean }; // headshot: bezpośrednie trafienie w hurtbox głowy
 
 // walka i zdrowie (#01)
 health_changed: { id: EntityId; current: number; max: number };
@@ -744,7 +745,8 @@ heat_changed: { id: EntityId; current: number; max: number; overheated: boolean 
 projectile_spawned: { id: EntityId; owner: EntityId; team: Team };
 projectile_reflected: { id: EntityId; newOwner: EntityId };
 prop_destroyed: { id: EntityId; kind: string; point: Vec3; size: Vec3; dir: Vec3 | null }; // rozbita skrzynia (PropPhysicsSystem); słucha WorldDebris
-world_hit: { point: Vec3; normal: Vec3; owner: EntityId; tags: readonly string[] }; // pocisk trafił geometrię świata (nie hurtbox); emituje ProjectileSystem; słucha WorldDebris (okruchy)
+world_hit: { point: Vec3; normal: Vec3; owner: EntityId; tags: readonly string[] }; // kontakt ze światem (pocisk lub odrzut wroga z #wall); słucha WorldDebris
+enemy_wall_slam: { id: EntityId; point: Vec3; normal: Vec3; speed: number }; // prędkość odrzutu w stronę powierzchni w m/s; słucha HitSparks
 
 // wręcz (#07)
 melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };  // F2-11: etap 4 = bliźniacze ostrza
@@ -752,6 +754,7 @@ melee_blocked: { defender: EntityId; attacker: EntityId | null; amount: number }
 melee_parried: { defender: EntityId; attacker: EntityId; point: Vec3 }; // sparowany cios wręcz: obrażenia 0, atakujący ogłuszony (meleeParryStunS), point = iskra; zawsze razem z parry_success { projectile: null }
 
 // moce (#11)
+resonance_push: { origin: Vec3; forward: Vec3; range: number; cosHalf: number; knockback: number; lift: number }; // udane użycie Pchnięcia; odbiorcy sprawdzają środki rekwizytów tym samym testem stożka
 power_cooldown: { power: string; user: EntityId; cooldownS: number };
 energy_changed: { id: EntityId; current: number; max: number };
 stamina_changed: { id: EntityId; current: number; max: number };
@@ -846,7 +849,7 @@ export type CoolingPhase = 'waiting' | 'window' | 'late' | 'penalty' | 'success'
 export interface WeaponDeps {
   projectiles: Pick<ProjectileSystem, 'spawn'>;
   /** F2-04: promień lasera — pierwszy trafiony collider (wróg albo ściana). */
-  castBeam?(origin: Vec3, dir: Vec3, rangeM: number): { target: EntityId | null; distance: number; point: Vec3 };
+  castBeam?(origin: Vec3, dir: Vec3, rangeM: number): { target: EntityId | null; distance: number; point: Vec3; headshot?: boolean };
   damage?: DamageSystem;
 }
 export class Weapon {
@@ -889,7 +892,7 @@ export interface PowerDeps {
   owner: EntityId; bus: EventBus; tuning: Tuning;
   damage: DamageSystem; energy: PlayerEnergy;
   aim(): { origin: Vec3; dir: Vec3 };
-  targets(): readonly PushTarget[];               // { id, position }
+  targets(): readonly PushTarget[];               // { id, position, physical?: boolean }; physical wyłącza timer testowych manekinów
   castWall(origin: Vec3, dir: Vec3, maxDistance: number): number | null;
   projectiles?: ProjectileSystem;                 // Bariera
   grab?: GrabPhysics;                             // Chwyt (F2-09)

@@ -2,6 +2,7 @@ import { ColliderDesc, RigidBodyDesc } from '@dimforge/rapier3d-compat';
 import type { Collider, RigidBody, World } from '@dimforge/rapier3d-compat';
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
+import { directionInCone } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { CollisionGroup, interactionGroups } from '../physics';
 import type { PropQuat } from './propPhysics';
@@ -104,6 +105,22 @@ export class ScatterProps {
   constructor(private readonly options: ScatterOptions) {
     const { bus, tuning, playerId } = options;
     this.off = [
+      bus.on(
+        'resonance_push',
+        ({ origin, forward, range, cosHalf, knockback }) => {
+          for (const item of this.items) {
+            const center = item.body?.translation() ?? item.center;
+            if (directionInCone(center, origin, forward, range, cosHalf))
+              this.push(
+                item,
+                origin,
+                range,
+                knockback * tuning.props.scatterPushImpulseScale,
+                center,
+              );
+          }
+        },
+      ),
       bus.on('explosion', ({ point, radiusM }) => {
         const radius = radiusM + tuning.props.scatterRadiusM;
         for (const item of this.items)
@@ -170,9 +187,15 @@ export class ScatterProps {
   }
 
   /** Impuls od punktu `from` (poziomo, z lekkim wzniesieniem). */
-  private push(item: Item, from: Vec3, radius: number, speed: number): void {
-    const dx = item.center.x - from.x;
-    const dz = item.center.z - from.z;
+  private push(
+    item: Item,
+    from: Vec3,
+    radius: number,
+    speed: number,
+    center = item.center,
+  ): void {
+    const dx = center.x - from.x;
+    const dz = center.z - from.z;
     const distance = Math.hypot(dx, dz);
     if (distance > radius) return;
     const body = this.wake(item);

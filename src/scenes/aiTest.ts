@@ -1,6 +1,6 @@
 import { BoxGeometry, Color, Euler, Group, Mesh, Quaternion } from 'three';
 import type { Material, Scene as ThreeScene } from 'three';
-import type { World } from '@dimforge/rapier3d-compat';
+import { Ray, QueryFilterFlags, type World } from '@dimforge/rapier3d-compat';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { z } from 'zod';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
@@ -45,6 +45,9 @@ import { enemyBody } from '../vfx/enemyBody';
 import { HitSparks } from '../vfx/hitSparks';
 import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
 import { StatusVfx } from '../vfx/statusVfx';
+import { DebrisSystem } from '../vfx/debris';
+import { DebrisRenderer } from '../vfx/debrisRenderer';
+import { EnemyShatter } from '../vfx/enemyShatter';
 
 const vec3 = z.object({
   x: z.number().finite(),
@@ -113,6 +116,9 @@ export class AiTest implements Scene {
   private statusView!: StatusVfxRenderer;
   protected hitSparks!: HitSparks;
   private hitSparksView!: HitSparksRenderer;
+  private debris?: DebrisSystem;
+  private debrisView?: DebrisRenderer;
+  private shatter?: EnemyShatter;
 
   constructor(
     private readonly loadModels = true,
@@ -313,6 +319,39 @@ export class AiTest implements Scene {
       },
       { director: this.data.director, spawnPoints: this.data.spawnPoints },
     );
+    if (this.id === 'ai-test') {
+      this.debris = new DebrisSystem({
+        maxDebris: ctx.tuning.vfx.maxDebris,
+        tuning: ctx.tuning.vfx,
+        seed: ctx.rng.fork('ai-test-debris').getState(),
+        walls: (pos, dir, dist) =>
+          this.world.castRay(
+            new Ray(pos, dir),
+            dist,
+            true,
+            QueryFilterFlags.EXCLUDE_SENSORS,
+            interactionGroups(CollisionGroup.Debris, CollisionGroup.World),
+          )?.timeOfImpact ?? null,
+      });
+      this.debrisView = new DebrisRenderer(this.debris);
+      this.root.add(this.debrisView.root);
+      this.shatter = new EnemyShatter(ctx.bus, this.debris, {
+        positionOf: (enemyId) => this.enemyPosition(enemyId),
+        collapse: {
+          tuning: ctx.tuning.enemies,
+          ageOf: (enemyId) => {
+            let age: number | undefined;
+            this.manager.forEach((enemy) => {
+              if (enemy.id === enemyId && enemy.current.state === 'dead')
+                age = enemy.current.stateTimeS;
+            });
+            return age;
+          },
+        },
+        cameraPosition: () => ctx.camera?.position ?? null,
+        tuning: ctx.tuning,
+      });
+    }
     three.background = new Color(ctx.tuning.render.world);
     three.add(this.root);
     this.root.add(this.lights);
@@ -413,8 +452,18 @@ export class AiTest implements Scene {
       },
     );
     const hit = (amount: number): string => {
+      const { position } = this.player.getState();
       this.manager.forEach((enemy) =>
-        this.damage.deal(enemy.id, { source: id, amount, tags: ['#debug'] }),
+        this.damage.deal(enemy.id, {
+          source: id,
+          amount,
+          tags: ['#debug'],
+          dir: {
+            x: enemy.current.position.x - position.x,
+            y: 0,
+            z: enemy.current.position.z - position.z,
+          },
+        }),
       );
       return 'Obrażenia zadane.';
     };
@@ -425,6 +474,29 @@ export class AiTest implements Scene {
         : 'Podaj skończone, nieujemne obrażenia.';
     });
     register('kill all', 'kill all', () => hit(Number.MAX_VALUE));
+    if (this.id === 'ai-test')
+      register('slam', 'slam [odrzut] — odrzuca Szturmowca w filar', (args) => {
+        const knockback = args[0] === undefined ? 18 : Number(args[0]);
+        if (args.length > 1 || !Number.isFinite(knockback) || knockback <= 0)
+          return 'Podaj dodatni odrzut.';
+        const pillar = this.data.arena.find(
+          (block) => block.model === 'pillar',
+        );
+        if (!pillar) return 'Brak filaru na scenie.';
+        const enemy = this.manager.spawn('assaulter', {
+          x: pillar.position.x,
+          y: 0,
+          z: pillar.position.z + pillar.size.z / 2 + 1.5,
+        });
+        this.damage.deal(enemy.id, {
+          source: id,
+          amount: 1,
+          tags: ['#debug'],
+          dir: { x: 0, y: 0, z: -1 },
+          knockback,
+        });
+        return 'Szturmowiec odrzucony w stronę filaru.';
+      });
     register(
       'knock',
       'knock — mocny odrzut wszystkich wrogów od gracza (przewrócenie i kip-up)',
@@ -595,6 +667,7 @@ export class AiTest implements Scene {
     this.statuses.reset();
     this.statusVfx.clear();
     this.hitSparks.clear();
+    this.debris?.clear();
     this.projectiles.dispose();
     this.projectileRenderer.capturePrevious();
     this.health.reset();
@@ -630,6 +703,8 @@ export class AiTest implements Scene {
     this.world.timestep = dt;
     this.world.step();
     this.projectiles.step(dt);
+    this.debris?.step(dt);
+    this.shatter?.step(dt);
   }
 
   render(alpha: number, frameDt = 1 / 60): void {
@@ -638,11 +713,11 @@ export class AiTest implements Scene {
       ids.add(enemy.id);
       let view = this.views.get(enemy.id);
       if (!view) {
-        view = createEnemyView(enemy, this.loadModels);
+        view = createEnemyView(enemy, this.loadModels, this.ctx.bus);
         this.views.set(enemy.id, view);
         this.root.add(view.root);
       }
-      view.render(alpha);
+      view.render(alpha, frameDt);
     });
     for (const [id, view] of this.views)
       if (!ids.has(id)) {
@@ -652,6 +727,7 @@ export class AiTest implements Scene {
     this.projectileRenderer.render(alpha);
     this.statusView.render(alpha, frameDt);
     this.hitSparksView.render(frameDt);
+    this.debrisView?.render(alpha);
     this.lights.sync();
     const camera = this.ctx.camera;
     if (!camera) return;
@@ -725,6 +801,8 @@ export class AiTest implements Scene {
     this.statusView?.dispose();
     this.hitSparks?.dispose();
     this.hitSparksView?.dispose();
+    this.shatter?.dispose();
+    this.debrisView?.dispose();
     this.projectileRenderer?.dispose();
     this.projectiles?.dispose();
     this.camera?.dispose();

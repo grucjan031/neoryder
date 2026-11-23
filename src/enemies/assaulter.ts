@@ -1,3 +1,4 @@
+import { deathDirection, deathDuration } from './enemyDeath';
 import { arrivalSpeed, turnToward, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import { Cuboid } from '@dimforge/rapier3d-compat';
@@ -15,6 +16,8 @@ import { Stats } from '../core/stats';
 import { CollisionGroup, interactionGroups } from '../physics';
 import type { EnemyDefinition } from './enemySchema';
 import { EnemyBody } from './enemyBody';
+import { resolveWallSlam } from './enemyWallImpact';
+import { knockdownFrame } from './enemyKnockdown';
 import { clearWorld, playerThreatens } from './tactics';
 import type {
   Enemy,
@@ -156,6 +159,8 @@ export class Assaulter implements Enemy {
           this.body.knockback(
             dir,
             event.knockback * (1 - definition.knockbackResist),
+            ctx.tuning.enemies,
+            event,
           );
         const heavy = event.knockback >= ctx.tuning.enemies.stunKnockback;
         if (event.tags.includes(PIERCE_BLOCK_TAG) || heavy) {
@@ -185,14 +190,21 @@ export class Assaulter implements Enemy {
             },
             ctx.tuning.melee.meleeParryKnockback *
               (1 - definition.knockbackResist),
+            ctx.tuning.enemies,
+            { source: defender, tags: [] },
           );
         this.stunS = ctx.tuning.melee.meleeParryStunS;
         this.transition('stunned');
         ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
       }),
-      ctx.bus.on('enemy_killed', ({ id }) => {
-        if (id === this.id && this.current.state !== 'dead')
-          this.transition('dead');
+      ctx.bus.on('enemy_killed', ({ id, dir, tags }) => {
+        if (id !== this.id || this.current.state === 'dead') return;
+        this.body.disableCollision();
+        this.current.death = {
+          dir: deathDirection(dir),
+          durationS: deathDuration(tags, ctx.tuning.enemies),
+        };
+        this.transition('dead');
       }),
     );
   }
@@ -281,6 +293,7 @@ export class Assaulter implements Enemy {
     this.current.state = state;
     this.current.stateTimeS = 0;
     delete this.current.knockdown;
+    this.body.resetHurtboxes();
     this.hitbox = undefined;
     this.updateShield();
     // Token trzyma tylko zapowiedź i wymach; regeneracja po ciosie oddaje go następnemu.
@@ -407,7 +420,13 @@ export class Assaulter implements Enemy {
     s.stateTimeS += dt;
     s.speed = 0;
     if (s.state === 'dead') {
-      if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
+      if (
+        s.stateTimeS + epsilon >=
+        Math.max(
+          this.ctx.tuning.enemies.corpseS,
+          s.death ? s.death.durationS + dt : 0,
+        )
+      )
         this.dispose();
       return;
     }
@@ -608,6 +627,28 @@ export class Assaulter implements Enemy {
     s.position = movement.position;
     s.speed = movement.distance / dt;
     s.distance += movement.distance;
+    const knockdownTuning = this.ctx.tuning.vfx.enemyKnockdown;
+    this.body.updateKnockdown(
+      s,
+      knockdownFrame(d, s, knockdownTuning),
+      knockdownTuning,
+    );
+    if (movement.wallSlam) {
+      const extra = this.ctx.tuning.enemies.wallSlamExtraStunS;
+      if (extra > 0) {
+        if (s.state !== 'stunned') {
+          this.stunS = 0;
+          this.transition('stunned');
+        }
+        this.stunS = Math.max(this.stunS, s.stateTimeS) + extra;
+        this.ctx.bus.emit('enemy_stunned', {
+          id: this.id,
+          durationS: this.stunS - s.stateTimeS,
+        });
+      }
+      resolveWallSlam(this.ctx, this.deps.damage, this.id, movement.wallSlam);
+      if (this.deps.damage.health(this.id)?.dead) return;
+    }
     updateBodyPose(
       this.previous,
       s,

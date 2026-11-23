@@ -791,6 +791,10 @@ export class RoomScene implements Scene {
       tuning: ctx.tuning,
     });
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
+      collapse: {
+        tuning: ctx.tuning.enemies,
+        ageOf: (id) => this.enemy(id)?.current.stateTimeS,
+      },
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
       bodyOf: (id) => {
         const e = this.enemy(id);
@@ -1615,11 +1619,12 @@ export class RoomScene implements Scene {
           projectiles: this.projectiles,
           aim: () => this.aim(),
           targets: () => {
-            const list: { id: EntityId; position: Vec3 }[] = [];
+            const list: { id: EntityId; position: Vec3; physical: true }[] = [];
             this.manager.forEach((e) => {
               if (e.current.state !== 'dead')
                 list.push({
                   id: e.id,
+                  physical: true,
                   position: {
                     ...e.current.position,
                     // Środek ciała z danych wroga (Dron bez `body` to już środek kuli).
@@ -1694,10 +1699,10 @@ export class RoomScene implements Scene {
       },
     );
     const distance = hit?.timeOfImpact ?? rangeM;
+    const box = hit ? this.hurtboxes.get(hit.collider.handle) : undefined;
     return {
-      target: hit
-        ? (this.hurtboxes.get(hit.collider.handle)?.entity ?? null)
-        : null,
+      target: box?.entity ?? null,
+      ...(box?.headshot ? { headshot: true } : {}),
       distance,
       point: {
         x: origin.x + dir.x * distance,
@@ -1946,6 +1951,7 @@ export class RoomScene implements Scene {
     this.execute.step(dt);
     this.projectileView.capturePrevious();
     this.debris.step(dt);
+    this.shatter.step(dt);
     for (const weapon of this.weapons) {
       if (weapon === this.weapon && this.heldItem.held === 'gun')
         weapon.step(pdt, {
@@ -2025,11 +2031,11 @@ export class RoomScene implements Scene {
       ids.add(enemy.id);
       let view = this.views.get(enemy.id);
       if (!view) {
-        view = createEnemyView(enemy, this.loadModels);
+        view = createEnemyView(enemy, this.loadModels, this.ctx.bus);
         this.views.set(enemy.id, view);
         this.root.add(view.root);
       }
-      view.render(alpha);
+      view.render(alpha, frameDt);
       view.setExecutable?.(
         executable.includes(enemy.id),
         frameDt,

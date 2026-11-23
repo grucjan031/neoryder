@@ -32,7 +32,12 @@ export interface WeaponDeps {
     origin: Vec3,
     dir: Vec3,
     rangeM: number,
-  ): { target: EntityId | null; distance: number; point: Vec3 };
+  ): {
+    target: EntityId | null;
+    distance: number;
+    point: Vec3;
+    headshot?: boolean;
+  };
   damage?: DamageSystem;
 }
 
@@ -288,6 +293,8 @@ export class Weapon {
     Object.assign(beam.from, input.origin);
     Object.assign(beam.to, hit.point);
     this.beamTickS += dt;
+    const amount = def.dps / def.tickHz;
+    const weapons = this.ctx.tuning.weapons;
     while (this.beamTickS + Number.EPSILON * 16 >= 1 / def.tickHz) {
       if (ammo && !ammo.available()) break;
       this.beamTickS -= 1 / def.tickHz;
@@ -295,10 +302,19 @@ export class Weapon {
       if (hit.target !== null && hit.distance <= def.rangeM)
         this.deps.damage!.deal(hit.target, {
           source: this.owner,
-          amount: def.dps / def.tickHz,
+          amount,
           tags: def.tags,
           point: hit.point,
           dir: input.dir,
+          ...(hit.headshot ? { headshot: true } : {}),
+          ...(this.team === 'player'
+            ? {
+                knockback: Math.min(
+                  weapons.hitKnockbackMax,
+                  amount * weapons.hitKnockbackPerDamage,
+                ),
+              }
+            : {}),
           ...(def.statuses ? { statuses: def.statuses } : {}),
         });
     }

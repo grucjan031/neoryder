@@ -7,6 +7,7 @@ import type { Collider, RigidBody, World } from '@dimforge/rapier3d-compat';
 import type { EntityRegistry } from '../core/entities';
 import type { EntityId, EventBus } from '../core/events';
 import type { Vec3 } from '../core/math';
+import { directionInCone } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { CollisionGroup, interactionGroups } from '../physics';
@@ -122,7 +123,7 @@ export function quatFromEuler(rotation?: Vec3): PropQuat {
 export class PropPhysicsSystem {
   private readonly props: Prop[] = [];
   private readonly byEntity = new Map<EntityId, Prop>();
-  private readonly off: () => void;
+  private readonly off: (() => void)[];
   private readonly targetBuffer: HazardTarget[] = [];
   private bodies = 0;
   /** Encje rozbitych skrzyń: usuwane w następnym kroku (nie w trakcie obsługi `damage_dealt`). */
@@ -131,12 +132,36 @@ export class PropPhysicsSystem {
   private disposed = false;
 
   constructor(private readonly options: PropPhysicsOptions) {
-    this.off = options.bus.on('damage_dealt', (event) => {
-      const prop = this.byEntity.get(event.target);
-      if (!prop?.alive) return;
-      if (event.killed) this.destroy(prop, event.dir);
-      else this.nudge(prop, event.dir, event.knockback);
-    });
+    this.off = [
+      options.bus.on('damage_dealt', (event) => {
+        const prop = this.byEntity.get(event.target);
+        if (!prop?.alive) return;
+        if (event.killed) this.destroy(prop, event.dir);
+        else this.nudge(prop, event.dir, event.knockback);
+      }),
+      options.bus.on(
+        'resonance_push',
+        ({ origin, forward, range, cosHalf, knockback, lift }) => {
+          for (const prop of this.props) {
+            if (!prop.alive || prop.id < 0 || !prop.body || prop.frozen)
+              continue;
+            const away = directionInCone(
+              prop.body.translation(),
+              origin,
+              forward,
+              range,
+              cosHalf,
+            );
+            if (away)
+              this.nudge(
+                prop,
+                { ...away, y: Math.max(lift, away.y) },
+                knockback,
+              );
+          }
+        },
+      ),
+    ];
   }
 
   /** Rejestruje blok jako rekwizyt. false: nie jest zniszczalną skrzynią (scena buduje go jak dotąd). */
@@ -411,7 +436,7 @@ export class PropPhysicsSystem {
     }
     this.bodies = 0;
     this.disposed = true;
-    this.off();
+    for (const off of this.off) off();
     this.props.length = 0;
     this.byEntity.clear();
   }

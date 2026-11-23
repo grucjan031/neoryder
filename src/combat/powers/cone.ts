@@ -1,6 +1,6 @@
 import type { EntityId } from '../../core/events';
 import type { Vec3 } from '../../core/math';
-import { dot, normalize, sub } from '../../core/math';
+import { directionInCone, normalize } from '../../core/math';
 import { PowerBase } from './power';
 import type { ConePowerDefinition } from './powerSchema';
 
@@ -33,13 +33,25 @@ export class ConePower extends PowerBase<ConePowerDefinition> {
     const { origin, dir } = this.deps.aim();
     const forward = normalize(dir);
     const cosHalf = Math.cos(((this.def.coneAngleDeg / 2) * Math.PI) / 180);
+    if (this.def.id === 'push' && this.def.knockback > 0)
+      this.deps.bus.emit('resonance_push', {
+        origin,
+        forward,
+        cosHalf,
+        range: this.def.range,
+        knockback: this.def.knockback,
+        lift: this.def.knockbackLift,
+      });
     let hits = 0;
     for (const target of this.deps.targets()) {
-      const to = sub(target.position, origin);
-      const distance = Math.hypot(to.x, to.y, to.z);
-      if (distance > this.def.range || distance < 1e-6) continue;
-      const away = normalize(to);
-      if (this.def.coneAngleDeg < 360 && dot(away, forward) < cosHalf) continue;
+      const away = directionInCone(
+        target.position,
+        origin,
+        forward,
+        this.def.range,
+        cosHalf,
+      );
+      if (!away) continue;
       // Odrzut głównie poziomy, lekko w górę — czytelny lot.
       const push = normalize({
         x: away.x,
@@ -60,6 +72,7 @@ export class ConePower extends PowerBase<ConePowerDefinition> {
       )
         continue;
       hits++;
+      if (target.physical) continue;
       const flat = normalize({ x: push.x, y: 0, z: push.z });
       const wall =
         flat.x === 0 && flat.z === 0

@@ -12,16 +12,27 @@ export interface Hurtbox {
   entity: EntityId;
   colliderHandle: number;
   multiplier: number;
+  headshot?: boolean;
 }
 
 /** Indeks hurtboxów po uchwycie collidera Rapier. */
 export class Hurtboxes {
   private readonly byHandle = new Map<number, Hurtbox>();
 
-  add(entity: EntityId, collider: Collider | number, multiplier = 1): Hurtbox {
+  add(
+    entity: EntityId,
+    collider: Collider | number,
+    multiplier = 1,
+    headshot = false,
+  ): Hurtbox {
     const colliderHandle =
       typeof collider === 'number' ? collider : collider.handle;
-    const box = { entity, colliderHandle, multiplier };
+    const box = {
+      entity,
+      colliderHandle,
+      multiplier,
+      ...(headshot ? { headshot } : {}),
+    };
     this.byHandle.set(colliderHandle, box);
     return box;
   }

@@ -50,9 +50,10 @@ export interface EnemySnapshot {
     | { kind: 'gridHack'; center: Vec3; radiusM: number; destination: Vec3 };
   /**
    * Ogłuszenie z mocnego odrzutu (`knockback >= stunKnockback`): kierunek przewrócenia w świecie
-   * (poziomy, jednostkowy). Tylko dla widoku (upadek i kip-up w czasie `stunOnHeavyS`).
+   * (poziomy, jednostkowy) i odsunięcie modelu oraz hurtboxów od ściany.
    */
-  knockdown?: { x: number; z: number };
+  knockdown?: { x: number; z: number; retreatM?: number };
+  death?: { dir: Vec3; durationS: number };
 }
 export interface EnemyCarry {
   speedMultiplier: number;

@@ -25,6 +25,7 @@ export const pushDefinition = loadPush(pushData);
 
 export interface PushTarget {
   id: EntityId;
+  physical?: boolean;
   /** Środek celu (zwykle tułów). */
   position: Vec3;
 }

@@ -11,6 +11,7 @@ import { DroneView } from './droneView';
 import { EnemyView } from './enemyView';
 import { TurretView } from './turretView';
 import type { Enemy } from './types';
+import type { EventBus } from '../core/events';
 
 export interface EnemyViewLike {
   readonly root: Object3D;
@@ -23,13 +24,14 @@ export interface EnemyViewLike {
 export function createEnemyView(
   enemy: Enemy,
   loadModels = true,
+  bus?: EventBus,
 ): EnemyViewLike {
   const view =
     enemy.definition.kind === 'turret'
       ? new TurretView(enemy, loadModels)
       : enemy.definition.kind === 'drone' || enemy.definition.kind === 'hacker'
-        ? new DroneView(enemy, loadModels)
-        : new EnemyView(enemy, loadModels);
+        ? new DroneView(enemy, loadModels, bus)
+        : new EnemyView(enemy, loadModels, bus);
   const geometry = new RingGeometry(0.16, 0.21, 4);
   const red = new Color(0xff3028);
   const white = new Color(0xffd8bd);

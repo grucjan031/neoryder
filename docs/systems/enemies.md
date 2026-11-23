@@ -222,7 +222,7 @@ głowy ×1,5. Wszystkie collidery są związane z encją przez `EntityRegistry`;
 tylko sensory należą do `Hurtboxes`. Ciało i hurtboxy poruszają się razem.
 Scena wykonuje **jeden** `world.step()` po krokach gracza i managera.
 
-`damage_dealt` dla własnego id dodaje poziomy impuls z pola `knockback`,
+`damage_dealt` dla własnego id dodaje impuls z pola `knockback`,
 skalowany przez `1 - knockbackResist`, z wykładniczym tłumieniem z danych.
 Kierunek pochodzi z `dir`; przy `null` można go odtworzyć z pozycji celu będącego
 atakującym. Nieznany kierunek pomija sam odrzut. Tag `PIERCE_BLOCK_TAG`
@@ -230,10 +230,20 @@ lub impuls co najmniej `tuning.enemies.stunKnockback` przerywa aktualny atak,
 przełącza stan na `stunned` i emituje `enemy_stunned { id, durationS }`.
 Ponowne ogłuszenie odświeża czas. Ogłuszony wróg nie atakuje.
 
+Mocny impuls lub kierunek w górę nadaje chodzącym prędkość pionową
+(`knockbackLiftRatio`, `knockbackMaxLiftSpeed`). Przy rzeczywistym kontakcie
+ze ścianą Rapier podaje punkt i normalną. Jeśli odrzut w stronę ściany ma co
+najmniej `wallSlamMinSpeed`, składowa normalna odbija się z `wallSlamBounce`.
+Zderzenie dodaje `wallSlamExtraStunS` do ogłuszenia, zadaje obrażenia `#wall`
+i wyzwala `enemy_wall_slam`, iskry, wstrząs kamery i hitstop. Drony korzystają
+z istniejącego testu kolizji kuli ze światem.
+
 Zdarzenie `enemy_killed` z `DamageSystem` przełącza dowolny stan na `dead`.
-Wróg przestaje działać i znika wizualnie. Po `tuning.enemies.corpseS` manager
-usuwa kontroler, ciało, hurtboxy, rejestrację obrażeń i encję. Zdarzenie śmierci
-emituje wyłącznie `DamageSystem`, raz. Odłamki należą do zadania #12.
+Collidery ruchu i hurtboxy są usuwane podczas obsługi zdarzenia. Model humanoida
+lub drona pochyla się i przesuwa w kierunku ostatniego trafienia przez
+`deathCollapseS` (0,14 s), po czym ustępuje miejsca głównej fali odłamków.
+Egzekucja i śmierć wieżyczki używają natychmiastowego rozpadu. Po
+`tuning.enemies.corpseS` manager sprząta pozostałe zasoby wroga.
 
 `EnemyManager`: `spawn(id, position)`, `step(dt)`, `forEach(cb)`, `despawnAll()`,
 `dispose()`, `grabTargets()`, `captureControlled()`, `setSpawnModifiers(mods)`, pola `difficulty` i `director`.
@@ -286,7 +296,7 @@ drogą obrotu. Czysta funkcja `selectEnemyAnimation` wybiera klip ze snapshotu:
 | Burst                       | `Pistol_Shoot`, ponawiany przy resecie `shotTimeS`        |
 | Stunned                     | `Hit_Chest`, jednorazowo                                  |
 | Controlled                  | `Hit_Head`, jednorazowo (ogłuszenie ma pierwszeństwo)     |
-| Dead                        | model niewidoczny, dotychczasowy rozpad na odłamki        |
+| Dead                        | kierunkowy upadek, potem rozpad na odłamki                |
 
 Tempo ruchu to `clip.duration * speed / stride`, gdzie `stride` to `animation.clipStrideM[klip]` (droga stóp na cykl w metrach świata: Walk 1,41 / Jog 4,61 dla modelu Szturmowca, Strzelca, Snajpera i Tarczownika, 1,69 / 5,54 dla modelu Egzekutora, razy `modelScale`; test `enemyStride.test.ts` mierzy je w GLB), a bez wpisu `animation.strideM` (też faza chodu brył zastępczych)
 (`strideM` = droga na cykl klipu chodu w metrach świata, u bossa 1,69 m × `modelScale`
@@ -765,7 +775,7 @@ czytelność zapowiedzi, szybki cios w dotychczasowym oknie obrażeń oraz recoi
 każdego strzału. Do obciążenia użyj `kill all`, `spawn assaulter 30` i obróć
 kamerę od grupy; mixery poza kadrem mają przestać aktualizować kości.
 
-## Przewrócenie i kip-up (S0-08, tylko widok)
+## Przewrócenie i kip-up (S0-08)
 
 Trafienie z odrzutem `knockback >= tuning.enemies.stunKnockback` u humanoidów
 chodzących (assaulter, gunner, sniper, shielder, executor; bez dronów, hakera,
@@ -774,10 +784,21 @@ ogłuszenia (`stunOnHeavyS`) i obrażenia bez zmian. `EnemyView` obraca korzeń 
 wokół bioder (`enemyKnockdown.ts`): upadek na plecy 0,22 s, leżenie (reszta ogłuszenia),
 kip-up 0,32 s z podskokiem 0,34 m i lądowaniem w `Sword_Idle` / `Pistol_Idle_Loop`
 oraz czerwonymi iskrami. Przy krótszym ogłuszeniu ruchy skalują się, nic się nie wydłuża.
-Liczby: `tuning.vfx.enemyKnockdown`. Hitbox to pionowa kapsuła symulacji (bez zmian,
-także w leżeniu; wróg dalej przyjmuje trafienia). Śmierć w leżeniu: zwykły rozpad.
+Poza z `tuning.vfx.enemyKnockdown` przesuwa i obraca hurtboxy tak, by można było
+trafić leżącego wroga. Kapsuła ruchu zachowuje swój kształt. Blisko ściany
+wspólne przesunięcie modelu i hurtboxów odsuwa głowę od powierzchni.
 Ogłuszenie bez mocnego odrzutu (`PIERCE_BLOCK_TAG`, status) — jak dotąd `Hit_Chest`.
 Kontrola: `?scene=ai-test&debug=1`, `spawn assaulter 3`, `knock` (`timescale 0.1` zwalnia).
+
+## Reakcja widoku na trafienie
+
+Dodatnie, nieśmiertelne obrażenia wyzwalają krótkie wychylenie tułowia lub drona.
+`headshot` dodaje wychylenie głowy. Widok nakłada pozę po animacji i wygasza ją
+po `enemyFlinchDurationS`. Tik statusu nie wyzwala reakcji. Mikroodrzut broni
+działa osobno przez `damage_dealt.knockback`.
+
+W `?scene=ai-test&debug=1` użyj `hit 10` dla flincha, `slam` dla podrzutu
+i uderzenia w filar, a `kill all` dla kierunkowego upadku i rozpadu.
 
 ## Cel wroga: gracz albo sojusznik
 

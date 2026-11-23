@@ -33,7 +33,10 @@ import { loadSettings } from '../core/save';
 import { PIERCE_BLOCK_TAG } from '../combat/damage';
 import { gaitWeights, rifleman, selectEnemyAnimation } from './enemyAnimation';
 import { angleDelta } from './locomotion';
-import { knockdownFrame } from './enemyKnockdown';
+import { knockdownFrame, knockdownOffset } from './enemyKnockdown';
+import { EnemyFlinch } from './enemyFlinch';
+import { deathPose } from './enemyDeath';
+import type { EventBus } from '../core/events';
 import { HeldShield, ShieldHeadClearance } from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
@@ -47,7 +50,6 @@ const BOSS_SHIELD_BAR_M = 0.07;
 const BOSS_HALO: [number, number, number] = [0.36, 2.02, -0.3];
 const laserFrom = new Vector3();
 const knockAxis = new Vector3();
-const knockPivot = new Vector3();
 const knockQuat = new Quaternion();
 const spineWorld = new Quaternion();
 const aimAxis = new Vector3();
@@ -105,6 +107,13 @@ export class EnemyView {
   private gait?: AnimationAction[];
   private gaitFade = 0;
   private spine?: Object3D;
+  private flinchBones?: {
+    torso: Object3D | undefined;
+    head: Object3D | undefined;
+  };
+  private readonly flinch: EnemyFlinch;
+  private flinchRad = 0;
+  private foldHead = false;
   private torsoYaw = 0;
   private readonly spinePose = new Quaternion();
   private appliedAim = false;
@@ -150,7 +159,9 @@ export class EnemyView {
   constructor(
     readonly enemy: Enemy,
     loadModels = true,
+    bus?: EventBus,
   ) {
+    this.flinch = new EnemyFlinch(enemy.id, bus);
     const body = enemy.definition.body;
     if (!body) throw new Error('Brak geometrii wroga.');
     const part = (
@@ -317,6 +328,13 @@ export class EnemyView {
         this.model.scale.setScalar(enemy.definition.boss?.modelScale ?? 1);
         const instance = clone(source);
         this.spine = instance.getObjectByName('DEF-spine003');
+        this.flinch.restore();
+        this.flinchBones = {
+          torso: instance.getObjectByName('DEF-spine002') ?? this.spine,
+          head:
+            instance.getObjectByName('DEF-head') ??
+            instance.getObjectByName('head'),
+        };
         this.model.add(instance);
         instance.traverse((node) => {
           if (node instanceof SkinnedMesh) this.skins.push(node);
@@ -566,7 +584,7 @@ export class EnemyView {
     laser.scale.set(width, length, width);
   }
 
-  render(alpha: number): void {
+  render(alpha: number, frameDt = 1 / 60): void {
     const { previous: a, current: b, definition } = this.enemy;
     const t = Math.max(0, Math.min(1, alpha));
     this.root.position.set(
@@ -592,11 +610,40 @@ export class EnemyView {
       );
       this.fallbackShield.rotation.y = this.torsoYaw;
     }
-    this.root.visible = b.state !== 'dead' && !this.enemy.removed;
+    const death =
+      b.state === 'dead' && b.death && b.stateTimeS < b.death.durationS
+        ? b.death
+        : null;
+    this.root.visible =
+      (b.state !== 'dead' || death !== null) && !this.enemy.removed;
+    this.flinchRad =
+      (this.flinch.sample(frameDt, this.root.rotation.y) *
+        tuning.vfx.enemyFlinchAngleDeg *
+        Math.PI) /
+      180;
+    this.foldHead = this.flinch.headshot;
+    if (!this.mixer) this.flinch.restore();
     this.applyKnockdown();
     if (!b.knockdown && !b.controlled)
       this.model.rotation.z +=
         (a.lean ?? 0) + ((b.lean ?? 0) - (a.lean ?? 0)) * t;
+    if (death) {
+      const pose = deathPose(
+        b.stateTimeS / death.durationS,
+        false,
+        tuning.enemies,
+      );
+      this.root.position.set(
+        b.position.x + death.dir.x * pose.slide,
+        b.position.y,
+        b.position.z + death.dir.z * pose.slide,
+      );
+      this.flinch.setDirection(death.dir, this.root.rotation.y);
+      knockAxis.set(this.flinch.pitch, 0, this.flinch.roll);
+      this.model.quaternion.setFromAxisAngle(knockAxis, pose.tilt);
+      this.flinchRad = pose.tilt * tuning.enemies.deathCollapseFoldRatio;
+      this.foldHead = true;
+    }
     if (this.shield) this.shield.visible = b.shieldUp === true;
     this.renderLaser();
     const heavy =
@@ -609,7 +656,10 @@ export class EnemyView {
     );
     const anim = definition.animation;
     if (this.mixer) this.prepareAnimation(t);
-    if (!anim) return;
+    if (!anim) {
+      if (!this.mixer) this.applyFlinch();
+      return;
+    }
     for (const [node, rest] of this.rest) {
       if (this.mixer && (node.type === 'Bone' || node instanceof SkinnedMesh))
         continue;
@@ -621,6 +671,7 @@ export class EnemyView {
     }
     const torso = this.model.getObjectByName('torso');
     if (!this.mixer && torso) torso.rotation.y += this.torsoYaw;
+    if (!this.mixer) this.applyFlinch();
     const rotate = (name: string, axis: 'x' | 'z', angle: number): void => {
       const node = this.model.getObjectByName(name);
       if (node && !this.mixer) node.rotation[axis] += angle;
@@ -775,7 +826,7 @@ export class EnemyView {
   /**
    * Przewrócenie przy mocnym odrzucie: obrót korzenia modelu wokół bioder w kierunku odrzutu
    * (upadek na plecy), obniżenie do ziemi, potem kip-up z podskokiem i lądowaniem. Poza
-   * przewróceniem model wraca do pozy bazowej. Hitbox (kapsuła symulacji) bez zmian.
+   * przewróceniem model wraca do pozy bazowej.
    */
   private applyKnockdown(): void {
     const { current: b, definition } = this.enemy;
@@ -798,18 +849,12 @@ export class EnemyView {
     const lz = b.knockdown.x * s + b.knockdown.z * c;
     // Oś obrotu prostopadła do kierunku: głowa leci w stronę odrzutu.
     knockAxis.set(lz, 0, -lx).normalize();
-    const tilt = (pose.tiltDeg * Math.PI) / 180;
-    knockQuat.setFromAxisAngle(knockAxis, tilt);
     const hip = definition.body?.centerY ?? 0.9;
-    const lower = -(hip - k.lieRestM) * Math.max(0, Math.sin(tilt));
-    // Obrót wokół bioder: pozycja = (0, biodra + przesunięcie) − R·(0, biodra, 0).
-    knockPivot.set(0, hip, 0).applyQuaternion(knockQuat);
+    const { tilt, forward, up } = knockdownOffset(pose, hip, k.lieRestM);
+    const shift = forward - (b.knockdown.retreatM ?? 0);
+    knockQuat.setFromAxisAngle(knockAxis, tilt);
     this.model.quaternion.copy(knockQuat);
-    this.model.position.set(
-      -knockPivot.x,
-      hip + lower + pose.liftM - knockPivot.y,
-      -knockPivot.z,
-    );
+    this.model.position.set(lx * shift, up, lz * shift);
     const widen = 1 + (1 - pose.squash) * 0.5;
     this.model.scale.set(
       baseScale * widen,
@@ -1006,9 +1051,24 @@ export class EnemyView {
     this.animationPending = this.root.visible;
   }
 
+  private applyFlinch(): void {
+    if (!this.flinchRad) return;
+    const bones = this.flinchBones;
+    this.flinch.apply(
+      bones?.torso ?? this.model.getObjectByName('torso'),
+      this.flinchRad,
+    );
+    if (this.foldHead)
+      this.flinch.apply(
+        bones?.head ?? this.model.getObjectByName('head'),
+        this.flinchRad * tuning.vfx.enemyFlinchHeadMult,
+      );
+  }
+
   private advanceAnimation(): void {
     if (!this.animationPending || !this.mixer) return;
     this.animationPending = false;
+    this.flinch.restore();
     if (this.spine && this.appliedAim)
       this.spine.quaternion.copy(this.spinePose);
     this.mixer.update(this.pendingAnimationS);
@@ -1021,6 +1081,7 @@ export class EnemyView {
       }
       this.appliedAim = true;
     }
+    this.applyFlinch();
     this.model.updateWorldMatrix(true, true);
     this.heldShield?.update();
     this.shieldHeadClearance?.update();
@@ -1030,6 +1091,7 @@ export class EnemyView {
 
   dispose(): void {
     this.disposed = true;
+    this.flinch.dispose();
     this.restoreHeavyMaterials();
     if (this.mixer) {
       this.mixer.stopAllAction();

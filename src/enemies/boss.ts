@@ -1,3 +1,4 @@
+import { deathDirection, deathDuration } from './enemyDeath';
 import { arrivalSpeed, updateBodyPose } from './locomotion';
 import { Health } from '../combat/damage';
 import type { DamageInfo } from '../combat/damage';
@@ -154,10 +155,15 @@ export class Boss implements Enemy {
         else if (pending && this.vulnerableS <= epsilon)
           this.openReflectCounter();
       }),
-      ctx.bus.on('enemy_killed', ({ id }) => {
+      ctx.bus.on('enemy_killed', ({ id, dir, tags }) => {
         if (id === this.id) {
           this.setPattern(null);
           this.resetShield();
+          this.body?.disableCollision();
+          this.current.death = {
+            dir: deathDirection(dir),
+            durationS: deathDuration(tags, ctx.tuning.enemies),
+          };
           this.transition('dead');
           this.killMinions();
         }
@@ -622,7 +628,13 @@ export class Boss implements Enemy {
     s.speed = 0;
     if (s.shotTimeS !== undefined) s.shotTimeS += dt;
     if (s.state === 'dead') {
-      if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
+      if (
+        s.stateTimeS + epsilon >=
+        Math.max(
+          this.ctx.tuning.enemies.corpseS,
+          s.death ? s.death.durationS + dt : 0,
+        )
+      )
         this.dispose();
       return;
     }

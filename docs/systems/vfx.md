@@ -141,7 +141,11 @@ bez pobierania węzłów modelu. Oba wybuchy dziedziczą kierunek ciosu.
 
 `DamageSystem` emituje `damage_dealt` przed `enemy_killed`. Identyfikator
 zabitego wroga jest zapamiętany, więc para zdarzeń daje jeden rozpad.
-Samotne `enemy_killed` daje minimalny rozpad z `dir: null`. Pozycja musi być
+Samotne `enemy_killed` daje minimalny rozpad z kierunkiem zdarzenia, jeśli go
+podano. Arena, pokoje i scena `ai-test` synchronizują główny rozpad z upadkiem
+wroga. W momencie śmierci pojawia się błysk i około 25% fragmentów z miejsca
+trafienia. Po 0,14 s reszta wylatuje z przesuniętej sylwetki. Egzekucje
+i wieżyczki rozpadają się od razu. Pozycja musi być
 dostępna podczas obsługi zdarzenia: twórz `EnemyShatter` przed subskrypcją,
 która usuwa wroga ze sceny. `entity_spawned` i `entity_despawned` czyszczą
 zapamiętane ID; `dispose()` odpina wszystkie subskrypcje.

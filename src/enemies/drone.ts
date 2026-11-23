@@ -1,3 +1,4 @@
+import { deathDirection, deathDuration } from './enemyDeath';
 import { steerVelocity, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import {
@@ -16,6 +17,12 @@ import { Stats } from '../core/stats';
 import { CollisionGroup, interactionGroups } from '../physics';
 import { droneFields, gunnerFields } from './enemySchema';
 import type { EnemyDefinition } from './enemySchema';
+import {
+  resolveWallSlam,
+  wallSlamContact,
+  type WallSlam,
+  type ImpactSource,
+} from './enemyWallImpact';
 import type {
   Enemy,
   EnemyDependencies,
@@ -55,6 +62,7 @@ export class Drone implements Enemy {
   private readonly velocity = { x: 0, z: 0 };
   private orbit: 1 | -1;
   private stunS = 0;
+  private impulseSource: ImpactSource | null = null;
   private shots = 0;
   private nextShotS = 0;
   private token = false;
@@ -126,6 +134,7 @@ export class Drone implements Enemy {
           this.impulse.x += (dir.x / length) * push;
           this.impulse.y += (dir.y / length) * push;
           this.impulse.z += (dir.z / length) * push;
+          this.impulseSource = event;
         }
         if (
           event.tags.includes(PIERCE_BLOCK_TAG) ||
@@ -136,9 +145,16 @@ export class Drone implements Enemy {
           ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
         }
       }),
-      ctx.bus.on('enemy_killed', ({ id }) => {
-        if (id === this.id && this.current.state !== 'dead')
-          this.transition('dead');
+      ctx.bus.on('enemy_killed', ({ id, dir, tags }) => {
+        if (id !== this.id || this.current.state === 'dead') return;
+        this.deps.hurtboxes.removeEntity(this.id);
+        this.deps.entities.unbindCollider(this.hurtbox.handle);
+        this.deps.world.removeCollider(this.hurtbox, false);
+        this.current.death = {
+          dir: deathDirection(dir),
+          durationS: deathDuration(tags, ctx.tuning.enemies),
+        };
+        this.transition('dead');
       }),
     );
   }
@@ -279,7 +295,13 @@ export class Drone implements Enemy {
     if (s.shotTimeS !== undefined) s.shotTimeS += dt;
     s.speed = 0;
     if (s.state === 'dead') {
-      if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
+      if (
+        s.stateTimeS + epsilon >=
+        Math.max(
+          this.ctx.tuning.enemies.corpseS,
+          s.death ? s.death.durationS + dt : 0,
+        )
+      )
         this.dispose();
       return;
     }
@@ -413,6 +435,7 @@ export class Drone implements Enemy {
       y: (vy + this.impulse.y) * dt,
       z: (vz + this.impulse.z) * dt,
     });
+    if (this.deps.damage.health(this.id)?.dead) return;
     const damping = Math.exp(-this.flight.knockbackDamping * dt);
     this.impulse.x *= damping;
     this.impulse.y *= damping;
@@ -473,9 +496,18 @@ export class Drone implements Enemy {
     pos.y += delta.y * t;
     pos.z += delta.z * t;
     let moved = length * t;
+    let slam: WallSlam | null = null;
     if (hit && t < 1) {
-      this.impulse.x = this.impulse.y = this.impulse.z = 0;
       const n = hit.normal1;
+      slam = wallSlamContact(
+        this.impulse,
+        hit.collider,
+        hit.witness1,
+        n,
+        this.impulseSource,
+        this.ctx.tuning.enemies,
+      );
+      if (!slam) this.impulse.x = this.impulse.y = this.impulse.z = 0;
       const normalSpeed = this.velocity.x * n.x + this.velocity.z * n.z;
       if (normalSpeed < 0) {
         this.velocity.x -= normalSpeed * n.x;
@@ -509,6 +541,21 @@ export class Drone implements Enemy {
     }
     this.body.setNextKinematicTranslation(pos);
     this.current.position = pos;
+    if (slam) {
+      const extra = this.ctx.tuning.enemies.wallSlamExtraStunS;
+      if (extra > 0) {
+        if (this.current.state !== 'stunned') {
+          this.transition('stunned');
+          this.stunS = 0;
+        }
+        this.stunS = Math.max(this.stunS, this.current.stateTimeS) + extra;
+        this.ctx.bus.emit('enemy_stunned', {
+          id: this.id,
+          durationS: this.stunS - this.current.stateTimeS,
+        });
+      }
+      resolveWallSlam(this.ctx, this.deps.damage, this.id, slam);
+    }
     return moved;
   }
 
