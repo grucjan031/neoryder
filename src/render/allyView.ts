@@ -52,7 +52,8 @@ const CLIP = {
   ready: 'Pistol_Idle_Loop',
   reviving: 'Crouch_Idle_Loop',
 } as const;
-const HAND_BONE = 'DEF-hand.R';
+// GLTFLoader usuwa kropki z nazw węzłów (PropertyBinding.sanitizeNodeName): DEF-hand.R → DEF-handR.
+const HAND_BONE = 'DEF-handR';
 
 /**
  * Widok sojusznika: postać z `npc_civilian.glb` w stroju z danych, broń w dłoni, cyanowy znacznik

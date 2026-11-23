@@ -943,6 +943,10 @@ export const tuning = {
     threatFacingDot: 0.5,
     /** Odstęp tarczy od hełmu podczas animacji UAL (metry). */
     shieldHeadClearanceM: 0.03,
+    /** Odstęp tylnej ściany tarczy od płyt pancerza i dłoni Tarczownika (metry). */
+    shieldBodyClearanceM: 0.02,
+    /** Promień dłoni trzymającej tarczę przy sprawdzaniu przenikania (metry). */
+    shieldHandRadiusM: 0.07,
     animationFadeS: 0.12,
     animationActionFadeS: 0.04,
     phaseShiftS: 1,
@@ -1604,13 +1608,17 @@ export const tuning = {
     downedLiftM: 0.2,
     downedMarkerM: 0.9,
     /** Chwyt broni w kości dłoni (m i rad w układzie kości, kalibrowane w `Pistol_Aim_Neutral`). */
+    /**
+     * Broń sojusznika względem kości DEF-hand.R (metry, radiany). Ułożenie przeniesione z gniazda
+     * hand_R modelu enemy_gunner (ten sam szkielet) i obrócone o 180°, bo lufy broni gracza są w −Z.
+     */
     weaponGrip: {
       x: 0,
-      y: 0.08,
-      z: 0.03,
-      rotX: 0,
-      rotY: 0,
-      rotZ: 0,
+      y: 0.075,
+      z: 0,
+      rotX: 1.3852,
+      rotY: -0.03,
+      rotZ: 0.042,
       scale: 1,
     },
     downedRingM: 0.75,

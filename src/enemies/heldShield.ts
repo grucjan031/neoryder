@@ -43,6 +43,85 @@ export class ShieldHeadClearance {
   }
 }
 
+const bodyPoint = new Vector3();
+const pointSize = new Vector3();
+
+/**
+ * Wypycha tarczę do przodu (+Z układu wroga), gdy sztywne części ciała (płyty pancerza)
+ * albo punkty kości (dłoń) wchodzą w nią od tyłu — np. przy wymachu ręki w biegu.
+ * Liczy się tylko to, co leży w obrysie tarczy w płaszczyźnie XY.
+ */
+export class ShieldBodyClearance {
+  private readonly inverse = new Matrix4();
+  private readonly matrix = new Matrix4();
+  private readonly shieldBox = new Box3();
+  private readonly partBox = new Box3();
+  private readonly meshBox = new Box3();
+
+  constructor(
+    private readonly shield: Object3D,
+    private readonly root: Object3D,
+    private readonly parts: readonly Object3D[],
+    private readonly points: readonly Object3D[],
+    private readonly clearanceM: () => number,
+    private readonly pointRadiusM: () => number,
+  ) {}
+
+  private bounds(node: Object3D, box: Box3): void {
+    box.makeEmpty();
+    node.traverse((part) => {
+      if (!(part instanceof Mesh)) return;
+      if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
+      this.matrix.multiplyMatrices(this.inverse, part.matrixWorld);
+      box.union(
+        this.meshBox.copy(part.geometry.boundingBox!).applyMatrix4(this.matrix),
+      );
+    });
+  }
+
+  private overlapsXY(box: Box3): boolean {
+    const s = this.shieldBox;
+    return (
+      box.max.x > s.min.x &&
+      box.min.x < s.max.x &&
+      box.max.y > s.min.y &&
+      box.min.y < s.max.y
+    );
+  }
+
+  update(): void {
+    if (this.shield.parent !== this.root) return;
+    this.root.updateWorldMatrix(true, true);
+    this.inverse.copy(this.root.matrixWorld).invert();
+    this.bounds(this.shield, this.shieldBox);
+    if (this.shieldBox.isEmpty()) return;
+    const clearance = this.clearanceM();
+    let frontZ = -Infinity;
+    for (const part of this.parts) {
+      this.bounds(part, this.partBox);
+      if (!this.partBox.isEmpty() && this.overlapsXY(this.partBox))
+        frontZ = Math.max(frontZ, this.partBox.max.z);
+    }
+    const r = this.pointRadiusM();
+    for (const point of this.points) {
+      bodyPoint
+        .setFromMatrixPosition(point.matrixWorld)
+        .applyMatrix4(this.inverse);
+      this.partBox.setFromCenterAndSize(
+        bodyPoint,
+        pointSize.setScalar(2 * r),
+      );
+      if (this.overlapsXY(this.partBox))
+        frontZ = Math.max(frontZ, this.partBox.max.z);
+    }
+    const pushBy = frontZ + clearance - this.shieldBox.min.z;
+    if (!(pushBy > 0)) return;
+    this.shield.position.z += pushBy;
+    this.shield.updateMatrix();
+    this.shield.updateWorldMatrix(false, true);
+  }
+}
+
 export interface ShieldHold {
   bone: string;
   position: { x: number; y: number; z: number };

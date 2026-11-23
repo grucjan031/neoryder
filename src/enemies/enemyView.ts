@@ -37,7 +37,11 @@ import { knockdownFrame, knockdownOffset } from './enemyKnockdown';
 import { EnemyFlinch } from './enemyFlinch';
 import { deathPose } from './enemyDeath';
 import type { EventBus } from '../core/events';
-import { HeldShield, ShieldHeadClearance } from './heldShield';
+import {
+  HeldShield,
+  ShieldBodyClearance,
+  ShieldHeadClearance,
+} from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { applyStyle, getMaterial } from '../render/materials';
 import type { Enemy } from './types';
@@ -45,6 +49,23 @@ import type { Enemy } from './types';
 const laserLocal = new Vector3();
 /** Boss: przezroczystość tarczy energetycznej i grubość jej ramy [m]. */
 const BOSS_SHIELD_OPACITY = 0.18;
+/** Sztywne części ciała, przed którymi musi zostać tarcza (prawa ręka z pałką celowo poza listą). */
+const SHIELD_BODY_PARTS = [
+  'chest_plate',
+  'chest_light_-1',
+  'chest_light_1',
+  'abdomen_plate',
+  'forearm_plate_L',
+  'forearm_light_L',
+  'thigh_plate_L',
+  'thigh_plate_R',
+  'shin_plate_L',
+  'shin_plate_R',
+  'knee_light_L',
+  'knee_light_R',
+] as const;
+/** Kości bez własnej bryły (dłoń trzymająca tarczę) — kula o promieniu shieldHandRadiusM. */
+const SHIELD_BODY_POINTS = ['DEF-handL'] as const;
 const BOSS_SHIELD_BAR_M = 0.07;
 /** Pierścień korony bossa w metrach modelu Egzekutora: promień, wysokość środka, odsunięcie w tył. */
 const BOSS_HALO: [number, number, number] = [0.36, 2.02, -0.3];
@@ -130,6 +151,7 @@ export class EnemyView {
   private readonly shieldRest = new Vector3();
   private heldShield?: HeldShield;
   private shieldHeadClearance?: ShieldHeadClearance;
+  private shieldBodyClearance?: ShieldBodyClearance;
   private readonly fallbackGeometries: BufferGeometry[] = [];
   private readonly heavyMaterials = new Map<
     Mesh,
@@ -509,6 +531,18 @@ export class EnemyView {
         this.root,
         () => tuning.enemies.shieldHeadClearanceM,
       );
+    if (this.heldShield) {
+      const find = (names: readonly string[]): Object3D[] =>
+        names.flatMap((name) => this.model.getObjectByName(name) ?? []);
+      this.shieldBodyClearance = new ShieldBodyClearance(
+        node,
+        this.root,
+        find(SHIELD_BODY_PARTS),
+        find(SHIELD_BODY_POINTS),
+        () => tuning.enemies.shieldBodyClearanceM,
+        () => tuning.enemies.shieldHandRadiusM,
+      );
+    }
     idle.stop();
   }
 
@@ -1085,6 +1119,7 @@ export class EnemyView {
     this.model.updateWorldMatrix(true, true);
     this.heldShield?.update();
     this.shieldHeadClearance?.update();
+    this.shieldBodyClearance?.update();
     // Renderer zbiera listę obiektów przed onBeforeRender; odśwież też jego macierze skina.
     for (const skin of this.skins) skin.skeleton.update();
   }
