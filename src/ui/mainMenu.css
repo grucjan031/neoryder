@@ -1,248 +1,182 @@
-@font-face {
-  font-family: Rajdhani;
-  src: url('/assets/fonts/Rajdhani-Medium.ttf') format('truetype');
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: Rajdhani;
-  src: url('/assets/fonts/Rajdhani-SemiBold.ttf') format('truetype');
-  font-style: normal;
-  font-weight: 600 800;
-  font-display: swap;
-}
-html:has(.main-menu) {
-  background: #02050b;
-}
+/* Menu główne: kolumna z lewej na tle splasharta; bez przewijania strony (przewija się tylko kolumna). */
+html:has(.main-menu),
 body:has(.main-menu) {
-  /* flow-root: margines menu nie przecieka przez body i nie odsłania tła html. */
-  display: flow-root;
-  overflow: auto;
-  min-height: 100vh;
-  background: radial-gradient(
-    ellipse at 50% 25%,
-    #0b1628 0%,
-    #050a14 65%,
-    #02050b 100%
-  );
-  color: var(--hud-text, #edf7ff);
+  overflow: hidden;
+  background: var(--c-bg);
 }
 .main-menu {
-  position: relative;
-  box-sizing: border-box;
-  width: min(540px, calc(100% - 32px));
-  margin: 8vh auto;
-  padding: 32px 36px;
-  color: var(--hud-text, #edf7ff);
-  font:
-    500 15px/1.35 Rajdhani,
-    'Segoe UI',
-    sans-serif;
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  color: var(--c-text);
+  font: 400 var(--fs-14) / 1.5 var(--font-body);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
-  border: 1px solid rgba(0, 229, 255, 0.24);
-  animation: main-menu-in 180ms ease-out;
+  animation: ui-enter var(--t-slow) var(--ease);
 }
-/* Tło z rozmyciem w ::before, aby backdrop-filter nie tworzył bloku dla fixed .build-select w debugu. */
-.main-menu::before {
-  content: '';
+.main-menu__art {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 65% center;
+}
+.main-menu__shade {
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
-      0 / 14px 1px no-repeat,
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
-      0 / 1px 14px no-repeat,
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
-      0 / 14px 1px no-repeat,
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
-      0 / 1px 14px no-repeat,
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
-      100% / 14px 1px no-repeat,
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 0
-      100% / 1px 14px no-repeat,
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
-      100% / 14px 1px no-repeat,
-    linear-gradient(var(--hud-health, #00e5ff), var(--hud-health, #00e5ff)) 100%
-      100% / 1px 14px no-repeat,
-    rgba(6, 12, 24, 0.85);
-  backdrop-filter: blur(6px);
+    linear-gradient(
+      90deg,
+      rgb(5 7 11 / 96%) 0,
+      rgb(5 7 11 / 90%) 30rem,
+      rgb(5 7 11 / 40%) 60%,
+      rgb(5 7 11 / 10%) 100%
+    ),
+    linear-gradient(0deg, rgb(5 7 11 / 85%) 0, transparent 8rem);
 }
-.main-menu h1 {
+.main-menu__column {
+  grid-row: 1;
+  grid-column: 1;
+  display: grid;
+  align-content: safe center;
+  gap: var(--sp-5);
+  box-sizing: border-box;
+  padding: var(--sp-6) var(--sp-6) var(--sp-4);
+}
+.main-menu__brand {
+  display: grid;
+  gap: var(--sp-1);
+}
+.main-menu__title {
   position: relative;
-  margin: 0 0 10px;
-  padding-bottom: 12px;
-  font-family: Rajdhani, 'Segoe UI', sans-serif;
-  font-size: clamp(36px, 5vw, 50px);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: 0.18em;
+  margin: 0;
+  padding-bottom: var(--sp-3);
+  color: var(--c-text);
+  font: 700 var(--fs-64) / 1 var(--font-display);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--hud-health, #00e5ff);
-  text-shadow:
-    0 1px 3px #000,
-    0 0 16px rgba(0, 229, 255, 0.45);
 }
-.main-menu h1::before {
-  content: 'ISKRA // TERMINAL';
-  display: block;
-  margin-bottom: 6px;
-  font-family: Rajdhani, 'Segoe UI', sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0.18em;
-  color: rgba(237, 247, 255, 0.58);
-  text-shadow: none;
-}
-.main-menu h1::after {
+.main-menu__title::after {
   content: '';
   position: absolute;
   left: 0;
-  right: 0;
   bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.7), transparent);
+  width: 5rem;
+  height: 3px;
+  background: var(--c-accent);
 }
-.main-menu p {
-  margin: 8px 0 14px;
-  color: rgba(237, 247, 255, 0.62);
+.main-menu__subtitle {
+  margin: var(--sp-2) 0 0;
+  color: var(--c-text-muted);
+  font: 400 var(--fs-16) / 1.4 var(--font-body);
 }
-.main-menu p[role='status'] {
-  margin: 14px 0;
-  padding: 8px 12px;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(237, 247, 255, 0.68);
-  border-left: 2px solid rgba(0, 229, 255, 0.45);
-  background: rgba(0, 229, 255, 0.04);
+.main-menu__home,
+.main-menu__modes-list {
+  display: grid;
+  gap: var(--sp-2);
 }
-.main-menu label {
+.main-menu__home[hidden],
+.main-menu__modes[hidden] {
+  display: none;
+}
+.main-menu__primary {
+  display: grid;
+  gap: var(--sp-2);
+}
+.main-menu .ui-button {
+  width: 100%;
+}
+.main-menu__status {
+  margin: 0 0 var(--sp-1);
+  padding: var(--sp-1) 0 var(--sp-1) var(--sp-3);
+  border-left: 2px solid var(--c-line);
+  color: var(--c-text-faint);
+  font: 500 var(--fs-14) / 1.4 var(--font-body);
+}
+.main-menu__status[data-state='save'] {
+  border-left-color: var(--c-accent);
+  color: var(--c-text);
+}
+.main-menu__status[data-state='error'] {
+  border-left-color: var(--c-accent);
+  color: var(--c-accent-strong);
+}
+.main-menu__tutorial--recommended {
+  border-color: var(--c-accent-line);
+  color: var(--c-accent-strong);
+}
+.main-menu__tutorial-hint {
   display: block;
-  margin-top: 16px;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(237, 247, 255, 0.6);
+  color: var(--c-text-muted);
+  font: 400 var(--fs-14) / 1.35 var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
 }
-.main-menu > button,
+.main-menu__debug {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-line);
+}
+.main-menu__seed {
+  display: grid;
+  gap: var(--sp-1);
+  color: var(--c-text-muted);
+  font: 500 var(--fs-14) / 1.3 var(--font-body);
+}
 .main-menu input {
   box-sizing: border-box;
-  display: block;
   width: 100%;
-  padding: 13px 16px;
-  margin: 10px 0;
-  font: inherit;
-  font-variant-numeric: tabular-nums;
-  border: 1px solid rgba(0, 229, 255, 0.28);
+  min-height: var(--hit);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-line);
+  background: var(--c-panel-solid);
+  color: var(--c-text);
+  font: 400 var(--fs-14) / 1.2 var(--font-body);
 }
-.main-menu input {
-  margin-top: 6px;
-  background: rgba(6, 12, 24, 0.72);
-  color: var(--hud-text, #edf7ff);
+.main-menu input:focus-visible {
+  border-color: var(--c-accent);
 }
 .main-menu input::placeholder {
-  color: rgba(237, 247, 255, 0.4);
+  color: var(--c-text-faint);
 }
-.main-menu > button {
-  position: relative;
-  text-align: left;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  background: transparent;
-  color: var(--hud-text, #edf7ff);
-  border-bottom-color: rgba(0, 229, 255, 0.65);
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+.main-menu__bar {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-5);
+  padding: 0 var(--sp-6);
+  border-top: 1px solid var(--c-line);
+  background: rgb(5 7 11 / 78%);
 }
-.main-menu > .main-menu__hub {
-  color: var(--hud-health, #00e5ff);
-  border-color: rgba(0, 229, 255, 0.65);
-  border-bottom-color: var(--hud-health, #00e5ff);
-  background: rgba(0, 229, 255, 0.09);
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
+.main-menu__bar .ui-actionbar {
+  width: auto;
+  margin: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
-.main-menu > button:hover:not(:disabled),
-.main-menu > button:focus-visible:not(:disabled) {
-  background: rgba(0, 229, 255, 0.15);
-  border-color: var(--hud-health, #00e5ff);
-  box-shadow:
-    0 0 16px rgba(0, 229, 255, 0.26),
-    inset 0 0 12px rgba(0, 229, 255, 0.08);
-}
-.main-menu > button:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-.main-menu button:focus-visible,
-.main-menu input:focus-visible {
-  outline: 2px solid var(--hud-health, #00e5ff);
-  outline-offset: 2px;
+.main-menu__version {
+  color: var(--c-text-faint);
+  font: 400 var(--fs-14) / 1.4 var(--font-body);
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
 }
 /* RunState przechowuje ekwipunek; warianty ostrza pozostają wyborem poligonu. */
 .main-menu .build-select__blades {
   display: none;
 }
-@keyframes main-menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
+@media (max-width: 760px) {
   .main-menu {
-    animation: none;
+    grid-template-columns: minmax(0, 1fr);
   }
-  .main-menu > button {
-    transition: none;
-  }
-  .main-menu h1,
-  .main-menu > .main-menu__hub {
-    text-shadow: 0 1px 3px #000;
-  }
-}
-.main-menu > .main-menu__tutorial--recommended {
-  color: #ffbf50;
-  border-color: #ffbf5080;
-  background: #ffbf5010;
-  box-shadow: 0 0 14px #ffbf501c;
-}
-.main-menu > button.main-menu__tutorial--recommended:hover:not(:disabled),
-.main-menu
-  > button.main-menu__tutorial--recommended:focus-visible:not(:disabled) {
-  border-color: #ffbf50;
-  background: #ffbf5020;
-  box-shadow: 0 0 18px #ffbf5038;
-  outline-color: #ffbf50;
-}
-.main-menu__tutorial-hint {
-  display: block;
-  margin-top: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0.03em;
-  text-transform: none;
-}
-.main-menu__version {
-  margin-top: 20px;
-  text-align: right;
-  color: var(--ui-text);
-  opacity: 0.6;
-  font-size: 14px;
-  line-height: 1.5;
-  letter-spacing: 0.08em;
-  overflow-wrap: anywhere;
 }

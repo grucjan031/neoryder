@@ -66,6 +66,9 @@ const fixedKeys = {
   choice1: '1',
   choice2: '2',
   choice3: '3',
+  navigate: '↑ ↓',
+  tabs: 'Q / E',
+  reset: 'R',
 };
 
 let activeDevice: InputDevice = { device: 'keyboardMouse', layout: 'generic' };
@@ -105,6 +108,9 @@ export function inputGlyphLabel(
         ? inputText.leftStick
         : `D-pad / ${inputText.leftStick}`;
     if (name === 'look') return inputText.rightStick;
+    if (name === 'tabs')
+      return `${padButtonLabel(4, device.layout)} / ${padButtonLabel(5, device.layout)}`;
+    if (name === 'reset') return padButtonLabel(3, device.layout);
     if (!action.success) return undefined;
     const pad = resolveGamepadBindings(settings.gamepad.bindings);
     const wanted = action.data;

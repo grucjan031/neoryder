@@ -6,7 +6,7 @@
   display: grid;
   grid-template-columns: repeat(var(--point-count, 3), 76px) 130px;
   gap: 8px;
-  z-index: 12;
+  z-index: var(--z-hud-aux);
   color: #fff1d6;
   font: 12px/1.4 monospace;
   pointer-events: none;

@@ -20,16 +20,16 @@
       #boot-splash {
         position: fixed;
         inset: 0;
-        z-index: 1000;
+        z-index: var(--z-boot, 1100);
         display: grid;
         place-content: center;
         justify-items: center;
         gap: 10px;
         overflow: hidden;
-        background: #05060a;
-        color: #edf7ff;
+        background: #05070b;
+        color: #f2efe8;
         font:
-          600 15px/1.2 Rajdhani,
+          600 15px/1.2 'Chakra Petch',
           'Segoe UI',
           sans-serif;
         letter-spacing: 0.2em;
@@ -43,15 +43,45 @@
       }
       .boot-splash__brand {
         position: relative;
-        font-size: 34px;
+        font-size: 40px;
         font-weight: 700;
         letter-spacing: 0.32em;
         text-shadow: 0 2px 12px #000;
       }
       .boot-splash__loading {
         position: relative;
-        color: #9fb4c8;
+        color: #bcc1ca;
         text-shadow: 0 1px 6px #000;
+      }
+      /* Pasek postępu: nieokreślony do pierwszego setProgress() z src/ui/bootSplash.ts. */
+      .boot-splash__progress {
+        position: relative;
+        z-index: 2;
+        width: min(22rem, 60vw);
+        height: 4px;
+        margin-top: 6px;
+        overflow: hidden;
+        background: rgb(150 164 186 / 28%);
+        --boot-progress: 0;
+      }
+      .boot-splash__progress > span {
+        display: block;
+        height: 100%;
+        width: calc(var(--boot-progress) * 100%);
+        background: #ffb547;
+        transition: width 180ms ease-out;
+      }
+      .boot-splash__progress.is-indeterminate > span {
+        width: 38%;
+        animation: boot-splash-indeterminate 1.2s ease-in-out infinite;
+      }
+      @keyframes boot-splash-indeterminate {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(260%);
+        }
       }
       .boot-splash__img {
         position: absolute;
@@ -71,7 +101,7 @@
         padding-bottom: 10vh;
       }
       .boot-splash--art .boot-splash__loading {
-        color: #c4d4e4;
+        color: #e4e0d6;
       }
       .boot-splash--art::before {
         content: '';
@@ -90,6 +120,10 @@
       .boot-splash--art .boot-splash__loading {
         z-index: 2;
       }
+      .boot-splash__progress > span,
+      .boot-splash__progress {
+        border-radius: 0;
+      }
       .boot-splash__caption {
         position: absolute;
         top: 16px;
@@ -97,8 +131,8 @@
         z-index: 2;
         padding: 4px 10px;
         background: rgba(2, 4, 9, 0.72);
-        color: #d6e4f2;
-        font-size: 12px;
+        color: #e4e0d6;
+        font-size: 14px;
         letter-spacing: 0.12em;
       }
       @keyframes boot-splash-zoom {
@@ -111,7 +145,8 @@
       }
       @media (prefers-reduced-motion: reduce) {
         #boot-splash,
-        .boot-splash__img {
+        .boot-splash__img,
+        .boot-splash__progress.is-indeterminate > span {
           transition: none;
           animation: none;
         }
@@ -122,6 +157,15 @@
     <div id="boot-splash">
       <div class="boot-splash__brand">NEORYDER</div>
       <div class="boot-splash__loading" aria-live="polite">Ładowanie…</div>
+      <div
+        class="boot-splash__progress is-indeterminate"
+        role="progressbar"
+        aria-label="Ładowanie"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <span></span>
+      </div>
     </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>

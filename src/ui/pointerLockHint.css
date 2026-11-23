@@ -3,7 +3,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 100;
+  z-index: var(--z-hud);
   box-sizing: border-box;
   width: min(420px, calc(100vw - 32px));
   min-height: 48px;

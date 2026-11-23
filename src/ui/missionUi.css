@@ -91,7 +91,7 @@
 .mission-hud {
   position: fixed;
   inset: 0;
-  z-index: 101;
+  z-index: var(--z-hud-panel);
   pointer-events: none;
   color: #fff1d6;
   font:
@@ -121,9 +121,9 @@
 }
 .mission-radio--run {
   position: fixed;
-  top: clamp(11rem, 24vh, 15rem);
+  top: clamp(176px, 24vh, 240px);
   right: 28px;
-  z-index: 102;
+  z-index: var(--z-hud-top);
   box-sizing: border-box;
   width: min(360px, 45vw);
   background: #070b16e8;
@@ -204,7 +204,7 @@
     height: 3px;
   }
   .mission-radio--run {
-    top: clamp(9rem, 24vh, 12rem);
+    top: clamp(144px, 24vh, 192px);
     right: 16px;
     width: min(296px, calc(100vw - 32px));
     font-size: 14px;
@@ -236,7 +236,7 @@
   top: 22px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 102;
+  z-index: var(--z-hud-top);
   color: #fff1d6;
   background: #070b16de;
   padding: 8px 16px;

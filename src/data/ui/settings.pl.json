@@ -87,5 +87,35 @@
     "hard": "Trudny",
     "nightmare": "Koszmar"
   },
-  "difficultyHint": "Zmiana działa od następnego runu. Trudny: wrogowie flankują, kryją się i atakują razem."
+  "difficultyHint": "Zmiana działa od następnego runu. Trudny: wrogowie flankują, kryją się i atakują razem.",
+  "path": "Menu główne",
+  "pathPause": "Pauza",
+  "tabs": {
+    "gameplay": "Rozgrywka",
+    "graphics": "Grafika",
+    "audio": "Dźwięk",
+    "keyboard": "Sterowanie: klawiatura",
+    "pad": "Sterowanie: pad",
+    "access": "Dostępność"
+  },
+  "tabsLabel": "Kategorie ustawień",
+  "uiScale": "Skala interfejsu",
+  "uiScaleHint": "Powiększa lub zmniejsza całe menu i HUD. Zmiana działa od razu.",
+  "uiVolume": "Dźwięki interfejsu",
+  "uiVolumeHint": "Tiki, potwierdzenia i dźwięki menu; mnożone przez głośność główną.",
+  "reduceMotion": "Ogranicz animacje",
+  "reduceMotionHint": "Wyłącza przesunięcia i ruch ozdobny w menu; zostają same zaniki.",
+  "flashesHint": "Wyłącz, jeśli błyski przy trafieniach męczą wzrok.",
+  "screenShakeHint": "Siła wstrząsów kamery przy trafieniach i wybuchach.",
+  "fovHint": "Szersze pole widzenia pokazuje więcej, ale oddala cele.",
+  "mouseSensitivityHint": "Mnożnik czułości obrotu kamery myszą.",
+  "invertYHint": "Odwraca pionową oś rozglądania.",
+  "qualityLabelHint": "Zmiany jakości są stosowane na bieżąco.",
+  "autoSave": "Zmiany zapisują się automatycznie.",
+  "resetDone": "Przywrócono domyślne wartości tej zakładki.",
+  "resetTitle": "Przywrócić domyślne?",
+  "resetMessage": "Ustawienia z tej zakładki wrócą do wartości domyślnych. Tej zmiany nie można cofnąć.",
+  "resetConfirm": "Przywróć",
+  "pickBinding": "Wybierz akcję i naciśnij nowy klawisz.",
+  "unboundMouse": "Celowanie bez klawisza oznacza, że przypisano je do przycisku myszy (PPM)."
 }

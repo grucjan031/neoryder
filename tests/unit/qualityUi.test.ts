@@ -11,15 +11,23 @@ it('wybór jakości zapisuje profil i stosuje go bez przeładowania', () => {
   const changed = vi.fn();
   const screen = new SettingsScreen(settings, changed);
   try {
-    document.querySelector<HTMLButtonElement>('#settings-tab-video')!.click();
-    const select = document.querySelector<HTMLSelectElement>('select')!;
-    expect(select.value).toBe('medium');
+    document
+      .querySelector<HTMLButtonElement>('#settings-tab-graphics')!
+      .click();
+    const trigger = document.querySelector<HTMLButtonElement>(
+      '.ui-select__trigger',
+    )!;
+    expect(trigger.textContent).toBe(text.qualities.medium);
     for (const [profile, outline] of [
       ['low', 0],
       ['high', 1],
     ] as const) {
-      select.value = profile;
-      select.dispatchEvent(new Event('change'));
+      trigger.click();
+      document
+        .querySelector<HTMLButtonElement>(
+          `.ui-select__option[data-value="${profile}"]`,
+        )!
+        .click();
       expect(loadSettings(localStorage).quality).toBe(profile);
       expect(getQuality().outline).toBe(outline);
     }

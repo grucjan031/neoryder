@@ -2,7 +2,7 @@
   position: fixed;
   top: 26px;
   left: 32px;
-  z-index: 101;
+  z-index: var(--z-meta-bar);
   display: flex;
   align-items: center;
   flex-wrap: wrap;

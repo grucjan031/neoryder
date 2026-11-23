@@ -4,16 +4,16 @@
   left: 50%;
   transform: translateX(-50%);
   max-width: min(76vw, 760px);
-  padding: 0.5rem 0.9rem;
+  padding: 8px 14.4px;
   border-radius: 3px;
   background: rgb(9 12 20 / 55%);
   color: rgb(239 238 231 / 82%);
-  font-size: 0.95rem;
+  font-size: 15.2px;
   line-height: 1.5;
   text-align: center;
   text-shadow: 0 1px 3px #000;
   pointer-events: none;
-  z-index: 12;
+  z-index: var(--z-hud-aux);
   animation: hub-chatter-in 240ms ease-out;
 }
 .hub-chatter[hidden] {

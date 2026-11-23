@@ -60,6 +60,7 @@ test('pauza pokazuje wersję i seed; Esc zamyka tylko sterowanie', async ({
     name: 'Ustawienia',
     exact: true,
   });
+  await settings.getByRole('tab', { name: 'Sterowanie: klawiatura' }).click();
   await settings.locator('[data-action="dash"]').click();
   await page.keyboard.press('KeyV');
   await settings.getByRole('button', { name: 'Wróć', exact: true }).click();

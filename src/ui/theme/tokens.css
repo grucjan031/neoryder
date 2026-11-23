@@ -1,0 +1,142 @@
+/* Jedyny zestaw tokenów interfejsu NEORYDER („Neon Noir console”). Opis: docs/systems/ui.md.
+   Akcent UI = bursztyn. Cyan = gracz, czerwień = wrogowie, magenta = Rezonans: nie używaj ich jako akcentu. */
+@import '@fontsource/chakra-petch/latin-500.css';
+@import '@fontsource/chakra-petch/latin-ext-500.css';
+@import '@fontsource/chakra-petch/latin-600.css';
+@import '@fontsource/chakra-petch/latin-ext-600.css';
+@import '@fontsource/chakra-petch/latin-700.css';
+@import '@fontsource/chakra-petch/latin-ext-700.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-ext-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-ext-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-ext-600.css';
+
+:root {
+  /* Skala interfejsu: ustawienie gracza (80–140%) mnoży rozmiar bazowy z wysokości okna. */
+  --ui-scale: 1;
+  font-size: calc(clamp(12px, 1.48vh, 24px) * var(--ui-scale));
+
+  /* Kolory: powierzchnie */
+  --c-bg: #05070b;
+  --c-panel: rgb(11 15 22 / 88%);
+  --c-panel-solid: #0b0f16;
+  --c-panel-raise: rgb(24 31 43 / 92%);
+  --c-panel-hover: rgb(36 44 58 / 94%);
+  --c-line: rgb(150 164 186 / 24%);
+  --c-line-strong: rgb(170 184 206 / 46%);
+  --c-scrim: rgb(3 5 9 / 74%);
+
+  /* Kolory: tekst (kontrast ≥ 4.5:1 na --c-panel-solid) */
+  --c-text: #f2efe8;
+  --c-text-muted: #bcc1ca;
+  --c-text-faint: #959cab;
+
+  /* Kolory: akcent UI (bursztyn) i stany */
+  --c-accent: #ffb547;
+  --c-accent-strong: #ffcb73;
+  --c-accent-dim: rgb(255 181 71 / 16%);
+  --c-accent-line: rgb(255 181 71 / 55%);
+  --c-accent-ink: #1a1204;
+  --c-success: #7bdc6a;
+  --c-neutral-info: #9db3ff;
+
+  /* Kolory zarezerwowane znaczeniem (nie jako akcent UI) */
+  --c-player: #00e5ff;
+  --c-enemy: #e0262b;
+  --c-resonance: #ff2bd6;
+
+  /* Typografia */
+  --font-display: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --font-body: Inter, 'Segoe UI', system-ui, sans-serif;
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-20: 1.25rem;
+  --fs-26: 1.625rem;
+  --fs-34: 2.125rem;
+  --fs-48: 3rem;
+  --fs-64: 4rem;
+  --track-display: 0.14em;
+
+  /* Odstępy */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --cut: 0.5rem;
+  --hit: 2.75rem;
+
+  /* Ruch */
+  --t-fast: 120ms;
+  --t-base: 160ms;
+  --t-slow: 180ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --slide: 8px;
+
+  /* Cień (jeden poziom) */
+  --shadow: 0 1.25rem 3.5rem rgb(0 0 0 / 55%);
+
+  /* Skala z-index (jedyna): warstwy świata, HUD, ekranów, powiadomień i narzędzi */
+  --z-content: 1;
+  --z-hud-aux: 12;
+  --z-panel: 90;
+  --z-meta-bar: 92;
+  --z-map: 95;
+  --z-hud: 100;
+  --z-hud-panel: 101;
+  --z-hud-top: 102;
+  --z-screen: 104;
+  --z-toast: 105;
+  --z-overlay: 110;
+  --z-run-screen: 120;
+  --z-menu-layer: 130;
+  --z-blocking: 900;
+  --z-debug: 1000;
+  --z-boot: 1100;
+
+  /* Aliasy dawnych zmiennych (--ui-*, --hud-*, --tp-*): ekrany U2/U3 przechodzą na tokeny
+     powyżej, po czym aliasy znikną. Nie dodawaj nowych użyć. */
+  --ui-font: Rajdhani, 'Segoe UI', system-ui, sans-serif;
+  --ui-cyan: var(--c-player);
+  --ui-magenta: var(--c-resonance);
+  --ui-danger: var(--c-enemy);
+  --ui-danger-text: #ff6b6f;
+  --ui-amber: var(--c-accent);
+  --ui-violet: #8a5cff;
+  --ui-violet-text: #ad92ff;
+  --ui-blue: #3d7bff;
+  --ui-blue-text: #7aa4ff;
+  --ui-green: #6dff4a;
+  --ui-warm: #fff1d6;
+  --ui-text: var(--c-text);
+  --ui-muted: var(--c-text-muted);
+  --ui-faint: var(--c-text-faint);
+  --ui-bg: var(--c-bg);
+  --ui-panel: var(--c-panel);
+  --ui-panel-solid: var(--c-panel-solid);
+  --ui-raise: var(--c-panel-raise);
+  --ui-line: rgb(0 229 255 / 22%);
+  --ui-line-strong: rgb(0 229 255 / 60%);
+  --ui-focus: 0 0 0 1px var(--c-bg), 0 0 0 3px var(--c-accent);
+  --ui-in: 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --tp-blade: var(--c-player);
+  --tp-resonance: var(--c-resonance);
+  --tp-gunner: var(--c-accent);
+  --tp-hybrid: #8a5cff;
+}
+
+/* Ogranicz animacje: system albo ustawienie gracza wyłącza przesunięcia (zostają zaniki). */
+:root[data-reduce-motion='true'] {
+  --slide: 0px;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --slide: 0px;
+  }
+}

@@ -16,7 +16,7 @@
   position: fixed;
   inset: 0;
   /* Nad HUD (100): panel nie może przegrywać z paskami zdrowia. */
-  z-index: 120;
+  z-index: var(--z-run-screen);
   display: grid;
   place-items: center;
   padding: clamp(8px, 2vh, 24px) clamp(8px, 2vw, 24px);

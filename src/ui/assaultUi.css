@@ -9,7 +9,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  z-index: 12;
+  z-index: var(--z-hud-aux);
   color: #fff1d6;
   font: 12px/1.4 monospace;
   font-variant-numeric: tabular-nums;

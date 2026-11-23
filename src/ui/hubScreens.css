@@ -1,7 +1,7 @@
 .hub-screen {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: var(--z-screen);
   display: grid;
   place-items: center;
   padding: clamp(8px, 2vh, 24px) clamp(8px, 2vw, 24px);
@@ -136,7 +136,7 @@
   left: 50%;
   bottom: 22%;
   transform: translateX(-50%);
-  z-index: 90;
+  z-index: var(--z-panel);
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
   grid-template-rows: auto auto;
@@ -244,7 +244,7 @@
   left: 50%;
   bottom: 9%;
   transform: translateX(-50%);
-  z-index: 91;
+  z-index: calc(var(--z-panel) + 1);
   width: min(640px, calc(100vw - 32px));
   box-sizing: border-box;
   padding: 12px 22px 14px;

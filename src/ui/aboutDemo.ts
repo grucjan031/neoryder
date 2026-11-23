@@ -7,6 +7,9 @@ import { aboutDemoText as text } from '../data/ui/aboutDemoSchema';
 import { bugReportText } from './buildInfo';
 import type { BuildInfo } from './buildInfo';
 import { keyLabel, setInputHint } from './inputGlyphs';
+import { uiButton } from './components/button';
+import { el } from './components/dom';
+import { trapFocus } from './components/modal';
 import './aboutDemo.css';
 
 const controls = z
@@ -23,12 +26,19 @@ export class AboutDemo {
   private generation = 0;
 
   constructor() {
-    this.root.className = 'about-demo';
-    const close = document.createElement('button');
-    close.type = 'button';
-    close.textContent = text.close;
-    close.addEventListener('click', () => this.hide());
-    this.root.append(this.content, close);
+    this.root.className = 'about-demo ui-scope';
+    this.root.setAttribute('aria-modal', 'true');
+    this.content.className = 'about-demo__content ui-scroll';
+    const panel = el('div', 'about-demo__panel ui-panel');
+    const close = uiButton({
+      label: text.close,
+      sound: 'back',
+      onClick: () => this.hide(),
+    });
+    close.classList.add('about-demo__close');
+    panel.append(this.content, close);
+    this.root.append(panel);
+    trapFocus(this.root);
     this.root.addEventListener('cancel', (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -85,8 +95,9 @@ export class AboutDemo {
       resolution: { width: window.innerWidth, height: window.innerHeight },
       date: new Date().toISOString(),
     });
-    const status = document.createElement('p');
+    const status = el('p', 'about-demo__status');
     status.setAttribute('role', 'status');
+    status.dataset.state = 'pending';
     status.textContent = text.copyPending;
     const link = document.createElement('a');
     link.href = text.reportUrl;
@@ -96,10 +107,14 @@ export class AboutDemo {
     this.content.append(status, link);
     try {
       await navigator.clipboard.writeText(report);
-      if (generation === this.generation) status.textContent = text.copied;
+      if (generation === this.generation) {
+        status.textContent = text.copied;
+        status.dataset.state = 'ok';
+      }
     } catch {
       if (generation !== this.generation) return;
       status.textContent = text.copyFallback;
+      status.dataset.state = 'warn';
       const field = document.createElement('textarea');
       field.readOnly = true;
       field.setAttribute('aria-label', text.reportData);

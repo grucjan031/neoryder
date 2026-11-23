@@ -1,15 +1,19 @@
 import text from '../data/ui/settings.pl.json';
+import uiText from '../data/ui/ui.pl.json';
 import './pauseMenu.css';
 import { aboutDemoText } from '../data/ui/aboutDemoSchema';
 import { appBuild, buildInfoText } from './buildInfo';
 import type { BuildInfo } from './buildInfo';
 import { AboutDemo } from './aboutDemo';
-import { setInputHint } from './inputGlyphs';
+import { createActionBar } from './components/actionBar';
+import { uiButton } from './components/button';
+import type { ButtonVariant } from './components/button';
+import { el } from './components/dom';
 
 export class PauseMenu {
   private readonly root = document.createElement('dialog');
   private readonly hub: HTMLButtonElement;
-  private readonly infoLine = document.createElement('p');
+  private readonly infoLine = el('p', 'pause-menu__version');
   private readonly about = new AboutDemo();
   private info: BuildInfo = appBuild;
   constructor(
@@ -21,22 +25,25 @@ export class PauseMenu {
       menu(): void;
     },
   ) {
-    this.root.className = 'pause-menu';
+    this.root.className = 'pause-menu ui-scope';
     this.root.setAttribute('aria-label', text.pause);
-    const title = document.createElement('h1');
-    title.textContent = text.pause;
-    this.root.append(title);
-    const button = (label: string, action: () => void): HTMLButtonElement => {
-      const node = document.createElement('button');
-      node.type = 'button';
-      node.textContent = label;
-      node.addEventListener('click', action);
-      this.root.append(node);
+    const panel = el('div', 'pause-menu__panel ui-panel');
+    const inner = el('div', 'pause-menu__inner');
+    inner.append(
+      el('p', 'ui-kicker', 'ISKRA // WSTRZYMANO'),
+      el('h1', 'ui-title', text.pause),
+    );
+    const list = el('div', 'pause-menu__list');
+    const button = (
+      label: string,
+      action: () => void,
+      variant: ButtonVariant = 'secondary',
+    ): HTMLButtonElement => {
+      const node = uiButton({ label, onClick: action, variant });
+      list.append(node);
       return node;
     };
-    const resume = button(text.resume, actions.resume);
-    resume.setAttribute('aria-label', text.resume);
-    setInputHint(resume, text.resume, `${text.resume} {pause}`);
+    button(text.resume, actions.resume, 'primary');
     button(text.title, actions.settings);
     button(aboutDemoText.title, () => this.about.showControls());
     button(aboutDemoText.report, () => {
@@ -45,8 +52,14 @@ export class PauseMenu {
     });
     this.hub = button(text.hub, actions.hub);
     button(text.menu, actions.menu);
-    this.infoLine.className = 'pause-menu__version';
-    this.root.append(this.infoLine);
+    inner.append(list, this.infoLine);
+    const bar = createActionBar([
+      { keys: '{navigate}', label: uiText.navigate, decorative: true },
+      { keys: '{confirm}', label: uiText.select, decorative: true },
+      { keys: '{back}', label: uiText.resume, decorative: true },
+    ]);
+    panel.append(inner, bar.root);
+    this.root.append(panel);
     this.root.addEventListener('cancel', (event) => {
       event.preventDefault();
       if (document.querySelector('.debug-console[open]')) return;
@@ -57,7 +70,7 @@ export class PauseMenu {
       event.stopPropagation();
       if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
       event.preventDefault();
-      const buttons = [...this.root.querySelectorAll('button')].filter(
+      const buttons = [...list.querySelectorAll('button')].filter(
         (node) => !node.hidden,
       );
       const index = buttons.indexOf(

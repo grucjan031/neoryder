@@ -1,8 +1,4 @@
 .talents-panel {
-  --tp-blade: #00e5ff;
-  --tp-resonance: #ff2bd6;
-  --tp-gunner: #ffae1a;
-  --tp-hybrid: #8a5cff;
   display: grid;
   gap: 14px;
   color: #f4f7fa;

@@ -42,6 +42,8 @@ import { RenderInfoProbe } from './render/renderInfo';
 import { readSplashAct, showBootSplash } from './ui/bootSplash';
 import type { BootSplash } from './ui/bootSplash';
 import { bindInputGlyphs, setInputHint } from './ui/inputGlyphs';
+import { applyUiSettings } from './ui/theme/applySettings';
+import { uiSounds } from './audio/uiSounds';
 import {
   isNavigationButton,
   PadNavigation,
@@ -76,6 +78,8 @@ async function main(): Promise<void> {
     saveSettings({ ...loadSettings(), difficulty: 'hard' });
   applyLookPreset(location.search);
   configureFx(params);
+  applyUiSettings(loadSettings());
+  uiSounds();
   const requested = params.get('scene');
   if (
     requested === 'run' &&
@@ -153,6 +157,7 @@ async function main(): Promise<void> {
     import('three'),
     import('./render/outline'),
   ]);
+  bootSplash?.setProgress(0.35);
   const seed =
     params.get('seed') ??
     (sceneId === 'arena-mutators'
@@ -344,8 +349,10 @@ async function main(): Promise<void> {
   if (!getLiteFx())
     setRenderWarmUp((cancelled) => pipeline.warmUp(three, camera, cancelled));
   const stopLoadingPoll = pollPadFrames((dt) => input.update(dt, false));
+  bootSplash?.setProgress(0.55);
   try {
     await scene.init(ctx, three);
+    bootSplash?.setProgress(0.8);
     window.addEventListener('resize', resize);
     // Ekran startowy zasłania obraz do `scene_loaded`.
     try {
@@ -353,6 +360,7 @@ async function main(): Promise<void> {
     } catch (error) {
       console.warn('Rozgrzewka renderu nie powiodła się.', error);
     }
+    bootSplash?.setProgress(0.95);
   } finally {
     stopLoadingPoll();
   }

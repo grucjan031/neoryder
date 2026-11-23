@@ -169,6 +169,18 @@ export class PadNavigation {
       active.dispatchEvent(new win.Event('input', { bubbles: true }));
       return;
     }
+    if (x && active.hasAttribute('data-pad-adjust')) {
+      // Kontrolki własne (stepper, lista rozwijana) same zmieniają wartość na strzałki.
+      active.dispatchEvent(
+        new win.KeyboardEvent('keydown', {
+          key: x > 0 ? 'ArrowRight' : 'ArrowLeft',
+          code: x > 0 ? 'ArrowRight' : 'ArrowLeft',
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      return;
+    }
     if (x && active instanceof win.HTMLSelectElement) {
       let index = active.selectedIndex + x;
       while (active.options[index]?.disabled) index += x;

@@ -1,6 +1,7 @@
 import { setInputHint } from './inputGlyphs';
 import { tuning } from '../core/tuning';
 import { getTips, pickTip } from './loadingTips';
+import { motionReduced } from './theme/applySettings';
 import './loadingTips.css';
 
 /** Wspólna dekoracyjna porada; właściciel usuwa timer wraz ze splashem. */
@@ -29,11 +30,7 @@ export function createLoadingTip(key: string): {
       ? window.setInterval(() => {
           index = (index + 1) % list.length;
           update();
-          if (
-            typeof matchMedia === 'function' &&
-            matchMedia('(prefers-reduced-motion: reduce)').matches
-          )
-            return;
+          if (motionReduced()) return;
           root.animate?.([{ opacity: 0 }, { opacity: 1 }], {
             duration: 400,
             easing: 'ease-out',

@@ -1,7 +1,7 @@
 .puzzle-hud {
   position: fixed;
   inset: 0;
-  z-index: 101;
+  z-index: var(--z-hud-panel);
   pointer-events: none;
   color: #fff1d6;
   font:

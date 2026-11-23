@@ -61,6 +61,9 @@ describe('Settings Z6', () => {
         masterVolume: 0.4,
         sfxVolume: 1,
         musicVolume: 0.7,
+        uiVolume: 0.7,
+        uiScale: 1,
+        reduceMotion: false,
         invertY: false,
         screenShake: 1,
         flashes: true,
@@ -145,6 +148,9 @@ describe('Settings Z6', () => {
       masterVolume: 0.4,
       sfxVolume: 1,
       musicVolume: 0.7,
+      uiVolume: 0.7,
+      uiScale: 1,
+      reduceMotion: false,
       invertY: false,
       screenShake: 1,
       flashes: true,
@@ -182,6 +188,9 @@ describe('Settings Z6', () => {
       masterVolume: 0.2,
       sfxVolume: 1,
       musicVolume: 0.7,
+      uiVolume: 0.7,
+      uiScale: 1,
+      reduceMotion: false,
       invertY: false,
       screenShake: 1,
       flashes: false,
@@ -367,6 +376,9 @@ describe('Settings Z6', () => {
     };
     try {
       screen.show();
+      document
+        .querySelector<HTMLButtonElement>('#settings-tab-keyboard')!
+        .click();
       const slider = document.querySelector<HTMLInputElement>(
         'input[aria-label="Czułość myszy"]',
       )!;

@@ -632,6 +632,12 @@ export interface Settings {
   masterVolume: number;
   sfxVolume: number;
   musicVolume: number;
+  /** Głośność dźwięków interfejsu (mnożona przez główną). */
+  uiVolume: number;
+  /** Skala interfejsu 0.8–1.4 (krok 0.1), mnoży rozmiar bazowy rem. */
+  uiScale: number;
+  /** Wyłącza przesunięcia i ruch ozdobny w interfejsie. */
+  reduceMotion: boolean;
   invertY: boolean;
   screenShake: number;
   flashes: boolean;
@@ -644,6 +650,7 @@ export const SETTINGS_RANGES = {
   fov: { min: 60, max: 110 },
   padSensitivity: { min: 0.1, max: 5 },
   padDeadzone: { min: 0, max: 0.5 },
+  uiScale: { min: 0.8, max: 1.4 },
 } as const;
 
 function clampedSetting(range: { min: number; max: number }, fallback: number) {
@@ -690,6 +697,11 @@ const settingsSchema = z.object({
   masterVolume: z.number().min(0).max(1).catch(1),
   sfxVolume: z.number().min(0).max(1).catch(1),
   musicVolume: z.number().min(0).max(1).catch(0.7),
+  uiVolume: z.number().min(0).max(1).catch(0.7),
+  uiScale: clampedSetting(SETTINGS_RANGES.uiScale, 1).transform(
+    (value) => Math.round(value * 10) / 10,
+  ),
+  reduceMotion: z.boolean().catch(false),
   invertY: z.boolean().catch(false),
   screenShake: z.number().min(0).max(1).catch(1),
   flashes: z.boolean().catch(true),
@@ -709,12 +721,15 @@ const settingsSchema = z.object({
     }),
 });
 const settingsKey = 'neoryder.settings';
-const defaults = (): Settings => ({
+export const defaultSettings = (): Settings => ({
   mouseSensitivity: 1,
   fov: tuning.camera.fov,
   masterVolume: 1,
   sfxVolume: 1,
   musicVolume: 0.7,
+  uiVolume: 0.7,
+  uiScale: 1,
+  reduceMotion: false,
   invertY: false,
   screenShake: 1,
   flashes: true,
@@ -728,16 +743,16 @@ let sharedSettings: Settings | undefined;
 export function loadSettings(storage?: Storage): Settings {
   if (!storage && typeof window !== 'undefined' && sharedSettings)
     return sharedSettings;
-  let result = defaults();
+  let result = defaultSettings();
   try {
     const raw = (storage ?? localStorage).getItem(settingsKey);
     result = raw
       ? settingsSchema.parse({
-          ...defaults(),
+          ...defaultSettings(),
           quality: 'high',
           ...recordSchema.parse(JSON.parse(raw)),
         })
-      : defaults();
+      : defaultSettings();
   } catch {
     // Brak dostępu do localStorage nie blokuje zmiany ustawień w bieżącej sesji.
   }

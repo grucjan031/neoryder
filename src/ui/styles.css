@@ -1,31 +1,8 @@
+@import './theme/tokens.css';
+@import './theme/components.css';
 @import './hud.css';
 
 :root {
-  /* Wspólne tokeny interfejsu (wizjer implantu). Cyan = gracz, magenta = Rezonans,
-     czerwień = zagrożenie; akcenty informacyjne z neonów otoczenia. */
-  --ui-font: Rajdhani, 'Segoe UI', system-ui, sans-serif;
-  --ui-cyan: #00e5ff;
-  --ui-magenta: #ff2bd6;
-  --ui-danger: #e0262b;
-  --ui-danger-text: #ff6b6f;
-  --ui-amber: #ffae1a;
-  --ui-violet: #8a5cff;
-  --ui-violet-text: #ad92ff;
-  --ui-blue: #3d7bff;
-  --ui-blue-text: #7aa4ff;
-  --ui-green: #6dff4a;
-  --ui-warm: #fff1d6;
-  --ui-text: #edf7ff;
-  --ui-muted: #a9bccb;
-  --ui-faint: #7d93a3;
-  --ui-bg: #040810;
-  --ui-panel: rgba(6, 12, 24, 0.92);
-  --ui-panel-solid: #070d1a;
-  --ui-raise: rgba(12, 22, 38, 0.9);
-  --ui-line: rgba(0, 229, 255, 0.22);
-  --ui-line-strong: rgba(0, 229, 255, 0.6);
-  --ui-focus: 0 0 0 1px var(--ui-bg), 0 0 0 3px var(--ui-cyan);
-  --ui-in: 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
   /* Narożniki ramki wizjera: tło `var(--ui-frame), <wypełnienie>`. */
   --ui-frame:
     linear-gradient(#00e5ff, #00e5ff) 0 0 / 14px 1px no-repeat,
@@ -65,7 +42,7 @@ canvas {
 .debug-console {
   position: fixed;
   inset: auto 0 0;
-  z-index: 1000;
+  z-index: var(--z-debug);
   background: #111e;
   color: #00e5ff;
   padding: 16px;
@@ -282,7 +259,7 @@ body:has(.scene-menu) {
   gap: 8px;
   background: #050505d9;
   color: #f2f2f2;
-  z-index: 900;
+  z-index: var(--z-blocking);
 }
 .arena-dead[hidden] {
   display: none;
@@ -322,7 +299,7 @@ body:has(.hud) .hint {
   --build-hybrid: var(--ui-violet);
   position: fixed;
   inset: 0;
-  z-index: 110;
+  z-index: var(--z-overlay);
   display: flex;
   padding: 24px 16px;
   overflow-y: auto;
@@ -657,9 +634,7 @@ body:has(.hud) .hint {
   }
   .run-screen__panel,
   .hub-screen__panel,
-  .build-select__panel,
-  .pause-menu,
-  .settings-screen {
+  .build-select__panel {
     zoom: var(--ui-zoom);
   }
 }
@@ -680,11 +655,8 @@ body:has(.hud) .hint {
   .hud__retry:focus-visible,
   .scene-menu a:focus-visible,
   .run-screen button:focus-visible,
-  .pause-menu button:focus-visible,
-  .settings-screen :focus-visible,
   .hub-screen button:focus-visible,
   .hub-screen input:focus-visible,
-  .main-menu button:focus-visible,
   .main-menu input:focus-visible {
     outline: 2px solid CanvasText;
     outline-offset: 2px;

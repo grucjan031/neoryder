@@ -13,7 +13,7 @@
   color: #fff1d6;
   font: 12px/1.5 monospace;
   font-variant-numeric: tabular-nums;
-  z-index: 12;
+  z-index: var(--z-hud-aux);
   pointer-events: none;
 }
 .heist-hud header {
