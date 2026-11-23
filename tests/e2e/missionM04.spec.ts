@@ -124,8 +124,13 @@ test('Ładunek klasy K: tablica, Szron, blokady, Egzekutor, wagon, debrief i odb
   await command(page, 'god');
   await page.evaluate(() => document.fonts.ready);
   await capture(page, 'start');
-  for (const width of [390, 768, 1280]) {
-    await page.setViewportSize({ width, height: 844 });
+  // Tylko desktop (decyzja: bez wersji mobilnej).
+  for (const [width, height] of [
+    [1280, 720],
+    [1600, 900],
+    [1920, 1080],
+  ] as const) {
+    await page.setViewportSize({ width, height });
     await assertPayloadLayout(page);
   }
   await page.setViewportSize({ width: 1280, height: 720 });
