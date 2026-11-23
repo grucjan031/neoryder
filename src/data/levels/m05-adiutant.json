@@ -1,0 +1,3560 @@
+{
+  "id": "m05-adiutant",
+  "name": "Huty — dachy i górne estakady",
+  "type": "combat",
+  "theme": "neonStreet",
+  "playerSpawn": {
+    "x": 5,
+    "y": 0,
+    "z": 0
+  },
+  "blocks": [
+    {
+      "position": {
+        "x": 2,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 6,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 10,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 14,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 18,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 22,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 26,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 30,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 34,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 38,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 20,
+        "y": -10,
+        "z": 0
+      },
+      "size": {
+        "x": 40,
+        "y": 18,
+        "z": 20
+      },
+      "material": "smog_soot_wall"
+    },
+    {
+      "position": {
+        "x": 20,
+        "y": 0.45,
+        "z": -9.8
+      },
+      "size": {
+        "x": 40,
+        "y": 0.9,
+        "z": 0.4
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 1.05,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 16,
+        "y": 1.05,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 1.05,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 20,
+        "y": 0.45,
+        "z": 9.8
+      },
+      "size": {
+        "x": 40,
+        "y": 0.9,
+        "z": 0.4
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 1.05,
+        "z": 9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 16,
+        "y": 1.05,
+        "z": 9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 1.05,
+        "z": 9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": -0.5,
+        "y": 2.5,
+        "z": 0
+      },
+      "size": {
+        "x": 1,
+        "y": 5,
+        "z": 20
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 8,
+        "y": 4.5,
+        "z": 0
+      },
+      "size": {
+        "x": 16,
+        "y": 1,
+        "z": 8
+      },
+      "material": "corrugated"
+    },
+    {
+      "position": {
+        "x": 22,
+        "y": 1,
+        "z": -5
+      },
+      "size": {
+        "x": 5,
+        "y": 2,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 30,
+        "y": 1,
+        "z": 5
+      },
+      "size": {
+        "x": 5,
+        "y": 2,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 42,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 46,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 50,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 54,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 58,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 62,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 66,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 70,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 74,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 78,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 82,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 86,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 90,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 94,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 68,
+        "y": 0.45,
+        "z": -7.8
+      },
+      "size": {
+        "x": 56,
+        "y": 0.9,
+        "z": 0.3
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 44,
+        "y": -9,
+        "z": -6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 60,
+        "y": -9,
+        "z": -6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 80,
+        "y": -9,
+        "z": -6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 92,
+        "y": -9,
+        "z": -6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 68,
+        "y": 0.45,
+        "z": 7.8
+      },
+      "size": {
+        "x": 56,
+        "y": 0.9,
+        "z": 0.3
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 44,
+        "y": -9,
+        "z": 6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 60,
+        "y": -9,
+        "z": 6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 80,
+        "y": -9,
+        "z": 6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 92,
+        "y": -9,
+        "z": 6
+      },
+      "size": {
+        "x": 1.2,
+        "y": 18,
+        "z": 1.2
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 70,
+        "y": 2.5,
+        "z": 5
+      },
+      "size": {
+        "x": 0.8,
+        "y": 5,
+        "z": 6
+      },
+      "material": "corrugated"
+    },
+    {
+      "position": {
+        "x": 70,
+        "y": 2.5,
+        "z": -3.5
+      },
+      "size": {
+        "x": 0.8,
+        "y": 5,
+        "z": 3
+      },
+      "material": "corrugated"
+    },
+    {
+      "position": {
+        "x": 70,
+        "y": 3.075,
+        "z": -6.5
+      },
+      "size": {
+        "x": 0.8,
+        "y": 3.85,
+        "z": 3
+      },
+      "material": "corrugated"
+    },
+    {
+      "position": {
+        "x": 58,
+        "y": 0.8,
+        "z": 5.5
+      },
+      "size": {
+        "x": 4,
+        "y": 1.6,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 63,
+        "y": 1.6,
+        "z": 5.5
+      },
+      "size": {
+        "x": 4,
+        "y": 3.2,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 70,
+        "y": 5.2,
+        "z": 5.5
+      },
+      "size": {
+        "x": 10,
+        "y": 0.4,
+        "z": 3
+      },
+      "material": "steel_grating",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 79.39710084891449,
+        "y": 2.5285014148574914,
+        "z": 5.5
+      },
+      "size": {
+        "x": 10.495713410721542,
+        "y": 0.4,
+        "z": 3
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.5404195002705843
+      },
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 98,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 102,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 106,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 110,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 114,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 118,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 20
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": -10,
+        "z": 0
+      },
+      "size": {
+        "x": 24,
+        "y": 18,
+        "z": 20
+      },
+      "material": "smog_soot_wall"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 0.45,
+        "z": -9.8
+      },
+      "size": {
+        "x": 24,
+        "y": 0.9,
+        "z": 0.4
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 100,
+        "y": 1.05,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 112,
+        "y": 1.05,
+        "z": -9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 0.45,
+        "z": 9.8
+      },
+      "size": {
+        "x": 24,
+        "y": 0.9,
+        "z": 0.4
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 100,
+        "y": 1.05,
+        "z": 9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 112,
+        "y": 1.05,
+        "z": 9.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 3,
+        "z": -8
+      },
+      "size": {
+        "x": 24,
+        "y": 6,
+        "z": 1
+      },
+      "material": "corrugated"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 1.1,
+        "z": -5
+      },
+      "size": {
+        "x": 4,
+        "y": 2.2,
+        "z": 2
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 3,
+        "z": 8
+      },
+      "size": {
+        "x": 24,
+        "y": 6,
+        "z": 1
+      },
+      "material": "corrugated"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 1.1,
+        "z": 5
+      },
+      "size": {
+        "x": 4,
+        "y": 2.2,
+        "z": 2
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 6.5,
+        "z": 0
+      },
+      "size": {
+        "x": 24,
+        "y": 1,
+        "z": 17
+      },
+      "material": "corrugated"
+    },
+    {
+      "position": {
+        "x": 122,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 126,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 130,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 134,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 138,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 142,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 146,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 150,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 154,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 158,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 162,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 166,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 170,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 174,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 178,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 182,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 4
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 122,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 126,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 130,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 143,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 147,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 150,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 2,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 161,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 165,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 169,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 173,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 177,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 181,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 183.5,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 1,
+        "y": 1,
+        "z": 16
+      },
+      "material": "steel_grating"
+    },
+    {
+      "position": {
+        "x": 124,
+        "y": -6,
+        "z": -7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 124,
+        "y": -6,
+        "z": 7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 124,
+        "y": 6.5,
+        "z": 0
+      },
+      "size": {
+        "x": 1.2,
+        "y": 1,
+        "z": 16
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 145,
+        "y": -6,
+        "z": -7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 145,
+        "y": -6,
+        "z": 7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 145,
+        "y": 6.5,
+        "z": 0
+      },
+      "size": {
+        "x": 1.2,
+        "y": 1,
+        "z": 16
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 164,
+        "y": -6,
+        "z": -7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 164,
+        "y": -6,
+        "z": 7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 164,
+        "y": 6.5,
+        "z": 0
+      },
+      "size": {
+        "x": 1.2,
+        "y": 1,
+        "z": 16
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": -6,
+        "z": -7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": -6,
+        "z": 7
+      },
+      "size": {
+        "x": 1,
+        "y": 24,
+        "z": 1
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": 6.5,
+        "z": 0
+      },
+      "size": {
+        "x": 1.2,
+        "y": 1,
+        "z": 16
+      },
+      "material": "crane_paint"
+    },
+    {
+      "position": {
+        "x": 124.58315195205356,
+        "y": 1.4181051048828401,
+        "z": -5.5
+      },
+      "size": {
+        "x": 7.696752561957543,
+        "y": 0.4,
+        "z": 3
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.42877802744601645
+      },
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 130,
+        "y": 3,
+        "z": -5.5
+      },
+      "size": {
+        "x": 4,
+        "y": 0.4,
+        "z": 2.5
+      },
+      "material": "crane_paint",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 146,
+        "y": 3,
+        "z": -5.5
+      },
+      "size": {
+        "x": 10,
+        "y": 0.4,
+        "z": 2.5
+      },
+      "material": "crane_paint",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 164.5,
+        "y": 3,
+        "z": -5.5
+      },
+      "size": {
+        "x": 11,
+        "y": 0.4,
+        "z": 2.5
+      },
+      "material": "crane_paint",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 174.93904485457924,
+        "y": 1.4095151705601352,
+        "z": -5.5
+      },
+      "size": {
+        "x": 10.499523798725349,
+        "y": 0.4,
+        "z": 3
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3097029445424562
+      },
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 186,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 190,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 194,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 198,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 202,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 206,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 210,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 214,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 218,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 222,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 226,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 230,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 234,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 238,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 242,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 246,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 250,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 4,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 253,
+        "y": -0.5,
+        "z": 0
+      },
+      "size": {
+        "x": 2,
+        "y": 1,
+        "z": 32
+      },
+      "material": "roof_tar"
+    },
+    {
+      "position": {
+        "x": 219,
+        "y": -10,
+        "z": 0
+      },
+      "size": {
+        "x": 70,
+        "y": 18,
+        "z": 32
+      },
+      "material": "smog_soot_wall"
+    },
+    {
+      "position": {
+        "x": 219,
+        "y": 0.45,
+        "z": -15.8
+      },
+      "size": {
+        "x": 70,
+        "y": 0.9,
+        "z": 0.4
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 188,
+        "y": 1.05,
+        "z": -15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 200,
+        "y": 1.05,
+        "z": -15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 212,
+        "y": 1.05,
+        "z": -15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 224,
+        "y": 1.05,
+        "z": -15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 236,
+        "y": 1.05,
+        "z": -15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 248,
+        "y": 1.05,
+        "z": -15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 219,
+        "y": 0.45,
+        "z": 15.8
+      },
+      "size": {
+        "x": 70,
+        "y": 0.9,
+        "z": 0.4
+      },
+      "material": "concrete"
+    },
+    {
+      "position": {
+        "x": 188,
+        "y": 1.05,
+        "z": 15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 200,
+        "y": 1.05,
+        "z": 15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 212,
+        "y": 1.05,
+        "z": 15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 224,
+        "y": 1.05,
+        "z": 15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 236,
+        "y": 1.05,
+        "z": 15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 248,
+        "y": 1.05,
+        "z": 15.5
+      },
+      "size": {
+        "x": 0.25,
+        "y": 0.2,
+        "z": 0.25
+      },
+      "material": "neon_amber"
+    },
+    {
+      "position": {
+        "x": 192,
+        "y": 1.4,
+        "z": -5
+      },
+      "size": {
+        "x": 3,
+        "y": 2.8,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 202,
+        "y": 1.4,
+        "z": 6
+      },
+      "size": {
+        "x": 3,
+        "y": 2.8,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 216,
+        "y": 1.4,
+        "z": -6
+      },
+      "size": {
+        "x": 3,
+        "y": 2.8,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 224,
+        "y": 1.4,
+        "z": 6
+      },
+      "size": {
+        "x": 3,
+        "y": 2.8,
+        "z": 3
+      },
+      "material": "roof_hvac_metal"
+    },
+    {
+      "position": {
+        "x": 220,
+        "y": 3.75,
+        "z": -12
+      },
+      "size": {
+        "x": 20,
+        "y": 0.5,
+        "z": 4
+      },
+      "material": "concrete",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 205.07427813527082,
+        "y": 1.8143046618229481,
+        "z": -12
+      },
+      "size": {
+        "x": 10.77032961426901,
+        "y": 0.4,
+        "z": 4
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.3805063771123649
+      },
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 234.92572186472918,
+        "y": 1.8143046618229481,
+        "z": -12
+      },
+      "size": {
+        "x": 10.77032961426901,
+        "y": 0.4,
+        "z": 4
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3805063771123649
+      },
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 220,
+        "y": 3.75,
+        "z": 12
+      },
+      "size": {
+        "x": 20,
+        "y": 0.5,
+        "z": 4
+      },
+      "material": "concrete",
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 205.07427813527082,
+        "y": 1.8143046618229481,
+        "z": 12
+      },
+      "size": {
+        "x": 10.77032961426901,
+        "y": 0.4,
+        "z": 4
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0.3805063771123649
+      },
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 234.92572186472918,
+        "y": 1.8143046618229481,
+        "z": 12
+      },
+      "size": {
+        "x": 10.77032961426901,
+        "y": 0.4,
+        "z": 4
+      },
+      "material": "steel_grating",
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -0.3805063771123649
+      },
+      "walkable": true
+    },
+    {
+      "position": {
+        "x": 220,
+        "y": 0.03,
+        "z": -3
+      },
+      "size": {
+        "x": 8,
+        "y": 0.03,
+        "z": 0.35
+      },
+      "material": "light_white"
+    },
+    {
+      "position": {
+        "x": 220,
+        "y": 0.03,
+        "z": 3
+      },
+      "size": {
+        "x": 8,
+        "y": 0.03,
+        "z": 0.35
+      },
+      "material": "light_white"
+    },
+    {
+      "position": {
+        "x": 220,
+        "y": 0.03,
+        "z": 0
+      },
+      "size": {
+        "x": 0.35,
+        "y": 0.03,
+        "z": 6
+      },
+      "material": "light_white"
+    },
+    {
+      "position": {
+        "x": 244,
+        "y": 0.6,
+        "z": 1.5
+      },
+      "size": {
+        "x": 5,
+        "y": 1.2,
+        "z": 0.2
+      },
+      "material": "metal"
+    },
+    {
+      "position": {
+        "x": 254.5,
+        "y": 3,
+        "z": 0
+      },
+      "size": {
+        "x": 1,
+        "y": 6,
+        "z": 32
+      },
+      "material": "concrete"
+    }
+  ],
+  "spawnPoints": [],
+  "signs": [
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": 36,
+        "y": 3,
+        "z": -4
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": -1.5707963267948966,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": 67,
+        "y": 2,
+        "z": -6.5
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": -1.5707963267948966,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": 116,
+        "y": 3,
+        "z": -4
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": -1.5707963267948966,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": 127,
+        "y": 4.5,
+        "z": -5.5
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": -1.5707963267948966,
+      "tint": "#ffae1a"
+    },
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": 175,
+        "y": 3,
+        "z": 2
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": -1.5707963267948966,
+      "tint": "#6dff4a"
+    },
+    {
+      "kind": "holo",
+      "texture": "holo_kurogane",
+      "position": {
+        "x": 246,
+        "y": 7,
+        "z": 14
+      },
+      "size": {
+        "w": 8,
+        "h": 4
+      },
+      "yaw": 3.141592653589793,
+      "tint": "#3d7bff"
+    },
+    {
+      "kind": "neon",
+      "texture": "arrow",
+      "position": {
+        "x": 245,
+        "y": 2.8,
+        "z": -5
+      },
+      "size": {
+        "w": 2.4,
+        "h": 1.2
+      },
+      "yaw": -1.5707963267948966,
+      "tint": "#6dff4a"
+    }
+  ],
+  "lights": [
+    {
+      "position": {
+        "x": 4,
+        "y": 1.4,
+        "z": -9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 16,
+        "y": 1.4,
+        "z": -9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 1.4,
+        "z": -9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 1.4,
+        "z": 9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 16,
+        "y": 1.4,
+        "z": 9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 28,
+        "y": 1.4,
+        "z": 9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 3.4,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 24,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": 12,
+        "y": 3.4,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 24,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": 44,
+        "y": 4,
+        "z": -6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 60,
+        "y": 4,
+        "z": -6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 80,
+        "y": 4,
+        "z": -6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 92,
+        "y": 4,
+        "z": -6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 44,
+        "y": 4,
+        "z": 6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 60,
+        "y": 4,
+        "z": 6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 80,
+        "y": 4,
+        "z": 6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 92,
+        "y": 4,
+        "z": 6.5
+      },
+      "color": "#fff1d6",
+      "intensity": 18,
+      "range": 14
+    },
+    {
+      "position": {
+        "x": 69,
+        "y": 1,
+        "z": -6.5
+      },
+      "color": "#6dff4a",
+      "intensity": 9,
+      "range": 8
+    },
+    {
+      "position": {
+        "x": 100,
+        "y": 1.4,
+        "z": -9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 112,
+        "y": 1.4,
+        "z": -9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 100,
+        "y": 1.4,
+        "z": 9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 112,
+        "y": 1.4,
+        "z": 9
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 100,
+        "y": 5,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 5,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": 116,
+        "y": 5,
+        "z": 0
+      },
+      "color": "#fff1d6",
+      "intensity": 26,
+      "range": 12
+    },
+    {
+      "position": {
+        "x": 124,
+        "y": 5,
+        "z": -6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 124,
+        "y": 5,
+        "z": 6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 145,
+        "y": 5,
+        "z": -6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 145,
+        "y": 5,
+        "z": 6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 164,
+        "y": 5,
+        "z": -6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 164,
+        "y": 5,
+        "z": 6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": 5,
+        "z": -6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 180,
+        "y": 5,
+        "z": 6
+      },
+      "color": "#ffae1a",
+      "intensity": 24,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 188,
+        "y": 1.4,
+        "z": -15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 200,
+        "y": 1.4,
+        "z": -15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 212,
+        "y": 1.4,
+        "z": -15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 224,
+        "y": 1.4,
+        "z": -15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 236,
+        "y": 1.4,
+        "z": -15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 248,
+        "y": 1.4,
+        "z": -15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 188,
+        "y": 1.4,
+        "z": 15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 200,
+        "y": 1.4,
+        "z": 15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 212,
+        "y": 1.4,
+        "z": 15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 224,
+        "y": 1.4,
+        "z": 15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 236,
+        "y": 1.4,
+        "z": 15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 248,
+        "y": 1.4,
+        "z": 15
+      },
+      "color": "#ffae1a",
+      "intensity": 9,
+      "range": 10
+    },
+    {
+      "position": {
+        "x": 221,
+        "y": 5.5,
+        "z": -11
+      },
+      "color": "#fff1d6",
+      "intensity": 30,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 221,
+        "y": 5.5,
+        "z": 11
+      },
+      "color": "#fff1d6",
+      "intensity": 30,
+      "range": 18
+    },
+    {
+      "position": {
+        "x": 246,
+        "y": 5,
+        "z": -13
+      },
+      "color": "#8a5cff",
+      "intensity": 18,
+      "range": 16
+    },
+    {
+      "position": {
+        "x": 248,
+        "y": 3,
+        "z": -7
+      },
+      "color": "#6dff4a",
+      "intensity": 14,
+      "range": 10
+    }
+  ],
+  "decor": [
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 22,
+        "y": 2,
+        "z": -5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 25,
+        "y": 0,
+        "z": -5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_ac_unit",
+      "position": {
+        "x": 30,
+        "y": 2,
+        "z": 5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 33,
+        "y": 0,
+        "z": 5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_generator",
+      "position": {
+        "x": 52,
+        "y": 0,
+        "z": 5.8
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 108,
+        "y": 0,
+        "z": -7.4
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 108,
+        "y": 0,
+        "z": 7.4
+      },
+      "yaw": 3.141592653589793,
+      "scale": 1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 124,
+        "y": -4,
+        "z": 10
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 145,
+        "y": -4,
+        "z": 10
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 164,
+        "y": -4,
+        "z": 10
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_pipe_run",
+      "position": {
+        "x": 180,
+        "y": -4,
+        "z": 10
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 192,
+        "y": 2.8,
+        "z": -5
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 202,
+        "y": 2.8,
+        "z": 6
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 216,
+        "y": 2.8,
+        "z": -6
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_vent_grate",
+      "position": {
+        "x": 224,
+        "y": 2.8,
+        "z": 6
+      },
+      "yaw": 0,
+      "scale": 1
+    },
+    {
+      "model": "city_shutter",
+      "position": {
+        "x": 252.8,
+        "y": 0,
+        "z": -7
+      },
+      "yaw": -1.5707963267948966,
+      "scale": 1
+    }
+  ],
+  "decals": [],
+  "ambientFx": [
+    {
+      "kind": "steam",
+      "position": {
+        "x": 25,
+        "y": 0.1,
+        "z": -5
+      },
+      "rate": 5
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 33,
+        "y": 0.1,
+        "z": 5
+      },
+      "rate": 5
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 192,
+        "y": 3,
+        "z": -5
+      },
+      "rate": 4
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 202,
+        "y": 3,
+        "z": 6
+      },
+      "rate": 4
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 216,
+        "y": 3,
+        "z": -6
+      },
+      "rate": 4
+    },
+    {
+      "kind": "steam",
+      "position": {
+        "x": 224,
+        "y": 3,
+        "z": 6
+      },
+      "rate": 4
+    }
+  ],
+  "rainShelters": [
+    {
+      "position": {
+        "x": 8,
+        "y": 2,
+        "z": 0
+      },
+      "size": {
+        "x": 16,
+        "y": 4,
+        "z": 8
+      }
+    },
+    {
+      "position": {
+        "x": 108,
+        "y": 3,
+        "z": 0
+      },
+      "size": {
+        "x": 24,
+        "y": 6,
+        "z": 16
+      }
+    }
+  ],
+  "hazards": [],
+  "sections": [
+    {
+      "id": "dachy",
+      "name": "Dach walcowni",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 20,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 40,
+          "y": 12,
+          "z": 32
+        }
+      }
+    },
+    {
+      "id": "estakada",
+      "name": "Estakada załadunkowa",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 68,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 56,
+          "y": 12,
+          "z": 32
+        }
+      }
+    },
+    {
+      "id": "maszynownia",
+      "name": "Maszynownia windy dachowej",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 108,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 24,
+          "y": 12,
+          "z": 32
+        }
+      }
+    },
+    {
+      "id": "suwnice",
+      "name": "Węzeł suwnic nad odlewnią",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 152,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 64,
+          "y": 12,
+          "z": 32
+        }
+      }
+    },
+    {
+      "id": "ladowisko",
+      "name": "Lądowisko sektorowe",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 219,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 70,
+          "y": 12,
+          "z": 32
+        }
+      }
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "start",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 5,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 8,
+          "y": 12,
+          "z": 32
+        }
+      }
+    },
+    {
+      "id": "maszynownia",
+      "position": {
+        "x": 92,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 92,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 8,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "after": {
+        "kind": "objective",
+        "id": "estakada"
+      }
+    },
+    {
+      "id": "podejscie",
+      "position": {
+        "x": 180,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 180,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 8,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "after": {
+        "kind": "objective",
+        "id": "suwnice"
+      }
+    },
+    {
+      "id": "ladowisko",
+      "position": {
+        "x": 206,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 206,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 8,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "after": {
+        "kind": "objective",
+        "id": "ladowisko"
+      }
+    },
+    {
+      "id": "karta",
+      "position": {
+        "x": 240,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90,
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 240,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 8,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "after": {
+        "kind": "objective",
+        "id": "karta"
+      }
+    }
+  ],
+  "encounters": [
+    {
+      "id": "tylna-straz",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 50,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 18,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "wave": "m05RearGuard",
+      "spawnPoints": [
+        {
+          "x": 60,
+          "z": 0
+        },
+        {
+          "x": 64,
+          "z": 2
+        },
+        {
+          "x": 66,
+          "z": -2
+        }
+      ]
+    },
+    {
+      "id": "tarcze-suwnic",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 134,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 24,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "wave": "m05Shields",
+      "spawnPoints": [
+        {
+          "x": 145,
+          "z": 0
+        },
+        {
+          "x": 149,
+          "z": 0
+        },
+        {
+          "x": 164,
+          "z": 4
+        }
+      ],
+      "after": {
+        "kind": "objective",
+        "id": "estakada"
+      }
+    },
+    {
+      "id": "snajperzy",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 210,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 24,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "wave": "m05Snipers",
+      "spawnPoints": [
+        {
+          "x": 218,
+          "z": -12
+        },
+        {
+          "x": 224,
+          "z": 12
+        }
+      ],
+      "spawnHeightM": 4,
+      "after": {
+        "kind": "objective",
+        "id": "suwnice"
+      }
+    },
+    {
+      "id": "oslona-ladowiska",
+      "zone": {
+        "kind": "box",
+        "position": {
+          "x": 218,
+          "y": 3,
+          "z": 0
+        },
+        "size": {
+          "x": 72,
+          "y": 12,
+          "z": 32
+        }
+      },
+      "wave": "m05Escort",
+      "spawnPoints": [
+        {
+          "x": 222,
+          "z": -3
+        },
+        {
+          "x": 226,
+          "z": 3
+        },
+        {
+          "x": 232,
+          "z": 0
+        }
+      ],
+      "after": {
+        "kind": "encounter",
+        "id": "snajperzy"
+      }
+    }
+  ],
+  "gates": [
+    {
+      "id": "grodz-estakada",
+      "block": {
+        "position": {
+          "x": 70,
+          "y": 2,
+          "z": 0
+        },
+        "size": {
+          "x": 0.6,
+          "y": 4,
+          "z": 4
+        },
+        "material": "hazard_stripes_worn"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "tylna-straz"
+      }
+    },
+    {
+      "id": "gate-estakada",
+      "block": {
+        "position": {
+          "x": 96,
+          "y": 3.5,
+          "z": 0
+        },
+        "size": {
+          "x": 0.6,
+          "y": 7,
+          "z": 16
+        },
+        "material": "hazard_stripes_worn"
+      },
+      "after": {
+        "kind": "objective",
+        "id": "estakada"
+      }
+    },
+    {
+      "id": "grodz-suwnice",
+      "block": {
+        "position": {
+          "x": 148,
+          "y": 1.25,
+          "z": 0
+        },
+        "size": {
+          "x": 0.6,
+          "y": 2.5,
+          "z": 4
+        },
+        "material": "hazard_stripes_worn"
+      },
+      "after": {
+        "kind": "encounter",
+        "id": "tarcze-suwnic"
+      }
+    },
+    {
+      "id": "gate-suwnice",
+      "block": {
+        "position": {
+          "x": 184,
+          "y": 3.5,
+          "z": 0
+        },
+        "size": {
+          "x": 0.6,
+          "y": 7,
+          "z": 16
+        },
+        "material": "hazard_stripes_worn"
+      },
+      "after": {
+        "kind": "objective",
+        "id": "suwnice"
+      }
+    },
+    {
+      "id": "gate-ewakuacja",
+      "block": {
+        "position": {
+          "x": 246,
+          "y": 2,
+          "z": -7
+        },
+        "size": {
+          "x": 0.6,
+          "y": 4,
+          "z": 4
+        },
+        "material": "hazard_stripes_worn"
+      },
+      "after": {
+        "kind": "objective",
+        "id": "karta"
+      }
+    }
+  ],
+  "allies": [],
+  "maxAlive": 12,
+  "objectiveOrder": [
+    "estakada",
+    "suwnice",
+    "ladowisko",
+    "karta",
+    "exit"
+  ],
+  "objectivePositions": {
+    "estakada": {
+      "x": 92,
+      "y": 0,
+      "z": 0
+    },
+    "suwnice": {
+      "x": 180,
+      "y": 0,
+      "z": 0
+    },
+    "ladowisko": {
+      "x": 206,
+      "y": 0,
+      "z": 0
+    },
+    "karta": {
+      "x": 240,
+      "y": 0,
+      "z": 0
+    },
+    "exit": {
+      "x": 248,
+      "y": 0,
+      "z": -7
+    }
+  },
+  "objectiveAfter": {
+    "karta": {
+      "kind": "encounter",
+      "id": "oslona-ladowiska"
+    }
+  },
+  "objectiveNpcs": [
+    {
+      "objective": "karta",
+      "spawn": {
+        "x": 242,
+        "y": 0,
+        "z": 0
+      },
+      "yawDeg": -90
+    }
+  ]
+}

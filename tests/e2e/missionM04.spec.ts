@@ -224,6 +224,7 @@ test('Ładunek klasy K: tablica, Szron, blokady, Egzekutor, wagon, debrief i odb
     });
   await openMissions(page);
   await expect(choice).toContainText('Ukończona');
-  await expect(page.locator('[data-mission="m06-odlewnia"]')).toBeEnabled();
+  await expect(page.locator('[data-mission="m05-adiutant"]')).toBeEnabled();
+  await expect(page.locator('[data-mission="m06-odlewnia"]')).toBeDisabled();
   expect(errors).toEqual([]);
 });

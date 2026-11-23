@@ -149,7 +149,7 @@ it('M04: pełny poziom, Szron, osiem celów, dialogi, nagrody i następna misja'
     { id: 'szron', spawn: { x: 10, y: 0, z: -4 } },
   ]);
   expect(mission.requires).toEqual(['m03-list-przewozowy']);
-  expect(missionDefinitions.get('m06-odlewnia')!.requires).toEqual([ID]);
+  expect(missionDefinitions.get('m05-adiutant')!.requires).toEqual([ID]);
   expect(mission.briefing.length).toBeLessThanOrEqual(3);
   expect(mission.debrief.length).toBeLessThanOrEqual(6);
   expect(mission.rewards.firstClear).toEqual({ data: 110, cores: 1 });

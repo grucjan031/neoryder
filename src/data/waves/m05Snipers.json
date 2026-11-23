@@ -1,0 +1,24 @@
+{
+  "id": "m05Snipers",
+  "firstBreakS": 0,
+  "breakS": 0,
+  "maxAlive": 8,
+  "minSpawnDistance": 3,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.4,
+      "groups": [
+        {
+          "enemy": "sniper",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

@@ -33,6 +33,13 @@ export const RADIO_TRIGGER =
 export const missionObjectiveSchema = z.discriminatedUnion('kind', [
   z.object({
     ...base,
+    kind: z.literal('reach'),
+    position: vec3Schema,
+    radiusM: positive,
+    timeLimitS: positive,
+  }),
+  z.object({
+    ...base,
     kind: z.literal('sabotage'),
     position: vec3Schema,
     holdS: positive,
@@ -151,6 +158,10 @@ export const missionSchema = z
     const objectives = new Map(
       mission.objectives.map((objective) => [objective.id, objective]),
     );
+    if (!mission.level && mission.objectives.some((o) => o.kind === 'reach'))
+      fail(
+        'Cel reach wymaga poziomu liniowego z obsługą powrotu do checkpointu.',
+      );
     if (objectives.size !== mission.objectives.length)
       fail('Powtórzone id celu.');
     if (mission.fixedNodes.filter((node) => node.final).length !== 1)

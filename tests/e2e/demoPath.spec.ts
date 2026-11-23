@@ -7,6 +7,7 @@ import m01 from '../../src/data/missions/m01-maszty.json' with { type: 'json' };
 import m02 from '../../src/data/missions/m02-punkt-kontrolny.json' with { type: 'json' };
 import m03 from '../../src/data/missions/m03-list-przewozowy.json' with { type: 'json' };
 import m04 from '../../src/data/missions/m04-ladunek-klasy-k.json' with { type: 'json' };
+import m05 from '../../src/data/missions/m05-adiutant.json' with { type: 'json' };
 import m06 from '../../src/data/missions/m06-odlewnia.json' with { type: 'json' };
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
@@ -137,6 +138,30 @@ async function clearEncounter(
     })
     .toContain(id);
   if (gate) expect((await mission(page)).openGates).toContain(gate);
+}
+
+async function playM05(page: Page) {
+  for (const [id, x, target, goal] of [
+    ['tylna-straz', 50, 92, 'estakada'],
+    ['tarcze-suwnic', 134, 180, 'suwnice'],
+  ] as const) {
+    await clearEncounter(page, id, x, null);
+    await command(page, `tp ${target} 0 -90`);
+    await pollMission(page, `M05 / ${goal}`).toMatchObject({
+      objectives: { [goal]: 'done' },
+    });
+  }
+  await command(page, 'tp 206 0 -90');
+  await pollMission(page, 'M05 / lądowisko').toMatchObject({
+    objectives: { ladowisko: 'done' },
+  });
+  await clearEncounter(page, 'snajperzy', 206, null);
+  await clearEncounter(page, 'oslona-ladowiska', 218, null);
+  await command(page, 'tp 240 0');
+  await pollMission(page, 'M05 / karta').toMatchObject({
+    objectives: { karta: 'done' },
+  });
+  await command(page, 'tp 248 -7');
 }
 
 async function playM01(page: Page) {
@@ -625,6 +650,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
     { definition: m02, play: playM02 },
     { definition: m03, play: playM03 },
     { definition: m04, play: playM04 },
+    { definition: m05, play: playM05 },
     { definition: m06, play: playM06 },
   ];
   const completed: string[] = [];
@@ -675,7 +701,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
 
     await stage('koniec kampanii / tablica', async () => {
       expect(meta.campaign).toMatchObject({
-        completed: [m01.id, m02.id, m03.id, m04.id, m06.id],
+        completed: [m01.id, m02.id, m03.id, m04.id, m05.id, m06.id],
         pendingDebrief: null,
       });
       await board(page, boardStatuses());

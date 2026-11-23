@@ -33,6 +33,7 @@ test('mobilna Odlewnia: cel, kierunek i pasek bossa nie nachodzą na siebie, naz
           game.command('campaign complete m01-maszty');
           game.command('campaign complete m03-list-przewozowy');
           game.command('campaign complete m04-ladunek-klasy-k');
+          game.command('campaign complete m05-adiutant');
           return true;
         }),
       { timeout: LOAD_TIMEOUT },

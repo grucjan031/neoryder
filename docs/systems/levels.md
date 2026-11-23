@@ -296,7 +296,7 @@ Sprawdzenie: po `campaign complete m03-list-przewozowy` otwórz
 `payload skip` skraca trasę w debug, `payload hp 0` sprawdza porażkę. Cele:
 `barricade`, `laser`, `switch-1`, `carts`, `switch-2`, `executor`, `payload`, `exit`.
 Interakcje trwają 2 s. `missionM04Level.test.ts` przechodzi trasę kapsułą bez
-teleportacji, `missionM04.spec.ts` sprawdza tablicę, cele, powrót i odblokowanie M06.
+teleportacji, `missionM04.spec.ts` sprawdza tablicę, cele, powrót i odblokowanie M05.
 
 Do oceny Architekta: czytelność toru, tempo eskorty, HUD drużyny i balans ostrzału.
 Celowanie pozostaje takie jak w prototypie: wrogowie wybierają gracza lub sojusznika,
@@ -342,3 +342,39 @@ Sprawdzenie w 30 s: po `campaign complete m01-maszty` w scenie `run` otwórz
 Pełne przejście kapsułą, kolizje bram, dołączenie i wznowienie Nadii sprawdza
 `missionM02Level.test.ts`; start z tablicy, walkę, powrót i zapis kampanii —
 `tests/e2e/missionM02.spec.ts`.
+
+## M05 — Adiutant
+
+Generator `node tools/levels/buildM05.mjs` zapisuje poziom i cztery fale `m05*`.
+Trasa ma 254 m, motyw `neonStreet`, pięć sekcji:
+
+| Sekcja | x (m) | Trasa i starcia |
+| --- | --- | --- |
+| `dachy` | 0–40 | Szyb techniczny, dach walcowni, wentylatory, para i bursztynowe światła narożne. |
+| `estakada` | 40–96 | Tylna straż: szturmowcy, strzelec, wieżyczka. Gródź po walce, boczna roleta (prześwit 1,15 m) i górne obejście po wentylacji. |
+| `maszynownia` | 96–120 | Osłonięty łącznik z instalacjami, ciepła biel i wyjście na suwnice. |
+| `suwnice` | 120–184 | Dolna kładka: tarczownicy i drony; górne belki na 3,2 m, luki 9 i 8 m do podwójnego skoku/dasha. |
+| `ladowisko` | 184–254 | Kominy jako osłony, snajperzy na gzymsach 4 m, potem eskorta. Wirska przy relingu, karta i szyb wyjściowy. |
+
+Cele: `estakada` → `suwnice` → `ladowisko` (reach, 95/110/90 s) →
+`karta` (pickup) → `exit` (2 s). Checkpointy: `start`, `maszynownia`,
+`podejscie`, `ladowisko`, `karta`; środkowe zapisują się przy końcach
+odcinków. Bramy odcinków wymagają celów, grodzie wymagają spotkań i mają fizyczne
+obejścia. `allies: []`: pościg solo, rozmowy z kryjówką tylko w radiu.
+Wirska używa istniejącego neutralnego widoku NPC bez broni, obrażeń i AI drużyny.
+Brak animowanego konwoju i śmigłowca; ruch przekazuje radio. Opcjonalna walizka
+i premie za skróty pozostają poza tym wariantem.
+
+Rozszerzenia formatu: `objectiveAfter` wiąże cel ze spotkaniem (karta po
+`oslona-ladowiska`); warunek blokuje ukończenie również przez debug, ale zachowuje
+widoczny kierunek celu. Host ustawia czysty predykat `MissionObjectives.canComplete`.
+`objectiveNpcs: [{objective,spawn,yawDeg}]` ustawia neutralny istniejący model.
+`encounters[].spawnHeightM` określa wysokość fali (snajperzy: 4 m), bez pola y=0.
+
+Sprawdzenie w 30 s po M04: `?scene=mission&mission=m05-adiutant&debug=1`,
+`god`, `tp 50 0 -90`, `encounter clear`, `tp 92 0`, `tp 134 0`,
+`encounter clear`, `tp 180 0`, `tp 206 0`, `encounter clear`, `tp 218 0`,
+`encounter clear`, `tp 240 0`, `tp 248 -7`. Poczekaj na start spotkania
+między teleportacją a czyszczeniem. Testy: `missionChase.test.ts`,
+`missionM05Level.test.ts` (pełna dolna trasa kapsułą, limit i wznowienie),
+`missionM05.spec.ts` (tablica, cele, debrief, odblokowanie M06).
