@@ -266,7 +266,8 @@ Metryki raportu mają dodatkowo `routeBlockedM` i `routeZones`.
 | `run/_runKit.mjs` | wspólny zestaw: `createRunRoom` (arena + drzwi + dyrektor), `mass` (elewacja), `deck` (dach/antresola z podłogą), `ramp`, `prop` (model z kolizją i rezerwacją rzutu), `face/faceNeon` (dodatki na elewacji), `lamp`, `perimeter` (mury z otworami na drzwi), `finish` (strefy, punkty, oprawa) |
 | `run/<id>.mjs` | generator pokoju; eksportuje też `shots` (widoki kontrolne) |
 | `run/_shots.mjs` | zrzuty z gry: `node tools/arenas/run/_shots.mjs <katalog> <id>...` przy `npx vite --port 5192 --strictPort` |
-| `tests/unit/arenaRun.test.ts` | testy profilu i czterech aren partii A |
+| `run/_wallKit.mjs` | `dressWall`: dekoracje i neony co kilka metrów wzdłuż ściany (zestawy `KITS`, `maxY` dla niskich budynków); gęsta oprawa ścian |
+| `tests/unit/arenaRun.test.ts` | testy profilu i aren partii A i B (alleyBackstreet, alleyCrossing, alleyMarket, alleyUnderpass, combatCorridor, combatFloodedTunnel, combatLaserYard, combatPillars, combatPlatforms) |
 
 Budowa: `node tools/arenas/build.mjs <id>` (generator z `run/` ma pierwszeństwo przed
 głównym katalogiem) albo `node tools/arenas/build.mjs --run` dla wszystkich z `run/`.
@@ -295,6 +296,9 @@ Wynik CLI dla runu zawiera liczbę bloków i świateł oraz metryki trasy.
   sprawdź misje (`combatYard` ma maszt 3 i wyjście w m01).
 - Testy stare, związane z geometrią pokoju, trzeba dostosować: `rainShelters.test.ts` (punkt pod dachem
   = środek strefy) i `roomStaticBatch.test.ts` (alleyMarket przeszedł na ścieżkę areny z instancjami).
+- Hazardy (`electric_field`, `laser_gate`) muszą leżeć w całości na podłodze z wierzchem na poziomie startu (`validateLayout`): nie stawiaj ich na dnie rowu ani na dachach; odstęp od spawnów ≥ 1 m.
+- Stary Szturm (`assault.json`, `roomId: combatCorridor`) ma stałe współrzędne stacji i spawnów (|x| ≤ 7, z −15…13); `combatCorridor` zostawia tam wolną podsypkę torów bez wagonów i słupów.
+- Modele z innych zestawów (`port_*`, `dock_*`, `hw_*`, `rail_*`, `roof_*`) wymagają wpisu w `SIZE` (`Object.assign(SIZE, …)` w generatorze) albo `deco` z niewidocznym colliderem; punkt odniesienia modelu nie zawsze jest środkiem AABB (patrz `docs/assets.md`).
 - Poziomy z `tp ... floorY` w `_shots.mjs`: nie teleportuj na rampę ani w bryłę.
 
 ## Jak dodać arenę

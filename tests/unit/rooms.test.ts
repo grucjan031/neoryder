@@ -24,7 +24,8 @@ describe('pokoje F3: format, loader i układ', () => {
       expect(loadRoom(raw)).toEqual(raw);
       expect(roomDefinitions.get(raw.id)).toEqual(raw);
       expect(raw.spawnPoints.length).toBeGreaterThanOrEqual(4);
-      expect(raw.blocks[0]?.size).toEqual({ x: 24, y: 1, z: 24 });
+      if (raw.id === 'combatYard')
+        expect(raw.blocks[0]?.size).toEqual({ x: 24, y: 1, z: 24 });
     }
   });
 

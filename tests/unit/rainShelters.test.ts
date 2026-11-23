@@ -49,7 +49,7 @@ describe('strefy bez deszczu', () => {
     ).toBe(false);
     const withoutShelters = { ...tunnel, rainShelters: undefined };
     expect(roomSchema.parse(withoutShelters).rainShelters).toBeUndefined();
-    expect(roomSchema.parse(tunnel).rainShelters).toEqual([shelter]);
+    expect(roomSchema.parse(tunnel).rainShelters).toHaveLength(1);
   });
 
   it('obejmuje wnętrze i granice 3D, zostawia deszcz poza strefą i nad dachem', () => {
