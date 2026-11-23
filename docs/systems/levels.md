@@ -1,5 +1,35 @@
 # Poziomy liniowe
 
+## M09 — Brat
+
+Generator `node tools/levels/buildM09.mjs` zapisuje poziom i pięć fal M09.
+Trasa 248 m wzdłuż +X: `kladki` (0–48), `kontrola` (48–96), `pokaz`
+(96–140), `pojedynek` (140–192), `rampa` (192–248). Motyw `neonStreet`;
+ciepłe lampy robocze, fioletowe projektory, błękit galerii, zielone wyjście,
+bursztynowy szlaban. Kontenery pozostawiają przejście środkiem i flanki.
+Nadia dołącza od startu przez `allies`, bez zmian w systemie drużyny.
+
+Spotkania: `kordon`, `kontrola`, `oslona`, `tymon` (pojedynczy `securityChief`,
+`bossFor: tymon`), `poscig` i trzy fale obrony `brama:0..2` przy 25/50/80%.
+Pięć bram wymaga kolejno trzech spotkań, opaski i obrony; wejście na arenę
+zamyka się na czas pojedynku. Checkpointy: start, kontrola, pokaz, przed Tymonem,
+rampa. `bossFor` dopuszcza również `subdue`, wtedy spotkanie kończy dopiero
+neutralizator, nie śmierć wroga. Debug `encounter clear` pomija takie spotkanie.
+
+Sprawdzenie w 30 s: po ukończeniu wymagań `?scene=mission&mission=m09-brat&debug=1`,
+`god`; kolejno `tp 16 0`, `tp 58 0`, `tp 104 0` i po każdym `encounter clear`.
+`tp 136 0` zapisuje checkpoint, `tp 148 0` rozpoczyna pojedynek. Trzy razy
+`kill all` z odstępem 1,25 s przechodzi fazy i zatrzymuje HP na 15%; podejdź
+do Tymona na 1,5 s przed upływem 10 s. `query('subdue')` podaje jego pozycję.
+`tp 216 0` rozpoczyna obronę (60 s); `objective done brama` skraca ją w debug,
+`tp 238 0` kończy misję. Test kapsuły pokonuje całą trasę bez teleportacji.
+
+Transport jest statyczną bryłą z istniejących materiałów za ostatnim szlabanem;
+przyjazd sygnalizuje radio i otwarcie bramy. Nie ma animacji jazdy ani niesienia
+Tymona. Projektory i budki techników są dekoracją, bez opcjonalnych premii.
+Ocenę jasności, sylwetki powalenia i tempa starć wykonuje architekt — bez
+oglądania zrzutów w tym zadaniu.
+
 Poziom w `src/data/levels/<id>.json` to jedna mapa ładowana w całości, bez przejść
 między pokojami. `levelSchema.ts` reużywa pola `roomSchema` i jego walidację
 osiągalności: `blocks`, `playerSpawn`, `spawnPoints`, `theme`, `signs`, `lights`,
@@ -27,12 +57,13 @@ samej fali. Spotkanie z kluczem `defend` nie startuje od strefy ani `after` — 
 je wyłącznie próg postępu (`atProgress`) zgłoszony przez `MissionObjectives`. Po odrodzeniu niewykonane
 posiłki mogą uruchomić się ponownie po powrocie do ich strefy.
 
-`bossFor` (id celu `killBoss`) oznacza spotkanie dowódcy: ukończenie całej fali
-kończy wskazany cel. M06 używa wroga `kind: "boss"`, M02 elity `executor`
+`bossFor` (id celu `killBoss` lub `subdue`) oznacza spotkanie dowódcy: dla `killBoss`
+ukończenie całej fali kończy wskazany cel, a dla `subdue` obowiązują reguły M09 powyżej.
+M06 używa wroga `kind: "boss"`, M02 elity `executor`
 z obstawą (bez paska i faz bossa). `closedDuring`
 (id spotkania) zamyka bramę ponownie na czas, gdy to spotkanie jest aktywne —
 brama areny otwiera się po `after`, zatrzaskuje za graczem i otwiera po walce.
-`loadLevel` odrzuca `bossFor` wskazujące cel inny niż `killBoss` oraz nieznane
+`loadLevel` odrzuca `bossFor` wskazujące cel inny niż `killBoss`/`subdue` oraz nieznane
 `closedDuring`.
 
 `loadLevel(data, mission, waves)` sprawdza strukturę zod, unikalność id, referencje,

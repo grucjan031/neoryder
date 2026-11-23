@@ -277,6 +277,13 @@ export function loadLevel(
   for (const ally of level.allies ?? [])
     if (!allyDefinitions.has(ally.id))
       throw new Error(`Nieznany sojusznik: ${ally.id}`);
+  for (const objective of mission.objectives)
+    if (
+      objective.kind === 'subdue' &&
+      level.encounters.filter((entry) => entry.bossFor === objective.id)
+        .length !== 1
+    )
+      throw new Error('Subdue wymaga dokładnie jednego spotkania bossFor.');
   for (const encounter of level.encounters) {
     if (!waves.has(encounter.wave))
       throw new Error(`Nieznana fala: ${encounter.wave}`);
@@ -294,12 +301,27 @@ export function loadLevel(
       if (wave !== encounter.wave)
         throw new Error('Posiłki nie odpowiadają celowi misji.');
     }
-    if (
-      encounter.bossFor &&
-      mission.objectives.find((item) => item.id === encounter.bossFor)?.kind !==
-        'killBoss'
-    )
-      throw new Error('Spotkanie bossa wymaga celu killBoss.');
+    if (encounter.bossFor) {
+      const objective = mission.objectives.find(
+        (item) => item.id === encounter.bossFor,
+      );
+      if (objective?.kind !== 'killBoss' && objective?.kind !== 'subdue')
+        throw new Error('Spotkanie bossa wymaga celu killBoss lub subdue.');
+      if (objective.kind === 'subdue') {
+        const groups = waves
+          .get(encounter.wave)!
+          .waves.flatMap((wave) => wave.groups);
+        if (
+          groups.length !== 1 ||
+          groups[0]!.count !== 1 ||
+          level.objectiveOrder.indexOf(objective.neutralizeWith) !==
+            level.objectiveOrder.indexOf(objective.id) + 1
+        )
+          throw new Error(
+            'Subdue wymaga jednego celu i opaski bezpośrednio po nim.',
+          );
+      }
+    }
   }
   // Reużycie walidacji osiągalności pokoju także dla celów, checkpointów i spawnów.
   roomSchema.parse({

@@ -2458,6 +2458,24 @@ Szczegóły i koszt: `docs/systems/prototypes-s4-03.md`.
 - Cele (więzień, wagon) to encje drużyny `neutral` z `Health` i colliderem w grupie
   `CollisionGroup.Player` o filtrze tylko `EnemyProjectile`: trafiają je wyłącznie pociski wrogów.
 
+## Pojmanie w misji liniowej (M09)
+
+`subdue { id, label, targetName, hpFraction, neutralizeWith, timeLimitS }` wymaga
+`level` i jednego spotkania `bossFor`, z jednym wrogiem typu boss. `neutralizeWith`
+wskazuje późniejszy `interact` zależny od tego celu. Host kończy `subdue` przy
+progu HP, a `MissionObjectives` odlicza `timeLimitS` do ukończenia interakcji;
+upływ czasu ustawia `failed` (porażka próby, bez nagród).
+
+Lokalny `SubdueMissionRoom` dekoruje `Health.apply` konkretnego bossa, zachowując
+jego redukcje i progi faz, ale ograniczając końcowe obrażenia do `hpFraction`.
+Po przełamaniu dekorator `Enemy.step` zatrzymuje AI w stanie `stunned` i aktualizuje
+pozycję opaski na rzeczywiste stopy celu. Nie zmienia prototypów ani innych wrogów.
+`enemy_killed` celu oznacza porażkę, nigdy ukończenie spotkania. Dopiero opaska
+kończy spotkanie. `query('subdue')` zwraca `id`, `hp`, `maxHp`, `subdued`,
+`captured` i `position` celu.
+Niedokończone pojmanie po odrodzeniu/wczytaniu cofa się do pojedynku; ukończona
+opaska pozostaje zapisana. Brak zmiany formatu zapisu i wspólnych zdarzeń.
+
 ## Sojusznicy
 
 System: `docs/systems/allies.md`. Kod: `src/allies/`, dane `src/data/allies/*.json`.

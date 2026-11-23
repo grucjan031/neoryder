@@ -2,6 +2,7 @@ import type { Scene as ThreeScene } from 'three';
 import type { Collider } from '@dimforge/rapier3d-compat';
 import type { Vec3 } from '../core/math';
 import { Health } from '../combat/damage';
+import type { Enemy } from '../enemies/types';
 import { CollisionGroup, interactionGroups } from '../physics';
 import { RailPayload } from '../world/railPayload';
 import { PayloadView, EscortNpcView } from './prototypeViews';
@@ -171,6 +172,12 @@ export class MissionScene implements Scene {
     if (this.disposed) return;
     this.validateRadio();
     this.validateSnapshot();
+    for (const objective of definition.objectives)
+      if (
+        objective.kind === 'subdue' &&
+        this.snapshot.objectives[objective.neutralizeWith] !== 'done'
+      )
+        this.snapshot.objectives[objective.id] = 'pending';
     this.runtime = new LevelRuntime(
       this.level,
       this.snapshot.completedEncounters,
@@ -192,7 +199,11 @@ export class MissionScene implements Scene {
       implants: this.snapshot.implants,
       threatLevel: this.snapshot.threatLevel,
     };
-    const Room = this.level.payload ? PayloadMissionRoom : RoomScene;
+    const Room = this.level.payload
+      ? PayloadMissionRoom
+      : definition.objectives.some((o) => o.kind === 'subdue')
+        ? SubdueMissionRoom
+        : RoomScene;
     this.room = new Room(
       { ...this.level, doors: [] },
       combat,
@@ -223,6 +234,13 @@ export class MissionScene implements Scene {
         },
         reinforce: (_wave, key) => this.pendingReinforcements.add(key),
         missionSignal: (trigger) => {
+          if (
+            this.definition.objectives.some(
+              (o) =>
+                o.kind === 'subdue' && trigger === `objective:${o.id}:done`,
+            )
+          )
+            this.radio?.signal('boss:defeated');
           this.radio?.signal(trigger);
           if (trigger.endsWith(':done')) {
             this.persist();
@@ -241,13 +259,17 @@ export class MissionScene implements Scene {
     const checkpoint = this.currentCheckpoint();
     const objectives = this.room.objectiveModel()!;
     objectives.canComplete = (objective) =>
+      (!(this.room instanceof SubdueMissionRoom) ||
+        this.room.canCompleteCapture(objective)) &&
       this.runtime.satisfied(
         this.level.objectiveAfter?.[objective.id],
         objectives.objectives,
       );
     if (
       typeof document !== 'undefined' &&
-      definition.objectives.some((o) => o.kind === 'reach')
+      definition.objectives.some(
+        (o) => o.kind === 'reach' || o.kind === 'subdue',
+      )
     ) {
       this.chaseClock = document.createElement('output');
       this.chaseClock.dataset.chaseClock = '';
@@ -435,6 +457,12 @@ export class MissionScene implements Scene {
             y: encounter.spawnHeightM ?? position.y,
           });
           if (id !== null) enemies.add(id);
+          if (
+            id !== null &&
+            encounter.bossFor &&
+            this.room instanceof SubdueMissionRoom
+          )
+            this.room.bindCapture(id, encounter.bossFor);
           return id;
         },
         playerPosition: () => this.room!.playerSnapshot().position,
@@ -486,6 +514,15 @@ export class MissionScene implements Scene {
     this.snapshot.elapsedS += dt;
     this.room!.step(dt, input);
     if (this.room!.objectiveModel()?.failed) {
+      if (
+        this.definition.objectives.some(
+          (o) =>
+            o.kind === 'subdue' && o.id === this.room!.objectiveModel()!.failed,
+        )
+      ) {
+        this.failPayload();
+        return;
+      }
       this.state = 'respawning';
       this.deathTimer = this.ctx.tuning.level.respawnDelayS;
       return;
@@ -507,6 +544,21 @@ export class MissionScene implements Scene {
     this.pendingReinforcements.clear();
     for (const [id, entry] of this.active) {
       entry.director.step(dt);
+      const capture = this.definition.objectives.find(
+        (o) =>
+          o.kind === 'subdue' &&
+          this.level.encounters.find((e) => e.id === id)?.bossFor === o.id,
+      );
+      if (capture?.kind === 'subdue') {
+        if (this.objectives()[capture.neutralizeWith] !== 'done') continue;
+        entry.director.stop();
+        entry.director.dispose();
+        this.active.delete(id);
+        this.runtime.clear(id);
+        this.room!.allyDependencyDone('encounter', id);
+        this.radio?.signal(`encounter:${id}:done`);
+        continue;
+      }
       if (entry.director.currentPhase === 'done') {
         entry.director.dispose();
         this.active.delete(id);
@@ -705,14 +757,23 @@ export class MissionScene implements Scene {
       () => {
         if (this.state !== 'playing') return 'Misja nieaktywna.';
         for (const [id, entry] of this.active) {
+          if (
+            this.definition.objectives.some(
+              (o) =>
+                o.kind === 'subdue' &&
+                this.level.encounters.find((e) => e.id === id)?.bossFor ===
+                  o.id,
+            )
+          )
+            continue;
           entry.director.stop();
           entry.director.dispose();
           this.room!.removeEncounterEnemies([...entry.enemies]);
           this.runtime.clear(id);
           this.room!.allyDependencyDone('encounter', id);
           this.radio?.signal(`encounter:${id}:done`);
+          this.active.delete(id);
         }
-        this.active.clear();
         this.updateGates();
         return 'Spotkania ukończone.';
       },
@@ -789,6 +850,148 @@ export class MissionScene implements Scene {
     this.chaseClock?.remove();
     for (const view of this.objectiveNpcs) view.dispose();
     this.disposeSummary?.();
+  }
+}
+
+/** Adapter pojmania: zmiany dotyczą wyłącznie instancji celu w tej misji. */
+class SubdueMissionRoom extends RoomScene {
+  private captive?: {
+    enemy: Enemy;
+    health: Health;
+    objective: Extract<MissionObjective, { kind: 'subdue' }>;
+  };
+  private captureOff?: () => void;
+
+  canCompleteCapture(objective: MissionObjective): boolean {
+    if (objective.kind !== 'subdue') return true;
+    return (
+      this.captive?.objective.id === objective.id &&
+      !this.captive.health.dead &&
+      this.captive.health.current <=
+        this.captive.health.max * objective.hpFraction
+    );
+  }
+
+  bindCapture(id: EntityId, objectiveId: string): void {
+    const model = this.objectiveModel()!;
+    const objective = model.mission.objectives.find(
+      (o) => o.id === objectiveId,
+    );
+    if (objective?.kind !== 'subdue') return;
+    let target: Enemy | undefined;
+    this.manager.forEach((enemy) => {
+      if (enemy.id === id) target = enemy;
+    });
+    if (!target || target.definition.kind !== 'boss')
+      throw new Error('Subdue wymaga bossa.');
+    const enemy = target;
+    const health = this.damage.health(id)!;
+    this.captive = { enemy, health, objective };
+    const apply = health.apply.bind(health);
+    const step = enemy.step.bind(enemy);
+    const subdued = () => health.current <= health.max * objective.hpFraction;
+    // Limit po modyfikatorach; oryginalny BossHealth nadal pilnuje progów faz.
+    health.apply = (info) =>
+      apply({
+        amount: Math.min(
+          info.amount,
+          Math.max(0, health.current - health.max * objective.hpFraction),
+        ),
+      });
+    enemy.step = (dt) => {
+      if (!subdued() || health.dead) {
+        step(dt);
+        return;
+      }
+      Object.assign(enemy.previous, structuredClone(enemy.current));
+      enemy.current.state = 'stunned';
+      enemy.current.knockdown = {
+        x: Math.sin(enemy.current.yaw),
+        z: Math.cos(enemy.current.yaw),
+      };
+      enemy.current.attack = undefined;
+      enemy.current.field = undefined;
+      enemy.current.speed = 0;
+      enemy.current.stateTimeS += dt;
+    };
+    this.captureOff?.();
+    this.captureOff = this.ctx.bus.on('enemy_killed', (event) => {
+      if (event.id === id) model.failed = objective.id;
+    });
+    this.ctx.bus.emit('boss_spawned', {
+      id,
+      name: objective.targetName,
+      maxHealth: health.max,
+      phaseThresholds: enemy.definition
+        .boss!.phases.slice(1)
+        .map((p) => p.hpThreshold),
+    });
+  }
+
+  override step(dt: number, input: InputSnapshot): void {
+    const captive = this.captive;
+    const model = this.objectiveModel()!;
+    if (captive && !captive.enemy.removed) {
+      const { enemy, health, objective } = captive;
+      if (health.dead) model.failed = objective.id;
+      else if (
+        this.canCompleteCapture(objective) &&
+        model.objectives[objective.id] !== 'done'
+      ) {
+        const interaction = model.mission.objectives.find(
+          (o) => o.id === objective.neutralizeWith,
+        )!;
+        if (interaction.kind === 'interact')
+          interaction.position = {
+            ...enemy.current.position,
+            y:
+              enemy.current.position.y -
+              enemy.definition.body!.controllerOffset,
+          };
+        model.done(objective.id);
+      }
+    }
+    super.step(dt, input);
+  }
+
+  override resetLevelCombat(position: Vec3, yawDeg: number): void {
+    this.captureOff?.();
+    this.captive = undefined;
+    const model = this.objectiveModel();
+    for (const objective of model?.mission.objectives ?? [])
+      if (
+        objective.kind === 'subdue' &&
+        model!.objectives[objective.neutralizeWith] !== 'done'
+      ) {
+        model!.objectives[objective.id] = 'pending';
+        model!.progress[objective.id] = 0;
+        model!.progress[objective.neutralizeWith] = 0;
+      }
+    super.resetLevelCombat(position, yawDeg);
+  }
+
+  override query(name: string): unknown {
+    if (name === 'subdue') {
+      const c = this.captive;
+      return c
+        ? {
+            id: c.enemy.id,
+            hp: c.health.current,
+            maxHp: c.health.max,
+            subdued: this.canCompleteCapture(c.objective),
+            position: { ...c.enemy.current.position },
+            captured:
+              this.objectiveModel()!.objectives[c.objective.neutralizeWith] ===
+              'done',
+          }
+        : null;
+    }
+    return super.query(name);
+  }
+
+  override dispose(): void {
+    this.captureOff?.();
+    super.dispose();
   }
 }
 

@@ -100,6 +100,26 @@ export class MissionObjectives {
   step(dt: number, player: Vec3): void {
     if (!Number.isFinite(dt) || dt <= 0 || this.failed !== null) return;
     for (const objective of this.mission.objectives) {
+      if (
+        objective.kind !== 'subdue' ||
+        !this.ids.includes(objective.id) ||
+        this.objectives[objective.id] !== 'done'
+      )
+        continue;
+      if (this.objectives[objective.neutralizeWith] === 'done') {
+        delete this.remainingS[objective.id];
+        continue;
+      }
+      this.remainingS[objective.id] = Math.max(
+        0,
+        (this.remainingS[objective.id] ?? objective.timeLimitS) - dt,
+      );
+      if (this.remainingS[objective.id]! <= 1e-9) {
+        this.failed = objective.id;
+        return;
+      }
+    }
+    for (const objective of this.mission.objectives) {
       const { id } = objective;
       if (
         !this.ids.includes(id) ||
@@ -160,7 +180,11 @@ export class MissionObjectives {
         this.done(id);
         continue;
       }
-      if (objective.kind === 'killBoss' || objective.kind === 'escortPayload')
+      if (
+        objective.kind === 'killBoss' ||
+        objective.kind === 'escortPayload' ||
+        objective.kind === 'subdue'
+      )
         continue;
       const duration = objective.holdS;
       this.progress[id] = Math.min(1, (this.progress[id] ?? 0) + dt / duration);
