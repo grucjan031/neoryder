@@ -119,3 +119,13 @@ Zasada: zadania spoza bieżącej fazy trafiają tutaj, nie do kodu. Przegląd na
 | --- | --- |
 | NPC ruchu oporu w kryjówce, dialogi | F5 |
 | Automatyczny wzrost Poziomu zagrożenia z poziomem postaci | Odrzucone w ADR 0007; wrócić, jeśli playtest F4 pokaże, że gra robi się za łatwa |
+
+## Playtest 2026-11-23
+
+| Pomysł | Dlaczego odłożone |
+| --- | --- |
+| Mapy misji i aren za duże na liczbę wrogów: wskaźnik położenia ostatnich wrogów (znacznik / kierunek na HUD) i audyt wszystkich map (które się nadają, które poprawić) | Bierze Gracjan |
+| Drzewko wyboru ścieżki w runie: punkty (węzły) za małe, trudno trafić i odczytać | Interfejs: uzgodnić z Gracjanem (audyt UI) |
+| Zupa u kucharza w kryjówce: dziś miska jedzie do gracza i wraca pełna. Docelowo kamera z 3. osoby, postać podnosi miskę i je, zawartość znika, odsuwa pustą, kucharz ją zabiera i wystawia nową; miska ma wyglądać jak ramen / noodle (makaron, pałeczki), nie jak zupa | Wymaga modelu postaci gracza w 3. osobie i animacji |
+| Głaskanie kota: kamera odjeżdża do 3. osoby i widać postać gracza | Jak wyżej, wspólna kamera 3. osoby dla interakcji |
+| Skok przy obiektach blokuje gracza „od góry” (dziwne zatrzymanie, jakby uderzenie w sufit) | Fizyka ruchu, sprawdzić z Gracjanem (jego obszar) |
