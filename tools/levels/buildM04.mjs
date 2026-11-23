@@ -69,7 +69,7 @@ const level = {
 const B = (...args) => level.blocks.push(block(...args));
 const decor = (model, x, z, yaw = 0, y = 0) =>
   level.decor.push({ model, position: v(x, y, z), yaw });
-const light = (x, y, z, color, intensity = 18, range = 15) =>
+const light = (x, y, z, color, intensity = 32, range = 24) =>
   level.lights.push({ position: v(x, y, z), color, intensity, range });
 const sections = [
   ['nastawnia', 'Nastawnia rozrządowa', 0, 56, 20],
@@ -105,7 +105,7 @@ for (const [id, name, from, to, width] of sections) {
       size: v(length, 6, width),
     });
     for (let x = from + 4; x < from + length; x += 8)
-      light(x, 5.5, 0, '#fff1d6', 28, 12);
+      light(x, 5.5, 0, '#fff1d6', 44, 20);
   }
 }
 B(-1, 5, 0, 2, 10, 24, 'concrete');
@@ -117,11 +117,11 @@ for (let x = 2; x < 260; x += 4) {
 }
 for (const x of [36, 62, 104, 156, 178, 220]) {
   decor('rail_signal_gantry', x, 0);
-  light(x, 5, 0, '#ffae1a', 14, 12);
+  light(x, 5, 0, '#ffae1a', 24, 20);
 }
 for (const x of [88, 146]) {
   decor('city_generator', x, -7);
-  light(x, 2, -6, '#6dff4a', 8, 8);
+  light(x, 2, -6, '#6dff4a', 14, 14);
   // Odgałęzienie bocznicy: tylko dekoracyjna geometria poza torem głównym.
   for (const z of [5.5, 7.7]) B(x + 5, 0.07, z, 20, 0.08, 0.12, 'metal');
 }
@@ -135,13 +135,13 @@ for (const x of [30, 114, 170, 208]) {
     surface: 'floor',
     yaw: 0,
   });
-  light(x, 6, -9, '#3d7bff', 10, 12);
+  light(x, 6, -9, '#3d7bff', 20, 20);
 }
 // Rytm lamp i oznakowania prowadzi eskortę; wyłącznie oprawa bez colliderów.
 for (let x = 8, index = 0; x < 260; x += 14, index++) {
   const side = index % 2 === 0 ? -1 : 1;
   decor('city_street_lamp', x, side * 5.8, side > 0 ? Math.PI : 0);
-  light(x, 4.5, side * 3, index % 3 === 0 ? '#ffae1a' : '#fff1d6', 36, 18);
+  light(x, 4.5, side * 3, index % 3 === 0 ? '#ffae1a' : '#fff1d6', 52, 26);
   for (const z of [-2.2, 2.2])
     level.decals.push({
       texture: 'floor_hazard',
@@ -152,10 +152,10 @@ for (let x = 8, index = 0; x < 260; x += 14, index++) {
     });
 }
 for (const position of Object.values(level.objectivePositions))
-  light(position.x, 3.5, position.z, '#fff1d6', 26, 12);
+  light(position.x, 3.5, position.z, '#fff1d6', 42, 18);
 for (const stop of level.payload.stops) {
   const x = 12 + stop.atM;
-  light(x, 3, -3, stop.id.startsWith('switch') ? '#6dff4a' : '#ffae1a', 20, 12);
+  light(x, 3, -3, stop.id.startsWith('switch') ? '#6dff4a' : '#ffae1a', 34, 18);
   level.decals.push({
     texture: 'floor_stop',
     position: v(x - 2, 0.012, 0),
@@ -172,10 +172,28 @@ for (const [index, [, , from, to, width]] of sections.entries()) {
       kind: 'neon',
       texture: side < 0 ? 'arrow' : index % 2 === 0 ? 'warsztat' : 'repair',
       position: v(x, 4.2, side * (wall - 0.15)),
-      size: { w: side < 0 ? 2 : 4, h: 1.5 },
+      size: { w: side < 0 ? 2.4 : 6, h: side < 0 ? 1.6 : 2.4 },
       yaw: side < 0 ? 0 : Math.PI,
       tint: side < 0 ? '#6dff4a' : '#ffae1a',
     });
+    if (index < sections.length - 1) {
+      // Emisyjne tło hal czytelne z toru, bez dodatkowych świateł punktowych.
+      level.signs.push({
+        kind: 'neon',
+        texture: side < 0 ? 'iskra' : 'metro',
+        position: v(from + (to - from) * 0.6, 7, side * (wall - 0.15)),
+        size: { w: 8, h: 2.4 },
+        yaw: side < 0 ? 0 : Math.PI,
+        tint: side < 0 ? '#fff1d6' : '#3d7bff',
+      });
+      decor(
+        'city_ad_screen',
+        from + (to - from) * 0.25,
+        side * (wall - 0.2),
+        side < 0 ? 0 : Math.PI,
+        3.2,
+      );
+    }
   }
   decor('city_cable_span', x - 4, -wall + 0.2, 0, 5);
   decor('city_ad_screen', x + 3, -wall + 0.5);
