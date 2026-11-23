@@ -41,6 +41,20 @@ export const levelSchema = z
   .extend({
     objectiveOrder: z.array(id).min(1),
     objectivePositions: z.record(id, vec3Schema),
+    /** Dodatkowy warunek celu, np. osłona musi zginąć przed zabraniem karty. */
+    objectiveAfter: z
+      .record(id, z.object({ kind: z.literal('encounter'), id }))
+      .optional(),
+    /** Neutralna postać przy celu: bez AI walki, hurtboxa i slotu drużyny. */
+    objectiveNpcs: z
+      .array(
+        z.object({
+          objective: id,
+          spawn: vec3Schema,
+          yawDeg: z.number().finite(),
+        }),
+      )
+      .optional(),
     payload: z
       .object({
         objective: id,
@@ -66,6 +80,7 @@ export const levelSchema = z
         zone: levelZoneSchema,
         wave: id,
         spawnPoints: wavesSchema.shape.spawnPoints,
+        spawnHeightM: z.number().finite().optional(),
         after: dependency.optional(),
         reinforcementFor: id.optional(),
         /** Spotkanie z bossem: jego ukończenie kończy wskazany cel `killBoss`. */
@@ -139,6 +154,18 @@ export const levelSchema = z
           code: 'custom',
           path: ['allies'],
           message: `Nieznana zależność sojusznika: ${ally.joinAfter.id}`,
+        });
+    for (const [objective, after] of Object.entries(level.objectiveAfter ?? {}))
+      if (!level.objectiveOrder.includes(objective) || !known(after))
+        ctx.addIssue({
+          code: 'custom',
+          message: `Nieznana zależność celu: ${objective}`,
+        });
+    for (const npc of level.objectiveNpcs ?? [])
+      if (!level.objectiveOrder.includes(npc.objective))
+        ctx.addIssue({
+          code: 'custom',
+          message: `Nieznany cel postaci: ${npc.objective}`,
         });
     for (const gate of level.gates)
       if (
@@ -297,6 +324,7 @@ export function loadLevel(
       ...level.checkpoints.map((point) => point.position),
       ...level.encounters.flatMap((encounter) => encounter.spawnPoints),
       ...(level.allies ?? []).map((ally) => ally.spawn),
+      ...(level.objectiveNpcs ?? []).map((npc) => npc.spawn),
       ...(level.payload?.route ?? []),
     ],
   });

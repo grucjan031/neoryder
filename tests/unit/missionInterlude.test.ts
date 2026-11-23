@@ -49,7 +49,7 @@ const expected = [
       },
       {
         speaker: 'szron',
-        text: 'Brandt w odpowiedzi zamknął Huty. Kontakt Nadii zatrzymał konwój jego adiutantki, porucznik Wirskiej. Oddała kartę do sieci ochrony bez walki.',
+        text: 'Brandt w odpowiedzi zamknął Huty. Kurier dogonił jego adiutantkę, porucznik Wirską, na lądowisku. Po rozbiciu eskorty przejął od niej kartę do sieci ochrony.',
       },
       {
         speaker: 'bajt',
@@ -86,13 +86,14 @@ it.each([
   ).toBe(false);
 });
 
-it('po M01–M03 misje liniowe M03 i M06 są dostępne z przerywnikiem, M01 ma odprawę', () => {
+it('po M01–M05 misje liniowe M03 i M06 są dostępne z przerywnikiem, M01 ma odprawę', () => {
   const state = createStarterMetaState();
   state.campaign.completed = [
     'm01-maszty',
     'm02-punkt-kontrolny',
     'm03-list-przewozowy',
     'm04-ladunek-klasy-k',
+    'm05-adiutant',
   ];
   const original = HTMLElement.prototype.scrollIntoView;
   HTMLElement.prototype.scrollIntoView = vi.fn();

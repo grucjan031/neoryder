@@ -165,7 +165,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
   expect(errors).toEqual([]);
 });
 
-test('tablica: odprawa M01 otwiera scenę mission, M02 czeka na M01, M03 na M02, M06 na M04', async ({
+test('tablica: odprawa M01 otwiera scenę mission, kolejne misje czekają na poprzednie', async ({
   page,
 }) => {
   test.setTimeout(3 * LOAD_TIMEOUT);
@@ -180,6 +180,7 @@ test('tablica: odprawa M01 otwiera scenę mission, M02 czeka na M01, M03 na M02,
     ['m02-punkt-kontrolny', 'Zablokowana'],
     ['m03-list-przewozowy', 'Zablokowana'],
     ['m04-ladunek-klasy-k', 'Zablokowana'],
+    ['m05-adiutant', 'Zablokowana'],
   ] as const) {
     const choice = page.locator(`[data-mission="${id}"]`);
     await expect(choice).toBeDisabled();

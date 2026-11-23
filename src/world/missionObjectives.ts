@@ -14,6 +14,10 @@ export class MissionObjectives {
   readonly progress: Record<string, number>;
   readonly fuses: Record<string, number> = {};
   readonly paused: Record<string, boolean> = {};
+  readonly remainingS: Record<string, number> = {};
+  failed: string | null = null;
+  /** Host może blokować ukończenie (np. osłoną), zachowując widoczny kierunek celu. */
+  canComplete: (objective: MissionObjective) => boolean = () => true;
   private readonly pauseAnnounced = new Set<string>();
   private readonly started = new Set<string>();
   constructor(
@@ -76,6 +80,8 @@ export class MissionObjectives {
     const objective = this.mission.objectives.find((o) => o.id === id);
     if (
       !objective ||
+      this.failed !== null ||
+      !this.canComplete(objective) ||
       !this.ids.includes(id) ||
       this.objectives[id] === 'done' ||
       !this.unlocked(objective)
@@ -84,6 +90,7 @@ export class MissionObjectives {
     this.objectives[id] = 'done';
     this.progress[id] = 1;
     delete this.fuses[id];
+    delete this.remainingS[id];
     if (objective.kind === 'sabotage') this.hooks.explode(objective);
     this.hooks.signal(`objective:${id}:done`);
     if (this.mission.objectives.every((o) => this.objectives[o.id] === 'done'))
@@ -91,7 +98,7 @@ export class MissionObjectives {
     return true;
   }
   step(dt: number, player: Vec3): void {
-    if (!Number.isFinite(dt) || dt <= 0) return;
+    if (!Number.isFinite(dt) || dt <= 0 || this.failed !== null) return;
     for (const objective of this.mission.objectives) {
       const { id } = objective;
       if (
@@ -100,6 +107,29 @@ export class MissionObjectives {
         !this.unlocked(objective)
       )
         continue;
+      if (objective.kind === 'reach') {
+        const remaining = this.remainingS[id] ?? objective.timeLimitS;
+        if (!this.started.has(id)) {
+          this.started.add(id);
+          this.hooks.signal(`objective:${id}:started`);
+        }
+        this.remainingS[id] = Math.max(0, remaining - dt);
+        // Upływ limitu ma pierwszeństwo przed dotarciem w tym samym kroku.
+        if (this.remainingS[id]! <= 1e-9) {
+          this.failed = id;
+          return;
+        }
+        if (
+          Math.hypot(
+            player.x - objective.position.x,
+            player.z - objective.position.z,
+          ) <= objective.radiusM &&
+          Math.abs(player.y - objective.position.y) <= objective.radiusM
+        )
+          this.done(id);
+        // Następny odcinek rozpocznie się w kolejnym kroku symulacji.
+        return;
+      }
       const fuse = this.fuses[id];
       if (fuse !== undefined) {
         this.fuses[id] = Math.max(0, fuse - dt);
@@ -139,6 +169,17 @@ export class MissionObjectives {
       if (objective.kind === 'sabotage') this.fuses[id] = objective.fuseS;
       else this.done(id);
     }
+  }
+
+  resetTimers(): void {
+    this.failed = null;
+    for (const id of Object.keys(this.remainingS)) delete this.remainingS[id];
+    for (const objective of this.mission.objectives)
+      if (
+        objective.kind === 'reach' &&
+        this.objectives[objective.id] !== 'done'
+      )
+        this.started.delete(objective.id);
   }
 
   private stepDefend(

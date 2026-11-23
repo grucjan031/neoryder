@@ -77,7 +77,7 @@ Kryjówka czyta rekord i na tablicy oferuje „Kontynuuj misję”. Start zamra�
 wyposażenie warsztatu i talenty meta; obecny metazapis nie ma slotów implantów,
 więc początkowa lista implantów jest pusta, tak jak na starcie zwykłego runu.
 M03 i M06 są poziomami liniowymi (`level`, opis w `levels.md`) i startują z tablicy
-w scenie `mission`: M03 po ukończeniu M02, M06 po ukończeniu M03.
+w scenie `mission`: M03 po ukończeniu M02, M06 po ukończeniu M05.
 Zwykły run i Przejęcie zachowują przepływ.
 
 Migracja 5→6 zachowuje meta i aktywny run bez zmian; rekord misji jest początkowo
@@ -120,7 +120,7 @@ Wybuch (`sabotage`): zdarzenie `explosion` w punkcie celu (+0,5 m w górę) i ob
 
 **Tuning:** `tuning.mission`: `zoneRadiusM` 1,6, `pickupRadiusM` 1, `radioMinS` 3, `radioCharsPerS` 16 (tempo czytania dla radia i auto), `radioPageChars` 90, `radioCalmDelayS` 1,5, `radioStoryMaxWaitS` 20, `radioStoryReadFraction` 0,6, `dialoguePageChars` 150, `dialogueCharsPerS` 60, `dialogueAutoMinS` 2, `mastPulseHz` 0,5, `mastFusePulseHz` 2, `mastEmissionMin` 1,5, `mastEmissionMax` 4. `tuning.level`: `maxAlive` 12, `staticCellSizeM` 24, `respawnDelayS` 1,2.
 
-**Dane misji:** `m01-maszty` (nr 1, akt 1, `level: m01-maszty`, bez `requires`, firstClear 60 Danych; wrogowie `assaulter`, `gunner`, `turret`), `m02-punkt-kontrolny` (nr 2, wymaga M01, firstClear 80 Danych + 1 Rdzeń; debiut `executor`), `m03-list-przewozowy` (nr 3, wymaga M02, firstClear 95 Danych + 1 Rdzeń, `splashAct` 1; dodatkowo `shielder`, `drone`), `m06-odlewnia` (nr 6, `level: m06-odlewnia`, wymaga M03, 150 Danych + 3 Rdzenie, `splashAct` 2; wrogów określają fale poziomu, w tym `sniper`, `executor` i boss `securityChief`). Wszystkie mają 7 warstw.
+**Dane misji:** `m01-maszty` (nr 1, akt 1, `level: m01-maszty`, bez `requires`, firstClear 60 Danych; wrogowie `assaulter`, `gunner`, `turret`), `m02-punkt-kontrolny` (nr 2, wymaga M01, firstClear 80 Danych + 1 Rdzeń; debiut `executor`), `m03-list-przewozowy` (nr 3, wymaga M02, firstClear 95 Danych + 1 Rdzeń, `splashAct` 1; dodatkowo `shielder`, `drone`), `m06-odlewnia` (nr 6, `level: m06-odlewnia`, wymaga M05, 150 Danych + 3 Rdzenie, `splashAct` 2; wrogów określają fale poziomu, w tym `sniper`, `executor` i boss `securityChief`). Wszystkie mają 7 warstw.
 
 ## M02 — uwolnienie kurierów
 
@@ -166,7 +166,7 @@ Opcjonalne `defend.waves: { atProgress: number; wave: string }[]` uruchamia posi
 
 M03: podłączenie 2 s, transfer 90 s, promień 6 m, fale przy 25/55/85%, radio w połowie i przy 90%. Brama po przeciwnej stronie od wejścia wymaga 2 s. Pierwsze ukończenie: 95 Danych i 1 Rdzeń. `campaign complete <id>` jest komendą debug: oznacza ukończenie bez nagród i debriefu, zapisuje kampanię. Od wersji liniowej M03 ma `level: m03-list-przewozowy` (mapa i przebieg: `docs/systems/levels.md`, sekcja „M03”); pola `typeWeights` i `roomPools` usunięto, `layers` i `fixedNodes` zostają, bo wymaga ich schemat misji (jak w M01). Fale transferu startują jako spotkania poziomu z `reinforcementFor: terminal:<indeks>`. Sprawdzenie: `?scene=mission&mission=m03-list-przewozowy&debug=1` po ukończeniu M01 i M02 (`campaign complete m01-maszty`, `campaign complete m02-punkt-kontrolny` w `?scene=run&debug=1`), `objective done terminal`, następnie `objective done exit`.
 
-M06 „Odlewnia” wymaga M04 i jest poziomem liniowym (`levels.md`, sekcja „M06 — Odlewnia”); wariant runowy został usunięty. Z pól runu zostały tylko te, których wymaga schemat: `layers: 7` i jeden węzeł finałowy (warstwa 7, `bossRoom`) z celami `brandt`, `server`, `exit`; `typeWeights`, `roomPools`, `enemies` i osłony węzłów zniknęły. Pozycje celów w danych misji są zastępowane przez `objectivePositions` poziomu. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Kwestie zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów; odprawa ma trzy z nich, reszta pada w radiu. Radio `enterNode:3|6|7` wyzwalają odcinki poziomu (hala formowania, przedpokój, arena).
+M06 „Odlewnia” wymaga M05 i jest poziomem liniowym (`levels.md`, sekcja „M06 — Odlewnia”); wariant runowy został usunięty. Z pól runu zostały tylko te, których wymaga schemat: `layers: 7` i jeden węzeł finałowy (warstwa 7, `bossRoom`) z celami `brandt`, `server`, `exit`; `typeWeights`, `roomPools`, `enemies` i osłony węzłów zniknęły. Pozycje celów w danych misji są zastępowane przez `objectivePositions` poziomu. Pierwsze ukończenie: 150 Danych i 3 Rdzenie, splashAct 2. Kwestie zachowują tekst źródłowy, także odniesienia do pominiętych misji i opcjonalnych celów; odprawa ma trzy z nich, reszta pada w radiu. Radio `enterNode:3|6|7` wyzwalają odcinki poziomu (hala formowania, przedpokój, arena).
 
 Opcjonalne `interlude: { title, lines: DialogueLine[] }` wyświetla się przed odprawą M03 i M06: przerywnik zastępuje wydarzenia misji, których nie ma w grze; usuwamy go, gdy brakująca misja powstanie.
 
@@ -176,9 +176,9 @@ Host przekazuje istniejące zdarzenia `boss_phase` do `boss:phase:2` i `boss:pha
 
 Powyższy akapit opisuje pokój bossa w runie (`bossRoom`, `layout.bossEnemy`). W poziomie liniowym M06 boss jest wrogiem spotkania `bossFor`: fazy do radia przekazuje `MissionScene`, a `boss:defeated` i ukończenie `killBoss` następują z ukończeniem spotkania (szczegóły w `levels.md`).
 
-Sprawdzenie M06: `?scene=mission&mission=m06-odlewnia&debug=1` po ukończeniu M04 (adres `?scene=run&mission=m06-odlewnia` przekierowuje do sceny `mission`); kroki w `levels.md`, sekcja „M06 — Odlewnia”. Cele opcjonalne i zegar dostrojenia pozostają poza zakresem; balans bossa jest niezmieniony.
+Sprawdzenie M06: `?scene=mission&mission=m06-odlewnia&debug=1` po ukończeniu M05 (adres `?scene=run&mission=m06-odlewnia` przekierowuje do sceny `mission`); kroki w `levels.md`, sekcja „M06 — Odlewnia”. Cele opcjonalne i zegar dostrojenia pozostają poza zakresem; balans bossa jest niezmieniony.
 
-M04 „Ładunek klasy K” wymaga M03 i odblokowuje M06. Ma liniowy poziom bocznic Hut,
+M04 „Ładunek klasy K” wymaga M03 i odblokowuje M05. Ma liniowy poziom bocznic Hut,
 Szrona od początku, trzy krótkie kwestie odprawy i sześć debriefu. Scenariusz nie ma
 osobnego interludium. Radio to wyzwalacze startu, sekcji, interakcji i spotkań;
 odkrycie K-112 z pytaniem Idy następuje po pokonaniu oddziału Egzekutora.
@@ -188,4 +188,31 @@ i usuwa wózki. Potem `killBoss` (Egzekutor), nowy `escortPayload` i osobny `exi
 po statusie `RailPayload.arrived`. Zniszczenie wagonu kończy próbę bez nagród.
 Pierwsze ukończenie daje 110 Danych i 1 Rdzeń. Szczegóły checkpointów i trasy:
 `levels.md`, sekcja M04. Opcjonalne premie scenariusza, zmiany wystroju kryjówki
-i przerywnik M06 (obejmuje też pominiętą M05) pozostają poza zakresem tej zmiany.
+pozostają poza zakresem M04. Po dodaniu M05 przerywnik M06 opisuje kartę zdobytą przez Kuriera po rozbiciu eskorty Wirskiej.
+
+## M05 — Adiutant
+
+Kolejność kampanii: M04 → M05 → M06. M05 to pościg solo po dachach i estakadach
+Hut; trzy kwestie odprawy, radio na starcie, w sekcjach, spotkaniach i celach,
+sześć kwestii debriefu, bez interludium. Pierwsze ukończenie: 115 Danych i 1 Rdzeń.
+Karta jest dostępna dopiero po snajperach i eskorcie, Wirska nie jest celem walki.
+Jej wypowiedzi są oznaczonymi cytatami przekazywanymi przez Bajta (bez rozszerzania
+listy podpisów UI). M06 wymaga M05; jego przerywnik potwierdza zdobycie karty
+przez gracza, pozostała treść M06 pozostaje bez zmian.
+
+Nowy cel `reach`: `position`, `radiusM`, `timeLimitS` (dodatnie liczby).
+Dozwolony tylko z liniowym `level`. Odlicza od pierwszego kroku po odblokowaniu,
+także poza strefą; dotarcie kończy go automatycznie. Limity M05: 95/110/90 s.
+Nowy odcinek rusza w kolejnym kroku, limit ma pierwszeństwo przy jednoczesnym
+dotarciu i upływie czasu. Pauza gry nie zużywa czasu. HUD pokazuje pozostałe sekundy.
+`MissionObjectives.remainingS` i `failed` opisują czas oraz nieudany cel;
+`resetTimers()` zeruje porażkę i odliczanie nieukończonych odcinków.
+Scena uruchamia istniejące `respawning` i odradza na checkpoincie z pełnym
+limitem bieżącego celu. Ukończone cele zostają. Wznowienie zapisu również rozpoczyna
+bieżący odcinek od pełnego limitu; nie zmieniono formatu zapisu.
+`query('mission')` udostępnia `chaseRemainingS` i `failedObjective`.
+
+Nie wdrożono opcjonalnych premii za skróty i walizkę ani nagrody warsztatowej,
+zmian wystroju kryjówki czy animowanego konwoju. Śmierć używa standardowego
+checkpointu misji liniowej; różni się to od runowej porażki w scenariuszu.
+Mapa i sprawdzenie w 30 sekund: `levels.md`, sekcja M05.

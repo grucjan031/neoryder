@@ -4,7 +4,7 @@ import type { Vec3 } from '../core/math';
 import { Health } from '../combat/damage';
 import { CollisionGroup, interactionGroups } from '../physics';
 import { RailPayload } from '../world/railPayload';
-import { PayloadView } from './prototypeViews';
+import { PayloadView, EscortNpcView } from './prototypeViews';
 import { lerpPose } from './prototypeScene';
 import { PrototypeHud } from '../ui/prototypeHud';
 import prototypeText from '../data/ui/prototypes.pl.json';
@@ -86,6 +86,8 @@ export class MissionScene implements Scene {
   private readonly pendingReinforcements = new Set<string>();
   private disposeSummary?: () => void;
   private directed?: MissionObjectives;
+  private chaseClock?: HTMLOutputElement;
+  private readonly objectiveNpcs: EscortNpcView[] = [];
 
   constructor(private readonly options: MissionSceneOptions = {}) {
     this.store = options.store ?? createIndexedDbSaveStore();
@@ -237,7 +239,38 @@ export class MissionScene implements Scene {
       return;
     }
     const checkpoint = this.currentCheckpoint();
+    const objectives = this.room.objectiveModel()!;
+    objectives.canComplete = (objective) =>
+      this.runtime.satisfied(
+        this.level.objectiveAfter?.[objective.id],
+        objectives.objectives,
+      );
+    if (
+      typeof document !== 'undefined' &&
+      definition.objectives.some((o) => o.kind === 'reach')
+    ) {
+      this.chaseClock = document.createElement('output');
+      this.chaseClock.dataset.chaseClock = '';
+      document.querySelector('.mission-hud')?.append(this.chaseClock);
+    }
     this.room.resetLevelCombat(checkpoint.position, checkpoint.yawDeg);
+    for (const npc of this.level.objectiveNpcs ?? []) {
+      const t = ctx.tuning.player;
+      const view = new EscortNpcView(
+        ctx.tuning,
+        t.capsuleHeight,
+        t.capsuleRadius,
+      );
+      three.add(view.root);
+      this.objectiveNpcs.push(view);
+      view.update(
+        { position: npc.spawn, yaw: (npc.yawDeg * Math.PI) / 180 },
+        'waiting',
+        'idle',
+        0,
+      );
+      if (this.options.loadModels ?? true) void view.load();
+    }
     if (this.room instanceof PayloadMissionRoom) {
       this.payloadRoom = this.room;
       this.payloadRoom.initPayload(
@@ -393,7 +426,10 @@ export class MissionScene implements Scene {
       definition,
       {
         spawn: (enemy, position) => {
-          const id = this.room!.spawnEncounterEnemy(enemy, position);
+          const id = this.room!.spawnEncounterEnemy(enemy, {
+            ...position,
+            y: encounter.spawnHeightM ?? position.y,
+          });
           if (id !== null) enemies.add(id);
           return id;
         },
@@ -426,6 +462,7 @@ export class MissionScene implements Scene {
     );
     const point = this.currentCheckpoint();
     this.room!.resetLevelCombat(point.position, point.yawDeg);
+    this.room!.objectiveModel()?.resetTimers();
     this.payloadRoom?.restorePayload(point.payloadDistanceM!);
     this.state = 'playing';
     this.updateGates();
@@ -444,6 +481,11 @@ export class MissionScene implements Scene {
     if (this.state !== 'playing') return;
     this.snapshot.elapsedS += dt;
     this.room!.step(dt, input);
+    if (this.room!.objectiveModel()?.failed) {
+      this.state = 'respawning';
+      this.deathTimer = this.ctx.tuning.level.respawnDelayS;
+      return;
+    }
     if (this.payloadRoom?.payload.status === 'destroyed') {
       this.failPayload();
       return;
@@ -509,8 +551,24 @@ export class MissionScene implements Scene {
   render(alpha: number, frameDt?: number): void {
     if (!this.ready || this.disposed) return;
     this.room?.render(alpha, frameDt);
+    this.objectiveNpcs.forEach((view, index) => {
+      const npc = this.level.objectiveNpcs![index]!;
+      view.update(
+        { position: npc.spawn, yaw: (npc.yawDeg * Math.PI) / 180 },
+        'waiting',
+        'idle',
+        frameDt ?? 0,
+      );
+    });
     this.direction?.setStatus(this.state, this.saveError);
     const model = this.room?.objectiveModel();
+    if (model && this.chaseClock) {
+      const current = Object.entries(model.remainingS)[0];
+      this.chaseClock.hidden = !current;
+      this.chaseClock.textContent = current
+        ? `${model.mission.objectives.find((o) => o.id === current[0])!.label} · ${Math.ceil(current[1])} s`
+        : '';
+    }
     if (model)
       this.direction?.update(
         this.directionModel(model),
@@ -707,6 +765,8 @@ export class MissionScene implements Scene {
             activeEncounters: [...this.runtime.active],
             openGates: this.runtime.openGates(this.objectives()),
             elapsedS: this.snapshot.elapsedS,
+            chaseRemainingS: this.room?.objectiveModel()?.remainingS ?? {},
+            failedObjective: this.room?.objectiveModel()?.failed ?? null,
             saveError: this.saveError,
           })
         : null;
@@ -722,6 +782,8 @@ export class MissionScene implements Scene {
     this.room?.dispose();
     this.radio?.dispose();
     this.direction?.dispose();
+    this.chaseClock?.remove();
+    for (const view of this.objectiveNpcs) view.dispose();
     this.disposeSummary?.();
   }
 }

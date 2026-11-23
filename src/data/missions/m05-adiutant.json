@@ -1,0 +1,243 @@
+{
+  "id": "m05-adiutant",
+  "number": 5,
+  "title": "Adiutant",
+  "act": 1,
+  "sectorId": "kurogane",
+  "level": "m05-adiutant",
+  "requires": ["m04-ladunek-klasy-k"],
+  "summary": "Ścigaj konwój Hanny Wirskiej po dachach Hut. Omiń grodzie, pokonaj snajperów i eskortę, przejmij kartę do sieci ochrony Brandta i zniknij szybem technicznym.",
+  "layers": 7,
+  "enemies": ["assaulter", "gunner", "turret", "shielder", "drone", "sniper"],
+  "fixedNodes": [
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatPlatforms",
+      "objectives": ["estakada", "suwnice", "ladowisko", "karta", "exit"],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "estakada",
+      "kind": "reach",
+      "label": "Dogoń konwój za estakadą",
+      "position": { "x": 92, "y": 0, "z": 0 },
+      "radiusM": 2,
+      "timeLimitS": 95
+    },
+    {
+      "id": "suwnice",
+      "kind": "reach",
+      "label": "Przetnij drogę przez suwnice",
+      "position": { "x": 180, "y": 0, "z": 0 },
+      "radiusM": 2,
+      "timeLimitS": 110
+    },
+    {
+      "id": "ladowisko",
+      "kind": "reach",
+      "label": "Dotrzyj na lądowisko przed transportem",
+      "position": { "x": 206, "y": 0, "z": 0 },
+      "radiusM": 2,
+      "timeLimitS": 90
+    },
+    {
+      "id": "karta",
+      "kind": "pickup",
+      "label": "Pokonaj osłonę i przejmij kartę Wirskiej",
+      "spawnAfter": "ladowisko",
+      "offset": { "x": 34, "y": 0, "z": 0 }
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Zniknij szybem za kominami",
+      "position": { "x": 248, "y": 0, "z": -7 },
+      "holdS": 2,
+      "unlockAfter": ["karta"]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "bajt",
+      "text": "Brandt odciął sieć Hut. Jego adiutantka, Hanna Wirska, wiezie fizyczną kartę na lądowisko."
+    },
+    {
+      "speaker": "mira",
+      "text": "Idź dachami. Nad grodziami są rury, pod boczną roletą zmieścisz się ślizgiem."
+    },
+    {
+      "speaker": "szron",
+      "text": "Wytnij eskortę, nie Wirską. Potrzebujemy jej karty w całości."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "bajt",
+      "text": "Karta jest czysta, zero zdalnego czyszczenia. Mamy klucz do wejścia serwisowego pod odlewnią i do sieci ochrony Brandta."
+    },
+    {
+      "speaker": "mira",
+      "text": "Akt zgonu, Szron. Przez tydzień mówiłeś o Brandcie, jakbyś znał go z gazety."
+    },
+    { "speaker": "szron", "text": "Służyłem pod nim. Dziewięć lat temu." },
+    {
+      "speaker": "szron",
+      "text": "Przy jednym zaworze stał chłopak z kluczem w rękach. Miał może szesnaście lat. Za godzinę Wirska złoży meldunek i Brandt będzie wiedział wszystko. Nie czekamy do jutra."
+    },
+    {
+      "speaker": "mira",
+      "text": "Odlewnia pracuje całą noc. Hałas pieców przykryje wejście."
+    },
+    {
+      "speaker": "szron",
+      "text": "Karta otwiera dolne drzwi serwisowe. Zbieraj sprzęt, Kurier."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Sygnał z karty Wirskiej jest sto metrów przed tobą, na wysokości czwartego piętra. Już ruszyli w stronę estakady.",
+          "shortText": "Wirska jedzie górnymi estakadami. Sygnał karty jest przed tobą."
+        },
+        {
+          "speaker": "szron",
+          "text": "Zaczynaj pościg. Nie wdawaj się w długie strzelaniny na kładkach, jeśli nie blokują ci przejścia."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:dachy",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Wirska. Znam jej teczkę. Nie będzie się bić do ostatniego naboju, jeśli straci osłonę, ale ma kwadrans przewagi na czystych drogach."
+        },
+        {
+          "speaker": "tomasz",
+          "text": "Wiatr na wysokości hal potrafi zepchnąć z rury podczas deszczu. Pilnuj krawędzi, Kurier."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:tylna-straz:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Zamknęli główną śluzę na estakadzie, sukinsyny! Licznik idzie w dół — jeśli nie przebijesz się w półtorej minuty, wjadą na lądowisko przed czasem!",
+          "shortText": "Zamknęli główną śluzę! Licznik idzie w dół. Skrót masz przy bocznej rolecie."
+        },
+        {
+          "speaker": "mira",
+          "text": "Patrz na prawo od bramy, przy skrzynkach elektrycznych. Blacha rolety serwisowej wisi dwadzieścia centymetrów nad betonem — przelecisz ślizgiem, nie musisz stać przy zamku!",
+          "shortText": "Boczna roleta jest niedomknięta. Przeleć ślizgiem albo skocz górą po wentylacji."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:estakada:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jesteś z powrotem na ogonie konwoju! Przestawili się na szybsze przejście w stronę starych suwnic."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:maszynownia",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Tam pełno starych rur i niedomkniętych rolet serwisowych. Nie szukaj zamków, jak możesz przelecieć górą albo prześlizgnąć się pod blachą."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:suwnice",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Tu zaczyna się wesoło. Albo walczysz z tarczami na dolnej kładce, albo skaczesz po żółtych wysięgnikach suwnic nad przepaścią. W powietrzu dopal dasha, inaczej nie dosięgniesz przeciwnego dachu.",
+          "shortText": "Tarcze na dolnej kładce. Górą masz belki suwnic: podwójny skok i dash przez luki."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:suwnice:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jeśli dopadnie śmigłowca na lądowisku, karta zniknie z sektora.",
+          "shortText": "Lądowisko przed tobą. Dotrzyj tam przed transportem!"
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:snajperzy:started",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Uwaga! Czerwone linie przez deszcz — na wyższych gzymsach wokół lądowiska siedzą snajperzy. Nie zatrzymuj się na otwartej płycie.",
+          "shortText": "Snajperzy na wyższych gzymsach! Nie stój na otwartej płycie."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:oslona-ladowiska:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Wirska jest już przy relingu! Transportowiec podchodzi od wschodu, masz ostatnią minutę na oczyszczenie dachu!",
+          "shortText": "Wirska przy relingu! Została eskorta na płycie. Pokonaj ją i zabierz kartę."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:oslona-ladowiska:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Wirska na otwartym kanale: „Pieprzyć to, wystarczy. Nie jestem warta kulki za podpis dyrektora. Karta leży w prawej kieszeni kurtki.”"
+        },
+        {
+          "speaker": "szron",
+          "text": "Zostaw broń tam, gdzie leży, porucznik. Karta i kody zmiany na dzisiejszą noc."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Wirska pyta: „Czekaj... znam ten głos. Szron?”"
+        },
+        {
+          "speaker": "szron",
+          "text": "Zostawiamy cię bez radia. Zanim przyleci wóz z hali, zdążymy wyjść z sektora."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Wirska mówi: „Niemożliwe... Brandt powiedział całemu garnizonowi, że utonąłeś w Niecce dziewięć lat temu. Na odprawie po przepompowni odczytali twój akt zgonu.”"
+        },
+        {
+          "speaker": "szron",
+          "text": "Jak widać, nie doczytał do końca. Zabieraj kartę, Kurier, i znikaj szybem za kominami."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:karta:done",
+      "priority": "story",
+      "lines": [
+        {
+          "speaker": "wolan",
+          "text": "K-112 nadal ma bardzo niskie ciśnienie. Ale serwer Brandta to jedyne, co wyjaśni, po co Helixa kupuje te odczyty."
+        }
+      ]
+    }
+  ],
+  "rewards": { "firstClear": { "data": 115, "cores": 1 } }
+}

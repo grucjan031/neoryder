@@ -6,7 +6,7 @@
   "act": 1,
   "summary": "Wejdź do siedziby ochrony Kurogane w Hutach. Pokonaj Oskara Brandta, zgraj główny serwer ochrony i opuść Odlewnię windą towarową.",
   "sectorId": "kurogane",
-  "requires": ["m04-ladunek-klasy-k"],
+  "requires": ["m05-adiutant"],
   "layers": 7,
   "splashAct": 2,
   "fixedNodes": [
@@ -70,7 +70,7 @@
       },
       {
         "speaker": "szron",
-        "text": "Brandt w odpowiedzi zamknął Huty. Kontakt Nadii zatrzymał konwój jego adiutantki, porucznik Wirskiej. Oddała kartę do sieci ochrony bez walki."
+        "text": "Brandt w odpowiedzi zamknął Huty. Kurier dogonił jego adiutantkę, porucznik Wirską, na lądowisku. Po rozbiciu eskorty przejął od niej kartę do sieci ochrony."
       },
       {
         "speaker": "bajt",
