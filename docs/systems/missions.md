@@ -189,3 +189,14 @@ po statusie `RailPayload.arrived`. Zniszczenie wagonu kończy próbę bez nagró
 Pierwsze ukończenie daje 110 Danych i 1 Rdzeń. Szczegóły checkpointów i trasy:
 `levels.md`, sekcja M04. Opcjonalne premie scenariusza, zmiany wystroju kryjówki
 i przerywnik M06 (obejmuje też pominiętą M05) pozostają poza zakresem tej zmiany.
+
+M07 „Nocny dyżur” (akt II, `splashAct` 2) wymaga M06 i jest poziomem liniowym
+(`levels.md`, sekcja M07): `m07-nocny-dyzur`, firstClear 90 Danych i 1 Rdzeń, bez
+interludium. Cele: `krata` (`interact`), `kapsula` (`pickup`, `spawnAfter: krata`), `serwer`
+(`defend`, 8 s) i `exit`. Odprawa ma trzy kwestie, debrief sześć; pozostałe kwestie
+odprawy i radia padają na wyzwalaczach poziomu (`checkpoint:`, `enterSection:`,
+`objective:`, `encounter:`), dosłownie ze scenariusza (`missionBriefing.test.ts`).
+Scenariuszowy alarm po wykryciu realizuje układ mapy i spotkanie `alarm-hala`, a ucieczka
+po serwerze nie ma limitu czasu. Cele opcjonalne scenariusza są poza zakresem.
+Sprawdzenie: po `campaign complete` M01–M04 i M06 otwórz
+`?scene=mission&mission=m07-nocny-dyzur&debug=1`.
