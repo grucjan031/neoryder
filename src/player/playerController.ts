@@ -1,6 +1,5 @@
 import {
   Capsule,
-  Ray,
   ColliderDesc,
   QueryFilterFlags,
   Ray,
