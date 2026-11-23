@@ -1,5 +1,5 @@
 // Uruchom przy npm run dev: node tools/screens/moduleVisuals.mjs [URL] [katalog]
-// 42 pary model/kształt × biodro/ADS/podgląd 3/4. Niezgodne pary służą wyłącznie kontroli geometrii.
+// 84 pary model/kształt × biodro/ADS/podgląd 3/4. Niezgodne pary służą wyłącznie kontroli geometrii.
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { chromium } from '@playwright/test';
@@ -50,7 +50,7 @@ try {
           const { FppViewModel } = await import('/src/render/fppViewModel.ts');
           const { EventBus } = await import('/src/core/events.ts');
           const { tuning } = await import('/src/core/tuning.ts');
-          const { renderWithViewmodel } =
+          const { renderWithViewmodel, viewmodelFov } =
             await import('/src/render/viewmodelLayer.ts');
           const renderer = new THREE.WebGLRenderer({
             antialias: true,
@@ -94,34 +94,37 @@ try {
             // Ten sam model i dodatki, poza pozą FPP; widoczny lewy bok oraz przód lufy.
             const gun = visual.parent;
             scene.add(gun);
-            gun.traverse((part) => part.layers.set(0));
+            gun.traverse((part) => {
+              part.layers.set(0);
+              if (part.userData.noOutline) part.visible = false;
+            });
             view.root.visible = false;
-            const box = new THREE.Box3().setFromObject(gun);
-            const center = box.getCenter(new THREE.Vector3());
-            const size = box.getSize(new THREE.Vector3());
-            const distance = size.length() * 1.4;
-            camera.position
-              .copy(center)
-              .add(
-                new THREE.Vector3(-0.82, 0.45, -0.57)
-                  .normalize()
-                  .multiplyScalar(distance),
-              );
-            camera.lookAt(center);
-            camera.updateMatrixWorld();
+            const { frameModuleSide } =
+              await import('/tools/screens/moduleSideCamera.ts');
+            frameModuleSide(camera, gun);
+            renderer.render(scene, camera);
+          } else {
+            renderWithViewmodel(renderer, scene, camera);
+            camera.fov = viewmodelFov(camera);
+            camera.updateProjectionMatrix();
           }
-          renderWithViewmodel(renderer, scene, camera);
-          // Rozmiar rzutu bbox pomaga wychwycić zbyt małe dodatki; nie mierzy zasłonięcia dłonią.
-          const moduleBox = new THREE.Box3().setFromObject(visual);
+          // Rzut fizycznych części modułu, przed uwzględnieniem zasłonięcia dłonią.
           const screenBox = new THREE.Box2();
-          for (const x of [moduleBox.min.x, moduleBox.max.x])
-            for (const y of [moduleBox.min.y, moduleBox.max.y])
-              for (const z of [moduleBox.min.z, moduleBox.max.z]) {
-                const point = new THREE.Vector3(x, y, z).project(camera);
-                screenBox.expandByPoint(
-                  new THREE.Vector2((point.x + 1) * 640, (1 - point.y) * 360),
-                );
-              }
+          const point = new THREE.Vector3();
+          const pixel = new THREE.Vector2();
+          visual.traverseVisible((mesh) => {
+            if (!mesh.isMesh || mesh.userData.noOutline) return;
+            const vertices = mesh.geometry.getAttribute('position');
+            for (let i = 0; i < vertices.count; i++) {
+              point
+                .fromBufferAttribute(vertices, i)
+                .applyMatrix4(mesh.matrixWorld)
+                .project(camera);
+              screenBox.expandByPoint(
+                pixel.set((point.x + 1) * 640, (1 - point.y) * 360),
+              );
+            }
+          });
           const projected = screenBox.getSize(new THREE.Vector2());
           document.getElementById('caption').textContent =
             `${entry.weapon} / ${entry.shape} / ${shot === 'side' ? 'podgląd 3/4' : aim ? 'ADS (poza)' : 'biodro'}${entry.compatible ? '' : ' / tylko geometria — niedostępne w grze'}`;

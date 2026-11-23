@@ -107,14 +107,28 @@ FPP. Parametry dopasowania są w `tuning.weaponModuleVisuals`.
 
 ### Dopasowanie do modelu broni
 
-- Optyka i podwieszenie opierają się na powierzchni siatki GLB w miejscu każdej
-  stopy. Podkładki łączą stopę z korpusem także na nierównej powierzchni. W pełnym
-  ADS widok ustawia się na znaku lub środku soczewki. Kołysanie i opóźnienie
+- Optyka opiera się na powierzchni siatki GLB w miejscu każdej stopy.
+  Podkładki łączą stopę z korpusem także na nierównej powierzchni. W pełnym
+  ADS widok ustawia się na znaku. Luneta ma otwarty okular i cienki pierścień
+  celowniczy, przez którego środek widać cel. Kołysanie i opóźnienie
   obrotu wygaszają się wraz z wejściem w ADS, a odrzut nadal porusza bronią.
-- Końcówkę centruje gniazdo `muzzle`, a jej przekrój i długość wynikają z wymiarów
-  czoła lufy. Otwarta obejma zachodzi na czoło i zachowuje oba kanały
-  rozpraszacza. Błysk i poświata przesuwają się na koniec dodatku, a demontaż
-  przywraca ich pozycje.
+- W karabinie i rozpraszaczu chwyt przedni oraz laser wiszą centralnie pod osią
+  wylotu (`socket.x`), przed dłonią podporową i bez jej przenikania; między
+  dwoma lufami rozpraszacza stopa opiera się na parze symetrycznych podpór, a
+  szerokość modułu mieści się w obrysie broni (`barrelSpanWidth`, tolerancja
+  środka w X: `centerToleranceM` w `tuning.weaponModuleVisuals.grip`), dzięki
+  czemu wiązka lasera biegnie w osi muszki. W blasterze i pistolecie stopa
+  modułu jest przytwierdzona od spodu w osi lufy.
+- Końcówkę (`compensator`, `brake`, `rail`) centruje gniazdo `muzzle`, a jej
+  przekrój i długość wynikają z wymiarów czoła lufy; tylna krawędź opiera się o
+  faktyczne czoło lufy — przedni pierścień/opaskę `trim` obejmującą oś wylotu w
+  zasięgu szyjki (`maxSleeveDepth`) albo `frame.min.z`, gdy brak takiego
+  pierścienia (tolerancja `rearToleranceM`), dzięki czemu moduł nasuwa się na
+  zwężaną szyjkę bez przerwy powietrznej. Minimalna długość wynosi 14% długości
+  modelu. Barwny akcent widać od strony strzelca. Górna krawędź końcówki mieści
+  się pod linią celowania. Otwarta obejma rozszerza się od czoła do obudowy i
+  zachowuje oba kanały rozpraszacza. Błysk i poświata przesuwają się na koniec
+  dodatku, a demontaż przywraca ich pozycje.
 - Położenie ogniwa wzdłuż korpusu bazuje na `heat_cell`. Dwie podpory łączą
   ogniwo z lokalną powierzchnią lewego boku, z uwzględnieniem wystających części.
 
@@ -127,8 +141,9 @@ Skrypt wymaga deweloperskiego serwera Vite i Chromium Playwright. Tworzy 252 PNG
 (7 modeli × 12 kształtów × biodro/ADS/widok boczny) oraz manifest. Używa prawdziwego
 `FppViewModel` na neutralnym tle; kombinacje niedostępne w grze są oznaczone jako
 kontrola geometrii. To kontrola brył i póz, bez symulowania FOV optyki ani bloomu
-rozgrywki; bloom i czytelność w scenie należy sprawdzić ręcznie. Skrypt nie był
-uruchamiany w rundzie Codexa zgodnie ze zleceniem. Podgląd kryjówki 3D opisuje następna sekcja.
+rozgrywki. Kadr boczny obejmuje bryłę broni z dodatkiem na około 60% szerokości.
+Kamerę ustala rzut wierzchołków widocznych części. Wiązka lasera, błyski
+i poświaty są pomijane w tym ujęciu. Podgląd kryjówki 3D opisuje następna sekcja.
 
 Vitest: `weaponModuleVisuals.test.ts` (styk mocowania, drożność lufy i widok przez
 optykę dla zgodnych par), `modules.test.ts` (dane, schematy, kopie, zgodność, przebicie i transport
