@@ -50,6 +50,7 @@ import { ProjectileRenderer } from '../render/projectileRenderer';
 import { PlasmaBlade } from '../combat/melee/plasmaBlade';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { createStyleLights } from '../render/lights';
@@ -133,6 +134,7 @@ export class MeleeTest implements Scene {
   protected lightningView!: LightningRenderer;
   private readonly hurtboxes = new Hurtboxes();
   private player!: PlayerController;
+  private legs?: FppLegs;
   private previous!: PlayerState;
   private playerSpawn!: Vec3;
   private fpsCamera!: FpsCamera;
@@ -245,6 +247,8 @@ export class MeleeTest implements Scene {
     this.previous = this.player.getState();
     this.playerSpawn = { ...this.previous.position };
     this.fpsCamera = new FpsCamera(ctx.tuning, playerId, ctx.bus);
+    if (ctx.camera && this.loadModels)
+      this.legs = new FppLegs(three, ctx.tuning);
     this.hurtboxes.add(playerId, this.player.colliderHandle);
     this.projectiles = new ProjectileSystem(
       this.world,
@@ -741,10 +745,12 @@ export class MeleeTest implements Scene {
     if (this.arcHideS <= 0) this.arcDebug.visible = false;
     this.flyingBlade.render(view, alpha, this.ctx.tuning);
     if (!camera) return;
+    const playerState = this.player.getState();
+    this.legs?.update(this.previous, playerState, alpha, frameDt);
     const pose = this.fpsCamera.update(
       frameDt,
       this.previous,
-      this.player.getState(),
+      playerState,
       alpha,
     );
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
@@ -788,6 +794,7 @@ export class MeleeTest implements Scene {
     this.projectiles?.dispose();
     this.projectileView?.dispose();
     this.energy?.dispose();
+    this.legs?.dispose();
     this.fpsCamera?.dispose();
     this.player?.dispose();
     this.world?.free();

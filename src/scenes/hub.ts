@@ -22,6 +22,7 @@ import { HubPropView } from './hubPropView';
 import { HubWarmth } from '../ui/hubWarmth';
 import { CollisionGroup, initPhysics, interactionGroups } from '../physics';
 import { FpsCamera } from '../player/fpsCamera';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import type { MetaManager } from '../progression/meta';
@@ -212,6 +213,7 @@ export class HubScene implements Scene {
   private entities!: EntityRegistry;
   private playerId!: EntityId;
   private player!: PlayerController;
+  private legs?: FppLegs;
   private previous!: PlayerState;
   private fpsCamera!: FpsCamera;
   private fppView!: FppViewModel;
@@ -400,6 +402,8 @@ export class HubScene implements Scene {
     this.entities.bindCollider(this.playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.fpsCamera = new FpsCamera(ctx.tuning, this.playerId, ctx.bus);
+    if (ctx.camera && this.loadModels)
+      this.legs = new FppLegs(three, ctx.tuning);
     this.fppView = new FppViewModel(ctx.bus, this.playerId, {
       tuning: ctx.tuning,
     });
@@ -1167,10 +1171,18 @@ export class HubScene implements Scene {
       this.soundscape?.render(alpha, this.stations.opened !== null);
       return;
     }
+    const playerState = this.player.getState();
+    this.legs?.update(
+      this.previous,
+      playerState,
+      alpha,
+      frameDt,
+      !this.seatPose,
+    );
     const pose = this.fpsCamera.update(
       frameDt,
       this.previous,
-      this.player.getState(),
+      playerState,
       alpha,
     );
     const sit = this.seatPose?.sit;
@@ -1193,7 +1205,7 @@ export class HubScene implements Scene {
     this.npcs?.cull(camera);
     this.soundscape?.render(alpha, this.stations.opened !== null);
     this.dressing?.render(frameDt, camera);
-    const velocity = this.player.getState().velocity;
+    const velocity = playerState.velocity;
     this.fppView.place(camera.matrixWorld, frameDt, {
       held: 'blade',
       blade: IDLE_BLADE,
@@ -1519,6 +1531,7 @@ export class HubScene implements Scene {
       this.metaBar?.dispose();
       this.guide?.dispose();
       this.fppView?.dispose();
+      this.legs?.dispose();
       this.fpsCamera?.dispose();
       this.player?.dispose();
       if (this.entities && this.playerId !== undefined)

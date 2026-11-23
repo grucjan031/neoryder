@@ -1636,6 +1636,12 @@ bez zwalniania świata podczas kroku symulacji.
 
 ## Wspólny widok FPP
 
+Sceny z kontrolerem gracza mogą dołączyć do świata `FppLegs` z
+`src/render/fppLegs.ts`. Widok przyjmuje poprzedni i bieżący `PlayerState`,
+`alpha` i czas klatki. Scena ukrywa go na czas odłączenia kamery od gracza
+i wywołuje `dispose()` przy wyjściu. Pozycję stóp wyznacza środek i wysokość
+kapsuły. Model korzysta z istniejącego kontraktu `PlayerController.getState()`.
+
 `FppViewModel` (`src/render/fppViewModel.ts`) posiada ostrze, broń, wolną dłoń
 i ruch rąk. Konstruktor przyjmuje bus, właściciela i opcje definicji ostrza,
 modeli broni oraz tuningu. `load(loadModels)`, `root`,

@@ -23,6 +23,7 @@ import {
 } from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
 import { getMaterial } from '../render/materials';
@@ -73,6 +74,7 @@ export class WeaponsTest implements Scene {
   private beamRenderer!: BeamRenderer;
   private explosionRenderer!: ExplosionRenderer;
   private player!: PlayerController;
+  private legs?: FppLegs;
   private previous!: PlayerState;
   private projectiles!: ProjectileSystem;
   private projectileRenderer!: ProjectileRenderer;
@@ -221,6 +223,7 @@ export class WeaponsTest implements Scene {
       loadSettings(),
     );
     this.previous = this.player.getState();
+    if (ctx.camera) this.legs = new FppLegs(three, ctx.tuning);
     for (const position of data.dummyPositions) {
       const id = this.entities.create('dummy', 'enemy');
       const stats = new Stats({ maxHealth: data.dummy.maxHealth });
@@ -401,6 +404,7 @@ export class WeaponsTest implements Scene {
     const p = this.previous;
     const camera = this.ctx.camera;
     if (camera) {
+      this.legs?.update(p, current, alpha, frameDt);
       camera.position.set(
         p.position.x + (current.position.x - p.position.x) * alpha,
         p.position.y +
@@ -476,6 +480,7 @@ export class WeaponsTest implements Scene {
     this.statuses.dispose();
     this.projectileRenderer.dispose();
     this.projectiles.dispose();
+    this.legs?.dispose();
     this.player.dispose();
     this.hurtboxes.clear();
     for (const id of this.entities.ids()) {

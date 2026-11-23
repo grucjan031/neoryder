@@ -38,6 +38,10 @@ export const scenes: Record<string, SceneLoader> = {
   sandbox: () => import('./sandbox').then((m) => () => new m.Sandbox()),
   'player-test': () =>
     import('./playerTest').then((m) => () => new m.PlayerTest()),
+  legsTest: () =>
+    import('./playerTest').then(
+      (m) => () => new m.PlayerTest(true, 'legsTest'),
+    ),
   'damage-test': () =>
     import('./damageTest').then((m) => () => new m.DamageTest()),
   'style-test': () =>

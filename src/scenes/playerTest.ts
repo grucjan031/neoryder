@@ -3,6 +3,7 @@ import {
   BoxGeometry,
   Color,
   DirectionalLight,
+  GridHelper,
   Group,
   Mesh,
   MeshStandardMaterial,
@@ -15,6 +16,7 @@ import type { InputSnapshot } from '../core/input';
 import type { Vec3 } from '../core/math';
 import { loadSettings } from '../core/save';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
+import { FppLegs } from '../render/fppLegs';
 import { PlayerController } from '../player/playerController';
 import playerData from '../data/scenes/playerTest.json';
 import type { PlayerState } from '../player/playerController';
@@ -23,17 +25,22 @@ import { palette } from '../render/palette';
 import type { Scene } from './index';
 
 export class PlayerTest implements Scene {
-  readonly id = 'player-test';
   private readonly commandOffs: (() => void)[] = [];
   private fpsCamera!: FpsCamera;
   private ctx!: GameContext;
   private three!: ThreeScene;
   private world!: World;
   private player!: PlayerController;
+  private legs?: FppLegs;
   private previous!: PlayerState;
   private readonly root = new Group();
+  private grid?: GridHelper;
+  private spawnX = 0;
 
-  constructor(private readonly loadModels = true) {}
+  constructor(
+    private readonly loadModels = true,
+    readonly id: 'player-test' | 'legsTest' = 'player-test',
+  ) {}
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
@@ -77,7 +84,20 @@ export class PlayerTest implements Scene {
       );
       return mesh;
     };
-    box({ x: 60, y: 1, z: 60 }, { x: 0, y: -0.5, z: 0 });
+    const floor = box({ x: 60, y: 1, z: 60 }, { x: 0, y: -0.5, z: 0 });
+    if (this.id === 'legsTest') {
+      const size = floor.geometry.parameters.width;
+      this.grid = new GridHelper(
+        size,
+        size,
+        palette.interactive,
+        palette.interactive,
+      );
+      floor.material.polygonOffset = true;
+      floor.material.polygonOffsetFactor =
+        floor.material.polygonOffsetUnits = 1;
+      this.root.add(this.grid);
+    }
     for (let i = 0; i < 6; i++) {
       const height = (i + 1) * 0.25;
       box({ x: 3, y: height, z: 1 }, { x: -6, y: height / 2, z: -3 - i });
@@ -109,7 +129,8 @@ export class PlayerTest implements Scene {
     // Tor dashu i slide: niski tunel (prześwit 1,25 m — tylko w ślizgu) i ściana do dashu.
     for (const x of [14.6, 17.4])
       box({ x: 0.4, y: 1.25, z: 8 }, { x, y: 0.625, z: -6 });
-    box({ x: 3.2, y: 0.4, z: 8 }, { x: 16, y: 1.45, z: -6 });
+    const tunnel = box({ x: 3.2, y: 0.4, z: 8 }, { x: 16, y: 1.45, z: -6 });
+    if (this.id === 'legsTest') this.spawnX = tunnel.position.x;
     box({ x: 6, y: 3, z: 0.4 }, { x: -14, y: 1.5, z: -8 });
 
     // Długa rampa zjazdowa 25° (14 m) kończąca się niskim tunelem: napęd ślizgu stokiem, slide-jump z pędem,
@@ -168,6 +189,8 @@ export class PlayerTest implements Scene {
     );
     this.previous = this.player.getState();
     this.fpsCamera = new FpsCamera(ctx.tuning, this.player.id, ctx.bus);
+    if (ctx.camera && this.loadModels)
+      this.legs = new FppLegs(three, ctx.tuning);
     // Pierwszy krok indeksuje statyczne collidery przed zapytaniami kontrolera.
     this.world.step();
     this.render(1);
@@ -203,7 +226,7 @@ export class PlayerTest implements Scene {
 
   private spawnPosition(): Vec3 {
     return {
-      x: 0,
+      x: this.spawnX,
       y:
         this.ctx.tuning.player.capsuleHeight / 2 +
         this.ctx.tuning.player.controllerOffset,
@@ -232,10 +255,12 @@ export class PlayerTest implements Scene {
   render(alpha: number, frameDt = 1 / 60): void {
     const camera = this.ctx.camera;
     if (!camera) return;
+    const playerState = this.player.getState();
+    this.legs?.update(this.previous, playerState, alpha, frameDt);
     const pose = this.fpsCamera.update(
       frameDt,
       this.previous,
-      this.player.getState(),
+      playerState,
       alpha,
     );
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
@@ -262,6 +287,8 @@ export class PlayerTest implements Scene {
 
   dispose(): void {
     for (const off of this.commandOffs.splice(0)) off();
+    this.grid?.dispose();
+    this.legs?.dispose();
     this.fpsCamera.dispose();
     this.player.dispose();
     this.world.free();
