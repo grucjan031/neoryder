@@ -282,9 +282,9 @@
     "semantic_hash": ""
   },
   "src/combat/weapons/weaponSchema.ts": {
-    "mtime": 1795380034.4750428,
-    "seen": 1795445710.6162903,
-    "ast_hash": "c224f3b918340a45fecdb65c96178eb9",
+    "mtime": 1795470429.254374,
+    "seen": 1795470459.2746706,
+    "ast_hash": "b9caf1c270a18b5487cbf5581c406d19",
     "semantic_hash": ""
   },
   "src/core/context.ts": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "src/core/tuning.ts": {
-    "mtime": 1795467858.957469,
-    "seen": 1795467933.0053308,
-    "ast_hash": "116ae8f6793dc6409e6769da3e11d90b",
+    "mtime": 1795470429.2553737,
+    "seen": 1795470459.274697,
+    "ast_hash": "9b7d4abad56cc727643b4aa7bfe3264e",
     "semantic_hash": ""
   },
   "src/data/audio/sfx.json": {
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "src/data/hub/hideout.json": {
-    "mtime": 1795351304.7941701,
-    "seen": 1795445710.6163638,
-    "ast_hash": "a61daf2259e4affafd5c10efa58b366f",
+    "mtime": 1795470443.054877,
+    "seen": 1795470459.2747283,
+    "ast_hash": "76fb056d1181009384e24ad6c372805e",
     "semantic_hash": ""
   },
   "src/data/hub/npcs.pl.json": {
@@ -1158,9 +1158,9 @@
     "semantic_hash": ""
   },
   "src/data/scenes/weaponsTest.json": {
-    "mtime": 1794659529.080501,
-    "seen": 1795445710.6165605,
-    "ast_hash": "782fd2317f221cbce3539474c46bd0f7",
+    "mtime": 1795470429.257374,
+    "seen": 1795470459.2749133,
+    "ast_hash": "25c5fa54f352abc28916753c9593cad8",
     "semantic_hash": ""
   },
   "src/data/sectors/kurogane.json": {
@@ -1302,9 +1302,9 @@
     "semantic_hash": ""
   },
   "src/data/themes/hideout.json": {
-    "mtime": 1795365686.6018538,
-    "seen": 1795445710.6165857,
-    "ast_hash": "40e8876838420dfd3051819ccb6898fe",
+    "mtime": 1795470443.055876,
+    "seen": 1795470459.2749376,
+    "ast_hash": "a1d23c7492d20cb850e51428d1e1e679",
     "semantic_hash": ""
   },
   "src/data/themes/neonStreet.json": {
@@ -1506,45 +1506,45 @@
     "semantic_hash": ""
   },
   "src/data/weapons/beam.json": {
-    "mtime": 1795036062.085495,
-    "seen": 1795445710.616692,
-    "ast_hash": "6c996b690864dfecd9e56d5cd75368dd",
+    "mtime": 1795470429.257374,
+    "seen": 1795470459.2750373,
+    "ast_hash": "1c7a00c1110d68e5a59b960b193c066a",
     "semantic_hash": ""
   },
   "src/data/weapons/blaster.json": {
-    "mtime": 1795380034.4830444,
-    "seen": 1795445710.616693,
-    "ast_hash": "d77955461411d12f5aa4d9081599e626",
+    "mtime": 1795470429.257374,
+    "seen": 1795470459.275038,
+    "ast_hash": "734d3ace2e364348311506eac576d6e7",
     "semantic_hash": ""
   },
   "src/data/weapons/emp.json": {
-    "mtime": 1795380034.4840434,
-    "seen": 1795445710.6166942,
-    "ast_hash": "60714e0f8acae65b8a4f9e208b34c8c8",
+    "mtime": 1795470429.2583745,
+    "seen": 1795470459.275039,
+    "ast_hash": "3af66b7efb4299a67597350ca5f62a36",
     "semantic_hash": ""
   },
   "src/data/weapons/pistol.json": {
-    "mtime": 1795380034.4840434,
-    "seen": 1795445710.6166954,
-    "ast_hash": "c83c56486b99618a7eb3979d54d42576",
+    "mtime": 1795470429.2583745,
+    "seen": 1795470459.27504,
+    "ast_hash": "babbce79c1a2540b2fb955170af52c16",
     "semantic_hash": ""
   },
   "src/data/weapons/rifle.json": {
-    "mtime": 1795380034.4850411,
-    "seen": 1795445710.6166968,
-    "ast_hash": "80e0a44a689de27c7c19b8098852b432",
+    "mtime": 1795470429.2583745,
+    "seen": 1795470459.2750409,
+    "ast_hash": "9a5ddba85c591f3dc1f5dbc981a65d56",
     "semantic_hash": ""
   },
   "src/data/weapons/scatter.json": {
-    "mtime": 1795380034.4850411,
-    "seen": 1795445710.6166978,
-    "ast_hash": "8aa3eaf8e2d6da5f9c8671cf9a609166",
+    "mtime": 1795470429.2594945,
+    "seen": 1795470459.2750418,
+    "ast_hash": "e191a5d4f860677c50259d752ff97139",
     "semantic_hash": ""
   },
   "src/data/weapons/sniper.json": {
-    "mtime": 1795380034.4850411,
-    "seen": 1795445710.616699,
-    "ast_hash": "b675546f7974c285040c318cab23eba3",
+    "mtime": 1795470429.2594945,
+    "seen": 1795470459.2750425,
+    "ast_hash": "8c8c00bb93837abaf22722187bb04e7b",
     "semantic_hash": ""
   },
   "src/data/weather/clearNight.json": {
@@ -1794,9 +1794,9 @@
     "semantic_hash": ""
   },
   "src/progression/moduleSchema.ts": {
-    "mtime": 1795380034.486044,
-    "seen": 1795445710.6167874,
-    "ast_hash": "db1801b846b72692ad56aa12580fc712",
+    "mtime": 1795470429.2603762,
+    "seen": 1795470459.2750945,
+    "ast_hash": "b7d495dc5b7b4dd2f548ba735364d449",
     "semantic_hash": ""
   },
   "src/progression/patchSchema.ts": {
@@ -1908,9 +1908,9 @@
     "semantic_hash": ""
   },
   "src/render/city/dressing.ts": {
-    "mtime": 1795036062.0974953,
-    "seen": 1795445710.6168141,
-    "ast_hash": "09c8f089ad3fc0284a29990d1946212c",
+    "mtime": 1795470443.055876,
+    "seen": 1795470459.2751162,
+    "ast_hash": "493b9c71921dfeca9405ce7c91b563b5",
     "semantic_hash": ""
   },
   "src/render/city/flicker.ts": {
@@ -1920,9 +1920,9 @@
     "semantic_hash": ""
   },
   "src/render/city/lamps.ts": {
-    "mtime": 1795036062.0974953,
-    "seen": 1795445710.6168168,
-    "ast_hash": "a29afb1b3a66d60b039e8e92a44da45a",
+    "mtime": 1795470443.0568743,
+    "seen": 1795470459.275118,
+    "ast_hash": "16a94f67b6bfd31307ef25c65f0fe093",
     "semantic_hash": ""
   },
   "src/render/city/lights.ts": {
@@ -1980,9 +1980,9 @@
     "semantic_hash": ""
   },
   "src/render/fppBlaster.ts": {
-    "mtime": 1795438230.4748414,
-    "seen": 1795445710.616832,
-    "ast_hash": "5265e4c62c6a509ea4f7339de397f6ac",
+    "mtime": 1795470429.2603762,
+    "seen": 1795470459.2751312,
+    "ast_hash": "30777f88de8d01f290b25cee6e8f241d",
     "semantic_hash": ""
   },
   "src/render/fppMaterials.ts": {
@@ -1992,9 +1992,9 @@
     "semantic_hash": ""
   },
   "src/render/fppMotion.ts": {
-    "mtime": 1795438230.4748414,
-    "seen": 1795445710.6168349,
-    "ast_hash": "ba04423ae15561449901e5a6741c0768",
+    "mtime": 1795470429.2613757,
+    "seen": 1795470459.2751348,
+    "ast_hash": "9c079cb720f0a8dc8d779e654b902698",
     "semantic_hash": ""
   },
   "src/render/fppOffhand.ts": {
@@ -2004,9 +2004,9 @@
     "semantic_hash": ""
   },
   "src/render/fppViewModel.ts": {
-    "mtime": 1795438230.4758353,
-    "seen": 1795445710.6168377,
-    "ast_hash": "dd142919b27a2768ea7d089b2a31fbe5",
+    "mtime": 1795470429.2613757,
+    "seen": 1795470459.275137,
+    "ast_hash": "09e354210d99d1179ce88567db02b4c7",
     "semantic_hash": ""
   },
   "src/render/frameClock.ts": {
@@ -2274,9 +2274,9 @@
     "semantic_hash": ""
   },
   "src/scenes/hubDecor.ts": {
-    "mtime": 1795189657.4439468,
-    "seen": 1795445710.6169143,
-    "ast_hash": "2d32c609799fc12a8a8c3ebfbd9578fa",
+    "mtime": 1795470443.0568743,
+    "seen": 1795470459.2752025,
+    "ast_hash": "b6585b54179f5f436b44b3e9d627951e",
     "semantic_hash": ""
   },
   "src/scenes/hubFauna.ts": {
@@ -2388,9 +2388,9 @@
     "semantic_hash": ""
   },
   "src/scenes/weaponsTest.ts": {
-    "mtime": 1795467858.9654682,
-    "seen": 1795467933.005937,
-    "ast_hash": "9954e82825e21afc2964389728e17e34",
+    "mtime": 1795470442.413929,
+    "seen": 1795470459.275231,
+    "ast_hash": "3273618c2da487a15472bd800cba29f9",
     "semantic_hash": ""
   },
   "src/scenes/weatherTest.ts": {
@@ -2550,9 +2550,9 @@
     "semantic_hash": ""
   },
   "src/ui/hud.ts": {
-    "mtime": 1795426091.596675,
-    "seen": 1795445710.6170437,
-    "ast_hash": "f88ac9033df13814e77e07dbbe202549",
+    "mtime": 1795470429.2633734,
+    "seen": 1795470459.2752826,
+    "ast_hash": "1974978c033fcf9c75fb5f4502d9ca70",
     "semantic_hash": ""
   },
   "src/ui/loadingTipView.ts": {
@@ -2802,9 +2802,9 @@
     "semantic_hash": ""
   },
   "src/world/hubSchema.ts": {
-    "mtime": 1795351304.8001704,
-    "seen": 1795445710.6171398,
-    "ast_hash": "4ce3146615984db330cbf416c850ca25",
+    "mtime": 1795470443.057875,
+    "seen": 1795470459.2753587,
+    "ast_hash": "80f876e72085fc85c6c0954e4c3fc847",
     "semantic_hash": ""
   },
   "src/world/hubStations.ts": {
@@ -3366,9 +3366,9 @@
     "semantic_hash": ""
   },
   "tests/unit/cityLighting.test.ts": {
-    "mtime": 1795036062.1490097,
-    "seen": 1795445710.6173432,
-    "ast_hash": "bfa23afe25b5f68b621df39e5f9468b2",
+    "mtime": 1795470443.057875,
+    "seen": 1795470459.2755053,
+    "ast_hash": "ce6b483ceb26413c3b7b137443211c42",
     "semantic_hash": ""
   },
   "tests/unit/cityModelLoader.test.ts": {
@@ -3378,9 +3378,9 @@
     "semantic_hash": ""
   },
   "tests/unit/cityModels.test.ts": {
-    "mtime": 1795036062.1500125,
-    "seen": 1795445710.6173453,
-    "ast_hash": "b5b02cb7fa4c120dde19af1567f1ed92",
+    "mtime": 1795470443.0588768,
+    "seen": 1795470459.275508,
+    "ast_hash": "d267c54b7568db033131ef73b93f5094",
     "semantic_hash": ""
   },
   "tests/unit/conquest.test.ts": {
@@ -3672,9 +3672,9 @@
     "semantic_hash": ""
   },
   "tests/unit/hubLayout.test.ts": {
-    "mtime": 1795351304.8021703,
-    "seen": 1795445710.6174388,
-    "ast_hash": "8d15051fd088506e7e78632be3e273d2",
+    "mtime": 1795470443.059876,
+    "seen": 1795470459.2755868,
+    "ast_hash": "cb29ad12677376833932ff5bb9f6f2e1",
     "semantic_hash": ""
   },
   "tests/unit/hubMap.test.ts": {
@@ -3738,9 +3738,9 @@
     "semantic_hash": ""
   },
   "tests/unit/hubScene.test.ts": {
-    "mtime": 1795365686.8947449,
-    "seen": 1795445710.6174579,
-    "ast_hash": "0d53d3a9cdb76b76602b2bdde09408df",
+    "mtime": 1795470443.059876,
+    "seen": 1795470459.2755983,
+    "ast_hash": "0372273581b36bb5a68f4febe12e9add",
     "semantic_hash": ""
   },
   "tests/unit/hubScreens.test.ts": {
@@ -3768,9 +3768,9 @@
     "semantic_hash": ""
   },
   "tests/unit/hud.test.ts": {
-    "mtime": 1795357030.6795566,
-    "seen": 1795445710.6174679,
-    "ast_hash": "27ba58daff4d757c4807f57ca5206254",
+    "mtime": 1795470429.2643743,
+    "seen": 1795470459.2756042,
+    "ast_hash": "80cbe6389ecc39c03edee39d17c3ee5a",
     "semantic_hash": ""
   },
   "tests/unit/hudAccessibilityZ12.test.ts": {
@@ -4374,9 +4374,9 @@
     "semantic_hash": ""
   },
   "tests/unit/weaponsTest.test.ts": {
-    "mtime": 1795365678.1283977,
-    "seen": 1795445710.61774,
-    "ast_hash": "05ecc290465552595b75069d7638e45b",
+    "mtime": 1795470429.2653756,
+    "seen": 1795470459.275779,
+    "ast_hash": "4b108076b8dd7719e42964692566423b",
     "semantic_hash": ""
   },
   "tests/unit/windowAtlas.test.ts": {
@@ -4392,9 +4392,9 @@
     "semantic_hash": ""
   },
   "tools/blender/build_assets.py": {
-    "mtime": 1795167504.0047288,
-    "seen": 1795445710.6178536,
-    "ast_hash": "019b75f30698b68e7a9bbcc42c09864e",
+    "mtime": 1795470443.0618756,
+    "seen": 1795470459.275854,
+    "ast_hash": "8d87dc81e95319cfb3277f84ec237645",
     "semantic_hash": ""
   },
   "tools/hub/extractNpcAnimations.mjs": {
@@ -4548,9 +4548,9 @@
     "semantic_hash": ""
   },
   "docs/api.md": {
-    "mtime": 1795467858.9554706,
-    "seen": 1795467933.0067146,
-    "ast_hash": "43dbcd25f059832910b9c59218779821",
+    "mtime": 1795470443.051868,
+    "seen": 1795470459.2759163,
+    "ast_hash": "ccd8cd195151cf4f450c6152047cb855",
     "semantic_hash": ""
   },
   "docs/assets.md": {
@@ -4956,9 +4956,9 @@
     "semantic_hash": ""
   },
   "docs/systems/hub.md": {
-    "mtime": 1795426091.515582,
-    "seen": 1795445710.6180756,
-    "ast_hash": "572389b82066aed191df3e1eacb5886d",
+    "mtime": 1795470443.0530195,
+    "seen": 1795470459.2759962,
+    "ast_hash": "28b36e3d6debcd74eb15d734219a8335",
     "semantic_hash": ""
   },
   "docs/systems/hud.md": {
@@ -5094,15 +5094,15 @@
     "semantic_hash": ""
   },
   "docs/systems/weaponModules.md": {
-    "mtime": 1795445624.4565938,
-    "seen": 1795445710.6181188,
-    "ast_hash": "c67acf69ef6ce6ca0e6f2508035e11b3",
+    "mtime": 1795470429.2533777,
+    "seen": 1795470459.2760234,
+    "ast_hash": "ff6af313ae6f239c93fd40c5990b5344",
     "semantic_hash": ""
   },
   "docs/systems/weapons.md": {
-    "mtime": 1795380034.4740427,
-    "seen": 1795445710.61812,
-    "ast_hash": "09003901f32132ce7ac7f64db6de80c3",
+    "mtime": 1795470429.254374,
+    "seen": 1795470459.2760243,
+    "ast_hash": "cae96498fe22f94605326a66de72e0e2",
     "semantic_hash": ""
   },
   "docs/systems/weather.md": {
@@ -6846,9 +6846,9 @@
     "semantic_hash": ""
   },
   "tools/blender/previews/city/city_lantern_string.png": {
-    "mtime": 1794699589.1162586,
-    "seen": 1795445710.6203218,
-    "ast_hash": "95389725dab75177298e7ef614adf69e",
+    "mtime": 1795470443.0628777,
+    "seen": 1795470459.2775373,
+    "ast_hash": "d6ad25ff5f3ac66e2e8abd19dfee9af4",
     "semantic_hash": ""
   },
   "tools/blender/previews/city/city_market_stall_canopy.png": {
@@ -7464,21 +7464,21 @@
     "semantic_hash": ""
   },
   "src/data/modules/collimator.json": {
-    "mtime": 1795036062.0521455,
-    "seen": 1795445710.6164682,
-    "ast_hash": "c8fc73b1282917ed5e7f2e0fffd2f03e",
+    "mtime": 1795470429.2553737,
+    "seen": 1795470459.2748282,
+    "ast_hash": "992309f0ab36055a401fa7dcee3ca2c7",
     "semantic_hash": ""
   },
   "src/data/modules/scope.json": {
-    "mtime": 1795036062.0531456,
-    "seen": 1795445710.6164808,
-    "ast_hash": "dc0ed59429995fed1e57c48080088384",
+    "mtime": 1795470429.2563744,
+    "seen": 1795470459.27484,
+    "ast_hash": "314f83ab7e393a015dfc371e0b6e8341",
     "semantic_hash": ""
   },
   "src/render/weaponModuleVisuals.ts": {
-    "mtime": 1795445624.4585936,
-    "seen": 1795445710.616891,
-    "ast_hash": "fcd4fc47c5e445861da2fe29dc148dcc",
+    "mtime": 1795470429.262375,
+    "seen": 1795470459.2751844,
+    "ast_hash": "1f3901fc01faa3eec9146b6190150600",
     "semantic_hash": ""
   },
   "tests/unit/sanitizeModules.test.ts": {
@@ -7488,9 +7488,9 @@
     "semantic_hash": ""
   },
   "tests/unit/weaponModuleVisuals.test.ts": {
-    "mtime": 1795445624.4595945,
-    "seen": 1795445710.6177275,
-    "ast_hash": "95198153737cd71b44635506bb79c3f9",
+    "mtime": 1795470429.2643743,
+    "seen": 1795470459.275771,
+    "ast_hash": "b4d77d173393e0d89165f0bbbe408769",
     "semantic_hash": ""
   },
   "tests/unit/weaponModulesSlots.test.ts": {
@@ -8046,9 +8046,9 @@
     "semantic_hash": ""
   },
   "src/render/comicSurfaces.ts": {
-    "mtime": 1795036062.0994945,
-    "seen": 1795445710.6168253,
-    "ast_hash": "c11eef71938c9047892e57653009341b",
+    "mtime": 1795470443.0568743,
+    "seen": 1795470459.2751243,
+    "ast_hash": "f021c1f15cc6ce3e44e5b7c184daccb0",
     "semantic_hash": ""
   },
   "src/ui/threatIndicator.ts": {
@@ -8058,9 +8058,9 @@
     "semantic_hash": ""
   },
   "tests/unit/comicSurfaces.test.ts": {
-    "mtime": 1795036062.1510108,
-    "seen": 1795445710.6173475,
-    "ast_hash": "d00685e879341e1aada21b2caf28d98b",
+    "mtime": 1795470443.0588768,
+    "seen": 1795470459.2755103,
+    "ast_hash": "dce2c2715ed648d2506389a0d6f4cfb8",
     "semantic_hash": ""
   },
   "tests/unit/enemyViewTelegraph.test.ts": {
@@ -8490,9 +8490,9 @@
     "semantic_hash": ""
   },
   "src/data/modules/holo.json": {
-    "mtime": 1795380034.482041,
-    "seen": 1795445710.6164742,
-    "ast_hash": "667b16963243f36b447f6cf625540c94",
+    "mtime": 1795470429.2563744,
+    "seen": 1795470459.2748334,
+    "ast_hash": "9966d7fa3d93d2dff21fbcc1d763cf04",
     "semantic_hash": ""
   },
   "src/data/modules/laser.json": {
@@ -17277,6 +17277,18 @@
     "mtime": 1795467858.9674678,
     "seen": 1795468005.6845372,
     "ast_hash": "61df3802b8594fd7fc97f9dd6a345747",
+    "semantic_hash": ""
+  },
+  "src/data/render/lanternString.json": {
+    "mtime": 1795470443.054877,
+    "seen": 1795470459.274858,
+    "ast_hash": "c9bc919cbdb133900cb2b972aaa196dd",
+    "semantic_hash": ""
+  },
+  "src/render/ironSightGeometry.ts": {
+    "mtime": 1795470429.2613757,
+    "seen": 1795470459.2751498,
+    "ast_hash": "5b7c67f76547bd52c7740c1abc68378b",
     "semantic_hash": ""
   },
   "package-lock.json": {
