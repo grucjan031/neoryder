@@ -34,6 +34,7 @@ export class FppMotion {
     frameDt: number,
     horizontalSpeed: number,
     held?: HeldItemView,
+    sightAim = 0,
   ): Matrix4 {
     const dt = Math.min(MAX_FRAME_S, Math.max(0, frameDt));
     const h = this.t.hands;
@@ -73,12 +74,18 @@ export class FppMotion {
       const t = Math.max(0, Math.min(1, held.swapT));
       lower = (t < 0.5 ? t * 2 : (1 - t) * 2) ** 2;
     }
+    const drift = 1 - Math.max(0, Math.min(1, sightAim));
     this.position.set(
-      Math.sin(this.phase) * bob,
-      Math.cos(this.phase * 2) * bob - lower * h.swapDropM,
+      Math.sin(this.phase) * bob * drift,
+      Math.cos(this.phase * 2) * bob * drift - lower * h.swapDropM,
       0,
     );
-    this.e.set(this.pitch + lower * h.swapAngle, this.yaw, 0, 'YXZ');
+    this.e.set(
+      this.pitch * drift + lower * h.swapAngle,
+      this.yaw * drift,
+      0,
+      'YXZ',
+    );
     this.q.setFromEuler(this.e);
     this.local.compose(this.position, this.q, this.scale);
     return this.result.multiplyMatrices(camera, this.local);

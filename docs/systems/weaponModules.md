@@ -103,22 +103,35 @@ tylko w `RoomScene`; Arena przekazuje wyłącznie `aimFovScale` (nie obsługuje 
 zgodne moduły danego slotu, nazwę slotu, „— brak —” i opis efektu pod wyborem.
 
 Fabryka `weaponModuleVisuals.ts` tworzy proceduralne bryły z własnymi materiałami
-FPP i umiarkowaną emisją (0,25). Zaczepy wynikają z bbox `frame`, `heat_cell` i
-położenia `muzzle`; optyka stoi na 60% długości korpusu od tyłu. Błysk i poświata
-wylotu przesuwają się na koniec dodatku, demontaż przywraca ich pozycję.
+FPP. Parametry dopasowania są w `tuning.weaponModuleVisuals`.
+
+### Dopasowanie do modelu broni
+
+- Optyka i podwieszenie opierają się na powierzchni siatki GLB w miejscu każdej
+  stopy. Podkładki łączą stopę z korpusem także na nierównej powierzchni. W pełnym
+  ADS widok ustawia się na znaku lub środku soczewki. Kołysanie i opóźnienie
+  obrotu wygaszają się wraz z wejściem w ADS, a odrzut nadal porusza bronią.
+- Końcówkę centruje gniazdo `muzzle`, a jej przekrój i długość wynikają z wymiarów
+  czoła lufy. Otwarta obejma zachodzi na czoło i zachowuje oba kanały
+  rozpraszacza. Błysk i poświata przesuwają się na koniec dodatku, a demontaż
+  przywraca ich pozycje.
+- Położenie ogniwa wzdłuż korpusu bazuje na `heat_cell`. Dwie podpory łączą
+  ogniwo z lokalną powierzchnią lewego boku, z uwzględnieniem wystających części.
+
 `modulesOf` dostarcza zamrożone moduły runu w `RoomScene` (także misja liniowa).
-Zmiana broni i dispose zdejmują dodatki. Ręce i pozy FPP pozostają istniejące.
+Zmiana broni i dispose zdejmują dodatki.
 
 Kontrola wizualna dla Claude: uruchom `npm run dev`, następnie
 `node tools/screens/moduleVisuals.mjs http://localhost:5173 artifacts/module-visuals`.
-Skrypt wymaga deweloperskiego serwera Vite i Chromium Playwright. Tworzy 84 PNG
-(7 modeli × 6 kształtów × biodro/poza ADS) oraz manifest. Używa prawdziwego
+Skrypt wymaga deweloperskiego serwera Vite i Chromium Playwright. Tworzy 252 PNG
+(7 modeli × 12 kształtów × biodro/ADS/widok boczny) oraz manifest. Używa prawdziwego
 `FppViewModel` na neutralnym tle; kombinacje niedostępne w grze są oznaczone jako
 kontrola geometrii. To kontrola brył i póz, bez symulowania FOV optyki ani bloomu
 rozgrywki; bloom i czytelność w scenie należy sprawdzić ręcznie. Skrypt nie był
 uruchamiany w rundzie Codexa zgodnie ze zleceniem. Podgląd kryjówki 3D opisuje następna sekcja.
 
-Vitest: `modules.test.ts` (dane, schematy, kopie, zgodność, przebicie i transport
+Vitest: `weaponModuleVisuals.test.ts` (styk mocowania, drożność lufy i widok przez
+optykę dla zgodnych par), `modules.test.ts` (dane, schematy, kopie, zgodność, przebicie i transport
 parametrów), `patches.test.ts` (`append` i błędne dane),
 `meta.test.ts` (walidacja i stare meta), `runMeta.test.ts` (zamrożenie modułów),
 `fireModes.test.ts` (Rapier: jedno odbicie, pozostały dystans, druga ściana,
