@@ -85,9 +85,14 @@ nieobecny. Zapis ukończenia poprzedza `applyRun`, zapis meta i usunięcie rekor
 Nieudane rozliczenie pozostawia ukończoną próbę do ponowienia. `appliedRunIds`
 chroni tę samą próbę, `campaign.completed` chroni firstClear między próbami.
 Pierwsze ukończenie misji liniowej daje zwykłe nagrody runu z `computeRunRewards` oraz jednorazowy bonus `firstClear`, każde kolejne ukończenie daje same zwykłe nagrody runu, a próba nieukończona daje 0 nagród.
-Wzór używa reguł `progression.rewards` i mnożnika Poziomu zagrożenia;
-scena przekazuje `roomsCleared` = 0 i `elitesCleared` = 0, więc liczą się zabójstwa
-i premia za zwycięstwo. Bonus `firstClear` dla M01 to 60 Danych. Misja
+Wzór używa reguł `progression.rewards` i mnożnika Poziomu zagrożenia.
+Scena przekazuje `roomsCleared` = 0 i `elitesCleared` = 0, więc zwykła nagroda
+obejmuje premię za zwycięstwo i Dane za zabójstwa gracza. Misja zwiększa licznik
+`kills` przy każdym `enemy_killed` z identyfikatorem gracza jako zabójcy. Zabójstwa
+sojuszników i usunięcia wrogów bez kredytu gracza nie zwiększają licznika.
+Licznik próby zostaje po odrodzeniu, zapisuje się z checkpointem i jest
+wczytywany przy wznowieniu. Starszy zapis bez `kills` zaczyna od zera.
+Bonus `firstClear` dla M01 to 60 Danych. Misja
 liniowa nigdy nie odblokowuje kolejnego Poziomu zagrożenia. Podsumowanie prowadzi do kryjówki
 z jednorazowym debriefem. Błąd zapisu jest widoczny w HUD; „Ponów zapis” i komenda
 `mission retry` ponawiają zapis lub rozliczenie.
@@ -99,7 +104,7 @@ z jednorazowym debriefem. Błąd zapisu jest widoczny w HUD; „Ponów zapis” 
 - Walidacja rekordu: znany punkt kontrolny, zestaw celów równy `level.objectiveOrder`, ukończone cele tworzą prefiks kolejności, `completed` wymaga wszystkich `done`.
 - Losowość: pokój dostaje `new Rng(seed)` (bez forka), każde spotkanie własny `new Rng(seed).fork('encounter:<id>')`. Spotkanie startuje, gdy gracz jest w jego strefie, a warunek `after` (cel `done` albo spotkanie ukończone) jest spełniony; liczba żywych to `min(maxAlive fali, tuning.level.maxAlive = 12)`, punkty spawnu z poziomu. Spotkanie kończy się, gdy `WaveDirector` osiągnie `done`. Posiłki celu (`sabotage.reinforcements`) startują spotkanie z `reinforcementFor` równym kluczowi (id celu).
 - Stany sceny: `loading → playing ↔ respawning`, `settling → summary` lub `error` (błąd zapisu; `mission retry` ponawia). `elapsedS` rośnie tylko w `playing`. Śmierć gracza w `playing` uruchamia `respawning` na `tuning.level.respawnDelayS`; odrodzenie niszczy aktywne spotkania, przywraca `completedEncounters` z punktu kontrolnego, teleportuje gracza (pozycja i kierunek punktu), zeruje postęp nieukończonych celów i lonty.
-- Finał: sygnał `objective:exit:done` ustawia flagę, a w następnym kroku `finish()`: `completed = true`, zapis rekordu, `applyRun` z podsumowaniem (`missionId`, `missionCompleted: true`, `outcome: 'victory'`, `kills`, `roomsCleared`, `elitesCleared`, `layerReached` = 0, obrażenia 0, `elapsedS`, `loadoutId`, `threatLevel`) i `attemptId` jako `runId`, zapis meta, `clearMission`.
+- Finał: sygnał `objective:exit:done` ustawia flagę, a w następnym kroku `finish()`: `completed = true`, zapis rekordu, `applyRun` z podsumowaniem (`missionId`, `missionCompleted: true`, `outcome: 'victory'`, `kills` z rekordu misji, `roomsCleared`, `elitesCleared`, `layerReached` = 0, obrażenia 0, `elapsedS`, `loadoutId`, `threatLevel`) i `attemptId` jako `runId`, zapis meta, `clearMission`.
 - Komendy: `mission start`, `checkpoint <id>` (teleport i zapis), `objective done <id>`, `encounter clear`, `mission radio <wyzwalacz>`, `mission retry`; `query('mission')` zwraca `{ id, level, state, checkpointId, objectives, completedEncounters, activeEncounters, openGates, elapsedS, saveError }`, a `query('missionRadio')` stan kolejki radia.
 
 Format mapy i sprawdzenie w 30 sekund: [levels.md](levels.md).

@@ -105,9 +105,10 @@ it.each(['memory', 'indexeddb'])(
       meta: createStarterMetaState(),
     };
     await store.saveMeta(meta);
-    await store.saveMission!(checkpoint);
+    const withKills = { ...checkpoint, kills: 3 };
+    await store.saveMission!(withKills);
     const loaded = await store.loadMission!();
-    expect(loaded).toEqual(checkpoint);
+    expect(loaded).toEqual(withKills);
     loaded!.objectives['mast-1'] = 'pending';
     expect((await store.loadMission!())?.objectives['mast-1']).toBe('done');
     expect(await store.loadRun()).toBeNull();

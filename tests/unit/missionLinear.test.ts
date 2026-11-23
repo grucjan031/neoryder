@@ -181,7 +181,42 @@ it('checkpoint zapisuje spotkania; śmierć przywraca pozycję, HP i cele, a res
   expect(resumed.scene.query('playerLook')).toMatchObject({ yawDeg: -90 });
 });
 
-it('ukończenie po checkpoincie zachowuje cel po śmierci i po ponownym wczytaniu', async () => {
+it('zabójstwa gracza sumują się przez odrodzenie i wznowienie checkpointu', async () => {
+  const { scene, commands, bus, store } = await setup();
+  expect(commands.execute('spawn assaulter')).toBe('Utworzono: 1');
+  commands.execute('kill all');
+  bus.emit('enemy_killed', { id: 100, killer: 101, tags: [] }); // cios sojusznika
+  commands.execute('objective done mast-1');
+  commands.execute('checkpoint po-maszcie-1');
+  await vi.waitFor(async () =>
+    expect(await store.loadMission!()).toMatchObject({
+      checkpointId: 'po-maszcie-1',
+      kills: 1,
+    }),
+  );
+
+  commands.execute('hurt 9999');
+  expect(scene.query('screen')).toBe('respawning');
+  steps(scene, Math.ceil(tuning.level.respawnDelayS / SIM_DT) + 2);
+  expect(scene.query('screen')).toBe('playing');
+  await vi.waitFor(() => expect(scene.query('savePending')).toBe(false));
+  expect((await store.loadMission!())?.kills).toBe(1);
+  scene.dispose();
+
+  const resumed = await setup(store, true);
+  expect(resumed.scene.query('kills')).toBe(0);
+  expect((await store.loadMission!())?.kills).toBe(1);
+  expect(resumed.commands.execute('spawn assaulter')).toBe('Utworzono: 1');
+  resumed.commands.execute('kill all');
+  resumed.commands.execute('kill all');
+  resumed.commands.execute('checkpoint po-maszcie-1');
+  await vi.waitFor(() =>
+    expect(resumed.scene.query('savePending')).toBe(false),
+  );
+  expect((await store.loadMission!())?.kills).toBe(2);
+});
+
+it('ukończenie po checkpoincie zachowuje cel po śmierci i po ponownym wczytaniu starego zapisu', async () => {
   const { scene, commands, store } = await setup();
   commands.execute('objective done mast-1');
   commands.execute('hurt 9999');
@@ -192,9 +227,12 @@ it('ukończenie po checkpoincie zachowuje cel po śmierci i po ponownym wczytani
     expect((await store.loadMission!())?.objectives['mast-1']).toBe('done'),
   );
   scene.dispose();
-  expect(state((await setup(store, true)).scene).objectives['mast-1']).toBe(
-    'done',
-  );
+  const oldCheckpoint = (await store.loadMission!())!;
+  delete oldCheckpoint.kills;
+  await store.saveMission!(oldCheckpoint);
+  const resumed = await setup(store, true);
+  expect(state(resumed.scene).objectives['mast-1']).toBe('done');
+  expect((await store.loadMission!())?.kills).toBe(0);
 });
 
 it('cały zestaw celów ma oryginalne czasy i pozycje z poziomu, firstClear rozlicza się tylko raz, a powtórka daje zwykłe nagrody runu', async () => {
@@ -203,20 +241,29 @@ it('cały zestaw celów ma oryginalne czasy i pozycje z poziomu, firstClear rozl
   const before = meta.state.data;
   await saveMetaManager(store, meta);
   let afterFirst: number | undefined;
-  const ordinary = computeRunRewards(
-    { outcome: 'victory', roomsCleared: 0, elitesCleared: 0, kills: 0 },
-    defaultMetaRules.threat[meta.state.threat.selected]!,
-    defaultMetaRules.progression.rewards,
+  const victory = {
+    outcome: 'victory',
+    roomsCleared: 0,
+    elitesCleared: 0,
+  } as const;
+  const threat = defaultMetaRules.threat[meta.state.threat.selected]!;
+  const rewards = defaultMetaRules.progression.rewards;
+  const ordinary = computeRunRewards({ ...victory, kills: 2 }, threat, rewards);
+  expect(ordinary.data).toBeGreaterThan(
+    computeRunRewards({ ...victory, kills: 0 }, threat, rewards).data,
   );
   for (let attempt = 0; attempt < 2; attempt++) {
     const { scene, commands } = await setup(store);
     commands.execute('god');
+    expect(commands.execute('spawn assaulter 2')).toBe('Utworzono: 2');
+    commands.execute('kill all');
     for (const id of levelDefinitions.get('m01-maszty')!.objectiveOrder)
       expect(commands.execute(`objective done ${id}`)).toBe('Cel ukończony.');
     await vi.waitFor(() => expect(scene.query('screen')).toBe('summary'));
     expect(await store.loadMission!()).toBeNull();
     const saved = await store.loadMeta();
     expect(saved?.meta.campaign.completed).toEqual(['m01-maszty']);
+    expect(saved?.meta.stats.kills).toBe((attempt + 1) * 2);
     // firstClear (60) tylko raz; naszywki Iskry mogą dodać własną nagrodę przy pierwszym ukończeniu.
     // Kolejne ukończenie daje zwykłe nagrody runu (bez firstClear).
     if (afterFirst === undefined) {

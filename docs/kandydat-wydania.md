@@ -3,8 +3,8 @@
 ## Zakres automatu
 
 Plik: `tests/e2e/demoPath.spec.ts`. Jeden test, jedna strona i jeden kontekst
-Playwright, bez resetowania zapisu pomiędzy etapami. Wszystkie pięć misji dema
-(M01, M02, M03, M04, M06 — w kolejności kampanii) to poziomy liniowe (scena
+Playwright, bez resetowania zapisu pomiędzy etapami. Wszystkie siedem misji
+(M01–M07 w kolejności kampanii) to poziomy liniowe (scena
 `mission`) i startują tak, jak u gracza: tablica misji w kryjówce → odprawa →
 „Rozpocznij misję”.
 
@@ -30,21 +30,25 @@ Playwright, bez resetowania zapisu pomiędzy etapami. Wszystkie pięć misji dem
 6. M04 „Ładunek klasy K”: eskorta wagonu — pięć celów postojów (`objective
 done`), Egzekutor, wagon przeskakiwany komendą `payload skip` do końca trasy,
    wyjście.
-7. M06 „Odlewnia”: pięć spotkań z bramami, punkt kontrolny `przed-arena`,
-   arena z zamkniętymi wrotami, trzy fazy Brandta zabite przez system obrażeń,
+7. M05 „Adiutant”: pościg, tylna straż, estakada, suwnice, lądowisko ze
+   snajperami i osłoną, przejęcie karty, wyjście.
+8. M06 „Odlewnia”: pięć spotkań z bramami, punkt kontrolny `przed-arena`,
+   arena z zamkniętymi wrotami, walka z Brandtem przez system obrażeń,
    serwer w gabinecie, winda towarowa.
-8. Powtórka M01, M02, M03, M04 i M06 na tym samym zapisie.
-9. Końcowa tablica: pięć misji „Ukończona”, kampania bez oczekującego debriefu.
+9. M07 „Nocny dyżur”: krata, cichy pas przy ścianie i alarm na środku hali,
+   wieżyczka magazynu, kapsuła, obrona transferu z posiłkami, trzy spotkania
+   na targu i winda towarowa.
+10. Powtórka M01–M07 na tym samym zapisie.
+11. Końcowa tablica pokazuje siedem misji „Ukończona”. Kampania nie ma oczekującego debriefu.
 
-Po każdej misji (dziesięć razy): podsumowanie → kryjówka → debrief → zakończenie
-rozmowy → reload strony. Po reloadzie cały stan meta (kampania, waluty,
+Po każdej z czternastu prób automat przechodzi z podsumowania do kryjówki,
+kończy rozmowę i przeładowuje stronę. Po reloadzie cały stan meta (kampania, waluty,
 historia rozliczeń, naszywki) musi być identyczny ze stanem sprzed odświeżenia,
 a debrief nie może się pojawić ponownie.
 
 Przed każdym startem tablica jest sprawdzana względem postępu kampanii:
-M02 jest „Zablokowana” do ukończenia M01, M03 do ukończenia M02, M04 do M03,
-M06 do M04 (wymagania z `src/data/missions/*.json`), ukończone misje mają
-status „Ukończona”, a żadna nie ma „Wkrótce”.
+M02–M07 czekają na ukończenie poprzedniej misji (wymagania z `src/data/missions/*.json`).
+Ukończone misje mają status „Ukończona”.
 
 Każdy etap ma `test.step` i nazwane limity `expect.poll`. Załączniki Playwright
 `demo-rc-etapy`, `demo-rc-nagrody` i `demo-rc-bledy` powstają również przy
@@ -55,28 +59,28 @@ nawigacji do końca; lista dozwolonych wyjątków (`ALLOWED_ERRORS`) jest pusta.
 
 Reguła (`docs/systems/missions.md`): pierwsze ukończenie misji liniowej daje
 zwykłe nagrody runu i jednorazowy bonus `firstClear`, powtórka — same zwykłe
-nagrody. Zwykła nagroda na Poziomie zagrożenia 0 to premia za zwycięstwo:
-50 XP, 30 Danych, 3 Rdzenie. `firstClear`: M01 60 Danych, M03 95 Danych
-i 1 Rdzeń, M06 150 Danych i 3 Rdzenie.
+nagrody. Na Poziomie zagrożenia 0 premia za zwycięstwo wynosi 50 XP, 30 Danych
+oraz 3 Rdzenie. Każde zabójstwo gracza dodaje 1 Daną. Bonus `firstClear`
+wynosi 60 Danych w M01, a w M07 90 Danych i 1 Rdzeń.
 
-Asercje po każdej misji: dokładna nagroda rozliczonej próby (z `firstClear`
-lub bez), różnice XP, Danych i Rdzeni równe nagrodzie próby plus nagrodom nowo
-zdobytych naszywek, jedna nowa pozycja w `appliedRunIds` i unikalność
-identyfikatorów prób.
+Po każdej misji automat sprawdza dokładną nagrodę próby z uwzględnieniem
+zabójstw i jednorazowego `firstClear`. Sprawdza też przyrost zabójstw w meta,
+różnice XP, Danych i Rdzeni wraz z nagrodami za nowe naszywki oraz jeden nowy,
+unikalny identyfikator próby w `appliedRunIds`.
 
 Użyte komendy:
 
 | Komenda                   | Cel                                                          | Pomija logikę ukończenia celu?                            |
 | ------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- |
 | `tp x z yaw pitch floorY` | Przeniesienie do strefy spotkania, celu, punktu kontroli     | Nie; silnik nadal sprawdza pozycję, kolejność i czas      |
-| `encounter clear`         | Usunięcie wrogów aktywnych spotkań (M03, M06)                | Nie celu; pomija walkę — spotkanie liczy się jako wygrane |
-| `kill all`                | Obrażenia śmiertelne: fazy Brandta, ostatnia fala samouczka  | Nie; pozostają zdarzenia śmierci i fazy bossa             |
+| `encounter clear`         | Usunięcie wrogów aktywnych spotkań bez kredytu gracza        | Oznacza spotkanie jako wygrane                          |
+| `kill all`                | Obrażenia ze źródłem gracza, m.in. walka z Brandtem          | Uruchamia system obrażeń, fazy bossa i nalicza zabójstwa |
 | `timescale 0.1`, `1`, `4` | Precyzyjne ćwiczenia samouczka; przyspieszenie transferu M03 | Nie; nadal naliczany jest wymagany czas symulacji         |
 | `god`                     | Ochrona przed śmiercią podczas automatyzacji                 | Nie                                                       |
 | `hub open missions`       | Otwarcie tablicy misji                                       | Omija dojście do stacji, nie cele misji                   |
-| `objective done exit`     | Jedna kontrola negatywna w M03 przed transferem              | Oczekiwany wynik to odmowa („Cel niedostępny.”)           |
+| `objective done`          | Kontrole kolejności celów oraz skrócona eskorta wagonu w M04 | Przed spełnieniem zależności komenda zwraca odmowę        |
 
-Żaden cel nie jest oznaczany komendą jako ukończony. Automat nie używa
+Automat nie używa
 `campaign complete`, `checkpoint`, `tutorial step`, komend przyznających waluty
 ani bezpośrednich zapisów do bazy. To więcej niż we wzorcowym
 `missionList.spec.ts`, który kończy terminal i wyjście M03 komendą
@@ -86,7 +90,25 @@ Seed wszystkich URL: `demo-rc`. Init script dodaje brakujący parametr po
 nawigacjach menu/kryjówki, zanim uruchomi się gra; nie zmienia zapisu ani celów.
 Misje dostają seed przez pole na tablicy.
 
-## Wyniki
+## Wynik przebiegu M01–M07
+
+Playwright na porcie 4264 z jednym workerem zaliczył kampanię w **12,8 min**.
+Wszystkie czternaście prób rozliczono na jednym zapisie. Po każdym reloadzie
+automat potwierdził stan meta i wygaszony debrief. Na końcu tablica pokazała
+siedem ukończonych misji, a zapis miał 700 XP, 1213 Danych i 53 Rdzenie.
+Test zarejestrował zero `console.error` i `pageerror`.
+
+| Próba M07 | Czas z debriefem i reloadem | XP | Dane | Rdzenie |
+| --- | ---: | ---: | ---: | ---: |
+| Pierwsze ukończenie | 47,2 s | 50 | 120 | 4 |
+| Powtórka | 54,4 s | 50 | 30 | 3 |
+
+Różnica w M07 wyniosła dokładnie `firstClear`, czyli 90 Danych i 1 Rdzeń.
+Nagroda w obu próbach M06 uwzględniła 1 Daną za zabicie Brandta.
+Szczegóły przebiegu są w załącznikach `demo-rc-etapy`, `demo-rc-nagrody`
+i `demo-rc-bledy`.
+
+## Wyniki historyczne (M01–M04 i M06)
 
 **Automat przechodzi: cała pięciomisyjna kampania dema jest do ukończenia
 z tablicy misji na jednym zapisie.** Jeden przebieg zielony (15,0 min), zero
@@ -155,7 +177,7 @@ tak jak wcześniej combo i parowanie.
 
 - Teleporty nie dowodzą drożności poziomu ani czytelności nawigacji; bramy są
   sprawdzane w stanie gry (`openGates`), nie przez przejście kolizji.
-- `encounter clear` pomija walkę w spotkaniach M02, M03, M04 i M06 (także posiłki
+- `encounter clear` pomija walkę w spotkaniach M02–M07 (także posiłki
   transferu i pościg); `kill all` i `god` nie sprawdzają balansu. Skład fal,
   trudność i wzorce Brandta nie są oceniane.
 - M01 jest przechodzona samymi teleportami do celów, bez spotkań i bram.
@@ -170,12 +192,3 @@ tak jak wcześniej combo i parowanie.
 - Poziom zagrożenia 0 i startowe wyposażenie; zakupy w warsztacie i talenty
   między misjami nie są wykonywane.
 - Test nie zastępuje playtestu. Review Architekta pozostaje do wykonania.
-
-## Do wyjaśnienia
-
-`docs/systems/missions.md` (opis nagród misji liniowej) podaje, że przy
-`roomsCleared` = 0 i `elitesCleared` = 0 „liczą się zabójstwa i premia za
-zwycięstwo”, a `src/scenes/mission.ts:507` przekazuje do rozliczenia
-`kills: 0`. Nagroda nie zależy więc od liczby zabitych; automat i
-`missionLinear.spec.ts` oczekują samej premii za zwycięstwo. Do decyzji, czy
-poprawić zdanie w dokumencie, czy liczyć zabójstwa w scenie.

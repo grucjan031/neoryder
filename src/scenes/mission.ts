@@ -58,7 +58,7 @@ export class MissionScene implements Scene {
   private definition!: MissionDefinition;
   private level!: LevelDefinition;
   private runtime!: LevelRuntime;
-  private snapshot!: MissionSave;
+  private snapshot!: MissionSave & { kills: number };
   private room?: RoomScene;
   private payloadRoom?: PayloadMissionRoom;
   private radio?: MissionRadio;
@@ -137,7 +137,7 @@ export class MissionScene implements Scene {
         saved.levelId !== this.level.id
       )
         throw new Error('Brak punktu kontrolnego tej misji.');
-      this.snapshot = saved;
+      this.snapshot = { ...saved, kills: saved.kills ?? 0 };
     } else {
       const existing = await this.store.loadMission();
       if (this.disposed) return;
@@ -161,6 +161,7 @@ export class MissionScene implements Scene {
         ),
         completedEncounters: [],
         elapsedS: 0,
+        kills: 0,
         completed: false,
         loadout: meta.loadout(),
         talents: [...meta.state.talents],
@@ -292,6 +293,13 @@ export class MissionScene implements Scene {
         else this.persist();
       });
     this.off.push(
+      ctx.bus.on('enemy_killed', ({ killer }) => {
+        if (
+          (this.state === 'playing' || this.state === 'respawning') &&
+          killer === this.room?.playerId
+        )
+          this.snapshot.kills++;
+      }),
       ctx.bus.on('player_died', ({ id }) => {
         if (id !== this.room?.playerId || this.state !== 'playing') return;
         this.state = 'respawning';
@@ -635,7 +643,7 @@ export class MissionScene implements Scene {
         seed: this.snapshot.seed,
         loadoutId: this.snapshot.loadout.id,
         elapsedS: this.snapshot.elapsedS,
-        kills: 0,
+        kills: this.snapshot.kills,
         roomsCleared: 0,
         elitesCleared: 0,
         layerReached: 0,
