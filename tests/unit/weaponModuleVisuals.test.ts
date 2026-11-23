@@ -225,11 +225,11 @@ describe('elementy modułów na siedmiu modelach GLB', () => {
         const expectedLength = {
           scope: 0.4,
           reddot: 0.08,
-          brake: 0.15,
+          brake: 0.12,
           rail: 0.25,
           coil: 0.25,
           canister: 0.25,
-          compensator: 0.2,
+          compensator: 0.16,
           extended: 0.32,
           pulse: 0.25,
           holo: 0.13,

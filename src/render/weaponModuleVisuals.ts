@@ -161,10 +161,9 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
   switch (shape) {
     case 'brake':
       // Otwarty kanał wzdłuż -Z; przerwy między pierścieniami pełnią rolę portów.
-      for (const z of [-0.12, -0.5, -0.88]) {
-        ring(0.42, 0, z);
-        ring(0.43, 0, z - 0.025, true).scale.z = 0.3;
-      }
+      for (const z of [-0.12, -0.5, -0.88]) ring(0.42, 0, z);
+      for (const z of [-0.185, -0.945])
+        add(new TorusGeometry(0.42, 0.012, 4, 12), 0, 0, z, true);
       for (const x of [-0.39, 0.39]) box(0.12, 0.22, 1, x, 0, -0.5);
       break;
     case 'rail':
@@ -182,9 +181,11 @@ export function createModuleVisual(shape: Shape, color: Color): Object3D {
         -0.5,
       ).rotation.x = Math.PI / 2;
       for (const z of [-0.04, -0.96]) ring(0.37, 0, z);
+      for (const z of [-0.14, -0.86])
+        add(new TorusGeometry(0.36, 0.012, 4, 16), 0, 0, z, true);
       for (const z of [-0.24, -0.5, -0.76]) {
         ring(0.39, 0, z);
-        for (const x of [-0.35, 0.35]) box(0.08, 0.2, 0.13, x, 0, z, true);
+        for (const x of [-0.35, 0.35]) box(0.08, 0.2, 0.13, x, 0, z);
       }
       break;
     case 'coil':
@@ -479,9 +480,9 @@ export function attachModuleVisuals(
     const fit = (x: number, y: number, z: number) =>
       visual.scale.set(x / raw.x, y / raw.y, z / raw.z);
     if (module.slot === 'muzzle' && muzzle) {
-      if (shape === 'brake') fit(barrel * 1.4, barrel * 1.4, length * 0.15);
+      if (shape === 'brake') fit(barrel * 1.3, barrel * 1.3, length * 0.12);
       else if (shape === 'compensator')
-        fit(barrel * 1.5, barrel * 1.5, length * 0.2);
+        fit(barrel * 1.3, barrel * 1.3, length * 0.16);
       else fit(barrel * 1.3, size.y * 0.18, length * 0.25);
       visual.position.copy(
         gunRoot.worldToLocal(muzzle.getWorldPosition(new Vector3())),
