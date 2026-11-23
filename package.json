@@ -15,8 +15,10 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "build": "vite build",
-    "check": "npm run typecheck && npm run lint && npm test",
+    "check": "npm run typecheck && npm run lint && vitest run --maxWorkers=4 --exclude tests/unit/arenaPerf.test.ts --exclude tests/unit/arenaTraversal.test.ts --exclude tests/unit/arenaEnemies.test.ts && vitest run --no-file-parallelism tests/unit/arenaEnemies.test.ts tests/unit/arenaTraversal.test.ts tests/unit/arenaPerf.test.ts",
     "balance": "node src/balance/run.mjs",
+    "bench:ai": "node tools/perf/ai.mjs",
+    "wasm": "node tools/buildWasm.mjs",
     "perf:bench": "vite build && node tools/perf/benchmark.mjs"
   },
   "dependencies": {

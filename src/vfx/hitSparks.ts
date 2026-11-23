@@ -23,6 +23,7 @@ export class HitSparks {
   private readonly pool: ParticlePool;
   private readonly off: () => void;
   private readonly offParry: () => void;
+  private readonly offWall: () => void;
 
   constructor(
     bus: EventBus,
@@ -30,7 +31,11 @@ export class HitSparks {
   ) {
     this.pool = new ParticlePool(opts.tuning.vfx.maxHitSparks);
     this.off = bus.on('damage_dealt', (event) => {
-      if (!event.point) return;
+      if (
+        !event.point ||
+        (event.tags.includes('#wall') && event.tags.includes('#hazard'))
+      )
+        return;
       if (event.source === opts.playerId && event.target !== opts.playerId)
         this.burst(event.point, event.dir, HIT_SPARK_CYAN);
       else if (event.target === opts.playerId && event.source !== opts.playerId)
@@ -45,6 +50,9 @@ export class HitSparks {
           opts.tuning.vfx.parrySparkCount,
         );
     });
+    this.offWall = bus.on('enemy_wall_slam', ({ point, normal }) =>
+      this.burst(point, normal, HIT_SPARK_RED),
+    );
   }
 
   get count(): number {
@@ -121,6 +129,7 @@ export class HitSparks {
   dispose(): void {
     this.off();
     this.offParry();
+    this.offWall();
     this.pool.clear();
   }
 }

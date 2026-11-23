@@ -164,6 +164,7 @@ export class DamageSystem {
       dir: info.dir ?? null,
       knockback: info.knockback ?? 0,
       killed,
+      ...(info.headshot ? { headshot: true } : {}),
       ...(blocked > 0 ? { blocked } : {}),
       ...(info.statuses !== undefined ? { statuses: info.statuses } : {}),
     });
@@ -183,6 +184,7 @@ export class DamageSystem {
           id: target,
           killer: info.source,
           tags: info.tags,
+          ...(info.dir ? { dir: info.dir } : {}),
         });
     }
     return dealt;

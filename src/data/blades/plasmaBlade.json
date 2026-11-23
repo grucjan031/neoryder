@@ -2,8 +2,8 @@
   "id": "plasmaBlade",
   "model": "plasma_blade",
   "combo": [
-    { "damage": 25, "knockback": 0, "reach": 2.2, "width": 2.2 },
-    { "damage": 25, "knockback": 0, "reach": 2.2, "width": 2.2 },
+    { "damage": 25, "knockback": 1.8, "reach": 2.2, "width": 2.2 },
+    { "damage": 25, "knockback": 2.2, "reach": 2.2, "width": 2.2 },
     { "damage": 40, "knockback": 7, "reach": 2.4, "width": 2.6 }
   ],
   "heavy": { "damage": 80, "knockback": 10, "reach": 2.8, "width": 2.0 },

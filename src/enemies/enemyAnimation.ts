@@ -31,6 +31,19 @@ export interface EnemyAnimation {
   continues?: boolean;
 }
 
+export function gaitWeights(
+  speed: number,
+  runSpeed: number,
+  walkFraction: number,
+): [number, number, number] {
+  const fraction = Math.max(0, Math.min(1, speed / runSpeed));
+  if (walkFraction >= 1) return [1 - fraction, fraction, 0];
+  const walk = Math.max(0.001, Math.min(0.999, walkFraction));
+  const idle = Math.max(0, 1 - fraction / walk);
+  const jog = Math.max(0, (fraction - walk) / (1 - walk));
+  return [idle, 1 - idle - jog, jog];
+}
+
 export function rifleman(
   definition: Pick<EnemyDefinition, 'kind' | 'model'>,
 ): boolean {

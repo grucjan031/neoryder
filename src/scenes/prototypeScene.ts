@@ -66,6 +66,7 @@ export abstract class PrototypeScene extends RoomScene {
     if (this.disposed) return;
     if (!this.room.arena)
       throw new Error(`Pokój ${this.room.id} nie ma danych areny (nawigacja).`);
+    this.navigation?.dispose();
     this.navigation = new ArenaNavigation(this.room);
   }
 
@@ -125,14 +126,18 @@ export abstract class PrototypeScene extends RoomScene {
     return goal;
   }
 
-  /** Wrogowie maszerują do gracza po nawigacji (jak w trybie Przejęcia); w 10 m chasują sami. */
+  /**
+   * Wrogowie maszerują do gracza po nawigacji (jak w trybie Przejęcia); w 10 m chasują sami.
+   * Cel końcowy ustawiamy tu, a węzeł trasy wybiera wsad `EnemyManager.step` w kroku sceny.
+   */
   private steerEnemies(): void {
-    const nav = this.navigation;
-    if (!nav) return;
+    if (!this.navigation) return;
     const goal = this.navGoal(this.playerFeet());
     this.manager.forEach((enemy) => {
-      if (!enemy.removed && enemy.current.state !== 'dead')
-        enemy.moveGoal = nav.next(enemy.current.position, goal);
+      if (!enemy.removed && enemy.current.state !== 'dead') {
+        enemy.moveGoal = goal;
+        enemy.moveGoalFinal = true;
+      }
     });
   }
 

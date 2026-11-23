@@ -325,7 +325,21 @@ export const tuning = {
     landingDipPerSpeed: 0.012,
     landingDipMax: 0.16,
     landingRecoverRate: 9,
+    /** Szybkość uginania kamery przy lądowaniu (1/s): dip goni cel zamiast skoku w jednej klatce. */
+    landingAttackRate: 45,
+    /** Wstrząs przy ciężkim lądowaniu: od prędkości pionowej (m/s), skala traumy i czas (s). */
+    landingShakeMinSpeed: 11,
+    landingShakeScale: 0.22,
+    landingShakeS: 0.25,
     eyeLerpRate: 16,
+    /** Wygładzanie skoków wysokości stóp na schodach (1/s) i margines ponad nachylenie rampy (m/krok). */
+    stepSmoothRate: 22,
+    stepSmoothMinM: 0.05,
+    /** Dodatkowe FOV w ślizgu (stopnie) i przechył boczny (stopnie, przy prędkości sprintu / w ślizgu). */
+    slideFovKick: 8,
+    strafeRollDeg: 1.6,
+    slideRollDeg: 2.8,
+    rollLerpRate: 14,
   },
   render: {
     concrete: '#ffffff',
@@ -481,6 +495,14 @@ export const tuning = {
     doubleJumpVelocity: 7.5,
     coyoteTimeMs: 100,
     jumpBufferMs: 120,
+    /** Bufor wciśnięcia ślizgu w powietrzu tuż przed lądowaniem (ms). */
+    slideBufferMs: 140,
+    /** Bufor wciśnięcia dashu tuż przed końcem odnowienia (ms). */
+    dashBufferMs: 100,
+    /** 1 = pęd ponad prędkość docelową w powietrzu nie jest hamowany przy trzymaniu kierunku lotu. */
+    airPreserveMomentum: 1,
+    /** Łagodne tłumienie nadmiarowego pędu w locie (1/s). */
+    airDrag: 0.4,
     capsuleHeight: 1.8,
     capsuleRadius: 0.35,
     eyeHeight: 1.65,
@@ -507,6 +529,25 @@ export const tuning = {
     slideEndSpeed: 4,
     slideMaxS: 1.1,
     slideCapsuleHeight: 1.0,
+    /** Napęd ślizgu przez nachylenie (mnożnik |g|·nachylenie; 0 = wyłączony), minimalne nachylenie (sin) i maks. czas zjazdu (s). */
+    slideSlopeAccelScale: 0.85,
+    slideDownhillMinSlope: 0.12,
+    /** Wysokość startu promienia sondującego nachylenie podłoża nad stopami (m). */
+    groundProbeUpM: 0.2,
+    slideDownhillMaxS: 3,
+    /** 1 = po zderzeniu ze ścianą obcinamy składową prędkości poziomej skierowaną w ścianę. */
+    wallVelocityProjection: 1,
+    /** Ruch poziomy poniżej tego ułamka zamierzonego uznajemy za zablokowany; ściana = |normal.y| poniżej wallNormalMaxY. */
+    wallBlockedFrac: 0.9,
+    wallNormalMaxY: 0.3,
+    /**
+     * Krzywa grawitacji skoku (1 = bez zmian). Zalecane z audytu: apex 0.8, fall 1.18, jumpCut 1.5;
+     * domyślnie tylko apex, bo reszta skraca zasięg skoków i zmienia projekt poziomów.
+     */
+    apexSpeedThreshold: 1.8,
+    apexGravityMult: 0.8,
+    fallGravityMult: 1,
+    jumpCutGravityMult: 1,
     crouchSpeed: 3.5,
     /**
      * Celowanie (ADS, PPM z bronią palną): czas wejścia i wyjścia (s), FOV jako ułamek bazowego
@@ -690,7 +731,61 @@ export const tuning = {
       gain: 0.45,
     },
   },
-  physics: { gravity: -20, maxDynamicBodies: 300 },
+  physics: {
+    gravity: -20,
+    maxDynamicBodies: 300,
+    /** Twardy limit jednoczesnych ciał dynamicznych rekwizytów (poza maxDynamicBodies, który liczy wszystkie ciała świata). */
+    maxPropBodies: 24,
+    /** Rekwizyt wolniejszy niż to (m/s) przez propSleepDelayS jest usypiany. */
+    propSleepLinvel: 0.15,
+    propSleepDelayS: 0.6,
+  },
+  /** Zniszczalne skrzynie `crate` / `crate_small` (src/world/propPhysics.ts). */
+  props: {
+    crateHealth: 35,
+    smallCrateHealth: 15,
+    smallCrateMassKg: 15,
+    propDamping: 2.5,
+    propFriction: 0.8,
+    propRestitution: 0.05,
+    crateDebrisCount: 20,
+    smallCrateDebrisCount: 12,
+    debrisStrength: 5,
+    debrisSize: 0.14,
+    /** Impuls (N·s) = (knockback + hitMinKnockback) · hitImpulseScale, w stronę trafienia, z lekkim wzniesieniem. */
+    hitImpulseScale: 12,
+    hitMinKnockback: 4,
+    hitLift: 0.3,
+    /** Dynamiczna jest tylko mała skrzynia dalej niż doorClearM + maxDriftM od drzwi; reszta zostaje nieruchoma (zniszczalna). */
+    doorClearM: 4,
+    /** Maks. odległość od miejsca startu; dalej ciało jest zamrażane, żeby nie zablokować przejścia. */
+    maxDriftM: 2.5,
+    /** Skrzynia/dekoracja spadająca głębiej niż to pod miejsce startu jest zamrażana/zwalniana (m). */
+    fallLimitM: 20,
+    /** Wywracalne dekoracje (pachołki, worki): kształt i masa, zasięg dashu/wybuchu, impuls (m/s), wzniesienie. */
+    scatter: {
+      city_traffic_cone: { radiusM: 0.18, heightM: 0.7, massKg: 2 },
+      city_trash_bags: { radiusM: 0.35, heightM: 0.5, massKg: 5 },
+    },
+    scatterRadiusM: 2.2,
+    scatterImpulse: 5.5,
+    scatterPushImpulseScale: 0.4,
+    scatterLift: 0.6,
+    /** Minimalna prędkość gracza (sprint, ślizg, dash), by zahaczyć o dekorację w promieniu scatterTouchM. */
+    scatterMinSpeed: 8,
+    scatterTouchM: 0.9,
+    scatterMaxBodies: 12,
+    /** Dekoracja wolniejsza niż scatterSleepSpeed przez scatterSleepS traci ciało i zostaje w pozie. */
+    scatterSleepSpeed: 0.2,
+    scatterSleepS: 0.8,
+    /** Maks. liczba wywracalnych dekoracji na pokój (najbliższe miejsca startu gracza). */
+    scatterMaxItems: 16,
+    /** Mnożnik impulsu wybuchu, moment obrotowy (ułamek impulsu), restytucja i ułamek prędkości gracza przy potrąceniu. */
+    scatterExplosionMult: 1.6,
+    scatterTorque: 0.3,
+    scatterRestitution: 0.2,
+    scatterTouchSpeedMult: 0.5,
+  },
   damage: { playerInvulnMs: 250, respawnS: 1.5 },
   hazards: {
     electricTickS: 0.5,
@@ -715,6 +810,8 @@ export const tuning = {
     objectDamping: 3,
   },
   weapons: {
+    hitKnockbackPerDamage: 0.08,
+    hitKnockbackMax: 2.5,
     overheatLockS: 1.5,
     activeCooling: {
       windowStartS: 0.5,
@@ -764,8 +861,28 @@ export const tuning = {
     shieldBreakShake: 0.5,
     shieldBreakShakeS: 0.3,
     stunKnockback: 6,
+    knockbackLiftRatio: 0.22,
+    knockbackMaxLiftSpeed: 4.5,
+    wallSlamMinSpeed: 4,
+    wallSlamDamage: 25,
+    wallSlamExtraStunS: 0.35,
+    wallSlamBounce: 0.2,
+    wallSlamHitstopMs: 45,
+    wallSlamMaxNormalY: 0.5,
+    wallSlamShake: 0.35,
+    wallSlamShakeS: 0.25,
     corpseS: 0.5,
+    deathCollapseS: 0.14,
+    deathCollapseTiltDeg: 65,
+    deathCollapseSlideM: 0.45,
+    deathCollapseDroneDropM: 0.35,
+    deathCollapseFoldRatio: 0.25,
     separationRadius: 1,
+    pathLookaheadCells: 8,
+    accelerationMps2: 48,
+    brakingMps2: 32,
+    turnLeanRad: 0.12,
+    torsoAimLimitRad: 0.5,
     wallProbe: 1.5,
     /** Autostep kapsuły wroga (m): schody aren, które nawigacja uznaje za chodzone (≤ 0,35 m). */
     stepHeight: 0.35,
@@ -774,6 +891,13 @@ export const tuning = {
     snapToGroundDistance: 0,
   },
   vfx: {
+    deathCollapseChipFraction: 0.25,
+    enemyFlinchAngleDeg: 14,
+    enemyFlinchHeadMult: 1.6,
+    enemyFlinchDurationS: 0.16,
+    enemyFlinchReferenceDamage: 25,
+    enemyFlinchDecay: 3,
+    droneFlinchTiltRad: 0.38,
     /**
      * Czytelność wrogów z daleka (render/enemyRim.ts): jasność kombinezonu `mat_enemy_dark`
      * względem czerwieni wroga; poświata krawędzi rośnie od enemyRimNearM do enemyRimFarM [m]
@@ -880,6 +1004,17 @@ export const tuning = {
     debrisStrength: 6,
     debrisLifetimeS: 2.2,
     debrisGravity: -18,
+    /** Odbicie odłamka od ściany: restytucja normalna i tłumienie stycznej (z normalną trafienia). */
+    debrisWallRestitution: 0.3,
+    debrisWallFriction: 0.8,
+    /** Odłamki wybuchu beczki (blacha) i okruchy z trafień pocisków w świat (beton). */
+    barrelDebrisCount: 18,
+    barrelDebrisStrength: 11,
+    barrelDebrisSize: 0.16,
+    worldChipCount: 3,
+    worldChipStrength: 4.5,
+    worldChipSize: 0.065,
+    worldChipLifetimeS: 0.9,
     debrisSize: 0.18,
     /** Odłamki drona: mniejsze i rozpryśnięte ze środka bryły (mnożniki względem humanoida). */
     droneDebrisCountMult: 0.5,

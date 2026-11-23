@@ -64,9 +64,11 @@ function travel(focused: boolean, freeze: boolean) {
   );
   const enemy = manager.spawn('assaulter', { x: 0, y: 0, z: 0 });
   world.step();
-  // Rozpocznij pościg przed pomiarem dystansu, bez wliczania przejścia idle → chase.
-  manager.step(SIM_DT);
-  world.step();
+  // Porównujemy zegary po zakończeniu rozbiegu, przy tej samej prędkości.
+  for (let i = 0; i < 30; i++) {
+    manager.step(SIM_DT);
+    world.step();
+  }
   const startZ = enemy.current.position.z;
   const projectile = projectiles.spawn({
     owner,

@@ -57,6 +57,8 @@ export const roomBlockSchema = z.object({
   rotation: vec3Schema.optional(),
   instance: z.boolean().optional(),
   walkable: z.boolean().optional(),
+  /** false = skrzynia `crate` / `crate_small` zostaje statyczną bryłą (domyślnie zniszczalna). */
+  destructible: z.boolean().optional(),
   visible: z.boolean().optional(),
 });
 

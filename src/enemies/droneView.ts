@@ -13,6 +13,10 @@ import { droneFields } from './enemySchema';
 import { loadEnemyModel } from './enemyView';
 import { AimLaser } from './aimLaser';
 import type { Enemy } from './types';
+import type { EventBus } from '../core/events';
+import { tuning } from '../core/tuning';
+import { EnemyFlinch } from './enemyFlinch';
+import { deathPose } from './enemyDeath';
 
 /**
  * Widok drona (F2-13): model GLB z `definition.model` (węzły `eye` i `rotor*`) albo,
@@ -29,11 +33,14 @@ export class DroneView {
   private spin = 0;
   private readonly antenna = new Group();
   private readonly laser?: AimLaser;
+  private readonly flinch: EnemyFlinch;
 
   constructor(
     readonly enemy: Enemy,
     loadModels = true,
+    bus?: EventBus,
   ) {
+    this.flinch = new EnemyFlinch(enemy.id, bus);
     this.flight = droneFields.parse(enemy.definition.drone);
     const r = this.flight.radiusM;
     const hull = new OctahedronGeometry(r);
@@ -116,9 +123,39 @@ export class DroneView {
     );
     const delta = Math.atan2(Math.sin(b.yaw - a.yaw), Math.cos(b.yaw - a.yaw));
     this.root.rotation.y = a.yaw + delta * t;
-    this.root.visible = b.state !== 'dead' && !this.enemy.removed;
+    const death =
+      b.state === 'dead' && b.death && b.stateTimeS < b.death.durationS
+        ? b.death
+        : null;
+    this.root.visible =
+      (b.state !== 'dead' || death !== null) && !this.enemy.removed;
     const stunned = b.state === 'stunned';
-    this.tilt.rotation.z = stunned ? this.flight.stunTiltRad : 0;
+    const flinch =
+      this.flinch.sample(frameDt, this.root.rotation.y) *
+      tuning.vfx.droneFlinchTiltRad;
+    this.tilt.rotation.x = flinch * this.flinch.pitch;
+    this.tilt.rotation.z = stunned
+      ? this.flight.stunTiltRad
+      : (a.lean ?? 0) + ((b.lean ?? 0) - (a.lean ?? 0)) * t;
+    this.tilt.rotation.z += flinch * this.flinch.roll;
+    if (death) {
+      const pose = deathPose(
+        b.stateTimeS / death.durationS,
+        true,
+        tuning.enemies,
+      );
+      this.root.position.set(
+        b.position.x + death.dir.x * pose.slide,
+        b.position.y - pose.drop,
+        b.position.z + death.dir.z * pose.slide,
+      );
+      this.flinch.setDirection(death.dir, this.root.rotation.y);
+      this.tilt.rotation.set(
+        pose.tilt * this.flinch.pitch,
+        0,
+        pose.tilt * this.flinch.roll,
+      );
+    }
     this.spin +=
       Math.PI * 2 * this.flight.rotorSpinHz * frameDt * (stunned ? 0.2 : 1);
     for (const rotor of this.rotors) rotor.rotation.y = this.spin;
@@ -134,6 +171,7 @@ export class DroneView {
 
   dispose(): void {
     this.disposed = true;
+    this.flinch.dispose();
     this.laser?.dispose();
     this.root.removeFromParent();
     this.root.clear();

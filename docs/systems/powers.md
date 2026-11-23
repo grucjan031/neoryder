@@ -30,12 +30,13 @@ Właściciel: Moce. Kod: `src/combat/powers/`, dane: `src/data/powers/*.json`, s
 | `cooldownS`                       | 0,6          | odnowienie                                                      |
 | `coneAngleDeg`, `range`           | 70°, 7 m     | stożek przed oczami (kąt pełny)                                 |
 | `damage`, `knockback`             | 35, 14       | obrażenia i impuls w `damage_dealt`                             |
-| `wallSlamDamage`, `wallSlamRange` | 30, 3,5 m    | uderzenie w ścianę                                              |
+| `wallSlamDamage`, `wallSlamRange` | 30, 3,5 m    | uderzenie w ścianę dla prostych manekinów                       |
 | `knockbackLift`, `shakeDurationS` | 0,15; 0,25 s | minimalna składowa Y kierunku przed normalizacją; czas wstrząsu |
 
 - Odmowa: brak energii → `power_denied { reason: 'no_energy' }`, trwające odnowienie → `reason: 'cooldown'`. Udane użycie → `power_used`, wstrząs kamery (`camera_shake { intensity: pushShake (0,35), durationS: shakeDurationS, dir: null }`, **zawsze**, także bez trafień), a przy co najmniej jednym trafieniu hitstop `pushHitstopMs` (40 ms).
 - Cele w stożku (odległość 3D od oka ≤ `range`; filtr kąta: `dot(kierunek do celu, kierunek celowania) ≥ cos(coneAngleDeg/2)`, pomijany przy 360°) dostają obrażenia z tagami definicji (`#power`) i odrzut (`damage_dealt.knockback`; kierunek = od gracza do celu z `y = max(knockbackLift, y)` przed normalizacją). Cel, którego drużyna lub nietykalność odrzuca obrażenia (`canDamage = false` przy `dealt <= 0`), nie liczy się jako trafienie i nie dostaje uderzenia w ścianę. Ruch po odrzucie realizuje odbiorca (wróg, manekin) — ten sam kanał co ostatni cios combo.
-- **Uderzenie w ścianę** jest przewidywane promieniem w chwili pchnięcia: jeśli geometria świata jest bliżej niż `wallSlamRange` w kierunku odrzutu (poziomym, rzut kierunku odrzutu na XZ, promień z pozycji celu; wymaga `knockback > 0`; cel dokładnie nad lub pod graczem, czyli z zerowym odrzutem poziomym, nie dostaje uderzenia w ścianę), po czasie lotu (`dystans / knockback`) cel dostaje `wallSlamDamage` z tagami `#power`, `#wall`. Deterministyczne i niezależne od fizyki konkretnego wroga. Ograniczenie: przeszkoda, która pojawi się po pchnięciu, nie liczy się (do oceny w playteście).
+- **Uderzenie w ścianę** dla prawdziwego wroga rozlicza kontakt Rapiera na podstawie prędkości odrzutu. Proste manekiny w `push-test` używają promienia i czasu `dystans / knockback`.
+- **Rekwizyty:** po udanym użyciu `resonance_push` przekazuje ten sam stożek i impuls. Dynamiczna mała skrzynia dostaje impuls, a wywracalna dekoracja dostaje także moment obrotowy. Przy sprawdzaniu zasięgu liczy się środek obiektu. Skrzynie zachowują HP, duża skrzynia pozostaje nieruchoma. Kontrola w `?scene=room-test&room=combatWarehouse&debug=1`. Wyceluj w małe skrzynie przed punktem startu i naciśnij F. Duże skrzynie stoją obok, a pachołki są w narożnikach magazynu.
 - Drużyny filtruje `DamageSystem` (pchnięcie nie rani sojuszników).
 
 Wartości po F2-18 (opcja B): `damage` 35, `cost` 10; `cooldownS` bez zmian (0,6 s). Ograniczenia: `cost` ≥ 10, `cooldownS` ≥ 0,35, żeby Pchnięcie pozostało kontrolą, a nie karabinem.
@@ -44,13 +45,13 @@ Wartości po F2-18 (opcja B): `damage` 35, `cost` 10; `cooldownS` bez zmian (0,6
 
 To wyłącznie dane `kind: "cone"`: pełny kąt `coneAngleDeg = 360` pomija filtr kierunku, więc obejmuje także cele dokładnie za plecami. Zasięg nadal liczony jest w 3D od oczu, odrzut biegnie od gracza do danego celu.
 
-| Parametr                          | Wartość startowa  |
-| --------------------------------- | ----------------- |
-| `cost`, `cooldownS`               | 40 energii, 1,5 s |
-| `coneAngleDeg`, `range`           | 360°, 4 m         |
-| `damage`, `knockback`             | 10, 9             |
-| `wallSlamDamage`, `wallSlamRange` | 20, 2,5 m         |
-| `knockbackLift`, `shakeDurationS` | 0,15; 0,25 s      |
+| Parametr                          | Wartość startowa                 |
+| --------------------------------- | -------------------------------- |
+| `cost`, `cooldownS`               | 40 energii, 1,5 s                |
+| `coneAngleDeg`, `range`           | 360°, 4 m                        |
+| `damage`, `knockback`             | 10, 9                            |
+| `wallSlamDamage`, `wallSlamRange` | 20, 2,5 m dla prostych manekinów |
+| `knockbackLift`, `shakeDurationS` | 0,15; 0,25 s                     |
 
 Krótszy zasięg i słabszy odrzut w zamian za kontrolę otoczenia; wyższy koszt i dłuższe odnowienie ograniczają częste czyszczenie przestrzeni. Tagi i feedback jak w Pchnięciu. To balans startowy do F2-18.
 

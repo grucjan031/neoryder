@@ -9,6 +9,9 @@ import {
   loadDecor,
 } from '../render/cityModels';
 import { cloneRoomModel } from './roomModels';
+import { PropPhysicsSystem } from '../world/propPhysics';
+import type { PropKind } from '../world/propPhysics';
+import { PropRenderer, propTemplatesFromModel } from '../render/propRenderer';
 import { placeBlockModel } from './roomScene';
 import { FppViewModel } from '../render/fppViewModel';
 import {
@@ -88,6 +91,7 @@ import { RunInventoryMenu, buildRunInventoryView } from '../ui/runInventory';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
 import { EnemyShatter } from '../vfx/enemyShatter';
+import { WorldDebris } from '../vfx/worldDebris';
 import { enemyBody } from '../vfx/enemyBody';
 import { HitSparks } from '../vfx/hitSparks';
 import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
@@ -251,6 +255,9 @@ export class Arena implements Scene {
   private debris!: DebrisSystem;
   private debrisView!: DebrisRenderer;
   private shatter!: EnemyShatter;
+  private props?: PropPhysicsSystem;
+  private propView?: PropRenderer;
+  private worldDebris!: WorldDebris;
   private statusVfx!: StatusVfx;
   private statusView!: StatusVfxRenderer;
   private hitSparks!: HitSparks;
@@ -338,6 +345,15 @@ export class Arena implements Scene {
     );
     three.add(this.root);
     this.root.add(this.lights);
+    this.props = new PropPhysicsSystem({
+      world: this.world,
+      bus: ctx.bus,
+      damage: this.damage,
+      entities: this.entities,
+      hurtboxes: this.hurtboxes,
+      tuning: ctx.tuning,
+      deferActivation: true,
+    });
     await this.buildLayout();
     if (this.disposed) return;
     await loadDecor(this.root, layout.decor, this.loadModels);
@@ -360,6 +376,9 @@ export class Arena implements Scene {
       { ...staminaStatsSchema.parse(layout), damage: 1, attackSpeed: 1 },
     );
     this.registerPlayer();
+    this.props?.activate();
+    if ((this.props?.bodyCount ?? 0) > 0)
+      this.player.enableDynamicPush(ctx.tuning.puzzle.pushMassKg);
     this.hurtboxes.add(playerId, this.player.colliderHandle);
     this.entities.bindCollider(playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
@@ -514,7 +533,8 @@ export class Arena implements Scene {
           ),
         hurtboxPosition: (box) =>
           this.world.getCollider(box.colliderHandle)?.translation() ?? null,
-        castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+        castWall: (origin, dir, max, ignore) =>
+          this.castWall(origin, dir, max, ignore),
         dashActive: () => this.player.getState().dashS > 0,
         aim: () => this.aim(),
         projectiles: this.projectiles,
@@ -535,12 +555,19 @@ export class Arena implements Scene {
     this.createEquipment();
     this.debris = new DebrisSystem({
       maxDebris: ctx.tuning.vfx.maxDebris,
-      walls: (pos, dir, dist) => this.castWall(pos, dir, dist),
+      walls: (pos, dir, dist) => this.castDebrisWall(pos, dir, dist),
       tuning: ctx.tuning.vfx,
     });
     this.debrisView = new DebrisRenderer(this.debris);
     this.root.add(this.debrisView.root);
+    this.worldDebris = new WorldDebris(ctx.bus, this.debris, {
+      tuning: ctx.tuning,
+    });
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
+      collapse: {
+        tuning: ctx.tuning.enemies,
+        ageOf: (id) => this.enemy(id)?.current.stateTimeS,
+      },
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
       bodyOf: (id) => {
         const e = this.enemy(id);
@@ -736,9 +763,21 @@ export class Arena implements Scene {
     const models = new Group();
     models.name = 'static-models';
     this.root.add(blocks, models);
+    const propCapacity: Partial<Record<PropKind, number>> = {};
     await Promise.all(
       layout.blocks.map(
         async ({ size, position, model, material: blockMaterial }) => {
+          if (
+            this.props?.claim({
+              size,
+              position,
+              ...(model ? { model } : {}),
+            })
+          ) {
+            const kind = model as PropKind;
+            propCapacity[kind] = (propCapacity[kind] ?? 0) + 1;
+            return;
+          }
           this.world.createCollider(
             this.rapier.ColliderDesc.cuboid(size.x / 2, size.y / 2, size.z / 2)
               .setTranslation(position.x, position.y, position.z)
@@ -781,6 +820,23 @@ export class Arena implements Scene {
       ),
     );
     if (this.disposed) return;
+    if (this.props && this.props.aliveCount > 0) {
+      const templates: Partial<
+        Record<PropKind, ReturnType<typeof propTemplatesFromModel>>
+      > = {};
+      if (this.loadModels)
+        for (const kind of Object.keys(propCapacity) as PropKind[]) {
+          try {
+            const model = await cloneRoomModel(MODEL_FILES[kind]!);
+            if (model) templates[kind] = propTemplatesFromModel(model);
+          } catch {
+            // Zostaje bryła zastępcza (ten sam collider).
+          }
+        }
+      if (this.disposed) return;
+      this.propView = new PropRenderer(this.props, propCapacity, templates);
+      this.root.add(this.propView.root);
+    }
     // Statyczne bryły i modele bloków: jedna siatka na materiał (jak w pokojach).
     batchStaticGeometry(blocks, this.geometries);
     batchStaticGeometry(models, this.geometries);
@@ -906,11 +962,12 @@ export class Arena implements Scene {
           projectiles: this.projectiles,
           aim: () => this.aim(),
           targets: () => {
-            const list: { id: EntityId; position: Vec3 }[] = [];
+            const list: { id: EntityId; position: Vec3; physical: true }[] = [];
             this.manager.forEach((e) => {
               if (e.current.state !== 'dead')
                 list.push({
                   id: e.id,
+                  physical: true,
                   position: {
                     ...e.current.position,
                     // Środek ciała z danych wroga (Dron bez `body` to już środek kuli).
@@ -985,10 +1042,10 @@ export class Arena implements Scene {
       },
     );
     const distance = hit?.timeOfImpact ?? rangeM;
+    const box = hit ? this.hurtboxes.get(hit.collider.handle) : undefined;
     return {
-      target: hit
-        ? (this.hurtboxes.get(hit.collider.handle)?.entity ?? null)
-        : null,
+      target: box?.entity ?? null,
+      ...(box?.headshot ? { headshot: true } : {}),
       distance,
       point: {
         x: origin.x + dir.x * distance,
@@ -1042,13 +1099,43 @@ export class Arena implements Scene {
     );
   }
 
-  private castWall(origin: Vec3, dir: Vec3, max: number): number | null {
+  private castDebrisWall(
+    origin: Vec3,
+    dir: Vec3,
+    max: number,
+  ): { distance: number; normal: Vec3 } | null {
+    const hit = this.world.castRayAndGetNormal(
+      new this.rapier.Ray(origin, dir),
+      max,
+      false,
+      undefined,
+      interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
+    );
+    return hit
+      ? {
+          distance: hit.timeOfImpact,
+          normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z },
+        }
+      : null;
+  }
+
+  private castWall(
+    origin: Vec3,
+    dir: Vec3,
+    max: number,
+    ignoreCollider?: number,
+  ): number | null {
     const hit = this.world.castRay(
       new this.rapier.Ray(origin, dir),
       max,
       true,
       undefined,
       interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
+      undefined,
+      undefined,
+      ignoreCollider === undefined
+        ? undefined
+        : (collider) => collider.handle !== ignoreCollider,
     );
     return hit ? hit.timeOfImpact : null;
   }
@@ -1130,7 +1217,9 @@ export class Arena implements Scene {
     this.world.gravity.y = this.player.gravity;
     this.world.timestep = dt;
     this.world.step();
+    this.props?.step(dt);
     this.projectiles.step(dt);
+    this.shatter.step(dt);
     this.executeTarget = this.execute.targetId();
     if (this.attempt && this.offers.length > 0) this.openEndlessIntermission();
   }
@@ -1156,11 +1245,11 @@ export class Arena implements Scene {
       ids.add(enemy.id);
       let view = this.views.get(enemy.id);
       if (!view) {
-        view = createEnemyView(enemy, this.loadModels);
+        view = createEnemyView(enemy, this.loadModels, this.ctx.bus);
         this.views.set(enemy.id, view);
         this.root.add(view.root);
       }
-      view.render(alpha);
+      view.render(alpha, frameDt);
       view.setExecutable?.(
         executable.includes(enemy.id),
         frameDt,
@@ -1179,6 +1268,7 @@ export class Arena implements Scene {
       this.state === 'playing',
     );
     this.projectileView.render(alpha);
+    this.propView?.render(alpha);
     this.debrisView.render(alpha);
     this.explosionView.render(frameDt);
     this.statusView.render(alpha, frameDt);
@@ -1914,6 +2004,12 @@ export class Arena implements Scene {
         return this.debris.activeCount;
       case 'bodies':
         return this.world.bodies.len();
+      case 'props':
+        return {
+          alive: this.props?.aliveCount ?? 0,
+          bodies: this.props?.bodyCount ?? 0,
+          awake: this.props?.awakeCount ?? 0,
+        };
       default:
         return undefined;
     }
@@ -1933,6 +2029,9 @@ export class Arena implements Scene {
     this.lightningView?.dispose();
     this.explosionView?.dispose();
     this.shatter?.dispose();
+    this.propView?.dispose();
+    this.props?.dispose();
+    this.worldDebris?.dispose();
     this.debrisView?.dispose();
     this.statusVfx?.dispose();
     this.statusView?.dispose();

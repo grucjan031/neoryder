@@ -51,6 +51,7 @@ interface Projectile {
   owner: EntityId;
   team: Team;
   pos: Vec3;
+  firearmKnockback: boolean;
   dir: Vec3;
   speed: number;
   damage: number;
@@ -81,7 +82,7 @@ export class ProjectileSystem {
     private readonly hurtboxes: Hurtboxes,
     private readonly damage: DamageSystem,
     private readonly bus: EventBus,
-    tuning: Pick<Tuning, 'weapons'>,
+    private readonly tuning: Pick<Tuning, 'weapons'>,
   ) {
     this.pool = Array.from(
       { length: Math.max(1, Math.floor(tuning.weapons.maxProjectiles)) },
@@ -89,6 +90,7 @@ export class ProjectileSystem {
         id: null,
         owner: 0,
         team: 'neutral',
+        firearmKnockback: false,
         pos: { x: 0, y: 0, z: 0 },
         dir: { x: 0, y: 0, z: -1 },
         speed: 0,
@@ -123,6 +125,7 @@ export class ProjectileSystem {
       id,
       owner: spec.owner,
       team: spec.team,
+      firearmKnockback: spec.team === 'player' && spec.tags.includes('#gun'),
       speed: spec.speed,
       damage: spec.damage,
       tags: [...spec.tags],
@@ -181,6 +184,7 @@ export class ProjectileSystem {
     p.damage *= opts.damageMult ?? 1;
     p.owner = newOwner;
     p.team = newTeam;
+    p.firearmKnockback = false;
     p.hitTargets.length = 0;
     p.remainingS = p.lifetimeS;
     this.entities.setTeam(id, newTeam);
@@ -240,12 +244,23 @@ export class ProjectileSystem {
             y: p.pos.y + p.dir.y * hit.timeOfImpact,
             z: p.pos.z + p.dir.z * hit.timeOfImpact,
           };
+          const amount = p.damage * (box?.multiplier ?? 1);
+          const weapons = this.tuning.weapons;
           const info = {
-            amount: p.damage * (box?.multiplier ?? 1),
+            amount,
             source: p.owner,
             tags: p.tags,
             point,
             dir: { ...p.dir },
+            ...(box?.headshot ? { headshot: true } : {}),
+            ...(p.firearmKnockback
+              ? {
+                  knockback: Math.min(
+                    weapons.hitKnockbackMax,
+                    amount * weapons.hitKnockbackPerDamage,
+                  ),
+                }
+              : {}),
             ...(p.statuses ? { statuses: p.statuses } : {}),
           };
           if (box && p.id !== null) {
@@ -271,6 +286,13 @@ export class ProjectileSystem {
             }
           }
           if (p.id !== id) break;
+          if (!box)
+            this.bus.emit('world_hit', {
+              point: { ...point },
+              normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z },
+              owner: p.owner,
+              tags: p.tags,
+            });
           if (!box && p.ricochetsRemaining > 0) {
             const normal = hit.normal;
             const dot =

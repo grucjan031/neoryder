@@ -226,7 +226,7 @@ describe('combo', () => {
     expect(c.dealt()).toEqual([25]);
   });
 
-  it('ostatni cios combo niesie odrzut', () => {
+  it('dwa pierwsze ciosy combo dają mikroodrzut, a trzeci mocny odrzut', () => {
     const c = setup();
     const m = c.t.melee;
     for (let i = 0; i < 3; i++) {
@@ -236,7 +236,7 @@ describe('combo', () => {
     const hits = c.log
       .filter((e) => e.type === 'damage_dealt')
       .map((e) => e.payload as GameEvents['damage_dealt']);
-    expect(hits.map((h) => h.knockback)).toEqual([0, 0, 7]);
+    expect(hits.map((h) => h.knockback)).toEqual([1.8, 2.2, 7]);
     expect(hits[2]?.dir).toEqual({ x: 0, y: 0, z: -1 });
   });
 });

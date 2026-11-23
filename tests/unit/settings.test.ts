@@ -59,6 +59,7 @@ describe('Settings Z6', () => {
         invertY: false,
         screenShake: 1,
         flashes: true,
+        cameraTilt: true,
         quality: 'high',
         bindings: {},
       });
@@ -142,6 +143,7 @@ describe('Settings Z6', () => {
       invertY: false,
       screenShake: 1,
       flashes: true,
+      cameraTilt: true,
       quality: 'high',
       bindings: {},
     });
@@ -178,6 +180,7 @@ describe('Settings Z6', () => {
       invertY: false,
       screenShake: 1,
       flashes: false,
+      cameraTilt: true,
       quality: 'high',
       bindings: { swap: 'KeyV' },
     });

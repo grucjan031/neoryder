@@ -1,3 +1,5 @@
+import { deathDirection, deathDuration } from './enemyDeath';
+import { arrivalSpeed, updateBodyPose } from './locomotion';
 import { Health } from '../combat/damage';
 import type { DamageInfo } from '../combat/damage';
 import { STUNNED } from '../combat/status/statusSystem';
@@ -153,10 +155,15 @@ export class Boss implements Enemy {
         else if (pending && this.vulnerableS <= epsilon)
           this.openReflectCounter();
       }),
-      ctx.bus.on('enemy_killed', ({ id }) => {
+      ctx.bus.on('enemy_killed', ({ id, dir, tags }) => {
         if (id === this.id) {
           this.setPattern(null);
           this.resetShield();
+          this.body?.disableCollision();
+          this.current.death = {
+            dir: deathDirection(dir),
+            durationS: deathDuration(tags, ctx.tuning.enemies),
+          };
           this.transition('dead');
           this.killMinions();
         }
@@ -621,7 +628,13 @@ export class Boss implements Enemy {
     s.speed = 0;
     if (s.shotTimeS !== undefined) s.shotTimeS += dt;
     if (s.state === 'dead') {
-      if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
+      if (
+        s.stateTimeS + epsilon >=
+        Math.max(
+          this.ctx.tuning.enemies.corpseS,
+          s.death ? s.death.durationS + dt : 0,
+        )
+      )
         this.dispose();
       return;
     }
@@ -659,7 +672,13 @@ export class Boss implements Enemy {
           if (distance <= this.definition.attackRange) this.begin();
           else {
             if (s.state !== 'chase') this.transition('chase');
-            const speed = Math.min(this.stats.get('moveSpeed'), distance / dt);
+            const braking =
+              this.ctx.tuning.enemies.brakingMps2 *
+              (this.definition.body?.locomotionScale ?? 1);
+            const speed = Math.min(
+              this.stats.get('moveSpeed'),
+              arrivalSpeed(distance - this.definition.attackRange, braking, dt),
+            );
             vx = (dx / distance) * speed;
             vz = (dz / distance) * speed;
           }
@@ -696,6 +715,13 @@ export class Boss implements Enemy {
       s.position = movement.position;
       s.speed = movement.distance / dt;
       s.distance += movement.distance;
+      updateBodyPose(
+        this.previous,
+        s,
+        this.definition.turnRateDegS,
+        dt,
+        this.ctx.tuning.enemies,
+      );
     }
   }
 

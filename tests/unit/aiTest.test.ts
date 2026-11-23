@@ -1,4 +1,4 @@
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import { PerspectiveCamera, Scene as ThreeScene } from 'three';
 import { AiTest, createStatusTest } from '../../src/scenes/aiTest';
 import { scenes } from '../../src/scenes';
@@ -95,6 +95,20 @@ it('god prevents damage immediately and player death resets the arena after one 
   scene.step(SIM_DT, input);
   expect(scene.query('playerHp')).toBe(100);
   expect(scene.query('enemies')).toBe(3);
+});
+
+it('slam sends an enemy into the visible pillar', async () => {
+  const { scene, commands, bus } = await setup();
+  const slam = vi.fn();
+  bus.on('enemy_wall_slam', slam);
+  commands.execute('kill all');
+  commands.execute('slam');
+  for (let i = 0; i < 20; i++) scene.step(SIM_DT, input);
+  expect(slam).toHaveBeenCalledExactlyOnceWith(
+    expect.objectContaining({
+      point: expect.objectContaining({ z: expect.closeTo(-5.5, 2) }),
+    }),
+  );
 });
 
 it('shares projectiles with spawned gunners, applies ranged damage and clears shots on reset', async () => {

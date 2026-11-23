@@ -135,11 +135,13 @@ it('showDebrief zwalnia pointer lock przed oknem modalnym', () => {
   HTMLDialogElement.prototype.showModal = function () {
     this.setAttribute('open', '');
   };
+  let closeDebrief: (() => void) | undefined;
   try {
     const mission = [...missionDefinitions.values()][0]!;
-    showDebrief(mission, async () => {});
+    closeDebrief = showDebrief(mission, async () => {});
     expect(exit).toHaveBeenCalled();
   } finally {
+    closeDebrief?.();
     Reflect.deleteProperty(document, 'exitPointerLock');
     Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
   }

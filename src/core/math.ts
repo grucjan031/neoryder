@@ -30,3 +30,18 @@ export function normalize(a: Vec3): Vec3 {
   const len = length(a);
   return len > 1e-9 ? scale(a, 1 / len) : vec3();
 }
+
+/** Kierunek od wierzchołka stożka do punktu, jeśli punkt jest w jego zasięgu. */
+export function directionInCone(
+  point: Vec3,
+  origin: Vec3,
+  forward: Vec3,
+  range: number,
+  cosHalf: number,
+): Vec3 | null {
+  const to = sub(point, origin);
+  const distance = Math.hypot(to.x, to.y, to.z);
+  if (distance > range || distance < 1e-6) return null;
+  const away = scale(to, 1 / distance);
+  return cosHalf <= -1 || dot(away, forward) >= cosHalf ? away : null;
+}

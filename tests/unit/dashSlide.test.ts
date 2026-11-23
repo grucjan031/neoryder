@@ -239,3 +239,103 @@ describe('slide', () => {
     );
   });
 });
+
+describe('pęd i bufory wejścia (C-P1)', () => {
+  const speedOf = (p: PlayerController) => {
+    const v = p.getState().velocity;
+    return Math.hypot(v.x, v.z);
+  };
+
+  it('slide-jump z trzymanym W zachowuje pęd ponad prędkość sprintu', async () => {
+    const { ctx, player, step } = await setup();
+    const move = ['moveForward', 'sprint'] as Action[];
+    step(input(move), 60);
+    step(input([...move, 'crouch'], ['crouch']));
+    expect(player.getState().sliding).toBe(true);
+    step(input([...move, 'crouch']), 5);
+    step(input([...move, 'crouch'], ['jump']));
+    step(input(move), 3);
+    expect(player.getState().grounded).toBe(false);
+    const start = speedOf(player);
+    expect(start).toBeGreaterThan(ctx.tuning.player.sprintSpeed + 0.2);
+    step(input(move), 15);
+    expect(player.getState().grounded).toBe(false);
+    expect(speedOf(player)).toBeGreaterThan(start * 0.9);
+  });
+
+  it('przeciwny kierunek w locie nadal hamuje', async () => {
+    const { ctx, player, step } = await setup();
+    const move = ['moveForward', 'sprint'] as Action[];
+    step(input(move), 60);
+    step(input([...move, 'crouch'], ['crouch']));
+    step(input([...move, 'crouch'], ['jump']));
+    step(input(['moveBack']), 15);
+    expect(speedOf(player)).toBeLessThan(ctx.tuning.player.sprintSpeed);
+  });
+
+  it('crouch wciśnięty w powietrzu przed lądowaniem zaczyna ślizg w chwili kontaktu', async () => {
+    const { ctx, player, step } = await setup();
+    const move = ['moveForward', 'sprint'] as Action[];
+    ctx.tuning.player.airDrag = 0;
+    step(input(move), 60);
+    step(input(move, ['jump']));
+    step(input(move), 5);
+    let guard = 0;
+    while (player.getState().position.y > 1.25 && guard++ < 100)
+      step(input(move));
+    step(input([...move, 'crouch'], ['crouch']));
+    expect(player.getState().sliding).toBe(false);
+    guard = 0;
+    while (!player.getState().grounded && guard++ < 100)
+      step(input([...move, 'crouch']));
+    expect(player.getState().sliding).toBe(true);
+  });
+
+  it('bufor ślizgu wygasa i puszczenie crouch go anuluje', async () => {
+    const { ctx, player, step } = await setup();
+    const move = ['moveForward', 'sprint'] as Action[];
+    step(input(move), 60);
+    step(input(move, ['jump']));
+    step(input(move), 3);
+    step(input([...move, 'crouch'], ['crouch']));
+    step(input(move, [], ['crouch']));
+    let guard = 0;
+    while (!player.getState().grounded && guard++ < 100) step(input(move));
+    expect(player.getState().sliding).toBe(false);
+    expect(ctx.tuning.player.slideBufferMs).toBeGreaterThan(0);
+  });
+
+  it('dash wciśnięty tuż przed końcem odnowienia odpala się sam', async () => {
+    const { ctx, step, events } = await setup();
+    const t = ctx.tuning.player;
+    step(input([], ['dash']));
+    step(input(), steps(t.dashCooldownS - t.dashBufferMs / 2000));
+    step(input([], ['dash']));
+    expect(events).toEqual(['dash_used']);
+    step(input(), steps(t.dashBufferMs / 1000));
+    expect(events).toEqual(['dash_used', 'dash_used']);
+  });
+
+  it('bez wejścia w locie nadmiar pędu też podlega airDrag (nie rośnie względem trzymanego W)', async () => {
+    const hold = await setup();
+    const free = await setup();
+    const move = ['moveForward', 'sprint'] as Action[];
+    for (const c of [hold, free]) {
+      c.step(input(move), 60);
+      c.step(input([...move, 'crouch'], ['crouch']));
+      c.step(input([...move, 'crouch'], ['jump']));
+      c.step(input(move), 3);
+    }
+    hold.step(input(move), 15);
+    free.step(input(), 15);
+    const speedOf = (p: PlayerController) => {
+      const v = p.getState().velocity;
+      return Math.hypot(v.x, v.z);
+    };
+    expect(hold.player.getState().grounded).toBe(false);
+    expect(free.player.getState().grounded).toBe(false);
+    expect(speedOf(free.player)).toBeLessThanOrEqual(
+      speedOf(hold.player) + 1e-6,
+    );
+  });
+});

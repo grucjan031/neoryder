@@ -503,6 +503,7 @@ describe('settings', () => {
       invertY: false,
       screenShake: 1,
       flashes: true,
+      cameraTilt: true,
       quality: 'medium',
       bindings: {},
     });

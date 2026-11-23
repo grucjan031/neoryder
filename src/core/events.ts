@@ -38,6 +38,7 @@ export interface GameEvents {
     /** Impuls odrzutu (N·s) z DamageInfo.knockback; 0, gdy brak. */
     knockback: number;
     killed: boolean;
+    headshot?: boolean;
     /** Obrażenia zatrzymane przez blok (modyfikatory BLOCK_SOURCE); brak, gdy blok nie działał. */
     blocked?: number;
     statuses?: readonly StatusApplication[];
@@ -46,6 +47,7 @@ export interface GameEvents {
     id: EntityId;
     killer: EntityId | null;
     tags: readonly string[];
+    dir?: Vec3;
   };
   /** Udane parowanie: odbity pocisk (`projectile`) albo sparowany cios wręcz (`projectile: null`). */
   parry_success: {
@@ -56,6 +58,14 @@ export interface GameEvents {
   power_used: { power: string; user: EntityId };
   power_cooldown: { power: string; user: EntityId; cooldownS: number };
   power_released: { power: string; user: EntityId };
+  resonance_push: {
+    origin: Vec3;
+    forward: Vec3;
+    range: number;
+    cosHalf: number;
+    knockback: number;
+    lift: number;
+  };
   hitstop: { ms: number };
 
   // F1 — zdrowie (#01)
@@ -82,6 +92,22 @@ export interface GameEvents {
   };
   projectile_spawned: { id: EntityId; owner: EntityId; team: Team };
   projectile_reflected: { id: EntityId; newOwner: EntityId };
+  /** Zniszczalny rekwizyt (skrzynia) rozbity: środek, rozmiar i kierunek ostatniego trafienia (albo null). */
+  prop_destroyed: {
+    id: EntityId;
+    kind: string;
+    point: Vec3;
+    size: Vec3;
+    dir: Vec3 | null;
+  };
+  /** Pocisk trafił geometrię świata (nie hurtbox): punkt, normalna powierzchni, właściciel i tagi pocisku. */
+  world_hit: {
+    point: Vec3;
+    normal: Vec3;
+    owner: EntityId;
+    tags: readonly string[];
+  };
+  enemy_wall_slam: { id: EntityId; point: Vec3; normal: Vec3; speed: number };
   // F1 — wręcz (#07)
   melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };
   /** Sparowany cios wręcz (blok w oknie `meleeParryWindowMs`): obrażenia zanegowane, atakujący ogłuszony. */

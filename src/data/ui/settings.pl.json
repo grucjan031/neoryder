@@ -13,6 +13,7 @@
   "fov": "Pole widzenia (FOV)",
   "screenShake": "Wstrząsy kamery",
   "flashes": "Błyski ekranu",
+  "cameraTilt": "Przechyły i zoom kamery",
   "quality": "Jakość grafiki",
   "qualityHint": "Zmiany jakości są stosowane na bieżąco.",
   "masterVolume": "Głośność główna",

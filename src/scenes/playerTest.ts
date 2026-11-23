@@ -112,6 +112,22 @@ export class PlayerTest implements Scene {
     box({ x: 3.2, y: 0.4, z: 8 }, { x: 16, y: 1.45, z: -6 });
     box({ x: 6, y: 3, z: 0.4 }, { x: -14, y: 1.5, z: -8 });
 
+    // Długa rampa zjazdowa 25° (14 m) kończąca się niskim tunelem: napęd ślizgu stokiem, slide-jump z pędem,
+    // bufor ślizgu przy lądowaniu. Wejdź na górę (+z), zawróć, sprint w dół (-z) i Ctrl.
+    {
+      const angle = (25 * Math.PI) / 180;
+      const length = 14;
+      box(
+        { x: 4, y: 0.3, z: length },
+        { x: 24, y: (Math.sin(angle) * length) / 2, z: 0 },
+        -angle,
+      );
+      const foot = (Math.cos(angle) * length) / 2;
+      for (const x of [22.2, 25.8])
+        box({ x: 0.4, y: 1.25, z: 6 }, { x, y: 0.625, z: -(foot + 4.5) });
+      box({ x: 4, y: 0.4, z: 6 }, { x: 24, y: 1.45, z: -(foot + 4.5) });
+    }
+
     const props = [
       { model: 'crate', size: { x: 1, y: 1, z: 1 }, x: 3, z: 3 },
       { model: 'crate', size: { x: 1, y: 1, z: 1 }, x: 5, z: 4 },

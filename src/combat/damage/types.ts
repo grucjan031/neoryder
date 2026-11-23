@@ -20,6 +20,7 @@ export interface DamageInfo {
   dir?: Vec3;
   /** Impuls odrzutu w N·s. */
   knockback?: number;
+  headshot?: boolean;
   statuses?: readonly StatusApplication[];
 }
 

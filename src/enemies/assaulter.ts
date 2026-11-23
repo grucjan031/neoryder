@@ -1,3 +1,5 @@
+import { deathDirection, deathDuration } from './enemyDeath';
+import { arrivalSpeed, turnToward, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import { Cuboid } from '@dimforge/rapier3d-compat';
 import {
@@ -14,6 +16,8 @@ import { Stats } from '../core/stats';
 import { CollisionGroup, interactionGroups } from '../physics';
 import type { EnemyDefinition } from './enemySchema';
 import { EnemyBody } from './enemyBody';
+import { resolveWallSlam } from './enemyWallImpact';
+import { knockdownFrame } from './enemyKnockdown';
 import { clearWorld, playerThreatens } from './tactics';
 import type {
   Enemy,
@@ -38,6 +42,7 @@ export class Assaulter implements Enemy {
   current: EnemySnapshot;
   removed = false;
   moveGoal?: Vec3;
+  moveGoalFinal?: boolean;
   tacticalGoal?: Vec3;
   private tacticS = 0;
   private flanking = false;
@@ -154,6 +159,8 @@ export class Assaulter implements Enemy {
           this.body.knockback(
             dir,
             event.knockback * (1 - definition.knockbackResist),
+            ctx.tuning.enemies,
+            event,
           );
         const heavy = event.knockback >= ctx.tuning.enemies.stunKnockback;
         if (event.tags.includes(PIERCE_BLOCK_TAG) || heavy) {
@@ -183,14 +190,21 @@ export class Assaulter implements Enemy {
             },
             ctx.tuning.melee.meleeParryKnockback *
               (1 - definition.knockbackResist),
+            ctx.tuning.enemies,
+            { source: defender, tags: [] },
           );
         this.stunS = ctx.tuning.melee.meleeParryStunS;
         this.transition('stunned');
         ctx.bus.emit('enemy_stunned', { id: this.id, durationS: this.stunS });
       }),
-      ctx.bus.on('enemy_killed', ({ id }) => {
-        if (id === this.id && this.current.state !== 'dead')
-          this.transition('dead');
+      ctx.bus.on('enemy_killed', ({ id, dir, tags }) => {
+        if (id !== this.id || this.current.state === 'dead') return;
+        this.body.disableCollision();
+        this.current.death = {
+          dir: deathDirection(dir),
+          durationS: deathDuration(tags, ctx.tuning.enemies),
+        };
+        this.transition('dead');
       }),
     );
   }
@@ -279,6 +293,7 @@ export class Assaulter implements Enemy {
     this.current.state = state;
     this.current.stateTimeS = 0;
     delete this.current.knockdown;
+    this.body.resetHurtboxes();
     this.hitbox = undefined;
     this.updateShield();
     // Token trzyma tylko zapowiedź i wymach; regeneracja po ciosie oddaje go następnemu.
@@ -405,7 +420,13 @@ export class Assaulter implements Enemy {
     s.stateTimeS += dt;
     s.speed = 0;
     if (s.state === 'dead') {
-      if (s.stateTimeS + epsilon >= this.ctx.tuning.enemies.corpseS)
+      if (
+        s.stateTimeS + epsilon >=
+        Math.max(
+          this.ctx.tuning.enemies.corpseS,
+          s.death ? s.death.durationS + dt : 0,
+        )
+      )
         this.dispose();
       return;
     }
@@ -486,6 +507,8 @@ export class Assaulter implements Enemy {
       )
         this.transition('telegraph');
     }
+    const braking =
+      this.ctx.tuning.enemies.brakingMps2 * (d.body?.locomotionScale ?? 1);
     let vx = 0;
     let vz = 0;
     let heading: number | null = null;
@@ -494,10 +517,11 @@ export class Assaulter implements Enemy {
       const gx = march.x - s.position.x,
         gz = march.z - s.position.z;
       const gap = Math.hypot(gx, gz);
-      if (gap > this.ctx.tuning.modes.conquest.goalStopM) {
+      const final = this.moveGoalFinal !== false;
+      if (gap > (final ? this.ctx.tuning.modes.conquest.goalStopM : epsilon)) {
         heading = Math.atan2(gx, gz);
-        s.yaw = heading;
-        speed = gap / dt;
+        s.yaw = turnToward(s.yaw, heading, d.turnRateDegS, dt);
+        speed = final ? arrivalSpeed(gap, braking, dt) : Infinity;
       }
     } else if (s.state === 'chase' && target) {
       if (this.tacticalGoal) {
@@ -532,11 +556,15 @@ export class Assaulter implements Enemy {
           };
         }
         heading = Math.atan2(goal.x - s.position.x, goal.z - s.position.z);
-        speed = Math.hypot(goal.x - s.position.x, goal.z - s.position.z) / dt;
+        speed = arrivalSpeed(
+          Math.hypot(goal.x - s.position.x, goal.z - s.position.z),
+          braking,
+          dt,
+        );
       } else if (engaged) {
         if (distance > d.attackRange) {
           heading = s.yaw;
-          speed = (distance - d.attackRange) / dt;
+          speed = arrivalSpeed(distance - d.attackRange, braking, dt);
         }
       } else if (
         distance > d.attackRange + epsilon ||
@@ -552,7 +580,7 @@ export class Assaulter implements Enemy {
         const gap = Math.hypot(gx, gz);
         if (gap > epsilon) {
           heading = Math.atan2(gx, gz);
-          speed = gap / dt;
+          speed = arrivalSpeed(gap, braking, dt);
         }
       }
     }
@@ -573,7 +601,9 @@ export class Assaulter implements Enemy {
       vx = Math.sin(yaw) * v;
       vz = Math.cos(yaw) * v;
     }
-    for (const neighbor of this.deps.getNeighbors?.() ?? []) {
+    for (const neighbor of this.deps.getLocalNeighbors?.() ??
+      this.deps.getNeighbors?.() ??
+      []) {
       if (neighbor.id === this.id || neighbor.current.state === 'dead')
         continue;
       let x = s.position.x - neighbor.current.position.x;
@@ -597,6 +627,35 @@ export class Assaulter implements Enemy {
     s.position = movement.position;
     s.speed = movement.distance / dt;
     s.distance += movement.distance;
+    const knockdownTuning = this.ctx.tuning.vfx.enemyKnockdown;
+    this.body.updateKnockdown(
+      s,
+      knockdownFrame(d, s, knockdownTuning),
+      knockdownTuning,
+    );
+    if (movement.wallSlam) {
+      const extra = this.ctx.tuning.enemies.wallSlamExtraStunS;
+      if (extra > 0) {
+        if (s.state !== 'stunned') {
+          this.stunS = 0;
+          this.transition('stunned');
+        }
+        this.stunS = Math.max(this.stunS, s.stateTimeS) + extra;
+        this.ctx.bus.emit('enemy_stunned', {
+          id: this.id,
+          durationS: this.stunS - s.stateTimeS,
+        });
+      }
+      resolveWallSlam(this.ctx, this.deps.damage, this.id, movement.wallSlam);
+      if (this.deps.damage.health(this.id)?.dead) return;
+    }
+    updateBodyPose(
+      this.previous,
+      s,
+      d.turnRateDegS,
+      dt,
+      this.ctx.tuning.enemies,
+    );
     if (this.hitbox) {
       this.strike();
       // strike() może przerwać cios (sparowanie → stunned zeruje hitbox).

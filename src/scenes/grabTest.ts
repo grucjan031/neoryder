@@ -380,11 +380,11 @@ export class GrabTest implements Scene {
       alive.add(enemy.id);
       let view = this.views.get(enemy.id);
       if (!view) {
-        view = createEnemyView(enemy, false);
+        view = createEnemyView(enemy, false, this.ctx.bus);
         this.views.set(enemy.id, view);
         this.root.add(view.root);
       }
-      view.render(alpha);
+      view.render(alpha, frameDt);
     });
     for (const [id, view] of this.views)
       if (!alive.has(id)) {

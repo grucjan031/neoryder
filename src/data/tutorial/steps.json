@@ -133,7 +133,7 @@
     },
     "spawn": {
       "enemy": "assaulter",
-      "position": { "x": 6, "y": 0, "z": -11 },
+      "position": { "x": 6, "y": 0, "z": -11.5 },
       "passive": true,
       "healthMultiplier": 100
     },

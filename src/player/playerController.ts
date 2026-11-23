@@ -1,5 +1,6 @@
 import {
   Capsule,
+  Ray,
   ColliderDesc,
   QueryFilterFlags,
   RigidBodyDesc,
@@ -171,8 +172,15 @@ export class PlayerController {
       this.jumpDenialNotified = false;
     }
     if (input.pressed.has('dash') && this.carrySpeed === null)
-      this.dashQueued = true;
-    if (input.pressed.has('crouch')) this.crouchQueued = true;
+      this.dashBufferMs = t.dashBufferMs;
+    if (input.pressed.has('crouch')) {
+      this.crouchQueued = true;
+      this.slideBufferMs = t.slideBufferMs;
+    }
+    if (input.released.has('crouch')) {
+      this.crouchQueued = false;
+      this.slideBufferMs = 0;
+    }
     if (dt <= 0) return;
 
     if (this.stamina.current <= 0) this.sprintExhausted = true;
@@ -185,9 +193,11 @@ export class PlayerController {
 
     const move = this.moveInput(input);
     this.stats.setBase('dashCooldown', t.dashCooldownS);
-    if (this.dashQueued && s.dashCooldownS <= 0 && s.dashS <= 0)
+    if (this.dashBufferMs > 0 && s.dashCooldownS <= 0 && s.dashS <= 0) {
+      this.dashBufferMs = 0;
       this.startDash(move);
-    this.dashQueued = false;
+    }
+    this.dashBufferMs = Math.max(0, this.dashBufferMs - dt * 1000);
 
     if (s.jumpBufferMs > 0 && s.dashS <= 0) {
       if (s.grounded || s.coyoteMs > 0) this.jump(false);
@@ -205,6 +215,9 @@ export class PlayerController {
     )
       this.startSlide();
     this.crouchQueued = false;
+    // Bufor ślizgu żyje tylko w powietrzu (lądowanie bez skoku z bufora).
+    if (s.grounded) this.slideBufferMs = 0;
+    else if (!input.held.has('crouch')) this.slideBufferMs = 0;
 
     s.sprinting =
       this.carrySpeed === null &&
@@ -222,7 +235,8 @@ export class PlayerController {
     else if (s.sliding) this.stepSlide(dt, move, input);
     else this.stepRun(dt, move);
 
-    if (!dashing) s.velocity.y += this.gravity * dt;
+    if (!dashing)
+      s.velocity.y += this.gravity * this.gravityMultiplier(input) * dt;
     const impactSpeed = Math.abs(s.velocity.y);
     if (s.grounded && s.velocity.y <= 0)
       this.controller.enableSnapToGround(t.snapToGroundDistance);
@@ -241,6 +255,7 @@ export class PlayerController {
       this.groups,
     );
     const movement = this.controller.computedMovement();
+    this.resolveContacts(dt, movement);
     // Pomijamy mikrokorekty kontaktów Rapiera (metry), nie rzeczywisty ruch.
     if (
       sprintStep &&
@@ -275,6 +290,15 @@ export class PlayerController {
       if (!wasGrounded) {
         this.ctx.bus.emit('player_landed', { id: this.id, speed: impactSpeed });
         if (s.jumpBufferMs > 0 && s.dashS <= 0) this.jump(false);
+        else if (
+          this.slideBufferMs > 0 &&
+          this.carrySpeed === null &&
+          !s.sliding &&
+          s.dashS <= 0 &&
+          horizontalSpeed(s.velocity) >= t.slideMinSpeed
+        )
+          this.startSlide();
+        this.slideBufferMs = 0;
       }
     } else {
       if (s.sliding) this.endSlide();
@@ -290,11 +314,18 @@ export class PlayerController {
     }
     if (s.crouched && !s.sliding && !input.held.has('crouch')) this.tryStand();
     s.jumpBufferMs = Math.max(0, s.jumpBufferMs - dt * 1000);
+    this.slideBufferMs = Math.max(0, this.slideBufferMs - dt * 1000);
     this.body.setNextKinematicTranslation(s.position);
   }
 
-  private dashQueued = false;
+  /** Normalna podłoża z ostatniego kroku (ślizg po rampie); (0,1,0) w locie i na płaskim. */
+  private groundNormal = { x: 0, y: 1, z: 0 };
+  private slideDownhill = false;
+  /** Czas ślizgu na stoku (nie liczy się do limitu `slideMaxS` po wyjściu na płaskie). */
+  private slideDownhillS = 0;
+  private dashBufferMs = 0;
   private crouchQueued = false;
+  private slideBufferMs = 0;
   /** Postęp celowania 0–1 (ustawiany przez scenę z `HeldItem.aim`). */
   private aim = 0;
   private aimSensitivityScale = 1;
@@ -311,7 +342,7 @@ export class PlayerController {
         value: speed,
         source: 'heistCarry',
       });
-      this.dashQueued = false;
+      this.dashBufferMs = 0;
       this.dashEnded = false;
       this.state.dashS = 0;
       this.state.sprinting = false;
@@ -394,7 +425,31 @@ export class PlayerController {
         : t.walkSpeed;
     this.stats.setBase('moveSpeed', base);
     const targetSpeed = this.stats.get('moveSpeed');
-    if (move.dir) {
+    const flightSpeed = horizontalSpeed(s.velocity);
+    if (
+      move.dir &&
+      !s.grounded &&
+      t.airPreserveMomentum > 0 &&
+      flightSpeed > targetSpeed &&
+      s.velocity.x * move.dir.x + s.velocity.z * move.dir.z >= 0
+    ) {
+      // Pęd ponad targetSpeed (slide-jump, dash): sterowanie obraca wektor, nie hamuje.
+      const keep = Math.max(
+        targetSpeed,
+        flightSpeed * Math.exp(-t.airDrag * dt),
+      );
+      accelerateTowards(
+        s.velocity,
+        move.dir.x * flightSpeed,
+        move.dir.z * flightSpeed,
+        t.airAccel * dt,
+      );
+      const turned = horizontalSpeed(s.velocity);
+      if (turned > 1e-6) {
+        s.velocity.x *= keep / turned;
+        s.velocity.z *= keep / turned;
+      }
+    } else if (move.dir) {
       const acceleration = s.grounded ? t.groundAccel : t.airAccel;
       accelerateTowards(
         s.velocity,
@@ -406,7 +461,94 @@ export class PlayerController {
       const damping = Math.exp(-t.groundFriction * dt);
       s.velocity.x *= damping;
       s.velocity.z *= damping;
+    } else if (t.airPreserveMomentum > 0 && flightSpeed > targetSpeed) {
+      // Bez wejścia w locie nadmiar pędu też podlega łagodnemu airDrag (jak przy trzymanym kierunku).
+      const keep = Math.max(
+        targetSpeed,
+        flightSpeed * Math.exp(-t.airDrag * dt),
+      );
+      s.velocity.x *= keep / flightSpeed;
+      s.velocity.z *= keep / flightSpeed;
     }
+  }
+
+  /** Krzywa skoku: lżejsza grawitacja w szczycie, cięższa w opadaniu i po puszczeniu skoku (1 = wyłączone). */
+  private gravityMultiplier(input: InputSnapshot): number {
+    const s = this.state;
+    const t = this.ctx.tuning.player;
+    if (s.grounded) return 1;
+    const vy = s.velocity.y;
+    if (Math.abs(vy) < t.apexSpeedThreshold) return t.apexGravityMult;
+    if (vy < 0) return t.fallGravityMult;
+    return input.held.has('jump') ? 1 : t.jumpCutGravityMult;
+  }
+
+  /**
+   * Kontakty po `computeColliderMovement`: rzutowanie prędkości poziomej na ścianę, gdy ruch
+   * został faktycznie zablokowany (autostep nie liczy się).
+   */
+  private resolveContacts(dt: number, movement: Vec3): void {
+    const s = this.state;
+    const t = this.ctx.tuning.player;
+    const wanted = Math.hypot(s.velocity.x, s.velocity.z) * dt;
+    // Na ziemi poza ślizgiem wejście i tak ustawia prędkość w następnym kroku; autostep (ruch w górę) to nie ściana.
+    const momentum = s.sliding || !s.grounded;
+    const steppedUp = s.grounded && movement.y > 0.02;
+    const blocked =
+      momentum &&
+      !steppedUp &&
+      wanted > 1e-6 &&
+      Math.hypot(movement.x, movement.z) < wanted * t.wallBlockedFrac;
+    for (let i = 0; i < this.controller.numComputedCollisions(); i++) {
+      const collision = this.controller.computedCollision(i);
+      const normal = collision?.normal1;
+      if (!normal) continue;
+      // Ciała dynamiczne (skrzynie, dekoracje) nie są ścianą: ustąpią pod impulsem.
+      if (collision?.collider?.parent()?.isDynamic()) continue;
+      if (
+        blocked &&
+        t.wallVelocityProjection > 0 &&
+        Math.abs(normal.y) < t.wallNormalMaxY
+      ) {
+        const length = Math.hypot(normal.x, normal.z);
+        if (length < 1e-6) continue;
+        const nx = normal.x / length;
+        const nz = normal.z / length;
+        const into = s.velocity.x * nx + s.velocity.z * nz;
+        if (into < 0) {
+          s.velocity.x -= into * nx;
+          s.velocity.z -= into * nz;
+        }
+      }
+    }
+  }
+
+  /** Normalna podłoża pod stopami (promień w dół); kontakty kontrolera nie raportują stoku przy snap-to-ground. */
+  private updateGroundNormal(): void {
+    const s = this.state;
+    const t = this.ctx.tuning.player;
+    const n = this.groundNormal;
+    n.x = 0;
+    n.y = 1;
+    n.z = 0;
+    const feet = s.position.y - s.height / 2;
+    const hit = this.world.castRayAndGetNormal(
+      new Ray(
+        { x: s.position.x, y: feet + t.groundProbeUpM, z: s.position.z },
+        { x: 0, y: -1, z: 0 },
+      ),
+      t.groundProbeUpM + t.snapToGroundDistance + t.controllerOffset,
+      true,
+      undefined,
+      interactionGroups(CollisionGroup.Player, CollisionGroup.World),
+      undefined,
+      this.body,
+    );
+    if (!hit || hit.normal.y < Math.cos((t.maxSlopeDeg * Math.PI) / 180))
+      return;
+    n.x = hit.normal.x;
+    n.y = hit.normal.y;
+    n.z = hit.normal.z;
   }
 
   private startDash(move: ReturnType<PlayerController['moveInput']>): void {
@@ -450,6 +592,7 @@ export class PlayerController {
     s.velocity.z *= k;
     s.sliding = true;
     s.slideS = 0;
+    this.slideDownhillS = 0;
     this.setHeight(t.slideCapsuleHeight, true);
     s.crouched = true;
     this.ctx.bus.emit('slide_started', { user: this.id });
@@ -466,6 +609,27 @@ export class PlayerController {
     const damping = Math.exp(-t.slideFriction * dt);
     s.velocity.x *= damping;
     s.velocity.z *= damping;
+    this.updateGroundNormal();
+    // Składowa grawitacji wzdłuż stoku: zjazd przyspiesza ślizg, podjazd go hamuje.
+    const slope = Math.hypot(this.groundNormal.x, this.groundNormal.z);
+    this.slideDownhill = false;
+    if (slope > 1e-3 && t.slideSlopeAccelScale > 0) {
+      const accel = Math.abs(this.gravity) * t.slideSlopeAccelScale;
+      // Poziomy składnik normalnej wskazuje w dół stoku.
+      const ax = this.groundNormal.x * accel * dt;
+      const az = this.groundNormal.z * accel * dt;
+      s.velocity.x += ax;
+      s.velocity.z += az;
+      this.slideDownhill =
+        s.velocity.x * ax + s.velocity.z * az > 0 &&
+        slope > t.slideDownhillMinSlope;
+      const speed = horizontalSpeed(s.velocity);
+      if (speed > t.slideMaxSpeed) {
+        s.velocity.x *= t.slideMaxSpeed / speed;
+        s.velocity.z *= t.slideMaxSpeed / speed;
+      }
+    }
+    if (this.slideDownhill) this.slideDownhillS += dt;
     // Lekkie sterowanie bez przyspieszania: obracamy wektor prędkości w stronę wejścia.
     if (move.dir) {
       const speed = horizontalSpeed(s.velocity);
@@ -478,7 +642,8 @@ export class PlayerController {
     }
     if (
       horizontalSpeed(s.velocity) < t.slideEndSpeed ||
-      s.slideS >= t.slideMaxS ||
+      s.slideS - this.slideDownhillS >= t.slideMaxS ||
+      s.slideS >= t.slideDownhillMaxS ||
       !input.held.has('crouch')
     )
       this.endSlide();

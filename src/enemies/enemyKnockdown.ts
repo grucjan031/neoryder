@@ -159,3 +159,21 @@ export function knockdownFrame(
     return null;
   return knockdownPose(snapshot.stateTimeS, definition.stunOnHeavyS, t);
 }
+
+/** Przesunięcie korzenia po obrocie wokół bioder, wspólne dla widoku i hurtboxów. */
+export function knockdownOffset(
+  pose: KnockdownPose,
+  hip: number,
+  rest: number,
+) {
+  const tilt = (pose.tiltDeg * Math.PI) / 180;
+  const sin = Math.sin(tilt);
+  const cos = Math.cos(tilt);
+  return {
+    tilt,
+    sin,
+    cos,
+    forward: -hip * sin,
+    up: hip - (hip - rest) * Math.max(0, sin) + pose.liftM - hip * cos,
+  };
+}

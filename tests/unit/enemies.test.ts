@@ -67,6 +67,47 @@ afterEach(() => {
   for (const dispose of cleanup.splice(0)) dispose();
 });
 
+it.each(['assaulter', 'gunner'])(
+  '%s nie zatrzymuje się ani nie hamuje przy węźle pośrednim trasy',
+  (kind) => {
+    const run = (final: boolean) => {
+      const { enemy, steps } = setup('via-waypoint', 25, kind);
+      const start = enemy.current.position.x;
+      for (let i = 0; i < 60; i++) {
+        // Węzeł 0,3 m przed wrogiem: poniżej progu zatrzymania celu końcowego (0,5 m).
+        enemy.moveGoal = {
+          x: enemy.current.position.x + 0.3,
+          y: 0,
+          z: enemy.current.position.z,
+        };
+        enemy.moveGoalFinal = final;
+        steps(1);
+      }
+      return enemy.current.position.x - start;
+    };
+    expect(run(true)).toBeLessThan(0.5);
+    expect(run(false)).toBeGreaterThan(3);
+  },
+);
+
+it('boss hamuje do zasięgu ataku zamiast wjeżdżać w niego z pełną prędkością', () => {
+  const { enemy, steps, moveTarget } = setup('boss-brake', 25, 'securityChief');
+  moveTarget(14);
+  const attackRange = enemy.definition.attackRange;
+  let closest = Infinity;
+  for (let i = 0; i < 600 && enemy.current.state !== 'telegraph'; i++) {
+    steps(1);
+    closest = Math.min(closest, 14 - enemy.current.position.z);
+  }
+  expect(enemy.current.state).toBe('telegraph');
+  // Bez hamowania ruch wygasałby dopiero w zapowiedzi ataku (ponad 0,3 m za zasięgiem).
+  for (let i = 0; i < 20; i++) {
+    steps(1);
+    closest = Math.min(closest, 14 - enemy.current.position.z);
+  }
+  expect(closest).toBeGreaterThan(attackRange - 0.15);
+});
+
 describe('Nosiciel rdzenia — regresja AI', () => {
   const carry = {
     speedMultiplier: heistDefinition.enemyCarrySpeed,
@@ -99,10 +140,16 @@ describe('Nosiciel rdzenia — regresja AI', () => {
           .filter((m) => m.source === 'heistCarry'),
       ).toHaveLength(1);
       steps(30);
-      expect(enemy.current.position.x).toBeCloseTo(
-        enemy.definition.moveSpeed * carry.speedMultiplier * 0.5,
-        1,
-      );
+      const cruise = enemy.definition.moveSpeed * carry.speedMultiplier;
+      const acceleration =
+        tuning.enemies.accelerationMps2 *
+        enemy.definition.body!.locomotionScale!;
+      const expected = Array.from(
+        { length: 30 },
+        (_, step) =>
+          Math.min(cruise, acceleration * (step + 1) * SIM_DT) * SIM_DT,
+      ).reduce((sum, distance) => sum + distance, 0);
+      expect(enemy.current.position.x).toBeCloseTo(expected, 1);
       expect(Math.abs(enemy.current.position.z)).toBeLessThan(0.1);
       for (let i = 0; i < 240 && heist.state === 'enemy'; i++) {
         steps();

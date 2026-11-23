@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Scene } from 'three';
 import { EventBus } from '../../src/core/events';
 import { Rng } from '../../src/core/rng';
@@ -9,6 +9,7 @@ import { EscortTest } from '../../src/scenes/escortTest';
 import { PayloadTest } from '../../src/scenes/payloadTest';
 import { scenes } from '../../src/scenes';
 import { roomDefinitions } from '../../src/world/rooms';
+import { ArenaNavigation } from '../../src/world/arenaNavigation';
 import { escortTest, payloadTest } from '../../src/world/prototypes';
 import type { InputSnapshot } from '../../src/core/input';
 import type { Vec3 } from '../../src/core/math';
@@ -128,6 +129,29 @@ describe('sceny prototypów S4-03', () => {
       step(2);
       expect(scene.query('escort')).toMatchObject({ state: 'evacuated' });
     } finally {
+      scene.dispose();
+    }
+  }, 60_000);
+
+  it('escort-test: scena podaje wsadowi cel końcowy, a węzeł trasy wybiera tylko wsad', async () => {
+    const { scene, step, run } = await setup(escortScene);
+    const original = ArenaNavigation.prototype.nextBatch;
+    const goals: string[] = [];
+    const batch = vi
+      .spyOn(ArenaNavigation.prototype, 'nextBatch')
+      .mockImplementation(function (this: ArenaNavigation, agents, r, l) {
+        for (const agent of agents)
+          if (agent.moveGoal) goals.push(JSON.stringify(agent.moveGoal));
+        return original.call(this, agents, r, l);
+      });
+    try {
+      run('spawn gunner 4');
+      step(5);
+      expect(goals.length).toBeGreaterThanOrEqual(4);
+      // Wszyscy wrogowie wchodzą do wsadu z tym samym celem końcowym, nie z węzłem obok siebie.
+      expect(new Set(goals.slice(-4)).size).toBe(1);
+    } finally {
+      batch.mockRestore();
       scene.dispose();
     }
   }, 60_000);
