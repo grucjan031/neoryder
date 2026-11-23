@@ -28,7 +28,13 @@ export interface BladeDeps {
     fallbackDir?: Vec3,
   ): Hurtbox[];
   hurtboxPosition?(box: Hurtbox): Vec3 | null;
-  castWall?(origin: Vec3, dir: Vec3, max: number): number | null;
+  /** `ignoreCollider`: uchwyt collidera celu, który nie zasłania samego siebie (skrzynie mają grupę World). */
+  castWall?(
+    origin: Vec3,
+    dir: Vec3,
+    max: number,
+    ignoreCollider?: number,
+  ): number | null;
   dashActive?(): boolean;
   owner: EntityId;
   team: Team;
@@ -602,8 +608,12 @@ export class PlasmaBlade {
         const distance = Math.hypot(toward.x, toward.y, toward.z);
         if (
           distance > 0 &&
-          this.deps.castWall?.(from, normalizeVec(toward, dir), distance) !=
-            null
+          this.deps.castWall?.(
+            from,
+            normalizeVec(toward, dir),
+            distance,
+            box.colliderHandle,
+          ) != null
         )
           continue;
       }

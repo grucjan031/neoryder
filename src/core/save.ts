@@ -628,6 +628,8 @@ export interface Settings {
   invertY: boolean;
   screenShake: number;
   flashes: boolean;
+  /** Przechyły kamery i kick FOV (ruch boczny, ślizg, dash); false = wyłączone (dostępność). */
+  cameraTilt: boolean;
   quality: 'low' | 'medium' | 'high';
   bindings: import('./input').BindingOverrides;
 }
@@ -654,6 +656,7 @@ const settingsSchema = z.object({
   invertY: z.boolean().catch(false),
   screenShake: z.number().min(0).max(1).catch(1),
   flashes: z.boolean().catch(true),
+  cameraTilt: z.boolean().catch(true),
   quality: z.enum(['low', 'medium', 'high']).catch('high'),
   bindings: z
     .record(z.string(), z.unknown())
@@ -678,6 +681,7 @@ const defaults = (): Settings => ({
   invertY: false,
   screenShake: 1,
   flashes: true,
+  cameraTilt: true,
   quality: 'medium',
   bindings: {},
 });

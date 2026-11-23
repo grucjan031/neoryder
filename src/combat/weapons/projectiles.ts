@@ -271,6 +271,13 @@ export class ProjectileSystem {
             }
           }
           if (p.id !== id) break;
+          if (!box)
+            this.bus.emit('world_hit', {
+              point: { ...point },
+              normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z },
+              owner: p.owner,
+              tags: p.tags,
+            });
           if (!box && p.ricochetsRemaining > 0) {
             const normal = hit.normal;
             const dot =

@@ -7,6 +7,8 @@ import { getMaterial } from '../render/materials';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
 import { EnemyShatter } from '../vfx/enemyShatter';
+import { DEBRIS_TINT } from '../vfx/debris';
+import { WorldDebris } from '../vfx/worldDebris';
 import type { Scene } from './index';
 
 const directions: readonly Vec3[] = [
@@ -28,6 +30,7 @@ export class DebrisTest implements Scene {
   private debris!: DebrisSystem;
   private renderer!: DebrisRenderer;
   private shatter!: EnemyShatter;
+  private worldDebris!: WorldDebris;
   private automatic = true;
   private elapsed = 0;
   private nextId = 1;
@@ -55,6 +58,9 @@ export class DebrisTest implements Scene {
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
       positionOf: (id) => this.positions.get(id) ?? null,
       cameraPosition: () => ctx.camera?.position ?? null,
+      tuning: ctx.tuning,
+    });
+    this.worldDebris = new WorldDebris(ctx.bus, this.debris, {
       tuning: ctx.tuning,
     });
     const floor = new Mesh(new BoxGeometry(24, 0.2, 20), getMaterial('world'));
@@ -90,6 +96,43 @@ export class DebrisTest implements Scene {
         return `Odłamki: ${this.debris.activeCount}`;
       },
     );
+    const propOff = ctx.commands?.register(
+      'shatterProp',
+      'shatterProp <crate|barrel|wall> — odłamki otoczenia (skrzynia, beczka, trafienie w ścianę)',
+      (args) => {
+        const kind = args[0];
+        const t = ctx.tuning.vfx;
+        this.automatic = false;
+        if (kind === 'crate')
+          this.debris.burst({
+            origin: { x: 0, y: 0.5, z: 0 },
+            dir: null,
+            strength: 6,
+            count: 20,
+            size: 0.14,
+            bounds: { halfX: 0.4, halfY: 0.4, halfZ: 0.4 },
+            tint: DEBRIS_TINT.plastic,
+          });
+        else if (kind === 'barrel')
+          ctx.bus.emit('explosion', {
+            point: { x: 0, y: 0.55, z: 0 },
+            radiusM: 4,
+            owner: 0,
+            tags: ['#hazard', '#explosion'],
+          });
+        else if (kind === 'wall')
+          for (let i = 0; i < 6; i++)
+            ctx.bus.emit('world_hit', {
+              point: { x: -2 + i * 0.8, y: 1.2 + (i % 2) * 0.6, z: -4 },
+              normal: { x: 0, y: 0, z: 1 },
+              owner: 0,
+              tags: [],
+            });
+        else return 'Podaj: crate, barrel albo wall.';
+        return `Odłamki (${kind}): ${this.debris.activeCount}/${t.maxDebris}`;
+      },
+    );
+    if (propOff) this.off.push(propOff);
     if (shatterOff) this.off.push(shatterOff);
     if (perfOff) this.off.push(perfOff);
     this.render(1);
@@ -155,6 +198,7 @@ export class DebrisTest implements Scene {
   dispose(): void {
     for (const off of this.off) off();
     this.shatter.dispose();
+    this.worldDebris.dispose();
     this.renderer.dispose();
     this.debris.clear();
     this.positions.clear();

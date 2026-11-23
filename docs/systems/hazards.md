@@ -169,3 +169,66 @@ Audio: `AudioSystem.facts` udostępnia `team` wyłącznie dla
 Reguła `{ killed: true, team: 'neutral' }` nigdy by tu nie pasowała.
 `sfx.json` pozostaje bez zmian: zniszczenie beczki może nadal wybrać `kill`.
 Rozdzielenie tego dźwięku wymaga rozszerzenia faktów audio poza zakresem Z2.
+
+## Zniszczalne skrzynie (fizyka B-P2)
+
+`PropPhysicsSystem` (`src/world/propPhysics.ts`) przejmuje z układu pokoju i areny bloki
+`model: "crate"` (duża, 1 m) i `"crate_small"` (mała, 0,5 m), chyba że mają `destructible: false`,
+`walkable`, `instance` lub `visible: false` (pole `destructible` jest opcjonalne w `roomBlockSchema`).
+Scena wywołuje `props.claim(blok)` zamiast tworzyć statyczny collider i siatkę; rysuje je
+`PropRenderer` (`src/render/propRenderer.ts`: `InstancedMesh` na część modelu i rodzaj, interpolacja,
+uśpione skrzynie nie odświeżają macierzy; bez GLB zostaje box w materiale `interactive`).
+
+- **Duża skrzynia**: nieruchomy collider (grupy `World | Enemy`, jak beczka), `Health` = `props.crateHealth` (35).
+  Blokuje ruch i wzrok do rozbicia; hurtbox przyjmuje pociski (także wrogów), ostrze i wybuchy.
+- **Mała skrzynia**: dynamiczne ciało Rapiera (`smallCrateMassKg` 15, tłumienie `propDamping`), `Health` 15.
+  Startuje w spoczynku; trafienie daje impuls `(knockback + hitMinKnockback) · hitImpulseScale` w stronę
+  trafienia z lekkim wzniesieniem, gracz popycha ją biegiem (`enableDynamicPush`). Ciało wolniejsze niż
+  `physics.propSleepLinvel` przez `propSleepDelayS` jest usypiane.
+- **Limity**: `physics.maxPropBodies` (24) to twardy limit ciał dynamicznych rekwizytów; nadmiar skrzyń zostaje
+  nieruchomy, ale zniszczalny. Spawn wrogów nadal sprawdza `maxDynamicBodies` (300).
+- **Drzwi i osiągalność**: dynamiczna jest tylko mała skrzynia startująca dalej niż `doorClearM + maxDriftM`
+  (4 + 2,5 m) od środka drzwi; ciało odsunięte dalej niż `maxDriftM` od miejsca startu jest zamrażane
+  (`Fixed`). Rozbicie usuwa collider, więc przejście nigdy się nie pogarsza. `ArenaNavigation` liczy skrzynie
+  jako przeszkody od startu (konserwatywnie): po rozbiciu siatka nie rozszerza się, więc osiągalność jest co najmniej
+  taka jak przed zmianą.
+- **Zniszczenie**: `damage_dealt` z `killed` usuwa collider/ciało, hurtbox i `Health`, emituje
+  `prop_destroyed { id, kind, point, size, dir }`; `WorldDebris` robi z tego `crateDebrisCount` (20) /
+  `smallCrateDebrisCount` (12) odłamków tworzywa (`tint 4`) z własnego RNG puli. System nie losuje i nie
+  dotyka `ctx.rng`.
+- **Wybuchy**: `RoomScene` dopisuje `props.targets()` do celów `HazardSystem`; beczka rozbija skrzynie w
+  promieniu (obrażenia `barrelDamage · frac`, mała skrzynia zawsze, duża przy ok. 2/3 promienia).
+- **Ograniczenia**: Pchnięcie i Błyskawica nie trafiają skrzyń (jak beczek, patrz wyżej); elektryczne pola i lasery
+  także rozbijają skrzynie, które w nich stoją. `Arena` nie ma hazardów, więc wybuchy tam nie sięgają skrzyń.
+
+Parametry: `tuning.props` (`crateHealth` 35, `smallCrateHealth` 15, `smallCrateMassKg` 15, `propDamping` 2,5,
+`propFriction` 0,8, `propRestitution` 0,05, `crateDebrisCount` 20, `smallCrateDebrisCount` 12, `debrisStrength` 5,
+`debrisSize` 0,14, `hitImpulseScale` 12, `hitMinKnockback` 4, `hitLift` 0,3, `doorClearM` 4, `maxDriftM` 2,5)
+oraz `tuning.physics` (`maxPropBodies` 24, `propSleepLinvel` 0,15, `propSleepDelayS` 0,6).
+Sprawdzenie w 30 s: `?scene=room-test&room=combatWarehouse&debug=1` — przed spawnem stoją trzy małe skrzynie
+(popchnij je, przestrzel, `hazard detonate warehouse-south`), cztery duże służą za osłonę do rozbicia;
+`query('props')` zwraca `{ alive, bodies, awake }`. Testy: `tests/unit/propPhysics.test.ts`, `tests/unit/propRoom.test.ts`.
+
+## Wywracalne dekoracje (fizyka B-P3)
+
+`ScatterProps` (`src/world/scatterProps.ts`, rysuje `ScatterRenderer`) zamienia pachołki `city_traffic_cone` i worki
+`city_trash_bags` z `layout.decor` w lekkie przeszkody reagujące na ruch. `RoomScene` wybiera do
+`props.scatterMaxItems` (16) najbliższych punktu startu gracza i wyłącza je ze scalonego `static-decor`
+(osobne modele); przy `quality: 'low'` oraz `fx=lite` dekoracje zostają statyczne. `Arena` nie używa tego mechanizmu.
+
+- Ciało dynamiczne powstaje dopiero przy zakłóceniu (limit `scatterMaxBodies` 12) i znika po uspokojeniu
+  (`scatterSleepSpeed` 0,2 m/s przez `scatterSleepS` 0,8 s): dekoracja zostaje w pozie końcowej bez collidera.
+- Zakłócenia: `dash_used` gracza (promień `scatterRadiusM` 2,2 m, impuls `scatterImpulse` 5,5 m/s), `explosion`
+  (promień wybuchu + `scatterRadiusM`, impuls ×1,6) oraz sprint, ślizg lub dash gracza z prędkością ≥ `scatterMinSpeed`
+  (8 m/s) w odległości `scatterTouchM` (0,9 m; raz na zbliżenie). Kierunek poziomo od źródła + `scatterLift`, obrót
+  koziołkujący; bez losowości.
+- Kolizje: `Debris` z filtrem `World` (czysto kosmetyczne: ani gracz, ani wrogowie, pociski czy wzrok ich nie czują; impuls od gracza
+  pochodzi z pozycji i zdarzeń, nie z kolizji). Dlatego zależność od jakości grafiki jest dopuszczalna. Kształt i masa: `props.scatter` (`radiusM`, `heightM`, `massKg` per model).
+- Pchnięcie Rezonansu nie przewraca dekoracji (moce celują tylko w wrogów, jak przy beczkach i skrzyniach).
+
+Sprawdzenie: `?scene=room-test&room=combatWarehouse&debug=1` — pachołki przy rogach pokoju; sprint/dash obok
+nich albo `hazard detonate warehouse-west`. Testy: `tests/unit/scatterProps.test.ts`.
+
+Kroki `PropPhysicsSystem.step` i `ScatterProps.step` w `RoomScene` wołane są po `world.step()`. Encja rozbitej skrzyni jest usuwana z
+`EntityRegistry` w następnym kroku (nie w obsłudze `damage_dealt`, żeby `DamageSystem` nie wyemitował `enemy_killed`).
+Ciało skrzyni poza `maxDriftM` (albo spadające głębiej niż `fallLimitM`) jest zamrażane dopiero po opadnięciu.

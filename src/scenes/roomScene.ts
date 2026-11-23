@@ -29,6 +29,13 @@ import { spawnOcclusion } from '../world/arenaSpawns';
 import { worldEnvelope } from '../render/horizon';
 import { SceneAtmosphere } from '../render/sceneAtmosphere';
 import { HazardSystem } from '../world/hazards';
+import { PropPhysicsSystem } from '../world/propPhysics';
+import type { PropKind } from '../world/propPhysics';
+import { PropRenderer, propTemplatesFromModel } from '../render/propRenderer';
+import type { DecorDef } from '../world/dressingSchema';
+import { ScatterProps, isScatterModel } from '../world/scatterProps';
+import { ScatterRenderer } from '../render/scatterRenderer';
+import { getLiteFx } from '../render/fxMode';
 import type { HazardTarget } from '../world/hazards';
 import { HazardView } from '../render/hazardView';
 import { GrabPuzzle } from '../world/grabPuzzle';
@@ -132,6 +139,7 @@ import { Hud } from '../ui/hud';
 import { DebrisSystem } from '../vfx/debris';
 import { DebrisRenderer } from '../vfx/debrisRenderer';
 import { EnemyShatter } from '../vfx/enemyShatter';
+import { WorldDebris } from '../vfx/worldDebris';
 import { enemyBody } from '../vfx/enemyBody';
 import { HitSparks } from '../vfx/hitSparks';
 import { HitSparksRenderer, StatusVfxRenderer } from '../vfx/fxRenderer';
@@ -352,6 +360,7 @@ export class RoomScene implements Scene {
   private debris!: DebrisSystem;
   private debrisView!: DebrisRenderer;
   private shatter!: EnemyShatter;
+  private worldDebris!: WorldDebris;
   private statusVfx!: StatusVfx;
   private statusView!: StatusVfxRenderer;
   private hitSparks!: HitSparks;
@@ -372,6 +381,11 @@ export class RoomScene implements Scene {
   private missionHud?: MissionHud;
   private readonly reinforcements: WaveDirector[] = [];
   private hazards!: HazardSystem;
+  private props?: PropPhysicsSystem;
+  private propView?: PropRenderer;
+  private scatter?: ScatterProps;
+  private pendingScatter: DecorDef[] = [];
+  private scatterView?: ScatterRenderer;
   private hazardView!: HazardView;
   private puzzle?: GrabPuzzle;
   private puzzleGrab?: GrabPhysics;
@@ -452,12 +466,28 @@ export class RoomScene implements Scene {
       this.staticWorld.name = 'static-world';
       this.root.add(this.staticWorld);
     }
+    this.props = new PropPhysicsSystem({
+      world: this.world,
+      bus: ctx.bus,
+      damage: this.damage,
+      entities: this.entities,
+      hurtboxes: this.hurtboxes,
+      tuning: ctx.tuning,
+      doors: this.layout.doors.map((door) => door.position),
+      deferActivation: true,
+    });
     await this.buildLayout();
     if (this.disposed) return;
     const decor = new Group();
     decor.name = 'static-decor';
     (this.staticWorld ?? this.root).add(decor);
-    await loadDecor(decor, this.layout.decor, this.loadModels);
+    const scatterDecor = this.pickScatterDecor();
+    await loadDecor(
+      decor,
+      (this.layout.decor ?? []).filter((def) => !scatterDecor.includes(def)),
+      this.loadModels,
+    );
+    this.pendingScatter = scatterDecor;
     if (this.disposed) return;
     if (this.staticWorld)
       batchStaticGeometry(this.staticWorld, this.geometries, {
@@ -492,6 +522,9 @@ export class RoomScene implements Scene {
     this.applyTalents();
     this.health.set(this.run.hp);
     this.registerPlayer();
+    this.props?.activate();
+    await this.buildScatter(this.pendingScatter);
+    if (this.disposed) return;
     this.hurtboxes.add(playerId, this.player.colliderHandle);
     this.entities.bindCollider(playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
@@ -664,6 +697,8 @@ export class RoomScene implements Scene {
             Math.max(0, state.height / 2 - radius),
           );
         this.manager.forEach(collectHazardEnemy);
+        for (const target of this.props?.targets() ?? [])
+          hazardTargets.push(target);
         return hazardTargets;
       },
     });
@@ -725,7 +760,8 @@ export class RoomScene implements Scene {
           ),
         hurtboxPosition: (box) =>
           this.world.getCollider(box.colliderHandle)?.translation() ?? null,
-        castWall: (origin, dir, max) => this.castWall(origin, dir, max),
+        castWall: (origin, dir, max, ignore) =>
+          this.castWall(origin, dir, max, ignore),
         dashActive: () => this.player.getState().dashS > 0,
         aim: () => this.aim(),
         projectiles: this.projectiles,
@@ -746,11 +782,14 @@ export class RoomScene implements Scene {
     this.createEquipment();
     this.debris = new DebrisSystem({
       maxDebris: ctx.tuning.vfx.maxDebris,
-      walls: (pos, dir, dist) => this.castWall(pos, dir, dist),
+      walls: (pos, dir, dist) => this.castDebrisWall(pos, dir, dist),
       tuning: ctx.tuning.vfx,
     });
     this.debrisView = new DebrisRenderer(this.debris);
     this.root.add(this.debrisView.root);
+    this.worldDebris = new WorldDebris(ctx.bus, this.debris, {
+      tuning: ctx.tuning,
+    });
     this.shatter = new EnemyShatter(ctx.bus, this.debris, {
       positionOf: (id) => this.enemy(id)?.current.position ?? null,
       bodyOf: (id) => {
@@ -1052,6 +1091,7 @@ export class RoomScene implements Scene {
     const models = new Group();
     models.name = 'static-models';
     (this.staticWorld ?? this.root).add(blocks, models);
+    const propCapacity: Partial<Record<PropKind, number>> = {};
     const instances = new Map<
       string,
       {
@@ -1071,7 +1111,25 @@ export class RoomScene implements Scene {
           rotation,
           instance,
           visible,
+          destructible,
+          walkable,
         }) => {
+          if (
+            this.props?.claim({
+              size,
+              position,
+              ...(rotation ? { rotation } : {}),
+              ...(model ? { model } : {}),
+              ...(destructible !== undefined ? { destructible } : {}),
+              ...(walkable !== undefined ? { walkable } : {}),
+              ...(instance !== undefined ? { instance } : {}),
+              ...(visible !== undefined ? { visible } : {}),
+            })
+          ) {
+            const kind = model as PropKind;
+            propCapacity[kind] = (propCapacity[kind] ?? 0) + 1;
+            return;
+          }
           const quaternion = new Quaternion().setFromEuler(
             new Euler(rotation?.x ?? 0, rotation?.y ?? 0, rotation?.z ?? 0),
           );
@@ -1148,6 +1206,23 @@ export class RoomScene implements Scene {
         },
       ),
     );
+    if (this.props && this.props.aliveCount > 0) {
+      const templates: Partial<
+        Record<PropKind, ReturnType<typeof propTemplatesFromModel>>
+      > = {};
+      if (this.loadModels)
+        for (const kind of Object.keys(propCapacity) as PropKind[]) {
+          try {
+            const model = await cloneRoomModel(MODEL_FILES[kind]!);
+            if (model) templates[kind] = propTemplatesFromModel(model);
+          } catch {
+            // Zostaje bryła zastępcza (ten sam collider).
+          }
+        }
+      if (this.disposed) return;
+      this.propView = new PropRenderer(this.props, propCapacity, templates);
+      this.root.add(this.propView.root);
+    }
     const modelInstances = new Map<
       string,
       { source: Mesh; matrices: Matrix4[]; name: string }
@@ -1297,6 +1372,49 @@ export class RoomScene implements Scene {
       );
       this.doors.set(door.id, { role: door.role, mesh, collider });
     }
+  }
+
+  /** Wywracalne dekoracje (pachołki, worki): najbliższe startu gracza, bez trybu low i fx=lite. */
+  private pickScatterDecor(): DecorDef[] {
+    if (!this.loadModels || getLiteFx() || loadSettings().quality === 'low')
+      return [];
+    const spawn = this.layout.playerSpawn;
+    return (this.layout.decor ?? [])
+      .filter((def) => isScatterModel(def.model))
+      .sort(
+        (a, b) =>
+          Math.hypot(a.position.x - spawn.x, a.position.z - spawn.z) -
+          Math.hypot(b.position.x - spawn.x, b.position.z - spawn.z),
+      )
+      .slice(0, this.ctx.tuning.props.scatterMaxItems);
+  }
+
+  private async buildScatter(defs: readonly DecorDef[]): Promise<void> {
+    if (defs.length === 0) return;
+    const system = new ScatterProps({
+      world: this.world,
+      bus: this.ctx.bus,
+      tuning: this.ctx.tuning,
+      playerId: this.player.id,
+    });
+    this.scatter = system;
+    const objects: Object3D[] = [];
+    for (const def of defs) {
+      const model = await cloneCityModel(def.model);
+      if (this.disposed) return;
+      if (!model || !isScatterModel(def.model)) continue;
+      model.position.copy(def.position);
+      model.rotation.y = def.yaw ?? 0;
+      model.scale.setScalar(def.scale ?? 1);
+      system.add({
+        model: def.model,
+        position: def.position,
+        yaw: def.yaw ?? 0,
+      });
+      objects.push(model);
+    }
+    this.scatterView = new ScatterRenderer(system, objects);
+    this.root.add(this.scatterView.root);
   }
 
   private applyImplants(): void {
@@ -1633,13 +1751,43 @@ export class RoomScene implements Scene {
     );
   }
 
-  private castWall(origin: Vec3, dir: Vec3, max: number): number | null {
+  private castDebrisWall(
+    origin: Vec3,
+    dir: Vec3,
+    max: number,
+  ): { distance: number; normal: Vec3 } | null {
+    const hit = this.world.castRayAndGetNormal(
+      new this.rapier.Ray(origin, dir),
+      max,
+      false,
+      undefined,
+      interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
+    );
+    return hit
+      ? {
+          distance: hit.timeOfImpact,
+          normal: { x: hit.normal.x, y: hit.normal.y, z: hit.normal.z },
+        }
+      : null;
+  }
+
+  private castWall(
+    origin: Vec3,
+    dir: Vec3,
+    max: number,
+    ignoreCollider?: number,
+  ): number | null {
     const hit = this.world.castRay(
       new this.rapier.Ray(origin, dir),
       max,
       true,
       undefined,
       interactionGroups(CollisionGroup.Enemy, CollisionGroup.World),
+      undefined,
+      undefined,
+      ignoreCollider === undefined
+        ? undefined
+        : (collider) => collider.handle !== ignoreCollider,
     );
     return hit ? hit.timeOfImpact : null;
   }
@@ -1658,7 +1806,7 @@ export class RoomScene implements Scene {
       this.manager.step(dt);
       return;
     }
-    if (this.puzzle)
+    if (this.puzzle || (this.props?.bodyCount ?? 0) > 0)
       this.player.enableDynamicPush(this.ctx.tuning.puzzle.pushMassKg);
     if (
       input.pressed.has('map') &&
@@ -1820,6 +1968,17 @@ export class RoomScene implements Scene {
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
+    this.props?.step(dt);
+    if (this.scatter) {
+      const p = this.player.getState();
+      this.scatter.step(dt, {
+        position: p.position,
+        velocity: p.velocity,
+        sliding: p.sliding,
+        sprinting: p.sprinting,
+        dashS: p.dashS,
+      });
+    }
     if (this.puzzle?.step(dt)) this.completeRoom();
     this.projectiles.step(dt);
     this.executeTarget = this.execute.targetId();
@@ -1846,6 +2005,8 @@ export class RoomScene implements Scene {
     );
     this.hazardView.advance(frameDt);
     this.hazardView.update(this.hazards.state(), alpha);
+    this.propView?.render(alpha);
+    this.scatterView?.render(alpha);
     if (this.puzzle) {
       const state = this.puzzle.view();
       this.puzzleView?.render(state, alpha);
@@ -2839,6 +3000,12 @@ export class RoomScene implements Scene {
           : null;
       case 'hazards':
         return this.hazards.state();
+      case 'props':
+        return {
+          alive: this.props?.aliveCount ?? 0,
+          bodies: this.props?.bodyCount ?? 0,
+          awake: this.props?.awakeCount ?? 0,
+        };
       case 'puzzle':
         return this.puzzle?.view();
       case 'wave':
@@ -2981,6 +3148,10 @@ export class RoomScene implements Scene {
     this.missionHud?.dispose();
     for (const director of this.reinforcements) director.dispose();
     this.hazards?.dispose();
+    this.propView?.dispose();
+    this.scatterView?.dispose();
+    this.scatter?.dispose();
+    this.props?.dispose();
     for (const off of this.off.splice(0)) off();
     this.hud?.dispose();
     this.synergies?.dispose();
@@ -2994,6 +3165,7 @@ export class RoomScene implements Scene {
     this.explosionView?.dispose();
     this.bossFx?.dispose();
     this.shatter?.dispose();
+    this.worldDebris?.dispose();
     this.debrisView?.dispose();
     this.statusVfx?.dispose();
     this.statusView?.dispose();

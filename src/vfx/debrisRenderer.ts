@@ -32,6 +32,19 @@ import type { CombatFlash, DebrisSystem } from './debris';
 const ENEMY_HOT = new Color('#ff3b2f');
 const POWER_HOT = new Color('#ff2bd6');
 const WHITE_HOT = new Color('#fff1d6');
+/** Odłamki otoczenia (`DEBRIS_TINT` 2–5): barwa bryły i żar krawędzi. Bez czerwieni, cyanu i magenty. */
+const ENV_BODY = [
+  new Color('#2b303c'),
+  new Color('#4a5260'),
+  new Color('#5c4a38'),
+  new Color('#8ab4f8'),
+];
+const ENV_HOT = [
+  new Color('#ffd9a0'),
+  new Color('#ffae1a'),
+  new Color('#d98a1f'),
+  new Color('#ffae1a'),
+];
 /** Pula błysków (sylwetka, rdzeń, pierścień, iskra) — zgodna z pulą zdarzeń w DebrisSystem. */
 const FLASH_VIEWS = 24;
 
@@ -51,6 +64,7 @@ const edgeVertex = /* glsl */ `
 
 const edgeFragment = /* glsl */ `
   uniform vec3 uEnemy, uPower, uWhite;
+  uniform vec3 uEnv[4];
   uniform float uCool, uBright;
   varying vec3 vBary;
   varying vec2 vHeat;
@@ -60,7 +74,8 @@ const edgeFragment = /* glsl */ `
     float edge = 1.0 - smoothstep(0.02, 0.07 + aa * 1.5, e);
     // Żar: biały w chwili cięcia, stygnie do barwy wroga (albo magenty Rezonansu) i tli się.
     float heat = exp(-vHeat.x / max(uCool, 1e-3));
-    vec3 base = mix(uEnemy, uPower, vHeat.y);
+    int envIndex = int(clamp(vHeat.y - 1.5, 0.0, 3.0) + 0.5);
+    vec3 base = vHeat.y < 1.5 ? mix(uEnemy, uPower, vHeat.y) : uEnv[envIndex];
     vec3 color = mix(base, uWhite, heat * heat * 0.85);
     float glow = edge * (0.35 + heat * 1.4) + (1.0 - edge) * heat * 0.45;
     gl_FragColor = vec4(color * uBright, clamp(glow, 0.0, 1.0));
@@ -131,6 +146,12 @@ export class DebrisRenderer {
   private readonly edges: InstancedMesh;
   private readonly edgeMaterial: ShaderMaterial;
   private readonly heat: InstancedBufferAttribute;
+  /** Warstwa odłamków otoczenia (tint >= 2): własny materiał z kolorem instancji i własny żar. */
+  private readonly envGeometry = new TetrahedronGeometry(1, 0);
+  private readonly envRoot: InstancedMesh;
+  private readonly envEdges: InstancedMesh;
+  private readonly envHeat: InstancedBufferAttribute;
+  private readonly envMaterial = new MeshBasicMaterial({ toneMapped: false });
   private readonly flashRoot = new Group();
   private readonly flashViews: FlashView[] = [];
   private readonly rimGeometry = new CapsuleGeometry(1, 1, 4, 14);
@@ -174,6 +195,7 @@ export class DebrisRenderer {
         uEnemy: { value: ENEMY_HOT.clone() },
         uPower: { value: POWER_HOT.clone() },
         uWhite: { value: WHITE_HOT.clone() },
+        uEnv: { value: ENV_HOT.map((c) => c.clone()) },
         uCool: { value: this.tuning.vfx.debrisEdgeCoolS },
         uBright: { value: this.tuning.vfx.debrisEdgeBrightness },
       },
@@ -196,6 +218,43 @@ export class DebrisRenderer {
     this.edges.renderOrder = 2;
     this.root.add(this.edges);
 
+    const envVertices = this.envGeometry.getAttribute('position').count;
+    const envBary = new Float32Array(envVertices * 3);
+    for (let i = 0; i < envVertices; i++) envBary[i * 3 + (i % 3)] = 1;
+    this.envGeometry.setAttribute('aBary', new BufferAttribute(envBary, 3));
+    this.envHeat = new InstancedBufferAttribute(
+      new Float32Array(system.maxDebris * 2),
+      2,
+    );
+    this.envHeat.setUsage(DynamicDrawUsage);
+    this.envGeometry.setAttribute('aHeat', this.envHeat);
+    this.envRoot = new InstancedMesh(
+      this.envGeometry,
+      this.envMaterial,
+      system.maxDebris,
+    );
+    this.envRoot.name = 'debris-env';
+    this.envRoot.count = 0;
+    this.envRoot.frustumCulled = false;
+    this.envRoot.instanceMatrix.setUsage(DynamicDrawUsage);
+    this.envRoot.userData.noOutline = true;
+    this.envRoot.userData.vfxPool = true;
+    this.envRoot.setColorAt(0, ENV_BODY[0]!);
+    this.envEdges = new InstancedMesh(
+      this.envGeometry,
+      this.edgeMaterial,
+      system.maxDebris,
+    );
+    this.envEdges.name = 'debris-env-edges';
+    this.envEdges.count = 0;
+    this.envEdges.frustumCulled = false;
+    this.envEdges.instanceMatrix = this.envRoot.instanceMatrix;
+    this.envEdges.userData.noOutline = true;
+    this.envEdges.userData.vfxPool = true;
+    this.envEdges.renderOrder = 2;
+    this.envRoot.add(this.envEdges);
+    this.root.add(this.envRoot);
+
     this.flashRoot.name = 'combat-flashes';
     for (let i = 0; i < FLASH_VIEWS; i++) this.flashViews.push(this.makeView());
     this.root.add(this.flashRoot);
@@ -203,6 +262,7 @@ export class DebrisRenderer {
     if (getLiteFx()) {
       this.warmFrames = 0;
       this.edges.visible = false;
+      this.envRoot.visible = false;
       this.flashRoot.visible = false;
     }
   }
@@ -266,20 +326,47 @@ export class DebrisRenderer {
 
   render(alpha = 1): void {
     let count = 0;
+    let envCount = 0;
     const heat = this.heat.array as Float32Array;
+    const envHeat = this.envHeat.array as Float32Array;
     this.system.forEachActive((pos, quat, scale, _a, age = 0, tint = 0) => {
       this.transform.position.set(pos.x, pos.y, pos.z);
       this.transform.quaternion.set(quat.x, quat.y, quat.z, quat.w);
       this.transform.scale.set(scale.x, scale.y, scale.z);
       this.transform.updateMatrix();
+      if (tint >= 1.5) {
+        envHeat[envCount * 2] = age;
+        envHeat[envCount * 2 + 1] = tint;
+        const body =
+          ENV_BODY[Math.min(3, Math.round(tint) - 2)] ?? ENV_BODY[0]!;
+        this.envRoot.setColorAt(envCount, body);
+        this.envRoot.setMatrixAt(envCount++, this.transform.matrix);
+        return;
+      }
       heat[count * 2] = age;
       heat[count * 2 + 1] = tint;
       this.root.setMatrixAt(count++, this.transform.matrix);
     }, alpha);
     this.root.count = count;
     this.edges.count = count;
+    this.envRoot.count = envCount;
+    this.envEdges.count = envCount;
     const warming = this.warmFrames > 0;
     if (warming) this.warmFrames--;
+    if (warming && envCount === 0 && !getLiteFx()) {
+      this.transform.scale.setScalar(0);
+      this.transform.updateMatrix();
+      this.envRoot.setMatrixAt(0, this.transform.matrix);
+      this.envRoot.setColorAt(0, ENV_BODY[0]!);
+      this.envRoot.count = this.envEdges.count = 1;
+      envCount = 1;
+    }
+    if (envCount > 0 || warming) {
+      this.envRoot.instanceMatrix.needsUpdate = true;
+      if (this.envRoot.instanceColor)
+        this.envRoot.instanceColor.needsUpdate = true;
+      this.envHeat.needsUpdate = true;
+    }
     if (warming && count === 0) {
       this.transform.scale.setScalar(0);
       this.transform.updateMatrix();
@@ -384,8 +471,12 @@ export class DebrisRenderer {
     this.root.removeFromParent();
     this.edges.removeFromParent();
     this.edges.dispose();
+    this.envEdges.dispose();
+    this.envRoot.dispose();
     this.root.dispose();
     this.geometry.dispose();
+    this.envGeometry.dispose();
+    this.envMaterial.dispose();
     this.edgeMaterial.dispose();
     for (const view of this.flashViews) {
       view.rim.material.dispose();
