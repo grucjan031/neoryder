@@ -10,6 +10,26 @@ i bufora oraz licznik skoków w powietrzu `airJumpsUsed`, a także `height`,
 po `player.step(dt, snapshot)` scena wykonuje jeden `world.step()`.
 `dispose()` usuwa kontroler i ciało; świat jest zwalniany osobno przez scenę.
 
+## Nogi gracza w FPP
+
+`FppLegs` rysuje spodnie i buty z `npc_civilian.glb` w warstwie świata.
+Biodra podążają za interpolowaną pozycją stóp i obrotem yaw. Cofnięcie bioder
+zmienia się razem z wysokością kapsuły. Obie siatki współdzielą szkielet,
+podlegają odrzucaniu poza frustum i mają wyłączone rzucanie cieni.
+
+Postawa przechodzi od `Idle_Loop` przez `Walk_Loop` do `Jog_Fwd_Loop`.
+Droga przebyta w świecie wyznacza fazę cyklu, także przy zmianie tempa symulacji.
+Ruch w bok obraca biodra, a cofanie odwraca cykl. Kucanie miesza
+`Crouch_Idle_Loop` z chodem, ślizg używa `Sitting_Idle_Loop`, a w locie
+prędkość pionowa wybiera ułożenie nóg z klipu biegu. Parametry widoku,
+w tym przełącznik `enabled`, są w folderze `fppLegs` panelu strojenia.
+
+W `?scene=legsTest` gracz zaczyna przed niskim tunelem. Kliknij scenę
+i spójrz w dół. Linie co metr na podłodze pozwalają porównać ruch stopy
+podporowej z podłożem przy chodzie, biegu i cofaniu. Sprawdź również skok
+oraz krok w bok. Wślizgnij się pod tunel i zatrzymaj się pod nim,
+by sprawdzić widok z obniżonej kapsuły.
+
 ## Kolejność kroku `step(dt, input)`
 
 Stały krok `SIM_DT = 1/60`. Kolejność w kodzie (istotna dla odtworzenia feelu):
