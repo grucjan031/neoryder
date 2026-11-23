@@ -9,6 +9,7 @@ import m03 from '../../src/data/missions/m03-list-przewozowy.json' with { type: 
 import m04 from '../../src/data/missions/m04-ladunek-klasy-k.json' with { type: 'json' };
 import m05 from '../../src/data/missions/m05-adiutant.json' with { type: 'json' };
 import m06 from '../../src/data/missions/m06-odlewnia.json' with { type: 'json' };
+import m07 from '../../src/data/missions/m07-nocny-dyzur.json' with { type: 'json' };
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
 // Panel debug lil-gui (dev) zasłania prawy dolny róg; ekrany stacji mają tam przyciski.
@@ -361,6 +362,7 @@ async function playM06(page: Page) {
       { timeout: SIM_TIMEOUT, message: 'utknięto na: M06 / walka z Brandtem' },
     )
     .toBe('done');
+  expect(await query(page, 'kills')).toBeGreaterThanOrEqual(1);
   await pollMission(page, 'M06 / po Brandcie').toMatchObject({
     objectives: { server: 'pending' },
     activeEncounters: [],
@@ -378,6 +380,69 @@ async function playM06(page: Page) {
   await command(page, 'tp 216 -11.5 0');
 }
 
+async function playM07(page: Page) {
+  expect(await command(page, 'objective done kapsula')).toBe(
+    'Cel niedostępny.',
+  );
+  expect((await mission(page)).openGates).not.toContain('gate-krata');
+  await command(page, 'tp 63.5 0 -90');
+  await pollMission(page, 'M07 / krata').toMatchObject({
+    objectives: { krata: 'done' },
+    openGates: expect.arrayContaining(['gate-krata']),
+  });
+
+  // Przejście przy ścianie jest ciche; środek hali uruchamia alarm i zamyka rolety.
+  await command(page, 'tp 146 -9.2 -90');
+  await waitSimSteps(page, 30);
+  expect((await mission(page)).activeEncounters).toEqual([]);
+  expect((await mission(page)).openGates).toContain('gate-rolety');
+  await command(page, 'tp 146 0 -90');
+  await pollMission(page, 'M07 / alarm w hali').toMatchObject({
+    activeEncounters: ['alarm-hala'],
+  });
+  expect((await mission(page)).openGates).not.toContain('gate-rolety');
+  await command(page, 'encounter clear');
+  expect((await mission(page)).openGates).toContain('gate-rolety');
+
+  await clearEncounter(page, 'wieza-magazynu', 180, null);
+  expect((await mission(page)).openGates).not.toContain('gate-serwerownia');
+  await command(page, 'tp 198 -7.2 -90');
+  await pollMission(page, 'M07 / kapsuła').toMatchObject({
+    objectives: { kapsula: 'done' },
+    openGates: expect.arrayContaining(['gate-serwerownia']),
+  });
+
+  expect((await mission(page)).openGates).not.toContain('gate-targ');
+  await command(page, 'tp 238 0 -90');
+  await expect
+    .poll(
+      async () => {
+        const state = await mission(page);
+        if (state.activeEncounters.length > 0)
+          await command(page, 'encounter clear');
+        return state.objectives.serwer;
+      },
+      { timeout: SIM_TIMEOUT, message: 'utknięto na: M07 / transfer' },
+    )
+    .toBe('done');
+  expect((await mission(page)).openGates).toContain('gate-targ');
+  await command(page, 'encounter clear');
+  expect((await mission(page)).completedEncounters).toContain(
+    'czujnik-serwera',
+  );
+
+  for (const [id, x] of [
+    ['poscig-targ-1', 266],
+    ['poscig-targ-2', 288],
+    ['blokada-windy', 309],
+  ] as const) {
+    expect((await mission(page)).openGates).not.toContain('gate-winda');
+    await clearEncounter(page, id, x, null);
+  }
+  expect((await mission(page)).openGates).toContain('gate-winda');
+  await command(page, 'tp 326 0 -90');
+}
+
 /**
  * Podsumowanie → kryjówka → debrief → reload. Zwraca stan meta, który musi
  * przetrwać odświeżenie w całości (kampania, waluty, rozliczenia, naszywki).
@@ -391,6 +456,8 @@ async function settleAndReload(
     timeout: LOAD_TIMEOUT,
   });
   expect(await query(page, 'saveError')).toBeNull();
+  const kills = (await query(page, 'kills')) as number;
+  expect(Number.isInteger(kills)).toBe(true);
   await page
     .getByRole('button', { name: 'Wróć do kryjówki', exact: true })
     .click();
@@ -415,7 +482,7 @@ async function settleAndReload(
     settled,
   );
   await expect(page.locator('[data-mission-debrief]')).toHaveCount(0);
-  return settled;
+  return { meta: settled, kills };
 }
 
 /**
@@ -426,12 +493,14 @@ function expectRewards(
   before: MetaState,
   after: MetaState,
   firstClear: FirstClear | null,
+  kills: number,
 ) {
   const rules = progression.rewards;
   const run = after.lastRuns[0]!.rewards;
   expect(run).toEqual({
     xp: rules.xpVictory,
-    data: rules.dataVictory + (firstClear?.data ?? 0),
+    data:
+      rules.dataVictory + kills * rules.dataPerKill + (firstClear?.data ?? 0),
     cores: rules.coresVictory + (firstClear?.cores ?? 0),
   });
   const badges = achievements.filter(
@@ -441,6 +510,7 @@ function expectRewards(
   );
   const badgeSum = (key: 'data' | 'cores') =>
     badges.reduce((sum, badge) => sum + (badge.reward[key] ?? 0), 0);
+  expect(after.stats.kills - before.stats.kills).toBe(kills);
   expect(after.xp - before.xp).toBe(run.xp);
   expect(after.data - before.data).toBe(run.data + badgeSum('data'));
   expect(after.cores - before.cores).toBe(run.cores + badgeSum('cores'));
@@ -613,7 +683,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
   page,
   context,
 }, testInfo) => {
-  test.setTimeout(1_200_000);
+  test.setTimeout(1_800_000);
   const errors: string[] = [];
   const timings: Record<string, number> = {};
   const settlements: Record<string, unknown> = {};
@@ -652,6 +722,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
     { definition: m04, play: playM04 },
     { definition: m05, play: playM05 },
     { definition: m06, play: playM06 },
+    { definition: m07, play: playM07 },
   ];
   const completed: string[] = [];
   const boardStatuses = () =>
@@ -687,13 +758,19 @@ test('S10-02: całe demo na jednym zapisie', async ({
           await startMission(page, definition.id, boardStatuses());
           await play(page);
           if (first) completed.push(definition.id);
-          const after = await settleAndReload(page, definition.id, completed);
+          const { meta: after, kills } = await settleAndReload(
+            page,
+            definition.id,
+            completed,
+          );
           settlements[`${definition.id} / ${pass}`] = {
             ...expectRewards(
               meta,
               after,
               first ? definition.rewards.firstClear : null,
+              kills,
             ),
+            kills,
             stan: { xp: after.xp, data: after.data, cores: after.cores },
           };
           meta = after;
@@ -701,7 +778,7 @@ test('S10-02: całe demo na jednym zapisie', async ({
 
     await stage('koniec kampanii / tablica', async () => {
       expect(meta.campaign).toMatchObject({
-        completed: [m01.id, m02.id, m03.id, m04.id, m05.id, m06.id],
+        completed: [m01.id, m02.id, m03.id, m04.id, m05.id, m06.id, m07.id],
         pendingDebrief: null,
       });
       await board(page, boardStatuses());

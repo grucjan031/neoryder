@@ -22,6 +22,16 @@ const query = (page: Page, key: string) =>
     .catch(() => undefined);
 const command = (page: Page, line: string) =>
   page.evaluate((text) => window.__neoryder?.command(text), line);
+async function killOneEnemy(page: Page) {
+  const result = await page.evaluate(() => {
+    const game = window.__neoryder!;
+    const spawned = game.command('spawn assaulter');
+    game.command('kill all');
+    return { spawned, kills: game.query('kills') };
+  });
+  expect(result).toEqual({ spawned: 'Utworzono: 1', kills: 1 });
+}
+
 const waitPlaying = (page: Page) =>
   expect
     .poll(() => query(page, 'screen'), { timeout: LOAD_TIMEOUT })
@@ -39,7 +49,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
       timeout: LOAD_TIMEOUT,
     })
     .toBe('hub');
-  const before = (await query(page, 'meta')) as { data: number };
+  const before = (await query(page, 'meta')) as MetaState;
   await command(page, 'mission start m01-maszty');
   await waitPlaying(page);
   expect(await page.evaluate(() => window.__neoryder?.sceneId())).toBe(
@@ -51,6 +61,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
   );
   expect(await command(page, 'objective done mast-2')).toBe('Cel niedostępny.');
   await command(page, 'god');
+  await killOneEnemy(page);
   // Wejście na targ zgłasza `enterSection:targ`; ostrzeżenie taktyczne gra po kwestiach startu.
   await command(page, 'tp 50 0 -90');
   const radio = page.locator('.mission-radio--run');
@@ -121,10 +132,10 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
     timeout: LOAD_TIMEOUT,
   });
   await page.getByRole('button', { name: 'Zakończ rozmowę' }).click();
-  // Scena rozlicza 0 pokojów, elit i zabójstw na Poziomie zagrożenia 0.
+  // Jedno zabójstwo gracza w każdej próbie, bez punktów za pokoje i elity.
   const ordinary = {
     xp: progression.rewards.xpVictory,
-    data: progression.rewards.dataVictory,
+    data: progression.rewards.dataVictory + progression.rewards.dataPerKill,
     cores: progression.rewards.coresVictory,
   };
   // Naszywki Iskry mogą dodać własną nagrodę poza zwykłymi nagrodami i firstClear.
@@ -133,6 +144,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
     .toMatchObject({ campaign: { completed: ['m01-maszty'] } });
   const firstMeta = (await query(page, 'meta')) as MetaState;
   const afterFirst = firstMeta.data;
+  expect(firstMeta.stats.kills - before.stats.kills).toBe(1);
   expect(firstMeta.lastRuns[0]?.rewards).toEqual({
     ...ordinary,
     data: ordinary.data + mission.rewards.firstClear.data,
@@ -145,6 +157,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
   await command(page, 'mission start m01-maszty');
   await waitPlaying(page);
   await command(page, 'god');
+  await killOneEnemy(page);
   for (const id of ['mast-1', 'mast-2', 'helix', 'mast-3', 'exit'])
     await command(page, `objective done ${id}`);
   await expect(page.locator('[data-mission-summary]')).toBeVisible({
@@ -158,6 +171,7 @@ test('M01: debug start, checkpoint, śmierć, wznowienie i jednokrotny bonus', a
     .toMatchObject({ data: afterFirst + ordinary.data });
   const secondMeta = (await query(page, 'meta')) as MetaState;
   expect(secondMeta.data).toBeGreaterThan(afterFirst);
+  expect(secondMeta.stats.kills - firstMeta.stats.kills).toBe(1);
   expect(secondMeta.lastRuns[0]?.rewards).toEqual(ordinary);
   expect(
     firstMeta.lastRuns[0]!.rewards.data - secondMeta.lastRuns[0]!.rewards.data,
