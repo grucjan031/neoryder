@@ -31,7 +31,8 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { tuning } from '../core/tuning';
 import { loadSettings } from '../core/save';
 import { PIERCE_BLOCK_TAG } from '../combat/damage';
-import { rifleman, selectEnemyAnimation } from './enemyAnimation';
+import { gaitWeights, rifleman, selectEnemyAnimation } from './enemyAnimation';
+import { angleDelta } from './locomotion';
 import { knockdownFrame } from './enemyKnockdown';
 import { HeldShield, ShieldHeadClearance } from './heldShield';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -48,6 +49,8 @@ const laserFrom = new Vector3();
 const knockAxis = new Vector3();
 const knockPivot = new Vector3();
 const knockQuat = new Quaternion();
+const spineWorld = new Quaternion();
+const aimAxis = new Vector3();
 
 const up = new Vector3(0, 1, 0);
 const templates = new Map<string, Promise<Object3D | null>>();
@@ -99,6 +102,12 @@ export class EnemyView {
   private disposed = false;
   private mixer?: AnimationMixer;
   private action?: AnimationAction;
+  private gait?: AnimationAction[];
+  private gaitFade = 0;
+  private spine?: Object3D;
+  private torsoYaw = 0;
+  private readonly spinePose = new Quaternion();
+  private appliedAim = false;
   private readonly actions = new Map<string, AnimationAction>();
   private readonly skins: SkinnedMesh[] = [];
   private animationState?: Enemy['current']['state'];
@@ -109,6 +118,7 @@ export class EnemyView {
   private readonly laser?: Mesh;
   private shield?: Object3D;
   private fallbackShield?: Mesh;
+  private readonly shieldRest = new Vector3();
   private heldShield?: HeldShield;
   private shieldHeadClearance?: ShieldHeadClearance;
   private readonly fallbackGeometries: BufferGeometry[] = [];
@@ -280,6 +290,7 @@ export class EnemyView {
         body.centerY,
         body.radius + shieldSize.z / 2,
       );
+      this.shieldRest.copy(this.shield.position);
       this.shield.visible = enemy.current.shieldUp === true;
       this.root.add(this.shield);
     }
@@ -305,6 +316,7 @@ export class EnemyView {
         this.model = new Group();
         this.model.scale.setScalar(enemy.definition.boss?.modelScale ?? 1);
         const instance = clone(source);
+        this.spine = instance.getObjectByName('DEF-spine003');
         this.model.add(instance);
         instance.traverse((node) => {
           if (node instanceof SkinnedMesh) this.skins.push(node);
@@ -530,7 +542,14 @@ export class EnemyView {
       b.aim.y - this.root.position.y,
       Math.sin(yaw) * wx + Math.cos(yaw) * wz,
     );
-    const from = laserFrom.set(m.x, m.y, m.z);
+    // Lufa leży w układzie celowania (aimYaw), a korzeń widoku obraca bodyYaw.
+    const sin = Math.sin(this.torsoYaw),
+      cos = Math.cos(this.torsoYaw);
+    const from = laserFrom.set(
+      m.x * cos + m.z * sin,
+      m.y,
+      m.z * cos - m.x * sin,
+    );
     const dir = local.sub(from);
     const length = dir.length();
     if (length <= 1e-6) {
@@ -556,9 +575,28 @@ export class EnemyView {
       a.position.z + (b.position.z - a.position.z) * t,
     );
     const delta = Math.atan2(Math.sin(b.yaw - a.yaw), Math.cos(b.yaw - a.yaw));
-    this.root.rotation.y = a.yaw + delta * t;
+    const aimYaw = a.yaw + delta * t;
+    const oldBody = a.bodyYaw ?? a.yaw;
+    const bodyYaw = oldBody + angleDelta(oldBody, b.bodyYaw ?? b.yaw) * t;
+    this.root.rotation.y = this.spine || !this.mixer ? bodyYaw : aimYaw;
+    this.torsoYaw = angleDelta(this.root.rotation.y, aimYaw);
+    if (this.fallbackShield && this.shield === this.fallbackShield) {
+      // Tarcza zastępcza blokuje zgodnie z kierunkiem celowania, nie korpusu.
+      const sin = Math.sin(this.torsoYaw),
+        cos = Math.cos(this.torsoYaw);
+      const rest = this.shieldRest;
+      this.fallbackShield.position.set(
+        rest.x * cos + rest.z * sin,
+        rest.y,
+        rest.z * cos - rest.x * sin,
+      );
+      this.fallbackShield.rotation.y = this.torsoYaw;
+    }
     this.root.visible = b.state !== 'dead' && !this.enemy.removed;
     this.applyKnockdown();
+    if (!b.knockdown && !b.controlled)
+      this.model.rotation.z +=
+        (a.lean ?? 0) + ((b.lean ?? 0) - (a.lean ?? 0)) * t;
     if (this.shield) this.shield.visible = b.shieldUp === true;
     this.renderLaser();
     const heavy =
@@ -581,6 +619,8 @@ export class EnemyView {
       node.position.copy(rest.position);
       node.scale.copy(rest.scale);
     }
+    const torso = this.model.getObjectByName('torso');
+    if (!this.mixer && torso) torso.rotation.y += this.torsoYaw;
     const rotate = (name: string, axis: 'x' | 'z', angle: number): void => {
       const node = this.model.getObjectByName(name);
       if (node && !this.mixer) node.rotation[axis] += angle;
@@ -592,7 +632,7 @@ export class EnemyView {
     const walk =
       Math.sin(phase) *
       anim.walkAngle *
-      Math.min(1, b.speed / definition.moveSpeed);
+      Math.min(1, (a.speed + (b.speed - a.speed) * t) / definition.moveSpeed);
     for (const [side, sign] of [
       ['L', 1],
       ['R', -1],
@@ -865,7 +905,64 @@ export class EnemyView {
       : Math.max(0, time);
     this.animationState = b.state;
     this.animationTimeS = time;
+    this.pendingAnimationS = dt;
+    this.animationPending = this.root.visible;
     const selection = selectEnemyAnimation(definition, b);
+    const locomotion =
+      !b.attack &&
+      !b.controlled &&
+      (b.state === 'idle' || b.state === 'chase' || b.state === 'reposition');
+    if (locomotion && !this.gait) {
+      const clips = [
+        rifleman(definition) ? 'Pistol_Idle_Loop' : 'Idle_Loop',
+        'Walk_Loop',
+        'Jog_Fwd_Loop',
+      ];
+      const actions = clips.map((name) => this.actions.get(name));
+      if (actions.every((a): a is AnimationAction => !!a)) {
+        this.gait = actions;
+        // Aktywny klip spoczynkowy jest częścią chodu: bez zanikania, inaczej suma wag spada do 0.
+        const inGait = !!this.action && actions.includes(this.action);
+        this.gaitFade = this.action && !inGait ? 0 : 1;
+        if (!inGait) this.action?.fadeOut(tuning.enemies.animationFadeS);
+        const active = this.action;
+        this.action = undefined;
+        for (const action of actions)
+          (action === active && inGait ? action.stopFading() : action.reset())
+            .setLoop(LoopRepeat, Infinity)
+            .play();
+      }
+    }
+    if (this.gait && locomotion) {
+      const speed = a.speed + (b.speed - a.speed) * alpha;
+      const weights = gaitWeights(
+        speed,
+        definition.moveSpeed,
+        definition.animation?.jogFromSpeedFrac ?? 0.5,
+      );
+      this.gaitFade = Math.min(
+        1,
+        this.gaitFade + dt / Math.max(1e-6, tuning.enemies.animationFadeS),
+      );
+      this.gait.forEach((action, i) => {
+        const clip = action.getClip();
+        action.setEffectiveWeight(weights[i]! * this.gaitFade);
+        action.setEffectiveTimeScale(
+          i === 0 ? 1 : (clip.duration * speed) / this.strideFor(clip.name),
+        );
+      });
+      return;
+    }
+    if (this.gait) {
+      this.action = this.gait[0];
+      for (const action of this.gait.slice(1))
+        action.fadeOut(
+          selection.once
+            ? tuning.enemies.animationActionFadeS
+            : tuning.enemies.animationFadeS,
+        );
+      this.gait = undefined;
+    }
     const next = this.actions.get(selection.clip);
     if (!next) return;
     const clip = next.getClip();
@@ -912,7 +1009,18 @@ export class EnemyView {
   private advanceAnimation(): void {
     if (!this.animationPending || !this.mixer) return;
     this.animationPending = false;
+    if (this.spine && this.appliedAim)
+      this.spine.quaternion.copy(this.spinePose);
     this.mixer.update(this.pendingAnimationS);
+    if (this.spine) {
+      this.spinePose.copy(this.spine.quaternion);
+      if (this.torsoYaw) {
+        this.spine.getWorldQuaternion(spineWorld).invert();
+        aimAxis.copy(up).applyQuaternion(spineWorld);
+        this.spine.rotateOnAxis(aimAxis, this.torsoYaw);
+      }
+      this.appliedAim = true;
+    }
     this.model.updateWorldMatrix(true, true);
     this.heldShield?.update();
     this.shieldHeadClearance?.update();

@@ -118,7 +118,9 @@ export class DroneView {
     this.root.rotation.y = a.yaw + delta * t;
     this.root.visible = b.state !== 'dead' && !this.enemy.removed;
     const stunned = b.state === 'stunned';
-    this.tilt.rotation.z = stunned ? this.flight.stunTiltRad : 0;
+    this.tilt.rotation.z = stunned
+      ? this.flight.stunTiltRad
+      : (a.lean ?? 0) + ((b.lean ?? 0) - (a.lean ?? 0)) * t;
     this.spin +=
       Math.PI * 2 * this.flight.rotorSpinHz * frameDt * (stunned ? 0.2 : 1);
     for (const rotor of this.rotors) rotor.rotation.y = this.spin;

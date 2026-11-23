@@ -1,3 +1,4 @@
+import { arrivalSpeed, updateBodyPose } from './locomotion';
 import { Health } from '../combat/damage';
 import type { DamageInfo } from '../combat/damage';
 import { STUNNED } from '../combat/status/statusSystem';
@@ -659,7 +660,13 @@ export class Boss implements Enemy {
           if (distance <= this.definition.attackRange) this.begin();
           else {
             if (s.state !== 'chase') this.transition('chase');
-            const speed = Math.min(this.stats.get('moveSpeed'), distance / dt);
+            const braking =
+              this.ctx.tuning.enemies.brakingMps2 *
+              (this.definition.body?.locomotionScale ?? 1);
+            const speed = Math.min(
+              this.stats.get('moveSpeed'),
+              arrivalSpeed(distance - this.definition.attackRange, braking, dt),
+            );
             vx = (dx / distance) * speed;
             vz = (dz / distance) * speed;
           }
@@ -696,6 +703,13 @@ export class Boss implements Enemy {
       s.position = movement.position;
       s.speed = movement.distance / dt;
       s.distance += movement.distance;
+      updateBodyPose(
+        this.previous,
+        s,
+        this.definition.turnRateDegS,
+        dt,
+        this.ctx.tuning.enemies,
+      );
     }
   }
 

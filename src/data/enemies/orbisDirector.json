@@ -16,6 +16,7 @@
   "stunOnHeavyS": 0.6,
   "repathJitter": 0.15,
   "body": {
+    "locomotionScale": 0.7,
     "height": 2.16,
     "halfHeight": 0.42,
     "radius": 0.36,

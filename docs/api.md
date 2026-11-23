@@ -2274,6 +2274,14 @@ rusza po `tuning.mission.radioCalmDelayS` bez walki albo, pojedynczo, po
 - `ArenaNavigation`: czysta siatka przechodniości i pola odległości A/B/C;
   host RoomScene przekazuje następny widoczny waypoint przez istniejące
   `Enemy.moveGoal`. Zwykłe AI i zwykłe runy nie korzystają z tej nawigacji.
+- `EnemyManager.step(dt, navigation?)` przyjmuje cele trybu w `Enemy.moveGoal`.
+  Na początku kroku wsad wyznacza prefiksy ścieżek i kandydatów do separacji.
+  Kolejność wrogów jest kolejnością spawnu. Konkretna kolizja i siła separacji
+  nadal korzystają z aktualnych pozycji w chwili ruchu danego wroga.
+  `ArenaNavigation.path/next` pozostają dostępne dla sojuszników i walidacji.
+  Wsad zastępuje `moveGoal` węzłem trasy i ustawia `Enemy.moveGoalFinal`
+  (`false` = węzeł pośredni). Host ustawia `moveGoal` na cel końcowy
+  i `moveGoalFinal = true` w każdym kroku; sceny prototypowe nie wołają `next`.
 - `AudioSystem.setAmbience` obsługuje także syntetyczne warstwy `rain` i `wind`.
   Pogoda podąża źródłami za kamerą, wykorzystując istniejące odblokowanie i pauzę.
 

@@ -1,3 +1,4 @@
+import { steerVelocity, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import {
   Ball,
@@ -51,6 +52,7 @@ export class Drone implements Enemy {
   private readonly off: (() => void)[] = [];
   private readonly rng;
   private readonly impulse = { x: 0, y: 0, z: 0 };
+  private readonly velocity = { x: 0, z: 0 };
   private orbit: 1 | -1;
   private stunS = 0;
   private shots = 0;
@@ -246,6 +248,7 @@ export class Drone implements Enemy {
       setControlled: (controlled) => {
         if (this.removed) return;
         this.current.controlled = controlled;
+        this.velocity.x = this.velocity.z = 0;
         this.deps.director?.releaseToken(this.id);
         this.token = false;
         this.hurtbox.setSensor(!controlled);
@@ -377,7 +380,9 @@ export class Drone implements Enemy {
         Math.min(this.stats.get('moveSpeed'), vy),
       );
     }
-    for (const neighbor of this.deps.getNeighbors?.() ?? []) {
+    for (const neighbor of this.deps.getLocalNeighbors?.() ??
+      this.deps.getNeighbors?.() ??
+      []) {
       if (neighbor.id === this.id || neighbor.current.state === 'dead')
         continue;
       const x = s.position.x - neighbor.current.position.x,
@@ -391,6 +396,18 @@ export class Drone implements Enemy {
       vx += (x / length) * strength;
       vz += (z / length) * strength;
     }
+    const scale = this.flight.locomotionScale ?? 1;
+    const settings = this.ctx.tuning.enemies;
+    steerVelocity(
+      this.velocity,
+      vx,
+      vz,
+      settings.accelerationMps2 * scale,
+      settings.brakingMps2 * scale,
+      dt,
+    );
+    vx = this.velocity.x;
+    vz = this.velocity.z;
     const moved = this.move({
       x: (vx + this.impulse.x) * dt,
       y: (vy + this.impulse.y) * dt,
@@ -402,6 +419,7 @@ export class Drone implements Enemy {
     this.impulse.z *= damping;
     s.speed = moved / dt;
     s.distance += moved;
+    updateBodyPose(this.previous, s, d.turnRateDegS, dt, settings);
   }
 
   private recoverClearance(): void {
@@ -429,15 +447,13 @@ export class Drone implements Enemy {
     this.current.position = point;
   }
 
-  /** Rzut kuli z `from` o `delta`; zwraca ułamek ruchu do kolizji (1 = bez przeszkody). */
-  private sweep(from: Vec3, delta: Vec3): number {
-    if (Math.hypot(delta.x, delta.y, delta.z) <= epsilon) return 1;
-    const hit = this.deps.world.castShape(
+  private sweep(from: Vec3, delta: Vec3, clearance = this.flight.skinM) {
+    return this.deps.world.castShape(
       from,
       identity,
       delta,
       this.shape,
-      this.flight.skinM,
+      clearance,
       1,
       false,
       QueryFilterFlags.EXCLUDE_SENSORS,
@@ -445,34 +461,51 @@ export class Drone implements Enemy {
       undefined,
       this.body,
     );
-    return hit ? Math.max(0, Math.min(1, hit.time_of_impact)) : 1;
   }
 
-  /**
-   * Przesuwa kulę o `delta`, zatrzymując się `skinM` przed światem. Przy kolizji resztę ruchu
-   * próbuje osobno w osiach x, z, y (ślizg wzdłuż ściany), więc dron nie zamarza, gdy cel orbity
-   * leży za ścianą. Gdy nie przesunie się wcale, odwraca kierunek krążenia. Zwraca przebytą drogę.
-   */
   private move(delta: Vec3): number {
     const length = Math.hypot(delta.x, delta.y, delta.z);
     if (length <= epsilon) return 0;
     const pos = { ...this.current.position };
-    const t = this.sweep(pos, delta);
+    const hit = this.sweep(pos, delta);
+    const t = hit ? Math.max(0, Math.min(1, hit.time_of_impact)) : 1;
     pos.x += delta.x * t;
     pos.y += delta.y * t;
     pos.z += delta.z * t;
     let moved = length * t;
-    if (t < 1) {
+    if (hit && t < 1) {
       this.impulse.x = this.impulse.y = this.impulse.z = 0;
-      for (const axis of ['x', 'z', 'y'] as const) {
-        const rest = delta[axis] * (1 - t);
-        if (Math.abs(rest) <= epsilon) continue;
-        const step = { x: 0, y: 0, z: 0, [axis]: rest };
-        const k = this.sweep(pos, step);
-        pos[axis] += rest * k;
-        moved += Math.abs(rest) * k;
+      const n = hit.normal1;
+      const normalSpeed = this.velocity.x * n.x + this.velocity.z * n.z;
+      if (normalSpeed < 0) {
+        this.velocity.x -= normalSpeed * n.x;
+        this.velocity.z -= normalSpeed * n.z;
       }
-      if (moved <= epsilon) this.orbit = this.orbit === 1 ? -1 : 1;
+      const dot = delta.x * n.x + delta.y * n.y + delta.z * n.z;
+      const slide = {
+        x: (delta.x - dot * n.x) * (1 - t),
+        y: (delta.y - dot * n.y) * (1 - t),
+        z: (delta.z - dot * n.z) * (1 - t),
+      };
+      const tangentLength = Math.hypot(slide.x, slide.y, slide.z);
+      if (tangentLength > epsilon) {
+        // The first cast stopped at the skin boundary. A tangent cast with the
+        // same inflated radius can hit that wall again at time zero after f32 rounding.
+        const second = this.sweep(pos, slide, this.flight.skinM / 2);
+        const fraction = second
+          ? Math.max(0, Math.min(1, second.time_of_impact))
+          : 1;
+        pos.x += slide.x * fraction;
+        pos.y += slide.y * fraction;
+        pos.z += slide.z * fraction;
+        moved += tangentLength * fraction;
+      }
+      if (
+        moved <= epsilon &&
+        (this.current.state === 'reposition' ||
+          this.current.state === 'cooldown')
+      )
+        this.orbit = this.orbit === 1 ? -1 : 1;
     }
     this.body.setNextKinematicTranslation(pos);
     this.current.position = pos;

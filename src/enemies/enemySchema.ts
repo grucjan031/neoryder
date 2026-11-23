@@ -170,6 +170,7 @@ export const gunnerFields = z.object({
 export const droneFields = z.object({
   antenna: z.boolean().optional(),
   massKg: positive,
+  locomotionScale: positive.optional(),
   /** Wysokość środka drona nad punktem spawnu (stopami). */
   hoverHeightM: positive,
   /** Prędkość kątowa krążenia wokół celu. */
@@ -248,6 +249,7 @@ export const enemySchema = z
         headRadius: positive,
         headMultiplier: positive,
         controllerOffset: positive,
+        locomotionScale: positive.optional(),
         knockbackDamping: positive,
         attackHalfWidth: positive,
         attackHalfHeight: positive,

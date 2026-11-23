@@ -9,6 +9,8 @@ import type { DirectorConfig } from './director';
 import type { StatModifier } from '../core/stats';
 import { createEnemy } from './registry';
 import type { Enemy, EnemyDependencies } from './types';
+import { EnemyBatch } from '../world/enemyBatch';
+import type { ArenaNavigation } from '../world/arenaNavigation';
 import {
   difficulties,
   difficultyModifiers,
@@ -37,6 +39,8 @@ export interface EnemyManagerOptions {
 export class EnemyManager {
   readonly difficulty: DifficultyId;
   private enemies: Enemy[] = [];
+  private readonly batch = new EnemyBatch();
+  private nearby?: Enemy[];
   /** Numer spawnu w runie — źródło losowości AI niezależne od rosnących ID encji. */
   private sequence = 0;
   private spawnModifiers: readonly StatModifier[] = [];
@@ -121,6 +125,7 @@ export class EnemyManager {
           : { x: -Math.sin(yaw), y: 0, z: -Math.cos(yaw) };
       },
       getNeighbors: () => this.enemies,
+      getLocalNeighbors: () => this.nearby ?? this.enemies,
       get spawnModifiers() {
         return readModifiers();
       },
@@ -156,11 +161,51 @@ export class EnemyManager {
       : this.deps;
     const enemy = createEnemy({ ...this.ctx, rng }, deps, id, position);
     self = enemy;
+    this.nearby = undefined;
     this.enemies.push(enemy);
     return enemy;
   }
-  step(dt: number): void {
-    for (const enemy of this.enemies) enemy.step(dt);
+  step(dt: number, navigation?: ArenaNavigation): void {
+    const count = this.enemies.length;
+    const settings = this.ctx.tuning.enemies;
+    let radius = settings.separationRadius;
+    for (const enemy of this.enemies)
+      radius = Math.max(radius, 2 * (enemy.definition.body?.radius ?? 0));
+    // Extra radius bounds movement of earlier actors in this sequential tick.
+    // A teleport, strong impulse or mid-tick spawn invalidates the remaining rows.
+    const margin = radius;
+    const packed =
+      (dt > 0 && count > 1) || (dt > 0 && navigation && count)
+        ? navigation
+          ? navigation.nextBatch(
+              this.enemies,
+              radius + margin,
+              settings.pathLookaheadCells,
+            )
+          : this.batch.run(this.enemies, radius + margin, 0)
+        : undefined;
+    let valid = !!packed;
+    const local: Enemy[] = [];
+    for (let i = 0; i < this.enemies.length; i++) {
+      const enemy = this.enemies[i]!;
+      if (valid && packed) {
+        local.length = 0;
+        for (let j = packed[i]!; j < packed[i + 1]!; j++)
+          local.push(this.enemies[packed[j]!]!);
+        this.nearby = local;
+      }
+      const { x, z } = enemy.current.position;
+      enemy.step(dt);
+      if (
+        count !== this.enemies.length ||
+        Math.abs(enemy.current.position.x - x) >= margin ||
+        Math.abs(enemy.current.position.z - z) >= margin
+      ) {
+        valid = false;
+        this.nearby = undefined;
+      }
+    }
+    this.nearby = undefined;
     this.enemies = this.enemies.filter((enemy) => !enemy.removed);
     this.director?.step(dt);
   }
@@ -184,6 +229,7 @@ export class EnemyManager {
     this.director?.reset();
   }
   dispose(): void {
+    this.batch.dispose();
     this.despawnAll();
     this.director?.dispose();
   }

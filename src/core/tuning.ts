@@ -766,6 +766,11 @@ export const tuning = {
     stunKnockback: 6,
     corpseS: 0.5,
     separationRadius: 1,
+    pathLookaheadCells: 8,
+    accelerationMps2: 48,
+    brakingMps2: 32,
+    turnLeanRad: 0.12,
+    torsoAimLimitRad: 0.5,
     wallProbe: 1.5,
     /** Autostep kapsuły wroga (m): schody aren, które nawigacja uznaje za chodzone (≤ 0,35 m). */
     stepHeight: 0.35,

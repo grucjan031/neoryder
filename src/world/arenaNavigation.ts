@@ -3,6 +3,10 @@ import type { RoomDefinition } from './roomSchema';
 import { ArenaSurfaceNavigation } from './arenaSurfaceNavigation';
 import { freeModePosition } from './modeSchema';
 import { tuning } from '../core/tuning';
+import { EnemyBatch, type MovingAgent } from './enemyBatch';
+
+/** Liczba buforowanych pól celu; cel ruchomy (gracz, lider) nie rozdyma pamięci. */
+const FIELD_LIMIT = 32;
 
 /** Pola odległości po gruncie; bez fizyki, renderu i losowości. */
 export class ArenaNavigation {
@@ -10,6 +14,7 @@ export class ArenaNavigation {
   private readonly fields = new Map<string, Map<string, number>>();
   private readonly cell: number;
   private readonly surface?: ArenaSurfaceNavigation;
+  private batch?: EnemyBatch;
   constructor(private readonly room: RoomDefinition) {
     const config = room.arena;
     if (!config) throw new Error('Nawigacja wymaga danych areny.');
@@ -98,6 +103,8 @@ export class ArenaNavigation {
         queue.push(next);
       }
     }
+    if (this.fields.size >= FIELD_LIMIT)
+      this.fields.delete(this.fields.keys().next().value!);
     this.fields.set(key, result);
     return result;
   }
@@ -159,5 +166,26 @@ export class ArenaNavigation {
       next = point;
     }
     return { ...next };
+  }
+
+  nextBatch(
+    agents: readonly MovingAgent[],
+    radius: number,
+    lookahead: number,
+  ): Uint32Array {
+    this.batch ??= new EnemyBatch(this.surface?.batchGraph());
+    if (!this.surface)
+      for (const agent of agents)
+        if (agent.moveGoal) {
+          const goal = agent.moveGoal;
+          agent.moveGoal = this.next(agent.current.position, goal);
+          agent.moveGoalFinal =
+            agent.moveGoal.x === goal.x && agent.moveGoal.z === goal.z;
+        }
+    return this.batch.run(agents, radius, lookahead);
+  }
+
+  dispose(): void {
+    this.batch?.dispose();
   }
 }

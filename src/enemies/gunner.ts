@@ -1,3 +1,4 @@
+import { arrivalSpeed, turnToward, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import { Ray } from '@dimforge/rapier3d-compat';
 import { Health, PIERCE_BLOCK_TAG } from '../combat/damage';
@@ -31,6 +32,7 @@ export class Gunner implements Enemy {
   current: EnemySnapshot;
   removed = false;
   moveGoal?: Vec3;
+  moveGoalFinal?: boolean;
   tacticalGoal?: Vec3;
   private coverPhase: 'travel' | 'hold' | 'exit' | null = null;
   private coverExit: Vec3 | null = null;
@@ -591,10 +593,20 @@ export class Gunner implements Enemy {
       const gx = goal.x - s.position.x,
         gz = goal.z - s.position.z;
       const gap = Math.hypot(gx, gz);
-      if (gap > (march ? this.ctx.tuning.modes.conquest.goalStopM : epsilon)) {
+      // Węzeł pośredni trasy: bez zatrzymania i hamowania przed nim.
+      const via = goal === march && this.moveGoalFinal === false;
+      if (
+        gap >
+        (march && !via ? this.ctx.tuning.modes.conquest.goalStopM : epsilon)
+      ) {
         const heading = this.steer(dt, Math.atan2(gx, gz), this.strafe);
-        if (march) s.yaw = heading;
-        const speed = Math.min(this.stats.get('moveSpeed'), gap / dt);
+        if (march) s.yaw = turnToward(s.yaw, heading, d.turnRateDegS, dt);
+        const braking =
+          this.ctx.tuning.enemies.brakingMps2 * (d.body?.locomotionScale ?? 1);
+        const speed = Math.min(
+          this.stats.get('moveSpeed'),
+          via ? Infinity : arrivalSpeed(gap, braking, dt),
+        );
         vx = Math.sin(heading) * speed;
         vz = Math.cos(heading) * speed;
       }
@@ -624,7 +636,9 @@ export class Gunner implements Enemy {
       vx = ((dx * radial + dz * lateral) / distance / norm) * speed;
       vz = ((dz * radial - dx * lateral) / distance / norm) * speed;
     }
-    for (const neighbor of this.deps.getNeighbors?.() ?? []) {
+    for (const neighbor of this.deps.getLocalNeighbors?.() ??
+      this.deps.getNeighbors?.() ??
+      []) {
       if (this.coverPhase === 'hold') break;
       if (neighbor.id === this.id || neighbor.current.state === 'dead')
         continue;
@@ -649,6 +663,13 @@ export class Gunner implements Enemy {
     s.position = movement.position;
     s.speed = movement.distance / dt;
     s.distance += movement.distance;
+    updateBodyPose(
+      this.previous,
+      s,
+      d.turnRateDegS,
+      dt,
+      this.ctx.tuning.enemies,
+    );
   }
 
   /**

@@ -1,10 +1,13 @@
 import * as RAPIER from '@dimforge/rapier3d-compat';
+import { initEnemySim } from '../world/enemyBatch';
 
 let initialization: Promise<typeof RAPIER> | undefined;
 export async function initPhysics(): Promise<
   typeof import('@dimforge/rapier3d-compat')
 > {
-  initialization ??= RAPIER.init().then(() => RAPIER);
+  initialization ??= Promise.all([RAPIER.init(), initEnemySim()]).then(
+    () => RAPIER,
+  );
   return initialization;
 }
 

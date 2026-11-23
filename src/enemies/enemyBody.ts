@@ -1,3 +1,4 @@
+import { steerVelocity } from './locomotion';
 import {
   ColliderDesc,
   QueryFilterFlags,
@@ -16,6 +17,7 @@ export class EnemyBody {
   private readonly controller;
   private readonly groups = interactionGroups(CollisionGroup.Enemy, 0xffff);
   private readonly impulse = { x: 0, z: 0 };
+  private readonly velocity = { x: 0, z: 0 };
   private verticalSpeed = 0;
   private stepping = false;
 
@@ -71,6 +73,7 @@ export class EnemyBody {
   }
 
   clearMotion(): void {
+    this.velocity.x = this.velocity.z = 0;
     this.impulse.x = this.impulse.z = this.verticalSpeed = 0;
   }
 
@@ -121,12 +124,27 @@ export class EnemyBody {
       }
       this.stepping = true;
     }
+    const scale = this.geometry.locomotionScale;
+    if (scale !== undefined) {
+      steerVelocity(
+        this.velocity,
+        vx,
+        vz,
+        tuning.enemies.accelerationMps2 * scale,
+        tuning.enemies.brakingMps2 * scale,
+        dt,
+      );
+      vx = this.velocity.x;
+      vz = this.velocity.z;
+    }
     this.verticalSpeed += tuning.physics.gravity * dt;
     const center = this.body.translation();
     const separating = new Set<number>();
     // Kontroler nie rozwiązuje penetracji ze spawnu. Pozwól jedynie na ruch
     // od nakładającego się sąsiada; po rozdzieleniu kapsuł wraca zwykła kolizja.
-    for (const neighbor of this.deps.getNeighbors?.() ?? []) {
+    for (const neighbor of this.deps.getLocalNeighbors?.() ??
+      this.deps.getNeighbors?.() ??
+      []) {
       if (neighbor.id === this.id || !neighbor.definition.body) continue;
       const x = center.x - neighbor.current.position.x;
       const z = center.z - neighbor.current.position.z;

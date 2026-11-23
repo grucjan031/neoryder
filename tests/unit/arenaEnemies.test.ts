@@ -136,11 +136,8 @@ it.each(
               arrived = true;
               break;
             }
-            enemy.moveGoal = navigation.next(
-              enemy.current.position,
-              point.position,
-            );
-            manager.step(SIM_DT);
+            enemy.moveGoal = point.position;
+            manager.step(SIM_DT, navigation);
             world.step();
           }
           expect(
@@ -151,6 +148,7 @@ it.each(
         }
       }
     } finally {
+      navigation.dispose();
       manager.dispose();
       projectiles.dispose();
       world.free();

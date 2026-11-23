@@ -17,6 +17,7 @@
   "stunOnHeavyS": 0.8,
   "repathJitter": 0,
   "drone": {
+    "locomotionScale": 1.25,
     "massKg": 5,
     "hoverHeightM": 2.6,
     "orbitSpeedDegS": 35,

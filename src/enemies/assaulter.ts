@@ -1,3 +1,4 @@
+import { arrivalSpeed, turnToward, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import { Cuboid } from '@dimforge/rapier3d-compat';
 import {
@@ -38,6 +39,7 @@ export class Assaulter implements Enemy {
   current: EnemySnapshot;
   removed = false;
   moveGoal?: Vec3;
+  moveGoalFinal?: boolean;
   tacticalGoal?: Vec3;
   private tacticS = 0;
   private flanking = false;
@@ -486,6 +488,8 @@ export class Assaulter implements Enemy {
       )
         this.transition('telegraph');
     }
+    const braking =
+      this.ctx.tuning.enemies.brakingMps2 * (d.body?.locomotionScale ?? 1);
     let vx = 0;
     let vz = 0;
     let heading: number | null = null;
@@ -494,10 +498,11 @@ export class Assaulter implements Enemy {
       const gx = march.x - s.position.x,
         gz = march.z - s.position.z;
       const gap = Math.hypot(gx, gz);
-      if (gap > this.ctx.tuning.modes.conquest.goalStopM) {
+      const final = this.moveGoalFinal !== false;
+      if (gap > (final ? this.ctx.tuning.modes.conquest.goalStopM : epsilon)) {
         heading = Math.atan2(gx, gz);
-        s.yaw = heading;
-        speed = gap / dt;
+        s.yaw = turnToward(s.yaw, heading, d.turnRateDegS, dt);
+        speed = final ? arrivalSpeed(gap, braking, dt) : Infinity;
       }
     } else if (s.state === 'chase' && target) {
       if (this.tacticalGoal) {
@@ -532,11 +537,15 @@ export class Assaulter implements Enemy {
           };
         }
         heading = Math.atan2(goal.x - s.position.x, goal.z - s.position.z);
-        speed = Math.hypot(goal.x - s.position.x, goal.z - s.position.z) / dt;
+        speed = arrivalSpeed(
+          Math.hypot(goal.x - s.position.x, goal.z - s.position.z),
+          braking,
+          dt,
+        );
       } else if (engaged) {
         if (distance > d.attackRange) {
           heading = s.yaw;
-          speed = (distance - d.attackRange) / dt;
+          speed = arrivalSpeed(distance - d.attackRange, braking, dt);
         }
       } else if (
         distance > d.attackRange + epsilon ||
@@ -552,7 +561,7 @@ export class Assaulter implements Enemy {
         const gap = Math.hypot(gx, gz);
         if (gap > epsilon) {
           heading = Math.atan2(gx, gz);
-          speed = gap / dt;
+          speed = arrivalSpeed(gap, braking, dt);
         }
       }
     }
@@ -573,7 +582,9 @@ export class Assaulter implements Enemy {
       vx = Math.sin(yaw) * v;
       vz = Math.cos(yaw) * v;
     }
-    for (const neighbor of this.deps.getNeighbors?.() ?? []) {
+    for (const neighbor of this.deps.getLocalNeighbors?.() ??
+      this.deps.getNeighbors?.() ??
+      []) {
       if (neighbor.id === this.id || neighbor.current.state === 'dead')
         continue;
       let x = s.position.x - neighbor.current.position.x;
@@ -597,6 +608,13 @@ export class Assaulter implements Enemy {
     s.position = movement.position;
     s.speed = movement.distance / dt;
     s.distance += movement.distance;
+    updateBodyPose(
+      this.previous,
+      s,
+      d.turnRateDegS,
+      dt,
+      this.ctx.tuning.enemies,
+    );
     if (this.hitbox) {
       this.strike();
       // strike() może przerwać cios (sparowanie → stunned zeruje hitbox).

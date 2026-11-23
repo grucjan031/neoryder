@@ -1733,11 +1733,7 @@ export class RoomScene implements Scene {
                 enemy.current.position,
                 player,
               );
-              if (enemy.moveGoal && this.navigation)
-                enemy.moveGoal = this.navigation.next(
-                  enemy.current.position,
-                  enemy.moveGoal,
-                );
+              enemy.moveGoalFinal = true;
             }
           }
         });
@@ -1747,11 +1743,7 @@ export class RoomScene implements Scene {
         if (this.heist) {
           this.manager.forEach((enemy) => {
             enemy.moveGoal = this.heist!.moveGoal(enemy.id, player);
-            if (this.navigation)
-              enemy.moveGoal = this.navigation.next(
-                enemy.current.position,
-                enemy.moveGoal,
-              );
+            enemy.moveGoalFinal = true;
             enemy.setCarry?.(
               this.heist!.carrierId === enemy.id
                 ? {
@@ -1821,7 +1813,10 @@ export class RoomScene implements Scene {
     }
     this.director.step(dt);
     this.squad.step(dt, reviving && input.held.has('power2'));
-    this.manager.step(dt);
+    this.manager.step(
+      dt,
+      !this.health.dead && !this.cleared ? this.navigation : undefined,
+    );
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
@@ -2977,6 +2972,7 @@ export class RoomScene implements Scene {
 
   /** Sprząta również zasoby utworzone przed przerwaniem asynchronicznego init(). */
   private disposeParts(): void {
+    this.navigation?.dispose();
     this.hazardView?.dispose();
     this.conquestView?.dispose();
     this.assaultView?.dispose();

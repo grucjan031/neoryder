@@ -8,6 +8,7 @@ import type { Enemy, EnemySnapshot } from '../../src/enemies/types';
 import turret from '../../src/data/enemies/turret.json';
 import hacker from '../../src/data/enemies/hacker.json';
 import sniper from '../../src/data/enemies/sniper.json';
+import securityChief from '../../src/data/enemies/securityChief.json';
 
 const views: EnemyViewLike[] = [];
 afterEach(() => {
@@ -28,16 +29,18 @@ function simMuzzle(
 }
 
 it.each([
-  ['turret', turret],
-  ['hacker', hacker],
-  ['sniper', sniper],
+  ['turret', turret, 0],
+  ['hacker', hacker, 0],
+  ['sniper', sniper, 0],
+  ['sniper z korpusem obróconym względem celowania', sniper, -0.45],
 ])(
   '%s: początek lasera celowania pokrywa się z wylotem pocisku (przesunięty i obrócony)',
-  (_, raw) => {
+  (_, raw, bodyOffset) => {
     const definition = enemySchema.parse(raw);
     const snapshot = (): EnemySnapshot => ({
       position: { x: 3, y: 0.5, z: -2 },
       yaw: 0.7,
+      bodyYaw: 0.7 + bodyOffset,
       speed: 0,
       state: 'aim',
       stateTimeS: 0.2,
@@ -65,3 +68,36 @@ it.each([
     expect(start.distanceTo(expected)).toBeLessThan(1e-6);
   },
 );
+
+it('tarcza zastępcza bossa podąża za kierunkiem celowania, nie za korpusem', () => {
+  const definition = enemySchema.parse(securityChief);
+  const build = (bodyYaw: number) => {
+    const snapshot = (): EnemySnapshot => ({
+      position: { x: 1, y: 0, z: 2 },
+      yaw: 0.7,
+      bodyYaw,
+      speed: 0,
+      state: 'telegraph',
+      stateTimeS: 0.1,
+      distance: 0,
+      shieldUp: true,
+    });
+    const enemy: Enemy = {
+      id: 2,
+      definition,
+      previous: snapshot(),
+      current: snapshot(),
+      removed: false,
+      step: () => {},
+      dispose: () => {},
+    };
+    const view = createEnemyView(enemy, false);
+    views.push(view);
+    view.render(1);
+    view.root.updateMatrixWorld(true);
+    const shield = view.root.getObjectByName('shield')!;
+    expect(shield.visible).toBe(true);
+    return shield.getWorldPosition(new Vector3());
+  };
+  expect(build(0.2).distanceTo(build(0.7))).toBeLessThan(1e-6);
+});

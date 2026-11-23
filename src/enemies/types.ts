@@ -26,6 +26,8 @@ export type EnemyState =
 export interface EnemySnapshot {
   position: Vec3;
   yaw: number;
+  bodyYaw?: number;
+  lean?: number;
   speed: number;
   state: EnemyState;
   stateTimeS: number;
@@ -60,6 +62,8 @@ export interface Enemy {
   /** Bieżący cel taktyczny (debug i testy symulacji). */
   tacticalGoal?: Vec3;
   moveGoal?: Vec3;
+  /** false, gdy `moveGoal` jest węzłem pośrednim trasy (bez hamowania i zatrzymania). */
+  moveGoalFinal?: boolean;
   setCarry?(carry: EnemyCarry | null): void;
   readonly id: EntityId;
   readonly definition: EnemyDefinition;
@@ -98,6 +102,7 @@ export interface EnemyDependencies {
     height?: number;
   } | null;
   getNeighbors?(): readonly Enemy[];
+  getLocalNeighbors?(): readonly Enemy[];
   /** F2-12: tokeny ataku i sloty flankowania; bez dyrektora wróg atakuje jak w F1. */
   director?: EnemyDirectorApi;
   /** F3-17: tworzy wroga (EnemyManager.spawn); dla wezwań bossa. */

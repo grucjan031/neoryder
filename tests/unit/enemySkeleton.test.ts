@@ -400,3 +400,55 @@ it('tarcza Tarczownika podąża za klatką piersiową i osłania lewą stronę b
     }
   }
 });
+
+it('wejście w chód z aktywnego Pistol_Idle_Loop nie zbija sumy wag poniżej 1 (bez T-pozy)', async () => {
+  const source = await load('enemy_gunner');
+  vi.spyOn(GLTFLoader.prototype, 'loadAsync').mockResolvedValue(source);
+  const actions = vi.spyOn(AnimationMixer.prototype, 'clipAction');
+  const enemy: Enemy = {
+    id: 101,
+    definition: enemySchema.parse({ ...gunner, model: 'test-skinned-gunner' }),
+    previous: snapshot(),
+    current: snapshot(),
+    removed: false,
+    step() {},
+    dispose() {},
+  };
+  const view = new EnemyView(enemy);
+  views.push(view);
+  await vi.waitFor(() =>
+    expect(view.root.getObjectByName('armored_body')).toBeDefined(),
+  );
+  const loops = new Map(
+    actions.mock.results.map((r) => {
+      const action = r.value as AnimationAction;
+      return [action.getClip().name, action] as const;
+    }),
+  );
+  const total = () =>
+    ['Pistol_Idle_Loop', 'Walk_Loop', 'Jog_Fwd_Loop'].reduce(
+      (sum, name) => sum + loops.get(name)!.getEffectiveWeight(),
+      0,
+    );
+  const draw = () =>
+    Reflect.apply(
+      (view.root.getObjectByName('armored_body') as SkinnedMesh).onBeforeRender,
+      view.root.getObjectByName('armored_body'),
+      [],
+    );
+  // Klip spoczynkowy poza lokomocją (atak w toku), potem powrót do chodu.
+  enemy.current.attack = { kind: 'test', telegraphS: 0.1, recoveryS: 0.1 };
+  view.render(1);
+  draw();
+  enemy.current.attack = undefined;
+  enemy.current.stateTimeS = 0.016;
+  view.render(1);
+  draw();
+  expect(total()).toBeGreaterThan(0.99);
+  for (let i = 2; i < 8; i++) {
+    enemy.current.stateTimeS = 0.016 * i;
+    view.render(1);
+    draw();
+    expect(total()).toBeGreaterThan(0.99);
+  }
+});

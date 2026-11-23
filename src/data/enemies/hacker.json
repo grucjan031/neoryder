@@ -18,6 +18,7 @@
   "repathJitter": 0,
   "hack": { "hackCooldownS": 5, "hackTelegraphS": 1.2, "durationS": 3 },
   "drone": {
+    "locomotionScale": 1.25,
     "antenna": true,
     "massKg": 5,
     "hoverHeightM": 2.6,
