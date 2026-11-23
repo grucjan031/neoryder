@@ -1640,9 +1640,17 @@ bez zwalniania świata podczas kroku symulacji.
 i ruch rąk. Konstruktor przyjmuje bus, właściciela i opcje definicji ostrza,
 modeli broni oraz tuningu. `load(loadModels)`, `root`,
 `setBladeDefinition(def)` i `dispose()` obsługują cykl życia.
-`place(cameraMatrix, frameDt, { blade?, held, horizontalSpeed, visible? })`
+`place(cameraMatrix, frameDt, { blade?, held, horizontalSpeed, visible?, aim? })`
 jest wywoływane raz na klatkę; `held` przyjmuje `HeldItemView` albo stałe
 `blade`/`gun` dla scen testowych. `blade` to `BladeView` wymagany przy ostrzu.
+`aim` to wygładzona wartość ADS 0–1. Widok broni wyrównuje linię przyrządów
+do osi kamery. `adsEye()` zwraca aktywne położenie kamery w układzie korzenia
+broni. `setAdsEye([x, y, z] | null)` ustawia lub kasuje odchylenie debug dla
+załadowanej broni i jej aktualnego celownika, zwraca informację o powodzeniu.
+Pola `ironSight` w definicji broni (`rear`, `front`, opcjonalne `eyeReliefM`
+i podstawy dodawanych przyrządów) są w metrach w układzie GLB, z przodem w −Z.
+`visual.sight` modułu optycznego określa `target` i `rearZ` w lokalnych osiach
+geometrii modułu oraz `eyeReliefM` w metrach po dopasowaniu do broni.
 Getter `beamOrigin` zwraca pozycję świata root broni, jak dotychczas w Arenie.
 Moduł zachowuje kolejność: ruch, ostrze, widoczność, broń, wolna dłoń.
 

@@ -3,7 +3,8 @@ import { Ray } from '@dimforge/rapier3d-compat';
 import { StatusSystem } from '../combat/status/statusSystem';
 import { BeamRenderer } from '../render/beamRenderer';
 import { ExplosionRenderer } from '../render/explosionRenderer';
-import { BoxGeometry, Color, Group, Mesh } from 'three';
+import { BoxGeometry, Color, Group, MathUtils, Mesh } from 'three';
+import GUI from 'lil-gui';
 import type { Object3D, Scene as ThreeScene } from 'three';
 import type { Collider, World } from '@dimforge/rapier3d-compat';
 import { z } from 'zod';
@@ -11,9 +12,10 @@ import sceneData from '../data/scenes/weaponsTest.json';
 import type { GameContext } from '../core/context';
 import { EntityRegistry } from '../core/entities';
 import type { EntityId } from '../core/events';
-import type { InputSnapshot } from '../core/input';
+import type { Action, InputSnapshot } from '../core/input';
 import { loadSettings } from '../core/save';
 import { Stats } from '../core/stats';
+import { HeldItem } from '../combat/heldItem';
 import { DamageSystem, Health, Hurtboxes } from '../combat/damage';
 import { Weapon } from '../combat/weapons/weapon';
 import type { WeaponInput } from '../combat/weapons/weapon';
@@ -22,6 +24,11 @@ import {
   weaponModelOf,
 } from '../combat/weapons/weaponSchema';
 import { ProjectileSystem } from '../combat/weapons/projectiles';
+import { moddedWeapon } from '../progression/moddedWeapon';
+import {
+  moduleDefinitions,
+  moduleFitsWeapon,
+} from '../progression/moduleSchema';
 import { initPhysics, CollisionGroup, interactionGroups } from '../physics';
 import { PlayerController } from '../player/playerController';
 import type { PlayerState } from '../player/playerController';
@@ -62,6 +69,9 @@ interface Dummy {
   respawnS?: number;
 }
 
+const noActions: ReadonlySet<Action> = new Set();
+const aimAction: ReadonlySet<Action> = new Set(['aim']);
+
 export class WeaponsTest implements Scene {
   readonly id = 'weapons-test';
   private ctx!: GameContext;
@@ -79,6 +89,11 @@ export class WeaponsTest implements Scene {
   private readonly hurtboxes = new Hurtboxes();
   private readonly root = new Group();
   private fppView!: FppViewModel;
+  private aimPreview!: HeldItem;
+  private readonly optics = new Map<string, string>();
+  private aimDefinition?: ReturnType<typeof moddedWeapon>;
+  private aimGuide?: HTMLDivElement;
+  private adsGui?: GUI;
   private playerId!: EntityId;
   private shownWeapon = '';
   private readonly weapons = new Map<string, Weapon>();
@@ -88,6 +103,7 @@ export class WeaponsTest implements Scene {
   private readonly off: (() => void)[] = [];
   private lights!: ReturnType<typeof createStyleLights>;
   private cameraParent: Object3D | null = null;
+  private previousFov?: number;
   private hud?: HTMLDivElement;
   private bar?: HTMLDivElement;
 
@@ -221,6 +237,7 @@ export class WeaponsTest implements Scene {
       loadSettings(),
     );
     this.previous = this.player.getState();
+    this.aimPreview = new HeldItem(ctx.bus, playerId, ctx.tuning, 'gun');
     for (const position of data.dummyPositions) {
       const id = this.entities.create('dummy', 'enemy');
       const stats = new Stats({ maxHealth: data.dummy.maxHealth });
@@ -252,12 +269,17 @@ export class WeaponsTest implements Scene {
     }
     this.fppView = new FppViewModel(ctx.bus, playerId, {
       modelOf: weaponModelOf,
+      modulesOf: (id) => {
+        const optic = this.optics.get(id);
+        return optic ? [optic] : [];
+      },
       tuning: ctx.tuning,
     });
     void this.fppView.load(typeof document !== 'undefined');
     this.root.add(this.fppView.root);
     if (ctx.camera) {
       this.cameraParent = ctx.camera.parent;
+      this.previousFov = ctx.camera.fov;
       this.root.add(ctx.camera);
     }
     this.off.push(
@@ -296,6 +318,55 @@ export class WeaponsTest implements Scene {
       this.weapon.overheat();
       return 'Broń przegrzana.';
     });
+    if (ctx.debug) {
+      register(
+        'ads optic',
+        'ads optic <id|none> — optyka bieżącej broni',
+        ([id]) => {
+          const weaponId = this.weapon.definition.id;
+          const available = [...moduleDefinitions.values()].filter(
+            (module) =>
+              module.slot === 'optic' && moduleFitsWeapon(module, weaponId),
+          );
+          if (id === 'none') this.optics.delete(weaponId);
+          else if (id && available.some((module) => module.id === id))
+            this.optics.set(weaponId, id);
+          else
+            return `Dostępne: ${['none', ...available.map((module) => module.id)].join(', ')}`;
+          this.shownWeapon = '';
+          this.syncWeaponView();
+          return `Optyka: ${id}`;
+        },
+      );
+      register(
+        'ads eye',
+        'ads eye [x y z|reset] — pozycja oka w układzie broni',
+        (args) => {
+          if (args.length === 1 && args[0] === 'reset') {
+            this.fppView.setAdsEye(null);
+          } else if (args.length > 0) {
+            const [x, y, z] = args.map(Number);
+            if (args.length !== 3 || ![x, y, z].every(Number.isFinite))
+              return 'Użycie: ads eye [x y z|reset]';
+            this.fppView.setAdsEye([x!, y!, z!]);
+          }
+          const eye = this.fppView.adsEye();
+          return eye
+            ? `Oko ADS: ${eye.map((axis) => axis.toFixed(4)).join(' ')}`
+            : 'Model broni jest jeszcze niedostępny.';
+        },
+      );
+      register(
+        'ads guide',
+        'ads guide <on|off> — krzyż kontrolny',
+        ([mode]) => {
+          if (!this.aimGuide || (mode !== 'on' && mode !== 'off'))
+            return 'Użycie: ads guide <on|off>';
+          this.aimGuide.hidden = mode === 'off';
+          return mode === 'on' ? 'Krzyż włączony.' : 'Krzyż wyłączony.';
+        },
+      );
+    }
     if (typeof document !== 'undefined') {
       this.hud = document.createElement('div');
       this.hud.setAttribute('aria-label', data.hudLabel);
@@ -310,6 +381,20 @@ export class WeaponsTest implements Scene {
       help.textContent = data.controls;
       this.hud.append(document.createElement('span'), track, help);
       document.body.append(this.hud);
+      if (ctx.debug) {
+        this.adsGui = new GUI({
+          container: this.hud,
+          title: 'Dane przyrządów ADS',
+        }).close();
+        this.adsGui.domElement.style.pointerEvents = 'auto';
+        this.aimGuide = document.createElement('div');
+        this.aimGuide.hidden = true;
+        this.aimGuide.setAttribute('aria-hidden', 'true');
+        this.aimGuide.style.cssText =
+          'position:absolute;top:50%;left:50%;width:44px;height:44px;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 0 1px black);' +
+          'background:linear-gradient(white,white) center top / 2px 10px no-repeat,linear-gradient(white,white) center bottom / 2px 10px no-repeat,linear-gradient(white,white) left center / 10px 2px no-repeat,linear-gradient(white,white) right center / 10px 2px no-repeat';
+        document.body.append(this.aimGuide);
+      }
     }
     this.world.step();
     this.syncWeaponView();
@@ -376,6 +461,18 @@ export class WeaponsTest implements Scene {
     }
     this.projectiles.step(dt);
     this.syncWeaponView();
+    this.aimPreview.step(
+      dt,
+      {
+        ...input,
+        held:
+          input.held.has('aim') || input.held.has('block')
+            ? aimAction
+            : noActions,
+        pressed: noActions,
+      },
+      { bladeBusy: false, aimInScale: this.aimDefinition?.aimInScale },
+    );
   }
 
   /** Widok FPP dostaje bieżącą broń i jej ciepło przez zdarzenia (jak w arenie). */
@@ -383,6 +480,35 @@ export class WeaponsTest implements Scene {
     const id = this.weapon.definition.id;
     if (id === this.shownWeapon) return;
     this.shownWeapon = id;
+    const optic = this.optics.get(id);
+    this.aimDefinition = moddedWeapon(id, optic ? [optic] : []);
+    if (this.adsGui) {
+      const gui = this.adsGui;
+      for (const controller of [...gui.controllers]) controller.destroy();
+      const iron = this.weapon.definition.ironSight;
+      const module = optic ? moduleDefinitions.get(optic) : undefined;
+      const sight = module?.visual.sight;
+      const rows: Record<string, string> = {
+        Broń: this.weapon.definition.name,
+      };
+      if (sight && module) {
+        rows.Celownik = module.name;
+        rows['Znak (lokalnie)'] = sight.target.join(', ');
+        rows['Z okularu (lokalnie)'] = String(sight.rearZ);
+        rows['Eye relief (m)'] = String(sight.eyeReliefM);
+      } else if (iron) {
+        rows['Szczerbinka (m)'] = iron.rear.join(', ');
+        rows['Muszka (m)'] = iron.front.join(', ');
+        rows['Eye relief (m)'] = String(
+          iron.eyeReliefM ?? this.ctx.tuning.player.aim.ironEyeReliefM,
+        );
+        if (iron.rearBaseY !== undefined)
+          rows['Podstawa szczerbinki Y (m)'] = String(iron.rearBaseY);
+        if (iron.frontBaseY !== undefined)
+          rows['Podstawa muszki Y (m)'] = String(iron.frontBaseY);
+      }
+      for (const key of Object.keys(rows)) gui.add(rows, key).disable();
+    }
     this.ctx.bus.emit('weapon_switched', {
       owner: this.playerId,
       weapon: id,
@@ -415,6 +541,18 @@ export class WeaponsTest implements Scene {
         0,
         'YXZ',
       );
+      const fov = this.ctx.tuning.camera.fov;
+      const aimFov = MathUtils.lerp(
+        fov,
+        fov *
+          (this.aimDefinition?.aimFovScale ??
+            this.ctx.tuning.player.aim.fovScale),
+        this.aimPreview.aim,
+      );
+      if (camera.fov !== aimFov) {
+        camera.fov = aimFov;
+        camera.updateProjectionMatrix();
+      }
     }
     this.lights.sync();
     this.projectileRenderer.render(alpha);
@@ -423,6 +561,7 @@ export class WeaponsTest implements Scene {
       this.fppView.place(camera.matrixWorld, frameDt, {
         held: 'gun',
         horizontalSpeed: Math.hypot(current.velocity.x, current.velocity.z),
+        aim: this.aimPreview.aim,
       });
     }
     this.beamRenderer.advance(frameDt);
@@ -465,12 +604,21 @@ export class WeaponsTest implements Scene {
       return this.dummies.map((d) => this.statuses.list(d.id));
     if (name === 'beam') return this.weapon.beam;
     if (name === 'shots') return this.weapon.shots;
+    if (name === 'ads' && this.ctx.debug)
+      return {
+        amount: this.aimPreview.aim,
+        eye: this.fppView.adsEye(),
+        fov: this.ctx.camera?.fov,
+      };
     return undefined;
   }
 
   dispose(): void {
     for (const off of this.off.splice(0)) off();
+    this.adsGui?.destroy();
     this.hud?.remove();
+    this.aimGuide?.remove();
+    this.aimPreview.dispose();
     this.beamRenderer.dispose();
     this.explosionRenderer.dispose();
     this.statuses.dispose();
@@ -485,6 +633,10 @@ export class WeaponsTest implements Scene {
     this.world.free();
     this.fppView.dispose();
     if (this.ctx.camera) {
+      if (this.previousFov !== undefined) {
+        this.ctx.camera.fov = this.previousFov;
+        this.ctx.camera.updateProjectionMatrix();
+      }
       this.ctx.camera.removeFromParent();
       this.cameraParent?.add(this.ctx.camera);
     }

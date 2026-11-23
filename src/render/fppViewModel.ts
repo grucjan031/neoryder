@@ -28,7 +28,7 @@ export interface FppViewModelOptions {
 export type FppViewModelFrame = {
   horizontalSpeed: number;
   visible?: boolean;
-  /** Celowanie 0–1: broń przesuwa się do środka kadru („przy oku”). */
+  /** Celowanie 0–1: broń wyrównuje przyrządy do osi kamery. */
   aim?: number;
 } & (
   | { held: 'gun'; blade?: BladeView }
@@ -86,13 +86,13 @@ export class FppViewModel {
     const held = typeof frame.held === 'string' ? undefined : frame.held;
     const shown: HeldKind =
       typeof frame.held === 'string' ? frame.held : shownHeld(frame.held);
-    const aim = frame.aim ?? 0;
+    const aim = shown === 'gun' ? (frame.aim ?? 0) : 0;
     const handMatrix = this.motion.place(
       cameraMatrix,
       frameDt,
       frame.horizontalSpeed,
       held,
-      shown === 'gun' && this.blaster.hasOptic ? aim : 0,
+      aim,
     );
     const visible = frame.visible ?? true;
     if (frame.blade)
@@ -119,6 +119,14 @@ export class FppViewModel {
 
   get beamOrigin(): Vector3 {
     return this.blaster.root.getWorldPosition(this.origin);
+  }
+
+  adsEye(): [number, number, number] | undefined {
+    return this.blaster.adsEye();
+  }
+
+  setAdsEye(eye: readonly [number, number, number] | null): boolean {
+    return this.blaster.setAdsEye(eye);
   }
 
   /** Początek wiązki w świecie, zgodny z rzutem przebiegu rąk także przy `viewmodelFov`. */

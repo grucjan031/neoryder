@@ -6,6 +6,7 @@ import {
   Matrix4,
   Mesh,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   PlaneGeometry,
   Quaternion,
   ShapeGeometry,
@@ -23,12 +24,16 @@ import { palette } from './palette';
 import { HandRig } from './handRig';
 import { isHandPose } from './handPoses';
 import type { HandPose } from './handPoses';
-import { weaponGripOfModel } from '../combat/weapons/weaponSchema';
+import {
+  ironSightOfModel,
+  weaponGripOfModel,
+} from '../combat/weapons/weaponSchema';
 import type { WeaponGrip } from '../combat/weapons/weaponSchema';
 import { moddedWeapon } from '../progression/moddedWeapon';
 import { attachModuleVisuals } from './weaponModuleVisuals';
 import { loadWeaponScene } from './weaponModelLoader';
 import { fppGlowMaterial, fppGlowTexture, markGlow } from './fppMaterials';
+import { createIronSightGeometry } from './ironSightGeometry';
 
 /** Broń w prawej dłoni: pozycja w metrach, obrót YXZ i odrzut po strzale. */
 const POSE = {
@@ -40,15 +45,6 @@ const TWO_HAND_POSE = {
   pos: new Vector3(0.15, -0.27, -0.45),
   rot: new Euler(0.1, 0.11, -0.15, 'YXZ'),
 };
-/** Celowanie: broń na środku kadru, lufa wzdłuż osi widoku („przy oku”). */
-const AIM_POSE = {
-  pos: new Vector3(0.0, -0.145, -0.4),
-  rot: new Euler(0, 0, 0, 'YXZ'),
-};
-const AIM_TWO_HAND_POSE = {
-  pos: new Vector3(0.0, -0.215, -0.44),
-  rot: new Euler(0.02, 0, 0, 'YXZ'),
-};
 /** Obrót lewej dłoni wokół osi Y węzła support: przedramię od lewego dołu kadru. */
 const TWO_HAND_SUPPORT_YAW = -1.4;
 /** Przesunięcie lewej dłoni do przodu (pod lufę) i obrót przedramienia w dół, w osiach węzła support. */
@@ -59,6 +55,40 @@ const RECOIL_BACK = 0.06;
 const RECOIL_PITCH = 0.12;
 const RECOIL_RECOVER = 14;
 const FALLBACK_MODEL = 'blaster';
+const CAMERA_FORWARD = new Vector3(0, 0, -1);
+
+interface AdsSight {
+  rear: Vector3;
+  direction: Vector3;
+  rotation: Quaternion;
+  eyeReliefM?: number;
+  optic: boolean;
+}
+
+function adsSight(
+  rear: Vector3,
+  front: Vector3,
+  eyeReliefM?: number,
+  optic = false,
+): AdsSight {
+  const direction = front.sub(rear).normalize();
+  return {
+    rear,
+    direction,
+    rotation: new Quaternion().setFromUnitVectors(direction, CAMERA_FORWARD),
+    eyeReliefM,
+    optic,
+  };
+}
+
+function modelIronSight(name: string): AdsSight {
+  const data = ironSightOfModel(name) ?? ironSightOfModel(FALLBACK_MODEL)!;
+  return adsSight(
+    new Vector3(...data.rear),
+    new Vector3(...data.front),
+    data.eyeReliefM,
+  );
+}
 
 /** Chwyt dłoni dla bieżącego modelu: macierze gniazd w układzie broni i pozy palców. */
 interface ResolvedGrip {
@@ -172,6 +202,9 @@ export class FppBlaster {
     new BoxGeometry(0.06, 0.1, 0.32),
     getMaterial('interactive'),
   );
+  private readonly ironBox = new BoxGeometry();
+  private readonly ironMaterial = new MeshStandardMaterial();
+  private readonly ironGeometry = new Map<Object3D, Group>();
   private readonly models = new Map<string, Promise<Object3D | null>>();
   private readonly flashes = new Map<Object3D, Object3D>();
   private readonly tuning: Pick<Tuning, 'weapons' | 'player'>;
@@ -179,7 +212,10 @@ export class FppBlaster {
   private readonly modelOf: (weaponId: string) => string | undefined;
   private loadModels = false;
   private current: Object3D | null = null;
-  private opticSight: Vector3 | null = null;
+  private sight = modelIronSight(FALLBACK_MODEL);
+  private sightKey?: string;
+  private sightReady = false;
+  private readonly eyeOverrides = new Map<string, Vector3>();
   private grip: ResolvedGrip = DEFAULT_GRIP;
   private readonly grips = new Map<string, ResolvedGrip>();
   private wanted = FALLBACK_MODEL;
@@ -205,6 +241,7 @@ export class FppBlaster {
 
   constructor(bus: EventBus, owner: EntityId, options: FppBlasterOptions = {}) {
     this.tuning = options.tuning ?? defaultTuning;
+    this.ironMaterial.color.set(this.tuning.player.aim.ironGeometry.color);
     this.modelOf = options.modelOf ?? (() => undefined);
     this.modulesOf = options.modulesOf ?? (() => []);
     this.settings = options.settings;
@@ -226,6 +263,7 @@ export class FppBlaster {
       bus.on('weapon_switched', ({ owner: who, weapon }) => {
         if (who !== owner) return;
         this.weaponId = weapon;
+        this.sightReady = false;
         this.recoilScale = recoilScaleOf(weapon, this.modulesOf(weapon));
         this.wanted = this.modelOf(weapon) ?? FALLBACK_MODEL;
         void this.show(this.wanted);
@@ -249,7 +287,7 @@ export class FppBlaster {
       shown = FALLBACK_MODEL;
     }
     if (this.disposed || name !== this.wanted || !model) return;
-    this.setCurrent(model);
+    this.setCurrent(model, shown);
     this.grip = this.gripOf(shown);
   }
 
@@ -262,20 +300,37 @@ export class FppBlaster {
     return grip;
   }
 
-  private setCurrent(model: Object3D): void {
+  private setCurrent(model: Object3D, name: string): void {
     this.detachModules?.();
     if (this.current) this.root.remove(this.current);
     this.root.remove(this.fallback);
     this.current = model;
-    this.root.add(model);
+    const iron = this.ironGeometry.get(model);
+    iron?.removeFromParent();
     this.detachModules =
       this.weaponId === undefined
         ? undefined
         : attachModuleVisuals(model, this.modulesOf(this.weaponId));
-    const sight = model.getObjectByName('module_ads_sight');
-    this.opticSight = sight
-      ? this.root.worldToLocal(sight.getWorldPosition(new Vector3()))
-      : null;
+    this.root.add(model);
+    const target = model.getObjectByName('module_ads_sight');
+    const rear = model.getObjectByName('module_ads_rear');
+    const relief: unknown = rear?.userData.eyeReliefM;
+    this.sight =
+      target && rear && typeof relief === 'number'
+        ? adsSight(
+            this.root.worldToLocal(rear.getWorldPosition(new Vector3())),
+            this.root.worldToLocal(target.getWorldPosition(new Vector3())),
+            relief,
+            true,
+          )
+        : modelIronSight(name);
+    this.sightKey = JSON.stringify([
+      name,
+      this.weaponId,
+      target?.parent?.userData.moduleId,
+    ]);
+    this.sightReady = true;
+    if (iron && !this.sight.optic) model.add(iron);
     this.flashLeft = 0;
   }
 
@@ -291,6 +346,17 @@ export class FppBlaster {
   private async loadModel(name: string): Promise<Object3D | null> {
     try {
       const scene = await loadWeaponScene(name);
+      const sight = ironSightOfModel(name);
+      if (sight) {
+        const geometry = createIronSightGeometry(
+          scene,
+          sight,
+          this.tuning.player.aim.ironGeometry,
+          this.ironBox,
+          this.ironMaterial,
+        );
+        if (geometry) this.ironGeometry.set(scene, geometry);
+      }
       // Własny materiał dla elementów ciepła — współdzielony materiał gracza zostaje cyan.
       let muzzle: Object3D | null = null;
       scene.traverse((node: Object3D) => {
@@ -382,26 +448,19 @@ export class FppBlaster {
 
     const { m, q, e, v, s } = this.tmp;
     const pose = this.twoHanded ? TWO_HAND_POSE : POSE;
-    const sight = this.twoHanded ? AIM_TWO_HAND_POSE : AIM_POSE;
-    const optic = this.opticSight;
     const k = Math.min(1, Math.max(0, aim));
     const recoil =
       this.recoil *
       this.recoilScale *
       (1 + (this.tuning.player.aim.recoil - 1) * k);
-    const mix = (a: number, b: number): number => a + (b - a) * k;
-    e.set(
-      mix(pose.rot.x, optic ? 0 : sight.rot.x) + recoil * RECOIL_PITCH,
-      mix(pose.rot.y, sight.rot.y),
-      mix(pose.rot.z, sight.rot.z),
-      'YXZ',
-    );
-    q.setFromEuler(e);
-    v.copy(pose.pos).lerp(sight.pos, k);
-    if (optic) {
-      v.x = mix(pose.pos.x, -optic.x);
-      v.y = mix(pose.pos.y, -optic.y);
+    q.setFromEuler(pose.rot).slerp(this.sight.rotation, k);
+    if (recoil > 0) {
+      e.setFromQuaternion(q, 'YXZ');
+      e.x += recoil * RECOIL_PITCH * (1 - k);
+      q.setFromEuler(e);
     }
+    this.eyePosition(v).applyQuaternion(this.sight.rotation).negate();
+    v.lerpVectors(pose.pos, v, k);
     v.z += recoil * RECOIL_BACK;
     m.compose(v, q, s);
     this.root.matrix.multiplyMatrices(cameraMatrix, m);
@@ -431,8 +490,30 @@ export class FppBlaster {
     return !!support && support.position.z < TWO_HAND_SUPPORT_Z;
   }
 
-  get hasOptic(): boolean {
-    return this.opticSight !== null;
+  private eyePosition(out: Vector3): Vector3 {
+    const override = this.sightKey && this.eyeOverrides.get(this.sightKey);
+    if (override) return out.copy(override);
+    const { sight } = this;
+    const aim = this.tuning.player.aim;
+    let relief = sight.eyeReliefM ?? aim.ironEyeReliefM;
+    if (sight.optic)
+      relief = Math.max(
+        relief,
+        (aim.opticMinEyeZ - sight.rear.z) / -sight.direction.z,
+      );
+    return out.copy(sight.rear).addScaledVector(sight.direction, -relief);
+  }
+
+  adsEye(): [number, number, number] | undefined {
+    if (!this.sightReady) return;
+    return this.eyePosition(this.tmp.v).toArray();
+  }
+
+  setAdsEye(eye: readonly [number, number, number] | null): boolean {
+    if (!this.sightReady || !this.sightKey) return false;
+    if (eye) this.eyeOverrides.set(this.sightKey, new Vector3(...eye));
+    else this.eyeOverrides.delete(this.sightKey);
+    return true;
   }
 
   supportMatrix(): Matrix4 | null {
@@ -467,6 +548,8 @@ export class FppBlaster {
     this.flashGeometry.dispose();
     this.quadGeometry.dispose();
     this.fallback.geometry.dispose();
+    this.ironBox.dispose();
+    this.ironMaterial.dispose();
     // Materiał bryły zastępczej jest współdzielony (getMaterial) — nie zwalniamy go.
     this.root.removeFromParent();
   }

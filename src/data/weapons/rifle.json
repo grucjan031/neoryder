@@ -12,6 +12,10 @@
   "recoilScale": 1,
   "tags": ["#gun"],
   "model": "rifle",
+  "ironSight": {
+    "rear": [0, 0.131, -0.026],
+    "front": [0, 0.1305, -0.207]
+  },
   "grip": {
     "offset": [0.0003, -0.014, 0.032],
     "pose": "gripRifle",

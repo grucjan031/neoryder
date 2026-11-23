@@ -669,14 +669,14 @@ export class Hud {
   }
 
   /** Obrót kamery (rad), by znacznik kierunku obrażeń podążał za widokiem. */
-  /** Celowanie 0–1: celownik zwęża się (CSS `--aim`), pełne celowanie dodaje klasę. */
+  /** Celowanie 0–1: celownik wygasa podczas podnoszenia przyrządów do oka. */
   setAim(aim: number): void {
     if (this.disposed || !this.crosshair) return;
     const k = Math.round(Math.min(1, Math.max(0, aim)) * 100) / 100;
     if (k === this.aim) return;
     this.aim = k;
     this.crosshair.style.setProperty('--aim', String(k));
-    this.crosshair.classList.toggle('hud__crosshair--aim', k >= 0.5);
+    this.crosshair.hidden = k >= 0.5;
   }
 
   setViewYaw(yaw: number): void {

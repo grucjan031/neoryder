@@ -3,7 +3,11 @@
   "name": "Kolimator",
   "description": "Celowanie: czas wejścia ×0,5, pole widzenia 85% zwykłego. Rozrzut ×0,6 względem bazowego celowania.",
   "slot": "optic",
-  "visual": { "shape": "reddot", "color": "green" },
+  "visual": {
+    "shape": "reddot",
+    "color": "green",
+    "sight": { "target": [0, 0.43, 0.0325], "rearZ": 0.08, "eyeReliefM": 0.28 }
+  },
   "tags": ["#optic"],
   "weaponKinds": ["projectile", "spread", "lob", "beam"],
   "patches": [

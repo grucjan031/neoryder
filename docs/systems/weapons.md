@@ -107,6 +107,39 @@ pociskowego `pierceCount > 1` włącza przebicie (tak działa moduł Przebicie).
 Kolejność losowań `Rng` na pocisk: kąt `float(0, 2π)`, potem promień
 `sqrt(next()) × tan(spreadDeg)`; wynik to znormalizowany `forward + right·x + up·y`.
 
+### Widok przez przyrządy w ADS
+
+Pola `ironSight.rear` i `ironSight.front` w danych siedmiu broni wyznaczają
+linię od szczerbinki do czubka muszki w metrach, w osiach modelu GLB
+(przód to −Z). Położenie oka leży na przedłużeniu tej linii za szczerbinką,
+w odległości `ironSight.eyeReliefM` albo `tuning.player.aim.ironEyeReliefM`.
+Przy pełnym ADS obrót broni wyrównuje linię przyrządów do osi kamery, a
+przesunięcie pokrywa położenie oka z początkiem kamery. Oba przejścia używają
+wygładzonego postępu z `HeldItem`.
+
+Modele mają punkty skalibrowane ręcznie na geometrii GLB. Blaster, pistolet,
+karabin i rozpraszacz używają wymodelowanych przyrządów. Laser ciągły dostał
+muszkę, a granatnik EMP i snajperka oba przyrządy. Zapasowe przyrządy snajperki
+są nad fabryczną obudową lunety. Ich podstawy definiują `rearBaseY` i
+`frontBaseY`, a szerokość zależy od przekroju korpusu i
+`tuning.player.aim.ironGeometry`.
+
+Zamontowana optyka przejmuje linię celowania. Znak i punkt odniesienia okularu
+pochodzą z `visual.sight` modułu, a luneta używa swojego `aimFovScale`.
+`swayScale` i `bobScale` w `tuning.player.aim` wygaszają kołysanie oraz
+opóźnienie obrotu do zera w pełnym ADS. Celownik HUD gaśnie podczas
+podnoszenia broni. W pełnym ADS odrzut cofa model wzdłuż osi kamery,
+dzięki czemu punkt celowania pozostaje na środku także podczas serii.
+
+Kontrola ręczna w `?scene=weapons-test&debug=1` używa PPM i komend
+`weapon <id>`, `ads optic <id|none>` oraz `ads guide on|off`.
+Panel lil-gui „Dane przyrządów ADS” pokazuje współrzędne i odległość oka
+dla wybranej broni lub optyki.
+`ads eye` odczytuje położenie oka, `ads eye x y z` nadpisuje je dla aktualnej
+broni i celownika na czas sceny, a `ads eye reset` przywraca dane.
+Po przytrzymaniu PPM środek znaku lub czubek muszki w szczerbince powinien
+wypaść w środku krzyża kontrolnego.
+
 Wszystkie dane mają tag `#gun`. Wstępny balans względem blastera (F2-18 dopracuje TTK):
 
 | ID / nazwa              | Tryb / spust      | Obrażenia  | Strzały/s | Ciepło | Prędkość m/s | Życie s | Półkąt ° | Parametry                                                               |
