@@ -137,6 +137,24 @@ export default function generate() {
   ])
     k.prop(model, x, z, { quarter });
 
+  // Zniszczalne skrzynie przy beczkach (PropPhysicsSystem): 4 duże nieruchome, 3 małe dynamiczne.
+  const crate = (model, size, x, z) =>
+    k.solid(
+      R(x - size / 2, x + size / 2, z - size / 2, z + size / 2),
+      0,
+      size,
+      'metal',
+      { model },
+    );
+  for (const [x, z] of [
+    [-2.5, -2.5],
+    [2.5, -2.5],
+    [-2.5, 2.5],
+    [2.5, 2.5],
+  ])
+    crate('crate', 1, x, z);
+  for (const x of [-1.2, 0, 1.2]) crate('crate_small', 0.5, x, 5);
+
   // Plac kontenerów (południe): stosy 20' w trzech rzędach; pas wejścia x = −22 zostaje wolny.
   const colours = ['navy', 'olive', 'ochre', 'graphite'];
   let c = 0;
