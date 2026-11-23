@@ -13,8 +13,27 @@ export interface DebrisBurst {
   size: number;
   spread?: number;
   bounds?: { halfX: number; halfY: number; halfZ: number };
-  /** Barwa żaru krawędzi: 0 = czerwień wroga, 1 = magenta Rezonansu (zabicie mocą). */
+  /**
+   * Barwa odłamka: 0 = czerwień wroga, 1 = magenta Rezonansu (zabicie mocą),
+   * 2 = beton, 3 = metal, 4 = tworzywo/drewno, 5 = szkło/neon (paleta otoczenia, `DEBRIS_TINT`).
+   */
   tint?: number;
+  /** Bazowy czas życia (s) zamiast `debrisLifetimeS`; ±20% losowego rozrzutu zostaje. */
+  lifetimeS?: number;
+}
+/** Barwy odłamków otoczenia (`DebrisBurst.tint`); 0 i 1 to barwy walki. */
+export const DEBRIS_TINT = {
+  enemy: 0,
+  power: 1,
+  concrete: 2,
+  metal: 3,
+  plastic: 4,
+  glass: 5,
+} as const;
+/** Trafienie promienia w geometrię z normalną powierzchni (odbicie fizyczne). */
+export interface DebrisWallHit {
+  distance: number;
+  normal?: Vec3;
 }
 /** Kosmetyczny błysk walki: trafienie (błysk sylwetki) albo zabicie (rozbłysk rozpadu). */
 export interface CombatFlash {
@@ -42,7 +61,7 @@ export interface DebrisOptions {
   maxDebris: number;
   floorY?: number;
   /** Odległość trafienia promienia; kierunek jednostkowy, tylko geometria świata. */
-  walls?: (pos: Vec3, dir: Vec3, dist: number) => number | null;
+  walls?: (pos: Vec3, dir: Vec3, dist: number) => number | DebrisWallHit | null;
   seed?: number;
   tuning?: Tuning['vfx'];
 }
@@ -207,7 +226,8 @@ export class DebrisSystem {
       fragment.serial = ++this.serial;
       fragment.age = fragment.previousAge = 0;
       fragment.lifetime =
-        this.settings.debrisLifetimeS * (0.8 + this.random() * 0.4);
+        (spec.lifetimeS ?? this.settings.debrisLifetimeS) *
+        (0.8 + this.random() * 0.4);
       fragment.sleeping = false;
       fragment.tint = spec.tint ?? 0;
       fragment.pos.x =
@@ -240,6 +260,25 @@ export class DebrisSystem {
     }
   }
 
+  /** v' = v - (1 + e)(v·n)n dla składowej normalnej, tarcie dla stycznej. */
+  private reflect(f: Fragment, normal: Vec3): void {
+    const v = f.velocity;
+    const length = Math.hypot(normal.x, normal.y, normal.z) || 1;
+    const nx = normal.x / length;
+    const ny = normal.y / length;
+    const nz = normal.z / length;
+    const along = v.x * nx + v.y * ny + v.z * nz;
+    if (along >= 0) return;
+    const e = this.settings.debrisWallRestitution;
+    const friction = this.settings.debrisWallFriction;
+    const tx = v.x - along * nx;
+    const ty = v.y - along * ny;
+    const tz = v.z - along * nz;
+    v.x = tx * friction - e * along * nx;
+    v.y = ty * friction - e * along * ny;
+    v.z = tz * friction - e * along * nz;
+  }
+
   step(dt: number): void {
     if (!(dt > 0) || !Number.isFinite(dt)) return;
     for (const f of this.flashes) {
@@ -267,16 +306,36 @@ export class DebrisSystem {
         this.rayDir.x = f.velocity.x / speed;
         this.rayDir.y = f.velocity.y / speed;
         this.rayDir.z = f.velocity.z / speed;
-        const hit = this.opts.walls(f.pos, this.rayDir, travel);
+        const result = this.opts.walls(f.pos, this.rayDir, travel);
+        // Trafienie od środka bryły (zerowa normalna) ignorujemy: odłamek ma się wydostać, nie zawisnąć.
+        const inside =
+          result !== null &&
+          typeof result === 'object' &&
+          result.normal !== undefined &&
+          Math.hypot(result.normal.x, result.normal.y, result.normal.z) < 1e-6;
+        const hit =
+          result === null || inside
+            ? null
+            : typeof result === 'number'
+              ? result
+              : result.distance;
         if (hit !== null && hit >= 0 && hit <= travel) {
           travel = Math.max(0, hit - 0.001);
           f.pos.x += this.rayDir.x * travel;
           f.pos.y += this.rayDir.y * travel;
           f.pos.z += this.rayDir.z * travel;
-          // Kontrakt promienia nie zwraca normalnej: odbijamy wzdłuż promienia.
-          f.velocity.x *= -0.3;
-          f.velocity.y *= -0.3;
-          f.velocity.z *= -0.3;
+          const normal =
+            result !== null && typeof result === 'object'
+              ? result.normal
+              : undefined;
+          if (normal) this.reflect(f, normal);
+          else {
+            // Bez normalnej odbijamy wzdłuż promienia.
+            const k = -this.settings.debrisWallRestitution;
+            f.velocity.x *= k;
+            f.velocity.y *= k;
+            f.velocity.z *= k;
+          }
           travel = 0;
         }
       }

@@ -82,6 +82,21 @@ export interface GameEvents {
   };
   projectile_spawned: { id: EntityId; owner: EntityId; team: Team };
   projectile_reflected: { id: EntityId; newOwner: EntityId };
+  /** Zniszczalny rekwizyt (skrzynia) rozbity: środek, rozmiar i kierunek ostatniego trafienia (albo null). */
+  prop_destroyed: {
+    id: EntityId;
+    kind: string;
+    point: Vec3;
+    size: Vec3;
+    dir: Vec3 | null;
+  };
+  /** Pocisk trafił geometrię świata (nie hurtbox): punkt, normalna powierzchni, właściciel i tagi pocisku. */
+  world_hit: {
+    point: Vec3;
+    normal: Vec3;
+    owner: EntityId;
+    tags: readonly string[];
+  };
   // F1 — wręcz (#07)
   melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };
   /** Sparowany cios wręcz (blok w oknie `meleeParryWindowMs`): obrażenia zanegowane, atakujący ogłuszony. */

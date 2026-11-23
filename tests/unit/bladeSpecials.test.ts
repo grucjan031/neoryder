@@ -95,13 +95,16 @@ function setup(wallZ?: number) {
       querySegment: query,
       hurtboxPosition: (box) =>
         world.getCollider(box.colliderHandle)?.translation() ?? null,
-      castWall: (origin, dir, max) =>
+      castWall: (origin, dir, max, ignore) =>
         world.castRay(
           new R.Ray(origin, dir),
           max,
           true,
           undefined,
           interactionGroups(CollisionGroup.Player, CollisionGroup.World),
+          undefined,
+          undefined,
+          ignore === undefined ? undefined : (c) => c.handle !== ignore,
         )?.timeOfImpact ?? null,
     },
     bus,
@@ -162,6 +165,8 @@ function setup(wallZ?: number) {
     stops,
     reflect,
     world,
+    registry,
+    hurtboxes,
     query,
     step,
     startDash,
@@ -206,6 +211,27 @@ describe('rzut ostrzem', () => {
     expect(outside.health.current).toBe(1000);
     expect(far.health.current).toBe(1000);
     expect(c.stops).toEqual([c.t.time.hitstopLightMs]);
+  });
+
+  it('trafia zniszczalną skrzynię (collider World + hurtbox): cel nie zasłania sam siebie', () => {
+    const c = setup();
+    const id = c.registry.create('prop_crate', 'neutral');
+    c.damage.register(id, new Health(() => 1000));
+    const collider = c.world.createCollider(
+      R.ColliderDesc.cuboid(0.5, 0.8, 0.5)
+        .setTranslation(0, 1.6, -4)
+        .setCollisionGroups(
+          interactionGroups(
+            CollisionGroup.World | CollisionGroup.Enemy,
+            0xffff,
+          ),
+        ),
+    );
+    c.hurtboxes.add(id, collider);
+    c.world.step();
+    c.step(input(['bladeThrow']));
+    c.step(input(), 60);
+    expect(c.hits.map((h) => h.target)).toContain(id);
   });
 
   it('raycast zatrzymuje na ścianie i od następnego kroku wraca', () => {

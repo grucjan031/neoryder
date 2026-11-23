@@ -2,6 +2,7 @@ import type { EntityId, EventBus } from '../core/events';
 import type { Tuning } from '../core/tuning';
 import type { PlayerState } from './playerController';
 import { loadSettings } from '../core/save';
+import { SIM_DT } from '../core/loop';
 
 /** Wynik kamery na klatkę. Scena przepisuje go na PerspectiveCamera (rotacja 'YXZ'). */
 export interface CameraPose {
@@ -42,7 +43,16 @@ export class FpsCamera {
   private fov: number;
   private bobPhase = 0;
   private bobWeight = 0;
+  /** Ugięcie lądowania: `dip` goni `dipTarget` (szybki atak), cel wygasa wolniej (sprężyna bez przeregulowania). */
   private dip = 0;
+  private dipTarget = 0;
+  /** Wygładzanie skoku wysokości stóp na schodach: skumulowane przesunięcie i skok bieżącego kroku symulacji. */
+  private stepBase = 0;
+  private stepPending = 0;
+  private lastCur: { x: number; y: number; z: number } | null = null;
+  private lastPrev: { x: number; y: number; z: number } | null = null;
+  private lastFeet = 0;
+  private tiltRoll = 0;
   private eye: number;
   private readonly off: (() => void)[] = [];
 
@@ -53,7 +63,10 @@ export class FpsCamera {
     private readonly settings: Pick<
       import('../core/save').Settings,
       'screenShake'
-    > = loadSettings(),
+    > &
+      Partial<
+        Pick<import('../core/save').Settings, 'cameraTilt'>
+      > = loadSettings(),
   ) {
     this.fov = tuning.camera.fov;
     this.eye = tuning.player.eyeHeight;
@@ -72,10 +85,15 @@ export class FpsCamera {
       bus.on('player_landed', ({ id, speed }) => {
         if (id !== this.playerId || speed < 3) return;
         const c = this.tuning.camera;
-        this.dip = Math.max(
-          this.dip,
+        this.dipTarget = Math.max(
+          this.dipTarget,
           Math.min(c.landingDipMax, speed * c.landingDipPerSpeed),
         );
+        if (speed >= c.landingShakeMinSpeed)
+          this.addTrauma(
+            Math.min(1, c.landingShakeScale * (speed / c.landingShakeMinSpeed)),
+            c.landingShakeS,
+          );
       }),
     );
   }
@@ -114,16 +132,23 @@ export class FpsCamera {
     this.trauma = Math.max(0, this.trauma - this.decayPerS * dt);
 
     // FOV: baza czytana na żywo + kick przy sprincie / dashu, wygładzony wykładniczo.
+    const tilt = this.settings.cameraTilt !== false;
     const targetFov =
       c.fov +
-      (cur.sprinting ? c.sprintFovKick : 0) +
-      (cur.dashS > 0 ? c.dashFovKick : 0);
+      (tilt
+        ? (cur.sprinting ? c.sprintFovKick : 0) +
+          (cur.sliding ? c.slideFovKick : 0) +
+          (cur.dashS > 0 ? c.dashFovKick : 0)
+        : 0);
     this.fov += (targetFov - this.fov) * (1 - Math.exp(-c.fovLerpRate * dt));
 
     // Wysokość oczu liczona od stóp, wygładzona przy zmianie kapsuły.
     const eyeTarget = cur.height - (p.capsuleHeight - p.eyeHeight);
     this.eye += (eyeTarget - this.eye) * (1 - Math.exp(-c.eyeLerpRate * dt));
-    this.dip *= Math.exp(-c.landingRecoverRate * dt);
+    this.dipTarget *= Math.exp(-c.landingRecoverRate * dt);
+    this.dip +=
+      (this.dipTarget - this.dip) * (1 - Math.exp(-c.landingAttackRate * dt));
+    this.updateSteps(dt, prev, cur);
 
     // Kołysanie: faza z przebytej drogi, waga płynnie wygasa po zatrzymaniu.
     const speed = Math.hypot(cur.velocity.x, cur.velocity.z);
@@ -142,6 +167,20 @@ export class FpsCamera {
     const feetCur = cur.position.y - cur.height / 2;
     const yaw = lerp(prev.yaw, cur.yaw);
     const pitch = lerp(prev.pitch, cur.pitch);
+    const feetOffset = this.stepBase - this.stepPending * alpha;
+
+    // Przechył: pochylenie w stronę ruchu bocznego (prawo = przechył w prawo, roll ujemny).
+    const rightSpeed =
+      cur.velocity.x * Math.cos(yaw) - cur.velocity.z * Math.sin(yaw);
+    const lean = Math.max(
+      -1.5,
+      Math.min(1.5, rightSpeed / Math.max(1, p.sprintSpeed)),
+    );
+    const tiltTarget = tilt
+      ? -lean * (c.strafeRollDeg + (cur.sliding ? c.slideRollDeg : 0)) * DEG
+      : 0;
+    this.tiltRoll +=
+      (tiltTarget - this.tiltRoll) * (1 - Math.exp(-c.rollLerpRate * dt));
 
     const amp =
       shakeAmplitude(this.trauma, c.shakeMax) * this.settings.screenShake;
@@ -157,14 +196,78 @@ export class FpsCamera {
     return {
       position: {
         x: lerp(prev.position.x, cur.position.x) + Math.cos(yaw) * side,
-        y: lerp(feetPrev, feetCur) + this.eye - bobY - this.dip + offY,
+        y:
+          lerp(feetPrev, feetCur) +
+          feetOffset +
+          this.eye -
+          bobY -
+          this.dip +
+          offY,
         z: lerp(prev.position.z, cur.position.z) - Math.sin(yaw) * side,
       },
       pitch: pitch + shakePitch,
       yaw: yaw + shakeYaw,
-      roll,
+      roll: roll + this.tiltRoll,
       fov: this.fov * (1 + (aimFovScale - 1) * Math.min(1, Math.max(0, aim))),
     };
+  }
+
+  /**
+   * Filtr schodów: skok wysokości stóp w jednym kroku symulacji (autostep / snap) na ziemi
+   * jest rozkładany wykładniczo (`stepSmoothRate`). Skoki mniejsze niż nachylenie rampy
+   * (`maxSlopeDeg` przy bieżącej prędkości) i lot są pomijane, więc rampy nie dają opóźnienia.
+   */
+  private updateSteps(dt: number, prev: PlayerState, cur: PlayerState): void {
+    const c = this.tuning.camera;
+    const p = this.tuning.player;
+    const decay = Math.exp(-c.stepSmoothRate * dt);
+    this.stepBase *= decay;
+    this.stepPending *= decay;
+    const feet = cur.position.y - cur.height / 2;
+    const last = this.lastCur;
+    const curMoved =
+      !last ||
+      last.x !== cur.position.x ||
+      last.y !== cur.position.y ||
+      last.z !== cur.position.z;
+    const lastPrev = this.lastPrev;
+    // Nowy krok symulacji zmienia też `prev` (nawet gdy `cur` stoi): wtedy dotychczasowy skok trafia do bazy.
+    const prevMoved =
+      !lastPrev ||
+      lastPrev.x !== prev.position.x ||
+      lastPrev.y !== prev.position.y ||
+      lastPrev.z !== prev.position.z;
+    if (curMoved || prevMoved) {
+      this.stepBase -= this.stepPending;
+      this.stepPending = 0;
+      this.lastPrev = {
+        x: prev.position.x,
+        y: prev.position.y,
+        z: prev.position.z,
+      };
+    }
+    if (curMoved) {
+      if (last && prev.grounded && cur.grounded && !cur.sliding) {
+        const delta = feet - this.lastFeet;
+        const rampRise =
+          Math.hypot(cur.velocity.x, cur.velocity.z) *
+            SIM_DT *
+            Math.tan((p.maxSlopeDeg * Math.PI) / 180) +
+          c.stepSmoothMinM;
+        if (
+          Math.abs(delta) > rampRise &&
+          Math.abs(delta) <= p.stepHeight + 0.02
+        )
+          this.stepPending = delta;
+      }
+      this.lastCur = {
+        x: cur.position.x,
+        y: cur.position.y,
+        z: cur.position.z,
+      };
+      this.lastFeet = feet;
+    }
+    if (!cur.grounded) this.stepBase = this.stepPending = 0;
   }
 
   dispose(): void {

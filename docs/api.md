@@ -743,6 +743,8 @@ weapon_fired: { weapon: string; owner: EntityId };
 heat_changed: { id: EntityId; current: number; max: number; overheated: boolean };
 projectile_spawned: { id: EntityId; owner: EntityId; team: Team };
 projectile_reflected: { id: EntityId; newOwner: EntityId };
+prop_destroyed: { id: EntityId; kind: string; point: Vec3; size: Vec3; dir: Vec3 | null }; // rozbita skrzynia (PropPhysicsSystem); słucha WorldDebris
+world_hit: { point: Vec3; normal: Vec3; owner: EntityId; tags: readonly string[] }; // pocisk trafił geometrię świata (nie hurtbox); emituje ProjectileSystem; słucha WorldDebris (okruchy)
 
 // wręcz (#07)
 melee_swing: { attacker: EntityId; stage: 1 | 2 | 3 | 4 | 'heavy' };  // F2-11: etap 4 = bliźniacze ostrza

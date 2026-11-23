@@ -185,6 +185,42 @@ modyfikować ani zachowywać. `alpha` materiału jest zawsze 1, zanik jest już
 uwzględniony w skali. Renderer zwalnia własną geometrię i instancje, zachowując
 współdzielony materiał. Scena zapewnia oświetlenie przez `createStyleLights()`.
 
+## Odłamki otoczenia (fizyka B-P1)
+
+`DebrisBurst.tint` ma paletę: 0 czerwień wroga, 1 magenta Rezonansu (walka) oraz
+2 beton `#2b303c`, 3 metal `#4a5260`, 4 tworzywo/drewno `#5c4a38`, 5 szkło `#8ab4f8`
+(stała `DEBRIS_TINT`). Barwy otoczenia nie używają czerwieni, cyanu ani magenty
+(ADR 0006). `DebrisRenderer` rysuje tint ≥ 2 w osobnej warstwie `debris-env`
+(drugi `InstancedMesh` z kolorem instancji + skorupa żaru bursztynowego / ciepłej bieli),
+obie siatki mają `vfxPool`. `DebrisBurst.lifetimeS` skraca bazowy czas życia.
+
+`DebrisOptions.walls` może zwrócić `number | null` (stary kontrakt: odbicie wzdłuż
+promienia, restytucja `debrisWallRestitution`) albo `{ distance, normal }`. Z normalną
+odłamek odbija się fizycznie: składowa normalna `−e·vₙ`, styczna mnożona przez
+`debrisWallFriction`. Sceny `RoomScene` i `Arena` podają normalną z `castRayAndGetNormal`.
+
+`src/vfx/worldDebris.ts` (`WorldDebris(bus, debris, { tuning })`) słucha dwóch zdarzeń:
+`explosion` z tagami `#hazard` + `#explosion` (beczka, sabotaż) wyrzuca
+`barrelDebrisCount` metalowych odłamków promieniście; `world_hit` (pocisk trafił geometrię,
+emituje `ProjectileSystem`, także przy rykoszecie) i `prop_destroyed` (rozbita skrzynia, patrz `hazards.md`: odłamki tworzywa `tint 4`) sypie `worldChipCount` okruchów betonu
+wzdłuż normalnej na `worldChipLifetimeS`. Zero ciał Rapiera; losowanie tylko z własnego
+RNG puli (nie z `ctx.rng`).
+
+| Parametr (`tuning.vfx`)  | Wartość | Opis                                              |
+| ------------------------ | ------- | ------------------------------------------------- |
+| `debrisWallRestitution`  | 0.3     | Restytucja normalna odbicia od ściany             |
+| `debrisWallFriction`     | 0.8     | Mnożnik składowej stycznej po odbiciu             |
+| `barrelDebrisCount`      | 18      | Odłamki blachy przy wybuchu beczki                |
+| `barrelDebrisStrength`   | 11      | Prędkość wyrzutu, m/s                             |
+| `barrelDebrisSize`       | 0.16    | Rozmiar, m                                        |
+| `worldChipCount`         | 3       | Okruchy na trafienie pocisku w świat              |
+| `worldChipStrength`      | 4.5     | Prędkość okruchów, m/s                            |
+| `worldChipSize`          | 0.065   | Rozmiar okruchu, m                                |
+| `worldChipLifetimeS`     | 0.9     | Czas życia okruchów, s                            |
+
+Komenda `shatterProp <crate|barrel|wall>` w `debris-test` pokazuje paletę;
+w `?scene=room-test&room=combatWarehouse` strzał w ścianę i `hazard detonate` dają ten sam efekt w grze.
+
 ## Pokaz i weryfikacja
 
 Otwórz `?scene=debris-test&debug=1&seed=demo`. Statyczna kamera pokazuje białą
