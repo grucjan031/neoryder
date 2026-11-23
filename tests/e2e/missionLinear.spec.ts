@@ -181,6 +181,7 @@ test('tablica: odprawa M01 otwiera scenę mission, kolejne misje czekają na pop
     ['m03-list-przewozowy', 'Zablokowana'],
     ['m04-ladunek-klasy-k', 'Zablokowana'],
     ['m05-adiutant', 'Zablokowana'],
+    ['m08-kwarantanna', 'Zablokowana'],
   ] as const) {
     const choice = page.locator(`[data-mission="${id}"]`);
     await expect(choice).toBeDisabled();

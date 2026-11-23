@@ -1,0 +1,353 @@
+{
+  "id": "m08-kwarantanna",
+  "level": "m08-kwarantanna",
+  "number": 8,
+  "title": "Kwarantanna",
+  "act": 2,
+  "summary": "Helixa odcięła blok na Bulwarze po rozstrojeniu całej partii Akordu. Otwórz drogi trzem grupom cywilów i osłoń ich ewakuację windą towarową. Szron idzie z tobą.",
+  "sectorId": "kurogane",
+  "requires": [
+    "m07-nocny-dyzur"
+  ],
+  "layers": 7,
+  "enemies": [
+    "gunner",
+    "shielder",
+    "rozstrojony"
+  ],
+  "fixedNodes": [
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatYard",
+      "objectives": [
+        "sluza-a",
+        "grupa-a",
+        "sluza-b",
+        "grupa-b",
+        "sluza-c",
+        "grupa-c",
+        "ewakuacja",
+        "exit"
+      ],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "sluza-a",
+      "kind": "interact",
+      "label": "Otwórz drogę grupie A",
+      "position": {
+        "x": 62,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": []
+    },
+    {
+      "id": "grupa-a",
+      "kind": "reach",
+      "label": "Przeprowadź grupę A do bezpiecznego szybu",
+      "position": {
+        "x": 82,
+        "y": 0,
+        "z": 0
+      },
+      "radiusM": 2.5,
+      "timeLimitS": 60
+    },
+    {
+      "id": "sluza-b",
+      "kind": "interact",
+      "label": "Otwórz drogę grupie B",
+      "position": {
+        "x": 122,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": [
+        "grupa-a"
+      ]
+    },
+    {
+      "id": "grupa-b",
+      "kind": "reach",
+      "label": "Przeprowadź grupę B do bezpiecznego szybu",
+      "position": {
+        "x": 142,
+        "y": 0,
+        "z": 0
+      },
+      "radiusM": 2.5,
+      "timeLimitS": 60
+    },
+    {
+      "id": "sluza-c",
+      "kind": "interact",
+      "label": "Otwórz drogę grupie C",
+      "position": {
+        "x": 182,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": [
+        "grupa-b"
+      ]
+    },
+    {
+      "id": "grupa-c",
+      "kind": "reach",
+      "label": "Przeprowadź grupę C do bezpiecznego szybu",
+      "position": {
+        "x": 202,
+        "y": 0,
+        "z": 0
+      },
+      "radiusM": 2.5,
+      "timeLimitS": 60
+    },
+    {
+      "id": "ewakuacja",
+      "kind": "defend",
+      "label": "Osłaniaj ewakuację trzech grup przy windzie",
+      "position": {
+        "x": 222,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "radiusM": 6,
+      "durationS": 25,
+      "waves": [
+        {
+          "atProgress": 0.2,
+          "wave": "m08Rampa"
+        },
+        {
+          "atProgress": 0.6,
+          "wave": "m08Rozstrojeni"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Zjedź z ostatnim kursem windy",
+      "position": {
+        "x": 244,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 2,
+      "unlockAfter": [
+        "grupa-a",
+        "grupa-b",
+        "grupa-c",
+        "ewakuacja"
+      ]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "ida",
+      "text": "Nie chcę siedzieć. Za estakadą coś pękło."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Sześć godzin temu Helixa ogrodziła stary blok na granicy Bulwaru. W papierach wyciek chłodziwa z podstacji."
+    },
+    {
+      "speaker": "szron",
+      "text": "Wchodzisz przed świtem, Kurier. Szukasz ludzi bez wszczepów i prowadzisz do windy towarowej przy tylnej rampie."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "tomasz",
+      "text": "Zostawiłem im stare koce przy przejściu w stronę kanału wodnego. Przed patrolem porannym będą u swoich w Niecce."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Wszyscy z trzech grup. W samym bloku zostało kilkadziesiąt ciał. Część wystrzelali ci skurwiele z Helixy, reszta powpadała przez barierki."
+    },
+    {
+      "speaker": "mira",
+      "text": "Dlaczego przestali wszyscy naraz?"
+    },
+    {
+      "speaker": "wolan",
+      "text": "Przestało to, do czego byli podpięci."
+    },
+    {
+      "speaker": "ida",
+      "text": "Ten, który umarł… leżał obok mnie."
+    },
+    {
+      "speaker": "szron",
+      "text": "Mira, nie ruszaj się z Kamiennej bez rozkazu. Najpierw musimy wiedzieć, skąd biorą te partie."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jesteś przy bramce kwarantanny. Czujniki Helixa zgłaszają tu czyste powietrze — kłamstwo o wycieku jest tylko dla kamer z zewnątrz."
+        },
+        {
+          "speaker": "szron",
+          "text": "Z prawej masz parter i aptekę, wyżej zaczynają się skrzydła mieszkalne. Sprawdzaj terminale przy klatkach, wyłowią pokoje bez aktywnego sygnału Akordu."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:kordon",
+      "lines": [
+        {
+          "speaker": "wolan",
+          "text": "Puls się wyrównał, ale powinnaś jeszcze siedzieć."
+        },
+        {
+          "speaker": "szron",
+          "text": "Co dokładnie?"
+        },
+        {
+          "speaker": "ida",
+          "text": "Ktoś krzyczał w środku głowy. Bardzo głośno, jakby darli drut z kości. Potem cisza. Od tamtej pory cały blok nade mną drży i nie trafia rękami w drzwi."
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "encounter:kordon:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Jasna cholera, zobacz na odczyty… w środku walczą dwie grupy naraz. Oddział Helixa próbuje uśpić własnych pacjentów."
+        },
+        {
+          "speaker": "wolan",
+          "text": "Ich implanty wysyłają śmieciowy impuls. Nie celują. Atakują każdy ruch, który pojawi się w polu widzenia."
+        },
+        {
+          "speaker": "mira",
+          "text": "Kurwa. Więc tak to wygląda, kiedy po drugiej stronie kabla ktoś przestaje oddychać."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:kordon:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Kolejny, kurwa, „wyciek”."
+        },
+        {
+          "speaker": "szron",
+          "text": "Kto jest w środku?"
+        },
+        {
+          "speaker": "bajt",
+          "text": "Ponad połowa lokatorów nie ma Akordu. Nocna zmiana z magazynów, rodziny. Helixa nikogo nie wypuszcza i właśnie wpuściła tam ekipę w maskach."
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "enterSection:skrzydlo-a",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Sygnał z pralni na lewo od korytarza. Trzy osoby, zero aktywnych implantów bojowych."
+        },
+        {
+          "speaker": "szron",
+          "text": "Wyczyść podejście przed kratą. Dopiero jak przestaną latać granaty, otwórz zamek i skieruj ich w szyb serwisowy."
+        },
+        {
+          "speaker": "ida",
+          "text": "Nie krzycz na nich. Od tych świateł na korytarzu nie słyszą własnych myśli."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:sluza-a:done",
+      "lines": [
+        {
+          "speaker": "tomasz",
+          "text": "Zostań tu, mała. Woda zaraz się zagotuje."
+        },
+        {
+          "speaker": "ida",
+          "text": "Nie nazywaj mnie tak. I nie gaś tego światła."
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "objective:grupa-a:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Kanał ustawiony. Nie mieszaj się między obie strony, jeśli same do siebie strzelają. Nam zależy na tych za drzwiami."
+        }
+      ],
+      "priority": "story"
+    },
+    {
+      "trigger": "enterSection:skrzydlo-b",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Drugie piętro, narożne mieszkanie za otwartą galerią. Ekipa czyszcząca już odcina im klatkę gazem."
+        },
+        {
+          "speaker": "mira",
+          "text": "Zostaw sobie trochę miejsca za plecami na tych pomostach. Ktoś spadnie z balustrady i skończysz, kurwa, piętro niżej."
+        },
+        {
+          "speaker": "szron",
+          "text": "Szybko. Kobieta w środku ma kartę medyczną bez Akordu, otworzy reszcie drogę na schody."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:dziedziniec",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Wszyscy z pierwszych dwóch skrzydeł schodzą szybem na dół. Trzecia grupa siedzi jeszcze przy zamkniętych roletach rampy."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:grupa-c:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Ostatni oddział Helixa stoi przed windą, a z górnych schodów zbiega kolejna fala rozstrojonych. Wyczyść plac i trzymaj drzwi windy, aż wejdzie ostatnia osoba."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:ewakuacja:done",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Klatka pełna, liny idą w ruch. Zjeżdżaj razem z nimi, Kurier."
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 100,
+      "cores": 1
+    }
+  }
+}

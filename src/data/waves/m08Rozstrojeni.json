@@ -1,0 +1,24 @@
+{
+  "id": "m08Rozstrojeni",
+  "firstBreakS": 0,
+  "breakS": 0,
+  "maxAlive": 6,
+  "minSpawnDistance": 6,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.6,
+      "groups": [
+        {
+          "enemy": "rozstrojony",
+          "count": 4
+        }
+      ]
+    }
+  ]
+}

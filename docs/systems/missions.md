@@ -229,3 +229,24 @@ Scenariuszowy alarm po wykryciu realizuje układ mapy i spotkanie `alarm-hala`, 
 po serwerze nie ma limitu czasu. Cele opcjonalne scenariusza są poza zakresem.
 Sprawdzenie: po `campaign complete` M01–M04 i M06 otwórz
 `?scene=mission&mission=m07-nocny-dyzur&debug=1`.
+
+## M08 — Kwarantanna
+
+Misja liniowa aktu II wymaga wyłącznie ukończonej M07 (`m07-nocny-dyzur`).
+Trzy krótkie kwestie odprawy i sześć kwestii debriefu pochodzą ze scenariusza;
+reszta odprawy oraz całe radio trafiają na wyzwalacze sekcji, spotkań i celów.
+Scenariusz nie przewiduje osobnego interludium. FirstClear: 100 Danych i 1 Rdzeń.
+
+Kolejność: `sluza-a` → `grupa-a` → `sluza-b` → `grupa-b` → `sluza-c` →
+`grupa-c` → `ewakuacja` → `exit`. Każda śluza to `interact` 2 s po pokonaniu
+osłony, a grupa to `reach` do wejścia do bezpiecznego szybu (promień 2,5 m,
+lokalny limit 60 s). Nie ma globalnego limitu misji. Upływ czasu i śmierć
+gracza przywracają checkpoint z zachowaniem ukończonych celów. Finał: `defend`
+25 s w promieniu 6 m po 2 s uruchomienia; wyjście ze strefy wstrzymuje obronę.
+Posiłki przy 20% i 60%; osobny `exit` 2 s odblokowany po wszystkich grupach
+i odjeździe windy. Szron towarzyszy od startu.
+
+Wariant uproszczony do istniejących systemów: dojście gracza zalicza grupę,
+cywile są neutralnymi NPC bez obrażeń; brak porażki za ich śmierć, walk między
+frakcjami, aerozolu, opcjonalnego czytnika i premii za brak strat oraz zmian
+w wystroju kryjówki. Opis mapy i szybkie sprawdzenie: `levels.md`, sekcja M08.

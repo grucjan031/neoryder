@@ -557,9 +557,15 @@ export class MissionScene implements Scene {
     this.room?.render(alpha, frameDt);
     this.objectiveNpcs.forEach((view, index) => {
       const npc = this.level.objectiveNpcs![index]!;
+      // Cywile celu reach znikają dopiero po wejściu grupy do bezpiecznego szybu.
+      const evacuated =
+        this.objectives()[npc.objective] === 'done' &&
+        this.definition.objectives.some(
+          (o) => o.id === npc.objective && o.kind === 'reach',
+        );
       view.update(
         { position: npc.spawn, yaw: (npc.yawDeg * Math.PI) / 180 },
-        'waiting',
+        evacuated ? 'evacuated' : 'waiting',
         'idle',
         frameDt ?? 0,
       );
