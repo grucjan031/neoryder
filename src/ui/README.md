@@ -10,3 +10,7 @@ Tokeny: `theme/tokens.css`, style komponentów: `theme/components.css`, helpery 
 ## Kryjówka (U2)
 
 Panele stacji (`hub/`): `hubPanel.ts` (kontrakt, opcjonalne `actions` i `cycleTab`), `workshopPanel.ts`, `missionsPanel.ts`, `talentsPanel.ts` + `talentLayout.ts` (czysty układ grafu), `metaBar.ts` (nagłówek meta, `--meta-bar-h`). Ekran stacji: `hubScreens.ts`. Opis: `docs/systems/ui.md`.
+
+## Run i tryby (U3)
+
+Ekrany runu: `runScreens.ts/css` + `runPanel.ts` (ramka `ui-panel` z przewijaną treścią), `mapScreen`, `buildSelect`, `runInventory`, `endlessScreens`, `challengeHistory`. HUD trybów i misji: `modeHud.css` (wspólne tokeny `--font-hud`, `--hud-surface`) oraz `assaultUi`, `heistUi`, `conquestUi`, `prototypeHud`, `puzzleHud`, `missionUi`, `squadHud`. Opis: `docs/systems/ui.md`.

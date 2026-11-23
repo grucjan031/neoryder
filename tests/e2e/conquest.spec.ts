@@ -1,6 +1,17 @@
 import { expect, test } from '@playwright/test';
 import { LOAD_TIMEOUT } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy górny róg; karty tablicy misji bywają pod nim.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 for (const outcome of ['victory', 'death'] as const) {
   test(`Przejęcie: kryjówka → arena → ${outcome} → kryjówka`, async ({
     page,
@@ -15,12 +26,8 @@ for (const outcome of ['victory', 'death'] as const) {
       })
       .toBe('hub');
     await page.evaluate(() => window.__neoryder?.command('hub open missions'));
-    await expect(
-      page.getByRole('button', {
-        name: 'Kradzież rdzenia',
-        exact: true,
-      }),
-    ).toBeEnabled();
+    // Karty trybów w tablicy misji mają selektor data-mode (nazwa karty zawiera stan i typ).
+    await expect(page.locator('[data-mode="heist"]')).toBeEnabled();
     await page.locator('[data-mode="conquest"]').click();
     await page
       .getByRole('button', { name: 'Rozpocznij Przejęcie', exact: true })

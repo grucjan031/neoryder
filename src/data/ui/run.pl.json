@@ -15,6 +15,24 @@
     "puzzle": "Zagadka",
     "boss": "Boss"
   },
+  "kickers": {
+    "map": "Sektor Kurogane · mapa",
+    "room": "Sektor Kurogane · węzeł",
+    "reward": "System · modyfikacja",
+    "shop": "Czarny rynek · kontrakt",
+    "rest": "Strefa buforowa · kalibracja",
+    "summary": "Telemetria · raport"
+  },
+  "hints": {
+    "pick": "Wybierz",
+    "confirm": "Potwierdź"
+  },
+  "buyConfirm": {
+    "title": "Potwierdzić zakup?",
+    "message": "{name} za {price} kredytów. Po zakupie zostanie ci {left} kredytów.",
+    "confirm": "Kup",
+    "cancel": "Anuluj"
+  },
   "noRewards": "brak nagród",
   "eliteModule": "Dodatkowy moduł za elitę",
   "extractionAvailable": "W warsztacie kryjówki możesz wydobyć jeden moduł z tego runu.",

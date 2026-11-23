@@ -8,6 +8,13 @@ import textData from '../data/ui/run.pl.json';
 import metaTextData from '../data/ui/meta.pl.json';
 import './runScreens.css';
 import { MapScreen } from './mapScreen';
+import { createRunPanel } from './runPanel';
+import { createActionBar } from './components/actionBar';
+import { createSelect } from './components/controls';
+import { bindUiFeedback } from './components/feedback';
+import { uiConfirm } from './components/modal';
+import { playUiSound } from '../audio/uiSounds';
+import { el } from './components/dom';
 import { splashUrl } from './splash';
 import { getLiteFx } from '../render/fxMode';
 import { createLoadingTip } from './loadingTipView';
@@ -34,6 +41,21 @@ const text = z
       rest: z.string(),
       puzzle: z.string(),
       boss: z.string(),
+    }),
+    kickers: z.object({
+      map: z.string(),
+      room: z.string(),
+      reward: z.string(),
+      shop: z.string(),
+      rest: z.string(),
+      summary: z.string(),
+    }),
+    hints: z.object({ pick: z.string(), confirm: z.string() }),
+    buyConfirm: z.object({
+      title: z.string(),
+      message: z.string(),
+      confirm: z.string(),
+      cancel: z.string(),
     }),
     noRewards: z.string(),
     eliteModule: z.string(),
@@ -171,7 +193,10 @@ export interface RunScreens {
 /** Mapa sektora i ekrany przejść runu (pozostałe nakładki: F3-14). */
 export class HtmlRunScreens implements RunScreens {
   private readonly root = document.createElement('section');
-  private readonly panel = document.createElement('div');
+  private readonly frame: HTMLElement;
+  private readonly panel: HTMLElement;
+  /** Element, do którego trafiają linie i grupy bieżącego ekranu (podsumowanie ma kolumny). */
+  private host: HTMLElement;
   private buttons: HTMLButtonElement[] = [];
   private splashFile: string | null = null;
   private tipKey: string | null = null;
@@ -191,8 +216,12 @@ export class HtmlRunScreens implements RunScreens {
     if (
       target instanceof HTMLElement &&
       (target.isContentEditable ||
-        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) ||
+        target.closest('dialog, .ui-select, .ui-select__list'))
     )
+      return;
+    // Okno potwierdzenia (zakup) i otwarta lista przechwytują klawisze same.
+    if (document.querySelector('dialog[open], .ui-select__list:not([hidden])'))
       return;
     const index = ['Digit1', 'Digit2', 'Digit3'].indexOf(event.code);
     const focused = document.activeElement;
@@ -210,8 +239,11 @@ export class HtmlRunScreens implements RunScreens {
   constructor(parent = document.querySelector('#app') ?? document.body) {
     this.root.className = 'run-screen';
     this.root.setAttribute('aria-label', 'Wyprawa');
-    this.panel.className = 'run-screen__panel';
-    this.root.append(this.panel);
+    const { frame, body } = createRunPanel();
+    this.frame = frame;
+    this.panel = body;
+    this.host = body;
+    this.root.append(this.frame);
     this.map = new MapScreen(this.panel);
     parent.append(this.root);
     window.addEventListener('keydown', this.onKey);
@@ -234,12 +266,17 @@ export class HtmlRunScreens implements RunScreens {
     ))
       this.clearSplash();
     this.panel.replaceChildren();
-    const heading = document.createElement('h1');
+    this.host = this.panel;
+    const head = el('div', 'run-screen__head');
+    const titles = el('div');
+    const heading = el('h1', 'ui-title');
     heading.textContent = view.dailyChallenge
       ? `${challengeText.title} · ${text.titles[view.screen]}`
       : text.titles[view.screen];
-    this.panel.append(heading);
-    this.vitals(view.state.hp, view.state.credits);
+    titles.append(el('p', 'ui-kicker', text.kickers[view.screen]), heading);
+    head.append(titles);
+    this.panel.append(head);
+    this.vitals(head, view.state.hp, view.state.credits);
     if (document.pointerLockElement) document.exitPointerLock?.();
     if (view.error) {
       this.line(view.error);
@@ -256,16 +293,21 @@ export class HtmlRunScreens implements RunScreens {
       this.map.show(view.state, actions.selectNode);
     } else if (view.screen === 'summary') {
       const summary = view.summary;
+      const layout = this.group('run-summary');
+      const main = el('div', 'run-summary__main');
+      const side = el('div', 'run-summary__side');
+      layout.append(main, side);
+      this.host = main;
       if (summary) {
         const seconds = Math.floor(summary.elapsedS);
         const outcome = this.line(text[summary.outcome]);
         outcome.className = 'run-screen__outcome';
         outcome.dataset.outcome = summary.outcome;
-        this.panel.dataset.outcome = summary.outcome;
+        this.frame.dataset.outcome = summary.outcome;
         if (summary.outcome === 'death') {
           const message = defeatMessage(view.cause);
-          this.line(message.cause);
-          this.line(message.tip);
+          this.line(message.cause).className = 'run-screen__cause';
+          this.line(message.tip).className = 'run-screen__tip';
         }
         const stats = document.createElement('div');
         stats.className = 'run-screen__stats';
@@ -277,7 +319,7 @@ export class HtmlRunScreens implements RunScreens {
           [text.layer, String(summary.layerReached)],
         ] as const)
           stats.append(this.stat(label, value));
-        this.panel.append(stats);
+        main.append(stats);
         this.line(`${text.seed}: ${summary.seed}`).className =
           'run-screen__meta-line';
         this.line(
@@ -302,6 +344,7 @@ export class HtmlRunScreens implements RunScreens {
           damage.append(row);
         }
       }
+      this.host = side;
       if (view.meta) this.metaRewards(view.meta, summary?.threatLevel ?? 0);
       if (view.extractionAvailable) this.line(text.extractionAvailable);
       if (view.rewardError) {
@@ -346,6 +389,7 @@ export class HtmlRunScreens implements RunScreens {
         this.line(text.rewardAlreadySaved).className =
           'run-screen__reward-pending';
       }
+      this.host = layout;
       const row = this.group('run-screen__actions');
       const hub = actions.hub;
       const nav: HTMLButtonElement[] = [];
@@ -355,16 +399,16 @@ export class HtmlRunScreens implements RunScreens {
           actions.history,
           row,
         );
-        history.classList.add('run-screen__primary');
+        this.primary(history);
         nav.push(history);
       } else if (hub) {
         const back = this.button(metaText.backToHub, hub, row);
-        back.classList.add('run-screen__primary');
+        this.primary(back);
         nav.push(back);
       }
       if (!view.dailyChallenge) {
         const again = this.button(text.newRun, () => actions.newRun?.(), row);
-        if (!hub) again.classList.add('run-screen__primary');
+        if (!hub) this.primary(again);
         nav.push(again);
       }
       nav.push(this.button(text.menu, actions.menu, row));
@@ -375,17 +419,28 @@ export class HtmlRunScreens implements RunScreens {
         leaving.setAttribute('role', 'status');
       }
     } else if (view.screen === 'reward') {
-      let selection: HTMLSelectElement | undefined;
+      let selection: { readonly value: string } | undefined;
+      let moduleField: HTMLElement | undefined;
       if (view.moduleOffers?.length) {
-        const label = document.createElement('label');
-        label.textContent = text.eliteModule;
-        selection = document.createElement('select');
-        for (const id of view.moduleOffers) {
-          const module = moduleDefinitions.get(id)!;
-          selection.add(new Option(module.name, id));
-        }
-        label.append(selection);
-        this.panel.append(label);
+        const field = el('div', 'run-screen__field');
+        const label = el('span', undefined, text.eliteModule);
+        label.id = 'run-elite-module-label';
+        const picker = createSelect<string>({
+          label: text.eliteModule,
+          labelledBy: label.id,
+          value: view.moduleOffers[0]!,
+          options: view.moduleOffers.map((id) => ({
+            value: id,
+            label: moduleDefinitions.get(id)!.name,
+            description: moduleDefinitions.get(id)!.description,
+          })),
+          onChange: () => undefined,
+        });
+        picker.trigger.dataset.testid = 'elite-module';
+        field.append(label, picker.root);
+        // Pole pod kartami: pierwszy przycisk ekranu zostaje pierwszą ofertą (klawisze 1/2/3).
+        moduleField = field;
+        selection = picker;
       }
       const choose = (id?: string) => {
         if (selection) actions.chooseReward?.(id, selection.value);
@@ -398,29 +453,46 @@ export class HtmlRunScreens implements RunScreens {
       if (!view.offers?.length) {
         cards.remove();
         this.line(text.noRewards);
-        this.button(
-          `${text.next} — ${text.credits}: +${view.fallbackCredits ?? 0}`,
-          () => (actions.chooseReward ? choose() : actions.next()),
+        this.primary(
+          this.button(
+            `${text.next} — ${text.credits}: +${view.fallbackCredits ?? 0}`,
+            () => (actions.chooseReward ? choose() : actions.next()),
+          ),
         );
       }
+      if (moduleField) this.panel.append(moduleField);
+      if (view.offers?.length) this.barHint();
     } else if (view.screen === 'shop') {
       const cards = this.group('run-screen__offers');
       for (const offer of view.offers ?? []) {
-        const button = this.offer(offer, () => actions.buy?.(offer.id), cards);
-        button.disabled = view.state.credits < (offer.price ?? 0);
+        const price = offer.price ?? 0;
+        const button = this.offer(
+          offer,
+          () =>
+            void this.confirmBuy(offer.label, price, view, () =>
+              actions.buy?.(offer.id),
+            ),
+          cards,
+        );
+        button.disabled = view.state.credits < price;
       }
       const row = this.group('run-screen__actions');
       const heal = this.button(
         `${text.heal} — ${view.healPrice ?? 0} ${text.credits}`,
-        () => actions.buy?.('heal'),
+        () =>
+          void this.confirmBuy(text.heal, view.healPrice ?? 0, view, () =>
+            actions.buy?.('heal'),
+          ),
         row,
       );
       heal.classList.add('run-screen__heal');
       heal.disabled = view.state.credits < (view.healPrice ?? 0);
       this.button(text.leave, actions.next, row);
+      this.barHint();
     } else if (view.screen === 'rest') {
       const heal = this.button(text.heal, () => actions.rest?.('heal'));
-      heal.classList.add('run-screen__heal', 'run-screen__primary');
+      heal.classList.add('run-screen__heal');
+      this.primary(heal);
       const cards = this.group('run-screen__offers');
       for (const offer of view.offers ?? [])
         this.offer(
@@ -430,6 +502,7 @@ export class HtmlRunScreens implements RunScreens {
           true,
         );
       if (!view.offers?.length) cards.remove();
+      this.barHint();
     } else {
       this.line(text.placeholder);
       this.button(text.next, actions.next);
@@ -481,7 +554,7 @@ export class HtmlRunScreens implements RunScreens {
   }
 
   /** Zdrowie i Kredyty jako odczyt wizjera; tekst zostaje „Zdrowie: N · Kredyty: N”. */
-  private vitals(hp: number, credits: number): void {
+  private vitals(parent: HTMLElement, hp: number, credits: number): void {
     const line = document.createElement('p');
     line.className = 'run-screen__vitals';
     const part = (kind: string, label: string, value: number): HTMLElement => {
@@ -508,7 +581,7 @@ export class HtmlRunScreens implements RunScreens {
       separator,
       part('credits', text.credits, credits),
     );
-    this.panel.append(line);
+    parent.append(line);
   }
 
   private stat(label: string, value: string): HTMLElement {
@@ -529,8 +602,52 @@ export class HtmlRunScreens implements RunScreens {
   private group(className: string): HTMLElement {
     const node = document.createElement('div');
     node.className = className;
-    this.panel.append(node);
+    this.host.append(node);
     return node;
+  }
+
+  private primary(button: HTMLButtonElement): HTMLButtonElement {
+    button.classList.add('run-screen__primary', 'ui-button--primary');
+    button.classList.remove('ui-button--secondary');
+    return button;
+  }
+
+  /** Podpowiedź klawiszy pod kartami (tylko do odczytu; przyciski robią to samo). */
+  private barHint(): void {
+    const bar = createActionBar([
+      {
+        keys: '{choice1} {choice2} {choice3}',
+        padKeys: '{navigate}',
+        label: text.hints.pick,
+        decorative: true,
+      },
+      { keys: '{confirm}', label: text.hints.confirm, decorative: true },
+    ]);
+    const wrap = el('div', 'run-screen__bar-hint');
+    wrap.append(bar.root);
+    this.panel.append(wrap);
+  }
+
+  /** Zakup w runie zawsze przez okno potwierdzenia z ceną i stanem po zakupie. */
+  private async confirmBuy(
+    name: string,
+    price: number,
+    view: RunScreenView,
+    buy: () => void,
+  ): Promise<void> {
+    const ok = await uiConfirm({
+      title: text.buyConfirm.title,
+      message: fill(text.buyConfirm.message, {
+        name,
+        price,
+        left: Math.max(0, view.state.credits - price),
+      }),
+      confirmLabel: text.buyConfirm.confirm,
+      cancelLabel: text.buyConfirm.cancel,
+    });
+    if (!ok) return;
+    playUiSound('purchase');
+    buy();
   }
 
   private metaRewards(meta: RunMetaView, runThreat: number): void {
@@ -568,7 +685,7 @@ export class HtmlRunScreens implements RunScreens {
       );
       box.append(row);
     }
-    this.panel.append(box);
+    this.host.append(box);
     if (meta.achievements?.length) this.achievementList(meta.achievements);
   }
 
@@ -603,7 +720,7 @@ export class HtmlRunScreens implements RunScreens {
       row.append(icon, label);
       box.append(row);
     }
-    this.panel.append(box);
+    this.host.append(box);
   }
 
   private offer(
@@ -613,6 +730,7 @@ export class HtmlRunScreens implements RunScreens {
     upgrade = false,
   ): HTMLButtonElement {
     const button = this.button('', action, parent);
+    button.classList.remove('ui-button', 'ui-button--secondary');
     button.classList.add('run-screen__card');
     if (offer.rarity) {
       button.dataset.rarity = offer.rarity;
@@ -686,19 +804,21 @@ export class HtmlRunScreens implements RunScreens {
   private line(value: string): HTMLParagraphElement {
     const line = document.createElement('p');
     line.textContent = value;
-    this.panel.append(line);
+    this.host.append(line);
     return line;
   }
 
   private button(
     label: string,
     action: () => void,
-    parent: HTMLElement = this.panel,
+    parent: HTMLElement = this.host,
   ): HTMLButtonElement {
     const button = document.createElement('button');
     button.type = 'button';
+    button.className = 'ui-button ui-interactive ui-button--secondary';
     button.textContent = label;
     button.addEventListener('click', action);
+    bindUiFeedback(button, 'confirm');
     // Podpowiedź klawisza 1/2/3 rysuje CSS (attr bez wpływu na nazwę dostępną).
     if (this.buttons.length < 3)
       button.dataset.key = String(this.buttons.length + 1);

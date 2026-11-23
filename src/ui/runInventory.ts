@@ -14,10 +14,19 @@ import descriptionData from '../data/ui/descriptions.pl.json';
 import bladeText from '../data/ui/buildSelect.pl.json';
 import textData from '../data/ui/inventory.pl.json';
 import './runScreens.css';
+import { createRunPanel } from './runPanel';
+import { uiButton } from './components/button';
+import { playUiSound } from '../audio/uiSounds';
 
 const text = z
   .object({
     title: z.string(),
+    kicker: z.string(),
+    columns: z.object({
+      implants: z.string(),
+      build: z.string(),
+      weapons: z.string(),
+    }),
     credits: z.string(),
     implants: z.string(),
     noImplants: z.string(),
@@ -148,6 +157,7 @@ function element<K extends keyof HTMLElementTagNameMap>(
 export class RunInventoryMenu {
   private readonly root = element('div', 'run-screen run-inventory');
   private readonly body = element('div', 'run-inventory__body');
+  private readonly credits = element('p', 'run-inventory__credits');
   private readonly footer = element('div', 'run-inventory__footer');
   private lastCode = '';
   private openedBy = 'Tab';
@@ -169,7 +179,27 @@ export class RunInventoryMenu {
     ) {
       event.preventDefault();
       event.stopImmediatePropagation();
+      playUiSound('back');
       this.close();
+      return;
+    }
+    // Strzałki lewo/prawo (i D-pad) przechodzą między kolumnami i przyciskiem „Wróć do gry”.
+    if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
+      const stops = [
+        ...this.root.querySelectorAll<HTMLElement>(
+          '.run-inventory__column, .run-inventory__footer button',
+        ),
+      ];
+      const index = stops.indexOf(document.activeElement as HTMLElement);
+      const next =
+        stops[
+          Math.min(
+            stops.length - 1,
+            Math.max(0, index + (event.code === 'ArrowRight' ? 1 : -1)),
+          )
+        ];
+      event.preventDefault();
+      next?.focus();
     }
   };
 
@@ -181,9 +211,18 @@ export class RunInventoryMenu {
     this.root.dataset.screen = 'inventory';
     this.root.setAttribute('role', 'dialog');
     this.root.setAttribute('aria-label', text.title);
-    const panel = element('section', 'run-screen__panel run-inventory__panel');
-    panel.append(element('h1', undefined, text.title), this.body, this.footer);
-    this.root.append(panel);
+    this.root.setAttribute('aria-modal', 'true');
+    const { frame, body: scroll } = createRunPanel('run-inventory__panel');
+    const head = element('div', 'run-screen__head');
+    const titles = element('div');
+    titles.append(
+      element('p', 'ui-kicker', text.kicker),
+      element('h1', 'ui-title', text.title),
+    );
+    head.append(titles, this.credits);
+    scroll.append(head, this.body);
+    frame.append(this.footer);
+    this.root.append(frame);
     // Panel trafia do dokumentu tylko na czas otwarcia: ukryty `.run-screen` w DOM mylił
     // selektory ekranów runu (testy e2e trybów) i logikę „czy jakiś ekran jest otwarty”.
     window.addEventListener('keydown', this.onKey, true);
@@ -208,7 +247,9 @@ export class RunInventoryMenu {
     this.root.hidden = false;
     this.ctx.loop.paused = true;
     if (document.pointerLockElement) document.exitPointerLock();
-    this.root.querySelector('button')?.focus();
+    this.root
+      .querySelector<HTMLElement>('.run-inventory__footer button')
+      ?.focus();
   }
 
   close(): void {
@@ -253,8 +294,14 @@ export class RunInventoryMenu {
       }
       return ul;
     };
+    const column = (label: string): HTMLElement => {
+      const node = element('div', 'run-inventory__column ui-scroll');
+      node.tabIndex = 0;
+      node.setAttribute('role', 'region');
+      node.setAttribute('aria-label', label);
+      return node;
+    };
     const implants = section(text.implants, view.implants.length);
-    implants.classList.add('run-inventory__section--wide');
     implants.append(list(view.implants, text.noImplants));
     const synergies = section(text.synergies, view.synergies.length);
     synergies.append(list(view.synergies, text.noSynergies));
@@ -271,18 +318,26 @@ export class RunInventoryMenu {
       li.append(element('div', 'run-inventory__name', weapon.name));
       if (!weapon.modules.length)
         li.append(element('p', undefined, text.noModules));
-      for (const module of weapon.modules)
-        li.append(
-          element('p', undefined, `${module.name}: ${module.description}`),
+      for (const module of weapon.modules) {
+        const line = element('p', 'run-inventory__module');
+        line.append(
+          element('b', undefined, module.name),
+          `: ${module.description}`,
         );
+        li.append(line);
+      }
       weaponList.append(li);
     }
     weapons.append(weaponList);
     // Przycisk powstaje dopiero przy otwarciu: ukryty panel nie ma żadnych przycisków
     // (testy liczą `.run-screen button` na ekranach runu).
-    const close = element('button', 'run-screen__primary', text.close);
-    close.type = 'button';
-    close.addEventListener('click', () => this.close());
+    const close = uiButton({
+      label: text.close,
+      variant: 'primary',
+      sound: 'back',
+      onClick: () => this.close(),
+    });
+    close.classList.add('run-screen__primary');
     this.footer.replaceChildren(
       setInputHint(
         element('p', 'run-inventory__hint'),
@@ -291,16 +346,20 @@ export class RunInventoryMenu {
       ),
       close,
     );
-    this.body.replaceChildren();
-    if (view.credits !== undefined) {
-      const credits = element('p', 'run-inventory__credits');
-      credits.append(
+    this.credits.replaceChildren();
+    this.credits.hidden = view.credits === undefined;
+    if (view.credits !== undefined)
+      this.credits.append(
         `${text.credits}: `,
         element('b', undefined, String(view.credits)),
       );
-      this.body.append(credits);
-    }
-    this.body.append(implants, synergies, powers, weapons);
+    const left = column(text.columns.implants);
+    left.append(implants);
+    const middle = column(text.columns.build);
+    middle.append(synergies, powers);
+    const right = column(text.columns.weapons);
+    right.append(weapons);
+    this.body.replaceChildren(left, middle, right);
   }
 
   dispose(): void {

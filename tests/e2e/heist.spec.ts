@@ -1,6 +1,17 @@
 import { expect, test } from '@playwright/test';
 import { LOAD_TIMEOUT } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy górny róg; karty tablicy misji bywają pod nim.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 for (const outcome of ['victory', 'death'] as const) {
   test(`Kradzież rdzenia: kryjówka → ${outcome} → kryjówka`, async ({
     page,

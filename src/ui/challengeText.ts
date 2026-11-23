@@ -4,6 +4,7 @@ import data from '../data/ui/challenge.pl.json';
 export const challengeText = z
   .object({
     title: z.string(),
+    kicker: z.string(),
     rules: z.string(),
     today: z.string(),
     start: z.string(),

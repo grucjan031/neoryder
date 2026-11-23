@@ -186,13 +186,18 @@ export function createStepper<T>(options: {
 export interface SelectOption<T extends string> {
   value: T;
   label: string;
+  /** Opis w dymku (`title`) pozycji listy. */
+  description?: string;
 }
 
 export interface UiSelect<T extends string> {
   readonly root: HTMLElement;
   readonly trigger: HTMLButtonElement;
   readonly value: T;
+  /** Wartości pozycji w kolejności listy (testy i czytniki nie muszą otwierać listy). */
+  readonly values: readonly T[];
   setValue(value: T): void;
+  setDisabled(disabled: boolean): void;
   close(): void;
 }
 
@@ -234,6 +239,7 @@ export function createSelect<T extends string>(options: {
     options.options.find((option) => option.value === item)?.label ?? '';
   const renderValue = (): void => {
     current.textContent = labelOf(value);
+    trigger.dataset.value = value;
   };
   const outside = (event: Event): void => {
     const target = event.target;
@@ -271,6 +277,7 @@ export function createSelect<T extends string>(options: {
     node.type = 'button';
     node.setAttribute('role', 'option');
     node.dataset.value = option.value;
+    if (option.description) node.title = option.description;
     node.addEventListener('click', () => choose(option.value));
     bindUiFeedback(node, false);
     list.append(node);
@@ -356,9 +363,14 @@ export function createSelect<T extends string>(options: {
     get value() {
       return value;
     },
+    values: options.options.map((option) => option.value),
     setValue(next) {
       value = next;
       renderValue();
+    },
+    setDisabled(disabled) {
+      if (disabled) close(false);
+      trigger.disabled = disabled;
     },
     close,
   };

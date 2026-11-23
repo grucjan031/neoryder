@@ -705,13 +705,13 @@ describe('panel sklepu', () => {
       modules: { blaster: ['compensator', 'pulseCell', 'holo'] },
     });
     const { q } = setup(manager);
-    const grip = q<HTMLSelectElement>(
-      'select[data-weapon="blaster"][data-slot="3"]',
+    const grip = q<HTMLButtonElement>(
+      'button[data-weapon="blaster"][data-slot="3"]',
     );
     expect(grip.disabled).toBe(true);
     expect(grip.title).toContain('Limit 3 dodatków');
     expect(
-      q<HTMLSelectElement>('select[data-weapon="blaster"][data-slot="0"]')
+      q<HTMLButtonElement>('button[data-weapon="blaster"][data-slot="0"]')
         .disabled,
     ).toBe(false);
   });

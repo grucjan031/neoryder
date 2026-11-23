@@ -45,9 +45,11 @@ export function padScope(doc: Document = document): HTMLElement | undefined {
     dialogs.filter((dialog) => dialog.matches(':modal')).at(-1) ??
     dialogs.at(-1) ??
     [...doc.querySelectorAll<HTMLElement>(overlays)].filter(visible).at(-1) ??
-    [...doc.querySelectorAll<HTMLElement>('.main-menu, .scene-menu')].find(
-      visible,
-    )
+    [
+      ...doc.querySelectorAll<HTMLElement>(
+        '.main-menu, .scene-menu, .challenge-screen',
+      ),
+    ].find(visible)
   );
 }
 

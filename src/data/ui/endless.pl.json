@@ -2,6 +2,7 @@
   "title": "Nieskończona strefa",
   "briefing": "Przetrwaj jak najwięcej fal. Między falami zmieniają się warunki walki i pojawiają się implanty.",
   "intermission": "Wybierz implant",
+  "summaryKicker": "Wynik strefy",
   "skip": "Pomiń implant",
   "result": "Ukończone fale {wave} · {time} s",
   "record": "Rekord · {wave} fal · {time} s",

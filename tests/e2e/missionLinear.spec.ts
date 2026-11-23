@@ -4,6 +4,17 @@ import progression from '../../src/data/meta/progression.json' with { type: 'jso
 import mission from '../../src/data/missions/m01-maszty.json' with { type: 'json' };
 import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy górny róg; karty tablicy misji bywają pod nim.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 // `mission start` przeładowuje stronę; odpytanie w trakcie nawigacji zwraca undefined zamiast wyjątku.
 const query = (page: Page, key: string) =>
   page

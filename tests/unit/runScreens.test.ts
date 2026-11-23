@@ -134,15 +134,34 @@ it('przekazuje wybrany moduł za elitę razem z wybranym implantem', () => {
     },
     { selectNode() {}, next() {}, menu() {}, chooseReward },
   );
-  const select = document.querySelector<HTMLSelectElement>(
-    '.run-screen label select',
+  // Moduł za elitę wybiera się własną listą (ui-select), nie natywnym select.
+  const trigger = document.querySelector<HTMLButtonElement>(
+    '.run-screen .ui-select__trigger',
   )!;
-  select.value = 'incendiary';
+  expect(trigger.dataset.value).toBe('pierce');
+  trigger.click();
+  document
+    .querySelector<HTMLElement>('.ui-select__option[data-value="incendiary"]')!
+    .click();
+  expect(trigger.dataset.value).toBe('incendiary');
+  // Pole leży pod kartami: pierwszy przycisk ekranu to oferta, a Enter na liście jej nie wybiera.
+  expect(document.querySelector('.run-screen button')?.textContent).toContain(
+    'Implant',
+  );
   window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1' }));
   expect(chooseReward).toHaveBeenCalledExactlyOnceWith('implant', 'incendiary');
 });
 
-it('shop disables unaffordable items and rest forwards the upgrade id', () => {
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+/** Potwierdza okno zakupu (modal `uiConfirm`). */
+const confirmModal = async (): Promise<void> => {
+  document
+    .querySelector<HTMLButtonElement>('dialog.ui-modal .ui-button--primary')!
+    .click();
+  await flush();
+};
+
+it('shop disables unaffordable items and rest forwards the upgrade id', async () => {
   const screens = new HtmlRunScreens();
   active.add(screens);
   const buy = vi.fn();
@@ -168,7 +187,14 @@ it('shop disables unaffordable items and rest forwards the upgrade id', () => {
   expect(buttons[1]!.disabled).toBe(true);
   buttons[1]!.click();
   expect(buy).not.toHaveBeenCalled();
+  // Zakup zawsze przez okno potwierdzenia z ceną i stanem po zakupie.
   buttons[0]!.click();
+  expect(buy).not.toHaveBeenCalled();
+  const modal = document.querySelector('dialog.ui-modal')!;
+  expect(modal.textContent).toContain('Cheap');
+  expect(modal.textContent).toContain('30');
+  expect(modal.textContent).toContain('10');
+  await confirmModal();
   expect(buy).toHaveBeenCalledExactlyOnceWith('cheap');
   screens.show(
     { ...view, screen: 'rest', offers: [{ id: 'old', label: 'Old' }] },

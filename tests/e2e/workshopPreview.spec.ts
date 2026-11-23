@@ -61,8 +61,9 @@ test('warsztat: podgląd 3D broni z modułem, zmiana slotu zmienia podgląd', as
 
   // Gniazda dodatków edytuje się w kategorii Wyposażenie.
   await page.locator('[data-action="tab"][data-tab="equipment"]').click();
-  const select = page.locator('select[data-weapon="blaster"][data-slot="0"]');
-  await select.selectOption('pierce');
+  // Własna lista (ui-select): otwarcie przyciskiem, wybór pozycji z listy.
+  await page.locator('button[data-weapon="blaster"][data-slot="0"]').click();
+  await page.locator('.ui-select__option[data-value="pierce"]').click();
   await expect(preview).toHaveAttribute('data-modules', /pierce/);
   await expect.poll(() => paintedPixels(canvas)).toBeGreaterThan(500);
 

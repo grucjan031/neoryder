@@ -34,6 +34,36 @@ function setup(prepare?: (manager: MetaManager) => void) {
   return { manager, save, panel };
 }
 
+/** Pole slotu modułu to własna lista (`ui-select`): przycisk z `data-weapon`/`data-slot`. */
+const slotTrigger = (root: HTMLElement, weapon: string, slot: number) =>
+  root.querySelector<HTMLButtonElement>(
+    `button[data-weapon="${weapon}"][data-slot="${slot}"]`,
+  )!;
+const slotValue = (root: HTMLElement, weapon: string, slot: number): string =>
+  slotTrigger(root, weapon, slot).dataset.value ?? '';
+/** Otwiera listę i zwraca wartości pozycji (zamyka ją z powrotem). */
+const slotOptions = (root: HTMLElement, weapon: string, slot: number) => {
+  const trigger = slotTrigger(root, weapon, slot);
+  trigger.click();
+  const values = [
+    ...document.querySelectorAll<HTMLElement>('.ui-select__option'),
+  ].map((option) => option.dataset.value);
+  trigger.click();
+  return values;
+};
+/** Otwiera listę slotu i klika pozycję. */
+const pickModule = (
+  root: HTMLElement,
+  weapon: string,
+  slot: number,
+  value: string,
+): void => {
+  slotTrigger(root, weapon, slot).click();
+  document
+    .querySelector<HTMLElement>(`.ui-select__option[data-value="${value}"]`)!
+    .click();
+};
+
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 const isDisabled = (node: Element | null): boolean =>
   node?.getAttribute('aria-disabled') === 'true' ||
@@ -83,11 +113,7 @@ it('wydobywa jeden moduł, pozwala ponowić zapis i od razu udostępnia montaż'
   expect(save).toHaveBeenCalledTimes(2);
   expect(panel.root.querySelector('[data-section="extraction"]')).toBeNull();
   expect(manager.isUnlocked('module:ricochet')).toBe(false);
-  const slot = panel.root.querySelector<HTMLSelectElement>(
-    'select[data-weapon="blaster"][data-slot="0"]',
-  )!;
-  slot.value = 'pierce';
-  slot.dispatchEvent(new Event('change'));
+  pickModule(panel.root, 'blaster', 0, 'pierce');
   await flush();
   expect(manager.loadout().modules?.blaster).toEqual(['pierce']);
 });
@@ -109,6 +135,12 @@ describe('workshopState', () => {
       blaster: ['pierce', 'incendiary', 'scope'],
     });
     expect(manager.state).toEqual(state);
+  });
+  it('moduł z innego slotu jest odrzucany z komunikatem', () => {
+    const manager = new MetaManager(createStarterMetaState());
+    expect(() => nextModuleLoadout(manager, 'blaster', 0, 'scope')).toThrow(
+      'Moduł nie pasuje do slotu.',
+    );
   });
   it('statusy wierszy: posiadane, poziom, Dane, Rdzenie, do kupienia', () => {
     const manager = new MetaManager(createStarterMetaState());
@@ -170,7 +202,7 @@ describe('workshopState', () => {
 });
 
 describe('createWorkshopPanel', () => {
-  it('odrzucona zmiana podczas zapisu przywraca select do stanu meta', async () => {
+  it('odrzucona zmiana podczas zapisu przywraca pole slotu do stanu meta', async () => {
     const { manager, save, panel } = setup((m) => m.debugUnlockAll());
     let finishSave: () => void = () => {};
     save.mockImplementationOnce(
@@ -180,24 +212,18 @@ describe('createWorkshopPanel', () => {
         }),
     );
     const spy = vi.spyOn(manager, 'setLoadout');
-    const select = (slot: number) =>
-      panel.root.querySelector<HTMLSelectElement>(
-        `select[data-weapon="blaster"][data-slot="${slot}"]`,
-      )!;
-    select(0).value = 'pierce';
-    select(0).dispatchEvent(new Event('change'));
-    select(1).value = 'incendiary';
-    select(1).dispatchEvent(new Event('change'));
-    expect(select(0).value).toBe('pierce');
-    expect(select(1).value).toBe('');
+    const value = (slot: number) => slotValue(panel.root, 'blaster', slot);
+    pickModule(panel.root, 'blaster', 0, 'pierce');
+    pickModule(panel.root, 'blaster', 1, 'incendiary');
+    expect(value(0)).toBe('pierce');
+    expect(value(1)).toBe('');
     expect(manager.state.loadout.modules).toEqual({ blaster: ['pierce'] });
     expect(spy).toHaveBeenCalledTimes(1);
     expect(save).toHaveBeenCalledTimes(1);
     finishSave();
     await flush();
-    expect(select(1).value).toBe('');
-    select(1).value = 'incendiary';
-    select(1).dispatchEvent(new Event('change'));
+    expect(value(1)).toBe('');
+    pickModule(panel.root, 'blaster', 1, 'incendiary');
     await flush();
     expect(manager.state.loadout.modules.blaster).toEqual([
       'pierce',
@@ -205,63 +231,37 @@ describe('createWorkshopPanel', () => {
     ]);
   });
 
-  it('błąd obliczenia modułów trafia do statusu, a select wraca do meta', async () => {
+  it('błąd setLoadout i odrzucony zapis odświeżają pole slotu ze stanu meta', async () => {
     const { manager, save, panel } = setup((m) => m.debugUnlockAll());
-    const select = panel.root.querySelector<HTMLSelectElement>(
-      'select[data-weapon="blaster"][data-slot="0"]',
-    )!;
-    const invalid = document.createElement('option');
-    invalid.value = 'scope';
-    select.append(invalid);
-    select.value = 'scope';
-    select.dispatchEvent(new Event('change'));
-    await flush();
-    expect(status(panel.root)).toBe('Moduł nie pasuje do slotu.');
-    expect(panel.root.querySelector<HTMLSelectElement>('select')!.value).toBe(
-      '',
-    );
-    expect(manager.state.loadout.modules).toEqual({});
-    expect(save).not.toHaveBeenCalled();
-  });
-
-  it('błąd setLoadout i odrzucony zapis odświeżają select ze stanu meta', async () => {
-    const { manager, save, panel } = setup((m) => m.debugUnlockAll());
-    const select = () =>
-      panel.root.querySelector<HTMLSelectElement>(
-        'select[data-weapon="blaster"][data-slot="0"]',
-      )!;
+    const value = () => slotValue(panel.root, 'blaster', 0);
     vi.spyOn(manager, 'setLoadout').mockImplementationOnce(() => {
       throw new Error('Odrzucono moduł.');
     });
-    select().value = 'pierce';
-    select().dispatchEvent(new Event('change'));
+    pickModule(panel.root, 'blaster', 0, 'pierce');
     await flush();
     expect(status(panel.root)).toBe('Odrzucono moduł.');
-    expect(select().value).toBe('');
+    expect(value()).toBe('');
     expect(save).not.toHaveBeenCalled();
     save.mockRejectedValueOnce(new Error('Błąd zapisu.'));
-    select().value = 'ricochet';
-    select().dispatchEvent(new Event('change'));
+    pickModule(panel.root, 'blaster', 0, 'ricochet');
     await flush();
     expect(status(panel.root)).toBe('Błąd zapisu.');
-    expect(select().value).toBe('ricochet');
+    expect(value()).toBe('ricochet');
     expect(manager.state.loadout.modules).toEqual({ blaster: ['ricochet'] });
   });
+
   it('montuje i usuwa moduły przez setLoadout i save, filtruje duplikaty oraz typ broni', async () => {
     const { manager, save, panel } = setup((m) => m.debugUnlockAll());
     const spy = vi.spyOn(manager, 'setLoadout');
-    const select = (weapon: string, slot: number) =>
-      panel.root.querySelector<HTMLSelectElement>(
-        `select[data-weapon="${weapon}"][data-slot="${slot}"]`,
-      )!;
+    const value = (weapon: string, slot: number) =>
+      slotValue(panel.root, weapon, slot);
     expect(row(panel.root, 'module:ricochet').textContent).toContain(
       'Rykoszet',
     );
     expect(
-      panel.root.querySelectorAll('select[data-weapon="blaster"]'),
+      panel.root.querySelectorAll('button[data-weapon="blaster"]'),
     ).toHaveLength(4);
-    select('blaster', 0).value = 'ricochet';
-    select('blaster', 0).dispatchEvent(new Event('change'));
+    pickModule(panel.root, 'blaster', 0, 'ricochet');
     await flush();
     expect(spy).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -269,23 +269,19 @@ describe('createWorkshopPanel', () => {
       }),
     );
     expect(save).toHaveBeenCalledTimes(1);
-    expect(select('blaster', 0).value).toBe('ricochet');
-    expect([...select('blaster', 1).options].map((o) => o.value)).not.toContain(
-      'ricochet',
-    );
-    select('blaster', 1).value = 'incendiary';
-    select('blaster', 1).dispatchEvent(new Event('change'));
+    expect(value('blaster', 0)).toBe('ricochet');
+    expect(slotOptions(panel.root, 'blaster', 1)).not.toContain('ricochet');
+    pickModule(panel.root, 'blaster', 1, 'incendiary');
     await flush();
     expect(manager.state.loadout.modules.blaster).toEqual([
       'ricochet',
       'incendiary',
     ]);
-    select('blaster', 0).value = '';
-    select('blaster', 0).dispatchEvent(new Event('change'));
+    pickModule(panel.root, 'blaster', 0, '');
     await flush();
     expect(manager.state.loadout.modules.blaster).toEqual(['incendiary']);
-    expect(select('blaster', 1).value).toBe('incendiary');
-    expect(select('blaster', 0).value).toBe('');
+    expect(value('blaster', 1)).toBe('incendiary');
+    expect(value('blaster', 0)).toBe('');
     expect(
       panel.root.querySelector('[data-module-weapon="blaster"]')?.textContent,
     ).toContain('Ogniwo');
@@ -298,13 +294,13 @@ describe('createWorkshopPanel', () => {
       )?.textContent,
     ).toBe('');
     expect(
-      select('blaster', 1).parentElement?.querySelector(
-        '.workshop__module-description',
-      )?.textContent,
+      slotTrigger(panel.root, 'blaster', 1)
+        .closest('.workshop__module-slot')
+        ?.querySelector('.workshop__module-description')?.textContent,
     ).toContain('Trafienie podpala');
     choice(panel.root, 'weapons', 'beam')!.click();
     await flush();
-    expect([...select('beam', 1).options].map((o) => o.value)).toEqual([
+    expect(slotOptions(panel.root, 'beam', 1)).toEqual([
       '',
       'extendedCell',
       'incendiary',
@@ -313,15 +309,23 @@ describe('createWorkshopPanel', () => {
     await flush();
     expect(manager.state.loadout.modules).toEqual({});
     expect(
-      panel.root.querySelector('select[data-weapon="blaster"]'),
+      panel.root.querySelector('button[data-weapon="blaster"]'),
     ).toBeNull();
     expect(save).toHaveBeenCalledTimes(5);
   });
 
   it('sloty nie oferują nieodblokowanych modułów', () => {
     const { panel } = setup();
-    const select = panel.root.querySelector<HTMLSelectElement>('select')!;
-    expect([...select.options].map((o) => o.value)).toEqual(['']);
+    const trigger = panel.root.querySelector<HTMLButtonElement>(
+      'button[data-weapon]',
+    )!;
+    expect(
+      slotOptions(
+        panel.root,
+        trigger.dataset.weapon!,
+        Number(trigger.dataset.slot),
+      ),
+    ).toEqual(['']);
   });
   it('pokazuje Dane, Rdzenie i poziom w nagłówku', () => {
     const { root } = setup((m) => {

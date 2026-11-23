@@ -4,7 +4,7 @@ import { bindUiFeedback } from '../components/feedback';
 import { uiConfirm } from '../components/modal';
 import { createTabs } from '../components/tabs';
 import type { UiTabs } from '../components/tabs';
-import { uiBadge } from '../components/controls';
+import { createSelect, uiBadge } from '../components/controls';
 import { uiButton } from '../components/button';
 import uiText from '../../data/ui/ui.pl.json';
 import type { HubPanel, HubPanelContext, HubPanelFactory } from './hubPanel';
@@ -843,52 +843,51 @@ export const createWorkshopPanel: HubPanelFactory = (
         el('h3', 'ui-heading workshop__group-title', weapon.weaponName),
       );
       weapon.slots.forEach((slot, index) => {
-        const label = el('label', 'workshop__module-slot');
-        label.append(
-          el(
-            'span',
-            'workshop__module-label',
-            text.equipment.moduleSlots[slot.slot],
-          ),
+        const label = el('div', 'workshop__module-slot');
+        const slotTitle = el(
+          'span',
+          'workshop__module-label',
+          text.equipment.moduleSlots[slot.slot],
         );
-        const field = el('select', 'workshop__module-select');
-        field.dataset.weapon = weapon.weaponId;
-        field.dataset.slot = String(index);
-        field.dataset.key = `module:${weapon.weaponId}:${index}`;
-        const empty = el('option', undefined, text.equipment.emptyModule);
-        empty.value = '';
-        field.append(empty);
-        for (const option of slot.options) {
-          const node = el('option', undefined, option.name);
-          node.value = option.id;
-          node.title = option.description;
-          field.append(node);
-        }
-        field.value = slot.selected;
-        field.disabled = slot.blocked;
+        slotTitle.id = `module-label-${weapon.weaponId}-${slot.slot}-${index}`;
+        label.append(slotTitle);
         const hint = slot.blocked
           ? fill(text.equipment.slotLimitHint, {
               n: ctx.manager.moduleSlotsPerWeapon,
             })
           : (slot.options.find((option) => option.id === slot.selected)
               ?.description ?? '');
-        field.title = hint;
-        field.addEventListener('change', () => {
-          void run(() =>
-            ctx.manager.setLoadout(
-              nextModuleLoadout(
-                ctx.manager,
-                weapon.weaponId,
-                index,
-                field.value,
+        const field = createSelect<string>({
+          label: text.equipment.moduleSlots[slot.slot],
+          labelledBy: slotTitle.id,
+          value: slot.selected,
+          options: [
+            { value: '', label: text.equipment.emptyModule },
+            ...slot.options.map((option) => ({
+              value: option.id,
+              label: option.name,
+              description: option.description,
+            })),
+          ],
+          onChange: (value) => {
+            void run(() =>
+              ctx.manager.setLoadout(
+                nextModuleLoadout(ctx.manager, weapon.weaponId, index, value),
               ),
-            ),
-          );
+            );
+          },
         });
-        label.append(field);
+        field.root.classList.add('workshop__module-select');
+        const trigger = field.trigger;
+        trigger.dataset.weapon = weapon.weaponId;
+        trigger.dataset.slot = String(index);
+        trigger.dataset.key = `module:${weapon.weaponId}:${index}`;
+        field.setDisabled(slot.blocked);
+        trigger.title = hint;
+        label.append(field.root);
         const description = el('span', 'workshop__module-description', hint);
         description.id = `module-description-${weapon.weaponId}-${slot.slot}`;
-        field.setAttribute('aria-describedby', description.id);
+        trigger.setAttribute('aria-describedby', description.id);
         label.append(description);
         group.append(label);
       });
