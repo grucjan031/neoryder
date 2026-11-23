@@ -394,7 +394,7 @@ write(`src/data/missions/${ID}.json`, {
   summary:
     'Samotna infiltracja wieży Helixy na Tarasie: otwórz archiwum, pobierz równania potrzebne Tymonowi, zniszcz rdzeń i ucieknij szybem. Bajt prowadzi przez radio, a nagłówki danych ujawnią sekret Wolan.',
   // M09 powstaje w innym worktree; walidator wymaga istniejącej definicji.
-  requires: ['m07-nocny-dyzur'],
+  requires: ['m09-brat'],
   layers: 7,
   enemies: ['sniper', 'turret', 'gunner', 'shielder', 'executor', 'drone'],
   fixedNodes: [

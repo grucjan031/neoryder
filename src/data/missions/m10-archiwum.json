@@ -7,7 +7,7 @@
   "sectorId": "kurogane",
   "summary": "Samotna infiltracja wieży Helixy na Tarasie: otwórz archiwum, pobierz równania potrzebne Tymonowi, zniszcz rdzeń i ucieknij szybem. Bajt prowadzi przez radio, a nagłówki danych ujawnią sekret Wolan.",
   "requires": [
-    "m07-nocny-dyzur"
+    "m09-brat"
   ],
   "layers": 7,
   "enemies": [

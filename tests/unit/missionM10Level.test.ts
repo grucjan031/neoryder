@@ -101,7 +101,7 @@ function walkTo(
 it('M10: walidacja, infiltracja solo, zależność tymczasowa M07 i komplet fal', () => {
   expect(loadLevel(data, mission, levelWaves)).toEqual(level);
   expect(mission.number).toBe(10);
-  expect(mission.requires).toEqual(['m07-nocny-dyzur']);
+  expect(mission.requires).toEqual(['m09-brat']);
   expect(level.sections.map((section) => section.id)).toEqual([
     'winda',
     'pasaz',
