@@ -13,8 +13,15 @@ afterEach(() => {
   active.splice(0).forEach((menu) => menu.dispose());
   document.body.replaceChildren();
 });
+const label = (b: Element) => b.getAttribute('aria-label') ?? b.textContent;
 const button = (text: string) =>
-  [...document.querySelectorAll('button')].find((b) => b.textContent === text)!;
+  [...document.querySelectorAll('button')].find((b) => label(b) === text)!;
+/** Tryby (Poligon, Arena wyzwań, Wyzwanie dnia, Nieskończona strefa) są w podmenu. */
+const mode = (text: string) => {
+  if (document.querySelector<HTMLElement>('.main-menu__modes')!.hidden)
+    button('Tryby').click();
+  return button(text);
+};
 
 it('Kryjówka prowadzi do sceny hub, Kontynuuj run jest nieaktywne podczas odczytu i bez zapisu, Poligon do areny', async () => {
   const navigate = vi.fn();
@@ -30,7 +37,7 @@ it('Kryjówka prowadzi do sceny hub, Kontynuuj run jest nieaktywne podczas odczy
   expect(navigate).not.toHaveBeenCalled();
   button('Kryjówka').click();
   expect(navigate).toHaveBeenLastCalledWith('?scene=hub');
-  button('Poligon').click();
+  mode('Poligon').click();
   expect(navigate).toHaveBeenLastCalledWith('?scene=arena');
   expect(navigate).toHaveBeenCalledTimes(2);
 });
@@ -42,19 +49,25 @@ it('bez debug menu nie pokazuje Nowy run (presety), seeda ani wyboru buildu', as
   });
   active.push(menu);
   await menu.ready;
-  expect(
-    [...document.querySelectorAll('button')].map(
-      (b) => b.getAttribute('aria-label') ?? b.textContent,
-    ),
-  ).toEqual([
-    'Samouczek',
+  const visible = () =>
+    [...document.querySelectorAll('button')]
+      .filter((b) => !b.closest('[hidden]'))
+      .map(label);
+  // Nowa hierarchia: główna akcja, Tryby jako podmenu, Ustawienia, mniejszy Samouczek.
+  expect(visible()).toEqual([
     'Kryjówka',
     'Kontynuuj run',
+    'Tryby',
+    'Ustawienia',
+    'Samouczek',
+  ]);
+  button('Tryby').click();
+  expect(visible()).toEqual([
     'Poligon',
     'Arena wyzwań',
     'Wyzwanie dnia',
     'Nieskończona strefa',
-    'Ustawienia',
+    'Wróć',
   ]);
   expect(document.querySelector('input')).toBeNull();
   expect(document.querySelector('.build-select')).toBeNull();
@@ -72,11 +85,11 @@ it('w debug Kryjówka i Poligon zachowują debug w URL', async () => {
   await menu.ready;
   button('Kryjówka').click();
   expect(navigate).toHaveBeenLastCalledWith('?scene=hub&debug=1');
-  button('Poligon').click();
+  mode('Poligon').click();
   expect(navigate).toHaveBeenLastCalledWith('?scene=arena&debug=1');
-  button('Wyzwanie dnia').click();
+  mode('Wyzwanie dnia').click();
   expect(navigate).toHaveBeenLastCalledWith('?debug=1&daily=1');
-  button('Nieskończona strefa').click();
+  mode('Nieskończona strefa').click();
   expect(navigate).toHaveBeenLastCalledWith('?scene=endless&debug=1');
 });
 
@@ -120,6 +133,60 @@ it('bez debug nie ma przycisku Sceny debug, a opcja debug (tryb dev) go włącza
   expect(navigate).toHaveBeenLastCalledWith('?scenes=1');
   button('Kryjówka').click();
   expect(navigate).toHaveBeenLastCalledWith('?scene=hub');
+});
+
+it('Esc zamyka podmenu Tryby i przywraca fokus na przycisku Tryby', async () => {
+  const menu = new MainMenu({
+    root: document.body,
+    save: createMemorySaveStore(),
+  });
+  active.push(menu);
+  await menu.ready;
+  const tryby = button('Tryby');
+  tryby.focus();
+  tryby.click();
+  expect(document.querySelector<HTMLElement>('.main-menu__modes')!.hidden).toBe(
+    false,
+  );
+  expect(document.activeElement).toBe(button('Poligon'));
+  document.activeElement!.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  expect(document.querySelector<HTMLElement>('.main-menu__modes')!.hidden).toBe(
+    true,
+  );
+  expect(document.activeElement).toBe(tryby);
+});
+
+it('z zapisem Kontynuuj run jest główną akcją (pierwszy i duży), a Kryjówka drugą', async () => {
+  const save = createMemorySaveStore();
+  const manager = new RunManager(new EventBus(), {
+    generateMap: (seed) => generateSectorMap(kuroganeSector, seed),
+  });
+  const run = manager.newRun('menu-primary', 'blade');
+  run.currentNodeId = run.map.layers[0]![0]!.id;
+  run.visited = [run.currentNodeId];
+  await save.saveRun({
+    saveVersion: SAVE_VERSION,
+    seed: run.seed,
+    startedAt: run.startedAtMs,
+    run,
+  });
+  manager.dispose();
+  const menu = new MainMenu({ root: document.body, save });
+  active.push(menu);
+  expect(button('Kryjówka').classList).toContain('ui-button--primary');
+  await menu.ready;
+  expect(button('Kontynuuj run').classList).toContain('ui-button--primary');
+  expect(button('Kryjówka').classList).not.toContain('ui-button--primary');
+  expect(document.querySelector('.main-menu__primary')!.firstElementChild).toBe(
+    button('Kontynuuj run'),
+  );
+  expect(document.activeElement).toBe(button('Kontynuuj run'));
 });
 
 it('Kontynuuj pokazuje warstwę i HP i wznawia zapis bez seeda z menu', async () => {

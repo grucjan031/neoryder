@@ -1,0 +1,11 @@
+/* Wspólna typografia i powierzchnia HUD trybów i misji (heist, szturm, przejęcie, prototypy,
+   zagadki, cele misji, radio, drużyna). Krój i obrys jak w HUD walki (Rajdhani, cień tekstu),
+   kolory wyłącznie z tokenów --c-*: akcent bursztyn, czerwień tylko wrogowie, cyan tylko gracz. */
+:root {
+  --font-hud: Rajdhani, 'Segoe UI', system-ui, sans-serif;
+  --hud-surface: rgb(11 15 22 / 86%);
+  --hud-border: 1px solid var(--c-line);
+  --hud-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 40%);
+  --hud-top: 90px;
+  --hud-left: 28px;
+}

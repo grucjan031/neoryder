@@ -8,9 +8,10 @@
     "hybrid": "Hybrydy"
   },
   "tier": "Próg {tier}",
-  "tierRequirement": "{need} pkt w drzewku (wydane: {spent})",
-  "tierOpen": "bez wymagań (wydane: {spent})",
+  "tierRequirement": "wymaga {need} pkt · masz {spent}",
+  "tierOpen": "bez wymagań · masz {spent}",
   "cost": "Koszt: {n} pkt talentów",
+  "costShort": "{n} pkt",
   "states": {
     "bought": "kupiony",
     "available": "dostępny",
@@ -24,10 +25,17 @@
     "treePart": "{n} pkt w {tree}",
     "treeJoin": " i "
   },
-  "detailsHint": "Najedź na węzeł lub wybierz go klawiaturą, by zobaczyć opis.",
+  "detailsHint": "Wybierz węzeł, by zobaczyć opis, koszt i wymagania.",
   "detailsCost": "Koszt: {n} pkt talentów",
+  "buy": "Kup · {n} pkt",
+  "treesLabel": "Drzewka talentów",
+  "hybridNote": "Hybrydy odblokowują się punktami wydanymi w innych drzewkach.",
   "reset": "Resetuj talenty",
-  "resetConfirm": "Potwierdź reset",
+  "resetConfirm": {
+    "title": "Zresetować talenty?",
+    "message": "Wszystkie wydane punkty talentów wrócą do puli. Możesz je wydać od nowa.",
+    "confirm": "Resetuj"
+  },
   "resetDone": "Talenty zresetowane.",
   "bought": "Kupiono: {name}.",
   "saveFailed": "Nie udało się zapisać postępu."

@@ -3,6 +3,7 @@ import textData from '../data/ui/meta.pl.json';
 import { hubMapFrame, hubMapModel, hubMapPlayer } from '../world/hubMap';
 import type { HubMapFrame, HubMapPlayer } from '../world/hubMap';
 import type { HubLayout } from '../world/hubSchema';
+import { setInputHint } from './inputGlyphs';
 import './hubMap.css';
 
 const text = z
@@ -12,6 +13,7 @@ const text = z
         kicker: z.string(),
         title: z.string(),
         hint: z.string(),
+        padHint: z.string(),
         north: z.string(),
         legendLabel: z.string(),
         legendStation: z.string(),
@@ -231,7 +233,7 @@ export class HubMap implements HubMapView {
     }
     const hint = document.createElement('p');
     hint.className = 'hub-map__hint';
-    hint.textContent = text.hint;
+    setInputHint(hint, text.hint, text.padHint);
     this.root.append(kicker, title, frame, legend, hint);
   }
 }

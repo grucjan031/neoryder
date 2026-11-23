@@ -1,3 +1,4 @@
+import { padAimTargets } from './padAimTargets';
 import { BoxGeometry, Color, Group, Mesh, Quaternion } from 'three';
 import type { Scene as ThreeScene } from 'three';
 import { QueryFilterFlags, Ray } from '@dimforge/rapier3d-compat';
@@ -170,6 +171,7 @@ export class GrabTest implements Scene {
       },
       { director: data.director },
     );
+    this.player.setAimTargets(() => padAimTargets(this.manager));
     this.grabPhysics = new GrabPhysics(this.world, this.entities, () =>
       this.manager.grabTargets(),
     );

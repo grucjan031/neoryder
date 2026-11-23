@@ -1071,3 +1071,7 @@ Po powrocie prądu najbliższy graczowi mieszkaniec z wpisem w `src/data/hub/eve
 stacja/plan. Zdarzenie `hub_power_dip { durationS }` jest emitowane na początku.
 
 Debug: `hub dip` wymusza spadek, `query('hubPower')` → `{ level, active, nextInS }`.
+
+## Interfejs stacji (U2)
+
+Stacje (Warsztat, Tablica misji, Terminal drzewek, Poligon) otwierają się jako pełne ekrany `ui-screen` pod stałym nagłówkiem meta; opis komponentów, układu trzech kolumn, grafu talentów i zakupu z potwierdzeniem: `docs/systems/ui.md` (sekcja „Kryjówka (U2)”). Zmiany zachowania względem F4: zakup w Warsztacie zawsze przez modal potwierdzenia, talent kupuje się przyciskiem w panelu szczegółów (klik/fokus tylko wybiera węzeł), reset talentów przez modal, a nie podwójne kliknięcie.

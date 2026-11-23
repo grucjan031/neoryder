@@ -31,7 +31,8 @@ it('wyróżnia pierwszy przycisk Samouczek przy braku meta i flagi; Kryjówka pr
   button('Kryjówka').click();
   expect(navigate).toHaveBeenLastCalledWith('?scene=hub');
   await current.ready;
-  expect(document.querySelector('button')).toBe(button('Samouczek'));
+  // Samouczek jest mniejszą pozycją na końcu listy, ale z wyróżnieniem dla nowego gracza.
+  expect(button('Samouczek').classList).toContain('ui-button--quiet');
   expect(button('Samouczek').classList).toContain(
     'main-menu__tutorial--recommended',
   );

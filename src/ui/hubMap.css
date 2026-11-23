@@ -1,63 +1,57 @@
 /* Plan stacji jak plan metra: neonowe obrysy stref, cyan = gracz (kolor zarezerwowany). */
 .hub-map {
-  --map-amber: var(--ui-amber, #ffae1a);
-  --map-green: var(--ui-green, #6dff4a);
-  --map-violet: var(--ui-violet-text, #ad92ff);
-  --map-blue: var(--ui-blue-text, #7aa4ff);
-  --map-white: var(--ui-warm, #fff1d6);
+  --map-amber: var(--c-accent);
+  --map-green: var(--c-success);
+  --map-violet: #ad92ff;
+  --map-blue: #7aa4ff;
+  --map-white: var(--c-text);
   position: fixed;
   left: 50%;
-  top: 50%;
+  top: calc(50% + var(--meta-bar-h, 0px) / 2);
   transform: translate(-50%, -50%);
-  z-index: 95;
+  z-index: var(--z-map);
   display: grid;
   justify-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
   width: fit-content;
   max-width: 90vw;
-  max-height: 90vh;
-  max-height: calc(100dvh - 32px);
-  padding: 18px 24px 16px;
+  max-height: calc(100dvh - var(--meta-bar-h, 0px) - 2rem);
+  padding: var(--sp-4) var(--sp-5) var(--sp-3);
   box-sizing: border-box;
   pointer-events: none;
   background:
-    var(--ui-frame),
-    linear-gradient(rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 / 32px
-      32px,
-    linear-gradient(90deg, rgba(0, 229, 255, 0.035) 1px, transparent 1px) 0 0 /
-      32px 32px,
-    var(--ui-panel, rgba(6, 12, 24, 0.92));
-  border: 1px solid var(--ui-line, rgba(0, 229, 255, 0.22));
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
-  color: var(--ui-text, #edf7ff);
-  font: 500 15px/1.35 var(--ui-font, Rajdhani, 'Segoe UI', sans-serif);
+    linear-gradient(rgb(255 255 255 / 3%) 1px, transparent 1px) 0 0 / 2rem 2rem,
+    linear-gradient(90deg, rgb(255 255 255 / 3%) 1px, transparent 1px) 0 0 /
+      2rem 2rem,
+    var(--c-panel);
+  border: 1px solid var(--c-line-strong);
+  clip-path: var(--cut-shape);
+  color: var(--c-text);
+  font: 500 var(--fs-14) / 1.35 var(--font-body);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.03em;
 }
 .hub-map[hidden] {
   display: none;
 }
 .hub-map__kicker {
   margin: 0;
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  color: var(--ui-faint, #7d93a3);
+  color: var(--c-text-faint);
+  font: 500 var(--fs-12) / 1.2 var(--font-display);
+  letter-spacing: 0.18em;
 }
 .hub-map h2 {
-  margin: 0 0 6px;
-  font-size: 24px;
-  font-weight: 600;
+  margin: 0 0 var(--sp-1);
+  color: var(--c-text);
+  font: 700 var(--fs-26) / 1.1 var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--ui-cyan, #00e5ff);
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+  letter-spacing: var(--track-display);
 }
 .hub-map__frame {
   position: relative;
-  width: min(calc(90vw - 50px), calc((80vh - 150px) * var(--map-aspect, 1.5)));
+  width: min(calc(90vw - 3rem), calc((100dvh - var(--meta-bar-h, 0px) - 14rem) * var(--map-aspect, 1.5)));
   aspect-ratio: var(--map-aspect, 1.5);
-  border: 1px solid rgba(0, 229, 255, 0.16);
-  background: rgba(3, 7, 14, 0.7);
+  border: 1px solid var(--c-line);
+  background: rgb(3 7 14 / 70%);
 }
 .hub-map__svg {
   position: absolute;
@@ -102,7 +96,7 @@
   stroke-width: 0.5px;
 }
 .hub-map__prop {
-  fill: var(--ui-muted, #a9bccb);
+  fill: var(--c-text-muted);
   opacity: 0.8;
 }
 .hub-map__station circle {
@@ -126,7 +120,7 @@
   filter: brightness(1.25);
 }
 .hub-map__player path {
-  fill: var(--ui-cyan, #00e5ff);
+  fill: var(--c-player);
   stroke: #050a14;
   stroke-width: 0.3px;
 }
@@ -134,10 +128,10 @@
   position: absolute;
   right: 8px;
   top: 6px;
-  font-size: 11px;
+  font-size: var(--fs-12);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--ui-faint, #7d93a3);
+  color: var(--c-text-faint);
 }
 .hub-map__legend {
   display: flex;
@@ -147,8 +141,8 @@
   margin: 6px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
-  color: var(--ui-muted, #a9bccb);
+  font-size: var(--fs-14);
+  color: var(--c-text-muted);
 }
 .hub-map__legend li {
   display: flex;
@@ -157,8 +151,8 @@
 }
 .hub-map__legend-mark {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 0.75rem;
+  height: 0.75rem;
   box-sizing: border-box;
 }
 .hub-map__legend-mark--station {
@@ -166,19 +160,19 @@
   border-radius: 50%;
 }
 .hub-map__legend-mark--prop {
-  width: 6px;
-  height: 6px;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
-  background: var(--ui-muted, #a9bccb);
+  background: var(--c-text-muted);
 }
 .hub-map__legend-mark--player {
-  background: var(--ui-cyan, #00e5ff);
+  background: var(--c-player);
   clip-path: polygon(50% 0, 100% 100%, 50% 70%, 0 100%);
 }
 .hub-map__hint {
   margin: 2px 0 0;
-  font-size: 11px;
+  font-size: var(--fs-12);
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--ui-faint, #7d93a3);
+  color: var(--c-text-faint);
 }

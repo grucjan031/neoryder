@@ -15,6 +15,24 @@
     "puzzle": "Zagadka",
     "boss": "Boss"
   },
+  "kickers": {
+    "map": "Sektor Kurogane · mapa",
+    "room": "Sektor Kurogane · węzeł",
+    "reward": "System · modyfikacja",
+    "shop": "Czarny rynek · kontrakt",
+    "rest": "Strefa buforowa · kalibracja",
+    "summary": "Telemetria · raport"
+  },
+  "hints": {
+    "pick": "Wybierz",
+    "confirm": "Potwierdź"
+  },
+  "buyConfirm": {
+    "title": "Potwierdzić zakup?",
+    "message": "{name} za {price} kredytów. Po zakupie zostanie ci {left} kredytów.",
+    "confirm": "Kup",
+    "cancel": "Anuluj"
+  },
   "noRewards": "brak nagród",
   "eliteModule": "Dodatkowy moduł za elitę",
   "extractionAvailable": "W warsztacie kryjówki możesz wydobyć jeden moduł z tego runu.",
@@ -24,7 +42,8 @@
   "loading": "Ładowanie pokoju…",
   "victory": "Zwycięstwo",
   "death": "Porażka",
-  "keys": "Wybór: mysz, 1 / 2 / 3, Enter. Tab wybiera także czwarty węzeł.",
+  "keys": "Wybór: {mouse}, {choice1} / {choice2} / {choice3}, {confirm}. {tab} wybiera także czwarty węzeł.",
+  "padKeys": "{navigate} — wybierz węzeł. {confirm} — zatwierdź.",
   "hp": "Zdrowie",
   "credits": "Kredyty",
   "layer": "Warstwa",
@@ -65,7 +84,21 @@
     "unsettledBroken": "Nagrody za ostatni run nie da się naliczyć — Kontynuuj pokaże podsumowanie",
     "saveError": "Nie można odczytać zapisu.",
     "back": "Wróć",
-    "debug": "Sceny debug"
+    "debug": "Sceny debug",
+    "kicker": "ISKRA // TERMINAL",
+    "hubHint": "Baza Iskry: stacje, misje i rozwój postaci.",
+    "continueHint": "Wróć do przerwanego runu.",
+    "modes": "Tryby",
+    "modesHint": "Poligon, arena wyzwań, wyzwanie dnia, nieskończona strefa.",
+    "modesTitle": "Tryby gry",
+    "modeDescriptions": {
+      "arena": "Trening walki na arenie.",
+      "arenaMutators": "Arena z modyfikatorami walki.",
+      "daily": "Codzienny run z jednym seedem na dany dzień.",
+      "endless": "Przetrwaj jak najwięcej fal."
+    },
+    "settingsHint": "Sterowanie, obraz, dźwięk i dostępność.",
+    "debugGroup": "Narzędzia deweloperskie"
   },
   "rooms": "Pokoje",
   "implants": "Implanty",

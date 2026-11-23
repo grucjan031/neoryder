@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import textData from '../data/ui/meta.pl.json';
 import './hubScreens.css';
+import { setInputGlyph } from './inputGlyphs';
 
 const text = z
-  .object({ hub: z.object({ interact: z.string(), interactKey: z.string() }) })
+  .object({ hub: z.object({ interact: z.string() }) })
   .parse(textData).hub;
 
 /** Podpowiedź interakcji; scena przekazuje etykietę wybranej stacji podczas renderowania. */
@@ -18,8 +19,7 @@ export class HubPrompt {
     this.root.hidden = true;
     this.root.setAttribute('role', 'status');
     this.root.setAttribute('aria-label', text.interact);
-    const key = document.createElement('kbd');
-    key.textContent = text.interactKey;
+    const key = setInputGlyph(document.createElement('kbd'), 'power2');
     this.root.append(key, this.label);
     parent.append(this.root);
   }

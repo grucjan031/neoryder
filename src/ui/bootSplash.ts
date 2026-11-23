@@ -6,10 +6,13 @@ import { getLiteFx } from '../render/fxMode';
 import { pickSplash, splashUrl, unlockedSplashAct } from './splash';
 import type { SplashAct } from './splash';
 import { createLoadingTip } from './loadingTipView';
+import { motionReduced } from './theme/applySettings';
 
 export interface BootSplash {
   /** Zdejmuje nakładkę startową (krótkie wygaszenie); wielokrotne wołanie jest bezpieczne. */
   dismiss(): void;
+  /** Postęp ładowania 0..1 (etapy startu sceny); bez wywołania pasek jest nieokreślony. */
+  setProgress(value: number): void;
 }
 
 const FADE_MS = 320;
@@ -51,11 +54,12 @@ export function showBootSplash(
   maxAct: SplashAct | Promise<SplashAct> = 1,
 ): BootSplash {
   const root = document.getElementById('boot-splash');
-  if (!root) return { dismiss() {} };
+  if (!root) return { dismiss() {}, setProgress() {} };
   // Nieprzezroczysta nakładka przechwytuje myszy, a ukryty interfejs nie łapie fokusu ani Tab.
   const app = document.getElementById('app');
   if (app) app.inert = true;
   const lite = getLiteFx();
+  const bar = root.querySelector<HTMLElement>('.boot-splash__progress');
   let tip: ReturnType<typeof createLoadingTip> | undefined;
   let done = false;
   const key = `${sceneId ?? 'menu'}:${params.get('seed') ?? ''}`;
@@ -98,15 +102,20 @@ export function showBootSplash(
     else void maxAct.then(mountArt, () => mountArt(1));
   }
   return {
+    setProgress(value) {
+      if (done || !bar) return;
+      const clamped = Math.min(1, Math.max(0, value));
+      bar.classList.remove('is-indeterminate');
+      bar.style.setProperty('--boot-progress', String(clamped));
+      bar.setAttribute('aria-valuenow', String(Math.round(clamped * 100)));
+    },
     dismiss() {
       if (done) return;
       done = true;
+      bar?.style.setProperty('--boot-progress', '1');
       tip?.dispose();
       if (app) app.inert = false;
-      const instant =
-        lite ||
-        (typeof matchMedia === 'function' &&
-          matchMedia('(prefers-reduced-motion: reduce)').matches);
+      const instant = lite || motionReduced();
       if (instant) {
         root.remove();
         return;

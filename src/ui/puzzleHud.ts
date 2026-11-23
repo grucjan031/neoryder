@@ -1,9 +1,7 @@
-import { resolveBindings } from '../core/input';
-import { loadSettings } from '../core/save';
 import type { PuzzleOutcome } from '../world/grabPuzzle';
 import type { GrabPuzzleDefinition } from '../world/roomSchema';
 import { puzzleText as text } from './puzzleText';
-import { keyLabel } from './settingsScreen';
+import { setInputHint } from './inputGlyphs';
 import './puzzleHud.css';
 
 export class PuzzleHud {
@@ -29,13 +27,7 @@ export class PuzzleHud {
     panel.append(this.status, this.instructions);
     this.root.append(panel);
     document.body.append(this.root);
-    const binding = Object.entries(
-      resolveBindings(loadSettings().bindings),
-    ).find(([, action]) => action === 'map');
-    this.skip.textContent =
-      skippable && binding
-        ? text.skip.replace('{key}', keyLabel(binding[0]))
-        : '';
+    if (skippable) setInputHint(this.skip, text.skip.replace('{key}', '{map}'));
   }
 
   update(outcome: PuzzleOutcome | null): void {

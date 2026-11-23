@@ -51,7 +51,13 @@ export class AchievementToast {
     icon.append(createAchievementIcon(def.icon));
     const label = document.createElement('span');
     label.className = 'achv-toast__text';
-    label.textContent = `${achievementText.toast.prefix}: ${def.title}`;
+    const kicker = document.createElement('span');
+    kicker.className = 'achv-toast__kicker';
+    kicker.textContent = `${achievementText.toast.prefix}:`;
+    const title = document.createElement('span');
+    title.className = 'achv-toast__title';
+    title.textContent = def.title;
+    label.append(kicker, ' ', title);
     this.node.replaceChildren(icon, label);
     this.node.dataset.id = def.id;
     this.node.hidden = false;

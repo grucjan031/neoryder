@@ -1,0 +1,125 @@
+/* Jedyny zestaw tokenów interfejsu NEORYDER („Neon Noir console”). Opis: docs/systems/ui.md.
+   Akcent UI = bursztyn. Cyan = gracz, czerwień = wrogowie, magenta = Rezonans: nie używaj ich jako akcentu. */
+@import '@fontsource/chakra-petch/latin-500.css';
+@import '@fontsource/chakra-petch/latin-ext-500.css';
+@import '@fontsource/chakra-petch/latin-600.css';
+@import '@fontsource/chakra-petch/latin-ext-600.css';
+@import '@fontsource/chakra-petch/latin-700.css';
+@import '@fontsource/chakra-petch/latin-ext-700.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-ext-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-ext-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-ext-600.css';
+
+:root {
+  /* Skala interfejsu: ustawienie gracza (80–140%) mnoży rozmiar bazowy z wysokości okna. */
+  --ui-scale: 1;
+  font-size: calc(clamp(13px, 1.48vh, 24px) * var(--ui-scale));
+
+  /* Kolory: powierzchnie */
+  --c-bg: #05070b;
+  --c-panel: rgb(11 15 22 / 88%);
+  --c-panel-solid: #0b0f16;
+  --c-panel-raise: rgb(24 31 43 / 92%);
+  --c-panel-hover: rgb(36 44 58 / 94%);
+  --c-line: rgb(150 164 186 / 24%);
+  --c-line-strong: rgb(170 184 206 / 46%);
+  --c-scrim: rgb(3 5 9 / 74%);
+
+  /* Kolory: tekst (kontrast ≥ 4.5:1 na --c-panel-solid) */
+  --c-text: #f2efe8;
+  --c-text-muted: #bcc1ca;
+  --c-text-faint: #959cab;
+
+  /* Kolory: akcent UI (bursztyn) i stany */
+  --c-accent: #ffb547;
+  --c-accent-strong: #ffcb73;
+  --c-accent-dim: rgb(255 181 71 / 16%);
+  --c-accent-line: rgb(255 181 71 / 55%);
+  --c-accent-ink: #1a1204;
+  --c-success: #7bdc6a;
+  --c-neutral-info: #9db3ff;
+  --c-warm: #fff1d6;
+  --c-violet: #ad92ff;
+  --c-violet-line: rgb(173 146 255 / 50%);
+  --c-success-line: rgb(123 220 106 / 55%);
+
+  /* Rzadkość: kolor + kształt znacznika (nie sam kolor) */
+  --c-rarity-common: #bcc1ca;
+  --c-rarity-rare: var(--c-neutral-info);
+  --c-rarity-epic: var(--c-violet);
+  --c-rarity-legendary: var(--c-accent);
+
+  /* Kolory zarezerwowane znaczeniem (nie jako akcent UI) */
+  --c-player: #00e5ff;
+  --c-enemy: #e0262b;
+  --c-resonance: #ff2bd6;
+  /* Czerwień jako tekst na ciemnym tle (kontrast); tylko zagrożenie i wrogowie */
+  --c-enemy-text: #ff6b6f;
+  --c-enemy-line: rgb(224 38 43 / 55%);
+
+  /* Typografia */
+  --font-display: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --font-body: Inter, 'Segoe UI', system-ui, sans-serif;
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-20: 1.25rem;
+  --fs-26: 1.625rem;
+  --fs-34: 2.125rem;
+  --fs-48: 3rem;
+  --fs-64: 4rem;
+  --track-display: 0.14em;
+
+  /* Odstępy */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --cut: 0.5rem;
+  --hit: 2.75rem;
+
+  /* Ruch */
+  --t-fast: 120ms;
+  --t-base: 160ms;
+  --t-slow: 180ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --slide: 8px;
+
+  /* Cień (jeden poziom) */
+  --shadow: 0 1.25rem 3.5rem rgb(0 0 0 / 55%);
+
+  /* Skala z-index (jedyna): warstwy świata, HUD, ekranów, powiadomień i narzędzi */
+  --z-content: 1;
+  --z-hud-aux: 12;
+  --z-panel: 90;
+  --z-meta-bar: 92;
+  --z-map: 95;
+  --z-hud: 100;
+  --z-hud-panel: 101;
+  --z-hud-top: 102;
+  --z-screen: 104;
+  --z-toast: 105;
+  --z-overlay: 110;
+  --z-run-screen: 120;
+  --z-menu-layer: 130;
+  --z-blocking: 900;
+  --z-debug: 1000;
+  --z-boot: 1100;
+}
+
+/* Ogranicz animacje: system albo ustawienie gracza wyłącza przesunięcia (zostają zaniki). */
+:root[data-reduce-motion='true'] {
+  --slide: 0px;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --slide: 0px;
+  }
+}

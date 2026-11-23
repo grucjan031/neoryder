@@ -1,6 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
 import { LOAD_TIMEOUT, SIM_TIMEOUT } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy dolny róg; ekrany stacji mają tam przyciski.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 const M03 = 'm03-list-przewozowy';
 // Start misji przeładowuje stronę; odpytanie w trakcie nawigacji zwraca undefined zamiast wyjątku.
 const query = (page: Page, key: string) =>

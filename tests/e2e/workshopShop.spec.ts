@@ -46,12 +46,17 @@ test('warsztat: kup broń i holo, załóż, podgląd i broń z modułem w runie'
   await expect(action).toHaveAttribute('data-card-action', 'buy');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/sklep-bron.png` });
   await action.click();
+  // Zakup wymaga potwierdzenia w oknie modalnym.
+  await page.locator('dialog.ui-modal .ui-button--primary').click();
   await expect(card).toHaveAttribute('data-status', 'owned');
   await expect(action).toHaveAttribute('data-card-action', 'equip');
   // Jedno miejsce na broń: karta pokazuje powód, dopóki nie kupimy drugiego slotu.
   await expect(action).toBeDisabled();
   await expect(card.locator('[data-blocked="full"]')).toBeVisible();
+  await page.locator('[data-action="tab"][data-tab="unlocks"]').click();
   await page.locator('[data-key="buy:slot:weapon2"]').click();
+  await page.locator('dialog.ui-modal .ui-button--primary').click();
+  await page.locator('[data-action="tab"][data-tab="weapon"]').click();
   await expect(action).toBeEnabled();
   await action.click();
   await expect(card).toHaveAttribute('data-equipped', 'true');
@@ -65,6 +70,7 @@ test('warsztat: kup broń i holo, załóż, podgląd i broń z modułem w runie'
   const buy = holo.locator('[data-action="card"]');
   await expect(buy).toHaveAttribute('data-card-action', 'buy');
   await buy.click();
+  await page.locator('dialog.ui-modal .ui-button--primary').click();
   await expect(holo).toHaveAttribute('data-status', 'owned');
   await expect(buy).toHaveAttribute('data-card-action', 'equip');
   await buy.click();

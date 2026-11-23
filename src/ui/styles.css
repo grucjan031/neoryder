@@ -1,47 +1,10 @@
+@import './theme/tokens.css';
+@import './theme/components.css';
 @import './hud.css';
+@import './modeHud.css';
 
 :root {
-  /* Wspólne tokeny interfejsu (wizjer implantu). Cyan = gracz, magenta = Rezonans,
-     czerwień = zagrożenie; akcenty informacyjne z neonów otoczenia. */
-  --ui-font: Rajdhani, 'Segoe UI', system-ui, sans-serif;
-  --ui-cyan: #00e5ff;
-  --ui-magenta: #ff2bd6;
-  --ui-danger: #e0262b;
-  --ui-danger-text: #ff6b6f;
-  --ui-amber: #ffae1a;
-  --ui-violet: #8a5cff;
-  --ui-violet-text: #ad92ff;
-  --ui-blue: #3d7bff;
-  --ui-blue-text: #7aa4ff;
-  --ui-green: #6dff4a;
-  --ui-warm: #fff1d6;
-  --ui-text: #edf7ff;
-  --ui-muted: #a9bccb;
-  --ui-faint: #7d93a3;
-  --ui-bg: #040810;
-  --ui-panel: rgba(6, 12, 24, 0.92);
-  --ui-panel-solid: #070d1a;
-  --ui-raise: rgba(12, 22, 38, 0.9);
-  --ui-line: rgba(0, 229, 255, 0.22);
-  --ui-line-strong: rgba(0, 229, 255, 0.6);
-  --ui-focus: 0 0 0 1px var(--ui-bg), 0 0 0 3px var(--ui-cyan);
-  --ui-in: 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  /* Narożniki ramki wizjera: tło `var(--ui-frame), <wypełnienie>`. */
-  --ui-frame:
-    linear-gradient(#00e5ff, #00e5ff) 0 0 / 14px 1px no-repeat,
-    linear-gradient(#00e5ff, #00e5ff) 0 0 / 1px 14px no-repeat,
-    linear-gradient(#00e5ff, #00e5ff) 100% 0 / 14px 1px no-repeat,
-    linear-gradient(#00e5ff, #00e5ff) 100% 0 / 1px 14px no-repeat,
-    linear-gradient(#00e5ff, #00e5ff) 0 100% / 14px 1px no-repeat,
-    linear-gradient(#00e5ff, #00e5ff) 0 100% / 1px 14px no-repeat,
-    linear-gradient(#00e5ff, #00e5ff) 100% 100% / 14px 1px no-repeat,
-    linear-gradient(#00e5ff, #00e5ff) 100% 100% / 1px 14px no-repeat;
-  --ui-scan: repeating-linear-gradient(
-    0deg,
-    rgba(0, 229, 255, 0.025) 0 1px,
-    transparent 1px 3px
-  );
-  font-family: var(--ui-font);
+  font-family: var(--font-body);
   color: #111;
   background: #f1f3f4;
 }
@@ -65,7 +28,7 @@ canvas {
 .debug-console {
   position: fixed;
   inset: auto 0 0;
-  z-index: 1000;
+  z-index: var(--z-debug);
   background: #111e;
   color: #00e5ff;
   padding: 16px;
@@ -180,7 +143,7 @@ body:has(.scene-menu) {
   align-items: center;
   gap: 24px;
   margin: 0;
-  color: var(--hud-danger);
+  color: var(--c-warm);
   font-size: 44px;
   letter-spacing: 0.36em;
   text-indent: 0.36em;
@@ -191,7 +154,7 @@ body:has(.scene-menu) {
   content: '';
   width: min(18vw, 160px);
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--hud-danger));
+  background: linear-gradient(90deg, transparent, var(--c-accent));
 }
 .hud__death-title::after {
   transform: scaleX(-1);
@@ -202,8 +165,8 @@ body:has(.scene-menu) {
   border: 0;
   padding: 12px 28px;
   background: #0a0d14;
-  box-shadow: inset 0 0 0 1px var(--hud-energy);
-  color: var(--hud-energy);
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+  color: var(--c-accent);
   font: inherit;
   font-size: 13px;
   letter-spacing: 0.2em;
@@ -220,8 +183,8 @@ body:has(.scene-menu) {
 }
 .hud__retry:hover,
 .hud__retry:focus-visible {
-  background: var(--hud-energy);
-  color: #0a0d14;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
   outline: none;
 }
 /* Fokus: ciemna ramka 2 px wewnątrz wypełnionego przycisku (3 px od krawędzi),
@@ -251,13 +214,13 @@ body:has(.scene-menu) {
   );
 }
 .hud__retry.hud__change-build {
-  box-shadow: inset 0 0 0 1px var(--hud-heat);
-  color: var(--hud-heat);
+  box-shadow: inset 0 0 0 1px var(--c-line-strong);
+  color: var(--c-text-muted);
 }
 .hud__retry.hud__change-build:hover,
 .hud__retry.hud__change-build:focus-visible {
-  background: var(--hud-heat);
-  color: #0a0d14;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
 }
 .arena-status {
   position: fixed;
@@ -272,40 +235,6 @@ body:has(.scene-menu) {
   pointer-events: none;
   white-space: nowrap;
 }
-.arena-dead {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #050505d9;
-  color: #f2f2f2;
-  z-index: 900;
-}
-.arena-dead[hidden] {
-  display: none;
-}
-.arena-dead h2 {
-  margin: 0;
-  color: #ff3b40;
-  letter-spacing: 0.2em;
-  font-size: 32px;
-}
-.arena-dead button {
-  margin-top: 12px;
-  padding: 10px 20px;
-  background: #e0262b;
-  color: #fff;
-  border: 0;
-  font: inherit;
-  cursor: pointer;
-}
-.arena-dead button:focus-visible {
-  outline: 2px solid #00e5ff;
-  outline-offset: 2px;
-}
 body:has(.hud) .hint {
   left: 50%;
   right: auto;
@@ -316,377 +245,28 @@ body:has(.hud) .hint {
   letter-spacing: 0.08em;
   text-shadow: 0 1px 2px #000;
 }
-/* Ekran wyboru buildu (F2-17) — nad HUD, przed falą 1. */
-.build-select {
-  --build-accent: var(--ui-cyan);
-  --build-hybrid: var(--ui-violet);
-  position: fixed;
-  inset: 0;
-  z-index: 110;
-  display: flex;
-  padding: 24px 16px;
-  overflow-y: auto;
-  background:
-    radial-gradient(ellipse at 50% 0%, #0b1628f0 0%, transparent 70%),
-    radial-gradient(ellipse at center, #050a14eb, #02050bfa);
-  color: var(--ui-text);
-  font: 500 15px/1.35 var(--ui-font);
-  letter-spacing: 0.03em;
-}
-.build-select[hidden] {
-  display: none;
-}
-.build-select__panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: min(1000px, 100%);
-  margin: auto;
-  animation: ui-rise var(--ui-in);
-}
-.build-select__title {
-  position: relative;
-  margin: 0;
-  padding-bottom: 10px;
-  color: var(--build-accent);
-  font-size: clamp(26px, 3vw, 34px);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  text-shadow:
-    0 1px 3px #000,
-    0 0 14px rgba(0, 229, 255, 0.4);
-}
-.build-select__title::before {
-  content: 'ISKRA // KONFIGURACJA';
-  content: 'ISKRA // KONFIGURACJA' / '';
-  display: block;
-  margin-bottom: 6px;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  color: var(--ui-faint);
-  text-shadow: none;
-}
-.build-select__title::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, var(--ui-line-strong), transparent 70%);
-}
-.build-select__subtitle {
-  margin: 0 0 4px;
-  color: var(--ui-muted);
-  letter-spacing: 0.04em;
-}
-.build-select__section {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 10px 0 0;
-  color: var(--ui-violet-text);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-}
-.build-select__section::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(138, 92, 255, 0.6), transparent);
-}
-.build-select__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-}
-.build-select__card {
-  --card-accent: var(--build-accent);
-  --card-glow: rgba(0, 229, 255, 0.28);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px 18px 18px;
-  border: 0;
-  border-top: 2px solid var(--card-accent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card-accent) 10%, transparent),
-      transparent 55%
-    ),
-    var(--ui-panel);
-  box-shadow: inset 0 0 0 1px rgba(237, 247, 255, 0.1);
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  clip-path: polygon(
-    0 0,
-    calc(100% - 14px) 0,
-    100% 14px,
-    100% 100%,
-    14px 100%,
-    0 calc(100% - 14px)
-  );
-  transition:
-    background-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
-}
-.build-select__card[data-loadout='resonance'] {
-  --card-accent: var(--ui-magenta);
-  --card-glow: rgba(255, 43, 214, 0.28);
-}
-.build-select__card[data-loadout='gunner'] {
-  --card-accent: var(--ui-amber);
-  --card-glow: rgba(255, 174, 26, 0.28);
-}
-.build-select__card--hybrid,
-.build-select__card--hybrid[data-loadout] {
-  --card-accent: var(--build-hybrid);
-  --card-glow: rgba(138, 92, 255, 0.3);
-}
-.build-select__card:hover,
-.build-select__card:focus-visible {
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--card-accent) 20%, transparent),
-      transparent 70%
-    ),
-    var(--ui-raise);
-  box-shadow:
-    inset 0 0 0 1px var(--card-accent),
-    inset 0 0 24px var(--card-glow);
-  outline: none;
-  transform: translateY(-2px);
-}
-/* Fokus: ramka 3 px rysowana wewnątrz karty (pierścień po obrysie ze ściętymi
-   narożnikami), bo clip-path przycinałby zwykły outline. */
-.build-select__card:focus-visible::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--card-accent);
-  pointer-events: none;
-  clip-path: polygon(
-    evenodd,
-    0 0,
-    calc(100% - 14px) 0,
-    100% 14px,
-    100% 100%,
-    14px 100%,
-    0 calc(100% - 14px),
-    0 0,
-    3px 3px,
-    3px calc(100% - 15px),
-    15px calc(100% - 3px),
-    calc(100% - 3px) calc(100% - 3px),
-    calc(100% - 3px) 15px,
-    calc(100% - 15px) 3px,
-    3px 3px
-  );
-}
-.build-select__card:focus-visible .build-select__name::after {
-  content: ' ◂';
-  content: ' ◂' / '';
-  color: var(--card-accent);
-}
-.build-select__name {
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--card-accent);
-  text-shadow: 0 0 10px var(--card-glow);
-}
-.build-select__card--hybrid .build-select__name {
-  color: var(--ui-violet-text);
-}
-.build-select__details {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.build-select__description {
-  margin-bottom: 4px;
-  color: #c8d6e2;
-  line-height: 1.4;
-}
-.build-select__line {
-  display: grid;
-  grid-template-columns: 76px 1fr;
-  gap: 8px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(237, 247, 255, 0.07);
-}
-.build-select__label {
-  padding-top: 2px;
-  color: var(--ui-faint);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-size: 11px;
-}
-.build-select__items {
-  font-weight: 600;
-  color: var(--ui-text);
-}
-.build-select__line--synergy .build-select__items {
-  color: var(--ui-violet-text);
+/* Tryb wymuszonych kolorów (Windows): cienie znikają, więc fokus zawsze ma outline. */
+@media (forced-colors: active) {
+  /* Tu kształt jest drugorzędny: bez clip-path, żeby outline nie był przycinany. */
+  .hud__retry:focus-visible {
+    clip-path: none;
+  }
+  .hud__retry:focus-visible::after {
+    display: none;
+  }
+  .hud__retry:focus-visible,
+  .scene-menu a:focus-visible,
+  .run-screen button:focus-visible,
+  .hub-screen button:focus-visible,
+  .hub-screen input:focus-visible,
+  .main-menu input:focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
 }
 .hud__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--hud-gap);
-}
-.hud__change-build {
-  border-color: var(--hud-heat);
-}
-
-/* Wybór wariantu ostrza na ekranie buildu (F2-11). */
-.build-select__blades {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 8px 10px;
-  margin: 0 0 4px;
-}
-.build-select__blades-label {
-  align-self: center;
-  min-width: 76px;
-  color: var(--ui-faint);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-.build-select__blade {
-  display: flex;
-  flex: 1 1 200px;
-  flex-direction: column;
-  gap: 2px;
-  padding: 9px 14px;
-  border: 1px solid rgba(237, 247, 255, 0.1);
-  border-bottom: 2px solid transparent;
-  background: rgba(6, 12, 24, 0.75);
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-.build-select__blade[aria-pressed='true'] {
-  border-color: rgba(0, 229, 255, 0.35);
-  border-bottom-color: var(--build-accent);
-  background: rgba(0, 229, 255, 0.1);
-}
-.build-select__blade[aria-pressed='true'] .build-select__blade-name::before {
-  content: '◆ ';
-  content: '◆ ' / '';
-  color: var(--build-accent);
-}
-.build-select__blade:hover,
-.build-select__blade:focus-visible {
-  background: rgba(0, 229, 255, 0.14);
-  border-color: var(--ui-line-strong);
-  outline: none;
-}
-.build-select__blade:focus-visible {
-  outline: 2px solid var(--build-accent);
-  outline-offset: 2px;
-}
-.build-select__blade-name {
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.build-select__blade-desc {
-  color: var(--ui-muted);
-  font-size: 13px;
-}
-
-/* Wspólne mikroanimacje ekranów. */
-@keyframes ui-rise {
-  from {
-    opacity: 0.3;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes ui-fade {
-  from {
-    opacity: 0.3;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .build-select__panel {
-    animation: none;
-  }
-  .build-select__card,
-  .build-select__blade {
-    transition: none;
-  }
-  .build-select__card:hover,
-  .build-select__card:focus-visible {
-    transform: none;
-  }
-}
-
-/* Duże ekrany: panele rosną razem z rozdzielczością, żeby nie były „znaczkiem” na środku.
-   `--ui-zoom` czytają też `max-height` paneli (dzielą przez zoom), inaczej panel 1,2x wyższy
-   niż okno byłby ucięty u góry i na dole. */
-@media (min-width: 1600px) and (min-height: 900px) {
-  :root {
-    --ui-zoom: 1.2;
-  }
-  .run-screen__panel,
-  .hub-screen__panel,
-  .build-select__panel,
-  .pause-menu,
-  .settings-screen {
-    zoom: var(--ui-zoom);
-  }
-}
-
-/* Tryb wymuszonych kolorów (Windows): cienie znikają, więc fokus zawsze ma outline. */
-@media (forced-colors: active) {
-  /* Tu kształt jest drugorzędny: bez clip-path, żeby outline nie był przycinany. */
-  .build-select__card:focus-visible,
-  .hud__retry:focus-visible {
-    clip-path: none;
-  }
-  .build-select__card:focus-visible::after,
-  .hud__retry:focus-visible::after {
-    display: none;
-  }
-  .build-select__card:focus-visible,
-  .build-select__blade:focus-visible,
-  .hud__retry:focus-visible,
-  .scene-menu a:focus-visible,
-  .run-screen button:focus-visible,
-  .pause-menu button:focus-visible,
-  .settings-screen :focus-visible,
-  .hub-screen button:focus-visible,
-  .hub-screen input:focus-visible,
-  .main-menu button:focus-visible,
-  .main-menu input:focus-visible {
-    outline: 2px solid CanvasText;
-    outline-offset: 2px;
-  }
 }

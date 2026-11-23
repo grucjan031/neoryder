@@ -3,39 +3,38 @@
   bottom: 26%;
   left: 50%;
   transform: translateX(-50%);
-  max-width: min(76vw, 760px);
-  padding: 0.5rem 0.9rem;
-  border-radius: 3px;
-  background: rgb(9 12 20 / 55%);
-  color: rgb(239 238 231 / 82%);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  max-width: min(76vw, 48rem);
+  padding: var(--sp-2) var(--sp-4);
+  background: rgb(9 12 20 / 65%);
+  color: var(--c-text);
+  font: 400 var(--fs-16) / 1.5 var(--font-body);
   text-align: center;
   text-shadow: 0 1px 3px #000;
   pointer-events: none;
-  z-index: 12;
+  z-index: var(--z-hud-aux);
   animation: hub-chatter-in 240ms ease-out;
 }
 .hub-chatter[hidden] {
   display: none;
 }
 .hub-chatter__name {
-  font-weight: 600;
+  font: 600 var(--fs-16) / 1.5 var(--font-display);
+  letter-spacing: 0.06em;
 }
 .hub-chatter[data-accent='amber'] .hub-chatter__name {
-  color: #ffae1a;
+  color: var(--c-accent);
 }
 .hub-chatter[data-accent='green'] .hub-chatter__name {
-  color: #6dff4a;
+  color: var(--c-success);
 }
 .hub-chatter[data-accent='violet'] .hub-chatter__name {
-  color: #8a5cff;
+  color: #ad92ff;
 }
 .hub-chatter[data-accent='blue'] .hub-chatter__name {
-  color: #3d7bff;
+  color: #7aa4ff;
 }
 .hub-chatter[data-accent='white'] .hub-chatter__name {
-  color: #fff1d6;
+  color: var(--c-text);
 }
 @keyframes hub-chatter-in {
   from {

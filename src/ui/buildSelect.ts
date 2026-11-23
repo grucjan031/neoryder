@@ -13,6 +13,10 @@ import type { SynergyDefinition } from '../progression/synergies';
 import descriptionText from '../data/ui/descriptions.pl.json';
 import { createSquadPicker } from './squadPicker';
 import type { SquadPicker } from './squadPicker';
+import uiText from '../data/ui/ui.pl.json';
+import { createActionBar } from './components/actionBar';
+import { bindUiFeedback } from './components/feedback';
+import './buildSelect.css';
 
 const descriptions = new Map([
   ...Object.entries(descriptionText.powers).map(
@@ -30,8 +34,10 @@ const descriptions = new Map([
 
 const buildSelectSchema = z.object({
   title: z.string().min(1),
+  kicker: z.string().min(1),
   subtitle: z.string(),
   hybridsTitle: z.string().min(1),
+  startHint: z.string().min(1),
   weapons: z.string().min(1),
   powers: z.string().min(1),
   synergies: z.string().min(1),
@@ -154,10 +160,19 @@ export class BuildSelect {
     const { text: t, options } = buildOptions(opts.data ?? text);
     this.root.hidden = true;
     this.root.setAttribute('aria-labelledby', 'build-select-title');
-    const panel = element('div', 'build-select__panel');
+    const panel = element(
+      'div',
+      'build-select__panel ui-panel ui-scope ui-scroll',
+    );
     const title = element('h2', 'build-select__title', t.title);
     title.id = 'build-select-title';
-    panel.append(title, element('p', 'build-select__subtitle', t.subtitle));
+    const head = element('div', 'build-select__head');
+    head.append(
+      element('p', 'ui-kicker', t.kicker),
+      title,
+      element('p', 'build-select__subtitle', t.subtitle),
+    );
+    panel.append(head);
     this.briefing.hidden = true;
     panel.append(this.briefing);
     const builds = element('div', 'build-select__grid');
@@ -174,6 +189,14 @@ export class BuildSelect {
         hybrids,
       );
     panel.append(this.squadPicker.root);
+    const bar = element('div', 'build-select__bar');
+    bar.append(
+      createActionBar([
+        { keys: '{navigate}', label: uiText.navigate, decorative: true },
+        { keys: '{confirm}', label: t.startHint, decorative: true },
+      ]).root,
+    );
+    panel.append(bar);
     this.root.append(panel);
     (opts.root ?? document.body).append(this.root);
   }
@@ -225,6 +248,8 @@ export class BuildSelect {
     for (const option of t.blade.options) {
       const button = element('button', 'build-select__blade');
       button.type = 'button';
+      button.classList.add('ui-interactive');
+      bindUiFeedback(button, 'tab');
       button.dataset.blade = option.id;
       button.title = option.description;
       button.append(
@@ -260,6 +285,8 @@ export class BuildSelect {
         : 'build-select__card',
     );
     button.type = 'button';
+    button.classList.add('ui-interactive');
+    bindUiFeedback(button, 'confirm');
     button.dataset.loadout = option.id;
     const name = element('span', 'build-select__name', option.name);
     name.id = `build-select-${option.id}-name`;

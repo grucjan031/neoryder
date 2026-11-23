@@ -33,7 +33,7 @@ function setup(max = 0, selected = 0, completed: string[] = []) {
   return { manager, save, navigate, panel, level };
 }
 
-it('blokada pokazuje numer i tytuł wymaganej misji, a nieznany wymóg zachowuje id', () => {
+it('blokada pokazuje tytuł wymaganej misji (bez numeracji), a nieznany wymóg zachowuje id', () => {
   const original = missionDefinitions.get('m01-maszty')!;
   const required = [...missionDefinitions.values()].find(
     (m) => m.id !== original.id,
@@ -47,10 +47,11 @@ it('blokada pokazuje numer i tytuł wymaganej misji, a nieznany wymóg zachowuje
   const button = panel.root.querySelector<HTMLButtonElement>(
     '[data-mission="m01-maszty"]',
   )!;
-  expect(button.disabled).toBe(true);
+  expect(button.getAttribute('aria-disabled')).toBe('true');
   expect(button.textContent).toContain(
-    `Wymagane misje: ${String(required.number).padStart(2, '0')} · ${required.title}, missing-definition`,
+    `Wymagane misje: ${required.title}, missing-definition`,
   );
+  expect(button.textContent).not.toContain('01 ·');
   expect(button.textContent).not.toContain(required.id);
 });
 
@@ -233,14 +234,16 @@ it('odprawa misji ukrywa nagłówek Poziomu zagrożenia i listę, a Wstecz je pr
   Element.prototype.scrollIntoView = vi.fn();
   const { panel } = setup();
   const heading = panel.root.querySelector<HTMLElement>(
-    ':scope > .missions-panel__heading',
+    '.missions-panel__heading',
   )!;
   const list = panel.root.querySelector<HTMLElement>(
     '.missions-panel__levels',
   )!;
   const mission = [
     ...panel.root.querySelectorAll<HTMLButtonElement>('[data-mission]'),
-  ].find((button) => button.dataset.mission !== 'regular' && !button.disabled)!;
+  ].find((button) => button.dataset.mission !== 'regular' &&
+      button.getAttribute('aria-disabled') !== 'true',
+  )!;
   mission.click();
   const briefing = panel.root.querySelector<HTMLElement>(
     '[data-mission-briefing]',
@@ -259,4 +262,55 @@ it('odprawa misji ukrywa nagłówek Poziomu zagrożenia i listę, a Wstecz je pr
     ?.click();
   expect(heading.hidden).toBe(false);
   expect(list.hidden).toBe(false);
+});
+
+it('karty są pogrupowane: Fabuła, Tryby, Run; typ i zagrożenie widać na karcie', () => {
+  const { panel } = setup(2, 2);
+  const groups = [
+    ...panel.root.querySelectorAll('.missions-panel__group-title'),
+  ].map((node) => node.textContent);
+  expect(groups).toEqual(['Fabuła', 'Tryby', 'Run']);
+  const story = panel.root.querySelector<HTMLElement>(
+    '[data-mission="m01-maszty"]',
+  )!;
+  expect(story.textContent).toContain('Misja');
+  expect(story.textContent).toContain('Zagrożenie 2');
+  expect(story.textContent).toContain('Nagroda: +');
+  expect(
+    panel.root.querySelector('[data-mode="heist"]')!.textContent,
+  ).toContain('Tryb areny');
+});
+
+it('zablokowana karta nie otwiera odprawy; dostępna zaznacza się i otwiera', () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const { panel } = setup();
+  const locked = panel.root.querySelector<HTMLButtonElement>(
+    '[data-mission="m03-list-przewozowy"]',
+  )!;
+  locked.click();
+  expect(
+    panel.root.querySelector<HTMLElement>('[data-mission-briefing]')!.hidden,
+  ).toBe(true);
+  const regular = panel.root.querySelector<HTMLElement>(
+    '[data-mission="regular"]',
+  )!;
+  expect(regular.getAttribute('aria-pressed')).toBe('true');
+  const open = panel.root.querySelector<HTMLButtonElement>(
+    '[data-mission="m01-maszty"]',
+  )!;
+  open.click();
+  expect(open.getAttribute('aria-pressed')).toBe('true');
+  expect(regular.getAttribute('aria-pressed')).toBe('false');
+  expect(
+    panel.root.querySelector('[data-action=start-run]')!.textContent,
+  ).toContain('Rozpocznij misję');
+});
+
+it('kafelki zagrożenia są przyciskami z pełną nazwą dla czytników', () => {
+  const { panel, level } = setup(3, 1);
+  expect(level(1).getAttribute('aria-pressed')).toBe('true');
+  expect(level(3).textContent).toContain(threatLevels[3]!.name);
+  expect(
+    panel.root.querySelector('.missions-panel__caption')!.textContent,
+  ).toBe(`Wybrany poziom: 1 · ${threatLevels[1]!.name}`);
 });

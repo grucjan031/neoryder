@@ -74,7 +74,19 @@
     "tabsLabel": "Kategoria sklepu",
     "tabs": {
       "weapon": "Bronie",
-      "module": "Dodatki"
+      "module": "Dodatki",
+      "equipment": "Wyposażenie",
+      "unlocks": "Odblokowania",
+      "extraction": "Wydobycie"
+    },
+    "pickHint": "Wybierz pozycję z listy.",
+    "priceFree": "bez opłaty",
+    "purchased": "Kupiono: {name}.",
+    "confirm": {
+      "title": "Kupić {name}?",
+      "message": "Cena: {cost}. Po zakupie zostanie: {left}.",
+      "confirm": "Kup",
+      "cancel": "Anuluj"
     },
     "listLabel": {
       "weapon": "Bronie w sklepie",

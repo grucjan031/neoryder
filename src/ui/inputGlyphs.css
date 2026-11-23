@@ -1,0 +1,42 @@
+:root kbd.input-glyph {
+  display: inline-block;
+  min-width: 1.5em;
+  inline-size: max-content;
+  block-size: auto;
+  padding: 0.08em 0.35em;
+  border: 1px solid #f1efe6;
+  border-radius: 0.3em;
+  background: #e1dfd5;
+  color: #181b22;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-shadow: none;
+  transform: none;
+  white-space: nowrap;
+}
+
+:root .hud__slot.input-glyph {
+  opacity: 0.7;
+}
+
+:root .hud__slot--active.input-glyph {
+  opacity: 1;
+  outline: 1px solid #f1efe6;
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+[data-input-device='gamepad'] .hud__overheat[data-cooling='window']::before,
+[data-input-device='gamepad'] .hud__overheat[data-cooling='window']::after {
+  content: none;
+}
+
+[data-input-device='gamepad']
+  :is(button, a, input, select, summary, [tabindex]):focus,
+[data-input-device='gamepad']
+  :is(button, a, input, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid #f1efe6;
+  outline-offset: 3px;
+}

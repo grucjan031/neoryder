@@ -3,6 +3,7 @@ import {
   Ray,
   ColliderDesc,
   QueryFilterFlags,
+  Ray,
   RigidBodyDesc,
 } from '@dimforge/rapier3d-compat';
 import type {
@@ -14,6 +15,8 @@ import type {
 import type { GameContext } from '../core/context';
 import type { EntityId } from '../core/events';
 import type { InputSnapshot } from '../core/input';
+import { assistAim } from '../core/input/aimAssist';
+import { SIM_DT } from '../core/loop';
 import type { Vec3 } from '../core/math';
 import type { Settings } from '../core/save';
 import { Stats, type StatId } from '../core/stats';
@@ -61,6 +64,7 @@ export class PlayerController {
   private shapeHeight: number;
   private shapeRadius: number;
   private readonly state: PlayerState;
+  private aimTargets?: () => readonly Vec3[];
 
   constructor(
     readonly id: EntityId,
@@ -371,23 +375,54 @@ export class PlayerController {
       });
   }
 
+  setAimTargets(targets: () => readonly Vec3[]): void {
+    this.aimTargets = targets;
+  }
+
   private look(input: InputSnapshot): void {
     const s = this.state;
     const t = this.ctx.tuning.player;
+    const aimScale =
+      1 + (t.aim.sensitivity * this.aimSensitivityScale - 1) * this.aim;
     const sensitivity =
-      t.lookSensitivity *
-      this.settings.mouseSensitivity *
-      (1 + (t.aim.sensitivity * this.aimSensitivityScale - 1) * this.aim);
-    s.yaw -= input.lookDelta.x * sensitivity;
+      t.lookSensitivity * this.settings.mouseSensitivity * aimScale;
+    let dx = input.lookDelta.x * sensitivity;
+    let dy = input.lookDelta.y * sensitivity * (this.settings.invertY ? -1 : 1);
+    if (input.gamepad) {
+      const { move, look, aimAssist } = input.gamepad;
+      const eye = {
+        ...s.position,
+        y: s.position.y + s.height / 2 - (t.capsuleHeight - t.eyeHeight),
+      };
+      const result =
+        aimAssist && this.aimTargets && (move.x || move.y || look.x || look.y)
+          ? assistAim(
+              look,
+              Boolean(move.x || move.y),
+              s.yaw,
+              s.pitch,
+              eye,
+              this.aimTargets(),
+              this.ctx.tuning.gamepad.aim,
+              (dir, distance) =>
+                !this.world.castRay(
+                  new Ray(eye, dir),
+                  distance,
+                  true,
+                  QueryFilterFlags.EXCLUDE_SENSORS,
+                  interactionGroups(
+                    CollisionGroup.Player,
+                    CollisionGroup.World,
+                  ),
+                ),
+            )
+          : look;
+      dx += result.x * aimScale * SIM_DT;
+      dy += result.y * aimScale * SIM_DT;
+    }
+    s.yaw -= dx;
     const pitchLimit = (t.maxPitchDeg * Math.PI) / 180;
-    s.pitch = Math.max(
-      -pitchLimit,
-      Math.min(
-        pitchLimit,
-        s.pitch -
-          input.lookDelta.y * sensitivity * (this.settings.invertY ? -1 : 1),
-      ),
-    );
+    s.pitch = Math.max(-pitchLimit, Math.min(pitchLimit, s.pitch - dy));
   }
 
   /** Kierunek ruchu z WASD w świecie (poziomy, jednostkowy) i składowe wejścia. */
@@ -395,18 +430,24 @@ export class PlayerController {
     forward: number;
     right: number;
     dir: Vec3 | null;
+    scale: number;
   } {
+    const analog = input.gamepad?.move;
     const forward =
+      -(analog?.y ?? 0) +
       Number(input.held.has('moveForward')) -
       Number(input.held.has('moveBack'));
     const right =
-      Number(input.held.has('moveRight')) - Number(input.held.has('moveLeft'));
+      (analog?.x ?? 0) +
+      Number(input.held.has('moveRight')) -
+      Number(input.held.has('moveLeft'));
     const magnitude = Math.hypot(forward, right);
-    if (magnitude === 0) return { forward, right, dir: null };
+    if (magnitude === 0) return { forward, right, dir: null, scale: 0 };
     const yaw = this.state.yaw;
     return {
       forward,
       right,
+      scale: input.gamepad ? Math.min(1, magnitude) : 1,
       dir: {
         x: (right * Math.cos(yaw) - forward * Math.sin(yaw)) / magnitude,
         y: 0,
@@ -424,7 +465,7 @@ export class PlayerController {
         ? t.sprintSpeed
         : t.walkSpeed;
     this.stats.setBase('moveSpeed', base);
-    const targetSpeed = this.stats.get('moveSpeed');
+    const targetSpeed = this.stats.get('moveSpeed') * move.scale;
     const flightSpeed = horizontalSpeed(s.velocity);
     if (
       move.dir &&

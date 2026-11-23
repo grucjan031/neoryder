@@ -15,14 +15,15 @@
     "ControlLeft": "Ctrl",
     "ControlRight": "Ctrl"
   },
+  "padMove": "Rozejrzyj się {look}. Ruszaj {move} i podejdź do jasnego znacznika przed tobą.",
   "steps": {
     "move": "Rozejrzyj się myszą. Ruszaj {moveForward} {moveBack} {moveLeft} {moveRight} i podejdź do jasnego znacznika przed tobą.",
     "jump": "Wskocz na oznaczony podest: {jump}, a w powietrzu ponownie {jump}. Na poligonie masz odblokowany talent podwójnego skoku.",
     "mobility": "Zeskocz z podestu. Wykonaj doskok {dash}. Rozpędź się {sprint} i naciśnij {crouch}, by ślizgiem minąć belkę.",
-    "combo": "Podejdź do manekina przy jasnym znaczniku. Traf go trzema krótkimi kliknięciami {attack} w rytmie 1–2–3. Manekin nie oddaje.",
+    "combo": "Podejdź do manekina przy jasnym znaczniku. Traf go trzema krótkimi naciśnięciami {attack} w rytmie 1–2–3. Manekin nie oddaje.",
     "heavy": "Manekin ma tarczę. Stań przed nim, przytrzymaj {attack}, aż ostrze się naładuje, a potem puść przycisk. Ciężki cios przebije osłonę.",
     "parry": "Spójrz na strzelca. Z ostrzem w ręce odbij 2 pociski: naciśnij {block} tuż przed trafieniem. Puść przycisk między odbiciami.",
-    "heat": "Wybierz blaster {swap}. Trzymaj {attack} do przegrzania. Puść spust i poczekaj na chłodzenie. PPM: celowanie bronią, blok ostrzem.",
+    "heat": "Wybierz blaster {swap}. Trzymaj {attack} do przegrzania. Puść spust i poczekaj na chłodzenie. {block}: celowanie bronią, blok ostrzem.",
     "push": "Podejdź do manekina na prawym torze. Wyceluj w niego i użyj Pchnięcia {power}, aby uderzył w ścianę za nim.",
     "execute": "Podejdź do osłabionego wroga z pulsującym znacznikiem. Wyceluj w niego i naciśnij {attack}, trzymając ostrze, aby wykonać wykończenie.",
     "fight": "Pokonaj 3 wrogów, używając ruchu, parowania i mocy. Otrzymujesz obrażenia. Po śmierci powtórzysz tę walkę z pełnym zdrowiem.",

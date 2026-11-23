@@ -503,7 +503,8 @@ Wczytany zapis z `saveVersion < SAVE_VERSION` jest migrowany; z `saveVersion > S
 ```ts
 export type Action = 'moveForward' | 'moveBack' | 'moveLeft' | 'moveRight'
   | 'jump' | 'sprint' | 'dash' | 'crouch' | 'attack' | 'block' | 'swap' | 'power'
-  | 'power2' | 'weapon1' | 'weapon2' | 'weapon3' | 'bladeThrow' | 'coolWeapon';
+  | 'power2' | 'weapon1' | 'weapon2' | 'weapon3' | 'bladeThrow' | 'coolWeapon'
+  | 'aim' | 'map' | 'inventory' | 'squadCommand' | 'pause';
 export type BindingOverrides = Partial<Record<Action, string>>;
 export function resolveBindings(overrides?: BindingOverrides): Record<string, Action>;
 export function assignBinding(overrides: BindingOverrides, action: Action, code: string): BindingOverrides;
@@ -517,7 +518,7 @@ export interface InputSnapshot {
 }
 
 export class Input {
-  constructor(target: HTMLElement, getBindings?: () => BindingOverrides);
+  constructor(target: HTMLElement, getBindings?: () => BindingOverrides, padOptions?: PadOptions);
   clear(): void; // zeruje przytrzymane akcje i ruch myszy przy pauzie/rebindzie
   /** Wołane raz na krok symulacji; zwraca stan i zeruje pressed/released/lookDelta. */
   snapshot(): InputSnapshot;
@@ -529,6 +530,14 @@ export class Input {
 ```
 
 Mapowanie klawiszy w danych (domyślnie WASD, Space, Shift, Q = dash, Ctrl = crouch, LPM = attack, PPM = block, R/F = swap/power).
+
+### Pad i urządzenie aktywne
+
+- `input:deviceChanged` ma payload `{ device: 'keyboardMouse' | 'gamepad', layout: 'xbox' | 'playstation' | 'generic' }`. `Input.activeDevice` zwraca ten sam stan synchronicznie. `generic` korzysta z glifów Xbox.
+- `GameLoop` wywołuje opcjonalny callback `beforeFrame(frameDt)` przed krokami, również na pauzie. `Input.update(frameDt, gameplayEnabled)` odczytuje standardowy pad raz na klatkę i udostępnia `Input.padFrame` nawigacji menu. Drugi argument może być predykatem sprawdzanym po wykryciu pada. `InputSnapshot.gamepad?` niesie ruch od −1 do 1 i prędkość obrotu w radianach na sekundę. Krawędzie akcji pada są konsumowane w `snapshot()` razem z wejściem klawiatury.
+- `Input.padPauseButton` zwraca indeks przypisanego przycisku pauzy, jeśli został wciśnięty w bieżącej klatce. Aplikacja obsługuje go również na pauzie. `GamepadBindingOverrides` mapuje akcję na indeks standardowego przycisku albo `null` dla jawnego braku przypisania. `resolveGamepadBindings` zwraca akcje krótkie i długie dla poszczególnych przycisków. `Settings.gamepad` przechowuje nadpisania i parametry gracza.
+- Sceny mogą wstrzyknąć `PlayerController.setAimTargets(() => readonly Vec3[])`. Zwracają punkty celowania żywych wrogów przez istniejące zapytania sceny do `EnemyManager.forEach`. Kontroler sprawdza linię widzenia w świecie Rapiera i stosuje pomoc tylko do migawki pada.
+- `PadNavigation.update(frame, dt)` obsługuje fizyczne przyciski nawigacji niezależnie od przypisań w grze. `inputGlyphLabel` i `setInputHint` używają aktualnego urządzenia i ustawień do wyświetlania skrótów. `GameContext.input?` udostępnia migawkę diagnostyczną scenie `pad-test`.
 
 ## Kontekst gry i sceny — `src/core/context.ts`, `src/scenes/`
 

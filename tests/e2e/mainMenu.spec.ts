@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import type { RunSave } from '../../src/core/save';
 import type { RunState } from '../../src/core/runTypes';
 
-test('menu pokazuje Kryjówkę, Kontynuuj run i Poligon; Poligon otwiera arenę', async ({
+test('menu pokazuje Kryjówkę i Kontynuuj run; Poligon w podmenu Tryby otwiera arenę', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -17,7 +17,8 @@ test('menu pokazuje Kryjówkę, Kontynuuj run i Poligon; Poligon otwiera arenę'
   await expect(
     page.getByRole('button', { name: 'Nowy run (presety)' }),
   ).toHaveCount(0);
-  await page.getByRole('button', { name: 'Poligon' }).click();
+  await page.getByRole('button', { name: 'Tryby', exact: true }).click();
+  await page.getByRole('button', { name: 'Poligon', exact: true }).click();
   await expect(page).toHaveURL(/scene=arena/);
   expect(errors).toEqual([]);
 });

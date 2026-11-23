@@ -1,30 +1,36 @@
 .assault-hud {
-  --assault-player: #ffae1a;
-  --assault-enemy: #e0262b;
   position: fixed;
   top: max(16px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
-  width: 300px;
+  width: min(340px, calc(100vw - 32px));
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  z-index: 12;
-  color: #fff1d6;
-  font: 12px/1.4 monospace;
+  z-index: var(--z-hud-aux);
+  color: var(--c-warm);
+  font: 600 14px/1.3 var(--font-hud);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 3px #000;
   pointer-events: none;
+}
+.assault-hud header,
+.assault-hud [data-station],
+.assault-hud p {
+  background: var(--hud-surface);
+  box-shadow: var(--hud-shadow);
 }
 .assault-hud header {
   grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
   padding: 6px 10px;
-  background: #101827ed;
-  border-top: 2px solid var(--assault-player);
+  border-top: 2px solid var(--c-accent);
+  text-transform: uppercase;
 }
 .assault-hud header span {
-  color: var(--assault-player);
+  color: var(--c-accent);
 }
 .assault-hud [data-station] {
   display: grid;
@@ -32,20 +38,20 @@
   align-items: center;
   gap: 4px 8px;
   padding: 6px 10px;
-  background: #101827ed;
-  border: 1px solid var(--assault-enemy);
+  border: 1px solid var(--c-enemy-line);
 }
 .assault-hud b {
-  font-size: 20px;
+  font-size: 22px;
+  line-height: 1;
 }
 .assault-hud progress {
   grid-column: 1 / -1;
   width: 100%;
   height: 5px;
-  accent-color: var(--assault-player);
+  accent-color: var(--c-accent);
 }
 .assault-hud [data-state='destroyed'] {
-  border-color: var(--assault-player);
+  border-color: var(--c-accent-line);
 }
 .assault-hud [data-state='fuse'] {
   border-style: dashed;
@@ -53,9 +59,9 @@
 .assault-hud p {
   grid-column: 1 / -1;
   margin: 0;
+  padding: 3px 10px;
   text-align: center;
-  background: #101827ed;
-  color: var(--assault-player);
+  color: var(--c-accent);
 }
 .assault-hud p:empty {
   display: none;
@@ -63,7 +69,6 @@
 @media (max-width: 600px) {
   .assault-hud {
     top: max(88px, calc(env(safe-area-inset-top) + 80px));
-    width: min(300px, calc(100vw - 32px));
     gap: 4px;
   }
 }

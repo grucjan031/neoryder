@@ -12,6 +12,7 @@ test('ustawienia zachowują czułość i przypisanie dash po przeładowaniu', as
   await page.getByRole('button', { name: 'Ustawienia', exact: true }).click();
   const screen = page.getByRole('dialog', { name: 'Ustawienia', exact: true });
   await expect(screen).toBeVisible();
+  await screen.getByRole('tab', { name: 'Sterowanie: klawiatura' }).click();
   const sensitivity = screen.getByRole('slider', { name: 'Czułość myszy' });
   await sensitivity.focus();
   await page.keyboard.press('Home');
@@ -24,6 +25,7 @@ test('ustawienia zachowują czułość i przypisanie dash po przeładowaniu', as
   await expect(screen.locator('[data-action="dash"]')).toHaveText('V');
   await page.reload();
   await page.getByRole('button', { name: 'Ustawienia', exact: true }).click();
+  await screen.getByRole('tab', { name: 'Sterowanie: klawiatura' }).click();
   await expect(sensitivity).toHaveValue('2.5');
   await expect(screen.locator('[data-action="dash"]')).toHaveText('V');
   expect(errors).toEqual([]);
@@ -57,7 +59,6 @@ test('Esc w room-test zatrzymuje tick, ustawienia pozostają w pauzie, Wznów ur
     exact: true,
   });
   await expect(settings).toBeVisible();
-  await settings.getByRole('tab', { name: 'Obraz' }).click();
   await settings
     .getByRole('slider', { name: 'Pole widzenia (FOV)', exact: true })
     .focus();

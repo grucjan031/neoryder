@@ -208,6 +208,8 @@ test('run: zakup implantu w sklepie za Kredyty', async ({ page }) => {
     implants: string[];
   };
   await page.locator('.run-screen button[data-rarity]').first().click();
+  // Zakup w sklepie zawsze przez okno potwierdzenia.
+  await page.locator('dialog.ui-modal .ui-button--primary').click();
   await expect
     .poll(
       async () => {

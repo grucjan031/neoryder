@@ -1,6 +1,4 @@
 .heist-hud {
-  --heist-amber: #ffae1a;
-  --heist-enemy: #e0262b;
   position: fixed;
   top: max(16px, env(safe-area-inset-top));
   left: 50%;
@@ -8,28 +6,32 @@
   width: min(340px, calc(100vw - 32px));
   box-sizing: border-box;
   padding: 10px 12px;
-  border-top: 2px solid var(--heist-amber);
-  background: #101827ed;
-  color: #fff1d6;
-  font: 12px/1.5 monospace;
+  border-top: 2px solid var(--c-accent);
+  background: var(--hud-surface);
+  box-shadow: var(--hud-shadow);
+  color: var(--c-warm);
+  font: 600 14px/1.4 var(--font-hud);
   font-variant-numeric: tabular-nums;
-  z-index: 12;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 3px #000;
+  z-index: var(--z-hud-aux);
   pointer-events: none;
 }
 .heist-hud header {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+  text-transform: uppercase;
 }
 .heist-hud header span {
   white-space: nowrap;
-  color: var(--heist-amber);
+  color: var(--c-accent);
 }
 .heist-hud > div {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--heist-amber);
+  color: var(--c-accent);
   margin-top: 4px;
 }
 .heist-hud b {
@@ -40,7 +42,7 @@
 .heist-hud progress {
   width: 100%;
   height: 6px;
-  accent-color: var(--heist-amber);
+  accent-color: var(--c-accent);
 }
 .heist-hud p {
   margin: 4px 0 0;
@@ -49,7 +51,7 @@
   display: none;
 }
 .heist-hud[data-state='enemy'] {
-  border-color: var(--heist-enemy);
+  border-top-color: var(--c-enemy);
 }
 @media (max-width: 600px) {
   .heist-hud {

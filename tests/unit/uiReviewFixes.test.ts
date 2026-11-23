@@ -158,11 +158,17 @@ it('warsztat: po zakupie fokus zostaje w panelu zamiast uciec na body', async ()
     close: vi.fn(),
   });
   document.body.append(panel.root);
+  panel.root
+    .querySelector<HTMLElement>('[data-key="row:weapon:rifle"]')!
+    .click();
   const buy = panel.root.querySelector<HTMLButtonElement>(
-    '[data-unlock="weapon:rifle"] button',
+    '[data-card="weapon:rifle"] [data-action="card"]',
   )!;
   buy.focus();
   buy.click();
+  document
+    .querySelector<HTMLButtonElement>('dialog.ui-modal .ui-button--primary')!
+    .click();
   await new Promise((resolve) => setTimeout(resolve, 0));
   expect(panel.root.contains(document.activeElement)).toBe(true);
   panel.dispose();

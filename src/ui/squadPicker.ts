@@ -5,6 +5,7 @@ import { isAllyUnlocked, sanitizeSquad } from '../allies/roster';
 import { tuning } from '../core/tuning';
 import textData from '../data/ui/squad.pl.json';
 import { missionCatalog } from '../world/missionCatalog';
+import { bindUiFeedback } from './components/feedback';
 import './squadPicker.css';
 
 const text = z
@@ -101,7 +102,8 @@ export function createSquadPicker(options: SquadPickerOptions): SquadPicker {
   const cards = [...definitions.values()].map((definition) => {
     const card = document.createElement('button');
     card.type = 'button';
-    card.className = 'squad-picker__card';
+    card.className = 'squad-picker__card ui-interactive';
+    bindUiFeedback(card, 'tab');
     card.dataset.ally = definition.id;
     const portrait = document.createElement('span');
     portrait.className = 'squad-picker__portrait';

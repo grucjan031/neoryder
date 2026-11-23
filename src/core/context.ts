@@ -5,8 +5,10 @@ import type { FeelSystem } from './feel';
 import type { Rng } from './rng';
 import type { GameLoop } from './loop';
 import type { Tuning } from './tuning';
+import type { Input } from './input';
 
 export interface GameContext {
+  input?: Pick<Input, 'activeDevice' | 'padFrame'>;
   bus: EventBus;
   rng: Rng;
   loop: GameLoop;

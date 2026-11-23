@@ -3,6 +3,7 @@ export const MAX_STEPS_PER_FRAME = 5;
 const TIME_EPSILON_MS = 1e-9;
 
 export interface LoopCallbacks {
+  beforeFrame?(frameDt: number): void;
   step(dt: number, tick: number): void;
   render(alpha: number, frameDt: number): void;
 }
@@ -91,6 +92,7 @@ export class GameLoop {
 
   advance(realMs: number): number {
     const frameMs = Number.isFinite(realMs) ? Math.max(0, realMs) : 0;
+    this.cb.beforeFrame?.(frameMs / 1000);
     if (this.paused) {
       this.cb.render(this.accumulator / SIM_DT, frameMs / 1000);
       return 0;

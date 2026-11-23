@@ -1,6 +1,6 @@
 .tutorial-panel {
   position: fixed;
-  z-index: 90;
+  z-index: var(--z-panel);
   top: max(24px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);

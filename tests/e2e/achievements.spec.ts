@@ -2,6 +2,17 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { LOAD_TIMEOUT, waitSimSteps } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy dolny róg; ekrany stacji mają tam przyciski.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 const query = (page: Page, name: string) =>
   page.evaluate((key) => window.__neoryder?.query(key), name);
 
@@ -110,6 +121,8 @@ test('naszywki: komenda debug achievement grant odblokowuje kłódkę w warsztac
     game?.command('meta cores 50');
     game?.command('hub open workshop');
   });
+  const unlocksTab = page.locator('[data-action=tab][data-tab=unlocks]');
+  await unlocksTab.click();
   const row = page.locator('[data-unlock="blade:staffBlade"]');
   await expect(row).toHaveAttribute('data-status', 'achievement');
   await expect(row).toContainText('Wymaga naszywki: Taniec ostrza');
@@ -120,6 +133,7 @@ test('naszywki: komenda debug achievement grant odblokowuje kłódkę w warsztac
     game?.command('achievement grant taniec-ostrza');
     game?.command('hub open workshop');
   });
+  await unlocksTab.click();
   await expect(
     page.locator('[data-unlock="blade:staffBlade"]'),
   ).toHaveAttribute('data-status', 'buyable');

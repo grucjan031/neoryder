@@ -1,13 +1,17 @@
+/* Ekran ładowania: kadr splasharta z panelem porady (nazwa obrazu + porada). */
 .loading-copy {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: var(--sp-4);
+  right: var(--sp-4);
   z-index: 2;
   box-sizing: border-box;
-  width: min(560px, calc(100% - 32px));
-  padding: 16px 20px;
-  background: linear-gradient(135deg, rgba(2, 4, 9, 0.94), rgba(2, 4, 9, 0.78));
-  color: #fff1d6;
+  width: min(35rem, calc(100% - 2rem));
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--c-line);
+  border-left: 3px solid var(--c-accent);
+  background: rgb(5 7 11 / 86%);
+  color: var(--c-text);
+  font-family: var(--font-body);
   text-shadow: 0 1px 4px #000;
 }
 .loading-copy .boot-splash__caption,
@@ -16,34 +20,32 @@
   display: block;
   padding: 0;
   background: none;
-  color: #fff1d6;
-  font-size: 12px;
-  letter-spacing: 0.12em;
+  color: var(--c-text-muted);
+  font: 600 var(--fs-14) / 1.2 var(--font-display);
+  letter-spacing: 0.14em;
 }
 .loading-tip {
-  margin-top: 14px;
-  font-size: clamp(14px, 2vw, 17px);
-  line-height: 1.4;
-  letter-spacing: 0.02em;
+  margin-top: var(--sp-3);
+  font: 400 var(--fs-16) / 1.5 var(--font-body);
+  letter-spacing: 0;
   text-transform: none;
 }
 .loading-tip strong {
-  color: #ffae1a;
-  font-size: 12px;
+  color: var(--c-accent);
+  font: 600 var(--fs-14) / 1.2 var(--font-display);
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .loading-tip p {
-  margin: 4px 0 0;
+  margin: var(--sp-1) 0 0;
 }
-.boot-splash--art .boot-splash__loading::after,
 .run-screen--splash .run-screen__loading::after {
   content: '';
   display: block;
-  width: 80px;
-  height: 2px;
-  margin: 12px auto 0;
-  background: linear-gradient(90deg, transparent, #ffae1a, transparent);
+  width: 12rem;
+  height: 4px;
+  margin: var(--sp-3) auto 0;
+  background: linear-gradient(90deg, transparent, var(--c-accent), transparent);
   animation: loading-progress 1.4s ease-in-out infinite alternate;
 }
 @keyframes loading-progress {
@@ -57,8 +59,12 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .boot-splash--art .boot-splash__loading::after,
   .run-screen--splash .run-screen__loading::after {
     animation: none;
   }
+}
+:root[data-reduce-motion='true']
+  .run-screen--splash
+  .run-screen__loading::after {
+  animation: none;
 }

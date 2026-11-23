@@ -130,10 +130,12 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   await command('hub open workshop');
   const workshop = page.locator('.hub-screen [data-panel=workshop]');
   await expect(workshop).toBeVisible();
+  // Odblokowania (moce, ostrza, sloty) mają własną kategorię; broń i dodatki kupuje się z kart sklepu.
+  await workshop.locator('[data-action=tab][data-tab=unlocks]').click();
   const cheapest = await workshop.evaluate((node) => {
     const rows = [
       ...node.querySelectorAll<HTMLElement>(
-        '[data-unlock][data-status=buyable]',
+        '[data-pane=unlocks] [data-unlock][data-status=buyable]',
       ),
     ].map((row) => ({
       id: row.dataset.unlock ?? '',
@@ -149,6 +151,8 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   await workshop
     .locator(`[data-unlock="${cheapest}"] [data-action=buy]`)
     .click();
+  // Zakup wymaga potwierdzenia w oknie modalnym.
+  await page.locator('dialog.ui-modal .ui-button--primary').click();
   await expect.poll(async () => (await meta()).unlocks).toContain(cheapest);
   await expect(workshop.locator(`[data-unlock="${cheapest}"]`)).toHaveAttribute(
     'data-status',
@@ -160,6 +164,7 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   let equipped = false;
   if (kind === 'weapon' || kind === 'power') {
     const part = kind === 'weapon' ? 'weapons' : 'powers';
+    await workshop.locator('[data-action=tab][data-tab=equipment]').click();
     const choice = workshop.locator(
       `[data-action=toggle][data-part=${part}][data-item="${key}"]`,
     );
@@ -172,7 +177,7 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   await shot('07-warsztat');
 
   // Terminal drzewek: zakup korzenia (pierwszy dostępny węzeł).
-  await page.getByRole('button', { name: 'Zamknij' }).click();
+  await page.keyboard.press('Escape'); // przycisk „Zamknij” bywa pod panelem debug lil-gui
   await command('hub open talents');
   const panel = page.locator('.hub-screen .talents-panel');
   await expect(panel).toBeVisible();
@@ -180,6 +185,7 @@ test('bot meta: menu → kryjówka → run → nagrody → warsztat i talenty �
   await expect(rootNode).toBeVisible();
   const rootId = await rootNode.getAttribute('data-node-id');
   await rootNode.click();
+  await panel.locator('[data-action=buy-talent]').click();
   await expect.poll(async () => (await meta()).talents).toContain(rootId);
   await shot('06-talenty');
   await expect.poll(() => query('savePending')).not.toBe(true);

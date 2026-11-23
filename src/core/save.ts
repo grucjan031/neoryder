@@ -4,7 +4,14 @@ import {
   type MissionCheckpoint,
 } from '../world/missionCheckpoint';
 import { modeIdSchema } from '../world/modeSchema';
-import { actionSchema, isBindingCode } from './input';
+import {
+  actionSchema,
+  defaultGamepadSettings,
+  isBindingCode,
+  isGamepadButton,
+} from './input';
+import type { GamepadBindingOverrides } from './input';
+import type { GamepadSettings } from './input/gamepad';
 import { loadoutDefinitions } from '../progression/loadout';
 import { runAchievementProgressSchema } from '../progression/achievementsSchema';
 import { metaStateSchema } from '../progression/metaStateSchema';
@@ -625,6 +632,12 @@ export interface Settings {
   masterVolume: number;
   sfxVolume: number;
   musicVolume: number;
+  /** Głośność dźwięków interfejsu (mnożona przez główną). */
+  uiVolume: number;
+  /** Skala interfejsu 0.8–1.4 (krok 0.1), mnoży rozmiar bazowy rem. */
+  uiScale: number;
+  /** Wyłącza przesunięcia i ruch ozdobny w interfejsie. */
+  reduceMotion: boolean;
   invertY: boolean;
   screenShake: number;
   flashes: boolean;
@@ -632,10 +645,14 @@ export interface Settings {
   cameraTilt: boolean;
   quality: 'low' | 'medium' | 'high';
   bindings: import('./input').BindingOverrides;
+  gamepad: GamepadSettings;
 }
 export const SETTINGS_RANGES = {
   mouseSensitivity: { min: 0.1, max: 5 },
   fov: { min: 60, max: 110 },
+  padSensitivity: { min: 0.1, max: 5 },
+  padDeadzone: { min: 0, max: 0.5 },
+  uiScale: { min: 0.8, max: 1.4 },
 } as const;
 
 function clampedSetting(range: { min: number; max: number }, fallback: number) {
@@ -646,6 +663,35 @@ function clampedSetting(range: { min: number; max: number }, fallback: number) {
     .catch(fallback);
 }
 
+const gamepadSettingsSchema = z
+  .object({
+    sensitivityX: clampedSetting(SETTINGS_RANGES.padSensitivity, 1),
+    sensitivityY: clampedSetting(SETTINGS_RANGES.padSensitivity, 1),
+    invertY: z.boolean().catch(false),
+    deadzone: clampedSetting(
+      SETTINGS_RANGES.padDeadzone,
+      tuning.gamepad.innerDeadzone,
+    )
+      .optional()
+      .catch(undefined),
+    aimAssist: z.boolean().catch(true),
+    vibration: z.boolean().catch(true),
+    vibrationStrength: clampedSetting({ min: 0, max: 1 }, 1),
+    bindings: z
+      .record(z.string(), z.unknown())
+      .catch({})
+      .transform((value) => {
+        const result: GamepadBindingOverrides = {};
+        for (const [name, button] of Object.entries(value)) {
+          const action = actionSchema.safeParse(name);
+          if (action.success && (button === null || isGamepadButton(button)))
+            result[action.data] = button;
+        }
+        return result;
+      }),
+  })
+  .catch(defaultGamepadSettings);
+
 const settingsSchema = z.object({
   difficulty: difficultyIdSchema.optional().catch(undefined),
   mouseSensitivity: clampedSetting(SETTINGS_RANGES.mouseSensitivity, 1),
@@ -653,11 +699,17 @@ const settingsSchema = z.object({
   masterVolume: z.number().min(0).max(1).catch(1),
   sfxVolume: z.number().min(0).max(1).catch(1),
   musicVolume: z.number().min(0).max(1).catch(0.7),
+  uiVolume: z.number().min(0).max(1).catch(0.7),
+  uiScale: clampedSetting(SETTINGS_RANGES.uiScale, 1).transform(
+    (value) => Math.round(value * 10) / 10,
+  ),
+  reduceMotion: z.boolean().catch(false),
   invertY: z.boolean().catch(false),
   screenShake: z.number().min(0).max(1).catch(1),
   flashes: z.boolean().catch(true),
   cameraTilt: z.boolean().catch(true),
   quality: z.enum(['low', 'medium', 'high']).catch('high'),
+  gamepad: gamepadSettingsSchema,
   bindings: z
     .record(z.string(), z.unknown())
     .catch({})
@@ -672,18 +724,22 @@ const settingsSchema = z.object({
     }),
 });
 const settingsKey = 'neoryder.settings';
-const defaults = (): Settings => ({
+export const defaultSettings = (): Settings => ({
   mouseSensitivity: 1,
   fov: tuning.camera.fov,
   masterVolume: 1,
   sfxVolume: 1,
   musicVolume: 0.7,
+  uiVolume: 0.7,
+  uiScale: 1,
+  reduceMotion: false,
   invertY: false,
   screenShake: 1,
   flashes: true,
   cameraTilt: true,
   quality: 'medium',
   bindings: {},
+  gamepad: defaultGamepadSettings(),
 });
 
 let sharedSettings: Settings | undefined;
@@ -691,16 +747,16 @@ let sharedSettings: Settings | undefined;
 export function loadSettings(storage?: Storage): Settings {
   if (!storage && typeof window !== 'undefined' && sharedSettings)
     return sharedSettings;
-  let result = defaults();
+  let result = defaultSettings();
   try {
     const raw = (storage ?? localStorage).getItem(settingsKey);
     result = raw
       ? settingsSchema.parse({
-          ...defaults(),
+          ...defaultSettings(),
           quality: 'high',
           ...recordSchema.parse(JSON.parse(raw)),
         })
-      : defaults();
+      : defaultSettings();
   } catch {
     // Brak dostępu do localStorage nie blokuje zmiany ustawień w bieżącej sesji.
   }

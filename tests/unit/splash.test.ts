@@ -5,6 +5,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { getTips, loadTips, pickTip } from '../../src/ui/loadingTips';
 import tipData from '../../src/data/ui/loadingTips.pl.json';
 import { tuning } from '../../src/core/tuning';
+import { inputGlyphLabel } from '../../src/ui/inputGlyphs';
 import { createLoadingTip } from '../../src/ui/loadingTipView';
 import { readFileSync } from 'node:fs';
 import { configureFx } from '../../src/render/fxMode';
@@ -78,7 +79,12 @@ it('start pokazuje poradę z nagłówkiem, rotuje i usuwa timer przy dismiss', (
   expect(tip.querySelector('strong')?.textContent).toBe(
     pickTip('hub:test')?.label,
   );
-  expect(tip.querySelector('p')?.textContent).toBe(pickTip('hub:test')?.text);
+  expect(tip.querySelector('p')?.textContent).toBe(
+    pickTip('hub:test')?.text.replace(
+      '{attack}',
+      inputGlyphLabel('attack') ?? '',
+    ),
+  );
   const before = tip.textContent;
   vi.advanceTimersByTime(tuning.ui.loadingTipS * 1000);
   expect(tip.textContent).not.toBe(before);

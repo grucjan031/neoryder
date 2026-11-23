@@ -48,6 +48,24 @@ function setup(prepare?: (manager: MetaManager) => void) {
   return { manager, panel };
 }
 
+/** Pole slotu modułu to własna lista (`ui-select`): przycisk z `data-weapon`/`data-slot`. */
+const slotTrigger = (root: HTMLElement, weapon: string, slot: number) =>
+  root.querySelector<HTMLButtonElement>(
+    `button[data-weapon="${weapon}"][data-slot="${slot}"]`,
+  )!;
+/** Otwiera listę slotu i klika pozycję. */
+const pickModule = (
+  root: HTMLElement,
+  weapon: string,
+  slot: number,
+  value: string,
+): void => {
+  slotTrigger(root, weapon, slot).click();
+  document
+    .querySelector<HTMLElement>(`.ui-select__option[data-value="${value}"]`)!
+    .click();
+};
+
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 const box = (root: HTMLElement) =>
   root.querySelector<HTMLElement>('[data-testid="weapon-preview"]')!;
@@ -79,11 +97,7 @@ describe('podgląd broni w warsztacie', () => {
 
   it('zmiana modułu w polu slotu aktualizuje data-modules i podgląd', async () => {
     const { panel } = setup((manager) => manager.debugUnlockAll());
-    const select = panel.root.querySelector<HTMLSelectElement>(
-      'select[data-weapon="blaster"][data-slot="0"]',
-    )!;
-    select.value = 'pierce';
-    select.dispatchEvent(new Event('change'));
+    pickModule(panel.root, 'blaster', 0, 'pierce');
     await flush();
     expect(box(panel.root).dataset.modules).toBe('pierce');
     expect(fake.instances[0]!.show).toHaveBeenLastCalledWith('blaster', [

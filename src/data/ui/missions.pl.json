@@ -9,6 +9,13 @@
         "many": ", +{count} Rdzeni"
       }
     },
+    "groups": { "story": "Fabuła", "modes": "Tryby", "run": "Run" },
+    "types": { "story": "Misja", "mode": "Tryb areny", "run": "Run" },
+    "cardReward": "Nagroda: +{data} Danych",
+    "threatBadge": "Zagrożenie {level}",
+    "boardLabel": "Tablica misji",
+    "detailsLabel": "Szczegóły wyboru",
+    "levelCaption": "Wybrany poziom: {level} · {name}",
     "sector": {
       "name": "Kurogane Arms",
       "description": "Dzielnica fabryk broni korporacji Kurogane: nocne uliczki, zakłady i strzeżone magazyny. Przebij się przez kolejne warstwy sektora aż do szefa."

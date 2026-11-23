@@ -1,183 +1,90 @@
-.hub-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  padding: clamp(8px, 2vh, 24px) clamp(8px, 2vw, 24px);
-  box-sizing: border-box;
-  overflow: hidden;
-  background: radial-gradient(
-    ellipse at 50% 40%,
-    rgba(4, 8, 16, 0.72),
-    rgba(2, 4, 9, 0.94)
-  );
-  backdrop-filter: blur(4px) saturate(0.8);
-  color: var(--ui-text, #edf7ff);
-  font: 500 17px/1.4 var(--ui-font, Rajdhani, 'Segoe UI', sans-serif);
-  letter-spacing: 0.03em;
-  animation: ui-fade 160ms ease-out;
+/* Ekran stacji kryjówki: ui-screen pod stałym nagłówkiem meta; w środku panel stacji. */
+.hub-screen.ui-screen {
+  z-index: var(--z-screen);
+  top: var(--meta-bar-h, 0);
+  height: auto;
+  background: rgb(5 7 11 / 92%);
 }
-.hub-screen[hidden] {
+:root:not([data-fx='lite']) .hub-screen.ui-screen {
+  backdrop-filter: blur(0.4rem) saturate(0.8);
+}
+.hub-screen.ui-screen[hidden] {
   display: none;
 }
-.hub-screen__panel {
-  position: relative;
-  width: min(620px, 100%);
-  max-height: 90vh; /* zapas dla przeglądarek bez dvh */
-  max-height: calc((100dvh - 2 * clamp(8px, 2vh, 24px)) / var(--ui-zoom, 1));
-  overflow-y: auto;
-  padding: clamp(14px, 3vh, 26px) clamp(14px, 2.4vw, 30px)
-    clamp(14px, 3vh, 28px);
-  box-sizing: border-box;
-  background:
-    var(--ui-frame),
-    linear-gradient(180deg, rgba(0, 229, 255, 0.05), transparent 120px),
-    var(--ui-panel, rgba(6, 12, 24, 0.92));
-  border: 1px solid var(--ui-line, rgba(0, 229, 255, 0.22));
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
-  scrollbar-color: rgba(0, 229, 255, 0.35) transparent;
-  scrollbar-width: thin;
-  animation: ui-rise var(--ui-in, 200ms ease-out);
+.hub-screen .ui-screen__header {
+  width: min(96rem, 100%);
+  padding: var(--sp-4) var(--sp-6) 0;
+  gap: var(--sp-1);
 }
-.hub-screen--panel .hub-screen__panel {
-  width: min(1040px, 100%);
+.hub-screen .ui-screen__body {
+  width: min(96rem, 100%);
+  padding: var(--sp-3) var(--sp-6);
 }
-.hub-screen h1 {
-  position: relative;
-  margin: 0 0 16px;
-  padding-bottom: 10px;
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 1.1;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--ui-cyan, #00e5ff);
-  text-shadow:
-    0 1px 3px #000,
-    0 0 12px rgba(0, 229, 255, 0.4);
+.hub-screen .ui-actionbar {
+  width: min(96rem, 100%);
 }
-.hub-screen h1::before {
-  content: 'KRYJÓWKA ISKRY // STACJA';
-  content: 'KRYJÓWKA ISKRY // STACJA' / '';
-  display: block;
-  margin-bottom: 5px;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  color: var(--ui-faint, #7d93a3);
-  text-shadow: none;
-}
-.hub-screen h1::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.7), transparent);
+.hub-screen .ui-title {
+  font-size: var(--fs-26);
 }
 .hub-screen__note {
-  color: var(--ui-muted, #a9bccb);
-  font-size: 0.9em;
-}
-.hub-screen__hint {
-  margin-bottom: 0;
-  color: var(--ui-faint, #7d93a3);
-  font-size: 0.85em;
-}
-.hub-screen__panel > button {
-  display: block;
-  width: 100%;
-  margin: 10px 0;
-  padding: 14px 16px;
-  text-align: left;
-  font: inherit;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ui-text, #edf7ff);
-  background: rgba(6, 12, 24, 0.5);
-  border: 1px solid rgba(0, 229, 255, 0.28);
-  border-bottom-color: rgba(0, 229, 255, 0.6);
-  cursor: pointer;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.hub-screen__panel > button[data-action='arena'] {
-  color: var(--ui-cyan, #00e5ff);
-  background: rgba(0, 229, 255, 0.1);
-  border-color: rgba(0, 229, 255, 0.65);
-}
-.hub-screen__panel > button:hover,
-.hub-screen__panel > button:focus-visible {
-  background: rgba(0, 229, 255, 0.15);
-  border-color: var(--ui-cyan, #00e5ff);
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.25);
-}
-.hub-screen__panel > button:focus-visible {
-  outline: 2px solid var(--ui-cyan, #00e5ff);
-  outline-offset: 3px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .hub-screen,
-  .hub-screen__panel {
-    animation: none;
-  }
-  .hub-screen__panel > button {
-    transition: none;
-  }
+  margin: 0;
+  color: var(--c-text-muted);
 }
 
+/* Zaślepka stacji / poligon: opis i lista trybów */
+.hub-stub {
+  align-self: start;
+  width: min(40rem, 100%);
+  margin: 0 auto;
+}
+.hub-stub__inner {
+  display: grid;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+}
+.hub-stub__text {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: var(--fs-16);
+}
+.hub-stub__list {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+/* Podpowiedź interakcji (świat 3D): glif + etykieta stacji */
 .hub-prompt {
   position: fixed;
   left: 50%;
   bottom: 22%;
   transform: translateX(-50%);
-  z-index: 90;
+  z-index: var(--z-panel);
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 2.25rem minmax(0, 1fr);
   grid-template-rows: auto auto;
   align-items: center;
-  column-gap: 14px;
-  row-gap: 2px;
-  min-height: 44px;
-  max-width: calc(100vw - 32px);
-  padding: 4px 0 10px;
+  column-gap: var(--sp-3);
+  row-gap: 0.1rem;
+  max-width: calc(100vw - 2rem);
   box-sizing: border-box;
-  color: var(--hud-text, #edf7ff);
-  font:
-    600 18px/1.15 Rajdhani,
-    'Segoe UI',
-    sans-serif;
+  padding: var(--sp-2) var(--sp-5) var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-panel);
+  clip-path: var(--cut-shape);
+  color: var(--c-text);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
-  animation: hub-prompt-in 0.18s ease-out;
+  animation: hub-prompt-in var(--t-slow) var(--ease);
 }
 .hub-prompt::before {
   content: attr(aria-label);
   grid-column: 2;
   grid-row: 1;
   align-self: end;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 9px;
-  font-weight: 500;
-  line-height: 1.1;
+  color: var(--c-text-faint);
+  font: 500 var(--fs-12) / 1.1 var(--font-display);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #8faebc;
-}
-.hub-prompt::after {
-  content: '';
-  position: absolute;
-  left: 44px;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, #00e5ffb0, transparent);
-  pointer-events: none;
 }
 .hub-prompt[hidden] {
   display: none;
@@ -187,20 +94,15 @@
   grid-row: 1 / 3;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  min-width: 2rem;
+  height: 2rem;
+  box-sizing: border-box;
   margin: 0;
-  border: 1px solid #00e5ff90;
-  border-radius: 50%;
-  background: none;
-  color: var(--hud-health, #00e5ff);
-  font:
-    600 18px/1 Rajdhani,
-    'Segoe UI',
-    sans-serif;
-  text-shadow:
-    0 1px 3px #000,
-    0 0 10px #00e5ff80;
+  border: 1px solid var(--c-accent-line);
+  border-radius: 0.25rem;
+  background: var(--c-accent-dim);
+  color: var(--c-accent-strong);
+  font: 700 var(--fs-16) / 1 var(--font-display);
 }
 .hub-prompt span {
   grid-column: 2;
@@ -208,77 +110,40 @@
   align-self: start;
   min-width: 0;
   overflow-wrap: anywhere;
-  font:
-    600 18px/1.15 Rajdhani,
-    'Segoe UI',
-    sans-serif;
-  letter-spacing: 0.12em;
+  color: var(--c-text);
+  font: 600 var(--fs-16) / 1.15 var(--font-display);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--hud-text, #edf7ff);
-  text-shadow:
-    0 1px 3px #000,
-    0 0 12px #00e5ff20;
 }
 @keyframes hub-prompt-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 8px);
+    transform: translate(-50%, var(--slide));
   }
   to {
     opacity: 1;
     transform: translate(-50%, 0);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .hub-prompt {
-    animation: none;
-  }
-  .hub-prompt kbd,
-  .hub-prompt span {
-    text-shadow: 0 1px 3px #000;
-  }
-}
 
+/* Rozmowa z NPC: ramka na dole ekranu (imię, rola, kwestia) */
 .hub-dialog {
   position: fixed;
   left: 50%;
-  bottom: 9%;
+  bottom: 7%;
   transform: translateX(-50%);
-  z-index: 91;
-  width: min(640px, calc(100vw - 32px));
+  z-index: calc(var(--z-panel) + 1);
+  width: min(44rem, calc(100vw - 2rem));
   box-sizing: border-box;
-  padding: 12px 22px 14px;
-  color: var(--hud-text, #edf7ff);
-  font:
-    500 19px/1.35 Rajdhani,
-    'Segoe UI',
-    sans-serif;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    #070b16c8 14%,
-    #070b16c8 86%,
-    transparent
-  );
+  padding: var(--sp-3) var(--sp-5) var(--sp-4);
+  border: 1px solid var(--c-line-strong);
+  border-left: 3px solid var(--c-accent);
+  background: var(--c-panel);
+  clip-path: var(--cut-shape);
+  color: var(--c-text);
+  font: 400 var(--fs-16) / 1.5 var(--font-body);
   pointer-events: none;
-  animation: hub-dialog-in 0.2s ease-out;
-}
-.hub-dialog::before,
-.hub-dialog::after {
-  content: '';
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  height: 1px;
-  pointer-events: none;
-}
-.hub-dialog::before {
-  top: 0;
-  background: linear-gradient(90deg, transparent, #ffae1a90, transparent);
-}
-.hub-dialog::after {
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, #00e5ffb0, transparent);
+  animation: hub-dialog-in var(--t-slow) var(--ease);
 }
 .hub-dialog[hidden] {
   display: none;
@@ -286,34 +151,28 @@
 .hub-dialog__header {
   display: flex;
   align-items: baseline;
-  gap: 14px;
-  margin-bottom: 4px;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-1);
 }
 .hub-dialog__name {
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: 0.14em;
+  color: var(--c-accent);
+  font: 700 var(--fs-20) / 1.1 var(--font-display);
+  letter-spacing: var(--track-display);
   text-transform: uppercase;
-  color: #ffae1a;
-  text-shadow:
-    0 1px 3px #000,
-    0 0 12px #ffae1a60;
 }
 .hub-dialog__role {
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.2em;
+  color: var(--c-text-faint);
+  font: 500 var(--fs-12) / 1 var(--font-display);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #8faebc;
 }
 .hub-dialog__line {
   margin: 0;
-  text-shadow: 0 1px 3px #000;
 }
 @keyframes hub-dialog-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 8px);
+    transform: translate(-50%, var(--slide));
   }
   to {
     opacity: 1;
@@ -321,6 +180,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .hub-prompt,
   .hub-dialog {
     animation: none;
   }

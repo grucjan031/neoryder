@@ -1,74 +1,68 @@
+/* Sekcja „Drużyna”: karty towarzyszy w stylu Neon Noir console (tokeny --c-*, bursztyn jako akcent). */
 .squad-picker {
   display: grid;
-  gap: 8px;
-  font-family: var(--ui-font);
-  color: #f4f7fa;
+  gap: var(--sp-2);
+  color: var(--c-text);
+  font: 400 var(--fs-14) / 1.4 var(--font-body);
 }
 .squad-picker[hidden] {
   display: none;
 }
 .squad-picker__title {
-  margin: 4px 0 0;
-  font-size: 0.85em;
+  margin: var(--sp-1) 0 0;
+  color: var(--c-text-muted);
+  font: 700 var(--fs-14) / 1.2 var(--font-display);
+  letter-spacing: var(--track-display);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #8894a8;
 }
 .squad-picker__hint,
 .squad-picker__summary {
   margin: 0;
-  font-size: 0.85em;
-  color: #b9c6d1;
+  color: var(--c-text-muted);
+  font-size: var(--fs-12);
 }
 .squad-picker__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--sp-2);
 }
 .squad-picker__card {
   display: grid;
-  grid-template-columns: 44px 1fr;
-  gap: 10px;
+  grid-template-columns: 2.75rem 1fr;
+  gap: var(--sp-3);
   align-items: center;
-  padding: 8px 10px;
-  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-line);
+  border-left: 3px solid var(--c-line-strong);
+  background: var(--c-panel-raise);
+  color: var(--c-text);
   font: inherit;
-  color: #f4f7fa;
-  background: #0c1626;
-  border: 1px solid rgba(255, 174, 26, 0.3);
-  border-left: 4px solid #3a5263;
-  cursor: pointer;
+  text-align: left;
 }
 .squad-picker__card[data-state='selected'] {
-  border-left-color: #ffae1a;
-  background: rgba(255, 174, 26, 0.1);
-  box-shadow: inset 0 0 0 1px #ffae1a;
+  border-color: var(--c-accent-line);
+  border-left-color: var(--c-accent);
+  background: var(--c-accent-dim);
 }
 .squad-picker__card[data-state='locked'] {
-  color: #6b7686;
-  background: #060b15;
-  border-color: rgba(255, 174, 26, 0.1);
-  cursor: not-allowed;
-}
-.squad-picker__card:hover:not([data-state='locked']),
-.squad-picker__card:focus-visible {
-  outline: 2px solid #ffae1a;
-  outline-offset: 2px;
+  color: var(--c-text-faint);
+  background: var(--c-panel-solid);
+  opacity: 0.7;
 }
 .squad-picker__portrait {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  font-size: 1.4em;
-  font-weight: 700;
-  color: #ffae1a;
-  background: #070d1a;
-  border: 1px solid rgba(255, 174, 26, 0.45);
+  width: 2.75rem;
+  height: 2.75rem;
+  box-sizing: border-box;
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-panel-solid);
+  color: var(--c-accent);
+  font: 700 var(--fs-20) / 1 var(--font-display);
 }
 .squad-picker__card[data-state='locked'] .squad-picker__portrait {
-  color: #4a5666;
-  border-color: rgba(255, 174, 26, 0.12);
+  color: var(--c-text-faint);
+  border-color: var(--c-line);
 }
 .squad-picker__body {
   display: grid;
@@ -76,6 +70,9 @@
 }
 .squad-picker__role,
 .squad-picker__status {
-  font-size: 0.8em;
-  color: #8894a8;
+  color: var(--c-text-faint);
+  font-size: var(--fs-12);
+}
+.squad-picker__card[data-state='selected'] .squad-picker__status {
+  color: var(--c-accent);
 }

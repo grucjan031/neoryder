@@ -4,6 +4,7 @@ import { Rng } from './core/rng';
 import { GameLoop } from './core/loop';
 import { FeelSystem } from './core/feel';
 import { Input } from './core/input';
+import { Rumble } from './core/input/rumble';
 import { tuning, createTuningGui } from './core/tuning';
 import { applyLookPreset } from './render/lookPresets';
 import type { GameContext } from './core/context';
@@ -40,14 +41,35 @@ import { FrameProfiler, setFrameProfiler } from './render/frameProfiler';
 import { RenderInfoProbe } from './render/renderInfo';
 import { readSplashAct, showBootSplash } from './ui/bootSplash';
 import type { BootSplash } from './ui/bootSplash';
+import { bindInputGlyphs, setInputHint } from './ui/inputGlyphs';
+import { applyUiSettings } from './ui/theme/applySettings';
+import { uiSounds } from './audio/uiSounds';
+import {
+  isNavigationButton,
+  PadNavigation,
+  padScope,
+} from './ui/padNavigation';
 import './ui/styles.css';
 import './ui/pointerLockHint.css';
 
 let bootSplash: BootSplash | undefined;
 
+function pollPadFrames(update: (dt: number) => void): () => void {
+  let last = performance.now();
+  let request = requestAnimationFrame(function frame(now) {
+    update(Math.max(0, now - last) / 1000);
+    last = now;
+    request = requestAnimationFrame(frame);
+  });
+  return () => cancelAnimationFrame(request);
+}
+
 async function main(): Promise<void> {
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) throw new Error('Brak elementu aplikacji.');
+  const bus = new EventBus();
+  const glyphsOff = bindInputGlyphs(bus);
+  const navigation = new PadNavigation();
   const params = new URLSearchParams(location.search);
   setDifficultyOverride(params.get('difficulty'));
   // Decyzja właściciela 18.11: nowy gracz startuje na Trudnym (Normalny ≈ dawna gra).
@@ -56,6 +78,8 @@ async function main(): Promise<void> {
     saveSettings({ ...loadSettings(), difficulty: 'hard' });
   applyLookPreset(location.search);
   configureFx(params);
+  applyUiSettings(loadSettings());
+  uiSounds();
   const requested = params.get('scene');
   if (
     requested === 'run' &&
@@ -74,6 +98,25 @@ async function main(): Promise<void> {
   );
   const debug = import.meta.env.DEV || params.get('debug') === '1';
   if (requested === null) {
+    const input = new Input(app, undefined, {
+      bus,
+      settings: () => loadSettings().gamepad,
+      keyboardActions: false,
+    });
+    const stopPolling = pollPadFrames((dt) => {
+      input.update(dt, false);
+      navigation.update(
+        input.activeDevice.device === 'gamepad' ? input.padFrame : null,
+        dt,
+      );
+    });
+    const disposePad = (): void => {
+      stopPolling();
+      input.dispose();
+      glyphsOff();
+    };
+    window.addEventListener('pagehide', disposePad, { once: true });
+    import.meta.hot?.dispose(disposePad);
     if (debug && params.get('scenes') === '1') {
       const sceneParams = new URLSearchParams(params);
       sceneParams.delete('scenes');
@@ -114,6 +157,7 @@ async function main(): Promise<void> {
     import('three'),
     import('./render/outline'),
   ]);
+  bootSplash?.setProgress(0.35);
   const seed =
     params.get('seed') ??
     (sceneId === 'arena-mutators'
@@ -153,12 +197,46 @@ async function main(): Promise<void> {
   const scene = createScene();
   const settings = loadSettings();
   tuning.camera.fov = settings.fov;
-  const input = new Input(renderer.domElement, () => settings.bindings);
-  const bus = new EventBus();
+  const input = new Input(renderer.domElement, () => settings.bindings, {
+    bus,
+    settings: () => settings.gamepad,
+  });
+  const rumble = new Rumble(
+    bus,
+    () =>
+      input.activeDevice.device === 'gamepad' ? input.padFrame?.pad : undefined,
+    () => settings.gamepad,
+    tuning.gamepad.rumble,
+    () => camera.position,
+  );
   pipeline.bindEvents(bus);
   const stats = debug ? new StatsPanel() : undefined;
   const loop = new GameLoop(
     {
+      beforeFrame: (frameDt) => {
+        let scope: HTMLElement | undefined;
+        input.update(frameDt, () => {
+          scope = padScope();
+          return !loop.paused && !scope;
+        });
+        const frame =
+          input.activeDevice.device === 'gamepad' ? input.padFrame : null;
+        const pauseButton = input.padPauseButton;
+        if (
+          frame &&
+          scope?.matches('.pause-menu') &&
+          (frame.pressed.has(9) ||
+            (pauseButton !== undefined && !isNavigationButton(pauseButton)))
+        ) {
+          resume();
+          return;
+        }
+        if (pauseButton !== undefined && !scope) {
+          pause();
+          return;
+        }
+        navigation.update(frame, frameDt, scope ?? null);
+      },
       step: (dt) => {
         profiler?.begin('step');
         try {
@@ -248,6 +326,7 @@ async function main(): Promise<void> {
   const ctx: GameContext = {
     // Wywoływane w geście użytkownika (np. „Jeszcze raz”): zdejmuje pauzę i przechwytuje mysz.
     resume: () => resume(),
+    input,
     bus,
     audio,
     rng: new Rng(seed),
@@ -269,19 +348,33 @@ async function main(): Promise<void> {
   // Tryb lite (testy na rendererze programowym) nie rozgrzewa: nakładka i tak nie ma obrazu.
   if (!getLiteFx())
     setRenderWarmUp((cancelled) => pipeline.warmUp(three, camera, cancelled));
-  await scene.init(ctx, three);
-  window.addEventListener('resize', resize);
-  // Ekran startowy zasłania obraz do `scene_loaded`: shadery i tekstury kompilujemy teraz, nie w pierwszej klatce gry.
+  const stopLoadingPoll = pollPadFrames((dt) => input.update(dt, false));
+  bootSplash?.setProgress(0.55);
   try {
-    await warmUpRender();
-  } catch (error) {
-    console.warn('Rozgrzewka renderu nie powiodła się.', error);
+    await scene.init(ctx, three);
+    bootSplash?.setProgress(0.8);
+    window.addEventListener('resize', resize);
+    // Ekran startowy zasłania obraz do `scene_loaded`.
+    try {
+      await warmUpRender();
+    } catch (error) {
+      console.warn('Rozgrzewka renderu nie powiodła się.', error);
+    }
+    bootSplash?.setProgress(0.95);
+  } finally {
+    stopLoadingPoll();
   }
   const hint = document.createElement('p');
   hint.className = 'hint';
-  hint.textContent = debug
-    ? `NEORYDER / ${scene.id} · kliknij scenę, aby przechwycić mysz · \` konsola`
+  const keyboardHint = debug
+    ? `NEORYDER / ${scene.id} · kliknij scenę, aby przechwycić mysz · {console} konsola`
     : `NEORYDER / ${scene.id} · kliknij scenę, aby przechwycić mysz`;
+  const padHint = `NEORYDER / ${scene.id} · {pause} pauza`;
+  setInputHint(hint, keyboardHint, padHint);
+  const hintOff = bus.on('input:deviceChanged', ({ device }) => {
+    if (device === 'keyboardMouse' && !input.pointerLocked)
+      setInputHint(hint, keyboardHint, padHint);
+  });
   app.append(hint);
   const ownsInterface = (): boolean =>
     document.querySelector(
@@ -297,6 +390,8 @@ async function main(): Promise<void> {
     settings,
     () => {
       input.clear();
+      if (!settings.gamepad.vibration || !settings.gamepad.vibrationStrength)
+        rumble.stop();
       updateQuality();
       tuning.camera.fov = settings.fov;
       audio.updateVolume();
@@ -342,6 +437,7 @@ async function main(): Promise<void> {
     if (
       event.code !== 'Escape' ||
       event.repeat ||
+      (!event.isTrusted && input.activeDevice.device === 'gamepad') ||
       settingsScreen.visible ||
       pauseMenu.visible ||
       ownsInterface()
@@ -360,9 +456,14 @@ async function main(): Promise<void> {
     syncAudioPause();
     unlockAudio();
     input.requestPointerLock();
-    hint.textContent = debug
-      ? `NEORYDER / ${scene.id} · \` konsola`
-      : `NEORYDER / ${scene.id}`;
+    if (input.activeDevice.device === 'keyboardMouse')
+      setInputHint(
+        hint,
+        debug
+          ? `NEORYDER / ${scene.id} · {console} konsola`
+          : `NEORYDER / ${scene.id}`,
+        padHint,
+      );
   };
   renderer.domElement.addEventListener('click', resume);
   const feel = new FeelSystem(bus, loop, tuning);
@@ -496,6 +597,9 @@ async function main(): Promise<void> {
     for (const event of unlockEvents)
       window.removeEventListener(event, unlockAudio);
     input.dispose();
+    rumble.dispose();
+    hintOff();
+    glyphsOff();
     disposeConsole?.();
     gui?.destroy();
     stats?.dom.remove();

@@ -1,0 +1,210 @@
+/* Wybór zestawu przed falą 1 / runem: karty ścieżek (Ostrze, Moc, Strzelec) i hybryd.
+   Mieści się w 1366×768 bez przewijania (wymiary w rem, zwarte karty). Kolor ścieżki =
+   znacznik na karcie (nie kolor fokusu): fokus i hover są zawsze bursztynowe. */
+.build-select {
+  --path-melee: var(--c-neutral-info);
+  --path-power: var(--c-resonance);
+  --path-gun: var(--c-accent);
+  --path-hybrid: var(--c-violet);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+  box-sizing: border-box;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgb(255 181 71 / 7%), transparent 55%),
+    rgb(5 7 11 / 94%);
+  color: var(--c-text);
+  font: 400 var(--fs-14) / 1.45 var(--font-body);
+  color-scheme: dark;
+}
+.build-select[hidden] {
+  display: none;
+}
+.build-select__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: min(72rem, 100%);
+  max-height: calc(100dvh - 2 * var(--sp-4));
+  box-sizing: border-box;
+  padding: var(--sp-5) var(--sp-6);
+  overflow-y: auto;
+  animation: ui-enter var(--t-slow) var(--ease);
+}
+.build-select__panel::before {
+  background: var(--c-panel-solid);
+}
+.build-select__head {
+  display: grid;
+  gap: var(--sp-1);
+}
+.build-select__title {
+  margin: 0;
+  color: var(--c-text);
+  font: 700 var(--fs-26) / 1.1 var(--font-display);
+  letter-spacing: var(--track-display);
+  text-transform: uppercase;
+}
+.build-select__subtitle {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+.build-select__section {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--sp-1) 0 0;
+  color: var(--path-hybrid);
+  font: 600 var(--fs-14) / 1.2 var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.build-select__section::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--c-line-strong);
+}
+.build-select__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.build-select__card {
+  --card-accent: var(--path-melee);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--c-line);
+  background:
+    linear-gradient(var(--card-accent), var(--card-accent)) top / 100% 3px
+      no-repeat,
+    var(--c-panel-raise);
+  clip-path: var(--cut-shape);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.build-select__card:is(:hover, :focus-visible) {
+  background:
+    linear-gradient(var(--card-accent), var(--card-accent)) top / 100% 3px
+      no-repeat,
+    var(--c-panel-hover);
+}
+.build-select__card[data-loadout='resonance'] {
+  --card-accent: var(--path-power);
+}
+.build-select__card[data-loadout='gunner'] {
+  --card-accent: var(--path-gun);
+}
+.build-select__card--hybrid,
+.build-select__card--hybrid[data-loadout] {
+  --card-accent: var(--path-hybrid);
+}
+.build-select__name {
+  color: var(--card-accent);
+  font: 700 var(--fs-16) / 1.2 var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.build-select__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.build-select__description {
+  color: var(--c-text);
+  line-height: 1.4;
+}
+.build-select__line {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: var(--sp-2);
+  padding-top: var(--sp-1);
+  border-top: 1px solid var(--c-line);
+}
+.build-select__label {
+  color: var(--c-text-faint);
+  font: 500 var(--fs-12) / 1.6 var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.build-select__items {
+  color: var(--c-text);
+  font-weight: 600;
+}
+.build-select__line--synergy .build-select__items {
+  color: var(--c-violet);
+}
+
+/* Wariant ostrza: rząd przycisków, zaznaczony ma znacznik ◆ i bursztynową ramkę. */
+.build-select__blades {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--sp-2);
+}
+.build-select__blades-label {
+  align-self: center;
+  min-width: 4.5rem;
+  color: var(--c-text-faint);
+  font: 600 var(--fs-14) / 1.2 var(--font-display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.build-select__blade {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-line);
+  background: var(--c-panel-raise);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.build-select__blade[aria-pressed='true'] {
+  border-color: var(--c-accent-line);
+  background: var(--c-accent-dim);
+}
+.build-select__blade[aria-pressed='true'] .build-select__blade-name::before {
+  content: '◆ ';
+  content: '◆ ' / '';
+  color: var(--c-accent);
+}
+.build-select__blade-name {
+  color: var(--c-text);
+  font: 700 var(--fs-14) / 1.3 var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.build-select__blade-desc {
+  color: var(--c-text-muted);
+  font-size: var(--fs-14);
+}
+.build-select__bar {
+  border-top: 1px solid var(--c-line);
+}
+.build-select__bar .ui-actionbar {
+  width: 100%;
+  padding-inline: 0;
+}
+@media (max-width: 900px) {
+  .build-select__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .build-select__panel {
+    padding: var(--sp-4);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .build-select__panel {
+    animation: none;
+  }
+}

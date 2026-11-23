@@ -1,0 +1,26 @@
+{
+  "on": "Wł.",
+  "off": "Wył.",
+  "select": "Wybierz",
+  "confirm": "Potwierdź",
+  "cancel": "Anuluj",
+  "back": "Wróć",
+  "close": "Zamknij",
+  "tabs": "Zakładki",
+  "navigate": "Nawigacja",
+  "adjust": "Zmień",
+  "reset": "Przywróć domyślne",
+  "resume": "Wznów",
+  "leave": {
+    "hub": { "title": "Wrócić do kryjówki?", "message": "Bieżący run lub misja zostanie przerwany. Postęp zapisany do tej pory zostaje.", "confirm": "Wróć do kryjówki" },
+    "menu": { "title": "Wyjść do menu głównego?", "message": "Bieżąca rozgrywka zostanie przerwana. Postęp zapisany do tej pory zostaje.", "confirm": "Menu główne" }
+  },
+  "path": {
+    "mainMenu": "Menu główne",
+    "pause": "Pauza"
+  },
+  "loading": {
+    "label": "Ładowanie",
+    "tipsLabel": "Porada"
+  }
+}

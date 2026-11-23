@@ -129,22 +129,27 @@ describe('panel Naszywki Iskry', () => {
       }),
     );
     const tabs = panel.root.querySelectorAll<HTMLButtonElement>('[role="tab"]');
-    expect(tabs).toHaveLength(2);
-    const views = panel.root.querySelectorAll<HTMLElement>('[role="tabpanel"]');
-    expect(views[0]!.hidden).toBe(false);
-    expect(views[1]!.hidden).toBe(true);
+    // Cztery drzewka i zakładka Naszywki Iskry.
+    expect(tabs).toHaveLength(5);
+    const last = tabs[4]!;
+    const achievements = panel.root.querySelector<HTMLElement>(
+      '#talents-view-achievements',
+    )!;
+    expect(achievements.hidden).toBe(true);
     expect(tabs[0]!.getAttribute('aria-selected')).toBe('true');
-    tabs[0]!.focus();
-    tabs[0]!.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
-    );
-    expect(tabs[1]!.getAttribute('aria-selected')).toBe('true');
-    expect(document.activeElement).toBe(tabs[1]);
-    expect(views[1]!.hidden).toBe(false);
-    expect(views[0]!.hidden).toBe(true);
+    last.focus();
+    last.click();
+    expect(last.getAttribute('aria-selected')).toBe('true');
+    expect(achievements.hidden).toBe(false);
     expect(panel.root.querySelectorAll('.achv-card')).toHaveLength(26);
+    // Strzałki przechodzą po zakładkach, w tym wstecz do drzewka.
+    last.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
+    );
+    expect(tabs[3]!.getAttribute('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[3]);
+    expect(achievements.hidden).toBe(true);
     tabs[0]!.click();
-    expect(views[0]!.hidden).toBe(false);
     expect(panel.root.querySelector('.talents-node')).not.toBeNull();
   });
 });
@@ -174,9 +179,11 @@ describe('warsztat: bramka naszywki', () => {
     expect(node.dataset.status).toBe('achievement');
     expect(node.querySelector('.achv-lock')).not.toBeNull();
     expect(node.textContent).toContain('Wymaga naszywki: Taniec ostrza');
-    expect(node.querySelector<HTMLButtonElement>('button')!.disabled).toBe(
-      true,
-    );
+    expect(
+      node.querySelector<HTMLButtonElement>('button')!.getAttribute(
+        'aria-disabled',
+      ),
+    ).toBe('true');
     meta.debugGrantAchievement('taniec-ostrza');
     panel.refresh();
     const unlocked = panel.root.querySelector<HTMLElement>(

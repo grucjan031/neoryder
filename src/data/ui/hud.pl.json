@@ -1,7 +1,7 @@
 {
   "arenaAmmo": "Amunicja",
   "arenaMutator": "Mutator",
-  "execute": "[LPM] Wykończ",
+  "execute": "[{attack}] Wykończ",
   "health": "Zdrowie",
   "energy": "Energia",
   "stamina": "Wytrzymałość",
@@ -30,7 +30,6 @@
   "bladeInFlight": "Ostrze w locie",
   "weapon": "Broń",
   "powers": "Moce Rezonansu",
-  "powerKeys": ["F", "E"],
   "ready": "Gotowa",
   "empty": "—",
   "seconds": "s",

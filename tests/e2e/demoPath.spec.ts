@@ -10,6 +10,17 @@ import m04 from '../../src/data/missions/m04-ladunek-klasy-k.json' with { type: 
 import m06 from '../../src/data/missions/m06-odlewnia.json' with { type: 'json' };
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy dolny róg; ekrany stacji mają tam przyciski.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 // Dozwolone console.error / pageerror. Każdy wpis wymaga nazwy i uzasadnienia;
 // lista jest pusta, bo ścieżka dema nie zgłasza żadnego błędu.
 const ALLOWED_ERRORS: { name: string; pattern: RegExp }[] = [];

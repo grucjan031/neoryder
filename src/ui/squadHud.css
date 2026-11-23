@@ -3,22 +3,22 @@
   left: var(--hud-inset, 28px);
   /* Nad blokiem zdrowia/energii, z dala od celów misji i panelu eskorty u góry. */
   bottom: calc(var(--hud-inset, 28px) + 200px);
-  z-index: 102;
-  width: 232px;
+  z-index: var(--z-hud-top);
+  width: 248px;
   pointer-events: none;
-  color: var(--ui-text);
-  font: 600 13px/1.25 var(--ui-font);
-  letter-spacing: 0.04em;
+  color: var(--c-warm);
+  font: 600 14px/1.25 var(--font-hud);
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 3px #000;
 }
 .squad-hud [hidden] {
   display: none;
 }
 .squad-hud__order {
   margin: 0 0 6px;
-  color: var(--ui-cyan);
-  font-size: 11px;
+  color: var(--c-accent);
+  font-size: 14px;
   text-transform: uppercase;
-  text-shadow: 0 0 6px #000;
 }
 .squad-hud__list {
   display: grid;
@@ -30,23 +30,24 @@
 .squad-hud__member {
   position: relative;
   display: grid;
-  grid-template-columns: 34px 1fr;
+  grid-template-columns: 36px 1fr;
   gap: 8px;
   align-items: center;
   padding: 5px 8px 5px 5px;
-  background: var(--ui-panel);
-  border-left: 2px solid var(--ui-cyan);
+  background: var(--hud-surface);
+  box-shadow: var(--hud-shadow);
+  border-left: 2px solid var(--c-text-muted);
 }
 .squad-hud__portrait {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   box-sizing: border-box;
-  border: 1px solid var(--ui-line-strong);
-  background: var(--ui-raise);
-  color: var(--ui-warm);
-  font-size: 18px;
+  border: 1px solid var(--c-line-strong);
+  background: var(--c-panel-raise);
+  color: var(--c-warm);
+  font-size: 20px;
   font-weight: 700;
 }
 .squad-hud__name {
@@ -54,12 +55,12 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 6px;
-  color: var(--ui-warm);
+  color: var(--c-warm);
   text-transform: uppercase;
 }
 .squad-hud__status {
-  color: var(--ui-muted);
-  font-size: 11px;
+  color: var(--c-text-muted);
+  font-size: 14px;
   font-weight: 500;
   text-transform: none;
   white-space: nowrap;
@@ -68,33 +69,33 @@
   display: block;
   height: 4px;
   margin-top: 4px;
-  background: rgba(255, 241, 214, 0.16);
+  background: rgb(255 241 214 / 16%);
 }
 .squad-hud__hp i {
   display: block;
   height: 100%;
-  background: var(--ui-warm);
-  transition: width var(--ui-in);
+  background: var(--c-warm);
+  transition: width var(--t-slow);
 }
 .squad-hud__member[data-state='downed'],
 .squad-hud__member[data-state='reviving'],
 .squad-hud__member[data-state='evacuated'] {
-  border-left-color: var(--ui-amber);
+  border-left-color: var(--c-accent);
 }
 .squad-hud__member[data-state='downed'] .squad-hud__status,
 .squad-hud__member[data-state='reviving'] .squad-hud__status,
 .squad-hud__member[data-state='evacuated'] .squad-hud__status {
-  color: var(--ui-amber);
+  color: var(--c-accent);
 }
 .squad-hud__member[data-state='downed'] .squad-hud__portrait,
 .squad-hud__member[data-state='evacuated'] .squad-hud__portrait {
-  border-color: var(--ui-amber);
-  color: var(--ui-amber);
+  border-color: var(--c-accent);
+  color: var(--c-accent);
   opacity: 0.75;
 }
 .squad-hud__member[data-state='downed'] .squad-hud__hp i,
 .squad-hud__member[data-state='reviving'] .squad-hud__hp i {
-  background: var(--ui-amber);
+  background: var(--c-accent);
 }
 .squad-hud__bark {
   position: absolute;
@@ -105,11 +106,12 @@
   margin: 0;
   padding: 3px 8px;
   transform: translateY(-50%);
-  background: var(--ui-panel);
-  border-left: 2px solid var(--ui-warm);
-  color: var(--ui-warm);
+  background: var(--hud-surface);
+  box-shadow: var(--hud-shadow);
+  border-left: 2px solid var(--c-warm);
+  color: var(--c-warm);
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 .squad-hud__revive {
   position: fixed;
@@ -118,27 +120,27 @@
   margin: 0;
   padding: 6px 12px 8px;
   transform: translateX(-50%);
-  background: var(--ui-panel);
-  border-top: 2px solid var(--ui-amber);
-  color: var(--ui-warm);
-  font-size: 15px;
+  background: var(--hud-surface);
+  box-shadow: var(--hud-shadow);
+  border-top: 2px solid var(--c-accent);
+  color: var(--c-warm);
+  font-size: 16px;
   text-align: center;
 }
-.squad-hud__revive span {
+.squad-hud__revive-track {
   display: block;
   height: 4px;
   margin-top: 6px;
-  background: rgba(255, 174, 26, 0.2);
+  background: var(--c-accent-dim);
 }
 .squad-hud__revive i {
   display: block;
   height: 100%;
-  background: var(--ui-amber);
+  background: var(--c-accent);
 }
 @media (max-width: 900px) {
   .squad-hud {
-    top: 24vh;
-    width: 180px;
+    width: 190px;
   }
   .squad-hud__bark {
     max-width: 160px;

@@ -1,3 +1,4 @@
+import { padAimTargets } from './padAimTargets';
 import { Conquest } from '../world/conquest';
 import { conquestMode, assaultMode, heistMode } from '../world/modes';
 import { Heist, type HeistEnemy } from '../world/heist';
@@ -587,6 +588,7 @@ export class RoomScene implements Scene {
         })),
       },
     );
+    this.player.setAimTargets(() => padAimTargets(this.manager));
     this.manager.setSpawnModifiers(this.baseSpawnModifiers());
     this.squad = new AllySquad({
       ctx,

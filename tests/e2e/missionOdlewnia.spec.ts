@@ -1,6 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy górny róg; karty tablicy misji bywają pod nim.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 // Start misji przeładowuje stronę; odpytanie w trakcie nawigacji zwraca undefined zamiast wyjątku.
 const query = (page: Page, key: string) =>
   page
