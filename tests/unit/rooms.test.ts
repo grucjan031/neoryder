@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import yard from '../../src/data/rooms/combatYard.json';
+// Mały pokój 24 × 24 m (dawny combatYard) jako stały fixture testów loadera: pokoje runu są większe.
+import yard from './fixtures/legacyYard.json';
 import pillars from '../../src/data/rooms/combatPillars.json';
 import { loadRoom, roomSchema } from '../../src/world/roomSchema';
 import { loadRoomDefinitions, roomDefinitions } from '../../src/world/rooms';
@@ -19,12 +20,13 @@ describe('pokoje F3: format, loader i układ', () => {
   it('ładuje wszystkie pliki JSON z katalogu i zachowuje dane układu', () => {
     expect([...roomDefinitions.keys()].sort()).toEqual([...roomFiles].sort());
     expect(roomDefinitions.size).toBeGreaterThanOrEqual(2);
-    for (const raw of [yard, pillars]) {
-      expect(roomDefinitions.has(raw.id)).toBe(true);
-      expect(loadRoom(raw)).toEqual(raw);
-      expect(roomDefinitions.get(raw.id)).toEqual(raw);
-      expect(raw.spawnPoints.length).toBeGreaterThanOrEqual(4);
-      expect(raw.blocks[0]?.size).toEqual({ x: 24, y: 1, z: 24 });
+    expect(loadRoom(yard)).toEqual(yard);
+    expect(yard.blocks[0]?.size).toEqual({ x: 24, y: 1, z: 24 });
+    for (const id of [yard.id, pillars.id]) {
+      const room = roomDefinitions.get(id)!;
+      expect(room).toBeDefined();
+      expect(loadRoom(room)).toEqual(room);
+      expect(room.spawnPoints.length).toBeGreaterThanOrEqual(4);
     }
   });
 

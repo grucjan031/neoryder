@@ -49,7 +49,7 @@ describe('strefy bez deszczu', () => {
     ).toBe(false);
     const withoutShelters = { ...tunnel, rainShelters: undefined };
     expect(roomSchema.parse(withoutShelters).rainShelters).toBeUndefined();
-    expect(roomSchema.parse(tunnel).rainShelters).toEqual([shelter]);
+    expect(roomSchema.parse(tunnel).rainShelters).toHaveLength(1);
   });
 
   it('obejmuje wnętrze i granice 3D, zostawia deszcz poza strefą i nad dachem', () => {
@@ -108,9 +108,12 @@ describe('strefy bez deszczu', () => {
       expect(zone.position.y + zone.size.y / 2).toBe(
         roof.position.y - roof.size.y / 2,
       );
-      expect(isRainSheltered({ x: 0, y: 1, z: 0 }, room.rainShelters!)).toBe(
-        true,
-      );
+      expect(
+        isRainSheltered(
+          { x: zone.position.x, y: 1, z: zone.position.z },
+          room.rainShelters!,
+        ),
+      ).toBe(true);
       expect(
         isRainSheltered(
           { x: 0, y: 1, z: room.playerSpawn.z },

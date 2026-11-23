@@ -210,6 +210,97 @@ Ograniczenia schematu/silnika:
 - CLI nie importuje TypeScript ani zod. Każdą nową arenę trzeba osobno
   objąć testem `roomSchema.parse` i nawigacji, tak jak demonstrację.
 
+## Profil `run` i katalog `tools/arenas/run/`
+
+Pokoje walki i elity zwykłego runu (`combat`/`elite`, losowane przez `RunScene.chooseRoom`)
+są większe niż stare pokoje 16–40 m i mają odrębne motywy. Powstają z generatorów w
+`tools/arenas/run/<id>.mjs`; JSON trafia do `src/data/rooms/<id>.json`, a rzut SVG do
+`docs/arenas/run/<id>.svg`. Ręcznie pisanego JSON-u pokoju runu się nie zostawia.
+Projekt i motywy 17 pokoi: `briefs/areny.md` (partie A, B, C).
+
+`checkArena(arena, metadata, { profile: 'run' })` (CLI wybiera go sam dla generatorów z
+`run/`) zastępuje progi dużych aren (240–450 m, 40 000 m², ≥16 spawnów). Profil dużych
+aren jest bez zmian. Progi (`RUN_PROFILE` w `lib/check.mjs`):
+
+| Reguła | combat | elite |
+| --- | --- | --- |
+| najdłuższa oś obwiedni (`dimensions`) | 70–100 m | 90–130 m |
+| powierzchnia chodzenia (`walkable-area`) | ≥ 3 500 m² | ≥ 6 000 m² |
+| strefy (`zones`) | 3–5 | 3–5 |
+| poziomy (`height-levels`) | ≥ 2 | ≥ 3 |
+| każdy poziom powyżej/poniżej startu ma rampę (`level-ramps`) | tak | tak |
+| spawny (`spawn-count`) | ≥ 10 | ≥ 14 |
+| udział jednego modelu (`prop-share`) | ≤ 20% | ≤ 20% |
+| linia start → wyjście (`straight-route`) | zablokowana ≥ 8 m i przecina ≥ 2 strefy | jw. |
+
+Sprawdzane nadal: wolnostojące słupy (`unsupported-pillars`), granice spawnów i stref.
+Pominięte względem dużych aren: kwadratowy obrys, punkty A–E, rodzaje stref.
+`level-ramps`: dla każdego poziomu z `measure.levels` (≠ poziom startu) musi istnieć
+`walkable` blok obrócony wokół X lub Z, którego koniec górnej płaszczyzny leży w ±0,3 m
+od tego poziomu; schody nie liczą się, bo wrogowie po nich nie chodzą. `straight-route`
+próbkuje odcinek od `playerSpawn` do drzwi wyjścia co 0,5 m (bez ostatnich 2 m) i liczy
+długość zajętą przez bryły o wysokości człowieka (górą > 1,2 m nad podłogą startu).
+Metryki raportu mają dodatkowo `routeBlockedM` i `routeZones`.
+
+### Kształt pokoju runu
+
+- `createArena({ ..., exclusive: false })`: run losuje wyłącznie pokoje bez
+  `arena.exclusive` (`RunScene.chooseRoom`), więc pole się pomija. Blok `arena` zostaje:
+  jego `spawnRing` włącza w `RoomScene` statyczne batchowanie (`instance` i scalanie
+  dekoracji, bez tego każdy blok to osobny obiekt) i wspinanie wrogów po niskich stopniach.
+  Schemat wymaga 3–5 punktów A–E, więc generator podaje trzy; w runie nie mają znaczenia.
+- Typ (`combat`/`elite`), `doors` (`entry` przy południowej ścianie, `exit` przy północnej,
+  4 × 3 × 1 m w otworze muru), `director` (jak w starych pokojach: combat 3/2 żetony,
+  elite 4/3), `maxAlive` (combat 9–10, elite 11–12) i `minSpawnDistance` ustawia
+  `createRunRoom`/generator. `id` pokoju jest niezmienny (zapisy runów i dane sektora).
+- `spawnPoints` (XZ, wysokość startu) leżą wyłącznie na gruncie; wyższe poziomy służą
+  graczowi, wrogowie wchodzą tam rampami. Walidacja `roomSchema` sprawdza spawny na siatce 1 m
+  od `playerSpawn`.
+- Pogoda w polu `weather` (`src/data/weather/`), motyw `neonStreet`; neony i światła tylko
+  z palety (bursztyn, zieleń, fiolet, błękit, ciepła biel). Test pilnuje zakazanych kolorów.
+
+### Katalog
+
+| Plik | Rola |
+| --- | --- |
+| `run/_runKit.mjs` | wspólny zestaw: `createRunRoom` (arena + drzwi + dyrektor), `mass` (elewacja), `deck` (dach/antresola z podłogą), `ramp`, `prop` (model z kolizją i rezerwacją rzutu), `face/faceNeon` (dodatki na elewacji), `lamp`, `perimeter` (mury z otworami na drzwi), `finish` (strefy, punkty, oprawa) |
+| `run/<id>.mjs` | generator pokoju; eksportuje też `shots` (widoki kontrolne) |
+| `run/_shots.mjs` | zrzuty z gry: `node tools/arenas/run/_shots.mjs <katalog> <id>...` przy `npx vite --port 5192 --strictPort` |
+| `run/_wallKit.mjs` | `dressWall`: dekoracje i neony co kilka metrów wzdłuż ściany (zestawy `KITS`, `maxY` dla niskich budynków); gęsta oprawa ścian |
+| `tests/unit/arenaRun.test.ts` | testy profilu i aren partii A i B (alleyBackstreet, alleyCrossing, alleyMarket, alleyUnderpass, combatCorridor, combatFloodedTunnel, combatLaserYard, combatPillars, combatPlatforms) |
+
+Budowa: `node tools/arenas/build.mjs <id>` (generator z `run/` ma pierwszeństwo przed
+głównym katalogiem) albo `node tools/arenas/build.mjs --run` dla wszystkich z `run/`.
+Wynik CLI dla runu zawiera liczbę bloków i świateł oraz metryki trasy.
+
+### Wzorzec dla kolejnych pokoi (z partii A)
+
+- Najpierw rzut: obwiednia, strefy, trasa start → wyjście, landmark. Dopiero potem rekwizyty.
+- Wszystkie krawędzie podłóg i końce ramp na liczbach całkowitych. Złącze rampy z płytą
+  na połowie metra (środek komórki nawigacji) psuje `ArenaSurfaceNavigation`: poziom jest
+  nieosiągalny mimo poprawnego colliderów. Rampa o spadku ≤ 0,35 (wznios/długość).
+- Pasarele i dachy muszą mieć szerokość ≥ 4–5 m: osłona w środku zwęża korytarz poniżej
+  `navigationClearanceM` (0,8 m z każdej strony) i zamyka trasę AI. Osłony na wąskich
+  pasarelach pomijamy.
+- Filary i inne wolnostojące bryły rejestruj w `k.reserve`; `k.prop` i `k.spawn` ostrzegają,
+  gdy rekwizyt lub spawn leży w rzucie bryły albo bliżej niż 1 m od niej. Ostrzeżenia generatora
+  są błędami w teście.
+- `prop` z modelem 90° to dekoracja z niewidocznym, osiowym colliderem o zamienionych wymiarach.
+- Udział modelu: lampy (`city_street_lamp`) i tory też liczą się do `prop-share`; urozmaicaj
+  modele osłon i dekoracji.
+- Dach/ceilings: spód dachu równo z wierzchem kolumn (kolumny są wtedy „podparte” dla testu słupów).
+- Pokoje użyte w misjach (`src/data/missions/*.json`, `fixedNodes[].roomId`) mają cele o stałych
+  współrzędnych: m01 stawia maszty w `alleyCrossing` i `alleyMarket` w (0, 0, 0) (strefa 1,6 m,
+  strażnicy w promieniu 3 m, `helix` +1,5 m), więc środek areny musi zostać wolnym gruntem.
+  Test `arenaRun.test.ts` sprawdza to dla każdego pokoju z `fixedNodes`; przy kolejnych partiach
+  sprawdź misje (`combatYard` ma maszt 3 i wyjście w m01).
+- Testy stare, związane z geometrią pokoju, trzeba dostosować: `rainShelters.test.ts` (punkt pod dachem
+  = środek strefy) i `roomStaticBatch.test.ts` (alleyMarket przeszedł na ścieżkę areny z instancjami).
+- Hazardy (`electric_field`, `laser_gate`) muszą leżeć w całości na podłodze z wierzchem na poziomie startu (`validateLayout`): nie stawiaj ich na dnie rowu ani na dachach; odstęp od spawnów ≥ 1 m.
+- Stary Szturm (`assault.json`, `roomId: combatCorridor`) ma stałe współrzędne stacji i spawnów (|x| ≤ 7, z −15…13); `combatCorridor` zostawia tam wolną podsypkę torów bez wagonów i słupów.
+- Modele z innych zestawów (`port_*`, `dock_*`, `hw_*`, `rail_*`, `roof_*`) wymagają wpisu w `SIZE` (`Object.assign(SIZE, …)` w generatorze) albo `deco` z niewidocznym colliderem; punkt odniesienia modelu nie zawsze jest środkiem AABB (patrz `docs/assets.md`).
+- Poziomy z `tp ... floorY` w `_shots.mjs`: nie teleportuj na rampę ani w bryłę.
+
 ## Jak dodać arenę
 
 1. Dodaj `tools/arenas/<id>.mjs` z default generate i stałym seedem. Zbuduj
@@ -256,3 +347,18 @@ okręgi A–E pokazują promień punktu, × to spawny, △ START to gracz,
 małe kropki to dekoracje. Dach może zasłaniać wnętrze w rzucie z góry;
 SVG nie jest przekrojem i nie zastępuje testu kolizji ani wizyty w grze.
 Kolory mapy są legendą analityczną, a nie paletą materiałów świata.
+
+### Partia C (podstacja, magazyn, złomowisko i pięć elit)
+
+Generatory `run/combatSubstation`, `combatWarehouse`, `combatYard` (combat) oraz `eliteChemPlant`,
+`eliteCourtyard`, `eliteFoundry`, `eliteHall`, `plazaHolo` (elite) używają `run/_runKitC.mjs` (dodatek do
+`_runKit.mjs`, który zostaje bez zmian): rozmiary kolejnych modeli (`SIZE`), `track` (zapis bloków i obrysów
+ramp), `blockedAt`/`onFloor`, `scatter` (rekwizyty z kolizją rozsiewane z rng areny, z odstępem od brył,
+dróg wejścia/wyjścia i stref `avoid`), `spawns` (korekta spawnu do wolnego gruntu, margines od hazardów),
+`dressFace`/`dressPerimeter`/`wallSets`/`tower` (okładzina ścian co kilka metrów: żaluzje, rury, drzwi, ekrany,
+klimatyzatory, neony, naklejki ścienne sprawdzane względem bloku-nośnika) i `wallDecal`.
+Testy partii: `tests/unit/arenaRunC.test.ts` (kopia testów pokoi z `arenaRun.test.ts`, osobny plik, by nie
+kolidować z partią B). `roomStaticBatch.test.ts` mierzy batchowanie na pokojach runu (jeden korzeń `static-world`,
+budżet siatek `RUN_SCENE_MESH_BUDGET`). Cele misji: `combatYard` (M01: maszt 3 w (0, 0), właz w (10, 0)) i
+`combatWarehouse` (M03: terminal w (0, 0), brama w (0, −10), wartownicy w (±9, −6) i (0, −4)) mają te punkty na
+wolnym gruncie; beczki `warehouse-*` zostały w ładowni na dawnych współrzędnych.
