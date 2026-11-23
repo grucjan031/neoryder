@@ -49,6 +49,7 @@ it('tablica udostępnia M01, blokuje M03, M04 i M06 (wymaga M04) i przekazuje ko
       ['m03-list-przewozowy', 'Zablokowana'],
       ['m04-ladunek-klasy-k', 'Zablokowana'],
       ['m05-adiutant', 'Zablokowana'],
+      ['m08-kwarantanna', 'Zablokowana'],
     ] as const) {
       const button = panel.root.querySelector<HTMLButtonElement>(
         `[data-mission="${id}"]`,

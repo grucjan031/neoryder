@@ -25,6 +25,7 @@ const missions = [
     'W trakcie misji (radio i hala bossa)',
   ],
   ['m07-nocny-dyzur', 'misja-07-nocny-dyzur.md', 'W trakcie misji (radio)'],
+  ['m08-kwarantanna', 'misja-08-kwarantanna.md', 'W trakcie misji (radio)'],
 ] as const;
 
 type Line = { speaker: string; text: string };

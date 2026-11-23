@@ -412,3 +412,36 @@ Radio ma wyzwalacze `runStart`, `checkpoint:<id>` (ulica, kuchnia, magazyn, wind
 opcjonalne (ciche przejście, harmonogram transportów) i panel wyłączania wieżyczki.
 Testy: `missionM07Level.test.ts` (walidacja, alarm w strefie, przejście trasy
 kapsułą po cichym pasie), `missionM07.spec.ts` (tablica po M06, cele, alarm, pościg, debrief).
+
+## M08 — Kwarantanna
+
+`node tools/levels/buildM08.mjs` odtwarza misję, poziom, cztery fale `m08*`
+i wariant danych wroga `rozstrojony` (szybszy, mniej wytrzymały `assaulter`,
+bez broni palnej). Trasa 252 m w osi +X ma pięć sekcji:
+kordon (0–40), Skrzydło A z pralnią (40–100), Skrzydło B ze studnią i galeriami
+(100–160), dziedziniec rozładunkowy (160–212), winda (212–252).
+Galerie są scenografią; trasa ewakuacji biegnie po ciągłej podłodze.
+Motyw `neonStreet`, istniejące modele, ciepła biel lamp co 8 m i zielone
+oznaczenia szybów; bursztyn kordonu, błękit/fiolet komunikatów. Ocena jasności
+i kompozycji w grze pozostaje do wykonania przez Architekta.
+
+Spotkania: `kordon`, `oslona-a/b/c`, następnie `ewakuacja-1/2` przy 20/60%
+obrony windy. Osłony blokują otwarcie śluz przez `objectiveAfter`.
+Bramy wymagają kolejno patrolu, otwarcia każdej śluzy, przeprowadzenia każdej
+grupy i ukończenia obrony. Pięć checkpointów rozpoczyna kolejne sekcje.
+Szron dołącza przez `allies` od startu. Dziesięciu neutralnych NPC (3+3+4)
+czeka przy śluzach; bez hurtboxów, broni i nowego AI. Po zaliczeniu powiązanego
+celu `reach` host przekazuje widokowi stan `evacuated`, ukrywając grupę.
+Pozostali NPC celów (np. M05) zachowują dotychczasowe zachowanie.
+
+Ewakuacja jest uproszczona: po otwarciu śluzy gracz dochodzi do oznaczonego
+wejścia do bezpiecznego szybu, a grupa jest uznawana za wyprowadzoną.
+Nie ma animacji przejścia cywilów ani ich trwałej śmierci. Wrogowie Helixy
+i Rozstrojeni walczą z graczem i Szronem, nie między sobą.
+
+Sprawdzenie w 30 s: po `campaign complete m07-nocny-dyzur` w scenie `run`
+otwórz `?scene=mission&mission=m08-kwarantanna&debug=1&fx=lite`, `god`.
+`tp 16 0`, poczekaj na patrol, `encounter clear`; powtórz dla x=48, 108, 168.
+W odpowiedniej kolejności: śluzy x=62/122/182 (2 s), strefy x=82/142/202,
+obrona x=222 (2 s uruchomienia + 25 s), wyjście x=244 (2 s).
+Testy: `missionM08Level.test.ts`, `missionM08.spec.ts` (port 4261).

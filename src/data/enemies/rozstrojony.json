@@ -1,0 +1,48 @@
+{
+  "id": "rozstrojony",
+  "threatCost": 1,
+  "kind": "assaulter",
+  "model": "enemy_trooper",
+  "grabbable": true,
+  "maxHealth": 45,
+  "moveSpeed": 5.4,
+  "turnRateDegS": 360,
+  "attackRange": 1.8,
+  "telegraphS": 0.32,
+  "swingActiveS": 0.12,
+  "recoveryS": 0.6,
+  "cooldownS": 0.7,
+  "damage": 15,
+  "knockbackResist": 0,
+  "stunOnHeavyS": 0.6,
+  "repathJitter": 0.15,
+  "flankDistanceM": 2,
+  "body": {
+    "locomotionScale": 1,
+    "height": 1.8,
+    "halfHeight": 0.35,
+    "radius": 0.3,
+    "centerY": 1.05,
+    "headY": 1.65,
+    "headRadius": 0.22,
+    "headMultiplier": 1.5,
+    "controllerOffset": 0.02,
+    "knockbackDamping": 8,
+    "attackHalfWidth": 0.55,
+    "attackHalfHeight": 0.65
+  },
+  "animation": {
+    "strideM": 1.8,
+    "clipStrideM": {
+      "Walk_Loop": 1.41,
+      "Jog_Fwd_Loop": 4.61
+    },
+    "walkAngle": 0.5,
+    "telegraphAngle": -2.4,
+    "swingAngle": 1.2,
+    "elbowAngle": -1,
+    "stunAngle": 0.3,
+    "pulseHz": 6,
+    "pulseScale": 0.4
+  }
+}
