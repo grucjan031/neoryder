@@ -1483,7 +1483,7 @@ export class RoomScene implements Scene {
     // Tryby na dużej arenie mają własny start (układ w `arena.assault` / `arena.heist`).
     const start =
       (this.run.modeId === 'assault'
-        ? this.layout.arena?.assault?.sectors[0]?.playerSpawn
+        ? assaultForArena(assaultMode, this.layout).sectors[0]?.playerSpawn
         : this.run.modeId === 'heist'
           ? this.layout.arena?.heist?.playerSpawn
           : undefined) ?? this.layout.playerSpawn;

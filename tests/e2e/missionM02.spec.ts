@@ -1,6 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
 import { LOAD_TIMEOUT, SIM_TIMEOUT, waitSimSteps } from './helpers';
 
+// Panel debug lil-gui (dev) zasłania prawy dolny róg; ekrany stacji mają tam przyciski.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const style = document.createElement('style');
+      style.textContent = '.lil-gui { display: none !important; }';
+      document.head.append(style);
+    });
+  });
+});
+
 const ID = 'm02-punkt-kontrolny';
 const query = (page: Page, key: string) =>
   page
