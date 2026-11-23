@@ -14,7 +14,6 @@ export const COMIC_SURFACES = new Set([
   'rust_metal',
   'corrugated',
   'plaster',
-  'tiles_wall',
   'wood_planks',
   'tread_plate',
   'roof_tar',

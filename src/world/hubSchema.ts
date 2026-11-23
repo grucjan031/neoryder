@@ -111,19 +111,19 @@ export const hubStationSchema = z.object({
 export type HubStationDef = z.infer<typeof hubStationSchema>;
 
 /**
- * Płaszczyzna okładziny: `tiles` — kafle ściany (`/assets/textures/surfaces/<texture>.webp`,
+ * Płaszczyzna okładziny: `tiles` — okładzina ściany (`/assets/textures/surfaces/<texture>.webp`,
  * powtarzane co `tileM` metrów), `screen` — świecący ekran (`/assets/textures/screens/<texture>.webp`),
- * `poster` — nieprzezroczysty plakat, baner albo mural (`/assets/textures/posters/<texture>.webp`),
- * `tunnel` — malowany proceduralnie wylot tunelu metra (perspektywa w mrok, bez pliku; `texture` to tylko nazwa).
+ * `poster` — nieprzezroczysty plakat, baner albo mural (`/assets/textures/posters/<texture>.webp`).
  * Płaszczyzna patrzy w +Z przy yaw = 0. Kosmetyka bez collidera.
  */
 export const hubPanelSchema = z.object({
-  kind: z.enum(['tiles', 'screen', 'poster', 'tunnel']),
+  kind: z.enum(['tiles', 'screen', 'poster']),
   texture: textureId,
   position: vec3Schema,
   size: size2,
   yaw: finite,
   tileM: positive.optional(),
+  roughness: z.number().min(0).max(1).optional(),
   tint: hexColor.optional(),
   ...campaignGateFields,
 });
@@ -182,7 +182,7 @@ export type NpcRoute = z.infer<typeof npcRouteSchema>;
 
 /**
  * Postać niezależna kryjówki. `rotationDeg` to kierunek patrzenia na płaszczyźnie podłogi:
- * 0 = +Z (w stronę torów), 90 = +X, 180 = −Z. Teksty rozmów: `src/data/hub/npcs.pl.json` (to samo `id`).
+ * 0 = +Z (w stronę pasażu), 90 = +X, 180 = −Z. Teksty rozmów: `src/data/hub/npcs.pl.json` (to samo `id`).
  */
 export const hubNpcSchema = z
   .object({

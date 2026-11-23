@@ -7,6 +7,7 @@ import {
   LampCones,
   lampFixtures,
   lampLightDefs,
+  lanternFixtures,
 } from '../../src/render/city/lamps';
 import {
   CityLights,
@@ -134,6 +135,23 @@ describe('latarnie', () => {
     expect(fixtures[1]!.head.y).toBeCloseTo(0.5 + 2 * t.lampHeadHeightM);
     expect(fixtures[1]!.baseY).toBe(0.5);
     expect(lampFixtures(undefined)).toEqual([]);
+  });
+
+  it('sznur opraw obraca i skaluje stożki bez rezerwowania świateł punktowych', () => {
+    const spans = [
+      {
+        model: 'city_lantern_string',
+        position: { x: 2, y: 5, z: 3 },
+        yaw: Math.PI / 2,
+        scale: 2,
+      },
+    ];
+    const fixtures = lanternFixtures(spans);
+    expect(fixtures).toHaveLength(4);
+    expect(fixtures[0]!.head.x).toBeCloseTo(2);
+    expect(fixtures[0]!.head.z).toBeCloseTo(10.5);
+    expect(fixtures[0]!.head.y).toBeCloseTo(3.375);
+    expect(lampLightDefs(lampFixtures(spans))).toEqual([]);
   });
 
   it('światła latarni pochodzą z tuningu i leżą tuż pod głowicą', () => {

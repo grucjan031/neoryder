@@ -14,7 +14,13 @@ import type {
 } from '../../world/dressingSchema';
 import type { Theme } from '../themeSchema';
 import { DecalRenderer } from './decals';
-import { LampCones, lampFixtures, lampLightDefs } from './lamps';
+import lantern from '../../data/render/lanternString.json';
+import {
+  LampCones,
+  lampFixtures,
+  lanternFixtures,
+  lampLightDefs,
+} from './lamps';
 import { CityLights } from './lights';
 import { SignRenderer } from './signs';
 import { frameProfiler } from '../frameProfiler';
@@ -76,6 +82,7 @@ export class CityDressing {
   private readonly signs?: SignRenderer;
   private readonly lights?: CityLights;
   private readonly lamps?: LampCones;
+  private readonly lanterns?: LampCones;
   private readonly decals?: DecalRenderer;
   private readonly ambient?: AmbientFx;
   weather?: Weather;
@@ -119,6 +126,15 @@ export class CityDressing {
     if (fixtures.length) {
       this.lamps = new LampCones(fixtures);
       roots.push(this.lamps.root);
+    }
+    const pendants = lanternFixtures(layout.decor);
+    if (pendants.length) {
+      this.lanterns = new LampCones(
+        pendants,
+        lantern.color,
+        lantern.opacityScale,
+      );
+      roots.push(this.lanterns.root);
     }
     if (layout.decals?.length) {
       this.decals = new DecalRenderer(layout.decals);
@@ -217,6 +233,7 @@ export class CityDressing {
       this.signs ||
       this.lights ||
       this.lamps ||
+      this.lanterns ||
       this.decals ||
       this.ambient ||
       this.weather
@@ -244,6 +261,7 @@ export class CityDressing {
     this.signs?.update(dt, frameDt, camera);
     this.lights?.update(dt, frameDt, camera);
     this.lamps?.update(dt, frameDt, camera);
+    this.lanterns?.update(dt, frameDt, camera);
     this.decals?.update(dt, frameDt, camera);
     this.ambient?.update(dt, frameDt, camera);
     if (this.weatherId && this.audio) {
@@ -271,6 +289,7 @@ export class CityDressing {
     this.signs?.dispose();
     this.lights?.dispose();
     this.lamps?.dispose();
+    this.lanterns?.dispose();
     this.decals?.dispose();
     this.ambient?.dispose();
     if (this.weather) {

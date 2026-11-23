@@ -103,7 +103,7 @@ it('plakat ma prześwit nad schodami, a ekran na zachodniej ścianie omija drzwi
     .map(({ position, size }) =>
       rect(position, size.w + frame, size.h + frame),
     );
-  // Kafelki i tunel są tłem ściany, więc pomijamy je; plakaty, ekrany i graffiti nie mogą nachodzić.
+  // Okładziny są tłem ściany, więc pomijamy je; plakaty, ekrany i graffiti nie mogą nachodzić.
   const flat = [
     ...(layout.panels ?? []).filter(
       ({ kind }) => kind === 'poster' || kind === 'screen',
@@ -145,31 +145,21 @@ it('układ obejmuje dwa perony i skrzydła północne oraz zachodnie, z sufitem'
   const back = Math.max(...long.map((b) => b.position.z + b.size.z / 2));
   expect(back - front).toBeGreaterThanOrEqual(20);
   expect(back - front).toBeLessThanOrEqual(26);
-  // Niecka torów leży między peronami.
-  const trough = layout.blocks.filter(
-    (block) => block.position.y + block.size.y / 2 < 0 && block.size.x >= 30,
-  );
-  expect(trough.length).toBeGreaterThan(0);
-  const [hall, platformB] = [...long].sort(
-    (a, b) => a.position.z - b.position.z,
-  );
-  for (const bed of trough) {
-    expect(bed.position.z - bed.size.z / 2).toBeGreaterThanOrEqual(
-      hall!.position.z + hall!.size.z / 2,
-    );
-    expect(bed.position.z + bed.size.z / 2).toBeLessThanOrEqual(
-      platformB!.position.z - platformB!.size.z / 2,
-    );
-  }
 });
 
-it('dno niecki torów leży najwyżej 1 m pod peronem (wyjście skokiem, bez pułapek)', () => {
-  const bed = layout.blocks.filter(
-    (block) => block.position.y + block.size.y / 2 < 0 && block.size.y >= 1,
+it('pasaż ma ciągłą podłogę na poziomie obu peronów, także pod warsztatem', () => {
+  const floors = layout.blocks.filter(
+    ({ position, size }) => position.y + size.y / 2 === 0,
   );
-  expect(bed.length).toBeGreaterThan(0);
-  for (const block of bed)
-    expect(block.position.y + block.size.y / 2).toBeGreaterThanOrEqual(-1);
+  for (let x = -19.5; x < 20; x++)
+    for (let z = 3.5; z < 8; z++) {
+      const supports = floors.filter(
+        ({ position, size }) =>
+          Math.abs(position.x - x) < size.x / 2 &&
+          Math.abs(position.z - z) < size.z / 2,
+      );
+      expect(supports, `podłoga (${x}, ${z})`).toHaveLength(1);
+    }
 });
 
 it('motyw hideout istnieje i nie ma deszczu ani burzy', () => {
@@ -190,8 +180,6 @@ it('tekstury i modele z danych istnieją w public/assets', () => {
   for (const decal of layout.decals ?? [])
     expect(exists(`textures/decals/${decal.texture}.webp`)).toBe(true);
   for (const panel of layout.panels ?? []) {
-    // Wylot tunelu jest malowany proceduralnie, bez pliku tekstury.
-    if (panel.kind === 'tunnel') continue;
     expect(
       exists(
         `textures/${{ tiles: 'surfaces', screen: 'screens', poster: 'posters' }[panel.kind]}/${panel.texture}.webp`,
@@ -204,8 +192,11 @@ it('tekstury i modele z danych istnieją w public/assets', () => {
     if (block.model)
       expect(exists(`models/city/${block.model}.glb`)).toBe(true);
   expect(layout.panels?.some((panel) => panel.texture === 'tiles_wall')).toBe(
-    true,
+    false,
   );
+  expect(
+    layout.panels?.some((panel) => panel.texture === 'concrete_raw_cast'),
+  ).toBe(true);
 });
 
 it('oprawa: definicje świateł (renderer włącza 8 najbliższych) i paleta Neon Noir bez czerwieni, cyanu i magenty', () => {
@@ -226,6 +217,10 @@ it('oprawa: definicje świateł (renderer włącza 8 najbliższych) i paleta Neo
   ];
   for (const color of colors)
     expect(allowed.has(color.toLowerCase())).toBe(true);
+  for (const light of layout.lights ?? []) {
+    expect(light.intensity).toBeGreaterThanOrEqual(1.3);
+    expect(light.intensity).toBeLessThanOrEqual(2.4);
+  }
 });
 
 it('neonTexts są opcjonalne i dopuszczają wyłącznie kolory palety Neon Noir', () => {
@@ -262,7 +257,7 @@ it('stacje: strefy się nie nachodzą i mają jasne obiekty interaktywne', () =>
   ).toBeGreaterThanOrEqual(4);
 });
 
-it('schemat odrzuca stację poza podłogą, w bloku i w niecce torów', () => {
+it('schemat odrzuca stację poza podłogą, w bloku i nad obniżoną podłogą', () => {
   expect(
     paths(
       mutate((copy) => {
@@ -281,7 +276,10 @@ it('schemat odrzuca stację poza podłogą, w bloku i w niecce torów', () => {
   expect(
     paths(
       mutate((copy) => {
-        // Niecka torów: dno poniżej poziomu spawnu, więc poza podłogą.
+        const slab = copy.blocks.find(
+          ({ position }) => position.x === 0.5 && position.z === 5.5,
+        )!;
+        slab.position.y -= 1;
         copy.stations[2]!.position = { x: 0, z: 6 };
       }),
     ),
@@ -380,7 +378,7 @@ it('schemat odrzuca NPC w bloku, poza podłogą i z powtórzonym id; siedzący s
     paths(
       mutate((copy) => {
         standing(copy);
-        copy.npcs[0]!.position = { x: 0, z: 6 };
+        copy.npcs[0]!.position = { x: 30, z: 6 };
       }),
     ),
   ).toContain('npcs.0.position');

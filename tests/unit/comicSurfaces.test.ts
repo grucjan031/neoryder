@@ -24,6 +24,10 @@ describe('comicSurfaces', () => {
     expect(
       resolveTextureKey('surfaces', 'container_corrugated_navy', true),
     ).toBe('surfaces/container_corrugated_navy');
+    expect(resolveTextureKey('surfaces', 'concrete_raw_cast', true)).toBe(
+      'surfaces/concrete_raw_cast',
+    );
+    expect(COMIC_SURFACES.has('tiles_wall')).toBe(false);
     expect(resolveTextureKey('labels', 'brick', true)).toBe('labels/brick');
     expect(resolveTextureKey('surfaces', 'brick', false)).toBe(
       'surfaces/brick',
