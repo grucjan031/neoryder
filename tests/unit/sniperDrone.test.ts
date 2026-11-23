@@ -15,6 +15,7 @@ import { SIM_DT } from '../../src/core/loop';
 import type { Vec3 } from '../../src/core/math';
 import { Rng } from '../../src/core/rng';
 import { tuning } from '../../src/core/tuning';
+import { Drone } from '../../src/enemies/drone';
 import { DroneView } from '../../src/enemies/droneView';
 import { enemySchema } from '../../src/enemies/enemySchema';
 import { EnemyView } from '../../src/enemies/enemyView';
@@ -434,6 +435,45 @@ describe('F2-13 — poprawki po przeglądzie', () => {
       ),
     ).toBeGreaterThan(1);
     expect(minZ).toBeGreaterThanOrEqual(-5 - 1e-3 + droneRaw.drone.radiusM);
+  });
+
+  it('escapes a two-wall corner within three seconds with few orbit reversals', () => {
+    const { manager, step, wall } = world('corner');
+    wall({ x: 1.75, y: 3, z: 0 }, { x: 0.25, y: 3, z: 20 });
+    wall({ x: 0, y: 3, z: 1.75 }, { x: 20, y: 3, z: 0.25 });
+    const drone = manager.spawn('drone', { x: 1.05, y: 0, z: 1.05 });
+    if (!(drone instanceof Drone)) throw new Error('Expected a Drone');
+    // Korekta promienia przeważa nad ruchem stycznym i spycha drona w obie ściany.
+    drone.current.state = 'reposition';
+    const start = { ...drone.current.position };
+    let orbit = drone['orbit'];
+    let reversals = 0;
+    let lastReversalStep = -Infinity;
+    let maxCoordinate = -Infinity;
+    for (let i = 0; i < Math.round(3 / SIM_DT); i++) {
+      step();
+      if (drone['orbit'] !== orbit) {
+        expect((i - lastReversalStep) * SIM_DT).toBeGreaterThanOrEqual(
+          droneRaw.drone.cornerEscape.orbitReverseLockS,
+        );
+        lastReversalStep = i;
+        orbit = drone['orbit'];
+        reversals++;
+      }
+      const { x, z } = drone.current.position;
+      maxCoordinate = Math.max(maxCoordinate, x, z);
+    }
+    expect(reversals).toBeGreaterThan(0);
+    expect(reversals).toBeLessThanOrEqual(3);
+    expect(
+      Math.hypot(
+        drone.current.position.x - start.x,
+        drone.current.position.z - start.z,
+      ),
+    ).toBeGreaterThan(2);
+    expect(maxCoordinate).toBeLessThanOrEqual(
+      1.5 - droneRaw.drone.radiusM + 1e-3,
+    );
   });
 
   it('sniper keeps the locked point: faces it, and fires even when the player hides after the lock', () => {

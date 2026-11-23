@@ -182,6 +182,15 @@ export const droneFields = z.object({
   knockbackDamping: positive,
   /** Odstęp od ścian przy castShape. */
   skinM: positive,
+  cornerEscape: z
+    .object({
+      stuckWindowS: positive,
+      stuckDistanceM: positive,
+      maxOrbitReversals: z.number().int().nonnegative(),
+      orbitReverseLockS: positive,
+      sampleCount: z.number().int().positive(),
+    })
+    .optional(),
   /** Render: obroty wirników na sekundę, przechył ogłuszenia (rad), pulsowanie oka przy celowaniu. */
   rotorSpinHz: positive,
   stunTiltRad: z.number().finite(),

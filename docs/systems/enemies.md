@@ -265,6 +265,7 @@ zerowane przez `despawnAll`), a wróg bierze z niego `fork('ai')`. Dyrektor ma o
 Kolejność losowań wroga (zmiana kolejności zmienia przebieg tego samego seeda):
 
 - Dron/haker: w konstruktorze `chance(0.5)` (kierunek krążenia: sukces = +1); w `fire`: `float(−s, s)` yaw, potem pitch;
+  dron przy wyborze drogi z narożnika losuje `float(0, 2π)` jako przesunięcie kątowe próbek.
 - Strzelec/Snajper/Wieżyczka: wejście w `reposition` — `chance(0.5)` (strafe); `fire` — yaw, potem pitch (`float(−s, s)`);
   próba ściany `steer`: `float(0, repathJitter)` po każdej próbie; osłona: `chance(coverUse)`, potem `float(0, 2π)`;
   unik doskoku: `chance(dashDodgeChance)`, `chance(0.5)`; początek okna presji: `chance(groupAttack)`;
@@ -536,8 +537,17 @@ W `reposition` i `cooldown` krąży wokół celu w odległości `preferredRange`
 z prędkością kątową `orbitSpeedDegS` (kierunek z `Rng`), w `aim`/`burst` wisi
 w miejscu. Strzela seriami jak Strzelec (pola `gunnerFields`, token `shot`
 dyrektora, widoczność promieniem do celu). Każdy ruch to `world.castShape`
-kuli po grupie `World` z odstępem `skinM`: dron zatrzymuje się przed ścianą
-i odwraca kierunek krążenia, odrzut jest wtedy wygaszany. Odrzut działa w 3D
+kuli po grupie `World` z odstępem `skinM`. Dron ślizga się wzdłuż ściany
+i odwraca kierunek krążenia, gdy ruch stanął. Odwrócenie blokuje kolejne na
+`cornerEscape.orbitReverseLockS` (0,25 s). Po kontakcie ze ścianą dron mierzy
+przesunięcie w poziomie w oknie `stuckWindowS` (0,4 s). Utknięcie to przesunięcie
+poniżej `stuckDistanceM` (0,2 m) lub przekroczenie `maxOrbitReversals` (1) w oknie.
+Dron sprawdza `sampleCount` (24) równomiernie rozłożone punkty orbity z przesunięciem
+kątowym z własnego `Rng`. Sprawdza drogę kulą o promieniu `radiusM` z zapasem
+`skinM / 2` i leci do najbliższego dostępnego punktu bez odwracania orbity.
+Zapamiętuje punkt do dotarcia, również podczas celowania i strzału. Gdy nie znajdzie
+przejezdnej drogi, wraca do zwykłego krążenia i ponawia wybór po kolejnym wykryciu
+utknięcia. Odrzut działa w 3D
 z tłumieniem `knockbackDamping`; po nim dron wraca na wysokość lotu. Ciężki
 cios, duży odrzut i status `stunned` ogłuszają go (przechył, wolne wirniki,
 brak strzałów). Pozycja snapshotów to środek drona. Widok `DroneView`
@@ -551,9 +561,15 @@ omijają filar i ściany, strzelają seriami na zmianę. Ocena feel: czy zgrubie
 lasera wystarcza jako sygnał uniku i czy drony nie są za trudne do trafienia
 ostrzem (wiszą na 2,6 m).
 
+Sprawdzenie narożnika w tej scenie. Włącz `god` i użyj `kill all`. Stań
+około 9 m od narożnika areny, patrząc po przekątnej w jego stronę. Użyj
+`spawn drone 1`, podejdź w stronę narożnika i obserwuj, czy dron po kontakcie
+z obiema ścianami odleci w głąb areny.
+
 Testy: `tests/unit/sniperDrone.test.ts` — dane, telegraf i śledzenie lasera,
 blokada celu (unik po zamrożeniu), ciężki strzał i ucieczka Snajpera; lot
 drona na wysokości i krążenie, brak wejścia w ścianę z odwróceniem kierunku,
+ślizg wzdłuż pojedynczej ściany, wyjście z narożnika dwóch ścian w 3 s,
 serie, ogłuszenie ciosem i statusem, śmierć i sprzątanie, deterministyczność;
 `DroneView`, laser w `EnemyView`, `createEnemyView`.
 

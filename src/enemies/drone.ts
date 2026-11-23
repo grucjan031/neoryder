@@ -1,5 +1,5 @@
 import { deathDirection, deathDuration } from './enemyDeath';
-import { steerVelocity, updateBodyPose } from './locomotion';
+import { arrivalSpeed, steerVelocity, updateBodyPose } from './locomotion';
 import type { GrabTarget } from '../combat/powers/grabTypes';
 import {
   Ball,
@@ -32,6 +32,8 @@ import type {
 
 const epsilon = 1e-6;
 const identity = { x: 0, y: 0, z: 0, w: 1 };
+const isOrbiting = (state: EnemyState): boolean =>
+  state === 'reposition' || state === 'cooldown';
 const copy = (s: EnemySnapshot): EnemySnapshot => ({
   ...s,
   position: { ...s.position },
@@ -41,7 +43,8 @@ const copy = (s: EnemySnapshot): EnemySnapshot => ({
  * Dron (F2-13): lata bez character controllera — kinematyczna kula na stałej wysokości
  * (`hoverHeightM` nad spawnem), krąży wokół celu w odległości `preferredRange` i strzela seriami
  * jak Strzelec (token 'shot' dyrektora). Ruch sprawdza `castShape` kuli po świecie: przy ścianie
- * zatrzymuje się przed nią i zmienia kierunek krążenia. Pozycja snapshotów to środek drona.
+ * ślizga się po niej, a po utknięciu może poszukać nowej pozycji na orbicie.
+ * Pozycja snapshotów to środek drona.
  */
 export class Drone implements Enemy {
   readonly id: number;
@@ -61,6 +64,13 @@ export class Drone implements Enemy {
   private readonly impulse = { x: 0, y: 0, z: 0 };
   private readonly velocity = { x: 0, z: 0 };
   private orbit: 1 | -1;
+  private orbitReverseWaitS = 0;
+  private orbitWatch: {
+    start: Vec3;
+    elapsedS: number;
+    reversals: number;
+  } | null = null;
+  private escapeGoal: Vec3 | null = null;
   private stunS = 0;
   private impulseSource: ImpactSource | null = null;
   private shots = 0;
@@ -172,6 +182,9 @@ export class Drone implements Enemy {
   protected transition(state: EnemyState): void {
     this.current.state = state;
     this.current.stateTimeS = 0;
+    if (!isOrbiting(state)) this.orbitWatch = null;
+    if (state === 'idle' || state === 'stunned' || state === 'dead')
+      this.escapeGoal = null;
     if (state !== 'aim' && state !== 'burst') {
       this.current.aim = undefined;
       if (this.token) this.deps.director?.releaseToken(this.id);
@@ -310,6 +323,7 @@ export class Drone implements Enemy {
       return;
     }
     const stunned = this.deps.statuses?.remaining(this.id, STUNNED) ?? 0;
+    this.orbitReverseWaitS = Math.max(0, this.orbitReverseWaitS - dt);
     if (stunned > 0) {
       if (s.state !== 'stunned') {
         this.transition('stunned');
@@ -366,7 +380,23 @@ export class Drone implements Enemy {
     let vx = 0,
       vy = 0,
       vz = 0;
-    if (target && (s.state === 'reposition' || s.state === 'cooldown')) {
+    const scale = this.flight.locomotionScale ?? 1;
+    const settings = this.ctx.tuning.enemies;
+    const orbiting = target !== null && isOrbiting(s.state);
+    if (orbiting && this.escapeGoal) {
+      const x = this.escapeGoal.x - s.position.x;
+      const y = this.escapeGoal.y - s.position.y;
+      const z = this.escapeGoal.z - s.position.z;
+      const distance = Math.hypot(x, y, z);
+      const speed = Math.min(
+        this.stats.get('moveSpeed'),
+        arrivalSpeed(distance, settings.brakingMps2 * scale, dt),
+      );
+      const ratio = speed / Math.max(distance, epsilon);
+      vx = x * ratio;
+      vy = y * ratio;
+      vz = z * ratio;
+    } else if (orbiting) {
       // Krążenie = składowa styczna (prędkość kątowa na bieżącym promieniu) + korekta promienia
       // do preferredRange. Gdy ściana blokuje korektę, ślizg zachowuje pełne krążenie.
       const speed = this.stats.get('moveSpeed');
@@ -418,8 +448,6 @@ export class Drone implements Enemy {
       vx += (x / length) * strength;
       vz += (z / length) * strength;
     }
-    const scale = this.flight.locomotionScale ?? 1;
-    const settings = this.ctx.tuning.enemies;
     steerVelocity(
       this.velocity,
       vx,
@@ -436,6 +464,8 @@ export class Drone implements Enemy {
       z: (vz + this.impulse.z) * dt,
     });
     if (this.deps.damage.health(this.id)?.dead) return;
+    if (target && isOrbiting(s.state))
+      this.updateOrbitProgress(target.position, dt);
     const damping = Math.exp(-this.flight.knockbackDamping * dt);
     this.impulse.x *= damping;
     this.impulse.y *= damping;
@@ -443,6 +473,64 @@ export class Drone implements Enemy {
     s.speed = moved / dt;
     s.distance += moved;
     updateBodyPose(this.previous, s, d.turnRateDegS, dt, settings);
+  }
+
+  private updateOrbitProgress(target: Vec3, dt: number): void {
+    const recovery = this.flight.cornerEscape;
+    if (!recovery) return;
+    const position = this.current.position;
+    const goal = this.escapeGoal;
+    if (
+      goal &&
+      Math.hypot(
+        goal.x - position.x,
+        goal.y - position.y,
+        goal.z - position.z,
+      ) <= this.flight.skinM
+    ) {
+      this.escapeGoal = this.orbitWatch = null;
+      return;
+    }
+    const watch = this.orbitWatch;
+    if (!watch) return;
+    watch.elapsedS += dt;
+    const windowEnded = watch.elapsedS + epsilon >= recovery.stuckWindowS;
+    if (!windowEnded && watch.reversals <= recovery.maxOrbitReversals) return;
+    this.orbitWatch = null;
+    if (
+      watch.reversals > recovery.maxOrbitReversals ||
+      Math.hypot(position.x - watch.start.x, position.z - watch.start.z) <
+        recovery.stuckDistanceM
+    )
+      this.escapeGoal = this.findEscapeGoal(target, recovery.sampleCount);
+  }
+
+  private findEscapeGoal(target: Vec3, sampleCount: number): Vec3 | null {
+    const from = this.current.position;
+    const turn = 2 * Math.PI;
+    const offset = this.rng.float(0, turn);
+    let best: Vec3 | null = null;
+    let bestDistance = Infinity;
+    for (let i = 0; i < sampleCount; i++) {
+      const angle = offset + (i * turn) / sampleCount;
+      const candidate = {
+        x: target.x + this.ranged.preferredRange * Math.cos(angle),
+        y: this.altitude,
+        z: target.z + this.ranged.preferredRange * Math.sin(angle),
+      };
+      const delta = {
+        x: candidate.x - from.x,
+        y: candidate.y - from.y,
+        z: candidate.z - from.z,
+      };
+      const distance = Math.hypot(delta.x, delta.y, delta.z);
+      if (distance <= this.flight.skinM || distance >= bestDistance) continue;
+      // Tak jak przy ślizgu, mniejszy zapas pozwala ruszyć z granicy kontaktu.
+      if (this.sweep(from, delta, this.flight.skinM / 2)) continue;
+      best = candidate;
+      bestDistance = distance;
+    }
+    return best;
   }
 
   private recoverClearance(): void {
@@ -490,7 +578,10 @@ export class Drone implements Enemy {
     const length = Math.hypot(delta.x, delta.y, delta.z);
     if (length <= epsilon) return 0;
     const pos = { ...this.current.position };
-    const hit = this.sweep(pos, delta);
+    const orbiting = isOrbiting(this.current.state);
+    const clearance =
+      orbiting && this.escapeGoal ? this.flight.skinM / 2 : this.flight.skinM;
+    const hit = this.sweep(pos, delta, clearance);
     const t = hit ? Math.max(0, Math.min(1, hit.time_of_impact)) : 1;
     pos.x += delta.x * t;
     pos.y += delta.y * t;
@@ -498,6 +589,13 @@ export class Drone implements Enemy {
     let moved = length * t;
     let slam: WallSlam | null = null;
     if (hit && t < 1) {
+      const recovery = this.flight.cornerEscape;
+      if (orbiting && recovery && !this.orbitWatch)
+        this.orbitWatch = {
+          start: this.current.position,
+          elapsedS: 0,
+          reversals: 0,
+        };
       const n = hit.normal1;
       slam = wallSlamContact(
         this.impulse,
@@ -534,10 +632,14 @@ export class Drone implements Enemy {
       }
       if (
         moved <= epsilon &&
-        (this.current.state === 'reposition' ||
-          this.current.state === 'cooldown')
-      )
+        orbiting &&
+        !this.escapeGoal &&
+        this.orbitReverseWaitS <= epsilon
+      ) {
         this.orbit = this.orbit === 1 ? -1 : 1;
+        this.orbitReverseWaitS = recovery?.orbitReverseLockS ?? 0;
+        if (this.orbitWatch) this.orbitWatch.reversals++;
+      }
     }
     this.body.setNextKinematicTranslation(pos);
     this.current.position = pos;

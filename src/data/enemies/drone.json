@@ -25,6 +25,13 @@
     "hurtboxMultiplier": 1,
     "knockbackDamping": 5,
     "skinM": 0.05,
+    "cornerEscape": {
+      "stuckWindowS": 0.4,
+      "stuckDistanceM": 0.2,
+      "maxOrbitReversals": 1,
+      "orbitReverseLockS": 0.25,
+      "sampleCount": 24
+    },
     "rotorSpinHz": 12,
     "stunTiltRad": 0.6,
     "pulseHz": 8,
