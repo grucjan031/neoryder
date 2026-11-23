@@ -1,0 +1,297 @@
+{
+  "id": "m07-nocny-dyzur",
+  "level": "m07-nocny-dyzur",
+  "number": 7,
+  "title": "Nocny dyżur",
+  "act": 2,
+  "summary": "Iskra sprawdza bezpłatną przychodnię Helixa Dynamics przy targu na Bulwarze. Kurier wchodzi nocą przez zaplecze budki z makaronem, wykrada z magazynu fabryczną próbkę Akordu i zgrywa rejestr pacjentów z serwera, a po alarmie przebija się przez targ do windy towarowej.",
+  "sectorId": "kurogane",
+  "requires": ["m06-odlewnia"],
+  "layers": 7,
+  "splashAct": 2,
+  "enemies": ["assaulter", "gunner", "shielder", "drone", "turret", "hacker"],
+  "fixedNodes": [
+    {
+      "layer": 7,
+      "type": "combat",
+      "roomId": "combatWarehouse",
+      "objectives": ["krata", "kapsula", "serwer", "exit"],
+      "final": true
+    }
+  ],
+  "objectives": [
+    {
+      "id": "krata",
+      "kind": "interact",
+      "label": "Przetnij zamek kraty za budką z makaronem",
+      "position": {
+        "x": 63.5,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 1.5,
+      "unlockAfter": []
+    },
+    {
+      "id": "kapsula",
+      "kind": "pickup",
+      "label": "Zabierz kapsułę z próbką Akordu",
+      "spawnAfter": "krata",
+      "offset": {
+        "x": 134.5,
+        "y": 0,
+        "z": -7.6
+      }
+    },
+    {
+      "id": "serwer",
+      "kind": "defend",
+      "label": "Zgraj rejestr pacjentów z serwera",
+      "position": {
+        "x": 241,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 1,
+      "durationS": 8,
+      "radiusM": 6,
+      "waves": [
+        {
+          "atProgress": 0.6,
+          "wave": "m07Serwer"
+        }
+      ]
+    },
+    {
+      "id": "exit",
+      "kind": "exit",
+      "label": "Zjedź windą towarową do Niecki",
+      "position": {
+        "x": 326,
+        "y": 0,
+        "z": 0
+      },
+      "holdS": 3,
+      "unlockAfter": ["serwer"]
+    }
+  ],
+  "briefing": [
+    {
+      "speaker": "nadia",
+      "text": "Przychodnia stoi przy zachodnim rogu targu, tuż pod pętlą estakady. Od szóstej rano kolejka zawija się aż pod automat z wodą."
+    },
+    {
+      "speaker": "wolan",
+      "text": "Interesuje mnie nienaruszona kapsuła z serii produkcyjnej. Powinna leżeć w chłodziarce w magazynie zabiegowym, w roztworze soli. Nie uszkodźcie obudowy."
+    },
+    {
+      "speaker": "szron",
+      "text": "Najpierw bez hałasu. Ochrona Helixa ma mało ludzi na nocnej zmianie, ale jak podniesiesz alarm, odetną targ od estakady."
+    }
+  ],
+  "debrief": [
+    {
+      "speaker": "wolan",
+      "text": "Kapsuła jest cała. Płyn w środku nie zmętniał — jutro rozbiorę obudowę i sprawdzę, jak łączą elektrody z korą ruchową."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Właśnie ją porządkuję. Cztery tysiące dwieście nazwisk z Bulwaru i Niecki. Większość to zwykli kurierzy, magazynierzy, operatorzy dźwigów..."
+    },
+    {
+      "speaker": "bajt",
+      "text": "Tymon. Jedenaście miesięcy temu. Wiek, numer implantu ruchowego z warsztatu na dole, adres: stary kwadrat w Niecce."
+    },
+    {
+      "speaker": "mira",
+      "text": "To nie może być jego podpis. Złapali go na zmianie w porcie, nie zdążył nawet wrócić do domu."
+    },
+    {
+      "speaker": "mira",
+      "text": "Nie mów nic. Przez rok sprawdzałam każdy spalony kontener i każdą listę z Hut. A on siedział piętro wyżej i podpisał, kurwa, papier na własne nazwisko."
+    },
+    {
+      "speaker": "szron",
+      "text": "Na dziś wystarczy. Dajcie jej chwilę przy stole. Kurier — bez tej listy nadal szukalibyśmy w ciemno. Odpocznij przed kolejnym wyjściem."
+    }
+  ],
+  "radio": [
+    {
+      "trigger": "runStart",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "I ludzie naprawdę biorą ten szajs dobrowolnie?"
+        },
+        {
+          "speaker": "nadia",
+          "text": "Za darmo dają każdemu, kto podpisze przydział do ochrony Kurogane. Reszta dostaje na raty, połowę taniej niż zwykły implant ruchowy u prywaciarzy."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:ulica",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Brzmi jak promocja z haczykiem wielkości dźwigu portowego."
+        },
+        {
+          "speaker": "szron",
+          "text": "Wejście od frontu odpada. Nadia znalazła drogę bokiem."
+        },
+        {
+          "speaker": "nadia",
+          "text": "Przez budkę z makaronem dwie bramy dalej. Właściciel zamyka o jedenastej i nie wraca przed piątą. Tylna krata prowadzi prosto na pomost za przychodnią."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:kuchnia",
+      "lines": [
+        {
+          "speaker": "nadia",
+          "text": "Jesteś w środku? Kuchnia powinna być pusta, tylko wyłącznik wentylatora nad piecem czasem iskrzy."
+        },
+        {
+          "speaker": "bajt",
+          "text": "Łączność czysta. Przechodzisz kratą na tyłach zaplecza — zaraz za śmietnikiem zaczynają się okna gabinetów."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:krata:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Do tego mój czytnik do lokalnego serwera. Chcę pełną bazę przyjęć z ostatniego roku — imiona, daty, numery partii, kto podpisał kontrakt, a kogo przysłano bez pytania."
+        },
+        {
+          "speaker": "mira",
+          "text": "Sprawdź też, czy nie przepuszczali tam ludzi złapanych w Niecce. Z zeszłej wiosny wciąż brakuje kilkunastu osób."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:krata:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Jeśli cię zauważą, nie zatrzymuj się przy drzwiach. Baza ma trafić do nas, a nie zostać w serwerowni."
+        },
+        {
+          "speaker": "mira",
+          "text": "Torba termoizolacyjna wisi na prawej klamrze. Kapsuła ma wejść ciasno w piankę, inaczej pęknie przy pierwszym skoku z murka."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:przychodnia",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Dwa patrole na piętrze i czujniki w głównym przejściu. Omiń wiązki przez boksy zabiegowe, nie idź środkiem korytarza."
+        },
+        {
+          "speaker": "nadia",
+          "text": "W gabinetach po lewej trzymają tylko opatrunki i puste formularze. Magazyn jest na końcu, za podwójnymi drzwiami."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:alarm-hala:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Kurwa, złapali ruch w korytarzu, rolety od frontu lecą w dół."
+        },
+        {
+          "speaker": "szron",
+          "text": "Nie cofaj się. Szyb techniczny nad rejestracją zostaje otwarty — bierz próbkę i idź prosto do serwera."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:magazyn",
+      "lines": [
+        {
+          "speaker": "wolan",
+          "text": "Chłodziarka stoi przy ścianie z filtrami. Kapsuły są opisane kodem serii na etykiecie z numerem partii."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:kapsula:done",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Masz? Dobra, dociśnij wieko torby, zanim zaczniesz biec."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:serwer:started",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Czytnik widzi dysk. Zgrywam rejestr pacjentów... chwila, to ma ponad cztery tysiące wpisów, potrzebuję kilku sekund."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:serwer:progress:60",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Cholera, serwer wysłał sygnał o nieautoryzowanym kopiowaniu. Za moment postawią na nogi cały budynek."
+        }
+      ]
+    },
+    {
+      "trigger": "objective:serwer:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Od strony alei idzie ekipa w gładkich maskach i dwa drony. Nie walcz na środku placu, między straganami łatwiej zerwać linię ognia."
+        }
+      ]
+    },
+    {
+      "trigger": "enterSection:targ",
+      "lines": [
+        {
+          "speaker": "mira",
+          "text": "Uważaj na te ich granaty ze strzykawkami — jak rozleje się chmura na asfalcie, zwalnia stawy i wyżera filtr w masce."
+        },
+        {
+          "speaker": "nadia",
+          "text": "Za stoiskiem z elektroniką jest zejście na krawędź estakady. Tam stoi stara winda towarowa do Niecki."
+        }
+      ]
+    },
+    {
+      "trigger": "checkpoint:winda",
+      "lines": [
+        {
+          "speaker": "bajt",
+          "text": "Plik siedzi w pamięci cały. Zamykaj bramę windy, zanim dopadną pomostu."
+        }
+      ]
+    },
+    {
+      "trigger": "encounter:blokada-windy:done",
+      "lines": [
+        {
+          "speaker": "szron",
+          "text": "Dobra robota, Kurier. Zjeżdżaj na dół, widzimy się na Kamiennej."
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "firstClear": {
+      "data": 90,
+      "cores": 1
+    }
+  }
+}

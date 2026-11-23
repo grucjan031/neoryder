@@ -348,13 +348,13 @@ Pełne przejście kapsułą, kolizje bram, dołączenie i wznowienie Nadii spraw
 Generator `node tools/levels/buildM05.mjs` zapisuje poziom i cztery fale `m05*`.
 Trasa ma 254 m, motyw `neonStreet`, pięć sekcji:
 
-| Sekcja | x (m) | Trasa i starcia |
-| --- | --- | --- |
-| `dachy` | 0–40 | Szyb techniczny, dach walcowni, wentylatory, para i bursztynowe światła narożne. |
-| `estakada` | 40–96 | Tylna straż: szturmowcy, strzelec, wieżyczka. Gródź po walce, boczna roleta (prześwit 1,15 m) i górne obejście po wentylacji. |
-| `maszynownia` | 96–120 | Osłonięty łącznik z instalacjami, ciepła biel i wyjście na suwnice. |
-| `suwnice` | 120–184 | Dolna kładka: tarczownicy i drony; górne belki na 3,2 m, luki 9 i 8 m do podwójnego skoku/dasha. |
-| `ladowisko` | 184–254 | Kominy jako osłony, snajperzy na gzymsach 4 m, potem eskorta. Wirska przy relingu, karta i szyb wyjściowy. |
+| Sekcja        | x (m)   | Trasa i starcia                                                                                                               |
+| ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `dachy`       | 0–40    | Szyb techniczny, dach walcowni, wentylatory, para i bursztynowe światła narożne.                                              |
+| `estakada`    | 40–96   | Tylna straż: szturmowcy, strzelec, wieżyczka. Gródź po walce, boczna roleta (prześwit 1,15 m) i górne obejście po wentylacji. |
+| `maszynownia` | 96–120  | Osłonięty łącznik z instalacjami, ciepła biel i wyjście na suwnice.                                                           |
+| `suwnice`     | 120–184 | Dolna kładka: tarczownicy i drony; górne belki na 3,2 m, luki 9 i 8 m do podwójnego skoku/dasha.                              |
+| `ladowisko`   | 184–254 | Kominy jako osłony, snajperzy na gzymsach 4 m, potem eskorta. Wirska przy relingu, karta i szyb wyjściowy.                    |
 
 Cele: `estakada` → `suwnice` → `ladowisko` (reach, 95/110/90 s) →
 `karta` (pickup) → `exit` (2 s). Checkpointy: `start`, `maszynownia`,
@@ -378,3 +378,37 @@ Sprawdzenie w 30 s po M04: `?scene=mission&mission=m05-adiutant&debug=1`,
 między teleportacją a czyszczeniem. Testy: `missionChase.test.ts`,
 `missionM05Level.test.ts` (pełna dolna trasa kapsułą, limit i wznowienie),
 `missionM05.spec.ts` (tablica, cele, debrief, odblokowanie M06).
+
+## M07 — Nocny dyżur
+
+Generator `node tools/levels/buildM07.mjs` zapisuje poziom i siedem fal `m07*`.
+Trasa biegnie w osi +X (0–332 m), Nadia dołącza na starcie. Sekcje: `bulwar`
+(Bulwar nocą, kuchnia budki z makaronem, krata w zapleczu), `estakada` (pomost za
+przychodnią), `przychodnia` (hala z boksami zabiegowymi i magazyn z chłodziarką),
+`serwerownia` (korytarz z szafami i szklane biuro administratora), `targ` (nocny targ
+pod estakadą i winda towarowa). Neony w palecie ADR 0006: bursztyn, zieleń,
+fiolet, błękit i ciepła biel; czerwień, cyan i magenta zostają dla wrogów, gracza
+i Rezonansu.
+
+Cele: `krata` (`interact`, 1,5 s), `kapsula` (`pickup` po kracie), `serwer`
+(`defend`, 1 s podpięcia i 8 s transferu, fala `m07Serwer` przy 60%), `exit`
+(winda, 3 s). Bramy: `gate-krata`, `gate-serwerownia` (po kapsule), `gate-targ`
+(po serwerze), `gate-winda` (po spotkaniu `blokada-windy`) i `gate-rolety`.
+
+Zakradanie bez systemu wykrywania: układ hali. Korytarz środkowy (x 128–164,
+|z| < 3,2) jest oświetlony, ma bursztynowe wiązki (`laser_gate`) i strefę spotkania
+`alarm-hala`; pasy boczne za szklanymi przegrodami (boksy zabiegowe) mają osłony i nie
+mają spotkań. Wejście w korytarz startuje alarm: fala `m07Hala` i opuszczone rolety
+(`gate-rolety` z `closedDuring: alarm-hala`) odcinają odwrót do końca walki. Kolejne
+spotkania `wieza-magazynu` (wieżyczka i dron) są małe. Alarm po serwerze to spotkania
+z `after: objective(serwer)`: `alarm-serwerownia` (za plecami gracza) i trzy fale na
+targu (`poscig-targ-1`, `poscig-targ-2`, `blokada-windy`, łańcuch `after`). Ucieczka
+jest bez limitu czasu (cel czasowy to osobne zadanie). Wrogowie: istniejące
+archetypy (`shielder` jako ochroniarz Helixy, `hacker` jako sanitariusz, `drone`,
+`turret`, `assaulter`, `gunner`); dedykowane warianty Helixy są w backlogu scenariusza.
+
+Radio ma wyzwalacze `runStart`, `checkpoint:<id>` (ulica, kuchnia, magazyn, winda),
+`enterSection`, `objective:*` i `encounter:*`. Pominięte względem scenariusza: cele
+opcjonalne (ciche przejście, harmonogram transportów) i panel wyłączania wieżyczki.
+Testy: `missionM07Level.test.ts` (walidacja, alarm w strefie, przejście trasy
+kapsułą po cichym pasie), `missionM07.spec.ts` (tablica po M06, cele, alarm, pościg, debrief).

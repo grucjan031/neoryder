@@ -1,0 +1,32 @@
+{
+  "id": "m07Alarm",
+  "firstBreakS": 0,
+  "breakS": 0,
+  "maxAlive": 6,
+  "minSpawnDistance": 6,
+  "spawnPoints": [
+    {
+      "x": 0,
+      "z": 0
+    }
+  ],
+  "waves": [
+    {
+      "spawnIntervalS": 0.5,
+      "groups": [
+        {
+          "enemy": "shielder",
+          "count": 1
+        },
+        {
+          "enemy": "assaulter",
+          "count": 2
+        },
+        {
+          "enemy": "gunner",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

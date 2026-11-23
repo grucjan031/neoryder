@@ -216,3 +216,16 @@ Nie wdrożono opcjonalnych premii za skróty i walizkę ani nagrody warsztatowej
 zmian wystroju kryjówki czy animowanego konwoju. Śmierć używa standardowego
 checkpointu misji liniowej; różni się to od runowej porażki w scenariuszu.
 Mapa i sprawdzenie w 30 sekund: `levels.md`, sekcja M05.
+
+i przerywnik M06 (obejmuje też pominiętą M05) pozostają poza zakresem tej zmiany.
+
+M07 „Nocny dyżur” (akt II, `splashAct` 2) wymaga M06 i jest poziomem liniowym
+(`levels.md`, sekcja M07): `m07-nocny-dyzur`, firstClear 90 Danych i 1 Rdzeń, bez
+interludium. Cele: `krata` (`interact`), `kapsula` (`pickup`, `spawnAfter: krata`), `serwer`
+(`defend`, 8 s) i `exit`. Odprawa ma trzy kwestie, debrief sześć; pozostałe kwestie
+odprawy i radia padają na wyzwalaczach poziomu (`checkpoint:`, `enterSection:`,
+`objective:`, `encounter:`), dosłownie ze scenariusza (`missionBriefing.test.ts`).
+Scenariuszowy alarm po wykryciu realizuje układ mapy i spotkanie `alarm-hala`, a ucieczka
+po serwerze nie ma limitu czasu. Cele opcjonalne scenariusza są poza zakresem.
+Sprawdzenie: po `campaign complete` M01–M04 i M06 otwórz
+`?scene=mission&mission=m07-nocny-dyzur&debug=1`.
