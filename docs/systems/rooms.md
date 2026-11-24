@@ -202,3 +202,9 @@ runu, a jego zwykłe spawny, geometria i oprawa nie zostały zmienione.
 Opcjonalne `blocks[].rotation` (radiany XYZ) obraca render i statyczny collider;
 `blocks[].instance` pozwala grupować powtarzalne bryły portu.
 Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
+
+## Audyt danych i oględziny
+
+`node tools/levels/mapAudit.mjs` podaje liczbę znalezisk dla każdej mapy. Po podaniu id wypisuje ścieżki JSON i współrzędne. Opcja `--json` zwraca pełne wyniki, a `--report` odświeża tabele i listy w raporcie. Test jednostkowy sprawdza osobny limit błędów dla każdej mapy w `tests/unit/mapAudit.baseline.json`. Po usunięciu błędów należy obniżyć odpowiedni limit.
+
+`node tools/screens/mapAudit.mjs bossRoom --tag before` uruchamia serwer i zapisuje dziesięć ujęć PNG. Użycie `--tag after` zapisuje drugą serię w sąsiednim katalogu. Scena audytu korzysta z renderu gry, zatrzymanej symulacji i osobnego zapisu w pamięci. Metodę pomiaru modeli, progi i ręcznie sprawdzone przykłady opisuje [raport audytu](../audits/mapAudit-report.md).

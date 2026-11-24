@@ -83,8 +83,8 @@ Punkty są w `room.arena.points`, spawny w pokoju lub opcjonalnym
 `room.arena.spawnPoints`. Spawny trybu są walidowane poza strefami z marginesem
 `navigationClearanceM`; zwykłe spawny pokoi nie są zmieniane. Szczegóły: [arenas.md](arenas.md), [weather.md](weather.md).
 
-Bez wpisanego seeda start z tablicy i bezpośredniego URL wybiera pierwszą arenę
-(port), a run nadal dostaje losowy seed. Wpisany `?seed=` wybiera arenę przez
+Bezpośredni URL bez seeda wybiera pierwszą arenę (port). Tablica w kryjówce
+generuje seed, gdy pole jest puste. Przekazany `?seed=` wybiera arenę przez
 osobny strumień `new Rng(seed).fork('conquest-arena').pick(arenas)` (jedno losowanie
 z listy w kolejności z pliku). Debugowy `?arena=<id>` ma
 pierwszeństwo i akceptuje tylko id z listy (inne id w debug = błąd); poza debug jest ignorowany.
@@ -161,9 +161,8 @@ Pliki trybów dostają `arenas: string[]`. Dotychczasowe `roomId` + `sectors` / 
 **Wybór areny** jak w Przejęciu (`selectArena`, wspólne API): bez seeda pierwsza z listy
 (Szturm: Zajezdnia Maglev, Kradzież: Terminal kontenerowy), z wpisanym `?seed=` losowanie
 przez `Rng(seed).fork('<tryb>-arena')`, debugowy `?arena=<id>` ma pierwszeństwo i
-akceptuje id z listy albo dawny `roomId`. Tablica misji nie ma osobnego wyboru areny,
-więc z kryjówki Szturm i Kradzież startują na pierwszej arenie z listy, a przy wpisanym
-seedzie na wylosowanej. Mały pokój: `?scene=run&mode=assault&arena=combatCorridor&debug=1`
+akceptuje id z listy albo dawny `roomId`. Tablica misji w kryjówce przekazuje wpisany seed
+lub generuje go przy starcie Przejęcia, Szturmu i Kradzieży. Mały pokój: `?scene=run&mode=assault&arena=combatCorridor&debug=1`
 albo `mode=heist&arena=combatRing`.
 
 **Walidacja** (`validateMode`, ładowanie `modes.ts`): pozycje stacji, bazy, ewakuacji, startów

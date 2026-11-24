@@ -125,7 +125,7 @@ import {
   rollArenaMutator,
   type ArenaMutator,
 } from '../world/arenaMutators';
-import type { Scene } from './index';
+import type { CameraPose, Scene } from './index';
 
 const vec3 = z.object({
   x: z.number().finite(),
@@ -1231,7 +1231,7 @@ export class Arena implements Scene {
     if (this.attempt && this.offers.length > 0) this.openEndlessIntermission();
   }
 
-  render(alpha: number, frameDt = 1 / 60): void {
+  render(alpha: number, frameDt = 1 / 60, cameraOverride?: CameraPose): void {
     const executable = this.execute.readyIds();
     this.hud?.setCoolingHint(
       this.state === 'playing' &&
@@ -1303,7 +1303,7 @@ export class Arena implements Scene {
       playerState,
       alpha,
       frameDt,
-      this.state === 'playing',
+      !cameraOverride && this.state === 'playing',
     );
     const pose = this.fpsCamera.update(
       frameDt,
@@ -1328,6 +1328,10 @@ export class Arena implements Scene {
       this.barrierView.render(barrier, pose);
     else this.barrierView.root.visible = false;
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    if (cameraOverride) {
+      camera.position.copy(cameraOverride.position);
+      camera.rotation.copy(cameraOverride.rotation);
+    }
     this.hud?.setViewYaw(pose.yaw);
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
       camera.fov = pose.fov;
@@ -1340,7 +1344,7 @@ export class Arena implements Scene {
       blade: this.blade.view(),
       held: this.heldView(),
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
-      visible: this.state === 'playing',
+      visible: !cameraOverride && this.state === 'playing',
       aim: this.heldItem.aim,
     });
     this.beamView.advance(frameDt);

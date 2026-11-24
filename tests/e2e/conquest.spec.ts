@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { LOAD_TIMEOUT } from './helpers';
+import conquest from '../../src/data/modes/conquest.json';
 
 // Panel debug lil-gui (dev) zasłania prawy górny róg; karty tablicy misji bywają pod nim.
 test.beforeEach(async ({ page }) => {
@@ -35,25 +36,28 @@ for (const outcome of ['victory', 'death'] as const) {
     await expect
       .poll(
         () =>
-          page.evaluate((outcome) => {
-            const game = window.__neoryder;
-            if (
-              !game ||
-              game.query('loading') !== false ||
-              game.query('screen') !== 'room' ||
-              game.query('room') !== 'arenaContainerPort' ||
-              !game.query('conquest')
-            )
-              return false;
-            if (outcome === 'victory') {
-              game.command('god');
-              for (const id of ['A', 'B', 'C', 'D', 'E'])
-                game.command(`conquest capture ${id}`);
-              game.command('conquest tickets 0');
-              game.command('kill all');
-            } else game.command('hurt 99999');
-            return true;
-          }, outcome),
+          page.evaluate(
+            ({ outcome, arenas }) => {
+              const game = window.__neoryder;
+              if (
+                !game ||
+                game.query('loading') !== false ||
+                game.query('screen') !== 'room' ||
+                !arenas.includes(String(game.query('room'))) ||
+                !game.query('conquest')
+              )
+                return false;
+              if (outcome === 'victory') {
+                game.command('god');
+                for (const id of ['A', 'B', 'C', 'D', 'E'])
+                  game.command(`conquest capture ${id}`);
+                game.command('conquest tickets 0');
+                game.command('kill all');
+              } else game.command('hurt 99999');
+              return true;
+            },
+            { outcome, arenas: conquest.arenas },
+          ),
         { timeout: LOAD_TIMEOUT },
       )
       .toBe(true);

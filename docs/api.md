@@ -2590,3 +2590,9 @@ snapshots(): AllySnapshot[];                forEachPose(cb): void;    registerCo
 — `id` z `src/data/allies` (unikalne), `spawn` to stopy (sprawdzana osiągalność), `joinAfter`
 musi wskazywać istniejący cel albo spotkanie. Zależność `encounter` zgłasza host misji przez
 `RoomScene.allyDependencyDone('encounter', id)`.
+
+## Audyt map
+
+`auditMap(map, { mapId? })` w `src/world/mapAudit.ts` odczytuje geometrię układu i zwraca znaleziska z polami `mapId, rule, severity, path, message, position`. Pozycja jest podana w metrach świata. Dla klasycznej areny bez pola `id` identyfikator to `arena`.
+
+Scena debug `?scene=map-audit&map=<id>&debug=1` udostępnia przez `__neoryder.query('auditViews')` nazwy ujęć, a przez `__neoryder.command('audit view <nazwa>')` przełącza kamerę. Symulacja stoi podczas inspekcji.

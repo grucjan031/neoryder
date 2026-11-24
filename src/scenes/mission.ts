@@ -42,7 +42,7 @@ import {
 } from '../ui/missionUi';
 import { RoomScene, type RoomCombatState } from './roomScene';
 import playerData from '../data/scenes/roomPlayer.json';
-import type { Scene } from './index';
+import type { CameraPose, Scene } from './index';
 
 export interface MissionSceneOptions {
   params?: URLSearchParams;
@@ -612,9 +612,9 @@ export class MissionScene implements Scene {
     }
   }
 
-  render(alpha: number, frameDt?: number): void {
+  render(alpha: number, frameDt?: number, cameraOverride?: CameraPose): void {
     if (!this.ready || this.disposed) return;
-    this.room?.render(alpha, frameDt);
+    this.room?.render(alpha, frameDt, cameraOverride);
     this.objectiveNpcs.forEach((view, index) => {
       const npc = this.level.objectiveNpcs![index]!;
       // Cywile celu reach znikają dopiero po wejściu grupy do bezpiecznego szybu.
@@ -1138,8 +1138,12 @@ class PayloadMissionRoom extends RoomScene {
     });
   }
 
-  override render(alpha: number, frameDt?: number): void {
-    super.render(alpha, frameDt);
+  override render(
+    alpha: number,
+    frameDt?: number,
+    cameraOverride?: CameraPose,
+  ): void {
+    super.render(alpha, frameDt, cameraOverride);
     if (this.payload)
       this.payloadView?.update(
         lerpPose(this.previousPayload, this.payload.snapshot(), alpha),

@@ -92,7 +92,7 @@ import { HubNpcs } from './hubNpcs';
 import { HubSoundscape } from './hubSoundscape';
 import { HubFauna } from './hubFauna';
 import { KIDS_CAT_CONVERSATION, KidsCatEncounter } from '../world/hubKidsCat';
-import type { Scene } from './index';
+import type { CameraPose, Scene } from './index';
 import { preserveLiteFx } from '../render/fxMode';
 
 export interface HubSceneOptions {
@@ -1088,7 +1088,7 @@ export class HubScene implements Scene {
     };
   }
 
-  render(alpha: number, frameDt = 1 / 60): void {
+  render(alpha: number, frameDt = 1 / 60, cameraOverride?: CameraPose): void {
     const guideBusy =
       this.stations.opened !== null ||
       this.hubMap?.isOpen === true ||
@@ -1179,7 +1179,7 @@ export class HubScene implements Scene {
       playerState,
       alpha,
       frameDt,
-      !this.seatPose,
+      !cameraOverride && !this.seatPose,
     );
     const pose = this.fpsCamera.update(
       frameDt,
@@ -1199,6 +1199,10 @@ export class HubScene implements Scene {
     }
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    if (cameraOverride) {
+      camera.position.copy(cameraOverride.position);
+      camera.rotation.copy(cameraOverride.rotation);
+    }
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
       camera.fov = pose.fov;
       camera.updateProjectionMatrix();
@@ -1212,7 +1216,9 @@ export class HubScene implements Scene {
       held: 'blade',
       blade: IDLE_BLADE,
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
-      visible: !this.fauna?.renderPetHand(camera.matrixWorld, alpha),
+      visible:
+        !cameraOverride &&
+        !this.fauna?.renderPetHand(camera.matrixWorld, alpha),
     });
   }
 
