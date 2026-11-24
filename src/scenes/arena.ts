@@ -359,14 +359,19 @@ export class Arena implements Scene {
     });
     await this.buildLayout();
     if (this.disposed) return;
-    await loadDecor(this.root, layout.decor, this.loadModels);
+    const decor = new Group();
+    decor.name = 'static-decor';
+    this.root.add(decor);
+    await loadDecor(decor, layout.decor, this.loadModels);
     if (this.disposed) return;
+    batchStaticGeometry(decor, this.geometries);
     this.dressing = new CityDressing(
       this.root,
       layout,
       this.atmosphere.theme,
       layout.playerSpawn.y,
       'arena',
+      ctx.audio,
     );
 
     const playerId = this.entities.create('player', 'player');

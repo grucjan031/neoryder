@@ -53,7 +53,7 @@ Obrys podłogi obejmuje płaty połączone ze spawnem w rzucie XZ. Fizyczne ramy
 | alleyMarket | 0 | 18 |
 | alleyUnderpass | 1 | 3 |
 | alleyUnderpassMission | 0 | 2 |
-| arena | 0 | 3 |
+| arena | 0 | 0 |
 | arenaConstructionSite | 1 | 60 |
 | arenaContainerPort | 39 | 90 |
 | arenaFloodedDocks | 4 | 19 |
@@ -144,9 +144,7 @@ Obrys podłogi obejmuje płaty połączone ze spawnem w rzucie XZ. Fizyczne ramy
 
 ### arena
 
-- warn · emptyRoom · `lights` · (0, 0, 4) · Brak świateł w danych mapy.
-- warn · emptyRoom · `decor` · (0, 0, 4) · Brak dekoracji w danych mapy.
-- warn · emptyRoom · `signs` · (0, 0, 4) · Brak szyldów w danych mapy.
+Brak zgłoszeń.
 
 ### arenaConstructionSite
 

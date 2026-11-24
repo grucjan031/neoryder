@@ -2,6 +2,14 @@
 
 Scena `?scene=arena` (pierwsza pozycja w menu) — pierwsza pełna pętla walki F1. Kod: `src/scenes/arena.ts`, `src/world/waves.ts`; dane: `src/data/scenes/arena.json` (układ), `src/data/waves/arena.json` (fale).
 
+## Klatka w Dolnym Mieście
+
+Arena, Endless i Arena wyzwań korzystają z tego samego ringu na dawnym placu przeładunkowym. Cztery rolety wskazują osiowe wejścia fal, a drzwi na obu końcach północnego i południowego muru wskazują wejścia narożne. Bursztynowa Iskra nad północną roletą wyznacza stronę organizatorów. Po przeciwnej stronie świeci niebieskie Arcade. Fioletowy bar oznacza zachód, zielony warsztat wschód.
+
+Gracz startuje pod otwartą bramownicą. Może okrążać filary od środka, przebiec między nimi a osłonami albo przenieść walkę na obwód. Boczne bariery chronią przed ostrzałem z szerokiej strony. Na oba agregaty, kontener i paletę skrzyń można wejść zwykłym skokiem. W każdej ćwiartce jest zniszczalna skrzynia.
+
+Deszcz, odgłosy ulicy, neony i hologramy korzystają ze wspólnej oprawy pokoi. Trzy okapy osłaniają stragan, terminal i południowy dok. Mutator `darkness` przyciemnia światło globalne. Lampiony ringu i oznaczenia wejść pozostają widoczne.
+
 ## Co łączy
 
 | Element                                            | Moduł                                                                    |
