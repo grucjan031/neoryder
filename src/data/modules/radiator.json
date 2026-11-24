@@ -1,0 +1,24 @@
+{
+  "id": "radiator",
+  "name": "Radiator",
+  "description": "Ciepło na strzał −20%, obrażenia bezpośrednie −8%.",
+  "slot": "cell",
+  "visual": {
+    "shape": "radiator",
+    "color": "white"
+  },
+  "tags": ["#radiator"],
+  "weaponKinds": ["projectile", "spread", "pierce", "lob"],
+  "patches": [
+    {
+      "op": "mul",
+      "path": "heatPerShot",
+      "value": 0.8
+    },
+    {
+      "op": "mul",
+      "path": "damage",
+      "value": 0.92
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "choke",
+  "name": "Dławik",
+  "description": "Rozrzut ×0,55, czas lotu pocisków ×1,4.",
+  "slot": "muzzle",
+  "visual": {
+    "shape": "choke",
+    "color": "amber"
+  },
+  "tags": ["#choke"],
+  "weaponKinds": ["spread"],
+  "patches": [
+    {
+      "op": "mul",
+      "path": "spreadDeg",
+      "value": 0.55
+    },
+    {
+      "op": "mul",
+      "path": "projectileLifetimeS",
+      "value": 1.4
+    }
+  ]
+}

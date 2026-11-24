@@ -170,6 +170,95 @@ export function createModuleVisual({
     bright = false,
   ) => add(new CylinderGeometry(top, bottom, height, 10), 0, y, 0, bright);
   switch (shape) {
+    case 'suppressor': {
+      // Przekrój tulei zawraca po wewnętrznej ściance, zostawiając otwarty kanał.
+      const wall = new LatheGeometry(
+        [
+          new Vector2(0.31, 0),
+          new Vector2(0.42, 0),
+          new Vector2(0.42, -2.06),
+          new Vector2(0.35, -2.2),
+          new Vector2(0.31, -2.2),
+          new Vector2(0.31, 0),
+        ].reverse(),
+        20,
+      );
+      add(wall.rotateX(Math.PI / 2), 0, 0, 0);
+      for (const z of [-0.12, -0.96, -1.88])
+        ring(0.42, 0, z, true).scale.z = 0.45;
+      break;
+    }
+    case 'choke':
+      for (let i = 0; i < 4; i++) {
+        const wall = new CylinderGeometry(
+          0.37,
+          0.49,
+          0.8,
+          6,
+          1,
+          true,
+          (i * Math.PI) / 2 + 0.08,
+          Math.PI / 2 - 0.16,
+        );
+        add(wall.rotateX(Math.PI / 2), 0, 0, -0.4);
+      }
+      ring(0.37, 0, 0);
+      ring(0.49, 0, -0.8, true);
+      break;
+    case 'drum':
+      box(0.52, 0.2, 0.54, 0, -0.1).name = 'module_foot';
+      add(
+        new CylinderGeometry(0.53, 0.53, 0.48, 20).rotateZ(Math.PI / 2),
+        0,
+        -0.66,
+        0,
+      );
+      for (const x of [-0.245, 0.245])
+        box(0.025, 0.18, 0.56, x, -0.66, 0, true);
+      break;
+    case 'overload':
+      box(0.72, 0.62, 1, 0, -0.12);
+      for (const z of [-0.27, 0.27]) box(0.28, 0.45, 0.14, 0, 0.35, z);
+      box(0.09, 0.09, 0.45, 0, 0.49, 0, true);
+      break;
+    case 'stun':
+      tube(0.33, 0.76);
+      for (const z of [-0.38, 0.38])
+        add(new SphereGeometry(0.33, 12, 8), 0, 0, z).scale.z = 0.55;
+      for (const z of [-0.29, 0, 0.29]) ring(0.33, 0, z, true);
+      break;
+    case 'radiator':
+      box(0.62, 0.29, 1);
+      for (let i = 0; i < 8; i++)
+        box(0.67, 0.46, 0.055, 0, 0.06, -0.44 + i * 0.125, i === 7);
+      break;
+    case 'prism': {
+      box(0.86, 0.12, 1, 0, 0.06).name = 'module_foot';
+      box(0.8, 0.08, 0.91, 0, 0.14).name = 'scope_mount';
+      for (const side of [-1, 1]) {
+        const cheek = box(0.09, 0.57, 0.91, side * 0.355, 0.38);
+        cheek.rotation.z = side * 0.22;
+      }
+      box(0.66, 0.085, 0.91, 0, 0.66);
+      const pane = add(new BoxGeometry(0.62, 0.52, 0.024), 0, 0.38, 0.3);
+      pane.rotation.x = -Math.PI / 8;
+      const glass = accent.clone();
+      glass.transparent = true;
+      glass.opacity = 0.18;
+      glass.depthWrite = false;
+      pane.material = glass;
+      pane.name = 'optic_glass';
+      const dot = add(new SphereGeometry(0.028, 10, 8), ...sight!.target, true);
+      accent.emissiveIntensity = layout.optic.reticleIntensity;
+      dot.name = 'optic_reticle';
+      break;
+    }
+    case 'angled':
+      box(0.8, 0.16, 1.5, 0, -0.08).name = 'module_foot';
+      box(0.58, 1.55, 0.48, 0, -0.83).rotation.x = Math.PI / 6;
+      box(0.61, 0.12, 0.52, 0, -0.94, -0.09, true).rotation.x = Math.PI / 6;
+      box(0.74, 0.16, 0.65, 0, -1.46, -0.4, true);
+      break;
     case 'brake':
       // Otwarty kanał wzdłuż -Z; przerwy między pierścieniami pełnią rolę portów.
       for (const z of [-0.12, -0.5, -0.88]) {
@@ -361,7 +450,7 @@ export function createModuleVisual({
   const y =
     slot === 'optic'
       ? boxBounds.min.y
-      : slot === 'grip'
+      : slot === 'grip' || shape === 'drum'
         ? boxBounds.max.y
         : center.y;
   for (const child of root.children)
@@ -759,10 +848,7 @@ export function attachModuleVisuals(
     const raw = new Box3().setFromObject(visual).getSize(new Vector3());
     const fit = (x: number, y: number, z: number) =>
       visual.scale.set(x / raw.x, y / raw.y, z / raw.z);
-    if (
-      muzzle &&
-      (shape === 'brake' || shape === 'compensator' || shape === 'rail')
-    ) {
+    if (muzzle && module.slot === 'muzzle') {
       // Przekrój rzeczywistego czoła lufy, z osią z zaczepu GLB. Wspólna
       // obejma obejmuje też dwa wyloty rozpraszacza.
       const front = frameBox.min.z;
@@ -775,7 +861,10 @@ export function attachModuleVisuals(
       if (rim.isEmpty()) continue;
       const width = 2 * Math.max(socket.x - rim.min.x, rim.max.x - socket.x);
       const height = 2 * Math.max(socket.y - rim.min.y, rim.max.y - socket.y);
-      const profile = layout.muzzle[shape];
+      const profile =
+        layout.muzzle[
+          shape === 'brake' || shape === 'rail' ? shape : 'compensator'
+        ];
       const caliber = Math.min(width, height);
       const depth = Math.min(
         Math.max(caliber * profile.length, length * layout.muzzle.minLength),
@@ -806,7 +895,8 @@ export function attachModuleVisuals(
       fit(
         width * profile.width,
         muzzleHeight,
-        depth + Math.max(0, rear - front),
+        (shape === 'suppressor' ? 2.2 : shape === 'choke' ? 0.8 : 1) * depth +
+          Math.max(0, rear - front),
       );
       visual.position.copy(socket).setZ(rear);
       const collarDepth = caliber * layout.muzzle.collarDepth;
@@ -862,7 +952,27 @@ export function attachModuleVisuals(
         (shape === 'extended'
           ? layout.cell.extendedLength
           : layout.cell.length);
-      fit(diameter, diameter, cellLength);
+      if (shape === 'drum') {
+        fit(diameter * 0.6, diameter * 1.1, diameter);
+        if (
+          verticalSeat(
+            visual,
+            frameBox,
+            modelBox,
+            surface,
+            socket.x,
+            frameBox.min.z + size.z * layout.grip.foregrip.fromFront,
+            -1,
+          )
+        )
+          gunRoot.add(visual);
+        continue;
+      }
+      fit(
+        diameter,
+        shape === 'radiator' ? diameter * 0.55 : diameter,
+        cellLength,
+      );
       if (
         !cellSeat(
           visual,
@@ -878,8 +988,8 @@ export function attachModuleVisuals(
       )
         continue;
       gunRoot.add(visual);
-    } else if (shape === 'foregrip' || shape === 'laser') {
-      const profile = layout.grip[shape];
+    } else if (module.slot === 'grip') {
+      const profile = layout.grip[shape === 'laser' ? shape : 'foregrip'];
       const depth = size.z * profile.length;
       fit(size.x * profile.width, size.y * profile.height, depth);
       const support = gunRoot.getObjectByName('support');
@@ -921,8 +1031,9 @@ export function attachModuleVisuals(
         dot.scale.z = laserBeamWidth / laserBeamLength;
         beam.add(dot);
       }
-    } else if (shape === 'scope' || shape === 'holo' || shape === 'reddot') {
-      const profile = layout.optic[shape];
+    } else if (module.slot === 'optic') {
+      const profile =
+        layout.optic[shape === 'scope' || shape === 'reddot' ? shape : 'holo'];
       if (shape === 'scope') {
         const diameter = Math.min(
           size.x * profile.width,
@@ -932,7 +1043,7 @@ export function attachModuleVisuals(
       } else
         fit(
           size.x * profile.width,
-          size.y * profile.height,
+          size.y * profile.height * (shape === 'prism' ? 0.75 : 1),
           size.z * profile.length,
         );
       if (

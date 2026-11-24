@@ -86,6 +86,64 @@
     "minLevel": 5
   },
   {
+    "id": "module:suppressor",
+    "cost": {
+      "data": 150
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "module:choke",
+    "cost": {
+      "data": 140
+    },
+    "minLevel": 2
+  },
+  {
+    "id": "module:radiator",
+    "cost": {
+      "data": 170
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "module:stabilizer",
+    "cost": {
+      "data": 180
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "module:drumCell",
+    "cost": {
+      "data": 210
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "module:prism",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 4
+  },
+  {
+    "id": "module:overloadCell",
+    "cost": {
+      "cores": 3
+    },
+    "minLevel": 4,
+    "requiresAchievement": "rezonator"
+  },
+  {
+    "id": "module:stunCell",
+    "cost": {
+      "cores": 4
+    },
+    "minLevel": 5,
+    "requiresAchievement": "egzekutor"
+  },
+  {
     "id": "weapon:rifle",
     "cost": {
       "data": 80

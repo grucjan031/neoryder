@@ -78,7 +78,7 @@ describe('dane osiągnięć (S4b-01)', () => {
     expect(achievementsSchema.safeParse([valid]).success).toBe(true);
   });
 
-  it('requiresAchievement wskazuje istniejące osiągnięcie, a bramkowane są dokładnie cztery odblokowania', () => {
+  it('requiresAchievement przypisuje przedmiotom właściwe naszywki z katalogu', () => {
     const gates = loadUnlocks(unlocksData)
       .filter((unlock) => unlock.requiresAchievement !== undefined)
       .map((unlock) => [unlock.id, unlock.requiresAchievement]);
@@ -88,6 +88,8 @@ describe('dane osiągnięć (S4b-01)', () => {
       'blade:staffBlade': 'taniec-ostrza',
       'power:focus': 'glos-rezonansu',
       'module:superconductor': 'reka-strzelca',
+      'module:overloadCell': 'rezonator',
+      'module:stunCell': 'egzekutor',
       'slot:weapon3': 'weteran-hut',
     });
   });
@@ -99,12 +101,14 @@ describe('dane osiągnięć (S4b-01)', () => {
       kills_melee: ['blade:'],
       kills_power: ['power:'],
       kills_gun: ['weapon:'],
+      execute_performed: ['blade:'],
+      synergy_triggered: [],
       victories: [],
     };
     for (const unlock of loadUnlocks(unlocksData)) {
       if (!unlock.requiresAchievement) continue;
       const def = achievementDefinitions.get(unlock.requiresAchievement)!;
-      // Nie wymaga własnej nagrody ani zakupu: tylko licznik zwycięstw lub zabójstw.
+      // Postęp licznika można rozpocząć z ekwipunkiem startowym.
       expect(def.kind).toBe('counter');
       const prefixes = needs[def.counter!];
       expect(prefixes).toBeDefined();

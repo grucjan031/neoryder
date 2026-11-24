@@ -121,7 +121,7 @@ FPP. Parametry dopasowania są w `tuning.weaponModuleVisuals`.
   środka w X: `centerToleranceM` w `tuning.weaponModuleVisuals.grip`), dzięki
   czemu wiązka lasera biegnie w osi muszki. W blasterze i pistolecie stopa
   modułu jest przytwierdzona od spodu w osi lufy.
-- Końcówkę (`compensator`, `brake`, `rail`) centruje gniazdo `muzzle`, a jej
+- Końcówkę centruje gniazdo `muzzle`, a jej
   przekrój i długość wynikają z wymiarów czoła lufy; tylna krawędź opiera się o
   faktyczne czoło lufy — przedni pierścień/opaskę `trim` obejmującą oś wylotu w
   zasięgu szyjki (`maxSleeveDepth`) albo `frame.min.z`, gdy brak takiego
@@ -131,7 +131,7 @@ FPP. Parametry dopasowania są w `tuning.weaponModuleVisuals`.
   się pod linią celowania. Otwarta obejma rozszerza się od czoła do obudowy i
   zachowuje oba kanały rozpraszacza. Błysk i poświata przesuwają się na koniec
   dodatku, a demontaż przywraca ich pozycje.
-- Położenie ogniwa wzdłuż korpusu bazuje na `heat_cell`. Dwie podpory łączą
+- Ogniwo bębnowe korzysta ze stopy pod korpusem. Położenie pozostałych ogniw wzdłuż korpusu bazuje na `heat_cell`. Dwie podpory łączą
   ogniwo z lokalną powierzchnią lewego boku, z uwzględnieniem wystających części.
 
 `modulesOf` dostarcza zamrożone moduły runu w `RoomScene` (także misja liniowa).
@@ -139,8 +139,8 @@ Zmiana broni i dispose zdejmują dodatki.
 
 Kontrola wizualna dla Claude: uruchom `npm run dev`, następnie
 `node tools/screens/moduleVisuals.mjs http://localhost:5173 artifacts/module-visuals`.
-Skrypt wymaga deweloperskiego serwera Vite i Chromium Playwright. Tworzy 252 PNG
-(7 modeli × 12 kształtów × biodro/ADS/widok boczny) oraz manifest. Używa prawdziwego
+Skrypt wymaga deweloperskiego serwera Vite i Chromium Playwright. Tworzy po trzy PNG
+na każdą parę modelu i kształtu (biodro, ADS, widok boczny) oraz manifest. Używa prawdziwego
 `FppViewModel` na neutralnym tle; kombinacje niedostępne w grze są oznaczone jako
 kontrola geometrii. To kontrola brył i póz, bez symulowania FOV optyki ani bloomu
 rozgrywki. Kadr boczny obejmuje bryłę broni z dodatkiem na około 60% szerokości.
@@ -201,3 +201,20 @@ Nowy slot `grip` (podwieszenie pod lufą) obok `muzzle`, `cell`, `optic`; limit
 Wygląd: nowe kształty w `weaponModuleVisuals.ts` (ramka holo ze znakiem w bursztynie,
 laser z kropką, kompensator, chwyt, ogniwa). Testy: `workshopShop.test.ts`, e2e
 `workshopShop.spec.ts`.
+
+### Dodatki specjalistyczne
+
+| Moduł                                  | Efekt                                                                                                                                | Tryby broni                     | Zakup                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- | --------------------------------------- |
+| Tłumik (`suppressor`)                  | Odrzut −20%, rozrzut −15%, ciepło na strzał −10%, prędkość pocisku −10%.                                                             | projectile, spread, pierce      | poz. 2, 150 Danych                      |
+| Dławik (`choke`)                       | Rozrzut ×0,55, czas lotu pocisków ×1,4.                                                                                              | spread                          | poz. 2, 140 Danych                      |
+| Radiator (`radiator`)                  | Ciepło na strzał −20%, obrażenia bezpośrednie −8%.                                                                                   | projectile, spread, pierce, lob | poz. 3, 170 Danych                      |
+| Chwyt stabilizujący (`stabilizer`)     | Odrzut −45%, rozrzut −10%, szybkostrzelność −5%.                                                                                     | projectile, spread, pierce      | poz. 3, 180 Danych                      |
+| Ogniwo bębnowe (`drumCell`)            | Pojemność cieplna ×1,6, szybkostrzelność −8%.                                                                                        | projectile, spread, pierce, lob | poz. 4, 210 Danych                      |
+| Celownik pryzmatyczny (`prism`)        | Pole widzenia ×0,7, czas wejścia w celowanie ×0,85, rozrzut podczas celowania ×0,45.                                                 | projectile, pierce, beam        | poz. 4, 200 Danych                      |
+| Ogniwo przeciążeniowe (`overloadCell`) | Przeciążenie na 4 s, do 3 ładunków: cel otrzymuje +25% obrażeń za ładunek, przy 3 — ogłuszenie i wyładowanie. Ciepło na strzał +15%. | projectile, spread, pierce      | poz. 4, 3 Rdzenie, naszywka `rezonator` |
+| Ogniwo paraliżujące (`stunCell`)       | Ogłuszenie na 0,4 s, szybkostrzelność −15%.                                                                                          | pierce, lob                     | poz. 5, 4 Rdzenie, naszywka `egzekutor` |
+
+Na EMP ogłuszenie trafia do listy statusów wybuchu obok bazowego przeciążenia. Radiator skaluje obrażenia kontaktowe pocisku EMP. Wiązka ciągła korzysta z pola widzenia i czasu wejścia pryzmatu, a jej tryb strzału pomija rozrzut.
+
+Testy `newModules.test.ts` sprawdzają zakup, zgodność, bryły, transport statusów oraz połączenie ogniwa bębnowego z tłumikiem na karabinie.

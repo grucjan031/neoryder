@@ -1,0 +1,34 @@
+{
+  "id": "suppressor",
+  "name": "Tłumik",
+  "description": "Odrzut −20%, rozrzut −15%, ciepło na strzał −10%, prędkość pocisku −10%.",
+  "slot": "muzzle",
+  "visual": {
+    "shape": "suppressor",
+    "color": "white"
+  },
+  "tags": ["#suppressor"],
+  "weaponKinds": ["projectile", "spread", "pierce"],
+  "patches": [
+    {
+      "op": "mul",
+      "path": "recoilScale",
+      "value": 0.8
+    },
+    {
+      "op": "mul",
+      "path": "spreadDeg",
+      "value": 0.85
+    },
+    {
+      "op": "mul",
+      "path": "heatPerShot",
+      "value": 0.9
+    },
+    {
+      "op": "mul",
+      "path": "projectileSpeed",
+      "value": 0.9
+    }
+  ]
+}
