@@ -20,6 +20,7 @@ export type SceneLoader = () => Promise<SceneFactory>;
 export const scenes: Record<string, SceneLoader> = {
   'map-audit': () =>
     import('./mapAuditScene').then((m) => () => new m.MapAuditScene()),
+  'map-walk': () => import('./mapWalk').then((m) => () => new m.MapWalkScene()),
   tutorial: () => import('./tutorial').then((m) => () => new m.Tutorial()),
   'pad-test': () => import('./padTest').then((m) => () => new m.PadTest()),
   'city-fx-test': () =>

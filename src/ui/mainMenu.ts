@@ -180,7 +180,26 @@ export class MainMenu {
       .catch(() => {
         // Błąd odczytu nie oznacza braku zapisu; samouczek pozostaje dostępny przyciskiem.
       });
-    home.append(primary, status, modesButton, settingsButton, tutorial);
+    // TODO: tymczasowa zakładka „Testy map” do usunięcia po audycie map (widoczna zawsze).
+    const mapTests = button(
+      'Testy map',
+      () => {
+        const params = new URLSearchParams({ maps: '1' });
+        if (options.params?.get('debug') === '1') params.set('debug', '1');
+        if (options.params) preserveLiteFx(options.params, params);
+        navigate(`?${params}`);
+      },
+      'quiet',
+    );
+    mapTests.dataset.mapTests = '';
+    home.append(
+      primary,
+      status,
+      modesButton,
+      settingsButton,
+      tutorial,
+      mapTests,
+    );
 
     // Podmenu „Tryby”: osobna warstwa w kolumnie (Esc / B wraca do menu głównego).
     const modes = el('section', 'main-menu__modes');

@@ -60,6 +60,7 @@ it('bez debug menu nie pokazuje Nowy run (presety), seeda ani wyboru buildu', as
     'Tryby',
     'Ustawienia',
     'Samouczek',
+    'Testy map',
   ]);
   button('Tryby').click();
   expect(visible()).toEqual([

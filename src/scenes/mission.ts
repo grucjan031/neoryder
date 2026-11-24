@@ -49,6 +49,8 @@ export interface MissionSceneOptions {
   store?: SaveStore;
   navigate?: (url: string) => void;
   loadModels?: boolean;
+  /** Testy map: encountery nigdy się nie uruchamiają (brak wrogów). */
+  peaceful?: boolean;
 }
 type ActiveEncounter = { director: WaveDirector; enemies: Set<EntityId> };
 
@@ -447,6 +449,7 @@ export class MissionScene implements Scene {
   }
 
   private startEncounter(id: string): void {
+    if (this.options.peaceful) return;
     if (this.active.has(id) || this.runtime.completed.has(id)) return;
     const encounter = this.level.encounters.find((item) => item.id === id)!;
     const definition = structuredClone(levelWaves.get(encounter.wave)!);

@@ -295,6 +295,8 @@ export class Arena implements Scene {
     private readonly selectBuild = false,
     readonly id: 'arena' | typeof ARENA_MUTATORS_SCENE | 'endless' = 'arena',
     private readonly endlessSaveOverride?: EndlessSavePort,
+    /** Testy map: bez fal i wrogów. */
+    private readonly peaceful = false,
   ) {}
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
@@ -700,7 +702,7 @@ export class Arena implements Scene {
     this.heldItem.reset(this.loadout.startHeld);
     this.world.step();
     if (choosing) this.enterBuildSelect();
-    else this.director.start();
+    else if (!this.peaceful) this.director.start();
     this.render(1);
   }
 

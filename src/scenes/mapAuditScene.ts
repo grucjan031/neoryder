@@ -5,8 +5,8 @@ import {
   type Scene as ThreeScene,
 } from 'three';
 import type { GameContext } from '../core/context';
-import { createMemorySaveStore, SAVE_VERSION } from '../core/save';
-import { createStarterMetaState } from '../progression/progressionSchema';
+import { createMemorySaveStore } from '../core/save';
+import { loadMapScene } from './mapSceneLoader';
 import { contains, orientedBox, surfaceY } from '../world/mapAuditGeometry';
 import type { AuditMapData } from '../world/mapAudit';
 import type { CameraPose, Scene } from './index';
@@ -131,58 +131,9 @@ export class MapAuditScene implements Scene {
     const id = params.get('map');
     if (!id) throw new Error('Podaj identyfikator mapy w parametrze map.');
     this.mapId = id;
-    const store = createMemorySaveStore();
-    let layout: AuditMapData;
-    if (id === 'arena') {
-      const { Arena, arenaLayoutSchema } = await import('./arena');
-      layout = arenaLayoutSchema.parse(
-        (await import('../data/scenes/arena.json')).default,
-      );
-      this.scene = new Arena();
-    } else if (id === 'hideout') {
-      const { loadHubLayout } = await import('../world/hubSchema');
-      const { HubScene } = await import('./hub');
-      const hub = loadHubLayout(
-        (await import('../data/hub/hideout.json')).default,
-      );
-      layout = hub;
-      this.scene = new HubScene({ layout: hub, metaStore: store });
-    } else {
-      const { roomDefinitions } = await import('../world/rooms');
-      const room = roomDefinitions.get(id);
-      if (room) {
-        const { RoomScene } = await import('./roomScene');
-        const { roomTestRun } = await import('./roomTest');
-        const { default: waves } = await import('../data/waves/roomTest.json');
-        layout = room;
-        this.scene = new RoomScene(
-          room,
-          roomTestRun(room, params),
-          { ...waves, spawnPoints: room.spawnPoints, waves: [] },
-          { manualEncounter: true },
-        );
-      } else {
-        const { levelDefinitions } = await import('../world/levels');
-        const { missionDefinitions } = await import('../world/missions');
-        const level = levelDefinitions.get(id);
-        const mission = [...missionDefinitions.values()].find(
-          (m) => m.level === id,
-        );
-        if (!level || !mission) throw new Error(`Nieznana mapa audytu: ${id}`);
-        layout = level;
-        const meta = createStarterMetaState();
-        meta.campaign.completed = [...mission.requires];
-        await store.saveMeta({
-          saveVersion: SAVE_VERSION,
-          createdAt: 0,
-          updatedAt: 0,
-          meta,
-        });
-        params.set('mission', mission.id);
-        const { MissionScene } = await import('./mission');
-        this.scene = new MissionScene({ params, store });
-      }
-    }
+    const loaded = await loadMapScene(id, params, createMemorySaveStore());
+    const layout = loaded.layout;
+    this.scene = loaded.scene;
     await this.scene.init(ctx, three);
     this.scene.render(1, 0);
     this.views = viewpoints(layout, ctx.camera, ctx.tuning.player.eyeHeight);

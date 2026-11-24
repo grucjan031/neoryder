@@ -15,6 +15,7 @@ import { createSceneMenu } from './ui/sceneMenu';
 import { MainMenu } from './ui/mainMenu';
 import { ChallengeHistoryScreen } from './ui/challengeHistory';
 import { PauseMenu } from './ui/pauseMenu';
+import { MapTestScreen } from './ui/mapTestScreen';
 import { SettingsScreen } from './ui/settingsScreen';
 import type { RunState } from './core/runTypes';
 import { missionCatalog } from './world/missionCatalog';
@@ -121,6 +122,14 @@ async function main(): Promise<void> {
       const sceneParams = new URLSearchParams(params);
       sceneParams.delete('scenes');
       createSceneMenu(app, Object.keys(scenes), sceneParams);
+      bootSplash.dismiss();
+    } else if (params.get('maps') === '1') {
+      // TODO: tymczasowa zakładka „Testy map” — usunąć po audycie map.
+      const screen = new MapTestScreen(app, params);
+      window.addEventListener('pagehide', () => screen.dispose(), {
+        once: true,
+      });
+      await screen.ready;
       bootSplash.dismiss();
     } else {
       const menu = params.has('daily')
@@ -422,7 +431,8 @@ async function main(): Promise<void> {
       preserveLiteFx(params, query);
       location.assign(`/?${query}`);
     },
-    menu: () => location.assign('/'),
+    // TODO: powrót do listy „Testy map” (tymczasowe, do usunięcia po audycie map).
+    menu: () => location.assign(scene.id === 'map-walk' ? '/?maps=1' : '/'),
   });
   const pause = (): void => {
     loop.paused = true;
