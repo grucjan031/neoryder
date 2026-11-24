@@ -53,6 +53,7 @@ export const handPosesSchema = z.strictObject({
     // Chwyty dopasowane do modeli broni (pole `grip` w src/data/weapons/*.json).
     gripPistol: poseSchema,
     gripPistolFire: poseSchema,
+    supportPistol: poseSchema,
     gripRifle: poseSchema,
     gripRifleFire: poseSchema,
     gripScatter: poseSchema,

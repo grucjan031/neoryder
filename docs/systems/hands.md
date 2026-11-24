@@ -176,10 +176,12 @@ w `src/combat/weapons/weaponSchema.ts`):
 
 Pozy: `gripGun`/`gripGunFire` (blaster), `gripPistol`, `gripRifle`, `gripScatter`,
 `gripSniper`, `gripBeam`, `gripEmp` (+ `…Fire`), `supportRifle`, `supportScatter`,
-`supportSniper`, `supportBeam`, `supportEmp`. Pozy kadru (`POSE`, `TWO_HAND_POSE`,
+`supportSniper`, `supportBeam`, `supportEmp`, `supportPistol`. Pozy kadru (`POSE`, `TWO_HAND_POSE`,
 `AIM_POSE`, `TWO_HAND_SUPPORT_*`), położenie broni w kadrze i ruch są bez zmian —
-przesuwa się tylko dłoń względem broni. Pistolet i blaster mają lewą dłoń pod
-chwytem z pozą `support` (bez zmian).
+przesuwa się tylko dłoń względem broni. Pistolet i blaster trzymane są oburącz:
+lewa dłoń (`supportPistol`, palce zawinięte) obejmuje rękojeść z przodu i od lewej,
+na prawej dłoni, a przedramię schodzi skosem w lewy dół kadru (`grip.support` w
+`pistol.json` / `blaster.json`; blaster ma węzeł `support` 2 cm niżej, stąd wyższe `offset.y`).
 
 Wynik pomiaru (mm; ujemne = przenikanie; luz liczony na paliczkach środkowego,
 serdecznego, małego i dystalnym wskazującego oraz `thumb_2/3`):

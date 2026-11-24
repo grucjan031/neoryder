@@ -988,7 +988,7 @@ Plik zawiera pełne pozy po 15 przegubów palców: `relaxed`, `open`, `fist`, `g
 `gripGun`/`gripGunFire` (blaster i domyślny chwyt), chwyty dopasowane do modeli broni
 (`gripPistol`, `gripRifle`, `gripScatter`, `gripSniper`, `gripBeam`, `gripEmp` z wariantami
 `…Fire`) oraz dłoń podpierającą: `support` (domyślna) i `supportRifle`, `supportScatter`,
-`supportSniper`, `supportBeam`, `supportEmp`. Wybór pozy i położenie dłoni względem broni
+`supportSniper`, `supportBeam`, `supportEmp`, `supportPistol`. Wybór pozy i położenie dłoni względem broni
 podaje pole `grip` w danych broni (`docs/systems/hands.md`).
 
 Wartości to **radiany Euler XYZ w lokalnych osiach kości glTF**, jak w Three.js
