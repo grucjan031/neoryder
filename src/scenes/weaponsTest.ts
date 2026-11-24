@@ -321,6 +321,10 @@ export class WeaponsTest implements Scene {
       this.weapon.overheat();
       return 'Broń przegrzana.';
     });
+    register('inspect', 'inspect — obejrzyj broń', () => {
+      this.fppView.inspect();
+      return 'Oglądanie broni';
+    });
     if (ctx.debug) {
       register(
         'ads optic',
@@ -428,6 +432,7 @@ export class WeaponsTest implements Scene {
     this.previous = this.player.getState();
     this.player.step(dt, input);
     if (!(dt > 0)) return;
+    if (input.pressed.has('inspect')) this.fppView.inspect();
     for (const [index, action] of (
       ['weapon1', 'weapon2', 'weapon3'] as const
     ).entries()) {

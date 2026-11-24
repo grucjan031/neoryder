@@ -78,7 +78,7 @@ const DESCRIPTIONS: Record<
 };
 
 const CONTROLS =
-  '{move} ruch · {sprint} sprint · {jump} skok (×2) · {dash} doskok · {crouch} ślizg · {attack} atak/strzał (ostrze: przytrzymaj = ciężki) · {block} blok · {power} Pchnięcie · {swap} zamiana ostrze/broń';
+  '{move} ruch · {sprint} sprint · {jump} skok (×2) · {dash} doskok · {crouch} ślizg · {attack} atak/strzał (ostrze: przytrzymaj = ciężki) · {block} blok · {power} Pchnięcie · {swap} zamiana ostrze/broń · {inspect} obejrzyj broń';
 
 /** Menu startowe: lista scen jako linki (zachowuje parametry debug i seed). */
 export function createSceneMenu(

@@ -254,16 +254,16 @@ describe('Settings Z6', () => {
   it('Input odczytuje nowe przypisanie natychmiast, clear usuwa przytrzymane akcje', () => {
     const target = document.createElement('canvas');
     document.body.append(target);
-    const settings = { bindings: { dash: 'KeyV' } };
+    const settings = { bindings: { dash: 'KeyN' } };
     const input = new Input(target, () => settings.bindings);
     vi.spyOn(input, 'pointerLocked', 'get').mockReturnValue(true);
     try {
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyV' }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyN' }));
       expect(input.snapshot().pressed.has('dash')).toBe(true);
       input.clear();
       expect(input.snapshot().held.size).toBe(0);
       settings.bindings = { dash: 'KeyB' };
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyV' }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyN' }));
       expect(input.snapshot().held.size).toBe(0);
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyB' }));
       expect(input.snapshot().pressed.has('dash')).toBe(true);

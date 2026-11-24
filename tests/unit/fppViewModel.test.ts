@@ -160,7 +160,7 @@ describe('FppViewModel', () => {
     await view.load(false);
     const parent = new Group();
     parent.add(view.root);
-    expect(unsubscribes).toHaveLength(4);
+    expect(unsubscribes).toHaveLength(6);
     view.dispose();
     expect(unsubscribes.every((off) => off.mock.calls.length === 1)).toBe(true);
     expect(parent.children).toHaveLength(0);
