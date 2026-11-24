@@ -1,4 +1,20 @@
 {
+  "skins": {
+    "title": "Skiny",
+    "factory": "Fabryczny",
+    "equip": "Załóż",
+    "equipped": "Założony",
+    "buyData": "Kup — {n} Danych",
+    "buyCores": "Kup — {n} Rdzenie",
+    "achievement": "Za naszywkę: {title}",
+    "preview": "Przymierz: {name}",
+    "rarity": {
+      "standard": "Standard",
+      "rzadki": "Rzadki",
+      "elitarny": "Elitarny",
+      "mistrzowski": "Mistrzowski"
+    }
+  },
   "extraction": {
     "title": "Wydobycie modułu",
     "choose": "Wybierz jeden moduł z runu {seed}.",
@@ -20,6 +36,7 @@
       "power": "Moce",
       "blade": "Ostrza",
       "slot": "Sloty",
+      "skin": "Skiny",
       "module": "Moduły"
     }
   },
@@ -67,7 +84,8 @@
     "power2": "Drugi slot mocy"
   },
   "errors": {
-    "generic": "Operacja nie powiodła się."
+    "generic": "Operacja nie powiodła się.",
+    "skinUnavailable": "Skin nieodblokowany lub nie pasuje do broni."
   },
   "shop": {
     "title": "Sklep warsztatu",

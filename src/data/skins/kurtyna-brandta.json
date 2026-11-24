@@ -1,0 +1,18 @@
+{
+  "id": "kurtyna-brandta",
+  "name": "Kurtyna Brandta",
+  "description": "Pasy ostrzegawcze przecinają czarny pancerz ochrony.",
+  "rarity": "elitarny",
+  "weapons": "*",
+  "colors": {
+    "armor": "#1a1c20",
+    "trim": "#4d525c",
+    "grip": "#26292f",
+    "accent": "#ffae1a"
+  },
+  "pattern": "stripes",
+  "patternColor": "#ffb62e",
+  "patternScale": 1.5,
+  "metalness": 0.5,
+  "roughness": 0.45
+}

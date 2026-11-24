@@ -194,5 +194,40 @@
     },
     "minLevel": 4,
     "requiresAchievement": "weteran-hut"
+  },
+  {
+    "id": "skin:nocny-karbon",
+    "minLevel": 1,
+    "cost": {
+      "data": 120
+    }
+  },
+  {
+    "id": "skin:miejski-kamuflaz",
+    "minLevel": 1,
+    "cost": {
+      "data": 150
+    }
+  },
+  {
+    "id": "skin:bursztynowa-linia",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "skin:zielony-sygnal",
+    "cost": {
+      "data": 200
+    },
+    "minLevel": 3
+  },
+  {
+    "id": "skin:biala-ceramika",
+    "cost": {
+      "cores": 3
+    },
+    "minLevel": 5
   }
 ]

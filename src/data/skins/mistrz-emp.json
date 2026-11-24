@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-emp",
+  "name": "Wzorzec: Granat EMP",
+  "description": "Pola izolacji układają się w cyfrową mozaikę.",
+  "rarity": "mistrzowski",
+  "weapons": ["emp"],
+  "colors": {
+    "armor": "#182544",
+    "trim": "#6a7fae",
+    "grip": "#111a30",
+    "accent": "#3d7bff"
+  },
+  "pattern": "digital",
+  "patternColor": "#2d4f9a",
+  "patternScale": 2,
+  "metalness": 0.5,
+  "roughness": 0.4
+}

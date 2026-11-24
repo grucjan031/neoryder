@@ -22,7 +22,12 @@ export interface LoadoutChoice {
   weapons: string[];
   powers: string[];
   modules: Record<string, string[]>;
+  skins: Record<string, string>;
 }
+
+/** Starsi nadawcy wyboru wyposażenia mogą pominąć mapę skinów. */
+export type LoadoutChoiceInput = Omit<LoadoutChoice, 'skins'> &
+  Partial<Pick<LoadoutChoice, 'skins'>>;
 
 export interface RunRewards {
   xp: number;

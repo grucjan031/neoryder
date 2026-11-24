@@ -125,7 +125,17 @@ describe('dane meta F4 przechodzą schematy', () => {
       'module:extendedCell',
       'module:pulseCell',
     ].filter((id) => !starter.has(id));
-    expect([...loaded.keys()].sort()).toEqual(expected.sort());
+    const nonSkins = [...loaded.keys()].filter((id) => !id.startsWith('skin:'));
+    expect(nonSkins.sort()).toEqual(expected.sort());
+    expect(
+      [...loaded.keys()].filter((id) => id.startsWith('skin:')).sort(),
+    ).toEqual([
+      'skin:biala-ceramika',
+      'skin:bursztynowa-linia',
+      'skin:miejski-kamuflaz',
+      'skin:nocny-karbon',
+      'skin:zielony-sygnal',
+    ]);
     for (const id of starter) expect(loaded.has(id)).toBe(false);
     expect(loaded.get('slot:weapon2')?.cost.data).toBeGreaterThan(0);
     expect(loaded.get('slot:weapon3')?.cost.cores).toBeGreaterThan(0);

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { bladeDefinitions } from '../combat/melee/bladeSchema';
 import { powerDefinitions } from '../combat/powers/definitions';
 import { weaponDefinitions } from '../combat/weapons/weaponSchema';
+import { skinDefinitions } from './skinSchema';
 import unlocksData from '../data/meta/unlocks.json';
 import { moduleDefinitions } from './moduleSchema';
 
@@ -15,6 +16,7 @@ export const unlockIdSchema = z.string().superRefine((id, ctx) => {
   const known =
     separator > 0 &&
     ((kind === 'weapon' && weaponDefinitions.has(name)) ||
+      (kind === 'skin' && skinDefinitions.has(name)) ||
       (kind === 'power' && powerDefinitions.has(name)) ||
       (kind === 'blade' && bladeDefinitions.has(name)) ||
       (kind === 'module' && moduleDefinitions.has(name)) ||

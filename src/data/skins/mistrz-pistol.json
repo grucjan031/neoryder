@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-pistol",
+  "name": "Wzorzec: Pistolet",
+  "description": "Drobny splot karbowanego chwytu przechodzi na zamek.",
+  "rarity": "mistrzowski",
+  "weapons": ["pistol"],
+  "colors": {
+    "armor": "#1e2b22",
+    "trim": "#6a8a72",
+    "grip": "#141c17",
+    "accent": "#6dff4a"
+  },
+  "pattern": "carbon",
+  "patternColor": "#2f5a3c",
+  "patternScale": 2.5,
+  "metalness": 0.55,
+  "roughness": 0.35
+}

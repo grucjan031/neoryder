@@ -1,0 +1,18 @@
+{
+  "id": "zar-hut",
+  "name": "Żar hut",
+  "description": "Na ciemnym metalu żarzą się smugi hutniczego pieca.",
+  "rarity": "elitarny",
+  "weapons": "*",
+  "colors": {
+    "armor": "#2b2a2d",
+    "trim": "#6e6252",
+    "grip": "#1e1c1d",
+    "accent": "#ff922b"
+  },
+  "pattern": "brushed",
+  "patternColor": "#c86a1e",
+  "patternScale": 2,
+  "metalness": 0.7,
+  "roughness": 0.35
+}

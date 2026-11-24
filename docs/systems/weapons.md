@@ -461,6 +461,12 @@ oceń tempo, czytelność cyan i paska ciepła, blokadę po przegrzaniu oraz pow
 do strzelania. Porównaj `fire 3` i `overheat` w konsoli; oceń pozycję broni
 i zmianę koloru otworów chłodzenia podczas ruchu kamery.
 
+## Skiny
+
+Warsztat pozwala przymierzyć każdy skin pasujący do wybranej broni, także przed zakupem lub zdobyciem naszywki. Przycisk pod próbką kupuje lub zakłada skin. „Fabryczny” przywraca oryginalne materiały. Zmiana dotyczy korpusu, chwytu, wykończenia i akcentu świetlnego. Dodatki zachowują własne materiały.
+
+W poligonie `?scene=weapons-test&debug=1` wybierz np. `weapon rifle`, następnie `skin mistrz-rifle` i `skin none`. Porównaj wzór korpusu, zimny emiter oraz wzrost temperatury podczas strzelania. Nieznany identyfikator wypisuje skiny pasujące do aktualnej broni.
+
 ## Pola modyfikowane przez dodatki
 
 `recoilScale` (odrzut widoku FPP), `hipSpreadScale` (rozrzut bez celowania, mnożnik

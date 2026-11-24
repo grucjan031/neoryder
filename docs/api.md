@@ -2590,3 +2590,9 @@ snapshots(): AllySnapshot[];                forEachPose(cb): void;    registerCo
 — `id` z `src/data/allies` (unikalne), `spawn` to stopy (sprawdzana osiągalność), `joinAfter`
 musi wskazywać istniejący cel albo spotkanie. Zależność `encounter` zgłasza host misji przez
 `RoomScene.allyDependencyDone('encounter', id)`.
+
+## Skiny broni
+
+`skinOf(weaponId)` zwraca id skina w wyposażeniu lub undefined dla fabrycznego wyglądu. `applyWeaponSkin(root, skin | null)` zmienia materiały korpusu lub przywraca oryginały. `reward.unlocks?: string[]` przyznaje trwałe identyfikatory odblokowań wraz z naszywką.
+
+`ownedSkins(meta, weaponId)` zwraca pasujące, posiadane definicje. `skinSource(skinId)` wskazuje ofertę sklepu, naszywkę albo brak źródła. `equipSkin(meta, weaponId, skinId | null)` zwraca nowy `LoadoutChoice` do przekazania do `MetaManager.setLoadout`. Przymiarka w warsztacie korzysta bezpośrednio z renderera i nie zapisuje zmiany wyposażenia.

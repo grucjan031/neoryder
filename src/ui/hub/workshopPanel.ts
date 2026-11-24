@@ -1,4 +1,7 @@
 import type { LoadoutChoice } from '../../core/metaTypes';
+import { equipSkin, skinSource } from '../../progression/meta';
+import { achievementDefinitions } from '../../progression/achievementsSchema';
+import { skinDefinitions, skinFitsWeapon } from '../../progression/skinSchema';
 import { playUiSound } from '../../audio/uiSounds';
 import { bindUiFeedback } from '../components/feedback';
 import { uiConfirm } from '../components/modal';
@@ -83,6 +86,11 @@ export const createWorkshopPanel: HubPanelFactory = (
   let extractionNeedsSave = false;
   let wantedPreview: string | undefined;
   let shownPreview = '';
+  let fitting: { weapon: string; skin: string | null } | undefined;
+  const previewSkin = (weapon: string) =>
+    fitting?.weapon === weapon
+      ? (fitting.skin ?? undefined)
+      : ctx.manager.state.loadout.skins[weapon];
   let tab: Category = ctx.manager.state.pendingExtractions.length
     ? 'extraction'
     : 'weapon';
@@ -382,6 +390,103 @@ export const createWorkshopPanel: HubPanelFactory = (
     return pane;
   };
 
+  const renderSkins = (weapon: string): HTMLElement => {
+    const state = ctx.manager.state;
+    const equipped = state.loadout.skins[weapon] ?? null;
+    const section = el('section', 'workshop__skins');
+    section.append(el('h3', 'ui-heading', text.skins.title));
+    const selectedSkin = previewSkin(weapon) ?? null;
+    const grid = el('div', 'workshop__skin-grid');
+    const rows = unlockRows(ctx.manager);
+    // Kolejność: posiadane, do kupienia od najtańszych, za naszywki, mistrzowskie na końcu.
+    const owned = new Set(state.unlocks);
+    const rank = (id: string): [number, number] => {
+      const skin = skinDefinitions.get(id)!;
+      if (owned.has('skin:' + id)) return [0, 0];
+      const source = skinSource(id);
+      if (source.kind === 'shop')
+        return [
+          1,
+          (source.unlock.cost.data ?? 0) +
+            (source.unlock.cost.cores ?? 0) * 100,
+        ];
+      return [skin.rarity === 'mistrzowski' ? 3 : 2, 0];
+    };
+    const ordered = [...skinDefinitions.values()]
+      .filter((s) => skinFitsWeapon(s, weapon))
+      .sort((a, b) => {
+        const [ga, ca] = rank(a.id);
+        const [gb, cb] = rank(b.id);
+        return ga - gb || ca - cb || a.name.localeCompare(b.name, 'pl');
+      });
+    for (const skin of [null, ...ordered]) {
+      const id = skin?.id ?? null;
+      const name = skin?.name ?? text.skins.factory;
+      const tile = el('div', 'workshop__skin');
+      tile.dataset.skin = id ?? 'factory';
+      tile.dataset.rarity = skin?.rarity ?? 'standard';
+      const swatch = el('button', 'workshop__swatch', name);
+      swatch.type = 'button';
+      swatch.dataset.key = 'skin-preview:' + tile.dataset.skin;
+      swatch.setAttribute('aria-label', fill(text.skins.preview, { name }));
+      swatch.setAttribute('aria-pressed', String(selectedSkin === id));
+      if (skin) {
+        swatch.style.setProperty('--armor', skin.colors.armor);
+        swatch.style.setProperty('--trim', skin.colors.trim);
+        swatch.style.setProperty('--accent', skin.colors.accent);
+        swatch.append(el('small', '', text.skins.rarity[skin.rarity]));
+      }
+      tile.onclick = (event) => {
+        if (
+          event.target instanceof Element &&
+          event.target.closest('button') === action
+        )
+          return;
+        fitting = { weapon, skin: id };
+        refresh();
+      };
+      tile.append(swatch);
+      const action = el(
+        'button',
+        'ui-button',
+        equipped === id ? text.skins.equipped : text.skins.equip,
+      );
+      action.type = 'button';
+      action.dataset.key = 'skin-action:' + tile.dataset.skin;
+      action.disabled = equipped === id;
+      let hint = skin?.description ?? '';
+      if (!id || state.unlocks.includes('skin:' + id)) {
+        action.onclick = () => {
+          fitting = { weapon, skin: id };
+          void setChoice(equipSkin(ctx.manager.state, weapon, id));
+        };
+      } else {
+        const source = skinSource(id);
+        const row = rows.find((row) => row.id === 'skin:' + id);
+        action.disabled = true;
+        if (source.kind === 'shop' && row) {
+          action.textContent = row.cost.cores
+            ? fill(text.skins.buyCores, { n: row.cost.cores })
+            : fill(text.skins.buyData, { n: row.cost.data });
+          action.disabled = row.status !== 'buyable';
+          hint = purchaseLabel(row) ?? hint;
+          action.onclick = () => void buy(row.id);
+        } else if (source.kind === 'achievement') {
+          const badge = achievementDefinitions.get(source.achievementId)!;
+          action.textContent = fill(text.skins.achievement, {
+            title: badge.title,
+          });
+          hint = badge.hint;
+        }
+      }
+      if (hint) tile.append(el('small', 'workshop__skin-note', hint));
+      tile.append(action);
+      grid.append(tile);
+    }
+    section.append(grid);
+    return section;
+  };
+
   /** Podgląd 3D: przełącznik broni z ekwipunku, trwały canvas i gniazda dodatków. */
   const renderPreview = (shown: ShopPreview | null): HTMLElement => {
     const block = el('div', 'workshop__preview-block');
@@ -418,10 +523,18 @@ export const createWorkshopPanel: HubPanelFactory = (
       previewBox.dataset.modules = shown.moduleIds.join(',');
       previewBox.dataset.tryOn = shown.tryOn ?? '';
       previewBox.dataset.highlight = shown.highlight ?? '';
-      const key = `${shown.weaponId}|${shown.moduleIds.join(',')}`;
+      const skin =
+        tab === 'weapon'
+          ? previewSkin(shown.weaponId)
+          : ctx.manager.state.loadout.skins[shown.weaponId];
+      previewBox.dataset.skin = skin ?? '';
+      const key = JSON.stringify([shown.weaponId, shown.moduleIds, skin]);
       if (preview && key !== shownPreview) {
         shownPreview = key;
-        preview.show(shown.weaponId, shown.moduleIds).catch(() => {});
+        const loading = skin
+          ? preview.show(shown.weaponId, shown.moduleIds, skin)
+          : preview.show(shown.weaponId, shown.moduleIds);
+        loading.catch(() => {});
       }
       preview?.highlight(shown.highlight);
     }
@@ -984,6 +1097,7 @@ export const createWorkshopPanel: HubPanelFactory = (
       el('h2', 'ui-heading', text.preview.title),
       renderPreview(shown),
       ...(card ? [renderCard(card)] : []),
+      ...(shown && tab === 'weapon' ? [renderSkins(shown.weaponId)] : []),
     );
     if (focusKey && root.isConnected) {
       const focusTarget = [

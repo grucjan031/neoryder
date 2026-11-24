@@ -1,0 +1,18 @@
+{
+  "id": "nocny-karbon",
+  "name": "Nocny karbon",
+  "description": "Grafitowy splot włókien matowi pancerz.",
+  "rarity": "standard",
+  "weapons": "*",
+  "colors": {
+    "armor": "#1d232c",
+    "trim": "#3c4654",
+    "grip": "#14181e",
+    "accent": "#00e5ff"
+  },
+  "pattern": "carbon",
+  "patternColor": "#3a4656",
+  "patternScale": 2.5,
+  "metalness": 0.55,
+  "roughness": 0.35
+}

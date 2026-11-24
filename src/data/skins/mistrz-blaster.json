@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-blaster",
+  "name": "Wzorzec: Blaster",
+  "description": "Miedziane ścieżki oplatają komorę impulsową.",
+  "rarity": "mistrzowski",
+  "weapons": ["blaster"],
+  "colors": {
+    "armor": "#3a2c18",
+    "trim": "#a08a64",
+    "grip": "#251c10",
+    "accent": "#ffae1a"
+  },
+  "pattern": "hex",
+  "patternColor": "#a8701f",
+  "patternScale": 2.5,
+  "metalness": 0.6,
+  "roughness": 0.35
+}

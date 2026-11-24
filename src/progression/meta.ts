@@ -1,3 +1,4 @@
+import workshopLabels from '../data/ui/workshop.pl.json';
 import type { EventBus } from '../core/events';
 import { Rng } from '../core/rng';
 import { tuning } from '../core/tuning';
@@ -6,6 +7,7 @@ import {
   MAX_APPLIED_RUN_IDS,
   MAX_LAST_RUNS,
   type LoadoutChoice,
+  type LoadoutChoiceInput,
   type MetaRunRecord,
   type MetaState,
   type RunRewards,
@@ -40,6 +42,46 @@ import {
   moduleFitsWeapon,
   sanitizeModules,
 } from './moduleSchema';
+
+import {
+  skinDefinitions,
+  skinFitsWeapon,
+  type SkinDefinition,
+} from './skinSchema';
+
+export function ownedSkins(
+  meta: MetaState,
+  weaponId: string,
+): SkinDefinition[] {
+  return [...skinDefinitions.values()].filter(
+    (skin) =>
+      skinFitsWeapon(skin, weaponId) &&
+      meta.unlocks.includes('skin:' + skin.id),
+  );
+}
+export function skinSource(skinId: string) {
+  const id = 'skin:' + skinId;
+  const unlock = unlockDefinitions.get(id);
+  if (unlock) return { kind: 'shop' as const, unlock };
+  for (const def of achievementDefinitions.values())
+    if (def.reward.unlocks?.includes(id))
+      return { kind: 'achievement' as const, achievementId: def.id };
+  return { kind: 'none' as const };
+}
+export function equipSkin(
+  meta: MetaState,
+  weaponId: string,
+  skinId: string | null,
+): LoadoutChoice {
+  const skins = { ...meta.loadout.skins };
+  if (skinId === null) delete skins[weaponId];
+  else {
+    if (!ownedSkins(meta, weaponId).some((s) => s.id === skinId))
+      throw new Error(workshopLabels.errors.skinUnavailable);
+    skins[weaponId] = skinId;
+  }
+  return { ...meta.loadout, skins };
+}
 
 export const CUSTOM_LOADOUT_NAME = 'Własny';
 
@@ -155,6 +197,19 @@ export class MetaManager {
     this.current = structuredClone(state);
     this.events = events;
     this.rules = rules;
+    for (const id of this.current.achievements.unlocked)
+      this.grantItems(this.achievementRules.get(id));
+    const skins = this.current.loadout.skins ?? {};
+    this.current.loadout.skins = Object.fromEntries(
+      Object.entries(skins).filter(([weapon, id]) =>
+        ownedSkins(this.current, weapon).some((skin) => skin.id === id),
+      ),
+    );
+  }
+
+  private grantItems(def: AchievementDefinition | undefined): void {
+    for (const id of def?.reward.unlocks ?? [])
+      if (!this.current.unlocks.includes(id)) this.current.unlocks.push(id);
   }
 
   static restore(
@@ -264,6 +319,7 @@ export class MetaManager {
       weapons: [...weapons],
       powers: [...powers],
       tags: [],
+      skins: { ...this.current.loadout.skins },
       modules: sanitizeModules(weapons, modules),
     };
   }
@@ -414,6 +470,7 @@ export class MetaManager {
           : flags.has(def.id);
       if (!met) continue;
       state.unlocked.push(def.id);
+      this.grantItems(def);
       const reward = {
         data: def.reward.data ?? 0,
         cores: def.reward.cores ?? 0,
@@ -462,7 +519,7 @@ export class MetaManager {
     this.grantFlag(ACHIEVEMENT_IDS.firstPurchase);
   }
 
-  setLoadout(choice: LoadoutChoice): void {
+  setLoadout(choice: LoadoutChoiceInput): void {
     if (!this.isUnlocked(`blade:${choice.blade}`))
       throw new Error(`Ostrze nieodblokowane: ${choice.blade}.`);
     this.checkList(choice.weapons, 'weapon', 'broń', this.weaponSlots);
@@ -492,7 +549,12 @@ export class MetaManager {
       }
       modules[weaponId] = ids;
     }
+    const skins = { ...(choice.skins ?? this.current.loadout.skins) };
+    for (const [weapon, id] of Object.entries(skins))
+      if (!ownedSkins(this.current, weapon).some((s) => s.id === id))
+        throw new Error(workshopLabels.errors.skinUnavailable);
     this.current.loadout = {
+      skins,
       blade: choice.blade,
       weapons: [...choice.weapons],
       powers: [...choice.powers],
@@ -580,12 +642,13 @@ export class MetaManager {
       this.grantFlag(ACHIEVEMENT_IDS.level);
   }
 
-  /** Oznacza osiągnięcie jako zdobyte bez nagrody i bez sprawdzania warunku (konsola debug). */
+  /** Oznacza osiągnięcie jako zdobyte bez wypłaty waluty i bez sprawdzania warunku (konsola debug). */
   debugGrantAchievement(id: string): void {
     if (!this.achievementRules.has(id))
       throw new Error(`Nieznane osiągnięcie: ${id}.`);
     if (this.hasAchievement(id)) return;
     this.current.achievements.unlocked.push(id);
+    this.grantItems(this.achievementRules.get(id));
     this.events?.emit('achievement_unlocked', { id });
   }
 

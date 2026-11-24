@@ -1,0 +1,16 @@
+{
+  "id": "biala-ceramika",
+  "name": "Biała ceramika",
+  "description": "Jasne ceramiczne płyty osłaniają bursztynowe ogniwo.",
+  "rarity": "elitarny",
+  "weapons": "*",
+  "colors": {
+    "armor": "#f2e8d5",
+    "trim": "#b8b0a0",
+    "grip": "#8f8a80",
+    "accent": "#ffae1a"
+  },
+  "pattern": "none",
+  "metalness": 0.1,
+  "roughness": 0.5
+}

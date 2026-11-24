@@ -1,0 +1,18 @@
+{
+  "id": "mistrz-scatter",
+  "name": "Wzorzec: Rozpraszacz",
+  "description": "Pasy na osłonie biegną ku wylotowi.",
+  "rarity": "mistrzowski",
+  "weapons": ["scatter"],
+  "colors": {
+    "armor": "#3d3a33",
+    "trim": "#9a9280",
+    "grip": "#2a2823",
+    "accent": "#ffcc65"
+  },
+  "pattern": "stripes",
+  "patternColor": "#ffcc65",
+  "patternScale": 1.5,
+  "metalness": 0.45,
+  "roughness": 0.5
+}

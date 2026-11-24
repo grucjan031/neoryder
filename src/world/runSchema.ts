@@ -10,7 +10,7 @@ import {
   type SectorMap,
 } from '../core/runTypes';
 import { runAchievementProgressSchema } from '../progression/achievementsSchema';
-import { loadoutSchema } from '../progression/loadout';
+import { savedLoadoutSchema } from '../progression/loadout';
 import { squadStateSchema } from '../allies/roster';
 import type { SquadMemberState } from '../allies/roster';
 
@@ -63,7 +63,7 @@ export const runStateSchema: z.ZodType<CheckpointRunState> = z
     seed: z.string(),
     sectorId: z.string().min(1),
     loadoutId: z.string().min(1),
-    loadout: loadoutSchema,
+    loadout: savedLoadoutSchema,
     talents: z
       .array(z.string().min(1))
       .refine(

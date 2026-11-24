@@ -41,10 +41,10 @@ const summary = (over: Partial<RunSummary> = {}): RunSummary => ({
 });
 
 describe('dane osiągnięć (S4b-01)', () => {
-  it('ma 26 osiągnięć w czterech kategoriach z unikalnymi id', () => {
+  it('ma 33 osiągnięcia w czterech kategoriach z unikalnymi id', () => {
     const list = loadAchievements(achievementsData);
-    expect(list).toHaveLength(26);
-    expect(new Set(list.map((def) => def.id)).size).toBe(26);
+    expect(list).toHaveLength(33);
+    expect(new Set(list.map((def) => def.id)).size).toBe(33);
     for (const category of ACHIEVEMENT_CATEGORIES)
       expect(list.some((def) => def.category === category)).toBe(true);
   });

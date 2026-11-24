@@ -1,0 +1,18 @@
+{
+  "id": "zielony-sygnal",
+  "name": "Zielony sygnał",
+  "description": "Zielona siatka oplata stalową obudowę.",
+  "rarity": "rzadki",
+  "weapons": "*",
+  "colors": {
+    "armor": "#1f3329",
+    "trim": "#6f8f7c",
+    "grip": "#172520",
+    "accent": "#6dff4a"
+  },
+  "pattern": "hex",
+  "patternColor": "#4fd17a",
+  "patternScale": 2.5,
+  "metalness": 0.5,
+  "roughness": 0.4
+}

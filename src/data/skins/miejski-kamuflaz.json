@@ -1,0 +1,18 @@
+{
+  "id": "miejski-kamuflaz",
+  "name": "Miejski kamuflaż",
+  "description": "Szaroniebieskie łaty dzielą sylwetkę korpusu na piksele.",
+  "rarity": "standard",
+  "weapons": "*",
+  "colors": {
+    "armor": "#5a6b7e",
+    "trim": "#8a98ab",
+    "grip": "#3b4756",
+    "accent": "#85b6d8"
+  },
+  "pattern": "digital",
+  "patternColor": "#26323f",
+  "patternScale": 2,
+  "metalness": 0.35,
+  "roughness": 0.6
+}

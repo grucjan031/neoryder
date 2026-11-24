@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { bladeDefinitions } from '../../combat/melee/bladeSchema';
 import { powerDefinitions } from '../../combat/powers/registry';
 import { weaponDefinitions } from '../../combat/weapons/weaponSchema';
+import { skinDefinitions } from '../../progression/skinSchema';
 import type { WeaponDefinition } from '../../combat/weapons/weaponSchema';
 import type { LoadoutChoice } from '../../core/metaTypes';
 import { Stats } from '../../core/stats';
@@ -23,6 +24,22 @@ import textData from '../../data/ui/workshop.pl.json';
 
 export const workshopText = z
   .object({
+    skins: z.object({
+      title: z.string(),
+      factory: z.string(),
+      equip: z.string(),
+      equipped: z.string(),
+      buyData: z.string(),
+      buyCores: z.string(),
+      achievement: z.string(),
+      preview: z.string(),
+      rarity: z.object({
+        standard: z.string(),
+        rzadki: z.string(),
+        elitarny: z.string(),
+        mistrzowski: z.string(),
+      }),
+    }),
     extraction: z.object({
       title: z.string(),
       choose: z.string(),
@@ -40,6 +57,7 @@ export const workshopText = z
         weapon: z.string(),
         power: z.string(),
         blade: z.string(),
+        skin: z.string(),
         slot: z.string(),
         module: z.string(),
       }),
@@ -162,11 +180,12 @@ export const workshopText = z
     weaponDescriptions: z.record(z.string(), z.string()),
     bladeNames: z.record(z.string(), z.string()),
     slotNames: z.record(z.string(), z.string()),
-    errors: z.object({ generic: z.string() }),
+    errors: z.object({ generic: z.string(), skinUnavailable: z.string() }),
   })
   .parse(textData);
 
-export type ItemKind = 'weapon' | 'power' | 'blade' | 'slot' | 'module';
+export type ItemKind =
+  'weapon' | 'power' | 'blade' | 'slot' | 'module' | 'skin';
 export const ITEM_KINDS: readonly ItemKind[] = [
   'weapon',
   'power',
@@ -210,6 +229,8 @@ export function splitId(id: string): { kind: ItemKind; key: string } {
 
 export function itemName(kind: ItemKind, key: string): string {
   switch (kind) {
+    case 'skin':
+      return skinDefinitions.get(key)?.name ?? key;
     case 'weapon':
       return weaponDefinitions.get(key)?.name ?? key;
     case 'power':
@@ -250,7 +271,7 @@ export function unlockRows(
   view: MetaView,
   defs: ReadonlyMap<string, UnlockDefinition> = unlockDefinitions,
 ): UnlockRow[] {
-  const { data, cores, unlocks } = view.state;
+  const { data, cores, unlocks, achievements } = view.state;
   const ids = [...defs.keys()];
   for (const id of unlocks) if (!defs.has(id)) ids.push(id);
   return ids.map((id) => {
@@ -258,8 +279,7 @@ export function unlockRows(
     const { kind, key } = splitId(id);
     const required = def?.requiresAchievement;
     const missing =
-      required !== undefined &&
-      !view.state.achievements.unlocked.includes(required);
+      required !== undefined && !achievements.unlocked.includes(required);
     return {
       id,
       kind,

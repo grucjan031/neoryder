@@ -15,6 +15,8 @@ import {
 } from 'three';
 import type { BufferGeometry, Object3D } from 'three';
 import { weaponModelOf } from '../combat/weapons/weaponSchema';
+import { skinDefinitions } from '../progression/skinSchema';
+import { applyWeaponSkin } from './weaponSkin';
 import { attachModuleVisuals } from './weaponModuleVisuals';
 import { FALLBACK_WEAPON_MODEL, loadWeaponScene } from './weaponModelLoader';
 
@@ -143,7 +145,11 @@ export class WeaponPreview {
   }
 
   /** Wczytuje broń i nakłada moduły; poprzedni model znika dopiero po załadowaniu nowego. */
-  async show(weaponId: string, moduleIds: readonly string[]): Promise<void> {
+  async show(
+    weaponId: string,
+    moduleIds: readonly string[],
+    skinId?: string,
+  ): Promise<void> {
     if (this.disposed) return;
     const token = ++this.token;
     const name = weaponModelOf(weaponId) ?? FALLBACK_WEAPON_MODEL;
@@ -154,6 +160,7 @@ export class WeaponPreview {
     this.clearCurrent();
     // Klon współdzieli geometrie i materiały z oryginałem; moduły dodajemy tylko na klonie.
     const model = source.clone(true);
+    applyWeaponSkin(model, skinDefinitions.get(skinId ?? '') ?? null);
     this.detachModules = attachModuleVisuals(model, moduleIds);
     model.traverse((node) => {
       if (node.name === 'laser_beam') node.visible = false;

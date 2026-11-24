@@ -832,6 +832,7 @@ export class RoomScene implements Scene {
     this.root.add(this.hitSparksView.root);
 
     this.fppView = new FppViewModel(ctx.bus, playerId, {
+      skinOf: (id) => this.run.loadout.skins?.[id],
       modulesOf: (id) => this.run.loadout.modules?.[id] ?? [],
       bladeDefinition: this.blade.definition,
       modelOf: (id) =>
