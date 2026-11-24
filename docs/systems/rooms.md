@@ -73,6 +73,13 @@ na dach lub wypadnie pod posadzkę, wraca na pole podajnika. Podczas przenoszeni
 gracz zachowuje Chwyt. Powrót czeka na puszczenie skrzyni i zwolnienie pola.
 Kolejna próba zachowuje stan gracza i zamknięcie bramy.
 
+W kanale kalibracji Kurogane dwie szyny prowadzą osłonę do poprzecznego pasa
+między głowicami lasera. Przewód od zachodniego filara dochodzi do rygla śluzy.
+Przejście w przerwie cyklu ani przeskoczenie promienia nie otwiera drzwi.
+Osłona działa na całym odcinku wiązki. Poza nim swobodna osłona wraca
+z bocznego stanowiska lub znad okapu według tych samych zasad `workArea`
+co skrzynia w śluzie wagowej.
+
 Sprawdzenie w 30 sekund:
 
 1. Otwórz `?scene=puzzle-test&debug=1`. Przytrzymaj F na skrzyni, patrz lekko

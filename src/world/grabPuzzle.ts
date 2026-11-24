@@ -96,10 +96,11 @@ export class GrabPuzzle {
     this.previous = this.position;
     this.position = { ...this.body.translation() };
     if (this.outcome !== null) return false;
+    this.engaged = this.matchesGoal();
     if (
-      this.definition.kind === 'plate' &&
       this.definition.workArea &&
       this.body.isDynamic() &&
+      !(this.laser && this.engaged) &&
       !insideLevelZone(this.position, this.definition.workArea)
     ) {
       const occupied = this.options.world.intersectionWithShape(
@@ -118,7 +119,6 @@ export class GrabPuzzle {
       this.confirmS = 0;
       return false;
     }
-    this.engaged = this.matchesGoal();
     this.confirmS = this.engaged ? this.confirmS + dt : 0;
     if (this.engaged && this.confirmS >= this.options.tuning.confirmS)
       return this.finish('solved');

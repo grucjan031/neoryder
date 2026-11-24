@@ -1,9 +1,11 @@
 import { z } from 'zod';
+import { length, scale, sub } from '../core/math';
 import { tuning } from '../core/tuning';
 import { blockMaterialSchema, dressingFields } from './dressingSchema';
 import { NODE_TYPES } from '../core/runTypes';
 import { directorConfigSchema } from '../enemies/director';
 import { insideLevelZone } from './levelRuntime';
+import { rayAabbDistance } from './hubStations';
 
 const finite = z.number().finite();
 const positive = z.number().finite().positive();
@@ -158,24 +160,27 @@ const puzzleObjectSchema = z.object({
   massKg: positive,
 });
 
+const puzzleWorkAreaSchema = z
+  .object({
+    kind: z.literal('box'),
+    position: vec3Schema,
+    size: positiveVec3Schema,
+  })
+  .optional();
+
 const grabPuzzleSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('plate'),
     object: puzzleObjectSchema,
     position: vec3Schema,
     radiusM: positive,
-    workArea: z
-      .object({
-        kind: z.literal('box'),
-        position: vec3Schema,
-        size: positiveVec3Schema,
-      })
-      .optional(),
+    workArea: puzzleWorkAreaSchema,
   }),
   z.object({
     kind: z.literal('laser'),
     object: puzzleObjectSchema,
     laserId: z.string().min(1),
+    workArea: puzzleWorkAreaSchema,
   }),
 ]);
 export type GrabPuzzleDefinition = z.infer<typeof grabPuzzleSchema>;
@@ -317,16 +322,15 @@ function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
     )
   )
     issue('Obiekt zagadki jest zbyt blisko punktu startu gracza.');
+  const { workArea } = puzzle;
+  if (workArea && !insideLevelZone(at, workArea))
+    issue('Strefa robocza musi obejmować środek obiektu na starcie.');
   if (puzzle.kind === 'plate') {
     if (!onFloor(puzzle.position) || puzzle.position.y !== groundY)
       issue('Płyta naciskowa musi leżeć na podłodze.');
     const goal = { ...puzzle.position, y: groundY + size.y / 2 };
-    if (
-      puzzle.workArea &&
-      (!insideLevelZone(at, puzzle.workArea) ||
-        !insideLevelZone(goal, puzzle.workArea))
-    )
-      issue('Tor wagowy musi obejmować środek skrzyni na starcie i na płycie.');
+    if (workArea && !insideLevelZone(goal, workArea))
+      issue('Tor wagowy musi obejmować środek skrzyni na płycie.');
   } else {
     const laser = room.hazards?.find((hazard) => hazard.id === puzzle.laserId);
     if (
@@ -334,8 +338,19 @@ function validatePuzzle(room: RoomDefinition, ctx: z.RefinementCtx): void {
       (laser.from.x === laser.to.x &&
         laser.from.y === laser.to.y &&
         laser.from.z === laser.to.z)
-    )
+    ) {
       issue('Zagadka laserowa wymaga wskazania bramki o różnych końcach.');
+    } else if (workArea) {
+      const beam = sub(laser.to, laser.from);
+      const distance = length(beam);
+      const hit = rayAabbDistance(
+        laser.from,
+        scale(beam, 1 / distance),
+        workArea,
+      );
+      if (hit === null || hit > distance)
+        issue('Strefa robocza osłony musi przecinać odcinek wiązki.');
+    }
   }
 }
 

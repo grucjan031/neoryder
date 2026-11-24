@@ -9,7 +9,7 @@ Audyt obejmuje 33 pokoje z `src/data/rooms`, klasyczną arenę, 10 poziomów lin
 | `bossRoom` | Wszystkie sześć końców kabli styka się z fasadami na X = ±16 m. Pod galeriami stoją dwie zniszczalne skrzynie. Prosta od bossa do wejścia jest wolna. | Ze spawnu sprawdzić sylwetkę bossa na tle logo. Po walce podejść do terminala na północy i bursztynowej wnęki windy po lewej. |
 | `arena` | Podłoga w `blocks[0]` ma **40 × 40 m**. Układ korzysta z domyślnego motywu `white`. Brak wpisów `lights`, `decor` i `signs` daje trzy ostrzeżenia. | Ze spawnu sprawdzić czytelność filarów i niskich osłon w świetle bazowym motywu. |
 | `puzzlePlate` | Światła, dekoracje i szyldy śluzy usuwają trzy wcześniejsze braki oprawy. Ze spawnu na X = −2,1 m geometria odsłania cały środkowy obwód pierścienia. | Sprawdzić, czy strzałki od skrzyni przez wagę do rygla są czytelne na mokrym asfalcie i czy zieleń po zważeniu odcina się od otoczenia. |
-| `puzzleLaser` | Ten sam zestaw trzech braków oprawy. Bramka laserowa pochodzi z `hazards`, a obiekt zagadki z `puzzle`. | Zestawić ze spawnem `puzzlePlate`. Sprawdzić widoczność bramki na tle ścian. |
+| `puzzleLaser` | Ze spawnu widać obie soczewki i środek gniazda osłony. Pasy na posadzce wyznaczają oś wiązki również podczas przerwy w cyklu. | Sprawdzić kontrast wiązki na chłodnym tle i prześledzić przewód od zachodniej głowicy do rygla. |
 | `combatRing` | Oba kable `decor[0..1]` kończą się przy X bliskim ±13,5 m na wysokości ok. 8 m. Pod nimi stoją ściany wysokie na 4 m. | Sprawdzić oba prześwity między końcówkami a fasadami. |
 | `combatFloodedTunnel` | Na dnie kanału `blocks[4]` (−1,2 m) stoją **dwa wraki i trzy łodzie** w `decor[2..6]`. Modele są duże, a w ich podstawach brakuje koliderów. Pompownia i śluza mają osobne bryły z `visible: false`. | Obejrzeć dojście po rampie i przejście przy burcie. Na zdjęciach można ocenić skalę, a przechodzenie przez model wymaga sprawdzenia podczas gry. |
 | `alleyCrossing` | Generator umieszcza klimatyzatory 0,35 m od elewacji, a część schodów i markiz 0,6 m od lica. Tolerancja montażu eliminuje te powtarzalne alarmy. | Sprawdzić latarnie `decor[51..52]` nad obniżeniem oraz szyldy `signs[10..11]` przy tarasie. |
@@ -88,7 +88,7 @@ Obrys podłogi obejmuje płaty połączone ze spawnem w rzucie XZ. Fizyczne ramy
 | m10-archiwum | 3 | 28 |
 | noodleShop | 0 | 1 |
 | plazaHolo | 0 | 84 |
-| puzzleLaser | 0 | 3 |
+| puzzleLaser | 0 | 0 |
 | puzzlePlate | 0 | 0 |
 | restRoom | 0 | 0 |
 | rooftopRest | 2 | 6 |
@@ -1369,9 +1369,7 @@ Brak zgłoszeń.
 
 ### puzzleLaser
 
-- warn · emptyRoom · `lights` · (0, 0, 4) · Brak świateł w danych mapy.
-- warn · emptyRoom · `decor` · (0, 0, 4) · Brak dekoracji w danych mapy.
-- warn · emptyRoom · `signs` · (0, 0, 4) · Brak szyldów w danych mapy.
+Brak zgłoszeń.
 
 ### puzzlePlate
 

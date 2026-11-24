@@ -122,6 +122,31 @@ describe('pokoje F3: format, loader i układ', () => {
     ).toThrow(/różnych końcach/);
   });
 
+  it('strefa osłony obejmuje start i przecina skończony odcinek lasera', () => {
+    const room = roomDefinitions.get('puzzleLaser')!;
+    const puzzle = room.puzzle!;
+    const beam = room.hazards![0]!;
+    if (beam.kind !== 'laser_gate') throw new Error('oczekiwano lasera');
+    const workArea = {
+      kind: 'box',
+      position: beam.from,
+      size: { x: 1, y: 1, z: 1 },
+    };
+    expect(() =>
+      loadRoom({ ...room, puzzle: { ...puzzle, workArea } }),
+    ).toThrow(/na starcie/);
+    expect(() =>
+      loadRoom({
+        ...room,
+        hazards: [{ ...beam, from: beam.to, to: { ...beam.to, x: 3.8 } }],
+      }),
+    ).toThrow(/odcinek wiązki/);
+    expect(
+      loadRoom({ ...room, puzzle: { ...puzzle, workArea: undefined } }).puzzle
+        ?.workArea,
+    ).toBeUndefined();
+  });
+
   it('odrzuca punkt w filarze, osłonie i na krawędzi bloku', () => {
     for (const point of [
       { x: -7, z: 3 },
