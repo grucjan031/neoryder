@@ -182,7 +182,7 @@ it('Węgielka można pogłaskać po podejściu na 2,1 m w poziomie (zasięg XZ, 
   expect(scene.query('hubTarget')).toBeNull();
 });
 
-it('E przy Węgielku uruchamia głaskanie FPP, kładzie kota i raz emituje miauknięcie', async () => {
+it('E przy Węgielku uruchamia ujęcie, kładzie kota i raz emituje miauknięcie', async () => {
   const { scene, commands, bus, three } = await setup(
     '',
     {},
@@ -190,27 +190,29 @@ it('E przy Węgielku uruchamia głaskanie FPP, kładzie kota i raz emituje miauk
   );
   const meow = vi.fn();
   bus.on('hub_fauna_sound', meow);
-  const hand = three.getObjectByName('hub-cat-pet-hand')!;
+  expect(three.getObjectByName('hub-cat-pet-hand')).toBeUndefined();
   commands.execute('hub tp -14.5 13.5');
   expect(commands.execute('hub look cat')).toBe('Patrzysz na: cat');
   scene.step(SIM_DT, interact);
   scene.render(1);
-  expect(hand.visible).toBe(true);
+  expect(scene.query('hubCutaway')).toMatchObject({
+    active: true,
+    kind: 'cat',
+  });
   expect(scene.query('hubFauna')).toMatchObject({ cat: { state: 'lie' } });
   expect(meow).toHaveBeenCalledExactlyOnceWith({
     kind: 'meow',
     point: { x: -14.5, y: 0, z: 12.5 },
   });
-  const start = hand.matrix.clone();
   for (let i = 0; i < 20; i++) scene.step(SIM_DT, holdInteract);
   scene.render(1);
-  expect(hand.matrix.equals(start)).toBe(false);
+  expect(scene.query('hubCutaway')).toMatchObject({ t: expect.any(Number) });
   scene.step(SIM_DT, interact);
   expect(meow).toHaveBeenCalledTimes(1);
   for (let i = 0; i < Math.ceil(tuning.hub.catPetDurationS / SIM_DT); i++)
     scene.step(SIM_DT, holdInteract);
   scene.render(1);
-  expect(hand.visible).toBe(false);
+  expect(scene.query('hubCutaway')).toMatchObject({ active: false });
   expect(meow).toHaveBeenCalledTimes(1);
 });
 
@@ -240,6 +242,9 @@ it('rekwizyty działają przez E, debug i atak; przytrzymane E i cooldown nie po
   expect(commands.execute('hub use noodles')).toBe('true');
   expect(scene.query('hubChatter')).toMatchObject({ npc: 'hela' });
   expect(commands.execute('hub use noodles')).toBe('false');
+  commands.execute('cutaway skip');
+  for (let i = 0; i <= Math.ceil(tuning.hub.cutaway.blendOutS / SIM_DT); i++)
+    scene.step(SIM_DT, idle);
   commands.execute('hub tp 18.3 0');
   commands.execute('hub look bag');
   scene.step(SIM_DT, { ...idle, pressed: new Set(['attack']) });
@@ -253,6 +258,20 @@ it('rekwizyty działają przez E, debug i atak; przytrzymane E i cooldown nie po
     angle?: { z: number };
   }[];
   expect(props.find((p) => p.id === 'bag')!.angle!.z).toBeLessThan(0);
+});
+
+it('debug pozwala powtórzyć ujęcie ramenu natychmiast po powrocie', async () => {
+  const { scene, commands } = await setup();
+  expect(commands.execute('hub use noodles')).toBe('true');
+  commands.execute('cutaway skip');
+  for (let i = 0; i <= Math.ceil(tuning.hub.cutaway.blendOutS / SIM_DT); i++)
+    scene.step(SIM_DT, idle);
+  expect(commands.execute('hub use noodles')).toBe('false');
+  expect(commands.execute('cutaway noodles')).toBe('true');
+  expect(scene.query('hubCutaway')).toMatchObject({
+    active: true,
+    kind: 'noodles',
+  });
 });
 
 it('radio wymusza audycję i drugie E przerywa ją również przed końcem cooldownu', async () => {

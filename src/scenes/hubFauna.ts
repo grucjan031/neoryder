@@ -5,14 +5,11 @@ import {
   Euler,
   Group,
   LoopRepeat,
-  MathUtils,
-  Matrix4,
   Mesh,
   MeshToonMaterial,
   Quaternion,
   SkinnedMesh,
   SphereGeometry,
-  Vector3,
 } from 'three';
 import type {
   AnimationAction,
@@ -26,12 +23,8 @@ import type { GameContext } from '../core/context';
 import type { Vec3 } from '../core/math';
 import type { Tuning } from '../core/tuning';
 import type { PlayerState } from '../player/playerController';
-import { HandRig } from '../render/handRig';
 import { gradientMap } from '../render/materials';
-import {
-  applyViewmodelLayer,
-  registerViewmodel,
-} from '../render/viewmodelLayer';
+import type { catState } from './hubCutaway';
 import { HubFaunaRuntime } from '../world/hubFauna';
 import { hubInteractions } from '../world/hubInteractions';
 import type { CatRuntime, FaunaPose } from '../world/hubFauna';
@@ -102,10 +95,7 @@ export class HubFauna {
   private readonly ratFur: MeshToonMaterial;
   private readonly eyes: MeshToonMaterial;
   private readonly cat: CatView | null;
-  private readonly petHand: HandRig | null;
-  private readonly handPosition = new Vector3();
   private readonly handRotation = new Euler();
-  private readonly handMatrix = new Matrix4();
   private readonly headTilt = new Quaternion();
   private readonly rats: AnimalView[];
   private readonly off: (() => void)[] = [];
@@ -161,15 +151,6 @@ export class HubFauna {
     this.cat = this.runtime.cat
       ? { root: new Group(), actions: new Map(), time: 0 }
       : null;
-    this.petHand = this.cat ? new HandRig('R') : null;
-    if (this.petHand) {
-      const hand = this.petHand.root;
-      hand.name = 'hub-cat-pet-hand';
-      hand.visible = false;
-      this.root.add(hand);
-      this.off.push(registerViewmodel(hand));
-      this.petHand.setPose('open', 'open', 0);
-    }
     if (this.cat) {
       this.cat.root.name = 'hub-cat-wegielek';
       this.root.add(this.cat.root);
@@ -222,10 +203,9 @@ export class HubFauna {
   async load(): Promise<void> {
     const view = this.cat;
     if (!view) return;
-    const [gltf] = await Promise.all([
-      loader.loadAsync('/assets/models/hub_cat.glb').catch(() => null),
-      this.petHand?.load(),
-    ]);
+    const gltf = await loader
+      .loadAsync('/assets/models/hub_cat.glb')
+      .catch(() => null);
     if (!gltf || this.disposed) return;
     const model = gltf.scene;
     const head = model.getObjectByName('head');
@@ -315,7 +295,12 @@ export class HubFauna {
     return { root, legs, tail };
   }
 
-  step(dt: number, p: PlayerState): void {
+  step(dt: number, p: PlayerState, petting = false): void {
+    const cat = this.runtime.cat;
+    if (petting && cat) {
+      cat.restLeftS = Math.max(cat.restLeftS, dt * 2);
+      cat.fleeCooldownS = Math.max(cat.fleeCooldownS, dt * 2);
+    }
     this.runtime.step(dt, p.position, p.velocity);
   }
 
@@ -323,49 +308,12 @@ export class HubFauna {
     return this.runtime.petFocus(eye);
   }
 
+  get head() {
+    return this.cat?.head?.bone;
+  }
+
   pet(): void {
     this.runtime.pet();
-  }
-
-  private petTime(alpha: number): number {
-    return (
-      1 -
-      MathUtils.lerp(
-        this.runtime.previousPetLeftS,
-        this.runtime.petLeftS,
-        alpha,
-      ) /
-        this.ctx.tuning.hub.catPetDurationS
-    );
-  }
-
-  renderPetHand(cameraMatrix: Matrix4, alpha: number): boolean {
-    const hand = this.petHand?.root;
-    if (!hand) return false;
-    const time = this.petTime(alpha);
-    hand.visible = time < 1;
-    if (!hand.visible) return false;
-    const t = this.ctx.tuning.hub;
-    const { catPet } = hubInteractions;
-    const reach = t.catPetReachFraction;
-    const blend =
-      MathUtils.smoothstep(time, 0, reach) *
-      (1 - MathUtils.smoothstep(time, 1 - reach, 1));
-    const strokeTime = MathUtils.clamp((time - reach) / (1 - 2 * reach), 0, 1);
-    const stroke =
-      (1 - Math.cos(strokeTime * Math.PI * 2 * t.catPetStrokes)) / 2;
-    this.handPosition
-      .copy(catPet.restPosition)
-      .lerp(catPet.reachPosition, blend);
-    this.handPosition.z -= stroke * t.catPetStrokeM;
-    this.handRotation.set(catPet.handPitchRad, catPet.handYawRad, 0);
-    this.handMatrix
-      .makeRotationFromEuler(this.handRotation)
-      .setPosition(this.handPosition);
-    hand.matrix.multiplyMatrices(cameraMatrix, this.handMatrix);
-    hand.matrixWorldNeedsUpdate = true;
-    applyViewmodelLayer(hand);
-    return true;
   }
 
   private place(view: { root: Group }, pose: FaunaPose, alpha: number): number {
@@ -381,7 +329,7 @@ export class HubFauna {
     );
   }
 
-  render(alpha: number): void {
+  render(alpha: number, pet?: ReturnType<typeof catState>): void {
     const t = this.ctx.tuning.hub,
       c = this.runtime.cat,
       view = this.cat;
@@ -412,12 +360,12 @@ export class HubFauna {
         if (head) head.bone.quaternion.copy(head.animated);
         // Mixer idzie czasem symulacji: pauza gry zatrzymuje kota.
         view.mixer.update(Math.max(0, time - view.time));
-        const petTime = this.petTime(alpha);
         if (head) {
           head.animated.copy(head.bone.quaternion);
-          if (petTime < 1) {
+          if (pet?.phase === 'stroke') {
             this.handRotation.set(
-              Math.sin(petTime * Math.PI) * hubInteractions.catPet.headTiltRad,
+              Math.sin(pet.progress * Math.PI) *
+                hubInteractions.catPet.headTiltRad,
               0,
               0,
             );
@@ -431,7 +379,9 @@ export class HubFauna {
       const source = this.sources[0]!;
       Object.assign(source.position, view.root.position);
       source.radiusM = this.ctx.tuning.audio.ambienceProfiles.purr.radiusM;
-      source.gain = rest ? this.ctx.tuning.audio.ambienceProfiles.purr.gain : 0;
+      source.gain = (pet ? pet.phase === 'stroke' : rest)
+        ? this.ctx.tuning.audio.ambienceProfiles.purr.gain
+        : 0;
     }
     for (let i = 0; i < this.rats.length; i++) {
       const rat = this.runtime.rats[i]!,
@@ -451,7 +401,6 @@ export class HubFauna {
 
   dispose(): void {
     this.disposed = true;
-    this.petHand?.dispose();
     if (this.cat?.mixer) {
       this.cat.mixer.stopAllAction();
       this.cat.mixer.uncacheRoot(this.cat.mixer.getRoot());

@@ -182,9 +182,9 @@ x −34…20, z −19…16. Nowe skrzydła dodają 448 m² podłogi na poziomie 
 | ------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Hala (peron A)     | x −20…20, z −7…3             | główna hala ze spawnem (0; 0,8); tylna ściana: antresola, tablica misji (stacja `missions`, Kapitan Szron), neon ISKRA, automat, kiosk, generator, wejście na poligon w tunelu (x 12,5…15,5; stacja `arena`)         |
 | Antresola          | x −20…−11, z −7…−3, y 2,4    | podest z barierką i kolizyjnymi stopniami (12 × 0,2 m, bieg 0,3 m; autostep gracza 0,35 m), skrzynie, pod spodem magazyn z zielonym światłem                                                                         |
-| Pasaż              | z 3…8, podłoga y 0           | betonowa posadzka łączy oba perony. Na obu końcach stoją grafitowe przegrody z blachy                                                                                                   |
-| Wagon-warsztat     | x −16…−3, z 3…7, podłoga y 0 | wagon metra w hali: dwoje drzwi od strony hali (x −13…−11 i −8…−6), okna od strony peronu B, stół warsztatowy (stacja `workshop`), ławki, generator, Mira                                                   |
-| Kładka             | x 4…7, z 3…8, poziom peronu  | metalowy pomost z barierkami na poziomie pasażu, łączy halę z peronem B                                                                                                                                                      |
+| Pasaż              | z 3…8, podłoga y 0           | betonowa posadzka łączy oba perony. Na obu końcach stoją grafitowe przegrody z blachy                                                                                                                                |
+| Wagon-warsztat     | x −16…−3, z 3…7, podłoga y 0 | wagon metra w hali: dwoje drzwi od strony hali (x −13…−11 i −8…−6), okna od strony peronu B, stół warsztatowy (stacja `workshop`), ławki, generator, Mira                                                            |
+| Kładka             | x 4…7, z 3…8, poziom peronu  | metalowy pomost z barierkami na poziomie pasażu, łączy halę z peronem B                                                                                                                                              |
 | Peron B            | x −20…20, z 8…16             | zachód: strefa wypoczynku (otwarty bar i neon `sign_bar`, beczka z ogniem i Stary Tomasz, dwie kanapy, stolik, skrzynie, mural `mural_spark`, sznury lampek); środek: automat i kiosk; baner `banner_iskra` na targu |
 | Kącik łączności    | x 8…20, z 8…16               | pomieszczenie z wejściem 3 m (z 10…13): szafy serwerowe z ekranami, terminal drzew (stacja `talents`, Doktor Wolan), biurko Bajta z ekranem `screen_comms`, hologram Kurogane, projektor, antena, kable              |
 | Przejście północne | x −20…8, z −11…−8            | poprzeczny korytarz 3 m; wejście z hali x 3…6 przez ścianę z −8…−7, wysokość 3,5 m; rozdzielnia i wnęka robocza elektryczki                                                                                          |
@@ -473,8 +473,7 @@ Wszystkie miejsca i kierunki odpowiadają przygotowanym rekwizytom, bez korekt w
   character controller gracza tak samo jak statyczne walce. Focus i debug używają bieżącej pozycji.
   Render interpoluje poprzednią i bieżącą pozycję oraz yaw (najkrótszy łuk). Zmiana klipu używa
   `npcAnimFadeS`; klipy stanów, także `PickUp_Table` i `Punch_*`, są zapętlone. Użycie miski uruchamia
-  osobny, jednorazowy `Interact` z `npc_anims.glb` dla Heli. `HubPropView` rysuje miskę z zupą na ladzie
-  i przesuwa ją podczas gestu według fazy klipu. Postęp podawania (czas klipu i przesuw miski) idzie czasem symulacji (`HubNpcs.step`, wołane z `HubScene.step`), więc pauza go zatrzymuje, a render tylko interpoluje; podczas podawania tułów Heli wraca do `baseYaw` w stanie symulacji (`NpcRuntime.faceBase`), po klipie crossfade wraca do poprzedniej animacji, a sklonowany klip jest zwalniany (`uncacheAction` + `uncacheClip`). Geometria i kolory miski są w `src/data/hub/interactions.json` (schemat `hubInteractionsSchema`), przesuw i ułamki klipu w `tuning.hub.soup*`. Ekstraktor zeruje
+  klip `Interact` Heli przy podaniu i odebraniu ramenu (patrz „Ujęcia interakcji”). Ekstraktor zeruje
   poziome translacje kości `root` w `Walk_Loop` i `Jog_Fwd_Loop`: przesunięcie pochodzi tylko z trasy.
 - Wstawki animacji (`NPC_IDLE_VARIETY`, `src/world/hubNpcs.ts`): NPC bez trasy, którzy nie mówią (dymek
   ani podsłuchana rozmowa), co `tuning.hub.npcIdleVarietyS` ([18, 45] s; pierwsza wstawka z losowym
@@ -666,11 +665,7 @@ statycznych NPC). Liczby w `tuning.hub` (`cat*`, `rat*`, `fauna*`).
   1,1 m w bok (losowa strona, tylko po bezpiecznej podłodze) z prędkością `catFleeSpeedMS` 2,4 m/s i wraca na punkt opuszczenia trasy;
   kolejna ucieczka dopiero po `catFleeCooldownS` 4 s. Ciało: promień `catRadiusM` 0,22 m, wysokość `catHeightM` 0,6 m, odstęp od NPC
   `catStaticClearanceM` 0,6 m.
-- Gracz może podejść do Węgielka i nacisnąć E po wyświetleniu „Pogłaszcz Węgielka”. Prawa dłoń FPP
-  wysuwa się, wykonuje dwa ruchy głaskania i wraca, a kot kładzie się, pochyla głowę i miauczy
-  (`hub_fauna_sound` → `hub_meow`). Logika głaskania (licznik czasu, położenie kota, miauknięcie) jest w `HubFaunaRuntime`; zasięg liczony poziomo (XZ) od oka,
-  `catPetRangeM` 2,2 m, czas `catPetDurationS` 1,5 s, `catPetStrokes`, `catPetStrokeM`, `catPetReachFraction` w `tuning.hub`; pozycje dłoni w `src/data/hub/interactions.json`,
-  etykieta w `props.pl.json`. W debugu `hub look cat` ustawia cel, gdy kot jest w zasięgu (`hub cat` stawia go 2 m przed graczem).
+- E przy podpowiedzi „Pogłaszcz Węgielka” rozpoczyna ujęcie z graczem. Zasięg poziomy wynosi 2,2 m. Węgielek kładzie się i miauczy raz. W fazie głaskania przechyla głowę i mruczy. `hub cat` ustawia go 2 m przed graczem, a `hub look cat` kieruje na niego wzrok.
 - Dzieci przy kocie (`src/world/hubKidsCat.ts`, `KidsCatEncounter`; `tuning.hub.kidsCat*`): gdy Węgielek odpoczywa
   (siedzi, leży, myje się) w zasięgu `kidsCatRangeM` od `ola` lub `stas` i minęło odnowienie `kidsCatCooldownS`,
   dziecko schodzi z trasy, podchodzi truchtem na `kidsCatStandM` od kota (tylko gdy odcinek leży na podłodze fauny,
@@ -1069,3 +1064,12 @@ Debug: `hub dip` wymusza spadek, `query('hubPower')` → `{ level, active, nextI
 ## Interfejs stacji (U2)
 
 Stacje (Warsztat, Tablica misji, Terminal drzewek, Poligon) otwierają się jako pełne ekrany `ui-screen` pod stałym nagłówkiem meta; opis komponentów, układu trzech kolumn, grafu talentów i zakupu z potwierdzeniem: `docs/systems/ui.md` (sekcja „Kryjówka (U2)”). Zmiany zachowania względem F4: zakup w Warsztacie zawsze przez modal potwierdzenia, talent kupuje się przyciskiem w panelu szczegółów (klik/fokus tylko wybiera węzeł), reset talentów przez modal, a nie podwójne kliknięcie.
+
+### Ujęcia interakcji
+
+Kamera sprawdza kolejno kąty +70°, −70°, +50°, −50°, +100° i −100° względem kierunku od postaci gracza do celu. Promień do geometrii wymaga 0,25 m zapasu. Odcinki do głowy postaci, rekwizytu lub kota oraz głowy Heli w ujęciu ramenu uwzględniają tułowia i głowy mieszkańców. Ciało postaci gracza może również zasłonić miskę lub kota. Kamera wybiera pierwszy wolny kadr, a gdy wszystkie są zajęte, ten z najmniejszą liczbą przesłonięć. Odległość od punktu patrzenia wynosi 1,9 m przy ladzie i 1,6 m przy kocie. Kąt pozostaje stały przez całe ujęcie. E lub Esc rozpoczyna powrót do FPP. Pauza zatrzymuje zegar ujęcia.
+
+- **Ramen u Heli (8 s).** Hela stawia miskę. Postać gracza podnosi ją do brody, zjada makaron i dodatki, odstawia pustą miskę i przesuwa ją w stronę Heli. Hela odbiera naczynie i wystawia pełne. Kolory składników i pozycja chwytu pochodzą z `interactions.json`.
+- **Węgielek (4,5 s).** Postać gracza przyklęka, wykonuje dwa pociągnięcia dłonią i wstaje. Poza bazuje na klipie `Fixing_Kneeling`.
+- **Strojenie i debug.** Czasy, granice faz i odległości kamery zawiera `tuning.hub.cutaway`. Polecenia `cutaway noodles`, `cutaway cat` oraz `cutaway skip` odtwarzają oba ujęcia i powrót. `query('hubCutaway')` podaje `active`, `kind` i znormalizowany czas `t`.
+- `query('cutawayDebug')` zwraca pozycje animowanych kości i miski w świecie, pozycję spoczynkową na ladzie, rzut NDC postaci w rzeczywistej kamerze oraz kąt kadru i liczbę przesłonięć.

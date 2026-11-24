@@ -38,6 +38,7 @@ import { isSeated, npcRootPosition, wrapAngle } from '../world/hubNpcs';
 import type { NpcRuntime } from '../world/hubNpcs';
 import type { HubNpcDef, NpcAccent, NpcAnimation } from '../world/hubSchema';
 import { hubInteractions } from '../world/hubInteractions';
+import type { ShotSphere } from './hubCutaway';
 
 const { soup } = hubInteractions;
 
@@ -164,6 +165,7 @@ interface NpcView {
   mixer?: AnimationMixer;
   neck?: Object3D;
   head?: Object3D;
+  chest?: Object3D;
   skins: SkinnedMesh[];
   marker: Mesh;
   /** Materiały na wyłączność NPC (geometrie i materiały wspólne są w HubNpcs). */
@@ -218,10 +220,6 @@ export class HubNpcs {
   private readonly views: NpcView[] = [];
   private readonly geometries = new Map<string, BufferGeometry>();
   private serving?: AnimationAction;
-  /** Czas symulacji podawania (s): bieżący, poprzedni krok i długość klipu. */
-  private soupS = 0;
-  private previousSoupS = 0;
-  private soupDurationS = 0;
   /** Zakończone klipy podawania do zwolnienia po crossfadzie z powrotem do animacji bazowej. */
   private readonly retiring: {
     mixer: AnimationMixer;
@@ -409,6 +407,7 @@ export class HubNpcs {
       view.skins.length = Math.min(view.skins.length, 1);
       view.root.add(instance);
       view.head = instance.getObjectByName('DEF-head');
+      view.chest = instance.getObjectByName('DEF-spine003');
       if (view.head) this.dress(view, view.head);
       view.neck = instance.getObjectByName('DEF-neck');
       const mixer = new AnimationMixer(instance);
@@ -588,7 +587,36 @@ export class HubNpcs {
     }
   }
 
-  serveSoup(): void {
+  get helaHead() {
+    return this.views.find(({ def }) => def.id === soup.npc)?.head;
+  }
+
+  shotObstacles(focus: Vector3): ShotSphere[] {
+    const result: ShotSphere[] = [];
+    for (const view of this.views) {
+      if (view.root.position.distanceToSquared(focus) > 25) continue;
+      for (const bone of [view.head, view.chest]) {
+        if (bone)
+          result.push({
+            owner: view.def.id,
+            center: bone.getWorldPosition(new Vector3()),
+            radius: this.tuning.hub.cutaway.npcSphereM * view.root.scale.x,
+          });
+      }
+    }
+    return result;
+  }
+
+  get servingHand() {
+    return (
+      this.serving &&
+      this.views
+        .find(({ def }) => def.id === soup.npc)
+        ?.root.getObjectByName('DEF-handL')
+    );
+  }
+
+  private beginServing(): void {
     if (this.serving) return;
     const view = this.views.find(({ def }) => def.id === soup.npc);
     const clip = view?.actions.get(soup.clip)?.getClip();
@@ -599,29 +627,13 @@ export class HubNpcs {
     action.paused = true;
     action.clampWhenFinished = true;
     this.serving = action.setLoop(LoopOnce, 1).play();
-    this.soupS = this.previousSoupS = 0;
-    this.soupDurationS = action.getClip().duration;
     view.action?.crossFadeTo(action, this.tuning.hub.npcAnimFadeS, false);
     view.action = action;
   }
 
-  /** Krok symulacji: postęp podawania idzie czasem symulacji, więc pauza go zatrzymuje. */
-  step(dt: number): void {
+  faceCounter(active: boolean): void {
     const hela = this.views.find(({ def }) => def.id === soup.npc);
-    if (hela) hela.state.faceBase = this.serving !== undefined;
-    if (!this.serving || !(dt > 0)) return;
-    this.previousSoupS = this.soupS;
-    this.soupS = Math.min(this.soupDurationS, this.soupS + dt);
-  }
-
-  private soupTime(): number {
-    return this.previousSoupS + (this.soupS - this.previousSoupS) * this.alpha;
-  }
-
-  get soupProgress(): number {
-    return this.serving && this.soupDurationS > 0
-      ? this.soupTime() / this.soupDurationS
-      : 0;
+    if (hela) hela.state.faceBase = active;
   }
 
   /** Interpolacja stanu symulacji i kosmetyczne mixery. Bez alokacji w pętli widoków. */
@@ -631,11 +643,13 @@ export class HubNpcs {
     camera: Vec3,
     speaker: string | null,
     pending: ((id: string) => boolean) | null = null,
+    gesture: number | null = null,
   ): void {
     const t = this.tuning.hub;
     this.time += dt;
     this.alpha = alpha;
     this.releaseRetired(dt);
+    if (gesture !== null) this.beginServing();
     const pulse =
       1 +
       Math.sin(this.time * t.markerPulseHz * Math.PI * 2) * t.markerPulseAmp;
@@ -671,8 +685,7 @@ export class HubNpcs {
       view.root.position.copy(this.rootPosition);
       const animation = state.animation(speaker === view.def.id);
       if (serving) {
-        const time = this.soupTime();
-        if (time >= this.soupDurationS && view.mixer) {
+        if (gesture === null && view.mixer) {
           // Klip skończony: akcja zostaje w `view.action`, by crossfade wrócił do animacji bazowej.
           this.retiring.push({
             mixer: view.mixer,
@@ -681,7 +694,8 @@ export class HubNpcs {
           });
           this.serving = undefined;
           view.animation = undefined;
-        } else serving.time = time;
+        } else if (gesture !== null)
+          serving.time = gesture * serving.getClip().duration;
       }
       if (!this.serving || view.def.id !== soup.npc) {
         const action = view.actions.get(animation);

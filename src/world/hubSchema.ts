@@ -526,15 +526,20 @@ export const hubInteractionsSchema = z
         bowlRadiusM: positive,
         bowlHeightM: positive,
         bowlColor: hexColor,
+        rimColor: hexColor,
+        noodleColor: hexColor,
+        eggColor: hexColor,
+        noriColor: hexColor,
+        onionColor: hexColor,
+        woodColor: hexColor,
+        chinPosition: vec3Schema,
+        handOffset: vec3Schema,
+        handRotation: vec3Schema,
         brothColor: hexColor,
       })
       .strict(),
     catPet: z
       .object({
-        restPosition: vec3Schema,
-        reachPosition: vec3Schema,
-        handYawRad: finite,
-        handPitchRad: finite,
         headTiltRad: finite,
       })
       .strict(),

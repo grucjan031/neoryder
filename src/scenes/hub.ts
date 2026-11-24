@@ -1,4 +1,22 @@
-import { BoxGeometry, CylinderGeometry, Group, Mesh } from 'three';
+import {
+  BoxGeometry,
+  CylinderGeometry,
+  Group,
+  Mesh,
+  Vector3,
+  Quaternion,
+  Matrix4,
+} from 'three';
+import {
+  HubCutaway,
+  catState,
+  noodlesState,
+  shotCamera,
+  subjectOcclusions,
+  type CutawayKind,
+} from './hubCutaway';
+import { ThirdPersonBody } from '../render/thirdPersonBody';
+import { hubInteractions } from '../world/hubInteractions';
 import type { BufferGeometry, Scene as ThreeScene } from 'three';
 import type { Ray, RigidBody, World } from '@dimforge/rapier3d-compat';
 import type { GameContext } from '../core/context';
@@ -215,6 +233,10 @@ export class HubScene implements Scene {
   private player!: PlayerController;
   private legs?: FppLegs;
   private previous!: PlayerState;
+  private cutaway!: HubCutaway;
+  private body?: ThirdPersonBody;
+  private shotCameraPose?: ReturnType<typeof shotCamera>;
+  private renderedCutawayTime = 0;
   private fpsCamera!: FpsCamera;
   private fppView!: FppViewModel;
   private stations!: HubStations;
@@ -256,6 +278,24 @@ export class HubScene implements Scene {
 
   async init(ctx: GameContext, three: ThreeScene): Promise<void> {
     this.ctx = ctx;
+    this.cutaway = new HubCutaway(ctx.tuning.hub.cutaway);
+    if (typeof window !== 'undefined') {
+      const skip = (event: KeyboardEvent) => {
+        if (
+          event.code === 'Escape' &&
+          this.cutaway.active &&
+          !document.querySelector(
+            '.debug-console:not([hidden]), .pause-menu[open]',
+          )
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          this.cutaway.skip();
+        }
+      };
+      window.addEventListener('keydown', skip, true);
+      this.off.push(() => window.removeEventListener('keydown', skip, true));
+    }
     this.metaStore = this.options.metaStore ?? createIndexedDbSaveStore();
     const store = this.metaStore;
     this.meta = await loadMetaManager(store, ctx.bus);
@@ -402,8 +442,12 @@ export class HubScene implements Scene {
     this.entities.bindCollider(this.playerId, this.player.colliderHandle);
     this.previous = this.player.getState();
     this.fpsCamera = new FpsCamera(ctx.tuning, this.playerId, ctx.bus);
-    if (ctx.camera && this.loadModels)
+    if (ctx.camera && this.loadModels) {
       this.legs = new FppLegs(three, ctx.tuning);
+      this.body = new ThirdPersonBody(three, ctx.tuning.hub);
+      await this.body.load();
+      if (this.disposed) return;
+    }
     this.fppView = new FppViewModel(ctx.bus, this.playerId, {
       tuning: ctx.tuning,
     });
@@ -710,8 +754,97 @@ export class HubScene implements Scene {
       : target;
   }
 
+  private startCutaway(kind: CutawayKind) {
+    if (this.cutaway.active || this.stations.opened || this.seat) return false;
+    const state = this.player.getState();
+    const bowl = this.layout.props?.find((p) => p.kind === 'noodles');
+    const target =
+      kind === 'cat'
+        ? this.fauna?.runtime.cat?.position
+        : bowl &&
+          new Vector3()
+            .copy(bowl.focus.position)
+            .add(hubInteractions.soup.bowlOffset);
+    if (!target) return false;
+    const shot = {
+      playerPos: {
+        ...state.position,
+        y:
+          state.position.y -
+          state.height / 2 -
+          this.ctx.tuning.player.controllerOffset,
+      },
+      playerYaw: state.yaw,
+      targetPos: target,
+    };
+    this.cutaway.start(kind, shot);
+    this.shotCameraPose = undefined;
+    if (kind === 'cat') this.fauna?.pet();
+    this.pendingLook = null;
+    return true;
+  }
+
+  private cutawaySubjects(kind: CutawayKind) {
+    const head = this.body?.bone('DEF-head')?.getWorldPosition(new Vector3());
+    const chest = this.body
+      ?.bone('DEF-spine003')
+      ?.getWorldPosition(new Vector3());
+    const focus =
+      kind === 'cat'
+        ? this.fauna?.head?.getWorldPosition(new Vector3())
+        : this.propView?.bowlCenter;
+    if (!head || !chest || !focus) return;
+    const obstacles = this.npcs?.shotObstacles(focus) ?? [];
+    obstacles.push(
+      {
+        owner: 'player',
+        center: head.clone().add(new Vector3(0, 0.08, 0)),
+        radius: 0.1,
+      },
+      { owner: 'player', center: chest, radius: 0.19 },
+    );
+    return {
+      obstacles,
+      subjects: {
+        head,
+        chest,
+        focus,
+        hela:
+          kind === 'noodles'
+            ? this.npcs?.helaHead?.getWorldPosition(new Vector3())
+            : undefined,
+      },
+    };
+  }
+
+  private frameCutaway(
+    kind: CutawayKind,
+    shot: NonNullable<HubCutaway['shot']>,
+  ) {
+    const frame = this.cutawaySubjects(kind);
+    if (!frame) return;
+    this.shotCameraPose = shotCamera(
+      shot,
+      kind,
+      frame.subjects,
+      frame.obstacles,
+      (origin, dir, max) =>
+        this.world.castRay(
+          new this.rapier.Ray(origin, dir),
+          max,
+          true,
+          undefined,
+          interactionGroups(0xffff, CollisionGroup.World),
+          undefined,
+          undefined,
+          (c) => this.blockTops.has(c.handle),
+        )?.timeOfImpact ?? max,
+      this.ctx.tuning.hub.cutaway,
+    );
+  }
+
   private useProp(id: string): boolean {
-    if (this.stations.opened) return false;
+    if (this.stations.opened || this.cutaway.active) return false;
     const def = this.layout.props?.find((p) => p.id === id);
     if (def?.kind === 'seat') return this.toggleSeat(id);
     return this.props.use(
@@ -807,7 +940,7 @@ export class HubScene implements Scene {
         text: this.props.texts.jukebox.tracks[track]!,
       });
     } else if (kind === 'noodles') {
-      this.npcs?.serveSoup();
+      this.startCutaway('noodles');
       this.chatter.say({
         conversation: id,
         npc: 'hela',
@@ -955,9 +1088,18 @@ export class HubScene implements Scene {
     this.previous = this.player.getState();
     // Nakładka otwarta: ruch gracza zatrzymany (jak ekran sklepu w RunScene).
     if (this.stations.opened || this.isDebriefOpen() || !(dt > 0)) return;
-    if (input.pressed.has('map') && this.talk === null) this.hubMap?.toggle();
+    const playing = this.cutaway.active;
+    if (playing && input.pressed.has(HUB_INTERACT_ACTION)) this.cutaway.skip();
+    this.cutaway.step(dt);
+    if (!playing && input.pressed.has('map') && this.talk === null)
+      this.hubMap?.toggle();
     const mapOpen = this.hubMap?.isOpen === true;
-    if (!mapOpen && this.talk === null && input.pressed.has('inspect'))
+    if (
+      !playing &&
+      !mapOpen &&
+      this.talk === null &&
+      input.pressed.has('inspect')
+    )
       this.fppView.inspect();
     this.props.step(dt);
     const seated = this.seat !== null;
@@ -976,9 +1118,9 @@ export class HubScene implements Scene {
       Math.min(1, this.seatBlend + (this.seat ? blendStep : -blendStep)),
     );
     if (!this.seat && this.seatBlend === 0) this.seatPose = null;
-    this.fauna?.step(dt, this.previous);
+    this.fauna?.step(dt, this.previous, this.cutaway.kind === 'cat');
     const player = this.player.getState().position;
-    this.npcs?.step(dt);
+    this.npcs?.faceCounter(this.cutaway.kind === 'noodles');
     for (const state of this.npcStates)
       state.step(
         dt,
@@ -999,10 +1141,11 @@ export class HubScene implements Scene {
     }
     this.soundscape?.step(dt, player);
     if (this.powerDip.step(dt)) this.commentPowerDip(player);
-    this.player.step(
-      dt,
-      this.seat ? this.seatedInput(input, dt) : this.withPendingLook(input),
-    );
+    if (!playing)
+      this.player.step(
+        dt,
+        this.seat ? this.seatedInput(input, dt) : this.withPendingLook(input),
+      );
     this.world.gravity.y = this.ctx.tuning.physics.gravity;
     this.world.timestep = dt;
     this.world.step();
@@ -1014,7 +1157,7 @@ export class HubScene implements Scene {
       input.pressed.has(HUB_INTERACT_ACTION)
     )
       this.stand();
-    const target = seated ? null : this.focusedTarget();
+    const target = playing || seated ? null : this.focusedTarget();
     if (
       !mapOpen &&
       !discardInteract &&
@@ -1023,7 +1166,7 @@ export class HubScene implements Scene {
     ) {
       if (target.kind === 'station') this.stations.open(target.id);
       else if (target.kind === 'prop') this.useProp(target.id);
-      else if (target.kind === 'cat') this.fauna?.pet();
+      else if (target.kind === 'cat') this.startCutaway('cat');
       else this.talkTo(target.id);
     }
     if (
@@ -1090,6 +1233,7 @@ export class HubScene implements Scene {
 
   render(alpha: number, frameDt = 1 / 60): void {
     const guideBusy =
+      this.cutaway.active ||
       this.stations.opened !== null ||
       this.hubMap?.isOpen === true ||
       this.talk !== null ||
@@ -1108,13 +1252,25 @@ export class HubScene implements Scene {
       this.player.getState(),
       guideBusy,
     );
-    this.fauna?.render(alpha);
+    const { kind, shot } = this.cutaway;
+    const time = this.cutaway.t(alpha),
+      blend = this.cutaway.cameraBlend(alpha);
+    this.renderedCutawayTime = time;
+    const settings = this.ctx.tuning.hub.cutaway;
+    const meal =
+      kind === 'noodles'
+        ? noodlesState(time, settings.noodlesPhases)
+        : undefined;
+    this.fauna?.render(
+      alpha,
+      kind === 'cat' ? catState(time, settings.catPhases) : undefined,
+    );
     const mapOpen = this.hubMap?.isOpen === true;
     if (mapOpen) {
       const state = this.player.getState();
       this.hubMap?.update(state.position, state.yaw);
     }
-    const target = this.seat ? null : this.focusedTarget();
+    const target = this.seat || kind ? null : this.focusedTarget();
     if (this.seat) {
       this.prompt?.update(
         this.props.texts.labels.stand,
@@ -1159,8 +1315,41 @@ export class HubScene implements Scene {
       this.ctx.camera?.position ?? this.player.getState().position,
       this.talk?.line.id ?? this.chatter.line?.npc ?? null,
       this.arrival ? this.isArrivalPending : null,
+      meal?.phase === 'serve' || meal?.phase === 'take' ? meal.progress : null,
     );
-    this.propView?.render(alpha, this.npcs?.soupProgress);
+    if (this.body) {
+      this.body.root.visible = blend > 0;
+      if (kind && shot && blend > 0) {
+        if (!this.shotCameraPose) {
+          // Wybór na pozie kontaktu utrzymuje tę samą stronę przez całe ujęcie.
+          this.body.pose(kind, shot, 0.5, 1, this.fauna?.head);
+          if (kind === 'noodles')
+            this.propView?.render(
+              alpha,
+              noodlesState(0.5, settings.noodlesPhases),
+              this.body.bone('DEF-handR'),
+            );
+          this.frameCutaway(kind, shot);
+        }
+        this.body.pose(kind, shot, time, blend, this.fauna?.head);
+      }
+    }
+    let push: Vector3 | undefined;
+    if (meal && shot) {
+      const hela = this.npcById.get(hubInteractions.soup.npc);
+      if (hela) {
+        push = new Vector3().copy(hela.position).sub(shot.targetPos);
+        push.y = 0;
+        push.normalize().multiplyScalar(settings.pushM);
+      }
+    }
+    this.propView?.render(
+      alpha,
+      meal,
+      this.body?.bone('DEF-handR'),
+      push,
+      this.npcs?.servingHand,
+    );
     this.lights.sync();
     this.atmosphere?.sync(frameDt);
     this.markers?.update(
@@ -1179,7 +1368,7 @@ export class HubScene implements Scene {
       playerState,
       alpha,
       frameDt,
-      !this.seatPose,
+      !this.seatPose && blend === 0,
     );
     const pose = this.fpsCamera.update(
       frameDt,
@@ -1199,6 +1388,20 @@ export class HubScene implements Scene {
     }
     camera.position.set(pose.position.x, pose.position.y, pose.position.z);
     camera.rotation.set(pose.pitch, pose.yaw, pose.roll, 'YXZ');
+    if (blend > 0 && this.shotCameraPose) {
+      const { position, look } = this.shotCameraPose;
+      const dest = new Vector3().copy(position);
+      const rotation = new Matrix4().lookAt(
+        dest,
+        new Vector3().copy(look),
+        camera.up,
+      );
+      camera.position.lerp(dest, blend);
+      camera.quaternion.slerp(
+        new Quaternion().setFromRotationMatrix(rotation),
+        blend,
+      );
+    }
     if (Math.abs(camera.fov - pose.fov) > 1e-3) {
       camera.fov = pose.fov;
       camera.updateProjectionMatrix();
@@ -1212,7 +1415,7 @@ export class HubScene implements Scene {
       held: 'blade',
       blade: IDLE_BLADE,
       horizontalSpeed: Math.hypot(velocity.x, velocity.z),
-      visible: !this.fauna?.renderPetHand(camera.matrixWorld, alpha),
+      visible: blend === 0,
     });
   }
 
@@ -1224,9 +1427,67 @@ export class HubScene implements Scene {
   }
 
   query(name: string): unknown {
+    if (name === 'hubCutaway')
+      return {
+        active: this.cutaway.active,
+        kind: this.cutaway.kind,
+        t: this.cutaway.t(1),
+      };
     if (name === 'horizon') return this.atmosphere?.horizon();
     if (name === 'hubFauna') return this.fauna?.runtime.query();
     if (name === 'hubKidsCat') return this.kidsCat?.query() ?? null;
+    if (name === 'cutawayDebug') {
+      const r = (v?: { x: number; y: number; z: number }) =>
+        v && [v.x, v.y, v.z];
+      const hand = this.body
+        ?.bone('DEF-handR')
+        ?.getWorldPosition(new Vector3());
+      const head = this.body?.bone('DEF-head')?.getWorldPosition(new Vector3());
+      const chin = this.body?.chin;
+      const bowl = this.propView?.bowlCenter;
+      const cat = this.fauna?.head?.getWorldPosition(new Vector3());
+      const helaHead = this.npcs?.helaHead?.getWorldPosition(new Vector3());
+      const frame =
+        this.cutaway.kind && this.cutawaySubjects(this.cutaway.kind);
+      const ndc = (point?: Vector3) =>
+        point && this.ctx.camera && r(point.clone().project(this.ctx.camera));
+      return {
+        t: this.renderedCutawayTime,
+        bowlBase: r(this.propView?.bowl?.getWorldPosition(new Vector3())),
+        full: this.propView?.bowlFull,
+        hand: r(hand),
+        head: r(head),
+        chin: r(chin),
+        helaHead: r(helaHead),
+        cat: r(cat),
+        bowl: r(bowl),
+        rest: r(this.propView?.bowlRest),
+        ndc: {
+          head: ndc(head),
+          bowl: ndc(bowl),
+          cat: ndc(cat),
+          hela: ndc(helaHead),
+        },
+        cam: r(this.ctx.camera?.position),
+        shot: this.shotCameraPose && {
+          degrees: this.shotCameraPose.degrees,
+          occlusions:
+            frame && this.ctx.camera
+              ? this.shotCameraPose.wall +
+                subjectOcclusions(
+                  this.ctx.camera.position,
+                  frame.subjects,
+                  frame.obstacles,
+                )
+              : undefined,
+          position: r(this.shotCameraPose.position),
+          look: r(this.shotCameraPose.look),
+        },
+        body: r(this.body?.root.position),
+        bodyVisible: this.body?.root.visible,
+        hela: r(this.npcById.get('hela')?.position),
+      };
+    }
     switch (name) {
       case 'hubNpcVisible':
         return this.npcs?.visibleCount ?? 0;
@@ -1318,6 +1579,44 @@ export class HubScene implements Scene {
     };
     const metaCommands = registerMetaCommands(host, this.meta, this.metaStore!);
     this.off.push(() => metaCommands.dispose());
+    register('cutaway', 'cutaway noodles|cat|skip', ([kind]) => {
+      if (kind === 'skip') {
+        this.cutaway.skip();
+        return 'Powrót kamery.';
+      }
+      if (this.cutaway.active) return 'Ujęcie trwa.';
+      if (
+        this.stations.opened ||
+        this.seat ||
+        this.hubMap?.isOpen ||
+        this.isDebriefOpen()
+      )
+        return 'Zamknij ekran lub wstań przed ujęciem.';
+      if (kind === 'cat') {
+        const s = this.player.getState();
+        if (
+          ![0, Math.PI / 2, -Math.PI / 2, Math.PI].some((turn) =>
+            this.fauna?.runtime.placeCat(s.position, s.yaw + turn),
+          )
+        )
+          return 'Brak wolnego miejsca dla kota przy postaci.';
+        return String(this.startCutaway(kind));
+      }
+      if (kind === 'noodles') {
+        const bowl = this.layout.props?.find((p) => p.kind === 'noodles');
+        if (!bowl) return 'Brak miski.';
+        const pos = bowl.focus.position;
+        this.player.teleport({
+          ...this.spawnPosition(),
+          x: pos.x,
+          z: pos.z + this.ctx.tuning.hub.cutaway.minDistanceM,
+        });
+        this.previous = this.player.getState();
+        this.onPropUsed(bowl.id, 'noodles');
+        return String(this.cutaway.active);
+      }
+      return 'cutaway noodles|cat|skip';
+    });
     register('hub use', 'hub use <propId>', (args) => {
       if (args.length !== 1 || !args[0]) return 'hub use <propId>';
       return String(this.useProp(args[0]));
@@ -1534,6 +1833,7 @@ export class HubScene implements Scene {
       this.guide?.dispose();
       this.fppView?.dispose();
       this.legs?.dispose();
+      this.body?.dispose();
       this.fpsCamera?.dispose();
       this.player?.dispose();
       if (this.entities && this.playerId !== undefined)
