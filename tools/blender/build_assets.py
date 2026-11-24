@@ -1400,8 +1400,11 @@ def build_mag_crossbow():
         slab([(-.22, -.035), (-.21, -.036), (-.065, .016), (-.065, .027),
               (-.21, -.021), (-.21, .039), (-.22, .039)], -.011, .011),
     )
-    cell = block(-.017, -.013, -.024, .341, .050, .053)
-    return weapon_root("mag_crossbow", frame, bm_merge(*coils), cell, (0, .373, .064), trim=trim, grip=grip)
+    rail_glow = block(-.017, -.013, -.024, .341, .050, .053)
+    # Ogniwo na boku korpusu przed ramionami: tam moduł slotu `cell` szuka miejsca.
+    cell = block(-.0266, -.0256, .02, .15, .024, .044)
+    return weapon_root("mag_crossbow", frame, bm_merge(*coils, rail_glow), cell, (0, .373, .064),
+                       trim=trim, grip=grip)
 
 
 def build_rifle():

@@ -95,6 +95,8 @@ export class WeaponsTest implements Scene {
   private aimPreview!: HeldItem;
   private readonly skins = new Map<string, string>();
   private readonly optics = new Map<string, string>();
+  /** Dodatki spoza optyki zakładane komendą `mod` (slot → id). */
+  private readonly mods = new Map<string, Map<string, string>>();
   private aimDefinition?: ReturnType<typeof moddedWeapon>;
   private aimGuide?: HTMLDivElement;
   private adsGui?: GUI;
@@ -277,7 +279,10 @@ export class WeaponsTest implements Scene {
       skinOf: (id) => this.skins.get(id),
       modulesOf: (id) => {
         const optic = this.optics.get(id);
-        return optic ? [optic] : [];
+        return [
+          ...(optic ? [optic] : []),
+          ...(this.mods.get(id)?.values() ?? []),
+        ];
       },
       tuning: ctx.tuning,
     });
@@ -341,6 +346,28 @@ export class WeaponsTest implements Scene {
           return `Dostępne: ${['none', ...fits.map((s) => s.id)].join(', ')}`;
         return `Skin: ${id}`;
       });
+      register(
+        'mod',
+        'mod <id|none> — dodatek (bez optyki) na bieżącej broni',
+        ([id]) => {
+          const weaponId = this.weapon.definition.id;
+          const available = [...moduleDefinitions.values()].filter(
+            (module) =>
+              module.slot !== 'optic' && moduleFitsWeapon(module, weaponId),
+          );
+          const installed =
+            this.mods.get(weaponId) ?? new Map<string, string>();
+          const module = available.find((candidate) => candidate.id === id);
+          if (id === 'none') installed.clear();
+          else if (module) installed.set(module.slot, module.id);
+          else
+            return `Dostępne: ${['none', ...available.map((m) => m.id)].join(', ')}`;
+          this.mods.set(weaponId, installed);
+          this.shownWeapon = '';
+          this.syncWeaponView();
+          return `Dodatki: ${[...installed.values()].join(', ') || 'brak'}`;
+        },
+      );
       register(
         'ads optic',
         'ads optic <id|none> — optyka bieżącej broni',
